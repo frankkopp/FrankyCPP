@@ -65,5 +65,6 @@ extern const std::locale deLocale;
 #include "direction.h"
 #include "orientation.h"
 #include "castlingrights.h"
+#include "piecetype.h"
 
 #endif//FRANKYCPP_TYPES_H

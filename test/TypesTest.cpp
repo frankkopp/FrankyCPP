@@ -109,14 +109,21 @@ TEST(TypesTest, CastlingStr) {
   ASSERT_EQ("Q", str(WHITE_OOO));
 }
 
-//TEST(GlobalsTest, pieceTypeLabels) {
-//  ASSERT_EQ('K', pieceTypeToChar[KING]);
-//  ASSERT_EQ('Q', pieceTypeToChar[QUEEN]);
-//  ASSERT_EQ('R', pieceTypeToChar[ROOK]);
-//  ASSERT_EQ('B', pieceTypeToChar[BISHOP]);
-//  ASSERT_EQ('N', pieceTypeToChar[KNIGHT]);
-//  ASSERT_EQ('P', pieceTypeToChar[PAWN]);
-//}
+TEST(GlobalsTest, pieceTypeLabels) {
+  ASSERT_EQ('K', pieceTypeLabel(KING));
+  ASSERT_EQ('Q', pieceTypeLabel(QUEEN));
+  ASSERT_EQ('R', pieceTypeLabel(ROOK));
+  ASSERT_EQ('B', pieceTypeLabel(BISHOP));
+  ASSERT_EQ('N', pieceTypeLabel(KNIGHT));
+  ASSERT_EQ('P', pieceTypeLabel(PAWN));
+}
+
+
+TEST(TypesTest, GamePhaseValue) {
+  ASSERT_EQ(1, gamePhaseValue(KNIGHT));
+  ASSERT_EQ(2, gamePhaseValue(ROOK));
+  ASSERT_EQ(4, gamePhaseValue(QUEEN));
+}
 //
 //TEST(GlobalsTest, pieceLabels) {
 //  ASSERT_EQ('K', pieceToChar[WHITE_KING]);
