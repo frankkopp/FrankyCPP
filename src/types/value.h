@@ -45,6 +45,11 @@ enum Value : int16_t {
 };
 
 
+// checks if value is a value of min - max
+constexpr bool validValue(Value v) {
+  return (v >= VALUE_MIN && v <= VALUE_MAX) || v == VALUE_NONE;
+}
+
 /** PieceType values */
 constexpr const Value pieceTypeValue[] = {
   Value(0),   // no type

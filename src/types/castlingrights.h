@@ -76,7 +76,6 @@ constexpr bool operator==(CastlingRights cr1, CastlingRights cr2) {
   return (cr1 & cr2) || (cr1 == 0 && cr2 == 0);
 }
 
-
 // returns a string representing the castling rights as used in a FEN (e.g. KQkq)
 inline std::string str(CastlingRights cr) {
   if (cr == NO_CASTLING) {

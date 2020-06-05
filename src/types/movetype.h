@@ -23,34 +23,35 @@
  *
  */
 
-#ifndef FRANKYCPP_TYPES_H
-#define FRANKYCPP_TYPES_H
+#ifndef FRANKYCPP_MOVETYPE_H
+#define FRANKYCPP_MOVETYPE_H
 
-#include "fmt/locale.h"
+// MoveType is used for the different move types we use to encode moves.
+//  Normal    = 0
+//  Promotion = 1
+//  EnPassant = 2
+//  Castling  = 3
+enum MoveType {
+  NORMAL,
+  PROMOTION,
+  ENPASSANT,
+  CASTLING
+};
 
-// convenience macros
-#define sleepForSec(x) std::this_thread::sleep_for(std::chrono::seconds(x));
-#define NEWLINE std::cout << std::endl
-#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
-#define println(s) std::cout << (s) << std::endl
-#define fprint(...) std::cout << fmt::format(deLocale, __VA_ARGS__)
-#define fprintln(...) fprint(__VA_ARGS__) << std::endl
-#define DEBUG(...) std::cout << fmt::format(deLocale, "DEBUG {}:{} {}", __FILE__, __LINE__, __VA_ARGS__) << std::endl
+// checks if move type is a value of 0 - 3
+constexpr bool validMoveType(MoveType mt) {
+  return !(mt < 0); // || mt >= 4);
+}
 
+// single char label for the piece type (one of " KPNBRQ")
+constexpr char str(MoveType mt) {
+  if (!validMoveType(mt)) return '-';
+  return std::string("npec")[mt];
+}
 
-// include all type headers for convenience
-#include "globals.h"
-#include "file.h"
-#include "rank.h"
-#include "square.h"
-#include "color.h"
-#include "direction.h"
-#include "orientation.h"
-#include "castlingrights.h"
-#include "piecetype.h"
-#include "piece.h"
-#include "movetype.h"
-#include "move.h"
-#include "movelist.h"
+inline std::ostream& operator<<(std::ostream& os, const MoveType mt) {
+  os << str(mt);
+  return os;
+}
 
-#endif//FRANKYCPP_TYPES_H
+#endif//FRANKYCPP_MOVETYPE_H

@@ -23,34 +23,39 @@
  *
  */
 
-#ifndef FRANKYCPP_TYPES_H
-#define FRANKYCPP_TYPES_H
+#ifndef FRANKYCPP_MOVELIST_H
+#define FRANKYCPP_MOVELIST_H
 
-#include "fmt/locale.h"
-
-// convenience macros
-#define sleepForSec(x) std::this_thread::sleep_for(std::chrono::seconds(x));
-#define NEWLINE std::cout << std::endl
-#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
-#define println(s) std::cout << (s) << std::endl
-#define fprint(...) std::cout << fmt::format(deLocale, __VA_ARGS__)
-#define fprintln(...) fprint(__VA_ARGS__) << std::endl
-#define DEBUG(...) std::cout << fmt::format(deLocale, "DEBUG {}:{} {}", __FILE__, __LINE__, __VA_ARGS__) << std::endl
-
-
-// include all type headers for convenience
-#include "globals.h"
-#include "file.h"
-#include "rank.h"
-#include "square.h"
-#include "color.h"
-#include "direction.h"
-#include "orientation.h"
-#include "castlingrights.h"
-#include "piecetype.h"
-#include "piece.h"
-#include "movetype.h"
+#include <vector>
+#include <sstream>
 #include "move.h"
-#include "movelist.h"
 
-#endif//FRANKYCPP_TYPES_H
+/// A collection of moves using a std::vector
+typedef std::vector<Move> MoveList;
+
+inline std::string strVerbose(const MoveList& moveList) {
+  std::ostringstream os;
+  os << "MoveList: size=" << moveList.size() << " [";
+  for (auto itr = moveList.begin(); itr != moveList.end(); ++itr) {
+    os << *itr;
+    if (itr != moveList.end() - 1) os << ", ";
+  }
+  os << "]";
+  return os.str();
+}
+
+inline std::string str(const MoveList& moveList) {
+  std::ostringstream os;
+  for (Move m : moveList) {
+    os << m;
+    if (m != moveList.back()) os << " ";
+  }
+  return os.str();
+}
+
+inline std::ostream& operator<< (std::ostream& os, const MoveList& moveList) {
+  os << str(moveList);
+  return os;
+}
+
+#endif//FRANKYCPP_MOVELIST_H

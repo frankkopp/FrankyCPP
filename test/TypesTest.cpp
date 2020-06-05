@@ -66,7 +66,7 @@ TEST(TypesTest, MoveDirection) {
   ASSERT_EQ(-1, moveDirection(BLACK));
 }
 
-TEST(CastlingTest, castling) {
+TEST(TypesTest, castling) {
 
   CastlingRights cr = ANY_CASTLING;
   ASSERT_EQ(0b1110, cr - WHITE_OO);
@@ -109,7 +109,7 @@ TEST(TypesTest, CastlingStr) {
   ASSERT_EQ("Q", str(WHITE_OOO));
 }
 
-TEST(GlobalsTest, pieceTypeLabels) {
+TEST(TypesTest, pieceTypeLabels) {
   ASSERT_EQ('K', str(KING));
   ASSERT_EQ('Q', str(QUEEN));
   ASSERT_EQ('R', str(ROOK));
@@ -177,97 +177,81 @@ TEST(TypesTest, directionOperators) {
   ASSERT_EQ(SQ_H8, SQ_A1 + (7 * NORTH_EAST));
   ASSERT_EQ(SQ_A8, SQ_H1 + (7 * NORTH_WEST));
 }
-//
-//TEST(MoveTest, moves) {
-//  Move move = createMove<NORMAL>(SQ_A1, SQ_H1);
-//  ASSERT_TRUE(isMove(move));
-//  ASSERT_EQ(SQ_A1, getFromSquare(move));
-//  ASSERT_EQ(SQ_H1, getToSquare(move));
-//  ASSERT_EQ(NORMAL, typeOf(move));
-//  ASSERT_EQ(KNIGHT, promotionType(move)); // not useful is not type PROMOTION
-//
-//  move = createMove<PROMOTION>(SQ_A7, SQ_A8, QUEEN);
-//  ASSERT_TRUE(isMove(move));
-//  ASSERT_EQ(SQ_A7, getFromSquare(move));
-//  ASSERT_EQ(SQ_A8, getToSquare(move));
-//  ASSERT_EQ(PROMOTION, typeOf(move));
-//  ASSERT_EQ(QUEEN, promotionType(move)); // not useful is not type PROMOTION
-//
-//  std::stringstream buffer1, buffer2;
-//  buffer1 << "a7a8Q";
-//  buffer2 << move;
-//  ASSERT_EQ(buffer1.str(), buffer2.str());
-//  ASSERT_EQ("a7a8Q (PROMOTION -15001 31800)", printMoveVerbose(move));
-//
-//  move = createMove<PROMOTION>("a7a8N");
-//  ASSERT_TRUE(isMove(move));
-//  ASSERT_EQ(SQ_A7, getFromSquare(move));
-//  ASSERT_EQ(SQ_A8, getToSquare(move));
-//  ASSERT_EQ(PROMOTION, typeOf(move));
-//  ASSERT_EQ(KNIGHT, promotionType(move)); // not useful is not type PROMOTION
-//  ASSERT_NE(QUEEN, promotionType(move)); // not useful is not type PROMOTION
-//}
-//
-//TEST(MoveTest, movesValue) {
-//  NEWLINE;
-//  Move move = createMove<NORMAL>(SQ_A1, SQ_H1);
-//
-//  ASSERT_EQ(VALUE_NONE, valueOf(move));
-//
-//  Value v = VALUE_MAX;
-//  setValue(move, v);
-//  ASSERT_EQ(v, valueOf(move));
-//
-//  v = VALUE_MIN;
-//  setValue(move, v);
-//  ASSERT_EQ(v, valueOf(move));
-//
-//  v = Value(100);
-//  setValue(move, v);
-//  ASSERT_EQ(v, valueOf(move));
-//
-//  v = VALUE_CHECKMATE_THRESHOLD;
-//  setValue(move, v);
-//  ASSERT_EQ(v, valueOf(move));
-//
-//  move = createMove<NORMAL>(SQ_A1, SQ_H1, VALUE_DRAW);
-//  ASSERT_EQ(VALUE_DRAW, valueOf(move));
-//  move = createMove<NORMAL>(SQ_A1, SQ_H1, Value(-100));
-//  ASSERT_EQ(Value(-100), valueOf(move));
-//  move = createMove<NORMAL>(SQ_A1, SQ_H1, Value(100));
-//  ASSERT_EQ(Value(100), valueOf(move));
-//
-//  move = createMove<PROMOTION>(SQ_A1, SQ_H1, Value(-pieceTypeValue[QUEEN]), QUEEN);
-//  ASSERT_EQ(-pieceTypeValue[QUEEN], valueOf(move));
-//
-//  // test equality without value / pure move
-//  move = createMove<NORMAL>(SQ_A1, SQ_H1, Value(100));
-//  Move move2 = createMove<NORMAL>(SQ_A1, SQ_H1, Value(-100));
-//  ASSERT_NE(move, move2);
-//  ASSERT_EQ(moveOf(move), moveOf(move2));
-//
-//}
-//
-//
-//TEST(MoveListTest, moveListPrint) {
-//
-//    Move move1 = createMove<NORMAL>(SQ_A1, SQ_H1);
-//  Move move2 = createMove<PROMOTION>(SQ_A7, SQ_A8, QUEEN);
-//  Move move3 = createMove<CASTLING>(SQ_E1, SQ_G1);
-//  MoveList moveList;
-//  moveList.push_back(move1);
-//  moveList.push_back(move2);
-//  moveList.push_back(move3);
-//
-//  std::ostringstream ml;
-//  ml << moveList;
-//  std::string expected = "MoveList: size=3 [a1h1, a7a8Q, e1g1]";
-//  ASSERT_EQ(expected, ml.str());
-//
-//}
-//
-//TEST(MoveListTest, bitString) {
-//  ASSERT_EQ("00000000.00000000.00000000.00000000.00000000.00000000.00000000.11111111", printBitString(0b11111111));
-//  ASSERT_EQ("00000000.00000000.00000000.00000000.00000000.00000000.00000000.00000001", printBitString(0b1));
-//  ASSERT_EQ("11111111.11111111.11111111.11111111.11111111.11111111.11111111.11111110", printBitString(~0b1));
-//}
+
+TEST(TypesTest, moves) {
+  Move move = createMove(SQ_A1, SQ_H1, NORMAL);
+  ASSERT_TRUE(validMove(move));
+  ASSERT_EQ(SQ_A1, fromSquare(move));
+  ASSERT_EQ(SQ_H1, toSquare(move));
+  ASSERT_EQ(NORMAL, moveTypeOf(move));
+  ASSERT_EQ(KNIGHT, promotionTypeOf(move));// not useful is not type PROMOTION
+
+  move = createMove(SQ_A7, SQ_A8, PROMOTION, QUEEN);
+  ASSERT_TRUE(validMove(move));
+  ASSERT_EQ(SQ_A7, fromSquare(move));
+  ASSERT_EQ(SQ_A8, toSquare(move));
+  ASSERT_EQ(PROMOTION, moveTypeOf(move));
+  ASSERT_EQ(QUEEN, promotionTypeOf(move));// not useful is not type PROMOTION
+
+  std::stringstream buffer1, buffer2;
+  buffer1 << "a7a8Q";
+  buffer2 << move;
+  ASSERT_EQ(buffer1.str(), buffer2.str());
+  ASSERT_EQ("a7a8Q (PROMOTION -15001 31800)", strVerbose(move));
+}
+
+TEST(TypesTest, movesValue) {
+  NEWLINE;
+  Move move = createMove(SQ_A1, SQ_H1, NORMAL);
+
+  ASSERT_EQ(VALUE_NONE, valueOf(move));
+
+  Value v = VALUE_MAX;
+  setValueOf(move, v);
+  ASSERT_EQ(v, valueOf(move));
+
+  v = VALUE_MIN;
+  setValueOf(move, v);
+  ASSERT_EQ(v, valueOf(move));
+
+  v = Value(100);
+  setValueOf(move, v);
+  ASSERT_EQ(v, valueOf(move));
+
+  v = VALUE_CHECKMATE_THRESHOLD;
+  setValueOf(move, v);
+  ASSERT_EQ(v, valueOf(move));
+
+  move = createMove(SQ_A1, SQ_H1, NORMAL, VALUE_DRAW);
+  ASSERT_EQ(VALUE_DRAW, valueOf(move));
+  move = createMove(SQ_A1, SQ_H1, NORMAL, Value(-100));
+  ASSERT_EQ(Value(-100), valueOf(move));
+  move = createMove(SQ_A1, SQ_H1, NORMAL, Value(100));
+  ASSERT_EQ(Value(100), valueOf(move));
+
+  move = createMove(SQ_A1, SQ_H1, PROMOTION, QUEEN, Value(-pieceTypeValue[QUEEN]));
+  ASSERT_EQ(-pieceTypeValue[QUEEN], valueOf(move));
+
+  // test equality without value / pure move
+  move       = createMove(SQ_A1, SQ_H1, NORMAL, Value(100));
+  Move move2 = createMove(SQ_A1, SQ_H1, NORMAL, Value(-100));
+  ASSERT_NE(move, move2);
+  ASSERT_EQ(moveOf(move), moveOf(move2));
+}
+
+TEST(TypesTest, moveListPrint) {
+
+  Move move1 = createMove(SQ_A1, SQ_H1, NORMAL);
+  Move move2 = createMove(SQ_A7, SQ_A8, PROMOTION, QUEEN);
+  Move move3 = createMove(SQ_E1, SQ_G1, CASTLING);
+  MoveList moveList;
+  moveList.push_back(move1);
+  moveList.push_back(move2);
+  moveList.push_back(move3);
+
+  std::ostringstream ml;
+  ml << moveList;
+  std::string expected = "a1h1 a7a8Q e1g1";
+  ASSERT_EQ(expected, ml.str());
+}
+
