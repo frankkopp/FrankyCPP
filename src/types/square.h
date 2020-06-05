@@ -32,8 +32,16 @@
 #include "file.h"
 #include "rank.h"
 
-// @formatter:off
-enum Square : int {
+// Square represent exactly on square on a chess board.
+//  SqA1   // 0
+//  SqB1   // 1
+//  SqC1
+//  SqD1
+//  ...
+//  SqG8
+//  SqH8   // 63
+//  SqNone // 64
+enum Square : int { // @formatter:off
   SQ_A1, SQ_B1, SQ_C1, SQ_D1, SQ_E1, SQ_F1, SQ_G1, SQ_H1,
   SQ_A2, SQ_B2, SQ_C2, SQ_D2, SQ_E2, SQ_F2, SQ_G2, SQ_H2,
   SQ_A3, SQ_B3, SQ_C3, SQ_D3, SQ_E3, SQ_F3, SQ_G3, SQ_H3,
@@ -70,12 +78,12 @@ inline Square makeSquare(std::string s) {
 }
 
 // returns a string representing the square (e.g. a1 or h8)
-inline std::string squareLabel (Square sq) {
-  return validSquare(sq) ? std::string{ fileLabel(fileOf(sq)), rankLabel(rankOf(sq)) } : "--";
+inline std::string str(Square sq) {
+  return validSquare(sq) ? std::string{str(fileOf(sq)), str(rankOf(sq)) } : "--";
 }
 
 inline std::ostream& operator<< (std::ostream& os, const Square sq) {
-  os << squareLabel(sq);
+  os << str(sq);
   return os;
 }
 

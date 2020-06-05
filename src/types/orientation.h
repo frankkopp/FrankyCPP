@@ -26,16 +26,26 @@
 #ifndef FRANKYCPP_ORIENTATION_H
 #define FRANKYCPP_ORIENTATION_H
 
+// Orientation is a set of constants for directions from a squares
+//  NW,       // 0
+//  N,        // 1
+//  NE,       // 2
+//  E,        // 3
+//  SE,       // 4
+//  S,        // 5
+//  SW,       // 6
+//  W,        // 7
+//  OR_LENGTH // 8
 enum Orientation : int {
-  NW,
-  N,
-  NE,
-  E,
-  SE,
-  S,
-  SW,
-  W,
-  OR_LENGTH
+  NW,      // 0
+  N,       // 1
+  NE,      // 2
+  E,       // 3
+  SE,      // 4
+  S,       // 5
+  SW,      // 6
+  W,       // 7
+  OR_LENGTH// 8
 };
 
 #endif//FRANKYCPP_ORIENTATION_H

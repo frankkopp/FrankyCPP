@@ -28,6 +28,17 @@
 
 #include <ostream>
 
+// File represents a chess board file a-h
+//  FILE_A      // 0
+//	FILE_B      // 1
+//	FILE_C      // 2
+//	FILE_D      // 3
+//	FILE_E      // 4
+//	FILE_F      // 5
+//	FILE_G      // 6
+//	FILE_H      // 7
+//	FILE_NONE   // 8
+//  FILE_LENGTH // 8
 enum File : int {
   FILE_A,
   FILE_B,
@@ -38,7 +49,7 @@ enum File : int {
   FILE_G,
   FILE_H,
   FILE_NONE,
-  FILE_LENGTH = 9
+  FILE_LENGTH = 8
 };
 
 // checks if file is a value of 0-7
@@ -52,14 +63,14 @@ constexpr File makeFile(char fileLabel) {
   return validFile(f) ? f : FILE_NONE;
 }
 
-// returns a string representing the square (e.g. a1 or h8)
-constexpr char fileLabel(File f) {
+// returns a char representing the square (e.g. a1 or h8)
+constexpr char str(File f) {
   if (f < 0 || f >= 8) return '-';
   return 'a' + f;
 }
 
 inline std::ostream& operator<<(std::ostream& os, const File f) {
-  os << fileLabel(f);
+  os << str(f);
   return os;
 }
 

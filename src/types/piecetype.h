@@ -29,6 +29,17 @@
 #include <ostream>
 #include <string>
 
+// PieceType is a set of constants for piece types in chess
+//  test for non sliding pt & 0b0100 == 0 (must also be none zero)
+//  test for sliding pt & 0b0100 == 1 (must also be < 7)
+//  PtNone   = 0b0000
+//  King     = 0b0001 // non sliding
+//  Pawn     = 0b0010 // non sliding
+//  Knight   = 0b0011 // non sliding
+//  Bishop   = 0b0100 // sliding
+//  Rook     = 0b0101 // sliding
+//  Queen    = 0b0110 // sliding
+//  PtLength = 0b0111
 enum PieceType : int {
   PT_NONE, // 0
   KING,    // 1 non sliding
@@ -62,13 +73,13 @@ constexpr int gamePhaseValue(PieceType pt) {
 }
 
 // single char label for the piece type (one of " KPNBRQ")
-constexpr char pieceTypeLabel(PieceType pt) {
+constexpr char str(PieceType pt) {
   if (!validPieceType(pt)) return '-';
   return std::string(" KPNBRQ")[pt];
 }
 
 inline std::ostream& operator<<(std::ostream& os, const PieceType pt) {
-  os << pieceTypeLabel(pt);
+  os << str(pt);
   return os;
 }
 

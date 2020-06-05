@@ -28,20 +28,27 @@
 
 #include <iostream>
 
-/** CastlingRight */
+// CastlingRights encodes the castling state e.g. available castling
+// and defines functions to change this state
+//  NO_CASTLING = 0,                                 // 0000
+//  WHITE_OO,                                        // 0001
+//  WHITE_OOO      = WHITE_OO << 1,                  // 0010
+//  WHITE_CASTLING = WHITE_OO | WHITE_OOO,           // 0011
+//  BLACK_OO       = WHITE_OO << 2,                  // 0100
+//  BLACK_OOO      = WHITE_OO << 3,                  // 1000
+//  BLACK_CASTLING = BLACK_OO | BLACK_OOO,           // 1100
+//  ANY_CASTLING   = WHITE_CASTLING | BLACK_CASTLING,// 1111
+//  CR_LENGTH      = 16
 enum CastlingRights : unsigned int {
-  NO_CASTLING = 0,// 0000
-
-  WHITE_OO,                             // 0001
-  WHITE_OOO      = WHITE_OO << 1,       // 0010
-  WHITE_CASTLING = WHITE_OO | WHITE_OOO,// 0011
-
-  BLACK_OO       = WHITE_OO << 2,       // 0100
-  BLACK_OOO      = WHITE_OO << 3,       // 1000
-  BLACK_CASTLING = BLACK_OO | BLACK_OOO,// 1100
-
-  ANY_CASTLING = WHITE_CASTLING | BLACK_CASTLING,// 1111
-  CR_LENGTH    = 16
+  NO_CASTLING = 0,                                 // 0000
+  WHITE_OO,                                        // 0001
+  WHITE_OOO      = WHITE_OO << 1,                  // 0010
+  WHITE_CASTLING = WHITE_OO | WHITE_OOO,           // 0011
+  BLACK_OO       = WHITE_OO << 2,                  // 0100
+  BLACK_OOO      = WHITE_OO << 3,                  // 1000
+  BLACK_CASTLING = BLACK_OO | BLACK_OOO,           // 1100
+  ANY_CASTLING   = WHITE_CASTLING | BLACK_CASTLING,// 1111
+  CR_LENGTH      = 16
 };
 
 // remove castling rights
@@ -70,7 +77,7 @@ constexpr bool operator==(CastlingRights cr1, CastlingRights cr2) {
 }
 
 
-// returns a string representing the square (e.g. a1 or h8)
+// returns a string representing the castling rights as used in a FEN (e.g. KQkq)
 inline std::string str(CastlingRights cr) {
   if (cr == NO_CASTLING) {
     return "-";

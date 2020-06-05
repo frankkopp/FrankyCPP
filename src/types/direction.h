@@ -26,12 +26,20 @@
 #ifndef FRANKYCPP_DIRECTION_H
 #define FRANKYCPP_DIRECTION_H
 
+// Direction is a set of constants for moving squares within a Bb
+//  NORTH      = 8,
+//  EAST       = 1,
+//  SOUTH      = -NORTH,
+//  WEST       = -EAST,
+//  NORTH_EAST = NORTH + EAST,
+//  SOUTH_EAST = SOUTH + EAST,
+//  SOUTH_WEST = SOUTH + WEST,
+//  NORTH_WEST = NORTH + WEST
 enum Direction : int {
-  NORTH = 8,
-  EAST  = 1,
-  SOUTH = -NORTH,
-  WEST  = -EAST,
-
+  NORTH      = 8,
+  EAST       = 1,
+  SOUTH      = -NORTH,
+  WEST       = -EAST,
   NORTH_EAST = NORTH + EAST,
   SOUTH_EAST = SOUTH + EAST,
   SOUTH_WEST = SOUTH + WEST,
@@ -41,16 +49,20 @@ enum Direction : int {
 // return direction of pawns for the color
 constexpr Direction pawnPush(Color c) { return c == WHITE ? NORTH : SOUTH; }
 
-/// Additional operators to add a Direction to a Square
+// Additional operators to add a Direction to a Square
 constexpr Square operator+(Square s, Direction d) {
   return static_cast<Square>(int(s) + int(d));
 }
+
+// Additional operators to add a Direction to a Square
 constexpr Square& operator+=(Square& s, Direction d) { return s = s + d; }
 
-/// Additional operators to subtract a Direction to a Square
+// Additional operators to subtract a Direction to a Square
 constexpr Square operator-(Square s, Direction d) {
   return static_cast<Square>(int(s) - int(d));
 }
+
+// Additional operators to subtract a Direction to a Square
 constexpr Square& operator-=(Square& s, Direction d) { return s = s - d; }
 
 

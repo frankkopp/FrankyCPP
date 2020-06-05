@@ -28,7 +28,11 @@
 
 #include <ostream>
 
-// represents the two colors of a chess game
+// Color represents constants for each chess color White and Black
+//  WHITE        = 0,
+//  BLACK        = 1,
+//  NOCOLOR      = 2,
+//  COLOR_LENGTH = 2 
 enum Color : int {
   WHITE        = 0,
   BLACK        = 1,
@@ -36,19 +40,26 @@ enum Color : int {
   COLOR_LENGTH = 2
 };
 
+// checks if rank is a value of 0-7
+constexpr bool validColor(Color c) {
+  return !(c < 0 || c >= 2);
+}
+
+// returns the opposite color
 constexpr Color operator~(Color c) { return Color(c ^ 1); }
 
-// returns a string representing the square (e.g. a1 or h8)
-constexpr char colorLabel(Color c) {
+// moveDirection returns positive 1 for White and negative 1 (-1) for Black
+constexpr int moveDirection(Color c) { return c == WHITE ? 1 : -1; }
+
+// returns a char representing the color (e.g. w or b)
+constexpr char str(Color c) {
   if (c < 0 || c >= 2) return '-';
   return c == WHITE ? 'w' : 'b';
 }
 
 inline std::ostream& operator<<(std::ostream& os, const Color c) {
-  os << colorLabel(c);
+  os << str(c);
   return os;
 }
-
-constexpr int moveDirection(Color c) { return c == WHITE ? 1 : -1; }
 
 #endif//FRANKYCPP_COLOR_H
