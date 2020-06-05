@@ -23,8 +23,8 @@
  *
  */
 
-#ifndef FRANKYCPP_NEWGEN_SQUARE_H
-#define FRANKYCPP_NEWGEN_SQUARE_H
+#ifndef FRANKYCPP_SQUARE_H
+#define FRANKYCPP_SQUARE_H
 
 #include <ostream>
 
@@ -79,4 +79,4 @@ inline std::ostream& operator<< (std::ostream& os, const Square sq) {
   return os;
 }
 
-#endif//FRANKYCPP_NEWGEN_SQUARE_H
+#endif//FRANKYCPP_SQUARE_H

@@ -23,19 +23,19 @@
  *
  */
 
-#include <gtest/gtest.h>
-#include <random>
 #include "types/types.h"
 #include "fmt/locale.h"
+#include <gtest/gtest.h>
+#include <random>
 
 using testing::Eq;
 
-TEST(GlobalsTest, colors) {
+TEST(TypesTest, colors) {
   ASSERT_EQ(WHITE, ~BLACK);
   ASSERT_EQ(BLACK, ~WHITE);
 }
 
-TEST(GlobalsTest, labels) {
+TEST(TypesTest, labels) {
   // all squares and label of squares
   std::string actual;
   for (int i = 0; i < SQ_NONE; ++i) {
@@ -48,12 +48,65 @@ TEST(GlobalsTest, labels) {
   ASSERT_EQ(expected, actual);
 }
 
-TEST(GlobalsTest, filesAndRanks) {
+TEST(TypesTest, filesAndRanks) {
   // all squares and label of squares
   std::string actual;
   for (int i = 0; i < SQ_NONE; ++i) {
     ASSERT_EQ(Square(i), squareOf(File(fileOf(Square(i))), Rank(rankOf(Square(i)))));
   }
+}
+
+TEST(TypesTest, ColorLabel) {
+  ASSERT_EQ('w', colorLabel(WHITE));
+  ASSERT_EQ('b', colorLabel(BLACK));
+}
+
+TEST(TypesTest, MoveDirection) {
+  ASSERT_EQ(1, moveDirection(WHITE));
+  ASSERT_EQ(-1, moveDirection(BLACK));
+}
+
+TEST(CastlingTest, castling) {
+
+  CastlingRights cr = ANY_CASTLING;
+  ASSERT_EQ(0b1110, cr - WHITE_OO);
+  ASSERT_EQ(0b1101, cr - WHITE_OOO);
+  ASSERT_EQ(0b1011, cr - BLACK_OO);
+  ASSERT_EQ(0b0111, cr - BLACK_OOO);
+
+  cr = NO_CASTLING;
+  ASSERT_TRUE(cr == NO_CASTLING);
+
+  cr += WHITE_OO;
+  ASSERT_EQ(0b0001, cr);
+  ASSERT_TRUE(cr == WHITE_OO);
+  ASSERT_TRUE(cr != WHITE_OOO);
+  ASSERT_TRUE(cr != NO_CASTLING);
+  ASSERT_TRUE(cr != BLACK_OO);
+  ASSERT_TRUE(cr != BLACK_OOO);
+  ASSERT_TRUE(cr != BLACK_CASTLING);
+
+  cr += WHITE_OOO;
+  ASSERT_EQ(0b0011, cr);
+  ASSERT_TRUE(cr == WHITE_OO);
+  ASSERT_TRUE(cr == WHITE_OOO);
+  ASSERT_TRUE(cr == WHITE_CASTLING);
+  ASSERT_TRUE(cr != NO_CASTLING);
+  ASSERT_TRUE(cr != BLACK_OO);
+  ASSERT_TRUE(cr != BLACK_OOO);
+  ASSERT_TRUE(cr != BLACK_CASTLING);
+
+  cr += BLACK_OO;
+  ASSERT_EQ(0b0111, cr);
+  ASSERT_EQ(0b1111, cr + BLACK_OOO);
+}
+
+TEST(TypesTest, CastlingStr) {
+  ASSERT_EQ("KQkq", str(ANY_CASTLING));
+  ASSERT_EQ("KQ", str(WHITE_CASTLING));
+  ASSERT_EQ("kq", str(BLACK_CASTLING));
+  ASSERT_EQ("k", str(BLACK_OO));
+  ASSERT_EQ("Q", str(WHITE_OOO));
 }
 
 //TEST(GlobalsTest, pieceTypeLabels) {
@@ -274,4 +327,3 @@ TEST(GlobalsTest, filesAndRanks) {
 //  ASSERT_EQ("00000000.00000000.00000000.00000000.00000000.00000000.00000000.00000001", printBitString(0b1));
 //  ASSERT_EQ("11111111.11111111.11111111.11111111.11111111.11111111.11111111.11111110", printBitString(~0b1));
 //}
-

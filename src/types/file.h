@@ -23,8 +23,8 @@
  *
  */
 
-#ifndef FRANKYCPP_NEWGEN_FILE_H
-#define FRANKYCPP_NEWGEN_FILE_H
+#ifndef FRANKYCPP_FILE_H
+#define FRANKYCPP_FILE_H
 
 #include <ostream>
 
@@ -42,18 +42,18 @@ enum File : int {
 };
 
 // checks if file is a value of 0-7
-inline bool validFile(File f) {
+constexpr bool validFile(File f) {
   return !(f < 0 || f >= 8);
 }
 
 // creates a file from a char
-inline File makeFile(char fileLabel) {
+constexpr File makeFile(char fileLabel) {
   const File f = static_cast<File>(fileLabel - 'a');
   return validFile(f) ? f : FILE_NONE;
 }
 
 // returns a string representing the square (e.g. a1 or h8)
-inline char fileLabel(File f) {
+constexpr char fileLabel(File f) {
   if (f < 0 || f >= 8) return '-';
   return 'a' + f;
 }
@@ -63,4 +63,4 @@ inline std::ostream& operator<<(std::ostream& os, const File f) {
   return os;
 }
 
-#endif//FRANKYCPP_NEWGEN_FILE_H
+#endif//FRANKYCPP_FILE_H

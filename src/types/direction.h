@@ -23,32 +23,35 @@
  *
  */
 
-#ifndef FRANKYCPP_COLOR_H
-#define FRANKYCPP_COLOR_H
+#ifndef FRANKYCPP_DIRECTION_H
+#define FRANKYCPP_DIRECTION_H
 
-#include <ostream>
+enum Direction : int {
+  NORTH = 8,
+  EAST  = 1,
+  SOUTH = -NORTH,
+  WEST  = -EAST,
 
-// represents the two colors of a chess game
-enum Color : int {
-  WHITE        = 0,
-  BLACK        = 1,
-  NOCOLOR      = 2,
-  COLOR_LENGTH = 2
+  NORTH_EAST = NORTH + EAST,
+  SOUTH_EAST = SOUTH + EAST,
+  SOUTH_WEST = SOUTH + WEST,
+  NORTH_WEST = NORTH + WEST
 };
 
-constexpr Color operator~(Color c) { return Color(c ^ 1); }
+// return direction of pawns for the color
+constexpr Direction pawnPush(Color c) { return c == WHITE ? NORTH : SOUTH; }
 
-// returns a string representing the square (e.g. a1 or h8)
-constexpr char colorLabel(Color c) {
-  if (c < 0 || c >= 2) return '-';
-  return c == WHITE ? 'w' : 'b';
+/// Additional operators to add a Direction to a Square
+constexpr Square operator+(Square s, Direction d) {
+  return static_cast<Square>(int(s) + int(d));
 }
+constexpr Square& operator+=(Square& s, Direction d) { return s = s + d; }
 
-inline std::ostream& operator<<(std::ostream& os, const Color c) {
-  os << colorLabel(c);
-  return os;
+/// Additional operators to subtract a Direction to a Square
+constexpr Square operator-(Square s, Direction d) {
+  return static_cast<Square>(int(s) - int(d));
 }
+constexpr Square& operator-=(Square& s, Direction d) { return s = s - d; }
 
-constexpr int moveDirection(Color c) { return c == WHITE ? 1 : -1; }
 
-#endif//FRANKYCPP_COLOR_H
+#endif//FRANKYCPP_DIRECTION_H

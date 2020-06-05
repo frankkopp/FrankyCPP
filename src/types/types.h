@@ -23,8 +23,8 @@
  *
  */
 
-#ifndef FRANKYCPP_NEWGEN_TYPES_H
-#define FRANKYCPP_NEWGEN_TYPES_H
+#ifndef FRANKYCPP_TYPES_H
+#define FRANKYCPP_TYPES_H
 
 #include "fmt/locale.h"
 
@@ -57,10 +57,13 @@ struct deLocaleDecimals : std::numpunct<char> {
 };
 extern const std::locale deLocale;
 
-
+// include all type headers for convenience
 #include "file.h"
 #include "rank.h"
 #include "square.h"
 #include "color.h"
+#include "direction.h"
+#include "orientation.h"
+#include "castlingrights.h"
 
-#endif//FRANKYCPP_NEWGEN_TYPES_H
+#endif//FRANKYCPP_TYPES_H

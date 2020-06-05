@@ -23,8 +23,8 @@
  *
  */
 
-#ifndef FRANKYCPP_NEWGEN_RANK_H
-#define FRANKYCPP_NEWGEN_RANK_H
+#ifndef FRANKYCPP_RANK_H
+#define FRANKYCPP_RANK_H
 
 enum Rank : int {
   RANK_1,
@@ -40,18 +40,18 @@ enum Rank : int {
 };
 
 // checks if rank is a value of 0-7
-inline bool validRank(Rank r) {
+constexpr bool validRank(Rank r) {
   return !(r < 0 || r >= 8);
 }
 
 // creates a rank from a char
-inline Rank makeRank(char rankLabel) {
+constexpr Rank makeRank(char rankLabel) {
   const Rank r = static_cast<Rank>(rankLabel - '1');
   return validRank(r) ? r : RANK_NONE;
 }
 
 // returns a string representing the rank (e.g. 1 or 8)
-inline char rankLabel(Rank r) {
+constexpr char rankLabel(Rank r) {
   if (r < 0 || r >= 8) return '-';
   return '1' + r;
 }
@@ -60,4 +60,4 @@ inline std::ostream& operator<< (std::ostream& os, const Rank r) {
   os << rankLabel(r);
   return os;
 }
-#endif//FRANKYCPP_NEWGEN_RANK_H
+#endif//FRANKYCPP_RANK_H

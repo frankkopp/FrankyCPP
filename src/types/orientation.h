@@ -23,32 +23,19 @@
  *
  */
 
-#ifndef FRANKYCPP_COLOR_H
-#define FRANKYCPP_COLOR_H
+#ifndef FRANKYCPP_ORIENTATION_H
+#define FRANKYCPP_ORIENTATION_H
 
-#include <ostream>
-
-// represents the two colors of a chess game
-enum Color : int {
-  WHITE        = 0,
-  BLACK        = 1,
-  NOCOLOR      = 2,
-  COLOR_LENGTH = 2
+enum Orientation : int {
+  NW,
+  N,
+  NE,
+  E,
+  SE,
+  S,
+  SW,
+  W,
+  OR_LENGTH
 };
 
-constexpr Color operator~(Color c) { return Color(c ^ 1); }
-
-// returns a string representing the square (e.g. a1 or h8)
-constexpr char colorLabel(Color c) {
-  if (c < 0 || c >= 2) return '-';
-  return c == WHITE ? 'w' : 'b';
-}
-
-inline std::ostream& operator<<(std::ostream& os, const Color c) {
-  os << colorLabel(c);
-  return os;
-}
-
-constexpr int moveDirection(Color c) { return c == WHITE ? 1 : -1; }
-
-#endif//FRANKYCPP_COLOR_H
+#endif//FRANKYCPP_ORIENTATION_H
