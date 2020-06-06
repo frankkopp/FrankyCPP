@@ -127,7 +127,7 @@ namespace Squares {
       } else if (fileOf(sq) <= FILE_D && rankOf(sq) <= RANK_4) {
         centerDistance[sq] = squareDistance[sq][SQ_D4];
         // right lower quadrant
-      } else if (fileOf(sq) <= FILE_D && rankOf(sq) <= RANK_4) {
+      } else if (fileOf(sq) >= FILE_E && rankOf(sq) <= RANK_4) {
         centerDistance[sq] = squareDistance[sq][SQ_E4];
       }
     }

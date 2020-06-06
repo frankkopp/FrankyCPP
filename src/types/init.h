@@ -41,7 +41,7 @@ namespace types {
     Bitboards::intermediatePreCompute();
     Bitboards::maskPassedPawnsPreCompute();
     Bitboards::castleMasksPreCompute();
-    Bitboards::squareColorsPreCompute();
+    Bitboards::colorBitboardsPreCompute();
     Squares::centerDistancePreCompute();
   }
 }

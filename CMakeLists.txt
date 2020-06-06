@@ -27,7 +27,7 @@ message("Compiler is " ${CMAKE_CXX_COMPILER_ID} " " ${CMAKE_CXX_COMPILER_VERSION
 
 if (CMAKE_CXX_COMPILER_ID EQUAL "Clang")
     message("Compiler Settings: Clang")
-    set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra ")
+    set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra")
     set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fprofile-instr-generate -fcoverage-mapping -Wpedantic -Wshadow -Wno-conversion -Wunreachable-code -Wuninitialized  -Wold-style-cast -Wunused-variable -Wfloat-equal -Wno-gnu-zero-variadic-macro-arguments")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "9")
@@ -35,9 +35,9 @@ if (CMAKE_CXX_COMPILER_ID EQUAL "Clang")
         add_compile_definitions(HAS_EXECUTION_LIB)
     endif()
 
-elseif(CMAKE_CXX_COMPILER_ID EQUAL "AppleClang")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
     message("Compiler Settings: AppleClang")
-    set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra ")
+    set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra")
     set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fprofile-instr-generate -fcoverage-mapping -Wpedantic -Wshadow -Wno-conversion -Wunreachable-code -Wuninitialized  -Wold-style-cast -Wunused-variable -Wfloat-equal -Wno-gnu-zero-variadic-macro-arguments")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "11")
@@ -67,8 +67,9 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     endif()
 endif ()
 
-message("Compiler DEBUG flags: " ${CMAKE_CXX_FLAGS} " " ${CMAKE_CXX_FLAGS_DEBUG})
-message("Compiler RELEASE flags: " ${CMAKE_CXX_FLAGS} " " ${CMAKE_CXX_FLAGS_RELEASE})
+message("Compiler flags: " ${CMAKE_CXX_FLAGS})
+message("Compiler DEBUG flags: " ${CMAKE_CXX_FLAGS_DEBUG})
+message("Compiler RELEASE flags: " ${CMAKE_CXX_FLAGS_RELEASE})
 message("EXEC: " ${CMAKE_CXX_LINK_EXECUTABLE})
 
 # For downloading with GIT

@@ -99,7 +99,7 @@ constexpr Bitboard CENTER_SQUARES = CENTER_FILES & CENTER_RANKS;
 // pre computed arrays for various bitboards
 // pre-computed in types::init()
 namespace Bitboards {
-  inline Bitboard squareBb[SQ_LENGTH];
+  inline Bitboard sqBb[SQ_LENGTH];
   inline Bitboard fileBb[FILE_LENGTH];
   inline Bitboard rankBb[RANK_LENGTH];
   inline Bitboard sqToFileBb[SQ_LENGTH];
@@ -121,7 +121,7 @@ namespace Bitboards {
   inline Bitboard kingSideCastleMask[COLOR_LENGTH];
   inline Bitboard queenSideCastleMask[COLOR_LENGTH];
   inline Bitboard castlingRights[SQ_LENGTH];
-  inline Bitboard squaresBb[COLOR_LENGTH];
+  inline Bitboard colorBb[COLOR_LENGTH];
 
 }// namespace Bitboards
 
@@ -172,10 +172,13 @@ inline int popcount(Bitboard b) {
   extern uint8_t PopCnt16[1 << 16];
   // nice trick to address 16-bit groups in a 64-bit int
   // @formatter:off
-    union { Bitboard bb; uint16_t u[4]; } v = {b};
-    // @formatter:on
-    // adding all 16-bit population counters referenced in the 64-bit union
-    return PopCnt16[v.u[0]] + PopCnt16[v.u[1]] + PopCnt16[v.u[2]] + PopCnt16[v.u[3]];
+  union {
+    Bitboard bb;
+    uint16_t u[4];
+  } v = {b};
+  // @formatter:on
+  // adding all 16-bit population counters referenced in the 64-bit union
+  return PopCnt16[v.u[0]] + PopCnt16[v.u[1]] + PopCnt16[v.u[2]] + PopCnt16[v.u[3]];
 #endif
 }
 
@@ -242,32 +245,32 @@ inline Square popLSB(Bitboard &b) {
 
 // Operators for Squares as Bitboards
 inline Bitboard operator&(const Square lhs, const Square rhs) {
-  return Bitboards::squareBb[lhs] & Bitboards::squareBb[rhs];
+  return Bitboards::sqBb[lhs] & Bitboards::sqBb[rhs];
 }
 
 inline Bitboard operator|(const Square lhs, const Square rhs) {
-  return Bitboards::squareBb[lhs] | Bitboards::squareBb[rhs];
+  return Bitboards::sqBb[lhs] | Bitboards::sqBb[rhs];
 }
 
 // Operators for Squares on Bitboards
 inline Bitboard operator&(const Bitboard b, const Square s) {
-  return b & Bitboards::squareBb[s];
+  return b & Bitboards::sqBb[s];
 }
 
 inline Bitboard operator|(const Bitboard b, const Square s) {
-  return b | Bitboards::squareBb[s];
+  return b | Bitboards::sqBb[s];
 }
 
 inline Bitboard operator^(const Bitboard b, const Square s) {
-  return b ^ Bitboards::squareBb[s];
+  return b ^ Bitboards::sqBb[s];
 }
 
 inline Bitboard &operator|=(Bitboard &b, const Square s) {
-  return b |= Bitboards::squareBb[s];
+  return b |= Bitboards::sqBb[s];
 }
 
 inline Bitboard &operator^=(Bitboard &b, const Square s) {
-  return b ^= Bitboards::squareBb[s];
+  return b ^= Bitboards::sqBb[s];
 }
 
 // //////////////////////////////////////////////////////////////////
@@ -297,7 +300,7 @@ namespace Bitboards {
   void intermediatePreCompute();
   void maskPassedPawnsPreCompute();
   void castleMasksPreCompute();
-  void squareColorsPreCompute();
+  void colorBitboardsPreCompute();
 }
 
 // //////////////////////////////////////////////////////////////////

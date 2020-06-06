@@ -13,6 +13,7 @@ add_executable(
         ${testExeName}
         TypesTest.cpp
         BitboardTest.cpp
+        TimingTests.cpp
         BOOST_Test.cpp
         )
 

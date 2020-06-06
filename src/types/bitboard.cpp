@@ -29,6 +29,10 @@
 #include "macros.h"
 #include <sstream>
 
+// //////////////////////////////////
+// Bitboard functions
+// //////////////////////////////////
+
 Bitboard getAttacksBb(PieceType pt, Square sq, Bitboard occupied) {
   switch (pt) {
     case BISHOP:
@@ -77,7 +81,7 @@ std::string strGrouped(Bitboard b) {
 }
 
 // //////////////////////////////////
-// Initialization
+// Initialization amd pre-computing
 // //////////////////////////////////
 
 void Bitboards::rankFileBbPreCompute() {
@@ -93,7 +97,7 @@ void Bitboards::squareBitboardsPreCompute() {
   for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
 
     // square bitboard
-    squareBb[sq] = ONE_BB << sq;
+    sqBb[sq] = ONE_BB << sq;
 
 
     // file and rank bitboards
@@ -211,7 +215,7 @@ void Bitboards::raysPreCompute() {
 void Bitboards::intermediatePreCompute() {
   for (Square from = SQ_A1; from <= SQ_H8; ++from) {
     for (Square to = SQ_A1; to <= SQ_H8; ++to) {
-      Bitboard toBB = squareBb[to];
+      Bitboard toBB = sqBb[to];
       for (int o = 0; o < 8; o++) {
          if ((rays[o][from] & toBB) != EMPTY_BB) {
              intermediateBb[from][to] |= rays[Orientation(o)][from] & ~rays[o][to] & ~toBB;
@@ -246,10 +250,10 @@ void Bitboards::maskPassedPawnsPreCompute() {
 
 void Bitboards::castleMasksPreCompute() {
   // castle masks
-  kingSideCastleMask[WHITE] =  squareBb[SQ_F1] | squareBb[SQ_G1] | squareBb[SQ_H1];
-  kingSideCastleMask[BLACK] =  squareBb[SQ_F8] | squareBb[SQ_G8] | squareBb[SQ_H8];
-  queenSideCastleMask[WHITE] = squareBb[SQ_D1] | squareBb[SQ_C1] | squareBb[SQ_B1] | squareBb[SQ_A1];
-  queenSideCastleMask[BLACK] = squareBb[SQ_D8] | squareBb[SQ_C8] | squareBb[SQ_B8] | squareBb[SQ_A8];
+  kingSideCastleMask[WHITE] = sqBb[SQ_F1] | sqBb[SQ_G1] | sqBb[SQ_H1];
+  kingSideCastleMask[BLACK] = sqBb[SQ_F8] | sqBb[SQ_G8] | sqBb[SQ_H8];
+  queenSideCastleMask[WHITE] = sqBb[SQ_D1] | sqBb[SQ_C1] | sqBb[SQ_B1] | sqBb[SQ_A1];
+  queenSideCastleMask[BLACK] = sqBb[SQ_D8] | sqBb[SQ_C8] | sqBb[SQ_B8] | sqBb[SQ_A8];
   castlingRights[SQ_E1] = WHITE_CASTLING;
   castlingRights[SQ_A1] = WHITE_OOO;
   castlingRights[SQ_H1] = WHITE_OO;
@@ -258,18 +262,18 @@ void Bitboards::castleMasksPreCompute() {
   castlingRights[SQ_H8] = BLACK_OO;
 }
 
-void Bitboards::squareColorsPreCompute() {
+void Bitboards::colorBitboardsPreCompute() {
   for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
     if ((int(fileOf(sq))+int(rankOf(sq)))%2 == 0) {
-      squaresBb[BLACK] = squaresBb[BLACK] | sq;
+      colorBb[BLACK] = colorBb[BLACK] | sq;
     } else {
-      squaresBb[WHITE] = squaresBb[WHITE] | sq;
+      colorBb[WHITE] = colorBb[WHITE] | Bitboards::sqBb[sq]; // squaresBb[WHITE] | sq;
     }
   }
-  fprintln(strBoard(squareBb[WHITE]));
-  fprintln(strBoard(squareBb[BLACK]));
-
 }
+
+// Stockfish Magic bitboards - no need to reinvent the wheel
+// Credits to Stockfish
 
 /// xorshift64star Pseudo-Random Number Generator
 /// This class is based on original code written and dedicated
@@ -379,6 +383,7 @@ void init_magics(Bitboard table[], Magic magics[], Direction directions[]) {
 // bitboards are used to look up attacks of sliding pieces. As a reference see
 // www.chessprogramming.org/Magic_Bitboards. In particular, here we use the so
 // called "fancy" approach.
+// Credits to Stockfish
 void Bitboards::initMagicBitboards() {
   Direction rookDirections[] = { NORTH, EAST, SOUTH, WEST };
   Direction bishopDirections[] = { NORTH_EAST, SOUTH_EAST, SOUTH_WEST, NORTH_WEST };
