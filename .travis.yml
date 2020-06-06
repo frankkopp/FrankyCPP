@@ -1,1 +1,4 @@
+os: osx
 language: cpp
+compiler: clang
+osx_image: xcode11.5
