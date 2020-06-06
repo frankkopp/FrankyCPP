@@ -23,21 +23,21 @@
  *
  */
 
-#include <chrono>
 #include <gtest/gtest.h>
 #include <random>
 #include <thread>
 
-#include "types/types.h"
+#include "init.h"
 
-#include <boost/timer/timer.hpp>
-using namespace boost::timer;
+#include <Position.h>
+#include <chrono>
+using namespace std::chrono;
 
 class TimingTests : public ::testing::Test {
 public:
   static void SetUpTestSuite() {
     NEWLINE;
-    types::init();
+    init::init();
     NEWLINE;
   }
 
@@ -54,7 +54,7 @@ TEST_F(TimingTests, popcount) {
   std::ostringstream os;
 
   //// TESTS START
-  std::function<void()>         f1 = []() { popcount(0b0010000000010000000000000010000000000000000000000000000000000000ULL); };
+  std::function<void()> f1 = []() { popcount(0b0010000000010000000000000010000000000000000000000000000000000000ULL); };
   std::vector<std::function<void()>> tests;
   tests.push_back(f1);
   //// TESTS END
@@ -64,48 +64,74 @@ TEST_F(TimingTests, popcount) {
   std::cout << os.str();
 }
 
-//
-///**
-// * Test the absolute speed of doMove, undoMove
-// */
-//TEST_F(TimingTests, doMoveUndoMove) {
-//  ostringstream os;
-//
-//  //// TESTS START
-//  Position position = Position(
-//      "r3k2r/1ppqbppp/2n2n2/1B2p1B1/3p2b1/2NP1N2/1PPQPPPP/R3K2R w KQkq - 0 1");
-//  const Move move1 = createMove(SQ_E2, SQ_E4);
-//  const Move move2 = createMove(SQ_D4, SQ_E3);
-//  const Move move3 = createMove(SQ_D2, SQ_E3);
-//  const Move move4 = createMove(SQ_E8, SQ_C8);
-//  const Move move5 = createMove(SQ_E1, SQ_G1);
-//
-//  std::function<void()> f1 = [&]() {
-//    //    string fen = position.printFen();
-//    //    cout << position.printBoard() << endl;
-//    position.doMove(move1);
-//    position.doMove(move2);
-//    position.doMove(move3);
-//    position.doMove(move4);
-//    position.doMove(move5);
-//
-//    position.undoMove();
-//    position.undoMove();
-//    position.undoMove();
-//    position.undoMove();
-//    position.undoMove();
-//    // ASSERT_EQ(fen, position.printFen());
-//  };
-//
-//  vector<std::function<void()>> tests;
-//  tests.push_back(f1);
-//  //// TESTS END
-//
-//  testTiming(os, 5, 1, 10'000'000, tests);
-//
-//  cout << os.str();
-//}
-//
+TEST_F(TimingTests, distancevsdiff) {
+  std::ostringstream os;
+
+  //// TESTS START
+  Position position("r3k2r/1ppqbppp/2n2n2/1B2p1B1/3p2b1/2NP1N2/1PPQPPPP/R3K2R w KQkq - 0 1");
+
+  volatile bool t = false;
+
+  std::function<void()> f1 = [&]() {
+    t = distance(SQ_E2, SQ_E4) == 2;
+  };
+  std::function<void()> f2 = [&]() {
+    t = std::abs(SQ_E2 - SQ_E4) == 16;
+  };
+  std::vector<std::function<void()>> tests;
+  tests.push_back(f1);
+  tests.push_back(f2);
+  //// TESTS END
+
+  testTiming(os, 5, 10, 10'000'000, tests);
+
+  std::cout << os.str();
+}
+
+
+
+/**
+ * Test the absolute speed of doMove, undoMove
+ */
+TEST_F(TimingTests, doMoveUndoMove) {
+  std::ostringstream os;
+
+  //// TESTS START
+  // position for each move type
+  // fxe3 enpassant
+  // fxe3 normal capture
+  // o-o castling
+  // Rc1 normal non capturing
+  // c1Q promotion
+  Position position = Position("r3k2r/1ppn3p/4q1n1/8/4Pp2/3R4/p1p2PPP/R5K1 b kq e3 0 1");
+  const Move move1 = createMove(SQ_F4, SQ_E3, ENPASSANT);
+  const Move move2 = createMove(SQ_F2, SQ_E3);
+  const Move move3 = createMove(SQ_E8, SQ_G8, CASTLING);
+  const Move move4 = createMove(SQ_D3, SQ_C3);
+  const Move move5 = createMove(SQ_C2, SQ_C1, PROMOTION, QUEEN);
+
+  std::function<void()> f1 = [&]() {
+    position.doMove(move1);
+    position.doMove(move2);
+    position.doMove(move3);
+    position.doMove(move4);
+    position.doMove(move5);
+    position.undoMove();
+    position.undoMove();
+    position.undoMove();
+    position.undoMove();
+    position.undoMove();
+  };
+
+  std::vector<std::function<void()>> tests;
+  tests.push_back(f1);
+  //// TESTS END
+
+  testTiming(os, 5, 1, 20'000'000, tests);
+
+  std::cout << os.str();
+}
+
 ///**
 // * Test difference for getMoves with pre rotated bb vs. on-the-fly rotated bb
 // * Round  5 Test  1:  451.076.050 ns (  0,45107605 sec)
@@ -524,9 +550,6 @@ TEST_F(TimingTests, popcount) {
 
 void TimingTests::testTiming(std::ostringstream& os, int rounds, int iterations,
                              int repetitions, std::vector<std::function<void()>> tests) {
-
-  nanosecond_type last = 0;
-
   std::cout.imbue(deLocale);
   os.imbue(deLocale);
   os << std::setprecision(9);
@@ -537,45 +560,47 @@ void TimingTests::testTiming(std::ostringstream& os, int rounds, int iterations,
   os << "======================================================================"
      << std::endl;
 
+  auto startTime = high_resolution_clock::now();
+  nanoseconds last(0);
+
   // rounds
   for (int round = 1; round <= rounds; ++round) {
     std::cout << "Round " << round << " of " << rounds << " timing tests." << std::endl;
+
+    nanoseconds accDuration(0);
+
     // tests
     int testNr = 1;
     for (auto f : tests) {
       // iterations
-      int                     i = 0;
-      boost::timer::cpu_timer timer;
-      timer.stop();
+      int i = 0;
+
       while (i++ < iterations) {
         // repetitions
-        timer.resume();
+        startTime = high_resolution_clock::now();
         for (int j = 0; j < repetitions; ++j)
           f();
-        timer.stop();
+        accDuration += duration_cast<nanoseconds>(high_resolution_clock::now() - startTime);
       }
 
-      cpu_times cpuTime  = timer.elapsed();
-      cpu_times avgTimes = cpu_times{ cpuTime.wall / iterations, cpuTime.user / iterations,
-                                      cpuTime.system / iterations };
-
-      const nanosecond_type avgCpu          = avgTimes.user + avgTimes.system;
-      uint64_t              percentFromLast = last ? (avgCpu * 10'000) / last : 10'000;
+      const nanoseconds cpuTime = accDuration;
+      const nanoseconds avgCpu  = cpuTime / iterations;
+      uint64_t percentFromLast  = last.count() ? (avgCpu * 10'000) / last : 10'000;
 
       os << "Round " << std::setfill(' ') << std::setw(2) << round << " Test "
          << std::setw(2) << testNr++ << ": " << std::setfill(' ') << std::setw(12)
-         << avgCpu << " ns"
+         << avgCpu.count() << " ns"
          << " (" << std::setfill(' ') << std::setw(6) << (percentFromLast / 100)
          << "%)"
-         << " (" << std::setfill(' ') << std::setw(12) << (avgCpu / 1e9) << " sec)"
+         << " (" << std::setfill(' ') << std::setw(12) << (avgCpu.count() / 1e9) << " sec)"
          << " (" << std::setfill(' ') << std::setw(12)
-         << static_cast<double>(avgCpu) / (repetitions * iterations)
+         << static_cast<double>(avgCpu.count()) / (repetitions * iterations)
          << " ns avg per test)"
-         << " >> " << boost::timer::format(avgTimes, default_places);
+         << std::endl;
 
       last = avgCpu;
     }
     os << std::endl;
-    last = 0;
+    last = nanoseconds(0);
   }
 }

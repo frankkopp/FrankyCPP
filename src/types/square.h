@@ -61,10 +61,10 @@ namespace Squares {
   inline int centerDistance[SQ_LENGTH];
 }
 
-/** checks if this is a valid square (int >= 0 and <64 */
+// checks if this is a valid square (int >= 0 and <64)
 constexpr bool validSquare(Square s) { return !(s & ~0b11'1111); }
 
-/** returns the square of the intersection of file and rank */
+// returns the square of the intersection of file and rank
 constexpr Square squareOf (File f, Rank r) { return Square ((r << 3) + f); }
 
 // returns the file of this square

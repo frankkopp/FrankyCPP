@@ -56,7 +56,7 @@ TEST_F(BitboardsTest, init) {
   EXPECT_EQ(Bitboards::rankBb[RANK_8], Bitboards::sqToRankBb[SQ_H8]);
   EXPECT_EQ("0000000000000000000000000000000000000000010000000010000000000000", str(Bitboards::nonSliderAttacks[KNIGHT][SQ_H1]));
   EXPECT_EQ("0111111101111111011111110111111101111111011111110111111101111111", str(Bitboards::filesWestMask[SQ_H1]));
-  EXPECT_EQ("1000000010000000100000001000000010000000100000001000000001111111", str(Bitboards::rookMagics[SQ_H1].attacks[Bitboards::rookMagics[SQ_H1].index(EMPTY_BB)]));
+  EXPECT_EQ("1000000010000000100000001000000010000000100000001000000001111111", str(Bitboards::rookMagics[SQ_H1].attacks[Bitboards::rookMagics[SQ_H1].index(BbZero)]));
   EXPECT_EQ("0000000000000000000000000000000011111110000000000000000000000000", str(Bitboards::rays[E][SQ_A4]));
   EXPECT_EQ("0000000000000000000000000000000000000000000000000000000000111110", str(Bitboards::intermediateBb[SQ_A1][SQ_G1]));
   EXPECT_EQ("0011100000111000001110000011100000000000000000000000000000000000", str(Bitboards::passedPawnMask[WHITE][SQ_E4]));
@@ -64,20 +64,26 @@ TEST_F(BitboardsTest, init) {
   EXPECT_EQ("0101010110101010010101011010101001010101101010100101010110101010", str(Bitboards::colorBb[WHITE]));
 }
 
+TEST_F(BitboardsTest, str) {
+  EXPECT_EQ("1111111100000000000000000000000000000000000000000000000000000000", str(Bitboards::rankBb[RANK_8]));
+  EXPECT_EQ("00000000.00000000.00000000.00000000.00000000.00000000.00000000.11111111 (18374686479671623680)", strGrouped(Bitboards::rankBb[RANK_8]));
+  EXPECT_EQ("+---+---+---+---+---+---+---+---+\n| X | X | X | X | X | X | X | X |\n+---+---+---+---+---+---+---+---+\n|   |   |   |   |   |   |   |   |\n+---+---+---+---+---+---+---+---+\n|   |   |   |   |   |   |   |   |\n+---+---+---+---+---+---+---+---+\n|   |   |   |   |   |   |   |   |\n+---+---+---+---+---+---+---+---+\n|   |   |   |   |   |   |   |   |\n+---+---+---+---+---+---+---+---+\n|   |   |   |   |   |   |   |   |\n+---+---+---+---+---+---+---+---+\n|   |   |   |   |   |   |   |   |\n+---+---+---+---+---+---+---+---+\n|   |   |   |   |   |   |   |   |\n+---+---+---+---+---+---+---+---+\n", strBoard(Bitboards::rankBb[RANK_8]));
+}
+
 TEST_F(BitboardsTest, popcount) {
   uint64_t b = 0b0010000000010000000000000010000000000000000000000000000000000000ULL;
   ASSERT_EQ(3, popcount(b));
-  b = EMPTY_BB;
+  b = BbZero;
   ASSERT_EQ(0, popcount(b));
 }
 
 TEST_F(BitboardsTest, BitboardSquareTest) {
   // Tests if the & operator is overloaded for Bitboards & Square
-  EXPECT_EQ(Bitboards::sqBb[SQ_E4], ALL_BB & SQ_E4);
-  EXPECT_EQ(Bitboards::sqBb[SQ_A1], ALL_BB & SQ_A1);
-  EXPECT_EQ(Bitboards::sqBb[SQ_H8], ALL_BB & SQ_H8);
-  EXPECT_EQ(Bitboards::sqBb[SQ_A8], ALL_BB & SQ_A8);
-  EXPECT_NE(Bitboards::sqBb[SQ_A8], ALL_BB & SQ_A1);
+  EXPECT_EQ(Bitboards::sqBb[SQ_E4], BbFull & SQ_E4);
+  EXPECT_EQ(Bitboards::sqBb[SQ_A1], BbFull & SQ_A1);
+  EXPECT_EQ(Bitboards::sqBb[SQ_H8], BbFull & SQ_H8);
+  EXPECT_EQ(Bitboards::sqBb[SQ_A8], BbFull & SQ_A8);
+  EXPECT_NE(Bitboards::sqBb[SQ_A8], BbFull & SQ_A1);
 }
 
 TEST_F(BitboardsTest, SquareDistanceTest) {
@@ -95,7 +101,7 @@ TEST_F(BitboardsTest, shiftTest) {
   ASSERT_EQ(FileBBB, shifted);
 
   shifted = shiftBb(WEST, FileABB);
-  ASSERT_EQ(EMPTY_BB, shifted);
+  ASSERT_EQ(BbZero, shifted);
 
   shifted = shiftBb(NORTH, Rank1BB);
   ASSERT_EQ(Rank2BB, shifted);
@@ -104,7 +110,7 @@ TEST_F(BitboardsTest, shiftTest) {
   ASSERT_EQ(Rank7BB, shifted);
 
   shifted = shiftBb(NORTH, Rank8BB);
-  ASSERT_EQ(EMPTY_BB, shifted);
+  ASSERT_EQ(BbZero, shifted);
 
   shifted = shiftBb(NORTH_EAST, Bitboards::sqBb[SQ_E4]);
   ASSERT_EQ(Bitboards::sqBb[SQ_F5], shifted);
@@ -132,25 +138,25 @@ TEST_F(BitboardsTest, Diagonals) {
 
 TEST_F(BitboardsTest, lsb_msb) {
   // set least significant bit
-  Bitboard b = ONE_BB;
+  Bitboard b = BbOne;
   Square sql = lsb(b);
   Square sqm = msb(b);
   ASSERT_EQ(SQ_A1, sql);
   ASSERT_EQ(SQ_A1, sqm);
 
-  b   = (ONE_BB << 63);
+  b   = (BbOne << 63);
   sql = lsb(b);
   sqm = msb(b);
   ASSERT_EQ(SQ_H8, sql);
   ASSERT_EQ(SQ_H8, sqm);
 
-  b         = b | ONE_BB;
+  b         = b | BbOne;
   Square sq = popLSB(b);
   ASSERT_EQ(SQ_A1, sq);
   sq = popLSB(b);
   ASSERT_EQ(SQ_H8, sq);
 
-  b   = EMPTY_BB | SQ_H1;
+  b   = BbZero | SQ_H1;
   b   = b | SQ_G8;
   sql = lsb(b);
   sqm = msb(b);
@@ -263,7 +269,7 @@ TEST_F(BitboardsTest, knightAttacks) {
              "+---+---+---+---+---+---+---+---+\n"
              "|   |   |   |   |   |   |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
-  actual = strBoard(getAttacksBb(KNIGHT, SQ_E4, EMPTY_BB));
+  actual = strBoard(getAttacksBb(KNIGHT, SQ_E4, BbZero));
   //  std::cout << actual;
   ASSERT_EQ(expected, actual);
 
@@ -284,7 +290,7 @@ TEST_F(BitboardsTest, knightAttacks) {
              "+---+---+---+---+---+---+---+---+\n"
              "|   |   |   |   |   | X |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
-  actual = strBoard(getAttacksBb(KNIGHT, SQ_H2, EMPTY_BB));
+  actual = strBoard(getAttacksBb(KNIGHT, SQ_H2, BbZero));
   //  std::cout << actual;
   ASSERT_EQ(expected, actual);
 }
@@ -309,7 +315,7 @@ TEST_F(BitboardsTest, kingAttacks) {
              "+---+---+---+---+---+---+---+---+\n"
              "|   |   |   |   |   |   |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
-  actual = strBoard(getAttacksBb(KING, SQ_E4, EMPTY_BB));
+  actual = strBoard(getAttacksBb(KING, SQ_E4, BbZero));
   //  std::cout << actual;
   ASSERT_EQ(expected, actual);
 
@@ -330,7 +336,7 @@ TEST_F(BitboardsTest, kingAttacks) {
              "+---+---+---+---+---+---+---+---+\n"
              "|   |   |   |   |   |   | X | X |\n"
              "+---+---+---+---+---+---+---+---+\n";
-  actual = strBoard(getAttacksBb(KING, SQ_H2, EMPTY_BB));
+  actual = strBoard(getAttacksBb(KING, SQ_H2, BbZero));
   //  std::cout << actual;
   ASSERT_EQ(expected, actual);
 }
@@ -355,7 +361,7 @@ TEST_F(BitboardsTest, slidingAttacks) {
              "+---+---+---+---+---+---+---+---+\n"
              "|   | X |   |   |   |   |   | X |\n"
              "+---+---+---+---+---+---+---+---+\n";
-  actual = strBoard(getAttacksBb(BISHOP, SQ_E4, EMPTY_BB));
+  actual = strBoard(getAttacksBb(BISHOP, SQ_E4, BbZero));
   //  std::cout << actual;
   ASSERT_EQ(expected, actual);
 
@@ -376,7 +382,7 @@ TEST_F(BitboardsTest, slidingAttacks) {
              "+---+---+---+---+---+---+---+---+\n"
              "|   |   |   |   | X |   |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
-  actual = strBoard(getAttacksBb(ROOK, SQ_E4, EMPTY_BB));
+  actual = strBoard(getAttacksBb(ROOK, SQ_E4, BbZero));
   //  std::cout << actual;
   ASSERT_EQ(expected, actual);
 
@@ -397,10 +403,10 @@ TEST_F(BitboardsTest, slidingAttacks) {
              "+---+---+---+---+---+---+---+---+\n"
              "|   | X |   |   | X |   |   | X |\n"
              "+---+---+---+---+---+---+---+---+\n";
-  actual = strBoard(getAttacksBb(QUEEN, SQ_E4, EMPTY_BB));
+  actual = strBoard(getAttacksBb(QUEEN, SQ_E4, BbZero));
   //  std::cout << actual;
   ASSERT_EQ(expected, actual);
-  ASSERT_EQ(getAttacksBb(QUEEN, SQ_E4, EMPTY_BB), (getAttacksBb(BISHOP, SQ_E4, EMPTY_BB) | getAttacksBb(ROOK, SQ_E4, EMPTY_BB)));
+  ASSERT_EQ(getAttacksBb(QUEEN, SQ_E4, BbZero), (getAttacksBb(BISHOP, SQ_E4, BbZero) | getAttacksBb(ROOK, SQ_E4, BbZero)));
 }
 
 TEST_F(BitboardsTest, masks) {

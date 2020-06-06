@@ -23,11 +23,10 @@
  *
  */
 
+#include <sstream>
 #include "bitboard.h"
 #include "castlingrights.h"
 #include "direction.h"
-#include "macros.h"
-#include <sstream>
 
 // //////////////////////////////////
 // Bitboard functions
@@ -46,7 +45,7 @@ Bitboard getAttacksBb(PieceType pt, Square sq, Bitboard occupied) {
     case KING:
       return Bitboards::nonSliderAttacks[pt][sq];
     default:
-      return EMPTY_BB;
+      return BbZero;
   }
 }
 
@@ -74,7 +73,7 @@ std::string strGrouped(Bitboard b) {
     if (i > 0 && i % 8 == 0) {
       os << ".";
     }
-    os << (b & (ONE_BB << i) ? "1" : "0");
+    os << (b & (BbOne << i) ? "1" : "0");
   }
   os << " (" + std::to_string(b) + ")";
   return os.str();
@@ -97,7 +96,7 @@ void Bitboards::squareBitboardsPreCompute() {
   for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
 
     // square bitboard
-    sqBb[sq] = ONE_BB << sq;
+    sqBb[sq] = BbOne << sq;
 
 
     // file and rank bitboards
@@ -201,14 +200,14 @@ void Bitboards::neighbourMasksPreCompute() {
 
 void Bitboards::raysPreCompute() {
   for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
-    rays[N][sq] =  getAttacksBb(ROOK, sq, EMPTY_BB) & ranksNorthMask[sq];
-    rays[E][sq] =  getAttacksBb(ROOK, sq, EMPTY_BB) & filesEastMask[sq];
-    rays[S][sq] =  getAttacksBb(ROOK, sq, EMPTY_BB) & ranksSouthMask[sq];
-    rays[W][sq] =  getAttacksBb(ROOK, sq, EMPTY_BB) & filesWestMask[sq];
-    rays[NW][sq] = getAttacksBb(BISHOP, sq, EMPTY_BB) & filesWestMask[sq] & ranksNorthMask[sq];
-    rays[NE][sq] = getAttacksBb(BISHOP, sq, EMPTY_BB) & filesEastMask[sq] & ranksNorthMask[sq];
-    rays[SE][sq] = getAttacksBb(BISHOP, sq, EMPTY_BB) & filesEastMask[sq] & ranksSouthMask[sq];
-    rays[SW][sq] = getAttacksBb(BISHOP, sq, EMPTY_BB) & filesWestMask[sq] & ranksSouthMask[sq];
+    rays[N][sq] =  getAttacksBb(ROOK, sq, BbZero) & ranksNorthMask[sq];
+    rays[E][sq] =  getAttacksBb(ROOK, sq, BbZero) & filesEastMask[sq];
+    rays[S][sq] =  getAttacksBb(ROOK, sq, BbZero) & ranksSouthMask[sq];
+    rays[W][sq] =  getAttacksBb(ROOK, sq, BbZero) & filesWestMask[sq];
+    rays[NW][sq] = getAttacksBb(BISHOP, sq, BbZero) & filesWestMask[sq] & ranksNorthMask[sq];
+    rays[NE][sq] = getAttacksBb(BISHOP, sq, BbZero) & filesEastMask[sq] & ranksNorthMask[sq];
+    rays[SE][sq] = getAttacksBb(BISHOP, sq, BbZero) & filesEastMask[sq] & ranksSouthMask[sq];
+    rays[SW][sq] = getAttacksBb(BISHOP, sq, BbZero) & filesWestMask[sq] & ranksSouthMask[sq];
   }
 }
 
@@ -217,7 +216,7 @@ void Bitboards::intermediatePreCompute() {
     for (Square to = SQ_A1; to <= SQ_H8; ++to) {
       Bitboard toBB = sqBb[to];
       for (int o = 0; o < 8; o++) {
-         if ((rays[o][from] & toBB) != EMPTY_BB) {
+         if ((rays[o][from] & toBB) != BbZero) {
              intermediateBb[from][to] |= rays[Orientation(o)][from] & ~rays[o][to] & ~toBB;
          }
       }
@@ -275,34 +274,6 @@ void Bitboards::colorBitboardsPreCompute() {
 // Stockfish Magic bitboards - no need to reinvent the wheel
 // Credits to Stockfish
 
-/// xorshift64star Pseudo-Random Number Generator
-/// This class is based on original code written and dedicated
-/// to the public domain by Sebastiano Vigna (2014).
-/// It has the following characteristics:
-///
-///  -  Outputs 64-bit numbers
-///  -  Passes Dieharder and SmallCrush test batteries
-///  -  Does not require warm-up, no zeroland to escape
-///  -  Internal state is a single 64-bit integer
-///  -  Period is 2^64 - 1
-///  -  Speed: 1.60 ns/call (Core i7 @3.40GHz)
-///
-/// For further analysis see
-///   <http://vigna.di.unimi.it/ftp/papers/xorshift.pdf>
-class PRNG {
-  uint64_t s;
-  uint64_t rand64() {
-    s ^= s >> 12, s ^= s << 25, s ^= s >> 27;
-    return s * 2685821657736338717LL;
-  }
-public:
-  PRNG(uint64_t seed) : s(seed) { assert(seed); }
-  template<typename T> T rand() { return T(rand64()); }
-  /// Special generator used to fast init magic numbers.
-  /// Output values only have 1/8th of their bits set on average.
-  template<typename T> T sparse_rand() { return T(rand64() & rand64() & rand64()); }
-};
-
 Bitboard sliding_attack(Direction directions[], Square sq, Bitboard occupied) {
   Bitboard attack = 0;
   for (int i = 0; i < 4; ++i) {
@@ -327,7 +298,7 @@ void init_magics(Bitboard table[], Magic magics[], Direction directions[]) {
 
   for (Square s = SQ_A1; s <= SQ_H8; ++s) {
     // Board edges are not considered in the relevant occupancies
-    edges = ((Rank1BB | Rank8BB) & ~Bitboards::rankBb[s]) | ((FileABB | FileHBB) & ~Bitboards::fileBb[s]);
+    edges = ((Rank1BB | Rank8BB) & ~Bitboards::sqToRankBb[s]) | ((FileABB | FileHBB) & ~Bitboards::sqToFileBb[s]);
 
     // Given a square 's', the mask is the bitboard of sliding attacks from
     // 's' computed on an empty board. The index must be big enough to contain

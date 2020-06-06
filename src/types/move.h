@@ -66,7 +66,7 @@ namespace MoveShifts {
 }// namespace MoveShifts
 
 // creates a move
-constexpr Move createMove(Square from, Square to, MoveType mt, PieceType promType = KNIGHT) {
+constexpr Move createMove(Square from, Square to, MoveType mt = NORMAL, PieceType promType = KNIGHT) {
   if (promType < KNIGHT) promType = KNIGHT;
   // promType will be reduced to 2 bits (4 values) Knight, Bishop, Rook, Queen
   // therefore we subtract the Knight value from the promType to get
@@ -116,7 +116,7 @@ inline PieceType promotionTypeOf(Move m) {
 }
 
 // MoveType returns the type of the move as defined in MoveType
-inline MoveType moveTypeOf(Move m) {
+inline MoveType typeOf(Move m) {
   return MoveType((m & MoveShifts::MOVE_TYPE_MASK) >> MoveShifts::MOVE_TYPE_SHIFT);
 }
 
@@ -144,7 +144,7 @@ constexpr bool validMove(Move m) {
          validSquare(fromSquare(m)) &&
          validSquare(toSquare(m)) &&
          validPieceType(promotionTypeOf(m)) &&
-         validMoveType(moveTypeOf(m)) &&
+         validMoveType(typeOf(m)) &&
          (valueOf(m) == VALUE_NONE || validValue(valueOf(m)));
 }
 
@@ -152,7 +152,7 @@ constexpr bool validMove(Move m) {
 inline std::string str(Move move) {
   if (moveOf(move) == MOVE_NONE) return "no move";
   std::string promotion = "";
-  if ((moveTypeOf(move) == PROMOTION)) promotion = str(promotionTypeOf(move));
+  if ((typeOf(move) == PROMOTION)) promotion = str(promotionTypeOf(move));
   return str(fromSquare(move)) + str(toSquare(move)) + promotion;
 }
 
@@ -161,7 +161,7 @@ inline std::string strVerbose(Move move) {
   if (!move) return "no move " + std::to_string(move);
   std::string tp;
   std::string promPt;
-  switch (moveTypeOf(move)) {
+  switch (typeOf(move)) {
     case NORMAL:
       tp = "NORMAL";
       break;

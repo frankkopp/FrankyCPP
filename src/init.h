@@ -23,7 +23,17 @@
  *
  */
 
-#include "types.h"
-#include <iostream>
+#ifndef FRANKYCPP_INIT_H
+#define FRANKYCPP_INIT_H
 
-const std::locale deLocale(std::cout.getloc(), new deLocaleDecimals);
+#include "types/init.h"
+#include "Values.h"
+
+namespace init {
+  inline void init() {
+    types::init();
+    Values::init();
+  }
+}
+
+#endif//FRANKYCPP_INIT_H

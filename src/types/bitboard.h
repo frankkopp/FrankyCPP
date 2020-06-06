@@ -30,6 +30,7 @@
 #include "orientation.h"
 #include "piecetype.h"
 #include "square.h"
+#include "castlingrights.h"
 #include <cstdint>
 
 // 64 bit Bitboard type for storing boards as bits
@@ -38,9 +39,9 @@ typedef uint64_t Bitboard;
 // //////////////////////////////////////////////////////////////////
 // Bitboard constants
 
-constexpr Bitboard EMPTY_BB = Bitboard(0);
-constexpr Bitboard ALL_BB   = ~EMPTY_BB;
-constexpr Bitboard ONE_BB   = Bitboard(1);
+constexpr Bitboard BbZero = Bitboard(0);
+constexpr Bitboard BbFull = ~BbZero;
+constexpr Bitboard BbOne  = Bitboard(1);
 
 constexpr Bitboard FileABB = 0x0101010101010101ULL;
 constexpr Bitboard FileBBB = FileABB << 1;
@@ -120,8 +121,8 @@ namespace Bitboards {
   inline Bitboard passedPawnMask[COLOR_LENGTH][SQ_LENGTH];
   inline Bitboard kingSideCastleMask[COLOR_LENGTH];
   inline Bitboard queenSideCastleMask[COLOR_LENGTH];
-  inline Bitboard castlingRights[SQ_LENGTH];
   inline Bitboard colorBb[COLOR_LENGTH];
+  inline CastlingRights castlingRights[SQ_LENGTH];
 
 }// namespace Bitboards
 
@@ -276,7 +277,6 @@ inline Bitboard &operator^=(Bitboard &b, const Square s) {
 // //////////////////////////////////////////////////////////////////
 // Bitboard print functions
 
-
 // Prints a bitboard as a bitset
 std::string str(Bitboard b);
 
@@ -288,7 +288,7 @@ std::string strBoard(Bitboard b);
 std::string strGrouped(Bitboard b);
 
 // //////////////////////////////////////////////////////////////////
-// Bitboard init
+// Bitboard initialization and pre-computation
 
 namespace Bitboards {
   void rankFileBbPreCompute();
@@ -328,5 +328,32 @@ namespace Bitboards {
   inline Magic bishopMagics[SQ_LENGTH];
 }
 
+/// xorshift64star Pseudo-Random Number Generator
+/// This class is based on original code written and dedicated
+/// to the public domain by Sebastiano Vigna (2014).
+/// It has the following characteristics:
+///
+///  -  Outputs 64-bit numbers
+///  -  Passes Dieharder and SmallCrush test batteries
+///  -  Does not require warm-up, no zeroland to escape
+///  -  Internal state is a single 64-bit integer
+///  -  Period is 2^64 - 1
+///  -  Speed: 1.60 ns/call (Core i7 @3.40GHz)
+///
+/// For further analysis see
+///   <http://vigna.di.unimi.it/ftp/papers/xorshift.pdf>
+class PRNG {
+  uint64_t s;
+  uint64_t rand64() {
+    s ^= s >> 12, s ^= s << 25, s ^= s >> 27;
+    return s * 2685821657736338717LL;
+  }
+public:
+  PRNG(uint64_t seed) : s(seed) { assert(seed); }
+  template<typename T> T rand() { return T(rand64()); }
+  /// Special generator used to fast init magic numbers.
+  /// Output values only have 1/8th of their bits set on average.
+  template<typename T> T sparse_rand() { return T(rand64() & rand64() & rand64()); }
+};
 
 #endif//FRANKYCPP_BITBOARD_H

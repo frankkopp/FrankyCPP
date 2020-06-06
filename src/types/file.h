@@ -49,7 +49,7 @@ enum File : int {
   FILE_G,
   FILE_H,
   FILE_NONE,
-  FILE_LENGTH = 8
+  FILE_LENGTH = 9
 };
 
 // checks if file is a value of 0-7

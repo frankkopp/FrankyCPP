@@ -28,7 +28,9 @@
 
 #include "globals.h"
 
-// convenience macros
+// Here we define some convenience macros to be used throughout the code.
+// As types are imported likely everywhere this will be included in types.h
+
 #define sleepForSec(x) std::this_thread::sleep_for(std::chrono::seconds(x));
 #define NEWLINE std::cout << std::endl
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)

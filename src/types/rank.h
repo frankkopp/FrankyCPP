@@ -49,7 +49,7 @@ enum Rank : int {
   RANK_7,
   RANK_8,
   RANK_NONE,
-  RANK_LENGTH = 8
+  RANK_LENGTH = 9
 };
 
 // checks if rank is a value of 0-7

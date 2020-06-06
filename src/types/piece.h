@@ -85,15 +85,21 @@ constexpr Color colorOf(Piece p) { return Color(p >> 3); }
 // returns the piece type of the given piece
 constexpr PieceType typeOf(Piece p) { return PieceType(p & 7); }
 
+/** returns a char representing the piece. Upper case letters for white, lower case for black */
+constexpr const char* pieceToChar = " KPNBRQ  kpnbrq   ";
+
 // single char label for the piece as used in a FEN (one of " KPNBRQ  kpnbrq")
 constexpr char str(Piece p) {
   if (!validPiece(p)) return '-';
-  return std::string(" KPNBRQ  kpnbrq   ")[p];
+  return std::string(pieceToChar)[p];
 }
 
 inline std::ostream& operator<<(std::ostream& os, const Piece p) {
   os << str(p);
   return os;
 }
+
+inline Piece& operator++ (Piece& d) { return d = static_cast<Piece> (static_cast<int> (d) + 1); }
+inline Piece& operator-- (Piece& d) { return d = static_cast<Piece> (static_cast<int> (d) - 1); }
 
 #endif//FRANKYCPP_PIECE_H

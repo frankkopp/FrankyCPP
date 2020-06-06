@@ -13,9 +13,11 @@ add_executable(
         ${testExeName}
         TypesTest.cpp
         BitboardTest.cpp
-        TimingTests.cpp
+        PositionTest.cpp
+        ValuesTest.cpp
         BOOST_Test.cpp
-        )
+        TimingTests.cpp
+)
 
 target_link_libraries(
         ${testExeName}

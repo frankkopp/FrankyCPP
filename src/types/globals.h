@@ -26,8 +26,21 @@
 #ifndef FRANKYCPP_GLOBALS_H
 #define FRANKYCPP_GLOBALS_H
 
-#include <cstdint>
 #include "fmt/locale.h"
+#include <cstdint>
+#include <iostream>
+#include <chrono>
+
+// Here we define some global constants  to be used throughout the code.
+// As types are imported likely everywhere this will be included in types.h
+
+// standard chess starting position
+constexpr const char* START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+// game phase is a gelper value to determine in which phase a game is.
+// A value of 24 indicates that all officers are still on the board.
+// A value of 0 indicates that no officers are on the boardany longer.
+constexpr const int GAME_PHASE_MAX = 24;
 
 // max depth
 constexpr const int MAX_DEPTH = 128;
@@ -50,6 +63,7 @@ struct deLocaleDecimals : std::numpunct<char> {
   char do_thousands_sep() const override { return '.'; }
   std::string do_grouping() const override { return "\03"; }
 };
-extern const std::locale deLocale;
+
+inline const std::locale deLocale(std::cout.getloc(), new deLocaleDecimals);
 
 #endif//FRANKYCPP_GLOBALS_H

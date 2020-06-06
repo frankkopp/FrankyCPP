@@ -94,5 +94,7 @@ inline std::ostream& operator<<(std::ostream& os, const CastlingRights cr) {
   return os;
 }
 
+inline CastlingRights& operator++ (CastlingRights& d) { return d = static_cast<CastlingRights> (static_cast<int> (d) + 1); }
+inline CastlingRights& operator-- (CastlingRights& d) { return d = static_cast<CastlingRights> (static_cast<int> (d) - 1); }
 
 #endif//FRANKYCPP_CASTLINGRIGHTS_H
