@@ -1,10 +1,18 @@
-os: osx
-osx_image: xcode11.5
 language: cpp
-compiler: clang
-apt:
+compiler: gcc
+
+os: linux
+addons:
+  apt:
     sources:
-      - george-edison55-precise-backports
+      - ubuntu-toolchain-r-test
     packages:
-      - cmake-data
-      - cmake
+      - g++-7
+
+script:
+  - export CC=gcc-7
+  - export CXX=g++-7
+  - cmake --version
+  - cmake CMakeLists.txt
+  - cmake  --build . --target neat
+
