@@ -1,4 +1,10 @@
 os: osx
+osx_image: xcode11.5
 language: cpp
 compiler: clang
-osx_image: xcode11.5
+apt:
+    sources:
+      - george-edison55-precise-backports
+    packages:
+      - cmake-data
+      - cmake
