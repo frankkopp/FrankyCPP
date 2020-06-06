@@ -7,6 +7,7 @@ cmake_minimum_required(VERSION 3.16)
 
 # Project name and version
 project(FrankyCPP VERSION 0.1)
+message("FrankyCPP v" ${PROJECT_VERSION_MAJOR} "." ${PROJECT_VERSION_MINOR})
 
 # updates template file and replaces placeholder variables
 configure_file(src/version.h.in version.h)

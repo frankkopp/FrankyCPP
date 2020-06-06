@@ -63,6 +63,8 @@ constexpr File makeFile(char fileLabel) {
   return validFile(f) ? f : FILE_NONE;
 }
 
+inline int distance(File f1, File f2) { return abs(f2 - f1); }
+
 // returns a char representing the square (e.g. a1 or h8)
 constexpr char str(File f) {
   if (f < 0 || f >= 8) return '-';
@@ -73,5 +75,9 @@ inline std::ostream& operator<<(std::ostream& os, const File f) {
   os << str(f);
   return os;
 }
+
+inline File& operator++ (File& d) { return d = static_cast<File> (static_cast<int> (d) + 1); }
+inline File& operator-- (File& d) { return d = static_cast<File> (static_cast<int> (d) - 1); }
+
 
 #endif//FRANKYCPP_FILE_H

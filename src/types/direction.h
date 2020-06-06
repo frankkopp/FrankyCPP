@@ -26,6 +26,8 @@
 #ifndef FRANKYCPP_DIRECTION_H
 #define FRANKYCPP_DIRECTION_H
 
+#include "square.h"
+
 // Direction is a set of constants for moving squares within a Bb
 //  NORTH      = 8,
 //  EAST       = 1,

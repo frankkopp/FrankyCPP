@@ -12,6 +12,7 @@ include(GoogleTest)
 add_executable(
         ${testExeName}
         TypesTest.cpp
+        BitboardTest.cpp
         BOOST_Test.cpp
         )
 

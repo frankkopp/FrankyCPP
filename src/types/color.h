@@ -62,4 +62,7 @@ inline std::ostream& operator<<(std::ostream& os, const Color c) {
   return os;
 }
 
+inline Color& operator++ (Color& d) { return d = static_cast<Color> (static_cast<int> (d) + 1); }
+inline Color& operator-- (Color& d) { return d = static_cast<Color> (static_cast<int> (d) - 1); }
+
 #endif//FRANKYCPP_COLOR_H

@@ -23,25 +23,27 @@
  *
  */
 
-#ifndef FRANKYCPP_TYPES_H
-#define FRANKYCPP_TYPES_H
+#ifndef FRANKYCPP_INIT_H
+#define FRANKYCPP_INIT_H
 
-// include all type headers for convenience
-#include "macros.h"
-#include "init.h"
-#include "globals.h"
-#include "file.h"
-#include "rank.h"
 #include "square.h"
-#include "color.h"
-#include "direction.h"
-#include "orientation.h"
-#include "castlingrights.h"
-#include "piecetype.h"
-#include "piece.h"
-#include "movetype.h"
-#include "move.h"
-#include "movelist.h"
 #include "bitboard.h"
 
-#endif//FRANKYCPP_TYPES_H
+namespace types {
+  inline void init() {
+    Squares::squareDistancePreCompute();
+    Bitboards::rankFileBbPreCompute();
+    Bitboards::squareBitboardsPreCompute();
+    Bitboards::nonSlidingAttacksPreCompute();
+    Bitboards::neighbourMasksPreCompute();
+    Bitboards::initMagicBitboards();
+    Bitboards::raysPreCompute();
+    Bitboards::intermediatePreCompute();
+    Bitboards::maskPassedPawnsPreCompute();
+    Bitboards::castleMasksPreCompute();
+    Bitboards::squareColorsPreCompute();
+    Squares::centerDistancePreCompute();
+  }
+}
+
+#endif//FRANKYCPP_INIT_H

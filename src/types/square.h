@@ -55,6 +55,12 @@ enum Square : int { // @formatter:off
 };
 // @formatter:on
 
+// precomputed arrays
+namespace Squares {
+  inline int squareDistance[SQ_NONE][SQ_NONE];
+  inline int centerDistance[SQ_LENGTH];
+}
+
 /** checks if this is a valid square (int >= 0 and <64 */
 constexpr bool validSquare(Square s) { return !(s & ~0b11'1111); }
 
@@ -77,6 +83,9 @@ inline Square makeSquare(std::string s) {
   return SQ_NONE;
 }
 
+// returns the precomputed distance between two squares
+inline int distance(Square s1, Square s2) { return Squares::squareDistance[s1][s2]; }
+
 // returns a string representing the square (e.g. a1 or h8)
 inline std::string str(Square sq) {
   return validSquare(sq) ? std::string{str(fileOf(sq)), str(rankOf(sq)) } : "--";
@@ -85,6 +94,44 @@ inline std::string str(Square sq) {
 inline std::ostream& operator<< (std::ostream& os, const Square sq) {
   os << str(sq);
   return os;
+}
+
+inline Square& operator++ (Square& d) { return d = static_cast<Square> (static_cast<int> (d) + 1); }
+inline Square& operator-- (Square& d) { return d = static_cast<Square> (static_cast<int> (d) - 1); }
+
+// precomputed by types::init()
+namespace Squares {
+
+  inline void squareDistancePreCompute() {
+    // distance between squares
+    for (Square sq1 = SQ_A1; sq1 <= SQ_H8; ++sq1) {
+      for (Square sq2 = SQ_A1; sq2 <= SQ_H8; ++sq2) {
+        if (sq1 != sq2) {
+          squareDistance[sq1][sq2] =
+            static_cast<int8_t>(std::max(distance(fileOf(sq1), fileOf(sq2)),
+                                         distance(rankOf(sq1), rankOf(sq2))));
+        }
+      }
+    }
+  }
+
+  inline void centerDistancePreCompute() {
+    for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
+      // left upper quadrant
+      if (fileOf(sq) <= FILE_D && rankOf(sq) >= RANK_5) {
+        centerDistance[sq] = squareDistance[sq][SQ_D5];
+        // right upper quadrant
+      } else if (fileOf(sq) >= FILE_E && rankOf(sq) >= RANK_5) {
+        centerDistance[sq] = squareDistance[sq][SQ_E5];
+        // left lower quadrant
+      } else if (fileOf(sq) <= FILE_D && rankOf(sq) <= RANK_4) {
+        centerDistance[sq] = squareDistance[sq][SQ_D4];
+        // right lower quadrant
+      } else if (fileOf(sq) <= FILE_D && rankOf(sq) <= RANK_4) {
+        centerDistance[sq] = squareDistance[sq][SQ_E4];
+      }
+    }
+  }
 }
 
 #endif//FRANKYCPP_SQUARE_H
