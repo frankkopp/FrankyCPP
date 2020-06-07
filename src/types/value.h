@@ -26,6 +26,7 @@
 #ifndef FRANKYCPP_VALUE_H
 #define FRANKYCPP_VALUE_H
 
+#include "macros.h"
 #include "globals.h"
 #include "piece.h"
 #include "piecetype.h"
@@ -62,7 +63,7 @@ constexpr const Value pieceTypeValue[] = {
 };
 
 // returns the value of the given piece type
-constexpr Value valueOf (const PieceType pt) { return pieceTypeValue[pt]; }
+constexpr Value valueOf(const PieceType pt) { return pieceTypeValue[pt]; }
 
 // returns the value of the given piece
 constexpr Value valueOf(const Piece p) {
@@ -96,5 +97,7 @@ inline std::ostream& operator<<(std::ostream& os, const Value v) {
   os << str(v);
   return os;
 }
+
+ENABLE_FULL_OPERATORS_ON(Value)
 
 #endif//FRANKYCPP_VALUE_H

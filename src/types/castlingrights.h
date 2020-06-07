@@ -27,6 +27,7 @@
 #define FRANKYCPP_CASTLINGRIGHTS_H
 
 #include <iostream>
+#include "macros.h"
 
 // CastlingRights encodes the castling state e.g. available castling
 // and defines functions to change this state
@@ -94,7 +95,6 @@ inline std::ostream& operator<<(std::ostream& os, const CastlingRights cr) {
   return os;
 }
 
-inline CastlingRights& operator++ (CastlingRights& d) { return d = static_cast<CastlingRights> (static_cast<int> (d) + 1); }
-inline CastlingRights& operator-- (CastlingRights& d) { return d = static_cast<CastlingRights> (static_cast<int> (d) - 1); }
+ENABLE_INCR_OPERATORS_ON (CastlingRights)
 
 #endif//FRANKYCPP_CASTLINGRIGHTS_H

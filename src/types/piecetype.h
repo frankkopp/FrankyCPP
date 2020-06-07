@@ -28,6 +28,7 @@
 
 #include <ostream>
 #include <string>
+#include "macros.h"
 
 // PieceType is a set of constants for piece types in chess
 //  test for non sliding pt & 0b0100 == 0 (must also be none zero)
@@ -82,5 +83,7 @@ inline std::ostream& operator<<(std::ostream& os, const PieceType pt) {
   os << str(pt);
   return os;
 }
+
+ENABLE_INCR_OPERATORS_ON (PieceType)
 
 #endif//FRANKYCPP_PIECETYPE_H

@@ -27,6 +27,7 @@
 #define FRANKYCPP_COLOR_H
 
 #include <ostream>
+#include "macros.h"
 
 // Color represents constants for each chess color White and Black
 //  WHITE        = 0,
@@ -62,7 +63,6 @@ inline std::ostream& operator<<(std::ostream& os, const Color c) {
   return os;
 }
 
-inline Color& operator++ (Color& d) { return d = static_cast<Color> (static_cast<int> (d) + 1); }
-inline Color& operator-- (Color& d) { return d = static_cast<Color> (static_cast<int> (d) - 1); }
+ENABLE_INCR_OPERATORS_ON (Color)
 
 #endif//FRANKYCPP_COLOR_H

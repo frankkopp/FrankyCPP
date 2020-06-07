@@ -26,6 +26,7 @@
 #ifndef FRANKYCPP_RANK_H
 #define FRANKYCPP_RANK_H
 
+#include "macros.h"
 #include "color.h"
 
 // Rank represents a chess board rank 1-8
@@ -86,7 +87,6 @@ inline std::ostream& operator<< (std::ostream& os, const Rank r) {
   return os;
 }
 
-inline Rank& operator++ (Rank& d) { return d = static_cast<Rank> (static_cast<int> (d) + 1); }
-inline Rank& operator-- (Rank& d) { return d = static_cast<Rank> (static_cast<int> (d) - 1); }
+ENABLE_INCR_OPERATORS_ON (Rank)
 
 #endif//FRANKYCPP_RANK_H

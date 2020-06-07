@@ -164,7 +164,7 @@ inline Move moveOf(Move m) {
 
 // returns the sort value for the move used in the move generator
 inline Value valueOf(Move m) {
-  return static_cast<Value>(((m & MoveShifts::VALUE_MASK) >> MoveShifts::VALUE_SHIFT) + VALUE_NONE);
+  return static_cast<Value>(((m & MoveShifts::VALUE_MASK) >> MoveShifts::VALUE_SHIFT)) + VALUE_NONE;
 }
 
 inline Move setValueOf(Move& m, Value v) {

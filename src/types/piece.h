@@ -26,6 +26,8 @@
 #ifndef FRANKYCPP_PIECE_H
 #define FRANKYCPP_PIECE_H
 
+#include "macros.h"
+
 // Piece is a set of constants for pieces in chess
 // Can be used with masks:
 //  No Piece = 0
@@ -99,7 +101,6 @@ inline std::ostream& operator<<(std::ostream& os, const Piece p) {
   return os;
 }
 
-inline Piece& operator++ (Piece& d) { return d = static_cast<Piece> (static_cast<int> (d) + 1); }
-inline Piece& operator-- (Piece& d) { return d = static_cast<Piece> (static_cast<int> (d) - 1); }
+ENABLE_INCR_OPERATORS_ON (Piece)
 
 #endif//FRANKYCPP_PIECE_H
