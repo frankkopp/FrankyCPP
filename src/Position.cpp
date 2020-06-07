@@ -80,37 +80,22 @@ void Position::doMove(Move move) {
   assert(validSquare(fromSquare(move)));
   assert(validSquare(toSquare(move)));
   assert(getPiece(fromSquare(move)) != PIECE_NONE);
+  assert(colorOf(fromPC) == nextPlayer);
+  assert((historyCounter < MAX_MOVES - 1) && "Can't have more move than MAX_MOVES");
 
-  const Square fromSq = fromSquare(move);
-  const Piece fromPC  = getPiece(fromSq);
-  const Color myColor = colorOf(fromPC);
-  assert(myColor == nextPlayer);
+  const Square fromSq  = fromSquare(move);
   const Square toSq    = toSquare(move);
-  const Piece targetPC = getPiece(toSq);
 
   // Save state of board for undo
-  // update existing history entry to not create and allocate a new one
-  //  historyState[historyCounter].zobristKey      = zobristKey;
-  //  historyState[historyCounter].pawnKey         = pawnKey;
-  //  historyState[historyCounter].move            = move;
-  //  historyState[historyCounter].fromPiece       = board[fromSquare(move)];
-  //  historyState[historyCounter].capturedPiece   = board[toSquare(move)];
-  //  historyState[historyCounter].castlingRights  = castlingRights;
-  //  historyState[historyCounter].enPassantSquare = enPassantSquare;
-  //  historyState[historyCounter].halfMoveClock   = halfMoveClock;
-  //  historyState[historyCounter].hasCheckFlag    = hasCheckFlag;
-  // update counter
-  //  historyCounter++;
   historyState[historyCounter++] = {zobristKey,
                                     pawnKey,
                                     move,
-                                    board[fromSquare(move)],
-                                    board[toSquare(move)],
+                                    board[fromSq],
+                                    board[toSq],
                                     castlingRights,
                                     enPassantSquare,
                                     halfMoveClock,
                                     hasCheckFlag};
-  assert((historyCounter < MAX_MOVES - 1) && "Can't have more move than MAX_MOVES");
 
   // change the position data according to the move
   switch (typeOf(move)) {
@@ -126,15 +111,15 @@ void Position::doMove(Move move) {
         }
       }
       clearEnPassant();
-      if (targetPC != PIECE_NONE) {// capture
+      if (getPiece(toSq) != PIECE_NONE) {// capture
         removePiece(toSq);
         halfMoveClock = 0;// reset half move clock because of capture
       }
-      else if (typeOf(fromPC) == PAWN) {
+      else if (typeOf(getPiece(fromSq)) == PAWN) {
         halfMoveClock = 0;                // reset half move clock because of pawn move
         if (distance(fromSq, toSq) == 2) {// pawn double - set en passant
           // set new en passant target field - always one "behind" the toSquare
-          enPassantSquare = toSq + static_cast<Direction>(moveDirection(~myColor) * NORTH);
+          enPassantSquare = toSq + static_cast<Direction>(moveDirection(~colorOf(getPiece(fromSq))) * NORTH);
           zobristKey      = zobristKey ^ Zobrist::enPassantFile[fileOf(enPassantSquare)];// in
         }
       }
@@ -147,7 +132,7 @@ void Position::doMove(Move move) {
       assert(fromPC == makePiece(myColor, PAWN));
       assert(rankOf(toSq) == (myColor == WHITE ? RANK_8 : RANK_1));
       // capture
-      if (targetPC != PIECE_NONE) {
+      if (getPiece(toSq) != PIECE_NONE) {
         removePiece(toSq);
       }
       // If we still have castling rights and the move touches castling squares then invalidate
@@ -162,13 +147,13 @@ void Position::doMove(Move move) {
       }
       clearEnPassant();
       removePiece(fromSq);
-      putPiece(makePiece(myColor, promotionTypeOf(move)), toSq);
+      putPiece(makePiece(colorOf(getPiece(fromSq)), promotionTypeOf(move)), toSq);
       halfMoveClock = 0;// reset half move clock because of pawn move
       break;
     case ENPASSANT: {
       assert(fromPC == makePiece(myColor, PAWN));
       assert(enPassantSquare != SQ_NONE);
-      const Square capSq = toSq + static_cast<Direction>(moveDirection(~myColor) * NORTH);
+      const Square capSq = toSq + static_cast<Direction>(moveDirection(~colorOf(getPiece(fromSq))) * NORTH);
       assert(getPiece(capSq) == makePiece(~myColor, PAWN));
       clearEnPassant();
       removePiece(capSq);
@@ -249,23 +234,25 @@ void Position::undoMove() {
   historyCounter--;
   nextHalfMoveNumber--;
   nextPlayer      = ~nextPlayer;
-  const Move move = historyState[historyCounter].move;
+
+  const HistoryState& lastHistoryState = historyState[historyCounter];
+  const Move move = lastHistoryState.move;
 
   // undo piece move / restore board
   switch (typeOf(move)) {
 
     case NORMAL:
       movePiece(toSquare(move), fromSquare(move));
-      if (historyState[historyCounter].capturedPiece != PIECE_NONE) {
-        putPiece(historyState[historyCounter].capturedPiece, toSquare(move));
+      if (lastHistoryState.capturedPiece != PIECE_NONE) {
+        putPiece(lastHistoryState.capturedPiece, toSquare(move));
       }
       break;
 
     case PROMOTION:
       removePiece(toSquare(move));
       putPiece(makePiece(nextPlayer, PAWN), fromSquare(move));
-      if (historyState[historyCounter].capturedPiece != PIECE_NONE) {
-        putPiece(historyState[historyCounter].capturedPiece, toSquare(move));
+      if (lastHistoryState.capturedPiece != PIECE_NONE) {
+        putPiece(lastHistoryState.capturedPiece, toSquare(move));
       }
       break;
 
@@ -299,12 +286,12 @@ void Position::undoMove() {
   }
 
   // restore state part 2
-  castlingRights  = historyState[historyCounter].castlingRights;
-  enPassantSquare = historyState[historyCounter].enPassantSquare;
-  halfMoveClock   = historyState[historyCounter].halfMoveClock;
-  zobristKey      = historyState[historyCounter].zobristKey;
-  pawnKey         = historyState[historyCounter].pawnKey;
-  hasCheckFlag    = historyState[historyCounter].hasCheckFlag;
+  castlingRights  = lastHistoryState.castlingRights;
+  enPassantSquare = lastHistoryState.enPassantSquare;
+  halfMoveClock   = lastHistoryState.halfMoveClock;
+  zobristKey      = lastHistoryState.zobristKey;
+  pawnKey         = lastHistoryState.pawnKey;
+  hasCheckFlag    = lastHistoryState.hasCheckFlag;
 }
 
 void Position::doNullMove() {
