@@ -26,6 +26,7 @@
 #ifndef FRANKYCPP_DIRECTION_H
 #define FRANKYCPP_DIRECTION_H
 
+#include "macros.h"
 #include "square.h"
 
 // Direction is a set of constants for moving squares within a Bb
@@ -67,5 +68,6 @@ constexpr Square operator-(Square s, Direction d) {
 // Additional operators to subtract a Direction to a Square
 constexpr Square& operator-=(Square& s, Direction d) { return s = s - d; }
 
+ENABLE_FULL_OPERATORS_ON (Direction)
 
 #endif//FRANKYCPP_DIRECTION_H

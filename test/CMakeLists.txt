@@ -14,9 +14,10 @@ add_executable(
         TypesTest.cpp
         BitboardTest.cpp
         PositionTest.cpp
+        MoveGeneratorTest.cpp
         ValuesTest.cpp
-        BOOST_Test.cpp
         TimingTests.cpp
+        BOOST_Test.cpp
 )
 
 target_link_libraries(

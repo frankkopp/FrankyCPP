@@ -28,6 +28,7 @@
 
 #include <ostream>
 
+#include "macros.h"
 #include "color.h"
 #include "file.h"
 #include "rank.h"
@@ -96,8 +97,7 @@ inline std::ostream& operator<< (std::ostream& os, const Square sq) {
   return os;
 }
 
-inline Square& operator++ (Square& d) { return d = static_cast<Square> (static_cast<int> (d) + 1); }
-inline Square& operator-- (Square& d) { return d = static_cast<Square> (static_cast<int> (d) - 1); }
+ENABLE_INCR_OPERATORS_ON (Square)
 
 // precomputed by types::init()
 namespace Squares {

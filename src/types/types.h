@@ -42,5 +42,6 @@
 #include "move.h"
 #include "movelist.h"
 #include "bitboard.h"
+#include "zobristkey.h"
 
 #endif//FRANKYCPP_TYPES_H

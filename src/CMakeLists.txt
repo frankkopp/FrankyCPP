@@ -8,9 +8,13 @@ set(CMAKE_CXX_STANDARD 17)
 # define library files
 set(FrankyCPPlib_SRCS
         init.h
-        types/types.h types/bitboard.cpp
-        Position.cpp Position.h
+        types/types.h
+        types/bitboard.cpp
+        misc.cpp misc.h
         Values.cpp Values.h
+        Position.cpp Position.h
+        MoveGenerator.cpp MoveGenerator.h
+        History.cpp History.h
 )
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})
 target_link_libraries(

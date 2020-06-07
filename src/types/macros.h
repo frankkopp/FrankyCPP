@@ -39,4 +39,32 @@
 #define fprintln(...) fprint(__VA_ARGS__) << std::endl
 #define DEBUG(...) std::cout << fmt::format(deLocale, "DEBUG {}:{} {}", __FILE__, __LINE__, __VA_ARGS__) << std::endl
 
+// These are convenience macros to define custom operators on our types.
+// This idea and code is taken from Stockfish
+#define ENABLE_BASE_OPERATORS_ON(T)                                                                         \
+  constexpr T operator+(T d1, T d2) { return static_cast<T>(static_cast<int>(d1) + static_cast<int>(d2)); } \
+  constexpr T operator-(T d1, T d2) { return static_cast<T>(static_cast<int>(d1) - static_cast<int>(d2)); } \
+  constexpr T operator-(T d) { return static_cast<T>(-static_cast<int>(d)); }                               \
+  constexpr T& operator+=(T& d1, T d2) { return d1 = d1 + d2; }                                             \
+  constexpr T& operator-=(T& d1, T d2) { return d1 = d1 - d2; }
+
+#define ENABLE_INCR_OPERATORS_ON(T)                                                     \
+  constexpr T& operator++(T& d) { return d = static_cast<T>(static_cast<int>(d) + 1); } \
+  constexpr T& operator--(T& d) { return d = static_cast<T>(static_cast<int>(d) - 1); }
+
+#define ENABLE_FULL_OPERATORS_ON(T)                                                            \
+  ENABLE_BASE_OPERATORS_ON(T)                                                                  \
+  ENABLE_INCR_OPERATORS_ON(T)                                                                  \
+  constexpr T operator+(int i, T d) { return static_cast<T>(i + static_cast<int>(d)); }        \
+  constexpr T operator+(T d, int i) { return static_cast<T>(static_cast<int>(d) + i); }        \
+  constexpr T operator-(int i, T d) { return static_cast<T>(i - static_cast<int>(d)); }        \
+  constexpr T operator-(T d, int i) { return static_cast<T>(static_cast<int>(d) - i); }        \
+  constexpr T operator*(int i, T d) { return static_cast<T>(i * static_cast<int>(d)); }        \
+  constexpr T operator*(T d, int i) { return static_cast<T>(static_cast<int>(d) * i); }        \
+  constexpr T operator/(T d, int i) { return static_cast<T>(static_cast<int>(d) / i); }        \
+  constexpr int operator/(T d1, T d2) { return static_cast<int>(d1) / static_cast<int>(d2); }  \
+  constexpr T& operator*=(T& d, int i) { return d = static_cast<T>(static_cast<int>(d) * i); } \
+  constexpr T& operator/=(T& d, int i) { return d = static_cast<T>(static_cast<int>(d) / i); }
+
+
 #endif//FRANKYCPP_MACROS_H
