@@ -80,11 +80,11 @@ void Position::doMove(Move move) {
   assert(validSquare(fromSquare(move)));
   assert(validSquare(toSquare(move)));
   assert(getPiece(fromSquare(move)) != PIECE_NONE);
-  assert(colorOf(fromPC) == nextPlayer);
+  assert(colorOf(getPiece(fromSquare(move))) == nextPlayer);
   assert((historyCounter < MAX_MOVES - 1) && "Can't have more move than MAX_MOVES");
 
-  const Square fromSq  = fromSquare(move);
-  const Square toSq    = toSquare(move);
+  const Square fromSq = fromSquare(move);
+  const Square toSq   = toSquare(move);
 
   // Save state of board for undo
   historyState[historyCounter++] = {zobristKey,
@@ -99,6 +99,7 @@ void Position::doMove(Move move) {
 
   // change the position data according to the move
   switch (typeOf(move)) {
+
     case NORMAL:
       // If we still have castling rights and the move touches castling squares then invalidate
       // the corresponding castling right
@@ -128,9 +129,10 @@ void Position::doMove(Move move) {
       }
       movePiece(fromSq, toSq);
       break;
+
     case PROMOTION:
-      assert(fromPC == makePiece(myColor, PAWN));
-      assert(rankOf(toSq) == (myColor == WHITE ? RANK_8 : RANK_1));
+      assert(getPiece(fromSquare(move)) == makePiece(colorOf(getPiece(fromSquare(move))), PAWN));
+      assert(rankOf(toSq) == (colorOf(getPiece(fromSquare(move))) == WHITE ? RANK_8 : RANK_1));
       // capture
       if (getPiece(toSq) != PIECE_NONE) {
         removePiece(toSq);
@@ -150,19 +152,21 @@ void Position::doMove(Move move) {
       putPiece(makePiece(colorOf(getPiece(fromSq)), promotionTypeOf(move)), toSq);
       halfMoveClock = 0;// reset half move clock because of pawn move
       break;
+
     case ENPASSANT: {
-      assert(fromPC == makePiece(myColor, PAWN));
+      assert(getPiece(fromSquare(move)) == makePiece(colorOf(getPiece(fromSquare(move))), PAWN));
       assert(enPassantSquare != SQ_NONE);
       const Square capSq = toSq + static_cast<Direction>(moveDirection(~colorOf(getPiece(fromSq))) * NORTH);
-      assert(getPiece(capSq) == makePiece(~myColor, PAWN));
+      assert(getPiece(capSq) == makePiece(~colorOf(getPiece(fromSquare(move))), PAWN));
       clearEnPassant();
       removePiece(capSq);
       movePiece(fromSq, toSq);
       halfMoveClock = 0;// reset half move clock because of pawn move
       break;
     }
+
     case CASTLING:
-      assert(fromPC == makePiece(myColor, KING));
+      assert(getPiece(fromSquare(move)) == makePiece(colorOf(getPiece(fromSquare(move))), KING));
       switch (toSq) {
         case SQ_G1:
           assert(castlingRights == WHITE_OO);
@@ -233,10 +237,10 @@ void Position::undoMove() {
   // Restore state part 1
   historyCounter--;
   nextHalfMoveNumber--;
-  nextPlayer      = ~nextPlayer;
+  nextPlayer = ~nextPlayer;
 
   const HistoryState& lastHistoryState = historyState[historyCounter];
-  const Move move = lastHistoryState.move;
+  const Move move                      = lastHistoryState.move;
 
   // undo piece move / restore board
   switch (typeOf(move)) {
@@ -297,17 +301,16 @@ void Position::undoMove() {
 void Position::doNullMove() {
   // Save state of board for undo
   // update existing history entry to not create and allocate a new one
-  historyState[historyCounter].zobristKey      = zobristKey;
-  historyState[historyCounter].pawnKey         = pawnKey;
-  historyState[historyCounter].move            = MOVE_NONE;
-  historyState[historyCounter].fromPiece       = PIECE_NONE;
-  historyState[historyCounter].capturedPiece   = PIECE_NONE;
-  historyState[historyCounter].castlingRights  = castlingRights;
-  historyState[historyCounter].enPassantSquare = enPassantSquare;
-  historyState[historyCounter].halfMoveClock   = halfMoveClock;
-  historyState[historyCounter].hasCheckFlag    = hasCheckFlag;
-  // update counter
-  historyCounter++;
+  // Save state of board for undo
+  historyState[historyCounter++] = {zobristKey,
+                                    pawnKey,
+                                    MOVE_NONE,
+                                    PIECE_NONE,
+                                    PIECE_NONE,
+                                    castlingRights,
+                                    enPassantSquare,
+                                    halfMoveClock,
+                                    hasCheckFlag};
   // update state for null move
   hasCheckFlag = FLAG_TBD;
   clearEnPassant();
@@ -320,13 +323,14 @@ void Position::undoNullMove() {
   // Restore state
   historyCounter--;
   nextHalfMoveNumber--;
-  nextPlayer      = ~nextPlayer;
-  castlingRights  = historyState[historyCounter].castlingRights;
-  enPassantSquare = historyState[historyCounter].enPassantSquare;
-  halfMoveClock   = historyState[historyCounter].halfMoveClock;
-  hasCheckFlag    = historyState[historyCounter].hasCheckFlag;
-  pawnKey         = historyState[historyCounter].pawnKey;
-  zobristKey      = historyState[historyCounter].zobristKey;
+  nextPlayer                           = ~nextPlayer;
+  const HistoryState& lastHistoryState = historyState[historyCounter];
+  castlingRights                       = lastHistoryState.castlingRights;
+  enPassantSquare                      = lastHistoryState.enPassantSquare;
+  halfMoveClock                        = lastHistoryState.halfMoveClock;
+  hasCheckFlag                         = lastHistoryState.hasCheckFlag;
+  pawnKey                              = lastHistoryState.pawnKey;
+  zobristKey                           = lastHistoryState.zobristKey;
 }
 
 bool Position::isAttacked(Square sq, Color by) const {
@@ -783,27 +787,25 @@ std::ostream& operator<<(std::ostream& os, Position& position) {
 ////////////////////////////////////////////////
 ///// PRIVATE
 
-void Position::movePiece(Square fromSq, Square toSq) {
+inline void Position::movePiece(Square fromSq, Square toSq) {
   putPiece(removePiece(fromSq), toSq);
 }
 
 void Position::putPiece(Piece piece, Square square) {
+  assert(getPiece(square) == PIECE_NONE);
+  assert((piecesBb[colorOf(piece)][typeOf(piece)] & square) == 0);
+  assert((occupiedBb[colorOf(piece)] & square) == 0);
+
   const PieceType pieceType = typeOf(piece);
   const Color color         = colorOf(piece);
-
   // piece board
-  assert(getPiece(square) == PIECE_NONE);
   board[square] = piece;
   if (pieceType == KING) {
     kingSquare[color] = square;
   }
-
   // bitboards
-  assert((piecesBb[color][pieceType] & square) == 0);
   piecesBb[color][pieceType] |= square;
-  assert((occupiedBB[color] & square) == 0);
-  occupiedBB[color] |= square;
-
+  occupiedBb[color] |= square;
   // zobrist
   zobristKey ^= Zobrist::pieces[piece][square];
   if (pieceType == PAWN) {
@@ -825,20 +827,18 @@ void Position::putPiece(Piece piece, Square square) {
 }
 
 Piece Position::removePiece(Square square) {
+  assert(getPiece(square) != PIECE_NONE);
+  assert(piecesBb[colorOf(getPiece(square))][typeOf(getPiece(square))] & square);
+  assert(occupiedBb[colorOf(getPiece(square))] & square);
+
   const Piece removed       = getPiece(square);
   const Color color         = colorOf(removed);
   const PieceType pieceType = typeOf(removed);
-
   // piece board
-  assert(getPiece(square) != PIECE_NONE);
   board[square] = PIECE_NONE;
-
   // bitboards
-  assert(piecesBb[color][pieceType] & square);
   piecesBb[color][pieceType] ^= square;
-  assert(occupiedBB[color] & square);
-  occupiedBB[color] ^= square;
-
+  occupiedBb[color] ^= square;
   // zobrist
   zobristKey ^= Zobrist::pieces[removed][square];
   if (pieceType == PAWN) {
@@ -857,10 +857,11 @@ Piece Position::removePiece(Square square) {
   // position value
   psqMidValue[color] -= Values::posMidValue[removed][square];
   psqEndValue[color] -= Values::posEndValue[removed][square];
+  // return the removed piece
   return removed;
 }
 
-void Position::clearEnPassant() {
+inline void Position::clearEnPassant() {
   if (enPassantSquare != SQ_NONE) {
     zobristKey      = zobristKey ^ Zobrist::enPassantFile[fileOf(enPassantSquare)];// out
     enPassantSquare = SQ_NONE;
@@ -882,7 +883,7 @@ void Position::initializeBoard() {
   nextHalfMoveNumber = 1;
 
   for (Color color = WHITE; color <= BLACK; ++color) {// foreach color
-    occupiedBB[color] = BbZero;
+    occupiedBb[color] = BbZero;
     std::fill_n(&piecesBb[color][0], sizeof(piecesBb[color]), BbZero);
     kingSquare[color]      = SQ_NONE;
     material[color]        = 0;

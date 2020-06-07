@@ -108,7 +108,7 @@ class Position {
   Bitboard piecesBb[COLOR_LENGTH][PT_LENGTH]{};
 
   // occupied bitboards with rotations
-  Bitboard occupiedBB[COLOR_LENGTH]{};
+  Bitboard occupiedBb[COLOR_LENGTH]{};
 
   // Extended Board State END ---------------------------------
   // **********************************************************
@@ -278,7 +278,7 @@ public:
    * @return true if move captures (incl. en passant)
    */
   bool isCapturingMove(const Move& move) const {
-    return (occupiedBB[~nextPlayer] & toSquare(move)) || typeOf(move) == ENPASSANT;
+    return (occupiedBb[~nextPlayer] & toSquare(move)) || typeOf(move) == ENPASSANT;
   };
 
   // LastCapturedPiece returns the captured piece of the the last
@@ -313,8 +313,8 @@ public:
   inline Square getEnPassantSquare() const { return enPassantSquare; }
   inline Square getKingSquare(const Color color) const { return kingSquare[color]; };
   inline Bitboard getPieceBb(const Color c, const PieceType pt) const { return piecesBb[c][pt]; }
-  inline Bitboard getOccupiedBb() const { return occupiedBB[WHITE] | occupiedBB[BLACK]; }
-  inline Bitboard getOccupiedBB(const Color c) const { return occupiedBB[c]; }
+  inline Bitboard getOccupiedBb() const { return occupiedBb[WHITE] | occupiedBb[BLACK]; }
+  inline Bitboard getOccupiedBB(const Color c) const { return occupiedBb[c]; }
   inline int getMaterial(const Color c) const { return material[c]; }
   inline int getMaterialNonPawn(const Color c) const { return materialNonPawn[c]; }
   inline int getMidPosValue(const Color c) const { return psqMidValue[c]; }
