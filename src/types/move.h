@@ -26,10 +26,63 @@
 #ifndef FRANKYCPP_MOVE_H
 #define FRANKYCPP_MOVE_H
 
-#include "movetype.h"
 #include "piece.h"
 #include "piecetype.h"
 #include "value.h"
+
+namespace MoveShifts {
+  constexpr unsigned int FROM_SHIFT      = 6u;
+  constexpr unsigned int PROM_TYPE_SHIFT = 12u;
+  constexpr unsigned int MOVE_TYPE_SHIFT = 14u;
+  constexpr unsigned int VALUE_SHIFT     = 16u;
+
+  constexpr unsigned int SQUARE_MASK    = 0b111111u;
+  constexpr unsigned int TO_MASK        = SQUARE_MASK;
+  constexpr unsigned int FROM_MASK      = SQUARE_MASK << FROM_SHIFT;
+  constexpr unsigned int PROM_TYPE_MASK = 0b11u << PROM_TYPE_SHIFT;
+  constexpr unsigned int MOVE_TYPE_MASK = 0b11u << MOVE_TYPE_SHIFT;
+
+  constexpr unsigned int MOVE_MASK  = 0xFFFFu;               // first 16-bit
+  constexpr unsigned int VALUE_MASK = 0xFFFFu << VALUE_SHIFT;// second 16-bit
+}// namespace MoveShifts
+
+// //////////////////////////////////
+// MoveType
+// //////////////////////////////////
+
+// MoveType is used for the different move types we use to encode moves.
+//  Normal
+//  Promotion
+//  EnPassant
+//  Castling
+// Enum values are already shifted to their place in a move to save
+// the time to shift them when creating a move or reading the type.
+enum MoveType {
+  NORMAL    = 0 << MoveShifts::MOVE_TYPE_SHIFT,
+  PROMOTION = 1 << MoveShifts::MOVE_TYPE_SHIFT,
+  ENPASSANT = 2 << MoveShifts::MOVE_TYPE_SHIFT,
+  CASTLING  = 3 << MoveShifts::MOVE_TYPE_SHIFT
+};
+
+// checks if move type is a value of 0 - 3
+constexpr bool validMoveType(MoveType mt) {
+  return !(mt < 0);// || mt >= 4);
+}
+
+// single char label for the piece type (one of " KPNBRQ")
+constexpr char str(MoveType mt) {
+  if (!validMoveType(mt)) return '-';
+  return std::string("npec")[mt];
+}
+
+inline std::ostream& operator<<(std::ostream& os, const MoveType mt) {
+  os << str(mt);
+  return os;
+}
+
+// //////////////////////////////////
+// Move
+// //////////////////////////////////
 
 // Move is a 32bit unsigned int type for encoding chess moves as a primitive data type
 // 16 bits for move encoding - 16 bits for sort value
@@ -49,22 +102,6 @@ enum Move : uint32_t {
   MOVE_NONE = 0
 };
 
-namespace MoveShifts {
-  constexpr unsigned int FROM_SHIFT      = 6u;
-  constexpr unsigned int PROM_TYPE_SHIFT = 12u;
-  constexpr unsigned int MOVE_TYPE_SHIFT = 14u;
-  constexpr unsigned int VALUE_SHIFT     = 16u;
-
-  constexpr unsigned int SQUARE_MASK    = 0b111111u;
-  constexpr unsigned int TO_MASK        = SQUARE_MASK;
-  constexpr unsigned int FROM_MASK      = SQUARE_MASK << FROM_SHIFT;
-  constexpr unsigned int PROM_TYPE_MASK = 0b11u << PROM_TYPE_SHIFT;
-  constexpr unsigned int MOVE_TYPE_MASK = 0b11u << MOVE_TYPE_SHIFT;
-
-  constexpr unsigned int MOVE_MASK  = 0xFFFFu;               // first 16-bit
-  constexpr unsigned int VALUE_MASK = 0xFFFFu << VALUE_SHIFT;// second 16-bit
-}// namespace MoveShifts
-
 // creates a move
 constexpr Move createMove(Square from, Square to, MoveType mt = NORMAL, PieceType promType = KNIGHT) {
   if (promType < KNIGHT) promType = KNIGHT;
@@ -74,14 +111,14 @@ constexpr Move createMove(Square from, Square to, MoveType mt = NORMAL, PieceTyp
   return static_cast<Move>(to |
                            from << MoveShifts::FROM_SHIFT |
                            (promType - KNIGHT) << MoveShifts::PROM_TYPE_SHIFT |
-                           mt << MoveShifts::MOVE_TYPE_SHIFT);
+                           mt);
 }
 
 // creates a move
 constexpr Move createMove(Square from, Square to, MoveType mt, Value value) {
   return static_cast<Move>(to |
                            from << MoveShifts::FROM_SHIFT |
-                           mt << MoveShifts::MOVE_TYPE_SHIFT |
+                           mt |
                            (value - VALUE_NONE) << MoveShifts::VALUE_SHIFT);
 }
 
@@ -94,7 +131,7 @@ constexpr Move createMove(Square from, Square to, MoveType mt, PieceType promTyp
   return static_cast<Move>(to |
                            from << MoveShifts::FROM_SHIFT |
                            (promType - KNIGHT) << MoveShifts::PROM_TYPE_SHIFT |
-                           mt << MoveShifts::MOVE_TYPE_SHIFT |
+                           mt |
                            (value - VALUE_NONE) << MoveShifts::VALUE_SHIFT);
 }
 
@@ -117,7 +154,7 @@ inline PieceType promotionTypeOf(Move m) {
 
 // MoveType returns the type of the move as defined in MoveType
 inline MoveType typeOf(Move m) {
-  return static_cast<MoveType>((m & MoveShifts::MOVE_TYPE_MASK) >> MoveShifts::MOVE_TYPE_SHIFT);
+  return static_cast<MoveType>((m & MoveShifts::MOVE_TYPE_MASK));
 }
 
 // returns the move without any value (least 16-bits)
