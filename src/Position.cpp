@@ -90,17 +90,26 @@ void Position::doMove(Move move) {
 
   // Save state of board for undo
   // update existing history entry to not create and allocate a new one
-  historyState[historyCounter].zobristKey      = zobristKey;
-  historyState[historyCounter].pawnKey         = pawnKey;
-  historyState[historyCounter].move            = move;
-  historyState[historyCounter].fromPiece       = board[fromSquare(move)];
-  historyState[historyCounter].capturedPiece   = board[toSquare(move)];
-  historyState[historyCounter].castlingRights  = castlingRights;
-  historyState[historyCounter].enPassantSquare = enPassantSquare;
-  historyState[historyCounter].halfMoveClock   = halfMoveClock;
-  historyState[historyCounter].hasCheckFlag    = hasCheckFlag;
+  //  historyState[historyCounter].zobristKey      = zobristKey;
+  //  historyState[historyCounter].pawnKey         = pawnKey;
+  //  historyState[historyCounter].move            = move;
+  //  historyState[historyCounter].fromPiece       = board[fromSquare(move)];
+  //  historyState[historyCounter].capturedPiece   = board[toSquare(move)];
+  //  historyState[historyCounter].castlingRights  = castlingRights;
+  //  historyState[historyCounter].enPassantSquare = enPassantSquare;
+  //  historyState[historyCounter].halfMoveClock   = halfMoveClock;
+  //  historyState[historyCounter].hasCheckFlag    = hasCheckFlag;
   // update counter
-  historyCounter++;
+  //  historyCounter++;
+  historyState[historyCounter++] = {zobristKey,
+                                    pawnKey,
+                                    move,
+                                    board[fromSquare(move)],
+                                    board[toSquare(move)],
+                                    castlingRights,
+                                    enPassantSquare,
+                                    halfMoveClock,
+                                    hasCheckFlag};
   assert((historyCounter < MAX_MOVES - 1) && "Can't have more move than MAX_MOVES");
 
   // change the position data according to the move

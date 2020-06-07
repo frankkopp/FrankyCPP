@@ -938,7 +938,7 @@ using namespace std::chrono;
 
 TEST_F(PositionTest, TimingDoMoveUndoMove) {
   const int rounds     = 5;
-  const int iterations = 20'000'000;
+  const int iterations = 50'000'000;
 
   // position for each move type
   // fxe3 enpassant

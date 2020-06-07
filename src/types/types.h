@@ -39,7 +39,6 @@
 #include "castlingrights.h"
 #include "piecetype.h"
 #include "piece.h"
-#include "movetype.h"
 #include "move.h"
 #include "movelist.h"
 #include "bitboard.h"
