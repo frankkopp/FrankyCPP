@@ -71,18 +71,18 @@ constexpr Move createMove(Square from, Square to, MoveType mt = NORMAL, PieceTyp
   // promType will be reduced to 2 bits (4 values) Knight, Bishop, Rook, Queen
   // therefore we subtract the Knight value from the promType to get
   // value between 0 and 3 (0b00 - 0b11)
-  return Move(to |
-              from << MoveShifts::FROM_SHIFT |
-              (promType - KNIGHT) << MoveShifts::PROM_TYPE_SHIFT |
-              mt << MoveShifts::MOVE_TYPE_SHIFT);
+  return static_cast<Move>(to |
+                           from << MoveShifts::FROM_SHIFT |
+                           (promType - KNIGHT) << MoveShifts::PROM_TYPE_SHIFT |
+                           mt << MoveShifts::MOVE_TYPE_SHIFT);
 }
 
 // creates a move
 constexpr Move createMove(Square from, Square to, MoveType mt, Value value) {
-  return Move(to |
-              from << MoveShifts::FROM_SHIFT |
-              mt << MoveShifts::MOVE_TYPE_SHIFT |
-              (value - VALUE_NONE) << MoveShifts::VALUE_SHIFT);
+  return static_cast<Move>(to |
+                           from << MoveShifts::FROM_SHIFT |
+                           mt << MoveShifts::MOVE_TYPE_SHIFT |
+                           (value - VALUE_NONE) << MoveShifts::VALUE_SHIFT);
 }
 
 // creates a move
@@ -91,43 +91,43 @@ constexpr Move createMove(Square from, Square to, MoveType mt, PieceType promTyp
   // promType will be reduced to 2 bits (4 values) Knight, Bishop, Rook, Queen
   // therefore we subtract the Knight value from the promType to get
   // value between 0 and 3 (0b00 - 0b11)
-  return Move(to |
-              from << MoveShifts::FROM_SHIFT |
-              (promType - KNIGHT) << MoveShifts::PROM_TYPE_SHIFT |
-              mt << MoveShifts::MOVE_TYPE_SHIFT |
-              (value - VALUE_NONE) << MoveShifts::VALUE_SHIFT);
+  return static_cast<Move>(to |
+                           from << MoveShifts::FROM_SHIFT |
+                           (promType - KNIGHT) << MoveShifts::PROM_TYPE_SHIFT |
+                           mt << MoveShifts::MOVE_TYPE_SHIFT |
+                           (value - VALUE_NONE) << MoveShifts::VALUE_SHIFT);
 }
 
 // returns the from-Square of the move
 inline Square fromSquare(Move m) {
-  return Square((m & MoveShifts::FROM_MASK) >> MoveShifts::FROM_SHIFT);
+  return static_cast<Square>((m & MoveShifts::FROM_MASK) >> MoveShifts::FROM_SHIFT);
 }
 
 // returns the to-Square of the move
 inline Square toSquare(Move m) {
-  return Square(m & MoveShifts::TO_MASK);
+  return static_cast<Square>(m & MoveShifts::TO_MASK);
 }
 
 // PromotionType returns the PieceType considered for promotion when
 // move type is also MoveType.Promotion.
 // Must be ignored when move type is not MoveType.Promotion.
 inline PieceType promotionTypeOf(Move m) {
-  return PieceType(((m & MoveShifts::PROM_TYPE_MASK) >> MoveShifts::PROM_TYPE_SHIFT) + KNIGHT);
+  return static_cast<PieceType>(((m & MoveShifts::PROM_TYPE_MASK) >> MoveShifts::PROM_TYPE_SHIFT) + KNIGHT);
 }
 
 // MoveType returns the type of the move as defined in MoveType
 inline MoveType typeOf(Move m) {
-  return MoveType((m & MoveShifts::MOVE_TYPE_MASK) >> MoveShifts::MOVE_TYPE_SHIFT);
+  return static_cast<MoveType>((m & MoveShifts::MOVE_TYPE_MASK) >> MoveShifts::MOVE_TYPE_SHIFT);
 }
 
 // returns the move without any value (least 16-bits)
 inline Move moveOf(Move m) {
-  return Move(m & MoveShifts::MOVE_MASK);
+  return static_cast<Move>(m & MoveShifts::MOVE_MASK);
 }
 
 // returns the sort value for the move used in the move generator
 inline Value valueOf(Move m) {
-  return Value(((m & MoveShifts::VALUE_MASK) >> MoveShifts::VALUE_SHIFT) + VALUE_NONE);
+  return static_cast<Value>(((m & MoveShifts::VALUE_MASK) >> MoveShifts::VALUE_SHIFT) + VALUE_NONE);
 }
 
 inline Move setValueOf(Move& m, Value v) {
@@ -136,7 +136,7 @@ inline Move setValueOf(Move& m, Value v) {
   // when saving a value to a move we shift value to a positive integer
   // (0-VALUE_NONE) and encode it into the move. For retrieving we then shift
   // the value back to a range from VALUE_NONE to VALUE_INF
-  return m = Move((m & MoveShifts::MOVE_MASK) | ((v - VALUE_NONE) << MoveShifts::VALUE_SHIFT));
+  return m = static_cast<Move>((m & MoveShifts::MOVE_MASK) | ((v - VALUE_NONE) << MoveShifts::VALUE_SHIFT));
 }
 
 constexpr bool validMove(Move m) {
