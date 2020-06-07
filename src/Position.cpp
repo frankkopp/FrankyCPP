@@ -120,7 +120,7 @@ void Position::doMove(Move move) {
         halfMoveClock = 0;                // reset half move clock because of pawn move
         if (distance(fromSq, toSq) == 2) {// pawn double - set en passant
           // set new en passant target field - always one "behind" the toSquare
-          enPassantSquare = toSq + static_cast<Direction>(moveDirection(~colorOf(getPiece(fromSq))) * NORTH);
+          enPassantSquare = toSq + pawnPush(~colorOf(getPiece(fromSq)));
           zobristKey      = zobristKey ^ Zobrist::enPassantFile[fileOf(enPassantSquare)];// in
         }
       }
@@ -156,7 +156,7 @@ void Position::doMove(Move move) {
     case ENPASSANT: {
       assert(getPiece(fromSquare(move)) == makePiece(colorOf(getPiece(fromSquare(move))), PAWN));
       assert(enPassantSquare != SQ_NONE);
-      const Square capSq = toSq + static_cast<Direction>(moveDirection(~colorOf(getPiece(fromSq))) * NORTH);
+      const Square capSq = toSq + pawnPush(~colorOf(getPiece(fromSq)));
       assert(getPiece(capSq) == makePiece(~colorOf(getPiece(fromSquare(move))), PAWN));
       clearEnPassant();
       removePiece(capSq);
@@ -263,7 +263,7 @@ void Position::undoMove() {
     case ENPASSANT:
       // ignore Zobrist Key as it will be restored via history
       movePiece(toSquare(move), fromSquare(move));
-      putPiece(makePiece(~nextPlayer, PAWN), toSquare(move) + static_cast<Direction>(moveDirection(~nextPlayer) * NORTH));
+      putPiece(makePiece(~nextPlayer, PAWN), toSquare(move) + pawnPush(~nextPlayer));
       break;
 
     case CASTLING:
@@ -392,6 +392,37 @@ bool Position::isAttacked(Square sq, Color by) const {
   return false;
 }
 
+Bitboard Position::attacksTo(Square square, Color color) const {
+  assert(validSquare(square) && "Position::attacksTo needs a valid square");
+  // prepare en passant attacks
+  Bitboard epAttacks = BbZero;
+  if (enPassantSquare != SQ_NONE && enPassantSquare == square) {
+    Square pawnSquare   = enPassantSquare + pawnPush(~color);
+    Bitboard epAttacker = Bitboards::neighbourFilesMask[pawnSquare] & Bitboards::sqToRankBb[pawnSquare] & piecesBb[color][PAWN];
+    if (epAttacker) {
+      epAttacks |= Bitboards::sqBb[pawnSquare];
+    }
+  }
+  const Bitboard occupiedAll = getOccupiedBb();
+
+  // this uses a reverse approach - it uses the target square as from square
+  // to generate attacks for each type and then intersects the result with
+  // the piece bitboard.
+
+  //     Pawns
+  return (Bitboards::pawnAttacks[~color][square] & piecesBb[color][PAWN]) |
+         // Knight
+         (getAttacksBb(KNIGHT, square, occupiedAll) & piecesBb[color][KNIGHT]) |
+         // King
+         (getAttacksBb(KING, square, occupiedAll) & piecesBb[color][KING]) |
+         // Sliding rooks and queens
+         (getAttacksBb(ROOK, square, occupiedAll) & (piecesBb[color][ROOK] | piecesBb[color][QUEEN])) |
+         // Sliding bishops and queens
+         (getAttacksBb(BISHOP, square, occupiedAll) & (piecesBb[color][BISHOP] | piecesBb[color][QUEEN])) |
+         // consider en passant attacks
+         epAttacks;
+}
+
 bool Position::hasCheck() const {
   if (hasCheckFlag != FLAG_TBD) {
     return (hasCheckFlag == FLAG_TRUE);
@@ -445,7 +476,7 @@ bool Position::givesCheck(Move move) const {
       break;
     case ENPASSANT:
       // set en passant capture square
-      epTargetSq = toSq + static_cast<Direction>(moveDirection(them) * NORTH);
+      epTargetSq = toSq + pawnPush(them);
       break;
     default:
       break;

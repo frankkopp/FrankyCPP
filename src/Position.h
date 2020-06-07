@@ -26,13 +26,11 @@
 #ifndef FRANKYCPP_POSITION_H
 #define FRANKYCPP_POSITION_H
 
-#include "types/types.h"
-#include "gtest/gtest_prod.h"
 #include <array>
 #include <cstdint>
+#include "gtest/gtest_prod.h"
 
-/** 64 bit Key for zobrist etc. */
-typedef uint64_t Key;
+#include "types/types.h"
 
 namespace Zobrist {
   // zobrist key for pieces - piece, board
@@ -218,6 +216,9 @@ public:
   // legal move. E.g. a pinned piece could not actually make a capture on the
   // square.
   bool isAttacked(Square sq, Color by) const;
+
+  // AttacksTo determines all attacks to the given square for the given color.
+  Bitboard attacksTo(Square square, Color color) const;
 
   // HasCheck returns true if the next player is threatened by a check
   // (king is attacked).

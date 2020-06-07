@@ -933,12 +933,69 @@ TEST_F(PositionTest, wasLegalMove) {
   position.undoMove();
 }
 
+TEST_F(PositionTest, attacksTo) {
+  Position p;
+  Bitboard attacksTo;
+
+  	p = Position("2brr1k1/1pq1b1p1/p1np1p1p/P1p1p2n/1PNPPP2/2P1BNP1/4Q1BP/R2R2K1 w - -");
+  	attacksTo = p.attacksTo(SQ_E5, WHITE);
+  	fprintln("{}", strBoard(attacksTo));
+  	fprintln("{}", strGrouped(attacksTo));
+  	EXPECT_EQ(740294656, attacksTo);
+  	
+  	attacksTo = p.attacksTo(SQ_F1, WHITE);
+  	fprintln("{}", strBoard(attacksTo));
+  	fprintln("{}", strGrouped(attacksTo));
+  	EXPECT_EQ(20552, attacksTo);
+
+  	attacksTo = p.attacksTo(SQ_D4, WHITE);
+  	fprintln("{}", strBoard(attacksTo));
+  	fprintln("{}", strGrouped(attacksTo));
+  	EXPECT_EQ(3407880, attacksTo);
+
+  	attacksTo = p.attacksTo(SQ_D4, BLACK);
+  	fprintln("{}", strBoard(attacksTo));
+  	fprintln("{}", strGrouped(attacksTo));
+  	EXPECT_EQ(4483945857024, attacksTo);
+
+  	attacksTo = p.attacksTo(SQ_D6, BLACK);
+  	fprintln("{}", strBoard(attacksTo));
+  	fprintln("{}", strGrouped(attacksTo));
+  	EXPECT_EQ(582090251837636608, attacksTo);
+
+  	attacksTo = p.attacksTo(SQ_F8, BLACK);
+  	fprintln("{}", strBoard(attacksTo));
+  	fprintln("{}", strGrouped(attacksTo));
+  	EXPECT_EQ(5769111122661605376, attacksTo);
+
+  	p = Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
+  	attacksTo = p.attacksTo(SQ_E5, BLACK);
+  	fprintln("{}", strBoard(attacksTo));
+  	fprintln("{}", strGrouped(attacksTo));
+  	EXPECT_EQ(2339760743907840, attacksTo);
+
+  	attacksTo = p.attacksTo(SQ_B1, BLACK);
+  	fprintln("{}", strBoard(attacksTo));
+  	fprintln("{}", strGrouped(attacksTo));
+  	EXPECT_EQ(1280, attacksTo);
+
+  	attacksTo = p.attacksTo(SQ_G3, WHITE);
+  	fprintln("{}", strBoard(attacksTo));
+  	fprintln("{}", strGrouped(attacksTo));
+  	EXPECT_EQ(40960, attacksTo);
+
+  	attacksTo = p.attacksTo(SQ_E4, BLACK);
+  	fprintln("{}", strBoard(attacksTo));
+  	fprintln("{}", strGrouped(attacksTo));
+  	EXPECT_EQ(4398113619968, attacksTo);
+}
+
 #include <chrono>
 using namespace std::chrono;
 
 TEST_F(PositionTest, TimingDoMoveUndoMove) {
   const int rounds     = 5;
-  const int iterations = 20'000'000;
+  const int iterations = 50'000'000;
 
   // position for each move type
   // fxe3 enpassant
