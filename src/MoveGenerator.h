@@ -27,8 +27,8 @@
 #define FRANKYCPP_MOVEGENERATOR_H
 
 
-#include <types/types.h>
 #include "gtest/gtest_prod.h"
+#include <types/types.h>
 
 // forward declaration
 class Position;
@@ -118,7 +118,7 @@ public:
   // Because of beta cuts off we quite often will never have to check the full legality
   // of these moves anyway.
   template<GenMode GM>
-  const MoveList* generatePseudoLegalMoves(const Position& position, bool evasion);
+  const MoveList* generatePseudoLegalMoves(const Position& position, bool evasion = false);
 
   // GenerateLegalMoves generates legal moves for the next player.
   // Uses GeneratePseudoLegalMoves and filters out illegal moves.
@@ -155,11 +155,28 @@ public:
   // Because of beta cuts off we quite often will never have to check the full legality
   // of these moves anyway.
   template<GenMode GM>
-  Move getNextPseudoLegalMove(const Position& p, bool evasion);
+  Move getNextPseudoLegalMove(const Position& p, bool evasion = false);
+
+// Resets the move generator to start fresh. Clears all lists (e.g. killers) and resets on demand iterator
+  inline void reset() {
+    pseudoLegalMoves.clear();
+    legalMoves.clear();
+    killerMoves[0] = MOVE_NONE;
+    killerMoves[1] = MOVE_NONE;
+    resetOnDemand();
+  }
 
   // ResetOnDemand resets the move on demand generator to start fresh.
   // Also deletes PV moves.
-  void resetOnDemand();
+  inline void resetOnDemand() {
+    onDemandMoves.clear();
+    onDemandEvasionTargets = BbZero;
+    currentODStage         = OD_NEW;
+    currentODZobrist       = 0;
+    pvMove                 = MOVE_NONE;
+    pvMovePushed           = false;
+    takeIndex              = 0;
+  }
 
   // SetPvMove sets a PV move which should be returned first by
   // the OnDemand MoveGenerator.
