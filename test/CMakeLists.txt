@@ -19,7 +19,7 @@ add_executable(
         ValuesTest.cpp
         TimingTests.cpp
         BOOST_Test.cpp
-)
+        SpeedTests.cpp)
 
 target_link_libraries(
         ${testExeName}
