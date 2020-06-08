@@ -50,7 +50,7 @@ protected:
                   int repetitions, std::vector<std::function<void(void)>> tests);
 };
 
-TEST_F(TimingTests, popcount) {
+TEST_F(TimingTests, DISABLED_popcount) {
   std::ostringstream os;
 
   //// TESTS START
@@ -64,7 +64,7 @@ TEST_F(TimingTests, popcount) {
   std::cout << os.str();
 }
 
-TEST_F(TimingTests, distancevsdiff) {
+TEST_F(TimingTests, DISABLED_distancevsdiff) {
   std::ostringstream os;
 
   //// TESTS START
@@ -93,7 +93,7 @@ TEST_F(TimingTests, distancevsdiff) {
 /**
  * Test the absolute speed of doMove, undoMove
  */
-TEST_F(TimingTests, doMoveUndoMove) {
+TEST_F(TimingTests, DISABLED_doMoveUndoMove) {
   std::ostringstream os;
 
   //// TESTS START

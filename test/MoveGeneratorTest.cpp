@@ -687,7 +687,7 @@ using namespace std::chrono;
 
 // 8.6.: Loaner Mac:
 // 480.000.000 moves generated: 84.774.069 mps
-TEST_F(MoveGenTest, PseudoMoveGen) {
+TEST_F(MoveGenTest, DISABLED_PseudoMoveGen) {
   MoveGenerator mg;
 
   const int rounds     = 5;
@@ -717,49 +717,6 @@ TEST_F(MoveGenTest, PseudoMoveGen) {
   }
 
 //  fprintln(str(*moves));
-}
-
-
-TEST_F(MoveGenTest, onDemandPseudoMoveGen) {
-  MoveGenerator mg;
-
-  const int rounds     = 5;
-  const int iterations = 10'000'000;
-
-  Position position = Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3");
-  auto k1 = mg.getMoveFromUci(position, "g6h4");
-  auto k2 = mg.getMoveFromUci(position, "b7b6");
-  auto pv = mg.getMoveFromUci(position, "a2b1Q");
-
-  uint64_t generated = 0;
-  Move move;
-  for (int r = 1; r <= rounds; r++) {
-    fprintln("Round {}", r);
-    auto start = high_resolution_clock::now();
-    for (int i = 0; i < iterations; i++) {
-      generated = 0;
-      mg.resetOnDemand();
-      mg.storeKiller(k1);
-      mg.storeKiller(k2);
-      mg.setPV(pv);
-      while ((move = mg.getNextPseudoLegalMove<GenAll>(position)) != MOVE_NONE) {
-        generated++;
-      }
-    }
-    auto elapsed = duration_cast<nanoseconds>(high_resolution_clock::now() - start);
-
-    std::ostringstream os;
-    os.flags(std::cout.flags());
-    os.imbue(deLocale);
-    os.precision(os.precision());
-    os << "Test took " << elapsed.count() << " ns for " << iterations << " iterations" << std::endl;
-    os << "Test took " << elapsed.count() / iterations << " ns per test" << std::endl;
-    os << "Test per sec " << (iterations * nanoPerSec) / elapsed.count() << " tps" << std::endl;
-    os << generated * iterations << " moves generated: " << (generated * iterations * nanoPerSec) / elapsed.count() << " mps" << std::endl;
-    std::cout << os.str() << std::endl;
-  }
-
-  //  fprintln(str(*moves));
 }
 
 TEST_F(MoveGenTest, debug) {
