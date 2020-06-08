@@ -990,6 +990,17 @@ TEST_F(PositionTest, attacksTo) {
   	EXPECT_EQ(4398113619968, attacksTo);
 }
 
+TEST_F(PositionTest, debug) {
+
+  Position p("r3k2r/Pppp1ppp/1b3nbN/nP6/BBPPP3/q4N2/Pp4PP/R2Q1RK1 b kq d3 0 1");
+  Move m = createMove(SQ_B2, SQ_A1, PROMOTION, QUEEN);
+  fprintln(strVerbose(m));
+  fprintln(p.strFen());
+  p.doMove(m);
+  fprintln(p.strFen());
+  
+}
+
 #include <chrono>
 using namespace std::chrono;
 

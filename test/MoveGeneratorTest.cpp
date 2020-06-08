@@ -762,3 +762,12 @@ TEST_F(MoveGenTest, onDemandPseudoMoveGen) {
   //  fprintln(str(*moves));
 }
 
+TEST_F(MoveGenTest, debug) {
+  MoveGenerator mg;
+  Position p("rnbq1bnr/ppp1pppp/4k3/3pP3/3P2Q1/8/PPP2PPP/RNB1KBNR b KQ - 2 4");
+  fprintln("{}", mg.generatePseudoLegalMoves<GenAll>(p)->size());
+  fprintln("{}", mg.generateLegalMoves<GenAll>(p)->size());
+  fprintln("{}", str(mg.generateLegalMoves<GenAll>(p)->at(0)));
+  fprintln("{}", mg.hasLegalMove(p));
+
+}

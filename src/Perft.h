@@ -41,6 +41,8 @@ class Perft {
   uint64_t checkMateCounter{};
   uint64_t captureCounter{};
   uint64_t enpassantCounter{};
+  uint64_t castleCounter{};
+  uint64_t promotionCounter{};
   std::string fen;
 
 public:
@@ -56,7 +58,9 @@ public:
   uint64_t getEnpassantCounter() const { return enpassantCounter; }
   uint64_t getCheckCounter() const { return checkCounter; }
   uint64_t getCheckMateCounter() const { return checkMateCounter; }
-
+  uint64_t getCastleCounter() const { return castleCounter; }
+  uint64_t getPromotionCounter() const { return promotionCounter; }
+  
 private:
   void resetCounter();
   uint64_t miniMax(int depth, Position &position, MoveGenerator *moveGeneratorList);
