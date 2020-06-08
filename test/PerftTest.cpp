@@ -73,7 +73,7 @@ TEST_F(PerftTest, stdPerftOD) {
   // @formatter:on
 
   const int startDepth = 1;
-  const int maxDepth = 7;
+  const int maxDepth = 6;
 
   for (int i = startDepth; i <= maxDepth; i++) {
     p.perft(i);
@@ -140,20 +140,21 @@ TEST_F(PerftTest, kiwiPetePerft) {
 
   // @formatter:off
   const uint64_t results[7][8] = {
-    //N  Nodes        Captures    EP       Checks   Mates    Castles    Promotions
-    { 0, 0,           0,          0,       0,       0      , 0,         0        },
-    { 1, 48,          8,          0,       0,       0      , 2,         0        },
-    { 2, 2039,        351,        1,       3,       0      , 91,        0        },
-    { 3, 97862,       17102,      45,      993,     1      , 3162 ,     0        },
-    { 4, 4085603,     757163,     1929,    25523,   43     , 128013,    15172    },
-    { 5, 193690690,   35043416,   73365,   3309887, 30171  , 4993637,   8392     },
-    { 6, 8031647685,  1558445089, 3577504, 3309887, 360003 , 184513607, 56627920 },
+    //N  Nodes        Captures    EP       Checks    Mates    Castles    Promotions
+    { 0, 0,           0,          0,       0,        0      , 0,         0        },
+    { 1, 48,          8,          0,       0,        0      , 2,         0        },
+    { 2, 2039,        351,        1,       3,        0      , 91,        0        },
+    { 3, 97862,       17102,      45,      993,      1      , 3162 ,     0        },
+    { 4, 4085603,     757163,     1929,    25523,    43     , 128013,    15172    },
+    { 5, 193690690,   35043416,   73365,   3309887,  30171  , 4993637,   8392     },
+    { 6, 8031647685,  1558445089, 3577504, 92238050, 360003 , 184513607, 56627920 },
   };
   // @formatter:on
 
-  int maxDepth = 5;
+  const int startDepth = 1;
+  const int maxDepth = 5;
 
-  for (int i = 1; i <= maxDepth; i++) {
+  for (int i = startDepth; i <= maxDepth; i++) {
     p.perft(i, true);
     NEWLINE;
     EXPECT_EQ(results[i][1], p.getNodes());

@@ -81,13 +81,13 @@ void Perft::perft(int maxDepth, bool onDemand) {
   os << "NPS          : " << (result * 1'000) / (duration + 1) << " nps" << std::endl;
   os << "Results:" << std::endl;
   os << "   Nodes     : " << nodes << std::endl;
-  os << "   Captures  : " << captureCounter<< std::endl;
-  os << "   EnPassant : " << enpassantCounter<< std::endl;
-  os << "   Checks    : " << checkCounter<< std::endl;
-  os << "   CheckMates: " << checkMateCounter<< std::endl;
-  os << "   Castles   : " << castleCounter<< std::endl;
-  os << "   Promotions: " << promotionCounter<< std::endl;
-  os << "-----------------------------------------"<< std::endl;
+  os << "   Captures  : " << captureCounter << std::endl;
+  os << "   EnPassant : " << enpassantCounter << std::endl;
+  os << "   Checks    : " << checkCounter << std::endl;
+  os << "   CheckMates: " << checkMateCounter << std::endl;
+  os << "   Castles   : " << castleCounter << std::endl;
+  os << "   Promotions: " << promotionCounter << std::endl;
+  os << "-----------------------------------------" << std::endl;
   os << "Finished PERFT Test for Depth " << maxDepth << std::endl;
 
   std::cout << os.str();
@@ -124,6 +124,7 @@ uint64_t Perft::miniMaxOD(int depth, Position& position, MoveGenerator* pMg) {
         // castling
         else if (typeOf(move) == CASTLING) {
           castleCounter++;
+//          fprintln("No: {:2d} Last: {:5s} Move: {:5s}   Fen: {:s} ", castleCounter, str(position.getLastMove()), str(move), position.strFen());
         }
         else if (typeOf(move) == PROMOTION) {
           promotionCounter++;
@@ -138,7 +139,6 @@ uint64_t Perft::miniMaxOD(int depth, Position& position, MoveGenerator* pMg) {
           //  mate
           if (!MoveGenerator::hasLegalMove(position)) {
             checkMateCounter++;
-//            fprintln("Last: {:5s} Move: {:5s}   Fen: {:s} ", str(position.getLastMove()), str(move), position.strFen());
           }
         }
       }
@@ -175,7 +175,7 @@ uint64_t Perft::miniMax(int depth, Position& position, MoveGenerator* pMg) {
           enpassantCounter++;
           captureCounter++;
         }
-          // castling
+        // castling
         else if (typeOf(move) == CASTLING) {
           castleCounter++;
         }
@@ -288,4 +288,6 @@ void Perft::resetCounter() {
   checkMateCounter = 0;
   captureCounter   = 0;
   enpassantCounter = 0;
+  castleCounter    = 0;
+  promotionCounter = 0;
 }
