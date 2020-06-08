@@ -130,7 +130,7 @@ void Position::doMove(Move move) {
       movePiece(fromSq, toSq);
       break;
 
-    case PROMOTION:
+    case PROMOTION: {
       assert(getPiece(fromSquare(move)) == makePiece(colorOf(getPiece(fromSquare(move))), PAWN));
       assert(rankOf(toSq) == (colorOf(getPiece(fromSquare(move))) == WHITE ? RANK_8 : RANK_1));
       // capture
@@ -149,9 +149,10 @@ void Position::doMove(Move move) {
       }
       clearEnPassant();
       removePiece(fromSq);
-      putPiece(makePiece(colorOf(getPiece(fromSq)), promotionTypeOf(move)), toSq);
+      putPiece(makePiece(nextPlayer, promotionTypeOf(move)), toSq);
       halfMoveClock = 0;// reset half move clock because of pawn move
       break;
+    }
 
     case ENPASSANT: {
       assert(getPiece(fromSquare(move)) == makePiece(colorOf(getPiece(fromSquare(move))), PAWN));

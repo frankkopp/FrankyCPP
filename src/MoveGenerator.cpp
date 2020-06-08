@@ -210,10 +210,17 @@ bool MoveGenerator::hasLegalMove(const Position& position) {
   }
 
   // PAWN
-  // pawn pushes - check step one to unoccupied squares
-  // don't have to test double steps as they would be redundant to single steps
-  // for the purpose of finding at least one legal move
-  tmpMoves = shiftBb(pawnPush(us), ourPawns) & ~position.getOccupiedBb();
+  // pawns - check step one to unoccupied squares
+   tmpMoves = shiftBb(pawnPush(us), ourPawns) & ~position.getOccupiedBb();
+  // pawns double - check step two to unoccupied squares
+  Bitboard tmpMovesDouble = shiftBb(pawnPush(us), tmpMoves & Bitboards::rankBb[pawnDoubleRank(us)]) & ~position.getOccupiedBb();
+  // double pawn steps
+  while (tmpMovesDouble) {
+    const Square toSquare = popLSB(tmpMovesDouble);
+    const Square fromSquare = toSquare + 2 * pawnPush(them);
+    if (position.isLegalMove(createMove(fromSquare, toSquare))) return true;
+  }
+  // normal single pawn steps
   while (tmpMoves) {
     const Square toSquare   = popLSB(tmpMoves);
     const Square fromSquare = toSquare + pawnPush(them);

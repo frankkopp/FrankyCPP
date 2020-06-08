@@ -285,6 +285,7 @@ public:
   // LastCapturedPiece returns the captured piece of the the last
   // move made on the position or MoveNone if the move was
   // non-capturing or the position has no history of earlier moves.
+  // Does not return a pawn captured by en passant.
   inline Piece getLastCapturedPiece() const {
     if (historyCounter <= 0) return PIECE_NONE;
     return historyState[historyCounter - 1].capturedPiece;
