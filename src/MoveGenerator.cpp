@@ -47,19 +47,19 @@ const MoveList* MoveGenerator::generatePseudoLegalMoves(const Position& p, bool 
   }
 
   // first generate all non quiet moves
-  if (GM & GenNonQuiet) {
-    generatePawnMoves<GM>(p, &pseudoLegalMoves, evasion, onDemandEvasionTargets);
-    generateMoves<GM>(p, &pseudoLegalMoves, evasion, onDemandEvasionTargets);
-    generateKingMoves<GM>(p, &pseudoLegalMoves, evasion);
+  if (GM == GenNonQuiet || GM == GenAll) {
+    generatePawnMoves<GenNonQuiet>(p, &pseudoLegalMoves, evasion, onDemandEvasionTargets);
+    generateMoves<GenNonQuiet>(p, &pseudoLegalMoves, evasion, onDemandEvasionTargets);
+    generateKingMoves<GenNonQuiet>(p, &pseudoLegalMoves, evasion);
   }
   // second generate all other moves
-  if (GM & GenNonQuiet) {
-    generatePawnMoves<GM>(p, &pseudoLegalMoves, evasion, onDemandEvasionTargets);
+  if (GM == GenQuiet || GM == GenAll) {
+    generatePawnMoves<GenQuiet>(p, &pseudoLegalMoves, evasion, onDemandEvasionTargets);
     if (!evasion) {// no castling when in check
-      generateCastling<GM>(p, &pseudoLegalMoves);
+      generateCastling<GenQuiet>(p, &pseudoLegalMoves);
     }
-    generateMoves<GM>(p, &pseudoLegalMoves, evasion, onDemandEvasionTargets);
-    generateKingMoves<GM>(p, &pseudoLegalMoves, evasion);
+    generateMoves<GenQuiet>(p, &pseudoLegalMoves, evasion, onDemandEvasionTargets);
+    generateKingMoves<GenQuiet>(p, &pseudoLegalMoves, evasion);
   }
 
   // PV, Killer and history handling
@@ -167,16 +167,6 @@ Move MoveGenerator::getNextPseudoLegalMove(const Position& p, bool evasion) {
   takeIndex    = 0;
   pvMovePushed = false;
   return MOVE_NONE;
-}
-
-void MoveGenerator::resetOnDemand() {
-  onDemandMoves.clear();
-  onDemandEvasionTargets = BbZero;
-  currentODStage         = OD_NEW;
-  currentODZobrist       = 0;
-  pvMove                 = MOVE_NONE;
-  pvMovePushed           = false;
-  takeIndex              = 0;
 }
 
 void MoveGenerator::setPV(Move move) {
@@ -365,10 +355,10 @@ Move MoveGenerator::getMoveFromSan(const Position& position, std::string sanMove
     const std::string& moveTarget = ::str(toSquare(m));
     if (moveTarget == toSq) {
       // Find out piece
-      Piece movePiece = position.getPiece(fromSquare(m));
-      const std::string pieceTypeChar(1, ::str(typeOf(movePiece)));
+      PieceType movePieceType = typeOf(position.getPiece(fromSquare(m)));
+      const std::string pieceTypeChar(1, ::str(movePieceType));
       // determine if piece types match - if not skip
-      if (pieceType.empty() || pieceTypeChar != pieceType) {
+      if ((pieceType.empty() || pieceTypeChar != pieceType) && (!pieceType.empty() || movePieceType != PAWN)) {
         continue;
       }
       // Disambiguation File
@@ -494,7 +484,9 @@ void MoveGenerator::fillOnDemandMoveList(const Position& position, bool evasion)
     }
     // sort the list according to sort values encoded in the move
     if (!onDemandMoves.empty()) {
-      sort(onDemandMoves.begin(), onDemandMoves.end());
+      sort(onDemandMoves.begin(), onDemandMoves.end(), [](const Move lhs, const Move rhs) {
+        return valueOf(lhs) > valueOf(rhs);
+      });
     }
   }// while onDemandMoves.empty()
 }
@@ -797,8 +789,10 @@ void MoveGenerator::generateKingMoves(const Position& position, MoveList* const 
     while (nonCaptures) {
       const Square toSquare = popLSB(nonCaptures);
       // value is the positional value of the piece at this game phase
-      const Value value = static_cast<Value>(-10000) + Values::posValue[piece][toSquare][gamePhase];
-      pMoves->push_back(createMove(fromSquare, toSquare, NORMAL, value));
+      if (!evasion || !position.attacksTo(toSquare, ~nextPlayer)) {
+        const Value value = static_cast<Value>(-10000) + Values::posValue[piece][toSquare][gamePhase];
+        pMoves->push_back(createMove(fromSquare, toSquare, NORMAL, value));
+      }
     }
   }
 }
@@ -834,18 +828,30 @@ void MoveGenerator::generateCastling(const Position& position, MoveList* const p
 }
 
 // explicitly instantiate all template definitions so other classes can see them
-template void MoveGenerator::generatePawnMoves<GenNonQuiet>(const Position& position, MoveList* const pMoves, bool evasion, Bitboard evasionTargets);
-template void MoveGenerator::generatePawnMoves<GenQuiet>   (const Position& position, MoveList* const pMoves, bool evasion, Bitboard evasionTargets);
-template void MoveGenerator::generatePawnMoves<GenAll>     (const Position& position, MoveList* const pMoves, bool evasion, Bitboard evasionTargets);
+template const MoveList* MoveGenerator::generatePseudoLegalMoves<GenNonQuiet>(const Position& position, bool evasion);
+template const MoveList* MoveGenerator::generatePseudoLegalMoves<GenQuiet>(const Position& position, bool evasion);
+template const MoveList* MoveGenerator::generatePseudoLegalMoves<GenAll>(const Position& position, bool evasion);
 
-template void MoveGenerator::generateMoves    <GenNonQuiet>(const Position& position, MoveList* const pMoves, bool evasion, Bitboard evasionTargets);
-template void MoveGenerator::generateMoves    <GenQuiet>   (const Position& position, MoveList* const pMoves, bool evasion, Bitboard evasionTargets);
-template void MoveGenerator::generateMoves    <GenAll>     (const Position& position, MoveList* const pMoves, bool evasion, Bitboard evasionTargets);
+template const MoveList* MoveGenerator::generateLegalMoves<GenNonQuiet>(const Position& position);
+template const MoveList* MoveGenerator::generateLegalMoves<GenQuiet>(const Position& position);
+template const MoveList* MoveGenerator::generateLegalMoves<GenAll>(const Position& position);
+
+template Move MoveGenerator::getNextPseudoLegalMove<GenNonQuiet>(const Position& position, bool evasion);
+template Move MoveGenerator::getNextPseudoLegalMove<GenQuiet>(const Position& position, bool evasion);
+template Move MoveGenerator::getNextPseudoLegalMove<GenAll>(const Position& position, bool evasion);
+
+template void MoveGenerator::generatePawnMoves<GenNonQuiet>(const Position& position, MoveList* const pMoves, bool evasion, Bitboard evasionTargets);
+template void MoveGenerator::generatePawnMoves<GenQuiet>(const Position& position, MoveList* const pMoves, bool evasion, Bitboard evasionTargets);
+template void MoveGenerator::generatePawnMoves<GenAll>(const Position& position, MoveList* const pMoves, bool evasion, Bitboard evasionTargets);
+
+template void MoveGenerator::generateMoves<GenNonQuiet>(const Position& position, MoveList* const pMoves, bool evasion, Bitboard evasionTargets);
+template void MoveGenerator::generateMoves<GenQuiet>(const Position& position, MoveList* const pMoves, bool evasion, Bitboard evasionTargets);
+template void MoveGenerator::generateMoves<GenAll>(const Position& position, MoveList* const pMoves, bool evasion, Bitboard evasionTargets);
 
 template void MoveGenerator::generateKingMoves<GenNonQuiet>(const Position& position, MoveList* const pMoves, bool evasion);
-template void MoveGenerator::generateKingMoves<GenQuiet>   (const Position& position, MoveList* const pMoves, bool evasion);
-template void MoveGenerator::generateKingMoves<GenAll>     (const Position& position, MoveList* const pMoves, bool evasion);
+template void MoveGenerator::generateKingMoves<GenQuiet>(const Position& position, MoveList* const pMoves, bool evasion);
+template void MoveGenerator::generateKingMoves<GenAll>(const Position& position, MoveList* const pMoves, bool evasion);
 
-template void MoveGenerator::generateCastling <GenNonQuiet>(const Position& position, MoveList* const pMoves);
-template void MoveGenerator::generateCastling <GenQuiet>   (const Position& position, MoveList* const pMoves);
-template void MoveGenerator::generateCastling <GenAll>     (const Position& position, MoveList* const pMoves);
+template void MoveGenerator::generateCastling<GenNonQuiet>(const Position& position, MoveList* const pMoves);
+template void MoveGenerator::generateCastling<GenQuiet>(const Position& position, MoveList* const pMoves);
+template void MoveGenerator::generateCastling<GenAll>(const Position& position, MoveList* const pMoves);
