@@ -14,6 +14,7 @@ set(FrankyCPPlib_SRCS
         Values.cpp Values.h
         Position.cpp Position.h
         MoveGenerator.cpp MoveGenerator.h
+        Perft.cpp Perft.h
         History.cpp History.h
 )
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})
