@@ -257,8 +257,8 @@ TEST_F(PositionTest, Copy) {
   EXPECT_EQ(position.getZobristKey(), copy.getZobristKey());
   EXPECT_EQ(position.strFen(), copy.strFen());
   EXPECT_EQ(position.strBoard(), copy.strBoard());
-  EXPECT_EQ(position.getOccupiedBB(WHITE), copy.getOccupiedBB(WHITE));
-  EXPECT_EQ(position.getOccupiedBB(BLACK), copy.getOccupiedBB(BLACK));
+  EXPECT_EQ(position.getOccupiedBb(WHITE), copy.getOccupiedBb(WHITE));
+  EXPECT_EQ(position.getOccupiedBb(BLACK), copy.getOccupiedBb(BLACK));
   EXPECT_EQ(SQ_E3, copy.getEnPassantSquare());
   EXPECT_EQ(BLACK, copy.getNextPlayer());
 }

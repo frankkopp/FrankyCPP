@@ -78,50 +78,65 @@ TEST_F(MoveGenTest, pawnMoves) {
   }
 }
 
-//
-//TEST_F(MoveGenTest, kingMoves) {
-//  string        fen;
-//  MoveGenerator mg;
-//  MoveList      moves;
-//
-//  fen = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
-//  Position position(fen);
-//  LOG__DEBUG(Logger::get().TEST_LOG, "\n{}", position.printBoard());
-//
-//  moves.clear();
-//  mg.generateKingMoves<MoveGenerator::GENCAP>(position, &moves);
-//  LOG__DEBUG(Logger::get().TEST_LOG, "Capture moves = {}", moves.size());
-//  EXPECT_EQ(0, moves.size());
-//
-//  moves.clear();
-//  mg.generateKingMoves<MoveGenerator::GENNONCAP>(position, &moves);
-//  LOG__DEBUG(Logger::get().TEST_LOG, "Non capture moves = {}", moves.size());
-//  EXPECT_EQ(4, moves.size());
-//}
-//
-///**
-// * Test move generation
-// */
-//TEST_F(MoveGenTest, normalMoves) {
-//  string        fen;
-//  MoveGenerator mg;
-//  MoveList      moves;
-//
-//  fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3";
-//  Position position(fen);
-//  LOG__DEBUG(Logger::get().TEST_LOG, "\n{}", position.printBoard());
-//
-//  moves.clear();
-//  mg.generateMoves<MoveGenerator::GENCAP>(position, &moves);
-//  LOG__DEBUG(Logger::get().TEST_LOG, "Capture moves = {}", moves.size());
-//  EXPECT_EQ(3, moves.size());
-//
-//  moves.clear();
-//  mg.generateMoves<MoveGenerator::GENNONCAP>(position, &moves);
-//  LOG__DEBUG(Logger::get().TEST_LOG, "Non capture moves = {}", moves.size());
-//  EXPECT_EQ(49, moves.size());
-//}
-//
+TEST_F(MoveGenTest, kingMoves) {
+  MoveGenerator mg;
+  Position pos;
+  MoveList moves;
+
+  pos = Position("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R w KQkq -");
+  mg.generateKingMoves<GenAll>(pos, &moves, false);
+  EXPECT_EQ(3, moves.size());
+  EXPECT_EQ("e1d2 e1d1 e1f1", str(moves));
+  moves.clear();
+
+  pos = Position("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R b KQkq -");
+  mg.generateKingMoves<GenAll>(pos, &moves, false);
+  EXPECT_EQ(3, moves.size());
+  EXPECT_EQ("e8d7 e8d8 e8f8", str(moves));
+
+  // sort moves
+  sort(moves.begin(), moves.end(), [](const Move lhs, const Move rhs) {
+    return valueOf(lhs) > valueOf(rhs);
+  });
+  for (Move m : moves) {
+    fprintln(strVerbose(m));
+  }
+}
+
+/**
+ * Test move generation
+ */
+TEST_F(MoveGenTest, normalMoves) {
+  MoveGenerator mg;
+  Position pos;
+  MoveList moves;
+
+  pos = Position("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R w KQkq -");
+  mg.generateMoves<GenNonQuiet>(pos, &moves, false, BbZero);
+  EXPECT_EQ(7, moves.size());
+  EXPECT_EQ("f3d2 f3e5 d7e5 d7b6 d7f6 b5c6 e2d2", str(moves));
+  moves.clear();
+
+  pos = Position("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R b KQkq -");
+  mg.generateMoves<GenQuiet>(pos, &moves, false, BbZero);
+  EXPECT_EQ(28, moves.size());
+  EXPECT_EQ("d2b1 d2f1 d2b3 d2c4 c6d4 c6a5 c6b8 c6d8 f6g4 f6d5 f6h5 f6g8 b4a3 b4a5 b4c5 b4d6 b7a6 b7c8 a8b8 a8c8 a8d8 h8f8 h8g8 e7c5 e7d6 e7e6 e7d8 e7f8", str(moves));
+  moves.clear();
+
+  pos = Position("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R b KQkq -");
+  mg.generateMoves<GenAll>(pos, &moves, false, BbZero);
+  EXPECT_EQ(34, moves.size());
+  EXPECT_EQ("d2f3 d2e4 d2b1 d2f1 d2b3 d2c4 c6d4 c6a5 c6b8 c6d8 f6e4 f6d7 f6g4 f6d5 f6h5 f6g8 b4c3 b4a3 b4a5 b4c5 b4d6 b7a6 b7c8 a8b8 a8c8 a8d8 h8f8 h8g8 e7d7 e7c5 e7d6 e7e6 e7d8 e7f8", str(moves));
+
+  // sort moves
+  sort(moves.begin(), moves.end(), [](const Move lhs, const Move rhs) {
+    return valueOf(lhs) > valueOf(rhs);
+  });
+  for (Move m : moves) {
+    fprintln(strVerbose(m));
+  }
+}
+
 //TEST_F(MoveGenTest, castlingMoves) {
 //  string        fen;
 //  MoveGenerator mg;

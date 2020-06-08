@@ -315,7 +315,7 @@ public:
   inline Square getKingSquare(const Color color) const { return kingSquare[color]; };
   inline Bitboard getPieceBb(const Color c, const PieceType pt) const { return piecesBb[c][pt]; }
   inline Bitboard getOccupiedBb() const { return occupiedBb[WHITE] | occupiedBb[BLACK]; }
-  inline Bitboard getOccupiedBB(const Color c) const { return occupiedBb[c]; }
+  inline Bitboard getOccupiedBb(const Color c) const { return occupiedBb[c]; }
   inline int getMaterial(const Color c) const { return material[c]; }
   inline int getMaterialNonPawn(const Color c) const { return materialNonPawn[c]; }
   inline int getMidPosValue(const Color c) const { return psqMidValue[c]; }
