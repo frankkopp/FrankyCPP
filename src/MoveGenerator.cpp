@@ -207,8 +207,8 @@ bool MoveGenerator::hasLegalMove(const Position& position) {
 
   const Color us          = position.getNextPlayer();
   const Color them        = ~us;
-  const Bitboard ourBb    = position.getOccupiedBB(us);
-  const Bitboard theirBb  = position.getOccupiedBB(them);
+  const Bitboard ourBb    = position.getOccupiedBb(us);
+  const Bitboard theirBb  = position.getOccupiedBb(them);
   const Bitboard ourPawns = position.getPieceBb(us, PAWN);
 
   // KING
@@ -592,7 +592,7 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
 
     for (Direction dir : {WEST, EAST}) {
       // normal pawn captures - promotions first
-      tmpCaptures = shiftBb(pawnPush(nextPlayer) + dir, myPawns) & position.getOccupiedBB(~nextPlayer);
+      tmpCaptures = shiftBb(pawnPush(nextPlayer) + dir, myPawns) & position.getOccupiedBb(~nextPlayer);
 
       // filter evasion targets if in check
       if (evasion) {
@@ -738,7 +738,7 @@ void MoveGenerator::generateMoves(const Position& position, MoveList* const pMov
 
       // captures
       if (GM == GenNonQuiet || GM == GenAll) {
-        Bitboard captures = pseudoMoves & position.getOccupiedBB(~nextPlayer);
+        Bitboard captures = pseudoMoves & position.getOccupiedBb(~nextPlayer);
         if (evasion) {
           captures &= evasionTargets;
         }
@@ -779,7 +779,7 @@ void MoveGenerator::generateKingMoves(const Position& position, MoveList* const 
 
   // captures
   if (GM == GenNonQuiet || GM == GenAll) {
-    Bitboard captures = pseudoMoves & position.getOccupiedBB(~nextPlayer);
+    Bitboard captures = pseudoMoves & position.getOccupiedBb(~nextPlayer);
     while (captures) {
       const Square toSquare = popLSB(captures);
       // value is the positional value of the piece at this game phase minus the
