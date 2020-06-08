@@ -15,6 +15,7 @@ add_executable(
         BitboardTest.cpp
         PositionTest.cpp
         MoveGeneratorTest.cpp
+        PerftTest.cpp
         ValuesTest.cpp
         TimingTests.cpp
         BOOST_Test.cpp
