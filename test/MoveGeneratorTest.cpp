@@ -264,7 +264,7 @@ TEST_F(MoveGenTest, legalMoves) {
   moves.clear();
   moves = *mg.generateLegalMoves<GenAll>(position);
   EXPECT_EQ(83, moves.size());
-  ASSERT_FALSE(position.isLegalMove(createMove(SQ_E8, SQ_G8, CASTLING)));
+  EXPECT_FALSE(position.isLegalMove(createMove(SQ_E8, SQ_G8, CASTLING)));
 }
 
 TEST_F(MoveGenTest, hasLegalMoves) {
@@ -276,22 +276,29 @@ TEST_F(MoveGenTest, hasLegalMoves) {
   position = Position("rn2kbnr/pbpp1ppp/8/1p2p1q1/4K3/3P4/PPP1PPPP/RNBQ1BNR w kq -");
   moves    = *mg.generateLegalMoves<GenAll>(position);
   EXPECT_EQ(0, moves.size());
-  ASSERT_FALSE(mg.hasLegalMove(position));
-  ASSERT_TRUE(position.hasCheck());
+  EXPECT_FALSE(mg.hasLegalMove(position));
+  EXPECT_TRUE(position.hasCheck());
 
   // stale mate position
   position = Position("7k/5K2/6Q1/8/8/8/8/8 b - -");
   moves    = *mg.generateLegalMoves<GenAll>(position);
   EXPECT_EQ(0, moves.size());
-  ASSERT_FALSE(mg.hasLegalMove(position));
-  ASSERT_FALSE(position.hasCheck());
+  EXPECT_FALSE(mg.hasLegalMove(position));
+  EXPECT_FALSE(position.hasCheck());
 
   // only en passant
   position = Position("8/8/8/8/5Pp1/6P1/7k/K3BQ2 b - f3");
   moves    = *mg.generateLegalMoves<GenAll>(position);
   EXPECT_EQ(1, moves.size());
-  ASSERT_TRUE(mg.hasLegalMove(position));
-  ASSERT_FALSE(position.hasCheck());
+  EXPECT_TRUE(mg.hasLegalMove(position));
+  EXPECT_FALSE(position.hasCheck());
+
+  // pawn double is only legal move (was bug in previous FrankyGo v1.0 version)
+  position = Position("rnbq1bnr/ppp1pppp/4k3/3pP3/3P2Q1/8/PPP2PPP/RNB1KBNR b KQ - 2 4");
+  moves    = *mg.generateLegalMoves<GenAll>(position);
+  EXPECT_EQ(1, moves.size());
+  EXPECT_TRUE(mg.hasLegalMove(position));
+  EXPECT_TRUE(position.hasCheck());
 }
 
 TEST_F(MoveGenTest, validateMove) {
@@ -303,19 +310,23 @@ TEST_F(MoveGenTest, validateMove) {
   fen = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
   Position position(fen);
 
-  ASSERT_TRUE(mg.validateMove(position, createMove(SQ_B2, SQ_E5)));
-  ASSERT_TRUE(mg.validateMove(position, createMove(SQ_E6, SQ_E5)));
-  ASSERT_TRUE(mg.validateMove(position, createMove(SQ_C4, SQ_E4)));
-  ASSERT_TRUE(mg.validateMove(position, createMove(SQ_C6, SQ_E4)));
-  ASSERT_TRUE(mg.validateMove(position, createMove(SQ_A2, SQ_A1, PROMOTION, QUEEN)));
-  ASSERT_TRUE(mg.validateMove(position, createMove(SQ_C2, SQ_C1, PROMOTION, QUEEN)));
-  ASSERT_TRUE(mg.validateMove(position, createMove(SQ_A2, SQ_A1, PROMOTION, QUEEN)));
-  ASSERT_TRUE(mg.validateMove(position, createMove(SQ_C2, SQ_C1, PROMOTION, QUEEN)));
-  ASSERT_FALSE(mg.validateMove(position, createMove(SQ_E2, SQ_E4)));
-  ASSERT_FALSE(mg.validateMove(position, createMove(SQ_B8, SQ_C8)));
-  ASSERT_FALSE(mg.validateMove(position, createMove(SQ_A2, SQ_B3)));
-  ASSERT_FALSE(mg.validateMove(position, createMove(SQ_B1, SQ_C3)));
-  ASSERT_FALSE(mg.validateMove(position, MOVE_NONE));
+  EXPECT_TRUE(mg.validateMove(position, createMove(SQ_B2, SQ_E5)));
+  EXPECT_TRUE(mg.validateMove(position, createMove(SQ_E6, SQ_E5)));
+  EXPECT_TRUE(mg.validateMove(position, createMove(SQ_C4, SQ_E4)));
+  EXPECT_TRUE(mg.validateMove(position, createMove(SQ_C6, SQ_E4)));
+  EXPECT_TRUE(mg.validateMove(position, createMove(SQ_A2, SQ_A1, PROMOTION, QUEEN)));
+  EXPECT_TRUE(mg.validateMove(position, createMove(SQ_C2, SQ_C1, PROMOTION, QUEEN)));
+  EXPECT_TRUE(mg.validateMove(position, createMove(SQ_A2, SQ_A1, PROMOTION, QUEEN)));
+  EXPECT_TRUE(mg.validateMove(position, createMove(SQ_C2, SQ_C1, PROMOTION, QUEEN)));
+  EXPECT_FALSE(mg.validateMove(position, createMove(SQ_E2, SQ_E4)));
+  EXPECT_FALSE(mg.validateMove(position, createMove(SQ_B8, SQ_C8)));
+  EXPECT_FALSE(mg.validateMove(position, createMove(SQ_A2, SQ_B3)));
+  EXPECT_FALSE(mg.validateMove(position, createMove(SQ_B1, SQ_C3)));
+  EXPECT_FALSE(mg.validateMove(position, MOVE_NONE));
+
+  // pawn double is only legal move (was bug in hasLegalMoves in previous FrankyGo v1.0 version)
+  position = Position("rnbq1bnr/ppp1pppp/4k3/3pP3/3P2Q1/8/PPP2PPP/RNB1KBNR b KQ - 2 4");
+  EXPECT_TRUE(mg.validateMove(position, createMove(SQ_F7, SQ_F5)));
 }
 
 TEST_F(MoveGenTest, fromUci) {
@@ -327,9 +338,7 @@ TEST_F(MoveGenTest, fromUci) {
 
   // invalid pattern
   move = mg.getMoveFromUci(pos, "8888");
-  ;
   EXPECT_EQ(MOVE_NONE, move);
-  ;
 
   // valid move
   move = mg.getMoveFromUci(pos, "b7b5");
@@ -630,54 +639,54 @@ TEST_F(MoveGenTest, evasion) {
   p                = Position("r3k2r/1pp4p/2q1qNn1/3nP3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq -");
   pseudoLegalMoves = mg.generatePseudoLegalMoves<GenAll>(p, false);
   fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), str(*pseudoLegalMoves));
-  evasionMoves     = mg.generatePseudoLegalMoves<GenAll>(p, true);
+  evasionMoves = mg.generatePseudoLegalMoves<GenAll>(p, true);
   fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), str(*evasionMoves));
-  legalMoves       = mg.generateLegalMoves<GenAll>(p);
+  legalMoves = mg.generateLegalMoves<GenAll>(p);
   fprintln("Legal      : {:3d} {:s}", legalMoves->size(), str(*legalMoves));
   fprintln("");
 
   p                = Position("5k2/8/8/8/8/8/6p1/3K1R2 b - -");
   pseudoLegalMoves = mg.generatePseudoLegalMoves<GenAll>(p, false);
   fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), str(*pseudoLegalMoves));
-  evasionMoves     = mg.generatePseudoLegalMoves<GenAll>(p, true);
+  evasionMoves = mg.generatePseudoLegalMoves<GenAll>(p, true);
   fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), str(*evasionMoves));
-  legalMoves       = mg.generateLegalMoves<GenAll>(p);
+  legalMoves = mg.generateLegalMoves<GenAll>(p);
   fprintln("Legal      : {:3d} {:s}", legalMoves->size(), str(*legalMoves));
   fprintln("");
 
   p                = Position("5k2/8/8/8/8/6p1/5R2/3K4 b - -");
   pseudoLegalMoves = mg.generatePseudoLegalMoves<GenAll>(p, false);
   fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), str(*pseudoLegalMoves));
-  evasionMoves     = mg.generatePseudoLegalMoves<GenAll>(p, true);
+  evasionMoves = mg.generatePseudoLegalMoves<GenAll>(p, true);
   fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), str(*evasionMoves));
-  legalMoves       = mg.generateLegalMoves<GenAll>(p);
+  legalMoves = mg.generateLegalMoves<GenAll>(p);
   fprintln("Legal      : {:3d} {:s}", legalMoves->size(), str(*legalMoves));
   fprintln("");
 
   p                = Position("8/8/8/3k4/4Pp2/8/8/3K4 b - e3");
   pseudoLegalMoves = mg.generatePseudoLegalMoves<GenAll>(p, false);
   fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), str(*pseudoLegalMoves));
-  evasionMoves     = mg.generatePseudoLegalMoves<GenAll>(p, true);
+  evasionMoves = mg.generatePseudoLegalMoves<GenAll>(p, true);
   fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), str(*evasionMoves));
-  legalMoves       = mg.generateLegalMoves<GenAll>(p);
+  legalMoves = mg.generateLegalMoves<GenAll>(p);
   fprintln("Legal      : {:3d} {:s}", legalMoves->size(), str(*legalMoves));
   fprintln("");
 
   p                = Position("8/8/8/3k2n1/8/8/6B1/3K4 b - -");
   pseudoLegalMoves = mg.generatePseudoLegalMoves<GenAll>(p, false);
   fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), str(*pseudoLegalMoves));
-  evasionMoves     = mg.generatePseudoLegalMoves<GenAll>(p, true);
+  evasionMoves = mg.generatePseudoLegalMoves<GenAll>(p, true);
   fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), str(*evasionMoves));
-  legalMoves       = mg.generateLegalMoves<GenAll>(p);
+  legalMoves = mg.generateLegalMoves<GenAll>(p);
   fprintln("Legal      : {:3d} {:s}", legalMoves->size(), str(*legalMoves));
   fprintln("");
 
   p                = Position("5k2/3N4/8/8/8/8/6p1/3K1R2 b - - 1 1");
   pseudoLegalMoves = mg.generatePseudoLegalMoves<GenAll>(p, false);
   fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), str(*pseudoLegalMoves));
-  evasionMoves     = mg.generatePseudoLegalMoves<GenAll>(p, true);
+  evasionMoves = mg.generatePseudoLegalMoves<GenAll>(p, true);
   fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), str(*evasionMoves));
-  legalMoves       = mg.generateLegalMoves<GenAll>(p);
+  legalMoves = mg.generateLegalMoves<GenAll>(p);
   fprintln("Legal      : {:3d} {:s}", legalMoves->size(), str(*legalMoves));
   fprintln("");
 }
@@ -693,8 +702,8 @@ TEST_F(MoveGenTest, DISABLED_PseudoMoveGen) {
   const int rounds     = 5;
   const int iterations = 10'000'000;
 
-  Position position = Position("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
-  const MoveList *moves = mg.generatePseudoLegalMoves<GenAll>(position);
+  Position position     = Position("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+  const MoveList* moves = mg.generatePseudoLegalMoves<GenAll>(position);
 
   for (int r = 1; r <= rounds; r++) {
     fprintln("Round {}", r);
@@ -716,7 +725,7 @@ TEST_F(MoveGenTest, DISABLED_PseudoMoveGen) {
     std::cout << os.str() << std::endl;
   }
 
-//  fprintln(str(*moves));
+  //  fprintln(str(*moves));
 }
 
 TEST_F(MoveGenTest, debug) {
@@ -726,5 +735,4 @@ TEST_F(MoveGenTest, debug) {
   fprintln("{}", mg.generateLegalMoves<GenAll>(p)->size());
   fprintln("{}", str(mg.generateLegalMoves<GenAll>(p)->at(0)));
   fprintln("{}", mg.hasLegalMove(p));
-
 }

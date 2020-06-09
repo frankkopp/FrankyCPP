@@ -152,7 +152,7 @@ TEST_F(PerftTest, kiwiPetePerft) {
   // @formatter:on
 
   const int startDepth = 1;
-  const int maxDepth = 5;
+  const int maxDepth = 4;
 
   for (int i = startDepth; i <= maxDepth; i++) {
     p.perft(i, true);

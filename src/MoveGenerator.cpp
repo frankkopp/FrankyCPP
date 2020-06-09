@@ -25,6 +25,7 @@
 
 #include <regex>
 
+#include "History.h"
 #include "MoveGenerator.h"
 #include "Position.h"
 #include "Values.h"
@@ -43,6 +44,7 @@ const MoveList* MoveGenerator::generatePseudoLegalMoves(const Position& p, bool 
 
   // when in check only generate moves either blocking or capturing the attacker
   if (evasion) {
+    assert(p.hasCheck() && "move generator called with evasion true but not in check");
     onDemandEvasionTargets = getEvasionTargets(p);
   }
 
@@ -211,12 +213,12 @@ bool MoveGenerator::hasLegalMove(const Position& position) {
 
   // PAWN
   // pawns - check step one to unoccupied squares
-   tmpMoves = shiftBb(pawnPush(us), ourPawns) & ~position.getOccupiedBb();
+  tmpMoves = shiftBb(pawnPush(us), ourPawns) & ~position.getOccupiedBb();
   // pawns double - check step two to unoccupied squares
   Bitboard tmpMovesDouble = shiftBb(pawnPush(us), tmpMoves & Bitboards::rankBb[pawnDoubleRank(us)]) & ~position.getOccupiedBb();
   // double pawn steps
   while (tmpMovesDouble) {
-    const Square toSquare = popLSB(tmpMovesDouble);
+    const Square toSquare   = popLSB(tmpMovesDouble);
     const Square fromSquare = toSquare + 2 * pawnPush(them);
     if (position.isLegalMove(createMove(fromSquare, toSquare))) return true;
   }
@@ -525,23 +527,20 @@ void MoveGenerator::updateSortValues(const Position& p, MoveList* const moveList
       // per 1000 count points.
       // It is also yet unclear if the history count table should be
       // reused for several consecutive searches or just for one search.
-      // TODO:
-      //       auto count = historyData.HistoryCount[us][move.From()][move.To()]
-      //       value : = Value(count / 100)
+      auto count  = historyData->historyCount[us][fromSquare(*move)][toSquare(*move)];
+      Value value = static_cast<Value>(count / 100);
 
       // Counter Move History
       // When we have a counter move which caused a beta cut off before we
       // bump up its sort value
-      // TODO:
-      //      if mg.historyData.CounterMoves[p.LastMove().From()][p.LastMove().To()] == move.MoveOf() {
-      //        value += 500;
-      //      }
+      if (historyData->counterMoves[fromSquare(p.getLastMove())][toSquare(p.getLastMove())] == moveOf(*move)) {
+        value = value + 500;
+      }
 
       // update move sort value
-      // TODO
-      //      if (value > 0) {// only touch the value if it would be improved
-      //        preValue = move.ValueOf()(*move).SetValue(preValue + value)
-      //      }
+      if (value > 0) {// only touch the value if it would be improved
+        setValueOf(*move, valueOf(*move) + value);
+      }
     }
   }
 }
@@ -551,14 +550,19 @@ Bitboard MoveGenerator::getEvasionTargets(const Position& p) const {
   const Square ourKing = p.getKingSquare(us);
   // find all target squares which either capture or block the attacker
   Bitboard evasionTargets = p.attacksTo(ourKing, ~us);
+  assert(evasionTargets != BbZero && "evasion target should not be empty");
   // we can only block attacks of sliders of there is not more
   // than one attacker
-  if (popcount(evasionTargets) == 1) {
+  const int popCount = popcount(evasionTargets);
+  if (popCount == 1) {
     Square atck = lsb(evasionTargets);
     // sliding pieces
     if (typeOf(p.getPiece(atck)) > KNIGHT) {
       evasionTargets |= Bitboards::intermediateBb[atck][ourKing];
     }
+  }
+  else if (popCount > 1) {
+    evasionTargets = BbZero;
   }
   return evasionTargets;
 }
@@ -781,9 +785,12 @@ void MoveGenerator::generateKingMoves(const Position& position, MoveList* const 
     Bitboard captures = pseudoMoves & position.getOccupiedBb(~nextPlayer);
     while (captures) {
       const Square toSquare = popLSB(captures);
-      // value is the positional value of the piece at this game phase minus the
-      // value of the captured piece
-      if (!evasion || !position.attacksTo(toSquare, ~nextPlayer)) {
+      if (!evasion) {
+        const Value value = valueOf(position.getPiece(toSquare)) - valueOf(position.getPiece(fromSquare)) + Values::posValue[piece][toSquare][gamePhase];
+        pMoves->push_back(createMove(fromSquare, toSquare, NORMAL, value));
+      }
+      // when evasion only move to non attacked squares - will not check for x-ray attacks
+      else if (!position.attacksTo(toSquare, ~nextPlayer)) {
         const Value value = valueOf(position.getPiece(toSquare)) - valueOf(position.getPiece(fromSquare)) + Values::posValue[piece][toSquare][gamePhase];
         pMoves->push_back(createMove(fromSquare, toSquare, NORMAL, value));
       }
@@ -795,8 +802,12 @@ void MoveGenerator::generateKingMoves(const Position& position, MoveList* const 
     Bitboard nonCaptures = pseudoMoves & ~position.getOccupiedBb();
     while (nonCaptures) {
       const Square toSquare = popLSB(nonCaptures);
-      // value is the positional value of the piece at this game phase
-      if (!evasion || !position.attacksTo(toSquare, ~nextPlayer)) {
+      if (!evasion) {
+        const Value value = static_cast<Value>(-10000) + Values::posValue[piece][toSquare][gamePhase];
+        pMoves->push_back(createMove(fromSquare, toSquare, NORMAL, value));
+      }
+      // when evasion only move to non attacked squares - will not check for x-ray attacks
+      else if (!position.attacksTo(toSquare, ~nextPlayer)) {
         const Value value = static_cast<Value>(-10000) + Values::posValue[piece][toSquare][gamePhase];
         pMoves->push_back(createMove(fromSquare, toSquare, NORMAL, value));
       }
