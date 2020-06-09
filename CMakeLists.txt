@@ -37,7 +37,7 @@ if (CMAKE_CXX_COMPILER_ID EQUAL "Clang")
 
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
     message("Compiler Settings: AppleClang")
-    set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra")
+    set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra -mpopcnt -mbmi2")
     set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fprofile-instr-generate -fcoverage-mapping -Wpedantic -Wshadow -Wno-conversion -Wunreachable-code -Wuninitialized  -Wold-style-cast -Wunused-variable -Wfloat-equal -Wno-gnu-zero-variadic-macro-arguments")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "11")

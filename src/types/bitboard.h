@@ -26,12 +26,21 @@
 #ifndef FRANKYCPP_BITBOARD_H
 #define FRANKYCPP_BITBOARD_H
 
+#include "castlingrights.h"
 #include "direction.h"
 #include "orientation.h"
 #include "piecetype.h"
 #include "square.h"
-#include "castlingrights.h"
 #include <cstdint>
+
+#if defined(_MSC_VER)
+#include <intrin.h>
+#include <iostream>
+#endif
+
+// PEXT BMI2 - add -mpopcnt -mbmi2 to compiler options
+#include <immintrin.h>
+constexpr bool HasPext = false;
 
 // 64 bit Bitboard type for storing boards as bits
 typedef uint64_t Bitboard;
@@ -317,6 +326,10 @@ struct Magic {
 
   // Compute the attack's index using the 'magic bitboards' approach
   unsigned index(Bitboard occupied) const {
+
+    if (HasPext)
+      return unsigned(_pext_u64(occupied, mask));
+
     return unsigned(((occupied & mask) * magic) >> shift);
   }
 };

@@ -319,9 +319,16 @@ void init_magics(Bitboard table[], Magic magics[], Direction directions[]) {
     do {
       occupancy[size] = b;
       reference[size] = sliding_attack(directions, s, b);
+
+      if (HasPext)
+        m.attacks[_pext_u64(b, m.mask)] = reference[size];
+
       size++;
       b = (b - m.mask) & m.mask;
     } while (b);
+
+    if (HasPext)
+      continue;
 
     PRNG rng(seeds[rankOf(s)]);
 
