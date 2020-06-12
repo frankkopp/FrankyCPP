@@ -927,6 +927,7 @@ void Position::initializeBoard() {
   gamePhase    = 0;
 }
 
+// TODO make robost with error handling
 void Position::setupBoard(const char* fen) {
   // also sets defaults if fen is short
   initializeBoard();

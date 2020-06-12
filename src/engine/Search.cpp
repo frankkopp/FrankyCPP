@@ -24,3 +24,7 @@
  */
 
 #include "Search.h"
+
+void Search::setUciHandler(UCIHandler* pHandler) {
+  
+}
