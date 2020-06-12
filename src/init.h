@@ -26,14 +26,17 @@
 #ifndef FRANKYCPP_INIT_H
 #define FRANKYCPP_INIT_H
 
-#include "types/init.h"
 #include "Values.h"
+#include "types/init.h"
+
 
 namespace init {
+  // initializes all data structures and pre computed data
+  // for the application
   inline void init() {
     types::init();
     Values::init();
   }
-}
+}// namespace init
 
 #endif//FRANKYCPP_INIT_H

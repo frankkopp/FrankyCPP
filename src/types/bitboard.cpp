@@ -253,12 +253,6 @@ void Bitboards::castleMasksPreCompute() {
   kingSideCastleMask[BLACK] = sqBb[SQ_F8] | sqBb[SQ_G8] | sqBb[SQ_H8];
   queenSideCastleMask[WHITE] = sqBb[SQ_D1] | sqBb[SQ_C1] | sqBb[SQ_B1] | sqBb[SQ_A1];
   queenSideCastleMask[BLACK] = sqBb[SQ_D8] | sqBb[SQ_C8] | sqBb[SQ_B8] | sqBb[SQ_A8];
-  castlingRights[SQ_E1] = WHITE_CASTLING;
-  castlingRights[SQ_A1] = WHITE_OOO;
-  castlingRights[SQ_H1] = WHITE_OO;
-  castlingRights[SQ_E8] = BLACK_CASTLING;
-  castlingRights[SQ_A8] = BLACK_OOO;
-  castlingRights[SQ_H8] = BLACK_OO;
 }
 
 void Bitboards::colorBitboardsPreCompute() {

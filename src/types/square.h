@@ -74,7 +74,7 @@ constexpr File fileOf (Square s) { return File (s & 7); }
 // returns the rank of this square
 constexpr Rank rankOf (Square s) { return Rank (s >> 3); }
 
-// creates a square from a string
+// creates a square from a string (uci style square e.g. e2, h7)
 inline Square makeSquare(std::string s) {
   const File f = makeFile(s[0]);
   const Rank r = makeRank(s[1]);
@@ -85,7 +85,10 @@ inline Square makeSquare(std::string s) {
 }
 
 // returns the precomputed distance between two squares
-inline int distance(Square s1, Square s2) { return Squares::squareDistance[s1][s2]; }
+constexpr int distance(Square s1, Square s2) { return Squares::squareDistance[s1][s2]; }
+
+// pawnPush returns the square of a pawn move of the given color
+constexpr Square pawnPush(Square s, Color c) { return static_cast<Square>(s + (c == WHITE ? 8 : -8)); }
 
 // returns a string representing the square (e.g. a1 or h8)
 inline std::string str(Square sq) {

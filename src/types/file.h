@@ -55,7 +55,7 @@ enum File : int {
 
 // checks if file is a value of 0-7
 constexpr bool validFile(File f) {
-  return !(f < 0 || f >= 8);
+  return f >= 0 && f < 8;
 }
 
 // creates a file from a char
@@ -64,7 +64,10 @@ constexpr File makeFile(char fileLabel) {
   return validFile(f) ? f : FILE_NONE;
 }
 
-inline int distance(File f1, File f2) { return abs(f2 - f1); }
+// returns the distance between two files in king moves
+inline int distance(File f1, File f2) {
+  return abs(f2 - f1);
+}
 
 // returns a char representing the square (e.g. a1 or h8)
 constexpr char str(File f) {

@@ -32,7 +32,7 @@
 
 // forward declaration
 class Position;
-class History;
+struct History;
 
 // GenMode generation modes for on demand move generation.
 //  GenZero     = 0b00

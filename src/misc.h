@@ -28,12 +28,14 @@
 
 #include <string>
 
+// transforms the given string to lower case
 inline std::string toLowerCase(std::string str) {
   std::transform(str.begin(), str.end(), str.begin(), [](
     unsigned char c) { return std::tolower(c); });
   return str;
 }
 
+// transforms the given string to upper case
 inline std::string toUpperCase(std::string str) {
   std::transform(str.begin(), str.end(), str.begin(), [](
     unsigned char c) { return std::toupper(c); });

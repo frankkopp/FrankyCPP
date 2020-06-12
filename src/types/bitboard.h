@@ -38,7 +38,7 @@
 #include <iostream>
 #endif
 
-// PEXT BMI2 - add -mpopcnt -mbmi2 to compiler options
+// PEXT BMI2 - add -mbmi2 to compiler options
 #include <immintrin.h>
 constexpr bool HasPext = false;
 
@@ -131,8 +131,6 @@ namespace Bitboards {
   inline Bitboard kingSideCastleMask[COLOR_LENGTH];
   inline Bitboard queenSideCastleMask[COLOR_LENGTH];
   inline Bitboard colorBb[COLOR_LENGTH];
-  inline CastlingRights castlingRights[SQ_LENGTH];
-
 }// namespace Bitboards
 
 // //////////////////////////////////////////////////////////////////
@@ -192,10 +190,8 @@ inline int popcount(Bitboard b) {
 #endif
 }
 
-/**
- * Used when no build in popcount is available for compiler.
- * @return popcount16() counts the non-zero bits using SWAR-Popcount algorithm
- */
+// Used when no build-in popcount is available for compiler.
+// @return popcount16() counts the non-zero bits using SWAR-Popcount algorithm
 inline unsigned popcount16(unsigned u) {
   u -= (u >> 1U) & 0x5555U;
   u = ((u >> 2U) & 0x3333U) + (u & 0x3333U);
@@ -203,8 +199,8 @@ inline unsigned popcount16(unsigned u) {
   return (u * 0x0101U) >> 8U;
 }
 
-/** lsb() and msb() return the least/most significant bit in a non-zero
- * bitboard */
+// lsb() and msb() return the least/most significant bit in a non-zero
+// bitboard
 inline Square lsb(Bitboard b) {
   if (!b) return SQ_NONE;
 #ifdef __GNUC__ // GCC, Clang, ICC
@@ -222,8 +218,8 @@ inline Square lsb(Bitboard b) {
 #endif
 }
 
-/** lsb() and msb() return the least/most significant bit in a non-zero
- * bitboard */
+// lsb() and msb() return the least/most significant bit in a non-zero
+// bitboard
 inline Square msb(Bitboard b) {
   if (!b) return SQ_NONE;
 #if defined(__GNUC__) // GCC, Clang, ICC
@@ -241,8 +237,8 @@ inline Square msb(Bitboard b) {
 #endif
 }
 
-/** pop_lsb() finds and clears the least significant bit in a non-zero
- * bitboard */
+// pop_lsb() finds and clears the least significant bit in a non-zero
+// bitboard
 inline Square popLSB(Bitboard &b) {
   if (!b) return SQ_NONE;
   const Square s = lsb(b);
@@ -364,8 +360,8 @@ class PRNG {
 public:
   PRNG(uint64_t seed) : s(seed) { assert(seed); }
   template<typename T> T rand() { return T(rand64()); }
-  /// Special generator used to fast init magic numbers.
-  /// Output values only have 1/8th of their bits set on average.
+  // Special generator used to fast init magic numbers.
+  // Output values only have 1/8th of their bits set on average.
   template<typename T> T sparse_rand() { return T(rand64() & rand64() & rand64()); }
 };
 

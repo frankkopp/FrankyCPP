@@ -117,6 +117,7 @@ TEST_F(PositionTest, Setup) {
   Position position;
   EXPECT_EQ(WHITE, position.getNextPlayer());
   EXPECT_EQ(BLACK, ~position.getNextPlayer());
+  EXPECT_EQ(1, position.getMoveNumber());
   EXPECT_EQ(position.getMaterial(WHITE), position.getMaterial(BLACK));
   EXPECT_EQ(24, position.getGamePhase());
   EXPECT_FLOAT_EQ(1.0, position.getGamePhaseFactor());
@@ -134,6 +135,7 @@ TEST_F(PositionTest, Setup) {
   EXPECT_EQ(BLACK, ~position2.getNextPlayer());
   EXPECT_EQ(position2.getMaterial(WHITE), position2.getMaterial(BLACK));
   EXPECT_EQ(24, position2.getGamePhase());
+  EXPECT_EQ(1, position.getMoveNumber());
   EXPECT_FLOAT_EQ(1.0, position2.getGamePhaseFactor());
   EXPECT_EQ(position2.getMidPosValue(WHITE), position2.getMidPosValue(BLACK));
   EXPECT_EQ(-225, position2.getMidPosValue(WHITE));
@@ -149,6 +151,7 @@ TEST_F(PositionTest, Setup) {
   EXPECT_EQ(BLACK, ~position3.getNextPlayer());
   EXPECT_EQ(position3.getMaterial(WHITE), position3.getMaterial(BLACK));
   EXPECT_EQ(24, position3.getGamePhase());
+  EXPECT_EQ(1, position.getMoveNumber());
   EXPECT_FLOAT_EQ(1.0, position3.getGamePhaseFactor());
   EXPECT_EQ(position3.getMidPosValue(WHITE), position3.getMidPosValue(BLACK));
   EXPECT_EQ(-225, position3.getMidPosValue(WHITE));
@@ -165,6 +168,7 @@ TEST_F(PositionTest, Setup) {
   EXPECT_EQ(BLACK, ~position4.getNextPlayer());
   EXPECT_EQ(position4.getMaterial(WHITE), position4.getMaterial(BLACK));
   EXPECT_EQ(24, position4.getGamePhase());
+  EXPECT_EQ(1, position.getMoveNumber());
   EXPECT_FLOAT_EQ(1.0, position4.getGamePhaseFactor());
   EXPECT_EQ(position4.getMidPosValue(WHITE), position4.getMidPosValue(BLACK));
   EXPECT_EQ(-225, position4.getMidPosValue(WHITE));
@@ -183,6 +187,7 @@ TEST_F(PositionTest, Setup) {
   EXPECT_EQ(3400, position.getMaterial(WHITE));
   EXPECT_EQ(6940, position.getMaterial(BLACK));
   EXPECT_EQ(22, position.getGamePhase());
+  EXPECT_EQ(113, position.getMoveNumber());
   EXPECT_FLOAT_EQ((22.0 / 24), position.getGamePhaseFactor());
   EXPECT_EQ(90, position.getMidPosValue(WHITE));
   EXPECT_EQ(7, position.getMidPosValue(BLACK));

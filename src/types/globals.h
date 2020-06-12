@@ -37,7 +37,7 @@
 // standard chess starting position
 constexpr const char* START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-// game phase is a gelper value to determine in which phase a game is.
+// game phase is a helper value to determine in which phase a game is.
 // A value of 24 indicates that all officers are still on the board.
 // A value of 0 indicates that no officers are on the boardany longer.
 constexpr const int GAME_PHASE_MAX = 24;

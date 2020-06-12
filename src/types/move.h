@@ -66,7 +66,7 @@ enum MoveType {
 
 // checks if move type is a value of 0 - 3
 constexpr bool validMoveType(MoveType mt) {
-  return !(mt < 0);// || mt >= 4);
+  return mt >= NORMAL && mt <= CASTLING;
 }
 
 // single char label for the piece type (one of " KPNBRQ")
@@ -185,7 +185,7 @@ constexpr bool validMove(Move m) {
          (valueOf(m) == VALUE_NONE || validValue(valueOf(m)));
 }
 
-/** returns a short representation of the move as string (UCI protocol) */
+// returns a short representation of the move as string (UCI protocol)
 inline std::string str(Move move) {
   if (moveOf(move) == MOVE_NONE) return "no move";
   std::string promotion = "";
@@ -193,7 +193,7 @@ inline std::string str(Move move) {
   return str(fromSquare(move)) + str(toSquare(move)) + promotion;
 }
 
-/** returns a verbose representation of the move as string */
+// returns a verbose representation of the move as string
 inline std::string strVerbose(Move move) {
   if (!move) return "no move " + std::to_string(move);
   std::string tp;

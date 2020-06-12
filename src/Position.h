@@ -28,9 +28,9 @@
 
 #include <array>
 #include <cstdint>
-#include "gtest/gtest_prod.h"
 
 #include "types/types.h"
+#include "gtest/gtest_prod.h"
 
 namespace Zobrist {
   // zobrist key for pieces - piece, board
@@ -47,6 +47,9 @@ enum Flag {
   FLAG_TRUE
 };
 
+// HistoryState encapsulates a position state to  enable undo move. It
+// acts as a stack by adding a position state after doMove and removing
+// a state after undoMove.
 struct HistoryState {
   Key zobristKey                = 0;
   Key pawnKey                   = 0;
@@ -66,6 +69,7 @@ struct HistoryState {
 // Can be created with any FEN notation and as a copy from another Position.
 class Position {
 
+  // flag to indicate whether the class has been initialized
   static bool initialized;
 
   // The zobrist key to use as a hash key in transposition tables
@@ -87,6 +91,7 @@ class Position {
   Square enPassantSquare = SQ_NONE;
   int halfMoveClock      = 0;
   Color nextPlayer       = WHITE;
+  int moveNumber         = 1;
 
   // Board State END ------------------------------------------
   // **********************************************************
@@ -98,14 +103,10 @@ class Position {
   // special for king squares
   Square kingSquare[COLOR_LENGTH]{};
 
-  // half move number - the actual half move number to determine the full move
-  // number
-  int nextHalfMoveNumber = 1;
-
   // piece bitboards
   Bitboard piecesBb[COLOR_LENGTH][PT_LENGTH]{};
 
-  // occupied bitboards with rotations
+  // occupied bitboard
   Bitboard occupiedBb[COLOR_LENGTH]{};
 
   // Extended Board State END ---------------------------------
@@ -113,8 +114,8 @@ class Position {
 
   // history information for undo and repetition detection
   constexpr static std::size_t MAX_HISTORY = MAX_MOVES;
-  int historyCounter                       = 0;
   std::array<HistoryState, MAX_HISTORY> historyState{};
+  int historyCounter                       = 0;
 
   // Calculated by doMove/undoMove
 
@@ -327,7 +328,7 @@ public:
   }
   inline CastlingRights getCastlingRights() const { return castlingRights; }
   inline int getHalfMoveClock() const { return halfMoveClock; }
-  inline int getNextHalfMoveNumber() const { return nextHalfMoveNumber; }
+  inline int getMoveNumber() const { return moveNumber; }
   // 24 for beginning, 0 at the end
   inline int getGamePhase() const { return std::min(GAME_PHASE_MAX, gamePhase); }
   // 1.0 for beginning to 0.0 t the end)

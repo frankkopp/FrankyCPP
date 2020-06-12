@@ -74,7 +74,10 @@ constexpr Rank pawnDoubleRank(Color c) {
   return c == WHITE ? RANK_3 : RANK_6;
 }
 
-inline int distance(Rank r1, Rank r2) { return abs(r2 - r1); }
+// returns the distance between two ranks in king moves
+inline int distance(Rank r1, Rank r2) {
+  return abs(r2 - r1);
+}
 
 // returns a char representing the rank (e.g. 1 or 8)
 constexpr char str(Rank r) {

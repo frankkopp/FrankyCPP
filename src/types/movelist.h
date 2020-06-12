@@ -33,6 +33,16 @@
 /// A collection of moves using a std::vector
 typedef std::vector<Move> MoveList;
 
+// returns a uci compatible string representation of the move list
+inline std::string str(const MoveList& moveList) {
+  std::ostringstream os;
+  for (Move m : moveList) {
+    os << m;
+    if (m != moveList.back()) os << " ";
+  }
+  return os.str();
+}
+
 inline std::string strVerbose(const MoveList& moveList) {
   std::ostringstream os;
   os << "MoveList: size=" << moveList.size() << " [";
@@ -41,15 +51,6 @@ inline std::string strVerbose(const MoveList& moveList) {
     if (itr != moveList.end() - 1) os << ", ";
   }
   os << "]";
-  return os.str();
-}
-
-inline std::string str(const MoveList& moveList) {
-  std::ostringstream os;
-  for (Move m : moveList) {
-    os << m;
-    if (m != moveList.back()) os << " ";
-  }
   return os.str();
 }
 
