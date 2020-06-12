@@ -2,13 +2,20 @@ message("====================================================================")
 message("FrankyCPP src/")
 message("====================================================================")
 
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.13)
 set(CMAKE_CXX_STANDARD 17)
 
 # define library files
 set(FrankyCPPlib_SRCS
-        types/types.h types/types.cpp
-        )
+        init.h
+        types/types.h
+        types/bitboard.cpp
+        misc.cpp misc.h
+        chesscore/Values.cpp chesscore/Values.h
+        chesscore/Position.cpp chesscore/Position.h
+        chesscore/MoveGenerator.cpp chesscore/MoveGenerator.h
+        chesscore/Perft.cpp chesscore/Perft.h
+        chesscore/History.cpp chesscore/History.h)
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})
 target_link_libraries(
         FrankyCPPlib

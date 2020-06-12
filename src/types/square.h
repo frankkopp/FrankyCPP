@@ -23,17 +23,26 @@
  *
  */
 
-#ifndef FRANKYCPP_NEWGEN_SQUARE_H
-#define FRANKYCPP_NEWGEN_SQUARE_H
+#ifndef FRANKYCPP_SQUARE_H
+#define FRANKYCPP_SQUARE_H
 
 #include <ostream>
 
+#include "macros.h"
 #include "color.h"
 #include "file.h"
 #include "rank.h"
 
-// @formatter:off
-enum Square : int {
+// Square represent exactly on square on a chess board.
+//  SqA1   // 0
+//  SqB1   // 1
+//  SqC1
+//  SqD1
+//  ...
+//  SqG8
+//  SqH8   // 63
+//  SqNone // 64
+enum Square : int { // @formatter:off
   SQ_A1, SQ_B1, SQ_C1, SQ_D1, SQ_E1, SQ_F1, SQ_G1, SQ_H1,
   SQ_A2, SQ_B2, SQ_C2, SQ_D2, SQ_E2, SQ_F2, SQ_G2, SQ_H2,
   SQ_A3, SQ_B3, SQ_C3, SQ_D3, SQ_E3, SQ_F3, SQ_G3, SQ_H3,
@@ -47,10 +56,16 @@ enum Square : int {
 };
 // @formatter:on
 
-/** checks if this is a valid square (int >= 0 and <64 */
+// precomputed arrays
+namespace Squares {
+  inline int squareDistance[SQ_NONE][SQ_NONE];
+  inline int centerDistance[SQ_LENGTH];
+}
+
+// checks if this is a valid square (int >= 0 and <64)
 constexpr bool validSquare(Square s) { return !(s & ~0b11'1111); }
 
-/** returns the square of the intersection of file and rank */
+// returns the square of the intersection of file and rank
 constexpr Square squareOf (File f, Rank r) { return Square ((r << 3) + f); }
 
 // returns the file of this square
@@ -59,7 +74,7 @@ constexpr File fileOf (Square s) { return File (s & 7); }
 // returns the rank of this square
 constexpr Rank rankOf (Square s) { return Rank (s >> 3); }
 
-// creates a square from a string
+// creates a square from a string (uci style square e.g. e2, h7)
 inline Square makeSquare(std::string s) {
   const File f = makeFile(s[0]);
   const Rank r = makeRank(s[1]);
@@ -69,14 +84,57 @@ inline Square makeSquare(std::string s) {
   return SQ_NONE;
 }
 
+// returns the precomputed distance between two squares
+constexpr int distance(Square s1, Square s2) { return Squares::squareDistance[s1][s2]; }
+
+// pawnPush returns the square of a pawn move of the given color
+constexpr Square pawnPush(Square s, Color c) { return static_cast<Square>(s + (c == WHITE ? 8 : -8)); }
+
 // returns a string representing the square (e.g. a1 or h8)
-inline std::string squareLabel (Square sq) {
-  return validSquare(sq) ? std::string{ fileLabel(fileOf(sq)), rankLabel(rankOf(sq)) } : "--";
+inline std::string str(Square sq) {
+  return validSquare(sq) ? std::string{str(fileOf(sq)), str(rankOf(sq)) } : "--";
 }
 
 inline std::ostream& operator<< (std::ostream& os, const Square sq) {
-  os << squareLabel(sq);
+  os << str(sq);
   return os;
 }
 
-#endif//FRANKYCPP_NEWGEN_SQUARE_H
+ENABLE_INCR_OPERATORS_ON (Square)
+
+// precomputed by types::init()
+namespace Squares {
+
+  inline void squareDistancePreCompute() {
+    // distance between squares
+    for (Square sq1 = SQ_A1; sq1 <= SQ_H8; ++sq1) {
+      for (Square sq2 = SQ_A1; sq2 <= SQ_H8; ++sq2) {
+        if (sq1 != sq2) {
+          squareDistance[sq1][sq2] =
+            static_cast<int8_t>(std::max(distance(fileOf(sq1), fileOf(sq2)),
+                                         distance(rankOf(sq1), rankOf(sq2))));
+        }
+      }
+    }
+  }
+
+  inline void centerDistancePreCompute() {
+    for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
+      // left upper quadrant
+      if (fileOf(sq) <= FILE_D && rankOf(sq) >= RANK_5) {
+        centerDistance[sq] = squareDistance[sq][SQ_D5];
+        // right upper quadrant
+      } else if (fileOf(sq) >= FILE_E && rankOf(sq) >= RANK_5) {
+        centerDistance[sq] = squareDistance[sq][SQ_E5];
+        // left lower quadrant
+      } else if (fileOf(sq) <= FILE_D && rankOf(sq) <= RANK_4) {
+        centerDistance[sq] = squareDistance[sq][SQ_D4];
+        // right lower quadrant
+      } else if (fileOf(sq) >= FILE_E && rankOf(sq) <= RANK_4) {
+        centerDistance[sq] = squareDistance[sq][SQ_E4];
+      }
+    }
+  }
+}
+
+#endif//FRANKYCPP_SQUARE_H
