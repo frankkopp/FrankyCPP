@@ -23,19 +23,37 @@
  *
  */
 
-#ifndef FRANKYCPP_SEARCH_H
-#define FRANKYCPP_SEARCH_H
+#ifndef FRANKYCPP_SEARCHLIMITS_H
+#define FRANKYCPP_SEARCHLIMITS_H
 
+#include <cstdint>
+#include <types/types.h>
 
-// forward declaration
-class UCIHandler;
+// Limits is data structure to hold all information about how
+// a search of the chess games shall be controlled.
+// Search needs to read these an determine the necessary limits.
+// E.g. time controlled game or not
+struct SearchLimits {
+  // no time control
+  bool infinite = false;
+  bool ponder   = false;
+  int mate      = 0;
 
-class Search {
+  // extra limits
+  int depth      = 0;
+  uint64_t nodes = 0;
+  MoveList moves{};
 
-public:
-  void setUciHandler(UCIHandler* pHandler);
+  //  time control;
+  bool timeControl   = false;
+  MilliSec whiteTime = 0;
+  MilliSec blackTime = 0;
+  MilliSec whiteInc  = 0;
+  MilliSec blackInc  = 0;
+  MilliSec moveTime  = 0;
 
+  // parameter
+  int movesToGo = 0;
 };
 
-
-#endif//FRANKYCPP_SEARCH_H
+#endif//FRANKYCPP_SEARCHLIMITS_H

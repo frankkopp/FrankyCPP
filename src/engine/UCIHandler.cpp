@@ -23,12 +23,18 @@
  *
  */
 
-#include "version.h"
-#include "Logging.h"
-#include "chesscore/Position.h"
+#include <memory>
+
 #include "chesscore/MoveGenerator.h"
 #include "chesscore/Perft.h"
+#include "chesscore/Position.h"
+#include "types/types.h"
+
+#include "Logging.h"
 #include "Search.h"
+#include "SearchLimits.h"
+#include "version.h"
+
 #include "UCIHandler.h"
 
 UCIHandler::UCIHandler() {
@@ -50,65 +56,71 @@ void UCIHandler::loop() {
 }
 
 void UCIHandler::loop(std::istream* pIstream) {
-  std::string cmd, token;
+  std::string cmd;
+  LOG__DEBUG(Logger::get().UCIHAND_LOG, "UCI Handler waiting for command:");
   do {
-    LOG__DEBUG(Logger::get().UCIHAND_LOG, "UCI Handler waiting for command:");
-
     // Block here waiting for input or EOF
     // only blocks on cin!!
     if (!getline(*pIstream, cmd)) cmd = "quit";
 
-    //  create the stream object
-    std::istringstream inStream(cmd);
+    // if handleCommand returns true it has received a quit.
+    if (handleCommand(cmd)) return;
 
-    LOG__INFO(Logger::get().UCI_LOG, "<< {}", inStream.str());
-    LOG__DEBUG(Logger::get().UCIHAND_LOG, "UCI Handler received command: {}", inStream.str());
+    LOG__DEBUG(Logger::get().UCIHAND_LOG, "UCI Handler waiting for command:");
+  } while (1);
+}
 
-    // clear possible previous entries
-    token.clear();
+// handles a new command and returns true if received "quit"
+bool UCIHandler::handleCommand(const std::string& cmd) {
+  //  create the stream object
+  std::istringstream inStream(cmd);
+  LOG__INFO(Logger::get().UCI_LOG, "<< {}", inStream.str());
+  LOG__DEBUG(Logger::get().UCIHAND_LOG, "UCI Handler received command: {}", inStream.str());
 
-    // read word from stream delimiter is whitespace
-    // to get line use inStream.str()
-    inStream >> std::skipws >> token;
+  // read word from stream delimiter is whitespace
+  // to get line use inStream.str()
+  std::string token;
+  inStream >> std::skipws >> token;
 
-    if (token == "quit") { break; }
-    else if (token == "uci") { uciCommand(); }
-    else if (token == "isready") { isReadyCommand(); }
-    else if (token == "setoption") { setOptionCommand(inStream); }
-    else if (token == "ucinewgame") { uciNewGameCommand(); }
-    else if (token == "position") { positionCommand(inStream); }
-    else if (token == "go") { goCommand(inStream); }
-    else if (token == "stop") { stopCommand(); }
-    else if (token == "ponderhit") { ponderHitCommand(); }
-    else if (token == "register") { registerCommand(); }
-    else if (token == "debug") { debugCommand(); }
-    else if (token == "noop") { /* noop */}
-    else
-      LOG__WARN(Logger::get().UCIHAND_LOG, "Unknown UCI command: {}", token);
+  // @formatter:off
+  if (token == "quit") { return true; }
+  else if (token == "uci") { uciCommand(); }
+  else if (token == "isready") { isReadyCommand(); }
+  else if (token == "setoption") { setOptionCommand(inStream); }
+  else if (token == "ucinewgame") { uciNewGameCommand(); }
+  else if (token == "position") { positionCommand(inStream); }
+  else if (token == "go") { goCommand(inStream); }
+  else if (token == "stop") { stopCommand(); }
+  else if (token == "ponderhit") { ponderHitCommand(); }
+  else if (token == "register") { registerCommand(); }
+  else if (token == "debug") { debugCommand(); }
+  else if (token == "perft") { perftCommand(inStream); }
+  else if (token == "noop") { /* noop */}
+  else uciError(fmt::format("Unknown UCI command: {}", token));
+  // @formatter:on
 
-    LOG__DEBUG(Logger::get().UCIHAND_LOG, "UCI Handler processed command: {}", token);
-
-  } while (token != "quit");
+  LOG__DEBUG(Logger::get().UCIHAND_LOG, "UCI Handler processed command: {}", token);
+  return false;
 }
 
 void UCIHandler::uciCommand() const {
-  send("id name FrankyCPP v" + std::to_string(FrankyCPP_VERSION_MAJOR) + "." +
-       std::to_string(FrankyCPP_VERSION_MINOR));
+  send("id name FrankyCPP v" + std::to_string(FrankyCPP_VERSION_MAJOR) + "." + std::to_string(FrankyCPP_VERSION_MINOR));
   send("id author Frank Kopp, Germany");
   // TODO UCIOption
-  //  send(pEngine->str());
+  uciError("Not yet implemented: UCI command: uci");
   send("uciok");
 }
 
 void UCIHandler::isReadyCommand() const {
   // TODO initialize tt and book
+  uciError("Not yet implemented: UCI command: isready");
   send("readyok");
 }
 
-void UCIHandler::setOptionCommand(std::istringstream &inStream) const {
+void UCIHandler::setOptionCommand(std::istringstream& inStream) const {
   std::string token, name, value;
   if (inStream >> token && token != "name") {
-    LOG__WARN(Logger::get().UCIHAND_LOG, "Command setoption is malformed - expected 'name': {}", token);
+    uciError(fmt::format("Command setoption is malformed - expected 'name': {}", token));
     return;
   }
   // read name which could contain spaces
@@ -124,209 +136,252 @@ void UCIHandler::setOptionCommand(std::istringstream &inStream) const {
     value += token;
   }
   // TODO set option
+  uciError("Not yet implemented: UCI command: setoption");
 }
 
 void UCIHandler::uciNewGameCommand() const {
- // TODO new game
+  // TODO new game
+  uciError("Not yet implemented: UCI command: ucinewgame");
 }
 
-
-void UCIHandler::positionCommand(std::istringstream &inStream) {
+void UCIHandler::positionCommand(std::istringstream& inStream) {
 
   // retrieve additional command parameter
   std::string token, fen;
   inStream >> token;
 
-  // default
+  // setup poistion whith startpos or fen
   fen = START_POSITION_FEN;
-  if (token == "startpos") { // just keep default
+  if (token == "startpos") {// just keep default
     inStream >> token;
   }
   else if (token == "fen") {
-    fen.clear(); // reset to empty
+    fen.clear();// reset to empty
     while (inStream >> token && token != "moves") {
       fen += token + " ";
     }
   }
 
+  // TODO error handling when fen is invalid
   LOG__INFO(Logger::get().UCIHAND_LOG, "Set position to {}", fen);
   position = std::make_shared<Position>(fen);
 
+  // if "moves" are given, read all and execute them to position
   if (token == "moves") {
     std::vector<std::string> moves;
-    // read all moves from uci
     while (inStream >> token) {
       moves.push_back(token);
     }
     // create moves and execute moves on position
-    for (const std::string &move : moves) {
+    for (const std::string& move : moves) {
       Move moveFromUci = mg->getMoveFromUci(*position, move);
       if (moveFromUci == MOVE_NONE) {
-        const std::string& msg = fmt::format("Invalid move {}", move);
-        LOG__ERROR(Logger::get().UCIHAND_LOG, msg);
-        sendString(msg);
+        uciError(fmt::format("Invalid move {}", move));
         return;
       }
-      LOG__INFO(Logger::get().UCIHAND_LOG, "Do move {}", move);
+      LOG__DEBUG(Logger::get().UCIHAND_LOG, "Do move {}", move);
       position->doMove(moveFromUci);
     }
   }
 }
 
-
-void UCIHandler::goCommand(std::istringstream &inStream) {
+void UCIHandler::goCommand(std::istringstream& inStream) {
   std::string token, startFen;
-
-  // resetting search mode
-  UCISearchMode searchMode = UCISearchMode();
+  SearchLimits searchLimits{};
 
   while (inStream >> token) {
     if (token == "searchmoves") {
       MoveList searchMoves;
       while (inStream >> token) {
-        Move move = createMove(token.c_str());
-        if (isMove(move)) { searchMoves.push_back(move); }
-        else { break; }
+        Move move = mg->getMoveFromUci(*position, token);
+        if (move != MOVE_NONE) {
+          searchMoves.push_back(move);
+        }
+        else {
+          break;
+        }
       }
-      if (!searchMoves.empty()) searchMode.moves = searchMoves;
+      if (!searchMoves.empty()) {
+        searchLimits.moves = searchMoves;
+      }
     }
     if (token == "ponder") {
-      searchMode.ponder = true;
+      searchLimits.ponder = true;
     }
     if (token == "wtime") {
       inStream >> token;
       try {
-        searchMode.whiteTime = stoi(token);
-      } catch (...) {
-        LOG__ERROR(Logger::get().UCIHAND_LOG, "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
+        searchLimits.whiteTime = stoi(token);
+      } catch (...) { /* ignored */
       }
-      if (searchMode.whiteTime <= 0) {
-        LOG__WARN(Logger::get().UCIHAND_LOG, "Invalid wtime. Was '{}'", token);
+      if (searchLimits.whiteTime <= 0) {
+        uciError(fmt::format("Invalid wtime: {}", token));
         return;
       }
     }
     if (token == "btime") {
       inStream >> token;
       try {
-        searchMode.blackTime = stoi(token);
-      } catch (...) {
-        LOG__ERROR(Logger::get().UCIHAND_LOG, "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
+        searchLimits.blackTime = stoi(token);
+      } catch (...) { /* ignored */
       }
-      if (searchMode.blackTime <= 0) {
-        LOG__WARN(Logger::get().UCIHAND_LOG, "Invalid btime. Was '{}'", token);
+      if (searchLimits.blackTime <= 0) {
+        uciError(fmt::format("Invalid btime: {}", token));
         return;
       }
     }
     if (token == "winc") {
       inStream >> token;
       try {
-        searchMode.whiteInc = std::stoi(token);
-      } catch (...) {
-        LOG__ERROR(Logger::get().UCIHAND_LOG, "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
+        searchLimits.whiteInc = std::stoi(token);
+      } catch (...) { /* ignored */
       }
-      if (searchMode.whiteInc < 0) {
-        LOG__WARN(Logger::get().UCIHAND_LOG, "Invalid winc. Was '{}'", token);
+      if (searchLimits.whiteInc < 0) {
+        uciError(fmt::format("Invalid winc: {}", token));
         return;
       }
     }
     if (token == "binc") {
       inStream >> token;
       try {
-        searchMode.blackInc = std::stoi(token);
-      } catch (...) {
-        LOG__ERROR(Logger::get().UCIHAND_LOG,
-                   "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
+        searchLimits.blackInc = std::stoi(token);
+      } catch (...) { /* ignored */
       }
-      if (searchMode.blackInc < 0) {
-        LOG__WARN(Logger::get().UCIHAND_LOG, "Invalid binc. Was '{}'", token);
+      if (searchLimits.blackInc < 0) {
+        uciError(fmt::format("Invalid binc: {}", token));
         return;
       }
     }
     if (token == "movestogo") {
       inStream >> token;
       try {
-        searchMode.movesToGo = std::stoi(token);
-      } catch (...) {
-        LOG__ERROR(Logger::get().UCIHAND_LOG,
-                   "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
+        searchLimits.movesToGo = std::stoi(token);
+      } catch (...) { /* ignored */
       }
-      if (searchMode.movesToGo <= 0) {
-        LOG__WARN(Logger::get().UCIHAND_LOG, "Invalid movestogo. Was '{}'", token);
+      if (searchLimits.movesToGo <= 0) {
+        uciError(fmt::format("Invalid movestogo: {}", token));
         return;
       }
     }
     if (token == "depth") {
       inStream >> token;
       try {
-        searchMode.depth = std::stoi(token);
-      } catch (...) {
-        LOG__ERROR(Logger::get().UCIHAND_LOG,
-                   "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
+        searchLimits.depth = std::stoi(token);
+      } catch (...) { /* ignored */
       }
-      if (searchMode.depth <= 0 || searchMode.depth > PLY_MAX) {
-        LOG__WARN(Logger::get().UCIHAND_LOG, "depth not between 1 and {}. Was '{}'", PLY_MAX, token);
+      if (searchLimits.depth <= 0 || searchLimits.depth > MAX_DEPTH) {
+        uciError(fmt::format("depth not between 1 and {}. Was '{}'", MAX_DEPTH, token));
         return;
       }
     }
     if (token == "nodes") {
       inStream >> token;
       try {
-        searchMode.nodes = std::stoi(token);
-      } catch (...) {
-        LOG__ERROR(Logger::get().UCIHAND_LOG,
-                   "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
+        searchLimits.nodes = std::stoi(token);
+      } catch (...) { /* ignored */
       }
-      if (searchMode.nodes <= 0) {
-        LOG__WARN(Logger::get().UCIHAND_LOG, "Invalid nodes. Was '{}'", token);
+      if (searchLimits.nodes <= 0) {
+        uciError(fmt::format("Invalid nodes: {}", token));
         return;
       }
     }
     if (token == "mate") {
       inStream >> token;
       try {
-        searchMode.mate = stoi(token);
-      } catch (...) {
-        LOG__ERROR(Logger::get().UCIHAND_LOG,
-                   "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
+        searchLimits.mate = stoi(token);
+      } catch (...) { /* ignored */
       }
-      if (searchMode.mate <= 0 || searchMode.mate > PLY_MAX) {
-        LOG__WARN(Logger::get().UCIHAND_LOG, "mate not between 1 and {}. Was '{}'", PLY_MAX, token);
+      if (searchLimits.mate <= 0 || searchLimits.mate > MAX_DEPTH) {
+        uciError(fmt::format("mate not between 1 and {}. Was '{}'", MAX_DEPTH, token));
         return;
       }
     }
-    if (token == "movetime") {
+    if (token == "movetime" || token == "moveTime") {
       inStream >> token;
       try {
-        searchMode.movetime = stoi(token);
-      } catch (...) {
-        LOG__ERROR(Logger::get().UCIHAND_LOG,
-                   "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
+        searchLimits.moveTime = stoi(token);
+      } catch (...) { /* ignored */
       }
-      if (searchMode.movetime <= 0) {
-        LOG__WARN(Logger::get().UCIHAND_LOG, "Invalid movetime. Was '{}'", token);
+      if (searchLimits.moveTime <= 0) {
+        uciError(fmt::format("Invalid movetime: {}", token));
         return;
       }
     }
     if (token == "infinite") {
-      searchMode.infinite = true;
-    }
-    if (token == "perft") {
-      searchMode.perft = true;
-      inStream >> token;
-      try {
-        searchMode.depth = stoi(token);
-      } catch (...) {
-        LOG__ERROR(Logger::get().UCIHAND_LOG,
-                   "Given string is not a valid int: {} ({}:{})", token, __FILENAME__, __LINE__);
-      }
-      if (searchMode.depth <= 0 || searchMode.depth > PLY_MAX) {
-        LOG__WARN(Logger::get().UCIHAND_LOG, "perft depth not between 1 and {}. Was '{}'", PLY_MAX, token);
-        return;
-      }
+      searchLimits.infinite = true;
     }
   }
-
-  // start search in engine
-  pEngine->startSearch(searchMode);
+  // start search
+  // TODO: search
+  uciError("Search not yet implemented");
 }
 
+
+void UCIHandler::stopCommand() const {
+  // TODO: search
+  uciError("StopSearch not yet implemented");
+}
+
+void UCIHandler::ponderHitCommand() const {
+  // TODO: search
+  uciError("Ponderhit not yet implemented");
+}
+
+void UCIHandler::perftCommand(std::istringstream& inStream) {
+  // TODO: search
+  uciError("Perft not yet implemented");
+}
+
+void UCIHandler::registerCommand() {
+  LOG__WARN(Logger::get().UCIHAND_LOG, "UCI Protocol Command: register not implemented!");
+}
+
+void UCIHandler::debugCommand() {
+  LOG__WARN(Logger::get().UCIHAND_LOG, "UCI Protocol Command: debug not implemented!");
+}
+
+void UCIHandler::send(const std::string& toSend) const {
+  LOG__INFO(Logger::get().UCI_LOG, ">> {}", toSend);
+  *pOutputStream << toSend << std::endl;
+}
+
+void UCIHandler::sendString(const std::string& anyString) const {
+  send(fmt::format("info string {}", anyString));
+}
+
+void UCIHandler::sendResult(Move bestMove, Move ponderMove) const {
+  send(fmt::format("bestmove {}{}", str(bestMove), (ponderMove ? " ponder " + str(ponderMove) : "")));
+}
+
+void UCIHandler::sendCurrentLine(const MoveList& moveList) const {
+  send(fmt::format("currline {}", str(moveList)));
+}
+
+void UCIHandler::sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t nodes,
+                                      uint64_t nps, MilliSec time, const MoveList& pv) const {
+  send(fmt::format("info depth {} seldepth {} multipv 1 score {} nodes {} nps {} time {} pv {}",
+                   depth, seldepth, str(Value(value)), nodes, nps, time, str(pv)));
+}
+
+void UCIHandler::sendAspirationResearchInfo(int depth, int seldepth, Value value,
+                                            const std::string& bound, uint64_t nodes, uint64_t nps,
+                                            MilliSec time, const MoveList& pv) const {
+  send(fmt::format("info depth {} seldepth {} multipv 1 score {} {} nodes {} nps {} time {} pv {}",
+                   depth, seldepth, str(Value(value)), bound, nodes, nps, time, str(pv)));
+}
+
+void UCIHandler::sendCurrentRootMove(Move currmove, std::size_t movenumber) const {
+  send(fmt::format("info currmove {} currmovenumber {}", str(currmove),
+                   movenumber));
+}
+
+void UCIHandler::sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps,
+                                  MilliSec time, int hashfull) const {
+  send(fmt::format("info depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
+                   depth, seldepth, nodes, nps, time, hashfull));
+}
+
+void UCIHandler::uciError(std::string const& msg) const {
+  LOG__ERROR(Logger::get().UCIHAND_LOG, msg);
+  sendString(msg);
+}

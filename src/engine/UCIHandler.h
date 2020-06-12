@@ -31,15 +31,13 @@
 #include <iosfwd>
 #include <memory>
 
+#include "gtest/gtest_prod.h"
+
 // forward declaration
 class Position;
 class MoveGenerator;
 class Perft;
 class Search;
-class Move;
-class MoveList;
-class Value;
-class MilliSec;
 
 /**
  * Main UCI protocol handler. Communicates through pipe streams with UCI user
@@ -77,6 +75,7 @@ public:
   void sendString(const std::string& anyString) const;
 
 private:
+  bool handleCommand(const std::string& cmd);
   void uciCommand() const;
   void isReadyCommand() const;
   void setOptionCommand(std::istringstream& inStream) const;
@@ -85,8 +84,12 @@ private:
   void goCommand(std::istringstream& inStream);
   void stopCommand() const;
   void ponderHitCommand() const;
+  void perftCommand(std::istringstream& inStream);
   static void registerCommand();
   static void debugCommand();
+  void uciError(const std::string &msg) const;
+
+  FRIEND_TEST(UCITest, positionTest);
 };
 
 

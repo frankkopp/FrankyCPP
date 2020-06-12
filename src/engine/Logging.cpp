@@ -156,9 +156,9 @@ void Logger::init() {
 //  BOOK_LOG->flush_on(flushLevel);
 //
 //  // Logger for Unit Tests
-//  TEST_LOG->set_pattern(defaultPattern);
-//  TEST_LOG->set_level(logLevel);
-//  TEST_LOG->flush_on(flushLevel);
+  TEST_LOG->set_pattern(defaultPattern);
+  TEST_LOG->set_level(logLevel);
+  TEST_LOG->flush_on(flushLevel);
 
   std::cout << "Logger initialized (" << logLvL << " / " << searchLogLvL << ")" << std::endl;
 }

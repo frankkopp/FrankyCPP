@@ -17,6 +17,7 @@ add_executable(
         MoveGeneratorTest.cpp
         PerftTest.cpp
         ValuesTest.cpp
+        UCITests.cpp
         TimingTests.cpp
         BOOST_Test.cpp
         SpeedTests.cpp)

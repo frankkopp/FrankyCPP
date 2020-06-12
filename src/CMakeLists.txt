@@ -18,7 +18,7 @@ set(FrankyCPPlib_SRCS
         chesscore/History.cpp chesscore/History.h
         engine/UCIHandler.cpp engine/UCIHandler.h
         engine/Logging.cpp engine/Logging.h
-        engine/Search.cpp engine/Search.h)
+        engine/Search.cpp engine/Search.h engine/SearchLimits.h)
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})
 target_link_libraries(
         FrankyCPPlib
