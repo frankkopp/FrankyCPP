@@ -11,8 +11,14 @@ addons:
       - cmake
 
 before_install:
-  - sudo apt-get update
-  - sudo apt-get install cmake
+  - sudo apt purge cmake
+  - wget https://github.com/Kitware/CMake/releases/download/v3.13.4/cmake-3.13.4.tar.gz
+  -tar zxcf cmake-3.13.4.tar.gz
+  - cd cmake-3.13.4
+  - sudo ./bootstrap
+  - sudo make
+  - sudo make install
+  - cmake --version
 
 script:
   - export CC=gcc-7
