@@ -26,8 +26,9 @@
 #ifndef FRANKYCPP_INIT_H
 #define FRANKYCPP_INIT_H
 
-#include "Values.h"
+#include "chesscore/Values.h"
 #include "types/init.h"
+#include <engine/Logging.h>
 
 
 namespace init {
@@ -36,6 +37,7 @@ namespace init {
   inline void init() {
     types::init();
     Values::init();
+    Logger::get();
   }
 }// namespace init
 

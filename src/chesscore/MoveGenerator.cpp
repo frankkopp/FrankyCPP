@@ -25,10 +25,10 @@
 
 #include <regex>
 
-#include "MoveGenerator.h"
 #include "History.h"
-#include "Position.h"
+#include "MoveGenerator.h"
 #include "Values.h"
+#include "chesscore/Position.h"
 #include "misc.h"
 #include "types/types.h"
 

@@ -29,7 +29,7 @@
 
 #include "init.h"
 
-#include <Position.h>
+#include <chesscore/Position.h>
 #include <chrono>
 using namespace std::chrono;
 

@@ -27,8 +27,8 @@
 #include <ostream>
 #include <string>
 
-#include "MoveGenerator.h"
-#include "Position.h"
+#include "chesscore/MoveGenerator.h"
+#include "chesscore/Position.h"
 #include "init.h"
 #include "types/types.h"
 
