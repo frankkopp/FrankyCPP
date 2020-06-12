@@ -15,10 +15,7 @@ set(FrankyCPPlib_SRCS
         chesscore/Position.cpp chesscore/Position.h
         chesscore/MoveGenerator.cpp chesscore/MoveGenerator.h
         chesscore/Perft.cpp chesscore/Perft.h
-        chesscore/History.cpp chesscore/History.h
-        engine/UCIHandler.cpp engine/UCIHandler.h
-        engine/Logging.cpp engine/Logging.h
-        engine/Search.cpp engine/Search.h)
+        chesscore/History.cpp chesscore/History.h)
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})
 target_link_libraries(
         FrankyCPPlib
