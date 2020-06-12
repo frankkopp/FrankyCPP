@@ -2,7 +2,7 @@ message("====================================================================")
 message("FrankyCPP test/")
 message("====================================================================")
 
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.13)
 set(CMAKE_CXX_STANDARD 17)
 
 # set the name of the executable
@@ -12,8 +12,14 @@ include(GoogleTest)
 add_executable(
         ${testExeName}
         TypesTest.cpp
+        BitboardTest.cpp
+        PositionTest.cpp
+        MoveGeneratorTest.cpp
+        PerftTest.cpp
+        ValuesTest.cpp
+        TimingTests.cpp
         BOOST_Test.cpp
-        )
+        SpeedTests.cpp)
 
 target_link_libraries(
         ${testExeName}
