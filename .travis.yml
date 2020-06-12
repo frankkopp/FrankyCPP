@@ -13,7 +13,7 @@ addons:
 before_install:
   - sudo apt purge cmake
   - wget https://github.com/Kitware/CMake/releases/download/v3.13.4/cmake-3.13.4.tar.gz
-  -tar zxcf cmake-3.13.4.tar.gz
+  - tar zxcf cmake-3.13.4.tar.gz
   - cd cmake-3.13.4
   - sudo ./bootstrap
   - sudo make
