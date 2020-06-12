@@ -23,11 +23,23 @@
  *
  */
 
-#ifndef FRANKYCPP_NEWGEN_FILE_H
-#define FRANKYCPP_NEWGEN_FILE_H
+#ifndef FRANKYCPP_FILE_H
+#define FRANKYCPP_FILE_H
 
 #include <ostream>
+#include "macros.h"
 
+// File represents a chess board file a-h
+//  FILE_A      // 0
+//	FILE_B      // 1
+//	FILE_C      // 2
+//	FILE_D      // 3
+//	FILE_E      // 4
+//	FILE_F      // 5
+//	FILE_G      // 6
+//	FILE_H      // 7
+//	FILE_NONE   // 8
+//  FILE_LENGTH // 8
 enum File : int {
   FILE_A,
   FILE_B,
@@ -42,25 +54,32 @@ enum File : int {
 };
 
 // checks if file is a value of 0-7
-inline bool validFile(File f) {
-  return !(f < 0 || f >= 8);
+constexpr bool validFile(File f) {
+  return f >= 0 && f < 8;
 }
 
 // creates a file from a char
-inline File makeFile(char fileLabel) {
+constexpr File makeFile(char fileLabel) {
   const File f = static_cast<File>(fileLabel - 'a');
   return validFile(f) ? f : FILE_NONE;
 }
 
-// returns a string representing the square (e.g. a1 or h8)
-inline char fileLabel(File f) {
+// returns the distance between two files in king moves
+inline int distance(File f1, File f2) {
+  return abs(f2 - f1);
+}
+
+// returns a char representing the square (e.g. a1 or h8)
+constexpr char str(File f) {
   if (f < 0 || f >= 8) return '-';
   return 'a' + f;
 }
 
 inline std::ostream& operator<<(std::ostream& os, const File f) {
-  os << fileLabel(f);
+  os << str(f);
   return os;
 }
 
-#endif//FRANKYCPP_NEWGEN_FILE_H
+ENABLE_INCR_OPERATORS_ON (File)
+
+#endif//FRANKYCPP_FILE_H

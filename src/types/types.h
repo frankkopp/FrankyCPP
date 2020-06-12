@@ -23,44 +23,28 @@
  *
  */
 
-#ifndef FRANKYCPP_NEWGEN_TYPES_H
-#define FRANKYCPP_NEWGEN_TYPES_H
+#ifndef FRANKYCPP_TYPES_H
+#define FRANKYCPP_TYPES_H
 
-#include "fmt/locale.h"
-
-// convenience macros
-#define sleepForSec(x) std::this_thread::sleep_for(std::chrono::seconds(x));
-#define NEWLINE std::cout << std::endl
-#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
-#define println(s) std::cout << (s) << std::endl
-#define fprint(...) std::cout << fmt::format(deLocale, __VA_ARGS__)
-#define fprintln(...) fprint(__VA_ARGS__) << std::endl
-#define DEBUG(...) std::cout << fmt::format(deLocale, "DEBUG {}:{} {}", __FILE__, __LINE__, __VA_ARGS__) << std::endl
-
-
-///////////////////
-// Global constants
-// nanoseconds per second
-constexpr const uint64_t nanoPerSec = 1'000'000'000;
-// kilobyte
-constexpr const uint64_t KB = 1024;
-// megabyte
-constexpr const uint64_t MB = KB * KB;
-// gigabyte
-constexpr const uint64_t GB = KB * MB;
-
-// defines a locale for European style numbers
-struct deLocaleDecimals : std::numpunct<char> {
-  char do_decimal_point() const override { return ','; }
-  char do_thousands_sep() const override { return '.'; }
-  std::string do_grouping() const override { return "\03"; }
-};
-extern const std::locale deLocale;
-
-
+// include all type headers for convenience
+#include "macros.h"
+#include "init.h"
+#include "globals.h"
 #include "file.h"
 #include "rank.h"
 #include "square.h"
 #include "color.h"
+#include "direction.h"
+#include "orientation.h"
+#include "castlingrights.h"
+#include "piecetype.h"
+#include "piece.h"
+#include "move.h"
+#include "movelist.h"
+#include "bitboard.h"
+#include "zobristkey.h"
 
-#endif//FRANKYCPP_NEWGEN_TYPES_H
+/** for time keeping */
+typedef int64_t MilliSec;
+
+#endif//FRANKYCPP_TYPES_H

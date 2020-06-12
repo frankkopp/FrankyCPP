@@ -23,46 +23,40 @@
  *
  */
 
-#ifndef FRANKYCPP_COLOR_H
-#define FRANKYCPP_COLOR_H
+#ifndef FRANKYCPP_MOVELIST_H
+#define FRANKYCPP_MOVELIST_H
 
-#include <ostream>
-#include "macros.h"
+#include <vector>
+#include <sstream>
+#include "move.h"
 
-// Color represents constants for each chess color White and Black
-//  WHITE        = 0,
-//  BLACK        = 1,
-//  NOCOLOR      = 2,
-//  COLOR_LENGTH = 2 
-enum Color : int {
-  WHITE        = 0,
-  BLACK        = 1,
-  NOCOLOR      = 2,
-  COLOR_LENGTH = 2
-};
+/// A collection of moves using a std::vector
+typedef std::vector<Move> MoveList;
 
-// checks if rank is a value of 0-7
-constexpr bool validColor(Color c) {
-  return c >= 0 && c < 2;
+// returns a uci compatible string representation of the move list
+inline std::string str(const MoveList& moveList) {
+  std::ostringstream os;
+  for (Move m : moveList) {
+    os << m;
+    if (m != moveList.back()) os << " ";
+  }
+  return os.str();
 }
 
-// returns the opposite color
-constexpr Color operator~(Color c) { return Color(c ^ 1); }
-
-// moveDirection returns positive 1 for White and negative 1 (-1) for Black
-constexpr int moveDirection(Color c) { return c == WHITE ? 1 : -1; }
-
-// returns a char representing the color (e.g. w or b)
-constexpr char str(Color c) {
-  if (c < 0 || c >= 2) return '-';
-  return c == WHITE ? 'w' : 'b';
+inline std::string strVerbose(const MoveList& moveList) {
+  std::ostringstream os;
+  os << "MoveList: size=" << moveList.size() << " [";
+  for (auto itr = moveList.begin(); itr != moveList.end(); ++itr) {
+    os << *itr;
+    if (itr != moveList.end() - 1) os << ", ";
+  }
+  os << "]";
+  return os.str();
 }
 
-inline std::ostream& operator<<(std::ostream& os, const Color c) {
-  os << str(c);
+inline std::ostream& operator<< (std::ostream& os, const MoveList& moveList) {
+  os << str(moveList);
   return os;
 }
 
-ENABLE_INCR_OPERATORS_ON (Color)
-
-#endif//FRANKYCPP_COLOR_H
+#endif//FRANKYCPP_MOVELIST_H
