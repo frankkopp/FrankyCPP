@@ -23,9 +23,23 @@
  *
  */
 
-#ifndef FRANKYCPP_NEWGEN_RANK_H
-#define FRANKYCPP_NEWGEN_RANK_H
+#ifndef FRANKYCPP_RANK_H
+#define FRANKYCPP_RANK_H
 
+#include "macros.h"
+#include "color.h"
+
+// Rank represents a chess board rank 1-8
+//  RANK_1,
+//  RANK_2,
+//  RANK_3,
+//  RANK_4,
+//  RANK_5,
+//  RANK_6,
+//  RANK_7,
+//  RANK_8,
+//  RANK_NONE,
+//  RANK_LENGTH = 8
 enum Rank : int {
   RANK_1,
   RANK_2,
@@ -40,24 +54,42 @@ enum Rank : int {
 };
 
 // checks if rank is a value of 0-7
-inline bool validRank(Rank r) {
+constexpr bool validRank(Rank r) {
   return !(r < 0 || r >= 8);
 }
 
 // creates a rank from a char
-inline Rank makeRank(char rankLabel) {
+constexpr Rank makeRank(char rankLabel) {
   const Rank r = static_cast<Rank>(rankLabel - '1');
   return validRank(r) ? r : RANK_NONE;
 }
 
-// returns a string representing the rank (e.g. 1 or 8)
-inline char rankLabel(Rank r) {
+// returns the rank for promotion of a color
+constexpr Rank promotionRank(Color c) {
+  return c == WHITE ? RANK_8 : RANK_1;
+}
+
+// returns the rank for a double pawn move of a color
+constexpr Rank pawnDoubleRank(Color c) {
+  return c == WHITE ? RANK_3 : RANK_6;
+}
+
+// returns the distance between two ranks in king moves
+inline int distance(Rank r1, Rank r2) {
+  return abs(r2 - r1);
+}
+
+// returns a char representing the rank (e.g. 1 or 8)
+constexpr char str(Rank r) {
   if (r < 0 || r >= 8) return '-';
   return '1' + r;
 }
 
 inline std::ostream& operator<< (std::ostream& os, const Rank r) {
-  os << rankLabel(r);
+  os << str(r);
   return os;
 }
-#endif//FRANKYCPP_NEWGEN_RANK_H
+
+ENABLE_INCR_OPERATORS_ON (Rank)
+
+#endif//FRANKYCPP_RANK_H

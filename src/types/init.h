@@ -23,46 +23,34 @@
  *
  */
 
-#ifndef FRANKYCPP_COLOR_H
-#define FRANKYCPP_COLOR_H
+#ifndef FRANKYCPP_TYPES_INIT_H
+#define FRANKYCPP_TYPES_INIT_H
 
-#include <ostream>
-#include "macros.h"
+#include "bitboard.h"
+#include "square.h"
 
-// Color represents constants for each chess color White and Black
-//  WHITE        = 0,
-//  BLACK        = 1,
-//  NOCOLOR      = 2,
-//  COLOR_LENGTH = 2 
-enum Color : int {
-  WHITE        = 0,
-  BLACK        = 1,
-  NOCOLOR      = 2,
-  COLOR_LENGTH = 2
-};
+namespace types {
 
-// checks if rank is a value of 0-7
-constexpr bool validColor(Color c) {
-  return c >= 0 && c < 2;
-}
+  // init() initializes all chess types by pre-computing arrays of
+  // Bitboard or other data structures to avoid computation time
+  // during runtime.
+  // The order of the initialization is important as there are
+  // dependencies.
+  inline void init() {
+    Squares::squareDistancePreCompute();
+    Bitboards::rankFileBbPreCompute();
+    Bitboards::squareBitboardsPreCompute();
+    Bitboards::nonSlidingAttacksPreCompute();
+    Bitboards::neighbourMasksPreCompute();
+    Bitboards::initMagicBitboards();
+    Bitboards::raysPreCompute();
+    Bitboards::intermediatePreCompute();
+    Bitboards::maskPassedPawnsPreCompute();
+    Bitboards::castleMasksPreCompute();
+    Bitboards::colorBitboardsPreCompute();
+    Squares::centerDistancePreCompute();
+    Castling::initCastlingRights();
+  }
+}// namespace types
 
-// returns the opposite color
-constexpr Color operator~(Color c) { return Color(c ^ 1); }
-
-// moveDirection returns positive 1 for White and negative 1 (-1) for Black
-constexpr int moveDirection(Color c) { return c == WHITE ? 1 : -1; }
-
-// returns a char representing the color (e.g. w or b)
-constexpr char str(Color c) {
-  if (c < 0 || c >= 2) return '-';
-  return c == WHITE ? 'w' : 'b';
-}
-
-inline std::ostream& operator<<(std::ostream& os, const Color c) {
-  os << str(c);
-  return os;
-}
-
-ENABLE_INCR_OPERATORS_ON (Color)
-
-#endif//FRANKYCPP_COLOR_H
+#endif//FRANKYCPP_TYPES_INIT_H

@@ -23,255 +23,246 @@
  *
  */
 
-#include <gtest/gtest.h>
-#include <random>
 #include "types/types.h"
 #include "fmt/locale.h"
+#include <gtest/gtest.h>
+#include <random>
 
 using testing::Eq;
 
-TEST(GlobalsTest, colors) {
-  ASSERT_EQ(WHITE, ~BLACK);
-  ASSERT_EQ(BLACK, ~WHITE);
+TEST(TypesTest, colors) {
+  EXPECT_EQ(WHITE, ~BLACK);
+  EXPECT_EQ(BLACK, ~WHITE);
 }
 
-TEST(GlobalsTest, labels) {
+TEST(TypesTest, labels) {
   // all squares and label of squares
   std::string actual;
   for (int i = 0; i < SQ_NONE; ++i) {
     ASSERT_TRUE(validSquare(Square(i)));
-    actual += squareLabel(Square(i));
+    actual += str(Square(i));
   }
   std::string expected = "a1b1c1d1e1f1g1h1a2b2c2d2e2f2g2h2a3b3c3d3e3f3g3h3a4b4c4"
                          "d4e4f4g4h4a5b5c5d5e5f5g5h5a6b6c6d6e6f6g6h6a7b7c7d7e7f7"
                          "g7h7a8b8c8d8e8f8g8h8";
-  ASSERT_EQ(expected, actual);
+  EXPECT_EQ(expected, actual);
 }
 
-TEST(GlobalsTest, filesAndRanks) {
+TEST(TypesTest, filesAndRanks) {
   // all squares and label of squares
   std::string actual;
   for (int i = 0; i < SQ_NONE; ++i) {
-    ASSERT_EQ(Square(i), squareOf(File(fileOf(Square(i))), Rank(rankOf(Square(i)))));
+    EXPECT_EQ(Square(i), squareOf(File(fileOf(Square(i))), Rank(rankOf(Square(i)))));
   }
 }
 
-//TEST(GlobalsTest, pieceTypeLabels) {
-//  ASSERT_EQ('K', pieceTypeToChar[KING]);
-//  ASSERT_EQ('Q', pieceTypeToChar[QUEEN]);
-//  ASSERT_EQ('R', pieceTypeToChar[ROOK]);
-//  ASSERT_EQ('B', pieceTypeToChar[BISHOP]);
-//  ASSERT_EQ('N', pieceTypeToChar[KNIGHT]);
-//  ASSERT_EQ('P', pieceTypeToChar[PAWN]);
-//}
-//
-//TEST(GlobalsTest, pieceLabels) {
-//  ASSERT_EQ('K', pieceToChar[WHITE_KING]);
-//  ASSERT_EQ('Q', pieceToChar[WHITE_QUEEN]);
-//  ASSERT_EQ('R', pieceToChar[WHITE_ROOK]);
-//  ASSERT_EQ('B', pieceToChar[WHITE_BISHOP]);
-//  ASSERT_EQ('N', pieceToChar[WHITE_KNIGHT]);
-//  ASSERT_EQ('P', pieceToChar[WHITE_PAWN]);
-//  ASSERT_EQ('k', pieceToChar[BLACK_KING]);
-//  ASSERT_EQ('q', pieceToChar[BLACK_QUEEN]);
-//  ASSERT_EQ('r', pieceToChar[BLACK_ROOK]);
-//  ASSERT_EQ('b', pieceToChar[BLACK_BISHOP]);
-//  ASSERT_EQ('n', pieceToChar[BLACK_KNIGHT]);
-//  ASSERT_EQ('p', pieceToChar[BLACK_PAWN]);
-//}
-//
-//
-//TEST(GlobalsTest, pieces) {
-//
-//  // make piece
-//  ASSERT_EQ(WHITE_KING, makePiece(WHITE, KING));
-//  ASSERT_EQ(BLACK_KING, makePiece(BLACK, KING));
-//  ASSERT_EQ(WHITE_QUEEN, makePiece(WHITE, QUEEN));
-//  ASSERT_EQ(BLACK_QUEEN, makePiece(BLACK, QUEEN));
-//
-//  // colorOf
-//  ASSERT_EQ(WHITE, colorOf(WHITE_KING));
-//  ASSERT_EQ(WHITE, colorOf(WHITE_QUEEN));
-//  ASSERT_EQ(WHITE, colorOf(WHITE_PAWN));
-//  ASSERT_EQ(WHITE, colorOf(WHITE_ROOK));
-//  ASSERT_EQ(BLACK, colorOf(BLACK_KING));
-//  ASSERT_EQ(BLACK, colorOf(BLACK_QUEEN));
-//  ASSERT_EQ(BLACK, colorOf(BLACK_PAWN));
-//  ASSERT_EQ(BLACK, colorOf(BLACK_ROOK));
-//
-//  // typeOf
-//  ASSERT_EQ(KING, typeOf(WHITE_KING));
-//  ASSERT_EQ(QUEEN, typeOf(WHITE_QUEEN));
-//  ASSERT_EQ(PAWN, typeOf(WHITE_PAWN));
-//  ASSERT_EQ(ROOK, typeOf(WHITE_ROOK));
-//  ASSERT_EQ(KING, typeOf(BLACK_KING));
-//  ASSERT_EQ(QUEEN, typeOf(BLACK_QUEEN));
-//  ASSERT_EQ(PAWN, typeOf(BLACK_PAWN));
-//  ASSERT_EQ(ROOK, typeOf(BLACK_ROOK));
-//  ASSERT_EQ(PIECETYPE_NONE, typeOf(PIECE_NONE));
-//}
-//
-//TEST(GlobalsTest, operators) {
-//  ASSERT_EQ(WHITE, ~BLACK);
-//  ASSERT_EQ(BLACK, ~WHITE);
-//
-//  Color color = WHITE;
-//  ASSERT_EQ(BLACK, ++color);
-//
-//  ASSERT_EQ(SQ_A2, SQ_A1 + NORTH);
-//  ASSERT_TRUE(SQ_H8 + NORTH > 63);
-//  ASSERT_TRUE(SQ_H1 + SOUTH < 0);
-//  ASSERT_EQ(SQ_H8, SQ_A1 + (7 * NORTH_EAST));
-//  ASSERT_EQ(SQ_A8, SQ_H1 + (7 * NORTH_WEST));
-//}
-//
-//TEST(MoveTest, moves) {
-//  Move move = createMove<NORMAL>(SQ_A1, SQ_H1);
-//  ASSERT_TRUE(isMove(move));
-//  ASSERT_EQ(SQ_A1, getFromSquare(move));
-//  ASSERT_EQ(SQ_H1, getToSquare(move));
-//  ASSERT_EQ(NORMAL, typeOf(move));
-//  ASSERT_EQ(KNIGHT, promotionType(move)); // not useful is not type PROMOTION
-//
-//  move = createMove<PROMOTION>(SQ_A7, SQ_A8, QUEEN);
-//  ASSERT_TRUE(isMove(move));
-//  ASSERT_EQ(SQ_A7, getFromSquare(move));
-//  ASSERT_EQ(SQ_A8, getToSquare(move));
-//  ASSERT_EQ(PROMOTION, typeOf(move));
-//  ASSERT_EQ(QUEEN, promotionType(move)); // not useful is not type PROMOTION
-//
-//  std::stringstream buffer1, buffer2;
-//  buffer1 << "a7a8Q";
-//  buffer2 << move;
-//  ASSERT_EQ(buffer1.str(), buffer2.str());
-//  ASSERT_EQ("a7a8Q (PROMOTION -15001 31800)", printMoveVerbose(move));
-//
-//  move = createMove<PROMOTION>("a7a8N");
-//  ASSERT_TRUE(isMove(move));
-//  ASSERT_EQ(SQ_A7, getFromSquare(move));
-//  ASSERT_EQ(SQ_A8, getToSquare(move));
-//  ASSERT_EQ(PROMOTION, typeOf(move));
-//  ASSERT_EQ(KNIGHT, promotionType(move)); // not useful is not type PROMOTION
-//  ASSERT_NE(QUEEN, promotionType(move)); // not useful is not type PROMOTION
-//}
-//
-//TEST(MoveTest, movesValue) {
-//  NEWLINE;
-//  Move move = createMove<NORMAL>(SQ_A1, SQ_H1);
-//
-//  ASSERT_EQ(VALUE_NONE, valueOf(move));
-//
-//  Value v = VALUE_MAX;
-//  setValue(move, v);
-//  ASSERT_EQ(v, valueOf(move));
-//
-//  v = VALUE_MIN;
-//  setValue(move, v);
-//  ASSERT_EQ(v, valueOf(move));
-//
-//  v = Value(100);
-//  setValue(move, v);
-//  ASSERT_EQ(v, valueOf(move));
-//
-//  v = VALUE_CHECKMATE_THRESHOLD;
-//  setValue(move, v);
-//  ASSERT_EQ(v, valueOf(move));
-//
-//  move = createMove<NORMAL>(SQ_A1, SQ_H1, VALUE_DRAW);
-//  ASSERT_EQ(VALUE_DRAW, valueOf(move));
-//  move = createMove<NORMAL>(SQ_A1, SQ_H1, Value(-100));
-//  ASSERT_EQ(Value(-100), valueOf(move));
-//  move = createMove<NORMAL>(SQ_A1, SQ_H1, Value(100));
-//  ASSERT_EQ(Value(100), valueOf(move));
-//
-//  move = createMove<PROMOTION>(SQ_A1, SQ_H1, Value(-pieceTypeValue[QUEEN]), QUEEN);
-//  ASSERT_EQ(-pieceTypeValue[QUEEN], valueOf(move));
-//
-//  // test equality without value / pure move
-//  move = createMove<NORMAL>(SQ_A1, SQ_H1, Value(100));
-//  Move move2 = createMove<NORMAL>(SQ_A1, SQ_H1, Value(-100));
-//  ASSERT_NE(move, move2);
-//  ASSERT_EQ(moveOf(move), moveOf(move2));
-//
-//}
-//
-//TEST(CastlingTest, castling) {
-//  ASSERT_EQ(0b1000, BLACK | QUEEN_SIDE);
-//  ASSERT_EQ(BLACK_OOO, BLACK | QUEEN_SIDE);
-//
-//  CastlingRights cr = ANY_CASTLING;
-//  ASSERT_EQ(0b1110, cr - WHITE_OO);
-//  ASSERT_EQ(0b1101, cr - WHITE_OOO);
-//  ASSERT_EQ(0b1011, cr - BLACK_OO);
-//  ASSERT_EQ(0b0111, cr - BLACK_OOO);
-//
-//  cr = NO_CASTLING;
-//  ASSERT_TRUE(cr == NO_CASTLING);
-//
-//  cr += WHITE_OO;
-//  ASSERT_EQ(0b0001, cr);
-//  ASSERT_TRUE(cr == WHITE_OO);
-//  ASSERT_TRUE(cr != WHITE_OOO);
-//  ASSERT_TRUE(cr != NO_CASTLING);
-//  ASSERT_TRUE(cr != BLACK_OO);
-//  ASSERT_TRUE(cr != BLACK_OOO);
-//  ASSERT_TRUE(cr != BLACK_CASTLING);
-//
-//  cr += WHITE_OOO;
-//  ASSERT_EQ(0b0011, cr);
-//  ASSERT_TRUE(cr == WHITE_OO);
-//  ASSERT_TRUE(cr == WHITE_OOO);
-//  ASSERT_TRUE(cr == WHITE_CASTLING);
-//  ASSERT_TRUE(cr != NO_CASTLING);
-//  ASSERT_TRUE(cr != BLACK_OO);
-//  ASSERT_TRUE(cr != BLACK_OOO);
-//  ASSERT_TRUE(cr != BLACK_CASTLING);
-//
-//  cr += BLACK_OO;
-//  ASSERT_EQ(0b0111, cr);
-//  ASSERT_EQ(0b1111, cr + BLACK_OOO);
-//
-//  cr = ANY_CASTLING;
-//  cr -= WHITE | QUEEN_SIDE;
-//  ASSERT_EQ(0b1101, cr);
-//  cr += WHITE | QUEEN_SIDE;
-//  ASSERT_EQ(0b1111, cr);
-//
-//  cr = ANY_CASTLING;
-//  ASSERT_TRUE(cr == WHITE_OOO);
-//  ASSERT_FALSE(cr != WHITE_OOO);
-//  cr -= BLACK | KING_SIDE;
-//  ASSERT_TRUE(cr != BLACK_OO);
-//  ASSERT_FALSE(cr == BLACK_OO);
-//}
-//
-////TEST(CastlingTest, Iteration) {
-////  cout << endl;
-////  for (CastlingRights cr = NO_CASTLING; cr <= ANY_CASTLING; ++cr) {
-////    cout << "Castling: " << cr << " " << Bitboards::printFlat(cr) << endl;
-////  }
-////}
-//
-//TEST(MoveListTest, moveListPrint) {
-//
-//    Move move1 = createMove<NORMAL>(SQ_A1, SQ_H1);
-//  Move move2 = createMove<PROMOTION>(SQ_A7, SQ_A8, QUEEN);
-//  Move move3 = createMove<CASTLING>(SQ_E1, SQ_G1);
-//  MoveList moveList;
-//  moveList.push_back(move1);
-//  moveList.push_back(move2);
-//  moveList.push_back(move3);
-//
-//  std::ostringstream ml;
-//  ml << moveList;
-//  std::string expected = "MoveList: size=3 [a1h1, a7a8Q, e1g1]";
-//  ASSERT_EQ(expected, ml.str());
-//
-//}
-//
-//TEST(MoveListTest, bitString) {
-//  ASSERT_EQ("00000000.00000000.00000000.00000000.00000000.00000000.00000000.11111111", printBitString(0b11111111));
-//  ASSERT_EQ("00000000.00000000.00000000.00000000.00000000.00000000.00000000.00000001", printBitString(0b1));
-//  ASSERT_EQ("11111111.11111111.11111111.11111111.11111111.11111111.11111111.11111110", printBitString(~0b1));
-//}
+TEST(TypesTest, makeSquare) {
+  EXPECT_EQ(SQ_A1, makeSquare("a1)"));
+  EXPECT_EQ(SQ_H8, makeSquare("h8)"));
+}
+
+TEST(TypesTest, ColorLabel) {
+  EXPECT_EQ('w', str(WHITE));
+  EXPECT_EQ('b', str(BLACK));
+}
+
+TEST(TypesTest, MoveDirection) {
+  EXPECT_EQ(1, moveDirection(WHITE));
+  EXPECT_EQ(-1, moveDirection(BLACK));
+}
+
+TEST(TypesTest, castling) {
+
+  CastlingRights cr = ANY_CASTLING;
+  EXPECT_EQ(0b1110, cr - WHITE_OO);
+  EXPECT_EQ(0b1101, cr - WHITE_OOO);
+  EXPECT_EQ(0b1011, cr - BLACK_OO);
+  EXPECT_EQ(0b0111, cr - BLACK_OOO);
+
+  cr = NO_CASTLING;
+  ASSERT_TRUE(cr == NO_CASTLING);
+
+  cr += WHITE_OO;
+  EXPECT_EQ(0b0001, cr);
+  ASSERT_TRUE(cr == WHITE_OO);
+  ASSERT_TRUE(cr != WHITE_OOO);
+  ASSERT_TRUE(cr != NO_CASTLING);
+  ASSERT_TRUE(cr != BLACK_OO);
+  ASSERT_TRUE(cr != BLACK_OOO);
+  ASSERT_TRUE(cr != BLACK_CASTLING);
+
+  cr += WHITE_OOO;
+  EXPECT_EQ(0b0011, cr);
+  ASSERT_TRUE(cr == WHITE_OO);
+  ASSERT_TRUE(cr == WHITE_OOO);
+  ASSERT_TRUE(cr == WHITE_CASTLING);
+  ASSERT_TRUE(cr != NO_CASTLING);
+  ASSERT_TRUE(cr != BLACK_OO);
+  ASSERT_TRUE(cr != BLACK_OOO);
+  ASSERT_TRUE(cr != BLACK_CASTLING);
+
+  cr += BLACK_OO;
+  EXPECT_EQ(0b0111, cr);
+  EXPECT_EQ(0b1111, cr + BLACK_OOO);
+}
+
+TEST(TypesTest, CastlingStr) {
+  EXPECT_EQ("KQkq", str(ANY_CASTLING));
+  EXPECT_EQ("KQ", str(WHITE_CASTLING));
+  EXPECT_EQ("kq", str(BLACK_CASTLING));
+  EXPECT_EQ("k", str(BLACK_OO));
+  EXPECT_EQ("Q", str(WHITE_OOO));
+}
+
+TEST(TypesTest, pieceTypeLabels) {
+  EXPECT_EQ('K', str(KING));
+  EXPECT_EQ('Q', str(QUEEN));
+  EXPECT_EQ('R', str(ROOK));
+  EXPECT_EQ('B', str(BISHOP));
+  EXPECT_EQ('N', str(KNIGHT));
+  EXPECT_EQ('P', str(PAWN));
+}
+
+
+TEST(TypesTest, GamePhaseValue) {
+  EXPECT_EQ(1, gamePhaseValue(KNIGHT));
+  EXPECT_EQ(2, gamePhaseValue(ROOK));
+  EXPECT_EQ(4, gamePhaseValue(QUEEN));
+}
+
+TEST(TypesTest, pieceLabels) {
+  EXPECT_EQ('K', str(WHITE_KING));
+  EXPECT_EQ('Q', str(WHITE_QUEEN));
+  EXPECT_EQ('R', str(WHITE_ROOK));
+  EXPECT_EQ('B', str(WHITE_BISHOP));
+  EXPECT_EQ('N', str(WHITE_KNIGHT));
+  EXPECT_EQ('P', str(WHITE_PAWN));
+  EXPECT_EQ('k', str(BLACK_KING));
+  EXPECT_EQ('q', str(BLACK_QUEEN));
+  EXPECT_EQ('r', str(BLACK_ROOK));
+  EXPECT_EQ('b', str(BLACK_BISHOP));
+  EXPECT_EQ('n', str(BLACK_KNIGHT));
+  EXPECT_EQ('p', str(BLACK_PAWN));
+}
+
+TEST(TypesTest, pieces) {
+
+  // make piece
+  EXPECT_EQ(WHITE_KING, makePiece(WHITE, KING));
+  EXPECT_EQ(BLACK_KING, makePiece(BLACK, KING));
+  EXPECT_EQ(WHITE_QUEEN, makePiece(WHITE, QUEEN));
+  EXPECT_EQ(BLACK_QUEEN, makePiece(BLACK, QUEEN));
+
+  // colorOf
+  EXPECT_EQ(WHITE, colorOf(WHITE_KING));
+  EXPECT_EQ(WHITE, colorOf(WHITE_QUEEN));
+  EXPECT_EQ(WHITE, colorOf(WHITE_PAWN));
+  EXPECT_EQ(WHITE, colorOf(WHITE_ROOK));
+  EXPECT_EQ(BLACK, colorOf(BLACK_KING));
+  EXPECT_EQ(BLACK, colorOf(BLACK_QUEEN));
+  EXPECT_EQ(BLACK, colorOf(BLACK_PAWN));
+  EXPECT_EQ(BLACK, colorOf(BLACK_ROOK));
+
+  // typeOf
+  EXPECT_EQ(KING, typeOf(WHITE_KING));
+  EXPECT_EQ(QUEEN, typeOf(WHITE_QUEEN));
+  EXPECT_EQ(PAWN, typeOf(WHITE_PAWN));
+  EXPECT_EQ(ROOK, typeOf(WHITE_ROOK));
+  EXPECT_EQ(KING, typeOf(BLACK_KING));
+  EXPECT_EQ(QUEEN, typeOf(BLACK_QUEEN));
+  EXPECT_EQ(PAWN, typeOf(BLACK_PAWN));
+  EXPECT_EQ(ROOK, typeOf(BLACK_ROOK));
+  EXPECT_EQ(PT_NONE, typeOf(PIECE_NONE));
+
+  // pieceToCharacter
+  EXPECT_EQ('k', pieceToChar[BLACK_KING]);
+  EXPECT_EQ('P', pieceToChar[WHITE_PAWN]);
+  EXPECT_EQ(BLACK_KNIGHT, std::string(pieceToChar).find("n"));
+
+}
+
+TEST(TypesTest, directionOperators) {
+  EXPECT_EQ(SQ_A2, SQ_A1 + NORTH);
+  ASSERT_TRUE(SQ_H8 + NORTH > 63);
+  ASSERT_TRUE(SQ_H1 + SOUTH < 0);
+  EXPECT_EQ(SQ_H8, SQ_A1 + (7 * NORTH_EAST));
+  EXPECT_EQ(SQ_A8, SQ_H1 + (7 * NORTH_WEST));
+}
+
+TEST(TypesTest, moves) {
+  Move move = createMove(SQ_A1, SQ_H1, NORMAL);
+  ASSERT_TRUE(validMove(move));
+  EXPECT_EQ(SQ_A1, fromSquare(move));
+  EXPECT_EQ(SQ_H1, toSquare(move));
+  EXPECT_EQ(NORMAL, typeOf(move));
+  EXPECT_EQ(KNIGHT, promotionTypeOf(move));// not useful is not type PROMOTION
+
+  move = createMove(SQ_A7, SQ_A8, PROMOTION, QUEEN);
+  ASSERT_TRUE(validMove(move));
+  EXPECT_EQ(SQ_A7, fromSquare(move));
+  EXPECT_EQ(SQ_A8, toSquare(move));
+  EXPECT_EQ(PROMOTION, typeOf(move));
+  EXPECT_EQ(QUEEN, promotionTypeOf(move));// not useful is not type PROMOTION
+
+  std::stringstream buffer1, buffer2;
+  buffer1 << "a7a8Q";
+  buffer2 << move;
+  EXPECT_EQ(buffer1.str(), buffer2.str());
+  EXPECT_EQ("a7a8Q (PROMOTION -15001 31800)", strVerbose(move));
+}
+
+TEST(TypesTest, movesValue) {
+  NEWLINE;
+  Move move = createMove(SQ_A1, SQ_H1, NORMAL);
+
+  EXPECT_EQ(VALUE_NONE, valueOf(move));
+
+  Value v = VALUE_MAX;
+  setValueOf(move, v);
+  EXPECT_EQ(v, valueOf(move));
+
+  v = VALUE_MIN;
+  setValueOf(move, v);
+  EXPECT_EQ(v, valueOf(move));
+
+  v = Value(100);
+  setValueOf(move, v);
+  EXPECT_EQ(v, valueOf(move));
+
+  v = VALUE_CHECKMATE_THRESHOLD;
+  setValueOf(move, v);
+  EXPECT_EQ(v, valueOf(move));
+
+  move = createMove(SQ_A1, SQ_H1, NORMAL, VALUE_DRAW);
+  EXPECT_EQ(VALUE_DRAW, valueOf(move));
+  move = createMove(SQ_A1, SQ_H1, NORMAL, Value(-100));
+  EXPECT_EQ(Value(-100), valueOf(move));
+  move = createMove(SQ_A1, SQ_H1, NORMAL, Value(100));
+  EXPECT_EQ(Value(100), valueOf(move));
+
+  move = createMove(SQ_A1, SQ_H1, PROMOTION, QUEEN, Value(-pieceTypeValue[QUEEN]));
+  EXPECT_EQ(-pieceTypeValue[QUEEN], valueOf(move));
+
+  // test equality without value / pure move
+  move       = createMove(SQ_A1, SQ_H1, NORMAL, Value(100));
+  Move move2 = createMove(SQ_A1, SQ_H1, NORMAL, Value(-100));
+  ASSERT_NE(move, move2);
+  EXPECT_EQ(moveOf(move), moveOf(move2));
+}
+
+TEST(TypesTest, moveListPrint) {
+
+  Move move1 = createMove(SQ_A1, SQ_H1, NORMAL);
+  Move move2 = createMove(SQ_A7, SQ_A8, PROMOTION, QUEEN);
+  Move move3 = createMove(SQ_E1, SQ_G1, CASTLING);
+  MoveList moveList;
+  moveList.push_back(move1);
+  moveList.push_back(move2);
+  moveList.push_back(move3);
+
+  std::ostringstream ml;
+  ml << moveList;
+  std::string expected = "a1h1 a7a8Q e1g1";
+  EXPECT_EQ(expected, ml.str());
+}
 
