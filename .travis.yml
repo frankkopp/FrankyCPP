@@ -14,7 +14,7 @@ before_install:
   - sudo apt purge cmake
   - wget https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3.tar.gz
   - tar -zxf cmake-3.17.3.tar.gz
-  - cd cmake-3.13.4
+  - cd cmake-3.17.3
   - sudo ./bootstrap
   - sudo make
   - sudo make install
