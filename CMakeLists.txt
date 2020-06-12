@@ -3,7 +3,7 @@ message("FrankyCPP Main")
 message("CMAKE " ${CMAKE_VERSION} " " ${CMAKE_COMMAND})
 message("====================================================================")
 
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.13)
 
 # Project name and version
 project(FrankyCPP VERSION 0.1)
