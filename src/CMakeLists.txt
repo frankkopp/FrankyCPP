@@ -16,7 +16,7 @@ set(FrankyCPPlib_SRCS
         MoveGenerator.cpp MoveGenerator.h
         Perft.cpp Perft.h
         History.cpp History.h
-)
+        )
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})
 target_link_libraries(
         FrankyCPPlib

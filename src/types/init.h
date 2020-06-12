@@ -26,8 +26,8 @@
 #ifndef FRANKYCPP_TYPES_INIT_H
 #define FRANKYCPP_TYPES_INIT_H
 
-#include "square.h"
 #include "bitboard.h"
+#include "square.h"
 
 namespace types {
 
@@ -49,7 +49,8 @@ namespace types {
     Bitboards::castleMasksPreCompute();
     Bitboards::colorBitboardsPreCompute();
     Squares::centerDistancePreCompute();
+    Castling::initCastlingRights();
   }
-}
+}// namespace types
 
 #endif//FRANKYCPP_TYPES_INIT_H

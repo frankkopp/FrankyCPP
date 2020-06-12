@@ -56,7 +56,7 @@ enum Piece : int { // @formatter:off
 
 // checks if piece type is a value of 0 - 6
 constexpr bool validPiece(Piece p) {
-  return !(p < 0 || p >= 15 || p == 7 || p == 8);
+  return p >= 0 && p < 15 && p != 7 && p != 8;
 }
 
 // creates the piece given by color and piece type

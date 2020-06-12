@@ -26,8 +26,9 @@
 #ifndef FRANKYCPP_CASTLINGRIGHTS_H
 #define FRANKYCPP_CASTLINGRIGHTS_H
 
-#include <iostream>
 #include "macros.h"
+#include "square.h"
+#include <iostream>
 
 // CastlingRights encodes the castling state e.g. available castling
 // and defines functions to change this state
@@ -51,6 +52,19 @@ enum CastlingRights : unsigned int {
   ANY_CASTLING   = WHITE_CASTLING | BLACK_CASTLING,// 1111
   CR_LENGTH      = 16
 };
+
+namespace Castling {
+  // pre determined constants for squares which influence castling rights
+  inline CastlingRights castlingRights[SQ_LENGTH];
+  inline void initCastlingRights() {
+    castlingRights[SQ_E1] = WHITE_CASTLING;
+    castlingRights[SQ_A1] = WHITE_OOO;
+    castlingRights[SQ_H1] = WHITE_OO;
+    castlingRights[SQ_E8] = BLACK_CASTLING;
+    castlingRights[SQ_A8] = BLACK_OOO;
+    castlingRights[SQ_H8] = BLACK_OO;
+  }
+}// namespace Castling
 
 // remove castling rights
 constexpr CastlingRights operator-(CastlingRights cr1, CastlingRights cr2) {
@@ -95,6 +109,6 @@ inline std::ostream& operator<<(std::ostream& os, const CastlingRights cr) {
   return os;
 }
 
-ENABLE_INCR_OPERATORS_ON (CastlingRights)
+ENABLE_INCR_OPERATORS_ON(CastlingRights)
 
 #endif//FRANKYCPP_CASTLINGRIGHTS_H

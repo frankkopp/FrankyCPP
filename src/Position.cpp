@@ -104,7 +104,7 @@ void Position::doMove(Move move) {
       // If we still have castling rights and the move touches castling squares then invalidate
       // the corresponding castling right
       if (castlingRights) {
-        CastlingRights cr = Bitboards::castlingRights[fromSq] + Bitboards::castlingRights[toSq];
+        CastlingRights cr = Castling::castlingRights[fromSq] + Castling::castlingRights[toSq];
         if (cr) {
           zobristKey ^= Zobrist::castlingRights[castlingRights];// out
           castlingRights -= cr;
@@ -140,7 +140,7 @@ void Position::doMove(Move move) {
       // If we still have castling rights and the move touches castling squares then invalidate
       // the corresponding castling right
       if (castlingRights) {
-        CastlingRights cr = Bitboards::castlingRights[fromSq] + Bitboards::castlingRights[toSq];
+        CastlingRights cr = Castling::castlingRights[fromSq] + Castling::castlingRights[toSq];
         if (cr) {
           zobristKey ^= Zobrist::castlingRights[castlingRights];// out
           castlingRights -= cr;
@@ -227,7 +227,7 @@ void Position::doMove(Move move) {
 
   // update additional state info
   hasCheckFlag = FLAG_TBD;
-  nextHalfMoveNumber++;
+  if (nextPlayer == BLACK) moveNumber++;
   nextPlayer = ~nextPlayer;
   zobristKey ^= Zobrist::nextPlayer;
 }
@@ -237,7 +237,7 @@ void Position::undoMove() {
 
   // Restore state part 1
   historyCounter--;
-  nextHalfMoveNumber--;
+  if (nextPlayer == WHITE) moveNumber--;
   nextPlayer = ~nextPlayer;
 
   const HistoryState& lastHistoryState = historyState[historyCounter];
@@ -315,7 +315,7 @@ void Position::doNullMove() {
   // update state for null move
   hasCheckFlag = FLAG_TBD;
   clearEnPassant();
-  nextHalfMoveNumber++;
+  if (nextPlayer == BLACK) moveNumber++;
   nextPlayer = ~nextPlayer;
   zobristKey ^= Zobrist::nextPlayer;
 }
@@ -323,7 +323,7 @@ void Position::doNullMove() {
 void Position::undoNullMove() {
   // Restore state
   historyCounter--;
-  nextHalfMoveNumber--;
+  if (nextPlayer == WHITE) moveNumber--;
   nextPlayer                           = ~nextPlayer;
   const HistoryState& lastHistoryState = historyState[historyCounter];
   castlingRights                       = lastHistoryState.castlingRights;
@@ -707,7 +707,7 @@ std::string Position::str() const {
                                                                           : "No check")
          << std::endl;
   ;
-  output << "Gamephase: " << gamePhase << std::endl;
+  output << "Game Phase: " << gamePhase << std::endl;
   output << "Material: white=" << material[WHITE]
          << " black=" << material[BLACK] << std::endl;
   output << "Non Pawn: white=" << materialNonPawn[WHITE]
@@ -806,7 +806,7 @@ std::string Position::strFen() const {
   fen << halfMoveClock << " ";
 
   // full move number
-  fen << ((nextHalfMoveNumber + 1) / 2);
+  fen << moveNumber;
 
   return fen.str();
 }
@@ -912,7 +912,7 @@ void Position::initializeBoard() {
 
   nextPlayer = WHITE;
 
-  nextHalfMoveNumber = 1;
+  moveNumber = 1;
 
   for (Color color = WHITE; color <= BLACK; ++color) {// foreach color
     occupiedBb[color] = BbZero;
@@ -960,7 +960,6 @@ void Position::setupBoard(const char* fen) {
     if (token == 'b') {
       nextPlayer = BLACK;
       zobristKey ^= Zobrist::nextPlayer;
-      nextHalfMoveNumber++;// increase to 2 for black
     }
   }
   else {
@@ -1030,10 +1029,7 @@ void Position::setupBoard(const char* fen) {
   // half move clock (50 moves rules)
   iss >> std::skipws >> halfMoveClock;
 
-  // game move number - to be converted into next half move number (ply)
-  int moveNumber = 0;
+  // game move number
   iss >> std::skipws >> moveNumber;
-  if (moveNumber == 0)
-    moveNumber = 1;
-  nextHalfMoveNumber = 2 * moveNumber - (nextPlayer == WHITE);
+  if (moveNumber == 0) moveNumber = 1;
 }

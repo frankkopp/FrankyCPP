@@ -43,7 +43,7 @@ enum Color : int {
 
 // checks if rank is a value of 0-7
 constexpr bool validColor(Color c) {
-  return !(c < 0 || c >= 2);
+  return c >= 0 && c < 2;
 }
 
 // returns the opposite color

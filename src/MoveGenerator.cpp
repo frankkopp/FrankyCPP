@@ -25,8 +25,8 @@
 
 #include <regex>
 
-#include "History.h"
 #include "MoveGenerator.h"
+#include "History.h"
 #include "Position.h"
 #include "Values.h"
 #include "misc.h"

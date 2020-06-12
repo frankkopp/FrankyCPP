@@ -54,7 +54,7 @@ enum PieceType : int {
 
 // checks if piece type is a value of 0 - 6
 constexpr bool validPieceType(PieceType pt) {
-  return !(pt < 0 || pt >= 7);
+  return pt >= 0 && pt < 7;
 }
 
 // returns the game phase value of the piece type to
