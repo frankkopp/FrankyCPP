@@ -44,4 +44,7 @@
 #include "bitboard.h"
 #include "zobristkey.h"
 
+/** for time keeping */
+typedef int64_t MilliSec;
+
 #endif//FRANKYCPP_TYPES_H

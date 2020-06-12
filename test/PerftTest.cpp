@@ -23,9 +23,9 @@
  *
  */
 
-#include "Perft.h"
-#include "MoveGenerator.h"
-#include "Position.h"
+#include "chesscore/Perft.h"
+#include "chesscore/MoveGenerator.h"
+#include "chesscore/Position.h"
 #include "init.h"
 #include "types/types.h"
 #include <gtest/gtest.h>

@@ -26,9 +26,9 @@
 
 #include <gtest/gtest.h>
 
+#include "chesscore/Values.h"
 #include "init.h"
 #include "types/types.h"
-#include "Values.h"
 
 using testing::Eq;
 

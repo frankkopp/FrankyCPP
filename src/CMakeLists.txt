@@ -11,12 +11,14 @@ set(FrankyCPPlib_SRCS
         types/types.h
         types/bitboard.cpp
         misc.cpp misc.h
-        Values.cpp Values.h
-        Position.cpp Position.h
-        MoveGenerator.cpp MoveGenerator.h
-        Perft.cpp Perft.h
-        History.cpp History.h
-        )
+        chesscore/Values.cpp chesscore/Values.h
+        chesscore/Position.cpp chesscore/Position.h
+        chesscore/MoveGenerator.cpp chesscore/MoveGenerator.h
+        chesscore/Perft.cpp chesscore/Perft.h
+        chesscore/History.cpp chesscore/History.h
+        engine/UCIHandler.cpp engine/UCIHandler.h
+        engine/Logging.cpp engine/Logging.h
+        engine/Search.cpp engine/Search.h)
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})
 target_link_libraries(
         FrankyCPPlib

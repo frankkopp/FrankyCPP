@@ -28,7 +28,7 @@
 #include <ostream>
 #include <string>
 
-#include "Position.h"
+#include "chesscore/Position.h"
 #include "init.h"
 
 using namespace std;

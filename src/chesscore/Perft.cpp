@@ -27,9 +27,9 @@
 #include <iomanip>
 #include <iostream>
 
-#include "MoveGenerator.h"
 #include "Perft.h"
-#include "Position.h"
+#include "chesscore/MoveGenerator.h"
+#include "chesscore/Position.h"
 
 Perft::Perft() {
   fen = START_POSITION_FEN;
