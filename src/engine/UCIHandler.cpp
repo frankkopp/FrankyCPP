@@ -24,6 +24,7 @@
  */
 
 #include <memory>
+#import <thread>
 
 #include "chesscore/MoveGenerator.h"
 #include "chesscore/Perft.h"
@@ -328,8 +329,32 @@ void UCIHandler::ponderHitCommand() const {
 }
 
 void UCIHandler::perftCommand(std::istringstream& inStream) {
-  // TODO: search
-  uciError("Perft not yet implemented");
+  std::string token;
+  inStream >> token;
+  int startDepth = 1;
+  try {
+    startDepth = stoi(token);
+  } catch (...) { /* Ignore */
+  }
+  if (startDepth <= 0 || startDepth > MAX_DEPTH) {
+    uciError(fmt::format("perft start depth not between 1 and {}. Was '{}'", MAX_DEPTH, token));
+    return;
+  }
+  int endDepth = startDepth;
+  if (inStream >> token) {
+    try {
+      endDepth = stoi(token);
+    } catch (...) { /* Ignore */
+    }
+    if (endDepth <= 0 || endDepth > MAX_DEPTH) {
+      uciError(fmt::format("perft end depth not between 1 and {}. Was '{}'", MAX_DEPTH, token));
+    }
+  }
+  std::thread perftThread([&](int s, int e){
+    perft->perft(s, e, true);
+    sendString("Perft finished.");
+  }, startDepth, endDepth);
+  perftThread.detach();
 }
 
 void UCIHandler::registerCommand() {

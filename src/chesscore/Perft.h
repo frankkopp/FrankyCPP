@@ -44,6 +44,7 @@ class Perft {
   uint64_t castleCounter{};
   uint64_t promotionCounter{};
   std::string fen;
+  bool stopFlag;
 
 public:
   Perft();
@@ -51,7 +52,10 @@ public:
 
   void perft(int maxDepth);
   void perft(int maxDepth, bool onDemand);
+  void perft(int startDepth, int endDepth, bool onDemand);
   void perft_divide(int maxDepth, bool onDemand);
+
+  void stop();
 
   uint64_t getNodes() const { return nodes; }
   uint64_t getCaptureCounter() const { return captureCounter; }
@@ -60,7 +64,7 @@ public:
   uint64_t getCheckMateCounter() const { return checkMateCounter; }
   uint64_t getCastleCounter() const { return castleCounter; }
   uint64_t getPromotionCounter() const { return promotionCounter; }
-  
+
 private:
   void resetCounter();
   uint64_t miniMax(int depth, Position &position, MoveGenerator *moveGeneratorList);
