@@ -24,6 +24,7 @@
  */
 
 #include <memory>
+#include <thread>
 #include "init.h"
 #include "types/types.h"
 
@@ -174,27 +175,18 @@ TEST_F(UCITest, positionTest) {
     ASSERT_EQ("7K/6P1/7k/5ppP/1p1p2P1/1p1p4/1P1P4/8 w - - 0 13", uciHandler.position->strFen());
   }
 }
-//
-//TEST_F(UCITest, goPerft) {
-//
-//  ostringstream os;
-//  Engine engine;
-//
-//  string command = "go perft 6";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
-//  istringstream is(command);
-//  UCIHandler uciHandler( &is, &os);
-//  uciHandler.loop();
-//
-//  engine.stopSearch();
-//  engine.waitWhileSearching();
-//
-//  ASSERT_TRUE(engine.getSearchLimitsPtr()->isPerft());
-//  ASSERT_FALSE(engine.getSearchLimitsPtr()->isInfinite());
-//  ASSERT_FALSE(engine.getSearchLimitsPtr()->isPonder());
-//  ASSERT_FALSE(engine.getSearchLimitsPtr()->isTimeControl());
-//  ASSERT_EQ(6, engine.getSearchLimitsPtr()->getMaxDepth());
-//}
+
+TEST_F(UCITest, goPerft) {
+  ostringstream os;
+  string command = "perft 1 5";
+  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+  istringstream is(command);
+  UCIHandler uciHandler(&is, &os);
+  uciHandler.loop();
+  while (os.str(). find("Perft finished") == std::string::npos) {
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+  }
+}
 //
 //TEST_F(UCITest, goInfinite) {
 //
