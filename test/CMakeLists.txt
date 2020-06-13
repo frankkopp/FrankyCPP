@@ -31,11 +31,11 @@ target_link_libraries(
 )
 
 # copy config files and opening books to the build directories
-#add_custom_command(
-#        TARGET ${testExeName} POST_BUILD
-#        COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/config $<TARGET_FILE_DIR:${testExeName}>/config
-#        COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/books $<TARGET_FILE_DIR:${testExeName}>/books
-#)
+add_custom_command(
+        TARGET ${testExeName} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/config $<TARGET_FILE_DIR:${testExeName}>/config
+        #COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/books $<TARGET_FILE_DIR:${testExeName}>/books
+)
 
 gtest_discover_tests(${testExeName})
 

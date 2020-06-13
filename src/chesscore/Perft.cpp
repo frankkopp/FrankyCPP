@@ -111,7 +111,7 @@ void Perft::perft(int maxDepth, bool onDemand) {
   os << "-----------------------------------------" << std::endl;
   os << "Finished PERFT Test for Depth " << maxDepth << std::endl;
 
-  std::cout << os.str();
+  std::cout << os.str() << std::endl;
 }
 
 uint64_t Perft::miniMaxOD(int depth, Position& position, MoveGenerator* pMg) {

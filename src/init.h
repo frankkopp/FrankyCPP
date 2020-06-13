@@ -30,7 +30,6 @@
 #include "types/init.h"
 #include <engine/Logging.h>
 
-
 namespace init {
   // initializes all data structures and pre computed data
   // for the application

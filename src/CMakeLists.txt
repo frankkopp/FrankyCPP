@@ -42,20 +42,20 @@ target_link_libraries(
 )
 
 # copy config files and opening books to the build directories
-#add_custom_command(
-#        TARGET ${exeName} POST_BUILD
-#        COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/config $<TARGET_FILE_DIR:${exeName}>/config
-#        COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/books $<TARGET_FILE_DIR:${exeName}>/books
-#)
+add_custom_command(
+        TARGET ${exeName} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/config $<TARGET_FILE_DIR:${exeName}>/config
+        #COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/books $<TARGET_FILE_DIR:${exeName}>/books
+)
 
 # install executable, config and opening books into the release folder
-#install(TARGETS ${exeName}
-#        CONFIGURATIONS Release
-#        RUNTIME DESTINATION ${PROJECT_SOURCE_DIR}/Release/bin
-#)
-#install(DIRECTORY ${PROJECT_SOURCE_DIR}/config
-#        DESTINATION ${PROJECT_SOURCE_DIR}/Release/bin
-#)
+install(TARGETS ${exeName}
+        CONFIGURATIONS Release
+        RUNTIME DESTINATION ${PROJECT_SOURCE_DIR}/Release/bin
+)
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/config
+        DESTINATION ${PROJECT_SOURCE_DIR}/Release/bin
+)
 #install(DIRECTORY ${PROJECT_SOURCE_DIR}/books
 #        DESTINATION ${PROJECT_SOURCE_DIR}/Release/bin
 #        PATTERN "*.cache.*" EXCLUDE
