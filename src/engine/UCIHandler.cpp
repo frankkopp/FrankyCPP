@@ -24,7 +24,7 @@
  */
 
 #include <memory>
-#import <thread>
+#include <thread>
 
 #include "chesscore/MoveGenerator.h"
 #include "chesscore/Perft.h"
@@ -39,6 +39,9 @@
 #include "UCIHandler.h"
 
 UCIHandler::UCIHandler() {
+  pInputStream = &std::cin;
+  pOutputStream = &std::cout;
+
   position = std::make_shared<Position>();
   mg       = std::make_shared<MoveGenerator>();
   perft    = std::make_shared<Perft>();

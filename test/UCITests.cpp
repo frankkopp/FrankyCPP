@@ -178,7 +178,11 @@ TEST_F(UCITest, positionTest) {
 
 TEST_F(UCITest, goPerft) {
   ostringstream os;
-  string command = "perft 1 5";
+  int endDepth = 4;
+#ifdef NDEBUG
+    endDepth = 6;
+#endif
+  string command = "perft 1 " + to_string(endDepth);
   LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
   istringstream is(command);
   UCIHandler uciHandler(&is, &os);
@@ -187,7 +191,6 @@ TEST_F(UCITest, goPerft) {
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
 }
-//
 //TEST_F(UCITest, goInfinite) {
 //
 //  ostringstream os;
