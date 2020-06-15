@@ -20,7 +20,7 @@ add_executable(
         UCITests.cpp
         TimingTests.cpp
         BOOST_Test.cpp
-        SpeedTests.cpp)
+        SpeedTests.cpp UciOptionsTest.cpp)
 
 target_link_libraries(
         ${testExeName}

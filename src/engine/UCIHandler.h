@@ -31,6 +31,7 @@
 #include <iosfwd>
 #include <memory>
 
+#include "UciOptions.h"
 #include "gtest/gtest_prod.h"
 
 // forward declaration
@@ -53,6 +54,8 @@ class UCIHandler {
 
   std::istream* pInputStream;
   std::ostream* pOutputStream;
+
+
 
 public:
   UCIHandler();

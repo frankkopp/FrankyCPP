@@ -1,8 +1,9 @@
 #include "init.h"
 #include "version.h"
+#include <chesscore/Perft.h>
 #include <engine/UCIHandler.h>
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
 // BOOST program options
 #include "boost/program_options.hpp"
@@ -23,6 +24,8 @@ int main(int argc, char* argv[]) {
   std::cout << appName << std::endl;
 
   std::string config_file;
+  int perftStart;
+  int perftEnd;
 
   // Command line options
   try {
@@ -39,13 +42,16 @@ int main(int argc, char* argv[]) {
     po::options_description config("Configuration");
     config.add_options()
       ("log_lvl,l", po::value<std::string>()->default_value("warn"), "set general log level <critical|error|warn|info|debug|trace>")
-      ("search_log_lvl,s", po::value<std::string>()->default_value("warn"), "set search log level <critical|error|warn|info|debug|trace>");
+      ("search_log_lvl,s", po::value<std::string>()->default_value("warn"), "set search log level <critical|error|warn|info|debug|trace>")
     //  ("nobook", "do not use opening book")
     //  ("book,b", po::value<std::string>(&book_file), "opening book to use")
     //  ("booktype,t", po::value<std::string>(&book_type), "type of opening book <simple|san|pgn>")
     //  ("testsuite", po::value<std::string>(&testsuite_file), "run testsuite in given file")
     //  ("tsTime", po::value<int>(&testsuite_time)->default_value(1'000), "time in ms per test in testsuite")
     //  ("tsDepth", po::value<int>(&testsuite_depth)->default_value(0), "max search depth per test in testsuite");
+      ("perft", "run perft test")
+      ("startDepth", po::value<int>(&perftStart)->default_value(1), "start depth for perft test")
+      ("endDepth", po::value<int>(&perftEnd)->default_value(5), "end depth for perft test");
 
     // Hidden options, will be allowed both on command line and in config file,
     // but will not be shown to the user when printing help.
@@ -138,7 +144,19 @@ int main(int argc, char* argv[]) {
     //      return 0;
     //    }
 
-    // TODO PERFT from command line
+    if (programOptions.count("perft")) {
+      init::init();
+      std::cout << std::endl;
+      std::cout << "RUNNING PERFT TEST\n";
+      std::cout << "########################################################\n";
+      std::cout << "Version: " << appName << "\n";
+      std::cout << "Start depth: " << fmt::format("{:n}", perftStart) << "\n";
+      std::cout << "End depth  : " << fmt::format("{:n}", perftEnd) << "\n";
+      std::cout << std::endl;
+      Perft perft{};
+      perft.perft(perftStart, perftEnd, true);
+      return 0;
+    }
 
     // just a test - does nothing
     if (programOptions.count("test")) {
