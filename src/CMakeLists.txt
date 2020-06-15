@@ -17,6 +17,7 @@ set(FrankyCPPlib_SRCS
         chesscore/Perft.cpp chesscore/Perft.h
         chesscore/History.cpp chesscore/History.h
         engine/UCIHandler.cpp engine/UCIHandler.h
+        engine/UciOptions.cpp engine/UciOptions.h
         engine/Logging.cpp engine/Logging.h
         engine/Search.cpp engine/Search.h engine/SearchLimits.h)
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})

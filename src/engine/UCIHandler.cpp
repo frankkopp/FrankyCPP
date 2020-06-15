@@ -39,7 +39,7 @@
 #include "UCIHandler.h"
 
 UCIHandler::UCIHandler() {
-  pInputStream = &std::cin;
+  pInputStream  = &std::cin;
   pOutputStream = &std::cout;
 
   position = std::make_shared<Position>();
@@ -110,7 +110,7 @@ bool UCIHandler::handleCommand(const std::string& cmd) {
 void UCIHandler::uciCommand() const {
   send("id name FrankyCPP v" + std::to_string(FrankyCPP_VERSION_MAJOR) + "." + std::to_string(FrankyCPP_VERSION_MINOR));
   send("id author Frank Kopp, Germany");
-  // TODO UCIOption
+  // TODO UCIOptions
   uciError("Not yet implemented: UCI command: uci");
   send("uciok");
 }
@@ -139,8 +139,25 @@ void UCIHandler::setOptionCommand(std::istringstream& inStream) const {
     if (!value.empty()) name += " ";
     value += token;
   }
+
   // TODO set option
-  uciError("Not yet implemented: UCI command: setoption");
+//  uciError("Not yet implemented: UCI command: setoption");
+
+  LOG__INFO(Logger::get().UCIHAND_LOG, "Set option {} = {}", name, value);
+
+//  // find option entry
+//  const auto optionIterator =
+//    std::find_if(uciOptions.optionVector.begin(),
+//                 uciOptions.optionVector.end(),
+//                 [&](std::pair<std::string, UciOptions> p) {
+//                   return name == p.first;
+//                 });
+//
+//  if (optionIterator != uciOptions.optionVector.end()) {
+//    optionIterator->second.pHandler();
+//  } else {
+//    uciError(fmt::format("Unknown option: %s", name.c_str()));
+//  }
 }
 
 void UCIHandler::uciNewGameCommand() const {
@@ -188,6 +205,7 @@ void UCIHandler::positionCommand(std::istringstream& inStream) {
     }
   }
 }
+
 
 void UCIHandler::goCommand(std::istringstream& inStream) {
   std::string token, startFen;
@@ -320,9 +338,9 @@ void UCIHandler::goCommand(std::istringstream& inStream) {
   uciError("Search not yet implemented");
 }
 
-
 void UCIHandler::stopCommand() const {
-  // TODO: search
+  perft->stop();
+  // TODO: stop search
   uciError("StopSearch not yet implemented");
 }
 
@@ -353,10 +371,11 @@ void UCIHandler::perftCommand(std::istringstream& inStream) {
       uciError(fmt::format("perft end depth not between 1 and {}. Was '{}'", MAX_DEPTH, token));
     }
   }
-  std::thread perftThread([&](int s, int e){
+  std::thread perftThread([&](int s, int e) {
     perft->perft(s, e, true);
     sendString("Perft finished.");
-  }, startDepth, endDepth);
+  },
+                          startDepth, endDepth);
   perftThread.detach();
 }
 
@@ -408,8 +427,9 @@ void UCIHandler::sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint6
   send(fmt::format("info depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
                    depth, seldepth, nodes, nps, time, hashfull));
 }
-
 void UCIHandler::uciError(std::string const& msg) const {
   LOG__ERROR(Logger::get().UCIHAND_LOG, msg);
   sendString(msg);
 }
+
+

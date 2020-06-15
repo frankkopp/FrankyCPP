@@ -42,4 +42,7 @@ inline std::string toUpperCase(std::string str) {
   return str;
 }
 
+constexpr const char* boolStr (bool b) { return b ? "true" : "false"; }
+constexpr const char* boolStr (int b) { return boolStr (bool (b)); }
+
 #endif//FRANKYCPP_MISC_H
