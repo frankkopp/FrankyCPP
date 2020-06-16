@@ -26,7 +26,8 @@
 #ifndef FRANKYCPP_UCIOPTIONS_H
 #define FRANKYCPP_UCIOPTIONS_H
 
-#include <misc.h>
+#include <common/misc.h>
+#include <ostream>
 #include <sstream>
 #include <vector>
 
@@ -48,9 +49,7 @@ struct UciOption {
   std::string currentValue;
   std::function<void()> pHandler;
 
-  friend std::ostream& operator<<(std::ostream& os, const UciOption& option);
-
-  explicit UciOption(const char* name, std::function<void()> handler)
+    explicit UciOption(const char* name, std::function<void()> handler)
       : nameID(name), type(BUTTON), defaultValue(boolStr(false)), pHandler(handler) {}
 
   UciOption(const char* name, bool value, std::function<void()> handler)
@@ -71,26 +70,35 @@ struct UciOption {
   // String for uciOption will return a representation of the uci option as required by
   // the UCI protocol during the initialization phase of the UCI protocol
   std::string str() const;
+
+  friend std::ostream& operator<<(std::ostream& os, const UciOption& option) {
+    os << option.str();
+    return os;
+  }
 };
 
-inline std::ostream& operator<<(std::ostream& os, const UciOption& option) {
-  // TODO
-  return os;
-}
 
 // Singleton class for options
 class UciOptions {
+private:
+  std::vector<UciOption> optionVector{};
 
   UciOptions() { initOptions(); }// private constructor
+
   void initOptions();
   friend std::ostream& operator<<(std::ostream& os, const UciOptions& options);
-  std::vector<UciOption> optionVector{};
 
 public:
   UciOptions(UciOptions const&)  = delete;           // copy
   UciOptions(UciOptions const&&) = delete;           // move
   UciOptions& operator=(const UciOptions&) = delete; // copy assignment
   UciOptions& operator=(const UciOptions&&) = delete;// move assignment
+
+  // get the singleton instance of the class
+  static UciOptions* getInstance() {
+    static UciOptions instance;
+    return &instance;
+  }
 
   // returns a pointer to the uci option or nullptr if option is not found
   const UciOption* getOption(std::string name) const;
@@ -101,21 +109,16 @@ public:
   // Otherwise, if option was not found it returns false.
   bool setOption(std::string name, std::string value);
 
-  // get the singleton instance of the class
-  static UciOptions* getInstance() {
-    static UciOptions instance;
-    return &instance;
-  }
-
   // String for uciOption will return a representation of the uci option as required by
   // the UCI protocol during the initialization phase of the UCI protocol
   std::string str() const;
 
+  // helper for converting a string option to an int
   int getInt(const std::string& value);
 };
 
 inline std::ostream& operator<<(std::ostream& os, const UciOptions& options) {
-  // TODO
+  os << options.str();
   return os;
 }
 

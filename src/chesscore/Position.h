@@ -154,7 +154,7 @@ public:
   // Copy assignment operator
   Position& operator=(const Position& other) = default;
 
-  // Move constructor - creates a copy of the given Position
+  // Move constructor
   Position(Position&& other) = default;
 
   // Move assignment operator

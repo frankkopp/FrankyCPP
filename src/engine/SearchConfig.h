@@ -31,6 +31,7 @@
 namespace SearchConfig {
 
   // @formatter:off
+  inline bool USE_PONDER = true;
 
   // opening book
   //  inline bool                    USE_BOOK  = true;

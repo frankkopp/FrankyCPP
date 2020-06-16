@@ -29,7 +29,7 @@
 #include "MoveGenerator.h"
 #include "Values.h"
 #include "chesscore/Position.h"
-#include "misc.h"
+#include "common/misc.h"
 #include "types/types.h"
 
 MoveGenerator::MoveGenerator() {

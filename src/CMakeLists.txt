@@ -8,18 +8,29 @@ set(CMAKE_CXX_STANDARD 17)
 # define library files
 set(FrankyCPPlib_SRCS
         init.h
-        types/types.h
-        types/bitboard.cpp
-        misc.cpp misc.h
+
+        types/types.h types/bitboard.cpp
+
+        common/misc.h
+        common/Semaphore.h
+        common/ThreadPool.cpp common/ThreadPool.h
+        common/Logging.cpp common/Logging.h
+
         chesscore/Values.cpp chesscore/Values.h
         chesscore/Position.cpp chesscore/Position.h
         chesscore/MoveGenerator.cpp chesscore/MoveGenerator.h
         chesscore/Perft.cpp chesscore/Perft.h
         chesscore/History.cpp chesscore/History.h
-        engine/UCIHandler.cpp engine/UCIHandler.h
+
+        openingbook/PGN_Reader.cpp openingbook/PGN_Reader.h
+        openingbook/OpeningBook.cpp openingbook/OpeningBook.h
+
+        engine/UciHandler.cpp engine/UciHandler.h
         engine/UciOptions.cpp engine/UciOptions.h
-        engine/Logging.cpp engine/Logging.h
-        engine/Search.cpp engine/Search.h engine/SearchLimits.h)
+        engine/Search.cpp engine/Search.h
+        engine/SearchResult.h engine/SearchLimits.h engine/SearchConfig.h
+        engine/SearchStats.cpp engine/SearchStats.h
+        )
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})
 target_link_libraries(
         FrankyCPPlib
@@ -46,7 +57,7 @@ target_link_libraries(
 add_custom_command(
         TARGET ${exeName} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/config $<TARGET_FILE_DIR:${exeName}>/config
-        #COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/books $<TARGET_FILE_DIR:${exeName}>/books
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/books $<TARGET_FILE_DIR:${exeName}>/books
 )
 
 # install executable, config and opening books into the release folder
@@ -57,8 +68,8 @@ install(TARGETS ${exeName}
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/config
         DESTINATION ${PROJECT_SOURCE_DIR}/Release/bin
 )
-#install(DIRECTORY ${PROJECT_SOURCE_DIR}/books
-#        DESTINATION ${PROJECT_SOURCE_DIR}/Release/bin
-#        PATTERN "*.cache.*" EXCLUDE
-#)
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/books
+        DESTINATION ${PROJECT_SOURCE_DIR}/Release/bin
+        PATTERN "*.cache.*" EXCLUDE
+)
 

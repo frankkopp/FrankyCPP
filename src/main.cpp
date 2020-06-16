@@ -1,7 +1,7 @@
 #include "init.h"
 #include "version.h"
 #include <chesscore/Perft.h>
-#include <engine/UCIHandler.h>
+#include <engine/UciHandler.h>
 #include <fstream>
 #include <iostream>
 
@@ -177,7 +177,7 @@ int main(int argc, char* argv[]) {
   init::init();
 
   // Create engine and start UCI loop
-  UCIHandler uci{};
+  UciHandler uci{};
   uci.loop();
 
   return 0;
