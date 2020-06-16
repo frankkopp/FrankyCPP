@@ -25,6 +25,40 @@
 
 #include "Search.h"
 
-void Search::setUciHandler(UCIHandler* pHandler) {
-  
+////////////////////////////////////////////////
+///// CONSTRUCTORS
+
+Search::Search(UciHandler* uciHandler) {
+  fprintln("Not yet implemented: {}", __FUNCTION__);
+}
+
+////////////////////////////////////////////////
+///// PUBLIC
+
+void Search::startSearch(const Position p, SearchLimits sl) {
+  this->position = std::move(p);
+  this->searchLimits = std::move(sl);
+
+}
+
+void Search::stopSearch() {
+  fprintln("Not yet implemented: {}", __FUNCTION__);
+}
+
+void Search::waitWhileSearching() {
+  fprintln("Not yet implemented: {}", __FUNCTION__);
+
+}
+
+void Search::ponderhit() {
+  fprintln("Not yet implemented: {}", __FUNCTION__);
+}
+
+void Search::clearHash() {
+  fprintln("Not yet implemented: {}", __FUNCTION__);
+
+}
+
+void Search::setHashSize(int sizeInMB) {
+  fprintln("Not yet implemented: {}", __FUNCTION__);
 }

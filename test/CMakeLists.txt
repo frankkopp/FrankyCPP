@@ -11,16 +11,29 @@ set(testExeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR}
 include(GoogleTest)
 add_executable(
         ${testExeName}
-        TypesTest.cpp
-        BitboardTest.cpp
-        PositionTest.cpp
-        MoveGeneratorTest.cpp
-        PerftTest.cpp
-        ValuesTest.cpp
-        UCITests.cpp
+
+        types/TypesTest.cpp
+        types/BitboardTest.cpp
+        types/ValuesTest.cpp
+
+        common/SemaphoreTest.cpp
+        common/FifoTest.cpp
+        common/ThreadPoolTest.cpp
+
+        chesscore/PositionTest.cpp
+        chesscore/MoveGeneratorTest.cpp
+        chesscore/PerftTest.cpp
+
+        openingbook/PGN_ReaderTest.cpp
+        openingbook/OpeningBookTest.cpp
+
+        engine/UCITests.cpp
+        engine/UciOptionsTest.cpp
+
         TimingTests.cpp
+        SpeedTests.cpp
         BOOST_Test.cpp
-        SpeedTests.cpp UciOptionsTest.cpp)
+)
 
 target_link_libraries(
         ${testExeName}
@@ -34,7 +47,7 @@ target_link_libraries(
 add_custom_command(
         TARGET ${testExeName} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/config $<TARGET_FILE_DIR:${testExeName}>/config
-        #COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/books $<TARGET_FILE_DIR:${testExeName}>/books
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/books $<TARGET_FILE_DIR:${testExeName}>/books
 )
 
 gtest_discover_tests(${testExeName})

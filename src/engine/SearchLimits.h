@@ -27,11 +27,12 @@
 #define FRANKYCPP_SEARCHLIMITS_H
 
 #include <cstdint>
+#include <ostream>
 #include <types/types.h>
 
 // Limits is data structure to hold all information about how
 // a search of the chess games shall be controlled.
-// Search needs to read these an determine the necessary limits.
+// Search needs to read these and determine the necessary limits.
 // E.g. time controlled game or not
 struct SearchLimits {
   // no time control
@@ -54,6 +55,17 @@ struct SearchLimits {
 
   // parameter
   int movesToGo = 0;
+
+  std::string str() const {
+    std::ostringstream os;
+    os << "infinite: " << infinite << " ponder: " << ponder << " mate: " << mate << " depth: " << depth << " nodes: " << nodes << " moves: " << moves << " timeControl: " << timeControl << " whiteTime: " << whiteTime << " blackTime: " << blackTime << " whiteInc: " << whiteInc << " blackInc: " << blackInc << " moveTime: " << moveTime << " movesToGo: " << movesToGo;
+    return os.str();
+  }
+
+  friend std::ostream& operator<<(std::ostream& os, const SearchLimits& limits) {
+    os << limits.str();
+    return os;
+  }
 };
 
 #endif//FRANKYCPP_SEARCHLIMITS_H

@@ -26,6 +26,7 @@
 #include "UciOptions.h"
 #include "SearchConfig.h"
 #include "types/types.h"
+#include <boost/algorithm/string/trim.hpp>
 
 void UciOptions::initOptions() {
   optionVector.push_back(UciOption{"Clear Hash", [&]() { fprintln("Clear Hash not yet implemented"); }});
@@ -99,6 +100,7 @@ std::string UciOptions::str() const {
   for (auto o : optionVector) {
     str += o.str() + "\n";
   }
+  boost::trim(str); // remove last newline
   return str;
 }
 

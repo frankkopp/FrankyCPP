@@ -27,15 +27,75 @@
 #define FRANKYCPP_SEARCH_H
 
 
+#include <thread>
+
+#include "types/types.h"
+#include "SearchLimits.h"
+#include "SearchStats.h"
+#include "chesscore/MoveGenerator.h"
+#include "chesscore/Position.h"
+#include "common/Semaphore.h"
+#include "openingbook/OpeningBook.h"
+
+#include "gtest/gtest_prod.h"
+
 // forward declaration
-class UCIHandler;
+class UciHandler;
 
 class Search {
 
+  Position position{};
+  SearchLimits searchLimits{};
+
+
 public:
-  void setUciHandler(UCIHandler* pHandler);
+  ////////////////////////////////////////////////
+  ///// CONSTRUCTORS
+
+  Search(UciHandler* uciHandler);
+
+  // disallow copies and moves
+  Search (Search const&) = delete;
+  Search& operator= (const Search&) = delete;
+  Search (Search const&&)           = delete;
+  Search& operator= (const Search&&) = delete;
+
+  ////////////////////////////////////////////////
+  ///// PUBLIC
+
+  /** starts the search in a separate thread with the given search limits */
+  void startSearch (const Position p, SearchLimits sl);
+
+  /** Stops a running search gracefully - e.g. returns the best move found so far */
+  void stopSearch ();
+
+  /** checks if the search is already running */
+  bool isRunning () const { return false; } // TODO
+
+  /** signals if we have a result */
+  bool hasResult () const { return false; } // TODO implement
+
+  /** wait while searching */
+  void waitWhileSearching ();
+
+  /** to signal the search that pondering was successful */
+  void ponderhit ();
+
+  /** return current root pv list */
+//  const MoveList& getPV () const { return pv[PLY_ROOT]; };    // TODO implement
+
+  /** clears the hash table */
+  void clearHash ();
+
+  /** resize the hash to the given value in MB */
+  void setHashSize (int sizeInMB);
+
+  /** return search stats instance */
+//  inline const SearchStats& getSearchStats () const { return searchStats; } // TODO implement
+
+  /** return the last search result */
+//  inline const SearchResult& getLastSearchResult () const { return lastSearchResult; }; // TODO implement
 
 };
-
 
 #endif//FRANKYCPP_SEARCH_H

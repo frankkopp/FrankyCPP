@@ -72,6 +72,15 @@ Position::Position(const char* fen) {
   setupBoard(fen);
 }
 
+//Position::Position(const Position& op) {
+//
+//}
+//
+//Position& Position::operator=(const Position& other) {
+//  Position p(other);
+//  return p;
+//}
+
 ////////////////////////////////////////////////
 ///// PUBLIC
 
@@ -1034,3 +1043,4 @@ void Position::setupBoard(const char* fen) {
   iss >> std::skipws >> moveNumber;
   if (moveNumber == 0) moveNumber = 1;
 }
+
