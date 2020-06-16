@@ -27,6 +27,7 @@ set(FrankyCPPlib_SRCS
 
         engine/UciHandler.cpp engine/UciHandler.h
         engine/UciOptions.cpp engine/UciOptions.h
+        engine/TT.cpp engine/TT.h
         engine/Search.cpp engine/Search.h
         engine/SearchResult.h engine/SearchLimits.h engine/SearchConfig.h
         engine/SearchStats.cpp engine/SearchStats.h

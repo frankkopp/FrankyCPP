@@ -128,11 +128,11 @@ void Logger::init() {
 //  EVAL_LOG->set_pattern(defaultPattern);
 //  EVAL_LOG->set_level(logLevel);
 //  EVAL_LOG->flush_on(flushLevel);
-//
-//  TT_LOG->sinks().push_back(sharedFileSink);
-//  TT_LOG->set_pattern(defaultPattern);
-//  TT_LOG->set_level(logLevel);
-//  TT_LOG->flush_on(flushLevel);
+
+  TT_LOG->sinks().push_back(sharedFileSink);
+  TT_LOG->set_pattern(defaultPattern);
+  TT_LOG->set_level(logLevel);
+  TT_LOG->flush_on(flushLevel);
 
   UCIHAND_LOG->sinks().push_back(sharedFileSink);
   UCIHAND_LOG->set_pattern(defaultPattern);
