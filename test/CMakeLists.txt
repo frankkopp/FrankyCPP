@@ -29,9 +29,10 @@ add_executable(
 
         engine/UCITests.cpp
         engine/UciOptionsTest.cpp
+        engine/TT_Test.cpp
 
         TimingTests.cpp
-        SpeedTests.cpp
+        chesscore/SpeedTests.cpp
         BOOST_Test.cpp
 )
 
