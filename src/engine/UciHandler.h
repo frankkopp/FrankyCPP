@@ -74,6 +74,7 @@ public:
   void sendCurrentLine(const MoveList& moveList) const;
   void sendResult(Move bestMove, Move ponderMove) const;
   void sendString(const std::string& anyString) const;
+  void sendReadyOk() const;
 
 private:
   bool handleCommand(const std::string& cmd);

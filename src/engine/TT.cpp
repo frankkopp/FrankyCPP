@@ -72,6 +72,7 @@ void TT::clear() {
   std::vector<std::thread> threads;
   threads.reserve(noOfThreads);
 
+  // split work onto multiple threads
   for (unsigned int t = 0; t < noOfThreads; ++t) {
     threads.emplace_back([&, this, t]() {
       auto range = maxNumberOfEntries / noOfThreads;
@@ -91,7 +92,10 @@ void TT::clear() {
     });
   }
 
+  // wait until all threads have finished their work
   for (std::thread& th : threads) th.join();
+
+  // reset statistics
   numberOfPuts       = 0;
   numberOfEntries    = 0;
   numberOfHits       = 0;
@@ -100,6 +104,7 @@ void TT::clear() {
   numberOfCollisions = 0;
   numberOfOverwrites = 0;
   numberOfProbes     = 0;
+
   auto finish        = std::chrono::high_resolution_clock::now();
   auto time          = std::chrono::duration_cast<std::chrono::milliseconds>(finish - startTime).count();
 
