@@ -23,46 +23,20 @@
  *
  */
 
-#include "init.h"
-#include "types/types.h"
-#include "engine/Search.h"
+#ifndef FRANKYCPP_TIMEUNITS_H
+#define FRANKYCPP_TIMEUNITS_H
 
-#include <engine/SearchConfig.h>
-#include <gtest/gtest.h>
-using testing::Eq;
+typedef std::chrono::time_point<std::chrono::high_resolution_clock> TimePoint;
+typedef std::chrono::milliseconds MilliSec;
+typedef std::chrono::nanoseconds NanoSec;
 
-class SearchTest : public ::testing::Test {
-public:
-  static void SetUpTestSuite() {
-    NEWLINE;
-    init::init();
-    NEWLINE;
-    Logger::get().TEST_LOG->set_level(spdlog::level::debug);
-    Logger::get().UCIHAND_LOG->set_level(spdlog::level::debug);
-    Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
-    Logger::get().TT_LOG->set_level(spdlog::level::debug);
-    Logger::get().BOOK_LOG->set_level(spdlog::level::debug);
-  }
-
-protected:
-  void SetUp() override {
-    //SearchConfig::USE_BOOK = false;
-  }
-  void TearDown() override {}
-};
-
-TEST_F(SearchTest, construct) {
-  Search search{};
-  search.isReady();
+inline std::string str(MilliSec s) {
+  return fmt::format(deLocale, "{:n} ms", s.count());
 }
 
-TEST_F(SearchTest, resizeHash) {
-  Search search{};
-  search.isReady();
-  SearchConfig::TT_SIZE_MB = 1024;
-  search.resizeTT();
+inline std::string str(NanoSec s) {
+  return fmt::format(deLocale, "{:n} ns", s.count());
 }
 
-TEST_F(SearchTest, develop) {
 
-}
+#endif//FRANKYCPP_TIMEUNITS_H

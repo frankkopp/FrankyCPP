@@ -213,12 +213,12 @@ void UciHandler::goCommand(std::istringstream& inStream) {
     return;
   }
   // sanity check time control
-  if (searchLimits.timeControl && searchLimits.moveTime == 0) {
-    if (pPosition->getNextPlayer() == WHITE && searchLimits.whiteTime == 0) {
+  if (searchLimits.timeControl && searchLimits.moveTime.count() == 0) {
+    if (pPosition->getNextPlayer() == WHITE && searchLimits.whiteTime.count() == 0) {
       uciError(fmt::format("UCI command go invalid. White to move but time for white is zero! %s", searchLimits.str()));
       return ;
     }
-    else if (pPosition->getNextPlayer() == BLACK && searchLimits.blackTime == 0) {
+    else if (pPosition->getNextPlayer() == BLACK && searchLimits.blackTime.count() == 0) {
       uciError(fmt::format("UCI command go invalid. Black to move but time for white is zero! %s", searchLimits.str()));
       return ;
     }
@@ -271,11 +271,11 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
     else if (token == "movetime" || token == "moveTime") {
       inStream >> token;
       try {
-        searchLimits.moveTime = stoi(token);
+        searchLimits.moveTime = MilliSec(stoi(token));
         searchLimits.timeControl = true;
       } catch (...) { /* ignored */
       }
-      if (searchLimits.moveTime <= 0) {
+      if (searchLimits.moveTime.count() <= 0) {
         uciError(fmt::format("Invalid movetime: {}", token));
         return false;
       }
@@ -284,11 +284,11 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
     else if (token == "wtime") {
       inStream >> token;
       try {
-        searchLimits.whiteTime = stoi(token);
+        searchLimits.whiteTime = MilliSec(stoi(token));
         searchLimits.timeControl = true;
       } catch (...) { /* ignored */
       }
-      if (searchLimits.whiteTime <= 0) {
+      if (searchLimits.whiteTime.count() <= 0) {
         uciError(fmt::format("Invalid wtime: {}", token));
         return false;
       }
@@ -297,11 +297,11 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
     else if (token == "btime") {
       inStream >> token;
       try {
-        searchLimits.blackTime = stoi(token);
+        searchLimits.blackTime = MilliSec(std::stoi(token));
         searchLimits.timeControl = true;
       } catch (...) { /* ignored */
       }
-      if (searchLimits.blackTime <= 0) {
+      if (searchLimits.blackTime.count() <= 0) {
         uciError(fmt::format("Invalid btime: {}", token));
         return false;
       }
@@ -310,10 +310,10 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
     else if (token == "winc") {
       inStream >> token;
       try {
-        searchLimits.whiteInc = std::stoi(token);
+        searchLimits.whiteInc = MilliSec(std::stoi(token));
       } catch (...) { /* ignored */
       }
-      if (searchLimits.whiteInc < 0) {
+      if (searchLimits.whiteInc.count() < 0) {
         uciError(fmt::format("Invalid winc: {}", token));
         return false;
       }
@@ -322,10 +322,10 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
     else if (token == "binc") {
       inStream >> token;
       try {
-        searchLimits.blackInc = std::stoi(token);
+        searchLimits.blackInc = MilliSec(std::stoi(token));
       } catch (...) { /* ignored */
       }
-      if (searchLimits.blackInc < 0) {
+      if (searchLimits.blackInc.count() < 0) {
         uciError(fmt::format("Invalid binc: {}", token));
         return false;
       }
@@ -461,14 +461,14 @@ void UciHandler::sendCurrentLine(const MoveList& moveList) const {
 void UciHandler::sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t nodes,
                                       uint64_t nps, MilliSec time, const MoveList& pv) const {
   send(fmt::format("info depth {} seldepth {} multipv 1 score {} nodes {} nps {} time {} pv {}",
-                   depth, seldepth, str(Value(value)), nodes, nps, time, str(pv)));
+                   depth, seldepth, str(Value(value)), nodes, nps, time.count(), str(pv)));
 }
 
 void UciHandler::sendAspirationResearchInfo(int depth, int seldepth, Value value,
                                             const std::string& bound, uint64_t nodes, uint64_t nps,
                                             MilliSec time, const MoveList& pv) const {
   send(fmt::format("info depth {} seldepth {} multipv 1 score {} {} nodes {} nps {} time {} pv {}",
-                   depth, seldepth, str(Value(value)), bound, nodes, nps, time, str(pv)));
+                   depth, seldepth, str(Value(value)), bound, nodes, nps, time.count(), str(pv)));
 }
 
 void UciHandler::sendCurrentRootMove(Move currmove, std::size_t movenumber) const {
@@ -479,7 +479,7 @@ void UciHandler::sendCurrentRootMove(Move currmove, std::size_t movenumber) cons
 void UciHandler::sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps,
                                   MilliSec time, int hashfull) const {
   send(fmt::format("info depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
-                   depth, seldepth, nodes, nps, time, hashfull));
+                   depth, seldepth, nodes, nps, time.count(), hashfull));
 }
 
 void UciHandler::uciError(std::string const& msg) const {
