@@ -33,6 +33,10 @@
 /** data structure to cluster all search statistical values */
 struct SearchStats {
 
+  int currentSearchDepth;
+  int currentExtraSearchDepth;
+
+
   // TODO implement
 
   std::string str() const;

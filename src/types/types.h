@@ -27,27 +27,25 @@
 #define FRANKYCPP_TYPES_H
 
 // include all type headers for convenience
-#include "macros.h"
-#include "init.h"
-#include "globals.h"
-#include "color.h"
-#include "direction.h"
-#include "orientation.h"
-#include "depth.h"
-#include "file.h"
-#include "rank.h"
-#include "square.h"
+#include "bitboard.h"
 #include "castlingrights.h"
-#include "value.h"
-#include "valuetype.h"
-#include "piecetype.h"
-#include "piece.h"
+#include "color.h"
+#include "depth.h"
+#include "direction.h"
+#include "file.h"
+#include "globals.h"
+#include "init.h"
+#include "macros.h"
 #include "move.h"
 #include "movelist.h"
-#include "bitboard.h"
+#include "orientation.h"
+#include "piece.h"
+#include "piecetype.h"
+#include "rank.h"
+#include "square.h"
+#include "timeunits.h"
+#include "value.h"
+#include "valuetype.h"
 #include "zobristkey.h"
-
-/** for time keeping */
-typedef int64_t MilliSec;
 
 #endif//FRANKYCPP_TYPES_H

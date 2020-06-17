@@ -29,23 +29,22 @@
 #include "types/types.h"
 
 struct SearchResult {
-  Move    bestMove      = MOVE_NONE;
-  Value   bestMoveValue = VALUE_NONE;
-  Move    ponderMove    = MOVE_NONE;
-  int64_t time          = 0;
-  int     depth         = 0;
-  int     extraDepth    = 0;
+  Move bestMove       = MOVE_NONE;
+  Value bestMoveValue = VALUE_NONE;
+  Move ponderMove     = MOVE_NONE;
+  NanoSec time{};
+  int depth      = 0;
+  int extraDepth = 0;
+  MoveList pv{};
 
-  std::string str () const {
-    return "Best Move: " + ::str(bestMove)
-           + " (" + std::to_string (bestMoveValue) + ") " + "Ponder Move: "
-           + ::str(ponderMove) + " Depth: " + std::to_string (depth)
-           + "/" + std::to_string (extraDepth);
+  bool bookMove = false;
+  std::string str() const {
+    return "Best Move: " + ::str(bestMove) + " (" + std::to_string(bestMoveValue) + ") " + "Ponder Move: " + ::str(ponderMove) + " Depth: " + std::to_string(depth) + "/" + std::to_string(extraDepth);
   }
 };
 
-inline std::ostream& operator<< (std::ostream& os, const SearchResult& searchResult) {
-  os << searchResult.str ();
+inline std::ostream& operator<<(std::ostream& os, const SearchResult& searchResult) {
+  os << searchResult.str();
   return os;
 }
 

@@ -47,18 +47,18 @@ struct SearchLimits {
 
   //  time control;
   bool timeControl   = false;
-  MilliSec whiteTime = 0;
-  MilliSec blackTime = 0;
-  MilliSec whiteInc  = 0;
-  MilliSec blackInc  = 0;
-  MilliSec moveTime  = 0;
+  MilliSec whiteTime = MilliSec{0};
+  MilliSec blackTime = MilliSec{0};
+  MilliSec whiteInc  = MilliSec{0};
+  MilliSec blackInc  = MilliSec{0};
+  MilliSec moveTime  = MilliSec{0};
 
   // parameter
   int movesToGo = 0;
 
   std::string str() const {
     std::ostringstream os;
-    os << "infinite: " << infinite << " ponder: " << ponder << " mate: " << mate << " depth: " << depth << " nodes: " << nodes << " moves: " << moves << " timeControl: " << timeControl << " whiteTime: " << whiteTime << " blackTime: " << blackTime << " whiteInc: " << whiteInc << " blackInc: " << blackInc << " moveTime: " << moveTime << " movesToGo: " << movesToGo;
+    os << "infinite: " << infinite << " ponder: " << ponder << " mate: " << mate << " depth: " << depth << " nodes: " << nodes << " moves: " << moves << " timeControl: " << timeControl << " whiteTime: " << whiteTime.count() << " blackTime: " << blackTime.count() << " whiteInc: " << whiteInc.count() << " blackInc: " << blackInc.count() << " moveTime: " << moveTime.count() << " movesToGo: " << movesToGo;
     return os.str();
   }
 

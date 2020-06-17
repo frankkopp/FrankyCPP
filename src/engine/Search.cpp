@@ -70,9 +70,6 @@ void Search::startSearch(const Position p, SearchLimits sl) {
   // join() previous thread
   if (searchThread.joinable()) { searchThread.join(); }
 
-  // reset stop flag
-  _stopSearchFlag = false;
-
   // start search in a separate thread
   LOG__DEBUG(Logger::get().SEARCH_LOG, "Starting search in separate thread.");
   searchThread = std::thread(&Search::run, this);
@@ -85,7 +82,7 @@ void Search::startSearch(const Position p, SearchLimits sl) {
 }
 
 void Search::stopSearch() {
-  _stopSearchFlag = false;
+  stopSearchFlag = true;
   waitWhileSearching();
 }
 
@@ -146,6 +143,133 @@ void Search::resizeTT() {
 ////////////////////////////////////////////////
 ///// PRIVATE
 
+void Search::run() {
+  // check if there is already a search running
+  // and if not grab the isRunning semaphore
+  if (!isRunningSemaphore.get()) {
+    LOG__ERROR(Logger::get().SEARCH_LOG, "Search already running");
+    return;
+  }
+
+  // start search time
+  startTime = std::chrono::high_resolution_clock::now();
+
+  LOG__INFO(Logger::get().SEARCH_LOG, "Searching " + position.strFen());
+
+  // initialize search
+  stopSearchFlag    = false;
+  hasResultFlag     = false;
+  timeLimit         = MilliSec{0};
+  extraTime         = MilliSec{0};
+  nodesVisited      = 0;
+  searchStats       = SearchStats{};
+  lastUciUpdateTime = startTime;
+  initialize();
+
+  // setup and report search limits
+  setupSearchLimits(position, searchLimits);
+
+  // when not pondering and search is time controlled start timer
+  if (searchLimits.timeControl && !searchLimits.ponder) {
+    startTimer();
+  }
+
+  // check for opening book move when we have a time controlled game
+  Move bookMove = MOVE_NONE;
+  if (book && SearchConfig::USE_BOOK && searchLimits.timeControl) {
+    bookMove = book->getRandomMove(position.getZobristKey());
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Opening Book: Choosing book move " + str(bookMove));
+  }
+  else {
+    LOG__INFO(Logger::get().SEARCH_LOG, "Opening Book: Not using book.");
+  }
+
+  // age tt entries
+  if (tt) {
+    LOG__INFO(Logger::get().SEARCH_LOG, "Transposition Table: Using TT: " + tt->str());
+    tt->ageEntries();
+  }
+  else {
+    LOG__INFO(Logger::get().SEARCH_LOG, "Transposition Table: Not using TT.");
+  }
+
+  LOG__INFO(Logger::get().SEARCH_LOG, fmt::format("Search using: PVS={} ASP={}", SearchConfig::USE_PVS, SearchConfig::USE_ASP));
+
+  // Initialize ply based data
+  // move generators for each ply
+  // pv move list for each ply
+  // Each depth in search gets it own global
+  // field to avoid object creation during search.
+  for (int i = DEPTH_NONE; i < DEPTH_MAX; i++) {
+    this->mg[i] = MoveGenerator{};
+    if (SearchConfig::USE_HISTORY_COUNTER || SearchConfig::USE_HISTORY_MOVES) {
+      this->mg[i].setHistoryData(&history);
+    }
+    pv[i].clear();
+  }
+
+  // release the init phase lock to signal the calling go routine
+  // waiting in StartSearch() to return
+  initSemaphore.release();
+
+  SearchResult searchResult{};
+  if (!bookMove) {
+    searchResult = iterativeDeepening(position);
+  }
+  else {
+    searchResult.bestMove = bookMove;
+    searchResult.bookMove = true;
+    hadBookMove           = true;
+  }
+
+  // If we arrive here during Ponder mode or Infinite mode and the search is not
+  // stopped it means that the search was finished before it has been stopped
+  // by stopSearchFlag or ponderhit,
+  // We wait here until search has completed.
+  if (!stopSearchFlag && (searchLimits.ponder || searchLimits.infinite)) {
+    LOG__INFO(Logger::get().SEARCH_LOG, "Search finished before stopped or ponderhit! Waiting for stop/ponderhit to send result");
+    // relaxed busy wait
+    while (!stopSearchFlag && (searchLimits.ponder || searchLimits.infinite)) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    }
+  }
+
+  // update search result with search time and pv
+  searchResult.time = std::chrono::high_resolution_clock::now() - startTime;
+  searchResult.pv   = pv[0];
+
+  // print stats to log
+  //  LOG__INFO(Logger::get().SEARCH_LOG, "Search finished after {})",
+  //            (searchResult.time % 1'000'000) / 1'000, (searchResult.time % 1'000));
+  //  LOG__INFO(Logger::get().SEARCH_LOG, "Search depth was {}({}) with {} nodes visited. NPS = {} nps)",
+  //            searchStats.currentSearchDepth, searchStats.currentExtraSearchDepth, nodesVisited,
+  //            (nodesVisited * 1'000'000) / (searchResult.time + std::chrono::nanoseconds{1}).count());
+  //  LOG__DEBUG(Logger::get().SEARCH_LOG, "Search stats: {}", searchStats.str());
+
+  // print result to log
+  LOG__INFO(Logger::get().SEARCH_LOG, "Search result: {}", searchResult.str());
+
+  // save result until overwritten by the next search
+  lastSearchResult = searchResult;
+  hasResultFlag    = true;
+
+  // Clean up
+  // make sure timer stops as this could potentially still be running
+  // when search finished without any stop signal/limit
+  stopSearchFlag = true;
+
+  // At the end of a search we send the result in any case even if
+  // searched has been stopped.
+  sendResult(searchResult);
+
+  // release the running semaphore after the search has ended
+  isRunningSemaphore.release();
+}
+
+SearchResult Search::iterativeDeepening(Position& position) {
+  return SearchResult();
+}
+
 void Search::initialize() {
   // init opening book
   if (SearchConfig::USE_BOOK) {
@@ -175,10 +299,41 @@ void Search::initialize() {
   }
 }
 
-void Search::run() {
-  LOG__TRACE(Logger::get().SEARCH_LOG, "Search thread started.");
+bool Search::stopConditions() {
+  if (stopSearchFlag) return true;
+  if (searchLimits.nodes > 0 && nodesVisited >= searchLimits.nodes) {
+    stopSearchFlag = true;
+  }
+  return stopSearchFlag;
 }
+
+void Search::setupSearchLimits(Position& position, SearchLimits& sl) {
+  if (sl.infinite) {
+    LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Infinite");
+  }
+  if (sl.ponder) {
+    LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Ponder");
+  }
+  if (sl.mate > 0) {
+    LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Mate in {}", sl.mate);
+  }
+  if (sl.timeControl) {
+    timeLimit = setupTimeControl(position, sl);
+    extraTime = MilliSec{0};
+    if (sl.moveTime.count() > 0) {
+      LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Time Controlled: Time per Move {}", sl.moveTime.count());
+    }
+    // TODO implement
+  }
+  // TODO implement
+}
+
+MilliSec Search::setupTimeControl(Position& position, SearchLimits& limits) {
+  return MilliSec{};
+}
+
 void Search::startTimer() {
+  // TODO implement
 }
 
 void Search::sendReadyOk() const {
@@ -186,7 +341,7 @@ void Search::sendReadyOk() const {
     uciHandler->sendReadyOk();
   }
   else {
-    LOG__DEBUG(Logger::get().SEARCH_LOG, "uci >> readyok");
+    LOG__INFO(Logger::get().SEARCH_LOG, "uci >> readyok");
   }
 }
 
@@ -195,6 +350,12 @@ void Search::sendString(const std::string& msg) const {
     uciHandler->sendString(msg);
   }
   else {
-    LOG__DEBUG(Logger::get().SEARCH_LOG, "uci >> " + msg);
+    LOG__INFO(Logger::get().SEARCH_LOG, "uci >> " + msg);
+  }
+}
+
+void Search::sendResult(SearchResult& result) {
+  if (uciHandler) {
+    uciHandler->sendResult(result.bestMove, result.ponderMove);
   }
 }

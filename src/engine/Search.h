@@ -74,18 +74,18 @@ class Search {
   MoveList rootMoves{};
 
   // manage running search
-  std::atomic_bool _stopSearchFlag = false;
-  std::atomic_bool _hasResult      = false;
-  bool hadBookMove                 = false;
+  std::atomic_bool stopSearchFlag = false;
+  std::atomic_bool hasResultFlag  = false;
+  bool hadBookMove                = false;
 
   // time management for the search
-  MilliSec startTime{};
+  TimePoint startTime{};
   MilliSec timeLimit{};
-  std::atomic_int64_t extraTime{};
+  MilliSec extraTime{};
 
   // UCI related
-  constexpr static MilliSec UCI_UPDATE_INTERVAL = 500;
-  MilliSec lastUciUpdateTime{};
+  constexpr static MilliSec UCI_UPDATE_INTERVAL = MilliSec{500};
+  TimePoint lastUciUpdateTime{};
 
   // UCI relevant statistics
   uint64_t nodesVisited{0};
@@ -156,7 +156,7 @@ public:
   void ponderhit();
   /** return current root pv list */
 
-  const MoveList& getPV () const { return pv[0]; };    // TODO implement
+  const MoveList& getPV() const { return pv[0]; };// TODO implement
 
   /** clears the hash table */
   void clearTT();
@@ -165,13 +165,12 @@ public:
   void resizeTT();
 
   /** return search stats instance */
-  inline const SearchStats& getSearchStats () const { return searchStats; } // TODO implement
+  inline const SearchStats& getSearchStats() const { return searchStats; }// TODO implement
 
   /** return the last search result */
-  inline const SearchResult& getLastSearchResult () const { return lastSearchResult; }; // TODO implement
+  inline const SearchResult& getLastSearchResult() const { return lastSearchResult; };// TODO implement
 
 private:
-
   ////////////////////////////////////////////////
   ///// PRIVATE
 
@@ -189,12 +188,38 @@ private:
    */
   void run();
 
+  // Iterative Deepening:
+  // It works as follows: the program starts with a one ply search,
+  // then increments the search depth and does another search. This
+  // process is repeated until the time allocated for the search is
+  // exhausted. In case of an unfinished search, the current best
+  // move is returned by the search. The current best move is
+  // guaranteed to by at least as good as the best move from the
+  // last finished iteration as we sorted the root moves before
+  // the start of the new iteration and started with this best
+  // move. This way, also the results from the partial search
+  // can be accepted
+  //
+  //  IDEA in case of a severe drop of the score it is wise
+  //   to allocate some more time, as the first alternative is often
+  //   a bad capture, delaying the loss instead of preventing it
+  SearchResult iterativeDeepening(Position& position);
+
+  // stopConditions checks if stopFlag is set or if nodesVisited have
+  // reached a potential maximum set in the search limits.
+  bool stopConditions();
+
+  MilliSec setupTimeControl(Position& position, SearchLimits& limits);
+
   // startTimer starts a thread which regularly checks the elapsed time against
   // the time limit and extra time given. If time limit is reached this will set
   // the stopFlag to true and terminate itself.
   void startTimer();
+
   void sendReadyOk() const;
   void sendString(const std::string& msg) const;
+  void setupSearchLimits(Position& position, SearchLimits& sl);
+  void sendResult(SearchResult& result);
 };
 
 #endif//FRANKYCPP_SEARCH_H
