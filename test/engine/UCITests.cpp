@@ -46,7 +46,8 @@ public:
     NEWLINE;
     Logger::get().TEST_LOG->set_level(spdlog::level::debug);
     Logger::get().UCIHAND_LOG->set_level(spdlog::level::debug);
-    //Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
+    Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
+    Logger::get().TT_LOG->set_level(spdlog::level::debug);
   }
 
 protected:

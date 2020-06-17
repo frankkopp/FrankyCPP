@@ -113,12 +113,12 @@ void Logger::init() {
 //  ENGINE_LOG->set_pattern(defaultPattern);
 //  ENGINE_LOG->set_level(logLevel);
 //  ENGINE_LOG->flush_on(flushLevel);
-//
-//  SEARCH_LOG->sinks().push_back(sharedFileSink);
-//  SEARCH_LOG->set_pattern(defaultPattern);
-//  SEARCH_LOG->set_level(searchLogLevel);
-//  SEARCH_LOG->flush_on(flushLevel);
-//
+
+  SEARCH_LOG->sinks().push_back(sharedFileSink);
+  SEARCH_LOG->set_pattern(defaultPattern);
+  SEARCH_LOG->set_level(searchLogLevel);
+  SEARCH_LOG->flush_on(flushLevel);
+  //
 //  TSUITE_LOG->sinks().push_back(sharedFileSink);
 //  TSUITE_LOG->set_pattern(defaultPattern);
 //  TSUITE_LOG->set_level(logLevel);

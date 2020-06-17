@@ -27,75 +27,174 @@
 #define FRANKYCPP_SEARCH_H
 
 
+#include <chesscore/History.h>
 #include <thread>
 
-#include "types/types.h"
 #include "SearchLimits.h"
 #include "SearchStats.h"
 #include "chesscore/MoveGenerator.h"
 #include "chesscore/Position.h"
 #include "common/Semaphore.h"
+#include "engine/UciHandler.h"
 #include "openingbook/OpeningBook.h"
+#include "types/types.h"
 
+#include "SearchResult.h"
+#include "TT.h"
 #include "gtest/gtest_prod.h"
 
 // forward declaration
 class UciHandler;
+class Evaluator;
 
 class Search {
 
+  // callback handler for UCI communication
+  UciHandler* uciHandler{};
+
+  // state management for the search
+  mutable Semaphore initSemaphore{1};
+  mutable Semaphore isRunningSemaphore{1};
+  std::thread searchThread{};
+  std::thread timerThread{};
+
+  std::unique_ptr<OpeningBook> book;
+  std::unique_ptr<TT> tt;
+  std::unique_ptr<Evaluator> evaluator;
+
+  // history heuristics
+  History history{};
+
+  // result of previous search
+  SearchResult lastSearchResult{};
+
+  // current position and search limits for the search
   Position position{};
   SearchLimits searchLimits{};
+  MoveList rootMoves{};
 
+  // manage running search
+  std::atomic_bool _stopSearchFlag = false;
+  std::atomic_bool _hasResult      = false;
+  bool hadBookMove                 = false;
+
+  // time management for the search
+  MilliSec startTime{};
+  MilliSec timeLimit{};
+  std::atomic_int64_t extraTime{};
+
+  // UCI related
+  constexpr static MilliSec UCI_UPDATE_INTERVAL = 500;
+  MilliSec lastUciUpdateTime{};
+
+  // UCI relevant statistics
+  uint64_t nodesVisited{0};
+
+  // Statistics
+  SearchStats searchStats{};
+
+  // ply related data
+  MoveList pv[DEPTH_MAX];
+  MoveGenerator mg[DEPTH_MAX];
 
 public:
+  // in PV we search the full window in NonPV we try a zero window first
+  enum Node_Type : bool { NonPV = false,
+                          PV    = true };
+
+  // If this is true we are allowed to do a NULL move in this ply. This is to
+  // avoid recursive null move searches or other prunings which do not make sense
+  // in a null move search
+  enum Do_Null : bool { No_Null_Move = false,
+                        Do_Null_Move = true };
+
   ////////////////////////////////////////////////
   ///// CONSTRUCTORS
 
-  Search(UciHandler* uciHandler);
+  Search();
+  explicit Search(UciHandler* pUciHandler);
+  ~Search();
 
   // disallow copies and moves
-  Search (Search const&) = delete;
-  Search& operator= (const Search&) = delete;
-  Search (Search const&&)           = delete;
-  Search& operator= (const Search&&) = delete;
+  Search(Search const&) = delete;
+  Search& operator=(const Search&) = delete;
+  Search(Search const&&)           = delete;
+  Search& operator=(const Search&&) = delete;
 
   ////////////////////////////////////////////////
   ///// PUBLIC
 
+  // NewGame stops any running searches and resets the search state
+  // to be ready for a different game. Any caches or states will be reset.
+  void newGame();
+
+  // IsReady signals the uciHandler that the search is ready.
+  // This is part if the UCI protocol to make sure a chess
+  // engine is initialized and ready to receive commands.
+  // When called this will initialize the search which might
+  // take a while. When finished this will call the uciHandler
+  // set in SetUciHandler to send "readyok" to the UCI user interface.
+  void isReady();
+
   /** starts the search in a separate thread with the given search limits */
-  void startSearch (const Position p, SearchLimits sl);
+  void startSearch(const Position p, SearchLimits sl);// TODO implement
 
   /** Stops a running search gracefully - e.g. returns the best move found so far */
-  void stopSearch ();
+  void stopSearch();
 
   /** checks if the search is already running */
-  bool isRunning () const { return false; } // TODO
+  bool isSearching() const;
 
   /** signals if we have a result */
-  bool hasResult () const { return false; } // TODO implement
+  bool hasResult() const { return false; }// TODO implement
 
-  /** wait while searching */
-  void waitWhileSearching ();
+  // wait while searching blocks execution of the current thread until
+  // the search has finished
+  void waitWhileSearching() const;
 
   /** to signal the search that pondering was successful */
-  void ponderhit ();
-
+  void ponderhit();
   /** return current root pv list */
-//  const MoveList& getPV () const { return pv[PLY_ROOT]; };    // TODO implement
+
+  const MoveList& getPV () const { return pv[0]; };    // TODO implement
 
   /** clears the hash table */
-  void clearHash ();
+  void clearTT();
 
-  /** resize the hash to the given value in MB */
-  void setHashSize (int sizeInMB);
+  /** resize the hash to the value in the global config SearchConfig::TT_SIZE_MB */
+  void resizeTT();
 
   /** return search stats instance */
-//  inline const SearchStats& getSearchStats () const { return searchStats; } // TODO implement
+  inline const SearchStats& getSearchStats () const { return searchStats; } // TODO implement
 
   /** return the last search result */
-//  inline const SearchResult& getLastSearchResult () const { return lastSearchResult; }; // TODO implement
+  inline const SearchResult& getLastSearchResult () const { return lastSearchResult; }; // TODO implement
 
+private:
+
+  ////////////////////////////////////////////////
+  ///// PRIVATE
+
+  // Initialize sets up opening book, transposition table
+  // and other potentially time consuming setup tasks
+  // This can be called several times without doing
+  // initialization again.
+  void initialize();
+
+  /**
+   * Called after starting the search in a new thread. Configures the search
+   * and eventually calls iterativeDeepening. After the search it takes the
+   * result to sends it to the UCI engine.
+   * // TODO implement
+   */
+  void run();
+
+  // startTimer starts a thread which regularly checks the elapsed time against
+  // the time limit and extra time given. If time limit is reached this will set
+  // the stopFlag to true and terminate itself.
+  void startTimer();
+  void sendReadyOk() const;
+  void sendString(const std::string& msg) const;
 };
 
 #endif//FRANKYCPP_SEARCH_H

@@ -179,11 +179,6 @@ TEST_F(TT_Test, put) {
   const Key key1 = randomKey(rg);
   const Key key2 = key1 + 13;               // different bucket
   const Key key3 = key1 + collisionDistance;// same bucket - collision
-  //  const Key key4 = key3 + collisionDistance; // same bucket - collision
-  //  const Key key5 = key4 + collisionDistance; // same bucket - collision
-  //  const Key key6 = key5 + collisionDistance; // same bucket - collision
-  //  const Key key7 = key6 + collisionDistance; // same bucket - collision
-  //  const Key key8 = key7 + collisionDistance; // same bucket - collision
 
   // new entry in empty bucket at pos 0
   tt.put(key1, Depth(6), createMove(SQ_E2, SQ_E4), Value(101), TYPE_EXACT, Value(1001), true);
@@ -222,62 +217,7 @@ TEST_F(TT_Test, put) {
   ASSERT_EQ(tt.getMatch(key3)->eval, Value(1003));
   ASSERT_TRUE(tt.getMatch(key3)->mateThreat);
 
-  //
-  //  // new entry in bucket at pos 2 (collision)
-  //  tt.put(key4, Value(104), TT::TYPE_EXACT, Depth(3), createMove("e2e4"), false);
-  //  ASSERT_EQ(4, tt.getNumberOfPuts());
-  //  ASSERT_EQ(4, tt.getNumberOfEntries());
-  //  ASSERT_EQ(0, tt.getNumberOfUpdates());
-  //  ASSERT_EQ(0, tt.getNumberOfCollisions());
-  //  ASSERT_EQ(0, tt.getNumberOfOverwrites());
-  //  ASSERT_EQ(tt._keys[key4], key4);
-  //  ASSERT_EQ(TT::getValue(tt._data[key4]), Value(104));
-  //
-  //
-  //  // new entry in bucket at pos 3 (collision)
-  //  tt.put(key5, Value(105), TT::TYPE_EXACT, Depth(5), createMove("e2e4"), false);
-  //  ASSERT_EQ(5, tt.getNumberOfPuts());
-  //  ASSERT_EQ(5, tt.getNumberOfEntries());
-  //  ASSERT_EQ(0, tt.getNumberOfUpdates());
-  //  ASSERT_EQ(0, tt.getNumberOfCollisions());
-  //  ASSERT_EQ(0, tt.getNumberOfOverwrites());
-  //  ASSERT_EQ(tt._keys[key5], key5);
-  //  ASSERT_EQ(TT::getValue(tt._data[key5]), Value(105));
-  //
-  //  // REPLACE entry in bucket at pos 2 (collision) as pos has lowest depth (3)
-  //  tt.put(key6, Value(206), TT::TYPE_EXACT, Depth(4), createMove("e2e4"), false);
-  //  ASSERT_EQ(6, tt.getNumberOfPuts());
-  //  ASSERT_EQ(5, tt.getNumberOfEntries());
-  //  ASSERT_EQ(0, tt.getNumberOfUpdates());
-  //  ASSERT_EQ(1, tt.getNumberOfCollisions());
-  //  ASSERT_EQ(1, tt.getNumberOfOverwrites());
-  //  ASSERT_EQ(tt._keys[key6], key6);
-  //  ASSERT_EQ(TT::getValue(tt._data[key6]), Value(206));
-  //
-  //  // REPLACE entry in bucket at pos 2 (collision) as pos has lowest depth (4) and is last of 2 entries with this depth
-  //  tt.put(key7, Value(207), TT::TYPE_EXACT, Depth(4), createMove("e2e4"), false);
-  //  ASSERT_EQ(7, tt.getNumberOfPuts());
-  //  ASSERT_EQ(5, tt.getNumberOfEntries());
-  //  ASSERT_EQ(0, tt.getNumberOfUpdates());
-  //  ASSERT_EQ(2, tt.getNumberOfCollisions());
-  //  ASSERT_EQ(2, tt.getNumberOfOverwrites());
-  //  ASSERT_EQ(tt._keys[key7], key7);
-  //  ASSERT_EQ(TT::getValue(tt._data[key7]), Value(207));
-  //
-  //  // age first entry with depth 5
-  //  tt._data[key1] = TT::increaseAge(tt._data[key1]);
-  //
-  //  // REPLACE entry in bucket at pos 0 (collision) as it is oldest
-  //  tt.put(key8, Value(208), TT::TYPE_EXACT, Depth(4), createMove("e2e4"), false);
-  //  ASSERT_EQ(8, tt.getNumberOfPuts());
-  //  ASSERT_EQ(5, tt.getNumberOfEntries());
-  //  ASSERT_EQ(0, tt.getNumberOfUpdates());
-  //  ASSERT_EQ(3, tt.getNumberOfCollisions());
-  //  ASSERT_EQ(3, tt.getNumberOfOverwrites());
-  //  ASSERT_EQ(tt._keys[key8], key8);
-  //  ASSERT_EQ(TT::getValue(tt._data[key8]), Value(208));
 }
-
 
 TEST_F(TT_Test, get) {
   std::random_device rd;
@@ -311,60 +251,6 @@ TEST_F(TT_Test, get) {
   const TT::Entry* e4 = tt.getMatch(key4);// not in TT
   ASSERT_EQ(nullptr, e4);
 }
-
-//TEST_F(TT_Test, probe) {
-//  std::random_device rd;
-//  std::mt19937_64 rg(rd());
-//  std::uniform_int_distribution<uint64_t> randomKey;
-//
-//  TT tt(10 * TT::MB);
-//
-//  const Key key1 = randomKey(rg);
-//  const Key key2 = key1 + 13; // different bucket
-//  const Key key3 = key1 + 17; // same bucket - collision
-//
-//  tt.put(key1, Depth(6), createMove("e2e4"), Value(101), TYPE_EXACT, true);
-//  tt.put(key2, Depth(5), createMove("e2e4"), Value(102), TYPE_ALPHA, false);
-//  tt.put(key3, Depth(4), createMove("e2e4"), Value(103), TYPE_BETA, false);
-//
-//  TT::Result ttHit = TT::TT_NOCUT;
-//  TT::Entry beforeProbe = tt.getEntry(key1);
-//  const TT::Entry* r = tt.probe<Search::NonPV>(key1);
-//  const TT::Entry afterProbe = tt.getEntry(key1);
-//  ASSERT_EQ(beforeProbe.age - 1, afterProbe.age); // has entry aged?
-//  ASSERT_EQ(TT::TT_CUT, ttHit);
-//  ASSERT_TRUE(r->mateThreat);
-//
-//  // TT entry has lower depth
-//  r = tt.probe<Search::NonPV>(key1);
-//  ASSERT_EQ(TT::TT_NOCUT, ttHit);
-//
-//  // TT entry was alpha within of bounds - MISS
-//  r = tt.probe<Search::NonPV>(key2);
-//  ASSERT_EQ(TT::TT_NOCUT, ttHit);
-//  ASSERT_FALSE(r);
-//
-//  // TT entry was alpha and value < alpha
-//  r = tt.probe<Search::NonPV>(key2);
-//  ASSERT_EQ(TT::TT_CUT, ttHit);
-//
-//  // TT entry was alpha and value < alpha but PV
-//  r = tt.probe<Search::PV>(key2);
-//  ASSERT_EQ(TT::TT_NOCUT, ttHit);
-//
-//  // TT entry was beta within of bounds - MISS
-//  r = tt.probe<Search::NonPV>(key3);
-//  ASSERT_EQ(TT::TT_NOCUT, ttHit);
-//
-//  // TT entry was beta and value > beta - HIT
-//  r = tt.probe<Search::NonPV>(key3);
-//  ASSERT_EQ(TT::TT_CUT, ttHit);
-//
-//  // TT entry was beta and value > beta but PV - MISS
-//  r = tt.probe<Search::PV>(key3);
-//  ASSERT_EQ(TT::TT_NOCUT, ttHit);
-//
-//}
 
 // 17.6.2020 (loaner laptop)
 // Run time      : 976.401.106 ns (102.416.926 put/probes per sec)

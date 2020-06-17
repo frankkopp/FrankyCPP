@@ -115,8 +115,7 @@ void UciHandler::uciCommand() const {
 }
 
 void UciHandler::isReadyCommand() const {
-  // TODO initialize tt and book
-  send("readyok");
+  pSearch->isReady();
 }
 
 void UciHandler::setOptionCommand(std::istringstream& inStream) const {
@@ -148,8 +147,8 @@ void UciHandler::uciNewGameCommand() const {
   // TODO new game
   uciError("Not yet implemented: UCI command: ucinewgame");
   LOG__INFO(Logger::get().UCIHAND_LOG, "New Game");
-  if (pSearch->isRunning()) pSearch->stopSearch();
-  pSearch->clearHash();
+  if (pSearch->isSearching()) pSearch->stopSearch();
+  pSearch->clearTT();
 }
 
 void UciHandler::positionCommand(std::istringstream& inStream) {
@@ -227,7 +226,7 @@ void UciHandler::goCommand(std::istringstream& inStream) {
 
   // start search
   LOG__INFO(Logger::get().UCIHAND_LOG, "Start Search");
-  if (pSearch->isRunning()) {
+  if (pSearch->isSearching()) {
     // Previous search was still running. Stopping to start new search!
     uciError("Already searching. Stopping search to start new search.");
     pSearch->stopSearch();
@@ -447,6 +446,10 @@ void UciHandler::sendString(const std::string& anyString) const {
   send(fmt::format("info string {}", anyString));
 }
 
+void UciHandler::sendReadyOk() const {
+  send("readyok");
+}
+
 void UciHandler::sendResult(Move bestMove, Move ponderMove) const {
   send(fmt::format("bestmove {}{}", str(bestMove), (ponderMove ? " ponder " + str(ponderMove) : "")));
 }
@@ -472,11 +475,13 @@ void UciHandler::sendCurrentRootMove(Move currmove, std::size_t movenumber) cons
   send(fmt::format("info currmove {} currmovenumber {}", str(currmove),
                    movenumber));
 }
+
 void UciHandler::sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps,
                                   MilliSec time, int hashfull) const {
   send(fmt::format("info depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
                    depth, seldepth, nodes, nps, time, hashfull));
 }
+
 void UciHandler::uciError(std::string const& msg) const {
   LOG__ERROR(Logger::get().UCIHAND_LOG, msg);
   sendString(msg);
