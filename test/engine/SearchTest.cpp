@@ -23,9 +23,9 @@
  *
  */
 
+#include "engine/Search.h"
 #include "init.h"
 #include "types/types.h"
-#include "engine/Search.h"
 
 #include <engine/SearchConfig.h>
 #include <gtest/gtest.h>
@@ -63,6 +63,60 @@ TEST_F(SearchTest, resizeHash) {
   search.resizeTT();
 }
 
-TEST_F(SearchTest, develop) {
+TEST_F(SearchTest, setupTime) {
+  Position p{};
+  SearchLimits sl{};
 
+  sl.moveTime = MilliSec{1500};
+  EXPECT_EQ(1480, Search::setupTimeControl(p, sl).count());
+
+  sl           = SearchLimits{};
+  sl.whiteTime = MilliSec{30000};
+  sl.blackTime = MilliSec{30000};
+  fprintln("{}", str(Search::setupTimeControl(p, sl)));
+  EXPECT_EQ(675, Search::setupTimeControl(p, sl).count());
+
+  sl           = SearchLimits{};
+  sl.whiteTime = MilliSec{3000};
+  sl.blackTime = MilliSec{3000};
+  fprintln("{}", str(Search::setupTimeControl(p, sl)));
+  EXPECT_EQ(60, Search::setupTimeControl(p, sl).count());
+
+  sl           = SearchLimits{};
+  sl.whiteTime = MilliSec{30000};
+  sl.whiteInc  = MilliSec{1000};
+  sl.blackTime = MilliSec{30000};
+  sl.blackInc  = MilliSec{1000};
+  fprintln("{}", str(Search::setupTimeControl(p, sl)));
+  EXPECT_EQ(1575, Search::setupTimeControl(p, sl).count());
+}
+
+TEST_F(SearchTest, extraTime) {
+  Position p{};
+  SearchLimits sl{};
+  Search s{};
+  s.searchLimits.timeControl = true;
+  s.timeLimit = MilliSec(10000);
+  s.extraTime = MilliSec(0);
+  s.addExtraTime(0.9);
+  fprintln("{}", str(s.extraTime));
+  EXPECT_EQ(-999, s.extraTime.count());
+  s.extraTime = MilliSec(0);
+  s.addExtraTime(1.2);
+  fprintln("{}", str(s.extraTime));
+  EXPECT_EQ(1999, s.extraTime.count());
+}
+
+TEST_F(SearchTest, startTimer) {
+  Position p{};
+  SearchLimits sl{};
+  Search s{};
+  s.searchLimits.timeControl = true;
+  s.startTime = std::chrono::high_resolution_clock::now();
+  s.timeLimit = MilliSec(2000);
+  s.extraTime = MilliSec(1000);
+  s.startTimer();
+  s.timerThread.join();
+  EXPECT_LT(3'000'000'000, (std::chrono::high_resolution_clock::now() - s.startTime).count());
+  EXPECT_GT(3'010'000'000, (std::chrono::high_resolution_clock::now() - s.startTime).count());
 }

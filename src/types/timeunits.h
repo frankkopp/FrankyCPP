@@ -26,16 +26,17 @@
 #ifndef FRANKYCPP_TIMEUNITS_H
 #define FRANKYCPP_TIMEUNITS_H
 
+
 typedef std::chrono::time_point<std::chrono::high_resolution_clock> TimePoint;
 typedef std::chrono::milliseconds MilliSec;
 typedef std::chrono::nanoseconds NanoSec;
 
 inline std::string str(MilliSec s) {
-  return fmt::format(deLocale, "{:n} ms", s.count());
+  return fmt::format(deLocale, "{:.3f} s", static_cast<double>(s.count())/1e3);
 }
 
 inline std::string str(NanoSec s) {
-  return fmt::format(deLocale, "{:n} ns", s.count());
+  return fmt::format(deLocale, "{:.9f} s", static_cast<double>(s.count())/1e9);
 }
 
 

@@ -209,16 +209,34 @@ private:
   // reached a potential maximum set in the search limits.
   bool stopConditions();
 
-  MilliSec setupTimeControl(Position& position, SearchLimits& limits);
+  // setupSearchLimits reports to log on search limits for the search
+  // and sets up time control.
+  void setupSearchLimits(Position& position, SearchLimits& sl);
+
+  // setupTimeControl sets up time control according to the given search limits
+  // and returns a limit on the duration for the current search.
+  static MilliSec setupTimeControl(Position& position, SearchLimits& limits);
+  FRIEND_TEST(SearchTest, setupTime);
+
+  // addExtraTime certain situations might call for a extension or reduction
+  // of the given time limit for the search. This function add/subtracts
+  // a portion (%) of the current time limit.
+  //  Example:
+  //  f = 1.0 --> no change in search time
+  //  f = 0.9 --> reduction by 10%
+  //  f = 1.1 --> extension by 10%
+  void addExtraTime(double f);
+  FRIEND_TEST(SearchTest, extraTime);
+
 
   // startTimer starts a thread which regularly checks the elapsed time against
   // the time limit and extra time given. If time limit is reached this will set
   // the stopFlag to true and terminate itself.
   void startTimer();
+  FRIEND_TEST(SearchTest, startTimer);
 
   void sendReadyOk() const;
   void sendString(const std::string& msg) const;
-  void setupSearchLimits(Position& position, SearchLimits& sl);
   void sendResult(SearchResult& result);
 };
 

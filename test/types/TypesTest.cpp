@@ -266,10 +266,10 @@ TEST(TypesTest, moveListPrint) {
   EXPECT_EQ(expected, ml.str());
 }
 
-
 TEST(TypesTest, MillSec) {
   MilliSec msec{1500};
   std::cout << str(msec) << std::endl;
   NanoSec nsec{1500};
   std::cout << str(nsec) << std::endl;
+
 }

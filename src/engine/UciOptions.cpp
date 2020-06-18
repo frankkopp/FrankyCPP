@@ -23,16 +23,19 @@
  *
  */
 
-#include "UciOptions.h"
+#include "Search.h"
 #include "SearchConfig.h"
-#include "types/types.h"
+#include "UciHandler.h"
+#include "UciOptions.h"
+
 #include <boost/algorithm/string/trim.hpp>
 
 void UciOptions::initOptions() {
-  optionVector.push_back(UciOption{"Clear Hash", [&]() { fprintln("Clear Hash not yet implemented"); }});
-  optionVector.push_back(UciOption{"Hash", SearchConfig::TT_SIZE_MB, 0, 4096, [&]() { SearchConfig::TT_SIZE_MB = getInt(getOption("Hash")->currentValue); }});
-
-  //  MAP("Hash",             UCI_Option("Hash",             EngineConfig::hash, 0, TT::MAX_SIZE_MB));
+  optionVector.push_back(UciOption{"Clear Hash", [&](UciHandler* uciHandler) {
+                                     uciHandler->getSearchPtr()->clearTT(); }});
+  optionVector.push_back(UciOption{"Hash", SearchConfig::TT_SIZE_MB, 0, 4096, [&](UciHandler* uciHandler) {
+                                     SearchConfig::TT_SIZE_MB = getInt(getOption("Hash")->currentValue);
+                                     uciHandler->getSearchPtr()->resizeTT(); }});
 
   // @formatter:off
   //  MAP("Use_Hash",         UCI_Option("Use_Hash",         SearchConfig::USE_TT));
@@ -85,11 +88,11 @@ const UciOption* UciOptions::getOption(std::string name) const {
   }
 }
 
-bool UciOptions::setOption(const std::string name, const std::string value) {
+bool UciOptions::setOption(UciHandler* uciHandler, const std::string name, const std::string value) {
   auto o = const_cast<UciOption*>(getOption(name));
   if (o) {
     o->currentValue = value;
-    o->pHandler();
+    o->pHandler(uciHandler);
     return true;
   }
   return false;

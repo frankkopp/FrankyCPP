@@ -98,6 +98,30 @@ TEST_F(UCITest, setoptionTest) {
   EXPECT_EQ("2048", UciOptions::getInstance()->getOption("Hash")->currentValue);
 }
 
+TEST_F(UCITest, clearHashTest) {
+  ostringstream os;
+  string command = "isready\nsetoption name Clear Hash";
+  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+  istringstream is(command);
+  UciHandler uciHandler(&is, &os);
+  uciHandler.loop();
+  string result = os.str();
+  LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE: \n" + result);
+  EXPECT_TRUE(result.find("Hash cleared") != string::npos);
+}
+
+TEST_F(UCITest, resizeHashTest) {
+  ostringstream os;
+  string command = "isready\nsetoption name Hash value 512";
+  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+  istringstream is(command);
+  UciHandler uciHandler(&is, &os);
+  uciHandler.loop();
+  string result = os.str();
+  LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE: \n" + result);
+  EXPECT_TRUE(result.find("Resized hash") != string::npos);
+}
+
 TEST_F(UCITest, positionTest) {
   ostringstream os;
   // normal

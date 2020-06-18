@@ -267,6 +267,7 @@ void Search::run() {
 }
 
 SearchResult Search::iterativeDeepening(Position& position) {
+  fprintln("Not yet implemented: {}", __FUNCTION__ );
   return SearchResult();
 }
 
@@ -320,20 +321,92 @@ void Search::setupSearchLimits(Position& position, SearchLimits& sl) {
   if (sl.timeControl) {
     timeLimit = setupTimeControl(position, sl);
     extraTime = MilliSec{0};
-    if (sl.moveTime.count() > 0) {
-      LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Time Controlled: Time per Move {}", sl.moveTime.count());
+    if (sl.moveTime.count()) {
+      LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Time Controlled: Time per Move {} ms", str(sl.moveTime));
     }
-    // TODO implement
+    else {
+      LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Time Controlled: White = {} (inc {}) Black = {} (inc {}) Moves to go: {}",
+                str(sl.whiteTime), str(sl.whiteInc), str(sl.blackTime), str(sl.blackInc), sl.movesToGo);
+      LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Time limit: {}", str(timeLimit));
+    }
+    if (sl.ponder) {
+      LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Ponder - time control postponed until ponderhit received");
+    }
   }
-  // TODO implement
+  else {
+    LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: No time control");
+  }
+  if (sl.depth) {
+    LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Depth limited  : {}", sl.depth);
+  }
+  if (sl.nodes) {
+    LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Nodes limited  : {}", sl.nodes);
+  }
+  if (!sl.moves.empty()) {
+    LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Moves limited  : {}", str(sl.moves));
+  }
 }
 
-MilliSec Search::setupTimeControl(Position& position, SearchLimits& limits) {
-  return MilliSec{};
+MilliSec Search::setupTimeControl(Position& position, SearchLimits& sl) {
+  if (sl.moveTime.count()) {// mode time per move
+    // we need a little room for executing the code
+    MilliSec duration = sl.moveTime - MilliSec{20};
+    // if the duration is now negative return the original value and issue a warning
+    if (duration.count() < 0) {
+      LOG__WARN(Logger::get().SEARCH_LOG, "Very short move time: {} ms", sl.moveTime.count());
+      return sl.moveTime;
+    }
+    return duration;
+  }
+  else {// mode is remaining time - estimated time per move
+    // moves left
+    int movesLeft = sl.movesToGo;
+    if (!movesLeft) {// default
+      // we estimate minimum 15 more moves in final game phases
+      // in early game phases this grows up to 40
+      movesLeft = 15 + (25 * position.getGamePhaseFactor());
+    }
+    // time left for current player
+    MilliSec timeLeft;
+    if (position.getNextPlayer()) {
+      timeLeft = sl.blackTime + (movesLeft * sl.blackInc);
+    }
+    else {
+      timeLeft = sl.whiteTime + (movesLeft * sl.whiteInc);
+    }
+    // estimate time per move
+    MilliSec tl = static_cast<MilliSec>(timeLeft.count() / movesLeft);
+    // account for runtime of our code
+    if (tl.count() < 100) {
+      // limits for very short available time reduced by another 20%
+      tl = static_cast<MilliSec>(uint64_t(0.8 * tl.count()));
+    }
+    else {
+      // reduced by 10%
+      tl = static_cast<MilliSec>(uint64_t(0.9 * tl.count()));
+    }
+    return tl;
+  }
+}
+
+void Search::addExtraTime(double f) {
+  if (searchLimits.timeControl && !searchLimits.moveTime.count()) {
+    auto duration = uint64_t(timeLimit.count() * (f - 1.0));
+    extraTime += MilliSec(duration);
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Time added/reduced by {} to {} ", str(MilliSec(duration)), str(timeLimit + extraTime));
+  }
 }
 
 void Search::startTimer() {
-  // TODO implement
+  this->timerThread = std::thread([&] {
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Timer started with time limit of {} ms", str(timeLimit));
+    // relaxed busy wait
+    while (std::chrono::high_resolution_clock::now() - startTime < timeLimit + extraTime && !stopSearchFlag) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    }
+    this->stopSearchFlag = true;
+    LOG__INFO(Logger::get().SEARCH_LOG, "Stop search by Timer after wall time: {} (time limit {} and extra time {})", str(std::chrono::high_resolution_clock::now() - startTime), str(timeLimit), str(extraTime));
+  });
 }
 
 void Search::sendReadyOk() const {
@@ -353,7 +426,6 @@ void Search::sendString(const std::string& msg) const {
     LOG__INFO(Logger::get().SEARCH_LOG, "uci >> " + msg);
   }
 }
-
 void Search::sendResult(SearchResult& result) {
   if (uciHandler) {
     uciHandler->sendResult(result.bestMove, result.ponderMove);
