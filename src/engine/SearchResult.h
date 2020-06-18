@@ -28,16 +28,18 @@
 
 #include "types/types.h"
 
+// Simple struct to store the result and some meta data from the last search.
 struct SearchResult {
   Move bestMove       = MOVE_NONE;
   Value bestMoveValue = VALUE_NONE;
   Move ponderMove     = MOVE_NONE;
-  NanoSec time{};
   int depth      = 0;
   int extraDepth = 0;
+  uint64_t nodes = 0;
+  bool bookMove = false;
+  NanoSec time{};
   MoveList pv{};
 
-  bool bookMove = false;
   std::string str() const {
     return "Best Move: " + ::str(bestMove) + " (" + std::to_string(bestMoveValue) + ") " + "Ponder Move: " + ::str(ponderMove) + " Depth: " + std::to_string(depth) + "/" + std::to_string(extraDepth);
   }

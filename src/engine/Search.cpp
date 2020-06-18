@@ -212,6 +212,9 @@ void Search::run() {
   // waiting in StartSearch() to return
   initSemaphore.release();
 
+
+  // If we have found a book move update result and omit search.
+  // Otherwise start search with iterative deepening.
   SearchResult searchResult{};
   if (!bookMove) {
     searchResult = iterativeDeepening(position);
@@ -237,14 +240,14 @@ void Search::run() {
   // update search result with search time and pv
   searchResult.time = std::chrono::high_resolution_clock::now() - startTime;
   searchResult.pv   = pv[0];
+  searchResult.nodes = nodesVisited;
 
   // print stats to log
-  //  LOG__INFO(Logger::get().SEARCH_LOG, "Search finished after {})",
-  //            (searchResult.time % 1'000'000) / 1'000, (searchResult.time % 1'000));
-  //  LOG__INFO(Logger::get().SEARCH_LOG, "Search depth was {}({}) with {} nodes visited. NPS = {} nps)",
-  //            searchStats.currentSearchDepth, searchStats.currentExtraSearchDepth, nodesVisited,
-  //            (nodesVisited * 1'000'000) / (searchResult.time + std::chrono::nanoseconds{1}).count());
-  //  LOG__DEBUG(Logger::get().SEARCH_LOG, "Search stats: {}", searchStats.str());
+  LOG__INFO(Logger::get().SEARCH_LOG, "Search finished after {})", str(searchResult.time));
+  LOG__INFO(Logger::get().SEARCH_LOG, "Search depth was {}({}) with {:n} nodes visited. NPS = {} nps)",
+            searchStats.currentSearchDepth, searchStats.currentExtraSearchDepth, nodesVisited,
+            nps(nodesVisited, searchResult.time));
+  LOG__DEBUG(Logger::get().SEARCH_LOG, "Search stats: {}", searchStats.str());
 
   // print result to log
   LOG__INFO(Logger::get().SEARCH_LOG, "Search result: {}", searchResult.str());
@@ -267,14 +270,14 @@ void Search::run() {
 }
 
 SearchResult Search::iterativeDeepening(Position& position) {
-  fprintln("Not yet implemented: {}", __FUNCTION__ );
+  fprintln("Not yet implemented: {}", __FUNCTION__);
   return SearchResult();
 }
 
 void Search::initialize() {
   // init opening book
   if (SearchConfig::USE_BOOK) {
-    if (!book) {
+    if (!book) {// only initialize once
       book = std::make_unique<OpeningBook>(SearchConfig::BOOK_PATH, SearchConfig::BOOK_TYPE);
       book->initialize();
     }
@@ -285,7 +288,7 @@ void Search::initialize() {
 
   // init transposition table
   if (SearchConfig::USE_TT) {
-    if (!tt) {
+    if (!tt) {// only initialize once
       const int ttSizeMb = SearchConfig::TT_SIZE_MB;
       tt                 = std::make_unique<TT>(ttSizeMb);
     }
@@ -295,7 +298,7 @@ void Search::initialize() {
   }
 
   // init evaluator
-  if (!evaluator) {
+  if (!evaluator) {// only initialize once
     evaluator = std::make_unique<Evaluator>();
   }
 }

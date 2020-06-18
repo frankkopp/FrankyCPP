@@ -39,5 +39,16 @@ inline std::string str(NanoSec s) {
   return fmt::format(deLocale, "{:.9f} s", static_cast<double>(s.count())/1e9);
 }
 
+// returns the nodes per second from milli seconds
+inline uint64_t nps(uint64_t nodes, MilliSec ms) {
+  if (!ms.count()) return nodes;
+  return nodes * 1'000 / ms.count() ; // +1 to avoid division by zero
+}
+
+// returns the nodes per second from nano seconds
+inline uint64_t nps(uint64_t nodes, NanoSec ms) {
+  if (!ms.count()) return nodes;
+  return nodes * 1'000'000'000 / ms.count(); // +1 to avoid division by zero
+}
 
 #endif//FRANKYCPP_TIMEUNITS_H
