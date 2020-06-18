@@ -30,6 +30,7 @@
 #include "engine/SearchConfig.h"
 #include "engine/UciOptions.h"
 
+#include <engine/UciHandler.h>
 #include <gtest/gtest.h>
 using testing::Eq;
 
@@ -49,6 +50,7 @@ protected:
 
 TEST_F(UciOptionsTest, initAndStr) {
   UciOptions* pUciOptions = UciOptions::getInstance();
+  UciHandler uciHandler{};
 
   auto o = pUciOptions->getOption("Clear Hash");
   fprintln("Option: {}", o->str());
@@ -60,7 +62,7 @@ TEST_F(UciOptionsTest, initAndStr) {
   fprintln("Option current value: {}", o->currentValue);
   EXPECT_EQ("64", o->defaultValue);
 
-  pUciOptions->setOption(nullptr, "Hash", "0");
+  pUciOptions->setOption(&uciHandler, "Hash", "0");
   fprintln("Option: {}", o->currentValue);
   EXPECT_EQ("0", o->currentValue);
 }
@@ -73,16 +75,17 @@ TEST_F(UciOptionsTest, getOption) {
 
 TEST_F(UciOptionsTest, setOption) {
   UciOptions* pUciOptions = UciOptions::getInstance();
+  UciHandler uciHandler{};
 
   auto o = pUciOptions->getOption("Hash");
   EXPECT_EQ("Hash", o->nameID);
   EXPECT_EQ(std::to_string(SearchConfig::TT_SIZE_MB), o->currentValue);
 
-  pUciOptions->setOption(nullptr, "Hash", "0");
+  pUciOptions->setOption(&uciHandler, "Hash", "0");
   EXPECT_EQ("0", o->currentValue);
   EXPECT_EQ(SearchConfig::TT_SIZE_MB, 0);
 
-  pUciOptions->setOption(nullptr, "Hash", "128");
+  pUciOptions->setOption(&uciHandler, "Hash", "128");
   EXPECT_EQ("128", o->currentValue);
   EXPECT_EQ(SearchConfig::TT_SIZE_MB, 128);
 }

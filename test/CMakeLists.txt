@@ -35,7 +35,7 @@ add_executable(
         TimingTests.cpp
         chesscore/SpeedTests.cpp
         BOOST_Test.cpp
-        engine/SearchTest.cpp)
+)
 
 target_link_libraries(
         ${testExeName}

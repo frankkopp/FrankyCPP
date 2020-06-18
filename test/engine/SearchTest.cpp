@@ -23,11 +23,11 @@
  *
  */
 
-#include "engine/Search.h"
 #include "init.h"
 #include "types/types.h"
+#include "engine/SearchConfig.h"
+#include "engine/Search.h"
 
-#include <engine/SearchConfig.h>
 #include <gtest/gtest.h>
 using testing::Eq;
 
@@ -45,9 +45,7 @@ public:
   }
 
 protected:
-  void SetUp() override {
-    //SearchConfig::USE_BOOK = false;
-  }
+  void SetUp() override {}
   void TearDown() override {}
 };
 

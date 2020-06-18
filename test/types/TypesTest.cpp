@@ -266,10 +266,15 @@ TEST(TypesTest, moveListPrint) {
   EXPECT_EQ(expected, ml.str());
 }
 
-TEST(TypesTest, MillSec) {
-  MilliSec msec{1500};
-  std::cout << str(msec) << std::endl;
-  NanoSec nsec{1500};
-  std::cout << str(nsec) << std::endl;
+TEST(TypesTest, nps) {
+  uint64_t nodes = 10'000'000;
+  MilliSec msec{1'500};
+  NanoSec nsec{1'500'000'000};
+  fprintln("{}", nps(nodes, msec));
+  fprintln("{}", nps(nodes, nsec));
+  msec = MilliSec{0};
+  nsec = NanoSec{0};
+  fprintln("{}", nps(nodes, msec));
+  fprintln("{}", nps(nodes, nsec));
 
 }

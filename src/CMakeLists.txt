@@ -31,7 +31,8 @@ set(FrankyCPPlib_SRCS
         engine/Search.cpp engine/Search.h
         engine/SearchResult.h engine/SearchLimits.h engine/SearchConfig.h
         engine/SearchStats.cpp engine/SearchStats.h
-        engine/Evaluator.cpp engine/Evaluator.h types/timeunits.h)
+        engine/Evaluator.cpp engine/Evaluator.h
+        )
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})
 target_link_libraries(
         FrankyCPPlib

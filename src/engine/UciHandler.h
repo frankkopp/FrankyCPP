@@ -60,15 +60,18 @@ private:
 
 public:
   UciHandler();
+  
+  // The UciHandler can be provided with stream input and output objects to
+  // simulate cin and cout. Useul for testing. 
   UciHandler(std::istream* pIstream, std::ostream* pOstream);
 
-  /** Starts the handler loop with the istream provided when creating the instance */
+  // Starts the handler loop with the istream provided when creating the instance
   void loop();
 
-  /** Starts the handler loop  with the given istream (mainly for testing) */
+  // Starts the handler loop  with the given istream (mainly for testing)
   void loop(std::istream* pIstream);
 
-  /* send information to the UCI user interface through pipe streams */
+  // send information to the UCI user interface through pipe streams
   void send(const std::string& toSend) const;
   void sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t nodes, uint64_t nps, MilliSec time, const MoveList& pv) const;
   void sendAspirationResearchInfo(int depth, int seldepth, Value value, const std::string& bound, uint64_t nodes, uint64_t nps, MilliSec time, const MoveList& pv) const;
@@ -89,27 +92,28 @@ private:
   void isReadyCommand() const;
   void setOptionCommand(std::istringstream& inStream) const;
   void uciNewGameCommand() const;
+
   void positionCommand(std::istringstream& inStream);
+  FRIEND_TEST(UCITest, positionTest);
+
   void goCommand(std::istringstream& inStream);
+  bool readSearchLimits(std::istringstream& inStream, SearchLimits& searchLimits);
+  FRIEND_TEST(UCITest, goCommand);
+  FRIEND_TEST(UCITest, goInfinite);
+  FRIEND_TEST(UCITest, goPonder);
+  FRIEND_TEST(UCITest, goMate);
+
   // reads uci parameters for the go command and updates the given SearchLimits. Returns true if
   // successful, otherwise false.
-  bool readSearchLimits(std::istringstream& inStream, SearchLimits& searchLimits);
   void stopCommand() const;
   void ponderHitCommand() const;
   void perftCommand(std::istringstream& inStream);
   void registerCommand();
-
   void debugCommand();
 
   void uciError(const std::string &msg) const;
-
-  FRIEND_TEST(UCITest, positionTest);
   FRIEND_TEST(UCITest, goError);
-  FRIEND_TEST(UCITest, goCommand);
 
-  FRIEND_TEST(UCITest, goInfinite);
-  FRIEND_TEST(UCITest, goPonder);
-  FRIEND_TEST(UCITest, goMate);
 };
 
 

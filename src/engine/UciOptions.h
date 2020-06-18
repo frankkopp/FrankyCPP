@@ -34,6 +34,7 @@
 
 class UciHandler;
 
+// Uci option types
 enum UciOptionType {
   CHECK,
   SPIN,
@@ -42,6 +43,13 @@ enum UciOptionType {
   STRING
 };
 
+// UCI provides the ability to change parameters of an engine via
+// UCI options. This is done by the setoption command and the each engine
+// might define its own set of options which will be listed when the GUI
+// sends the 'uci' command.
+// An instance of this struct defines one available option. It defines
+// a type, default value, min, max or var (possible values) and also
+// a pointer to a handler function mostly defined as a lambda function.
 struct UciOption {
   const std::string nameID;
   const UciOptionType type;
@@ -81,7 +89,9 @@ struct UciOption {
 };
 
 
-// Singleton class for options
+// Singleton class to store for all available options
+// This singleton instance can be used through the engine to access options.
+// The str() call returns a list of all options as required by the "uci" command.
 class UciOptions {
 private:
   std::vector<UciOption> optionVector{};
@@ -89,6 +99,7 @@ private:
   UciOptions() { initOptions(); }// private constructor
 
   void initOptions();
+
   friend std::ostream& operator<<(std::ostream& os, const UciOptions& options);
 
 public:

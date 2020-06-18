@@ -58,6 +58,7 @@ class Search {
   std::thread searchThread{};
   std::thread timerThread{};
 
+
   std::unique_ptr<OpeningBook> book;
   std::unique_ptr<TT> tt;
   std::unique_ptr<Evaluator> evaluator;
@@ -76,14 +77,13 @@ class Search {
   // manage running search
   std::atomic_bool stopSearchFlag = false;
   std::atomic_bool hasResultFlag  = false;
-  bool hadBookMove                = false;
 
   // time management for the search
   TimePoint startTime{};
   MilliSec timeLimit{};
   MilliSec extraTime{};
 
-  // UCI related
+  // Control UCI updates to avoid flooding
   constexpr static MilliSec UCI_UPDATE_INTERVAL = MilliSec{500};
   TimePoint lastUciUpdateTime{};
 
@@ -97,6 +97,9 @@ class Search {
   MoveList pv[DEPTH_MAX];
   MoveGenerator mg[DEPTH_MAX];
 
+  // to mark the last move was a book move
+  bool hadBookMove = false;
+
 public:
   // in PV we search the full window in NonPV we try a zero window first
   enum Node_Type : bool { NonPV = false,
@@ -108,8 +111,8 @@ public:
   enum Do_Null : bool { No_Null_Move = false,
                         Do_Null_Move = true };
 
-  ////////////////////////////////////////////////
-  ///// CONSTRUCTORS
+  // //////////////////////////////////////////////
+  // CONSTRUCTORS
 
   Search();
   explicit Search(UciHandler* pUciHandler);
@@ -121,8 +124,8 @@ public:
   Search(Search const&&)           = delete;
   Search& operator=(const Search&&) = delete;
 
-  ////////////////////////////////////////////////
-  ///// PUBLIC
+  // ///////////////////////////////////////////
+  // PUBLIC
 
   // NewGame stops any running searches and resets the search state
   // to be ready for a different game. Any caches or states will be reset.
@@ -136,38 +139,38 @@ public:
   // set in SetUciHandler to send "readyok" to the UCI user interface.
   void isReady();
 
-  /** starts the search in a separate thread with the given search limits */
+  // starts the search in a separate thread with the given search limits
   void startSearch(const Position p, SearchLimits sl);// TODO implement
 
-  /** Stops a running search gracefully - e.g. returns the best move found so far */
+  // Stops a running search gracefully - e.g. returns the best move found so far
   void stopSearch();
 
-  /** checks if the search is already running */
+  // checks if the search is already running
   bool isSearching() const;
 
-  /** signals if we have a result */
+  // signals if we have a result
   bool hasResult() const { return false; }// TODO implement
 
   // wait while searching blocks execution of the current thread until
   // the search has finished
   void waitWhileSearching() const;
 
-  /** to signal the search that pondering was successful */
+  // to signal the search that pondering was successful
   void ponderhit();
-  /** return current root pv list */
+  // return current root pv list
 
   const MoveList& getPV() const { return pv[0]; };// TODO implement
 
-  /** clears the hash table */
+  // clears the hash table
   void clearTT();
 
-  /** resize the hash to the value in the global config SearchConfig::TT_SIZE_MB */
+  // resize the hash to the value in the global config SearchConfig::TT_SIZE_MB
   void resizeTT();
 
-  /** return search stats instance */
+  // return search stats instance
   inline const SearchStats& getSearchStats() const { return searchStats; }// TODO implement
 
-  /** return the last search result */
+  // return the last search result
   inline const SearchResult& getLastSearchResult() const { return lastSearchResult; };// TODO implement
 
 private:
@@ -180,12 +183,9 @@ private:
   // initialization again.
   void initialize();
 
-  /**
-   * Called after starting the search in a new thread. Configures the search
-   * and eventually calls iterativeDeepening. After the search it takes the
-   * result to sends it to the UCI engine.
-   * // TODO implement
-   */
+  // Called after starting the search in a new thread. Configures the search
+  // and eventually calls iterativeDeepening. After the search it takes the
+  // result to sends it to the UCI engine.
   void run();
 
   // Iterative Deepening:
@@ -199,10 +199,6 @@ private:
   // the start of the new iteration and started with this best
   // move. This way, also the results from the partial search
   // can be accepted
-  //
-  //  IDEA in case of a severe drop of the score it is wise
-  //   to allocate some more time, as the first alternative is often
-  //   a bad capture, delaying the loss instead of preventing it
   SearchResult iterativeDeepening(Position& position);
 
   // stopConditions checks if stopFlag is set or if nodesVisited have
@@ -227,7 +223,6 @@ private:
   //  f = 1.1 --> extension by 10%
   void addExtraTime(double f);
   FRIEND_TEST(SearchTest, extraTime);
-
 
   // startTimer starts a thread which regularly checks the elapsed time against
   // the time limit and extra time given. If time limit is reached this will set
