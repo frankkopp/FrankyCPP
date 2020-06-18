@@ -60,7 +60,7 @@ TEST_F(UciOptionsTest, initAndStr) {
   fprintln("Option current value: {}", o->currentValue);
   EXPECT_EQ("64", o->defaultValue);
 
-  pUciOptions->setOption("Hash", "0");
+  pUciOptions->setOption(nullptr, "Hash", "0");
   fprintln("Option: {}", o->currentValue);
   EXPECT_EQ("0", o->currentValue);
 }
@@ -78,11 +78,11 @@ TEST_F(UciOptionsTest, setOption) {
   EXPECT_EQ("Hash", o->nameID);
   EXPECT_EQ(std::to_string(SearchConfig::TT_SIZE_MB), o->currentValue);
 
-  pUciOptions->setOption("Hash", "0");
+  pUciOptions->setOption(nullptr, "Hash", "0");
   EXPECT_EQ("0", o->currentValue);
   EXPECT_EQ(SearchConfig::TT_SIZE_MB, 0);
 
-  pUciOptions->setOption("Hash", "128");
+  pUciOptions->setOption(nullptr, "Hash", "128");
   EXPECT_EQ("128", o->currentValue);
   EXPECT_EQ(SearchConfig::TT_SIZE_MB, 128);
 }

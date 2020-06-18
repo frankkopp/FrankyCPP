@@ -137,7 +137,7 @@ void UciHandler::setOptionCommand(std::istringstream& inStream) const {
     value += token;
   }
 
-   if (!UciOptions::getInstance()->setOption(name, value)) {
+   if (!UciOptions::getInstance()->setOption(const_cast<UciHandler*>(this), name, value)) {
      uciError(fmt::format("Unknown option: %s", name.c_str()));
    }
    LOG__INFO(Logger::get().UCIHAND_LOG, "Set option: {} = {}", name, value);

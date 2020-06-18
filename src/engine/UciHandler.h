@@ -32,6 +32,8 @@
 #include <memory>
 
 #include "UciOptions.h"
+//#include "Search.h"
+#include "SearchLimits.h"
 #include "gtest/gtest_prod.h"
 
 // forward declaration
@@ -52,6 +54,7 @@ class UciHandler {
   std::shared_ptr<Perft> pPerft;
   std::shared_ptr<Search> pSearch;
 
+private:
   std::istream* pInputStream;
   std::ostream* pOutputStream;
 
@@ -75,6 +78,10 @@ public:
   void sendResult(Move bestMove, Move ponderMove) const;
   void sendString(const std::string& anyString) const;
   void sendReadyOk() const;
+
+  const std::shared_ptr<Search>& getSearchPtr() const {
+    return pSearch;
+  }
 
 private:
   bool handleCommand(const std::string& cmd);
