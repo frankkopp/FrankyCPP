@@ -30,7 +30,7 @@
 #include <ostream>
 #include <types/types.h>
 
-// Limits is data structure to hold all information about how
+// SearchLimits is data structure to hold all information about how
 // a search of the chess games shall be controlled.
 // Search needs to read these and determine the necessary limits.
 // E.g. time controlled game or not
@@ -47,11 +47,11 @@ struct SearchLimits {
 
   //  time control;
   bool timeControl   = false;
-  MilliSec whiteTime = MilliSec{0};
-  MilliSec blackTime = MilliSec{0};
-  MilliSec whiteInc  = MilliSec{0};
-  MilliSec blackInc  = MilliSec{0};
-  MilliSec moveTime  = MilliSec{0};
+  MilliSec whiteTime{0};
+  MilliSec blackTime{0};
+  MilliSec whiteInc{0};
+  MilliSec blackInc{0};
+  MilliSec moveTime{0};
 
   // parameter
   int movesToGo = 0;

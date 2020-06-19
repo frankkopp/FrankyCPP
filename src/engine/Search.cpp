@@ -57,11 +57,16 @@ void Search::isReady() {
   initialize();
   sendReadyOk();
 }
+
 void Search::startSearch(const Position p, SearchLimits sl) {
   // acquire init phase lock
   if (!initSemaphore.get()) {
     LOG__WARN(Logger::get().SEARCH_LOG, "Search init failed as another initialization is ongoing.");
   }
+
+  // start search time
+  startTime = now();
+  startSearchTime = startTime;
 
   // move the received copy of position and search limits to instance variables
   this->position     = std::move(p);
@@ -79,10 +84,20 @@ void Search::startSearch(const Position p, SearchLimits sl) {
   initSemaphore.getOrWait();
   initSemaphore.release();
   LOG__INFO(Logger::get().SEARCH_LOG, "Search started.");
+  TICK(startTime);
 }
 
 void Search::stopSearch() {
+  if (!isSearching()) {
+    LOG__WARN(Logger::get().SEARCH_LOG, "Stop search called when search was not running");
+    return;
+  }
+  LOG__INFO(Logger::get().SEARCH_LOG, "Search stopped.");
   stopSearchFlag = true;
+  // Wait for the thread to die
+  if (searchThread.joinable()) {
+    searchThread.join();
+  }
   waitWhileSearching();
 }
 
@@ -151,8 +166,7 @@ void Search::run() {
     return;
   }
 
-  // start search time
-  startTime = std::chrono::high_resolution_clock::now();
+  TICK(startTime);
 
   LOG__INFO(Logger::get().SEARCH_LOG, "Searching " + position.strFen());
 
@@ -168,10 +182,12 @@ void Search::run() {
 
   // setup and report search limits
   setupSearchLimits(position, searchLimits);
+  TICK(startTime);
 
   // when not pondering and search is time controlled start timer
   if (searchLimits.timeControl && !searchLimits.ponder) {
     startTimer();
+    TICK(startTime);
   }
 
   // check for opening book move when we have a time controlled game
@@ -184,6 +200,8 @@ void Search::run() {
     LOG__INFO(Logger::get().SEARCH_LOG, "Opening Book: Not using book.");
   }
 
+  TICK(startTime);
+
   // age tt entries
   if (tt) {
     LOG__INFO(Logger::get().SEARCH_LOG, "Transposition Table: Using TT: " + tt->str());
@@ -194,6 +212,8 @@ void Search::run() {
   }
 
   LOG__INFO(Logger::get().SEARCH_LOG, fmt::format("Search using: PVS={} ASP={}", SearchConfig::USE_PVS, SearchConfig::USE_ASP));
+
+  TICK(startTime);
 
   // Initialize ply based data
   // move generators for each ply
@@ -211,7 +231,7 @@ void Search::run() {
   // release the init phase lock to signal the calling go routine
   // waiting in StartSearch() to return
   initSemaphore.release();
-
+  TICK(startTime);
 
   // If we have found a book move update result and omit search.
   // Otherwise start search with iterative deepening.
@@ -224,6 +244,7 @@ void Search::run() {
     searchResult.bookMove = true;
     hadBookMove           = true;
   }
+  TICK(startTime);
 
   // If we arrive here during Ponder mode or Infinite mode and the search is not
   // stopped it means that the search was finished before it has been stopped
@@ -236,15 +257,16 @@ void Search::run() {
       std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
   }
+  TICK(startTime);
 
   // update search result with search time and pv
-  searchResult.time = std::chrono::high_resolution_clock::now() - startTime;
-  searchResult.pv   = pv[0];
+  searchResult.time  = now() - startSearchTime;
+  searchResult.pv    = pv[0];
   searchResult.nodes = nodesVisited;
 
   // print stats to log
-  LOG__INFO(Logger::get().SEARCH_LOG, "Search finished after {})", str(searchResult.time));
-  LOG__INFO(Logger::get().SEARCH_LOG, "Search depth was {}({}) with {:n} nodes visited. NPS = {} nps)",
+  LOG__INFO(Logger::get().SEARCH_LOG, "Search finished after {}", str(searchResult.time));
+  LOG__INFO(Logger::get().SEARCH_LOG, "Search depth was {}({}) with {:n} nodes visited. NPS = {} nps",
             searchStats.currentSearchDepth, searchStats.currentExtraSearchDepth, nodesVisited,
             nps(nodesVisited, searchResult.time));
   LOG__DEBUG(Logger::get().SEARCH_LOG, "Search stats: {}", searchStats.str());
@@ -265,16 +287,27 @@ void Search::run() {
   // searched has been stopped.
   sendResult(searchResult);
 
+  // clean up timer thread if necessary
+  if (timerThread.joinable()) timerThread.join();
+
   // release the running semaphore after the search has ended
   isRunningSemaphore.release();
+  TICK(startTime);
 }
 
 SearchResult Search::iterativeDeepening(Position& position) {
   fprintln("Not yet implemented: {}", __FUNCTION__);
+  fprintln("Simulating search by sleeping in a loop until stopConditions are met");
+  TICK(startTime);
+  while (!stopConditions()) {
+    nodesVisited++;
+  }
+  TICK(startTime);
   return SearchResult();
 }
 
 void Search::initialize() {
+  LOG__INFO(Logger::get().SEARCH_LOG, "Search initialization.");
   // init opening book
   if (SearchConfig::USE_BOOK) {
     if (!book) {// only initialize once
@@ -325,7 +358,7 @@ void Search::setupSearchLimits(Position& position, SearchLimits& sl) {
     timeLimit = setupTimeControl(position, sl);
     extraTime = MilliSec{0};
     if (sl.moveTime.count()) {
-      LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Time Controlled: Time per Move {} ms", str(sl.moveTime));
+      LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Time Controlled: Time per Move {}", str(sl.moveTime));
     }
     else {
       LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Time Controlled: White = {} (inc {}) Black = {} (inc {}) Moves to go: {}",
@@ -402,13 +435,15 @@ void Search::addExtraTime(double f) {
 
 void Search::startTimer() {
   this->timerThread = std::thread([&] {
+    startSearchTime = now();
     LOG__DEBUG(Logger::get().SEARCH_LOG, "Timer started with time limit of {} ms", str(timeLimit));
+    TICK(startTime);
     // relaxed busy wait
-    while (std::chrono::high_resolution_clock::now() - startTime < timeLimit + extraTime && !stopSearchFlag) {
+    while (now() - startSearchTime < timeLimit + extraTime && !stopSearchFlag) {
       std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
     this->stopSearchFlag = true;
-    LOG__INFO(Logger::get().SEARCH_LOG, "Stop search by Timer after wall time: {} (time limit {} and extra time {})", str(std::chrono::high_resolution_clock::now() - startTime), str(timeLimit), str(extraTime));
+    LOG__INFO(Logger::get().SEARCH_LOG, "Stop search by Timer after wall time: {} (time limit {} and extra time {})", str(now() - startTime), str(timeLimit), str(extraTime));
   });
 }
 

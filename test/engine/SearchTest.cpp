@@ -23,10 +23,10 @@
  *
  */
 
+#include "engine/Search.h"
+#include "engine/SearchConfig.h"
 #include "init.h"
 #include "types/types.h"
-#include "engine/SearchConfig.h"
-#include "engine/Search.h"
 
 #include <gtest/gtest.h>
 using testing::Eq;
@@ -94,8 +94,8 @@ TEST_F(SearchTest, extraTime) {
   SearchLimits sl{};
   Search s{};
   s.searchLimits.timeControl = true;
-  s.timeLimit = MilliSec(10000);
-  s.extraTime = MilliSec(0);
+  s.timeLimit                = MilliSec(10000);
+  s.extraTime                = MilliSec(0);
   s.addExtraTime(0.9);
   fprintln("{}", str(s.extraTime));
   EXPECT_EQ(-999, s.extraTime.count());
@@ -110,11 +110,101 @@ TEST_F(SearchTest, startTimer) {
   SearchLimits sl{};
   Search s{};
   s.searchLimits.timeControl = true;
-  s.startTime = std::chrono::high_resolution_clock::now();
-  s.timeLimit = MilliSec(2000);
-  s.extraTime = MilliSec(1000);
+  s.startTime                = std::chrono::high_resolution_clock::now();
+  s.timeLimit                = MilliSec(2000);
+  s.extraTime                = MilliSec(1000);
   s.startTimer();
   s.timerThread.join();
   EXPECT_LT(3'000'000'000, (std::chrono::high_resolution_clock::now() - s.startTime).count());
   EXPECT_GT(3'010'000'000, (std::chrono::high_resolution_clock::now() - s.startTime).count());
+}
+
+TEST_F(SearchTest, startStopSearch) {
+  Position p{};
+  SearchLimits sl{};
+  Search s{};
+  sl.infinite = true;
+  s.isReady();
+  s.startSearch(p, sl);
+  EXPECT_TRUE(s.isSearching());
+  EXPECT_FALSE(s.hasResult());
+  std::this_thread::sleep_for(std::chrono::nanoseconds(nanoPerSec));
+  s.stopSearch();
+  s.waitWhileSearching();
+  EXPECT_TRUE(s.hasResult());
+  EXPECT_LT(nanoPerSec, s.getLastSearchResult().time.count());
+  EXPECT_GT(nanoPerSec * 1.1, s.getLastSearchResult().time.count());
+}
+
+TEST_F(SearchTest, startTimedSearch) {
+  SearchConfig::USE_BOOK = false;
+  Position p{};
+  SearchLimits sl{};
+  Search s{};
+  sl.timeControl = true;
+  sl.moveTime    = MilliSec{1000};
+  s.isReady();
+  s.startSearch(p, sl);
+  EXPECT_TRUE(s.isSearching());
+  EXPECT_FALSE(s.hasResult());
+  s.waitWhileSearching();
+  EXPECT_TRUE(s.hasResult());
+  EXPECT_LT(nanoPerSec - 20'000'000, s.getLastSearchResult().time.count());
+  EXPECT_GT(uint64_t(nanoPerSec * 1.1), s.getLastSearchResult().time.count());
+}
+
+TEST_F(SearchTest, bookMoveSearch) {
+  SearchConfig::USE_BOOK = true;
+  Position p{};
+  SearchLimits sl{};
+  Search s{};
+  sl.timeControl = true;
+  sl.moveTime    = MilliSec{1000};
+  s.isReady();
+  s.startSearch(p, sl);
+  EXPECT_TRUE(s.isSearching());
+  s.waitWhileSearching();
+  EXPECT_TRUE(s.hasResult());
+  EXPECT_NE(MOVE_NONE, s.getLastSearchResult().bestMove);
+  EXPECT_TRUE(s.getLastSearchResult().bookMove);
+  EXPECT_LT(NANO(MilliSec{1}).count(), s.getLastSearchResult().time.count());
+  EXPECT_GT(NANO(MilliSec{10}).count(), s.getLastSearchResult().time.count());
+}
+
+TEST_F(SearchTest, startPonderSearch) {
+  SearchConfig::USE_BOOK = false;
+  Position p{};
+  SearchLimits sl{};
+  Search s{};
+  sl.timeControl = true;
+  sl.moveTime    = MilliSec{1000};
+  sl.ponder = true;
+  s.isReady();
+  TimePoint start = now();
+  s.startSearch(p, sl);
+  EXPECT_TRUE(s.isSearching());
+  EXPECT_FALSE(s.hasResult());
+  std::this_thread::sleep_for(std::chrono::nanoseconds(nanoPerSec));
+  s.ponderhit();
+  s.waitWhileSearching();
+  EXPECT_TRUE(s.hasResult());
+  EXPECT_LT(nanoPerSec - 20'000'000, s.getLastSearchResult().time.count());
+  EXPECT_GT(uint64_t(nanoPerSec * 1.1), s.getLastSearchResult().time.count());
+  EXPECT_GT(uint64_t(nanoPerSec * 2.1), elapsedSince(start).count());
+}
+
+TEST_F(SearchTest, startNodesLimitedSearch) {
+  SearchConfig::USE_BOOK = false;
+  Position p{};
+  SearchLimits sl{};
+  Search s{};
+  sl.infinite = true;
+  sl.nodes = 10'000'000;
+  s.isReady();
+  s.startSearch(p, sl);
+  EXPECT_TRUE(s.isSearching());
+  EXPECT_FALSE(s.hasResult());
+  s.waitWhileSearching();
+  EXPECT_TRUE(s.hasResult());
+  EXPECT_EQ(10'000'000, s.getLastSearchResult().nodes);
 }

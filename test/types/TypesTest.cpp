@@ -276,5 +276,13 @@ TEST(TypesTest, nps) {
   nsec = NanoSec{0};
   fprintln("{}", nps(nodes, msec));
   fprintln("{}", nps(nodes, nsec));
+}
 
+TEST(TypesTest, elapsed) {
+  TimePoint start = std::chrono::high_resolution_clock::now();
+  TimePoint jetzt = std::chrono::high_resolution_clock::now();
+  for (int i = 0; i < 2000; ++i){
+    fprintln("{:3n}. Since start: {:n} ns - last jetzt: {:n} ns", i, elapsedSince(start).count(), elapsedSince(jetzt).count());
+    jetzt = std::chrono::high_resolution_clock::now();
+  }
 }

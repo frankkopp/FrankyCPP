@@ -26,6 +26,7 @@
 #ifndef FRANKYCPP_TIMEUNITS_H
 #define FRANKYCPP_TIMEUNITS_H
 
+#include <chrono>
 
 typedef std::chrono::time_point<std::chrono::high_resolution_clock> TimePoint;
 typedef std::chrono::milliseconds MilliSec;
@@ -50,5 +51,14 @@ inline uint64_t nps(uint64_t nodes, NanoSec ms) {
   if (!ms.count()) return nodes;
   return nodes * 1'000'000'000 / ms.count(); // +1 to avoid division by zero
 }
+
+inline NanoSec elapsedSince(const TimePoint tp) {
+  return std::chrono::high_resolution_clock::now() - tp;
+}
+
+// convenience for std::chrono::high_resolution_clock::now()
+constexpr auto now = std::chrono::high_resolution_clock::now;
+
+#define NANO(t) std::chrono::duration_cast<std::chrono::nanoseconds>(t)
 
 #endif//FRANKYCPP_TIMEUNITS_H

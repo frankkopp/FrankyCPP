@@ -30,12 +30,11 @@
 #include <array>
 #include "types/types.h"
 
-/** data structure to cluster all search statistical values */
+// data structure to cluster all search statistics
 struct SearchStats {
 
   int currentSearchDepth;
   int currentExtraSearchDepth;
-
 
   // TODO implement
 
