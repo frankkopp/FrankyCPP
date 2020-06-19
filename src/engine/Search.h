@@ -56,8 +56,6 @@ class Search {
   mutable Semaphore initSemaphore{1};
   mutable Semaphore isRunningSemaphore{1};
   std::thread searchThread{};
-  std::thread timerThread{};
-
 
   std::unique_ptr<OpeningBook> book;
   std::unique_ptr<TT> tt;
@@ -79,9 +77,11 @@ class Search {
   std::atomic_bool hasResultFlag  = false;
 
   // time management for the search
-  TimePoint startTime{};
+  TimePoint startTime{}; // when startSearch has been called
+  TimePoint startSearchTime; // actual start time of search - only different from startTime after ponderhit()
   MilliSec timeLimit{};
   MilliSec extraTime{};
+  std::thread timerThread{};
 
   // Control UCI updates to avoid flooding
   constexpr static MilliSec UCI_UPDATE_INTERVAL = MilliSec{500};
@@ -114,8 +114,14 @@ public:
   // //////////////////////////////////////////////
   // CONSTRUCTORS
 
+  // Creates a Search instance without an UciHandler. Prints uci
+  // output to std::cout.
   Search();
+
+  // Creates a Search instance and sends any uci protocol messages
+  // to the UciHandler.
   explicit Search(UciHandler* pUciHandler);
+
   ~Search();
 
   // disallow copies and moves
@@ -140,7 +146,7 @@ public:
   void isReady();
 
   // starts the search in a separate thread with the given search limits
-  void startSearch(const Position p, SearchLimits sl);// TODO implement
+  void startSearch(const Position p, SearchLimits sl);
 
   // Stops a running search gracefully - e.g. returns the best move found so far
   void stopSearch();
@@ -149,7 +155,7 @@ public:
   bool isSearching() const;
 
   // signals if we have a result
-  bool hasResult() const { return false; }// TODO implement
+  bool hasResult() const { return hasResultFlag; }
 
   // wait while searching blocks execution of the current thread until
   // the search has finished
@@ -230,6 +236,7 @@ private:
   void startTimer();
   FRIEND_TEST(SearchTest, startTimer);
 
+  // helper to send uci protocol messages.
   void sendReadyOk() const;
   void sendString(const std::string& msg) const;
   void sendResult(SearchResult& result);

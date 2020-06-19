@@ -41,7 +41,7 @@ struct SearchResult {
   MoveList pv{};
 
   std::string str() const {
-    return "Best Move: " + ::str(bestMove) + " (" + std::to_string(bestMoveValue) + ") " + "Ponder Move: " + ::str(ponderMove) + " Depth: " + std::to_string(depth) + "/" + std::to_string(extraDepth);
+    return "Best Move: " + ::str(bestMove) + " (" + (bookMove ? "book move" : std::to_string(bestMoveValue)) + ") " + "Ponder Move: " + ::str(ponderMove) + " Depth: " + std::to_string(depth) + "/" + std::to_string(extraDepth);
   }
 };
 

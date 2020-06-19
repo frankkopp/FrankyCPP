@@ -38,6 +38,7 @@
 #define fprint(...) std::cout << fmt::format(deLocale, __VA_ARGS__)
 #define fprintln(...) fprint(__VA_ARGS__) << std::endl
 #define DEBUG(...) std::cout << fmt::format(deLocale, "DEBUG {}:{} {}", __FILE__, __LINE__, __VA_ARGS__) << std::endl
+#define TICK(tp) fprintln("{:n} ns: function: {}() line: {}", elapsedSince(tp).count(), __FUNCTION__, __LINE__)
 
 // These are convenience macros to define custom operators on our types.
 // This idea and code is taken from Stockfish
