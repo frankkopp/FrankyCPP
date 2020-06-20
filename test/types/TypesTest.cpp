@@ -300,3 +300,12 @@ TEST(TypesTest, elapsed) {
     jetzt = std::chrono::high_resolution_clock::now();
   }
 }
+
+TEST(TypesTest, ltgt) {
+  EXPECT_EQ(1s, 1000ms);
+  EXPECT_LT(1s, 1001ms);
+  EXPECT_GT(1s, 999ms);
+  EXPECT_EQ(1s, 1'000'000'000ns);
+  EXPECT_LT(1s, 1'000'000'001ns);
+  EXPECT_GT(1s, 999'000'000ns);
+}

@@ -27,20 +27,20 @@
 #define FRANKYCPP_SEARCH_H
 
 
-#include <chesscore/History.h>
 #include <thread>
 
 #include "SearchLimits.h"
+#include "SearchResult.h"
 #include "SearchStats.h"
+#include "TT.h"
 #include "chesscore/MoveGenerator.h"
 #include "chesscore/Position.h"
 #include "common/Semaphore.h"
 #include "engine/UciHandler.h"
 #include "openingbook/OpeningBook.h"
 #include "types/types.h"
+#include "chesscore/History.h"
 
-#include "SearchResult.h"
-#include "TT.h"
 #include "gtest/gtest_prod.h"
 
 // forward declaration
@@ -77,21 +77,21 @@ class Search {
   std::atomic_bool hasResultFlag  = false;
 
   // time management for the search
-  TimePoint startTime{}; // when startSearch has been called
-  TimePoint startSearchTime; // actual start time of search - only different from startTime after ponderhit()
+  TimePoint startTime{};    // when startSearch has been called
+  TimePoint startSearchTime;// actual start time of search - only different from startTime after ponderhit()
   MilliSec timeLimit{};
   MilliSec extraTime{};
   std::thread timerThread{};
 
   // Control UCI updates to avoid flooding
-  constexpr static MilliSec UCI_UPDATE_INTERVAL = MilliSec{500};
+  constexpr static MilliSec UCI_UPDATE_INTERVAL = 500ms;
   TimePoint lastUciUpdateTime{};
 
   // UCI relevant statistics
   uint64_t nodesVisited{0};
 
   // Statistics
-  SearchStats searchStats{};
+  SearchStats statistics{};
 
   // ply related data
   MoveList pv[DEPTH_MAX];
@@ -174,7 +174,7 @@ public:
   void resizeTT();
 
   // return search stats instance
-  inline const SearchStats& getSearchStats() const { return searchStats; }// TODO implement
+  inline const SearchStats& getSearchStats() const { return statistics; }// TODO implement
 
   // return the last search result
   inline const SearchResult& getLastSearchResult() const { return lastSearchResult; };// TODO implement
@@ -205,30 +205,61 @@ private:
   // the start of the new iteration and started with this best
   // move. This way, also the results from the partial search
   // can be accepted
-  SearchResult iterativeDeepening(Position& position);
+  SearchResult iterativeDeepening(Position& p);
 
   // Aspiration Search
   // AspirationSearch tries to achieve more beta cut offs by searching with a narrow
   // search window around an expected value for the search. We establish
   // a start value by doing a 3 ply normal search and expand the search window in
   // in several steps to the maximal window if search value returns outside of the window.
-  Value aspirationSearch(Position& position, Depth depth, Value value);
+  Value aspirationSearch(Position& p, Depth depth, Value value);
 
   // rootSearch starts the actual recursive alpha beta search with the root moves for the first ply.
   // As root moves are treated a little different this separate function supports readability
   // as mixing it with the normal search would require quite some "if ply==0" statements.
-  Value rootSearch(Position& position, Depth depth, Value alpha, Value beta);
+  Value rootSearch(Position& p, Depth depth, Value alpha, Value beta);
 
   // search is the normal alpha beta search after the root move ply (ply > 0)
   // it will be called recursively until the remaining depth == 0 and we would
   // enter quiescence search. Search consumes about 60% of the search time and
   // all major prunings are done here. Quiescence search uses about 40% of the
   // search time and has less options for pruning as not all moves are searched.
-  Value search(Position& position, Depth depth, Depth ply, Value alpha, Value beta, Node_Type isPv, Do_Null doNull);
+  Value search(Position& p, Depth depth, Depth ply, Value alpha, Value beta, Node_Type isPv, Do_Null doNull);
+
+  // qsearch is a simplified search to counter the horizon effect in depth based
+  // searches. It continues the search into deeper branches as long as there are
+  // so called non quiet moves (usually capture, checks, promotions). Only if the
+  // position is relatively quiet we will compute an evaluation of the position
+  // to return to the previous depth.
+  // Look for non quiet moves is supported be the move generator which only
+  // generates captures or promotions in qsearch (when not in check) and also
+  // by SEE (Static Exchange Evaluation) to determine winning captured sequences.
+  Value qsearch(Position& p, Depth ply, Value alpha, Value beta, Node_Type isPv);
+
+  // After expanding the search to the required depth and all non quiet moves were
+  // generated call the evaluation heuristic on the position.
+  // This gives us a numerical value of this quiet position which we will return
+  // back to the search.
+  Value evaluate(Position& p);
+
+  // storeTT stores a position into the TT
+  void storeTt(Position& position, Depth depth, Depth ply, Move move, Value value, ValueType valuetype, Value eval, bool mateThreat);
 
   // savePV adds the given move as first move to a dest move list and the appends
   // all src moves to dest. Dest will be cleared before the the append.
-  void savePV(Move move, MoveList src, MoveList dest);
+  void savePV(Move move, MoveList& src, MoveList& dest);
+
+  // correct the value for mate distance when storing to TT
+  Value valueToTT(Value value, Depth ply);
+
+  // correct the value for mate distance when reading from TT
+  Value valueFromTt(Value value, Depth ply);
+
+  // getPVLine fills the given pv move list with the pv move starting from the given
+  // depth as long as these position are in the TT
+  // This is used when we retrieve a value and move from the TT and would not get a PV
+  // line otherwise.
+  void getPvLine(Position& p, MoveList& pvList, Depth depth);
 
   // stopConditions checks if stopFlag is set or if nodesVisited have
   // reached a potential maximum set in the search limits.
@@ -237,11 +268,12 @@ private:
   // setupSearchLimits reports to log on search limits for the search
   // and sets up time control.
   void setupSearchLimits(Position& position, SearchLimits& sl);
+
   // setupTimeControl sets up time control according to the given search limits
   // and returns a limit on the duration for the current search.
   static MilliSec setupTimeControl(Position& position, SearchLimits& limits);
-
   FRIEND_TEST(SearchTest, setupTime);
+
   // addExtraTime certain situations might call for a extension or reduction
   // of the given time limit for the search. This function add/subtracts
   // a portion (%) of the current time limit.
@@ -250,25 +282,32 @@ private:
   //  f = 0.9 --> reduction by 10%
   //  f = 1.1 --> extension by 10%
   void addExtraTime(double f);
-
   FRIEND_TEST(SearchTest, extraTime);
+
   // startTimer starts a thread which regularly checks the elapsed time against
   // the time limit and extra time given. If time limit is reached this will set
   // the stopFlag to true and terminate itself.
   void startTimer();
-
   FRIEND_TEST(SearchTest, startTimer);
 
   // checks repetitions and 50-moves rule. Returns true if the position
   // has repeated itself at least the given number of times.
   bool checkDrawRepAnd50(Position& position, int numberOfRepetitions);
+
   // helper to send uci protocol messages.
   void sendReadyOk() const;
+
+  // sends an info string to the uci handler if a handler is available.
   void sendString(const std::string& msg) const;
 
+  // sends the search result to the uci handler if a handler is available.
   void sendResult(SearchResult& result);
 
+  // send UCI information after each depth iteration.
   void sendIterationEndInfoToUci();
+
+  // send UCI information about search - could be called each 500ms or so.
+  void sendSearchUpdateToUci();
 };
 
 #endif//FRANKYCPP_SEARCH_H

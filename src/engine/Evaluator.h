@@ -26,10 +26,23 @@
 #ifndef FRANKYCPP_EVALUATOR_H
 #define FRANKYCPP_EVALUATOR_H
 
+#include "types/types.h"
+#include <chesscore/Position.h>
 
 class Evaluator {
+
 public:
   Evaluator();
+
+  // Evaluate calculates a value for a chess positions by
+  // using various evaluation heuristics like material,
+  // positional values, pawn structure, etc.
+  // It calls InitEval and then the internal evaluation function
+  // which calculates the value for the position of the given
+  // position for the current game phase and from the
+  // view of the next player.
+  Value evaluate(Position& p);
+
 };
 
 

@@ -69,24 +69,24 @@ TEST_F(SearchTest, setupTime) {
   EXPECT_EQ(1480, Search::setupTimeControl(p, sl).count());
 
   sl           = SearchLimits{};
-  sl.whiteTime = MilliSec{30000};
-  sl.blackTime = MilliSec{30000};
+  sl.whiteTime = 30s;
+  sl.blackTime = 30s;
   fprintln("{}", str(Search::setupTimeControl(p, sl)));
-  EXPECT_EQ(675, Search::setupTimeControl(p, sl).count());
+  EXPECT_EQ(675ms, Search::setupTimeControl(p, sl));
 
   sl           = SearchLimits{};
-  sl.whiteTime = MilliSec{3000};
-  sl.blackTime = MilliSec{3000};
+  sl.whiteTime = 3s;
+  sl.blackTime = 3s;
   fprintln("{}", str(Search::setupTimeControl(p, sl)));
-  EXPECT_EQ(60, Search::setupTimeControl(p, sl).count());
+  EXPECT_EQ(60ms, Search::setupTimeControl(p, sl));
 
   sl           = SearchLimits{};
-  sl.whiteTime = MilliSec{30000};
-  sl.whiteInc  = MilliSec{1000};
-  sl.blackTime = MilliSec{30000};
-  sl.blackInc  = MilliSec{1000};
+  sl.whiteTime =30s;
+  sl.whiteInc  = 1s;
+  sl.blackTime = 30s;
+  sl.blackInc  = 1s;
   fprintln("{}", str(Search::setupTimeControl(p, sl)));
-  EXPECT_EQ(1575, Search::setupTimeControl(p, sl).count());
+  EXPECT_EQ(1575ms, Search::setupTimeControl(p, sl));
 }
 
 TEST_F(SearchTest, extraTime) {
@@ -94,15 +94,15 @@ TEST_F(SearchTest, extraTime) {
   SearchLimits sl{};
   Search s{};
   s.searchLimits.timeControl = true;
-  s.timeLimit                = MilliSec(10000);
-  s.extraTime                = MilliSec(0);
+  s.timeLimit                = 10s;
+  s.extraTime                = 0ms;
   s.addExtraTime(0.9);
   fprintln("{}", str(s.extraTime));
-  EXPECT_EQ(-999, s.extraTime.count());
-  s.extraTime = MilliSec(0);
+  EXPECT_EQ(-999ms, s.extraTime);
+  s.extraTime = 0ms;
   s.addExtraTime(1.2);
   fprintln("{}", str(s.extraTime));
-  EXPECT_EQ(1999, s.extraTime.count());
+  EXPECT_EQ(1999ms, s.extraTime);
 }
 
 TEST_F(SearchTest, startTimer) {
@@ -110,16 +110,17 @@ TEST_F(SearchTest, startTimer) {
   SearchLimits sl{};
   Search s{};
   s.searchLimits.timeControl = true;
-  s.startTime                = std::chrono::high_resolution_clock::now();
-  s.timeLimit                = MilliSec(2000);
-  s.extraTime                = MilliSec(1000);
+  s.startTime                = high_resolution_clock::now();
+  s.timeLimit                = 2s;
+  s.extraTime                = 1s;
   s.startTimer();
   s.timerThread.join();
-  EXPECT_LT(3'000'000'000, (std::chrono::high_resolution_clock::now() - s.startTime).count());
-  EXPECT_GT(3'010'000'000, (std::chrono::high_resolution_clock::now() - s.startTime).count());
+  EXPECT_LT(3s, (high_resolution_clock::now() - s.startTime));
+  EXPECT_GT(3.010s, (high_resolution_clock::now() - s.startTime));
 }
 
 TEST_F(SearchTest, startStopSearch) {
+  SearchConfig::USE_BOOK = false;
   Position p{};
   SearchLimits sl{};
   Search s{};
@@ -128,12 +129,12 @@ TEST_F(SearchTest, startStopSearch) {
   s.startSearch(p, sl);
   EXPECT_TRUE(s.isSearching());
   EXPECT_FALSE(s.hasResult());
-  std::this_thread::sleep_for(std::chrono::nanoseconds(nanoPerSec));
+  SLEEP(nanoseconds(1s));
   s.stopSearch();
   s.waitWhileSearching();
   EXPECT_TRUE(s.hasResult());
-  EXPECT_LT(nanoPerSec, s.getLastSearchResult().time.count());
-  EXPECT_GT(nanoPerSec * 1.1, s.getLastSearchResult().time.count());
+  EXPECT_LT(1s, s.getLastSearchResult().time);
+  EXPECT_GT(1s * 1.1, s.getLastSearchResult().time);
 }
 
 TEST_F(SearchTest, startTimedSearch) {
@@ -142,15 +143,15 @@ TEST_F(SearchTest, startTimedSearch) {
   SearchLimits sl{};
   Search s{};
   sl.timeControl = true;
-  sl.moveTime    = MilliSec{1000};
+  sl.moveTime    = 1s;
   s.isReady();
   s.startSearch(p, sl);
   EXPECT_TRUE(s.isSearching());
   EXPECT_FALSE(s.hasResult());
   s.waitWhileSearching();
   EXPECT_TRUE(s.hasResult());
-  EXPECT_LT(nanoPerSec - 20'000'000, s.getLastSearchResult().time.count());
-  EXPECT_GT(uint64_t(nanoPerSec * 1.1), s.getLastSearchResult().time.count());
+  EXPECT_LT(1s - 20ms, s.getLastSearchResult().time);
+  EXPECT_GT(1s * 1.1, s.getLastSearchResult().time);
 }
 
 TEST_F(SearchTest, bookMoveSearch) {
@@ -159,7 +160,7 @@ TEST_F(SearchTest, bookMoveSearch) {
   SearchLimits sl{};
   Search s{};
   sl.timeControl = true;
-  sl.moveTime    = MilliSec{1000};
+  sl.moveTime    = 1s;
   s.isReady();
   s.startSearch(p, sl);
   EXPECT_TRUE(s.isSearching());
@@ -167,12 +168,13 @@ TEST_F(SearchTest, bookMoveSearch) {
   EXPECT_TRUE(s.hasResult());
   EXPECT_NE(MOVE_NONE, s.getLastSearchResult().bestMove);
   EXPECT_TRUE(s.getLastSearchResult().bookMove);
-  EXPECT_LT(NANOSECONDS(MilliSec{1}).count(), s.getLastSearchResult().time.count());
-  EXPECT_GT(NANOSECONDS(MilliSec{10}).count(), s.getLastSearchResult().time.count());
+  EXPECT_LT(100us, s.getLastSearchResult().time);
+  EXPECT_GT(1ms, s.getLastSearchResult().time);
 }
 
 TEST_F(SearchTest, startPonderSearch) {
   SearchConfig::USE_BOOK = false;
+  SearchConfig::USE_PONDER = true;
   Position p{};
   SearchLimits sl{};
   Search s{};
@@ -184,7 +186,7 @@ TEST_F(SearchTest, startPonderSearch) {
   s.startSearch(p, sl);
   EXPECT_TRUE(s.isSearching());
   EXPECT_FALSE(s.hasResult());
-  std::this_thread::sleep_for(std::chrono::nanoseconds(nanoPerSec));
+  SLEEP(nanoseconds(nanoPerSec));
   s.ponderhit();
   s.waitWhileSearching();
   EXPECT_TRUE(s.hasResult());
