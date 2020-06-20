@@ -84,8 +84,9 @@ class Search {
   std::thread timerThread{};
 
   // Control UCI updates to avoid flooding
-  constexpr static MilliSec UCI_UPDATE_INTERVAL = 500ms;
-  TimePoint lastUciUpdateTime{};
+  constexpr static uint64_t UCI_UPDATE_INTERVAL = nanoPerSec;
+  uint64_t lastUciUpdateTime{};
+  uint64_t lastUciUpdateNodes{};
 
   // UCI relevant statistics
   uint64_t nodesVisited{0};
