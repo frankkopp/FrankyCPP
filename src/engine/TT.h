@@ -258,13 +258,13 @@ public:
 
   static inline std::string str(const ValueType type) {
     switch (type) {
-      case TYPE_NONE:
+      case NONE:
         return "NONE";
-      case TYPE_EXACT:
+      case EXACT:
         return "EXACT";
-      case TYPE_ALPHA:
+      case ALPHA:
         return "ALPHA";
-      case TYPE_BETA:
+      case BETA:
         return "BETA";
     }
     return "";

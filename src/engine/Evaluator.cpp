@@ -26,3 +26,8 @@
 #include "Evaluator.h"
 
 Evaluator::Evaluator() {}
+
+Value Evaluator::evaluate(Position& p) {
+  // TODO implement
+  return static_cast<Value>((p.getNextPlayer() == WHITE ? 1 : -1) * (p.getMaterial(WHITE) - p.getMaterial(BLACK)));
+}

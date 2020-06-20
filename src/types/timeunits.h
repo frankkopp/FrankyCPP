@@ -28,9 +28,13 @@
 
 #include <chrono>
 
-typedef std::chrono::time_point<std::chrono::high_resolution_clock> TimePoint;
-typedef std::chrono::milliseconds MilliSec;
-typedef std::chrono::nanoseconds NanoSec;
+using namespace std::chrono_literals ;
+using namespace std::chrono ;
+
+typedef time_point<std::chrono::high_resolution_clock> TimePoint;
+typedef milliseconds MilliSec;
+typedef nanoseconds NanoSec;
+
 
 inline std::string str(MilliSec s) {
   return fmt::format(deLocale, "{:.3f} s", static_cast<double>(s.count())/1e3);
@@ -53,12 +57,13 @@ inline uint64_t nps(uint64_t nodes, NanoSec ms) {
 }
 
 inline NanoSec elapsedSince(const TimePoint tp) {
-  return std::chrono::high_resolution_clock::now() - tp;
+  return high_resolution_clock::now() - tp;
 }
 
 // convenience for std::chrono::high_resolution_clock::now()
-constexpr auto now = std::chrono::high_resolution_clock::now;
+constexpr auto now = high_resolution_clock::now;
 
+#define SLEEP(t) std::this_thread::sleep_for(t)
 #define NANOSECONDS(t) std::chrono::duration_cast<std::chrono::nanoseconds>(t)
 #define MILLISECONDS(t) std::chrono::duration_cast<std::chrono::milliseconds>(t)
 

@@ -84,7 +84,7 @@ void TT::clear() {
         _data[i].move       = MOVE_NONE;
         _data[i].depth      = DEPTH_NONE;
         _data[i].value      = VALUE_NONE;
-        _data[i].type       = TYPE_NONE;
+        _data[i].type       = ValueType::NONE;
         _data[i].eval       = VALUE_NONE;
         _data[i].age        = 1;
         _data[i].mateThreat = false;
@@ -131,8 +131,8 @@ void TT::put(const Key key, const Depth depth, const Move move, const Value valu
     entryDataPtr->depth      = depth;
     entryDataPtr->value      = value;
     entryDataPtr->type       = type;
-    entryDataPtr->eval       = eval;
     entryDataPtr->age        = 1;
+    entryDataPtr->eval       = eval;
     entryDataPtr->mateThreat = mateThreat;
     return;
   }
@@ -151,8 +151,8 @@ void TT::put(const Key key, const Depth depth, const Move move, const Value valu
       entryDataPtr->depth      = depth;
       entryDataPtr->value      = value;
       entryDataPtr->type       = type;
-      entryDataPtr->eval       = eval;
       entryDataPtr->age        = 1;
+      entryDataPtr->eval       = eval;
       entryDataPtr->mateThreat = mateThreat;
     }
     return;

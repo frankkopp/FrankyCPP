@@ -31,7 +31,7 @@
 
 namespace SearchConfig {
 
-  inline bool USE_PONDER = true;
+  inline bool USE_PONDER = false;
 
   // opening book
   inline bool USE_BOOK                     = true;
@@ -39,28 +39,30 @@ namespace SearchConfig {
   inline OpeningBook::BookFormat BOOK_TYPE = OpeningBook::BookFormat::SIMPLE;
 
   // basic search strategies and features
-  inline bool USE_PVS = false; // use PVS null window search
+  inline bool USE_PVS = false;// use PVS null window search
   inline bool USE_ASP = false;
   //  inline Depth ASP_START_DEPTH = Depth{4};
 
-  //  inline bool USE_QUIESCENCE          = true; // use quiescence search
+  inline bool USE_QUIESCENCE = false;// use quiescence search
   //  inline bool USE_QS_SEE              = true; // use SEE for goodCaptures
   //  inline Depth MAX_EXTRA_QDEPTH       = Depth{20};
 
   // Transposition Table
-  inline bool USE_TT    = true;// use transposition table
-  inline int TT_SIZE_MB = 64;  // size of TT in MB
+  inline bool USE_TT       = false;// use transposition table
+  inline bool USE_TT_VALUE = true;// use value from tt to prune
+  inline bool USE_EVAL_TT  = true;// use value from tt for storing evaluations
+  inline int TT_SIZE_MB    = 64;  // size of TT in MB
+
   //  inline bool USE_TT_QSEARCH          = true; // use transposition table also in quiescence search
 
   //  // Move Sorting Features
-  //  inline bool USE_PV_MOVE_SORT        = true; // tell the move gen the current pv to return first
-  //  inline bool USE_KILLER_MOVES        = true; // Store refutation moves (>beta) for move ordering
-  //  inline int NO_KILLER_MOVES          = 2;    // number of killers stored
-  inline bool USE_HISTORY_COUNTER = true;
-  inline bool USE_HISTORY_MOVES = true;
+  inline bool USE_TT_PV_MOVE_SORT = false;// use move from tt as pv
+  inline bool USE_KILLER_MOVES    = false;// Store refutation moves (>beta) for move ordering
+  inline bool USE_HISTORY_COUNTER = false;
+  inline bool USE_HISTORY_MOVES   = false;
 
   //  // Pruning features
-  //  inline bool USE_MDP                 = true; // mate distance pruning
+  inline bool USE_MDP = false;// mate distance pruning
   //  inline bool USE_MPP                 = true; // minor promotion pruning
   //  inline bool USE_QS_STANDPAT_CUT     = true; // RFP for quiescence
   //

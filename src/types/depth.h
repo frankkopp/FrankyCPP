@@ -31,7 +31,7 @@
 
 ///////////////////////////////////
 //// DEPTH
-enum Depth : int8_t {
+enum Depth : int {
   DEPTH_NONE  = 0,
   DEPTH_ONE   = 1,
   DEPTH_TWO   = 2,

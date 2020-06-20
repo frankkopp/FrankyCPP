@@ -181,7 +181,7 @@ TEST_F(TT_Test, put) {
   const Key key3 = key1 + collisionDistance;// same bucket - collision
 
   // new entry in empty bucket at pos 0
-  tt.put(key1, Depth(6), createMove(SQ_E2, SQ_E4), Value(101), TYPE_EXACT, Value(1001), true);
+  tt.put(key1, Depth(6), createMove(SQ_E2, SQ_E4), Value(101), EXACT, Value(1001), true);
   ASSERT_EQ(1, tt.getNumberOfPuts());
   ASSERT_EQ(1, tt.getNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfUpdates());
@@ -193,7 +193,7 @@ TEST_F(TT_Test, put) {
   ASSERT_TRUE(tt.getMatch(key1)->mateThreat);
 
   // new entry
-  tt.put(key2, Depth(5), createMove(SQ_E2, SQ_E4), Value(102), TYPE_EXACT, Value(1002), false);
+  tt.put(key2, Depth(5), createMove(SQ_E2, SQ_E4), Value(102), EXACT, Value(1002), false);
   ASSERT_EQ(2, tt.getNumberOfPuts());
   ASSERT_EQ(2, tt.getNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfUpdates());
@@ -206,7 +206,7 @@ TEST_F(TT_Test, put) {
 
 
   // new entry (collision)
-  tt.put(key3, Depth(6), createMove(SQ_E2, SQ_E4), Value(103), TYPE_EXACT, Value(1003), true);
+  tt.put(key3, Depth(6), createMove(SQ_E2, SQ_E4), Value(103), EXACT, Value(1003), true);
   ASSERT_EQ(3, tt.getNumberOfPuts());
   ASSERT_EQ(2, tt.getNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfUpdates());
@@ -234,17 +234,17 @@ TEST_F(TT_Test, get) {
   const Key key4 = key1 + 17;
 
   // new entry in empty slot
-  tt.put(key1, Depth(6), createMove(SQ_E2, SQ_E4), Value(101), TYPE_EXACT, Value(1001), false);
+  tt.put(key1, Depth(6), createMove(SQ_E2, SQ_E4), Value(101), EXACT, Value(1001), false);
   const TT::Entry* e1 = tt.getMatch(key1);
   ASSERT_EQ(101, e1->value);
 
   // new entry in empty slot
-  tt.put(key2, Depth(5), createMove(SQ_E2, SQ_E4), Value(102), TYPE_EXACT, Value(1002), false);
+  tt.put(key2, Depth(5), createMove(SQ_E2, SQ_E4), Value(102), EXACT, Value(1002), false);
   const TT::Entry* e2 = tt.getMatch(key2);
   ASSERT_EQ(102, e2->value);
 
   // new entry in occupied slot
-  tt.put(key3, Depth(7), createMove(SQ_E2, SQ_E4), Value(103), TYPE_EXACT, Value(1003), false);
+  tt.put(key3, Depth(7), createMove(SQ_E2, SQ_E4), Value(103), EXACT, Value(1003), false);
   const TT::Entry* e3 = tt.getMatch(key3);
   ASSERT_EQ(103, e3->value);
 

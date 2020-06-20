@@ -26,9 +26,9 @@
 #ifndef FRANKYCPP_SEARCHSTATS_H
 #define FRANKYCPP_SEARCHSTATS_H
 
-#include <ostream>
-#include <array>
 #include "types/types.h"
+#include <array>
+#include <ostream>
 
 // data structure to cluster all search statistics
 struct SearchStats {
@@ -47,14 +47,28 @@ struct SearchStats {
   uint64_t checkmates;
   uint64_t stalemates;
 
-  uint64_t rootPvsResearches;
-  uint64_t bestMoveChange;
-  uint64_t betaCuts;
+  uint64_t leafPositionsEvaluated;
+  uint64_t evaluations;
 
+  uint64_t betaCuts;
+  uint64_t betaCuts1st;
+  uint64_t rootPvsResearches;
+  uint64_t pvsResearches;
+  uint64_t bestMoveChange;
+  uint64_t mdp;
+
+  uint64_t lmrResearches;
+  uint64_t ttHit;
+  uint64_t ttMiss;
+  uint64_t TtCuts;
+  uint64_t evalFromTT;
+  uint64_t TtMoveUsed;
+
+  uint64_t NoTtMove;
   // TODO implement
   std::string str() const;
-  friend std::ostream &operator<<(std::ostream &os, const SearchStats &stats);
+  friend std::ostream& operator<<(std::ostream& os, const SearchStats& stats);
 };
 
 
-#endif //FRANKYCPP_SEARCHSTATS_H
+#endif//FRANKYCPP_SEARCHSTATS_H
