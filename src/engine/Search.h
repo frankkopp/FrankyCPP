@@ -207,6 +207,29 @@ private:
   // can be accepted
   SearchResult iterativeDeepening(Position& position);
 
+  // Aspiration Search
+  // AspirationSearch tries to achieve more beta cut offs by searching with a narrow
+  // search window around an expected value for the search. We establish
+  // a start value by doing a 3 ply normal search and expand the search window in
+  // in several steps to the maximal window if search value returns outside of the window.
+  Value aspirationSearch(Position& position, Depth depth, Value value);
+
+  // rootSearch starts the actual recursive alpha beta search with the root moves for the first ply.
+  // As root moves are treated a little different this separate function supports readability
+  // as mixing it with the normal search would require quite some "if ply==0" statements.
+  Value rootSearch(Position& position, Depth depth, Value alpha, Value beta);
+
+  // search is the normal alpha beta search after the root move ply (ply > 0)
+  // it will be called recursively until the remaining depth == 0 and we would
+  // enter quiescence search. Search consumes about 60% of the search time and
+  // all major prunings are done here. Quiescence search uses about 40% of the
+  // search time and has less options for pruning as not all moves are searched.
+  Value search(Position& position, Depth depth, Depth ply, Value alpha, Value beta, Node_Type isPv, Do_Null doNull);
+
+  // savePV adds the given move as first move to a dest move list and the appends
+  // all src moves to dest. Dest will be cleared before the the append.
+  void savePV(Move move, MoveList src, MoveList dest);
+
   // stopConditions checks if stopFlag is set or if nodesVisited have
   // reached a potential maximum set in the search limits.
   bool stopConditions();
@@ -214,12 +237,11 @@ private:
   // setupSearchLimits reports to log on search limits for the search
   // and sets up time control.
   void setupSearchLimits(Position& position, SearchLimits& sl);
-
   // setupTimeControl sets up time control according to the given search limits
   // and returns a limit on the duration for the current search.
   static MilliSec setupTimeControl(Position& position, SearchLimits& limits);
-  FRIEND_TEST(SearchTest, setupTime);
 
+  FRIEND_TEST(SearchTest, setupTime);
   // addExtraTime certain situations might call for a extension or reduction
   // of the given time limit for the search. This function add/subtracts
   // a portion (%) of the current time limit.
@@ -228,18 +250,25 @@ private:
   //  f = 0.9 --> reduction by 10%
   //  f = 1.1 --> extension by 10%
   void addExtraTime(double f);
-  FRIEND_TEST(SearchTest, extraTime);
 
+  FRIEND_TEST(SearchTest, extraTime);
   // startTimer starts a thread which regularly checks the elapsed time against
   // the time limit and extra time given. If time limit is reached this will set
   // the stopFlag to true and terminate itself.
   void startTimer();
+
   FRIEND_TEST(SearchTest, startTimer);
 
+  // checks repetitions and 50-moves rule. Returns true if the position
+  // has repeated itself at least the given number of times.
+  bool checkDrawRepAnd50(Position& position, int numberOfRepetitions);
   // helper to send uci protocol messages.
   void sendReadyOk() const;
   void sendString(const std::string& msg) const;
+
   void sendResult(SearchResult& result);
+
+  void sendIterationEndInfoToUci();
 };
 
 #endif//FRANKYCPP_SEARCH_H

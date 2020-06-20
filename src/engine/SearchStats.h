@@ -33,15 +33,27 @@
 // data structure to cluster all search statistics
 struct SearchStats {
 
+  int currentIterationDepth;
   int currentSearchDepth;
   int currentExtraSearchDepth;
 
+  Move currentBestRootMove;
+  Value currentBestRootMoveValue;
+
+  MoveList currentVariation{};
+  int currentRootMoveIndex;
+  Move currentRootMove;
+
+  uint64_t checkmates;
+  uint64_t stalemates;
+
+  uint64_t rootPvsResearches;
+  uint64_t bestMoveChange;
+  uint64_t betaCuts;
+
   // TODO implement
-
   std::string str() const;
-
   friend std::ostream &operator<<(std::ostream &os, const SearchStats &stats);
-
 };
 
 

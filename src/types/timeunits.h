@@ -59,6 +59,7 @@ inline NanoSec elapsedSince(const TimePoint tp) {
 // convenience for std::chrono::high_resolution_clock::now()
 constexpr auto now = std::chrono::high_resolution_clock::now;
 
-#define NANO(t) std::chrono::duration_cast<std::chrono::nanoseconds>(t)
+#define NANOSECONDS(t) std::chrono::duration_cast<std::chrono::nanoseconds>(t)
+#define MILLISECONDS(t) std::chrono::duration_cast<std::chrono::milliseconds>(t)
 
 #endif//FRANKYCPP_TIMEUNITS_H

@@ -167,8 +167,8 @@ TEST_F(SearchTest, bookMoveSearch) {
   EXPECT_TRUE(s.hasResult());
   EXPECT_NE(MOVE_NONE, s.getLastSearchResult().bestMove);
   EXPECT_TRUE(s.getLastSearchResult().bookMove);
-  EXPECT_LT(NANO(MilliSec{1}).count(), s.getLastSearchResult().time.count());
-  EXPECT_GT(NANO(MilliSec{10}).count(), s.getLastSearchResult().time.count());
+  EXPECT_LT(NANOSECONDS(MilliSec{1}).count(), s.getLastSearchResult().time.count());
+  EXPECT_GT(NANOSECONDS(MilliSec{10}).count(), s.getLastSearchResult().time.count());
 }
 
 TEST_F(SearchTest, startPonderSearch) {
