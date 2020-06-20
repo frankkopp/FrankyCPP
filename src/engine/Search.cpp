@@ -85,7 +85,6 @@ void Search::startSearch(const Position p, SearchLimits sl) {
   initSemaphore.getOrWait();
   initSemaphore.release();
   LOG__INFO(Logger::get().SEARCH_LOG, "Search started.");
-  TICK(startTime);
 }
 
 void Search::stopSearch() {
@@ -167,8 +166,6 @@ void Search::run() {
     return;
   }
 
-  TICK(startTime);
-
   LOG__INFO(Logger::get().SEARCH_LOG, "Searching " + position.strFen());
 
   // initialize search
@@ -183,12 +180,10 @@ void Search::run() {
 
   // setup and report search limits
   setupSearchLimits(position, searchLimits);
-  TICK(startTime);
 
   // when not pondering and search is time controlled start timer
   if (searchLimits.timeControl && !searchLimits.ponder) {
     startTimer();
-    TICK(startTime);
   }
 
   // age tt entries
@@ -199,7 +194,6 @@ void Search::run() {
   else {
     LOG__INFO(Logger::get().SEARCH_LOG, "Transposition Table: Not using TT.");
   }
-  TICK(startTime);
 
   // Initialize ply based data
   // move generators for each ply
@@ -217,7 +211,6 @@ void Search::run() {
   // release the init phase lock to signal the calling go routine
   // waiting in StartSearch() to return
   initSemaphore.release();
-  TICK(startTime);
 
   // check for opening book move when we have a time controlled game
   Move bookMove = MOVE_NONE;
@@ -228,8 +221,6 @@ void Search::run() {
   else {
     LOG__INFO(Logger::get().SEARCH_LOG, "Opening Book: Not using book.");
   }
-
-  TICK(startTime);
 
   LOG__INFO(Logger::get().SEARCH_LOG, fmt::format("Search using: PVS={} ASP={}", SearchConfig::USE_PVS, SearchConfig::USE_ASP));
 
@@ -244,7 +235,6 @@ void Search::run() {
     searchResult.bookMove = true;
     hadBookMove           = true;
   }
-  TICK(startTime);
 
   // If we arrive here during Ponder mode or Infinite mode and the search is not
   // stopped it means that the search was finished before it has been stopped
@@ -257,7 +247,6 @@ void Search::run() {
       std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
   }
-  TICK(startTime);
 
   // Clean up
   // make sure timer stops as this could potentially still be running
@@ -292,7 +281,6 @@ void Search::run() {
 
   // release the running semaphore after the search has ended
   isRunningSemaphore.release();
-  TICK(startTime);
 }
 
 SearchResult Search::iterativeDeepening(Position& p) {
@@ -1035,7 +1023,6 @@ void Search::startTimer() {
   this->timerThread = std::thread([&] {
     startSearchTime = now();
     LOG__DEBUG(Logger::get().SEARCH_LOG, "Timer started with time limit of {} ms", str(timeLimit));
-    TICK(startTime);
     // relaxed busy wait
     while (now() - startSearchTime < timeLimit + extraTime && !stopSearchFlag) {
       std::this_thread::sleep_for(std::chrono::milliseconds(5));
@@ -1105,7 +1092,7 @@ void Search::sendSearchUpdateToUci() {
   }
   lastUciUpdateTime = nowFast();
 
-  int hashfull      = 0;
+  int hashfull = 0;
   if (tt) {
     hashfull = tt->hashFull();
   }
