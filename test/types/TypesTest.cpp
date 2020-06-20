@@ -266,6 +266,20 @@ TEST(TypesTest, moveListPrint) {
   EXPECT_EQ(expected, ml.str());
 }
 
+TEST(TypesTest, sortMoveListByValue) {
+  Move move1 = createMove(SQ_C2, SQ_C4, NORMAL, Value(-100));
+  Move move2 = createMove(SQ_D2, SQ_D4, NORMAL, Value(0));
+  Move move3 = createMove(SQ_E2, SQ_E4, NORMAL, Value(100));
+  MoveList ml{};
+  ml.push_back(move1);
+  ml.push_back(move2);
+  ml.push_back(move3);
+  fprintln("{}", str(ml));
+  std::sort(ml.begin(),ml.end(), sortByValue);
+  fprintln("{}", str(ml));
+  EXPECT_EQ(move3, ml.at(0));
+}
+
 TEST(TypesTest, nps) {
   uint64_t nodes = 10'000'000;
   MilliSec msec{1'500};

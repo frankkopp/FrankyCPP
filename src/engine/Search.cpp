@@ -23,10 +23,11 @@
  *
  */
 
-#include "Search.h"
-#include "SearchConfig.h"
+#include <chrono>
 
 #include "Evaluator.h"
+#include "Search.h"
+#include "SearchConfig.h"
 
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
@@ -65,7 +66,7 @@ void Search::startSearch(const Position p, SearchLimits sl) {
   }
 
   // start search time
-  startTime = now();
+  startTime       = now();
   startSearchTime = startTime;
 
   // move the received copy of position and search limits to instance variables
@@ -296,6 +297,244 @@ void Search::run() {
 }
 
 SearchResult Search::iterativeDeepening(Position& position) {
+  //  fprintln("Not yet implemented: {}", __FUNCTION__);
+  //  fprintln("Simulating search by sleeping in a loop until stopConditions are met");
+  //  TICK(startTime);
+  //  while (!stopConditions()) {
+  //    nodesVisited++;
+  //  }
+  //  TICK(startTime);
+  //  return SearchResult();
+
+  SearchResult searchResult{};
+
+  // check repetition and 50-moves rule
+  if (checkDrawRepAnd50(position, 2)) {
+    std::string msg = "Search called on DRAW by Repetition or 50-moves-rule";
+    sendString(msg);
+    LOG__WARN(Logger::get().SEARCH_LOG, msg);
+    searchResult.bestMoveValue = VALUE_DRAW;
+    return searchResult;
+  }
+
+  // generate all legal root moves
+  rootMoves = *mg[0].generateLegalMoves<GenAll>(position);
+
+  // check if there are legal moves - if not it's mate or stalemate
+  if (rootMoves.empty()) {
+    if (position.hasCheck()) {
+      searchStats.checkmates++;
+      std::string msg = "Search called on a check mate position";
+      sendString(msg);
+      LOG__WARN(Logger::get().SEARCH_LOG, msg);
+      searchResult.bestMoveValue = -VALUE_CHECKMATE;
+    }
+    else {
+      searchStats.stalemates++;
+      std::string msg = "Search called on a stale mate position";
+      sendString(msg);
+      LOG__WARN(Logger::get().SEARCH_LOG, msg);
+      searchResult.bestMoveValue = VALUE_DRAW;
+    }
+    return searchResult;
+  }
+
+  // add some extra time for the move after the last book move
+  // hadBookMove move will be true at his point if we ever had
+  // a book move.
+  if (hadBookMove && searchLimits.timeControl && searchLimits.moveTime.count() == 0) {
+    LOG__WARN(Logger::get().SEARCH_LOG, "First non-book move to search. Adding extra time: Before: {}, after: {}",
+              str(timeLimit + extraTime), str(2 * timeLimit + extraTime));
+    addExtraTime(2.0);
+    hadBookMove = false;
+  }
+
+  // prepare max depth from search limits
+  int maxDepth = DEPTH_MAX;
+  if (searchLimits.depth) {
+    maxDepth = searchLimits.depth;
+  }
+
+  // Max window search in preparation for aspiration window search
+  // not needed yet
+  Value alpha     = VALUE_MIN;
+  Value beta      = VALUE_MAX;
+  Value bestValue = VALUE_NONE;
+
+  // ###########################################
+  // ### BEGIN Iterative Deepening
+  for (Depth iterationDepth = Depth{0}; iterationDepth < maxDepth; ++iterationDepth) {
+    // update search counter
+    nodesVisited++;
+
+    // update depth statistics
+    searchStats.currentIterationDepth = iterationDepth;
+    searchStats.currentSearchDepth    = searchStats.currentIterationDepth;
+    if (searchStats.currentExtraSearchDepth < searchStats.currentIterationDepth) {
+      searchStats.currentExtraSearchDepth = searchStats.currentIterationDepth;
+    }
+
+    // ###########################################
+    // Start actual alpha beta search
+    // ASPIRATION SEARCH
+    if (SearchConfig::USE_ASP && iterationDepth > 3) {
+      bestValue = aspirationSearch(position, iterationDepth, bestValue);
+    }
+    // PVS SEARCH (or pure ALPHA BETA when PVS deactivated)
+    else {
+      bestValue = rootSearch(position, iterationDepth, alpha, beta);
+    }
+    // ###########################################
+
+    // check if we need to stop
+    // doing this after the first iteration ensures that
+    // we have done at least one complete search and have
+    // a pv (best) move
+    // If we only have one move to play also stop the search
+    if (!stopConditions() && rootMoves.size() > 1) {
+      // sort root moves for the next iteration
+      std::sort(rootMoves.begin(), rootMoves.end(), sortByValue);
+      searchStats.currentBestRootMove      = pv[0].at(0);
+      searchStats.currentBestRootMoveValue = valueOf(pv[0].at(0));
+      // update UCI GUI
+      sendIterationEndInfoToUci();
+    }
+    else {
+      break;
+    }
+  }
+  // ### END OF Iterative Deepening
+  // ###########################################
+
+  // update searchResult
+  // best move is pv[0][0] - we need to make sure this array entry exists at this time
+  // best value is pv[0][0].valueOf
+  searchResult.bestMove      = moveOf(pv[0].at(0));
+  searchResult.bestMoveValue = valueOf(pv[0].at(0));
+  searchResult.depth         = searchStats.currentIterationDepth;
+  searchResult.extraDepth    = searchStats.currentExtraSearchDepth;
+  searchResult.bookMove      = false;
+
+  // see if we have a move we could ponder on
+  if (pv[0].size() > 1) {
+    searchResult.ponderMove = moveOf(pv[0].at(1));
+  }
+  else {
+    // we do not have a ponder move in the pv list
+    // so let's check the TT
+    if (SearchConfig::USE_TT) {
+      position.doMove(searchResult.bestMove);
+      const auto* ttEntryPtr  = tt->probe(position.getZobristKey());
+      searchResult.ponderMove = ttEntryPtr ? static_cast<Move>(ttEntryPtr->move) : MOVE_NONE;
+      position.undoMove();
+      LOG__DEBUG(Logger::get().SEARCH_LOG, "Using ponder move from hash table: {}", str(searchResult.ponderMove));
+    }
+  }
+
+  return searchResult;
+}
+
+Value Search::aspirationSearch(Position& position, Depth depth, Value value) {
+  // TODO implement
+  return VALUE_DRAW;
+}
+
+Value Search::rootSearch(Position& position, Depth depth, Value alpha, Value beta) {
+
+  // In root search we search all moves and store the value
+  // into the root moves themselves for sorting in the
+  // next iteration
+  // best move is stored in pv[0][0]
+  // best value is stored in pv[0][0].value
+  // The next iteration begins with the best move of the last
+  // iteration so we can be sure pv[0][0] will be set with the
+  // last best move from the previous iteration independent of
+  // the value. Any better move found is really better and will
+  // replace pv[0][0] and also will be sorted first in the
+  // next iteration
+
+  // prepare root node search
+  const Depth ply     = static_cast<Depth>(1);
+  Value bestNodeValue = VALUE_NONE;
+  Value value;
+
+  // ///////////////////////////////////////////////////////
+  // MOVE LOOP
+  for (int i = 0; i < rootMoves.size(); i++) {
+    Move move = rootMoves.at(i);
+
+    position.doMove(move);
+    nodesVisited++;
+    searchStats.currentVariation.push_back(move);
+    searchStats.currentRootMoveIndex = i;
+    searchStats.currentRootMove      = move;
+
+    if (checkDrawRepAnd50(position, 2)) {
+      value = VALUE_DRAW;
+    }
+    else {
+      // ///////////////////////////////////////////////////////////////////
+      // PVS
+      // First move in a node is an assumed PV and searched with full search window
+      if (!SearchConfig::USE_PVS || i == 0) {
+        value = -search(position, depth - 1, ply, -beta, -alpha, PV, Do_Null_Move);
+      }
+      else {
+        // Null window search after the initial PV search.
+        value = -search(position, depth - 1, ply, -alpha - 1, -alpha, NonPV, Do_Null_Move);
+        // If this move improved alpha without exceeding beta we do a proper full window
+        // search to get an accurate score.
+        if (value > alpha && value < beta && !stopConditions()) {
+          searchStats.rootPvsResearches++;
+          value = -search(position, depth - 1, ply, -beta, -alpha, NonPV, Do_Null_Move);
+        }
+      }
+      // ///////////////////////////////////////////////////////////////////
+    }
+
+    searchStats.currentVariation.pop_back();
+    position.undoMove();
+
+    // we want to do at least one complete search with depth 1
+    // After that we can stop any time - any new best moves will
+    // have been stored in pv[0]
+    if (stopConditions() && depth > 1) {
+      return VALUE_NONE;
+    }
+
+    // set the value into he root move to later be able to sort
+    // root moves according to value
+    setValueOf(rootMoves.at(i), value);
+
+    // Did we find a new best move?
+    // For the first move with a full window (alpha=-inf)
+    // this is always the case.
+    if (value > bestNodeValue) {
+      bestNodeValue = value;
+      // we have a new best move and pv[0][0] - store pv+1 tp pv
+      savePV(move, pv[1], pv[0]);
+      searchStats.bestMoveChange++;
+      if (value > alpha) {
+        // fail high in root only when using aspiration search
+        if (value >= beta) {
+          searchStats.betaCuts++;
+          return value;
+        }
+        // value is < beta
+        // always the case when not using aspiration search
+        alpha = bestNodeValue;
+      }
+    }
+  }
+  // MOVE LOOP
+  // ///////////////////////////////////////////////////////
+
+  // only needed for aspiration and MTDf
+  return bestNodeValue;
+}
+
+Value Search::search(Position& position, Depth depth, Depth ply, Value alpha, Value beta, Node_Type isPv, Do_Null doNull) {
+  // DEBUG / PROTOTYPE
   fprintln("Not yet implemented: {}", __FUNCTION__);
   fprintln("Simulating search by sleeping in a loop until stopConditions are met");
   TICK(startTime);
@@ -303,7 +542,13 @@ SearchResult Search::iterativeDeepening(Position& position) {
     nodesVisited++;
   }
   TICK(startTime);
-  return SearchResult();
+  return VALUE_DRAW;
+}
+
+void Search::savePV(Move move, MoveList src, MoveList dest) {
+  dest.clear();
+  dest.push_back(move);
+  dest.insert(dest.end(), src.begin(), src.end());
 }
 
 void Search::initialize() {
@@ -342,6 +587,13 @@ bool Search::stopConditions() {
     stopSearchFlag = true;
   }
   return stopSearchFlag;
+}
+
+bool Search::checkDrawRepAnd50(Position& p, int numberOfRepetitions) {
+  if (p.checkRepetitions(numberOfRepetitions) || p.getHalfMoveClock() >= 100) {
+    return true;
+  }
+  return false;
 }
 
 void Search::setupSearchLimits(Position& position, SearchLimits& sl) {
@@ -467,5 +719,27 @@ void Search::sendString(const std::string& msg) const {
 void Search::sendResult(SearchResult& result) {
   if (uciHandler) {
     uciHandler->sendResult(result.bestMove, result.ponderMove);
+  }
+}
+
+void Search::sendIterationEndInfoToUci() {
+  if (uciHandler) {
+    uciHandler->sendIterationEndInfo(
+      searchStats.currentSearchDepth,
+      searchStats.currentExtraSearchDepth,
+      searchStats.currentBestRootMoveValue,
+      nodesVisited,
+      nps(nodesVisited, elapsedSince(startSearchTime)),
+      MILLISECONDS(elapsedSince(startSearchTime)),
+      pv[0]);
+  }
+  else {
+    LOG__INFO(Logger::get().SEARCH_LOG, "depth {} seldepth {} value {} nodes {:n} nps {:n} time {:n} pv {}",
+              searchStats.currentExtraSearchDepth,
+              str(searchStats.currentBestRootMoveValue),
+              nodesVisited,
+              nps(nodesVisited, elapsedSince(startSearchTime)),
+              MILLISECONDS(elapsedSince(startSearchTime)).count(),
+              str(pv[0]));
   }
 }
