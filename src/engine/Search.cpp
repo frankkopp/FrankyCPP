@@ -178,7 +178,7 @@ void Search::run() {
   extraTime         = MilliSec{0};
   nodesVisited      = 0;
   statistics        = SearchStats{};
-  lastUciUpdateTime = startTime;
+  lastUciUpdateTime = nowFast();
   initialize();
 
   // setup and report search limits
@@ -271,7 +271,7 @@ void Search::run() {
 
   // print stats to log
   LOG__INFO(Logger::get().SEARCH_LOG, "Search finished after {}", str(searchResult.time));
-  LOG__INFO(Logger::get().SEARCH_LOG, "Search depth was {}({}) with {:n} nodes visited. NPS = {} nps",
+  LOG__INFO(Logger::get().SEARCH_LOG, "Search depth was {}({}) with {:n} nodes visited. NPS = {:n} nps",
             statistics.currentSearchDepth, statistics.currentExtraSearchDepth, nodesVisited,
             nps(nodesVisited, searchResult.time));
   LOG__DEBUG(Logger::get().SEARCH_LOG, "Search stats: {}", statistics.str());
@@ -353,7 +353,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
 
   // ###########################################
   // ### BEGIN Iterative Deepening
-  for (Depth iterationDepth = Depth{1}; iterationDepth < maxDepth; ++iterationDepth) {
+  for (Depth iterationDepth = Depth{1}; iterationDepth <= maxDepth; ++iterationDepth) {
     // update search counter
     nodesVisited++;
 
@@ -363,6 +363,9 @@ SearchResult Search::iterativeDeepening(Position& p) {
     if (statistics.currentExtraSearchDepth < statistics.currentIterationDepth) {
       statistics.currentExtraSearchDepth = statistics.currentIterationDepth;
     }
+
+    // reset perft counter for last depth to
+    statistics.perftNodeCount = 0;
 
     // ###########################################
     // Start actual alpha beta search
@@ -524,7 +527,7 @@ Value Search::rootSearch(Position& p, Depth depth, Value alpha, Value beta) {
 }
 
 Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value beta, Node_Type isPv, Do_Null doNull) {
-  //  DEBUG(fmt::format("Search {} {} {}", depth, ply, str(statistics.currentVariation)));
+  //    DEBUG(fmt::format("Search {} {} {}", depth, ply, str(statistics.currentVariation)));
 
   // Enter quiescence search when depth == 0 or max ply has been reached
   if (depth == 0 || ply >= MAX_DEPTH) {
@@ -637,11 +640,10 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
   Value value       = VALUE_NONE;
   Move move         = MOVE_NONE;
   int movesSearched = 0;// to detect mate situations
-  int moveNumber    = 0;// to count where cutoffs take place
 
   // ///////////////////////////////////////////////////////
   // MOVE LOOP
-  while ((move = mg->getNextPseudoLegalMove<GenAll>(p, hasCheck)) != MOVE_NONE) {
+  while ((move = myMg->getNextPseudoLegalMove<GenAll>(p, hasCheck)) != MOVE_NONE) {
     const Square from     = fromSquare(move);
     const Square to       = toSquare(move);
     const bool givesCheck = p.givesCheck(move);
@@ -742,7 +744,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
         // as we cut off the rest of the search of the node here.
         // We will safe the move as a killer to be able to search it
         // earlier in another node of the ply.
-        if (value >= beta) {
+        if (value >= beta && SearchConfig::USE_ALPHABETA) {
           // Count beta cuts
           statistics.betaCuts++;
           // Count beta cuts on first move
@@ -826,6 +828,7 @@ Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, Search::N
   // if we have deactivated qsearch or we have reached our maximum depth
   // we evaluate the position and return the value
   if (!SearchConfig::USE_QUIESCENCE || ply >= MAX_DEPTH) {
+    statistics.perftNodeCount++;
     return evaluate(p);
   }
 
@@ -1068,14 +1071,15 @@ void Search::sendResult(SearchResult& result) {
 }
 
 void Search::sendIterationEndInfoToUci() {
+  const NanoSec& since = elapsedSince(startSearchTime);
   if (uciHandler) {
     uciHandler->sendIterationEndInfo(
       statistics.currentSearchDepth,
       statistics.currentExtraSearchDepth,
       statistics.currentBestRootMoveValue,
       nodesVisited,
-      nps(nodesVisited, elapsedSince(startSearchTime)),
-      MILLISECONDS(elapsedSince(startSearchTime)),
+      nps(nodesVisited, since),
+      MILLISECONDS(since),
       pv[0]);
   }
   else {
@@ -1084,38 +1088,46 @@ void Search::sendIterationEndInfoToUci() {
               statistics.currentExtraSearchDepth,
               str(statistics.currentBestRootMoveValue),
               nodesVisited,
-              nps(nodesVisited, elapsedSince(startSearchTime)),
-              MILLISECONDS(elapsedSince(startSearchTime)).count(),
+              nps(nodesVisited, since),
+              MILLISECONDS(since).count(),
               str(pv[0]));
   }
 }
 
 void Search::sendSearchUpdateToUci() {
-  if (elapsedSince(lastUciUpdateTime) > UCI_UPDATE_INTERVAL) {
-    lastUciUpdateTime = high_resolution_clock::now();
-    int hashfull      = 0;
-    if (tt) {
-      hashfull = tt->hashFull();
-    }
-    if (uciHandler) {
-      uciHandler->sendSearchUpdate(
-        statistics.currentSearchDepth,
-        statistics.currentExtraSearchDepth,
-        nodesVisited,
-        nps(nodesVisited, elapsedSince(startSearchTime)),
-        MILLISECONDS(elapsedSince(startSearchTime)),
-        hashfull);
-      uciHandler->sendCurrentRootMove(statistics.currentRootMove, statistics.currentRootMoveIndex);
-      uciHandler->sendCurrentLine(statistics.currentVariation);
-    }
-    else {
-      LOG__INFO(Logger::get().SEARCH_LOG, "depth {} seldepth {} nodes {:n} nps {:n} time {:n} hashful {:n}",
-                statistics.currentSearchDepth,
-                statistics.currentExtraSearchDepth,
-                nodesVisited,
-                nps(nodesVisited, elapsedSince(startSearchTime)),
-                MILLISECONDS(elapsedSince(startSearchTime)).count(),
-                hashfull);
-    }
+  // to minimize performance impact we only check time every 1M nodes
+  if ((nodesVisited - lastUciUpdateNodes < 1'000'000)) {
+    return;
+  }
+  lastUciUpdateNodes = nodesVisited;
+  if ((nowFast() - lastUciUpdateTime) < UCI_UPDATE_INTERVAL) {
+    return;
+  }
+  lastUciUpdateTime = nowFast();
+
+  int hashfull      = 0;
+  if (tt) {
+    hashfull = tt->hashFull();
+  }
+  const NanoSec& since = elapsedSince(startSearchTime);
+  if (uciHandler) {
+    uciHandler->sendSearchUpdate(
+      statistics.currentSearchDepth,
+      statistics.currentExtraSearchDepth,
+      nodesVisited,
+      nps(nodesVisited, since),
+      MILLISECONDS(since),
+      hashfull);
+    uciHandler->sendCurrentRootMove(statistics.currentRootMove, statistics.currentRootMoveIndex);
+    uciHandler->sendCurrentLine(statistics.currentVariation);
+  }
+  else {
+    LOG__INFO(Logger::get().SEARCH_LOG, "depth {} seldepth {} nodes {:n} nps {:n} time {:n} hashful {:n}",
+              statistics.currentSearchDepth,
+              statistics.currentExtraSearchDepth,
+              nodesVisited,
+              nps(nodesVisited, since),
+              MILLISECONDS(since).count(),
+              hashfull);
   }
 }

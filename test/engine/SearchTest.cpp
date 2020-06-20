@@ -210,3 +210,19 @@ TEST_F(SearchTest, startNodesLimitedSearch) {
   EXPECT_TRUE(s.hasResult());
   EXPECT_EQ(10'000'000, s.getLastSearchResult().nodes);
 }
+
+TEST_F(SearchTest, depthLimitedSearch) {
+  SearchConfig::USE_BOOK = false;
+  Position p{};
+  SearchLimits sl{};
+  Search s{};
+  const int depth = 7;
+  sl.depth = depth;
+  s.isReady();
+  s.startSearch(p, sl);
+  EXPECT_TRUE(s.isSearching());
+  EXPECT_FALSE(s.hasResult());
+  s.waitWhileSearching();
+  EXPECT_TRUE(s.hasResult());
+  EXPECT_EQ(depth, s.getLastSearchResult().depth);
+}

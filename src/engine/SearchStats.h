@@ -49,6 +49,7 @@ struct SearchStats {
 
   uint64_t leafPositionsEvaluated;
   uint64_t evaluations;
+  uint64_t perftNodeCount;
 
   uint64_t betaCuts;
   uint64_t betaCuts1st;
@@ -65,9 +66,35 @@ struct SearchStats {
   uint64_t TtMoveUsed;
 
   uint64_t NoTtMove;
-  // TODO implement
-  std::string str() const;
-  friend std::ostream& operator<<(std::ostream& os, const SearchStats& stats);
+
+  std::string str() const {
+    std::ostringstream os;
+    os << *this;
+    return os.str();
+  };
+
+  friend std::ostream& operator<<(std::ostream& os, const SearchStats& stats) {
+    os.imbue(deLocale);
+    os << "checkmates: " << stats.checkmates
+       << " stalemates: " << stats.stalemates
+       << " perft: " << stats.perftNodeCount
+       << " leafPositionsEvaluated: " << stats.leafPositionsEvaluated
+       << " evaluations: " << stats.evaluations
+       << " betaCuts: " << stats.betaCuts
+       << " betaCuts1st: " << stats.betaCuts1st
+       << " rootPvsResearches: " << stats.rootPvsResearches
+       << " pvsResearches: " << stats.pvsResearches
+       << " bestMoveChange: " << stats.bestMoveChange
+       << " mdp: " << stats.mdp
+       << " lmrResearches: " << stats.lmrResearches
+       << " ttHit: " << stats.ttHit
+       << " ttMiss: " << stats.ttMiss
+       << " TtCuts: " << stats.TtCuts
+       << " evalFromTT: " << stats.evalFromTT
+       << " TtMoveUsed: " << stats.TtMoveUsed
+       << " NoTtMove: " << stats.NoTtMove;
+    return os;
+  }
 };
 
 

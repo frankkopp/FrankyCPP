@@ -23,19 +23,5 @@
  *
  */
 
-#include "SearchStats.h"
-#include <sstream>
 
-std::string SearchStats::str() const {
-  std::stringstream os;
-  os.imbue(deLocale);
 
-  // TODO implement
-
-  return os.str();
-}
-
-std::ostream& operator<<(std::ostream& os, const SearchStats& stats) {
-  os << stats.str();
-  return os;
-}

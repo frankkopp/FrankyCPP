@@ -60,6 +60,16 @@ inline NanoSec elapsedSince(const TimePoint tp) {
   return high_resolution_clock::now() - tp;
 }
 
+// faster on Apple - returns nanoseconds
+inline unsigned long long int nowFast() {
+#if defined(__APPLE__)
+  // this C function is much faster than c++ chrono
+  return clock_gettime_nsec_np(CLOCK_UPTIME_RAW_APPROX);
+#else
+  return std::chrono::time_point timePoint = std::chrono::high_resolution_clock::now().time_since_epoch;
+#endif
+}
+
 // convenience for std::chrono::high_resolution_clock::now()
 constexpr auto now = high_resolution_clock::now;
 

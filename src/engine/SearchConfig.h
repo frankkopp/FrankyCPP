@@ -39,6 +39,7 @@ namespace SearchConfig {
   inline OpeningBook::BookFormat BOOK_TYPE = OpeningBook::BookFormat::SIMPLE;
 
   // basic search strategies and features
+  inline bool USE_ALPHABETA = false;// use ALPHABETA pruning
   inline bool USE_PVS = false;// use PVS null window search
   inline bool USE_ASP = false;
   //  inline Depth ASP_START_DEPTH = Depth{4};
@@ -49,8 +50,8 @@ namespace SearchConfig {
 
   // Transposition Table
   inline bool USE_TT       = false;// use transposition table
-  inline bool USE_TT_VALUE = true;// use value from tt to prune
-  inline bool USE_EVAL_TT  = true;// use value from tt for storing evaluations
+  inline bool USE_TT_VALUE = false;// use value from tt to prune
+  inline bool USE_EVAL_TT  = false;// use value from tt for storing evaluations
   inline int TT_SIZE_MB    = 64;  // size of TT in MB
 
   //  inline bool USE_TT_QSEARCH          = true; // use transposition table also in quiescence search
