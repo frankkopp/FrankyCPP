@@ -321,11 +321,10 @@ struct Magic {
   unsigned  shift;
 
   // Compute the attack's index using the 'magic bitboards' approach
-  unsigned index(Bitboard occupied) const {
-
-    if (HasPext)
+  inline unsigned index(Bitboard occupied) const {
+    if (HasPext) {
       return unsigned(_pext_u64(occupied, mask));
-
+    }
     return unsigned(((occupied & mask) * magic) >> shift);
   }
 };

@@ -44,16 +44,21 @@ inline std::string str(NanoSec s) {
   return fmt::format(deLocale, "{:.9f} s", static_cast<double>(s.count())/1e9);
 }
 
+// returns the nodes per second from nano seconds
+inline uint64_t nps(uint64_t nodes, uint64_t ns) {
+  if (!ns) return nodes;
+  return nodes * 1'000'000'000 / ns;
+}
+
 // returns the nodes per second from milli seconds
 inline uint64_t nps(uint64_t nodes, MilliSec ms) {
   if (!ms.count()) return nodes;
-  return nodes * 1'000 / ms.count() ; // +1 to avoid division by zero
+  return nodes * 1'000 / ms.count() ;
 }
 
 // returns the nodes per second from nano seconds
-inline uint64_t nps(uint64_t nodes, NanoSec ms) {
-  if (!ms.count()) return nodes;
-  return nodes * 1'000'000'000 / ms.count(); // +1 to avoid division by zero
+inline uint64_t nps(uint64_t nodes, NanoSec ns) {
+  return nps(nodes, ns.count());
 }
 
 inline NanoSec elapsedSince(const TimePoint tp) {
@@ -66,7 +71,7 @@ inline unsigned long long int nowFast() {
   // this C function is much faster than c++ chrono
   return clock_gettime_nsec_np(CLOCK_UPTIME_RAW_APPROX);
 #else
-  return std::chrono::time_point timePoint = std::chrono::high_resolution_clock::now().time_since_epoch;
+  return std::chrono::high_resolution_clock::now().time_since_epoch().count();
 #endif
 }
 

@@ -36,6 +36,7 @@ MoveGenerator::MoveGenerator() {
   pseudoLegalMoves.reserve(MAX_MOVES);
   legalMoves.reserve(MAX_MOVES);
   onDemandMoves.reserve(MAX_MOVES);
+  currentODStage = OD_NEW;
 }
 
 template<GenMode GM>
@@ -507,7 +508,8 @@ void MoveGenerator::updateSortValues(const Position& p, MoveList* const moveList
   // sort value if the move is the PV or a Killer move.
   // Also update the sort value for history and counter
   // move significance.
-  for (size_t i = 0; i < moveList->size(); i++) {
+  const unsigned long size = moveList->size();
+  for (size_t i = 0; i < size; i++) {
     Move* move = &(*moveList)[i];
     if (moveOf(*move) == pvMove)// PV move
       setValueOf(*move, VALUE_MAX);

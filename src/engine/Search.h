@@ -87,16 +87,18 @@ class Search {
   constexpr static uint64_t UCI_UPDATE_INTERVAL = nanoPerSec;
   uint64_t lastUciUpdateTime{};
   uint64_t lastUciUpdateNodes{};
+  uint64_t npsTime{};
+  uint64_t npsNodes{};
 
   // UCI relevant statistics
-  uint64_t nodesVisited{0};
+  uint64_t nodesVisited{};
 
   // Statistics
   SearchStats statistics{};
 
   // ply related data
-  MoveList pv[DEPTH_MAX];
-  MoveGenerator mg[DEPTH_MAX];
+  std::array<MoveList, DEPTH_MAX> pv{};
+  std::array<MoveGenerator, DEPTH_MAX> mg{};
 
   // to mark the last move was a book move
   bool hadBookMove = false;
@@ -251,7 +253,7 @@ private:
   void savePV(Move move, MoveList& src, MoveList& dest);
 
   // correct the value for mate distance when storing to TT
-  Value valueToTT(Value value, Depth ply);
+  Value valueToTt(Value value, Depth ply);
 
   // correct the value for mate distance when reading from TT
   Value valueFromTt(Value value, Depth ply);
@@ -268,7 +270,7 @@ private:
 
   // setupSearchLimits reports to log on search limits for the search
   // and sets up time control.
-  void setupSearchLimits(Position& position, SearchLimits& sl);
+  void setupSearchLimits(Position& p, SearchLimits& sl);
 
   // setupTimeControl sets up time control according to the given search limits
   // and returns a limit on the duration for the current search.

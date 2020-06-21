@@ -46,7 +46,7 @@
 #endif
 
 /**
- * Simple TT implementation using heap memory and simple hash for entries.
+ * TT implementation using heap memory and simple hash for entries.
  * The number of entries are always a power of two fitting into the given size.
  * It is not yet thread safe as it has no synchronization.
  *

@@ -886,7 +886,7 @@ Piece Position::removePiece(Square square) {
     pawnKey ^= Zobrist::pieces[removed][square];
   }
   // game phase
-  gamePhase -= gamePhaseValue(pieceType);
+  gamePhase -= phaseValue[pieceType];
   if (gamePhase < 0) {
     gamePhase = 0;
   }
