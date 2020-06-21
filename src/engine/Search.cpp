@@ -48,7 +48,7 @@ Search::~Search() {
 ///// PUBLIC
 
 void Search::newGame() {
-  stopSearch();
+  if (isSearching()) stopSearch();
   if (tt) tt->clear();
   evaluator = std::make_unique<Evaluator>();
   history   = History{};

@@ -32,6 +32,7 @@ add_executable(
         engine/TT_Test.cpp
         engine/SearchTest.cpp
         engine/EngineSpeedTests.cpp
+        engine/SearchTreeSizeTest.cpp
 
         TimingTests.cpp
         chesscore/SpeedTests.cpp

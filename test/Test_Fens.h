@@ -26,8 +26,9 @@
 #ifndef FRANKYCPP_TEST_FENS_H
 #define FRANKYCPP_TEST_FENS_H
 
-#include "types.h"
-#include "vector"
+#include <vector>
+
+#include "types/types.h"
 
 namespace Test_Fens {
   static std::vector<std::string> getFENs() {
