@@ -31,11 +31,12 @@ add_executable(
         engine/UciOptionsTest.cpp
         engine/TT_Test.cpp
         engine/SearchTest.cpp
+        engine/EngineSpeedTests.cpp
 
         TimingTests.cpp
         chesscore/SpeedTests.cpp
         BOOST_Test.cpp
-        engine/EngineSpeedTests.cpp)
+        )
 
 target_link_libraries(
         ${testExeName}

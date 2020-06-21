@@ -148,7 +148,7 @@ void Search::resizeTT() {
     LOG__WARN(Logger::get().SEARCH_LOG, msg);
     return;
   }
-  tt = nullptr;// clear the old TT (is smart pointer)
+  tt = nullptr;// clear the old TT (is smart pointer and memory is freed)
   initialize();// re-initialize
   if (tt) {
     sendString("Resized hash: " + tt->str());
@@ -171,11 +171,12 @@ void Search::run() {
   // initialize search
   stopSearchFlag    = false;
   hasResultFlag     = false;
-  timeLimit         = MilliSec{0};
-  extraTime         = MilliSec{0};
+  timeLimit         = MilliSec{};
+  extraTime         = MilliSec{};
   nodesVisited      = 0;
   statistics        = SearchStats{};
   lastUciUpdateTime = nowFast();
+  npsTime           = lastUciUpdateTime;
   initialize();
 
   // setup and report search limits
@@ -562,7 +563,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
   // this branch and return the value.
   // Alpha or Beta entries will only be used if they improve
   // the current values.
-  const TT::Entry* ttEntryPtr{};
+  const TT::Entry* ttEntryPtr;
   if (SearchConfig::USE_TT) {
     ttEntryPtr = tt->probe(p.getZobristKey());
     if (ttEntryPtr) {// tt hit
@@ -750,7 +751,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
             history.historyCount[us][from][to] += 1 << depth;
           }
           // store a successful counter move to the previous opponent move
-          if (SearchConfig::USE_HISTORY_COUNTER) {
+          if (SearchConfig::USE_HISTORY_MOVES) {
             Move lastMove = p.getLastMove();
             if (lastMove != MOVE_NONE) {
               history.counterMoves[fromSquare(lastMove)][toSquare(lastMove)] = move;
@@ -835,7 +836,7 @@ inline Value Search::evaluate(Position& p) {
 }
 
 void Search::storeTt(Position& p, Depth depth, Depth ply, Move move, Value value, ValueType valueType, Value eval, bool mateThreat) {
-  tt->put(p.getZobristKey(), depth, move, valueToTT(value, ply), valueType, eval, mateThreat);
+  tt->put(p.getZobristKey(), depth, move, valueToTt(value, ply), valueType, eval, mateThreat);
 }
 
 void Search::savePV(Move move, MoveList& src, MoveList& dest) {
@@ -844,7 +845,7 @@ void Search::savePV(Move move, MoveList& src, MoveList& dest) {
   dest.insert(dest.end(), src.begin(), src.end());
 }
 
-Value Search::valueToTT(Value value, Depth ply) {
+Value Search::valueToTt(Value value, Depth ply) {
   if (isCheckMateValue(value)) {
     if (value > 0) {
       value = value + Value(ply);
@@ -901,8 +902,7 @@ void Search::initialize() {
   // init transposition table
   if (SearchConfig::USE_TT) {
     if (!tt) {// only initialize once
-      const int ttSizeMb = SearchConfig::TT_SIZE_MB;
-      tt                 = std::make_unique<TT>(ttSizeMb);
+      tt = std::make_unique<TT>(SearchConfig::TT_SIZE_MB);
     }
   }
   else {
@@ -930,7 +930,7 @@ bool Search::checkDrawRepAnd50(Position& p, int numberOfRepetitions) {
   return false;
 }
 
-void Search::setupSearchLimits(Position& position, SearchLimits& sl) {
+void Search::setupSearchLimits(Position& p, SearchLimits& sl) {
   if (sl.infinite) {
     LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Infinite");
   }
@@ -941,7 +941,7 @@ void Search::setupSearchLimits(Position& position, SearchLimits& sl) {
     LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Mate in {}", sl.mate);
   }
   if (sl.timeControl) {
-    timeLimit = setupTimeControl(position, sl);
+    timeLimit = setupTimeControl(p, sl);
     extraTime = MilliSec{0};
     if (sl.moveTime.count()) {
       LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Time Controlled: Time per Move {}", str(sl.moveTime));
@@ -1024,7 +1024,7 @@ void Search::startTimer() {
     startSearchTime = now();
     LOG__DEBUG(Logger::get().SEARCH_LOG, "Timer started with time limit of {} ms", str(timeLimit));
     // relaxed busy wait
-    while (now() - startSearchTime < timeLimit + extraTime && !stopSearchFlag) {
+    while ((now() - startSearchTime) < (timeLimit + extraTime) && !stopSearchFlag) {
       std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
     if (!this->stopSearchFlag) {
@@ -1082,27 +1082,37 @@ void Search::sendIterationEndInfoToUci() {
 }
 
 void Search::sendSearchUpdateToUci() {
+
   // to minimize performance impact we only check time every 1M nodes
   if ((nodesVisited - lastUciUpdateNodes < 1'000'000)) {
     return;
   }
   lastUciUpdateNodes = nodesVisited;
-  if ((nowFast() - lastUciUpdateTime) < UCI_UPDATE_INTERVAL) {
+
+  // we only update every UCI_UPDATE_INTERVAL ns
+  const uint64_t nowTime = nowFast();
+  if (nowTime - lastUciUpdateTime < UCI_UPDATE_INTERVAL) {
     return;
   }
-  lastUciUpdateTime = nowFast();
+  lastUciUpdateTime = nowTime;
 
-  int hashfull = 0;
-  if (tt) {
-    hashfull = tt->hashFull();
-  }
+  // nps is calculated from the nodes and time since last update.
+  // This might not be the same as the over all avg. nps which is shown
+  // at the end of a search.
+  const uint64_t nodesPerSec = nps(nodesVisited - npsNodes, nowTime - npsTime);
+  npsTime                    = nowTime;
+  npsNodes                   = nodesVisited;
+
+  const int hashfull = tt ? tt->hashFull() : 0;
+
   const NanoSec& since = elapsedSince(startSearchTime);
+
   if (uciHandler) {
     uciHandler->sendSearchUpdate(
       statistics.currentSearchDepth,
       statistics.currentExtraSearchDepth,
       nodesVisited,
-      nps(nodesVisited, since),
+      nodesPerSec,
       MILLISECONDS(since),
       hashfull);
     uciHandler->sendCurrentRootMove(statistics.currentRootMove, statistics.currentRootMoveIndex);
@@ -1113,7 +1123,7 @@ void Search::sendSearchUpdateToUci() {
               statistics.currentSearchDepth,
               statistics.currentExtraSearchDepth,
               nodesVisited,
-              nps(nodesVisited, since),
+              nodesPerSec,
               MILLISECONDS(since).count(),
               hashfull);
   }

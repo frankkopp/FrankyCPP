@@ -69,10 +69,14 @@ constexpr bool validMoveType(MoveType mt) {
   return mt >= NORMAL && mt <= CASTLING;
 }
 
-// single char label for the piece type (one of " KPNBRQ")
+namespace {
+  inline auto moveTypeLabel = std::string("npec");
+}
+
+// single char label for the piece type (one of " npec")
 constexpr char str(MoveType mt) {
   if (!validMoveType(mt)) return '-';
-  return std::string("npec")[mt];
+  return moveTypeLabel[mt];
 }
 
 inline std::ostream& operator<<(std::ostream& os, const MoveType mt) {
