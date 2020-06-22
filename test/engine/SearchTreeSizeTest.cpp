@@ -39,10 +39,10 @@ using testing::Eq;
 
 class SearchTreeSizeTest : public ::testing::Test {
 public:
-  static constexpr int DEPTH = 7;
+  static constexpr int DEPTH = 6;
   static constexpr MilliSec MOVE_TIME{0};
   static constexpr int START_FEN = 0;
-  static constexpr int END_FEN   = 5;
+  static constexpr int END_FEN   = 10;
 
   /* special is used to collect a dedicated stat */
   const uint64_t* ptrToSpecial1 = nullptr;
@@ -84,6 +84,10 @@ public:
     NEWLINE;
     init::init();
     NEWLINE;
+    Logger::get().TEST_LOG->set_level(spdlog::level::debug);
+    Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
+    Logger::get().TT_LOG->set_level(spdlog::level::debug);
+    Logger::get().BOOK_LOG->set_level(spdlog::level::warn);
   }
 
 protected:
@@ -97,7 +101,6 @@ protected:
 TEST_F(SearchTreeSizeTest, size_test) {
 
   LOG__INFO(Logger::get().TEST_LOG, "Start Search Tree Size Test for depth {}", DEPTH);
-  spdlog::set_level(spdlog::level::debug);
 
   // Prepare test fens
   std::vector<std::string> fens = Test_Fens::getFENs();
@@ -114,15 +117,13 @@ TEST_F(SearchTreeSizeTest, size_test) {
   }
 
   // Print result
-  // @formatter:off
   NEWLINE;
   fmt::print("################## Results for depth {} ##########################\n", DEPTH);
   NEWLINE;
   fmt::print("{:<15s} | {:>6s} | {:>8s} | {:>15s} | {:>12s} | {:>12s} | {:>7s} | {:>12s} | {:>12s} | {} | {}\n",
-             "Test Name", "Move", "Value", "Nodes", "Nps", "Time", "Depth",  "Special1", "Special2", "PV", "Fen");
+             "Test Name", "Move", "Value", "Nodes", "Nps", "Time", "Depth", "Special1", "Special2", "PV", "Fen");
   println("-----------------------------------------------------------------------"
           "-----------------------------------------------------------------------");
-  // @formatter:on
 
   setlocale(LC_NUMERIC, "de_DE.UTF-8");
   std::map<std::string, TestSums> sums{};
@@ -140,8 +141,8 @@ TEST_F(SearchTreeSizeTest, size_test) {
 
       //fmt::print("{:<15s} | {:>6s} | {:>8d} | {:>15n} | {:>12n} | {:>12n} | {:3d}/{:3d} | {:>12n} | {:>12n} | {} | {} \n",
       fprintln("{:<15s} | {:>6s} | {:>8s} | {:>15n} | {:>12n} | {:>12n} | {:>3d}/{:<3d} | {:>12n} | {:>12n} | {} | {}",
-                 test.name, str(test.move), str(test.value), test.nodes, test.nps,
-               (test.time/1'000'000), test.depth, test.extra, test.special1, test.special2, test.pv, result.fen);
+               test.name, str(test.move), str(test.value), test.nodes, test.nps,
+               (test.time / 1'000'000), test.depth, test.extra, test.special1, test.special2, test.pv, result.fen);
     }
     fmt::print("\n");
   }
@@ -156,13 +157,13 @@ TEST_F(SearchTreeSizeTest, size_test) {
   fmt::print("SearchTime             : {:s}\n", str(MOVE_TIME));
   fmt::print("MaxDepth               : {:d}\n", DEPTH);
   fmt::print("Number of feature tests: {:d}\n", results[0].tests.size());
-  fmt::print("Number of fens         : {:d}\n", END_FEN-START_FEN);
-  fmt::print("Total tests            : {:d}\n\n", results[0].tests.size() * END_FEN-START_FEN);
+  fmt::print("Number of fens         : {:d}\n", END_FEN - START_FEN);
+  fmt::print("Total tests            : {:d}\n\n", results[0].tests.size() * END_FEN - START_FEN);
 
   for (auto& sum : sums) {
     fprintln("Test: {:<12s}  Nodes: {:>16n}  Nps: {:>16n}  Time: {:>16n} Depth: {:>3d}/{:<3d} Special1: {:>16n} Special2: {:>16n}", sum.first.c_str(),
              sum.second.sumNodes / sum.second.sumCounter, sum.second.sumNps / sum.second.sumCounter,
-             (sum.second.sumTime/1'000'000) / sum.second.sumCounter, sum.second.sumDepth / sum.second.sumCounter, sum.second.sumExtra / sum.second.sumCounter,
+             (sum.second.sumTime / 1'000'000) / sum.second.sumCounter, sum.second.sumDepth / sum.second.sumCounter, sum.second.sumExtra / sum.second.sumCounter,
              sum.second.special1 / sum.second.sumCounter, sum.second.special2 / sum.second.sumCounter);
   }
 }
@@ -188,13 +189,13 @@ SearchTreeSizeTest::Result SearchTreeSizeTest::featureMeasurements(int depth, Mi
 
   SearchConfig::USE_QUIESCENCE = false;
   //  SearchConfig::MAX_EXTRA_QDEPTH      = Depth{20};
+  //  SearchConfig::USE_QS_SEE            = false;
 
   SearchConfig::USE_TT              = false;
   SearchConfig::TT_SIZE_MB          = 64;
   SearchConfig::USE_TT_VALUE        = false;
   SearchConfig::USE_TT_PV_MOVE_SORT = false;
   //  SearchConfig::USE_TT_QSEARCH        = false;
-  //  SearchConfig::USE_QS_SEE            = false;
 
   SearchConfig::USE_KILLER_MOVES    = false;
   SearchConfig::USE_TT_PV_MOVE_SORT = false;
@@ -211,17 +212,12 @@ SearchTreeSizeTest::Result SearchTreeSizeTest::featureMeasurements(int depth, Mi
   //  SearchConfig::USE_FP                = false;
   //  SearchConfig::USE_EFP               = false;
   //  SearchConfig::USE_LMR               = false;
-
-  // not yet implemented
-  // vvvvvvvvvvvvvvvvvvv
   //  SearchConfig::USE_RAZOR_PRUNING = false;
   //  SearchConfig::USE_LMP           = false;
 
   // ***********************************
   // TESTS
 
-  Logger::get().TEST_LOG->set_level(spdlog::level::info);
-  Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
   ptrToSpecial1 = &search.getSearchStats().ttHit;
   ptrToSpecial2 = &search.getSearchStats().ttMiss;
 
@@ -231,27 +227,35 @@ SearchTreeSizeTest::Result SearchTreeSizeTest::featureMeasurements(int depth, Mi
   SearchConfig::USE_ALPHABETA = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "10 AlphaBeta"));
 
-    SearchConfig::USE_PVS = true;
-    result.tests.push_back(measureTreeSize(search, position, searchLimits, "15 PVS"));
+  SearchConfig::USE_PVS = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "15 PVS"));
 
-    SearchConfig::USE_KILLER_MOVES = true;
-    SearchConfig::USE_HISTORY_COUNTER = true;
-    SearchConfig::USE_HISTORY_MOVES = true;
-    result.tests.push_back(measureTreeSize(search, position, searchLimits, "20 History"));
+  SearchConfig::USE_KILLER_MOVES    = true;
+  SearchConfig::USE_HISTORY_COUNTER = true;
+  SearchConfig::USE_HISTORY_MOVES   = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "20 History"));
 
-    SearchConfig::USE_TT         = true;
-    result.tests.push_back(measureTreeSize(search, position, searchLimits, "22 TT"));
+  SearchConfig::USE_MDP = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "25 MDP"));
 
-    SearchConfig::USE_TT_PV_MOVE_SORT = true;
-    //    SearchConfig::USE_TT_VALUE = true;
-    //    SearchConfig::USE_EVAL_TT = true;
-    result.tests.push_back(measureTreeSize(search, position, searchLimits, "25 PVSort"));
+  SearchConfig::USE_TT = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "32 TT"));
+
+  //  SearchConfig::TT_SIZE_MB = 1'024;
+  //  search.resizeTT();
+  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "23 TT 1.024"));
+
+  SearchConfig::USE_TT_PV_MOVE_SORT = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "35 PVSort"));
+  SearchConfig::USE_TT_VALUE = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "36 TT Cuts"));
 
 
-    //  SearchConfig::USE_MDP = true;
-    //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "30 MDP"));
+  //  SearchConfig::USE_EVAL_TT = true;
 
-    // pure MiniMax + quiescence
+  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "10 BASE"));
+
+  // pure MiniMax + quiescence
   //  SearchConfig::USE_QUIESCENCE = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 MM+QS"));
   //  SearchConfig::USE_TT_QSEARCH = true;
@@ -259,7 +263,6 @@ SearchTreeSizeTest::Result SearchTreeSizeTest::featureMeasurements(int depth, Mi
   //  SearchConfig::USE_MPP = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "04 MPP"));
 
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "10 BASE"));
   //
   //  SearchConfig::USE_EXTENSIONS = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "40 EXT"));

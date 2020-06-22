@@ -29,6 +29,11 @@
 #include "types/types.h"
 #include <chesscore/Position.h>
 
+struct Score {
+  int midgame;
+  int endgame;
+};
+
 class Evaluator {
 
 public:

@@ -35,12 +35,12 @@ namespace Test_Fens {
 
     std::vector<std::string> fen{};
 
-    fen.emplace_back(START_POSITION_FEN);
+    fen.emplace_back("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -");
     fen.emplace_back("8/1P6/6k1/8/8/8/p1K5/8 w - -");
     fen.emplace_back("4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -");
     fen.emplace_back("r2r1n2/pp2bk2/2p1p2p/3q4/3PN1QP/2P3R1/P4PP1/5RK1 w - -");
     fen.emplace_back("1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -");
-    fen.emplace_back("1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -");
+    fen.emplace_back("1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -");// DEBUG;
     fen.emplace_back("rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -");
     fen.emplace_back("r3k2r/pp2qppp/2n1pn2/bN5b/3P4/P3BN1P/1P2BPP1/R2Q1RK1 w kq -");
     fen.emplace_back("2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - -");
@@ -57,9 +57,9 @@ namespace Test_Fens {
     fen.emplace_back("2q1rr1k/3bbnnp/p2p1pp1/2pPp3/PpP1P1P1/1P2BNNP/2BQ1PRK/7R b - -");
 
     fen.emplace_back("r3k2r/1ppn3p/2q1q1nb/4P2N/2q1Pp2/B5RP/pbp2PP1/1R4K1 w kq -");
-    fen.emplace_back("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
+    // "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
     fen.emplace_back("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
-    
+
     fen.emplace_back("rnbqkb1r/p3pppp/1p6/2ppP3/3N4/2P5/PPP1QPPP/R1B1KB1R w KQkq -");
     fen.emplace_back("r1b2rk1/2q1b1pp/p2ppn2/1p6/3QP3/1BN1B3/PPP3PP/R4RK1 w - -");
     fen.emplace_back("2r3k1/pppR1pp1/4p3/4P1P1/5P2/1P4K1/P1P5/8 w - -");
@@ -118,7 +118,7 @@ namespace Test_Fens {
     fen.emplace_back("3r2k1/p4bp1/1q5p/8/3Npp2/1PQ5/P4PPP/3R2K1 w - -");
     fen.emplace_back("8/p4bpk/7p/3rq3/3N1P2/PPQR1P2/6KP/4q3 w - -");
     fen.emplace_back("8/p6k/7p/4P1p1/1Pb5/P3RP2/3r1K1P/8 w - -");
-    fen.emplace_back("r1bqkb1r/pp3ppp/2n1pn2/2pp4/2PP4/1P2PN2/P2N1PPP/R1BQKB1R w Kqkq -");
+    fen.emplace_back("r1bqkb1r/pp3ppp/2n1pn2/2pp4/2PP4/1P2PN2/P2N1PPP/R1BQKB1R w KQkq -");
     fen.emplace_back("r2q1rk1/pp1b1ppp/2nbp3/3p4/2PP1n2/1P3N2/PB1N1PPP/1BRQR1K1 w - -");
     fen.emplace_back("2rr2k1/pp1qnppp/2n1p3/b2p4/2PP3P/PP2RNP1/1B3P2/1BRQ2K1 w - -");
     fen.emplace_back("2r1r3/ppbqnpk1/4p1p1/1PPp1n1p/3P3P/P2Q1NP1/3BRP2/1BR3K1 w - -");
@@ -430,11 +430,51 @@ namespace Test_Fens {
     fen.emplace_back("3b1k2/8/6p1/p6p/1p2PPP1/1B3K2/P7/8 w - -");
     fen.emplace_back("8/8/2B2P2/p1b1P1kp/1p2K3/8/P7/8 w - -");
     fen.emplace_back("4B3/5K2/4PP2/p5k1/1p1b4/7p/P7/8 w - -");
-    // repeat the first
-    fen.emplace_back("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
+
+    // Mates
+    // Mate 3
+    fen.emplace_back("4r1b1/1p4B1/pN2pR2/RB2k3/1P2N2p/2p3b1/n2P1p1r/5K1n w - -");
+    fen.emplace_back("b7/p1BR2pK/B1p5/pNk3p1/Pp4Pp/1P3n2/4R2r/7n w - -");
+    fen.emplace_back("6K1/n1P2N1p/6pr/b1pp3b/n2Bp1k1/1R2R1Pp/3p1P2/2qN1B2 w - -");
+    fen.emplace_back("8/2P1P1P1/3PkP2/8/4K3/8/8/8 w - -");
+    // Mate 4
+    fen.emplace_back("r4rk1/pppqbp1p/3pp1p1/8/4P3/1P1P3R/PBP2PPP/R2Q2K1 w - -");
+    fen.emplace_back("r4qrk/ppp1b1pp/3p1p2/4pPPQ/4P2P/3PB3/PPP5/1K4RR w - -");
+    fen.emplace_back("r3r3/p1p2p1k/3p2pp/2p5/2P2n2/2N2B2/PPR1PP1q/3RQK2 b - -");
+    fen.emplace_back("3r4/1p1r4/1Pp5/3p4/p2R4/K1NN4/1P6/kqBB3R w - -");
+    fen.emplace_back("n7/3p1p2/NpkNp1p1/1p2P3/3Q4/6B1/b7/4K3 w - -");
+    fen.emplace_back("1b1R2B1/p1n1p3/p3P2K/N1k5/2N2P2/5P2/2PP4/R7 w - -");
+    fen.emplace_back("K6Q/1p6/pPq4P/P2p2P1/4pP1N/7k/n5R1/1n2BB2 w - -");
+    // Mate 5
+    fen.emplace_back("1r4k1/1b2K1pp/7b/2pp3P/6NB/2Q2pp1/4p3/5r2 w - -");
+    fen.emplace_back("r2r4/1p1R3p/5pk1/b1B1Pp2/p4P2/P7/1P5P/1K1R4 w - -");
+    fen.emplace_back("5rk1/pp4p1/8/3N3p/2P4P/1P4K1/P2r1n2/R3R3 b - -");
+    fen.emplace_back("6b1/4Kpk1/5r2/8/3B2P1/7R/8/8 w - -");
+    fen.emplace_back("8/8/8/p7/8/8/R6p/2K2Rbk w - -");
+    fen.emplace_back("b7/8/7B/7p/8/2p3r1/2P1P1pp/4K1kq w - -");
+    fen.emplace_back("5R2/6r1/3P4/1BBk4/8/3N4/8/K7 w - -");
+    fen.emplace_back("1r1r2k1/p4ppp/1qp5/4Pb2/3b1P2/1PP2N2/P2BQ1PP/2KR3R w - -");
+    // Mate 6
+    fen.emplace_back("4k3/8/4K3/8/4N3/4B3/3P1P2/8 w - -");
+    // takes too long
+    fen.emplace_back("3rn1kr/1bqn1ppp/p7/2bpP1P1/1p1N1Q2/1P3B2/PBP1NR1P/3R2K1 w - -");
+    fen.emplace_back("8/4p2p/nn6/2p2N2/8/8/4NK2/7k w - -");
+    fen.emplace_back("6r1/p1qp1p1k/4nBpb/4P3/n3B2Q/3P2N1/PPP4N/1K2R3 w - -");
+    fen.emplace_back("6k1/p4ppp/5n2/1Pppr3/5b2/1BPP1P1q/1P3P1P/R2Q1NK1 w - -");
+    fen.emplace_back("8/8/8/4N3/2R5/4k3/8/5K2 w - -");
+    fen.emplace_back("r5k1/1ppnqp2/2b1p3/3p4/3PnP1N/1P1BP2Q/P7/4K2R w K -");
+    fen.emplace_back("2kr3r/Qpp1n1p1/2b2pp1/4b3/8/6N1/PP3P2/R1B2RK1 w - -");
+    fen.emplace_back("r1br4/1p2npkp/3Bpbp1/pqp5/2N1R3/1P1P1QP1/1PP2PBP/R5K1 w - -");
+    fen.emplace_back("K7/3p4/2p4Q/2ppp3/2pkn1R1/2p1p3/4P3/8 w - -");
+    fen.emplace_back("rn3rk1/pbppq1pp/1p2pb2/4N2Q/3PN3/3B4/PPP2PPP/R3K2R w KQ -");
+    fen.emplace_back("3r1rk1/1p3pnp/p3pBp1/1qPpP3/1P1P2R1/P2Q3R/6PP/6K1 w - -");
+    fen.emplace_back("k7/P7/P7/P7/P7/P7/P7/R3K3 w Q -");
+    fen.emplace_back("1b4k1/r4p2/5Pp1/8/8/8/8/2Q4K w - -");
+
+
     return fen;
   }
 
-}
+}// namespace Test_Fens
 
-#endif //FRANKYCPP_TEST_FENS_H
+#endif//FRANKYCPP_TEST_FENS_H

@@ -171,6 +171,7 @@ inline Value valueOf(Move m) {
   return static_cast<Value>(((m & MoveShifts::VALUE_MASK) >> MoveShifts::VALUE_SHIFT)) + VALUE_NONE;
 }
 
+// stores/encodes the value into the given move (changes given move) and also returns the new value.
 inline Move setValueOf(Move& m, Value v) {
   // can't store a value on MoveNone
   if (moveOf(m) == MOVE_NONE) return m;

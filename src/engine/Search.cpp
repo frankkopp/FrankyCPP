@@ -36,6 +36,7 @@ Search::Search() : Search(nullptr) {}
 
 Search::Search(UciHandler* uciHandler) {
   this->uciHandler = uciHandler;
+  this->tt         = std::make_unique<TT>(0);
 }
 
 Search::~Search() {
@@ -49,7 +50,7 @@ Search::~Search() {
 
 void Search::newGame() {
   if (isSearching()) stopSearch();
-  if (tt) tt->clear();
+  tt->clear();
   evaluator = std::make_unique<Evaluator>();
   history   = History{};
 }
@@ -133,12 +134,10 @@ void Search::clearTT() {
     LOG__WARN(Logger::get().SEARCH_LOG, msg);
     return;
   }
-  if (tt) {
-    tt->clear();
-    const std::string msg = "Hash cleared.";
-    sendString(msg);
-    LOG__INFO(Logger::get().SEARCH_LOG, msg);
-  }
+  tt->clear();
+  const std::string msg = "Hash cleared.";
+  sendString(msg);
+  LOG__INFO(Logger::get().SEARCH_LOG, msg);
 }
 
 void Search::resizeTT() {
@@ -148,11 +147,9 @@ void Search::resizeTT() {
     LOG__WARN(Logger::get().SEARCH_LOG, msg);
     return;
   }
-  tt = nullptr;// clear the old TT (is smart pointer and memory is freed)
-  initialize();// re-initialize
-  if (tt) {
-    sendString("Resized hash: " + tt->str());
-  }
+  tt = std::make_unique<TT>(0);// clear the old TT (is smart pointer and memory is freed)
+  initialize();                // re-initialize
+  sendString("Resized hash: " + tt->str());
 }
 
 ////////////////////////////////////////////////
@@ -180,6 +177,7 @@ void Search::run() {
   initialize();
 
   // setup and report search limits
+  // TODO: MODE mate - search until mate in x is found or other limits have been met
   setupSearchLimits(position, searchLimits);
 
   // when not pondering and search is time controlled start timer
@@ -188,7 +186,7 @@ void Search::run() {
   }
 
   // age tt entries
-  if (tt) {
+  if (tt->getMaxNumberOfEntries()) {
     LOG__INFO(Logger::get().SEARCH_LOG, "Transposition Table: Using TT: " + tt->str());
     tt->ageEntries();
   }
@@ -267,6 +265,9 @@ void Search::run() {
   LOG__DEBUG(Logger::get().SEARCH_LOG, "Search stats: {}", statistics.str());
 
   // print result to log
+  if (searchLimits.mate && searchResult.mateFound) {
+    LOG__INFO(Logger::get().SEARCH_LOG, "Mate in {} found: {}", searchLimits.mate, str(pv[0].at(0)));
+  }
   LOG__INFO(Logger::get().SEARCH_LOG, "Search result: {}", searchResult.str());
 
   // save result until overwritten by the next search
@@ -368,6 +369,12 @@ SearchResult Search::iterativeDeepening(Position& p) {
     }
     // ###########################################
 
+    // if mate search check if we found a mate within the mate limit
+    if (searchLimits.mate && abs(bestValue) >= VALUE_CHECKMATE_THRESHOLD && searchLimits.mate * 2 - 1 == VALUE_CHECKMATE-bestValue) {
+      searchResult.mateFound = true;
+      break;
+    }
+
     // check if we need to stop
     // doing this after the first iteration ensures that
     // we have done at least one complete search and have
@@ -406,10 +413,12 @@ SearchResult Search::iterativeDeepening(Position& p) {
     // so let's check the TT
     if (SearchConfig::USE_TT) {
       p.doMove(searchResult.bestMove);
-      const auto* ttEntryPtr  = tt->probe(p.getZobristKey());
-      searchResult.ponderMove = ttEntryPtr ? static_cast<Move>(ttEntryPtr->move) : MOVE_NONE;
+      const auto* ttEntryPtr = tt->probe(p.getZobristKey());
+      if (ttEntryPtr) {
+        searchResult.ponderMove = static_cast<Move>(ttEntryPtr->move);
+        LOG__DEBUG(Logger::get().SEARCH_LOG, "Using ponder move from hash table: {}", str(searchResult.ponderMove));
+      }
       p.undoMove();
-      LOG__DEBUG(Logger::get().SEARCH_LOG, "Using ponder move from hash table: {}", str(searchResult.ponderMove));
     }
   }
 
@@ -443,13 +452,13 @@ Value Search::rootSearch(Position& p, Depth depth, Value alpha, Value beta) {
   // ///////////////////////////////////////////////////////
   // MOVE LOOP
   for (size_t i = 0; i < rootMoves.size(); i++) {
-    const Move m = rootMoves.at(i);
+    Move& moveRef = rootMoves.at(i);
 
-    p.doMove(m);
+    p.doMove(moveRef);
     nodesVisited++;
-    statistics.currentVariation.push_back(m);
+    statistics.currentVariation.push_back(moveRef);
     statistics.currentRootMoveIndex = i;
-    statistics.currentRootMove      = m;
+    statistics.currentRootMove      = moveRef;
 
     // if available on platform tells the cpu to
     // prefetch the data into cpu caches
@@ -473,7 +482,7 @@ Value Search::rootSearch(Position& p, Depth depth, Value alpha, Value beta) {
         // search to get an accurate score.
         if (value > alpha && value < beta && !stopConditions()) {
           statistics.rootPvsResearches++;
-          value = -search(p, depth - 1, ply, -beta, -alpha, NonPV, Do_Null_Move);
+          value = -search(p, depth - 1, ply, -beta, -alpha, PV, Do_Null_Move);
         }
       }
       // ///////////////////////////////////////////////////////////////////
@@ -491,7 +500,7 @@ Value Search::rootSearch(Position& p, Depth depth, Value alpha, Value beta) {
 
     // set the value into he root move to later be able to sort
     // root moves according to value
-    setValueOf(rootMoves.at(i), value);
+    setValueOf(moveRef, value);
 
     // Did we find a new best move?
     // For the first move with a full window (alpha=-inf)
@@ -499,11 +508,11 @@ Value Search::rootSearch(Position& p, Depth depth, Value alpha, Value beta) {
     if (value > bestNodeValue) {
       bestNodeValue = value;
       // we have a new best move and pv[0][0] - store pv+1 tp pv
-      savePV(m, pv[1], pv[0]);
+      savePV(moveRef, pv[1], pv[0]);
       statistics.bestMoveChange++;
       if (value > alpha) {
         // fail high in root only when using aspiration search
-        if (value >= beta) {
+        if (value >= beta && SearchConfig::USE_ALPHABETA) {
           statistics.betaCuts++;
           return value;
         }
@@ -653,14 +662,15 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
     // DO MOVE
     p.doMove(move);
 
-    // if available on platform tells the cpu to
-    // prefetch the data into cpu caches
-    // TT_PREFETCH;
-
     if (!p.wasLegalMove()) {
       p.undoMove();
       continue;
     }
+
+    // if available on platform tells the cpu to
+    // prefetch the data into cpu caches
+    TT_PREFETCH;
+    // EVAL_PREFETCH;
 
     // we only count legal moves
     nodesVisited++;
@@ -910,12 +920,13 @@ void Search::initialize() {
 
   // init transposition table
   if (SearchConfig::USE_TT) {
-    if (!tt) {// only initialize once
+    if (tt->getMaxNumberOfEntries() == 0) {// only initialize once
       tt = std::make_unique<TT>(SearchConfig::TT_SIZE_MB);
     }
   }
   else {
     LOG__INFO(Logger::get().SEARCH_LOG, "Transposition Table disabled in configuration");
+    tt = std::make_unique<TT>(0);
   }
 
   // init evaluator
@@ -933,10 +944,7 @@ bool Search::stopConditions() {
 }
 
 bool Search::checkDrawRepAnd50(Position& p, int numberOfRepetitions) {
-  if (p.checkRepetitions(numberOfRepetitions) || p.getHalfMoveClock() >= 100) {
-    return true;
-  }
-  return false;
+  return p.checkRepetitions(numberOfRepetitions) || p.getHalfMoveClock() >= 100;
 }
 
 void Search::setupSearchLimits(Position& p, SearchLimits& sl) {
@@ -1112,7 +1120,7 @@ void Search::sendSearchUpdateToUci() {
   npsTime                    = nowTime;
   npsNodes                   = nodesVisited;
 
-  const int hashfull = tt ? tt->hashFull() : 0;
+  const int hashfull = tt->hashFull();
 
   const NanoSec& since = elapsedSince(startSearchTime);
 
