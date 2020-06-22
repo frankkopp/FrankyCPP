@@ -39,7 +39,7 @@ using testing::Eq;
 
 class SearchTreeSizeTest : public ::testing::Test {
 public:
-  static constexpr int DEPTH = 5;
+  static constexpr int DEPTH = 7;
   static constexpr MilliSec MOVE_TIME{0};
   static constexpr int START_FEN = 0;
   static constexpr int END_FEN   = 5;
@@ -160,7 +160,7 @@ TEST_F(SearchTreeSizeTest, size_test) {
   fmt::print("Total tests            : {:d}\n\n", results[0].tests.size() * END_FEN-START_FEN);
 
   for (auto& sum : sums) {
-    fprintln("Test: {:<12s}  Nodes: {:>16n}  Nps: {:>16n}  Time: {:>16n} Depth: {:>3d}/{:<3d} Special1: {:>16n}", sum.first.c_str(),
+    fprintln("Test: {:<12s}  Nodes: {:>16n}  Nps: {:>16n}  Time: {:>16n} Depth: {:>3d}/{:<3d} Special1: {:>16n} Special2: {:>16n}", sum.first.c_str(),
              sum.second.sumNodes / sum.second.sumCounter, sum.second.sumNps / sum.second.sumCounter,
              (sum.second.sumTime/1'000'000) / sum.second.sumCounter, sum.second.sumDepth / sum.second.sumCounter, sum.second.sumExtra / sum.second.sumCounter,
              sum.second.special1 / sum.second.sumCounter, sum.second.special2 / sum.second.sumCounter);
@@ -222,31 +222,42 @@ SearchTreeSizeTest::Result SearchTreeSizeTest::featureMeasurements(int depth, Mi
 
   Logger::get().TEST_LOG->set_level(spdlog::level::info);
   Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
-  ptrToSpecial1 = &search.getSearchStats().perftNodeCount;
-  ptrToSpecial2 = &search.getSearchStats().betaCuts;
+  ptrToSpecial1 = &search.getSearchStats().ttHit;
+  ptrToSpecial2 = &search.getSearchStats().ttMiss;
 
   // pure MiniMax
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 MINIMAX"));
+//  result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 MINIMAX"));
 
   SearchConfig::USE_ALPHABETA = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "01 AlphaBeta"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "10 AlphaBeta"));
 
-  // pure MiniMax + quiescence
+    SearchConfig::USE_PVS = true;
+    result.tests.push_back(measureTreeSize(search, position, searchLimits, "15 PVS"));
+
+    SearchConfig::USE_KILLER_MOVES = true;
+    SearchConfig::USE_HISTORY_COUNTER = true;
+    SearchConfig::USE_HISTORY_MOVES = true;
+    result.tests.push_back(measureTreeSize(search, position, searchLimits, "20 History"));
+
+    SearchConfig::USE_TT         = true;
+    result.tests.push_back(measureTreeSize(search, position, searchLimits, "22 TT"));
+
+    SearchConfig::USE_TT_PV_MOVE_SORT = true;
+    //    SearchConfig::USE_TT_VALUE = true;
+    //    SearchConfig::USE_EVAL_TT = true;
+    result.tests.push_back(measureTreeSize(search, position, searchLimits, "25 PVSort"));
+
+
+    //  SearchConfig::USE_MDP = true;
+    //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "30 MDP"));
+
+    // pure MiniMax + quiescence
   //  SearchConfig::USE_QUIESCENCE = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 MM+QS"));
-  //  SearchConfig::USE_TT         = true;
   //  SearchConfig::USE_TT_QSEARCH = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MM+QS+TT"));
-  //  SearchConfig::USE_PVS = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "01 PVS"));
-  //  SearchConfig::USE_PV_MOVE_SORT = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "02 PVSort"));
-  //  SearchConfig::USE_KILLER_MOVES = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "03 KILL"));
   //  SearchConfig::USE_MPP = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "04 MPP"));
-  //  SearchConfig::USE_MDP = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "05 MDP"));
 
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "10 BASE"));
   //

@@ -451,6 +451,11 @@ Value Search::rootSearch(Position& p, Depth depth, Value alpha, Value beta) {
     statistics.currentRootMoveIndex = i;
     statistics.currentRootMove      = m;
 
+    // if available on platform tells the cpu to
+    // prefetch the data into cpu caches
+    // TT_PREFETCH;
+    // EVAL_PREFETCH;
+
     if (checkDrawRepAnd50(p, 2)) {
       value = VALUE_DRAW;
     }
@@ -647,6 +652,10 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
     // ///////////////////////////////////////////////////////
     // DO MOVE
     p.doMove(move);
+
+    // if available on platform tells the cpu to
+    // prefetch the data into cpu caches
+    // TT_PREFETCH;
 
     if (!p.wasLegalMove()) {
       p.undoMove();
