@@ -37,11 +37,12 @@ struct SearchResult {
   int extraDepth = 0;
   uint64_t nodes = 0;
   bool bookMove = false;
+  bool mateFound = false;
   NanoSec time{};
   MoveList pv{};
 
   std::string str() const {
-    return "Best Move: " + ::str(bestMove) + " (" + (bookMove ? "book move" : std::to_string(bestMoveValue)) + ") " + "Ponder Move: " + ::str(ponderMove) + " Depth: " + std::to_string(depth) + "/" + std::to_string(extraDepth);
+    return "Best Move: " + ::str(bestMove) + " (" + (bookMove ? "book move" : ::str(bestMoveValue)) + ") " + "Ponder Move: " + ::str(ponderMove) + " Depth: " + std::to_string(depth) + "/" + std::to_string(extraDepth);
   }
 };
 

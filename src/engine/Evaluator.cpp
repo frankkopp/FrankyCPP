@@ -28,6 +28,28 @@
 Evaluator::Evaluator() {}
 
 Value Evaluator::evaluate(Position& p) {
-  // TODO implement
-  return static_cast<Value>((p.getNextPlayer() == WHITE ? 1 : -1) * (p.getMaterial(WHITE) - p.getMaterial(BLACK)));
+
+  // if not enough material on the board to achieve a mate it is a draw
+  if (p.checkInsufficientMaterial()) {
+    return VALUE_DRAW;
+  }
+
+  Score score{};
+
+  // material
+  score.midgame = p.getMaterial(WHITE) - p.getMaterial(BLACK);
+  score.endgame = score.midgame;
+
+  // positional value
+  score.midgame += p.getMidPosValue(WHITE) - p.getMidPosValue(BLACK);
+  score.endgame += p.getEndPosValue(WHITE) - p.getEndPosValue(BLACK);
+
+  // calculate value depending on game phases
+  const double gamePhaseFactor = p.getGamePhaseFactor();
+  Value value{ static_cast<Value>(score.midgame * gamePhaseFactor + score.endgame * (1.0 - gamePhaseFactor))};
+
+  // normalize for next player
+  value *= p.getNextPlayer() == WHITE ? 1 : -1;
+
+  return value;
 }

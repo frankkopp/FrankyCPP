@@ -40,7 +40,7 @@
 #endif
 
 #ifdef TT_ENABLE_PREFETCH
-#define TT_PREFETCH if (tt) tt->prefetch(p.getZobristKey())
+#define TT_PREFETCH tt->prefetch(p.getZobristKey())
 #else
 #define TT_PREFETCH void(0);
 #endif

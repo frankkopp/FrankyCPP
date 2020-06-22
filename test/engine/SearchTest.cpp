@@ -81,7 +81,7 @@ TEST_F(SearchTest, setupTime) {
   EXPECT_EQ(60ms, Search::setupTimeControl(p, sl));
 
   sl           = SearchLimits{};
-  sl.whiteTime =30s;
+  sl.whiteTime = 30s;
   sl.whiteInc  = 1s;
   sl.blackTime = 30s;
   sl.blackInc  = 1s;
@@ -173,14 +173,14 @@ TEST_F(SearchTest, bookMoveSearch) {
 }
 
 TEST_F(SearchTest, startPonderSearch) {
-  SearchConfig::USE_BOOK = false;
+  SearchConfig::USE_BOOK   = false;
   SearchConfig::USE_PONDER = true;
   Position p{};
   SearchLimits sl{};
   Search s{};
   sl.timeControl = true;
   sl.moveTime    = MilliSec{1000};
-  sl.ponder = true;
+  sl.ponder      = true;
   s.isReady();
   TimePoint start = now();
   s.startSearch(p, sl);
@@ -201,7 +201,7 @@ TEST_F(SearchTest, startNodesLimitedSearch) {
   SearchLimits sl{};
   Search s{};
   sl.infinite = true;
-  sl.nodes = 10'000'000;
+  sl.nodes    = 10'000'000;
   s.isReady();
   s.startSearch(p, sl);
   EXPECT_TRUE(s.isSearching());
@@ -216,8 +216,8 @@ TEST_F(SearchTest, depthLimitedSearch) {
   Position p{};
   SearchLimits sl{};
   Search s{};
-  const int depth = 7;
-  sl.depth = depth;
+  const int depth = 6;
+  sl.depth        = depth;
   s.isReady();
   s.startSearch(p, sl);
   EXPECT_TRUE(s.isSearching());
@@ -225,4 +225,107 @@ TEST_F(SearchTest, depthLimitedSearch) {
   s.waitWhileSearching();
   EXPECT_TRUE(s.hasResult());
   EXPECT_EQ(depth, s.getLastSearchResult().depth);
+}
+
+TEST_F(SearchTest, stalemate0Search) {
+  SearchConfig::USE_BOOK = false;
+  Position p{"6R1/8/8/8/8/5K2/R7/7k b - -"};
+  SearchLimits sl{};
+  Search s{};
+  const int depth = 6;
+  sl.depth        = depth;
+  s.isReady();
+  s.startSearch(p, sl);
+  s.waitWhileSearching();
+  EXPECT_EQ(VALUE_DRAW, s.getLastSearchResult().bestMoveValue);
+}
+
+TEST_F(SearchTest, mate0Search) {
+  SearchConfig::USE_BOOK = false;
+  Position p{"8/8/8/8/8/5K2/8/R4k2 b - -"};
+  SearchLimits sl{};
+  Search s{};
+  sl.timeControl = true;
+  sl.moveTime = 60s;
+  sl.mate = 0;
+  s.isReady();
+  s.startSearch(p, sl);
+  s.waitWhileSearching();
+  EXPECT_EQ(-VALUE_CHECKMATE, s.getLastSearchResult().bestMoveValue);
+}
+
+TEST_F(SearchTest, mate1Search) {
+  SearchConfig::USE_BOOK = false;
+  Position p{"8/8/8/8/8/6K1/R7/6k1 w - - 0 8"};
+  SearchLimits sl{};
+  Search s{};
+  sl.timeControl = true;
+  sl.moveTime = 60s;
+  sl.mate  = 1;
+  s.isReady();
+  s.startSearch(p, sl);
+  s.waitWhileSearching();
+  EXPECT_EQ(VALUE_CHECKMATE - 1, s.getLastSearchResult().bestMoveValue);
+  EXPECT_TRUE(s.getLastSearchResult().mateFound);
+}
+
+TEST_F(SearchTest, mate2Search) {
+  SearchConfig::USE_BOOK = false;
+  Position p{"8/8/8/8/8/5K2/R7/7k w - - 0 7"};
+  SearchLimits sl{};
+  Search s{};
+  sl.timeControl = true;
+  sl.moveTime = 60s;
+  sl.mate  = 2;
+  s.isReady();
+  s.startSearch(p, sl);
+  s.waitWhileSearching();
+  EXPECT_EQ(VALUE_CHECKMATE - 3, s.getLastSearchResult().bestMoveValue);
+  EXPECT_TRUE(s.getLastSearchResult().mateFound);
+}
+
+TEST_F(SearchTest, mate3Search) {
+  SearchConfig::USE_BOOK = false;
+  Position p{"8/8/8/8/8/4K3/R7/6k1 w - - 0 6"};
+  SearchLimits sl{};
+  Search s{};
+  sl.timeControl = true;
+  sl.moveTime = 60s;
+  sl.mate  = 3;
+  s.isReady();
+  s.startSearch(p, sl);
+  s.waitWhileSearching();
+  EXPECT_EQ(VALUE_CHECKMATE - 5, s.getLastSearchResult().bestMoveValue);
+  EXPECT_TRUE(s.getLastSearchResult().mateFound);
+}
+
+TEST_F(SearchTest, mate4Search) {
+  SearchConfig::USE_BOOK = false;
+  Position p{"8/8/8/8/8/3K4/R7/5k2 w - - 0 5"};
+  SearchLimits sl{};
+  Search s{};
+  sl.timeControl = true;
+  sl.moveTime = 60s;
+  sl.mate  = 4;
+  s.isReady();
+  s.startSearch(p, sl);
+  s.waitWhileSearching();
+  EXPECT_EQ(VALUE_CHECKMATE - 7, s.getLastSearchResult().bestMoveValue);
+  EXPECT_TRUE(s.getLastSearchResult().mateFound);
+}
+
+TEST_F(SearchTest, mate5Search) {
+  SearchConfig::USE_BOOK = false;
+  SearchConfig::USE_ALPHABETA = true;
+  Position p{"8/8/8/8/4K3/8/R7/4k3 w - - 0 4"};
+  SearchLimits sl{};
+  Search s{};
+  sl.timeControl = true;
+  sl.moveTime = 60s;
+  sl.mate  = 5;
+  s.isReady();
+  s.startSearch(p, sl);
+  s.waitWhileSearching();
+  EXPECT_EQ(VALUE_CHECKMATE - 9, s.getLastSearchResult().bestMoveValue);
+  EXPECT_TRUE(s.getLastSearchResult().mateFound);
 }

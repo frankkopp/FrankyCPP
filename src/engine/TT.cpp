@@ -59,11 +59,16 @@ void TT::resize(const uint64_t newSizeInMByte) {
   _data = new Entry[maxNumberOfEntries];
 
   clear();
-  LOG__INFO(Logger::get().TT_LOG, "TT Size {:n} MByte, Capacity {:n} entries (size={}Byte) (Requested were {:n} MBytes)",
-            sizeInByte / MB, maxNumberOfEntries, sizeof(Entry), newSizeInMByte);
+  if (maxNumberOfEntries) {
+    LOG__INFO(Logger::get().TT_LOG, "TT Size {:n} MByte, Capacity {:n} entries (size={}Byte) (Requested were {:n} MBytes)",
+              sizeInByte / MB, maxNumberOfEntries, sizeof(Entry), newSizeInMByte);
+  }
 }
 
 void TT::clear() {
+  if (!maxNumberOfEntries) {
+    return;
+  }
   // This clears the TT by overwriting each entry with 0.
   // It uses multiple threads if noOfThreads is > 1.
   LOG__TRACE(Logger::get().TT_LOG, "Clearing TT ({} threads)...", noOfThreads);
@@ -105,8 +110,8 @@ void TT::clear() {
   numberOfOverwrites = 0;
   numberOfProbes     = 0;
 
-  auto finish        = std::chrono::high_resolution_clock::now();
-  auto time          = std::chrono::duration_cast<std::chrono::milliseconds>(finish - startTime).count();
+  auto finish = std::chrono::high_resolution_clock::now();
+  auto time   = std::chrono::duration_cast<std::chrono::milliseconds>(finish - startTime).count();
 
   LOG__DEBUG(Logger::get().TT_LOG, "TT cleared {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }
@@ -165,16 +170,16 @@ void TT::put(const Key key, const Depth depth, const Move move, const Value valu
     // we would have found this during the search in a previous probe
     // and we would not have come to store it again
     entryDataPtr->key = key;
-    if (move) { // preserve existing move if no move is given
+    if (move) {// preserve existing move if no move is given
       entryDataPtr->move = static_cast<uint16_t>(move);
     }
-    if (value != VALUE_NONE) { // preserve existing entry if no valid value is given
+    if (value != VALUE_NONE) {// preserve existing entry if no valid value is given
       entryDataPtr->depth = depth;
       entryDataPtr->value = value;
       entryDataPtr->type  = type;
       entryDataPtr->age   = 1;
     }
-    if (eval != VALUE_NONE) { // preserve existing entry if no valid value is given
+    if (eval != VALUE_NONE) {// preserve existing entry if no valid value is given
       entryDataPtr->eval = eval;
     }
     entryDataPtr->mateThreat = mateThreat;
@@ -189,7 +194,7 @@ const TT::Entry* TT::probe(const Key& key) {
 
   Entry* ttEntryPtr = getEntryPtr(key);
   if (ttEntryPtr->key == key) {
-    numberOfHits++;   // entries with identical keys found
+    numberOfHits++;     // entries with identical keys found
     ttEntryPtr->age = 0;// mark the entry as used
     return ttEntryPtr;
   }
@@ -199,6 +204,9 @@ const TT::Entry* TT::probe(const Key& key) {
 }
 
 void TT::ageEntries() {
+  if (!maxNumberOfEntries) {
+    return;
+  }
   LOG__TRACE(Logger::get().TT_LOG, "Aging TT ({} threads)...", noOfThreads);
   auto timePoint = std::chrono::high_resolution_clock::now();
 
