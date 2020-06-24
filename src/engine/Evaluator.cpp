@@ -24,6 +24,7 @@
  */
 
 #include "Evaluator.h"
+#include "EvalConfig.h"
 
 Evaluator::Evaluator() {}
 
@@ -37,16 +38,26 @@ Value Evaluator::evaluate(Position& p) {
   Score score{};
 
   // material
-  score.midgame = p.getMaterial(WHITE) - p.getMaterial(BLACK);
-  score.endgame = score.midgame;
+  if (EvalConfig::USE_MATERIAL) {
+    score.midgame = p.getMaterial(WHITE) - p.getMaterial(BLACK);
+    score.endgame = score.midgame;
+  }
 
   // positional value
-  score.midgame += p.getMidPosValue(WHITE) - p.getMidPosValue(BLACK);
-  score.endgame += p.getEndPosValue(WHITE) - p.getEndPosValue(BLACK);
+  if (EvalConfig::USE_POSITIONAL) {
+    score.midgame += p.getMidPosValue(WHITE) - p.getMidPosValue(BLACK);
+    score.endgame += p.getEndPosValue(WHITE) - p.getEndPosValue(BLACK);
+  }
+
+  // TEMPO Bonus for the side to move (helps with evaluation alternation -
+  // less difference between side which makes aspiration search faster
+  // (not empirically tested)
+  score.midgame += EvalConfig::TEMPO;
+  // e.score.EndGameValue += Value(0) // can be ignored
 
   // calculate value depending on game phases
   const double gamePhaseFactor = p.getGamePhaseFactor();
-  Value value{ static_cast<Value>(score.midgame * gamePhaseFactor + score.endgame * (1.0 - gamePhaseFactor))};
+  Value value{static_cast<Value>(score.midgame * gamePhaseFactor + score.endgame * (1.0 - gamePhaseFactor))};
 
   // normalize for next player
   value *= p.getNextPlayer() == WHITE ? 1 : -1;
