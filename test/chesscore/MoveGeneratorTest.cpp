@@ -729,10 +729,26 @@ TEST_F(MoveGenTest, DISABLED_PseudoMoveGen) {
 }
 
 TEST_F(MoveGenTest, debug) {
-  MoveGenerator mg;
-  Position p("rnbq1bnr/ppp1pppp/4k3/3pP3/3P2Q1/8/PPP2PPP/RNB1KBNR b KQ - 2 4");
-  fprintln("{}", mg.generatePseudoLegalMoves<GenAll>(p)->size());
+  MoveGenerator mg{};
+  Position p("1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -");
+  MoveList moves{};
+  Move move;
+
+//  int counter = 0;
+//  while ((move = mg.getNextPseudoLegalMove<GenAll>(p)) != MOVE_NONE) {
+//    counter++;
+//    fprintln(strVerbose(move));
+//  }
+//
+//  NEWLINE;
+  
+  mg.reset();
+  moves = *mg.generatePseudoLegalMoves<GenAll>(p);
+  fprintln("{}", moves.size());
+  for (Move m : moves) {
+    fprintln(strVerbose(m));
+  }
+
   fprintln("{}", mg.generateLegalMoves<GenAll>(p)->size());
   fprintln("{}", str(mg.generateLegalMoves<GenAll>(p)->at(0)));
-  fprintln("{}", mg.hasLegalMove(p));
 }
