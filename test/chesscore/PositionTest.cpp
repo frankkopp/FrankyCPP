@@ -122,8 +122,8 @@ TEST_F(PositionTest, Setup) {
   EXPECT_EQ(24, position.getGamePhase());
   EXPECT_FLOAT_EQ(1.0, position.getGamePhaseFactor());
   EXPECT_EQ(position.getMidPosValue(WHITE), position.getMidPosValue(BLACK));
-  EXPECT_EQ(-225, position.getMidPosValue(WHITE));
-  EXPECT_EQ(-225, position.getMidPosValue(BLACK));
+  EXPECT_EQ(-195, position.getMidPosValue(WHITE));
+  EXPECT_EQ(-195, position.getMidPosValue(BLACK));
   EXPECT_EQ(WHITE_KING, position.getPiece(SQ_E1));
   EXPECT_EQ(BLACK_KING, position.getPiece(SQ_E8));
   EXPECT_EQ(WHITE_KNIGHT, position.getPiece(SQ_B1));
@@ -138,8 +138,8 @@ TEST_F(PositionTest, Setup) {
   EXPECT_EQ(1, position.getMoveNumber());
   EXPECT_FLOAT_EQ(1.0, position2.getGamePhaseFactor());
   EXPECT_EQ(position2.getMidPosValue(WHITE), position2.getMidPosValue(BLACK));
-  EXPECT_EQ(-225, position2.getMidPosValue(WHITE));
-  EXPECT_EQ(-225, position2.getMidPosValue(BLACK));
+  EXPECT_EQ(-195, position2.getMidPosValue(WHITE));
+  EXPECT_EQ(-195, position2.getMidPosValue(BLACK));
   EXPECT_EQ(WHITE_KING, position2.getPiece(SQ_E1));
   EXPECT_EQ(BLACK_KING, position2.getPiece(SQ_E8));
   EXPECT_EQ(WHITE_KNIGHT, position2.getPiece(SQ_B1));
@@ -154,8 +154,8 @@ TEST_F(PositionTest, Setup) {
   EXPECT_EQ(1, position.getMoveNumber());
   EXPECT_FLOAT_EQ(1.0, position3.getGamePhaseFactor());
   EXPECT_EQ(position3.getMidPosValue(WHITE), position3.getMidPosValue(BLACK));
-  EXPECT_EQ(-225, position3.getMidPosValue(WHITE));
-  EXPECT_EQ(-225, position3.getMidPosValue(BLACK));
+  EXPECT_EQ(-195, position3.getMidPosValue(WHITE));
+  EXPECT_EQ(-195, position3.getMidPosValue(BLACK));
   EXPECT_EQ(WHITE_KING, position3.getPiece(SQ_E1));
   EXPECT_EQ(BLACK_KING, position3.getPiece(SQ_E8));
   EXPECT_EQ(WHITE_KNIGHT, position3.getPiece(SQ_B1));
@@ -171,8 +171,8 @@ TEST_F(PositionTest, Setup) {
   EXPECT_EQ(1, position.getMoveNumber());
   EXPECT_FLOAT_EQ(1.0, position4.getGamePhaseFactor());
   EXPECT_EQ(position4.getMidPosValue(WHITE), position4.getMidPosValue(BLACK));
-  EXPECT_EQ(-225, position4.getMidPosValue(WHITE));
-  EXPECT_EQ(-225, position4.getMidPosValue(BLACK));
+  EXPECT_EQ(-195, position4.getMidPosValue(WHITE));
+  EXPECT_EQ(-195, position4.getMidPosValue(BLACK));
   EXPECT_EQ(WHITE_KING, position4.getPiece(SQ_E1));
   EXPECT_EQ(BLACK_KING, position4.getPiece(SQ_E8));
   EXPECT_EQ(WHITE_KNIGHT, position4.getPiece(SQ_B1));
@@ -189,7 +189,7 @@ TEST_F(PositionTest, Setup) {
   EXPECT_EQ(22, position.getGamePhase());
   EXPECT_EQ(113, position.getMoveNumber());
   EXPECT_FLOAT_EQ((22.0 / 24), position.getGamePhaseFactor());
-  EXPECT_EQ(90, position.getMidPosValue(WHITE));
+  EXPECT_EQ(95, position.getMidPosValue(WHITE));
   EXPECT_EQ(7, position.getMidPosValue(BLACK));
   EXPECT_EQ(WHITE_KING, position.getPiece(SQ_G1));
   EXPECT_EQ(BLACK_KING, position.getPiece(SQ_E8));

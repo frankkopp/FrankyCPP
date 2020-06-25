@@ -514,9 +514,9 @@ void MoveGenerator::updateSortValues(const Position& p, MoveList* const moveList
     if (moveOf(*move) == pvMove)// PV move
       setValueOf(*move, VALUE_MAX);
     else if (moveOf(*move) == killerMoves[1])// Killer 2
-      setValueOf(*move, static_cast<Value>(-4001));
+      setValueOf(*move, static_cast<Value>(1000));
     else if (moveOf(*move) == killerMoves[0])// Killer 1
-      setValueOf(*move, static_cast<Value>(-4000));
+      setValueOf(*move, static_cast<Value>(1001));
     else if (historyData) {// historical search data
 
       // History Count
@@ -613,12 +613,12 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
         // value is the delta of values from the two pieces involved minus the promotion value
         const Value value = valueOf(position.getPiece(toSquare)) - (2 * valueOf(PAWN));
         // add the possible promotion moves to the move list and also add value of the promoted piece type
-        pMoves->push_back(createMove(fromSquare, toSquare, PROMOTION, QUEEN, value + valueOf(QUEEN)));
-        pMoves->push_back(createMove(fromSquare, toSquare, PROMOTION, KNIGHT, value + valueOf(KNIGHT)));
+        pMoves->push_back(createMove(fromSquare, toSquare, PROMOTION, QUEEN, value + valueOf(QUEEN) + 5000));
+        pMoves->push_back(createMove(fromSquare, toSquare, PROMOTION, KNIGHT, value + valueOf(KNIGHT) + 1500));
         // rook and bishops are usually redundant to queen promotion (except in stale mate situations)
         // therefore we give them a lower sort order
-        pMoves->push_back(createMove(fromSquare, toSquare, PROMOTION, ROOK, value + valueOf(ROOK) - static_cast<Value>(2000)));
-        pMoves->push_back(createMove(fromSquare, toSquare, PROMOTION, BISHOP, value + valueOf(BISHOP) - static_cast<Value>(2000)));
+        pMoves->push_back(createMove(fromSquare, toSquare, PROMOTION, ROOK, value + valueOf(ROOK) - 5000));
+        pMoves->push_back(createMove(fromSquare, toSquare, PROMOTION, BISHOP, value + valueOf(BISHOP) - 5000));
       }
 
       tmpCaptures &= ~Bitboards::rankBb[promotionRank(nextPlayer)];
@@ -626,7 +626,7 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
         const Square toSquare   = popLSB(tmpCaptures);
         const Square fromSquare = toSquare + pawnPush(~nextPlayer) - dir;
         // value is the delta of values from the two pieces involved plus the positional value
-        const Value value = valueOf(position.getPiece(toSquare)) - valueOf(position.getPiece(fromSquare)) + Values::posValue[piece][toSquare][gamePhase];
+        const Value value = 2000 + valueOf(position.getPiece(toSquare)) - valueOf(position.getPiece(fromSquare)) + Values::posValue[piece][toSquare][gamePhase];
         pMoves->push_back(createMove(fromSquare, toSquare, NORMAL, value));
       }
     }
@@ -640,8 +640,7 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
           Square fromSquare = lsb(tmpCaptures);
           Square toSquare   = fromSquare + pawnPush(nextPlayer) - dir;
           // value is the positional value of the piece at this game phase
-          const Value value = Values::posValue[piece][toSquare][gamePhase];
-          pMoves->push_back(createMove(fromSquare, toSquare, ENPASSANT, value));
+          pMoves->push_back(createMove(fromSquare, toSquare, ENPASSANT, 2000 + Values::posValue[piece][toSquare][gamePhase]));
         }
       }
     }
@@ -658,10 +657,9 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
       const Square toSquare   = popLSB(promMoves);
       const Square fromSquare = toSquare + pawnPush(~nextPlayer);
       // value for non captures is lowered by 10k
-      const Value value = -valueOf(PAWN);
       // value is done manually for sorting of queen prom first, then knight and others
-      pMoves->push_back(createMove(fromSquare, toSquare, PROMOTION, QUEEN, value + valueOf(QUEEN)));
-      pMoves->push_back(createMove(fromSquare, toSquare, PROMOTION, KNIGHT, value + valueOf(KNIGHT)));
+      pMoves->push_back(createMove(fromSquare, toSquare, PROMOTION, QUEEN, 2000 - valueOf(PAWN) + valueOf(QUEEN)));
+      pMoves->push_back(createMove(fromSquare, toSquare, PROMOTION, KNIGHT, 1500 - valueOf(PAWN) + valueOf(KNIGHT)));
     }
   }
 
@@ -693,20 +691,19 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
     while (promMoves) {
       const Square toSquare   = popLSB(promMoves);
       const Square fromSquare = toSquare + pawnPush(~nextPlayer);
-      // value for non captures is lowered by 10k
-      const Value value = -Value(12'000);
+      // value for non captures is lowered
       // we treat Queen and Knight promotions as non quiet moves and they are generated above
       // rook and bishops are usually redundant to queen promotion (except in stale mate situations)
       // therefore we give them lower sort order
-      pMoves->push_back(createMove(fromSquare, toSquare, PROMOTION, ROOK, value + valueOf(ROOK)));
-      pMoves->push_back(createMove(fromSquare, toSquare, PROMOTION, BISHOP, value + valueOf(BISHOP)));
+      pMoves->push_back(createMove(fromSquare, toSquare, PROMOTION, ROOK, static_cast<const Value>(-6'000) + valueOf(ROOK)));
+      pMoves->push_back(createMove(fromSquare, toSquare, PROMOTION, BISHOP, static_cast<const Value>(-6'000) + valueOf(BISHOP)));
     }
 
     // double pawn steps
     while (tmpMovesDouble) {
       const Square toSquare = popLSB(tmpMovesDouble);
       // value is the positional value of the piece at this game phase
-      const auto value = static_cast<Value>(-10'000) + Values::posValue[piece][toSquare][gamePhase];
+      const auto value = Values::posValue[piece][toSquare][gamePhase] - 2'000;
       pMoves->push_back(createMove(toSquare + 2 * pawnPush(~nextPlayer), toSquare, NORMAL, value));
     }
 
@@ -716,7 +713,7 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
       const Square toSquare   = popLSB(tmpMoves);
       const Square fromSquare = toSquare + pawnPush(~nextPlayer);
       // value is the positional value of the piece at this game phase
-      const Value value = static_cast<Value>(-10000) + Values::posValue[piece][toSquare][gamePhase];
+      const Value value = Values::posValue[piece][toSquare][gamePhase] - 2'000;
       pMoves->push_back(createMove(fromSquare, toSquare, NORMAL, value));
     }
   }
@@ -749,7 +746,7 @@ void MoveGenerator::generateMoves(const Position& position, MoveList* const pMov
         }
         while (captures) {
           const Square toSquare = popLSB(captures);
-          const Value value     = valueOf(position.getPiece(toSquare)) - valueOf(position.getPiece(fromSquare)) + Values::posValue[piece][toSquare][gamePhase];
+          Value value = 2000 + valueOf(position.getPiece(toSquare)) - valueOf(position.getPiece(fromSquare)) + Values::posValue[piece][toSquare][gamePhase];
           pMoves->push_back(createMove(fromSquare, toSquare, NORMAL, value));
         }
       }
@@ -762,7 +759,7 @@ void MoveGenerator::generateMoves(const Position& position, MoveList* const pMov
         }
         while (nonCaptures) {
           const Square toSquare = popLSB(nonCaptures);
-          const Value value     = static_cast<Value>(-10000) + Values::posValue[piece][toSquare][gamePhase];
+          const Value value     = Values::posValue[piece][toSquare][gamePhase] - 2000;
           pMoves->push_back(createMove(fromSquare, toSquare, NORMAL, value));
         }
       }
@@ -788,12 +785,12 @@ void MoveGenerator::generateKingMoves(const Position& position, MoveList* const 
     while (captures) {
       const Square toSquare = popLSB(captures);
       if (!evasion) {
-        const Value value = valueOf(position.getPiece(toSquare)) - valueOf(position.getPiece(fromSquare)) + Values::posValue[piece][toSquare][gamePhase];
+        const Value value = 2000 + valueOf(position.getPiece(toSquare)) - valueOf(position.getPiece(fromSquare)) + Values::posValue[piece][toSquare][gamePhase];
         pMoves->push_back(createMove(fromSquare, toSquare, NORMAL, value));
       }
       // when evasion only move to non attacked squares - will not check for x-ray attacks
       else if (!position.attacksTo(toSquare, ~nextPlayer)) {
-        const Value value = valueOf(position.getPiece(toSquare)) - valueOf(position.getPiece(fromSquare)) + Values::posValue[piece][toSquare][gamePhase];
+        const Value value = 2000 + valueOf(position.getPiece(toSquare)) - valueOf(position.getPiece(fromSquare)) + Values::posValue[piece][toSquare][gamePhase];
         pMoves->push_back(createMove(fromSquare, toSquare, NORMAL, value));
       }
     }
@@ -805,12 +802,12 @@ void MoveGenerator::generateKingMoves(const Position& position, MoveList* const 
     while (nonCaptures) {
       const Square toSquare = popLSB(nonCaptures);
       if (!evasion) {
-        const Value value = static_cast<Value>(-10000) + Values::posValue[piece][toSquare][gamePhase];
+        const Value value = Values::posValue[piece][toSquare][gamePhase] - 2'000;
         pMoves->push_back(createMove(fromSquare, toSquare, NORMAL, value));
       }
       // when evasion only move to non attacked squares - will not check for x-ray attacks
       else if (!position.attacksTo(toSquare, ~nextPlayer)) {
-        const Value value = static_cast<Value>(-10000) + Values::posValue[piece][toSquare][gamePhase];
+        const Value value = Values::posValue[piece][toSquare][gamePhase] - 2'000;
         pMoves->push_back(createMove(fromSquare, toSquare, NORMAL, value));
       }
     }
@@ -830,18 +827,18 @@ void MoveGenerator::generateCastling(const Position& position, MoveList* const p
     const CastlingRights cr = position.getCastlingRights();
     if (nextPlayer == WHITE) {// white
       if (cr == WHITE_OO && !(Bitboards::intermediateBb[SQ_E1][SQ_H1] & occupiedBb)) {
-        pMoves->push_back(createMove(SQ_E1, SQ_G1, CASTLING, static_cast<Value>(-5000)));
+        pMoves->push_back(createMove(SQ_E1, SQ_G1, CASTLING, static_cast<Value>(0)));
       }
       if (cr == WHITE_OOO && !(Bitboards::intermediateBb[SQ_E1][SQ_A1] & occupiedBb)) {
-        pMoves->push_back(createMove(SQ_E1, SQ_C1, CASTLING, static_cast<Value>(-5000)));
+        pMoves->push_back(createMove(SQ_E1, SQ_C1, CASTLING, static_cast<Value>(0)));
       }
     }
     else {// black
       if (cr == BLACK_OO && !(Bitboards::intermediateBb[SQ_E8][SQ_H8] & occupiedBb)) {
-        pMoves->push_back(createMove(SQ_E8, SQ_G8, CASTLING, static_cast<Value>(-5000)));
+        pMoves->push_back(createMove(SQ_E8, SQ_G8, CASTLING, static_cast<Value>(0)));
       }
       if (cr == BLACK_OOO && !(Bitboards::intermediateBb[SQ_E8][SQ_A8] & occupiedBb)) {
-        pMoves->push_back(createMove(SQ_E8, SQ_C8, CASTLING, static_cast<Value>(-5000)));
+        pMoves->push_back(createMove(SQ_E8, SQ_C8, CASTLING, static_cast<Value>(0)));
       }
     }
   }

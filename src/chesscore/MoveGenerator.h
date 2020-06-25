@@ -283,6 +283,7 @@ private:
   FRIEND_TEST(MoveGenTest, normalMoves);
   FRIEND_TEST(MoveGenTest, castlingMoves);
   FRIEND_TEST(MoveGenTest, storeKiller);
+  FRIEND_TEST(MoveGenTest, sortValueTest);
 };
 
 #endif//FRANKYCPP_MOVEGENERATOR_H
