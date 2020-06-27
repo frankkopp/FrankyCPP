@@ -28,6 +28,7 @@
 #include "Evaluator.h"
 #include "Search.h"
 #include "SearchConfig.h"
+#include "See.h"
 
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
@@ -177,7 +178,6 @@ void Search::run() {
   initialize();
 
   // setup and report search limits
-  // TODO: MODE mate - search until mate in x is found or other limits have been met
   setupSearchLimits(position, searchLimits);
 
   // when not pondering and search is time controlled start timer
@@ -259,9 +259,7 @@ void Search::run() {
 
   // print stats to log
   LOG__INFO(Logger::get().SEARCH_LOG, "Search finished after {}", str(searchResult.time));
-  LOG__INFO(Logger::get().SEARCH_LOG, "Search depth was {}({}) with {:n} nodes visited. NPS = {:n} nps",
-            statistics.currentSearchDepth, statistics.currentExtraSearchDepth, nodesVisited,
-            nps(nodesVisited, searchResult.time));
+  LOG__INFO(Logger::get().SEARCH_LOG, "Search depth was {}({}) with {:n} nodes visited. NPS = {:n} nps", statistics.currentSearchDepth, statistics.currentExtraSearchDepth, nodesVisited, nps(nodesVisited, searchResult.time));
   LOG__DEBUG(Logger::get().SEARCH_LOG, "Search stats: {}", statistics.str());
 
   // print result to log
@@ -297,7 +295,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
     return searchResult;
   }
 
-  // generate all legal root moves
+  // generate all legal root moves (get a copy)
   rootMoves = *mg[0].generateLegalMoves<GenAll>(p);
 
   // check if there are legal moves - if not it's mate or stalemate
@@ -369,8 +367,10 @@ SearchResult Search::iterativeDeepening(Position& p) {
     }
     // ###########################################
 
+    assert((bestValue == valueOf(pv[0].at(0)) || stopSearchFlag) && "bestValue should be equal value of pv[0].at(0)");
+
     // if mate search check if we found a mate within the mate limit
-    if (searchLimits.mate && abs(bestValue) >= VALUE_CHECKMATE_THRESHOLD && searchLimits.mate * 2 - 1 == VALUE_CHECKMATE-bestValue) {
+    if (searchLimits.mate && abs(valueOf(pv[0].at(0))) >= VALUE_CHECKMATE_THRESHOLD && searchLimits.mate * 2 - 1 == VALUE_CHECKMATE - valueOf(pv[0].at(0))) {
       searchResult.mateFound = true;
       break;
     }
@@ -385,6 +385,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
       std::sort(rootMoves.begin(), rootMoves.end(), sortByValue);
       statistics.currentBestRootMove      = pv[0].at(0);
       statistics.currentBestRootMoveValue = valueOf(pv[0].at(0));
+      assert(pv[0].at(0) == rootMoves.at(0) && "Best root move should be equal to pv[0].at(0)");
       // update UCI GUI
       sendIterationEndInfoToUci();
     }
@@ -427,6 +428,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
 
 Value Search::aspirationSearch(Position& p, Depth depth, Value value) {
   // TODO implement
+  LOG__CRITICAL(Logger::get().SEARCH_LOG, "Not implemented yet", __FUNCTION__);
   return VALUE_DRAW;
 }
 
@@ -462,7 +464,7 @@ Value Search::rootSearch(Position& p, Depth depth, Value alpha, Value beta) {
 
     // if available on platform tells the cpu to
     // prefetch the data into cpu caches
-    // TT_PREFETCH;
+    TT_PREFETCH;
     // EVAL_PREFETCH;
 
     if (checkDrawRepAnd50(p, 2)) {
@@ -556,7 +558,6 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
 
   // prepare node search
   const Color us      = p.getNextPlayer();
-  const bool hasCheck = p.hasCheck();
   Value bestNodeValue = VALUE_NONE;
   Move bestNodeMove   = MOVE_NONE;// used to store in the TT
   Move ttMove         = MOVE_NONE;
@@ -607,6 +608,8 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
       statistics.ttMiss++;
     }
   }// use TT
+
+  const bool hasCheck = p.hasCheck();
 
   // get an evaluation for the position
   if (!hasCheck && staticEval == VALUE_NONE) {
@@ -845,6 +848,231 @@ Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, Search::N
     return VALUE_NONE;
   }
 
+  // Mate Distance Pruning
+  if (SearchConfig::USE_MDP) {
+    alpha = std::max(alpha, -VALUE_CHECKMATE + Value(ply));
+    beta  = std::min(beta, VALUE_CHECKMATE - Value(ply));
+    if (alpha >= beta) {
+      statistics.mdp++;
+      return alpha;
+    }
+  }
+
+  // prepare node search
+  const Color us      = p.getNextPlayer();
+  Value bestNodeValue = VALUE_NONE;
+  Move bestNodeMove   = MOVE_NONE;// used to store in the TT
+  Move ttMove         = MOVE_NONE;
+  ValueType ttType    = ALPHA;
+  Value staticEval    = VALUE_NONE;
+
+  // TT Lookup
+  // Results of searches are stored in the TT to be used to
+  // avoid searching positions several times. If a position
+  // is stored in the TT we retrieve a pointer to the entry.
+  // We use the stored move as a best move from previous searches
+  // and search it first (through setting PV move in move gen).
+  // If we have a value from a similar or deeper search we check
+  // if the value is usable. Exact values mean that the previously
+  // stored result already was a precise result and we do not
+  // need to search the position again. We can stop searching
+  // this branch and return the value.
+  // Alpha or Beta entries will only be used if they improve
+  // the current values.
+  const TT::Entry* ttEntryPtr;
+  if (SearchConfig::USE_TT) {
+    ttEntryPtr = tt->probe(p.getZobristKey());
+    if (ttEntryPtr) {// tt hit
+      statistics.ttHit++;
+      ttMove              = static_cast<Move>(ttEntryPtr->move);
+      const Value ttValue = valueFromTt(ttEntryPtr->value, ply);
+      if (validValue(ttValue) &&
+          (ttEntryPtr->type == EXACT ||
+           (ttEntryPtr->type == ALPHA && ttValue <= alpha) ||
+           (ttEntryPtr->type == BETA && ttValue >= beta)) &&
+          SearchConfig::USE_TT_VALUE) {
+        statistics.TtCuts++;
+        return ttValue;
+      }
+      // if we have a static eval stored we can reuse it
+      if (SearchConfig::USE_EVAL_TT && ttEntryPtr->eval != VALUE_NONE) {
+        statistics.evalFromTT++;
+        staticEval = ttEntryPtr->eval;
+      }
+    }
+    else {
+      statistics.ttMiss++;
+    }
+  }// use TT
+
+  const bool hasCheck = p.hasCheck();
+
+  // if in check we simply do a normal search (all moves) in qsearch
+  if (!hasCheck) {
+    // get an evaluation for the position
+    if (staticEval == VALUE_NONE) {
+      staticEval = evaluate(p);
+    }
+    // Quiescence StandPat
+    // Use evaluation as a standing pat (lower bound)
+    // https://www.chessprogramming.org/Quiescence_Search#Standing_Pat
+    // Assumption is that there is at least on move which would improve the
+    // current position. So if we are already >beta we don't need to look at it.
+    if (SearchConfig::USE_QS_STANDPAT_CUT && staticEval > alpha) {
+      if (staticEval >= beta) {
+        statistics.standpatCuts++;
+        // Storing this value might save us calls to eval on the same position.
+        if (SearchConfig::USE_TT && SearchConfig::USE_EVAL_TT) {
+          storeTt(p, DEPTH_NONE, ply, MOVE_NONE, VALUE_NONE, NONE, staticEval, false);
+        }
+        return staticEval;
+      }
+      alpha = staticEval;
+    }
+    bestNodeValue = staticEval;
+  }
+
+  // reset search
+  const auto myMg = &mg[ply];
+  myMg->resetOnDemand();
+  pv[ply].clear();
+
+  // PV Move Sort
+  // When we received a best move for the position from the
+  // TT we set it as PV move in the movegen so it will
+  // be searched first.
+  if (SearchConfig::USE_TT_PV_MOVE_SORT) {
+    if (ttMove != MOVE_NONE) {
+      statistics.TtMoveUsed++;
+      myMg->setPV(ttMove);
+    }
+    else {
+      statistics.NoTtMove++;
+    }
+  }
+
+  // prepare move loop
+  Value value       = VALUE_NONE;
+  Move move         = MOVE_NONE;
+  int movesSearched = 0;// to detect mate situations
+
+  // ///////////////////////////////////////////////////////
+  // MOVE LOOP
+  while ((move = myMg->getNextPseudoLegalMove<GenAll>(p, hasCheck)) != MOVE_NONE) {
+    const Square from     = fromSquare(move);
+    const Square to       = toSquare(move);
+    const bool givesCheck = p.givesCheck(move);
+
+    // TODO implement pruning
+
+    // reduce number of moves searched in quiescence
+    // by looking at good captures only
+    if (!hasCheck && !goodCapture(p, move)) {
+      continue;
+    }
+
+    // ///////////////////////////////////////////////////////
+    // DO MOVE
+    p.doMove(move);
+
+    if (!p.wasLegalMove()) {
+      p.undoMove();
+      continue;
+    }
+
+    // if available on platform tells the cpu to
+    // prefetch the data into cpu caches
+    TT_PREFETCH;
+    // EVAL_PREFETCH;
+
+    // we only count legal moves
+    nodesVisited++;
+    statistics.currentVariation.push_back(move);
+    sendSearchUpdateToUci();
+
+    // check repetition and 50 moves
+    if (checkDrawRepAnd50(p, 2)) {
+      value = VALUE_DRAW;
+    }
+    else {
+      value = -qsearch(p, ply + 1, -beta, -alpha, isPv);
+    }
+
+    movesSearched++;
+    statistics.currentVariation.pop_back();
+    p.undoMove();
+    // UNDO MOVE
+    // ///////////////////////////////////////////////////////
+
+    // check if we should stop the search
+    if (stopConditions()) {
+      return VALUE_NONE;
+    }
+
+    // See search function above for documentation
+    if (value > bestNodeValue) {
+      bestNodeValue = value;
+      bestNodeMove  = move;
+      if (value > alpha) {
+        if (value >= beta && SearchConfig::USE_ALPHABETA) {
+          statistics.betaCuts++;
+          if (movesSearched == 1) {
+            statistics.betaCuts1st++;
+          }
+          if (SearchConfig::USE_KILLER_MOVES && !p.isCapturingMove(move)) {
+            myMg->storeKiller(move);
+          }
+          if (SearchConfig::USE_HISTORY_COUNTER) {
+            history.historyCount[us][from][to] += 1 << 1;
+          }
+          if (SearchConfig::USE_HISTORY_MOVES) {
+            Move lastMove = p.getLastMove();
+            if (lastMove != MOVE_NONE) {
+              history.counterMoves[fromSquare(lastMove)][toSquare(lastMove)] = move;
+            }
+          }
+          ttType = BETA;
+          break;
+        }
+        savePV(move, pv[ply + 1], pv[ply]);
+        alpha  = value;
+        ttType = EXACT;
+      }
+    }
+    if (SearchConfig::USE_HISTORY_COUNTER) {
+      history.historyCount[us][from][to] -= 1 << 1;
+      if (history.historyCount[us][from][to] < 0) {
+        history.historyCount[us][from][to] = 0;
+      }
+    }
+  }
+  // MOVE LOOP
+  // ///////////////////////////////////////////////////////
+
+  // If we did not have at least one legal move
+  // then we might have a mate or stalemate
+  if (movesSearched == 0 && !stopConditions()) {
+    // if we have a mate we had a check before and therefore
+    // generated all moves. We can be sure this is a mate.
+    if (hasCheck) {// mate
+      statistics.checkmates++;
+      bestNodeValue = -VALUE_CHECKMATE + Value(ply);
+      ttType        = EXACT;
+    }
+    // if we do not have mate we had no check and
+    // therefore might have only quiet moves which
+    // we did not generate.
+    // We return the standpat value in this case
+    // which we have set to bestNodeValue in the
+    // static eval earlier
+  }
+
+  // Store TT
+  // Store search result for this node into the transposition table
+  if (SearchConfig::USE_TT && SearchConfig::USE_QS_TT) {
+    storeTt(p, DEPTH_ONE, ply, bestNodeMove, bestNodeValue, ttType, staticEval, false);
+  }
+
   return evaluate(p);
 }
 
@@ -852,6 +1080,24 @@ inline Value Search::evaluate(Position& p) {
   statistics.leafPositionsEvaluated++;
   statistics.evaluations++;
   return evaluator->evaluate(p);
+}
+
+bool Search::goodCapture(Position& p, Move move) {
+  if (SearchConfig::USE_QS_SEE) {
+    // Check SEE score of higher value pieces to low value pieces
+    return See::see(p, move) > 0;
+  } else {
+    // Lower value piece captures higher value piece
+    // With a margin to also look at Bishop x Knight
+    return valueOf(p.getPiece(fromSquare(move))) + 50 < valueOf(p.getPiece(toSquare(move))) ||
+           // all recaptures should be looked at
+           (p.getLastMove() != MOVE_NONE && toSquare(p.getLastMove()) && p.getLastCapturedPiece() != PIECE_NONE) ||
+           // undefended pieces captures are good
+           // If the defender is "behind" the attacker this will not be recognized
+           // here, This is not too bad as it only adds a move to qsearch which we
+           // could otherwise ignore
+           !p.isAttacked(toSquare(move), p.getNextPlayer());
+  }
 }
 
 void Search::storeTt(Position& p, Depth depth, Depth ply, Move move, Value value, ValueType valueType, Value eval, bool mateThreat) {
@@ -1145,3 +1391,4 @@ void Search::sendSearchUpdateToUci() {
               hashfull);
   }
 }
+

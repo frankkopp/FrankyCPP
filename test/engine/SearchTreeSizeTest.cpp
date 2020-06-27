@@ -39,10 +39,10 @@ using testing::Eq;
 
 class SearchTreeSizeTest : public ::testing::Test {
 public:
-  static constexpr int DEPTH = 6;
+  static constexpr int DEPTH = 8;
   static constexpr MilliSec MOVE_TIME{0};
   static constexpr int START_FEN = 0;
-  static constexpr int END_FEN   = 10;
+  static constexpr int END_FEN   = 50;
 
   /* special is used to collect a dedicated stat */
   const uint64_t* ptrToSpecial1 = nullptr;
@@ -99,8 +99,10 @@ protected:
 };
 
 TEST_F(SearchTreeSizeTest, size_test) {
-
-  LOG__INFO(Logger::get().TEST_LOG, "Start Search Tree Size Test for depth {}", DEPTH);
+#ifndef NDEBUG
+  GTEST_SKIP();
+#endif
+  fprintln("Start Search Tree Size Test for depth {}", DEPTH);
 
   // Prepare test fens
   std::vector<std::string> fens = Test_Fens::getFENs();
@@ -218,8 +220,8 @@ SearchTreeSizeTest::Result SearchTreeSizeTest::featureMeasurements(int depth, Mi
   // ***********************************
   // TESTS
 
-  ptrToSpecial1 = &search.getSearchStats().ttHit;
-  ptrToSpecial2 = &search.getSearchStats().ttMiss;
+  ptrToSpecial1 = &search.getSearchStats().mdp;
+  ptrToSpecial2 = &search.getSearchStats().checkmates;
 
   // pure MiniMax
 //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 MINIMAX"));
@@ -229,70 +231,68 @@ SearchTreeSizeTest::Result SearchTreeSizeTest::featureMeasurements(int depth, Mi
 
   SearchConfig::USE_PVS = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "15 PVS"));
-
+//
   SearchConfig::USE_KILLER_MOVES    = true;
   SearchConfig::USE_HISTORY_COUNTER = true;
   SearchConfig::USE_HISTORY_MOVES   = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "20 History"));
-
+//
   SearchConfig::USE_MDP = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "25 MDP"));
-
+//
   SearchConfig::USE_TT = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "32 TT"));
-
-  //  SearchConfig::TT_SIZE_MB = 1'024;
-  //  search.resizeTT();
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "23 TT 1.024"));
-
+//
+//  //  SearchConfig::TT_SIZE_MB = 1'024;
+//  //  search.resizeTT();
+//  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "23 TT 1.024"));
+//
   SearchConfig::USE_TT_PV_MOVE_SORT = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "35 PVSort"));
+
   SearchConfig::USE_TT_VALUE = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "36 TT Cuts"));
-
-
-  //  SearchConfig::USE_EVAL_TT = true;
-
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "10 BASE"));
-
-  // pure MiniMax + quiescence
-  //  SearchConfig::USE_QUIESCENCE = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 MM+QS"));
-  //  SearchConfig::USE_TT_QSEARCH = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MM+QS+TT"));
-  //  SearchConfig::USE_MPP = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "04 MPP"));
-
-  //
-  //  SearchConfig::USE_EXTENSIONS = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "40 EXT"));
-  //
-  //  SearchConfig::USE_FP = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "50 FP"));
-  //
-  //  SearchConfig::USE_EFP = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "60 EFP"));
-  //
-  //  SearchConfig::USE_RFP = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "70 RFP"));
-  //
-  //  SearchConfig::USE_ASPIRATION_WINDOW = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "80 ASP"));
-  //
-  //  SearchConfig::USE_LMR = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "90 LMR"));
-  //
-  //  SearchConfig::USE_NMP = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "99 NMP"));
-
-  //  SearchConfig::USE_RAZOR_PRUNING = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "90 RAZOR"));
-
-  //  SearchConfig::USE_IID = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "30 IID"));
-
-  //  SearchConfig::USE_LMP = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "80 LMP"));
+//
+//  //  SearchConfig::USE_EVAL_TT = true;
+//  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "10 BASE"));
+//
+//  // pure MiniMax + quiescence
+//  //  SearchConfig::USE_QUIESCENCE = true;
+//  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 MM+QS"));
+//  //  SearchConfig::USE_TT_QSEARCH = true;
+//  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "MM+QS+TT"));
+//  //  SearchConfig::USE_MPP = true;
+//  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "04 MPP"));
+//                                                                     //  //
+//  //  SearchConfig::USE_EXTENSIONS = true;
+//  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "40 EXT"));
+//  //
+//  //  SearchConfig::USE_FP = true;
+//  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "50 FP"));
+//  //
+//  //  SearchConfig::USE_EFP = true;
+//  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "60 EFP"));
+//  //
+//  //  SearchConfig::USE_RFP = true;
+//  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "70 RFP"));
+//  //
+//  //  SearchConfig::USE_ASPIRATION_WINDOW = true;
+//  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "80 ASP"));
+//  //
+//  //  SearchConfig::USE_LMR = true;
+//  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "90 LMR"));
+//  //
+//  //  SearchConfig::USE_NMP = true;
+//  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "99 NMP"));
+//
+//  //  SearchConfig::USE_RAZOR_PRUNING = true;
+//  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "90 RAZOR"));
+//
+//  //  SearchConfig::USE_IID = true;
+//  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "30 IID"));
+//
+//  //  SearchConfig::USE_LMP = true;
+//  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "80 LMP"));
 
   // ***********************************
 
@@ -303,10 +303,10 @@ SearchTreeSizeTest::SingleTest
 SearchTreeSizeTest::measureTreeSize(Search& search, const Position& position,
                                     SearchLimits searchLimits, const std::string& featureName) {
 
-  LOG__INFO(Logger::get().TEST_LOG, "");
-  LOG__INFO(Logger::get().TEST_LOG, "Testing {} ####################################", featureName);
-  LOG__INFO(Logger::get().TEST_LOG, "Position {}", position.strFen());
-  LOG__INFO(Logger::get().TEST_LOG, "");
+  NEWLINE;
+  fprintln("Testing {} ####################################", featureName);
+  fprintln("Position {}", position.strFen());
+  NEWLINE;
   search.newGame();
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
