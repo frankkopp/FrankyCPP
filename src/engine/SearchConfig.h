@@ -40,21 +40,21 @@ namespace SearchConfig {
 
   // basic search strategies and features
   inline bool USE_ALPHABETA = false;// use ALPHABETA pruning
-  inline bool USE_PVS = false;// use PVS null window search
-  inline bool USE_ASP = false;
+  inline bool USE_PVS       = false;// use PVS null window search
+  inline bool USE_ASP       = false;
   //  inline Depth ASP_START_DEPTH = Depth{4};
 
   inline bool USE_QUIESCENCE = false;// use quiescence search
-  //  inline bool USE_QS_SEE              = true; // use SEE for goodCaptures
-  //  inline Depth MAX_EXTRA_QDEPTH       = Depth{20};
+  inline bool USE_QS_STANDPAT_CUT   = false;
+  inline bool USE_QS_SEE              = true; // use SEE for goodCaptures
 
   // Transposition Table
   inline bool USE_TT       = false;// use transposition table
   inline bool USE_TT_VALUE = false;// use value from tt to prune
   inline bool USE_EVAL_TT  = false;// use value from tt for storing evaluations
-  inline int TT_SIZE_MB    = 64;  // size of TT in MB
+  inline int TT_SIZE_MB    = 64;   // size of TT in MB
+  inline bool USE_QS_TT   = true; // use transposition table also in quiescence search
 
-  //  inline bool USE_TT_QSEARCH          = true; // use transposition table also in quiescence search
 
   //  // Move Sorting Features
   inline bool USE_TT_PV_MOVE_SORT = false;// use move from tt as pv

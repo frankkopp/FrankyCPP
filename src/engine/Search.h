@@ -245,6 +245,10 @@ private:
   // back to the search.
   Value evaluate(Position& p);
 
+  // reduce the number of moves searched in quiescence search by trying
+  // to only look at good captures.
+  bool goodCapture(Position& position, Move move);
+
   // storeTT stores a position into the TT
   void storeTt(Position& position, Depth depth, Depth ply, Move move, Value value, ValueType valuetype, Value eval, bool mateThreat);
 

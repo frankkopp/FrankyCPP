@@ -57,15 +57,17 @@ struct SearchStats {
   uint64_t pvsResearches;
   uint64_t bestMoveChange;
   uint64_t mdp;
-
   uint64_t lmrResearches;
+
+  uint64_t standpatCuts;
+
   uint64_t ttHit;
   uint64_t ttMiss;
   uint64_t TtCuts;
   uint64_t evalFromTT;
+  uint64_t NoTtMove;
   uint64_t TtMoveUsed;
 
-  uint64_t NoTtMove;
 
   std::string str() const {
     std::ostringstream os;
@@ -95,6 +97,7 @@ struct SearchStats {
        << " NoTtMove: " << stats.NoTtMove;
     return os;
   }
+
 };
 
 

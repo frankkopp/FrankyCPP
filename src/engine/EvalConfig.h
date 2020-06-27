@@ -29,7 +29,7 @@
 namespace EvalConfig {
 
   inline bool USE_MATERIAL = true;
-  inline bool USE_POSITIONAL = false;
+  inline bool USE_POSITIONAL = true;
 
   inline int TEMPO = 34;
 
