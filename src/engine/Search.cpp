@@ -955,10 +955,13 @@ Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, Search::N
   Value value       = VALUE_NONE;
   Move move         = MOVE_NONE;
   int movesSearched = 0;// to detect mate situations
+  
+  //  const GenMode genMode = hasCheck ? GenAll : GenNonQuiet;
+  const GenMode genMode = hasCheck ? GenAll : GenNonQuiet;
 
   // ///////////////////////////////////////////////////////
   // MOVE LOOP
-  while ((move = myMg->getNextPseudoLegalMove<GenAll>(p, hasCheck)) != MOVE_NONE) {
+  while ((move = myMg->getNextPseudoLegalMove<genMode>(p, hasCheck)) != MOVE_NONE) {
     const Square from     = fromSquare(move);
     const Square to       = toSquare(move);
     const bool givesCheck = p.givesCheck(move);
@@ -1086,17 +1089,26 @@ bool Search::goodCapture(Position& p, Move move) {
   if (SearchConfig::USE_QS_SEE) {
     // Check SEE score of higher value pieces to low value pieces
     return See::see(p, move) > 0;
+
   } else {
+    // all pawn captures - they never loose material
+    // typeOf(position.getPiece(getFromSquare(move))) == PAWN
+
     // Lower value piece captures higher value piece
     // With a margin to also look at Bishop x Knight
-    return valueOf(p.getPiece(fromSquare(move))) + 50 < valueOf(p.getPiece(toSquare(move))) ||
-           // all recaptures should be looked at
-           (p.getLastMove() != MOVE_NONE && toSquare(p.getLastMove()) && p.getLastCapturedPiece() != PIECE_NONE) ||
-           // undefended pieces captures are good
-           // If the defender is "behind" the attacker this will not be recognized
-           // here, This is not too bad as it only adds a move to qsearch which we
-           // could otherwise ignore
-           !p.isAttacked(toSquare(move), p.getNextPlayer());
+    (valueOf(position.getPiece(fromSquare(move))) + 50)
+    < valueOf(position.getPiece(toSquare(move)))
+
+    // all recaptures should be looked at
+    || (position.getLastMove() != MOVE_NONE
+        && toSquare(position.getLastMove()) == toSquare(move)
+        && position.getLastCapturedPiece() != PIECE_NONE)
+
+    // undefended pieces captures are good
+    // If the defender is "behind" the attacker this will not be recognized
+    // here This is not too bad as it only adds a move to qsearch which we
+    // could otherwise ignore
+    || !position.isAttacked(toSquare(move), ~position.getNextPlayer())
   }
 }
 

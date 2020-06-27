@@ -245,8 +245,8 @@ TEST_F(SearchTest, mate0Search) {
   SearchLimits sl{};
   Search s{};
   sl.timeControl = true;
-  sl.moveTime = 60s;
-  sl.mate = 0;
+  sl.moveTime    = 60s;
+  sl.mate        = 0;
   s.isReady();
   s.startSearch(p, sl);
   s.waitWhileSearching();
@@ -259,8 +259,8 @@ TEST_F(SearchTest, mate1Search) {
   SearchLimits sl{};
   Search s{};
   sl.timeControl = true;
-  sl.moveTime = 60s;
-  sl.mate  = 1;
+  sl.moveTime    = 60s;
+  sl.mate        = 1;
   s.isReady();
   s.startSearch(p, sl);
   s.waitWhileSearching();
@@ -274,8 +274,8 @@ TEST_F(SearchTest, mate2Search) {
   SearchLimits sl{};
   Search s{};
   sl.timeControl = true;
-  sl.moveTime = 60s;
-  sl.mate  = 2;
+  sl.moveTime    = 60s;
+  sl.mate        = 2;
   s.isReady();
   s.startSearch(p, sl);
   s.waitWhileSearching();
@@ -289,8 +289,8 @@ TEST_F(SearchTest, mate3Search) {
   SearchLimits sl{};
   Search s{};
   sl.timeControl = true;
-  sl.moveTime = 60s;
-  sl.mate  = 3;
+  sl.moveTime    = 60s;
+  sl.mate        = 3;
   s.isReady();
   s.startSearch(p, sl);
   s.waitWhileSearching();
@@ -304,8 +304,8 @@ TEST_F(SearchTest, mate4Search) {
   SearchLimits sl{};
   Search s{};
   sl.timeControl = true;
-  sl.moveTime = 60s;
-  sl.mate  = 4;
+  sl.moveTime    = 60s;
+  sl.mate        = 4;
   s.isReady();
   s.startSearch(p, sl);
   s.waitWhileSearching();
@@ -314,17 +314,54 @@ TEST_F(SearchTest, mate4Search) {
 }
 
 TEST_F(SearchTest, mate5Search) {
-  SearchConfig::USE_BOOK = false;
+  SearchConfig::USE_BOOK      = false;
   SearchConfig::USE_ALPHABETA = true;
   Position p{"8/8/8/8/4K3/8/R7/4k3 w - - 0 4"};
   SearchLimits sl{};
   Search s{};
   sl.timeControl = true;
-  sl.moveTime = 60s;
-  sl.mate  = 5;
+  sl.moveTime    = 60s;
+  sl.mate        = 5;
   s.isReady();
   s.startSearch(p, sl);
   s.waitWhileSearching();
   EXPECT_EQ(VALUE_CHECKMATE - 9, s.getLastSearchResult().bestMoveValue);
   EXPECT_TRUE(s.getLastSearchResult().mateFound);
+}
+
+TEST_F(SearchTest, quiescenceTest) {
+
+  Search search;
+  SearchLimits searchLimits;
+  Position position("r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3 10 113");
+  searchLimits.depth = 2;
+
+  SearchConfig::USE_BOOK      = false;
+  SearchConfig::USE_ALPHABETA = false;
+  SearchConfig::USE_TT        = false;
+
+  SearchConfig::USE_QUIESCENCE = false;
+  SearchConfig::USE_QS_SEE = false;
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+  auto nodes1 = search.getLastSearchResult().nodes;
+  auto extra1 = search.getSearchStats().currentExtraSearchDepth;
+
+  SearchConfig::USE_QUIESCENCE = true;
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+  auto nodes2 = search.getLastSearchResult().nodes;
+  auto extra2 = search.getSearchStats().currentExtraSearchDepth;
+
+  SearchConfig::USE_QS_SEE = true;
+  search.startSearch(position, searchLimits);
+  search.waitWhileSearching();
+  auto nodes3 = search.getLastSearchResult().nodes;
+  auto extra3 = search.getSearchStats().currentExtraSearchDepth;
+
+  LOG__INFO(Logger::get().TEST_LOG, "Nodes without Quiescence: {:n} Nodes with Quiescence: {:n} Nodes with SEE: {:n}", nodes1, nodes2, nodes3);
+  LOG__INFO(Logger::get().TEST_LOG, "Extra without Quiescence: {:n} Extra with Quiescence: {:n} Extra with SEE: {:n}", extra1, extra2, extra3);
+
+  ASSERT_GT(nodes2, nodes1);
+  ASSERT_GT(extra2, extra1);
 }
