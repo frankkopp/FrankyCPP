@@ -68,7 +68,7 @@ const MoveList* MoveGenerator::generatePseudoLegalMoves(const Position& p, const
   updateSortValues(p, &pseudoLegalMoves);
 
   // sort moves
-  sort(pseudoLegalMoves.begin(), pseudoLegalMoves.end(), [](const Move lhs, const Move rhs) {
+  std::stable_sort(pseudoLegalMoves.begin(), pseudoLegalMoves.end(), [](const Move lhs, const Move rhs) {
     return valueOf(lhs) > valueOf(rhs);
   });
 
@@ -491,7 +491,7 @@ void MoveGenerator::fillOnDemandMoveList(const Position& position, const GenMode
     }
     // sort the list according to sort values encoded in the move
     if (!onDemandMoves.empty()) {
-      sort(onDemandMoves.begin(), onDemandMoves.end(), [](const Move lhs, const Move rhs) {
+      std::stable_sort(onDemandMoves.begin(), onDemandMoves.end(), [](const Move lhs, const Move rhs) {
         return valueOf(lhs) > valueOf(rhs);
       });
     }
