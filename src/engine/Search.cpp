@@ -296,7 +296,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
   }
 
   // generate all legal root moves (get a copy)
-  rootMoves = *mg[0].generateLegalMoves<GenAll>(p);
+  rootMoves = *mg[0].generateLegalMoves(p, GenAll);
 
   // check if there are legal moves - if not it's mate or stalemate
   if (rootMoves.empty()) {
@@ -649,7 +649,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
 
   // ///////////////////////////////////////////////////////
   // MOVE LOOP
-  while ((move = myMg->getNextPseudoLegalMove<GenAll>(p, hasCheck)) != MOVE_NONE) {
+  while ((move = myMg->getNextPseudoLegalMove(p, GenAll, hasCheck)) != MOVE_NONE) {
     const Square from     = fromSquare(move);
     const Square to       = toSquare(move);
     const bool givesCheck = p.givesCheck(move);
@@ -955,13 +955,13 @@ Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, Search::N
   Value value       = VALUE_NONE;
   Move move         = MOVE_NONE;
   int movesSearched = 0;// to detect mate situations
-  
-  //  const GenMode genMode = hasCheck ? GenAll : GenNonQuiet;
+
+  // when in check generate all moves
   const GenMode genMode = hasCheck ? GenAll : GenNonQuiet;
 
   // ///////////////////////////////////////////////////////
   // MOVE LOOP
-  while ((move = myMg->getNextPseudoLegalMove<genMode>(p, hasCheck)) != MOVE_NONE) {
+  while ((move = myMg->getNextPseudoLegalMove(p, genMode, hasCheck)) != MOVE_NONE) {
     const Square from     = fromSquare(move);
     const Square to       = toSquare(move);
     const bool givesCheck = p.givesCheck(move);
@@ -1108,7 +1108,7 @@ bool Search::goodCapture(Position& p, Move move) {
     // If the defender is "behind" the attacker this will not be recognized
     // here This is not too bad as it only adds a move to qsearch which we
     // could otherwise ignore
-    || !position.isAttacked(toSquare(move), ~position.getNextPlayer())
+    || !position.isAttacked(toSquare(move), ~position.getNextPlayer());
   }
 }
 

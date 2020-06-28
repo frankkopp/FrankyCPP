@@ -59,12 +59,16 @@ TEST_F(EngineSpeedTests, npsTest) {
   SearchConfig::USE_ALPHABETA = false;
   SearchConfig::USE_PVS = false;
   SearchConfig::USE_TT = false;
+  SearchConfig::USE_QUIESCENCE = false;
+  SearchConfig::USE_MDP = false;
+  SearchConfig::USE_HISTORY_COUNTER = false;
+  SearchConfig::USE_HISTORY_MOVES = false;
   Position p{};
   Search s{};
   s.isReady();
   SearchLimits sl{};
   sl.timeControl = true;
-  sl.moveTime = 30s;
+  sl.moveTime = 60s;
   s.startSearch(p, sl);
   EXPECT_TRUE(s.isSearching());
   EXPECT_FALSE(s.hasResult());

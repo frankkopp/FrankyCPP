@@ -23,6 +23,7 @@ add_executable(
         chesscore/PositionTest.cpp
         chesscore/MoveGeneratorTest.cpp
         chesscore/PerftTest.cpp
+        chesscore/SpeedTests.cpp
 
         openingbook/PGN_ReaderTest.cpp
         openingbook/OpeningBookTest.cpp
@@ -33,11 +34,11 @@ add_executable(
         engine/SearchTest.cpp
         engine/EngineSpeedTests.cpp
         engine/SearchTreeSizeTest.cpp
+        engine/SeeTest.cpp
 
         TimingTests.cpp
-        chesscore/SpeedTests.cpp
         BOOST_Test.cpp
-        engine/SeeTest.cpp)
+)
 
 target_link_libraries(
         ${testExeName}
