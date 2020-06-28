@@ -82,7 +82,7 @@ inline int distance(Rank r1, Rank r2) {
 // returns a char representing the rank (e.g. 1 or 8)
 constexpr char str(Rank r) {
   if (r < 0 || r >= 8) return '-';
-  return '1' + r;
+  return '1' + char(r);
 }
 
 inline std::ostream& operator<< (std::ostream& os, const Rank r) {

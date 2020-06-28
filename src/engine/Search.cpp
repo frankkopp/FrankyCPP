@@ -770,7 +770,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
           // we use 1 << depth as an increment to favor deeper searches
           // a more repetitions
           if (SearchConfig::USE_HISTORY_COUNTER) {
-            history.historyCount[us][from][to] += 1 << depth;
+            history.historyCount[us][from][to] += 1LL << depth;
           }
           // store a successful counter move to the previous opponent move
           if (SearchConfig::USE_HISTORY_MOVES) {
@@ -796,7 +796,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
     // no beta cutoff - decrease historyCounter for the move
     // we decrease it by only half the increase amount
     if (SearchConfig::USE_HISTORY_COUNTER) {
-      history.historyCount[us][from][to] -= 1 << depth;
+      history.historyCount[us][from][to] -= 1LL << depth;
       if (history.historyCount[us][from][to] < 0) {
         history.historyCount[us][from][to] = 0;
       }
@@ -1043,7 +1043,7 @@ Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, Search::N
       }
     }
     if (SearchConfig::USE_HISTORY_COUNTER) {
-      history.historyCount[us][from][to] -= 1 << 1;
+      history.historyCount[us][from][to] -= 1U << 1;
       if (history.historyCount[us][from][to] < 0) {
         history.historyCount[us][from][to] = 0;
       }
@@ -1089,26 +1089,24 @@ bool Search::goodCapture(Position& p, Move move) {
   if (SearchConfig::USE_QS_SEE) {
     // Check SEE score of higher value pieces to low value pieces
     return See::see(p, move) > 0;
+  }
+  else {
+    return
+      // all pawn captures - they never loose material
+      // typeOf(position.getPiece(getFromSquare(move))) == PAWN
 
-  } else {
-    // all pawn captures - they never loose material
-    // typeOf(position.getPiece(getFromSquare(move))) == PAWN
+      // Lower value piece captures higher value piece
+      // With a margin to also look at Bishop x Knight
+      (valueOf(position.getPiece(fromSquare(move))) + 50) < valueOf(position.getPiece(toSquare(move)))
 
-    // Lower value piece captures higher value piece
-    // With a margin to also look at Bishop x Knight
-    (valueOf(position.getPiece(fromSquare(move))) + 50)
-    < valueOf(position.getPiece(toSquare(move)))
+      // all recaptures should be looked at
+      || (position.getLastMove() != MOVE_NONE && toSquare(position.getLastMove()) == toSquare(move) && position.getLastCapturedPiece() != PIECE_NONE)
 
-    // all recaptures should be looked at
-    || (position.getLastMove() != MOVE_NONE
-        && toSquare(position.getLastMove()) == toSquare(move)
-        && position.getLastCapturedPiece() != PIECE_NONE)
-
-    // undefended pieces captures are good
-    // If the defender is "behind" the attacker this will not be recognized
-    // here This is not too bad as it only adds a move to qsearch which we
-    // could otherwise ignore
-    || !position.isAttacked(toSquare(move), ~position.getNextPlayer());
+      // undefended pieces captures are good
+      // If the defender is "behind" the attacker this will not be recognized
+      // here This is not too bad as it only adds a move to qsearch which we
+      // could otherwise ignore
+      || !position.isAttacked(toSquare(move), ~position.getNextPlayer());
   }
 }
 
@@ -1261,7 +1259,7 @@ MilliSec Search::setupTimeControl(Position& position, SearchLimits& sl) {
     if (!movesLeft) {// default
       // we estimate minimum 15 more moves in final game phases
       // in early game phases this grows up to 40
-      movesLeft = 15 + (25 * position.getGamePhaseFactor());
+      movesLeft = 15 + static_cast<int>(25 * position.getGamePhaseFactor());
     }
     // time left for current player
     MilliSec timeLeft;
@@ -1403,4 +1401,3 @@ void Search::sendSearchUpdateToUci() {
               hashfull);
   }
 }
-

@@ -74,16 +74,16 @@ TEST(TypesTest, MoveDirection) {
 TEST(TypesTest, castling) {
 
   CastlingRights cr = ANY_CASTLING;
-  EXPECT_EQ(0b1110, cr - WHITE_OO);
-  EXPECT_EQ(0b1101, cr - WHITE_OOO);
-  EXPECT_EQ(0b1011, cr - BLACK_OO);
-  EXPECT_EQ(0b0111, cr - BLACK_OOO);
+  EXPECT_EQ(0b1110U, cr - WHITE_OO);
+  EXPECT_EQ(0b1101U, cr - WHITE_OOO);
+  EXPECT_EQ(0b1011U, cr - BLACK_OO);
+  EXPECT_EQ(0b0111U, cr - BLACK_OOO);
 
   cr = NO_CASTLING;
   ASSERT_TRUE(cr == NO_CASTLING);
 
   cr += WHITE_OO;
-  EXPECT_EQ(0b0001, cr);
+  EXPECT_EQ(0b0001U, cr);
   ASSERT_TRUE(cr == WHITE_OO);
   ASSERT_TRUE(cr != WHITE_OOO);
   ASSERT_TRUE(cr != NO_CASTLING);
@@ -92,7 +92,7 @@ TEST(TypesTest, castling) {
   ASSERT_TRUE(cr != BLACK_CASTLING);
 
   cr += WHITE_OOO;
-  EXPECT_EQ(0b0011, cr);
+  EXPECT_EQ(0b0011U, cr);
   ASSERT_TRUE(cr == WHITE_OO);
   ASSERT_TRUE(cr == WHITE_OOO);
   ASSERT_TRUE(cr == WHITE_CASTLING);
@@ -102,8 +102,8 @@ TEST(TypesTest, castling) {
   ASSERT_TRUE(cr != BLACK_CASTLING);
 
   cr += BLACK_OO;
-  EXPECT_EQ(0b0111, cr);
-  EXPECT_EQ(0b1111, cr + BLACK_OOO);
+  EXPECT_EQ(0b0111U, cr);
+  EXPECT_EQ(0b1111U, cr + BLACK_OOO);
 }
 
 TEST(TypesTest, CastlingStr) {

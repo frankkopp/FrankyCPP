@@ -25,12 +25,12 @@
 
 #include <regex>
 
+#include "types/types.h"
 #include "History.h"
 #include "MoveGenerator.h"
 #include "Values.h"
 #include "chesscore/Position.h"
 #include "common/misc.h"
-#include "types/types.h"
 
 MoveGenerator::MoveGenerator() {
   pseudoLegalMoves.reserve(MAX_MOVES);
@@ -505,7 +505,7 @@ void MoveGenerator::updateSortValues(const Position& p, MoveList* const moveList
   // sort value if the move is the PV or a Killer move.
   // Also update the sort value for history and counter
   // move significance.
-  const unsigned long size = moveList->size();
+  auto size = moveList->size();
   for (size_t i = 0; i < size; i++) {
     Move* move = &(*moveList)[i];
     if (moveOf(*move) == pvMove)// PV move
@@ -691,8 +691,8 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
       // we treat Queen and Knight promotions as non quiet moves and they are generated above
       // rook and bishops are usually redundant to queen promotion (except in stale mate situations)
       // therefore we give them lower sort order
-      pMoves->push_back(createMove(fromSquare, toSquare, PROMOTION, ROOK, static_cast<const Value>(-6'000) + valueOf(ROOK)));
-      pMoves->push_back(createMove(fromSquare, toSquare, PROMOTION, BISHOP, static_cast<const Value>(-6'000) + valueOf(BISHOP)));
+      pMoves->push_back(createMove(fromSquare, toSquare, PROMOTION, ROOK, valueOf(ROOK) - 6'000));
+      pMoves->push_back(createMove(fromSquare, toSquare, PROMOTION, BISHOP, valueOf(BISHOP) - 6'000));
     }
 
     // double pawn steps

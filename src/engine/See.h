@@ -55,7 +55,7 @@ namespace See {
   // It is only necessary to look at slider pieces as only their attacks can be revealed.
   Bitboard revealedAttacks(Position& p, Square square, Bitboard occupied, Color color);
 
-};
+}
 
 
 #endif//FRANKYCPP_SEE_H
