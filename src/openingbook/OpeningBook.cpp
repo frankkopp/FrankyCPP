@@ -197,10 +197,10 @@ void OpeningBook::processAllLines(std::vector<std::string> &lines) {
       for (unsigned int t = 0; t < numberOfThreads; ++t) {
         threads.emplace_back([&, this, t]() {
           auto range = maxNumberOfEntries / numberOfThreads;
-          auto start = t * range;
-          auto end = start + range;
+          auto startIter = t * range;
+          auto end = startIter + range;
           if (t == numberOfThreads - 1) end = maxNumberOfEntries;
-          for (std::size_t i = start; i < end; ++i) {
+          for (std::size_t i = startIter; i < end; ++i) {
             processLine(lines[i]);
           }
         });
