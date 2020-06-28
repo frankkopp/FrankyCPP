@@ -28,7 +28,9 @@
 
 #include <ostream>
 #include <sstream>
+#include <utility>
 #include <vector>
+#include <functional>
 
 #include "common/misc.h"
 
@@ -61,20 +63,20 @@ struct UciOption {
   std::function<void(UciHandler*)> pHandler;
 
     explicit UciOption(const char* name, std::function<void(UciHandler*)> handler)
-      : nameID(name), type(BUTTON), defaultValue(boolStr(false)), pHandler(handler) {}
+      : nameID(name), type(BUTTON), defaultValue(boolStr(false)), pHandler(std::move(handler)) {}
 
   UciOption(const char* name, bool value, std::function<void(UciHandler*)> handler)
-      : nameID(name), type(CHECK), defaultValue(boolStr(value)), currentValue(boolStr(value)), pHandler(handler) {}
+      : nameID(name), type(CHECK), defaultValue(boolStr(value)), currentValue(boolStr(value)), pHandler(std::move(handler)) {}
 
   UciOption(const char* name, int def, int min, int max, std::function<void(UciHandler*)> handler)
       : nameID(name), type(SPIN), defaultValue(std::to_string(def)), minValue(std::to_string(min)),
-        maxValue(std::to_string(max)), currentValue(std::to_string(def)), pHandler(handler) {}
+        maxValue(std::to_string(max)), currentValue(std::to_string(def)), pHandler(std::move(handler)) {}
 
   UciOption(const char* name, const char* str, std::function<void(UciHandler*)> handler)
-      : nameID(name), type(STRING), defaultValue(str), currentValue(str), pHandler(handler){}
+      : nameID(name), type(STRING), defaultValue(str), currentValue(str), pHandler(std::move(handler)){}
 
   UciOption(const char* name, const char* val, const char* def, std::function<void(UciHandler*)> handler)
-      : nameID(name), type(STRING), defaultValue(val), currentValue(def), pHandler(handler) {}
+      : nameID(name), type(STRING), defaultValue(val), currentValue(def), pHandler(std::move(handler)) {}
 
   UciOption(const UciOption& o) = default;
 
@@ -115,13 +117,13 @@ public:
   }
 
   // returns a pointer to the uci option or nullptr if option is not found
-  const UciOption* getOption(std::string name) const;
+  const UciOption* getOption(const std::string& name) const;
 
   // finds and stores the value in the given options. Returns true if
   // the options was found and the value was set. It calls the option's
   // handler function in this case.
   // Otherwise, if option was not found it returns false.
-  bool setOption(UciHandler* uciHandler, std::string name, std::string value);
+  bool setOption(UciHandler* uciHandler, const std::string& name, const std::string& value);
 
   // String for uciOption will return a representation of the uci option as required by
   // the UCI protocol during the initialization phase of the UCI protocol

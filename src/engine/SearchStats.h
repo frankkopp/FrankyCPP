@@ -41,7 +41,7 @@ struct SearchStats {
   Value currentBestRootMoveValue;
 
   MoveList currentVariation{};
-  int currentRootMoveIndex;
+  size_t currentRootMoveIndex;
   Move currentRootMove;
 
   uint64_t checkmates;

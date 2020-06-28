@@ -185,7 +185,7 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
   moves.clear();
   moves = *mg.generatePseudoLegalMoves(position, GenAll, false);
   EXPECT_EQ(40, moves.size());
-  EXPECT_EQ("c3b4 d7f6 f3d2 b5c6 f3e5 d7e5 d7b6 e2d2 e1d2 e1g1 e1c1 d3d4 f3d4 h1f1 a1d1 a1c1 d7c5 b5c4 e2e3 a2a3 h2h3 f3g5 e1f1 c3c4 h2h4 g2g4 a2a4 g2g3 b2b3 e2d1 b5a4 b5a6 a1b1 h1g1 e2f1 e1d1 f3g1 f3h4 d7f8 d7b8", str(moves));
+  EXPECT_EQ("c3b4 d7f6 f3d2 b5c6 f3e5 d7e5 d7b6 e2d2 e1d2 e1g1 e1c1 d3d4 f3d4 d7c5 a1c1 a1d1 h1f1 b5c4 a2a3 h2h3 f3g5 e2e3 a2a4 g2g4 h2h4 c3c4 e1f1 b2b3 g2g3 e2d1 b5a4 b5a6 a1b1 h1g1 e2f1 e1d1 f3g1 f3h4 d7f8 d7b8", str(moves));
   for (Move m : moves) {
     fprintln("{}", strVerbose(m));
   }
@@ -197,7 +197,7 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
   moves.clear();
   moves = *mg.generatePseudoLegalMoves(position, GenAll, false);
   EXPECT_EQ(86, moves.size());
-  EXPECT_EQ("c2b1Q a2b1Q a2a1Q c2c1Q f4g3 c2b1N a2b1N f4e3 b2a3 a8a3 g6e5 d7e5 b2e5 a2a1N c2c1N e6e5 c4e4 c6e4 e8c8 e8g8 h8f8 a8d8 a8c8 d7c5 b2d4 d7f6 b2c3 e6f7 f4f3 e6e7 h7h6 e6f6 e6d6 e6f5 g6e7 e6d5 c6d6 d7b6 c6d5 c6c5 c4d5 c4c5 c4d4 b7b5 e8f8 a8a4 a8a5 a8a6 a8a7 h7h5 e6g4 c6b6 c6b5 c4e2 c4b3 c4c3 c4d3 c4b4 c4b5 b7b6 c6a4 c4a4 b2c1 c4a6 c4f1 h8g8 c6a6 e6h3 a8b8 e6g8 b2a1 d7f8 g6f8 e8e7 e8f7 e8d8 d7b8 g6h4 c2b1R a2b1R c2b1B a2b1B a2a1R c2c1R a2a1B c2c1B", str(moves));
+  EXPECT_EQ("c2b1Q a2b1Q a2a1Q c2c1Q f4g3 c2b1N a2b1N f4e3 b2a3 a8a3 g6e5 d7e5 b2e5 a2a1N c2c1N e6e5 c4e4 c6e4 e8g8 e8c8 d7c5 a8c8 a8d8 h8f8 d7f6 b2d4 f4f3 h7h6 g6e7 d7b6 b2c3 c4c5 c4d5 c6c5 c6d5 c6d6 e6d5 e6f5 e6d6 e6f6 e6e7 e6f7 c4d4 b7b5 h7h5 a8a4 a8a5 a8a6 a8a7 c4e2 c4b3 c4c3 c4d3 c4b4 c4b5 c6b5 c6b6 e6g4 e8f8 b7b6 c4a4 c6a4 b2c1 a8b8 h8g8 c4f1 c4a6 c6a6 e6h3 e6g8 g6f8 d7f8 b2a1 e8e7 e8f7 e8d8 d7b8 g6h4 c2b1R a2b1R c2b1B a2b1B a2a1R c2c1R a2a1B c2c1B", str(moves));
   for (Move m : moves) {
     fprintln("{}", strVerbose(m));
   }
@@ -509,7 +509,8 @@ TEST_F(MoveGenTest, onDemandKiller) {
     moves.push_back(move);
   }
   EXPECT_EQ(86, moves.size());
-  EXPECT_EQ("a2b1Q c2b1Q a2a1Q c2c1Q f4g3 c2b1N a2b1N f4e3 a2a1N c2c1N c2b1R a2b1R c2b1B a2b1B b2a3 a8a3 g6e5 d7e5 b2e5 e6e5 c4e4 c6e4 b7b6 f4f3 h7h6 b7b5 h7h5 a2a1R c2c1R a2a1B c2c1B e8g8 e8c8 g6h4 d7c5 a8c8 a8d8 h8f8 d7f6 b2d4 e6f6 e6d6 e6f5 b2c3 e6d5 c6d6 c6d5 c6c5 c4d5 c4c5 g6e7 e6f7 d7b6 e6e7 c4d4 c4e2 c4b3 c4c3 c4d3 c4b4 c4b5 c6b5 a8a7 a8a6 c6b6 a8a5 e6g4 a8a4 c4a4 c6a4 h8g8 a8b8 c4f1 c4a6 c6a6 e6h3 b2c1 e6g8 b2a1 d7f8 g6f8 d7b8 e8f8 e8e7 e8f7 e8d8", str(moves));
+  EXPECT_EQ("a2b1Q c2b1Q a2a1Q c2c1Q f4g3 c2b1N a2b1N f4e3 a2a1N c2c1N c2b1R a2b1R c2b1B a2b1B b2a3 a8a3 g6e5 d7e5 b2e5 e6e5 c4e4 c6e4 b7b6 f4f3 h7h6 b7b5 h7h5 a2a1R c2c1R a2a1B c2c1B e8g8 e8c8 g6h4 d7c5 a8c8 a8d8 h8f8 d7f6 b2d4 b2c3 c4c5 c4d5 c6c5 c6d5 c6d6 e6d5 e6f5 e6d6 e6f6 g6e7 d7b6 e6e7 e6f7 c4d4 a8a4 a8a5 a8a6 a8a7 c4e2 c4b3 c4c3 c4d3 c4b4 c4b5 c6b5 c6b6 e6g4 c4a4 c6a4 a8b8 h8g8 b2c1 c4f1 c4a6 c6a6 e6h3 e6g8 g6f8 d7f8 b2a1 d7b8 e8f8 e8e7 e8f7 e8d8", str(moves));
+  // c2b1Q a2b1Q a2a1Q c2c1Q f4g3 c2b1N a2b1N f4e3 a2a1N c2c1N c2b1R a2b1R c2b1B a2b1B b2a3 a8a3 g6e5 d7e5 b2e5 e6e5 c4e4 c6e4 f4f3 h7h6 b7b5 h7h5 b7b6 a2a1R c2c1R a2a1B c2c1B e8g8 e8c8 d7c5 a8c8 a8d8 h8f8 b2d4 d7f6 e6d5 c4d5 c6c5 c6d5 c4c5 c6d6 e6f5 e6d6 b2c3 e6f6 g6e7 d7b6 e6e7 e6f7 c4d4 a8a4 c4b4 c6b5 c4e2 a8a5 a8a6 a8a7 c4b3 c6b6 e6g4 c4b5 c4c3 c4d3 c4a4 c6a4 a8b8 h8g8 c6a6 b2c1 c4f1 e6h3 c4a6 e6g8 d7f8 g6f8 b2a1 d7b8 g6h4 e8f8 e8e7 e8f7 e8d8
   moves.clear();
 
   mg.reset();
@@ -715,8 +716,13 @@ TEST_F(MoveGenTest, sortValueTest) {
   // PV, Killer and history handling
   mg.updateSortValues(p, &moves);
 
+  for (Move m : moves) {
+    fprintln("{}", strVerbose(m));
+  }
+  NEWLINE;
+
   // sort moves
-  sort(moves.begin(), moves.end(), [](const Move lhs, const Move rhs) {
+  std::stable_sort(moves.begin(), moves.end(), [](const Move lhs, const Move rhs) {
     return valueOf(lhs) > valueOf(rhs);
   });
   
@@ -733,6 +739,9 @@ using namespace std::chrono;
 // 8.6.: Loaner Mac:
 // 480.000.000 moves generated: 84.774.069 mps
 TEST_F(MoveGenTest, PseudoMoveGenSpeedTest) {
+#ifndef NDEBUG
+  GTEST_SKIP();
+#endif
   MoveGenerator mg;
 
   const int rounds     = 5;

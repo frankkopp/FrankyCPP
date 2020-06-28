@@ -116,7 +116,7 @@ TEST_F(SearchTest, startTimer) {
   s.startTimer();
   s.timerThread.join();
   EXPECT_LT(3s, (high_resolution_clock::now() - s.startTime));
-  EXPECT_GT(3.010s, (high_resolution_clock::now() - s.startTime));
+  EXPECT_GT(3.020s, (high_resolution_clock::now() - s.startTime));
 }
 
 TEST_F(SearchTest, startStopSearch) {
@@ -189,9 +189,9 @@ TEST_F(SearchTest, startPonderSearch) {
   s.ponderhit();
   s.waitWhileSearching();
   EXPECT_TRUE(s.hasResult());
-  EXPECT_LT(nanoPerSec - 20'000'000, s.getLastSearchResult().time.count());
-  EXPECT_GT(uint64_t(nanoPerSec * 1.1), s.getLastSearchResult().time.count());
-  EXPECT_GT(uint64_t(nanoPerSec * 2.5), elapsedSince(start).count());
+  EXPECT_LT(int64_t(nanoPerSec - 20'000'000), s.getLastSearchResult().time.count());
+  EXPECT_GT(int64_t(nanoPerSec * 1.1), s.getLastSearchResult().time.count());
+  EXPECT_GT(int64_t(nanoPerSec * 2.5), elapsedSince(start).count());
 }
 
 TEST_F(SearchTest, startNodesLimitedSearch) {

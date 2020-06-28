@@ -30,25 +30,23 @@
 
 #include <boost/algorithm/string/trim.hpp>
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-parameter"
 void UciOptions::initOptions() {
-  optionVector.push_back(UciOption{"Clear Hash",
-                                   [&](UciHandler* uciHandler) { uciHandler->getSearchPtr()->clearTT(); }});
+  optionVector.emplace_back("Clear Hash",
+                            [&](UciHandler* uciHandler) { uciHandler->getSearchPtr()->clearTT(); });
 
-  optionVector.push_back(UciOption{"Hash", SearchConfig::TT_SIZE_MB, 0, 4096,
-                                   [&](UciHandler* uciHandler) {
+  optionVector.emplace_back("Hash", SearchConfig::TT_SIZE_MB, 0, 4096,
+                            [&](UciHandler* uciHandler) {
                                      SearchConfig::TT_SIZE_MB = getInt(getOption("Hash")->currentValue);
-                                     uciHandler->getSearchPtr()->resizeTT(); }});
+                                     uciHandler->getSearchPtr()->resizeTT(); });
 
-  optionVector.push_back(UciOption{"Use Hash", SearchConfig::USE_PONDER,
-                                   [&](UciHandler* uciHandler) { SearchConfig::USE_TT = getOption("Use Hash")->currentValue == "true"; }});
+  optionVector.emplace_back("Use Hash", SearchConfig::USE_PONDER,
+                            [&](UciHandler*) { SearchConfig::USE_TT = getOption("Use Hash")->currentValue == "true"; });
 
-  optionVector.push_back(UciOption{"Ponder", SearchConfig::USE_PONDER,
-                                   [&](UciHandler* uciHandler) { SearchConfig::USE_PONDER = getOption("Ponder")->currentValue == "true"; }});
+  optionVector.emplace_back("Ponder", SearchConfig::USE_PONDER,
+                            [&](UciHandler*) { SearchConfig::USE_PONDER = getOption("Ponder")->currentValue == "true"; });
 
-  optionVector.push_back(UciOption{"OwnBook", SearchConfig::USE_BOOK,
-                                   [&](UciHandler* uciHandler) { SearchConfig::USE_BOOK = getOption("OwnBook")->currentValue == "true"; }});
+  optionVector.emplace_back("OwnBook", SearchConfig::USE_BOOK,
+                            [&](UciHandler*) { SearchConfig::USE_BOOK = getOption("OwnBook")->currentValue == "true"; });
 
   // @formatter:off
   //  MAP("Use_AlphaBeta",    UCI_Option("Use_AlphaBeta",    SearchConfig::USE_ALPHABETA));
@@ -82,9 +80,8 @@ void UciOptions::initOptions() {
   //  MAP("LMR_Reduction",    UCI_Option("LMR_Reduction",    SearchConfig::LMR_REDUCTION, 0, DEPTH_MAX));
   // @formatter:on
 }
-#pragma clang diagnostic pop
 
-const UciOption* UciOptions::getOption(std::string name) const {
+const UciOption* UciOptions::getOption(const std::string& name) const {
   // find option entry
   const auto optionIterator =
     std::find_if(optionVector.begin(), optionVector.end(),
@@ -92,14 +89,12 @@ const UciOption* UciOptions::getOption(std::string name) const {
                    return name == p.nameID;
                  });
   if (optionIterator != optionVector.end()) {
-    return optionIterator.base();
+    return &*optionIterator;
   }
-  else {
-    return nullptr;
-  }
+  return nullptr;
 }
 
-bool UciOptions::setOption(UciHandler* uciHandler, const std::string name, const std::string value) {
+bool UciOptions::setOption(UciHandler* uciHandler, const std::string& name, const std::string& value) {
   auto o = const_cast<UciOption*>(getOption(name));
   if (o) {
     o->currentValue = value;

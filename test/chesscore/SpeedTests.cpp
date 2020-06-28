@@ -54,6 +54,12 @@ protected:
 // /////////////////////
 // TIMING POSITION
 // /////////////////////
+
+// 28.6. PC
+// DoMove/UndoMove took 10.335.845.600 ns for 50.000.000 iterations with 5 do/undo pairs
+// DoMove/UndoMove took 41 ns per do/undo pair
+// Positions per sec 24.187.667 pps
+
 TEST_F(SpeedTests, TimingDoMoveUndoMove) {
 
   const int rounds     = 5;
@@ -103,16 +109,21 @@ TEST_F(SpeedTests, TimingDoMoveUndoMove) {
 // /////////////////////
 // TIMING MOVEGEN
 // /////////////////////
+// 28.6. PC
+// Test took 1.425.719.700 ns for 1.000.000 iterations
+// Test took 1.425 ns per test
+// Test per sec 701.400 tps
+// 86.000.000 moves generated: 60.320.412 mps
 TEST_F(SpeedTests, onDemandPseudoMoveGen) {
   MoveGenerator mg;
 
   const int rounds     = 5;
   const int iterations = 1'000'000;
 
-  Position position = Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3");
-  auto k1           = mg.getMoveFromUci(position, "g6h4");
-  auto k2           = mg.getMoveFromUci(position, "b7b6");
-  auto pv           = mg.getMoveFromUci(position, "a2b1Q");
+  Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3");
+  auto k1 = mg.getMoveFromUci(position, "g6h4");
+  auto k2 = mg.getMoveFromUci(position, "b7b6");
+  auto pv = mg.getMoveFromUci(position, "a2b1Q");
 
   uint64_t generated = 0;
   Move move;
@@ -146,6 +157,10 @@ TEST_F(SpeedTests, onDemandPseudoMoveGen) {
 // /////////////////////
 // TIMING PERFT
 // /////////////////////
+// 28.6. PC
+// Performing PERFT Test for Depth 7
+// Time         : 302.505 ms
+// NPS          : 10.564.755 nps
 TEST_F(SpeedTests, stdPerftOD) {
   MoveGenerator mg;
   Position position;

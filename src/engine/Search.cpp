@@ -770,7 +770,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
           // we use 1 << depth as an increment to favor deeper searches
           // a more repetitions
           if (SearchConfig::USE_HISTORY_COUNTER) {
-            history.historyCount[us][from][to] += 1 << depth;
+            history.historyCount[us][from][to] += 1LL << depth;
           }
           // store a successful counter move to the previous opponent move
           if (SearchConfig::USE_HISTORY_MOVES) {
@@ -796,7 +796,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
     // no beta cutoff - decrease historyCounter for the move
     // we decrease it by only half the increase amount
     if (SearchConfig::USE_HISTORY_COUNTER) {
-      history.historyCount[us][from][to] -= 1 << depth;
+      history.historyCount[us][from][to] -= 1LL << depth;
       if (history.historyCount[us][from][to] < 0) {
         history.historyCount[us][from][to] = 0;
       }
@@ -1259,7 +1259,7 @@ MilliSec Search::setupTimeControl(Position& position, SearchLimits& sl) {
     if (!movesLeft) {// default
       // we estimate minimum 15 more moves in final game phases
       // in early game phases this grows up to 40
-      movesLeft = 15 + (25 * position.getGamePhaseFactor());
+      movesLeft = 15 + static_cast<int>(25 * position.getGamePhaseFactor());
     }
     // time left for current player
     MilliSec timeLeft;
