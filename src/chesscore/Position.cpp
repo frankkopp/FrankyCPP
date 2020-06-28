@@ -452,10 +452,10 @@ bool Position::givesCheck(Move move) const {
   // move details
   const Square fromSq     = fromSquare(move);
   const Piece fromPc      = board[fromSq];
+  const MoveType moveType = typeOf(move);
   PieceType fromPt        = typeOf(fromPc);
   Square toSq             = toSquare(move);
-  Square epTargetSq       = SQ_NONE;
-  const MoveType moveType = typeOf(move);
+  Square epTargetSq{};
 
   switch (moveType) {
     case PROMOTION:
@@ -712,8 +712,7 @@ std::string Position::str() const {
   output << strBoard();
   output << strFen() << std::endl;
   output << "Check: "
-         << (hasCheckFlag == FLAG_TBD ? "N/A" : hasCheckFlag == FLAG_TRUE ? "Check"
-                                                                          : "No check")
+         << (hasCheckFlag == FLAG_TBD ? "N/A" : hasCheckFlag == FLAG_TRUE ? "Check" : "No check")
          << std::endl;
   ;
   output << "Game Phase: " << gamePhase << std::endl;
@@ -1043,4 +1042,3 @@ void Position::setupBoard(const char* fen) {
   iss >> std::skipws >> moveNumber;
   if (moveNumber == 0) moveNumber = 1;
 }
-
