@@ -35,8 +35,8 @@
 #include <emmintrin.h>
 #define TT_ENABLE_PREFETCH
 #elif _MSC_VER
-#include <xmmintrin.h>
-//#define TT_ENABLE_PREFETCH
+#include <intrin.h>
+#define TT_ENABLE_PREFETCH
 #endif
 
 #ifdef TT_ENABLE_PREFETCH
@@ -187,7 +187,7 @@ public:
 #ifdef __GNUC__
     _mm_prefetch(&_data[(key & hashKeyMask)], _MM_HINT_T0);
 #elif _MSC_VER
-    _mm_prefetch(reinterpret_cast<const CHAR*>(&_data[(key & hashKeyMask)]), _MM_HINT_T0);
+    _mm_prefetch((reinterpret_cast<const char*>(&_data[(key & hashKeyMask)])), _MM_HINT_T0);
 #endif
   }
 #endif
