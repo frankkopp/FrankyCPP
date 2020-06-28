@@ -48,18 +48,19 @@ protected:
 };
 
 TEST_F(TT_Test, entrySize) {
-  struct Entry {
+  struct EntryTest {
     // sorted by size to achieve smallest struct size
     // using bitfield for smallest size
-    Key key     = 0;         // 64 bit
-    Move move   = MOVE_NONE; // 32 bit
-    Value value = VALUE_NONE;// 16 bit signed
-    Depth depth : 7;         // 0-127
-    uint8_t age : 3;         // 0-7
-    ValueType type : 2;      // 4 values
-    bool mateThreat : 1;     // 1-bit bool
+    Key key       = 0;         // 64 bit
+    uint16_t move = MOVE_NONE; // 16 bit
+    Value eval    = VALUE_NONE;// 16 bit signed
+    Value value   = VALUE_NONE;// 16 bit signed
+    int8_t depth : 7;          // 0-127
+    uint8_t age : 3;           // 0-7
+    ValueType type : 2;        // 4 values
+    bool mateThreat : 1;       // 1-bit bool
   };
-  LOG__INFO(Logger::get().TEST_LOG, "Entry size = {} Byte", sizeof(Entry));
+  LOG__INFO(Logger::get().TEST_LOG, "Entry size = {} Byte", sizeof(EntryTest));
 }
 
 TEST_F(TT_Test, basic) {
@@ -216,7 +217,6 @@ TEST_F(TT_Test, put) {
   ASSERT_EQ(tt.getMatch(key3)->value, Value(103));
   ASSERT_EQ(tt.getMatch(key3)->eval, Value(1003));
   ASSERT_TRUE(tt.getMatch(key3)->mateThreat);
-
 }
 
 TEST_F(TT_Test, get) {

@@ -1,0 +1,29 @@
+language: cpp
+compiler: gcc
+
+os: linux
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-7
+      - cmake
+
+before_install:
+  - sudo apt purge cmake
+  - wget https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3.tar.gz
+  - tar -zxf cmake-3.17.3.tar.gz
+  - cd cmake-3.17.3
+  - sudo ./bootstrap
+  - sudo make
+  - sudo make install
+  - cmake --version
+
+script:
+  - export CC=gcc-7
+  - export CXX=g++-7
+  - cmake --version
+  - cmake CMakeLists.txt
+  - cmake  --build . 
+

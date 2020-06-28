@@ -25,12 +25,12 @@
 
 #include <regex>
 
+#include "types/types.h"
 #include "History.h"
 #include "MoveGenerator.h"
 #include "Values.h"
 #include "chesscore/Position.h"
 #include "common/misc.h"
-#include "types/types.h"
 
 MoveGenerator::MoveGenerator() {
   pseudoLegalMoves.reserve(MAX_MOVES);
@@ -68,7 +68,7 @@ const MoveList* MoveGenerator::generatePseudoLegalMoves(const Position& p, const
   updateSortValues(p, &pseudoLegalMoves);
 
   // sort moves
-  sort(pseudoLegalMoves.begin(), pseudoLegalMoves.end(), [](const Move lhs, const Move rhs) {
+  std::stable_sort(pseudoLegalMoves.begin(), pseudoLegalMoves.end(), [](const Move lhs, const Move rhs) {
     return valueOf(lhs) > valueOf(rhs);
   });
 
@@ -491,7 +491,7 @@ void MoveGenerator::fillOnDemandMoveList(const Position& position, const GenMode
     }
     // sort the list according to sort values encoded in the move
     if (!onDemandMoves.empty()) {
-      sort(onDemandMoves.begin(), onDemandMoves.end(), [](const Move lhs, const Move rhs) {
+      std::stable_sort(onDemandMoves.begin(), onDemandMoves.end(), [](const Move lhs, const Move rhs) {
         return valueOf(lhs) > valueOf(rhs);
       });
     }
@@ -505,7 +505,7 @@ void MoveGenerator::updateSortValues(const Position& p, MoveList* const moveList
   // sort value if the move is the PV or a Killer move.
   // Also update the sort value for history and counter
   // move significance.
-  const unsigned long size = moveList->size();
+  auto size = moveList->size();
   for (size_t i = 0; i < size; i++) {
     Move* move = &(*moveList)[i];
     if (moveOf(*move) == pvMove)// PV move
