@@ -39,6 +39,7 @@
 #endif
 
 // PEXT BMI2 - add -mbmi2 to compiler options
+#include <assert.h>
 #include <immintrin.h>
 constexpr bool HasPext = false;
 

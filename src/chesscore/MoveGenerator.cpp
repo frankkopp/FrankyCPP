@@ -691,8 +691,8 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
       // we treat Queen and Knight promotions as non quiet moves and they are generated above
       // rook and bishops are usually redundant to queen promotion (except in stale mate situations)
       // therefore we give them lower sort order
-      pMoves->push_back(createMove(fromSquare, toSquare, PROMOTION, ROOK, static_cast<const Value>(-6'000) + valueOf(ROOK)));
-      pMoves->push_back(createMove(fromSquare, toSquare, PROMOTION, BISHOP, static_cast<const Value>(-6'000) + valueOf(BISHOP)));
+      pMoves->push_back(createMove(fromSquare, toSquare, PROMOTION, ROOK, valueOf(ROOK) - 6'000));
+      pMoves->push_back(createMove(fromSquare, toSquare, PROMOTION, BISHOP, valueOf(BISHOP) - 6'000));
     }
 
     // double pawn steps
