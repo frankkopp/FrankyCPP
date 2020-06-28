@@ -72,7 +72,7 @@ inline int distance(File f1, File f2) {
 // returns a char representing the square (e.g. a1 or h8)
 constexpr char str(File f) {
   if (f < 0 || f >= 8) return '-';
-  return 'a' + f;
+  return 'a' + char(f);
 }
 
 inline std::ostream& operator<<(std::ostream& os, const File f) {

@@ -24,6 +24,7 @@
  */
 
 #include <sstream>
+#include <bitset>
 #include "bitboard.h"
 #include "castlingrights.h"
 #include "direction.h"

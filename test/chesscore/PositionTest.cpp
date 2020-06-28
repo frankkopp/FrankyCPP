@@ -70,7 +70,7 @@ TEST_F(PositionTest, ZobristTest) {
   z ^= Zobrist::enPassantFile[FILE_NONE];
   Key expected = z;
   // cout << "Zobrist= " << z << std::endl;
-  EXPECT_EQ(8408280106960045251, z);
+  EXPECT_EQ(8408280106960045251ULL, z);
 
   z ^= Zobrist::pieces[WHITE_KING][SQ_E1];
   z ^= Zobrist::pieces[WHITE_KING][SQ_E2];
