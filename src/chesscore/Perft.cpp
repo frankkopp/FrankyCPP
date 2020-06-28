@@ -123,7 +123,7 @@ uint64_t Perft::miniMaxOD(int depth, Position& position, MoveGenerator* pMg) {
   // moves to search recursively
   Move move;
   while (!stopFlag) {
-    move = pMg[depth].getNextPseudoLegalMove<GenAll>(position);
+    move = pMg[depth].getNextPseudoLegalMove(position, GenAll);
     if (move == MOVE_NONE) break;
     //    fprintln("Last: {:5s} Move: {:5s}   Fen: {:s} ", str(position.getLastMove()), str(move), position.strFen());
     if (depth > 1) {
@@ -178,7 +178,7 @@ uint64_t Perft::miniMax(int depth, Position& position, MoveGenerator* pMg) {
   //println(pPosition->str())
 
   // moves to search recursively
-  MoveList moves = *pMg[depth].generatePseudoLegalMoves<GenAll>(position);
+  MoveList moves = *pMg[depth].generatePseudoLegalMoves(position, GenAll);
   for (Move move : moves) {
     if (stopFlag) {
       return 0;
@@ -245,7 +245,7 @@ void Perft::perft_divide(int maxDepth, bool onDemand) {
   auto start      = std::chrono::high_resolution_clock::now();
 
   // moves to search recursively
-  MoveList moves = *mg[maxDepth].generatePseudoLegalMoves<GenAll>(position);
+  MoveList moves = *mg[maxDepth].generatePseudoLegalMoves(position, GenAll);
   for (Move move : moves) {
     if (stopFlag) {
       return;

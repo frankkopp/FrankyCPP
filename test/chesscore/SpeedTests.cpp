@@ -125,7 +125,7 @@ TEST_F(SpeedTests, onDemandPseudoMoveGen) {
       mg.storeKiller(k1);
       mg.storeKiller(k2);
       mg.setPV(pv);
-      while ((move = mg.getNextPseudoLegalMove<GenAll>(position)) != MOVE_NONE) {
+      while ((move = mg.getNextPseudoLegalMove(position, GenAll)) != MOVE_NONE) {
         generated++;
       }
     }
