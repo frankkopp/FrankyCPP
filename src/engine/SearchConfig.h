@@ -44,17 +44,15 @@ namespace SearchConfig {
   inline bool USE_ASP       = false;
   //  inline Depth ASP_START_DEPTH = Depth{4};
 
+  // quiscence search
   inline bool USE_QUIESCENCE = false;// use quiescence search
-  inline bool USE_QS_STANDPAT_CUT   = false;
-  inline bool USE_QS_SEE              = true; // use SEE for goodCaptures
 
   // Transposition Table
   inline bool USE_TT       = false;// use transposition table
   inline bool USE_TT_VALUE = false;// use value from tt to prune
   inline bool USE_EVAL_TT  = false;// use value from tt for storing evaluations
   inline int TT_SIZE_MB    = 64;   // size of TT in MB
-  inline bool USE_QS_TT   = true; // use transposition table also in quiescence search
-
+  inline bool USE_QS_TT    = true; // use transposition table also in quiescence search
 
   //  // Move Sorting Features
   inline bool USE_TT_PV_MOVE_SORT = false;// use move from tt as pv
@@ -63,7 +61,9 @@ namespace SearchConfig {
   inline bool USE_HISTORY_MOVES   = false;
 
   //  // Pruning features
-  inline bool USE_MDP = false;// mate distance pruning
+  inline bool USE_MDP             = false;// mate distance pruning
+  inline bool USE_QS_STANDPAT_CUT = false;
+  inline bool USE_QS_SEE          = false;// use SEE for goodCaptures
   //  inline bool USE_MPP                 = true; // minor promotion pruning
   //  inline bool USE_QS_STANDPAT_CUT     = true; // RFP for quiescence
   //

@@ -41,8 +41,7 @@ Bitboard getAttacksBb(PieceType pt, Square sq, Bitboard occupied) {
       return Bitboards::rookMagics[sq].attacks[Bitboards::rookMagics[sq].index(occupied)];
     case QUEEN:
       return Bitboards::bishopMagics[sq].attacks[Bitboards::bishopMagics[sq].index(occupied)] | Bitboards::rookMagics[sq].attacks[Bitboards::rookMagics[sq].index(occupied)];
-    case KNIGHT:
-      return Bitboards::nonSliderAttacks[pt][sq];
+    case KNIGHT: // fallthrough
     case KING:
       return Bitboards::nonSliderAttacks[pt][sq];
     default:
