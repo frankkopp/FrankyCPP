@@ -25,6 +25,7 @@
 
 #include <chrono>
 
+#include "chesscore/Position.h"
 #include "Evaluator.h"
 #include "Search.h"
 #include "SearchConfig.h"
@@ -880,7 +881,7 @@ Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, Search::N
   // Alpha or Beta entries will only be used if they improve
   // the current values.
   const TT::Entry* ttEntryPtr;
-  if (SearchConfig::USE_TT) {
+  if (SearchConfig::USE_TT && SearchConfig::USE_QS_TT) {
     ttEntryPtr = tt->probe(p.getZobristKey());
     if (ttEntryPtr) {// tt hit
       statistics.ttHit++;
@@ -922,7 +923,7 @@ Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, Search::N
       if (staticEval >= beta) {
         statistics.standpatCuts++;
         // Storing this value might save us calls to eval on the same position.
-        if (SearchConfig::USE_TT && SearchConfig::USE_EVAL_TT) {
+        if (SearchConfig::USE_TT && SearchConfig::USE_QS_TT && SearchConfig::USE_EVAL_TT) {
           storeTt(p, DEPTH_NONE, ply, MOVE_NONE, VALUE_NONE, NONE, staticEval, false);
         }
         return staticEval;
@@ -1100,7 +1101,7 @@ bool Search::goodCapture(Position& p, Move move) {
       (valueOf(position.getPiece(fromSquare(move))) + 50) < valueOf(position.getPiece(toSquare(move)))
 
       // all recaptures should be looked at
-      || (position.getLastMove() != MOVE_NONE && toSquare(position.getLastMove()) == toSquare(move) && position.getLastCapturedPiece() != PIECE_NONE)
+      || (position.getLastMove() != MOVE_NONE && position.getLastCapturedPiece() != PIECE_NONE && toSquare(position.getLastMove()) == toSquare(move) )
 
       // undefended pieces captures are good
       // If the defender is "behind" the attacker this will not be recognized
