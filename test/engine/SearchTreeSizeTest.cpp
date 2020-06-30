@@ -26,13 +26,13 @@
 #include <ctime>
 #include <utility>
 
+#include "types/types.h"
 #include "Test_Fens.h"
 #include "chesscore/Position.h"
 #include "common/Logging.h"
 #include "engine/Search.h"
 #include "engine/SearchConfig.h"
 #include "init.h"
-#include "types/types.h"
 
 #include <gtest/gtest.h>
 using testing::Eq;
@@ -49,7 +49,7 @@ public:
   const uint64_t* ptrToSpecial2 = nullptr;
 
   struct SingleTest {
-    std::string name  = "";
+    std::string name;
     uint64_t nodes    = 0;
     uint64_t nps      = 0;
     uint64_t depth    = 0;
@@ -59,11 +59,11 @@ public:
     uint64_t special2 = 0;
     Move move         = MOVE_NONE;
     Value value       = VALUE_NONE;
-    std::string pv    = "";
+    std::string pv;
   };
 
   struct Result {
-    std::string fen = "";
+    std::string fen;
     std::vector<SingleTest> tests{};
 
     explicit Result(std::string _fen) : fen(std::move(_fen)){};
@@ -95,7 +95,7 @@ protected:
   void TearDown() override {}
 
   Result featureMeasurements(int depth, MilliSec movetime, const std::string& fen);
-  SingleTest measureTreeSize(Search& search, const Position& position, SearchLimits searchLimits, const std::string& featureName);
+  SingleTest measureTreeSize(Search& search, const Position& position, SearchLimits searchLimits, const std::string& featureName) const;
 };
 
 TEST_F(SearchTreeSizeTest, size_test) {
@@ -154,7 +154,7 @@ TEST_F(SearchTreeSizeTest, size_test) {
   fmt::print("----------------------------------------------------------------------------------------------------------------------------------------------");
   fmt::print("\n################## Totals/Avg results for each feature test ##################\n\n");
 
-  std::time_t t = time(0);
+  std::time_t t = time(nullptr);
   fmt::print("Date                   : {:s}", ctime(&t));
   fmt::print("SearchTime             : {:s}\n", str(MOVE_TIME));
   fmt::print("MaxDepth               : {:d}\n", DEPTH);
@@ -255,7 +255,7 @@ SearchTreeSizeTest::Result SearchTreeSizeTest::featureMeasurements(int depth, Mi
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "36 TT Cuts"));
 
   SearchConfig::USE_EVAL_TT = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "37 TT Evals"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "37 TT Eval"));
 
   SearchConfig::USE_QUIESCENCE = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "40 QS"));
@@ -306,14 +306,14 @@ SearchTreeSizeTest::Result SearchTreeSizeTest::featureMeasurements(int depth, Mi
 
 SearchTreeSizeTest::SingleTest
 SearchTreeSizeTest::measureTreeSize(Search& search, const Position& position,
-                                    SearchLimits searchLimits, const std::string& featureName) {
+                                    SearchLimits searchLimits, const std::string& featureName) const {
 
   NEWLINE;
   fprintln("Testing {} ####################################", featureName);
   fprintln("Position {}", position.strFen());
   NEWLINE;
   search.newGame();
-  search.startSearch(position, searchLimits);
+  search.startSearch(position, std::move(searchLimits));
   search.waitWhileSearching();
 
   SingleTest test{};
