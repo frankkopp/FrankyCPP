@@ -31,6 +31,7 @@
 #include <boost/algorithm/string/trim.hpp>
 
 void UciOptions::initOptions() {
+  fprintln("Init Options");
   optionVector.emplace_back("Clear Hash",
                             [&](UciHandler* uciHandler) { uciHandler->getSearchPtr()->clearTT(); });
 
@@ -106,7 +107,7 @@ bool UciOptions::setOption(UciHandler* uciHandler, const std::string& name, cons
 
 std::string UciOptions::str() const {
   std::string str;
-  for (auto o : optionVector) {
+  for (const auto& o : optionVector) {
     str += o.str() + "\n";
   }
   boost::trim(str);// remove last newline

@@ -144,8 +144,6 @@ void UciHandler::setOptionCommand(std::istringstream& inStream) const {
 }
 
 void UciHandler::uciNewGameCommand() const {
-  // TODO new game
-  uciError("Not yet implemented: UCI command: ucinewgame");
   LOG__INFO(Logger::get().UCIHAND_LOG, "New Game");
   if (pSearch->isSearching()) pSearch->stopSearch();
   pSearch->clearTT();

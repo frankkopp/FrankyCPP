@@ -64,8 +64,8 @@ namespace SearchConfig {
   inline bool USE_MDP             = false;// mate distance pruning
   inline bool USE_QS_STANDPAT_CUT = false;
   inline bool USE_QS_SEE          = false;// use SEE for goodCaptures
+
   //  inline bool USE_MPP                 = true; // minor promotion pruning
-  //  inline bool USE_QS_STANDPAT_CUT     = true; // RFP for quiescence
   //
   //  inline bool USE_RFP                 = true; // Reverse Futility Pruning
   //  inline Value RFP_MARGIN             = Value{250}; // less than 3 pawns per depth
