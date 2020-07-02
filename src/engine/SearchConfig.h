@@ -44,7 +44,7 @@ namespace SearchConfig {
   inline bool USE_ASP       = false;
   //  inline Depth ASP_START_DEPTH = Depth{4};
 
-  // quiscence search
+  // quiescence search
   inline bool USE_QUIESCENCE = false;// use quiescence search
 
   // Transposition Table

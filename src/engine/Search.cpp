@@ -679,6 +679,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
     // we only count legal moves
     nodesVisited++;
     statistics.currentVariation.push_back(move);
+
     sendSearchUpdateToUci();
 
     // check repetition and 50 moves
