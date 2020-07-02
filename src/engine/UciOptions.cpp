@@ -36,9 +36,7 @@ void UciOptions::initOptions() {
                             [&](UciHandler* uciHandler) { uciHandler->getSearchPtr()->clearTT(); });
 
   optionVector.emplace_back("Hash", SearchConfig::TT_SIZE_MB, 0, 4096,
-                            [&](UciHandler* uciHandler) {
-                                     SearchConfig::TT_SIZE_MB = getInt(getOption("Hash")->currentValue);
-                                     uciHandler->getSearchPtr()->resizeTT(); });
+                            [&](UciHandler* uciHandler) { SearchConfig::TT_SIZE_MB = getInt(getOption("Hash")->currentValue); uciHandler->getSearchPtr()->resizeTT(); });
 
   optionVector.emplace_back("Use Hash", SearchConfig::USE_PONDER,
                             [&](UciHandler*) { SearchConfig::USE_TT = getOption("Use Hash")->currentValue == "true"; });
@@ -49,20 +47,26 @@ void UciOptions::initOptions() {
   optionVector.emplace_back("OwnBook", SearchConfig::USE_BOOK,
                             [&](UciHandler*) { SearchConfig::USE_BOOK = getOption("OwnBook")->currentValue == "true"; });
 
+  // optionVector.emplace_back("***", [&](UciHandler* uciHandler) { });
+
   // @formatter:off
   //  MAP("Use_AlphaBeta",    UCI_Option("Use_AlphaBeta",    SearchConfig::USE_ALPHABETA));
   //  MAP("Use_PVS",          UCI_Option("Use_PVS",          SearchConfig::USE_PVS));
+
   //  MAP("Use_Aspiration",   UCI_Option("Use_Aspiration",   SearchConfig::USE_ASPIRATION_WINDOW));
   //  MAP("Aspiration_Depth", UCI_Option("Aspiration_Depth", SearchConfig::ASPIRATION_START_DEPTH, 1, DEPTH_MAX));
+
   //  MAP("Use_Quiescence",   UCI_Option("Use_Quiescence",   SearchConfig::USE_QUIESCENCE));
-  //  MAP("Max_Extra_Depth",  UCI_Option("Max_Extra_Depth",  SearchConfig::MAX_EXTRA_QDEPTH, 1, DEPTH_MAX));
-  //  MAP("Use_QS_SEE",       UCI_Option("Use_QS_SEE",       SearchConfig::USE_QS_SEE));
+
+  //  MAP("Use_PV_Sort",      UCI_Option("Use_PV_Sort",      SearchConfig::USE_PV_MOVE_SORT));
   //  MAP("Use_KillerMoves",  UCI_Option("Use_KillerMoves",  SearchConfig::USE_KILLER_MOVES));
   //  MAP("No_Of_Killer",     UCI_Option("No_Of_Killer",     SearchConfig::NO_KILLER_MOVES, 1, 9));
-  //  MAP("Use_PV_Sort",      UCI_Option("Use_PV_Sort",      SearchConfig::USE_PV_MOVE_SORT));
+
   //  MAP("Use_MDP",          UCI_Option("Use_MDP",          SearchConfig::USE_MDP));
-  //  MAP("Use_MPP",          UCI_Option("Use_MPP",          SearchConfig::USE_MPP));
+  //  MAP("Use_QS_SEE",       UCI_Option("Use_QS_SEE",       SearchConfig::USE_QS_SEE));
   //  MAP("Use_Standpat",     UCI_Option("Use_Standpat",     SearchConfig::USE_QS_STANDPAT_CUT));
+
+  //  MAP("Use_MPP",          UCI_Option("Use_MPP",          SearchConfig::USE_MPP));
   //  MAP("Use_RFP",          UCI_Option("Use_RFP",          SearchConfig::USE_RFP));
   //  MAP("RFP_Margin",       UCI_Option("RFP_Margin",       SearchConfig::RFP_MARGIN, 0, VALUE_MAX));
   //  MAP("Use_NMP",          UCI_Option("Use_NMP",          SearchConfig::USE_NMP));

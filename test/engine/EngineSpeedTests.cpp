@@ -23,11 +23,11 @@
  *
  */
 
-#include "init.h"
-#include "types/types.h"
 #include "chesscore/Position.h"
 #include "engine/Search.h"
 #include "engine/SearchConfig.h"
+#include "init.h"
+#include "types/types.h"
 
 #include <gtest/gtest.h>
 using testing::Eq;
@@ -55,20 +55,26 @@ protected:
 // 21.6. Loaner laptop
 // NPS: 8.924.349
 TEST_F(EngineSpeedTests, npsTest) {
-  SearchConfig::USE_BOOK = false;
-  SearchConfig::USE_ALPHABETA = false;
-  SearchConfig::USE_PVS = false;
-  SearchConfig::USE_TT = false;
-  SearchConfig::USE_QUIESCENCE = false;
-  SearchConfig::USE_MDP = false;
-  SearchConfig::USE_HISTORY_COUNTER = false;
-  SearchConfig::USE_HISTORY_MOVES = false;
+  SearchConfig::USE_BOOK            = false;
+  SearchConfig::USE_ALPHABETA       = true;
+  SearchConfig::USE_PVS             = true;
+  SearchConfig::USE_TT              = true;
+  SearchConfig::USE_TT_VALUE        = true;
+  SearchConfig::USE_EVAL_TT         = true;
+  SearchConfig::TT_SIZE_MB          = 64;
+  SearchConfig::USE_MDP             = true;
+  SearchConfig::USE_HISTORY_COUNTER = true;
+  SearchConfig::USE_HISTORY_MOVES   = true;
+  SearchConfig::USE_QUIESCENCE      = true;
+  SearchConfig::USE_QS_STANDPAT_CUT = true;
+  SearchConfig::USE_QS_SEE          = true;
+  SearchConfig::USE_QS_TT           = true;
   Position p{};
   Search s{};
   s.isReady();
   SearchLimits sl{};
   sl.timeControl = true;
-  sl.moveTime = 60s;
+  sl.moveTime    = 60s;
   s.startSearch(p, sl);
   EXPECT_TRUE(s.isSearching());
   EXPECT_FALSE(s.hasResult());
