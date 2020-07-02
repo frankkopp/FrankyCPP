@@ -156,8 +156,7 @@ TEST_F(BitboardsTest, lsb_msb) {
   sq = popLSB(b);
   ASSERT_EQ(SQ_H8, sq);
 
-  b   = BbZero | SQ_H1;
-  b   = b | SQ_G8;
+  b   = BbZero | SQ_H1 | SQ_G8;
   sql = lsb(b);
   sqm = msb(b);
   ASSERT_EQ(SQ_H1, sql);

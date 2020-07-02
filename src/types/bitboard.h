@@ -26,22 +26,22 @@
 #ifndef FRANKYCPP_BITBOARD_H
 #define FRANKYCPP_BITBOARD_H
 
+#include <cstdint>
+#include <iostream>
+#include <cassert>
+#include <immintrin.h>
+
 #include "castlingrights.h"
 #include "direction.h"
 #include "orientation.h"
 #include "piecetype.h"
 #include "square.h"
-#include <cstdint>
 
-#if defined(_MSC_VER)
-#include <intrin.h>
-#include <iostream>
-#endif
-
-// PEXT BMI2 - add -mbmi2 to compiler options
-#include <assert.h>
-#include <immintrin.h>
+#if defined(HAS_PEXT) // to be set as compiler option
+constexpr bool HasPext = true;
+#else
 constexpr bool HasPext = false;
+#endif
 
 // 64 bit Bitboard type for storing boards as bits
 typedef uint64_t Bitboard;
@@ -175,7 +175,7 @@ inline int popcount(Bitboard b) {
 #if defined(__GNUC__)// GCC, Clang, ICC
   return __builtin_popcountll(b);
 #elif defined(_MSC_VER)
-  return static_cast<int>(__popcnt64(b));
+  return static_cast<int>(_mm_popcnt_u64(b));
 #else// Compiler is not GCC
   // pre-computed table of population counter for 16-bit
   extern uint8_t PopCnt16[1 << 16];
@@ -204,17 +204,17 @@ inline unsigned popcount16(unsigned u) {
 // bitboard
 inline Square lsb(Bitboard b) {
   if (!b) return SQ_NONE;
-#ifdef __GNUC__ // GCC, Clang, ICC
+#ifdef __GNUC__// GCC, Clang, ICC
   return static_cast<Square>(__builtin_ctzll(b));
 #elif defined(_MSC_VER)
   unsigned long index;
-    if (_BitScanForward64(&index, b)) {
-      return static_cast<Square>(index);
-    }
-    else {
-      return SQ_NONE;
-    }
-#else // Compiler is not GCC
+  if (_BitScanForward64(&index, b)) {
+    return static_cast<Square>(index);
+  }
+  else {
+    return SQ_NONE;
+  }
+#else// Compiler is not GCC
 #error "Compiler not yet supported."
 #endif
 }
@@ -223,24 +223,24 @@ inline Square lsb(Bitboard b) {
 // bitboard
 inline Square msb(Bitboard b) {
   if (!b) return SQ_NONE;
-#if defined(__GNUC__) // GCC, Clang, ICC
-  return static_cast<Square>(63 ^ __builtin_clzll(b));
+#if defined(__GNUC__)// GCC, Clang, ICC
+  return static_cast<Square>(63 - __builtin_clzll(b));
 #elif defined(_MSC_VER)
   unsigned long index;
-    if (_BitScanReverse64(&index, b)) {
-      return static_cast<Square>(index);
+  if (_BitScanReverse64(&index, b)) {
+    return static_cast<Square>(index);
   }
-    else {
-      return SQ_NONE;
-    }
-#else // Compiler is not GCC
+  else {
+    return SQ_NONE;
+  }
+#else// Compiler is not GCC
 #error "Compiler not yet supported."
 #endif
 }
 
 // pop_lsb() finds and clears the least significant bit in a non-zero
 // bitboard
-inline Square popLSB(Bitboard &b) {
+inline Square popLSB(Bitboard& b) {
   if (!b) return SQ_NONE;
   const Square s = lsb(b);
   b &= b - 1;
@@ -272,11 +272,11 @@ inline Bitboard operator^(const Bitboard b, const Square s) {
   return b ^ Bitboards::sqBb[s];
 }
 
-inline Bitboard &operator|=(Bitboard &b, const Square s) {
+inline Bitboard& operator|=(Bitboard& b, const Square s) {
   return b |= Bitboards::sqBb[s];
 }
 
-inline Bitboard &operator^=(Bitboard &b, const Square s) {
+inline Bitboard& operator^=(Bitboard& b, const Square s) {
   return b ^= Bitboards::sqBb[s];
 }
 
@@ -307,7 +307,7 @@ namespace Bitboards {
   void maskPassedPawnsPreCompute();
   void castleMasksPreCompute();
   void colorBitboardsPreCompute();
-}
+}// namespace Bitboards
 
 // //////////////////////////////////////////////////////////////////
 // Magic bitboards
@@ -316,10 +316,10 @@ namespace Bitboards {
 // Taken from Stockfish
 // License see https://stockfishchess.org/about/
 struct Magic {
-  Bitboard  mask;
-  Bitboard  magic;
+  Bitboard mask;
+  Bitboard magic;
   Bitboard* attacks;
-  unsigned  shift;
+  unsigned shift;
 
   // Compute the attack's index using the 'magic bitboards' approach
   inline unsigned index(Bitboard occupied) const {
@@ -331,11 +331,11 @@ struct Magic {
 };
 
 namespace Bitboards {
-  inline Bitboard rookTable[0x19000];  // To store rook attacks
-  inline Bitboard bishopTable[0x1480]; // To store bishop attacks
+  inline Bitboard rookTable[0x19000]; // To store rook attacks
+  inline Bitboard bishopTable[0x1480];// To store bishop attacks
   inline Magic rookMagics[SQ_LENGTH];
   inline Magic bishopMagics[SQ_LENGTH];
-}
+}// namespace Bitboards
 
 /// xorshift64star Pseudo-Random Number Generator
 /// This class is based on original code written and dedicated
@@ -357,12 +357,15 @@ class PRNG {
     s ^= s >> 12, s ^= s << 25, s ^= s >> 27;
     return s * 2685821657736338717LL;
   }
+
 public:
-  PRNG(uint64_t seed) : s(seed) { assert(seed); }
-  template<typename T> T rand() { return T(rand64()); }
+  explicit PRNG(uint64_t seed) : s(seed) { assert(seed); }
+  template<typename T>
+  T rand() { return T(rand64()); }
   // Special generator used to fast init magic numbers.
   // Output values only have 1/8th of their bits set on average.
-  template<typename T> T sparse_rand() { return T(rand64() & rand64() & rand64()); }
+  template<typename T>
+  T sparse_rand() { return T(rand64() & rand64() & rand64()); }
 };
 
 #endif//FRANKYCPP_BITBOARD_H
