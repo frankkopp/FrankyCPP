@@ -64,9 +64,9 @@ add_custom_command(
 
 # install executable, config and opening books into the release folder
 install(TARGETS ${exeName}
-        CONFIGURATIONS Release
+        CONFIGURATIONS Release RelWithDebInfo
         RUNTIME DESTINATION ${PROJECT_SOURCE_DIR}/Release/bin
-)
+        )
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/config
         DESTINATION ${PROJECT_SOURCE_DIR}/Release/bin
 )

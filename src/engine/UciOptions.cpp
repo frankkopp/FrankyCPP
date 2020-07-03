@@ -31,42 +31,67 @@
 #include <boost/algorithm/string/trim.hpp>
 
 void UciOptions::initOptions() {
-  fprintln("Init Options");
-  optionVector.emplace_back("Clear Hash",
-                            [&](UciHandler* uciHandler) { uciHandler->getSearchPtr()->clearTT(); });
-
-  optionVector.emplace_back("Hash", SearchConfig::TT_SIZE_MB, 0, 4096,
-                            [&](UciHandler* uciHandler) { SearchConfig::TT_SIZE_MB = getInt(getOption("Hash")->currentValue); uciHandler->getSearchPtr()->resizeTT(); });
-
-  optionVector.emplace_back("Use Hash", SearchConfig::USE_PONDER,
-                            [&](UciHandler*) { SearchConfig::USE_TT = getOption("Use Hash")->currentValue == "true"; });
-
-  optionVector.emplace_back("Ponder", SearchConfig::USE_PONDER,
-                            [&](UciHandler*) { SearchConfig::USE_PONDER = getOption("Ponder")->currentValue == "true"; });
 
   optionVector.emplace_back("OwnBook", SearchConfig::USE_BOOK,
                             [&](UciHandler*) { SearchConfig::USE_BOOK = getOption("OwnBook")->currentValue == "true"; });
 
+  optionVector.emplace_back("Ponder", SearchConfig::USE_PONDER,
+                            [&](UciHandler*) { SearchConfig::USE_PONDER = getOption("Ponder")->currentValue == "true"; });
+
+  optionVector.emplace_back("Use AlphaBeta", SearchConfig::USE_ALPHABETA,
+                            [&](UciHandler*) { SearchConfig::USE_ALPHABETA = getOption("Use AlphaBeta")->currentValue == "true"; });
+
+  optionVector.emplace_back("Use Pvs", SearchConfig::USE_PVS,
+                            [&](UciHandler*) { SearchConfig::USE_PVS = getOption("Use Pvs")->currentValue == "true"; });
+
+  optionVector.emplace_back("Use Aspiration", SearchConfig::USE_ASP,
+                            [&](UciHandler*) { SearchConfig::USE_ASP = getOption("Use Aspiration")->currentValue == "true"; });
+
+  optionVector.emplace_back("Use Hash", SearchConfig::USE_TT,
+                            [&](UciHandler*) { SearchConfig::USE_TT = getOption("Use Hash")->currentValue == "true"; });
+
+  optionVector.emplace_back("Hash", SearchConfig::TT_SIZE_MB, 0, 4096,
+                            [&](UciHandler* uciHandler) { SearchConfig::TT_SIZE_MB = getInt(getOption("Hash")->currentValue); uciHandler->getSearchPtr()->resizeTT(); });
+
+  optionVector.emplace_back("Use Hash Value", SearchConfig::USE_TT_VALUE,
+                            [&](UciHandler*) { SearchConfig::USE_TT_VALUE = getOption("Use Hash Value")->currentValue == "true"; });
+
+  optionVector.emplace_back("Use Hash PvMove", SearchConfig::USE_TT_PV_MOVE_SORT,
+                            [&](UciHandler*) { SearchConfig::USE_TT_PV_MOVE_SORT = getOption("Use Hash PvMove")->currentValue == "true"; });
+
+  optionVector.emplace_back("Use Hash Eval", SearchConfig::USE_EVAL_TT,
+                            [&](UciHandler*) { SearchConfig::USE_EVAL_TT = getOption("Use Hash Eval")->currentValue == "true"; });
+
+  optionVector.emplace_back("Use Hash Quiescence", SearchConfig::USE_QS_TT,
+                            [&](UciHandler*) { SearchConfig::USE_QS_TT = getOption("Use Hash Quiescence")->currentValue == "true"; });
+
+  optionVector.emplace_back("Clear Hash",
+                            [&](UciHandler* uciHandler) { uciHandler->getSearchPtr()->clearTT(); });
+
+  optionVector.emplace_back("Use Killer Moves", SearchConfig::USE_KILLER_MOVES,
+                            [&](UciHandler*) { SearchConfig::USE_KILLER_MOVES = getOption("Use Killer Moves")->currentValue == "true"; });
+
+  optionVector.emplace_back("Use History Moves", SearchConfig::USE_HISTORY_MOVES,
+                            [&](UciHandler*) { SearchConfig::USE_HISTORY_MOVES = getOption("Use History Moves")->currentValue == "true"; });
+
+  optionVector.emplace_back("Use History Counter", SearchConfig::USE_HISTORY_COUNTER,
+                            [&](UciHandler*) { SearchConfig::USE_HISTORY_COUNTER = getOption("Use History Counter")->currentValue == "true"; });
+
+  optionVector.emplace_back("Use Mate Distance Pruning", SearchConfig::USE_MDP,
+                            [&](UciHandler*) { SearchConfig::USE_MDP = getOption("Use Mate Distance Pruning")->currentValue == "true"; });
+
+  optionVector.emplace_back("Use Quiescence", SearchConfig::USE_QUIESCENCE,
+                            [&](UciHandler*) { SearchConfig::USE_QUIESCENCE = getOption("Use Quiescence")->currentValue == "true"; });
+
+  optionVector.emplace_back("Use Quiescence Standpat", SearchConfig::USE_QS_STANDPAT_CUT,
+                            [&](UciHandler*) { SearchConfig::USE_QS_STANDPAT_CUT = getOption("Use Quiescence Standpat")->currentValue == "true"; });
+
+  optionVector.emplace_back("Use Quiescence SEE", SearchConfig::USE_QS_SEE,
+                            [&](UciHandler*) { SearchConfig::USE_QS_SEE = getOption("Use Quiescence SEE")->currentValue == "true"; });
+
+
   // optionVector.emplace_back("***", [&](UciHandler* uciHandler) { });
 
-  // @formatter:off
-  //  MAP("Use_AlphaBeta",    UCI_Option("Use_AlphaBeta",    SearchConfig::USE_ALPHABETA));
-  //  MAP("Use_PVS",          UCI_Option("Use_PVS",          SearchConfig::USE_PVS));
-
-  //  MAP("Use_Aspiration",   UCI_Option("Use_Aspiration",   SearchConfig::USE_ASPIRATION_WINDOW));
-  //  MAP("Aspiration_Depth", UCI_Option("Aspiration_Depth", SearchConfig::ASPIRATION_START_DEPTH, 1, DEPTH_MAX));
-
-  //  MAP("Use_Quiescence",   UCI_Option("Use_Quiescence",   SearchConfig::USE_QUIESCENCE));
-
-  //  MAP("Use_PV_Sort",      UCI_Option("Use_PV_Sort",      SearchConfig::USE_PV_MOVE_SORT));
-  //  MAP("Use_KillerMoves",  UCI_Option("Use_KillerMoves",  SearchConfig::USE_KILLER_MOVES));
-  //  MAP("No_Of_Killer",     UCI_Option("No_Of_Killer",     SearchConfig::NO_KILLER_MOVES, 1, 9));
-
-  //  MAP("Use_MDP",          UCI_Option("Use_MDP",          SearchConfig::USE_MDP));
-  //  MAP("Use_QS_SEE",       UCI_Option("Use_QS_SEE",       SearchConfig::USE_QS_SEE));
-  //  MAP("Use_Standpat",     UCI_Option("Use_Standpat",     SearchConfig::USE_QS_STANDPAT_CUT));
-
-  //  MAP("Use_MPP",          UCI_Option("Use_MPP",          SearchConfig::USE_MPP));
   //  MAP("Use_RFP",          UCI_Option("Use_RFP",          SearchConfig::USE_RFP));
   //  MAP("RFP_Margin",       UCI_Option("RFP_Margin",       SearchConfig::RFP_MARGIN, 0, VALUE_MAX));
   //  MAP("Use_NMP",          UCI_Option("Use_NMP",          SearchConfig::USE_NMP));

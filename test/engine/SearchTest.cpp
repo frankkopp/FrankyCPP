@@ -365,3 +365,28 @@ TEST_F(SearchTest, quiescenceTest) {
   ASSERT_GT(nodes2, nodes1);
   ASSERT_GT(extra2, extra1);
 }
+
+TEST_F(SearchTest, debug) {
+  SearchConfig::USE_BOOK            = false;
+  SearchConfig::USE_ALPHABETA       = true;
+  SearchConfig::USE_PVS             = true;
+  SearchConfig::USE_TT              = true;
+  SearchConfig::USE_TT_VALUE        = true;
+  SearchConfig::USE_EVAL_TT         = true;
+  SearchConfig::TT_SIZE_MB          = 64;
+  SearchConfig::USE_MDP             = true;
+  SearchConfig::USE_HISTORY_COUNTER = true;
+  SearchConfig::USE_HISTORY_MOVES   = true;
+  SearchConfig::USE_QUIESCENCE      = true;
+  SearchConfig::USE_QS_STANDPAT_CUT = true;
+  SearchConfig::USE_QS_SEE          = true;
+  SearchConfig::USE_QS_TT           = true;
+  Position p{"2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - - 0 1 "};
+  SearchLimits sl{};
+  Search s{};
+  sl.timeControl = true;
+  sl.moveTime    = 10s;
+  s.isReady();
+  s.startSearch(p, sl);
+  s.waitWhileSearching();
+}
