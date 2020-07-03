@@ -26,23 +26,24 @@
 #include <ctime>
 #include <utility>
 
-#include "types/types.h"
 #include "Test_Fens.h"
 #include "chesscore/Position.h"
 #include "common/Logging.h"
 #include "engine/Search.h"
 #include "engine/SearchConfig.h"
 #include "init.h"
+#include "types/types.h"
+
 
 #include <gtest/gtest.h>
 using testing::Eq;
 
 class SearchTreeSizeTest : public ::testing::Test {
 public:
-  static constexpr int DEPTH = 8;
+  static constexpr int DEPTH = 9;
   static constexpr MilliSec MOVE_TIME{0};
   static constexpr int START_FEN = 0;
-  static constexpr int END_FEN   = 20;
+  static constexpr int END_FEN   = 15;
 
   /* special is used to collect a dedicated stat */
   const uint64_t* ptrToSpecial1 = nullptr;
@@ -131,6 +132,7 @@ TEST_F(SearchTreeSizeTest, size_test) {
   std::map<std::string, TestSums> sums{};
 
   for (const Result& result : results) {
+    fprintln("Fen: {}", result.fen);
     for (const SingleTest& test : result.tests) {
       sums[test.name].sumCounter++;
       sums[test.name].sumNodes += test.nodes;
@@ -141,7 +143,6 @@ TEST_F(SearchTreeSizeTest, size_test) {
       sums[test.name].special1 += test.special1;
       sums[test.name].special2 += test.special2;
 
-      //fmt::print("{:<15s} | {:>6s} | {:>8d} | {:>15n} | {:>12n} | {:>12n} | {:3d}/{:3d} | {:>12n} | {:>12n} | {} | {} \n",
       fprintln("{:<15s} | {:>6s} | {:>8s} | {:>15n} | {:>12n} | {:>12n} | {:>3d}/{:<3d} | {:>12n} | {:>12n} | {} | {}",
                test.name, str(test.move), str(test.value), test.nodes, test.nps,
                (test.time / 1'000'000), test.depth, test.extra, test.special1, test.special2, test.pv, result.fen);

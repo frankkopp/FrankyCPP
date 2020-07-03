@@ -16,6 +16,8 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 # C++ settings
 set(CMAKE_CXX_STANDARD 17)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Unit testing enabled
 enable_testing()
 
@@ -148,16 +150,20 @@ include_directories(
 
 # BOOST
 if (APPLE)
+    message("Find Boost on Apple")
     set(BOOST_ROOT "/usr/local/boost_1_73_0")
     set(Boost_INCLUDE_DIR "/usr/local/boost_1_73_0")
-elseif(CYGWIN)
+elseif (CYGWIN)
+    message("Find Boost on Cygwin")
     set(BOOST_ROOT "/usr/local/boost_1_72_0")
     set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
-elseif(WIN32)
+elseif (WIN32)
+    message("Find Boost on Win32")
     set(BOOST_ROOT "C:/Boost")
     set(BOOST_INCLUDEDIR "C:/Boost")
     set(BOOST_LIBRARYDIR "C:/Boost/lib")
-else()
+else ()
+    message("Find Boost on other")
     set(BOOST_ROOT "/usr/local/boost_1_73_0")
     set(Boost_INCLUDE_DIR "/usr/local/boost_1_73_0")
 endif ()
