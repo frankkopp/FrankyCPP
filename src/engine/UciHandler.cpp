@@ -23,9 +23,9 @@
  *
  */
 
+#include <exception>
 #include <memory>
 #include <thread>
-#include <exception>
 
 #include "chesscore/MoveGenerator.h"
 #include "chesscore/Perft.h"
@@ -137,10 +137,10 @@ void UciHandler::setOptionCommand(std::istringstream& inStream) const {
     value += token;
   }
 
-   if (!UciOptions::getInstance()->setOption(const_cast<UciHandler*>(this), name, value)) {
-     uciError(fmt::format("Unknown option: {}", name.c_str()));
-   }
-   LOG__INFO(Logger::get().UCIHAND_LOG, "Set option: {} = {}", name, value);
+  if (!UciOptions::getInstance()->setOption(const_cast<UciHandler*>(this), name, value)) {
+    uciError(fmt::format("Unknown option: {}", name.c_str()));
+  }
+  LOG__INFO(Logger::get().UCIHAND_LOG, "Set option: {} = {}", name, value);
 }
 
 void UciHandler::uciNewGameCommand() const {
@@ -168,7 +168,7 @@ void UciHandler::positionCommand(std::istringstream& inStream) {
   }
 
   // TODO error handling when fen is invalid
-  
+
   LOG__INFO(Logger::get().UCIHAND_LOG, "Set position to {}", fen);
   pPosition = std::make_shared<Position>(fen);
 
@@ -185,7 +185,7 @@ void UciHandler::positionCommand(std::istringstream& inStream) {
         uciError(fmt::format("Invalid move {}", move));
         return;
       }
-      LOG__DEBUG(Logger::get().UCIHAND_LOG, "Do move {}", move);
+      // LOG__DEBUG(Logger::get().UCIHAND_LOG, "Do move {}", move);
       pPosition->doMove(moveFromUci);
     }
   }
@@ -202,11 +202,11 @@ void UciHandler::goCommand(std::istringstream& inStream) {
   // Sanity check search limits
   // sanity check / minimum settings
   if (!(searchLimits.infinite ||
-       searchLimits.ponder ||
-       searchLimits.depth > 0 ||
-       searchLimits.nodes > 0 ||
-       searchLimits.mate > 0 ||
-       searchLimits.timeControl)) {
+        searchLimits.ponder ||
+        searchLimits.depth > 0 ||
+        searchLimits.nodes > 0 ||
+        searchLimits.mate > 0 ||
+        searchLimits.timeControl)) {
     uciError(fmt::format("UCI command go malformed. No effective limits set {}", searchLimits.str()));
     return;
   }
@@ -214,11 +214,11 @@ void UciHandler::goCommand(std::istringstream& inStream) {
   if (searchLimits.timeControl && searchLimits.moveTime.count() == 0) {
     if (pPosition->getNextPlayer() == WHITE && searchLimits.whiteTime.count() == 0) {
       uciError(fmt::format("UCI command go invalid. White to move but time for white is zero! %s", searchLimits.str()));
-      return ;
+      return;
     }
     else if (pPosition->getNextPlayer() == BLACK && searchLimits.blackTime.count() == 0) {
       uciError(fmt::format("UCI command go invalid. Black to move but time for white is zero! %s", searchLimits.str()));
-      return ;
+      return;
     }
   }
 
@@ -269,7 +269,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
     else if (token == "movetime" || token == "moveTime") {
       inStream >> token;
       try {
-        searchLimits.moveTime = MilliSec(stoi(token));
+        searchLimits.moveTime    = MilliSec(stoi(token));
         searchLimits.timeControl = true;
       } catch (...) { /* ignored */
       }
@@ -282,7 +282,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
     else if (token == "wtime") {
       inStream >> token;
       try {
-        searchLimits.whiteTime = MilliSec(stoi(token));
+        searchLimits.whiteTime   = MilliSec(stoi(token));
         searchLimits.timeControl = true;
       } catch (...) { /* ignored */
       }
@@ -295,7 +295,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
     else if (token == "btime") {
       inStream >> token;
       try {
-        searchLimits.blackTime = MilliSec(std::stoi(token));
+        searchLimits.blackTime   = MilliSec(std::stoi(token));
         searchLimits.timeControl = true;
       } catch (...) { /* ignored */
       }
@@ -423,7 +423,8 @@ void UciHandler::perftCommand(std::istringstream& inStream) {
   std::thread perftThread([&](int s, int e) {
     pPerft->perft(s, e, true);
     sendString("Perft finished.");
-  }, startDepth, endDepth);
+  },
+                          startDepth, endDepth);
   perftThread.detach();
 }
 

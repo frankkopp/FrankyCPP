@@ -117,14 +117,14 @@ public:
   // possible scenarios is more expensive than to just generate the move and dismiss it later.
   // Because of beta cuts off we quite often will never have to check the full legality
   // of these moves anyway.
-  const MoveList* generatePseudoLegalMoves(const Position& position, const GenMode genMode, const bool evasion = false);
+  const MoveList* generatePseudoLegalMoves(const Position& position, GenMode genMode, bool evasion = false);
 
   // GenerateLegalMoves generates legal moves for the next player.
   // Uses GeneratePseudoLegalMoves and filters out illegal moves.
   // Usually only used for root moves generation as this is expensive. During
   // the AlphaBeta search we will only use pseudo legal move generation.
   // Other than generatePseudoLegalMoves this determines check and evasion itself.
-  const MoveList* generateLegalMoves(const Position& p, const GenMode genMode);
+  const MoveList* generateLegalMoves(const Position& p, GenMode genMode);
 
   // GetNextMove is the main function for phased generation of pseudo legal moves.
   // It returns the next move for the given position and will usually be called in a
@@ -152,7 +152,7 @@ public:
   // possible scenarios is more expensive than to just generate the move and dismiss it later.
   // Because of beta cuts off we quite often will never have to check the full legality
   // of these moves anyway.
-  Move getNextPseudoLegalMove(const Position& p, const GenMode genMode, const bool evasion = false);
+  Move getNextPseudoLegalMove(const Position& p, GenMode genMode, bool evasion = false);
 
   // Resets the move generator to start fresh. Clears all lists (e.g. killers) and resets on demand iterator
   inline void reset() {
@@ -211,7 +211,7 @@ public:
   Move getMoveFromSan(const Position& position, const std::string& sanMove);
 
   // ValidateMove validates if a move is a valid legal move on the given position
-  bool validateMove(const Position& position, const Move move);
+  bool validateMove(const Position& position, Move move);
 
   // str() returns a string representation of a MoveGen instance
   std::string str();
@@ -228,10 +228,10 @@ public:
 
 private:
   // Fills on demand move list by generating moves according to phase
-  void fillOnDemandMoveList(const Position& position, const GenMode genMode, const bool evasion);
+  void fillOnDemandMoveList(const Position& position, GenMode genMode, bool evasion);
 
   // Move order heuristics based on history data.
-  void updateSortValues(const Position& position, MoveList* const moveList);
+  void updateSortValues(const Position& position, MoveList* moveList);
 
   // getEvasionTargets returns the number of attackers and a Bitboard with target
   // squares for generated moves when the position has check against the next
@@ -247,28 +247,28 @@ private:
   // @param genMode
   // @param pPosition
   // @param pMoves - generated moves will be added to this list
-  static void generatePawnMoves(const Position& position, MoveList* const pMoves, const GenMode genMode, const bool evasion, const Bitboard evasionTargets);
+  static void generatePawnMoves(const Position& position, MoveList* pMoves, GenMode genMode, bool evasion, Bitboard evasionTargets);
 
   // Generates pseudo knight, bishop, rook and queen moves for the next player.
   // Does not check if king is left in check
   // @param genMode
   // @param pPosition
   // @param pMoves - generated moves will be added to this list
-  void generateMoves(const Position& position, MoveList* const pMoves, const GenMode genMode, const bool evasion, const Bitboard evasionTargets);
+  void generateMoves(const Position& position, MoveList* pMoves, GenMode genMode, bool evasion, Bitboard evasionTargets);
 
   // Generates pseudo king moves for the next player. Does not check if king
   // lands on an attacked square.
   // @param genMode
   // @param pPosition
   // @param pMoves - generated moves will be added to this list
-  void generateKingMoves(const Position& position, MoveList* const pMoves, const GenMode genMode, const bool evasion);
+  void generateKingMoves(const Position& position, MoveList* pMoves, GenMode genMode, bool evasion);
 
   // Generates pseudo castling move for the next player. Does not check if king passes or lands on an
   // attacked square.
   // @param genMode
   // @param pPosition
   // @param pMoves - generated moves will be added to this list
-  void generateCastling(const Position& position, MoveList* const pMoves, const GenMode genMode);
+  void generateCastling(const Position& position, MoveList* pMoves, GenMode genMode);
 
   FRIEND_TEST(MoveGenTest, pawnMoves);
   FRIEND_TEST(MoveGenTest, kingMoves);

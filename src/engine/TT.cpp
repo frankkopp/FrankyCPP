@@ -194,8 +194,8 @@ const TT::Entry* TT::probe(const Key& key) {
 
   Entry* ttEntryPtr = getEntryPtr(key);
   if (ttEntryPtr->key == key) {
-    numberOfHits++;     // entries with identical keys found
-    ttEntryPtr->age = 0;// mark the entry as used
+    numberOfHits++;                        // entries with identical keys found
+    if (ttEntryPtr->age) ttEntryPtr->age--;// mark the entry as used
     return ttEntryPtr;
   }
 
