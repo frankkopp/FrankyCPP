@@ -33,11 +33,6 @@
 /// A collection of moves using a std::vector
 typedef std::vector<Move> MoveList;
 
-// comparator for descending sort by value
-inline bool sortByValue(const Move& lhs, const Move& rhs) {
-  return (lhs & 0xFFFF0000) > (rhs & 0xFFFF0000);
-}
-
 // returns a uci compatible string representation of the move list
 inline std::string str(const MoveList& moveList) {
   std::ostringstream os;
