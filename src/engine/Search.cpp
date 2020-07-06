@@ -25,11 +25,11 @@
 
 #include <chrono>
 
-#include "chesscore/Position.h"
 #include "Evaluator.h"
 #include "Search.h"
 #include "SearchConfig.h"
 #include "See.h"
+#include "chesscore/Position.h"
 
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
@@ -73,7 +73,7 @@ void Search::startSearch(const Position p, SearchLimits sl) {
   startSearchTime = startTime;
 
   // move the received copy of position and search limits to instance variables
-  this->position     = std::move(p);
+  this->position     = p;
   this->searchLimits = std::move(sl);
 
   // join() previous thread
@@ -417,6 +417,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
       p.doMove(searchResult.bestMove);
       const auto* ttEntryPtr = tt->probe(p.getZobristKey());
       if (ttEntryPtr) {
+        statistics.ttHit++;
         searchResult.ponderMove = static_cast<Move>(ttEntryPtr->move);
         LOG__DEBUG(Logger::get().SEARCH_LOG, "Using ponder move from hash table: {}", str(searchResult.ponderMove));
       }
@@ -448,13 +449,14 @@ Value Search::rootSearch(Position& p, Depth depth, Value alpha, Value beta) {
   // next iteration
 
   // prepare root node search
-  const Depth ply     = static_cast<Depth>(1);
+  const Depth ply{1};
   Value bestNodeValue = VALUE_NONE;
   Value value;
 
   // ///////////////////////////////////////////////////////
   // MOVE LOOP
-  for (size_t i = 0; i < rootMoves.size(); i++) {
+  const size_t size = rootMoves.size();
+  for (size_t i = 0; i < size; i++) {
     Move& moveRef = rootMoves.at(i);
 
     p.doMove(moveRef);
@@ -462,11 +464,6 @@ Value Search::rootSearch(Position& p, Depth depth, Value alpha, Value beta) {
     statistics.currentVariation.push_back(moveRef);
     statistics.currentRootMoveIndex = i;
     statistics.currentRootMove      = moveRef;
-
-    // if available on platform tells the cpu to
-    // prefetch the data into cpu caches
-    TT_PREFETCH;
-    // EVAL_PREFETCH;
 
     if (checkDrawRepAnd50(p, 2)) {
       value = VALUE_DRAW;
@@ -533,7 +530,7 @@ Value Search::rootSearch(Position& p, Depth depth, Value alpha, Value beta) {
 }
 
 Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value beta, Node_Type isPv, Do_Null doNull) {
-  //    DEBUG(fmt::format("Search {} {} {}", depth, ply, str(statistics.currentVariation)));
+  //  LOG__DEBUG(Logger::get().SEARCH_LOG, "Search {} {} {}", depth, ply, str(statistics.currentVariation));
 
   // Enter quiescence search when depth == 0 or max ply has been reached
   if (depth == 0 || ply >= MAX_DEPTH) {
@@ -598,9 +595,11 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
           statistics.TtCuts++;
           return ttValue;
         }
+        statistics.TtNoCuts++;
       }
       // if we have a static eval stored we can reuse it
-      if (SearchConfig::USE_EVAL_TT && ttEntryPtr->eval != VALUE_NONE) {
+      if (SearchConfig::USE_EVAL_TT &&
+          ttEntryPtr->eval != VALUE_NONE) {
         statistics.evalFromTT++;
         staticEval = ttEntryPtr->eval;
       }
@@ -621,7 +620,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
     }
   }
 
-  // TODO implement ponderRunningStop
+  // TODO implement prunings
 
   // reset search
   // !important to do this after IID!
@@ -633,14 +632,13 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
   // When we received a best move for the position from the
   // TT or IID we set it as PV move in the movegen so it will
   // be searched first.
-  if (SearchConfig::USE_TT_PV_MOVE_SORT) {
-    if (ttMove != MOVE_NONE) {
-      statistics.TtMoveUsed++;
-      myMg->setPV(ttMove);
-    }
-    else {
-      statistics.NoTtMove++;
-    }
+  if (SearchConfig::USE_TT_PV_MOVE_SORT &&
+      ttMove != MOVE_NONE) {
+    statistics.TtMoveUsed++;
+    myMg->setPV(ttMove);
+  }
+  else {
+    statistics.NoTtMove++;
   }
 
   // prepare move loop
@@ -833,6 +831,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
 }
 
 Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, Search::Node_Type isPv) {
+  //  LOG__DEBUG(Logger::get().SEARCH_LOG, "QSearch {} {}", ply, str(statistics.currentVariation));
 
   if (statistics.currentExtraSearchDepth < ply) {
     statistics.currentExtraSearchDepth = ply;
@@ -869,18 +868,6 @@ Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, Search::N
   Value staticEval    = VALUE_NONE;
 
   // TT Lookup
-  // Results of searches are stored in the TT to be used to
-  // avoid searching positions several times. If a position
-  // is stored in the TT we retrieve a pointer to the entry.
-  // We use the stored move as a best move from previous searches
-  // and search it first (through setting PV move in move gen).
-  // If we have a value from a similar or deeper search we check
-  // if the value is usable. Exact values mean that the previously
-  // stored result already was a precise result and we do not
-  // need to search the position again. We can stop searching
-  // this branch and return the value.
-  // Alpha or Beta entries will only be used if they improve
-  // the current values.
   const TT::Entry* ttEntryPtr;
   if (SearchConfig::USE_TT && SearchConfig::USE_QS_TT) {
     ttEntryPtr = tt->probe(p.getZobristKey());
@@ -897,7 +884,8 @@ Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, Search::N
         return ttValue;
       }
       // if we have a static eval stored we can reuse it
-      if (SearchConfig::USE_EVAL_TT && ttEntryPtr->eval != VALUE_NONE) {
+      if (SearchConfig::USE_EVAL_TT &&
+          ttEntryPtr->eval != VALUE_NONE) {
         statistics.evalFromTT++;
         staticEval = ttEntryPtr->eval;
       }
@@ -940,17 +928,13 @@ Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, Search::N
   pv[ply].clear();
 
   // PV Move Sort
-  // When we received a best move for the position from the
-  // TT we set it as PV move in the movegen so it will
-  // be searched first.
-  if (SearchConfig::USE_TT_PV_MOVE_SORT) {
-    if (ttMove != MOVE_NONE) {
-      statistics.TtMoveUsed++;
-      myMg->setPV(ttMove);
-    }
-    else {
-      statistics.NoTtMove++;
-    }
+  if (SearchConfig::USE_TT_PV_MOVE_SORT &&
+      ttMove != MOVE_NONE) {
+    statistics.TtMoveUsed++;
+    myMg->setPV(ttMove);
+  }
+  else {
+    statistics.NoTtMove++;
   }
 
   // prepare move loop
@@ -1078,7 +1062,7 @@ Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, Search::N
     storeTt(p, DEPTH_ONE, ply, bestNodeMove, bestNodeValue, ttType, staticEval, false);
   }
 
-  return evaluate(p);
+  return bestNodeValue;
 }
 
 inline Value Search::evaluate(Position& p) {
@@ -1092,24 +1076,22 @@ bool Search::goodCapture(Position& p, Move move) {
     // Check SEE score of higher value pieces to low value pieces
     return See::see(p, move) > 0;
   }
-  else {
-    return
-      // all pawn captures - they never loose material
-      // typeOf(position.getPiece(getFromSquare(move))) == PAWN
+  return
+    // all pawn captures - they never loose material
+    // typeOf(position.getPiece(getFromSquare(move))) == PAWN
 
-      // Lower value piece captures higher value piece
-      // With a margin to also look at Bishop x Knight
-      (valueOf(position.getPiece(fromSquare(move))) + 50) < valueOf(position.getPiece(toSquare(move)))
+    // Lower value piece captures higher value piece
+    // With a margin to also look at Bishop x Knight
+    (valueOf(position.getPiece(fromSquare(move))) + 50) < valueOf(position.getPiece(toSquare(move)))
 
-      // all recaptures should be looked at
-      || (position.getLastMove() != MOVE_NONE && position.getLastCapturedPiece() != PIECE_NONE && toSquare(position.getLastMove()) == toSquare(move) )
+    // all recaptures should be looked at
+    || (position.getLastMove() != MOVE_NONE && position.getLastCapturedPiece() != PIECE_NONE && toSquare(position.getLastMove()) == toSquare(move))
 
-      // undefended pieces captures are good
-      // If the defender is "behind" the attacker this will not be recognized
-      // here This is not too bad as it only adds a move to qsearch which we
-      // could otherwise ignore
-      || !position.isAttacked(toSquare(move), ~position.getNextPlayer());
-  }
+    // undefended pieces captures are good
+    // If the defender is "behind" the attacker this will not be recognized
+    // here This is not too bad as it only adds a move to qsearch which we
+    // could otherwise ignore
+    || !position.isAttacked(toSquare(move), ~position.getNextPlayer());
 }
 
 void Search::storeTt(Position& p, Depth depth, Depth ply, Move move, Value value, ValueType valueType, Value eval, bool mateThreat) {

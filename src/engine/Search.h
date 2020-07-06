@@ -257,10 +257,10 @@ private:
   void savePV(Move move, MoveList& src, MoveList& dest);
 
   // correct the value for mate distance when storing to TT
-  Value valueToTt(Value value, Depth ply);
+  static Value valueToTt(Value value, Depth ply);
 
   // correct the value for mate distance when reading from TT
-  Value valueFromTt(Value value, Depth ply);
+  static Value valueFromTt(Value value, Depth ply);
 
   // getPVLine fills the given pv move list with the pv move starting from the given
   // depth as long as these position are in the TT
@@ -299,7 +299,7 @@ private:
 
   // checks repetitions and 50-moves rule. Returns true if the position
   // has repeated itself at least the given number of times.
-  bool checkDrawRepAnd50(Position& position, int numberOfRepetitions);
+  static bool checkDrawRepAnd50(Position& position, int numberOfRepetitions);
 
   // helper to send uci protocol messages.
   void sendReadyOk() const;

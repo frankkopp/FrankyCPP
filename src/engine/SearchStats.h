@@ -64,6 +64,7 @@ struct SearchStats {
   uint64_t ttHit;
   uint64_t ttMiss;
   uint64_t TtCuts;
+  uint64_t TtNoCuts;
   uint64_t evalFromTT;
   uint64_t NoTtMove;
   uint64_t TtMoveUsed;
@@ -92,12 +93,12 @@ struct SearchStats {
        << " ttHit: " << stats.ttHit
        << " ttMiss: " << stats.ttMiss
        << " TtCuts: " << stats.TtCuts
+       << " TtNoCuts: " << stats.TtNoCuts
        << " evalFromTT: " << stats.evalFromTT
        << " TtMoveUsed: " << stats.TtMoveUsed
        << " NoTtMove: " << stats.NoTtMove;
     return os;
   }
-
 };
 
 

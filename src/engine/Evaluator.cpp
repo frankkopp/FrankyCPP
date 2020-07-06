@@ -53,7 +53,6 @@ Value Evaluator::evaluate(Position& p) {
   // less difference between side which makes aspiration search faster
   // (not empirically tested)
   score.midgame += EvalConfig::TEMPO;
-  // e.score.EndGameValue += Value(0) // can be ignored
 
   // calculate value depending on game phases
   const double gamePhaseFactor = p.getGamePhaseFactor();
