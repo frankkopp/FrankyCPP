@@ -716,18 +716,28 @@ TEST_F(MoveGenTest, sortValueTest) {
   // PV, Killer and history handling
   mg.updateSortValues(p, &moves);
 
+  fprintln("Pre sort:");
   for (Move m : moves) {
     fprintln("{}", strVerbose(m));
   }
   NEWLINE;
 
   // sort moves
-  std::stable_sort(moves.begin(), moves.end(), [](const Move lhs, const Move rhs) {
-    return valueOf(lhs) > valueOf(rhs);
-  });
-  
+  std::stable_sort(moves.begin(), moves.end(), moveValueGreaterComparator());
+
+  // TODO real tests
+
+  fprintln("Post sort:");
+  int counter = 0;
+  Move last   = MOVE_NONE;
   for (Move m : moves) {
     fprintln("{}", strVerbose(m));
+    if (!counter++) {
+      last = m;
+      continue;
+    }
+    EXPECT_GE(valueOf(last), valueOf(m));
+    last = m;
   }
   NEWLINE;
 }

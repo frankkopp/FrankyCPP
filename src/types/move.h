@@ -226,4 +226,12 @@ inline std::ostream& operator<<(std::ostream& os, const Move move) {
   return os;
 }
 
+// Compares two moves for their value part (valueOf()) and returns true if
+// the first move (lhs) is greater (has higher value) as the second move (rhs).
+struct moveValueGreaterComparator {
+  constexpr bool operator()(const Move lhs, const Move rhs) const {
+    return (lhs & 0xFFFF0000) > (rhs & 0xFFFF0000);
+  }
+};
+
 #endif//FRANKYCPP_MOVE_H

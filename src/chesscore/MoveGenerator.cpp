@@ -25,12 +25,12 @@
 
 #include <regex>
 
-#include "types/types.h"
 #include "History.h"
 #include "MoveGenerator.h"
 #include "Values.h"
 #include "chesscore/Position.h"
 #include "common/misc.h"
+#include "types/types.h"
 
 MoveGenerator::MoveGenerator() {
   pseudoLegalMoves.reserve(MAX_MOVES);
@@ -68,9 +68,7 @@ const MoveList* MoveGenerator::generatePseudoLegalMoves(const Position& p, const
   updateSortValues(p, &pseudoLegalMoves);
 
   // sort moves
-  std::stable_sort(pseudoLegalMoves.begin(), pseudoLegalMoves.end(), [](const Move lhs, const Move rhs) {
-    return valueOf(lhs) > valueOf(rhs);
-  });
+  std::stable_sort(pseudoLegalMoves.begin(), pseudoLegalMoves.end(), moveValueGreaterComparator());
 
   // remove internal sort value
   std::transform(pseudoLegalMoves.begin(), pseudoLegalMoves.end(),
@@ -179,10 +177,9 @@ void MoveGenerator::storeKiller(Move killerMove) {
   if (killerMoves[0] == m) {
     return;
   }
-  else {// if in second slot or not there at all move it to first
-    killerMoves[1] = killerMoves[0];
-    killerMoves[0] = m;
-  }
+  // if in second slot or not there at all move it to first
+  killerMoves[1] = killerMoves[0];
+  killerMoves[0] = m;
 }
 
 void MoveGenerator::setHistoryData(History* pHistory) {
@@ -405,7 +402,7 @@ void MoveGenerator::fillOnDemandMoveList(const Position& position, const GenMode
     switch (currentODStage) {
       case OD_NEW:
         currentODStage = PV;
-        // fall through
+        [[fallthrough]];
       case PV:
         // If a pvMove is set we return it first and filter it out before
         // returning a move
@@ -491,9 +488,7 @@ void MoveGenerator::fillOnDemandMoveList(const Position& position, const GenMode
     }
     // sort the list according to sort values encoded in the move
     if (!onDemandMoves.empty()) {
-      std::stable_sort(onDemandMoves.begin(), onDemandMoves.end(), [](const Move lhs, const Move rhs) {
-        return valueOf(lhs) > valueOf(rhs);
-      });
+      std::stable_sort(onDemandMoves.begin(), onDemandMoves.end(), moveValueGreaterComparator());
     }
   }// while onDemandMoves.empty()
 }
@@ -526,12 +521,14 @@ void MoveGenerator::updateSortValues(const Position& p, MoveList* const moveList
       // per 1000 count points.
       // It is also yet unclear if the history count table should be
       // reused for several consecutive searches or just for one search.
+      // TODO: Testing
       auto count  = historyData->historyCount[us][fromSquare(*move)][toSquare(*move)];
       Value value = static_cast<Value>(count / 100);
 
       // Counter Move History
       // When we have a counter move which caused a beta cut off before we
       // bump up its sort value
+      // TODO: Testing
       if (historyData->counterMoves[fromSquare(p.getLastMove())][toSquare(p.getLastMove())] == moveOf(*move)) {
         value = value + 500;
       }
@@ -544,7 +541,7 @@ void MoveGenerator::updateSortValues(const Position& p, MoveList* const moveList
   }
 }
 
-Bitboard MoveGenerator::getEvasionTargets(const Position& p) const {
+Bitboard MoveGenerator::getEvasionTargets(const Position& p) {
   const Color us       = p.getNextPlayer();
   const Square ourKing = p.getKingSquare(us);
   // find all target squares which either capture or block the attacker
@@ -559,9 +556,10 @@ Bitboard MoveGenerator::getEvasionTargets(const Position& p) const {
     if (typeOf(p.getPiece(atck)) > KNIGHT) {
       evasionTargets |= Bitboards::intermediateBb[atck][ourKing];
     }
+    return evasionTargets;
   }
-  else if (popCount > 1) {
-    evasionTargets = BbZero;
+  if (popCount > 1) {
+    return BbZero;
   }
   return evasionTargets;
 }

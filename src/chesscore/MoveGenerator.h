@@ -39,7 +39,7 @@ struct History;
 //  GenNonQuiet = 0b01
 //  GenQuiet    = 0b10
 //  GenAll      = 0b11
-enum GenMode {
+enum GenMode : uint8_t {
   GenZero     = 0b00,
   GenNonQuiet = 0b01,
   GenQuiet    = 0b10,
@@ -154,7 +154,7 @@ public:
   // of these moves anyway.
   Move getNextPseudoLegalMove(const Position& p, const GenMode genMode, const bool evasion = false);
 
-// Resets the move generator to start fresh. Clears all lists (e.g. killers) and resets on demand iterator
+  // Resets the move generator to start fresh. Clears all lists (e.g. killers) and resets on demand iterator
   inline void reset() {
     pseudoLegalMoves.clear();
     legalMoves.clear();
@@ -228,7 +228,7 @@ public:
 
 private:
   // Fills on demand move list by generating moves according to phase
-  void fillOnDemandMoveList(const Position& position,const  GenMode genMode, const bool evasion);
+  void fillOnDemandMoveList(const Position& position, const GenMode genMode, const bool evasion);
 
   // Move order heuristics based on history data.
   void updateSortValues(const Position& position, MoveList* const moveList);
@@ -241,13 +241,13 @@ private:
   // in case of the attacker being a slider.
   // If we have more than one attacker we can skip everything apart from
   // king moves.
-  Bitboard getEvasionTargets(const Position& position) const;
+  static Bitboard getEvasionTargets(const Position& position);
 
   // Generates pseudo pawn moves for the next player. Does not check if king is left in check
   // @param genMode
   // @param pPosition
   // @param pMoves - generated moves will be added to this list
-  void generatePawnMoves(const Position& position, MoveList* const pMoves, const GenMode genMode, const bool evasion, const Bitboard evasionTargets);
+  static void generatePawnMoves(const Position& position, MoveList* const pMoves, const GenMode genMode, const bool evasion, const Bitboard evasionTargets);
 
   // Generates pseudo knight, bishop, rook and queen moves for the next player.
   // Does not check if king is left in check
