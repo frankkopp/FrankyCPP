@@ -383,7 +383,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
     // If we only have one move to play also stop the search
     if (!stopConditions() && rootMoves.size() > 1) {
       // sort root moves for the next iteration
-      std::sort(rootMoves.begin(), rootMoves.end(), sortByValue);
+      std::stable_sort(rootMoves.begin(), rootMoves.end(), moveValueGreaterComparator());
       statistics.currentBestRootMove      = pv[0].at(0);
       statistics.currentBestRootMoveValue = valueOf(pv[0].at(0));
       assert(pv[0].at(0) == rootMoves.at(0) && "Best root move should be equal to pv[0].at(0)");

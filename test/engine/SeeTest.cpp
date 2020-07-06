@@ -54,33 +54,33 @@ TEST_F(SeeTest, attacksTo) {
   Bitboard attacksTo = See::attacksTo(position, SQ_E5, WHITE);
   fprint("{}", strBoard(attacksTo));
   fprintln("{}", strGrouped(attacksTo));
-  EXPECT_EQ(740294656, attacksTo);
+  EXPECT_EQ(740294656ULL, attacksTo);
 
   attacksTo = See::attacksTo(position, SQ_E5, BLACK);
   fprint("{}", strBoard(attacksTo));
   fprintln("{}", strGrouped(attacksTo));
-  EXPECT_EQ(48378511622144, attacksTo);
+  EXPECT_EQ(48378511622144ULL, attacksTo);
 
   attacksTo = See::attacksTo(position, SQ_D4, WHITE);
   fprint("{}", strBoard(attacksTo));
   fprintln("{}", strGrouped(attacksTo));
-  EXPECT_EQ(3407880, attacksTo);
+  EXPECT_EQ(3407880ULL, attacksTo);
 
   attacksTo = See::attacksTo(position, SQ_D4, BLACK);
   fprint("{}", strBoard(attacksTo));
   fprintln("{}", strGrouped(attacksTo));
-  EXPECT_EQ(4483945857024, attacksTo);
+  EXPECT_EQ(4483945857024ULL, attacksTo);
 
   position  = Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
   attacksTo = See::attacksTo(position, SQ_E5, BLACK);
   fprint("{}", strBoard(attacksTo));
   fprintln("{}", strGrouped(attacksTo));
-  EXPECT_EQ(2339760743907840, attacksTo);
+  EXPECT_EQ(2339760743907840ULL, attacksTo);
 
   attacksTo = See::attacksTo(position, SQ_A3, BLACK);
   fprint("{}", strBoard(attacksTo));
   fprintln("{}", strGrouped(attacksTo));
-  EXPECT_EQ(72057594037928448, attacksTo);
+  EXPECT_EQ(72057594037928448ULL, attacksTo);
 }
 
 TEST_F(SeeTest, revealedAttacks) {
@@ -94,14 +94,13 @@ TEST_F(SeeTest, revealedAttacks) {
   fprintln("Direkt:");
   fprint("{}", strBoard(attacksTo));
   fprintln("{}", strGrouped(attacksTo));
-  EXPECT_EQ(2286984186302464, attacksTo);
+  EXPECT_EQ(2286984186302464ULL, attacksTo);
 
   // take away bishop on f6
-  attacksTo ^= Bitboards::sqBb[SQ_F6];        // reset bit in set to traverse
-  occupiedBitboard ^= Bitboards::sqBb[SQ_F6]; // reset bit in temporary occupancy (for x-Rays)
+  attacksTo ^= Bitboards::sqBb[SQ_F6];       // reset bit in set to traverse
+  occupiedBitboard ^= Bitboards::sqBb[SQ_F6];// reset bit in temporary occupancy (for x-Rays)
 
-  attacksTo |= See::revealedAttacks(position, square, occupiedBitboard, BLACK)
-               | See::revealedAttacks(position, square, occupiedBitboard, WHITE);
+  attacksTo |= See::revealedAttacks(position, square, occupiedBitboard, BLACK) | See::revealedAttacks(position, square, occupiedBitboard, WHITE);
 
   fprintln("Revealed after removing bishop on f6:");
   fprint("{}", strBoard(attacksTo));

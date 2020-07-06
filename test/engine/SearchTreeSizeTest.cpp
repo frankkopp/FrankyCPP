@@ -40,7 +40,7 @@ using testing::Eq;
 
 class SearchTreeSizeTest : public ::testing::Test {
 public:
-  static constexpr int DEPTH = 9;
+  static constexpr int DEPTH = 8;
   static constexpr MilliSec MOVE_TIME{0};
   static constexpr int START_FEN = 0;
   static constexpr int END_FEN   = 15;
