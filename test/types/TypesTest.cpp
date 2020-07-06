@@ -23,11 +23,11 @@
  *
  */
 
-#include "types/types.h"
-#include "fmt/locale.h"
-#include <gtest/gtest.h>
 #include <random>
 
+#include "types/types.h"
+
+#include <gtest/gtest.h>
 using testing::Eq;
 
 TEST(TypesTest, colors) {
@@ -275,7 +275,7 @@ TEST(TypesTest, sortMoveListByValue) {
   ml.push_back(move2);
   ml.push_back(move3);
   fprintln("{}", str(ml));
-  std::sort(ml.begin(),ml.end(), sortByValue);
+  std::stable_sort(ml.begin(), ml.end(), moveValueGreaterComparator());
   fprintln("{}", str(ml));
   EXPECT_EQ(move3, ml.at(0));
 }
