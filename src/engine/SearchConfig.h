@@ -31,12 +31,12 @@
 
 namespace SearchConfig {
 
-  inline bool USE_PONDER = true;
-
   // opening book
   inline bool USE_BOOK                     = true;
   inline std::string BOOK_PATH             = "./books/book.txt";
   inline OpeningBook::BookFormat BOOK_TYPE = OpeningBook::BookFormat::SIMPLE;
+
+  inline bool USE_PONDER = true;
 
   // basic search strategies and features
   inline bool USE_ALPHABETA = true;// use ALPHABETA pruning
@@ -54,16 +54,19 @@ namespace SearchConfig {
   inline int TT_SIZE_MB    = 64;  // size of TT in MB
   inline bool USE_QS_TT    = true;// use transposition table also in quiescence search
 
-  //  // Move Sorting Features
+  // Move Sorting Features
   inline bool USE_TT_PV_MOVE_SORT = true;// use move from tt as pv
   inline bool USE_KILLER_MOVES    = true;// Store refutation moves (>beta) for move ordering
   inline bool USE_HISTORY_COUNTER = true;
   inline bool USE_HISTORY_MOVES   = true;
 
-  //  // Pruning features
+  // Pruning features
   inline bool USE_MDP             = true;// mate distance pruning
   inline bool USE_QS_STANDPAT_CUT = true;
   inline bool USE_QS_SEE          = true;// use SEE for goodCaptures
+  inline bool USE_RAZORING        = true;// Razoring like Stockfish
+  inline Value RAZOR_MARGIN{531};
+
 
   //  inline bool USE_MPP                 = true; // minor promotion pruning
   //

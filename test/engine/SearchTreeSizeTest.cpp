@@ -209,6 +209,9 @@ SearchTreeSizeTest::Result SearchTreeSizeTest::featureMeasurements(int depth, Mi
   SearchConfig::USE_MDP             = false;
   SearchConfig::USE_QS_STANDPAT_CUT = false;
   SearchConfig::USE_QS_SEE          = false;
+
+  SearchConfig::USE_RAZORING = false;
+
   //  SearchConfig::USE_RFP               = false;
   //  SearchConfig::USE_NMP               = false;
   //  SearchConfig::NMP_VERIFICATION      = false;
@@ -270,6 +273,9 @@ SearchTreeSizeTest::Result SearchTreeSizeTest::featureMeasurements(int depth, Mi
   SearchConfig::USE_QS_SEE = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "43 QS SEE"));
 
+  SearchConfig::USE_RAZORING = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "50 RAZOR"));
+
   //  SearchConfig::USE_EXTENSIONS = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "40 EXT"));
   //
@@ -291,8 +297,6 @@ SearchTreeSizeTest::Result SearchTreeSizeTest::featureMeasurements(int depth, Mi
   //  SearchConfig::USE_NMP = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "99 NMP"));
 
-  //  SearchConfig::USE_RAZOR_PRUNING = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "90 RAZOR"));
 
   //  SearchConfig::USE_IID = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "30 IID"));

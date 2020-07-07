@@ -622,6 +622,18 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
 
   // TODO implement prunings
 
+  // Razoring from Stockfish
+  // When static eval is well below alpha at the last node
+  // jump directly into qsearch
+  if (SearchConfig::USE_RAZORING &&
+      depth == 1 &&
+      staticEval != VALUE_NONE &&
+      staticEval <= alpha - SearchConfig::RAZOR_MARGIN) {
+
+    statistics.razorings++;
+    return qsearch(p, ply, alpha, beta, PV);
+  }
+
   // reset search
   // !important to do this after IID!
   const auto myMg = &mg[ply];

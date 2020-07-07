@@ -58,22 +58,23 @@ protected:
 TEST_F(EngineSpeedTests, npsTest) {
   SearchConfig::TT_SIZE_MB          = 64;
   SearchConfig::USE_BOOK            = false;
-  SearchConfig::USE_ALPHABETA       = false;
-  SearchConfig::USE_PVS             = false;
-  SearchConfig::USE_TT              = false;
-  SearchConfig::USE_TT_VALUE        = false;
-  SearchConfig::USE_EVAL_TT         = false;
-  SearchConfig::USE_MDP             = false;
-  SearchConfig::USE_HISTORY_COUNTER = false;
-  SearchConfig::USE_HISTORY_MOVES   = false;
+  SearchConfig::USE_ALPHABETA       = true;
+  SearchConfig::USE_PVS             = true;
+  SearchConfig::USE_TT              = true;
+  SearchConfig::USE_TT_VALUE        = true;
+  SearchConfig::USE_EVAL_TT         = true;
+  SearchConfig::USE_MDP             = true;
+  SearchConfig::USE_HISTORY_COUNTER = true;
+  SearchConfig::USE_HISTORY_MOVES   = true;
   SearchConfig::USE_QUIESCENCE      = true;
-  SearchConfig::USE_QS_STANDPAT_CUT = false;
+  SearchConfig::USE_QS_STANDPAT_CUT = true;
   SearchConfig::USE_QS_SEE          = true;
-  SearchConfig::USE_QS_TT           = false;
+  SearchConfig::USE_QS_TT           = true;
+  SearchConfig::USE_RAZORING        = true;
 
   EvalConfig::USE_MATERIAL   = true;
-  EvalConfig::USE_POSITIONAL = false;
-  EvalConfig::TEMPO          = 0;
+  EvalConfig::USE_POSITIONAL = true;
+  EvalConfig::TEMPO          = 34;
 
   //  Position p{"2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - - 0 1 "};
   Position p{};
@@ -81,7 +82,7 @@ TEST_F(EngineSpeedTests, npsTest) {
   s.isReady();
   SearchLimits sl{};
   sl.timeControl = true;
-  sl.moveTime    = 60s;
+  sl.moveTime    = 120s;
   s.startSearch(p, sl);
   EXPECT_TRUE(s.isSearching());
   EXPECT_FALSE(s.hasResult());

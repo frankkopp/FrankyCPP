@@ -89,6 +89,12 @@ void UciOptions::initOptions() {
   optionVector.emplace_back("Use Quiescence SEE", SearchConfig::USE_QS_SEE,
                             [&](UciHandler*) { SearchConfig::USE_QS_SEE = getOption("Use Quiescence SEE")->currentValue == "true"; });
 
+  optionVector.emplace_back("Use Razoring", SearchConfig::USE_RAZORING,
+                            [&](UciHandler*) { SearchConfig::USE_RAZORING = getOption("Use Razoring")->currentValue == "true"; });
+
+  optionVector.emplace_back("Razor Margin", SearchConfig::RAZOR_MARGIN, VALUE_MIN, VALUE_MAX,
+                            [&](UciHandler* uciHandler) { SearchConfig::RAZOR_MARGIN = static_cast<Value>(getInt(getOption("Razor Margin")->currentValue)); });
+
 
   // optionVector.emplace_back("***", [&](UciHandler* uciHandler) { });
 
