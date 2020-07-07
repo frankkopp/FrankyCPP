@@ -46,20 +46,16 @@ struct SearchStats {
 
   uint64_t checkmates;
   uint64_t stalemates;
-
   uint64_t leafPositionsEvaluated;
   uint64_t evaluations;
   uint64_t perftNodeCount;
 
   uint64_t betaCuts;
   uint64_t betaCuts1st;
-  uint64_t rootPvsResearches;
-  uint64_t pvsResearches;
-  uint64_t bestMoveChange;
   uint64_t mdp;
   uint64_t lmrResearches;
-
   uint64_t standpatCuts;
+  uint64_t razorings;
 
   uint64_t ttHit;
   uint64_t ttMiss;
@@ -69,6 +65,9 @@ struct SearchStats {
   uint64_t NoTtMove;
   uint64_t TtMoveUsed;
 
+  uint64_t rootPvsResearches;
+  uint64_t pvsResearches;
+  uint64_t bestMoveChange;
 
   std::string str() const {
     std::ostringstream os;
@@ -89,6 +88,7 @@ struct SearchStats {
        << " pvsResearches: " << stats.pvsResearches
        << " bestMoveChange: " << stats.bestMoveChange
        << " mdp: " << stats.mdp
+       << " razorings: " << stats.razorings
        << " lmrResearches: " << stats.lmrResearches
        << " ttHit: " << stats.ttHit
        << " ttMiss: " << stats.ttMiss
