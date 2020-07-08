@@ -66,6 +66,8 @@ namespace SearchConfig {
   inline bool USE_QS_SEE          = true;// use SEE for goodCaptures
   inline bool USE_RAZORING        = true;// Razoring like Stockfish
   inline Value RAZOR_MARGIN{531};
+  inline bool USE_RFP = true;                                          // Reverse Futility Pruning
+  inline Value rfp[4] = {Value{0}, Value{200}, Value{400}, Value{800}};// reverse futility pruning - array with margins per depth left
 
 
   //  inline bool USE_MPP                 = true; // minor promotion pruning
