@@ -634,6 +634,22 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
     return qsearch(p, ply, alpha, beta, PV);
   }
 
+  // Reverse Futility Pruning, (RFP, Static Null Move Pruning)
+  // https://www.chessprogramming.org/Reverse_Futility_Pruning
+  // Anticipate likely alpha low in the next ply by a beta cut
+  // off before making and evaluating the move
+  if (SearchConfig::USE_RFP &&
+      doNull &&
+      depth <= 3 &&
+      !isPv &&
+      !hasCheck) {
+    auto margin = SearchConfig::rfp[depth];
+    if (staticEval - margin >= beta) {
+      statistics.rfp_cuts++;
+      return staticEval - margin;// fail-hard: beta / fail-soft: staticEval - evalMargin;
+    }
+  }
+
   // reset search
   // !important to do this after IID!
   const auto myMg = &mg[ply];

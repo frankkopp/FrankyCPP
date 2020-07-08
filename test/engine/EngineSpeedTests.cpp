@@ -71,6 +71,7 @@ TEST_F(EngineSpeedTests, npsTest) {
   SearchConfig::USE_QS_SEE          = true;
   SearchConfig::USE_QS_TT           = true;
   SearchConfig::USE_RAZORING        = true;
+  SearchConfig::USE_RFP             = true;
 
   EvalConfig::USE_MATERIAL   = true;
   EvalConfig::USE_POSITIONAL = true;

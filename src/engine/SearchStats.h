@@ -56,6 +56,7 @@ struct SearchStats {
   uint64_t lmrResearches;
   uint64_t standpatCuts;
   uint64_t razorings;
+  uint64_t rfp_cuts;
 
   uint64_t ttHit;
   uint64_t ttMiss;
@@ -89,6 +90,7 @@ struct SearchStats {
        << " bestMoveChange: " << stats.bestMoveChange
        << " mdp: " << stats.mdp
        << " razorings: " << stats.razorings
+       << " rfp_cuts: " << stats.rfp_cuts
        << " lmrResearches: " << stats.lmrResearches
        << " ttHit: " << stats.ttHit
        << " ttMiss: " << stats.ttMiss
