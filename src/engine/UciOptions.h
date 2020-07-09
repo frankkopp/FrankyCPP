@@ -82,7 +82,7 @@ struct UciOption {
 
   // String for uciOption will return a representation of the uci option as required by
   // the UCI protocol during the initialization phase of the UCI protocol
-  std::string str() const;
+  [[nodiscard]] std::string str() const;
 
   friend std::ostream& operator<<(std::ostream& os, const UciOption& option) {
     os << option.str();

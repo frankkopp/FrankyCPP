@@ -59,6 +59,9 @@ namespace SearchConfig {
   inline bool USE_KILLER_MOVES    = true;// Store refutation moves (>beta) for move ordering
   inline bool USE_HISTORY_COUNTER = true;
   inline bool USE_HISTORY_MOVES   = true;
+  inline bool USE_IID             = true;// Internal iterative deepening
+  inline Depth IID_DEPTH{6};             // Internal iterative deepening
+  inline Depth IID_REDUCTION{2};         // Internal iterative deepening
 
   // Pruning features
   inline bool USE_MDP             = true;// mate distance pruning
@@ -69,18 +72,11 @@ namespace SearchConfig {
   inline bool USE_RFP = true;                                          // Reverse Futility Pruning
   inline Value rfp[4] = {Value{0}, Value{200}, Value{400}, Value{800}};// reverse futility pruning - array with margins per depth left
 
+  inline bool USE_NMP        = true;// Null Move Pruning
+  inline Depth NMP_DEPTH     = Depth{3};
+  inline Depth NMP_REDUCTION = Depth{2};
 
-  //  inline bool USE_MPP                 = true; // minor promotion pruning
-  //
-  //  inline bool USE_RFP                 = true; // Reverse Futility Pruning
-  //  inline Value RFP_MARGIN             = Value{250}; // less than 3 pawns per depth
-  //
-  //  inline bool USE_NMP                 = true; // Null Move Pruning
-  //  inline Depth NMP_DEPTH              = Depth{3};
-  //  inline Depth NMP_REDUCTION          = Depth{3};
-  //  inline bool NMP_VERIFICATION        = true;
-  //  inline Depth NMP_V_REDUCTION        = Depth{3};
-  //
+
   //  inline bool USE_EXTENSIONS          = true; // extensions
   //
   //  inline bool USE_FP                  = true; // futility pruning

@@ -53,10 +53,10 @@ struct SearchStats {
   uint64_t betaCuts;
   uint64_t betaCuts1st;
   uint64_t mdp;
-  uint64_t lmrResearches;
   uint64_t standpatCuts;
   uint64_t razorings;
   uint64_t rfp_cuts;
+  uint64_t nullMoveCuts;
 
   uint64_t ttHit;
   uint64_t ttMiss;
@@ -64,13 +64,16 @@ struct SearchStats {
   uint64_t TtNoCuts;
   uint64_t evalFromTT;
   uint64_t NoTtMove;
+  uint64_t iidSearches;
+  uint64_t iidMoves;
   uint64_t TtMoveUsed;
 
   uint64_t rootPvsResearches;
   uint64_t pvsResearches;
   uint64_t bestMoveChange;
+  uint64_t lmrResearches;
 
-  std::string str() const {
+  [[nodiscard]] std::string str() const {
     std::ostringstream os;
     os << *this;
     return os.str();
@@ -91,6 +94,7 @@ struct SearchStats {
        << " mdp: " << stats.mdp
        << " razorings: " << stats.razorings
        << " rfp_cuts: " << stats.rfp_cuts
+       << " nmp_cuts: " << stats.nullMoveCuts
        << " lmrResearches: " << stats.lmrResearches
        << " ttHit: " << stats.ttHit
        << " ttMiss: " << stats.ttMiss
@@ -98,7 +102,9 @@ struct SearchStats {
        << " TtNoCuts: " << stats.TtNoCuts
        << " evalFromTT: " << stats.evalFromTT
        << " TtMoveUsed: " << stats.TtMoveUsed
-       << " NoTtMove: " << stats.NoTtMove;
+       << " NoTtMove: " << stats.NoTtMove
+       << " IID Searches: " << stats.iidSearches
+       << " IID Moves: " << stats.iidMoves;
     return os;
   }
 };

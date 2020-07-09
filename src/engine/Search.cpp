@@ -620,7 +620,6 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
     }
   }
 
-  // TODO implement prunings
 
   // Razoring from Stockfish
   // When static eval is well below alpha at the last node
@@ -647,6 +646,112 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
     if (staticEval - margin >= beta) {
       statistics.rfp_cuts++;
       return staticEval - margin;// fail-hard: beta / fail-soft: staticEval - evalMargin;
+    }
+  }
+
+  // NULL MOVE PRUNING
+  // https://www.chessprogramming.org/Null_Move_Pruning
+  // Under the assumption that in most chess position it would be better
+  // do make a move than to not make a move we assume that if
+  // our positional value after a null move is already above beta (>beta)
+  // it would be above beta when doing a move in any case.
+  // Certain situations need to be considered though:
+  // - Zugzwang - it would be better not to move
+  // - in check - this would lead to an illegal situation where the king is captured
+  // - recursive null moves should be avoided
+  if (SearchConfig::USE_NMP) {
+    if (doNull &&
+        !isPv &&
+        depth >= SearchConfig::NMP_DEPTH &&
+        p.getMaterialNonPawn(us) > 0 &&// to reduce risk of zugzwang
+        !hasCheck) {
+      // possible other criteria: eval > beta
+
+      // determine depth reduction
+      // ICCA Journal, Vol. 22, No. 3
+      // Ernst A. Heinz, Adaptive Null-Move Pruning, postscript
+      // http://people.csail.mit.edu/heinz/ps/adpt_null.ps.gz
+      auto r = SearchConfig::NMP_REDUCTION;
+      if (depth > 8 || (depth > 6 && p.getGamePhase() >= 3)) {
+        ++r;
+      }
+      auto newDepth = depth - r - 1;
+      // double check that depth does not get negative
+      if (newDepth < 0) {
+        newDepth = DEPTH_NONE;
+      }
+
+      // do null move search
+      p.doNullMove();
+      nodesVisited++;
+      auto nValue = -search(p, newDepth, ply + 1, -beta, -beta + 1, Node_Type::NonPV, Do_Null::No_Null_Move);
+      p.undoNullMove();
+
+      // check if we should stop the search
+      if (stopConditions()) {
+        return VALUE_NONE;
+      }
+
+      // flag for mate threats
+      if (nValue > VALUE_CHECKMATE_THRESHOLD) {
+        // although this player did not make a move the value still is
+        // a mate - very good! Just adjust the value to not return an
+        // unproven mate
+        nValue = VALUE_CHECKMATE_THRESHOLD;
+      }
+      else if (nValue < VALUE_CHECKMATE_THRESHOLD) {
+        // the player did not move and got mated ==> mate threat
+        matethreat = true;
+      }
+
+      // if the value is higher than beta even after not making
+      // a move it is not worth searching as it will very likely
+      // be above beta if we make a move
+      if (nValue >= beta) {
+        statistics.nullMoveCuts++;
+        // Store TT
+        if (SearchConfig::USE_TT) {
+          storeTt(p, depth, ply, ttMove, nValue, BETA, staticEval, matethreat);
+        }
+        return nValue;
+      }
+    }
+  }
+
+  // Internal Iterative Deepening (IID)
+  // https://www.chessprogramming.org/Internal_Iterative_Deepening
+  // Used when no best move from the tt is available from a previous
+  // searches. IID is used to find a good move to search first by
+  // searching the current position to a reduced depth, and using
+  // the best move of that search as the first move at the real depth.
+  // Does not make a big difference in search tree size when move
+  // order already is good.
+  if (SearchConfig::USE_IID) {
+    if (depth >= SearchConfig::IID_DEPTH &&
+        ttMove != MOVE_NONE &&// no move from TT
+        doNull &&             // avoid in null move search
+        isPv) {
+
+      // get the new depth and make sure it is >0
+      auto newDepth = depth - SearchConfig::IID_REDUCTION;
+      if (newDepth < 0) {
+        newDepth = DEPTH_NONE;
+      }
+
+      // do the actual reduced search
+      search(p, newDepth, ply, alpha, beta, isPv, doNull);
+      statistics.iidSearches++;
+
+      // check if we should stop the search
+      if (stopConditions()) {
+        return VALUE_NONE;
+      }
+
+      // get the best move from the reduced search if available
+      if (!pv[ply].empty()) {
+        statistics.iidMoves++;
+        ttMove = moveOf(pv[ply][0]);
+      }
     }
   }
 

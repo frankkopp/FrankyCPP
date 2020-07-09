@@ -93,10 +93,29 @@ void UciOptions::initOptions() {
                             [&](UciHandler*) { SearchConfig::USE_RAZORING = getOption("Use Razoring")->currentValue == "true"; });
 
   optionVector.emplace_back("Razor Margin", SearchConfig::RAZOR_MARGIN, VALUE_MIN, VALUE_MAX,
-                            [&](UciHandler* uciHandler) { SearchConfig::RAZOR_MARGIN = static_cast<Value>(getInt(getOption("Razor Margin")->currentValue)); });
+                            [&](UciHandler*) { SearchConfig::RAZOR_MARGIN = static_cast<Value>(getInt(getOption("Razor Margin")->currentValue)); });
 
-  optionVector.emplace_back("Use RFP", SearchConfig::USE_RFP,
-                            [&](UciHandler*) { SearchConfig::USE_RFP = getOption("Use RFP")->currentValue == "true"; });
+  optionVector.emplace_back("Use Reverse Futility Pruning", SearchConfig::USE_RFP,
+                            [&](UciHandler*) { SearchConfig::USE_RFP = getOption("Use Reverse Futility Pruning")->currentValue == "true"; });
+
+  optionVector.emplace_back("Use Null Move Pruning", SearchConfig::USE_NMP,
+                            [&](UciHandler*) { SearchConfig::USE_NMP = getOption("Use Null Move Pruning")->currentValue == "true"; });
+
+  optionVector.emplace_back("Null Move Depth", SearchConfig::NMP_DEPTH, 0, DEPTH_MAX,
+                            [&](UciHandler*) { SearchConfig::NMP_DEPTH = static_cast<Depth>(getInt(getOption("Null Move Depth")->currentValue)); });
+
+  optionVector.emplace_back("Null Depth Reduction", SearchConfig::NMP_REDUCTION, 0, DEPTH_MAX,
+                            [&](UciHandler*) { SearchConfig::NMP_REDUCTION = static_cast<Depth>(getInt(getOption("Null Depth Reduction")->currentValue)); });
+
+  optionVector.emplace_back("Use Internal Iterative Deepening", SearchConfig::USE_IID,
+                            [&](UciHandler*) { SearchConfig::USE_IID = getOption("Use Internal Iterative Deepening")->currentValue == "true"; });
+
+  optionVector.emplace_back("IID Move Depth", SearchConfig::IID_DEPTH, 0, DEPTH_MAX,
+                            [&](UciHandler*) { SearchConfig::IID_DEPTH = static_cast<Depth>(getInt(getOption("IID Move Depth")->currentValue)); });
+
+  optionVector.emplace_back("IID Depth Reduction", SearchConfig::IID_REDUCTION, 0, DEPTH_MAX,
+                            [&](UciHandler*) { SearchConfig::IID_REDUCTION = static_cast<Depth>(getInt(getOption("IID Depth Reduction")->currentValue)); });
+
 
   // optionVector.emplace_back("***", [&](UciHandler* uciHandler) { });
 
