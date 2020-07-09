@@ -69,18 +69,19 @@ namespace SearchConfig {
   inline bool USE_QS_SEE          = true;// use SEE for goodCaptures
   inline bool USE_RAZORING        = true;// Razoring like Stockfish
   inline Value RAZOR_MARGIN{531};
-  inline bool USE_RFP = true;                                          // Reverse Futility Pruning
-  inline Value rfp[4] = {Value{0}, Value{200}, Value{400}, Value{800}};// reverse futility pruning - array with margins per depth left
+  inline bool USE_RFP        = true;                                          // Reverse Futility Pruning
+  inline Value RFP_MARGIN[4] = {Value{0}, Value{200}, Value{400}, Value{800}};// reverse futility pruning - array with margins per depth left
 
   inline bool USE_NMP        = true;// Null Move Pruning
   inline Depth NMP_DEPTH     = Depth{3};
   inline Depth NMP_REDUCTION = Depth{2};
 
+  inline bool USE_FP        = true;                                                                               // futility pruning
+  inline Value FP_MARGIN[7] = {Value{0}, Value{100}, Value{200}, Value{300}, Value{500}, Value{900}, Value{1200}};// futility pruning - array with margins per depth left.
+
 
   //  inline bool USE_EXTENSIONS          = true; // extensions
   //
-  //  inline bool USE_FP                  = true; // futility pruning
-  //  inline Value FP_MARGIN              = 2 * valueOf(PAWN);
   //
   //  inline bool USE_EFP                 = true;
   //  inline Value EFP_MARGIN             = valueOf(ROOK);

@@ -57,6 +57,7 @@ struct SearchStats {
   uint64_t razorings;
   uint64_t rfp_cuts;
   uint64_t nullMoveCuts;
+  uint64_t fpPrunings;
 
   uint64_t ttHit;
   uint64_t ttMiss;
@@ -95,6 +96,7 @@ struct SearchStats {
        << " razorings: " << stats.razorings
        << " rfp_cuts: " << stats.rfp_cuts
        << " nmp_cuts: " << stats.nullMoveCuts
+       << " fp_prunings: " << stats.fpPrunings
        << " lmrResearches: " << stats.lmrResearches
        << " ttHit: " << stats.ttHit
        << " ttMiss: " << stats.ttMiss

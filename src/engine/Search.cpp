@@ -642,7 +642,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
       depth <= 3 &&
       !isPv &&
       !hasCheck) {
-    auto margin = SearchConfig::rfp[depth];
+    auto margin = SearchConfig::RFP_MARGIN[depth];
     if (staticEval - margin >= beta) {
       statistics.rfp_cuts++;
       return staticEval - margin;// fail-hard: beta / fail-soft: staticEval - evalMargin;
@@ -792,6 +792,80 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
     Depth extension = DEPTH_NONE;
 
     // TODO implement extension and pruning
+
+    // ///////////////////////////////////////////////////////
+    // Forward Pruning
+    // FP will only be done when the move is not
+    // interesting - no check, no capture, etc.
+    if (!isPv &&
+        extension == 0 &&
+        move != ttMove &&
+        move != myMg->getKillerMoves()[0] &&
+        move != myMg->getKillerMoves()[1] &&
+        typeOf(move) != PROMOTION &&
+        !p.isCapturingMove(move) &&
+        !hasCheck &&  // pre move
+        !givesCheck &&// post move
+        !matethreat) {// from pre move null move check
+
+      // to check in futility pruning what material delta we have
+      auto moveGain = valueOf(p.getPiece(to));
+
+      // Futility Pruning
+      // Using an array of margin values for each depth
+      // we try to prune moves if they seem not worth
+      // searching any further. They are so far below
+      // alpha that we can assume a beta cutoff in the
+      // next iteration anyway.
+      // This is a typical forward pruning technique
+      // which might lead to errors.
+      // Limited Razoring / Extended FP are covered by this.
+      if (SearchConfig::USE_FP && depth < 7) {
+        auto futilityMargin = SearchConfig::FP_MARGIN[depth];
+        if (staticEval + moveGain + futilityMargin <= alpha) {
+          if (staticEval + moveGain > bestNodeValue) {
+            bestNodeValue = staticEval + moveGain;
+          }
+          statistics.fpPrunings++;
+          continue;
+        }
+      }
+
+      /*
+         // LMP - Late Move Pruning
+         // aka Move Count Based Pruning
+         if Settings.Search.UseLmp {
+           if movesSearched >= LmpMovesSearched(depth) {
+             s.statistics.LmpCuts++
+             continue
+           }
+         }
+
+         // LMR
+         // Late Move Reduction assumes that later moves a rarely
+         // exceeding alpha and therefore the search is reduced in
+         // depth. This is in effect a soft transition into
+         // quiescence search as we usually try the pv move and
+         // capturing moves first. In quiescence only capturing
+         // moves are searched anyway.
+         // newDepth is the "standard" new depth (depth - 1)
+         // lmrDepth is set to newDepth and only reduced
+         // if conditions apply.
+         if Settings.Search.UseLmr {
+           // compute reduction from depth and move searched
+           if depth >= Settings.Search.LmrDepth &&
+              movesSearched >= Settings.Search.LmrMovesSearched {
+             lmrDepth -= LmrReduction(depth, movesSearched)
+             s.statistics.LmrReductions++
+           }
+           // make sure not to become negative
+           if lmrDepth < 0 {
+             lmrDepth = 0
+           }
+         }
+         */
+    }
+    // ///////////////////////////////////////////////////////
 
     // ///////////////////////////////////////////////////////
     // DO MOVE
