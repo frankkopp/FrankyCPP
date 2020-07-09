@@ -116,6 +116,8 @@ void UciOptions::initOptions() {
   optionVector.emplace_back("IID Depth Reduction", SearchConfig::IID_REDUCTION, 0, DEPTH_MAX,
                             [&](UciHandler*) { SearchConfig::IID_REDUCTION = static_cast<Depth>(getInt(getOption("IID Depth Reduction")->currentValue)); });
 
+  optionVector.emplace_back("Use Futility Pruning", SearchConfig::USE_FP,
+                            [&](UciHandler*) { SearchConfig::USE_FP = getOption("Use Futility Pruning")->currentValue == "true"; });
 
   // optionVector.emplace_back("***", [&](UciHandler* uciHandler) { });
 
