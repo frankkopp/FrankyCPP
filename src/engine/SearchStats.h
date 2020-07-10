@@ -74,6 +74,8 @@ struct SearchStats {
   uint64_t bestMoveChange;
   uint64_t lmrResearches;
   uint64_t lmrReductions;
+  uint64_t lmpCuts;
+
 
   [[nodiscard]] std::string str() const {
     std::ostringstream os;

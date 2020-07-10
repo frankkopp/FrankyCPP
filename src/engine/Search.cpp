@@ -831,16 +831,15 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
         }
       }
 
-      /*
-         // LMP - Late Move Pruning
-         // aka Move Count Based Pruning
-         if Settings.Search.UseLmp {
-           if movesSearched >= LmpMovesSearched(depth) {
-             s.statistics.LmpCuts++
-             continue
-           }
-         }
-*/
+      // LMP - Late Move Pruning
+      // aka Move Count Based Pruning
+      if (SearchConfig::USE_LMP) {
+        if (movesSearched >= SearchConfig::LMP_MOVES[(depth > 15 ? 15 : depth)]) {
+          statistics.lmpCuts++;
+          continue;
+        }
+      }
+
       // LMR
       // Late Move Reduction assumes that later moves a rarely
       // exceeding alpha and therefore the search is reduced in
@@ -859,7 +858,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
             lmrDepth -= static_cast<Depth>(SearchConfig::LMR_REDUCTION[31][63]);
           }
           else {
-            lmrDepth -= 1 + static_cast<Depth>(SearchConfig::LMR_REDUCTION[depth][movesSearched]);
+            lmrDepth -= static_cast<Depth>(SearchConfig::LMR_REDUCTION[depth][movesSearched]);
           }
           statistics.lmrReductions++;
         }

@@ -76,6 +76,7 @@ TEST_F(EngineSpeedTests, npsTest) {
   SearchConfig::USE_IID             = true;
   SearchConfig::USE_FP              = true;
   SearchConfig::USE_LMR             = true;
+  SearchConfig::USE_LMP             = true;
 
   EvalConfig::USE_MATERIAL   = true;
   EvalConfig::USE_POSITIONAL = true;
