@@ -216,14 +216,15 @@ SearchTreeSizeTest::Result SearchTreeSizeTest::featureMeasurements(int depth, Mi
   SearchConfig::USE_IID      = false;
 
   SearchConfig::USE_FP  = false;
+  SearchConfig::USE_QFP = false;
   SearchConfig::USE_LMR = false;
   SearchConfig::USE_LMP = false;
 
   // ***********************************
   // TESTS
 
-  ptrToSpecial1 = &search.getSearchStats().lmrReductions;
-  ptrToSpecial2 = &search.getSearchStats().lmpCuts;
+  ptrToSpecial1 = &search.getSearchStats().fpPrunings;
+  ptrToSpecial2 = &search.getSearchStats().qfpPrunings;
 
   // pure MiniMax
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 MINIMAX"));
@@ -290,6 +291,9 @@ SearchTreeSizeTest::Result SearchTreeSizeTest::featureMeasurements(int depth, Mi
 
   SearchConfig::USE_LMP = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "66 LMP"));
+
+  SearchConfig::USE_QFP = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "67 QFP"));
 
   //  SearchConfig::USE_EXTENSIONS = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "40 EXT"));

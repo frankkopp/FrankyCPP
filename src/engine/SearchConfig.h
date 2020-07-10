@@ -77,6 +77,7 @@ namespace SearchConfig {
   inline Depth NMP_REDUCTION = Depth{2};
 
   inline bool USE_FP        = true;                                                                               // futility pruning
+  inline bool USE_QFP       = true;                                                                               // futility pruning qsearch
   inline Value FP_MARGIN[7] = {Value{0}, Value{100}, Value{200}, Value{300}, Value{500}, Value{900}, Value{1200}};// futility pruning - array with margins per depth left.
 
   inline bool USE_LMR                 = true;// Late Move Reduction

@@ -809,7 +809,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
         !matethreat) {// from pre move null move check
 
       // to check in futility pruning what material delta we have
-      auto moveGain = valueOf(p.getPiece(to));
+      const auto moveGain = valueOf(p.getPiece(to));
 
       // Futility Pruning
       // Using an array of margin values for each depth
@@ -821,7 +821,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
       // which might lead to errors.
       // Limited Razoring / Extended FP are covered by this.
       if (SearchConfig::USE_FP && depth < 7) {
-        auto futilityMargin = SearchConfig::FP_MARGIN[depth];
+        const auto futilityMargin = SearchConfig::FP_MARGIN[depth];
         if (staticEval + moveGain + futilityMargin <= alpha) {
           if (staticEval + moveGain > bestNodeValue) {
             bestNodeValue = staticEval + moveGain;
@@ -1162,7 +1162,29 @@ Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, Search::N
     const Square to       = toSquare(move);
     const bool givesCheck = p.givesCheck(move);
 
-    // TODO implement pruning
+    // Forward Pruning
+    // FP will only be done when the move is not
+    // interesting - no check, no capture, etc.
+    if (SearchConfig::USE_QFP &&
+        !isPv &&
+        move != ttMove &&
+        move != myMg->getKillerMoves()[0] &&
+        move != myMg->getKillerMoves()[1] &&
+        typeOf(move) != PROMOTION &&
+        !hasCheck &&// pre move
+        !givesCheck // post move
+    ) {
+      // to check in futility pruning what material delta we have
+      const auto moveGain       = valueOf(p.getPiece(to));
+      const auto futilityMargin = Value{150};
+      if (staticEval + moveGain + futilityMargin <= alpha) {
+        if (staticEval + moveGain > bestNodeValue) {
+          bestNodeValue = staticEval + moveGain;
+        }
+        statistics.qfpPrunings++;
+        continue;
+      }
+    }
 
     // reduce number of moves searched in quiescence
     // by looking at good captures only

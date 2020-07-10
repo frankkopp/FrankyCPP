@@ -119,6 +119,9 @@ void UciOptions::initOptions() {
   optionVector.emplace_back("Use Futility Pruning", SearchConfig::USE_FP,
                             [&](UciHandler*) { SearchConfig::USE_FP = getOption("Use Futility Pruning")->currentValue == "true"; });
 
+  optionVector.emplace_back("Use Quiescence Futility Pruning", SearchConfig::USE_QFP,
+                            [&](UciHandler*) { SearchConfig::USE_QFP = getOption("Use Quiescence Futility Pruning")->currentValue == "true"; });
+
   optionVector.emplace_back("Use Late Move Reduction", SearchConfig::USE_LMR,
                             [&](UciHandler*) { SearchConfig::USE_LMR = getOption("Use Late Move Reduction")->currentValue == "true"; });
 
