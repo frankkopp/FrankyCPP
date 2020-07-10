@@ -119,6 +119,11 @@ namespace SearchConfig {
   inline bool USE_LMP         = true;// Late Move Pruning (pre-computed with 6 + int(math.Pow(float64(i)+0.5, 1.3)))
   constexpr int LMP_MOVES[16] = {0, 7, 9, 11, 13, 15, 17, 19, 22, 24, 27, 29, 32, 35, 38, 41};
 
+  inline bool USE_EXTENSIONS    = true;
+  inline bool USE_CHECK_EXT     = true;
+  inline bool USE_THREAT_EXT    = false;
+  inline bool USE_EXT_ADD_DEPTH = true;
+
 }// namespace SearchConfig
 
 #endif//FRANKYCPP_SEARCHCONFIG_H
