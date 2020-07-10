@@ -73,6 +73,7 @@ struct SearchStats {
   uint64_t pvsResearches;
   uint64_t bestMoveChange;
   uint64_t lmrResearches;
+  uint64_t lmrReductions;
 
   [[nodiscard]] std::string str() const {
     std::ostringstream os;
@@ -97,6 +98,7 @@ struct SearchStats {
        << " rfp_cuts: " << stats.rfp_cuts
        << " nmp_cuts: " << stats.nullMoveCuts
        << " fp_prunings: " << stats.fpPrunings
+       << " lmrReductions: " << stats.lmrReductions
        << " lmrResearches: " << stats.lmrResearches
        << " ttHit: " << stats.ttHit
        << " ttMiss: " << stats.ttMiss

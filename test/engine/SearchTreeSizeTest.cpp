@@ -215,12 +215,8 @@ SearchTreeSizeTest::Result SearchTreeSizeTest::featureMeasurements(int depth, Mi
   SearchConfig::USE_NMP      = false;
   SearchConfig::USE_IID      = false;
 
-  //  SearchConfig::USE_EXTENSIONS        = false;
-  SearchConfig::USE_FP = false;
-  //  SearchConfig::USE_EFP               = false;
-  //  SearchConfig::USE_LMR               = false;
-  //  SearchConfig::USE_RAZOR_PRUNING = false;
-  //  SearchConfig::USE_LMP           = false;
+  SearchConfig::USE_FP  = false;
+  SearchConfig::USE_LMR = false;
 
   // ***********************************
   // TESTS
@@ -288,6 +284,9 @@ SearchTreeSizeTest::Result SearchTreeSizeTest::featureMeasurements(int depth, Mi
   SearchConfig::USE_FP = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "60 FP"));
 
+  SearchConfig::USE_LMR = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "65 LMR"));
+
   //  SearchConfig::USE_EXTENSIONS = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "40 EXT"));
   //
@@ -299,8 +298,6 @@ SearchTreeSizeTest::Result SearchTreeSizeTest::featureMeasurements(int depth, Mi
   //  SearchConfig::USE_ASPIRATION_WINDOW = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "80 ASP"));
   //
-  //  SearchConfig::USE_LMR = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "90 LMR"));
   //
   //  SearchConfig::USE_NMP = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "99 NMP"));

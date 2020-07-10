@@ -75,6 +75,7 @@ TEST_F(EngineSpeedTests, npsTest) {
   SearchConfig::USE_NMP             = true;
   SearchConfig::USE_IID             = true;
   SearchConfig::USE_FP              = true;
+  SearchConfig::USE_LMR             = true;
 
   EvalConfig::USE_MATERIAL   = true;
   EvalConfig::USE_POSITIONAL = true;
@@ -86,7 +87,7 @@ TEST_F(EngineSpeedTests, npsTest) {
   s.isReady();
   SearchLimits sl{};
   sl.timeControl = true;
-  sl.moveTime    = 120s;
+  sl.moveTime    = 160s;
   s.startSearch(p, sl);
   EXPECT_TRUE(s.isSearching());
   EXPECT_FALSE(s.hasResult());
