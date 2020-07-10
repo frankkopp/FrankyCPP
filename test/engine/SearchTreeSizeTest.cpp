@@ -217,12 +217,13 @@ SearchTreeSizeTest::Result SearchTreeSizeTest::featureMeasurements(int depth, Mi
 
   SearchConfig::USE_FP  = false;
   SearchConfig::USE_LMR = false;
+  SearchConfig::USE_LMP = false;
 
   // ***********************************
   // TESTS
 
-  ptrToSpecial1 = &search.getSearchStats().iidSearches;
-  ptrToSpecial2 = &search.getSearchStats().iidMoves;
+  ptrToSpecial1 = &search.getSearchStats().lmrReductions;
+  ptrToSpecial2 = &search.getSearchStats().lmpCuts;
 
   // pure MiniMax
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 MINIMAX"));
@@ -287,27 +288,17 @@ SearchTreeSizeTest::Result SearchTreeSizeTest::featureMeasurements(int depth, Mi
   SearchConfig::USE_LMR = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "65 LMR"));
 
+  SearchConfig::USE_LMP = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "66 LMP"));
+
   //  SearchConfig::USE_EXTENSIONS = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "40 EXT"));
-  //
   //
   //  SearchConfig::USE_EFP = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "60 EFP"));
   //
-  //
   //  SearchConfig::USE_ASPIRATION_WINDOW = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "80 ASP"));
-  //
-  //
-  //  SearchConfig::USE_NMP = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "99 NMP"));
-
-
-  //  SearchConfig::USE_IID = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "30 IID"));
-
-  //  SearchConfig::USE_LMP = true;
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "80 LMP"));
 
   // ***********************************
 

@@ -115,6 +115,9 @@ namespace SearchConfig {
     {1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8},
   };
 
+  inline bool USE_LMP         = true;// Late Move Pruning (pre-computed with 6 + int(math.Pow(float64(i)+0.5, 1.3)))
+  constexpr int LMP_MOVES[16] = {0, 7, 9, 11, 13, 15, 17, 19, 22, 24, 27, 29, 32, 35, 38, 41};
+
 }// namespace SearchConfig
 
 #endif//FRANKYCPP_SEARCHCONFIG_H

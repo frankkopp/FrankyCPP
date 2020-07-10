@@ -122,6 +122,9 @@ void UciOptions::initOptions() {
   optionVector.emplace_back("Use Late Move Reduction", SearchConfig::USE_LMR,
                             [&](UciHandler*) { SearchConfig::USE_LMR = getOption("Use Late Move Reduction")->currentValue == "true"; });
 
+  optionVector.emplace_back("Use Late Move Pruning", SearchConfig::USE_LMP,
+                            [&](UciHandler*) { SearchConfig::USE_LMP = getOption("Use Late Move Pruning")->currentValue == "true"; });
+
   // optionVector.emplace_back("***", [&](UciHandler* uciHandler) { });
 }
 
