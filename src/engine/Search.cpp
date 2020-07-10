@@ -791,7 +791,36 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
     Depth lmrDepth  = newDepth;
     Depth extension = DEPTH_NONE;
 
-    // TODO implement extension and pruning
+    // Here we try some search extensions. This has to be done
+    // very carefully as it usually is more effective to prune
+    // than to extend.
+    if (SearchConfig::USE_EXTENSIONS) {
+      // The check extensions is a bit redundant as our QS search
+      // searches all moves anyway when in check. But with this
+      // extension we hope to profit from using the prunings
+      // of the normal search which are not available in
+      // qsearch.
+      if (SearchConfig::USE_CHECK_EXT && givesCheck) {
+        statistics.checkExtension++;
+        extension = DEPTH_ONE;
+      }
+
+      // If we have found a mate threat during Null Move Search
+      // we extend normal search by one ply to try to find
+      // a way out.
+      // Deactivated in config as this grows the search tree
+      // too much.
+      if (SearchConfig::USE_THREAT_EXT && matethreat) {
+        statistics.threatExtension++;
+        extension = DEPTH_ONE;
+      }
+
+      // With this turned off we still can use extension to
+      // at least avoid reductions for these moves.
+      if (SearchConfig::USE_EXT_ADD_DEPTH) {
+        newDepth += extension;
+      }
+    }
 
     // ///////////////////////////////////////////////////////
     // Forward Pruning
@@ -1327,7 +1356,7 @@ bool Search::goodCapture(Position& p, Move move) {
 }
 
 void Search::storeTt(Position& p, Depth depth, Depth ply, Move move, Value value, ValueType valueType, Value eval, bool mateThreat) {
-  tt->put(p.getZobristKey(), depth, move, valueToTt(value, ply), valueType, eval, mateThreat);
+  tt->put(p.getZobristKey(), depth, move, valueToTt(value, ply), valueType, eval);
 }
 
 void Search::savePV(Move move, MoveList& src, MoveList& dest) {

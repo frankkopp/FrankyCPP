@@ -81,7 +81,6 @@ public:
     int8_t depth : 7;          // 0-127
     uint8_t age : 3;           // 0-7
     ValueType type : 2;        // 4 values
-    bool mateThreat : 1;       // 1-bit bool
     friend std::ostream& operator<<(std::ostream& os, const Entry& entry);
   };
 
@@ -153,7 +152,7 @@ public:
     * @param type EXACT, ALPHA or BETA
     * @param mateThreat node had a mate threat in the ply
     */
-  void put(Key key, Depth depth, Move move, Value value, ValueType type, Value eval, bool mateThreat);
+  void put(Key key, Depth depth, Move move, Value value, ValueType type, Value eval);
 
   /**
    * This retrieves a ptr to the entry of this node from cache.

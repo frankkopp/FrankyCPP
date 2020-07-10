@@ -77,6 +77,8 @@ struct SearchStats {
   uint64_t lmrReductions;
   uint64_t lmpCuts;
 
+  uint64_t checkExtension;
+  uint64_t threatExtension;
 
   [[nodiscard]] std::string str() const {
     std::ostringstream os;
@@ -104,6 +106,8 @@ struct SearchStats {
        << " qfp_prunings: " << stats.qfpPrunings
        << " lmrReductions: " << stats.lmrReductions
        << " lmrResearches: " << stats.lmrResearches
+       << " check ext: " << stats.checkExtension
+       << " threat ext: " << stats.threatExtension
        << " ttHit: " << stats.ttHit
        << " ttMiss: " << stats.ttMiss
        << " TtCuts: " << stats.TtCuts

@@ -92,7 +92,6 @@ void TT::clear() {
         _data[i].type       = ValueType::NONE;
         _data[i].eval       = VALUE_NONE;
         _data[i].age        = 1;
-        _data[i].mateThreat = false;
       }
     });
   }
@@ -116,8 +115,7 @@ void TT::clear() {
   LOG__DEBUG(Logger::get().TT_LOG, "TT cleared {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }
 
-void TT::put(const Key key, const Depth depth, const Move move, const Value value,
-             const ValueType type, const Value eval, const bool mateThreat) {
+void TT::put(Key key, Depth depth, Move move, Value value, ValueType type, Value eval) {
 
   // if the size of the TT = 0 we
   // do not store anything
@@ -138,7 +136,6 @@ void TT::put(const Key key, const Depth depth, const Move move, const Value valu
     entryDataPtr->type       = type;
     entryDataPtr->age        = 1;
     entryDataPtr->eval       = eval;
-    entryDataPtr->mateThreat = mateThreat;
     return;
   }
 
@@ -158,7 +155,6 @@ void TT::put(const Key key, const Depth depth, const Move move, const Value valu
       entryDataPtr->type       = type;
       entryDataPtr->age        = 1;
       entryDataPtr->eval       = eval;
-      entryDataPtr->mateThreat = mateThreat;
     }
     return;
   }
@@ -182,7 +178,6 @@ void TT::put(const Key key, const Depth depth, const Move move, const Value valu
     if (eval != VALUE_NONE) {// preserve existing entry if no valid value is given
       entryDataPtr->eval = eval;
     }
-    entryDataPtr->mateThreat = mateThreat;
     return;
   }
 
@@ -247,7 +242,6 @@ std::string TT::str() {
 
 std::ostream& operator<<(std::ostream& os, const TT::Entry& entry) {
   os << "key: " << entry.key << " depth: " << entry.depth << " move: " << entry.move << " value: "
-     << entry.value << " type: " << entry.type << " mateThreat: " << entry.mateThreat
-     << " age: " << entry.age;
+     << entry.value << " type: " << entry.type << " age: " << entry.age;
   return os;
 }
