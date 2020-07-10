@@ -119,25 +119,10 @@ void UciOptions::initOptions() {
   optionVector.emplace_back("Use Futility Pruning", SearchConfig::USE_FP,
                             [&](UciHandler*) { SearchConfig::USE_FP = getOption("Use Futility Pruning")->currentValue == "true"; });
 
-  // optionVector.emplace_back("***", [&](UciHandler* uciHandler) { });
+  optionVector.emplace_back("Use Late Move Reduction", SearchConfig::USE_LMR,
+                            [&](UciHandler*) { SearchConfig::USE_LMR = getOption("Use Late Move Reduction")->currentValue == "true"; });
 
-  //  MAP("Use_RFP",          UCI_Option("Use_RFP",          SearchConfig::USE_RFP));
-  //  MAP("RFP_Margin",       UCI_Option("RFP_Margin",       SearchConfig::RFP_MARGIN, 0, VALUE_MAX));
-  //  MAP("Use_NMP",          UCI_Option("Use_NMP",          SearchConfig::USE_NMP));
-  //  MAP("NMP_Depth",        UCI_Option("NMP_Depth",        SearchConfig::NMP_DEPTH, 0, DEPTH_MAX));
-  //  MAP("NMP_Reduction",    UCI_Option("NMP_Reduction",    SearchConfig::NMP_REDUCTION, 0, DEPTH_MAX));
-  //  MAP("Use_NMPVer",       UCI_Option("Use_NMPVer",       SearchConfig::NMP_VERIFICATION));
-  //  MAP("NMPV_Reduction",   UCI_Option("NMPV_Reduction",   SearchConfig::NMP_V_REDUCTION, 0, DEPTH_MAX));
-  //  MAP("Use_EXT",          UCI_Option("Use_EXT",          SearchConfig::USE_EXTENSIONS));
-  //  MAP("Use_FP",           UCI_Option("Use_FP",           SearchConfig::USE_FP));
-  //  MAP("FP_Margin",        UCI_Option("FP_Margin",        SearchConfig::FP_MARGIN, 0, VALUE_MAX));
-  //  MAP("Use_EFP",          UCI_Option("Use_EFP",          SearchConfig::USE_EFP));
-  //  MAP("EFP_Margin",       UCI_Option("EFP_Margin",       SearchConfig::EFP_MARGIN, 0, VALUE_MAX));
-  //  MAP("Use_LMR",          UCI_Option("Use_LMR",          SearchConfig::USE_LMR));
-  //  MAP("LMR_Min_Depth",    UCI_Option("LMR_Min_Depth",    SearchConfig::LMR_MIN_DEPTH, 0, DEPTH_MAX));
-  //  MAP("LMR_Min_Moves",    UCI_Option("LMR_Min_Moves",    SearchConfig::LMR_MIN_MOVES, 0, DEPTH_MAX));
-  //  MAP("LMR_Reduction",    UCI_Option("LMR_Reduction",    SearchConfig::LMR_REDUCTION, 0, DEPTH_MAX));
-  // @formatter:on
+  // optionVector.emplace_back("***", [&](UciHandler* uciHandler) { });
 }
 
 const UciOption* UciOptions::getOption(const std::string& name) const {

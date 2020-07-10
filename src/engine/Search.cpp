@@ -840,8 +840,8 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
              continue
            }
          }
-
-         // LMR
+*/
+      // LMR
          // Late Move Reduction assumes that later moves a rarely
          // exceeding alpha and therefore the search is reduced in
          // depth. This is in effect a soft transition into
@@ -851,19 +851,23 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
          // newDepth is the "standard" new depth (depth - 1)
          // lmrDepth is set to newDepth and only reduced
          // if conditions apply.
-         if Settings.Search.UseLmr {
-           // compute reduction from depth and move searched
-           if depth >= Settings.Search.LmrDepth &&
-              movesSearched >= Settings.Search.LmrMovesSearched {
-             lmrDepth -= LmrReduction(depth, movesSearched)
-             s.statistics.LmrReductions++
-           }
-           // make sure not to become negative
-           if lmrDepth < 0 {
-             lmrDepth = 0
-           }
-         }
-         */
+      if (SearchConfig::USE_LMR) {
+        // compute reduction from depth and move searched
+        if (depth >= SearchConfig::LMR_MIN_DEPTH &&
+            movesSearched >= SearchConfig::LMR_MIN_MOVES) {
+          if (depth >= 32 || movesSearched >= 64) {
+            lmrDepth -= static_cast<Depth>(SearchConfig::LMR_REDUCTION[31][63]);
+          }
+          else {
+            lmrDepth -= 1 + static_cast<Depth>(SearchConfig::LMR_REDUCTION[depth][movesSearched]);
+          }
+          statistics.lmrReductions++;
+        }
+        // make sure not to become negative
+        if (lmrDepth < 0) {
+          lmrDepth = DEPTH_NONE;
+        }
+      }
     }
     // ///////////////////////////////////////////////////////
 
