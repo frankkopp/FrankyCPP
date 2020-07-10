@@ -842,15 +842,15 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
          }
 */
       // LMR
-         // Late Move Reduction assumes that later moves a rarely
-         // exceeding alpha and therefore the search is reduced in
-         // depth. This is in effect a soft transition into
-         // quiescence search as we usually try the pv move and
-         // capturing moves first. In quiescence only capturing
-         // moves are searched anyway.
-         // newDepth is the "standard" new depth (depth - 1)
-         // lmrDepth is set to newDepth and only reduced
-         // if conditions apply.
+      // Late Move Reduction assumes that later moves a rarely
+      // exceeding alpha and therefore the search is reduced in
+      // depth. This is in effect a soft transition into
+      // quiescence search as we usually try the pv move and
+      // capturing moves first. In quiescence only capturing
+      // moves are searched anyway.
+      // newDepth is the "standard" new depth (depth - 1)
+      // lmrDepth is set to newDepth and only reduced
+      // if conditions apply.
       if (SearchConfig::USE_LMR) {
         // compute reduction from depth and move searched
         if (depth >= SearchConfig::LMR_MIN_DEPTH &&
@@ -1318,11 +1318,9 @@ void Search::savePV(Move move, MoveList& src, MoveList& dest) {
 Value Search::valueToTt(Value value, Depth ply) {
   if (isCheckMateValue(value)) {
     if (value > 0) {
-      value = value + Value(ply);
+      return value + Value(ply);
     }
-    else {
-      value = value - Value(ply);
-    }
+    return value - Value(ply);
   }
   return value;
 }
@@ -1330,11 +1328,9 @@ Value Search::valueToTt(Value value, Depth ply) {
 Value Search::valueFromTt(Value value, Depth ply) {
   if (isCheckMateValue(value)) {
     if (value > 0) {
-      value = value - Value(ply);
+      return value - Value(ply);
     }
-    else {
-      value = value + Value(ply);
-    }
+    return value + Value(ply);
   }
   return value;
 }
@@ -1469,13 +1465,10 @@ MilliSec Search::setupTimeControl(Position& position, SearchLimits& sl) {
     // account for runtime of our code
     if (tl.count() < 100) {
       // limits for very short available time reduced by another 20%
-      tl = static_cast<MilliSec>(uint64_t(0.8 * tl.count()));
+      return static_cast<MilliSec>(uint64_t(0.8 * tl.count()));
     }
-    else {
-      // reduced by 10%
-      tl = static_cast<MilliSec>(uint64_t(0.9 * tl.count()));
-    }
-    return tl;
+    // reduced by 10%
+    return static_cast<MilliSec>(uint64_t(0.9 * tl.count()));
   }
 }
 
@@ -1505,20 +1498,19 @@ void Search::startTimer() {
 void Search::sendReadyOk() const {
   if (uciHandler) {
     uciHandler->sendReadyOk();
+    return;
   }
-  else {
-    LOG__INFO(Logger::get().SEARCH_LOG, "uci >> readyok");
-  }
+  LOG__INFO(Logger::get().SEARCH_LOG, "uci >> readyok");
 }
 
 void Search::sendString(const std::string& msg) const {
   if (uciHandler) {
     uciHandler->sendString(msg);
+    return;
   }
-  else {
-    LOG__INFO(Logger::get().SEARCH_LOG, "uci >> " + msg);
-  }
+  LOG__INFO(Logger::get().SEARCH_LOG, "uci >> " + msg);
 }
+
 void Search::sendResult(SearchResult& result) {
   if (uciHandler) {
     uciHandler->sendResult(result.bestMove, result.ponderMove);
@@ -1536,17 +1528,17 @@ void Search::sendIterationEndInfoToUci() {
       nps(nodesVisited, since),
       MILLISECONDS(since),
       pv[0]);
+    return;
   }
-  else {
-    LOG__INFO(Logger::get().SEARCH_LOG, "depth {} seldepth {} value {} nodes {:n} nps {:n} time {:n} pv {}",
-              statistics.currentSearchDepth,
-              statistics.currentExtraSearchDepth,
-              str(statistics.currentBestRootMoveValue),
-              nodesVisited,
-              nps(nodesVisited, since),
-              MILLISECONDS(since).count(),
-              str(pv[0]));
-  }
+
+  LOG__INFO(Logger::get().SEARCH_LOG, "depth {} seldepth {} value {} nodes {:n} nps {:n} time {:n} pv {}",
+            statistics.currentSearchDepth,
+            statistics.currentExtraSearchDepth,
+            str(statistics.currentBestRootMoveValue),
+            nodesVisited,
+            nps(nodesVisited, since),
+            MILLISECONDS(since).count(),
+            str(pv[0]));
 }
 
 void Search::sendSearchUpdateToUci() {
@@ -1585,14 +1577,14 @@ void Search::sendSearchUpdateToUci() {
       hashfull);
     uciHandler->sendCurrentRootMove(statistics.currentRootMove, statistics.currentRootMoveIndex);
     uciHandler->sendCurrentLine(statistics.currentVariation);
+    return;
   }
-  else {
-    LOG__INFO(Logger::get().SEARCH_LOG, "depth {} seldepth {} nodes {:n} nps {:n} time {:n} hashful {:n}",
-              statistics.currentSearchDepth,
-              statistics.currentExtraSearchDepth,
-              nodesVisited,
-              nodesPerSec,
-              MILLISECONDS(since).count(),
-              hashfull);
-  }
+
+  LOG__INFO(Logger::get().SEARCH_LOG, "depth {} seldepth {} nodes {:n} nps {:n} time {:n} hashful {:n}",
+            statistics.currentSearchDepth,
+            statistics.currentExtraSearchDepth,
+            nodesVisited,
+            nodesPerSec,
+            MILLISECONDS(since).count(),
+            hashfull);
 }
