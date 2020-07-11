@@ -32,9 +32,9 @@ add_executable(
         engine/UciOptionsTest.cpp
         engine/TT_Test.cpp
         engine/SearchTest.cpp
-        engine/EngineSpeedTests.cpp
-        engine/SearchTreeSizeTest.cpp
         engine/SeeTest.cpp
+        engine/EngineSpeedTests.cpp
+        engine/SearchTreeSizeTest_Test.cpp
 
         TimingTests.cpp
         BOOST_Test.cpp
