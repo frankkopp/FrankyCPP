@@ -72,6 +72,7 @@ struct SearchStats {
 
   uint64_t rootPvsResearches;
   uint64_t pvsResearches;
+  uint64_t aspirationResearches;
   uint64_t bestMoveChange;
   uint64_t lmrResearches;
   uint64_t lmrReductions;
@@ -97,6 +98,7 @@ struct SearchStats {
        << " betaCuts1st: " << stats.betaCuts1st
        << " rootPvsResearches: " << stats.rootPvsResearches
        << " pvsResearches: " << stats.pvsResearches
+       << " aspirationResearches: " << stats.aspirationResearches
        << " bestMoveChange: " << stats.bestMoveChange
        << " mdp: " << stats.mdp
        << " razorings: " << stats.razorings
