@@ -228,8 +228,8 @@ SearchTreeSizeTest::Result SearchTreeSizeTest::featureMeasurements(int depth, Mi
   // ***********************************
   // TESTS
 
-  ptrToSpecial1 = &search.getSearchStats().fpPrunings;
-  ptrToSpecial2 = &search.getSearchStats().checkExtension;
+  ptrToSpecial1 = &search.getSearchStats().checkExtension;
+  ptrToSpecial2 = &search.getSearchStats().threatExtension;
 
   // pure MiniMax
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 MINIMAX"));

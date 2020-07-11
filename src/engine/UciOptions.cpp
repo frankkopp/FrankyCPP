@@ -128,6 +128,18 @@ void UciOptions::initOptions() {
   optionVector.emplace_back("Use Late Move Pruning", SearchConfig::USE_LMP,
                             [&](UciHandler*) { SearchConfig::USE_LMP = getOption("Use Late Move Pruning")->currentValue == "true"; });
 
+  optionVector.emplace_back("Use Extensions", SearchConfig::USE_EXTENSIONS,
+                            [&](UciHandler*) { SearchConfig::USE_EXTENSIONS = getOption("Use Extensions")->currentValue == "true"; });
+
+  optionVector.emplace_back("Use Check Extension", SearchConfig::USE_CHECK_EXT,
+                            [&](UciHandler*) { SearchConfig::USE_CHECK_EXT = getOption("Use Check Extension")->currentValue == "true"; });
+
+  optionVector.emplace_back("Use Threat Extension", SearchConfig::USE_THREAT_EXT,
+                            [&](UciHandler*) { SearchConfig::USE_THREAT_EXT = getOption("Use Threat Extension")->currentValue == "true"; });
+
+  optionVector.emplace_back("Use Extension Add", SearchConfig::USE_EXT_ADD_DEPTH,
+                            [&](UciHandler*) { SearchConfig::USE_EXT_ADD_DEPTH = getOption("Use Extension Add")->currentValue == "true"; });
+
   // optionVector.emplace_back("***", [&](UciHandler* uciHandler) { });
 }
 
