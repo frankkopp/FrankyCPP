@@ -29,7 +29,6 @@
 #include "Search.h"
 #include "SearchConfig.h"
 #include "See.h"
-#include "chesscore/Position.h"
 
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
@@ -342,7 +341,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
 
   // ###########################################
   // ### BEGIN Iterative Deepening
-  for (Depth iterationDepth = Depth{1}; iterationDepth <= maxDepth; ++iterationDepth) {
+  for (auto iterationDepth = Depth{1}; iterationDepth <= maxDepth; ++iterationDepth) {
     // update search counter
     nodesVisited++;
 
@@ -428,10 +427,55 @@ SearchResult Search::iterativeDeepening(Position& p) {
   return searchResult;
 }
 
-Value Search::aspirationSearch(Position& p, Depth depth, Value value) {
-  // TODO implement
-  LOG__CRITICAL(Logger::get().SEARCH_LOG, "Not implemented yet", __FUNCTION__);
-  return VALUE_DRAW;
+Value Search::aspirationSearch(Position& p, Depth depth, Value bestValue) {
+  // aspiration steps
+  std::array<Value, 3> aspirationSteps = {Value{50}, Value{200}, VALUE_MAX};
+
+  const auto steps = aspirationSteps.size();
+  Value value      = VALUE_NONE;
+
+  // new search window
+  Value alpha = std::max(bestValue - aspirationSteps[0], VALUE_MIN);
+  Value beta  = std::min(bestValue + aspirationSteps[0], VALUE_MAX);
+
+  for (auto i = 1; i < steps; ++i) {
+    // search with the reduced window or last with the full window
+    value = rootSearch(p, depth, alpha, beta);
+    // if search has been stopped and value has missed window return
+    // the value and the values of the root moves are invalid
+    if (stopConditions() && (value <= alpha || value >= beta)) {
+      return VALUE_NONE;
+    }
+    // check if value was within the window or expand the window
+    if (value <= alpha) {
+      // FAIL LOW - decrease upper bound
+      sendAspirationResearchInfo("upperbound");
+      // add some extra time because of fail low
+      // we might have found a strong opponent's move
+      addExtraTime(1.3);
+      // if we fail low tests show it is best to immediately open up the window full
+      alpha = VALUE_MIN;
+      // Alternatively we could do steps as well
+      // alpha = Max(bestValue-aspirationSteps[i], ValueMin)
+      statistics.aspirationResearches++;
+      statistics.currentExtraSearchDepth = 0;
+    }
+    else if (value >= beta) {
+      // FAIL HIGH - increase upper bound
+      sendAspirationResearchInfo("lowerbound");
+      beta = std::min(bestValue + aspirationSteps[i], VALUE_MAX);
+      statistics.aspirationResearches++;
+      statistics.currentExtraSearchDepth = 0;
+    }
+    else {
+      break;
+    }
+  }
+
+  // With a fully open search window of the last step we can accept
+  // partial searches as well. Root move values are usable and can
+  // be sorted to find the best move.
+  return value;
 }
 
 Value Search::rootSearch(Position& p, Depth depth, Value alpha, Value beta) {
@@ -619,7 +663,6 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
       storeTt(p, DEPTH_NONE, DEPTH_NONE, MOVE_NONE, VALUE_NONE, NONE, staticEval, matethreat);
     }
   }
-
 
   // Razoring from Stockfish
   // When static eval is well below alpha at the last node
@@ -1637,4 +1680,30 @@ void Search::sendSearchUpdateToUci() {
             nodesPerSec,
             MILLISECONDS(since).count(),
             hashfull);
+}
+
+void Search::sendAspirationResearchInfo(std::string boundString) {
+  const NanoSec& since = elapsedSince(startSearchTime);
+  if (uciHandler) {
+    uciHandler->sendAspirationResearchInfo(
+      statistics.currentSearchDepth,
+      statistics.currentExtraSearchDepth,
+      statistics.currentBestRootMoveValue,
+      boundString,
+      nodesVisited,
+      nps(nodesVisited, since),
+      MILLISECONDS(since),
+      pv[0]);
+    return;
+  }
+
+  LOG__INFO(Logger::get().SEARCH_LOG, "depth {} seldepth {} value {} {} nodes {:n} nps {:n} time {:n} pv {}",
+            statistics.currentSearchDepth,
+            statistics.currentExtraSearchDepth,
+            str(statistics.currentBestRootMoveValue),
+            boundString,
+            nodesVisited,
+            nps(nodesVisited, since),
+            MILLISECONDS(since).count(),
+            str(pv[0]));
 }

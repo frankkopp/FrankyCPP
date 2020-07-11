@@ -464,10 +464,10 @@ void UciHandler::sendIterationEndInfo(int depth, int seldepth, Value value, uint
 }
 
 void UciHandler::sendAspirationResearchInfo(int depth, int seldepth, Value value,
-                                            const std::string& bound, uint64_t nodes, uint64_t nps,
+                                            const std::string& boundString, uint64_t nodes, uint64_t nps,
                                             MilliSec time, const MoveList& pv) const {
   send(fmt::format("info depth {} seldepth {} multipv 1 score {} {} nodes {} nps {} time {} pv {}",
-                   depth, seldepth, str(Value(value)), bound, nodes, nps, time.count(), str(pv)));
+                   depth, seldepth, str(Value(value)), boundString, nodes, nps, time.count(), str(pv)));
 }
 
 void UciHandler::sendCurrentRootMove(Move currmove, std::size_t movenumber) const {

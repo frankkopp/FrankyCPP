@@ -41,8 +41,7 @@ namespace SearchConfig {
   // basic search strategies and features
   inline bool USE_ALPHABETA = true;// use ALPHABETA pruning
   inline bool USE_PVS       = true;// use PVS null window search
-  inline bool USE_ASP       = false;
-  //  inline Depth ASP_START_DEPTH = Depth{4};
+  inline bool USE_ASP       = true;// use Aspiration Window search
 
   // quiescence search
   inline bool USE_QUIESCENCE = true;// use quiescence search

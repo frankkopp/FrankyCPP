@@ -130,7 +130,7 @@ public:
   std::string str() const;
 
   // helper for converting a string option to an int
-  int getInt(const std::string& value);
+  static int getInt(const std::string& value);
 };
 
 inline std::ostream& operator<<(std::ostream& os, const UciOptions& options) {

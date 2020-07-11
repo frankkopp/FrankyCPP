@@ -315,6 +315,9 @@ private:
 
   // send UCI information about search - could be called each 500ms or so.
   void sendSearchUpdateToUci();
+
+  // send UCI information after aspiration search.
+  void sendAspirationResearchInfo(const std::string boundString);
 };
 
 #endif//FRANKYCPP_SEARCH_H
