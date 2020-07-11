@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018-2020 Frank Kopp
+ * Copyright (c) 2018 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,155 +23,10 @@
  *
  */
 
-#include <ctime>
-#include <utility>
+#include "SearchTreeSizeTest.h"
+#include <engine/SearchConfig.h>
 
-#include "Test_Fens.h"
-#include "chesscore/Position.h"
-#include "common/Logging.h"
-#include "engine/Search.h"
-#include "engine/SearchConfig.h"
-#include "init.h"
-#include "types/types.h"
-
-
-#include <gtest/gtest.h>
-using testing::Eq;
-
-class SearchTreeSizeTest : public ::testing::Test {
-public:
-  static constexpr int DEPTH = 8;
-  static constexpr MilliSec MOVE_TIME{0};
-  static constexpr int START_FEN = 0;
-  static constexpr int END_FEN   = 15;
-
-  /* special is used to collect a dedicated stat */
-  const uint64_t* ptrToSpecial1 = nullptr;
-  const uint64_t* ptrToSpecial2 = nullptr;
-
-  struct SingleTest {
-    std::string name;
-    uint64_t nodes    = 0;
-    uint64_t nps      = 0;
-    uint64_t depth    = 0;
-    uint64_t extra    = 0;
-    uint64_t time     = 0;
-    uint64_t special1 = 0;
-    uint64_t special2 = 0;
-    Move move         = MOVE_NONE;
-    Value value       = VALUE_NONE;
-    std::string pv;
-  };
-
-  struct Result {
-    std::string fen;
-    std::vector<SingleTest> tests{};
-
-    explicit Result(std::string _fen) : fen(std::move(_fen)){};
-  };
-
-  struct TestSums {
-    uint64_t sumCounter{};
-    uint64_t sumNodes{};
-    uint64_t sumNps{};
-    uint64_t sumDepth{};
-    uint64_t sumExtra{};
-    uint64_t sumTime{};
-    uint64_t special1{};
-    uint64_t special2{};
-  };
-
-  static void SetUpTestSuite() {
-    NEWLINE;
-    init::init();
-    NEWLINE;
-    Logger::get().TEST_LOG->set_level(spdlog::level::debug);
-    Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
-    Logger::get().TT_LOG->set_level(spdlog::level::debug);
-    Logger::get().BOOK_LOG->set_level(spdlog::level::warn);
-  }
-
-protected:
-  void SetUp() override {}
-  void TearDown() override {}
-
-  Result featureMeasurements(int depth, MilliSec movetime, const std::string& fen);
-  SingleTest measureTreeSize(Search& search, const Position& position, SearchLimits searchLimits, const std::string& featureName) const;
-};
-
-TEST_F(SearchTreeSizeTest, size_test) {
-#ifndef NDEBUG
-  GTEST_SKIP();
-#endif
-  fprintln("Start Search Tree Size Test for depth {}", DEPTH);
-
-  // Prepare test fens
-  std::vector<std::string> fens = Test_Fens::getFENs();
-  std::vector<Result> results{};
-  results.reserve(fens.size());
-  auto iterStart = fens.begin() + START_FEN;
-  auto iterEnd   = fens.begin() + START_FEN + END_FEN;
-  if (iterEnd > fens.end()) iterEnd = fens.end();
-  if (iterStart > iterEnd) iterStart = iterEnd;
-
-  // Execute tests and store results
-  for (auto fen = iterStart; fen != iterEnd; ++fen) {
-    results.push_back(featureMeasurements(DEPTH, MOVE_TIME, *fen));
-  }
-
-  // Print result
-  NEWLINE;
-  fmt::print("################## Results for depth {} ##########################\n", DEPTH);
-  NEWLINE;
-  fmt::print("{:<15s} | {:>6s} | {:>8s} | {:>15s} | {:>12s} | {:>12s} | {:>7s} | {:>12s} | {:>12s} | {} | {}\n",
-             "Test Name", "Move", "Value", "Nodes", "Nps", "Time", "Depth", "Special1", "Special2", "PV", "Fen");
-  println("-----------------------------------------------------------------------"
-          "-----------------------------------------------------------------------");
-
-  setlocale(LC_NUMERIC, "de_DE.UTF-8");
-  std::map<std::string, TestSums> sums{};
-
-  for (const Result& result : results) {
-    fprintln("Fen: {}", result.fen);
-    for (const SingleTest& test : result.tests) {
-      sums[test.name].sumCounter++;
-      sums[test.name].sumNodes += test.nodes;
-      sums[test.name].sumNps += test.nps;
-      sums[test.name].sumTime += test.time;
-      sums[test.name].sumDepth += test.depth;
-      sums[test.name].sumExtra += test.extra;
-      sums[test.name].special1 += test.special1;
-      sums[test.name].special2 += test.special2;
-
-      fprintln("{:<15s} | {:>6s} | {:>8s} | {:>15n} | {:>12n} | {:>12n} | {:>3d}/{:<3d} | {:>12n} | {:>12n} | {} | {}",
-               test.name, str(test.move), str(test.value), test.nodes, test.nps,
-               (test.time / 1'000'000), test.depth, test.extra, test.special1, test.special2, test.pv, result.fen);
-    }
-    fmt::print("\n");
-  }
-
-  NEWLINE;
-
-  fmt::print("----------------------------------------------------------------------------------------------------------------------------------------------");
-  fmt::print("\n################## Totals/Avg results for each feature test ##################\n\n");
-
-  std::time_t t = time(nullptr);
-  fmt::print("Date                   : {:s}", ctime(&t));
-  fmt::print("SearchTime             : {:s}\n", str(MOVE_TIME));
-  fmt::print("MaxDepth               : {:d}\n", DEPTH);
-  fmt::print("Number of feature tests: {:d}\n", results[0].tests.size());
-  fmt::print("Number of fens         : {:d}\n", END_FEN - START_FEN);
-  fmt::print("Total tests            : {:d}\n\n", results[0].tests.size() * END_FEN - START_FEN);
-
-  for (auto& sum : sums) {
-    fprintln("Test: {:<12s}  Nodes: {:>16n}  Nps: {:>16n}  Time: {:>16n} Depth: {:>3d}/{:<3d} Special1: {:>16n} Special2: {:>16n}", sum.first.c_str(),
-             sum.second.sumNodes / sum.second.sumCounter, sum.second.sumNps / sum.second.sumCounter,
-             (sum.second.sumTime / 1'000'000) / sum.second.sumCounter, sum.second.sumDepth / sum.second.sumCounter, sum.second.sumExtra / sum.second.sumCounter,
-             sum.second.special1 / sum.second.sumCounter, sum.second.special2 / sum.second.sumCounter);
-  }
-}
-
-SearchTreeSizeTest::Result SearchTreeSizeTest::featureMeasurements(int depth, MilliSec movetime, const std::string& fen) {
+Result SearchTreeSizeTest::featureMeasurements(int depth, MilliSec movetime, const std::string& fen) {
   Search search{};
   SearchLimits searchLimits{};
   searchLimits.depth = depth;
@@ -304,15 +159,82 @@ SearchTreeSizeTest::Result SearchTreeSizeTest::featureMeasurements(int depth, Mi
   SearchConfig::USE_EXT_ADD_DEPTH = true;
   SearchConfig::USE_CHECK_EXT     = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "70 CEXT"));
-  SearchConfig::USE_THREAT_EXT = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "71 TEXT"));
+  //  SearchConfig::USE_THREAT_EXT = true;
+  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "71 TEXT"));
+
+  SearchConfig::USE_ASP = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "80 ASP"));
 
   return result;
 }
 
-SearchTreeSizeTest::SingleTest
-SearchTreeSizeTest::measureTreeSize(Search& search, const Position& position,
-                                    SearchLimits searchLimits, const std::string& featureName) const {
+void SearchTreeSizeTest::start() {
+
+  fprintln("Start Search Tree Size Test for depth {}", depth);
+
+  // Prepare test fens
+  results.clear();
+  results.reserve(fens.size());
+
+  // Execute tests and store results
+  for (auto fen = fens.begin(); fen != fens.end(); ++fen) {
+    results.push_back(featureMeasurements(depth, movetime, *fen));
+  }
+
+  // Print result
+  NEWLINE;
+  fmt::print("################## Results for depth {} ##########################\n", depth);
+  NEWLINE;
+  fmt::print("{:<15s} | {:>6s} | {:>8s} | {:>15s} | {:>12s} | {:>12s} | {:>7s} | {:>12s} | {:>12s} | {} | {}\n",
+             "Test Name", "Move", "Value", "Nodes", "Nps", "Time", "Depth", "Special1", "Special2", "PV", "Fen");
+  println("-----------------------------------------------------------------------"
+          "-----------------------------------------------------------------------");
+
+  setlocale(LC_NUMERIC, "de_DE.UTF-8");
+  std::map<std::string, TestSums> sums{};
+
+  for (const Result& result : results) {
+    fprintln("Fen: {}", result.fen);
+    for (const SingleTest& test : result.tests) {
+      sums[test.name].sumCounter++;
+      sums[test.name].sumNodes += test.nodes;
+      sums[test.name].sumNps += test.nps;
+      sums[test.name].sumTime += test.time;
+      sums[test.name].sumDepth += test.depth;
+      sums[test.name].sumExtra += test.extra;
+      sums[test.name].special1 += test.special1;
+      sums[test.name].special2 += test.special2;
+
+      fprintln("{:<15s} | {:>6s} | {:>8s} | {:>15n} | {:>12n} | {:>12n} | {:>3d}/{:<3d} | {:>12n} | {:>12n} | {} | {}",
+               test.name, str(test.move), str(test.value), test.nodes, test.nps,
+               (test.time / 1'000'000), test.depth, test.extra, test.special1, test.special2, test.pv, result.fen);
+    }
+    fmt::print("\n");
+  }
+
+  NEWLINE;
+
+  fmt::print("----------------------------------------------------------------------------------------------------------------------------------------------");
+  fmt::print("\n################## Totals/Avg results for each feature test ##################\n\n");
+
+  std::time_t t = time(nullptr);
+  fmt::print("Date                   : {:s}", ctime(&t));
+  fmt::print("SearchTime             : {:s}\n", str(movetime));
+  fmt::print("MaxDepth               : {:d}\n", depth);
+  fmt::print("Number of feature tests: {:d}\n", results[0].tests.size());
+  fmt::print("Number of fens         : {:d}\n", fens.size());
+  fmt::print("Total tests            : {:d}\n\n", results[0].tests.size() * fens.size());
+
+  for (auto& sum : sums) {
+    fprintln("Test: {:<12s}  Nodes: {:>16n}  Nps: {:>16n}  Time: {:>16n} Depth: {:>3d}/{:<3d} Special1: {:>16n} Special2: {:>16n}", sum.first.c_str(),
+             sum.second.sumNodes / sum.second.sumCounter, sum.second.sumNps / sum.second.sumCounter,
+             (sum.second.sumTime / 1'000'000) / sum.second.sumCounter, sum.second.sumDepth / sum.second.sumCounter, sum.second.sumExtra / sum.second.sumCounter,
+             sum.second.special1 / sum.second.sumCounter, sum.second.special2 / sum.second.sumCounter);
+  }
+}
+
+SingleTest SearchTreeSizeTest::measureTreeSize(Search& search, const Position& position,
+                                               SearchLimits searchLimits, const std::string& featureName) const {
 
   NEWLINE;
   fprintln("Testing {} ####################################", featureName);

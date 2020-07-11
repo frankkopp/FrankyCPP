@@ -32,8 +32,13 @@ set(FrankyCPPlib_SRCS
         engine/SearchResult.h engine/SearchLimits.h engine/SearchConfig.h
         engine/SearchStats.cpp engine/SearchStats.h
         engine/Evaluator.cpp engine/Evaluator.h engine/EvalConfig.h
-        engine/See.cpp engine/See.h)
+        engine/See.cpp engine/See.h
+
+        enginetest/SearchTreeSizeTest.cpp enginetest/SearchTreeSizeTest.h
+        )
+
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})
+
 target_link_libraries(
         FrankyCPPlib
         PUBLIC
