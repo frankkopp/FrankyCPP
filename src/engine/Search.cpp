@@ -771,7 +771,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
   // order already is good.
   if (SearchConfig::USE_IID) {
     if (depth >= SearchConfig::IID_DEPTH &&
-        ttMove != MOVE_NONE &&// no move from TT
+        !ttMove &&// no move from TT
         doNull &&             // avoid in null move search
         isPv) {
 

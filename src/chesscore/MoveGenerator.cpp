@@ -32,6 +32,8 @@
 #include "common/misc.h"
 #include "types/types.h"
 
+static constexpr bool REMOVE_SORT_VALUE = true;
+
 MoveGenerator::MoveGenerator() {
   pseudoLegalMoves.reserve(MAX_MOVES);
   legalMoves.reserve(MAX_MOVES);
@@ -71,8 +73,10 @@ const MoveList* MoveGenerator::generatePseudoLegalMoves(const Position& p, const
   std::stable_sort(pseudoLegalMoves.begin(), pseudoLegalMoves.end(), moveValueGreaterComparator());
 
   // remove internal sort value
-  std::transform(pseudoLegalMoves.begin(), pseudoLegalMoves.end(),
-                 pseudoLegalMoves.begin(), [](Move m) { return moveOf(m); });
+  if (REMOVE_SORT_VALUE) {
+    std::transform(pseudoLegalMoves.begin(), pseudoLegalMoves.end(),
+                   pseudoLegalMoves.begin(), [](Move m) { return moveOf(m); });
+  }
 
   return &pseudoLegalMoves;
 }
@@ -153,7 +157,7 @@ Move MoveGenerator::getNextPseudoLegalMove(const Position& p, const GenMode genM
 
     // we have at least one move in the list and
     // it is not the pvMove.
-    Move move = moveOf(onDemandMoves[takeIndex++]);
+    Move move = REMOVE_SORT_VALUE ? moveOf(onDemandMoves[takeIndex++]) : onDemandMoves[takeIndex++];
     if (takeIndex >= onDemandMoves.size()) {
       takeIndex = 0;
       onDemandMoves.clear();
@@ -620,7 +624,7 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
         const Square toSquare   = popLSB(tmpCaptures);
         const Square fromSquare = toSquare + pawnPush(~nextPlayer) - dir;
         // value is the delta of values from the two pieces involved plus the positional value
-        const Value value = 2000 + valueOf(position.getPiece(toSquare)) - valueOf(position.getPiece(fromSquare)) + Values::posValue[piece][toSquare][gamePhase];
+        const Value value = valueOf(position.getPiece(toSquare)) - valueOf(position.getPiece(fromSquare)) + Values::posValue[piece][toSquare][gamePhase];
         pMoves->push_back(createMove(fromSquare, toSquare, NORMAL, value));
       }
     }
@@ -634,14 +638,14 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
           Square fromSquare = lsb(tmpCaptures);
           Square toSquare   = fromSquare + pawnPush(nextPlayer) - dir;
           // value is the positional value of the piece at this game phase
-          pMoves->push_back(createMove(fromSquare, toSquare, ENPASSANT, 2000 + Values::posValue[piece][toSquare][gamePhase]));
+          pMoves->push_back(createMove(fromSquare, toSquare, ENPASSANT, Values::posValue[piece][toSquare][gamePhase]));
         }
       }
     }
 
     // we treat Queen and Knight promotions as non quiet moves
     Bitboard promMoves = shiftBb(pawnPush(nextPlayer), myPawns) & ~position.getOccupiedBb() & Bitboards::rankBb[promotionRank(nextPlayer)];
-    ;
+
     // filter evasion targets if in check
     if (evasion) {
       promMoves &= evasionTargets;
@@ -739,7 +743,7 @@ void MoveGenerator::generateMoves(const Position& position, MoveList* const pMov
         }
         while (captures) {
           const Square toSquare = popLSB(captures);
-          Value value           = 2000 + valueOf(position.getPiece(toSquare)) - valueOf(position.getPiece(fromSquare)) + Values::posValue[piece][toSquare][gamePhase];
+          const Value value     = 2000 + valueOf(position.getPiece(toSquare)) - valueOf(position.getPiece(fromSquare)) + Values::posValue[piece][toSquare][gamePhase];
           pMoves->push_back(createMove(fromSquare, toSquare, NORMAL, value));
         }
       }
@@ -818,18 +822,18 @@ void MoveGenerator::generateCastling(const Position& position, MoveList* const p
     const CastlingRights cr = position.getCastlingRights();
     if (nextPlayer == WHITE) {// white
       if (cr == WHITE_OO && !(Bitboards::intermediateBb[SQ_E1][SQ_H1] & occupiedBb)) {
-        pMoves->push_back(createMove(SQ_E1, SQ_G1, CASTLING, static_cast<Value>(0)));
+        pMoves->push_back(createMove(SQ_E1, SQ_G1, CASTLING, VALUE_ZERO));
       }
       if (cr == WHITE_OOO && !(Bitboards::intermediateBb[SQ_E1][SQ_A1] & occupiedBb)) {
-        pMoves->push_back(createMove(SQ_E1, SQ_C1, CASTLING, static_cast<Value>(0)));
+        pMoves->push_back(createMove(SQ_E1, SQ_C1, CASTLING, VALUE_ZERO));
       }
     }
     else {// black
       if (cr == BLACK_OO && !(Bitboards::intermediateBb[SQ_E8][SQ_H8] & occupiedBb)) {
-        pMoves->push_back(createMove(SQ_E8, SQ_G8, CASTLING, static_cast<Value>(0)));
+        pMoves->push_back(createMove(SQ_E8, SQ_G8, CASTLING, VALUE_ZERO));
       }
       if (cr == BLACK_OOO && !(Bitboards::intermediateBb[SQ_E8][SQ_A8] & occupiedBb)) {
-        pMoves->push_back(createMove(SQ_E8, SQ_C8, CASTLING, static_cast<Value>(0)));
+        pMoves->push_back(createMove(SQ_E8, SQ_C8, CASTLING, VALUE_ZERO));
       }
     }
   }
