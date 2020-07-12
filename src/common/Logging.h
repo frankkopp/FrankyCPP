@@ -26,9 +26,10 @@
 #ifndef FRANKYCPP_LOGGING_H
 #define FRANKYCPP_LOGGING_H
 
+#include <iosfwd>
+
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
-#include <iosfwd>
 #include <spdlog/spdlog.h>
 
 #ifdef NDEBUG

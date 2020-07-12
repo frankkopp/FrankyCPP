@@ -482,7 +482,6 @@ namespace Test_Fens {
     fen.emplace_back("k7/P7/P7/P7/P7/P7/P7/R3K3 w Q -");
     fen.emplace_back("1b4k1/r4p2/5Pp1/8/8/8/8/2Q4K w - -");
 
-
     return fen;
   }
 

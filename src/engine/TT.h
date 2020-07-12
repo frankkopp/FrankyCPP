@@ -23,9 +23,10 @@
  *
  */
 
+#include <iosfwd>
+
 #include "types/types.h"
 #include "gtest/gtest_prod.h"
-#include <iosfwd>
 
 #ifndef FRANKYCPP_TT_H
 #define FRANKYCPP_TT_H
