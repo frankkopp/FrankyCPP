@@ -332,7 +332,7 @@ public:
   // 24 for beginning, 0 at the end
   inline int getGamePhase() const { return gamePhase; }
   // 1.0 for beginning to 0.0 t the end)
-  inline double getGamePhaseFactor() const { return float(gamePhase) / GAME_PHASE_MAX; }
+  inline double getGamePhaseFactor() const { return double(gamePhase) / GAME_PHASE_MAX; }
 };
 
 

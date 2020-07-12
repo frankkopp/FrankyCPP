@@ -7,3 +7,5 @@ build/
 .idea/
 .vscode/
 *.cache.*
+/Release/bin/books/
+/Release/bin/config/

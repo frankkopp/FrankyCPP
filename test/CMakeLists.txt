@@ -38,7 +38,7 @@ add_executable(
 
         TimingTests.cpp
         BOOST_Test.cpp
-)
+        engine/EvaluatorTest.cpp)
 
 target_link_libraries(
         ${testExeName}

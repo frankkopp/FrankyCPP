@@ -80,8 +80,8 @@ Result SearchTreeSizeTest::featureMeasurements(int depth, MilliSec movetime, con
   // ***********************************
   // TESTS
 
-  ptrToSpecial1 = &search.getSearchStats().checkExtension;
-  ptrToSpecial2 = &search.getSearchStats().threatExtension;
+  ptrToSpecial1 = &search.getSearchStats().ttHit;
+  ptrToSpecial2 = &search.getSearchStats().ttMiss;
 
   // pure MiniMax
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 MINIMAX"));

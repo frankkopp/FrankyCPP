@@ -56,7 +56,7 @@ Value Evaluator::evaluate(Position& p) {
 
   // calculate value depending on game phases
   const double gamePhaseFactor = p.getGamePhaseFactor();
-  Value value{static_cast<Value>(score.midgame * gamePhaseFactor + score.endgame * (1.0 - gamePhaseFactor))};
+  Value value                  = static_cast<Value>(score.midgame * gamePhaseFactor + score.endgame * (1.0 - gamePhaseFactor));
 
   // normalize for next player
   value *= p.getNextPlayer() == WHITE ? 1 : -1;
