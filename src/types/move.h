@@ -202,23 +202,25 @@ inline std::string str(Move move) {
 inline std::string strVerbose(Move move) {
   if (!move) return "no move " + std::to_string(move);
   std::string tp;
-  std::string promPt;
+  std::string promPt = "";
   switch (typeOf(move)) {
     case NORMAL:
-      tp = "NORMAL";
+      tp = "n";
       break;
     case PROMOTION:
       promPt = str(promotionTypeOf(move));
-      tp     = "PROMOTION";
+      tp     = "p";
       break;
     case ENPASSANT:
-      tp = "ENPASSANT";
+      tp = "e";
       break;
     case CASTLING:
-      tp = "CASTLING";
+      tp = "c";
       break;
   }
-  return str(fromSquare(move)) + str(toSquare(move)) + promPt + " (" + tp + " " + std::to_string(valueOf(move)) + " " + std::to_string(move) + ")";
+  // return str(fromSquare(move)) + str(toSquare(move)) + promPt + " (" + tp + " " + std::to_string(valueOf(move)) + " " + std::to_string(move) + ")";
+  return fmt::format("Move: {:2}{:2}{:1}  type:{:<1}  prom:{:<1}  value:{:<6}  ({})",
+                     str(fromSquare(move)), str(toSquare(move)), promPt, tp, promPt, std::to_string(valueOf(move)), std::to_string(move));
 }
 
 inline std::ostream& operator<<(std::ostream& os, const Move move) {

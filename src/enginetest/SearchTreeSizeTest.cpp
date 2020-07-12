@@ -45,9 +45,9 @@ Result SearchTreeSizeTest::featureMeasurements(int depth, MilliSec movetime, con
   SearchConfig::USE_PVS       = false;
   SearchConfig::USE_ASP       = false;
 
-  SearchConfig::USE_QUIESCENCE = false;
-  //  SearchConfig::MAX_EXTRA_QDEPTH      = Depth{20};
-  //  SearchConfig::USE_QS_SEE            = false;
+  SearchConfig::USE_QUIESCENCE      = false;
+  SearchConfig::USE_QS_STANDPAT_CUT = false;
+  SearchConfig::USE_QS_SEE          = false;
 
   SearchConfig::USE_TT              = false;
   SearchConfig::TT_SIZE_MB          = 64;
@@ -61,10 +61,7 @@ Result SearchTreeSizeTest::featureMeasurements(int depth, MilliSec movetime, con
   SearchConfig::USE_HISTORY_COUNTER = false;
   SearchConfig::USE_HISTORY_MOVES   = false;
 
-  SearchConfig::USE_MDP             = false;
-  SearchConfig::USE_QS_STANDPAT_CUT = false;
-  SearchConfig::USE_QS_SEE          = false;
-
+  SearchConfig::USE_MDP      = false;
   SearchConfig::USE_RAZORING = false;
   SearchConfig::USE_RFP      = false;
   SearchConfig::USE_NMP      = false;
@@ -95,16 +92,19 @@ Result SearchTreeSizeTest::featureMeasurements(int depth, MilliSec movetime, con
   SearchConfig::USE_PVS = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "15 PVS"));
 
+  SearchConfig::USE_ASP = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "18 ASP"));
+
   SearchConfig::USE_KILLER_MOVES    = true;
   SearchConfig::USE_HISTORY_COUNTER = true;
   SearchConfig::USE_HISTORY_MOVES   = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "20 History"));
 
-  SearchConfig::USE_MDP = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "25 MDP"));
+  SearchConfig::USE_IID = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "25 IID"));
 
   SearchConfig::USE_TT = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "32 TT"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "30 TT"));
 
   //  SearchConfig::TT_SIZE_MB = 1'024;
   //  search.resizeTT();
@@ -131,6 +131,9 @@ Result SearchTreeSizeTest::featureMeasurements(int depth, MilliSec movetime, con
   SearchConfig::USE_QS_SEE = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "43 QS SEE"));
 
+  SearchConfig::USE_MDP = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "50 MDP"));
+
   SearchConfig::USE_RAZORING = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "50 RAZOR"));
 
@@ -139,9 +142,6 @@ Result SearchTreeSizeTest::featureMeasurements(int depth, MilliSec movetime, con
 
   SearchConfig::USE_NMP = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "52 NMP"));
-
-  SearchConfig::USE_IID = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "53 IID"));
 
   SearchConfig::USE_FP = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "60 FP"));
@@ -161,9 +161,6 @@ Result SearchTreeSizeTest::featureMeasurements(int depth, MilliSec movetime, con
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "70 CEXT"));
   //  SearchConfig::USE_THREAT_EXT = true;
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "71 TEXT"));
-
-  SearchConfig::USE_ASP = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "80 ASP"));
 
   return result;
 }
