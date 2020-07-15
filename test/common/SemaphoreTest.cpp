@@ -36,16 +36,16 @@ Semaphore mySemaphore;
 std::thread myThread;
 
 enum State {
-  NONE, NEW, INITIALIZED, DONE
+  NOOP, NEW, INITIALIZED, DONE
 };
 
-State myState = NONE;
+State myState = NOOP;
 
 TEST(SemaphoreTest, basic) {
 
   // semaphore should not be available
   ASSERT_FALSE(mySemaphore.get());
-  ASSERT_EQ(NONE, myState);
+  ASSERT_EQ(NOOP, myState);
 
   //std::cout << "Start Thread!\n";
   std::thread myTestThread = std::thread([] { run(); });

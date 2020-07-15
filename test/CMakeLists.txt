@@ -34,11 +34,11 @@ add_executable(
         engine/SearchTest.cpp
         engine/SeeTest.cpp
         engine/EngineSpeedTests.cpp
-        engine/SearchTreeSizeTest_Test.cpp
+        enginetest/SearchTreeSizeTest_Test.cpp
 
         TimingTests.cpp
         BOOST_Test.cpp
-        engine/EvaluatorTest.cpp)
+        engine/EvaluatorTest.cpp enginetest/TestSuite_Test.cpp)
 
 target_link_libraries(
         ${testExeName}

@@ -66,7 +66,7 @@ elseif (CMAKE_COMPILER_IS_GNUCXX)
 
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     message("Compiler Settings: MSVC")
-    set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /W4 /GR /EHsc /std:c++17 /wd4127 /arch:AVX2")
+    set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /W4 /GR /EHsc /std:c++17 /wd4127 /arch:AVX2 /MP")
     set(CMAKE_CXX_FLAGS_DEBUG " /MDd /Zi /Ob0 /Od /RTC1")
     # /showIncludes
     set(CMAKE_CXX_FLAGS_RELEASE "/MD /O2 /Ob2 /DNDEBUG")

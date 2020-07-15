@@ -35,14 +35,14 @@ set(FrankyCPPlib_SRCS
         engine/See.cpp engine/See.h
 
         enginetest/SearchTreeSizeTest.cpp enginetest/SearchTreeSizeTest.h
-        )
+        enginetest/TestSuite.cpp enginetest/TestSuite.h)
 
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})
 
 target_link_libraries(
         FrankyCPPlib
         PUBLIC
-        fmt 
+        fmt
         spdlog
         ${Boost_LIBRARIES}
 )
