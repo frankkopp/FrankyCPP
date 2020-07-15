@@ -89,7 +89,6 @@ void TT::clear() {
         _data[i].move       = MOVE_NONE;
         _data[i].depth      = DEPTH_NONE;
         _data[i].value      = VALUE_NONE;
-        _data[i].type       = ValueType::NONE;
         _data[i].eval       = VALUE_NONE;
         _data[i].age        = 1;
       }
