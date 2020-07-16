@@ -127,6 +127,7 @@ TEST_F(OpeningBookTest, initPGNMedium) {
 }
 
 TEST_F(OpeningBookTest, initPGNLarge) {
+  GTEST_SKIP();
 #ifndef NDEBUG
   GTEST_SKIP();
 #endif
@@ -218,6 +219,7 @@ TEST_F(OpeningBookTest, serializationMedium) {
 }
 
 TEST_F(OpeningBookTest, serializationLarge) {
+  GTEST_SKIP();
 #ifndef NDEBUG
   GTEST_SKIP();
 #endif

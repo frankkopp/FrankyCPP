@@ -175,9 +175,9 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
   moves = *mg.generatePseudoLegalMoves(position, GenAll, false);
   EXPECT_EQ(20, moves.size());
   EXPECT_EQ("d2d4 e2e4 b1c3 g1f3 a2a3 h2h3 a2a4 b2b4 c2c4 f2f4 g2g4 h2h4 d2d3 e2e3 b2b3 g2g3 c2c3 f2f3 b1a3 g1h3", str(moves));
-  for (Move m : moves) {
-    fprintln("{}", strVerbose(m));
-  }
+//  for (Move m : moves) {
+//    fprintln("{}", strVerbose(m));
+//  }
   NEWLINE;
 
   fen      = "r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R w KQkq -";
@@ -185,10 +185,10 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
   moves.clear();
   moves = *mg.generatePseudoLegalMoves(position, GenAll, false);
   EXPECT_EQ(40, moves.size());
-  EXPECT_EQ("c3b4 d7f6 f3d2 b5c6 f3e5 d7e5 d7b6 e2d2 e1d2 e1g1 e1c1 d3d4 f3d4 d7c5 a1c1 a1d1 h1f1 b5c4 a2a3 h2h3 f3g5 e2e3 a2a4 g2g4 h2h4 c3c4 e1f1 b2b3 g2g3 e2d1 b5a4 b5a6 a1b1 h1g1 e2f1 e1d1 f3g1 f3h4 d7f8 d7b8", str(moves));
-  for (Move m : moves) {
-    fprintln("{}", strVerbose(m));
-  }
+  EXPECT_EQ("d7f6 f3d2 b5c6 f3e5 d7e5 d7b6 e2d2 e1d2 c3b4 e1g1 e1c1 d3d4 f3d4 d7c5 a1c1 a1d1 h1f1 b5c4 a2a3 h2h3 f3g5 e2e3 a2a4 g2g4 h2h4 c3c4 e1f1 b2b3 g2g3 e2d1 b5a4 b5a6 a1b1 h1g1 e2f1 e1d1 f3g1 f3h4 d7f8 d7b8", str(moves));
+//  for (Move m : moves) {
+//    fprintln("{}", strVerbose(m));
+//  }
   NEWLINE;
 
   // 86 pseudo legal moves (incl. castling over attacked square)
@@ -197,10 +197,10 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
   moves.clear();
   moves = *mg.generatePseudoLegalMoves(position, GenAll, false);
   EXPECT_EQ(86, moves.size());
-  EXPECT_EQ("c2b1Q a2b1Q a2a1Q c2c1Q f4g3 c2b1N a2b1N f4e3 b2a3 a8a3 g6e5 d7e5 b2e5 a2a1N c2c1N e6e5 c4e4 c6e4 e8g8 e8c8 d7c5 a8c8 a8d8 h8f8 d7f6 b2d4 f4f3 h7h6 g6e7 d7b6 b2c3 c4c5 c4d5 c6c5 c6d5 c6d6 e6d5 e6f5 e6d6 e6f6 e6e7 e6f7 c4d4 b7b5 h7h5 a8a4 a8a5 a8a6 a8a7 c4e2 c4b3 c4c3 c4d3 c4b4 c4b5 c6b5 c6b6 e6g4 e8f8 b7b6 c4a4 c6a4 b2c1 a8b8 h8g8 c4f1 c4a6 c6a6 e6h3 e6g8 g6f8 d7f8 b2a1 e8e7 e8f7 e8d8 d7b8 g6h4 c2b1R a2b1R c2b1B a2b1B a2a1R c2c1R a2a1B c2c1B", str(moves));
-  for (Move m : moves) {
-    fprintln("{}", strVerbose(m));
-  }
+  EXPECT_EQ("c2b1Q a2b1Q a2a1Q c2c1Q c2b1N a2b1N b2a3 a8a3 g6e5 d7e5 b2e5 a2a1N c2c1N e6e5 c4e4 c6e4 f4g3 f4e3 e8g8 e8c8 d7c5 a8c8 a8d8 h8f8 d7f6 b2d4 f4f3 h7h6 g6e7 d7b6 b2c3 c4c5 c4d5 c6c5 c6d5 c6d6 e6d5 e6f5 e6d6 e6f6 e6e7 e6f7 c4d4 b7b5 h7h5 a8a4 a8a5 a8a6 a8a7 c4e2 c4b3 c4c3 c4d3 c4b4 c4b5 c6b5 c6b6 e6g4 e8f8 b7b6 c4a4 c6a4 b2c1 a8b8 h8g8 c4f1 c4a6 c6a6 e6h3 e6g8 g6f8 d7f8 b2a1 e8e7 e8f7 e8d8 d7b8 g6h4 c2b1R a2b1R c2b1B a2b1B a2a1R c2c1R a2a1B c2c1B", str(moves));
+//  for (Move m : moves) {
+//    fprintln("{}", strVerbose(m));
+//  }
   NEWLINE;
 
   // 218 pseudo legal moves (incl. castling over attacked square)
@@ -209,9 +209,9 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
   moves.clear();
   moves = *mg.generatePseudoLegalMoves(position, GenAll, false);
   EXPECT_EQ(218, moves.size());
-  for (Move m : moves) {
-    fprintln("{}", strVerbose(m));
-  }
+//  for (Move m : moves) {
+//    fprintln("{}", strVerbose(m));
+//  }
   NEWLINE;
 
   // bug fixed positions
@@ -220,9 +220,9 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
   moves.clear();
   moves = *mg.generatePseudoLegalMoves(position, GenAll);
   EXPECT_EQ(21, moves.size());
-  for (Move m : moves) {
-    fprintln("{}", strVerbose(m));
-  }
+//  for (Move m : moves) {
+//    fprintln("{}", strVerbose(m));
+//  }
   NEWLINE;
 
   fen      = "rnbqkbnr/p2ppppp/8/1Pp5/8/8/1PPPPPPP/RNBQKBNR w KQkq c6";
@@ -230,9 +230,9 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
   moves.clear();
   moves = *mg.generatePseudoLegalMoves(position, GenAll);
   EXPECT_EQ(26, moves.size());
-  for (Move m : moves) {
-    fprintln("{}", strVerbose(m));
-  }
+//  for (Move m : moves) {
+//    fprintln("{}", strVerbose(m));
+//  }
   NEWLINE;
 
   // kiwipete 48
@@ -241,9 +241,9 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
   moves.clear();
   moves = *mg.generatePseudoLegalMoves(position, GenAll);
   EXPECT_EQ(48, moves.size());
-  for (Move m : moves) {
-    fprintln("{}", strVerbose(m));
-  }
+//  for (Move m : moves) {
+//    fprintln("{}", strVerbose(m));
+//  }
 }
 
 TEST_F(MoveGenTest, legalMoves) {
@@ -750,6 +750,7 @@ using namespace std::chrono;
 // 8.6.: Loaner Mac:
 // 480.000.000 moves generated: 84.774.069 mps
 TEST_F(MoveGenTest, PseudoMoveGenSpeedTest) {
+  GTEST_SKIP();
 #ifndef NDEBUG
   GTEST_SKIP();
 #endif
