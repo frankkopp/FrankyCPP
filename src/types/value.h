@@ -26,8 +26,8 @@
 #ifndef FRANKYCPP_VALUE_H
 #define FRANKYCPP_VALUE_H
 
-#include "macros.h"
 #include "globals.h"
+#include "macros.h"
 #include "piece.h"
 #include "piecetype.h"
 #include <cstdint>
@@ -51,16 +51,18 @@ constexpr bool validValue(Value v) {
   return (v >= VALUE_MIN && v <= VALUE_MAX) || v == VALUE_NONE;
 }
 
-/** PieceType values */
-constexpr const Value pieceTypeValue[] = {
-  Value(0),   // no type
-  Value(2000),// king
-  Value(100), // pawn
-  Value(320), // knight
-  Value(330), // bishop
-  Value(500), // rook
-  Value(900), // queen
-};
+namespace {
+  /** PieceType values */
+  constexpr const Value pieceTypeValue[] = {
+    Value(0),   // no type
+    Value(2000),// king
+    Value(100), // pawn
+    Value(320), // knight
+    Value(330), // bishop
+    Value(500), // rook
+    Value(900), // queen
+  };
+}// namespace
 
 // returns the value of the given piece type
 constexpr Value valueOf(const PieceType pt) { return pieceTypeValue[pt]; }

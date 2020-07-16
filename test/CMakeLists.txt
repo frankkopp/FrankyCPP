@@ -11,15 +11,34 @@ set(testExeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR}
 include(GoogleTest)
 add_executable(
         ${testExeName}
-        TypesTest.cpp
-        BitboardTest.cpp
-        PositionTest.cpp
-        MoveGeneratorTest.cpp
-        PerftTest.cpp
-        ValuesTest.cpp
+
+        types/TypesTest.cpp
+        types/BitboardTest.cpp
+        types/ValuesTest.cpp
+
+        common/SemaphoreTest.cpp
+        common/FifoTest.cpp
+        common/ThreadPoolTest.cpp
+
+        chesscore/PositionTest.cpp
+        chesscore/MoveGeneratorTest.cpp
+        chesscore/PerftTest.cpp
+        chesscore/SpeedTests.cpp
+
+        openingbook/PGN_ReaderTest.cpp
+        openingbook/OpeningBookTest.cpp
+
+        engine/UCITests.cpp
+        engine/UciOptionsTest.cpp
+        engine/TT_Test.cpp
+        engine/SearchTest.cpp
+        engine/SeeTest.cpp
+        engine/EngineSpeedTests.cpp
+        enginetest/SearchTreeSizeTest_Test.cpp
+
         TimingTests.cpp
         BOOST_Test.cpp
-        SpeedTests.cpp)
+        engine/EvaluatorTest.cpp enginetest/TestSuite_Test.cpp)
 
 target_link_libraries(
         ${testExeName}
@@ -30,11 +49,11 @@ target_link_libraries(
 )
 
 # copy config files and opening books to the build directories
-#add_custom_command(
-#        TARGET ${testExeName} POST_BUILD
-#        COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/config $<TARGET_FILE_DIR:${testExeName}>/config
-#        COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/books $<TARGET_FILE_DIR:${testExeName}>/books
-#)
+add_custom_command(
+        TARGET ${testExeName} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/config $<TARGET_FILE_DIR:${testExeName}>/config
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/books $<TARGET_FILE_DIR:${testExeName}>/books
+)
 
 gtest_discover_tests(${testExeName})
 

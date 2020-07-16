@@ -154,7 +154,7 @@ public:
   // Copy assignment operator
   Position& operator=(const Position& other) = default;
 
-  // Move constructor - creates a copy of the given Position
+  // Move constructor
   Position(Position&& other) = default;
 
   // Move assignment operator
@@ -330,9 +330,9 @@ public:
   inline int getHalfMoveClock() const { return halfMoveClock; }
   inline int getMoveNumber() const { return moveNumber; }
   // 24 for beginning, 0 at the end
-  inline int getGamePhase() const { return std::min(GAME_PHASE_MAX, gamePhase); }
+  inline int getGamePhase() const { return gamePhase; }
   // 1.0 for beginning to 0.0 t the end)
-  inline double getGamePhaseFactor() const { return float(getGamePhase()) / GAME_PHASE_MAX; }
+  inline double getGamePhaseFactor() const { return double(gamePhase) / GAME_PHASE_MAX; }
 };
 
 

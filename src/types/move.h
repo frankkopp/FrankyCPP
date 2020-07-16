@@ -69,10 +69,14 @@ constexpr bool validMoveType(MoveType mt) {
   return mt >= NORMAL && mt <= CASTLING;
 }
 
-// single char label for the piece type (one of " KPNBRQ")
+namespace {
+  inline auto moveTypeLabel = std::string("npec");
+}
+
+// single char label for the piece type (one of " npec")
 constexpr char str(MoveType mt) {
   if (!validMoveType(mt)) return '-';
-  return std::string("npec")[mt];
+  return moveTypeLabel[mt];
 }
 
 inline std::ostream& operator<<(std::ostream& os, const MoveType mt) {
@@ -167,6 +171,7 @@ inline Value valueOf(Move m) {
   return static_cast<Value>(((m & MoveShifts::VALUE_MASK) >> MoveShifts::VALUE_SHIFT)) + VALUE_NONE;
 }
 
+// stores/encodes the value into the given move (changes given move) and also returns the new value.
 inline Move setValueOf(Move& m, Value v) {
   // can't store a value on MoveNone
   if (moveOf(m) == MOVE_NONE) return m;
@@ -197,28 +202,38 @@ inline std::string str(Move move) {
 inline std::string strVerbose(Move move) {
   if (!move) return "no move " + std::to_string(move);
   std::string tp;
-  std::string promPt;
+  std::string promPt = "";
   switch (typeOf(move)) {
     case NORMAL:
-      tp = "NORMAL";
+      tp = "n";
       break;
     case PROMOTION:
       promPt = str(promotionTypeOf(move));
-      tp     = "PROMOTION";
+      tp     = "p";
       break;
     case ENPASSANT:
-      tp = "ENPASSANT";
+      tp = "e";
       break;
     case CASTLING:
-      tp = "CASTLING";
+      tp = "c";
       break;
   }
-  return str(fromSquare(move)) + str(toSquare(move)) + promPt + " (" + tp + " " + std::to_string(valueOf(move)) + " " + std::to_string(move) + ")";
+  // return str(fromSquare(move)) + str(toSquare(move)) + promPt + " (" + tp + " " + std::to_string(valueOf(move)) + " " + std::to_string(move) + ")";
+  return fmt::format("Move: {:2}{:2}{:1}  type:{:<1}  prom:{:<1}  value:{:<6}  ({})",
+                     str(fromSquare(move)), str(toSquare(move)), promPt, tp, promPt, std::to_string(valueOf(move)), std::to_string(move));
 }
 
 inline std::ostream& operator<<(std::ostream& os, const Move move) {
   os << str(move);
   return os;
 }
+
+// Compares two moves for their value part (valueOf()) and returns true if
+// the first move (lhs) is greater (has higher value) as the second move (rhs).
+struct moveValueGreaterComparator {
+  constexpr bool operator()(const Move lhs, const Move rhs) const {
+    return (lhs & 0xFFFF0000) > (rhs & 0xFFFF0000);
+  }
+};
 
 #endif//FRANKYCPP_MOVE_H

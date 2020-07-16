@@ -3,5 +3,9 @@ cmake-build-release/
 cmake-build-relwithdebinfo/
 cmake-build-minsizerel/
 cmake-build-default/
+build/
 .idea/
+.vscode/
 *.cache.*
+/Release/bin/books/
+/Release/bin/config/
