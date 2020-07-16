@@ -39,7 +39,7 @@ struct History;
 //  GenNonQuiet = 0b01
 //  GenQuiet    = 0b10
 //  GenAll      = 0b11
-enum GenMode {
+enum GenMode : uint8_t {
   GenZero     = 0b00,
   GenNonQuiet = 0b01,
   GenQuiet    = 0b10,
@@ -117,16 +117,14 @@ public:
   // possible scenarios is more expensive than to just generate the move and dismiss it later.
   // Because of beta cuts off we quite often will never have to check the full legality
   // of these moves anyway.
-  template<GenMode GM>
-  const MoveList* generatePseudoLegalMoves(const Position& position, bool evasion = false);
+  const MoveList* generatePseudoLegalMoves(const Position& position, GenMode genMode, bool evasion = false);
 
   // GenerateLegalMoves generates legal moves for the next player.
   // Uses GeneratePseudoLegalMoves and filters out illegal moves.
   // Usually only used for root moves generation as this is expensive. During
   // the AlphaBeta search we will only use pseudo legal move generation.
   // Other than generatePseudoLegalMoves this determines check and evasion itself.
-  template<GenMode GM>
-  const MoveList* generateLegalMoves(const Position& p);
+  const MoveList* generateLegalMoves(const Position& p, GenMode genMode);
 
   // GetNextMove is the main function for phased generation of pseudo legal moves.
   // It returns the next move for the given position and will usually be called in a
@@ -154,10 +152,9 @@ public:
   // possible scenarios is more expensive than to just generate the move and dismiss it later.
   // Because of beta cuts off we quite often will never have to check the full legality
   // of these moves anyway.
-  template<GenMode GM>
-  Move getNextPseudoLegalMove(const Position& p, bool evasion = false);
+  Move getNextPseudoLegalMove(const Position& p, GenMode genMode, bool evasion = false);
 
-// Resets the move generator to start fresh. Clears all lists (e.g. killers) and resets on demand iterator
+  // Resets the move generator to start fresh. Clears all lists (e.g. killers) and resets on demand iterator
   inline void reset() {
     pseudoLegalMoves.clear();
     legalMoves.clear();
@@ -203,7 +200,7 @@ public:
   //
   // As this uses string creation and comparison this is not very efficient.
   // Use only when performance is not critical.
-  Move getMoveFromUci(const Position& position, std::string uciMove);
+  Move getMoveFromUci(const Position& position, const std::string& uciMove);
 
   // GetMoveFromSan Generates all legal moves and matches the given SAN
   // move string against them. If there is a match the actual move is returned.
@@ -211,10 +208,10 @@ public:
   //
   // As this uses string creation and comparison this is not very efficient.
   // Use only when performance is not critical.
-  Move getMoveFromSan(const Position& position, std::string sanMove);
+  Move getMoveFromSan(const Position& position, const std::string& sanMove);
 
   // ValidateMove validates if a move is a valid legal move on the given position
-  bool validateMove(const Position& position, const Move move);
+  bool validateMove(const Position& position, Move move);
 
   // str() returns a string representation of a MoveGen instance
   std::string str();
@@ -224,18 +221,17 @@ public:
     return pvMove;
   }
 
-  // returns a poionter to the current killer move list
+  // returns a pointer to the current killer move list
   const Move* getKillerMoves() const {
     return killerMoves;
   }
 
 private:
   // Fills on demand move list by generating moves according to phase
-  template<GenMode GM>
-  void fillOnDemandMoveList(const Position& position, bool evasion);
+  void fillOnDemandMoveList(const Position& position, GenMode genMode, bool evasion);
 
   // Move order heuristics based on history data.
-  void updateSortValues(const Position& position, MoveList* const moveList);
+  void updateSortValues(const Position& position, MoveList* moveList);
 
   // getEvasionTargets returns the number of attackers and a Bitboard with target
   // squares for generated moves when the position has check against the next
@@ -245,44 +241,41 @@ private:
   // in case of the attacker being a slider.
   // If we have more than one attacker we can skip everything apart from
   // king moves.
-  Bitboard getEvasionTargets(const Position& position) const;
+  static Bitboard getEvasionTargets(const Position& position);
 
   // Generates pseudo pawn moves for the next player. Does not check if king is left in check
   // @param genMode
   // @param pPosition
   // @param pMoves - generated moves will be added to this list
-  template<GenMode GM>
-  void generatePawnMoves(const Position& position, MoveList* const pMoves, bool evasion, Bitboard evasionTargets);
+  static void generatePawnMoves(const Position& position, MoveList* pMoves, GenMode genMode, bool evasion, Bitboard evasionTargets);
 
   // Generates pseudo knight, bishop, rook and queen moves for the next player.
   // Does not check if king is left in check
   // @param genMode
   // @param pPosition
   // @param pMoves - generated moves will be added to this list
-  template<GenMode GM>
-  void generateMoves(const Position& position, MoveList* const pMoves, bool evasion, Bitboard evasionTargets);
+  void generateMoves(const Position& position, MoveList* pMoves, GenMode genMode, bool evasion, Bitboard evasionTargets);
 
   // Generates pseudo king moves for the next player. Does not check if king
   // lands on an attacked square.
   // @param genMode
   // @param pPosition
   // @param pMoves - generated moves will be added to this list
-  template<GenMode GM>
-  void generateKingMoves(const Position& position, MoveList* const pMoves, bool evasion);
+  void generateKingMoves(const Position& position, MoveList* pMoves, GenMode genMode, bool evasion);
 
   // Generates pseudo castling move for the next player. Does not check if king passes or lands on an
   // attacked square.
   // @param genMode
   // @param pPosition
   // @param pMoves - generated moves will be added to this list
-  template<GenMode GM>
-  void generateCastling(const Position& position, MoveList* const pMoves);
+  void generateCastling(const Position& position, MoveList* pMoves, GenMode genMode);
 
   FRIEND_TEST(MoveGenTest, pawnMoves);
   FRIEND_TEST(MoveGenTest, kingMoves);
   FRIEND_TEST(MoveGenTest, normalMoves);
   FRIEND_TEST(MoveGenTest, castlingMoves);
   FRIEND_TEST(MoveGenTest, storeKiller);
+  FRIEND_TEST(MoveGenTest, sortValueTest);
 };
 
 #endif//FRANKYCPP_MOVEGENERATOR_H

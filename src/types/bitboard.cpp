@@ -24,6 +24,7 @@
  */
 
 #include <sstream>
+#include <bitset>
 #include "bitboard.h"
 #include "castlingrights.h"
 #include "direction.h"
@@ -41,7 +42,7 @@ Bitboard getAttacksBb(PieceType pt, Square sq, Bitboard occupied) {
     case QUEEN:
       return Bitboards::bishopMagics[sq].attacks[Bitboards::bishopMagics[sq].index(occupied)] | Bitboards::rookMagics[sq].attacks[Bitboards::rookMagics[sq].index(occupied)];
     case KNIGHT:
-      return Bitboards::nonSliderAttacks[pt][sq];
+      [[fallthrough]];
     case KING:
       return Bitboards::nonSliderAttacks[pt][sq];
     default:

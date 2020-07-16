@@ -1,0 +1,13 @@
+os: windows
+language: cpp
+compiler: cpp
+
+addons:
+  apt:
+    sources:
+    packages:
+      - cmake
+
+before_install:
+  - cmake --version
+

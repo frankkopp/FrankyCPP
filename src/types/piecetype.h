@@ -26,9 +26,9 @@
 #ifndef FRANKYCPP_PIECETYPE_H
 #define FRANKYCPP_PIECETYPE_H
 
+#include "macros.h"
 #include <ostream>
 #include <string>
-#include "macros.h"
 
 // PieceType is a set of constants for piece types in chess
 //  test for non sliding pt & 0b0100 == 0 (must also be none zero)
@@ -57,11 +57,8 @@ constexpr bool validPieceType(PieceType pt) {
   return pt >= 0 && pt < 7;
 }
 
-// returns the game phase value of the piece type to
-// compute the current game phase in relation to the
-// pieces currently on the board.
-constexpr int gamePhaseValue(PieceType pt) {
-  const int gamePhaseValue[] = {
+namespace {
+  constexpr const int phaseValue[] = {
     0,// no type
     0,// king
     0,// pawn
@@ -70,13 +67,23 @@ constexpr int gamePhaseValue(PieceType pt) {
     2,// rook
     4 // queen
   };
-  return gamePhaseValue[pt];
+
+  inline auto pieceLabels = std::string(" KPNBRQ");
+
+}// namespace
+
+// returns the game phase value of the piece type to
+// compute the current game phase in relation to the
+// pieces currently on the board.
+constexpr int gamePhaseValue(PieceType pt) {
+  return phaseValue[pt];
 }
+
 
 // single char label for the piece type (one of " KPNBRQ")
 constexpr char str(PieceType pt) {
   if (!validPieceType(pt)) return '-';
-  return std::string(" KPNBRQ")[pt];
+  return pieceLabels[pt];
 }
 
 inline std::ostream& operator<<(std::ostream& os, const PieceType pt) {
@@ -84,6 +91,6 @@ inline std::ostream& operator<<(std::ostream& os, const PieceType pt) {
   return os;
 }
 
-ENABLE_INCR_OPERATORS_ON (PieceType)
+ENABLE_INCR_OPERATORS_ON(PieceType)
 
 #endif//FRANKYCPP_PIECETYPE_H

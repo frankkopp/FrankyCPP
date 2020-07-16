@@ -85,7 +85,7 @@ inline Square makeSquare(std::string s) {
 }
 
 // returns the precomputed distance between two squares
-constexpr int distance(Square s1, Square s2) { return Squares::squareDistance[s1][s2]; }
+inline int distance(Square s1, Square s2) { return Squares::squareDistance[s1][s2]; }
 
 // pawnPush returns the square of a pawn move of the given color
 constexpr Square pawnPush(Square s, Color c) { return static_cast<Square>(s + (c == WHITE ? 8 : -8)); }

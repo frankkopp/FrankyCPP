@@ -43,7 +43,23 @@ void Perft::perft(int maxDepth) {
   perft(maxDepth, false);
 }
 
+void Perft::stop() {
+  stopFlag = true;
+}
+
+void Perft::perft(int startDepth, int endDepth, bool onDemand) {
+  stopFlag = false;
+  for (int depth = startDepth; depth <= endDepth; ++depth) {
+    if (stopFlag) {
+      std::cout << "Perft stopped.";
+      return;
+    }
+    perft(depth, onDemand);
+  }
+}
+
 void Perft::perft(int maxDepth, bool onDemand) {
+  stopFlag = false;
   resetCounter();
 
   Position position(fen);
@@ -72,6 +88,11 @@ void Perft::perft(int maxDepth, bool onDemand) {
     result = miniMax(maxDepth, position, mg);
   }
 
+  if (stopFlag) {
+    std::cout << "Perft stopped.";
+    return;
+  }
+
   auto finish       = std::chrono::high_resolution_clock::now();
   uint64_t duration = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
 
@@ -90,7 +111,7 @@ void Perft::perft(int maxDepth, bool onDemand) {
   os << "-----------------------------------------" << std::endl;
   os << "Finished PERFT Test for Depth " << maxDepth << std::endl;
 
-  std::cout << os.str();
+  std::cout << os.str() << std::endl;
 }
 
 uint64_t Perft::miniMaxOD(int depth, Position& position, MoveGenerator* pMg) {
@@ -101,8 +122,8 @@ uint64_t Perft::miniMaxOD(int depth, Position& position, MoveGenerator* pMg) {
 
   // moves to search recursively
   Move move;
-  while (true) {
-    move = pMg[depth].getNextPseudoLegalMove<GenAll>(position);
+  while (!stopFlag) {
+    move = pMg[depth].getNextPseudoLegalMove(position, GenAll);
     if (move == MOVE_NONE) break;
     //    fprintln("Last: {:5s} Move: {:5s}   Fen: {:s} ", str(position.getLastMove()), str(move), position.strFen());
     if (depth > 1) {
@@ -157,8 +178,11 @@ uint64_t Perft::miniMax(int depth, Position& position, MoveGenerator* pMg) {
   //println(pPosition->str())
 
   // moves to search recursively
-  MoveList moves = *pMg[depth].generatePseudoLegalMoves<GenAll>(position);
+  MoveList moves = *pMg[depth].generatePseudoLegalMoves(position, GenAll);
   for (Move move : moves) {
+    if (stopFlag) {
+      return 0;
+    }
     if (depth > 1) {
       position.doMove(move);
       if (position.wasLegalMove()) {
@@ -221,8 +245,11 @@ void Perft::perft_divide(int maxDepth, bool onDemand) {
   auto start      = std::chrono::high_resolution_clock::now();
 
   // moves to search recursively
-  MoveList moves = *mg[maxDepth].generatePseudoLegalMoves<GenAll>(position);
+  MoveList moves = *mg[maxDepth].generatePseudoLegalMoves(position, GenAll);
   for (Move move : moves) {
+    if (stopFlag) {
+      return;
+    }
     //  Move move = createMove<PROMOTION>("c7c8n");
     // Iterate over moves
     uint64_t totalNodes = 0L;
