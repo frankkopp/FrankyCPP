@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
       ("testsuite", po::value<std::string>(&testsuite_file), "run testsuite in given file")
       ("tsTime", po::value<int>(&testsuite_time)->default_value(1'000), "time in ms per test in testsuite")
       ("tsDepth", po::value<int>(&testsuite_depth)->default_value(0), "max search depth per test in testsuite")
-      ("perft", "run perft test")                 --
+      ("perft", "run perft test")
       ("startDepth", po::value<int>(&perftStart)->default_value(1), "start depth for perft test")
       ("endDepth", po::value<int>(&perftEnd)->default_value(5), "end depth for perft test");
 
