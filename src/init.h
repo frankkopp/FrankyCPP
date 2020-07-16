@@ -30,13 +30,13 @@
 #include "types/init.h"
 #include <common/Logging.h>
 
+
 namespace init {
   // initializes all data structures and pre computed data
   // for the application
   inline void init() {
     types::init();
     Values::init();
-    Logger::get();
   }
 }// namespace init
 
