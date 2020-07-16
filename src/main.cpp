@@ -1,7 +1,9 @@
 #include "init.h"
 #include "version.h"
 #include <chesscore/Perft.h>
+#include <engine/SearchConfig.h>
 #include <engine/UciHandler.h>
+#include <enginetest/TestSuite.h>
 #include <fstream>
 #include <iostream>
 
@@ -24,6 +26,11 @@ int main(int argc, char* argv[]) {
   std::cout << appName << std::endl;
 
   std::string config_file;
+  std::string book_file;
+  std::string book_type;
+  std::string testsuite_file;
+  int testsuite_time;
+  int testsuite_depth;
   int perftStart;
   int perftEnd;
 
@@ -43,13 +50,13 @@ int main(int argc, char* argv[]) {
     config.add_options()
       ("log_lvl,l", po::value<std::string>()->default_value("warn"), "set general log level <critical|error|warn|info|debug|trace>")
       ("search_log_lvl,s", po::value<std::string>()->default_value("warn"), "set search log level <critical|error|warn|info|debug|trace>")
-    //  ("nobook", "do not use opening book")
-    //  ("book,b", po::value<std::string>(&book_file), "opening book to use")
-    //  ("booktype,t", po::value<std::string>(&book_type), "type of opening book <simple|san|pgn>")
-    //  ("testsuite", po::value<std::string>(&testsuite_file), "run testsuite in given file")
-    //  ("tsTime", po::value<int>(&testsuite_time)->default_value(1'000), "time in ms per test in testsuite")
-    //  ("tsDepth", po::value<int>(&testsuite_depth)->default_value(0), "max search depth per test in testsuite");
-      ("perft", "run perft test")
+      ("nobook", "do not use opening book")
+      ("book,b", po::value<std::string>(&book_file), "opening book to use")
+      ("booktype,t", po::value<std::string>(&book_type), "type of opening book <simple|san|pgn>")
+      ("testsuite", po::value<std::string>(&testsuite_file), "run testsuite in given file")
+      ("tsTime", po::value<int>(&testsuite_time)->default_value(1'000), "time in ms per test in testsuite")
+      ("tsDepth", po::value<int>(&testsuite_depth)->default_value(0), "max search depth per test in testsuite")
+      ("perft", "run perft test")                 --
       ("startDepth", po::value<int>(&perftStart)->default_value(1), "start depth for perft test")
       ("endDepth", po::value<int>(&perftEnd)->default_value(5), "end depth for perft test");
 
@@ -93,56 +100,56 @@ int main(int argc, char* argv[]) {
     }
 
     // opening book
-    //    if (programOptions.count("nobook")) {
-    //      SearchConfig::USE_BOOK = false;
-    //      LOG__INFO(Logger::get().BOOK_LOG, "Not using opening book.");
-    //    }
-    //    else if (programOptions.count("book")) {
-    //      if (!programOptions.count("booktype")) {
-    //        LOG__ERROR(Logger::get().BOOK_LOG, "Opening book type is missing (use --help for details). Using default book.");
-    //      }
-    //      else {
-    //        const std::string &bookPath = programOptions["book"].as<std::string>();
-    //        if (!OpeningBook::fileExists(bookPath)) {
-    //          LOG__ERROR(Logger::get().BOOK_LOG, "Open book '{}' not found. Using default {}", bookPath, SearchConfig::BOOK_PATH);
-    //        }
-    //        else {
-    //          SearchConfig::BOOK_PATH = bookPath;
-    //        }
-    //        const std::string &bookType = programOptions["booktype"].as<std::string>();
-    //        if (bookType == "simple" || bookType == "SIMPLE") {
-    //          SearchConfig::BOOK_TYPE = OpeningBook::BookFormat::SIMPLE;
-    //        }
-    //        else if (bookType == "san" || bookType == "SAN") {
-    //          SearchConfig::BOOK_TYPE = OpeningBook::BookFormat::SAN;
-    //        }
-    //        else if (bookType == "pgn" || bookType == "PGN") {
-    //          SearchConfig::BOOK_TYPE = OpeningBook::BookFormat::PGN;
-    //        }
-    //      }
-    //    }
+    if (programOptions.count("nobook")) {
+      SearchConfig::USE_BOOK = false;
+      LOG__INFO(Logger::get().BOOK_LOG, "Not using opening book.");
+    }
+    else if (programOptions.count("book")) {
+      if (!programOptions.count("booktype")) {
+        LOG__ERROR(Logger::get().BOOK_LOG, "Opening book type is missing (use --help for details). Using default book.");
+      }
+      else {
+        const auto& bookPath = programOptions["book"].as<std::string>();
+        if (!OpeningBook::fileExists(bookPath)) {
+          LOG__ERROR(Logger::get().BOOK_LOG, "Open book '{}' not found. Using default {}", bookPath, SearchConfig::BOOK_PATH);
+        }
+        else {
+          SearchConfig::BOOK_PATH = bookPath;
+        }
+        const auto& bookType = programOptions["booktype"].as<std::string>();
+        if (bookType == "simple" || bookType == "SIMPLE") {
+          SearchConfig::BOOK_TYPE = OpeningBook::BookFormat::SIMPLE;
+        }
+        else if (bookType == "san" || bookType == "SAN") {
+          SearchConfig::BOOK_TYPE = OpeningBook::BookFormat::SAN;
+        }
+        else if (bookType == "pgn" || bookType == "PGN") {
+          SearchConfig::BOOK_TYPE = OpeningBook::BookFormat::PGN;
+        }
+      }
+    }
 
     // Testsuite run from cmd line
-    //    if (programOptions.count("testsuite")) {
-    //      INIT::init();
-    //      std::cout << "RUNNING TEST SUITE\n";
-    //      std::cout << "########################################################\n";
-    //      std::cout << "Version: " << appName << "\n";
-    //      std::ifstream file(testsuite_file);
-    //      if (file.is_open()) {
-    //        std::cout << "Running Testsuite:  " << testsuite_file << "\n";
-    //        file.close();
-    //      }
-    //      else {
-    //        std::cerr << "Could not read file: " << testsuite_file << "\n";
-    //        return 1;
-    //      }
-    //      std::cout << "Time per Test:      " << fmt::format("{:n}", testsuite_time) << "\n";
-    //      std::cout << "Max depth per Test: " << fmt::format("{:n}", testsuite_depth) << "\n";
-    //      TestSuite testSuite(testsuite_file, testsuite_time, Depth(testsuite_depth));
-    //      testSuite.runTestSuite();
-    //      return 0;
-    //    }
+    if (programOptions.count("testsuite")) {
+      init::init();
+      std::cout << "RUNNING TEST SUITE\n";
+      std::cout << "########################################################\n";
+      std::cout << "Version: " << appName << "\n";
+      std::ifstream file(testsuite_file);
+      if (file.is_open()) {
+        std::cout << "Running Testsuite:  " << testsuite_file << "\n";
+        file.close();
+      }
+      else {
+        std::cerr << "Could not read file: " << testsuite_file << "\n";
+        return 1;
+      }
+      std::cout << "Time per Test:      " << fmt::format("{:n}", testsuite_time) << "\n";
+      std::cout << "Max depth per Test: " << fmt::format("{:n}", testsuite_depth) << "\n";
+      TestSuite testSuite{MilliSec{testsuite_time}, Depth{testsuite_depth}, testsuite_file};
+      testSuite.runTestSuite();
+      return 0;
+    }
 
     if (programOptions.count("perft")) {
       init::init();

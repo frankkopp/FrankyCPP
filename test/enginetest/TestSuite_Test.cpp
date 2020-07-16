@@ -83,3 +83,21 @@ TEST_F(TestSuite_Test, wac_test) {
   TestSuite ts{moveTime, depth, filePath};
   ts.runTestSuite();
 }
+
+TEST_F(TestSuite_Test, crafty_test) {
+  MilliSec moveTime{5s};
+  Depth depth{0};
+  std::string filePath = FrankyCPP_PROJECT_ROOT;
+  filePath += +"/test/testsets/crafty_test.epd";
+  TestSuite ts{moveTime, depth, filePath};
+  ts.runTestSuite();
+}
+
+TEST_F(TestSuite_Test, ecm98_test) {
+  MilliSec moveTime{5s};
+  Depth depth{0};
+  std::string filePath = FrankyCPP_PROJECT_ROOT;
+  filePath += +"/test/testsets/ecm98.epd";
+  TestSuite ts{moveTime, depth, filePath};
+  ts.runTestSuite();
+}
