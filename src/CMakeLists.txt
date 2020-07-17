@@ -35,7 +35,7 @@ set(FrankyCPPlib_SRCS
         engine/See.cpp engine/See.h
 
         enginetest/SearchTreeSizeTest.cpp enginetest/SearchTreeSizeTest.h
-        enginetest/TestSuite.cpp enginetest/TestSuite.h)
+        enginetest/TestSuite.cpp enginetest/TestSuite.h engine/PawnTT.cpp engine/PawnTT.h)
 
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})
 

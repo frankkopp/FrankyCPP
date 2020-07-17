@@ -118,16 +118,16 @@ void Logger::init() {
   SEARCH_LOG->set_pattern(defaultPattern);
   SEARCH_LOG->set_level(searchLogLevel);
   SEARCH_LOG->flush_on(flushLevel);
-  //
+  
   TSUITE_LOG->sinks().push_back(sharedFileSink);
   TSUITE_LOG->set_pattern(defaultPattern);
   TSUITE_LOG->set_level(logLevel);
   TSUITE_LOG->flush_on(flushLevel);
-  //
-//  EVAL_LOG->sinks().push_back(sharedFileSink);
-//  EVAL_LOG->set_pattern(defaultPattern);
-//  EVAL_LOG->set_level(logLevel);
-//  EVAL_LOG->flush_on(flushLevel);
+
+  EVAL_LOG->sinks().push_back(sharedFileSink);
+  EVAL_LOG->set_pattern(defaultPattern);
+  EVAL_LOG->set_level(logLevel);
+  EVAL_LOG->flush_on(flushLevel);
 
   TT_LOG->sinks().push_back(sharedFileSink);
   TT_LOG->set_pattern(defaultPattern);
