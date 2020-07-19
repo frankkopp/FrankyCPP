@@ -27,14 +27,12 @@
 #define FRANKYCPP_EVALUATOR_H
 
 #include "types/types.h"
-#include <chesscore/Position.h>
-
-struct Score {
-  int midgame;
-  int endgame;
-};
+#include "chesscore/Position.h"
+#include "PawnTT.h"
 
 class Evaluator {
+
+  PawnTT pawnCache{0};
 
 public:
   Evaluator();
@@ -48,6 +46,14 @@ public:
   // view of the next player.
   Value evaluate(Position& p);
 
+  // evaluates pawns and updating score in place
+  void pawnEval(Position& p, Score& score);
+
+  // ValueFromScore adds up the mid and end games scores after multiplying
+  // them with the game phase factor
+  static Value valueFromScore(const Score& score, double gamePhaseFactor) ;
+
+  static Value finalEval(const Position& p, Value value) ;
 };
 
 

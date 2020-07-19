@@ -26,7 +26,6 @@
 #ifndef FRANKYCPP_PAWNTT_H
 #define FRANKYCPP_PAWNTT_H
 
-#include "Evaluator.h"
 #include "types/types.h"
 
 // pre-fetching of TT entries into CPU caches

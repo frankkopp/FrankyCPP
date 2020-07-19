@@ -28,6 +28,7 @@
 #include "common/Logging.h"
 #include "engine/PawnTT.h"
 #include "init.h"
+#include "chesscore/Position.h"
 
 #include <gtest/gtest.h>
 using testing::Eq;
