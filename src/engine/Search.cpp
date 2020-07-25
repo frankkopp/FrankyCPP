@@ -660,7 +660,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
     staticEval = evaluate(p);
     // Storing this value might save us calls to eval on the same position.
     if (SearchConfig::USE_TT && SearchConfig::USE_EVAL_TT) {
-      storeTt(p, DEPTH_NONE, DEPTH_NONE, MOVE_NONE, VALUE_NONE, NONE, staticEval, matethreat);
+      storeTt(p, DEPTH_NONE, DEPTH_NONE, MOVE_NONE, VALUE_NONE, NONE, staticEval);
     }
   }
 
@@ -754,7 +754,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
         statistics.nullMoveCuts++;
         // Store TT
         if (SearchConfig::USE_TT) {
-          storeTt(p, depth, ply, ttMove, nValue, BETA, staticEval, matethreat);
+          storeTt(p, depth, ply, ttMove, nValue, BETA, staticEval);
         }
         return nValue;
       }
@@ -1106,7 +1106,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
   // Store TT
   // Store search result for this node into the transposition table
   if (SearchConfig::USE_TT) {
-    storeTt(p, depth, ply, bestNodeMove, bestNodeValue, ttType, staticEval, matethreat);
+    storeTt(p, depth, ply, bestNodeMove, bestNodeValue, ttType, staticEval);
   }
 
   return bestNodeValue;
@@ -1195,7 +1195,7 @@ Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, Search::N
         statistics.standpatCuts++;
         // Storing this value might save us calls to eval on the same position.
         if (SearchConfig::USE_TT && SearchConfig::USE_QS_TT && SearchConfig::USE_EVAL_TT) {
-          storeTt(p, DEPTH_NONE, ply, MOVE_NONE, VALUE_NONE, NONE, staticEval, false);
+          storeTt(p, DEPTH_NONE, ply, MOVE_NONE, VALUE_NONE, NONE, staticEval);
         }
         return staticEval;
       }
@@ -1363,7 +1363,7 @@ Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, Search::N
   // Store TT
   // Store search result for this node into the transposition table
   if (SearchConfig::USE_TT && SearchConfig::USE_QS_TT) {
-    storeTt(p, DEPTH_ONE, ply, bestNodeMove, bestNodeValue, ttType, staticEval, false);
+    storeTt(p, DEPTH_ONE, ply, bestNodeMove, bestNodeValue, ttType, staticEval);
   }
 
   return bestNodeValue;
@@ -1398,7 +1398,7 @@ bool Search::goodCapture(Position& p, Move move) {
     || !position.isAttacked(toSquare(move), ~position.getNextPlayer());
 }
 
-void Search::storeTt(Position& p, Depth depth, Depth ply, Move move, Value value, ValueType valueType, Value eval, bool mateThreat) {
+void Search::storeTt(Position& p, Depth depth, Depth ply, Move move, Value value, ValueType valueType, Value eval) {
   tt->put(p.getZobristKey(), depth, move, valueToTt(value, ply), valueType, eval);
 }
 

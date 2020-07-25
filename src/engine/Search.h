@@ -250,7 +250,7 @@ private:
   bool goodCapture(Position& position, Move move);
 
   // storeTT stores a position into the TT
-  void storeTt(Position& position, Depth depth, Depth ply, Move move, Value value, ValueType valuetype, Value eval, bool mateThreat);
+  void storeTt(Position& p, Depth depth, Depth ply, Move move, Value value, ValueType valueType, Value eval);
 
   // savePV adds the given move as first move to a dest move list and the appends
   // all src moves to dest. Dest will be cleared before the the append.
