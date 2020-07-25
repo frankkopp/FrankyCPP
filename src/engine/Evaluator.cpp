@@ -50,26 +50,22 @@ Value Evaluator::evaluate(Position& p) {
   // All heuristic should return a value in centi pawns or
   // have a dedicated configurable weight to adjust and test
 
-  Score score{};
+  score.midgame = VALUE_ZERO;
+  score.endgame = VALUE_ZERO;
 
   const double gamePhaseFactor = p.getGamePhaseFactor();
 
   // material
   if (EvalConfig::USE_MATERIAL) {
-    score.midgame = p.getMaterial(WHITE) - p.getMaterial(BLACK);
+    score.midgame = static_cast<Value>(p.getMaterial(WHITE) - p.getMaterial(BLACK));
     score.endgame = score.midgame;
   }
 
   // positional value
   if (EvalConfig::USE_POSITIONAL) {
-    score.midgame += p.getMidPosValue(WHITE) - p.getMidPosValue(BLACK);
-    score.endgame += p.getEndPosValue(WHITE) - p.getEndPosValue(BLACK);
+    score.midgame += static_cast<Value>(p.getMidPosValue(WHITE) - p.getMidPosValue(BLACK));
+    score.endgame += static_cast<Value>(p.getEndPosValue(WHITE) - p.getEndPosValue(BLACK));
   }
-
-  // TEMPO Bonus for the side to move (helps with evaluation alternation -
-  // less difference between side which makes aspiration search faster
-  // (not empirically tested)
-  score.midgame += EvalConfig::TEMPO;
 
   // early exit
   // arbitrary threshold - in early phases (game phase = 1.0) this is doubled
@@ -86,6 +82,13 @@ Value Evaluator::evaluate(Position& p) {
   if (EvalConfig::USE_PAWN_EVAL) {
     pawnEval(p, score);
   }
+
+  // TODO further evaluations
+
+  // TEMPO Bonus for the side to move (helps with evaluation alternation -
+  // less difference between side which makes aspiration search faster
+  // (not empirically tested)
+  score.midgame += static_cast<Value>(EvalConfig::TEMPO);
 
   // calculate value depending on game phases
   Value value = valueFromScore(score, gamePhaseFactor);
@@ -105,19 +108,21 @@ inline Value Evaluator::valueFromScore(const Score& score, double gamePhaseFacto
 }
 
 void Evaluator::pawnEval(Position& p, Score& score) {
+  PawnTT::Entry* entryPtr;
+  const Key key = p.getPawnZobristKey();
 
   // check pawn tt
-
   if (EvalConfig::USE_PAWN_TT) {
-    PawnTT::Entry* entryPtr = pawnCache.getEntryPtr(p.getPawnZobristKey());
-    if (entryPtr->key == p.getPawnZobristKey()) {
+    entryPtr = pawnCache.getEntryPtr(key);
+    if (entryPtr->key == key) {
       score.midgame += entryPtr->midvalue;
       score.endgame += entryPtr->endvalue;
       return;
     }
   }
 
-  Score tmpScore{};
+  tmpScore.midgame = VALUE_ZERO;
+  tmpScore.endgame = VALUE_ZERO;
 
   // evaluations inspired by Stockfish
   for (Color color = WHITE; color <= BLACK; ++color) {
@@ -186,22 +191,22 @@ void Evaluator::pawnEval(Position& p, Score& score) {
     // @formatter:on
 
     if (color == WHITE) {
-      tmpScore.midgame += midvalue;
-      tmpScore.endgame += endvalue;
+      tmpScore.midgame += static_cast<Value>(midvalue);
+      tmpScore.endgame += static_cast<Value>(endvalue);
     }
     else {
-      tmpScore.midgame -= midvalue;
-      tmpScore.endgame -= endvalue;
+      tmpScore.midgame -= static_cast<Value>(midvalue);
+      tmpScore.endgame -= static_cast<Value>(endvalue);
     }
     //    LOG__DEBUG(Logger::get().EVAL_LOG, "Raw pawn eval for {} results midvalue = {} and endvalue = {}", color ? "BLACK" : "WHITE", midvalue, endvalue);
   }// color loop
 
   // check pawn tt
   if (EvalConfig::USE_PAWN_TT) {
-    pawnCache.put(p.getPawnZobristKey(), tmpScore);
+    pawnCache.put(entryPtr, key, tmpScore);
   }
 
   score += tmpScore;
 
-//  LOG__DEBUG(Logger::get().EVAL_LOG, "Raw pawn eval: midvalue = {} and endvalue = {}", tmpScore.midgame, tmpScore.endgame);
+  //  LOG__DEBUG(Logger::get().EVAL_LOG, "Raw pawn eval: midvalue = {} and endvalue = {}", tmpScore.midgame, tmpScore.endgame);
 }

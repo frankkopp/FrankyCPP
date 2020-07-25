@@ -26,6 +26,8 @@
 #ifndef FRANKYCPP_EVALCONFIG_H
 #define FRANKYCPP_EVALCONFIG_H
 
+#include "types/types.h"
+
 namespace EvalConfig {
 
   inline bool USE_MATERIAL   = true;
@@ -38,7 +40,7 @@ namespace EvalConfig {
 
   inline bool USE_PAWN_EVAL       = false;
   inline bool USE_PAWN_TT         = false;
-  inline uint64_t PAWN_TT_SIZE_MB = 64;
+  inline int PAWN_TT_SIZE_MB = 64;
 
   inline int ISOLATED_PAWN_MID_WEIGHT  = -10;
   inline int ISOLATED_PAWN_END_WEIGHT  = -20;

@@ -34,6 +34,9 @@ class Evaluator {
 
   PawnTT pawnCache{0};
 
+  Score score{};
+  Score tmpScore{};
+
 public:
   Evaluator();
 
@@ -53,6 +56,7 @@ public:
   // them with the game phase factor
   static Value valueFromScore(const Score& score, double gamePhaseFactor) ;
 
+  // convert value from white view to next player view
   static Value finalEval(const Position& p, Value value) ;
 };
 
