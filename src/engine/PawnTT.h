@@ -58,14 +58,14 @@ public:
   /** Entry struct for the eval cache */
   struct Entry {
     Key key          = 0;
-    int16_t midvalue = 0;
-    int16_t endvalue = 0;
+    Value midvalue = VALUE_NONE;
+    Value endvalue = VALUE_NONE;
 
     std::string str() const {
       return fmt::format("id {} midvalue {} endvalue {}", key, midvalue, endvalue);
     }
 
-    std::ostream& operator<<(std::ostream& os) {
+    std::ostream& operator<<(std::ostream& os) const {
       os << this->str();
       return os;
     }
@@ -125,18 +125,10 @@ public:
   void clear();
 
   // putEntry stores a Score for a pawn structure represented by the
-  // pawn zobrist key in the cache.
-  void put(Key key, Score score);
-
-  // GetEntry returns a pointer to the corresponding entry.
-  // Given key is checked against the entry's key. When
-  // equal pointer to entry will be returned. Otherwise
-  // nil will be returned.
-  inline const Entry* getEntry(const Key key) const {
-    numberOfQueries++;
-    const Entry* const entryPtr = getEntryPtr(key);
-    return entryPtr->key == key ? entryPtr : nullptr;
-  }
+  // pawn zobrist key in the cache. As usually a query happens we
+  // can expect that the pointer to the entry is already known
+  // and can be provided. Otherwise a call to getEntryPtr is necessary.
+  void put(Entry* entryPtr, Key key, Score score);
 
   /* This retrieves a direct pointer to the entry of this node from cache */
   inline Entry* getEntryPtr(const Key key) const {

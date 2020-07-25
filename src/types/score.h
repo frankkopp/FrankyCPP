@@ -26,10 +26,12 @@
 #ifndef FRANKYCPP_SCORE_H
 #define FRANKYCPP_SCORE_H
 
+#include "types/value.h"
+
 // tuple to store two values during evaluation
 struct Score {
-  int midgame;
-  int endgame;
+  Value midgame;
+  Value endgame;
 };
 
 constexpr Score operator+(const Score& lhs, const Score& rhs) {

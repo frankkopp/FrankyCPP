@@ -148,9 +148,9 @@ TEST_F(PawnTT_Test, put) {
   ASSERT_EQ(0, tt.getNumberOfCollisions());
 
   Position p{};
-  Score score = {1, 11};
+  Score score = {Value{1}, Value{11}};
 
-  tt.put(p.getPawnZobristKey(), score);
+  tt.put(tt.getEntryPtr(p.getPawnZobristKey()), p.getPawnZobristKey(), score);
 
   // new entry in empty bucket at pos 0
   ASSERT_EQ(1, tt.getNumberOfPuts());

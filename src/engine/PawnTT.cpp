@@ -104,18 +104,11 @@ void PawnTT::clear() {
   LOG__DEBUG(Logger::get().EVAL_LOG, "PawnTT cleared {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }
 
-void PawnTT::put(Key key, Score score) {
-
-  // if the size of the PawnTT = 0 we
-  // do not store anything
-  if (!maxNumberOfEntries) return;
-
-  // read the entries for this hash
-  Entry* entryDataPtr = getEntryPtr(key);
+void PawnTT::put(Entry* entryDataPtr, Key key, Score score) {
 
   // Replace any existing entries as this should be collisions.
   // Updates should not happen as we should have read this entry and
-  // therefore nor calculated in anew.
+  // therefore not re-calculated
 
   numberOfPuts++;
 
@@ -129,7 +122,6 @@ void PawnTT::put(Key key, Score score) {
   }
   else { // collision replaces former entry
     numberOfCollisions++;
-    LOG__DEBUG(Logger::get().EVAL_LOG, "PawnTT collision of entries.");
   }
 
   entryDataPtr->key      = key;
