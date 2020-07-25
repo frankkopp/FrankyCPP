@@ -24,6 +24,7 @@
  */
 
 #include "UciOptions.h"
+#include "EvalConfig.h"
 #include "Search.h"
 #include "SearchConfig.h"
 #include "UciHandler.h"
@@ -58,9 +59,6 @@ void UciOptions::initOptions() {
 
   optionVector.emplace_back("Use Hash PvMove", SearchConfig::USE_TT_PV_MOVE_SORT,
                             [&](UciHandler*) { SearchConfig::USE_TT_PV_MOVE_SORT = getOption("Use Hash PvMove")->currentValue == "true"; });
-
-  optionVector.emplace_back("Use Hash Eval", SearchConfig::USE_EVAL_TT,
-                            [&](UciHandler*) { SearchConfig::USE_EVAL_TT = getOption("Use Hash Eval")->currentValue == "true"; });
 
   optionVector.emplace_back("Use Hash Quiescence", SearchConfig::USE_QS_TT,
                             [&](UciHandler*) { SearchConfig::USE_QS_TT = getOption("Use Hash Quiescence")->currentValue == "true"; });
@@ -139,6 +137,21 @@ void UciOptions::initOptions() {
 
   optionVector.emplace_back("Use Extension Add", SearchConfig::USE_EXT_ADD_DEPTH,
                             [&](UciHandler*) { SearchConfig::USE_EXT_ADD_DEPTH = getOption("Use Extension Add")->currentValue == "true"; });
+
+  optionVector.emplace_back("Use Hash Eval", SearchConfig::USE_EVAL_TT,
+                            [&](UciHandler*) { SearchConfig::USE_EVAL_TT = getOption("Use Hash Eval")->currentValue == "true"; });
+
+  optionVector.emplace_back("Use Lazy Eval", EvalConfig::USE_LAZY_EVAL,
+                            [&](UciHandler*) { EvalConfig::USE_LAZY_EVAL = getOption("Use Lazy Eval")->currentValue == "true"; });
+
+  optionVector.emplace_back("Use Pawn Eval", EvalConfig::USE_PAWN_EVAL,
+                            [&](UciHandler*) { EvalConfig::USE_PAWN_EVAL = getOption("Use Pawn Eval")->currentValue == "true"; });
+
+  optionVector.emplace_back("Use Pawn Hash", EvalConfig::USE_PAWN_TT,
+                            [&](UciHandler*) { EvalConfig::USE_PAWN_TT = getOption("Use Pawn Hash")->currentValue == "true"; });
+
+  optionVector.emplace_back("Pawn Hash Size", EvalConfig::PAWN_TT_SIZE_MB, 0, 1024,
+                            [&](UciHandler*) { EvalConfig::PAWN_TT_SIZE_MB = static_cast<Depth>(getInt(getOption("Pawn Hash Size")->currentValue)); });
 
   // optionVector.emplace_back("***", [&](UciHandler* uciHandler) { });
 }

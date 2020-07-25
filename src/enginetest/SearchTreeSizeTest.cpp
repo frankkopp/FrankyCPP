@@ -23,15 +23,17 @@
  *
  */
 
+#include <fmt/chrono.h>
+
 #include "SearchTreeSizeTest.h"
 #include <engine/SearchConfig.h>
 
-Result SearchTreeSizeTest::featureMeasurements(int depth, MilliSec movetime, const std::string& fen) {
+Result SearchTreeSizeTest::featureMeasurements(int d, MilliSec mt, const std::string& fen) {
   Search search{};
   SearchLimits searchLimits{};
-  searchLimits.depth = depth;
-  if (movetime != MilliSec::zero()) {
-    searchLimits.moveTime    = movetime;
+  searchLimits.depth = d;
+  if (mt != MilliSec::zero()) {
+    searchLimits.moveTime    = mt;
     searchLimits.timeControl = true;
   }
   Result result(fen);
@@ -213,9 +215,7 @@ void SearchTreeSizeTest::start() {
 
   fmt::print("----------------------------------------------------------------------------------------------------------------------------------------------");
   fmt::print("\n################## Totals/Avg results for each feature test ##################\n\n");
-
-  std::time_t t = time(nullptr);
-  fmt::print("Date                   : {:s}", ctime(&t));
+  fmt::print("Date:                  : {:%Y-%m-%d %X}", fmt::localtime(time(nullptr)));
   fmt::print("SearchTime             : {:s}\n", str(movetime));
   fmt::print("MaxDepth               : {:d}\n", depth);
   fmt::print("Number of feature tests: {:d}\n", results[0].tests.size());

@@ -83,7 +83,7 @@ public:
   void start();
 
 private:
-  Result featureMeasurements(int depth, MilliSec movetime, const std::string& fen);
+  Result featureMeasurements(int d, MilliSec mt, const std::string& fen);
   SingleTest measureTreeSize(Search& search, const Position& position, SearchLimits searchLimits, const std::string& featureName) const;
 };
 
