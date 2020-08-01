@@ -182,7 +182,7 @@ TEST_F(SearchTest, startPonderSearch) {
   sl.moveTime    = MilliSec{1000};
   sl.ponder      = true;
   s.isReady();
-  TimePoint start = now();
+  TimePoint start = currentTime();
   s.startSearch(p, sl);
   EXPECT_TRUE(s.isSearching());
   EXPECT_FALSE(s.hasResult());

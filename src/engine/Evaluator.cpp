@@ -108,7 +108,7 @@ inline Value Evaluator::valueFromScore(const Score& score, double gamePhaseFacto
 }
 
 void Evaluator::pawnEval(Position& p, Score& s) {
-  PawnTT::Entry* entryPtr;
+  PawnTT::Entry* entryPtr{};
   const Key key = p.getPawnZobristKey();
 
   // check pawn tt

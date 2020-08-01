@@ -143,9 +143,11 @@ public:
   Position();
 
   // Creates a standard board position and initializes it with a fen position
+  // Throws std::invalid_argument if fen is invalid
   explicit Position(const char* fen);
 
   // Creates a standard board position and initializes it with a fen position
+  // Throws std::invalid_argument if fen is invalid
   explicit Position(const std::string& fen);
 
   // Copy constructor - creates a copy of the given Position

@@ -53,8 +53,6 @@ protected:
   void TearDown() override {}
 };
 
-// 21.6. Loaner laptop
-// NPS: 8.924.349
 TEST_F(EngineSpeedTests, npsTest) {
   SearchConfig::TT_SIZE_MB          = 64;
   SearchConfig::USE_BOOK            = false;

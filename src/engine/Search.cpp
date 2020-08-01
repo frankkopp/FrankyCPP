@@ -68,7 +68,7 @@ void Search::startSearch(const Position p, SearchLimits sl) {
   }
 
   // start search time
-  startTime       = now();
+  startTime       = currentTime();
   startSearchTime = startTime;
 
   // move the received copy of position and search limits to instance variables
@@ -253,7 +253,7 @@ void Search::run() {
   stopSearchFlag = true;
 
   // update search result with search time and pv
-  searchResult.time  = now() - startSearchTime;
+  searchResult.time  = currentTime() - startSearchTime;
   searchResult.pv    = pv[0];
   searchResult.nodes = nodesVisited;
 
@@ -1575,15 +1575,15 @@ void Search::addExtraTime(double f) {
 
 void Search::startTimer() {
   this->timerThread = std::thread([&] {
-    startSearchTime = now();
+    startSearchTime = currentTime();
     LOG__DEBUG(Logger::get().SEARCH_LOG, "Timer started with time limit of {} ms", str(timeLimit));
     // relaxed busy wait
-    while ((now() - startSearchTime) < (timeLimit + extraTime) && !stopSearchFlag) {
+    while ((currentTime() - startSearchTime) < (timeLimit + extraTime) && !stopSearchFlag) {
       std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
     if (!this->stopSearchFlag) {
       this->stopSearchFlag = true;
-      LOG__INFO(Logger::get().SEARCH_LOG, "Stop search by Timer after wall time: {} (time limit {} and extra time {})", str(now() - startTime), str(timeLimit), str(extraTime));
+      LOG__INFO(Logger::get().SEARCH_LOG, "Stop search by Timer after wall time: {} (time limit {} and extra time {})", str(currentTime() - startTime), str(timeLimit), str(extraTime));
     }
   });
 }
@@ -1612,6 +1612,7 @@ void Search::sendResult(SearchResult& result) {
 
 void Search::sendIterationEndInfoToUci() {
   const NanoSec& since = elapsedSince(startSearchTime);
+  lastUciUpdateTime = nowFast();
   if (uciHandler) {
     uciHandler->sendIterationEndInfo(
       statistics.currentSearchDepth,

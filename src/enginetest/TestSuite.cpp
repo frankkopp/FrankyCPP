@@ -53,7 +53,7 @@ void TestSuite::runTestSuite() {
     return;
   }
 
-  auto startTime = now();
+  auto startTime = currentTime();
 
   fprintln("Running Test Suite");
   fprintln("==================================================================");
@@ -147,7 +147,7 @@ void TestSuite::runAllTests(Search& search, SearchLimits& searchLimits) {
   for (auto& test : testCases) {
     fprintln("Test {} of {}\nTest: {} -- Target Result {}",
              ++i, testCases.size(), test.line, str(test.targetMoves));
-    auto startTime2 = now();
+    auto startTime2 = currentTime();
     runSingleTest(search, searchLimits, test);
     auto elapsedTime = elapsedSince(startTime2);
     test.nodes       = search.getLastSearchResult().nodes;
