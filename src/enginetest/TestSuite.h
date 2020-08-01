@@ -98,23 +98,23 @@ public:
 
 private:
   // reads all tests from the given file into the given list
-  void readTestCases(const std::string& filePath, std::vector<Test>& tests) const;
+  static void readTestCases(const std::string& filePath, std::vector<Test>& tests) ;
 
   // reads on EPD file and creates a Test
-  bool readOneEPD(std::string& line, Test& test) const;
+  static bool readOneEPD(std::string& line, Test& test) ;
 
   // removes leading and trailing whitespace and comments
   static std::string& cleanUpLine(std::string& line);
 
-  void directMateTest(Search& search, SearchLimits& limits, Position& position, Test& test);
-  void bestMoveTest(Search& search, SearchLimits& limits, Position& position, Test& test);
-  void avoidMoveTest(Search& search, SearchLimits& limits, Position& position, Test& test);
+  static void directMateTest(Search& search, SearchLimits& limits, Position& position, Test& test);
+  static void bestMoveTest(Search& search, SearchLimits& limits, Position& position, Test& test);
+  static void avoidMoveTest(Search& search, SearchLimits& limits, Position& position, Test& test);
 
   void runAllTests(Search& search, SearchLimits& searchLimits);
 
   // determines which test type the test is and call the appropriate
   // test function.
-  void runSingleTest(Search& search, SearchLimits& limits, Test& test);
+  static void runSingleTest(Search& search, SearchLimits& limits, Test& test);
 
   TestSuiteResult sumUpTests() const;
 

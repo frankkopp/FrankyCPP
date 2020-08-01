@@ -50,7 +50,7 @@ public:
   Value evaluate(Position& p);
 
   // evaluates pawns and updating score in place
-  void pawnEval(Position& p, Score& score);
+  void pawnEval(Position& p, Score& s);
 
   // ValueFromScore adds up the mid and end games scores after multiplying
   // them with the game phase factor

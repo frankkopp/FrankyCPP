@@ -211,8 +211,8 @@ std::string UciOption::str() const {
 }
 
 int UciOptions::getInt(const std::string& value) {
-  int intValue = 0;
   try {
+    int intValue = 0;
     intValue = stoi(value);
     return intValue;
   } catch (...) {

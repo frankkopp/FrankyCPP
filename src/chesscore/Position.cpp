@@ -38,7 +38,7 @@ bool Position::initialized = false;
 
 void Position::init() {
   // Zobrist Key initialization
-  PRNG random(1070372);
+  PRNG random(1070372);  // seed from Stockfish :) - they supposedly did some research
   for (Piece pc = PIECE_NONE; pc < PIECE_LENGTH; ++pc) {
     for (Square sq = SQ_A1; sq < SQ_LENGTH; ++sq) {
       Zobrist::pieces[pc][sq] = random.rand<Key>();
@@ -71,15 +71,6 @@ Position::Position(const char* fen) {
   }
   setupBoard(fen);
 }
-
-//Position::Position(const Position& op) {
-//
-//}
-//
-//Position& Position::operator=(const Position& other) {
-//  Position p(other);
-//  return p;
-//}
 
 ////////////////////////////////////////////////
 ///// PUBLIC
@@ -167,7 +158,7 @@ void Position::doMove(Move move) {
       assert(getPiece(fromSquare(move)) == makePiece(colorOf(getPiece(fromSquare(move))), PAWN));
       assert(enPassantSquare != SQ_NONE);
       const Square capSq = toSq + pawnPush(~colorOf(getPiece(fromSq)));
-      assert(getPiece(capSq) == makePiece(~colorOf(getPiece(fromSquare(move))), PAWN));
+      assert(getPiece(capSq) == makePiece(~colorOf(getPiece(fromSquare(move))), PAWN)); 
       clearEnPassant();
       removePiece(capSq);
       movePiece(fromSq, toSq);

@@ -3,24 +3,20 @@ message("FrankyCPP src/")
 message("====================================================================")
 
 cmake_minimum_required(VERSION 3.13)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 # define library files
 set(FrankyCPPlib_SRCS
-        init.h
+        types/bitboard.cpp
 
-        types/types.h types/bitboard.cpp
+        common/ThreadPool.cpp
+        common/Logging.cpp
 
-        common/misc.h
-        common/Semaphore.h
-        common/ThreadPool.cpp common/ThreadPool.h
-        common/Logging.cpp common/Logging.h
-
-        chesscore/Values.cpp chesscore/Values.h
-        chesscore/Position.cpp chesscore/Position.h
-        chesscore/MoveGenerator.cpp chesscore/MoveGenerator.h
-        chesscore/Perft.cpp chesscore/Perft.h
-        chesscore/History.cpp chesscore/History.h
+        chesscore/Values.cpp
+        chesscore/Position.cpp
+        chesscore/MoveGenerator.cpp
+        chesscore/Perft.cpp
+        chesscore/History.cpp
 
         openingbook/PGN_Reader.cpp openingbook/PGN_Reader.h
         openingbook/OpeningBook.cpp openingbook/OpeningBook.h
@@ -31,13 +27,31 @@ set(FrankyCPPlib_SRCS
         engine/Search.cpp engine/Search.h
         engine/SearchResult.h engine/SearchLimits.h engine/SearchConfig.h
         engine/SearchStats.cpp engine/SearchStats.h
-        engine/Evaluator.cpp engine/Evaluator.h engine/EvalConfig.h
         engine/See.cpp engine/See.h
+        engine/Evaluator.cpp engine/Evaluator.h engine/EvalConfig.h
+        engine/PawnTT.cpp engine/PawnTT.h
 
         enginetest/SearchTreeSizeTest.cpp enginetest/SearchTreeSizeTest.h
-        enginetest/TestSuite.cpp enginetest/TestSuite.h engine/PawnTT.cpp engine/PawnTT.h types/score.h)
+        enginetest/TestSuite.cpp enginetest/TestSuite.h
+)
 
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})
+
+# pre compile main header files
+target_precompile_headers(
+        FrankyCPPlib PUBLIC
+        init.h
+        types/types.h
+        common/misc.h
+        common/Semaphore.h
+        common/ThreadPool.h
+        common/Logging.h
+        chesscore/Values.h
+        chesscore/Position.h
+        chesscore/MoveGenerator.h
+        chesscore/Perft.h
+        chesscore/History.h
+)
 
 target_link_libraries(
         FrankyCPPlib

@@ -29,12 +29,9 @@
 #include <fmt/chrono.h>
 
 #include "TestSuite.h"
-#include "common/Logging.h"
-#include <engine/Search.h>
 #include <engine/SearchConfig.h>
 
 #include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
 
 TestSuite::TestSuite(const MilliSec& time, Depth searchDepth, const std::string& filePath)
     : searchTime(time), searchDepth(searchDepth), filePath(filePath) {
@@ -95,7 +92,7 @@ void TestSuite::runTestSuite() {
   fprintln(" {:<4s} | {:<10s} | {:<8s} | {:<8s} | {:<18s} | {:s} | {:s}", " Nr.", "Result", "Move", "Value", "Expected Result", "Fen", "Id");
   fprintln("====================================================================================================================================");
   int i = 0;
-  for (auto t : testCases) {
+  for (const auto& t : testCases) {
     i++;
     if (t.type == DM) {
       fprintln(" {:<4d} | {:<10s} | {:<8s} | {:<8s} | {:s} {:<15d} | {:s} | {:s}",
@@ -122,7 +119,7 @@ void TestSuite::runTestSuite() {
 
 TestSuiteResult TestSuite::sumUpTests() const {
   TestSuiteResult tsr{};
-  for (auto t : testCases) {
+  for (const auto& t : testCases) {
     tsr.counter++;
     switch (t.result) {
       case NOT_TESTED:
@@ -199,7 +196,6 @@ void TestSuite::directMateTest(Search& search, SearchLimits& limits, Position& p
   }
   test.actualMove  = search.getLastSearchResult().bestMove;
   test.actualValue = search.getLastSearchResult().bestMoveValue;
-  return;
 }
 
 void TestSuite::bestMoveTest(Search& search, SearchLimits& limits, Position& position, Test& test) {
@@ -250,10 +246,9 @@ void TestSuite::avoidMoveTest(Search& search, SearchLimits& limits, Position& po
   test.actualMove  = search.getLastSearchResult().bestMove;
   test.actualValue = search.getLastSearchResult().bestMoveValue;
   test.result      = SUCCESS;
-  return;
 }
 
-void TestSuite::readTestCases(const std::string& filePathStr, std::vector<Test>& tests) const {
+void TestSuite::readTestCases(const std::string& filePathStr, std::vector<Test>& tests) {
   std::ifstream file(filePathStr);
   if (file.is_open()) {
     // read all lines from the file, parse the line into
@@ -273,7 +268,7 @@ void TestSuite::readTestCases(const std::string& filePathStr, std::vector<Test>&
   }
 }
 
-bool TestSuite::readOneEPD(std::string& line, Test& test) const {
+bool TestSuite::readOneEPD(std::string& line, Test& test) {
   LOG__DEBUG(Logger::get().TSUITE_LOG, "EPD: {}", line);
   // skip empty lines and comments
   cleanUpLine(line);

@@ -3,7 +3,7 @@ message("FrankyCPP test/")
 message("====================================================================")
 
 cmake_minimum_required(VERSION 3.13)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 # set the name of the executable
 set(testExeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR}_Test)
@@ -33,12 +33,16 @@ add_executable(
         engine/TT_Test.cpp
         engine/SearchTest.cpp
         engine/SeeTest.cpp
+        engine/EvaluatorTest.cpp
+        engine/PawnTT_Test.cpp
         engine/EngineSpeedTests.cpp
+
         enginetest/SearchTreeSizeTest_Test.cpp
+        enginetest/TestSuite_Test.cpp
 
         TimingTests.cpp
         BOOST_Test.cpp
-        engine/EvaluatorTest.cpp enginetest/TestSuite_Test.cpp engine/PawnTT_Test.cpp)
+        )
 
 target_link_libraries(
         ${testExeName}

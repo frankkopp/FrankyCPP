@@ -1682,7 +1682,7 @@ void Search::sendSearchUpdateToUci() {
             hashfull);
 }
 
-void Search::sendAspirationResearchInfo(std::string boundString) {
+void Search::sendAspirationResearchInfo(const std::string& boundString) {
   const NanoSec& since = elapsedSince(startSearchTime);
   if (uciHandler) {
     uciHandler->sendAspirationResearchInfo(

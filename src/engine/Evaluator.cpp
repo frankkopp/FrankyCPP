@@ -23,10 +23,11 @@
  *
  */
 
+#include "types/types.h"
+#include "common/Logging.h"
+
 #include "Evaluator.h"
 #include "EvalConfig.h"
-#include "types/types.h"
-#include <common/Logging.h>
 
 Evaluator::Evaluator() {
   if (EvalConfig::USE_PAWN_TT) {
@@ -71,9 +72,8 @@ Value Evaluator::evaluate(Position& p) {
   // arbitrary threshold - in early phases (game phase = 1.0) this is doubled
   // in late phases it stands as it is
   if (EvalConfig::USE_LAZY_EVAL) {
-    auto th     = EvalConfig::LAZY_THRESHOLD + (EvalConfig::LAZY_THRESHOLD * gamePhaseFactor);
     Value value = valueFromScore(score, gamePhaseFactor);
-    if (value > th) {
+    if (value > EvalConfig::LAZY_THRESHOLD + (EvalConfig::LAZY_THRESHOLD * gamePhaseFactor)) {
       return finalEval(p, value);
     }
   }
@@ -107,7 +107,7 @@ inline Value Evaluator::valueFromScore(const Score& score, double gamePhaseFacto
   return static_cast<Value>(score.midgame * gamePhaseFactor + score.endgame * (1.0 - gamePhaseFactor));
 }
 
-void Evaluator::pawnEval(Position& p, Score& score) {
+void Evaluator::pawnEval(Position& p, Score& s) {
   PawnTT::Entry* entryPtr;
   const Key key = p.getPawnZobristKey();
 
@@ -115,8 +115,8 @@ void Evaluator::pawnEval(Position& p, Score& score) {
   if (EvalConfig::USE_PAWN_TT) {
     entryPtr = pawnCache.getEntryPtr(key);
     if (entryPtr->key == key) {
-      score.midgame += entryPtr->midvalue;
-      score.endgame += entryPtr->endvalue;
+      s.midgame += entryPtr->midvalue;
+      s.endgame += entryPtr->endvalue;
       return;
     }
   }
@@ -206,7 +206,7 @@ void Evaluator::pawnEval(Position& p, Score& score) {
     pawnCache.put(entryPtr, key, tmpScore);
   }
 
-  score += tmpScore;
+  s += tmpScore;
 
   //  LOG__DEBUG(Logger::get().EVAL_LOG, "Raw pawn eval: midvalue = {} and endvalue = {}", tmpScore.midgame, tmpScore.endgame);
 }

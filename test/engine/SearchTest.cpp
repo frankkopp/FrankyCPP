@@ -334,7 +334,7 @@ TEST_F(SearchTest, quiescenceTest) {
 
   Search search;
   SearchLimits searchLimits;
-  Position position("r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 w kq e3 10 113");
+  Position position("r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 w kq - 10 113");
   searchLimits.depth = 2;
 
   SearchConfig::USE_BOOK       = false;

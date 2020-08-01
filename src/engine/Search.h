@@ -254,7 +254,7 @@ private:
 
   // savePV adds the given move as first move to a dest move list and the appends
   // all src moves to dest. Dest will be cleared before the the append.
-  void savePV(Move move, MoveList& src, MoveList& dest);
+  static void savePV(Move move, MoveList& src, MoveList& dest);
 
   // correct the value for mate distance when storing to TT
   static Value valueToTt(Value value, Depth ply);
@@ -317,7 +317,7 @@ private:
   void sendSearchUpdateToUci();
 
   // send UCI information after aspiration search.
-  void sendAspirationResearchInfo(const std::string boundString);
+  void sendAspirationResearchInfo(const std::string& boundString);
 };
 
 #endif//FRANKYCPP_SEARCH_H
