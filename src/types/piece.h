@@ -63,7 +63,7 @@ constexpr bool validPiece(Piece p) {
 constexpr Piece makePiece(Color c, PieceType pt) { return Piece((c << 3) + pt); }
 
 // creates the piece based on the FEN char
-constexpr Piece makePiece(char p) {
+constexpr Piece makePiece(unsigned char p) {
   switch (p) { // @formatter:off
     case 'K': return WHITE_KING;
     case 'P': return WHITE_PAWN;

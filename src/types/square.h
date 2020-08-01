@@ -75,6 +75,7 @@ constexpr File fileOf (Square s) { return File (s & 7); }
 constexpr Rank rankOf (Square s) { return Rank (s >> 3); }
 
 // creates a square from a string (uci style square e.g. e2, h7)
+// returns SQ_NONE if not a valid square
 inline Square makeSquare(std::string s) {
   const File f = makeFile(s[0]);
   const Rank r = makeRank(s[1]);

@@ -33,7 +33,7 @@ set(FrankyCPPlib_SRCS
 
         enginetest/SearchTreeSizeTest.cpp enginetest/SearchTreeSizeTest.h
         enginetest/TestSuite.cpp enginetest/TestSuite.h
-)
+        )
 
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})
 
@@ -43,6 +43,7 @@ target_precompile_headers(
         init.h
         types/types.h
         common/misc.h
+        common/splitstring.h
         common/Semaphore.h
         common/ThreadPool.h
         common/Logging.h

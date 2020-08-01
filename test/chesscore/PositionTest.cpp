@@ -210,6 +210,77 @@ TEST_F(PositionTest, Setup) {
   EXPECT_EQ(24, position.getGamePhase());
 }
 
+TEST_F(PositionTest, FenCheck) {
+
+  // test data for table driven test
+  struct test {
+    std::string fen;
+    bool valid;
+  };
+
+  test illegalFens[]{
+    {"", false},                                                         // empty
+    {"   not a fen   ", false},                                          // illegal chars in position
+    {"81/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", false},       // too many files in rank
+    {"7/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", false},        // too few files in rank
+    {"rnbqkbnr/ppppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", false},// too many files in rank
+    {"Onbqkbnr/ppppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", false},// illegal char
+    {"rnbqkbnrr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", false},// too many files
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBN w KQkq - 0 1", false},  // not complete
+
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR x KQkq - 0 1", false},  // next player invalid
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR abc KQkq - 0 1", false},// next player invalid
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1", true},   // next player valid
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", true},   // next player valid
+
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w xyz - 0 1", false},// invalid castling
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w -- - 0 1", false}, // invalid castling
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w Kk - 0 1", true},  // valid castling
+
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - x 0 1", false},  // invalid en passant
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - abc 0 1", false},// invalid en passant
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - aa 0 1", false}, // invalid en passant
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - 11 0 1", false}, // invalid en passant
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - 0 1", false},    // invalid en passant
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - e3 0 1", true},  // valid en passant
+
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - - 1", false}, // invalid half move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - a 1", false}, // invalid half move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 1a 1", false},// invalid half move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - a1 1", false},// invalid half move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1", true},  // valid half move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 1 1", true},  // valid half move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 999 1", true},// valid half move number
+
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 -", false}, // invalid move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 a", false}, // invalid move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1a", false},// invalid move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 a1", false},// invalid move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 -4", false},// valid move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 0", true},  // valid move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1", true},  // valid move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 999", true},// valid move number
+
+    {START_POSITION_FEN, true},                                     // standard start position
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1", true},// valid
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0", true},  // valid
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - -", true},    // valid
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w -", true},      // valid
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w", true},        // valid
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", true},          // valid
+  };
+
+  // run all test cases
+  for (const auto& test : illegalFens) {
+    if (test.valid) {
+      EXPECT_NO_THROW(Position p(test.fen));
+    }
+    else {
+      EXPECT_THROW(Position p(test.fen), std::invalid_argument);
+    }
+  }
+}
+
 TEST_F(PositionTest, Output) {
   ostringstream expected;
   ostringstream actual;
@@ -268,8 +339,8 @@ TEST_F(PositionTest, Copy) {
   // make copy and check if copy is really an independent deep copy from position.
   Position copy(position);
   position.undoMove();
-  position.doMove(move2); // different move changes history
-  EXPECT_EQ(move1, copy.getLastMove()); // check if copy's history is independent
+  position.doMove(move2);              // different move changes history
+  EXPECT_EQ(move1, copy.getLastMove());// check if copy's history is independent
 
   // undo and check if equal
   copy.undoMove();
@@ -957,57 +1028,57 @@ TEST_F(PositionTest, attacksTo) {
   Position p;
   Bitboard attacksTo;
 
-  	p = Position("2brr1k1/1pq1b1p1/p1np1p1p/P1p1p2n/1PNPPP2/2P1BNP1/4Q1BP/R2R2K1 w - -");
-  	attacksTo = p.attacksTo(SQ_E5, WHITE);
-  	fprintln("{}", strBoard(attacksTo));
-  	fprintln("{}", strGrouped(attacksTo));
-  	EXPECT_EQ(740294656, attacksTo);
-  	
-  	attacksTo = p.attacksTo(SQ_F1, WHITE);
-  	fprintln("{}", strBoard(attacksTo));
-  	fprintln("{}", strGrouped(attacksTo));
-  	EXPECT_EQ(20552, attacksTo);
+  p         = Position("2brr1k1/1pq1b1p1/p1np1p1p/P1p1p2n/1PNPPP2/2P1BNP1/4Q1BP/R2R2K1 w - -");
+  attacksTo = p.attacksTo(SQ_E5, WHITE);
+  //fprintln("{}", strBoard(attacksTo));
+  //fprintln("{}", strGrouped(attacksTo));
+  EXPECT_EQ(740294656, attacksTo);
 
-  	attacksTo = p.attacksTo(SQ_D4, WHITE);
-  	fprintln("{}", strBoard(attacksTo));
-  	fprintln("{}", strGrouped(attacksTo));
-  	EXPECT_EQ(3407880, attacksTo);
+  attacksTo = p.attacksTo(SQ_F1, WHITE);
+  //fprintln("{}", strBoard(attacksTo));
+  //fprintln("{}", strGrouped(attacksTo));
+  EXPECT_EQ(20552, attacksTo);
 
-  	attacksTo = p.attacksTo(SQ_D4, BLACK);
-  	fprintln("{}", strBoard(attacksTo));
-  	fprintln("{}", strGrouped(attacksTo));
-  	EXPECT_EQ(4483945857024, attacksTo);
+  attacksTo = p.attacksTo(SQ_D4, WHITE);
+  //fprintln("{}", strBoard(attacksTo));
+  //fprintln("{}", strGrouped(attacksTo));
+  EXPECT_EQ(3407880, attacksTo);
 
-  	attacksTo = p.attacksTo(SQ_D6, BLACK);
-  	fprintln("{}", strBoard(attacksTo));
-  	fprintln("{}", strGrouped(attacksTo));
-  	EXPECT_EQ(582090251837636608, attacksTo);
+  attacksTo = p.attacksTo(SQ_D4, BLACK);
+  //fprintln("{}", strBoard(attacksTo));
+  //fprintln("{}", strGrouped(attacksTo));
+  EXPECT_EQ(4483945857024, attacksTo);
 
-  	attacksTo = p.attacksTo(SQ_F8, BLACK);
-  	fprintln("{}", strBoard(attacksTo));
-  	fprintln("{}", strGrouped(attacksTo));
-  	EXPECT_EQ(5769111122661605376, attacksTo);
+  attacksTo = p.attacksTo(SQ_D6, BLACK);
+  //fprintln("{}", strBoard(attacksTo));
+  //fprintln("{}", strGrouped(attacksTo));
+  EXPECT_EQ(582090251837636608, attacksTo);
 
-  	p = Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
-  	attacksTo = p.attacksTo(SQ_E5, BLACK);
-  	fprintln("{}", strBoard(attacksTo));
-  	fprintln("{}", strGrouped(attacksTo));
-  	EXPECT_EQ(2339760743907840, attacksTo);
+  attacksTo = p.attacksTo(SQ_F8, BLACK);
+  //fprintln("{}", strBoard(attacksTo));
+  //fprintln("{}", strGrouped(attacksTo));
+  EXPECT_EQ(5769111122661605376, attacksTo);
 
-  	attacksTo = p.attacksTo(SQ_B1, BLACK);
-  	fprintln("{}", strBoard(attacksTo));
-  	fprintln("{}", strGrouped(attacksTo));
-  	EXPECT_EQ(1280, attacksTo);
+  p         = Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
+  attacksTo = p.attacksTo(SQ_E5, BLACK);
+  //fprintln("{}", strBoard(attacksTo));
+  //fprintln("{}", strGrouped(attacksTo));
+  EXPECT_EQ(2339760743907840, attacksTo);
 
-  	attacksTo = p.attacksTo(SQ_G3, WHITE);
-  	fprintln("{}", strBoard(attacksTo));
-  	fprintln("{}", strGrouped(attacksTo));
-  	EXPECT_EQ(40960, attacksTo);
+  attacksTo = p.attacksTo(SQ_B1, BLACK);
+  //fprintln("{}", strBoard(attacksTo));
+  //fprintln("{}", strGrouped(attacksTo));
+  EXPECT_EQ(1280, attacksTo);
 
-  	attacksTo = p.attacksTo(SQ_E4, BLACK);
-  	fprintln("{}", strBoard(attacksTo));
-  	fprintln("{}", strGrouped(attacksTo));
-  	EXPECT_EQ(4398113619968, attacksTo);
+  attacksTo = p.attacksTo(SQ_G3, WHITE);
+  //fprintln("{}", strBoard(attacksTo));
+  //fprintln("{}", strGrouped(attacksTo));
+  EXPECT_EQ(40960, attacksTo);
+
+  attacksTo = p.attacksTo(SQ_E4, BLACK);
+  //fprintln("{}", strBoard(attacksTo));
+  //fprintln("{}", strGrouped(attacksTo));
+  EXPECT_EQ(4398113619968, attacksTo);
 }
 
 TEST_F(PositionTest, debug) {
@@ -1018,5 +1089,4 @@ TEST_F(PositionTest, debug) {
   fprintln(p.strFen());
   p.doMove(m);
   fprintln(p.strFen());
-  
 }

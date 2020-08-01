@@ -163,8 +163,8 @@ public:
   // Destructor
   ~Position() = default;
 
-  //Returns a String representation of the chess position of this Position as
-  //a FEN String.
+  // Returns a String representation of the chess position of this Position as
+  // a FEN String.
   friend std::ostream& operator<<(std::ostream& os, Position& position);
 
   // return string showing the position as 8x8 matrix with additional
@@ -175,8 +175,8 @@ public:
   // return string showing the position as a 8x8 matrix
   std::string strBoard() const;
 
-  //Returns a String representation of the chess position of this Position as
-  //a FEN String.
+  // Returns a String representation of the chess position of this Position as
+  // a FEN String.
   std::string strFen() const;
 
   // DoMove commits a move to the board. Due to performance there is no check if this
