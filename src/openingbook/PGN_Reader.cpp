@@ -33,7 +33,7 @@
 // BOOST regex
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/regex.hpp>
-using namespace boost;
+//using namespace boost;
 using namespace std::string_literals;
 
 static const boost::regex trailingComments(R"(;.*$)");
@@ -98,9 +98,9 @@ inline PGN_Game PGN_Reader::processOneGame(VectorIterator &iterator) {
   do {
     LOG__TRACE(Logger::get().BOOK_LOG, "Process line: {}    (length={})", *iterator, iterator->size());
     // clean up line
-    trim(*iterator);
+    boost::trim(*iterator);
     // ignore comment lines
-    if (starts_with(*iterator, "%")) continue;
+    if (boost::starts_with(*iterator, "%")) continue;
     // ignore meta data tags for now
     replace_all_regex(*iterator, tagPairs, " "s);
     // trailing comments
@@ -108,7 +108,7 @@ inline PGN_Game PGN_Reader::processOneGame(VectorIterator &iterator) {
     // eliminate double whitespace
     replace_all_regex(*iterator, doubleWhiteSpace, " "s);
     // clean up line
-    trim(*iterator);
+    boost::trim(*iterator);
     // process move section
     if (find_regex(*iterator, moveSectionStart)) {
       handleMoveSection(iterator, game);
@@ -132,9 +132,9 @@ inline void PGN_Reader::handleMoveSection(VectorIterator &iterator, PGN_Game &ga
   // read and concatenate all lines belonging to the move section of  one game
   std::ostringstream os;
   do {
-    trim(*iterator);
+    boost::trim(*iterator);
     // ignore comment lines
-    if (starts_with(*iterator, "%")) continue;
+    if (boost::starts_with(*iterator, "%")) continue;
     // trailing comments
     erase_regex(*iterator, trailingComments);
     // append line
@@ -159,12 +159,12 @@ inline void PGN_Reader::handleMoveSection(VectorIterator &iterator, PGN_Game &ga
   replace_all_regex(moveSection, moveNumbers, " "s);
   // eliminate double whitespace
   replace_all_regex(moveSection, doubleWhiteSpace, " "s);
-  trim(moveSection);
+  boost::trim(moveSection);
   LOG__TRACE(Logger::get().BOOK_LOG, "Move section clean (length={}): {} ", moveSection.size(), moveSection);
 
   // add to game
   std::vector<std::string> moves{};
-  split(moves, moveSection, is_space(), token_compress_on);
+  boost::split(moves, moveSection, boost::is_space(), boost::token_compress_on);
   LOG__TRACE(Logger::get().BOOK_LOG, "Moves extracted: {} ", moves.size());
   // move detection
   for (auto m : moves) {

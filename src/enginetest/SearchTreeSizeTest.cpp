@@ -176,8 +176,14 @@ void SearchTreeSizeTest::start() {
   results.reserve(fens.size());
 
   // Execute tests and store results
-  for (auto fen = fens.begin(); fen != fens.end(); ++fen) {
-    results.push_back(featureMeasurements(depth, movetime, *fen));
+  for (auto & fen : fens) {
+    try {
+      Position testPosition(fen);
+    } catch (std::invalid_argument& e) {
+      std::cerr << fmt::format("Invalid fen skipped: {} ({})", e.what(), fen) << std::endl;
+      continue;
+    }
+    results.push_back(featureMeasurements(depth, movetime, fen));
   }
 
   // Print result

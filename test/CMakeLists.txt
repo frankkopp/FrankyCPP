@@ -42,7 +42,7 @@ add_executable(
 
         TimingTests.cpp
         BOOST_Test.cpp
-        )
+        PlaygroundTests.cpp)
 
 target_link_libraries(
         ${testExeName}

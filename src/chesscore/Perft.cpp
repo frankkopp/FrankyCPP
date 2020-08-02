@@ -62,7 +62,13 @@ void Perft::perft(int maxDepth, bool onDemand) {
   stopFlag = false;
   resetCounter();
 
-  Position position(fen);
+  Position position;
+  try {
+    position = Position(fen);
+  } catch (std::invalid_argument& e) {
+    std::cerr << fmt::format("Fen for perft invalid: {}", e.what()) << std::endl;
+    return;
+  }
   MoveGenerator mg[MAX_DEPTH];
   std::ostringstream os;
   std::cout.imbue(deLocale);
@@ -228,7 +234,13 @@ uint64_t Perft::miniMax(int depth, Position& position, MoveGenerator* pMg) {
 void Perft::perft_divide(int maxDepth, bool onDemand) {
   resetCounter();
 
-  Position position(fen);
+  Position position;
+  try {
+    position = Position(fen);
+  } catch (std::invalid_argument& e) {
+    std::cerr << fmt::format("Fen for perft invalid: {}", e.what()) << std::endl;
+    return;
+  }
   MoveGenerator mg[MAX_DEPTH];
   std::ostringstream os;
   std::cout.imbue(deLocale);

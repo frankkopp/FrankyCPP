@@ -44,7 +44,7 @@ class Perft {
   uint64_t castleCounter{};
   uint64_t promotionCounter{};
   std::string fen;
-  bool stopFlag;
+  bool stopFlag{};
 
 public:
   Perft();

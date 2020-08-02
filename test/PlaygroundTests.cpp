@@ -23,37 +23,9 @@
  *
  */
 
-#ifndef FRANKYCPP_SPLITSTRING_H
-#define FRANKYCPP_SPLITSTRING_H
+#include <gtest/gtest.h>
+using testing::Eq;
 
-// see https://gitlab.com/tbeu/wcx_setfolderdate/-/blob/master/src/splitstring.h
-// see https://stackoverflow.com/a/236803/8520615
-
-#include <sstream>
-#include <string>
-#include <vector>
-
-template<typename T>
-using StringType = std::basic_string<T, std::char_traits<T>, std::allocator<T>>;
-
-template<typename T>
-using StringStreamType = std::basic_stringstream<T, std::char_traits<T>, std::allocator<T>>;
-
-template<typename T, typename Out>
-inline static void splitT(const StringType<T>& s, T delim, Out result) {
-  StringStreamType<T> ss(s);
-  StringType<T> item;
-  while (std::getline(ss, item, delim)) {
-    *(result++) = std::move(item);
-  }
+TEST(Playground, format) {
+  std::cout << fmt::format(deLocale, "This is a test: {:n}", nowFast()) << std::endl;
 }
-
-template <typename T>
-inline static void splitT(const StringType<T>& s, std::vector<StringType<T>>& elems, T delim) {
-  splitT<T, std::back_insert_iterator<std::vector<StringType<T>>>>(s, delim, std::back_inserter(elems));
-}
-
-constexpr auto split = splitT<char>;
-constexpr auto splitW = splitT<wchar_t>;
-
-#endif//FRANKYCPP_SPLITSTRING_H

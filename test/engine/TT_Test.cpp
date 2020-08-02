@@ -55,7 +55,7 @@ TEST_F(TT_Test, entrySize) {
     uint16_t move = MOVE_NONE; // 16 bit
     Value eval    = VALUE_NONE;// 16 bit signed
     Value value   = VALUE_NONE;// 16 bit signed
-    int8_t depth : 7;           // 0-127
+    int8_t depth : 7;          // 0-127
     uint8_t age : 3;           // 0-7
     ValueType type : 2;        // 4 values
     bool mateThreat : 1;       // 1-bit bool
@@ -269,11 +269,10 @@ TEST_F(TT_Test, TT_PPS) {
 
   const Move move = createMove(SQ_E2, SQ_E4);
 
-  uint64_t sum         = 0;
   const int rounds     = 5;
   const int iterations = 100'000'000;
   for (int j = 0; j < rounds; ++j) {
-    sum           = 0;
+    uint64_t sum  = 0;
     const Key key = randomKey(rg1);
     auto depth    = static_cast<Depth>(randomDepth(rg1));
     auto value    = static_cast<Value>(randomValue(rg1));
@@ -290,7 +289,7 @@ TEST_F(TT_Test, TT_PPS) {
     auto finish = std::chrono::high_resolution_clock::now();
     sum += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
     const double sec = double(sum) / nanoPerSec;
-    uint64_t tts     = iterations / sec;
+    uint64_t tts     = uint64_t(iterations / sec);
     fprintln("TT Statistics : {:s}", tt.str());
     fprintln("Run time      : {:n} ns ({:n} put/probes per sec)", sum, tts);
     fprintln("");

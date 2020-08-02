@@ -289,8 +289,13 @@ bool TestSuite::readOneEPD(std::string& line, Test& test) {
   std::string id     = matcher.str(5).empty() ? "no ID" : matcher.str(5);
   LOG__DEBUG(Logger::get().TSUITE_LOG, "Fen: {}    Type: {}    Result: {}    ID: {}", fen, type, result, id);
   // get position
-  // TODO error handling
-  Position p{fen};
+  Position p;
+  try {
+    p = Position(fen);
+  } catch (std::invalid_argument& e) {
+    LOG__WARN(Logger::get().TSUITE_LOG, "Invalid fen {} could not create position from: {}", e.what(), line);
+    return false;
+  }
   // get test type
   TestType testType;
   if (type == "dm") {

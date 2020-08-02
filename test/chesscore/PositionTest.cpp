@@ -120,7 +120,7 @@ TEST_F(PositionTest, Setup) {
   EXPECT_EQ(1, position.getMoveNumber());
   EXPECT_EQ(position.getMaterial(WHITE), position.getMaterial(BLACK));
   EXPECT_EQ(24, position.getGamePhase());
-  EXPECT_FLOAT_EQ(1.0, position.getGamePhaseFactor());
+  EXPECT_DOUBLE_EQ(1.0, position.getGamePhaseFactor());
   EXPECT_EQ(position.getMidPosValue(WHITE), position.getMidPosValue(BLACK));
   EXPECT_EQ(-195, position.getMidPosValue(WHITE));
   EXPECT_EQ(-195, position.getMidPosValue(BLACK));
@@ -136,7 +136,7 @@ TEST_F(PositionTest, Setup) {
   EXPECT_EQ(position2.getMaterial(WHITE), position2.getMaterial(BLACK));
   EXPECT_EQ(24, position2.getGamePhase());
   EXPECT_EQ(1, position.getMoveNumber());
-  EXPECT_FLOAT_EQ(1.0, position2.getGamePhaseFactor());
+  EXPECT_DOUBLE_EQ(1.0, position2.getGamePhaseFactor());
   EXPECT_EQ(position2.getMidPosValue(WHITE), position2.getMidPosValue(BLACK));
   EXPECT_EQ(-195, position2.getMidPosValue(WHITE));
   EXPECT_EQ(-195, position2.getMidPosValue(BLACK));
@@ -152,7 +152,7 @@ TEST_F(PositionTest, Setup) {
   EXPECT_EQ(position3.getMaterial(WHITE), position3.getMaterial(BLACK));
   EXPECT_EQ(24, position3.getGamePhase());
   EXPECT_EQ(1, position.getMoveNumber());
-  EXPECT_FLOAT_EQ(1.0, position3.getGamePhaseFactor());
+  EXPECT_DOUBLE_EQ(1.0, position3.getGamePhaseFactor());
   EXPECT_EQ(position3.getMidPosValue(WHITE), position3.getMidPosValue(BLACK));
   EXPECT_EQ(-195, position3.getMidPosValue(WHITE));
   EXPECT_EQ(-195, position3.getMidPosValue(BLACK));
@@ -169,7 +169,7 @@ TEST_F(PositionTest, Setup) {
   EXPECT_EQ(position4.getMaterial(WHITE), position4.getMaterial(BLACK));
   EXPECT_EQ(24, position4.getGamePhase());
   EXPECT_EQ(1, position.getMoveNumber());
-  EXPECT_FLOAT_EQ(1.0, position4.getGamePhaseFactor());
+  EXPECT_DOUBLE_EQ(1.0, position4.getGamePhaseFactor());
   EXPECT_EQ(position4.getMidPosValue(WHITE), position4.getMidPosValue(BLACK));
   EXPECT_EQ(-195, position4.getMidPosValue(WHITE));
   EXPECT_EQ(-195, position4.getMidPosValue(BLACK));
@@ -188,7 +188,7 @@ TEST_F(PositionTest, Setup) {
   EXPECT_EQ(6940, position.getMaterial(BLACK));
   EXPECT_EQ(22, position.getGamePhase());
   EXPECT_EQ(113, position.getMoveNumber());
-  EXPECT_FLOAT_EQ((22.0 / 24), position.getGamePhaseFactor());
+  EXPECT_DOUBLE_EQ((22.0 / 24), position.getGamePhaseFactor());
   EXPECT_EQ(95, position.getMidPosValue(WHITE));
   EXPECT_EQ(7, position.getMidPosValue(BLACK));
   EXPECT_EQ(WHITE_KING, position.getPiece(SQ_G1));
@@ -220,7 +220,9 @@ TEST_F(PositionTest, FenCheck) {
 
   test illegalFens[]{
     {"", false},                                                         // empty
+
     {"   not a fen   ", false},                                          // illegal chars in position
+
     {"81/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", false},       // too many files in rank
     {"7/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", false},        // too few files in rank
     {"rnbqkbnr/ppppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", false},// too many files in rank
@@ -1047,38 +1049,38 @@ TEST_F(PositionTest, attacksTo) {
   attacksTo = p.attacksTo(SQ_D4, BLACK);
   //fprintln("{}", strBoard(attacksTo));
   //fprintln("{}", strGrouped(attacksTo));
-  EXPECT_EQ(4483945857024, attacksTo);
+  EXPECT_EQ(Bitboard(4483945857024), attacksTo);
 
   attacksTo = p.attacksTo(SQ_D6, BLACK);
   //fprintln("{}", strBoard(attacksTo));
   //fprintln("{}", strGrouped(attacksTo));
-  EXPECT_EQ(582090251837636608, attacksTo);
+  EXPECT_EQ(Bitboard(582090251837636608), attacksTo);
 
   attacksTo = p.attacksTo(SQ_F8, BLACK);
   //fprintln("{}", strBoard(attacksTo));
   //fprintln("{}", strGrouped(attacksTo));
-  EXPECT_EQ(5769111122661605376, attacksTo);
+  EXPECT_EQ(Bitboard(5769111122661605376), attacksTo);
 
   p         = Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
   attacksTo = p.attacksTo(SQ_E5, BLACK);
   //fprintln("{}", strBoard(attacksTo));
   //fprintln("{}", strGrouped(attacksTo));
-  EXPECT_EQ(2339760743907840, attacksTo);
+  EXPECT_EQ(Bitboard(2339760743907840), attacksTo);
 
   attacksTo = p.attacksTo(SQ_B1, BLACK);
   //fprintln("{}", strBoard(attacksTo));
   //fprintln("{}", strGrouped(attacksTo));
-  EXPECT_EQ(1280, attacksTo);
+  EXPECT_EQ(Bitboard(1280), attacksTo);
 
   attacksTo = p.attacksTo(SQ_G3, WHITE);
   //fprintln("{}", strBoard(attacksTo));
   //fprintln("{}", strGrouped(attacksTo));
-  EXPECT_EQ(40960, attacksTo);
+  EXPECT_EQ(Bitboard(40960), attacksTo);
 
   attacksTo = p.attacksTo(SQ_E4, BLACK);
   //fprintln("{}", strBoard(attacksTo));
   //fprintln("{}", strGrouped(attacksTo));
-  EXPECT_EQ(4398113619968, attacksTo);
+  EXPECT_EQ(Bitboard(4398113619968), attacksTo);
 }
 
 TEST_F(PositionTest, debug) {

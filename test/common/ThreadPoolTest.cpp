@@ -57,10 +57,10 @@ protected:
   std::random_device rd;
   std::uniform_int_distribution<unsigned long long> randomU64;
 
-  Result process(Product& p) {
+  static Result process(const Product& p) {
     // simulate cpu intense calculation
-    auto f = 100000000;
-    while (f > 1) f /= 1.00000001;
+    uint64_t f = 100000000;
+    while (f > 1) f = uint64_t(f/1.00000001);
     const Result result = Result{p.producedNumber + 1'000'000 + f};
 //    std::cout << "   >>> Processing product...done: " << result.producedNumber << std::endl;;
     return result;
