@@ -221,7 +221,7 @@ void SearchTreeSizeTest::start() {
 
   fmt::print("----------------------------------------------------------------------------------------------------------------------------------------------");
   fmt::print("\n################## Totals/Avg results for each feature test ##################\n\n");
-  fmt::print("Date:                  : {:%Y-%m-%d %X}", fmt::localtime(time(nullptr)));
+  fmt::print("Date:                  : {:%Y-%m-%d %X}\n", fmt::localtime(time(nullptr)));
   fmt::print("SearchTime             : {:s}\n", str(movetime));
   fmt::print("MaxDepth               : {:d}\n", depth);
   fmt::print("Number of feature tests: {:d}\n", results[0].tests.size());

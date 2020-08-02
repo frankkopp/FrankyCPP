@@ -55,7 +55,7 @@ protected:
 };
 
 TEST_F(SearchTreeSizeTest_Test, size_test) {
-  GTEST_SKIP();
+//  GTEST_SKIP();
 
   static constexpr int DEPTH = 8;
   static constexpr MilliSec MOVE_TIME{0};

@@ -817,7 +817,7 @@ std::string Position::strFen() const {
   return fen.str();
 }
 
-std::ostream& operator<<(std::ostream& os, Position& position) {
+std::ostream& operator<<(std::ostream& os, const Position& position) {
   os << position.strFen();
   return os;
 }

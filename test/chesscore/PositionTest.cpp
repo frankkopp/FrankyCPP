@@ -1078,13 +1078,13 @@ TEST_F(PositionTest, attacksTo) {
   EXPECT_EQ(Bitboard(40960), attacksTo);
 
   attacksTo = p.attacksTo(SQ_E3, BLACK);
-  fprintln("{}", strBoard(attacksTo));
-  fprintln("{}", strGrouped(attacksTo));
+//  fprintln("{}", strBoard(attacksTo));
+//  fprintln("{}", strGrouped(attacksTo));
   EXPECT_EQ(Bitboard(536870912), attacksTo);
 
   attacksTo = p.attacksTo(SQ_E4, BLACK);
-  fprintln("{}", strBoard(attacksTo));
-  fprintln("{}", strGrouped(attacksTo));
+//  fprintln("{}", strBoard(attacksTo));
+//  fprintln("{}", strGrouped(attacksTo));
   EXPECT_EQ(Bitboard(4398650490880), attacksTo);
 }
 
