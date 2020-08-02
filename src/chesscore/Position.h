@@ -62,7 +62,7 @@ struct HistoryState {
   Flag hasCheckFlag             = FLAG_TBD;
 };
 
-// This class represents the chess board and its position.<br>
+// This class represents a chess position.<br>
 // It uses a 8x8 piece board and bitboards, a stack for undo moves, zobrist keys
 // for transposition tables, piece lists, material and positional value counter.
 //
@@ -87,10 +87,10 @@ class Position {
   // which is also not represented in a FEN string)
 
   Piece board[SQ_LENGTH]{};
+  Color nextPlayer       = WHITE;
   CastlingRights castlingRights{};
   Square enPassantSquare = SQ_NONE;
   int halfMoveClock      = 0;
-  Color nextPlayer       = WHITE;
   int moveNumber         = 1;
 
   // Board State END ------------------------------------------
@@ -130,7 +130,7 @@ class Position {
   // Game phase value
   int gamePhase{};
 
-  // caches a hasCheck and hasMate Flag for the current position. Will be set
+  // caches a hasCheck Flag for the current position. Will be set
   // after a call to hasCheck() and reset to TBD every time a move is made or
   // unmade.
   mutable Flag hasCheckFlag = FLAG_TBD;
@@ -173,7 +173,6 @@ public:
   // information about the object's state
   std::string str() const;
 
-
   // return string showing the position as a 8x8 matrix
   std::string strBoard() const;
 
@@ -199,9 +198,6 @@ public:
   // DoNullMove is used in Null Move Pruning. The position is basically unchanged but
   // the next player changes. The state before the null move will be stored to
   // history.
-  // The history entry will be changed. So in effect after an UndoNullMove()
-  // the external view on the position is unchanged (e.g. fenBeforeNull == fenAfterNull
-  // and zobristBeforeNull == zobristAfterNull but positionBeforeNull != positionAfterNull.
   void doNullMove();
 
   // UndoNullMove restores the state of the position to before the DoNullMove() call.

@@ -26,9 +26,9 @@
 #include <regex>
 #include <string>
 
-#include "common/splitstring.h"
 #include "Position.h"
 #include "Values.h"
+#include "common/splitstring.h"
 
 Key Zobrist::pieces[PIECE_LENGTH][SQ_LENGTH];
 Key Zobrist::castlingRights[CR_LENGTH];
@@ -374,13 +374,11 @@ bool Position::isAttacked(Square sq, Color by) const {
           // this is indeed the en passant attacked square
           enPassantSquare + NORTH == sq) {
         // left
-        Square square = sq + WEST;
-        if (board[square] == BLACK_PAWN) {
+        if (board[(sq + WEST)] == BLACK_PAWN) {
           return true;
         }
         // right
-        square = sq + EAST;
-        return board[square] == BLACK_PAWN;
+        return board[(sq + EAST)] == BLACK_PAWN;
       }
     }
     else {// WHITE
@@ -389,13 +387,11 @@ bool Position::isAttacked(Square sq, Color by) const {
           // this is indeed the en passant attacked square
           enPassantSquare + SOUTH == sq) {
         // left
-        Square square = sq + WEST;
-        if (board[square] == WHITE_PAWN) {
+        if (board[(sq + WEST)] == WHITE_PAWN) {
           return true;
         }
         // right
-        square = sq + EAST;
-        return board[square] == WHITE_PAWN;
+        return board[(sq + EAST)] == WHITE_PAWN;
       }
     }
   }
@@ -404,15 +400,16 @@ bool Position::isAttacked(Square sq, Color by) const {
 
 Bitboard Position::attacksTo(Square square, Color color) const {
   assert(validSquare(square) && "Position::attacksTo needs a valid square");
+
   // prepare en passant attacks
   Bitboard epAttacks = BbZero;
-  if (enPassantSquare != SQ_NONE && enPassantSquare == square) {
-    Square pawnSquare   = enPassantSquare + pawnPush(~color);
-    Bitboard epAttacker = Bitboards::neighbourFilesMask[pawnSquare] & Bitboards::sqToRankBb[pawnSquare] & piecesBb[color][PAWN];
-    if (epAttacker) {
-      epAttacks |= Bitboards::sqBb[pawnSquare];
+  if (enPassantSquare != SQ_NONE) {
+    const Square pawnSquare = enPassantSquare + pawnPush(~color);
+    if (pawnSquare == square) {
+      epAttacks |= Bitboards::neighbourFilesMask[pawnSquare] & Bitboards::sqToRankBb[pawnSquare] & piecesBb[color][PAWN];
     }
   }
+
   const Bitboard occupiedAll = getOccupiedBb();
 
   // this uses a reverse approach - it uses the target square as from square
