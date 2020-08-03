@@ -74,7 +74,7 @@ std::string strGrouped(Bitboard b) {
     if (i > 0 && i % 8 == 0) {
       os << ".";
     }
-    os << (b & (BbOne << i) ? "1" : "0");
+    os << ((b & (BbOne << i)) ? "1" : "0");
   }
   os << " (" + std::to_string(b) + ")";
   return os.str();
@@ -288,10 +288,12 @@ void init_magics(Bitboard table[], Magic magics[], Direction directions[]) {
   // Optimal PRNG seeds to pick the correct magics in the shortest time
   int seeds[RANK_LENGTH] = {728, 10316, 55013, 32803, 12281, 15100, 16645, 255};
 
-  Bitboard occupancy[4096], reference[4096], edges, b;
-  int epoch[4096] = {}, cnt = 0, size = 0;
+  Bitboard occupancy[4096], reference[4096];
+  int size = 0;
 
   for (Square s = SQ_A1; s <= SQ_H8; ++s) {
+    Bitboard edges, b;
+
     // Board edges are not considered in the relevant occupancies
     edges = ((Rank1BB | Rank8BB) & ~Bitboards::sqToRankBb[s]) | ((FileABB | FileHBB) & ~Bitboards::sqToFileBb[s]);
 
@@ -315,16 +317,19 @@ void init_magics(Bitboard table[], Magic magics[], Direction directions[]) {
       occupancy[size] = b;
       reference[size] = sliding_attack(directions, s, b);
 
-      if (HasPext)
+      if (HasPext) {
         m.attacks[_pext_u64(b, m.mask)] = reference[size];
+      }
 
       size++;
       b = (b - m.mask) & m.mask;
     } while (b);
 
-    if (HasPext)
+    if (HasPext) {
       continue;
+    }
 
+    int epoch[4096] = {}, cnt = 0;
     PRNG rng(seeds[rankOf(s)]);
 
     // Find a magic for square 's' picking up an (almost) random number
