@@ -458,14 +458,12 @@ Value Search::aspirationSearch(Position& p, Depth depth, Value bestValue) {
       // Alternatively we could do steps as well
       // alpha = Max(bestValue-aspirationSteps[i], ValueMin)
       statistics.aspirationResearches++;
-      statistics.currentExtraSearchDepth = 0;
     }
     else if (value >= beta) {
       // FAIL HIGH - increase upper bound
       sendAspirationResearchInfo("lowerbound");
       beta = std::min(bestValue + aspirationSteps[i], VALUE_MAX);
       statistics.aspirationResearches++;
-      statistics.currentExtraSearchDepth = 0;
     }
     else {
       break;
@@ -671,7 +669,6 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
       depth == 1 &&
       staticEval != VALUE_NONE &&
       staticEval <= alpha - SearchConfig::RAZOR_MARGIN) {
-
     statistics.razorings++;
     return qsearch(p, ply, alpha, beta, PV);
   }
@@ -685,7 +682,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
       depth <= 3 &&
       !isPv &&
       !hasCheck) {
-    auto margin = SearchConfig::RFP_MARGIN[depth];
+    const Value margin = SearchConfig::RFP_MARGIN[depth];
     if (staticEval - margin >= beta) {
       statistics.rfp_cuts++;
       return staticEval - margin;// fail-hard: beta / fail-soft: staticEval - evalMargin;
@@ -714,11 +711,11 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
       // ICCA Journal, Vol. 22, No. 3
       // Ernst A. Heinz, Adaptive Null-Move Pruning, postscript
       // http://people.csail.mit.edu/heinz/ps/adpt_null.ps.gz
-      auto r = SearchConfig::NMP_REDUCTION;
+      Depth r = SearchConfig::NMP_REDUCTION;
       if (depth > 8 || (depth > 6 && p.getGamePhase() >= 3)) {
         ++r;
       }
-      auto newDepth = depth - r - 1;
+      Depth newDepth = depth - r - 1;
       // double check that depth does not get negative
       if (newDepth < 0) {
         newDepth = DEPTH_NONE;
@@ -727,7 +724,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
       // do null move search
       p.doNullMove();
       nodesVisited++;
-      auto nValue = -search(p, newDepth, ply + 1, -beta, -beta + 1, Node_Type::NonPV, Do_Null::No_Null_Move);
+      Value nValue = -search(p, newDepth, ply + 1, -beta, -beta + 1, Node_Type::NonPV, Do_Null::No_Null_Move);
       p.undoNullMove();
 
       // check if we should stop the search
