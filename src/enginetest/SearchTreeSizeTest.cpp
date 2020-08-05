@@ -210,7 +210,7 @@ void SearchTreeSizeTest::start() {
       sums[test.name].special1 += test.special1;
       sums[test.name].special2 += test.special2;
 
-      fprintln("{:<15s} | {:>6s} | {:>8s} | {:>15n} | {:>12n} | {:>12n} | {:>3d}/{:<3d} | {:>12n} | {:>12n} | {} | {}",
+      fprintln("{:<15s} | {:>6s} | {:>8s} | {:>15L} | {:>12L} | {:>12L} | {:>3d}/{:<3d} | {:>12L} | {:>12L} | {} | {}",
                test.name, str(test.move), str(test.value), test.nodes, test.nps,
                (test.time / 1'000'000), test.depth, test.extra, test.special1, test.special2, test.pv, result.fen);
     }
@@ -229,7 +229,7 @@ void SearchTreeSizeTest::start() {
   fmt::print("Total tests            : {:d}\n\n", results[0].tests.size() * fens.size());
 
   for (auto& sum : sums) {
-    fprintln("Test: {:<12s}  Nodes: {:>16n}  Nps: {:>16n}  Time: {:>16n} Depth: {:>3d}/{:<3d} Special1: {:>16n} Special2: {:>16n}", sum.first.c_str(),
+    fprintln("Test: {:<12s}  Nodes: {:>16L}  Nps: {:>16L}  Time: {:>16L} Depth: {:>3d}/{:<3d} Special1: {:>16L} Special2: {:>16L}", sum.first.c_str(),
              sum.second.sumNodes / sum.second.sumCounter, sum.second.sumNps / sum.second.sumCounter,
              (sum.second.sumTime / 1'000'000) / sum.second.sumCounter, sum.second.sumDepth / sum.second.sumCounter, sum.second.sumExtra / sum.second.sumCounter,
              sum.second.special1 / sum.second.sumCounter, sum.second.special2 / sum.second.sumCounter);

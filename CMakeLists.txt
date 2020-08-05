@@ -143,7 +143,6 @@ FetchContent_Declare(
         GIT_TAG v1.7.0
 )
 message("Downloading/Update SPDLOG")
-option(SPDLOG_FMT_EXTERNAL ON)
 set(SPDLOG_FMT_EXTERNAL ON)
 FetchContent_MakeAvailable(spdlog)
 include_directories(

@@ -229,7 +229,7 @@ void Bitboards::maskPassedPawnsPreCompute() {
   for (Square square = SQ_A1; square <= SQ_H8; ++square) {
     int f = int(fileOf(square));
     int r = int(rankOf(square));
-    // white pawn - ignore that pawns can'*t be on all squares
+    // white pawn - ignore that pawns can't be on all squares
     passedPawnMask[WHITE][square] |= rays[N][square];
     if (f < 7 && r < 7) {
       passedPawnMask[WHITE][square] |= rays[N][square + EAST];

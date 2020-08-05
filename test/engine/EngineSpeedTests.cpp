@@ -91,7 +91,7 @@ TEST_F(EngineSpeedTests, npsTest) {
   s.isReady();
   SearchLimits sl{};
   sl.timeControl = true;
-  sl.moveTime    = 60s;
+  sl.moveTime    = 30s;
   s.startSearch(p, sl);
   EXPECT_TRUE(s.isSearching());
   EXPECT_FALSE(s.hasResult());

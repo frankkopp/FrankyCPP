@@ -108,11 +108,6 @@ void Logger::init() {
 //  MAIN_LOG->set_pattern(defaultPattern);
 //  MAIN_LOG->set_level(logLevel);
 //  MAIN_LOG->flush_on(flushLevel);
-//
-//  ENGINE_LOG->sinks().push_back(sharedFileSink);
-//  ENGINE_LOG->set_pattern(defaultPattern);
-//  ENGINE_LOG->set_level(logLevel);
-//  ENGINE_LOG->flush_on(flushLevel);
 
   SEARCH_LOG->sinks().push_back(sharedFileSink);
   SEARCH_LOG->set_pattern(defaultPattern);

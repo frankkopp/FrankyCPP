@@ -110,27 +110,50 @@ constexpr Bitboard CENTER_SQUARES = CENTER_FILES & CENTER_RANKS;
 // pre computed arrays for various bitboards
 // pre-computed in types::init()
 namespace Bitboards {
+  // holds the corresponding bitboards for each square
   inline Bitboard sqBb[SQ_LENGTH];
+  // holds the corresponding bitboards for each file
   inline Bitboard fileBb[FILE_LENGTH];
+  // holds the corresponding bitboards for each rank
   inline Bitboard rankBb[RANK_LENGTH];
+  // holds the corresponding file bitboards for each square
   inline Bitboard sqToFileBb[SQ_LENGTH];
+  // holds the corresponding rank bitboards for each square
   inline Bitboard sqToRankBb[SQ_LENGTH];
+  // holds the corresponding upwards diagonals bitboards for each square
   inline Bitboard squareDiagUpBb[SQ_LENGTH];
+  // holds the corresponding downwards diagonals bitboards for each square
   inline Bitboard squareDiagDownBb[SQ_LENGTH];
+  // holds bitboards for the attacked squares if a pawn of the given color would be on the given square
   inline Bitboard pawnAttacks[COLOR_LENGTH][SQ_LENGTH];
+  // holds bitboards for the attacked squares for Kings and Knights on the given square
   inline Bitboard nonSliderAttacks[PT_LENGTH][SQ_LENGTH];
+  // holds bitboards for all the files to the left of the given square
   inline Bitboard filesWestMask[SQ_LENGTH];
+  // holds bitboards for all the files to the right of the given square
   inline Bitboard filesEastMask[SQ_LENGTH];
+  // holds bitboards for all the ranks above the given square
   inline Bitboard ranksNorthMask[SQ_LENGTH];
+  // holds bitboards for all the ranks below the given square
   inline Bitboard ranksSouthMask[SQ_LENGTH];
+  // holds bitboards for the file to the left of the given square
   inline Bitboard fileWestMask[SQ_LENGTH];
+  // holds bitboards for the file to the right of the given square
   inline Bitboard fileEastMask[SQ_LENGTH];
+  // holds bitboards for the files to the left and right of the given square
   inline Bitboard neighbourFilesMask[SQ_LENGTH];
+  // holds bitboards for the squares in the given orientation from the given square (excl. given square)
   inline Bitboard rays[OR_LENGTH][SQ_LENGTH];
+  // holds bitboards for the squares between the two given squares or BbZero if the squares are not
+  // on a straight line to each other or if the are direct neighbours
   inline Bitboard intermediateBb[SQ_LENGTH][SQ_LENGTH];
+  // holds bitboards for the squares in front of the given pawn on the same or neighbouring files
   inline Bitboard passedPawnMask[COLOR_LENGTH][SQ_LENGTH];
+  // holds bitboards for squares involved in the corresponding castle move
   inline Bitboard kingSideCastleMask[COLOR_LENGTH];
+  // holds bitboards for squares involved in the corresponding castle move
   inline Bitboard queenSideCastleMask[COLOR_LENGTH];
+  // holds bitboards for all squares of the given color
   inline Bitboard colorBb[COLOR_LENGTH];
 }// namespace Bitboards
 
@@ -170,6 +193,7 @@ inline Bitboard shiftBb(Direction d, Bitboard b) {
   return b;
 }
 
+// if C++20 feature library <bit> is available, use the new bit operations
 #if __cpp_lib_bitops >= 201907L
 #include <bit>
 #endif
