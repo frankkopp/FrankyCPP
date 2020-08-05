@@ -3,7 +3,7 @@ message("FrankyCPP Main")
 message("CMAKE " ${CMAKE_VERSION} " " ${CMAKE_COMMAND})
 message("====================================================================")
 
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.16)
 
 # Project name and version
 project(FrankyCPP VERSION 0.3)
@@ -16,8 +16,6 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 # C++ settings
 set(CMAKE_CXX_STANDARD 20)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 # Unit testing enabled
 enable_testing()
 
@@ -29,7 +27,7 @@ message("Compiler is " ${CMAKE_CXX_COMPILER_ID} " " ${CMAKE_CXX_COMPILER_VERSION
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
     message("Compiler Settings: AppleClang")
-    set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra -mpopcnt -mbmi2")
+    set(CMAKE_CXX_FLAGS "-std=c++20 -Wall -Wextra -mpopcnt -mbmi2")
     set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fprofile-instr-generate -fcoverage-mapping -Wpedantic -Wshadow -Wno-conversion -Wunreachable-code -Wuninitialized  -Wold-style-cast -Wunused-variable -Wfloat-equal -Wno-gnu-zero-variadic-macro-arguments")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "11")
@@ -41,7 +39,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
 
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     message("Compiler Settings: Clang")
-    set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra -mpopcnt -mbmi2")
+    set(CMAKE_CXX_FLAGS "-std=c++20 -Wall -Wextra -mpopcnt -mbmi2")
     set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fprofile-instr-generate -fcoverage-mapping -Wpedantic -Wshadow -Wno-conversion -Wunreachable-code -Wuninitialized  -Wold-style-cast -Wunused-variable -Wfloat-equal -Wno-gnu-zero-variadic-macro-arguments")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "9")
@@ -78,6 +76,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     endif ()
 endif ()
 
+message("Generator: " ${CMAKE_GENERATOR} " " ${CMAKE_MAKE_PROGRAM})
 message("Compiler flags: " ${CMAKE_CXX_FLAGS})
 message("Compiler DEBUG flags: " ${CMAKE_CXX_FLAGS_DEBUG})
 message("Compiler RELEASE flags: " ${CMAKE_CXX_FLAGS_RELEASE})
@@ -163,9 +162,9 @@ elseif (WIN32)
     set(BOOST_INCLUDEDIR "C:/Boost/include/boost-1_73")
     set(BOOST_LIBRARYDIR "C:/Boost/lib")
 else ()
-    message("Find Boost on other")
-    set(BOOST_ROOT "/usr/local/boost_1_73_0")
-    set(Boost_INCLUDE_DIR "/usr/local/boost_1_73_0")
+    message("Find Boost on Unix")
+    set(BOOST_ROOT "/usr/local")
+    set(Boost_INCLUDE_DIR "/usr/local/include/boost")
 endif ()
 set(Boost_DEBUG FALSE)
 set(Boost_USE_MULTITHREADED TRUE)

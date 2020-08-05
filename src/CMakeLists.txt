@@ -2,7 +2,7 @@ message("====================================================================")
 message("FrankyCPP src/")
 message("====================================================================")
 
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.16)
 set(CMAKE_CXX_STANDARD 20)
 
 # define library files

@@ -27,5 +27,5 @@
 using testing::Eq;
 
 TEST(Playground, format) {
-  std::cout << fmt::format(deLocale, "This is a test: {:n}", nowFast()) << std::endl;
+
 }

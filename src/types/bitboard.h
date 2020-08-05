@@ -170,8 +170,15 @@ inline Bitboard shiftBb(Direction d, Bitboard b) {
   return b;
 }
 
+#if __cpp_lib_bitops >= 201907L
+#include <bit>
+#endif
+
 // popcount() counts the number of non-zero bits in a bitboard
 inline int popcount(Bitboard b) {
+#if __cpp_lib_bitops >= 201907L
+  return std::popcount(b);
+#else
 #if defined(__GNUC__)// GCC, Clang, ICC
   return __builtin_popcountll(b);
 #elif defined(_MSC_VER)
@@ -189,6 +196,7 @@ inline int popcount(Bitboard b) {
   // adding all 16-bit population counters referenced in the 64-bit union
   return PopCnt16[v.u[0]] + PopCnt16[v.u[1]] + PopCnt16[v.u[2]] + PopCnt16[v.u[3]];
 #endif
+#endif// _cpp_bit
 }
 
 // Used when no build-in popcount is available for compiler.
@@ -204,6 +212,9 @@ inline unsigned popcount16(unsigned u) {
 // bitboard
 inline Square lsb(Bitboard b) {
   if (!b) return SQ_NONE;
+#if __cpp_lib_bitops >= 201907L
+  return static_cast<Square>(std::countr_zero(b));
+#else
 #ifdef __GNUC__// GCC, Clang, ICC
   return static_cast<Square>(__builtin_ctzll(b));
 #elif defined(_MSC_VER)
@@ -217,12 +228,16 @@ inline Square lsb(Bitboard b) {
 #else// Compiler is not GCC
 #error "Compiler not yet supported."
 #endif
+#endif
 }
 
 // lsb() and msb() return the least/most significant bit in a non-zero
 // bitboard
 inline Square msb(Bitboard b) {
   if (!b) return SQ_NONE;
+#if __cpp_lib_bitops >= 201907L
+  return static_cast<Square>(std::countl_zero(b));
+#else
 #if defined(__GNUC__)// GCC, Clang, ICC
   return static_cast<Square>(63 - __builtin_clzll(b));
 #elif defined(_MSC_VER)
@@ -235,6 +250,7 @@ inline Square msb(Bitboard b) {
   }
 #else// Compiler is not GCC
 #error "Compiler not yet supported."
+#endif
 #endif
 }
 

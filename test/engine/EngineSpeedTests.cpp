@@ -84,7 +84,7 @@ TEST_F(EngineSpeedTests, npsTest) {
   EvalConfig::PAWN_TT_SIZE_MB = 64;
 
   //  Position p{"2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - - 0 1 "};
-  Position p{"r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq - 0 1"};
+  Position p{};
   Search s{};
   s.isReady();
   SearchLimits sl{};
