@@ -36,11 +36,11 @@ PawnTT::PawnTT(uint64_t newSizeInMByte) {
 
 void PawnTT::resize(const uint64_t newSizeInMByte) {
   if (newSizeInMByte > MAX_SIZE_MB) {
-    LOG__ERROR(Logger::get().EVAL_LOG, "Requested size for PawnTT of {:n} MB reduced to max of {:n} MB", newSizeInMByte, MAX_SIZE_MB);
+    LOG__ERROR(Logger::get().EVAL_LOG, "Requested size for PawnTT of {:L} MB reduced to max of {:L} MB", newSizeInMByte, MAX_SIZE_MB);
     sizeInByte = MAX_SIZE_MB * MB;
   }
   else {
-    LOG__TRACE(Logger::get().EVAL_LOG, "Resizing PawnTT from {:n} MB to {:n} MB", sizeInByte, newSizeInMByte);
+    LOG__TRACE(Logger::get().EVAL_LOG, "Resizing PawnTT from {:L} MB to {:L} MB", sizeInByte, newSizeInMByte);
     sizeInByte = newSizeInMByte * MB;
   }
 
@@ -61,7 +61,7 @@ void PawnTT::resize(const uint64_t newSizeInMByte) {
 
   clear();
   if (maxNumberOfEntries) {
-    LOG__INFO(Logger::get().EVAL_LOG, "PawnTT Size {:n} MByte, Capacity {:n} entries (size={}Byte) (Requested were {:n} MBytes)",
+    LOG__INFO(Logger::get().EVAL_LOG, "PawnTT Size {:L} MByte, Capacity {:L} entries (size={}Byte) (Requested were {:L} MBytes)",
               sizeInByte / MB, maxNumberOfEntries, sizeof(Entry), newSizeInMByte);
   }
 }
@@ -106,7 +106,7 @@ void PawnTT::clear() {
   auto finish = std::chrono::high_resolution_clock::now();
   auto time   = std::chrono::duration_cast<std::chrono::milliseconds>(finish - startTime).count();
 
-  LOG__DEBUG(Logger::get().EVAL_LOG, "PawnTT cleared {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
+  LOG__DEBUG(Logger::get().EVAL_LOG, "PawnTT cleared {:L} entries in {:L} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }
 
 void PawnTT::put(Entry* entryDataPtr, Key key, Score score) {
@@ -138,8 +138,8 @@ void PawnTT::put(Entry* entryDataPtr, Key key, Score score) {
 
 std::string PawnTT::str() {
   return fmt::format(
-    "PawnTT: size {:n} MB max entries {:n} of size {:n} Bytes entries {:n} puts {:n} "
-    "updates {:n} collisions {:n} overwrites {:n} hits {:n} ({:n}%) misses {:n} ({:n}%)",
+    "PawnTT: size {:L} MB max entries {:L} of size {:L} Bytes entries {:L} puts {:L} "
+    "updates {:L} collisions {:L} overwrites {:L} hits {:L} ({:L}%) misses {:L} ({:L}%)",
     sizeInByte / MB, maxNumberOfEntries, sizeof(Entry), numberOfEntries,
     numberOfPuts, numberOfUpdates, numberOfCollisions, numberOfOverwrites,
     numberOfHits, numberOfQueries ? (numberOfHits * 100) / numberOfQueries : 0,

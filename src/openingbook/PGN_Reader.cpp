@@ -57,35 +57,35 @@ PGN_Reader::PGN_Reader(std::vector<std::string> &lines) {
 }
 
 bool PGN_Reader::process(Fifo<PGN_Game> &gamesFifo) {
-  LOG__TRACE(Logger::get().BOOK_LOG, "Finding games in {:n} lines.", inputLines->size());
+  LOG__TRACE(Logger::get().BOOK_LOG, "Finding games in {:L} lines.", inputLines->size());
   const auto start = std::chrono::high_resolution_clock::now();
   // loop over all input lines
   VectorIterator linesIter = inputLines->begin();
   while (linesIter < inputLines->end()) {
-    LOG__TRACE(Logger::get().BOOK_LOG, "Finding game {:n}", games.size() + 1);
+    LOG__TRACE(Logger::get().BOOK_LOG, "Finding game {:L}", games.size() + 1);
     PGN_Game game = processOneGame(linesIter);
     games.push_back(game);
     gamesFifo.push(game);
-    LOG__TRACE(Logger::get().BOOK_LOG, "Game Fifo has {:n} games", gamesFifo.size());
+    LOG__TRACE(Logger::get().BOOK_LOG, "Game Fifo has {:L} games", gamesFifo.size());
   }
   const auto stop = std::chrono::high_resolution_clock::now();
   const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-  LOG__INFO(Logger::get().BOOK_LOG, "Found {:n} games in {:n} ms", games.size(), elapsed.count());
+  LOG__INFO(Logger::get().BOOK_LOG, "Found {:L} games in {:L} ms", games.size(), elapsed.count());
   return true;
 }
 
 bool PGN_Reader::process() {
-  LOG__TRACE(Logger::get().BOOK_LOG, "Processing {:n} lines.", inputLines->size());
+  LOG__TRACE(Logger::get().BOOK_LOG, "Processing {:L} lines.", inputLines->size());
   const auto start = std::chrono::high_resolution_clock::now();
   // loop over all input lines
   VectorIterator linesIter = inputLines->begin();
   while (linesIter < inputLines->end()) {
-    LOG__TRACE(Logger::get().BOOK_LOG, "Processing game {:n}", games.size() + 1);
+    LOG__TRACE(Logger::get().BOOK_LOG, "Processing game {:L}", games.size() + 1);
     games.push_back(processOneGame(linesIter));
   }
   const auto stop = std::chrono::high_resolution_clock::now();
   const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-  LOG__INFO(Logger::get().BOOK_LOG, "Found {:n} games in {:n} ms", games.size(), elapsed.count());
+  LOG__INFO(Logger::get().BOOK_LOG, "Found {:L} games in {:L} ms", games.size(), elapsed.count());
   return true;
 }
 

@@ -259,7 +259,7 @@ void Search::run() {
 
   // print stats to log
   LOG__INFO(Logger::get().SEARCH_LOG, "Search finished after {}", str(searchResult.time));
-  LOG__INFO(Logger::get().SEARCH_LOG, "Search depth was {}({}) with {:n} nodes visited. NPS = {:n} nps", statistics.currentSearchDepth, statistics.currentExtraSearchDepth, nodesVisited, nps(nodesVisited, searchResult.time));
+  LOG__INFO(Logger::get().SEARCH_LOG, "Search depth was {}({}) with {:L} nodes visited. NPS = {:L} nps", statistics.currentSearchDepth, statistics.currentExtraSearchDepth, nodesVisited, nps(nodesVisited, searchResult.time));
   LOG__DEBUG(Logger::get().SEARCH_LOG, "Search stats: {}", statistics.str());
 
   // print result to log
@@ -1273,7 +1273,7 @@ Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, Search::N
     // if available on platform tells the cpu to
     // prefetch the data into cpu caches
     TT_PREFETCH;
-    // EVAL_PREFETCH;
+    EVAL_PREFETCH;
 
     // we only count legal moves
     nodesVisited++;
@@ -1622,7 +1622,7 @@ void Search::sendIterationEndInfoToUci() {
     return;
   }
 
-  LOG__INFO(Logger::get().SEARCH_LOG, "depth {} seldepth {} value {} nodes {:n} nps {:n} time {:n} pv {}",
+  LOG__INFO(Logger::get().SEARCH_LOG, "depth {} seldepth {} value {} nodes {:L} nps {:L} time {:L} pv {}",
             statistics.currentSearchDepth,
             statistics.currentExtraSearchDepth,
             str(statistics.currentBestRootMoveValue),
@@ -1671,7 +1671,7 @@ void Search::sendSearchUpdateToUci() {
     return;
   }
 
-  LOG__INFO(Logger::get().SEARCH_LOG, "depth {} seldepth {} nodes {:n} nps {:n} time {:n} hashful {:n}",
+  LOG__INFO(Logger::get().SEARCH_LOG, "depth {} seldepth {} nodes {:L} nps {:L} time {:L} hashful {:L}",
             statistics.currentSearchDepth,
             statistics.currentExtraSearchDepth,
             nodesVisited,
@@ -1695,7 +1695,7 @@ void Search::sendAspirationResearchInfo(const std::string& boundString) {
     return;
   }
 
-  LOG__INFO(Logger::get().SEARCH_LOG, "depth {} seldepth {} value {} {} nodes {:n} nps {:n} time {:n} pv {}",
+  LOG__INFO(Logger::get().SEARCH_LOG, "depth {} seldepth {} value {} {} nodes {:L} nps {:L} time {:L} pv {}",
             statistics.currentSearchDepth,
             statistics.currentExtraSearchDepth,
             str(statistics.currentBestRootMoveValue),

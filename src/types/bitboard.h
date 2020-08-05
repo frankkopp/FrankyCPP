@@ -26,10 +26,10 @@
 #ifndef FRANKYCPP_BITBOARD_H
 #define FRANKYCPP_BITBOARD_H
 
-#include <cstdint>
-#include <iostream>
 #include <cassert>
+#include <cstdint>
 #include <immintrin.h>
+#include <iostream>
 
 #include "castlingrights.h"
 #include "direction.h"
@@ -37,7 +37,7 @@
 #include "piecetype.h"
 #include "square.h"
 
-#if defined(HAS_PEXT) // to be set as compiler option
+#if defined(HAS_PEXT)// to be set as compiler option
 constexpr bool HasPext = true;
 #else
 constexpr bool HasPext = false;
@@ -338,7 +338,7 @@ struct Magic {
   unsigned shift;
 
   // Compute the attack's index using the 'magic bitboards' approach
-  inline unsigned index(Bitboard occupied) const {
+  [[nodiscard]] inline unsigned index(Bitboard occupied) const {
     if (HasPext) {
       return unsigned(_pext_u64(occupied, mask));
     }

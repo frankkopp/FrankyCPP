@@ -53,6 +53,8 @@ protected:
   void TearDown() override {}
 };
 
+// 5.8. All Features: NPS: 2.788.209
+//
 TEST_F(EngineSpeedTests, npsTest) {
   SearchConfig::TT_SIZE_MB          = 64;
   SearchConfig::USE_BOOK            = false;

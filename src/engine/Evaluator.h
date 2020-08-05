@@ -58,6 +58,13 @@ public:
 
   // convert value from white view to next player view
   static Value finalEval(const Position& p, Value value) ;
+
+  // do a prefetch for the pawn cache data
+#ifdef EVAL_ENABLE_PREFETCH
+  inline void prefetch(Key key) {
+    pawnCache.prefetch(key);
+  }
+#endif
 };
 
 

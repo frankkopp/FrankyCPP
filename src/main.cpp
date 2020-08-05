@@ -144,8 +144,8 @@ int main(int argc, char* argv[]) {
         std::cerr << "Could not read file: " << testsuite_file << "\n";
         return 1;
       }
-      std::cout << "Time per Test:      " << fmt::format("{:n}", testsuite_time) << "\n";
-      std::cout << "Max depth per Test: " << fmt::format("{:n}", testsuite_depth) << "\n";
+      std::cout << "Time per Test:      " << fmt::format("{:L}", testsuite_time) << "\n";
+      std::cout << "Max depth per Test: " << fmt::format("{:L}", testsuite_depth) << "\n";
       TestSuite testSuite{MilliSec{testsuite_time}, Depth{testsuite_depth}, testsuite_file};
       testSuite.runTestSuite();
       return 0;
@@ -157,8 +157,8 @@ int main(int argc, char* argv[]) {
       std::cout << "RUNNING PERFT TEST\n";
       std::cout << "########################################################\n";
       std::cout << "Version: " << appName << "\n";
-      std::cout << "Start depth: " << fmt::format("{:n}", perftStart) << "\n";
-      std::cout << "End depth  : " << fmt::format("{:n}", perftEnd) << "\n";
+      std::cout << "Start depth: " << fmt::format("{:L}", perftStart) << "\n";
+      std::cout << "End depth  : " << fmt::format("{:L}", perftEnd) << "\n";
       std::cout << std::endl;
       Perft perft{};
       perft.perft(perftStart, perftEnd, true);

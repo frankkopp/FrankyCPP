@@ -63,11 +63,12 @@ elseif (CMAKE_COMPILER_IS_GNUCXX)
     endif ()
 
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    # -DCMAKE_C_COMPILER=cl.exe -DCMAKE_CXX_COMPILER=cl.exe -G Ninja
     message("Compiler Settings: MSVC")
-    set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /W4 /GR /EHsc /std:c++latest /wd4127 /arch:AVX2 /MP")
-    set(CMAKE_CXX_FLAGS_DEBUG " /MDd /Zi /Ob0 /Od /RTC1")
+    set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /favor:INTEL64 /Gr /Qpar /W4 /GR /EHsc /std:c++latest /arch:AVX2 /MP")
+    set(CMAKE_CXX_FLAGS_RELEASE "/O2 /Ob2 /MD /DNDEBUG")
+    set(CMAKE_CXX_FLAGS_DEBUG "/Od /Ob0 /MDd /Zi /RTC1")
     # /showIncludes
-    set(CMAKE_CXX_FLAGS_RELEASE "/MD /O2 /Ob2 /DNDEBUG")
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "19.24")
         message("Using HAS_EXECUTION_LIB")
         add_compile_definitions(HAS_EXECUTION_LIB)
@@ -125,7 +126,8 @@ include(FetchContent)
 FetchContent_Declare(
         fmt
         GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-        GIT_TAG 6.1.2
+        GIT_TAG 7.0.2
+        #GIT_TAG 6.1.2
 )
 message("Downloading/Update FMT")
 FetchContent_MakeAvailable(fmt)
@@ -142,6 +144,7 @@ FetchContent_Declare(
 )
 message("Downloading/Update SPDLOG")
 option(SPDLOG_FMT_EXTERNAL ON)
+set(SPDLOG_FMT_EXTERNAL ON)
 FetchContent_MakeAvailable(spdlog)
 include_directories(
         ${spdlog_SOURCE_DIR}/include

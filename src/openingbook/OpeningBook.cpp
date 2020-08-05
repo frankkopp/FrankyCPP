@@ -118,7 +118,7 @@ void OpeningBook::initialize() {
 
   const auto stop = std::chrono::high_resolution_clock::now();
   const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-  LOG__INFO(Logger::get().BOOK_LOG, "Opening book initialized in ({:n} ms). {:n} positions", elapsed.count(), bookMap.size());
+  LOG__INFO(Logger::get().BOOK_LOG, "Opening book initialized in ({:L} ms). {:L} positions", elapsed.count(), bookMap.size());
   isInitialized = true;
 }
 
@@ -128,7 +128,7 @@ void OpeningBook::reset() {
   gamesTotal = 0;
   gamesProcessed = 0;
   isInitialized = false;
-  LOG__DEBUG(Logger::get().TEST_LOG, "Opening book reset: {:n}", bookMap.size());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Opening book reset: {:L}", bookMap.size());
 }
 
 // //////////////////////////////////////////////
@@ -143,7 +143,7 @@ void OpeningBook::readBookFromFile(const std::string &filePath) {
   fileSize = getFileSize(filePath);
   std::ifstream file(filePath);
   if (file.is_open()) {
-    LOG__DEBUG(Logger::get().BOOK_LOG, "Open book '{}' with {:n} kB successful.", filePath, fileSize / 1024);
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Open book '{}' with {:L} kB successful.", filePath, fileSize / 1024);
     std::vector<std::string> lines = getLinesFromFile(file);
     file.close();
     processAllLines(lines);
@@ -167,7 +167,7 @@ std::vector<std::string> OpeningBook::getLinesFromFile(std::ifstream &ifstream) 
   }
   const auto stop = std::chrono::high_resolution_clock::now();
   const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Read {:n} lines in {:n} ms.", lines.size(), elapsed.count());
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Read {:L} lines in {:L} ms.", lines.size(), elapsed.count());
   return lines;
 }
 
@@ -225,7 +225,7 @@ void OpeningBook::processAllLines(std::vector<std::string> &lines) {
 
   const auto stop = std::chrono::high_resolution_clock::now();
   const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Internal book created {:n} positions in {:n} ms.", bookMap.size(), elapsed.count());
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Internal book created {:L} positions in {:L} ms.", bookMap.size(), elapsed.count());
 }
 
 /* process each line depending on format */
@@ -350,7 +350,7 @@ void OpeningBook::processPGNFileFifo(std::vector<std::string> &lines) {
         if (game.has_value()) { // no value means pop_wait has been canceled
           LOG__TRACE(Logger::get().BOOK_LOG, "Got game...");
           processGame(game.value());
-          LOG__TRACE(Logger::get().BOOK_LOG, "Processed game...Book now at {:n} entries.", bookMap.size());
+          LOG__TRACE(Logger::get().BOOK_LOG, "Processed game...Book now at {:L} entries.", bookMap.size());
         }
         else {
           LOG__TRACE(Logger::get().BOOK_LOG, "Game NULL");
@@ -400,7 +400,7 @@ void OpeningBook::processPGNFile(std::vector<std::string> &lines) {
 /* After reading all games (non fifo) a parallel thread pool of workers take the games
  * to process them to build up internal book data structure. */
 void OpeningBook::processGames(std::vector<PGN_Game>* ptrGames) {// processing games
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Processing {:n} games", ptrGames->size());
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Processing {:L} games", ptrGames->size());
   const auto startTime = std::chrono::high_resolution_clock::now();
 
 #ifdef PARALLEL_GAME_PROCESSING
@@ -431,13 +431,13 @@ void OpeningBook::processGames(std::vector<PGN_Game>* ptrGames) {// processing g
   auto iterEnd = ptrGames->end();
   for (auto iter = ptrGames->begin(); iter < iterEnd; iter++) {
     processGame(*iter);
-    LOG__TRACE(Logger::get().BOOK_LOG, "Process game finished - games={:n} book={:n}", gamesProcessed, bookMap.size());
+    LOG__TRACE(Logger::get().BOOK_LOG, "Process game finished - games={:L} book={:L}", gamesProcessed, bookMap.size());
   }
 #endif
 
   const auto stopTime = std::chrono::high_resolution_clock::now();
   const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime);
-  LOG__INFO(Logger::get().BOOK_LOG, "Processed {:n} games in {:n} ms", gamesTotal, elapsed.count());
+  LOG__INFO(Logger::get().BOOK_LOG, "Processed {:L} games in {:L} ms", gamesTotal, elapsed.count());
 }
 
 /* process a game from PGN SAN format and build internal book data structure */
@@ -534,7 +534,7 @@ void OpeningBook::saveToCache() {
     oa << BOOST_SERIALIZATION_NVP(bookMap);
     const auto stop = std::chrono::high_resolution_clock::now();
     const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-    LOG__DEBUG(Logger::get().BOOK_LOG, "Book saved to binary cache in ({:n} ms) ({})", elapsed.count(), serCacheFile);
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Book saved to binary cache in ({:L} ms) ({})", elapsed.count(), serCacheFile);
   } // archive and stream closed when destructors are called
   // reset recreation flag
   _recreateCache = false;
@@ -553,7 +553,7 @@ void OpeningBook::saveToCache() {
 
       const auto stop = std::chrono::high_resolution_clock::now();
       const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-      LOG__INFO(Logger::get().BOOK_LOG, "Opening book save to txt cache in ({:n} ms) ({})", elapsed.count(), txtCacheFile);
+      LOG__INFO(Logger::get().BOOK_LOG, "Opening book save to txt cache in ({:L} ms) ({})", elapsed.count(), txtCacheFile);
     } // archive and stream closed when destructors are called
 
     // this is redundant for testing purposes
@@ -571,7 +571,7 @@ void OpeningBook::saveToCache() {
 
       const auto stop = std::chrono::high_resolution_clock::now();
       const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-      LOG__INFO(Logger::get().BOOK_LOG, "Opening book saved to xml cache in ({:n} ms) ({})", elapsed.count(), xmlCacheFile);
+      LOG__INFO(Logger::get().BOOK_LOG, "Opening book saved to xml cache in ({:L} ms) ({})", elapsed.count(), xmlCacheFile);
     } // archive and stream closed when destructors are called*/
 }
 
@@ -583,7 +583,7 @@ bool OpeningBook::loadFromCache() {
   { // load data from archive
     const auto start = std::chrono::high_resolution_clock::now();
     const std::string serCacheFile = bookFilePath + cacheExt;
-    LOG__DEBUG(Logger::get().BOOK_LOG, "Loading from cache file {} ({:n} kB)", serCacheFile, getFileSize(serCacheFile) / 1'024);
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Loading from cache file {} ({:L} kB)", serCacheFile, getFileSize(serCacheFile) / 1'024);
     // create and open a binary archive for input
     std::ifstream ifsBin(serCacheFile, std::fstream::binary | std::fstream::in);
     if (!ifsBin.is_open() || !ifsBin.good()) {
@@ -596,7 +596,7 @@ bool OpeningBook::loadFromCache() {
     const auto stop = std::chrono::high_resolution_clock::now();
     const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
     LOG__INFO(Logger::get().BOOK_LOG,
-              "Book loaded from cache with {:n} entries in ({:n} ms) ({})",
+              "Book loaded from cache with {:L} entries in ({:L} ms) ({})",
               binMap.size(), elapsed.count(), serCacheFile);
   }
   /*std::unordered_map<Key, BookEntry> txtMap;
@@ -618,7 +618,7 @@ bool OpeningBook::loadFromCache() {
     const auto stop = std::chrono::high_resolution_clock::now();
     const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
     LOG__INFO(Logger::get().BOOK_LOG,
-              "Opening book loaded from txt cache with {:n} entries in ({:n} ms) ({})",
+              "Opening book loaded from txt cache with {:L} entries in ({:L} ms) ({})",
               txtMap.size(), elapsed.count(), txtCacheFile);
   }
 
@@ -641,7 +641,7 @@ bool OpeningBook::loadFromCache() {
     const auto stop = std::chrono::high_resolution_clock::now();
     const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
     LOG__INFO(Logger::get().BOOK_LOG,
-              "Opening book loaded from xml cache with {:n} entries in ({:n} ms) ({})",
+              "Opening book loaded from xml cache with {:L} entries in ({:L} ms) ({})",
               xmlMap.size(), elapsed.count(), xmlCacheFile);
   }*/
   bookMap = std::move(binMap);
@@ -656,7 +656,7 @@ bool OpeningBook::hasCache() const {
     return false;
   }
   uint64_t fsize = getFileSize(serCacheFile);
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Cache file {} ({:n} kB) available", serCacheFile, fsize / 1'024);
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Cache file {} ({:L} kB) available", serCacheFile, fsize / 1'024);
   return true;
 }
 

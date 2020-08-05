@@ -38,7 +38,7 @@
 #endif
 
 #ifdef EVAL_ENABLE_PREFETCH
-#define EVAL_PREFETCH void(0)
+#define EVAL_PREFETCH evaluator->prefetch(p.getPawnZobristKey())
 #else
 #define EVAL_PREFETCH void(0);
 #endif
