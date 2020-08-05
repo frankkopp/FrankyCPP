@@ -57,7 +57,7 @@ TEST_F(OpeningBookTest, initSimpleSmall) {
   OpeningBook book(filePathStr, OpeningBook::BookFormat::SIMPLE);
   book.setUseCache(false);
   book.initialize();
-  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:L}", book.size());
   EXPECT_EQ(11'196, book.size());
 }
 
@@ -69,7 +69,7 @@ TEST_F(OpeningBookTest, initSimple) {
   OpeningBook book(filePathStr, OpeningBook::BookFormat::SIMPLE);
   book.setUseCache(false);
   book.initialize();
-  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:L}", book.size());
   EXPECT_EQ(273'578, book.size());
 }
 
@@ -78,7 +78,7 @@ TEST_F(OpeningBookTest, initSAN) {
   OpeningBook book(filePathStr, OpeningBook::BookFormat::SAN);
   book.setUseCache(false);
   book.initialize();
-  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:L}", book.size());
   EXPECT_EQ(1'256, book.size());
 }
 
@@ -87,7 +87,7 @@ TEST_F(OpeningBookTest, pgnECOE) {
   OpeningBook book(filePathStr, OpeningBook::BookFormat::PGN);
   book.setUseCache(false);
   book.initialize();
-  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:L}", book.size());
   EXPECT_EQ(4'039, book.size());
 }
 
@@ -96,7 +96,7 @@ TEST_F(OpeningBookTest, initPGNSmall) {
   OpeningBook book(filePathStr, OpeningBook::BookFormat::PGN);
   book.setUseCache(false);
   book.initialize();
-  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:L}", book.size());
   EXPECT_EQ(1'435, book.size());
 }
 
@@ -108,7 +108,7 @@ TEST_F(OpeningBookTest, initPGNMedium) {
   OpeningBook book(filePathStr, OpeningBook::BookFormat::PGN);
   book.setUseCache(false);
   book.initialize();
-  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:L}", book.size());
   EXPECT_EQ(204'513, book.size());
   //  [16:24:12:523075] [t:42948     ] [Book_Logger      ] [info    ]: Found 44.624 games in 2.232 ms
   //  [16:24:12:523087] [t:42948     ] [Book_Logger      ] [debug   ]: Number of games 44.624
@@ -135,7 +135,7 @@ TEST_F(OpeningBookTest, initPGNLarge) {
   OpeningBook book(filePathStr, OpeningBook::BookFormat::PGN);
   book.setUseCache(false);
   book.initialize();
-  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:L}", book.size());
   EXPECT_EQ(4'821'485, book.size());
   // NON FIFO
   //[16:42:28:673870] [t:2688      ] [Book_Logger      ] [info    ]: Found 190.783 games in 19.856 ms
@@ -157,7 +157,7 @@ TEST_F(OpeningBookTest, getMove) {
   OpeningBook book(filePathStr, OpeningBook::BookFormat::SIMPLE);
   book.setUseCache(false);
   book.initialize();
-  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:L}", book.size());
   EXPECT_EQ(11'196, book.size());
 
   Position position;
@@ -177,7 +177,7 @@ void testCache(OpeningBook &book) {
   LOG__DEBUG(Logger::get().TEST_LOG, "Load book w/o cache...");
   book.setRecreateCache(true);
   book.initialize();
-  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:L}", book.size());
 
   NEWLINE;
   LOG__DEBUG(Logger::get().TEST_LOG, "Reset book ...");
@@ -186,7 +186,7 @@ void testCache(OpeningBook &book) {
   NEWLINE;
   LOG__DEBUG(Logger::get().TEST_LOG, "Load book with cache...");
   book.initialize();
-  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:n}", book.size());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:L}", book.size());
 
   NEWLINE;
   MoveGenerator mg;

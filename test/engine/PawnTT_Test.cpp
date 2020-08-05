@@ -59,81 +59,81 @@ TEST_F(PawnTT_Test, entrySize) {
 
 TEST_F(PawnTT_Test, basic) {
  PawnTT pawnTt{};
-  LOG__INFO(Logger::get().TEST_LOG, "Trying to create a PawnTT with {:n} MB in size (default)", PawnTT::DEFAULT_TT_SIZE);
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", pawnTt.getMaxNumberOfEntries());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", pawnTt.getSizeInByte());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", pawnTt.getNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Trying to create a PawnTT with {:L} MB in size (default)", PawnTT::DEFAULT_TT_SIZE);
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", pawnTt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", pawnTt.getSizeInByte());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", pawnTt.getNumberOfEntries());
   ASSERT_EQ(131072, pawnTt.getMaxNumberOfEntries());
   ASSERT_EQ(0, pawnTt.getNumberOfEntries());
 }
 
 TEST_F(PawnTT_Test, zero) {
-  LOG__INFO(Logger::get().TEST_LOG, "Trying to create a PawnTT with {:n} MB in size", 0);
+  LOG__INFO(Logger::get().TEST_LOG, "Trying to create a PawnTT with {:L} MB in size", 0);
   PawnTT tt;
   tt.resize(0);
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries:         {:n}", tt.getMaxNumberOfEntries());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of max entries:     {:n}", tt.getMaxNumberOfEntries());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries:         {:n}", tt.getNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries:         {:L}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of max entries:     {:L}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries:         {:L}", tt.getNumberOfEntries());
 }
 
 TEST_F(PawnTT_Test, basic10) {
-  LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the PawnTT with {:n} MB in size", 10);
+  LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the PawnTT with {:L} MB in size", 10);
   PawnTT tt(10);
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
   ASSERT_EQ(524288, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
 }
 
 TEST_F(PawnTT_Test, basic64) {
-  LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the PawnTT with {:n} MB in size", 64);
+  LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the PawnTT with {:L} MB in size", 64);
   PawnTT tt(64);
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
   ASSERT_EQ(4194304, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
 }
 
 TEST_F(PawnTT_Test, basic100) {
-  LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the PawnTT with {:n} MB in size", 100);
+  LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the PawnTT with {:L} MB in size", 100);
   PawnTT tt(100);
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
   ASSERT_EQ(4194304, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
 }
 
 TEST_F(PawnTT_Test, basic1000) {
-  LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the PawnTT with {:n} MB in size", 1'000);
+  LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the PawnTT with {:L} MB in size", 1'000);
   PawnTT tt(1'000);
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
   ASSERT_EQ(33554432, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
 }
 
 TEST_F(PawnTT_Test, basic10000) {
-  LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the PawnTT with {:n} MB in size", 10'000);
+  LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the PawnTT with {:L} MB in size", 10'000);
   PawnTT tt(10'000);
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
   ASSERT_EQ(268435456, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
 }
 
 TEST_F(PawnTT_Test, parallelClear) {
   const int sizeInMB = 4'096;
-  LOG__INFO(Logger::get().TEST_LOG, "Trying to create a PawnTT with {:n} MB in size", sizeInMB);
+  LOG__INFO(Logger::get().TEST_LOG, "Trying to create a PawnTT with {:L} MB in size", sizeInMB);
   PawnTT tt = PawnTT(sizeInMB);
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
   ASSERT_EQ(268'435'456, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
   tt.clear();

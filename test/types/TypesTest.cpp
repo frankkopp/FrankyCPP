@@ -296,7 +296,7 @@ TEST(TypesTest, elapsed) {
   TimePoint start = std::chrono::high_resolution_clock::now();
   TimePoint jetzt = std::chrono::high_resolution_clock::now();
   for (int i = 0; i < 2000; ++i){
-    fprintln("{:3n}. Since start: {:n} ns - last jetzt: {:n} ns", i, elapsedSince(start).count(), elapsedSince(jetzt).count());
+    fprintln("{:3n}. Since start: {:L} ns - last jetzt: {:L} ns", i, elapsedSince(start).count(), elapsedSince(jetzt).count());
     jetzt = std::chrono::high_resolution_clock::now();
   }
 }

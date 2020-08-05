@@ -361,8 +361,8 @@ TEST_F(SearchTest, quiescenceTest) {
   auto nodes3 = search.getLastSearchResult().nodes;
   auto extra3 = search.getSearchStats().currentExtraSearchDepth;
 
-  LOG__INFO(Logger::get().TEST_LOG, "Nodes without Quiescence: {:n} Nodes with Quiescence: {:n} Nodes with SEE: {:n}", nodes1, nodes2, nodes3);
-  LOG__INFO(Logger::get().TEST_LOG, "Extra without Quiescence: {:n} Extra with Quiescence: {:n} Extra with SEE: {:n}", extra1, extra2, extra3);
+  LOG__INFO(Logger::get().TEST_LOG, "Nodes without Quiescence: {:L} Nodes with Quiescence: {:L} Nodes with SEE: {:L}", nodes1, nodes2, nodes3);
+  LOG__INFO(Logger::get().TEST_LOG, "Extra without Quiescence: {:L} Extra with Quiescence: {:L} Extra with SEE: {:L}", extra1, extra2, extra3);
 
   ASSERT_GT(nodes2, nodes1);
   ASSERT_GT(extra2, extra1);

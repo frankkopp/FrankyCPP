@@ -65,103 +65,103 @@ TEST_F(TT_Test, entrySize) {
 
 TEST_F(TT_Test, basic) {
   TT tt;
-  LOG__INFO(Logger::get().TEST_LOG, "Trying to create a TT with {:n} MB in size (default)", TT::DEFAULT_TT_SIZE);
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Trying to create a TT with {:L} MB in size (default)", TT::DEFAULT_TT_SIZE);
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
   ASSERT_EQ(131072, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
 }
 
 TEST_F(TT_Test, basic10) {
-  LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:n} MB in size", 10);
+  LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:L} MB in size", 10);
   TT tt(10);
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
   ASSERT_EQ(524288, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
 }
 
 TEST_F(TT_Test, basic100) {
-  LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:n} MB in size", 100);
+  LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:L} MB in size", 100);
   TT tt(100);
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
   ASSERT_EQ(4194304, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
 }
 
 TEST_F(TT_Test, basic1000) {
-  LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:n} MB in size", 1'000);
+  LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:L} MB in size", 1'000);
   TT tt(1'000);
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
   ASSERT_EQ(33554432, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
 }
 
 TEST_F(TT_Test, basic10000) {
-  LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:n} MB in size", 10'000);
+  LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:L} MB in size", 10'000);
   TT tt(10'000);
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
   ASSERT_EQ(536870912, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
 }
 
 TEST_F(TT_Test, basic32000) {
   GTEST_SKIP();
-  LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:n} MB in size", 32'000);
+  LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:L} MB in size", 32'000);
   TT tt(32'000);
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
   ASSERT_EQ(1073741824, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
 }
 
 TEST_F(TT_Test, basic36000) {
   GTEST_SKIP();
-  LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:n} MB in size", 32'000);
+  LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:L} MB in size", 32'000);
   TT tt(36'000);
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
   ASSERT_EQ(2147483648, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
 }
 
 TEST_F(TT_Test, basic64) {
-  LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:n} MB in size", 64);
+  LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:L} MB in size", 64);
   TT tt(64);
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
   ASSERT_EQ(4194304, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
 }
 
 TEST_F(TT_Test, zero) {
-  LOG__INFO(Logger::get().TEST_LOG, "Trying to create a TT with {:n} MB in size", 0);
+  LOG__INFO(Logger::get().TEST_LOG, "Trying to create a TT with {:L} MB in size", 0);
   TT tt;
   tt.resize(0);
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries:         {:n}", tt.getMaxNumberOfEntries());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of max entries:     {:n}", tt.getMaxNumberOfEntries());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries:         {:n}", tt.getNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries:         {:L}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of max entries:     {:L}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries:         {:L}", tt.getNumberOfEntries());
 }
 
 TEST_F(TT_Test, parallelClear) {
   const int sizeInMB = 4'096;
-  LOG__INFO(Logger::get().TEST_LOG, "Trying to create a TT with {:n} MB in size", sizeInMB);
+  LOG__INFO(Logger::get().TEST_LOG, "Trying to create a TT with {:L} MB in size", sizeInMB);
   TT tt = TT(sizeInMB);
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getMaxNumberOfEntries());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:n}", tt.getSizeInByte());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:n}", tt.getNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
   ASSERT_EQ(268'435'456, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
   tt.setThreads(8);
@@ -291,7 +291,7 @@ TEST_F(TT_Test, TT_PPS) {
     const double sec = double(sum) / nanoPerSec;
     uint64_t tts     = uint64_t(iterations / sec);
     fprintln("TT Statistics : {:s}", tt.str());
-    fprintln("Run time      : {:n} ns ({:n} put/probes per sec)", sum, tts);
+    fprintln("Run time      : {:L} ns ({:L} put/probes per sec)", sum, tts);
     fprintln("");
   }
 }

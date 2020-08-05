@@ -97,5 +97,5 @@ TEST_F(EngineSpeedTests, npsTest) {
   EXPECT_FALSE(s.hasResult());
   s.waitWhileSearching();
   EXPECT_TRUE(s.hasResult());
-  fprintln("NPS: {:n}", nps(s.getLastSearchResult().nodes, s.getLastSearchResult().time));
+  fprintln("NPS: {:L}", nps(s.getLastSearchResult().nodes, s.getLastSearchResult().time));
 }
