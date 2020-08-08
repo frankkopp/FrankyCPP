@@ -125,8 +125,8 @@ public:
   void clear();
 
   // putEntry stores a Score for a pawn structure represented by the
-  // pawn zobrist key in the cache. As usually a query happens we
-  // can expect that the pointer to the entry is already known
+  // pawn zobrist key in the cache. As usually a query happens before this
+  // we can expect that the pointer to the entry is already known
   // and can be provided. Otherwise a call to getEntryPtr is necessary.
   void put(Entry* entryPtr, Key key, Score score);
 

@@ -59,12 +59,22 @@ public:
   // convert value from white view to next player view
   static Value finalEval(const Position& p, Value value) ;
 
+  void pieceEval(Position& p, Score& s, Color color, PieceType pieceType);
+  void knightEval(const Position& p, Score& s, Color us, Color them, Square sq);
+  void bishopEval(const Position& p, Score& s, Color us, Color them, Square sq);
+  void rookEval  (const Position& p, Score& scores, Color us, Color them, Square sq);
+  void queenEval (const Position& p, Score& s, Color us, Color them, Square sq);
+
+
+
+
   // do a prefetch for the pawn cache data
 #ifdef EVAL_ENABLE_PREFETCH
   inline void prefetch(Key key) {
     pawnCache.prefetch(key);
   }
 #endif
+  void kingEval(Position& p, Score s, Color c);
 };
 
 

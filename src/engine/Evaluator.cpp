@@ -23,11 +23,11 @@
  *
  */
 
-#include "types/types.h"
 #include "common/Logging.h"
+#include "types/types.h"
 
-#include "Evaluator.h"
 #include "EvalConfig.h"
+#include "Evaluator.h"
 
 Evaluator::Evaluator() {
   if (EvalConfig::USE_PAWN_TT) {
@@ -83,7 +83,23 @@ Value Evaluator::evaluate(Position& p) {
     pawnEval(p, score);
   }
 
-  // TODO further evaluations
+  // evaluate pieces
+  if (EvalConfig::USE_PIECE_EVAL) {
+    pieceEval(p, score, WHITE, KNIGHT);
+    pieceEval(p, score, BLACK, KNIGHT);
+    pieceEval(p, score, WHITE, BISHOP);
+    pieceEval(p, score, BLACK, BISHOP);
+    pieceEval(p, score, WHITE, ROOK);
+    pieceEval(p, score, BLACK, ROOK);
+    pieceEval(p, score, WHITE, QUEEN);
+    pieceEval(p, score, BLACK, QUEEN);
+  }
+
+  // evaluate kings
+  if (EvalConfig::USE_KING_EVAL) {
+    kingEval(p, score, WHITE);
+    kingEval(p, score, BLACK);
+  }
 
   // TEMPO Bonus for the side to move (helps with evaluation alternation -
   // less difference between side which makes aspiration search faster
@@ -209,4 +225,68 @@ void Evaluator::pawnEval(Position& p, Score& s) {
   s += tmpScore;
 
   //  LOG__DEBUG(Logger::get().EVAL_LOG, "Raw pawn eval: midvalue = {} and endvalue = {}", tmpScore.midgame, tmpScore.endgame);
+}
+
+void Evaluator::pieceEval(Position& p, Score& s, Color color, PieceType pieceType) {
+
+  // get pieces or return if none of given type or color is found
+  Bitboard pieceBb = p.getPieceBb(color, pieceType);
+  if (!pieceBb) {
+    return;
+  }
+
+  tmpScore.midgame = VALUE_ZERO;
+  tmpScore.endgame = VALUE_ZERO;
+
+  // piece type specific evaluation which are done once
+  // for all pieces of one type
+  switch (pieceType) {
+    case KNIGHT:
+      while (pieceBb) {
+        knightEval(p, s, color, ~color, popLSB(pieceBb));
+      }
+      break;
+    case BISHOP:
+      // bonus for pair
+      if (popcount(pieceBb) > 1) {
+        s.midgame += EvalConfig::BISHOP_PAIR_MID_BONUS;
+        s.endgame += EvalConfig::BISHOP_PAIR_END_BONUS;
+      }
+      while (pieceBb) {
+        bishopEval(p, s, color, ~color, popLSB(pieceBb));
+      }
+      break;
+    case ROOK:
+      while (pieceBb) {
+        rookEval(p, s, color, ~color, popLSB(pieceBb));
+      }
+      break;
+    case QUEEN:
+      while (pieceBb) {
+        queenEval(p, s, color, ~color, popLSB(pieceBb));
+      }
+      break;
+    default:
+      break;
+  }
+}
+
+void Evaluator::knightEval(const Position& p, Score& s, Color us, Color them, Square sq) {
+  // TODO: Knight eval
+}
+
+void Evaluator::bishopEval(const Position& p, Score& s, Color us, Color them, Square sq) {
+  // TODO: Bishop eval
+}
+
+void Evaluator::rookEval(const Position& p, Score& s, Color us, Color them, Square sq) {
+  // TODO: Rook eval
+}
+
+void Evaluator::queenEval(const Position& p, Score& s, Color us, Color them, Square sq) {
+  // TODO: Queen eval
+}
+
+void Evaluator::kingEval(Position& p, Score s, Color c) {
+  // TODO: King eval
 }
