@@ -728,7 +728,7 @@ std::string Position::strBoard() const {
   const std::string ptc = " KONBRQ  k*nbrq   ";
   std::ostringstream output;
   output << "  +---+---+---+---+---+---+---+---+" << std::endl;
-  for (Rank r = RANK_8; r >= RANK_1; --r) {
+  for (Rank r = RANK_8;; --r) {
     output << (r + 1) << " |";
     for (File f = FILE_A; f <= FILE_H; ++f) {
       Piece pc = getPiece(squareOf(f, r));
@@ -741,6 +741,7 @@ std::string Position::strBoard() const {
     }
     output << std::endl;
     output << "  +---+---+---+---+---+---+---+---+" << std::endl;
+    if (r==0) break;
   }
   output << "   ";
   for (File f = FILE_A; f <= FILE_H; ++f) {
@@ -755,7 +756,7 @@ std::string Position::strFen() const {
   std::ostringstream fen;
 
   // pieces
-  for (Rank r = RANK_8; r >= RANK_1; --r) {
+  for (Rank r = RANK_8;; --r) {
     int emptySquares = 0;
     for (File f = FILE_A; f <= FILE_H; ++f) {
       Piece pc = getPiece(squareOf(f, r));
@@ -776,6 +777,7 @@ std::string Position::strFen() const {
     if (r > RANK_1) {
       fen << "/";
     }
+    if (r==0) break;
   }
 
   // next player

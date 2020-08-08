@@ -63,13 +63,13 @@ constexpr Bitboard FileGBB = FileABB << 6;
 constexpr Bitboard FileHBB = FileABB << 7;
 
 constexpr Bitboard Rank1BB = 0xFF;
-constexpr Bitboard Rank2BB = Rank1BB << (8 * 1);
-constexpr Bitboard Rank3BB = Rank1BB << (8 * 2);
-constexpr Bitboard Rank4BB = Rank1BB << (8 * 3);
-constexpr Bitboard Rank5BB = Rank1BB << (8 * 4);
-constexpr Bitboard Rank6BB = Rank1BB << (8 * 5);
-constexpr Bitboard Rank7BB = Rank1BB << (8 * 6);
-constexpr Bitboard Rank8BB = Rank1BB << (8 * 7);
+constexpr Bitboard Rank2BB = Rank1BB << 8;
+constexpr Bitboard Rank3BB = Rank1BB << 16; //(8 * 2)
+constexpr Bitboard Rank4BB = Rank1BB << 24; //(8 * 3)
+constexpr Bitboard Rank5BB = Rank1BB << 32; //(8 * 4)
+constexpr Bitboard Rank6BB = Rank1BB << 40; //(8 * 5)
+constexpr Bitboard Rank7BB = Rank1BB << 48; //(8 * 6)
+constexpr Bitboard Rank8BB = Rank1BB << 56; //(8 * 7)
 
 constexpr Bitboard DiagUpA1 = 0b1000000001000000001000000001000000001000000001000000001000000001;
 constexpr Bitboard DiagUpB1 = (DiagUpA1 << 1) & ~FileABB;// shift EAST
@@ -225,7 +225,7 @@ inline int popcount(Bitboard b) {
 
 // Used when no build-in popcount is available for compiler.
 // @return popcount16() counts the non-zero bits using SWAR-Popcount algorithm
-inline unsigned popcount16(unsigned u) {
+[[maybe_unused]] inline unsigned popcount16(unsigned u) {
   u -= (u >> 1U) & 0x5555U;
   u = ((u >> 2U) & 0x3333U) + (u & 0x3333U);
   u = ((u >> 4U) + u) & 0x0F0FU;
@@ -279,7 +279,8 @@ inline Square msb(Bitboard b) {
 }
 
 // pop_lsb() finds and clears the least significant bit in a non-zero
-// bitboard
+// bitboard. Returns the cleared bit as a Square or SQ_NONE if
+// bitboard was zero. The given Bitboard is changed in-place.
 inline Square popLSB(Bitboard& b) {
   if (!b) return SQ_NONE;
   const Square s = lsb(b);
@@ -363,7 +364,7 @@ struct Magic {
 
   // Compute the attack's index using the 'magic bitboards' approach
   [[nodiscard]] inline unsigned index(Bitboard occupied) const {
-    if (HasPext) {
+    if (HasPext) { // based on compiler option HAS_PEXT
       return unsigned(_pext_u64(occupied, mask));
     }
     return unsigned(((occupied & mask) * magic) >> shift);

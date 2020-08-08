@@ -184,7 +184,7 @@ TEST(TypesTest, pieces) {
 TEST(TypesTest, directionOperators) {
   EXPECT_EQ(SQ_A2, SQ_A1 + NORTH);
   ASSERT_TRUE(SQ_H8 + NORTH > 63);
-  ASSERT_TRUE(SQ_H1 + SOUTH < 0);
+  ASSERT_FALSE(validSquare(SQ_H1 + SOUTH));
   EXPECT_EQ(SQ_H8, SQ_A1 + (7 * NORTH_EAST));
   EXPECT_EQ(SQ_A8, SQ_H1 + (7 * NORTH_WEST));
 }

@@ -34,7 +34,7 @@
 //  BLACK        = 1,
 //  NOCOLOR      = 2,
 //  COLOR_LENGTH = 2 
-enum Color : int {
+enum Color : uint_fast8_t {
   WHITE        = 0,
   BLACK        = 1,
   NOCOLOR      = 2,
@@ -43,7 +43,7 @@ enum Color : int {
 
 // checks if rank is a value of 0-7
 constexpr bool validColor(Color c) {
-  return c >= 0 && c < 2;
+  return c < 2;
 }
 
 // returns the opposite color
@@ -54,7 +54,7 @@ constexpr int moveDirection(Color c) { return c == WHITE ? 1 : -1; }
 
 // returns a char representing the color (e.g. w or b)
 constexpr char str(Color c) {
-  if (c < 0 || c >= 2) return '-';
+  if (!validColor(c)) return '-';
   return c == WHITE ? 'w' : 'b';
 }
 

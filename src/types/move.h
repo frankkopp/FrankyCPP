@@ -57,7 +57,7 @@ namespace MoveShifts {
 //  Castling
 // Enum values are already shifted to their place in a move to save
 // the time to shift them when creating a move or reading the type.
-enum MoveType {
+enum MoveType : unsigned int {
   NORMAL    = 0 << MoveShifts::MOVE_TYPE_SHIFT,
   PROMOTION = 1 << MoveShifts::MOVE_TYPE_SHIFT,
   ENPASSANT = 2 << MoveShifts::MOVE_TYPE_SHIFT,
@@ -102,7 +102,7 @@ inline std::ostream& operator<<(std::ostream& os, const MoveType mt) {
 //                                  |     1 1                          promotion piece type (pt-2 > 0-3)
 //                                  | 1 1                              move type
 //  1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |                                  move sort value
-enum Move : uint32_t {
+enum Move : uint_fast32_t {
   MOVE_NONE = 0
 };
 

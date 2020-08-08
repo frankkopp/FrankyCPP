@@ -76,7 +76,7 @@ TEST_F(TimingTests, DISABLED_distancevsdiff) {
     t = distance(SQ_E2, SQ_E4) == 2;
   };
   std::function<void()> f2 = [&]() {
-    t = std::abs(SQ_E2 - SQ_E4) == 16;
+    t = std::abs(static_cast<int>(SQ_E2) - static_cast<int>(SQ_E4)) == 16;
   };
   std::vector<std::function<void()>> tests;
   tests.push_back(f1);

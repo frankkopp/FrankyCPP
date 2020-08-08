@@ -55,7 +55,7 @@ TEST_F(PositionTest, initialization) {
 
 TEST_F(PositionTest, HistoryStruct) {
   Position position;
-  EXPECT_EQ(48, sizeof(HistoryState));
+  EXPECT_EQ(32, sizeof(HistoryState));
   EXPECT_EQ(MAX_MOVES, position.historyState.size());
 }
 
