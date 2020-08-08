@@ -30,7 +30,7 @@
 #include "boost/program_options.hpp"
 namespace po = boost::program_options;
 
-inline po::variables_map programOptions;
+inline po::variables_map programOptions{};
 
 void Logger::init() {
 
