@@ -156,7 +156,7 @@ public:
    * Returns a random move for the given position.
    * @param zobrist key of the position
    */
-  Move getRandomMove(Key zobrist) const;
+  [[nodiscard]] Move getRandomMove(Key zobrist) const;
 
 private:
   void readBookFromFile(const std::string &filePath);
@@ -168,12 +168,14 @@ private:
   void processPGNFileFifo(std::vector<std::string> &lines);
   void processPGNFile(std::vector<std::string> &lines);
   void processGames(std::vector<PGN_Game>* ptrGames);
-  void processGame(PGN_Game &game);
+  void processGame(const PGN_Game &game);
   void addToBook(Position &currentPosition, const Move &move);
 
   bool hasCache() const;
   void saveToCache();
   bool loadFromCache();
+
+  FRIEND_TEST(OpeningBookTest, readFile);
 
 public:
   bool useCache() const { return _useCache; }

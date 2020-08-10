@@ -33,6 +33,7 @@
 #include <thread>
 
 #include "types/types.h"
+#include "common/misc.h"
 #include "common/Fifo.h"
 #include "common/Logging.h"
 #include "common/ThreadPool.h"
@@ -57,7 +58,7 @@ namespace bfs = boost::filesystem;
 #define PARALLEL_GAME_PROCESSING
 // enable for using fifo when reading pgn files and processing pgn games
 // this allows to start processing games in parallel while still reading
-#define FIFO_PROCESSING
+//#define FIFO_PROCESSING
 
 // not all C++17 compilers have this std library for parallelization
 #ifdef HAS_EXECUTION_LIB
@@ -158,10 +159,10 @@ void OpeningBook::readBookFromFile(const std::string &filePath) {
    skips empty lines */
 std::vector<std::string> OpeningBook::getLinesFromFile(std::ifstream &ifstream) const {
   LOG__DEBUG(Logger::get().BOOK_LOG, "Reading lines from book.");
-  const auto start = std::chrono::high_resolution_clock::now();
   std::vector<std::string> lines;
-  lines.reserve(fileSize / 40);
   std::string line;
+  const auto start = std::chrono::high_resolution_clock::now();
+  lines.reserve(fileSize / 40);
   while (std::getline(ifstream, line)) {
     if (!line.empty()) lines.push_back(line);
   }
@@ -441,7 +442,7 @@ void OpeningBook::processGames(std::vector<PGN_Game>* ptrGames) {// processing g
 }
 
 /* process a game from PGN SAN format and build internal book data structure */
-void OpeningBook::processGame(PGN_Game &game) {
+void OpeningBook::processGame(const PGN_Game &game) {
   std::smatch matcher;
   const std::regex UCIRegex(R"(([a-h][1-8][a-h][1-8])([NBRQnbrq])?)");
   const std::regex SANRegex(R"(([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O-O-O|O-O)(=?([NBRQ]))?([!?+#]*)?)");
@@ -462,7 +463,7 @@ void OpeningBook::processGame(PGN_Game &game) {
       move = mg.getMoveFromSan(currentPosition, moveStr);
     }
 
-    // create and validate the move
+    // validate the move
     if (move == MOVE_NONE) {
       LOG__WARN(Logger::get().BOOK_LOG, "Not a valid move {} on this position {}", moveStr, currentPosition.strFen());
       return;
@@ -470,7 +471,6 @@ void OpeningBook::processGame(PGN_Game &game) {
     LOG__TRACE(Logger::get().BOOK_LOG, "Move found {}", printMoveVerbose(move));
 
     addToBook(currentPosition, move);
-
   }
   gamesProcessed++;
 #ifndef FIFO_PROCESSING
@@ -478,7 +478,7 @@ void OpeningBook::processGame(PGN_Game &game) {
   // avgLinesPerGameTimesProgressSteps = 12*15 as 12 is avg game lines and 15 steps
   const uint64_t progressInterval = 1 + (gamesTotal / 15);
   if (gamesProcessed % progressInterval == 0) {
-    LOG__DEBUG(Logger::get().BOOK_LOG, "Process games: {:s}", Misc::printProgress(static_cast<double>(gamesProcessed) / gamesTotal));
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Process games: {:s}", printProgress(static_cast<double>(gamesProcessed) / gamesTotal));
   }
 #endif
 }
@@ -675,13 +675,4 @@ uint64_t OpeningBook::getFileSize(const std::string &filePath) {
   return fsize;
 }
 
-/* String representation of a book entry */
-std::string BookEntry::str() {
-  std::ostringstream os;
-  os << this->fen << " (" << this->counter << ") ";
-  for (std::size_t i = 0; i < moves.size(); i++) {
-    os << "[" << ::str(this->moves[i]) << " (" << this->ptrNextPosition[i]->counter << ")] ";
-  }
-  return os.str();
-}
 

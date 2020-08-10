@@ -32,6 +32,7 @@
 #include "chesscore/MoveGenerator.h"
 #include "openingbook/OpeningBook.h"
 
+#include <fstream>
 #include <gtest/gtest.h>
 using testing::Eq;
 
@@ -51,6 +52,17 @@ protected:
 };
 
 void printEntry(BookEntry* next, int ply);
+
+TEST_F(OpeningBookTest, readFile) {
+  std::string filePathStr = "./books/superbook.pgn";
+  OpeningBook book{filePathStr, OpeningBook::BookFormat::PGN};
+  book.fileSize = OpeningBook::getFileSize(filePathStr);
+  fprintln("Size: {:L} Byte", book.fileSize);
+  std::ifstream file(filePathStr);
+  std::vector<std::string> lines = book.getLinesFromFile(file);
+  file.close();
+  EXPECT_EQ(2'238'553, lines.size());
+}
 
 TEST_F(OpeningBookTest, initSimpleSmall) {
   std::string filePathStr = "./books/book_smalltest.txt";
@@ -127,7 +139,7 @@ TEST_F(OpeningBookTest, initPGNMedium) {
 }
 
 TEST_F(OpeningBookTest, initPGNLarge) {
-  GTEST_SKIP();
+//  GTEST_SKIP();
 #ifndef NDEBUG
   GTEST_SKIP();
 #endif

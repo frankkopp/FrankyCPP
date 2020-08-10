@@ -300,8 +300,7 @@ Move MoveGenerator::getMoveFromUci(const Position& position, const std::string& 
   const std::string matchedMove = matcher.str(1);
   const std::string promotion   = toUpperCase(matcher.str(2));
   // create all moves on position and compare
-  MoveGenerator mg;
-  const MoveList* legalMovesPtr = mg.generateLegalMoves(position, GenAll);
+  const MoveList* legalMovesPtr = generateLegalMoves(position, GenAll);
   for (Move m : *legalMovesPtr) {
     if (::str(m) == matchedMove + promotion) {
       return m;
@@ -331,8 +330,7 @@ Move MoveGenerator::getMoveFromSan(const Position& position, const std::string& 
   // Generate all legal moves and loop through them to search for a matching move
   Move moveFromSAN{MOVE_NONE};
   int movesFound = 0;
-  MoveGenerator mg;
-  const MoveList* legalMovesPtr = mg.generateLegalMoves(position, GenAll);
+  const MoveList* legalMovesPtr = generateLegalMoves(position, GenAll);
   for (Move m : *legalMovesPtr) {
     m = moveOf(m);
     // castling move
