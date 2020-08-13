@@ -79,6 +79,8 @@ private:
 
   // multi threading handling
   unsigned int numberOfThreads = 1;
+  std::mutex gamesMutex;
+
 
 public:
 
@@ -138,15 +140,31 @@ private:
 
   void readGamesSimple(const std::vector<std::string_view>& line, std::vector<MoveList>& games);
   void readGamesSan(const std::vector<std::string_view>& lines, std::vector<MoveList>& games);
-  void readGamesPgn(const std::vector<std::string_view>& lines, std::vector<MoveList>& games);
+  void readGamesPgn(const std::vector<std::string_view>* lines, std::vector<MoveList>* games);
 
   static MoveList readOneGameSimple(const std::string_view& lineView);
+  static MoveList readOneGameSan(const std::string_view& lineView);
+  bool readOneGamePgn(const std::vector<std::string_view>* lines, int gameStart, int gameEnd, std::vector<MoveList>* games);
 
-  
+  // fast removal of trailing comments (no regex)
+  static std::string removeTrailingComments(const std::string_view& stringView);
+
+  // fast removal of unwanted parts of a PGN move section to avoid slow regex
+  static void cleanUpPgnMoveSection(std::string& str);
+
+  // std::thread::hardware_concurrency() is not reliable - on some platforms
+  // it returns 0 - in this case we chose a default of 4
+  static inline unsigned int getNoOfThreads() {
+    return std::thread::hardware_concurrency() == 0 ? 4 : std::thread::hardware_concurrency();
+  }
+
   FRIEND_TEST(OpeningBook2Test, readFile);
   FRIEND_TEST(OpeningBook2Test, readGamesSimple);
   FRIEND_TEST(OpeningBook2Test, readGamesSan);
   FRIEND_TEST(OpeningBook2Test, readGamesPgn);
+  FRIEND_TEST(OpeningBook2Test, readGamesPgnLarge);
+  FRIEND_TEST(OpeningBook2Test, readGamesPgnXLLarge);
+  FRIEND_TEST(OpeningBook2Test, pgnCleanUpTest);
 };
 
 

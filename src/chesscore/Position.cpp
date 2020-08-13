@@ -28,7 +28,7 @@
 
 #include "Position.h"
 #include "Values.h"
-#include "common/splitstring.h"
+#include "common/stringutil.h"
 
 Key Zobrist::pieces[PIECE_LENGTH][SQ_LENGTH];
 Key Zobrist::castlingRights[CR_LENGTH];
@@ -66,10 +66,10 @@ void Position::init() {
 Position::Position() : Position(START_POSITION_FEN) {}
 
 /** Creates a board with setup from the given fen */
-Position::Position(const std::string& fen) : Position(fen.c_str()) {}
+Position::Position(const char* fen) : Position(std::string{fen}) {}
 
 /** Creates a board with setup from the given fen */
-Position::Position(const char* fen) {
+Position::Position(const std::string& fen) {
   if (!Position::initialized) {
     Position::init();
   }
@@ -935,13 +935,13 @@ void Position::initializeBoard() {
   gamePhase    = 0;
 }
 
-void Position::setupBoard(const char* fen) {
+void Position::setupBoard(const std::string& fen) {
   // also sets defaults if fen is short
   initializeBoard();
 
   // clean up and check fen
-  static const std::regex trimWhiteSpace(R"(^\s+|\s+$)");
-  std::string myFen = std::regex_replace(fen, trimWhiteSpace, "");
+  std::string myFen = trimFast(fen);
+
   std::vector<std::string> fenParts{};
 
   // split into parts and check if at least the position is available

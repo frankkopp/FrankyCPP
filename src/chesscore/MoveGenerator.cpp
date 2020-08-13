@@ -290,7 +290,7 @@ bool MoveGenerator::validateMove(const Position& position, Move move) {
 }
 
 Move MoveGenerator::getMoveFromUci(const Position& position, const std::string& uciMove) {
-  const std::regex regexUciMove(R"(([a-h][1-8][a-h][1-8])([NBRQnbrq])?)");
+  static const std::regex regexUciMove(R"(([a-h][1-8][a-h][1-8])([NBRQnbrq])?)");
   std::smatch matcher;
   // Match the target string
   if (!std::regex_match(uciMove, matcher, regexUciMove)) {
@@ -311,14 +311,12 @@ Move MoveGenerator::getMoveFromUci(const Position& position, const std::string& 
 
 Move MoveGenerator::getMoveFromSan(const Position& position, const std::string& sanMove) {
   // Regex for short move notation (SAN)
-  const std::regex regexPattern(R"(([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O-O-O|O-O)(=?([NBRQ]))?([!?+#]*)?)");
+  static const std::regex regexPattern(R"(([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O-O-O|O-O)(=?([NBRQ]))?([!?+#]*)?)");
   std::smatch matcher;
-
   // Match the target string
   if (!std::regex_match(sanMove, matcher, regexPattern)) {
     return MOVE_NONE;
   }
-
   // get the parts
   const std::string pieceType  = matcher.str(1);
   const std::string disambFile = matcher.str(2);
@@ -326,7 +324,6 @@ Move MoveGenerator::getMoveFromSan(const Position& position, const std::string& 
   const std::string toSq       = matcher.str(4);
   const std::string promotion  = matcher.str(6);
   const std::string checkSign  = matcher.str(7);
-
   // Generate all legal moves and loop through them to search for a matching move
   Move moveFromSAN{MOVE_NONE};
   int movesFound = 0;
@@ -355,7 +352,6 @@ Move MoveGenerator::getMoveFromSan(const Position& position, const std::string& 
         continue;
       }
     }
-
     // normal move
     const std::string& moveTarget = ::str(toSquare(m));
     if (moveTarget == toSq) {
@@ -386,10 +382,7 @@ Move MoveGenerator::getMoveFromSan(const Position& position, const std::string& 
     }
   }
   // we should only have one move here
-  if (movesFound > 1) {
-    return MOVE_NONE;
-  }
-  else if (movesFound == 0 || !validMove(moveFromSAN)) {
+  if (movesFound > 1 || (movesFound == 0 || !validMove(moveFromSAN))) {
     return MOVE_NONE;
   }
   return moveFromSAN;

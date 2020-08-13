@@ -297,7 +297,7 @@ private:
 
   // initialization of board data structure to an empty board
   void initializeBoard();
-  void setupBoard(const char* fen);
+  void setupBoard(const std::string& fen);
   void movePiece(Square fromSq, Square toSq);
   void putPiece(Piece piece, Square square);
   Piece removePiece(Square square);

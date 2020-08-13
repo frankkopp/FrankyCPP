@@ -132,6 +132,87 @@ TEST_F(TimingTests, DISABLED_doMoveUndoMove) {
   std::cout << os.str();
 }
 
+TEST_F(TimingTests, trimWhiteSpace) {
+  std::ostringstream os;
+
+  //// TESTS START
+
+  const std::string line = " \t This is a text. This is a text. This is a text. This is a text.\t  \r\n";
+  const std::string_view lineView{line};
+
+  fprintln("Original line:      '{}'", line);
+  fprintln("Original line view: '{}'", lineView);
+
+  NEWLINE;
+
+  int counter = 0;
+
+  // regex
+  std::string trimmedLineRegex{};
+  std::function<void()> f1 = [&]() {
+    trimmedLineRegex = trimRegex(line);
+    counter++;
+  };
+
+  std::string trimmedLineViewRegex{};                           
+  std::function<void()> f2 = [&]() {
+    trimmedLineViewRegex = trimRegex(lineView);
+    counter++;
+  };
+
+  // find_first_not_of
+  std::string trimmedLineFindNot{};
+  std::function<void()> f3 = [&]() {
+    trimmedLineFindNot = trimFindNot(line);
+    counter++;
+  };
+
+  // find_if
+  std::string trimmedLineFindIf{};
+  std::string lineCopy{line};
+  std::function<void()> f4 = [&]() {
+    trimmedLineFindIf = trimFindIf(lineCopy);
+    counter++;
+  };
+
+  // while
+  std::string trimmedLineWhile{};
+  std::function<void()> f5 = [&]() {
+    trimmedLineWhile = trimFast(line);
+    counter++;
+  };
+
+  // while
+  std::string_view trimmedLineViewWhile{};
+  std::function<void()> f6 = [&]() {
+    trimmedLineViewWhile = trimFast(lineView);
+    counter++;
+  };
+
+  std::vector<std::function<void()>> tests;
+  tests.push_back(f1);
+  tests.push_back(f2);
+  tests.push_back(f3);
+  tests.push_back(f4);
+  tests.push_back(f5);
+  tests.push_back(f6);
+  //// TESTS END
+
+  testTiming(os, 5, 10, 10'000, tests);
+
+  NEWLINE;
+
+  fprintln("trimmedLineRegex:     '{}'", trimmedLineRegex);
+  fprintln("trimmedLineViewRegex: '{}'", trimmedLineViewRegex);
+  fprintln("trimmedLineFindNot:   '{}'", trimmedLineFindNot);
+  fprintln("trimmedLineFindIf:    '{}'", trimmedLineFindIf);
+  fprintln("trimmedLineWhile:     '{}'", trimmedLineWhile);
+  fprintln("trimmedLineViewWhile: '{}'", trimmedLineViewWhile);
+  fprintln("counter: {:L}", counter);
+
+  std::cout << os.str();
+}
+
 ///**
 // * Test difference for getMoves with pre rotated bb vs. on-the-fly rotated bb
 // * Round  5 Test  1:  451.076.050 ns (  0,45107605 sec)
@@ -599,6 +680,7 @@ void TimingTests::testTiming(std::ostringstream& os, int rounds, int iterations,
          << std::endl;
 
       last = avgCpu;
+      accDuration = nanoseconds(0);
     }
     os << std::endl;
     last = nanoseconds(0);
