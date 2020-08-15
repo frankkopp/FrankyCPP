@@ -55,6 +55,35 @@ protected:
 // TIMING POSITION
 // /////////////////////
 
+
+TEST_F(SpeedTests, TimingSetupPosition) {
+
+  const int rounds     = 5;
+  const int iterations = 200'000;
+
+  const char* const fen = "r3k2r/1ppn3p/4q1n1/8/4Pp2/3R4/p1p2PPP/R5K1 b kq e3 0 1";
+  Position position;
+
+  for (int r = 1; r <= rounds; r++) {
+    fprintln("Round {}", r);
+    auto start = high_resolution_clock::now();
+    for (int i = 0; i < iterations; i++) {
+      position = Position(fen);
+    }
+    auto elapsed = duration_cast<nanoseconds>(high_resolution_clock::now() - start);
+
+    std::ostringstream os;
+    os.flags(std::cout.flags());
+    os.imbue(deLocale);
+    os.precision(os.precision());
+    os << "Setup position took " << elapsed.count() << " ns for " << iterations << " iterations"  << std::endl;
+    os << "Setup position " << elapsed.count() / iterations  << " ns per setup position" << std::endl;
+    os << "Positions per sec " << (iterations * nanoPerSec) / elapsed.count() << " pps" << std::endl;
+    std::cout << os.str() << std::endl;
+  }
+  fprintln("{}", position.str());
+}
+
 // 28.6. PC
 // DoMove/UndoMove took 10.335.845.600 ns for 50.000.000 iterations with 5 do/undo pairs
 // DoMove/UndoMove took 41 ns per do/undo pair

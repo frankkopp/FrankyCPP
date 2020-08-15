@@ -237,6 +237,7 @@ TEST_F(PositionTest, FenCheck) {
 
     {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w xyz - 0 1", false},// invalid castling
     {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w -- - 0 1", false}, // invalid castling
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KK - 0 1", false}, // invalid castling
     {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w Kk - 0 1", true},  // valid castling
 
     {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - x 0 1", false},  // invalid en passant
@@ -274,6 +275,7 @@ TEST_F(PositionTest, FenCheck) {
 
   // run all test cases
   for (const auto& test : illegalFens) {
+    fprintln("{}", test.fen);
     if (test.valid) {
       EXPECT_NO_THROW(Position p(test.fen));
     }
