@@ -101,9 +101,9 @@ TEST_F(OpeningBook2Test, readGamesPgnLarge) {
   auto lines = book.readFile(book.bookFilePath);
   auto games = book.readGames(lines);
   fprintln("Games: {:L}", games.size());
-  for (const auto& game : games) {
-    fprintln("Game: {}", str(game));
-  }
+//  for (const auto& game : games) {
+//    fprintln("Game: {}", str(game));
+//  }
   EXPECT_EQ(190'781, games.size());
 }
 
@@ -112,7 +112,7 @@ TEST_F(OpeningBook2Test, readGamesPgnXLLarge) {
   auto lines = book.readFile(book.bookFilePath);
   auto games = book.readGames(lines);
   fprintln("Games: {:L}", games.size());
-  EXPECT_EQ(190'781, games.size());
+  EXPECT_EQ(3'434'058, games.size());
 }
 
 TEST_F(OpeningBook2Test, pgnCleanUpTest) {

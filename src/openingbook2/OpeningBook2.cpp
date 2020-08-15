@@ -321,8 +321,8 @@ void OpeningBook2::readGamesPgn(const std::vector<std::string_view>* lines, std:
   // up to the line number marked in gameStart are part of one game.
   // This game (marked by line numbers for start and end will then be
   // send to be processed asynchronously
-  int gameStart  = 0;
-  int gameEnd    = 0;
+  size_t gameStart  = 0;
+  size_t gameEnd    = 0;
   bool lastEmpty = true;
   const auto length = lines->size();
   for (int lineNumber = 0; lineNumber < length; lineNumber++) {
@@ -363,12 +363,12 @@ void OpeningBook2::readGamesPgn(const std::vector<std::string_view>* lines, std:
   }
 }
 
-bool OpeningBook2::readOneGamePgn(const std::vector<std::string_view>* lines, int gameStart, int gameEnd, std::vector<MoveList>* games) {// process previous game
+bool OpeningBook2::readOneGamePgn(const std::vector<std::string_view>* lines, size_t gameStart, size_t gameEnd, std::vector<MoveList>* games) {// process previous game
 
   std::string moveLine;
 
   // join all lines but skip empty line and %-comment lines and tag line starting with [
-  for (int i = gameStart; i < gameEnd; i++) {
+  for (auto i = gameStart; i < gameEnd; i++) {
     const auto lineView = trimFast((*lines)[i]);
     if (lineView.empty() || lineView[0] == '[' || lineView[0] == '%') continue;
     moveLine.append(" ").append(removeTrailingComments(lineView));
@@ -386,10 +386,6 @@ bool OpeningBook2::readOneGamePgn(const std::vector<std::string_view>* lines, in
   if (moveLine.empty()) return true;
 
   // find and check move from the clean line of moves
-  std::smatch matcher;
-  const std::regex UCIRegex(R"(([a-h][1-8][a-h][1-8])([NBRQnbrq])?)");
-  const std::regex SANRegex(R"(([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O-O-O|O-O)(=?([NBRQ]))?([!?+#]*)?)");
-
   // get each move string from the clean line
   std::vector<std::string> movesStrings{};
   split(moveLine, movesStrings, ' ');
@@ -399,24 +395,27 @@ bool OpeningBook2::readOneGamePgn(const std::vector<std::string_view>* lines, in
   MoveList game{};
 
   // iterate though each move
+  int moveNumber = 0;
   for (const auto& moveStr : movesStrings) {
     Move move = MOVE_NONE;
+    moveNumber++;
 
     // check the notation format
     // Per PGN it must be SAN but some files have UCI notation
     // As UCI is pattern wise a subset of SAN we test for UCI first.
-    if (std::regex_match(moveStr, matcher, UCIRegex)) {
-//      fprintln("Game move {} is UCI", moveStr);
+    if ((moveStr.size() == 4 && islower(moveStr[0]) && isdigit(moveStr[1]) && islower(moveStr[2]) && isdigit(moveStr[3])) ||
+      (moveStr.size() == 5 && islower(moveStr[0]) && isdigit(moveStr[1]) && islower(moveStr[2]) && isdigit(moveStr[3]) && isupper(moveStr[4]))) {
+      //      fprintln("Game move {} is UCI", moveStr);
       move = mg.getMoveFromUci(p, moveStr);
     }
-    else if (std::regex_match(moveStr, matcher, SANRegex)) {
+    else {
 //      fprintln("Game move {} is SAN", moveStr);
       move = mg.getMoveFromSan(p, moveStr);
     }
 
     // validate the move
     if (move == MOVE_NONE) {
-      LOG__WARN(Logger::get().BOOK_LOG, "Not a valid move {} on this position {}", moveStr, p.strFen());
+      LOG__WARN(Logger::get().BOOK_LOG, "Game at line {:L}:{}: Not a valid move {} on this position {}", gameStart, moveNumber, moveStr, p.strFen());
       break;
     }
 //    fprintln("Move found {}", str(move));
