@@ -352,9 +352,9 @@ TEST_F(MoveGenTest, fromUci) {
   move = mg.getMoveFromUci(pos, "a2a1Q");
   EXPECT_EQ(createMove(SQ_A2, SQ_A1, PROMOTION, QUEEN), move);
 
-  // valid promotion (we allow lower case promotions);
+  // valid promotion (we don't allow lower case promotions);
   move = mg.getMoveFromUci(pos, "a2a1q");
-  EXPECT_EQ(createMove(SQ_A2, SQ_A1, PROMOTION, QUEEN), move);
+  EXPECT_EQ(MOVE_NONE, move);
 
   // valid castling
   move = mg.getMoveFromUci(pos, "e8c8");
@@ -388,7 +388,7 @@ TEST_F(MoveGenTest, fromSan) {
   move = mg.getMoveFromSan(pos, "a1Q");
   EXPECT_EQ(createMove(SQ_A2, SQ_A1, PROMOTION, QUEEN), move);
 
-  // valid promotion (we allow lower case promotions);
+  // invalid promotion
   move = mg.getMoveFromSan(pos, "a1q");
   EXPECT_EQ(MOVE_NONE, move);
 
@@ -399,6 +399,14 @@ TEST_F(MoveGenTest, fromSan) {
   // invalid castling
   move = mg.getMoveFromSan(pos, "O-O");
   EXPECT_EQ(MOVE_NONE, move);
+
+  // capture
+  move = mg.getMoveFromSan(pos, "Qxe5");
+  EXPECT_EQ(createMove(SQ_E6, SQ_E5, NORMAL), move);
+
+  // ep capture
+  move = mg.getMoveFromSan(pos, "fxe3");
+  EXPECT_EQ(createMove(SQ_F4, SQ_E3, ENPASSANT), move);
 
   // ambiguous
   move = mg.getMoveFromSan(pos, "Ne5");

@@ -208,7 +208,7 @@ public:
   //
   // As this uses string creation and comparison this is not very efficient.
   // Use only when performance is not critical.
-  Move getMoveFromSan(const Position& position, const std::string& sanMove);
+  Move getMoveFromSan(const Position& position, std::string sanMove);
 
   // ValidateMove validates if a move is a valid legal move on the given position
   bool validateMove(const Position& position, Move move);

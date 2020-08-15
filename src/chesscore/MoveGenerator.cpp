@@ -290,43 +290,110 @@ bool MoveGenerator::validateMove(const Position& position, Move move) {
 }
 
 Move MoveGenerator::getMoveFromUci(const Position& position, const std::string& uciMove) {
-  static const std::regex regexUciMove(R"(([a-h][1-8][a-h][1-8])([NBRQnbrq])?)");
-  std::smatch matcher;
-  // Match the target string
-  if (!std::regex_match(uciMove, matcher, regexUciMove)) {
+  // check move format
+  std::string_view stringView{uciMove};
+  stringView = trimFast(stringView);
+  if (!((stringView.size() == 4 && islower(stringView[0]) && isdigit(stringView[1]) && islower(stringView[2]) && isdigit(stringView[3])) ||
+        (stringView.size() == 5 && islower(stringView[0]) && isdigit(stringView[1]) && islower(stringView[2]) && isdigit(stringView[3]) && isalpha(stringView[4])))) {
     return MOVE_NONE;
   }
-  // pattern is move
-  const std::string matchedMove = matcher.str(1);
-  const std::string promotion   = toUpperCase(matcher.str(2));
   // create all moves on position and compare
   const MoveList* legalMovesPtr = generateLegalMoves(position, GenAll);
   for (Move m : *legalMovesPtr) {
-    if (::str(m) == matchedMove + promotion) {
+    if (::str(m) == stringView) {
       return m;
     }
   }
   return MOVE_NONE;
 }
 
-Move MoveGenerator::getMoveFromSan(const Position& position, const std::string& sanMove) {
-  // Regex for short move notation (SAN)
-  static const std::regex regexPattern(R"(([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O-O-O|O-O)(=?([NBRQ]))?([!?+#]*)?)");
-  std::smatch matcher;
-  // Match the target string
-  if (!std::regex_match(sanMove, matcher, regexPattern)) {
-    return MOVE_NONE;
-  }
+Move MoveGenerator::getMoveFromSan(const Position& position, std::string sanMove) {
+  sanMove = trimFast(sanMove);
+
+  // ^([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O-O-O|O-O)(=?([NBRQ]))?([!?+#]*)?$)
+
+  // phase for searching
+  enum Part {
+    PROM,
+    TO_SQ,
+    FROM,
+    PIECE
+  };
+
   // get the parts
-  const std::string pieceType  = matcher.str(1);
-  const std::string disambFile = matcher.str(2);
-  const std::string disambRank = matcher.str(3);
-  const std::string toSq       = matcher.str(4);
-  const std::string promotion  = matcher.str(6);
-  const std::string checkSign  = matcher.str(7);
+  std::string pieceType;
+  std::string disambFile;
+  std::string disambRank;
+  std::string toSq;
+  std::string promotion;
+
+  // backwards scan
+  Part part                     = PROM;
+  int index                     = static_cast<int>(sanMove.size()) - 1;
+  const std::string nonrelevant = "x=!?+#e.p. ";
+
+  while (index >= 0) {
+
+    // skip non relevant characters
+    if (nonrelevant.find(sanMove[index]) != std::string::npos) {
+      index--;
+      continue;
+    }
+
+    switch (part) {
+      case PROM:
+        // promotion is optional
+        if (isupper(sanMove[index])) {
+          promotion = sanMove[index--];
+        }
+        part = TO_SQ;
+        break;
+      case TO_SQ:
+        // check if string is long enough is a letter following a digit
+        if (sanMove == "O-O-O" || sanMove == "O-O") {
+          toSq  = sanMove;
+          index = -1;
+          break;
+        }
+        else if (index >= 1 && isdigit(sanMove[index]) && islower(sanMove[index - 1])) {
+          toSq += sanMove[index - 1];
+          toSq += sanMove[index];
+          index -= 2;
+          part = FROM;
+        }
+        else {
+          // no target square - invalid
+          return MOVE_NONE;
+        }
+        break;
+      case FROM:
+        // check if lower letter and digit or either one alone
+        if (index >= 1 && isdigit(sanMove[index]) && islower(sanMove[index - 1])) {
+          disambRank = sanMove[index--];
+          disambFile = sanMove[index--];
+        }
+        else if (index >= 0 && isdigit(sanMove[index])) {
+          disambRank = sanMove[index--];
+        }
+        else if (index >= 0 && islower(sanMove[index])) {
+          disambFile = sanMove[index--];
+        }
+        part = PIECE;
+        break;
+      case PIECE:
+        // piece type - empty for pawn
+        if (index >= 0 && isupper(sanMove[index])) {
+          pieceType = sanMove[index--];
+        }
+        break;
+    }
+  }
+  //  fprintln("move string: {}", sanMove);
+  //  fprintln("piece={} df={} dr={} to={} prom={}", pieceType, disambFile, disambRank, toSq, promotion);
+
   // Generate all legal moves and loop through them to search for a matching move
   Move moveFromSAN{MOVE_NONE};
-  int movesFound = 0;
+  int movesFound                = 0;
   const MoveList* legalMovesPtr = generateLegalMoves(position, GenAll);
   for (Move m : *legalMovesPtr) {
     m = moveOf(m);

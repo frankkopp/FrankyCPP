@@ -144,7 +144,7 @@ private:
 
   static MoveList readOneGameSimple(const std::string_view& lineView);
   static MoveList readOneGameSan(const std::string_view& lineView);
-  bool readOneGamePgn(const std::vector<std::string_view>* lines, int gameStart, int gameEnd, std::vector<MoveList>* games);
+  bool readOneGamePgn(const std::vector<std::string_view>* lines, size_t gameStart, size_t gameEnd, std::vector<MoveList>* games);
 
   // fast removal of trailing comments (no regex)
   static std::string removeTrailingComments(const std::string_view& stringView);
