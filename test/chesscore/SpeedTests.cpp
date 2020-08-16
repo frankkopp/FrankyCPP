@@ -100,7 +100,7 @@ TEST_F(SpeedTests, TimingDoMoveUndoMove) {
   // o-o castling
   // Rc1 normal non capturing
   // c1Q promotion
-  Position position = Position("r3k2r/1ppn3p/4q1n1/8/4Pp2/3R4/p1p2PPP/R5K1 b kq e3 0 1");
+  Position position("r3k2r/1ppn3p/4q1n1/8/4Pp2/3R4/p1p2PPP/R5K1 b kq e3 0 1");
   const Move move1  = createMove(SQ_F4, SQ_E3, ENPASSANT);
   const Move move2  = createMove(SQ_F2, SQ_E3);
   const Move move3  = createMove(SQ_E8, SQ_G8, CASTLING);
