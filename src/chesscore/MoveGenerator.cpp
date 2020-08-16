@@ -330,7 +330,7 @@ Move MoveGenerator::getMoveFromSan(const Position& position, std::string sanMove
   // backwards scan
   Part part                     = PROM;
   int index                     = static_cast<int>(sanMove.size()) - 1;
-  const std::string nonrelevant = "x=!?+#e.p. ";
+  const std::string nonrelevant = "x=!?+#.p ";
 
   while (index >= 0) {
 
@@ -361,6 +361,12 @@ Move MoveGenerator::getMoveFromSan(const Position& position, std::string sanMove
           index -= 2;
           part = FROM;
         }
+        else if (sanMove[index] == 'e') {
+          // if the move has e.p. at the end this is needs to be ignored here
+          // . and p are ignored above - but e could also be a file and can only caught here
+          index--;
+          continue;
+        }
         else {
           // no target square - invalid
           return MOVE_NONE;
@@ -388,8 +394,8 @@ Move MoveGenerator::getMoveFromSan(const Position& position, std::string sanMove
         break;
     }
   }
-  //  fprintln("move string: {}", sanMove);
-  //  fprintln("piece={} df={} dr={} to={} prom={}", pieceType, disambFile, disambRank, toSq, promotion);
+  //    fprintln("move string: {}", sanMove);
+  //    fprintln("piece={} df={} dr={} to={} prom={}", pieceType, disambFile, disambRank, toSq, promotion);
 
   // Generate all legal moves and loop through them to search for a matching move
   Move moveFromSAN{MOVE_NONE};
@@ -419,6 +425,7 @@ Move MoveGenerator::getMoveFromSan(const Position& position, std::string sanMove
         continue;
       }
     }
+
     // normal move
     const std::string& moveTarget = ::str(toSquare(m));
     if (moveTarget == toSq) {

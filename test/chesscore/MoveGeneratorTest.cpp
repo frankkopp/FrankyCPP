@@ -408,6 +408,10 @@ TEST_F(MoveGenTest, fromSan) {
   move = mg.getMoveFromSan(pos, "fxe3");
   EXPECT_EQ(createMove(SQ_F4, SQ_E3, ENPASSANT), move);
 
+  move = mg.getMoveFromSan(pos, "fxe3e.p.");
+  EXPECT_EQ(createMove(SQ_F4, SQ_E3, ENPASSANT), move);
+
+
   // ambiguous
   move = mg.getMoveFromSan(pos, "Ne5");
   EXPECT_EQ(MOVE_NONE, move);
@@ -423,6 +427,15 @@ TEST_F(MoveGenTest, fromSan) {
   EXPECT_EQ(createMove(SQ_A2, SQ_B1, PROMOTION, QUEEN), move);
   move = mg.getMoveFromSan(pos, "cb1Q");
   EXPECT_EQ(createMove(SQ_C2, SQ_B1, PROMOTION, QUEEN), move);
+
+  pos = Position("rnbqkb1r/ppp1p1pp/5B2/3p1p2/3P4/2N5/PPP1PPPP/R2QKBNR b KQkq -");
+  move = mg.getMoveFromSan(pos, "exf6");
+  EXPECT_EQ(createMove(SQ_E7, SQ_F6, NORMAL, PT_NONE), move);
+
+  pos = Position("8/6Bp/7P/5p2/pKP2P2/1b6/p7/1k6 b - - 3 51");
+  move = mg.getMoveFromSan(pos, "a1=Q");
+  EXPECT_EQ(createMove(SQ_A2, SQ_A1, PROMOTION, QUEEN), move);
+
 }
 
 

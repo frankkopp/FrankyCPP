@@ -21,8 +21,7 @@ set(FrankyCPPlib_SRCS
         openingbook/PGN_Reader.cpp openingbook/PGN_Reader.h
         openingbook/OpeningBook.cpp openingbook/OpeningBook.h
         openingbook2/OpeningBook2.cpp openingbook2/OpeningBook2.h
-        openingbook2/BookEntry2.cpp openingbook2/BookEntry2.h
-        
+
         engine/UciHandler.cpp engine/UciHandler.h
         engine/UciOptions.cpp engine/UciOptions.h
         engine/TT.cpp engine/TT.h

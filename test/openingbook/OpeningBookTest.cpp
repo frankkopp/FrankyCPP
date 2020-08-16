@@ -231,7 +231,7 @@ TEST_F(OpeningBookTest, serializationMedium) {
 }
 
 TEST_F(OpeningBookTest, serializationLarge) {
-  GTEST_SKIP();
+//  GTEST_SKIP();
 #ifndef NDEBUG
   GTEST_SKIP();
 #endif

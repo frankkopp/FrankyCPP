@@ -27,11 +27,46 @@
 #define FRANKYCPP_OPENINGBOOK2_H
 
 #include <filesystem>
-#include <unordered_map>
 
-#include "openingbook2/BookEntry2.h"
+#include <boost/serialization/unordered_map.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 
 #include "gtest/gtest_prod.h"
+
+
+/**
+ * An entry in the opening book data structure. Stores a key (e.g. zobrist key)
+ * for the position, the current fen, a count of how often a position is in the
+ * book and two vectors storing the moves from the position and pointers to the
+ * book entry for the corresponding move.
+ */
+struct BookEntry2 {
+  Key key{};
+  int counter{};
+  std::vector<Move> moves{};
+  std::vector<std::shared_ptr<BookEntry2>> ptrNextPosition{};
+
+  BookEntry2() = default; // necessary for serialization
+  explicit BookEntry2(Key zobrist) : key(zobrist), counter{1} {}
+
+  std::string str() {
+    std::ostringstream os;
+    for (std::size_t i = 0; i < moves.size(); i++) {
+      os << "[" << ::str(this->moves[i]) << " (" << this->ptrNextPosition[i]->counter << ")] ";
+    }
+    return os.str();
+  }
+  // BOOST Serialization
+  friend class boost::serialization::access;
+  template<class Archive>
+  void serialize(Archive & ar, [[maybe_unused]] const unsigned int version) {
+    ar & BOOST_SERIALIZATION_NVP (key);
+    ar & BOOST_SERIALIZATION_NVP (counter);
+    ar & BOOST_SERIALIZATION_NVP (moves);
+    ar & BOOST_SERIALIZATION_NVP (ptrNextPosition);
+  }
+};
 
 /**
  * The OpeningBook reads game databases of different formats into an internal
@@ -66,6 +101,7 @@ private:
 
   // the book data structure
   std::unordered_map<Key, BookEntry2> bookMap{};
+  std::mutex bookMutex;
 
   // book information
   BookFormat bookFormat{};
@@ -81,6 +117,11 @@ private:
   unsigned int numberOfThreads = 1;
   std::mutex gamesMutex;
 
+  // cache control
+  bool _useCache = true;
+  bool _recreateCache = false;
+  // the extension cache files use after the given opening book filename
+  static constexpr const char* cacheExt = ".cache.bin";
 
 public:
 
@@ -105,21 +146,69 @@ public:
   /**
    * Resets the OpeningBook to an un-initialized state. All data will be removed.
    */
-  //    void reset();
+  void reset();
 
   /**
    * Returns the number of positions in the book
    */
-  uint64_t size() { return bookMap.size(); }
+  uint64_t size() const { return bookMap.size(); }
+
+  /**
+   * returns a hierarchical string of the book entries with given depth
+   */
+   std::string str(int level) const;
 
   /**
    * Returns a random move for the given position.
    * @param zobrist key of the position
    */
-  //    [[nodiscard]] Move getRandomMove(Key zobrist) const;
+  [[nodiscard]] Move getRandomMove(Key zobrist) const;
+
+private:
+
+  // reads all lines from a file into a vector of string_views
+  std::vector<std::string_view> readFile(const std::string& filePath);
+
+  // decides which process to use to read games based on book format
+  void readGames(std::vector<std::string_view> &lines);
+
+  // processes lines with one line per game and 4 chars per move without any separator characters
+  // Example:
+  //  g1f3c7c5e2e4d7d6d2d4c5d4f3d4g8f6b1c3b8c6f1c4d8b6d4b5a7a6c1e3b6a5b5d4e7e6e1g1f8e7
+  //  e2e4g7g6d2d4f8g7b1c3d7d6f2f4c7c6g1f3d8b6f1c4g8h6c4b3c8g4d4d5a7a5a2a4b8a6h2h3g4f3
+  void readGamesSimple(const std::vector<std::string_view>& lines);
+  void readOneGameSimple(const std::string_view& lineView);
+
+  // processes lines with one line per game with SAN notation
+  // Example:
+  //  1. f4 d5 2. Nf3 Nf6 3. e3 g6 4. b3 Bg7 5. Bb2 O-O 6. Be2 c5 7. O-O Nc6 8. Ne5 Qc7 1/2-1/2
+  //  1. f4 d5 2. Nf3 Nf6 3. e3 Bg4 4. Be2 e6 5. O-O Bd6 6. b3 O-O 7. Bb2 c5 1/2-1/2
+  void readGamesSan(const std::vector<std::string_view>& lines);
+  void readOneGameSan(const std::string_view& lineView);
+
+  // processes lines with one or more games in PGN format. PGN uses multiple line per game
+  // for meta data and moves. Games will be extracted and the interpreted in parallel to retrieve
+  // moves
+  void readGamesPgn(const std::vector<std::string_view>* lines);
+  void readOneGamePgn(const std::vector<std::string_view>* lines, size_t gameStart, size_t gameEnd);
+
+  // fast removal of trailing comments (no regex)
+  static std::string removeTrailingComments(const std::string_view& stringView);
+
+  // fast removal of unwanted parts of a PGN move section to avoid slow regex
+  static void cleanUpPgnMoveSection(std::string& str);
+
+  // adding moves from one game to book map
+  int addGameToBook(const MoveList& game);
+
+  // std::thread::hardware_concurrency() is not reliable - on some platforms
+  // it returns 0 - in this case we chose a default of 4
+  static inline unsigned int getNoOfThreads() {
+    return std::thread::hardware_concurrency() == 0 ? 4 : std::thread::hardware_concurrency();
+  }
 
   /** Checks of file exists and encapsulates platform differences for
-   * filesystem operations */
+    * filesystem operations */
   static inline bool fileExists(const std::string& filePath) {
     return std::filesystem::exists(filePath);
   }
@@ -130,33 +219,9 @@ public:
     return std::filesystem::file_size(filePath);
   }
 
-private:
-
-  // reads all lines from a file into a vector of string_views
-  std::vector<std::string_view> readFile(const std::string& filePath);
-
-  // decides which process to use to read games based on book format
-  std::vector<MoveList> readGames(std::vector<std::string_view> &lines);
-
-  void readGamesSimple(const std::vector<std::string_view>& line, std::vector<MoveList>& games);
-  void readGamesSan(const std::vector<std::string_view>& lines, std::vector<MoveList>& games);
-  void readGamesPgn(const std::vector<std::string_view>* lines, std::vector<MoveList>* games);
-
-  static MoveList readOneGameSimple(const std::string_view& lineView);
-  static MoveList readOneGameSan(const std::string_view& lineView);
-  bool readOneGamePgn(const std::vector<std::string_view>* lines, size_t gameStart, size_t gameEnd, std::vector<MoveList>* games);
-
-  // fast removal of trailing comments (no regex)
-  static std::string removeTrailingComments(const std::string_view& stringView);
-
-  // fast removal of unwanted parts of a PGN move section to avoid slow regex
-  static void cleanUpPgnMoveSection(std::string& str);
-
-  // std::thread::hardware_concurrency() is not reliable - on some platforms
-  // it returns 0 - in this case we chose a default of 4
-  static inline unsigned int getNoOfThreads() {
-    return std::thread::hardware_concurrency() == 0 ? 4 : std::thread::hardware_concurrency();
-  }
+  [[nodiscard]] bool hasCache() const;
+  void saveToCache();
+  bool loadFromCache();
 
   FRIEND_TEST(OpeningBook2Test, readFile);
   FRIEND_TEST(OpeningBook2Test, readGamesSimple);
@@ -165,6 +230,12 @@ private:
   FRIEND_TEST(OpeningBook2Test, readGamesPgnLarge);
   FRIEND_TEST(OpeningBook2Test, readGamesPgnXLLarge);
   FRIEND_TEST(OpeningBook2Test, pgnCleanUpTest);
+
+public:
+  [[nodiscard]] bool useCache() const { return _useCache; }
+  void setUseCache(bool aBool) { _useCache = aBool; }
+  [[nodiscard]] bool recreateCache() const { return _recreateCache; }
+  void setRecreateCache(bool recreateCache) { _recreateCache = recreateCache; }
 };
 
 
