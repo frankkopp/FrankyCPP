@@ -26,17 +26,17 @@
 #include <cctype>
 #include <fstream>
 #include <memory>
+#include <random>
 #include <regex>
 #include <string>
 #include <xstring>
-#include <random>
 
-#include "types/types.h"
 #include "openingbook2/OpeningBook2.h"
+#include "types/types.h"
 
 // BOOST Serialization
-#include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
 
 // enable for parallel processing of input lines
 #define PARALLEL_LINE_PROCESSING
@@ -61,8 +61,8 @@ OpeningBook2::OpeningBook2(std::string bookPath, BookFormat bFormat)
   // set root entry
   Position p{};
   const Key zobristKey = p.getZobristKey();
-  const BookEntry2 rootEntry(zobristKey);
-  bookMap.emplace(zobristKey, rootEntry);
+  bookMap.emplace(zobristKey, zobristKey);
+  bookMap.at(zobristKey).counter = 0;
 }
 
 Move OpeningBook2::getRandomMove(Key zobrist) const {
@@ -92,7 +92,7 @@ void OpeningBook2::initialize() {
   }
 
   // load the whole file into memory line by line
-  auto lines = readFile(bookFilePath);
+  const auto lines = readFile(bookFilePath);
 
   // reads lines and retrieves game (lists of moves) and adds these to the book map
   readGames(lines);
@@ -119,8 +119,28 @@ void OpeningBook2::reset() {
   LOG__DEBUG(Logger::get().TEST_LOG, "Opening book reset: {:L}", bookMap.size());
 }
 
-std::string OpeningBook2::str(int level) const {
-  return std::string();
+std::string OpeningBook2::str(int level) {
+  Position p{};
+  std::string out;
+
+  Key zobristKey = p.getZobristKey();
+  const BookEntry2* node = &bookMap.at(zobristKey);
+  out += fmt::format(deLocale, "Root ({:L})\n", bookMap.at(zobristKey).counter);
+  out += getLevelStr(1, level, node);
+  return out;
+}
+
+std::string OpeningBook2::getLevelStr(int level, int maxLevel, const BookEntry2* node) {
+  std::string out;
+  const size_t size = node->moves.size();
+  for (int i = 0; i < size; i++) {
+    const BookEntry2* newNode = &bookMap.at((node->nextPosition)[i]);
+    out += fmt::format(deLocale, "{:{}}{} ({:L})\n", "", level, node->moves[i], newNode->counter);
+    if (level < maxLevel) {
+      out += getLevelStr(level + 1, maxLevel, newNode);
+    }
+  }
+  return out;
 }
 
 // //////////////////////////////////////////////
@@ -173,7 +193,7 @@ std::vector<std::string_view> OpeningBook2::readFile(const std::string& filePath
   return lines;
 }
 
-void OpeningBook2::readGames(std::vector<std::string_view>& lines) {
+void OpeningBook2::readGames(const std::vector<std::string_view>& lines) {
   LOG__DEBUG(Logger::get().BOOK_LOG, "Reading games...");
 
   const auto start = std::chrono::high_resolution_clock::now();
@@ -202,7 +222,7 @@ void OpeningBook2::readGamesSimple(const std::vector<std::string_view>& lines) {
   LOG__DEBUG(Logger::get().BOOK_LOG, "Using {} threads", getNoOfThreads());
 #ifdef HAS_EXECUTION_LIB// use parallel lambda
   std::for_each(std::execution::par_unseq, lines.begin(), lines.end(),
-                [&](auto&& line) {
+                [&](auto& line) {
                   readOneGameSimple(line);
                 });
 #else// no <execution> library (< C++17)
@@ -230,9 +250,8 @@ void OpeningBook2::readGamesSimple(const std::vector<std::string_view>& lines) {
 }
 
 void OpeningBook2::readOneGameSimple(const std::string_view& lineView) {
-  MoveList game{};
-  MoveGenerator mg;
-  Position p;
+//  DEBUG(lineView);
+  Moves game{};
 
   // trim line
   auto lineViewTrimmed = trimFast(lineView);
@@ -243,20 +262,18 @@ void OpeningBook2::readOneGameSimple(const std::string_view& lineView) {
   while (index < lineViewTrimmed.length()) {
     const auto moveStr = lineViewTrimmed.substr(index, 4);
     index += 4;
-    if (!(isalpha(moveStr[0]) && isdigit(moveStr[1]) && isalpha(moveStr[2]) && isdigit(moveStr[3]))) continue;
-    // create and validate the move against current position
-    const Move move = mg.getMoveFromUci(p, std::string{moveStr});
-    if (!move) {
-      LOG__WARN(Logger::get().BOOK_LOG, "Not a valid move {} on this position {}", moveStr, p.strFen());
-      return;
+    // check basic format
+    if (!(isalpha(moveStr[0]) && isdigit(moveStr[1]) && isalpha(moveStr[2]) && isdigit(moveStr[3]))) {
+      break;
     }
     // add the validated move to the game and commit the move to the current position
-    game.push_back(move);
-    p.doMove(move);
+    game.emplace_back(std::string{moveStr});
   }
 
   // add game to book
-  addGameToBook(game);
+  if (!game.empty()) {
+    addGameToBook(game);
+  }
 }
 
 void OpeningBook2::readGamesSan(const std::vector<std::string_view>& lines) {
@@ -292,7 +309,7 @@ void OpeningBook2::readGamesSan(const std::vector<std::string_view>& lines) {
 }
 
 void OpeningBook2::readOneGameSan(const std::string_view& lineView) {
-  MoveList game{};
+  Moves game{};
 
   // create a trimmed copy of the string as regex can't handle string_view :(
   const std::string line{trimFast(lineView)};
@@ -310,21 +327,14 @@ void OpeningBook2::readOneGameSan(const std::string_view& lineView) {
   1. f4 d5 2. Nf3 Nf6 3. e3 Bg4 4. Be2 e6 5. O-O Bd6 6. b3 O-O 7. Bb2 c5 1/2-1/2
   */
 
-  std::vector<std::string> elements{};
-  split(line, elements, ' ');
+  std::vector<std::string> moveStrings{};
+  split(line, moveStrings, ' ');
 
-  for (const auto& e : elements) {
-    if (e.empty() || e.length() == 1) continue;
-    if (!isalpha(e[0])) continue;
-    // create and validate the move
-    Move move = mg.getMoveFromSan(p, e);
-    if (!move) {
-      LOG__WARN(Logger::get().BOOK_LOG, "Not a valid move {} on this position {} from line {}", e, p.strFen(), lineView);
-      return;
-    }
+  for (const auto& moveStr : moveStrings) {
+    if (moveStr.empty() || moveStr.length() == 1) continue;
+    if (!isalpha(moveStr[0])) continue;
     // add the validated move to the game and commit the move to the current position
-    game.push_back(move);
-    p.doMove(move);
+    game.push_back(moveStr);
   }
 
   // add game to book
@@ -335,6 +345,7 @@ void OpeningBook2::readGamesPgn(const std::vector<std::string_view>* lines) {
 
 #ifdef PARALLEL_GAME_PROCESSING
   ThreadPool worker{getNoOfThreads()};
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Using {} threads", getNoOfThreads());
 #else
   ThreadPool worker{1};
 #endif
@@ -416,41 +427,8 @@ void OpeningBook2::readOneGamePgn(const std::vector<std::string_view>* lines, si
   std::vector<std::string> movesStrings{};
   split(moveLine, movesStrings, ' ');
 
-  MoveGenerator mg{};
-  Position p{};// start position
-  MoveList game{};
-
-  // iterate though each move
-  int moveNumber = 0;
-  for (const auto& moveStr : movesStrings) {
-    Move move = MOVE_NONE;
-    moveNumber++;
-
-    // check the notation format
-    // Per PGN it must be SAN but some files have UCI notation
-    // As UCI is pattern wise a subset of SAN we test for UCI first.
-    if ((moveStr.size() == 4 && islower(moveStr[0]) && isdigit(moveStr[1]) && islower(moveStr[2]) && isdigit(moveStr[3])) ||
-        (moveStr.size() == 5 && islower(moveStr[0]) && isdigit(moveStr[1]) && islower(moveStr[2]) && isdigit(moveStr[3]) && isupper(moveStr[4]))) {
-      move = mg.getMoveFromUci(p, moveStr);
-    }
-    else {
-      move = mg.getMoveFromSan(p, moveStr);
-    }
-
-    // validate the move
-    if (move == MOVE_NONE) {
-      LOG__WARN(Logger::get().BOOK_LOG, "Game at line {:L}:{}: Not a valid move {} on this position {}", gameStart, moveNumber, moveStr, p.strFen());
-      fprintln("Moveline: {}\n", moveLine);
-      break;
-    }
-
-    // add move to game and execute it on position
-    game.emplace_back(move);
-    p.doMove(move);
-  }
-
   // add game to book
-  addGameToBook(game);
+  addGameToBook(movesStrings);
 }
 
 std::string OpeningBook2::removeTrailingComments(const std::string_view& stringView) {
@@ -568,53 +546,93 @@ void OpeningBook2::cleanUpPgnMoveSection(std::string& str) {
   str = trimFast(str);
 }
 
-int OpeningBook2::addGameToBook(const MoveList& game) {
-  Position currentPosition{};
+void OpeningBook2::addGameToBook(const Moves& game) {
+//  DEBUG(game.size());
+
+  Position p{};
   MoveGenerator mg{};
-  int counter = 0;
 
-  for (Move move : game) {
-    counter++;
-    // remember previous position
-    const Key lastKey = currentPosition.getZobristKey();
-    // make move on position to get new position
-    currentPosition.doMove(move);
-    const Key currentKey = currentPosition.getZobristKey();
-
-    // get the lock on the data map
-    const std::scoped_lock<std::mutex> lock(bookMutex);
-
-    // create or update book entry
-    if (bookMap.count(currentKey)) {
-      // pointer to entry already in book
-      BookEntry2* existingEntry = &bookMap.at(currentKey);
-      existingEntry->counter++;
-      LOG__TRACE(Logger::get().BOOK_LOG, "Position already existed {} times: {}", existingEntry->counter, existingEntry->fen);
-    }
-    else {
-      // new position
-      bookMap.emplace(currentKey, BookEntry2(currentKey));
-      LOG__TRACE(Logger::get().BOOK_LOG, "Position new", currentKey);
-    }
-
-    // add move to the last book entry's move list
-    BookEntry2* lastEntry = &bookMap.at(lastKey);
-    if (std::find(lastEntry->moves.begin(), lastEntry->moves.end(), move) == lastEntry->moves.end()) {
-      lastEntry->moves.push_back(move);
-      lastEntry->ptrNextPosition.emplace_back(std::make_shared<BookEntry2>(bookMap.at(currentKey)));
-      LOG__TRACE(Logger::get().BOOK_LOG, "Added move and pointer to last entry.");
-    }
+  if (game.empty()) {
+    return;
   }
 
-  return counter;
+  Key lastKey = p.getZobristKey();
+
+  // increase counter for root entry for each game
+  { // lock scope
+    std::scoped_lock<std::mutex> bookLock(bookMutex);
+    bookMap.at(lastKey).counter++;
+  }
+//  DEBUG(fmt::format(deLocale, "root counter = {}", bookMap.at(lastKey).counter));
+//  fprintln("{}", str(3));
+
+  // Loop through all move string and try to find a matching move on the current position.
+  // If found add the move to the book.
+  for (const std::string& moveStr : game) {
+    Move move;
+
+    // check the notation format
+    if ((moveStr.size() == 4 && islower(moveStr[0]) && isdigit(moveStr[1]) && islower(moveStr[2]) && isdigit(moveStr[3])) ||
+        (moveStr.size() == 5 && islower(moveStr[0]) && isdigit(moveStr[1]) && islower(moveStr[2]) && isdigit(moveStr[3]) && isupper(moveStr[4]))) {
+      move = mg.getMoveFromUci(p, trimFast(moveStr));
+    }
+    else {
+      move = mg.getMoveFromSan(p, trimFast(moveStr));
+    }
+    if (move == MOVE_NONE) {
+      LOG__WARN(Logger::get().BOOK_LOG, "Not a valid move {} on this position {}", moveStr, p.strFen());
+      break;
+    }
+
+    // remember previous position
+    // and make move on position to get new position
+    p.doMove(move);
+
+    // takes care of concurrent locking
+    writeToBook(move, p.getZobristKey(), lastKey);
+    lastKey = p.getZobristKey();
+  }
+}
+
+void OpeningBook2::writeToBook(Move move, Key currentKey, Key lastKey) {
+//  DEBUG(fmt::format(deLocale, "Write move {} current: {} last: {}", ::str(move), currentKey, lastKey));
+
+  // get the lock on the data map
+  std::scoped_lock<std::mutex> bookLock(bookMutex);
+  // create or update book entry
+  if (bookMap.contains(currentKey)) {
+    // pointer to entry already in book
+    (&bookMap.at(currentKey))->counter++;
+//    DEBUG(fmt::format(deLocale, "last    {}", bookMap.at(lastKey).str()));
+//    DEBUG(fmt::format(deLocale, "current {}", bookMap.at(currentKey).str()));
+    // return as we do not need to update the predecessor
+    return;
+  }
+  else {
+    // new position
+    bookMap.emplace(currentKey, currentKey);
+  }
+
+//  DEBUG(fmt::format(deLocale, "last    {}", bookMap.at(lastKey).str()));
+//  DEBUG(fmt::format(deLocale, "current {}", bookMap.at(currentKey).str()));
+
+  // add move to the last book entry's move list
+  BookEntry2* lastEntry = &bookMap.at(lastKey);
+  lastEntry->moves.push_back(move);
+  lastEntry->nextPosition.push_back(currentKey);
+//
+//  DEBUG(fmt::format(deLocale, "last    {}", bookMap.at(lastKey).str()));
+//  DEBUG(fmt::format(deLocale, "current {}\n" , bookMap.at(currentKey).str()));
+
+
 }// lock released
 
 /* Saves the bookMap data to a binary cache file for faster reading.
    Uses BOOST serialization to serialize the data to a binary file */
 void OpeningBook2::saveToCache() {
   const std::scoped_lock<std::mutex> lock(bookMutex);
-  { // save data to archive
-    const auto start = std::chrono::high_resolution_clock::now();
+  {// save data to archive
+    const auto start               = std::chrono::high_resolution_clock::now();
     const std::string serCacheFile = bookFilePath + cacheExt;
     LOG__DEBUG(Logger::get().BOOK_LOG, "Saving book to cache file {}", serCacheFile);
     // create and open a binary archive for output
@@ -622,10 +640,10 @@ void OpeningBook2::saveToCache() {
     boost::archive::binary_oarchive oa(ofsBin);
     // write class instance to archive
     oa << BOOST_SERIALIZATION_NVP(bookMap);
-    const auto stop = std::chrono::high_resolution_clock::now();
+    const auto stop    = std::chrono::high_resolution_clock::now();
     const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
     LOG__DEBUG(Logger::get().BOOK_LOG, "Book saved to binary cache in ({:L} ms) ({})", elapsed.count(), serCacheFile);
-  } // archive and stream closed when destructors are called
+  }// archive and stream closed when destructors are called
   _recreateCache = false;
 }
 
@@ -634,8 +652,8 @@ void OpeningBook2::saveToCache() {
 bool OpeningBook2::loadFromCache() {
   const std::scoped_lock<std::mutex> lock(bookMutex);
   std::unordered_map<Key, BookEntry2> binMap;
-  { // load data from archive
-    const auto start = std::chrono::high_resolution_clock::now();
+  {// load data from archive
+    const auto start               = std::chrono::high_resolution_clock::now();
     const std::string serCacheFile = bookFilePath + cacheExt;
     LOG__DEBUG(Logger::get().BOOK_LOG, "Loading from cache file {} ({:L} kB)", serCacheFile, getFileSize(serCacheFile) / 1'024);
     // create and open a binary archive for input
@@ -647,7 +665,7 @@ bool OpeningBook2::loadFromCache() {
     boost::archive::binary_iarchive ia(ifsBin);
     // write archive to class instance
     ia >> BOOST_SERIALIZATION_NVP(binMap);
-    const auto stop = std::chrono::high_resolution_clock::now();
+    const auto stop    = std::chrono::high_resolution_clock::now();
     const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
     LOG__INFO(Logger::get().BOOK_LOG,
               "Book loaded from cache with {:L} entries in ({:L} ms) ({})",
@@ -655,7 +673,7 @@ bool OpeningBook2::loadFromCache() {
   }
   bookMap = std::move(binMap);
   return true;
-} // archive and stream closed when destructors are called
+}// archive and stream closed when destructors are called
 
 /* checks if a cache file exists */
 bool OpeningBook2::hasCache() const {

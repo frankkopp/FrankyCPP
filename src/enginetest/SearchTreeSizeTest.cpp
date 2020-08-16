@@ -23,6 +23,8 @@
  *
  */
 
+#include <map>
+
 #include <fmt/chrono.h>
 
 #include "SearchTreeSizeTest.h"

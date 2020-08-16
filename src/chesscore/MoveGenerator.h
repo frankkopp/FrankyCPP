@@ -208,7 +208,7 @@ public:
   //
   // As this uses string creation and comparison this is not very efficient.
   // Use only when performance is not critical.
-  Move getMoveFromSan(const Position& position, std::string sanMove);
+  Move getMoveFromSan(const Position& position, const std::string& sanMove);
 
   // ValidateMove validates if a move is a valid legal move on the given position
   bool validateMove(const Position& position, Move move);
@@ -217,12 +217,12 @@ public:
   std::string str();
 
   // returns the current pv move
-  Move getPvMove() const {
+  [[nodiscard]] Move getPvMove() const {
     return pvMove;
   }
 
   // returns a pointer to the current killer move list
-  const Move* getKillerMoves() const {
+  [[nodiscard]] const Move* getKillerMoves() const {
     return killerMoves;
   }
 

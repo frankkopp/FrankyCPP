@@ -100,7 +100,7 @@ TEST_F(OpeningBook2Test, initPgn) {
 
 TEST_F(OpeningBook2Test, initPgnLarge) {
   //  GTEST_SKIP();
-#ifndef NDEBUG
+#ifndef NDEBUG                 
   GTEST_SKIP();
 #endif
   OpeningBook2 book("./books/superbook.pgn", OpeningBook2::BookFormat::PGN);
@@ -108,10 +108,11 @@ TEST_F(OpeningBook2Test, initPgnLarge) {
   book.initialize();
   fprintln("Book:  {:L} entries", book.size()); 
   EXPECT_EQ(4'821'615, book.size());
+  fprintln("{}", book.str(1));
 }                                                                                       
 
 TEST_F(OpeningBook2Test, readGamesPgnXLLarge) {
-  GTEST_SKIP();
+//  GTEST_SKIP();
 #ifndef NDEBUG
   GTEST_SKIP();
 #endif
@@ -119,7 +120,7 @@ TEST_F(OpeningBook2Test, readGamesPgnXLLarge) {
   book.setUseCache(false);
   book.initialize();
   fprintln("Book:  {:L} entries", book.size());
-  EXPECT_EQ(273'578, book.size());
+  EXPECT_EQ(4'821'615, book.size());
 }
 
 TEST_F(OpeningBook2Test, getMove) {
@@ -205,6 +206,13 @@ TEST_F(OpeningBook2Test, serializationLarge) {
   bookMove = book.getRandomMove(position.getZobristKey());
   LOG__DEBUG(Logger::get().TEST_LOG, "Book returned move: {}", strVerbose(bookMove));
   EXPECT_TRUE(validMove(bookMove));
-  EXPECT_TRUE(mg.validateMove(position, bookMove));
+  EXPECT_TRUE(mg.validateMove(position, bookMove));                                      
 }
 
+TEST_F(OpeningBook2Test, str) {
+  OpeningBook2 book("./books/book_smalltest.txt", OpeningBook2::BookFormat::SIMPLE);
+  book.setUseCache(false);
+  book.initialize();
+  const std::string output = book.str(1);
+  fprintln("{}", output);
+}

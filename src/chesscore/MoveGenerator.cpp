@@ -291,27 +291,21 @@ bool MoveGenerator::validateMove(const Position& position, Move move) {
 
 Move MoveGenerator::getMoveFromUci(const Position& position, const std::string& uciMove) {
   // check move format
-  std::string_view stringView{uciMove};
-  stringView = trimFast(stringView);
-  if (!((stringView.size() == 4 && islower(stringView[0]) && isdigit(stringView[1]) && islower(stringView[2]) && isdigit(stringView[3])) ||
-        (stringView.size() == 5 && islower(stringView[0]) && isdigit(stringView[1]) && islower(stringView[2]) && isdigit(stringView[3]) && isalpha(stringView[4])))) {
+  if (!((uciMove.size() == 4 && islower(uciMove[0]) && isdigit(uciMove[1]) && islower(uciMove[2]) && isdigit(uciMove[3])) ||
+        (uciMove.size() == 5 && islower(uciMove[0]) && isdigit(uciMove[1]) && islower(uciMove[2]) && isdigit(uciMove[3]) && isalpha(uciMove[4])))) {
     return MOVE_NONE;
   }
   // create all moves on position and compare
   const MoveList* legalMovesPtr = generateLegalMoves(position, GenAll);
   for (Move m : *legalMovesPtr) {
-    if (::str(m) == stringView) {
+    if (::str(m) == uciMove) {
       return m;
     }
   }
   return MOVE_NONE;
 }
 
-Move MoveGenerator::getMoveFromSan(const Position& position, std::string sanMove) {
-  sanMove = trimFast(sanMove);
-
-  // ^([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O-O-O|O-O)(=?([NBRQ]))?([!?+#]*)?$)
-
+Move MoveGenerator::getMoveFromSan(const Position& position, const std::string& sanMove) {
   // phase for searching
   enum Part {
     PROM,

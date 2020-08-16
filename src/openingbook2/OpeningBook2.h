@@ -30,10 +30,10 @@
 
 #include <boost/serialization/unordered_map.hpp>
 #include <boost/serialization/vector.hpp>
-#include <boost/serialization/shared_ptr.hpp>
 
 #include "gtest/gtest_prod.h"
 
+typedef std::vector<std::string> Moves;
 
 /**
  * An entry in the opening book data structure. Stores a key (e.g. zobrist key)
@@ -42,21 +42,24 @@
  * book entry for the corresponding move.
  */
 struct BookEntry2 {
-  Key key{};
-  int counter{};
+  Key key{};                   
+  int counter{1};
   std::vector<Move> moves{};
-  std::vector<std::shared_ptr<BookEntry2>> ptrNextPosition{};
+  std::vector<Key> nextPosition{};
 
   BookEntry2() = default; // necessary for serialization
   explicit BookEntry2(Key zobrist) : key(zobrist), counter{1} {}
 
-  std::string str() {
+  [[nodiscard]] std::string str() const {
     std::ostringstream os;
+    os << this->key << " (" << this->counter << ")" << " [ ";
     for (std::size_t i = 0; i < moves.size(); i++) {
-      os << "[" << ::str(this->moves[i]) << " (" << this->ptrNextPosition[i]->counter << ")] ";
+      os << ::str(this->moves[i]) << " ";
     }
+    os << "] ";
     return os.str();
   }
+
   // BOOST Serialization
   friend class boost::serialization::access;
   template<class Archive>
@@ -64,7 +67,7 @@ struct BookEntry2 {
     ar & BOOST_SERIALIZATION_NVP (key);
     ar & BOOST_SERIALIZATION_NVP (counter);
     ar & BOOST_SERIALIZATION_NVP (moves);
-    ar & BOOST_SERIALIZATION_NVP (ptrNextPosition);
+    ar & BOOST_SERIALIZATION_NVP (nextPosition);
   }
 };
 
@@ -151,12 +154,13 @@ public:
   /**
    * Returns the number of positions in the book
    */
-  uint64_t size() const { return bookMap.size(); }
+  [[nodiscard]] uint64_t size() const { return bookMap.size(); }
 
   /**
    * returns a hierarchical string of the book entries with given depth
    */
-   std::string str(int level) const;
+   [[nodiscard]] std::string str(int level);
+   std::string getLevelStr(int level, int maxLevel, const BookEntry2* node);
 
   /**
    * Returns a random move for the given position.
@@ -176,7 +180,7 @@ private:
   std::vector<std::string_view> readFile(const std::string& filePath);
 
   // decides which process to use to read games based on book format
-  void readGames(std::vector<std::string_view> &lines);
+  void readGames(const std::vector<std::string_view>& lines);
 
   // processes lines with one line per game and 4 chars per move without any separator characters
   // Example:
@@ -198,14 +202,17 @@ private:
   void readGamesPgn(const std::vector<std::string_view>* lines);
   void readOneGamePgn(const std::vector<std::string_view>* lines, size_t gameStart, size_t gameEnd);
 
+  // adding moves from one game to book map
+  void addGameToBook(const Moves& game);
+
+  // writing to the book map with synchronization
+  void writeToBook(Move move, Key currentKey, Key lastKey);
+
   // fast removal of trailing comments (no regex)
   static std::string removeTrailingComments(const std::string_view& stringView);
 
   // fast removal of unwanted parts of a PGN move section to avoid slow regex
   static void cleanUpPgnMoveSection(std::string& str);
-
-  // adding moves from one game to book map
-  int addGameToBook(const MoveList& game);
 
   // std::thread::hardware_concurrency() is not reliable - on some platforms
   // it returns 0 - in this case we chose a default of 4
@@ -236,6 +243,7 @@ public:
   void setUseCache(bool aBool) { _useCache = aBool; }
   [[nodiscard]] bool recreateCache() const { return _recreateCache; }
   void setRecreateCache(bool recreateCache) { _recreateCache = recreateCache; }
+
 };
 
 
