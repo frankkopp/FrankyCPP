@@ -1447,7 +1447,7 @@ void Search::initialize() {
   // init opening book
   if (SearchConfig::USE_BOOK) {
     if (!book) {// only initialize once
-      book = std::make_unique<OpeningBook>(SearchConfig::BOOK_PATH, SearchConfig::BOOK_TYPE);
+      book = std::make_unique<OpeningBook2>(SearchConfig::BOOK_PATH, SearchConfig::BOOK_TYPE);
       book->initialize();
     }
   }

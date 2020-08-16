@@ -25,8 +25,6 @@ add_executable(
         chesscore/PerftTest.cpp
         chesscore/SpeedTests.cpp
 
-        openingbook/PGN_ReaderTest.cpp
-        openingbook/OpeningBookTest.cpp
         openingbook/Openingbook2Test.cpp
 
         engine/UCITests.cpp

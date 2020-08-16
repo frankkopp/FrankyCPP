@@ -18,8 +18,6 @@ set(FrankyCPPlib_SRCS
         chesscore/Perft.cpp
         chesscore/History.cpp
 
-        openingbook/PGN_Reader.cpp openingbook/PGN_Reader.h
-        openingbook/OpeningBook.cpp openingbook/OpeningBook.h
         openingbook2/OpeningBook2.cpp openingbook2/OpeningBook2.h
 
         engine/UciHandler.cpp engine/UciHandler.h

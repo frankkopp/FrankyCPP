@@ -80,7 +80,6 @@ Move OpeningBook2::getRandomMove(Key zobrist) const {
   return bookMove;
 }
 
-
 void OpeningBook2::initialize() {
   if (isInitialized) return;
   LOG__INFO(Logger::get().BOOK_LOG, "Opening book initialization.");

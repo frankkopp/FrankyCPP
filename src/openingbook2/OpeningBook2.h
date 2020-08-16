@@ -164,6 +164,12 @@ public:
    */
   [[nodiscard]] Move getRandomMove(Key zobrist) const;
 
+  /** Checks of file exists and encapsulates platform differences for
+  * filesystem operations */
+  static inline bool fileExists(const std::string& filePath) {
+    return std::filesystem::exists(filePath);
+  }
+
 private:
 
   // reads all lines from a file into a vector of string_views
@@ -205,12 +211,6 @@ private:
   // it returns 0 - in this case we chose a default of 4
   static inline unsigned int getNoOfThreads() {
     return std::thread::hardware_concurrency() == 0 ? 4 : std::thread::hardware_concurrency();
-  }
-
-  /** Checks of file exists and encapsulates platform differences for
-    * filesystem operations */
-  static inline bool fileExists(const std::string& filePath) {
-    return std::filesystem::exists(filePath);
   }
 
   /** Returns files size in bytes and encapsulates platform differences for

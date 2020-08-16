@@ -37,7 +37,7 @@
 #include "chesscore/Position.h"
 #include "common/Semaphore.h"
 #include "engine/UciHandler.h"
-#include "openingbook/OpeningBook.h"
+#include "openingbook2/OpeningBook2.h"
 #include "types/types.h"
 #include "chesscore/History.h"
 
@@ -57,7 +57,7 @@ class Search {
   mutable Semaphore isRunningSemaphore{1};
   std::thread searchThread{};
 
-  std::unique_ptr<OpeningBook> book;
+  std::unique_ptr<OpeningBook2> book;
   std::unique_ptr<TT> tt;
   std::unique_ptr<Evaluator> evaluator;
 

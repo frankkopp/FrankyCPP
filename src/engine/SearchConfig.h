@@ -26,7 +26,7 @@
 #ifndef FRANKYCPP_SEARCHCONFIG_H
 #define FRANKYCPP_SEARCHCONFIG_H
 
-#include "openingbook/OpeningBook.h"
+#include "openingbook2/OpeningBook2.h"
 #include "types/types.h"
 
 namespace SearchConfig {
@@ -34,7 +34,7 @@ namespace SearchConfig {
   // opening book
   inline bool USE_BOOK                     = true;
   inline std::string BOOK_PATH             = "./books/book.txt";
-  inline OpeningBook::BookFormat BOOK_TYPE = OpeningBook::BookFormat::SIMPLE;
+  inline OpeningBook2::BookFormat BOOK_TYPE = OpeningBook2::BookFormat::SIMPLE;
 
   inline bool USE_PONDER = true;
 
