@@ -110,7 +110,7 @@ int main(int argc, char* argv[]) {
       }
       else {
         const auto& bookPath = programOptions["book"].as<std::string>();
-        if (!OpeningBook2::fileExists(bookPath)) {
+        if (!OpeningBook::fileExists(bookPath)) {
           LOG__ERROR(Logger::get().BOOK_LOG, "Open book '{}' not found. Using default {}", bookPath, SearchConfig::BOOK_PATH);
         }
         else {
@@ -118,13 +118,13 @@ int main(int argc, char* argv[]) {
         }
         const auto& bookType = programOptions["booktype"].as<std::string>();
         if (bookType == "simple" || bookType == "SIMPLE") {
-          SearchConfig::BOOK_TYPE = OpeningBook2::BookFormat::SIMPLE;
+          SearchConfig::BOOK_TYPE = OpeningBook::BookFormat::SIMPLE;
         }
         else if (bookType == "san" || bookType == "SAN") {
-          SearchConfig::BOOK_TYPE = OpeningBook2::BookFormat::SAN;
+          SearchConfig::BOOK_TYPE = OpeningBook::BookFormat::SAN;
         }
         else if (bookType == "pgn" || bookType == "PGN") {
-          SearchConfig::BOOK_TYPE = OpeningBook2::BookFormat::PGN;
+          SearchConfig::BOOK_TYPE = OpeningBook::BookFormat::PGN;
         }
       }
     }

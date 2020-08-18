@@ -23,8 +23,8 @@
  *
  */
 
-#ifndef FRANKYCPP_OPENINGBOOK2_H
-#define FRANKYCPP_OPENINGBOOK2_H
+#ifndef FRANKYCPP_OPENINGBOOK_H
+#define FRANKYCPP_OPENINGBOOK_H
 
 #include <filesystem>
 
@@ -41,14 +41,14 @@ typedef std::vector<std::string> Moves;
  * book and two vectors storing the moves from the position and pointers to the
  * book entry for the corresponding move.
  */
-struct BookEntry2 {
+struct BookEntry {
   Key key{};                   
   int counter{1};
   std::vector<Move> moves{};
   std::vector<Key> nextPosition{};
 
-  BookEntry2() = default; // necessary for serialization
-  explicit BookEntry2(Key zobrist) : key(zobrist), counter{1} {}
+  BookEntry() = default; // necessary for serialization
+  explicit BookEntry(Key zobrist) : key(zobrist), counter{1} {}
 
   [[nodiscard]] std::string str() const {
     std::ostringstream os;
@@ -84,7 +84,7 @@ struct BookEntry2 {
  * As reading these formats can be slow the OpeningBook keeps a cache file where
  * it stores the serialized data of the internal book.
  */
-class OpeningBook2 {
+class OpeningBook {
 public:
   /**
      * Supported formats are currently:<br/>
@@ -103,7 +103,7 @@ public:
 private:
 
   // the book data structure
-  std::unordered_map<Key, BookEntry2> bookMap{};
+  std::unordered_map<Key, BookEntry> bookMap{};
   std::mutex bookMutex;
 
   // book information
@@ -139,7 +139,7 @@ public:
      * BookFormat::SAN for files with lines of moves in SAN notation<br/>
      * BookFormat::PGN for PGN formatted games<br/>
      */
-  OpeningBook2(std::string bookPath, BookFormat bFormat);
+  OpeningBook(std::string bookPath, BookFormat bFormat);
 
   /**
    * Initializes this OpeningBook instance by reading moves data from the file
@@ -162,7 +162,7 @@ public:
    * returns a hierarchical string of the book entries with given depth
    */
    [[nodiscard]] std::string str(int level);
-   std::string getLevelStr(int level, int maxLevel, const BookEntry2* node);
+   std::string getLevelStr(int level, int maxLevel, const BookEntry* node);
 
   /**
    * Returns a random move for the given position.
@@ -232,13 +232,13 @@ private:
   void saveToCache();
   bool loadFromCache();
 
-  FRIEND_TEST(OpeningBook2Test, readFile);
-  FRIEND_TEST(OpeningBook2Test, readGamesSimple);
-  FRIEND_TEST(OpeningBook2Test, readGamesSan);
-  FRIEND_TEST(OpeningBook2Test, readGamesPgn);
-  FRIEND_TEST(OpeningBook2Test, readGamesPgnLarge);
-  FRIEND_TEST(OpeningBook2Test, readGamesPgnXLLarge);
-  FRIEND_TEST(OpeningBook2Test, pgnCleanUpTest);
+  FRIEND_TEST(OpeningBookTest, readFile);
+  FRIEND_TEST(OpeningBookTest, readGamesSimple);
+  FRIEND_TEST(OpeningBookTest, readGamesSan);
+  FRIEND_TEST(OpeningBookTest, readGamesPgn);
+  FRIEND_TEST(OpeningBookTest, readGamesPgnLarge);
+  FRIEND_TEST(OpeningBookTest, readGamesPgnXLLarge);
+  FRIEND_TEST(OpeningBookTest, pgnCleanUpTest);
 
 public:
   [[nodiscard]] bool useCache() const { return _useCache; }
@@ -249,4 +249,4 @@ public:
 };
 
 
-#endif//FRANKYCPP_OPENINGBOOK2_H
+#endif//FRANKYCPP_OPENINGBOOK_H

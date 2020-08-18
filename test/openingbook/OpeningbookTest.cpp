@@ -24,15 +24,15 @@
  */
 
 
-#include "openingbook2/OpeningBook2.h"
 #include "common/Logging.h"
 #include "init.h"
+#include "openingbook/OpeningBook.h"
 #include "types/types.h"
 
 #include <gtest/gtest.h>
 using testing::Eq;
 
-class OpeningBook2Test : public ::testing::Test {
+class OpeningBookTest : public ::testing::Test {
 public:
   static void SetUpTestSuite() {
     NEWLINE;
@@ -47,13 +47,13 @@ protected:
   void TearDown() override {}
 };
 
-TEST_F(OpeningBook2Test, readFile) {
+TEST_F(OpeningBookTest, readFile) {
 
   // set up Opening Book
-  OpeningBook2 book{"./books/superbook.pgn", OpeningBook2::BookFormat::PGN};
+  OpeningBook book{"./books/superbook.pgn", OpeningBook::BookFormat::PGN};
   EXPECT_EQ(1, book.bookMap.size());
-  EXPECT_TRUE(OpeningBook2::fileExists(book.bookFilePath));
-  fprintln("File {} Size {:L} Byte", book.bookFilePath, OpeningBook2::getFileSize(book.bookFilePath));
+  EXPECT_TRUE(OpeningBook::fileExists(book.bookFilePath));
+  fprintln("File {} Size {:L} Byte", book.bookFilePath, OpeningBook::getFileSize(book.bookFilePath));
 
   // non existing file
   EXPECT_THROW(book.readFile("Invalid"), std::runtime_error);
@@ -64,17 +64,17 @@ TEST_F(OpeningBook2Test, readFile) {
   fprintln("Lines: {:L}", lines.size());
 }
 
-TEST_F(OpeningBook2Test, pgnCleanUpTest) {
+TEST_F(OpeningBookTest, pgnCleanUpTest) {
   std::string_view testView{"e4(d4) d5!!2.c4$50(Nf3?)e5 Nf3{Comment !}Nc6 Nc3 Nf6 Bc4 {another comment} Bc5 O-O O-O a1=Q  @@@æææ {unexpected characters are skipped}  <> {These symbols are reserved}  1/2-1/2  ; comment     "};
   fprintln("Before: '{}'", testView);
-  std::string test = OpeningBook2::removeTrailingComments(testView);
-  OpeningBook2::cleanUpPgnMoveSection(test);
+  std::string test = OpeningBook::removeTrailingComments(testView);
+  OpeningBook::cleanUpPgnMoveSection(test);
   fprintln("After : '{}'", test);
   EXPECT_EQ("e4 d5 c4 e5 Nf3 Nc6 Nc3 Nf6 Bc4 Bc5 O-O O-O a1=Q", test);
 }
 
-TEST_F(OpeningBook2Test, initSimple) {
-  OpeningBook2 book("./books/book.txt", OpeningBook2::BookFormat::SIMPLE);
+TEST_F(OpeningBookTest, initSimple) {
+  OpeningBook book("./books/book.txt", OpeningBook::BookFormat::SIMPLE);
   //  book.setRecreateCache(true);
   book.setUseCache(false);
   book.initialize();
@@ -82,28 +82,28 @@ TEST_F(OpeningBook2Test, initSimple) {
   EXPECT_EQ(273'578, book.size());
 }
 
-TEST_F(OpeningBook2Test, initSan) {
-  OpeningBook2 book("./books/book_test.san", OpeningBook2::BookFormat::SAN);
+TEST_F(OpeningBookTest, initSan) {
+  OpeningBook book("./books/book_test.san", OpeningBook::BookFormat::SAN);
   book.setUseCache(false);
   book.initialize();
   fprintln("Book:  {:L} entries", book.size());
   EXPECT_EQ(1'256, book.size());
 }
 
-TEST_F(OpeningBook2Test, initPgn) {
-  OpeningBook2 book("./books/pgn_test.pgn", OpeningBook2::BookFormat::PGN);
+TEST_F(OpeningBookTest, initPgn) {
+  OpeningBook book("./books/pgn_test.pgn", OpeningBook::BookFormat::PGN);
   book.setUseCache(false);
   book.initialize();
   fprintln("Book:  {:L} entries", book.size());
   EXPECT_EQ(1'495, book.size());
 }
 
-TEST_F(OpeningBook2Test, initPgnLarge) {
+TEST_F(OpeningBookTest, initPgnLarge) {
   //  GTEST_SKIP();
 #ifndef NDEBUG                 
   GTEST_SKIP();
 #endif
-  OpeningBook2 book("./books/superbook.pgn", OpeningBook2::BookFormat::PGN);
+  OpeningBook book("./books/superbook.pgn", OpeningBook::BookFormat::PGN);
   book.setUseCache(false);
   book.initialize();
   fprintln("Book:  {:L} entries", book.size()); 
@@ -113,13 +113,13 @@ TEST_F(OpeningBook2Test, initPgnLarge) {
   EXPECT_TRUE(book.str(1).starts_with(expected));
 }
 
-TEST_F(OpeningBook2Test, initPgnXLLarge) {
+TEST_F(OpeningBookTest, initPgnXLLarge) {
   GTEST_SKIP();
 #ifndef NDEBUG
   GTEST_SKIP();
 #endif
   // superbook_xl is a multiple self copy of the normal non xl version
-  OpeningBook2 book("./books/superbook_xl.pgn", OpeningBook2::BookFormat::PGN);
+  OpeningBook book("./books/superbook_xl.pgn", OpeningBook::BookFormat::PGN);
   book.setUseCache(false);
   book.initialize();
   fprintln("Book:  {:L} entries", book.size());
@@ -129,9 +129,9 @@ TEST_F(OpeningBook2Test, initPgnXLLarge) {
   EXPECT_TRUE(book.str(1).starts_with(expected));
 }
 
-TEST_F(OpeningBook2Test, getMove) {
+TEST_F(OpeningBookTest, getMove) {
   std::string filePathStr = "./books/book_smalltest.txt";
-  OpeningBook2 book(filePathStr, OpeningBook2::BookFormat::SIMPLE);
+  OpeningBook book(filePathStr, OpeningBook::BookFormat::SIMPLE);
   book.setUseCache(false);
   book.initialize();
   LOG__DEBUG(Logger::get().TEST_LOG, "Entries in book: {:L}", book.size());
@@ -151,13 +151,13 @@ TEST_F(OpeningBook2Test, getMove) {
 }
 
 
-TEST_F(OpeningBook2Test, serializationSimple) {
+TEST_F(OpeningBookTest, serializationSimple) {
   //  GTEST_SKIP();
 #ifndef NDEBUG
   GTEST_SKIP();
 #endif
   std::string filePathStr = "./books/book.txt";
-  OpeningBook2 book(filePathStr, OpeningBook2::BookFormat::SIMPLE);
+  OpeningBook book(filePathStr, OpeningBook::BookFormat::SIMPLE);
 
   LOG__DEBUG(Logger::get().TEST_LOG, "Load book w/o cache...");
   book.setRecreateCache(true);
@@ -176,13 +176,13 @@ TEST_F(OpeningBook2Test, serializationSimple) {
   EXPECT_EQ(273578, book.size());
 }
 
-TEST_F(OpeningBook2Test, serializationLarge) {
+TEST_F(OpeningBookTest, serializationLarge) {
   //  GTEST_SKIP();
 #ifndef NDEBUG
   GTEST_SKIP();
 #endif
   std::string filePathStr = "./books/superbook.pgn";
-  OpeningBook2 book(filePathStr, OpeningBook2::BookFormat::PGN);
+  OpeningBook book(filePathStr, OpeningBook::BookFormat::PGN);
 
   LOG__DEBUG(Logger::get().TEST_LOG, "Load book w/o cache...");
   book.setRecreateCache(true);
@@ -215,8 +215,8 @@ TEST_F(OpeningBook2Test, serializationLarge) {
   EXPECT_TRUE(mg.validateMove(position, bookMove));                                      
 }
 
-TEST_F(OpeningBook2Test, str) {
-  OpeningBook2 book("./books/book_smalltest.txt", OpeningBook2::BookFormat::SIMPLE);
+TEST_F(OpeningBookTest, str) {
+  OpeningBook book("./books/book_smalltest.txt", OpeningBook::BookFormat::SIMPLE);
   book.setUseCache(false);
   book.initialize();
   const std::string output = book.str(1);

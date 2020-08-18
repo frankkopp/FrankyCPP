@@ -16,9 +16,9 @@ set(FrankyCPPlib_SRCS
         chesscore/Position.cpp
         chesscore/MoveGenerator.cpp
         chesscore/Perft.cpp
-        chesscore/History.cpp
+        chesscore/History.cpp                       
 
-        openingbook2/OpeningBook2.cpp openingbook2/OpeningBook2.h
+        openingbook/OpeningBook.cpp openingbook/OpeningBook.h
 
         engine/UciHandler.cpp engine/UciHandler.h
         engine/UciOptions.cpp engine/UciOptions.h
