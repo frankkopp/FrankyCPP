@@ -59,10 +59,8 @@ OpeningBook2::OpeningBook2(std::string bookPath, BookFormat bFormat)
   numberOfThreads = getNoOfThreads();
 
   // set root entry
-  Position p{};
-  const Key zobristKey = p.getZobristKey();
-  bookMap.emplace(zobristKey, zobristKey);
-  bookMap.at(zobristKey).counter = 0;
+  bookMap.emplace(rootZobristKey, rootZobristKey);
+  bookMap.at(rootZobristKey).counter = 0;
 }
 
 Move OpeningBook2::getRandomMove(Key zobrist) const {
@@ -250,7 +248,6 @@ void OpeningBook2::readGamesSimple(const std::vector<std::string_view>& lines) {
 }
 
 void OpeningBook2::readOneGameSimple(const std::string_view& lineView) {
-//  DEBUG(lineView);
   Moves game{};
 
   // trim line
@@ -547,7 +544,6 @@ void OpeningBook2::cleanUpPgnMoveSection(std::string& str) {
 }
 
 void OpeningBook2::addGameToBook(const Moves& game) {
-//  DEBUG(game.size());
 
   Position p{};
   MoveGenerator mg{};
@@ -556,15 +552,13 @@ void OpeningBook2::addGameToBook(const Moves& game) {
     return;
   }
 
-  Key lastKey = p.getZobristKey();
-
+  // initialize lasKey with start position (aka root position)
+  Key lastKey = rootZobristKey;
   // increase counter for root entry for each game
   { // lock scope
     std::scoped_lock<std::mutex> bookLock(bookMutex);
     bookMap.at(lastKey).counter++;
   }
-//  DEBUG(fmt::format(deLocale, "root counter = {}", bookMap.at(lastKey).counter));
-//  fprintln("{}", str(3));
 
   // Loop through all move string and try to find a matching move on the current position.
   // If found add the move to the book.
@@ -584,27 +578,22 @@ void OpeningBook2::addGameToBook(const Moves& game) {
       break;
     }
 
-    // remember previous position
     // and make move on position to get new position
     p.doMove(move);
-
-    // takes care of concurrent locking
+    // writes move to book map takes care of concurrent locking
     writeToBook(move, p.getZobristKey(), lastKey);
+    // remember previous position
     lastKey = p.getZobristKey();
   }
 }
 
 void OpeningBook2::writeToBook(Move move, Key currentKey, Key lastKey) {
-//  DEBUG(fmt::format(deLocale, "Write move {} current: {} last: {}", ::str(move), currentKey, lastKey));
-
   // get the lock on the data map
   std::scoped_lock<std::mutex> bookLock(bookMutex);
   // create or update book entry
-  if (bookMap.contains(currentKey)) {
+  if (bookMap.contains(currentKey)) {                                 
     // pointer to entry already in book
-    (&bookMap.at(currentKey))->counter++;
-//    DEBUG(fmt::format(deLocale, "last    {}", bookMap.at(lastKey).str()));
-//    DEBUG(fmt::format(deLocale, "current {}", bookMap.at(currentKey).str()));
+    bookMap.at(currentKey).counter++;
     // return as we do not need to update the predecessor
     return;
   }
@@ -612,19 +601,10 @@ void OpeningBook2::writeToBook(Move move, Key currentKey, Key lastKey) {
     // new position
     bookMap.emplace(currentKey, currentKey);
   }
-
-//  DEBUG(fmt::format(deLocale, "last    {}", bookMap.at(lastKey).str()));
-//  DEBUG(fmt::format(deLocale, "current {}", bookMap.at(currentKey).str()));
-
   // add move to the last book entry's move list
   BookEntry2* lastEntry = &bookMap.at(lastKey);
   lastEntry->moves.push_back(move);
   lastEntry->nextPosition.push_back(currentKey);
-//
-//  DEBUG(fmt::format(deLocale, "last    {}", bookMap.at(lastKey).str()));
-//  DEBUG(fmt::format(deLocale, "current {}\n" , bookMap.at(currentKey).str()));
-
-
 }// lock released
 
 /* Saves the bookMap data to a binary cache file for faster reading.

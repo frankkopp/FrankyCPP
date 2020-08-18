@@ -126,6 +126,8 @@ private:
   // the extension cache files use after the given opening book filename
   static constexpr const char* cacheExt = ".cache.bin";
 
+  const Key rootZobristKey = Position{}.getZobristKey();
+
 public:
 
   /**

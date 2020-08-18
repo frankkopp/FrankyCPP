@@ -198,6 +198,8 @@ public:
   // move string against them. If there is a match the actual move is returned.
   // Otherwise MoveNone is returned.
   //
+  // Uses getNextPseudoLegalMove which needs to be reset before use on same position.
+  //
   // As this uses string creation and comparison this is not very efficient.
   // Use only when performance is not critical.
   Move getMoveFromUci(const Position& position, const std::string& uciMove);

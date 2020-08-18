@@ -296,10 +296,10 @@ Move MoveGenerator::getMoveFromUci(const Position& position, const std::string& 
     return MOVE_NONE;
   }
   // create all moves on position and compare
-  const MoveList* legalMovesPtr = generateLegalMoves(position, GenAll);
-  for (Move m : *legalMovesPtr) {
-    if (::str(m) == uciMove) {
-      return m;
+  Move move;
+  while ((move = getNextPseudoLegalMove(position, GenAll, position.hasCheck())) != MOVE_NONE) {
+    if (::str(move) == uciMove && position.isLegalMove(move)) {
+      return move;
     }
   }
   return MOVE_NONE;
@@ -388,15 +388,15 @@ Move MoveGenerator::getMoveFromSan(const Position& position, const std::string& 
         break;
     }
   }
-  //    fprintln("move string: {}", sanMove);
-  //    fprintln("piece={} df={} dr={} to={} prom={}", pieceType, disambFile, disambRank, toSq, promotion);
 
   // Generate all legal moves and loop through them to search for a matching move
+  // we can't return early if we found a move as we could find several moves which would
+  // mean the provided move string is ambiguous.
   Move moveFromSAN{MOVE_NONE};
   int movesFound                = 0;
   const MoveList* legalMovesPtr = generateLegalMoves(position, GenAll);
   for (Move m : *legalMovesPtr) {
-    m = moveOf(m);
+
     // castling move
     if (typeOf(m) == CASTLING) {
       const Square kingToSquare = toSquare(m);

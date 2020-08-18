@@ -591,9 +591,8 @@ bool Position::isLegalMove(Move move) const {
   // then check if the move leaves the king in check
   // This could probably be implemented a bit more efficient by
   // not having to call DoMove/UndoMove similar to GivesCheck() but
-  // IsLegalMove is not used during normal search. The only usage
-  // is in HasLegalMoves which is used in perft to check for
-  // mate. So this simple implementation is sufficient.
+  // IsLegalMove is not used during normal search.
+  // Used in generateLegalMoves and perft. 
   const_cast<Position*>(this)->doMove(move);
   const bool legal = !isAttacked(kingSquare[~nextPlayer], nextPlayer);
   const_cast<Position*>(this)->undoMove();
