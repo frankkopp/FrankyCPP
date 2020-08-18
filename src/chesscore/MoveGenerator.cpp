@@ -297,6 +297,7 @@ Move MoveGenerator::getMoveFromUci(const Position& position, const std::string& 
   }
   // create all moves on position and compare
   Move move;
+  resetOnDemand(); // in case this is called multiple times on the same position
   while ((move = getNextPseudoLegalMove(position, GenAll, position.hasCheck())) != MOVE_NONE) {
     if (::str(move) == uciMove && position.isLegalMove(move)) {
       return move;
