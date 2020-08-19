@@ -260,7 +260,7 @@ inline Square lsb(Bitboard b) {
 inline Square msb(Bitboard b) {
   if (!b) return SQ_NONE;
 #if __cpp_lib_bitops >= 201907L
-  return static_cast<Square>(std::countl_zero(b));
+  return static_cast<Square>(63 - std::countl_zero(b));
 #else
 #if defined(__GNUC__)// GCC, Clang, ICC
   return static_cast<Square>(63 - __builtin_clzll(b));

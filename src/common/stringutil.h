@@ -35,7 +35,6 @@
 #include <string>
 #include <thread>
 #include <vector>
-#include <xstring>
 
 // //////////////////////////////////////////////////////////////////
 // String splitting

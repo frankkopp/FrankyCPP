@@ -27,16 +27,20 @@
 #include <fstream>
 #include <memory>
 #include <random>
-#include <regex>
 #include <string>
-#include <xstring>
 
+#include "chesscore/MoveGenerator.h"
+#include "chesscore/Position.h"
+#include "common/Logging.h"
+#include "common/ThreadPool.h"
+#include "common/misc.h"
+#include "common/stringutil.h"
 #include "openingbook/OpeningBook.h"
 #include "types/types.h"
 
 // BOOST Serialization
 #include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>                 
+#include <boost/archive/binary_oarchive.hpp>
 
 // enable for parallel processing of input lines
 #define PARALLEL_LINE_PROCESSING
@@ -121,7 +125,7 @@ std::string OpeningBook::str(int level) {
   Position p{};
   std::string out;
 
-  Key zobristKey = p.getZobristKey();
+  Key zobristKey        = p.getZobristKey();
   const BookEntry* node = &bookMap.at(zobristKey);
   out += fmt::format(deLocale, "Root ({:L})\n", bookMap.at(zobristKey).counter);
   out += getLevelStr(1, level, node);
@@ -216,8 +220,9 @@ void OpeningBook::readGames(const std::vector<std::string_view>& lines) {
 }
 
 void OpeningBook::readGamesSimple(const std::vector<std::string_view>& lines) {
+  const unsigned int noOfThreads = getNoOfThreads();
 #ifdef PARALLEL_LINE_PROCESSING
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Using {} threads", getNoOfThreads());
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Using {} threads", noOfThreads);
 #ifdef HAS_EXECUTION_LIB// use parallel lambda
   std::for_each(std::execution::par_unseq, lines.begin(), lines.end(),
                 [&](auto& line) {
@@ -274,8 +279,9 @@ void OpeningBook::readOneGameSimple(const std::string_view& lineView) {
 }
 
 void OpeningBook::readGamesSan(const std::vector<std::string_view>& lines) {
+  const unsigned int noOfThreads = getNoOfThreads();
 #ifdef PARALLEL_LINE_PROCESSING
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Using {} threads", getNoOfThreads());
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Using {} threads", noOfThreads);
 #ifdef HAS_EXECUTION_LIB// use parallel lambda
   std::for_each(std::execution::par_unseq, lines.begin(), lines.end(),
                 [&](auto&& line) {
@@ -370,7 +376,7 @@ void OpeningBook::readGamesPgn(const std::vector<std::string_view>* lines) {
     if ((lastEmpty && trimmedLineView[0] == '[') || lineNumber == length - 1) {
       gameEnd = lineNumber;
       // process the previous found game asynchronously
-      auto future = std::make_shared<std::future<bool>>(worker.enqueue([=] {
+      auto future = std::make_shared<std::future<bool>>(worker.enqueue([=, this] {
         readOneGamePgn(lines, gameStart, gameEnd);
         return true;
       }));
@@ -437,7 +443,7 @@ std::string OpeningBook::removeTrailingComments(const std::string_view& stringVi
 
 void OpeningBook::cleanUpPgnMoveSection(std::string& str) {
 
-  auto l    = str.length();
+  int l     = static_cast<int>(str.length());// explicit as the later loop test for <0
   char last = ' ';
   for (int a = 0; a < l;) {
 
@@ -497,7 +503,7 @@ void OpeningBook::cleanUpPgnMoveSection(std::string& str) {
   }
 
   // remove result (1-0 0-1 1/2-1/2 *)
-  auto a = l - 1;
+  int a = l - 1;
   for (; a >= 0; a--) {
     if (str[a] == ' ') {
       continue;
@@ -518,7 +524,7 @@ void OpeningBook::cleanUpPgnMoveSection(std::string& str) {
   str.resize(a);
 
   // another run to remove all double spaces
-  l              = str.length();
+  l              = static_cast<int>(str.length());// explicit as the later loop test for <0
   int index      = 0;
   int copyTo     = 0;
   int spaceFound = 0;
@@ -555,7 +561,7 @@ void OpeningBook::addGameToBook(const Moves& game) {
   // initialize lasKey with start position (aka root position)
   Key lastKey = rootZobristKey;
   // increase counter for root entry for each game
-  { // lock scope
+  {// lock scope
     std::scoped_lock<std::mutex> bookLock(bookMutex);
     bookMap.at(lastKey).counter++;
   }
@@ -591,7 +597,7 @@ void OpeningBook::writeToBook(Move move, Key currentKey, Key lastKey) {
   // get the lock on the data map
   std::scoped_lock<std::mutex> bookLock(bookMutex);
   // create or update book entry
-  if (bookMap.contains(currentKey)) {                                 
+  if (bookMap.contains(currentKey)) {
     // pointer to entry already in book
     bookMap.at(currentKey).counter++;
     // return as we do not need to update the predecessor

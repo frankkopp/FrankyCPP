@@ -28,8 +28,10 @@
 #include <thread>
 
 #include "init.h"
-
+#include "types/types.h"
+#include "common/stringutil.h"
 #include <chesscore/Position.h>
+
 #include <chrono>
 using namespace std::chrono;
 

@@ -1093,3 +1093,4 @@ void Position::setupBoard(const std::string& fen) {
   // if move number is 0 set it to 1
   if (moveNumber == 0) moveNumber = 1;
 }
+

@@ -27,9 +27,14 @@
 #define FRANKYCPP_OPENINGBOOK_H
 
 #include <filesystem>
+#include <mutex>
+#include <thread>
 
 #include <boost/serialization/unordered_map.hpp>
 #include <boost/serialization/vector.hpp>
+
+#include "types/types.h"
+#include "chesscore/Position.h"
 
 #include "gtest/gtest_prod.h"
 

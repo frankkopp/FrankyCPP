@@ -24,10 +24,11 @@
  */
 
 
-#include "common/Logging.h"
 #include "init.h"
-#include "openingbook/OpeningBook.h"
 #include "types/types.h"
+#include "common/Logging.h"
+#include "openingbook/OpeningBook.h"
+#include <chesscore/MoveGenerator.h>
 
 #include <gtest/gtest.h>
 using testing::Eq;
@@ -114,7 +115,7 @@ TEST_F(OpeningBookTest, initPgnLarge) {
 }
 
 TEST_F(OpeningBookTest, initPgnXLLarge) {
-  GTEST_SKIP();
+//  GTEST_SKIP();
 #ifndef NDEBUG
   GTEST_SKIP();
 #endif

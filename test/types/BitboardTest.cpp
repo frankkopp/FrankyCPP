@@ -139,28 +139,37 @@ TEST_F(BitboardsTest, Diagonals) {
 TEST_F(BitboardsTest, lsb_msb) {
   // set least significant bit
   Bitboard b = BbOne;
+  fprintln("{}", str(b));
   Square sql = lsb(b);
   Square sqm = msb(b);
   ASSERT_EQ(SQ_A1, sql);
   ASSERT_EQ(SQ_A1, sqm);
 
   b   = (BbOne << 63);
+  fprintln("{}", str(b));
   sql = lsb(b);
   sqm = msb(b);
   ASSERT_EQ(SQ_H8, sql);
   ASSERT_EQ(SQ_H8, sqm);
 
-  b         = b | BbOne;
-  Square sq = popLSB(b);
-  ASSERT_EQ(SQ_A1, sq);
-  sq = popLSB(b);
-  ASSERT_EQ(SQ_H8, sq);
-
   b   = BbZero | SQ_H1 | SQ_G8;
+  fprintln("{}", str(b));
   sql = lsb(b);
   sqm = msb(b);
   ASSERT_EQ(SQ_H1, sql);
   ASSERT_EQ(SQ_G8, sqm);
+
+  NEWLINE;
+  
+  b         =  BbZero | SQ_A1 | SQ_H8;
+  fprintln("{}", str(b));
+  Square sq = popLSB(b);
+  fprintln("{}", str(b));
+  ASSERT_EQ(SQ_A1, sq);
+  sq = popLSB(b);
+  fprintln("{}", str(b));
+  ASSERT_EQ(SQ_H8, sq);
+
 }
 
 TEST_F(BitboardsTest, bitScans) {

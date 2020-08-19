@@ -167,7 +167,7 @@ public:
 
   // Returns a String representation of the chess position of this Position as
   // a FEN String.
-  friend std::ostream& operator<<(std::ostream& os, Position& position);
+  friend std::ostream& operator<<(std::ostream& os, const Position& position);
 
   // return string showing the position as 8x8 matrix with additional
   // information about the object's state
