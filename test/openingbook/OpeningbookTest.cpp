@@ -24,11 +24,12 @@
  */
 
 
+#include "openingbook/OpeningBook.h"
+#include "common/Logging.h"
+#include "common/stringutil.h"
 #include "init.h"
 #include "types/types.h"
-#include "common/Logging.h"
-#include "openingbook/OpeningBook.h"
-#include <chesscore/MoveGenerator.h>
+#include "chesscore/MoveGenerator.h"
 
 #include <gtest/gtest.h>
 using testing::Eq;
@@ -66,9 +67,9 @@ TEST_F(OpeningBookTest, readFile) {
 }
 
 TEST_F(OpeningBookTest, pgnCleanUpTest) {
-  std::string_view testView{"e4(d4) d5!!2.c4$50(Nf3?)e5 Nf3{Comment !}Nc6 Nc3 Nf6 Bc4 {another comment} Bc5 O-O O-O a1=Q  @@@æææ {unexpected characters are skipped}  <> {These symbols are reserved}  1/2-1/2  ; comment     "};
-  fprintln("Before: '{}'", testView);
-  std::string test = OpeningBook::removeTrailingComments(testView);
+  std::string testString{"e4(d4) d5!!2.c4$50(Nf3?)e5 Nf3{Comment !}Nc6 Nc3 Nf6 Bc4 {another comment} Bc5 O-O O-O a1=Q  @@@æææ {unexpected characters are skipped}  <> {These symbols are reserved}  1/2-1/2  ; comment     "};
+  fprintln("Before: '{}'", testString);
+  std::string test = removeTrailingComments(testString, ";");
   OpeningBook::cleanUpPgnMoveSection(test);
   fprintln("After : '{}'", test);
   EXPECT_EQ("e4 d5 c4 e5 Nf3 Nc6 Nc3 Nf6 Bc4 Bc5 O-O O-O a1=Q", test);

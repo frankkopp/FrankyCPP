@@ -85,6 +85,26 @@ inline std::string_view trimFast(const std::string_view& s) {
   return s.substr(a, 1+b-a);
 }
 
+// removes trailing parts of a string after a given commentMarker
+// returns a new string
+inline std::string removeTrailingComments(const std::string& s, const std::string& commentMarker) {
+  const auto firstOf = s.find_first_of(commentMarker);
+  if (firstOf != std::string_view::npos) {
+    return std::string{s.data(), firstOf};
+  }
+  return s;
+}
+
+// removes trailing parts of a string after a given commentMarker
+// returns a new string_view
+inline std::string_view removeTrailingComments(const std::string_view& stringView, const std::string& commentMarker) {
+  const auto firstOf = stringView.find_first_of(commentMarker);
+  if (firstOf != std::string_view::npos) {
+    return std::string_view{stringView.data(), firstOf};
+  }
+  return stringView;
+}
+
 // slower alternatives
 //Round  1 Test  1: 5.684.239.320 ns (   100%) (  5,68423932 sec) ( 56.842,3932 ns avg per test)
 //Round  1 Test  2: 5.081.285.270 ns (    89%) (  5,08128527 sec) ( 50.812,8527 ns avg per test)
@@ -93,43 +113,43 @@ inline std::string_view trimFast(const std::string_view& s) {
 //Round  1 Test  5:   16.635.990 ns (    37%) (  0,01663599 sec) (    166,3599 ns avg per test)
 //Round  1 Test  6:    2.149.750 ns (    12%) (  0,00214975 sec) (     21,4975 ns avg per test)
 // 5 = trimFast(string), 6 = trimFast(string_view)
-inline std::string trimRegex(const std::string& toTrim) {
-  const std::regex trimWhiteSpace(R"(^\s+|\s+$)");
-  return std::regex_replace(toTrim, trimWhiteSpace, "");
-}
-
-inline std::string trimRegex(const std::string_view& toTrim) {
-  const std::regex trimWhiteSpace(R"(^\s+|\s+$)");
-  // create a trimmed copy of the string as regex can't handle string_view :(
-  return std::regex_replace(std::string{toTrim}, trimWhiteSpace, "");
-}
-
-inline std::string trimFindNot(const std::string& toTrim,
-                               const std::string& whitespace = " \t\n\v\f\r") {
-  const auto strBegin = toTrim.find_first_not_of(whitespace);
-  if (strBegin == std::string::npos) {
-    return "";// no content
-  }
-  const auto strEnd   = toTrim.find_last_not_of(whitespace);
-  const auto strRange = strEnd - strBegin + 1;
-  return toTrim.substr(strBegin, strRange);
-}
-
-inline std::string& ltrim(std::string& str) {
-  auto it2 =  std::find_if( str.begin() , str.end() , [](char ch){ return !std::isspace<char>(ch , std::locale::classic() ) ; } );
-  str.erase( str.begin() , it2);
-  return str;
-}
-
-inline std::string& rtrim(std::string& str) {
-  auto it1 =  std::find_if( str.rbegin() , str.rend() , [](char ch){ return !std::isspace<char>(ch , std::locale::classic() ) ; } );
-  str.erase( it1.base() , str.end() );
-  return str;
-}
-
-inline std::string& trimFindIf(std::string& str) {
-  return ltrim(rtrim(str));
-}
+//inline std::string trimRegex(const std::string& toTrim) {
+//  const std::regex trimWhiteSpace(R"(^\s+|\s+$)");
+//  return std::regex_replace(toTrim, trimWhiteSpace, "");
+//}
+//
+//inline std::string trimRegex(const std::string_view& toTrim) {
+//  const std::regex trimWhiteSpace(R"(^\s+|\s+$)");
+//  // create a trimmed copy of the string as regex can't handle string_view :(
+//  return std::regex_replace(std::string{toTrim}, trimWhiteSpace, "");
+//}
+//
+//inline std::string trimFindNot(const std::string& toTrim,
+//                               const std::string& whitespace = " \t\n\v\f\r") {
+//  const auto strBegin = toTrim.find_first_not_of(whitespace);
+//  if (strBegin == std::string::npos) {
+//    return "";// no content
+//  }
+//  const auto strEnd   = toTrim.find_last_not_of(whitespace);
+//  const auto strRange = strEnd - strBegin + 1;
+//  return toTrim.substr(strBegin, strRange);
+//}
+//
+//inline std::string& ltrim(std::string& str) {
+//  auto it2 =  std::find_if( str.begin() , str.end() , [](char ch){ return !std::isspace<char>(ch , std::locale::classic() ) ; } );
+//  str.erase( str.begin() , it2);
+//  return str;
+//}
+//
+//inline std::string& rtrim(std::string& str) {
+//  auto it1 =  std::find_if( str.rbegin() , str.rend() , [](char ch){ return !std::isspace<char>(ch , std::locale::classic() ) ; } );
+//  str.erase( it1.base() , str.end() );
+//  return str;
+//}
+//
+//inline std::string& trimFindIf(std::string& str) {
+//  return ltrim(rtrim(str));
+//}
 
 
 #endif//FRANKYCPP_STRINGUTIL_H
