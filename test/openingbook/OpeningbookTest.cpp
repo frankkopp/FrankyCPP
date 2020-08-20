@@ -115,10 +115,7 @@ TEST_F(OpeningBookTest, initPgnLarge) {
 }
 
 TEST_F(OpeningBookTest, initPgnXLLarge) {
-//  GTEST_SKIP();
-#ifndef NDEBUG
   GTEST_SKIP();
-#endif
   // superbook_xl is a multiple self copy of the normal non xl version
   OpeningBook book("./books/superbook_xl.pgn", OpeningBook::BookFormat::PGN);
   book.setUseCache(false);

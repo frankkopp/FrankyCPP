@@ -167,12 +167,13 @@ std::vector<std::string_view> OpeningBook::readFile(const std::string& filePath)
 
     // fastest way to read all lines from a file into memory
     // https://stackoverflow.com/a/52699885/9161706
+    file.seekg(0, std::ios::beg);
     file.seekg(0, std::ios::end);
     size_t data_size = file.tellg();
-    data             = std::make_unique<char[]>(data_size);
     file.seekg(0, std::ios::beg);
+    data = std::make_unique<char[]>(data_size);
     file.read(data.get(), data_size);
-    lines.reserve(data_size / 40);
+    lines.reserve(data_size / 20);
     for (size_t i = 0, dstart = 0; i < data_size; ++i) {
       if (data[i] == '\n' || i == data_size - 1) {// End of line, got string
         lines.emplace_back(data.get() + dstart, i - dstart);
@@ -221,8 +222,10 @@ void OpeningBook::readGames(const std::vector<std::string_view>& lines) {
 
 void OpeningBook::readGamesSimple(const std::vector<std::string_view>& lines) {
   const unsigned int noOfThreads = getNoOfThreads();
+
 #ifdef PARALLEL_LINE_PROCESSING
   LOG__DEBUG(Logger::get().BOOK_LOG, "Using {} threads", noOfThreads);
+
 #ifdef HAS_EXECUTION_LIB// use parallel lambda
   std::for_each(std::execution::par_unseq, lines.begin(), lines.end(),
                 [&](auto& line) {
@@ -245,6 +248,7 @@ void OpeningBook::readGamesSimple(const std::vector<std::string_view>& lines) {
   }
   for (std::thread& th : threads) th.join();
 #endif
+
 #else// no parallel execution
   for (auto line : lines) {
     readOneGameSimple(line);
@@ -282,6 +286,7 @@ void OpeningBook::readGamesSan(const std::vector<std::string_view>& lines) {
   const unsigned int noOfThreads = getNoOfThreads();
 #ifdef PARALLEL_LINE_PROCESSING
   LOG__DEBUG(Logger::get().BOOK_LOG, "Using {} threads", noOfThreads);
+
 #ifdef HAS_EXECUTION_LIB// use parallel lambda
   std::for_each(std::execution::par_unseq, lines.begin(), lines.end(),
                 [&](auto&& line) {
@@ -304,6 +309,7 @@ void OpeningBook::readGamesSan(const std::vector<std::string_view>& lines) {
   }
   for (std::thread& th : threads) th.join();
 #endif
+
 #else// no parallel execution
   for (auto line : lines) {
     readOneGameSan(line);
