@@ -25,7 +25,9 @@
 
 #include "ThreadPool.h"
 
-ThreadPool::ThreadPool(std::size_t numThreads) { start(numThreads); }
+ThreadPool::ThreadPool(std::size_t numThreads) {
+  start(numThreads);
+}
 
 // //////////////////////
 // PRIVATE
@@ -36,7 +38,7 @@ ThreadPool::ThreadPool(std::size_t numThreads) { start(numThreads); }
 void ThreadPool::start(std::size_t numThreads) {
   mStopping = false;
   for (std::size_t i = 0; i < numThreads; ++i) {
-    mThreads.emplace_back([=] {
+    mThreads.emplace_back([=, this] {
       while (true) {
         Task task;
         { // lock block

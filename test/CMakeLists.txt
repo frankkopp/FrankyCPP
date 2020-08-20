@@ -25,8 +25,7 @@ add_executable(
         chesscore/PerftTest.cpp
         chesscore/SpeedTests.cpp
 
-        openingbook/PGN_ReaderTest.cpp
-        openingbook/OpeningBookTest.cpp
+        openingbook/OpeningbookTest.cpp
 
         engine/UCITests.cpp
         engine/UciOptionsTest.cpp
@@ -42,7 +41,7 @@ add_executable(
 
         TimingTests.cpp
         BOOST_Test.cpp
-        PlaygroundTests.cpp)
+        PlaygroundTests.cpp )
 
 target_link_libraries(
         ${testExeName}

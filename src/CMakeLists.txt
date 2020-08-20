@@ -16,9 +16,8 @@ set(FrankyCPPlib_SRCS
         chesscore/Position.cpp
         chesscore/MoveGenerator.cpp
         chesscore/Perft.cpp
-        chesscore/History.cpp
+        chesscore/History.cpp                       
 
-        openingbook/PGN_Reader.cpp openingbook/PGN_Reader.h
         openingbook/OpeningBook.cpp openingbook/OpeningBook.h
 
         engine/UciHandler.cpp engine/UciHandler.h
@@ -43,7 +42,7 @@ target_precompile_headers(
         init.h
         types/types.h
         common/misc.h
-        common/splitstring.h
+        common/stringutil.h
         common/Semaphore.h
         common/ThreadPool.h
         common/Logging.h

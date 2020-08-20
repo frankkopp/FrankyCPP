@@ -23,12 +23,11 @@
  *
  */
 
-#include <regex>
 #include <string>
 
 #include "Position.h"
 #include "Values.h"
-#include "common/splitstring.h"
+#include "common/stringutil.h"
 
 Key Zobrist::pieces[PIECE_LENGTH][SQ_LENGTH];
 Key Zobrist::castlingRights[CR_LENGTH];
@@ -66,10 +65,10 @@ void Position::init() {
 Position::Position() : Position(START_POSITION_FEN) {}
 
 /** Creates a board with setup from the given fen */
-Position::Position(const std::string& fen) : Position(fen.c_str()) {}
+Position::Position(const char* fen) : Position(std::string{fen}) {}
 
 /** Creates a board with setup from the given fen */
-Position::Position(const char* fen) {
+Position::Position(const std::string& fen) {
   if (!Position::initialized) {
     Position::init();
   }
@@ -592,9 +591,8 @@ bool Position::isLegalMove(Move move) const {
   // then check if the move leaves the king in check
   // This could probably be implemented a bit more efficient by
   // not having to call DoMove/UndoMove similar to GivesCheck() but
-  // IsLegalMove is not used during normal search. The only usage
-  // is in HasLegalMoves which is used in perft to check for
-  // mate. So this simple implementation is sufficient.
+  // IsLegalMove is not used during normal search.
+  // Used in generateLegalMoves and perft. 
   const_cast<Position*>(this)->doMove(move);
   const bool legal = !isAttacked(kingSquare[~nextPlayer], nextPlayer);
   const_cast<Position*>(this)->undoMove();
@@ -741,7 +739,7 @@ std::string Position::strBoard() const {
     }
     output << std::endl;
     output << "  +---+---+---+---+---+---+---+---+" << std::endl;
-    if (r==0) break;
+    if (r == 0) break;
   }
   output << "   ";
   for (File f = FILE_A; f <= FILE_H; ++f) {
@@ -777,7 +775,7 @@ std::string Position::strFen() const {
     if (r > RANK_1) {
       fen << "/";
     }
-    if (r==0) break;
+    if (r == 0) break;
   }
 
   // next player
@@ -935,13 +933,13 @@ void Position::initializeBoard() {
   gamePhase    = 0;
 }
 
-void Position::setupBoard(const char* fen) {
+void Position::setupBoard(const std::string& fen) {
   // also sets defaults if fen is short
   initializeBoard();
 
   // clean up and check fen
-  static const std::regex trimWhiteSpace(R"(^\s+|\s+$)");
-  std::string myFen = std::regex_replace(fen, trimWhiteSpace, "");
+  std::string myFen = trimFast(fen);
+
   std::vector<std::string> fenParts{};
 
   // split into parts and check if at least the position is available
@@ -951,9 +949,12 @@ void Position::setupBoard(const char* fen) {
   }
 
   // check if position fen part is valid
-  static const std::regex illegalInFenPosition(R"([^0-8pPnNbBrRqQkK/]+)");
-  if (std::regex_search(fenParts[0], illegalInFenPosition)) {
-    throw std::invalid_argument("FEN contains illegal characters: " + fenParts[0]);
+  static const std::string allowedChars{"12345678pPnNbBrRqQkK/"};
+  auto l = fenParts[0].length();
+  for (int i = 0; i < l; i++) {
+    if (allowedChars.find(fenParts[0][i]) == std::string::npos) {
+      throw std::invalid_argument("FEN contains illegal characters: " + fenParts[0]);
+    }
   }
 
   // a fen start at A8 - which is file==0 and rank==7
@@ -1023,26 +1024,31 @@ void Position::setupBoard(const char* fen) {
   }
 
   // castling rights
-  static const std::regex castlingRegex(R"(^(K?Q?k?q?|-)$)");
-
   if (fenParts.size() >= 3) {
-    if (!std::regex_search(fenParts[2], castlingRegex)) {
-      throw std::invalid_argument("FEN castling rights contains invalid characters:: " + fenParts[2]);
+    static const std::string allowedCastlingChars{"KkQq-"};
+    l = fenParts[2].length();
+    for (int i = 0; i < l; i++) {
+      if (allowedCastlingChars.find(fenParts[2][i]) == std::string::npos) {
+        throw std::invalid_argument("FEN castling rights contains illegal characters: " + fenParts[2]);
+      }
     }
     // are there  rights to be encoded?
     if (fenParts[2] != "-") {
       for (char c : fenParts[2]) {
-        if (c == 'K') {
+        if (c == 'K' && !(castlingRights == WHITE_OO)) {
           castlingRights += WHITE_OO;
         }
-        else if (c == 'Q') {
+        else if (c == 'Q' && !(castlingRights == WHITE_OOO)) {
           castlingRights += WHITE_OOO;
         }
-        else if (c == 'k') {
+        else if (c == 'k' && !(castlingRights == BLACK_OO)) {
           castlingRights += BLACK_OO;
         }
-        else if (c == 'q') {
+        else if (c == 'q' && !(castlingRights == BLACK_OOO)) {
           castlingRights += BLACK_OOO;
+        }
+        else {
+          throw std::invalid_argument("FEN castling rights has invalid structure: " + fenParts[2]);
         }
       }
     }
@@ -1050,9 +1056,8 @@ void Position::setupBoard(const char* fen) {
   }
 
   // en passant
-  static const std::regex enPassantRegex(R"(^([a-h][1-8]|-)$)");
   if (fenParts.size() >= 4) {
-    if (!std::regex_search(fenParts[3], enPassantRegex)) {
+    if (!(fenParts[3] == "-" || (islower(fenParts[3][0]) && isdigit(fenParts[3][1])))) {
       throw std::invalid_argument("FEN en passant contains invalid characters: " + fenParts[3]);
     }
     if (fenParts[3] != "-") {
@@ -1088,3 +1093,4 @@ void Position::setupBoard(const char* fen) {
   // if move number is 0 set it to 1
   if (moveNumber == 0) moveNumber = 1;
 }
+

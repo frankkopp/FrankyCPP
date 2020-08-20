@@ -50,15 +50,14 @@ TEST(TypesTest, labels) {
 
 TEST(TypesTest, filesAndRanks) {
   // all squares and label of squares
-  std::string actual;
   for (int i = 0; i < SQ_NONE; ++i) {
     EXPECT_EQ(Square(i), squareOf(File(fileOf(Square(i))), Rank(rankOf(Square(i)))));
   }
 }
 
 TEST(TypesTest, makeSquare) {
-  EXPECT_EQ(SQ_A1, makeSquare("a1)"));
-  EXPECT_EQ(SQ_H8, makeSquare("h8)"));
+  EXPECT_EQ(SQ_A1, makeSquare(std::string{"a1"}));
+  EXPECT_EQ(SQ_H8, makeSquare(std::string{"h8"}));
 }
 
 TEST(TypesTest, ColorLabel) {

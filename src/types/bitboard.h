@@ -64,12 +64,12 @@ constexpr Bitboard FileHBB = FileABB << 7;
 
 constexpr Bitboard Rank1BB = 0xFF;
 constexpr Bitboard Rank2BB = Rank1BB << 8;
-constexpr Bitboard Rank3BB = Rank1BB << 16; //(8 * 2)
-constexpr Bitboard Rank4BB = Rank1BB << 24; //(8 * 3)
-constexpr Bitboard Rank5BB = Rank1BB << 32; //(8 * 4)
-constexpr Bitboard Rank6BB = Rank1BB << 40; //(8 * 5)
-constexpr Bitboard Rank7BB = Rank1BB << 48; //(8 * 6)
-constexpr Bitboard Rank8BB = Rank1BB << 56; //(8 * 7)
+constexpr Bitboard Rank3BB = Rank1BB << 16;//(8 * 2)
+constexpr Bitboard Rank4BB = Rank1BB << 24;//(8 * 3)
+constexpr Bitboard Rank5BB = Rank1BB << 32;//(8 * 4)
+constexpr Bitboard Rank6BB = Rank1BB << 40;//(8 * 5)
+constexpr Bitboard Rank7BB = Rank1BB << 48;//(8 * 6)
+constexpr Bitboard Rank8BB = Rank1BB << 56;//(8 * 7)
 
 constexpr Bitboard DiagUpA1 = 0b1000000001000000001000000001000000001000000001000000001000000001;
 constexpr Bitboard DiagUpB1 = (DiagUpA1 << 1) & ~FileABB;// shift EAST
@@ -260,7 +260,7 @@ inline Square lsb(Bitboard b) {
 inline Square msb(Bitboard b) {
   if (!b) return SQ_NONE;
 #if __cpp_lib_bitops >= 201907L
-  return static_cast<Square>(std::countl_zero(b));
+  return static_cast<Square>(63 - std::countl_zero(b));
 #else
 #if defined(__GNUC__)// GCC, Clang, ICC
   return static_cast<Square>(63 - __builtin_clzll(b));

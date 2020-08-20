@@ -55,7 +55,15 @@ TEST_F(PositionTest, initialization) {
 
 TEST_F(PositionTest, HistoryStruct) {
   Position position;
-  EXPECT_EQ(32, sizeof(HistoryState));
+  fprintln("int:            {}", sizeof(int));
+  fprintln("Key:            {}", sizeof(Key));
+  fprintln("Move:           {}", sizeof(Move));
+  fprintln("Piece:          {}", sizeof(Piece));
+  fprintln("CastlingRights: {}", sizeof(CastlingRights));
+  fprintln("Square:         {}", sizeof(Square));
+  fprintln("Flag:           {}", sizeof(Flag));
+  fprintln("History: {}", sizeof(HistoryState));
+//  EXPECT_EQ(32, sizeof(HistoryState));
   EXPECT_EQ(MAX_MOVES, position.historyState.size());
 }
 
@@ -237,6 +245,7 @@ TEST_F(PositionTest, FenCheck) {
 
     {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w xyz - 0 1", false},// invalid castling
     {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w -- - 0 1", false}, // invalid castling
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KK - 0 1", false}, // invalid castling
     {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w Kk - 0 1", true},  // valid castling
 
     {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - x 0 1", false},  // invalid en passant
@@ -274,6 +283,7 @@ TEST_F(PositionTest, FenCheck) {
 
   // run all test cases
   for (const auto& test : illegalFens) {
+    fprintln("{}", test.fen);
     if (test.valid) {
       EXPECT_NO_THROW(Position p(test.fen));
     }
@@ -504,8 +514,8 @@ TEST_F(PositionTest, doUndoMoveEnPassantCapture) {
 TEST_F(PositionTest, doMoveCASTLING) {
   // do move
   Position position("r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQkq -");
-  ;
-  ;
+
+
   // cout << position.str() << endl;
   position.doMove(createMove(SQ_E1, SQ_G1, CASTLING));
   // cout << position.str() << endl;
@@ -517,8 +527,8 @@ TEST_F(PositionTest, doMoveCASTLING) {
 
   // do move
   position = Position("r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQkq -");
-  ;
-  ;
+
+
   // cout << position.str() << endl;
   position.doMove(createMove(SQ_E1, SQ_C1, CASTLING));
   // cout << position.str() << endl;
@@ -530,8 +540,8 @@ TEST_F(PositionTest, doMoveCASTLING) {
 
   // do move
   position = Position("r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R b KQkq -");
-  ;
-  ;
+
+
   // cout << position.str() << endl;
   position.doMove(createMove(SQ_E8, SQ_G8, CASTLING));
   // cout << position.str() << endl;
@@ -543,8 +553,8 @@ TEST_F(PositionTest, doMoveCASTLING) {
 
   // do move
   position = Position("r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R b KQkq -");
-  ;
-  ;
+
+
   // cout << position.str() << endl;
   position.doMove(createMove(SQ_E8, SQ_C8, CASTLING));
   // cout << position.str() << endl;
@@ -556,8 +566,8 @@ TEST_F(PositionTest, doMoveCASTLING) {
 
   // do move
   position = Position("r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQkq -");
-  ;
-  ;
+
+
   // cout << position.str() << endl;
   position.doMove(createMove(SQ_E1, SQ_F1, NORMAL));
   // cout << position.str() << endl;
@@ -569,8 +579,8 @@ TEST_F(PositionTest, doMoveCASTLING) {
 
   // do move
   position = Position("r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQkq -");
-  ;
-  ;
+
+
   // cout << position.str() << endl;
   position.doMove(createMove(SQ_H1, SQ_F1, NORMAL));
   // cout << position.str() << endl;
@@ -582,8 +592,8 @@ TEST_F(PositionTest, doMoveCASTLING) {
 
   // do move
   position = Position("r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R b KQkq -");
-  ;
-  ;
+
+
   // cout << position.str() << endl;
   position.doMove(createMove(SQ_A8, SQ_C8, NORMAL));
   // cout << position.str() << endl;
@@ -646,8 +656,8 @@ TEST_F(PositionTest, repetitionSimple) {
 
 TEST_F(PositionTest, repetitionAdvanced) {
   Position position("6k1/p3q2p/1n1Q2pB/8/5P2/6P1/PP5P/3R2K1 b - -");
-  ;
-  ;
+
+
 
   position.doMove(createMove(SQ_E7, SQ_E3, NORMAL));
   position.doMove(createMove(SQ_G1, SQ_G2, NORMAL));
@@ -674,64 +684,64 @@ TEST_F(PositionTest, insufficientMaterial) {
 
   // 	both sides have a bare king
   position = Position("8/3k4/8/8/8/8/4K3/8 w - -");
-  ;
-  ;
+
+
   EXPECT_TRUE(position.checkInsufficientMaterial());
 
   // 	one side has a king and a minor piece against a bare king
   // 	both sides have a king and a minor piece each
   position = Position("8/3k4/8/8/8/2B5/4K3/8 w - -");
-  ;
+
   EXPECT_TRUE(position.checkInsufficientMaterial());
   position = Position("8/8/4K3/8/8/2b5/4k3/8 b - -");
-  ;
+
   EXPECT_TRUE(position.checkInsufficientMaterial());
 
   // 	both sides have a king and a bishop, the bishops being the same color
   position = Position("8/8/3BK3/8/8/2b5/4k3/8 b - -");
-  ;
+
   EXPECT_TRUE(position.checkInsufficientMaterial());
   position = Position("8/8/2B1K3/8/8/8/2b1k3/8 b - -");
-  ;
+
   EXPECT_TRUE(position.checkInsufficientMaterial());
   position = Position("8/8/4K3/2B5/8/8/2b1k3/8 b - -");
-  ;
+
   EXPECT_TRUE(position.checkInsufficientMaterial());
 
   // one side has two bishops a mate can be forced
   position = Position("8/8/2B1K3/2B5/8/8/2n1k3/8 b - -");
-  ;
+
   EXPECT_FALSE(position.checkInsufficientMaterial());
 
   // 	two knights against the bare king
   position = Position("8/8/2NNK3/8/8/8/4k3/8 w - -");
-  ;
+
   EXPECT_TRUE(position.checkInsufficientMaterial());
   position = Position("8/8/2nnk3/8/8/8/4K3/8 w - -");
-  ;
+
   EXPECT_TRUE(position.checkInsufficientMaterial());
 
   // 	the weaker side has a minor piece against two knights
   position = Position("8/8/2n1kn2/8/8/8/4K3/4B3 w - -");
-  ;
+
   EXPECT_TRUE(position.checkInsufficientMaterial());
 
   // 	two bishops draw against a bishop
   position = Position("8/8/3bk1b1/8/8/8/4K3/4B3 w - -");
-  ;
+
   EXPECT_TRUE(position.checkInsufficientMaterial());
 
   // 	two minor pieces against one draw, except when the stronger side has a bishop pair
   position = Position("8/8/3bk1b1/8/8/8/4K3/4N3 w - -");
-  ;
+
   EXPECT_FALSE(position.checkInsufficientMaterial());
   position = Position("8/8/3bk1n1/8/8/8/4K3/4N3 w - -");
-  ;
+
   EXPECT_TRUE(position.checkInsufficientMaterial());
 
   // bugs
   position = Position("8/8/8/6k1/8/4K3/8/r7 b - -");
-  ;
+
   EXPECT_FALSE(position.checkInsufficientMaterial());
 }
 
