@@ -215,9 +215,6 @@ private:
   // writing to the book map with synchronization
   void writeToBook(Move move, Key currentKey, Key lastKey);
 
-  // fast removal of trailing comments (no regex)
-  static std::string removeTrailingComments(const std::string_view& stringView);
-
   // fast removal of unwanted parts of a PGN move section to avoid slow regex
   static void cleanUpPgnMoveSection(std::string& str);
 

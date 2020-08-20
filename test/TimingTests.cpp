@@ -147,33 +147,33 @@ TEST_F(TimingTests, trimWhiteSpace) {
 
   int counter = 0;
 
-  // regex
-  std::string trimmedLineRegex{};
-  std::function<void()> f1 = [&]() {
-    trimmedLineRegex = trimRegex(line);
-    counter++;
-  };
-
-  std::string trimmedLineViewRegex{};                           
-  std::function<void()> f2 = [&]() {
-    trimmedLineViewRegex = trimRegex(lineView);
-    counter++;
-  };
-
-  // find_first_not_of
-  std::string trimmedLineFindNot{};
-  std::function<void()> f3 = [&]() {
-    trimmedLineFindNot = trimFindNot(line);
-    counter++;
-  };
-
-  // find_if
-  std::string trimmedLineFindIf{};
-  std::string lineCopy{line};
-  std::function<void()> f4 = [&]() {
-    trimmedLineFindIf = trimFindIf(lineCopy);
-    counter++;
-  };
+//  // regex
+//  std::string trimmedLineRegex{};
+//  std::function<void()> f1 = [&]() {
+//    trimmedLineRegex = trimRegex(line);
+//    counter++;
+//  };
+//
+//  std::string trimmedLineViewRegex{};
+//  std::function<void()> f2 = [&]() {
+//    trimmedLineViewRegex = trimRegex(lineView);
+//    counter++;
+//  };
+//
+//  // find_first_not_of
+//  std::string trimmedLineFindNot{};
+//  std::function<void()> f3 = [&]() {
+//    trimmedLineFindNot = trimFindNot(line);
+//    counter++;
+//  };
+//
+//  // find_if
+//  std::string trimmedLineFindIf{};
+//  std::string lineCopy{line};
+//  std::function<void()> f4 = [&]() {
+//    trimmedLineFindIf = trimFindIf(lineCopy);
+//    counter++;
+//  };
 
   // while
   std::string trimmedLineWhile{};
@@ -190,10 +190,10 @@ TEST_F(TimingTests, trimWhiteSpace) {
   };
 
   std::vector<std::function<void()>> tests;
-  tests.push_back(f1);
-  tests.push_back(f2);
-  tests.push_back(f3);
-  tests.push_back(f4);
+//  tests.push_back(f1);
+//  tests.push_back(f2);
+//  tests.push_back(f3);
+//  tests.push_back(f4);
   tests.push_back(f5);
   tests.push_back(f6);
   //// TESTS END
@@ -202,10 +202,10 @@ TEST_F(TimingTests, trimWhiteSpace) {
 
   NEWLINE;
 
-  fprintln("trimmedLineRegex:     '{}'", trimmedLineRegex);
-  fprintln("trimmedLineViewRegex: '{}'", trimmedLineViewRegex);
-  fprintln("trimmedLineFindNot:   '{}'", trimmedLineFindNot);
-  fprintln("trimmedLineFindIf:    '{}'", trimmedLineFindIf);
+//  fprintln("trimmedLineRegex:     '{}'", trimmedLineRegex);
+//  fprintln("trimmedLineViewRegex: '{}'", trimmedLineViewRegex);
+//  fprintln("trimmedLineFindNot:   '{}'", trimmedLineFindNot);
+//  fprintln("trimmedLineFindIf:    '{}'", trimmedLineFindIf);
   fprintln("trimmedLineWhile:     '{}'", trimmedLineWhile);
   fprintln("trimmedLineViewWhile: '{}'", trimmedLineViewWhile);
   fprintln("counter: {:L}", counter);

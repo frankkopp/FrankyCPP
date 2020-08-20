@@ -419,7 +419,7 @@ void OpeningBook::readOneGamePgn(const std::vector<std::string_view>* lines, siz
   for (auto i = gameStart; i < gameEnd; i++) {
     const auto lineView = trimFast((*lines)[i]);
     if (lineView.empty() || lineView[0] == '[' || lineView[0] == '%') continue;
-    moveLine.append(" ").append(removeTrailingComments(lineView));
+    moveLine.append(" ").append(removeTrailingComments(lineView, ";"));
   }
 
   // after cleanup skip games with no moves
@@ -438,13 +438,6 @@ void OpeningBook::readOneGamePgn(const std::vector<std::string_view>* lines, siz
 
   // add game to book
   addGameToBook(movesStrings);
-}
-
-std::string OpeningBook::removeTrailingComments(const std::string_view& stringView) {
-  if (stringView.find_first_of(';') != std::string_view::npos) {
-    return std::string{stringView.data(), stringView.find_first_of(';')};
-  }
-  return std::string{stringView};
 }
 
 void OpeningBook::cleanUpPgnMoveSection(std::string& str) {
@@ -580,9 +573,11 @@ void OpeningBook::addGameToBook(const Moves& game) {
     // check the notation format
     if ((moveStr.size() == 4 && islower(moveStr[0]) && isdigit(moveStr[1]) && islower(moveStr[2]) && isdigit(moveStr[3])) ||
         (moveStr.size() == 5 && islower(moveStr[0]) && isdigit(moveStr[1]) && islower(moveStr[2]) && isdigit(moveStr[3]) && isupper(moveStr[4]))) {
+      // UCI
       move = mg.getMoveFromUci(p, trimFast(moveStr));
     }
     else {
+      // SAN
       move = mg.getMoveFromSan(p, trimFast(moveStr));
     }
     if (move == MOVE_NONE) {
