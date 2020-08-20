@@ -33,13 +33,13 @@
 #include "SearchResult.h"
 #include "SearchStats.h"
 #include "TT.h"
+#include "chesscore/History.h"
 #include "chesscore/MoveGenerator.h"
 #include "chesscore/Position.h"
 #include "common/Semaphore.h"
 #include "engine/UciHandler.h"
 #include "openingbook/OpeningBook.h"
 #include "types/types.h"
-#include "chesscore/History.h"
 
 #include "gtest/gtest_prod.h"
 

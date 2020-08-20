@@ -35,8 +35,8 @@
 
 Search::Search() : Search(nullptr) {}
 
-Search::Search(UciHandler* uciHandler) {
-  this->uciHandler = uciHandler;
+Search::Search(UciHandler* pUciHandler) {
+  this->uciHandler = pUciHandler;
   this->tt         = std::make_unique<TT>(0);
 }
 

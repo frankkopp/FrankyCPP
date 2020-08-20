@@ -28,8 +28,10 @@
 #include <thread>
 
 #include "init.h"
-
+#include "types/types.h"
+#include "common/stringutil.h"
 #include <chesscore/Position.h>
+
 #include <chrono>
 using namespace std::chrono;
 
@@ -46,8 +48,8 @@ protected:
   void TearDown() override {}
 
   // Necessary because of function pointer use below.
-  void testTiming(std::ostringstream& os, int rounds, int iterations,
-                  int repetitions, std::vector<std::function<void(void)>> tests);
+  static void testTiming(std::ostringstream& os, int rounds, int iterations,
+                  int repetitions, const std::vector<std::function<void(void)>>& tests);
 };
 
 TEST_F(TimingTests, DISABLED_popcount) {
@@ -88,8 +90,6 @@ TEST_F(TimingTests, DISABLED_distancevsdiff) {
   std::cout << os.str();
 }
 
-
-
 /**
  * Test the absolute speed of doMove, undoMove
  */
@@ -103,7 +103,7 @@ TEST_F(TimingTests, DISABLED_doMoveUndoMove) {
   // o-o castling
   // Rc1 normal non capturing
   // c1Q promotion
-  Position position = Position("r3k2r/1ppn3p/4q1n1/8/4Pp2/3R4/p1p2PPP/R5K1 b kq e3 0 1");
+  Position position("r3k2r/1ppn3p/4q1n1/8/4Pp2/3R4/p1p2PPP/R5K1 b kq e3 0 1");
   const Move move1 = createMove(SQ_F4, SQ_E3, ENPASSANT);
   const Move move2 = createMove(SQ_F2, SQ_E3);
   const Move move3 = createMove(SQ_E8, SQ_G8, CASTLING);
@@ -128,6 +128,140 @@ TEST_F(TimingTests, DISABLED_doMoveUndoMove) {
   //// TESTS END
 
   testTiming(os, 5, 1, 20'000'000, tests);
+
+  std::cout << os.str();
+}
+
+TEST_F(TimingTests, trimWhiteSpace) {
+  std::ostringstream os;
+
+  //// TESTS START
+
+  const std::string line = " \t This is a text. This is a text. This is a text. This is a text.\t  \r\n";
+  const std::string_view lineView{line};
+
+  fprintln("Original line:      '{}'", line);
+  fprintln("Original line view: '{}'", lineView);
+
+  NEWLINE;
+
+  int counter = 0;
+
+  // regex
+  std::string trimmedLineRegex{};
+  std::function<void()> f1 = [&]() {
+    trimmedLineRegex = trimRegex(line);
+    counter++;
+  };
+
+  std::string trimmedLineViewRegex{};                           
+  std::function<void()> f2 = [&]() {
+    trimmedLineViewRegex = trimRegex(lineView);
+    counter++;
+  };
+
+  // find_first_not_of
+  std::string trimmedLineFindNot{};
+  std::function<void()> f3 = [&]() {
+    trimmedLineFindNot = trimFindNot(line);
+    counter++;
+  };
+
+  // find_if
+  std::string trimmedLineFindIf{};
+  std::string lineCopy{line};
+  std::function<void()> f4 = [&]() {
+    trimmedLineFindIf = trimFindIf(lineCopy);
+    counter++;
+  };
+
+  // while
+  std::string trimmedLineWhile{};
+  std::function<void()> f5 = [&]() {
+    trimmedLineWhile = trimFast(line);
+    counter++;
+  };
+
+  // while
+  std::string_view trimmedLineViewWhile{};
+  std::function<void()> f6 = [&]() {
+    trimmedLineViewWhile = trimFast(lineView);
+    counter++;
+  };
+
+  std::vector<std::function<void()>> tests;
+  tests.push_back(f1);
+  tests.push_back(f2);
+  tests.push_back(f3);
+  tests.push_back(f4);
+  tests.push_back(f5);
+  tests.push_back(f6);
+  //// TESTS END
+
+  testTiming(os, 5, 10, 10'000, tests);
+
+  NEWLINE;
+
+  fprintln("trimmedLineRegex:     '{}'", trimmedLineRegex);
+  fprintln("trimmedLineViewRegex: '{}'", trimmedLineViewRegex);
+  fprintln("trimmedLineFindNot:   '{}'", trimmedLineFindNot);
+  fprintln("trimmedLineFindIf:    '{}'", trimmedLineFindIf);
+  fprintln("trimmedLineWhile:     '{}'", trimmedLineWhile);
+  fprintln("trimmedLineViewWhile: '{}'", trimmedLineViewWhile);
+  fprintln("counter: {:L}", counter);
+
+  std::cout << os.str();
+}
+
+TEST_F(TimingTests, illegalCharacter) {
+  std::ostringstream os;
+
+  //// TESTS START
+
+  const std::string fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1";
+  static const std::regex illegalInFenPosition(R"([^1-8pPnNbBrRqQkK/]+)");
+  static const std::string allowedChars{"12345678pPnNbBrRqQkK/"};
+
+  NEWLINE;
+
+  int counter1 = 0;
+  int counter2 = 0;
+
+  // regex
+  std::string trimmedLineRegex{};
+  std::function<void()> f1 = [&]() {
+    if (!std::regex_search(fen, illegalInFenPosition)) {
+      counter1++;
+    }
+  };
+
+  std::string trimmedLineViewRegex{};
+  std::function<void()> f2 = [&]() {
+    bool illegalFound = false;
+    const auto l = fen.length();
+    for (int i = 0; i < l; i++) {
+      if (allowedChars.find(fen[i]) == std::string::npos) {
+        illegalFound = true;
+        break;
+      }
+    }
+    if (!illegalFound) {
+      counter2++;
+    }
+  };
+
+  std::vector<std::function<void()>> tests;
+  tests.push_back(f1);
+  tests.push_back(f2);
+
+  //// TESTS END
+
+  testTiming(os, 5, 10, 10'000, tests);
+
+  NEWLINE;
+
+  fprintln("Counter 1: {:L}", counter1);
+  fprintln("Counter 2: {:L}", counter2);
 
   std::cout << os.str();
 }
@@ -549,7 +683,7 @@ TEST_F(TimingTests, DISABLED_doMoveUndoMove) {
 //}
 
 void TimingTests::testTiming(std::ostringstream& os, int rounds, int iterations,
-                             int repetitions, std::vector<std::function<void()>> tests) {
+                             int repetitions, const std::vector<std::function<void()>>& tests) {
   std::cout.imbue(deLocale);
   os.imbue(deLocale);
   os << std::setprecision(9);
@@ -599,6 +733,7 @@ void TimingTests::testTiming(std::ostringstream& os, int rounds, int iterations,
          << std::endl;
 
       last = avgCpu;
+      accDuration = nanoseconds(0);
     }
     os << std::endl;
     last = nanoseconds(0);

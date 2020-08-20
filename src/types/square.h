@@ -77,7 +77,7 @@ constexpr Rank rankOf(Square s) { return Rank(s >> 3); }
 // creates a square from a string (uci style square e.g. e2, h7)
 // only considers the first and second character, rest is ignored
 // returns SQ_NONE if not a valid square
-inline Square makeSquare(std::string s) {
+inline Square makeSquare(std::string_view s) {
   if (s.length() < 2) return SQ_NONE;
   const File f = makeFile(s[0]);
   const Rank r = makeRank(s[1]);
@@ -85,6 +85,13 @@ inline Square makeSquare(std::string s) {
     return squareOf(f, r);
   }
   return SQ_NONE;
+}
+
+// creates a square from a string (uci style square e.g. e2, h7)
+// only considers the first and second character, rest is ignored
+// returns SQ_NONE if not a valid square
+inline Square makeSquare(const std::string& s) {
+  return makeSquare(std::string_view{s});
 }
 
 // returns the precomputed distance between two squares

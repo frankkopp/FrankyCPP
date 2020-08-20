@@ -167,7 +167,7 @@ public:
 
   // Returns a String representation of the chess position of this Position as
   // a FEN String.
-  friend std::ostream& operator<<(std::ostream& os, Position& position);
+  friend std::ostream& operator<<(std::ostream& os, const Position& position);
 
   // return string showing the position as 8x8 matrix with additional
   // information about the object's state
@@ -297,7 +297,7 @@ private:
 
   // initialization of board data structure to an empty board
   void initializeBoard();
-  void setupBoard(const char* fen);
+  void setupBoard(const std::string& fen);
   void movePiece(Square fromSq, Square toSq);
   void putPiece(Piece piece, Square square);
   Piece removePiece(Square square);

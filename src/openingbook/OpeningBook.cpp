@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018-2020 Frank Kopp
+ * Copyright (c) 2018 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -10,8 +10,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -23,64 +23,48 @@
  *
  */
 
-#include <algorithm>
-#include <chrono>
+#include <cctype>
 #include <fstream>
-#include <iostream>
-#include <mutex>
+#include <memory>
 #include <random>
-#include <regex>
-#include <thread>
+#include <string>
 
-#include "types/types.h"
-#include "common/Fifo.h"
+#include "chesscore/MoveGenerator.h"
+#include "chesscore/Position.h"
 #include "common/Logging.h"
 #include "common/ThreadPool.h"
-#include "chesscore/Position.h"
-#include "PGN_Reader.h"
-#include "OpeningBook.h"
-
-// BOOST filesystem
-#include <boost/filesystem.hpp>
-namespace bfs = boost::filesystem;
-
-// BOOST threads helper
-#include <boost/thread/thread_functors.hpp>
+#include "common/misc.h"
+#include "common/stringutil.h"
+#include "openingbook/OpeningBook.h"
+#include "types/types.h"
 
 // BOOST Serialization
-#include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
 
 // enable for parallel processing of input lines
 #define PARALLEL_LINE_PROCESSING
 // enable for parallel processing of games from pgn files
 #define PARALLEL_GAME_PROCESSING
-// enable for using fifo when reading pgn files and processing pgn games
-// this allows to start processing games in parallel while still reading
-#define FIFO_PROCESSING
 
 // not all C++17 compilers have this std library for parallelization
+//#undef HAS_EXECUTION_LIB
 #ifdef HAS_EXECUTION_LIB
 #include <execution>
 #include <utility>
 #endif
 
-// the extension cache files use after the given opening book filename
-static const char* const cacheExt = ".cache.bin";
-
 // //////////////////////////////////////////////
 // /// PUBLIC
 
-OpeningBook::OpeningBook(std::string bookPath, const BookFormat &bFormat)
-  :  bookFormat(bFormat), bookFilePath(std::move(bookPath)) {
-  // std::thread::hardware_concurrency() is not reliable - on some platforms
-  // it returns 0 - in this case we chose a default of 4
-  numberOfThreads = std::thread::hardware_concurrency() == 0 ?
-                    4 : std::thread::hardware_concurrency();
+OpeningBook::OpeningBook(std::string bookPath, BookFormat bFormat)
+    : bookFormat(bFormat), bookFilePath(std::move(bookPath)) {
+
+  numberOfThreads = getNoOfThreads();
 
   // set root entry
-  Position position;
-  bookMap.emplace(position.getZobristKey(), BookEntry(position.getZobristKey(), position.strFen()));
+  bookMap.emplace(rootZobristKey, rootZobristKey);
+  bookMap.at(rootZobristKey).counter = 0;
 }
 
 Move OpeningBook::getRandomMove(Key zobrist) const {
@@ -109,186 +93,241 @@ void OpeningBook::initialize() {
     if (loadFromCache()) return;
   }
 
-  readBookFromFile(bookFilePath);
+  // load the whole file into memory line by line
+  const auto lines = readFile(bookFilePath);
+
+  // reads lines and retrieves game (lists of moves) and adds these to the book map
+  readGames(lines);
+
+  // release memory from initial file load
+  data = nullptr;
 
   // safe the book to a cache
   if (_useCache && bookMap.size() > 1) {
     saveToCache();
   }
 
-  const auto stop = std::chrono::high_resolution_clock::now();
+  const auto stop    = std::chrono::high_resolution_clock::now();
   const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-  LOG__INFO(Logger::get().BOOK_LOG, "Opening book initialized in ({:L} ms). {:L} positions", elapsed.count(), bookMap.size());
+
   isInitialized = true;
+  LOG__INFO(Logger::get().BOOK_LOG, "Opening book initialized in ({:L} ms). {:L} positions", elapsed.count(), bookMap.size());
 }
 
 void OpeningBook::reset() {
   const std::scoped_lock<std::mutex> lock(bookMutex);
   bookMap.clear();
-  gamesTotal = 0;
-  gamesProcessed = 0;
   isInitialized = false;
   LOG__DEBUG(Logger::get().TEST_LOG, "Opening book reset: {:L}", bookMap.size());
+}
+
+std::string OpeningBook::str(int level) {
+  Position p{};
+  std::string out;
+
+  Key zobristKey        = p.getZobristKey();
+  const BookEntry* node = &bookMap.at(zobristKey);
+  out += fmt::format(deLocale, "Root ({:L})\n", bookMap.at(zobristKey).counter);
+  out += getLevelStr(1, level, node);
+  return out;
+}
+
+std::string OpeningBook::getLevelStr(int level, int maxLevel, const BookEntry* node) {
+  std::string out;
+  const size_t size = node->moves.size();
+  for (int i = 0; i < size; i++) {
+    const BookEntry* newNode = &bookMap.at((node->nextPosition)[i]);
+    out += fmt::format(deLocale, "{:{}}{} ({:L})\n", "", level, node->moves[i], newNode->counter);
+    if (level < maxLevel) {
+      out += getLevelStr(level + 1, maxLevel, newNode);
+    }
+  }
+  return out;
 }
 
 // //////////////////////////////////////////////
 // /// PRIVATE
 
-/* open the file a read all lines into a vector and process all lines */
-void OpeningBook::readBookFromFile(const std::string &filePath) {
+std::vector<std::string_view> OpeningBook::readFile(const std::string& filePath) {
+
   if (!fileExists(filePath)) {
-    LOG__ERROR(Logger::get().BOOK_LOG, "Open book '{}' not found.", filePath);
-    return;
+    const std::string message = fmt::format("Opening Book '{}' not found", filePath);
+    LOG__ERROR(Logger::get().BOOK_LOG, message);
+    throw std::runtime_error(message);
   }
-  fileSize = getFileSize(filePath);
-  std::ifstream file(filePath);
+
+  std::vector<std::string_view> lines{};
+
+  const auto start = std::chrono::high_resolution_clock::now();
+
+  std::fstream file(filePath, std::ios::in | std::ios::binary);
   if (file.is_open()) {
-    LOG__DEBUG(Logger::get().BOOK_LOG, "Open book '{}' with {:L} kB successful.", filePath, fileSize / 1024);
-    std::vector<std::string> lines = getLinesFromFile(file);
+    const uint64_t fileSize = getFileSize(filePath);
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Opened Opening Book '{}' with {:L} Byte successful.", filePath, fileSize);
+
+    // fastest way to read all lines from a file into memory
+    // https://stackoverflow.com/a/52699885/9161706
+    file.seekg(0, std::ios::beg);
+    file.seekg(0, std::ios::end);
+    size_t data_size = file.tellg();
+    file.seekg(0, std::ios::beg);
+    data = std::make_unique<char[]>(data_size);
+    file.read(data.get(), data_size);
+    lines.reserve(data_size / 20);
+    for (size_t i = 0, dstart = 0; i < data_size; ++i) {
+      if (data[i] == '\n' || i == data_size - 1) {// End of line, got string
+        lines.emplace_back(data.get() + dstart, i - dstart);
+        dstart = i + 1;
+      }
+    }
+
+    const auto stop    = std::chrono::high_resolution_clock::now();
+    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Read {:L} lines in {:L} ms.", lines.size(), elapsed.count());
+
     file.close();
-    processAllLines(lines);
   }
   else {
-    LOG__ERROR(Logger::get().BOOK_LOG, "Open book '{}' failed.", filePath);
-    return;
+    const std::string message = fmt::format("Could not open Opening Book '{}' ", filePath);
+    LOG__ERROR(Logger::get().BOOK_LOG, message);
+    throw std::runtime_error(message);
   }
-}
 
-/* reads all lines from a file stream into a vector and returns them
-   skips empty lines */
-std::vector<std::string> OpeningBook::getLinesFromFile(std::ifstream &ifstream) const {
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Reading lines from book.");
-  const auto start = std::chrono::high_resolution_clock::now();
-  std::vector<std::string> lines;
-  lines.reserve(fileSize / 40);
-  std::string line;
-  while (std::getline(ifstream, line)) {
-    if (!line.empty()) lines.push_back(line);
-  }
-  const auto stop = std::chrono::high_resolution_clock::now();
-  const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Read {:L} lines in {:L} ms.", lines.size(), elapsed.count());
   return lines;
 }
 
-
-/* processes the lines depending on file format.
-   SIMPLE and SAN have all moves of a game in one single line.
-   PGN has additional metadata and SA moves spread over several lines. */
-void OpeningBook::processAllLines(std::vector<std::string> &lines) {
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Creating internal book...");
+void OpeningBook::readGames(const std::vector<std::string_view>& lines) {
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Reading games...");
 
   const auto start = std::chrono::high_resolution_clock::now();
 
   // process all lines from the opening book file depending on format
   switch (bookFormat) {
     case BookFormat::SIMPLE:
+      readGamesSimple(lines);
+      break;
     case BookFormat::SAN: {
-#ifdef PARALLEL_LINE_PROCESSING
-      LOG__DEBUG(Logger::get().BOOK_LOG, "Using {} threads", numberOfThreads);
-
-#ifdef HAS_EXECUTION_LIB // use parallel lambda 
-      std::for_each(std::execution::par_unseq, lines.begin(), lines.end(),
-                    [&](auto &&item) { processLine(item); });
-#else // no <execution> library (< C++17)
-      const auto maxNumberOfEntries = lines.size();
-      std::vector<std::thread> threads;
-      threads.reserve(numberOfThreads);
-      for (unsigned int t = 0; t < numberOfThreads; ++t) {
-        threads.emplace_back([&, this, t]() {
-          auto range = maxNumberOfEntries / numberOfThreads;
-          auto startIter = t * range;
-          auto end = startIter + range;
-          if (t == numberOfThreads - 1) end = maxNumberOfEntries;
-          for (std::size_t i = startIter; i < end; ++i) {
-            processLine(lines[i]);
-          }
-        });
-      }
-      for (std::thread &th: threads) th.join();
-#endif
-#else // no parallel execution
-      for (auto l : lines) {
-        processLine(l);
-      }
-#endif
+      readGamesSan(lines);
       break;
     }
     case BookFormat::PGN:
-#ifdef FIFO_PROCESSING
-      processPGNFileFifo(lines);
-#else
-      processPGNFile(lines);
-#endif
+      readGamesPgn(&lines);
       break;
   }
 
-  const auto stop = std::chrono::high_resolution_clock::now();
+  const auto stop    = std::chrono::high_resolution_clock::now();
   const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Internal book created {:L} positions in {:L} ms.", bookMap.size(), elapsed.count());
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Read games in {:s}.", ::str(elapsed));
 }
 
-/* process each line depending on format */
-void OpeningBook::processLine(std::string &line) {
-  LOG__TRACE(Logger::get().BOOK_LOG, "Processing line: {}", line);
-  const std::regex whiteSpaceTrim(R"(^\s*(.*)\s*$)"); // clean up line
-  line = std::regex_replace(line, whiteSpaceTrim, "$1");
-  switch (bookFormat) {
-    case BookFormat::SIMPLE:
-      processSimpleLine(line);
-      break;
-    case BookFormat::SAN:
-      processSANLine(line);
-      break;
-    default:
-      LOG__ERROR(Logger::get().BOOK_LOG, "Line processing only for SIMPLE or SAN file format");
-      break;
+void OpeningBook::readGamesSimple(const std::vector<std::string_view>& lines) {
+  const unsigned int noOfThreads = getNoOfThreads();
+
+#ifdef PARALLEL_LINE_PROCESSING
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Using {} threads", noOfThreads);
+
+#ifdef HAS_EXECUTION_LIB// use parallel lambda
+  std::for_each(std::execution::par_unseq, lines.begin(), lines.end(),
+                [&](auto& line) {
+                  readOneGameSimple(line);
+                });
+#else// no <execution> library (< C++17)
+  const auto noOfLines = lines.size();
+  std::vector<std::thread> threads;
+  threads.reserve(noOfThreads);
+  for (unsigned int t = 0; t < noOfThreads; ++t) {
+    threads.emplace_back([&, this, t]() {
+      auto range     = noOfLines / numberOfThreads;
+      auto startIter = t * range;
+      auto end       = startIter + range;
+      if (t == numberOfThreads - 1) end = noOfLines;
+      for (std::size_t i = startIter; i < end; ++i) {
+        readOneGameSimple(lines[i]);
+      }
+    });
   }
+  for (std::thread& th : threads) th.join();
+#endif
+
+#else// no parallel execution
+  for (auto line : lines) {
+    readOneGameSimple(line);
+  }
+#endif
 }
 
-/* process a line from SIMPLE format and build internal book data structure */
-void OpeningBook::processSimpleLine(std::string &line) {
-  std::smatch matcher;
+void OpeningBook::readOneGameSimple(const std::string_view& lineView) {
+  Moves game{};
 
-  // check if line starts with move
-  const std::regex startPattern(R"(^[a-h][1-8][a-h][1-8].*$)");
-  if (!std::regex_match(line, matcher, startPattern)) {
-    LOG__TRACE(Logger::get().BOOK_LOG, "Line ignored: {}", line);
-    return;
-  }
+  // trim line
+  auto lineViewTrimmed = trimFast(lineView);
 
-  // iterate over all found pattern matches (aka moves)
-  const std::regex movePattern(R"([a-h][1-8][a-h][1-8])");
-  auto move_begin = std::sregex_iterator(line.begin(), line.end(), movePattern);
-  auto move_end = std::sregex_iterator();
-  LOG__TRACE(Logger::get().BOOK_LOG, "Found {} moves in line: {}", std::distance(move_begin, move_end), line);
-
-  Position currentPosition; // start position
-  for (auto i = move_begin; i != move_end; ++i) {
-    const std::string &moveStr = (*i).str();
-    LOG__TRACE(Logger::get().BOOK_LOG, "Moves {}", moveStr);
-
-    // create and validate the move
-    Move move = mg.getMoveFromUci(currentPosition, moveStr);
-    if (!validMove(move)) {
-      LOG__WARN(Logger::get().BOOK_LOG, "Not a valid move {} on this position {}", moveStr, currentPosition.strFen());
-      return;
+  // simple lines are in tuples of 4 per moveStr// read in 4 characters and check if they might
+  // be moves (letter, digit, letter, digit)
+  int index = 0;
+  while (index < lineViewTrimmed.length()) {
+    const auto moveStr = lineViewTrimmed.substr(index, 4);
+    index += 4;
+    // check basic format
+    if (!(isalpha(moveStr[0]) && isdigit(moveStr[1]) && isalpha(moveStr[2]) && isdigit(moveStr[3]))) {
+      break;
     }
+    // add the validated move to the game and commit the move to the current position
+    game.emplace_back(std::string{moveStr});
+  }
 
-    addToBook(currentPosition, move);
+  // add game to book
+  if (!game.empty()) {
+    addGameToBook(game);
   }
 }
 
-/* process a line from SAN format and build internal book data structure */
-void OpeningBook::processSANLine(std::string &line) {
-  std::smatch matcher;
+void OpeningBook::readGamesSan(const std::vector<std::string_view>& lines) {
+  const unsigned int noOfThreads = getNoOfThreads();
+#ifdef PARALLEL_LINE_PROCESSING
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Using {} threads", noOfThreads);
 
-  // check if line starts valid
-  const std::regex startLineRegex(R"(^\d+\. )");
-  if (std::regex_match(line, matcher, startLineRegex)) {
-    LOG__TRACE(Logger::get().BOOK_LOG, "Line ignored: {}", line);
-    return;
+#ifdef HAS_EXECUTION_LIB// use parallel lambda
+  std::for_each(std::execution::par_unseq, lines.begin(), lines.end(),
+                [&](auto&& line) {
+                  readOneGameSan(line);
+                });
+#else// no <execution> library (< C++17)
+  const auto noOfLines = lines.size();
+  std::vector<std::thread> threads;
+  threads.reserve(noOfThreads);
+  for (unsigned int t = 0; t < noOfThreads; ++t) {
+    threads.emplace_back([&, this, t]() {
+      auto range     = noOfLines / numberOfThreads;
+      auto startIter = t * range;
+      auto end       = startIter + range;
+      if (t == numberOfThreads - 1) end = noOfLines;
+      for (std::size_t i = startIter; i < end; ++i) {
+        readOneGameSan(lines[i]);
+      }
+    });
   }
+  for (std::thread& th : threads) th.join();
+#endif
+
+#else// no parallel execution
+  for (auto line : lines) {
+    readOneGameSan(line);
+  }
+#endif
+}
+
+void OpeningBook::readOneGameSan(const std::string_view& lineView) {
+  Moves game{};
+
+  // create a trimmed copy of the string as regex can't handle string_view :(
+  const std::string line{trimFast(lineView)};
+
+  // check if the line starts at least with a number or a character
+  if (!isalnum(line[0])) return;
+
+  MoveGenerator mg{};
+  Position p{};// start position
 
   /*
   Iterate over all tokens, ignore move numbers and results
@@ -297,234 +336,295 @@ void OpeningBook::processSANLine(std::string &line) {
   1. f4 d5 2. Nf3 Nf6 3. e3 Bg4 4. Be2 e6 5. O-O Bd6 6. b3 O-O 7. Bb2 c5 1/2-1/2
   */
 
-  // ignore patterns
-  const std::regex numberRegex(R"(^\d+\.)");
-  const std::regex resultRegex(R"((1/2|1|0)-(1/2|1|0))");
+  std::vector<std::string> moveStrings{};
+  split(line, moveStrings, ' ');
 
-  // split at every whitespace and iterate through items
-  const std::regex splitRegex(R"(\s+)");
-  const std::sregex_token_iterator iter(line.begin(), line.end(), splitRegex, -1);
-  const std::sregex_token_iterator end;
-
-  Position currentPosition; // start position
-  LOG__TRACE(Logger::get().BOOK_LOG, "Found {} items in line: {}", std::distance(iter, end), line);
-  for (auto i = iter; i != end; ++i) {
-    const std::string &moveStr = (*i).str();
-    LOG__TRACE(Logger::get().BOOK_LOG, "Item {}", moveStr);
-    if (std::regex_match(moveStr, matcher, numberRegex)) { continue; }
-    if (std::regex_match(moveStr, matcher, resultRegex)) { continue; }
-    LOG__TRACE(Logger::get().BOOK_LOG, "SAN Move {}", moveStr);
-
-    // create and validate the move
-    Move move = mg.getMoveFromSan(currentPosition, moveStr);
-    if (!validMove(move)) {
-      LOG__WARN(Logger::get().BOOK_LOG, "Not a valid move {} on this position {}", moveStr, currentPosition.strFen());
-      return;
-    }
-    LOG__TRACE(Logger::get().BOOK_LOG, "Move found {}", printMoveVerbose(move));
-
-    addToBook(currentPosition, move);
+  for (const auto& moveStr : moveStrings) {
+    if (moveStr.empty() || moveStr.length() == 1) continue;
+    if (!isalpha(moveStr[0])) continue;
+    // add the validated move to the game and commit the move to the current position
+    game.push_back(moveStr);
   }
+
+  // add game to book
+  addGameToBook(game);
 }
 
-/* Reads lines to find multiline PGN games (metadata and moves)
-   Every game found will be put into a fifo queue and a parallel thread pool
-   of workers take the games to process them to build up internal book
-   data structure. */
-void OpeningBook::processPGNFileFifo(std::vector<std::string> &lines) {
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Process lines from PGN file with FIFO ({} Threads)...", numberOfThreads);
-  // reading pgn and get a list of games
-  PGN_Reader pgnReader(lines);
-  // prepare FIFO for storing the games
-  Fifo<PGN_Game> gamesFifo;
-  // prepare thread pool
-  ThreadPool threadPool(numberOfThreads);
-  // flag to signal if all pgn lines have been processed
-  bool finished = false;
-  // prepare worker for processing found games
-  for (unsigned int i = 0; i < numberOfThreads; i++) {
-    threadPool.enqueue([&] {
-      while (!gamesFifo.isClosed()) {
-        LOG__TRACE(Logger::get().BOOK_LOG, "Get game...");
-        auto game = gamesFifo.pop_wait();
-        if (game.has_value()) { // no value means pop_wait has been canceled
-          LOG__TRACE(Logger::get().BOOK_LOG, "Got game...");
-          processGame(game.value());
-          LOG__TRACE(Logger::get().BOOK_LOG, "Processed game...Book now at {:L} entries.", bookMap.size());
-        }
-        else {
-          LOG__TRACE(Logger::get().BOOK_LOG, "Game NULL");
-        }
-      }
-    });
-  }
-
-  // start finding games asynchronously and put games into the FIFO
-  std::future<bool> future = std::async(std::launch::async, [&] {
-    LOG__DEBUG(Logger::get().BOOK_LOG, "Start finding games");
-    finished = pgnReader.process(gamesFifo);
-    LOG__DEBUG(Logger::get().BOOK_LOG, "Finished finding games {}", finished);
-    return finished;
-  });
-
-  // wait until all games have been put into the FIFO
-  if (future.get()) {
-    // busy wait until FIFO is empty
-    while (!gamesFifo.empty()) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
-    LOG__DEBUG(Logger::get().BOOK_LOG, "Finished processing games.");
-    gamesFifo.close();
-    LOG__DEBUG(Logger::get().BOOK_LOG, "Closed down ThreadPool");
-  }
-}
-
-/* Reads lines to find multiline PGN games (metadata and moves)
-   Every game found will be put into a vector. After reading all games a
-   parallel thread pool of workers take the games to process them to build
-   up internal book data structure. */
-void OpeningBook::processPGNFile(std::vector<std::string> &lines) {
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Process lines from PGN file...");
-  // reading pgn and get a list of games
-  PGN_Reader pgnReader(lines);
-  if (!pgnReader.process()) {
-    LOG__ERROR(Logger::get().BOOK_LOG, "Could not process lines from PGN file.");
-    return;
-  }
-  auto *ptrGames = &pgnReader.getGames();
-  gamesTotal = ptrGames->size();
-  // process all games
-  processGames(ptrGames);
-}
-
-/* After reading all games (non fifo) a parallel thread pool of workers take the games
- * to process them to build up internal book data structure. */
-void OpeningBook::processGames(std::vector<PGN_Game>* ptrGames) {// processing games
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Processing {:L} games", ptrGames->size());
-  const auto startTime = std::chrono::high_resolution_clock::now();
+void OpeningBook::readGamesPgn(const std::vector<std::string_view>* lines) {
 
 #ifdef PARALLEL_GAME_PROCESSING
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Using {} threads", numberOfThreads);
-#ifdef HAS_EXECUTION_LIB // parallel lambda
-  std::for_each(std::execution::par_unseq, ptrGames->begin(), ptrGames->end(),
-                [&](auto game) { processGame(game); });
-#else // no <execution> library (< C++17)
-  const auto noOfThreads = std::thread::hardware_concurrency() == 0 ?
-                           4 : std::thread::hardware_concurrency();
-  const unsigned int maxNumberOfEntries = ptrGames->size();
-  std::vector<std::thread> threads;
-  threads.reserve(noOfThreads);
-  for (unsigned int t = 0; t < noOfThreads; ++t) {
-    threads.emplace_back([&, this, t]() {
-      auto range = maxNumberOfEntries / noOfThreads;
-      auto start = t * range;
-      auto end = start + range;
-      if (t == noOfThreads - 1) end = maxNumberOfEntries;
-      for (std::size_t i = start; i < end; ++i) {
-        processGame((*ptrGames)[i]);
-      }
-    });
-  }
-  for (std::thread &th: threads) th.join();
-#endif
-#else // no parallel processing
-  auto iterEnd = ptrGames->end();
-  for (auto iter = ptrGames->begin(); iter < iterEnd; iter++) {
-    processGame(*iter);
-    LOG__TRACE(Logger::get().BOOK_LOG, "Process game finished - games={:L} book={:L}", gamesProcessed, bookMap.size());
-  }
+  ThreadPool worker{getNoOfThreads()};
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Using {} threads", getNoOfThreads());
+#else
+  ThreadPool worker{1};
 #endif
 
-  const auto stopTime = std::chrono::high_resolution_clock::now();
-  const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime);
-  LOG__INFO(Logger::get().BOOK_LOG, "Processed {:L} games in {:L} ms", gamesTotal, elapsed.count());
+  std::vector<std::shared_ptr<std::future<bool>>> results{};
+
+  // Get all lines belonging to one game and process this game asynchronously.
+  // Iterate though all lines and look for pattern indicating for the next game
+  // When a game start pattern is found ('^[')  we can assume the lines before
+  // up to the line number marked in gameStart are part of one game.
+  // This game (marked by line numbers for start and end will then be
+  // send to be processed asynchronously
+  size_t gameStart = 0;
+  size_t gameEnd;
+  bool lastEmpty    = true;
+  const auto length = lines->size();
+  for (int lineNumber = 0; lineNumber < length; lineNumber++) {
+    const auto trimmedLineView = trimFast((*lines)[lineNumber]);
+    // skip emtpy lines
+    if (trimmedLineView.empty()) {
+      lastEmpty = true;
+      continue;
+    }
+    // a new game (except in the first line) always starts with a newline and a tag-section ([tag-pair])
+    if ((lastEmpty && trimmedLineView[0] == '[') || lineNumber == length - 1) {
+      gameEnd = lineNumber;
+      // process the previous found game asynchronously
+      auto future = std::make_shared<std::future<bool>>(worker.enqueue([=, this] {
+        readOneGamePgn(lines, gameStart, gameEnd);
+        return true;
+      }));
+      results.push_back(future);
+      gameStart = gameEnd;
+    }
+    lastEmpty = false;
+  }
+
+  // Last game is not defined by the start pattern of the next game as the
+  // there is none. We simply use the last line as end marker in this case.
+  gameEnd = length;
+  // process the previous found game asynchronously
+  auto future = std::make_shared<std::future<bool>>(worker.enqueue([=] {
+    readOneGamePgn(lines, gameStart, gameEnd);
+    return true;
+  }));
+  results.push_back(future);
+
+  // wait for completion of the asynchronous operations
+  // future.get() is blocking if the async call has not returned
+  int counter         = 0;
+  const auto& iterEnd = results.end();
+  for (auto iter = results.begin(); iter < iterEnd; iter++) {
+    if (iter->get()->get()) counter++;
+  }
 }
 
-/* process a game from PGN SAN format and build internal book data structure */
-void OpeningBook::processGame(PGN_Game &game) {
-  std::smatch matcher;
-  const std::regex UCIRegex(R"(([a-h][1-8][a-h][1-8])([NBRQnbrq])?)");
-  const std::regex SANRegex(R"(([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O-O-O|O-O)(=?([NBRQ]))?([!?+#]*)?)");
+void OpeningBook::readOneGamePgn(const std::vector<std::string_view>* lines, size_t gameStart, size_t gameEnd) {
 
-  Position currentPosition; // start position
-  for (const auto& moveStr : game.moves) {
-    Move move = MOVE_NONE;
+  std::string moveLine;
+
+  // join all lines but skip empty line and %-comment lines and tag lines starting with [
+  for (auto i = gameStart; i < gameEnd; i++) {
+    const auto lineView = trimFast((*lines)[i]);
+    if (lineView.empty() || lineView[0] == '[' || lineView[0] == '%') continue;
+    moveLine.append(" ").append(removeTrailingComments(lineView));
+  }
+
+  // after cleanup skip games with no moves
+  if (moveLine.empty()) return;
+
+  // cleanup unwanted parts of move section
+  cleanUpPgnMoveSection(moveLine);
+
+  // after cleanup skip games with no moves
+  if (moveLine.empty()) return;
+
+  // find and check move from the clean line of moves
+  // get each move string from the clean line
+  std::vector<std::string> movesStrings{};
+  split(moveLine, movesStrings, ' ');
+
+  // add game to book
+  addGameToBook(movesStrings);
+}
+
+std::string OpeningBook::removeTrailingComments(const std::string_view& stringView) {
+  if (stringView.find_first_of(';') != std::string_view::npos) {
+    return std::string{stringView.data(), stringView.find_first_of(';')};
+  }
+  return std::string{stringView};
+}
+
+void OpeningBook::cleanUpPgnMoveSection(std::string& str) {
+
+  int l     = static_cast<int>(str.length());// explicit as the later loop test for <0
+  char last = ' ';
+  for (int a = 0; a < l;) {
+
+    // skip non ascii characters
+    if (int(str[a]) < 0 || int(str[a]) > 255) {
+      str[a++] = ' ';
+    }
+    // skip invalid characters
+    else if (!(isalnum(str[a]) || str[a] == '$' || str[a] == '*' || str[a] == '(' || str[a] == '{' || str[a] == '<' || str[a] == '/' || str[a] == '-' || str[a] == '=')) {
+      str[a++] = ' ';
+    }
+    // nag annotation \$\d{1,3}
+    else if (str[a] == '$') {
+      str[a++] = ' ';
+      while (a < l && isdigit(str[a])) {
+        str[a++] = ' ';
+      }
+    }
+    // remove curly bracket comments '\{[^{}]*\}'
+    else if (str[a] == '{') {
+      while (a < l && str[a] != '}') {
+        str[a++] = ' ';
+      }
+      str[a++] = ' ';
+    }
+    // remove curly bracket comments '\{[^{}]*\}'
+    else if (str[a] == '<') {
+      while (a < l && str[a] != '>') {
+        str[a++] = ' ';
+      }
+      str[a++] = ' ';
+    }
+    // remove bracket comments '\([^()]*\)'  - maybe recursive
+    else if (str[a] == '(') {
+      int open = 1;
+      str[a++] = ' ';
+      while (a < l && open > 0) {
+        if (str[a] == ')')
+          open--;
+        else if (str[a] == '(')
+          open++;
+        str[a++] = ' ';
+      }
+    }
+    // remove move numbering
+    else if (isdigit(str[a]) && last == ' ') {
+      str[a++] = ' ';
+      while (a < l && (isdigit(str[a]) || str[a] == '.')) {
+        str[a++] = ' ';
+      }
+    }
+    // valid - move forward
+    else {
+      a++;
+    }
+    last = str[a - 1];
+  }
+
+  // remove result (1-0 0-1 1/2-1/2 *)
+  int a = l - 1;
+  for (; a >= 0; a--) {
+    if (str[a] == ' ') {
+      continue;
+    }
+    if (str[a] == '*') {
+      str[a] = ' ';
+      break;
+    }
+    if (a >= 6 && str.substr(a - 6, 7) == " /2-1/2") {
+      a -= 6;
+      break;
+    }
+    if (a >= 2 && (str.substr(a - 2, 3) == " -0" || str.substr(a - 2, 3) == " -1")) {
+      a -= 2;
+      break;
+    }
+  }
+  str.resize(a);
+
+  // another run to remove all double spaces
+  l              = static_cast<int>(str.length());// explicit as the later loop test for <0
+  int index      = 0;
+  int copyTo     = 0;
+  int spaceFound = 0;
+  while (index < l) {
+    if (str[index] == ' ') {
+      spaceFound++;
+      if (spaceFound <= 1) {
+        str[copyTo++] = str[index++];
+      }
+      else {
+        index++;
+      }
+    }
+    else {
+      str[copyTo++] = str[index++];
+      spaceFound    = 0;
+    }
+  }
+  // remove left over characters at the end
+  str.erase(copyTo, index);
+  // remove trailing and leading whitespace
+  str = trimFast(str);
+}
+
+void OpeningBook::addGameToBook(const Moves& game) {
+
+  Position p{};
+  MoveGenerator mg{};
+
+  if (game.empty()) {
+    return;
+  }
+
+  // initialize lasKey with start position (aka root position)
+  Key lastKey = rootZobristKey;
+  // increase counter for root entry for each game
+  {// lock scope
+    std::scoped_lock<std::mutex> bookLock(bookMutex);
+    bookMap.at(lastKey).counter++;
+  }
+
+  // Loop through all move string and try to find a matching move on the current position.
+  // If found add the move to the book.
+  for (const std::string& moveStr : game) {
+    Move move;
 
     // check the notation format
-    // Per PGN it must be SAN but some files have UCI notation
-    // As UCI is pattern wise a subset of SAN we test for UCI first.  
-    if (std::regex_match(moveStr, matcher, UCIRegex)) {
-      LOG__TRACE(Logger::get().BOOK_LOG, "Game move {} is UCI", moveStr);
-      move = mg.getMoveFromUci(currentPosition, moveStr);
+    if ((moveStr.size() == 4 && islower(moveStr[0]) && isdigit(moveStr[1]) && islower(moveStr[2]) && isdigit(moveStr[3])) ||
+        (moveStr.size() == 5 && islower(moveStr[0]) && isdigit(moveStr[1]) && islower(moveStr[2]) && isdigit(moveStr[3]) && isupper(moveStr[4]))) {
+      move = mg.getMoveFromUci(p, trimFast(moveStr));
     }
-    else if (std::regex_match(moveStr, matcher, SANRegex)) {
-      LOG__TRACE(Logger::get().BOOK_LOG, "Game move {} is SAN", moveStr);
-      move = mg.getMoveFromSan(currentPosition, moveStr);
+    else {
+      move = mg.getMoveFromSan(p, trimFast(moveStr));
     }
-
-    // create and validate the move
     if (move == MOVE_NONE) {
-      LOG__WARN(Logger::get().BOOK_LOG, "Not a valid move {} on this position {}", moveStr, currentPosition.strFen());
-      return;
+      LOG__WARN(Logger::get().BOOK_LOG, "Not a valid move {} on this position {}", moveStr, p.strFen());
+      break;
     }
-    LOG__TRACE(Logger::get().BOOK_LOG, "Move found {}", printMoveVerbose(move));
 
-    addToBook(currentPosition, move);
-
+    // and make move on position to get new position
+    p.doMove(move);
+    // writes move to book map takes care of concurrent locking
+    writeToBook(move, p.getZobristKey(), lastKey);
+    // remember previous position
+    lastKey = p.getZobristKey();
   }
-  gamesProcessed++;
-#ifndef FIFO_PROCESSING
-  // x % 0 is undefined in c++
-  // avgLinesPerGameTimesProgressSteps = 12*15 as 12 is avg game lines and 15 steps
-  const uint64_t progressInterval = 1 + (gamesTotal / 15);
-  if (gamesProcessed % progressInterval == 0) {
-    LOG__DEBUG(Logger::get().BOOK_LOG, "Process games: {:s}", Misc::printProgress(static_cast<double>(gamesProcessed) / gamesTotal));
-  }
-#endif
 }
 
-/* adds a position and adds the move and a pointer to the new position
-   to the previous position's book entry. This is synchronized to be thread
-   safe */
-void OpeningBook::addToBook(Position &currentPosition, const Move &move) {
-  // remember previous position
-  const Key lastKey = currentPosition.getZobristKey();
-  // make move on position to get new position
-  currentPosition.doMove(move);
-  const Key currentKey = currentPosition.getZobristKey();
-  const std::string currentFen = currentPosition.strFen();
-
+void OpeningBook::writeToBook(Move move, Key currentKey, Key lastKey) {
   // get the lock on the data map
-  const std::scoped_lock<std::mutex> lock(bookMutex);
-
+  std::scoped_lock<std::mutex> bookLock(bookMutex);
   // create or update book entry
-  if (bookMap.count(currentKey)) {
+  if (bookMap.contains(currentKey)) {
     // pointer to entry already in book
-    BookEntry* existingEntry = &bookMap.at(currentKey);
-    existingEntry->counter++;
-    LOG__TRACE(Logger::get().BOOK_LOG, "Position already existed {} times: {}", existingEntry->counter, existingEntry->fen);
+    bookMap.at(currentKey).counter++;
+    // return as we do not need to update the predecessor
+    return;
   }
   else {
     // new position
-    bookMap.emplace(currentKey, BookEntry(currentKey, currentFen));
-    LOG__TRACE(Logger::get().BOOK_LOG, "Position new", currentKey);
+    bookMap.emplace(currentKey, currentKey);
   }
-
   // add move to the last book entry's move list
   BookEntry* lastEntry = &bookMap.at(lastKey);
-  if (std::find(lastEntry->moves.begin(), lastEntry->moves.end(), move) == lastEntry->moves.end()) {
-    lastEntry->moves.emplace_back(move);
-    lastEntry->ptrNextPosition.emplace_back(std::make_shared<BookEntry>(bookMap.at(currentKey)));
-    LOG__TRACE(Logger::get().BOOK_LOG, "Added move and pointer to last entry.");
-  }
-} // lock released
+  lastEntry->moves.push_back(move);
+  lastEntry->nextPosition.push_back(currentKey);
+}// lock released
 
 /* Saves the bookMap data to a binary cache file for faster reading.
    Uses BOOST serialization to serialize the data to a binary file */
 void OpeningBook::saveToCache() {
   const std::scoped_lock<std::mutex> lock(bookMutex);
-  { // save data to archive
-    const auto start = std::chrono::high_resolution_clock::now();
+  {// save data to archive
+    const auto start               = std::chrono::high_resolution_clock::now();
     const std::string serCacheFile = bookFilePath + cacheExt;
     LOG__DEBUG(Logger::get().BOOK_LOG, "Saving book to cache file {}", serCacheFile);
     // create and open a binary archive for output
@@ -532,47 +632,11 @@ void OpeningBook::saveToCache() {
     boost::archive::binary_oarchive oa(ofsBin);
     // write class instance to archive
     oa << BOOST_SERIALIZATION_NVP(bookMap);
-    const auto stop = std::chrono::high_resolution_clock::now();
+    const auto stop    = std::chrono::high_resolution_clock::now();
     const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
     LOG__DEBUG(Logger::get().BOOK_LOG, "Book saved to binary cache in ({:L} ms) ({})", elapsed.count(), serCacheFile);
-  } // archive and stream closed when destructors are called
-  // reset recreation flag
+  }// archive and stream closed when destructors are called
   _recreateCache = false;
-  // this is redundant for testing purposes
-  /*  { // save data to archive
-      const auto start = std::chrono::high_resolution_clock::now();
-
-      const std::basic_string<char> &txtCacheFile = bookFilePath + ".cache.txt";
-      LOG__DEBUG(Logger::get().BOOK_LOG, "Saving to cache file {}", txtCacheFile);
-
-      // create and open a character archive for output
-      std::ofstream ofsTXT(txtCacheFile);
-      boost::archive::text_oarchive oa(ofsTXT);
-      // write class instance to archive
-      oa << BOOST_SERIALIZATION_NVP(bookMap);
-
-      const auto stop = std::chrono::high_resolution_clock::now();
-      const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-      LOG__INFO(Logger::get().BOOK_LOG, "Opening book save to txt cache in ({:L} ms) ({})", elapsed.count(), txtCacheFile);
-    } // archive and stream closed when destructors are called
-
-    // this is redundant for testing purposes
-    { // save data to archive
-      const auto start = std::chrono::high_resolution_clock::now();
-
-      const std::basic_string<char> &xmlCacheFile = bookFilePath + ".cache.xml";
-      LOG__DEBUG(Logger::get().BOOK_LOG, "Saving to cache file {}", xmlCacheFile);
-
-      // create and open a character archive for output
-      std::ofstream ofsXML(xmlCacheFile);
-      boost::archive::xml_oarchive oa(ofsXML);
-      // write class instance to archive
-      oa << BOOST_SERIALIZATION_NVP(bookMap);
-
-      const auto stop = std::chrono::high_resolution_clock::now();
-      const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-      LOG__INFO(Logger::get().BOOK_LOG, "Opening book saved to xml cache in ({:L} ms) ({})", elapsed.count(), xmlCacheFile);
-    } // archive and stream closed when destructors are called*/
 }
 
 /* Loads the bookMap data from a binary data cache file. This is considerably
@@ -580,8 +644,8 @@ void OpeningBook::saveToCache() {
 bool OpeningBook::loadFromCache() {
   const std::scoped_lock<std::mutex> lock(bookMutex);
   std::unordered_map<Key, BookEntry> binMap;
-  { // load data from archive
-    const auto start = std::chrono::high_resolution_clock::now();
+  {// load data from archive
+    const auto start               = std::chrono::high_resolution_clock::now();
     const std::string serCacheFile = bookFilePath + cacheExt;
     LOG__DEBUG(Logger::get().BOOK_LOG, "Loading from cache file {} ({:L} kB)", serCacheFile, getFileSize(serCacheFile) / 1'024);
     // create and open a binary archive for input
@@ -593,60 +657,15 @@ bool OpeningBook::loadFromCache() {
     boost::archive::binary_iarchive ia(ifsBin);
     // write archive to class instance
     ia >> BOOST_SERIALIZATION_NVP(binMap);
-    const auto stop = std::chrono::high_resolution_clock::now();
+    const auto stop    = std::chrono::high_resolution_clock::now();
     const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
     LOG__INFO(Logger::get().BOOK_LOG,
               "Book loaded from cache with {:L} entries in ({:L} ms) ({})",
               binMap.size(), elapsed.count(), serCacheFile);
   }
-  /*std::unordered_map<Key, BookEntry> txtMap;
-  {
-    const auto start = std::chrono::high_resolution_clock::now();
-
-    // create and open a txt archive for input
-    const std::basic_string<char> &txtCacheFile = bookFilePath + ".cache.txt";
-    LOG__DEBUG(Logger::get().BOOK_LOG, "Loading from cache file {}", txtCacheFile);
-    std::ifstream ifsTXT(txtCacheFile);
-    if (!ifsTXT.good()) {
-      LOG__ERROR(Logger::get().BOOK_LOG, "Loading from cache file {} failed", txtCacheFile);
-      return;
-    }
-    boost::archive::text_iarchive ia(ifsTXT);
-    // write archive to class instance
-    ia >> BOOST_SERIALIZATION_NVP(txtMap);
-
-    const auto stop = std::chrono::high_resolution_clock::now();
-    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-    LOG__INFO(Logger::get().BOOK_LOG,
-              "Opening book loaded from txt cache with {:L} entries in ({:L} ms) ({})",
-              txtMap.size(), elapsed.count(), txtCacheFile);
-  }
-
-  std::unordered_map<Key, BookEntry> xmlMap;
-  {
-    const auto start = std::chrono::high_resolution_clock::now();
-
-    // create and open a xml archive for input
-    const std::basic_string<char> &xmlCacheFile = bookFilePath + ".cache.xml";
-    LOG__DEBUG(Logger::get().BOOK_LOG, "Loading from cache file {}", xmlCacheFile);
-    std::ifstream ifsXML(xmlCacheFile);
-    if (!ifsXML.good()) {
-      LOG__ERROR(Logger::get().BOOK_LOG, "Loading from cache file {} failed", xmlCacheFile);
-      return;
-    }
-    boost::archive::xml_iarchive ia(ifsXML);
-    // write archive to class instance
-    ia >> BOOST_SERIALIZATION_NVP(xmlMap);
-
-    const auto stop = std::chrono::high_resolution_clock::now();
-    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-    LOG__INFO(Logger::get().BOOK_LOG,
-              "Opening book loaded from xml cache with {:L} entries in ({:L} ms) ({})",
-              xmlMap.size(), elapsed.count(), xmlCacheFile);
-  }*/
   bookMap = std::move(binMap);
   return true;
-} // archive and stream closed when destructors are called
+}// archive and stream closed when destructors are called
 
 /* checks if a cache file exists */
 bool OpeningBook::hasCache() const {
@@ -659,29 +678,3 @@ bool OpeningBook::hasCache() const {
   LOG__DEBUG(Logger::get().BOOK_LOG, "Cache file {} ({:L} kB) available", serCacheFile, fsize / 1'024);
   return true;
 }
-
-/** Checks of file exists and encapsulates platform differences for
- * filesystem operations */
-bool OpeningBook::fileExists(const std::string& filePath) {
-  bfs::path p{filePath};
-  return bfs::exists(filePath);
-}
-
-/** Returns files size in bytes and encapsulates platform differences for
- * filesystem operations */
-uint64_t OpeningBook::getFileSize(const std::string &filePath) {
-  bfs::path p{filePath};
-  uint64_t fsize = bfs::file_size(bfs::canonical(p));
-  return fsize;
-}
-
-/* String representation of a book entry */
-std::string BookEntry::str() {
-  std::ostringstream os;
-  os << this->fen << " (" << this->counter << ") ";
-  for (std::size_t i = 0; i < moves.size(); i++) {
-    os << "[" << ::str(this->moves[i]) << " (" << this->ptrNextPosition[i]->counter << ")] ";
-  }
-  return os.str();
-}
-

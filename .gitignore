@@ -9,3 +9,5 @@ build/
 *.cache.*
 /Release/bin/books/
 /Release/bin/config/
+/books/superbook_xl.pgn
+

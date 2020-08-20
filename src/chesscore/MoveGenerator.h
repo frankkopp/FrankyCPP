@@ -217,12 +217,12 @@ public:
   std::string str();
 
   // returns the current pv move
-  Move getPvMove() const {
+  [[nodiscard]] Move getPvMove() const {
     return pvMove;
   }
 
   // returns a pointer to the current killer move list
-  const Move* getKillerMoves() const {
+  [[nodiscard]] const Move* getKillerMoves() const {
     return killerMoves;
   }
 

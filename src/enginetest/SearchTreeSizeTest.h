@@ -78,8 +78,8 @@ class SearchTreeSizeTest {
   const uint64_t* ptrToSpecial2 = nullptr;
 
 public:
-  SearchTreeSizeTest(int depth, const MilliSec& movetime, std::vector<std::string> fens)
-      : depth(depth), movetime(movetime), fens(std::move(fens)) {}
+  SearchTreeSizeTest(int depth, const MilliSec& movetime, std::vector<std::string> fenVector)
+      : depth(depth), movetime(movetime), fens(std::move(fenVector)) {}
 
   void start();
 

@@ -51,8 +51,7 @@ protected:
 };
 
 TEST_F(SearchTest, construct) {
-  Search search{};
-  search.isReady();
+  Search search{};search.isReady();
 }
 
 TEST_F(SearchTest, resizeHash) {
