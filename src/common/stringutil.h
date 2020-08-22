@@ -30,82 +30,48 @@
 // see https://stackoverflow.com/a/236803/8520615
 
 #include <chrono>
+#include <execution>
 #include <regex>
 #include <sstream>
 #include <string>
 #include <thread>
 #include <vector>
 
-// //////////////////////////////////////////////////////////////////
-// String splitting
-
+// splits a string or string view into a vector of parts at each delimiter
 template<typename T>
-using StringType = std::basic_string<T, std::char_traits<T>, std::allocator<T>>;
-
-template<typename T>
-using StringStreamType = std::basic_stringstream<T, std::char_traits<T>, std::allocator<T>>;
-
-template<typename T, typename Out>
-inline static void splitT(const StringType<T>& s, T delim, Out result) {
-  StringStreamType<T> ss(s);
-  StringType<T> item;
-  while (std::getline(ss, item, delim)) {
-    *(result++) = std::move(item);
+inline void splitFast(const T& str, std::vector<T>& container, const std::string& delims = " ") {
+  for (auto first = str.data(), second = str.data(), last = first + str.size();
+       second != last && first != last;
+       first = second + 1) {
+    second = std::find_first_of(first, last, std::cbegin(delims), std::cend(delims));
+    if (first != second) {
+      container.emplace_back(first, second - first);
+    }
   }
 }
 
-template<typename T>
-inline static void splitT(const StringType<T>& s, std::vector<StringType<T>>& elems, T delim) {
-  splitT<T, std::back_insert_iterator<std::vector<StringType<T>>>>(s, delim, std::back_inserter(elems));
-}
-
-constexpr auto split  = splitT<char>;
-constexpr auto splitW = splitT<wchar_t>;
-
-// //////////////////////////////////////////////////////////////////
-// String trimming
-
 // removes whitespace characters from beginning and end of string s
-inline std::string trimFast(const std::string& s) {
-  const int l = (int)s.length();
-  int a=0, b=l-1;
+template <typename T>
+inline T trimFast(const T& s) {
+  const int l = (int) s.length();
+  int a = 0, b = l - 1;
   char c;
-  while(a<l && ((c=s[a])==' '||c=='\t'||c=='\n'||c=='\v'||c=='\f'||c=='\r')) a++;
-  while(b>a && ((c=s[b])==' '||c=='\t'||c=='\n'||c=='\v'||c=='\f'||c=='\r')) b--;
-  return s.substr(a, 1+b-a);
-}
-
-// removes whitespace characters from beginning and end of string s
-inline std::string_view trimFast(const std::string_view& s) {
-  const int l = (int)s.length();
-  int a=0, b=l-1;
-  char c;
-  while(a<l && ((c=s[a])==' '||c=='\t'||c=='\n'||c=='\v'||c=='\f'||c=='\r')) a++;
-  while(b>a && ((c=s[b])==' '||c=='\t'||c=='\n'||c=='\v'||c=='\f'||c=='\r')) b--;
-  return s.substr(a, 1+b-a);
+  while (a < l && ((c = s[a]) == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' || c == '\r')) a++;
+  while (b > a && ((c = s[b]) == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' || c == '\r')) b--;
+  return s.substr(a, 1 + b - a);
 }
 
 // removes trailing parts of a string after a given commentMarker
-// returns a new string
-inline std::string removeTrailingComments(const std::string& s, const std::string& commentMarker) {
+template <typename T>
+inline T removeTrailingComments(const T& s, const std::string& commentMarker) {
   const auto firstOf = s.find_first_of(commentMarker);
-  if (firstOf != std::string_view::npos) {
-    return std::string{s.data(), firstOf};
+  if (firstOf != std::string_view::npos) { 
+    return s.substr(0, firstOf);
   }
   return s;
 }
 
-// removes trailing parts of a string after a given commentMarker
-// returns a new string_view
-inline std::string_view removeTrailingComments(const std::string_view& stringView, const std::string& commentMarker) {
-  const auto firstOf = stringView.find_first_of(commentMarker);
-  if (firstOf != std::string_view::npos) {
-    return std::string_view{stringView.data(), firstOf};
-  }
-  return stringView;
-}
-
-// slower alternatives
+// slower alternatives for trimming
 //Round  1 Test  1: 5.684.239.320 ns (   100%) (  5,68423932 sec) ( 56.842,3932 ns avg per test)
 //Round  1 Test  2: 5.081.285.270 ns (    89%) (  5,08128527 sec) ( 50.812,8527 ns avg per test)
 //Round  1 Test  3:   19.676.920 ns (     0%) (  0,01967692 sec) (    196,7692 ns avg per test)

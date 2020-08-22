@@ -23,12 +23,12 @@
  *
  */
 
-#include <chrono>
-
-#include "Evaluator.h"
 #include "Search.h"
+#include "Evaluator.h"
 #include "SearchConfig.h"
 #include "See.h"
+
+#include <chrono>
 
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
@@ -626,11 +626,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
       ttMove = static_cast<Move>(ttEntryPtr->move);
       if (ttEntryPtr->depth >= depth) {
         const Value ttValue = valueFromTt(ttEntryPtr->value, ply);
-        if (validValue(ttValue) &&
-            (ttEntryPtr->type == EXACT ||
-             (ttEntryPtr->type == ALPHA && ttValue <= alpha) ||
-             (ttEntryPtr->type == BETA && ttValue >= beta)) &&
-            SearchConfig::USE_TT_VALUE) {
+        if (validValue(ttValue) && (ttEntryPtr->type == EXACT || (ttEntryPtr->type == ALPHA && ttValue <= alpha) || (ttEntryPtr->type == BETA && ttValue >= beta)) && SearchConfig::USE_TT_VALUE) {
           // get PV line from tt as we prune here
           // and wouldn't have one otherwise
           getPvLine(p, pv[ply], depth);
@@ -640,8 +636,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
         statistics.TtNoCuts++;
       }
       // if we have a static eval stored we can reuse it
-      if (SearchConfig::USE_EVAL_TT &&
-          ttEntryPtr->eval != VALUE_NONE) {
+      if (SearchConfig::USE_EVAL_TT && ttEntryPtr->eval != VALUE_NONE) {
         statistics.evalFromTT++;
         staticEval = ttEntryPtr->eval;
       }
@@ -665,10 +660,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
   // Razoring from Stockfish
   // When static eval is well below alpha at the last node
   // jump directly into qsearch
-  if (SearchConfig::USE_RAZORING &&
-      depth == 1 &&
-      staticEval != VALUE_NONE &&
-      staticEval <= alpha - SearchConfig::RAZOR_MARGIN) {
+  if (SearchConfig::USE_RAZORING && depth == 1 && staticEval != VALUE_NONE && staticEval <= alpha - SearchConfig::RAZOR_MARGIN) {
     statistics.razorings++;
     return qsearch(p, ply, alpha, beta, PV);
   }
@@ -677,11 +669,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
   // https://www.chessprogramming.org/Reverse_Futility_Pruning
   // Anticipate likely alpha low in the next ply by a beta cut
   // off before making and evaluating the move
-  if (SearchConfig::USE_RFP &&
-      doNull &&
-      depth <= 3 &&
-      !isPv &&
-      !hasCheck) {
+  if (SearchConfig::USE_RFP && doNull && depth <= 3 && !isPv && !hasCheck) {
     const Value margin = SearchConfig::RFP_MARGIN[depth];
     if (staticEval - margin >= beta) {
       statistics.rfp_cuts++;
@@ -700,10 +688,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
   // - in check - this would lead to an illegal situation where the king is captured
   // - recursive null moves should be avoided
   if (SearchConfig::USE_NMP) {
-    if (doNull &&
-        !isPv &&
-        depth >= SearchConfig::NMP_DEPTH &&
-        p.getMaterialNonPawn(us) > 0 &&// to reduce risk of zugzwang
+    if (doNull && !isPv && depth >= SearchConfig::NMP_DEPTH && p.getMaterialNonPawn(us) > 0 &&// to reduce risk of zugzwang
         !hasCheck) {
       // possible other criteria: eval > beta
 
@@ -767,9 +752,8 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
   // Does not make a big difference in search tree size when move
   // order already is good.
   if (SearchConfig::USE_IID) {
-    if (depth >= SearchConfig::IID_DEPTH &&
-        !ttMove &&// no move from TT
-        doNull &&             // avoid in null move search
+    if (depth >= SearchConfig::IID_DEPTH && !ttMove &&// no move from TT
+        doNull &&                                     // avoid in null move search
         isPv) {
 
       // get the new depth and make sure it is >0
@@ -805,8 +789,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
   // When we received a best move for the position from the
   // TT or IID we set it as PV move in the movegen so it will
   // be searched first.
-  if (SearchConfig::USE_TT_PV_MOVE_SORT &&
-      ttMove != MOVE_NONE) {
+  if (SearchConfig::USE_TT_PV_MOVE_SORT && ttMove != MOVE_NONE) {
     statistics.TtMoveUsed++;
     myMg->setPV(ttMove);
   }
@@ -866,16 +849,9 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
     // Forward Pruning
     // FP will only be done when the move is not
     // interesting - no check, no capture, etc.
-    if (!isPv &&
-        extension == 0 &&
-        move != ttMove &&
-        move != myMg->getKillerMoves()[0] &&
-        move != myMg->getKillerMoves()[1] &&
-        typeOf(move) != PROMOTION &&
-        !p.isCapturingMove(move) &&
-        !hasCheck &&  // pre move
-        !givesCheck &&// post move
-        !matethreat) {// from pre move null move check
+    if (!isPv && extension == 0 && move != ttMove && move != myMg->getKillerMoves()[0] && move != myMg->getKillerMoves()[1] && typeOf(move) != PROMOTION && !p.isCapturingMove(move) && !hasCheck &&// pre move
+        !givesCheck &&                                                                                                                                                                              // post move
+        !matethreat) {                                                                                                                                                                              // from pre move null move check
 
       // to check in futility pruning what material delta we have
       const auto moveGain = valueOf(p.getPiece(to));
@@ -921,8 +897,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
       // if conditions apply.
       if (SearchConfig::USE_LMR) {
         // compute reduction from depth and move searched
-        if (depth >= SearchConfig::LMR_MIN_DEPTH &&
-            movesSearched >= SearchConfig::LMR_MIN_MOVES) {
+        if (depth >= SearchConfig::LMR_MIN_DEPTH && movesSearched >= SearchConfig::LMR_MIN_MOVES) {
           if (depth >= 32 || movesSearched >= 64) {
             lmrDepth -= static_cast<Depth>(SearchConfig::LMR_REDUCTION[31][63]);
           }
@@ -1154,17 +1129,12 @@ Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, Search::N
       statistics.ttHit++;
       ttMove              = static_cast<Move>(ttEntryPtr->move);
       const Value ttValue = valueFromTt(ttEntryPtr->value, ply);
-      if (validValue(ttValue) &&
-          (ttEntryPtr->type == EXACT ||
-           (ttEntryPtr->type == ALPHA && ttValue <= alpha) ||
-           (ttEntryPtr->type == BETA && ttValue >= beta)) &&
-          SearchConfig::USE_TT_VALUE) {
+      if (validValue(ttValue) && (ttEntryPtr->type == EXACT || (ttEntryPtr->type == ALPHA && ttValue <= alpha) || (ttEntryPtr->type == BETA && ttValue >= beta)) && SearchConfig::USE_TT_VALUE) {
         statistics.TtCuts++;
         return ttValue;
       }
       // if we have a static eval stored we can reuse it
-      if (SearchConfig::USE_EVAL_TT &&
-          ttEntryPtr->eval != VALUE_NONE) {
+      if (SearchConfig::USE_EVAL_TT && ttEntryPtr->eval != VALUE_NONE) {
         statistics.evalFromTT++;
         staticEval = ttEntryPtr->eval;
       }
@@ -1207,8 +1177,7 @@ Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, Search::N
   pv[ply].clear();
 
   // PV Move Sort
-  if (SearchConfig::USE_TT_PV_MOVE_SORT &&
-      ttMove != MOVE_NONE) {
+  if (SearchConfig::USE_TT_PV_MOVE_SORT && ttMove != MOVE_NONE) {
     statistics.TtMoveUsed++;
     myMg->setPV(ttMove);
   }
@@ -1234,14 +1203,8 @@ Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, Search::N
     // Forward Pruning
     // FP will only be done when the move is not
     // interesting - no check, no capture, etc.
-    if (SearchConfig::USE_QFP &&
-        !isPv &&
-        move != ttMove &&
-        move != myMg->getKillerMoves()[0] &&
-        move != myMg->getKillerMoves()[1] &&
-        typeOf(move) != PROMOTION &&
-        !hasCheck &&// pre move
-        !givesCheck // post move
+    if (SearchConfig::USE_QFP && !isPv && move != ttMove && move != myMg->getKillerMoves()[0] && move != myMg->getKillerMoves()[1] && typeOf(move) != PROMOTION && !hasCheck &&// pre move
+        !givesCheck                                                                                                                                                            // post move
     ) {
       // to check in futility pruning what material delta we have
       const auto moveGain       = valueOf(p.getPiece(to));
@@ -1609,7 +1572,7 @@ void Search::sendResult(SearchResult& result) {
 
 void Search::sendIterationEndInfoToUci() {
   const NanoSec& since = elapsedSince(startSearchTime);
-  lastUciUpdateTime = nowFast();
+  lastUciUpdateTime    = nowFast();
   if (uciHandler) {
     uciHandler->sendIterationEndInfo(
       statistics.currentSearchDepth,

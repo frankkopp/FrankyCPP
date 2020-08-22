@@ -26,15 +26,15 @@
 #ifndef FRANKYCPP_OPENINGBOOK_H
 #define FRANKYCPP_OPENINGBOOK_H
 
-#include <filesystem>
-#include <mutex>
-#include <thread>
+#include "chesscore/Position.h"
+#include "types/types.h"
 
 #include <boost/serialization/unordered_map.hpp>
 #include <boost/serialization/vector.hpp>
 
-#include "types/types.h"
-#include "chesscore/Position.h"
+#include <filesystem>
+#include <mutex>
+#include <thread>
 
 #include "gtest/gtest_prod.h"
 
@@ -43,21 +43,22 @@ typedef std::vector<std::string> Moves;
 /**
  * An entry in the opening book data structure. Stores a key (e.g. zobrist key)
  * for the position, the current fen, a count of how often a position is in the
- * book and two vectors storing the moves from the position and pointers to the
+ * book and two vectors storing the moves from the position and the key to the
  * book entry for the corresponding move.
  */
 struct BookEntry {
-  Key key{};                   
+  Key key{};
   int counter{1};
   std::vector<Move> moves{};
   std::vector<Key> nextPosition{};
 
-  BookEntry() = default; // necessary for serialization
+  BookEntry() = default;// necessary for serialization
   explicit BookEntry(Key zobrist) : key(zobrist), counter{1} {}
 
   [[nodiscard]] std::string str() const {
     std::ostringstream os;
-    os << this->key << " (" << this->counter << ")" << " [ ";
+    os << this->key << " (" << this->counter << ")"
+       << " [ ";
     for (std::size_t i = 0; i < moves.size(); i++) {
       os << ::str(this->moves[i]) << " ";
     }
@@ -68,11 +69,11 @@ struct BookEntry {
   // BOOST Serialization
   friend class boost::serialization::access;
   template<class Archive>
-  void serialize(Archive & ar, [[maybe_unused]] const unsigned int version) {
-    ar & BOOST_SERIALIZATION_NVP (key);
-    ar & BOOST_SERIALIZATION_NVP (counter);
-    ar & BOOST_SERIALIZATION_NVP (moves);
-    ar & BOOST_SERIALIZATION_NVP (nextPosition);
+  void serialize(Archive& ar, [[maybe_unused]] const unsigned int version) {
+    ar& BOOST_SERIALIZATION_NVP(key);
+    ar& BOOST_SERIALIZATION_NVP(counter);
+    ar& BOOST_SERIALIZATION_NVP(moves);
+    ar& BOOST_SERIALIZATION_NVP(nextPosition);
   }
 };
 
@@ -106,10 +107,8 @@ public:
   };
 
 private:
-
   // the book data structure
   std::unordered_map<Key, BookEntry> bookMap{};
-  std::mutex bookMutex;
 
   // book information
   BookFormat bookFormat{};
@@ -123,18 +122,19 @@ private:
 
   // multi threading handling
   unsigned int numberOfThreads = 1;
+  std::mutex bookMutex;
   std::mutex gamesMutex;
 
   // cache control
-  bool _useCache = true;
+  bool _useCache      = true;
   bool _recreateCache = false;
   // the extension cache files use after the given opening book filename
   static constexpr const char* cacheExt = ".cache.bin";
 
+  // the root position's zobrist key is required often - so we cache it here
   const Key rootZobristKey = Position{}.getZobristKey();
 
 public:
-
   /**
      * Creates an instance of an OpeningBook. Will not initialize (read book data).
      * Call initialize() to read book data from file or cache.<br/>
@@ -166,8 +166,8 @@ public:
   /**
    * returns a hierarchical string of the book entries with given depth
    */
-   [[nodiscard]] std::string str(int level);
-   std::string getLevelStr(int level, int maxLevel, const BookEntry* node);
+  [[nodiscard]] std::string str(int level);
+  std::string getLevelStr(int level, int maxLevel, const BookEntry* node);
 
   /**
    * Returns a random move for the given position.
@@ -176,17 +176,22 @@ public:
   [[nodiscard]] Move getRandomMove(Key zobrist) const;
 
   /** Checks of file exists and encapsulates platform differences for
-  * filesystem operations */
+  * filesystem operations (obsolete with support for std::filesystem) */
   static inline bool fileExists(const std::string& filePath) {
     return std::filesystem::exists(filePath);
   }
 
-private:
+  /** Returns files size in bytes and encapsulates platform differences for
+  * filesystem operations  (obsolete with support for std::filesystem) */
+  static inline uint64_t getFileSize(const std::string& filePath) {
+    return std::filesystem::file_size(filePath);
+  }
 
+private:
   // reads all lines from a file into a vector of string_views
   std::vector<std::string_view> readFile(const std::string& filePath);
 
-  // decides which process to use to read games based on book format
+  // decides which process to use to read games based on book format and calls this process
   void readGames(const std::vector<std::string_view>& lines);
 
   // processes lines with one line per game and 4 chars per move without any separator characters
@@ -215,7 +220,7 @@ private:
   // writing to the book map with synchronization
   void writeToBook(Move move, Key currentKey, Key lastKey);
 
-  // fast removal of unwanted parts of a PGN move section to avoid slow regex
+  // fast removal of unwanted parts of a PGN move section (not using slow std::regex)
   static void cleanUpPgnMoveSection(std::string& str);
 
   // std::thread::hardware_concurrency() is not reliable - on some platforms
@@ -224,14 +229,13 @@ private:
     return std::thread::hardware_concurrency() == 0 ? 4 : std::thread::hardware_concurrency();
   }
 
-  /** Returns files size in bytes and encapsulates platform differences for
-   * filesystem operations */
-  static inline uint64_t getFileSize(const std::string& filePath) {
-    return std::filesystem::file_size(filePath);
-  }
-
+  // checks if a cache file exists
   [[nodiscard]] bool hasCache() const;
+
+  // saves the book to a cache file
   void saveToCache();
+
+  // loads the book from a cache file
   bool loadFromCache();
 
   FRIEND_TEST(OpeningBookTest, readFile);
@@ -243,11 +247,18 @@ private:
   FRIEND_TEST(OpeningBookTest, pgnCleanUpTest);
 
 public:
+  // returns if a cache is used during initialization
   [[nodiscard]] bool useCache() const { return _useCache; }
-  void setUseCache(bool aBool) { _useCache = aBool; }
-  [[nodiscard]] bool recreateCache() const { return _recreateCache; }
-  void setRecreateCache(bool recreateCache) { _recreateCache = recreateCache; }
 
+  // sets if a cache is used during initialization
+  void setUseCache(bool aBool) { _useCache = aBool; }
+
+  // returns if the cache file will be regenerated during
+  // initialization even if it already exists
+  [[nodiscard]] bool recreateCache() const { return _recreateCache; }
+
+  // sets if the cache file will be regenerated during initialization
+  void setRecreateCache(bool recreateCache) { _recreateCache = recreateCache; }
 };
 
 

@@ -23,24 +23,24 @@
  *
  */
 
-#include <cctype>
-#include <fstream>
-#include <memory>
-#include <random>
-#include <string>
-
+#include "openingbook/OpeningBook.h"
 #include "chesscore/MoveGenerator.h"
 #include "chesscore/Position.h"
 #include "common/Logging.h"
 #include "common/ThreadPool.h"
 #include "common/misc.h"
 #include "common/stringutil.h"
-#include "openingbook/OpeningBook.h"
 #include "types/types.h"
 
 // BOOST Serialization
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
+
+#include <cctype>
+#include <fstream>
+#include <memory>
+#include <random>
+#include <string>
 
 // enable for parallel processing of input lines
 #define PARALLEL_LINE_PROCESSING
@@ -59,12 +59,7 @@
 
 OpeningBook::OpeningBook(std::string bookPath, BookFormat bFormat)
     : bookFormat(bFormat), bookFilePath(std::move(bookPath)) {
-
   numberOfThreads = getNoOfThreads();
-
-  // set root entry
-  bookMap.emplace(rootZobristKey, rootZobristKey);
-  bookMap.at(rootZobristKey).counter = 0;
 }
 
 Move OpeningBook::getRandomMove(Key zobrist) const {
@@ -83,7 +78,10 @@ Move OpeningBook::getRandomMove(Key zobrist) const {
 }
 
 void OpeningBook::initialize() {
-  if (isInitialized) return;
+  if (isInitialized) {
+    LOG__WARN(Logger::get().BOOK_LOG, "Opening book already initialized. Call to initialize ignored.");
+    return;
+  }
   LOG__INFO(Logger::get().BOOK_LOG, "Opening book initialization.");
 
   const auto start = std::chrono::high_resolution_clock::now();
@@ -95,6 +93,10 @@ void OpeningBook::initialize() {
 
   // load the whole file into memory line by line
   const auto lines = readFile(bookFilePath);
+
+  // set root entry
+  bookMap.emplace(rootZobristKey, rootZobristKey);
+  bookMap.at(rootZobristKey).counter = 0;
 
   // reads lines and retrieves game (lists of moves) and adds these to the book map
   readGames(lines);
@@ -118,7 +120,7 @@ void OpeningBook::reset() {
   const std::scoped_lock<std::mutex> lock(bookMutex);
   bookMap.clear();
   isInitialized = false;
-  LOG__DEBUG(Logger::get().TEST_LOG, "Opening book reset: {:L}", bookMap.size());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Opening book reset: {:L} entries", bookMap.size());
 }
 
 std::string OpeningBook::str(int level) {
@@ -165,7 +167,7 @@ std::vector<std::string_view> OpeningBook::readFile(const std::string& filePath)
     const uint64_t fileSize = getFileSize(filePath);
     LOG__DEBUG(Logger::get().BOOK_LOG, "Opened Opening Book '{}' with {:L} Byte successful.", filePath, fileSize);
 
-    // fastest way to read all lines from a file into memory
+    // fast way to read all lines from a file into memory
     // https://stackoverflow.com/a/52699885/9161706
     file.seekg(0, std::ios::beg);
     file.seekg(0, std::ios::end);
@@ -228,7 +230,7 @@ void OpeningBook::readGamesSimple(const std::vector<std::string_view>& lines) {
 
 #ifdef HAS_EXECUTION_LIB// use parallel lambda
   std::for_each(std::execution::par_unseq, lines.begin(), lines.end(),
-                [&](auto& line) {
+                [&](auto&& line) {
                   readOneGameSimple(line);
                 });
 #else// no <execution> library (< C++17)
@@ -262,8 +264,11 @@ void OpeningBook::readOneGameSimple(const std::string_view& lineView) {
   // trim line
   auto lineViewTrimmed = trimFast(lineView);
 
-  // simple lines are in tuples of 4 per moveStr// read in 4 characters and check if they might
+  // simple lines are in tuples of 4 per move
+  // read in 4 characters and check if they might
   // be moves (letter, digit, letter, digit)
+  // checks if they are indeed valid moves happen when trying to add
+  // the move to the book map
   int index = 0;
   while (index < lineViewTrimmed.length()) {
     const auto moveStr = lineViewTrimmed.substr(index, 4);
@@ -272,7 +277,7 @@ void OpeningBook::readOneGameSimple(const std::string_view& lineView) {
     if (!(isalpha(moveStr[0]) && isdigit(moveStr[1]) && isalpha(moveStr[2]) && isdigit(moveStr[3]))) {
       break;
     }
-    // add the validated move to the game and commit the move to the current position
+    // add the valid formatted moves strings to the game
     game.emplace_back(std::string{moveStr});
   }
 
@@ -320,8 +325,8 @@ void OpeningBook::readGamesSan(const std::vector<std::string_view>& lines) {
 void OpeningBook::readOneGameSan(const std::string_view& lineView) {
   Moves game{};
 
-  // create a trimmed copy of the string as regex can't handle string_view :(
-  const std::string line{trimFast(lineView)};
+  // create a trimmed copy of the string
+  const auto line{trimFast(lineView)};
 
   // check if the line starts at least with a number or a character
   if (!isalnum(line[0])) return;
@@ -336,14 +341,14 @@ void OpeningBook::readOneGameSan(const std::string_view& lineView) {
   1. f4 d5 2. Nf3 Nf6 3. e3 Bg4 4. Be2 e6 5. O-O Bd6 6. b3 O-O 7. Bb2 c5 1/2-1/2
   */
 
-  std::vector<std::string> moveStrings{};
-  split(line, moveStrings, ' ');
+  std::vector<std::string_view> moveStrings{};
+  splitFast(line, moveStrings, " ");
 
   for (const auto& moveStr : moveStrings) {
     if (moveStr.empty() || moveStr.length() == 1) continue;
     if (!isalpha(moveStr[0])) continue;
     // add the validated move to the game and commit the move to the current position
-    game.push_back(moveStr);
+    game.push_back(static_cast<const std::string>(moveStr));
   }
 
   // add game to book
@@ -434,7 +439,7 @@ void OpeningBook::readOneGamePgn(const std::vector<std::string_view>* lines, siz
   // find and check move from the clean line of moves
   // get each move string from the clean line
   std::vector<std::string> movesStrings{};
-  split(moveLine, movesStrings, ' ');
+  splitFast(moveLine, movesStrings, " ");
 
   // add game to book
   addGameToBook(movesStrings);
@@ -571,8 +576,7 @@ void OpeningBook::addGameToBook(const Moves& game) {
     Move move;
 
     // check the notation format
-    if ((moveStr.size() == 4 && islower(moveStr[0]) && isdigit(moveStr[1]) && islower(moveStr[2]) && isdigit(moveStr[3])) ||
-        (moveStr.size() == 5 && islower(moveStr[0]) && isdigit(moveStr[1]) && islower(moveStr[2]) && isdigit(moveStr[3]) && isupper(moveStr[4]))) {
+    if ((moveStr.size() == 4 && islower(moveStr[0]) && isdigit(moveStr[1]) && islower(moveStr[2]) && isdigit(moveStr[3])) || (moveStr.size() == 5 && islower(moveStr[0]) && isdigit(moveStr[1]) && islower(moveStr[2]) && isdigit(moveStr[3]) && isupper(moveStr[4]))) {
       // UCI
       move = mg.getMoveFromUci(p, trimFast(moveStr));
     }

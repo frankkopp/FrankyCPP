@@ -19,6 +19,7 @@ add_executable(
         common/SemaphoreTest.cpp
         common/FifoTest.cpp
         common/ThreadPoolTest.cpp
+        common/StringUtilsTest.cpp
 
         chesscore/PositionTest.cpp
         chesscore/MoveGeneratorTest.cpp
