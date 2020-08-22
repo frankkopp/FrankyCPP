@@ -53,7 +53,7 @@ TEST_F(OpeningBookTest, readFile) {
 
   // set up Opening Book
   OpeningBook book{"./books/superbook.pgn", OpeningBook::BookFormat::PGN};
-  EXPECT_EQ(1, book.bookMap.size());
+  EXPECT_EQ(0, book.bookMap.size());
   EXPECT_TRUE(OpeningBook::fileExists(book.bookFilePath));
   fprintln("File {} Size {:L} Byte", book.bookFilePath, OpeningBook::getFileSize(book.bookFilePath));
 

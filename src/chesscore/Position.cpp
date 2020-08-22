@@ -23,11 +23,11 @@
  *
  */
 
-#include <string>
-
 #include "Position.h"
 #include "Values.h"
 #include "common/stringutil.h"
+
+#include <string>
 
 Key Zobrist::pieces[PIECE_LENGTH][SQ_LENGTH];
 Key Zobrist::castlingRights[CR_LENGTH];

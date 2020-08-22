@@ -26,11 +26,12 @@
 #ifndef FRANKYCPP_POSITION_H
 #define FRANKYCPP_POSITION_H
 
+#include "types/types.h"
+
+#include "gtest/gtest_prod.h"
+
 #include <array>
 #include <cstdint>
-
-#include "types/types.h"
-#include "gtest/gtest_prod.h"
 
 namespace Zobrist {
   // zobrist key for pieces - piece, board

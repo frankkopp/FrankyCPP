@@ -29,12 +29,7 @@
 // see https://gitlab.com/tbeu/wcx_setfolderdate/-/blob/master/src/splitstring.h
 // see https://stackoverflow.com/a/236803/8520615
 
-#include <chrono>
-#include <execution>
-#include <regex>
-#include <sstream>
 #include <string>
-#include <thread>
 #include <vector>
 
 // splits a string or string view into a vector of parts at each delimiter
@@ -51,6 +46,7 @@ inline void splitFast(const T& str, std::vector<T>& container, const std::string
 }
 
 // removes whitespace characters from beginning and end of string s
+// whitespaces are defined as:  ' ' || '\t' || '\n' || '\v' || '\f' || '\r'
 template <typename T>
 inline T trimFast(const T& s) {
   const int l = (int) s.length();
