@@ -132,7 +132,7 @@ TEST_F(TimingTests, DISABLED_doMoveUndoMove) {
   std::cout << os.str();
 }
 
-TEST_F(TimingTests, trimWhiteSpace) {
+TEST_F(TimingTests, DISABLED_trimWhiteSpace) {
   std::ostringstream os;
 
   //// TESTS START
@@ -213,7 +213,7 @@ TEST_F(TimingTests, trimWhiteSpace) {
   std::cout << os.str();
 }
 
-TEST_F(TimingTests, illegalCharacter) {
+TEST_F(TimingTests, DISABLED_illegalCharacter) {
   std::ostringstream os;
 
   //// TESTS START
@@ -262,6 +262,78 @@ TEST_F(TimingTests, illegalCharacter) {
 
   fprintln("Counter 1: {:L}", counter1);
   fprintln("Counter 2: {:L}", counter2);
+
+  std::cout << os.str();
+}
+
+TEST_F(TimingTests, split) {
+  std::ostringstream os;
+
+  //// TESTS START
+
+  const std::string line = "1. e4 e6 2. d4 d5 3. Nd2 Nc6 4. Ngf3 Nf6 5. e5 Nd7 6. g3 Be7 7. Bh3 b6 8. O-O "
+                           "Bb7 9. c3 h5 10. Qe2 Nf8 11. b4 a5 12. b5 Na7 13. a4 c6 14. Ba3 cxb5 15. Bxe7 "
+                           "Qxe7 16. axb5 g5 17. Bg2 Ng6 18. Rab1 h4 19. Qe3 g4 20. Ne1 Rc8 21. c4 Qf8 22. "
+                           "Nd3 Rc7 23. c5 Nc8 24. c6 Ba8 25. f3 hxg3 26. hxg3 gxf3 27. Rxf3 Nce7 28. Rbf1 "
+                           "Rh7 29. Rf6 Qh8 30. Qg5 Bxc6 31. bxc6 Rxc6 32. Nf4 Nxf4 33. Qxf4 Ng6 34. Qg4 "
+                           "Ne7 35. Qe2 Qg8 36. Qd3 Rg7 37. R1f3 Qh8 38. Qf1 Qg8 39. Qd3 Qh8 40. Qf1 Qg8 "
+                           "41. Qf2 Ng6 42. Nf1 Ke7 43. Qd2 Nf8 44. Rc3 Rxc3 45. Qxc3 Nd7 46. Qa3+ Kd8 47. "
+                           "Rf3 Qf8 48. Qa4 Qb4 49. Qxb4 axb4 50. Bh3 Nb8 51. Nd2 Nc6 52. Nb3 Ke7 53. Kf2 "
+                           "Rg8 54. Bf1 Rc8 55. Ke1 Na5 56. Kd2 Nc4+ 57. Ke1 Ra8 58. Nc1 Na5 59. Kd1 Rg8 "
+                           "60. Bb5 Rh8 61. Be2 Rh2 62. Ke1 Rh1+ 63. Bf1 Rh8 64. Nb3 Rc8 65. Be2 Nc4 66. "
+                           "Nd2 Na5 67. Kd1 Rh8 68. Rf2 Rh3 69. Nf1 Rh8 70. Nd2 Rh3 71. Rf3 Rh2 72. Rd3 "
+                           "Rh1+ 73. Nf1 Rh8 74. Ke1 Rc8 75. Nd2 Rh8 76. Bf3 Rh2 77. Kf1 Rh8 78. Kg1 Rc8 "
+                           "79. Bh5 Rc2 80. Kf1 Nc4 81. Nb3 Rb2 82. Kg1 Na5 83. Bd1 Rb1 84. Nxa5 bxa5 85. "
+                           "Kf2 Ra1 86. Ke2 a4 87. Kd2 b3 88. Kc3 Rc1+ 89. Kb2 Rc4 90. Rd2 Rc8 91. Be2 Rh8 "
+                           "92. Bb5 Rg8 93. Rd3 Ra8 94. Rd2 Rg8 95. Bxa4 Rxg3 96. Bxb3 f6 97. exf6+ Kxf6 "
+                           "98. Rf2+ Ke7 99. Kc2 Re3 100. Rh2 e5 101. dxe5 Rxe5 102. Kd3 Kd6 103. Bc2 Rg5 "
+                           "104. Rh8 Rg3+ 105. Kd4 Rg4+ 106. Kc3 Rc4+ 107. Kb3 Rg4 108. Rd8+ Kc5 109. Rc8+ "
+                           "Kd6 110. Bh7 Rc4 111. Rd8+ Kc5 112. Bg8 Rb4+ 113. Ka3 Rd4 114. Kb3 Rb4+ 115. "
+                           "Kc3 Rc4+ 116. Kd3 Rd4+ 117. Ke3 Re4+ 118. Kf3 Re5 119. Kf4 Rh5 120. Bf7 Rh4+ "
+                           "121. Ke5 Re4+ 122. Kf5 Rd4 123. Be6 Rd1 124. Ke5 Re1+ 125. Kf6 Rd1 126. Ke7 Rd2 "
+                           "127. Rc8+ Kd4 128. Bxd5 Rh2 129. Kd6 Rh6+ 130. Be6 Rg6 131. Rc4+ Kd3 132. Rh4 "
+                           "Kc3 133. Re4 Kd3 134. Rh4 Kc3 135. Ke5 Rg5+ 136. Bf5 Kb3 137. Rf4 Kc3 138. Kd5 "
+                           "Rg7 139. Rc4+ Kd2 140. Kd4 Ke2 141. Ke4 Re7+ 142. Kf4 Rf7 143. Rc2+ Kd1 144. "
+                           "Ra2 Kc1 145. Ke4 Rf8 146. Rf2 Rd8 147. Ke3 Re8+ 148. Be4 Rc8 149. Bd3 Re8+ 150. "
+                           "Be4 Rc8 151. Rf1+ Kb2 152. Rb1+ Ka3 153. Bd3 Re8+ 154. Be4 Rc8 155. Rf1 Kb2 "
+                           "156. Rb1+ Ka3 157. Kd4 Ka4 158. Bf5 Rh8 159. Be6 Rh6 160. Kc4 Rh4+ 161. Kc5 "
+                           "Rh5+ 162. Bd5 Ka3 163. Rb3+ Ka4 164. Rg3 Re5 165. Rg2 Re3 166. Kc4 Ka5 167. Rg6 "
+                           "Re1 168. Kc5 Rb1 169. Bc4 Rb5+ 170. Kd4 1/2-1/2";
+  const std::string_view lineView{line};
+
+  NEWLINE;
+
+  std::vector<std::string> splitStringParts{};
+  std::function<void()> f1 = [&]() {
+    splitStringParts.clear();
+    splitFast(line, splitStringParts, " ");
+  };
+
+//  std::vector<std::string> splitStringParts2{};
+//  std::function<void()> f2 = [&]() {
+//    splitStringParts2.clear();
+//    split(line, splitStringParts2, ' ');
+//  };
+
+  std::vector<std::string_view> splitViewParts{};
+  std::function<void()> f3 = [&]() {
+    splitViewParts.clear();
+    splitFast(lineView, splitViewParts, " ");
+  };
+
+  std::vector<std::function<void()>> tests;
+    tests.push_back(f1);
+//    tests.push_back(f2);
+    tests.push_back(f3);
+  //// TESTS END
+
+  testTiming(os, 5, 10, 10'000, tests);
+
+  NEWLINE;
+
+  fprintln("Elements: {:L}", splitStringParts.size());
+//  fprintln("Elements: {:L}", splitStringParts2.size());
+  fprintln("Elements: {:L}", splitViewParts.size());
 
   std::cout << os.str();
 }

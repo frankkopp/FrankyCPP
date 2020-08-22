@@ -943,7 +943,7 @@ void Position::setupBoard(const std::string& fen) {
   std::vector<std::string> fenParts{};
 
   // split into parts and check if at least the position is available
-  split(myFen, fenParts, ' ');
+  splitFast(myFen, fenParts, " ");
   if (fenParts.empty()) {
     throw std::invalid_argument("FEN must not be empty: " + myFen);
   }
