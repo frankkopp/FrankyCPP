@@ -79,8 +79,8 @@ class Search {
   // time management for the search
   TimePoint startTime{};    // when startSearch has been called
   TimePoint startSearchTime;// actual start time of search - only different from startTime after ponderhit()
-  MilliSec timeLimit{};
-  MilliSec extraTime{};
+  milliseconds timeLimit{};
+  milliseconds extraTime{};
   std::thread timerThread{};
 
   // Control UCI updates to avoid flooding
@@ -278,8 +278,8 @@ private:
 
   // setupTimeControl sets up time control according to the given search limits
   // and returns a limit on the duration for the current search.
-  static MilliSec setupTimeControl(Position& position, SearchLimits& limits);
-  FRIEND_TEST(SearchTest, setupTime);
+  static milliseconds setupTimeControl(Position& position, SearchLimits& limits);
+  FRIEND_TEST(SearchTest, setupTime);       
 
   // addExtraTime certain situations might call for a extension or reduction
   // of the given time limit for the search. This function add/subtracts

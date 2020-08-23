@@ -146,7 +146,7 @@ int main(int argc, char* argv[]) {
       }
       std::cout << "Time per Test:      " << fmt::format("{:L}", testsuite_time) << "\n";
       std::cout << "Max depth per Test: " << fmt::format("{:L}", testsuite_depth) << "\n";
-      TestSuite testSuite{MilliSec{testsuite_time}, Depth{testsuite_depth}, testsuite_file};
+      TestSuite testSuite{milliseconds{testsuite_time}, Depth{testsuite_depth}, testsuite_file};
       testSuite.runTestSuite();
       return 0;
     }

@@ -169,8 +169,8 @@ void Search::run() {
   // initialize search
   stopSearchFlag    = false;
   hasResultFlag     = false;
-  timeLimit         = MilliSec{};
-  extraTime         = MilliSec{};
+  timeLimit         = milliseconds{};
+  extraTime         = milliseconds{};
   nodesVisited      = 0;
   statistics        = SearchStats{};
   lastUciUpdateTime = nowFast();
@@ -1459,7 +1459,7 @@ void Search::setupSearchLimits(Position& p, SearchLimits& sl) {
   }
   if (sl.timeControl) {
     timeLimit = setupTimeControl(p, sl);
-    extraTime = MilliSec{0};
+    extraTime = milliseconds{0};
     if (sl.moveTime.count()) {
       LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Time Controlled: Time per Move {}", str(sl.moveTime));
     }
@@ -1486,10 +1486,10 @@ void Search::setupSearchLimits(Position& p, SearchLimits& sl) {
   }
 }
 
-MilliSec Search::setupTimeControl(Position& position, SearchLimits& sl) {
+milliseconds Search::setupTimeControl(Position& position, SearchLimits& sl) {
   if (sl.moveTime.count()) {// mode time per move
     // we need a little room for executing the code
-    MilliSec duration = sl.moveTime - MilliSec{20};
+    milliseconds duration = sl.moveTime - milliseconds{20};
     // if the duration is now negative return the original value and issue a warning
     if (duration.count() < 0) {
       LOG__WARN(Logger::get().SEARCH_LOG, "Very short move time: {} ms", sl.moveTime.count());
@@ -1506,7 +1506,7 @@ MilliSec Search::setupTimeControl(Position& position, SearchLimits& sl) {
       movesLeft = 15 + static_cast<int>(25 * position.getGamePhaseFactor());
     }
     // time left for current player
-    MilliSec timeLeft;
+    milliseconds timeLeft;
     if (position.getNextPlayer()) {
       timeLeft = sl.blackTime + (movesLeft * sl.blackInc);
     }
@@ -1514,22 +1514,22 @@ MilliSec Search::setupTimeControl(Position& position, SearchLimits& sl) {
       timeLeft = sl.whiteTime + (movesLeft * sl.whiteInc);
     }
     // estimate time per move
-    MilliSec tl = static_cast<MilliSec>(timeLeft.count() / movesLeft);
+    milliseconds tl = static_cast<milliseconds>(timeLeft.count() / movesLeft);
     // account for runtime of our code
     if (tl.count() < 100) {
       // limits for very short available time reduced by another 20%
-      return static_cast<MilliSec>(uint64_t(0.8 * tl.count()));
+      return static_cast<milliseconds>(uint64_t(0.8 * tl.count()));
     }
     // reduced by 10%
-    return static_cast<MilliSec>(uint64_t(0.9 * tl.count()));
+    return static_cast<milliseconds>(uint64_t(0.9 * tl.count()));
   }
 }
 
 void Search::addExtraTime(double f) {
   if (searchLimits.timeControl && !searchLimits.moveTime.count()) {
     auto duration = uint64_t(timeLimit.count() * (f - 1.0));
-    extraTime += MilliSec(duration);
-    LOG__DEBUG(Logger::get().SEARCH_LOG, "Time added/reduced by {} to {} ", str(MilliSec(duration)), str(timeLimit + extraTime));
+    extraTime += milliseconds(duration);
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Time added/reduced by {} to {} ", str(milliseconds(duration)), str(timeLimit + extraTime));
   }
 }
 
@@ -1571,7 +1571,7 @@ void Search::sendResult(SearchResult& result) {
 }
 
 void Search::sendIterationEndInfoToUci() {
-  const NanoSec& since = elapsedSince(startSearchTime);
+  const nanoseconds& since = elapsedSince(startSearchTime);
   lastUciUpdateTime    = nowFast();
   if (uciHandler) {
     uciHandler->sendIterationEndInfo(
@@ -1619,7 +1619,7 @@ void Search::sendSearchUpdateToUci() {
 
   const int hashfull = tt->hashFull();
 
-  const NanoSec& since = elapsedSince(startSearchTime);
+  const nanoseconds& since = elapsedSince(startSearchTime);
 
   if (uciHandler) {
     uciHandler->sendSearchUpdate(
@@ -1644,7 +1644,7 @@ void Search::sendSearchUpdateToUci() {
 }
 
 void Search::sendAspirationResearchInfo(const std::string& boundString) {
-  const NanoSec& since = elapsedSince(startSearchTime);
+  const nanoseconds& since = elapsedSince(startSearchTime);
   if (uciHandler) {
     uciHandler->sendAspirationResearchInfo(
       statistics.currentSearchDepth,

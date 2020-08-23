@@ -20,6 +20,7 @@ add_executable(
         common/FifoTest.cpp
         common/ThreadPoolTest.cpp
         common/StringUtilsTest.cpp
+        common/TimeUtilsTest.cpp
 
         chesscore/PositionTest.cpp
         chesscore/MoveGeneratorTest.cpp
@@ -42,7 +43,7 @@ add_executable(
 
         TimingTests.cpp
         BOOST_Test.cpp
-        PlaygroundTests.cpp )
+        PlaygroundTests.cpp common/TimeUtilsTest.cpp)
 
 target_link_libraries(
         ${testExeName}
