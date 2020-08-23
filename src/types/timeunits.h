@@ -52,38 +52,38 @@ inline std::string format(T timeunit) {
   const char oldFill = os.fill();
   os.fill('0');
   typedef duration<int, std::ratio<86400*365>> years;
-  auto y = duration_cast<years>(ns);
+  const auto y = duration_cast<years>(ns);
   if (y.count()) {
     foundNonZero = true;
     os << y.count() << "y:";
     ns -= y;
   }
   typedef duration<int, std::ratio<86400>> days;
-  auto d = duration_cast<days>(ns);
+  const auto d = duration_cast<days>(ns);
   if (d.count()) {
     foundNonZero = true;
     os << d.count() << "d:";
     ns -= d;
   }
-  auto h = duration_cast<hours>(ns);
+  const auto h = duration_cast<hours>(ns);
   if (h.count() || foundNonZero) {
     foundNonZero = true;
     os << h.count() << "h:";
     ns -= h;
   }
-  auto m = duration_cast<minutes>(ns);
+  const auto m = duration_cast<minutes>(ns);
   if (m.count() || foundNonZero) {
     foundNonZero = true;
     os << m.count() << "m:";
     ns -= m;
   }
-  auto s = duration_cast<seconds>(ns);
+  const auto s = duration_cast<seconds>(ns);
   if (s.count() || foundNonZero) {
     foundNonZero = true;
     os << s.count() << "s:";
     ns -= s;
   }
-  auto ms = duration_cast<milliseconds>(ns);
+  const auto ms = duration_cast<milliseconds>(ns);
   if (ms.count() || foundNonZero) {
     if (foundNonZero) {
       os << std::setw(3);
@@ -92,7 +92,7 @@ inline std::string format(T timeunit) {
     ns -= ms;
     foundNonZero = true;
   }
-  auto us = duration_cast<microseconds>(ns);
+  const auto us = duration_cast<microseconds>(ns);
   if (us.count() || foundNonZero) {
     if (foundNonZero) {
       os << std::setw(3);
