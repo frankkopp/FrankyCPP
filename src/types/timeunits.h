@@ -47,9 +47,7 @@ template<typename T>
 inline std::string format(T timeunit) {
   nanoseconds ns = duration_cast<nanoseconds>(timeunit);
   std::ostringstream os;
-  os.imbue(deLocale);
   bool foundNonZero  = false;
-  const char oldFill = os.fill();
   os.fill('0');
   typedef duration<int, std::ratio<86400*365>> years;
   const auto y = duration_cast<years>(ns);
@@ -101,7 +99,6 @@ inline std::string format(T timeunit) {
     ns -= us;
   }
   os << std::setw(3) << ns.count() << "ns" ;
-  os.fill(oldFill);
   return os.str();
 }
 
