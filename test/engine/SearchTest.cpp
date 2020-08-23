@@ -65,7 +65,7 @@ TEST_F(SearchTest, setupTime) {
   Position p{};
   SearchLimits sl{};
 
-  sl.moveTime = MilliSec{1500};
+  sl.moveTime = milliseconds{1500};
   EXPECT_EQ(1480, Search::setupTimeControl(p, sl).count());
 
   sl           = SearchLimits{};
@@ -178,7 +178,7 @@ TEST_F(SearchTest, startPonderSearch) {
   SearchLimits sl{};
   Search s{};
   sl.timeControl = true;
-  sl.moveTime    = MilliSec{1000};
+  sl.moveTime    = milliseconds{1000};
   sl.ponder      = true;
   s.isReady();
   TimePoint start = currentTime();

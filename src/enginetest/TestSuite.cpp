@@ -33,7 +33,7 @@
 
 #include <boost/algorithm/string.hpp>
 
-TestSuite::TestSuite(const MilliSec& time, Depth searchDepth, const std::string& filePath)
+TestSuite::TestSuite(const milliseconds& time, Depth searchDepth, const std::string& filePath)
     : searchTime(time), searchDepth(searchDepth), filePath(filePath) {
 
   LOG__INFO(Logger::get().TSUITE_LOG, "Preparing Test Suite {}", filePath);
@@ -113,7 +113,7 @@ void TestSuite::runTestSuite() {
   fprintln("Failed:     {:<3d} ({:d} %)", lastResult.failedCounter, 100 * lastResult.failedCounter / lastResult.counter);
   fprintln("Skipped:    {:<3d} ({:d} %)", lastResult.skippedCounter, 100 * lastResult.skippedCounter / lastResult.counter);
   fprintln("Not tested: {:<3d} ({:d} %)", lastResult.notTestedCounter, 100 * lastResult.notTestedCounter / lastResult.counter);
-  fprintln("Test time:  {:s}", str(elapsed));
+  fprintln("Test time:  {:s}", format(elapsed));
   fprintln("\nConfiguration:\n{:s}\n", UciOptions::getInstance()->str());
 }
 
@@ -153,7 +153,7 @@ void TestSuite::runAllTests(Search& search, SearchLimits& searchLimits) {
     test.nodes       = search.getLastSearchResult().nodes;
     test.time        = search.getLastSearchResult().time;
     test.nps         = nps(search.getLastSearchResult().nodes, search.getLastSearchResult().time);
-    fprintln("Test finished in {} ms with result {} ({}) - nps: {:L}\n\n",
+    fprintln("Test finished in {} with result {} ({}) - nps: {:L}\n\n",
              str(elapsedTime), resultTypeStr[test.result], str(test.actualMove), test.nps);
   }
 }

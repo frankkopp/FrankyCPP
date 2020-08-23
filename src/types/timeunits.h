@@ -27,41 +27,102 @@
 #define FRANKYCPP_TIMEUNITS_H
 
 #include <chrono>
+#include <iomanip>
+#include <sstream>
 
-using namespace std::chrono_literals ;
-using namespace std::chrono ;
+using namespace std::chrono_literals;
+using namespace std::chrono;
 
 typedef time_point<std::chrono::high_resolution_clock> TimePoint;
-typedef milliseconds MilliSec;
-typedef nanoseconds NanoSec;
 
-
-inline std::string str(MilliSec s) {
-  return fmt::format(deLocale, "{:.3f} s", static_cast<double>(s.count())/1e3);
+inline std::string str(milliseconds s) {
+  return fmt::format(deLocale, "{:.3f} s", static_cast<double>(s.count()) / 1e3);
 }
 
-inline std::string str(NanoSec s) {
-  return fmt::format(deLocale, "{:.9f} s", static_cast<double>(s.count())/1e9);
+inline std::string str(nanoseconds s) {
+  return fmt::format(deLocale, "{:.9f} s", static_cast<double>(s.count()) / 1e9);
 }
 
-// returns the nodes per second from nano seconds
+template<typename T>
+inline std::string format(T timeunit) {
+  nanoseconds ns = duration_cast<nanoseconds>(timeunit);
+  std::ostringstream os;
+  os.imbue(deLocale);
+  bool foundNonZero  = false;
+  const char oldFill = os.fill();
+  os.fill('0');
+  typedef duration<int, std::ratio<86400*365>> years;
+  auto y = duration_cast<years>(ns);
+  if (y.count()) {
+    foundNonZero = true;
+    os << y.count() << "y:";
+    ns -= y;
+  }
+  typedef duration<int, std::ratio<86400>> days;
+  auto d = duration_cast<days>(ns);
+  if (d.count()) {
+    foundNonZero = true;
+    os << d.count() << "d:";
+    ns -= d;
+  }
+  auto h = duration_cast<hours>(ns);
+  if (h.count() || foundNonZero) {
+    foundNonZero = true;
+    os << h.count() << "h:";
+    ns -= h;
+  }
+  auto m = duration_cast<minutes>(ns);
+  if (m.count() || foundNonZero) {
+    foundNonZero = true;
+    os << m.count() << "m:";
+    ns -= m;
+  }
+  auto s = duration_cast<seconds>(ns);
+  if (s.count() || foundNonZero) {
+    foundNonZero = true;
+    os << s.count() << "s:";
+    ns -= s;
+  }
+  auto ms = duration_cast<milliseconds>(ns);
+  if (ms.count() || foundNonZero) {
+    if (foundNonZero) {
+      os << std::setw(3);
+    }
+    os << ms.count() << ".";
+    ns -= ms;
+    foundNonZero = true;
+  }
+  auto us = duration_cast<microseconds>(ns);
+  if (us.count() || foundNonZero) {
+    if (foundNonZero) {
+      os << std::setw(3);
+    }
+    os << us.count() << ".";
+    ns -= us;
+  }
+  os << std::setw(3) << ns.count() << "ns" ;
+  os.fill(oldFill);
+  return os.str();
+}
+
+// returns the nodes per second from nano seconds given as uint64_t
 inline uint64_t nps(uint64_t nodes, uint64_t ns) {
   if (!ns) return nodes;
   return nodes * 1'000'000'000 / ns;
 }
 
 // returns the nodes per second from milli seconds
-inline uint64_t nps(uint64_t nodes, MilliSec ms) {
+inline uint64_t nps(uint64_t nodes, milliseconds ms) {
   if (!ms.count()) return nodes;
-  return nodes * 1'000 / ms.count() ;
+  return nodes * 1'000 / ms.count();
 }
 
 // returns the nodes per second from nano seconds
-inline uint64_t nps(uint64_t nodes, NanoSec ns) {
+inline uint64_t nps(uint64_t nodes, nanoseconds ns) {
   return nps(nodes, ns.count());
 }
 
-inline NanoSec elapsedSince(const TimePoint tp) {
+inline nanoseconds elapsedSince(const TimePoint tp) {
   return high_resolution_clock::now() - tp;
 }
 

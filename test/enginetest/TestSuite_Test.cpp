@@ -27,6 +27,7 @@
 #include "common/Logging.h"
 #include "types/types.h"
 #include "version.h"
+#include "engine/SearchConfig.h"
 #include "enginetest/TestSuite.h"
 
 #include <gtest/gtest.h>
@@ -49,7 +50,7 @@ protected:
 };
 
 TEST_F(TestSuite_Test, readFile) {
-  MilliSec moveTime{0};
+  milliseconds moveTime{0};
   Depth depth{0};
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath += +"/test/testsets/franky_tests.epd";
@@ -58,7 +59,7 @@ TEST_F(TestSuite_Test, readFile) {
 }
 
 TEST_F(TestSuite_Test, franky_test) {
-  MilliSec moveTime{200ms};
+  milliseconds moveTime{200ms};
   Depth depth{0};
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath += +"/test/testsets/franky_tests.epd";
@@ -68,7 +69,7 @@ TEST_F(TestSuite_Test, franky_test) {
 
 TEST_F(TestSuite_Test, mate_test) {
   GTEST_SKIP();
-  MilliSec moveTime{15s};
+  milliseconds moveTime{15s};
   Depth depth{0};
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath += +"/test/testsets/mate_test_suite.epd";
@@ -77,8 +78,8 @@ TEST_F(TestSuite_Test, mate_test) {
 }
 
 TEST_F(TestSuite_Test, wac_test) {
-  GTEST_SKIP();
-  MilliSec moveTime{5s};
+//  GTEST_SKIP();
+  milliseconds moveTime{5s};
   Depth depth{0};
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath += +"/test/testsets/wac.epd";
@@ -88,7 +89,7 @@ TEST_F(TestSuite_Test, wac_test) {
 
 TEST_F(TestSuite_Test, crafty_test) {
   GTEST_SKIP();
-  MilliSec moveTime{5s};
+  milliseconds moveTime{5s};
   Depth depth{0};
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath += +"/test/testsets/crafty_test.epd";
@@ -97,8 +98,9 @@ TEST_F(TestSuite_Test, crafty_test) {
 }
 
 TEST_F(TestSuite_Test, ecm98_test) {
-  GTEST_SKIP();
-  MilliSec moveTime{5s};
+//  GTEST_SKIP();
+  SearchConfig::USE_BOOK = false;
+  milliseconds moveTime{5s};
   Depth depth{0};
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath += +"/test/testsets/ecm98.epd";

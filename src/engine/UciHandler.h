@@ -73,10 +73,10 @@ public:
 
   // send information to the UCI user interface through pipe streams
   void send(const std::string& toSend) const;
-  void sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t nodes, uint64_t nps, MilliSec time, const MoveList& pv) const;
-  void sendAspirationResearchInfo(int depth, int seldepth, Value value, const std::string& boundString, uint64_t nodes, uint64_t nps, MilliSec time, const MoveList& pv) const;
+  void sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t nodes, uint64_t nps, milliseconds time, const MoveList& pv) const;
+  void sendAspirationResearchInfo(int depth, int seldepth, Value value, const std::string& boundString, uint64_t nodes, uint64_t nps, milliseconds time, const MoveList& pv) const;
   void sendCurrentRootMove(Move currmove, std::size_t movenumber) const;
-  void sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps, MilliSec time, int hashfull) const;
+  void sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps, milliseconds time, int hashfull) const;
   void sendCurrentLine(const MoveList& moveList) const;
   void sendResult(Move bestMove, Move ponderMove) const;
   void sendString(const std::string& anyString) const;

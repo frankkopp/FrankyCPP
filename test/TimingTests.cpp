@@ -23,15 +23,17 @@
  *
  */
 
-#include <gtest/gtest.h>
-#include <random>
-#include <thread>
-
 #include "init.h"
 #include "types/types.h"
 #include "common/stringutil.h"
 #include <chesscore/Position.h>
 
+#include <gtest/gtest.h>
+
+#include <random>
+#include <regex>
+#include <functional>
+#include <thread>
 #include <chrono>
 using namespace std::chrono;
 

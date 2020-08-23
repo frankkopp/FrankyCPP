@@ -281,12 +281,12 @@ TEST(TypesTest, sortMoveListByValue) {
 
 TEST(TypesTest, nps) {
   uint64_t nodes = 10'000'000;
-  MilliSec msec{1'500};
-  NanoSec nsec{1'500'000'000};
+  milliseconds msec{1'500};
+  nanoseconds nsec{1'500'000'000};
   fprintln("{}", nps(nodes, msec));
   fprintln("{}", nps(nodes, nsec));
-  msec = MilliSec{0};
-  nsec = NanoSec{0};
+  msec = milliseconds{0};
+  nsec = nanoseconds{0};
   fprintln("{}", nps(nodes, msec));
   fprintln("{}", nps(nodes, nsec));
 }

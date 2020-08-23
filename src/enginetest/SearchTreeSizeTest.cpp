@@ -30,11 +30,11 @@
 #include "SearchTreeSizeTest.h"
 #include <engine/SearchConfig.h>
 
-Result SearchTreeSizeTest::featureMeasurements(int d, MilliSec mt, const std::string& fen) {
+Result SearchTreeSizeTest::featureMeasurements(int d, milliseconds mt, const std::string& fen) {
   Search search{};
   SearchLimits searchLimits{};
   searchLimits.depth = d;
-  if (mt != MilliSec::zero()) {
+  if (mt != milliseconds::zero()) {
     searchLimits.moveTime    = mt;
     searchLimits.timeControl = true;
   }

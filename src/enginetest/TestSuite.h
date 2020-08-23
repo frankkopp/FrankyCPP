@@ -63,7 +63,7 @@ struct TestSuiteResult {
   int skippedCounter   = 0;
   int notTestedCounter = 0;
   uint64_t nodes       = 0;
-  NanoSec time         = 0s;
+  nanoseconds time         = 0s;
 };
 
 struct Test {
@@ -78,20 +78,20 @@ struct Test {
   ResultType result{NOT_TESTED};
   std::string line{};
   uint64_t nodes{};
-  NanoSec time{};
+  nanoseconds time{};
   uint64_t nps{};
 };
 
 class TestSuite {
 
   std::vector<Test> testCases;
-  MilliSec searchTime;
+  milliseconds searchTime;
   Depth searchDepth;
   std::string filePath;
   TestSuiteResult lastResult{};
 
 public:
-  TestSuite(const MilliSec& time, Depth searchDepth, const std::string& filePath);
+  TestSuite(const milliseconds& time, Depth searchDepth, const std::string& filePath);
 
   // runs the tests
   void runTestSuite();
