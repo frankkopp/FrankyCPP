@@ -23,15 +23,17 @@
  *
  */
 
+
+
+#include "TestSuite.h"
+#include "engine/SearchConfig.h"
+
+#include <fmt/chrono.h>
+#include <boost/algorithm/string.hpp>
+
 #include <fstream>
 #include <iostream>
 #include <regex>
-#include <fmt/chrono.h>
-
-#include "TestSuite.h"
-#include <engine/SearchConfig.h>
-
-#include <boost/algorithm/string.hpp>
 
 TestSuite::TestSuite(const milliseconds& time, Depth searchDepth, const std::string& filePath)
     : searchTime(time), searchDepth(searchDepth), filePath(filePath) {
@@ -352,16 +354,11 @@ bool TestSuite::readOneEPD(std::string& line, Test& test) {
 }
 
 std::string& TestSuite::cleanUpLine(std::string& line) {
-  //  fprintln("{}", line);
-  std::regex whiteSpaceTrim(R"(^\s*(.*)\s*$)");
-  line = std::regex_replace(line, whiteSpaceTrim, "$1");
-  //  fprintln("{}", line);
+  line = trimFast(line);
   std::regex leadCommentTrim(R"(^\s*#.*$)");
   line = std::regex_replace(line, leadCommentTrim, "");
-  //  fprintln("{}", line);
   std::regex trailCommentTrim(R"(^(.*)#([^;]*)$)");
   line = std::regex_replace(line, trailCommentTrim, "$1;");
-  //  fprintln("{}", line);
   return line;
 }
 
