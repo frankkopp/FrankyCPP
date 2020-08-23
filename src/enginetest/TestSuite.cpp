@@ -156,7 +156,7 @@ void TestSuite::runAllTests(Search& search, SearchLimits& searchLimits) {
     test.time        = search.getLastSearchResult().time;
     test.nps         = nps(search.getLastSearchResult().nodes, search.getLastSearchResult().time);
     fprintln("Test finished in {} with result {} ({}) - nps: {:L}\n\n",
-             str(elapsedTime), resultTypeStr[test.result], str(test.actualMove), test.nps);
+             format(elapsedTime), resultTypeStr[test.result], str(test.actualMove), test.nps);
   }
 }
 
