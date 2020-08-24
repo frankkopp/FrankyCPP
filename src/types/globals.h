@@ -59,9 +59,9 @@ constexpr const uint64_t GB = KB * MB;
 
 // defines a locale for European style numbers
 struct deLocaleDecimals : std::numpunct<char> {
-  char do_decimal_point() const override { return ','; }
-  char do_thousands_sep() const override { return '.'; }
-  std::string do_grouping() const override { return "\03"; }
+  [[nodiscard]] char do_decimal_point() const override { return ','; }
+  [[nodiscard]] char do_thousands_sep() const override { return '.'; }
+  [[nodiscard]] std::string do_grouping() const override { return "\03"; }
 };
 
 inline const std::locale deLocale(std::cout.getloc(), new deLocaleDecimals);
