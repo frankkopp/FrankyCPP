@@ -4,9 +4,8 @@ message("====================================================================")
 
 cmake_minimum_required(VERSION 3.16)
 
-# set the name of the executable
+# Google Test executable
 set(testExeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR}_Test)
-
 include(GoogleTest)
 add_executable(
         ${testExeName}
@@ -51,20 +50,6 @@ target_link_libraries(
         FrankyCPPlib
         gtest
         gtest_main
-)
-
-# Google Benchmark executable
-set(benchExeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR}_Bench)
-add_executable(
-        ${benchExeName}
-        GoogleBenchTests.cpp
-)
-target_link_libraries(
-        ${benchExeName}
-        PUBLIC
-        FrankyCPPlib
-        benchmark
-        benchmark_main
 )
 
 # copy config files and opening books to the build directories
