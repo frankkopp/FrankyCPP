@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
     .append(std::to_string(FrankyCPP_VERSION_MAJOR))
     .append(".")
     .append(std::to_string(FrankyCPP_VERSION_MINOR));
-  std::cout << appName << std::endl;
+  std::cout << appName << std::endl;                                   
 
   std::string config_file;
   std::string book_file;

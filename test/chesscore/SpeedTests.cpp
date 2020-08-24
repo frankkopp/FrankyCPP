@@ -77,7 +77,9 @@ TEST_F(SpeedTests, TimingSetupPosition) {
     os.imbue(deLocale);
     os.precision(os.precision());
     os << "Setup position took " << elapsed.count() << " ns for " << iterations << " iterations"  << std::endl;
-    os << "Setup position " << elapsed.count() / iterations  << " ns per setup position" << std::endl;
+    os << "Setup position ";
+    os << elapsed.count() / iterations;
+    os << " ns per setup position" << std::endl;
     os << "Positions per sec " << (iterations * nanoPerSec) / elapsed.count() << " pps" << std::endl;
     std::cout << os.str() << std::endl;
   }

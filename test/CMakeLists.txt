@@ -3,11 +3,9 @@ message("FrankyCPP test/")
 message("====================================================================")
 
 cmake_minimum_required(VERSION 3.16)
-set(CMAKE_CXX_STANDARD 20)
 
-# set the name of the executable
+# Google Test executable
 set(testExeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR}_Test)
-
 include(GoogleTest)
 add_executable(
         ${testExeName}
@@ -43,7 +41,8 @@ add_executable(
 
         TimingTests.cpp
         BOOST_Test.cpp
-        PlaygroundTests.cpp common/TimeUtilsTest.cpp)
+        PlaygroundTests.cpp 
+        )
 
 target_link_libraries(
         ${testExeName}
