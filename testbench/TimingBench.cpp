@@ -32,6 +32,8 @@
 
 #include <regex>
 
+// TimingBench is meant as a collection of benchmarks for alternative implementations
+// of certain code pieces to find the fastest alternative.
 class TimingBench : public benchmark::Fixture {
 public:
   void SetUp(const ::benchmark::State&) {

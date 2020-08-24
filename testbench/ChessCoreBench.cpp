@@ -29,6 +29,7 @@
 
 #include <benchmark/benchmark.h>
 
+// Benchmark tests for the core chess classes and functions
 class ChessCoreBench : public benchmark::Fixture {
 public:
   void SetUp(const ::benchmark::State&) override {
@@ -38,7 +39,6 @@ public:
   void TearDown(const ::benchmark::State&) override {
   }
 };
-
 
 BENCHMARK_F(ChessCoreBench, BM_SetupPosition)(benchmark::State& state) {
   Position position{};
