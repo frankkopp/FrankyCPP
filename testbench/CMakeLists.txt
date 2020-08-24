@@ -8,9 +8,10 @@ cmake_minimum_required(VERSION 3.16)
 set(benchExeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR}_Bench)
 add_executable(
         ${benchExeName}
+        RunBench.cpp
         ChessCoreBench.cpp
         TimingBench.cpp
-        RunBench.cpp)
+        )
 target_link_libraries(
         ${benchExeName}
         PUBLIC
