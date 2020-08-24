@@ -14,7 +14,7 @@ configure_file(src/version.h.in version.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # C++ settings
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 
 # Unit testing enabled
 enable_testing()
@@ -59,7 +59,7 @@ elseif (CMAKE_COMPILER_IS_GNUCXX)
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     # -DCMAKE_C_COMPILER=cl.exe -DCMAKE_CXX_COMPILER=cl.exe -G Ninja
     message("Compiler Settings: MSVC")
-    set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /favor:INTEL64 /Gr /Qpar /W4 /GR /EHsc /std:c++latest /arch:AVX2 /MP")
+    set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /favor:INTEL64 /Gr /Qpar /W4 /GR /EHsc /std:c++17 /arch:AVX2 /MP")
     set(CMAKE_CXX_FLAGS_RELEASE "/O2 /Ob2 /MD /DNDEBUG")
     set(CMAKE_CXX_FLAGS_DEBUG "/Od /Ob0 /MDd /Zi /RTC1")
     # /showIncludes
@@ -80,60 +80,69 @@ message("Finding GIT...")
 set(GIT_EXECUTABLE)
 find_package(Git)
 if (GIT_FOUND)
-    message("git found: ${GIT_EXECUTABLE}")
+    message("GIT found: ${GIT_EXECUTABLE}")
 elseif ()
-    message("git NOT found:")
+    message("GIT NOT found:")
 endif ()
 
 set(FETCHCONTENT_QUIET OFF)
 set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
-
-# Getting included libs from Github
 include(FetchContent)
+
+# GOOGLE TEST
+message("Downloading/Update Google Test")
 FetchContent_Declare(
         googletest
         GIT_REPOSITORY https://github.com/google/googletest.git
         GIT_TAG release-1.10.0
 )
-message("Downloading/Update Google Test")
+FetchContent_Declare(googletest)
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_GetProperties(googletest)
-if (NOT googletest_POPULATED)
-    # Fetch the content using previously declared details
-    FetchContent_Populate(googletest)
-    # Set custom variables, policies, etc.
-    option(INSTALL_GMOCK "Install Googletest's GMock?" OFF)
-    option(INSTALL_GTEST "Install Googletest's GTest?" OFF)
-    # Bring the populated content into the build
-    add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
-endif ()
-
+option(INSTALL_GMOCK "Install Googletest's GMock?" OFF)
+option(INSTALL_GTEST "Install Googletest's GTest?" OFF)
+#if (NOT googletest_POPULATED)
+#    # Fetch the content using previously declared details
+#    FetchContent_Populate(googletest)
+#    # Set custom variables, policies, etc.
+#    # Bring the populated content into the build
+#    add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
+#endif ()
 FetchContent_MakeAvailable(googletest)
 include_directories(
         ${googletest_SOURCE_DIR}/googletest/include
 )
 
-## Getting included libs from Github
-include(FetchContent)
+# GOOGLE BENCHMARK
+FetchContent_Declare(
+        googlebenchmark
+        GIT_REPOSITORY https://github.com/google/benchmark.git
+        GIT_TAG v1.5.1) # need master for benchmark::benchmark
+set(BENCHMARK_ENABLE_GTEST_TESTS OFF)
+option(BENCHMARK_ENABLE_GTEST_TESTS OFF)
+FetchContent_MakeAvailable(googlebenchmark)
+include_directories(
+        ${googlebenchmark_SOURCE_DIR}/include
+)
+
+# FMT
+message("Downloading/Update FMT")
 FetchContent_Declare(
         fmt
         GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-        GIT_TAG 7.0.3        #GIT_TAG 6.1.2
+        GIT_TAG 7.0.3
 )
-message("Downloading/Update FMT")
 FetchContent_MakeAvailable(fmt)
 include_directories(
         ${fmt_SOURCE_DIR}/include
 )
 
-# Getting included libs from Github
-include(FetchContent)
+# SPDLOG
+message("Downloading/Update SPDLOG")
 FetchContent_Declare(
         spdlog
         GIT_REPOSITORY https://github.com/gabime/spdlog.git
         GIT_TAG v1.7.0
 )
-message("Downloading/Update SPDLOG")
 option(SPDLOG_FMT_EXTERNAL ON)
 set(SPDLOG_FMT_EXTERNAL ON)
 FetchContent_MakeAvailable(spdlog)
