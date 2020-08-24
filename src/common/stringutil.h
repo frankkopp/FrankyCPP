@@ -29,6 +29,7 @@
 // see https://gitlab.com/tbeu/wcx_setfolderdate/-/blob/master/src/splitstring.h
 // see https://stackoverflow.com/a/236803/8520615
 
+#include <algorithm>
 #include <string>
 #include <vector>
 

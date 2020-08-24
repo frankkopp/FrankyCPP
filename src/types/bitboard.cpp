@@ -44,7 +44,7 @@ Bitboard getAttacksBb(PieceType pt, Square sq, Bitboard occupied) {
       [[fallthrough]];
     case KING:
       return Bitboards::nonSliderAttacks[pt][sq];
-    [[unlikely]] default:
+    default:
       return BbZero;
   }
 }
