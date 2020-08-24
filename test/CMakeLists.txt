@@ -3,7 +3,6 @@ message("FrankyCPP test/")
 message("====================================================================")
 
 cmake_minimum_required(VERSION 3.16)
-set(CMAKE_CXX_STANDARD 20)
 
 # set the name of the executable
 set(testExeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR}_Test)
@@ -43,7 +42,8 @@ add_executable(
 
         TimingTests.cpp
         BOOST_Test.cpp
-        PlaygroundTests.cpp common/TimeUtilsTest.cpp)
+        PlaygroundTests.cpp 
+        )
 
 target_link_libraries(
         ${testExeName}
@@ -51,6 +51,20 @@ target_link_libraries(
         FrankyCPPlib
         gtest
         gtest_main
+)
+
+# Google Benchmark executable
+set(benchExeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR}_Bench)
+add_executable(
+        ${benchExeName}
+        GoogleBenchTests.cpp
+)
+target_link_libraries(
+        ${benchExeName}
+        PUBLIC
+        FrankyCPPlib
+        benchmark
+        benchmark_main
 )
 
 # copy config files and opening books to the build directories
