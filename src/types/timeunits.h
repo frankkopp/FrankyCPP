@@ -35,14 +35,32 @@ using namespace std::chrono;
 
 typedef time_point<std::chrono::high_resolution_clock> TimePoint;
 
+// returns a string representation of the milliseconds as a fraction of a seconds
+// with a DE locale
+//  Examples:
+//  5,021 s
 inline std::string str(milliseconds s) {
   return fmt::format(deLocale, "{:.3f} s", static_cast<double>(s.count()) / 1e3);
 }
 
+// returns a string representation of the nanoseconds as a fraction of a seconds
+// with a DE locale
+//  Examples:
+//  5,021456234 s
 inline std::string str(nanoseconds s) {
   return fmt::format(deLocale, "{:.9f} s", static_cast<double>(s.count()) / 1e9);
 }
 
+// returns a string representation of the duration as a human readable string
+// with a DE locale
+// Examples:
+//  59y:325d:20h:33m:19s:008.800.999ns
+//  20d:13h:53m:19s:008.800.999ns
+//  33m:19s:008.800.999ns
+//  1s:000.000.999ns
+//  1.000.099ns
+//  10.000ns
+//  100ns
 template<typename T>
 inline std::string format(T timeunit) {
   nanoseconds ns = duration_cast<nanoseconds>(timeunit);
@@ -105,18 +123,15 @@ inline std::string format(T timeunit) {
 // returns the nodes per second from nano seconds given as uint64_t
 inline uint64_t nps(uint64_t nodes, uint64_t ns) {
   if (!ns) return nodes;
-  return nodes * 1'000'000'000 / ns;
+  return nodes * nanoPerSec / ns;
 }
 
 // returns the nodes per second from milli seconds
-inline uint64_t nps(uint64_t nodes, milliseconds ms) {
-  if (!ms.count()) return nodes;
-  return nodes * 1'000 / ms.count();
-}
-
-// returns the nodes per second from nano seconds
-inline uint64_t nps(uint64_t nodes, nanoseconds ns) {
-  return nps(nodes, ns.count());
+template <typename T>
+inline uint64_t nps(uint64_t nodes, T timeunit) {
+  nanoseconds ns = duration_cast<nanoseconds>(timeunit);
+  if (!ns.count()) return nodes;
+  return (nodes * nanoPerSec) / ns.count();
 }
 
 inline nanoseconds elapsedSince(const TimePoint tp) {

@@ -393,7 +393,7 @@ TEST_F(SearchTest, debug) {
   Search s{};
   //  sl.timeControl = true;
   //  sl.moveTime    = 160s;
-  sl.depth = 1;
+  sl.depth = 6;
   s.isReady();
   s.startSearch(p, sl);
   s.waitWhileSearching();
