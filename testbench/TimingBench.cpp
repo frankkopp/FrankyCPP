@@ -43,12 +43,11 @@ public:
   void TearDown(const ::benchmark::State&) {
   }
 
-  const std::string fen{"r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1"};
-  const std::regex illegalInFenPosition{R"([^1-8pPnNbBrRqQkK/]+)"};
-  const std::string allowedChars{"12345678pPnNbBrRqQkK/"};
 };
 
 BENCHMARK_F(TimingBench, BM_IllegalCharacter1)(benchmark::State& state) {
+  const std::string fen{"r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1"};
+  const std::regex illegalInFenPosition{R"([^1-8pPnNbBrRqQkK/]+)"};
   double counter{};
   for (auto _ : state) {
     if (!std::regex_search(fen, illegalInFenPosition)) {
@@ -58,6 +57,8 @@ BENCHMARK_F(TimingBench, BM_IllegalCharacter1)(benchmark::State& state) {
 }
 
 BENCHMARK_F(TimingBench, BM_IllegalCharacter2)(benchmark::State& state) {
+  const std::string fen{"r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1"};
+  const std::string allowedChars{"12345678pPnNbBrRqQkK/"};
   double counter{};
   for (auto _ : state) {
     bool illegalFound = false;

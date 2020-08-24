@@ -105,3 +105,10 @@ BENCHMARK_F(ChessCoreBench, BM_MoveGen)(benchmark::State& state) {
   state.counters["Move"] = move;
 }
 
+// 25.8.2020
+// -------------------------------------------------------------------------------------------
+//Benchmark                                 Time             CPU   Iterations UserCounters...
+//-------------------------------------------------------------------------------------------
+//ChessCoreBench/BM_SetupPosition        5392 ns         5469 ns       100000 RunTime=5.46875us RunRate=182.857k/s Runs=100k
+//ChessCoreBench/BM_DoUndoMove            182 ns          184 ns      3733333 DoUndoPairTime=36.8304ns DoUndoPairs=18.6667M DoUndoRate=27.1515M/s
+//ChessCoreBench/BM_MoveGen              1338 ns         1350 ns       497778  GenTime=15.6947ns GenRate=63.7156M/s Generated=42.8089M Move=0
