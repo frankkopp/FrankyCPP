@@ -387,7 +387,7 @@ void OpeningBook::readGamesPgn(const std::vector<std::string_view>* lines) {
     if ((lastEmpty && trimmedLineView[0] == '[') || lineNumber == length - 1) {
       gameEnd = lineNumber;
       // process the previous found game asynchronously
-      auto future = std::make_shared<std::future<bool>>(worker.enqueue([=, this] {
+      auto future = std::make_shared<std::future<bool>>(worker.enqueue([=] {
         readOneGamePgn(lines, gameStart, gameEnd);
         return true;
       }));
@@ -601,8 +601,8 @@ void OpeningBook::addGameToBook(const Moves& game) {
 void OpeningBook::writeToBook(Move move, Key currentKey, Key lastKey) {
   // get the lock on the data map
   std::scoped_lock<std::mutex> bookLock(bookMutex);
-  // create or update book entry
-  if (bookMap.contains(currentKey)) {
+  // create or update book entry                  
+  if (bookMap.count(currentKey)) {             
     // pointer to entry already in book
     bookMap.at(currentKey).counter++;
     // return as we do not need to update the predecessor

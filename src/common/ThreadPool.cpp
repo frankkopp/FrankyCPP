@@ -38,7 +38,7 @@ ThreadPool::ThreadPool(std::size_t numThreads) {
 void ThreadPool::start(std::size_t numThreads) {
   mStopping = false;
   for (std::size_t i = 0; i < numThreads; ++i) {
-    mThreads.emplace_back([=, this] {
+    mThreads.emplace_back([=] {
       while (true) {
         Task task;
         { // lock block
