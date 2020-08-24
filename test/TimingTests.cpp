@@ -768,7 +768,7 @@ void TimingTests::testTiming(std::ostringstream& os, int rounds, int iterations,
   os << "======================================================================"
      << std::endl;
 
-  auto startTime = high_resolution_clock::now();
+  time_point<steady_clock> startTime;
   nanoseconds last(0);
 
   // rounds
