@@ -50,6 +50,7 @@ script:
   - cd ..
   # Run your build commands next
   - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ..
+  - make -j
 
 #install:
 #  travis_wait sudo -E apt-get -yq --no-install-suggests --no-install-recommends install gcc-10;
