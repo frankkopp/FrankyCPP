@@ -1,4 +1,5 @@
 dist: trusty
+# xenial
 sudo: required
 language: cpp
 compiler: gcc
@@ -14,13 +15,12 @@ addons:
 
 env: COMPILER=g++ C_COMPILER=gcc BUILD_TYPE=Release
 
-before_script:
-  - mkdir -p build && cd build
-
-script:
+before_install:
   # Check versions of gcc, g++ and cmake
-  - which gcc && which g++
-  - gcc -v && g++ -v
+  - which gcc && which g++ && which cmake
+  - gcc -v && g++ -v && which cmake
+
+install:
   # Update to gcc-9
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 100
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 100
@@ -48,10 +48,16 @@ script:
   - ./b2 >> /dev/null 2>&1
   - sudo ./b2 install  >> /dev/null 2>&1
   - cd ..
-  # Run your build commands next
-  - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ..
-  - make -j
 
-#install:
-#  travis_wait sudo -E apt-get -yq --no-install-suggests --no-install-recommends install gcc-10;
+before_script:
+  # Check versions of gcc, g++ and cmake
+  - which gcc && which g++ && which cmake
+  - gcc -v && g++ -v && which cmake
+  - mkdir -p build && cd build
+
+script:
+  # Run your build commands next
+  - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -G Ninja ..
+  - ninja -j
+
 
