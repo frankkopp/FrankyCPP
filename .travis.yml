@@ -15,5 +15,5 @@ before_script:
   source .travis-pre-setup.sh;
 
 install:
-  travis_wait sudo -E apt-get -yq --no-install-suggests --no-install-recommends install g++-10;
+  travis_wait sudo -E apt-get -yq --no-install-suggests --no-install-recommends install gcc-10;
 
