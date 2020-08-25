@@ -12,17 +12,19 @@ addons:
       - gcc-9
       - g++-9
 
-#before_script:
-#  source .travis-pre-setup.sh;
+env:
+  - COMPILER=g++
+  - C_COMPILER=gcc
+  - BUILD_TYPE=Release
+
+before_script:
+  - mkdir -p build && cd build
+  - source .travis-pre-setup.sh;
 
 script:
   # Check versions of gcc, g++ and cmake
   - which gcc && which g++ && which cmake
   - gcc -v && g++ -v && cmake --version
-  #  # Install a newer CMake version
-  - sudo curl -sSL https://cmake.org/files/v3.18/cmake-3.18.2-Linux-x86_64.sh -o install-cmake.sh
-  - sudo chmod +x install-cmake.sh
-  - sudo ./install-cmake.sh --prefix=/usr/local --skip-license
   # Update to gcc-9
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 100
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 100
