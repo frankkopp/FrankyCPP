@@ -173,7 +173,7 @@ set(Boost_DEBUG FALSE)
 set(Boost_USE_MULTITHREADED TRUE)
 set(Boost_USE_STATIC_LIBS TRUE)
 set(Boost_USE_STATIC_RUNTIME FALSE)
-find_package(Boost 1.72.0 COMPONENTS serialization program_options timer REQUIRED)
+find_package(Boost 1.72.0 COMPONENTS serialization program_options REQUIRED)
 #  log log_setup
 if (Boost_FOUND)
     message("BOOST found: " ${BOOST_ROOT} " " ${Boost_INCLUDE_DIR})

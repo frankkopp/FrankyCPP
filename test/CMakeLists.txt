@@ -40,8 +40,7 @@ add_executable(
         enginetest/TestSuite_Test.cpp
 
         TimingTests.cpp
-        BOOST_Test.cpp
-        PlaygroundTests.cpp 
+        PlaygroundTests.cpp
         )
 
 target_link_libraries(
