@@ -18,8 +18,8 @@ env:
   - BUILD_TYPE=Release
 
 before_script:
-  - mkdir -p build && cd build
   - source .travis-pre-setup.sh;
+  - mkdir -p build && cd build
 
 script:
   # Check versions of gcc, g++ and cmake
@@ -37,6 +37,7 @@ script:
   - which gcc && which g++ && which cmake
   - gcc -v && g++ -v && cmake --version
   # Run your build commands next
+  - cmake -DCMAKE_C_COMPILER=${C_COMPILER} -DCMAKE_CXX_COMPILER=${COMPILER} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ..
 
 #install:
 #  travis_wait sudo -E apt-get -yq --no-install-suggests --no-install-recommends install gcc-10;
