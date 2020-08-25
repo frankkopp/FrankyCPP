@@ -57,7 +57,7 @@ before_script:
 
 script:
   # Run your build commands next
-  - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -G Ninja ..
-  - ninja -j
+  - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ..
+  - make -j
 
 

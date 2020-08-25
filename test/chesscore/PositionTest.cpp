@@ -23,7 +23,6 @@
  *
  */
 
-#include <boost/timer/timer.hpp>
 #include <gtest/gtest.h>
 #include <ostream>
 #include <string>
