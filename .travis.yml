@@ -12,7 +12,7 @@ addons:
       - gcc-9
       - g++-9
 
-env:env: COMPILER=g++ C_COMPILER=gcc BUILD_TYPE=Release
+env: COMPILER=g++ C_COMPILER=gcc BUILD_TYPE=Release
 
 before_script:
   - mkdir -p build && cd build
@@ -44,7 +44,7 @@ script:
   - wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz >> /dev/null 2>&1
   - tar xfz boost_1_73_0.tar.gz
   - cd boost_1_73_0/
-  - ./bootstrap.sh --with-libraries=serialization,program_options
+  - ./bootstrap.sh --with-libraries=serialization,program_options,timer
   - ./b2 >> /dev/null 2>&1
   - sudo ./b2 install  >> /dev/null 2>&1
   - cd ..
