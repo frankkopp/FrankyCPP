@@ -22,6 +22,14 @@ script:
   # Check versions of gcc, g++ and cmake
   - which gcc && which g++ && which cmake
   - gcc -v && g++ -v && cmake --version
+  # Newer CMAKE
+  - curl -sSL https://cmake.org/files/v3.18/cmake-3.18.2-Linux-x86_64.sh -o install-cmake.sh
+  - chmod +x install-cmake.sh
+  - sudo ./install-cmake.sh --prefix=/usr/local --skip-license
+  - export PATH=/usr/local/bin:$PATH;
+  - /usr/local/bin/cmake --version
+  - which cmake
+  - cmake --version
   # Update to gcc-9
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 100
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 100
