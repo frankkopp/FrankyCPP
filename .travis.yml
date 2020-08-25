@@ -11,8 +11,6 @@ addons:
     packages:
       - gcc-9
       - g++-9
-      - cmake
-#env: COMPILER=g++-10 C_COMPILER=gcc-10 BUILD_TYPE=Release
 
 #before_script:
 #  source .travis-pre-setup.sh;
