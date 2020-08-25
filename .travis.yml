@@ -12,10 +12,7 @@ addons:
       - gcc-9
       - g++-9
 
-env:
-  - COMPILER=g++
-  - C_COMPILER=gcc
-  - BUILD_TYPE=Release
+env:env: COMPILER=g++ C_COMPILER=gcc BUILD_TYPE=Release
 
 before_script:
   - source .travis-pre-setup.sh;
