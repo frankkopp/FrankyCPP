@@ -44,8 +44,8 @@ script:
   - wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz >> /dev/null 2>&1
   - tar xfz boost_1_73_0.tar.gz
   - cd boost_1_73_0/
-  - ./bootstrap.sh --with-libraries=serialization,program_options,timer,log,log_setup
-  - ./b2 threading=multi link=static >> /dev/null 2>&1
+  - ./bootstrap.sh --with-libraries=serialization,program_options
+  - ./b2 >> /dev/null 2>&1
   - sudo ./b2 install  >> /dev/null 2>&1
   - cd ..
   # Run your build commands next
