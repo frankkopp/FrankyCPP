@@ -14,8 +14,8 @@ addons:
       - cmake
 #env: COMPILER=g++-10 C_COMPILER=gcc-10 BUILD_TYPE=Release
 
-before_script:
-  source .travis-pre-setup.sh;
+#before_script:
+#  source .travis-pre-setup.sh;
 
 script:
   # Check versions of gcc, g++ and cmake
@@ -26,8 +26,10 @@ script:
   #  - chmod +x install-cmake.sh
   #  - ./install-cmake.sh --prefix=/usr/local --skip-license
   # Update to gcc-9
-  - update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9
-  - update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9
+  - update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 100
+  - update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 100
+  - update-alternatives --set gcc /usr/bin/gcc-9
+  - update-alternatives --set g++ /usr/bin/g++-9
   # Export CC and CXX to tell cmake which compiler to use
   - export CC=/usr/bin/gcc-9
   - export CXX=/usr/bin/g++-9
