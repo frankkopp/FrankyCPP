@@ -15,21 +15,12 @@ addons:
 env:env: COMPILER=g++ C_COMPILER=gcc BUILD_TYPE=Release
 
 before_script:
-  - source .travis-pre-setup.sh;
   - mkdir -p build && cd build
 
 script:
   # Check versions of gcc, g++ and cmake
-  - which gcc && which g++ && which cmake
-  - gcc -v && g++ -v && cmake --version
-  # Newer CMAKE
-  - curl -sSL https://cmake.org/files/v3.18/cmake-3.18.2-Linux-x86_64.sh -o install-cmake.sh
-  - chmod +x install-cmake.sh
-  - sudo ./install-cmake.sh --prefix=/usr/local --skip-license
-  - export PATH=/usr/local/bin:$PATH;
-  - /usr/local/bin/cmake --version
-  - which cmake
-  - cmake --version
+  - which gcc && which g++
+  - gcc -v && g++ -v
   # Update to gcc-9
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 100
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 100
@@ -39,8 +30,24 @@ script:
   - export CC=/usr/bin/gcc-9
   - export CXX=/usr/bin/g++-9
   # Check versions of gcc, g++ and cmake
-  - which gcc && which g++ && which cmake
-  - gcc -v && g++ -v && cmake --version
+  - which gcc && which g++
+  - gcc -v && g++ -v
+  # Newer CMAKE
+  - curl -sSL https://cmake.org/files/v3.18/cmake-3.18.2-Linux-x86_64.sh -o install-cmake.sh
+  - chmod +x install-cmake.sh
+  - sudo ./install-cmake.sh --prefix=/usr/local --skip-license
+  - export PATH=/usr/local/bin:$PATH;
+  - /usr/local/bin/cmake --version
+  - which cmake
+  - cmake --version
+  # BOOST
+  - wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz >> /dev/null 2>&1
+  - tar xfz boost_1_73_0.tar.gz
+  - cd boost_1_73_0/
+  - ./bootstrap.sh
+  - ./b2 >> /dev/null 2>&1
+  - sudo ./b2 install  >> /dev/null 2>&1
+  - cd ..
   # Run your build commands next
   - cmake -DCMAKE_C_COMPILER=${C_COMPILER} -DCMAKE_CXX_COMPILER=${COMPILER} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ..
 
