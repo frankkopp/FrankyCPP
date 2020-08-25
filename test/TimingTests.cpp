@@ -755,7 +755,7 @@ void TimingTests::testTiming(std::ostringstream& os, int rounds, int iterations,
 
       while (i++ < iterations) {
         // repetitions
-        startTime = high_resolution_clock::now();
+        startTime = currentTime();
         for (int j = 0; j < repetitions; ++j)
           f();
         accDuration += duration_cast<nanoseconds>(high_resolution_clock::now() - startTime);
