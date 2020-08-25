@@ -100,13 +100,6 @@ FetchContent_Declare(googletest)
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 option(INSTALL_GMOCK "Install Googletest's GMock?" OFF)
 option(INSTALL_GTEST "Install Googletest's GTest?" OFF)
-#if (NOT googletest_POPULATED)
-#    # Fetch the content using previously declared details
-#    FetchContent_Populate(googletest)
-#    # Set custom variables, policies, etc.
-#    # Bring the populated content into the build
-#    add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
-#endif ()
 FetchContent_MakeAvailable(googletest)
 include_directories(
         ${googletest_SOURCE_DIR}/googletest/include
