@@ -1,19 +1,32 @@
+dist: trusty
 sudo: required
 language: cpp
 compiler: gcc
-
 os: linux
+
 addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
     packages:
-      - gcc
-env: COMPILER=g++-10 C_COMPILER=gcc-10 BUILD_TYPE=Release
+      - gcc-10
+      - g++-10
+#env: COMPILER=g++-10 C_COMPILER=gcc-10 BUILD_TYPE=Release
 
 before_script:
   source .travis-pre-setup.sh;
 
-install:
-  travis_wait sudo -E apt-get -yq --no-install-suggests --no-install-recommends install gcc-10;
+script:
+  # Link gcc-6 and g++-6 to their standard commands
+  - ln -s /usr/bin/gcc-10 /usr/local/bin/gcc
+  - ln -s /usr/bin/g++-10 /usr/local/bin/g++
+  # Export CC and CXX to tell cmake which compiler to use
+  - export CC=/usr/bin/gcc-10
+  - export CXX=/usr/bin/g++-10
+  # Check versions of gcc, g++ and cmake
+  - gcc -v && g++ -v && cmake --version
+  # Run your build commands next
+
+#install:
+#  travis_wait sudo -E apt-get -yq --no-install-suggests --no-install-recommends install gcc-10;
 
