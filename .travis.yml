@@ -44,12 +44,12 @@ script:
   - wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz >> /dev/null 2>&1
   - tar xfz boost_1_73_0.tar.gz
   - cd boost_1_73_0/
-  - ./bootstrap.sh
-  - ./b2 >> /dev/null 2>&1
+  - ./bootstrap.sh --with-libraries=serialization,program_options,timer,log,log_setup
+  - ./b2 threading=multi link=static >> /dev/null 2>&1
   - sudo ./b2 install  >> /dev/null 2>&1
   - cd ..
   # Run your build commands next
-  - cmake -DCMAKE_C_COMPILER=${C_COMPILER} -DCMAKE_CXX_COMPILER=${COMPILER} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ..
+  - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ..
 
 #install:
 #  travis_wait sudo -E apt-get -yq --no-install-suggests --no-install-recommends install gcc-10;
