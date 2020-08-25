@@ -26,6 +26,7 @@
 #include "init.h"
 #include "types/types.h"
 #include "chesscore/Position.h"
+#include "chesscore/MoveGenerator.h"
 
 #include <benchmark/benchmark.h>
 

@@ -1,0 +1,17 @@
+sudo: required
+language: cpp
+compiler: gcc
+
+os: linux
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-10
+env: COMPILER=g++ C_COMPILER=gcc BUILD_TYPE=Release
+
+before_script:
+  source .travis-pre-setup.sh;
+  
+

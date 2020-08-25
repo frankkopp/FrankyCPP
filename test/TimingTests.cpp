@@ -340,36 +340,6 @@ TEST_F(TimingTests, split) {
   std::cout << os.str();
 }
 
-///**
-// * Test difference for getMoves with pre rotated bb vs. on-the-fly rotated bb
-// * Round  5 Test  1:  451.076.050 ns (  0,45107605 sec)
-// * Round  5 Test  2:   17.723.886 ns ( 0,017723886 sec)
-// */
-//TEST_F(TimingTests, DISABLED_rotation) {
-//  ostringstream os;
-//
-//  //// TESTS START
-//  Position position(
-//      "r3k2r/1ppqbppp/2n2n2/1B2p1B1/3p2b1/2NP1N2/1PPQPPPP/R3K2R w KQkq - 0 1");
-//
-//  std::function<void()> f1 = [&]() {
-//    Bitboards::getMovesDiagUp(SQ_D2, position.getOccupiedBB());
-//  };
-//  std::function<void()> f2 = [&]() {
-//    Bitboards::getMovesDiagUpR(SQ_D2, position.getOccupiedBBR45());
-//  };
-//  vector<std::function<void()>> tests;
-//  tests.push_back(f1);
-//  tests.push_back(f2);
-//  //// TESTS END
-//
-//  testTiming(os, 5, 50, 10'000'000, tests);
-//
-//  cout << os.str();
-//}
-//
-//std::array<Value, 32> gain1{};
-//
 //TEST_F(TimingTests, DISABLED_gain_array) {
 //  ostringstream os;
 //
@@ -389,7 +359,7 @@ TEST_F(TimingTests, split) {
 //
 //  cout << os.str();
 //}
-//
+
 //TEST_F(TimingTests, DISABLED_TThash) {
 //  ostringstream os;
 //
@@ -419,14 +389,14 @@ TEST_F(TimingTests, split) {
 //  delete[] data1;
 //  delete[] data2;
 //}
-//
+
 //unsigned myPopcount16(unsigned u) {
 //  u -= (u >> 1U) & 0x5555U;
 //  u = ((u >> 2U) & 0x3333U) + (u & 0x3333U);
 //  u = ((u >> 4U) + u) & 0x0F0FU;
 //  return (u * 0x0101U) >> 8U;
 //}
-//
+
 //TEST_F(TimingTests, DISABLED_busyWait) {
 //  ostringstream os;
 //  //// TESTS START
@@ -442,7 +412,7 @@ TEST_F(TimingTests, split) {
 //  testTiming(os, 3, 1, 1, tests);
 //  cout << os.str();
 //}
-//
+
 ////#pragma clang diagnostic push
 ////#pragma clang diagnostic ignored "-Wunused-variable"
 ////TEST_F(TimingTests, DISABLED_moveUnion) {
@@ -515,7 +485,7 @@ TEST_F(TimingTests, split) {
 ////}
 ////
 ////#pragma clang diagnostic pop
-//
+
 //TEST_F(TimingTests, DISABLED_bitCount) {
 //  ostringstream os;
 //
@@ -547,7 +517,7 @@ TEST_F(TimingTests, split) {
 //
 //  cout << os.str();
 //}
-//
+
 //TEST_F(TimingTests, DISABLED_popLSB) {
 //  ostringstream os;
 //
@@ -574,7 +544,7 @@ TEST_F(TimingTests, split) {
 //
 //  cout << os.str();
 //}
-//
+
 //TEST_F(TimingTests, DISABLED_max) {
 //  ostringstream os;
 //
@@ -603,7 +573,7 @@ TEST_F(TimingTests, split) {
 //
 //  cout << os.str();
 //}
-//
+
 //TEST_F(TimingTests, DISABLED_SquareTest) {
 //  ostringstream os;
 //
@@ -628,7 +598,7 @@ TEST_F(TimingTests, split) {
 //
 //  cout << os.str();
 //}
-//
+
 //TEST_F(TimingTests, DequeSortVsArray) {
 //  ostringstream os;
 //
@@ -682,7 +652,7 @@ TEST_F(TimingTests, split) {
 //
 //  cout << os.str();
 //}
-//
+
 //TEST_F(TimingTests, StableSortVsSort) {
 //  ostringstream os;
 //
@@ -736,7 +706,7 @@ TEST_F(TimingTests, split) {
 //
 //  cout << os.str();
 //}
-//
+
 //TEST_F(TimingTests, DISABLED_Skeleton) {
 //  ostringstream os;
 //
