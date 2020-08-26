@@ -61,7 +61,7 @@ script:
   - ls -l ./src
   - ls -l ./test
   - ls -l ./testbench
-  - ctest -C ${BUILD_TYPE} -DBENCHMARK_ENABLE_TESTING=OFF -E ".*SpeedTest.*" -E ".*TimingTests.*" --output-on-failure
+  - ctest -C ${BUILD_TYPE} -DBENCHMARK_ENABLE_TESTING=OFF -E ".*SpeedTests.*" -E ".*TimingTests.*" --output-on-failure
   - ./testbench/FrankyCPP_v0.3_Bench
 
 
