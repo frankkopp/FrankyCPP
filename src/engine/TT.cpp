@@ -56,7 +56,20 @@ void TT::resize(const uint64_t newSizeInMByte) {
   sizeInByte = maxNumberOfEntries * ENTRY_SIZE;
 
   delete[] _data;
-  _data = new Entry[maxNumberOfEntries];
+  // try to allocate memory for TT - repeat until allocation is successful
+  while (true) {
+    try {
+      _data = new Entry[maxNumberOfEntries];
+      break;
+    } catch (std::bad_alloc const&) {
+      // we could not allocate enough memory so we reduce TT size by a power of 2
+      auto oldSize       = sizeInByte;
+      maxNumberOfEntries = maxNumberOfEntries >> 1ULL;
+      hashKeyMask        = maxNumberOfEntries - 1;
+      sizeInByte         = maxNumberOfEntries * ENTRY_SIZE;
+      LOG__ERROR(Logger::get().TT_LOG, "Not enough memory for requested TT size {:L} MB reducing to {:L} MB", oldSize, sizeInByte);
+    }
+  }
 
   clear();
   if (maxNumberOfEntries) {
