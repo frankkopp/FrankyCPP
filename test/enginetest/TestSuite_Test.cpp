@@ -68,7 +68,7 @@ TEST_F(TestSuite_Test, franky_test) {
 }
 
 TEST_F(TestSuite_Test, mate_test) {
-//  GTEST_SKIP();
+  GTEST_SKIP();
   milliseconds moveTime{15s};
   Depth depth{0};
   std::string filePath = FrankyCPP_PROJECT_ROOT;
@@ -78,7 +78,7 @@ TEST_F(TestSuite_Test, mate_test) {
 }
 
 TEST_F(TestSuite_Test, wac_test) {
-//  GTEST_SKIP();
+  GTEST_SKIP();
   milliseconds moveTime{5s};
   Depth depth{0};
   std::string filePath = FrankyCPP_PROJECT_ROOT;
