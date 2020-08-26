@@ -25,26 +25,21 @@ message("Recognized platform is " ${CMAKE_SYSTEM_NAME} " " ${CMAKE_SYSTEM_VERSIO
 # Compiler Settings
 message("Compiler is " ${CMAKE_CXX_COMPILER_ID} " " ${CMAKE_CXX_COMPILER_VERSION} " " ${CMAKE_CXX_COMPILER})
 
+# Apple OS X compiler
 if (CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
     message("Compiler Settings: AppleClang")
     set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra -mpopcnt -mbmi2")
     set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fprofile-instr-generate -fcoverage-mapping -Wpedantic -Wshadow -Wno-conversion -Wunreachable-code -Wuninitialized  -Wold-style-cast -Wunused-variable -Wfloat-equal -Wno-gnu-zero-variadic-macro-arguments")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+
+    # std::execution lib for parallel std operations. Not available on all platforms
     message("Using HAS_EXECUTION_LIB")
     add_compile_definitions(HAS_EXECUTION_LIB)
+    # Availability of PEXT compiler intrinsic. Not available on all platforms
     message("Using HAS_PEXT")
     add_compile_definitions(HAS_PEXT)
 
-elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    message("Compiler Settings: Clang")
-    set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra -mpopcnt -mbmi2")
-    set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fprofile-instr-generate -fcoverage-mapping -Wpedantic -Wshadow -Wno-conversion -Wunreachable-code -Wuninitialized  -Wold-style-cast -Wunused-variable -Wfloat-equal -Wno-gnu-zero-variadic-macro-arguments")
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-    message("Using HAS_EXECUTION_LIB")
-    add_compile_definitions(HAS_EXECUTION_LIB)
-    message("Using HAS_PEXT")
-    add_compile_definitions(HAS_PEXT)
-
+ # GNU compiler for WIndows WSL and Travis
 elseif (CMAKE_COMPILER_IS_GNUCXX)
     message("Compiler Settings: GNU")
 
@@ -53,29 +48,34 @@ elseif (CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
     # additional: -Wshadow  -Wno-unknown-pragmas -Weffc++ -Wimplicit-fallthrough -Wswitch -Wpointer-arith -Wcast-qual -Wconversion -Wno-sign-conversion -Wno-error=padded -Wno-error=inline")
 
-#    # Test for -flto support
-    #    include(CheckCXXCompilerFlag)
-    #    include(CheckCCompilerFlag)
-    #    CHECK_CXX_COMPILER_FLAG(-flto CXX_SUPPORTS_FLTO)
-    #    CHECK_C_COMPILER_FLAG(-flto C_SUPPORTS_FLTO)
-    #    if(CXX_SUPPORTS_FLTO AND C_SUPPORTS_FLTO)
-    #        message(STATUS "Compiling with FLTO support")
-    #        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto")
-    #        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
-    #        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -flto")
-    #        set(CMAKE_AR "gcc-ar")
-    #        set(CMAKE_C_ARCHIVE_CREATE "<CMAKE_AR> qcs <LINK_FLAGS> ")
-    #        set(CMAKE_C_ARCHIVE_FINISH true)
-    #        set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> qcs <LINK_FLAGS> ")
-    #        set(CMAKE_CXX_ARCHIVE_FINISH true)
-    #    endif()
+    # link time optimization on Travis does not work (yet)
+    # # Test for -flto support
+    # include(CheckCXXCompilerFlag)
+    # include(CheckCCompilerFlag)
+    # CHECK_CXX_COMPILER_FLAG(-flto CXX_SUPPORTS_FLTO)
+    # CHECK_C_COMPILER_FLAG(-flto C_SUPPORTS_FLTO)
+    # if(CXX_SUPPORTS_FLTO AND C_SUPPORTS_FLTO)
+    #     message(STATUS "Compiling with FLTO support")
+    #     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto")
+    #     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
+    #     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -flto")
+    #     set(CMAKE_AR "gcc-ar")
+    #     set(CMAKE_C_ARCHIVE_CREATE "<CMAKE_AR> qcs <LINK_FLAGS> ")
+    #     set(CMAKE_C_ARCHIVE_FINISH true)
+    #     set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> qcs <LINK_FLAGS> ")
+    #     set(CMAKE_CXX_ARCHIVE_FINISH true)
+    # endif()
 
-    if (TRAVIS)
+    # Test if we are on a Travis environment
+    if (TRAVIS=true)
         message("TRAVIS BUILD")
     endif()
 
+    # Availability of PEXT compiler intrinsic. Not available on all platforms
     message("Using HAS_PEXT")
     add_compile_definitions(HAS_PEXT)
+
+    # std::execution lib for parallel std operations. Only on gcc-10 and above
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "10")
         message("GCC >= 10.x")
         message("Using HAS_EXECUTION_LIB")
@@ -84,17 +84,36 @@ elseif (CMAKE_COMPILER_IS_GNUCXX)
         message("GCC < 10.x")
     endif ()
 
+# Microsoft Visual Compiler
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    # this needs to be added to CLION cmake options
     # -DCMAKE_C_COMPILER=cl.exe -DCMAKE_CXX_COMPILER=cl.exe -G Ninja
     message("Compiler Settings: MSVC")
     set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /favor:INTEL64 /Gr /Qpar /W4 /GR /EHsc /std:c++17 /arch:AVX2 /MP")
     set(CMAKE_CXX_FLAGS_RELEASE "/O2 /Ob2 /MD /DNDEBUG")
     set(CMAKE_CXX_FLAGS_DEBUG "/Od /Ob0 /MDd /Zi /RTC1")
-    # /showIncludes
+
+    # std::execution lib for parallel std operations. Not available on all platforms
     message("Using HAS_EXECUTION_LIB")
     add_compile_definitions(HAS_EXECUTION_LIB)
+    # Availability of PEXT compiler intrinsic. Not available on all platforms
     message("Using HAS_PEXT")
     add_compile_definitions(HAS_PEXT)
+
+# Clang compiler - needs more testing
+elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    message("Compiler Settings: Clang")
+    set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra -mpopcnt -mbmi2")
+    set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fprofile-instr-generate -fcoverage-mapping -Wpedantic -Wshadow -Wno-conversion -Wunreachable-code -Wuninitialized  -Wold-style-cast -Wunused-variable -Wfloat-equal -Wno-gnu-zero-variadic-macro-arguments")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+
+    # std::execution lib for parallel std operations. Not available on all platforms
+    message("Using HAS_EXECUTION_LIB")
+    add_compile_definitions(HAS_EXECUTION_LIB)
+    # Availability of PEXT compiler intrinsic. Not available on all platforms
+    message("Using HAS_PEXT")
+    add_compile_definitions(HAS_PEXT)
+
 endif ()
 
 message("Generator: " ${CMAKE_GENERATOR} " " ${CMAKE_MAKE_PROGRAM})
