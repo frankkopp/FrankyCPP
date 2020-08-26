@@ -22,8 +22,8 @@ env: COMPILER=g++ C_COMPILER=gcc BUILD_TYPE=Release
 
 before_install:
   # Check versions of gcc, g++ and cmake
-  - which gcc && which g++ && which cmake
-  - gcc -v && g++ -v && cmake --version
+  - which gcc && which g++ && which gcc-ar && which cmake
+  - gcc -v && g++ -v && gcc-ar --version && cmake --version
 
 install:
   # Update to gcc-9
@@ -31,7 +31,6 @@ install:
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 100
   - sudo update-alternatives --set gcc /usr/bin/gcc-9
   - sudo update-alternatives --set g++ /usr/bin/g++-9
-  - ls -laF /usr/lib/bin*
   - ls -laF /usr/bin/gcc*
   - sudo rm -f /usr/bin/gcc-ar
   - sudo rm -f /usr/bin/gcc-ranlib
@@ -62,19 +61,14 @@ install:
 
 before_script:
   # Check versions of gcc, g++ and cmake
-  - which gcc && which g++ && which cmake
-  - gcc -v && g++ -v && cmake --version
-  - which gcc-ar
-  - gcc-ar --version
+  - which gcc && which g++ && which gcc-ar && which cmake
+  - gcc -v && g++ -v && gcc-ar --version && cmake --version
   - mkdir -p build && cd build
 
 script:
   # Run your build commands next
   - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBENCHMARK_ENABLE_TESTING=OFF ..
   - make -j
-  - ls -l ./src
-  - ls -l ./test
-  - ls -l ./testbench
   - ctest -C ${BUILD_TYPE} -DBENCHMARK_ENABLE_TESTING=OFF -E ".*SpeedTests.*" -E ".*TimingTests.*" --output-on-failure
   - ./testbench/FrankyCPP_v0.3_Bench
 
