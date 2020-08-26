@@ -149,7 +149,7 @@ inline unsigned long long int nowFast() {
 }
 
 // convenience for std::chrono::high_resolution_clock::now()
-constexpr auto currentTime = high_resolution_clock::now;
+constexpr auto currentTime = std::chrono::high_resolution_clock::now;
 
 #define SLEEP(t) std::this_thread::sleep_for(t)
 #define NANOSECONDS(t) std::chrono::duration_cast<std::chrono::nanoseconds>(t)
