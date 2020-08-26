@@ -14,10 +14,10 @@ addons:
   apt:
     sources:
       # ubuntu early access versions
-      - ppa:ubuntu-toolchain-r/test
+      - ubuntu-toolchain-r-test
     packages:
-      - gcc-10
-      - g++-10
+      - gcc-9
+      - g++-9
 
 env: COMPILER=g++ C_COMPILER=gcc BUILD_TYPE=Release
 
@@ -51,7 +51,7 @@ install:
   - chmod +x install-cmake.sh
   - sudo ./install-cmake.sh --prefix=/usr/local --skip-license
   - export PATH=/usr/local/bin:$PATH;
-  # BOOST
+  # Install BOOST
   - wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz >> /dev/null 2>&1
   - tar xfz boost_1_73_0.tar.gz
   - cd boost_1_73_0/
@@ -72,5 +72,6 @@ script:
   - make -j
   - ctest -C ${BUILD_TYPE} -DBENCHMARK_ENABLE_TESTING=OFF -E ".*SpeedTests.*" -E ".*TimingTests.*" --output-on-failure
   - ./testbench/FrankyCPP_v0.3_Bench
+  - ./src/FrankyCPP_v0.3 --perft --endDepth=5
 
 
