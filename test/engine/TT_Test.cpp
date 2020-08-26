@@ -69,8 +69,8 @@ TEST_F(TT_Test, basic) {
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
-  ASSERT_EQ(131072, tt.getMaxNumberOfEntries());
-  ASSERT_EQ(0, tt.getNumberOfEntries());
+  EXPECT_EQ(131072, tt.getMaxNumberOfEntries());
+  EXPECT_EQ(0, tt.getNumberOfEntries());
 }
 
 TEST_F(TT_Test, basic10) {
@@ -79,8 +79,8 @@ TEST_F(TT_Test, basic10) {
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
-  ASSERT_EQ(524288, tt.getMaxNumberOfEntries());
-  ASSERT_EQ(0, tt.getNumberOfEntries());
+  EXPECT_EQ(524288, tt.getMaxNumberOfEntries());
+  EXPECT_EQ(0, tt.getNumberOfEntries());
 }
 
 TEST_F(TT_Test, basic100) {
@@ -89,8 +89,8 @@ TEST_F(TT_Test, basic100) {
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
-  ASSERT_EQ(4194304, tt.getMaxNumberOfEntries());
-  ASSERT_EQ(0, tt.getNumberOfEntries());
+  EXPECT_EQ(4194304, tt.getMaxNumberOfEntries());
+  EXPECT_EQ(0, tt.getNumberOfEntries());
 }
 
 TEST_F(TT_Test, basic1000) {
@@ -99,18 +99,18 @@ TEST_F(TT_Test, basic1000) {
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
-  ASSERT_EQ(33554432, tt.getMaxNumberOfEntries());
-  ASSERT_EQ(0, tt.getNumberOfEntries());
+  EXPECT_EQ(33554432, tt.getMaxNumberOfEntries());
+  EXPECT_EQ(0, tt.getNumberOfEntries());
 }
 
 TEST_F(TT_Test, basic10000) {
   LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the TT with {:L} MB in size", 10'000);
-  TT tt(10'000);
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
-  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
-  ASSERT_EQ(536870912, tt.getMaxNumberOfEntries());
-  ASSERT_EQ(0, tt.getNumberOfEntries());
+  EXPECT_NO_THROW(TT tt(10'000););
+//  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
+//  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
+//  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
+//  EXPECT_EQ(536870912, tt.getMaxNumberOfEntries());
+//  EXPECT_EQ(0, tt.getNumberOfEntries());
 }
 
 TEST_F(TT_Test, basic32000) {
@@ -120,8 +120,8 @@ TEST_F(TT_Test, basic32000) {
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
-  ASSERT_EQ(1073741824, tt.getMaxNumberOfEntries());
-  ASSERT_EQ(0, tt.getNumberOfEntries());
+  EXPECT_EQ(1073741824, tt.getMaxNumberOfEntries());
+  EXPECT_EQ(0, tt.getNumberOfEntries());
 }
 
 TEST_F(TT_Test, basic36000) {
@@ -131,8 +131,8 @@ TEST_F(TT_Test, basic36000) {
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
-  ASSERT_EQ(2147483648, tt.getMaxNumberOfEntries());
-  ASSERT_EQ(0, tt.getNumberOfEntries());
+  EXPECT_EQ(2147483648, tt.getMaxNumberOfEntries());
+  EXPECT_EQ(0, tt.getNumberOfEntries());
 }
 
 TEST_F(TT_Test, basic64) {
@@ -141,8 +141,8 @@ TEST_F(TT_Test, basic64) {
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
-  ASSERT_EQ(4194304, tt.getMaxNumberOfEntries());
-  ASSERT_EQ(0, tt.getNumberOfEntries());
+  EXPECT_EQ(4194304, tt.getMaxNumberOfEntries());
+  EXPECT_EQ(0, tt.getNumberOfEntries());
 }
 
 TEST_F(TT_Test, zero) {
@@ -162,8 +162,8 @@ TEST_F(TT_Test, parallelClear) {
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
-  ASSERT_EQ(268'435'456, tt.getMaxNumberOfEntries());
-  ASSERT_EQ(0, tt.getNumberOfEntries());
+  EXPECT_EQ(268'435'456, tt.getMaxNumberOfEntries());
+  EXPECT_EQ(0, tt.getNumberOfEntries());
   tt.setThreads(8);
   tt.clear();
 }
@@ -183,38 +183,38 @@ TEST_F(TT_Test, put) {
 
   // new entry in empty bucket at pos 0
   tt.put(key1, Depth(6), createMove(SQ_E2, SQ_E4), Value(101), EXACT, Value(1001));
-  ASSERT_EQ(1, tt.getNumberOfPuts());
-  ASSERT_EQ(1, tt.getNumberOfEntries());
-  ASSERT_EQ(0, tt.getNumberOfUpdates());
-  ASSERT_EQ(0, tt.getNumberOfCollisions());
-  ASSERT_EQ(0, tt.getNumberOfOverwrites());
-  ASSERT_EQ(tt.getMatch(key1)->key, key1);
-  ASSERT_EQ(tt.getMatch(key1)->value, Value(101));
-  ASSERT_EQ(tt.getMatch(key1)->eval, Value(1001));
+  EXPECT_EQ(1, tt.getNumberOfPuts());
+  EXPECT_EQ(1, tt.getNumberOfEntries());
+  EXPECT_EQ(0, tt.getNumberOfUpdates());
+  EXPECT_EQ(0, tt.getNumberOfCollisions());
+  EXPECT_EQ(0, tt.getNumberOfOverwrites());
+  EXPECT_EQ(tt.getMatch(key1)->key, key1);
+  EXPECT_EQ(tt.getMatch(key1)->value, Value(101));
+  EXPECT_EQ(tt.getMatch(key1)->eval, Value(1001));
 
   // new entry
   tt.put(key2, Depth(5), createMove(SQ_E2, SQ_E4), Value(102), EXACT, Value(1002));
-  ASSERT_EQ(2, tt.getNumberOfPuts());
-  ASSERT_EQ(2, tt.getNumberOfEntries());
-  ASSERT_EQ(0, tt.getNumberOfUpdates());
-  ASSERT_EQ(0, tt.getNumberOfCollisions());
-  ASSERT_EQ(0, tt.getNumberOfOverwrites());
-  ASSERT_EQ(tt.getMatch(key2)->key, key2);
-  ASSERT_EQ(tt.getMatch(key2)->value, Value(102));
-  ASSERT_EQ(tt.getMatch(key2)->eval, Value(1002));
-  ASSERT_EQ(tt.getMatch(key2)->depth, Value(5));
+  EXPECT_EQ(2, tt.getNumberOfPuts());
+  EXPECT_EQ(2, tt.getNumberOfEntries());
+  EXPECT_EQ(0, tt.getNumberOfUpdates());
+  EXPECT_EQ(0, tt.getNumberOfCollisions());
+  EXPECT_EQ(0, tt.getNumberOfOverwrites());
+  EXPECT_EQ(tt.getMatch(key2)->key, key2);
+  EXPECT_EQ(tt.getMatch(key2)->value, Value(102));
+  EXPECT_EQ(tt.getMatch(key2)->eval, Value(1002));
+  EXPECT_EQ(tt.getMatch(key2)->depth, Value(5));
 
 
   // new entry (collision)
   tt.put(key3, Depth(6), createMove(SQ_E2, SQ_E4), Value(103), EXACT, Value(1003));
-  ASSERT_EQ(3, tt.getNumberOfPuts());
-  ASSERT_EQ(2, tt.getNumberOfEntries());
-  ASSERT_EQ(0, tt.getNumberOfUpdates());
-  ASSERT_EQ(1, tt.getNumberOfCollisions());
-  ASSERT_EQ(1, tt.getNumberOfOverwrites());
-  ASSERT_EQ(tt.getMatch(key3)->key, key3);
-  ASSERT_EQ(tt.getMatch(key3)->value, Value(103));
-  ASSERT_EQ(tt.getMatch(key3)->eval, Value(1003));
+  EXPECT_EQ(3, tt.getNumberOfPuts());
+  EXPECT_EQ(2, tt.getNumberOfEntries());
+  EXPECT_EQ(0, tt.getNumberOfUpdates());
+  EXPECT_EQ(1, tt.getNumberOfCollisions());
+  EXPECT_EQ(1, tt.getNumberOfOverwrites());
+  EXPECT_EQ(tt.getMatch(key3)->key, key3);
+  EXPECT_EQ(tt.getMatch(key3)->value, Value(103));
+  EXPECT_EQ(tt.getMatch(key3)->eval, Value(1003));
 }
 
 TEST_F(TT_Test, get) {
@@ -234,20 +234,20 @@ TEST_F(TT_Test, get) {
   // new entry in empty slot
   tt.put(key1, Depth(6), createMove(SQ_E2, SQ_E4), Value(101), EXACT, Value(1001));
   const TT::Entry* e1 = tt.getMatch(key1);
-  ASSERT_EQ(101, e1->value);
+  EXPECT_EQ(101, e1->value);
 
   // new entry in empty slot
   tt.put(key2, Depth(5), createMove(SQ_E2, SQ_E4), Value(102), EXACT, Value(1002));
   const TT::Entry* e2 = tt.getMatch(key2);
-  ASSERT_EQ(102, e2->value);
+  EXPECT_EQ(102, e2->value);
 
   // new entry in occupied slot
   tt.put(key3, Depth(7), createMove(SQ_E2, SQ_E4), Value(103), EXACT, Value(1003));
   const TT::Entry* e3 = tt.getMatch(key3);
-  ASSERT_EQ(103, e3->value);
+  EXPECT_EQ(103, e3->value);
 
   const TT::Entry* e4 = tt.getMatch(key4);// not in TT
-  ASSERT_EQ(nullptr, e4);
+  EXPECT_EQ(nullptr, e4);
 }
 
 // 17.6.2020 (loaner laptop)
