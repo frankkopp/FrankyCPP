@@ -217,7 +217,7 @@ TEST_F(SpeedTests, stdPerftOD) {
   // @formatter:on
 
   const int startDepth = 1;
-  const int maxDepth   = 7;
+  const int maxDepth   = 6;
 
   for (int i = startDepth; i <= maxDepth; i++) {
     p.perft(i);

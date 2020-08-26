@@ -1,5 +1,4 @@
 dist: xenial
-# xenial | trusty
 sudo: required
 language: cpp
 compiler: gcc
@@ -56,7 +55,7 @@ script:
   - ls -l ./src
   - ls -l ./test
   - ls -l ./testbench
-  - ctest -C ${BUILD_TYPE} -E SpeedTests.* -E TimingTests.* --output-on-failure
+  - ctest -C ${BUILD_TYPE} -N -E ".*SpeedTests.*" -E ".*TimingTests.*" --output-on-failure
   - ./testbench/FrankyCPP_v0.3_Bench
 
 

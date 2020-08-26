@@ -101,7 +101,7 @@ TEST_F(OpeningBookTest, initPgn) {
 }
 
 TEST_F(OpeningBookTest, initPgnLarge) {
-  //  GTEST_SKIP();
+  GTEST_SKIP();
 #ifndef NDEBUG                 
   GTEST_SKIP();
 #endif
@@ -176,7 +176,7 @@ TEST_F(OpeningBookTest, serializationSimple) {
 }
 
 TEST_F(OpeningBookTest, serializationLarge) {
-  //  GTEST_SKIP();
+  GTEST_SKIP();
 #ifndef NDEBUG
   GTEST_SKIP();
 #endif
