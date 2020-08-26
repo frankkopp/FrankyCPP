@@ -53,7 +53,9 @@ script:
   # Run your build commands next
   - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBENCHMARK_ENABLE_GTEST_TESTS=OFF -DBENCHMARK_ENABLE_LTO=false ..
   - make -j
+  - ls -l ./src
+  - ls -l ./test
+  - ls -l ./testbench
   #- ctest -C ${BUILD_TYPE} -E SpeedTests.* -E TimingTests.* --output-on-failure
-  - ls -l
 
 
