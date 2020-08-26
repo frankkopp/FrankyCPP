@@ -55,6 +55,7 @@ before_script:
   - gcc -v && g++ -v && cmake --version
   - which gcc-ar
   - gcc-ar --version
+  - ls -laF /usr/bin/gcc*
   - mkdir -p build && cd build
 
 script:
