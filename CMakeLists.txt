@@ -67,7 +67,7 @@ elseif (CMAKE_COMPILER_IS_GNUCXX)
     # endif()
 
     # Test if we are on a Travis environment
-    if (TRAVIS=true)
+    if(DEFINED ENV{TRAVIS})
         message("TRAVIS BUILD")
     endif()
 
@@ -116,6 +116,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
 endif ()
 
+# Print some info to be able to check which compiler has been picked
 message("Generator: " ${CMAKE_GENERATOR} " " ${CMAKE_MAKE_PROGRAM})
 message("Compiler flags: " ${CMAKE_CXX_FLAGS})
 message("Compiler DEBUG flags: " ${CMAKE_CXX_FLAGS_DEBUG})
@@ -223,7 +224,7 @@ endif ()
 set(BOOST_ALL_NO_LIB 0)
 set(BOOST_LIB_DIAGNOSTIC 1)
 
-# My project
+# include sub directories
 include_directories(
         ${PROJECT_SOURCE_DIR}/src
         ${PROJECT_SOURCE_DIR}/test

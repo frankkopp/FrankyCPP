@@ -68,7 +68,7 @@ before_script:
 
 script:
   # Run your build commands next
-  - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBENCHMARK_ENABLE_TESTING=OFF -DTRAVIS=true ..
+  - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBENCHMARK_ENABLE_TESTING=OFF -DTRAVIS ..
   - make -j
   - ctest -C ${BUILD_TYPE} -DBENCHMARK_ENABLE_TESTING=OFF -E ".*SpeedTests.*" -E ".*TimingTests.*" --output-on-failure
   - ./testbench/FrankyCPP_v0.3_Bench
