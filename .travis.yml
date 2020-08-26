@@ -56,6 +56,9 @@ before_script:
   - which gcc-ar
   - gcc-ar --version
   - ls -laF /usr/bin/gcc*
+  - sudo rm -f /usr/bin/gcc-ar
+  - sudo ln -s /usr/bin/gcc-ar-9 /usr/bin/gcc-ar
+  - ls -laF /usr/bin/gcc*
   - mkdir -p build && cd build
 
 script:
