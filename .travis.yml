@@ -57,7 +57,7 @@ before_script:
 
 script:
   # Run your build commands next
-  - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBENCHMARK_ENABLE_GTEST_TESTS=OFF -DBENCHMARK_ENABLE_TESTING=OFF -DBENCHMARK_ENABLE_LTO=true ..
+  - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBENCHMARK_ENABLE_TESTING=OFF ..
   - make -j
   - ls -l ./src
   - ls -l ./test
