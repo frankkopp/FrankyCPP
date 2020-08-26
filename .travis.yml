@@ -63,7 +63,7 @@ before_script:
 
 script:
   # Run your build commands next
-  - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBENCHMARK_ENABLE_TESTING=OFF ..
+  - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBENCHMARK_ENABLE_TESTING=OFF -DCMAKE_AR="gcc-ar" -DCMAKE_C_ARCHIVE_CREATE="<CMAKE_AR> qcs <TARGET> <LINK_FLAGS> <OBJECTS>" -DCMAKE_C_ARCHIVE_FINISH=true ..
   - make -j
   - ls -l ./src
   - ls -l ./test
