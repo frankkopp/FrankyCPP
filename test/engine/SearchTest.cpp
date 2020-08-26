@@ -368,6 +368,7 @@ TEST_F(SearchTest, quiescenceTest) {
 }
 
 TEST_F(SearchTest, debug) {
+  GTEST_SKIP();
   SearchConfig::TT_SIZE_MB          = 64;
   SearchConfig::USE_BOOK            = false;
   SearchConfig::USE_ALPHABETA       = false;
