@@ -1,7 +1,8 @@
 branches:
   only:
     - master
-    - dev.*
+    - develop
+    - /dev_.*$/
 
 dist: xenial
 sudo: required
