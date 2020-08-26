@@ -50,13 +50,12 @@ before_script:
 
 script:
   # Run your build commands next
-  - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBENCHMARK_ENABLE_GTEST_TESTS=OFF -DBENCHMARK_ENABLE_LTO=false ..
+  - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBENCHMARK_ENABLE_GTEST_TESTS=OFF -DBENCHMARK_ENABLE_TESTING=OFF -DBENCHMARK_ENABLE_LTO=false ..
   - make -j
   - ls -l ./src
   - ls -l ./test
   - ls -l ./testbench
-  - ctest -C ${BUILD_TYPE} -N -E ".*SpeedTests.*" -E ".*TimingTests.*" --output-on-failure
-  - ctest -C ${BUILD_TYPE} -N -LE SpeedTests -LE TimingTests --output-on-failure
+  - ctest -C ${BUILD_TYPE} -DBENCHMARK_ENABLE_TESTING=OFF -N -E ".*SpeedTest.*" -E ".*TimingTests.*" --output-on-failure
   - ./testbench/FrankyCPP_v0.3_Bench
 
 

@@ -113,6 +113,7 @@ FetchContent_Declare(
         GIT_TAG v1.5.1) # need master for benchmark::benchmark
 set(BENCHMARK_ENABLE_GTEST_TESTS OFF)
 option(BENCHMARK_ENABLE_GTEST_TESTS OFF)
+option(BENCHMARK_ENABLE_TESTING "Enable testing of the benchmark library." OFF)
 FetchContent_MakeAvailable(googlebenchmark)
 include_directories(
         ${googlebenchmark_SOURCE_DIR}/include
