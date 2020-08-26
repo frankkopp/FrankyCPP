@@ -31,6 +31,7 @@ install:
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 100
   - sudo update-alternatives --set gcc /usr/bin/gcc-9
   - sudo update-alternatives --set g++ /usr/bin/g++-9
+  - sudo apt-get install binutils
   # Export CC and CXX to tell cmake which compiler to use
   - export CC=/usr/bin/gcc-9
   - export CXX=/usr/bin/g++-9
