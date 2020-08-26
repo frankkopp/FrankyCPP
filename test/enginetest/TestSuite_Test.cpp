@@ -98,7 +98,7 @@ TEST_F(TestSuite_Test, crafty_test) {
 }
 
 TEST_F(TestSuite_Test, ecm98_test) {
-//  GTEST_SKIP();
+  GTEST_SKIP();
   SearchConfig::USE_BOOK = false;
   milliseconds moveTime{5s};
   Depth depth{0};
