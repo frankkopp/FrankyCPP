@@ -4,19 +4,20 @@ branches:
     - develop
     - /dev_.*$/
 
+os: linux
 dist: xenial
 sudo: required
 language: cpp
 compiler: gcc
-os: linux
 
 addons:
   apt:
     sources:
-      - ubuntu-toolchain-r-test
+      # ubuntu early access versions
+      - ppa:ubuntu-toolchain-r/test
     packages:
-      - gcc-9
-      - g++-9
+      - gcc-10
+      - g++-10
 
 env: COMPILER=g++ C_COMPILER=gcc BUILD_TYPE=Release
 
@@ -67,7 +68,7 @@ before_script:
 
 script:
   # Run your build commands next
-  - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBENCHMARK_ENABLE_TESTING=OFF ..
+  - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBENCHMARK_ENABLE_TESTING=OFF -DTRAVIS ..
   - make -j
   - ctest -C ${BUILD_TYPE} -DBENCHMARK_ENABLE_TESTING=OFF -E ".*SpeedTests.*" -E ".*TimingTests.*" --output-on-failure
   - ./testbench/FrankyCPP_v0.3_Bench
