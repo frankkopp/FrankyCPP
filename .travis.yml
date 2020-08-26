@@ -31,6 +31,7 @@ install:
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 100
   - sudo update-alternatives --set gcc /usr/bin/gcc-9
   - sudo update-alternatives --set g++ /usr/bin/g++-9
+  - ls -laF /usr/lib/bin*
   - ls -laF /usr/bin/gcc*
   - sudo rm -f /usr/bin/gcc-ar
   - sudo rm -f /usr/bin/gcc-ranlib
@@ -69,7 +70,7 @@ before_script:
 
 script:
   # Run your build commands next
-  - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBENCHMARK_ENABLE_TESTING=OFF -DCMAKE_AR="gcc-ar" ..
+  - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBENCHMARK_ENABLE_TESTING=OFF ..
   - make -j
   - ls -l ./src
   - ls -l ./test
