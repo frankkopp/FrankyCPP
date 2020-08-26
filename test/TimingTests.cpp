@@ -23,18 +23,18 @@
  *
  */
 
+#include "common/stringutil.h"
 #include "init.h"
 #include "types/types.h"
-#include "common/stringutil.h"
 #include <chesscore/Position.h>
 
 #include <gtest/gtest.h>
 
+#include <chrono>
+#include <functional>
 #include <random>
 #include <regex>
-#include <functional>
 #include <thread>
-#include <chrono>
 using namespace std::chrono;
 
 class TimingTests : public ::testing::Test {
@@ -51,7 +51,7 @@ protected:
 
   // Necessary because of function pointer use below.
   static void testTiming(std::ostringstream& os, int rounds, int iterations,
-                  int repetitions, const std::vector<std::function<void(void)>>& tests);
+                         int repetitions, const std::vector<std::function<void(void)>>& tests);
 };
 
 TEST_F(TimingTests, DISABLED_popcount) {
@@ -149,33 +149,33 @@ TEST_F(TimingTests, DISABLED_trimWhiteSpace) {
 
   int counter = 0;
 
-//  // regex
-//  std::string trimmedLineRegex{};
-//  std::function<void()> f1 = [&]() {
-//    trimmedLineRegex = trimRegex(line);
-//    counter++;
-//  };
-//
-//  std::string trimmedLineViewRegex{};
-//  std::function<void()> f2 = [&]() {
-//    trimmedLineViewRegex = trimRegex(lineView);
-//    counter++;
-//  };
-//
-//  // find_first_not_of
-//  std::string trimmedLineFindNot{};
-//  std::function<void()> f3 = [&]() {
-//    trimmedLineFindNot = trimFindNot(line);
-//    counter++;
-//  };
-//
-//  // find_if
-//  std::string trimmedLineFindIf{};
-//  std::string lineCopy{line};
-//  std::function<void()> f4 = [&]() {
-//    trimmedLineFindIf = trimFindIf(lineCopy);
-//    counter++;
-//  };
+  //  // regex
+  //  std::string trimmedLineRegex{};
+  //  std::function<void()> f1 = [&]() {
+  //    trimmedLineRegex = trimRegex(line);
+  //    counter++;
+  //  };
+  //
+  //  std::string trimmedLineViewRegex{};
+  //  std::function<void()> f2 = [&]() {
+  //    trimmedLineViewRegex = trimRegex(lineView);
+  //    counter++;
+  //  };
+  //
+  //  // find_first_not_of
+  //  std::string trimmedLineFindNot{};
+  //  std::function<void()> f3 = [&]() {
+  //    trimmedLineFindNot = trimFindNot(line);
+  //    counter++;
+  //  };
+  //
+  //  // find_if
+  //  std::string trimmedLineFindIf{};
+  //  std::string lineCopy{line};
+  //  std::function<void()> f4 = [&]() {
+  //    trimmedLineFindIf = trimFindIf(lineCopy);
+  //    counter++;
+  //  };
 
   // while
   std::string trimmedLineWhile{};
@@ -192,10 +192,10 @@ TEST_F(TimingTests, DISABLED_trimWhiteSpace) {
   };
 
   std::vector<std::function<void()>> tests;
-//  tests.push_back(f1);
-//  tests.push_back(f2);
-//  tests.push_back(f3);
-//  tests.push_back(f4);
+  //  tests.push_back(f1);
+  //  tests.push_back(f2);
+  //  tests.push_back(f3);
+  //  tests.push_back(f4);
   tests.push_back(f5);
   tests.push_back(f6);
   //// TESTS END
@@ -204,10 +204,10 @@ TEST_F(TimingTests, DISABLED_trimWhiteSpace) {
 
   NEWLINE;
 
-//  fprintln("trimmedLineRegex:     '{}'", trimmedLineRegex);
-//  fprintln("trimmedLineViewRegex: '{}'", trimmedLineViewRegex);
-//  fprintln("trimmedLineFindNot:   '{}'", trimmedLineFindNot);
-//  fprintln("trimmedLineFindIf:    '{}'", trimmedLineFindIf);
+  //  fprintln("trimmedLineRegex:     '{}'", trimmedLineRegex);
+  //  fprintln("trimmedLineViewRegex: '{}'", trimmedLineViewRegex);
+  //  fprintln("trimmedLineFindNot:   '{}'", trimmedLineFindNot);
+  //  fprintln("trimmedLineFindIf:    '{}'", trimmedLineFindIf);
   fprintln("trimmedLineWhile:     '{}'", trimmedLineWhile);
   fprintln("trimmedLineViewWhile: '{}'", trimmedLineViewWhile);
   fprintln("counter: {:L}", counter);
@@ -240,7 +240,7 @@ TEST_F(TimingTests, DISABLED_illegalCharacter) {
   std::string trimmedLineViewRegex{};
   std::function<void()> f2 = [&]() {
     bool illegalFound = false;
-    const auto l = fen.length();
+    const auto l      = fen.length();
     for (int i = 0; i < l; i++) {
       if (allowedChars.find(fen[i]) == std::string::npos) {
         illegalFound = true;
@@ -311,11 +311,11 @@ TEST_F(TimingTests, split) {
     splitFast(line, splitStringParts, " ");
   };
 
-//  std::vector<std::string> splitStringParts2{};
-//  std::function<void()> f2 = [&]() {
-//    splitStringParts2.clear();
-//    split(line, splitStringParts2, ' ');
-//  };
+  //  std::vector<std::string> splitStringParts2{};
+  //  std::function<void()> f2 = [&]() {
+  //    splitStringParts2.clear();
+  //    split(line, splitStringParts2, ' ');
+  //  };
 
   std::vector<std::string_view> splitViewParts{};
   std::function<void()> f3 = [&]() {
@@ -324,9 +324,9 @@ TEST_F(TimingTests, split) {
   };
 
   std::vector<std::function<void()>> tests;
-    tests.push_back(f1);
-//    tests.push_back(f2);
-    tests.push_back(f3);
+  tests.push_back(f1);
+  //    tests.push_back(f2);
+  tests.push_back(f3);
   //// TESTS END
 
   testTiming(os, 5, 10, 10'000, tests);
@@ -334,7 +334,7 @@ TEST_F(TimingTests, split) {
   NEWLINE;
 
   fprintln("Elements: {:L}", splitStringParts.size());
-//  fprintln("Elements: {:L}", splitStringParts2.size());
+  //  fprintln("Elements: {:L}", splitStringParts2.size());
   fprintln("Elements: {:L}", splitViewParts.size());
 
   std::cout << os.str();
@@ -738,7 +738,7 @@ void TimingTests::testTiming(std::ostringstream& os, int rounds, int iterations,
   os << "======================================================================"
      << std::endl;
 
-  time_point<steady_clock> startTime;
+  auto startTime = currentTime();
   nanoseconds last(0);
 
   // rounds
@@ -776,7 +776,7 @@ void TimingTests::testTiming(std::ostringstream& os, int rounds, int iterations,
          << " ns avg per test)"
          << std::endl;
 
-      last = avgCpu;
+      last        = avgCpu;
       accDuration = nanoseconds(0);
     }
     os << std::endl;
