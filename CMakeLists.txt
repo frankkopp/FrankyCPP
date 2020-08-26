@@ -69,6 +69,10 @@ elseif (CMAKE_COMPILER_IS_GNUCXX)
     # Test if we are on a Travis environment
     if(DEFINED ENV{TRAVIS})
         message("TRAVIS BUILD")
+    else()
+        message("NONE TRAVIS BUILD")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
     endif()
 
     # Availability of PEXT compiler intrinsic. Not available on all platforms
@@ -89,7 +93,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     # this needs to be added to CLION cmake options
     # -DCMAKE_C_COMPILER=cl.exe -DCMAKE_CXX_COMPILER=cl.exe -G Ninja
     message("Compiler Settings: MSVC")
-    set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /favor:INTEL64 /Gr /Qpar /W4 /GR /EHsc /std:c++17 /arch:AVX2 /MP /LTCG:INCREMENTAL|STATUS")
+    set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /favor:INTEL64 /Gr /Qpar /W4 /GR /EHsc /std:c++17 /arch:AVX2 /MP")
     set(CMAKE_CXX_FLAGS_RELEASE "/O2 /Ob2 /MD /DNDEBUG")
     set(CMAKE_CXX_FLAGS_DEBUG "/Od /Ob0 /MDd /Zi /RTC1")
 
