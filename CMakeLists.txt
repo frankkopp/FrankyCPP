@@ -33,8 +33,8 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
     # std::execution lib for parallel std operations. Not available on all platforms
-    message("Using HAS_EXECUTION_LIB")
-    add_compile_definitions(HAS_EXECUTION_LIB)
+    # message("Using HAS_EXECUTION_LIB")
+    # add_compile_definitions(HAS_EXECUTION_LIB)
     # Availability of PEXT compiler intrinsic. Not available on all platforms
     message("Using HAS_PEXT")
     add_compile_definitions(HAS_PEXT)
