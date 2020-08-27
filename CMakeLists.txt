@@ -150,8 +150,8 @@ FetchContent_Declare(
 )
 FetchContent_Declare(googletest)
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-option(INSTALL_GMOCK "Install Googletest's GMock?" OFF)
-option(INSTALL_GTEST "Install Googletest's GTest?" OFF)
+option(INSTALL_GMOCK OFF)
+option(INSTALL_GTEST OFF)
 FetchContent_MakeAvailable(googletest)
 include_directories(
         ${googletest_SOURCE_DIR}/googletest/include
@@ -164,7 +164,7 @@ FetchContent_Declare(
         GIT_TAG v1.5.1) # need master for benchmark::benchmark
 option(BENCHMARK_ENABLE_LTO ON)
 option(BENCHMARK_ENABLE_GTEST_TESTS OFF)
-option(BENCHMARK_ENABLE_TESTING "Enable testing of the benchmark library." OFF)
+option(BENCHMARK_ENABLE_TESTING OFF)
 FetchContent_MakeAvailable(googlebenchmark)
 include_directories(
         ${googlebenchmark_SOURCE_DIR}/include
