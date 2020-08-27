@@ -23,22 +23,20 @@
  *
  */
 
-#include <exception>
-#include <memory>
-#include <thread>
-
+#include "UciHandler.h"
+#include "Search.h"
+#include "SearchConfig.h"
+#include "SearchLimits.h"
 #include "chesscore/MoveGenerator.h"
 #include "chesscore/Perft.h"
 #include "chesscore/Position.h"
-#include "types/types.h"
-
-#include "Search.h"
-#include "SearchLimits.h"
 #include "common/Logging.h"
+#include "types/types.h"
 #include "version.h"
 
-#include "SearchConfig.h"
-#include "UciHandler.h"
+#include <exception>
+#include <memory>
+#include <thread>
 
 UciHandler::UciHandler() {
   pInputStream  = &std::cin;
@@ -201,12 +199,7 @@ void UciHandler::goCommand(std::istringstream& inStream) {
 
   // Sanity check search limits
   // sanity check / minimum settings
-  if (!(searchLimits.infinite ||
-        searchLimits.ponder ||
-        searchLimits.depth > 0 ||
-        searchLimits.nodes > 0 ||
-        searchLimits.mate > 0 ||
-        searchLimits.timeControl)) {
+  if (!(searchLimits.infinite || searchLimits.ponder || searchLimits.depth > 0 || searchLimits.nodes > 0 || searchLimits.mate > 0 || searchLimits.timeControl)) {
     uciError(fmt::format("UCI command go malformed. No effective limits set {}", searchLimits.str()));
     return;
   }

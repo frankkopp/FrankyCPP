@@ -176,6 +176,7 @@ int main(int argc, char* argv[]) {
       return 0;
     }
 
+    // Perft run from cmd line
     if (programOptions.count("perft")) {
       init::init();
       std::cout << std::endl;
@@ -203,7 +204,6 @@ int main(int argc, char* argv[]) {
     std::cerr << "Exception of unknown type!\n";
     return 1;
   }
-
 
   // Init all pre calculated data structures
   init::init();

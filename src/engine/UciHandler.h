@@ -26,15 +26,15 @@
 #ifndef FRANKYCPP_UCIHANDLER_H
 #define FRANKYCPP_UCIHANDLER_H
 
+#include "SearchLimits.h"
+#include "UciOptions.h"
+
+#include "gtest/gtest_prod.h"
+
 #include <cstddef>
 #include <cstdint>
 #include <iosfwd>
 #include <memory>
-
-#include "UciOptions.h"
-//#include "Search.h"
-#include "SearchLimits.h"
-#include "gtest/gtest_prod.h"
 
 // forward declaration
 class Position;
@@ -60,9 +60,9 @@ private:
 
 public:
   UciHandler();
-  
+
   // The UciHandler can be provided with stream input and output objects to
-  // simulate cin and cout. Useul for testing. 
+  // simulate cin and cout. Useful for testing.
   UciHandler(std::istream* pIstream, std::ostream* pOstream);
 
   // Starts the handler loop with the istream provided when creating the instance
@@ -82,7 +82,7 @@ public:
   void sendString(const std::string& anyString) const;
   void sendReadyOk() const;
 
-  const std::shared_ptr<Search>& getSearchPtr() const {
+  [[nodiscard]] const std::shared_ptr<Search>& getSearchPtr() const {
     return pSearch;
   }
 
@@ -111,9 +111,8 @@ private:
   void registerCommand();
   void debugCommand();
 
-  void uciError(const std::string &msg) const;
+  void uciError(const std::string& msg) const;
   FRIEND_TEST(UCITest, goError);
-
 };
 
 
