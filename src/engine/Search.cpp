@@ -61,7 +61,7 @@ void Search::isReady() {
   sendReadyOk();
 }
 
-void Search::startSearch(const Position p, SearchLimits sl) {
+void Search::startSearch(Position p, SearchLimits sl) {
   // acquire init phase lock
   if (!initSemaphore.get()) {
     LOG__WARN(Logger::get().SEARCH_LOG, "Search init failed as another initialization is ongoing.");

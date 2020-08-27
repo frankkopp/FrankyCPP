@@ -23,9 +23,38 @@
  *
  */
 
+#include "types/types.h"
+#include "chesscore/Position.h"
+#include "engine/SearchLimits.h"
+
 #include <gtest/gtest.h>
 using testing::Eq;
 
-TEST(Playground, format) {
+#include <iostream>
+#include <type_traits>
 
+struct TestStructure {
+  // no time control
+  bool infinite = false;
+  bool ponder   = false;
+  int mate      = 0;
+
+  // extra limits
+  int depth      = 0;
+  uint64_t nodes = 0;
+//  MoveList moves{};
+
+  //  time control;
+  bool timeControl   = false;
+  milliseconds whiteTime{0};
+  milliseconds blackTime{0};
+  milliseconds whiteInc{0};
+  milliseconds blackInc{0};
+  milliseconds moveTime{0};
+};
+
+TEST(Playground, format) {
+  fprintln("Position:     {}", std::is_trivially_copyable<Position>::value);
+  fprintln("SearchLimits: {}", std::is_trivially_copyable<SearchLimits>::value);
+  fprintln("SearchLimits: {}", std::is_trivially_copyable<TestStructure>::value);
 }

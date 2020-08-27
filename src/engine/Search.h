@@ -26,9 +26,6 @@
 #ifndef FRANKYCPP_SEARCH_H
 #define FRANKYCPP_SEARCH_H
 
-
-#include <thread>
-
 #include "SearchLimits.h"
 #include "SearchResult.h"
 #include "SearchStats.h"
@@ -42,6 +39,8 @@
 #include "types/types.h"
 
 #include "gtest/gtest_prod.h"
+
+#include <thread>
 
 // forward declaration
 class UciHandler;
@@ -149,7 +148,7 @@ public:
   void isReady();
 
   // starts the search in a separate thread with the given search limits
-  void startSearch(const Position p, SearchLimits sl);
+  void startSearch(Position p, SearchLimits sl);
 
   // Stops a running search gracefully - e.g. returns the best move found so far
   void stopSearch();
@@ -279,7 +278,7 @@ private:
   // setupTimeControl sets up time control according to the given search limits
   // and returns a limit on the duration for the current search.
   static milliseconds setupTimeControl(Position& position, SearchLimits& limits);
-  FRIEND_TEST(SearchTest, setupTime);       
+  FRIEND_TEST(SearchTest, setupTime);
 
   // addExtraTime certain situations might call for a extension or reduction
   // of the given time limit for the search. This function add/subtracts
