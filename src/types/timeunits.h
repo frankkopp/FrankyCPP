@@ -63,6 +63,8 @@ inline std::string str(nanoseconds s) {
 //  100ns
 template<typename T>
 inline std::string format(T timeunit) {
+  // FIXME: overflow of nanoseconds is undefined
+  //  different behavior on MAc for debug vs. release build due to optimizations
   nanoseconds ns = duration_cast<nanoseconds>(timeunit);
   std::ostringstream os;
   bool foundNonZero  = false;
