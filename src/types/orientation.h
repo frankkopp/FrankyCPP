@@ -36,7 +36,7 @@
 //  SW,       // 6
 //  W,        // 7
 //  OR_LENGTH // 8
-enum Orientation : int {
+enum Orientation : uint_fast8_t {
   NW,      // 0
   N,       // 1
   NE,      // 2

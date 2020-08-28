@@ -53,8 +53,9 @@ protected:
   void TearDown() override {}
 };
 
-// 21.6. Loaner laptop
-// NPS: 8.924.349
+// 5.8. All Features: NPS: 2.788.209
+// 5.8. All Features: NPS: 2.788.209 (+piece eval)
+//
 TEST_F(EngineSpeedTests, npsTest) {
   SearchConfig::TT_SIZE_MB          = 64;
   SearchConfig::USE_BOOK            = false;
@@ -78,9 +79,14 @@ TEST_F(EngineSpeedTests, npsTest) {
   SearchConfig::USE_LMR             = true;
   SearchConfig::USE_LMP             = true;
 
-  EvalConfig::USE_MATERIAL   = true;
-  EvalConfig::USE_POSITIONAL = true;
-  EvalConfig::TEMPO          = 34;
+  EvalConfig::TEMPO           = 34;
+  EvalConfig::USE_MATERIAL    = true;
+  EvalConfig::USE_POSITIONAL  = true;
+  EvalConfig::USE_PAWN_EVAL   = true;
+  EvalConfig::USE_PAWN_TT     = true;
+  EvalConfig::PAWN_TT_SIZE_MB = 64;
+  EvalConfig::USE_PIECE_EVAL  = true;
+  EvalConfig::USE_KING_EVAL  = true;
 
   //  Position p{"2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - - 0 1 "};
   Position p{};
@@ -88,11 +94,11 @@ TEST_F(EngineSpeedTests, npsTest) {
   s.isReady();
   SearchLimits sl{};
   sl.timeControl = true;
-  sl.moveTime    = 160s;
+  sl.moveTime    = 30s;
   s.startSearch(p, sl);
   EXPECT_TRUE(s.isSearching());
   EXPECT_FALSE(s.hasResult());
   s.waitWhileSearching();
   EXPECT_TRUE(s.hasResult());
-  fprintln("NPS: {:n}", nps(s.getLastSearchResult().nodes, s.getLastSearchResult().time));
+  fprintln("NPS: {:L}", nps(s.getLastSearchResult().nodes, s.getLastSearchResult().time));
 }

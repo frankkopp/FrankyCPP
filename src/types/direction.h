@@ -38,7 +38,7 @@
 //  SOUTH_EAST = SOUTH + EAST,
 //  SOUTH_WEST = SOUTH + WEST,
 //  NORTH_WEST = NORTH + WEST
-enum Direction : int {
+enum Direction : int_fast8_t {
   NORTH      = 8,
   EAST       = 1,
   SOUTH      = -NORTH,
@@ -53,19 +53,23 @@ enum Direction : int {
 constexpr Direction pawnPush(Color c) { return c == WHITE ? NORTH : SOUTH; }
 
 // Additional operators to add a Direction to a Square
+// Could be invalid Square if int value of Direction + int value of Square are >63
 constexpr Square operator+(Square s, Direction d) {
   return static_cast<Square>(int(s) + int(d));
 }
 
 // Additional operators to add a Direction to a Square
+// Could be invalid Square if int value of Direction + int value of Square are >63
 constexpr Square& operator+=(Square& s, Direction d) { return s = s + d; }
 
 // Additional operators to subtract a Direction to a Square
+// // Could be invalid Square if int value of Direction is > int value of Square
 constexpr Square operator-(Square s, Direction d) {
   return static_cast<Square>(int(s) - int(d));
 }
 
 // Additional operators to subtract a Direction to a Square
+// // Could be invalid Square if int value of Direction is > int value of Square
 constexpr Square& operator-=(Square& s, Direction d) { return s = s - d; }
 
 ENABLE_FULL_OPERATORS_ON (Direction)

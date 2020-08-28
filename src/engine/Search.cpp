@@ -23,20 +23,20 @@
  *
  */
 
-#include <chrono>
-
-#include "Evaluator.h"
 #include "Search.h"
+#include "Evaluator.h"
 #include "SearchConfig.h"
 #include "See.h"
+
+#include <chrono>
 
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
 
 Search::Search() : Search(nullptr) {}
 
-Search::Search(UciHandler* uciHandler) {
-  this->uciHandler = uciHandler;
+Search::Search(UciHandler* pUciHandler) {
+  this->uciHandler = pUciHandler;
   this->tt         = std::make_unique<TT>(0);
 }
 
@@ -61,14 +61,14 @@ void Search::isReady() {
   sendReadyOk();
 }
 
-void Search::startSearch(const Position p, SearchLimits sl) {
+void Search::startSearch(Position p, SearchLimits sl) {
   // acquire init phase lock
   if (!initSemaphore.get()) {
     LOG__WARN(Logger::get().SEARCH_LOG, "Search init failed as another initialization is ongoing.");
   }
 
   // start search time
-  startTime       = now();
+  startTime       = currentTime();
   startSearchTime = startTime;
 
   // move the received copy of position and search limits to instance variables
@@ -169,8 +169,8 @@ void Search::run() {
   // initialize search
   stopSearchFlag    = false;
   hasResultFlag     = false;
-  timeLimit         = MilliSec{};
-  extraTime         = MilliSec{};
+  timeLimit         = milliseconds{};
+  extraTime         = milliseconds{};
   nodesVisited      = 0;
   statistics        = SearchStats{};
   lastUciUpdateTime = nowFast();
@@ -253,13 +253,13 @@ void Search::run() {
   stopSearchFlag = true;
 
   // update search result with search time and pv
-  searchResult.time  = now() - startSearchTime;
+  searchResult.time  = currentTime() - startSearchTime;
   searchResult.pv    = pv[0];
   searchResult.nodes = nodesVisited;
 
   // print stats to log
   LOG__INFO(Logger::get().SEARCH_LOG, "Search finished after {}", str(searchResult.time));
-  LOG__INFO(Logger::get().SEARCH_LOG, "Search depth was {}({}) with {:n} nodes visited. NPS = {:n} nps", statistics.currentSearchDepth, statistics.currentExtraSearchDepth, nodesVisited, nps(nodesVisited, searchResult.time));
+  LOG__INFO(Logger::get().SEARCH_LOG, "Search depth was {}({}) with {:L} nodes visited. NPS = {:L} nps", statistics.currentSearchDepth, statistics.currentExtraSearchDepth, nodesVisited, nps(nodesVisited, searchResult.time));
   LOG__DEBUG(Logger::get().SEARCH_LOG, "Search stats: {}", statistics.str());
 
   // print result to log
@@ -458,14 +458,12 @@ Value Search::aspirationSearch(Position& p, Depth depth, Value bestValue) {
       // Alternatively we could do steps as well
       // alpha = Max(bestValue-aspirationSteps[i], ValueMin)
       statistics.aspirationResearches++;
-      statistics.currentExtraSearchDepth = 0;
     }
     else if (value >= beta) {
       // FAIL HIGH - increase upper bound
       sendAspirationResearchInfo("lowerbound");
       beta = std::min(bestValue + aspirationSteps[i], VALUE_MAX);
       statistics.aspirationResearches++;
-      statistics.currentExtraSearchDepth = 0;
     }
     else {
       break;
@@ -628,11 +626,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
       ttMove = static_cast<Move>(ttEntryPtr->move);
       if (ttEntryPtr->depth >= depth) {
         const Value ttValue = valueFromTt(ttEntryPtr->value, ply);
-        if (validValue(ttValue) &&
-            (ttEntryPtr->type == EXACT ||
-             (ttEntryPtr->type == ALPHA && ttValue <= alpha) ||
-             (ttEntryPtr->type == BETA && ttValue >= beta)) &&
-            SearchConfig::USE_TT_VALUE) {
+        if (validValue(ttValue) && (ttEntryPtr->type == EXACT || (ttEntryPtr->type == ALPHA && ttValue <= alpha) || (ttEntryPtr->type == BETA && ttValue >= beta)) && SearchConfig::USE_TT_VALUE) {
           // get PV line from tt as we prune here
           // and wouldn't have one otherwise
           getPvLine(p, pv[ply], depth);
@@ -642,8 +636,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
         statistics.TtNoCuts++;
       }
       // if we have a static eval stored we can reuse it
-      if (SearchConfig::USE_EVAL_TT &&
-          ttEntryPtr->eval != VALUE_NONE) {
+      if (SearchConfig::USE_EVAL_TT && ttEntryPtr->eval != VALUE_NONE) {
         statistics.evalFromTT++;
         staticEval = ttEntryPtr->eval;
       }
@@ -660,18 +653,14 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
     staticEval = evaluate(p);
     // Storing this value might save us calls to eval on the same position.
     if (SearchConfig::USE_TT && SearchConfig::USE_EVAL_TT) {
-      storeTt(p, DEPTH_NONE, DEPTH_NONE, MOVE_NONE, VALUE_NONE, NONE, staticEval, matethreat);
+      storeTt(p, DEPTH_NONE, DEPTH_NONE, MOVE_NONE, VALUE_NONE, NONE, staticEval);
     }
   }
 
   // Razoring from Stockfish
   // When static eval is well below alpha at the last node
   // jump directly into qsearch
-  if (SearchConfig::USE_RAZORING &&
-      depth == 1 &&
-      staticEval != VALUE_NONE &&
-      staticEval <= alpha - SearchConfig::RAZOR_MARGIN) {
-
+  if (SearchConfig::USE_RAZORING && depth == 1 && staticEval != VALUE_NONE && staticEval <= alpha - SearchConfig::RAZOR_MARGIN) {
     statistics.razorings++;
     return qsearch(p, ply, alpha, beta, PV);
   }
@@ -680,12 +669,8 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
   // https://www.chessprogramming.org/Reverse_Futility_Pruning
   // Anticipate likely alpha low in the next ply by a beta cut
   // off before making and evaluating the move
-  if (SearchConfig::USE_RFP &&
-      doNull &&
-      depth <= 3 &&
-      !isPv &&
-      !hasCheck) {
-    auto margin = SearchConfig::RFP_MARGIN[depth];
+  if (SearchConfig::USE_RFP && doNull && depth <= 3 && !isPv && !hasCheck) {
+    const Value margin = SearchConfig::RFP_MARGIN[depth];
     if (staticEval - margin >= beta) {
       statistics.rfp_cuts++;
       return staticEval - margin;// fail-hard: beta / fail-soft: staticEval - evalMargin;
@@ -703,10 +688,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
   // - in check - this would lead to an illegal situation where the king is captured
   // - recursive null moves should be avoided
   if (SearchConfig::USE_NMP) {
-    if (doNull &&
-        !isPv &&
-        depth >= SearchConfig::NMP_DEPTH &&
-        p.getMaterialNonPawn(us) > 0 &&// to reduce risk of zugzwang
+    if (doNull && !isPv && depth >= SearchConfig::NMP_DEPTH && p.getMaterialNonPawn(us) > 0 &&// to reduce risk of zugzwang
         !hasCheck) {
       // possible other criteria: eval > beta
 
@@ -714,11 +696,11 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
       // ICCA Journal, Vol. 22, No. 3
       // Ernst A. Heinz, Adaptive Null-Move Pruning, postscript
       // http://people.csail.mit.edu/heinz/ps/adpt_null.ps.gz
-      auto r = SearchConfig::NMP_REDUCTION;
+      Depth r = SearchConfig::NMP_REDUCTION;
       if (depth > 8 || (depth > 6 && p.getGamePhase() >= 3)) {
         ++r;
       }
-      auto newDepth = depth - r - 1;
+      Depth newDepth = depth - r - 1;
       // double check that depth does not get negative
       if (newDepth < 0) {
         newDepth = DEPTH_NONE;
@@ -727,7 +709,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
       // do null move search
       p.doNullMove();
       nodesVisited++;
-      auto nValue = -search(p, newDepth, ply + 1, -beta, -beta + 1, Node_Type::NonPV, Do_Null::No_Null_Move);
+      Value nValue = -search(p, newDepth, ply + 1, -beta, -beta + 1, Node_Type::NonPV, Do_Null::No_Null_Move);
       p.undoNullMove();
 
       // check if we should stop the search
@@ -754,7 +736,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
         statistics.nullMoveCuts++;
         // Store TT
         if (SearchConfig::USE_TT) {
-          storeTt(p, depth, ply, ttMove, nValue, BETA, staticEval, matethreat);
+          storeTt(p, depth, ply, ttMove, nValue, BETA, staticEval);
         }
         return nValue;
       }
@@ -770,9 +752,8 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
   // Does not make a big difference in search tree size when move
   // order already is good.
   if (SearchConfig::USE_IID) {
-    if (depth >= SearchConfig::IID_DEPTH &&
-        !ttMove &&// no move from TT
-        doNull &&             // avoid in null move search
+    if (depth >= SearchConfig::IID_DEPTH && !ttMove &&// no move from TT
+        doNull &&                                     // avoid in null move search
         isPv) {
 
       // get the new depth and make sure it is >0
@@ -808,8 +789,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
   // When we received a best move for the position from the
   // TT or IID we set it as PV move in the movegen so it will
   // be searched first.
-  if (SearchConfig::USE_TT_PV_MOVE_SORT &&
-      ttMove != MOVE_NONE) {
+  if (SearchConfig::USE_TT_PV_MOVE_SORT && ttMove != MOVE_NONE) {
     statistics.TtMoveUsed++;
     myMg->setPV(ttMove);
   }
@@ -869,16 +849,9 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
     // Forward Pruning
     // FP will only be done when the move is not
     // interesting - no check, no capture, etc.
-    if (!isPv &&
-        extension == 0 &&
-        move != ttMove &&
-        move != myMg->getKillerMoves()[0] &&
-        move != myMg->getKillerMoves()[1] &&
-        typeOf(move) != PROMOTION &&
-        !p.isCapturingMove(move) &&
-        !hasCheck &&  // pre move
-        !givesCheck &&// post move
-        !matethreat) {// from pre move null move check
+    if (!isPv && extension == 0 && move != ttMove && move != myMg->getKillerMoves()[0] && move != myMg->getKillerMoves()[1] && typeOf(move) != PROMOTION && !p.isCapturingMove(move) && !hasCheck &&// pre move
+        !givesCheck &&                                                                                                                                                                              // post move
+        !matethreat) {                                                                                                                                                                              // from pre move null move check
 
       // to check in futility pruning what material delta we have
       const auto moveGain = valueOf(p.getPiece(to));
@@ -924,8 +897,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
       // if conditions apply.
       if (SearchConfig::USE_LMR) {
         // compute reduction from depth and move searched
-        if (depth >= SearchConfig::LMR_MIN_DEPTH &&
-            movesSearched >= SearchConfig::LMR_MIN_MOVES) {
+        if (depth >= SearchConfig::LMR_MIN_DEPTH && movesSearched >= SearchConfig::LMR_MIN_MOVES) {
           if (depth >= 32 || movesSearched >= 64) {
             lmrDepth -= static_cast<Depth>(SearchConfig::LMR_REDUCTION[31][63]);
           }
@@ -1106,7 +1078,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
   // Store TT
   // Store search result for this node into the transposition table
   if (SearchConfig::USE_TT) {
-    storeTt(p, depth, ply, bestNodeMove, bestNodeValue, ttType, staticEval, matethreat);
+    storeTt(p, depth, ply, bestNodeMove, bestNodeValue, ttType, staticEval);
   }
 
   return bestNodeValue;
@@ -1157,17 +1129,12 @@ Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, Search::N
       statistics.ttHit++;
       ttMove              = static_cast<Move>(ttEntryPtr->move);
       const Value ttValue = valueFromTt(ttEntryPtr->value, ply);
-      if (validValue(ttValue) &&
-          (ttEntryPtr->type == EXACT ||
-           (ttEntryPtr->type == ALPHA && ttValue <= alpha) ||
-           (ttEntryPtr->type == BETA && ttValue >= beta)) &&
-          SearchConfig::USE_TT_VALUE) {
+      if (validValue(ttValue) && (ttEntryPtr->type == EXACT || (ttEntryPtr->type == ALPHA && ttValue <= alpha) || (ttEntryPtr->type == BETA && ttValue >= beta)) && SearchConfig::USE_TT_VALUE) {
         statistics.TtCuts++;
         return ttValue;
       }
       // if we have a static eval stored we can reuse it
-      if (SearchConfig::USE_EVAL_TT &&
-          ttEntryPtr->eval != VALUE_NONE) {
+      if (SearchConfig::USE_EVAL_TT && ttEntryPtr->eval != VALUE_NONE) {
         statistics.evalFromTT++;
         staticEval = ttEntryPtr->eval;
       }
@@ -1195,7 +1162,7 @@ Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, Search::N
         statistics.standpatCuts++;
         // Storing this value might save us calls to eval on the same position.
         if (SearchConfig::USE_TT && SearchConfig::USE_QS_TT && SearchConfig::USE_EVAL_TT) {
-          storeTt(p, DEPTH_NONE, ply, MOVE_NONE, VALUE_NONE, NONE, staticEval, false);
+          storeTt(p, DEPTH_NONE, ply, MOVE_NONE, VALUE_NONE, NONE, staticEval);
         }
         return staticEval;
       }
@@ -1210,8 +1177,7 @@ Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, Search::N
   pv[ply].clear();
 
   // PV Move Sort
-  if (SearchConfig::USE_TT_PV_MOVE_SORT &&
-      ttMove != MOVE_NONE) {
+  if (SearchConfig::USE_TT_PV_MOVE_SORT && ttMove != MOVE_NONE) {
     statistics.TtMoveUsed++;
     myMg->setPV(ttMove);
   }
@@ -1237,14 +1203,8 @@ Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, Search::N
     // Forward Pruning
     // FP will only be done when the move is not
     // interesting - no check, no capture, etc.
-    if (SearchConfig::USE_QFP &&
-        !isPv &&
-        move != ttMove &&
-        move != myMg->getKillerMoves()[0] &&
-        move != myMg->getKillerMoves()[1] &&
-        typeOf(move) != PROMOTION &&
-        !hasCheck &&// pre move
-        !givesCheck // post move
+    if (SearchConfig::USE_QFP && !isPv && move != ttMove && move != myMg->getKillerMoves()[0] && move != myMg->getKillerMoves()[1] && typeOf(move) != PROMOTION && !hasCheck &&// pre move
+        !givesCheck                                                                                                                                                            // post move
     ) {
       // to check in futility pruning what material delta we have
       const auto moveGain       = valueOf(p.getPiece(to));
@@ -1276,7 +1236,7 @@ Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, Search::N
     // if available on platform tells the cpu to
     // prefetch the data into cpu caches
     TT_PREFETCH;
-    // EVAL_PREFETCH;
+    EVAL_PREFETCH;
 
     // we only count legal moves
     nodesVisited++;
@@ -1363,7 +1323,7 @@ Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, Search::N
   // Store TT
   // Store search result for this node into the transposition table
   if (SearchConfig::USE_TT && SearchConfig::USE_QS_TT) {
-    storeTt(p, DEPTH_ONE, ply, bestNodeMove, bestNodeValue, ttType, staticEval, false);
+    storeTt(p, DEPTH_ONE, ply, bestNodeMove, bestNodeValue, ttType, staticEval);
   }
 
   return bestNodeValue;
@@ -1398,7 +1358,7 @@ bool Search::goodCapture(Position& p, Move move) {
     || !position.isAttacked(toSquare(move), ~position.getNextPlayer());
 }
 
-void Search::storeTt(Position& p, Depth depth, Depth ply, Move move, Value value, ValueType valueType, Value eval, bool mateThreat) {
+void Search::storeTt(Position& p, Depth depth, Depth ply, Move move, Value value, ValueType valueType, Value eval) {
   tt->put(p.getZobristKey(), depth, move, valueToTt(value, ply), valueType, eval);
 }
 
@@ -1499,7 +1459,7 @@ void Search::setupSearchLimits(Position& p, SearchLimits& sl) {
   }
   if (sl.timeControl) {
     timeLimit = setupTimeControl(p, sl);
-    extraTime = MilliSec{0};
+    extraTime = milliseconds{0};
     if (sl.moveTime.count()) {
       LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Time Controlled: Time per Move {}", str(sl.moveTime));
     }
@@ -1526,10 +1486,10 @@ void Search::setupSearchLimits(Position& p, SearchLimits& sl) {
   }
 }
 
-MilliSec Search::setupTimeControl(Position& position, SearchLimits& sl) {
+milliseconds Search::setupTimeControl(Position& position, SearchLimits& sl) {
   if (sl.moveTime.count()) {// mode time per move
     // we need a little room for executing the code
-    MilliSec duration = sl.moveTime - MilliSec{20};
+    milliseconds duration = sl.moveTime - milliseconds{20};
     // if the duration is now negative return the original value and issue a warning
     if (duration.count() < 0) {
       LOG__WARN(Logger::get().SEARCH_LOG, "Very short move time: {} ms", sl.moveTime.count());
@@ -1546,7 +1506,7 @@ MilliSec Search::setupTimeControl(Position& position, SearchLimits& sl) {
       movesLeft = 15 + static_cast<int>(25 * position.getGamePhaseFactor());
     }
     // time left for current player
-    MilliSec timeLeft;
+    milliseconds timeLeft;
     if (position.getNextPlayer()) {
       timeLeft = sl.blackTime + (movesLeft * sl.blackInc);
     }
@@ -1554,36 +1514,36 @@ MilliSec Search::setupTimeControl(Position& position, SearchLimits& sl) {
       timeLeft = sl.whiteTime + (movesLeft * sl.whiteInc);
     }
     // estimate time per move
-    MilliSec tl = static_cast<MilliSec>(timeLeft.count() / movesLeft);
+    milliseconds tl = static_cast<milliseconds>(timeLeft.count() / movesLeft);
     // account for runtime of our code
     if (tl.count() < 100) {
       // limits for very short available time reduced by another 20%
-      return static_cast<MilliSec>(uint64_t(0.8 * tl.count()));
+      return static_cast<milliseconds>(uint64_t(0.8 * tl.count()));
     }
     // reduced by 10%
-    return static_cast<MilliSec>(uint64_t(0.9 * tl.count()));
+    return static_cast<milliseconds>(uint64_t(0.9 * tl.count()));
   }
 }
 
 void Search::addExtraTime(double f) {
   if (searchLimits.timeControl && !searchLimits.moveTime.count()) {
     auto duration = uint64_t(timeLimit.count() * (f - 1.0));
-    extraTime += MilliSec(duration);
-    LOG__DEBUG(Logger::get().SEARCH_LOG, "Time added/reduced by {} to {} ", str(MilliSec(duration)), str(timeLimit + extraTime));
+    extraTime += milliseconds(duration);
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Time added/reduced by {} to {} ", str(milliseconds(duration)), str(timeLimit + extraTime));
   }
 }
 
 void Search::startTimer() {
   this->timerThread = std::thread([&] {
-    startSearchTime = now();
+    startSearchTime = currentTime();
     LOG__DEBUG(Logger::get().SEARCH_LOG, "Timer started with time limit of {} ms", str(timeLimit));
     // relaxed busy wait
-    while ((now() - startSearchTime) < (timeLimit + extraTime) && !stopSearchFlag) {
+    while ((currentTime() - startSearchTime) < (timeLimit + extraTime) && !stopSearchFlag) {
       std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
     if (!this->stopSearchFlag) {
       this->stopSearchFlag = true;
-      LOG__INFO(Logger::get().SEARCH_LOG, "Stop search by Timer after wall time: {} (time limit {} and extra time {})", str(now() - startTime), str(timeLimit), str(extraTime));
+      LOG__INFO(Logger::get().SEARCH_LOG, "Stop search by Timer after wall time: {} (time limit {} and extra time {})", str(currentTime() - startTime), str(timeLimit), str(extraTime));
     }
   });
 }
@@ -1611,7 +1571,8 @@ void Search::sendResult(SearchResult& result) {
 }
 
 void Search::sendIterationEndInfoToUci() {
-  const NanoSec& since = elapsedSince(startSearchTime);
+  const nanoseconds& since = elapsedSince(startSearchTime);
+  lastUciUpdateTime    = nowFast();
   if (uciHandler) {
     uciHandler->sendIterationEndInfo(
       statistics.currentSearchDepth,
@@ -1624,7 +1585,7 @@ void Search::sendIterationEndInfoToUci() {
     return;
   }
 
-  LOG__INFO(Logger::get().SEARCH_LOG, "depth {} seldepth {} value {} nodes {:n} nps {:n} time {:n} pv {}",
+  LOG__INFO(Logger::get().SEARCH_LOG, "depth {} seldepth {} value {} nodes {:L} nps {:L} time {:L} pv {}",
             statistics.currentSearchDepth,
             statistics.currentExtraSearchDepth,
             str(statistics.currentBestRootMoveValue),
@@ -1658,7 +1619,7 @@ void Search::sendSearchUpdateToUci() {
 
   const int hashfull = tt->hashFull();
 
-  const NanoSec& since = elapsedSince(startSearchTime);
+  const nanoseconds& since = elapsedSince(startSearchTime);
 
   if (uciHandler) {
     uciHandler->sendSearchUpdate(
@@ -1673,7 +1634,7 @@ void Search::sendSearchUpdateToUci() {
     return;
   }
 
-  LOG__INFO(Logger::get().SEARCH_LOG, "depth {} seldepth {} nodes {:n} nps {:n} time {:n} hashful {:n}",
+  LOG__INFO(Logger::get().SEARCH_LOG, "depth {} seldepth {} nodes {:L} nps {:L} time {:L} hashful {:L}",
             statistics.currentSearchDepth,
             statistics.currentExtraSearchDepth,
             nodesVisited,
@@ -1682,8 +1643,8 @@ void Search::sendSearchUpdateToUci() {
             hashfull);
 }
 
-void Search::sendAspirationResearchInfo(std::string boundString) {
-  const NanoSec& since = elapsedSince(startSearchTime);
+void Search::sendAspirationResearchInfo(const std::string& boundString) {
+  const nanoseconds& since = elapsedSince(startSearchTime);
   if (uciHandler) {
     uciHandler->sendAspirationResearchInfo(
       statistics.currentSearchDepth,
@@ -1697,7 +1658,7 @@ void Search::sendAspirationResearchInfo(std::string boundString) {
     return;
   }
 
-  LOG__INFO(Logger::get().SEARCH_LOG, "depth {} seldepth {} value {} {} nodes {:n} nps {:n} time {:n} pv {}",
+  LOG__INFO(Logger::get().SEARCH_LOG, "depth {} seldepth {} value {} {} nodes {:L} nps {:L} time {:L} pv {}",
             statistics.currentSearchDepth,
             statistics.currentExtraSearchDepth,
             str(statistics.currentBestRootMoveValue),

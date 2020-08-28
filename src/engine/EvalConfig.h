@@ -26,13 +26,40 @@
 #ifndef FRANKYCPP_EVALCONFIG_H
 #define FRANKYCPP_EVALCONFIG_H
 
+#include "types/types.h"
+
 namespace EvalConfig {
 
-  inline bool USE_MATERIAL = true;
+  inline bool USE_MATERIAL   = true;
   inline bool USE_POSITIONAL = true;
 
   inline int TEMPO = 34;
 
-}
+  inline bool USE_LAZY_EVAL   = true;
+  inline Value LAZY_THRESHOLD = Value{700};
+
+  inline bool USE_PAWN_EVAL       = true;
+  inline bool USE_PAWN_TT         = true;
+  inline int PAWN_TT_SIZE_MB = 64;
+
+  inline int ISOLATED_PAWN_MID_WEIGHT  = -10;
+  inline int ISOLATED_PAWN_END_WEIGHT  = -20;
+  inline int DOUBLED_PAWN_MID_WEIGHT   = -10;
+  inline int DOUBLED_PAWN_END_WEIGHT   = -30;
+  inline int PASSED_PAWN_MID_WEIGHT    = 20;
+  inline int PASSED_PAWN_END_WEIGHT    = 40;
+  inline int BLOCKED_PAWN_MID_WEIGHT   = -2;
+  inline int BLOCKED_PAWN_END_WEIGHT   = -20;
+  inline int PHALANX_PAWN_MID_WEIGHT   = 4;
+  inline int PHALANX_PAWN_END_WEIGHT   = 4;
+  inline int SUPPORTED_PAWN_MID_WEIGHT = 10;
+  inline int SUPPORTED_PAWN_END_WEIGHT = 15;
+
+  inline bool USE_PIECE_EVAL = false;
+  inline Value BISHOP_PAIR_MID_BONUS = Value{20};
+  inline Value BISHOP_PAIR_END_BONUS = Value{20};
+
+  inline bool USE_KING_EVAL = false;
+}// namespace EvalConfig
 
 #endif//FRANKYCPP_EVALCONFIG_H

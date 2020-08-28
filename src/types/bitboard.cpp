@@ -25,9 +25,8 @@
 
 #include <sstream>
 #include <bitset>
+
 #include "bitboard.h"
-#include "castlingrights.h"
-#include "direction.h"
 
 // //////////////////////////////////
 // Bitboard functions
@@ -59,11 +58,12 @@ std::string str(Bitboard b) {
 std::string strBoard(Bitboard b) {
   std::ostringstream os;
   os << "+---+---+---+---+---+---+---+---+\n";
-  for (Rank r = RANK_8; r >= RANK_1; --r) {
+  for (Rank r = RANK_8;;--r) {
     for (File f = FILE_A; f <= FILE_H; ++f) {
-      os << (b & squareOf(f, r) ? "| X " : "|   ");
+      os << ((b & squareOf(f, r)) ? "| X " : "|   ");
     }
     os << "|\n+---+---+---+---+---+---+---+---+\n";
+    if (r==0) break;
   }
   return os.str();
 }
@@ -74,7 +74,7 @@ std::string strGrouped(Bitboard b) {
     if (i > 0 && i % 8 == 0) {
       os << ".";
     }
-    os << (b & (BbOne << i) ? "1" : "0");
+    os << ((b & (BbOne << i)) ? "1" : "0");
   }
   os << " (" + std::to_string(b) + ")";
   return os.str();
@@ -85,10 +85,10 @@ std::string strGrouped(Bitboard b) {
 // //////////////////////////////////
 
 void Bitboards::rankFileBbPreCompute() {
-  for (int i = RANK_1; i <= RANK_8; i++) {
+  for (unsigned int i = RANK_1; i <= RANK_8; i++) {
     rankBb[i] = Rank1BB << (8 * i);
   }
-  for (int i = FILE_A; i <= FILE_H; i++) {
+  for (unsigned int i = FILE_A; i <= FILE_H; i++) {
     fileBb[i] = FileABB << i;
   }
 }
@@ -97,8 +97,8 @@ void Bitboards::squareBitboardsPreCompute() {
   for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
 
     // square bitboard
-    sqBb[sq] = BbOne << sq;
-
+    // (cast to make clear that sq never is negative)
+    sqBb[sq] = BbOne << static_cast<unsigned int>(sq);
 
     // file and rank bitboards
     sqToFileBb[sq] = fileBb[fileOf(sq)];
@@ -171,9 +171,9 @@ void Bitboards::nonSlidingAttacksPreCompute() {
 
 void Bitboards::neighbourMasksPreCompute() {
   for (Square square = SQ_A1; square <= SQ_H8; ++square) {
-    int f = int(fileOf(square));
-    int r = int(rankOf(square));
-    for (int j = 0; j <= 7; j++) {
+    auto f = static_cast<unsigned int>(fileOf(square));
+    auto r = static_cast<unsigned int>(rankOf(square));
+    for (unsigned int j = 0; j <= 7; j++) {
       // file masks
       if (j < f) {
           filesWestMask[square] |= FileABB << j  ;
@@ -229,7 +229,7 @@ void Bitboards::maskPassedPawnsPreCompute() {
   for (Square square = SQ_A1; square <= SQ_H8; ++square) {
     int f = int(fileOf(square));
     int r = int(rankOf(square));
-    // white pawn - ignore that pawns can'*t be on all squares
+    // white pawn - ignore that pawns can't be on all squares
     passedPawnMask[WHITE][square] |= rays[N][square];
     if (f < 7 && r < 7) {
       passedPawnMask[WHITE][square] |= rays[N][square + EAST];
@@ -285,13 +285,12 @@ Bitboard sliding_attack(Direction directions[], Square sq, Bitboard occupied) {
 
 void init_magics(Bitboard table[], Magic magics[], Direction directions[]) {
 
-  // Optimal PRNG seeds to pick the correct magics in the shortest time
-  int seeds[RANK_LENGTH] = {728, 10316, 55013, 32803, 12281, 15100, 16645, 255};
-
-  Bitboard occupancy[4096], reference[4096], edges, b;
-  int epoch[4096] = {}, cnt = 0, size = 0;
+  Bitboard occupancy[4096], reference[4096];
+  int size = 0;
 
   for (Square s = SQ_A1; s <= SQ_H8; ++s) {
+    Bitboard edges, b;
+
     // Board edges are not considered in the relevant occupancies
     edges = ((Rank1BB | Rank8BB) & ~Bitboards::sqToRankBb[s]) | ((FileABB | FileHBB) & ~Bitboards::sqToFileBb[s]);
 
@@ -315,16 +314,23 @@ void init_magics(Bitboard table[], Magic magics[], Direction directions[]) {
       occupancy[size] = b;
       reference[size] = sliding_attack(directions, s, b);
 
-      if (HasPext)
+      if (HasPext) { // based on compiler option HAS_PEXT
         m.attacks[_pext_u64(b, m.mask)] = reference[size];
+      }
 
       size++;
       b = (b - m.mask) & m.mask;
     } while (b);
 
-    if (HasPext)
+    if (HasPext) { // based on compiler option HAS_PEXT
       continue;
+    }
 
+    // Manual mapping for magics when PEXT is not available
+
+    // Optimal PRNG seeds to pick the correct magics in the shortest time
+    const int seeds[RANK_LENGTH] = {728, 10316, 55013, 32803, 12281, 15100, 16645, 255};
+    int epoch[4096] = {}, cnt = 0;
     PRNG rng(seeds[rankOf(s)]);
 
     // Find a magic for square 's' picking up an (almost) random number

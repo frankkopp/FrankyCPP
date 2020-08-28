@@ -72,6 +72,7 @@ public:
   auto openTasks () { return mTasks.size (); }
 
 private:
+
   void start (std::size_t numThreads);
   void stop ();
 };
