@@ -47,59 +47,54 @@ protected:
   void TearDown() override {}
 
   struct Product {
-    uint64_t producedNumber;
+    uint64_t producedNumber; 
+    bool processed = false;
   };
 
-  struct Result {
-    uint64_t producedNumber;
-  };
-
-  std::random_device rd;
-  std::uniform_int_distribution<unsigned long long> randomU64;
-
-  Result process(Product& p) {
+  static Product process(Product p) {
+    fprintln(">>> Processing product...: {}", p.producedNumber);
     // simulate cpu intense calculation
-    auto f = 100000000;
-    while (f > 1) f /= 1.00000001;
-    const Result result = Result{p.producedNumber + 1'000'000 + f};
-//    std::cout << "   >>> Processing product...done: " << result.producedNumber << std::endl;;
-    return result;
+    uint64_t f = 100000000;
+    while (f > 1) f = uint64_t(f/1.00000001);
+    std::this_thread::sleep_for(std::chrono::milliseconds (f));
+    p.processed = true;
+    fprintln(">>> Processed product...: {}", p.producedNumber);
+    return p;
   }
 
-  Product produceProduct() {
+  Product produceProduct(uint64_t i) {
     std::this_thread::sleep_for(std::chrono::milliseconds (10));
-    const Product product = Product{randomU64(rd)};
-//    std::cout << "<<< Producing product...done: " << product.producedNumber << std::endl;;
+    Product product{i, false};
+    fprintln("<<< Producing product...: {} ", product.producedNumber);
     return product;
   }
 
 };
 
 TEST_F(ThreadPoolTest, basic) {
-  std::cout << "Producer Worker Test" << std::endl;
+  fprintln("Producer Worker Test");
 
-  ThreadPool threadPool{6};
-  std::vector<std::shared_ptr<std::future<Result>>> results{};
+  ThreadPool threadPool{4};
+  std::vector<std::shared_ptr<std::future<Product>>> results{};
 
-  std::cout << "Queuing and starting work" << std::endl;
+  fprintln("Queuing and starting work");
   int number = 100;
-#ifndef NDEBUG
-  number = 30;
-#endif
 
   for (int i = 0; i < number; i++) {
-    Product product = produceProduct();
-    auto future = std::make_shared<std::future<Result>>(threadPool.enqueue([&]{return process(product);}));
+    Product product = produceProduct(i);
+    auto future = std::make_shared<std::future<Product>>(threadPool.enqueue([=]{
+      return process(product);
+    }));
     results.push_back(future);
+    fprintln("Product queued: {} processed: {}", product.producedNumber, product.processed);
   }
 
-  std::cout << "Getting results" << std::endl;
+  fprintln("Getting results");
   const auto &iterEnd = results.end();
   for (auto iter = results.begin(); iter < iterEnd; iter++) {
-    std::cout << "Open tasks: " << threadPool.openTasks() << std::endl;
-    const uint64_t producedNumber = iter->get()->get().producedNumber;
-    std::cout << "Result: " << producedNumber << std::endl;
+    fprintln("Open tasks: {}", threadPool.openTasks());
+    const auto resultPtr = iter->get()->get();
+    fprintln("Product finished: {} processed {}", resultPtr.producedNumber, resultPtr.processed);
   }
-
   SUCCEED();
 }

@@ -27,14 +27,15 @@
 #define FRANKYCPP_EVALUATOR_H
 
 #include "types/types.h"
-#include <chesscore/Position.h>
-
-struct Score {
-  int midgame;
-  int endgame;
-};
+#include "chesscore/Position.h"
+#include "PawnTT.h"
 
 class Evaluator {
+
+  PawnTT pawnCache{0};
+
+  Score score{};
+  Score tmpScore{};
 
 public:
   Evaluator();
@@ -48,6 +49,32 @@ public:
   // view of the next player.
   Value evaluate(Position& p);
 
+  // evaluates pawns and updating score in place
+  void pawnEval(Position& p, Score& s);
+
+  // ValueFromScore adds up the mid and end games scores after multiplying
+  // them with the game phase factor
+  static Value valueFromScore(const Score& score, double gamePhaseFactor) ;
+
+  // convert value from white view to next player view
+  static Value finalEval(const Position& p, Value value) ;
+
+  void pieceEval(Position& p, Score& s, Color color, PieceType pieceType);
+  void knightEval(const Position& p, Score& s, Color us, Color them, Square sq);
+  void bishopEval(const Position& p, Score& s, Color us, Color them, Square sq);
+  void rookEval  (const Position& p, Score& scores, Color us, Color them, Square sq);
+  void queenEval (const Position& p, Score& s, Color us, Color them, Square sq);
+
+
+
+
+  // do a prefetch for the pawn cache data
+#ifdef EVAL_ENABLE_PREFETCH
+  inline void prefetch(Key key) {
+    pawnCache.prefetch(key);
+  }
+#endif
+  void kingEval(Position& p, Score s, Color c);
 };
 
 

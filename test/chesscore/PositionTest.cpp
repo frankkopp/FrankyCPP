@@ -23,7 +23,6 @@
  *
  */
 
-#include <boost/timer/timer.hpp>
 #include <gtest/gtest.h>
 #include <ostream>
 #include <string>
@@ -55,7 +54,15 @@ TEST_F(PositionTest, initialization) {
 
 TEST_F(PositionTest, HistoryStruct) {
   Position position;
-  EXPECT_EQ(48, sizeof(HistoryState));
+  fprintln("int:            {}", sizeof(int));
+  fprintln("Key:            {}", sizeof(Key));
+  fprintln("Move:           {}", sizeof(Move));
+  fprintln("Piece:          {}", sizeof(Piece));
+  fprintln("CastlingRights: {}", sizeof(CastlingRights));
+  fprintln("Square:         {}", sizeof(Square));
+  fprintln("Flag:           {}", sizeof(Flag));
+  fprintln("History: {}", sizeof(HistoryState));
+//  EXPECT_EQ(32, sizeof(HistoryState));
   EXPECT_EQ(MAX_MOVES, position.historyState.size());
 }
 
@@ -120,7 +127,7 @@ TEST_F(PositionTest, Setup) {
   EXPECT_EQ(1, position.getMoveNumber());
   EXPECT_EQ(position.getMaterial(WHITE), position.getMaterial(BLACK));
   EXPECT_EQ(24, position.getGamePhase());
-  EXPECT_FLOAT_EQ(1.0, position.getGamePhaseFactor());
+  EXPECT_DOUBLE_EQ(1.0, position.getGamePhaseFactor());
   EXPECT_EQ(position.getMidPosValue(WHITE), position.getMidPosValue(BLACK));
   EXPECT_EQ(-195, position.getMidPosValue(WHITE));
   EXPECT_EQ(-195, position.getMidPosValue(BLACK));
@@ -136,7 +143,7 @@ TEST_F(PositionTest, Setup) {
   EXPECT_EQ(position2.getMaterial(WHITE), position2.getMaterial(BLACK));
   EXPECT_EQ(24, position2.getGamePhase());
   EXPECT_EQ(1, position.getMoveNumber());
-  EXPECT_FLOAT_EQ(1.0, position2.getGamePhaseFactor());
+  EXPECT_DOUBLE_EQ(1.0, position2.getGamePhaseFactor());
   EXPECT_EQ(position2.getMidPosValue(WHITE), position2.getMidPosValue(BLACK));
   EXPECT_EQ(-195, position2.getMidPosValue(WHITE));
   EXPECT_EQ(-195, position2.getMidPosValue(BLACK));
@@ -152,7 +159,7 @@ TEST_F(PositionTest, Setup) {
   EXPECT_EQ(position3.getMaterial(WHITE), position3.getMaterial(BLACK));
   EXPECT_EQ(24, position3.getGamePhase());
   EXPECT_EQ(1, position.getMoveNumber());
-  EXPECT_FLOAT_EQ(1.0, position3.getGamePhaseFactor());
+  EXPECT_DOUBLE_EQ(1.0, position3.getGamePhaseFactor());
   EXPECT_EQ(position3.getMidPosValue(WHITE), position3.getMidPosValue(BLACK));
   EXPECT_EQ(-195, position3.getMidPosValue(WHITE));
   EXPECT_EQ(-195, position3.getMidPosValue(BLACK));
@@ -169,7 +176,7 @@ TEST_F(PositionTest, Setup) {
   EXPECT_EQ(position4.getMaterial(WHITE), position4.getMaterial(BLACK));
   EXPECT_EQ(24, position4.getGamePhase());
   EXPECT_EQ(1, position.getMoveNumber());
-  EXPECT_FLOAT_EQ(1.0, position4.getGamePhaseFactor());
+  EXPECT_DOUBLE_EQ(1.0, position4.getGamePhaseFactor());
   EXPECT_EQ(position4.getMidPosValue(WHITE), position4.getMidPosValue(BLACK));
   EXPECT_EQ(-195, position4.getMidPosValue(WHITE));
   EXPECT_EQ(-195, position4.getMidPosValue(BLACK));
@@ -188,7 +195,7 @@ TEST_F(PositionTest, Setup) {
   EXPECT_EQ(6940, position.getMaterial(BLACK));
   EXPECT_EQ(22, position.getGamePhase());
   EXPECT_EQ(113, position.getMoveNumber());
-  EXPECT_FLOAT_EQ((22.0 / 24), position.getGamePhaseFactor());
+  EXPECT_DOUBLE_EQ((22.0 / 24), position.getGamePhaseFactor());
   EXPECT_EQ(95, position.getMidPosValue(WHITE));
   EXPECT_EQ(7, position.getMidPosValue(BLACK));
   EXPECT_EQ(WHITE_KING, position.getPiece(SQ_G1));
@@ -208,6 +215,81 @@ TEST_F(PositionTest, Setup) {
   EXPECT_EQ(fen, position.strFen());
   EXPECT_EQ(WHITE, position.getNextPlayer());
   EXPECT_EQ(24, position.getGamePhase());
+}
+
+TEST_F(PositionTest, FenCheck) {
+
+  // test data for table driven test
+  struct test {
+    std::string fen;
+    bool valid;
+  };
+
+  test illegalFens[]{
+    {"", false},                                                         // empty
+
+    {"   not a fen   ", false},                                          // illegal chars in position
+
+    {"81/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", false},       // too many files in rank
+    {"7/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", false},        // too few files in rank
+    {"rnbqkbnr/ppppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", false},// too many files in rank
+    {"Onbqkbnr/ppppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", false},// illegal char
+    {"rnbqkbnrr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", false},// too many files
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBN w KQkq - 0 1", false},  // not complete
+
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR x KQkq - 0 1", false},  // next player invalid
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR abc KQkq - 0 1", false},// next player invalid
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1", true},   // next player valid
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", true},   // next player valid
+
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w xyz - 0 1", false},// invalid castling
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w -- - 0 1", false}, // invalid castling
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KK - 0 1", false}, // invalid castling
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w Kk - 0 1", true},  // valid castling
+
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - x 0 1", false},  // invalid en passant
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - abc 0 1", false},// invalid en passant
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - aa 0 1", false}, // invalid en passant
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - 11 0 1", false}, // invalid en passant
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - 0 1", false},    // invalid en passant
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - e3 0 1", true},  // valid en passant
+
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - - 1", false}, // invalid half move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - a 1", false}, // invalid half move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 1a 1", false},// invalid half move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - a1 1", false},// invalid half move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1", true},  // valid half move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 1 1", true},  // valid half move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 999 1", true},// valid half move number
+
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 -", false}, // invalid move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 a", false}, // invalid move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1a", false},// invalid move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 a1", false},// invalid move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 -4", false},// valid move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 0", true},  // valid move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1", true},  // valid move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 999", true},// valid move number
+
+    {START_POSITION_FEN, true},                                     // standard start position
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1", true},// valid
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0", true},  // valid
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - -", true},    // valid
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w -", true},      // valid
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w", true},        // valid
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", true},          // valid
+  };
+
+  // run all test cases
+  for (const auto& test : illegalFens) {
+    fprintln("{}", test.fen);
+    if (test.valid) {
+      EXPECT_NO_THROW(Position p(test.fen));
+    }
+    else {
+      EXPECT_THROW(Position p(test.fen), std::invalid_argument);
+    }
+  }
 }
 
 TEST_F(PositionTest, Output) {
@@ -268,8 +350,8 @@ TEST_F(PositionTest, Copy) {
   // make copy and check if copy is really an independent deep copy from position.
   Position copy(position);
   position.undoMove();
-  position.doMove(move2); // different move changes history
-  EXPECT_EQ(move1, copy.getLastMove()); // check if copy's history is independent
+  position.doMove(move2);              // different move changes history
+  EXPECT_EQ(move1, copy.getLastMove());// check if copy's history is independent
 
   // undo and check if equal
   copy.undoMove();
@@ -431,8 +513,8 @@ TEST_F(PositionTest, doUndoMoveEnPassantCapture) {
 TEST_F(PositionTest, doMoveCASTLING) {
   // do move
   Position position("r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQkq -");
-  ;
-  ;
+
+
   // cout << position.str() << endl;
   position.doMove(createMove(SQ_E1, SQ_G1, CASTLING));
   // cout << position.str() << endl;
@@ -444,8 +526,8 @@ TEST_F(PositionTest, doMoveCASTLING) {
 
   // do move
   position = Position("r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQkq -");
-  ;
-  ;
+
+
   // cout << position.str() << endl;
   position.doMove(createMove(SQ_E1, SQ_C1, CASTLING));
   // cout << position.str() << endl;
@@ -457,8 +539,8 @@ TEST_F(PositionTest, doMoveCASTLING) {
 
   // do move
   position = Position("r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R b KQkq -");
-  ;
-  ;
+
+
   // cout << position.str() << endl;
   position.doMove(createMove(SQ_E8, SQ_G8, CASTLING));
   // cout << position.str() << endl;
@@ -470,8 +552,8 @@ TEST_F(PositionTest, doMoveCASTLING) {
 
   // do move
   position = Position("r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R b KQkq -");
-  ;
-  ;
+
+
   // cout << position.str() << endl;
   position.doMove(createMove(SQ_E8, SQ_C8, CASTLING));
   // cout << position.str() << endl;
@@ -483,8 +565,8 @@ TEST_F(PositionTest, doMoveCASTLING) {
 
   // do move
   position = Position("r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQkq -");
-  ;
-  ;
+
+
   // cout << position.str() << endl;
   position.doMove(createMove(SQ_E1, SQ_F1, NORMAL));
   // cout << position.str() << endl;
@@ -496,8 +578,8 @@ TEST_F(PositionTest, doMoveCASTLING) {
 
   // do move
   position = Position("r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQkq -");
-  ;
-  ;
+
+
   // cout << position.str() << endl;
   position.doMove(createMove(SQ_H1, SQ_F1, NORMAL));
   // cout << position.str() << endl;
@@ -509,8 +591,8 @@ TEST_F(PositionTest, doMoveCASTLING) {
 
   // do move
   position = Position("r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R b KQkq -");
-  ;
-  ;
+
+
   // cout << position.str() << endl;
   position.doMove(createMove(SQ_A8, SQ_C8, NORMAL));
   // cout << position.str() << endl;
@@ -573,8 +655,8 @@ TEST_F(PositionTest, repetitionSimple) {
 
 TEST_F(PositionTest, repetitionAdvanced) {
   Position position("6k1/p3q2p/1n1Q2pB/8/5P2/6P1/PP5P/3R2K1 b - -");
-  ;
-  ;
+
+
 
   position.doMove(createMove(SQ_E7, SQ_E3, NORMAL));
   position.doMove(createMove(SQ_G1, SQ_G2, NORMAL));
@@ -601,64 +683,64 @@ TEST_F(PositionTest, insufficientMaterial) {
 
   // 	both sides have a bare king
   position = Position("8/3k4/8/8/8/8/4K3/8 w - -");
-  ;
-  ;
+
+
   EXPECT_TRUE(position.checkInsufficientMaterial());
 
   // 	one side has a king and a minor piece against a bare king
   // 	both sides have a king and a minor piece each
   position = Position("8/3k4/8/8/8/2B5/4K3/8 w - -");
-  ;
+
   EXPECT_TRUE(position.checkInsufficientMaterial());
   position = Position("8/8/4K3/8/8/2b5/4k3/8 b - -");
-  ;
+
   EXPECT_TRUE(position.checkInsufficientMaterial());
 
   // 	both sides have a king and a bishop, the bishops being the same color
   position = Position("8/8/3BK3/8/8/2b5/4k3/8 b - -");
-  ;
+
   EXPECT_TRUE(position.checkInsufficientMaterial());
   position = Position("8/8/2B1K3/8/8/8/2b1k3/8 b - -");
-  ;
+
   EXPECT_TRUE(position.checkInsufficientMaterial());
   position = Position("8/8/4K3/2B5/8/8/2b1k3/8 b - -");
-  ;
+
   EXPECT_TRUE(position.checkInsufficientMaterial());
 
   // one side has two bishops a mate can be forced
   position = Position("8/8/2B1K3/2B5/8/8/2n1k3/8 b - -");
-  ;
+
   EXPECT_FALSE(position.checkInsufficientMaterial());
 
   // 	two knights against the bare king
   position = Position("8/8/2NNK3/8/8/8/4k3/8 w - -");
-  ;
+
   EXPECT_TRUE(position.checkInsufficientMaterial());
   position = Position("8/8/2nnk3/8/8/8/4K3/8 w - -");
-  ;
+
   EXPECT_TRUE(position.checkInsufficientMaterial());
 
   // 	the weaker side has a minor piece against two knights
   position = Position("8/8/2n1kn2/8/8/8/4K3/4B3 w - -");
-  ;
+
   EXPECT_TRUE(position.checkInsufficientMaterial());
 
   // 	two bishops draw against a bishop
   position = Position("8/8/3bk1b1/8/8/8/4K3/4B3 w - -");
-  ;
+
   EXPECT_TRUE(position.checkInsufficientMaterial());
 
   // 	two minor pieces against one draw, except when the stronger side has a bishop pair
   position = Position("8/8/3bk1b1/8/8/8/4K3/4N3 w - -");
-  ;
+
   EXPECT_FALSE(position.checkInsufficientMaterial());
   position = Position("8/8/3bk1n1/8/8/8/4K3/4N3 w - -");
-  ;
+
   EXPECT_TRUE(position.checkInsufficientMaterial());
 
   // bugs
   position = Position("8/8/8/6k1/8/4K3/8/r7 b - -");
-  ;
+
   EXPECT_FALSE(position.checkInsufficientMaterial());
 }
 
@@ -957,57 +1039,62 @@ TEST_F(PositionTest, attacksTo) {
   Position p;
   Bitboard attacksTo;
 
-  	p = Position("2brr1k1/1pq1b1p1/p1np1p1p/P1p1p2n/1PNPPP2/2P1BNP1/4Q1BP/R2R2K1 w - -");
-  	attacksTo = p.attacksTo(SQ_E5, WHITE);
-  	fprintln("{}", strBoard(attacksTo));
-  	fprintln("{}", strGrouped(attacksTo));
-  	EXPECT_EQ(740294656, attacksTo);
-  	
-  	attacksTo = p.attacksTo(SQ_F1, WHITE);
-  	fprintln("{}", strBoard(attacksTo));
-  	fprintln("{}", strGrouped(attacksTo));
-  	EXPECT_EQ(20552, attacksTo);
+  p         = Position("2brr1k1/1pq1b1p1/p1np1p1p/P1p1p2n/1PNPPP2/2P1BNP1/4Q1BP/R2R2K1 w - -");
+  attacksTo = p.attacksTo(SQ_E5, WHITE);
+  //fprintln("{}", strBoard(attacksTo));
+  //fprintln("{}", strGrouped(attacksTo));
+  EXPECT_EQ(740294656, attacksTo);
 
-  	attacksTo = p.attacksTo(SQ_D4, WHITE);
-  	fprintln("{}", strBoard(attacksTo));
-  	fprintln("{}", strGrouped(attacksTo));
-  	EXPECT_EQ(3407880, attacksTo);
+  attacksTo = p.attacksTo(SQ_F1, WHITE);
+  //fprintln("{}", strBoard(attacksTo));
+  //fprintln("{}", strGrouped(attacksTo));
+  EXPECT_EQ(20552, attacksTo);
 
-  	attacksTo = p.attacksTo(SQ_D4, BLACK);
-  	fprintln("{}", strBoard(attacksTo));
-  	fprintln("{}", strGrouped(attacksTo));
-  	EXPECT_EQ(4483945857024, attacksTo);
+  attacksTo = p.attacksTo(SQ_D4, WHITE);
+  //fprintln("{}", strBoard(attacksTo));
+  //fprintln("{}", strGrouped(attacksTo));
+  EXPECT_EQ(3407880, attacksTo);
 
-  	attacksTo = p.attacksTo(SQ_D6, BLACK);
-  	fprintln("{}", strBoard(attacksTo));
-  	fprintln("{}", strGrouped(attacksTo));
-  	EXPECT_EQ(582090251837636608, attacksTo);
+  attacksTo = p.attacksTo(SQ_D4, BLACK);
+  //fprintln("{}", strBoard(attacksTo));
+  //fprintln("{}", strGrouped(attacksTo));
+  EXPECT_EQ(Bitboard(4483945857024), attacksTo);
 
-  	attacksTo = p.attacksTo(SQ_F8, BLACK);
-  	fprintln("{}", strBoard(attacksTo));
-  	fprintln("{}", strGrouped(attacksTo));
-  	EXPECT_EQ(5769111122661605376, attacksTo);
+  attacksTo = p.attacksTo(SQ_D6, BLACK);
+  //fprintln("{}", strBoard(attacksTo));
+  //fprintln("{}", strGrouped(attacksTo));
+  EXPECT_EQ(Bitboard(582090251837636608), attacksTo);
 
-  	p = Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
-  	attacksTo = p.attacksTo(SQ_E5, BLACK);
-  	fprintln("{}", strBoard(attacksTo));
-  	fprintln("{}", strGrouped(attacksTo));
-  	EXPECT_EQ(2339760743907840, attacksTo);
+  attacksTo = p.attacksTo(SQ_F8, BLACK);
+  //fprintln("{}", strBoard(attacksTo));
+  //fprintln("{}", strGrouped(attacksTo));
+  EXPECT_EQ(Bitboard(5769111122661605376), attacksTo);
 
-  	attacksTo = p.attacksTo(SQ_B1, BLACK);
-  	fprintln("{}", strBoard(attacksTo));
-  	fprintln("{}", strGrouped(attacksTo));
-  	EXPECT_EQ(1280, attacksTo);
+  p         = Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
+  attacksTo = p.attacksTo(SQ_E5, BLACK);
+  //fprintln("{}", strBoard(attacksTo));
+  //fprintln("{}", strGrouped(attacksTo));
+  EXPECT_EQ(Bitboard(2339760743907840), attacksTo);
 
-  	attacksTo = p.attacksTo(SQ_G3, WHITE);
-  	fprintln("{}", strBoard(attacksTo));
-  	fprintln("{}", strGrouped(attacksTo));
-  	EXPECT_EQ(40960, attacksTo);
+  attacksTo = p.attacksTo(SQ_B1, BLACK);
+  //fprintln("{}", strBoard(attacksTo));
+  //fprintln("{}", strGrouped(attacksTo));
+  EXPECT_EQ(Bitboard(1280), attacksTo);
 
-  	attacksTo = p.attacksTo(SQ_E4, BLACK);
-  	fprintln("{}", strBoard(attacksTo));
-  	fprintln("{}", strGrouped(attacksTo));
-  	EXPECT_EQ(4398113619968, attacksTo);
+  attacksTo = p.attacksTo(SQ_G3, WHITE);
+  //fprintln("{}", strBoard(attacksTo));
+  //fprintln("{}", strGrouped(attacksTo));
+  EXPECT_EQ(Bitboard(40960), attacksTo);
+
+  attacksTo = p.attacksTo(SQ_E3, BLACK);
+//  fprintln("{}", strBoard(attacksTo));
+//  fprintln("{}", strGrouped(attacksTo));
+  EXPECT_EQ(Bitboard(536870912), attacksTo);
+
+  attacksTo = p.attacksTo(SQ_E4, BLACK);
+//  fprintln("{}", strBoard(attacksTo));
+//  fprintln("{}", strGrouped(attacksTo));
+  EXPECT_EQ(Bitboard(4398650490880), attacksTo);
 }
 
 TEST_F(PositionTest, debug) {
@@ -1018,5 +1105,4 @@ TEST_F(PositionTest, debug) {
   fprintln(p.strFen());
   p.doMove(m);
   fprintln(p.strFen());
-  
 }

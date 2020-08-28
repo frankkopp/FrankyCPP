@@ -30,6 +30,8 @@
 #include "piecetype.h"
 #include "value.h"
 
+#include <string>
+
 namespace MoveShifts {
   constexpr unsigned int FROM_SHIFT      = 6u;
   constexpr unsigned int PROM_TYPE_SHIFT = 12u;
@@ -57,7 +59,7 @@ namespace MoveShifts {
 //  Castling
 // Enum values are already shifted to their place in a move to save
 // the time to shift them when creating a move or reading the type.
-enum MoveType {
+enum MoveType : unsigned int {
   NORMAL    = 0 << MoveShifts::MOVE_TYPE_SHIFT,
   PROMOTION = 1 << MoveShifts::MOVE_TYPE_SHIFT,
   ENPASSANT = 2 << MoveShifts::MOVE_TYPE_SHIFT,
@@ -102,7 +104,7 @@ inline std::ostream& operator<<(std::ostream& os, const MoveType mt) {
 //                                  |     1 1                          promotion piece type (pt-2 > 0-3)
 //                                  | 1 1                              move type
 //  1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |                                  move sort value
-enum Move : uint32_t {
+enum Move : uint_fast32_t {
   MOVE_NONE = 0
 };
 
@@ -193,7 +195,7 @@ constexpr bool validMove(Move m) {
 // returns a short representation of the move as string (UCI protocol)
 inline std::string str(Move move) {
   if (moveOf(move) == MOVE_NONE) return "no move";
-  std::string promotion = "";
+  std::string promotion;
   if ((typeOf(move) == PROMOTION)) promotion = str(promotionTypeOf(move));
   return str(fromSquare(move)) + str(toSquare(move)) + promotion;
 }
@@ -202,7 +204,7 @@ inline std::string str(Move move) {
 inline std::string strVerbose(Move move) {
   if (!move) return "no move " + std::to_string(move);
   std::string tp;
-  std::string promPt = "";
+  std::string promPt;
   switch (typeOf(move)) {
     case NORMAL:
       tp = "n";
@@ -220,7 +222,8 @@ inline std::string strVerbose(Move move) {
   }
   // return str(fromSquare(move)) + str(toSquare(move)) + promPt + " (" + tp + " " + std::to_string(valueOf(move)) + " " + std::to_string(move) + ")";
   return fmt::format("Move: {:2}{:2}{:1}  type:{:<1}  prom:{:<1}  value:{:<6}  ({})",
-                     str(fromSquare(move)), str(toSquare(move)), promPt, tp, promPt, std::to_string(valueOf(move)), std::to_string(move));
+                     str(fromSquare(move)), str(toSquare(move)), promPt, tp, promPt,
+                     std::to_string(valueOf(move)), std::to_string(move));
 }
 
 inline std::ostream& operator<<(std::ostream& os, const Move move) {

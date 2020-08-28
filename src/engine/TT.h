@@ -248,7 +248,7 @@ public:
     return numberOfMisses;
   }
 
-  int getThreads() const {
+  unsigned int getThreads() const {
     return noOfThreads;
   }
 

@@ -30,7 +30,7 @@
 
 ///////////////////////////////////
 //// VALUE TYPE
-enum ValueType : uint8_t {
+enum ValueType : uint_fast8_t {
   NONE = 0,
   // the node for the value was fully calculated and is exact
   EXACT = 1,

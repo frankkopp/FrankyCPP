@@ -2,12 +2,10 @@ message("====================================================================")
 message("FrankyCPP test/")
 message("====================================================================")
 
-cmake_minimum_required(VERSION 3.13)
-set(CMAKE_CXX_STANDARD 17)
+cmake_minimum_required(VERSION 3.16)
 
-# set the name of the executable
+# Google Test executable
 set(testExeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR}_Test)
-
 include(GoogleTest)
 add_executable(
         ${testExeName}
@@ -19,26 +17,31 @@ add_executable(
         common/SemaphoreTest.cpp
         common/FifoTest.cpp
         common/ThreadPoolTest.cpp
+        common/StringUtilsTest.cpp
+        common/TimeUtilsTest.cpp
 
         chesscore/PositionTest.cpp
         chesscore/MoveGeneratorTest.cpp
         chesscore/PerftTest.cpp
         chesscore/SpeedTests.cpp
 
-        openingbook/PGN_ReaderTest.cpp
-        openingbook/OpeningBookTest.cpp
+        openingbook/OpeningbookTest.cpp
 
         engine/UCITests.cpp
         engine/UciOptionsTest.cpp
         engine/TT_Test.cpp
         engine/SearchTest.cpp
         engine/SeeTest.cpp
+        engine/EvaluatorTest.cpp
+        engine/PawnTT_Test.cpp
         engine/EngineSpeedTests.cpp
+
         enginetest/SearchTreeSizeTest_Test.cpp
+        enginetest/TestSuite_Test.cpp
 
         TimingTests.cpp
-        BOOST_Test.cpp
-        engine/EvaluatorTest.cpp enginetest/TestSuite_Test.cpp)
+        PlaygroundTests.cpp
+        )
 
 target_link_libraries(
         ${testExeName}

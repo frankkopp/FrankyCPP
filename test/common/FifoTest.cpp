@@ -60,31 +60,31 @@ TEST_F(FifoTest, construct) {
   for (int i = 0; i < 1'000; ++i) {
     fifo1.push(std::to_string(randomU64(rd)));
   }
-  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in fifo: {:n}", fifo1.size());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in fifo: {:L}", fifo1.size());
   EXPECT_EQ(1'000, fifo1.size());
 
   Fifo<std::string> fifo2(fifo1);
-  LOG__DEBUG(Logger::get().TEST_LOG, "Copied constructed new fifo2: {:n}", fifo2.size());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Copied constructed new fifo2: {:L}", fifo2.size());
   EXPECT_EQ(1'000, fifo2.size());
 
   Fifo<std::string> fifo3 = fifo2;
-  LOG__DEBUG(Logger::get().TEST_LOG, "Copied constructed new fifo2: {:n}", fifo3.size());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Copied constructed new fifo2: {:L}", fifo3.size());
   EXPECT_EQ(1'000, fifo3.size());
 
   Fifo<std::string> fifo4 = Fifo<std::string>{};
-  LOG__DEBUG(Logger::get().TEST_LOG, "Constructed fifo4: {:n}", fifo4.size());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Constructed fifo4: {:L}", fifo4.size());
   EXPECT_EQ(0, fifo4.size());
 
   fifo4 = fifo1;
-  LOG__DEBUG(Logger::get().TEST_LOG, "Copied fifo1 into fifo4: {:n}", fifo4.size());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Copied fifo1 into fifo4: {:L}", fifo4.size());
   EXPECT_EQ(1'000, fifo4.size());
 
   Fifo<std::string> fifo5(std::move(Fifo<std::string>{}));
-  LOG__DEBUG(Logger::get().TEST_LOG, "Move constructed fifo5: {:n}", fifo5.size());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Move constructed fifo5: {:L}", fifo5.size());
   EXPECT_EQ(0, fifo5.size());
 
   fifo5 = std::move(fifo4);
-  LOG__DEBUG(Logger::get().TEST_LOG, "Moved fifo4 to fifo5: {:n}", fifo5.size());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Moved fifo4 to fifo5: {:L}", fifo5.size());
   EXPECT_EQ(1'000, fifo5.size());
   //EXPECT_EQ(0, fifo4.size());
 
@@ -95,29 +95,29 @@ TEST_F(FifoTest, pushPop) {
   for (int i = 0; i < 1'000; ++i) {
     fifo1.push(std::to_string(randomU64(rd)));
   }
-  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in fifo: {:n}", fifo1.size());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in fifo: {:L}", fifo1.size());
   EXPECT_EQ(1'000, fifo1.size());
 
   auto item = fifo1.pop();
   LOG__DEBUG(Logger::get().TEST_LOG, "Popped on item: {}", item.has_value() ? item.value() : "NULL");
-  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in fifo: {:n}", fifo1.size());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in fifo: {:L}", fifo1.size());
   EXPECT_EQ(999, fifo1.size());
 
   std::optional<std::string> str{};
   fifo1.pop(str);
   LOG__DEBUG(Logger::get().TEST_LOG, "Popped on item: {}", str.has_value() ? str.value() : "NULL");
-  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in fifo: {:n}", fifo1.size());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in fifo: {:L}", fifo1.size());
   EXPECT_EQ(998, fifo1.size());
 
   item = fifo1.pop_wait();
   LOG__DEBUG(Logger::get().TEST_LOG, "Popped on item: {}", item.has_value() ? item.value() : "NULL");
-  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in fifo: {:n}", fifo1.size());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in fifo: {:L}", fifo1.size());
   EXPECT_EQ(997, fifo1.size());
 
   str.reset();
   fifo1.pop_wait(str);
   LOG__DEBUG(Logger::get().TEST_LOG, "Popped on item: {}", str.has_value() ? str.value() : "NULL");
-  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in fifo: {:n}", fifo1.size());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in fifo: {:L}", fifo1.size());
   EXPECT_EQ(996, fifo1.size());
 }
 
@@ -126,7 +126,7 @@ TEST_F(FifoTest, order) {
   for (int i = 0; i < 1'000; ++i) {
     fifo1.push(std::to_string(i));
   }
-  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in fifo: {:n}", fifo1.size());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Entries in fifo: {:L}", fifo1.size());
   EXPECT_EQ(1'000, fifo1.size());
   for (int i = 0; i < 1'000; ++i) {
     auto s = fifo1.pop();
@@ -155,7 +155,7 @@ TEST_F(FifoTest, popWait) {
   auto item = fifo1.pop_wait();
   const auto stop = std::chrono::high_resolution_clock::now();
   const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-  LOG__DEBUG(Logger::get().TEST_LOG, "Got item '{}' after {:n} ms", *item, elapsed.count());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Got item '{}' after {:L} ms", *item, elapsed.count());
   EXPECT_GE(elapsed.count(), 2'000);
   t.join();
 }
@@ -176,7 +176,7 @@ TEST_F(FifoTest, popWaitCancel) {
   auto ptrItem = fifo1.pop_wait();
   auto stop = std::chrono::high_resolution_clock::now();
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-  LOG__DEBUG(Logger::get().TEST_LOG, "Got item '{}' after {:n} ms", ptrItem ? *ptrItem : "NULL", elapsed.count());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Got item '{}' after {:L} ms", ptrItem ? *ptrItem : "NULL", elapsed.count());
   EXPECT_GE(elapsed.count(), 2'000);
   EXPECT_EQ(std::nullopt, ptrItem);
   t.join();
@@ -198,7 +198,7 @@ TEST_F(FifoTest, popWaitCancel) {
   ptrItem = fifo1.pop_wait();
   stop = std::chrono::high_resolution_clock::now();
   elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-  LOG__DEBUG(Logger::get().TEST_LOG, "Got item '{}' after {:n} ms", ptrItem ? *ptrItem : "NULL", elapsed.count());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Got item '{}' after {:L} ms", ptrItem ? *ptrItem : "NULL", elapsed.count());
   EXPECT_GE(elapsed.count(), 2'000);
   EXPECT_EQ(std::nullopt, ptrItem);
   t.join();
@@ -219,7 +219,7 @@ TEST_F(FifoTest, popWaitCancel) {
   ptrItem = fifo1.pop_wait();
   stop = std::chrono::high_resolution_clock::now();
   elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-  LOG__DEBUG(Logger::get().TEST_LOG, "Got item '{}' after {:n} ms", ptrItem ? *ptrItem : "NULL", elapsed.count());
+  LOG__DEBUG(Logger::get().TEST_LOG, "Got item '{}' after {:L} ms", ptrItem ? *ptrItem : "NULL", elapsed.count());
   EXPECT_LT(elapsed.count(), 1'000);
   EXPECT_EQ(std::nullopt, ptrItem);
   t.join();

@@ -25,7 +25,9 @@
 
 #include "ThreadPool.h"
 
-ThreadPool::ThreadPool(std::size_t numThreads) { start(numThreads); }
+ThreadPool::ThreadPool(std::size_t numThreads) {
+  start(numThreads);
+}
 
 // //////////////////////
 // PRIVATE

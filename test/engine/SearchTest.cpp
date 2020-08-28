@@ -51,8 +51,7 @@ protected:
 };
 
 TEST_F(SearchTest, construct) {
-  Search search{};
-  search.isReady();
+  Search search{};search.isReady();
 }
 
 TEST_F(SearchTest, resizeHash) {
@@ -66,7 +65,7 @@ TEST_F(SearchTest, setupTime) {
   Position p{};
   SearchLimits sl{};
 
-  sl.moveTime = MilliSec{1500};
+  sl.moveTime = milliseconds{1500};
   EXPECT_EQ(1480, Search::setupTimeControl(p, sl).count());
 
   sl           = SearchLimits{};
@@ -179,10 +178,10 @@ TEST_F(SearchTest, startPonderSearch) {
   SearchLimits sl{};
   Search s{};
   sl.timeControl = true;
-  sl.moveTime    = MilliSec{1000};
+  sl.moveTime    = milliseconds{1000};
   sl.ponder      = true;
   s.isReady();
-  TimePoint start = now();
+  TimePoint start = currentTime();
   s.startSearch(p, sl);
   EXPECT_TRUE(s.isSearching());
   EXPECT_FALSE(s.hasResult());
@@ -334,7 +333,7 @@ TEST_F(SearchTest, quiescenceTest) {
 
   Search search;
   SearchLimits searchLimits;
-  Position position("r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 w kq e3 10 113");
+  Position position("r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 w kq - 10 113");
   searchLimits.depth = 2;
 
   SearchConfig::USE_BOOK       = false;
@@ -361,14 +360,15 @@ TEST_F(SearchTest, quiescenceTest) {
   auto nodes3 = search.getLastSearchResult().nodes;
   auto extra3 = search.getSearchStats().currentExtraSearchDepth;
 
-  LOG__INFO(Logger::get().TEST_LOG, "Nodes without Quiescence: {:n} Nodes with Quiescence: {:n} Nodes with SEE: {:n}", nodes1, nodes2, nodes3);
-  LOG__INFO(Logger::get().TEST_LOG, "Extra without Quiescence: {:n} Extra with Quiescence: {:n} Extra with SEE: {:n}", extra1, extra2, extra3);
+  LOG__INFO(Logger::get().TEST_LOG, "Nodes without Quiescence: {:L} Nodes with Quiescence: {:L} Nodes with SEE: {:L}", nodes1, nodes2, nodes3);
+  LOG__INFO(Logger::get().TEST_LOG, "Extra without Quiescence: {:L} Extra with Quiescence: {:L} Extra with SEE: {:L}", extra1, extra2, extra3);
 
   ASSERT_GT(nodes2, nodes1);
   ASSERT_GT(extra2, extra1);
 }
 
 TEST_F(SearchTest, debug) {
+  GTEST_SKIP();
   SearchConfig::TT_SIZE_MB          = 64;
   SearchConfig::USE_BOOK            = false;
   SearchConfig::USE_ALPHABETA       = false;
@@ -394,7 +394,7 @@ TEST_F(SearchTest, debug) {
   Search s{};
   //  sl.timeControl = true;
   //  sl.moveTime    = 160s;
-  sl.depth = 1;
+  sl.depth = 6;
   s.isReady();
   s.startSearch(p, sl);
   s.waitWhileSearching();

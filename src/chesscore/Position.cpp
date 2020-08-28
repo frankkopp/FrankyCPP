@@ -25,6 +25,9 @@
 
 #include "Position.h"
 #include "Values.h"
+#include "common/stringutil.h"
+
+#include <string>
 
 Key Zobrist::pieces[PIECE_LENGTH][SQ_LENGTH];
 Key Zobrist::castlingRights[CR_LENGTH];
@@ -38,7 +41,7 @@ bool Position::initialized = false;
 
 void Position::init() {
   // Zobrist Key initialization
-  PRNG random(1070372);
+  PRNG random(1070372);// seed from Stockfish :) - they supposedly did some research
   for (Piece pc = PIECE_NONE; pc < PIECE_LENGTH; ++pc) {
     for (Square sq = SQ_A1; sq < SQ_LENGTH; ++sq) {
       Zobrist::pieces[pc][sq] = random.rand<Key>();
@@ -62,24 +65,20 @@ void Position::init() {
 Position::Position() : Position(START_POSITION_FEN) {}
 
 /** Creates a board with setup from the given fen */
-Position::Position(const std::string& fen) : Position(fen.c_str()) {}
+Position::Position(const char* fen) : Position(std::string{fen}) {}
 
 /** Creates a board with setup from the given fen */
-Position::Position(const char* fen) {
+Position::Position(const std::string& fen) {
   if (!Position::initialized) {
     Position::init();
   }
-  setupBoard(fen);
+  try {
+    setupBoard(fen);
+  } catch (std::invalid_argument&) {
+    // std::cerr << "Invalid fen: " << exception.what() << std::endl;
+    throw;
+  }
 }
-
-//Position::Position(const Position& op) {
-//
-//}
-//
-//Position& Position::operator=(const Position& other) {
-//  Position p(other);
-//  return p;
-//}
 
 ////////////////////////////////////////////////
 ///// PUBLIC
@@ -374,13 +373,11 @@ bool Position::isAttacked(Square sq, Color by) const {
           // this is indeed the en passant attacked square
           enPassantSquare + NORTH == sq) {
         // left
-        Square square = sq + WEST;
-        if (board[square] == BLACK_PAWN) {
+        if (board[(sq + WEST)] == BLACK_PAWN) {
           return true;
         }
         // right
-        square = sq + EAST;
-        return board[square] == BLACK_PAWN;
+        return board[(sq + EAST)] == BLACK_PAWN;
       }
     }
     else {// WHITE
@@ -389,13 +386,11 @@ bool Position::isAttacked(Square sq, Color by) const {
           // this is indeed the en passant attacked square
           enPassantSquare + SOUTH == sq) {
         // left
-        Square square = sq + WEST;
-        if (board[square] == WHITE_PAWN) {
+        if (board[(sq + WEST)] == WHITE_PAWN) {
           return true;
         }
         // right
-        square = sq + EAST;
-        return board[square] == WHITE_PAWN;
+        return board[(sq + EAST)] == WHITE_PAWN;
       }
     }
   }
@@ -404,15 +399,16 @@ bool Position::isAttacked(Square sq, Color by) const {
 
 Bitboard Position::attacksTo(Square square, Color color) const {
   assert(validSquare(square) && "Position::attacksTo needs a valid square");
+
   // prepare en passant attacks
   Bitboard epAttacks = BbZero;
-  if (enPassantSquare != SQ_NONE && enPassantSquare == square) {
-    Square pawnSquare   = enPassantSquare + pawnPush(~color);
-    Bitboard epAttacker = Bitboards::neighbourFilesMask[pawnSquare] & Bitboards::sqToRankBb[pawnSquare] & piecesBb[color][PAWN];
-    if (epAttacker) {
-      epAttacks |= Bitboards::sqBb[pawnSquare];
+  if (enPassantSquare != SQ_NONE) {
+    const Square pawnSquare = enPassantSquare + pawnPush(~color);
+    if (pawnSquare == square) {
+      epAttacks |= Bitboards::neighbourFilesMask[pawnSquare] & Bitboards::sqToRankBb[pawnSquare] & piecesBb[color][PAWN];
     }
   }
+
   const Bitboard occupiedAll = getOccupiedBb();
 
   // this uses a reverse approach - it uses the target square as from square
@@ -595,9 +591,8 @@ bool Position::isLegalMove(Move move) const {
   // then check if the move leaves the king in check
   // This could probably be implemented a bit more efficient by
   // not having to call DoMove/UndoMove similar to GivesCheck() but
-  // IsLegalMove is not used during normal search. The only usage
-  // is in HasLegalMoves which is used in perft to check for
-  // mate. So this simple implementation is sufficient.
+  // IsLegalMove is not used during normal search.
+  // Used in generateLegalMoves and perft. 
   const_cast<Position*>(this)->doMove(move);
   const bool legal = !isAttacked(kingSquare[~nextPlayer], nextPlayer);
   const_cast<Position*>(this)->undoMove();
@@ -712,7 +707,8 @@ std::string Position::str() const {
   output << strBoard();
   output << strFen() << std::endl;
   output << "Check: "
-         << (hasCheckFlag == FLAG_TBD ? "N/A" : hasCheckFlag == FLAG_TRUE ? "Check" : "No check")
+         << (hasCheckFlag == FLAG_TBD ? "N/A" : hasCheckFlag == FLAG_TRUE ? "Check"
+                                                                          : "No check")
          << std::endl;
   ;
   output << "Game Phase: " << gamePhase << std::endl;
@@ -730,7 +726,7 @@ std::string Position::strBoard() const {
   const std::string ptc = " KONBRQ  k*nbrq   ";
   std::ostringstream output;
   output << "  +---+---+---+---+---+---+---+---+" << std::endl;
-  for (Rank r = RANK_8; r >= RANK_1; --r) {
+  for (Rank r = RANK_8;; --r) {
     output << (r + 1) << " |";
     for (File f = FILE_A; f <= FILE_H; ++f) {
       Piece pc = getPiece(squareOf(f, r));
@@ -743,6 +739,7 @@ std::string Position::strBoard() const {
     }
     output << std::endl;
     output << "  +---+---+---+---+---+---+---+---+" << std::endl;
+    if (r == 0) break;
   }
   output << "   ";
   for (File f = FILE_A; f <= FILE_H; ++f) {
@@ -757,7 +754,7 @@ std::string Position::strFen() const {
   std::ostringstream fen;
 
   // pieces
-  for (Rank r = RANK_8; r >= RANK_1; --r) {
+  for (Rank r = RANK_8;; --r) {
     int emptySquares = 0;
     for (File f = FILE_A; f <= FILE_H; ++f) {
       Piece pc = getPiece(squareOf(f, r));
@@ -778,6 +775,7 @@ std::string Position::strFen() const {
     if (r > RANK_1) {
       fen << "/";
     }
+    if (r == 0) break;
   }
 
   // next player
@@ -819,7 +817,7 @@ std::string Position::strFen() const {
   return fen.str();
 }
 
-std::ostream& operator<<(std::ostream& os, Position& position) {
+std::ostream& operator<<(std::ostream& os, const Position& position) {
   os << position.strFen();
   return os;
 }
@@ -935,110 +933,164 @@ void Position::initializeBoard() {
   gamePhase    = 0;
 }
 
-// TODO make robost with error handling
-void Position::setupBoard(const char* fen) {
+void Position::setupBoard(const std::string& fen) {
   // also sets defaults if fen is short
   initializeBoard();
 
-  unsigned char token;
-  std::size_t idx;
-  Square currentSquare = SQ_A8;
+  // clean up and check fen
+  std::string myFen = trimFast(fen);
 
-  std::istringstream iss(fen);
-  iss >> std::noskipws;
+  std::vector<std::string> fenParts{};
 
-  // pieces
-  while ((iss >> token) && !isspace(token)) {
-    if (isdigit(token)) {
-      currentSquare += static_cast<Direction>((token - '0') * EAST);
-    }
-    else if (token == '/') {
-      currentSquare += static_cast<Direction>(2 * SOUTH);
-    }
-    else if ((idx = std::string(pieceToChar).find(token)) != std::string::npos) {
-      putPiece(Piece(idx), currentSquare);
-      ++currentSquare;
+  // split into parts and check if at least the position is available
+  splitFast(myFen, fenParts, " ");
+  if (fenParts.empty()) {
+    throw std::invalid_argument("FEN must not be empty: " + myFen);
+  }
+
+  // check if position fen part is valid
+  static const std::string allowedChars{"12345678pPnNbBrRqQkK/"};
+  auto l = fenParts[0].length();
+  for (int i = 0; i < l; i++) {
+    if (allowedChars.find(fenParts[0][i]) == std::string::npos) {
+      throw std::invalid_argument("FEN contains illegal characters: " + fenParts[0]);
     }
   }
 
+  // a fen start at A8 - which is file==0 and rank==7
+  int file = 0;
+  int rank = 7;
+
+  // pieces
+  unsigned char token;
+  std::istringstream iss(fenParts[0]);
+  iss >> std::noskipws;
+  while (iss >> token) {
+    if (std::isdigit(token)) {// number
+      file += token - '0';
+      if (file > 8) {
+        throw std::invalid_argument(fmt::format("FEN has too many squares ({}) in rank {}:  {}", file, rank + 1, fenParts[0]));
+      }
+    }
+    else if (token == '/') {// rank separator
+      if (file < 8) {
+        throw std::invalid_argument(fmt::format("FEN has not enough squares ({}) in rank {}:  {}", file, rank + 1, fenParts[0]));
+      }
+      if (file > 8) {
+        throw std::invalid_argument(fmt::format("too many squares ({}) in rank {}:  {}", file, rank + 1, fenParts[0]));
+      }
+      // reset file counter and decrease rank
+      file = 0;
+      rank--;
+      if (rank < 0) {
+        throw std::invalid_argument(fmt::format("FEN has too many ranks ({}):  %s", 8 - rank, fenParts[0]));
+      }
+    }
+    else {// find piece type from piece symbol
+      Piece piece = makePiece(token);
+      if (piece == PIECE_NONE) {// redundant
+        throw std::invalid_argument(fmt::format("FEN has invalid piece character '{}' in {}", token, fenParts[0]));
+      }
+      if (file > 7) {
+        throw std::invalid_argument(fmt::format("FEN has too many squares ({}) in rank {}:  {}", file, rank + 1, fenParts[0]));
+      }
+      Square currentSquare = squareOf(File(file), Rank(rank));
+      if (currentSquare == SQ_NONE) {
+        throw std::invalid_argument(fmt::format("FEN has invalid square {} ({}): {}", currentSquare, ::str(currentSquare), fenParts[0]));
+      }
+      putPiece(piece, currentSquare);
+      file++;
+    }
+  }
+  if (file != 8 || rank != 0) {
+    throw std::invalid_argument(fmt::format("FEN not complete. Did not reached last square (file={}, rank={}) after reading fen", file, rank));
+  }
+
+  // set defaults
+  moveNumber      = 1;
+  enPassantSquare = SQ_NONE;
+
+  // everything below is optional as we can apply defaults
+
   // next player
-  if (iss >> token) {
-    if (!(token == 'w' || token == 'b')) {
-      return;
-    }// malformed - ignore the rest
-    if (token == 'b') {
+  if (fenParts.size() >= 2) {
+    if (fenParts[1] == "b") {
       nextPlayer = BLACK;
       zobristKey ^= Zobrist::nextPlayer;
     }
+    else if (fenParts[1] != "w") {
+      throw std::invalid_argument(fmt::format("FEN next player is invalid: {}", fenParts[1]));
+    }
   }
-  else {
-    return;
-  }// end of line
-
-  // skip space
-  if (!(iss >> token)) {
-    return;
-  }// end of line
 
   // castling rights
-  while ((iss >> token) && !isspace(token)) {
-    if (token == '-') {
-      // skip space
-      if (!(iss >> token)) {
-        return;
-      }// end of line
-      break;
+  if (fenParts.size() >= 3) {
+    static const std::string allowedCastlingChars{"KkQq-"};
+    l = fenParts[2].length();
+    for (int i = 0; i < l; i++) {
+      if (allowedCastlingChars.find(fenParts[2][i]) == std::string::npos) {
+        throw std::invalid_argument("FEN castling rights contains illegal characters: " + fenParts[2]);
+      }
     }
-    else if (token == 'K') {
-      castlingRights += WHITE_OO;
-    }
-    else if (token == 'Q') {
-      castlingRights += WHITE_OOO;
-    }
-    else if (token == 'k') {
-      castlingRights += BLACK_OO;
-    }
-    else if (token == 'q') {
-      castlingRights += BLACK_OOO;
-    }
-  }
-  zobristKey ^= Zobrist::castlingRights[castlingRights];
-
-  // en passant
-  if (iss >> token) {
-    if (token != '-') {
-      if (token >= 'a' && token <= 'h') {
-        File f = File(token - 'a');
-        if (!(iss >> token)) {
-          return;
-        }// malformed - ignore the rest
-        if ((token >= '1' && token <= '8')) {
-          Rank r          = Rank(token - '1');
-          enPassantSquare = squareOf(f, r);
-          zobristKey ^= Zobrist::enPassantFile[f];
+    // are there  rights to be encoded?
+    if (fenParts[2] != "-") {
+      for (char c : fenParts[2]) {
+        if (c == 'K' && !(castlingRights == WHITE_OO)) {
+          castlingRights += WHITE_OO;
+        }
+        else if (c == 'Q' && !(castlingRights == WHITE_OOO)) {
+          castlingRights += WHITE_OOO;
+        }
+        else if (c == 'k' && !(castlingRights == BLACK_OO)) {
+          castlingRights += BLACK_OO;
+        }
+        else if (c == 'q' && !(castlingRights == BLACK_OOO)) {
+          castlingRights += BLACK_OOO;
         }
         else {
-          return;
-        }// malformed - ignore the rest
+          throw std::invalid_argument("FEN castling rights has invalid structure: " + fenParts[2]);
+        }
       }
-      else {
-        return;
-      }// malformed - ignore the rest
-    }  // no en passant
+    }
+    zobristKey ^= Zobrist::castlingRights[castlingRights];
   }
-  else {
-    return;
-  }// end of line
 
-  // skip space
-  if (!(iss >> token)) {
-    return;
-  }// end of line
+  // en passant
+  if (fenParts.size() >= 4) {
+    if (!(fenParts[3] == "-" || (islower(fenParts[3][0]) && isdigit(fenParts[3][1])))) {
+      throw std::invalid_argument("FEN en passant contains invalid characters: " + fenParts[3]);
+    }
+    if (fenParts[3] != "-") {
+      enPassantSquare = makeSquare(fenParts[3]);
+      if (enPassantSquare == SQ_NONE) {
+        throw std::invalid_argument("FEN en passant invalid square: " + fenParts[3]);
+      }
+    }
+  }
 
-  // half move clock (50 moves rules)
-  iss >> std::skipws >> halfMoveClock;
+  // half move clock (50 moves rule)
+  if (fenParts.size() >= 5) {
+    char* p;
+    int tmp = strtol(fenParts[4].c_str(), &p, 10);
+    if (*p) {
+      throw std::invalid_argument("FEN half move clock is not a number: " + fenParts[4]);
+    }
+    halfMoveClock = tmp;
+  }
 
-  // game move number
-  iss >> std::skipws >> moveNumber;
+  // move number
+  if (fenParts.size() >= 6) {
+    char* p;
+    int tmp = strtol(fenParts[5].c_str(), &p, 10);
+    if (*p) {
+      throw std::invalid_argument("FEN move number is not a number: " + fenParts[5]);
+    }
+    if (tmp < 0) {
+      throw std::invalid_argument("FEN move number is negative: " + fenParts[5]);
+    }
+    moveNumber = tmp;
+  }
+  // if move number is 0 set it to 1
   if (moveNumber == 0) moveNumber = 1;
 }
+
