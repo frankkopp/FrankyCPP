@@ -71,7 +71,7 @@ script:
   - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBENCHMARK_ENABLE_TESTING=OFF -DTRAVIS=true ..
   - make -j
   - ctest -C ${BUILD_TYPE} -DBENCHMARK_ENABLE_TESTING=OFF -E ".*SpeedTests.*" -E ".*TimingTests.*" --output-on-failure
-  - ./testbench/FrankyCPP_v0.3_Bench
-  - ./src/FrankyCPP_v0.3 --perft --endDepth=5
+  - ./testbench/FrankyCPP_v0.4_Bench
+  - ./src/FrankyCPP_v0.4 --perft --endDepth=5
 
 
