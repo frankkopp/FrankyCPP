@@ -77,7 +77,9 @@ TEST_F(TimeUtilsTest, printNanoseconds) {
 }
 
 TEST_F(TimeUtilsTest, printMilliseconds) {
-  milliseconds ms = milliseconds{49777999008800999};
+  // FIXME: overflow of nanoseconds is undefined
+  //  different behavior on MAc for debug vs. release build due to optimizations
+  milliseconds ms = milliseconds{49777999008800999ULL};
   fprintln("{}", format(ms));
   EXPECT_EQ("275y:128d:10h:45m:32s:628.740.032ns", format(ms));
 
