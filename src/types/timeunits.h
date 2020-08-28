@@ -52,7 +52,11 @@ inline std::string str(nanoseconds s) {
 }
 
 // returns a string representation of the duration as a human readable string
-// with a DE locale
+// with a DE locale.
+// This function is limited by the max of a long long (int64) integer as
+// chrono uses int64 for representing nanoseconds. Any input of a timeunnit
+// representing mor than 292 years will result in a an overflow and the result
+// will be undefined.
 // Examples:
 //  59y:325d:20h:33m:19s:008.800.999ns
 //  20d:13h:53m:19s:008.800.999ns
@@ -61,8 +65,17 @@ inline std::string str(nanoseconds s) {
 //  1.000.099ns
 //  10.000ns
 //  100ns
-template<typename T>
-inline std::string format(T timeunit) {
+template <class Rep, class Period>
+inline std::string format(std::chrono::duration<Rep, Period> timeunit) {
+
+  // protect against overflow when converting to nanoseconds
+  using Unit         = duration<double, typename nanoseconds::period>;
+  constexpr Unit min = nanoseconds::min();
+  constexpr Unit max = nanoseconds::max();
+  Unit sTimeUnit     = timeunit;
+  if (sTimeUnit < min || sTimeUnit > max)
+    throw std::overflow_error("formatting a duration failed due to overflow of int64 nanoseconds");
+
   nanoseconds ns = duration_cast<nanoseconds>(timeunit);
   std::ostringstream os;
   bool foundNonZero  = false;
