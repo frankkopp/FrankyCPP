@@ -165,6 +165,7 @@ FetchContent_Declare(
 option(BENCHMARK_ENABLE_LTO ON)
 option(BENCHMARK_ENABLE_GTEST_TESTS OFF)
 option(BENCHMARK_ENABLE_TESTING OFF)
+option(BENCHMARK_ENABLE_INSTALL OFF)
 FetchContent_MakeAvailable(googlebenchmark)
 include_directories(
         ${googlebenchmark_SOURCE_DIR}/include
