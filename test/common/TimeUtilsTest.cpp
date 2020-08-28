@@ -77,11 +77,12 @@ TEST_F(TimeUtilsTest, printNanoseconds) {
 }
 
 TEST_F(TimeUtilsTest, printMilliseconds) {
-  // FIXME: overflow of nanoseconds is undefined
-  //  different behavior on MAc for debug vs. release build due to optimizations
-  milliseconds ms = milliseconds{49777999008800999ULL};
+
+  milliseconds ms = milliseconds{31'536'000'000ULL};
   fprintln("{}", format(ms));
-  EXPECT_EQ("275y:128d:10h:45m:32s:628.740.032ns", format(ms));
+
+  ms = milliseconds{293 * 31'536'000'000ULL};
+  EXPECT_THROW(format(ms), std::overflow_error);
 
   ms = milliseconds{1999008800999};
   fprintln("{}", format(ms));
@@ -103,3 +104,4 @@ TEST_F(TimeUtilsTest, printMilliseconds) {
   fprintln("{}", format(ms));
   EXPECT_EQ("100.000.000ns", format(ms));
 }
+
