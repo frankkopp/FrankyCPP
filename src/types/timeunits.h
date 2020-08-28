@@ -27,41 +27,127 @@
 #define FRANKYCPP_TIMEUNITS_H
 
 #include <chrono>
+#include <iomanip>
+#include <sstream>
 
-using namespace std::chrono_literals ;
-using namespace std::chrono ;
+using namespace std::chrono_literals;
+using namespace std::chrono;
 
 typedef time_point<std::chrono::high_resolution_clock> TimePoint;
-typedef milliseconds MilliSec;
-typedef nanoseconds NanoSec;
 
-
-inline std::string str(MilliSec s) {
-  return fmt::format(deLocale, "{:.3f} s", static_cast<double>(s.count())/1e3);
+// returns a string representation of the milliseconds as a fraction of a seconds
+// with a DE locale
+//  Examples:
+//  5,021 s
+inline std::string str(milliseconds s) {
+  return fmt::format(deLocale, "{:.3f} s", static_cast<double>(s.count()) / 1e3);
 }
 
-inline std::string str(NanoSec s) {
-  return fmt::format(deLocale, "{:.9f} s", static_cast<double>(s.count())/1e9);
+// returns a string representation of the nanoseconds as a fraction of a seconds
+// with a DE locale
+//  Examples:
+//  5,021456234 s
+inline std::string str(nanoseconds s) {
+  return fmt::format(deLocale, "{:.9f} s", static_cast<double>(s.count()) / 1e9);
 }
 
-// returns the nodes per second from nano seconds
+// returns a string representation of the duration as a human readable string
+// with a DE locale.
+// This function is limited by the max of a long long (int64) integer as
+// chrono uses int64 for representing nanoseconds. Any input of a timeunnit
+// representing mor than 292 years will result in a an overflow and the result
+// will be undefined.
+// Examples:
+//  59y:325d:20h:33m:19s:008.800.999ns
+//  20d:13h:53m:19s:008.800.999ns
+//  33m:19s:008.800.999ns
+//  1s:000.000.999ns
+//  1.000.099ns
+//  10.000ns
+//  100ns
+template <class Rep, class Period>
+inline std::string format(std::chrono::duration<Rep, Period> timeunit) {
+
+  // protect against overflow when converting to nanoseconds
+  using Unit         = duration<double, typename nanoseconds::period>;
+  constexpr Unit min = nanoseconds::min();
+  constexpr Unit max = nanoseconds::max();
+  Unit sTimeUnit     = timeunit;
+  if (sTimeUnit < min || sTimeUnit > max)
+    throw std::overflow_error("formatting a duration failed due to overflow of int64 nanoseconds");
+
+  nanoseconds ns = duration_cast<nanoseconds>(timeunit);
+  std::ostringstream os;
+  bool foundNonZero  = false;
+  os.fill('0');
+  typedef duration<int, std::ratio<86400*365>> years;
+  const auto y = duration_cast<years>(ns);
+  if (y.count()) {
+    foundNonZero = true;
+    os << y.count() << "y:";
+    ns -= y;
+  }
+  typedef duration<int, std::ratio<86400>> days;
+  const auto d = duration_cast<days>(ns);
+  if (d.count()) {
+    foundNonZero = true;
+    os << d.count() << "d:";
+    ns -= d;
+  }
+  const auto h = duration_cast<hours>(ns);
+  if (h.count() || foundNonZero) {
+    foundNonZero = true;
+    os << h.count() << "h:";
+    ns -= h;
+  }
+  const auto m = duration_cast<minutes>(ns);
+  if (m.count() || foundNonZero) {
+    foundNonZero = true;
+    os << m.count() << "m:";
+    ns -= m;
+  }
+  const auto s = duration_cast<seconds>(ns);
+  if (s.count() || foundNonZero) {
+    foundNonZero = true;
+    os << s.count() << "s:";
+    ns -= s;
+  }
+  const auto ms = duration_cast<milliseconds>(ns);
+  if (ms.count() || foundNonZero) {
+    if (foundNonZero) {
+      os << std::setw(3);
+    }
+    os << ms.count() << ".";
+    ns -= ms;
+    foundNonZero = true;
+  }
+  const auto us = duration_cast<microseconds>(ns);
+  if (us.count() || foundNonZero) {
+    if (foundNonZero) {
+      os << std::setw(3);
+    }
+    os << us.count() << ".";
+    ns -= us;
+  }
+  os << std::setw(3) << ns.count() << "ns" ;
+  return os.str();
+}
+
+// returns the nodes per second from nano seconds given as uint64_t
 inline uint64_t nps(uint64_t nodes, uint64_t ns) {
   if (!ns) return nodes;
-  return nodes * 1'000'000'000 / ns;
+  return nodes * nanoPerSec / ns;
 }
 
 // returns the nodes per second from milli seconds
-inline uint64_t nps(uint64_t nodes, MilliSec ms) {
-  if (!ms.count()) return nodes;
-  return nodes * 1'000 / ms.count() ;
+template <typename T>
+inline uint64_t nps(uint64_t nodes, T timeunit) {
+  nanoseconds ns = duration_cast<nanoseconds>(timeunit);
+  if (!ns.count()) return nodes;
+  return (nodes * nanoPerSec) / ns.count();
 }
 
-// returns the nodes per second from nano seconds
-inline uint64_t nps(uint64_t nodes, NanoSec ns) {
-  return nps(nodes, ns.count());
-}
-
-inline NanoSec elapsedSince(const TimePoint tp) {
+inline nanoseconds elapsedSince(const TimePoint tp) {
   return high_resolution_clock::now() - tp;
 }
 
@@ -76,7 +162,7 @@ inline unsigned long long int nowFast() {
 }
 
 // convenience for std::chrono::high_resolution_clock::now()
-constexpr auto now = high_resolution_clock::now;
+constexpr auto currentTime = std::chrono::high_resolution_clock::now;
 
 #define SLEEP(t) std::this_thread::sleep_for(t)
 #define NANOSECONDS(t) std::chrono::duration_cast<std::chrono::nanoseconds>(t)

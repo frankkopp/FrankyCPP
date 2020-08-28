@@ -30,7 +30,7 @@
 #include "boost/program_options.hpp"
 namespace po = boost::program_options;
 
-inline po::variables_map programOptions;
+inline po::variables_map programOptions{};
 
 void Logger::init() {
 
@@ -108,26 +108,21 @@ void Logger::init() {
 //  MAIN_LOG->set_pattern(defaultPattern);
 //  MAIN_LOG->set_level(logLevel);
 //  MAIN_LOG->flush_on(flushLevel);
-//
-//  ENGINE_LOG->sinks().push_back(sharedFileSink);
-//  ENGINE_LOG->set_pattern(defaultPattern);
-//  ENGINE_LOG->set_level(logLevel);
-//  ENGINE_LOG->flush_on(flushLevel);
 
   SEARCH_LOG->sinks().push_back(sharedFileSink);
   SEARCH_LOG->set_pattern(defaultPattern);
   SEARCH_LOG->set_level(searchLogLevel);
   SEARCH_LOG->flush_on(flushLevel);
-  //
+  
   TSUITE_LOG->sinks().push_back(sharedFileSink);
   TSUITE_LOG->set_pattern(defaultPattern);
   TSUITE_LOG->set_level(logLevel);
   TSUITE_LOG->flush_on(flushLevel);
-  //
-//  EVAL_LOG->sinks().push_back(sharedFileSink);
-//  EVAL_LOG->set_pattern(defaultPattern);
-//  EVAL_LOG->set_level(logLevel);
-//  EVAL_LOG->flush_on(flushLevel);
+
+  EVAL_LOG->sinks().push_back(sharedFileSink);
+  EVAL_LOG->set_pattern(defaultPattern);
+  EVAL_LOG->set_level(logLevel);
+  EVAL_LOG->flush_on(flushLevel);
 
   TT_LOG->sinks().push_back(sharedFileSink);
   TT_LOG->set_pattern(defaultPattern);

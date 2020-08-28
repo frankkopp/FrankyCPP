@@ -27,6 +27,7 @@
 #define FRANKYCPP_SEARCHTREESIZETEST_H
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <engine/Search.h>
@@ -68,7 +69,7 @@ namespace {
 class SearchTreeSizeTest {
 
   int depth;
-  MilliSec movetime;
+  milliseconds movetime;
   std::vector<std::string> fens;
   std::vector<Result> results{};
 
@@ -77,13 +78,13 @@ class SearchTreeSizeTest {
   const uint64_t* ptrToSpecial2 = nullptr;
 
 public:
-  SearchTreeSizeTest(int depth, const MilliSec& movetime, const std::vector<std::string>& fens)
-      : depth(depth), movetime(movetime), fens(fens) {}
+  SearchTreeSizeTest(int depth, const milliseconds& movetime, std::vector<std::string> fenVector)
+      : depth(depth), movetime(movetime), fens(std::move(fenVector)) {}
 
   void start();
 
 private:
-  Result featureMeasurements(int depth, MilliSec movetime, const std::string& fen);
+  Result featureMeasurements(int d, milliseconds mt, const std::string& fen);
   SingleTest measureTreeSize(Search& search, const Position& position, SearchLimits searchLimits, const std::string& featureName) const;
 };
 

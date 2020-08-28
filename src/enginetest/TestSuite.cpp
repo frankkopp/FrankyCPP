@@ -23,20 +23,19 @@
  *
  */
 
+
+
+#include "TestSuite.h"
+#include "engine/SearchConfig.h"
+
+#include <fmt/chrono.h>
+#include <boost/algorithm/string.hpp>
+
 #include <fstream>
 #include <iostream>
 #include <regex>
-#include <fmt/chrono.h>
 
-#include "TestSuite.h"
-#include "common/Logging.h"
-#include <engine/Search.h>
-#include <engine/SearchConfig.h>
-
-#include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
-
-TestSuite::TestSuite(const MilliSec& time, Depth searchDepth, const std::string& filePath)
+TestSuite::TestSuite(const milliseconds& time, Depth searchDepth, const std::string& filePath)
     : searchTime(time), searchDepth(searchDepth), filePath(filePath) {
 
   LOG__INFO(Logger::get().TSUITE_LOG, "Preparing Test Suite {}", filePath);
@@ -56,7 +55,7 @@ void TestSuite::runTestSuite() {
     return;
   }
 
-  auto startTime = now();
+  auto startTime = currentTime();
 
   fprintln("Running Test Suite");
   fprintln("==================================================================");
@@ -95,7 +94,7 @@ void TestSuite::runTestSuite() {
   fprintln(" {:<4s} | {:<10s} | {:<8s} | {:<8s} | {:<18s} | {:s} | {:s}", " Nr.", "Result", "Move", "Value", "Expected Result", "Fen", "Id");
   fprintln("====================================================================================================================================");
   int i = 0;
-  for (auto t : testCases) {
+  for (const auto& t : testCases) {
     i++;
     if (t.type == DM) {
       fprintln(" {:<4d} | {:<10s} | {:<8s} | {:<8s} | {:s} {:<15d} | {:s} | {:s}",
@@ -116,13 +115,13 @@ void TestSuite::runTestSuite() {
   fprintln("Failed:     {:<3d} ({:d} %)", lastResult.failedCounter, 100 * lastResult.failedCounter / lastResult.counter);
   fprintln("Skipped:    {:<3d} ({:d} %)", lastResult.skippedCounter, 100 * lastResult.skippedCounter / lastResult.counter);
   fprintln("Not tested: {:<3d} ({:d} %)", lastResult.notTestedCounter, 100 * lastResult.notTestedCounter / lastResult.counter);
-  fprintln("Test time:  {:s}", str(elapsed));
+  fprintln("Test time:  {:s}", format(elapsed));
   fprintln("\nConfiguration:\n{:s}\n", UciOptions::getInstance()->str());
 }
 
 TestSuiteResult TestSuite::sumUpTests() const {
   TestSuiteResult tsr{};
-  for (auto t : testCases) {
+  for (const auto& t : testCases) {
     tsr.counter++;
     switch (t.result) {
       case NOT_TESTED:
@@ -150,14 +149,14 @@ void TestSuite::runAllTests(Search& search, SearchLimits& searchLimits) {
   for (auto& test : testCases) {
     fprintln("Test {} of {}\nTest: {} -- Target Result {}",
              ++i, testCases.size(), test.line, str(test.targetMoves));
-    auto startTime2 = now();
+    auto startTime2 = currentTime();
     runSingleTest(search, searchLimits, test);
     auto elapsedTime = elapsedSince(startTime2);
     test.nodes       = search.getLastSearchResult().nodes;
     test.time        = search.getLastSearchResult().time;
     test.nps         = nps(search.getLastSearchResult().nodes, search.getLastSearchResult().time);
-    fprintln("Test finished in {} ms with result {} ({}) - nps: {:n}\n\n",
-             str(elapsedTime), resultTypeStr[test.result], str(test.actualMove), test.nps);
+    fprintln("Test finished in {} with result {} ({}) - nps: {:L}\n\n",
+             format(elapsedTime), resultTypeStr[test.result], str(test.actualMove), test.nps);
   }
 }
 
@@ -199,7 +198,6 @@ void TestSuite::directMateTest(Search& search, SearchLimits& limits, Position& p
   }
   test.actualMove  = search.getLastSearchResult().bestMove;
   test.actualValue = search.getLastSearchResult().bestMoveValue;
-  return;
 }
 
 void TestSuite::bestMoveTest(Search& search, SearchLimits& limits, Position& position, Test& test) {
@@ -250,10 +248,9 @@ void TestSuite::avoidMoveTest(Search& search, SearchLimits& limits, Position& po
   test.actualMove  = search.getLastSearchResult().bestMove;
   test.actualValue = search.getLastSearchResult().bestMoveValue;
   test.result      = SUCCESS;
-  return;
 }
 
-void TestSuite::readTestCases(const std::string& filePathStr, std::vector<Test>& tests) const {
+void TestSuite::readTestCases(const std::string& filePathStr, std::vector<Test>& tests) {
   std::ifstream file(filePathStr);
   if (file.is_open()) {
     // read all lines from the file, parse the line into
@@ -273,7 +270,7 @@ void TestSuite::readTestCases(const std::string& filePathStr, std::vector<Test>&
   }
 }
 
-bool TestSuite::readOneEPD(std::string& line, Test& test) const {
+bool TestSuite::readOneEPD(std::string& line, Test& test) {
   LOG__DEBUG(Logger::get().TSUITE_LOG, "EPD: {}", line);
   // skip empty lines and comments
   cleanUpLine(line);
@@ -294,8 +291,13 @@ bool TestSuite::readOneEPD(std::string& line, Test& test) const {
   std::string id     = matcher.str(5).empty() ? "no ID" : matcher.str(5);
   LOG__DEBUG(Logger::get().TSUITE_LOG, "Fen: {}    Type: {}    Result: {}    ID: {}", fen, type, result, id);
   // get position
-  // TODO error handling
-  Position p{fen};
+  Position p;
+  try {
+    p = Position(fen);
+  } catch (std::invalid_argument& e) {
+    LOG__WARN(Logger::get().TSUITE_LOG, "Invalid fen {} could not create position from: {}", e.what(), line);
+    return false;
+  }
   // get test type
   TestType testType;
   if (type == "dm") {
@@ -352,16 +354,11 @@ bool TestSuite::readOneEPD(std::string& line, Test& test) const {
 }
 
 std::string& TestSuite::cleanUpLine(std::string& line) {
-  //  fprintln("{}", line);
-  std::regex whiteSpaceTrim(R"(^\s*(.*)\s*$)");
-  line = std::regex_replace(line, whiteSpaceTrim, "$1");
-  //  fprintln("{}", line);
+  line = trimFast(line);
   std::regex leadCommentTrim(R"(^\s*#.*$)");
   line = std::regex_replace(line, leadCommentTrim, "");
-  //  fprintln("{}", line);
   std::regex trailCommentTrim(R"(^(.*)#([^;]*)$)");
   line = std::regex_replace(line, trailCommentTrim, "$1;");
-  //  fprintln("{}", line);
   return line;
 }
 

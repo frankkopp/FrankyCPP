@@ -30,6 +30,7 @@
 #include "init.h"
 #include "types/types.h"
 
+#include <engine/EvalConfig.h>
 #include <engine/Evaluator.h>
 #include <gtest/gtest.h>
 using testing::Eq;
@@ -41,6 +42,7 @@ public:
     init::init();
     NEWLINE;
     Logger::get().TEST_LOG->set_level(spdlog::level::debug);
+    Logger::get().EVAL_LOG->set_level(spdlog::level::debug);
   }
 
 protected:
@@ -49,6 +51,8 @@ protected:
 };
 
 TEST_F(EvaluatorTest, testFens) {
+  EvalConfig::USE_PAWN_EVAL        = true;
+  EvalConfig::USE_PAWN_TT          = false;
   std::vector<std::string> allFens = Test_Fens::getFENs();
   Evaluator e{};
   for (auto f : allFens) {

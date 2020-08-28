@@ -26,10 +26,10 @@
 #ifndef FRANKYCPP_BITBOARD_H
 #define FRANKYCPP_BITBOARD_H
 
-#include <cstdint>
-#include <iostream>
 #include <cassert>
+#include <cstdint>
 #include <immintrin.h>
+#include <iostream>
 
 #include "castlingrights.h"
 #include "direction.h"
@@ -37,7 +37,7 @@
 #include "piecetype.h"
 #include "square.h"
 
-#if defined(HAS_PEXT) // to be set as compiler option
+#if defined(HAS_PEXT)// to be set as compiler option
 constexpr bool HasPext = true;
 #else
 constexpr bool HasPext = false;
@@ -63,13 +63,13 @@ constexpr Bitboard FileGBB = FileABB << 6;
 constexpr Bitboard FileHBB = FileABB << 7;
 
 constexpr Bitboard Rank1BB = 0xFF;
-constexpr Bitboard Rank2BB = Rank1BB << (8 * 1);
-constexpr Bitboard Rank3BB = Rank1BB << (8 * 2);
-constexpr Bitboard Rank4BB = Rank1BB << (8 * 3);
-constexpr Bitboard Rank5BB = Rank1BB << (8 * 4);
-constexpr Bitboard Rank6BB = Rank1BB << (8 * 5);
-constexpr Bitboard Rank7BB = Rank1BB << (8 * 6);
-constexpr Bitboard Rank8BB = Rank1BB << (8 * 7);
+constexpr Bitboard Rank2BB = Rank1BB << 8;
+constexpr Bitboard Rank3BB = Rank1BB << 16;//(8 * 2)
+constexpr Bitboard Rank4BB = Rank1BB << 24;//(8 * 3)
+constexpr Bitboard Rank5BB = Rank1BB << 32;//(8 * 4)
+constexpr Bitboard Rank6BB = Rank1BB << 40;//(8 * 5)
+constexpr Bitboard Rank7BB = Rank1BB << 48;//(8 * 6)
+constexpr Bitboard Rank8BB = Rank1BB << 56;//(8 * 7)
 
 constexpr Bitboard DiagUpA1 = 0b1000000001000000001000000001000000001000000001000000001000000001;
 constexpr Bitboard DiagUpB1 = (DiagUpA1 << 1) & ~FileABB;// shift EAST
@@ -110,27 +110,50 @@ constexpr Bitboard CENTER_SQUARES = CENTER_FILES & CENTER_RANKS;
 // pre computed arrays for various bitboards
 // pre-computed in types::init()
 namespace Bitboards {
+  // holds the corresponding bitboards for each square
   inline Bitboard sqBb[SQ_LENGTH];
+  // holds the corresponding bitboards for each file
   inline Bitboard fileBb[FILE_LENGTH];
+  // holds the corresponding bitboards for each rank
   inline Bitboard rankBb[RANK_LENGTH];
+  // holds the corresponding file bitboards for each square
   inline Bitboard sqToFileBb[SQ_LENGTH];
+  // holds the corresponding rank bitboards for each square
   inline Bitboard sqToRankBb[SQ_LENGTH];
+  // holds the corresponding upwards diagonals bitboards for each square
   inline Bitboard squareDiagUpBb[SQ_LENGTH];
+  // holds the corresponding downwards diagonals bitboards for each square
   inline Bitboard squareDiagDownBb[SQ_LENGTH];
+  // holds bitboards for the attacked squares if a pawn of the given color would be on the given square
   inline Bitboard pawnAttacks[COLOR_LENGTH][SQ_LENGTH];
+  // holds bitboards for the attacked squares for Kings and Knights on the given square
   inline Bitboard nonSliderAttacks[PT_LENGTH][SQ_LENGTH];
+  // holds bitboards for all the files to the left of the given square
   inline Bitboard filesWestMask[SQ_LENGTH];
+  // holds bitboards for all the files to the right of the given square
   inline Bitboard filesEastMask[SQ_LENGTH];
+  // holds bitboards for all the ranks above the given square
   inline Bitboard ranksNorthMask[SQ_LENGTH];
+  // holds bitboards for all the ranks below the given square
   inline Bitboard ranksSouthMask[SQ_LENGTH];
+  // holds bitboards for the file to the left of the given square
   inline Bitboard fileWestMask[SQ_LENGTH];
+  // holds bitboards for the file to the right of the given square
   inline Bitboard fileEastMask[SQ_LENGTH];
+  // holds bitboards for the files to the left and right of the given square
   inline Bitboard neighbourFilesMask[SQ_LENGTH];
+  // holds bitboards for the squares in the given orientation from the given square (excl. given square)
   inline Bitboard rays[OR_LENGTH][SQ_LENGTH];
+  // holds bitboards for the squares between the two given squares or BbZero if the squares are not
+  // on a straight line to each other or if the are direct neighbours
   inline Bitboard intermediateBb[SQ_LENGTH][SQ_LENGTH];
+  // holds bitboards for the squares in front of the given pawn on the same or neighbouring files
   inline Bitboard passedPawnMask[COLOR_LENGTH][SQ_LENGTH];
+  // holds bitboards for squares involved in the corresponding castle move
   inline Bitboard kingSideCastleMask[COLOR_LENGTH];
+  // holds bitboards for squares involved in the corresponding castle move
   inline Bitboard queenSideCastleMask[COLOR_LENGTH];
+  // holds bitboards for all squares of the given color
   inline Bitboard colorBb[COLOR_LENGTH];
 }// namespace Bitboards
 
@@ -170,8 +193,16 @@ inline Bitboard shiftBb(Direction d, Bitboard b) {
   return b;
 }
 
+// if C++20 feature library <bit> is available, use the new bit operations
+#if __cpp_lib_bitops >= 201907L
+#include <bit>
+#endif
+
 // popcount() counts the number of non-zero bits in a bitboard
 inline int popcount(Bitboard b) {
+#if __cpp_lib_bitops >= 201907L
+  return std::popcount(b);
+#else
 #if defined(__GNUC__)// GCC, Clang, ICC
   return __builtin_popcountll(b);
 #elif defined(_MSC_VER)
@@ -189,11 +220,12 @@ inline int popcount(Bitboard b) {
   // adding all 16-bit population counters referenced in the 64-bit union
   return PopCnt16[v.u[0]] + PopCnt16[v.u[1]] + PopCnt16[v.u[2]] + PopCnt16[v.u[3]];
 #endif
+#endif// _cpp_bit
 }
 
 // Used when no build-in popcount is available for compiler.
 // @return popcount16() counts the non-zero bits using SWAR-Popcount algorithm
-inline unsigned popcount16(unsigned u) {
+[[maybe_unused]] inline unsigned popcount16(unsigned u) {
   u -= (u >> 1U) & 0x5555U;
   u = ((u >> 2U) & 0x3333U) + (u & 0x3333U);
   u = ((u >> 4U) + u) & 0x0F0FU;
@@ -204,6 +236,9 @@ inline unsigned popcount16(unsigned u) {
 // bitboard
 inline Square lsb(Bitboard b) {
   if (!b) return SQ_NONE;
+#if __cpp_lib_bitops >= 201907L
+  return static_cast<Square>(std::countr_zero(b));
+#else
 #ifdef __GNUC__// GCC, Clang, ICC
   return static_cast<Square>(__builtin_ctzll(b));
 #elif defined(_MSC_VER)
@@ -217,12 +252,16 @@ inline Square lsb(Bitboard b) {
 #else// Compiler is not GCC
 #error "Compiler not yet supported."
 #endif
+#endif
 }
 
 // lsb() and msb() return the least/most significant bit in a non-zero
 // bitboard
 inline Square msb(Bitboard b) {
   if (!b) return SQ_NONE;
+#if __cpp_lib_bitops >= 201907L
+  return static_cast<Square>(63 - std::countl_zero(b));
+#else
 #if defined(__GNUC__)// GCC, Clang, ICC
   return static_cast<Square>(63 - __builtin_clzll(b));
 #elif defined(_MSC_VER)
@@ -236,10 +275,12 @@ inline Square msb(Bitboard b) {
 #else// Compiler is not GCC
 #error "Compiler not yet supported."
 #endif
+#endif
 }
 
 // pop_lsb() finds and clears the least significant bit in a non-zero
-// bitboard
+// bitboard. Returns the cleared bit as a Square or SQ_NONE if
+// bitboard was zero. The given Bitboard is changed in-place.
 inline Square popLSB(Bitboard& b) {
   if (!b) return SQ_NONE;
   const Square s = lsb(b);
@@ -322,8 +363,8 @@ struct Magic {
   unsigned shift;
 
   // Compute the attack's index using the 'magic bitboards' approach
-  inline unsigned index(Bitboard occupied) const {
-    if (HasPext) {
+  [[nodiscard]] inline unsigned index(Bitboard occupied) const {
+    if (HasPext) { // based on compiler option HAS_PEXT
       return unsigned(_pext_u64(occupied, mask));
     }
     return unsigned(((occupied & mask) * magic) >> shift);

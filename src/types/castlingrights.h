@@ -41,7 +41,7 @@
 //  BLACK_CASTLING = BLACK_OO | BLACK_OOO,           // 1100
 //  ANY_CASTLING   = WHITE_CASTLING | BLACK_CASTLING,// 1111
 //  CR_LENGTH      = 16
-enum CastlingRights : unsigned int {
+enum CastlingRights : uint_fast8_t {
   NO_CASTLING = 0,                                 // 0000
   WHITE_OO,                                        // 0001
   WHITE_OOO      = WHITE_OO << 1,                  // 0010
@@ -68,22 +68,22 @@ namespace Castling {
 
 // remove castling rights
 constexpr CastlingRights operator-(CastlingRights cr1, CastlingRights cr2) {
-  return CastlingRights(cr1 & ~cr2);
+  return static_cast<CastlingRights>(cr1 & ~cr2);
 }
 
 // remove castling rights
 constexpr CastlingRights& operator-=(CastlingRights& cr1, CastlingRights cr2) {
-  return cr1 = CastlingRights(cr1 & ~cr2);
+  return cr1 = static_cast<CastlingRights>(cr1 & ~cr2);
 }
 
 // add castling rights
 constexpr CastlingRights operator+(CastlingRights cr1, CastlingRights cr2) {
-  return CastlingRights(cr1 | cr2);
+  return static_cast<CastlingRights>(cr1 | cr2);
 }
 
 // add castling rights
 constexpr CastlingRights& operator+=(CastlingRights& cr1, CastlingRights cr2) {
-  return cr1 = CastlingRights(cr1 | cr2);
+  return cr1 = static_cast<CastlingRights>(cr1 | cr2);
 }
 
 // Has castling right
@@ -96,7 +96,7 @@ inline std::string str(CastlingRights cr) {
   if (cr == NO_CASTLING) {
     return "-";
   }
-  std::string cr_str = "";
+  std::string cr_str;
   if (cr == WHITE_OO) cr_str += "K";
   if (cr == WHITE_OOO) cr_str += "Q";
   if (cr == BLACK_OO) cr_str += "k";

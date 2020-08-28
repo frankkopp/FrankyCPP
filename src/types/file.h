@@ -26,8 +26,8 @@
 #ifndef FRANKYCPP_FILE_H
 #define FRANKYCPP_FILE_H
 
-#include <ostream>
 #include "macros.h"
+#include <ostream>
 
 // File represents a chess board file a-h
 //  FILE_A      // 0
@@ -40,7 +40,7 @@
 //	FILE_H      // 7
 //	FILE_NONE   // 8
 //  FILE_LENGTH // 8
-enum File : int {
+enum File : uint_fast8_t {
   FILE_A,
   FILE_B,
   FILE_C,
@@ -55,7 +55,7 @@ enum File : int {
 
 // checks if file is a value of 0-7
 constexpr bool validFile(File f) {
-  return f >= 0 && f < 8;
+  return f < 8;
 }
 
 // creates a file from a char
@@ -66,13 +66,13 @@ constexpr File makeFile(char fileLabel) {
 
 // returns the distance between two files in king moves
 inline int distance(File f1, File f2) {
-  return abs(f2 - f1);
+  return std::abs(static_cast<int>(f2) - static_cast<int>(f1));
 }
 
 // returns a char representing the square (e.g. a1 or h8)
 constexpr char str(File f) {
-  if (f < 0 || f >= 8) return '-';
-  return 'a' + char(f);
+  if (f >= 8) return '-';
+  return static_cast<char>('a' + char(f));
 }
 
 inline std::ostream& operator<<(std::ostream& os, const File f) {
@@ -80,6 +80,6 @@ inline std::ostream& operator<<(std::ostream& os, const File f) {
   return os;
 }
 
-ENABLE_INCR_OPERATORS_ON (File)
+ENABLE_INCR_OPERATORS_ON(File)
 
 #endif//FRANKYCPP_FILE_H
