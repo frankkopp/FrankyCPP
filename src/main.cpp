@@ -50,14 +50,8 @@ int main(int argc, char* argv[]) {
     .append(std::to_string(FrankyCPP_VERSION_MINOR));
   std::cout << appName << std::endl;                                   
 
-  std::string config_file;
-  std::string book_file;
-  std::string book_type;
-  std::string testsuite_file;
-  int testsuite_time;
-  int testsuite_depth;
-  int perftStart;
-  int perftEnd;
+  std::string config_file, book_file, book_type, testsuite_file;
+  int testsuite_time, testsuite_depth, perftStart, perftEnd;
 
   // Command line options
   try {
