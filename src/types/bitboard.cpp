@@ -23,10 +23,10 @@
  *
  */
 
+#include "bitboard.h"
+
 #include <sstream>
 #include <bitset>
-
-#include "bitboard.h"
 
 // //////////////////////////////////
 // Bitboard functions

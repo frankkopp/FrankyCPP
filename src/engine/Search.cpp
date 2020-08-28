@@ -321,7 +321,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
   // hadBookMove move will be true at his point if we ever had
   // a book move.
   if (hadBookMove && searchLimits.timeControl && searchLimits.moveTime.count() == 0) {
-    LOG__WARN(Logger::get().SEARCH_LOG, "First non-book move to search. Adding extra time: Before: {}, after: {}",
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "First non-book move to search. Adding extra time: Before: {}, after: {}",
               str(timeLimit + extraTime), str(2 * timeLimit + extraTime));
     addExtraTime(2.0);
     hadBookMove = false;
@@ -1420,7 +1420,7 @@ void Search::initialize() {
 
   // init transposition table
   if (SearchConfig::USE_TT) {
-    if (tt->getMaxNumberOfEntries() == 0) {// only initialize once
+    if (tt->getMaxNumberOfEntries() == 0) { // only initialize once
       tt = std::make_unique<TT>(SearchConfig::TT_SIZE_MB);
     }
   }

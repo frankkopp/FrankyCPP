@@ -152,7 +152,7 @@ void Evaluator::pawnEval(Position& p, Score& s) {
     Bitboard phalanx   = BbZero;// both pawns are counted
     Bitboard supported = BbZero;
 
-    // LOOP through all pawns of this color and type
+    // LOOP through all pawns of this color 
     Bitboard pawns = myPawns;
     while (pawns) {
       const Square sq           = popLSB(pawns);
@@ -227,10 +227,10 @@ void Evaluator::pawnEval(Position& p, Score& s) {
   //  LOG__DEBUG(Logger::get().EVAL_LOG, "Raw pawn eval: midvalue = {} and endvalue = {}", tmpScore.midgame, tmpScore.endgame);
 }
 
-void Evaluator::pieceEval(Position& p, Score& s, Color color, PieceType pieceType) {
+void Evaluator::pieceEval(const Position& p, Score& s, Color us, PieceType pieceType) {
 
   // get pieces or return if none of given type or color is found
-  Bitboard pieceBb = p.getPieceBb(color, pieceType);
+  Bitboard pieceBb = p.getPieceBb(us, pieceType);
   if (!pieceBb) {
     return;
   }
@@ -243,7 +243,7 @@ void Evaluator::pieceEval(Position& p, Score& s, Color color, PieceType pieceTyp
   switch (pieceType) {
     case KNIGHT:
       while (pieceBb) {
-        knightEval(p, s, color, ~color, popLSB(pieceBb));
+        knightEval(p, s, us, ~us, popLSB(pieceBb));
       }
       break;
     case BISHOP:
@@ -253,17 +253,17 @@ void Evaluator::pieceEval(Position& p, Score& s, Color color, PieceType pieceTyp
         s.endgame += EvalConfig::BISHOP_PAIR_END_BONUS;
       }
       while (pieceBb) {
-        bishopEval(p, s, color, ~color, popLSB(pieceBb));
+        bishopEval(p, s, us, ~us, popLSB(pieceBb));
       }
       break;
     case ROOK:
       while (pieceBb) {
-        rookEval(p, s, color, ~color, popLSB(pieceBb));
+        rookEval(p, s, us, ~us, popLSB(pieceBb));
       }
       break;
     case QUEEN:
       while (pieceBb) {
-        queenEval(p, s, color, ~color, popLSB(pieceBb));
+        queenEval(p, s, us, ~us, popLSB(pieceBb));
       }
       break;
     default:
@@ -287,6 +287,6 @@ void Evaluator::queenEval(const Position& p, Score& s, Color us, Color them, Squ
   // TODO: Queen eval
 }
 
-void Evaluator::kingEval(Position& p, Score s, Color c) {
+void Evaluator::kingEval(const Position& p, Score& s, Color us) {
   // TODO: King eval
 }
