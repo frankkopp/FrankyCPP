@@ -26,13 +26,11 @@
 #ifndef FRANKYCPP_UCIOPTIONS_H
 #define FRANKYCPP_UCIOPTIONS_H
 
+#include <functional>
 #include <ostream>
 #include <sstream>
 #include <utility>
 #include <vector>
-#include <functional>
-
-#include "common/misc.h"
 
 class UciHandler;
 
@@ -62,7 +60,7 @@ struct UciOption {
   std::string currentValue;
   std::function<void(UciHandler*)> pHandler;
 
-    explicit UciOption(const char* name, std::function<void(UciHandler*)> handler)
+  explicit UciOption(const char* name, std::function<void(UciHandler*)> handler)
       : nameID(name), type(BUTTON), defaultValue(boolStr(false)), pHandler(std::move(handler)) {}
 
   UciOption(const char* name, bool value, std::function<void(UciHandler*)> handler)
@@ -73,7 +71,7 @@ struct UciOption {
         maxValue(std::to_string(max)), currentValue(std::to_string(def)), pHandler(std::move(handler)) {}
 
   UciOption(const char* name, const char* str, std::function<void(UciHandler*)> handler)
-      : nameID(name), type(STRING), defaultValue(str), currentValue(str), pHandler(std::move(handler)){}
+      : nameID(name), type(STRING), defaultValue(str), currentValue(str), pHandler(std::move(handler)) {}
 
   UciOption(const char* name, const char* val, const char* def, std::function<void(UciHandler*)> handler)
       : nameID(name), type(STRING), defaultValue(val), currentValue(def), pHandler(std::move(handler)) {}
@@ -117,7 +115,7 @@ public:
   }
 
   // returns a pointer to the uci option or nullptr if option is not found
-  const UciOption* getOption(const std::string& name) const;
+  [[nodiscard]] const UciOption* getOption(const std::string& name) const;
 
   // finds and stores the value in the given options. Returns true if
   // the options was found and the value was set. It calls the option's
@@ -127,7 +125,7 @@ public:
 
   // String for uciOption will return a representation of the uci option as required by
   // the UCI protocol during the initialization phase of the UCI protocol
-  std::string str() const;
+  [[nodiscard]] std::string str() const;
 
   // helper for converting a string option to an int
   static int getInt(const std::string& value);

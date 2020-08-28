@@ -165,8 +165,8 @@ public:
 
   // to signal the search that pondering was successful
   void ponderhit();
-  // return current root pv list
 
+  // return current root pv list
   const MoveList& getPV() const { return pv[0]; };// TODO implement
 
   // clears the hash table

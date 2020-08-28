@@ -26,16 +26,16 @@
 #ifndef FRANKYCPP_BITBOARD_H
 #define FRANKYCPP_BITBOARD_H
 
-#include <cassert>
-#include <cstdint>
-#include <immintrin.h>
-#include <iostream>
-
 #include "castlingrights.h"
 #include "direction.h"
 #include "orientation.h"
 #include "piecetype.h"
 #include "square.h"
+
+#include <cassert>
+#include <cstdint>
+#include <immintrin.h>
+#include <iostream> 
 
 #if defined(HAS_PEXT)// to be set as compiler option
 constexpr bool HasPext = true;
@@ -378,6 +378,7 @@ namespace Bitboards {
   inline Magic bishopMagics[SQ_LENGTH];
 }// namespace Bitboards
 
+/// from Stockfish:
 /// xorshift64star Pseudo-Random Number Generator
 /// This class is based on original code written and dedicated
 /// to the public domain by Sebastiano Vigna (2014).

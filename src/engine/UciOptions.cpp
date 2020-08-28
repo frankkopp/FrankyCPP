@@ -28,8 +28,7 @@
 #include "Search.h"
 #include "SearchConfig.h"
 #include "UciHandler.h"
-
-#include <boost/algorithm/string/trim.hpp>
+#include "common/stringutil.h"
 
 void UciOptions::initOptions() {
 
@@ -158,11 +157,10 @@ void UciOptions::initOptions() {
 
 const UciOption* UciOptions::getOption(const std::string& name) const {
   // find option entry
-  const auto optionIterator =
-    std::find_if(optionVector.begin(), optionVector.end(),
-                 [&](UciOption p) {
-                   return name == p.nameID;
-                 });
+  const auto optionIterator = std::find_if(optionVector.begin(), optionVector.end(),
+                                           [&](const UciOption& p) {
+                                             return name == p.nameID;
+                                           });
   if (optionIterator != optionVector.end()) {
     return &*optionIterator;
   }
@@ -184,7 +182,7 @@ std::string UciOptions::str() const {
   for (const auto& o : optionVector) {
     str += o.str() + "\n";
   }
-  boost::trim(str);// remove last newline
+  str = trimFast(str);// remove last newline
   return str;
 }
 
@@ -212,8 +210,7 @@ std::string UciOption::str() const {
 
 int UciOptions::getInt(const std::string& value) {
   try {
-    int intValue = 0;
-    intValue = stoi(value);
+    int intValue = stoi(value);
     return intValue;
   } catch (...) {
     return 0;
