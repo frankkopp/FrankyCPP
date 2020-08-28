@@ -26,22 +26,21 @@
 #ifndef FRANKYCPP_SEARCH_H
 #define FRANKYCPP_SEARCH_H
 
-
-#include <thread>
-
 #include "SearchLimits.h"
 #include "SearchResult.h"
 #include "SearchStats.h"
 #include "TT.h"
+#include "chesscore/History.h"
 #include "chesscore/MoveGenerator.h"
 #include "chesscore/Position.h"
 #include "common/Semaphore.h"
 #include "engine/UciHandler.h"
 #include "openingbook/OpeningBook.h"
 #include "types/types.h"
-#include "chesscore/History.h"
 
 #include "gtest/gtest_prod.h"
+
+#include <thread>
 
 // forward declaration
 class UciHandler;
@@ -79,8 +78,8 @@ class Search {
   // time management for the search
   TimePoint startTime{};    // when startSearch has been called
   TimePoint startSearchTime;// actual start time of search - only different from startTime after ponderhit()
-  MilliSec timeLimit{};
-  MilliSec extraTime{};
+  milliseconds timeLimit{};
+  milliseconds extraTime{};
   std::thread timerThread{};
 
   // Control UCI updates to avoid flooding
@@ -149,7 +148,7 @@ public:
   void isReady();
 
   // starts the search in a separate thread with the given search limits
-  void startSearch(const Position p, SearchLimits sl);
+  void startSearch(Position p, SearchLimits sl);
 
   // Stops a running search gracefully - e.g. returns the best move found so far
   void stopSearch();
@@ -250,11 +249,11 @@ private:
   bool goodCapture(Position& position, Move move);
 
   // storeTT stores a position into the TT
-  void storeTt(Position& position, Depth depth, Depth ply, Move move, Value value, ValueType valuetype, Value eval, bool mateThreat);
+  void storeTt(Position& p, Depth depth, Depth ply, Move move, Value value, ValueType valueType, Value eval);
 
   // savePV adds the given move as first move to a dest move list and the appends
   // all src moves to dest. Dest will be cleared before the the append.
-  void savePV(Move move, MoveList& src, MoveList& dest);
+  static void savePV(Move move, MoveList& src, MoveList& dest);
 
   // correct the value for mate distance when storing to TT
   static Value valueToTt(Value value, Depth ply);
@@ -278,7 +277,7 @@ private:
 
   // setupTimeControl sets up time control according to the given search limits
   // and returns a limit on the duration for the current search.
-  static MilliSec setupTimeControl(Position& position, SearchLimits& limits);
+  static milliseconds setupTimeControl(Position& position, SearchLimits& limits);
   FRIEND_TEST(SearchTest, setupTime);
 
   // addExtraTime certain situations might call for a extension or reduction
@@ -317,7 +316,7 @@ private:
   void sendSearchUpdateToUci();
 
   // send UCI information after aspiration search.
-  void sendAspirationResearchInfo(const std::string boundString);
+  void sendAspirationResearchInfo(const std::string& boundString);
 };
 
 #endif//FRANKYCPP_SEARCH_H

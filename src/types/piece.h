@@ -47,7 +47,7 @@
 //  BlackRook  = 0b01101
 //  BlackQueen = 0b01110
 //  PieceLength= 0b10000
-enum Piece : int { // @formatter:off
+enum Piece : int_fast8_t { // @formatter:off
   PIECE_NONE,
   WHITE_KING = 1, WHITE_PAWN, WHITE_KNIGHT, WHITE_BISHOP, WHITE_ROOK, WHITE_QUEEN,
   BLACK_KING = 9, BLACK_PAWN, BLACK_KNIGHT, BLACK_BISHOP, BLACK_ROOK, BLACK_QUEEN,
@@ -56,14 +56,14 @@ enum Piece : int { // @formatter:off
 
 // checks if piece type is a value of 0 - 6
 constexpr bool validPiece(Piece p) {
-  return p >= 0 && p < 15 && p != 7 && p != 8;
+  return p < 15 && p != 7 && p != 8;
 }
 
 // creates the piece given by color and piece type
 constexpr Piece makePiece(Color c, PieceType pt) { return Piece((c << 3) + pt); }
 
 // creates the piece based on the FEN char
-constexpr Piece makePiece(char p) {
+constexpr Piece makePiece(unsigned char p) {
   switch (p) { // @formatter:off
     case 'K': return WHITE_KING;
     case 'P': return WHITE_PAWN;

@@ -23,47 +23,11 @@
  *
  */
 
-#include "init.h"
-#include "types/types.h"
-#include "common/Logging.h"
-#include "openingbook/PGN_Reader.h"
+#include <fmt/core.h>
 
 #include <gtest/gtest.h>
 using testing::Eq;
 
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/regex.hpp>
-
-using namespace boost;
-using namespace std::string_literals;
-
-class PGN_ReaderTest : public ::testing::Test {
-public:
-  static void SetUpTestSuite() {
-    NEWLINE;
-    init::init();
-    NEWLINE;
-    Logger::get().TEST_LOG->set_level(spdlog::level::debug);
-    Logger::get().BOOK_LOG->set_level(spdlog::level::debug);
-  }
-
-protected:
-  void SetUp() override {}
-  void TearDown() override {}
-};
-
-TEST_F(PGN_ReaderTest, regex) {
-  std::string input{};
-
-  const boost::regex tagPairs(R"(\[\w+ +".*"\])");
-  input ="[Event \"?\"]";
-  EXPECT_TRUE(find_regex(input, tagPairs));
-  input = "[Event \"?\"";
-  EXPECT_FALSE(find_regex(input, tagPairs));
-  input = "Event \"?\"]";
-  EXPECT_FALSE(find_regex(input, tagPairs));
-
-  input ="[Site \"01, URS-ch38 Riga ;URS-ch\"]";
-  EXPECT_TRUE(find_regex(input, tagPairs));
-
+TEST(Playground, format) {
+  fmt::print("{:L}", 123456789);
 }

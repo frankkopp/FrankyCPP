@@ -40,7 +40,7 @@
 //  RANK_8,
 //  RANK_NONE,
 //  RANK_LENGTH = 8
-enum Rank : int {
+enum Rank : uint_fast8_t  {
   RANK_1,
   RANK_2,
   RANK_3,
@@ -55,7 +55,7 @@ enum Rank : int {
 
 // checks if rank is a value of 0-7
 constexpr bool validRank(Rank r) {
-  return !(r < 0 || r >= 8);
+  return r < 8;
 }
 
 // creates a rank from a char
@@ -76,13 +76,13 @@ constexpr Rank pawnDoubleRank(Color c) {
 
 // returns the distance between two ranks in king moves
 inline int distance(Rank r1, Rank r2) {
-  return abs(r2 - r1);
+  return abs(static_cast<int>(r2) - static_cast<int>(r1));
 }
 
 // returns a char representing the rank (e.g. 1 or 8)
 constexpr char str(Rank r) {
-  if (r < 0 || r >= 8) return '-';
-  return '1' + char(r);
+  if (!validRank(r)) return '-';
+  return static_cast<char>('1' + char(r));
 }
 
 inline std::ostream& operator<< (std::ostream& os, const Rank r) {

@@ -3,10 +3,10 @@ message("FrankyCPP Main")
 message("CMAKE " ${CMAKE_VERSION} " " ${CMAKE_COMMAND})
 message("====================================================================")
 
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.16)
 
 # Project name and version
-project(FrankyCPP VERSION 0.2)
+project(FrankyCPP VERSION 0.3)
 message("FrankyCPP v" ${PROJECT_VERSION_MAJOR} "." ${PROJECT_VERSION_MINOR})
 
 # updates template file and replaces placeholder variables
@@ -15,8 +15,6 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # C++ settings
 set(CMAKE_CXX_STANDARD 17)
-
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Unit testing enabled
 enable_testing()
@@ -27,57 +25,103 @@ message("Recognized platform is " ${CMAKE_SYSTEM_NAME} " " ${CMAKE_SYSTEM_VERSIO
 # Compiler Settings
 message("Compiler is " ${CMAKE_CXX_COMPILER_ID} " " ${CMAKE_CXX_COMPILER_VERSION} " " ${CMAKE_CXX_COMPILER})
 
+# Apple OS X compiler
 if (CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
     message("Compiler Settings: AppleClang")
     set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra -mpopcnt -mbmi2")
     set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fprofile-instr-generate -fcoverage-mapping -Wpedantic -Wshadow -Wno-conversion -Wunreachable-code -Wuninitialized  -Wold-style-cast -Wunused-variable -Wfloat-equal -Wno-gnu-zero-variadic-macro-arguments")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "11")
-        #        message("Using HAS_EXECUTION_LIB")
-        #        add_compile_definitions(HAS_EXECUTION_LIB)
-        message("Using HAS_PEXT")
-        add_compile_definitions(HAS_PEXT)
+
+    # std::execution lib for parallel std operations. Not available on all platforms
+    # message("Using HAS_EXECUTION_LIB")
+    # add_compile_definitions(HAS_EXECUTION_LIB)
+    # Availability of PEXT compiler intrinsic. Not available on all platforms
+    message("Using HAS_PEXT")
+    add_compile_definitions(HAS_PEXT)
+
+ # GNU compiler for WIndows WSL and Travis
+elseif (CMAKE_COMPILER_IS_GNUCXX)
+    message("Compiler Settings: GNU")
+
+    set(CMAKE_CXX_FLAGS "-std=c++17 -m64 -msse -msse3 -msse4 -mpopcnt -mbmi2 -Wall -Wextra -Wpedantic -Wno-error=pedantic -Wno-unknown-pragmas -Wno-variadic-macros -Wno-sign-compare -Wno-subobject-linkage")
+    set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 --coverage -Wno-unused-parameter -Wno-unused-variable")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+    # additional: -Wshadow  -Wno-unknown-pragmas -Weffc++ -Wimplicit-fallthrough -Wswitch -Wpointer-arith -Wcast-qual -Wconversion -Wno-sign-conversion -Wno-error=padded -Wno-error=inline")
+
+    # link time optimization on Travis does not work (yet)
+    # # Test for -flto support
+    # include(CheckCXXCompilerFlag)
+    # include(CheckCCompilerFlag)
+    # CHECK_CXX_COMPILER_FLAG(-flto CXX_SUPPORTS_FLTO)
+    # CHECK_C_COMPILER_FLAG(-flto C_SUPPORTS_FLTO)
+    # if(CXX_SUPPORTS_FLTO AND C_SUPPORTS_FLTO)
+    #     message(STATUS "Compiling with FLTO support")
+    #     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto")
+    #     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
+    #     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -flto")
+    #     set(CMAKE_AR "gcc-ar")
+    #     set(CMAKE_C_ARCHIVE_CREATE "<CMAKE_AR> qcs <LINK_FLAGS> ")
+    #     set(CMAKE_C_ARCHIVE_FINISH true)
+    #     set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> qcs <LINK_FLAGS> ")
+    #     set(CMAKE_CXX_ARCHIVE_FINISH true)
+    # endif()
+
+    # Test if we are on a Travis environment
+    if(DEFINED ENV{TRAVIS})
+        message("TRAVIS BUILD")
+    else()
+        message("NONE TRAVIS BUILD")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
+    endif()
+
+    # Availability of PEXT compiler intrinsic. Not available on all platforms
+    message("Using HAS_PEXT")
+    add_compile_definitions(HAS_PEXT)
+
+    # std::execution lib for parallel std operations. Only on gcc-10 and above
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "10")
+        message("GCC >= 10.x")
+        message("Using HAS_EXECUTION_LIB")
+        add_compile_definitions(HAS_EXECUTION_LIB)
+    else ()
+        message("GCC < 10.x")
     endif ()
 
+# Microsoft Visual Compiler
+elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    # this needs to be added to CLION cmake options
+    # -DCMAKE_C_COMPILER=cl.exe -DCMAKE_CXX_COMPILER=cl.exe -G Ninja
+    message("Compiler Settings: MSVC")
+    set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /favor:INTEL64 /Gr /Qpar /W4 /GR /EHsc /std:c++17 /arch:AVX2 /MP")
+    set(CMAKE_CXX_FLAGS_RELEASE "/O2 /Ob2 /MD /DNDEBUG")
+    set(CMAKE_CXX_FLAGS_DEBUG "/Od /Ob0 /MDd /Zi /RTC1")
+
+    # std::execution lib for parallel std operations. Not available on all platforms
+    message("Using HAS_EXECUTION_LIB")
+    add_compile_definitions(HAS_EXECUTION_LIB)
+    # Availability of PEXT compiler intrinsic. Not available on all platforms
+    message("Using HAS_PEXT")
+    add_compile_definitions(HAS_PEXT)
+
+# Clang compiler - needs more testing
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     message("Compiler Settings: Clang")
     set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra -mpopcnt -mbmi2")
     set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fprofile-instr-generate -fcoverage-mapping -Wpedantic -Wshadow -Wno-conversion -Wunreachable-code -Wuninitialized  -Wold-style-cast -Wunused-variable -Wfloat-equal -Wno-gnu-zero-variadic-macro-arguments")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "9")
-        message("Using HAS_EXECUTION_LIB")
-        add_compile_definitions(HAS_EXECUTION_LIB)
-        message("Using HAS_PEXT")
-        add_compile_definitions(HAS_PEXT)
-    endif ()
 
-elseif (CMAKE_COMPILER_IS_GNUCXX)
-    message("Compiler Settings: GNU")
-    set(CMAKE_CXX_FLAGS "-std=c++17 -m64 -mpopcnt -mbmi2 -Wall -Wextra -Wpedantic -Wno-error=pedantic -Wshadow -Wno-unknown-pragmas -Wno-variadic-macros")
-    set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 --coverage -Wno-unused-parameter -Wno-unused-variable")
-    # additional: -Wno-unknown-pragmas -Weffc++ -Wimplicit-fallthrough -Wswitch -Wpointer-arith -Wcast-qual -Wconversion -Wno-sign-conversion -Wno-error=padded -Wno-error=inline")
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "9.2")
-        #message("Using HAS_EXECUTION_LIB")
-        #add_compile_definitions(HAS_EXECUTION_LIB)
-        message("Using HAS_PEXT")
-        add_compile_definitions(HAS_PEXT)
-    endif ()
+    # std::execution lib for parallel std operations. Not available on all platforms
+    message("Using HAS_EXECUTION_LIB")
+    add_compile_definitions(HAS_EXECUTION_LIB)
+    # Availability of PEXT compiler intrinsic. Not available on all platforms
+    message("Using HAS_PEXT")
+    add_compile_definitions(HAS_PEXT)
 
-elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-    message("Compiler Settings: MSVC")
-    set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /W4 /GR /EHsc /std:c++17 /wd4127 /arch:AVX2 /MP")
-    set(CMAKE_CXX_FLAGS_DEBUG " /MDd /Zi /Ob0 /Od /RTC1")
-    # /showIncludes
-    set(CMAKE_CXX_FLAGS_RELEASE "/MD /O2 /Ob2 /DNDEBUG")
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "19.24")
-        message("Using HAS_EXECUTION_LIB")
-        add_compile_definitions(HAS_EXECUTION_LIB)
-        message("Using HAS_PEXT")
-        add_compile_definitions(HAS_PEXT)
-    endif ()
 endif ()
 
+# Print some info to be able to check which compiler has been picked
+message("Generator: " ${CMAKE_GENERATOR} " " ${CMAKE_MAKE_PROGRAM})
 message("Compiler flags: " ${CMAKE_CXX_FLAGS})
 message("Compiler DEBUG flags: " ${CMAKE_CXX_FLAGS_DEBUG})
 message("Compiler RELEASE flags: " ${CMAKE_CXX_FLAGS_RELEASE})
@@ -88,61 +132,65 @@ message("Finding GIT...")
 set(GIT_EXECUTABLE)
 find_package(Git)
 if (GIT_FOUND)
-    message("git found: ${GIT_EXECUTABLE}")
+    message("GIT found: ${GIT_EXECUTABLE}")
 elseif ()
-    message("git NOT found:")
+    message("GIT NOT found:")
 endif ()
 
 set(FETCHCONTENT_QUIET OFF)
 set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
-
-# Getting included libs from Github
 include(FetchContent)
+
+# GOOGLE TEST
+message("Downloading/Update Google Test")
 FetchContent_Declare(
         googletest
         GIT_REPOSITORY https://github.com/google/googletest.git
         GIT_TAG release-1.10.0
 )
-message("Downloading/Update Google Test")
+FetchContent_Declare(googletest)
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_GetProperties(googletest)
-if (NOT googletest_POPULATED)
-    # Fetch the content using previously declared details
-    FetchContent_Populate(googletest)
-    # Set custom variables, policies, etc.
-    option(INSTALL_GMOCK "Install Googletest's GMock?" OFF)
-    option(INSTALL_GTEST "Install Googletest's GTest?" OFF)
-    # Bring the populated content into the build
-    add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
-endif ()
-
+option(INSTALL_GMOCK OFF)
+option(INSTALL_GTEST OFF)
 FetchContent_MakeAvailable(googletest)
 include_directories(
         ${googletest_SOURCE_DIR}/googletest/include
 )
 
-## Getting included libs from Github
-include(FetchContent)
+# GOOGLE BENCHMARK
+FetchContent_Declare(
+        googlebenchmark
+        GIT_REPOSITORY https://github.com/google/benchmark.git
+        GIT_TAG v1.5.1) # need master for benchmark::benchmark
+option(BENCHMARK_ENABLE_LTO ON)
+option(BENCHMARK_ENABLE_GTEST_TESTS OFF)
+option(BENCHMARK_ENABLE_TESTING OFF)
+FetchContent_MakeAvailable(googlebenchmark)
+include_directories(
+        ${googlebenchmark_SOURCE_DIR}/include
+)
+
+# FMT
+message("Downloading/Update FMT")
 FetchContent_Declare(
         fmt
         GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-        GIT_TAG 6.1.2
+        GIT_TAG 7.0.3
 )
-message("Downloading/Update FMT")
 FetchContent_MakeAvailable(fmt)
 include_directories(
         ${fmt_SOURCE_DIR}/include
 )
 
-# Getting included libs from Github
-include(FetchContent)
+# SPDLOG
+message("Downloading/Update SPDLOG")
 FetchContent_Declare(
         spdlog
         GIT_REPOSITORY https://github.com/gabime/spdlog.git
         GIT_TAG v1.7.0
 )
-message("Downloading/Update SPDLOG")
 option(SPDLOG_FMT_EXTERNAL ON)
+set(SPDLOG_FMT_EXTERNAL ON)
 FetchContent_MakeAvailable(spdlog)
 include_directories(
         ${spdlog_SOURCE_DIR}/include
@@ -163,15 +211,16 @@ elseif (WIN32)
     set(BOOST_INCLUDEDIR "C:/Boost/include/boost-1_73")
     set(BOOST_LIBRARYDIR "C:/Boost/lib")
 else ()
-    message("Find Boost on other")
-    set(BOOST_ROOT "/usr/local/boost_1_73_0")
-    set(Boost_INCLUDE_DIR "/usr/local/boost_1_73_0")
+    message("Find Boost on Unix")
+    set(BOOST_ROOT "/usr/local")
+    set(Boost_INCLUDE_DIR "/usr/local/include/boost")
 endif ()
 set(Boost_DEBUG FALSE)
 set(Boost_USE_MULTITHREADED TRUE)
 set(Boost_USE_STATIC_LIBS TRUE)
 set(Boost_USE_STATIC_RUNTIME FALSE)
-find_package(Boost 1.72.0 COMPONENTS serialization program_options timer log log_setup REQUIRED)
+find_package(Boost 1.72.0 COMPONENTS serialization program_options REQUIRED)
+#  log log_setup
 if (Boost_FOUND)
     message("BOOST found: " ${BOOST_ROOT} " " ${Boost_INCLUDE_DIR})
     include_directories(${Boost_INCLUDE_DIRS})
@@ -179,15 +228,17 @@ endif ()
 set(BOOST_ALL_NO_LIB 0)
 set(BOOST_LIB_DIAGNOSTIC 1)
 
-# My project
+# include sub directories
 include_directories(
         ${PROJECT_SOURCE_DIR}/src
         ${PROJECT_SOURCE_DIR}/test
+        ${PROJECT_SOURCE_DIR}/testbench
 )
 
 # project sub directories - need to have their own CMakeList.txt
 add_subdirectory(src)
 add_subdirectory(test)
+add_subdirectory(testbench)
 
 
 

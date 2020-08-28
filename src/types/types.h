@@ -42,6 +42,7 @@
 #include "piece.h"
 #include "piecetype.h"
 #include "rank.h"
+#include "score.h"
 #include "square.h"
 #include "timeunits.h"
 #include "value.h"

@@ -41,7 +41,7 @@
 //  Rook     = 0b0101 // sliding
 //  Queen    = 0b0110 // sliding
 //  PtLength = 0b0111
-enum PieceType : int {
+enum PieceType : uint_fast8_t {
   PT_NONE, // 0
   KING,    // 1 non sliding
   PAWN,    // 2 non sliding
@@ -54,7 +54,7 @@ enum PieceType : int {
 
 // checks if piece type is a value of 0 - 6
 constexpr bool validPieceType(PieceType pt) {
-  return pt >= 0 && pt < 7;
+  return pt < 7;
 }
 
 namespace {

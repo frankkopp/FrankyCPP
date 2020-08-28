@@ -38,7 +38,7 @@ struct SearchResult {
   uint64_t nodes = 0;
   bool bookMove = false;
   bool mateFound = false;
-  NanoSec time{};
+  nanoseconds time{};
   MoveList pv{};
 
   std::string str() const {

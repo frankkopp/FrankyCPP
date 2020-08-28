@@ -39,11 +39,11 @@ TT::TT(uint64_t newSizeInMByte) {
 
 void TT::resize(const uint64_t newSizeInMByte) {
   if (newSizeInMByte > MAX_SIZE_MB) {
-    LOG__ERROR(Logger::get().TT_LOG, "Requested size for TT of {:n} MB reduced to max of {:n} MB", newSizeInMByte, MAX_SIZE_MB);
+    LOG__ERROR(Logger::get().TT_LOG, "Requested size for TT of {:L} MB reduced to max of {:L} MB", newSizeInMByte, MAX_SIZE_MB);
     sizeInByte = MAX_SIZE_MB * MB;
   }
   else {
-    LOG__TRACE(Logger::get().TT_LOG, "Resizing TT from {:n} MB to {:n} MB", sizeInByte, newSizeInMByte);
+    LOG__TRACE(Logger::get().TT_LOG, "Resizing TT from {:L} MB to {:L} MB", sizeInByte, newSizeInMByte);
     sizeInByte = newSizeInMByte * MB;
   }
 
@@ -56,11 +56,24 @@ void TT::resize(const uint64_t newSizeInMByte) {
   sizeInByte = maxNumberOfEntries * ENTRY_SIZE;
 
   delete[] _data;
-  _data = new Entry[maxNumberOfEntries];
+  // try to allocate memory for TT - repeat until allocation is successful
+  while (true) {
+    try {
+      _data = new Entry[maxNumberOfEntries];
+      break;
+    } catch (std::bad_alloc const&) {
+      // we could not allocate enough memory so we reduce TT size by a power of 2
+      auto oldSize       = sizeInByte;
+      maxNumberOfEntries = maxNumberOfEntries >> 1ULL;
+      hashKeyMask        = maxNumberOfEntries - 1;
+      sizeInByte         = maxNumberOfEntries * ENTRY_SIZE;
+      LOG__ERROR(Logger::get().TT_LOG, "Not enough memory for requested TT size {:L} MB reducing to {:L} MB", oldSize, sizeInByte);
+    }
+  }
 
   clear();
   if (maxNumberOfEntries) {
-    LOG__INFO(Logger::get().TT_LOG, "TT Size {:n} MByte, Capacity {:n} entries (size={}Byte) (Requested were {:n} MBytes)",
+    LOG__INFO(Logger::get().TT_LOG, "TT Size {:L} MByte, Capacity {:L} entries (size={}Byte) (Requested were {:L} MBytes)",
               sizeInByte / MB, maxNumberOfEntries, sizeof(Entry), newSizeInMByte);
   }
 }
@@ -111,7 +124,7 @@ void TT::clear() {
   auto finish = std::chrono::high_resolution_clock::now();
   auto time   = std::chrono::duration_cast<std::chrono::milliseconds>(finish - startTime).count();
 
-  LOG__DEBUG(Logger::get().TT_LOG, "TT cleared {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
+  LOG__DEBUG(Logger::get().TT_LOG, "TT cleared {:L} entries in {:L} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }
 
 void TT::put(Key key, Depth depth, Move move, Value value, ValueType type, Value eval) {
@@ -226,13 +239,13 @@ void TT::ageEntries() {
 
   auto finish = std::chrono::high_resolution_clock::now();
   auto time   = std::chrono::duration_cast<std::chrono::milliseconds>(finish - timePoint).count();
-  LOG__DEBUG(Logger::get().TT_LOG, "TT aged {:n} entries in {:n} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
+  LOG__DEBUG(Logger::get().TT_LOG, "TT aged {:L} entries in {:L} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }
 
 std::string TT::str() {
   return fmt::format(
-    "TT: size {:n} MB max entries {:n} of size {:n} Bytes entries {:n} ({:n}%) puts {:n} "
-    "updates {:n} collisions {:n} overwrites {:n} probes {:n} hits {:n} ({:n}%) misses {:n} ({:n}%)",
+    "TT: size {:L} MB max entries {:L} of size {:L} Bytes entries {:L} ({:L}%) puts {:L} "
+    "updates {:L} collisions {:L} overwrites {:L} probes {:L} hits {:L} ({:L}%) misses {:L} ({:L}%)",
     sizeInByte / MB, maxNumberOfEntries, sizeof(Entry), numberOfEntries, hashFull() / 10,
     numberOfPuts, numberOfUpdates, numberOfCollisions, numberOfOverwrites, numberOfProbes,
     numberOfHits, numberOfProbes ? (numberOfHits * 100) / numberOfProbes : 0,

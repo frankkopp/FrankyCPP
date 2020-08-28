@@ -26,21 +26,23 @@
 #ifndef FRANKYCPP_TESTSUITE_H
 #define FRANKYCPP_TESTSUITE_H
 
-#include <cstdint>
-#include <engine/Search.h>
-
+#include "engine/Search.h"
 #include "types/types.h"
 
 #include "gtest/gtest_prod.h"
 
+#include <cstdint>
+
 // supported test types
+// DM = direct mate
+// BM = best move
+// AM = avoid move
 enum TestType {
   NOOP,
   DM,
   BM,
   AM
 };
-
 
 // resultType define possible results for a tests as a type and constants.
 enum ResultType {
@@ -51,9 +53,9 @@ enum ResultType {
 };
 
 namespace {
-  inline const std::string testTypeStr[] = {"noop", "dm", "bm", "am"};
-  inline const std::string resultTypeStr[] = {"Not tested", "Skipped", "Failed", "Success"};
-}
+  inline const char* testTypeStr[]   = {"noop", "dm", "bm", "am"};
+  inline const char* resultTypeStr[] = {"Not tested", "Skipped", "Failed", "Success"};
+}// namespace
 
 // SuiteResult data structure to collect sum of the results of tests.
 struct TestSuiteResult {
@@ -63,9 +65,12 @@ struct TestSuiteResult {
   int skippedCounter   = 0;
   int notTestedCounter = 0;
   uint64_t nodes       = 0;
-  NanoSec time         = 0s;
+  nanoseconds time     = 0s;
 };
 
+// A Test struct holds all information to run a test and
+// has fields to store the test's result
+// Tests are created when reading a test file.
 struct Test {
   std::string id{};
   std::string fen{};
@@ -78,45 +83,50 @@ struct Test {
   ResultType result{NOT_TESTED};
   std::string line{};
   uint64_t nodes{};
-  NanoSec time{};
+  nanoseconds time{};
   uint64_t nps{};
 };
 
+// A TestSuite provides the ability to run chess test positions
 class TestSuite {
 
   std::vector<Test> testCases;
-  MilliSec searchTime;
+  milliseconds searchTime;
   Depth searchDepth;
   std::string filePath;
   TestSuiteResult lastResult{};
 
 public:
-  TestSuite(const MilliSec& time, Depth searchDepth, const std::string& filePath);
+  // Creates a TestSuite instance for a given test file
+  // with given search time and max search depth
+  // Reads all tests from the file. To run the tests call runTestSuite()
+  TestSuite(const milliseconds& time, Depth searchDepth, const std::string& filePath);
 
   // runs the tests
   void runTestSuite();
 
 private:
   // reads all tests from the given file into the given list
-  void readTestCases(const std::string& filePath, std::vector<Test>& tests) const;
+  static void readTestCases(const std::string& filePath, std::vector<Test>& tests);
 
   // reads on EPD file and creates a Test
-  bool readOneEPD(std::string& line, Test& test) const;
+  static bool readOneEPD(std::string& line, Test& test);
 
   // removes leading and trailing whitespace and comments
   static std::string& cleanUpLine(std::string& line);
 
-  void directMateTest(Search& search, SearchLimits& limits, Position& position, Test& test);
-  void bestMoveTest(Search& search, SearchLimits& limits, Position& position, Test& test);
-  void avoidMoveTest(Search& search, SearchLimits& limits, Position& position, Test& test);
+  static void directMateTest(Search& search, SearchLimits& limits, Position& position, Test& test);
+  static void bestMoveTest(Search& search, SearchLimits& limits, Position& position, Test& test);
+  static void avoidMoveTest(Search& search, SearchLimits& limits, Position& position, Test& test);
 
   void runAllTests(Search& search, SearchLimits& searchLimits);
 
   // determines which test type the test is and call the appropriate
   // test function.
-  void runSingleTest(Search& search, SearchLimits& limits, Test& test);
+  static void runSingleTest(Search& search, SearchLimits& limits, Test& test);
 
-  TestSuiteResult sumUpTests() const;
+  // goes through all results and sums up the result type for each test
+  [[nodiscard]] TestSuiteResult sumUpTests() const;
 
   FRIEND_TEST(TestSuite_Test, readFile);
 };

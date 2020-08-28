@@ -101,5 +101,7 @@ inline std::ostream& operator<<(std::ostream& os, const Value v) {
 }
 
 ENABLE_FULL_OPERATORS_ON(Value)
+// used for multiplication with gamePhaseValue
+constexpr Value operator*(Value d, double i) { return static_cast<Value>(static_cast<int>(d) * i); }
 
 #endif//FRANKYCPP_VALUE_H

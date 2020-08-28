@@ -50,15 +50,14 @@ TEST(TypesTest, labels) {
 
 TEST(TypesTest, filesAndRanks) {
   // all squares and label of squares
-  std::string actual;
   for (int i = 0; i < SQ_NONE; ++i) {
     EXPECT_EQ(Square(i), squareOf(File(fileOf(Square(i))), Rank(rankOf(Square(i)))));
   }
 }
 
 TEST(TypesTest, makeSquare) {
-  EXPECT_EQ(SQ_A1, makeSquare("a1)"));
-  EXPECT_EQ(SQ_H8, makeSquare("h8)"));
+  EXPECT_EQ(SQ_A1, makeSquare(std::string{"a1"}));
+  EXPECT_EQ(SQ_H8, makeSquare(std::string{"h8"}));
 }
 
 TEST(TypesTest, ColorLabel) {
@@ -184,7 +183,7 @@ TEST(TypesTest, pieces) {
 TEST(TypesTest, directionOperators) {
   EXPECT_EQ(SQ_A2, SQ_A1 + NORTH);
   ASSERT_TRUE(SQ_H8 + NORTH > 63);
-  ASSERT_TRUE(SQ_H1 + SOUTH < 0);
+  ASSERT_FALSE(validSquare(SQ_H1 + SOUTH));
   EXPECT_EQ(SQ_H8, SQ_A1 + (7 * NORTH_EAST));
   EXPECT_EQ(SQ_A8, SQ_H1 + (7 * NORTH_WEST));
 }
@@ -282,12 +281,12 @@ TEST(TypesTest, sortMoveListByValue) {
 
 TEST(TypesTest, nps) {
   uint64_t nodes = 10'000'000;
-  MilliSec msec{1'500};
-  NanoSec nsec{1'500'000'000};
+  milliseconds msec{1'500};
+  nanoseconds nsec{1'500'000'000};
   fprintln("{}", nps(nodes, msec));
   fprintln("{}", nps(nodes, nsec));
-  msec = MilliSec{0};
-  nsec = NanoSec{0};
+  msec = milliseconds{0};
+  nsec = nanoseconds{0};
   fprintln("{}", nps(nodes, msec));
   fprintln("{}", nps(nodes, nsec));
 }
@@ -296,7 +295,7 @@ TEST(TypesTest, elapsed) {
   TimePoint start = std::chrono::high_resolution_clock::now();
   TimePoint jetzt = std::chrono::high_resolution_clock::now();
   for (int i = 0; i < 2000; ++i){
-    fprintln("{:3n}. Since start: {:n} ns - last jetzt: {:n} ns", i, elapsedSince(start).count(), elapsedSince(jetzt).count());
+    fprintln("{:3}. Since start: {:L} ns - last jetzt: {:L} ns", i, elapsedSince(start).count(), elapsedSince(jetzt).count());
     jetzt = std::chrono::high_resolution_clock::now();
   }
 }
