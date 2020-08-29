@@ -276,6 +276,18 @@ TEST_F(UCITest, goMate) {
   EXPECT_EQ(0, sl.depth);
 }
 
+TEST_F(UCITest, testingBugs) {
+  // 8/7R/3K4/8/8/P3k3/7p/4r3 b - - 5 75
+  string command = "position fen 8/7R/3K4/8/8/P3k3/7p/4r3 b - - 5 75 moves h2h1q h7h3";
+  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+  istringstream is(command);
+  ostringstream os;
+  UciHandler uciHandler(&is, &os);
+  uciHandler.loop();
+  LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE: " + os.str());
+  EXPECT_TRUE(os.str().find("Invalid move") == string::npos);
+}
+
 //
 //TEST_F(UCITest, goMateDepth) {
 //  ostringstream os;
@@ -878,23 +890,3 @@ TEST_F(UCITest, goMate) {
 //
 //}
 //
-//TEST_F(UCITest, testingBugs) {
-//  ostringstream os;
-//  Engine engine;
-//
-//  string command = "position startpos moves d2d4 d7d6 d4d5 c7c6 d5c6 b7c6 d1d6 d8d6 e2e4 b8a6 f1a6 c8a6 e4e5 d6e5";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
-//  istringstream is(command);
-//  UCIHandler uciHandler( &is, &os);
-//  uciHandler.loop();
-//
-//  command = "go wtime 48330 btime 49040 movestogo 33";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
-//  is = istringstream(command);
-//  uciHandler.loop(&is);
-//
-//  LOG__DEBUG(Logger::get().TEST_LOG, "Waiting until search ends...");
-//  engine.waitWhileSearching();
-//  LOG__DEBUG(Logger::get().TEST_LOG, "SEARCH ENDED");
-//
-//}

@@ -299,7 +299,9 @@ Move MoveGenerator::getMoveFromUci(const Position& position, const std::string& 
   Move move;
   resetOnDemand(); // in case this is called multiple times on the same position
   while ((move = getNextPseudoLegalMove(position, GenAll, position.hasCheck())) != MOVE_NONE) {
-    if (::str(move) == uciMove && position.isLegalMove(move)) {
+    // to lower case is necessary as UCI uses lower case characters for promotions
+    // although "algebraic notation" defines upper case letters.
+    if (toLowerCase(::str(move)) == toLowerCase(uciMove) && position.isLegalMove(move)) {
       return move;
     }
   }
