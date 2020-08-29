@@ -352,9 +352,9 @@ TEST_F(MoveGenTest, fromUci) {
   move = mg.getMoveFromUci(pos, "a2a1Q");
   EXPECT_EQ(createMove(SQ_A2, SQ_A1, PROMOTION, QUEEN), move);
 
-  // valid promotion (we don't allow lower case promotions);
+  // valid promotion (we allow lower case promotions);
   move = mg.getMoveFromUci(pos, "a2a1q");
-  EXPECT_EQ(MOVE_NONE, move);
+  EXPECT_EQ(createMove(SQ_A2, SQ_A1, PROMOTION, QUEEN), move);
 
   // valid castling
   move = mg.getMoveFromUci(pos, "e8c8");
