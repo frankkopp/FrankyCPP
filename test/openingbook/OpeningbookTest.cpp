@@ -112,7 +112,7 @@ TEST_F(OpeningBookTest, initPgnLarge) {
   EXPECT_EQ(4'821'615, book.size());
   fprintln("{}", book.str(1));
   std::string expected = "Root (190.780)";
-//  EXPECT_TRUE(book.str(1).starts_with(expected));
+  EXPECT_TRUE(book.str(1).find_first_of(expected) != std::string::npos );
 }
 
 TEST_F(OpeningBookTest, initPgnXLLarge) {

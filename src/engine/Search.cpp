@@ -288,7 +288,13 @@ SearchResult Search::iterativeDeepening(Position& p) {
 
   // check repetition and 50-moves rule
   if (checkDrawRepAnd50(p, 2)) {
-    std::string msg = "Search called on DRAW by Repetition or 50-moves-rule";
+    std::string msg;
+    if (this->searchLimits.ponder) {
+      msg = "Ponder called on DRAW by Repetition or 50-moves-rule";
+    }
+    else {
+      msg = "Search called on DRAW by Repetition or 50-moves-rule";
+    }
     sendString(msg);
     LOG__WARN(Logger::get().SEARCH_LOG, msg);
     searchResult.bestMoveValue = VALUE_DRAW;
@@ -302,14 +308,26 @@ SearchResult Search::iterativeDeepening(Position& p) {
   if (rootMoves.empty()) {
     if (p.hasCheck()) {
       statistics.checkmates++;
-      std::string msg = "Search called on a check mate position";
+      std::string msg;
+      if (this->searchLimits.ponder) {
+        msg = "Ponder called on a check mate position";
+      }
+      else {
+        msg = "Search called on a check mate position";
+      }
       sendString(msg);
       LOG__WARN(Logger::get().SEARCH_LOG, msg);
       searchResult.bestMoveValue = -VALUE_CHECKMATE;
     }
     else {
       statistics.stalemates++;
-      std::string msg = "Search called on a stale mate position";
+      std::string msg;
+      if (this->searchLimits.ponder) {
+        msg = "Ponder called on a stale mate position";
+      }
+      else {
+        msg = "Search called on a stale mate position";
+      }
       sendString(msg);
       LOG__WARN(Logger::get().SEARCH_LOG, msg);
       searchResult.bestMoveValue = VALUE_DRAW;
@@ -322,7 +340,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
   // a book move.
   if (hadBookMove && searchLimits.timeControl && searchLimits.moveTime.count() == 0) {
     LOG__DEBUG(Logger::get().SEARCH_LOG, "First non-book move to search. Adding extra time: Before: {}, after: {}",
-              str(timeLimit + extraTime), str(2 * timeLimit + extraTime));
+               str(timeLimit + extraTime), str(2 * timeLimit + extraTime));
     addExtraTime(2.0);
     hadBookMove = false;
   }
@@ -422,6 +440,21 @@ SearchResult Search::iterativeDeepening(Position& p) {
       }
       p.undoMove();
     }
+  }
+
+  // Double check the ponder move to avoid a ponder search on mate or draw position.
+  // If position after ponder move is a final position do not even send a ponder move.
+  // This is necessary as arena sends a go ponder command although the position is final.
+  if (searchResult.ponderMove != MOVE_NONE) {
+    p.doMove(searchResult.bestMove);
+    p.doMove(searchResult.ponderMove);
+    // check repetition and 50-moves rule or if there are legal moves when using ponder move
+    if (checkDrawRepAnd50(p, 2) || (*mg[0].generateLegalMoves(p, GenAll)).empty()) {
+      LOG__DEBUG(Logger::get().SEARCH_LOG, "ponder move omitted as game finished");
+      searchResult.ponderMove = MOVE_NONE;
+    }
+    p.undoMove();
+    p.undoMove();
   }
 
   return searchResult;
@@ -1420,7 +1453,7 @@ void Search::initialize() {
 
   // init transposition table
   if (SearchConfig::USE_TT) {
-    if (tt->getMaxNumberOfEntries() == 0) { // only initialize once
+    if (tt->getMaxNumberOfEntries() == 0) {// only initialize once
       tt = std::make_unique<TT>(SearchConfig::TT_SIZE_MB);
     }
   }
@@ -1572,7 +1605,7 @@ void Search::sendResult(SearchResult& result) {
 
 void Search::sendIterationEndInfoToUci() {
   const nanoseconds& since = elapsedSince(startSearchTime);
-  lastUciUpdateTime    = nowFast();
+  lastUciUpdateTime        = nowFast();
   if (uciHandler) {
     uciHandler->sendIterationEndInfo(
       statistics.currentSearchDepth,
