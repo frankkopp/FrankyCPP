@@ -183,7 +183,6 @@ void UciHandler::positionCommand(std::istringstream& inStream) {
         uciError(fmt::format("Invalid move {}", move));
         return;
       }
-      // LOG__DEBUG(Logger::get().UCIHAND_LOG, "Do move {}", move);
       pPosition->doMove(moveFromUci);
     }
   }
