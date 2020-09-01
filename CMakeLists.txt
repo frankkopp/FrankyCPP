@@ -188,7 +188,7 @@ message("Downloading/Update SPDLOG")
 FetchContent_Declare(
         spdlog
         GIT_REPOSITORY https://github.com/gabime/spdlog.git
-        GIT_TAG v1.7.0
+        GIT_TAG v1.8.0
 )
 option(SPDLOG_FMT_EXTERNAL ON)
 set(SPDLOG_FMT_EXTERNAL ON)
