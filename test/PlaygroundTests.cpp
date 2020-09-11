@@ -36,13 +36,13 @@ TEST(Playground, emplace) {
 
   struct A {
     std::string s;
-    A(std::string str) : s(std::move(str)) {
+    explicit A(std::string str) : s(std::move(str)) {
       std::cout << " constructed\n";
     }
     A(const A& o) : s(o.s) {
       std::cout << " copy constructed\n";
     }
-    A(A&& o) : s(std::move(o.s)) {
+    A(A&& o)  noexcept : s(std::move(o.s)) {
       std::cout << " move constructed\n";
     }
     A& operator=(const A& other) {
@@ -50,14 +50,13 @@ TEST(Playground, emplace) {
       std::cout << " copy assigned\n";
       return *this;
     }
-    A& operator=(A&& other) {
+    A& operator=(A&& other)  noexcept {
       s = std::move(other.s);
       std::cout << " move assigned\n";
       return *this;
     }
     void * operator new(size_t size) {
       std::cout<< "new (allocated size=: " << size << ")" << std::endl;
-//      void * p = ::new A("");
       void * p = malloc(size);
       return p;
     }
