@@ -188,7 +188,7 @@ message("Downloading/Update SPDLOG")
 FetchContent_Declare(
         spdlog
         GIT_REPOSITORY https://github.com/gabime/spdlog.git
-        GIT_TAG v1.8.0
+        GIT_TAG v1.8.1
 )
 option(SPDLOG_FMT_EXTERNAL ON)
 set(SPDLOG_FMT_EXTERNAL ON)
@@ -208,9 +208,9 @@ elseif (CYGWIN)
     set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
 elseif (WIN32)
     message("Find Boost on Win32")
-    set(BOOST_ROOT "C:/Boost")
-    set(BOOST_INCLUDEDIR "C:/Boost/include/boost-1_73")
-    set(BOOST_LIBRARYDIR "C:/Boost/lib")
+    set(BOOST_ROOT "D:/Boost")
+    set(BOOST_INCLUDEDIR "D:/Boost/include/boost-1_73")
+    set(BOOST_LIBRARYDIR "D:/Boost/lib")
 else ()
     message("Find Boost on Unix")
     set(BOOST_ROOT "/usr/local")
