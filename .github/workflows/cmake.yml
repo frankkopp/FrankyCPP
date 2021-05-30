@@ -31,14 +31,13 @@ jobs:
 
     - name: Install dependencies
       run: |
-      wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz >> /dev/null 2>&1
-      tar xfz boost_1_76_0.tar.gz
-      cd boost_1_76_0/
-      ./bootstrap.sh --with-libraries=serialization,program_options >> /dev/null 2>&1
-      ./b2 >> /dev/null 2>&1
-      sudo ./b2 install  >> /dev/null 2>&1
-      cd ..
-      shell: bash
+        wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz >> /dev/null 2>&1
+        tar xfz boost_1_76_0.tar.gz
+        cd boost_1_76_0/
+        ./bootstrap.sh --with-libraries=serialization,program_options >> /dev/null 2>&1
+        ./b2 >> /dev/null 2>&1
+        sudo ./b2 install  >> /dev/null 2>&1
+        cd ..
 
     - name: Build
       # Build your program with the given configuration
