@@ -52,9 +52,9 @@ install:
   - sudo ./install-cmake.sh --prefix=/usr/local --skip-license
   - export PATH=/usr/local/bin:$PATH;
   # Install BOOST
-  - wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz >> /dev/null 2>&1
-  - tar xfz boost_1_73_0.tar.gz
-  - cd boost_1_73_0/
+  - wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz >> /dev/null 2>&1
+  - tar xfz boost_1_76_0.tar.gz
+  - cd boost_1_76_0/
   - ./bootstrap.sh --with-libraries=serialization,program_options >> /dev/null 2>&1
   - ./b2 >> /dev/null 2>&1
   - sudo ./b2 install  >> /dev/null 2>&1
