@@ -24,23 +24,28 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Cach Boost Build
+    - name: Cache Boost Build
       uses: actions/cache@v2
       env:
-        cache-name: cache-boost
+        cache-name: cache-boost-build
       with:
         path: boost_1_76_0
         key: ${{ runner.os }}-boost
 
-    - name: Install dependencies
-      if: steps.cache-boost.outputs.cache-hit != 'true'
+    - name: Download and build BOOST
+      if: steps.cache-boost-build.outputs.cache-hit != 'true'
       run: |
         wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz >> /dev/null 2>&1
         tar xfz boost_1_76_0.tar.gz
         cd boost_1_76_0/
-        ./bootstrap.sh --with-libraries=serialization,program_options >> /dev/null 2>&1
-        ./b2 >> /dev/null 2>&1
-        sudo ./b2 install  >> /dev/null 2>&1
+        ./bootstrap.sh --with-libraries=serialization,program_options
+        ./b2
+        cd ..
+
+    - name: Install BOOST
+      run: |
+        cd boost_1_76_0/
+        sudo ./b2 install
         cd ..
 
     - name: Configure CMake
