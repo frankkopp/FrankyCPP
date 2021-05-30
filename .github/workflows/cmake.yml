@@ -38,6 +38,7 @@ jobs:
       ./b2 >> /dev/null 2>&1
       sudo ./b2 install  >> /dev/null 2>&1
       cd ..
+      shell: bash
 
     - name: Build
       # Build your program with the given configuration
