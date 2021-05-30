@@ -161,7 +161,7 @@ include_directories(
 FetchContent_Declare(
         googlebenchmark
         GIT_REPOSITORY https://github.com/google/benchmark.git
-        GIT_TAG v1.5.2) # need master for benchmark::benchmark
+        GIT_TAG v1.5.4) # need master for benchmark::benchmark
 option(BENCHMARK_ENABLE_LTO ON)
 option(BENCHMARK_ENABLE_GTEST_TESTS OFF)
 option(BENCHMARK_ENABLE_TESTING OFF)
