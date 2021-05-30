@@ -24,7 +24,16 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Cach Boost Build
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-boost
+      with:
+        path: boost_1_76_0
+        key: ${{ runner.os }}-boost
+
     - name: Install dependencies
+      if: steps.cache-boost.outputs.cache-hit != 'true'
       run: |
         wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz >> /dev/null 2>&1
         tar xfz boost_1_76_0.tar.gz
@@ -49,3 +58,10 @@ jobs:
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C ${{env.BUILD_TYPE}}
 
+    - name: Run benchmark test
+      working-directory: ${{github.workspace}}/build
+      run: ./testbench/FrankyCPP_v0.4_Bench
+
+    - name: Run PERFT test
+      working-directory: ${{github.workspace}}/build
+      run: ./src/FrankyCPP_v0.4 --perft --endDepth=5

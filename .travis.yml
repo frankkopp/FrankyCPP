@@ -1,8 +1,8 @@
 branches:
   only:
-    - master
-    - develop
-    - /dev_.*$/
+#    - master
+#    - develop
+#    - /dev_.*$/
 
 os: linux
 dist: xenial
