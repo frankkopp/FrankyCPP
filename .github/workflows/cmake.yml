@@ -30,7 +30,7 @@ jobs:
         cache-name: cache-boost-build
       with:
         path: boost_1_76_0
-        key: ${{ runner.os }}-boost
+        key: ${{ runner.os }}-boost-build
 
     - name: Download and build BOOST
       if: steps.cache-boost-build.outputs.cache-hit != 'true'
@@ -45,7 +45,7 @@ jobs:
     - name: Install BOOST
       run: |
         cd boost_1_76_0/
-        sudo ./b2 install
+        sudo ./b2 install >> /dev/null 2>&1
         cd ..
 
     - name: Configure CMake
