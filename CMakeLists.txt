@@ -6,7 +6,7 @@ message("====================================================================")
 cmake_minimum_required(VERSION 3.16)
 
 # Project name and version
-project(FrankyCPP VERSION 0.3)
+project(FrankyCPP VERSION 0.4)
 message("FrankyCPP v" ${PROJECT_VERSION_MAJOR} "." ${PROJECT_VERSION_MINOR})
 
 # updates template file and replaces placeholder variables
@@ -161,10 +161,11 @@ include_directories(
 FetchContent_Declare(
         googlebenchmark
         GIT_REPOSITORY https://github.com/google/benchmark.git
-        GIT_TAG v1.5.1) # need master for benchmark::benchmark
+        GIT_TAG v1.5.4) # need master for benchmark::benchmark
 option(BENCHMARK_ENABLE_LTO ON)
 option(BENCHMARK_ENABLE_GTEST_TESTS OFF)
 option(BENCHMARK_ENABLE_TESTING OFF)
+option(BENCHMARK_ENABLE_INSTALL OFF)
 FetchContent_MakeAvailable(googlebenchmark)
 include_directories(
         ${googlebenchmark_SOURCE_DIR}/include
@@ -187,7 +188,7 @@ message("Downloading/Update SPDLOG")
 FetchContent_Declare(
         spdlog
         GIT_REPOSITORY https://github.com/gabime/spdlog.git
-        GIT_TAG v1.7.0
+        GIT_TAG v1.8.1
 )
 option(SPDLOG_FMT_EXTERNAL ON)
 set(SPDLOG_FMT_EXTERNAL ON)
@@ -207,9 +208,9 @@ elseif (CYGWIN)
     set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
 elseif (WIN32)
     message("Find Boost on Win32")
-    set(BOOST_ROOT "C:/Boost")
-    set(BOOST_INCLUDEDIR "C:/Boost/include/boost-1_73")
-    set(BOOST_LIBRARYDIR "C:/Boost/lib")
+    set(BOOST_ROOT "D:/Boost")
+    set(BOOST_INCLUDEDIR "D:/Boost/include/boost-1_73")
+    set(BOOST_LIBRARYDIR "D:/Boost/lib")
 else ()
     message("Find Boost on Unix")
     set(BOOST_ROOT "/usr/local")
