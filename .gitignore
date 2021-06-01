@@ -7,7 +7,9 @@ build/
 .idea/
 .vscode/
 *.cache.*
+/Release/bin/*log
 /Release/bin/books/
 /Release/bin/config/
 /books/superbook_xl.pgn
 /Testing/
+/vtune/
