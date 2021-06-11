@@ -122,14 +122,14 @@ jobs:
       - name: Download and build BOOST (windows)
         if: startsWith(matrix.config.os, 'windows') && steps.cache-boost-build-windows.outputs.cache-hit != 'true'
         run: |
-          wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.zip
-          unzip -q boost_1_76_0.tar.gz
+          wget -q https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.zip
+          unzip -q boost_1_76_0.zip
           cd boost_1_76_0/
           ./bootstrap.bat --with-libraries=serialization,program_options
           ./b2
           cd ..
 
-      - name: Install BOOST (macos)
+      - name: Install BOOST (windows)
         if: startsWith(matrix.config.os, 'windows')
         run: |
           cd boost_1_76_0/
