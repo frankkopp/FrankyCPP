@@ -3,9 +3,9 @@ name: CMake
 on:
   push:
     branches:
-#   - master
-#   - dev_v0.4
-    - githubWorkflowTests
+      #   - master
+      #   - dev_v0.4
+      - githubWorkflowTests
 
   pull_request:
 #    branches:
@@ -16,12 +16,12 @@ jobs:
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
-#    continue-on-error: true
+    #    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
         config:
-        - {
+          - {
             name: "Ubuntu_Latest",
             os: ubuntu-latest,
             artifact: "FrankyCPP_v0.4_linux.zip",
@@ -31,7 +31,7 @@ jobs:
             archiver: "zip",
             generators: "Ninja"
           }
-        - {
+          - {
             name: "Windows Latest MSVC",
             os: windows-latest,
             artifact: "FrankyCPP_v0.4_win.zip",
@@ -42,108 +42,121 @@ jobs:
             archiver: "zip",
             generators: "Visual Studio 16 2019"
           }
-        - {
-          name: "macOS Latest Clang",
-          os: macos-latest,
-          artifact: "macos_clang.zip",
-          build_type: "Release",
-          cc: "clang",
-          cxx: "clang++",
-          archiver: "zip",
-          generators: "Ninja"
-        }
+          - {
+            name: "macOS Latest Clang",
+            os: macos-latest,
+            artifact: "macos_clang.zip",
+            build_type: "Release",
+            cc: "clang",
+            cxx: "clang++",
+            archiver: "zip",
+            generators: "Ninja"
+          }
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
 
-    - name: Print env
-      run: |
-        echo github.event.action: ${{ github.event.action }}
-        echo github.event_name: ${{ github.event_name }}
+      - name: Print env
+        run: |
+          echo github.event.action: ${{ github.event.action }}
+          echo github.event_name: ${{ github.event_name }}
 
-# ##############################################################################
-# UBUNTU
-# ##############################################################################
+      # ##############################################################################
+      # UBUNTU
+      # ##############################################################################
 
-    - name: Cache Boost Build (ubuntu)
-      if: startsWith(matrix.config.name, 'Ubuntu_Latest')
-      uses: actions/cache@v2
-      env:
-        cache-name: cache-boost-build
-      with:
-        path: boost_1_76_0
-        key: ${{ runner.os }}-boost-build
+      - name: Cache Boost Build (ubuntu)
+        if: startsWith(matrix.config.name, 'Ubuntu_Latest')
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-boost-build.ubuntu
+        with:
+          path: boost_1_76_0
+          key: ${{ runner.os }}-boost-build
 
-    - name: Install dependencies (ubuntu)
-      if: startsWith(matrix.config.name, 'Ubuntu_Latest')
-      run: |
-        sudo apt-get update
-        sudo apt-get install ninja-build cmake
-        ninja --version
-        cmake --version
-        gcc --version
+      - name: Install dependencies (ubuntu)
+        if: startsWith(matrix.config.name, 'Ubuntu_Latest')
+        run: |
+          sudo apt-get update
+          sudo apt-get install ninja-build cmake
+          ninja --version
+          cmake --version
+          gcc --version
 
-    - name: Download and build BOOST (ubuntu)
-      if: startsWith(matrix.config.name, 'Ubuntu_Latest') && steps.cache-boost-build.outputs.cache-hit != 'true'
-      run: |
-        wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz >> /dev/null 2>&1
-        tar xfz boost_1_76_0.tar.gz
-        cd boost_1_76_0/
-        ./bootstrap.sh --with-libraries=serialization,program_options
-        ./b2
-        cd ..
+      - name: Download and build BOOST (ubuntu)
+        if: startsWith(matrix.config.name, 'Ubuntu_Latest') && steps.cache-boost-build.ubuntu.outputs.cache-hit != 'true'
+        run: |
+          wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz >> /dev/null 2>&1
+          tar xfz boost_1_76_0.tar.gz
+          cd boost_1_76_0/
+          ./bootstrap.sh --with-libraries=serialization,program_options
+          ./b2
+          cd ..
 
-    - name: Install BOOST (ubuntu)
-      if: startsWith(matrix.config.name, 'Ubuntu_Latest')
-      run: |
-        cd boost_1_76_0/
-        sudo ./b2 install >> /dev/null 2>&1
-        cd ..
+      - name: Install BOOST (ubuntu)
+        if: startsWith(matrix.config.name, 'Ubuntu_Latest')
+        run: |
+          cd boost_1_76_0/
+          sudo ./b2 install >> /dev/null 2>&1
+          cd ..
 
 # ##############################################################################
 # WINDOWS
 # ##############################################################################
 
-    - name: Install dependencies (windows)
-      if: startsWith(matrix.config.os, 'windows')
-      run: |
-        choco install ninja cmake boost-msvc-14.2
-        ninja --version
-        cmake --version
-#        cmd "${{ matrix.config.environment_script }}"
+      - name: Install dependencies (windows)
+        if: startsWith(matrix.config.os, 'windows')
+        run: |
+          choco install ninja cmake boost-msvc-14.2
+          ninja --version
+          cmake --version
 
-# ##############################################################################
-#  MACOS
-# ##############################################################################
+      - name: Cache Boost Install (windows)
+        if: startsWith(matrix.config.os, 'windows')
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-boost-build-windows
+        with:
+          path: C:/local/boost_1_74_0
+          key: ${{ runner.os }}-boost-build
 
-    - name: Install dependencies (macos)
-      if: startsWith(matrix.config.os, 'macos')
-      run: |
-        brew install p7zip cmake ninja boost
-        ninja --version
-        cmake --version
+      - name: Install BOOST (windows)
+        if: startsWith(matrix.config.os, 'windows') && steps.cache-boost-build-windows.outputs.cache-hit != 'true'
+        run: |
+          choco install boost-msvc-14.2
 
-# ##############################################################################
-# ALL
-# ##############################################################################
+      # ##############################################################################
+      #  MACOS
+      # ##############################################################################
 
-    - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} -G "${{ matrix.config.generators }}"
+      - name: Install dependencies (macos)
+        if: startsWith(matrix.config.os, 'macos')
+        run: |
+          brew install p7zip cmake ninja boost
+          ninja --version
+          cmake --version
 
-    - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{ matrix.config.build_type }}
+      # ##############################################################################
+      # ALL
+      # ##############################################################################
 
-    - name: Test
-      if: startsWith(matrix.config.name, 'Ubuntu_Latest')
-      working-directory: ${{github.workspace}}/build
-      run: ctest -C ${{ matrix.config.build_type }} -E "(SpeedTests|TimingTests)"
+      - name: Configure CMake
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} -G "${{ matrix.config.generators }}"
 
-    - name: Run benchmark test
-      if: startsWith(matrix.config.name, 'Ubuntu_Latest')
-      working-directory: ${{github.workspace}}/build
-      run: ./testbench/FrankyCPP_v0.4_Bench
+      - name: Build
+        run: cmake -j --build ${{github.workspace}}/build --config ${{ matrix.config.build_type }}
 
-    - name: Run PERFT test
-      if: startsWith(matrix.config.name, 'Ubuntu_Latest')
-      working-directory: ${{github.workspace}}/build
-      run: ./src/FrankyCPP_v0.4 --perft --endDepth=5
+      - name: Test
+        if: startsWith(matrix.config.name, 'Ubuntu_Latest')
+        working-directory: ${{github.workspace}}/build
+        run: ctest -C ${{ matrix.config.build_type }} -E "(SpeedTests|TimingTests)"
+
+      - name: Run benchmark test
+        if: startsWith(matrix.config.name, 'Ubuntu_Latest')
+        working-directory: ${{github.workspace}}/build
+        run: ./testbench/FrankyCPP_v0.4_Bench
+
+      - name: Run PERFT test
+        if: startsWith(matrix.config.name, 'Ubuntu_Latest')
+        working-directory: ${{github.workspace}}/build
+        run: ./src/FrankyCPP_v0.4 --perft --endDepth=5
