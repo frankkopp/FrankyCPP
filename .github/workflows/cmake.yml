@@ -101,7 +101,7 @@ jobs:
       - name: Install dependencies (windows)
         if: startsWith(matrix.config.os, 'windows')
         run: |
-          choco install ninja cmake wget zip unzip
+          choco install ninja cmake wget zip unzip --no-progress
           ninja --version
           cmake --version
           wget --version
@@ -183,7 +183,7 @@ jobs:
         run: cmake --build ${{github.workspace}}/build --config ${{ matrix.config.build_type }} --parallel
 
       - name: Test
-        if: startsWith(matrix.config.name, 'Ubuntu_Latest')
+        if: startsWith(matrix.config.name, 'Ubuntu_Latest') || startsWith(matrix.config.name, 'macos')
         working-directory: ${{github.workspace}}/build
         run: ctest -C ${{ matrix.config.build_type }} -E "(SpeedTests|TimingTests)"
 
