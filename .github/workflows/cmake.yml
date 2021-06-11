@@ -109,7 +109,7 @@ jobs:
       - name: Install BOOST (windows)
         if: startsWith(matrix.config.os, 'windows') && steps.cache-boost-build-windows.outputs.cache-hit != 'true'
         run: |
-          choco install boost-msvc-14.2
+          choco install boost-msvc-14.2 --no-progress
 #
 #      - name: Cache Boost Install (windows)
 #        if: startsWith(matrix.config.os, 'windows')
@@ -181,6 +181,11 @@ jobs:
 
       - name: Build
         run: cmake --build ${{github.workspace}}/build --config ${{ matrix.config.build_type }} --parallel
+
+      - name: Check build
+        if: startsWith(matrix.config.name, 'Ubuntu_Latest')
+        working-directory: ${{github.workspace}}/build
+        run: FrankyCPP_v0.4 --version
 
       - name: Test
         if: startsWith(matrix.config.name, 'Ubuntu_Latest')
