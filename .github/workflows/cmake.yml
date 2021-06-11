@@ -189,6 +189,9 @@ jobs:
         run: |
           ${{ matrix.config.executable }} --version
           ls -la .
+          ls -la ./src
+          ls -la ./test
+          ls -la ./testbench
 
 # Below tests do not yet all run on Windows and Mac together with github workflows.
 # They run fine on actual hardware. Needs more time investment to figure this out.
