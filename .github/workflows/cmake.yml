@@ -34,8 +34,8 @@ jobs:
             cxx: "g++",
             generators: "Ninja",
             archiver: "zip",
-            executable: "./src/FrankyCPP_v0.4",
-            test_exec: "./test/FrankyCPP_v0.4_Test",
+            executable: "FrankyCPP_v0.4",
+            test_exec: "FrankyCPP_v0.4_Test",
             check: true,
             test: true,
             benchmark: true,
@@ -51,8 +51,8 @@ jobs:
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat",
             generators: "Visual Studio 16 2019",
             archiver: "zip",
-            executable: "./src/Release/FrankyCPP_v0.4.exe",
-            test_exec: "./test/FrankyCPP_v0.4_Test.exe",
+            executable: "FrankyCPP_v0.4.exe",
+            test_exec: "FrankyCPP_v0.4_Test.exe",
             check: true,
             test: false,
             benchmark: false,
@@ -67,8 +67,8 @@ jobs:
             cxx: "clang++",
             generators: "Ninja",
             archiver: "zip",
-            executable: "./src/FrankyCPP_v0.4",
-            test_exec: "./test/FrankyCPP_v0.4_Test",
+            executable: "FrankyCPP_v0.4",
+            test_exec: "FrankyCPP_v0.4_Test",
             check: true,
             test: false,
             benchmark: false,
@@ -185,7 +185,7 @@ jobs:
 
       - name: Check build
         if: matrix.config.check
-        working-directory: ${{github.workspace}}/build
+        working-directory: ${{github.workspace}}/build/src
         run: |
           ${{ matrix.config.executable }} --version
           ls -la .
@@ -204,10 +204,10 @@ jobs:
 
       - name: Run benchmark test
         if: matrix.config.benchmark
-        working-directory: ${{github.workspace}}/build
+        working-directory: ${{github.workspace}}/build/testbench
         run: ./testbench/FrankyCPP_v0.4_Bench
 
       - name: Run PERFT test
         if: matrix.config.perft
-        working-directory: ${{github.workspace}}/build
+        working-directory: ${{github.workspace}}/build/src
         run: ${{ matrix.config.executable }} -c ${{github.workspace}}/config/FrankyCPP.cfg --perft --endDepth=5
