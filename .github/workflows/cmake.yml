@@ -36,6 +36,7 @@ jobs:
             archiver: "zip",
             executable: "./FrankyCPP_v0.4",
             test_exec: "./FrankyCPP_v0.4_Test",
+            bench_exec: "./FrankyCPP_v0.4_Bench",
             check: true,
             test: true,
             benchmark: true,
@@ -54,11 +55,12 @@ jobs:
             archiver: "zip",
             executable: "FrankyCPP_v0.4.exe",
             test_exec: "FrankyCPP_v0.4_Test.exe",
+            bench_exec: "FrankyCPP_v0.4_Bench.exe",
             check: true,
             test: true,
             benchmark: true,
             perft: true,
-            listCmd: "dir"
+            listCmd: "ls"
           }
           - {
             name: "MacOS_Latest_Clang",
@@ -71,6 +73,7 @@ jobs:
             archiver: "zip",
             executable: "./FrankyCPP_v0.4",
             test_exec: "./FrankyCPP_v0.4_Test",
+            bench_exec: "./FrankyCPP_v0.4_Bench",
             check: true,
             test: true,
             benchmark: true,
@@ -189,7 +192,6 @@ jobs:
       - name: List folder
         working-directory: ${{github.workspace}}/build
         run: |
-          pwd
           ${{ matrix.config.listCmd }} .
           ${{ matrix.config.listCmd }} ./src
           ${{ matrix.config.listCmd }} ./test
@@ -210,7 +212,7 @@ jobs:
       - name: Run benchmark test
         if: matrix.config.benchmark
         working-directory: ${{github.workspace}}/build/testbench
-        run: ./testbench/FrankyCPP_v0.4_Bench
+        run: ${{ matrix.config.bench_exec }}
 
       - name: Run PERFT test
         if: matrix.config.perft
