@@ -32,8 +32,8 @@ jobs:
             build_type: "Release",
             cc: "gcc",
             cxx: "g++",
-            archiver: "zip",
             generators: "Ninja",
+            archiver: "zip",
             executable: "./src/FrankyCPP_v0.4",
             test_exec: "./test/FrankyCPP_v0.4_Test",
             check: true,
@@ -49,8 +49,8 @@ jobs:
             cc: "cl",
             cxx: "cl",
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat",
-            archiver: "zip",
             generators: "Visual Studio 16 2019",
+            archiver: "zip",
             executable: "./src/Release/FrankyCPP_v0.4.exe",
             test_exec: "./test/FrankyCPP_v0.4_Test.exe",
             check: true,
@@ -65,8 +65,8 @@ jobs:
             build_type: "Release",
             cc: "clang",
             cxx: "clang++",
-            archiver: "zip",
             generators: "Ninja",
+            archiver: "zip",
             executable: "./src/FrankyCPP_v0.4",
             test_exec: "./test/FrankyCPP_v0.4_Test",
             check: true,
@@ -134,6 +134,9 @@ jobs:
         run: |
           choco install boost-msvc-14.2 --no-progress
 
+
+# ./b2 --with-program_options --with-filesystem --with-system
+
 # ##############################################################################
 #  MACOS
 # ##############################################################################
@@ -183,7 +186,9 @@ jobs:
       - name: Check build
         if: matrix.config.check
         working-directory: ${{github.workspace}}/build
-        run: ${{ matrix.config.executable }} --version
+        run: |
+          ${{ matrix.config.executable }} --version
+          ls -la .
 
 # Below tests do not yet all run on Windows and Mac together with github workflows.
 # They run fine on actual hardware. Needs more time investment to figure this out.
@@ -191,8 +196,8 @@ jobs:
       - name: Test
         if: matrix.config.test
         working-directory: ${{github.workspace}}/build
-        run: ${{ matrix.config.test_exec }} -*SpeedTests.*:-*TimingTests.*
-#run: ctest -C ${{ matrix.config.build_type }} -E "(SpeedTests|TimingTests)"
+        #run: ${{ matrix.config.test_exec }} -*SpeedTests.*:-*TimingTests.*
+        run: ctest -C ${{ matrix.config.build_type }} -E "(SpeedTests|TimingTests)"
 
       - name: Run benchmark test
         if: matrix.config.benchmark
