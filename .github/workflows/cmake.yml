@@ -134,9 +134,9 @@ jobs:
       run: cmake --build ${{github.workspace}}/build --config ${{ matrix.config.build_type }}
 
     - name: Test
-#      if: startsWith(matrix.config.name, 'Ubuntu_Latest')
+      if: startsWith(matrix.config.name, 'Ubuntu_Latest')
       working-directory: ${{github.workspace}}/build
-      run: ctest --verbose -C ${{ matrix.config.build_type }}
+      run: ctest -C ${{ matrix.config.build_type }}
 
     - name: Run benchmark test
       if: startsWith(matrix.config.name, 'Ubuntu_Latest')
