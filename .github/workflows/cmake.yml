@@ -5,6 +5,8 @@ on:
     branches:
     - master
     - dev_v0.4
+    - githubWorkflowTests
+
   pull_request:
     branches:
     - master
