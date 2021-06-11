@@ -56,14 +56,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Print env
-        run: |
-          echo github.event.action: ${{ github.event.action }}
-          echo github.event_name: ${{ github.event_name }}
-
-      # ##############################################################################
-      # UBUNTU
-      # ##############################################################################
+# ##############################################################################
+# UBUNTU
+# ##############################################################################
 
       - name: Cache Boost Build (ubuntu)
         if: startsWith(matrix.config.name, 'Ubuntu_Latest')
@@ -107,7 +102,7 @@ jobs:
       - name: Install dependencies (windows)
         if: startsWith(matrix.config.os, 'windows')
         run: |
-          choco install ninja cmake boost-msvc-14.2
+          choco install ninja cmake
           ninja --version
           cmake --version
 
@@ -125,9 +120,9 @@ jobs:
         run: |
           choco install boost-msvc-14.2
 
-      # ##############################################################################
-      #  MACOS
-      # ##############################################################################
+# ##############################################################################
+#  MACOS
+# ##############################################################################
 
       - name: Install dependencies (macos)
         if: startsWith(matrix.config.os, 'macos')
@@ -136,9 +131,9 @@ jobs:
           ninja --version
           cmake --version
 
-      # ##############################################################################
-      # ALL
-      # ##############################################################################
+# ##############################################################################
+# ALL
+# ##############################################################################
 
       - name: Configure CMake
         run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} -G "${{ matrix.config.generators }}"
