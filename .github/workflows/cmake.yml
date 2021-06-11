@@ -21,26 +21,26 @@ jobs:
       matrix:
         config:
         - {
-          name: "Ubuntu_Latest",
-          os: ubuntu-latest,
-          artifact: "FrankyCPP_v0.4_linux.zip",
-          build_type: "Release",
-          cc: "gcc",
-          cxx: "g++",
-          archiver: "zip",
-          generators: "Ninja"
-        }
-         - {
-          name: "Windows Latest MSVC",
-          os: windows-latest,
-          artifact: "FrankyCPP_v0.4_linux.zip",
-          build_type: "Release",
-          cc: "cl",
-          cxx: "cl",
-          environment_script: "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat",
-          archiver: "zip",
-          generators: "Visual Studio 16 2019"
-        }
+            name: "Ubuntu_Latest",
+            os: ubuntu-latest,
+            artifact: "FrankyCPP_v0.4_linux.zip",
+            build_type: "Release",
+            cc: "gcc",
+            cxx: "g++",
+            archiver: "zip",
+            generators: "Ninja"
+          }
+        - {
+            name: "Windows Latest MSVC",
+            os: windows-latest,
+            artifact: "FrankyCPP_v0.4_win.zip",
+            build_type: "Release",
+            cc: "cl",
+            cxx: "cl",
+            environment_script: "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat",
+            archiver: "zip",
+            generators: "Visual Studio 16 2019"
+          }
 
     steps:
     - name: Checkout
