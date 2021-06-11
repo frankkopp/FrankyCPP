@@ -73,7 +73,7 @@ jobs:
         cmake --version
         gcc --version
 
-    - name: Download and build BOOST
+    - name: Download and build BOOST (ubuntu)
       if: startsWith(matrix.config.name, 'Ubuntu_Latest') && steps.cache-boost-build.outputs.cache-hit != 'true'
       run: |
         wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz >> /dev/null 2>&1
@@ -83,7 +83,7 @@ jobs:
         ./b2
         cd ..
 
-    - name: Install BOOST
+    - name: Install BOOST (ubuntu)
       if: startsWith(matrix.config.name, 'Ubuntu_Latest')
       run: |
         cd boost_1_76_0/
@@ -94,13 +94,22 @@ jobs:
 # WINDOWS
 # ##############################################################################
 
-    - name: Install dependencies on windows
+    - name: Cache Boost Build (windows)
+      if: startsWith(matrix.config.os, 'windows')
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-boost-build
+      with:
+        path: c:/local/boost_1_74_0
+        key: ${{ runner.os }}-boost-build
+
+    - name: Install dependencies (windows)
       if: startsWith(matrix.config.os, 'windows')
       run: |
-        choco install ninja cmake boost-msvc-14.1
+        choco install ninja cmake boost-msvc-14.2
         ninja --version
         cmake --version
-        cmd "${{ matrix.config.environment_script }}"
+#        cmd "${{ matrix.config.environment_script }}"
 
 # ##############################################################################
 # ALL
