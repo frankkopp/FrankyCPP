@@ -16,7 +16,7 @@ jobs:
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
-    continue-on-error: true
+#    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -136,7 +136,7 @@ jobs:
     - name: Test
       if: startsWith(matrix.config.name, 'Ubuntu_Latest')
       working-directory: ${{github.workspace}}/build
-      run: ctest -C ${{ matrix.config.build_type }}
+      run: ctest -C ${{ matrix.config.build_type }} -E "(SpeedTests|TimingTests)"
 
     - name: Run benchmark test
       if: startsWith(matrix.config.name, 'Ubuntu_Latest')
