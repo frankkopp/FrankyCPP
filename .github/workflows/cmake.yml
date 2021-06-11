@@ -3,8 +3,8 @@ name: CMake
 on:
   push:
     branches:
-#    - master
-#    - dev_v0.4
+#   - master
+#   - dev_v0.4
     - githubWorkflowTests
 
   pull_request:
@@ -124,14 +124,14 @@ jobs:
 #  MACOS
 # ##############################################################################
 
-#    - name: Cache Boost Build (windows)
-#      if: startsWith(matrix.config.os, 'macos')
-#      uses: actions/cache@v2
-#      env:
-#        cache-name: cache-boost-build
-#      with:
-#        path: c:/local/boost_1_74_0
-#        key: ${{ runner.os }}-boost-build
+    - name: Cache Boost Build (windows)
+      if: startsWith(matrix.config.os, 'macos')
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-boost-build
+      with:
+        path: /usr/local/boost_1_73_0
+        key: ${{ runner.os }}-boost-build
 
     - name: Install dependencies on macos
       if: startsWith(matrix.config.os, 'macos')
@@ -156,6 +156,7 @@ jobs:
       run: ctest -C ${{ matrix.config.build_type }}
 
     - name: Run benchmark test
+      if: startsWith(matrix.config.name, 'Ubuntu_Latest')
       working-directory: ${{github.workspace}}/build
       run: ./testbench/FrankyCPP_v0.4_Bench
 
