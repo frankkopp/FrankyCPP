@@ -70,7 +70,7 @@ jobs:
             build_type: "Release",
             cc: "clang",
             cxx: "clang++",
-            generators: "Ninja",
+            generators: "Unix Makefiles",
             archiver: "zip",
             executable: "./FrankyCPP_v0.4",
             test_exec: "./FrankyCPP_v0.4_Test",
