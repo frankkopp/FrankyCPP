@@ -41,7 +41,16 @@ jobs:
             archiver: "zip",
             generators: "Visual Studio 16 2019"
           }
-
+        - {
+          name: "macOS Latest Clang",
+          os: macos-latest,
+          artifact: "macos_clang.zip",
+          build_type: "Release",
+          cc: "clang",
+          cxx: "clang++",
+          archiver: "zip",
+          generators: "Ninja"
+        }
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -112,6 +121,26 @@ jobs:
 #        cmd "${{ matrix.config.environment_script }}"
 
 # ##############################################################################
+#  MACOS
+# ##############################################################################
+
+#    - name: Cache Boost Build (windows)
+#      if: startsWith(matrix.config.os, 'macos')
+#      uses: actions/cache@v2
+#      env:
+#        cache-name: cache-boost-build
+#      with:
+#        path: c:/local/boost_1_74_0
+#        key: ${{ runner.os }}-boost-build
+
+    - name: Install dependencies on macos
+      if: startsWith(matrix.config.os, 'macos')
+      run: |
+        brew install p7zip cmake ninja boost
+        ninja --version
+        cmake --version
+
+# ##############################################################################
 # ALL
 # ##############################################################################
 
@@ -122,6 +151,7 @@ jobs:
       run: cmake --build ${{github.workspace}}/build --config ${{ matrix.config.build_type }}
 
     - name: Test
+      if: startsWith(matrix.config.name, 'Ubuntu_Latest')
       working-directory: ${{github.workspace}}/build
       run: ctest -C ${{ matrix.config.build_type }}
 
