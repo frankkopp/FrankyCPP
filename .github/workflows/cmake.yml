@@ -186,7 +186,6 @@ jobs:
         run: cmake --build ${{github.workspace}}/build --config ${{ matrix.config.build_type }} --parallel
 
       - name: Check build
-#        if: startsWith(matrix.config.name, 'Ubuntu_Latest')
         working-directory: ${{github.workspace}}/build
         run: ${{ matrix.config.executable }} --version
 
@@ -201,6 +200,6 @@ jobs:
         run: ./testbench/FrankyCPP_v0.4_Bench
 
       - name: Run PERFT test
-        if: startsWith(matrix.config.name, 'Ubuntu_Latest')
+#        if: startsWith(matrix.config.name, 'Ubuntu_Latest')
         working-directory: ${{github.workspace}}/build
-        run: ./src/FrankyCPP_v0.4 --perft --endDepth=5
+        run: ${{ matrix.config.executable }} --perft --endDepth=5
