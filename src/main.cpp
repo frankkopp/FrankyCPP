@@ -42,13 +42,13 @@ inline po::variables_map programOptions;
 int main(int argc, char* argv[]) {
 
   // Version comes from CMAKE template version.h.in
-  std::string appName = "FrankyCPP_NewGen";
+  std::string appName = "FrankyCPP";
   appName
     .append(" v")
     .append(std::to_string(FrankyCPP_VERSION_MAJOR))
     .append(".")
     .append(std::to_string(FrankyCPP_VERSION_MINOR));
-  std::cout << appName << std::endl;                                   
+  std::cout << appName << std::endl;
 
   std::string config_file, book_file, book_type, testsuite_file;
   int testsuite_time, testsuite_depth, perftStart, perftEnd;
@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
   // Command line options
   try {
     // @formatter:off
-    
+
     // Declare a group of options that will be allowed only on command line
     po::options_description generic("Generic options");
     generic.add_options()
