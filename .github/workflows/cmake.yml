@@ -34,8 +34,8 @@ jobs:
             cxx: "g++",
             generators: "Ninja",
             archiver: "zip",
-            executable: "FrankyCPP_v0.4",
-            test_exec: "FrankyCPP_v0.4_Test",
+            executable: "./FrankyCPP_v0.4",
+            test_exec: "./FrankyCPP_v0.4_Test",
             check: true,
             test: true,
             benchmark: true,
@@ -67,8 +67,8 @@ jobs:
             cxx: "clang++",
             generators: "Ninja",
             archiver: "zip",
-            executable: "FrankyCPP_v0.4",
-            test_exec: "FrankyCPP_v0.4_Test",
+            executable: "./FrankyCPP_v0.4",
+            test_exec: "./FrankyCPP_v0.4_Test",
             check: true,
             test: false,
             benchmark: false,
@@ -188,6 +188,7 @@ jobs:
         working-directory: ${{github.workspace}}/build/src
         run: |
           ${{ matrix.config.executable }} --version
+          pwd
           ls -la .
           ls -la ./src
           ls -la ./test
