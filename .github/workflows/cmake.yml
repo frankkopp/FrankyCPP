@@ -64,7 +64,7 @@ jobs:
         if: startsWith(matrix.config.name, 'Ubuntu_Latest')
         uses: actions/cache@v2
         env:
-          cache-name: cache-boost-build.ubuntu
+          cache-name: cache-boost-build-ubuntu
         with:
           path: boost_1_76_0
           key: ${{ runner.os }}-boost-build
@@ -79,7 +79,7 @@ jobs:
           gcc --version
 
       - name: Download and build BOOST (ubuntu)
-        if: startsWith(matrix.config.name, 'Ubuntu_Latest') && steps.cache-boost-build.ubuntu.outputs.cache-hit != 'true'
+        if: startsWith(matrix.config.name, 'Ubuntu_Latest') && steps.cache-boost-build-ubuntu.outputs.cache-hit != 'true'
         run: |
           wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz >> /dev/null 2>&1
           tar xfz boost_1_76_0.tar.gz
@@ -127,9 +127,35 @@ jobs:
       - name: Install dependencies (macos)
         if: startsWith(matrix.config.os, 'macos')
         run: |
-          brew install p7zip cmake ninja boost
+          brew install p7zip cmake ninja
           ninja --version
           cmake --version
+
+      - name: Cache Boost Build (macos)
+        if: startsWith(matrix.config.os, 'macos')
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-boost-build-macos
+        with:
+          path: boost_1_76_0
+          key: ${{ runner.os }}-boost-build
+
+      - name: Download and build BOOST (macos)
+        if: startsWith(matrix.config.os, 'macos') && steps.cache-boost-build-macos.outputs.cache-hit != 'true'
+        run: |
+          wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz >> /dev/null 2>&1
+          tar xfz boost_1_76_0.tar.gz
+          cd boost_1_76_0/
+          ./bootstrap.sh --with-libraries=serialization,program_options
+          ./b2
+          cd ..
+
+      - name: Install BOOST (macos)
+        if: startsWith(matrix.config.os, 'macos')
+        run: |
+          cd boost_1_76_0/
+          sudo ./b2 install >> /dev/null 2>&1
+          cd ..
 
 # ##############################################################################
 # ALL
