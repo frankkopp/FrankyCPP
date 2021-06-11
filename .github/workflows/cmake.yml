@@ -198,9 +198,9 @@ jobs:
 
       - name: Test
         if: matrix.config.test
-        working-directory: ${{github.workspace}}/build
-        #run: ${{ matrix.config.test_exec }} -*SpeedTests.*:-*TimingTests.*
-        run: ctest -C ${{ matrix.config.build_type }} -E "(SpeedTests|TimingTests)"
+        working-directory: ${{github.workspace}}/build/test
+        run: ${{ matrix.config.test_exec }} -*SpeedTests.*:-*TimingTests.*
+        #run: ctest -C ${{ matrix.config.build_type }} -E "(SpeedTests|TimingTests)"
 
       - name: Run benchmark test
         if: matrix.config.benchmark
