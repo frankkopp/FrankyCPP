@@ -1,15 +1,19 @@
-name: CMake
+name: CMake Matrix Build
+
+# This github workflow runs a build on all three platforms which are supported by FrankyCPP.
+# Tests are only run on Linux for the time being as some how Windows and Mac tests fail due to
+# unknown reasons. Most likely because of github platform specific reasons (folders, etc.).
 
 on:
   push:
     branches:
-      #   - master
-      #   - dev_v0.4
+      - master
+      - dev_v0.4
       - githubWorkflowTests
 
   pull_request:
-#    branches:
-#    - master
+    branches:
+      - master
 
 jobs:
   build:
@@ -22,7 +26,7 @@ jobs:
       matrix:
         config:
           - {
-            name: "Ubuntu_Latest",
+            name: "Ubuntu_Latest_GNU",
             os: ubuntu-latest,
             artifact: "FrankyCPP_v0.4_linux.zip",
             build_type: "Release",
@@ -30,10 +34,14 @@ jobs:
             cxx: "g++",
             archiver: "zip",
             generators: "Ninja",
-            executable: "./src/FrankyCPP_v0.4"
+            executable: "./src/FrankyCPP_v0.4",
+            check: true,
+            test: true,
+            benchmark: true,
+            perft: true,
           }
           - {
-            name: "Windows Latest MSVC",
+            name: "Windows_Latest_MSVC",
             os: windows-latest,
             artifact: "FrankyCPP_v0.4_win.zip",
             build_type: "Release",
@@ -43,9 +51,13 @@ jobs:
             archiver: "zip",
             generators: "Visual Studio 16 2019",
             executable: "./src/Release/FrankyCPP_v0.4.exe"
+            check: true,
+            test: false,
+            benchmark: false,
+            perft: true,
           }
           - {
-            name: "macOS Latest Clang",
+            name: "MacOS_Latest_Clang",
             os: macos-latest,
             artifact: "macos_clang.zip",
             build_type: "Release",
@@ -54,6 +66,10 @@ jobs:
             archiver: "zip",
             generators: "Ninja",
             executable: "./src/FrankyCPP_v0.4"
+            check: true,
+            test: false,
+            benchmark: false,
+            perft: false,
           }
     steps:
       - name: Checkout
@@ -102,7 +118,7 @@ jobs:
 # ##############################################################################
 
       - name: Install dependencies (windows)
-        if: startsWith(matrix.config.os, 'windows')
+        if: startsWith(matrix.config.name, 'Windows')
         run: |
           choco install ninja cmake wget zip unzip --no-progress
           ninja --version
@@ -110,7 +126,7 @@ jobs:
           wget --version
 
       - name: Install BOOST (windows)
-        if: startsWith(matrix.config.os, 'windows') && steps.cache-boost-build-windows.outputs.cache-hit != 'true'
+        if: startsWith(matrix.config.name, 'Windows') && steps.cache-boost-build-windows.outputs.cache-hit != 'true'
         run: |
           choco install boost-msvc-14.2 --no-progress
 #
@@ -144,14 +160,14 @@ jobs:
 # ##############################################################################
 
       - name: Install dependencies (macos)
-        if: startsWith(matrix.config.os, 'macos')
+        if: startsWith(matrix.config.name, 'MacOs')
         run: |
           brew install p7zip cmake ninja
           ninja --version
           cmake --version
 
       - name: Cache Boost Build (macos)
-        if: startsWith(matrix.config.os, 'macos')
+        if: startsWith(matrix.config.name, 'MacOs')
         id: cache-boost-build-macos
         uses: actions/cache@v2.1.6
         with:
@@ -159,7 +175,7 @@ jobs:
           key: ${{ runner.os }}-boost-build
 
       - name: Download and build BOOST (macos)
-        if: startsWith(matrix.config.os, 'macos') && steps.cache-boost-build-macos.outputs.cache-hit != 'true'
+        if: startsWith(matrix.config.name, 'MacOs') && steps.cache-boost-build-macos.outputs.cache-hit != 'true'
         run: |
           wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz >> /dev/null 2>&1
           tar xfz boost_1_76_0.tar.gz
@@ -169,7 +185,7 @@ jobs:
           cd ..
 
       - name: Install BOOST (macos)
-        if: startsWith(matrix.config.os, 'macos')
+        if: startsWith(matrix.config.name, 'MacOs')
         run: |
           cd boost_1_76_0/
           sudo ./b2 install >> /dev/null 2>&1
@@ -186,20 +202,24 @@ jobs:
         run: cmake --build ${{github.workspace}}/build --config ${{ matrix.config.build_type }} --parallel
 
       - name: Check build
+        if: matrix.config.check
         working-directory: ${{github.workspace}}/build
         run: ${{ matrix.config.executable }} --version
 
+# Below tests do not yet run on Windows and Mac together with github workflows.
+# They run fine on actual hardware. Needs more time investment to figure this out.
+
       - name: Test
-        if: startsWith(matrix.config.name, 'Ubuntu_Latest')
+        if: matrix.config.test
         working-directory: ${{github.workspace}}/build
         run: ctest -C ${{ matrix.config.build_type }} -E "(SpeedTests|TimingTests)"
 
       - name: Run benchmark test
-        if: startsWith(matrix.config.name, 'Ubuntu_Latest')
+        if: matrix.config.benchmark
         working-directory: ${{github.workspace}}/build
         run: ./testbench/FrankyCPP_v0.4_Bench
 
       - name: Run PERFT test
-#        if: startsWith(matrix.config.name, 'Ubuntu_Latest')
+        if: matrix.config.perft
         working-directory: ${{github.workspace}}/build
         run: ${{ matrix.config.executable }} -c ${{github.workspace}}/config/FrankyCPP.cfg --perft --endDepth=5
