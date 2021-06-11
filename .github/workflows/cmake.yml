@@ -38,7 +38,7 @@ jobs:
             check: true,
             test: true,
             benchmark: true,
-            perft: true,
+            perft: true
           }
           - {
             name: "Windows_Latest_MSVC",
@@ -50,11 +50,11 @@ jobs:
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat",
             archiver: "zip",
             generators: "Visual Studio 16 2019",
-            executable: "./src/Release/FrankyCPP_v0.4.exe"
+            executable: "./src/Release/FrankyCPP_v0.4.exe",
             check: true,
             test: false,
             benchmark: false,
-            perft: true,
+            perft: true
           }
           - {
             name: "MacOS_Latest_Clang",
@@ -65,11 +65,11 @@ jobs:
             cxx: "clang++",
             archiver: "zip",
             generators: "Ninja",
-            executable: "./src/FrankyCPP_v0.4"
+            executable: "./src/FrankyCPP_v0.4",
             check: true,
             test: false,
             benchmark: false,
-            perft: false,
+            perft: false
           }
     steps:
       - name: Checkout
