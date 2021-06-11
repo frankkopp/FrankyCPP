@@ -20,7 +20,7 @@ jobs:
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
-    #    continue-on-error: true
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -39,7 +39,8 @@ jobs:
             check: true,
             test: true,
             benchmark: true,
-            perft: true
+            perft: true,
+            listCmd: "ls -la"
           }
           - {
             name: "Windows_Latest_MSVC",
@@ -54,9 +55,10 @@ jobs:
             executable: "FrankyCPP_v0.4.exe",
             test_exec: "FrankyCPP_v0.4_Test.exe",
             check: true,
-            test: false,
-            benchmark: false,
-            perft: true
+            test: true,
+            benchmark: true,
+            perft: true,
+            listCmd: "dir"
           }
           - {
             name: "MacOS_Latest_Clang",
@@ -70,9 +72,10 @@ jobs:
             executable: "./FrankyCPP_v0.4",
             test_exec: "./FrankyCPP_v0.4_Test",
             check: true,
-            test: false,
-            benchmark: false,
-            perft: false
+            test: true,
+            benchmark: true,
+            perft: true,
+            listCmd: "ls -la"
           }
     steps:
       - name: Checkout
@@ -183,19 +186,20 @@ jobs:
       - name: Build
         run: cmake --build ${{github.workspace}}/build --config ${{ matrix.config.build_type }} --parallel
 
+      - name: List folder
+        working-directory: ${{github.workspace}}/build
+        run: |
+          pwd
+          ${{ matrix.config.listCmd }} .
+          ${{ matrix.config.listCmd }} ./src
+          ${{ matrix.config.listCmd }} ./test
+          ${{ matrix.config.listCmd }} ./testbench
+
       - name: Check build
         if: matrix.config.check
         working-directory: ${{github.workspace}}/build/src
         run: |
           ${{ matrix.config.executable }} --version
-          pwd
-          ls -la .
-          ls -la ./src
-          ls -la ./test
-          ls -la ./testbench
-
-# Below tests do not yet all run on Windows and Mac together with github workflows.
-# They run fine on actual hardware. Needs more time investment to figure this out.
 
       - name: Test
         if: matrix.config.test
