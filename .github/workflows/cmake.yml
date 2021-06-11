@@ -139,7 +139,7 @@ jobs:
         run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} -G "${{ matrix.config.generators }}"
 
       - name: Build
-        run: cmake -j --build ${{github.workspace}}/build --config ${{ matrix.config.build_type }}
+        run: cmake --build ${{github.workspace}}/build --config ${{ matrix.config.build_type }} --parallel
 
       - name: Test
         if: startsWith(matrix.config.name, 'Ubuntu_Latest')
