@@ -60,15 +60,6 @@ jobs:
 # UBUNTU
 # ##############################################################################
 
-      - name: Cache Boost Build (ubuntu)
-        if: startsWith(matrix.config.name, 'Ubuntu_Latest')
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-boost-build-ubuntu
-        with:
-          path: boost_1_76_0
-          key: ${{ runner.os }}-boost-build
-
       - name: Install dependencies (ubuntu)
         if: startsWith(matrix.config.name, 'Ubuntu_Latest')
         run: |
@@ -77,6 +68,15 @@ jobs:
           ninja --version
           cmake --version
           gcc --version
+
+      - name: Cache Boost Build (ubuntu)
+        if: startsWith(matrix.config.name, 'Ubuntu_Latest')
+        uses: actions/cache@v2.1.6
+        env:
+          cache-name: cache-boost-build-ubuntu
+        with:
+          path: boost_1_76_0
+          key: ${{ runner.os }}-boost-build
 
       - name: Download and build BOOST (ubuntu)
         if: startsWith(matrix.config.name, 'Ubuntu_Latest') && steps.cache-boost-build-ubuntu.outputs.cache-hit != 'true'
@@ -108,7 +108,7 @@ jobs:
 
       - name: Cache Boost Install (windows)
         if: startsWith(matrix.config.os, 'windows')
-        uses: actions/cache@v2
+        uses: actions/cache@v2.1.6
         env:
           cache-name: cache-boost-build-windows
         with:
@@ -133,7 +133,7 @@ jobs:
 
       - name: Cache Boost Build (macos)
         if: startsWith(matrix.config.os, 'macos')
-        uses: actions/cache@v2
+        uses: actions/cache@v2.1.6
         env:
           cache-name: cache-boost-build-macos
         with:
