@@ -202,4 +202,4 @@ jobs:
       - name: Run PERFT test
 #        if: startsWith(matrix.config.name, 'Ubuntu_Latest')
         working-directory: ${{github.workspace}}/build
-        run: ${{ matrix.config.executable }} --perft --endDepth=5
+        run: ${{ matrix.config.executable }} -c ${{github.workspace}}/config/FrankyCPP.cfg --perft --endDepth=5
