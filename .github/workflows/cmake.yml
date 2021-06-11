@@ -124,7 +124,7 @@ jobs:
 #  MACOS
 # ##############################################################################
 
-    - name: Cache Boost Build (windows)
+    - name: Cache Boost Build (macos)
       if: startsWith(matrix.config.os, 'macos')
       uses: actions/cache@v2
       env:
@@ -133,7 +133,7 @@ jobs:
         path: /usr/local/boost_1_73_0
         key: ${{ runner.os }}-boost-build
 
-    - name: Install dependencies on macos
+    - name: Install dependencies (macos)
       if: startsWith(matrix.config.os, 'macos')
       run: |
         brew install p7zip cmake ninja boost
@@ -161,5 +161,6 @@ jobs:
       run: ./testbench/FrankyCPP_v0.4_Bench
 
     - name: Run PERFT test
+      if: startsWith(matrix.config.name, 'Ubuntu_Latest')
       working-directory: ${{github.workspace}}/build
       run: ./src/FrankyCPP_v0.4 --perft --endDepth=5
