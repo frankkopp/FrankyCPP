@@ -200,8 +200,10 @@ include_directories(
 # BOOST
 if (APPLE)
     message("Find Boost on Apple")
-    set(BOOST_ROOT "/usr/local/boost_1_73_0")
-    set(Boost_INCLUDE_DIR "/usr/local/boost_1_73_0")
+    if (NOT BOOST_ROOT)
+        set(BOOST_ROOT "/usr/local/boost_1_73_0")
+        set(Boost_INCLUDE_DIR "/usr/local/boost_1_73_0")
+    endif()
 elseif (CYGWIN)
     message("Find Boost on Cygwin")
     set(BOOST_ROOT "/usr/local/boost_1_72_0")

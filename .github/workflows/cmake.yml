@@ -106,35 +106,35 @@ jobs:
           cmake --version
           wget --version
 
-#      - name: Install BOOST (windows)
-#        if: startsWith(matrix.config.os, 'windows') && steps.cache-boost-build-windows.outputs.cache-hit != 'true'
-#        run: |
-#          choco install boost-msvc-14.2
-
-      - name: Cache Boost Install (windows)
-        if: startsWith(matrix.config.os, 'windows')
-        id: cache-boost-build-windows
-        uses: actions/cache@v2.1.6
-        with:
-          path: boost_1_76_0
-          key: ${{ runner.os }}-boost-build
-
-      - name: Download and build BOOST (windows)
+      - name: Install BOOST (windows)
         if: startsWith(matrix.config.os, 'windows') && steps.cache-boost-build-windows.outputs.cache-hit != 'true'
         run: |
-          wget -q https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.zip
-          unzip -q boost_1_76_0.zip
-          cd boost_1_76_0/
-          ./bootstrap.bat --with-libraries=serialization,program_options
-          ./b2
-          cd ..
-
-      - name: Install BOOST (windows)
-        if: startsWith(matrix.config.os, 'windows')
-        run: |
-          cd boost_1_76_0/
-          sudo ./b2 install >> /dev/null 2>&1
-          cd ..
+          choco install boost-msvc-14.2
+#
+#      - name: Cache Boost Install (windows)
+#        if: startsWith(matrix.config.os, 'windows')
+#        id: cache-boost-build-windows
+#        uses: actions/cache@v2.1.6
+#        with:
+#          path: boost_1_76_0
+#          key: ${{ runner.os }}-boost-build
+#
+#      - name: Download and build BOOST (windows)
+#        if: startsWith(matrix.config.os, 'windows') && steps.cache-boost-build-windows.outputs.cache-hit != 'true'
+#        run: |
+#          wget -q https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.zip
+#          unzip -q boost_1_76_0.zip
+#          cd boost_1_76_0/
+#          ./bootstrap.bat --with-libraries=serialization,program_options
+#          ./b2
+#          cd ..
+#
+#      - name: Install BOOST (windows)
+#        if: startsWith(matrix.config.os, 'windows')
+#        run: |
+#          cd boost_1_76_0/
+#          sudo ./b2 install >> /dev/null 2>&1
+#          cd ..
 
 # ##############################################################################
 #  MACOS
