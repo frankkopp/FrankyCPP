@@ -35,6 +35,7 @@ jobs:
             archiver: "zip",
             generators: "Ninja",
             executable: "./src/FrankyCPP_v0.4",
+            test_exec: "./test/FrankyCPP_v0.4_Test.exe",
             check: true,
             test: true,
             benchmark: true,
@@ -51,6 +52,7 @@ jobs:
             archiver: "zip",
             generators: "Visual Studio 16 2019",
             executable: "./src/Release/FrankyCPP_v0.4.exe",
+            test_exec: "./test/FrankyCPP_v0.4_Test.exe",
             check: true,
             test: false,
             benchmark: false,
@@ -66,6 +68,7 @@ jobs:
             archiver: "zip",
             generators: "Ninja",
             executable: "./src/FrankyCPP_v0.4",
+            test_exec: "./test/FrankyCPP_v0.4_Test.exe",
             check: true,
             test: false,
             benchmark: false,
@@ -120,40 +123,16 @@ jobs:
       - name: Install dependencies (windows)
         if: startsWith(matrix.config.name, 'Windows')
         run: |
-          choco install ninja cmake wget zip unzip --no-progress
+          choco install ninja cmake --no-progress
           ninja --version
           cmake --version
-          wget --version
+
+# wget zip unzip
 
       - name: Install BOOST (windows)
         if: startsWith(matrix.config.name, 'Windows') && steps.cache-boost-build-windows.outputs.cache-hit != 'true'
         run: |
           choco install boost-msvc-14.2 --no-progress
-#
-#      - name: Cache Boost Install (windows)
-#        if: startsWith(matrix.config.os, 'windows')
-#        id: cache-boost-build-windows
-#        uses: actions/cache@v2.1.6
-#        with:
-#          path: boost_1_76_0
-#          key: ${{ runner.os }}-boost-build
-#
-#      - name: Download and build BOOST (windows)
-#        if: startsWith(matrix.config.os, 'windows') && steps.cache-boost-build-windows.outputs.cache-hit != 'true'
-#        run: |
-#          wget -q https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.zip
-#          unzip -q boost_1_76_0.zip
-#          cd boost_1_76_0/
-#          ./bootstrap.bat --with-libraries=serialization,program_options
-#          ./b2
-#          cd ..
-#
-#      - name: Install BOOST (windows)
-#        if: startsWith(matrix.config.os, 'windows')
-#        run: |
-#          cd boost_1_76_0/
-#          sudo ./b2 install >> /dev/null 2>&1
-#          cd ..
 
 # ##############################################################################
 #  MACOS
@@ -206,13 +185,14 @@ jobs:
         working-directory: ${{github.workspace}}/build
         run: ${{ matrix.config.executable }} --version
 
-# Below tests do not yet run on Windows and Mac together with github workflows.
+# Below tests do not yet all run on Windows and Mac together with github workflows.
 # They run fine on actual hardware. Needs more time investment to figure this out.
 
       - name: Test
         if: matrix.config.test
         working-directory: ${{github.workspace}}/build
-        run: ctest -C ${{ matrix.config.build_type }} -E "(SpeedTests|TimingTests)"
+        run: ${{ matrix.config.test_exec }} -*SpeedTests.*:-*TimingTests.*
+#run: ctest -C ${{ matrix.config.build_type }} -E "(SpeedTests|TimingTests)"
 
       - name: Run benchmark test
         if: matrix.config.benchmark
