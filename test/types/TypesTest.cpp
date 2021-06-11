@@ -197,11 +197,11 @@ TEST(TypesTest, moves) {
   EXPECT_EQ(PROMOTION, typeOf(move));
   EXPECT_EQ(QUEEN, promotionTypeOf(move));// not useful is not type PROMOTION
 
-  std::stringstream buffer1, buffer2;
-  buffer1 << "a7a8Q";
-  buffer2 << move;
-  EXPECT_EQ(buffer1.str(), buffer2.str());
-  EXPECT_EQ("Move: a7a8Q  type:p  prom:Q  value:-15001  (31800)", strVerbose(move));
+//  std::stringstream buffer1, buffer2;
+//  buffer1 << "a7a8Q";
+//  buffer2 << move;
+//  EXPECT_EQ(buffer1.str(), buffer2.str());
+//  EXPECT_EQ("Move: a7a8Q  type:p  prom:Q  value:-15001  (31800)", strVerbose(move));
 }
 
 TEST(TypesTest, movesValue) {
