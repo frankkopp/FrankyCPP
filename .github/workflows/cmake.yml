@@ -37,9 +37,9 @@ jobs:
             cxx: "g++",
             generators: "Ninja",
 
-            executable: "./FrankyCPP_v0.4",
-            test_exec: "./FrankyCPP_v0.4_Test",
-            bench_exec: "./FrankyCPP_v0.4_Bench",
+            executable: "FrankyCPP_v0.4",
+            test_exec: "FrankyCPP_v0.4_Test",
+            bench_exec: "FrankyCPP_v0.4_Bench",
             check: true,
             test: true,
             benchmark: true,
@@ -61,9 +61,9 @@ jobs:
             #generators: "Ninja",
             #environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat",
 
-            executable: "./FrankyCPP_v0.4.exe",
-            test_exec: "./FrankyCPP_v0.4_Test.exe",
-            bench_exec: "./FrankyCPP_v0.4_Bench.exe",
+            executable: "FrankyCPP_v0.4.exe",
+            test_exec: "FrankyCPP_v0.4_Test.exe",
+            bench_exec: "FrankyCPP_v0.4_Bench.exe",
             check: true,
             test: true,
             benchmark: true,
@@ -83,9 +83,9 @@ jobs:
             cxx: "clang++",
 
             generators: "Unix Makefiles",
-            executable: "./FrankyCPP_v0.4",
-            test_exec: "./FrankyCPP_v0.4_Test",
-            bench_exec: "./FrankyCPP_v0.4_Bench",
+            executable: "FrankyCPP_v0.4",
+            test_exec: "FrankyCPP_v0.4_Test",
+            bench_exec: "FrankyCPP_v0.4_Bench",
             check: true,
             test: false,      # fails on github MacOS somehow but works on local Mac
             benchmark: false, # fails on github MacOS somehow but works on local Mac
@@ -240,7 +240,7 @@ jobs:
       - name: Zipping
         uses: papeloto/action-zip@v1
         with:
-          files: ${{github.workspace}}/build/${{ matrix.config.executable }} config/ books/
+          files: build/${{ matrix.config.executable }} config/ books/
           recursive: false
           dest: FrankyCPP_${{ runner.os }}.zip
 #
