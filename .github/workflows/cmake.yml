@@ -107,7 +107,7 @@ jobs:
         if: startsWith(matrix.config.name, 'Ubuntu_Latest')
         run: |
           sudo apt-get update
-          sudo apt-get install ninja-build cmake
+          sudo apt-get install ninja-build cmake zip
           ninja --version
           cmake --version
           gcc --version
@@ -144,7 +144,7 @@ jobs:
       - name: Install dependencies (windows)
         if: startsWith(matrix.config.name, 'Windows')
         run: |
-          choco install ninja cmake --no-progress
+          choco install ninja cmake zip  --no-progress
           ninja --version
           cmake --version
 
@@ -160,7 +160,7 @@ jobs:
       - name: Install dependencies (macos)
         if: startsWith(matrix.config.name, 'MacOs')
         run: |
-          brew install p7zip cmake ninja
+          brew install cmake ninja zip
           ninja --version
           cmake --version
 
@@ -229,21 +229,11 @@ jobs:
         working-directory: ${{github.workspace}}/build
         run: ./${{ matrix.config.executable }} -c ${{github.workspace}}/config/FrankyCPP.cfg --perft --endDepth=5
 
-#      - name: Uploading files
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: matchmaker
-#          path: |
-#            README.md
-#            matchmaker.exe
-#
       - name: Zipping
-        uses: papeloto/action-zip@v1
-        with:
-          working-directory: ${{github.workspace}}/build
-          files: ${{ matrix.config.executable }} ../config/ ../books/
-          recursive: false
-          dest: FrankyCPP_${{ runner.os }}.zip
+        working-directory: ${{github.workspace}}
+        run: |
+          ${{ matrix.config.archiver }} -v FrankyCPP_${{ runner.os }}.zip build/${{ matrix.config.executable }}
+          ${{ matrix.config.archiver }} -vr FrankyCPP_${{ runner.os }}.zip config/ books/
 #
       - name: Deploy Latest Build
         uses: WebFreak001/deploy-nightly@v1.1.0
