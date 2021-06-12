@@ -4,8 +4,7 @@ name: CMake Matrix Build
 # Tests are only run on Linux and Windows for the time being as some how Mac tests fail due to
 # unknown reasons. Most likely because of github platform specific reasons (folders, etc.).
 
-# TODO: create artefacts of executables and upload them to nightly release
-# TODO: fix macos issue when running program_options
+# TODO: fix MacOS issue when running program_options
 
 on:
   push:
@@ -37,9 +36,9 @@ jobs:
             cxx: "g++",
             generators: "Ninja",
 
-            executable: "./FrankyCPP_v0.4",
-            test_exec: "./FrankyCPP_v0.4_Test",
-            bench_exec: "./FrankyCPP_v0.4_Bench",
+            executable: "FrankyCPP_v0.4",
+            test_exec: "FrankyCPP_v0.4_Test",
+            bench_exec: "FrankyCPP_v0.4_Bench",
             check: true,
             test: true,
             benchmark: true,
@@ -61,9 +60,9 @@ jobs:
             #generators: "Ninja",
             #environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat",
 
-            executable: "./FrankyCPP_v0.4.exe",
-            test_exec: "./FrankyCPP_v0.4_Test.exe",
-            bench_exec: "./FrankyCPP_v0.4_Bench.exe",
+            executable: "FrankyCPP_v0.4.exe",
+            test_exec: "FrankyCPP_v0.4_Test.exe",
+            bench_exec: "FrankyCPP_v0.4_Bench.exe",
             check: true,
             test: true,
             benchmark: true,
@@ -83,9 +82,9 @@ jobs:
             cxx: "clang++",
 
             generators: "Unix Makefiles",
-            executable: "./FrankyCPP_v0.4",
-            test_exec: "./FrankyCPP_v0.4_Test",
-            bench_exec: "./FrankyCPP_v0.4_Bench",
+            executable: "FrankyCPP_v0.4",
+            test_exec: "FrankyCPP_v0.4_Test",
+            bench_exec: "FrankyCPP_v0.4_Bench",
             check: true,
             test: false,      # fails on github MacOS somehow but works on local Mac
             benchmark: false, # fails on github MacOS somehow but works on local Mac
@@ -107,7 +106,7 @@ jobs:
         if: startsWith(matrix.config.name, 'Ubuntu_Latest')
         run: |
           sudo apt-get update
-          sudo apt-get install ninja-build cmake
+          sudo apt-get install ninja-build cmake zip
           ninja --version
           cmake --version
           gcc --version
@@ -144,7 +143,7 @@ jobs:
       - name: Install dependencies (windows)
         if: startsWith(matrix.config.name, 'Windows')
         run: |
-          choco install ninja cmake --no-progress
+          choco install ninja cmake zip  --no-progress
           ninja --version
           cmake --version
 
@@ -160,7 +159,7 @@ jobs:
       - name: Install dependencies (macos)
         if: startsWith(matrix.config.name, 'MacOs')
         run: |
-          brew install p7zip cmake ninja
+          brew install cmake ninja zip
           ninja --version
           cmake --version
 
@@ -211,20 +210,41 @@ jobs:
         if: matrix.config.check
         working-directory: ${{github.workspace}}/build
         run: |
-          ${{ matrix.config.executable }} --version
+          ./${{ matrix.config.executable }} --version
 
       - name: Run unit tests
         if: matrix.config.test
         working-directory: ${{github.workspace}}/build
-        run: ${{ matrix.config.test_exec }} -*SpeedTests.*:-*TimingTests.*
+        run: ./${{ matrix.config.test_exec }} -*SpeedTests.*:-*TimingTests.*
         #run: ctest -C ${{ matrix.config.build_type }} -E "(SpeedTests|TimingTests)"
 
       - name: Run benchmark test
         if: matrix.config.benchmark
         working-directory: ${{github.workspace}}/build
-        run: ${{ matrix.config.bench_exec }}
+        run: ./${{ matrix.config.bench_exec }}
 
       - name: Run PERFT test
         if: matrix.config.perft
         working-directory: ${{github.workspace}}/build
-        run: ${{ matrix.config.executable }} -c ${{github.workspace}}/config/FrankyCPP.cfg --perft --endDepth=5
+        run: ./${{ matrix.config.executable }} -c ${{github.workspace}}/config/FrankyCPP.cfg --perft --endDepth=5
+
+      - name: Zipping
+        if: github.ref == 'refs/heads/master'
+        working-directory: ${{github.workspace}}
+        run: |
+          ${{ matrix.config.archiver }} -vj FrankyCPP_${{ runner.os }}.zip build/${{ matrix.config.executable }}
+          ${{ matrix.config.archiver }} -vr FrankyCPP_${{ runner.os }}.zip config/ books/book.txt
+#
+      - name: Deploy Latest Build
+        if: github.ref == 'refs/heads/master'
+        uses: WebFreak001/deploy-nightly@v1.1.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # automatically provided by github actions
+        with:
+          upload_url: https://uploads.github.com/repos/frankkopp/FrankyCPP/releases/44522659/assets{?name,label} # find out this value by opening https://api.github.com/repos/<owner>/<repo>/releases in your browser and copy the full "upload_url" value including the {?name,label} part
+          release_id: 44522659 # same as above (id can just be taken out the upload_url, it's used to find old releases)
+          asset_path: FrankyCPP_${{ runner.os }}.zip # path to archive to upload
+          asset_name: FrankyCPP_${{ runner.os }}-$$.zip # name to upload the release as, use $$ to insert date (YYYYMMDD) and 6 letter commit hash
+          asset_content_type: application/zip # required by GitHub API
+          max_releases: 1 # optional, if there are more releases than this matching the asset_name, the oldest ones are going to be deleted
+

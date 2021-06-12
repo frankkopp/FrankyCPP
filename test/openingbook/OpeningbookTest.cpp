@@ -51,9 +51,6 @@ TEST_F(OpeningBookTest, readFile) {
   EXPECT_TRUE(OpeningBook::fileExists(book.bookFilePath));
   fprintln("File {} Size {:L} Byte", book.bookFilePath, OpeningBook::getFileSize(book.bookFilePath));
 
-  // non existing file
-  EXPECT_THROW(book.readFile("Invalid"), std::runtime_error);
-
   // read file lines
   auto lines = book.readFile(book.bookFilePath);
   EXPECT_EQ(2'620'079, lines.size());
