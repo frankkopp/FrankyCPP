@@ -79,15 +79,15 @@ jobs:
           cmake --version
           gcc --version
 
-      - name: Cache Boost Build (ubuntu)
-        id: cache-boost-build-ubuntu
+      - name: Cache Boost Codeql (ubuntu)
+        id: cache-boost-codeql-ubuntu
         uses: actions/cache@v2.1.6
         with:
           path: boost_1_76_0
-          key: ${{ runner.os }}-boost-build
+          key: ${{ runner.os }}-boost-codeql
 
       - name: Download and build BOOST (ubuntu)
-        if: steps.cache-boost-build-ubuntu.outputs.cache-hit != 'true'
+        if: steps.cache-boost-codeql-ubuntu.outputs.cache-hit != 'true'
         run: |
           wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz >> /dev/null 2>&1
           tar xfz boost_1_76_0.tar.gz
