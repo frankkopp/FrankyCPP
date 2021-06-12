@@ -4,8 +4,7 @@ name: CMake Matrix Build
 # Tests are only run on Linux and Windows for the time being as some how Mac tests fail due to
 # unknown reasons. Most likely because of github platform specific reasons (folders, etc.).
 
-# TODO: create artefacts of executables and upload them to nightly release
-# TODO: fix macos issue when running program_options
+# TODO: fix MacOS issue when running program_options
 
 on:
   push:
