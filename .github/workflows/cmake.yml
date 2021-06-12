@@ -45,9 +45,9 @@ jobs:
             benchmark: true,
             perft: true,
 
-            listCmd: "ls -la"
+            listCmd: "ls -la",
             archiver: "zip",
-            artifact: "FrankyCPP_v0.4_linux.zip",
+            artifact: "FrankyCPP_v0.4_linux.zip"
           }
           # WINDOWS
           - {
@@ -69,9 +69,9 @@ jobs:
             benchmark: true,
             perft: true,
 
-            listCmd: "ls"
+            listCmd: "ls",
             artifact: "FrankyCPP_v0.4_win.zip",
-            archiver: "zip",
+            archiver: "zip"
           }
           # MACOS
           - {
@@ -91,9 +91,9 @@ jobs:
             benchmark: false, # fails on github MacOS somehow but works on local Mac
             perft: false,     # fails on github MacOS somehow but works on local Mac
 
-            listCmd: "ls -la"
+            listCmd: "ls -la",
             artifact: "macos_clang.zip",
-            archiver: "zip",
+            archiver: "zip"
           }
     steps:
       - name: Checkout
