@@ -28,4 +28,4 @@ jobs:
           CLOSE_LIMIT: 0
           ROOT: "src"
           PROJECT_COLUMN_ID: 9828767
-          INCLUDE_PATTERN: "\\.(cpp|h)$"
+          INCLUDE_PATTERN: "\\.(cpp|h|txt|yml)$"
