@@ -1,8 +1,11 @@
 name: CMake Matrix Build
 
 # This github workflow runs a build on all three platforms which are supported by FrankyCPP.
-# Tests are only run on Linux for the time being as some how Windows and Mac tests fail due to
+# Tests are only run on Linux and Windows for the time being as some how Mac tests fail due to
 # unknown reasons. Most likely because of github platform specific reasons (folders, etc.).
+
+# TODO: create artefacts of executables and upload them to nightly release
+# TODO: fix macos issue when running program_options
 
 on:
   push:
@@ -17,7 +20,6 @@ on:
 
 jobs:
   build:
-    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     continue-on-error: false
@@ -25,15 +27,16 @@ jobs:
       fail-fast: false
       matrix:
         config:
+          # UBUNTU
           - {
             name: "Ubuntu_Latest_GNU",
             os: ubuntu-latest,
-            artifact: "FrankyCPP_v0.4_linux.zip",
+
             build_type: "Release",
             cc: "gcc",
             cxx: "g++",
             generators: "Ninja",
-            archiver: "zip",
+
             executable: "./FrankyCPP_v0.4",
             test_exec: "./FrankyCPP_v0.4_Test",
             bench_exec: "./FrankyCPP_v0.4_Bench",
@@ -41,19 +44,23 @@ jobs:
             test: true,
             benchmark: true,
             perft: true,
+
             listCmd: "ls -la"
+            archiver: "zip",
+            artifact: "FrankyCPP_v0.4_linux.zip",
           }
+          # WINDOWS
           - {
             name: "Windows_Latest_MSVC",
             os: windows-latest,
-            artifact: "FrankyCPP_v0.4_win.zip",
+
             build_type: "Release",
             cc: "cl",
             cxx: "cl",
-            environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat",
             generators: "Visual Studio 16 2019",
             #generators: "Ninja",
-            archiver: "zip",
+            #environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat",
+
             executable: "./FrankyCPP_v0.4.exe",
             test_exec: "./FrankyCPP_v0.4_Test.exe",
             bench_exec: "./FrankyCPP_v0.4_Bench.exe",
@@ -61,32 +68,39 @@ jobs:
             test: true,
             benchmark: true,
             perft: true,
+
             listCmd: "ls"
+            artifact: "FrankyCPP_v0.4_win.zip",
+            archiver: "zip",
           }
+          # MACOS
           - {
             name: "MacOS_Latest_Clang",
             os: macos-latest,
-            artifact: "macos_clang.zip",
+
             build_type: "Release",
             cc: "clang",
             cxx: "clang++",
+
             generators: "Unix Makefiles",
-            archiver: "zip",
             executable: "./FrankyCPP_v0.4",
             test_exec: "./FrankyCPP_v0.4_Test",
             bench_exec: "./FrankyCPP_v0.4_Bench",
             check: true,
-            test: false,
-            benchmark: false,
-            perft: false,
+            test: false,      # fails on github MacOS somehow but works on local Mac
+            benchmark: false, # fails on github MacOS somehow but works on local Mac
+            perft: false,     # fails on github MacOS somehow but works on local Mac
+
             listCmd: "ls -la"
+            artifact: "macos_clang.zip",
+            archiver: "zip",
           }
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
 # ##############################################################################
-# UBUNTU
+# UBUNTU Setup
 # ##############################################################################
 
       - name: Install dependencies (ubuntu)
@@ -124,7 +138,7 @@ jobs:
           cd ..
 
 # ##############################################################################
-# WINDOWS
+# WINDOWS Setup
 # ##############################################################################
 
       - name: Install dependencies (windows)
@@ -134,18 +148,13 @@ jobs:
           ninja --version
           cmake --version
 
-# wget zip unzip
-
       - name: Install BOOST (windows)
-        if: startsWith(matrix.config.name, 'Windows') && steps.cache-boost-build-windows.outputs.cache-hit != 'true'
+        if: startsWith(matrix.config.name, 'Windows')
         run: |
           choco install boost-msvc-14.2 --no-progress
 
-
-# ./b2 --with-program_options --with-filesystem --with-system
-
 # ##############################################################################
-#  MACOS
+#  MACOS Setup
 # ##############################################################################
 
       - name: Install dependencies (macos)
@@ -181,7 +190,7 @@ jobs:
           cd ..
 
 # ##############################################################################
-# ALL
+# BUILD AND TEST
 # ##############################################################################
 
       - name: Configure CMake
@@ -190,7 +199,7 @@ jobs:
       - name: Build
         run: cmake --build ${{github.workspace}}/build --config ${{ matrix.config.build_type }} --parallel
 
-      - name: List folder
+      - name: List build folders
         working-directory: ${{github.workspace}}/build
         run: |
           ${{ matrix.config.listCmd }} .
@@ -198,13 +207,13 @@ jobs:
           ${{ matrix.config.listCmd }} ./test
           ${{ matrix.config.listCmd }} ./testbench
 
-      - name: Check build
+      - name: Run simple check of build
         if: matrix.config.check
         working-directory: ${{github.workspace}}/build
         run: |
           ${{ matrix.config.executable }} --version
 
-      - name: Test
+      - name: Run unit tests
         if: matrix.config.test
         working-directory: ${{github.workspace}}/build
         run: ${{ matrix.config.test_exec }} -*SpeedTests.*:-*TimingTests.*
