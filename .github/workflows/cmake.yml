@@ -211,23 +211,23 @@ jobs:
         if: matrix.config.check
         working-directory: ${{github.workspace}}/build
         run: |
-          ${{ matrix.config.executable }} --version
+          ./${{ matrix.config.executable }} --version
 
       - name: Run unit tests
         if: matrix.config.test
         working-directory: ${{github.workspace}}/build
-        run: ${{ matrix.config.test_exec }} -*SpeedTests.*:-*TimingTests.*
+        run: ./${{ matrix.config.test_exec }} -*SpeedTests.*:-*TimingTests.*
         #run: ctest -C ${{ matrix.config.build_type }} -E "(SpeedTests|TimingTests)"
 
       - name: Run benchmark test
         if: matrix.config.benchmark
         working-directory: ${{github.workspace}}/build
-        run: ${{ matrix.config.bench_exec }}
+        run: ./${{ matrix.config.bench_exec }}
 
       - name: Run PERFT test
         if: matrix.config.perft
         working-directory: ${{github.workspace}}/build
-        run: ${{ matrix.config.executable }} -c ${{github.workspace}}/config/FrankyCPP.cfg --perft --endDepth=5
+        run: ./${{ matrix.config.executable }} -c ${{github.workspace}}/config/FrankyCPP.cfg --perft --endDepth=5
 
 #      - name: Uploading files
 #        uses: actions/upload-artifact@v2
