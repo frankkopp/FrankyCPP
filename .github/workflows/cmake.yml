@@ -232,8 +232,8 @@ jobs:
       - name: Zipping
         working-directory: ${{github.workspace}}
         run: |
-          ${{ matrix.config.archiver }} -v FrankyCPP_${{ runner.os }}.zip build/${{ matrix.config.executable }}
-          ${{ matrix.config.archiver }} -vr FrankyCPP_${{ runner.os }}.zip config/ books/
+          ${{ matrix.config.archiver }} -vj FrankyCPP_${{ runner.os }}.zip build/${{ matrix.config.executable }}
+          ${{ matrix.config.archiver }} -vr FrankyCPP_${{ runner.os }}.zip config/ books/book.txt
 #
       - name: Deploy Latest Build
         uses: WebFreak001/deploy-nightly@v1.1.0
