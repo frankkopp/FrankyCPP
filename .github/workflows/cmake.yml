@@ -10,12 +10,12 @@ on:
   push:
     branches:
       - master
-      - dev_v0.4
-      - githubWorkflowTests
+      - dev_*
 
   pull_request:
     branches:
       - master
+      - dev_*
 
 jobs:
   build:
