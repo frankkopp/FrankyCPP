@@ -230,12 +230,14 @@ jobs:
         run: ./${{ matrix.config.executable }} -c ${{github.workspace}}/config/FrankyCPP.cfg --perft --endDepth=5
 
       - name: Zipping
+        if: github.ref == 'refs/heads/master'
         working-directory: ${{github.workspace}}
         run: |
           ${{ matrix.config.archiver }} -vj FrankyCPP_${{ runner.os }}.zip build/${{ matrix.config.executable }}
           ${{ matrix.config.archiver }} -vr FrankyCPP_${{ runner.os }}.zip config/ books/book.txt
 #
       - name: Deploy Latest Build
+        if: github.ref == 'refs/heads/master'
         uses: WebFreak001/deploy-nightly@v1.1.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # automatically provided by github actions
