@@ -228,3 +228,31 @@ jobs:
         if: matrix.config.perft
         working-directory: ${{github.workspace}}/build
         run: ${{ matrix.config.executable }} -c ${{github.workspace}}/config/FrankyCPP.cfg --perft --endDepth=5
+
+#      - name: Uploading files
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: matchmaker
+#          path: |
+#            README.md
+#            matchmaker.exe
+#
+      - name: Zipping
+        uses: papeloto/action-zip@v1
+        with:
+          files: ${{github.workspace}}/build/${{ matrix.config.executable }} config/ books/
+          recursive: false
+          dest: FrankyCPP_${{ runner.os }}.zip
+#
+      - name: Deploy Latest Build
+        uses: WebFreak001/deploy-nightly@v1.1.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # automatically provided by github actions
+        with:
+          upload_url: https://uploads.github.com/repos/frankkopp/FrankyCPP/releases/44522659/assets{?name,label} # find out this value by opening https://api.github.com/repos/<owner>/<repo>/releases in your browser and copy the full "upload_url" value including the {?name,label} part
+          release_id: 44522659 # same as above (id can just be taken out the upload_url, it's used to find old releases)
+          asset_path: FrankyCPP_${{ runner.os }}.zip # path to archive to upload
+          asset_name: FrankyCPP_${{ runner.os }}-$$.zip # name to upload the release as, use $$ to insert date (YYYYMMDD) and 6 letter commit hash
+          asset_content_type: application/zip # required by GitHub API
+          max_releases: 1 # optional, if there are more releases than this matching the asset_name, the oldest ones are going to be deleted
+
