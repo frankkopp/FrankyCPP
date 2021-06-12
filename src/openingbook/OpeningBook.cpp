@@ -146,13 +146,13 @@ std::string OpeningBook::getLevelStr(int level, int maxLevel, const BookEntry* n
 
 std::vector<std::string_view> OpeningBook::readFile(const std::string& filePath) {
 
-  if (!fileExists(filePath)) {
-    const std::string message = fmt::format("Opening Book '{}' not found", filePath);
-    LOG__ERROR(Logger::get().BOOK_LOG, message);
-    throw std::runtime_error(message);
-  }
-
   std::vector<std::string_view> lines{};
+
+  if (!fileExists(filePath)) {
+    const std::string message = fmt::format("Opening Book '{}' not found. Using empty book.", filePath);
+    LOG__ERROR(Logger::get().BOOK_LOG, message);
+    return lines;
+  }
 
   const auto start = std::chrono::high_resolution_clock::now();
 
@@ -186,7 +186,7 @@ std::vector<std::string_view> OpeningBook::readFile(const std::string& filePath)
   else {
     const std::string message = fmt::format("Could not open Opening Book '{}' ", filePath);
     LOG__ERROR(Logger::get().BOOK_LOG, message);
-    throw std::runtime_error(message);
+    return lines;
   }
 
   return lines;
