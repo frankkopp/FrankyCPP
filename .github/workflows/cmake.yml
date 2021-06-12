@@ -76,7 +76,7 @@ jobs:
             test_exec: "./FrankyCPP_v0.4_Test",
             bench_exec: "./FrankyCPP_v0.4_Bench",
             check: true,
-            test: true,
+            test: false,
             benchmark: true,
             perft: true,
             listCmd: "ls -la"
