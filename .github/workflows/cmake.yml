@@ -78,7 +78,7 @@ jobs:
             check: true,
             test: false,
             benchmark: false,
-            perft: true,
+            perft: false,
             listCmd: "ls -la"
           }
     steps:
