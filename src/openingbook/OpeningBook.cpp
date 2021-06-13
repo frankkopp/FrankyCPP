@@ -148,7 +148,7 @@ std::vector<std::string_view> OpeningBook::readFile(const std::string& filePath)
 
   std::vector<std::string_view> lines{};
 
-  if (!fileExists(filePath)) {
+  if (!std::filesystem::exists(filePath)) {
     const std::string message = fmt::format("Opening Book '{}' not found. Using empty book.", filePath);
     LOG__ERROR(Logger::get().BOOK_LOG, message);
     return lines;
@@ -158,7 +158,7 @@ std::vector<std::string_view> OpeningBook::readFile(const std::string& filePath)
 
   std::fstream file(filePath, std::ios::in | std::ios::binary);
   if (file.is_open()) {
-    const uint64_t fileSize = getFileSize(filePath);
+    const uint64_t fileSize = std::filesystem::file_size(filePath);
     LOG__DEBUG(Logger::get().BOOK_LOG, "Opened Opening Book '{}' with {:L} Byte successful.", filePath, fileSize);
 
     // fast way to read all lines from a file into memory
@@ -640,7 +640,7 @@ bool OpeningBook::loadFromCache() {
   {// load data from archive
     const auto start               = std::chrono::high_resolution_clock::now();
     const std::string serCacheFile = bookFilePath + cacheExt;
-    LOG__DEBUG(Logger::get().BOOK_LOG, "Loading from cache file {} ({:L} kB)", serCacheFile, getFileSize(serCacheFile) / 1'024);
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Loading from cache file {} ({:L} kB)", serCacheFile, std::filesystem::file_size(serCacheFile) / 1'024);
     // create and open a binary archive for input
     std::ifstream ifsBin(serCacheFile, std::fstream::binary | std::fstream::in);
     if (!ifsBin.is_open() || !ifsBin.good()) {
@@ -663,11 +663,11 @@ bool OpeningBook::loadFromCache() {
 /* checks if a cache file exists */
 bool OpeningBook::hasCache() const {
   const std::basic_string<char> serCacheFile = bookFilePath + cacheExt;
-  if (!fileExists(serCacheFile)) {
+  if (!std::filesystem::exists(serCacheFile)) {
     LOG__DEBUG(Logger::get().BOOK_LOG, "No cache file {} available", serCacheFile);
     return false;
   }
-  uint64_t fsize = getFileSize(serCacheFile);
+  uint64_t fsize = std::filesystem::file_size(serCacheFile);
   LOG__DEBUG(Logger::get().BOOK_LOG, "Cache file {} ({:L} kB) available", serCacheFile, fsize / 1'024);
   return true;
 }

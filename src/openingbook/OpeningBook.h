@@ -169,20 +169,6 @@ public:
    */
   [[nodiscard]] Move getRandomMove(Key zobrist) const;
 
-  /** Checks of file exists and encapsulates platform differences for
-  * filesystem operations (obsolete with support for std::filesystem) */
-  static inline bool fileExists(const std::string& filePath) {
-    // TODO: inline these as we can expect std::filesystem now
-    return std::filesystem::exists(filePath);
-  }
-
-  /** Returns files size in bytes and encapsulates platform differences for
-  * filesystem operations  (obsolete with support for std::filesystem) */
-  static inline uint64_t getFileSize(const std::string& filePath) {
-    // TODO: inline these as we can expect std::filesystem now
-    return std::filesystem::file_size(filePath);
-  }
-
 private:
   // reads all lines from a file into a vector of string_views
   std::vector<std::string_view> readFile(const std::string& filePath);

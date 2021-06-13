@@ -48,8 +48,8 @@ TEST_F(OpeningBookTest, readFile) {
   // set up Opening Book
   OpeningBook book{"./books/superbook.pgn", OpeningBook::BookFormat::PGN};
   EXPECT_EQ(0, book.bookMap.size());
-  EXPECT_TRUE(OpeningBook::fileExists(book.bookFilePath));
-  fprintln("File {} Size {:L} Byte", book.bookFilePath, OpeningBook::getFileSize(book.bookFilePath));
+  EXPECT_TRUE(std::filesystem::exists(book.bookFilePath));
+  fprintln("File {} Size {:L} Byte", book.bookFilePath, std::filesystem::file_size(book.bookFilePath));
 
   // read file lines
   auto lines = book.readFile(book.bookFilePath);
