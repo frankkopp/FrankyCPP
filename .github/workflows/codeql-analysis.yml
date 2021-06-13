@@ -14,15 +14,16 @@ name: "CodeQL"
 on:
   push:
     branches:
-      #      - master
-      #      - dev_*
-      - githubWorkflowTests
+      - master
+      - dev_*
+
   pull_request:
-#    branches:
-#      - master
-#      - dev_*
-#  schedule:
-#    - cron: '21 4 * * 2'
+    branches:
+      - master
+      - dev_*
+
+  schedule:
+    - cron: '21 4 * * 2'
 
 jobs:
   analyze:
