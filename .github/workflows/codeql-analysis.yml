@@ -97,7 +97,6 @@ jobs:
           cd ..
 
       - name: Install BOOST (ubuntu)
-        if: startsWith(matrix.config.name, 'Ubuntu_Latest')
         run: |
           cd boost_1_76_0/
           sudo ./b2 install >> /dev/null 2>&1
