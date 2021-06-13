@@ -3,7 +3,7 @@ Re-Start of C++ Version of Franky Chess Engine
 
 Master
 [![CMake](https://github.com/frankkopp/FrankyCPP/actions/workflows/cmake.yml/badge.svg)](https://github.com/frankkopp/FrankyCPP/actions/workflows/cmake.yml)
-[![CodeQL](https://github.com/frankkopp/FrankyCPP/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/frankkopp/FrankyCPP/actions/workflows/codeql-analysis.yml)
+[![CodeQL](https://github.com/frankkopp/FrankyCPP/actions/workflows/codeql-analysis.yml/badge.svg?branch=master)](https://github.com/frankkopp/FrankyCPP/actions/workflows/codeql-analysis.yml)
 
 dev_v0.4
 [![CMake](https://github.com/frankkopp/FrankyCPP/actions/workflows/cmake.yml/badge.svg?branch=dev_v0.4)](https://github.com/frankkopp/FrankyCPP/actions/workflows/cmake.yml)
