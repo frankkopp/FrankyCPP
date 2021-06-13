@@ -123,7 +123,7 @@ int main(int argc, char* argv[]) {
       }
       else {
         const auto& bookPath = programOptions["book"].as<std::string>();
-        if (!OpeningBook::fileExists(bookPath)) {
+        if (!std::filesystem::exists(bookPath)) {
           LOG__ERROR(Logger::get().BOOK_LOG, "Opening book '{}' not found. Using default {}", bookPath, SearchConfig::BOOK_PATH);
         }
         else {
