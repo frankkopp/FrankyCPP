@@ -1,72 +1,250 @@
-name: CMake
+name: CMake Matrix Build
+
+# This github workflow runs a build on all three platforms which are supported by FrankyCPP.
+# Tests are only run on Linux and Windows for the time being as some how Mac tests fail due to
+# unknown reasons. Most likely because of github platform specific reasons (folders, etc.).
+
+# TODO: fix MacOS issue when running program_options
 
 on:
   push:
     branches:
-    - master
-    - dev_v0.4
+      - master
+      - dev_*
+
   pull_request:
     branches:
-    - master
-
-env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: Release
+      - master
+      - dev_*
 
 jobs:
   build:
-    # The CMake configure and build commands are platform agnostic and should work equally
-    # well on Windows or Mac.  You can convert this to a matrix build if you need
-    # cross-platform coverage.
-    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-    runs-on: ubuntu-latest
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    continue-on-error: false
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          # UBUNTU
+          - {
+            name: "Ubuntu_Latest_GNU",
+            os: ubuntu-latest,
 
+            build_type: "Release",
+            cc: "gcc",
+            cxx: "g++",
+            generators: "Ninja",
+
+            executable: "FrankyCPP_v0.4",
+            test_exec: "FrankyCPP_v0.4_Test",
+            bench_exec: "FrankyCPP_v0.4_Bench",
+            check: true,
+            test: true,
+            benchmark: true,
+            perft: true,
+
+            listCmd: "ls -la",
+            archiver: "zip",
+            artifact: "FrankyCPP_v0.4_linux.zip"
+          }
+          # WINDOWS
+          - {
+            name: "Windows_Latest_MSVC",
+            os: windows-latest,
+
+            build_type: "Release",
+            cc: "cl",
+            cxx: "cl",
+            generators: "Visual Studio 16 2019",
+            #generators: "Ninja",
+            #environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat",
+
+            executable: "FrankyCPP_v0.4.exe",
+            test_exec: "FrankyCPP_v0.4_Test.exe",
+            bench_exec: "FrankyCPP_v0.4_Bench.exe",
+            check: true,
+            test: true,
+            benchmark: true,
+            perft: true,
+
+            listCmd: "ls",
+            artifact: "FrankyCPP_v0.4_win.zip",
+            archiver: "zip"
+          }
+          # MACOS
+          - {
+            name: "MacOS_Latest_Clang",
+            os: macos-latest,
+
+            build_type: "Release",
+            cc: "clang",
+            cxx: "clang++",
+
+            generators: "Unix Makefiles",
+            executable: "FrankyCPP_v0.4",
+            test_exec: "FrankyCPP_v0.4_Test",
+            bench_exec: "FrankyCPP_v0.4_Bench",
+            check: true,
+            test: false,      # fails on github MacOS somehow but works on local Mac
+            benchmark: false, # fails on github MacOS somehow but works on local Mac
+            perft: false,     # fails on github MacOS somehow but works on local Mac
+
+            listCmd: "ls -la",
+            artifact: "macos_clang.zip",
+            archiver: "zip"
+          }
     steps:
-    - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
 
-    - name: Cache Boost Build
-      uses: actions/cache@v2
-      env:
-        cache-name: cache-boost-build
-      with:
-        path: boost_1_76_0
-        key: ${{ runner.os }}-boost-build
+# ##############################################################################
+# UBUNTU Setup
+# ##############################################################################
 
-    - name: Download and build BOOST
-      if: steps.cache-boost-build.outputs.cache-hit != 'true'
-      run: |
-        wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz >> /dev/null 2>&1
-        tar xfz boost_1_76_0.tar.gz
-        cd boost_1_76_0/
-        ./bootstrap.sh --with-libraries=serialization,program_options
-        ./b2
-        cd ..
+      - name: Install dependencies (ubuntu)
+        if: startsWith(matrix.config.name, 'Ubuntu_Latest')
+        run: |
+          sudo apt-get update
+          sudo apt-get install ninja-build cmake zip
+          ninja --version
+          cmake --version
+          gcc --version
 
-    - name: Install BOOST
-      run: |
-        cd boost_1_76_0/
-        sudo ./b2 install >> /dev/null 2>&1
-        cd ..
+      - name: Cache Boost Build (ubuntu)
+        if: startsWith(matrix.config.name, 'Ubuntu_Latest')
+        id: cache-boost-build-ubuntu
+        uses: actions/cache@v2.1.6
+        with:
+          path: boost_1_76_0
+          key: ${{ runner.os }}-boost-build
 
-    - name: Configure CMake
-      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      - name: Download and build BOOST (ubuntu)
+        if: startsWith(matrix.config.name, 'Ubuntu_Latest') && steps.cache-boost-build-ubuntu.outputs.cache-hit != 'true'
+        run: |
+          wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz >> /dev/null 2>&1
+          tar xfz boost_1_76_0.tar.gz
+          cd boost_1_76_0/
+          ./bootstrap.sh --with-libraries=serialization,program_options
+          ./b2
+          cd ..
 
-    - name: Build
-      # Build your program with the given configuration
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      - name: Install BOOST (ubuntu)
+        if: startsWith(matrix.config.name, 'Ubuntu_Latest')
+        run: |
+          cd boost_1_76_0/
+          sudo ./b2 install >> /dev/null 2>&1
+          cd ..
 
-    - name: Test
-      working-directory: ${{github.workspace}}/build
-      # Execute tests defined by the CMake configuration.
-      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      run: ctest -C ${{env.BUILD_TYPE}}
+# ##############################################################################
+# WINDOWS Setup
+# ##############################################################################
 
-    - name: Run benchmark test
-      working-directory: ${{github.workspace}}/build
-      run: ./testbench/FrankyCPP_v0.4_Bench
+      - name: Install dependencies (windows)
+        if: startsWith(matrix.config.name, 'Windows')
+        run: |
+          choco install ninja cmake zip  --no-progress
+          ninja --version
+          cmake --version
 
-    - name: Run PERFT test
-      working-directory: ${{github.workspace}}/build
-      run: ./src/FrankyCPP_v0.4 --perft --endDepth=5
+      - name: Install BOOST (windows)
+        if: startsWith(matrix.config.name, 'Windows')
+        run: |
+          choco install boost-msvc-14.2 --no-progress
+
+# ##############################################################################
+#  MACOS Setup
+# ##############################################################################
+
+      - name: Install dependencies (macos)
+        if: startsWith(matrix.config.name, 'MacOs')
+        run: |
+          brew install cmake ninja zip
+          ninja --version
+          cmake --version
+
+      - name: Cache Boost Build (macos)
+        if: startsWith(matrix.config.name, 'MacOs')
+        id: cache-boost-build-macos
+        uses: actions/cache@v2.1.6
+        with:
+          path: boost_1_76_0
+          key: ${{ runner.os }}-boost-build
+
+      - name: Download and build BOOST (macos)
+        if: startsWith(matrix.config.name, 'MacOs') && steps.cache-boost-build-macos.outputs.cache-hit != 'true'
+        run: |
+          wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz >> /dev/null 2>&1
+          tar xfz boost_1_76_0.tar.gz
+          cd boost_1_76_0/
+          ./bootstrap.sh --with-libraries=serialization,program_options
+          ./b2
+          cd ..
+
+      - name: Install BOOST (macos)
+        if: startsWith(matrix.config.name, 'MacOs')
+        run: |
+          cd boost_1_76_0/
+          sudo ./b2 install >> /dev/null 2>&1
+          cd ..
+
+# ##############################################################################
+# BUILD AND TEST
+# ##############################################################################
+
+      - name: Configure CMake
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE=${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} -G "${{ matrix.config.generators }}"
+
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build --config ${{ matrix.config.build_type }} --parallel
+
+      - name: List build folders
+        working-directory: ${{github.workspace}}/build
+        run: |
+          ${{ matrix.config.listCmd }} .
+          ${{ matrix.config.listCmd }} ./src
+          ${{ matrix.config.listCmd }} ./test
+          ${{ matrix.config.listCmd }} ./testbench
+
+      - name: Run simple check of build
+        if: matrix.config.check
+        working-directory: ${{github.workspace}}/build
+        run: |
+          ./${{ matrix.config.executable }} --version
+
+      - name: Run unit tests
+        if: matrix.config.test
+        working-directory: ${{github.workspace}}/build
+        run: ./${{ matrix.config.test_exec }} -*SpeedTests.*:-*TimingTests.*
+        #run: ctest -C ${{ matrix.config.build_type }} -E "(SpeedTests|TimingTests)"
+
+      - name: Run benchmark test
+        if: matrix.config.benchmark
+        working-directory: ${{github.workspace}}/build
+        run: ./${{ matrix.config.bench_exec }}
+
+      - name: Run PERFT test
+        if: matrix.config.perft
+        working-directory: ${{github.workspace}}/build
+        run: ./${{ matrix.config.executable }} -c ${{github.workspace}}/config/FrankyCPP.cfg --perft --endDepth=5
+
+      - name: Zipping
+        if: github.ref == 'refs/heads/master'
+        working-directory: ${{github.workspace}}
+        run: |
+          ${{ matrix.config.archiver }} -vj FrankyCPP_${{ runner.os }}.zip build/${{ matrix.config.executable }}
+          ${{ matrix.config.archiver }} -vr FrankyCPP_${{ runner.os }}.zip config/ books/book.txt
+#
+      - name: Deploy Latest Build
+        if: github.ref == 'refs/heads/master'
+        uses: WebFreak001/deploy-nightly@v1.1.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # automatically provided by github actions
+        with:
+          upload_url: https://uploads.github.com/repos/frankkopp/FrankyCPP/releases/44522659/assets{?name,label} # find out this value by opening https://api.github.com/repos/<owner>/<repo>/releases in your browser and copy the full "upload_url" value including the {?name,label} part
+          release_id: 44522659 # same as above (id can just be taken out the upload_url, it's used to find old releases)
+          asset_path: FrankyCPP_${{ runner.os }}.zip # path to archive to upload
+          asset_name: FrankyCPP_${{ runner.os }}-$$.zip # name to upload the release as, use $$ to insert date (YYYYMMDD) and 6 letter commit hash
+          asset_content_type: application/zip # required by GitHub API
+          max_releases: 1 # optional, if there are more releases than this matching the asset_name, the oldest ones are going to be deleted
+

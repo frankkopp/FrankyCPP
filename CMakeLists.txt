@@ -146,7 +146,7 @@ message("Downloading/Update Google Test")
 FetchContent_Declare(
         googletest
         GIT_REPOSITORY https://github.com/google/googletest.git
-        GIT_TAG release-1.10.0
+        GIT_TAG release-1.11.0
 )
 FetchContent_Declare(googletest)
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
@@ -161,7 +161,7 @@ include_directories(
 FetchContent_Declare(
         googlebenchmark
         GIT_REPOSITORY https://github.com/google/benchmark.git
-        GIT_TAG v1.5.4) # need master for benchmark::benchmark
+        GIT_TAG v1.5.5) # need master for benchmark::benchmark
 option(BENCHMARK_ENABLE_LTO ON)
 option(BENCHMARK_ENABLE_GTEST_TESTS OFF)
 option(BENCHMARK_ENABLE_TESTING OFF)
@@ -200,17 +200,21 @@ include_directories(
 # BOOST
 if (APPLE)
     message("Find Boost on Apple")
-    set(BOOST_ROOT "/usr/local/boost_1_73_0")
-    set(Boost_INCLUDE_DIR "/usr/local/boost_1_73_0")
+    if (NOT BOOST_ROOT)
+        set(BOOST_ROOT "/usr/local/boost_1_73_0")
+        set(Boost_INCLUDE_DIR "/usr/local/boost_1_73_0")
+    endif()
 elseif (CYGWIN)
     message("Find Boost on Cygwin")
     set(BOOST_ROOT "/usr/local/boost_1_72_0")
     set(Boost_INCLUDE_DIR "/usr/local/boost_1_72_0")
 elseif (WIN32)
     message("Find Boost on Win32")
-    set(BOOST_ROOT "D:/Boost")
-    set(BOOST_INCLUDEDIR "D:/Boost/include/boost-1_76")
-    set(BOOST_LIBRARYDIR "D:/Boost/lib")
+    if (NOT BOOST_ROOT)
+        set(BOOST_ROOT "D:/Boost")
+        set(BOOST_INCLUDEDIR "D:/Boost/include/boost-1_76")
+        set(BOOST_LIBRARYDIR "D:/Boost/lib")
+    endif()
 else ()
     message("Find Boost on Unix")
     set(BOOST_ROOT "/usr/local")

@@ -1,27 +1,21 @@
-/*
- * MIT License
- *
- * Copyright (c) 2018 Frank Kopp
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- *
- */
+// FrankyCPP
+// Copyright (c) 2018-2021 Frank Kopp
+//
+// MIT License
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifndef FRANKYCPP_OPENINGBOOK_H
 #define FRANKYCPP_OPENINGBOOK_H
@@ -123,7 +117,6 @@ private:
   // multi threading handling
   unsigned int numberOfThreads = 1;
   std::mutex bookMutex;
-  std::mutex gamesMutex;
 
   // cache control
   bool _useCache      = true;
@@ -148,9 +141,9 @@ public:
 
   /**
    * Initializes this OpeningBook instance by reading moves data from the file
-    * given to the constructor or from cache. Also creates a cache file after
-    * building the internal data structure when no cache was available.
-    */
+   * given to the constructor or from cache. Also creates a cache file after
+   * building the internal data structure when no cache was available.
+   */
   void initialize();
 
   /**
@@ -174,18 +167,6 @@ public:
    * @param zobrist key of the position
    */
   [[nodiscard]] Move getRandomMove(Key zobrist) const;
-
-  /** Checks of file exists and encapsulates platform differences for
-  * filesystem operations (obsolete with support for std::filesystem) */
-  static inline bool fileExists(const std::string& filePath) {
-    return std::filesystem::exists(filePath);
-  }
-
-  /** Returns files size in bytes and encapsulates platform differences for
-  * filesystem operations  (obsolete with support for std::filesystem) */
-  static inline uint64_t getFileSize(const std::string& filePath) {
-    return std::filesystem::file_size(filePath);
-  }
 
 private:
   // reads all lines from a file into a vector of string_views

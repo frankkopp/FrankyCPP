@@ -1,27 +1,21 @@
-/*
- * MIT License
- *
- * Copyright (c) 2018 Frank Kopp
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- *
- */
+// FrankyCPP
+// Copyright (c) 2018-2021 Frank Kopp
+//
+// MIT License
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "openingbook/OpeningBook.h"
 #include "chesscore/MoveGenerator.h"
@@ -152,19 +146,19 @@ std::string OpeningBook::getLevelStr(int level, int maxLevel, const BookEntry* n
 
 std::vector<std::string_view> OpeningBook::readFile(const std::string& filePath) {
 
-  if (!fileExists(filePath)) {
-    const std::string message = fmt::format("Opening Book '{}' not found", filePath);
-    LOG__ERROR(Logger::get().BOOK_LOG, message);
-    throw std::runtime_error(message);
-  }
-
   std::vector<std::string_view> lines{};
+
+  if (!std::filesystem::exists(filePath)) {
+    const std::string message = fmt::format("Opening Book '{}' not found. Using empty book.", filePath);
+    LOG__ERROR(Logger::get().BOOK_LOG, message);
+    return lines;
+  }
 
   const auto start = std::chrono::high_resolution_clock::now();
 
   std::fstream file(filePath, std::ios::in | std::ios::binary);
   if (file.is_open()) {
-    const uint64_t fileSize = getFileSize(filePath);
+    const uint64_t fileSize = std::filesystem::file_size(filePath);
     LOG__DEBUG(Logger::get().BOOK_LOG, "Opened Opening Book '{}' with {:L} Byte successful.", filePath, fileSize);
 
     // fast way to read all lines from a file into memory
@@ -192,7 +186,7 @@ std::vector<std::string_view> OpeningBook::readFile(const std::string& filePath)
   else {
     const std::string message = fmt::format("Could not open Opening Book '{}' ", filePath);
     LOG__ERROR(Logger::get().BOOK_LOG, message);
-    throw std::runtime_error(message);
+    return lines;
   }
 
   return lines;
@@ -601,8 +595,8 @@ void OpeningBook::addGameToBook(const Moves& game) {
 void OpeningBook::writeToBook(Move move, Key currentKey, Key lastKey) {
   // get the lock on the data map
   std::scoped_lock<std::mutex> bookLock(bookMutex);
-  // create or update book entry                  
-  if (bookMap.count(currentKey)) {             
+  // create or update book entry
+  if (bookMap.count(currentKey)) {
     // pointer to entry already in book
     bookMap.at(currentKey).counter++;
     // return as we do not need to update the predecessor
@@ -646,7 +640,7 @@ bool OpeningBook::loadFromCache() {
   {// load data from archive
     const auto start               = std::chrono::high_resolution_clock::now();
     const std::string serCacheFile = bookFilePath + cacheExt;
-    LOG__DEBUG(Logger::get().BOOK_LOG, "Loading from cache file {} ({:L} kB)", serCacheFile, getFileSize(serCacheFile) / 1'024);
+    LOG__DEBUG(Logger::get().BOOK_LOG, "Loading from cache file {} ({:L} kB)", serCacheFile, std::filesystem::file_size(serCacheFile) / 1'024);
     // create and open a binary archive for input
     std::ifstream ifsBin(serCacheFile, std::fstream::binary | std::fstream::in);
     if (!ifsBin.is_open() || !ifsBin.good()) {
@@ -669,11 +663,11 @@ bool OpeningBook::loadFromCache() {
 /* checks if a cache file exists */
 bool OpeningBook::hasCache() const {
   const std::basic_string<char> serCacheFile = bookFilePath + cacheExt;
-  if (!fileExists(serCacheFile)) {
+  if (!std::filesystem::exists(serCacheFile)) {
     LOG__DEBUG(Logger::get().BOOK_LOG, "No cache file {} available", serCacheFile);
     return false;
   }
-  uint64_t fsize = getFileSize(serCacheFile);
+  uint64_t fsize = std::filesystem::file_size(serCacheFile);
   LOG__DEBUG(Logger::get().BOOK_LOG, "Cache file {} ({:L} kB) available", serCacheFile, fsize / 1'024);
   return true;
 }

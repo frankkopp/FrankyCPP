@@ -84,7 +84,7 @@ add_custom_command(
 install(TARGETS ${exeName}
         CONFIGURATIONS Release RelWithDebInfo
         RUNTIME DESTINATION ${PROJECT_SOURCE_DIR}/Release/bin
-        )
+)
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/config
         DESTINATION ${PROJECT_SOURCE_DIR}/Release/bin
 )

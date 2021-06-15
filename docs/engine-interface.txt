@@ -514,7 +514,7 @@ stop
 // the engine has finished searching and is sending the bestmove command
 // which is needed for every "go" command sent to tell the GUI
 // that the engine is ready again
-		bestmove g1f3 ponderOption d8f6
+		bestmove g1f3 ponder d8f6
 
 
 
