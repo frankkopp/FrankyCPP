@@ -209,7 +209,7 @@ TEST_F(SearchTest, depthLimitedSearch) {
   Position p{};
   SearchLimits sl{};
   Search s{};
-  const int depth = 5;
+  const int depth = 8;
   sl.depth        = depth;
   s.isReady();
   s.startSearch(p, sl);
