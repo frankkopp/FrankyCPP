@@ -117,7 +117,6 @@ private:
   // multi threading handling
   unsigned int numberOfThreads = 1;
   std::mutex bookMutex;
-  std::mutex gamesMutex;
 
   // cache control
   bool _useCache      = true;
@@ -142,9 +141,9 @@ public:
 
   /**
    * Initializes this OpeningBook instance by reading moves data from the file
-    * given to the constructor or from cache. Also creates a cache file after
-    * building the internal data structure when no cache was available.
-    */
+   * given to the constructor or from cache. Also creates a cache file after
+   * building the internal data structure when no cache was available.
+   */
   void initialize();
 
   /**
