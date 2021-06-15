@@ -1,27 +1,21 @@
-/*
- * MIT License
- *
- * Copyright (c) 2020 Frank Kopp
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- *
- */
+// FrankyCPP
+// Copyright (c) 2018-2021 Frank Kopp
+//
+// MIT License
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "Search.h"
 #include "Evaluator.h"
@@ -288,7 +282,13 @@ SearchResult Search::iterativeDeepening(Position& p) {
 
   // check repetition and 50-moves rule
   if (checkDrawRepAnd50(p, 2)) {
-    std::string msg = "Search called on DRAW by Repetition or 50-moves-rule";
+    std::string msg;
+    if (this->searchLimits.ponder) {
+      msg = "Ponder called on DRAW by Repetition or 50-moves-rule";
+    }
+    else {
+      msg = "Search called on DRAW by Repetition or 50-moves-rule";
+    }
     sendString(msg);
     LOG__WARN(Logger::get().SEARCH_LOG, msg);
     searchResult.bestMoveValue = VALUE_DRAW;
@@ -302,14 +302,26 @@ SearchResult Search::iterativeDeepening(Position& p) {
   if (rootMoves.empty()) {
     if (p.hasCheck()) {
       statistics.checkmates++;
-      std::string msg = "Search called on a check mate position";
+      std::string msg;
+      if (this->searchLimits.ponder) {
+        msg = "Ponder called on a check mate position";
+      }
+      else {
+        msg = "Search called on a check mate position";
+      }
       sendString(msg);
       LOG__WARN(Logger::get().SEARCH_LOG, msg);
       searchResult.bestMoveValue = -VALUE_CHECKMATE;
     }
     else {
       statistics.stalemates++;
-      std::string msg = "Search called on a stale mate position";
+      std::string msg;
+      if (this->searchLimits.ponder) {
+        msg = "Ponder called on a stale mate position";
+      }
+      else {
+        msg = "Search called on a stale mate position";
+      }
       sendString(msg);
       LOG__WARN(Logger::get().SEARCH_LOG, msg);
       searchResult.bestMoveValue = VALUE_DRAW;
@@ -321,8 +333,8 @@ SearchResult Search::iterativeDeepening(Position& p) {
   // hadBookMove move will be true at his point if we ever had
   // a book move.
   if (hadBookMove && searchLimits.timeControl && searchLimits.moveTime.count() == 0) {
-    LOG__WARN(Logger::get().SEARCH_LOG, "First non-book move to search. Adding extra time: Before: {}, after: {}",
-              str(timeLimit + extraTime), str(2 * timeLimit + extraTime));
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "First non-book move to search. Adding extra time: Before: {}, after: {}",
+               str(timeLimit + extraTime), str(2 * timeLimit + extraTime));
     addExtraTime(2.0);
     hadBookMove = false;
   }
@@ -422,6 +434,21 @@ SearchResult Search::iterativeDeepening(Position& p) {
       }
       p.undoMove();
     }
+  }
+
+  // Double check the ponder move to avoid a ponder search on mate or draw position.
+  // If position after ponder move is a final position do not even send a ponder move.
+  // This is necessary as arena sends a go ponder command although the position is final.
+  if (searchResult.ponderMove != MOVE_NONE) {
+    p.doMove(searchResult.bestMove);
+    p.doMove(searchResult.ponderMove);
+    // check repetition and 50-moves rule or if there are legal moves when using ponder move
+    if (checkDrawRepAnd50(p, 2) || (*mg[0].generateLegalMoves(p, GenAll)).empty()) {
+      LOG__DEBUG(Logger::get().SEARCH_LOG, "ponder move omitted as game finished");
+      searchResult.ponderMove = MOVE_NONE;
+    }
+    p.undoMove();
+    p.undoMove();
   }
 
   return searchResult;
@@ -1410,8 +1437,15 @@ void Search::initialize() {
   // init opening book
   if (SearchConfig::USE_BOOK) {
     if (!book) {// only initialize once
-      book = std::make_unique<OpeningBook>(SearchConfig::BOOK_PATH, SearchConfig::BOOK_TYPE);
-      book->initialize();
+      if (!std::filesystem::exists(SearchConfig::BOOK_PATH)) {
+        const std::string message = fmt::format("Opening Book '{}' not found. Disabling book usage.", SearchConfig::BOOK_PATH);
+        LOG__ERROR(Logger::get().BOOK_LOG, message);
+        SearchConfig::USE_BOOK = false;
+      }
+      else {
+        book = std::make_unique<OpeningBook>(SearchConfig::BOOK_PATH, SearchConfig::BOOK_TYPE);
+        book->initialize();
+      }
     }
   }
   else {
@@ -1572,7 +1606,7 @@ void Search::sendResult(SearchResult& result) {
 
 void Search::sendIterationEndInfoToUci() {
   const nanoseconds& since = elapsedSince(startSearchTime);
-  lastUciUpdateTime    = nowFast();
+  lastUciUpdateTime        = nowFast();
   if (uciHandler) {
     uciHandler->sendIterationEndInfo(
       statistics.currentSearchDepth,

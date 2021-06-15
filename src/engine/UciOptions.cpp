@@ -1,35 +1,28 @@
-/*
- * MIT License
- *
- * Copyright (c) 2018-2020 Frank Kopp
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- *
- */
+// FrankyCPP
+// Copyright (c) 2018-2021 Frank Kopp
+//
+// MIT License
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "UciOptions.h"
 #include "EvalConfig.h"
 #include "Search.h"
 #include "SearchConfig.h"
 #include "UciHandler.h"
-
-#include <boost/algorithm/string/trim.hpp>
+#include "common/stringutil.h"
 
 void UciOptions::initOptions() {
 
@@ -158,11 +151,10 @@ void UciOptions::initOptions() {
 
 const UciOption* UciOptions::getOption(const std::string& name) const {
   // find option entry
-  const auto optionIterator =
-    std::find_if(optionVector.begin(), optionVector.end(),
-                 [&](UciOption p) {
-                   return name == p.nameID;
-                 });
+  const auto optionIterator = std::find_if(optionVector.begin(), optionVector.end(),
+                                           [&](const UciOption& p) {
+                                             return name == p.nameID;
+                                           });
   if (optionIterator != optionVector.end()) {
     return &*optionIterator;
   }
@@ -184,7 +176,7 @@ std::string UciOptions::str() const {
   for (const auto& o : optionVector) {
     str += o.str() + "\n";
   }
-  boost::trim(str);// remove last newline
+  str = trimFast(str);// remove last newline
   return str;
 }
 
@@ -212,8 +204,7 @@ std::string UciOption::str() const {
 
 int UciOptions::getInt(const std::string& value) {
   try {
-    int intValue = 0;
-    intValue = stoi(value);
+    int intValue = stoi(value);
     return intValue;
   } catch (...) {
     return 0;

@@ -1,38 +1,30 @@
-/*
- * MIT License
- *
- * Copyright (c) 2018-2020 Frank Kopp
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- *
- */
+// FrankyCPP
+// Copyright (c) 2018-2021 Frank Kopp
+//
+// MIT License
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifndef FRANKYCPP_UCIOPTIONS_H
 #define FRANKYCPP_UCIOPTIONS_H
 
+#include <functional>
 #include <ostream>
 #include <sstream>
 #include <utility>
 #include <vector>
-#include <functional>
-
-#include "common/misc.h"
 
 class UciHandler;
 
@@ -62,7 +54,7 @@ struct UciOption {
   std::string currentValue;
   std::function<void(UciHandler*)> pHandler;
 
-    explicit UciOption(const char* name, std::function<void(UciHandler*)> handler)
+  explicit UciOption(const char* name, std::function<void(UciHandler*)> handler)
       : nameID(name), type(BUTTON), defaultValue(boolStr(false)), pHandler(std::move(handler)) {}
 
   UciOption(const char* name, bool value, std::function<void(UciHandler*)> handler)
@@ -73,7 +65,7 @@ struct UciOption {
         maxValue(std::to_string(max)), currentValue(std::to_string(def)), pHandler(std::move(handler)) {}
 
   UciOption(const char* name, const char* str, std::function<void(UciHandler*)> handler)
-      : nameID(name), type(STRING), defaultValue(str), currentValue(str), pHandler(std::move(handler)){}
+      : nameID(name), type(STRING), defaultValue(str), currentValue(str), pHandler(std::move(handler)) {}
 
   UciOption(const char* name, const char* val, const char* def, std::function<void(UciHandler*)> handler)
       : nameID(name), type(STRING), defaultValue(val), currentValue(def), pHandler(std::move(handler)) {}
@@ -117,7 +109,7 @@ public:
   }
 
   // returns a pointer to the uci option or nullptr if option is not found
-  const UciOption* getOption(const std::string& name) const;
+  [[nodiscard]] const UciOption* getOption(const std::string& name) const;
 
   // finds and stores the value in the given options. Returns true if
   // the options was found and the value was set. It calls the option's
@@ -127,7 +119,7 @@ public:
 
   // String for uciOption will return a representation of the uci option as required by
   // the UCI protocol during the initialization phase of the UCI protocol
-  std::string str() const;
+  [[nodiscard]] std::string str() const;
 
   // helper for converting a string option to an int
   static int getInt(const std::string& value);

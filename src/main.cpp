@@ -1,27 +1,21 @@
-/*
- * MIT License
- *
- * Copyright (c) 2020 Frank Kopp
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- *
- */
+// FrankyCPP
+// Copyright (c) 2018-2021 Frank Kopp
+//
+// MIT License
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "init.h"
 #include "version.h"
@@ -42,27 +36,21 @@ inline po::variables_map programOptions;
 int main(int argc, char* argv[]) {
 
   // Version comes from CMAKE template version.h.in
-  std::string appName = "FrankyCPP_NewGen";
+  std::string appName = "FrankyCPP";
   appName
     .append(" v")
     .append(std::to_string(FrankyCPP_VERSION_MAJOR))
     .append(".")
     .append(std::to_string(FrankyCPP_VERSION_MINOR));
-  std::cout << appName << std::endl;                                   
+  std::cout << appName << std::endl;
 
-  std::string config_file;
-  std::string book_file;
-  std::string book_type;
-  std::string testsuite_file;
-  int testsuite_time;
-  int testsuite_depth;
-  int perftStart;
-  int perftEnd;
+  std::string config_file, book_file, book_type, testsuite_file;
+  int testsuite_time, testsuite_depth, perftStart, perftEnd;
 
   // Command line options
   try {
     // @formatter:off
-    
+
     // Declare a group of options that will be allowed only on command line
     po::options_description generic("Generic options");
     generic.add_options()
@@ -135,8 +123,8 @@ int main(int argc, char* argv[]) {
       }
       else {
         const auto& bookPath = programOptions["book"].as<std::string>();
-        if (!OpeningBook::fileExists(bookPath)) {
-          LOG__ERROR(Logger::get().BOOK_LOG, "Open book '{}' not found. Using default {}", bookPath, SearchConfig::BOOK_PATH);
+        if (!std::filesystem::exists(bookPath)) {
+          LOG__ERROR(Logger::get().BOOK_LOG, "Opening book '{}' not found. Using default {}", bookPath, SearchConfig::BOOK_PATH);
         }
         else {
           SearchConfig::BOOK_PATH = bookPath;

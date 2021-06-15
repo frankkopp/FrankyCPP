@@ -1,27 +1,21 @@
-/*
- * MIT License
- *
- * Copyright (c) 2018 Frank Kopp
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- *
- */
+// FrankyCPP
+// Copyright (c) 2018-2021 Frank Kopp
+//
+// MIT License
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 #include "openingbook/OpeningBook.h"
@@ -54,11 +48,8 @@ TEST_F(OpeningBookTest, readFile) {
   // set up Opening Book
   OpeningBook book{"./books/superbook.pgn", OpeningBook::BookFormat::PGN};
   EXPECT_EQ(0, book.bookMap.size());
-  EXPECT_TRUE(OpeningBook::fileExists(book.bookFilePath));
-  fprintln("File {} Size {:L} Byte", book.bookFilePath, OpeningBook::getFileSize(book.bookFilePath));
-
-  // non existing file
-  EXPECT_THROW(book.readFile("Invalid"), std::runtime_error);
+  EXPECT_TRUE(std::filesystem::exists(book.bookFilePath));
+  fprintln("File {} Size {:L} Byte", book.bookFilePath, std::filesystem::file_size(book.bookFilePath));
 
   // read file lines
   auto lines = book.readFile(book.bookFilePath);
@@ -102,17 +93,17 @@ TEST_F(OpeningBookTest, initPgn) {
 
 TEST_F(OpeningBookTest, initPgnLarge) {
 //  GTEST_SKIP();
-#ifndef NDEBUG                 
+#ifndef NDEBUG
   GTEST_SKIP();
 #endif
   OpeningBook book("./books/superbook.pgn", OpeningBook::BookFormat::PGN);
   book.setUseCache(false);
   book.initialize();
-  fprintln("Book:  {:L} entries", book.size()); 
+  fprintln("Book:  {:L} entries", book.size());
   EXPECT_EQ(4'821'615, book.size());
   fprintln("{}", book.str(1));
   std::string expected = "Root (190.780)";
-//  EXPECT_TRUE(book.str(1).starts_with(expected));
+  EXPECT_TRUE(book.str(1).find_first_of(expected) != std::string::npos );
 }
 
 TEST_F(OpeningBookTest, initPgnXLLarge) {
@@ -211,7 +202,7 @@ TEST_F(OpeningBookTest, serializationLarge) {
   bookMove = book.getRandomMove(position.getZobristKey());
   LOG__DEBUG(Logger::get().TEST_LOG, "Book returned move: {}", strVerbose(bookMove));
   EXPECT_TRUE(validMove(bookMove));
-  EXPECT_TRUE(mg.validateMove(position, bookMove));                                      
+  EXPECT_TRUE(mg.validateMove(position, bookMove));
 }
 
 TEST_F(OpeningBookTest, str) {
