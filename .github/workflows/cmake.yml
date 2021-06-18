@@ -143,7 +143,7 @@ jobs:
       - name: Install dependencies (windows)
         if: startsWith(matrix.config.name, 'Windows')
         run: |
-          choco install ninja cmake zip  --no-progress
+          choco install ninja cmake zip wget --no-progress
           ninja --version
           cmake --version
 
