@@ -150,7 +150,7 @@ jobs:
       - name: Install BOOST (windows)
         if: startsWith(matrix.config.name, 'Windows')
         run: |
-          wget https://sourceforge.net/projects/boost/files/boost-binaries/1.76.0/boost_1_76_0-msvc-14.2-64.exe/download -O boost_1_76_0-msvc-14.2-64.exe
+          wget https://sourceforge.net/projects/boost/files/boost-binaries/1.76.0/boost_1_76_0-msvc-14.2-64.exe/download -q -O boost_1_76_0-msvc-14.2-64.exe
           ./boost_1_76_0-msvc-14.2-64.exe /VERYSILENT
 #choco install boost-msvc-14.2 --no-progress
 #https://sourceforge.net/projects/boost/files/boost-binaries/1.76.0/boost_1_76_0-msvc-14.2-64.exe/download
