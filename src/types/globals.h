@@ -20,7 +20,7 @@
 #ifndef FRANKYCPP_GLOBALS_H
 #define FRANKYCPP_GLOBALS_H
 
-#include "fmt/locale.h"
+#include "fmt/format.h"
 #include <cstdint>
 #include <iostream>
 #include <chrono>

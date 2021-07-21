@@ -176,7 +176,7 @@ message("Downloading/Update FMT")
 FetchContent_Declare(
         fmt
         GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-        GIT_TAG 7.1.3
+        GIT_TAG 8.0.1
 )
 FetchContent_MakeAvailable(fmt)
 include_directories(
@@ -188,7 +188,7 @@ message("Downloading/Update SPDLOG")
 FetchContent_Declare(
         spdlog
         GIT_REPOSITORY https://github.com/gabime/spdlog.git
-        GIT_TAG v1.8.5
+        GIT_TAG v1.9.0
 )
 option(SPDLOG_FMT_EXTERNAL ON)
 set(SPDLOG_FMT_EXTERNAL ON)
