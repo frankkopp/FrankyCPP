@@ -308,18 +308,15 @@ void init_magics(Bitboard table[], Magic magics[], Direction directions[]) {
       occupancy[size] = b;
       reference[size] = sliding_attack(directions, s, b);
 
-      if (HasPext) { // based on compiler option HAS_PEXT
-        m.attacks[_pext_u64(b, m.mask)] = reference[size];
-      }
+#ifdef HAS_PEXT// to be set as compiler option
+      m.attacks[_pext_u64(b, m.mask)] = reference[size];
+#endif
 
       size++;
       b = (b - m.mask) & m.mask;
     } while (b);
 
-    if (HasPext) { // based on compiler option HAS_PEXT
-      continue;
-    }
-
+#ifndef HAS_PEXT
     // Manual mapping for magics when PEXT is not available
 
     // Optimal PRNG seeds to pick the correct magics in the shortest time
@@ -349,6 +346,7 @@ void init_magics(Bitboard table[], Magic magics[], Direction directions[]) {
           break;
       }
     }
+#endif
   }
 }
 
@@ -363,4 +361,3 @@ void Bitboards::initMagicBitboards() {
   init_magics(Bitboards::rookTable, rookMagics, rookDirections);
   init_magics(bishopTable, bishopMagics, bishopDirections);
 }
-

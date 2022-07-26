@@ -57,13 +57,13 @@ constexpr Square operator+(Square s, Direction d) {
 constexpr Square& operator+=(Square& s, Direction d) { return s = s + d; }
 
 // Additional operators to subtract a Direction to a Square
-// // Could be invalid Square if int value of Direction is > int value of Square
+// Could be invalid Square if int value of Direction is > int value of Square
 constexpr Square operator-(Square s, Direction d) {
   return static_cast<Square>(int(s) - int(d));
 }
 
 // Additional operators to subtract a Direction to a Square
-// // Could be invalid Square if int value of Direction is > int value of Square
+// Could be invalid Square if int value of Direction is > int value of Square
 constexpr Square& operator-=(Square& s, Direction d) { return s = s - d; }
 
 ENABLE_FULL_OPERATORS_ON (Direction)

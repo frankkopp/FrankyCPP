@@ -29,7 +29,7 @@ namespace init {
   // initializes all data structures and pre computed data
   // for the application
   inline void init() {
-    types::init();
+    Types::init();
     Values::init();
   }
 }// namespace init

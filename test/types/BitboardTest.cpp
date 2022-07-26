@@ -26,7 +26,7 @@ class BitboardsTest : public ::testing::Test {
 public:
   static void SetUpTestSuite() {
     NEWLINE;
-    types::init();
+    Types::init();
     NEWLINE;
   }
   static void TearDownTestSuite() {}
@@ -660,4 +660,3 @@ TEST_F(BitboardsTest, centerDistance) {
   ASSERT_EQ(3, Squares::centerDistance[SQ_H1]);
   ASSERT_EQ(3, Squares::centerDistance[SQ_H7]);
 }
-

@@ -149,8 +149,7 @@ Move MoveGenerator::getNextPseudoLegalMove(const Position& p, const GenMode genM
     }
     assert(!onDemandMoves.empty() && "OnDemandList should not be empty here");
 
-    // we have at least one move in the list and
-    // it is not the pvMove.
+    // we have at least one move in the list, and it is not the pvMove.
     Move move = REMOVE_SORT_VALUE ? moveOf(onDemandMoves[takeIndex++]) : onDemandMoves[takeIndex++];
     if (takeIndex >= onDemandMoves.size()) {
       takeIndex = 0;
@@ -303,7 +302,6 @@ Move MoveGenerator::getMoveFromUci(const Position& position, const std::string& 
 }
 
 Move MoveGenerator::getMoveFromSan(const Position& position, const std::string& sanMove) {
-  // phase for searching
   enum Part {
     PROM,
     TO_SQ,
@@ -607,7 +605,7 @@ Bitboard MoveGenerator::getEvasionTargets(const Position& p) {
   // find all target squares which either capture or block the attacker
   Bitboard evasionTargets = p.attacksTo(ourKing, ~us);
   assert(evasionTargets != BbZero && "evasion target should not be empty");
-  // we can only block attacks of sliders of there is not more
+  // we can only block attacks of sliders if there is not more
   // than one attacker
   const int popCount = popcount(evasionTargets);
   if (popCount == 1) {
@@ -650,7 +648,7 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
     Bitboard tmpCaptures, promCaptures;
 
     for (Direction dir : {WEST, EAST}) {
-      // normal pawn captures - promotions first
+      // normal pawn captures
       tmpCaptures = shiftBb(pawnPush(nextPlayer) + dir, myPawns) & position.getOccupiedBb(~nextPlayer);
 
       // filter evasion targets if in check
@@ -699,7 +697,7 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
       }
     }
 
-    // we treat Queen and Knight promotions as non quiet moves
+    // we treat Queen and Knight promotions as non-quiet moves
     Bitboard promMoves = shiftBb(pawnPush(nextPlayer), myPawns) & ~position.getOccupiedBb() & Bitboards::rankBb[promotionRank(nextPlayer)];
 
     // filter evasion targets if in check
@@ -746,8 +744,8 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
       const Square toSquare   = popLSB(promMoves);
       const Square fromSquare = toSquare + pawnPush(~nextPlayer);
       // value for non captures is lowered
-      // we treat Queen and Knight promotions as non quiet moves and they are generated above
-      // rook and bishops are usually redundant to queen promotion (except in stale mate situations)
+      // we treat Queen and Knight promotions as non-quiet moves, and they are generated above
+      // rook and bishops are usually redundant to queen promotion (except in stalemate situations)
       // therefore we give them lower sort order
       pMoves->push_back(createMove(fromSquare, toSquare, PROMOTION, ROOK, valueOf(ROOK) - 6'000));
       pMoves->push_back(createMove(fromSquare, toSquare, PROMOTION, BISHOP, valueOf(BISHOP) - 6'000));

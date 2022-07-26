@@ -22,6 +22,7 @@
 #include <gtest/gtest.h>
 using testing::Eq;
 
+#include <bitset>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -84,4 +85,22 @@ TEST(Playground, emplace) {
   for (const auto& obj : container)
     std::cout << ' ' << obj.s;
   std::cout << '\n';
+}
+
+TEST(Playground, complement) {
+  std::cout << "TEST:\n";
+  std::cout << '\n';
+
+  static const double headingToInt32 = 0xffffffff / 360.0;
+  for (int computedHdg =0; computedHdg < 361; computedHdg++) {
+    const auto c1 = static_cast<int32_t>((computedHdg <= 180 ? computedHdg : computedHdg - 360.0) * headingToInt32);
+    const auto c2 = static_cast<int32_t>(static_cast<uint32_t >(computedHdg * headingToInt32));
+
+    std::bitset<32> c1B(c1);
+    std::bitset<32> c2B(c2);
+    std::cout << "Degree = " << computedHdg << " ==> c1 = " << c1 << " c2=" << c2 << " (" << c2-c1 << ")"
+              << " c1B = " << c1B << " c2B=" << c2B << std::endl;
+  }
+
+
 }

@@ -26,8 +26,8 @@ ThreadPool::ThreadPool(std::size_t numThreads) {
 // //////////////////////
 // PRIVATE
 
-/* Start the given number of threads. Each threads enters a loop waiting for
- * for a condition variable to signal that tasks have been be enqueued into
+/* Start the given number of threads. Each thread enters a loop waiting for
+ * a condition variable to signal that tasks has been enqueued into
  * the mTask vector. */
 void ThreadPool::start(std::size_t numThreads) {
   mStopping = false;

@@ -172,7 +172,7 @@ inline Move setValueOf(Move& m, Value v) {
   // can't store a value on MoveNone
   if (moveOf(m) == MOVE_NONE) return m;
   // when saving a value to a move we shift value to a positive integer
-  // (0-VALUE_NONE) and encode it into the move. For retrieving we then shift
+  // (0-VALUE_NONE) and encode it into the move. For retrieving we shift
   // the value back to a range from VALUE_NONE to VALUE_INF
   return m = static_cast<Move>((m & MoveShifts::MOVE_MASK) | ((v - VALUE_NONE) << MoveShifts::VALUE_SHIFT));
 }

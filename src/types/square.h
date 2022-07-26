@@ -63,7 +63,7 @@ constexpr bool validSquare(Square s) { return s < 64; }
 constexpr Square squareOf(File f, Rank r) { return Square((r << 3) + f); }
 
 // returns the file of this square
-constexpr File fileOf(Square s) { return File(s & 7); }
+constexpr File fileOf(Square s) { return File(s & 0b00000111u); }
 
 // returns the rank of this square
 constexpr Rank rankOf(Square s) { return Rank(s >> 3); }

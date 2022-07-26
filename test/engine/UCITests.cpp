@@ -47,7 +47,7 @@ public:
 
 protected:
   void SetUp() override {
-    //SearchConfig::USE_BOOK = false;
+    SearchConfig::USE_BOOK = false;
   }
   void TearDown() override {}
 };
