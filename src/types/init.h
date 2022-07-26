@@ -23,7 +23,7 @@
 #include "bitboard.h"
 #include "square.h"
 
-namespace types {
+namespace Types {
 
   // init() initializes all chess types by pre-computing arrays of
   // Bitboard or other data structures to avoid computation time

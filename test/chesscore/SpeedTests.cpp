@@ -27,6 +27,7 @@
 #include <gtest/gtest.h>
 #include <ostream>
 #include <string>
+#include <format>
 
 using namespace std::chrono;
 using namespace std;
@@ -188,7 +189,6 @@ TEST_F(SpeedTests, onDemandPseudoMoveGen) {
 // NPS          : 10.564.755 nps
 TEST_F(SpeedTests, stdPerftOD) {
   MoveGenerator mg;
-  Position position;
   Perft p;
 
   cout << "Standard PERFT OnDemand Test" << endl;
@@ -211,7 +211,7 @@ TEST_F(SpeedTests, stdPerftOD) {
   // @formatter:on
 
   const int startDepth = 1;
-  const int maxDepth   = 6;
+  const int maxDepth   = 7;
 
   for (int i = startDepth; i <= maxDepth; i++) {
     p.perft(i);

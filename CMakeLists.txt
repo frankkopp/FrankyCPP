@@ -14,7 +14,7 @@ configure_file(src/version.h.in version.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # C++ settings
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 # Unit testing enabled
 enable_testing()
@@ -39,7 +39,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
     message("Using HAS_PEXT")
     add_compile_definitions(HAS_PEXT)
 
- # GNU compiler for WIndows WSL and Travis
+ # GNU compiler for Windows WSL and Travis
 elseif (CMAKE_COMPILER_IS_GNUCXX)
     message("Compiler Settings: GNU")
 
@@ -93,7 +93,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     # this needs to be added to CLION cmake options
     # -DCMAKE_C_COMPILER=cl.exe -DCMAKE_CXX_COMPILER=cl.exe -G Ninja
     message("Compiler Settings: MSVC")
-    set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /favor:INTEL64 /Gr /Qpar /W4 /GR /EHsc /std:c++17 /arch:AVX2 /MP")
+    set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /favor:INTEL64 /Gr /Qpar /W4 /GR /EHsc /std:c++20 /arch:AVX2 /MP")
     set(CMAKE_CXX_FLAGS_RELEASE "/O2 /Ob2 /MD /DNDEBUG")
     set(CMAKE_CXX_FLAGS_DEBUG "/Od /Ob0 /MDd /Zi /RTC1")
 
@@ -141,36 +141,6 @@ set(FETCHCONTENT_QUIET OFF)
 set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 include(FetchContent)
 
-# GOOGLE TEST
-message("Downloading/Update Google Test")
-FetchContent_Declare(
-        googletest
-        GIT_REPOSITORY https://github.com/google/googletest.git
-        GIT_TAG release-1.11.0
-)
-FetchContent_Declare(googletest)
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-option(INSTALL_GMOCK OFF)
-option(INSTALL_GTEST OFF)
-FetchContent_MakeAvailable(googletest)
-include_directories(
-        ${googletest_SOURCE_DIR}/googletest/include
-)
-
-# GOOGLE BENCHMARK
-FetchContent_Declare(
-        googlebenchmark
-        GIT_REPOSITORY https://github.com/google/benchmark.git
-        GIT_TAG v1.5.5) # need master for benchmark::benchmark
-option(BENCHMARK_ENABLE_LTO ON)
-option(BENCHMARK_ENABLE_GTEST_TESTS OFF)
-option(BENCHMARK_ENABLE_TESTING OFF)
-option(BENCHMARK_ENABLE_INSTALL OFF)
-FetchContent_MakeAvailable(googlebenchmark)
-include_directories(
-        ${googlebenchmark_SOURCE_DIR}/include
-)
-
 # FMT
 message("Downloading/Update FMT")
 FetchContent_Declare(
@@ -188,13 +158,43 @@ message("Downloading/Update SPDLOG")
 FetchContent_Declare(
         spdlog
         GIT_REPOSITORY https://github.com/gabime/spdlog.git
-        GIT_TAG v1.9.1
+        GIT_TAG v1.10.0
 )
 option(SPDLOG_FMT_EXTERNAL ON)
 set(SPDLOG_FMT_EXTERNAL ON)
 FetchContent_MakeAvailable(spdlog)
 include_directories(
         ${spdlog_SOURCE_DIR}/include
+)
+
+# GOOGLE TEST
+message("Downloading/Update Google Test")
+FetchContent_Declare(
+        googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG release-1.12.1
+)
+FetchContent_Declare(googletest)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+option(INSTALL_GMOCK OFF)
+option(INSTALL_GTEST OFF)
+FetchContent_MakeAvailable(googletest)
+include_directories(
+        ${googletest_SOURCE_DIR}/googletest/include
+)
+
+# GOOGLE BENCHMARK
+FetchContent_Declare(
+        googlebenchmark
+        GIT_REPOSITORY https://github.com/google/benchmark.git
+        GIT_TAG v1.6.2) # need master for benchmark::benchmark
+option(BENCHMARK_ENABLE_LTO ON)
+option(BENCHMARK_ENABLE_GTEST_TESTS OFF)
+option(BENCHMARK_ENABLE_TESTING OFF)
+option(BENCHMARK_ENABLE_INSTALL OFF)
+FetchContent_MakeAvailable(googlebenchmark)
+include_directories(
+        ${googlebenchmark_SOURCE_DIR}/include
 )
 
 # BOOST
@@ -212,7 +212,7 @@ elseif (WIN32)
     message("Find Boost on Win32")
     if (NOT BOOST_ROOT)
         set(BOOST_ROOT "D:/Boost")
-        set(BOOST_INCLUDEDIR "D:/Boost/include/boost-1_76")
+        set(BOOST_INCLUDEDIR "D:/Boost/include/boost-1_79")
         set(BOOST_LIBRARYDIR "D:/Boost/lib")
     endif()
 else ()
@@ -244,6 +244,3 @@ include_directories(
 add_subdirectory(src)
 add_subdirectory(test)
 add_subdirectory(testbench)
-
-
-

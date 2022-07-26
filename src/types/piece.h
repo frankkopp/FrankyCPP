@@ -79,7 +79,7 @@ constexpr Piece makePiece(unsigned char p) {
 constexpr Color colorOf(Piece p) { return static_cast<Color>(p >> 3); }
 
 // returns the piece type of the given piece
-constexpr PieceType typeOf(Piece p) { return static_cast<PieceType>(p & 7); }
+constexpr PieceType typeOf(Piece p) { return static_cast<PieceType>(p & 0b00000111u); }
 
 namespace {
   /** returns a char representing the piece. Upper case letters for white, lower case for black */

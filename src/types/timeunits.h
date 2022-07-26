@@ -133,7 +133,7 @@ inline uint64_t nps(uint64_t nodes, uint64_t ns) {
   return nodes * nanoPerSec / ns;
 }
 
-// returns the nodes per second from milli seconds
+// returns the nodes per second from milliseconds
 template <typename T>
 inline uint64_t nps(uint64_t nodes, T timeunit) {
   nanoseconds ns = duration_cast<nanoseconds>(timeunit);

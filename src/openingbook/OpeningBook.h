@@ -190,7 +190,7 @@ private:
   void readOneGameSan(const std::string_view& lineView);
 
   // processes lines with one or more games in PGN format. PGN uses multiple line per game
-  // for meta data and moves. Games will be extracted and the interpreted in parallel to retrieve
+  // for metadata and moves. Games will be extracted and the interpreted in parallel to retrieve
   // moves
   void readGamesPgn(const std::vector<std::string_view>* lines);
   void readOneGamePgn(const std::vector<std::string_view>* lines, size_t gameStart, size_t gameEnd);
@@ -234,7 +234,7 @@ public:
   // sets if a cache is used during initialization
   void setUseCache(bool aBool) { _useCache = aBool; }
 
-  // returns if the cache file will be regenerated during
+  // returns true if the cache file will be regenerated during
   // initialization even if it already exists
   [[nodiscard]] bool recreateCache() const { return _recreateCache; }
 

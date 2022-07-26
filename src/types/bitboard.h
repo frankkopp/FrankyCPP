@@ -31,12 +31,6 @@
 #include <immintrin.h>
 #include <iostream>
 
-#if defined(HAS_PEXT)// to be set as compiler option
-constexpr bool HasPext = true;
-#else
-constexpr bool HasPext = false;
-#endif
-
 // 64 bit Bitboard type for storing boards as bits
 typedef uint64_t Bitboard;
 
@@ -358,10 +352,11 @@ struct Magic {
 
   // Compute the attack's index using the 'magic bitboards' approach
   [[nodiscard]] inline unsigned index(Bitboard occupied) const {
-    if (HasPext) { // based on compiler option HAS_PEXT
-      return unsigned(_pext_u64(occupied, mask));
-    }
+#ifdef HAS_PEXT
+    return unsigned(_pext_u64(occupied, mask));
+#else
     return unsigned(((occupied & mask) * magic) >> shift);
+#endif
   }
 };
 

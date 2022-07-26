@@ -45,7 +45,7 @@ void TT::resize(const uint64_t newSizeInMByte) {
   maxNumberOfEntries = (1ULL << static_cast<uint64_t>(std::floor(std::log2(sizeInByte / ENTRY_SIZE))));
   hashKeyMask        = maxNumberOfEntries - 1;
 
-  // if TT is resized to 0 we cant have any entries.
+  // if TT is resized to 0 we can't have any entries.
   if (sizeInByte == 0) maxNumberOfEntries = 0;
   sizeInByte = maxNumberOfEntries * ENTRY_SIZE;
 
@@ -56,7 +56,7 @@ void TT::resize(const uint64_t newSizeInMByte) {
       _data = new Entry[maxNumberOfEntries];
       break;
     } catch (std::bad_alloc const&) {
-      // we could not allocate enough memory so we reduce TT size by a power of 2
+      // we could not allocate enough memory, so we reduce TT size by a power of 2
       auto oldSize       = sizeInByte;
       maxNumberOfEntries = maxNumberOfEntries >> 1ULL;
       hashKeyMask        = maxNumberOfEntries - 1;
@@ -169,7 +169,7 @@ void TT::put(Key key, Depth depth, Move move, Value value, ValueType type, Value
   if (entryDataPtr->key == key) {
     numberOfUpdates++;
     // we always update as the stored moved can't be any good otherwise
-    // we would have found this during the search in a previous probe
+    // we would have found this during the search in a previous probe,
     // and we would not have come to store it again
     entryDataPtr->key = key;
     if (move) {// preserve existing move if no move is given

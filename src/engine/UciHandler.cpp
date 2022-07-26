@@ -63,7 +63,7 @@ void UciHandler::loop(std::istream* pIstream) {
     if (handleCommand(cmd)) return;
 
     LOG__DEBUG(Logger::get().UCIHAND_LOG, "UCI Handler waiting for command:");
-  } while (1);
+  } while (true);
 }
 
 // handles a new command and returns true if received "quit"
@@ -240,7 +240,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
         }
       }
       if (!searchMoves.empty()) {
-        searchLimits.moves = searchMoves;
+        searchLimits.moves = std::move(searchMoves);
       }
     }
 
@@ -384,7 +384,7 @@ void UciHandler::ponderHitCommand() const {
 }
 
 void UciHandler::perftCommand(std::istringstream& inStream) {
-  LOG__INFO(Logger::get().UCIHAND_LOG, "Start Pert Test");
+  LOG__INFO(Logger::get().UCIHAND_LOG, "Start Perft Test");
   std::string token;
   inStream >> token;
   int startDepth = 1;
@@ -409,8 +409,7 @@ void UciHandler::perftCommand(std::istringstream& inStream) {
   std::thread perftThread([&](int s, int e) {
     pPerft->perft(s, e, true);
     sendString("Perft finished.");
-  },
-                          startDepth, endDepth);
+  }, startDepth, endDepth);
   perftThread.detach();
 }
 

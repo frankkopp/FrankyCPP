@@ -102,7 +102,7 @@ private:
   mutable uint64_t numberOfHits       = 0;// entries with identical key found
   mutable uint64_t numberOfMisses     = 0;// no entry with key found
 
-  // this array hold the actual entries for the transposition table
+  // this array holds the actual entries for the transposition table
   Entry* _data{};
 
 public:

@@ -49,7 +49,6 @@ void Position::init() {
   }
   Zobrist::nextPlayer   = random.rand<Key>();
   Position::initialized = true;
-  //  fprintln("Position initialized");
 }
 
 ////////////////////////////////////////////////
@@ -74,8 +73,8 @@ Position::Position(const std::string& fen) {
   }
 }
 
-////////////////////////////////////////////////
-///// PUBLIC
+// //////////////////////////////////////////////
+// /// PUBLIC
 
 void Position::doMove(Move move) {
   assert(validMove(move));
@@ -445,7 +444,7 @@ bool Position::givesCheck(Move move) const {
   const MoveType moveType = typeOf(move);
   PieceType fromPt        = typeOf(fromPc);
   Square toSq             = toSquare(move);
-  Square epTargetSq{};
+  Square epTargetSq;
 
   switch (moveType) {
     case PROMOTION:
@@ -609,7 +608,7 @@ bool Position::checkRepetitions(int reps) const {
   int i            = historyCounter - 2;
   int lastHalfMove = halfMoveClock;
   while (i >= 0) {
-    // every time the half move clock gets reset (non reversible position) there
+    // every time the half move clock gets reset (non-reversible position) there
     // can't be any more repetition of positions before this position
     if (historyState[i].halfMoveClock >= lastHalfMove) {
       break;
@@ -633,7 +632,7 @@ int Position::countRepetitions() const {
   int i            = historyCounter - 2;
   int lastHalfMove = halfMoveClock;
   while (i >= 0) {
-    // every time the half move clock gets reset (non reversible position) there
+    // every time the half move clock gets reset (non-reversible position) there
     // can't be any more repetition of positions before this position
     if (historyState[i].halfMoveClock >= lastHalfMove) {
       break;
@@ -704,7 +703,6 @@ std::string Position::str() const {
          << (hasCheckFlag == FLAG_TBD ? "N/A" : hasCheckFlag == FLAG_TRUE ? "Check"
                                                                           : "No check")
          << std::endl;
-  ;
   output << "Game Phase: " << gamePhase << std::endl;
   output << "Material: white=" << material[WHITE]
          << " black=" << material[BLACK] << std::endl;
@@ -847,7 +845,7 @@ void Position::putPiece(Piece piece, Square square) {
   gamePhase += gamePhaseValue(pieceType);
   if (gamePhase > GAME_PHASE_MAX) {
     gamePhase = GAME_PHASE_MAX;
-  };
+  }
   // material
   material[color] += pieceTypeValue[pieceType];
   if (pieceType > PAWN) {
@@ -1087,4 +1085,3 @@ void Position::setupBoard(const std::string& fen) {
   // if move number is 0 set it to 1
   if (moveNumber == 0) moveNumber = 1;
 }
-

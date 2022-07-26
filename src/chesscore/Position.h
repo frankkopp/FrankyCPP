@@ -114,11 +114,11 @@ class Position {
 
   // Calculated by doMove/undoMove
 
-  // Material value will always be up to date
+  // Material value will always be up-to-date
   int material[COLOR_LENGTH]{};
   int materialNonPawn[COLOR_LENGTH]{};
 
-  // Positional value will always be up to date
+  // Positional value will always be up-to-date
   int psqMidValue[COLOR_LENGTH]{};
   int psqEndValue[COLOR_LENGTH]{};
 
@@ -186,7 +186,7 @@ public:
   // the external view on the position is unchanged (e.g. fenBeforeDoMove == fenAfterUndoMove
   // and zobristBeforeDoMove == zobristAfterUndoMove but positionBeforeDoMove != positionAfterUndoMove
   // If positionBeforeDoMove == positionAfterUndoMove would be required this function would have
-  // to be changed to reset the history entry as well. Currently this is not necessary
+  // to be changed to reset the history entry as well. Currently, this is not necessary,
   // and therefore we spare the time to do this.
   void undoMove();
 
@@ -253,15 +253,16 @@ public:
   //
   // Return true if this position has been played reps times before
   bool checkRepetitions(int reps) const;
-  int countRepetitions() const;
 
+  // Returns the number of repetitions of the current positions.
+  int countRepetitions() const;
 
   // HasInsufficientMaterial returns true if no side has enough material to
   // force a mate (does not exclude combination where a helpmate would be
   // possible, e.g. the opponent needs to support a mate by mistake)
   bool checkInsufficientMaterial() const;
 
-  // Returns the last move. Returns Move.NOMOVE if there is no last move.
+  // Returns the last move. Returns MOVE_NONE if there is no last move.
   inline Move getLastMove() const {
     if (historyCounter <= 0) return MOVE_NONE;
     return historyState[historyCounter - 1].move;
@@ -276,7 +277,7 @@ public:
     return (occupiedBb[~nextPlayer] & toSquare(move)) || typeOf(move) == ENPASSANT;
   };
 
-  // LastCapturedPiece returns the captured piece of the the last
+  // LastCapturedPiece returns the captured piece of the last
   // move made on the position or MoveNone if the move was
   // non-capturing or the position has no history of earlier moves.
   // Does not return a pawn captured by en passant.
@@ -299,8 +300,8 @@ private:
   void clearEnPassant();
 
 public:
-  ////////////////////////////////////////////////
-  ///// GETTER / SETTER
+  // //////////////////////////////////////////////
+  // /// GETTER / SETTER
 
   inline Piece getPiece(const Square square) const { return board[square]; }
   inline Key getZobristKey() const { return zobristKey; }
@@ -327,6 +328,5 @@ public:
   // 1.0 for beginning to 0.0 t the end)
   inline double getGamePhaseFactor() const { return double(gamePhase) / GAME_PHASE_MAX; }
 };
-
 
 #endif//FRANKYCPP_POSITION_H
