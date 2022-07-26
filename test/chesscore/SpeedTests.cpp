@@ -27,7 +27,6 @@
 #include <gtest/gtest.h>
 #include <ostream>
 #include <string>
-#include <format>
 
 using namespace std::chrono;
 using namespace std;
