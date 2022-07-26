@@ -23,14 +23,18 @@
 #include "chesscore/Values.h"
 #include "types/init.h"
 #include <common/Logging.h>
-
+#include <format>
 
 namespace init {
   // initializes all data structures and pre computed data
   // for the application
   inline void init() {
+    const auto start = std::chrono::high_resolution_clock::now();
     Types::init();
     Values::init();
+    const auto stop    = std::chrono::high_resolution_clock::now();
+    const auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
+    std::cout << fmt::format(deLocale, "Application initialized {}.", str(elapsed)) << std::endl;
   }
 }// namespace init
 
