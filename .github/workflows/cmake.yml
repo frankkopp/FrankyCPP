@@ -56,8 +56,8 @@ jobs:
             build_type: "Release",
             cc: "cl",
             cxx: "cl",
-            generators: "Visual Studio 16 2019",
-            #generators: "Ninja",
+            #generators: "Visual Studio 16 2019",
+            generators: "Ninja",
             #environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat",
 
             executable: "FrankyCPP_v0.4.exe",
@@ -251,4 +251,3 @@ jobs:
           asset_name: FrankyCPP_${{ runner.os }}-$$.zip # name to upload the release as, use $$ to insert date (YYYYMMDD) and 6 letter commit hash
           asset_content_type: application/zip # required by GitHub API
           max_releases: 1 # optional, if there are more releases than this matching the asset_name, the oldest ones are going to be deleted
-
