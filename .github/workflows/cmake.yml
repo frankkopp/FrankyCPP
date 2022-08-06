@@ -21,7 +21,7 @@ jobs:
   build:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
-    continue-on-error: false
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
