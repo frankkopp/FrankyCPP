@@ -63,7 +63,10 @@ public:
   }
 
   /* Return the number of open (not started) tasks */
-  auto openTasks () { return mTasks.size (); }
+  auto openTasks () {
+    std::unique_lock<std::mutex> lock{ mEventMutex };
+    return mTasks.size ();
+  }
 
 private:
 

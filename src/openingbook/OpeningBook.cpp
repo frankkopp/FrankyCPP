@@ -96,7 +96,7 @@ void OpeningBook::initialize() {
   readGames(lines);
 
   // release memory from initial file load
-  data = nullptr;
+  data.reset(nullptr);
 
   // safe the book to a cache
   if (_useCache && bookMap.size() > 1) {
