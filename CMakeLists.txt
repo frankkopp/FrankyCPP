@@ -1,6 +1,7 @@
 message("====================================================================")
 message("FrankyCPP Main")
 message("CMAKE " ${CMAKE_VERSION} " " ${CMAKE_COMMAND})
+message("Compiler is " ${CMAKE_CXX_COMPILER_ID} " " ${CMAKE_CXX_COMPILER_VERSION} " " ${CMAKE_CXX_COMPILER})
 message("====================================================================")
 
 cmake_minimum_required(VERSION 3.16)
@@ -43,7 +44,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
 elseif (CMAKE_COMPILER_IS_GNUCXX)
     message("Compiler Settings: GNU")
 
-    set(CMAKE_CXX_FLAGS "-std=c++17 -m64 -msse -msse3 -msse4 -mpopcnt -mbmi2 -Wall -Wextra -Wpedantic -Wno-error=pedantic -Wno-unknown-pragmas -Wno-variadic-macros -Wno-sign-compare -Wno-subobject-linkage")
+    set(CMAKE_CXX_FLAGS "-std=c++2a -m64 -msse -msse3 -msse4 -mpopcnt -mbmi2 -Wall -Wextra -Wpedantic -Wno-error=pedantic -Wno-unknown-pragmas -Wno-variadic-macros -Wno-sign-compare -Wno-subobject-linkage")
     set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 --coverage -Wno-unused-parameter -Wno-unused-variable")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
     # additional: -Wshadow  -Wno-unknown-pragmas -Weffc++ -Wimplicit-fallthrough -Wswitch -Wpointer-arith -Wcast-qual -Wconversion -Wno-sign-conversion -Wno-error=padded -Wno-error=inline")

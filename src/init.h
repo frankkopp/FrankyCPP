@@ -23,7 +23,6 @@
 #include "chesscore/Values.h"
 #include "types/init.h"
 #include <common/Logging.h>
-#include <format>
 
 namespace init {
   // initializes all data structures and pre computed data
