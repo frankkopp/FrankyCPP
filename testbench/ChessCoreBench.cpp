@@ -82,7 +82,7 @@ BENCHMARK_F(ChessCoreBench, BM_MoveGen)(benchmark::State& state) {
   auto k2 = mg.getMoveFromUci(position, "b7b6");
   auto pv = mg.getMoveFromUci(position, "a2b1Q");
   double counter = 0;
-  Move move;
+  Move move = MOVE_NONE;
 
   for (auto _ : state) {
     mg.resetOnDemand();

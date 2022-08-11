@@ -444,7 +444,7 @@ bool Position::givesCheck(Move move) const {
   const MoveType moveType = typeOf(move);
   PieceType fromPt        = typeOf(fromPc);
   Square toSq             = toSquare(move);
-  Square epTargetSq;
+  Square epTargetSq = SQ_NONE;
 
   switch (moveType) {
     case PROMOTION:

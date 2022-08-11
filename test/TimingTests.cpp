@@ -733,7 +733,7 @@ void TimingTests::testTiming(std::ostringstream& os, int rounds, int iterations,
      << std::endl;
 
   auto startTime = currentTime();
-  nanoseconds last(0);
+  nanoseconds lastRound(0);
 
   // rounds
   for (int round = 1; round <= rounds; ++round) {
@@ -757,7 +757,7 @@ void TimingTests::testTiming(std::ostringstream& os, int rounds, int iterations,
 
       const nanoseconds cpuTime = accDuration;
       const nanoseconds avgCpu  = cpuTime / iterations;
-      uint64_t percentFromLast  = last.count() ? (avgCpu * 10'000) / last : 10'000;
+      uint64_t percentFromLast  = lastRound.count() ? (avgCpu * 10'000) / lastRound : 10'000;
 
       os << "Round " << std::setfill(' ') << std::setw(2) << round << " Test "
          << std::setw(2) << testNr++ << ": " << std::setfill(' ') << std::setw(12)
@@ -770,10 +770,10 @@ void TimingTests::testTiming(std::ostringstream& os, int rounds, int iterations,
          << " ns avg per test)"
          << std::endl;
 
-      last        = avgCpu;
+      lastRound   = avgCpu;
       accDuration = nanoseconds(0);
     }
     os << std::endl;
-    last = nanoseconds(0);
+    lastRound = nanoseconds(0);
   }
 }
