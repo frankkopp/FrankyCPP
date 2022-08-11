@@ -442,7 +442,7 @@ void OpeningBook::readOneGamePgn(const std::vector<std::string_view>* lines, siz
 void OpeningBook::cleanUpPgnMoveSection(std::string& str) {
 
   int l     = static_cast<int>(str.length());// explicit as the later loop test for <0
-  char last = ' ';
+  char lastChar = ' ';
   for (int a = 0; a < l;) {
 
     // skip non ascii characters
@@ -487,7 +487,7 @@ void OpeningBook::cleanUpPgnMoveSection(std::string& str) {
       }
     }
     // remove move numbering
-    else if (isdigit(str[a]) && last == ' ') {
+    else if (isdigit(str[a]) && lastChar == ' ') {
       str[a++] = ' ';
       while (a < l && (isdigit(str[a]) || str[a] == '.')) {
         str[a++] = ' ';
@@ -497,7 +497,7 @@ void OpeningBook::cleanUpPgnMoveSection(std::string& str) {
     else {
       a++;
     }
-    last = str[a - 1];
+    lastChar = str[a - 1];
   }
 
   // remove result (1-0 0-1 1/2-1/2 *)

@@ -747,15 +747,15 @@ TEST_F(MoveGenTest, sortValueTest) {
 
   fprintln("Post sort:");
   int counter = 0;
-  Move last   = MOVE_NONE;
+  Move lastMove = MOVE_NONE;
   for (Move m : moves) {
     fprintln("{}", strVerbose(m));
     if (!counter++) {
-      last = m;
+      lastMove = m;
       continue;
     }
-    EXPECT_GE(valueOf(last), valueOf(m));
-    last = m;
+    EXPECT_GE(valueOf(lastMove), valueOf(m));
+    lastMove = m;
   }
   NEWLINE;
 }
