@@ -24,6 +24,7 @@
 
 #include <benchmark/benchmark.h>
 
+#include <openingbook/OpeningBook.h>
 #include <regex>
 
 // TimingBench is meant as a collection of benchmarks for alternative implementations
@@ -38,6 +39,19 @@ public:
   }
 
 };
+
+BENCHMARK_F(TimingBench, cleanUp)(benchmark::State& state) {
+  std::string testString{"e4(d4) d5!!2.c4$50(Nf3?)e5 Nf3{Comment !}Nc6 Nc3 Nf6 Bc4 {another comment} Bc5 O-O O-O a1=Q  @@@æææ {unexpected characters are skipped}  <> {These symbols are reserved}  1/2-1/2  ; comment     "};
+  double counter = 0;
+  for (auto _ : state) {
+    std::string test = removeTrailingComments(testString, ";");
+    OpeningBook::cleanUpPgnMoveSection(test);
+    counter++;
+  }
+  state.counters["Runs"] = counter;
+  state.counters["RunRate"] = benchmark::Counter(counter, benchmark::Counter::kIsRate);
+  state.counters["RunTime"] = benchmark::Counter(counter, benchmark::Counter::kIsRate | benchmark::Counter::kInvert);
+}
 
 BENCHMARK_F(TimingBench, BM_IllegalCharacter1)(benchmark::State& state) {
   const std::string fen{"r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1"};

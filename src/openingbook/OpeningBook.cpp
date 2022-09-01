@@ -113,19 +113,16 @@ void OpeningBook::initialize() {
 void OpeningBook::reset() {
   const std::scoped_lock<std::mutex> lock(bookMutex);
   bookMap.clear();
+  data.reset(nullptr);
   isInitialized = false;
   LOG__DEBUG(Logger::get().TEST_LOG, "Opening book reset: {:L} entries", bookMap.size());
 }
 
 std::string OpeningBook::str(int level) {
   Position p{};
-  std::string out;
-
   Key zobristKey        = p.getZobristKey();
   const BookEntry* node = &bookMap.at(zobristKey);
-  out += fmt::format(deLocale, "Root ({:L})\n", bookMap.at(zobristKey).counter);
-  out += getLevelStr(1, level, node);
-  return out;
+  return std::string{fmt::format(deLocale, "Root ({:L})\n{:s}", bookMap.at(zobristKey).counter, getLevelStr(1, level, node))};
 }
 
 std::string OpeningBook::getLevelStr(int level, int maxLevel, const BookEntry* node) {
@@ -467,7 +464,7 @@ void OpeningBook::cleanUpPgnMoveSection(std::string& str) {
       }
       str[a++] = ' ';
     }
-    // remove curly bracket comments '\{[^{}]*\}'
+    // remove tag bracket comments '\{[^<>}*\}'
     else if (str[a] == '<') {
       while (a < l && str[a] != '>') {
         str[a++] = ' ';
@@ -556,7 +553,7 @@ void OpeningBook::addGameToBook(const Moves& game) {
     return;
   }
 
-  // initialize lasKey with start position (aka root position)
+  // initialize lastKey with start position (aka root position)
   Key lastKey = rootZobristKey;
   // increase counter for root entry for each game
   {// lock scope
@@ -564,7 +561,7 @@ void OpeningBook::addGameToBook(const Moves& game) {
     bookMap.at(lastKey).counter++;
   }
 
-  // Loop through all move string and try to find a matching move on the current position.
+  // Loop through all move strings and try to find a matching move on the current position.
   // If found add the move to the book.
   for (const std::string& moveStr : game) {
     Move move;

@@ -56,7 +56,7 @@ TEST_F(PositionTest, HistoryStruct) {
   fprintln("Square:         {}", sizeof(Square));
   fprintln("Flag:           {}", sizeof(Flag));
   fprintln("History: {}", sizeof(HistoryState));
-//  EXPECT_EQ(32, sizeof(HistoryState));
+  EXPECT_EQ(32, sizeof(HistoryState));
   EXPECT_EQ(MAX_MOVES, position.historyState.size());
 }
 

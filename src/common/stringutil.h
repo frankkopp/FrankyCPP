@@ -44,7 +44,7 @@ inline void splitFast(const T& str, std::vector<T>& container, const std::string
 // whitespaces are defined as:  ' ' || '\t' || '\n' || '\v' || '\f' || '\r'
 template <typename T>
 inline T trimFast(const T& s) {
-  const int l = (int) s.length();
+  const int l = static_cast<int>(s.length());
   int a = 0, b = l - 1;
   char c;
   while (a < l && ((c = s[a]) == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' || c == '\r')) a++;
