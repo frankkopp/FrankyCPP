@@ -876,9 +876,16 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
     // Forward Pruning
     // FP will only be done when the move is not
     // interesting - no check, no capture, etc.
-    if (!isPv && extension == 0 && move != ttMove && move != myMg->getKillerMoves()[0] && move != myMg->getKillerMoves()[1] && typeOf(move) != PROMOTION && !p.isCapturingMove(move) && !hasCheck &&// pre move
-        !givesCheck &&                                                                                                                                                                              // post move
-        !matethreat) {                                                                                                                                                                              // from pre move null move check
+    if (!isPv
+        && extension == 0
+        && move != ttMove
+        && move != myMg->getKillerMoves()[0]
+        && move != myMg->getKillerMoves()[1]
+        && typeOf(move) != PROMOTION
+        && !p.isCapturingMove(move)
+        && !hasCheck
+        && !givesCheck
+        && !matethreat) {
 
       // to check in futility pruning what material delta we have
       const auto moveGain = valueOf(p.getPiece(to));
@@ -1230,8 +1237,14 @@ Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, Search::N
     // Forward Pruning
     // FP will only be done when the move is not
     // interesting - no check, no capture, etc.
-    if (SearchConfig::USE_QFP && !isPv && move != ttMove && move != myMg->getKillerMoves()[0] && move != myMg->getKillerMoves()[1] && typeOf(move) != PROMOTION && !hasCheck &&// pre move
-        !givesCheck                                                                                                                                                            // post move
+    if (SearchConfig::USE_QFP
+        && !isPv
+        && move != ttMove
+        && move != myMg->getKillerMoves()[0]
+        && move != myMg->getKillerMoves()[1]
+        && typeOf(move) != PROMOTION
+        && !hasCheck
+        && !givesCheck                                                                                                                                                            // post move
     ) {
       // to check in futility pruning what material delta we have
       const auto moveGain       = valueOf(p.getPiece(to));

@@ -154,7 +154,7 @@ public:
   /**
    * Returns the number of positions in the book
    */
-  [[nodiscard]] uint64_t size() const { return bookMap.size(); }
+  [[nodiscard]] inline uint64_t size() const { return bookMap.size(); }
 
   /**
    * returns a hierarchical string of the book entries with given depth
@@ -202,7 +202,7 @@ private:
   void writeToBook(Move move, Key currentKey, Key lastKey);
 
   // fast removal of unwanted parts of a PGN move section (not using slow std::regex)
-  static void cleanUpPgnMoveSection(std::string& str);
+  public: static void cleanUpPgnMoveSection(std::string& str);
 
   // std::thread::hardware_concurrency() is not reliable - on some platforms
   // it returns 0 - in this case we chose a default of 4
@@ -229,17 +229,17 @@ private:
 
 public:
   // returns if a cache is used during initialization
-  [[nodiscard]] bool useCache() const { return _useCache; }
+  [[nodiscard]] constexpr bool useCache() const { return _useCache; }
 
   // sets if a cache is used during initialization
-  void setUseCache(bool aBool) { _useCache = aBool; }
+  void constexpr setUseCache(bool aBool) { _useCache = aBool; }
 
   // returns true if the cache file will be regenerated during
   // initialization even if it already exists
-  [[nodiscard]] bool recreateCache() const { return _recreateCache; }
+  [[nodiscard]] constexpr bool recreateCache() const { return _recreateCache; }
 
   // sets if the cache file will be regenerated during initialization
-  void setRecreateCache(bool recreateCache) { _recreateCache = recreateCache; }
+  void constexpr setRecreateCache(bool recreateCache) { _recreateCache = recreateCache; }
 };
 
 

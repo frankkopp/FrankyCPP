@@ -94,9 +94,9 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     # this needs to be added to CLION cmake options
     # -G Ninja
     message("Compiler Settings: MSVC")
-    set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /favor:INTEL64 /Gr /Qpar /W4 /GR /EHsc /std:c++20 /arch:AVX2 /MP")
-    set(CMAKE_CXX_FLAGS_RELEASE "/O2 /Ob2 /MD /DNDEBUG")
-    set(CMAKE_CXX_FLAGS_DEBUG "/Od /Ob0 /MDd /Zi /RTC1")
+    set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /favor:INTEL64 /Gr /W4 /w14640 /GR /EHsc /std:c++20 /arch:AVX2 /MP")
+    set(CMAKE_CXX_FLAGS_RELEASE "/Qpar /O2 /Ob3 /MD /DNDEBUG")
+    set(CMAKE_CXX_FLAGS_DEBUG "/Od /Ob0 /MDd /Zi /RTC1 /permissive-")
 
     # std::execution lib for parallel std operations. Not available on all platforms
     message("Using HAS_EXECUTION_LIB")
