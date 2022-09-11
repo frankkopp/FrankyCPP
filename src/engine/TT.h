@@ -69,13 +69,13 @@ public:
   struct Entry {
     // sorted by size to achieve smallest struct size
     // using bitfield for smallest size
-    Key key       = 0;         // 64 bit
-    uint16_t move = MOVE_NONE; // 16 bit
-    Value eval    = VALUE_NONE;// 16 bit signed
-    Value value   = VALUE_NONE;// 16 bit signed
-    int8_t depth : 7;          // 0-127
-    uint8_t age : 3;           // 0-7
-    ValueType type : 2;        // 4 values
+    Key key        = 0;         // 64 bit
+    uint16_t move  = MOVE_NONE; // 16 bit
+    Value eval     = VALUE_NONE;// 16 bit signed
+    Value value    = VALUE_NONE;// 16 bit signed
+    int8_t depth   : 7{};          // 0-127
+    uint8_t age    : 3{};           // 0-7
+    ValueType type : 2{};        // 4 values
     friend std::ostream& operator<<(std::ostream& os, const Entry& entry);
   };
 
@@ -103,7 +103,7 @@ private:
   mutable uint64_t numberOfMisses     = 0;// no entry with key found
 
   // this array holds the actual entries for the transposition table
-  Entry* _data{};
+  std::unique_ptr<Entry[]> _data = std::make_unique<Entry[]>(maxNumberOfEntries);
 
 public:
   // TT default size is 2 MB
@@ -115,9 +115,7 @@ public:
    */
   explicit TT(uint64_t newSizeInMByte);
 
-  ~TT() {
-    delete[] _data;
-  }
+  ~TT() = default;
 
   // disallow copies
   TT(TT const& tt) = delete;         // copy
@@ -168,7 +166,6 @@ public:
 
   /** Age all entries by 1 */
   void ageEntries();
-
   /** Returns how full the transposition table is in permill as per UCI */
   inline int hashFull() const {
     if (!maxNumberOfEntries) return 0;

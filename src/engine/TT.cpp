@@ -49,11 +49,13 @@ void TT::resize(const uint64_t newSizeInMByte) {
   if (sizeInByte == 0) maxNumberOfEntries = 0;
   sizeInByte = maxNumberOfEntries * ENTRY_SIZE;
 
-  delete[] _data;
+  // release old tt memory
+  _data.reset(nullptr);
+
   // try to allocate memory for TT - repeat until allocation is successful
   while (true) {
     try {
-      _data = new Entry[maxNumberOfEntries];
+      _data = std::make_unique<Entry[]>(maxNumberOfEntries);
       break;
     } catch (std::bad_alloc const&) {
       // we could not allocate enough memory, so we reduce TT size by a power of 2
