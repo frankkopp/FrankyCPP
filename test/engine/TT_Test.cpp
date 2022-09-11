@@ -283,7 +283,7 @@ TEST_F(TT_Test, TT_PPS) {
     auto finish = std::chrono::high_resolution_clock::now();
     sum += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
     const double sec = double(sum) / nanoPerSec;
-    uint64_t tts     = uint64_t(iterations / sec);
+    auto tts = uint64_t(iterations / sec);
     fprintln("TT Statistics : {:s}", tt.str());
     fprintln("Run time      : {:L} ns ({:L} put/probes per sec)", sum, tts);
     fprintln("");

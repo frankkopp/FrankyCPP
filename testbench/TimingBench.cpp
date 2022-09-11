@@ -18,9 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
+#include "chesscore/Position.h"
+#include "engine/TT.h"
 #include "init.h"
 #include "types/types.h"
-#include "chesscore/Position.h"
 
 #include <benchmark/benchmark.h>
 
@@ -39,6 +40,18 @@ public:
   }
 
 };
+
+BENCHMARK_F(TimingBench, TTAge1)(benchmark::State& state) {
+  double counter = 0;
+  TT tt{1'000};
+  for (auto _ : state) {
+    tt.ageEntries();
+    counter++;
+  }
+  state.counters["Runs"] = counter;
+  state.counters["RunRate"] = benchmark::Counter(counter, benchmark::Counter::kIsRate);
+  state.counters["RunTime"] = benchmark::Counter(counter, benchmark::Counter::kIsRate | benchmark::Counter::kInvert);
+}
 
 BENCHMARK_F(TimingBench, cleanUp)(benchmark::State& state) {
   std::string testString{"e4(d4) d5!!2.c4$50(Nf3?)e5 Nf3{Comment !}Nc6 Nc3 Nf6 Bc4 {another comment} Bc5 O-O O-O a1=Q  @@@æææ {unexpected characters are skipped}  <> {These symbols are reserved}  1/2-1/2  ; comment     "};
