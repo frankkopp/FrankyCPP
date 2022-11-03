@@ -141,12 +141,34 @@ TEST_F(TT_Test, basic64) {
 
 TEST_F(TT_Test, zero) {
   LOG__INFO(Logger::get().TEST_LOG, "Trying to create a TT with {:L} MB in size", 0);
-  TT tt;
-  tt.resize(0);
+  TT tt(0);
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries:         {:L}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of max entries:     {:L}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries:         {:L}", tt.getNumberOfEntries());
+}
+
+TEST_F(TT_Test, resize) {
+  LOG__INFO(Logger::get().TEST_LOG, "Trying to create a TT with {:L} MB in size", 0);
+  TT tt(0);
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries:         {:L}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of max entries:     {:L}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries:         {:L}", tt.getNumberOfEntries());
+  EXPECT_EQ(0, tt.getMaxNumberOfEntries());
+  EXPECT_EQ(0, tt.getNumberOfEntries());
+  tt.resize(64);
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
+  EXPECT_EQ(4194304, tt.getMaxNumberOfEntries());
+  EXPECT_EQ(0, tt.getNumberOfEntries());
+  tt.resize(1'000);
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
+  EXPECT_EQ(33554432, tt.getMaxNumberOfEntries());
+  EXPECT_EQ(0, tt.getNumberOfEntries());
 }
 
 TEST_F(TT_Test, parallelClear) {

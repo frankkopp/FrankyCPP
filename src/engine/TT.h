@@ -17,13 +17,13 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#ifndef FRANKYCPP_TT_H
+#define FRANKYCPP_TT_H
+
 #include <iosfwd>
 
 #include "types/types.h"
 #include "gtest/gtest_prod.h"
-
-#ifndef FRANKYCPP_TT_H
-#define FRANKYCPP_TT_H
 
 // pre-fetching of TT entries into CPU caches
 #ifdef __GNUC__
@@ -166,6 +166,7 @@ public:
 
   /** Age all entries by 1 */
   void ageEntries();
+
   /** Returns how full the transposition table is in permill as per UCI */
   inline int hashFull() const {
     if (!maxNumberOfEntries) return 0;

@@ -63,8 +63,7 @@ TEST_F(PawnTT_Test, basic) {
 
 TEST_F(PawnTT_Test, zero) {
   LOG__INFO(Logger::get().TEST_LOG, "Trying to create a PawnTT with {:L} MB in size", 0);
-  PawnTT tt;
-  tt.resize(0);
+  PawnTT tt(0);
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries:         {:L}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of max entries:     {:L}", tt.getMaxNumberOfEntries());
@@ -119,6 +118,30 @@ TEST_F(PawnTT_Test, basic10000) {
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
   ASSERT_EQ(268435456, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
+}
+
+TEST_F(PawnTT_Test, resize) {
+  LOG__INFO(Logger::get().TEST_LOG, "Trying to create a PawnTT with {:L} MB in size", 0);
+  PawnTT tt(0);
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries:         {:L}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of max entries:     {:L}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries:         {:L}", tt.getNumberOfEntries());
+  ASSERT_EQ(0, tt.getMaxNumberOfEntries());
+  ASSERT_EQ(0, tt.getNumberOfEntries());
+  tt.resize(64);
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
+  ASSERT_EQ(4194304, tt.getMaxNumberOfEntries());
+  ASSERT_EQ(0, tt.getNumberOfEntries());
+  tt.resize(1000);
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
+  LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
+  ASSERT_EQ(33554432, tt.getMaxNumberOfEntries());
+  ASSERT_EQ(0, tt.getNumberOfEntries());
+
 }
 
 TEST_F(PawnTT_Test, parallelClear) {
