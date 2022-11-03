@@ -41,17 +41,21 @@ void TT::resize(const uint64_t newSizeInMByte) {
     sizeInByte = newSizeInMByte * MB;
   }
 
-  // find the highest power of 2 smaller than maxPossibleEntries
-#if __cpp_lib_bitops >= 201907L
-  maxNumberOfEntries = std::bit_floor(sizeInByte / ENTRY_SIZE);
-#else
-  maxNumberOfEntries = (1ULL << static_cast<uint64_t>(std::floor(std::log2(sizeInByte / ENTRY_SIZE))));
-#endif
-  hashKeyMask        = maxNumberOfEntries - 1;
-
   // if TT is resized to 0 we can't have any entries.
-  if (sizeInByte == 0) maxNumberOfEntries = 0;
-  sizeInByte = maxNumberOfEntries * ENTRY_SIZE;
+  if (sizeInByte == 0) {
+    maxNumberOfEntries = 0;
+  }
+  else {
+    // find the highest power of 2 smaller than maxPossibleEntries
+#if __cpp_lib_bitops >= 201907L
+    maxNumberOfEntries = std::bit_floor(sizeInByte / ENTRY_SIZE);
+#else
+    maxNumberOfEntries = (1ULL << static_cast<uint64_t>(std::floor(std::log2(sizeInByte / ENTRY_SIZE))));
+#endif
+  }
+
+  hashKeyMask = maxNumberOfEntries - 1;
+  sizeInByte  = maxNumberOfEntries * ENTRY_SIZE;
 
   // release old tt memory
   _data.reset(nullptr);
@@ -63,7 +67,7 @@ void TT::resize(const uint64_t newSizeInMByte) {
       break;
     } catch (std::bad_alloc const&) {
       // we could not allocate enough memory, so we reduce TT size by a power of 2
-      auto oldSize       = sizeInByte;
+      uint64_t oldSize   = sizeInByte;
       maxNumberOfEntries = maxNumberOfEntries >> 1ULL;
       hashKeyMask        = maxNumberOfEntries - 1;
       sizeInByte         = maxNumberOfEntries * ENTRY_SIZE;
@@ -72,14 +76,13 @@ void TT::resize(const uint64_t newSizeInMByte) {
   }
 
   clear();
-  if (maxNumberOfEntries) {
-    LOG__INFO(Logger::get().TT_LOG, "TT Size {:L} MByte, Capacity {:L} entries (size={}Byte) (Requested were {:L} MBytes)",
-              sizeInByte / MB, maxNumberOfEntries, sizeof(Entry), newSizeInMByte);
-  }
+  LOG__INFO(Logger::get().TT_LOG, "TT Size {:L} MByte, Capacity {:L} entries (size={}Byte) (Requested were {:L} MBytes)",
+            sizeInByte / MB, maxNumberOfEntries, sizeof(Entry), newSizeInMByte);
 }
 
 void TT::clear() {
   if (!maxNumberOfEntries) {
+    LOG__DEBUG(Logger::get().TT_LOG, "TT cleared - no entries");
     return;
   }
   // This clears the TT by overwriting each entry with 0.

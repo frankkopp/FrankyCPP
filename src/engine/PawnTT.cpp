@@ -17,11 +17,11 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include <thread>
 #include <bit>
+#include <thread>
 
-#include "common/Logging.h"
 #include "PawnTT.h"
+#include "common/Logging.h"
 
 PawnTT::PawnTT(uint64_t newSizeInMByte) {
   noOfThreads = std::thread::hardware_concurrency();
@@ -38,31 +38,49 @@ void PawnTT::resize(const uint64_t newSizeInMByte) {
     sizeInByte = newSizeInMByte * MB;
   }
 
-  // find the highest power of 2 smaller than maxPossibleEntries
-#if __cpp_lib_bitops >= 201907L
-  maxNumberOfEntries = std::bit_floor(sizeInByte / ENTRY_SIZE);
-#else
-  maxNumberOfEntries = (1ULL << static_cast<uint64_t>(std::floor(std::log2(sizeInByte / ENTRY_SIZE))));
-#endif
-  hashKeyMask        = maxNumberOfEntries - 1;
-
   // if PawnTT is resized to 0 we cant have any entries.
-  if (sizeInByte == 0) maxNumberOfEntries = 0;
-  sizeInByte = maxNumberOfEntries * ENTRY_SIZE;
+  if (sizeInByte == 0) {
+    maxNumberOfEntries = 0;
+  }
+  else {
+    // find the highest power of 2 smaller than maxPossibleEntries
+#if __cpp_lib_bitops >= 201907L
+    maxNumberOfEntries = std::bit_floor(sizeInByte / ENTRY_SIZE);
+#else
+    maxNumberOfEntries = (1ULL << static_cast<uint64_t>(std::floor(std::log2(sizeInByte / ENTRY_SIZE))));
+#endif
+  }
 
-  delete[] _data;
-  _data = new Entry[maxNumberOfEntries];
+  hashKeyMask = maxNumberOfEntries - 1;
+  sizeInByte  = maxNumberOfEntries * ENTRY_SIZE;
+
+  // release old tt memory
+  _data.reset(nullptr);
+
+  // try to allocate memory for TT - repeat until allocation is successful
+  while (true) {
+    try {
+      _data = std::make_unique<Entry[]>(maxNumberOfEntries);
+      break;
+    } catch (std::bad_alloc const&) {
+      // we could not allocate enough memory, so we reduce PawnTT size by a power of 2
+      uint64_t oldSize   = sizeInByte;
+      maxNumberOfEntries = maxNumberOfEntries >> 1ULL;
+      hashKeyMask        = maxNumberOfEntries - 1;
+      sizeInByte         = maxNumberOfEntries * ENTRY_SIZE;
+      LOG__ERROR(Logger::get().EVAL_LOG, "Not enough memory for requested PawnTT size {:L} MB reducing to {:L} MB", oldSize, sizeInByte);
+    }
+  }
 
   clear();
-  if (maxNumberOfEntries) {
-    LOG__INFO(Logger::get().EVAL_LOG, "PawnTT Size {:L} MByte, Capacity {:L} entries (size={}Byte) (Requested were {:L} MBytes)",
-              sizeInByte / MB, maxNumberOfEntries, sizeof(Entry), newSizeInMByte);
-  }
+  LOG__INFO(Logger::get().EVAL_LOG, "PawnTT Size {:L} MByte, Capacity {:L} entries (size={}Byte) (Requested were {:L} MBytes)",
+            sizeInByte / MB, maxNumberOfEntries, sizeof(Entry), newSizeInMByte);
 }
 
 
 void PawnTT::clear() {
   if (!maxNumberOfEntries) {
+    LOG__DEBUG(Logger::get().EVAL_LOG, "PawnTT cleared - no entries");
     return;
   }
   // This clears the PawnTT by overwriting each entry with 0.
@@ -114,12 +132,12 @@ void PawnTT::put(Entry* entryDataPtr, Key key, Score score) {
   // New entry
   if (entryDataPtr->key == 0) {
     numberOfEntries++;
-  } // update - should not happen
+  }// update - should not happen
   else if (entryDataPtr->key == key) {
     numberOfUpdates++;
     LOG__WARN(Logger::get().EVAL_LOG, "PawnTT should not have to update entries. Missing a read?");
   }
-  else { // collision replaces former entry
+  else {// collision replaces former entry
     numberOfCollisions++;
   }
 

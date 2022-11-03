@@ -70,8 +70,6 @@ public:
   static_assert(CacheLineSize % ENTRY_SIZE == 0, "Cluster size incorrect");
 
 private:
-  // this array hold the actual entries for the transposition table
-  Entry* _data{};
 
   // threads for clearing hash
   unsigned int noOfThreads = 1;
@@ -91,6 +89,9 @@ private:
   mutable uint64_t numberOfOverwrites = 0;
   mutable uint64_t numberOfUpdates = 0;
 
+  // this array hold the actual entries for the transposition table
+  std::unique_ptr<Entry[]> _data = std::make_unique<Entry[]>(maxNumberOfEntries);
+
 public:
   // TT default size is 2 MB
   PawnTT() : PawnTT(DEFAULT_TT_SIZE) {}
@@ -98,9 +99,7 @@ public:
   // newSizeInMByte Size of TT in bytes which will be reduced to the next lowest power of 2 size
   explicit PawnTT(uint64_t newSizeInMByte);
 
-  ~PawnTT() {
-    delete[] _data;
-  }
+  ~PawnTT() = default;
 
   // disallow copies
   PawnTT(PawnTT const& tt) = delete;         // copy
