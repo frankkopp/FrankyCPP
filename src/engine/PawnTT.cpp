@@ -39,11 +39,11 @@ void PawnTT::resize(const uint64_t newSizeInMByte) {
   }
 
   // find the highest power of 2 smaller than maxPossibleEntries
-//#if __cpp_lib_bitops >= 201907L
-//  maxNumberOfEntries = std::bit_floor(sizeInByte / ENTRY_SIZE);
-//#else
+#if __cpp_lib_bitops >= 201907L
+  maxNumberOfEntries = std::bit_floor(sizeInByte / ENTRY_SIZE);
+#else
   maxNumberOfEntries = (1ULL << static_cast<uint64_t>(std::floor(std::log2(sizeInByte / ENTRY_SIZE))));
-//#endif
+#endif
   hashKeyMask        = maxNumberOfEntries - 1;
 
   // if PawnTT is resized to 0 we cant have any entries.
@@ -144,4 +144,3 @@ std::ostream& operator<<(std::ostream& os, const PawnTT::Entry& entry) {
   os << "key: " << entry.key << " midvalue: " << entry.midvalue << " endvalue: " << entry.endvalue;
   return os;
 }
-

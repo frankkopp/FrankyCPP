@@ -42,7 +42,11 @@ void TT::resize(const uint64_t newSizeInMByte) {
   }
 
   // find the highest power of 2 smaller than maxPossibleEntries
+#if __cpp_lib_bitops >= 201907L
+  maxNumberOfEntries = std::bit_floor(sizeInByte / ENTRY_SIZE);
+#else
   maxNumberOfEntries = (1ULL << static_cast<uint64_t>(std::floor(std::log2(sizeInByte / ENTRY_SIZE))));
+#endif
   hashKeyMask        = maxNumberOfEntries - 1;
 
   // if TT is resized to 0 we can't have any entries.
