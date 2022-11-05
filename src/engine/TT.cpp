@@ -47,7 +47,7 @@ void TT::resize(const uint64_t newSizeInMByte) {
   }
   else {
     // find the highest power of 2 smaller than maxPossibleEntries
-#if __cpp_lib_bitops >= 201907L
+#if __cpp_lib_int_pow2 >= 202002L
     maxNumberOfEntries = std::bit_floor(sizeInByte / ENTRY_SIZE);
 #else
     maxNumberOfEntries = (1ULL << static_cast<uint64_t>(std::floor(std::log2(sizeInByte / ENTRY_SIZE))));
