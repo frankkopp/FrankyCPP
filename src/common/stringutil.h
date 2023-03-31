@@ -62,6 +62,39 @@ inline StringType removeTrailingComments(const StringType& s, const std::string&
   return s;
 }
 
+// transforms the given string to lower case
+inline std::string toLowerCase(const std::string& s) {
+  std::string str(s);
+  std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return char(std::tolower(c)); });
+  return str;
+}
+
+// transforms the given string to lower case in place
+inline void toLowerCase(std::string& str) {
+  std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return char(std::tolower(c)); });
+}
+
+// transforms the given string to upper case
+inline std::string toUpperCase(const std::string& s) {
+  std::string str(s);
+  std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return char(std::toupper(c)); });
+  return str;
+}
+
+// transforms the given string to upper case in place
+inline void toUpperCase(std::string& str) {
+  std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return char(std::toupper(c)); });
+}
+
+constexpr const char* boolStr(bool b) {
+  return b ? "true" : "false";
+}
+
+constexpr const char* boolStr(int b) {
+  return boolStr(bool(b));
+}
+
+
 // slower alternatives for trimming
 // Round  1 Test  1: 5.684.239.320 ns (   100%) (  5,68423932 sec) ( 56.842,3932 ns avg per test)
 // Round  1 Test  2: 5.081.285.270 ns (    89%) (  5,08128527 sec) ( 50.812,8527 ns avg per test)

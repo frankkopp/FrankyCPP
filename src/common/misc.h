@@ -20,37 +20,17 @@
 #ifndef FRANKYCPP_MISC_H
 #define FRANKYCPP_MISC_H
 
-#include <string>
 #include <fmt/printf.h>
-
-// transforms the given string to lower case
-inline std::string toLowerCase(std::string str) {
-  std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return char(std::tolower(c)); });
-  return str;
-}
-
-// transforms the given string to upper case
-inline std::string toUpperCase(std::string str) {
-  std::transform(str.begin(), str.end(), str.begin(), [](
-    unsigned char c) { return char(std::toupper(c)); });
-  return str;
-}
-
-constexpr const char* boolStr (bool b) {
-  return b ? "true" : "false";
-}
-
-constexpr const char* boolStr (int b) {
-  return boolStr (bool (b));
-}
+#include <string>
 
 inline std::string printProgress(double percentage) {
-  constexpr const int pbarw = 60;
+  constexpr const int pbarw  = 60;
   constexpr const char* pbar = "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||";
-  int val = static_cast<int>(percentage * 100);
+
+  int val  = static_cast<int>(percentage * 100);
   int lpad = static_cast<int>(percentage * pbarw);
   int rpad = pbarw - lpad;
   return fmt::sprintf("%3d%% [%.*s%*s]", val, lpad, pbar, rpad, "");
 }
 
-#endif//FRANKYCPP_MISC_H
+#endif// FRANKYCPP_MISC_H
