@@ -35,14 +35,14 @@
 #include <memory>
 #include <random>
 #include <string>
+#include <future>
+#include <algorithm>
 
 // enable for parallel processing of input lines
 #define PARALLEL_LINE_PROCESSING
-// enable for parallel processing of games from pgn files
-#define PARALLEL_GAME_PROCESSING
 
 // not all C++17 compilers have this std library for parallelization
-//#undef HAS_EXECUTION_LIB
+// #undef HAS_EXECUTION_LIB
 #ifdef HAS_EXECUTION_LIB
 #include <execution>
 #include <utility>
@@ -60,13 +60,11 @@ Move OpeningBook::getRandomMove(Key zobrist) const {
   Move bookMove = MOVE_NONE;
   // Find the entry for this key (zobrist key of position) in the map and
   // choose a random move from the list of moves in the entry
-  if (bookMap.find(zobrist) != bookMap.end()) {
-    BookEntry bookEntry = bookMap.at(zobrist);
-    if (!bookEntry.moves.empty()) {
-      std::random_device rd;
-      std::uniform_int_distribution<std::size_t> random(0, bookEntry.moves.size() - 1);
-      bookMove = bookEntry.moves[random(rd)];
-    }
+  const auto iterator = bookMap.find(zobrist);
+  if (iterator != bookMap.end() && !iterator->second.moves.empty()) {
+    std::random_device rd;
+    std::uniform_int_distribution<std::size_t> random(0, iterator->second.moves.size() - 1);
+    bookMove = iterator->second.moves[random(rd)];
   }
   return bookMove;
 }
@@ -89,8 +87,8 @@ void OpeningBook::initialize() {
   const auto lines = readFile(bookFilePath);
 
   // set root entry
-  bookMap.emplace(rootZobristKey, rootZobristKey);
-  bookMap.at(rootZobristKey).counter = 0;
+  auto iteratorPair = bookMap.emplace(rootZobristKey, rootZobristKey);
+  iteratorPair.first->second.counter = 0;
 
   // reads lines and retrieves game (lists of moves) and adds these to the book map
   readGames(lines);
@@ -111,7 +109,6 @@ void OpeningBook::initialize() {
 }
 
 void OpeningBook::reset() {
-  const std::scoped_lock<std::mutex> lock(bookMutex);
   bookMap.clear();
   data.reset(nullptr);
   isInitialized = false;
@@ -121,15 +118,15 @@ void OpeningBook::reset() {
 std::string OpeningBook::str(int level) {
   Position p{};
   Key zobristKey        = p.getZobristKey();
-  const BookEntry* node = &bookMap.at(zobristKey);
-  return std::string{fmt::format(deLocale, "Root ({:L})\n{:s}", bookMap.at(zobristKey).counter, getLevelStr(1, level, node))};
+  const BookEntry* node = &bookMap[zobristKey];
+  return std::string{fmt::format(deLocale, "Root ({:L})\n{:s}", bookMap[zobristKey].counter, getLevelStr(1, level, node))};
 }
 
 std::string OpeningBook::getLevelStr(int level, int maxLevel, const BookEntry* node) {
   std::string out;
   const size_t size = node->moves.size();
   for (int i = 0; i < size; i++) {
-    const BookEntry* newNode = &bookMap.at((node->nextPosition)[i]);
+    const BookEntry* newNode = &bookMap[(node->nextPosition)[i]];
     out += fmt::format(deLocale, "{:{}}{} ({:L})\n", "", level, node->moves[i], newNode->counter);
     if (level < maxLevel) {
       out += getLevelStr(level + 1, maxLevel, newNode);
@@ -162,12 +159,12 @@ std::vector<std::string_view> OpeningBook::readFile(const std::string& filePath)
     // https://stackoverflow.com/a/52699885/9161706
     file.seekg(0, std::ios::beg);
     file.seekg(0, std::ios::end);
-    size_t data_size = file.tellg();
+    std::streamsize data_size = file.tellg();
     file.seekg(0, std::ios::beg);
     data = std::make_unique<char[]>(data_size);
     file.read(data.get(), data_size);
     lines.reserve(data_size / 20);
-    for (size_t i = 0, dstart = 0; i < data_size; ++i) {
+    for (std::streamsize i = 0, dstart = 0; i < data_size; ++i) {
       if (data[i] == '\n' || i == data_size - 1) {// End of line, got string
         lines.emplace_back(data.get() + dstart, i - dstart);
         dstart = i + 1;
@@ -258,7 +255,7 @@ void OpeningBook::readOneGameSimple(const std::string_view& lineView) {
   // simple lines are in tuples of 4 per move
   // read in 4 characters and check if they might
   // be moves (letter, digit, letter, digit)
-  // checks if they are indeed valid moves happen when trying to add
+  // checks if they are indeed valid moves happens when trying to add
   // the move to the book map
   int index = 0;
   while (index < lineViewTrimmed.length()) {
@@ -280,6 +277,7 @@ void OpeningBook::readOneGameSimple(const std::string_view& lineView) {
 
 void OpeningBook::readGamesSan(const std::vector<std::string_view>& lines) {
   const unsigned int noOfThreads = getNoOfThreads();
+
 #ifdef PARALLEL_LINE_PROCESSING
   LOG__DEBUG(Logger::get().BOOK_LOG, "Using {} threads", noOfThreads);
 
@@ -322,9 +320,6 @@ void OpeningBook::readOneGameSan(const std::string_view& lineView) {
   // check if the line starts at least with a number or a character
   if (!isalnum(line[0])) return;
 
-  MoveGenerator mg{};
-  Position p{};// start position
-
   /*
   Iterate over all tokens, ignore move numbers and results
   Example:
@@ -332,6 +327,7 @@ void OpeningBook::readOneGameSan(const std::string_view& lineView) {
   1. f4 d5 2. Nf3 Nf6 3. e3 Bg4 4. Be2 e6 5. O-O Bd6 6. b3 O-O 7. Bb2 c5 1/2-1/2
   */
 
+  MoveGenerator mg{};
   std::vector<std::string_view> moveStrings{};
   splitFast(line, moveStrings, " ");
 
@@ -339,7 +335,7 @@ void OpeningBook::readOneGameSan(const std::string_view& lineView) {
     if (moveStr.empty() || moveStr.length() == 1) continue;
     if (!isalpha(moveStr[0])) continue;
     // add the validated move to the game and commit the move to the current position
-    game.push_back(static_cast<const std::string>(moveStr));
+    game.emplace_back(std::string{moveStr});
   }
 
   // add game to book
@@ -347,22 +343,20 @@ void OpeningBook::readOneGameSan(const std::string_view& lineView) {
 }
 
 void OpeningBook::readGamesPgn(const std::vector<std::string_view>* lines) {
+  std::vector<std::future<bool>> futures;
 
-#ifdef PARALLEL_GAME_PROCESSING
-  ThreadPool worker{getNoOfThreads()};
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Using {} threads", getNoOfThreads());
+#ifdef PARALLEL_LINE_PROCESSING
+  const std::launch asyncPolicy = std::launch::async;
 #else
-  ThreadPool worker{1};
+  const std::launch asyncPolicy = std::launch::deferred;
 #endif
-
-  std::vector<std::shared_ptr<std::future<bool>>> results{};
 
   // Get all lines belonging to one game and process this game asynchronously.
   // Iterate though all lines and look for pattern indicating for the next game
   // When a game start pattern is found ('^[')  we can assume the lines before
   // up to the line number marked in gameStart are part of one game.
   // This game (marked by line numbers for start and end will then be
-  // send to be processed asynchronously
+  // sent to be processed asynchronously
   size_t gameStart = 0;
   size_t gameEnd;
   bool lastEmpty    = true;
@@ -378,11 +372,10 @@ void OpeningBook::readGamesPgn(const std::vector<std::string_view>* lines) {
     if ((lastEmpty && trimmedLineView[0] == '[') || lineNumber == length - 1) {
       gameEnd = lineNumber;
       // process the previous found game asynchronously
-      auto future = std::make_shared<std::future<bool>>(worker.enqueue([=] {
+      futures.push_back(std::async(asyncPolicy, [=, this] {
         readOneGamePgn(lines, gameStart, gameEnd);
         return true;
       }));
-      results.push_back(future);
       gameStart = gameEnd;
     }
     lastEmpty = false;
@@ -392,18 +385,15 @@ void OpeningBook::readGamesPgn(const std::vector<std::string_view>* lines) {
   // there is none. We simply use the last line as end marker in this case.
   gameEnd = length;
   // process the previous found game asynchronously
-  auto future = std::make_shared<std::future<bool>>(worker.enqueue([=] {
+  futures.push_back(std::async(asyncPolicy, [=, this] {
     readOneGamePgn(lines, gameStart, gameEnd);
     return true;
   }));
-  results.push_back(future);
 
   // wait for completion of the asynchronous operations
   // future.get() is blocking if the async call has not returned
-  int counter         = 0;
-  const auto& iterEnd = results.end();
-  for (auto iter = results.begin(); iter < iterEnd; iter++) {
-    if (iter->get()->get()) counter++;
+  for (auto& future : futures) {
+    future.get();
   }
 }
 
@@ -437,11 +427,11 @@ void OpeningBook::readOneGamePgn(const std::vector<std::string_view>* lines, siz
 }
 
 void OpeningBook::cleanUpPgnMoveSection(std::string& str) {
+  std::size_t length = str.length();// explicit as the later loop test for <0
+  if (length == 0) return;
 
-  int l     = static_cast<int>(str.length());// explicit as the later loop test for <0
   char lastChar = ' ';
-  for (int a = 0; a < l;) {
-
+  for (int a = 0; a < length;) {
     // skip non ascii characters
     if (int(str[a]) < 0 || int(str[a]) > 255) {
       str[a++] = ' ';
@@ -453,20 +443,20 @@ void OpeningBook::cleanUpPgnMoveSection(std::string& str) {
     // nag annotation \$\d{1,3}
     else if (str[a] == '$') {
       str[a++] = ' ';
-      while (a < l && isdigit(str[a])) {
+      while (a < length && isdigit(str[a])) {
         str[a++] = ' ';
       }
     }
     // remove curly bracket comments '\{[^{}]*\}'
     else if (str[a] == '{') {
-      while (a < l && str[a] != '}') {
+      while (a < length && str[a] != '}') {
         str[a++] = ' ';
       }
       str[a++] = ' ';
     }
     // remove tag bracket comments '\{[^<>}*\}'
     else if (str[a] == '<') {
-      while (a < l && str[a] != '>') {
+      while (a < length && str[a] != '>') {
         str[a++] = ' ';
       }
       str[a++] = ' ';
@@ -475,7 +465,7 @@ void OpeningBook::cleanUpPgnMoveSection(std::string& str) {
     else if (str[a] == '(') {
       int open = 1;
       str[a++] = ' ';
-      while (a < l && open > 0) {
+      while (a < length && open > 0) {
         if (str[a] == ')')
           open--;
         else if (str[a] == '(')
@@ -486,7 +476,7 @@ void OpeningBook::cleanUpPgnMoveSection(std::string& str) {
     // remove move numbering
     else if (isdigit(str[a]) && lastChar == ' ') {
       str[a++] = ' ';
-      while (a < l && (isdigit(str[a]) || str[a] == '.')) {
+      while (a < length && (isdigit(str[a]) || str[a] == '.')) {
         str[a++] = ' ';
       }
     }
@@ -498,8 +488,8 @@ void OpeningBook::cleanUpPgnMoveSection(std::string& str) {
   }
 
   // remove result (1-0 0-1 1/2-1/2 *)
-  int a = l - 1;
-  for (; a >= 0; a--) {
+  std::size_t a = length - 1;
+  do {
     if (str[a] == ' ') {
       continue;
     }
@@ -515,50 +505,35 @@ void OpeningBook::cleanUpPgnMoveSection(std::string& str) {
       a -= 2;
       break;
     }
-  }
+  } while (a-- > 0);
+
   str.resize(a);
 
-  // another run to remove all double spaces
-  l              = static_cast<int>(str.length());// explicit as the later loop test for <0
-  int index      = 0;
-  int copyTo     = 0;
-  int spaceFound = 0;
-  while (index < l) {
-    if (str[index] == ' ') {
-      spaceFound++;
-      if (spaceFound <= 1) {
-        str[copyTo++] = str[index++];
-      }
-      else {
-        index++;
-      }
-    }
-    else {
-      str[copyTo++] = str[index++];
-      spaceFound    = 0;
-    }
-  }
-  // remove left over characters at the end
-  str.erase(copyTo, index);
+  // Use the std::unique algorithm to remove consecutive spaces
+  auto newEnd = std::unique(str.begin(), str.end(),
+                            [](char a, char b) { return a == ' ' && b == ' '; });
+  // Erase the extra spaces from the string
+  str.resize(std::distance(str.begin(), newEnd));
   // remove trailing and leading whitespace
   str = trimFast(str);
 }
 
 void OpeningBook::addGameToBook(const Moves& game) {
-
-  Position p{};
-  MoveGenerator mg{};
-
   if (game.empty()) {
     return;
   }
 
+  Position p{};
+  MoveGenerator mg{};
+
   // initialize lastKey with start position (aka root position)
   Key lastKey = rootZobristKey;
   // increase counter for root entry for each game
-  {// lock scope
-    std::scoped_lock<std::mutex> bookLock(bookMutex);
-    bookMap.at(lastKey).counter++;
+  { // lock scope
+#ifdef PARALLEL_LINE_PROCESSING
+    std::lock_guard<std::mutex> bookLock(bookMutex);
+#endif
+    bookMap[lastKey].counter++;
   }
 
   // Loop through all move strings and try to find a matching move on the current position.
@@ -569,11 +544,11 @@ void OpeningBook::addGameToBook(const Moves& game) {
     // check the notation format
     if ((moveStr.size() == 4 && islower(moveStr[0]) && isdigit(moveStr[1]) && islower(moveStr[2]) && isdigit(moveStr[3])) || (moveStr.size() == 5 && islower(moveStr[0]) && isdigit(moveStr[1]) && islower(moveStr[2]) && isdigit(moveStr[3]) && isupper(moveStr[4]))) {
       // UCI
-      move = mg.getMoveFromUci(p, trimFast(moveStr));
+      move = mg.getMoveFromUci(p, moveStr);
     }
     else {
       // SAN
-      move = mg.getMoveFromSan(p, trimFast(moveStr));
+      move = mg.getMoveFromSan(p, moveStr);
     }
     if (move == MOVE_NONE) {
       LOG__WARN(Logger::get().BOOK_LOG, "Not a valid move {} on this position {}", moveStr, p.strFen());
@@ -590,12 +565,16 @@ void OpeningBook::addGameToBook(const Moves& game) {
 }
 
 void OpeningBook::writeToBook(Move move, Key currentKey, Key lastKey) {
+
+#ifdef PARALLEL_LINE_PROCESSING
   // get the lock on the data map
-  std::scoped_lock<std::mutex> bookLock(bookMutex);
+  std::lock_guard<std::mutex> bookLock(bookMutex);
+#endif
+
   // create or update book entry
-  if (bookMap.count(currentKey)) {
+  if (bookMap.contains(currentKey)) {
     // pointer to entry already in book
-    bookMap.at(currentKey).counter++;
+    bookMap[currentKey].counter++;
     // return as we do not need to update the predecessor
     return;
   }
@@ -604,7 +583,7 @@ void OpeningBook::writeToBook(Move move, Key currentKey, Key lastKey) {
     bookMap.emplace(currentKey, currentKey);
   }
   // add move to the last book entry's move list
-  BookEntry* lastEntry = &bookMap.at(lastKey);
+  BookEntry* lastEntry = &bookMap[lastKey];
   lastEntry->moves.push_back(move);
   lastEntry->nextPosition.push_back(currentKey);
 }// lock released
@@ -612,7 +591,6 @@ void OpeningBook::writeToBook(Move move, Key currentKey, Key lastKey) {
 /* Saves the bookMap data to a binary cache file for faster reading.
    Uses BOOST serialization to serialize the data to a binary file */
 void OpeningBook::saveToCache() {
-  const std::scoped_lock<std::mutex> lock(bookMutex);
   {// save data to archive
     const auto start               = std::chrono::high_resolution_clock::now();
     const std::string serCacheFile = bookFilePath + cacheExt;
@@ -632,7 +610,6 @@ void OpeningBook::saveToCache() {
 /* Loads the bookMap data from a binary data cache file. This is considerably
    faster than reading the text based game files again */
 bool OpeningBook::loadFromCache() {
-  const std::scoped_lock<std::mutex> lock(bookMutex);
   std::unordered_map<Key, BookEntry> binMap;
   {// load data from archive
     const auto start               = std::chrono::high_resolution_clock::now();
