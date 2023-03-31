@@ -361,7 +361,7 @@ bool Position::isAttacked(Square sq, Color by) const {
   // check en passant
   if (enPassantSquare != SQ_NONE) {
     if (by) {// BLACK
-      // white is target
+      // white is the target
       if (board[enPassantSquare + NORTH] == WHITE_PAWN &&
           // this is indeed the en passant attacked square
           enPassantSquare + NORTH == sq) {
@@ -444,7 +444,7 @@ bool Position::givesCheck(Move move) const {
   const MoveType moveType = typeOf(move);
   PieceType fromPt        = typeOf(fromPc);
   Square toSq             = toSquare(move);
-  Square epTargetSq = SQ_NONE;
+  Square epTargetSq{};
 
   switch (moveType) {
     case PROMOTION:
@@ -555,7 +555,7 @@ bool Position::isLegalMove(Move move) const {
   // king is not allowed to pass a square which is attacked by opponent
   if (typeOf(move) == CASTLING) {
     // castling not allowed when in check
-    // we can simply check the from square of the castling move
+    // we can simply check the from-square of the castling move
     // and check if the current opponent attacks it. Castling would not
     // be possible if the attack would be influenced by the castling
     // itself.
