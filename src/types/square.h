@@ -54,6 +54,7 @@ enum Square : uint_fast8_t { // @formatter:off
 namespace Squares {
   inline int squareDistance[SQ_NONE][SQ_NONE];
   inline int centerDistance[SQ_LENGTH];
+  inline std::string squareNames[SQ_LENGTH];
 }// namespace Squares
 
 // checks if this is a valid square (int >= 0 and <64)
@@ -95,8 +96,8 @@ inline int distance(Square s1, Square s2) { return Squares::squareDistance[s1][s
 constexpr Square pawnPush(Square s, Color c) { return static_cast<Square>(s + (c == WHITE ? 8 : -8)); }
 
 // returns a string representing the square (e.g. a1 or h8)
-inline std::string str(Square sq) {
-  return validSquare(sq) ? std::string{str(fileOf(sq)), str(rankOf(sq))} : "--";
+inline const std::string& str(Square sq) {
+  return Squares::squareNames[sq];
 }
 
 inline std::ostream& operator<<(std::ostream& os, const Square sq) {
@@ -138,6 +139,12 @@ namespace Squares {
       else if (fileOf(sq) >= FILE_E && rankOf(sq) <= RANK_4) {
         centerDistance[sq] = squareDistance[sq][SQ_E4];
       }
+    }
+  }
+
+  inline void squareNamesPreCompute() {
+    for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
+      squareNames[sq] = std::string{str(fileOf(sq)), str(rankOf(sq))};
     }
   }
 }// namespace Squares

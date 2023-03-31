@@ -24,12 +24,27 @@
 #include <gtest/gtest.h>
 using testing::Eq;
 
-TEST(TypesTest, colors) {
+class TypesTest : public ::testing::Test {
+public:
+  static void SetUpTestSuite() {
+    NEWLINE;
+    init::init();
+    NEWLINE;
+    Logger::get().TEST_LOG->set_level(spdlog::level::debug);
+    Logger::get().BOOK_LOG->set_level(spdlog::level::debug);
+  }
+
+protected:
+  void SetUp() override {}
+  void TearDown() override {}
+};
+
+TEST_F(TypesTest, colors) {
   EXPECT_EQ(WHITE, ~BLACK);
   EXPECT_EQ(BLACK, ~WHITE);
 }
 
-TEST(TypesTest, labels) {
+TEST_F(TypesTest, labels) {
   // all squares and label of squares
   std::string actual;
   for (int i = 0; i < SQ_NONE; ++i) {
@@ -42,29 +57,29 @@ TEST(TypesTest, labels) {
   EXPECT_EQ(expected, actual);
 }
 
-TEST(TypesTest, filesAndRanks) {
+TEST_F(TypesTest, filesAndRanks) {
   // all squares and label of squares
   for (int i = 0; i < SQ_NONE; ++i) {
     EXPECT_EQ(Square(i), squareOf(File(fileOf(Square(i))), Rank(rankOf(Square(i)))));
   }
 }
 
-TEST(TypesTest, makeSquare) {
+TEST_F(TypesTest, makeSquare) {
   EXPECT_EQ(SQ_A1, makeSquare(std::string{"a1"}));
   EXPECT_EQ(SQ_H8, makeSquare(std::string{"h8"}));
 }
 
-TEST(TypesTest, ColorLabel) {
+TEST_F(TypesTest, ColorLabel) {
   EXPECT_EQ('w', str(WHITE));
   EXPECT_EQ('b', str(BLACK));
 }
 
-TEST(TypesTest, MoveDirection) {
+TEST_F(TypesTest, MoveDirection) {
   EXPECT_EQ(1, moveDirection(WHITE));
   EXPECT_EQ(-1, moveDirection(BLACK));
 }
 
-TEST(TypesTest, castling) {
+TEST_F(TypesTest, castling) {
 
   CastlingRights cr = ANY_CASTLING;
   EXPECT_EQ(0b1110U, cr - WHITE_OO);
@@ -99,7 +114,7 @@ TEST(TypesTest, castling) {
   EXPECT_EQ(0b1111U, cr + BLACK_OOO);
 }
 
-TEST(TypesTest, CastlingStr) {
+TEST_F(TypesTest, CastlingStr) {
   EXPECT_EQ("KQkq", str(ANY_CASTLING));
   EXPECT_EQ("KQ", str(WHITE_CASTLING));
   EXPECT_EQ("kq", str(BLACK_CASTLING));
@@ -107,7 +122,7 @@ TEST(TypesTest, CastlingStr) {
   EXPECT_EQ("Q", str(WHITE_OOO));
 }
 
-TEST(TypesTest, pieceTypeLabels) {
+TEST_F(TypesTest, pieceTypeLabels) {
   EXPECT_EQ('K', str(KING));
   EXPECT_EQ('Q', str(QUEEN));
   EXPECT_EQ('R', str(ROOK));
@@ -117,13 +132,13 @@ TEST(TypesTest, pieceTypeLabels) {
 }
 
 
-TEST(TypesTest, GamePhaseValue) {
+TEST_F(TypesTest, GamePhaseValue) {
   EXPECT_EQ(1, gamePhaseValue(KNIGHT));
   EXPECT_EQ(2, gamePhaseValue(ROOK));
   EXPECT_EQ(4, gamePhaseValue(QUEEN));
 }
 
-TEST(TypesTest, pieceLabels) {
+TEST_F(TypesTest, pieceLabels) {
   EXPECT_EQ('K', str(WHITE_KING));
   EXPECT_EQ('Q', str(WHITE_QUEEN));
   EXPECT_EQ('R', str(WHITE_ROOK));
@@ -138,7 +153,7 @@ TEST(TypesTest, pieceLabels) {
   EXPECT_EQ('p', str(BLACK_PAWN));
 }
 
-TEST(TypesTest, pieces) {
+TEST_F(TypesTest, pieces) {
 
   // make piece
   EXPECT_EQ(WHITE_KING, makePiece(WHITE, KING));
@@ -174,7 +189,7 @@ TEST(TypesTest, pieces) {
 
 }
 
-TEST(TypesTest, directionOperators) {
+TEST_F(TypesTest, directionOperators) {
   EXPECT_EQ(SQ_A2, SQ_A1 + NORTH);
   ASSERT_TRUE(SQ_H8 + NORTH > 63);
   ASSERT_FALSE(validSquare(SQ_H1 + SOUTH));
@@ -182,7 +197,7 @@ TEST(TypesTest, directionOperators) {
   EXPECT_EQ(SQ_A8, SQ_H1 + (7 * NORTH_WEST));
 }
 
-TEST(TypesTest, moves) {
+TEST_F(TypesTest, moves) {
   Move move = createMove(SQ_A1, SQ_H1, NORMAL);
   ASSERT_TRUE(validMove(move));
   EXPECT_EQ(SQ_A1, fromSquare(move));
@@ -204,7 +219,7 @@ TEST(TypesTest, moves) {
   EXPECT_EQ("Move: a7a8Q  type:p  prom:Q  value:-15001  (31800)", strVerbose(move));
 }
 
-TEST(TypesTest, movesValue) {
+TEST_F(TypesTest, movesValue) {
   NEWLINE;
   Move move = createMove(SQ_A1, SQ_H1, NORMAL);
 
@@ -243,7 +258,7 @@ TEST(TypesTest, movesValue) {
   EXPECT_EQ(moveOf(move), moveOf(move2));
 }
 
-TEST(TypesTest, moveListPrint) {
+TEST_F(TypesTest, moveListPrint) {
 
   Move move1 = createMove(SQ_A1, SQ_H1, NORMAL);
   Move move2 = createMove(SQ_A7, SQ_A8, PROMOTION, QUEEN);
@@ -259,7 +274,7 @@ TEST(TypesTest, moveListPrint) {
   EXPECT_EQ(expected, ml.str());
 }
 
-TEST(TypesTest, sortMoveListByValue) {
+TEST_F(TypesTest, sortMoveListByValue) {
   Move move1 = createMove(SQ_C2, SQ_C4, NORMAL, Value(-100));
   Move move2 = createMove(SQ_D2, SQ_D4, NORMAL, Value(0));
   Move move3 = createMove(SQ_E2, SQ_E4, NORMAL, Value(100));
@@ -273,7 +288,7 @@ TEST(TypesTest, sortMoveListByValue) {
   EXPECT_EQ(move3, ml.at(0));
 }
 
-TEST(TypesTest, nps) {
+TEST_F(TypesTest, nps) {
   uint64_t nodes = 10'000'000;
   milliseconds msec{1'500};
   nanoseconds nsec{1'500'000'000};
@@ -285,7 +300,7 @@ TEST(TypesTest, nps) {
   fprintln("{}", nps(nodes, nsec));
 }
 
-TEST(TypesTest, elapsed) {
+TEST_F(TypesTest, elapsed) {
   using clock = std::chrono::high_resolution_clock;
   TimePoint start = clock::now();
   TimePoint jetzt = clock::now();
@@ -296,7 +311,7 @@ TEST(TypesTest, elapsed) {
   std::cout << std::endl;
 }
 
-TEST(TypesTest, ltgt) {
+TEST_F(TypesTest, ltgt) {
   EXPECT_EQ(1s, 1000ms);
   EXPECT_LT(1s, 1001ms);
   EXPECT_GT(1s, 999ms);
