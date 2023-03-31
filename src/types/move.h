@@ -189,9 +189,10 @@ constexpr bool validMove(Move m) {
 // returns a short representation of the move as string (UCI protocol)
 inline std::string str(Move move) {
   if (moveOf(move) == MOVE_NONE) return "no move";
-  std::string promotion;
-  if ((typeOf(move) == PROMOTION)) promotion = str(promotionTypeOf(move));
-  return str(fromSquare(move)) + str(toSquare(move)) + promotion;
+  if ((typeOf(move) == PROMOTION)) {
+    return str(fromSquare(move)) + str(toSquare(move)) + str(promotionTypeOf(move));
+  }
+  return str(fromSquare(move)) + str(toSquare(move));
 }
 
 // returns a verbose representation of the move as string
