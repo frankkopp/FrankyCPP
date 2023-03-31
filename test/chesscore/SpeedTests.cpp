@@ -143,7 +143,7 @@ TEST_F(SpeedTests, onDemandPseudoMoveGen) {
   MoveGenerator mg;
 
   const int rounds     = 5;
-  const int iterations = 1'000'000;
+  const int iterations = 5'000'000;
 
   Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3");
   auto k1 = mg.getMoveFromUci(position, "g6h4");
