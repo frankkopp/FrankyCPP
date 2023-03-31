@@ -43,6 +43,7 @@ namespace Types {
     Bitboards::castleMasksPreCompute();
     Bitboards::colorBitboardsPreCompute();
     Squares::centerDistancePreCompute();
+    Squares::squareNamesPreCompute();
     Castling::initCastlingRights();
   }
 }// namespace types
