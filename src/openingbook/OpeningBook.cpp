@@ -21,7 +21,6 @@
 #include "chesscore/MoveGenerator.h"
 #include "chesscore/Position.h"
 #include "common/Logging.h"
-#include "common/ThreadPool.h"
 #include "common/misc.h"
 #include "common/stringutil.h"
 #include "types/types.h"
