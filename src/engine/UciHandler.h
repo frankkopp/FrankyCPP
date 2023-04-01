@@ -97,8 +97,6 @@ private:
   FRIEND_TEST(UCITest, goPonder);
   FRIEND_TEST(UCITest, goMate);
 
-  // reads uci parameters for the go command and updates the given SearchLimits. Returns true if
-  // successful, otherwise false.
   void stopCommand() const;
   void ponderHitCommand() const;
   void perftCommand(std::istringstream& inStream);

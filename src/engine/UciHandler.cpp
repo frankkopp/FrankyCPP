@@ -466,7 +466,7 @@ void UciHandler::sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint6
                    depth, seldepth, nodes, nps, time.count(), hashfull));
 }
 
-void UciHandler::uciError(std::string const& msg) const {
+void UciHandler::uciError(const std::string& msg) const {
   LOG__ERROR(Logger::get().UCIHAND_LOG, msg);
   sendString(msg);
 }
