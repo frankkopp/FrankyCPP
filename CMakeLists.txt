@@ -173,7 +173,7 @@ message("Downloading/Update Google Test")
 FetchContent_Declare(
         googletest
         GIT_REPOSITORY https://github.com/google/googletest.git
-        GIT_TAG release-1.12.1
+        GIT_TAG v1.13.0
 )
 FetchContent_Declare(googletest)
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
@@ -188,7 +188,7 @@ include_directories(
 FetchContent_Declare(
         googlebenchmark
         GIT_REPOSITORY https://github.com/google/benchmark.git
-        GIT_TAG v1.6.2) # need master for benchmark::benchmark
+        GIT_TAG v1.7.1) # need master for benchmark::benchmark
 option(BENCHMARK_ENABLE_LTO ON)
 option(BENCHMARK_ENABLE_GTEST_TESTS OFF)
 option(BENCHMARK_ENABLE_TESTING OFF)
@@ -198,41 +198,16 @@ include_directories(
         ${googlebenchmark_SOURCE_DIR}/include
 )
 
-# BOOST
-if (APPLE)
-    message("Find Boost on Apple")
-    if (NOT BOOST_ROOT)
-        set(BOOST_ROOT "/usr/local/BOOST_1_73_0")
-        set(BOOST_INCLUDE_DIR "/usr/local/BOOST_1_73_0")
-    endif()
-elseif (CYGWIN)
-    message("Find Boost on Cygwin")
-    set(BOOST_ROOT "/usr/local/BOOST_1_72_0")
-    set(BOOST_INCLUDE_DIR "/usr/local/BOOST_1_72_0")
-elseif (WIN32)
-    message("Find Boost on Win32")
-    if (NOT BOOST_ROOT)
-        set(BOOST_ROOT "D:/Boost")
-        set(BOOST_INCLUDE_DIR "D:/Boost/include/boost-1_79")
-        #set(BOOST_LIBRARYDIR "D:/Boost/lib")
-    endif()
-else ()
-    message("Find Boost on Unix")
-    set(BOOST_ROOT "/usr/local")
-    set(BOOST_INCLUDE_DIR "/usr/local/include/boost")
-endif ()
+# Boost - needs to be installed - done via vcpkg
 set(BOOST_DEBUG FALSE)
 set(BOOST_USE_MULTITHREADED TRUE)
 set(BOOST_USE_STATIC_LIBS TRUE)
 set(BOOST_USE_STATIC_RUNTIME FALSE)
-find_package(Boost 1.72.0 COMPONENTS serialization program_options REQUIRED)
-#  log log_setup
-if (BOOST_FOUND)
-    message("BOOST found: " ${BOOST_ROOT} " " ${BOOST_INCLUDE_DIR})
-    include_directories(${BOOST_INCLUDE_DIR})
-endif ()
 set(BOOST_ALL_NO_LIB 0)
 set(BOOST_LIB_DIAGNOSTIC 1)
+find_package(Boost 1.72.0 REQUIRED COMPONENTS serialization program_options )
+message("BOOST found: " ${Boost_ROOT} " " ${Boost_INCLUDE_DIR})
+include_directories(${Boost_INCLUDE_DIR})
 
 # include sub directories
 include_directories(
