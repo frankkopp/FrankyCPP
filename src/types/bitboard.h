@@ -95,7 +95,7 @@ constexpr Bitboard CENTER_FILES   = FileDBB | FileEBB;
 constexpr Bitboard CENTER_RANKS   = Rank4BB | Rank5BB;
 constexpr Bitboard CENTER_SQUARES = CENTER_FILES & CENTER_RANKS;
 
-// pre computed arrays for various bitboards
+// pre-computed arrays for various bitboards
 // pre-computed in types::init()
 namespace Bitboards {
   // holds the corresponding bitboards for each square
