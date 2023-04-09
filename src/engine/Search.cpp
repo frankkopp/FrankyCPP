@@ -218,7 +218,7 @@ void Search::run() {
   LOG__INFO(Logger::get().SEARCH_LOG, fmt::format("Search using: PVS={} ASP={}", SearchConfig::USE_PVS, SearchConfig::USE_ASP));
 
   // If we have found a book move update result and omit search.
-  // Otherwise start search with iterative deepening.
+  // Otherwise, start search with iterative deepening.
   SearchResult searchResult{};
   if (!bookMove) {
     searchResult = iterativeDeepening(position);
@@ -282,13 +282,8 @@ SearchResult Search::iterativeDeepening(Position& p) {
 
   // check repetition and 50-moves rule
   if (checkDrawRepAnd50(p, 2)) {
-    std::string msg;
-    if (this->searchLimits.ponder) {
-      msg = "Ponder called on DRAW by Repetition or 50-moves-rule";
-    }
-    else {
-      msg = "Search called on DRAW by Repetition or 50-moves-rule";
-    }
+    std::string msg = this->searchLimits.ponder ? "Ponder called on DRAW by Repetition or 50-moves-rule"
+                                                : "Search called on DRAW by Repetition or 50-moves-rule";
     sendString(msg);
     LOG__WARN(Logger::get().SEARCH_LOG, msg);
     searchResult.bestMoveValue = VALUE_DRAW;
@@ -302,26 +297,16 @@ SearchResult Search::iterativeDeepening(Position& p) {
   if (rootMoves.empty()) {
     if (p.hasCheck()) {
       statistics.checkmates++;
-      std::string msg;
-      if (this->searchLimits.ponder) {
-        msg = "Ponder called on a check mate position";
-      }
-      else {
-        msg = "Search called on a check mate position";
-      }
+      std::string msg = this->searchLimits.ponder ? "Ponder called on a check mate position"
+                                                  : "Search called on a check mate position";
       sendString(msg);
       LOG__WARN(Logger::get().SEARCH_LOG, msg);
       searchResult.bestMoveValue = -VALUE_CHECKMATE;
     }
     else {
       statistics.stalemates++;
-      std::string msg;
-      if (this->searchLimits.ponder) {
-        msg = "Ponder called on a stale mate position";
-      }
-      else {
-        msg = "Search called on a stale mate position";
-      }
+      std::string msg = this->searchLimits.ponder ? "Ponder called on a stale mate position"
+                                                  : "Search called on a stale mate position";
       sendString(msg);
       LOG__WARN(Logger::get().SEARCH_LOG, msg);
       searchResult.bestMoveValue = VALUE_DRAW;
@@ -340,10 +325,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
   }
 
   // prepare max depth from search limits
-  int maxDepth = DEPTH_MAX;
-  if (searchLimits.depth) {
-    maxDepth = searchLimits.depth;
-  }
+  int maxDepth = searchLimits.depth ? searchLimits.depth : DEPTH_MAX;
 
   // Max window search in preparation for aspiration window search
   // not needed yet
@@ -394,7 +376,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
     // If we only have one move to play also stop the search
     if (!stopConditions() && rootMoves.size() > 1) {
       // sort root moves for the next iteration
-      std::stable_sort(rootMoves.begin(), rootMoves.end(), moveValueGreaterComparator());
+      std::ranges::stable_sort(rootMoves, moveValueGreaterComparator());
       statistics.currentBestRootMove      = pv[0].at(0);
       statistics.currentBestRootMoveValue = valueOf(pv[0].at(0));
       assert(pv[0].at(0) == rootMoves.at(0) && "Best root move should be equal to pv[0].at(0)");
@@ -436,7 +418,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
     }
   }
 
-  // Double check the ponder move to avoid a ponder search on mate or draw position.
+  // Double-check the ponder move to avoid a ponder search on mate or draw position.
   // If position after ponder move is a final position do not even send a ponder move.
   // This is necessary as arena sends a go ponder command although the position is final.
   if (searchResult.ponderMove != MOVE_NONE) {
@@ -511,7 +493,7 @@ Value Search::rootSearch(Position& p, Depth depth, Value alpha, Value beta) {
   // best move is stored in pv[0][0]
   // best value is stored in pv[0][0].value
   // The next iteration begins with the best move of the last
-  // iteration so we can be sure pv[0][0] will be set with the
+  // iteration, so we can be sure pv[0][0] will be set with the
   // last best move from the previous iteration independent of
   // the value. Any better move found is really better and will
   // replace pv[0][0] and also will be sorted first in the
@@ -576,7 +558,7 @@ Value Search::rootSearch(Position& p, Depth depth, Value alpha, Value beta) {
     // this is always the case.
     if (value > bestNodeValue) {
       bestNodeValue = value;
-      // we have a new best move and pv[0][0] - store pv+1 tp pv
+      // we have a new best move and pv[0][0] - store pv+1 to pv
       savePV(moveRef, pv[1], pv[0]);
       statistics.bestMoveChange++;
       if (value > alpha) {
@@ -640,7 +622,7 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
   // and search it first (through setting PV move in move gen).
   // If we have a value from a similar or deeper search we check
   // if the value is usable. Exact values mean that the previously
-  // stored result already was a precise result and we do not
+  // stored result already was a precise result, and we do not
   // need to search the position again. We can stop searching
   // this branch and return the value.
   // Alpha or Beta entries will only be used if they improve
@@ -653,7 +635,9 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
       ttMove = static_cast<Move>(ttEntryPtr->move);
       if (ttEntryPtr->depth >= depth) {
         const Value ttValue = valueFromTt(ttEntryPtr->value, ply);
-        if (validValue(ttValue) && (ttEntryPtr->type == EXACT || (ttEntryPtr->type == ALPHA && ttValue <= alpha) || (ttEntryPtr->type == BETA && ttValue >= beta)) && SearchConfig::USE_TT_VALUE) {
+        if (validValue(ttValue)
+            && (ttEntryPtr->type == EXACT || (ttEntryPtr->type == ALPHA && ttValue <= alpha) || (ttEntryPtr->type == BETA && ttValue >= beta))
+            && SearchConfig::USE_TT_VALUE) {
           // get PV line from tt as we prune here
           // and wouldn't have one otherwise
           getPvLine(p, pv[ply], depth);
@@ -1023,25 +1007,25 @@ Value Search::search(Position& p, Depth depth, Depth ply, Value alpha, Value bet
     // For the first move this is always the case.
     if (value > bestNodeValue) {
       // These "best" values are only valid for this node
-      // not for all of the ply (not yet clear if >alpha)
+      // not for all the ply (not yet clear if >alpha)
       bestNodeValue = value;
       bestNodeMove  = move;
 
       // Did we find a better move than in previous nodes in ply
       // then this is our new PV and best move for this ply.
       // If we never find a better alpha this means all moves in
-      // this node are worse then other moves in other nodes which
+      // this node are worse than other moves in other nodes which
       // raised alpha - meaning we have a better move from another
       // node we would play. We will return alpha and store a alpha
       // node in TT.
       if (value > alpha) {
         // If we found a move that is better or equal than beta
         // this means that the opponent can/will avoid this
-        // position altogether so we can stop search this node.
+        // position altogether, so we can stop search this node.
         // We will not know if our best move is really the
         // best move or how good it really is (value is a lower bound)
         // as we cut off the rest of the search of the node here.
-        // We will safe the move as a killer to be able to search it
+        // We will save the move as a killer to be able to search it
         // earlier in another node of the ply.
         if (value >= beta && SearchConfig::USE_ALPHABETA) {
           // Count beta cuts

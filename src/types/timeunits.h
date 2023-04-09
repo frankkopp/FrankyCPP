@@ -74,15 +74,13 @@ inline std::string format(std::chrono::duration<Rep, Period> timeunit) {
   std::ostringstream os;
   bool foundNonZero  = false;
   os.fill('0');
-  typedef duration<int, std::ratio<86400*365>> years;
-  const auto y = duration_cast<years>(ns);
+  const auto y = duration_cast<duration<int, std::ratio<86400 * 365>>>(ns);
   if (y.count()) {
     foundNonZero = true;
     os << y.count() << "y:";
     ns -= y;
   }
-  typedef duration<int, std::ratio<86400>> days;
-  const auto d = duration_cast<days>(ns);
+  const auto d = duration_cast<duration<int, std::ratio<86400>>>(ns);
   if (d.count()) {
     foundNonZero = true;
     os << d.count() << "d:";
