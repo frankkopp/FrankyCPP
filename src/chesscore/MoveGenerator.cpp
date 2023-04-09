@@ -17,13 +17,13 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#include <ranges>
 #include <regex>
 
 #include "History.h"
 #include "MoveGenerator.h"
 #include "Values.h"
 #include "chesscore/Position.h"
-#include "common/misc.h"
 #include "types/types.h"
 
 static constexpr bool REMOVE_SORT_VALUE = true;
@@ -68,8 +68,7 @@ const MoveList* MoveGenerator::generatePseudoLegalMoves(const Position& p, const
 
   // remove internal sort value
   if (REMOVE_SORT_VALUE) {
-    std::transform(pseudoLegalMoves.begin(), pseudoLegalMoves.end(),
-                   pseudoLegalMoves.begin(), [](Move m) { return moveOf(m); });
+    std::ranges::for_each(pseudoLegalMoves, [](Move& m) { m = moveOf(m); });
   }
 
   return &pseudoLegalMoves;
@@ -86,7 +85,7 @@ const MoveList* MoveGenerator::generateLegalMoves(const Position& p, const GenMo
 
 Move MoveGenerator::getNextPseudoLegalMove(const Position& p, const GenMode genMode, const bool evasion) {
   // if the position changes during iteration the iteration
-  // will be reset and generation will be restart with the
+  // will be reset and generation will be restarted with the
   // new position.
   if (p.getZobristKey() != currentODZobrist) {
     onDemandMoves.clear();
@@ -107,7 +106,7 @@ Move MoveGenerator::getNextPseudoLegalMove(const Position& p, const GenMode genM
   // without removing the element from the vector which would
   // be expensive as all elements would have to be shifted.
 
-  // If the list is currently empty and we have not generated all moves yet
+  // If the list is currently empty, and we have not generated all moves yet
   // generate the next batch until we have new moves or all moves are generated
   // and there are no more moves to generate
   if (onDemandMoves.empty()) {
@@ -137,7 +136,7 @@ Move MoveGenerator::getNextPseudoLegalMove(const Position& p, const GenMode genM
         // The pv move was the last move in this iterations list.
         // We will try to generate more moves. If no more moves
         // can be generated we will return MOVE_NONE.
-        // Otherwise we return the move below.
+        // Otherwise, we return the move below.
         takeIndex = 0;
         onDemandMoves.clear();
         fillOnDemandMoveList(p, genMode, evasion);
@@ -284,13 +283,12 @@ bool MoveGenerator::validateMove(const Position& position, Move move) {
 
 Move MoveGenerator::getMoveFromUci(const Position& position, const std::string& uciMove) {
   // check move format
-  if (!((uciMove.size() == 4 && islower(uciMove[0]) && isdigit(uciMove[1]) && islower(uciMove[2]) && isdigit(uciMove[3])) ||
-        (uciMove.size() == 5 && islower(uciMove[0]) && isdigit(uciMove[1]) && islower(uciMove[2]) && isdigit(uciMove[3]) && isalpha(uciMove[4])))) {
+  if (!((uciMove.size() == 4 && islower(uciMove[0]) && isdigit(uciMove[1]) && islower(uciMove[2]) && isdigit(uciMove[3])) || (uciMove.size() == 5 && islower(uciMove[0]) && isdigit(uciMove[1]) && islower(uciMove[2]) && isdigit(uciMove[3]) && isalpha(uciMove[4])))) {
     return MOVE_NONE;
   }
   // create all moves on position and compare
   Move move;
-  resetOnDemand(); // in case this is called multiple times on the same position
+  resetOnDemand();// in case this is called multiple times on the same position
   while ((move = getNextPseudoLegalMove(position, GenAll, position.hasCheck())) != MOVE_NONE) {
     // to lower case is necessary as UCI uses lower case characters for promotions
     // although "algebraic notation" defines upper case letters.
