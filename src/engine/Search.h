@@ -161,7 +161,7 @@ public:
   void ponderhit();
 
   // return current root pv list
-  const MoveList& getPV() const { return pv[0]; };// TODO implement
+  const MoveList& getPV() const { return pv[0]; };
 
   // clears the hash table
   void clearTT();
@@ -170,10 +170,10 @@ public:
   void resizeTT();
 
   // return search stats instance
-  inline const SearchStats& getSearchStats() const { return statistics; }// TODO implement
+  inline const SearchStats& getSearchStats() const { return statistics; };
 
   // return the last search result
-  inline const SearchResult& getLastSearchResult() const { return lastSearchResult; };// TODO implement
+  inline const SearchResult& getLastSearchResult() const { return lastSearchResult; };
 
 private:
   ////////////////////////////////////////////////
