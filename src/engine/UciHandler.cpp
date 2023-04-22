@@ -32,15 +32,13 @@
 #include <memory>
 #include <thread>
 
-UciHandler::UciHandler() {
-  pInputStream  = &std::cin;
-  pOutputStream = &std::cout;
-
-  pPosition = std::make_shared<Position>();
-  pMoveGen  = std::make_shared<MoveGenerator>();
-  pPerft    = std::make_shared<Perft>();
-  pSearch   = std::make_shared<Search>(this);
-}
+UciHandler::UciHandler()
+    : pInputStream(&std::cin),
+      pOutputStream(&std::cout),
+      pPosition(new Position),
+      pMoveGen(new MoveGenerator),
+      pPerft(new Perft),
+      pSearch(new Search(this)) {}
 
 UciHandler::UciHandler(std::istream* pIstream, std::ostream* pOstream) : UciHandler::UciHandler() {
   pInputStream  = pIstream;
@@ -91,8 +89,10 @@ bool UciHandler::handleCommand(const std::string& cmd) {
   else if (token == "register") { registerCommand(); }
   else if (token == "debug") { debugCommand(); }
   else if (token == "perft") { perftCommand(inStream); }
-  else if (token == "noop") { /* noop */}
-  else uciError(fmt::format("Unknown UCI command: {}", token));
+  else if (token == "noop") { /* noop */
+  }
+  else
+    uciError(fmt::format("Unknown UCI command: {}", token));
   // @formatter:on
 
   LOG__DEBUG(Logger::get().UCIHAND_LOG, "UCI Handler processed command: {}", token);
@@ -162,7 +162,7 @@ void UciHandler::positionCommand(std::istringstream& inStream) {
   // TODO error handling when fen is invalid
 
   LOG__INFO(Logger::get().UCIHAND_LOG, "Set position to {}", fen);
-  pPosition = std::make_shared<Position>(fen);
+  pPosition = std::make_unique<Position>(fen);
 
   // if "moves" are given, read all and execute them to position
   if (token == "moves") {
@@ -409,7 +409,8 @@ void UciHandler::perftCommand(std::istringstream& inStream) {
   std::thread perftThread([&](int s, int e) {
     pPerft->perft(s, e, true);
     sendString("Perft finished.");
-  }, startDepth, endDepth);
+  },
+                          startDepth, endDepth);
   perftThread.detach();
 }
 
