@@ -20,15 +20,15 @@
 #ifndef FRANKYCPP_UCIHANDLER_H
 #define FRANKYCPP_UCIHANDLER_H
 
-#include "SearchLimits.h"
-#include "UciOptions.h"
-
-#include "gtest/gtest_prod.h"
-
 #include <cstddef>
 #include <cstdint>
 #include <iosfwd>
 #include <memory>
+
+#include "gtest/gtest_prod.h"
+
+#include "SearchLimits.h"
+#include "UciOptions.h"
 
 // forward declaration
 class Position;
@@ -43,9 +43,9 @@ class Search;
  * Executes UCI commands (e.g. starts search, sets position, etc.)
  */
 class UciHandler {
-  std::shared_ptr<Position> pPosition;
-  std::shared_ptr<MoveGenerator> pMoveGen;
-  std::shared_ptr<Perft> pPerft;
+  std::unique_ptr<Position> pPosition;
+  std::unique_ptr<MoveGenerator> pMoveGen;
+  std::unique_ptr<Perft> pPerft;
   std::shared_ptr<Search> pSearch;
 
 private:
@@ -108,4 +108,4 @@ private:
 };
 
 
-#endif//FRANKYCPP_UCIHANDLER_H
+#endif// FRANKYCPP_UCIHANDLER_H
