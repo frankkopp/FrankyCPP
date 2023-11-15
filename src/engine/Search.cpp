@@ -57,7 +57,7 @@ void Search::isReady() {
 
 void Search::startSearch(Position p, SearchLimits sl) {
   // acquire init phase lock
-  if (!initSemaphore.get()) {
+  if (!initSemaphore.try_acquire()) {
     LOG__WARN(Logger::get().SEARCH_LOG, "Search init failed as another initialization is ongoing.");
   }
 
@@ -78,7 +78,7 @@ void Search::startSearch(Position p, SearchLimits sl) {
 
   // wait until search is running and initialization
   // is done before returning to caller
-  initSemaphore.getOrWait();
+  initSemaphore.acquire();
   initSemaphore.release();
   LOG__INFO(Logger::get().SEARCH_LOG, "Search started.");
 }
@@ -100,7 +100,7 @@ void Search::stopSearch() {
 bool Search::isSearching() const {
   // Try to get running semaphore.
   // If not available the search is running
-  if (isRunningSemaphore.get()) {
+  if (isRunningSemaphore.try_acquire()) {
     isRunningSemaphore.release();
     return false;
   }
@@ -109,7 +109,7 @@ bool Search::isSearching() const {
 
 void Search::waitWhileSearching() const {
   // get or wait for running semaphore
-  isRunningSemaphore.getOrWait();
+  isRunningSemaphore.acquire();
   isRunningSemaphore.release();
 }
 
@@ -153,7 +153,7 @@ void Search::resizeTT() {
 void Search::run() {
   // check if there is already a search running
   // and if not grab the isRunning semaphore
-  if (!isRunningSemaphore.get()) {
+  if (!isRunningSemaphore.try_acquire()) {
     LOG__ERROR(Logger::get().SEARCH_LOG, "Search already running");
     return;
   }

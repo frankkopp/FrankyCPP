@@ -28,35 +28,31 @@
 #include <string>
 
 enum Value : int16_t {
-  VALUE_ZERO                = 0,
-  VALUE_DRAW                = VALUE_ZERO,
-  VALUE_ONE                 = 1,
-  VALUE_INF                 = 15000,
-  VALUE_NONE                = -VALUE_INF - VALUE_ONE,
-  VALUE_MIN                 = -10000,
-  VALUE_MAX                 = 10000,
-  VALUE_CHECKMATE           = VALUE_MAX,
+  VALUE_ZERO = 0,
+  VALUE_DRAW = VALUE_ZERO,
+  VALUE_ONE = 1,
+  VALUE_INF = 15000,
+  VALUE_NONE = -VALUE_INF - VALUE_ONE,
+  VALUE_MIN = -10000,
+  VALUE_MAX = 10000,
+  VALUE_CHECKMATE = VALUE_MAX,
   VALUE_CHECKMATE_THRESHOLD = VALUE_CHECKMATE - static_cast<Value>(MAX_DEPTH) - 1,
 };
 
 
 // checks if value is a value of min - max
-constexpr bool validValue(Value v) {
-  return (v >= VALUE_MIN && v <= VALUE_MAX) || v == VALUE_NONE;
-}
+constexpr bool validValue(const Value v) { return (v >= VALUE_MIN && v <= VALUE_MAX) || v == VALUE_NONE; }
 
-namespace {
-  /** PieceType values */
-  constexpr const Value pieceTypeValue[] = {
-    Value(0),   // no type
-    Value(2000),// king
-    Value(100), // pawn
-    Value(320), // knight
-    Value(330), // bishop
-    Value(500), // rook
-    Value(900), // queen
-  };
-}// namespace
+/** PieceType values */
+constexpr Value pieceTypeValue[] = {
+  static_cast<Value>(0),   // no type
+  static_cast<Value>(2000),// king
+  static_cast<Value>(100), // pawn
+  static_cast<Value>(320), // knight
+  static_cast<Value>(330), // bishop
+  static_cast<Value>(500), // rook
+  static_cast<Value>(900), // queen
+};
 
 // returns the value of the given piece type
 constexpr Value valueOf(const PieceType pt) { return pieceTypeValue[pt]; }
@@ -68,24 +64,18 @@ constexpr Value valueOf(const Piece p) {
 }
 
 /** Returns true if value is considered a checkmate */
-inline bool isCheckMateValue(const Value value) {
-  return std::abs(value) > VALUE_CHECKMATE_THRESHOLD && std::abs(value) <= VALUE_CHECKMATE;
-}
+inline bool isCheckMateValue(const Value value) { return std::abs(value) > VALUE_CHECKMATE_THRESHOLD && std::abs(value) <= VALUE_CHECKMATE; }
 
 // Returns a UCI compatible std::string for the score in cp or in mate in ply
-inline std::string str(Value value) {
+inline std::string str(const Value value) {
   std::string scoreString;
   if (isCheckMateValue(value)) {
     scoreString = "mate ";
     scoreString += value < 0 ? "-" : "";
     scoreString += std::to_string((VALUE_CHECKMATE - std::abs(value) + 1) / 2);
   }
-  else if (value == VALUE_NONE) {
-    scoreString = "N/A";
-  }
-  else {
-    scoreString = "cp " + std::to_string(value);
-  }
+  else if (value == VALUE_NONE) { scoreString = "N/A"; }
+  else { scoreString = "cp " + std::to_string(value); }
   return scoreString;
 }
 
@@ -96,6 +86,6 @@ inline std::ostream& operator<<(std::ostream& os, const Value v) {
 
 ENABLE_FULL_OPERATORS_ON(Value)
 // used for multiplication with gamePhaseValue
-constexpr Value operator*(Value d, double i) { return static_cast<Value>(static_cast<int>(d) * i); }
+constexpr Value operator*(const Value d, const double i) { return static_cast<Value>(static_cast<int>(d) * i); }
 
 #endif//FRANKYCPP_VALUE_H

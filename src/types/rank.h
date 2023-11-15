@@ -48,35 +48,35 @@ enum Rank : uint_fast8_t  {
 };
 
 // checks if rank is a value of 0-7
-constexpr bool validRank(Rank r) {
+constexpr bool validRank(const Rank r) {
   return r < 8;
 }
 
 // creates a rank from a char
-constexpr Rank makeRank(char rankLabel) {
+constexpr Rank makeRank(const char rankLabel) {
   const Rank r = static_cast<Rank>(rankLabel - '1');
   return validRank(r) ? r : RANK_NONE;
 }
 
 // returns the rank for promotion of a color
-constexpr Rank promotionRank(Color c) {
+constexpr Rank promotionRank(const Color c) {
   return c == WHITE ? RANK_8 : RANK_1;
 }
 
 // returns the rank for a double pawn move of a color
-constexpr Rank pawnDoubleRank(Color c) {
+constexpr Rank pawnDoubleRank(const Color c) {
   return c == WHITE ? RANK_3 : RANK_6;
 }
 
 // returns the distance between two ranks in king moves
-inline int distance(Rank r1, Rank r2) {
+inline int distance(const Rank r1, const Rank r2) {
   return abs(static_cast<int>(r2) - static_cast<int>(r1));
 }
 
 // returns a char representing the rank (e.g. 1 or 8)
-constexpr char str(Rank r) {
+constexpr char str(const Rank r) {
   if (!validRank(r)) return '-';
-  return static_cast<char>('1' + char(r));
+  return static_cast<char>('1' + static_cast<char>(r));
 }
 
 inline std::ostream& operator<< (std::ostream& os, const Rank r) {

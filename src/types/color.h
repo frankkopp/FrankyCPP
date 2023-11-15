@@ -36,12 +36,12 @@ enum Color : uint_fast8_t {
 };
 
 // checks if rank is a value of 0-7
-constexpr bool validColor(Color c) {
+constexpr bool validColor(const Color c) {
   return c < 2;
 }
 
 // returns the opposite color
-constexpr Color operator~(Color c) { return Color(c ^ 1); }
+constexpr Color operator~(const Color c) { return static_cast<Color>(c ^ 1); }
 
 // moveDirection returns positive 1 for White and negative 1 (-1) for Black
 constexpr int moveDirection(Color c) { return c == WHITE ? 1 : -1; }

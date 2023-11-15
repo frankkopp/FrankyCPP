@@ -14,7 +14,6 @@ add_executable(
         types/BitboardTest.cpp
         types/ValuesTest.cpp
 
-        common/SemaphoreTest.cpp
         common/FifoTest.cpp
         common/ThreadPoolTest.cpp
         common/StringUtilsTest.cpp

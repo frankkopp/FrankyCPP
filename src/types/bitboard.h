@@ -37,9 +37,9 @@ typedef uint64_t Bitboard;
 // //////////////////////////////////////////////////////////////////
 // Bitboard constants
 
-constexpr Bitboard BbZero = Bitboard(0);
+constexpr Bitboard BbZero = 0;
 constexpr Bitboard BbFull = ~BbZero;
-constexpr Bitboard BbOne  = Bitboard(1);
+constexpr Bitboard BbOne  = 1;
 
 constexpr Bitboard FileABB = 0x0101010101010101ULL;
 constexpr Bitboard FileBBB = FileABB << 1;
@@ -157,12 +157,12 @@ Bitboard getAttacksBb(PieceType pt, Square sq, Bitboard occupied);
 * @param b Bitboard
 * @return shifted bitboard
 */
-inline Bitboard shiftBb(Direction d, Bitboard b) {
+inline Bitboard shiftBb(const Direction d, const Bitboard b) {
   // move the bits and clear the left our right file
   // after the shift to erase bit jumping over
   switch (d) {
     case NORTH:
-      return (b << 8);
+      return b << 8;
     case EAST:
       return (b << 1) & ~FileABB;
     case SOUTH:
@@ -353,9 +353,9 @@ struct Magic {
   // Compute the attack's index using the 'magic bitboards' approach
   [[nodiscard]] inline unsigned index(Bitboard occupied) const {
 #ifdef HAS_PEXT
-    return unsigned(_pext_u64(occupied, mask));
+    return static_cast<unsigned>(_pext_u64(occupied, mask));
 #else
-    return unsigned(((occupied & mask) * magic) >> shift);
+    return static_cast<unsigned>(((occupied & mask) * magic) >> shift);
 #endif
   }
 };
@@ -390,7 +390,7 @@ class PRNG {
   }
 
 public:
-  explicit PRNG(uint64_t seed) : s(seed) { assert(seed); }
+  explicit PRNG(const uint64_t seed) : s(seed) { assert(seed); }
   template<typename T>
   T rand() { return T(rand64()); }
   // Special generator used to fast init magic numbers.

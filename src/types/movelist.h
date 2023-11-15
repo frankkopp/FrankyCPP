@@ -30,7 +30,7 @@ typedef std::vector<Move> MoveList;
 // returns a uci compatible string representation of the move list
 inline std::string str(const MoveList& moveList) {
   std::ostringstream os;
-  for (Move m : moveList) {
+  for (const Move m : moveList) {
     os << m;
     if (m != moveList.back()) os << " ";
   }

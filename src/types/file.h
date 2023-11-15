@@ -48,25 +48,25 @@ enum File : uint_fast8_t {
 };
 
 // checks if file is a value of 0-7
-constexpr bool validFile(File f) {
+constexpr bool validFile(const File f) {
   return f < 8;
 }
 
 // creates a file from a char
-constexpr File makeFile(char fileLabel) {
+constexpr File makeFile(const char fileLabel) {
   const File f = static_cast<File>(fileLabel - 'a');
   return validFile(f) ? f : FILE_NONE;
 }
 
 // returns the distance between two files in king moves
-inline int distance(File f1, File f2) {
+inline int distance(const File f1, const File f2) {
   return std::abs(static_cast<int>(f2) - static_cast<int>(f1));
 }
 
 // returns a char representing the square (e.g. a1 or h8)
-constexpr char str(File f) {
+constexpr char str(const File f) {
   if (f >= 8) return '-';
-  return static_cast<char>('a' + char(f));
+  return static_cast<char>('a' + static_cast<char>(f));
 }
 
 inline std::ostream& operator<<(std::ostream& os, const File f) {

@@ -34,25 +34,25 @@ constexpr const char* START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R
 // game phase is a helper value to determine in which phase a game is.
 // A value of 24 indicates that all officers are still on the board.
 // A value of 0 indicates that no officers are on the boardany longer.
-constexpr const int GAME_PHASE_MAX = 24;
+constexpr int GAME_PHASE_MAX = 24;
 
 // max depth
-constexpr const int MAX_DEPTH = 128;
+constexpr int MAX_DEPTH = 128;
 
 // max number of moves
-constexpr const int MAX_MOVES = 512;
+constexpr int MAX_MOVES = 512;
 
 // nanoseconds per second
-constexpr const uint64_t nanoPerSec = 1'000'000'000;
+constexpr uint64_t nanoPerSec = 1'000'000'000;
 // kilobyte
-constexpr const uint64_t KB = 1024;
+constexpr uint64_t KB = 1024;
 // megabyte
-constexpr const uint64_t MB = KB * KB;
+constexpr uint64_t MB = KB * KB;
 // gigabyte
-constexpr const uint64_t GB = KB * MB;
+constexpr uint64_t GB = KB * MB;
 
 // defines a locale for European style numbers
-struct deLocaleDecimals : std::numpunct<char> {
+struct deLocaleDecimals final : std::numpunct<char> {
   [[nodiscard]] char do_decimal_point() const override { return ','; }
   [[nodiscard]] char do_thousands_sep() const override { return '.'; }
   [[nodiscard]] std::string do_grouping() const override { return "\03"; }

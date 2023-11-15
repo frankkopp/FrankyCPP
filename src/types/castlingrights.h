@@ -48,7 +48,7 @@ enum CastlingRights : uint_fast8_t {
 };
 
 namespace Castling {
-  // pre determined constants for squares which influence castling rights
+  // pre-determined constants for squares which influence castling rights
   inline CastlingRights castlingRights[SQ_LENGTH];
   inline void initCastlingRights() {
     castlingRights[SQ_E1] = WHITE_CASTLING;

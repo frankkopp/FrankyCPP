@@ -41,7 +41,8 @@
 //  BlackRook  = 0b01101
 //  BlackQueen = 0b01110
 //  PieceLength= 0b10000
-enum Piece : int_fast8_t { // @formatter:off
+enum Piece : int_fast8_t {
+ // @formatter:off
   PIECE_NONE,
   WHITE_KING = 1, WHITE_PAWN, WHITE_KNIGHT, WHITE_BISHOP, WHITE_ROOK, WHITE_QUEEN,
   BLACK_KING = 9, BLACK_PAWN, BLACK_KNIGHT, BLACK_BISHOP, BLACK_ROOK, BLACK_QUEEN,
@@ -49,45 +50,42 @@ enum Piece : int_fast8_t { // @formatter:off
 };// @formatter:on
 
 // checks if piece type is a value of 0 - 6
-constexpr bool validPiece(Piece p) {
-  return p < 15 && p != 7 && p != 8;
-}
+constexpr bool validPiece(const Piece p) { return p < 15 && p != 7 && p != 8; }
 
 // creates the piece given by color and piece type
-constexpr Piece makePiece(Color c, PieceType pt) { return Piece((c << 3) + pt); }
+constexpr Piece makePiece(const Color c, const PieceType pt) { return static_cast<Piece>((c << 3) + pt); }
 
 // creates the piece based on the FEN char
-constexpr Piece makePiece(unsigned char p) {
-  switch (p) { // @formatter:off
+constexpr Piece makePiece(const unsigned char p) {
+  switch (p) {
+ // @formatter:off
     case 'K': return WHITE_KING;
     case 'P': return WHITE_PAWN;
     case 'N': return WHITE_KNIGHT;
     case 'B': return WHITE_BISHOP;
-    case 'R': return WHITE_ROOK;;
+    case 'R': return WHITE_ROOK;
     case 'Q': return WHITE_QUEEN;
     case 'k': return BLACK_KING;
     case 'p': return BLACK_PAWN;
     case 'n': return BLACK_KNIGHT;
     case 'b': return BLACK_BISHOP;
-    case 'r': return BLACK_ROOK;;
+    case 'r': return BLACK_ROOK;
     case 'q': return BLACK_QUEEN;
     default: return PIECE_NONE;
   }// @formatter:on
 }
 
 // returns the color of the given piece
-constexpr Color colorOf(Piece p) { return static_cast<Color>(p >> 3); }
+constexpr Color colorOf(const Piece p) { return static_cast<Color>(p >> 3); }
 
 // returns the piece type of the given piece
-constexpr PieceType typeOf(Piece p) { return static_cast<PieceType>(p & 0b00000111u); }
+constexpr PieceType typeOf(const Piece p) { return static_cast<PieceType>(p & 0b00000111u); }
 
-namespace {
-  /** returns a char representing the piece. Upper case letters for white, lower case for black */
-  constexpr const char* pieceToChar = " KPNBRQ  kpnbrq   ";
-}// namespace
+/** returns a char representing the piece. Upper case letters for white, lower case for black */
+constexpr const char* pieceToChar = " KPNBRQ  kpnbrq   ";
 
 // single char label for the piece as used in a FEN (one of " KPNBRQ  kpnbrq")
-constexpr char str(Piece p) {
+constexpr char str(const Piece p) {
   if (!validPiece(p)) return '-';
   return std::string(pieceToChar)[p];
 }

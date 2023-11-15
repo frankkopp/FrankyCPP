@@ -27,7 +27,6 @@
 #include "chesscore/History.h"
 #include "chesscore/MoveGenerator.h"
 #include "chesscore/Position.h"
-#include "common/Semaphore.h"
 #include "engine/UciHandler.h"
 #include "openingbook/OpeningBook.h"
 #include "types/types.h"
@@ -35,6 +34,7 @@
 #include "gtest/gtest_prod.h"
 
 #include <thread>
+#include <semaphore>
 
 // forward declaration
 class UciHandler;
@@ -46,8 +46,8 @@ class Search {
   UciHandler* uciHandler{};
 
   // state management for the search
-  mutable Semaphore initSemaphore{1};
-  mutable Semaphore isRunningSemaphore{1};
+  mutable std::binary_semaphore initSemaphore{1};
+  mutable std::binary_semaphore isRunningSemaphore{1};
   std::thread searchThread{};
 
   std::unique_ptr<OpeningBook> book;
