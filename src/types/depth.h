@@ -20,7 +20,6 @@
 #ifndef FRANKYCPP_DEPTH_H
 #define FRANKYCPP_DEPTH_H
 
-#include <cstdint>
 #include "macros.h"
 
 ///////////////////////////////////

@@ -19,14 +19,14 @@
 
 #include "bitboard.h"
 
-#include <sstream>
 #include <bitset>
+#include <sstream>
 
 // //////////////////////////////////
 // Bitboard functions
 // //////////////////////////////////
 
-Bitboard getAttacksBb(PieceType pt, Square sq, Bitboard occupied) {
+Bitboard getAttacksBb(const PieceType pt, const Square sq, const Bitboard occupied) {
   switch (pt) {
     case BISHOP:
       return Bitboards::bishopMagics[sq].attacks[Bitboards::bishopMagics[sq].index(occupied)];
@@ -43,26 +43,26 @@ Bitboard getAttacksBb(PieceType pt, Square sq, Bitboard occupied) {
   }
 }
 
-std::string str(Bitboard b) {
+std::string str(const Bitboard b) {
   std::ostringstream os;
   os << std::bitset<64>(b);
   return os.str();
 }
 
-std::string strBoard(Bitboard b) {
+std::string strBoard(const Bitboard b) {
   std::ostringstream os;
   os << "+---+---+---+---+---+---+---+---+\n";
-  for (Rank r = RANK_8;;--r) {
+  for (Rank r = RANK_8;; --r) {
     for (File f = FILE_A; f <= FILE_H; ++f) {
       os << ((b & squareOf(f, r)) ? "| X " : "|   ");
     }
     os << "|\n+---+---+---+---+---+---+---+---+\n";
-    if (r==0) break;
+    if (r == 0) break;
   }
   return os.str();
 }
 
-std::string strGrouped(Bitboard b) {
+std::string strGrouped(const Bitboard b) {
   std::ostringstream os;
   for (uint16_t i = 0; i < 64; i++) {
     if (i > 0 && i % 8 == 0) {
@@ -100,6 +100,7 @@ void Bitboards::squareBitboardsPreCompute() {
 
     // square diagonals
     // @formatter:off
+    // clang-format off
     if (DiagUpA8 & sq) squareDiagUpBb[sq] = DiagUpA8;
     else if (DiagUpA7 & sq) squareDiagUpBb[sq] = DiagUpA7;
     else if (DiagUpA6 & sq) squareDiagUpBb[sq] = DiagUpA6;
@@ -132,27 +133,28 @@ void Bitboards::squareBitboardsPreCompute() {
     else if (DiagDownB1 & sq) squareDiagDownBb[sq] = DiagDownB1;
     else if (DiagDownA1 & sq) squareDiagDownBb[sq] = DiagDownA1;
     // @formatter:on
+    // clang-format on
   }
 }
 
 void Bitboards::nonSlidingAttacksPreCompute() {
   // @formatter:off
   // steps for kings, pawns, knight for WHITE - negate to get BLACK
-  int steps[][5] = { {},
-                     { NORTH_WEST, NORTH, NORTH_EAST, EAST }, // king
-                     { NORTH_WEST, NORTH_EAST }, // pawn
-                     { WEST+NORTH_WEST,          // knight
-                       EAST+NORTH_EAST,
-                       NORTH+NORTH_WEST,
-                       NORTH+NORTH_EAST }};
+  int steps[][5] = {{},
+                    {NORTH_WEST, NORTH, NORTH_EAST, EAST},// king
+                    {NORTH_WEST, NORTH_EAST},             // pawn
+                    {WEST + NORTH_WEST,                   // knight
+                     EAST + NORTH_EAST,
+                     NORTH + NORTH_WEST,
+                     NORTH + NORTH_EAST}};
   // @formatter:on
 
   // knight and king attacks
   for (Color c = WHITE; c <= BLACK; ++c) {
-    for (PieceType pt : {KING, PAWN, KNIGHT}) {
+    for (const PieceType pt : {KING, PAWN, KNIGHT}) {
       for (Square s = SQ_A1; s <= SQ_H8; ++s) {
         for (int i = 0; steps[pt][i]; ++i) {
-          Square to = s + Direction(c == WHITE ? steps[pt][i] : -steps[pt][i]);
+          const Square to = s + static_cast<Direction>(c == WHITE ? steps[pt][i] : -steps[pt][i]);
           if (validSquare(to) && distance(s, to) < 3) {
             if (pt == PAWN) { pawnAttacks[c][s] |= to; }
             else { nonSliderAttacks[pt][s] |= to; }
@@ -165,23 +167,23 @@ void Bitboards::nonSlidingAttacksPreCompute() {
 
 void Bitboards::neighbourMasksPreCompute() {
   for (Square square = SQ_A1; square <= SQ_H8; ++square) {
-    auto f = static_cast<unsigned int>(fileOf(square));
-    auto r = static_cast<unsigned int>(rankOf(square));
+    const auto f = static_cast<unsigned int>(fileOf(square));
+    const auto r = static_cast<unsigned int>(rankOf(square));
     for (unsigned int j = 0; j <= 7; j++) {
       // file masks
       if (j < f) {
-          filesWestMask[square] |= FileABB << j  ;
-        }
-      if (7-j > f) {
-          filesEastMask[square] |= FileABB << (7 - j);
-        }
+        filesWestMask[square] |= FileABB << j;
+      }
+      if (7 - j > f) {
+        filesEastMask[square] |= FileABB << (7 - j);
+      }
       // rank masks
-      if (7-j > r) {
-          ranksNorthMask[square] |= Rank1BB << (8 * (7 - j));
-        }
+      if (7 - j > r) {
+        ranksNorthMask[square] |= Rank1BB << (8 * (7 - j));
+      }
       if (j < r) {
-          ranksSouthMask[square] |= Rank1BB << (8 * j);
-        }
+        ranksSouthMask[square] |= Rank1BB << (8 * j);
+      }
     }
     if (f > 0) {
       fileWestMask[square] = FileABB << (f - 1);
@@ -195,10 +197,10 @@ void Bitboards::neighbourMasksPreCompute() {
 
 void Bitboards::raysPreCompute() {
   for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
-    rays[N][sq] =  getAttacksBb(ROOK, sq, BbZero) & ranksNorthMask[sq];
-    rays[E][sq] =  getAttacksBb(ROOK, sq, BbZero) & filesEastMask[sq];
-    rays[S][sq] =  getAttacksBb(ROOK, sq, BbZero) & ranksSouthMask[sq];
-    rays[W][sq] =  getAttacksBb(ROOK, sq, BbZero) & filesWestMask[sq];
+    rays[N][sq]  = getAttacksBb(ROOK, sq, BbZero) & ranksNorthMask[sq];
+    rays[E][sq]  = getAttacksBb(ROOK, sq, BbZero) & filesEastMask[sq];
+    rays[S][sq]  = getAttacksBb(ROOK, sq, BbZero) & ranksSouthMask[sq];
+    rays[W][sq]  = getAttacksBb(ROOK, sq, BbZero) & filesWestMask[sq];
     rays[NW][sq] = getAttacksBb(BISHOP, sq, BbZero) & filesWestMask[sq] & ranksNorthMask[sq];
     rays[NE][sq] = getAttacksBb(BISHOP, sq, BbZero) & filesEastMask[sq] & ranksNorthMask[sq];
     rays[SE][sq] = getAttacksBb(BISHOP, sq, BbZero) & filesEastMask[sq] & ranksSouthMask[sq];
@@ -209,11 +211,11 @@ void Bitboards::raysPreCompute() {
 void Bitboards::intermediatePreCompute() {
   for (Square from = SQ_A1; from <= SQ_H8; ++from) {
     for (Square to = SQ_A1; to <= SQ_H8; ++to) {
-      Bitboard toBB = sqBb[to];
+      const Bitboard toBB = sqBb[to];
       for (int o = 0; o < 8; o++) {
-         if ((rays[o][from] & toBB) != BbZero) {
-             intermediateBb[from][to] |= rays[Orientation(o)][from] & ~rays[o][to] & ~toBB;
-         }
+        if ((rays[o][from] & toBB) != BbZero) {
+          intermediateBb[from][to] |= rays[Orientation(o)][from] & ~rays[o][to] & ~toBB;
+        }
       }
     }
   }
@@ -221,8 +223,8 @@ void Bitboards::intermediatePreCompute() {
 
 void Bitboards::maskPassedPawnsPreCompute() {
   for (Square square = SQ_A1; square <= SQ_H8; ++square) {
-    int f = int(fileOf(square));
-    int r = int(rankOf(square));
+    const int f = int(fileOf(square));
+    const int r = int(rankOf(square));
     // white pawn - ignore that pawns can't be on all squares
     passedPawnMask[WHITE][square] |= rays[N][square];
     if (f < 7 && r < 7) {
@@ -244,18 +246,19 @@ void Bitboards::maskPassedPawnsPreCompute() {
 
 void Bitboards::castleMasksPreCompute() {
   // castle masks
-  kingSideCastleMask[WHITE] = sqBb[SQ_F1] | sqBb[SQ_G1] | sqBb[SQ_H1];
-  kingSideCastleMask[BLACK] = sqBb[SQ_F8] | sqBb[SQ_G8] | sqBb[SQ_H8];
+  kingSideCastleMask[WHITE]  = sqBb[SQ_F1] | sqBb[SQ_G1] | sqBb[SQ_H1];
+  kingSideCastleMask[BLACK]  = sqBb[SQ_F8] | sqBb[SQ_G8] | sqBb[SQ_H8];
   queenSideCastleMask[WHITE] = sqBb[SQ_D1] | sqBb[SQ_C1] | sqBb[SQ_B1] | sqBb[SQ_A1];
   queenSideCastleMask[BLACK] = sqBb[SQ_D8] | sqBb[SQ_C8] | sqBb[SQ_B8] | sqBb[SQ_A8];
 }
 
 void Bitboards::colorBitboardsPreCompute() {
   for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
-    if ((int(fileOf(sq))+int(rankOf(sq)))%2 == 0) {
+    if ((static_cast<int>(fileOf(sq)) + static_cast<int>(rankOf(sq))) % 2 == 0) {
       colorBb[BLACK] = colorBb[BLACK] | sq;
-    } else {
-      colorBb[WHITE] = colorBb[WHITE] | Bitboards::sqBb[sq]; // squaresBb[WHITE] | sq;
+    }
+    else {
+      colorBb[WHITE] = colorBb[WHITE] | Bitboards::sqBb[sq];// squaresBb[WHITE] | sq;
     }
   }
 }
@@ -263,7 +266,7 @@ void Bitboards::colorBitboardsPreCompute() {
 // Stockfish Magic bitboards - no need to reinvent the wheel
 // Credits to Stockfish
 
-Bitboard sliding_attack(Direction directions[], Square sq, Bitboard occupied) {
+Bitboard sliding_attack(Direction directions[], const Square sq, const Bitboard occupied) {
   Bitboard attack = 0;
   for (int i = 0; i < 4; ++i) {
     for (Square s = sq + directions[i];
@@ -293,13 +296,13 @@ void init_magics(Bitboard table[], Magic magics[], Direction directions[]) {
     // all the attacks for each possible subset of the mask and so is 2 power
     // the number of 1s of the mask. Hence we deduce the size of the shift to
     // apply to the 64 or 32 bits word to get the index.
-    Magic& m = magics[s];
-    m.mask   = sliding_attack(directions, s, 0) & ~edges;
-    m.shift  = 64 - popcount(m.mask);
+    Magic& m   = magics[s];
+    m.mask     = sliding_attack(directions, s, 0) & ~edges;
+    m.shift    = 64 - popcount(m.mask);
 
     // Set the offset for the attacks table of the square. We have individual
     // table sizes for each square with "Fancy Magic Bitboards".
-    m.attacks = s == SQ_A1 ? table : magics[s - 1].attacks + size;
+    m.attacks  = s == SQ_A1 ? table : magics[s - 1].attacks + size;
 
     // Use Carry-Rippler trick to enumerate all subsets of masks[s] and
     // store the corresponding sliding attack bitboard in reference[].
@@ -356,8 +359,8 @@ void init_magics(Bitboard table[], Magic magics[], Direction directions[]) {
 // called "fancy" approach.
 // Credits to Stockfish
 void Bitboards::initMagicBitboards() {
-  Direction rookDirections[] = { NORTH, EAST, SOUTH, WEST };
-  Direction bishopDirections[] = { NORTH_EAST, SOUTH_EAST, SOUTH_WEST, NORTH_WEST };
-  init_magics(Bitboards::rookTable, rookMagics, rookDirections);
+  Direction rookDirections[]   = {NORTH, EAST, SOUTH, WEST};
+  Direction bishopDirections[] = {NORTH_EAST, SOUTH_EAST, SOUTH_WEST, NORTH_WEST};
+  init_magics(rookTable, rookMagics, rookDirections);
   init_magics(bishopTable, bishopMagics, bishopDirections);
 }

@@ -20,8 +20,6 @@
 #ifndef FRANKYCPP_SQUARE_H
 #define FRANKYCPP_SQUARE_H
 
-#include <ostream>
-
 #include "color.h"
 #include "file.h"
 #include "macros.h"
@@ -58,21 +56,21 @@ namespace Squares {
 }// namespace Squares
 
 // checks if this is a valid square (int >= 0 and <64)
-constexpr bool validSquare(Square s) { return s < 64; }
+constexpr bool validSquare(const Square s) { return s < 64; }
 
 // returns the square of the intersection of file and rank
-constexpr Square squareOf(File f, Rank r) { return Square((r << 3) + f); }
+constexpr Square squareOf(const File f, const Rank r) { return static_cast<Square>((r << 3) + f); }
 
 // returns the file of this square
-constexpr File fileOf(Square s) { return File(s & 0b00000111u); }
+constexpr File fileOf(const Square s) { return static_cast<File>(s & 0b00000111u); }
 
 // returns the rank of this square
-constexpr Rank rankOf(Square s) { return Rank(s >> 3); }
+constexpr Rank rankOf(const Square s) { return static_cast<Rank>(s >> 3); }
 
 // creates a square from a string (uci style square e.g. e2, h7)
 // only considers the first and second character, rest is ignored
 // returns SQ_NONE if not a valid square
-inline Square makeSquare(std::string_view s) {
+inline Square makeSquare(const std::string_view s) {
   if (s.length() < 2) return SQ_NONE;
   const File f = makeFile(s[0]);
   const Rank r = makeRank(s[1]);
@@ -90,13 +88,13 @@ inline Square makeSquare(const std::string& s) {
 }
 
 // returns the precomputed distance between two squares
-inline int distance(Square s1, Square s2) { return Squares::squareDistance[s1][s2]; }
+inline int distance(const Square s1, const Square s2) { return Squares::squareDistance[s1][s2]; }
 
 // pawnPush returns the square of a pawn move of the given color
-constexpr Square pawnPush(Square s, Color c) { return static_cast<Square>(s + (c == WHITE ? 8 : -8)); }
+constexpr Square pawnPush(const Square s, const Color c) { return static_cast<Square>(s + (c == WHITE ? 8 : -8)); }
 
 // returns a string representing the square (e.g. a1 or h8)
-inline const std::string& str(Square sq) {
+inline const std::string& str(const Square sq) {
   return Squares::squareNames[sq];
 }
 

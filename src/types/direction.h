@@ -44,27 +44,27 @@ enum Direction : int_fast8_t {
 };
 
 // return direction of pawns for the color
-constexpr Direction pawnPush(Color c) { return c == WHITE ? NORTH : SOUTH; }
+constexpr Direction pawnPush(const Color c) { return c == WHITE ? NORTH : SOUTH; }
 
 // Additional operators to add a Direction to a Square
 // Could be invalid Square if int value of Direction + int value of Square are >63
-constexpr Square operator+(Square s, Direction d) {
-  return static_cast<Square>(int(s) + int(d));
+constexpr Square operator+(const Square s, const Direction d) {
+  return static_cast<Square>(static_cast<int>(s) + static_cast<int>(d));
 }
 
 // Additional operators to add a Direction to a Square
 // Could be invalid Square if int value of Direction + int value of Square are >63
-constexpr Square& operator+=(Square& s, Direction d) { return s = s + d; }
+constexpr Square& operator+=(Square& s, const Direction d) { return s = s + d; }
 
 // Additional operators to subtract a Direction to a Square
 // Could be invalid Square if int value of Direction is > int value of Square
-constexpr Square operator-(Square s, Direction d) {
-  return static_cast<Square>(int(s) - int(d));
+constexpr Square operator-(const Square s, const Direction d) {
+  return static_cast<Square>(static_cast<int>(s) - static_cast<int>(d));
 }
 
 // Additional operators to subtract a Direction to a Square
 // Could be invalid Square if int value of Direction is > int value of Square
-constexpr Square& operator-=(Square& s, Direction d) { return s = s - d; }
+constexpr Square& operator-=(Square& s, const Direction d) { return s = s - d; }
 
 ENABLE_FULL_OPERATORS_ON (Direction)
 

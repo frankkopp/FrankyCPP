@@ -15,7 +15,7 @@ set(FrankyCPPlib_SRCS
         chesscore/Position.cpp
         chesscore/MoveGenerator.cpp
         chesscore/Perft.cpp
-        chesscore/History.cpp                       
+        chesscore/History.cpp
 
         openingbook/OpeningBook.cpp openingbook/OpeningBook.h
 
@@ -42,7 +42,6 @@ target_precompile_headers(
         types/types.h
         common/misc.h
         common/stringutil.h
-        common/Semaphore.h
         common/ThreadPool.h
         common/Logging.h
         chesscore/Values.h
@@ -70,7 +69,7 @@ add_executable(${exeName} main.cpp)
 target_link_libraries(
         ${exeName}
         PUBLIC
-        FrankyCPPlib          
+        FrankyCPPlib
 )
 
 # copy config files and opening books to the build directories

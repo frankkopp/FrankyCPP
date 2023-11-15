@@ -29,13 +29,13 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 
+#include <algorithm>
 #include <cctype>
 #include <fstream>
+#include <future>
 #include <memory>
 #include <random>
 #include <string>
-#include <future>
-#include <algorithm>
 
 // enable for parallel processing of input lines
 #define PARALLEL_LINE_PROCESSING
@@ -86,7 +86,7 @@ void OpeningBook::initialize() {
   const auto lines = readFile(bookFilePath);
 
   // set root entry
-  auto iteratorPair = bookMap.emplace(rootZobristKey, rootZobristKey);
+  auto iteratorPair= bookMap.emplace(rootZobristKey, rootZobristKey);
   iteratorPair.first->second.counter = 0;
 
   // reads lines and retrieves game (lists of moves) and adds these to the book map
@@ -528,7 +528,7 @@ void OpeningBook::addGameToBook(const Moves& game) {
   // initialize lastKey with start position (aka root position)
   Key lastKey = rootZobristKey;
   // increase counter for root entry for each game
-  { // lock scope
+  {// lock scope
 #ifdef PARALLEL_LINE_PROCESSING
     std::lock_guard<std::mutex> bookLock(bookMutex);
 #endif
@@ -591,7 +591,7 @@ void OpeningBook::writeToBook(Move move, Key currentKey, Key lastKey) {
    Uses BOOST serialization to serialize the data to a binary file */
 void OpeningBook::saveToCache() {
   {// save data to archive
-    const auto start               = std::chrono::high_resolution_clock::now();
+    const auto start= std::chrono::high_resolution_clock::now();
     const std::string serCacheFile = bookFilePath + cacheExt;
     LOG__DEBUG(Logger::get().BOOK_LOG, "Saving book to cache file {}", serCacheFile);
     // create and open a binary archive for output
@@ -611,7 +611,7 @@ void OpeningBook::saveToCache() {
 bool OpeningBook::loadFromCache() {
   std::unordered_map<Key, BookEntry> binMap;
   {// load data from archive
-    const auto start               = std::chrono::high_resolution_clock::now();
+    const auto start= std::chrono::high_resolution_clock::now();
     const std::string serCacheFile = bookFilePath + cacheExt;
     LOG__DEBUG(Logger::get().BOOK_LOG, "Loading from cache file {} ({:L} kB)", serCacheFile, std::filesystem::file_size(serCacheFile) / 1'024);
     // create and open a binary archive for input
@@ -635,7 +635,7 @@ bool OpeningBook::loadFromCache() {
 
 /* checks if a cache file exists */
 bool OpeningBook::hasCache() const {
-  const std::basic_string<char> serCacheFile = bookFilePath + cacheExt;
+  const std::string serCacheFile = bookFilePath + cacheExt;
   if (!std::filesystem::exists(serCacheFile)) {
     LOG__DEBUG(Logger::get().BOOK_LOG, "No cache file {} available", serCacheFile);
     return false;

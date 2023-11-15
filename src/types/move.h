@@ -20,7 +20,6 @@
 #ifndef FRANKYCPP_MOVE_H
 #define FRANKYCPP_MOVE_H
 
-#include "piece.h"
 #include "piecetype.h"
 #include "value.h"
 
@@ -61,13 +60,11 @@ enum MoveType : unsigned int {
 };
 
 // checks if move type is a value of 0 - 3
-constexpr bool validMoveType(MoveType mt) {
-  return mt >= NORMAL && mt <= CASTLING;
+constexpr bool validMoveType(const MoveType mt) {
+  return mt <= CASTLING;
 }
 
-namespace {
-  inline auto moveTypeLabel = std::string("npec");
-}
+inline auto moveTypeLabel = std::string("npec");
 
 // single char label for the piece type (one of " npec")
 constexpr char str(MoveType mt) {
