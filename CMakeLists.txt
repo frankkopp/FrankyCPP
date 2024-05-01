@@ -203,9 +203,14 @@ set(BOOST_USE_STATIC_LIBS TRUE)
 set(BOOST_USE_STATIC_RUNTIME FALSE)
 set(BOOST_ALL_NO_LIB 0)
 set(BOOST_LIB_DIAGNOSTIC 1)
+set(Boost_NO_WARN_NEW_VERSIONS 1)
 find_package(Boost 1.72.0 REQUIRED COMPONENTS serialization program_options )
-message("BOOST found: " ${Boost_ROOT} " " ${Boost_INCLUDE_DIR})
-include_directories(${Boost_INCLUDE_DIR})
+if (Boost_FOUND)
+    message("BOOST found: " ${Boost_ROOT} " " ${Boost_INCLUDE_DIR})
+    include_directories(${Boost_INCLUDE_DIR})
+else ()
+    message(FATAL_ERROR "BOOST NOT found:")
+endif ()
 
 # include sub directories
 include_directories(

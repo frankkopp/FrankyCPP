@@ -87,13 +87,13 @@ struct BookEntry {
 class OpeningBook {
 public:
   /**
-     * Supported formats are currently:<br/>
-     * BookFormat::SIMPLE for files storing a game per line with from-square and
-     * to-square notation<br/>
-     * BookFormat::SAN for files with lines of moves in SAN notation<br/>
-     * BookFormat::PGN for PGN formatted games<br/>
-     * TODO: ABK format
-     */
+   * Supported formats are currently:<br/>
+   * BookFormat::SIMPLE for files storing a game per line with from-square and
+   * to-square notation<br/>
+   * BookFormat::SAN for files with lines of moves in SAN notation<br/>
+   * BookFormat::PGN for PGN formatted games<br/>
+   * TODO: ABK format
+   */
   enum class BookFormat {
     SIMPLE,
     SAN,
@@ -129,14 +129,14 @@ private:
 
 public:
   /**
-     * Creates an instance of an OpeningBook. Will not initialize (read book data).
-     * Call initialize() to read book data from file or cache.<br/>
-     * Supported formats are currently:<br/>
-     * BookFormat::SIMPLE for files storing a game per line with from-square and
-     * to-square notation<br/>
-     * BookFormat::SAN for files with lines of moves in SAN notation<br/>
-     * BookFormat::PGN for PGN formatted games<br/>
-     */
+   * Creates an instance of an OpeningBook. Will not initialize (read book data).
+   * Call initialize() to read book data from file or cache.<br/>
+   * Supported formats are currently:<br/>
+   * BookFormat::SIMPLE for files storing a game per line with from-square and
+   * to-square notation<br/>
+   * BookFormat::SAN for files with lines of moves in SAN notation<br/>
+   * BookFormat::PGN for PGN formatted games<br/>
+   */
   OpeningBook(std::string bookPath, BookFormat bFormat);
 
   /**
@@ -202,7 +202,8 @@ private:
   void writeToBook(Move move, Key currentKey, Key lastKey);
 
   // fast removal of unwanted parts of a PGN move section (not using slow std::regex)
-  public: static void cleanUpPgnMoveSection(std::string& str);
+public:
+  static void cleanUpPgnMoveSection(std::string& str);
 
   // std::thread::hardware_concurrency() is not reliable - on some platforms
   // it returns 0 - in this case we chose a default of 4
@@ -243,4 +244,4 @@ public:
 };
 
 
-#endif//FRANKYCPP_OPENINGBOOK_H
+#endif// FRANKYCPP_OPENINGBOOK_H
