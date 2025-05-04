@@ -49,12 +49,12 @@ protected:
 };
 
 TEST_F(SearchTreeSizeTest_Test, size_test) {
-  GTEST_SKIP();
+//  GTEST_SKIP();
 
   static constexpr int DEPTH = 8;
   static constexpr milliseconds MOVE_TIME{0};
   static constexpr int START_FEN = 0;
-  static constexpr int END_FEN   = 15;
+  static constexpr int END_FEN   = 50;
 
   // Prepare test fens
   // get sub vector of fens to test

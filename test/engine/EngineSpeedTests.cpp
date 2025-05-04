@@ -49,7 +49,7 @@ protected:
 
 // 5.8. All Features: NPS: 2.788.209
 // 5.8. All Features: NPS: 2.788.209 (+piece eval)
-//
+// 4.5.2025 GROOT: Search depth was 14(38) with 149.971.501 nodes visited. NPS = 5.000.489 nps
 TEST_F(EngineSpeedTests, npsTest) {
   SearchConfig::TT_SIZE_MB          = 64;
   SearchConfig::USE_BOOK            = false;

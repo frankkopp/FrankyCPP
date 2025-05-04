@@ -144,11 +144,11 @@ void UciHandler::uciNewGameCommand() const {
 void UciHandler::positionCommand(std::istringstream& inStream) {
 
   // retrieve additional command parameter
-  std::string token, fen;
+  std::string token;
   inStream >> token;
 
   // setup position with startpos or fen
-  fen = START_POSITION_FEN;
+  std::string fen = START_POSITION_FEN;
   if (token == "startpos") {// just keep default
     inStream >> token;
   }
@@ -172,7 +172,7 @@ void UciHandler::positionCommand(std::istringstream& inStream) {
     }
     // create moves and execute moves on position
     for (const std::string& move : moves) {
-      Move moveFromUci = pMoveGen->getMoveFromUci(*pPosition, move);
+      const Move moveFromUci = pMoveGen->getMoveFromUci(*pPosition, move);
       if (moveFromUci == MOVE_NONE) {
         uciError(fmt::format("Invalid move {}", move));
         return;
@@ -193,7 +193,7 @@ void UciHandler::goCommand(std::istringstream& inStream) {
   // Sanity check search limits
   // sanity check / minimum settings
   if (!(searchLimits.infinite || searchLimits.ponder || searchLimits.depth > 0 || searchLimits.nodes > 0 || searchLimits.mate > 0 || searchLimits.timeControl)) {
-    uciError(fmt::format("UCI command go malformed. No effective limits set {}", searchLimits.str()));
+    uciError(fmt::format("UCI command go malformed. No effective limits set: {}", searchLimits.str()));
     return;
   }
   // sanity check time control
@@ -223,7 +223,7 @@ void UciHandler::goCommand(std::istringstream& inStream) {
   pSearch->startSearch(*pPosition, searchLimits);
 }
 
-bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& searchLimits) {
+bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& searchLimits) const {
   std::string token;
 
   while (inStream >> token) {
@@ -383,14 +383,15 @@ void UciHandler::ponderHitCommand() const {
   pSearch->ponderhit();
 }
 
-void UciHandler::perftCommand(std::istringstream& inStream) {
+void UciHandler::perftCommand(std::istringstream& inStream) const {
   LOG__INFO(Logger::get().UCIHAND_LOG, "Start Perft Test");
   std::string token;
   inStream >> token;
-  int startDepth = 1;
+  int startDepth;
   try {
     startDepth = stoi(token);
   } catch (...) { /* Ignore */
+    startDepth = 1;
   }
   if (startDepth <= 0 || startDepth > MAX_DEPTH) {
     uciError(fmt::format("perft start depth not between 1 and {}. Was '{}'", MAX_DEPTH, token));
@@ -406,19 +407,18 @@ void UciHandler::perftCommand(std::istringstream& inStream) {
       uciError(fmt::format("perft end depth not between 1 and {}. Was '{}'", MAX_DEPTH, token));
     }
   }
-  std::thread perftThread([&](int s, int e) {
+  std::thread perftThread([&](const int s, const int e) {
     pPerft->perft(s, e, true);
     sendString("Perft finished.");
-  },
-                          startDepth, endDepth);
+  }, startDepth, endDepth);
   perftThread.detach();
 }
 
-void UciHandler::registerCommand() {
+void UciHandler::registerCommand() const {
   uciError("UCI Protocol Command: register not implemented!");
 }
 
-void UciHandler::debugCommand() {
+void UciHandler::debugCommand() const {
   uciError("UCI Protocol Command: debug not implemented!");
 }
 
@@ -435,7 +435,7 @@ void UciHandler::sendReadyOk() const {
   send("readyok");
 }
 
-void UciHandler::sendResult(Move bestMove, Move ponderMove) const {
+void UciHandler::sendResult(const Move bestMove, const Move ponderMove) const {
   send(fmt::format("bestmove {}{}", str(bestMove), (ponderMove ? " ponder " + str(ponderMove) : "")));
 }
 
@@ -443,26 +443,26 @@ void UciHandler::sendCurrentLine(const MoveList& moveList) const {
   send(fmt::format("currline {}", str(moveList)));
 }
 
-void UciHandler::sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t nodes,
-                                      uint64_t nps, milliseconds time, const MoveList& pv) const {
+void UciHandler::sendIterationEndInfo(int depth, int seldepth, const Value value, uint64_t nodes,
+                                      uint64_t nps, const milliseconds time, const MoveList& pv) const {
   send(fmt::format("info depth {} seldepth {} multipv 1 score {} nodes {} nps {} time {} pv {}",
-                   depth, seldepth, str(Value(value)), nodes, nps, time.count(), str(pv)));
+                   depth, seldepth, str(value), nodes, nps, time.count(), str(pv)));
 }
 
-void UciHandler::sendAspirationResearchInfo(int depth, int seldepth, Value value,
+void UciHandler::sendAspirationResearchInfo(int depth, int seldepth, const Value value,
                                             const std::string& boundString, uint64_t nodes, uint64_t nps,
-                                            milliseconds time, const MoveList& pv) const {
+                                            const milliseconds time, const MoveList& pv) const {
   send(fmt::format("info depth {} seldepth {} multipv 1 score {} {} nodes {} nps {} time {} pv {}",
-                   depth, seldepth, str(Value(value)), boundString, nodes, nps, time.count(), str(pv)));
+                   depth, seldepth, str(value), boundString, nodes, nps, time.count(), str(pv)));
 }
 
-void UciHandler::sendCurrentRootMove(Move currmove, std::size_t movenumber) const {
+void UciHandler::sendCurrentRootMove(const Move currmove, std::size_t movenumber) const {
   send(fmt::format("info currmove {} currmovenumber {}", str(currmove),
                    movenumber));
 }
 
 void UciHandler::sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps,
-                                  milliseconds time, int hashfull) const {
+                                  const milliseconds time, int hashfull) const {
   send(fmt::format("info depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
                    depth, seldepth, nodes, nps, time.count(), hashfull));
 }

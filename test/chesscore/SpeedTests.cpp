@@ -84,6 +84,10 @@ TEST_F(SpeedTests, TimingSetupPosition) {
 // DoMove/UndoMove took 10.335.845.600 ns for 50.000.000 iterations with 5 do/undo pairs
 // DoMove/UndoMove took 41 ns per do/undo pair
 // Positions per sec 24.187.667 pps
+// 4.5.2025 GROOT
+// DoMove/UndoMove took 4.709.415.200 ns for 50.000.000 iterations with 5 do/undo pairs
+// DoMove/UndoMove took 18 ns per do/undo pair
+// Positions per sec 53.085.147 pps
 
 TEST_F(SpeedTests, TimingDoMoveUndoMove) {
 
@@ -139,6 +143,11 @@ TEST_F(SpeedTests, TimingDoMoveUndoMove) {
 // Test took 1.425 ns per test
 // Test per sec 701.400 tps
 // 86.000.000 moves generated: 60.320.412 mps
+// 4.5.2025 GROOT
+// Test took 3.343.891.600 ns for 5.000.000 iterations
+// Test took 668 ns per test
+// Test per sec 1.495.263 tps
+// 430.000.000 moves generated: 128.592.685 mps
 TEST_F(SpeedTests, onDemandPseudoMoveGen) {
   MoveGenerator mg;
 
@@ -186,6 +195,10 @@ TEST_F(SpeedTests, onDemandPseudoMoveGen) {
 // Performing PERFT Test for Depth 7
 // Time         : 302.505 ms
 // NPS          : 10.564.755 nps
+// 4.5.2025 GROOT
+// Performing PERFT Test for Depth 7
+// Time         : 133.768 ms
+// NPS          : 23.891.199 nps
 TEST_F(SpeedTests, stdPerftOD) {
   MoveGenerator mg;
   Perft p;

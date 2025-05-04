@@ -91,7 +91,7 @@ private:
   FRIEND_TEST(UCITest, positionTest);
 
   void goCommand(std::istringstream& inStream);
-  bool readSearchLimits(std::istringstream& inStream, SearchLimits& searchLimits);
+  bool readSearchLimits(std::istringstream& inStream, SearchLimits& searchLimits) const;
   FRIEND_TEST(UCITest, goCommand);
   FRIEND_TEST(UCITest, goInfinite);
   FRIEND_TEST(UCITest, goPonder);
@@ -99,9 +99,9 @@ private:
 
   void stopCommand() const;
   void ponderHitCommand() const;
-  void perftCommand(std::istringstream& inStream);
-  void registerCommand();
-  void debugCommand();
+  void perftCommand(std::istringstream& inStream) const;
+  void registerCommand() const;
+  void debugCommand() const;
 
   void uciError(const std::string& msg) const;
   FRIEND_TEST(UCITest, goError);

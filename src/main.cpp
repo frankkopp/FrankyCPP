@@ -102,7 +102,7 @@ int main(int argc, char* argv[]) {
       return 0;
     }
 
-    //     read config file
+    // read config file
     std::ifstream ifs(config_file.c_str());
     if (!ifs) {
       std::cerr << "could not open config file: " << config_file << "\n";

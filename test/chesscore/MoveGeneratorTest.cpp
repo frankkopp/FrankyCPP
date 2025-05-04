@@ -766,6 +766,11 @@ using namespace std::chrono;
 
 // 8.6.: Loaner Mac:
 // 480.000.000 moves generated: 84.774.069 mps
+// 4.5.2025 GROOT
+// Test took 2.822.184.200 ns for 10.000.000 iterations
+// Test took 282 ns per test
+// Test per sec 3.543.354 tps
+// 480.000.000 moves generated: 170.081.031 mps
 TEST_F(MoveGenTest, PseudoMoveGenSpeedTest) {
   GTEST_SKIP();
 #ifndef NDEBUG

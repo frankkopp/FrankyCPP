@@ -132,13 +132,66 @@ set(GIT_EXECUTABLE)
 find_package(Git)
 if (GIT_FOUND)
     message("GIT found: ${GIT_EXECUTABLE}")
-elseif ()
+else()
     message(FATAL_ERROR "GIT NOT found:")
 endif ()
 
 set(FETCHCONTENT_QUIET OFF)
 set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 include(FetchContent)
+
+# Boost - needs to be installed - done via vcpkg
+#set(BOOST_DEBUG FALSE)
+#set(BOOST_USE_MULTITHREADED TRUE)
+#set(BOOST_USE_STATIC_LIBS TRUE)
+#set(BOOST_USE_STATIC_RUNTIME FALSE)
+#set(BOOST_ALL_NO_LIB 0)
+#set(BOOST_LIB_DIAGNOSTIC 1)
+#set(Boost_NO_WARN_NEW_VERSIONS 1)
+#find_package(Boost 1.72.0 REQUIRED COMPONENTS serialization program_options CONFIG)
+#if (Boost_FOUND)
+#    message("BOOST found: " ${Boost_ROOT} " " ${Boost_INCLUDE_DIRS})
+#    include_directories(${Boost_INCLUDE_DIRS})
+#else ()
+#    message(FATAL_ERROR "BOOST NOT found:")
+#endif ()
+#include_directories(${Boost_INCLUDE_DIRS})
+
+#find_package(Boost REQUIRED COMPONENTS program_options)
+#target_link_libraries(main PRIVATE Boost::program_options)
+#
+#find_package(Boost REQUIRED COMPONENTS serialization)
+#target_link_libraries(main PRIVATE Boost::serialization)
+
+# Boost - needed for program_options and serialization
+if(POLICY CMP0167)
+    cmake_policy(SET CMP0167 OLD)
+endif()
+
+# Then later in your Boost section:
+message("Finding Boost...")
+set(Boost_NO_WARN_NEW_VERSIONS 1)
+set(Boost_USE_STATIC_LIBS ON)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
+
+# Explicitly set Boost root to where vcpkg installed it
+set(BOOST_ROOT "${CMAKE_CURRENT_BINARY_DIR}/vcpkg_installed/x64-windows")
+set(Boost_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/vcpkg_installed/x64-windows/include")
+set(BOOST_LIBRARYDIR "${CMAKE_CURRENT_BINARY_DIR}/vcpkg_installed/x64-windows/lib")
+
+# This is important - use MODULE instead of CONFIG to use CMake's built-in FindBoost
+find_package(Boost 1.72.0 REQUIRED COMPONENTS program_options serialization)
+
+if (Boost_FOUND)
+    message("BOOST found: version ${Boost_VERSION}")
+    message("BOOST include dirs: ${Boost_INCLUDE_DIRS}")
+    include_directories(${Boost_INCLUDE_DIRS})
+    link_directories(${Boost_LIBRARY_DIRS})
+else()
+    message(FATAL_ERROR "BOOST NOT found")
+endif()
+
 
 # FMT
 message("Downloading/Update FMT")
@@ -195,22 +248,6 @@ FetchContent_MakeAvailable(googlebenchmark)
 include_directories(
         ${googlebenchmark_SOURCE_DIR}/include
 )
-
-# Boost - needs to be installed - done via vcpkg
-set(BOOST_DEBUG FALSE)
-set(BOOST_USE_MULTITHREADED TRUE)
-set(BOOST_USE_STATIC_LIBS TRUE)
-set(BOOST_USE_STATIC_RUNTIME FALSE)
-set(BOOST_ALL_NO_LIB 0)
-set(BOOST_LIB_DIAGNOSTIC 1)
-set(Boost_NO_WARN_NEW_VERSIONS 1)
-find_package(Boost 1.72.0 REQUIRED COMPONENTS serialization program_options )
-if (Boost_FOUND)
-    message("BOOST found: " ${Boost_ROOT} " " ${Boost_INCLUDE_DIR})
-    include_directories(${Boost_INCLUDE_DIR})
-else ()
-    message(FATAL_ERROR "BOOST NOT found:")
-endif ()
 
 # include sub directories
 include_directories(

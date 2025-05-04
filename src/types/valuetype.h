@@ -31,7 +31,7 @@ enum ValueType : uint_fast8_t {
   // the node for the value has NOT found a value > alpha so alpha is
   // upper bound (value could be worse)
   ALPHA = 2,
-  // the node for the value has found a refutation (value > beta( and has
+  // the node for the value has found a refutation (value > beta) and has
   // been cut off. Value is a lower bound (could be better).
   BETA = 3,
 };
