@@ -142,7 +142,7 @@ public:
   void isReady();
 
   // starts the search in a separate thread with the given search limits
-  void startSearch(Position p, SearchLimits sl);
+  void startSearch(const Position& p, SearchLimits sl);
 
   // Stops a running search gracefully - e.g. returns the best move found so far
   void stopSearch();
@@ -187,11 +187,11 @@ private:
 
   // Called after starting the search in a new thread. Configures the search
   // and eventually calls iterativeDeepening. After the search it takes the
-  // result to sends it to the UCI engine.
+  // result to send it to the UCI engine.
   void run();
 
   // Iterative Deepening:
-  // It works as follows: the program starts with a one ply search,
+  // It works as follows: the program starts with a one-ply search,
   // then increments the search depth and does another search. This
   // process is repeated until the time allocated for the search is
   // exhausted. In case of an unfinished search, the current best
@@ -204,14 +204,14 @@ private:
   SearchResult iterativeDeepening(Position& p);
 
   // Aspiration Search
-  // AspirationSearch tries to achieve more beta cut offs by searching with a narrow
+  // AspirationSearch tries to achieve more beta cutoffs by searching with a narrow
   // search window around an expected value for the search. We establish
-  // a start value by doing a 3 ply normal search and expand the search window in
-  // in several steps to the maximal window if search value returns outside of the window.
+  // a start value by doing a 3-ply normal search and expand the search window in
+  //  several steps to the maximal window if the search value returns outside the window.
   Value aspirationSearch(Position& p, Depth depth, Value value);
 
   // rootSearch starts the actual recursive alpha beta search with the root moves for the first ply.
-  // As root moves are treated a little different this separate function supports readability
+  // As root moves are treated a little differently, this separate function supports readability
   // as mixing it with the normal search would require quite some "if ply==0" statements.
   Value rootSearch(Position& p, Depth depth, Value alpha, Value beta);
 
@@ -219,23 +219,23 @@ private:
   // it will be called recursively until the remaining depth == 0 and we would
   // enter quiescence search. Search consumes about 60% of the search time and
   // all major prunings are done here. Quiescence search uses about 40% of the
-  // search time and has less options for pruning as not all moves are searched.
+  // search time and has fewer options for pruning as not all moves are searched.
   Value search(Position& p, Depth depth, Depth ply, Value alpha, Value beta, Node_Type isPv, Do_Null doNull);
 
-  // qsearch is a simplified search to counter the horizon effect in depth based
+  // qsearch is a simplified search to counter the horizon effect in depth-based
   // searches. It continues the search into deeper branches as long as there are
-  // so called non quiet moves (usually capture, checks, promotions). Only if the
-  // position is relatively quiet we will compute an evaluation of the position
+  // so-called non-quiet moves (usually capture, checks, promotions). Only if the
+  // position is relatively quiet, we will compute an evaluation of the position
   // to return to the previous depth.
-  // Look for non quiet moves is supported be the move generator which only
+  // Look for non-quiet moves is supported be the move generator which only
   // generates captures or promotions in qsearch (when not in check) and also
   // by SEE (Static Exchange Evaluation) to determine winning captured sequences.
   Value qsearch(Position& p, Depth ply, Value alpha, Value beta, Node_Type isPv);
 
-  // After expanding the search to the required depth and all non quiet moves were
-  // generated call the evaluation heuristic on the position.
+  // After expanding the search to the required depth and all non-quiet moves were
+  // generated, call the evaluation heuristic on the position.
   // This gives us a numerical value of this quiet position which we will return
-  // back to the search.
+  // to the search.
   Value evaluate(Position& p);
 
   // reduce the number of moves searched in quiescence search by trying
@@ -245,8 +245,8 @@ private:
   // storeTT stores a position into the TT
   void storeTt(Position& p, Depth depth, Depth ply, Move move, Value value, ValueType valueType, Value eval);
 
-  // savePV adds the given move as first move to a dest move list and the appends
-  // all src moves to dest. Dest will be cleared before the the append.
+  // savePV adds the given move as the first move to a dest move list and then appends
+  // all src moves to dest. Dest will be cleared before the appending.
   static void savePV(Move move, MoveList& src, MoveList& dest);
 
   // correct the value for mate distance when storing to TT
@@ -256,7 +256,7 @@ private:
   static Value valueFromTt(Value value, Depth ply);
 
   // getPVLine fills the given pv move list with the pv move starting from the given
-  // depth as long as these position are in the TT
+  // depth as long as these positions are in the TT.
   // This is used when we retrieve a value and move from the TT and would not get a PV
   // line otherwise.
   void getPvLine(Position& p, MoveList& pvList, Depth depth);
@@ -265,7 +265,7 @@ private:
   // reached a potential maximum set in the search limits.
   bool stopConditions();
 
-  // setupSearchLimits reports to log on search limits for the search
+  // setupSearchLimits reports logging on search limits for the search
   // and sets up time control.
   void setupSearchLimits(Position& p, SearchLimits& sl);
 
@@ -274,8 +274,8 @@ private:
   static milliseconds setupTimeControl(Position& position, SearchLimits& limits);
   FRIEND_TEST(SearchTest, setupTime);
 
-  // addExtraTime certain situations might call for a extension or reduction
-  // of the given time limit for the search. This function add/subtracts
+  // addExtraTime certain situations might call for an extension or reduction
+  // of the given time limit for the search. This function adds/subtracts
   // a portion (%) of the current time limit.
   //  Example:
   //  f = 1.0 --> no change in search time
@@ -285,7 +285,7 @@ private:
   FRIEND_TEST(SearchTest, extraTime);
 
   // startTimer starts a thread which regularly checks the elapsed time against
-  // the time limit and extra time given. If time limit is reached this will set
+  // the time limit and extra time given. If the time limit is reached, this will set
   // the stopFlag to true and terminate itself.
   void startTimer();
   FRIEND_TEST(SearchTest, startTimer);
