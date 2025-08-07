@@ -101,6 +101,7 @@ enum Move : uint_fast32_t {
 
 // creates a move
 constexpr Move createMove(Square from, Square to, MoveType mt = NORMAL, PieceType promType = KNIGHT) {
+  assert(validSquare(from) && validSquare(to));
   if (promType < KNIGHT) promType = KNIGHT;
   // promType will be reduced to 2 bits (4 values) Knight, Bishop, Rook, Queen
   // therefore we subtract the Knight value from the promType to get
@@ -113,6 +114,7 @@ constexpr Move createMove(Square from, Square to, MoveType mt = NORMAL, PieceTyp
 
 // creates a move
 constexpr Move createMove(Square from, Square to, MoveType mt, Value value) {
+  assert(validSquare(from) && validSquare(to));
   return static_cast<Move>(to |
                            from << MoveShifts::FROM_SHIFT |
                            mt |
@@ -121,6 +123,7 @@ constexpr Move createMove(Square from, Square to, MoveType mt, Value value) {
 
 // creates a move
 constexpr Move createMove(Square from, Square to, MoveType mt, PieceType promType, Value value) {
+  assert(validSquare(from) && validSquare(to));
   if (promType < KNIGHT) promType = KNIGHT;
   // promType will be reduced to 2 bits (4 values) Knight, Bishop, Rook, Queen
   // therefore we subtract the Knight value from the promType to get
@@ -176,8 +179,9 @@ inline Move setValueOf(Move& m, Value v) {
 
 constexpr bool validMove(Move m) {
   return m != MOVE_NONE &&
-         validSquare(fromSquare(m)) &&
-         validSquare(toSquare(m)) &&
+         // validSquare(fromSquare(m)) &&
+         // validSquare(toSquare(m)) &&
+         // due to the way we encode the move, we can not have an invalid square (6 bits = 0-63)
          validPieceType(promotionTypeOf(m)) &&
          validMoveType(typeOf(m)) &&
          (valueOf(m) == VALUE_NONE || validValue(valueOf(m)));

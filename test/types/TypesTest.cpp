@@ -319,3 +319,15 @@ TEST_F(TypesTest, ltgt) {
   EXPECT_LT(1s, 1'000'000'001ns);
   EXPECT_GT(1s, 999'000'000ns);
 }
+
+TEST_F(TypesTest, CenterDistance) {
+  ASSERT_EQ(Squares::centerDistance[Square::SQ_D4], 0);
+  ASSERT_EQ(Squares::centerDistance[Square::SQ_A1], 3);
+  ASSERT_EQ(Squares::centerDistance[Square::SQ_H8], 3);
+}
+
+TEST_F(TypesTest, SquareDistance) {
+  ASSERT_EQ(Squares::squareDistance[Square::SQ_A1][Square::SQ_A1], 0);
+  ASSERT_EQ(Squares::squareDistance[Square::SQ_A1][Square::SQ_H8], 7);
+  ASSERT_EQ(Squares::squareDistance[Square::SQ_D4][Square::SQ_E5], 1);
+}
