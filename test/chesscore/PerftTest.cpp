@@ -42,50 +42,22 @@ protected:
   void TearDown() override {}
 };
 
-TEST_F(PerftTest, stdPerftOD) {
-  MoveGenerator mg;
-  Position position;
-  Perft p;
-
-  cout << "Standard PERFT OnDemand Test" << endl;
-  cout << "==============================" << endl;
-
-  // @formatter:off
-  const uint64_t results[10][8] = {
-    //N                 Nodes            Captures              EP             Checks              Mates           Castles      Promotions
-    { 0,                 1ULL,               0ULL,           0ULL,              0ULL,              0ULL,             0ULL ,          0ULL },
-    { 1,                20ULL,               0ULL,           0ULL,              0ULL,              0ULL,             0ULL ,          0ULL },
-    { 2,               400ULL,               0ULL,           0ULL,              0ULL,              0ULL,             0ULL ,          0ULL },
-    { 3,             8'902ULL,              34ULL,           0ULL,             12ULL,              0ULL,             0ULL ,          0ULL },
-    { 4,           197'281ULL,           1'576ULL,           0ULL,            469ULL,              8ULL,             0ULL ,          0ULL },
-    { 5,         4'865'609ULL,          82'719ULL,         258ULL,         27'351ULL,            347ULL,             0ULL ,          0ULL },
-    { 6,       119'060'324ULL,       2'812'008ULL,       5'248ULL,        809'099ULL,         10'828ULL,             0ULL ,          0ULL },
-    { 7,     3'195'901'860ULL,     108'329'926ULL,     319'617ULL,     33'103'848ULL,        435'767ULL,       883'453ULL ,          0ULL },
-    { 8,    84'998'978'956ULL,   3'523'740'106ULL,   7'187'977ULL,    968'981'593ULL,      9'852'036ULL,    23'605'205ULL ,          0ULL },
-    { 9, 2'439'530'234'167ULL, 125'208'536'153ULL, 319'496'827ULL, 36'095'901'903ULL,    400'191'963ULL, 1'784'356'000ULL , 17'334'376ULL }
-  };
-  // @formatter:on
-
-  int startDepth = 1;
-  int maxDepth = 6;
-#ifndef NDEBUG
-  maxDepth = 4;
-#endif
-
-  for (int i = startDepth; i <= maxDepth; i++) {
-    p.perft(i);
-    NEWLINE;
-    EXPECT_EQ(results[i][1], p.getNodes());
-    EXPECT_EQ(results[i][2], p.getCaptureCounter());
-    EXPECT_EQ(results[i][3], p.getEnpassantCounter());
-    EXPECT_EQ(results[i][4], p.getCheckCounter());
-    EXPECT_EQ(results[i][5], p.getCheckMateCounter());
-    EXPECT_EQ(results[i][6], p.getCastleCounter());
-    EXPECT_EQ(results[i][7], p.getPromotionCounter());
-  }
-  cout << "==============================" << endl;
-}
-
+// 13.9.25
+// Performing PERFT Test for Depth 7
+// FEN: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+// -----------------------------------------
+// Time         : 148.832 ms
+// NPS          : 21.473.072 nps
+// Results:
+//    Nodes     : 3.195.901.860
+//    Captures  : 108.329.926
+//    EnPassant : 319.617
+//    Checks    : 33.103.848
+//    CheckMates: 435.767
+//    Castles   : 883.453
+//    Promotions: 0
+// -----------------------------------------
+// Finished PERFT Test for Depth 7
 TEST_F(PerftTest, stdPerft) {
   MoveGenerator mg;
   Perft p;
@@ -115,6 +87,66 @@ TEST_F(PerftTest, stdPerft) {
 #endif
 
   for (int i = 1; i <= maxDepth; i++) {
+    p.perft(i);
+    NEWLINE;
+    EXPECT_EQ(results[i][1], p.getNodes());
+    EXPECT_EQ(results[i][2], p.getCaptureCounter());
+    EXPECT_EQ(results[i][3], p.getEnpassantCounter());
+    EXPECT_EQ(results[i][4], p.getCheckCounter());
+    EXPECT_EQ(results[i][5], p.getCheckMateCounter());
+    EXPECT_EQ(results[i][6], p.getCastleCounter());
+    EXPECT_EQ(results[i][7], p.getPromotionCounter());
+  }
+  cout << "==============================" << endl;
+}
+
+// 13.9.25
+// Performing PERFT Test for Depth 7
+// FEN: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+// -----------------------------------------
+// Time         : 135.518 ms
+// NPS          : 23.582.684 nps
+// Results:
+//    Nodes     : 3.195.901.860
+//    Captures  : 108.329.926
+//    EnPassant : 319.617
+//    Checks    : 33.103.848
+//    CheckMates: 435.767
+//    Castles   : 883.453
+//    Promotions: 0
+// -----------------------------------------
+// Finished PERFT Test for Depth 7
+TEST_F(PerftTest, stdPerftOD) {
+  MoveGenerator mg;
+  Perft p;
+
+  cout << "Standard PERFT OnDemand Test" << endl;
+  cout << "==============================" << endl;
+
+  // @formatter:off
+  const uint64_t results[10][8] = {
+    //N                 Nodes            Captures              EP             Checks              Mates           Castles      Promotions
+    { 0,                 1ULL,               0ULL,           0ULL,              0ULL,              0ULL,             0ULL ,          0ULL },
+    { 1,                20ULL,               0ULL,           0ULL,              0ULL,              0ULL,             0ULL ,          0ULL },
+    { 2,               400ULL,               0ULL,           0ULL,              0ULL,              0ULL,             0ULL ,          0ULL },
+    { 3,             8'902ULL,              34ULL,           0ULL,             12ULL,              0ULL,             0ULL ,          0ULL },
+    { 4,           197'281ULL,           1'576ULL,           0ULL,            469ULL,              8ULL,             0ULL ,          0ULL },
+    { 5,         4'865'609ULL,          82'719ULL,         258ULL,         27'351ULL,            347ULL,             0ULL ,          0ULL },
+    { 6,       119'060'324ULL,       2'812'008ULL,       5'248ULL,        809'099ULL,         10'828ULL,             0ULL ,          0ULL },
+    { 7,     3'195'901'860ULL,     108'329'926ULL,     319'617ULL,     33'103'848ULL,        435'767ULL,       883'453ULL ,          0ULL },
+    { 8,    84'998'978'956ULL,   3'523'740'106ULL,   7'187'977ULL,    968'981'593ULL,      9'852'036ULL,    23'605'205ULL ,          0ULL },
+    { 9, 2'439'530'234'167ULL, 125'208'536'153ULL, 319'496'827ULL, 36'095'901'903ULL,    400'191'963ULL, 1'784'356'000ULL , 17'334'376ULL }
+  };
+  // @formatter:on
+
+  constexpr int startDepth = 1;
+#ifndef NDEBUG
+  maxDepth = 4;
+#else
+  constexpr int maxDepth   = 7;
+#  endif
+
+  for (int i = startDepth; i <= maxDepth; i++) {
     p.perft(i);
     NEWLINE;
     EXPECT_EQ(results[i][1], p.getNodes());
