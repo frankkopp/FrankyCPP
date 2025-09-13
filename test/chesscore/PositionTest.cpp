@@ -1100,3 +1100,29 @@ TEST_F(PositionTest, debug) {
   p.doMove(m);
   fprintln(p.strFen());
 }
+
+TEST_F(PositionTest, PrintZobristConstants) {
+  Position::init();
+
+  std::cout << "Zobrist::pieces:" << std::endl;
+  for (int pc = 0; pc < PIECE_LENGTH; ++pc) {
+    for (int sq = 0; sq < SQ_LENGTH; ++sq) {
+      std::cout << "pieces[" << pc << "][" << sq << "] = "
+                << Zobrist::pieces[pc][sq] << std::endl;
+    }
+  }
+
+  std::cout << "Zobrist::castlingRights:" << std::endl;
+  for (int cr = 0; cr < CR_LENGTH; ++cr) {
+    std::cout << "castlingRights[" << cr << "] = "
+              << Zobrist::castlingRights[cr] << std::endl;
+  }
+
+  std::cout << "Zobrist::enPassantFile:" << std::endl;
+  for (int f = 0; f < FILE_LENGTH; ++f) {
+    std::cout << "enPassantFile[" << f << "] = "
+              << Zobrist::enPassantFile[f] << std::endl;
+  }
+
+  std::cout << "Zobrist::nextPlayer = " << Zobrist::nextPlayer << std::endl;
+}

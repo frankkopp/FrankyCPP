@@ -182,6 +182,13 @@ void MoveGenerator::setHistoryData(History* pHistory) {
   historyData = pHistory;
 }
 
+bool MoveGenerator::validateMove(const Position& position, Move move) {
+  const Move moveOf1 = moveOf(move);
+  if (!moveOf1) return false;
+  const MoveList* lm = generateLegalMoves(position, GenAll);
+  return std::find_if(lm->begin(), lm->end(), [&](Move m) { return (moveOf1 == moveOf(m)); }) != lm->end();
+}
+
 bool MoveGenerator::hasLegalMove(const Position& position) {
   // To determine if we have at least one legal move we only have to find
   // one legal move. We search for any KING, PAWN, KNIGHT, BISHOP, ROOK, QUEEN move
@@ -202,21 +209,23 @@ bool MoveGenerator::hasLegalMove(const Position& position) {
     if (position.isLegalMove(createMove(kingSquare, toSquare))) return true;
   }
 
-  // PAWN
+  // PAWNS
+
   // pawns - check step one to unoccupied squares
   tmpMoves = shiftBb(pawnPush(us), ourPawns) & ~position.getOccupiedBb();
-  // pawns double - check step two to unoccupied squares
-  Bitboard tmpMovesDouble = shiftBb(pawnPush(us), tmpMoves & Bitboards::rankBb[pawnDoubleRank(us)]) & ~position.getOccupiedBb();
-  // double pawn steps
-  while (tmpMovesDouble) {
-    const Square toSquare   = popLSB(tmpMovesDouble);
-    const Square fromSquare = toSquare + 2 * pawnPush(them);
-    if (position.isLegalMove(createMove(fromSquare, toSquare))) return true;
-  }
-  // normal single pawn steps
+  Bitboard tmpMovesDouble = shiftBb(pawnPush(us), tmpMoves &
+    Bitboards::rankBb[pawnDoubleRank(us)]) & ~position.getOccupiedBb();
+
   while (tmpMoves) {
     const Square toSquare   = popLSB(tmpMoves);
     const Square fromSquare = toSquare + pawnPush(them);
+    if (position.isLegalMove(createMove(fromSquare, toSquare))) return true;
+  }
+
+  // pawns double - check step two to unoccupied squares
+  while (tmpMovesDouble) {
+    const Square toSquare   = popLSB(tmpMovesDouble);
+    const Square fromSquare = toSquare + 2 * pawnPush(them);
     if (position.isLegalMove(createMove(fromSquare, toSquare))) return true;
   }
 
@@ -272,13 +281,6 @@ bool MoveGenerator::hasLegalMove(const Position& position) {
 
   // no move found
   return false;
-}
-
-bool MoveGenerator::validateMove(const Position& position, Move move) {
-  const Move moveOf1 = moveOf(move);
-  if (!moveOf1) return false;
-  const MoveList* lm = generateLegalMoves(position, GenAll);
-  return std::find_if(lm->begin(), lm->end(), [&](Move m) { return (moveOf1 == moveOf(m)); }) != lm->end();
 }
 
 Move MoveGenerator::getMoveFromUci(const Position& position, const std::string& uciMove) {
@@ -706,7 +708,6 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
     while (promMoves) {
       const Square toSquare   = popLSB(promMoves);
       const Square fromSquare = toSquare + pawnPush(~nextPlayer);
-      // value for non captures is lowered by 10k
       // value is done manually for sorting of queen prom first, then knight and others
       pMoves->push_back(createMove(fromSquare, toSquare, PROMOTION, QUEEN, 2000 - valueOf(PAWN) + valueOf(QUEEN)));
       pMoves->push_back(createMove(fromSquare, toSquare, PROMOTION, KNIGHT, 1500 - valueOf(PAWN) + valueOf(KNIGHT)));

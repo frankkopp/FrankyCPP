@@ -31,8 +31,8 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 # this needs to be added to CLION cmake options
 # -G Ninja
 message("Compiler Settings: MSVC")
-set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /favor:INTEL64 /Gr /W4 /w14640 /GR /EHsc /arch:AVX2 /MP")
-set(CMAKE_CXX_FLAGS_RELEASE "/Qpar /O2 /Ob3 /MD /DNDEBUG")
+set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /favor:INTEL64 /Gr /W4 /w14640 /GR /EHsc /arch:AVX2 /MP /Oi /Ot /GL")
+set(CMAKE_CXX_FLAGS_RELEASE "/Qpar /O2 /Ob3 /Oy /Oi /Ot /GT /Gw /Gy /GL /LTCG /MD /DNDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "/Od /Ob0 /MDd /Zi /RTC1 /permissive-")
 
 # std::execution lib for parallel std operations. Not available on all platforms

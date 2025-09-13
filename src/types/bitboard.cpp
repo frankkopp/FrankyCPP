@@ -26,7 +26,7 @@
 // Bitboard functions
 // //////////////////////////////////
 
-Bitboard getAttacksBb(const PieceType pt, const Square sq, const Bitboard occupied) {
+inline Bitboard getAttacksBb(const PieceType pt, const Square sq, const Bitboard occupied) {
   switch (pt) {
     case BISHOP:
       return Bitboards::bishopMagics[sq].attacks[Bitboards::bishopMagics[sq].index(occupied)];

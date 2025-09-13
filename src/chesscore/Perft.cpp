@@ -25,21 +25,13 @@
 #include "chesscore/MoveGenerator.h"
 #include "chesscore/Position.h"
 
-Perft::Perft() {
-  fen = START_POSITION_FEN;
-}
+Perft::Perft() { fen = START_POSITION_FEN; }
 
-Perft::Perft(const std::string& f) {
-  fen = f;
-}
+Perft::Perft(const std::string& f) { fen = f; }
 
-void Perft::perft(int maxDepth) {
-  perft(maxDepth, false);
-}
+void Perft::perft(int maxDepth) { perft(maxDepth, false); }
 
-void Perft::stop() {
-  stopFlag = true;
-}
+void Perft::stop() { stopFlag = true; }
 
 void Perft::perft(int startDepth, int endDepth, bool onDemand) {
   stopFlag = false;
@@ -57,9 +49,7 @@ void Perft::perft(int maxDepth, bool onDemand) {
   resetCounter();
 
   Position position;
-  try {
-    position = Position(fen);
-  } catch (std::invalid_argument& e) {
+  try { position = Position(fen); } catch (std::invalid_argument& e) {
     std::cerr << fmt::format("Fen for perft invalid: {}", e.what()) << std::endl;
     return;
   }
@@ -81,12 +71,8 @@ void Perft::perft(int maxDepth, bool onDemand) {
   uint64_t result;
   auto start = std::chrono::high_resolution_clock::now();
 
-  if (onDemand) {
-    result = miniMaxOD(maxDepth, position, mg);
-  }
-  else {
-    result = miniMax(maxDepth, position, mg);
-  }
+  if (onDemand) { result = miniMaxOD(maxDepth, position, mg); }
+  else { result = miniMax(maxDepth, position, mg); }
 
   if (stopFlag) {
     std::cout << "Perft stopped.";
@@ -128,9 +114,7 @@ uint64_t Perft::miniMaxOD(int depth, Position& position, MoveGenerator* pMg) {
     //    fprintln("Last: {:5s} Move: {:5s}   Fen: {:s} ", str(position.getLastMove()), str(move), position.strFen());
     if (depth > 1) {
       position.doMove(move);
-      if (position.wasLegalMove()) {
-        totalNodes += miniMaxOD(depth - 1, position, pMg);
-      }
+      if (position.wasLegalMove()) { totalNodes += miniMaxOD(depth - 1, position, pMg); }
       position.undoMove();
     }
     else {
@@ -145,22 +129,16 @@ uint64_t Perft::miniMaxOD(int depth, Position& position, MoveGenerator* pMg) {
         // castling
         else if (typeOf(move) == CASTLING) {
           castleCounter++;
-//          fprintln("No: {:2d} Last: {:5s} Move: {:5s}   Fen: {:s} ", castleCounter, str(position.getLastMove()), str(move), position.strFen());
+          //          fprintln("No: {:2d} Last: {:5s} Move: {:5s}   Fen: {:s} ", castleCounter, str(position.getLastMove()), str(move), position.strFen());
         }
-        else if (typeOf(move) == PROMOTION) {
-          promotionCounter++;
-        }
+        else if (typeOf(move) == PROMOTION) { promotionCounter++; }
         // capture
-        if (position.getLastCapturedPiece() != PIECE_NONE) {
-          captureCounter++;
-        }
+        if (position.getLastCapturedPiece() != PIECE_NONE) { captureCounter++; }
         // check
         if (position.hasCheck()) {
           checkCounter++;
           //  mate
-          if (!MoveGenerator::hasLegalMove(position)) {
-            checkMateCounter++;
-          }
+          if (!MoveGenerator::hasLegalMove(position)) { checkMateCounter++; }
         }
       }
       position.undoMove();
@@ -180,14 +158,10 @@ uint64_t Perft::miniMax(int depth, Position& position, MoveGenerator* pMg) {
   // moves to search recursively
   MoveList moves = *pMg[depth].generatePseudoLegalMoves(position, GenAll);
   for (Move move : moves) {
-    if (stopFlag) {
-      return 0;
-    }
+    if (stopFlag) { return 0; }
     if (depth > 1) {
       position.doMove(move);
-      if (position.wasLegalMove()) {
-        totalNodes += miniMaxOD(depth - 1, position, pMg);
-      }
+      if (position.wasLegalMove()) { totalNodes += miniMaxOD(depth - 1, position, pMg); }
       position.undoMove();
     }
     else {
@@ -200,23 +174,15 @@ uint64_t Perft::miniMax(int depth, Position& position, MoveGenerator* pMg) {
           captureCounter++;
         }
         // castling
-        else if (typeOf(move) == CASTLING) {
-          castleCounter++;
-        }
-        else if (typeOf(move) == PROMOTION) {
-          promotionCounter++;
-        }
+        else if (typeOf(move) == CASTLING) { castleCounter++; }
+        else if (typeOf(move) == PROMOTION) { promotionCounter++; }
         // capture
-        if (position.getLastCapturedPiece() != PIECE_NONE) {
-          captureCounter++;
-        }
+        if (position.getLastCapturedPiece() != PIECE_NONE) { captureCounter++; }
         // check
         if (position.hasCheck()) {
           checkCounter++;
           //  mate
-          if (!MoveGenerator::hasLegalMove(position)) {
-            checkMateCounter++;
-          }
+          if (!MoveGenerator::hasLegalMove(position)) { checkMateCounter++; }
         }
       }
       position.undoMove();
@@ -229,9 +195,7 @@ void Perft::perft_divide(int maxDepth, bool onDemand) {
   resetCounter();
 
   Position position;
-  try {
-    position = Position(fen);
-  } catch (std::invalid_argument& e) {
+  try { position = Position(fen); } catch (std::invalid_argument& e) {
     std::cerr << fmt::format("Fen for perft invalid: {}", e.what()) << std::endl;
     return;
   }
@@ -248,14 +212,12 @@ void Perft::perft_divide(int maxDepth, bool onDemand) {
   os.clear();
 
   uint64_t result = 0;
-  auto start      = std::chrono::high_resolution_clock::now();
+  const auto start      = high_resolution_clock::now();
 
   // moves to search recursively
-  MoveList moves = *mg[maxDepth].generatePseudoLegalMoves(position, GenAll);
-  for (Move move : moves) {
-    if (stopFlag) {
-      return;
-    }
+  const MoveList moves = *mg[maxDepth].generatePseudoLegalMoves(position, GenAll);
+  for (const Move move : moves) {
+    if (stopFlag) { return; }
     //  Move move = createMove<PROMOTION>("c7c8n");
     // Iterate over moves
     uint64_t totalNodes = 0L;
@@ -265,9 +227,7 @@ void Perft::perft_divide(int maxDepth, bool onDemand) {
       // only go into recursion if move was legal
       if (position.wasLegalMove()) {
         if (onDemand) { totalNodes = miniMaxOD(maxDepth - 1, position, mg); }
-        else {
-          totalNodes = miniMax(maxDepth - 1, position, mg);
-        }
+        else { totalNodes = miniMax(maxDepth - 1, position, mg); }
         result += totalNodes;
       }
       position.undoMove();
@@ -297,20 +257,22 @@ void Perft::perft_divide(int maxDepth, bool onDemand) {
     os.clear();
   }
 
-  auto finish       = std::chrono::high_resolution_clock::now();
-  uint64_t duration = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
+  const auto finish       = high_resolution_clock::now();
+  const uint64_t duration = std::chrono::duration_cast<milliseconds>(finish - start).count();
 
   nodes = result;
 
   os << "Leaf Nodes: " << nodes
-     << " Captures: " << captureCounter
-     << " EnPassant: " << enpassantCounter
-     << " Checks: " << checkCounter
-     << " Mates: " << checkMateCounter
-     << std::endl;
+    << " Captures: " << captureCounter
+    << " EnPassant: " << enpassantCounter
+    << " Checks: " << checkCounter
+    << " Mates: " << checkMateCounter
+    << std::endl;
 
   os << "Duration: " << duration << " ms" << std::endl;
-  os << "NPS: " << ((result * 1'000) / duration) << " nps" << std::endl;
+  const uint64_t safeDuration = duration ? duration : 1;
+  os << "NPS: " << ((result * 1'000) / safeDuration) << " nps" << std::endl;
+
 
   std::cout << os.str();
 }
