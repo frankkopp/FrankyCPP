@@ -33,6 +33,7 @@ class Perft {
   uint64_t nodes{};
   uint64_t checkCounter{};
   uint64_t checkMateCounter{};
+  uint64_t staleMateCounter{};
   uint64_t captureCounter{};
   uint64_t enpassantCounter{};
   uint64_t castleCounter{};
@@ -46,6 +47,7 @@ public:
 
   void perft(int maxDepth);
   void perft(int maxDepth, bool onDemand);
+  void leaf_node(const Position& position, Move move);
   void perft(int startDepth, int endDepth, bool onDemand);
   void perft_divide(int maxDepth, bool onDemand);
 
@@ -56,6 +58,7 @@ public:
   uint64_t getEnpassantCounter() const { return enpassantCounter; }
   uint64_t getCheckCounter() const { return checkCounter; }
   uint64_t getCheckMateCounter() const { return checkMateCounter; }
+  uint64_t getStaleMateCounter() const { return staleMateCounter; }
   uint64_t getCastleCounter() const { return castleCounter; }
   uint64_t getPromotionCounter() const { return promotionCounter; }
 

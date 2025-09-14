@@ -69,7 +69,7 @@ void Perft::perft(int maxDepth, bool onDemand) {
   os.clear();
 
   uint64_t result;
-  auto start = std::chrono::high_resolution_clock::now();
+  auto start = high_resolution_clock::now();
 
   if (onDemand) { result = miniMaxOD(maxDepth, position, mg); }
   else { result = miniMax(maxDepth, position, mg); }
@@ -79,8 +79,8 @@ void Perft::perft(int maxDepth, bool onDemand) {
     return;
   }
 
-  auto finish       = std::chrono::high_resolution_clock::now();
-  uint64_t duration = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
+  auto finish       = high_resolution_clock::now();
+  uint64_t duration = std::chrono::duration_cast<milliseconds>(finish - start).count();
 
   nodes = result;
 
@@ -92,6 +92,7 @@ void Perft::perft(int maxDepth, bool onDemand) {
   os << "   EnPassant : " << enpassantCounter << std::endl;
   os << "   Checks    : " << checkCounter << std::endl;
   os << "   CheckMates: " << checkMateCounter << std::endl;
+  os << "   StaleMates: " << staleMateCounter << std::endl;
   os << "   Castles   : " << castleCounter << std::endl;
   os << "   Promotions: " << promotionCounter << std::endl;
   os << "-----------------------------------------" << std::endl;
@@ -107,89 +108,74 @@ uint64_t Perft::miniMaxOD(int depth, Position& position, MoveGenerator* pMg) {
   uint64_t totalNodes = 0;
 
   // moves to search recursively
-  Move move;
   while (!stopFlag) {
-    move = pMg[depth].getNextPseudoLegalMove(position, GenAll);
+    const Move move = pMg[depth].getNextPseudoLegalMove(position, GenAll);
     if (move == MOVE_NONE) break;
-    //    fprintln("Last: {:5s} Move: {:5s}   Fen: {:s} ", str(position.getLastMove()), str(move), position.strFen());
-    if (depth > 1) {
-      position.doMove(move);
-      if (position.wasLegalMove()) { totalNodes += miniMaxOD(depth - 1, position, pMg); }
-      position.undoMove();
-    }
-    else {
-      position.doMove(move);
-      if (position.wasLegalMove()) {
+
+    position.doMove(move);
+    if (position.wasLegalMove()) {
+      if (depth > 1) { totalNodes += miniMaxOD(depth - 1, position, pMg); }
+      else {
         totalNodes++;
-        // enpassant
-        if (typeOf(move) == ENPASSANT) {
-          enpassantCounter++;
-          captureCounter++;
-        }
-        // castling
-        else if (typeOf(move) == CASTLING) {
-          castleCounter++;
-          //          fprintln("No: {:2d} Last: {:5s} Move: {:5s}   Fen: {:s} ", castleCounter, str(position.getLastMove()), str(move), position.strFen());
-        }
-        else if (typeOf(move) == PROMOTION) { promotionCounter++; }
-        // capture
-        if (position.getLastCapturedPiece() != PIECE_NONE) { captureCounter++; }
-        // check
-        if (position.hasCheck()) {
-          checkCounter++;
-          //  mate
-          if (!MoveGenerator::hasLegalMove(position)) { checkMateCounter++; }
-        }
+        leaf_node(position, move);
       }
-      position.undoMove();
     }
+    position.undoMove();
   }
   return totalNodes;
 }
 
 
 uint64_t Perft::miniMax(int depth, Position& position, MoveGenerator* pMg) {
+  pMg[depth].reset();
 
   // Iterate over moves
   uint64_t totalNodes = 0;
 
-  //println(pPosition->str())
-
   // moves to search recursively
   MoveList moves = *pMg[depth].generatePseudoLegalMoves(position, GenAll);
+
   for (Move move : moves) {
     if (stopFlag) { return 0; }
-    if (depth > 1) {
-      position.doMove(move);
-      if (position.wasLegalMove()) { totalNodes += miniMaxOD(depth - 1, position, pMg); }
-      position.undoMove();
-    }
-    else {
-      position.doMove(move);
-      if (position.wasLegalMove()) {
+
+    position.doMove(move);
+    if (position.wasLegalMove()) {
+      if (depth > 1) { totalNodes += miniMax(depth - 1, position, pMg); }
+      else {
         totalNodes++;
-        // enpassant
-        if (typeOf(move) == ENPASSANT) {
-          enpassantCounter++;
-          captureCounter++;
-        }
-        // castling
-        else if (typeOf(move) == CASTLING) { castleCounter++; }
-        else if (typeOf(move) == PROMOTION) { promotionCounter++; }
-        // capture
-        if (position.getLastCapturedPiece() != PIECE_NONE) { captureCounter++; }
-        // check
-        if (position.hasCheck()) {
-          checkCounter++;
-          //  mate
-          if (!MoveGenerator::hasLegalMove(position)) { checkMateCounter++; }
-        }
+        leaf_node(position, move);
       }
-      position.undoMove();
     }
+    position.undoMove();
   }
   return totalNodes;
 }
+
+inline void Perft::leaf_node(const Position& position, const Move move)
+{
+  // enpassant
+  if (typeOf(move) == ENPASSANT) {
+    enpassantCounter++;
+    captureCounter++;
+  }
+  // castling
+  else if (typeOf(move) == CASTLING) {
+    castleCounter++;
+    //          fprintln("No: {:2d} Last: {:5s} Move: {:5s}   Fen: {:s} ", castleCounter, str(position.getLastMove()), str(move), position.strFen());
+  }
+  else if (typeOf(move) == PROMOTION) { promotionCounter++; }
+  // capture
+  if (position.getLastCapturedPiece() != PIECE_NONE) { captureCounter++; }
+  // check
+  if (position.hasCheck()) {
+    checkCounter++;
+  }
+  if (!MoveGenerator::hasLegalMove(position)) {
+    if (position.hasCheck()) checkMateCounter++;
+    else staleMateCounter++;
+  }
+}
+
 
 void Perft::perft_divide(int maxDepth, bool onDemand) {
   resetCounter();
@@ -211,8 +197,8 @@ void Perft::perft_divide(int maxDepth, bool onDemand) {
   os.str("");
   os.clear();
 
-  uint64_t result = 0;
-  const auto start      = high_resolution_clock::now();
+  uint64_t result  = 0;
+  const auto start = high_resolution_clock::now();
 
   // moves to search recursively
   const MoveList moves = *mg[maxDepth].generatePseudoLegalMoves(position, GenAll);

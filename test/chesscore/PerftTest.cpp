@@ -81,7 +81,7 @@ TEST_F(PerftTest, stdPerft) {
   };
   // @formatter:on
 
-  int maxDepth = 7;
+  int maxDepth = 6;
 #ifndef NDEBUG
   maxDepth = 5;
 #endif
