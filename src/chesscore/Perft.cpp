@@ -88,16 +88,17 @@ void Perft::perft(int maxDepth, bool onDemand) {
   os << "NPS          : " << (result * 1'000) / (duration + 1) << " nps" << std::endl;
   os << "Results:" << std::endl;
   os << "   Nodes     : " << nodes << std::endl;
-  os << "   Captures  : " << captureCounter << std::endl;
-  os << "   EnPassant : " << enpassantCounter << std::endl;
-  os << "   Checks    : " << checkCounter << std::endl;
-  os << "   CheckMates: " << checkMateCounter << std::endl;
-  os << "   StaleMates: " << staleMateCounter << std::endl;
-  os << "   Castles   : " << castleCounter << std::endl;
-  os << "   Promotions: " << promotionCounter << std::endl;
+  if (fullStats) {
+    os << "   Captures  : " << captureCounter << std::endl;
+    os << "   EnPassant : " << enpassantCounter << std::endl;
+    os << "   Checks    : " << checkCounter << std::endl;
+    os << "   CheckMates: " << checkMateCounter << std::endl;
+    os << "   StaleMates: " << staleMateCounter << std::endl;
+    os << "   Castles   : " << castleCounter << std::endl;
+    os << "   Promotions: " << promotionCounter << std::endl;
+  }
   os << "-----------------------------------------" << std::endl;
   os << "Finished PERFT Test for Depth " << maxDepth << std::endl;
-
   std::cout << os.str() << std::endl;
 }
 
@@ -117,7 +118,7 @@ uint64_t Perft::miniMaxOD(int depth, Position& position, MoveGenerator* pMg) {
       if (depth > 1) { totalNodes += miniMaxOD(depth - 1, position, pMg); }
       else {
         totalNodes++;
-        leaf_node(position, move);
+        if (fullStats) leaf_node(position, move);
       }
     }
     position.undoMove();
@@ -143,7 +144,7 @@ uint64_t Perft::miniMax(int depth, Position& position, MoveGenerator* pMg) {
       if (depth > 1) { totalNodes += miniMax(depth - 1, position, pMg); }
       else {
         totalNodes++;
-        leaf_node(position, move);
+        if (fullStats) leaf_node(position, move);
       }
     }
     position.undoMove();

@@ -40,6 +40,7 @@ class Perft {
   uint64_t promotionCounter{};
   std::string fen;
   bool stopFlag{};
+  bool fullStats{true};
 
 public:
   Perft();
@@ -61,6 +62,8 @@ public:
   uint64_t getStaleMateCounter() const { return staleMateCounter; }
   uint64_t getCastleCounter() const { return castleCounter; }
   uint64_t getPromotionCounter() const { return promotionCounter; }
+  bool isFullStats() const { return fullStats; }
+  void setFullStats(const bool fs) { fullStats = fs; }
 
 private:
   void resetCounter();

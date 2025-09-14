@@ -61,6 +61,7 @@ protected:
 TEST_F(PerftTest, stdPerft) {
   MoveGenerator mg;
   Perft p;
+  p.setFullStats(false);
 
   cout << "Standard PERFT Test" << endl;
   cout << "==============================" << endl;
@@ -90,12 +91,14 @@ TEST_F(PerftTest, stdPerft) {
     p.perft(i);
     NEWLINE;
     EXPECT_EQ(results[i][1], p.getNodes());
-    EXPECT_EQ(results[i][2], p.getCaptureCounter());
-    EXPECT_EQ(results[i][3], p.getEnpassantCounter());
-    EXPECT_EQ(results[i][4], p.getCheckCounter());
-    EXPECT_EQ(results[i][5], p.getCheckMateCounter());
-    EXPECT_EQ(results[i][6], p.getCastleCounter());
-    EXPECT_EQ(results[i][7], p.getPromotionCounter());
+    if (p.isFullStats()) {
+      EXPECT_EQ(results[i][2], p.getCaptureCounter());
+      EXPECT_EQ(results[i][3], p.getEnpassantCounter());
+      EXPECT_EQ(results[i][4], p.getCheckCounter());
+      EXPECT_EQ(results[i][5], p.getCheckMateCounter());
+      EXPECT_EQ(results[i][6], p.getCastleCounter());
+      EXPECT_EQ(results[i][7], p.getPromotionCounter());
+    }
   }
   cout << "==============================" << endl;
 }
@@ -119,6 +122,7 @@ TEST_F(PerftTest, stdPerft) {
 TEST_F(PerftTest, stdPerftOD) {
   MoveGenerator mg;
   Perft p;
+  p.setFullStats(false);
 
   cout << "Standard PERFT OnDemand Test" << endl;
   cout << "==============================" << endl;
@@ -141,7 +145,7 @@ TEST_F(PerftTest, stdPerftOD) {
 
   constexpr int startDepth = 1;
 #ifndef NDEBUG
-  maxDepth = 4;
+  constexpr int maxDepth = 4;
 #else
   constexpr int maxDepth   = 7;
 #  endif
@@ -150,12 +154,14 @@ TEST_F(PerftTest, stdPerftOD) {
     p.perft(i);
     NEWLINE;
     EXPECT_EQ(results[i][1], p.getNodes());
-    EXPECT_EQ(results[i][2], p.getCaptureCounter());
-    EXPECT_EQ(results[i][3], p.getEnpassantCounter());
-    EXPECT_EQ(results[i][4], p.getCheckCounter());
-    EXPECT_EQ(results[i][5], p.getCheckMateCounter());
-    EXPECT_EQ(results[i][6], p.getCastleCounter());
-    EXPECT_EQ(results[i][7], p.getPromotionCounter());
+    if (p.isFullStats()) {
+      EXPECT_EQ(results[i][2], p.getCaptureCounter());
+      EXPECT_EQ(results[i][3], p.getEnpassantCounter());
+      EXPECT_EQ(results[i][4], p.getCheckCounter());
+      EXPECT_EQ(results[i][5], p.getCheckMateCounter());
+      EXPECT_EQ(results[i][6], p.getCastleCounter());
+      EXPECT_EQ(results[i][7], p.getPromotionCounter());
+    }
   }
   cout << "==============================" << endl;
 }
