@@ -138,8 +138,7 @@ TEST_F(SpeedTests, TimingDoMoveUndoMove) {
 
 TEST_F(SpeedTests, TimingExtendedDoMoveUndoMove) {
 
-  const int rounds     = 5;
-  const int iterations = 50'000'000;
+  constexpr int rounds     = 5;
 
   // position for each move type
   // fxe3 enpassant
@@ -148,13 +147,14 @@ TEST_F(SpeedTests, TimingExtendedDoMoveUndoMove) {
   // Rc1 normal non capturing
   // c1Q promotion
   Position position("r3k2r/1ppn3p/4q1n1/8/4Pp2/3R4/p1p2PPP/R5K1 b kq e3 0 1");
-  const Move move1  = createMove(SQ_F4, SQ_E3, ENPASSANT);
-  const Move move2  = createMove(SQ_F2, SQ_E3);
-  const Move move3  = createMove(SQ_E8, SQ_G8, CASTLING);
-  const Move move4  = createMove(SQ_D3, SQ_C3);
-  const Move move5  = createMove(SQ_C2, SQ_C1, PROMOTION, QUEEN);
+  constexpr Move move1 = createMove(SQ_F4, SQ_E3, ENPASSANT);
+  constexpr Move move2 = createMove(SQ_F2, SQ_E3);
+  constexpr Move move3 = createMove(SQ_E8, SQ_G8, CASTLING);
+  constexpr Move move4 = createMove(SQ_D3, SQ_C3);
+  constexpr Move move5 = createMove(SQ_C2, SQ_C1, PROMOTION, QUEEN);
 
   for (int r = 1; r <= rounds; r++) {
+    constexpr int iterations = 50'000'000;
     fprintln("Round {}", r);
     auto start = high_resolution_clock::now();
     for (int i = 0; i < iterations; i++) {
@@ -274,8 +274,8 @@ TEST_F(SpeedTests, stdPerftOD) {
   };
   // @formatter:on
 
-  const int startDepth = 1;
-  const int maxDepth   = 7;
+  constexpr int startDepth = 1;
+  constexpr int maxDepth   = 7;
 
   for (int i = startDepth; i <= maxDepth; i++) {
     p.perft(i);

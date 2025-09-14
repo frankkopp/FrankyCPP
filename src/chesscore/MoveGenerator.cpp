@@ -546,7 +546,7 @@ void MoveGenerator::fillOnDemandMoveList(const Position& position, const GenMode
     }
     // sort the list according to sort values encoded in the move
     if (!onDemandMoves.empty()) {
-      std::stable_sort(onDemandMoves.begin(), onDemandMoves.end(), moveValueGreaterComparator());
+      std::ranges::stable_sort(onDemandMoves, moveValueGreaterComparator());
     }
   }// while onDemandMoves.empty()
 }
