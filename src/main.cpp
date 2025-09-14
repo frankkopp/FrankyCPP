@@ -46,6 +46,7 @@ int main(int argc, char* argv[]) {
 
   std::string config_file, book_file, book_type, testsuite_file;
   int testsuite_time, testsuite_depth, perftStart, perftEnd;
+  bool perftOnDemand;
 
   // Command line options
   try {
@@ -71,7 +72,8 @@ int main(int argc, char* argv[]) {
       ("tsDepth", po::value<int>(&testsuite_depth)->default_value(0), "max search depth per test in testsuite")
       ("perft", "run perft test")
       ("startDepth", po::value<int>(&perftStart)->default_value(1), "start depth for perft test")
-      ("endDepth", po::value<int>(&perftEnd)->default_value(5), "end depth for perft test");
+      ("endDepth", po::value<int>(&perftEnd)->default_value(5), "end depth for perft test")
+      ("onDemand", po::value<bool>(&perftOnDemand)->default_value(false), "use on demand move generation for perft test");
 
     // Hidden options, will be allowed both on command line and in config file,
     // but will not be shown to the user when printing help.
@@ -173,9 +175,10 @@ int main(int argc, char* argv[]) {
       std::cout << "Version: " << appName << "\n";
       std::cout << "Start depth: " << fmt::format("{:L}", perftStart) << "\n";
       std::cout << "End depth  : " << fmt::format("{:L}", perftEnd) << "\n";
+      std::cout << "On Demand  : " << (perftOnDemand ? "true" : "false") << "\n";
       std::cout << std::endl;
       Perft perft{};
-      perft.perft(perftStart, perftEnd, true);
+      perft.perft(perftStart, perftEnd, perftOnDemand);
       return 0;
     }
 
