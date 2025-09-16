@@ -41,23 +41,24 @@ protected:
   void TearDown() override {}
 
   struct Product {
-    uint64_t producedNumber;
+    uint64_t producedNumber{};
     bool processed = false;
+
   };
 
   static Product process(Product p) {
     fprintln(">>> Processing product...: {}", p.producedNumber);
     // simulate cpu intense calculation
     uint64_t f = 100000000;
-    while (f > 1) f = uint64_t(f/1.00000001);
-    std::this_thread::sleep_for(std::chrono::milliseconds (f));
+    while (f > 1) f = static_cast<uint64_t>(f / 1.00000001);
+    std::this_thread::sleep_for(milliseconds (f));
     p.processed = true;
     fprintln(">>> Processed product...: {}", p.producedNumber);
     return p;
   }
 
-  Product produceProduct(uint64_t i) {
-    std::this_thread::sleep_for(std::chrono::milliseconds (10));
+  static Product produceProduct(const uint64_t i) {
+    std::this_thread::sleep_for(milliseconds (10));
     Product product{i, false};
     fprintln("<<< Producing product...: {} ", product.producedNumber);
     return product;
@@ -72,7 +73,7 @@ TEST_F(ThreadPoolTest, basic) {
   std::vector<std::shared_ptr<std::future<Product>>> results{};
 
   fprintln("Queuing and starting work");
-  int number = 100;
+  constexpr int number = 100;
 
   for (int i = 0; i < number; i++) {
     Product product = produceProduct(i);
@@ -85,10 +86,10 @@ TEST_F(ThreadPoolTest, basic) {
 
   fprintln("Getting results");
   const auto &iterEnd = results.end();
-  for (auto iter = results.begin(); iter < iterEnd; iter++) {
+  for (auto iter = results.begin(); iter < iterEnd; ++iter) {
     fprintln("Open tasks: {}", threadPool.openTasks());
-    const auto resultPtr = iter->get()->get();
-    fprintln("Product finished: {} processed {}", resultPtr.producedNumber, resultPtr.processed);
+    const auto [producedNumber, processed] = iter->get()->get();
+    fprintln("Product finished: {} processed {}", producedNumber, processed);
   }
   SUCCEED();
 }

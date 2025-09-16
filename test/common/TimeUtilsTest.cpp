@@ -41,7 +41,7 @@ protected:
 };
 
 TEST_F(TimeUtilsTest, printNanoseconds) {
-  nanoseconds ns = nanoseconds{1888777999008800999};
+  auto ns = nanoseconds{1888777999008800999};
   fprintln("{}", format(ns));
   EXPECT_EQ("59y:325d:20h:33m:19s:008.800.999ns", format(ns));
 
@@ -72,7 +72,7 @@ TEST_F(TimeUtilsTest, printNanoseconds) {
 
 TEST_F(TimeUtilsTest, printMilliseconds) {
 
-  milliseconds ms = milliseconds{31'536'000'000ULL};
+  auto ms = milliseconds{31'536'000'000ULL};
   fprintln("{}", format(ms));
 
   ms = milliseconds{293 * 31'536'000'000ULL};
@@ -98,4 +98,3 @@ TEST_F(TimeUtilsTest, printMilliseconds) {
   fprintln("{}", format(ms));
   EXPECT_EQ("100.000.000ns", format(ms));
 }
-

@@ -24,7 +24,7 @@
 #include <gtest/gtest.h>
 using testing::Eq;
 
-class TypesTest : public ::testing::Test {
+class TypesTest : public testing::Test {
 public:
   static void SetUpTestSuite() {
     NEWLINE;
@@ -48,19 +48,19 @@ TEST_F(TypesTest, labels) {
   // all squares and label of squares
   std::string actual;
   for (int i = 0; i < SQ_NONE; ++i) {
-    ASSERT_TRUE(validSquare(Square(i)));
-    actual += str(Square(i));
+    ASSERT_TRUE(validSquare(static_cast<Square>(i)));
+    actual += str(static_cast<Square>(i));
   }
-  std::string expected = "a1b1c1d1e1f1g1h1a2b2c2d2e2f2g2h2a3b3c3d3e3f3g3h3a4b4c4"
-                         "d4e4f4g4h4a5b5c5d5e5f5g5h5a6b6c6d6e6f6g6h6a7b7c7d7e7f7"
-                         "g7h7a8b8c8d8e8f8g8h8";
+  const std::string expected = "a1b1c1d1e1f1g1h1a2b2c2d2e2f2g2h2a3b3c3d3e3f3g3h3a4b4c4"
+                               "d4e4f4g4h4a5b5c5d5e5f5g5h5a6b6c6d6e6f6g6h6a7b7c7d7e7f7"
+                               "g7h7a8b8c8d8e8f8g8h8";
   EXPECT_EQ(expected, actual);
 }
 
 TEST_F(TypesTest, filesAndRanks) {
   // all squares and label of squares
   for (int i = 0; i < SQ_NONE; ++i) {
-    EXPECT_EQ(Square(i), squareOf(File(fileOf(Square(i))), Rank(rankOf(Square(i)))));
+    EXPECT_EQ(static_cast<Square>(i), squareOf(fileOf(static_cast<Square>(i)), rankOf(static_cast<Square>(i))));
   }
 }
 
@@ -185,7 +185,7 @@ TEST_F(TypesTest, pieces) {
   // pieceToCharacter
   EXPECT_EQ('k', pieceToChar[BLACK_KING]);
   EXPECT_EQ('P', pieceToChar[WHITE_PAWN]);
-  EXPECT_EQ(BLACK_KNIGHT, std::string(pieceToChar).find("n"));
+  EXPECT_EQ(BLACK_KNIGHT, std::string(pieceToChar).find('n'));
 
 }
 
@@ -233,7 +233,7 @@ TEST_F(TypesTest, movesValue) {
   setValueOf(move, v);
   EXPECT_EQ(v, valueOf(move));
 
-  v = Value(100);
+  v = static_cast<Value>(100);
   setValueOf(move, v);
   EXPECT_EQ(v, valueOf(move));
 
@@ -243,26 +243,26 @@ TEST_F(TypesTest, movesValue) {
 
   move = createMove(SQ_A1, SQ_H1, NORMAL, VALUE_DRAW);
   EXPECT_EQ(VALUE_DRAW, valueOf(move));
-  move = createMove(SQ_A1, SQ_H1, NORMAL, Value(-100));
-  EXPECT_EQ(Value(-100), valueOf(move));
-  move = createMove(SQ_A1, SQ_H1, NORMAL, Value(100));
-  EXPECT_EQ(Value(100), valueOf(move));
+  move = createMove(SQ_A1, SQ_H1, NORMAL, static_cast<Value>(-100));
+  EXPECT_EQ(static_cast<Value>(-100), valueOf(move));
+  move = createMove(SQ_A1, SQ_H1, NORMAL, static_cast<Value>(100));
+  EXPECT_EQ(static_cast<Value>(100), valueOf(move));
 
-  move = createMove(SQ_A1, SQ_H1, PROMOTION, QUEEN, Value(-pieceTypeValue[QUEEN]));
+  move = createMove(SQ_A1, SQ_H1, PROMOTION, QUEEN, -pieceTypeValue[QUEEN]);
   EXPECT_EQ(-pieceTypeValue[QUEEN], valueOf(move));
 
   // test equality without value / pure move
-  move       = createMove(SQ_A1, SQ_H1, NORMAL, Value(100));
-  Move move2 = createMove(SQ_A1, SQ_H1, NORMAL, Value(-100));
+  move                 = createMove(SQ_A1, SQ_H1, NORMAL, static_cast<Value>(100));
+  constexpr Move move2 = createMove(SQ_A1, SQ_H1, NORMAL, static_cast<Value>(-100));
   ASSERT_NE(move, move2);
   EXPECT_EQ(moveOf(move), moveOf(move2));
 }
 
 TEST_F(TypesTest, moveListPrint) {
 
-  Move move1 = createMove(SQ_A1, SQ_H1, NORMAL);
-  Move move2 = createMove(SQ_A7, SQ_A8, PROMOTION, QUEEN);
-  Move move3 = createMove(SQ_E1, SQ_G1, CASTLING);
+  constexpr Move move1 = createMove(SQ_A1, SQ_H1, NORMAL);
+  constexpr Move move2 = createMove(SQ_A7, SQ_A8, PROMOTION, QUEEN);
+  constexpr Move move3 = createMove(SQ_E1, SQ_G1, CASTLING);
   MoveList moveList;
   moveList.push_back(move1);
   moveList.push_back(move2);
@@ -270,26 +270,26 @@ TEST_F(TypesTest, moveListPrint) {
 
   std::ostringstream ml;
   ml << moveList;
-  std::string expected = "a1h1 a7a8Q e1g1";
+  const std::string expected = "a1h1 a7a8Q e1g1";
   EXPECT_EQ(expected, ml.str());
 }
 
 TEST_F(TypesTest, sortMoveListByValue) {
-  Move move1 = createMove(SQ_C2, SQ_C4, NORMAL, Value(-100));
-  Move move2 = createMove(SQ_D2, SQ_D4, NORMAL, Value(0));
-  Move move3 = createMove(SQ_E2, SQ_E4, NORMAL, Value(100));
+  constexpr Move move1 = createMove(SQ_C2, SQ_C4, NORMAL, static_cast<Value>(-100));
+  constexpr Move move2 = createMove(SQ_D2, SQ_D4, NORMAL, static_cast<Value>(0));
+  constexpr Move move3 = createMove(SQ_E2, SQ_E4, NORMAL, static_cast<Value>(100));
   MoveList ml{};
   ml.push_back(move1);
   ml.push_back(move2);
   ml.push_back(move3);
   fprintln("{}", str(ml));
-  std::stable_sort(ml.begin(), ml.end(), moveValueGreaterComparator());
+  std::ranges::stable_sort(ml, moveValueGreaterComparator());
   fprintln("{}", str(ml));
   EXPECT_EQ(move3, ml.at(0));
 }
 
 TEST_F(TypesTest, nps) {
-  uint64_t nodes = 10'000'000;
+  constexpr uint64_t nodes = 10'000'000;
   milliseconds msec{1'500};
   nanoseconds nsec{1'500'000'000};
   fprintln("{}", nps(nodes, msec));
@@ -301,8 +301,8 @@ TEST_F(TypesTest, nps) {
 }
 
 TEST_F(TypesTest, elapsed) {
-  using clock = std::chrono::high_resolution_clock;
-  TimePoint start = clock::now();
+  using clock = high_resolution_clock;
+  const TimePoint start = clock::now();
   TimePoint jetzt = clock::now();
   for (int i = 0; i < 500; ++i){
     std::cout << fmt::format(deLocale, "{:3}. Since start: {:L} ns - last jetzt: {:L} ns\n", i, elapsedSince(start).count(), elapsedSince(jetzt).count());

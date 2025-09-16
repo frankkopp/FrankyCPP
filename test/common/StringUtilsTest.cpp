@@ -66,10 +66,10 @@ TEST_F(StringUtilsTest, trimFastTest) {
   const std::string line{" \t This is a text. This is a text. This is a text. This is a text.\t  \r\n"};
   const std::string_view lineView{line};
 
-  auto trimmedString = trimFast(line);
+  const auto trimmedString = trimFast(line);
   EXPECT_EQ("This is a text. This is a text. This is a text. This is a text.", trimmedString);
 
-  auto trimmedView = trimFast(lineView);
+  const auto trimmedView = trimFast(lineView);
   EXPECT_EQ("This is a text. This is a text. This is a text. This is a text.", trimmedView);
 }
 
@@ -77,9 +77,9 @@ TEST_F(StringUtilsTest, removeTrailingCommentTest) {
   const std::string line{"This is a text. This is a text. This is a text. ; and this is the comment"};
   const std::string_view lineView{line};
 
-  auto trimmedString = removeTrailingComments(line, ";");
+  const auto trimmedString = removeTrailingComments(line, ";");
   EXPECT_EQ("This is a text. This is a text. This is a text. ", trimmedString);
 
-  auto trimmedView = removeTrailingComments(lineView, ";");
+  const auto trimmedView = removeTrailingComments(lineView, ";");
   EXPECT_EQ("This is a text. This is a text. This is a text. ", trimmedView);
 }
