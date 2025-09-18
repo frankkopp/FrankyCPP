@@ -31,20 +31,23 @@ namespace Types {
   // The order of the initialization is important as there are
   // dependencies.
   inline void init() {
-    Squares::squareDistancePreCompute();
-    Bitboards::rankFileBbPreCompute();
-    Bitboards::squareBitboardsPreCompute();
-    Bitboards::nonSlidingAttacksPreCompute();
-    Bitboards::neighbourMasksPreCompute();
+    // Bitboards::rankFileBbPreCompute();
+    // Bitboards::squareBitboardsPreCompute();
+    // Bitboards::nonSlidingAttacksPreCompute();
+    // Bitboards::neighbourMasksPreCompute();
+    // Bitboards::colorBitboardsPreCompute();
+    // Bitboards::castleMasksPreCompute();
+    // Bitboards::raysPreCompute();
+    // Bitboards::intermediatePreCompute();
+    // Bitboards::maskPassedPawnsPreCompute();
+
+    // Castling::initCastlingRights();
+
+    // Squares::squareDistancePreCompute();
+    // Squares::squareNamesPreCompute();
+    // Squares::centerDistancePreCompute();
+
     Bitboards::initMagicBitboards();
-    Bitboards::raysPreCompute();
-    Bitboards::intermediatePreCompute();
-    Bitboards::maskPassedPawnsPreCompute();
-    Bitboards::castleMasksPreCompute();
-    Bitboards::colorBitboardsPreCompute();
-    Squares::centerDistancePreCompute();
-    Squares::squareNamesPreCompute();
-    Castling::initCastlingRights();
   }
 }// namespace types
 

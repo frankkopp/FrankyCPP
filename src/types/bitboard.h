@@ -26,12 +26,12 @@
 #include "piecetype.h"
 #include "square.h"
 
+#include <array>
 #include <cassert>
 #include <cstdint>
 #include <immintrin.h>
-#include <iostream>
 
-// 64 bit Bitboard type for storing boards as bits
+// 64-bit Bitboard type for storing boards as bits
 typedef uint64_t Bitboard;
 
 // //////////////////////////////////////////////////////////////////
@@ -98,65 +98,367 @@ constexpr Bitboard CENTER_SQUARES = CENTER_FILES & CENTER_RANKS;
 // pre-computed arrays for various bitboards
 // pre-computed in types::init()
 namespace Bitboards {
+  constexpr std::array<Bitboard, 8> makeRankBb() {
+    std::array<Bitboard, 8> a{};
+    for (unsigned i = 0; i < 8; ++i) a[i] = Rank1BB << (8 * i);
+    return a;
+  }
+  inline constexpr std::array<Bitboard, 8> rankBb = makeRankBb();
+
+  constexpr std::array<Bitboard, 8> makeFileBb() {
+    std::array<Bitboard, 8> a{};
+    for (unsigned i = 0; i < 8; ++i) a[i] = FileABB << i;
+    return a;
+  }
+  inline constexpr std::array<Bitboard, 8> fileBb = makeFileBb();
+
   // holds the corresponding bitboards for each square
-  inline Bitboard sqBb[SQ_LENGTH];
-  // holds the corresponding bitboards for each file
-  inline Bitboard fileBb[FILE_LENGTH];
-  // holds the corresponding bitboards for each rank
-  inline Bitboard rankBb[RANK_LENGTH];
-  // holds the corresponding file bitboards for each square
-  inline Bitboard sqToFileBb[SQ_LENGTH];
-  // holds the corresponding rank bitboards for each square
-  inline Bitboard sqToRankBb[SQ_LENGTH];
-  // holds the corresponding upwards diagonals bitboards for each square
-  inline Bitboard squareDiagUpBb[SQ_LENGTH];
-  // holds the corresponding downwards diagonals bitboards for each square
-  inline Bitboard squareDiagDownBb[SQ_LENGTH];
-  // holds bitboards for the attacked squares if a pawn of the given color would be on the given square
-  inline Bitboard pawnAttacks[COLOR_LENGTH][SQ_LENGTH];
+  constexpr unsigned fileIdx(const unsigned s) { return s & 7U; }
+  constexpr unsigned rankIdx(const unsigned s) { return s >> 3U; }
+  constexpr Bitboard oneAt(const unsigned s) { return BbOne << s; }
+
+  constexpr Bitboard diagUpForIdx(const unsigned s) {
+    const Bitboard one = oneAt(s);
+    if (DiagUpA8 & one) return DiagUpA8;
+    if (DiagUpA7 & one) return DiagUpA7;
+    if (DiagUpA6 & one) return DiagUpA6;
+    if (DiagUpA5 & one) return DiagUpA5;
+    if (DiagUpA4 & one) return DiagUpA4;
+    if (DiagUpA3 & one) return DiagUpA3;
+    if (DiagUpA2 & one) return DiagUpA2;
+    if (DiagUpA1 & one) return DiagUpA1;
+    if (DiagUpB1 & one) return DiagUpB1;
+    if (DiagUpC1 & one) return DiagUpC1;
+    if (DiagUpD1 & one) return DiagUpD1;
+    if (DiagUpE1 & one) return DiagUpE1;
+    if (DiagUpF1 & one) return DiagUpF1;
+    if (DiagUpG1 & one) return DiagUpG1;
+    if (DiagUpH1 & one) return DiagUpH1;
+    return BbZero;
+  }
+
+  constexpr Bitboard diagDownForIdx(const unsigned s) {
+    const Bitboard one = oneAt(s);
+    if (DiagDownH8 & one) return DiagDownH8;
+    if (DiagDownH7 & one) return DiagDownH7;
+    if (DiagDownH6 & one) return DiagDownH6;
+    if (DiagDownH5 & one) return DiagDownH5;
+    if (DiagDownH4 & one) return DiagDownH4;
+    if (DiagDownH3 & one) return DiagDownH3;
+    if (DiagDownH2 & one) return DiagDownH2;
+    if (DiagDownH1 & one) return DiagDownH1;
+    if (DiagDownG1 & one) return DiagDownG1;
+    if (DiagDownF1 & one) return DiagDownF1;
+    if (DiagDownE1 & one) return DiagDownE1;
+    if (DiagDownD1 & one) return DiagDownD1;
+    if (DiagDownC1 & one) return DiagDownC1;
+    if (DiagDownB1 & one) return DiagDownB1;
+    if (DiagDownA1 & one) return DiagDownA1;
+    return BbZero;
+  }
+
+  constexpr std::array<Bitboard, SQ_LENGTH> makeSqBb() {
+    std::array<Bitboard, SQ_LENGTH> a{};
+    for (unsigned s = 0; s < SQ_LENGTH; ++s) a[s] = oneAt(s);
+    return a;
+  }
+
+  constexpr std::array<Bitboard, SQ_LENGTH> makeSqToFileBb() {
+    std::array<Bitboard, SQ_LENGTH> a{};
+    for (unsigned s = 0; s < SQ_LENGTH; ++s) a[s] = fileBb[fileIdx(s)];
+    return a;
+  }
+
+  constexpr std::array<Bitboard, SQ_LENGTH> makeSqToRankBb() {
+    std::array<Bitboard, SQ_LENGTH> a{};
+    for (unsigned s = 0; s < SQ_LENGTH; ++s) a[s] = rankBb[rankIdx(s)];
+    return a;
+  }
+
+  constexpr std::array<Bitboard, SQ_LENGTH> makeSquareDiagUpBb() {
+    std::array<Bitboard, SQ_LENGTH> a{};
+    for (unsigned s = 0; s < SQ_LENGTH; ++s) a[s] = diagUpForIdx(s);
+    return a;
+  }
+
+  constexpr std::array<Bitboard, SQ_LENGTH> makeSquareDiagDownBb() {
+    std::array<Bitboard, SQ_LENGTH> a{};
+    for (unsigned s = 0; s < SQ_LENGTH; ++s) a[s] = diagDownForIdx(s);
+    return a;
+  }
+
+  inline constexpr std::array<Bitboard, SQ_LENGTH> sqBb             = makeSqBb();
+  inline constexpr std::array<Bitboard, SQ_LENGTH> sqToFileBb       = makeSqToFileBb();
+  inline constexpr std::array<Bitboard, SQ_LENGTH> sqToRankBb       = makeSqToRankBb();
+  inline constexpr std::array<Bitboard, SQ_LENGTH> squareDiagUpBb   = makeSquareDiagUpBb();
+  inline constexpr std::array<Bitboard, SQ_LENGTH> squareDiagDownBb = makeSquareDiagDownBb();
+
+  // holds bitboards for the attacked squares if a pawn of the given color is on the given square
+  constexpr std::array<std::array<Bitboard, SQ_LENGTH>, COLOR_LENGTH> makePawnAttacks() {
+    std::array<std::array<Bitboard, SQ_LENGTH>, COLOR_LENGTH> a{};
+
+    for (unsigned s = 0; s < SQ_LENGTH; ++s) {
+      const int f = static_cast<int>(s & 7);
+      const int r = static_cast<int>(s >> 3);
+
+      // consolidated loop over colors to avoid redundancy
+      for (unsigned c = 0; c < COLOR_LENGTH; ++c) {
+        const int dir = (c == WHITE) ? 1 : -1;
+        Bitboard m    = 0;
+        const int nr  = r + dir;
+
+        if (0 <= nr && nr < 8) {
+          if (f - 1 >= 0) m |= oneAt(static_cast<unsigned>(nr * 8 + (f - 1)));
+          if (f + 1 < 8) m |= oneAt(static_cast<unsigned>(nr * 8 + (f + 1)));
+        }
+
+        a[c][s] = m;
+      }
+    }
+
+    return a;
+  }
+  inline constexpr std::array<std::array<Bitboard, SQ_LENGTH>, COLOR_LENGTH> pawnAttacks = makePawnAttacks();
+
   // holds bitboards for the attacked squares for Kings and Knights on the given square
-  inline Bitboard nonSliderAttacks[PT_LENGTH][SQ_LENGTH];
+  constexpr std::array<std::array<Bitboard, SQ_LENGTH>, PT_LENGTH> makeNonSliderAttacks() {
+    std::array<std::array<Bitboard, SQ_LENGTH>, PT_LENGTH> a{};
+
+    for (unsigned s = 0; s < SQ_LENGTH; ++s) {
+      const int f = static_cast<int>(s & 7);
+      const int r = static_cast<int>(s >> 3);
+
+      // KING (8 neighbours)
+      {
+        Bitboard m = 0;
+        for (int df = -1; df <= 1; ++df) {
+          for (int dr = -1; dr <= 1; ++dr) {
+            if (df == 0 && dr == 0) continue;
+            const int nf = f + df, nr = r + dr;
+            if (0 <= nf && nf < 8 && 0 <= nr && nr < 8) m |= oneAt(static_cast<unsigned>(nr * 8 + nf));
+          }
+        }
+        a[KING][s] = m;
+      }
+
+      // KNIGHT (8 L-moves)
+      {
+        Bitboard m = 0;
+        for (int i = 0; i < 8; ++i) {
+          constexpr int kdr[8] = {-1, -2, -2, -1, 1, 2, 2, 1};
+          constexpr int kdf[8] = {-2, -1, 1, 2, -2, -1, 1, 2};
+          const int nf = f + kdf[i], nr = r + kdr[i];
+          if (0 <= nf && nf < 8 && 0 <= nr && nr < 8) m |= oneAt(static_cast<unsigned>(nr * 8 + nf));
+        }
+        a[KNIGHT][s] = m;
+      }
+    }
+
+    return a;
+  }
+  inline constexpr std::array<std::array<Bitboard, SQ_LENGTH>, PT_LENGTH> nonSliderAttacks = makeNonSliderAttacks();
+
+
   // holds bitboards for all the files to the left of the given square
-  inline Bitboard filesWestMask[SQ_LENGTH];
+  constexpr std::array<Bitboard, SQ_LENGTH> makeFilesWestMask() {
+    std::array<Bitboard, SQ_LENGTH> a{};
+    for (unsigned s = 0; s < SQ_LENGTH; ++s) {
+      const unsigned f = fileIdx(s);
+      Bitboard m       = 0;
+      for (unsigned k = 0; k < f; ++k) m |= (FileABB << k);
+      a[s] = m;
+    }
+    return a;
+  }
+  inline constexpr std::array<Bitboard, SQ_LENGTH> filesWestMask = makeFilesWestMask();
+
   // holds bitboards for all the files to the right of the given square
-  inline Bitboard filesEastMask[SQ_LENGTH];
+  constexpr std::array<Bitboard, SQ_LENGTH> makeFilesEastMask() {
+    std::array<Bitboard, SQ_LENGTH> a{};
+    for (unsigned s = 0; s < SQ_LENGTH; ++s) {
+      const unsigned f = fileIdx(s);
+      Bitboard m       = 0;
+      for (unsigned k = f + 1; k < 8; ++k) m |= (FileABB << k);
+      a[s] = m;
+    }
+    return a;
+  }
+  inline constexpr std::array<Bitboard, SQ_LENGTH> filesEastMask = makeFilesEastMask();
+
   // holds bitboards for all the ranks above the given square
-  inline Bitboard ranksNorthMask[SQ_LENGTH];
+  constexpr std::array<Bitboard, SQ_LENGTH> makeRanksNorthMask() {
+    std::array<Bitboard, SQ_LENGTH> a{};
+    for (unsigned s = 0; s < SQ_LENGTH; ++s) {
+      const unsigned r = rankIdx(s);
+      Bitboard m       = 0;
+      for (unsigned k = r + 1; k < 8; ++k) m |= (Rank1BB << (8 * k));
+      a[s] = m;
+    }
+    return a;
+  }
+  inline constexpr std::array<Bitboard, SQ_LENGTH> ranksNorthMask = makeRanksNorthMask();
+
   // holds bitboards for all the ranks below the given square
-  inline Bitboard ranksSouthMask[SQ_LENGTH];
+  constexpr std::array<Bitboard, SQ_LENGTH> makeRanksSouthMask() {
+    std::array<Bitboard, SQ_LENGTH> a{};
+    for (unsigned s = 0; s < SQ_LENGTH; ++s) {
+      const unsigned r = rankIdx(s);
+      Bitboard m       = 0;
+      for (unsigned k = 0; k < r; ++k) m |= (Rank1BB << (8 * k));
+      a[s] = m;
+    }
+    return a;
+  }
+  inline constexpr std::array<Bitboard, SQ_LENGTH> ranksSouthMask = makeRanksSouthMask();
+
   // holds bitboards for the file to the left of the given square
-  inline Bitboard fileWestMask[SQ_LENGTH];
+  constexpr std::array<Bitboard, SQ_LENGTH> makeFileWestMask() {
+    std::array<Bitboard, SQ_LENGTH> a{};
+    for (unsigned s = 0; s < SQ_LENGTH; ++s) {
+      const unsigned f = fileIdx(s);
+      a[s]             = (f > 0) ? (FileABB << (f - 1)) : BbZero;
+    }
+    return a;
+  }
+  inline constexpr std::array<Bitboard, SQ_LENGTH> fileWestMask = makeFileWestMask();
+
   // holds bitboards for the file to the right of the given square
-  inline Bitboard fileEastMask[SQ_LENGTH];
+  constexpr std::array<Bitboard, SQ_LENGTH> makeFileEastMask() {
+    std::array<Bitboard, SQ_LENGTH> a{};
+    for (unsigned s = 0; s < SQ_LENGTH; ++s) {
+      const unsigned f = fileIdx(s);
+      a[s]             = (f < 7) ? (FileABB << (f + 1)) : BbZero;
+    }
+    return a;
+  }
+  inline constexpr std::array<Bitboard, SQ_LENGTH> fileEastMask = makeFileEastMask();
+
   // holds bitboards for the files to the left and right of the given square
-  inline Bitboard neighbourFilesMask[SQ_LENGTH];
-  // holds bitboards for the squares in the given orientation from the given square (excl. given square)
-  inline Bitboard rays[OR_LENGTH][SQ_LENGTH];
-  // holds bitboards for the squares between the two given squares or BbZero if the squares are not
-  // on a straight line to each other or if the are direct neighbours
-  inline Bitboard intermediateBb[SQ_LENGTH][SQ_LENGTH];
-  // holds bitboards for the squares in front of the given pawn on the same or neighbouring files
-  inline Bitboard passedPawnMask[COLOR_LENGTH][SQ_LENGTH];
-  // holds bitboards for squares involved in the corresponding castle move
-  inline Bitboard kingSideCastleMask[COLOR_LENGTH];
-  // holds bitboards for squares involved in the corresponding castle move
-  inline Bitboard queenSideCastleMask[COLOR_LENGTH];
+  constexpr std::array<Bitboard, SQ_LENGTH> makeNeighbourFilesMask() {
+    std::array<Bitboard, SQ_LENGTH> a{};
+    for (unsigned s = 0; s < SQ_LENGTH; ++s) {
+      const unsigned f = fileIdx(s);
+      Bitboard m       = 0;
+      if (f > 0) m |= (FileABB << (f - 1));
+      if (f < 7) m |= (FileABB << (f + 1));
+      a[s] = m;
+    }
+    return a;
+  }
+  inline constexpr std::array<Bitboard, SQ_LENGTH> neighbourFilesMask = makeNeighbourFilesMask();
+
   // holds bitboards for all squares of the given color
-  inline Bitboard colorBb[COLOR_LENGTH];
+  constexpr std::array<Bitboard, COLOR_LENGTH> makeColorBb() {
+    std::array<Bitboard, COLOR_LENGTH> a{};
+    for (unsigned s = 0; s < SQ_LENGTH; ++s) {
+      const unsigned f   = fileIdx(s);
+      const unsigned r   = rankIdx(s);
+      const Bitboard bit = oneAt(s);
+      if (((f + r) & 1U) == 0) a[BLACK] |= bit;
+      else
+        a[WHITE] |= bit;
+    }
+    return a;
+  }
+  inline constexpr std::array<Bitboard, COLOR_LENGTH> colorBb = makeColorBb();
+
+  // holds bitboards for squares involved in the corresponding castle move
+  constexpr std::array kingSideCastleMask = {
+    sqBb[SQ_F1] | sqBb[SQ_G1] | sqBb[SQ_H1],
+    sqBb[SQ_F8] | sqBb[SQ_G8] | sqBb[SQ_H8]};
+  // holds bitboards for squares involved in the corresponding castle move
+  constexpr std::array queenSideCastleMask = {
+    sqBb[SQ_D1] | sqBb[SQ_C1] | sqBb[SQ_B1] | sqBb[SQ_A1],
+    sqBb[SQ_D8] | sqBb[SQ_C8] | sqBb[SQ_B8] | sqBb[SQ_A8]};
+
+
+  // Compile-time precomputation of rays for all orientations and squares
+  constexpr std::array<std::array<Bitboard, SQ_LENGTH>, OR_LENGTH> makeRays() {
+    std::array<std::array<Bitboard, SQ_LENGTH>, OR_LENGTH> a{};
+
+    for (unsigned s = 0; s < SQ_LENGTH; ++s) {
+      const Bitboard file     = sqToFileBb[s];
+      const Bitboard rank     = sqToRankBb[s];
+      const Bitboard diagUp   = squareDiagUpBb[s];    // NE-SW diagonal
+      const Bitboard diagDown = squareDiagDownBb[s];  // NW-SE diagonal
+
+      // Orthogonal rays
+      a[N][s] = file & ranksNorthMask[s];
+      a[S][s] = file & ranksSouthMask[s];
+      a[E][s] = rank & filesEastMask[s];
+      a[W][s] = rank & filesWestMask[s];
+
+      // Diagonal rays
+      a[NE][s] = diagUp   & ranksNorthMask[s] & filesEastMask[s];
+      a[SW][s] = diagUp   & ranksSouthMask[s] & filesWestMask[s];
+      a[NW][s] = diagDown & ranksNorthMask[s] & filesWestMask[s];
+      a[SE][s] = diagDown & ranksSouthMask[s] & filesEastMask[s];
+    }
+
+    return a;
+  }
+  inline constexpr std::array<std::array<Bitboard, SQ_LENGTH>, OR_LENGTH> rays = makeRays();
+
+// holds bitboards for the squares between the two given squares or BbZero if the squares are not
+  // on a straight line to each other or if they are direct neighbours
+  constexpr std::array<std::array<Bitboard, SQ_LENGTH>, SQ_LENGTH> makeIntermediateBb() {
+    std::array<std::array<Bitboard, SQ_LENGTH>, SQ_LENGTH> a{};
+
+    for (unsigned from = 0; from < SQ_LENGTH; ++from) {
+      for (unsigned to = 0; to < SQ_LENGTH; ++to) {
+        const Bitboard toBB = sqBb[to];
+        Bitboard acc        = 0;
+
+        for (unsigned o = 0; o < OR_LENGTH; ++o) {
+          if ((rays[o][from] & toBB) != BbZero) {
+            acc |= rays[o][from] & ~rays[o][to] & ~toBB;
+          }
+        }
+
+        a[from][to] = acc;
+      }
+    }
+
+    return a;
+  }
+  inline constexpr std::array<std::array<Bitboard, SQ_LENGTH>, SQ_LENGTH> intermediateBb = makeIntermediateBb();
+
+// holds bitboards for the squares in front of the given pawn on the same or neighboring files
+constexpr std::array<std::array<Bitboard, SQ_LENGTH>, COLOR_LENGTH> makePassedPawnMask() {
+  std::array<std::array<Bitboard, SQ_LENGTH>, COLOR_LENGTH> a{};
+
+  for (unsigned s = 0; s < SQ_LENGTH; ++s) {
+    const int f = static_cast<int>(fileIdx(s));
+    const int r = static_cast<int>(rankIdx(s));
+
+    // white pawn
+    Bitboard w = rays[N][s];
+    if (f < 7 && r < 7) w |= rays[N][s + 1U]; // east neighbor
+    if (f > 0 && r < 7) w |= rays[N][s - 1U]; // west neighbor
+    a[WHITE][s] = w;
+
+    // black pawn
+    Bitboard b = rays[S][s];
+    if (f < 7 && r > 0) b |= rays[S][s + 1U]; // east neighbor
+    if (f > 0 && r > 0) b |= rays[S][s - 1U]; // west neighbor
+    a[BLACK][s] = b;
+  }
+
+  return a;
+}
+inline constexpr std::array<std::array<Bitboard, SQ_LENGTH>, COLOR_LENGTH> passedPawnMask = makePassedPawnMask();
+
 }// namespace Bitboards
 
 // //////////////////////////////////////////////////////////////////
 // Bitboard functions
 
-// get all attacks from non pawn pieces
-Bitboard getAttacksBb(PieceType pt, Square sq, Bitboard occupied);
-
 /**
-* Shifts a bitboard in the given direction.
-* @param d Direction
-* @param b Bitboard
-* @return shifted bitboard
-*/
+ * Shifts a bitboard in the given direction.
+ * @param d Direction
+ * @param b Bitboard
+ * @return shifted bitboard
+ */
 inline Bitboard shiftBb(const Direction d, const Bitboard b) {
   // move the bits and clear the left our right file
   // after the shift to erase bit jumping over
@@ -187,10 +489,11 @@ inline Bitboard shiftBb(const Direction d, const Bitboard b) {
 #endif
 
 // popcount() counts the number of non-zero bits in a bitboard
-inline int popcount(Bitboard b) {
+constexpr int popcount(Bitboard b) {
 #if __cpp_lib_bitops >= 201907L
   return std::popcount(b);
 #else
+  // TODO: constexpr is not tested with these other implementations
 #if defined(__GNUC__)// GCC, Clang, ICC
   return __builtin_popcountll(b);
 #elif defined(_MSC_VER)
@@ -231,12 +534,8 @@ inline Square lsb(Bitboard b) {
   return static_cast<Square>(__builtin_ctzll(b));
 #elif defined(_MSC_VER)
   unsigned long index;
-  if (_BitScanForward64(&index, b)) {
-    return static_cast<Square>(index);
-  }
-  else {
-    return SQ_NONE;
-  }
+  if (_BitScanForward64(&index, b)) { return static_cast<Square>(index); }
+  else { return SQ_NONE; }
 #else// Compiler is not GCC
 #error "Compiler not yet supported."
 #endif
@@ -254,12 +553,8 @@ inline Square msb(Bitboard b) {
   return static_cast<Square>(63 - __builtin_clzll(b));
 #elif defined(_MSC_VER)
   unsigned long index;
-  if (_BitScanReverse64(&index, b)) {
-    return static_cast<Square>(index);
-  }
-  else {
-    return SQ_NONE;
-  }
+  if (_BitScanReverse64(&index, b)) { return static_cast<Square>(index); }
+  else { return SQ_NONE; }
 #else// Compiler is not GCC
 #error "Compiler not yet supported."
 #endif
@@ -280,34 +575,20 @@ inline Square popLSB(Bitboard& b) {
 // Bitboard operators
 
 // Operators for Squares as Bitboards
-inline Bitboard operator&(const Square lhs, const Square rhs) {
-  return Bitboards::sqBb[lhs] & Bitboards::sqBb[rhs];
-}
+constexpr Bitboard operator&(const Square lhs, const Square rhs) { return Bitboards::sqBb[lhs] & Bitboards::sqBb[rhs]; }
 
-inline Bitboard operator|(const Square lhs, const Square rhs) {
-  return Bitboards::sqBb[lhs] | Bitboards::sqBb[rhs];
-}
+constexpr Bitboard operator|(const Square lhs, const Square rhs) { return Bitboards::sqBb[lhs] | Bitboards::sqBb[rhs]; }
 
 // Operators for Squares on Bitboards
-inline Bitboard operator&(const Bitboard b, const Square s) {
-  return b & Bitboards::sqBb[s];
-}
+constexpr Bitboard operator&(const Bitboard b, const Square s) { return b & Bitboards::sqBb[s]; }
 
-inline Bitboard operator|(const Bitboard b, const Square s) {
-  return b | Bitboards::sqBb[s];
-}
+constexpr Bitboard operator|(const Bitboard b, const Square s) { return b | Bitboards::sqBb[s]; }
 
-inline Bitboard operator^(const Bitboard b, const Square s) {
-  return b ^ Bitboards::sqBb[s];
-}
+constexpr Bitboard operator^(const Bitboard b, const Square s) { return b ^ Bitboards::sqBb[s]; }
 
-inline Bitboard& operator|=(Bitboard& b, const Square s) {
-  return b |= Bitboards::sqBb[s];
-}
+constexpr Bitboard& operator|=(Bitboard& b, const Square s) { return b |= Bitboards::sqBb[s]; }
 
-inline Bitboard& operator^=(Bitboard& b, const Square s) {
-  return b ^= Bitboards::sqBb[s];
-}
+constexpr Bitboard& operator^=(Bitboard& b, const Square s) { return b ^= Bitboards::sqBb[s]; }
 
 // //////////////////////////////////////////////////////////////////
 // Bitboard print functions
@@ -326,16 +607,7 @@ std::string strGrouped(Bitboard b);
 // Bitboard initialization and pre-computation
 
 namespace Bitboards {
-  void rankFileBbPreCompute();
-  void squareBitboardsPreCompute();
-  void nonSlidingAttacksPreCompute();
   void initMagicBitboards();
-  void neighbourMasksPreCompute();
-  void raysPreCompute();
-  void intermediatePreCompute();
-  void maskPassedPawnsPreCompute();
-  void castleMasksPreCompute();
-  void colorBitboardsPreCompute();
 }// namespace Bitboards
 
 // //////////////////////////////////////////////////////////////////
@@ -351,7 +623,7 @@ struct Magic {
   unsigned shift;
 
   // Compute the attack's index using the 'magic bitboards' approach
-  [[nodiscard]] inline unsigned index(Bitboard occupied) const {
+  [[nodiscard]] unsigned index(const Bitboard occupied) const {
 #ifdef HAS_PEXT
     return static_cast<unsigned>(_pext_u64(occupied, mask));
 #else
@@ -366,6 +638,24 @@ namespace Bitboards {
   inline Magic rookMagics[SQ_LENGTH];
   inline Magic bishopMagics[SQ_LENGTH];
 }// namespace Bitboards
+
+// get all attacks from non pawn pieces
+inline Bitboard getAttacksBb(const PieceType pt, const Square sq, const Bitboard occupied) {
+  switch (pt) {
+    case BISHOP:
+      return Bitboards::bishopMagics[sq].attacks[Bitboards::bishopMagics[sq].index(occupied)];
+    case ROOK:
+      return Bitboards::rookMagics[sq].attacks[Bitboards::rookMagics[sq].index(occupied)];
+    case QUEEN:
+      return Bitboards::bishopMagics[sq].attacks[Bitboards::bishopMagics[sq].index(occupied)] | Bitboards::rookMagics[sq].attacks[Bitboards::rookMagics[sq].index(occupied)];
+    case KNIGHT:
+      [[fallthrough]];
+    case KING:
+      return Bitboards::nonSliderAttacks[pt][sq];
+    default:
+      return BbZero;
+  }
+}
 
 /// from Stockfish:
 /// xorshift64star Pseudo-Random Number Generator
@@ -384,6 +674,7 @@ namespace Bitboards {
 ///   <http://vigna.di.unimi.it/ftp/papers/xorshift.pdf>
 class PRNG {
   uint64_t s;
+
   uint64_t rand64() {
     s ^= s >> 12, s ^= s << 25, s ^= s >> 27;
     return s * 2685821657736338717LL;
@@ -391,12 +682,14 @@ class PRNG {
 
 public:
   explicit PRNG(const uint64_t seed) : s(seed) { assert(seed); }
+
   template<typename T>
   T rand() { return T(rand64()); }
+
   // Special generator used to fast init magic numbers.
   // Output values only have 1/8th of their bits set on average.
   template<typename T>
   T sparse_rand() { return T(rand64() & rand64() & rand64()); }
 };
 
-#endif//FRANKYCPP_BITBOARD_H
+#endif// FRANKYCPP_BITBOARD_H

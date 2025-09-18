@@ -34,26 +34,75 @@
 //  SqG8
 //  SqH8   // 63
 //  SqNone // 64
-enum Square : uint_fast8_t { // @formatter:off
-  SQ_A1, SQ_B1, SQ_C1, SQ_D1, SQ_E1, SQ_F1, SQ_G1, SQ_H1,
-  SQ_A2, SQ_B2, SQ_C2, SQ_D2, SQ_E2, SQ_F2, SQ_G2, SQ_H2,
-  SQ_A3, SQ_B3, SQ_C3, SQ_D3, SQ_E3, SQ_F3, SQ_G3, SQ_H3,
-  SQ_A4, SQ_B4, SQ_C4, SQ_D4, SQ_E4, SQ_F4, SQ_G4, SQ_H4,
-  SQ_A5, SQ_B5, SQ_C5, SQ_D5, SQ_E5, SQ_F5, SQ_G5, SQ_H5,
-  SQ_A6, SQ_B6, SQ_C6, SQ_D6, SQ_E6, SQ_F6, SQ_G6, SQ_H6,
-  SQ_A7, SQ_B7, SQ_C7, SQ_D7, SQ_E7, SQ_F7, SQ_G7, SQ_H7,
-  SQ_A8, SQ_B8, SQ_C8, SQ_D8, SQ_E8, SQ_F8, SQ_G8, SQ_H8,
+enum Square : uint_fast8_t {// @formatter:off
+  SQ_A1,
+  SQ_B1,
+  SQ_C1,
+  SQ_D1,
+  SQ_E1,
+  SQ_F1,
+  SQ_G1,
+  SQ_H1,
+  SQ_A2,
+  SQ_B2,
+  SQ_C2,
+  SQ_D2,
+  SQ_E2,
+  SQ_F2,
+  SQ_G2,
+  SQ_H2,
+  SQ_A3,
+  SQ_B3,
+  SQ_C3,
+  SQ_D3,
+  SQ_E3,
+  SQ_F3,
+  SQ_G3,
+  SQ_H3,
+  SQ_A4,
+  SQ_B4,
+  SQ_C4,
+  SQ_D4,
+  SQ_E4,
+  SQ_F4,
+  SQ_G4,
+  SQ_H4,
+  SQ_A5,
+  SQ_B5,
+  SQ_C5,
+  SQ_D5,
+  SQ_E5,
+  SQ_F5,
+  SQ_G5,
+  SQ_H5,
+  SQ_A6,
+  SQ_B6,
+  SQ_C6,
+  SQ_D6,
+  SQ_E6,
+  SQ_F6,
+  SQ_G6,
+  SQ_H6,
+  SQ_A7,
+  SQ_B7,
+  SQ_C7,
+  SQ_D7,
+  SQ_E7,
+  SQ_F7,
+  SQ_G7,
+  SQ_H7,
+  SQ_A8,
+  SQ_B8,
+  SQ_C8,
+  SQ_D8,
+  SQ_E8,
+  SQ_F8,
+  SQ_G8,
+  SQ_H8,
   SQ_NONE,
   SQ_LENGTH = 64
 };
 // @formatter:on
-
-// precomputed arrays
-namespace Squares {
-  inline int squareDistance[SQ_NONE][SQ_NONE];
-  inline int centerDistance[SQ_LENGTH];
-  inline std::string squareNames[SQ_LENGTH];
-}// namespace Squares
 
 // checks if this is a valid square (int >= 0 and <64)
 constexpr bool validSquare(const Square s) { return s < 64; }
@@ -87,15 +136,70 @@ inline Square makeSquare(const std::string& s) {
   return makeSquare(std::string_view{s});
 }
 
+// ENABLE_INCR_OPERATORS_ON(Square)
+constexpr Square& operator++(Square& d) { return d = static_cast<Square>(static_cast<int>(d) + 1); }
+constexpr Square& operator--(Square& d) { return d = static_cast<Square>(static_cast<int>(d) - 1); }
+
+// precomputed by types::init()
+namespace Squares {
+  constexpr std::array<std::array<int, SQ_NONE>, SQ_NONE> squareDistancePreCompute() {
+    std::array<std::array<int, SQ_NONE>, SQ_NONE> dist{};// zero-initialize (diagonal stays 0)
+    // distance between squares (Chebyshev distance)
+    for (Square sq1 = SQ_A1; sq1 <= SQ_H8; ++sq1) {
+      for (Square sq2 = SQ_A1; sq2 <= SQ_H8; ++sq2) {
+        if (sq1 != sq2) {
+          const int f1   = fileOf(sq1);
+          const int f2   = fileOf(sq2);
+          const int r1   = rankOf(sq1);
+          const int r2   = rankOf(sq2);
+          const int df   = f1 > f2 ? (f1 - f2) : (f2 - f1);
+          const int dr   = r1 > r2 ? (r1 - r2) : (r2 - r1);
+          dist[sq1][sq2] = df > dr ? df : dr;
+        }
+      }
+    }
+    return dist;
+  }
+  inline constexpr std::array<std::array<int, SQ_NONE>, SQ_NONE> squareDistance = squareDistancePreCompute();
+
+  constexpr std::array<int, SQ_LENGTH> centerDistancePreCompute() {
+    std::array<int, SQ_LENGTH> cd{};
+    for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
+      if (fileOf(sq) <= FILE_D && rankOf(sq) >= RANK_5) {
+        cd[sq] = squareDistance[sq][SQ_D5];
+      }
+      else if (fileOf(sq) >= FILE_E && rankOf(sq) >= RANK_5) {
+        cd[sq] = squareDistance[sq][SQ_E5];
+      }
+      else if (fileOf(sq) <= FILE_D && rankOf(sq) <= RANK_4) {
+        cd[sq] = squareDistance[sq][SQ_D4];
+      }
+      else if (fileOf(sq) >= FILE_E && rankOf(sq) <= RANK_4) {
+        cd[sq] = squareDistance[sq][SQ_E4];
+      }
+    }
+    return cd;
+  }
+  inline constexpr std::array<int, SQ_LENGTH> centerDistance = centerDistancePreCompute();
+
+  inline constexpr std::array<std::array<char, 3>, SQ_LENGTH> squareNames = []() {
+    std::array<std::array<char, 3>, SQ_LENGTH> names{};
+    for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
+      names[sq] = {str(fileOf(sq)), str(rankOf(sq)), '\0'};
+    }
+    return names;
+  }();
+}// namespace Squares
+
 // returns the precomputed distance between two squares
-inline int distance(const Square s1, const Square s2) { return Squares::squareDistance[s1][s2]; }
+constexpr int distance(const Square s1, const Square s2) { return Squares::squareDistance[s1][s2]; }
 
 // pawnPush returns the square of a pawn move of the given color
 constexpr Square pawnPush(const Square s, const Color c) { return static_cast<Square>(s + (c == WHITE ? 8 : -8)); }
 
 // returns a string representing the square (e.g. a1 or h8)
-inline const std::string& str(const Square sq) {
-  return Squares::squareNames[sq];
+inline std::string str(const Square sq) {
+  return Squares::squareNames[sq].data();
 }
 
 inline std::ostream& operator<<(std::ostream& os, const Square sq) {
@@ -103,48 +207,5 @@ inline std::ostream& operator<<(std::ostream& os, const Square sq) {
   return os;
 }
 
-ENABLE_INCR_OPERATORS_ON(Square)
 
-// precomputed by types::init()
-namespace Squares {
-
-  inline void squareDistancePreCompute() {
-    // distance between squares
-    for (Square sq1 = SQ_A1; sq1 <= SQ_H8; ++sq1) {
-      for (Square sq2 = SQ_A1; sq2 <= SQ_H8; ++sq2) {
-        if (sq1 != sq2) {
-          squareDistance[sq1][sq2] = std::max(distance(fileOf(sq1), fileOf(sq2)), distance(rankOf(sq1), rankOf(sq2)));
-        }
-      }
-    }
-  }
-
-  inline void centerDistancePreCompute() {
-    for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
-      // left upper quadrant
-      if (fileOf(sq) <= FILE_D && rankOf(sq) >= RANK_5) {
-        centerDistance[sq] = squareDistance[sq][SQ_D5];
-        // right upper quadrant
-      }
-      else if (fileOf(sq) >= FILE_E && rankOf(sq) >= RANK_5) {
-        centerDistance[sq] = squareDistance[sq][SQ_E5];
-        // left lower quadrant
-      }
-      else if (fileOf(sq) <= FILE_D && rankOf(sq) <= RANK_4) {
-        centerDistance[sq] = squareDistance[sq][SQ_D4];
-        // right lower quadrant
-      }
-      else if (fileOf(sq) >= FILE_E && rankOf(sq) <= RANK_4) {
-        centerDistance[sq] = squareDistance[sq][SQ_E4];
-      }
-    }
-  }
-
-  inline void squareNamesPreCompute() {
-    for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
-      squareNames[sq] = std::string{str(fileOf(sq)), str(rankOf(sq))};
-    }
-  }
-}// namespace Squares
-
-#endif//FRANKYCPP_SQUARE_H
+#endif// FRANKYCPP_SQUARE_H

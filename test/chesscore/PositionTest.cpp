@@ -42,12 +42,18 @@ protected:
 
 
 TEST_F(PositionTest, initialization) {
-  Position position;
+  const Position position;
   EXPECT_TRUE(Position::initialized);
+  EXPECT_EQ(WHITE, position.getNextPlayer());
+  EXPECT_EQ(BLACK, ~position.getNextPlayer());
+  EXPECT_EQ(1, position.getMoveNumber());
+  EXPECT_EQ(position.getMaterial(WHITE), position.getMaterial(BLACK));
+  EXPECT_EQ(24, position.getGamePhase());
+  EXPECT_DOUBLE_EQ(1.0, position.getGamePhaseFactor());
 }
 
 TEST_F(PositionTest, HistoryStruct) {
-  Position position;
+  const Position position;
   fprintln("int:            {}", sizeof(int));
   fprintln("Key:            {}", sizeof(Key));
   fprintln("Move:           {}", sizeof(Move));
@@ -61,7 +67,8 @@ TEST_F(PositionTest, HistoryStruct) {
 }
 
 TEST_F(PositionTest, ZobristTest) {
-  Position position;
+  const Position position;
+  EXPECT_EQ(WHITE, position.getNextPlayer());
 
   Key z = 0ULL;
 
@@ -69,7 +76,7 @@ TEST_F(PositionTest, ZobristTest) {
   z ^= Zobrist::pieces[BLACK_KING][SQ_E8];
   z ^= Zobrist::castlingRights[ANY_CASTLING];
   z ^= Zobrist::enPassantFile[FILE_NONE];
-  Key expected = z;
+  const Key expected = z;
   // cout << "Zobrist= " << z << std::endl;
   EXPECT_EQ(8408280106960045251ULL, z);
 
@@ -131,7 +138,7 @@ TEST_F(PositionTest, Setup) {
   EXPECT_EQ(BLACK_KNIGHT, position.getPiece(SQ_B8));
 
   // Copy constructor
-  Position position2 = Position(position);
+  auto position2 = Position(position);
   EXPECT_EQ(WHITE, position2.getNextPlayer());
   EXPECT_EQ(BLACK, ~position2.getNextPlayer());
   EXPECT_EQ(position2.getMaterial(WHITE), position2.getMaterial(BLACK));
@@ -213,75 +220,77 @@ TEST_F(PositionTest, Setup) {
 
 TEST_F(PositionTest, FenCheck) {
 
-  // test data for table driven test
+  // test data for table-driven test
   struct test {
     std::string fen;
     bool valid;
   };
 
   test illegalFens[]{
-    {"", false},                                                         // empty
+    {"", false},// empty
 
-    {"   not a fen   ", false},                                          // illegal chars in position
+    {"   not a fen   ", false},// illegal chars in position
 
-    {"81/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", false},       // too many files in rank
-    {"7/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", false},        // too few files in rank
+    {"81/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", false},// too many files in rank
+    {"7/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", false},// too few files in rank
     {"rnbqkbnr/ppppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", false},// too many files in rank
     {"Onbqkbnr/ppppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", false},// illegal char
     {"rnbqkbnrr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", false},// too many files
-    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBN w KQkq - 0 1", false},  // not complete
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBN w KQkq - 0 1", false},// not complete
 
-    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR x KQkq - 0 1", false},  // next player invalid
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR x KQkq - 0 1", false},// next player invalid
     {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR abc KQkq - 0 1", false},// next player invalid
-    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1", true},   // next player valid
-    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", true},   // next player valid
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1", true},// next player valid
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", true},// next player valid
 
     {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w xyz - 0 1", false},// invalid castling
-    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w -- - 0 1", false}, // invalid castling
-    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KK - 0 1", false}, // invalid castling
-    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w Kk - 0 1", true},  // valid castling
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w -- - 0 1", false},// invalid castling
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KK - 0 1", false},// invalid castling
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w Kk - 0 1", true},// valid castling
 
-    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - x 0 1", false},  // invalid en passant
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - x 0 1", false},// invalid en passant
     {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - abc 0 1", false},// invalid en passant
-    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - aa 0 1", false}, // invalid en passant
-    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - 11 0 1", false}, // invalid en passant
-    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - 0 1", false},    // invalid en passant
-    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - e3 0 1", true},  // valid en passant
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - aa 0 1", false},// invalid en passant
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - 11 0 1", false},// invalid en passant
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - 0 1", false},// invalid en passant
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - e3 0 1", true},// valid en passant
 
-    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - - 1", false}, // invalid half move number
-    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - a 1", false}, // invalid half move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - - 1", false},// invalid half move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - a 1", false},// invalid half move number
     {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 1a 1", false},// invalid half move number
     {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - a1 1", false},// invalid half move number
-    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1", true},  // valid half move number
-    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 1 1", true},  // valid half move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1", true},// valid half move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 1 1", true},// valid half move number
     {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 999 1", true},// valid half move number
 
-    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 -", false}, // invalid move number
-    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 a", false}, // invalid move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 -", false},// invalid move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 a", false},// invalid move number
     {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1a", false},// invalid move number
     {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 a1", false},// invalid move number
     {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 -4", false},// valid move number
-    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 0", true},  // valid move number
-    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1", true},  // valid move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 0", true},// valid move number
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1", true},// valid move number
     {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 999", true},// valid move number
 
-    {START_POSITION_FEN, true},                                     // standard start position
+    {START_POSITION_FEN, true},// standard start position
     {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1", true},// valid
-    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0", true},  // valid
-    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - -", true},    // valid
-    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w -", true},      // valid
-    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w", true},        // valid
-    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", true},          // valid
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0", true},// valid
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - -", true},// valid
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w -", true},// valid
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w", true},// valid
+    {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", true},// valid
   };
 
   // run all test cases
-  for (const auto& test : illegalFens) {
-    fprintln("{}", test.fen);
-    if (test.valid) {
-      EXPECT_NO_THROW(Position p(test.fen));
+  for (const auto& [fen, valid] : illegalFens) {
+    fprintln("{}", fen);
+    if (valid) {
+      // ReSharper disable once CppDeclaratorNeverUsed
+      EXPECT_NO_THROW(Position p(fen));
     }
     else {
-      EXPECT_THROW(Position p(test.fen), std::invalid_argument);
+      // ReSharper disable once CppDeclaratorNeverUsed
+      EXPECT_THROW(Position p(fen), std::invalid_argument);
     }
   }
 }
@@ -294,23 +303,23 @@ TEST_F(PositionTest, Output) {
   Position position;
   EXPECT_EQ(START_POSITION_FEN, position.strFen());
   expected << "  +---+---+---+---+---+---+---+---+\n"
-              "8 | r | n | b | q | k | b | n | r |\n"
-              "  +---+---+---+---+---+---+---+---+\n"
-              "7 | * | * | * | * | * | * | * | * |\n"
-              "  +---+---+---+---+---+---+---+---+\n"
-              "6 |   |   |   |   |   |   |   |   |\n"
-              "  +---+---+---+---+---+---+---+---+\n"
-              "5 |   |   |   |   |   |   |   |   |\n"
-              "  +---+---+---+---+---+---+---+---+\n"
-              "4 |   |   |   |   |   |   |   |   |\n"
-              "  +---+---+---+---+---+---+---+---+\n"
-              "3 |   |   |   |   |   |   |   |   |\n"
-              "  +---+---+---+---+---+---+---+---+\n"
-              "2 | O | O | O | O | O | O | O | O |\n"
-              "  +---+---+---+---+---+---+---+---+\n"
-              "1 | R | N | B | Q | K | B | N | R |\n"
-              "  +---+---+---+---+---+---+---+---+\n"
-              "    A   B   C   D   E   F   G   H  \n\n";
+    "8 | r | n | b | q | k | b | n | r |\n"
+    "  +---+---+---+---+---+---+---+---+\n"
+    "7 | * | * | * | * | * | * | * | * |\n"
+    "  +---+---+---+---+---+---+---+---+\n"
+    "6 |   |   |   |   |   |   |   |   |\n"
+    "  +---+---+---+---+---+---+---+---+\n"
+    "5 |   |   |   |   |   |   |   |   |\n"
+    "  +---+---+---+---+---+---+---+---+\n"
+    "4 |   |   |   |   |   |   |   |   |\n"
+    "  +---+---+---+---+---+---+---+---+\n"
+    "3 |   |   |   |   |   |   |   |   |\n"
+    "  +---+---+---+---+---+---+---+---+\n"
+    "2 | O | O | O | O | O | O | O | O |\n"
+    "  +---+---+---+---+---+---+---+---+\n"
+    "1 | R | N | B | Q | K | B | N | R |\n"
+    "  +---+---+---+---+---+---+---+---+\n"
+    "    A   B   C   D   E   F   G   H  \n\n";
   actual << position.strBoard();
   //  cout << expected.str() << endl;
   NEWLINE;
@@ -344,7 +353,7 @@ TEST_F(PositionTest, Copy) {
   // make copy and check if copy is really an independent deep copy from position.
   Position copy(position);
   position.undoMove();
-  position.doMove(move2);              // different move changes history
+  position.doMove(move2);// different move changes history
   EXPECT_EQ(move1, copy.getLastMove());// check if copy's history is independent
 
   // undo and check if equal
@@ -376,12 +385,10 @@ TEST_F(PositionTest, PosValue) {
 }
 
 TEST_F(PositionTest, Bitboards) {
-  string fen("r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3 10 113");
-  Position position(fen.c_str());
+  const string fen("r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3 10 113");
+  const Position position(fen.c_str());
 
-  Bitboard bb, expected;
-
-  bb = position.getPieceBb(WHITE, KING);
+  Bitboard bb = position.getPieceBb(WHITE, KING);
   //  cout << Bitboards::str(bb);
   EXPECT_EQ(Bitboards::sqBb[SQ_G1], bb);
 
@@ -391,7 +398,7 @@ TEST_F(PositionTest, Bitboards) {
 
   bb = position.getPieceBb(WHITE, ROOK);
   //  cout << Bitboards::str(bb);
-  expected = Bitboards::sqBb[SQ_B1] | Bitboards::sqBb[SQ_G3];
+  Bitboard expected = Bitboards::sqBb[SQ_B1] | Bitboards::sqBb[SQ_G3];
   EXPECT_EQ(expected, bb);
 
   bb = position.getPieceBb(BLACK, ROOK);
@@ -651,7 +658,6 @@ TEST_F(PositionTest, repetitionAdvanced) {
   Position position("6k1/p3q2p/1n1Q2pB/8/5P2/6P1/PP5P/3R2K1 b - -");
 
 
-
   position.doMove(createMove(SQ_E7, SQ_E3, NORMAL));
   position.doMove(createMove(SQ_G1, SQ_G2, NORMAL));
 
@@ -739,11 +745,9 @@ TEST_F(PositionTest, insufficientMaterial) {
 }
 
 TEST_F(PositionTest, hasCheck) {
-  string fen;
-  Position position;
 
-  fen      = "r3k2r/1ppn3p/2q1qNn1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3";
-  position = Position(fen);
+  const string fen    = "r3k2r/1ppn3p/2q1qNn1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3";
+  const auto position = Position(fen);
 
   EXPECT_TRUE(position.isAttacked(SQ_E8, WHITE));
   EXPECT_TRUE(position.hasCheck());
@@ -972,11 +976,8 @@ TEST_F(PositionTest, giveCheck) {
 }
 
 TEST_F(PositionTest, isCapturingMove) {
-  string fen;
-  Position position;
-
-  fen      = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3";
-  position = Position(fen);
+  const string fen    = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3";
+  const auto position = Position(fen);
   EXPECT_TRUE(position.isCapturingMove(createMove(SQ_A2, SQ_B1, PROMOTION)));
   EXPECT_FALSE(position.isCapturingMove(createMove(SQ_A2, SQ_A1, PROMOTION)));
   EXPECT_TRUE(position.isCapturingMove(createMove(SQ_C6, SQ_E4, NORMAL)));
@@ -984,12 +985,9 @@ TEST_F(PositionTest, isCapturingMove) {
 }
 
 TEST_F(PositionTest, isLegalMove) {
-  string fen;
-  Position position;
-
   // no o-o castling
-  fen      = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3";
-  position = Position(fen);
+  string fen    = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3";
+  auto position = Position(fen);
   EXPECT_FALSE(position.isLegalMove(createMove(SQ_E8, SQ_G8, CASTLING)));
   EXPECT_TRUE(position.isLegalMove(createMove(SQ_E8, SQ_C8, CASTLING)));
 
@@ -1001,12 +999,10 @@ TEST_F(PositionTest, isLegalMove) {
 }
 
 TEST_F(PositionTest, wasLegalMove) {
-  string fen;
-  Position position;
 
   // no o-o castling
-  fen      = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3";
-  position = Position(fen);
+  string fen    = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3";
+  auto position = Position(fen);
 
   position.doMove(createMove(SQ_E8, SQ_G8, CASTLING));
   EXPECT_FALSE(position.wasLegalMove());
@@ -1030,11 +1026,9 @@ TEST_F(PositionTest, wasLegalMove) {
 }
 
 TEST_F(PositionTest, attacksTo) {
-  Position p;
-  Bitboard attacksTo;
 
-  p         = Position("2brr1k1/1pq1b1p1/p1np1p1p/P1p1p2n/1PNPPP2/2P1BNP1/4Q1BP/R2R2K1 w - -");
-  attacksTo = p.attacksTo(SQ_E5, WHITE);
+  auto p             = Position("2brr1k1/1pq1b1p1/p1np1p1p/P1p1p2n/1PNPPP2/2P1BNP1/4Q1BP/R2R2K1 w - -");
+  Bitboard attacksTo = p.attacksTo(SQ_E5, WHITE);
   //fprintln("{}", strBoard(attacksTo));
   //fprintln("{}", strGrouped(attacksTo));
   EXPECT_EQ(740294656, attacksTo);
@@ -1052,49 +1046,49 @@ TEST_F(PositionTest, attacksTo) {
   attacksTo = p.attacksTo(SQ_D4, BLACK);
   //fprintln("{}", strBoard(attacksTo));
   //fprintln("{}", strGrouped(attacksTo));
-  EXPECT_EQ(Bitboard(4483945857024), attacksTo);
+  EXPECT_EQ(static_cast<Bitboard>(4483945857024), attacksTo);
 
   attacksTo = p.attacksTo(SQ_D6, BLACK);
   //fprintln("{}", strBoard(attacksTo));
   //fprintln("{}", strGrouped(attacksTo));
-  EXPECT_EQ(Bitboard(582090251837636608), attacksTo);
+  EXPECT_EQ(static_cast<Bitboard>(582090251837636608), attacksTo);
 
   attacksTo = p.attacksTo(SQ_F8, BLACK);
   //fprintln("{}", strBoard(attacksTo));
   //fprintln("{}", strGrouped(attacksTo));
-  EXPECT_EQ(Bitboard(5769111122661605376), attacksTo);
+  EXPECT_EQ(static_cast<Bitboard>(5769111122661605376), attacksTo);
 
   p         = Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
   attacksTo = p.attacksTo(SQ_E5, BLACK);
   //fprintln("{}", strBoard(attacksTo));
   //fprintln("{}", strGrouped(attacksTo));
-  EXPECT_EQ(Bitboard(2339760743907840), attacksTo);
+  EXPECT_EQ(static_cast<Bitboard>(2339760743907840), attacksTo);
 
   attacksTo = p.attacksTo(SQ_B1, BLACK);
   //fprintln("{}", strBoard(attacksTo));
   //fprintln("{}", strGrouped(attacksTo));
-  EXPECT_EQ(Bitboard(1280), attacksTo);
+  EXPECT_EQ(static_cast<Bitboard>(1280), attacksTo);
 
   attacksTo = p.attacksTo(SQ_G3, WHITE);
   //fprintln("{}", strBoard(attacksTo));
   //fprintln("{}", strGrouped(attacksTo));
-  EXPECT_EQ(Bitboard(40960), attacksTo);
+  EXPECT_EQ(static_cast<Bitboard>(40960), attacksTo);
 
   attacksTo = p.attacksTo(SQ_E3, BLACK);
-//  fprintln("{}", strBoard(attacksTo));
-//  fprintln("{}", strGrouped(attacksTo));
-  EXPECT_EQ(Bitboard(536870912), attacksTo);
+  //  fprintln("{}", strBoard(attacksTo));
+  //  fprintln("{}", strGrouped(attacksTo));
+  EXPECT_EQ(static_cast<Bitboard>(536870912), attacksTo);
 
   attacksTo = p.attacksTo(SQ_E4, BLACK);
-//  fprintln("{}", strBoard(attacksTo));
-//  fprintln("{}", strGrouped(attacksTo));
-  EXPECT_EQ(Bitboard(4398650490880), attacksTo);
+  //  fprintln("{}", strBoard(attacksTo));
+  //  fprintln("{}", strGrouped(attacksTo));
+  EXPECT_EQ(static_cast<Bitboard>(4398650490880), attacksTo);
 }
 
 TEST_F(PositionTest, debug) {
 
   Position p("r3k2r/Pppp1ppp/1b3nbN/nP6/BBPPP3/q4N2/Pp4PP/R2Q1RK1 b kq d3 0 1");
-  Move m = createMove(SQ_B2, SQ_A1, PROMOTION, QUEEN);
+  constexpr Move m = createMove(SQ_B2, SQ_A1, PROMOTION, QUEEN);
   fprintln(strVerbose(m));
   fprintln(p.strFen());
   p.doMove(m);
@@ -1108,20 +1102,20 @@ TEST_F(PositionTest, PrintZobristConstants) {
   for (int pc = 0; pc < PIECE_LENGTH; ++pc) {
     for (int sq = 0; sq < SQ_LENGTH; ++sq) {
       std::cout << "pieces[" << pc << "][" << sq << "] = "
-                << Zobrist::pieces[pc][sq] << std::endl;
+        << Zobrist::pieces[pc][sq] << std::endl;
     }
   }
 
   std::cout << "Zobrist::castlingRights:" << std::endl;
   for (int cr = 0; cr < CR_LENGTH; ++cr) {
     std::cout << "castlingRights[" << cr << "] = "
-              << Zobrist::castlingRights[cr] << std::endl;
+      << Zobrist::castlingRights[cr] << std::endl;
   }
 
   std::cout << "Zobrist::enPassantFile:" << std::endl;
   for (int f = 0; f < FILE_LENGTH; ++f) {
     std::cout << "enPassantFile[" << f << "] = "
-              << Zobrist::enPassantFile[f] << std::endl;
+      << Zobrist::enPassantFile[f] << std::endl;
   }
 
   std::cout << "Zobrist::nextPlayer = " << Zobrist::nextPlayer << std::endl;

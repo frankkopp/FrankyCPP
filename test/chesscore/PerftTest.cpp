@@ -67,7 +67,7 @@ TEST_F(PerftTest, stdPerft) {
   cout << "==============================" << endl;
 
   // @formatter:off
-  const uint64_t results[10][8] = {
+  static const uint64_t results[10][8] = {
     //N                 Nodes            Captures              EP             Checks              Mates           Castles      Promotions
     { 0,                 1ULL,               0ULL,           0ULL,              0ULL,              0ULL,             0ULL ,          0ULL },
     { 1,                20ULL,               0ULL,           0ULL,              0ULL,              0ULL,             0ULL ,          0ULL },
@@ -128,7 +128,7 @@ TEST_F(PerftTest, stdPerftOD) {
   cout << "==============================" << endl;
 
   // @formatter:off
-  const uint64_t results[10][8] = {
+  static const uint64_t results[10][8] = {
     //N                 Nodes            Captures              EP             Checks              Mates           Castles      Promotions
     { 0,                 1ULL,               0ULL,           0ULL,              0ULL,              0ULL,             0ULL ,          0ULL },
     { 1,                20ULL,               0ULL,           0ULL,              0ULL,              0ULL,             0ULL ,          0ULL },
@@ -147,7 +147,7 @@ TEST_F(PerftTest, stdPerftOD) {
 #ifndef NDEBUG
   constexpr int maxDepth = 4;
 #else
-  constexpr int maxDepth   = 7;
+  constexpr int maxDepth = 7;
 #  endif
 
   for (int i = startDepth; i <= maxDepth; i++) {
@@ -173,24 +173,25 @@ TEST_F(PerftTest, dividePerft) {
   cout << "Standard PERFT Test" << endl;
   cout << "==============================" << endl;
 
-  const int maxDepth = 5;
+  // @formatter:off
+  static const uint64_t results[10][8] = {
+       //N                 Nodes            Captures              EP             Checks              Mates           Castles      Promotions
+    { 0,                 1ULL,               0ULL,           0ULL,              0ULL,              0ULL,             0ULL ,          0ULL },
+    { 1,                20ULL,               0ULL,           0ULL,              0ULL,              0ULL,             0ULL ,          0ULL },
+    { 2,               400ULL,               0ULL,           0ULL,              0ULL,              0ULL,             0ULL ,          0ULL },
+    { 3,             8'902ULL,              34ULL,           0ULL,             12ULL,              0ULL,             0ULL ,          0ULL },
+    { 4,           197'281ULL,           1'576ULL,           0ULL,            469ULL,              8ULL,             0ULL ,          0ULL },
+    { 5,         4'865'609ULL,          82'719ULL,         258ULL,         27'351ULL,            347ULL,             0ULL ,          0ULL },
+    { 6,       119'060'324ULL,       2'812'008ULL,       5'248ULL,        809'099ULL,         10'828ULL,             0ULL ,          0ULL },
+    { 7,     3'195'901'860ULL,     108'329'926ULL,     319'617ULL,     33'103'848ULL,        435'767ULL,       883'453ULL ,          0ULL },
+    { 8,    84'998'978'956ULL,   3'523'740'106ULL,   7'187'977ULL,    968'981'593ULL,      9'852'036ULL,    23'605'205ULL ,          0ULL },
+    { 9, 2'439'530'234'167ULL, 125'208'536'153ULL, 319'496'827ULL, 36'095'901'903ULL,    400'191'963ULL, 1'784'356'000ULL , 17'334'376ULL }
+  };
+  // @formatter:on
+
+  constexpr int maxDepth = 5;
 
   for (int i = 1; i <= maxDepth; i++) {
-  // @formatter:off
-    const uint64_t results[10][8] = {
-      //N                 Nodes            Captures              EP             Checks              Mates           Castles      Promotions
-      { 0,                 1ULL,               0ULL,           0ULL,              0ULL,              0ULL,             0ULL ,          0ULL },
-      { 1,                20ULL,               0ULL,           0ULL,              0ULL,              0ULL,             0ULL ,          0ULL },
-      { 2,               400ULL,               0ULL,           0ULL,              0ULL,              0ULL,             0ULL ,          0ULL },
-      { 3,             8'902ULL,              34ULL,           0ULL,             12ULL,              0ULL,             0ULL ,          0ULL },
-      { 4,           197'281ULL,           1'576ULL,           0ULL,            469ULL,              8ULL,             0ULL ,          0ULL },
-      { 5,         4'865'609ULL,          82'719ULL,         258ULL,         27'351ULL,            347ULL,             0ULL ,          0ULL },
-      { 6,       119'060'324ULL,       2'812'008ULL,       5'248ULL,        809'099ULL,         10'828ULL,             0ULL ,          0ULL },
-      { 7,     3'195'901'860ULL,     108'329'926ULL,     319'617ULL,     33'103'848ULL,        435'767ULL,       883'453ULL ,          0ULL },
-      { 8,    84'998'978'956ULL,   3'523'740'106ULL,   7'187'977ULL,    968'981'593ULL,      9'852'036ULL,    23'605'205ULL ,          0ULL },
-      { 9, 2'439'530'234'167ULL, 125'208'536'153ULL, 319'496'827ULL, 36'095'901'903ULL,    400'191'963ULL, 1'784'356'000ULL , 17'334'376ULL }
-    };
-  // @formatter:on
     p.perft_divide(i, false);
     NEWLINE;
     EXPECT_EQ(results[i][1], p.getNodes());
@@ -207,6 +208,7 @@ TEST_F(PerftTest, dividePerft) {
 TEST_F(PerftTest, kiwiPetePerft) {
   MoveGenerator mg;
   Position position;
+  EXPECT_EQ(WHITE, position.getNextPlayer());
 
   cout << "Kiwipete PERFT Test" << endl;
   cout << "==============================" << endl;
@@ -214,7 +216,7 @@ TEST_F(PerftTest, kiwiPetePerft) {
   Perft p("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
 
   // @formatter:off
-  const uint64_t results[7][8] = {
+  static const uint64_t results[7][8] = {
     //N  Nodes        Captures    EP       Checks    Mates    Castles    Promotions
     { 0, 0,           0,          0,       0,        0      , 0,         0        },
     { 1, 48,          8,          0,       0,        0      , 2,         0        },
@@ -227,7 +229,7 @@ TEST_F(PerftTest, kiwiPetePerft) {
   // @formatter:on
 
   int startDepth = 1;
-  int maxDepth = 5;
+  int maxDepth   = 5;
 #ifndef NDEBUG
   maxDepth = 4;
 #endif
@@ -249,6 +251,7 @@ TEST_F(PerftTest, kiwiPetePerft) {
 TEST_F(PerftTest, pos3Perft) {
   MoveGenerator mg;
   Position position;
+  EXPECT_EQ(WHITE, position.getNextPlayer());
 
   cout << "Pos3 PERFT Test" << endl;
   cout << "==============================" << endl;
@@ -256,17 +259,17 @@ TEST_F(PerftTest, pos3Perft) {
   Perft p("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -");
 
   // @formatter:off
-  const uint64_t results[9][6] = {
-          //N  Nodes       Captures   EP       Checks     Mates
-          { 0, 0,          0,         0,       0,         0},
-          { 1, 14,         1,         0,       2,         0},
-          { 2, 191,        14,        0,       10,        0},
-          { 3, 2812,       209,       2,       267,       0},
-          { 4, 43238,      3348,      123,     1680,      17},
-          { 5, 674624,     52051,     1165,    52950,     0},
-          { 6, 11030083,   940350,    33325,   452473,    2733},
-          { 7, 178633661,  14519036,  294874,  12797406,  87},
-          { 8, 3009794393, 267586558, 8009239, 135626805, 450410}
+  static const uint64_t results[9][6] = {
+    //N  Nodes       Captures   EP       Checks     Mates
+    { 0, 0,          0,         0,       0,         0},
+    { 1, 14,         1,         0,       2,         0},
+    { 2, 191,        14,        0,       10,        0},
+    { 3, 2812,       209,       2,       267,       0},
+    { 4, 43238,      3348,      123,     1680,      17},
+    { 5, 674624,     52051,     1165,    52950,     0},
+    { 6, 11030083,   940350,    33325,   452473,    2733},
+    { 7, 178633661,  14519036,  294874,  12797406,  87},
+    { 8, 3009794393, 267586558, 8009239, 135626805, 450410}
   };
   // @formatter:on
 
@@ -290,6 +293,7 @@ TEST_F(PerftTest, pos3Perft) {
 TEST_F(PerftTest, pos4Perft) {
   MoveGenerator mg;
   Position position;
+  EXPECT_EQ(WHITE, position.getNextPlayer());
 
   cout << "Pos4 PERFT Test" << endl;
   cout << "==============================" << endl;
@@ -297,15 +301,15 @@ TEST_F(PerftTest, pos4Perft) {
   Perft p("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1");
 
   // @formatter:off
-  const uint64_t results[7][6] = {
-          //N  Nodes      Captures EP     Checks   Mates
-          { 0, 0,         0,         0,     0,        0},
-          { 1, 6,         0,         0,     0,        0},
-          { 2, 264,       87,        0,     10,       0},
-          { 3, 9467,      1021,      4,     38,       22},
-          { 4, 422333,    131393,    0,     15492,    5},
-          { 5, 15833292,  2046173,   6512,  200568,   50562},
-          { 6, 706045033, 210369132, 212,   26973664, 81076}
+  static const uint64_t results[7][6] = {
+    //N  Nodes      Captures EP     Checks   Mates
+    { 0, 0,         0,         0,     0,        0},
+    { 1, 6,         0,         0,     0,        0},
+    { 2, 264,       87,        0,     10,       0},
+    { 3, 9467,      1021,      4,     38,       22},
+    { 4, 422333,    131393,    0,     15492,    5},
+    { 5, 15833292,  2046173,   6512,  200568,   50562},
+    { 6, 706045033, 210369132, 212,   26973664, 81076}
   };
   // @formatter:on
 
@@ -326,39 +330,40 @@ TEST_F(PerftTest, pos4Perft) {
   }
   cout << "==============================" << endl;
 
-    cout << "Pos4 Mirrored PERFT Test" << endl;
-    cout << "==============================" << endl;
+  cout << "Pos4 Mirrored PERFT Test" << endl;
+  cout << "==============================" << endl;
 
-    Perft p2("r2q1rk1/pP1p2pp/Q4n2/bbp1p3/Np6/1B3NBn/pPPP1PPP/R3K2R b KQ - 0 1");
+  Perft p2("r2q1rk1/pP1p2pp/Q4n2/bbp1p3/Np6/1B3NBn/pPPP1PPP/R3K2R b KQ - 0 1");
 
-    // @formatter:off
-  const uint64_t results2[7][6] = {
-          //N  Nodes      Captures EP     Checks   Mates
-          { 0, 0,         0,         0,     0,        0},
-          { 1, 6,         0,         0,     0,        0},
-          { 2, 264,       87,        0,     10,       0},
-          { 3, 9467,      1021,      4,     38,       22},
-          { 4, 422333,    131393,    0,     15492,    5},
-          { 5, 15833292,  2046173,   6512,  200568,   50562},
-          { 6, 706045033, 210369132, 212,   26973664, 81076}
+  // @formatter:off
+  static const uint64_t results2[7][6] = {
+    //N  Nodes      Captures EP     Checks   Mates
+    { 0, 0,         0,         0,     0,        0},
+    { 1, 6,         0,         0,     0,        0},
+    { 2, 264,       87,        0,     10,       0},
+    { 3, 9467,      1021,      4,     38,       22},
+    { 4, 422333,    131393,    0,     15492,    5},
+    { 5, 15833292,  2046173,   6512,  200568,   50562},
+    { 6, 706045033, 210369132, 212,   26973664, 81076}
   };
-    // @formatter:on
+  // @formatter:on
 
-    for (int i = startDepth; i <= maxDepth; i++) {
-      p2.perft(i, true);
-      NEWLINE;
-      EXPECT_EQ(results2[i][1], p2.getNodes());
-      EXPECT_EQ(results2[i][2], p2.getCaptureCounter());
-      EXPECT_EQ(results2[i][3], p2.getEnpassantCounter());
-      EXPECT_EQ(results2[i][4], p2.getCheckCounter());
-      EXPECT_EQ(results2[i][5], p2.getCheckMateCounter());
-    }
-    cout << "==============================" << endl;
+  for (int i = startDepth; i <= maxDepth; i++) {
+    p2.perft(i, true);
+    NEWLINE;
+    EXPECT_EQ(results2[i][1], p2.getNodes());
+    EXPECT_EQ(results2[i][2], p2.getCaptureCounter());
+    EXPECT_EQ(results2[i][3], p2.getEnpassantCounter());
+    EXPECT_EQ(results2[i][4], p2.getCheckCounter());
+    EXPECT_EQ(results2[i][5], p2.getCheckMateCounter());
+  }
+  cout << "==============================" << endl;
 }
 
 TEST_F(PerftTest, pos5Perft) {
   MoveGenerator mg;
-  Position position;
+  const Position position;
+  EXPECT_EQ(WHITE, position.getNextPlayer());
 
   cout << "Pos5 PERFT Test" << endl;
   cout << "==============================" << endl;
@@ -366,14 +371,14 @@ TEST_F(PerftTest, pos5Perft) {
   Perft p("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ -");
 
   // @formatter:off
-  const uint64_t results[6][6] = {
-          //N  Nodes      Captures EP     Checks   Mates
-          { 0, 0       },
-          { 1, 44       },
-          { 2, 1486     },
-          { 3, 62379    },
-          { 4, 2103487  },
-          { 5, 89941194 }
+  static const uint64_t results[6][6] = {
+    //N  Nodes      Captures EP     Checks   Mates
+    { 0, 0       },
+    { 1, 44       },
+    { 2, 1486     },
+    { 3, 62379    },
+    { 4, 2103487  },
+    { 5, 89941194 }
   };
   // @formatter:on
 
@@ -424,7 +429,7 @@ TEST_F(PerftTest, pos5Perft) {
   *  * //--Stalemate & Checkmate
   *  * 8/8/2k5/5q2/5n2/8/5K2/8 b - - 0 1; perft 4 = 23527
   */
-void variousPerftTests(const string &s, int depth, int result);
+void variousPerftTests(const string& s, int depth, int result);
 TEST_F(PerftTest, Various) {
 #ifndef NDEBUG
   GTEST_SKIP();
@@ -453,13 +458,14 @@ TEST_F(PerftTest, Various) {
   variousPerftTests("n1n5/PPPk4/8/8/8/8/4Kppp/5N1N b - - 0 1", 6, 71179139);
 }
 
-void variousPerftTests(const string &s, int depth, int result) {
+void variousPerftTests(const string& s, const int depth, const int result) {
   println("Various PERFT Tests");
   println("==============================");
   println(s);
   println("Expected Result: " + to_string(result));
   MoveGenerator mg;
-  Position position;
+  const Position position;
+  EXPECT_EQ(WHITE, position.getNextPlayer());
   Perft p(s);
   p.perft(depth, true);
   println("Actual Result: " + to_string(p.getNodes()));

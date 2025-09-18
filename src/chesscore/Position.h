@@ -25,7 +25,6 @@
 #include "gtest/gtest_prod.h"
 
 #include <array>
-#include <cstdint>
 
 namespace Zobrist {
   // zobrist key for pieces - piece, board
@@ -82,7 +81,7 @@ class Position {
   // which is also not represented in a FEN string)
 
   Piece board[SQ_LENGTH]{};
-  Color nextPlayer       = WHITE;
+  Color nextPlayer = WHITE;
   CastlingRights castlingRights{};
   Square enPassantSquare = SQ_NONE;
   int halfMoveClock      = 0;
@@ -110,7 +109,7 @@ class Position {
   // history information for undo and repetition detection
   constexpr static std::size_t MAX_HISTORY = MAX_MOVES;
   std::array<HistoryState, MAX_HISTORY> historyState{};
-  int historyCounter                       = 0;
+  int historyCounter = 0;
 
   // Calculated by doMove/undoMove
 
@@ -273,9 +272,7 @@ public:
    * @param move
    * @return true if move captures (incl. en passant)
    */
-  bool isCapturingMove(const Move& move) const {
-    return (occupiedBb[~nextPlayer] & toSquare(move)) || typeOf(move) == ENPASSANT;
-  };
+  bool isCapturingMove(const Move& move) const { return (occupiedBb[~nextPlayer] & toSquare(move)) || typeOf(move) == ENPASSANT; };
 
   // LastCapturedPiece returns the captured piece of the last
   // move made on the position or MoveNone if the move was
@@ -303,30 +300,32 @@ public:
   // //////////////////////////////////////////////
   // /// GETTER / SETTER
 
-  inline Piece getPiece(const Square square) const { return board[square]; }
-  inline Key getZobristKey() const { return zobristKey; }
-  inline Key getPawnZobristKey() const { return pawnKey; }
-  inline Color getNextPlayer() const { return nextPlayer; }
-  inline Square getEnPassantSquare() const { return enPassantSquare; }
-  inline Square getKingSquare(const Color color) const { return kingSquare[color]; };
-  inline Bitboard getPieceBb(const Color c, const PieceType pt) const { return piecesBb[c][pt]; }
-  inline Bitboard getOccupiedBb() const { return occupiedBb[WHITE] | occupiedBb[BLACK]; }
-  inline Bitboard getOccupiedBb(const Color c) const { return occupiedBb[c]; }
-  inline int getMaterial(const Color c) const { return material[c]; }
-  inline int getMaterialNonPawn(const Color c) const { return materialNonPawn[c]; }
-  inline int getMidPosValue(const Color c) const { return psqMidValue[c]; }
-  inline int getEndPosValue(const Color c) const { return psqEndValue[c]; }
-  inline int getPosValue(const Color c) const {
+  Piece getPiece(const Square square) const { return board[square]; }
+  Key getZobristKey() const { return zobristKey; }
+  Key getPawnZobristKey() const { return pawnKey; }
+  Color getNextPlayer() const { return nextPlayer; }
+  Square getEnPassantSquare() const { return enPassantSquare; }
+  Square getKingSquare(const Color color) const { return kingSquare[color]; };
+  Bitboard getPieceBb(const Color c, const PieceType pt) const { return piecesBb[c][pt]; }
+  Bitboard getOccupiedBb() const { return occupiedBb[WHITE] | occupiedBb[BLACK]; }
+  Bitboard getOccupiedBb(const Color c) const { return occupiedBb[c]; }
+  int getMaterial(const Color c) const { return material[c]; }
+  int getMaterialNonPawn(const Color c) const { return materialNonPawn[c]; }
+  int getMidPosValue(const Color c) const { return psqMidValue[c]; }
+  int getEndPosValue(const Color c) const { return psqEndValue[c]; }
+
+  int getPosValue(const Color c) const {
     return static_cast<int>(getGamePhaseFactor() * psqMidValue[c] +
                             (1 - getGamePhaseFactor()) * psqEndValue[c]);
   }
-  inline CastlingRights getCastlingRights() const { return castlingRights; }
-  inline int getHalfMoveClock() const { return halfMoveClock; }
-  inline int getMoveNumber() const { return moveNumber; }
+
+  CastlingRights getCastlingRights() const { return castlingRights; }
+  int getHalfMoveClock() const { return halfMoveClock; }
+  int getMoveNumber() const { return moveNumber; }
   // 24 for beginning, 0 at the end
-  inline int getGamePhase() const { return gamePhase; }
+  int getGamePhase() const { return gamePhase; }
   // 1.0 for beginning to 0.0 t the end)
-  inline double getGamePhaseFactor() const { return double(gamePhase) / GAME_PHASE_MAX; }
+  double getGamePhaseFactor() const { return static_cast<double>(gamePhase) / GAME_PHASE_MAX; }
 };
 
 #endif//FRANKYCPP_POSITION_H
