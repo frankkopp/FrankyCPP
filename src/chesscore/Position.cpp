@@ -48,7 +48,7 @@ void Position::init() {
     Zobrist::enPassantFile[f] = random.rand<Key>();
   }
   Zobrist::nextPlayer   = random.rand<Key>();
-  Position::initialized = true;
+  initialized = true;
 }
 
 ////////////////////////////////////////////////

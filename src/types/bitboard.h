@@ -31,6 +31,10 @@
 #include <cstdint>
 #include <immintrin.h>
 
+#ifndef HAS_PEXT
+#error "PEXT-only path requested, but HAS_PEXT is not defined. Enable BMI2 (/arch:AVX2 or -mbmi2) and add -DHAS_PEXT."
+#endif
+
 // 64-bit Bitboard type for storing boards as bits
 typedef uint64_t Bitboard;
 
@@ -379,8 +383,8 @@ namespace Bitboards {
     for (unsigned s = 0; s < SQ_LENGTH; ++s) {
       const Bitboard file     = sqToFileBb[s];
       const Bitboard rank     = sqToRankBb[s];
-      const Bitboard diagUp   = squareDiagUpBb[s];    // NE-SW diagonal
-      const Bitboard diagDown = squareDiagDownBb[s];  // NW-SE diagonal
+      const Bitboard diagUp   = squareDiagUpBb[s];  // NE-SW diagonal
+      const Bitboard diagDown = squareDiagDownBb[s];// NW-SE diagonal
 
       // Orthogonal rays
       a[N][s] = file & ranksNorthMask[s];
@@ -389,8 +393,8 @@ namespace Bitboards {
       a[W][s] = rank & filesWestMask[s];
 
       // Diagonal rays
-      a[NE][s] = diagUp   & ranksNorthMask[s] & filesEastMask[s];
-      a[SW][s] = diagUp   & ranksSouthMask[s] & filesWestMask[s];
+      a[NE][s] = diagUp & ranksNorthMask[s] & filesEastMask[s];
+      a[SW][s] = diagUp & ranksSouthMask[s] & filesWestMask[s];
       a[NW][s] = diagDown & ranksNorthMask[s] & filesWestMask[s];
       a[SE][s] = diagDown & ranksSouthMask[s] & filesEastMask[s];
     }
@@ -399,7 +403,7 @@ namespace Bitboards {
   }
   inline constexpr std::array<std::array<Bitboard, SQ_LENGTH>, OR_LENGTH> rays = makeRays();
 
-// holds bitboards for the squares between the two given squares or BbZero if the squares are not
+  // holds bitboards for the squares between the two given squares or BbZero if the squares are not
   // on a straight line to each other or if they are direct neighbours
   constexpr std::array<std::array<Bitboard, SQ_LENGTH>, SQ_LENGTH> makeIntermediateBb() {
     std::array<std::array<Bitboard, SQ_LENGTH>, SQ_LENGTH> a{};
@@ -423,30 +427,30 @@ namespace Bitboards {
   }
   inline constexpr std::array<std::array<Bitboard, SQ_LENGTH>, SQ_LENGTH> intermediateBb = makeIntermediateBb();
 
-// holds bitboards for the squares in front of the given pawn on the same or neighboring files
-constexpr std::array<std::array<Bitboard, SQ_LENGTH>, COLOR_LENGTH> makePassedPawnMask() {
-  std::array<std::array<Bitboard, SQ_LENGTH>, COLOR_LENGTH> a{};
+  // holds bitboards for the squares in front of the given pawn on the same or neighboring files
+  constexpr std::array<std::array<Bitboard, SQ_LENGTH>, COLOR_LENGTH> makePassedPawnMask() {
+    std::array<std::array<Bitboard, SQ_LENGTH>, COLOR_LENGTH> a{};
 
-  for (unsigned s = 0; s < SQ_LENGTH; ++s) {
-    const int f = static_cast<int>(fileIdx(s));
-    const int r = static_cast<int>(rankIdx(s));
+    for (unsigned s = 0; s < SQ_LENGTH; ++s) {
+      const int f = static_cast<int>(fileIdx(s));
+      const int r = static_cast<int>(rankIdx(s));
 
-    // white pawn
-    Bitboard w = rays[N][s];
-    if (f < 7 && r < 7) w |= rays[N][s + 1U]; // east neighbor
-    if (f > 0 && r < 7) w |= rays[N][s - 1U]; // west neighbor
-    a[WHITE][s] = w;
+      // white pawn
+      Bitboard w = rays[N][s];
+      if (f < 7 && r < 7) w |= rays[N][s + 1U];// east neighbor
+      if (f > 0 && r < 7) w |= rays[N][s - 1U];// west neighbor
+      a[WHITE][s] = w;
 
-    // black pawn
-    Bitboard b = rays[S][s];
-    if (f < 7 && r > 0) b |= rays[S][s + 1U]; // east neighbor
-    if (f > 0 && r > 0) b |= rays[S][s - 1U]; // west neighbor
-    a[BLACK][s] = b;
+      // black pawn
+      Bitboard b = rays[S][s];
+      if (f < 7 && r > 0) b |= rays[S][s + 1U];// east neighbor
+      if (f > 0 && r > 0) b |= rays[S][s - 1U];// west neighbor
+      a[BLACK][s] = b;
+    }
+
+    return a;
   }
-
-  return a;
-}
-inline constexpr std::array<std::array<Bitboard, SQ_LENGTH>, COLOR_LENGTH> passedPawnMask = makePassedPawnMask();
+  inline constexpr std::array<std::array<Bitboard, SQ_LENGTH>, COLOR_LENGTH> passedPawnMask = makePassedPawnMask();
 
 }// namespace Bitboards
 
@@ -617,37 +621,46 @@ namespace Bitboards {
 // Taken from Stockfish
 // License see https://stockfishchess.org/about/
 struct Magic {
-  Bitboard mask;
-  Bitboard magic;
-  Bitboard* attacks;
-  unsigned shift;
+  Bitboard mask{};
+  Bitboard magic{};  // unused on PEXT path
+  unsigned shift{};  // unused on PEXT path
+  uint32_t offset{}; // start index into the global table
 
-  // Compute the attack's index using the 'magic bitboards' approach
-  [[nodiscard]] unsigned index(const Bitboard occupied) const {
-#ifdef HAS_PEXT
+  [[nodiscard]] inline unsigned index(const Bitboard occupied) const {
     return static_cast<unsigned>(_pext_u64(occupied, mask));
-#else
-    return static_cast<unsigned>(((occupied & mask) * magic) >> shift);
-#endif
   }
 };
 
 namespace Bitboards {
-  inline Bitboard rookTable[0x19000]; // To store rook attacks
-  inline Bitboard bishopTable[0x1480];// To store bishop attacks
+
+  // Global tables (sizes unchanged)
+  inline Bitboard rookTable[0x19000];
+  inline Bitboard bishopTable[0x1480];
+
+  // One Magic per square
   inline Magic rookMagics[SQ_LENGTH];
   inline Magic bishopMagics[SQ_LENGTH];
+
 }// namespace Bitboards
 
 // get all attacks from non pawn pieces
+// Attack lookup
 inline Bitboard getAttacksBb(const PieceType pt, const Square sq, const Bitboard occupied) {
   switch (pt) {
-    case BISHOP:
-      return Bitboards::bishopMagics[sq].attacks[Bitboards::bishopMagics[sq].index(occupied)];
-    case ROOK:
-      return Bitboards::rookMagics[sq].attacks[Bitboards::rookMagics[sq].index(occupied)];
-    case QUEEN:
-      return Bitboards::bishopMagics[sq].attacks[Bitboards::bishopMagics[sq].index(occupied)] | Bitboards::rookMagics[sq].attacks[Bitboards::rookMagics[sq].index(occupied)];
+    case BISHOP: {
+      const auto& m = Bitboards::bishopMagics[sq];
+      return Bitboards::bishopTable[m.offset + m.index(occupied)];
+    }
+    case ROOK: {
+      const auto& m = Bitboards::rookMagics[sq];
+      return Bitboards::rookTable[m.offset + m.index(occupied)];
+    }
+    case QUEEN: {
+      const auto& rb = Bitboards::bishopMagics[sq];
+      const auto& rr = Bitboards::rookMagics[sq];
+      return Bitboards::bishopTable[rb.offset + rb.index(occupied)]
+           | Bitboards::rookTable[rr.offset + rr.index(occupied)];
+    }
     case KNIGHT:
       [[fallthrough]];
     case KING:

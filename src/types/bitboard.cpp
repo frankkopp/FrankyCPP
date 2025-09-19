@@ -86,79 +86,41 @@ constexpr Bitboard sliding_attack(const Direction directions[], const Square sq,
 // Use your own popcount(Bitboard) if available; otherwise std::popcount (C++20).
 static_assert(
   popcount(sliding_attack(rookDirections, SQ_A1, Bitboard{0})) == 14,
-  "sliding_attack should yield 14 rook moves from A1 on an empty board"
-);
+  "sliding_attack should yield 14 rook moves from A1 on an empty board");
 
-void init_magics(Bitboard table[], Magic magics[], const Direction directions[]) {
-  Bitboard occupancy[4096], reference[4096];
-  int size = 0;
+// Initializes magic bitboards for all squares and both piece types
+constexpr void init_magics(Bitboard table[], Magic magics[], const Direction directions[]) {
+  size_t offset = 0;
 
   for (Square s = SQ_A1; s <= SQ_H8; ++s) {
+    // Exclude board edges from relevant occupancy
+    const Bitboard edges =
+        ((Rank1BB | Rank8BB) & ~Bitboards::sqToRankBb[s]) |
+        ((FileABB | FileHBB) & ~Bitboards::sqToFileBb[s]);
 
-    // Board edges are not considered in the relevant occupancies
-    const Bitboard edges = ((Rank1BB | Rank8BB) & ~Bitboards::sqToRankBb[s]) | ((FileABB | FileHBB) & ~Bitboards::sqToFileBb[s]);
-
-    // Given a square 's', the mask is the bitboard of sliding attacks from
-    // 's' computed on an empty board. The index must be big enough to contain
-    // all the attacks for each possible subset of the mask and so is 2 power
-    // the number of 1s of the mask. Hence we deduce the size of the shift to
-    // apply to the 64 or 32 bits word to get the index.
     Magic& m = magics[s];
+
+    // Relevant blocker mask for this square
     m.mask   = sliding_attack(directions, s, 0) & ~edges;
-    m.shift  = 64 - popcount(m.mask);
+    m.shift  = 0; // unused
+    m.magic  = 0; // unused
+    m.offset = static_cast<uint32_t>(offset);
 
-    // Set the offset for the attacks table of the square. We have individual
-    // table sizes for each square with "Fancy Magic Bitboards".
-    m.attacks = s == SQ_A1 ? table : magics[s - 1].attacks + size;
+    const unsigned bits  = static_cast<unsigned>(popcount(m.mask));
+    const unsigned count = 1u << bits;
 
-    // Use Carry-Rippler trick to enumerate all subsets of masks[s] and
-    // store the corresponding sliding attack bitboard in reference[].
-    Bitboard b = size = 0;
+    // Enumerate all subsets of m.mask via carry-rippler
+    Bitboard b = 0;
     do {
-      occupancy[size] = b;
-      reference[size] = sliding_attack(directions, s, b);
-
-#ifdef HAS_PEXT// to be set as compiler option
-      m.attacks[_pext_u64(b, m.mask)] = reference[size];
-#endif
-
-      size++;
+      const unsigned idx = static_cast<unsigned>(_pext_u64(b, m.mask));
+      table[m.offset + idx] = sliding_attack(directions, s, b);
       b = (b - m.mask) & m.mask;
     } while (b);
 
-#ifndef HAS_PEXT
-    // Manual mapping for magics when PEXT is not available
-
-    // Optimal PRNG seeds to pick the correct magics in the shortest time
-    const int seeds[RANK_LENGTH] = {728, 10316, 55013, 32803, 12281, 15100, 16645, 255};
-    int epoch[4096] = {}, cnt = 0;
-    PRNG rng(seeds[rankOf(s)]);
-
-    // Find a magic for square 's' picking up an (almost) random number
-    // until we find the one that passes the verification test.
-    for (int i = 0; i < size;) {
-      for (m.magic = 0; popcount((m.magic * m.mask) >> 56) < 6;)
-        m.magic = rng.sparse_rand<Bitboard>();
-
-      // A good magic must map every possible occupancy to an index that
-      // looks up the correct sliding attack in the attacks[s] database.
-      // Note that we build up the database for square 's' as a side
-      // effect of verifying the magic. Keep track of the attempt count
-      // and save it in epoch[], little speed-up trick to avoid resetting
-      // m.attacks[] after every failed attempt.
-      for (++cnt, i = 0; i < size; ++i) {
-        unsigned idx = m.index(occupancy[i]);
-        if (epoch[idx] < cnt) {
-          epoch[idx]     = cnt;
-          m.attacks[idx] = reference[i];
-        }
-        else if (m.attacks[idx] != reference[i])
-          break;
-      }
-    }
-#endif
+    offset += count;
   }
 }
+
 
 // init_magics() computes all rook and bishop attacks at startup. Magic
 // bitboards are used to look up attacks of sliding pieces. As a reference see
