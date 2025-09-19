@@ -25,6 +25,7 @@
 
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
+////////////////////////////////////////////////
 
 /** Default constructor creates a board with standard start setup */
 Position::Position() : Position(START_POSITION_FEN) {}
@@ -44,6 +45,7 @@ Position::Position(const std::string& fen) {
 
 // //////////////////////////////////////////////
 // /// PUBLIC
+// //////////////////////////////////////////////
 
 void Position::doMove(const Move move) {
   assert(validMove(move));
@@ -661,6 +663,7 @@ bool Position::checkInsufficientMaterial() const {
 
 ////////////////////////////////////////////////
 ///// STR
+////////////////////////////////////////////////
 
 std::string Position::str() const {
   std::ostringstream output;
@@ -783,6 +786,7 @@ std::ostream& operator<<(std::ostream& os, const Position& position) {
 
 ////////////////////////////////////////////////
 ///// PRIVATE
+////////////////////////////////////////////////
 
 inline void Position::movePiece(Square fromSq, Square toSq) {
   putPiece(removePiece(fromSq), toSq);

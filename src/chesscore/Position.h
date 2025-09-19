@@ -21,57 +21,11 @@
 #define FRANKYCPP_POSITION_H
 
 #include "types/types.h"
+#include "Zobrist.h"
 
 #include "gtest/gtest_prod.h"
 
 #include <array>
-
-namespace Zobrist {
-  // Compile-time generator reproducing the same PRNG stream as PRNG in zobristkey.h
-  // xorshift64* step
-  constexpr uint64_t xorshift64star_next(uint64_t& s) {
-    s ^= s >> 12;
-    s ^= s << 25;
-    s ^= s >> 27;
-    return s * 2685821657736338717ULL;
-  }
-
-  struct Tables {
-    std::array<std::array<Key, SQ_LENGTH>, PIECE_LENGTH> pieces{};
-    std::array<Key, CR_LENGTH> castlingRights{};
-    std::array<Key, FILE_LENGTH> enPassantFile{};
-    Key nextPlayer{};
-
-    // Fill all tables from a single PRNG stream seeded like before
-    constexpr Tables() {
-      uint64_t state = 1070372ULL; // same seed as before
-      // pieces
-      for (int pc = 0; pc < PIECE_LENGTH; ++pc) {
-        for (int sq = 0; sq < SQ_LENGTH; ++sq) {
-          pieces[pc][sq] = xorshift64star_next(state);
-        }
-      }
-      // castling rights [0..15]
-      for (int cr = 0; cr < CR_LENGTH; ++cr) {
-        castlingRights[cr] = xorshift64star_next(state);
-      }
-      // en passant files A..H only; FILE_NONE remains default 0
-      for (int f = FILE_A; f <= FILE_H; ++f) {
-        enPassantFile[static_cast<std::size_t>(f)] = xorshift64star_next(state);
-      }
-      // next player
-      nextPlayer = xorshift64star_next(state);
-    }
-  };
-
-  inline constexpr Tables T{};
-
-  // Expose tables with the same names used across the project
-  inline constexpr auto& pieces = T.pieces;
-  inline constexpr auto& castlingRights = T.castlingRights;
-  inline constexpr auto& enPassantFile = T.enPassantFile;
-  inline constexpr Key nextPlayer = T.nextPlayer;
-}// namespace Zobrist
 
 // Flag for boolean states with undetermined state
 enum Flag {
@@ -218,7 +172,7 @@ public:
   // The history entry will be changed but the history counter reset. So in effect
   // the external view on the position is unchanged (e.g. fenBeforeDoMove == fenAfterUndoMove
   // and zobristBeforeDoMove == zobristAfterUndoMove but positionBeforeDoMove != positionAfterUndoMove
-  // If positionBeforeDoMove == positionAfterUndoMove would be required this function would have
+  // If positionBeforeDoMove == positionAfterDoMove would be required this function would have
   // to be changed to reset the history entry as well. Currently, this is not necessary,
   // and therefore we spare the time to do this.
   void undoMove();
