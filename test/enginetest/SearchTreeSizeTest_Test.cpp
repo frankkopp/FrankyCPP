@@ -48,13 +48,23 @@ protected:
   void TearDown() override {}
 };
 
-TEST_F(SearchTreeSizeTest_Test, size_test) {
-//  GTEST_SKIP();
+inline bool isBulkRun() {
+  const auto* ut  = testing::UnitTest::GetInstance();
+  const bool cond = ut && ut->test_to_run_count() > 1;
+  if (cond) {
+    std::cout << "Bulk run detected - limiting depth and number of tests to shorten test time" << std::endl;
+  }
+  return cond;
+}
 
-  static constexpr int DEPTH = 8;
+TEST_F(SearchTreeSizeTest_Test, size_test) {
+  //  GTEST_SKIP();
+
   static constexpr milliseconds MOVE_TIME{0};
   static constexpr int START_FEN = 0;
-  static constexpr int END_FEN   = 50;
+
+  const int DEPTH   = isBulkRun() ? 5 : 8;
+  const int END_FEN = isBulkRun() ? 5 : 50;
 
   // Prepare test fens
   // get sub vector of fens to test
@@ -63,7 +73,7 @@ TEST_F(SearchTreeSizeTest_Test, size_test) {
   auto iterEnd                     = allFens.begin() + START_FEN + END_FEN;
   if (iterEnd > allFens.end()) iterEnd = allFens.end();
   if (iterStart > iterEnd) iterStart = iterEnd;
-  std::vector<std::string> testFens(iterStart, iterEnd);
+  const std::vector testFens(iterStart, iterEnd);
 
   // execute tests
   SearchTreeSizeTest stst(DEPTH, MOVE_TIME, testFens);

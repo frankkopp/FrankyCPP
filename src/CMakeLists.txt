@@ -6,7 +6,6 @@ cmake_minimum_required(VERSION 3.16)
 
 # define library files
 set(FrankyCPPlib_SRCS
-        types/bitboard.cpp
 
         common/ThreadPool.cpp
         common/Logging.cpp
@@ -91,4 +90,3 @@ install(DIRECTORY ${PROJECT_SOURCE_DIR}/books
         DESTINATION ${PROJECT_SOURCE_DIR}/Release/bin
         PATTERN "*.cache.*" EXCLUDE
 )
-

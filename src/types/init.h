@@ -21,32 +21,9 @@
 #define FRANKYCPP_TYPES_INIT_H
 
 #include "bitboard.h"
-#include "square.h"
 
 namespace Types {
-
-  // init() initializes all chess types by pre-computing arrays of
-  // Bitboard or other data structures to avoid computation time
-  // during runtime.
-  // The order of the initialization is important as there are
-  // dependencies.
   inline void init() {
-    // Bitboards::rankFileBbPreCompute();
-    // Bitboards::squareBitboardsPreCompute();
-    // Bitboards::nonSlidingAttacksPreCompute();
-    // Bitboards::neighbourMasksPreCompute();
-    // Bitboards::colorBitboardsPreCompute();
-    // Bitboards::castleMasksPreCompute();
-    // Bitboards::raysPreCompute();
-    // Bitboards::intermediatePreCompute();
-    // Bitboards::maskPassedPawnsPreCompute();
-
-    // Castling::initCastlingRights();
-
-    // Squares::squareDistancePreCompute();
-    // Squares::squareNamesPreCompute();
-    // Squares::centerDistancePreCompute();
-
     Bitboards::initMagicBitboards();
   }
 }// namespace types

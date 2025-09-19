@@ -34,71 +34,16 @@
 //  SqG8
 //  SqH8   // 63
 //  SqNone // 64
-enum Square : uint_fast8_t {// @formatter:off
-  SQ_A1,
-  SQ_B1,
-  SQ_C1,
-  SQ_D1,
-  SQ_E1,
-  SQ_F1,
-  SQ_G1,
-  SQ_H1,
-  SQ_A2,
-  SQ_B2,
-  SQ_C2,
-  SQ_D2,
-  SQ_E2,
-  SQ_F2,
-  SQ_G2,
-  SQ_H2,
-  SQ_A3,
-  SQ_B3,
-  SQ_C3,
-  SQ_D3,
-  SQ_E3,
-  SQ_F3,
-  SQ_G3,
-  SQ_H3,
-  SQ_A4,
-  SQ_B4,
-  SQ_C4,
-  SQ_D4,
-  SQ_E4,
-  SQ_F4,
-  SQ_G4,
-  SQ_H4,
-  SQ_A5,
-  SQ_B5,
-  SQ_C5,
-  SQ_D5,
-  SQ_E5,
-  SQ_F5,
-  SQ_G5,
-  SQ_H5,
-  SQ_A6,
-  SQ_B6,
-  SQ_C6,
-  SQ_D6,
-  SQ_E6,
-  SQ_F6,
-  SQ_G6,
-  SQ_H6,
-  SQ_A7,
-  SQ_B7,
-  SQ_C7,
-  SQ_D7,
-  SQ_E7,
-  SQ_F7,
-  SQ_G7,
-  SQ_H7,
-  SQ_A8,
-  SQ_B8,
-  SQ_C8,
-  SQ_D8,
-  SQ_E8,
-  SQ_F8,
-  SQ_G8,
-  SQ_H8,
+// @formatter:off
+enum Square : uint_fast8_t {
+  SQ_A1, SQ_B1, SQ_C1, SQ_D1, SQ_E1, SQ_F1, SQ_G1, SQ_H1,
+  SQ_A2, SQ_B2, SQ_C2, SQ_D2, SQ_E2, SQ_F2, SQ_G2, SQ_H2,
+  SQ_A3, SQ_B3, SQ_C3, SQ_D3, SQ_E3, SQ_F3, SQ_G3, SQ_H3,
+  SQ_A4, SQ_B4, SQ_C4, SQ_D4, SQ_E4, SQ_F4, SQ_G4, SQ_H4,
+  SQ_A5, SQ_B5, SQ_C5, SQ_D5, SQ_E5, SQ_F5, SQ_G5, SQ_H5,
+  SQ_A6, SQ_B6, SQ_C6, SQ_D6, SQ_E6, SQ_F6, SQ_G6, SQ_H6,
+  SQ_A7, SQ_B7, SQ_C7, SQ_D7, SQ_E7, SQ_F7, SQ_G7, SQ_H7,
+  SQ_A8, SQ_B8, SQ_C8, SQ_D8, SQ_E8, SQ_F8, SQ_G8, SQ_H8,
   SQ_NONE,
   SQ_LENGTH = 64
 };
@@ -129,8 +74,8 @@ inline Square makeSquare(const std::string_view s) {
   return SQ_NONE;
 }
 
-// creates a square from a string (uci style square e.g. e2, h7)
-// only considers the first and second character, rest is ignored
+// creates a square from a string (uci style square e.g., e2, h7)
+// only considers the first and second character; the rest is ignored
 // returns SQ_NONE if not a valid square
 inline Square makeSquare(const std::string& s) {
   return makeSquare(std::string_view{s});
@@ -140,10 +85,9 @@ inline Square makeSquare(const std::string& s) {
 constexpr Square& operator++(Square& d) { return d = static_cast<Square>(static_cast<int>(d) + 1); }
 constexpr Square& operator--(Square& d) { return d = static_cast<Square>(static_cast<int>(d) - 1); }
 
-// precomputed by types::init()
 namespace Squares {
   constexpr std::array<std::array<int, SQ_NONE>, SQ_NONE> squareDistancePreCompute() {
-    std::array<std::array<int, SQ_NONE>, SQ_NONE> dist{};// zero-initialize (diagonal stays 0)
+    std::array<std::array<int, SQ_NONE>, SQ_NONE> dist{}; // zero-initialize (diagonal stays 0)
     // distance between squares (Chebyshev distance)
     for (Square sq1 = SQ_A1; sq1 <= SQ_H8; ++sq1) {
       for (Square sq2 = SQ_A1; sq2 <= SQ_H8; ++sq2) {
@@ -160,6 +104,7 @@ namespace Squares {
     }
     return dist;
   }
+  // precomputed distances between all squares
   inline constexpr std::array<std::array<int, SQ_NONE>, SQ_NONE> squareDistance = squareDistancePreCompute();
 
   constexpr std::array<int, SQ_LENGTH> centerDistancePreCompute() {
@@ -180,8 +125,10 @@ namespace Squares {
     }
     return cd;
   }
+  // precomputed distances from center squares (d4, d5, e4, e5)
   inline constexpr std::array<int, SQ_LENGTH> centerDistance = centerDistancePreCompute();
 
+  // precomputed square names as char arrays for fast access
   inline constexpr std::array<std::array<char, 3>, SQ_LENGTH> squareNames = []() {
     std::array<std::array<char, 3>, SQ_LENGTH> names{};
     for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
@@ -202,10 +149,10 @@ inline std::string str(const Square sq) {
   return Squares::squareNames[sq].data();
 }
 
+// stream output operator for Square
 inline std::ostream& operator<<(std::ostream& os, const Square sq) {
   os << str(sq);
   return os;
 }
-
 
 #endif// FRANKYCPP_SQUARE_H

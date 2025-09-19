@@ -21,11 +21,11 @@
 
 namespace Values {
 
-  inline int calcPosValueWhite(const Square& sq, int gamePhase, const int posMidTable[], const int posEndTable[]) {
+  constexpr int calcPosValueWhite(const Square& sq, int gamePhase, const int posMidTable[], const int posEndTable[]) {
     return (gamePhase * posMidTable[63 - sq] + (GAME_PHASE_MAX - gamePhase) * posEndTable[63 - sq]) / GAME_PHASE_MAX;
   }
 
-  inline int calcPosValueBlack(const Square& sq, int gamePhase, const int posMidTable[], const int posEndTable[]) {
+  constexpr int calcPosValueBlack(const Square& sq, int gamePhase, const int posMidTable[], const int posEndTable[]) {
     return (gamePhase * posMidTable[sq] + (GAME_PHASE_MAX - gamePhase) * posEndTable[sq]) / GAME_PHASE_MAX;
   }
 
