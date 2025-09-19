@@ -40,7 +40,7 @@ UciHandler::UciHandler()
       pPerft(new Perft),
       pSearch(new Search(this)) {}
 
-UciHandler::UciHandler(std::istream* pIstream, std::ostream* pOstream) : UciHandler::UciHandler() {
+UciHandler::UciHandler(std::istream* pIstream, std::ostream* pOstream) : UciHandler() {
   pInputStream  = pIstream;
   pOutputStream = pOstream;
 }
@@ -182,7 +182,7 @@ void UciHandler::positionCommand(std::istringstream& inStream) {
   }
 }
 
-void UciHandler::goCommand(std::istringstream& inStream) {
+void UciHandler::goCommand(std::istringstream& inStream) const {
 
   SearchLimits searchLimits;
 
@@ -211,11 +211,11 @@ void UciHandler::goCommand(std::istringstream& inStream) {
   // start search
   LOG__INFO(Logger::get().UCIHAND_LOG, "Start Search");
   if (pSearch->isSearching()) {
-    // Previous search was still running. Stopping to start new search!
+    // The previous search was still running. Stopping to start a new search!
     uciError("Already searching. Stopping search to start new search.");
     pSearch->stopSearch();
   }
-  // do not start pondering if not ponder option is set
+  // do not start pondering if not a ponder option is set
   if (searchLimits.ponder && !SearchConfig::USE_PONDER) {
     uciError("go ponder command but ponder option is set to false.");
     return;

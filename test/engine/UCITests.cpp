@@ -85,7 +85,7 @@ TEST_F(UCITest, isreadyTest) {
 
 TEST_F(UCITest, setoptionTest) {
   ostringstream os;
-  string command = "setoption name Hash value 2048";
+  const string command = "setoption name Hash value 2048";
   LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
   istringstream is(command);
   UciHandler uciHandler(&is, &os);
@@ -199,13 +199,13 @@ TEST_F(UCITest, goPerft) {
   endDepth = 4;
 #endif
 
-  string command = "perft 1 " + to_string(endDepth);
+  const string command = "perft 1 " + to_string(endDepth);
   LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
   istringstream is(command);
   UciHandler uciHandler(&is, &os);
   uciHandler.loop();
   while (os.str().find("Perft finished") == std::string::npos) {
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    std::this_thread::sleep_for(seconds(1));
   }
 }
 
@@ -272,7 +272,7 @@ TEST_F(UCITest, goMate) {
 
 TEST_F(UCITest, testingBugs) {
   // 8/7R/3K4/8/8/P3k3/7p/4r3 b - - 5 75
-  string command = "position fen 8/7R/3K4/8/8/P3k3/7p/4r3 b - - 5 75 moves h2h1q h7h3";
+  const string command = "position fen 8/7R/3K4/8/8/P3k3/7p/4r3 b - - 5 75 moves h2h1q h7h3";
   LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
   istringstream is(command);
   ostringstream os;

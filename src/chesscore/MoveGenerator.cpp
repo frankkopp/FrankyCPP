@@ -64,7 +64,7 @@ const MoveList* MoveGenerator::generatePseudoLegalMoves(const Position& p, const
   updateSortValues(p, &pseudoLegalMoves);
 
   // sort moves
-  std::stable_sort(pseudoLegalMoves.begin(), pseudoLegalMoves.end(), moveValueGreaterComparator());
+  std::ranges::stable_sort(pseudoLegalMoves, moveValueGreaterComparator());
 
   // remove internal sort value
   if (REMOVE_SORT_VALUE) {
@@ -149,7 +149,8 @@ Move MoveGenerator::getNextPseudoLegalMove(const Position& p, const GenMode genM
     assert(!onDemandMoves.empty() && "OnDemandList should not be empty here");
 
     // we have at least one move in the list, and it is not the pvMove.
-    Move move = REMOVE_SORT_VALUE ? moveOf(onDemandMoves[takeIndex++]) : onDemandMoves[takeIndex++];
+    // ReSharper disable once CppDFAUnreachableCode
+    const Move move = REMOVE_SORT_VALUE ? moveOf(onDemandMoves[takeIndex++]) : onDemandMoves[takeIndex++];
     if (takeIndex >= onDemandMoves.size()) {
       takeIndex = 0;
       onDemandMoves.clear();
@@ -163,13 +164,13 @@ Move MoveGenerator::getNextPseudoLegalMove(const Position& p, const GenMode genM
   return MOVE_NONE;
 }
 
-void MoveGenerator::setPV(Move move) {
+void MoveGenerator::setPV(const Move move) {
   pvMove = moveOf(move);
 }
 
-void MoveGenerator::storeKiller(Move killerMove) {
+void MoveGenerator::storeKiller(const Move killerMove) {
   // check if already stored in first slot - if so return
-  Move m = moveOf(killerMove);
+  const Move m = moveOf(killerMove);
   if (killerMoves[0] == m) {
     return;
   }
@@ -182,11 +183,11 @@ void MoveGenerator::setHistoryData(History* pHistory) {
   historyData = pHistory;
 }
 
-bool MoveGenerator::validateMove(const Position& position, Move move) {
+bool MoveGenerator::validateMove(const Position& position, const Move move) {
   const Move moveOf1 = moveOf(move);
   if (!moveOf1) return false;
   const MoveList* lm = generateLegalMoves(position, GenAll);
-  return std::find_if(lm->begin(), lm->end(), [&](Move m) { return (moveOf1 == moveOf(m)); }) != lm->end();
+  return std::ranges::find_if(*lm, [&](const Move m) { return moveOf1 == moveOf(m); }) != lm->end();
 }
 
 bool MoveGenerator::hasLegalMove(const Position& position) {
@@ -339,45 +340,47 @@ Move MoveGenerator::getMoveFromSan(const Position& position, const std::string& 
         break;
       case TO_SQ:
         // check if string is long enough is a letter following a digit
-        if (sanMove == "O-O-O" || sanMove == "O-O") {
-          toSq  = sanMove;
-          index = -1;
-          break;
-        }
-        else if (index >= 1 && isdigit(sanMove[index]) && islower(sanMove[index - 1])) {
-          toSq += sanMove[index - 1];
-          toSq += sanMove[index];
-          index -= 2;
-          part = FROM;
-        }
-        else if (sanMove[index] == 'e') {
-          // if the move has e.p. at the end this is needs to be ignored here
-          // . and p are ignored above - but e could also be a file and can only caught here
-          index--;
-          continue;
-        }
-        else {
-          // no target square - invalid
-          return MOVE_NONE;
+        {
+          // check if string is long enough is a letter following a digit
+          if (sanMove == "O-O-O" || sanMove == "O-O") {
+            toSq  = sanMove;
+            index = -1;
+            break;
+          }
+          if (index >= 1 && isdigit(sanMove[index]) && islower(sanMove[index - 1])) {
+            toSq += sanMove[index - 1];
+            toSq += sanMove[index];
+            index -= 2;
+            part = FROM;
+          }
+          else if (sanMove[index] == 'e') {
+            // if the move has e.p. at the end this is needs to be ignored here
+            // . and p are ignored above - but e could also be a file and can only caught here
+            index--;
+          }
+          else {
+            // no target square - invalid
+            return MOVE_NONE;
+          }
         }
         break;
       case FROM:
-        // check if lower letter and digit or either one alone
+        // check if the lower letter and digit or either one alone
         if (index >= 1 && isdigit(sanMove[index]) && islower(sanMove[index - 1])) {
           disambRank = sanMove[index--];
           disambFile = sanMove[index--];
         }
-        else if (index >= 0 && isdigit(sanMove[index])) {
+        else if (isdigit(sanMove[index])) {
           disambRank = sanMove[index--];
         }
-        else if (index >= 0 && islower(sanMove[index])) {
+        else if (islower(sanMove[index])) {
           disambFile = sanMove[index--];
         }
         part = PIECE;
         break;
       case PIECE:
         // piece type - empty for pawn
-        if (index >= 0 && isupper(sanMove[index])) {
+        if (isupper(sanMove[index])) {
           pieceType = sanMove[index--];
         }
         break;
@@ -426,11 +429,11 @@ Move MoveGenerator::getMoveFromSan(const Position& position, const std::string& 
         continue;
       }
       // Disambiguation File
-      if (!disambFile.empty() && std::string(1, char('a' + fileOf(fromSquare(m)))) != disambFile) {
+      if (!disambFile.empty() && std::string(1, static_cast<char>('a' + fileOf(fromSquare(m)))) != disambFile) {
         continue;
       }
       // Disambiguation Rank
-      if (!disambRank.empty() && std::string(1, char('1' + rankOf(fromSquare(m)))) != disambRank) {
+      if (!disambRank.empty() && std::string(1, static_cast<char>('1' + rankOf(fromSquare(m)))) != disambRank) {
         continue;
       }
       // promotion
@@ -551,14 +554,14 @@ void MoveGenerator::fillOnDemandMoveList(const Position& position, const GenMode
   }// while onDemandMoves.empty()
 }
 
-void MoveGenerator::updateSortValues(const Position& p, MoveList* const moveList) {
-  Color us = p.getNextPlayer();
+void MoveGenerator::updateSortValues(const Position& p, MoveList* const moveList) const {
+  const Color us = p.getNextPlayer();
 
   // iterate over all available moves and update the
   // sort value if the move is the PV or a Killer move.
   // Also update the sort value for history and counter
   // move significance.
-  auto size = moveList->size();
+  const auto size = moveList->size();
   for (size_t i = 0; i < size; i++) {
     Move* move = &(*moveList)[i];
     if (moveOf(*move) == pvMove)// PV move
@@ -580,8 +583,8 @@ void MoveGenerator::updateSortValues(const Position& p, MoveList* const moveList
       // It is also yet unclear if the history count table should be
       // reused for several consecutive searches or just for one search.
       // TODO: Testing
-      auto count  = historyData->historyCount[us][fromSquare(*move)][toSquare(*move)];
-      Value value = static_cast<Value>(count / 100);
+      const auto count  = historyData->historyCount[us][fromSquare(*move)][toSquare(*move)];
+      auto value = static_cast<Value>(count / 100);
 
       // Counter Move History
       // When we have a counter move which caused a beta cut off before we
@@ -602,14 +605,14 @@ void MoveGenerator::updateSortValues(const Position& p, MoveList* const moveList
 Bitboard MoveGenerator::getEvasionTargets(const Position& p) {
   const Color us       = p.getNextPlayer();
   const Square ourKing = p.getKingSquare(us);
-  // find all target squares which either capture or block the attacker
+  // find all target squares that either capture or block the attacker
   Bitboard evasionTargets = p.attacksTo(ourKing, ~us);
   assert(evasionTargets != BbZero && "evasion target should not be empty");
   // we can only block attacks of sliders if there is not more
   // than one attacker
   const int popCount = popcount(evasionTargets);
   if (popCount == 1) {
-    Square atck = lsb(evasionTargets);
+    const Square atck = lsb(evasionTargets);
     // sliding pieces
     if (typeOf(p.getPiece(atck)) > KNIGHT) {
       evasionTargets |= Bitboards::intermediateBb[atck][ourKing];
@@ -645,9 +648,9 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
     // target these evasion squares. That is either capturing the attacker or blocking
     // a sliding attacker.
 
-    Bitboard tmpCaptures, promCaptures;
+    Bitboard tmpCaptures;
 
-    for (Direction dir : {WEST, EAST}) {
+    for (const Direction dir : {WEST, EAST}) {
       // normal pawn captures
       tmpCaptures = shiftBb(pawnPush(nextPlayer) + dir, myPawns) & position.getOccupiedBb(~nextPlayer);
 
@@ -657,7 +660,7 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
       }
 
       // normal pawn captures - promotions first
-      promCaptures = tmpCaptures & Bitboards::rankBb[promotionRank(nextPlayer)];
+      Bitboard promCaptures = tmpCaptures & Bitboards::rankBb[promotionRank(nextPlayer)];
       // promotion captures
       while (promCaptures) {
         const Square toSquare   = popLSB(promCaptures);
@@ -686,11 +689,11 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
     // en passant captures
     const Square enPassantSquare = position.getEnPassantSquare();
     if (enPassantSquare != SQ_NONE) {
-      for (Direction dir : {WEST, EAST}) {
+      for (const Direction dir : {WEST, EAST}) {
         tmpCaptures = shiftBb(pawnPush(~nextPlayer) + dir, Bitboards::sqBb[enPassantSquare]) & myPawns;
         if (tmpCaptures) {
-          Square fromSquare = lsb(tmpCaptures);
-          Square toSquare   = fromSquare + pawnPush(nextPlayer) - dir;
+          const Square fromSquare = lsb(tmpCaptures);
+          const Square toSquare   = fromSquare + pawnPush(nextPlayer) - dir;
           // value is the positional value of the piece at this game phase
           pMoves->push_back(createMove(fromSquare, toSquare, ENPASSANT, Values::posValue[piece][toSquare][gamePhase]));
         }

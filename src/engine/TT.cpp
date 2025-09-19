@@ -26,7 +26,7 @@
 #include "TT.h"
 #include "common/Logging.h"
 
-TT::TT(uint64_t newSizeInMByte) {
+TT::TT(const uint64_t newSizeInMByte) {
   noOfThreads = std::thread::hardware_concurrency();
   resize(newSizeInMByte);
 }
@@ -89,15 +89,15 @@ void TT::clear() {
   // It uses multiple threads if noOfThreads is > 1.
   LOG__TRACE(Logger::get().TT_LOG, "Clearing TT ({} threads)...", noOfThreads);
 
-  auto startTime = std::chrono::high_resolution_clock::now();
+  const auto startTime = high_resolution_clock::now();
   std::vector<std::thread> threads;
   threads.reserve(noOfThreads);
 
   // split work onto multiple threads
   for (unsigned int t = 0; t < noOfThreads; ++t) {
     threads.emplace_back([&, this, t]() {
-      auto range = maxNumberOfEntries / noOfThreads;
-      auto start = t * range;
+      const auto range = maxNumberOfEntries / noOfThreads;
+      const auto start = t * range;
       auto end   = start + range;
       if (t == noOfThreads - 1) end = maxNumberOfEntries;
       for (std::size_t i = start; i < end; ++i) {
@@ -124,13 +124,13 @@ void TT::clear() {
   numberOfOverwrites = 0;
   numberOfProbes     = 0;
 
-  auto finish = std::chrono::high_resolution_clock::now();
-  auto time   = std::chrono::duration_cast<std::chrono::milliseconds>(finish - startTime).count();
+  const auto finish = high_resolution_clock::now();
+  auto time   = std::chrono::duration_cast<milliseconds>(finish - startTime).count();
 
   LOG__DEBUG(Logger::get().TT_LOG, "TT cleared {:L} entries in {:L} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }
 
-void TT::put(Key key, Depth depth, Move move, Value value, ValueType type, Value eval) {
+void TT::put(const Key key, const Depth depth, const Move move, const Value value, const ValueType type, const Value eval) {
 
   // if the size of the TT = 0 we
   // do not store anything
@@ -199,7 +199,7 @@ void TT::put(Key key, Depth depth, Move move, Value value, ValueType type, Value
   assert(numberOfPuts == (numberOfEntries + numberOfCollisions + numberOfUpdates));
 }
 
-const TT::Entry* TT::probe(const Key& key) {
+const TT::Entry* TT::probe(const Key& key) const {
   numberOfProbes++;
 
   Entry* ttEntryPtr = getEntryPtr(key);
@@ -218,15 +218,15 @@ void TT::ageEntries() {
     return;
   }
   LOG__TRACE(Logger::get().TT_LOG, "Aging TT ({} threads)...", noOfThreads);
-  auto timePoint = std::chrono::high_resolution_clock::now();
+  const auto timePoint = high_resolution_clock::now();
 
   // split work onto multiple threads
   std::vector<std::thread> threads;
   threads.reserve(noOfThreads);
   for (unsigned int idx = 0; idx < noOfThreads; ++idx) {
     threads.emplace_back([&, this, idx]() {
-      auto range = maxNumberOfEntries / noOfThreads;
-      auto start = idx * range;
+      const auto range = maxNumberOfEntries / noOfThreads;
+      const auto start = idx * range;
       auto end   = start + range;
       if (idx == noOfThreads - 1) end = maxNumberOfEntries;
       for (std::size_t i = start; i < end; ++i) {
@@ -240,8 +240,8 @@ void TT::ageEntries() {
   // wait for the threads to finish
   for (std::thread& th : threads) th.join();
 
-  auto finish = std::chrono::high_resolution_clock::now();
-  auto time   = std::chrono::duration_cast<std::chrono::milliseconds>(finish - timePoint).count();
+  const auto finish = high_resolution_clock::now();
+  auto time   = std::chrono::duration_cast<milliseconds>(finish - timePoint).count();
   LOG__DEBUG(Logger::get().TT_LOG, "TT aged {:L} entries in {:L} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }
 

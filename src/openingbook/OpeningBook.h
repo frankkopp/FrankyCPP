@@ -47,7 +47,7 @@ struct BookEntry {
   std::vector<Key> nextPosition{};
 
   BookEntry() = default;// necessary for serialization
-  explicit BookEntry(Key zobrist) : key(zobrist), counter{1} {}
+  explicit BookEntry(const Key zobrist) : key(zobrist) {}
 
   [[nodiscard]] std::string str() const {
     std::ostringstream os;
@@ -122,7 +122,7 @@ private:
   bool _useCache      = true;
   bool _recreateCache = false;
   // the extension cache files use after the given opening book filename
-  static constexpr const char* cacheExt = ".cache.bin";
+  static constexpr auto cacheExt = ".cache.bin";
 
   // the root position's zobrist key is required often - so we cache it here
   const Key rootZobristKey = Position{}.getZobristKey();
@@ -233,14 +233,14 @@ public:
   [[nodiscard]] constexpr bool useCache() const { return _useCache; }
 
   // sets if a cache is used during initialization
-  void constexpr setUseCache(bool aBool) { _useCache = aBool; }
+  void constexpr setUseCache(const bool aBool) { _useCache = aBool; }
 
   // returns true if the cache file will be regenerated during
   // initialization even if it already exists
   [[nodiscard]] constexpr bool recreateCache() const { return _recreateCache; }
 
   // sets if the cache file will be regenerated during initialization
-  void constexpr setRecreateCache(bool recreateCache) { _recreateCache = recreateCache; }
+  void constexpr setRecreateCache(const bool recreateCache) { _recreateCache = recreateCache; }
 };
 
 

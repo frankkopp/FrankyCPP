@@ -45,7 +45,7 @@ void UciOptions::initOptions() {
                             [&](UciHandler*) { SearchConfig::USE_TT = getOption("Use Hash")->currentValue == "true"; });
 
   optionVector.emplace_back("Hash", SearchConfig::TT_SIZE_MB, 0, 4096,
-                            [&](UciHandler* uciHandler) { SearchConfig::TT_SIZE_MB = getInt(getOption("Hash")->currentValue); uciHandler->getSearchPtr()->resizeTT(); });
+                            [&](const UciHandler* uciHandler) { SearchConfig::TT_SIZE_MB = getInt(getOption("Hash")->currentValue); uciHandler->getSearchPtr()->resizeTT(); });
 
   optionVector.emplace_back("Use Hash Value", SearchConfig::USE_TT_VALUE,
                             [&](UciHandler*) { SearchConfig::USE_TT_VALUE = getOption("Use Hash Value")->currentValue == "true"; });
@@ -57,7 +57,7 @@ void UciOptions::initOptions() {
                             [&](UciHandler*) { SearchConfig::USE_QS_TT = getOption("Use Hash Quiescence")->currentValue == "true"; });
 
   optionVector.emplace_back("Clear Hash",
-                            [&](UciHandler* uciHandler) { uciHandler->getSearchPtr()->clearTT(); });
+                            [&](const UciHandler* uciHandler) { uciHandler->getSearchPtr()->clearTT(); });
 
   optionVector.emplace_back("Use Killer Moves", SearchConfig::USE_KILLER_MOVES,
                             [&](UciHandler*) { SearchConfig::USE_KILLER_MOVES = getOption("Use Killer Moves")->currentValue == "true"; });
@@ -151,19 +151,18 @@ void UciOptions::initOptions() {
 
 const UciOption* UciOptions::getOption(const std::string& name) const {
   // find option entry
-  const auto optionIterator = std::find_if(optionVector.begin(), optionVector.end(),
-                                           [&](const UciOption& p) {
-                                             return name == p.nameID;
-                                           });
+  const auto optionIterator = std::ranges::find_if(optionVector,
+                                                   [&](const UciOption& p) {
+                                                     return name == p.nameID;
+                                                   });
   if (optionIterator != optionVector.end()) {
     return &*optionIterator;
   }
   return nullptr;
 }
 
-bool UciOptions::setOption(UciHandler* uciHandler, const std::string& name, const std::string& value) {
-  auto o = const_cast<UciOption*>(getOption(name));
-  if (o) {
+bool UciOptions::setOption(UciHandler* uciHandler, const std::string& name, const std::string& value) const {
+  if (const auto o = const_cast<UciOption*>(getOption(name))) {
     o->currentValue = value;
     o->pHandler(uciHandler);
     return true;
@@ -204,7 +203,7 @@ std::string UciOption::str() const {
 
 int UciOptions::getInt(const std::string& value) {
   try {
-    int intValue = stoi(value);
+    const int intValue = stoi(value);
     return intValue;
   } catch (...) {
     return 0;

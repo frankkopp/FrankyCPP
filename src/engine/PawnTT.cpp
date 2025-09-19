@@ -23,7 +23,7 @@
 #include "PawnTT.h"
 #include "common/Logging.h"
 
-PawnTT::PawnTT(uint64_t newSizeInMByte) {
+PawnTT::PawnTT(const uint64_t newSizeInMByte) {
   noOfThreads = std::thread::hardware_concurrency();
   resize(newSizeInMByte);
 }
@@ -87,15 +87,15 @@ void PawnTT::clear() {
   // It uses multiple threads if noOfThreads is > 1.
   LOG__TRACE(Logger::get().EVAL_LOG, "Clearing PawnTT ({} threads)...", noOfThreads);
 
-  auto startTime = std::chrono::high_resolution_clock::now();
+  const auto startTime = high_resolution_clock::now();
   std::vector<std::thread> threads;
   threads.reserve(noOfThreads);
 
   // split work onto multiple threads
   for (unsigned int t = 0; t < noOfThreads; ++t) {
     threads.emplace_back([&, this, t]() {
-      auto range = maxNumberOfEntries / noOfThreads;
-      auto start = t * range;
+      const auto range = maxNumberOfEntries / noOfThreads;
+      const auto start = t * range;
       auto end   = start + range;
       if (t == noOfThreads - 1) end = maxNumberOfEntries;
       for (std::size_t i = start; i < end; ++i) {
@@ -115,13 +115,13 @@ void PawnTT::clear() {
   numberOfUpdates = 0;
   numberOfMisses  = 0;
 
-  auto finish = std::chrono::high_resolution_clock::now();
-  auto time   = std::chrono::duration_cast<std::chrono::milliseconds>(finish - startTime).count();
+  auto finish = high_resolution_clock::now();
+  auto time   = std::chrono::duration_cast<milliseconds>(finish - startTime).count();
 
   LOG__DEBUG(Logger::get().EVAL_LOG, "PawnTT cleared {:L} entries in {:L} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }
 
-void PawnTT::put(Entry* entryDataPtr, Key key, Score score) {
+void PawnTT::put(Entry* entryPtr, const Key key, const Score score) {
 
   // Replace any existing entries as this should be collisions.
   // Updates should not happen as we should have read this entry and
@@ -130,10 +130,10 @@ void PawnTT::put(Entry* entryDataPtr, Key key, Score score) {
   numberOfPuts++;
 
   // New entry
-  if (entryDataPtr->key == 0) {
+  if (entryPtr->key == 0) {
     numberOfEntries++;
   }// update - should not happen
-  else if (entryDataPtr->key == key) {
+  else if (entryPtr->key == key) {
     numberOfUpdates++;
     LOG__WARN(Logger::get().EVAL_LOG, "PawnTT should not have to update entries. Missing a read?");
   }
@@ -141,9 +141,9 @@ void PawnTT::put(Entry* entryDataPtr, Key key, Score score) {
     numberOfCollisions++;
   }
 
-  entryDataPtr->key      = key;
-  entryDataPtr->midvalue = score.midgame;
-  entryDataPtr->endvalue = score.endgame;
+  entryPtr->key      = key;
+  entryPtr->midvalue = score.midgame;
+  entryPtr->endvalue = score.endgame;
 
   assert(numberOfPuts == (numberOfEntries + numberOfCollisions + numberOfUpdates));
 }

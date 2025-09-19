@@ -26,9 +26,9 @@
 namespace SearchConfig {
 
   // opening book
-  inline bool USE_BOOK                     = true;
-  inline std::string BOOK_PATH             = "./books/book.txt";
-  inline OpeningBook::BookFormat BOOK_TYPE = OpeningBook::BookFormat::SIMPLE;
+  inline bool USE_BOOK         = true;
+  inline std::string BOOK_PATH = "./books/book.txt";
+  inline auto BOOK_TYPE        = OpeningBook::BookFormat::SIMPLE;
 
   inline bool USE_PONDER = true;
 
@@ -65,16 +65,16 @@ namespace SearchConfig {
   inline bool USE_RFP        = true;                                          // Reverse Futility Pruning
   inline Value RFP_MARGIN[4] = {Value{0}, Value{200}, Value{400}, Value{800}};// reverse futility pruning - array with margins per depth left
 
-  inline bool USE_NMP        = true;// Null Move Pruning
-  inline Depth NMP_DEPTH     = Depth{3};
-  inline Depth NMP_REDUCTION = Depth{2};
+  inline bool USE_NMP       = true;// Null Move Pruning
+  inline auto NMP_DEPTH     = Depth{3};
+  inline auto NMP_REDUCTION = Depth{2};
 
   inline bool USE_FP        = true;                                                                               // futility pruning
   inline bool USE_QFP       = true;                                                                               // futility pruning qsearch
   inline Value FP_MARGIN[7] = {Value{0}, Value{100}, Value{200}, Value{300}, Value{500}, Value{900}, Value{1200}};// futility pruning - array with margins per depth left.
 
   inline bool USE_LMR                 = true;// Late Move Reduction
-  inline Depth LMR_MIN_DEPTH          = Depth{3};
+  inline auto LMR_MIN_DEPTH           = Depth{3};
   inline int LMR_MIN_MOVES            = 3;
   constexpr int LMR_REDUCTION[32][64] = {
     // pre-computed array int(math.Round(((float64(depth) * 0.7) * (float64(movesSearched) * 0.005)) + 1.0))
@@ -119,4 +119,4 @@ namespace SearchConfig {
 
 }// namespace SearchConfig
 
-#endif//FRANKYCPP_SEARCHCONFIG_H
+#endif// FRANKYCPP_SEARCHCONFIG_H

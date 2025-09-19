@@ -43,7 +43,7 @@ protected:
 };
 
 TEST_F(UciOptionsTest, initAndStr) {
-  UciOptions* pUciOptions = UciOptions::getInstance();
+  const UciOptions* pUciOptions = UciOptions::getInstance();
   UciHandler uciHandler{};
 
   auto o = pUciOptions->getOption("Clear Hash");
@@ -62,16 +62,16 @@ TEST_F(UciOptionsTest, initAndStr) {
 }
 
 TEST_F(UciOptionsTest, getOption) {
-  UciOptions* pUciOptions = UciOptions::getInstance();
-  auto o = pUciOptions->getOption("Clear Hash");
+  const UciOptions* pUciOptions = UciOptions::getInstance();
+  const auto o = pUciOptions->getOption("Clear Hash");
   EXPECT_EQ("Clear Hash", o->nameID);
 }
 
 TEST_F(UciOptionsTest, setOption) {
-  UciOptions* pUciOptions = UciOptions::getInstance();
+  const UciOptions* pUciOptions = UciOptions::getInstance();
   UciHandler uciHandler{};
 
-  auto o = pUciOptions->getOption("Hash");
+  const auto o = pUciOptions->getOption("Hash");
   EXPECT_EQ("Hash", o->nameID);
   EXPECT_EQ(std::to_string(SearchConfig::TT_SIZE_MB), o->currentValue);
 

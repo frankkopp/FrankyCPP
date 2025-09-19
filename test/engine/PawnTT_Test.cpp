@@ -52,7 +52,7 @@ TEST_F(PawnTT_Test, entrySize) {
 }
 
 TEST_F(PawnTT_Test, basic) {
- PawnTT pawnTt{};
+  const PawnTT pawnTt{};
   LOG__INFO(Logger::get().TEST_LOG, "Trying to create a PawnTT with {:L} MB in size (default)", PawnTT::DEFAULT_TT_SIZE);
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", pawnTt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", pawnTt.getSizeInByte());
@@ -63,7 +63,7 @@ TEST_F(PawnTT_Test, basic) {
 
 TEST_F(PawnTT_Test, zero) {
   LOG__INFO(Logger::get().TEST_LOG, "Trying to create a PawnTT with {:L} MB in size", 0);
-  PawnTT tt(0);
+  const PawnTT tt(0);
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries:         {:L}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of max entries:     {:L}", tt.getMaxNumberOfEntries());
@@ -72,7 +72,7 @@ TEST_F(PawnTT_Test, zero) {
 
 TEST_F(PawnTT_Test, basic10) {
   LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the PawnTT with {:L} MB in size", 10);
-  PawnTT tt(10);
+  const PawnTT tt(10);
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
@@ -82,7 +82,7 @@ TEST_F(PawnTT_Test, basic10) {
 
 TEST_F(PawnTT_Test, basic64) {
   LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the PawnTT with {:L} MB in size", 64);
-  PawnTT tt(64);
+  const PawnTT tt(64);
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
@@ -92,7 +92,7 @@ TEST_F(PawnTT_Test, basic64) {
 
 TEST_F(PawnTT_Test, basic100) {
   LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the PawnTT with {:L} MB in size", 100);
-  PawnTT tt(100);
+  const PawnTT tt(100);
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
@@ -102,7 +102,7 @@ TEST_F(PawnTT_Test, basic100) {
 
 TEST_F(PawnTT_Test, basic1000) {
   LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the PawnTT with {:L} MB in size", 1'000);
-  PawnTT tt(1'000);
+  const PawnTT tt(1'000);
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
@@ -112,7 +112,7 @@ TEST_F(PawnTT_Test, basic1000) {
 
 TEST_F(PawnTT_Test, basic10000) {
   LOG__INFO(Logger::get().TEST_LOG, "Trying to resize the PawnTT with {:L} MB in size", 10'000);
-  PawnTT tt(10'000);
+  const PawnTT tt(10'000);
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
@@ -145,9 +145,9 @@ TEST_F(PawnTT_Test, resize) {
 }
 
 TEST_F(PawnTT_Test, parallelClear) {
-  const int sizeInMB = 4'096;
+  constexpr int sizeInMB = 4'096;
   LOG__INFO(Logger::get().TEST_LOG, "Trying to create a PawnTT with {:L} MB in size", sizeInMB);
-  PawnTT tt = PawnTT(sizeInMB);
+  auto tt = PawnTT(sizeInMB);
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());

@@ -22,7 +22,7 @@
 
 #include "types/types.h"
 
-// Simple struct to store the result and some meta data from the last search.
+// Simple struct to store the result and some meta-data from the last search.
 struct SearchResult {
   Move bestMove       = MOVE_NONE;
   Value bestMoveValue = VALUE_NONE;

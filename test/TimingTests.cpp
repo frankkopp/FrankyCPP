@@ -31,7 +31,7 @@
 #include <thread>
 using namespace std::chrono;
 
-class TimingTests : public ::testing::Test {
+class TimingTests : public testing::Test {
 public:
   static void SetUpTestSuite() {
     NEWLINE;
@@ -52,7 +52,7 @@ TEST_F(TimingTests, DISABLED_popcount) {
   std::ostringstream os;
 
   //// TESTS START
-  std::function<void()> f1 = []() { popcount(0b0010000000010000000000000010000000000000000000000000000000000000ULL); };
+  const std::function f1 = [] { popcount(0b0010000000010000000000000010000000000000000000000000000000000000ULL); };
   std::vector<std::function<void()>> tests;
   tests.push_back(f1);
   //// TESTS END
@@ -65,15 +65,12 @@ TEST_F(TimingTests, DISABLED_popcount) {
 TEST_F(TimingTests, DISABLED_distancevsdiff) {
   std::ostringstream os;
 
-  //// TESTS START
-  Position position("r3k2r/1ppqbppp/2n2n2/1B2p1B1/3p2b1/2NP1N2/1PPQPPPP/R3K2R w KQkq - 0 1");
-
   volatile bool t = false;
 
-  std::function<void()> f1 = [&]() {
+  const std::function f1 = [&] {
     t = distance(SQ_E2, SQ_E4) == 2;
   };
-  std::function<void()> f2 = [&]() {
+  const std::function f2 = [&] {
     t = std::abs(static_cast<int>(SQ_E2) - static_cast<int>(SQ_E4)) == 16;
   };
   std::vector<std::function<void()>> tests;
@@ -100,13 +97,13 @@ TEST_F(TimingTests, DISABLED_doMoveUndoMove) {
   // Rc1 normal non capturing
   // c1Q promotion
   Position position("r3k2r/1ppn3p/4q1n1/8/4Pp2/3R4/p1p2PPP/R5K1 b kq e3 0 1");
-  const Move move1 = createMove(SQ_F4, SQ_E3, ENPASSANT);
-  const Move move2 = createMove(SQ_F2, SQ_E3);
-  const Move move3 = createMove(SQ_E8, SQ_G8, CASTLING);
-  const Move move4 = createMove(SQ_D3, SQ_C3);
-  const Move move5 = createMove(SQ_C2, SQ_C1, PROMOTION, QUEEN);
+  constexpr Move move1 = createMove(SQ_F4, SQ_E3, ENPASSANT);
+  constexpr Move move2 = createMove(SQ_F2, SQ_E3);
+  constexpr Move move3 = createMove(SQ_E8, SQ_G8, CASTLING);
+  constexpr Move move4 = createMove(SQ_D3, SQ_C3);
+  constexpr Move move5 = createMove(SQ_C2, SQ_C1, PROMOTION, QUEEN);
 
-  std::function<void()> f1 = [&]() {
+  const std::function f1 = [&] {
     position.doMove(move1);
     position.doMove(move2);
     position.doMove(move3);
@@ -173,14 +170,14 @@ TEST_F(TimingTests, DISABLED_trimWhiteSpace) {
 
   // while
   std::string trimmedLineWhile{};
-  std::function<void()> f5 = [&]() {
+  const std::function f5 = [&] {
     trimmedLineWhile = trimFast(line);
     counter++;
   };
 
   // while
   std::string_view trimmedLineViewWhile{};
-  std::function<void()> f6 = [&]() {
+  const std::function f6 = [&] {
     trimmedLineViewWhile = trimFast(lineView);
     counter++;
   };
@@ -225,14 +222,14 @@ TEST_F(TimingTests, DISABLED_illegalCharacter) {
 
   // regex
   std::string trimmedLineRegex{};
-  std::function<void()> f1 = [&]() {
+  const std::function f1 = [&] {
     if (!std::regex_search(fen, illegalInFenPosition)) {
       counter1++;
     }
   };
 
   std::string trimmedLineViewRegex{};
-  std::function<void()> f2 = [&]() {
+  const std::function f2 = [&] {
     bool illegalFound = false;
     const auto l      = fen.length();
     for (int i = 0; i < l; i++) {
@@ -300,7 +297,7 @@ TEST_F(TimingTests, split) {
   NEWLINE;
 
   std::vector<std::string> splitStringParts{};
-  std::function<void()> f1 = [&]() {
+  const std::function f1 = [&] {
     splitStringParts.clear();
     splitFast(line, splitStringParts, " ");
   };
@@ -312,7 +309,7 @@ TEST_F(TimingTests, split) {
   //  };
 
   std::vector<std::string_view> splitViewParts{};
-  std::function<void()> f3 = [&]() {
+  const std::function f3 = [&] {
     splitViewParts.clear();
     splitFast(lineView, splitViewParts, " ");
   };
@@ -720,8 +717,8 @@ TEST_F(TimingTests, split) {
 //  cout << os.str();
 //}
 
-void TimingTests::testTiming(std::ostringstream& os, int rounds, int iterations,
-                             int repetitions, const std::vector<std::function<void()>>& tests) {
+void TimingTests::testTiming(std::ostringstream& os, const int rounds, const int iterations,
+                             const int repetitions, const std::vector<std::function<void()>>& tests) {
   std::cout.imbue(deLocale);
   os.imbue(deLocale);
   os << std::setprecision(9);
@@ -732,7 +729,6 @@ void TimingTests::testTiming(std::ostringstream& os, int rounds, int iterations,
   os << "======================================================================"
      << std::endl;
 
-  auto startTime = currentTime();
   nanoseconds lastRound(0);
 
   // rounds
@@ -749,7 +745,7 @@ void TimingTests::testTiming(std::ostringstream& os, int rounds, int iterations,
 
       while (i++ < iterations) {
         // repetitions
-        startTime = currentTime();
+        auto startTime = currentTime();
         for (int j = 0; j < repetitions; ++j)
           f();
         accDuration += duration_cast<nanoseconds>(currentTime() - startTime);
@@ -757,7 +753,7 @@ void TimingTests::testTiming(std::ostringstream& os, int rounds, int iterations,
 
       const nanoseconds cpuTime = accDuration;
       const nanoseconds avgCpu  = cpuTime / iterations;
-      uint64_t percentFromLast  = lastRound.count() ? (avgCpu * 10'000) / lastRound : 10'000;
+      const uint64_t percentFromLast  = lastRound.count() ? (avgCpu * 10'000) / lastRound : 10'000;
 
       os << "Round " << std::setfill(' ') << std::setw(2) << round << " Test "
          << std::setw(2) << testNr++ << ": " << std::setfill(' ') << std::setw(12)

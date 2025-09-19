@@ -19,14 +19,23 @@
 
 
 #include "openingbook/OpeningBook.h"
+#include "chesscore/MoveGenerator.h"
 #include "common/Logging.h"
 #include "common/stringutil.h"
 #include "init.h"
 #include "types/types.h"
-#include "chesscore/MoveGenerator.h"
 
 #include <gtest/gtest.h>
 using testing::Eq;
+
+inline bool isBulkRun() {
+  const auto* ut  = testing::UnitTest::GetInstance();
+  const bool cond = ut && ut->test_to_run_count() > 1;
+  if (cond) {
+    std::cout << "Bulk run detected - limiting depth to shorten test time" << std::endl;
+  }
+  return cond;
+}
 
 class OpeningBookTest : public ::testing::Test {
 public:
@@ -52,7 +61,7 @@ TEST_F(OpeningBookTest, readFile) {
   fprintln("File {} Size {:L} Byte", book.bookFilePath, std::filesystem::file_size(book.bookFilePath));
 
   // read file lines
-  auto lines = book.readFile(book.bookFilePath);
+  const auto lines = book.readFile(book.bookFilePath);
   EXPECT_EQ(2'620'079, lines.size());
   fprintln("Lines: {:L}", lines.size());
 }
@@ -92,22 +101,19 @@ TEST_F(OpeningBookTest, initPgn) {
 }
 
 TEST_F(OpeningBookTest, initPgnLarge) {
-//  GTEST_SKIP();
-#ifndef NDEBUG
-  GTEST_SKIP();
-#endif
+  if (isBulkRun()) GTEST_SKIP();
   OpeningBook book("./books/superbook.pgn", OpeningBook::BookFormat::PGN);
   book.setUseCache(false);
   book.initialize();
   fprintln("Book:  {:L} entries", book.size());
   EXPECT_EQ(4'821'615, book.size());
   fprintln("{}", book.str(1));
-  std::string expected = "Root (190.780)";
-  EXPECT_TRUE(book.str(1).find_first_of(expected) != std::string::npos );
+  const std::string expected = "Root (190.780)";
+  EXPECT_TRUE(book.str(1).find_first_of(expected) != std::string::npos);
 }
 
 TEST_F(OpeningBookTest, initPgnXLLarge) {
-  GTEST_SKIP();
+  if (isBulkRun()) GTEST_SKIP();
   // superbook_xl is a multiple self copy of the normal non xl version
   OpeningBook book("./books/superbook_xl.pgn", OpeningBook::BookFormat::PGN);
   book.setUseCache(false);
@@ -116,7 +122,7 @@ TEST_F(OpeningBookTest, initPgnXLLarge) {
   EXPECT_EQ(4'821'615, book.size());
   fprintln("{}", book.str(1));
   std::string expected = "Root (3.815.600)";
-//  EXPECT_TRUE(book.str(1).starts_with(expected));
+  //  EXPECT_TRUE(book.str(1).starts_with(expected));
 }
 
 TEST_F(OpeningBookTest, getMove) {
@@ -142,11 +148,9 @@ TEST_F(OpeningBookTest, getMove) {
 
 
 TEST_F(OpeningBookTest, serializationSimple) {
-  //  GTEST_SKIP();
-#ifndef NDEBUG
-  GTEST_SKIP();
-#endif
-  std::string filePathStr = "./books/book.txt";
+  if (isBulkRun()) GTEST_SKIP();
+
+  const std::string filePathStr = "./books/book.txt";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::SIMPLE);
 
   LOG__DEBUG(Logger::get().TEST_LOG, "Load book w/o cache...");
@@ -167,10 +171,8 @@ TEST_F(OpeningBookTest, serializationSimple) {
 }
 
 TEST_F(OpeningBookTest, serializationLarge) {
-//  GTEST_SKIP();
-#ifndef NDEBUG
-  GTEST_SKIP();
-#endif
+  if (isBulkRun()) GTEST_SKIP();
+
   std::string filePathStr = "./books/superbook.pgn";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::PGN);
 
@@ -212,5 +214,5 @@ TEST_F(OpeningBookTest, str) {
   const std::string output = book.str(1);
   fprintln("{}", output);
   std::string expected = "Root (1.000)";
-//  EXPECT_TRUE(book.str(1).starts_with(expected));
+  //  EXPECT_TRUE(book.str(1).starts_with(expected));
 }

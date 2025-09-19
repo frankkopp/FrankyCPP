@@ -21,8 +21,6 @@
 #define FRANKYCPP_UCIOPTIONS_H
 
 #include <functional>
-#include <ostream>
-#include <sstream>
 #include <utility>
 #include <vector>
 
@@ -38,7 +36,7 @@ enum UciOptionType {
 };
 
 // UCI provides the ability to change parameters of an engine via
-// UCI options. This is done by the setoption command and the each engine
+// UCI options. This is done by the setoption command, and each engine
 // might define its own set of options which will be listed when the GUI
 // sends the 'uci' command.
 // An instance of this struct defines one available option. It defines
@@ -57,10 +55,10 @@ struct UciOption {
   explicit UciOption(const char* name, std::function<void(UciHandler*)> handler)
       : nameID(name), type(BUTTON), defaultValue(boolStr(false)), pHandler(std::move(handler)) {}
 
-  UciOption(const char* name, bool value, std::function<void(UciHandler*)> handler)
+  UciOption(const char* name, const bool value, std::function<void(UciHandler*)> handler)
       : nameID(name), type(CHECK), defaultValue(boolStr(value)), currentValue(boolStr(value)), pHandler(std::move(handler)) {}
 
-  UciOption(const char* name, int def, int min, int max, std::function<void(UciHandler*)> handler)
+  UciOption(const char* name, const int def, const int min, const int max, std::function<void(UciHandler*)> handler)
       : nameID(name), type(SPIN), defaultValue(std::to_string(def)), minValue(std::to_string(min)),
         maxValue(std::to_string(max)), currentValue(std::to_string(def)), pHandler(std::move(handler)) {}
 
@@ -87,19 +85,15 @@ struct UciOption {
 // This singleton instance can be used through the engine to access options.
 // The str() call returns a list of all options as required by the "uci" command.
 class UciOptions {
-private:
   std::vector<UciOption> optionVector{};
-
   UciOptions() { initOptions(); }// private constructor
-
   void initOptions();
-
   friend std::ostream& operator<<(std::ostream& os, const UciOptions& options);
 
 public:
-  UciOptions(UciOptions const&)  = delete;           // copy
-  UciOptions(UciOptions const&&) = delete;           // move
-  UciOptions& operator=(const UciOptions&) = delete; // copy assignment
+  UciOptions(UciOptions const&)             = delete;// copy
+  UciOptions(UciOptions const&&)            = delete;// move
+  UciOptions& operator=(const UciOptions&)  = delete;// copy assignment
   UciOptions& operator=(const UciOptions&&) = delete;// move assignment
 
   // get the singleton instance of the class
@@ -108,14 +102,14 @@ public:
     return &instance;
   }
 
-  // returns a pointer to the uci option or nullptr if option is not found
+  // returns a pointer to the uci option or nullptr if the option is not found
   [[nodiscard]] const UciOption* getOption(const std::string& name) const;
 
   // finds and stores the value in the given options. Returns true if
-  // the options was found and the value was set. It calls the option's
+  // the option was found and the value was set. It calls the option's
   // handler function in this case.
-  // Otherwise, if option was not found it returns false.
-  bool setOption(UciHandler* uciHandler, const std::string& name, const std::string& value);
+  // Otherwise, if the option was not found, it returns false.
+  bool setOption(UciHandler* uciHandler, const std::string& name, const std::string& value) const;
 
   // String for uciOption will return a representation of the uci option as required by
   // the UCI protocol during the initialization phase of the UCI protocol
@@ -130,4 +124,4 @@ inline std::ostream& operator<<(std::ostream& os, const UciOptions& options) {
   return os;
 }
 
-#endif//FRANKYCPP_UCIOPTIONS_H
+#endif// FRANKYCPP_UCIOPTIONS_H

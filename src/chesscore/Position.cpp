@@ -304,7 +304,7 @@ void Position::undoNullMove() {
   zobristKey                           = lastHistoryState.zobristKey;
 }
 
-bool Position::isAttacked(Square sq, Color by) const {
+bool Position::isAttacked(const Square sq, const Color by) const {
   // to test if a position is attacked we do a reverse attack from the
   // target square to see if we hit a piece of the same or similar type
 
@@ -359,7 +359,7 @@ bool Position::isAttacked(Square sq, Color by) const {
   return false;
 }
 
-Bitboard Position::attacksTo(Square square, Color color) const {
+Bitboard Position::attacksTo(const Square square, const Color color) const {
   assert(validSquare(square) && "Position::attacksTo needs a valid square");
 
   // prepare en passant attacks
@@ -400,7 +400,7 @@ bool Position::hasCheck() const {
   return check;
 }
 
-bool Position::givesCheck(Move move) const {
+bool Position::givesCheck(const Move move) const {
   const Color us   = nextPlayer;
   const Color them = ~us;
 
@@ -520,7 +520,7 @@ bool Position::wasLegalMove() const {
   return true;
 }
 
-bool Position::isLegalMove(Move move) const {
+bool Position::isLegalMove(const Move move) const {
   // king is not allowed to pass a square which is attacked by opponent
   if (typeOf(move) == CASTLING) {
     // castling not allowed when in check
@@ -561,7 +561,7 @@ bool Position::isLegalMove(Move move) const {
   return legal;
 }
 
-bool Position::checkRepetitions(int reps) const {
+bool Position::checkRepetitions(const int reps) const {
   /*
    [0]     3185849660387886977 << 1st
    [1]     447745478729458041
@@ -691,7 +691,7 @@ std::string Position::strBoard() const {
   for (Rank r = RANK_8;; --r) {
     output << (r + 1) << " |";
     for (File f = FILE_A; f <= FILE_H; ++f) {
-      Piece pc = getPiece(squareOf(f, r));
+      const Piece pc = getPiece(squareOf(f, r));
       if (pc == PIECE_NONE) {
         output << "   |";
       }
@@ -705,7 +705,7 @@ std::string Position::strBoard() const {
   }
   output << "   ";
   for (File f = FILE_A; f <= FILE_H; ++f) {
-    output << " " << char('A' + f) << "  ";
+    output << " " << static_cast<char>('A' + f) << "  ";
   }
   output << std::endl
          << std::endl;
@@ -719,7 +719,7 @@ std::string Position::strFen() const {
   for (Rank r = RANK_8;; --r) {
     int emptySquares = 0;
     for (File f = FILE_A; f <= FILE_H; ++f) {
-      Piece pc = getPiece(squareOf(f, r));
+      const Piece pc = getPiece(squareOf(f, r));
       if (pc == PIECE_NONE) {
         emptySquares++;
       }
@@ -788,11 +788,11 @@ std::ostream& operator<<(std::ostream& os, const Position& position) {
 ///// PRIVATE
 ////////////////////////////////////////////////
 
-inline void Position::movePiece(Square fromSq, Square toSq) {
+inline void Position::movePiece(const Square fromSq, const Square toSq) {
   putPiece(removePiece(fromSq), toSq);
 }
 
-void Position::putPiece(Piece piece, Square square) {
+void Position::putPiece(const Piece piece, const Square square) {
   assert(getPiece(square) == PIECE_NONE);
   assert((piecesBb[colorOf(piece)][typeOf(piece)] & square) == 0);
   assert((occupiedBb[colorOf(piece)] & square) == 0);
@@ -827,7 +827,7 @@ void Position::putPiece(Piece piece, Square square) {
   psqEndValue[color] += Values::posEndValue[piece][square];
 }
 
-Piece Position::removePiece(Square square) {
+Piece Position::removePiece(const Square square) {
   assert(getPiece(square) != PIECE_NONE);
   assert(piecesBb[colorOf(getPiece(square))][typeOf(getPiece(square))] & square);
   assert(occupiedBb[colorOf(getPiece(square))] & square);
@@ -901,7 +901,7 @@ void Position::setupBoard(const std::string& fen) {
   initializeBoard();
 
   // clean up and check fen
-  std::string myFen = trimFast(fen);
+  const std::string myFen = trimFast(fen);
 
   std::vector<std::string> fenParts{};
 
@@ -950,14 +950,14 @@ void Position::setupBoard(const std::string& fen) {
       }
     }
     else {// find piece type from piece symbol
-      Piece piece = makePiece(token);
+      const Piece piece = makePiece(token);
       if (piece == PIECE_NONE) {// redundant
         throw std::invalid_argument(fmt::format("FEN has invalid piece character '{}' in {}", token, fenParts[0]));
       }
       if (file > 7) {
         throw std::invalid_argument(fmt::format("FEN has too many squares ({}) in rank {}:  {}", file, rank + 1, fenParts[0]));
       }
-      Square currentSquare = squareOf(File(file), Rank(rank));
+      Square currentSquare = squareOf(static_cast<File>(file), static_cast<Rank>(rank));
       if (currentSquare == SQ_NONE) {
         throw std::invalid_argument(fmt::format("FEN has invalid square {} ({}): {}", currentSquare, ::str(currentSquare), fenParts[0]));
       }
@@ -995,19 +995,20 @@ void Position::setupBoard(const std::string& fen) {
         throw std::invalid_argument("FEN castling rights contains illegal characters: " + fenParts[2]);
       }
     }
+
     // are there  rights to be encoded?
     if (fenParts[2] != "-") {
-      for (char c : fenParts[2]) {
-        if (c == 'K' && !(castlingRights == WHITE_OO)) {
+      for (const char c : fenParts[2]) {
+        if (c == 'K' && castlingRights != WHITE_OO) {
           castlingRights += WHITE_OO;
         }
-        else if (c == 'Q' && !(castlingRights == WHITE_OOO)) {
+        else if (c == 'Q' && castlingRights != WHITE_OOO) {
           castlingRights += WHITE_OOO;
         }
-        else if (c == 'k' && !(castlingRights == BLACK_OO)) {
+        else if (c == 'k' && castlingRights != BLACK_OO) {
           castlingRights += BLACK_OO;
         }
-        else if (c == 'q' && !(castlingRights == BLACK_OOO)) {
+        else if (c == 'q' && castlingRights != BLACK_OOO) {
           castlingRights += BLACK_OOO;
         }
         else {
@@ -1034,7 +1035,7 @@ void Position::setupBoard(const std::string& fen) {
   // half move clock (50 moves rule)
   if (fenParts.size() >= 5) {
     char* p;
-    int tmp = strtol(fenParts[4].c_str(), &p, 10);
+    const int tmp = strtol(fenParts[4].c_str(), &p, 10);
     if (*p) {
       throw std::invalid_argument("FEN half move clock is not a number: " + fenParts[4]);
     }
@@ -1044,7 +1045,7 @@ void Position::setupBoard(const std::string& fen) {
   // move number
   if (fenParts.size() >= 6) {
     char* p;
-    int tmp = strtol(fenParts[5].c_str(), &p, 10);
+    const int tmp = strtol(fenParts[5].c_str(), &p, 10);
     if (*p) {
       throw std::invalid_argument("FEN move number is not a number: " + fenParts[5]);
     }

@@ -40,9 +40,9 @@ Value Evaluator::evaluate(Position& p) {
   }
 
   // Each position is evaluated from the view of the white
-  // player. Before returning the value this will be adjusted
+  // player. Before returning the value, this will be adjusted
   // to the next player's color.
-  // All heuristic should return a value in centi pawns or
+  // All heuristics should return a value in centi pawns or
   // have a dedicated configurable weight to adjust and test
 
   score.midgame = VALUE_ZERO;
@@ -66,7 +66,7 @@ Value Evaluator::evaluate(Position& p) {
   // arbitrary threshold - in early phases (game phase = 1.0) this is doubled
   // in late phases it stands as it is
   if (EvalConfig::USE_LAZY_EVAL) {
-    Value value = valueFromScore(score, gamePhaseFactor);
+    const Value value = valueFromScore(score, gamePhaseFactor);
     if (value > EvalConfig::LAZY_THRESHOLD + (EvalConfig::LAZY_THRESHOLD * gamePhaseFactor)) {
       return finalEval(p, value);
     }
@@ -103,21 +103,21 @@ Value Evaluator::evaluate(Position& p) {
   // calculate value depending on game phases
   Value value = valueFromScore(score, gamePhaseFactor);
 
-  // normalize for next player
+  // normalize for the next player
   value = finalEval(p, value);
 
   return value;
 }
 
-inline Value Evaluator::finalEval(const Position& p, Value value) {
+inline Value Evaluator::finalEval(const Position& p, const Value value) {
   return value * (p.getNextPlayer() == WHITE ? 1 : -1);
 }
 
-inline Value Evaluator::valueFromScore(const Score& score, double gamePhaseFactor) {
-  return static_cast<Value>(score.midgame * gamePhaseFactor + score.endgame * (1.0 - gamePhaseFactor));
+inline Value Evaluator::valueFromScore(const Score& score, const double gamePhaseFactor) {
+  return score.midgame * gamePhaseFactor + score.endgame * (1.0 - gamePhaseFactor);
 }
 
-void Evaluator::pawnEval(Position& p, Score& s) {
+void Evaluator::pawnEval(const Position& p, Score& s) {
   PawnTT::Entry* entryPtr{};
   const Key key = p.getPawnZobristKey();
 
@@ -160,17 +160,17 @@ void Evaluator::pawnEval(Position& p, Score& s) {
       doubled |= ~Bitboards::sqBb[sq] & myPawns & rayForward;
 
       // passed pawns - no opponent pawns in the area before me and no own pawn before me
-      passed |= ((myPawns & rayForward) | (oppPawns & Bitboards::passedPawnMask[color][sq]))
+      passed |= myPawns & rayForward | oppPawns & Bitboards::passedPawnMask[color][sq]
                   ? BbZero
                   : Bitboards::sqBb[sq];
 
       // blocked pawns
-      blocked |= ((myPawns | oppPawns) & rayForward)
+      blocked |= (myPawns | oppPawns) & rayForward
                    ? Bitboards::sqBb[sq]
                    : BbZero;
 
       // pawns as neighbours in a row = phalanx
-      phalanx |= (neighbours & Bitboards::sqToRankBb[sq])
+      phalanx |= neighbours & Bitboards::sqToRankBb[sq]
                    ? Bitboards::sqBb[sq]
                    : BbZero;
 
@@ -221,7 +221,7 @@ void Evaluator::pawnEval(Position& p, Score& s) {
   //  LOG__DEBUG(Logger::get().EVAL_LOG, "Raw pawn eval: midvalue = {} and endvalue = {}", tmpScore.midgame, tmpScore.endgame);
 }
 
-void Evaluator::pieceEval(const Position& p, Score& s, Color us, PieceType pieceType) {
+void Evaluator::pieceEval(const Position& p, Score& s, const Color us, const PieceType pieceType) {
 
   // get pieces or return if none of given type or color is found
   Bitboard pieceBb = p.getPieceBb(us, pieceType);

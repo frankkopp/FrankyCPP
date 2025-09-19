@@ -48,7 +48,6 @@ class UciHandler {
   std::unique_ptr<Perft> pPerft;
   std::shared_ptr<Search> pSearch;
 
-private:
   std::istream* pInputStream;
   std::ostream* pOutputStream;
 
@@ -90,7 +89,7 @@ private:
   void positionCommand(std::istringstream& inStream);
   FRIEND_TEST(UCITest, positionTest);
 
-  void goCommand(std::istringstream& inStream);
+  void goCommand(std::istringstream& inStream) const;
   bool readSearchLimits(std::istringstream& inStream, SearchLimits& searchLimits) const;
   FRIEND_TEST(UCITest, goCommand);
   FRIEND_TEST(UCITest, goInfinite);

@@ -42,13 +42,13 @@
 
 /**
  * TT implementation using heap memory and simple hash for entries.
- * The number of entries are always a power of two fitting into the given size.
- * It is not yet thread safe as it has no synchronization.
+ * The number of entries is always a power of two fitting into the given size.
+ * It is not yet thread-safe as it has no synchronization.
  *
  * Tests have shown that an implementation with a struct and bitfields is
  * more efficient than using only one 64-bit data field with manual bit shifting
- * and masking (~9% slower)
- * Also using buckets has not shown significant strength improvements and is
+ * and masking (~9% slower).
+ * Also, using buckets has not shown significant strength improvements and is
  * much slower (~20% slower).
  */
 class TT {
@@ -68,14 +68,15 @@ public:
   //  bool mateThreat : 1;       // 1-bit bool
   struct Entry {
     // sorted by size to achieve the smallest struct size
-    // using bitfield for smallest size
-    Key key        = 0;          // 64 bit
-    uint16_t move  = MOVE_NONE;  // 16 bit
-    Value eval     = VALUE_NONE; // 16 bit signed
-    Value value    = VALUE_NONE; // 16 bit signed
-    int8_t depth   : 7{};        // 0-127
-    uint8_t age    : 3{};        // 0-7
-    ValueType type : 2{};        // 4 values
+    // using bitfield for the smallest size
+    Key key       = 0;         // 64 bit
+    uint16_t move = MOVE_NONE; // 16 bit
+    Value eval    = VALUE_NONE;// 16-bit signed
+    Value value   = VALUE_NONE;// 16-bit signed
+    int8_t depth : 7 {};       // 0-127
+    uint8_t age : 3 {};        // 0-7
+    ValueType type : 2 {};     // 4 values
+    bool mateThreat : 1 {};    // 1-bit bool
     friend std::ostream& operator<<(std::ostream& os, const Entry& entry);
   };
 
@@ -118,9 +119,9 @@ public:
   ~TT() = default;
 
   // disallow copies
-  TT(TT const& tt) = delete;         // copy
-  TT& operator=(const TT&) = delete; // copy assignment
-  TT(TT const&& tt)        = delete; // move
+  TT(TT const& tt)          = delete;// copy
+  TT& operator=(const TT&)  = delete;// copy assignment
+  TT(TT const&& tt)         = delete;// move
   TT& operator=(const TT&&) = delete;// move assignment
 
   /**
@@ -134,17 +135,17 @@ public:
   void clear();
 
   /**
-    * Stores the node value and the depth it has been calculated at.
-    * Also stores the best move for the node.
-    * OBS: move will be stripped of any value before storing as we store value
-    * separately and it may be surprising that a MOVE_NONE has a value.
-    * @param key Position key (usually Zobrist key)
-    * @param depth 0-DEPTH_MAX (usually 127)
-    * @param move best move of the node (when BETA best move until cut off)
-    * @param value Value of the position between VALUE_MIN and VALUE_MAX
-    * @param type EXACT, ALPHA or BETA
-    * @param mateThreat node had a mate threat in the ply
-    */
+   * Stores the node value and the depth it has been calculated at.
+   * Also stores the best move for the node.
+   * OBS: move will be stripped of any value before storing as we store value
+   * separately and it may be surprising that a MOVE_NONE has a value.
+   * @param key Position key (usually Zobrist key)
+   * @param depth 0-DEPTH_MAX (usually 127)
+   * @param move best move of the node (when BETA best move until cut off)
+   * @param value Value of the position between VALUE_MIN and VALUE_MAX
+   * @param type EXACT, ALPHA or BETA
+   * @param eval Static evaluation of the position
+   */
   void put(Key key, Depth depth, Move move, Value value, ValueType type, Value eval);
 
   /**
@@ -153,7 +154,7 @@ public:
    * @param key Position key (usually Zobrist key)
    * @return Pointer to entry for key or nullptr if not found
    */
-  inline const TT::Entry* getMatch(const Key key) const {
+  const Entry* getMatch(const Key key) const {
     const Entry* const entryPtr = getEntryPtr(key);
     return entryPtr->key == key ? entryPtr : nullptr;
   }
@@ -162,20 +163,20 @@ public:
    * Looks up and returns a pointer to an TT Entry. Decreases age of the entry
    * if an entry was found
    */
-  const TT::Entry* probe(const Key& key);
+  const Entry* probe(const Key& key) const;
 
   /** Age all entries by 1 */
   void ageEntries();
 
   /** Returns how full the transposition table is in permill as per UCI */
-  inline int hashFull() const {
+  int hashFull() const {
     if (!maxNumberOfEntries) return 0;
     return static_cast<int>((1000 * numberOfEntries) / maxNumberOfEntries);
   };
 
-    // using prefetch improves probe lookup speed significantly
+  // using prefetch improves probe lookup speed significantly
 #ifdef TT_ENABLE_PREFETCH
-  inline void prefetch(const Key key) {
+  void prefetch(const Key key) {
 #ifdef __GNUC__
     _mm_prefetch(&_data[(key & hashKeyMask)], _MM_HINT_T0);
 #elif _MSC_VER
@@ -244,11 +245,11 @@ public:
     return noOfThreads;
   }
 
-  void setThreads(int threads) {
-    TT::noOfThreads = threads;
+  void setThreads(const int threads) {
+    noOfThreads = threads;
   }
 
-  static inline std::string str(const ValueType type) {
+  static std::string str(const ValueType type) {
     switch (type) {
       case NONE:
         return "NONE";
@@ -268,4 +269,4 @@ public:
   FRIEND_TEST(TT_Test, probe);
 };
 
-#endif//FRANKYCPP_TT_H
+#endif// FRANKYCPP_TT_H

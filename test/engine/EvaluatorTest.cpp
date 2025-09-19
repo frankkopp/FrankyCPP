@@ -51,7 +51,7 @@ TEST_F(EvaluatorTest, testFens) {
   Evaluator e{};
   for (auto f : allFens) {
     Position p{f};
-    Value v{e.evaluate(p)};
+    const Value v{e.evaluate(p)};
     fprintln("Value: {:<6} GPF: {:<20}  Fen: {}", std::to_string(v), p.getGamePhaseFactor(), f);
   }
 }

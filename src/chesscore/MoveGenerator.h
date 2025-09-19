@@ -112,7 +112,7 @@ public:
   // possible scenarios is more expensive than to just generate the move and dismiss it later.
   // Because of beta cuts off we quite often will never have to check the full legality
   // of these moves anyway.
-  const MoveList* generatePseudoLegalMoves(const Position& position, GenMode genMode, bool evasion = false);
+  const MoveList* generatePseudoLegalMoves(const Position& p, GenMode genMode, bool evasion = false);
 
   // GenerateLegalMoves generates legal moves for the next player.
   // Uses GeneratePseudoLegalMoves and filters out illegal moves.
@@ -209,7 +209,7 @@ public:
   bool validateMove(const Position& position, Move move);
 
   // str() returns a string representation of a MoveGen instance
-  std::string str();
+  static std::string str();
 
   // returns the current pv move
   [[nodiscard]] Move getPvMove() const {
@@ -226,7 +226,7 @@ private:
   void fillOnDemandMoveList(const Position& position, GenMode genMode, bool evasion);
 
   // Move order heuristics based on history data.
-  void updateSortValues(const Position& position, MoveList* moveList);
+  void updateSortValues(const Position& p, MoveList* moveList) const;
 
   // getEvasionTargets returns the number of attackers and a Bitboard with target
   // squares for generated moves when the position has check against the next
@@ -236,7 +236,7 @@ private:
   // in case of the attacker being a slider.
   // If we have more than one attacker we can skip everything apart from
   // king moves.
-  static Bitboard getEvasionTargets(const Position& position);
+  static Bitboard getEvasionTargets(const Position& p);
 
   // Generates pseudo pawn moves for the next player. Does not check if king is left in check
   // @param genMode
@@ -249,21 +249,21 @@ private:
   // @param genMode
   // @param pPosition
   // @param pMoves - generated moves will be added to this list
-  void generateMoves(const Position& position, MoveList* pMoves, GenMode genMode, bool evasion, Bitboard evasionTargets);
+  static void generateMoves(const Position& position, MoveList* pMoves, GenMode genMode, bool evasion, Bitboard evasionTargets);
 
   // Generates pseudo king moves for the next player. Does not check if king
   // lands on an attacked square.
   // @param genMode
   // @param pPosition
   // @param pMoves - generated moves will be added to this list
-  void generateKingMoves(const Position& position, MoveList* pMoves, GenMode genMode, bool evasion);
+  static void generateKingMoves(const Position& position, MoveList* pMoves, GenMode genMode, bool evasion);
 
   // Generates pseudo castling move for the next player. Does not check if king passes or lands on an
   // attacked square.
   // @param genMode
   // @param pPosition
   // @param pMoves - generated moves will be added to this list
-  void generateCastling(const Position& position, MoveList* pMoves, GenMode genMode);
+  static void generateCastling(const Position& position, MoveList* pMoves, GenMode genMode);
 
   FRIEND_TEST(MoveGenTest, pawnMoves);
   FRIEND_TEST(MoveGenTest, kingMoves);

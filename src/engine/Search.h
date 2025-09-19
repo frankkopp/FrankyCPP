@@ -134,10 +134,10 @@ public:
   void newGame();
 
   // IsReady signals the uciHandler that the search is ready.
-  // This is part if the UCI protocol to make sure a chess
+  // This is part of the UCI protocol to make sure a chess
   // engine is initialized and ready to receive commands.
-  // When called this will initialize the search which might
-  // take a while. When finished this will call the uciHandler
+  // When called, this will initialize the search, which might
+  // take a while. When finished, this will call the uciHandler
   // set in SetUciHandler to send "readyok" to the UCI user interface.
   void isReady();
 
@@ -164,23 +164,23 @@ public:
   const MoveList& getPV() const { return pv[0]; };
 
   // clears the hash table
-  void clearTT();
+  void clearTT() const;
 
   // resize the hash to the value in the global config SearchConfig::TT_SIZE_MB
   void resizeTT();
 
   // return search stats instance
-  inline const SearchStats& getSearchStats() const { return statistics; };
+  const SearchStats& getSearchStats() const { return statistics; };
 
   // return the last search result
-  inline const SearchResult& getLastSearchResult() const { return lastSearchResult; };
+  const SearchResult& getLastSearchResult() const { return lastSearchResult; };
 
 private:
   ////////////////////////////////////////////////
   ///// PRIVATE
 
   // Initialize sets up opening book, transposition table
-  // and other potentially time consuming setup tasks
+  // and other potentially time-consuming setup tasks
   // This can be called several times without doing
   // initialization again.
   void initialize();
@@ -208,7 +208,7 @@ private:
   // search window around an expected value for the search. We establish
   // a start value by doing a 3-ply normal search and expand the search window in
   //  several steps to the maximal window if the search value returns outside the window.
-  Value aspirationSearch(Position& p, Depth depth, Value value);
+  Value aspirationSearch(Position& p, Depth depth, Value bestValue);
 
   // rootSearch starts the actual recursive alpha beta search with the root moves for the first ply.
   // As root moves are treated a little differently, this separate function supports readability
@@ -240,10 +240,10 @@ private:
 
   // reduce the number of moves searched in quiescence search by trying
   // to only look at good captures.
-  bool goodCapture(Position& position, Move move);
+  bool goodCapture(Position& p, Move move) const;
 
   // storeTT stores a position into the TT
-  void storeTt(Position& p, Depth depth, Depth ply, Move move, Value value, ValueType valueType, Value eval);
+  void storeTt(const Position& p, Depth depth, Depth ply, Move move, Value value, ValueType valueType, Value eval) const;
 
   // savePV adds the given move as the first move to a dest move list and then appends
   // all src moves to dest. Dest will be cleared before the appending.
@@ -259,7 +259,7 @@ private:
   // depth as long as these positions are in the TT.
   // This is used when we retrieve a value and move from the TT and would not get a PV
   // line otherwise.
-  void getPvLine(Position& p, MoveList& pvList, Depth depth);
+  void getPvLine(Position& p, MoveList& pvList, Depth depth) const;
 
   // stopConditions checks if stopFlag is set or if nodesVisited have
   // reached a potential maximum set in the search limits.
@@ -267,11 +267,11 @@ private:
 
   // setupSearchLimits reports logging on search limits for the search
   // and sets up time control.
-  void setupSearchLimits(Position& p, SearchLimits& sl);
+  void setupSearchLimits(const Position& p, SearchLimits& sl);
 
   // setupTimeControl sets up time control according to the given search limits
   // and returns a limit on the duration for the current search.
-  static milliseconds setupTimeControl(Position& position, SearchLimits& limits);
+  static milliseconds setupTimeControl(const Position& position, const SearchLimits& limits);
   FRIEND_TEST(SearchTest, setupTime);
 
   // addExtraTime certain situations might call for an extension or reduction
@@ -292,7 +292,7 @@ private:
 
   // checks repetitions and 50-moves rule. Returns true if the position
   // has repeated itself at least the given number of times.
-  static bool checkDrawRepAnd50(Position& position, int numberOfRepetitions);
+  static bool checkDrawRepAnd50(const Position& p, int numberOfRepetitions);
 
   // helper to send uci protocol messages.
   void sendReadyOk() const;
@@ -301,7 +301,7 @@ private:
   void sendString(const std::string& msg) const;
 
   // sends the search result to the uci handler if a handler is available.
-  void sendResult(SearchResult& result);
+  void sendResult(const SearchResult& result) const;
 
   // send UCI information after each depth iteration.
   void sendIterationEndInfoToUci();

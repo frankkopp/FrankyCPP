@@ -47,10 +47,9 @@ protected:
  */
 TEST_F(MoveGenTest, pawnMoves) {
   MoveGenerator mg;
-  Position pos;
   MoveList moves;
 
-  pos = Position("1kr3nr/pp1pP1P1/2p1p3/3P1p2/1n1bP3/2P5/PP3PPP/RNBQKBNR w KQ -");
+  const auto pos = Position("1kr3nr/pp1pP1P1/2p1p3/3P1p2/1n1bP3/2P5/PP3PPP/RNBQKBNR w KQ -");
 
   mg.generatePawnMoves(pos, &moves, GenNonQuiet, false, BbZero);
   EXPECT_EQ(11, moves.size());
@@ -64,20 +63,19 @@ TEST_F(MoveGenTest, pawnMoves) {
   EXPECT_EQ(25, moves.size());
 
   // sort moves
-  sort(moves.begin(), moves.end(), [](const Move lhs, const Move rhs) {
+  ranges::sort(moves, [](const Move lhs, const Move rhs) {
     return valueOf(lhs) > valueOf(rhs);
   });
-  for (Move m : moves) {
+  for (const Move m : moves) {
     fprintln(strVerbose(m));
   }
 }
 
 TEST_F(MoveGenTest, kingMoves) {
   MoveGenerator mg;
-  Position pos;
   MoveList moves;
 
-  pos = Position("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R w KQkq -");
+  auto pos = Position("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R w KQkq -");
   mg.generateKingMoves(pos, &moves, GenAll, false);
   EXPECT_EQ(3, moves.size());
   EXPECT_EQ("e1d2 e1d1 e1f1", str(moves));
@@ -89,10 +87,10 @@ TEST_F(MoveGenTest, kingMoves) {
   EXPECT_EQ("e8d7 e8d8 e8f8", str(moves));
 
   // sort moves
-  sort(moves.begin(), moves.end(), [](const Move lhs, const Move rhs) {
+  ranges::sort(moves, [](const Move lhs, const Move rhs) {
     return valueOf(lhs) > valueOf(rhs);
   });
-  for (Move m : moves) {
+  for (const Move m : moves) {
     fprintln(strVerbose(m));
   }
 }
@@ -123,7 +121,7 @@ TEST_F(MoveGenTest, normalMoves) {
   EXPECT_EQ("d2f3 d2e4 d2b1 d2f1 d2b3 d2c4 c6d4 c6a5 c6b8 c6d8 f6e4 f6d7 f6g4 f6d5 f6h5 f6g8 b4c3 b4a3 b4a5 b4c5 b4d6 b7a6 b7c8 a8b8 a8c8 a8d8 h8f8 h8g8 e7d7 e7c5 e7d6 e7e6 e7d8 e7f8", str(moves));
 
   // sort moves
-  sort(moves.begin(), moves.end(), [](const Move lhs, const Move rhs) {
+  ranges::sort(moves, [](const Move lhs, const Move rhs) {
     return valueOf(lhs) > valueOf(rhs);
   });
   for (Move m : moves) {
@@ -133,10 +131,9 @@ TEST_F(MoveGenTest, normalMoves) {
 
 TEST_F(MoveGenTest, castlingMoves) {
   MoveGenerator mg;
-  Position pos;
   MoveList moves;
 
-  pos = Position("r3k2r/pbppqppp/1pn2n2/1B2p3/1b2P3/N1PP1N2/PP1BQPPP/R3K2R w KQkq -");
+  auto pos = Position("r3k2r/pbppqppp/1pn2n2/1B2p3/1b2P3/N1PP1N2/PP1BQPPP/R3K2R w KQkq -");
   mg.generateCastling(pos, &moves, GenAll);
   EXPECT_EQ(2, moves.size());
   EXPECT_EQ("e1g1 e1c1", str(moves));
@@ -148,10 +145,10 @@ TEST_F(MoveGenTest, castlingMoves) {
   EXPECT_EQ("e8g8 e8c8", str(moves));
 
   // sort moves
-  sort(moves.begin(), moves.end(), [](const Move lhs, const Move rhs) {
+  ranges::sort(moves, [](const Move lhs, const Move rhs) {
     return valueOf(lhs) > valueOf(rhs);
   });
-  for (Move m : moves) {
+  for (const Move m : moves) {
     fprintln(strVerbose(m));
   }
 }
@@ -325,13 +322,11 @@ TEST_F(MoveGenTest, validateMove) {
 
 TEST_F(MoveGenTest, fromUci) {
   MoveGenerator mg;
-  Position pos;
-  Move move;
 
-  pos = Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3");
+  const auto pos = Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3");
 
   // invalid pattern
-  move = mg.getMoveFromUci(pos, "8888");
+  Move move = mg.getMoveFromUci(pos, "8888");
   EXPECT_EQ(MOVE_NONE, move);
 
   // valid move
@@ -444,6 +439,7 @@ TEST_F(MoveGenTest, onDemandGen) {
   Move move;
   int counter = 0;
   while ((move = mg.getNextPseudoLegalMove(position, GenAll)) != MOVE_NONE) {
+    EXPECT_TRUE(validMove(move));
     counter++;
   }
   EXPECT_EQ(86, counter);
@@ -453,6 +449,7 @@ TEST_F(MoveGenTest, onDemandGen) {
   position = Position(fen);
   counter  = 0;
   while ((move = mg.getNextPseudoLegalMove(position, GenAll)) != MOVE_NONE) {
+    EXPECT_TRUE(validMove(move));
     counter++;
   }
   EXPECT_EQ(218, counter);
@@ -462,6 +459,7 @@ TEST_F(MoveGenTest, onDemandGen) {
   position = Position(fen);
   counter  = 0;
   while ((move = mg.getNextPseudoLegalMove(position, GenAll)) != MOVE_NONE) {
+    EXPECT_TRUE(validMove(move));
     counter++;
   }
   EXPECT_EQ(48, counter);
@@ -507,11 +505,10 @@ TEST_F(MoveGenTest, storeKiller) {
 TEST_F(MoveGenTest, onDemandKiller) {
   MoveGenerator mg;
   MoveList moves;
-  Position pos;
   Move move;
 
   // 86
-  pos = Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3");
+  auto pos = Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3");
 
   Move move1 = mg.getMoveFromUci(pos, "g6h4");
   Move move2 = mg.getMoveFromUci(pos, "b7b6");
@@ -531,7 +528,7 @@ TEST_F(MoveGenTest, onDemandKiller) {
   mg.reset();
 
   // 48 kiwipete
-  pos         = Position("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+  pos = Position("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
 
   move1 = mg.getMoveFromUci(pos, "d2g5");
   move2 = mg.getMoveFromUci(pos, "b2b3");
@@ -710,11 +707,10 @@ TEST_F(MoveGenTest, evasion) {
 
 TEST_F(MoveGenTest, sortValueTest) {
   MoveGenerator mg;
-  Position p;
   MoveList moves;
 
   // Start pos
-  p = Position("r3k2r/1pp4p/2q1qNn1/3nP3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq -");
+  const auto p = Position("r3k2r/1pp4p/2q1qNn1/3nP3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq -");
 
   Move moveFromUci = createMove(SQ_G6, SQ_H4);
   mg.storeKiller(moveFromUci);
@@ -735,20 +731,20 @@ TEST_F(MoveGenTest, sortValueTest) {
   mg.updateSortValues(p, &moves);
 
   fprintln("Pre sort:");
-  for (Move m : moves) {
+  for (const Move m : moves) {
     fprintln("{}", strVerbose(m));
   }
   NEWLINE;
 
   // sort moves
-  std::stable_sort(moves.begin(), moves.end(), moveValueGreaterComparator());
+  ranges::stable_sort(moves, moveValueGreaterComparator());
 
   // TODO real tests
 
   fprintln("Post sort:");
-  int counter = 0;
+  int counter   = 0;
   Move lastMove = MOVE_NONE;
-  for (Move m : moves) {
+  for (const Move m : moves) {
     fprintln("{}", strVerbose(m));
     if (!counter++) {
       lastMove = m;
@@ -778,13 +774,13 @@ TEST_F(MoveGenTest, PseudoMoveGenSpeedTest) {
 #endif
   MoveGenerator mg;
 
-  const int rounds     = 5;
-  const int iterations = 10'000'000;
+  constexpr int rounds = 5;
 
-  Position position     = Position("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+  auto position         = Position("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
   const MoveList* moves = mg.generatePseudoLegalMoves(position, GenAll);
 
   for (int r = 1; r <= rounds; r++) {
+    constexpr int iterations = 10'000'000;
     fprintln("Round {}", r);
     auto start = high_resolution_clock::now();
     for (int i = 0; i < iterations; i++) {
@@ -809,7 +805,7 @@ TEST_F(MoveGenTest, PseudoMoveGenSpeedTest) {
 
 TEST_F(MoveGenTest, debug) {
   MoveGenerator mg{};
-  Position p("1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -");
+  const Position p("1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -");
   MoveList moves{};
 
   // Move move;
@@ -824,7 +820,7 @@ TEST_F(MoveGenTest, debug) {
   mg.reset();
   moves = *mg.generatePseudoLegalMoves(p, GenAll);
   fprintln("{}", moves.size());
-  for (Move m : moves) {
+  for (const Move m : moves) {
     fprintln(strVerbose(m));
   }
 

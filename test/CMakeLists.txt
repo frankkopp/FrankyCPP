@@ -39,8 +39,7 @@ add_executable(
         enginetest/TestSuite_Test.cpp
 
         TimingTests.cpp
-        PlaygroundTests.cpp
-        )
+)
 
 target_link_libraries(
         ${testExeName}
@@ -58,4 +57,3 @@ add_custom_command(
 )
 
 gtest_discover_tests(${testExeName})
-

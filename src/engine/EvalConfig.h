@@ -30,7 +30,7 @@ namespace EvalConfig {
   inline int TEMPO = 34;
 
   inline bool USE_LAZY_EVAL   = true;
-  inline Value LAZY_THRESHOLD = Value{700};
+  inline auto LAZY_THRESHOLD = Value{700};
 
   inline bool USE_PAWN_EVAL       = true;
   inline bool USE_PAWN_TT         = true;
@@ -50,8 +50,8 @@ namespace EvalConfig {
   inline int SUPPORTED_PAWN_END_WEIGHT = 15;
 
   inline bool USE_PIECE_EVAL = false;
-  inline Value BISHOP_PAIR_MID_BONUS = Value{20};
-  inline Value BISHOP_PAIR_END_BONUS = Value{20};
+  inline auto BISHOP_PAIR_MID_BONUS = Value{20};
+  inline auto BISHOP_PAIR_END_BONUS = Value{20};
 
   inline bool USE_KING_EVAL = false;
 }// namespace EvalConfig

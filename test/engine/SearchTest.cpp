@@ -26,7 +26,16 @@
 #include <gtest/gtest.h>
 using testing::Eq;
 
-class SearchTest : public ::testing::Test {
+inline bool isBulkRun() {
+  const auto* ut  = testing::UnitTest::GetInstance();
+  const bool cond = ut && ut->test_to_run_count() > 1;
+  if (cond) {
+    std::cout << "Bulk run detected - limiting depth to shorten test time" << std::endl;
+  }
+  return cond;
+}
+
+class SearchTest : public testing::Test {
 public:
   static void SetUpTestSuite() {
     NEWLINE;
@@ -45,7 +54,8 @@ protected:
 };
 
 TEST_F(SearchTest, construct) {
-  Search search{};search.isReady();
+  Search search{};
+  search.isReady();
 }
 
 TEST_F(SearchTest, resizeHash) {
@@ -84,7 +94,6 @@ TEST_F(SearchTest, setupTime) {
 }
 
 TEST_F(SearchTest, extraTime) {
-  Position p{};
   SearchLimits sl{};
   Search s{};
   s.searchLimits.timeControl = true;
@@ -100,7 +109,6 @@ TEST_F(SearchTest, extraTime) {
 }
 
 TEST_F(SearchTest, startTimer) {
-  Position p{};
   SearchLimits sl{};
   Search s{};
   s.searchLimits.timeControl = true;
@@ -115,7 +123,7 @@ TEST_F(SearchTest, startTimer) {
 
 TEST_F(SearchTest, startStopSearch) {
   SearchConfig::USE_BOOK = false;
-  Position p{};
+  const Position p{};
   SearchLimits sl{};
   Search s{};
   sl.infinite = true;
@@ -132,7 +140,7 @@ TEST_F(SearchTest, startStopSearch) {
 
 TEST_F(SearchTest, startTimedSearch) {
   SearchConfig::USE_BOOK = false;
-  Position p{};
+  const Position p{};
   SearchLimits sl{};
   Search s{};
   sl.timeControl = true;
@@ -149,7 +157,7 @@ TEST_F(SearchTest, startTimedSearch) {
 
 TEST_F(SearchTest, bookMoveSearch) {
   SearchConfig::USE_BOOK = true;
-  Position p{};
+  const Position p{};
   SearchLimits sl{};
   Search s{};
   sl.timeControl = true;
@@ -168,14 +176,14 @@ TEST_F(SearchTest, bookMoveSearch) {
 TEST_F(SearchTest, startPonderSearch) {
   SearchConfig::USE_BOOK   = false;
   SearchConfig::USE_PONDER = true;
-  Position p{};
+  const Position p{};
   SearchLimits sl{};
   Search s{};
   sl.timeControl = true;
   sl.moveTime    = milliseconds{1000};
   sl.ponder      = true;
   s.isReady();
-  TimePoint start = currentTime();
+  const TimePoint start = currentTime();
   s.startSearch(p, sl);
   EXPECT_TRUE(s.isSearching());
   EXPECT_FALSE(s.hasResult());
@@ -183,14 +191,14 @@ TEST_F(SearchTest, startPonderSearch) {
   s.ponderhit();
   s.waitWhileSearching();
   EXPECT_TRUE(s.hasResult());
-  EXPECT_LT(int64_t(nanoPerSec - 20'000'000), s.getLastSearchResult().time.count());
-  EXPECT_GT(int64_t(nanoPerSec * 1.1), s.getLastSearchResult().time.count());
-  EXPECT_GT(int64_t(nanoPerSec * 2.5), elapsedSince(start).count());
+  EXPECT_LT(static_cast<int64_t>(nanoPerSec - 20'000'000), s.getLastSearchResult().time.count());
+  EXPECT_GT(static_cast<int64_t>(nanoPerSec * 1.1), s.getLastSearchResult().time.count());
+  EXPECT_GT(static_cast<int64_t>(nanoPerSec * 2.5), elapsedSince(start).count());
 }
 
 TEST_F(SearchTest, startNodesLimitedSearch) {
   SearchConfig::USE_BOOK = false;
-  Position p{};
+  const Position p{};
   SearchLimits sl{};
   Search s{};
   sl.infinite = true;
@@ -206,11 +214,11 @@ TEST_F(SearchTest, startNodesLimitedSearch) {
 
 TEST_F(SearchTest, depthLimitedSearch) {
   SearchConfig::USE_BOOK = false;
-  Position p{};
+  const Position p{};
   SearchLimits sl{};
   Search s{};
-  const int depth = 8;
-  sl.depth        = depth;
+  constexpr int depth = 8;
+  sl.depth            = depth;
   s.isReady();
   s.startSearch(p, sl);
   EXPECT_TRUE(s.isSearching());
@@ -222,11 +230,11 @@ TEST_F(SearchTest, depthLimitedSearch) {
 
 TEST_F(SearchTest, stalemate0Search) {
   SearchConfig::USE_BOOK = false;
-  Position p{"6R1/8/8/8/8/5K2/R7/7k b - -"};
+  const Position p{"6R1/8/8/8/8/5K2/R7/7k b - -"};
   SearchLimits sl{};
   Search s{};
-  const int depth = 6;
-  sl.depth        = depth;
+  constexpr int depth = 6;
+  sl.depth            = depth;
   s.isReady();
   s.startSearch(p, sl);
   s.waitWhileSearching();
@@ -235,7 +243,7 @@ TEST_F(SearchTest, stalemate0Search) {
 
 TEST_F(SearchTest, mate0Search) {
   SearchConfig::USE_BOOK = false;
-  Position p{"8/8/8/8/8/5K2/8/R4k2 b - -"};
+  const Position p{"8/8/8/8/8/5K2/8/R4k2 b - -"};
   SearchLimits sl{};
   Search s{};
   sl.timeControl = true;
@@ -249,7 +257,7 @@ TEST_F(SearchTest, mate0Search) {
 
 TEST_F(SearchTest, mate1Search) {
   SearchConfig::USE_BOOK = false;
-  Position p{"8/8/8/8/8/6K1/R7/6k1 w - - 0 8"};
+  const Position p{"8/8/8/8/8/6K1/R7/6k1 w - - 0 8"};
   SearchLimits sl{};
   Search s{};
   sl.timeControl = true;
@@ -264,7 +272,7 @@ TEST_F(SearchTest, mate1Search) {
 
 TEST_F(SearchTest, mate2Search) {
   SearchConfig::USE_BOOK = false;
-  Position p{"8/8/8/8/8/5K2/R7/7k w - - 0 7"};
+  const Position p{"8/8/8/8/8/5K2/R7/7k w - - 0 7"};
   SearchLimits sl{};
   Search s{};
   sl.timeControl = true;
@@ -279,7 +287,7 @@ TEST_F(SearchTest, mate2Search) {
 
 TEST_F(SearchTest, mate3Search) {
   SearchConfig::USE_BOOK = false;
-  Position p{"8/8/8/8/8/4K3/R7/6k1 w - - 0 6"};
+  const Position p{"8/8/8/8/8/4K3/R7/6k1 w - - 0 6"};
   SearchLimits sl{};
   Search s{};
   sl.timeControl = true;
@@ -294,7 +302,7 @@ TEST_F(SearchTest, mate3Search) {
 
 TEST_F(SearchTest, mate4Search) {
   SearchConfig::USE_BOOK = false;
-  Position p{"8/8/8/8/8/3K4/R7/5k2 w - - 0 5"};
+  const Position p{"8/8/8/8/8/3K4/R7/5k2 w - - 0 5"};
   SearchLimits sl{};
   Search s{};
   sl.timeControl = true;
@@ -310,7 +318,7 @@ TEST_F(SearchTest, mate4Search) {
 TEST_F(SearchTest, mate5Search) {
   SearchConfig::USE_BOOK      = false;
   SearchConfig::USE_ALPHABETA = true;
-  Position p{"8/8/8/8/4K3/8/R7/4k3 w - - 0 4"};
+  const Position p{"8/8/8/8/4K3/8/R7/4k3 w - - 0 4"};
   SearchLimits sl{};
   Search s{};
   sl.timeControl = true;
@@ -327,7 +335,7 @@ TEST_F(SearchTest, quiescenceTest) {
 
   Search search;
   SearchLimits searchLimits;
-  Position position("r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 w kq - 10 113");
+  const Position position("r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 w kq - 10 113");
   searchLimits.depth = 2;
 
   SearchConfig::USE_BOOK       = false;
@@ -362,7 +370,9 @@ TEST_F(SearchTest, quiescenceTest) {
 }
 
 TEST_F(SearchTest, debug) {
-  GTEST_SKIP();
+  if (isBulkRun()) {
+    GTEST_SKIP() << "Skipping debug test in bulk run to save time";
+  }
   SearchConfig::TT_SIZE_MB          = 64;
   SearchConfig::USE_BOOK            = false;
   SearchConfig::USE_ALPHABETA       = false;
@@ -383,7 +393,7 @@ TEST_F(SearchTest, debug) {
   EvalConfig::USE_POSITIONAL = true;
   EvalConfig::TEMPO          = 34;
 
-  Position p{"2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - - 0 1"};
+  const Position p{"2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - - 0 1"};
   SearchLimits sl{};
   Search s{};
   //  sl.timeControl = true;

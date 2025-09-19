@@ -24,10 +24,10 @@
 #include <ostream>
 #include <types/types.h>
 
-// SearchLimits is data structure to hold all information about how
+// SearchLimits is a data structure to hold all information about how
 // a search of the chess games shall be controlled.
 // Search needs to read these and determine the necessary limits.
-// E.g. time controlled game or not
+// E.g., time-controlled game or not
 struct SearchLimits {
   // no time control
   bool infinite = false;

@@ -22,7 +22,7 @@ set(FrankyCPPlib_SRCS
         engine/TT.cpp engine/TT.h
         engine/Search.cpp engine/Search.h
         engine/SearchResult.h engine/SearchLimits.h engine/SearchConfig.h
-        engine/SearchStats.cpp engine/SearchStats.h
+        engine/SearchStats.h
         engine/See.cpp engine/See.h
         engine/Evaluator.cpp engine/Evaluator.h engine/EvalConfig.h
         engine/PawnTT.cpp engine/PawnTT.h

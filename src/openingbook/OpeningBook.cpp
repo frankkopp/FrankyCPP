@@ -21,7 +21,6 @@
 #include "chesscore/MoveGenerator.h"
 #include "chesscore/Position.h"
 #include "common/Logging.h"
-#include "common/misc.h"
 #include "common/stringutil.h"
 #include "types/types.h"
 
@@ -50,12 +49,12 @@
 // //////////////////////////////////////////////
 // /// PUBLIC
 
-OpeningBook::OpeningBook(std::string bookPath, BookFormat bFormat)
+OpeningBook::OpeningBook(std::string bookPath, const BookFormat bFormat)
     : bookFormat(bFormat), bookFilePath(std::move(bookPath)) {
   numberOfThreads = getNoOfThreads();
 }
 
-Move OpeningBook::getRandomMove(Key zobrist) const {
+Move OpeningBook::getRandomMove(const Key zobrist) const {
   Move bookMove = MOVE_NONE;
   // Find the entry for this key (zobrist key of position) in the map and
   // choose a random move from the list of moves in the entry
@@ -75,9 +74,9 @@ void OpeningBook::initialize() {
   }
   LOG__INFO(Logger::get().BOOK_LOG, "Opening book initialization.");
 
-  const auto start = std::chrono::high_resolution_clock::now();
+  const auto start = high_resolution_clock::now();
 
-  // if cache enabled check if we have a cache file and load from cache
+  // if cache enabled check if we have a cache file and load from the cache
   if (_useCache && !_recreateCache && hasCache()) {
     if (loadFromCache()) return;
   }
@@ -86,8 +85,8 @@ void OpeningBook::initialize() {
   const auto lines = readFile(bookFilePath);
 
   // set root entry
-  auto iteratorPair= bookMap.emplace(rootZobristKey, rootZobristKey);
-  iteratorPair.first->second.counter = 0;
+  auto [fst, _]       = bookMap.emplace(rootZobristKey, rootZobristKey);
+  fst->second.counter = 0;
 
   // reads lines and retrieves game (lists of moves) and adds these to the book map
   readGames(lines);
@@ -100,8 +99,8 @@ void OpeningBook::initialize() {
     saveToCache();
   }
 
-  const auto stop    = std::chrono::high_resolution_clock::now();
-  const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+  const auto stop    = high_resolution_clock::now();
+  const auto elapsed = std::chrono::duration_cast<milliseconds>(stop - start);
 
   isInitialized = true;
   LOG__INFO(Logger::get().BOOK_LOG, "Opening book initialized in ({:L} ms). {:L} positions", elapsed.count(), bookMap.size());
@@ -114,14 +113,14 @@ void OpeningBook::reset() {
   LOG__DEBUG(Logger::get().TEST_LOG, "Opening book reset: {:L} entries", bookMap.size());
 }
 
-std::string OpeningBook::str(int level) {
-  Position p{};
-  Key zobristKey        = p.getZobristKey();
+std::string OpeningBook::str(const int level) {
+  const Position p{};
+  const Key zobristKey  = p.getZobristKey();
   const BookEntry* node = &bookMap[zobristKey];
   return std::string{fmt::format(deLocale, "Root ({:L})\n{:s}", bookMap[zobristKey].counter, getLevelStr(1, level, node))};
 }
 
-std::string OpeningBook::getLevelStr(int level, int maxLevel, const BookEntry* node) {
+std::string OpeningBook::getLevelStr(int level, const int maxLevel, const BookEntry* node) {
   std::string out;
   const size_t size = node->moves.size();
   for (int i = 0; i < size; i++) {
@@ -158,7 +157,7 @@ std::vector<std::string_view> OpeningBook::readFile(const std::string& filePath)
     // https://stackoverflow.com/a/52699885/9161706
     file.seekg(0, std::ios::beg);
     file.seekg(0, std::ios::end);
-    std::streamsize data_size = file.tellg();
+    const std::streamsize data_size = file.tellg();
     file.seekg(0, std::ios::beg);
     data = std::make_unique<char[]>(data_size);
     file.read(data.get(), data_size);
@@ -170,8 +169,8 @@ std::vector<std::string_view> OpeningBook::readFile(const std::string& filePath)
       }
     }
 
-    const auto stop    = std::chrono::high_resolution_clock::now();
-    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+    const auto stop    = high_resolution_clock::now();
+    const auto elapsed = std::chrono::duration_cast<milliseconds>(stop - start);
     LOG__DEBUG(Logger::get().BOOK_LOG, "Read {:L} lines in {:L} ms.", lines.size(), elapsed.count());
 
     file.close();
@@ -249,7 +248,7 @@ void OpeningBook::readOneGameSimple(const std::string_view& lineView) {
   Moves game{};
 
   // trim line
-  auto lineViewTrimmed = trimFast(lineView);
+  const auto lineViewTrimmed = trimFast(lineView);
 
   // simple lines are in tuples of 4 per move
   // read in 4 characters and check if they might
@@ -345,7 +344,7 @@ void OpeningBook::readGamesPgn(const std::vector<std::string_view>* lines) {
   std::vector<std::future<bool>> futures;
 
 #ifdef PARALLEL_LINE_PROCESSING
-  const std::launch asyncPolicy = std::launch::async;
+  constexpr auto asyncPolicy = std::launch::async;
 #else
   const std::launch asyncPolicy = std::launch::deferred;
 #endif
@@ -396,7 +395,7 @@ void OpeningBook::readGamesPgn(const std::vector<std::string_view>* lines) {
   }
 }
 
-void OpeningBook::readOneGamePgn(const std::vector<std::string_view>* lines, size_t gameStart, size_t gameEnd) {
+void OpeningBook::readOneGamePgn(const std::vector<std::string_view>* lines, const size_t gameStart, const size_t gameEnd) {
 
   std::string moveLine;
 
@@ -426,13 +425,13 @@ void OpeningBook::readOneGamePgn(const std::vector<std::string_view>* lines, siz
 }
 
 void OpeningBook::cleanUpPgnMoveSection(std::string& str) {
-  std::size_t length = str.length();// explicit as the later loop test for <0
+  const std::size_t length = str.length();// explicit as the later loop test for <0
   if (length == 0) return;
 
   char lastChar = ' ';
   for (int a = 0; a < length;) {
-    // skip non ascii characters
-    if (int(str[a]) < 0 || int(str[a]) > 255) {
+    // skip non-ascii characters
+    if (static_cast<int>(str[a]) < 0 || static_cast<int>(str[a]) > 255) {
       str[a++] = ' ';
     }
     // skip invalid characters
@@ -509,8 +508,9 @@ void OpeningBook::cleanUpPgnMoveSection(std::string& str) {
   str.resize(a);
 
   // Use the std::unique algorithm to remove consecutive spaces
-  auto newEnd = std::unique(str.begin(), str.end(),
-                            [](char a, char b) { return a == ' ' && b == ' '; });
+  const auto newEnd = std::ranges::unique(str,
+                                          [](const char aa, const char bb) { return aa == ' ' && bb == ' '; })
+                        .begin();
   // Erase the extra spaces from the string
   str.resize(std::distance(str.begin(), newEnd));
   // remove trailing and leading whitespace
@@ -563,7 +563,7 @@ void OpeningBook::addGameToBook(const Moves& game) {
   }
 }
 
-void OpeningBook::writeToBook(Move move, Key currentKey, Key lastKey) {
+void OpeningBook::writeToBook(const Move move, Key currentKey, const Key lastKey) {
 
 #ifdef PARALLEL_LINE_PROCESSING
   // get the lock on the data map
@@ -591,7 +591,7 @@ void OpeningBook::writeToBook(Move move, Key currentKey, Key lastKey) {
    Uses BOOST serialization to serialize the data to a binary file */
 void OpeningBook::saveToCache() {
   {// save data to archive
-    const auto start= std::chrono::high_resolution_clock::now();
+    const auto start               = std::chrono::high_resolution_clock::now();
     const std::string serCacheFile = bookFilePath + cacheExt;
     LOG__DEBUG(Logger::get().BOOK_LOG, "Saving book to cache file {}", serCacheFile);
     // create and open a binary archive for output
@@ -611,7 +611,7 @@ void OpeningBook::saveToCache() {
 bool OpeningBook::loadFromCache() {
   std::unordered_map<Key, BookEntry> binMap;
   {// load data from archive
-    const auto start= std::chrono::high_resolution_clock::now();
+    const auto start               = std::chrono::high_resolution_clock::now();
     const std::string serCacheFile = bookFilePath + cacheExt;
     LOG__DEBUG(Logger::get().BOOK_LOG, "Loading from cache file {} ({:L} kB)", serCacheFile, std::filesystem::file_size(serCacheFile) / 1'024);
     // create and open a binary archive for input
@@ -640,7 +640,7 @@ bool OpeningBook::hasCache() const {
     LOG__DEBUG(Logger::get().BOOK_LOG, "No cache file {} available", serCacheFile);
     return false;
   }
-  uint64_t fsize = std::filesystem::file_size(serCacheFile);
+  const uint64_t fsize = std::filesystem::file_size(serCacheFile);
   LOG__DEBUG(Logger::get().BOOK_LOG, "Cache file {} ({:L} kB) available", serCacheFile, fsize / 1'024);
   return true;
 }
