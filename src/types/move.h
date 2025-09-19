@@ -23,6 +23,7 @@
 #include "piecetype.h"
 #include "value.h"
 
+#include <cassert>
 #include <string>
 
 namespace MoveShifts {

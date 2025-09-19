@@ -27,7 +27,7 @@
 using namespace std;
 using testing::Eq;
 
-class PositionTest : public ::testing::Test {
+class PositionTest : public testing::Test {
 public:
   static void SetUpTestSuite() {
     NEWLINE;
@@ -43,7 +43,6 @@ protected:
 
 TEST_F(PositionTest, initialization) {
   const Position position;
-  EXPECT_TRUE(Position::initialized);
   EXPECT_EQ(WHITE, position.getNextPlayer());
   EXPECT_EQ(BLACK, ~position.getNextPlayer());
   EXPECT_EQ(1, position.getMoveNumber());
@@ -1088,7 +1087,7 @@ TEST_F(PositionTest, attacksTo) {
 TEST_F(PositionTest, debug) {
 
   Position p("r3k2r/Pppp1ppp/1b3nbN/nP6/BBPPP3/q4N2/Pp4PP/R2Q1RK1 b kq d3 0 1");
-  constexpr Move m = createMove(SQ_B2, SQ_A1, PROMOTION, QUEEN);
+  const Move m = createMove(SQ_B2, SQ_A1, PROMOTION, QUEEN);
   fprintln(strVerbose(m));
   fprintln(p.strFen());
   p.doMove(m);
@@ -1096,7 +1095,6 @@ TEST_F(PositionTest, debug) {
 }
 
 TEST_F(PositionTest, PrintZobristConstants) {
-  Position::init();
 
   std::cout << "Zobrist::pieces:" << std::endl;
   for (int pc = 0; pc < PIECE_LENGTH; ++pc) {

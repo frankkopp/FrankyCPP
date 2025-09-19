@@ -25,6 +25,8 @@
 #include "macros.h"
 #include "rank.h"
 
+#include <array>
+
 // Square represent exactly on square on a chess board.
 //  SqA1   // 0
 //  SqB1   // 1

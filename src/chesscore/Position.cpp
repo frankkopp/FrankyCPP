@@ -23,34 +23,6 @@
 
 #include <string>
 
-Key Zobrist::pieces[PIECE_LENGTH][SQ_LENGTH];
-Key Zobrist::castlingRights[CR_LENGTH];
-Key Zobrist::enPassantFile[FILE_LENGTH];
-Key Zobrist::nextPlayer;
-
-////////////////////////////////////////////////
-///// STATIC
-
-bool Position::initialized = false;
-
-void Position::init() {
-  // Zobrist Key initialization
-  PRNG random(1070372);// seed from Stockfish :) - they supposedly did some research
-  for (Piece pc = PIECE_NONE; pc < PIECE_LENGTH; ++pc) {
-    for (Square sq = SQ_A1; sq < SQ_LENGTH; ++sq) {
-      Zobrist::pieces[pc][sq] = random.rand<Key>();
-    }
-  }
-  for (CastlingRights cr = NO_CASTLING; cr <= ANY_CASTLING; ++cr) {
-    Zobrist::castlingRights[cr] = random.rand<Key>();
-  }
-  for (File f = FILE_A; f <= FILE_H; ++f) {
-    Zobrist::enPassantFile[f] = random.rand<Key>();
-  }
-  Zobrist::nextPlayer   = random.rand<Key>();
-  initialized = true;
-}
-
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
 
@@ -62,9 +34,6 @@ Position::Position(const char* fen) : Position(std::string{fen}) {}
 
 /** Creates a board with setup from the given fen */
 Position::Position(const std::string& fen) {
-  if (!initialized) {
-    Position::init();
-  }
   try {
     setupBoard(fen);
   } catch (std::invalid_argument&) {
@@ -76,7 +45,7 @@ Position::Position(const std::string& fen) {
 // //////////////////////////////////////////////
 // /// PUBLIC
 
-void Position::doMove(Move move) {
+void Position::doMove(const Move move) {
   assert(validMove(move));
   assert(validSquare(fromSquare(move)));
   assert(validSquare(toSquare(move)));
@@ -105,8 +74,7 @@ void Position::doMove(Move move) {
       // If we still have castling rights and the move touches castling squares then invalidate
       // the corresponding castling right
       if (castlingRights) {
-        CastlingRights cr = Castling::castlingRights[fromSq] + Castling::castlingRights[toSq];
-        if (cr) {
+        if (const CastlingRights cr = Castling::castlingRights[fromSq] + Castling::castlingRights[toSq]) {
           zobristKey ^= Zobrist::castlingRights[castlingRights];// out
           castlingRights -= cr;
           zobristKey ^= Zobrist::castlingRights[castlingRights];// in
@@ -141,8 +109,7 @@ void Position::doMove(Move move) {
       // If we still have castling rights and the move touches castling squares then invalidate
       // the corresponding castling right
       if (castlingRights) {
-        CastlingRights cr = Castling::castlingRights[fromSq] + Castling::castlingRights[toSq];
-        if (cr) {
+        if (const CastlingRights cr = Castling::castlingRights[fromSq] + Castling::castlingRights[toSq]) {
           zobristKey ^= Zobrist::castlingRights[castlingRights];// out
           castlingRights -= cr;
           zobristKey ^= Zobrist::castlingRights[castlingRights];// in
