@@ -10,7 +10,6 @@ set(FrankyCPPlib_SRCS
         common/ThreadPool.cpp
         common/Logging.cpp
 
-        chesscore/Values.cpp
         chesscore/Position.cpp
         chesscore/MoveGenerator.cpp
         chesscore/Perft.cpp

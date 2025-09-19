@@ -20,7 +20,6 @@
 #ifndef FRANKYCPP_BITBOARD_H
 #define FRANKYCPP_BITBOARD_H
 
-#include "castlingrights.h"
 #include "direction.h"
 #include "orientation.h"
 #include "piecetype.h"
@@ -28,7 +27,6 @@
 
 #include <array>
 #include <bitset>
-#include <cassert>
 #include <cstdint>
 #include <immintrin.h>
 

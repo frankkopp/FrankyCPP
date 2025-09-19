@@ -62,7 +62,7 @@ Position::Position(const char* fen) : Position(std::string{fen}) {}
 
 /** Creates a board with setup from the given fen */
 Position::Position(const std::string& fen) {
-  if (!Position::initialized) {
+  if (!initialized) {
     Position::init();
   }
   try {

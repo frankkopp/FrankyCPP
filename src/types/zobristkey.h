@@ -20,6 +20,7 @@
 #ifndef FRANKYCPP_ZOBRISTKEY_H
 #define FRANKYCPP_ZOBRISTKEY_H
 
+#include <cassert>
 #include <cstdint>
 
 /** 64 bit Key for zobrist etc. */

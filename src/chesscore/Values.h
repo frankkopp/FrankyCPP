@@ -21,17 +21,11 @@
 #define FRANKYCPP_EVALUATION_H
 
 #include "types/types.h"
+#include <array>
 
 namespace Values {
 
-  void init();
-
-  // initialize in init();
-  inline Value posMidValue[PIECE_LENGTH][SQ_LENGTH];
-  inline Value posEndValue[PIECE_LENGTH][SQ_LENGTH];
-  inline Value posValue[PIECE_LENGTH][SQ_LENGTH][GAME_PHASE_MAX + 1];
-
-  /// Tables are upright for easier reading - will be transposed in init()
+  /// Tables are upright for easier reading - will be transposed in compile-time initialization
 
   // @formatter:off
   // PAWN Tables
@@ -166,6 +160,120 @@ namespace Values {
     -50,-30,-30,-30,-30,-30,-30,-50
   };
   // @formatter:on
-}
+
+  // Helper to compute mirrored/blended PSQT values
+  constexpr int calcPosValueWhite(const Square sq, const int gamePhase, const int posMidTable[], const int posEndTable[]) {
+    return (gamePhase * posMidTable[63 - sq] + (GAME_PHASE_MAX - gamePhase) * posEndTable[63 - sq]) / GAME_PHASE_MAX;
+  }
+  // Helper to compute mirrored/blended PSQT values
+  constexpr int calcPosValueBlack(const Square sq, const int gamePhase, const int posMidTable[], const int posEndTable[]) {
+    return (gamePhase * posMidTable[sq] + (GAME_PHASE_MAX - gamePhase) * posEndTable[sq]) / GAME_PHASE_MAX;
+  }
+
+  // Compute per-piece per-square midgame value
+  constexpr Value computePosMid(const Piece pc, const Square sq) {
+    switch (pc) {
+      case WHITE_KING:   return static_cast<Value>(kingMidGame[63 - sq]);
+      case WHITE_PAWN:   return static_cast<Value>(pawnsMidGame[63 - sq]);
+      case WHITE_KNIGHT: return static_cast<Value>(knightMidGame[63 - sq]);
+      case WHITE_BISHOP: return static_cast<Value>(bishopMidGame[63 - sq]);
+      case WHITE_ROOK:   return static_cast<Value>(rookMidGame[63 - sq]);
+      case WHITE_QUEEN:  return static_cast<Value>(queenMidGame[63 - sq]);
+      case BLACK_KING:   return static_cast<Value>(kingMidGame[sq]);
+      case BLACK_PAWN:   return static_cast<Value>(pawnsMidGame[sq]);
+      case BLACK_KNIGHT: return static_cast<Value>(knightMidGame[sq]);
+      case BLACK_BISHOP: return static_cast<Value>(bishopMidGame[sq]);
+      case BLACK_ROOK:   return static_cast<Value>(rookMidGame[sq]);
+      case BLACK_QUEEN:  return static_cast<Value>(queenMidGame[sq]);
+      case PIECE_NONE:
+      case PIECE_LENGTH:
+      default: return VALUE_ZERO;
+    }
+  }
+
+  // Compute per-piece per-square endgame value
+  constexpr Value computePosEnd(const Piece pc, const Square sq) {
+    switch (pc) {
+      case WHITE_KING:   return static_cast<Value>(kingEndGame[63 - sq]);
+      case WHITE_PAWN:   return static_cast<Value>(pawnsEndGame[63 - sq]);
+      case WHITE_KNIGHT: return static_cast<Value>(knightEndGame[63 - sq]);
+      case WHITE_BISHOP: return static_cast<Value>(bishopEndGame[63 - sq]);
+      case WHITE_ROOK:   return static_cast<Value>(rookEndGame[63 - sq]);
+      case WHITE_QUEEN:  return static_cast<Value>(queenEndGame[63 - sq]);
+      case BLACK_KING:   return static_cast<Value>(kingEndGame[sq]);
+      case BLACK_PAWN:   return static_cast<Value>(pawnsEndGame[sq]);
+      case BLACK_KNIGHT: return static_cast<Value>(knightEndGame[sq]);
+      case BLACK_BISHOP: return static_cast<Value>(bishopEndGame[sq]);
+      case BLACK_ROOK:   return static_cast<Value>(rookEndGame[sq]);
+      case BLACK_QUEEN:  return static_cast<Value>(queenEndGame[sq]);
+      case PIECE_NONE:
+      case PIECE_LENGTH:
+      default: return VALUE_ZERO;
+    }
+  }
+
+  // Compute per-piece per-square blended value for a given game phase
+  constexpr Value computePosBlend(const Piece pc, const Square sq, const int gp) {
+    switch (pc) {
+      case WHITE_KING:   return static_cast<Value>(calcPosValueWhite(sq, gp, kingMidGame, kingEndGame));
+      case WHITE_PAWN:   return static_cast<Value>(calcPosValueWhite(sq, gp, pawnsMidGame, pawnsEndGame));
+      case WHITE_KNIGHT: return static_cast<Value>(calcPosValueWhite(sq, gp, knightMidGame, knightEndGame));
+      case WHITE_BISHOP: return static_cast<Value>(calcPosValueWhite(sq, gp, bishopMidGame, bishopEndGame));
+      case WHITE_ROOK:   return static_cast<Value>(calcPosValueWhite(sq, gp, rookMidGame, rookEndGame));
+      case WHITE_QUEEN:  return static_cast<Value>(calcPosValueWhite(sq, gp, queenMidGame, queenEndGame));
+      case BLACK_KING:   return static_cast<Value>(calcPosValueBlack(sq, gp, kingMidGame, kingEndGame));
+      case BLACK_PAWN:   return static_cast<Value>(calcPosValueBlack(sq, gp, pawnsMidGame, pawnsEndGame));
+      case BLACK_KNIGHT: return static_cast<Value>(calcPosValueBlack(sq, gp, knightMidGame, knightEndGame));
+      case BLACK_BISHOP: return static_cast<Value>(calcPosValueBlack(sq, gp, bishopMidGame, bishopEndGame));
+      case BLACK_ROOK:   return static_cast<Value>(calcPosValueBlack(sq, gp, rookMidGame, rookEndGame));
+      case BLACK_QUEEN:  return static_cast<Value>(calcPosValueBlack(sq, gp, queenMidGame, queenEndGame));
+      case PIECE_NONE:
+      case PIECE_LENGTH:
+      default: return VALUE_ZERO;
+    }
+  }
+
+  // Holds precomputed posMidValue[Piece][Square] for all pieces and squares
+  // Used to quickly update position value when a piece is added or removed
+  // during move making and unmaking
+  inline constexpr std::array<std::array<Value, SQ_LENGTH>, PIECE_LENGTH> posMidValue = [] {
+    std::array<std::array<Value, SQ_LENGTH>, PIECE_LENGTH> arr{};
+    for (int pc = 0; pc < PIECE_LENGTH; ++pc) {
+      for (int sq = 0; sq < SQ_LENGTH; ++sq) {
+        arr[pc][sq] = computePosMid(static_cast<Piece>(pc), static_cast<Square>(sq));
+      }
+    }
+    return arr;
+  }();
+
+  // Holds precomputed posEndValue[Piece][Square] for all pieces and squares
+  // Used to quickly update position value when a piece is added or removed
+  // during move making and unmaking
+  inline constexpr std::array<std::array<Value, SQ_LENGTH>, PIECE_LENGTH> posEndValue = [] {
+    std::array<std::array<Value, SQ_LENGTH>, PIECE_LENGTH> arr{};
+    for (int pc = 0; pc < PIECE_LENGTH; ++pc) {
+      for (int sq = 0; sq < SQ_LENGTH; ++sq) {
+        arr[pc][sq] = computePosEnd(static_cast<Piece>(pc), static_cast<Square>(sq));
+      }
+    }
+    return arr;
+  }();
+
+  // Holds precomputed posValue[Piece][Square][GamePhase] for all pieces, squares and game phases
+  // Used to quickly get the blended position value during evaluation
+  // without having to do the blending calculation each time
+  inline constexpr std::array<std::array<std::array<Value, GAME_PHASE_MAX + 1>, SQ_LENGTH>, PIECE_LENGTH> posValue = [] {
+    std::array<std::array<std::array<Value, GAME_PHASE_MAX + 1>, SQ_LENGTH>, PIECE_LENGTH> arr{};
+    for (int pc = 0; pc < PIECE_LENGTH; ++pc) {
+      for (int sq = 0; sq < SQ_LENGTH; ++sq) {
+        for (int gp = 0; gp <= GAME_PHASE_MAX; ++gp) {
+          arr[pc][sq][gp] = computePosBlend(static_cast<Piece>(pc), static_cast<Square>(sq), gp);
+        }
+      }
+    }
+    return arr;
+  }();
+
+} // namespace Values
 
 #endif //FRANKYCPP_EVALUATION_H
