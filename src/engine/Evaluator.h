@@ -57,7 +57,7 @@ public:
   static Value finalEval(const Position& p, Value value);
 
   void pieceEval(const Position& p, Score& s, Color us, PieceType pieceType);
-  void knightEval(const Position& p, Score& s, Color us, Color them, Square sq);
+  static void knightEval(const Position& p, Score& s, Color us, Color them, Square sq);
   void bishopEval(const Position& p, Score& s, Color us, Color them, Square sq);
   void rookEval(const Position& p, Score& s, Color us, Color them, Square sq);
   void queenEval(const Position& p, Score& s, Color us, Color them, Square sq);

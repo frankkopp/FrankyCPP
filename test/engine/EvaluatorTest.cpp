@@ -34,7 +34,8 @@
 
 using testing::Eq;
 
-// centralize test eval config: set all USE_* flags to header defaults
+// centralize test eval config: set all USE_* flags
+// to the given onoff value
 void set_eval_config(const bool onoff) {
   // Values taken from src/engine/EvalConfig.h
   EvalConfig::USE_MATERIAL        = onoff;
@@ -44,6 +45,7 @@ void set_eval_config(const bool onoff) {
   EvalConfig::USE_PAWN_EVAL       = onoff;
   EvalConfig::USE_PAWN_TT         = onoff;
   EvalConfig::USE_PIECE_EVAL      = onoff;
+  EvalConfig::USE_KNIGHT_MOBILITY = onoff;
   EvalConfig::USE_KING_EVAL       = onoff;
   EvalConfig::USE_GAMEPHASE_VALUE = onoff;
 }
@@ -75,8 +77,8 @@ TEST_F(EvaluatorTest, testFens) {
 
 // New test: ensure evaluation with only MATERIAL equals material difference from side to move
 TEST_F(EvaluatorTest, EvaluateMaterialOnly) {
-  set_eval_config(false);;
-  EvalConfig::USE_MATERIAL        = true;
+  set_eval_config(false);
+  EvalConfig::USE_MATERIAL = true;
 
   const auto fens = Test_Fens::getFENs();
   Evaluator e{};
@@ -88,7 +90,8 @@ TEST_F(EvaluatorTest, EvaluateMaterialOnly) {
     Value expectedWhiteView;
     if (p.checkInsufficientMaterial()) {
       expectedWhiteView = VALUE_DRAW;
-    } else {
+    }
+    else {
       expectedWhiteView = static_cast<Value>(p.getMaterial(WHITE) - p.getMaterial(BLACK));
     }
 
@@ -100,7 +103,26 @@ TEST_F(EvaluatorTest, EvaluateMaterialOnly) {
   }
 }
 
+TEST_F(EvaluatorTest, KnightMobility_CentralBeatsCorner) {
+  // Enable only piece eval (knight mobility) to isolate the effect
+  set_eval_config(false);
+  EvalConfig::USE_PIECE_EVAL      = true;
+  EvalConfig::USE_KNIGHT_MOBILITY = true;
+  EvalConfig::USE_GAMEPHASE_VALUE = true;
 
+  Evaluator e{};
+
+  // Add one pawn per side to avoid early draw by insufficient material
+  // Central knight on d4, kings placed safely
+  Position central{"8/p7/8/3k4/3N4/8/P7/4K3 w - - 0 1"};
+  // Corner knight on a1, kings placed safely
+  Position corner{"8/p7/8/3k4/8/8/P7/N3K3 w - - 0 1"};
+
+  const Value vCentral = e.evaluate(central);
+  const Value vCorner  = e.evaluate(corner);
+
+  ASSERT_GT(vCentral, vCorner) << "Knight mobility should favor central knight over corner knight";
+}
 
 // New timing test modeled after SpeedTests::TimingExtendedDoMoveUndoMove
 TEST_F(EvaluatorTest, TimingEvaluateFens) {
@@ -115,6 +137,7 @@ TEST_F(EvaluatorTest, TimingEvaluateFens) {
   // Ensure evaluator configuration uses defaults from EvalConfig
   set_eval_config(true);
   EvalConfig::USE_LAZY_EVAL = false;// disable lazy eval for timing test to have all positions fully evaluated
+  EvalConfig::USE_KNIGHT_MOBILITY = false;
 
   // Gather and prepare positions once to avoid measuring FEN parsing
   const std::vector<std::string> allFens = Test_Fens::getFENs();

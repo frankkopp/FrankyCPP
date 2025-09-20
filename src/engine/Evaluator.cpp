@@ -105,7 +105,8 @@ Value Evaluator::evaluate(const Position& p) {
   Value value;
   if (EvalConfig::USE_GAMEPHASE_VALUE) {
     value = valueFromScore(score, gamePhaseFactor);
-  } else {
+  }
+  else {
     value = (score.midgame + score.endgame) / 2;
   }
 
@@ -271,22 +272,47 @@ void Evaluator::pieceEval(const Position& p, Score& s, const Color us, const Pie
   }
 }
 
-void Evaluator::knightEval(const Position& p, Score& s, Color us, Color them, Square sq) {
-  // TODO: Knight eval
+inline void Evaluator::knightEval(const Position& p, Score& s, const Color us, Color, const Square sq) {
+  if (EvalConfig::USE_KNIGHT_MOBILITY) {
+    const Bitboard myOcc   = p.getOccupiedBb(us);
+    const Bitboard attacks = getAttacksBb(KNIGHT, sq, BbZero);
+    const int mobility     = popcount(attacks & ~myOcc);
+
+    int mid = mobility * EvalConfig::KNIGHT_MOBILITY_MID_PER_MOVE;
+    int end = mobility * EvalConfig::KNIGHT_MOBILITY_END_PER_MOVE;
+
+    if (mobility <= 1) {
+      mid += EvalConfig::KNIGHT_LOW_MOBILITY_LEQ1_MID;
+      end += EvalConfig::KNIGHT_LOW_MOBILITY_LEQ1_END;
+    }
+    else if (mobility <= 2) {
+      mid += EvalConfig::KNIGHT_LOW_MOBILITY_LEQ2_MID;
+      end += EvalConfig::KNIGHT_LOW_MOBILITY_LEQ2_END;
+    }
+
+    if (us == WHITE) {
+      s.midgame += static_cast<Value>(mid);
+      s.endgame += static_cast<Value>(end);
+    }
+    else {
+      s.midgame -= static_cast<Value>(mid);
+      s.endgame -= static_cast<Value>(end);
+    }
+  }
 }
 
-void Evaluator::bishopEval(const Position& p, Score& s, Color us, Color them, Square sq) {
+inline void Evaluator::bishopEval(const Position& p, Score& s, Color us, Color them, Square sq) {
   // TODO: Bishop eval
 }
 
-void Evaluator::rookEval(const Position& p, Score& s, Color us, Color them, Square sq) {
+inline void Evaluator::rookEval(const Position& p, Score& s, Color us, Color them, Square sq) {
   // TODO: Rook eval
 }
 
-void Evaluator::queenEval(const Position& p, Score& s, Color us, Color them, Square sq) {
+inline void Evaluator::queenEval(const Position& p, Score& s, Color us, Color them, Square sq) {
   // TODO: Queen eval
 }
 
-void Evaluator::kingEval(const Position& p, Score& s, Color us) {
+inline void Evaluator::kingEval(const Position& p, Score& s, Color us) {
   // TODO: King eval
 }

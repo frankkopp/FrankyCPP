@@ -54,6 +54,17 @@ namespace EvalConfig {
   inline auto BISHOP_PAIR_MID_BONUS = Value{20};
   inline auto BISHOP_PAIR_END_BONUS = Value{20};
 
+  // Tier 1: Knight mobility configuration
+  inline bool USE_KNIGHT_MOBILITY = true;
+  // Linear mobility weights per available target square (excludes own-occupied)
+  inline int KNIGHT_MOBILITY_MID_PER_MOVE = 3;
+  inline int KNIGHT_MOBILITY_END_PER_MOVE = 2;
+  // Low-mobility penalties applied in addition to linear term
+  inline int KNIGHT_LOW_MOBILITY_LEQ1_MID = -6; // mobility <= 1
+  inline int KNIGHT_LOW_MOBILITY_LEQ1_END = -6;
+  inline int KNIGHT_LOW_MOBILITY_LEQ2_MID = -3; // mobility <= 2 (but > 1)
+  inline int KNIGHT_LOW_MOBILITY_LEQ2_END = -3;
+
   inline bool USE_KING_EVAL = true;
 
   inline bool USE_GAMEPHASE_VALUE = true;
