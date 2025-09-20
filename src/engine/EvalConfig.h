@@ -34,7 +34,7 @@ namespace EvalConfig {
   inline auto LAZY_THRESHOLD = Value{700};
 
   inline bool USE_PAWN_EVAL  = true;
-  inline bool USE_PAWN_TT    = false;
+  inline bool USE_PAWN_TT    = true;
   inline int PAWN_TT_SIZE_MB = 64;
 
   inline int ISOLATED_PAWN_MID_WEIGHT  = -10;

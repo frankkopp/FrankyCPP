@@ -230,30 +230,44 @@ inline void Evaluator::pieceEval(const Position& p, Score& s, const Color us, co
   tmpScore.midgame = VALUE_ZERO;
   tmpScore.endgame = VALUE_ZERO;
 
-  // piece-type-specific evaluation that is done once
-  // for all pieces of one type
+  // Each switch case allows for piece-type specific evaluation of all pieces of that type
+  // of the given color and loops through all pieces of that type to call the specific evaluation
+  // function for a single piece
   switch (pieceType) {
     case KNIGHT:
+      // general evaluation for all pieces of this color
+
+      // loop through all knights of this color
       while (pieceBb) {
         knightEval(p, s, us, ~us, popLSB(pieceBb));
       }
       break;
     case BISHOP:
+      // general evaluation for all pieces of this color
+
       // bonus for a pair
       if (EvalConfig::USE_BISHOP_PAIR_BONUS && popcount(pieceBb) > 1) {
         s.midgame += EvalConfig::BISHOP_PAIR_MID_BONUS;
         s.endgame += EvalConfig::BISHOP_PAIR_END_BONUS;
       }
+
+      // loop through all bishops of this color
       while (pieceBb) {
         bishopEval(p, s, us, ~us, popLSB(pieceBb));
       }
       break;
     case ROOK:
+      // general evaluation for all pieces of this color
+
+      // loop through all rooks of this color
       while (pieceBb) {
         rookEval(p, s, us, ~us, popLSB(pieceBb));
       }
       break;
     case QUEEN:
+      // general evaluation for all pieces of this color
+
+      // loop through all queens of this color
       while (pieceBb) {
         queenEval(p, s, us, ~us, popLSB(pieceBb));
       }
@@ -323,7 +337,7 @@ inline void Evaluator::rookEval(const Position& p, Score& s, const Color us, con
   int mid = 0;
   int end = 0;
 
-  // Mobility (Tier 1)
+  // Mobility
   if (EvalConfig::USE_ROOK_MOBILITY) {
     const Bitboard myOcc    = p.getOccupiedBb(us);
     const Bitboard occupied = p.getOccupiedBb();
