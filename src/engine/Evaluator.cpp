@@ -32,7 +32,7 @@ Evaluator::Evaluator() {
   }
 }
 
-Value Evaluator::evaluate(Position& p) {
+Value Evaluator::evaluate(const Position& p) {
   // if not enough material on the board to achieve a mate it is a draw
   if (p.checkInsufficientMaterial()) {
     return VALUE_DRAW;
@@ -66,7 +66,7 @@ Value Evaluator::evaluate(Position& p) {
   // in late phases it stands as it is
   if (EvalConfig::USE_LAZY_EVAL) {
     const Value value = valueFromScore(score, gamePhaseFactor);
-    if (value > EvalConfig::LAZY_THRESHOLD + (EvalConfig::LAZY_THRESHOLD * gamePhaseFactor)) {
+    if (value > EvalConfig::LAZY_THRESHOLD + EvalConfig::LAZY_THRESHOLD * gamePhaseFactor) {
       return finalEval(p, value);
     }
   }
@@ -102,7 +102,12 @@ Value Evaluator::evaluate(Position& p) {
   }
 
   // calculate value depending on game phases
-  Value value = valueFromScore(score, EvalConfig::USE_GAMEPHASE_VALUE ? gamePhaseFactor : 0.0);
+  Value value;
+  if (EvalConfig::USE_GAMEPHASE_VALUE) {
+    value = valueFromScore(score, gamePhaseFactor);
+  } else {
+    value = (score.midgame + score.endgame) / 2;
+  }
 
   // normalize for the next player
   value = finalEval(p, value);
@@ -242,7 +247,7 @@ void Evaluator::pieceEval(const Position& p, Score& s, const Color us, const Pie
       }
       break;
     case BISHOP:
-      // bonus for pair
+      // bonus for a pair
       if (popcount(pieceBb) > 1) {
         s.midgame += EvalConfig::BISHOP_PAIR_MID_BONUS;
         s.endgame += EvalConfig::BISHOP_PAIR_END_BONUS;

@@ -44,7 +44,7 @@ public:
   // which calculates the value for the position of the given
   // position for the current game phase and from the
   // view of the next player.
-  Value evaluate(Position& p);
+  Value evaluate(const Position& p);
 
   // evaluates pawns and updating score in place
   void pawnEval(const Position& p, Score& s);

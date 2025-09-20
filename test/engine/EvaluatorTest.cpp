@@ -35,17 +35,17 @@
 using testing::Eq;
 
 // centralize test eval config: set all USE_* flags to header defaults
-void applyEvalUseFlagsFromDefaults() {
+void set_eval_config(const bool onoff) {
   // Values taken from src/engine/EvalConfig.h
-  EvalConfig::USE_MATERIAL        = true;
-  EvalConfig::USE_POSITIONAL      = true;
-  EvalConfig::USE_TEMPO           = true;
-  EvalConfig::USE_LAZY_EVAL       = true;
-  EvalConfig::USE_PAWN_EVAL       = true;
-  EvalConfig::USE_PAWN_TT         = true;
-  EvalConfig::USE_PIECE_EVAL      = true;
-  EvalConfig::USE_KING_EVAL       = true;
-  EvalConfig::USE_GAMEPHASE_VALUE = true;
+  EvalConfig::USE_MATERIAL        = onoff;
+  EvalConfig::USE_POSITIONAL      = onoff;
+  EvalConfig::USE_TEMPO           = onoff;
+  EvalConfig::USE_LAZY_EVAL       = onoff;
+  EvalConfig::USE_PAWN_EVAL       = onoff;
+  EvalConfig::USE_PAWN_TT         = onoff;
+  EvalConfig::USE_PIECE_EVAL      = onoff;
+  EvalConfig::USE_KING_EVAL       = onoff;
+  EvalConfig::USE_GAMEPHASE_VALUE = onoff;
 }
 
 class EvaluatorTest : public ::testing::Test {
@@ -56,7 +56,6 @@ public:
     NEWLINE;
     Logger::get().TEST_LOG->set_level(spdlog::level::debug);
     Logger::get().EVAL_LOG->set_level(spdlog::level::debug);
-    applyEvalUseFlagsFromDefaults();
   }
 
 protected:
@@ -74,6 +73,35 @@ TEST_F(EvaluatorTest, testFens) {
   }
 }
 
+// New test: ensure evaluation with only MATERIAL equals material difference from side to move
+TEST_F(EvaluatorTest, EvaluateMaterialOnly) {
+  set_eval_config(false);;
+  EvalConfig::USE_MATERIAL        = true;
+
+  const auto fens = Test_Fens::getFENs();
+  Evaluator e{};
+
+  for (const auto& fen : fens) {
+    Position p{fen};
+
+    // expected from white's view: pure material difference
+    Value expectedWhiteView;
+    if (p.checkInsufficientMaterial()) {
+      expectedWhiteView = VALUE_DRAW;
+    } else {
+      expectedWhiteView = static_cast<Value>(p.getMaterial(WHITE) - p.getMaterial(BLACK));
+    }
+
+    // convert to the next player's perspective (finalEval logic)
+    const Value expectedFinal = p.getNextPlayer() == WHITE ? expectedWhiteView : -expectedWhiteView;
+
+    const Value v = e.evaluate(p);
+    ASSERT_EQ(v, expectedFinal) << "Material-only eval mismatch for FEN: " << fen;
+  }
+}
+
+
+
 // New timing test modeled after SpeedTests::TimingExtendedDoMoveUndoMove
 TEST_F(EvaluatorTest, TimingEvaluateFens) {
   using namespace std::chrono;
@@ -85,7 +113,8 @@ TEST_F(EvaluatorTest, TimingEvaluateFens) {
   constexpr int iterations = 100'000;
 
   // Ensure evaluator configuration uses defaults from EvalConfig
-  applyEvalUseFlagsFromDefaults();
+  set_eval_config(true);
+  EvalConfig::USE_LAZY_EVAL = false;// disable lazy eval for timing test to have all positions fully evaluated
 
   // Gather and prepare positions once to avoid measuring FEN parsing
   const std::vector<std::string> allFens = Test_Fens::getFENs();
