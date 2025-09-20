@@ -58,10 +58,10 @@ public:
 
   void pieceEval(const Position& p, Score& s, Color us, PieceType pieceType);
   static void knightEval(const Position& p, Score& s, Color us, Color them, Square sq);
-  void bishopEval(const Position& p, Score& s, Color us, Color them, Square sq);
-  void rookEval(const Position& p, Score& s, Color us, Color them, Square sq);
-  void queenEval(const Position& p, Score& s, Color us, Color them, Square sq);
-  void kingEval(const Position& p, Score& s, Color us);
+  static void bishopEval(const Position& p, Score& s, Color us, Color them, Square sq);
+  static void rookEval(const Position& p, Score& s, Color us, Color them, Square sq);
+  static void queenEval(const Position& p, Score& s, Color us, Color them, Square sq);
+  static void kingEval(const Position& p, Score& s, Color us);
 
   // do a prefetch for the pawn cache data
 #ifdef EVAL_ENABLE_PREFETCH

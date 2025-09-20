@@ -301,18 +301,156 @@ inline void Evaluator::knightEval(const Position& p, Score& s, const Color us, C
   }
 }
 
-inline void Evaluator::bishopEval(const Position& p, Score& s, Color us, Color them, Square sq) {
-  // TODO: Bishop eval
+inline void Evaluator::bishopEval(const Position& p, Score& s, const Color us, Color , const Square sq) {
+  // Mobility for bishops (Tier 1)
+  if (EvalConfig::USE_BISHOP_MOBILITY) {
+    const Bitboard myOcc     = p.getOccupiedBb(us);
+    const Bitboard occupied  = p.getOccupiedBb();
+    const Bitboard attacks   = getAttacksBb(BISHOP, sq, occupied);
+    const int mobility       = popcount(attacks & ~myOcc);
+
+    int mid = mobility * EvalConfig::BISHOP_MOBILITY_MID_PER_MOVE;
+    int end = mobility * EvalConfig::BISHOP_MOBILITY_END_PER_MOVE;
+
+    if (mobility <= 3) {
+      mid += EvalConfig::BISHOP_LOW_MOBILITY_LEQ3_MID;
+      end += EvalConfig::BISHOP_LOW_MOBILITY_LEQ3_END;
+    }
+
+    if (us == WHITE) {
+      s.midgame += static_cast<Value>(mid);
+      s.endgame += static_cast<Value>(end);
+    }
+    else {
+      s.midgame -= static_cast<Value>(mid);
+      s.endgame -= static_cast<Value>(end);
+    }
+  }
 }
 
-inline void Evaluator::rookEval(const Position& p, Score& s, Color us, Color them, Square sq) {
-  // TODO: Rook eval
+inline void Evaluator::rookEval(const Position& p, Score& s, const Color us, const Color them, const Square sq) {
+  int mid = 0;
+  int end = 0;
+
+  // Mobility (Tier 1)
+  if (EvalConfig::USE_ROOK_MOBILITY) {
+    const Bitboard myOcc    = p.getOccupiedBb(us);
+    const Bitboard occupied = p.getOccupiedBb();
+    const Bitboard attacks  = getAttacksBb(ROOK, sq, occupied);
+    const int mobility      = popcount(attacks & ~myOcc);
+
+    mid += mobility * EvalConfig::ROOK_MOBILITY_MID_PER_MOVE;
+    end += mobility * EvalConfig::ROOK_MOBILITY_END_PER_MOVE;
+
+    if (mobility <= 3) {
+      mid += EvalConfig::ROOK_LOW_MOBILITY_LEQ3_MID;
+      end += EvalConfig::ROOK_LOW_MOBILITY_LEQ3_END;
+    }
+  }
+
+  // Open/semi-open file bonuses
+  if (EvalConfig::USE_ROOK_OPEN_FILE_BONUS) {
+    const Bitboard fileMask   = Bitboards::sqToFileBb[sq];
+    const Bitboard myPawns    = p.getPieceBb(us, PAWN);
+    const Bitboard theirPawns = p.getPieceBb(them, PAWN);
+    const bool myPawnOnFile   = (myPawns & fileMask) != 0;
+    const bool theirPawnOnFile= (theirPawns & fileMask) != 0;
+
+    if (!myPawnOnFile) {
+      if (!theirPawnOnFile) {
+        mid += EvalConfig::ROOK_OPEN_FILE_MID_BONUS;
+        end += EvalConfig::ROOK_OPEN_FILE_END_BONUS;
+      }
+      else{
+        mid += EvalConfig::ROOK_SEMIOPEN_FILE_MID_BONUS;
+        end += EvalConfig::ROOK_SEMIOPEN_FILE_END_BONUS;
+      }
+    }
+  }
+
+  if (mid || end) {
+    if (us == WHITE) {
+      s.midgame += static_cast<Value>(mid);
+      s.endgame += static_cast<Value>(end);
+    }
+    else {
+      s.midgame -= static_cast<Value>(mid);
+      s.endgame -= static_cast<Value>(end);
+    }
+  }
 }
 
-inline void Evaluator::queenEval(const Position& p, Score& s, Color us, Color them, Square sq) {
-  // TODO: Queen eval
+inline void Evaluator::queenEval(const Position& p, Score& s, const Color us, const Color them, const Square sq) {
+  int mid = 0;
+  int end = 0;
+
+  // Mobility (Tier 1)
+  if (EvalConfig::USE_QUEEN_MOBILITY) {
+    const Bitboard myOcc    = p.getOccupiedBb(us);
+    const Bitboard occupied = p.getOccupiedBb();
+    const Bitboard attacks  = getAttacksBb(QUEEN, sq, occupied);
+    const int mobility      = popcount(attacks & ~myOcc);
+
+    mid += mobility * EvalConfig::QUEEN_MOBILITY_MID_PER_MOVE;
+    end += mobility * EvalConfig::QUEEN_MOBILITY_END_PER_MOVE;
+  }
+
+  // Simple tropism towards enemy king (Tier 0/phase-scaled)
+  if (EvalConfig::USE_QUEEN_TROPISM) {
+    const Square ksq = p.getKingSquare(them);
+    const int dist   = distance(sq, ksq); // 0..7
+    const int closeness = 8 - dist;       // 1..8 (or 8 if dist==0)
+    mid += closeness * EvalConfig::QUEEN_TROPISM_MID_PER_STEP;
+    end += closeness * EvalConfig::QUEEN_TROPISM_END_PER_STEP;
+  }
+
+  if (mid || end) {
+    if (us == WHITE) {
+      s.midgame += static_cast<Value>(mid);
+      s.endgame += static_cast<Value>(end);
+    }
+    else {
+      s.midgame -= static_cast<Value>(mid);
+      s.endgame -= static_cast<Value>(end);
+    }
+  }
 }
 
-inline void Evaluator::kingEval(const Position& p, Score& s, Color us) {
-  // TODO: King eval
+inline void Evaluator::kingEval(const Position& p, Score& s, const Color us) {
+  int mid = 0;
+  int end = 0;
+
+  const Square ksq = p.getKingSquare(us);
+
+  // Pawn shield in front of king (midgame focus)
+  if (EvalConfig::USE_KING_SAFETY_SHIELD) {
+    int shieldCount = 0;
+    const int dir   = (us == WHITE ? 1 : -1);
+    const int kr    = rankOf(ksq);
+    const int kf    = fileOf(ksq);
+
+    for (int df = -1; df <= 1; ++df) {
+      const int f = kf + df;
+      if (f < FILE_A || f > FILE_H) continue;
+      for (int dr = 1; dr <= 2; ++dr) {
+        const int r = kr + dir * dr;
+        if (r < RANK_1 || r > RANK_8) continue;
+        const Square sq2 = squareOf(static_cast<File>(f), static_cast<Rank>(r));
+        if (p.getPiece(sq2) == makePiece(us, PAWN)) {
+          ++shieldCount;
+        }
+      }
+    }
+    mid += shieldCount * EvalConfig::KING_SHIELD_MID_PER_PAWN;
+    end += shieldCount * EvalConfig::KING_SHIELD_END_PER_PAWN;
+  }
+
+  if (us == WHITE) {
+    s.midgame += static_cast<Value>(mid);
+    s.endgame += static_cast<Value>(end);
+  }
+  else {
+    s.midgame -= static_cast<Value>(mid);
+    s.endgame -= static_cast<Value>(end);
+  }
 }

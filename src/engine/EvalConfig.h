@@ -60,12 +60,43 @@ namespace EvalConfig {
   inline int KNIGHT_MOBILITY_MID_PER_MOVE = 3;
   inline int KNIGHT_MOBILITY_END_PER_MOVE = 2;
   // Low-mobility penalties applied in addition to linear term
-  inline int KNIGHT_LOW_MOBILITY_LEQ1_MID = -6; // mobility <= 1
+  inline int KNIGHT_LOW_MOBILITY_LEQ1_MID = -6;// mobility <= 1
   inline int KNIGHT_LOW_MOBILITY_LEQ1_END = -6;
-  inline int KNIGHT_LOW_MOBILITY_LEQ2_MID = -3; // mobility <= 2 (but > 1)
+  inline int KNIGHT_LOW_MOBILITY_LEQ2_MID = -3;// mobility <= 2 (but > 1)
   inline int KNIGHT_LOW_MOBILITY_LEQ2_END = -3;
 
-  inline bool USE_KING_EVAL = true;
+  // Tier 1: Bishop mobility configuration
+  inline bool USE_BISHOP_MOBILITY         = true;
+  inline int BISHOP_MOBILITY_MID_PER_MOVE = 2;
+  inline int BISHOP_MOBILITY_END_PER_MOVE = 3; // bishops stronger in endgame
+  inline int BISHOP_LOW_MOBILITY_LEQ3_MID = -4;// mobility <= 3
+  inline int BISHOP_LOW_MOBILITY_LEQ3_END = -2;
+
+  // Tier 1: Rook mobility and file presence
+  inline bool USE_ROOK_MOBILITY           = true;
+  inline int ROOK_MOBILITY_MID_PER_MOVE   = 2;
+  inline int ROOK_MOBILITY_END_PER_MOVE   = 2;
+  inline int ROOK_LOW_MOBILITY_LEQ3_MID   = -3;
+  inline int ROOK_LOW_MOBILITY_LEQ3_END   = -3;
+  inline bool USE_ROOK_OPEN_FILE_BONUS    = true;
+  inline int ROOK_OPEN_FILE_MID_BONUS     = 10;// no pawns on file
+  inline int ROOK_OPEN_FILE_END_BONUS     = 8;
+  inline int ROOK_SEMIOPEN_FILE_MID_BONUS = 5;// no own pawn on file
+  inline int ROOK_SEMIOPEN_FILE_END_BONUS = 4;
+
+  // Tier 1: Queen mobility and simple king tropism
+  inline bool USE_QUEEN_MOBILITY         = true;
+  inline int QUEEN_MOBILITY_MID_PER_MOVE = 1;// small to avoid overvaluing
+  inline int QUEEN_MOBILITY_END_PER_MOVE = 1;
+  inline bool USE_QUEEN_TROPISM          = true;// closer to enemy king gives small bonus
+  inline int QUEEN_TROPISM_MID_PER_STEP  = 0;   // disabled in midgame by default
+  inline int QUEEN_TROPISM_END_PER_STEP  = 1;   // (8 - distance) * weight
+
+  // King evaluation
+  inline bool USE_KING_EVAL             = true;
+  inline bool USE_KING_SAFETY_SHIELD    = true;// pawn shield in front of king (midgame)
+  inline int KING_SHIELD_MID_PER_PAWN   = 5;   // per pawn in the shield zone
+  inline int KING_SHIELD_END_PER_PAWN   = 0;   // no effect in endgame
 
   inline bool USE_GAMEPHASE_VALUE = true;
 }// namespace EvalConfig
