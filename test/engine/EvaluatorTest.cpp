@@ -30,12 +30,15 @@
 
 // add headers for timing output similar to SpeedTests
 #include <chrono>
+#include <cstring>
+#include <iomanip>
+#include <limits>
 #include <sstream>
 
 using testing::Eq;
 
 inline bool isBulkRun() {
-  const auto* ut = testing::UnitTest::GetInstance();
+  const auto* ut  = testing::UnitTest::GetInstance();
   const bool cond = ut && ut->test_to_run_count() > 1;
   if (cond) {
     std::cout << "Bulk run detected - limiting depth to shorten test time" << std::endl;
@@ -47,14 +50,15 @@ inline bool isBulkRun() {
 // to the given onoff value
 void set_eval_config(const bool onoff) {
   // Values taken from src/engine/EvalConfig.h
-  EvalConfig::USE_MATERIAL             = onoff;
-  EvalConfig::USE_POSITIONAL           = onoff;
-  EvalConfig::USE_TEMPO                = onoff;
-  EvalConfig::USE_LAZY_EVAL            = onoff;
-  EvalConfig::USE_PAWN_EVAL            = onoff;
-  EvalConfig::USE_PAWN_TT              = onoff;
-  EvalConfig::USE_PIECE_EVAL           = onoff;
+  EvalConfig::USE_MATERIAL   = onoff;
+  EvalConfig::USE_POSITIONAL = onoff;
+  EvalConfig::USE_TEMPO      = onoff;
+  EvalConfig::USE_LAZY_EVAL  = onoff;
+  // pawn-specific toggles
+  EvalConfig::USE_PAWN_EVAL = onoff;
+  EvalConfig::USE_PAWN_TT   = false;
   // piece-specific toggles
+  EvalConfig::USE_PIECE_EVAL           = onoff;
   EvalConfig::USE_KNIGHT_MOBILITY      = onoff;
   EvalConfig::USE_BISHOP_MOBILITY      = onoff;
   EvalConfig::USE_ROOK_MOBILITY        = onoff;
@@ -183,9 +187,9 @@ TEST_F(EvaluatorTest, Pawn_PassedBeatsBlocked) {
 
 TEST_F(EvaluatorTest, BishopMobility_CentralBeatsCorner) {
   set_eval_config(false);
-  EvalConfig::USE_PIECE_EVAL        = true;
-  EvalConfig::USE_BISHOP_MOBILITY   = true;
-  EvalConfig::USE_GAMEPHASE_VALUE   = true;
+  EvalConfig::USE_PIECE_EVAL      = true;
+  EvalConfig::USE_BISHOP_MOBILITY = true;
+  EvalConfig::USE_GAMEPHASE_VALUE = true;
 
   Evaluator e{};
 
@@ -209,10 +213,10 @@ TEST_F(EvaluatorTest, BishopMobility_CentralBeatsCorner) {
 
 TEST_F(EvaluatorTest, Rook_FileBonus_Open_gt_SemiOpen_gt_Closed) {
   set_eval_config(false);
-  EvalConfig::USE_PIECE_EVAL            = true;
-  EvalConfig::USE_ROOK_OPEN_FILE_BONUS  = true;
-  EvalConfig::USE_ROOK_MOBILITY         = false; // isolate file bonus
-  EvalConfig::USE_GAMEPHASE_VALUE       = true;
+  EvalConfig::USE_PIECE_EVAL           = true;
+  EvalConfig::USE_ROOK_OPEN_FILE_BONUS = true;
+  EvalConfig::USE_ROOK_MOBILITY        = false;// isolate file bonus
+  EvalConfig::USE_GAMEPHASE_VALUE      = true;
 
   Evaluator e{};
 
@@ -237,14 +241,14 @@ TEST_F(EvaluatorTest, Rook_FileBonus_Open_gt_SemiOpen_gt_Closed) {
   fprintln("Open > Semi-open > Closed: {} > {} > {}", vOpen, vSemiOpen, vClosed);
 
   ASSERT_GT(vSemiOpen, vClosed) << "Semi-open file should be better than closed file for rook";
-  ASSERT_GT(vOpen, vSemiOpen)  << "Open file should be better than semi-open file for rook";
+  ASSERT_GT(vOpen, vSemiOpen) << "Open file should be better than semi-open file for rook";
 }
 
 TEST_F(EvaluatorTest, Rook_PSQT_SeventhRank_BetterThan_BackRank) {
   set_eval_config(false);
-  EvalConfig::USE_POSITIONAL      = true;  // use PSQT
-  EvalConfig::USE_PIECE_EVAL      = false; // avoid mobility/file
-  EvalConfig::USE_KING_EVAL       = false; // avoid shield
+  EvalConfig::USE_POSITIONAL      = true; // use PSQT
+  EvalConfig::USE_PIECE_EVAL      = false;// avoid mobility/file
+  EvalConfig::USE_KING_EVAL       = false;// avoid shield
   EvalConfig::USE_PAWN_EVAL       = false;
   EvalConfig::USE_GAMEPHASE_VALUE = true;
 
@@ -269,10 +273,10 @@ TEST_F(EvaluatorTest, Rook_PSQT_SeventhRank_BetterThan_BackRank) {
 
 TEST_F(EvaluatorTest, QueenMobility_CentralBeatsCorner) {
   set_eval_config(false);
-  EvalConfig::USE_PIECE_EVAL        = true;
-  EvalConfig::USE_QUEEN_MOBILITY    = true;
-  EvalConfig::USE_QUEEN_TROPISM     = false; // isolate mobility
-  EvalConfig::USE_GAMEPHASE_VALUE   = true;
+  EvalConfig::USE_PIECE_EVAL      = true;
+  EvalConfig::USE_QUEEN_MOBILITY  = true;
+  EvalConfig::USE_QUEEN_TROPISM   = false;// isolate mobility
+  EvalConfig::USE_GAMEPHASE_VALUE = true;
 
   Evaluator e{};
 
@@ -294,10 +298,10 @@ TEST_F(EvaluatorTest, QueenMobility_CentralBeatsCorner) {
 
 TEST_F(EvaluatorTest, King_PSQT_CenterBeatsCorner_Endgameish) {
   set_eval_config(false);
-  EvalConfig::USE_POSITIONAL      = true;  // PSQT
+  EvalConfig::USE_POSITIONAL      = true;// PSQT
   EvalConfig::USE_PIECE_EVAL      = false;
   EvalConfig::USE_PAWN_EVAL       = false;
-  EvalConfig::USE_KING_EVAL       = false; // avoid dynamic shield
+  EvalConfig::USE_KING_EVAL       = false;// avoid dynamic shield
   EvalConfig::USE_GAMEPHASE_VALUE = true;
 
   Evaluator e{};
@@ -321,17 +325,17 @@ TEST_F(EvaluatorTest, King_PSQT_CenterBeatsCorner_Endgameish) {
 
 TEST_F(EvaluatorTest, BishopPairBonus_TwoBishopsBeats_BishopKnight) {
   set_eval_config(false);
-  EvalConfig::USE_PIECE_EVAL       = true;
-  EvalConfig::USE_BISHOP_MOBILITY  = false; // isolate pair bonus
-  EvalConfig::USE_MATERIAL         = false; // equalize material influence
-  EvalConfig::USE_POSITIONAL       = false; // no PSQT influence
-  EvalConfig::USE_PAWN_EVAL        = false;
-  EvalConfig::USE_KING_EVAL        = false;
-  EvalConfig::USE_GAMEPHASE_VALUE  = true;
+  EvalConfig::USE_PIECE_EVAL      = true;
+  EvalConfig::USE_BISHOP_MOBILITY = false;// isolate pair bonus
+  EvalConfig::USE_MATERIAL        = false;// equalize material influence
+  EvalConfig::USE_POSITIONAL      = false;// no PSQT influence
+  EvalConfig::USE_PAWN_EVAL       = false;
+  EvalConfig::USE_KING_EVAL       = false;
+  EvalConfig::USE_GAMEPHASE_VALUE = true;
 
   Evaluator e{};
 
-  // White has bishop pair; Black has bishop+knight. Add a pawn each to avoid insufficiency.
+  // White has a bishop pair; Black has a bishop+knight. Add a pawn each to avoid insufficiency.
   // Pair: white bishops c1,f1; black bishop c8, knight b8; kings h1/g8; pawns a2/a7.
   const Position pairPos{"1n1b2k1/p7/8/8/8/8/P7/2B2B1K w - - 0 1"};
   // No pair: replace white f1 bishop by knight.
@@ -352,14 +356,14 @@ TEST_F(EvaluatorTest, BishopPairBonus_TwoBishopsBeats_BishopKnight) {
 
 TEST_F(EvaluatorTest, RookMobility_CentralBeatsEdge_FileBonusesOff) {
   set_eval_config(false);
-  EvalConfig::USE_PIECE_EVAL            = true;
-  EvalConfig::USE_ROOK_MOBILITY         = true;
-  EvalConfig::USE_ROOK_OPEN_FILE_BONUS  = false; // isolate mobility
-  EvalConfig::USE_POSITIONAL            = false; // no PSQT influence
-  EvalConfig::USE_MATERIAL              = false;
-  EvalConfig::USE_PAWN_EVAL             = false;
-  EvalConfig::USE_KING_EVAL             = false;
-  EvalConfig::USE_GAMEPHASE_VALUE       = true;
+  EvalConfig::USE_PIECE_EVAL           = true;
+  EvalConfig::USE_ROOK_MOBILITY        = true;
+  EvalConfig::USE_ROOK_OPEN_FILE_BONUS = false;// isolate mobility
+  EvalConfig::USE_POSITIONAL           = false;// no PSQT influence
+  EvalConfig::USE_MATERIAL             = false;
+  EvalConfig::USE_PAWN_EVAL            = false;
+  EvalConfig::USE_KING_EVAL            = false;
+  EvalConfig::USE_GAMEPHASE_VALUE      = true;
 
   Evaluator e{};
 
@@ -383,14 +387,14 @@ TEST_F(EvaluatorTest, RookMobility_CentralBeatsEdge_FileBonusesOff) {
 
 TEST_F(EvaluatorTest, QueenTropism_CloserBeatsFarther_EndgameOnly) {
   set_eval_config(false);
-  EvalConfig::USE_PIECE_EVAL        = true;
-  EvalConfig::USE_QUEEN_MOBILITY    = false; // isolate tropism
-  EvalConfig::USE_QUEEN_TROPISM     = true;  // endgame-only weight
-  EvalConfig::USE_POSITIONAL        = false; // no PSQT influence
-  EvalConfig::USE_MATERIAL          = false;
-  EvalConfig::USE_PAWN_EVAL         = false;
-  EvalConfig::USE_KING_EVAL         = false;
-  EvalConfig::USE_GAMEPHASE_VALUE   = true;
+  EvalConfig::USE_PIECE_EVAL      = true;
+  EvalConfig::USE_QUEEN_MOBILITY  = false;// isolate tropism
+  EvalConfig::USE_QUEEN_TROPISM   = true; // endgame-only weight
+  EvalConfig::USE_POSITIONAL      = false;// no PSQT influence
+  EvalConfig::USE_MATERIAL        = false;
+  EvalConfig::USE_PAWN_EVAL       = false;
+  EvalConfig::USE_KING_EVAL       = false;
+  EvalConfig::USE_GAMEPHASE_VALUE = true;
 
   Evaluator e{};
 
@@ -427,7 +431,7 @@ TEST_F(EvaluatorTest, TimingEvaluateFens) {
 
   // Ensure evaluator configuration uses defaults from EvalConfig
   set_eval_config(true);
-  EvalConfig::USE_LAZY_EVAL = false; // disable lazy eval for timing test to have all positions fully evaluated
+  EvalConfig::USE_LAZY_EVAL       = false;// disable lazy eval for timing test to have all positions fully evaluated
   EvalConfig::USE_KNIGHT_MOBILITY = false;
 
   // Gather and prepare positions once to avoid measuring FEN parsing
@@ -463,7 +467,149 @@ TEST_F(EvaluatorTest, TimingEvaluateFens) {
     os << "Evaluate took " << elapsed.count() << " ns for " << iterations << " iterations with " << positions.size() << " positions" << std::endl;
     os << "Evaluate took " << (elapsed.count() / (totalEvals ? totalEvals : 1)) << " ns per evaluation" << std::endl;
     os << "Evaluations per sec " << ((totalEvals * nanoPerSec) / (elapsed.count() ? elapsed.count() : 1)) << " eps" << std::endl;
-    os << "Accumulated value " << acc << std::endl;
     std::cout << os.str() << std::endl;
+  }
+}
+
+// New timing suite: measure impact of each EvalConfig USE_* feature on performance
+TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
+  if (isBulkRun()) {
+    GTEST_SKIP() << "Skipping timing test in bulk run to save time";
+  }
+  using namespace std::chrono;
+
+  // Prepare a stable set of positions once (avoid counting FEN parsing)
+  const std::vector<std::string> allFens = Test_Fens::getFENs();
+  ASSERT_FALSE(allFens.empty()) << "Test_Fens::getFENs() returned no positions";
+
+  std::vector<Position> positions;
+  positions.reserve(allFens.size());
+  for (const auto& f : allFens) positions.emplace_back(f.c_str());
+
+  Evaluator e{};
+
+  // Timing parameters: keep modest to avoid long test duration
+  constexpr int repeats    = 5;    // take best-of 'repeats' to reduce noise
+  constexpr int iterations = 25000;// per repeat, per position set
+
+  struct Feature {
+    const char* name;
+    bool* flag;
+  };
+  std::vector<Feature> features = {
+    {"USE_PAWN_EVAL", &EvalConfig::USE_PAWN_EVAL},
+    {"USE_PAWN_TT", &EvalConfig::USE_PAWN_TT},
+
+    {"USE_PIECE_EVAL", &EvalConfig::USE_PIECE_EVAL},
+
+    {"USE_MATERIAL", &EvalConfig::USE_MATERIAL},
+    {"USE_POSITIONAL", &EvalConfig::USE_POSITIONAL},
+    {"USE_TEMPO", &EvalConfig::USE_TEMPO},
+    {"USE_LAZY_EVAL", &EvalConfig::USE_LAZY_EVAL},
+    // piece-specific
+    {"USE_KNIGHT_MOBILITY", &EvalConfig::USE_KNIGHT_MOBILITY},
+    {"USE_BISHOP_MOBILITY", &EvalConfig::USE_BISHOP_MOBILITY},
+    {"USE_ROOK_MOBILITY", &EvalConfig::USE_ROOK_MOBILITY},
+    {"USE_ROOK_OPEN_FILE_BONUS", &EvalConfig::USE_ROOK_OPEN_FILE_BONUS},
+    {"USE_QUEEN_MOBILITY", &EvalConfig::USE_QUEEN_MOBILITY},
+    {"USE_QUEEN_TROPISM", &EvalConfig::USE_QUEEN_TROPISM},
+    {"USE_KING_EVAL", &EvalConfig::USE_KING_EVAL},
+    {"USE_GAMEPHASE_VALUE", &EvalConfig::USE_GAMEPHASE_VALUE},
+  };
+
+  auto measure_ns = [&](const int iters) -> uint64_t {
+    volatile int64_t acc = 0;// prevent optimizing away
+    const auto start     = high_resolution_clock::now();
+    for (int i = 0; i < iters; ++i) {
+      for (auto& p : positions) {
+        const Value v{e.evaluate(p)};
+        acc += static_cast<int64_t>(v);
+      }
+    }
+    return static_cast<uint64_t>(duration_cast<nanoseconds>(high_resolution_clock::now() - start).count());
+  };
+
+  auto best_of_n = [&](const int iters) -> uint64_t {
+    uint64_t best = std::numeric_limits<uint64_t>::max();
+    for (int r = 0; r < repeats; ++r) {
+      const uint64_t ns = measure_ns(iters);
+      best              = std::min(best, ns);
+    }
+    return best == std::numeric_limits<uint64_t>::max() ? 0ull : best;
+  };
+
+  const uint64_t totalEvals = static_cast<uint64_t>(iterations) * positions.size();
+
+  // Precompute label width for a nice alignment
+  const std::string baselineLabel = "Baseline (all features ON)";
+  size_t maxLabel                 = std::max<size_t>(baselineLabel.size(), std::string("Case").size());
+  for (const auto& [name, flag] : features) {
+    maxLabel = std::max(maxLabel, std::string("Feature OFF: ").size() + std::strlen(name));
+  }
+  const int labelW    = static_cast<int>(maxLabel);
+  constexpr int colW1 = 14;// ns/eval
+  constexpr int colW2 = 14;// evals/sec
+  constexpr int colW3 = 8; // delta %
+
+  // Print header
+  {
+    std::ostringstream hdr;
+    hdr.flags(std::cout.flags());
+    hdr.imbue(deLocale);
+    hdr << std::left << std::setw(labelW) << "Case" << " | "
+        << std::right << std::setw(colW1) << "ns/eval" << " | "
+        << std::setw(colW2) << "evals/sec" << " | "
+        << std::setw(colW3) << "delta";
+    std::cout << hdr.str() << std::endl;
+    std::cout << std::string(labelW + 3 + colW1 + 3 + colW2 + 3 + colW3, '-') << std::endl;
+  }
+
+  // Helper to print one result line in aligned columns
+  auto print_result = [&](const std::string& label, const uint64_t total_ns, const uint64_t baseline_ns) {
+    std::ostringstream os;
+    os.flags(std::cout.flags());
+    os.imbue(deLocale);
+
+    const uint64_t nsPerEval = total_ns / (totalEvals ? totalEvals : 1);
+    const uint64_t eps       = totalEvals * nanoPerSec / (total_ns ? total_ns : 1);
+
+    std::string deltaStr;
+    if (baseline_ns > 0) {
+      const double base_ns_per = static_cast<double>(baseline_ns) / (totalEvals ? totalEvals : 1);
+      const double ns_per      = static_cast<double>(total_ns) / (totalEvals ? totalEvals : 1);
+      const double deltaPct    = base_ns_per > 0.0 ? ((ns_per - base_ns_per) / base_ns_per) * 100.0 : 0.0;
+      std::ostringstream ds;
+      ds.setf(std::ios::fixed);
+      ds << std::showpos << std::setprecision(1) << deltaPct << "%";
+      deltaStr = ds.str();
+    }
+    else {
+      deltaStr = "base";
+    }
+
+    os << std::left << std::setw(labelW) << label << " | "
+       << std::right << std::setw(colW1) << nsPerEval << " | "
+       << std::setw(colW2) << eps << " | "
+       << std::setw(colW3) << deltaStr;
+
+    std::cout << os.str() << std::endl;
+  };
+
+  // Baseline: all features ON (default config)
+  set_eval_config(true);
+  const uint64_t baseline_ns = best_of_n(iterations);
+  print_result(baselineLabel, baseline_ns, 0);
+
+  // Measure: toggle each feature OFF (others stay ON) and compare to baseline
+  for (auto& [name, flag] : features) {
+    // Reset to default ON, then disable the feature
+    set_eval_config(true);
+    *flag = false;
+
+    // Ensure dependencies for sub-feature tests: leave USE_PIECE_EVAL ON so sub-flags have an effect
+    // (Already ON due to set_eval_config(true))
+
+    const uint64_t ns = best_of_n(iterations);
+    print_result(std::string("Feature OFF: ") + name, ns, baseline_ns);
   }
 }

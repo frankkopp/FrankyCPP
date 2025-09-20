@@ -124,12 +124,12 @@ public:
   void put(Entry* entryPtr, Key key, Score score);
 
   /* This retrieves a direct pointer to the entry of this node from cache */
-  inline Entry* getEntryPtr(const Key key) const {
+  Entry* getEntryPtr(const Key key) const {
     return &_data[getHash(key)];
   }
 
   /* generates the index hash key from the position key  */
-  inline std::size_t getHash(const Key key) const {
+  std::size_t getHash(const Key key) const {
     return key & hashKeyMask;
   }
 

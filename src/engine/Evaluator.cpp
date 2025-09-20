@@ -219,9 +219,9 @@ void Evaluator::pawnEval(const Position& p, Score& s) {
   }// color loop
 
   // check pawn tt
-  if (EvalConfig::USE_PAWN_TT) {
-    pawnCache.put(entryPtr, key, tmpScore);
-  }
+  // if (EvalConfig::USE_PAWN_TT) {
+  //   pawnCache.put(entryPtr, key, tmpScore);
+  // }
 
   s += tmpScore;
 
