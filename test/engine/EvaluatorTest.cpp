@@ -525,68 +525,83 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
   auto make_cases = [&]() {
     std::vector<Case> cases;
 
-    // Helper: turn all features OFF, then set only the ones listed in the case to true
-    auto set_features = [](std::initializer_list<bool*> features) {
-      set_eval_config(false);// all features OFF
-      for (auto* f : features) *f = true;
+    // Helper: turn all features ON, disable LAZY, then set only the listed ones to false
+    auto disable_features = [](const std::initializer_list<bool*> features) {
+      set_eval_config(true);           // all features ON
+      EvalConfig::USE_LAZY_EVAL = false; // ensure lazy eval is OFF for timing
+      for (auto* f : features) *f = false;
     };
 
-    // Baseline: all features OFF
-    cases.push_back({"Baseline (all features OFF)", [&] {
+    // Baseline: all features ON, LAZY OFF
+    cases.push_back({"Baseline (all features ON; LAZY OFF)", [&] {
+                       set_eval_config(true);
+                       EvalConfig::USE_LAZY_EVAL = false;
+                     }});
+
+    // Each case disables exactly the named feature(s) while leaving others ON
+    cases.push_back({"Disable MATERIAL only", [&] {
+                       disable_features({&EvalConfig::USE_MATERIAL});
+                     }});
+    cases.push_back({"Disable POSITIONAL only", [&] {
+                       disable_features({&EvalConfig::USE_POSITIONAL});
+                     }});
+    cases.push_back({"Disable TEMPO only", [&] {
+                       disable_features({&EvalConfig::USE_TEMPO});
+                     }});
+
+    // Piece eval umbrella off
+    cases.push_back({"Disable PIECE_EVAL only", [&] {
+                       disable_features({&EvalConfig::USE_PIECE_EVAL});
+                     }});
+
+    // Piece sub-features (PIECE_EVAL stays ON)
+    cases.push_back({"Disable BISHOP_PAIR_BONUS (with PIECE_EVAL)", [&] {
+                       disable_features({&EvalConfig::USE_BISHOP_PAIR_BONUS});
+                     }});
+    cases.push_back({"Disable KNIGHT_MOBILITY (with PIECE_EVAL)", [&] {
+                       disable_features({&EvalConfig::USE_KNIGHT_MOBILITY});
+                     }});
+    cases.push_back({"Disable BISHOP_MOBILITY (with PIECE_EVAL)", [&] {
+                       disable_features({&EvalConfig::USE_BISHOP_MOBILITY});
+                     }});
+    cases.push_back({"Disable ROOK_MOBILITY (with PIECE_EVAL)", [&] {
+                       disable_features({&EvalConfig::USE_ROOK_MOBILITY});
+                     }});
+    cases.push_back({"Disable ROOK_OPEN_FILE_BONUS (with PIECE_EVAL)", [&] {
+                       disable_features({&EvalConfig::USE_ROOK_OPEN_FILE_BONUS});
+                     }});
+    cases.push_back({"Disable QUEEN_MOBILITY (with PIECE_EVAL)", [&] {
+                       disable_features({&EvalConfig::USE_QUEEN_MOBILITY});
+                     }});
+    cases.push_back({"Disable QUEEN_TROPISM (with PIECE_EVAL)", [&] {
+                       disable_features({&EvalConfig::USE_QUEEN_TROPISM});
+                     }});
+
+    // King eval
+    cases.push_back({"Disable KING_EVAL only", [&] {
+                       disable_features({&EvalConfig::USE_KING_EVAL});
+                     }});
+    cases.push_back({"Disable KING_SAFETY_SHIELD (with KING_EVAL)", [&] {
+                       disable_features({&EvalConfig::USE_KING_SAFETY_SHIELD});
+                     }});
+
+    cases.push_back({"Disable GAMEPHASE_VALUE only", [&] {
+                       disable_features({&EvalConfig::USE_GAMEPHASE_VALUE});
+                     }});
+
+    // Pawn eval
+    cases.push_back({"Disable PAWN_EVAL only", [&] {
+                       disable_features({&EvalConfig::USE_PAWN_EVAL});
+                     }});
+    cases.push_back({"Disable PAWN_TT (with PAWN_EVAL)", [&] {
+                       disable_features({&EvalConfig::USE_PAWN_TT});
+                     }});
+
+    // Final base case: everything OFF (including LAZY)
+    cases.push_back({"All features OFF", [&] {
                        set_eval_config(false);
                      }});
 
-    // Each case lists all features (including dependencies) to be ON
-    cases.push_back({"USE_MATERIAL only", [&] {
-                       set_features({&EvalConfig::USE_MATERIAL});
-                     }});
-    cases.push_back({"USE_POSITIONAL only", [&] {
-                       set_features({&EvalConfig::USE_POSITIONAL});
-                     }});
-    cases.push_back({"USE_TEMPO only", [&] {
-                       set_features({&EvalConfig::USE_TEMPO});
-                     }});
-
-    cases.push_back({"USE_PIECE_EVAL only", [&] {
-                       set_features({&EvalConfig::USE_PIECE_EVAL});
-                     }});
-    cases.push_back({"USE_BISHOP_PAIR_BONUS (with PIECE_EVAL)", [&] {
-                       set_features({&EvalConfig::USE_BISHOP_PAIR_BONUS, &EvalConfig::USE_PIECE_EVAL});
-                     }});
-    cases.push_back({"USE_KNIGHT_MOBILITY (with PIECE_EVAL)", [&] {
-                       set_features({&EvalConfig::USE_KNIGHT_MOBILITY, &EvalConfig::USE_PIECE_EVAL});
-                     }});
-    cases.push_back({"USE_BISHOP_MOBILITY (with PIECE_EVAL)", [&] {
-                       set_features({&EvalConfig::USE_BISHOP_MOBILITY, &EvalConfig::USE_PIECE_EVAL});
-                     }});
-    cases.push_back({"USE_ROOK_MOBILITY (with PIECE_EVAL)", [&] {
-                       set_features({&EvalConfig::USE_ROOK_MOBILITY, &EvalConfig::USE_PIECE_EVAL});
-                     }});
-    cases.push_back({"USE_ROOK_OPEN_FILE_BONUS (with PIECE_EVAL)", [&] {
-                       set_features({&EvalConfig::USE_ROOK_OPEN_FILE_BONUS, &EvalConfig::USE_PIECE_EVAL});
-                     }});
-    cases.push_back({"USE_QUEEN_MOBILITY (with PIECE_EVAL)", [&] {
-                       set_features({&EvalConfig::USE_QUEEN_MOBILITY, &EvalConfig::USE_PIECE_EVAL});
-                     }});
-    cases.push_back({"USE_QUEEN_TROPISM (with PIECE_EVAL)", [&] {
-                       set_features({&EvalConfig::USE_QUEEN_TROPISM, &EvalConfig::USE_PIECE_EVAL});
-                     }});
-    cases.push_back({"USE_KING_EVAL only", [&] {
-                       set_features({&EvalConfig::USE_KING_EVAL});
-                     }});
-    cases.push_back({"USE_KING_SAFETY_SHIELD (with KING_EVAL)", [&] {
-                       set_features({&EvalConfig::USE_KING_SAFETY_SHIELD, &EvalConfig::USE_KING_EVAL});
-                     }});
-    cases.push_back({"USE_GAMEPHASE_VALUE only", [&] {
-                       set_features({&EvalConfig::USE_GAMEPHASE_VALUE});
-                     }});
-
-    cases.push_back({"USE_PAWN_EVAL only", [&] {
-                       set_features({&EvalConfig::USE_PAWN_EVAL});
-                     }});
-    cases.push_back({"USE_PAWN_TT (with USE_PAWN_EVAL)", [&] {
-                       set_features({&EvalConfig::USE_PAWN_TT, &EvalConfig::USE_PAWN_EVAL});
-                     }});
     return cases;
   };
 
@@ -647,7 +662,7 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
     std::cout << os.str() << std::endl;
   };
 
-  // First case is baseline
+  // The first case is baseline
   uint64_t baseline_ns = 0;
   bool first           = true;
   for (const auto& [label, apply] : cases) {
