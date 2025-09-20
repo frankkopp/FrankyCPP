@@ -685,7 +685,7 @@ std::string Position::str() const {
 }
 
 std::string Position::strBoard() const {
-  const std::string ptc = " KONBRQ  k*nbrq   ";
+  const std::string ptc = " KoNBRQ  k*nbrq   ";
   std::ostringstream output;
   output << "  +---+---+---+---+---+---+---+---+" << std::endl;
   for (Rank r = RANK_8;; --r) {

@@ -98,6 +98,7 @@ TEST_F(EvaluatorTest, EvaluateMaterialOnly) {
   const auto fens = Test_Fens::getFENs();
   Evaluator e{};
 
+  int printed = 0;
   for (const auto& fen : fens) {
     Position p{fen};
 
@@ -114,6 +115,15 @@ TEST_F(EvaluatorTest, EvaluateMaterialOnly) {
     const Value expectedFinal = p.getNextPlayer() == WHITE ? expectedWhiteView : -expectedWhiteView;
 
     const Value v = e.evaluate(p);
+
+    // Human visual check (print a few examples outside bulk runs)
+    if (!isBulkRun() && printed < 3) {
+      fprintln("MaterialOnly Fen: {}", fen);
+      fprintln("Expected: {}  Got: {}", expectedFinal, v);
+      fprintln(p.strBoard());
+      ++printed;
+    }
+
     ASSERT_EQ(v, expectedFinal) << "Material-only eval mismatch for FEN: " << fen;
   }
 }
@@ -137,6 +147,13 @@ TEST_F(EvaluatorTest, KnightMobility_CentralBeatsCorner) {
   const Value vCorner  = e.evaluate(corner);
 
   ASSERT_GT(vCentral, vCorner) << "Knight mobility should favor central knight over corner knight";
+
+  // Human visual check
+  fprintln("Central Knight Eval: {}", vCentral);
+  fprintln(central.strBoard());
+  fprintln("Corner Knight Eval:  {}", vCorner);
+  fprintln(corner.strBoard());
+  fprintln("Knight mobility favors central knight over corner knight: {} > {}", vCentral, vCorner);
 }
 
 TEST_F(EvaluatorTest, Pawn_PassedBeatsBlocked) {
@@ -153,6 +170,13 @@ TEST_F(EvaluatorTest, Pawn_PassedBeatsBlocked) {
 
   const Value vPassed  = e.evaluate(passed);
   const Value vBlocked = e.evaluate(blocked);
+
+  // Human visual check
+  fprintln("Passed pawn eval: {}", vPassed);
+  fprintln(passed.strBoard());
+  fprintln("Blocked pawn eval: {}", vBlocked);
+  fprintln(blocked.strBoard());
+  fprintln("Passed > Blocked: {} > {}", vPassed, vBlocked);
 
   ASSERT_GT(vPassed, vBlocked) << "Passed pawn should evaluate higher than blocked pawn";
 }
@@ -172,6 +196,13 @@ TEST_F(EvaluatorTest, BishopMobility_CentralBeatsCorner) {
 
   const Value vCentral = e.evaluate(central);
   const Value vCorner  = e.evaluate(corner);
+
+  // Human visual check
+  fprintln("Central Bishop Eval: {}", vCentral);
+  fprintln(central.strBoard());
+  fprintln("Corner Bishop Eval:  {}", vCorner);
+  fprintln(corner.strBoard());
+  fprintln("Bishop mobility favors central over corner: {} > {}", vCentral, vCorner);
 
   ASSERT_GT(vCentral, vCorner) << "Bishop mobility should favor central bishop over corner bishop";
 }
@@ -196,6 +227,15 @@ TEST_F(EvaluatorTest, Rook_FileBonus_Open_gt_SemiOpen_gt_Closed) {
   const Value vSemiOpen = e.evaluate(semiOpen);
   const Value vOpen     = e.evaluate(open);
 
+  // Human visual check
+  fprintln("Rook closed-file eval: {}", vClosed);
+  fprintln(closed.strBoard());
+  fprintln("Rook semi-open-file eval: {}", vSemiOpen);
+  fprintln(semiOpen.strBoard());
+  fprintln("Rook open-file eval: {}", vOpen);
+  fprintln(open.strBoard());
+  fprintln("Open > Semi-open > Closed: {} > {} > {}", vOpen, vSemiOpen, vClosed);
+
   ASSERT_GT(vSemiOpen, vClosed) << "Semi-open file should be better than closed file for rook";
   ASSERT_GT(vOpen, vSemiOpen)  << "Open file should be better than semi-open file for rook";
 }
@@ -217,6 +257,13 @@ TEST_F(EvaluatorTest, Rook_PSQT_SeventhRank_BetterThan_BackRank) {
   const Value v7th  = e.evaluate(seventh);
   const Value vBack = e.evaluate(backrank);
 
+  // Human visual check
+  fprintln("Rook 7th-rank eval: {}", v7th);
+  fprintln(seventh.strBoard());
+  fprintln("Rook back-rank eval: {}", vBack);
+  fprintln(backrank.strBoard());
+  fprintln("7th rank > back rank: {} > {}", v7th, vBack);
+
   ASSERT_GT(v7th, vBack) << "PSQT should reward rook on the 7th rank more than back rank";
 }
 
@@ -234,6 +281,13 @@ TEST_F(EvaluatorTest, QueenMobility_CentralBeatsCorner) {
 
   const Value vCentral = e.evaluate(central);
   const Value vCorner  = e.evaluate(corner);
+
+  // Human visual check
+  fprintln("Central Queen Eval: {}", vCentral);
+  fprintln(central.strBoard());
+  fprintln("Corner Queen Eval:  {}", vCorner);
+  fprintln(corner.strBoard());
+  fprintln("Queen mobility favors central over corner: {} > {}", vCentral, vCorner);
 
   ASSERT_GT(vCentral, vCorner) << "Queen mobility should favor central queen over corner queen";
 }
@@ -255,7 +309,107 @@ TEST_F(EvaluatorTest, King_PSQT_CenterBeatsCorner_Endgameish) {
   const Value vCentral = e.evaluate(central);
   const Value vCorner  = e.evaluate(cornerK);
 
+  // Human visual check
+  fprintln("Central King Eval: {}", vCentral);
+  fprintln(central.strBoard());
+  fprintln("Corner King Eval:  {}", vCorner);
+  fprintln(cornerK.strBoard());
+  fprintln("PSQT favors central king in endgame: {} > {}", vCentral, vCorner);
+
   ASSERT_GT(vCentral, vCorner) << "PSQT should favor central king in endgame-like positions";
+}
+
+TEST_F(EvaluatorTest, BishopPairBonus_TwoBishopsBeats_BishopKnight) {
+  set_eval_config(false);
+  EvalConfig::USE_PIECE_EVAL       = true;
+  EvalConfig::USE_BISHOP_MOBILITY  = false; // isolate pair bonus
+  EvalConfig::USE_MATERIAL         = false; // equalize material influence
+  EvalConfig::USE_POSITIONAL       = false; // no PSQT influence
+  EvalConfig::USE_PAWN_EVAL        = false;
+  EvalConfig::USE_KING_EVAL        = false;
+  EvalConfig::USE_GAMEPHASE_VALUE  = true;
+
+  Evaluator e{};
+
+  // White has bishop pair; Black has bishop+knight. Add a pawn each to avoid insufficiency.
+  // Pair: white bishops c1,f1; black bishop c8, knight b8; kings h1/g8; pawns a2/a7.
+  const Position pairPos{"1n1b2k1/p7/8/8/8/8/P7/2B2B1K w - - 0 1"};
+  // No pair: replace white f1 bishop by knight.
+  const Position noPairPos{"1n1b2k1/p7/8/8/8/8/P7/2B2N1K w - - 0 1"};
+
+  const Value vPair   = e.evaluate(pairPos);
+  const Value vNoPair = e.evaluate(noPairPos);
+
+  // Human visual check
+  fprintln("Bishop pair eval: {}", vPair);
+  fprintln(pairPos.strBoard());
+  fprintln("Bishop+Knight eval: {}", vNoPair);
+  fprintln(noPairPos.strBoard());
+  fprintln("Pair > NoPair: {} > {}", vPair, vNoPair);
+
+  ASSERT_GT(vPair, vNoPair) << "Bishop pair bonus should favor two bishops over bishop+knight when material/PSQT are off";
+}
+
+TEST_F(EvaluatorTest, RookMobility_CentralBeatsEdge_FileBonusesOff) {
+  set_eval_config(false);
+  EvalConfig::USE_PIECE_EVAL            = true;
+  EvalConfig::USE_ROOK_MOBILITY         = true;
+  EvalConfig::USE_ROOK_OPEN_FILE_BONUS  = false; // isolate mobility
+  EvalConfig::USE_POSITIONAL            = false; // no PSQT influence
+  EvalConfig::USE_MATERIAL              = false;
+  EvalConfig::USE_PAWN_EVAL             = false;
+  EvalConfig::USE_KING_EVAL             = false;
+  EvalConfig::USE_GAMEPHASE_VALUE       = true;
+
+  Evaluator e{};
+
+  // Central rook d4 with own pieces blocking 3 directions; still has east moves (e4..h4)
+  const Position central{"6k1/8/8/3P4/2PR4/3P4/8/6K1 w - - 0 1"};
+  // Edge rook a1 boxed in by own a2 and b1 -> 0 mobility
+  const Position edge{"6k1/8/8/8/8/8/P7/RP4K1 w - - 0 1"};
+
+  const Value vCentral = e.evaluate(central);
+  const Value vEdge    = e.evaluate(edge);
+
+  // Human visual check
+  fprintln("Central rook eval: {}", vCentral);
+  fprintln(central.strBoard());
+  fprintln("Edge rook eval:    {}", vEdge);
+  fprintln(edge.strBoard());
+  fprintln("Central > Edge (mobility): {} > {}", vCentral, vEdge);
+
+  ASSERT_GT(vCentral, vEdge) << "Rook mobility should favor central rook when file bonuses and PSQT are off";
+}
+
+TEST_F(EvaluatorTest, QueenTropism_CloserBeatsFarther_EndgameOnly) {
+  set_eval_config(false);
+  EvalConfig::USE_PIECE_EVAL        = true;
+  EvalConfig::USE_QUEEN_MOBILITY    = false; // isolate tropism
+  EvalConfig::USE_QUEEN_TROPISM     = true;  // endgame-only weight
+  EvalConfig::USE_POSITIONAL        = false; // no PSQT influence
+  EvalConfig::USE_MATERIAL          = false;
+  EvalConfig::USE_PAWN_EVAL         = false;
+  EvalConfig::USE_KING_EVAL         = false;
+  EvalConfig::USE_GAMEPHASE_VALUE   = true;
+
+  Evaluator e{};
+
+  // Closer: Qg7 near black king h8
+  const Position closer{"7k/6Q1/8/8/8/8/8/6K1 w - - 0 1"};
+  // Farther: Qa1 far from black king h8
+  const Position farther{"7k/8/8/8/8/8/8/Q5K1 w - - 0 1"};
+
+  const Value vCloser  = e.evaluate(closer);
+  const Value vFarther = e.evaluate(farther);
+
+  // Human visual check
+  fprintln("Queen closer eval:  {}", vCloser);
+  fprintln(closer.strBoard());
+  fprintln("Queen farther eval: {}", vFarther);
+  fprintln(farther.strBoard());
+  fprintln("Closer > Farther (tropism): {} > {}", vCloser, vFarther);
+
+  ASSERT_GT(vCloser, vFarther) << "Queen tropism should reward being closer to enemy king (endgame-only), with mobility/PSQT/material off";
 }
 
 // New timing test modeled after SpeedTests::TimingExtendedDoMoveUndoMove
