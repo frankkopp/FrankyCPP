@@ -51,6 +51,8 @@ namespace EvalConfig {
   inline int SUPPORTED_PAWN_END_WEIGHT = 15;
 
   inline bool USE_PIECE_EVAL        = true;
+
+  inline auto USE_BISHOP_PAIR_BONUS = true;
   inline auto BISHOP_PAIR_MID_BONUS = Value{20};
   inline auto BISHOP_PAIR_END_BONUS = Value{20};
 

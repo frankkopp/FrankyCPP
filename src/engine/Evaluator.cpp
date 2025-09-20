@@ -123,7 +123,7 @@ inline Value Evaluator::valueFromScore(const Score& score, const double gamePhas
   return score.midgame * gamePhaseFactor + score.endgame * (1.0 - gamePhaseFactor);
 }
 
-void Evaluator::pawnEval(const Position& p, Score& s) {
+inline void Evaluator::pawnEval(const Position& p, Score& s) {
   const Key key = p.getPawnZobristKey();
 
   // Branch-minimal TT probe: always safe (dummy slot when mask == 0)
@@ -219,9 +219,9 @@ void Evaluator::pawnEval(const Position& p, Score& s) {
   //  LOG__DEBUG(Logger::get().EVAL_LOG, "Raw pawn eval: midvalue = {} and endvalue = {}", tmpScore.midgame, tmpScore.endgame);
 }
 
-void Evaluator::pieceEval(const Position& p, Score& s, const Color us, const PieceType pieceType) {
+inline void Evaluator::pieceEval(const Position& p, Score& s, const Color us, const PieceType pieceType) {
 
-  // get pieces or return if none of given type or color is found
+  // get pieces or return if none of given types or color is found
   Bitboard pieceBb = p.getPieceBb(us, pieceType);
   if (!pieceBb) {
     return;
@@ -240,7 +240,7 @@ void Evaluator::pieceEval(const Position& p, Score& s, const Color us, const Pie
       break;
     case BISHOP:
       // bonus for a pair
-      if (popcount(pieceBb) > 1) {
+      if (EvalConfig::USE_BISHOP_PAIR_BONUS && popcount(pieceBb) > 1) {
         s.midgame += EvalConfig::BISHOP_PAIR_MID_BONUS;
         s.endgame += EvalConfig::BISHOP_PAIR_END_BONUS;
       }
