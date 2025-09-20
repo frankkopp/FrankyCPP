@@ -31,6 +31,7 @@
 // add headers for timing output similar to SpeedTests
 #include <chrono>
 #include <cstring>
+#include <functional>
 #include <iomanip>
 #include <limits>
 #include <sstream>
@@ -56,7 +57,7 @@ void set_eval_config(const bool onoff) {
   EvalConfig::USE_LAZY_EVAL  = onoff;
   // pawn-specific toggles
   EvalConfig::USE_PAWN_EVAL = onoff;
-  EvalConfig::USE_PAWN_TT   = false;
+  EvalConfig::USE_PAWN_TT   = onoff;
   // piece-specific toggles
   EvalConfig::USE_PIECE_EVAL           = onoff;
   EvalConfig::USE_KNIGHT_MOBILITY      = onoff;
@@ -66,6 +67,7 @@ void set_eval_config(const bool onoff) {
   EvalConfig::USE_QUEEN_MOBILITY       = onoff;
   EvalConfig::USE_QUEEN_TROPISM        = onoff;
   EvalConfig::USE_KING_EVAL            = onoff;
+  EvalConfig::USE_KING_SAFETY_SHIELD   = onoff;
   EvalConfig::USE_GAMEPHASE_VALUE      = onoff;
 }
 
@@ -87,7 +89,7 @@ protected:
 TEST_F(EvaluatorTest, testFens) {
   const std::vector<std::string> allFens = Test_Fens::getFENs();
   Evaluator e{};
-  for (auto f : allFens) {
+  for (const auto& f : allFens) {
     Position p{f};
     const Value v{e.evaluate(p)};
     fprintln("Value: {:<6} GPF: {:<20}  Fen: {}", std::to_string(v), p.getGamePhaseFactor(), f);
@@ -492,34 +494,9 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
   constexpr int repeats    = 5;    // take best-of 'repeats' to reduce noise
   constexpr int iterations = 25000;// per repeat, per position set
 
-  struct Feature {
-    const char* name;
-    bool* flag;
-  };
-  std::vector<Feature> features = {
-    {"USE_PAWN_EVAL", &EvalConfig::USE_PAWN_EVAL},
-    {"USE_PAWN_TT", &EvalConfig::USE_PAWN_TT},
-
-    {"USE_PIECE_EVAL", &EvalConfig::USE_PIECE_EVAL},
-
-    {"USE_MATERIAL", &EvalConfig::USE_MATERIAL},
-    {"USE_POSITIONAL", &EvalConfig::USE_POSITIONAL},
-    {"USE_TEMPO", &EvalConfig::USE_TEMPO},
-    {"USE_LAZY_EVAL", &EvalConfig::USE_LAZY_EVAL},
-    // piece-specific
-    {"USE_KNIGHT_MOBILITY", &EvalConfig::USE_KNIGHT_MOBILITY},
-    {"USE_BISHOP_MOBILITY", &EvalConfig::USE_BISHOP_MOBILITY},
-    {"USE_ROOK_MOBILITY", &EvalConfig::USE_ROOK_MOBILITY},
-    {"USE_ROOK_OPEN_FILE_BONUS", &EvalConfig::USE_ROOK_OPEN_FILE_BONUS},
-    {"USE_QUEEN_MOBILITY", &EvalConfig::USE_QUEEN_MOBILITY},
-    {"USE_QUEEN_TROPISM", &EvalConfig::USE_QUEEN_TROPISM},
-    {"USE_KING_EVAL", &EvalConfig::USE_KING_EVAL},
-    {"USE_GAMEPHASE_VALUE", &EvalConfig::USE_GAMEPHASE_VALUE},
-  };
-
   auto measure_ns = [&](const int iters) -> uint64_t {
     volatile int64_t acc = 0;// prevent optimizing away
-    const auto start     = high_resolution_clock::now();
+    const auto start           = high_resolution_clock::now();
     for (int i = 0; i < iters; ++i) {
       for (auto& p : positions) {
         const Value v{e.evaluate(p)};
@@ -538,18 +515,141 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
     return best == std::numeric_limits<uint64_t>::max() ? 0ull : best;
   };
 
+  // Define dependency-aware cases. Baseline first.
+  struct Case {
+    std::string label;
+    std::function<void()> apply;
+  };
+
+  auto make_cases = [&]() {
+    std::vector<Case> cases;
+
+    // Baseline
+    cases.push_back({"Baseline (lazy OFF, others ON)", [&] {
+                       set_eval_config(true);
+                       EvalConfig::USE_LAZY_EVAL = false;
+                     }});
+
+    // Independent toggles
+    cases.push_back({"Feature OFF: USE_MATERIAL", [&] {
+                       set_eval_config(true);
+                       EvalConfig::USE_LAZY_EVAL = false;
+                       EvalConfig::USE_MATERIAL  = false;
+                     }});
+    cases.push_back({"Feature OFF: USE_POSITIONAL", [&] {
+                       set_eval_config(true);
+                       EvalConfig::USE_LAZY_EVAL  = false;
+                       EvalConfig::USE_POSITIONAL = false;
+                     }});
+    cases.push_back({"Feature OFF: USE_TEMPO", [&] {
+                       set_eval_config(true);
+                       EvalConfig::USE_LAZY_EVAL = false;
+                       EvalConfig::USE_TEMPO     = false;
+                     }});
+
+    // Pawn eval and its dependent TT
+    cases.push_back({"Feature OFF: USE_PAWN_EVAL (and USE_PAWN_TT)", [&] {
+                       set_eval_config(true);
+                       EvalConfig::USE_LAZY_EVAL = false;
+                       EvalConfig::USE_PAWN_EVAL = false;
+                       EvalConfig::USE_PAWN_TT   = false;// dependent
+                     }});
+
+    cases.push_back({"Feature OFF: USE_PAWN_TT", [&] {
+                       set_eval_config(true);
+                       EvalConfig::USE_LAZY_EVAL = false;
+                       EvalConfig::USE_PAWN_EVAL = true; // ensure parent on
+                       EvalConfig::USE_PAWN_TT   = false;// toggle dependent
+                     }});
+
+    // Piece eval and its sub-features
+    cases.push_back({"Feature OFF: USE_PIECE_EVAL (and sub-features)", [&] {
+                       set_eval_config(true);
+                       EvalConfig::USE_LAZY_EVAL  = false;
+                       EvalConfig::USE_PIECE_EVAL = false;
+                       // sub-features are meaningless -> force off to avoid incidental overhead
+                       EvalConfig::USE_KNIGHT_MOBILITY      = false;
+                       EvalConfig::USE_BISHOP_MOBILITY      = false;
+                       EvalConfig::USE_ROOK_MOBILITY        = false;
+                       EvalConfig::USE_ROOK_OPEN_FILE_BONUS = false;
+                       EvalConfig::USE_QUEEN_MOBILITY       = false;
+                       EvalConfig::USE_QUEEN_TROPISM        = false;
+                       // KING_EVAL is independent from PIECE_EVAL -> leave as default
+                     }});
+
+    // Sub-features under piece eval
+    cases.push_back({"Feature OFF: USE_KNIGHT_MOBILITY", [&] {
+                       set_eval_config(true);
+                       EvalConfig::USE_LAZY_EVAL       = false;
+                       EvalConfig::USE_PIECE_EVAL      = true;// ensure parent on
+                       EvalConfig::USE_KNIGHT_MOBILITY = false;
+                     }});
+    cases.push_back({"Feature OFF: USE_BISHOP_MOBILITY", [&] {
+                       set_eval_config(true);
+                       EvalConfig::USE_LAZY_EVAL       = false;
+                       EvalConfig::USE_PIECE_EVAL      = true;
+                       EvalConfig::USE_BISHOP_MOBILITY = false;
+                     }});
+    cases.push_back({"Feature OFF: USE_ROOK_MOBILITY", [&] {
+                       set_eval_config(true);
+                       EvalConfig::USE_LAZY_EVAL     = false;
+                       EvalConfig::USE_PIECE_EVAL    = true;
+                       EvalConfig::USE_ROOK_MOBILITY = false;
+                     }});
+    cases.push_back({"Feature OFF: USE_ROOK_OPEN_FILE_BONUS", [&] {
+                       set_eval_config(true);
+                       EvalConfig::USE_LAZY_EVAL            = false;
+                       EvalConfig::USE_PIECE_EVAL           = true;
+                       EvalConfig::USE_ROOK_OPEN_FILE_BONUS = false;
+                     }});
+    cases.push_back({"Feature OFF: USE_QUEEN_MOBILITY", [&] {
+                       set_eval_config(true);
+                       EvalConfig::USE_LAZY_EVAL      = false;
+                       EvalConfig::USE_PIECE_EVAL     = true;
+                       EvalConfig::USE_QUEEN_MOBILITY = false;
+                     }});
+    cases.push_back({"Feature OFF: USE_QUEEN_TROPISM", [&] {
+                       set_eval_config(true);
+                       EvalConfig::USE_LAZY_EVAL     = false;
+                       EvalConfig::USE_PIECE_EVAL    = true;
+                       EvalConfig::USE_QUEEN_TROPISM = false;
+                     }});
+
+    // King eval is independent
+    cases.push_back({"Feature OFF: USE_KING_EVAL", [&] {
+                       set_eval_config(true);
+                       EvalConfig::USE_LAZY_EVAL = false;
+                       EvalConfig::USE_KING_EVAL = false;
+                     }});
+    // King safety shield depends on KING_EVAL
+    cases.push_back({"Feature OFF: USE_KING_SAFETY_SHIELD", [&] {
+                       set_eval_config(true);
+                       EvalConfig::USE_LAZY_EVAL          = false;
+                       EvalConfig::USE_KING_EVAL          = true; // ensure parent on
+                       EvalConfig::USE_KING_SAFETY_SHIELD = false;// toggle dependent
+                     }});
+
+    // Gamephase scaling
+    cases.push_back({"Feature OFF: USE_GAMEPHASE_VALUE", [&] {
+                       set_eval_config(true);
+                       EvalConfig::USE_LAZY_EVAL       = false;
+                       EvalConfig::USE_GAMEPHASE_VALUE = false;
+                     }});
+
+    return cases;
+  };
+
+  auto cases = make_cases();
+
   const uint64_t totalEvals = static_cast<uint64_t>(iterations) * positions.size();
 
   // Precompute label width for a nice alignment
-  const std::string baselineLabel = "Baseline (all features ON)";
-  size_t maxLabel                 = std::max<size_t>(baselineLabel.size(), std::string("Case").size());
-  for (const auto& [name, flag] : features) {
-    maxLabel = std::max(maxLabel, std::string("Feature OFF: ").size() + std::strlen(name));
-  }
-  const int labelW    = static_cast<int>(maxLabel);
-  constexpr int colW1 = 14;// ns/eval
-  constexpr int colW2 = 14;// evals/sec
-  constexpr int colW3 = 8; // delta %
+  size_t maxLabel = 4;// length of "Case"
+  for (const auto& [label, apply] : cases) maxLabel = std::max(maxLabel, label.size());
+  const int labelW = static_cast<int>(maxLabel);
+  constexpr int colW1  = 14;// ns/eval
+  constexpr int colW2  = 14;// evals/sec
+  constexpr int colW3  = 8; // delta %
 
   // Print header
   {
@@ -560,20 +660,21 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
         << std::right << std::setw(colW1) << "ns/eval" << " | "
         << std::setw(colW2) << "evals/sec" << " | "
         << std::setw(colW3) << "delta";
+    std::cout << std::endl;
     std::cout << hdr.str() << std::endl;
     std::cout << std::string(labelW + 3 + colW1 + 3 + colW2 + 3 + colW3, '-') << std::endl;
   }
 
   // Helper to print one result line in aligned columns
-  auto print_result = [&](const std::string& label, const uint64_t total_ns, const uint64_t baseline_ns) {
+  auto print_result = [&](const std::string& label, uint64_t total_ns, uint64_t baseline_ns) {
     std::ostringstream os;
     os.flags(std::cout.flags());
     os.imbue(deLocale);
 
     const uint64_t nsPerEval = total_ns / (totalEvals ? totalEvals : 1);
-    const uint64_t eps       = totalEvals * nanoPerSec / (total_ns ? total_ns : 1);
+    const uint64_t eps       = (totalEvals * nanoPerSec) / (total_ns ? total_ns : 1);
 
-    std::string deltaStr;
+    std::string deltaStr = "";
     if (baseline_ns > 0) {
       const double base_ns_per = static_cast<double>(baseline_ns) / (totalEvals ? totalEvals : 1);
       const double ns_per      = static_cast<double>(total_ns) / (totalEvals ? totalEvals : 1);
@@ -595,21 +696,17 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
     std::cout << os.str() << std::endl;
   };
 
-  // Baseline: all features ON (default config)
-  set_eval_config(true);
-  const uint64_t baseline_ns = best_of_n(iterations);
-  print_result(baselineLabel, baseline_ns, 0);
-
-  // Measure: toggle each feature OFF (others stay ON) and compare to baseline
-  for (auto& [name, flag] : features) {
-    // Reset to default ON, then disable the feature
-    set_eval_config(true);
-    *flag = false;
-
-    // Ensure dependencies for sub-feature tests: leave USE_PIECE_EVAL ON so sub-flags have an effect
-    // (Already ON due to set_eval_config(true))
-
-    const uint64_t ns = best_of_n(iterations);
-    print_result(std::string("Feature OFF: ") + name, ns, baseline_ns);
+  // First case is baseline
+  uint64_t baseline_ns = 0;
+  bool first           = true;
+  for (const auto& c : cases) {
+    c.apply();
+    const uint64_t ns     = best_of_n(iterations);
+    const bool isBaseline = first;
+    if (first) {
+      baseline_ns = ns;
+      first       = false;
+    }
+    print_result(c.label, ns, isBaseline ? 0 : baseline_ns);
   }
 }

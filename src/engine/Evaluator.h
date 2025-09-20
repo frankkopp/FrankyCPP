@@ -23,6 +23,7 @@
 #include "PawnTT.h"
 #include "chesscore/Position.h"
 #include "types/types.h"
+#include "EvalConfig.h"
 
 // Evaluator calculates a value for a chess positions by
 // using various evaluation heuristics like material,
@@ -69,6 +70,18 @@ public:
     pawnCache.prefetch(key);
   }
 #endif
+
+  // Call this when EvalConfig has changed to resize the pawn TT
+  // Mainly for unit tests to change the config on the fly
+  void onEvalConfigChanged() {
+    if (EvalConfig::USE_PAWN_TT && EvalConfig::PAWN_TT_SIZE_MB > 0) {
+      pawnCache.resize(static_cast<uint64_t>(EvalConfig::PAWN_TT_SIZE_MB));
+    }
+    else {
+      // Keep the TT in the "disabled" state (mask==0, dummy slot allocated)
+      pawnCache.resize(0);
+    }
+  }
 };
 
-#endif//FRANKYCPP_EVALUATOR_H
+#endif// FRANKYCPP_EVALUATOR_H

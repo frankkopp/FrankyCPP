@@ -20,7 +20,6 @@
 #include "common/Logging.h"
 #include "types/types.h"
 
-#include "EvalConfig.h"
 #include "Evaluator.h"
 
 Evaluator::Evaluator() {
@@ -125,17 +124,16 @@ inline Value Evaluator::valueFromScore(const Score& score, const double gamePhas
 }
 
 void Evaluator::pawnEval(const Position& p, Score& s) {
-  PawnTT::Entry* entryPtr{};
   const Key key = p.getPawnZobristKey();
 
-  // check pawn tt
-  if (EvalConfig::USE_PAWN_TT) {
-    entryPtr = pawnCache.getEntryPtr(key);
-    if (entryPtr->key == key) {
-      s.midgame += entryPtr->midvalue;
-      s.endgame += entryPtr->endvalue;
-      return;
-    }
+  // Branch-minimal TT probe: always safe (dummy slot when mask == 0)
+  PawnTT::Entry* ep = pawnCache.getEntryPtr(key);
+
+  // Fast hit check; when TT is off this is an inexpensive, well-predicted branch
+  if (EvalConfig::USE_PAWN_TT && ep->key == key) {
+    s.midgame += ep->midvalue;
+    s.endgame += ep->endvalue;
+    return;
   }
 
   tmpScore.midgame = VALUE_ZERO;
@@ -185,13 +183,6 @@ void Evaluator::pawnEval(const Position& p, Score& s) {
       supported |= myPawns & neighbours & Bitboards::sqToRankBb[sq + pawnPush(color)];
     }
 
-    //    fprintln("{} isolated : {} {}", !color ? "WHITE" : "BLACK", popcount(isolated), strGrouped(isolated));
-    //    fprintln("{} doubled  : {} {}", !color ? "WHITE" : "BLACK", popcount(doubled), strGrouped(doubled));
-    //    fprintln("{} passed   : {} {}", !color ? "WHITE" : "BLACK", popcount(passed), strGrouped(passed));
-    //    fprintln("{} blocked  : {} {}", !color ? "WHITE" : "BLACK", popcount(blocked), strGrouped(blocked));
-    //    fprintln("{} phalanx  : {} {}", !color ? "WHITE" : "BLACK", popcount(phalanx), strGrouped(phalanx));
-    //    fprintln("{} supported: {} {}", !color ? "WHITE" : "BLACK", popcount(supported), strGrouped(supported));
-
     // @formatter:off
     int midvalue = popcount(isolated) * EvalConfig::ISOLATED_PAWN_MID_WEIGHT;
     int endvalue = popcount(isolated) * EvalConfig::ISOLATED_PAWN_END_WEIGHT;
@@ -218,10 +209,10 @@ void Evaluator::pawnEval(const Position& p, Score& s) {
     //    LOG__DEBUG(Logger::get().EVAL_LOG, "Raw pawn eval for {} results midvalue = {} and endvalue = {}", color ? "BLACK" : "WHITE", midvalue, endvalue);
   }// color loop
 
-  // check pawn tt
-  // if (EvalConfig::USE_PAWN_TT) {
-  //   pawnCache.put(entryPtr, key, tmpScore);
-  // }
+  // Store back only when enabled; ep already points to the correct slot
+  if (EvalConfig::USE_PAWN_TT) {
+    pawnCache.put(ep, key, tmpScore);
+  }
 
   s += tmpScore;
 

@@ -55,7 +55,7 @@ public:
     Value midvalue = VALUE_NONE;
     Value endvalue = VALUE_NONE;
 
-    std::string str() const {
+    [[nodiscard]] std::string str() const {
       return fmt::format("id {} midvalue {} endvalue {}", key, midvalue, endvalue);
     }
 
@@ -138,7 +138,7 @@ public:
 
   // using prefetch improves probe lookup speed significantly
 #ifdef EVAL_ENABLE_PREFETCH
-  inline void prefetch(const Key key) {
+  void prefetch(const Key key) {
 #ifdef __GNUC__
     _mm_prefetch(&_data[(key & hashKeyMask)], _MM_HINT_T0);
 #elif _MSC_VER

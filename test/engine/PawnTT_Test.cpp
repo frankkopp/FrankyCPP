@@ -181,3 +181,16 @@ TEST_F(PawnTT_Test, put) {
   ASSERT_EQ(tt.getEntryPtr(p.getPawnZobristKey())->endvalue, 11);
 
 }
+
+TEST_F(PawnTT_Test, getEntryPtr_valid_even_when_zero_then_resize) {
+  PawnTT tt(0);
+  const Position p{};
+  const auto key = p.getPawnZobristKey();
+  // Even when size is zero (logically disabled), we still have a dummy slot
+  ASSERT_EQ(0, tt.getMaxNumberOfEntries());
+  EXPECT_NE(nullptr, tt.getEntryPtr(key));
+
+  tt.resize(64);
+  ASSERT_GT(tt.getMaxNumberOfEntries(), 0u);
+  EXPECT_NE(nullptr, tt.getEntryPtr(key));
+}

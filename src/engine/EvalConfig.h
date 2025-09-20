@@ -99,6 +99,7 @@ namespace EvalConfig {
   inline int KING_SHIELD_END_PER_PAWN   = 0;   // no effect in endgame
 
   inline bool USE_GAMEPHASE_VALUE = true;
+
 }// namespace EvalConfig
 
 #endif// FRANKYCPP_EVALCONFIG_H

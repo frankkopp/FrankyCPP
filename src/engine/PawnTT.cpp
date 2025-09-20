@@ -51,7 +51,11 @@ void PawnTT::resize(const uint64_t newSizeInMByte) {
 #endif
   }
 
-  hashKeyMask = maxNumberOfEntries - 1;
+  // Even when logically disabled (maxNumberOfEntries==0), allocate a single dummy entry
+  // so hot-path functions can remain branchless and safely index _data[0].
+  const std::size_t allocEntries = maxNumberOfEntries ? maxNumberOfEntries : 1u;
+
+  hashKeyMask = maxNumberOfEntries ? (maxNumberOfEntries - 1) : 0;
   sizeInByte  = maxNumberOfEntries * ENTRY_SIZE;
 
   // release old tt memory
@@ -60,15 +64,22 @@ void PawnTT::resize(const uint64_t newSizeInMByte) {
   // try to allocate memory for TT - repeat until allocation is successful
   while (true) {
     try {
-      _data = std::make_unique<Entry[]>(maxNumberOfEntries);
+      _data = std::make_unique<Entry[]>(allocEntries);
       break;
     } catch (std::bad_alloc const&) {
       // we could not allocate enough memory, so we reduce PawnTT size by a power of 2
       uint64_t oldSize   = sizeInByte;
       maxNumberOfEntries = maxNumberOfEntries >> 1ULL;
-      hashKeyMask        = maxNumberOfEntries - 1;
+      const std::size_t alloc2 = maxNumberOfEntries ? maxNumberOfEntries : 1u;
+      hashKeyMask        = maxNumberOfEntries ? maxNumberOfEntries - 1 : 0;
       sizeInByte         = maxNumberOfEntries * ENTRY_SIZE;
       LOG__ERROR(Logger::get().EVAL_LOG, "Not enough memory for requested PawnTT size {:L} MB reducing to {:L} MB", oldSize, sizeInByte);
+      // retry with smaller allocation in next loop
+      try {
+        _data = std::make_unique<Entry[]>(alloc2);
+        break;
+      } catch (...) {
+      }
     }
   }
 
@@ -115,7 +126,7 @@ void PawnTT::clear() {
   numberOfUpdates = 0;
   numberOfMisses  = 0;
 
-  auto finish = high_resolution_clock::now();
+  const auto finish = high_resolution_clock::now();
   auto time   = std::chrono::duration_cast<milliseconds>(finish - startTime).count();
 
   LOG__DEBUG(Logger::get().EVAL_LOG, "PawnTT cleared {:L} entries in {:L} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
