@@ -65,7 +65,7 @@ public:
 
   // do a prefetch for the pawn cache data
 #ifdef EVAL_ENABLE_PREFETCH
-  inline void prefetch(Key key) {
+  void prefetch(const Key key) {
     pawnCache.prefetch(key);
   }
 #endif

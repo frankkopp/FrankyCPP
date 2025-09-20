@@ -27,13 +27,14 @@ namespace EvalConfig {
   inline bool USE_MATERIAL   = true;
   inline bool USE_POSITIONAL = true;
 
-  inline int TEMPO = 34;
+  inline bool USE_TEMPO = true;
+  inline int TEMPO      = 34;
 
-  inline bool USE_LAZY_EVAL   = true;
+  inline bool USE_LAZY_EVAL  = true;
   inline auto LAZY_THRESHOLD = Value{700};
 
-  inline bool USE_PAWN_EVAL       = true;
-  inline bool USE_PAWN_TT         = true;
+  inline bool USE_PAWN_EVAL  = true;
+  inline bool USE_PAWN_TT    = true;
   inline int PAWN_TT_SIZE_MB = 64;
 
   inline int ISOLATED_PAWN_MID_WEIGHT  = -10;
@@ -49,11 +50,13 @@ namespace EvalConfig {
   inline int SUPPORTED_PAWN_MID_WEIGHT = 10;
   inline int SUPPORTED_PAWN_END_WEIGHT = 15;
 
-  inline bool USE_PIECE_EVAL = false;
+  inline bool USE_PIECE_EVAL        = true;
   inline auto BISHOP_PAIR_MID_BONUS = Value{20};
   inline auto BISHOP_PAIR_END_BONUS = Value{20};
 
-  inline bool USE_KING_EVAL = false;
+  inline bool USE_KING_EVAL = true;
+
+  inline bool USE_GAMEPHASE_VALUE = true;
 }// namespace EvalConfig
 
-#endif//FRANKYCPP_EVALCONFIG_H
+#endif// FRANKYCPP_EVALCONFIG_H

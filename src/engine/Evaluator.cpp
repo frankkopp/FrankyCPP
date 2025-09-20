@@ -33,7 +33,6 @@ Evaluator::Evaluator() {
 }
 
 Value Evaluator::evaluate(Position& p) {
-
   // if not enough material on the board to achieve a mate it is a draw
   if (p.checkInsufficientMaterial()) {
     return VALUE_DRAW;
@@ -98,10 +97,12 @@ Value Evaluator::evaluate(Position& p) {
   // TEMPO Bonus for the side to move (helps with evaluation alternation -
   // less difference between side which makes aspiration search faster
   // (not empirically tested)
-  score.midgame += static_cast<Value>(EvalConfig::TEMPO);
+  if (EvalConfig::USE_TEMPO) {
+    score.midgame += static_cast<Value>(EvalConfig::TEMPO);
+  }
 
   // calculate value depending on game phases
-  Value value = valueFromScore(score, gamePhaseFactor);
+  Value value = valueFromScore(score, EvalConfig::USE_GAMEPHASE_VALUE ? gamePhaseFactor : 0.0);
 
   // normalize for the next player
   value = finalEval(p, value);
@@ -186,18 +187,18 @@ void Evaluator::pawnEval(const Position& p, Score& s) {
     //    fprintln("{} supported: {} {}", !color ? "WHITE" : "BLACK", popcount(supported), strGrouped(supported));
 
     // @formatter:off
-    int midvalue =  popcount(isolated)  * EvalConfig::ISOLATED_PAWN_MID_WEIGHT ;
-    int endvalue =  popcount(isolated)  * EvalConfig::ISOLATED_PAWN_END_WEIGHT ;
-    midvalue    +=  popcount(doubled)   * EvalConfig::DOUBLED_PAWN_MID_WEIGHT  ;
-    endvalue    +=  popcount(doubled)   * EvalConfig::DOUBLED_PAWN_END_WEIGHT  ;
-    midvalue    +=  popcount(passed)    * EvalConfig::PASSED_PAWN_MID_WEIGHT   ;
-    endvalue    +=  popcount(passed)    * EvalConfig::PASSED_PAWN_END_WEIGHT   ;
-    midvalue    +=  popcount(blocked)   * EvalConfig::BLOCKED_PAWN_MID_WEIGHT  ;
-    endvalue    +=  popcount(blocked)   * EvalConfig::BLOCKED_PAWN_END_WEIGHT  ;
-    midvalue    +=  popcount(phalanx)   * EvalConfig::PHALANX_PAWN_MID_WEIGHT  ;
-    endvalue    +=  popcount(phalanx)   * EvalConfig::PHALANX_PAWN_END_WEIGHT  ;
-    midvalue    +=  popcount(supported) * EvalConfig::SUPPORTED_PAWN_MID_WEIGHT;
-    endvalue    +=  popcount(supported) * EvalConfig::SUPPORTED_PAWN_END_WEIGHT;
+    int midvalue = popcount(isolated) * EvalConfig::ISOLATED_PAWN_MID_WEIGHT;
+    int endvalue = popcount(isolated) * EvalConfig::ISOLATED_PAWN_END_WEIGHT;
+    midvalue += popcount(doubled) * EvalConfig::DOUBLED_PAWN_MID_WEIGHT;
+    endvalue += popcount(doubled) * EvalConfig::DOUBLED_PAWN_END_WEIGHT;
+    midvalue += popcount(passed) * EvalConfig::PASSED_PAWN_MID_WEIGHT;
+    endvalue += popcount(passed) * EvalConfig::PASSED_PAWN_END_WEIGHT;
+    midvalue += popcount(blocked) * EvalConfig::BLOCKED_PAWN_MID_WEIGHT;
+    endvalue += popcount(blocked) * EvalConfig::BLOCKED_PAWN_END_WEIGHT;
+    midvalue += popcount(phalanx) * EvalConfig::PHALANX_PAWN_MID_WEIGHT;
+    endvalue += popcount(phalanx) * EvalConfig::PHALANX_PAWN_END_WEIGHT;
+    midvalue += popcount(supported) * EvalConfig::SUPPORTED_PAWN_MID_WEIGHT;
+    endvalue += popcount(supported) * EvalConfig::SUPPORTED_PAWN_END_WEIGHT;
     // @formatter:on
 
     if (color == WHITE) {
@@ -232,7 +233,7 @@ void Evaluator::pieceEval(const Position& p, Score& s, const Color us, const Pie
   tmpScore.midgame = VALUE_ZERO;
   tmpScore.endgame = VALUE_ZERO;
 
-  // piece type specific evaluation which are done once
+  // piece-type-specific evaluation that is done once
   // for all pieces of one type
   switch (pieceType) {
     case KNIGHT:
