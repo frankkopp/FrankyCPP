@@ -36,9 +36,9 @@ jobs:
             cxx: "g++",
             generators: "Ninja",
 
-            executable: "FrankyCPP_v0.4",
-            test_exec: "FrankyCPP_v0.4_Test",
-            bench_exec: "FrankyCPP_v0.4_Bench",
+            executable: "FrankyCPP_v0.5",
+            test_exec: "FrankyCPP_v0.5_Test",
+            bench_exec: "FrankyCPP_v0.5_Bench",
             check: true,
             test: true,
             benchmark: true,
@@ -46,7 +46,7 @@ jobs:
 
             listCmd: "ls -la",
             archiver: "zip",
-            artifact: "FrankyCPP_v0.4_linux.zip"
+            artifact: "FrankyCPP_v0.5_linux.zip"
           }
           # WINDOWS
           - {
@@ -60,16 +60,16 @@ jobs:
             generators: "Ninja",
             #environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat",
 
-            executable: "FrankyCPP_v0.4.exe",
-            test_exec: "FrankyCPP_v0.4_Test.exe",
-            bench_exec: "FrankyCPP_v0.4_Bench.exe",
+            executable: "FrankyCPP_v0.5.exe",
+            test_exec: "FrankyCPP_v0.5_Test.exe",
+            bench_exec: "FrankyCPP_v0.5_Bench.exe",
             check: true,
             test: true,
             benchmark: true,
             perft: true,
 
             listCmd: "ls",
-            artifact: "FrankyCPP_v0.4_win.zip",
+            artifact: "FrankyCPP_v0.5_win.zip",
             archiver: "zip"
           }
           # MACOS
@@ -82,9 +82,9 @@ jobs:
             cxx: "clang++",
 
             generators: "Unix Makefiles",
-            executable: "FrankyCPP_v0.4",
-            test_exec: "FrankyCPP_v0.4_Test",
-            bench_exec: "FrankyCPP_v0.4_Bench",
+            executable: "FrankyCPP_v0.5",
+            test_exec: "FrankyCPP_v0.5_Test",
+            bench_exec: "FrankyCPP_v0.5_Bench",
             check: true,
             test: false,      # fails on github MacOS somehow but works on local Mac
             benchmark: false, # fails on github MacOS somehow but works on local Mac

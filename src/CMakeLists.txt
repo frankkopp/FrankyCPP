@@ -49,12 +49,15 @@ target_precompile_headers(
         chesscore/History.h
 )
 
+# Explicitly link Boost components via targets rather than ${Boost_LIBRARIES}
+# to avoid accidental dynamic linkage
 target_link_libraries(
         FrankyCPPlib
         PUBLIC
         fmt
         spdlog
-        ${Boost_LIBRARIES}
+        Boost::program_options
+        Boost::serialization
 )
 
 # set the name of the executable

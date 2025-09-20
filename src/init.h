@@ -20,9 +20,7 @@
 #ifndef FRANKYCPP_INIT_H
 #define FRANKYCPP_INIT_H
 
-#include "chesscore/Values.h"
 #include "types/init.h"
-#include <common/Logging.h>
 
 namespace init {
   inline void init() {

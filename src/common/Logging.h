@@ -24,6 +24,7 @@
 
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
+#include "version.h"
 #include <spdlog/spdlog.h>
 
 #ifdef NDEBUG
@@ -90,9 +91,9 @@ class Logger {
 
 public:
   // disallow copies
-  Logger(Logger const&) = delete;            // copy
-  Logger& operator=(const Logger&) = delete; // copy assignment
-  Logger(Logger const&&)           = delete; // move
+  Logger(Logger const&)             = delete;// copy
+  Logger& operator=(const Logger&)  = delete;// copy assignment
+  Logger(Logger const&&)            = delete;// move
   Logger& operator=(const Logger&&) = delete;// move assignment
 
   /** get the singleton instance of Logger */
@@ -103,14 +104,17 @@ public:
 
   const std::string defaultPattern = "[%H:%M:%S:%f] [t:%-10!t] [%-17n] [%-8l]: %v";
 
-  const std::shared_ptr<spdlog::sinks::basic_file_sink_mt> sharedFileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("FrankyCPP.log");
+  const std::string logfile = fmt::format("FrankyCPP_v{}.{}.log", FrankyCPP_VERSION_MAJOR, FrankyCPP_VERSION_MINOR);
+  const std::string logfile_uci = fmt::format("FrankyCPP_v{}.{}_uci.log", FrankyCPP_VERSION_MAJOR, FrankyCPP_VERSION_MINOR);
+
+  const std::shared_ptr<spdlog::sinks::basic_file_sink_mt> sharedFileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logfile);
   const std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> uciOutSink   = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
 
   // @formatter:off
   //  const std::shared_ptr<spdlog::logger> MAIN_LOG    = spdlog::stdout_color_mt("Main_Logger");
   const std::shared_ptr<spdlog::logger> TEST_LOG    = spdlog::stdout_color_mt("Test_Logger");
   const std::shared_ptr<spdlog::logger> UCIHAND_LOG = spdlog::stdout_color_mt("UCIHandler_Logger");
-  const std::shared_ptr<spdlog::logger> UCI_LOG     = spdlog::basic_logger_mt("UCI_Logger", "FrankyCPP_uci.log");
+  const std::shared_ptr<spdlog::logger> UCI_LOG     = spdlog::basic_logger_mt("UCI_Logger", logfile_uci);
   const std::shared_ptr<spdlog::logger> BOOK_LOG    = spdlog::stdout_color_mt("Book_Logger");
   const std::shared_ptr<spdlog::logger> TT_LOG      = spdlog::stdout_color_mt("TT_Logger");
   const std::shared_ptr<spdlog::logger> SEARCH_LOG  = spdlog::stdout_color_mt("Search_Logger");
@@ -119,4 +123,4 @@ public:
   // @formatter:on
 };
 
-#endif//FRANKYCPP_LOGGING_H
+#endif// FRANKYCPP_LOGGING_H

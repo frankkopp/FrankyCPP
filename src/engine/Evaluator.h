@@ -25,7 +25,7 @@
 #include "types/types.h"
 #include "EvalConfig.h"
 
-// Evaluator calculates a value for a chess positions by
+// Evaluator calculates a value for a chess position by
 // using various evaluation heuristics like material,
 // positional values, pawn structure, etc.
 class Evaluator {

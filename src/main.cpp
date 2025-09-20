@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
       ("endDepth", po::value<int>(&perftEnd)->default_value(5), "end depth for perft test")
       ("onDemand", po::value<bool>(&perftOnDemand)->default_value(false), "use on demand move generation for perft test");
 
-    // Hidden options, will be allowed both on command line and in config file,
+    // Hidden options will be allowed both on command line and in config file,
     // but will not be shown to the user when printing help.
     po::options_description hidden("Hidden options");
     hidden.add_options()

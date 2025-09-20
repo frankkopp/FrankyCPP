@@ -7,8 +7,11 @@ message("====================================================================")
 cmake_minimum_required(VERSION 3.16)
 
 # Project name and version
-project(FrankyCPP VERSION 0.4)
+project(FrankyCPP VERSION 0.5)
 message("FrankyCPP v" ${PROJECT_VERSION_MAJOR} "." ${PROJECT_VERSION_MINOR})
+
+# Build all third-party libs statically unless a subproject overrides it
+set(BUILD_SHARED_LIBS OFF)
 
 # updates template file and replaces placeholder variables
 configure_file(src/version.h.in version.h)
@@ -20,19 +23,53 @@ set(CMAKE_CXX_STANDARD 20)
 # Unit testing enabled
 enable_testing()
 
+# Disable Boost auto-linking; we link explicitly via CMake
+add_compile_definitions(BOOST_ALL_NO_LIB)
+
 # Platform
 message("Recognized platform is " ${CMAKE_SYSTEM_NAME} " " ${CMAKE_SYSTEM_VERSION})
 
 # Compiler Settings
 message("Compiler is " ${CMAKE_CXX_COMPILER_ID} " " ${CMAKE_CXX_COMPILER_VERSION} " " ${CMAKE_CXX_COMPILER})
 
+# On MSVC choose the static vcpkg triplet by default so third-party libs (e.g., Boost)
+# are linked statically while keeping the MSVC CRT dynamic (/MD).
+# Users can still override by passing -DVCPKG_TARGET_TRIPLET.
+if (MSVC)
+    if (NOT DEFINED VCPKG_TARGET_TRIPLET)
+        set(VCPKG_TARGET_TRIPLET "x64-windows-static-md" CACHE STRING "vcpkg triplet" FORCE)
+        message(STATUS "VCPKG_TARGET_TRIPLET not set by user; defaulting to ${VCPKG_TARGET_TRIPLET}")
+    else()
+        message(STATUS "VCPKG_TARGET_TRIPLET is ${VCPKG_TARGET_TRIPLET}")
+    endif()
+endif()
+
+# Derive the vcpkg installed dir in this build tree when using manifest mode.
+# CLion/manifest mode typically places it under <build>/vcpkg_installed.
+if (NOT DEFINED VCPKG_INSTALLED_DIR)
+    set(VCPKG_INSTALLED_DIR "${CMAKE_CURRENT_BINARY_DIR}/vcpkg_installed" CACHE PATH "vcpkg installed dir")
+endif()
+message(STATUS "VCPKG_INSTALLED_DIR is ${VCPKG_INSTALLED_DIR}")
+
+# Guard: avoid building with the dynamic vcpkg triplet by accident
+if (WIN32)
+    if (DEFINED VCPKG_TARGET_TRIPLET)
+        string(FIND "${VCPKG_TARGET_TRIPLET}" "-windows" _dyn_pos)
+        if (_dyn_pos GREATER -1 AND NOT VCPKG_TARGET_TRIPLET MATCHES "-static")
+            message(FATAL_ERROR "VCPKG_TARGET_TRIPLET='${VCPKG_TARGET_TRIPLET}' is a dynamic triplet. Use 'x64-windows-static-md' (or -static) to produce a DLL-free executable.")
+        endif()
+        message(STATUS "Using VCPKG_TARGET_TRIPLET=${VCPKG_TARGET_TRIPLET}")
+    endif()
+endif()
+
 # Microsoft Visual Compiler
 if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 # this needs to be added to CLION cmake options
 # -G Ninja
+# /LTCG  throws errors
 message("Compiler Settings: MSVC")
 set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /favor:INTEL64 /Gr /W4 /w14640 /GR /EHsc /arch:AVX2 /MP /Oi /Ot /GL")
-set(CMAKE_CXX_FLAGS_RELEASE "/Qpar /O2 /Ob3 /Oy /Oi /Ot /GT /Gw /Gy /GL /LTCG /MD /DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "/Qpar /O2 /Ob3 /Oy /Oi /Ot /GT /Gw /Gy /GL /MD /DNDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "/Od /Ob0 /MDd /Zi /RTC1 /permissive-")
 
 # std::execution lib for parallel std operations. Not available on all platforms
@@ -173,12 +210,16 @@ message("Finding Boost...")
 set(Boost_NO_WARN_NEW_VERSIONS 1)
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
+# Keep the MSVC runtime dynamic (/MD). If you want /MT, set this to ON and
+# change your MSVC flags accordingly.
 set(Boost_USE_STATIC_RUNTIME OFF)
 
-# Explicitly set Boost root to where vcpkg installed it
-set(BOOST_ROOT "${CMAKE_CURRENT_BINARY_DIR}/vcpkg_installed/x64-windows")
-set(Boost_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/vcpkg_installed/x64-windows/include")
-set(BOOST_LIBRARYDIR "${CMAKE_CURRENT_BINARY_DIR}/vcpkg_installed/x64-windows/lib")
+# Work out include/lib roots from the active vcpkg triplet in this build tree
+set(_VCPKG_TRIPLET_DIR "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}")
+message(STATUS "Using Boost from ${_VCPKG_TRIPLET_DIR}")
+set(BOOST_ROOT "${_VCPKG_TRIPLET_DIR}")
+set(Boost_INCLUDE_DIR "${_VCPKG_TRIPLET_DIR}/include")
+set(BOOST_LIBRARYDIR "${_VCPKG_TRIPLET_DIR}/lib")
 
 # This is important - use MODULE instead of CONFIG to use CMake's built-in FindBoost
 find_package(Boost 1.72.0 REQUIRED COMPONENTS program_options serialization)
@@ -212,7 +253,7 @@ FetchContent_Declare(
         GIT_REPOSITORY https://github.com/gabime/spdlog.git
         GIT_TAG v1.10.0
 )
-option(SPDLOG_FMT_EXTERNAL ON)
+option(SPDLOG_FMT_EXTERNAL "Use external fmt" ON)
 set(SPDLOG_FMT_EXTERNAL ON)
 FetchContent_MakeAvailable(spdlog)
 include_directories(
@@ -228,8 +269,8 @@ FetchContent_Declare(
 )
 FetchContent_Declare(googletest)
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-option(INSTALL_GMOCK OFF)
-option(INSTALL_GTEST OFF)
+option(INSTALL_GMOCK "Install GMock" OFF)
+option(INSTALL_GTEST "Install GTest" OFF)
 FetchContent_MakeAvailable(googletest)
 include_directories(
         ${googletest_SOURCE_DIR}/googletest/include
@@ -240,10 +281,10 @@ FetchContent_Declare(
         googlebenchmark
         GIT_REPOSITORY https://github.com/google/benchmark.git
         GIT_TAG v1.7.1) # need master for benchmark::benchmark
-option(BENCHMARK_ENABLE_LTO ON)
-option(BENCHMARK_ENABLE_GTEST_TESTS OFF)
-option(BENCHMARK_ENABLE_TESTING OFF)
-option(BENCHMARK_ENABLE_INSTALL OFF)
+option(BENCHMARK_ENABLE_LTO "Enable LTO" ON)
+option(BENCHMARK_ENABLE_GTEST_TESTS "Build benchmark unit tests" OFF)
+option(BENCHMARK_ENABLE_TESTING "Enable benchmark tests" OFF)
+option(BENCHMARK_ENABLE_INSTALL "Install benchmark" OFF)
 FetchContent_MakeAvailable(googlebenchmark)
 include_directories(
         ${googlebenchmark_SOURCE_DIR}/include
