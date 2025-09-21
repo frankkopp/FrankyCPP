@@ -205,7 +205,18 @@ if (FRANKYCPP_BUILD_BENCHMARKS)
     option(BENCHMARK_ENABLE_GTEST_TESTS "Build benchmark unit tests" OFF)
     option(BENCHMARK_ENABLE_TESTING "Enable benchmark tests" OFF)
     option(BENCHMARK_ENABLE_INSTALL "Install benchmark" OFF)
+    # Prevent warnings from being treated as errors in benchmark itself (default ON upstream)
+    set(BENCHMARK_ENABLE_WERROR OFF CACHE BOOL "Disable Werror for googlebenchmark" FORCE)
     FetchContent_MakeAvailable(googlebenchmark)
+    # Defensive: ensure MSVC does not treat warnings as errors for benchmark targets
+    if (MSVC)
+        if (TARGET benchmark)
+            target_compile_options(benchmark PRIVATE /WX- /wd4714)
+        endif()
+        if (TARGET benchmark_main)
+            target_compile_options(benchmark_main PRIVATE /WX- /wd4714)
+        endif()
+    endif()
 endif()
 
 # project sub directories - need to have their own CMakeList.txt
