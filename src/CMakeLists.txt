@@ -48,15 +48,21 @@ if (ENABLE_BMI2_PEXT)
     endif()
 endif()
 
+# spdlog as header-only with std::format; do not link any spdlog/fmt libs
+# Pull only the include dirs from the imported target
+# (requires find_package(spdlog CONFIG REQUIRED) in the root CMakeLists)
+target_compile_definitions(FrankyCPPlib PUBLIC SPDLOG_HEADER_ONLY=1 SPDLOG_USE_STD_FORMAT=1)
+
 # Target-scoped include directories
 # - Expose project src to dependents and tests
 # - Expose binary dir for generated version.h
+# - Import spdlog includes from its header-only target without linking it
 target_include_directories(
         FrankyCPPlib
         PUBLIC
         ${PROJECT_SOURCE_DIR}/src
         ${PROJECT_BINARY_DIR}
-)
+        $<TARGET_PROPERTY:spdlog::spdlog_header_only,INTERFACE_INCLUDE_DIRECTORIES>)
 
 # pre compile main header files (optional)
 if (FRANKYCPP_USE_PCH)
@@ -83,12 +89,11 @@ endif()
 
 # Explicitly link Boost components via targets rather than ${Boost_LIBRARIES}
 # to avoid accidental dynamic linkage
-# Use non-namespaced targets from FetchContent builds (pinned versions)
+# Use vcpkg-configured targets
 
 target_link_libraries(
         FrankyCPPlib
         PUBLIC
-        spdlog
         Boost::serialization
         Boost::program_options)
 

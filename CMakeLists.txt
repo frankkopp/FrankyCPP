@@ -80,7 +80,8 @@ if (WIN32)
     endif()
 endif()
 
-# Microsoft Visual Compiler only (non-MSVC toolchains are commented out below for later work)
+# Microsoft Visual Compiler only (non-MSVC toolchains are commented out for now and will be
+# revisited later. Keeping them below for reference.)
 if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 
     # this needs to be added to CLION cmake options: -G Ninja
@@ -161,23 +162,8 @@ set(FETCHCONTENT_QUIET OFF)
 set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 include(FetchContent)
 
-# SPDLOG pinned (use std::format instead of external fmt)
-message(STATUS "Downloading/Update SPDLOG (pinned, std::format)")
-FetchContent_Declare(
-        spdlog
-        GIT_REPOSITORY https://github.com/gabime/spdlog.git
-        GIT_TAG v1.15.3
-)
-# Ensure spdlog uses std::format (C++20)
-option(SPDLOG_USE_STD_FORMAT "Use std::format instead of fmt" ON)
-set(SPDLOG_USE_STD_FORMAT ON CACHE BOOL "Use std::format" FORCE)
-# Make sure external fmt is not requested
-set(SPDLOG_FMT_EXTERNAL OFF CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(spdlog)
-# Enforce C++20 on spdlog target as well (in case global standard is ignored)
-if (TARGET spdlog)
-    target_compile_features(spdlog PUBLIC cxx_std_20)
-endif()
+# Use spdlog from vcpkg instead of FetchContent
+find_package(spdlog CONFIG REQUIRED)
 
 # GOOGLE TEST pinned (only if building tests)
 if (FRANKYCPP_BUILD_TESTS)
