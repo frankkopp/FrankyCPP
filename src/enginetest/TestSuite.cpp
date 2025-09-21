@@ -22,10 +22,11 @@
 #include "common/Logging.h"
 #include "common/stringutil.h"
 #include "engine/SearchConfig.h"
+#include "engine/UciOptions.h"
 
-#include <chrono>
 #include "types/timeunits.h"
 #include <boost/algorithm/string.hpp>
+#include <chrono>
 
 #include <fstream>
 #include <iostream>

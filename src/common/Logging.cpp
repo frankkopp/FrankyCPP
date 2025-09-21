@@ -26,9 +26,9 @@ namespace po = boost::program_options;
 
 inline po::variables_map programOptions{};
 
-void Logger::init() {
+void Logger::init() const {
 
-  const auto flushLevel = spdlog::level::trace;
+  constexpr auto flushLevel = spdlog::level::trace;
 
   auto logLvL = !programOptions.empty() ? programOptions["log_lvl"].as<std::string>() : "warn";
   auto searchLogLvL = !programOptions.empty() ? programOptions["search_log_lvl"].as<std::string>() : "warn";
@@ -145,5 +145,3 @@ void Logger::init() {
 
   std::cout << "Logger initialized (" << logLvL << " / " << searchLogLvL << ")" << std::endl;
 }
-
-

@@ -26,6 +26,7 @@
 #include "engine/Search.h"
 #include "engine/SearchConfig.h"
 #include "engine/UciHandler.h"
+#include "engine/UciOptions.h"
 
 #include <gtest/gtest.h>
 using testing::Eq;

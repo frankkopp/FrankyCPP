@@ -21,6 +21,7 @@
 #include "Search.h"
 #include "SearchConfig.h"
 #include "SearchLimits.h"
+#include "UciOptions.h"
 #include "chesscore/MoveGenerator.h"
 #include "chesscore/Perft.h"
 #include "chesscore/Position.h"
@@ -90,6 +91,7 @@ bool UciHandler::handleCommand(const std::string& cmd) {
   else if (token == "perft") { perftCommand(inStream); }
   else if (token == "noop") { /* noop */
   }
+  else if (token == "help") { helpCommand(); }
   else
     uciError(std::format("Unknown UCI command: {}", token));
   // @formatter:on
@@ -422,6 +424,77 @@ void UciHandler::registerCommand() const {
 
 void UciHandler::debugCommand() const {
   uciError("UCI Protocol Command: debug not implemented!");
+}
+
+void UciHandler::helpCommand() const {
+
+  // Provide a compact but comprehensive help for manual UCI use (logging suppressed)
+  auto out = [&](const std::string& s) {
+    *pOutputStream << std::format("{}", s) << std::endl;
+  };
+
+  out("FrankyCPP UCI help");
+  out("Commands are case-sensitive and follow the UCI protocol. Each command is a separate line.");
+
+  out("uci");
+  out("  Identify engine and list available options, then prints 'uciok'.");
+
+  out("isready");
+  out("  Probes readiness; engine answers 'readyok' when ready.");
+
+  out("setoption name <Name> [value <Value>]");
+  out("  Sets an engine option. Use 'uci' to list options and their types/defaults.");
+
+  out("ucinewgame");
+  out("  Starts a new game. Stops any search and clears transposition table.");
+
+  out("position [startpos | fen <FEN>] [moves <m1> <m2> ...]");
+  out("  Sets the current position. 'startpos' for initial setup or 'fen' for custom.");
+  out("  Optional 'moves' applies a space-separated list of UCI moves to the position.");
+
+  out("go [subcommands...]");
+  out("  Starts a search from the current position. Subcommands:");
+  out("    searchmoves <m1> <m2> ...   Limit root search to given UCI moves.");
+  out("    ponder                        Search in ponder mode (requires option Ponder).");
+  out(std::format("      Ponder option is currently {}.", SearchConfig::USE_PONDER ? "enabled" : "disabled"));
+  out("    infinite                      Search until 'stop'.");
+  out("    movetime <ms>                 Fixed time for the whole move in milliseconds.");
+  out("    wtime <ms> btime <ms>         Remaining time for each side in milliseconds.");
+  out("    winc <ms> binc <ms>           Increment per move in milliseconds (optional).");
+  out("    movestogo <n>                 Moves to the next time control (optional).");
+  out(std::format("    depth <n>                      Search depth 1..{} (plies).", MAX_DEPTH));
+  out("    nodes <n>                      Search until node count reached.");
+  out(std::format("    mate <n>                       Search for mate in 1..{} (plies).", MAX_DEPTH));
+  out("  Notes:");
+  out("    - Time control becomes active if any of movetime/wtime/btime is given.");
+  out("    - If using wtime/btime without movetime, the side to move must have non-zero time.");
+  out("    - 'go ponder' will be rejected if the Ponder option is disabled.");
+
+  out("stop");
+  out("  Stops an ongoing search or perft.");
+
+  out("ponderhit");
+  out("  Informs engine that opponent played the pondered move; converts ponder into normal search.");
+
+  out("perft <startDepth> [endDepth]");
+  out(std::format("  Runs a perft from the current position for depths {}..{}. If endDepth omitted, only startDepth is used.", 1, MAX_DEPTH));
+
+  out("register");
+  out("  Not implemented.");
+
+  out("debug");
+  out("  Not implemented.");
+
+  out("help");
+  out("  Prints this help.");
+
+  out("quit");
+  out("  Exit the engine.");
+
+  out("Examples (enter each on its own line):");
+  out("  position startpos");
+  out("  go movetime 1000");
+  out("  stop");
 }
 
 void UciHandler::send(const std::string& toSend) const {

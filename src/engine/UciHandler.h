@@ -20,7 +20,6 @@
 #ifndef FRANKYCPP_UCIHANDLER_H
 #define FRANKYCPP_UCIHANDLER_H
 
-#include <cstddef>
 #include <cstdint>
 #include <iosfwd>
 #include <memory>
@@ -28,7 +27,6 @@
 #include "common/gtest_friends.h"
 
 #include "SearchLimits.h"
-#include "UciOptions.h"
 
 // forward declaration
 class Position;
@@ -101,6 +99,7 @@ private:
   void perftCommand(std::istringstream& inStream) const;
   void registerCommand() const;
   void debugCommand() const;
+  void helpCommand() const;
 
   void uciError(const std::string& msg) const;
   FRIEND_TEST(UCITest, goError);

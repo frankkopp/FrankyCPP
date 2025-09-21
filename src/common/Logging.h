@@ -43,7 +43,7 @@
 #define DEBUG__LVL 5
 #define TRACE__LVL 6
 
-#define LOG__LEVEL DEBUG__LVL
+#define LOG__LEVEL INFO__LVL
 
 #if LOG__LEVEL > ZERO__LVL
 #define LOG__CRITICAL(logger, ...) (logger)->log(spdlog::level::critical, std::format(deLocale, __VA_ARGS__))
@@ -85,7 +85,7 @@
 class Logger {
   Logger() { init(); };
   ~Logger() = default;
-  void init();
+  void init() const;
 
 public:
   // disallow copies
