@@ -47,8 +47,7 @@ target_include_directories(
         ${testExeName}
         PRIVATE
         ${PROJECT_BINARY_DIR}
-        ${PROJECT_SOURCE_DIR}/test
-)
+        ${PROJECT_SOURCE_DIR}/test)
 
 # STRICT_WARNINGS for CI: treat warnings as errors when enabled
 if (MSVC AND STRICT_WARNINGS)

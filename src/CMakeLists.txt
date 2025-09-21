@@ -87,8 +87,7 @@ target_link_libraries(
         fmt
         spdlog
         Boost::serialization
-        Boost::program_options
-)
+        Boost::program_options)
 
 # set the name of the executable
 set(exeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR})

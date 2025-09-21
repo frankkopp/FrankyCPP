@@ -176,7 +176,7 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
   moves.clear();
   moves = *mg.generatePseudoLegalMoves(position, GenAll, false);
   EXPECT_EQ(40, moves.size());
-  EXPECT_EQ("d7f6 f3d2 b5c6 f3e5 d7e5 d7b6 e2d2 e1d2 c3b4 e1g1 e1c1 d3d4 f3d4 d7c5 a1c1 a1d1 h1f1 b5c4 a2a3 h2h3 f3g5 e2e3 a2a4 g2g4 h2h4 c3c4 e1f1 b2b3 g2g3 e2d1 b5a4 b5a6 a1b1 h1g1 e2f1 e1d1 f3g1 f3h4 d7f8 d7b8", str(moves));
+  EXPECT_EQ("d7f6 f3d2 b5c6 f3e5 d7e5 d7b6 e2d2 e1d2 c3b4 e1g1 e1c1 d3d4 f3d4 d7c5 a1c1 a1d1 h1f1 b5c4 a2a3 h2h3 f3g5 e2e3 a2a4 g2g4 h2h4 c3c4 e1f1 b2b3 g2g3 e2d1 b5a4 b5a6 a1b1 h1g1 e2f1 e1d1 f3h4 d7f8 f3g1 d7b8", str(moves));
   //  for (Move m : moves) {
   //    fprintln("{}", strVerbose(m));
   //  }
@@ -188,7 +188,7 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
   moves.clear();
   moves = *mg.generatePseudoLegalMoves(position, GenAll, false);
   EXPECT_EQ(86, moves.size());
-  EXPECT_EQ("c2b1Q a2b1Q a2a1Q c2c1Q c2b1N a2b1N b2a3 a8a3 g6e5 d7e5 b2e5 a2a1N c2c1N e6e5 c4e4 c6e4 f4g3 f4e3 e8g8 e8c8 d7c5 a8c8 a8d8 h8f8 d7f6 b2d4 f4f3 h7h6 g6e7 d7b6 b2c3 c4c5 c4d5 c6c5 c6d5 c6d6 e6d5 e6f5 e6d6 e6f6 e6e7 e6f7 c4d4 b7b5 h7h5 a8a4 a8a5 a8a6 a8a7 c4e2 c4b3 c4c3 c4d3 c4b4 c4b5 c6b5 c6b6 e6g4 e8f8 b7b6 c4a4 c6a4 b2c1 a8b8 h8g8 c4f1 c4a6 c6a6 e6h3 e6g8 g6f8 d7f8 b2a1 e8e7 e8f7 e8d8 d7b8 g6h4 c2b1R a2b1R c2b1B a2b1B a2a1R c2c1R a2a1B c2c1B", str(moves));
+  EXPECT_EQ("c2b1Q a2b1Q a2a1Q c2c1Q c2b1N a2b1N b2a3 a8a3 g6e5 d7e5 b2e5 a2a1N c2c1N e6e5 c4e4 c6e4 f4g3 f4e3 e8g8 e8c8 d7c5 a8c8 a8d8 h8f8 d7f6 g6e7 b2d4 f4f3 h7h6 d7b6 b2c3 c4c5 c4d5 c6c5 c6d5 c6d6 e6d5 e6f5 e6d6 e6f6 e6e7 e6f7 c4d4 b7b5 h7h5 a8a4 a8a5 a8a6 a8a7 c4e2 c4b3 c4c3 c4d3 c4b4 c4b5 c6b5 c6b6 e6g4 e8f8 b7b6 c4a4 c6a4 b2c1 a8b8 h8g8 c4f1 c4a6 c6a6 e6h3 e6g8 b2a1 e8e7 e8f7 e8d8 g6h4 g6f8 d7f8 d7b8 c2b1R a2b1R c2b1B a2b1B a2a1R c2c1R a2a1B c2c1B", str(moves));
   //  for (Move m : moves) {
   //    fprintln("{}", strVerbose(m));
   //  }
@@ -522,7 +522,7 @@ TEST_F(MoveGenTest, onDemandKiller) {
     //    fprintln(strVerbose(move));
   }
   EXPECT_EQ(86, moves.size());
-  EXPECT_EQ("a2b1Q c2b1Q a2a1Q c2c1Q c2b1N a2b1N a2a1N c2c1N f4g3 f4e3 c2b1R a2b1R c2b1B a2b1B b2a3 a8a3 g6e5 d7e5 b2e5 e6e5 c4e4 c6e4 b7b6 f4f3 h7h6 b7b5 h7h5 a2a1R c2c1R a2a1B c2c1B e8g8 e8c8 g6h4 d7c5 a8c8 a8d8 h8f8 d7f6 b2d4 b2c3 c4c5 c4d5 c6c5 c6d5 c6d6 e6d5 e6f5 e6d6 e6f6 g6e7 d7b6 e6e7 e6f7 c4d4 a8a4 a8a5 a8a6 a8a7 c4e2 c4b3 c4c3 c4d3 c4b4 c4b5 c6b5 c6b6 e6g4 c4a4 c6a4 a8b8 h8g8 b2c1 c4f1 c4a6 c6a6 e6h3 e6g8 g6f8 d7f8 b2a1 d7b8 e8f8 e8e7 e8f7 e8d8", str(moves));
+  EXPECT_EQ("a2b1Q c2b1Q a2a1Q c2c1Q c2b1N a2b1N a2a1N c2c1N f4g3 f4e3 c2b1R a2b1R c2b1B a2b1B b2a3 a8a3 g6e5 d7e5 b2e5 e6e5 c4e4 c6e4 b7b6 f4f3 h7h6 b7b5 h7h5 a2a1R c2c1R a2a1B c2c1B e8g8 e8c8 g6h4 d7c5 a8c8 a8d8 h8f8 d7f6 b2d4 g6e7 b2c3 c4c5 c4d5 c6c5 c6d5 c6d6 e6d5 e6f5 e6d6 e6f6 d7b6 e6e7 e6f7 c4d4 a8a4 a8a5 a8a6 a8a7 c4e2 c4b3 c4c3 c4d3 c4b4 c4b5 c6b5 c6b6 e6g4 c4a4 c6a4 a8b8 h8g8 b2c1 c4f1 c4a6 c6a6 e6h3 e6g8 b2a1 g6f8 d7f8 d7b8 e8f8 e8e7 e8f7 e8d8", str(moves));
   moves.clear();
 
   mg.reset();
@@ -542,7 +542,7 @@ TEST_F(MoveGenTest, onDemandKiller) {
     //    fprintln(strVerbose(move));
   }
   EXPECT_EQ(48, moves.size());
-  EXPECT_EQ("e2a6 g2h3 d5e6 e5g6 e5d7 e5f7 f3f6 f3h3 b2b3 a2a3 d5d6 a2a4 g2g4 g2g3 e1g1 e1c1 d2g5 e5d3 e5c4 a1c1 a1d1 h1f1 e5c6 d2e3 d2f4 e2d3 e2c4 c3b5 e2b5 f3d3 f3e3 f3f4 f3f5 e5g4 f3g3 f3g4 f3h5 d2h6 e2d1 a1b1 h1g1 c3b1 c3d1 c3a4 d2c1 e2f1 e1f1 e1d1", str(moves));
+  EXPECT_EQ("e2a6 g2h3 d5e6 e5d7 e5f7 e5g6 f3f6 f3h3 b2b3 a2a3 d5d6 a2a4 g2g4 g2g3 e1g1 e1c1 d2g5 e5d3 e5c4 a1c1 a1d1 h1f1 e5c6 d2e3 d2f4 e2d3 e2c4 c3b5 e2b5 f3d3 f3e3 f3f4 f3f5 e5g4 f3g3 f3g4 f3h5 d2h6 e2d1 a1b1 h1g1 c3a4 c3d1 d2c1 e2f1 c3b1 e1f1 e1d1", str(moves));
   moves.clear();
 }
 

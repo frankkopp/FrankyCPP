@@ -327,13 +327,14 @@ TEST_F(EvaluatorTest, King_PSQT_CenterBeatsCorner_Endgameish) {
 
 TEST_F(EvaluatorTest, BishopPairBonus_TwoBishopsBeats_BishopKnight) {
   set_eval_config(false);
-  EvalConfig::USE_PIECE_EVAL      = true;
-  EvalConfig::USE_BISHOP_MOBILITY = false;// isolate pair bonus
-  EvalConfig::USE_MATERIAL        = false;// equalize material influence
-  EvalConfig::USE_POSITIONAL      = false;// no PSQT influence
-  EvalConfig::USE_PAWN_EVAL       = false;
-  EvalConfig::USE_KING_EVAL       = false;
-  EvalConfig::USE_GAMEPHASE_VALUE = true;
+  EvalConfig::USE_PIECE_EVAL        = true;
+  EvalConfig::USE_BISHOP_PAIR_BONUS = true;
+  EvalConfig::USE_BISHOP_MOBILITY   = false;// isolate pair bonus
+  EvalConfig::USE_MATERIAL          = false;// equalize material influence
+  EvalConfig::USE_POSITIONAL        = false;// no PSQT influence
+  EvalConfig::USE_PAWN_EVAL         = false;
+  EvalConfig::USE_KING_EVAL         = false;
+  EvalConfig::USE_GAMEPHASE_VALUE   = true;
 
   Evaluator e{};
 
@@ -526,8 +527,8 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
 
     // Helper: turn all features ON, disable LAZY, then set only the listed ones to false
     auto disable_features = [](const std::initializer_list<bool*> features) {
-      set_eval_config(true);           // all features ON
-      EvalConfig::USE_LAZY_EVAL = false; // ensure lazy eval is OFF for timing
+      set_eval_config(true);            // all features ON
+      EvalConfig::USE_LAZY_EVAL = false;// ensure lazy eval is OFF for timing
       for (auto* f : features) *f = false;
     };
 
