@@ -4,6 +4,9 @@ message("====================================================================")
 
 cmake_minimum_required(VERSION 3.16)
 
+# Google Benchmark via vcpkg
+find_package(benchmark CONFIG REQUIRED)
+
 # Google Benchmark executable
 set(benchExeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR}_Bench)
 add_executable(
@@ -33,10 +36,10 @@ if (MSVC AND STRICT_WARNINGS)
     target_compile_options(${benchExeName} PRIVATE /WX)
 endif()
 
+# Link against project lib and vcpkg-provided Google Benchmark target
 target_link_libraries(
         ${benchExeName}
         PUBLIC
         FrankyCPPlib
-        benchmark
-        benchmark_main
+        benchmark::benchmark
 )

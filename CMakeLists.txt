@@ -165,46 +165,6 @@ include(FetchContent)
 # Use spdlog from vcpkg instead of FetchContent
 find_package(spdlog CONFIG REQUIRED)
 
-# GOOGLE TEST removed: now provided by vcpkg (see test/CMakeLists.txt)
-# if (FRANKYCPP_BUILD_TESTS)
-#     message(STATUS "Downloading/Update Google Test (pinned)")
-#     FetchContent_Declare(
-#             googletest
-#             GIT_REPOSITORY https://github.com/google/googletest.git
-#             GIT_TAG v1.17.0
-#     )
-#     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-#     option(INSTALL_GMOCK "Install GMock" OFF)
-#     option(INSTALL_GTEST "Install GTest" OFF)
-#     FetchContent_MakeAvailable(googletest)
-# endif()
-
-# GOOGLE BENCHMARK pinned (only if building benchmarks)
-if (FRANKYCPP_BUILD_BENCHMARKS)
-    message(STATUS "Downloading/Update Google Benchmark (pinned)")
-    FetchContent_Declare(
-            googlebenchmark
-            GIT_REPOSITORY https://github.com/google/benchmark.git
-            GIT_TAG v1.9.4
-    )
-    option(BENCHMARK_ENABLE_LTO "Enable LTO" ON)
-    option(BENCHMARK_ENABLE_GTEST_TESTS "Build benchmark unit tests" OFF)
-    option(BENCHMARK_ENABLE_TESTING "Enable benchmark tests" OFF)
-    option(BENCHMARK_ENABLE_INSTALL "Install benchmark" OFF)
-    # Prevent warnings from being treated as errors in benchmark itself (default ON upstream)
-    set(BENCHMARK_ENABLE_WERROR OFF CACHE BOOL "Disable Werror for googlebenchmark" FORCE)
-    FetchContent_MakeAvailable(googlebenchmark)
-    # Defensive: ensure MSVC does not treat warnings as errors for benchmark targets
-    if (MSVC)
-        if (TARGET benchmark)
-            target_compile_options(benchmark PRIVATE /WX- /wd4714)
-        endif()
-        if (TARGET benchmark_main)
-            target_compile_options(benchmark_main PRIVATE /WX- /wd4714)
-        endif()
-    endif()
-endif()
-
 # project sub directories - need to have their own CMakeList.txt
 add_subdirectory(src)
 
