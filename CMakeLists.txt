@@ -19,15 +19,14 @@ option(STRICT_WARNINGS "Treat all warnings as errors" OFF)
 # updates template file and replaces placeholder variables
 configure_file(src/version.h.in version.h)
 
-# C++ settings
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Prefer portable standard mode over gnu++ extensions
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # CI-friendly toggles
 option(FRANKYCPP_BUILD_TESTS "Build unit tests" ON)
 option(FRANKYCPP_BUILD_BENCHMARKS "Build benchmarks" ON)
 option(FRANKYCPP_USE_PCH "Enable precompiled headers" ON)
+option(ENABLE_UNITY_BUILD "Enable Unity/Jumbo builds" OFF)
 
 # Unit testing enabled only if requested
 if (FRANKYCPP_BUILD_TESTS)

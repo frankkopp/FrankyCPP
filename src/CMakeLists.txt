@@ -33,6 +33,9 @@ set(FrankyCPPlib_SRCS
 
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})
 
+# Request C++20 via features (propagates to dependents)
+target_compile_features(FrankyCPPlib PUBLIC cxx_std_20)
+
 # Feature macros (target-scoped)
 if (ENABLE_STD_EXECUTION)
     target_compile_definitions(FrankyCPPlib PUBLIC HAS_EXECUTION_LIB)
@@ -94,6 +97,12 @@ set(exeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR})
 
 # define executable
 add_executable(${exeName} main.cpp)
+
+# Enable Unity/Jumbo build on demand
+if (ENABLE_UNITY_BUILD)
+    set_target_properties(FrankyCPPlib PROPERTIES UNITY_BUILD ON)
+    set_target_properties(${exeName} PROPERTIES UNITY_BUILD ON)
+endif()
 
 # link executable with library
 target_link_libraries(

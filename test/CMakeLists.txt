@@ -39,8 +39,12 @@ add_executable(
         enginetest/TestSuite_Test.cpp
 
         TimingTests.cpp
-        Test_Fens.h
 )
+
+# Enable Unity/Jumbo build opt-in
+if (ENABLE_UNITY_BUILD)
+    set_target_properties(${testExeName} PROPERTIES UNITY_BUILD ON)
+endif()
 
 # Ensure access to generated headers (e.g., version.h) and local test headers
 target_include_directories(
