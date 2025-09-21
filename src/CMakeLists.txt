@@ -88,7 +88,6 @@ endif()
 target_link_libraries(
         FrankyCPPlib
         PUBLIC
-        fmt
         spdlog
         Boost::serialization
         Boost::program_options)

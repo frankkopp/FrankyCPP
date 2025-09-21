@@ -246,7 +246,8 @@ void TT::ageEntries() {
 }
 
 std::string TT::str() {
-  return fmt::format(
+  return fstr::lformat(
+    deLocale,
     "TT: size {:L} MB max entries {:L} of size {:L} Bytes entries {:L} ({:L}%) puts {:L} "
     "updates {:L} collisions {:L} overwrites {:L} probes {:L} hits {:L} ({:L}%) misses {:L} ({:L}%)",
     sizeInByte / MB, maxNumberOfEntries, sizeof(Entry), numberOfEntries, hashFull() / 10,

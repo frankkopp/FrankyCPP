@@ -25,8 +25,6 @@
 
 #include "common/gtest_friends.h"
 
-#include <cstdint>
-
 // supported test types
 // DM = direct mate
 // BM = best move
@@ -46,10 +44,8 @@ enum ResultType {
   SUCCESS
 };
 
-namespace {
-  inline const char* testTypeStr[]   = {"noop", "dm", "bm", "am"};
-  inline const char* resultTypeStr[] = {"Not tested", "Skipped", "Failed", "Success"};
-}// namespace
+inline const char* testTypeStr[]   = {"noop", "dm", "bm", "am"};
+inline const char* resultTypeStr[] = {"Not tested", "Skipped", "Failed", "Success"};
 
 // SuiteResult data structure to collect sum of the results of tests.
 struct TestSuiteResult {
@@ -101,7 +97,7 @@ public:
 
 private:
   // reads all tests from the given file into the given list
-  static void readTestCases(const std::string& filePath, std::vector<Test>& tests);
+  static void readTestCases(const std::string& filePathStr, std::vector<Test>& tests);
 
   // reads on EPD file and creates a Test
   static bool readOneEPD(std::string& line, Test& test);
@@ -109,9 +105,9 @@ private:
   // removes leading and trailing whitespace and comments
   static std::string& cleanUpLine(std::string& line);
 
-  static void directMateTest(Search& search, SearchLimits& limits, Position& position, Test& test);
-  static void bestMoveTest(Search& search, SearchLimits& limits, Position& position, Test& test);
-  static void avoidMoveTest(Search& search, SearchLimits& limits, Position& position, Test& test);
+  static void directMateTest(Search& search, SearchLimits& limits, const Position& position, Test& test);
+  static void bestMoveTest(Search& search, const SearchLimits& limits, const Position& position, Test& test);
+  static void avoidMoveTest(Search& search, const SearchLimits& limits, const Position& position, Test& test);
 
   void runAllTests(Search& search, SearchLimits& searchLimits);
 
@@ -126,4 +122,4 @@ private:
 };
 
 
-#endif//FRANKYCPP_TESTSUITE_H
+#endif// FRANKYCPP_TESTSUITE_H

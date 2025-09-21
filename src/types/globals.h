@@ -20,7 +20,8 @@
 #ifndef FRANKYCPP_GLOBALS_H
 #define FRANKYCPP_GLOBALS_H
 
-#include "fmt/format.h"
+#include "common/format_compat.h"
+#include <locale>
 #include <cstdint>
 #include <iostream>
 #include <chrono>
@@ -29,11 +30,11 @@
 // As types are imported likely everywhere this will be included in types.h
 
 // standard chess starting position
-constexpr const char* START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+constexpr auto START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 // game phase is a helper value to determine in which phase a game is.
 // A value of 24 indicates that all officers are still on the board.
-// A value of 0 indicates that no officers are on the boardany longer.
+// A value of 0 indicates that no officers are on the board any longer.
 constexpr int GAME_PHASE_MAX = 24;
 
 // max depth

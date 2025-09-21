@@ -28,6 +28,7 @@
 
 // BOOST program options
 #include "boost/program_options.hpp"
+#include "common/Logging.h"
 namespace po = boost::program_options;
 
 // global variable for program options
@@ -94,12 +95,12 @@ int main(int argc, char* argv[]) {
     store(po::command_line_parser(argc, argv).options(cmdline_options).positional(p).run(), programOptions);
     notify(programOptions);
 
-    if (programOptions.count("help")) {
+    if (programOptions.contains("help")) {
       std::cout << visible << "\n";
       return 0;
     }
 
-    if (programOptions.count("version")) {
+    if (programOptions.contains("version")) {
       std::cout << "Version: " << appName << "\n";
       return 0;
     }
@@ -115,12 +116,12 @@ int main(int argc, char* argv[]) {
     }
 
     // opening book
-    if (programOptions.count("nobook")) {
+    if (programOptions.contains("nobook")) {
       SearchConfig::USE_BOOK = false;
       LOG__INFO(Logger::get().BOOK_LOG, "Not using opening book.");
     }
-    else if (programOptions.count("book")) {
-      if (!programOptions.count("booktype")) {
+    else if (programOptions.contains("book")) {
+      if (!programOptions.contains("booktype")) {
         LOG__ERROR(Logger::get().BOOK_LOG, "Opening book type is missing (use --help for details). Using default book.");
       }
       else {
@@ -145,7 +146,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Testsuite run from cmd line
-    if (programOptions.count("testsuite")) {
+    if (programOptions.contains("testsuite")) {
       init::init();
       std::cout << "RUNNING TEST SUITE\n";
       std::cout << "########################################################\n";
@@ -159,22 +160,22 @@ int main(int argc, char* argv[]) {
         std::cerr << "Could not read file: " << testsuite_file << "\n";
         return 1;
       }
-      std::cout << "Time per Test:      " << fmt::format("{:L}", testsuite_time) << "\n";
-      std::cout << "Max depth per Test: " << fmt::format("{:L}", testsuite_depth) << "\n";
+      std::cout << "Time per Test:      " << fstr::lformat(deLocale, "{:L}", testsuite_time) << "\n";
+      std::cout << "Max depth per Test: " << fstr::lformat(deLocale, "{:L}", testsuite_depth) << "\n";
       TestSuite testSuite{milliseconds{testsuite_time}, Depth{testsuite_depth}, testsuite_file};
       testSuite.runTestSuite();
       return 0;
     }
 
     // Perft run from cmd line
-    if (programOptions.count("perft")) {
+    if (programOptions.contains("perft")) {
       init::init();
       std::cout << std::endl;
       std::cout << "RUNNING PERFT TEST\n";
       std::cout << "########################################################\n";
       std::cout << "Version: " << appName << "\n";
-      std::cout << "Start depth: " << fmt::format("{:L}", perftStart) << "\n";
-      std::cout << "End depth  : " << fmt::format("{:L}", perftEnd) << "\n";
+      std::cout << "Start depth: " << fstr::lformat(deLocale, "{:L}", perftStart) << "\n";
+      std::cout << "End depth  : " << fstr::lformat(deLocale, "{:L}", perftEnd) << "\n";
       std::cout << "On Demand  : " << (perftOnDemand ? "true" : "false") << "\n";
       std::cout << std::endl;
       Perft perft{};
@@ -183,7 +184,7 @@ int main(int argc, char* argv[]) {
     }
 
     // just a test - does nothing
-    if (programOptions.count("test")) {
+    if (programOptions.contains("test")) {
       std::cout << "Test of hidden command line option." << std::endl;
       std::cout << programOptions["test"].as<std::string>() << std::endl;
     }

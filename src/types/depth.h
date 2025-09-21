@@ -21,6 +21,7 @@
 #define FRANKYCPP_DEPTH_H
 
 #include "macros.h"
+#include <format>
 
 ///////////////////////////////////
 //// DEPTH
@@ -41,5 +42,13 @@ enum Depth : int {
 
 ENABLE_FULL_OPERATORS_ON (Depth)
 
+// Make Depth usable with std::format (C++20)
+template<>
+struct std::formatter<Depth> : formatter<int> {
+  template<typename FormatContext>
+  auto format(const Depth d, FormatContext& ctx) const {
+    return formatter<int>::format(static_cast<int>(d), ctx);
+  }
+};
 
 #endif//FRANKYCPP_DEPTH_H

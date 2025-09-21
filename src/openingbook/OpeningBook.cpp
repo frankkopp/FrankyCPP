@@ -117,7 +117,7 @@ std::string OpeningBook::str(const int level) {
   const Position p{};
   const Key zobristKey  = p.getZobristKey();
   const BookEntry* node = &bookMap[zobristKey];
-  return std::string{fmt::format(deLocale, "Root ({:L})\n{:s}", bookMap[zobristKey].counter, getLevelStr(1, level, node))};
+  return fstr::lformat(deLocale, "Root ({:L})\n{}", bookMap[zobristKey].counter, getLevelStr(1, level, node));
 }
 
 std::string OpeningBook::getLevelStr(int level, const int maxLevel, const BookEntry* node) {
@@ -125,7 +125,7 @@ std::string OpeningBook::getLevelStr(int level, const int maxLevel, const BookEn
   const size_t size = node->moves.size();
   for (int i = 0; i < size; i++) {
     const BookEntry* newNode = &bookMap[(node->nextPosition)[i]];
-    out += fmt::format(deLocale, "{:{}}{} ({:L})\n", "", level, node->moves[i], newNode->counter);
+    out += fstr::lformat(deLocale, "{:{}}{} ({:L})\n", "", level, ::str(node->moves[i]), newNode->counter);
     if (level < maxLevel) {
       out += getLevelStr(level + 1, maxLevel, newNode);
     }
@@ -141,8 +141,7 @@ std::vector<std::string_view> OpeningBook::readFile(const std::string& filePath)
   std::vector<std::string_view> lines{};
 
   if (!std::filesystem::exists(filePath)) {
-    const std::string message = fmt::format("Opening Book '{}' not found. Using empty book.", filePath);
-    LOG__ERROR(Logger::get().BOOK_LOG, message);
+    LOG__ERROR(Logger::get().BOOK_LOG, "Opening Book '{}' not found. Using empty book.", filePath);
     return lines;
   }
 
@@ -176,8 +175,7 @@ std::vector<std::string_view> OpeningBook::readFile(const std::string& filePath)
     file.close();
   }
   else {
-    const std::string message = fmt::format("Could not open Opening Book '{}' ", filePath);
-    LOG__ERROR(Logger::get().BOOK_LOG, message);
+    LOG__ERROR(Logger::get().BOOK_LOG, "Could not open Opening Book '{}' ", filePath);
     return lines;
   }
 
@@ -205,7 +203,7 @@ void OpeningBook::readGames(const std::vector<std::string_view>& lines) {
 
   const auto stop    = std::chrono::high_resolution_clock::now();
   const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-  LOG__DEBUG(Logger::get().BOOK_LOG, "Read games in {:s}.", ::str(elapsed));
+  LOG__DEBUG(Logger::get().BOOK_LOG, "Read games in {}.", ::str(elapsed));
 }
 
 void OpeningBook::readGamesSimple(const std::vector<std::string_view>& lines) {

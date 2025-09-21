@@ -20,8 +20,8 @@
 #ifndef FRANKYCPP_TYPES_H
 #define FRANKYCPP_TYPES_H
 
-// Allow fmt to format types with operator<< (e.g., Value, Square)
-#include <fmt/ostream.h>
+// Provide fmt::format via std::format shim (no external fmt required)
+#include "common/format_compat.h"
 
 // include all type headers for convenience
 #include "bitboard.h"

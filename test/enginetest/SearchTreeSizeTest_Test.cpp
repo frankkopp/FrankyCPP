@@ -20,15 +20,14 @@
 #include <ctime>
 
 #include "Test_Fens.h"
-#include "chesscore/Position.h"
 #include "common/Logging.h"
 #include "engine/Search.h"
 #include "engine/SearchConfig.h"
 #include "enginetest/SearchTreeSizeTest.h"
 #include "init.h"
-#include "types/types.h"
 
 #include <gtest/gtest.h>
+
 using testing::Eq;
 
 class SearchTreeSizeTest_Test : public ::testing::Test {

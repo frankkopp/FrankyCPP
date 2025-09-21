@@ -933,41 +933,41 @@ void Position::setupBoard(const std::string& fen) {
     if (std::isdigit(token)) {// number
       file += token - '0';
       if (file > 8) {
-        throw std::invalid_argument(fmt::format("FEN has too many squares ({}) in rank {}:  {}", file, rank + 1, fenParts[0]));
+        throw std::invalid_argument(fstr::sformat("FEN has too many squares ({}) in rank {}:  {}", file, rank + 1, fenParts[0]));
       }
     }
     else if (token == '/') {// rank separator
       if (file < 8) {
-        throw std::invalid_argument(fmt::format("FEN has not enough squares ({}) in rank {}:  {}", file, rank + 1, fenParts[0]));
+        throw std::invalid_argument(fstr::sformat("FEN has not enough squares ({}) in rank {}:  {}", file, rank + 1, fenParts[0]));
       }
       if (file > 8) {
-        throw std::invalid_argument(fmt::format("too many squares ({}) in rank {}:  {}", file, rank + 1, fenParts[0]));
+        throw std::invalid_argument(fstr::sformat("too many squares ({}) in rank {}:  {}", file, rank + 1, fenParts[0]));
       }
       // reset file counter and decrease rank
       file = 0;
       rank--;
       if (rank < 0) {
-        throw std::invalid_argument(fmt::format("FEN has too many ranks ({}):  %s", 8 - rank, fenParts[0]));
+        throw std::invalid_argument(fstr::sformat("FEN has too many ranks ({}):  {}", 8 - rank, fenParts[0]));
       }
     }
     else {// find piece type from piece symbol
       const Piece piece = makePiece(token);
       if (piece == PIECE_NONE) {// redundant
-        throw std::invalid_argument(fmt::format("FEN has invalid piece character '{}' in {}", token, fenParts[0]));
+        throw std::invalid_argument(fstr::sformat("FEN has invalid piece character '{}' in {}", token, fenParts[0]));
       }
       if (file > 7) {
-        throw std::invalid_argument(fmt::format("FEN has too many squares ({}) in rank {}:  {}", file, rank + 1, fenParts[0]));
+        throw std::invalid_argument(fstr::sformat("FEN has too many squares ({}) in rank {}:  {}", file, rank + 1, fenParts[0]));
       }
       Square currentSquare = squareOf(static_cast<File>(file), static_cast<Rank>(rank));
       if (currentSquare == SQ_NONE) {
-        throw std::invalid_argument(fmt::format("FEN has invalid square {} ({}): {}", currentSquare, ::str(currentSquare), fenParts[0]));
+        throw std::invalid_argument(fstr::sformat("FEN has invalid square {} ({}): {}", currentSquare, ::str(currentSquare), fenParts[0]));
       }
       putPiece(piece, currentSquare);
       file++;
     }
   }
   if (file != 8 || rank != 0) {
-    throw std::invalid_argument(fmt::format("FEN not complete. Did not reached last square (file={}, rank={}) after reading fen", file, rank));
+    throw std::invalid_argument(fstr::sformat("FEN not complete. Did not reached last square (file={}, rank={}) after reading fen", file, rank));
   }
 
   // set defaults
@@ -983,7 +983,7 @@ void Position::setupBoard(const std::string& fen) {
       zobristKey ^= Zobrist::nextPlayer;
     }
     else if (fenParts[1] != "w") {
-      throw std::invalid_argument(fmt::format("FEN next player is invalid: {}", fenParts[1]));
+      throw std::invalid_argument(fstr::sformat("FEN next player is invalid: {}", fenParts[1]));
     }
   }
 

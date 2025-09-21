@@ -33,12 +33,12 @@
 #include <thread>
 
 UciHandler::UciHandler()
-    : pInputStream(&std::cin),
-      pOutputStream(&std::cout),
-      pPosition(new Position),
+    : pPosition(new Position),
       pMoveGen(new MoveGenerator),
       pPerft(new Perft),
-      pSearch(new Search(this)) {}
+      pSearch(new Search(this)),
+      pInputStream(&std::cin),
+      pOutputStream(&std::cout) {}
 
 UciHandler::UciHandler(std::istream* pIstream, std::ostream* pOstream) : UciHandler() {
   pInputStream  = pIstream;
@@ -77,23 +77,24 @@ bool UciHandler::handleCommand(const std::string& cmd) {
   inStream >> std::skipws >> token;
 
   // @formatter:off
-  if (token == "quit") { return true; }
-  else if (token == "uci") { uciCommand(); }
-  else if (token == "isready") { isReadyCommand(); }
-  else if (token == "setoption") { setOptionCommand(inStream); }
+  if      (token == "quit")       { return true; }
+  if      (token == "uci")        { uciCommand(); }
+  else if (token == "isready")    { isReadyCommand(); }
+  else if (token == "setoption")  { setOptionCommand(inStream); }
   else if (token == "ucinewgame") { uciNewGameCommand(); }
-  else if (token == "position") { positionCommand(inStream); }
-  else if (token == "go") { goCommand(inStream); }
-  else if (token == "stop") { stopCommand(); }
-  else if (token == "ponderhit") { ponderHitCommand(); }
-  else if (token == "register") { registerCommand(); }
-  else if (token == "debug") { debugCommand(); }
-  else if (token == "perft") { perftCommand(inStream); }
-  else if (token == "noop") { /* noop */
-  }
+  else if (token == "position")   { positionCommand(inStream); }
+  else if (token == "go")         { goCommand(inStream); }
+  else if (token == "stop")       { stopCommand(); }
+  else if (token == "ponderhit")  { ponderHitCommand(); }
+  else if (token == "register")   { registerCommand(); }
+  else if (token == "debug")      { debugCommand(); }
+  else if (token == "perft")      { perftCommand(inStream); }
+  else if (token == "noop")       { /* noop */ }
   else
-    uciError(fmt::format("Unknown UCI command: {}", token));
+    uciError(fstr::sformat("Unknown UCI command: {}", token));
   // @formatter:on
+
+// TODO: add a help option for manual usage of uci commands
 
   LOG__DEBUG(Logger::get().UCIHAND_LOG, "UCI Handler processed command: {}", token);
   return false;
@@ -113,7 +114,7 @@ void UciHandler::isReadyCommand() const {
 void UciHandler::setOptionCommand(std::istringstream& inStream) const {
   std::string token, name, value;
   if (inStream >> token && token != "name") {
-    uciError(fmt::format("Command setoption is malformed - expected 'name': {}", token));
+    uciError(fstr::sformat("Command setoption is malformed - expected 'name': {}", token));
     return;
   }
   // read name which could contain spaces
@@ -130,7 +131,7 @@ void UciHandler::setOptionCommand(std::istringstream& inStream) const {
   }
 
   if (!UciOptions::getInstance()->setOption(const_cast<UciHandler*>(this), name, value)) {
-    uciError(fmt::format("Unknown option: {}", name.c_str()));
+    uciError(fstr::sformat("Unknown option: {}", name.c_str()));
   }
   LOG__INFO(Logger::get().UCIHAND_LOG, "Set option: {} = {}", name, value);
 }
@@ -174,7 +175,7 @@ void UciHandler::positionCommand(std::istringstream& inStream) {
     for (const std::string& move : moves) {
       const Move moveFromUci = pMoveGen->getMoveFromUci(*pPosition, move);
       if (moveFromUci == MOVE_NONE) {
-        uciError(fmt::format("Invalid move {}", move));
+        uciError(fstr::sformat("Invalid move {}", move));
         return;
       }
       pPosition->doMove(moveFromUci);
@@ -193,17 +194,17 @@ void UciHandler::goCommand(std::istringstream& inStream) const {
   // Sanity check search limits
   // sanity check / minimum settings
   if (!(searchLimits.infinite || searchLimits.ponder || searchLimits.depth > 0 || searchLimits.nodes > 0 || searchLimits.mate > 0 || searchLimits.timeControl)) {
-    uciError(fmt::format("UCI command go malformed. No effective limits set: {}", searchLimits.str()));
+    uciError(fstr::sformat("UCI command go malformed. No effective limits set: {}", searchLimits.str()));
     return;
   }
   // sanity check time control
   if (searchLimits.timeControl && searchLimits.moveTime.count() == 0) {
     if (pPosition->getNextPlayer() == WHITE && searchLimits.whiteTime.count() == 0) {
-      uciError(fmt::format("UCI command go invalid. White to move but time for white is zero! %s", searchLimits.str()));
+      uciError(fstr::sformat("UCI command go invalid. White to move but time for white is zero! {}", searchLimits.str()));
       return;
     }
     else if (pPosition->getNextPlayer() == BLACK && searchLimits.blackTime.count() == 0) {
-      uciError(fmt::format("UCI command go invalid. Black to move but time for white is zero! %s", searchLimits.str()));
+      uciError(fstr::sformat("UCI command go invalid. Black to move but time for white is zero! {}", searchLimits.str()));
       return;
     }
   }
@@ -260,7 +261,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
       } catch (...) { /* ignored */
       }
       if (searchLimits.moveTime.count() <= 0) {
-        uciError(fmt::format("Invalid movetime: {}", token));
+        uciError(fstr::sformat("Invalid movetime: {}", token));
         return false;
       }
     }
@@ -273,7 +274,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
       } catch (...) { /* ignored */
       }
       if (searchLimits.whiteTime.count() <= 0) {
-        uciError(fmt::format("Invalid wtime: {}", token));
+        uciError(fstr::sformat("Invalid wtime: {}", token));
         return false;
       }
     }
@@ -286,7 +287,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
       } catch (...) { /* ignored */
       }
       if (searchLimits.blackTime.count() <= 0) {
-        uciError(fmt::format("Invalid btime: {}", token));
+        uciError(fstr::sformat("Invalid btime: {}", token));
         return false;
       }
     }
@@ -298,7 +299,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
       } catch (...) { /* ignored */
       }
       if (searchLimits.whiteInc.count() < 0) {
-        uciError(fmt::format("Invalid winc: {}", token));
+        uciError(fstr::sformat("Invalid winc: {}", token));
         return false;
       }
     }
@@ -310,7 +311,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
       } catch (...) { /* ignored */
       }
       if (searchLimits.blackInc.count() < 0) {
-        uciError(fmt::format("Invalid binc: {}", token));
+        uciError(fstr::sformat("Invalid binc: {}", token));
         return false;
       }
     }
@@ -322,7 +323,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
       } catch (...) { /* ignored */
       }
       if (searchLimits.movesToGo <= 0) {
-        uciError(fmt::format("Invalid movestogo: {}", token));
+        uciError(fstr::sformat("Invalid movestogo: {}", token));
         return false;
       }
     }
@@ -334,7 +335,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
       } catch (...) { /* ignored */
       }
       if (searchLimits.depth <= 0 || searchLimits.depth > MAX_DEPTH) {
-        uciError(fmt::format("depth not between 1 and {}. Was '{}'", MAX_DEPTH, token));
+        uciError(fstr::sformat("depth not between 1 and {}. Was '{}'", MAX_DEPTH, token));
         return false;
       }
     }
@@ -346,7 +347,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
       } catch (...) { /* ignored */
       }
       if (searchLimits.nodes <= 0) {
-        uciError(fmt::format("Invalid nodes: {}", token));
+        uciError(fstr::sformat("Invalid nodes: {}", token));
         return false;
       }
     }
@@ -358,13 +359,13 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
       } catch (...) { /* ignored */
       }
       if (searchLimits.mate <= 0 || searchLimits.mate > MAX_DEPTH) {
-        uciError(fmt::format("mate not between 1 and {}. Was '{}'", MAX_DEPTH, token));
+        uciError(fstr::sformat("mate not between 1 and {}. Was '{}'", MAX_DEPTH, token));
         return false;
       }
     }
 
     else {
-      uciError(fmt::format("Unknown go subcommand. Was '{}'", token));
+      uciError(fstr::sformat("Unknown go subcommand. Was '{}'", token));
       return false;
     }
   }
@@ -394,7 +395,7 @@ void UciHandler::perftCommand(std::istringstream& inStream) const {
     startDepth = 1;
   }
   if (startDepth <= 0 || startDepth > MAX_DEPTH) {
-    uciError(fmt::format("perft start depth not between 1 and {}. Was '{}'", MAX_DEPTH, token));
+    uciError(fstr::sformat("perft start depth not between 1 and {}. Was '{}'", MAX_DEPTH, token));
     return;
   }
   int endDepth = startDepth;
@@ -404,7 +405,7 @@ void UciHandler::perftCommand(std::istringstream& inStream) const {
     } catch (...) { /* Ignore */
     }
     if (endDepth <= 0 || endDepth > MAX_DEPTH) {
-      uciError(fmt::format("perft end depth not between 1 and {}. Was '{}'", MAX_DEPTH, token));
+      uciError(fstr::sformat("perft end depth not between 1 and {}. Was '{}'", MAX_DEPTH, token));
     }
   }
   std::thread perftThread([&](const int s, const int e) {
@@ -428,7 +429,7 @@ void UciHandler::send(const std::string& toSend) const {
 }
 
 void UciHandler::sendString(const std::string& anyString) const {
-  send(fmt::format("info string {}", anyString));
+  send(fstr::sformat("info string {}", anyString));
 }
 
 void UciHandler::sendReadyOk() const {
@@ -436,34 +437,34 @@ void UciHandler::sendReadyOk() const {
 }
 
 void UciHandler::sendResult(const Move bestMove, const Move ponderMove) const {
-  send(fmt::format("bestmove {}{}", str(bestMove), (ponderMove ? " ponder " + str(ponderMove) : "")));
+  send(fstr::sformat("bestmove {}{}", str(bestMove), (ponderMove ? " ponder " + str(ponderMove) : "")));
 }
 
 void UciHandler::sendCurrentLine(const MoveList& moveList) const {
-  send(fmt::format("currline {}", str(moveList)));
+  send(fstr::sformat("currline {}", str(moveList)));
 }
 
 void UciHandler::sendIterationEndInfo(int depth, int seldepth, const Value value, uint64_t nodes,
                                       uint64_t nps, const milliseconds time, const MoveList& pv) const {
-  send(fmt::format("info depth {} seldepth {} multipv 1 score {} nodes {} nps {} time {} pv {}",
+  send(fstr::sformat("info depth {} seldepth {} multipv 1 score {} nodes {} nps {} time {} pv {}",
                    depth, seldepth, str(value), nodes, nps, time.count(), str(pv)));
 }
 
 void UciHandler::sendAspirationResearchInfo(int depth, int seldepth, const Value value,
                                             const std::string& boundString, uint64_t nodes, uint64_t nps,
                                             const milliseconds time, const MoveList& pv) const {
-  send(fmt::format("info depth {} seldepth {} multipv 1 score {} {} nodes {} nps {} time {} pv {}",
+  send(fstr::sformat("info depth {} seldepth {} multipv 1 score {} {} nodes {} nps {} time {} pv {}",
                    depth, seldepth, str(value), boundString, nodes, nps, time.count(), str(pv)));
 }
 
 void UciHandler::sendCurrentRootMove(const Move currmove, std::size_t movenumber) const {
-  send(fmt::format("info currmove {} currmovenumber {}", str(currmove),
+  send(fstr::sformat("info currmove {} currmovenumber {}", str(currmove),
                    movenumber));
 }
 
 void UciHandler::sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps,
                                   const milliseconds time, int hashfull) const {
-  send(fmt::format("info depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
+  send(fstr::sformat("info depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
                    depth, seldepth, nodes, nps, time.count(), hashfull));
 }
 

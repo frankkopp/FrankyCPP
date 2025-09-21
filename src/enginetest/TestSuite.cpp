@@ -17,15 +17,14 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
-
 #include "TestSuite.h"
 
 #include "common/Logging.h"
 #include "common/stringutil.h"
 #include "engine/SearchConfig.h"
 
-#include <fmt/chrono.h>
+#include <chrono>
+#include "types/timeunits.h"
 #include <boost/algorithm/string.hpp>
 
 #include <fstream>
@@ -52,7 +51,7 @@ void TestSuite::runTestSuite() {
     return;
   }
 
-  auto startTime = currentTime();
+  const auto startTime = currentTime();
 
   fprintln("Running Test Suite");
   fprintln("==================================================================");
@@ -60,7 +59,7 @@ void TestSuite::runTestSuite() {
   fprintln("SearchTime:  {}", str(searchTime));
   fprintln("MaxDepth:    {}", searchDepth);
   fprintln("No of tests: {}", testCases.size());
-  fprintln("Date:        {:%Y-%m-%d %X}", fmt::localtime(time(nullptr)));
+  fprintln("Date:        {}", format_now());
   fprintln("");
 
   // setup search
@@ -78,7 +77,7 @@ void TestSuite::runTestSuite() {
   // count and sum up the results
   lastResult = sumUpTests();
 
-  auto elapsed = elapsedSince(startTime);
+  const auto elapsed = elapsedSince(startTime);
 
   // print report
   fprintln("Results for Test Suite", filePath);
@@ -86,19 +85,19 @@ void TestSuite::runTestSuite() {
   fprintln("EPD File:   {}", filePath);
   fprintln("SearchTime: {}", str(searchTime));
   fprintln("MaxDepth:   {}", searchDepth);
-  fprintln("Date:       {:%Y-%m-%d %X}", fmt::localtime(time(nullptr)));
+  fprintln("Date:       {}", format_now());
   fprintln("===================================================================================================================================");
-  fprintln(" {:<4s} | {:<10s} | {:<8s} | {:<8s} | {:<18s} | {:s} | {:s}", " Nr.", "Result", "Move", "Value", "Expected Result", "Fen", "Id");
+  fprintln(" {:<4} | {:<10} | {:<8} | {:<8} | {:<18} | {} | {}", " Nr.", "Result", "Move", "Value", "Expected Result", "Fen", "Id");
   fprintln("====================================================================================================================================");
   int i = 0;
   for (const auto& t : testCases) {
     i++;
     if (t.type == DM) {
-      fprintln(" {:<4d} | {:<10s} | {:<8s} | {:<8s} | {:s} {:<15d} | {:s} | {:s}",
+      fprintln(" {:<4d} | {:<10} | {:<8} | {:<8} | {} {:<15d} | {} | {}",
                i, resultTypeStr[t.result], str(t.actualMove), str(t.actualValue), testTypeStr[t.type], t.mateDepth, t.fen, t.id);
     }
     else {
-      fprintln(" {:<4d} | {:<10s} | {:<8s} | {:<8s} | {:s} {:<15s} | {:s} | {:s}",
+      fprintln(" {:<4d} | {:<10} | {:<8} | {:<8} | {} {:<15} | {} | {}",
                i, resultTypeStr[t.result], str(t.actualMove), str(t.actualValue), testTypeStr[t.type], str(t.targetMoves), t.fen, t.id);
     }
   }
@@ -107,13 +106,13 @@ void TestSuite::runTestSuite() {
   fprintln("EPD File:   {}", filePath);
   fprintln("SearchTime: {}", str(searchTime));
   fprintln("MaxDepth:   {}", searchDepth);
-  fprintln("Date:       {:%Y-%m-%d %X}", fmt::localtime(time(nullptr)));
+  fprintln("Date:       {}", format_now());
   fprintln("Successful: {:<3d} ({:d} %)", lastResult.successCounter, 100 * lastResult.successCounter / lastResult.counter);
   fprintln("Failed:     {:<3d} ({:d} %)", lastResult.failedCounter, 100 * lastResult.failedCounter / lastResult.counter);
   fprintln("Skipped:    {:<3d} ({:d} %)", lastResult.skippedCounter, 100 * lastResult.skippedCounter / lastResult.counter);
   fprintln("Not tested: {:<3d} ({:d} %)", lastResult.notTestedCounter, 100 * lastResult.notTestedCounter / lastResult.counter);
-  fprintln("Test time:  {:s}", format(elapsed));
-  fprintln("\nConfiguration:\n{:s}\n", UciOptions::getInstance()->str());
+  fprintln("Test time:  {}", format(elapsed));
+  fprintln("\nConfiguration:\n{}\n", UciOptions::getInstance()->str());
 }
 
 TestSuiteResult TestSuite::sumUpTests() const {
@@ -146,9 +145,9 @@ void TestSuite::runAllTests(Search& search, SearchLimits& searchLimits) {
   for (auto& test : testCases) {
     fprintln("Test {} of {}\nTest: {} -- Target Result {}",
              ++i, testCases.size(), test.line, str(test.targetMoves));
-    auto startTime2 = currentTime();
+    const auto startTime2 = currentTime();
     runSingleTest(search, searchLimits, test);
-    auto elapsedTime = elapsedSince(startTime2);
+    const auto elapsedTime = elapsedSince(startTime2);
     test.nodes       = search.getLastSearchResult().nodes;
     test.time        = search.getLastSearchResult().time;
     test.nps         = nps(search.getLastSearchResult().nodes, search.getLastSearchResult().time);
@@ -161,7 +160,7 @@ void TestSuite::runSingleTest(Search& search, SearchLimits& limits, Test& test) 
   // reset search and search limits
   search.newGame();
   limits.mate = 0;
-  Position p{test.fen};
+  const Position p{test.fen};
   // call the appropriate function for the test type
   switch (test.type) {
     case DM:
@@ -178,7 +177,7 @@ void TestSuite::runSingleTest(Search& search, SearchLimits& limits, Test& test) 
   }
 }
 
-void TestSuite::directMateTest(Search& search, SearchLimits& limits, Position& position, Test& test) {
+void TestSuite::directMateTest(Search& search, SearchLimits& limits, const Position& position, Test& test) {
   // get target mate depth
   limits.mate = test.mateDepth;
   // start search
@@ -197,23 +196,20 @@ void TestSuite::directMateTest(Search& search, SearchLimits& limits, Position& p
   test.actualValue = search.getLastSearchResult().bestMoveValue;
 }
 
-void TestSuite::bestMoveTest(Search& search, SearchLimits& limits, Position& position, Test& test) {
+void TestSuite::bestMoveTest(Search& search, const SearchLimits& limits, const Position& position, Test& test) {
   // do the search
   search.startSearch(position, limits);
   search.waitWhileSearching();
   // get the result
   const Move actual = moveOf(search.getLastSearchResult().bestMove);
   // check against expected moves
-  for (Move m : test.targetMoves) {
+  for (const Move m : test.targetMoves) {
     if (m == actual) {
       LOG__INFO(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" SUCCESS", test.id);
       test.actualMove  = search.getLastSearchResult().bestMove;
       test.actualValue = search.getLastSearchResult().bestMoveValue;
       test.result      = SUCCESS;
       return;
-    }
-    else {
-      continue;
     }
   }
   LOG__INFO(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" FAILED", test.id);
@@ -222,14 +218,14 @@ void TestSuite::bestMoveTest(Search& search, SearchLimits& limits, Position& pos
   test.result      = FAILED;
 }
 
-void TestSuite::avoidMoveTest(Search& search, SearchLimits& limits, Position& position, Test& test) {
+void TestSuite::avoidMoveTest(Search& search, const SearchLimits& limits, const Position& position, Test& test) {
   // do the search
   search.startSearch(position, limits);
   search.waitWhileSearching();
   // get the result
   const Move actual = moveOf(search.getLastSearchResult().bestMove);
   // check against expected moves to avoid
-  for (Move m : test.targetMoves) {
+  for (const Move m : test.targetMoves) {
     if (m == actual) {
       LOG__INFO(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" FAILED", test.id);
       test.actualMove  = search.getLastSearchResult().bestMove;
@@ -320,7 +316,7 @@ bool TestSuite::readOneEPD(std::string& line, Test& test) {
     // and store the moves into the test
     MoveGenerator mg{};
     std::vector<std::string> results;
-    boost::split(results, result, [](char c) { return c == ' '; });
+    boost::split(results, result, [](const char c) { return c == ' '; });
     for (auto s : results) {
       boost::trim(s);
       Move m = mg.getMoveFromSan(p, s);
@@ -333,7 +329,7 @@ bool TestSuite::readOneEPD(std::string& line, Test& test) {
       return false;
     }
   }
-  else if (testType == DM) {
+  else { // if (testType == DM)
     std::istringstream(result) >> dmDepth;
     if (!dmDepth) {
       LOG__WARN(Logger::get().TSUITE_LOG, "Direct mate depth from EPD is invalid  {}", result);

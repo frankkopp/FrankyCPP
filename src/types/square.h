@@ -26,6 +26,7 @@
 #include "rank.h"
 
 #include <array>
+#include <format>
 
 // Square represent exactly on square on a chess board.
 //  SqA1   // 0
@@ -156,5 +157,14 @@ inline std::ostream& operator<<(std::ostream& os, const Square sq) {
   os << str(sq);
   return os;
 }
+
+// Make Square usable with std::format
+template<>
+struct std::formatter<Square> : formatter<string_view> {
+  template<typename FormatContext>
+  auto format(const Square sq, FormatContext& ctx) const {
+    return formatter<string_view>::format(str(sq), ctx);
+  }
+};
 
 #endif// FRANKYCPP_SQUARE_H

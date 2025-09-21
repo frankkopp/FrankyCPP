@@ -20,9 +20,9 @@
 #ifndef FRANKYCPP_POSITION_H
 #define FRANKYCPP_POSITION_H
 
+#include "common/gtest_friends.h"
 #include "types/types.h"
 
-#include <_deps/googletest-src/googletest/include/gtest/gtest_prod.h>
 #include <array>
 
 // Flag for boolean states with undetermined state

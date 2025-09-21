@@ -10,6 +10,10 @@ cmake_minimum_required(VERSION 3.16)
 project(FrankyCPP VERSION 0.5)
 message(STATUS "FrankyCPP v${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
 
+# Enforce C++20 globally so all targets (including FetchContent deps) see the right standard
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 # Build all third-party libs statically unless a subproject overrides it
 set(BUILD_SHARED_LIBS OFF)
 
@@ -157,25 +161,23 @@ set(FETCHCONTENT_QUIET OFF)
 set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 include(FetchContent)
 
-# FMT pinned
-message(STATUS "Downloading/Update FMT (pinned)")
-FetchContent_Declare(
-        fmt
-        GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-        GIT_TAG 8.0.1
-)
-FetchContent_MakeAvailable(fmt)
-
-# SPDLOG pinned (using external fmt)
-message(STATUS "Downloading/Update SPDLOG (pinned)")
+# SPDLOG pinned (use std::format instead of external fmt)
+message(STATUS "Downloading/Update SPDLOG (pinned, std::format)")
 FetchContent_Declare(
         spdlog
         GIT_REPOSITORY https://github.com/gabime/spdlog.git
         GIT_TAG v1.10.0
 )
-option(SPDLOG_FMT_EXTERNAL "Use external fmt" ON)
-set(SPDLOG_FMT_EXTERNAL ON)
+# Ensure spdlog uses std::format (C++20)
+option(SPDLOG_USE_STD_FORMAT "Use std::format instead of fmt" ON)
+set(SPDLOG_USE_STD_FORMAT ON CACHE BOOL "Use std::format" FORCE)
+# Make sure external fmt is not requested
+set(SPDLOG_FMT_EXTERNAL OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(spdlog)
+# Enforce C++20 on spdlog target as well (in case global standard is ignored)
+if (TARGET spdlog)
+    target_compile_features(spdlog PUBLIC cxx_std_20)
+endif()
 
 # GOOGLE TEST pinned (only if building tests)
 if (FRANKYCPP_BUILD_TESTS)

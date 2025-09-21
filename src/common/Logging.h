@@ -20,8 +20,6 @@
 #ifndef FRANKYCPP_LOGGING_H
 #define FRANKYCPP_LOGGING_H
 
-#include <iosfwd>
-
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "version.h"
@@ -48,37 +46,37 @@
 #define LOG__LEVEL DEBUG__LVL
 
 #if LOG__LEVEL > ZERO__LVL
-#define LOG__CRITICAL(logger, ...) logger->critical("{:s}", fmt::format(deLocale, __VA_ARGS__))
+#define LOG__CRITICAL(logger, ...) (logger)->log(spdlog::level::critical, fstr::lformat(deLocale, __VA_ARGS__))
 #else
 #define LOG__CRITICAL(logger, ...) void(0)
 #endif
 
 #if LOG__LEVEL > CRITICAL__LVL
-#define LOG__ERROR(logger, ...) logger->error("{:s}", fmt::format(deLocale, __VA_ARGS__))
+#define LOG__ERROR(logger, ...)    (logger)->log(spdlog::level::err,      fstr::lformat(deLocale, __VA_ARGS__))
 #else
 #define LOG__ERROR(logger, ...) void(0)
 #endif
 
 #if LOG__LEVEL > ERROR__LVL
-#define LOG__WARN(logger, ...) logger->warn("{:s}", fmt::format(deLocale, __VA_ARGS__))
+#define LOG__WARN(logger, ...)     (logger)->log(spdlog::level::warn,     fstr::lformat(deLocale, __VA_ARGS__))
 #else
 #define LOG__WARN(logger, ...) void(0)
 #endif
 
 #if LOG__LEVEL > WARN__LVL
-#define LOG__INFO(logger, ...) logger->info("{:s}", fmt::format(deLocale, __VA_ARGS__))
+#define LOG__INFO(logger, ...)     (logger)->log(spdlog::level::info,     fstr::lformat(deLocale, __VA_ARGS__))
 #else
 #define LOG__INFO(logger, ...) void(0)
 #endif
 
 #if LOG__LEVEL > INFO__LVL
-#define LOG__DEBUG(logger, ...) logger->debug("{:s}", fmt::format(deLocale, __VA_ARGS__))
+#define LOG__DEBUG(logger, ...)    (logger)->log(spdlog::level::debug,    fstr::lformat(deLocale, __VA_ARGS__))
 #else
 #define LOG__DEBUG(logger, ...) void(0)
 #endif
 
 #if LOG__LEVEL > DEBUG__LVL
-#define LOG__TRACE(logger, ...) logger->trace("{:s}", fmt::format(deLocale, __VA_ARGS__))
+#define LOG__TRACE(logger, ...)    (logger)->log(spdlog::level::trace,    fstr::lformat(deLocale, __VA_ARGS__))
 #else
 #define LOG__TRACE(logger, ...) void(0)
 #endif
@@ -104,8 +102,8 @@ public:
 
   const std::string defaultPattern = "[%H:%M:%S:%f] [t:%-10!t] [%-17n] [%-8l]: %v";
 
-  const std::string logfile = fmt::format("FrankyCPP_v{}.{}.log", FrankyCPP_VERSION_MAJOR, FrankyCPP_VERSION_MINOR);
-  const std::string logfile_uci = fmt::format("FrankyCPP_v{}.{}_uci.log", FrankyCPP_VERSION_MAJOR, FrankyCPP_VERSION_MINOR);
+  const std::string logfile = std::format("FrankyCPP_v{}.{}.log", FrankyCPP_VERSION_MAJOR, FrankyCPP_VERSION_MINOR);
+  const std::string logfile_uci = std::format("FrankyCPP_v{}.{}_uci.log", FrankyCPP_VERSION_MAJOR, FrankyCPP_VERSION_MINOR);
 
   const std::shared_ptr<spdlog::sinks::basic_file_sink_mt> sharedFileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logfile);
   const std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> uciOutSink   = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();

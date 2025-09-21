@@ -26,6 +26,7 @@
 #include "piecetype.h"
 #include <cstdint>
 #include <string>
+#include <format>
 
 enum Value : int16_t {
   VALUE_ZERO = 0,
@@ -87,5 +88,14 @@ inline std::ostream& operator<<(std::ostream& os, const Value v) {
 ENABLE_FULL_OPERATORS_ON(Value)
 // used for multiplication with gamePhaseValue
 constexpr Value operator*(const Value d, const double i) { return static_cast<Value>(static_cast<int>(d) * i); }
+
+// Make Value usable with std::format (C++20)
+template<>
+struct std::formatter<Value> : formatter<int> {
+  template<typename FormatContext>
+  auto format(const Value v, FormatContext& ctx) const {
+    return formatter<int>::format(static_cast<int>(v), ctx);
+  }
+};
 
 #endif//FRANKYCPP_VALUE_H

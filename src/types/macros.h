@@ -29,9 +29,9 @@
 #define NEWLINE std::cout << std::endl
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #define println(s) std::cout << (s) << std::endl
-#define fprint(...) std::cout << fmt::format(deLocale, __VA_ARGS__)
+#define fprint(...) std::cout << fstr::lformat(deLocale, __VA_ARGS__)
 #define fprintln(...) fprint(__VA_ARGS__) << std::endl
-#define DEBUG(...) std::cout << fmt::format(deLocale, "DEBUG {}:{} {}", __FILE__, __LINE__, __VA_ARGS__) << std::endl
+#define DEBUG(...) std::cout << fstr::lformat(deLocale, "DEBUG {}:{} {}", __FILE__, __LINE__, __VA_ARGS__) << std::endl
 #define TICK(tp) fprintln("{:L} ns: function: {}() line: {}", elapsedSince(tp).count(), __FUNCTION__, __LINE__)
 
 // These are convenience macros to define custom operators on our types.

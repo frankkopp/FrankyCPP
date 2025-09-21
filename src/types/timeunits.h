@@ -23,26 +23,41 @@
 #include <chrono>
 #include <iomanip>
 #include <sstream>
+#include <ctime>
 
 using namespace std::chrono_literals;
 using namespace std::chrono;
 
 typedef time_point<high_resolution_clock> TimePoint;
 
+// formats current local time as a string using std::put_time (no fmt dependency)
+inline std::string format_now(const char* fmt = "%Y-%m-%d %H:%M:%S") {
+  std::time_t t = std::time(nullptr);
+  std::tm tm{};
+#if defined(_WIN32)
+  ::localtime_s(&tm, &t);
+#else
+  ::localtime_r(&t, &tm);
+#endif
+  std::ostringstream os;
+  os << std::put_time(&tm, fmt);
+  return os.str();
+}
+
 // returns a string representation of the milliseconds as a fraction of a seconds
 // with a DE locale
 //  Examples:
 //  5,021 s
 inline std::string str(const milliseconds s) {
-  return fmt::format(deLocale, "{:.3f} s", static_cast<double>(s.count()) / 1e3);
+  return fstr::lformat(deLocale, "{:.3f} s", static_cast<double>(s.count()) / 1e3);
 }
 
-// returns a string representation of the nanoseconds as a fraction of a seconds
+// returns a string representation of the nanoseconds as a fraction of a second
 // with a DE locale
 //  Examples:
 //  5,021456234 s
 inline std::string str(const nanoseconds s) {
-  return fmt::format(deLocale, "{:.9f} s", static_cast<double>(s.count()) / 1e9);
+  return fstr::lformat(deLocale, "{:.9f} s", static_cast<double>(s.count()) / 1e9);
 }
 
 // returns a string representation of the duration as a human readable string

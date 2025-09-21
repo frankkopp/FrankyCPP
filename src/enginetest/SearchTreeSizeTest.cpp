@@ -19,12 +19,13 @@
 
 #include <map>
 
-#include <fmt/chrono.h>
+// no longer use fmt chrono; use our time utilities
+#include "types/timeunits.h"
 
 #include "SearchTreeSizeTest.h"
 #include <engine/SearchConfig.h>
 
-Result SearchTreeSizeTest::featureMeasurements(int d, milliseconds mt, const std::string& fen) {
+Result SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, const std::string& fen) {
   Search search{};
   SearchLimits searchLimits{};
   searchLimits.depth = d;
@@ -33,7 +34,7 @@ Result SearchTreeSizeTest::featureMeasurements(int d, milliseconds mt, const std
     searchLimits.timeControl = true;
   }
   Result result(fen);
-  Position position(fen);
+  const Position position(fen);
 
   // turn off all options
   SearchConfig::USE_BOOK   = false;
@@ -174,9 +175,10 @@ void SearchTreeSizeTest::start() {
   // Execute tests and store results
   for (auto & fen : fens) {
     try {
-      Position testPosition(fen);
+      const Position testPosition(fen);
+      (void)testPosition; // avoid unused variable warning
     } catch (std::invalid_argument& e) {
-      std::cerr << fmt::format("Invalid fen skipped: {} ({})", e.what(), fen) << std::endl;
+      std::cerr << fstr::sformat("Invalid fen skipped: {} ({})", e.what(), fen) << std::endl;
       continue;
     }
     results.push_back(featureMeasurements(depth, movetime, fen));
@@ -184,10 +186,10 @@ void SearchTreeSizeTest::start() {
 
   // Print result
   NEWLINE;
-  fmt::print("################## Results for depth {} ##########################\n", depth);
+  fprintln("################## Results for depth {} ##########################", depth);
   NEWLINE;
-  fmt::print("{:<15s} | {:>6s} | {:>8s} | {:>15s} | {:>12s} | {:>12s} | {:>7s} | {:>12s} | {:>12s} | {} | {}\n",
-             "Test Name", "Move", "Value", "Nodes", "Nps", "Time", "Depth", "Special1", "Special2", "PV", "Fen");
+  fprintln("{:<15} | {:>6} | {:>8} | {:>15} | {:>12} | {:>12} | {:>7} | {:>12} | {:>12} | {} | {}",
+           "Test Name", "Move", "Value", "Nodes", "Nps", "Time", "Depth", "Special1", "Special2", "PV", "Fen");
   println("-----------------------------------------------------------------------"
           "-----------------------------------------------------------------------");
 
@@ -196,6 +198,7 @@ void SearchTreeSizeTest::start() {
 
   for (const Result& result : results) {
     fprintln("Fen: {}", result.fen);
+    // ReSharper disable once CppUseStructuredBinding
     for (const SingleTest& test : result.tests) {
       sums[test.name].sumCounter++;
       sums[test.name].sumNodes += test.nodes;
@@ -206,24 +209,23 @@ void SearchTreeSizeTest::start() {
       sums[test.name].special1 += test.special1;
       sums[test.name].special2 += test.special2;
 
-      fprintln("{:<15s} | {:>6s} | {:>8s} | {:>15L} | {:>12L} | {:>12L} | {:>3d}/{:<3d} | {:>12L} | {:>12L} | {} | {}",
+      fprintln("{:<15} | {:>6} | {:>8} | {:>15L} | {:>12L} | {:>12L} | {:>3d}/{:<3d} | {:>12L} | {:>12L} | {} | {}",
                test.name, str(test.move), str(test.value), test.nodes, test.nps,
                (test.time / 1'000'000), test.depth, test.extra, test.special1, test.special2, test.pv, result.fen);
     }
-    fmt::print("\n");
+    NEWLINE;
   }
 
-  NEWLINE;
+  println("----------------------------------------------------------------------------------------------------------------------------------------------");
+  println("\n################## Totals/Avg results for each feature test ##################\n");
+  fprintln("Date:                  : {}", format_now());
+  fprintln("SearchTime             : {}", str(movetime));
+  fprintln("MaxDepth               : {:d}", depth);
+  fprintln("Number of feature tests: {:d}", results[0].tests.size());
+  fprintln("Number of fens         : {:d}", fens.size());
+  fprintln("Total tests            : {:d}\n", results[0].tests.size() * fens.size());
 
-  fmt::print("----------------------------------------------------------------------------------------------------------------------------------------------");
-  fmt::print("\n################## Totals/Avg results for each feature test ##################\n\n");
-  fmt::print("Date:                  : {:%Y-%m-%d %X}\n", fmt::localtime(time(nullptr)));
-  fmt::print("SearchTime             : {:s}\n", str(movetime));
-  fmt::print("MaxDepth               : {:d}\n", depth);
-  fmt::print("Number of feature tests: {:d}\n", results[0].tests.size());
-  fmt::print("Number of fens         : {:d}\n", fens.size());
-  fmt::print("Total tests            : {:d}\n\n", results[0].tests.size() * fens.size());
-
+  // ReSharper disable once CppUseStructuredBinding
   for (auto& sum : sums) {
     fprintln("Test: {:<12s}  Nodes: {:>16L}  Nps: {:>16L}  Time: {:>16L} Depth: {:>3d}/{:<3d} Special1: {:>16L} Special2: {:>16L}", sum.first.c_str(),
              sum.second.sumNodes / sum.second.sumCounter, sum.second.sumNps / sum.second.sumCounter,
