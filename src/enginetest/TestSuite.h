@@ -23,7 +23,7 @@
 #include "engine/Search.h"
 #include "types/types.h"
 
-#include "gtest/gtest_prod.h"
+#include "common/gtest_friends.h"
 
 #include <cstdint>
 

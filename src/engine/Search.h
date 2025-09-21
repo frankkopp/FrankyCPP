@@ -31,7 +31,7 @@
 #include "openingbook/OpeningBook.h"
 #include "types/types.h"
 
-#include "gtest/gtest_prod.h"
+#include "common/gtest_friends.h"
 
 #include <thread>
 #include <semaphore>

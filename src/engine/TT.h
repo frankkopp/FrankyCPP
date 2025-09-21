@@ -23,7 +23,7 @@
 #include <iosfwd>
 
 #include "types/types.h"
-#include "gtest/gtest_prod.h"
+#include "common/gtest_friends.h"
 
 // pre-fetching of TT entries into CPU caches
 #ifdef __GNUC__

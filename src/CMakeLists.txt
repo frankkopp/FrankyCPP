@@ -33,31 +33,61 @@ set(FrankyCPPlib_SRCS
 
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})
 
-# pre compile main header files
-target_precompile_headers(
-        FrankyCPPlib PUBLIC
-        init.h
-        types/types.h
-        common/misc.h
-        common/stringutil.h
-        common/ThreadPool.h
-        common/Logging.h
-        chesscore/Values.h
-        chesscore/Position.h
-        chesscore/MoveGenerator.h
-        chesscore/Perft.h
-        chesscore/History.h
+# Feature macros (target-scoped)
+if (ENABLE_STD_EXECUTION)
+    target_compile_definitions(FrankyCPPlib PUBLIC HAS_EXECUTION_LIB)
+endif()
+if (ENABLE_BMI2_PEXT)
+    target_compile_definitions(FrankyCPPlib PUBLIC HAS_PEXT)
+    if (MSVC)
+        target_compile_options(FrankyCPPlib PUBLIC /arch:AVX2)
+    endif()
+endif()
+
+# Target-scoped include directories
+# - Expose project src to dependents and tests
+# - Expose binary dir for generated version.h
+target_include_directories(
+        FrankyCPPlib
+        PUBLIC
+        ${PROJECT_SOURCE_DIR}/src
+        ${PROJECT_BINARY_DIR}
 )
+
+# pre compile main header files (optional)
+if (FRANKYCPP_USE_PCH)
+    target_precompile_headers(
+            FrankyCPPlib PUBLIC
+            init.h
+            types/types.h
+            common/misc.h
+            common/stringutil.h
+            common/ThreadPool.h
+            common/Logging.h
+            chesscore/Values.h
+            chesscore/Position.h
+            chesscore/MoveGenerator.h
+            chesscore/Perft.h
+            chesscore/History.h
+    )
+endif()
+
+# Apply AVX2 if explicitly requested
+if (ENABLE_AVX2 AND MSVC)
+    target_compile_options(FrankyCPPlib PUBLIC /arch:AVX2)
+endif()
 
 # Explicitly link Boost components via targets rather than ${Boost_LIBRARIES}
 # to avoid accidental dynamic linkage
+# Use non-namespaced targets from FetchContent builds (pinned versions)
+
 target_link_libraries(
         FrankyCPPlib
         PUBLIC
         fmt
         spdlog
-        Boost::program_options
         Boost::serialization
+        Boost::program_options
 )
 
 # set the name of the executable
@@ -72,6 +102,19 @@ target_link_libraries(
         PUBLIC
         FrankyCPPlib
 )
+
+# The executable may need access to generated headers
+target_include_directories(
+        ${exeName}
+        PRIVATE
+        ${PROJECT_BINARY_DIR}
+)
+
+# STRICT_WARNINGS for CI: treat warnings as errors when enabled
+if (MSVC AND STRICT_WARNINGS)
+    target_compile_options(FrankyCPPlib PRIVATE /WX)
+    target_compile_options(${exeName} PRIVATE /WX)
+endif()
 
 # copy config files and opening books to the build directories
 add_custom_command(
@@ -92,3 +135,5 @@ install(DIRECTORY ${PROJECT_SOURCE_DIR}/books
         DESTINATION ${PROJECT_SOURCE_DIR}/Release/bin
         PATTERN "*.cache.*" EXCLUDE
 )
+
+# Note: No GoogleTest includes are injected into production targets anymore.

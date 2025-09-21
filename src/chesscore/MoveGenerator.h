@@ -20,7 +20,7 @@
 #ifndef FRANKYCPP_MOVEGENERATOR_H
 #define FRANKYCPP_MOVEGENERATOR_H
 
-#include "gtest/gtest_prod.h"
+#include "common/gtest_friends.h"
 #include <types/types.h>
 
 // forward declaration

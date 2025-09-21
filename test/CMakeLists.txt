@@ -39,7 +39,21 @@ add_executable(
         enginetest/TestSuite_Test.cpp
 
         TimingTests.cpp
+        Test_Fens.h
 )
+
+# Ensure access to generated headers (e.g., version.h) and local test headers
+target_include_directories(
+        ${testExeName}
+        PRIVATE
+        ${PROJECT_BINARY_DIR}
+        ${PROJECT_SOURCE_DIR}/test
+)
+
+# STRICT_WARNINGS for CI: treat warnings as errors when enabled
+if (MSVC AND STRICT_WARNINGS)
+    target_compile_options(${testExeName} PRIVATE /WX)
+endif()
 
 target_link_libraries(
         ${testExeName}

@@ -22,6 +22,7 @@
 #include <string>
 
 #include "chesscore/Position.h"
+#include "chesscore/Zobrist.h"
 #include "init.h"
 
 using namespace std;

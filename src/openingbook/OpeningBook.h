@@ -30,7 +30,7 @@
 #include <mutex>
 #include <thread>
 
-#include "gtest/gtest_prod.h"
+#include "common/gtest_friends.h"
 
 typedef std::vector<std::string> Moves;
 

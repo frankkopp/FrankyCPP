@@ -13,17 +13,26 @@ message(STATUS "FrankyCPP v${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
 # Build all third-party libs statically unless a subproject overrides it
 set(BUILD_SHARED_LIBS OFF)
 
+# CI-friendly toggle: treat warnings as errors when enabled
+option(STRICT_WARNINGS "Treat all warnings as errors" OFF)
+
 # updates template file and replaces placeholder variables
 configure_file(src/version.h.in version.h)
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # C++ settings
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Unit testing enabled
-enable_testing()
+# CI-friendly toggles
+option(FRANKYCPP_BUILD_TESTS "Build unit tests" ON)
+option(FRANKYCPP_BUILD_BENCHMARKS "Build benchmarks" ON)
+option(FRANKYCPP_USE_PCH "Enable precompiled headers" ON)
+
+# Unit testing enabled only if requested
+if (FRANKYCPP_BUILD_TESTS)
+    enable_testing()
+endif()
 
 # Disable Boost auto-linking; we link explicitly via CMake
 add_compile_definitions(BOOST_ALL_NO_LIB)
@@ -88,20 +97,16 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     # Feature toggles
     option(ENABLE_STD_EXECUTION "Define HAS_EXECUTION_LIB to enable <execution> usage" ON)
     if(ENABLE_STD_EXECUTION)
-        add_compile_definitions(HAS_EXECUTION_LIB)
         message(STATUS "HAS_EXECUTION_LIB enabled")
     endif()
 
     option(ENABLE_BMI2_PEXT "Define HAS_PEXT and enable BMI2-related code paths" ON)
     if(ENABLE_BMI2_PEXT)
-        add_compile_definitions(HAS_PEXT)
-        add_compile_options(/arch:AVX2)
         message(STATUS "HAS_PEXT enabled; adding /arch:AVX2 for BMI2 support")
     endif()
 
-    option(ENABLE_AVX2 "Enable AVX2 instruction set (/arch:AVX2)" ON)
+    option(ENABLE_AVX2 "Enable AVX2 instruction set (/arch:AVX2)" OFF)
     if(ENABLE_AVX2)
-        add_compile_options(/arch:AVX2)
         message(STATUS "AVX2 enabled (/arch:AVX2)")
     endif()
 
@@ -195,7 +200,11 @@ message(STATUS "Compiler flags: ${CMAKE_CXX_FLAGS}")
 message(STATUS "Compiler DEBUG flags: ${CMAKE_CXX_FLAGS_DEBUG}")
 message(STATUS "Compiler RELEASE flags: ${CMAKE_CXX_FLAGS_RELEASE}")
 
-# For downloading with GIT
+# Boost via vcpkg CONFIG package (kept)
+set(Boost_NO_WARN_NEW_VERSIONS ON)
+find_package(Boost CONFIG REQUIRED COMPONENTS program_options serialization)
+
+# For downloading with GIT (required by FetchContent)
 message(STATUS "Finding GIT...")
 set(GIT_EXECUTABLE)
 find_package(Git)
@@ -209,77 +218,17 @@ set(FETCHCONTENT_QUIET OFF)
 set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 include(FetchContent)
 
-# Boost - needs to be installed - done via vcpkg
-#set(BOOST_DEBUG FALSE)
-#set(BOOST_USE_MULTITHREADED TRUE)
-#set(BOOST_USE_STATIC_LIBS TRUE)
-#set(BOOST_USE_STATIC_RUNTIME FALSE)
-#set(BOOST_ALL_NO_LIB 0)
-#set(BOOST_LIB_DIAGNOSTIC 1)
-#set(Boost_NO_WARN_NEW_VERSIONS 1)
-#find_package(Boost 1.72.0 REQUIRED COMPONENTS serialization program_options CONFIG)
-#if (Boost_FOUND)
-#    message(STATUS "BOOST found: ${Boost_ROOT} ${Boost_INCLUDE_DIRS}")
-#    include_directories(${Boost_INCLUDE_DIRS})
-#else ()
-#    message(FATAL_ERROR "BOOST NOT found:")
-#endif ()
-#include_directories(${Boost_INCLUDE_DIRS})
-
-#find_package(Boost REQUIRED COMPONENTS program_options)
-#target_link_libraries(main PRIVATE Boost::program_options)
-#
-#find_package(Boost REQUIRED COMPONENTS serialization)
-#target_link_libraries(main PRIVATE Boost::serialization)
-
-# Boost - needed for program_options and serialization
-if(POLICY CMP0167)
-    cmake_policy(SET CMP0167 OLD)
-endif()
-
-# Then later in your Boost section:
-message(STATUS "Finding Boost...")
-set(Boost_NO_WARN_NEW_VERSIONS 1)
-set(Boost_USE_STATIC_LIBS ON)
-set(Boost_USE_MULTITHREADED ON)
-# Keep the MSVC runtime dynamic (/MD). If you want /MT, set this to ON and
-# change your MSVC flags accordingly.
-set(Boost_USE_STATIC_RUNTIME OFF)
-
-# Work out include/lib roots from the active vcpkg triplet in this build tree
-set(_VCPKG_TRIPLET_DIR "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}")
-message(STATUS "Using Boost from ${_VCPKG_TRIPLET_DIR}")
-set(BOOST_ROOT "${_VCPKG_TRIPLET_DIR}")
-set(Boost_INCLUDE_DIR "${_VCPKG_TRIPLET_DIR}/include")
-set(BOOST_LIBRARYDIR "${_VCPKG_TRIPLET_DIR}/lib")
-
-# This is important - use MODULE instead of CONFIG to use CMake's built-in FindBoost
-find_package(Boost 1.72.0 REQUIRED COMPONENTS program_options serialization)
-
-if (Boost_FOUND)
-    message(STATUS "BOOST found: version ${Boost_VERSION}")
-    message(STATUS "BOOST include dirs: ${Boost_INCLUDE_DIRS}")
-    include_directories(${Boost_INCLUDE_DIRS})
-    link_directories(${Boost_LIBRARY_DIRS})
-else()
-    message(FATAL_ERROR "BOOST NOT found")
-endif()
-
-
-# FMT
-message(STATUS "Downloading/Update FMT")
+# FMT pinned
+message(STATUS "Downloading/Update FMT (pinned)")
 FetchContent_Declare(
         fmt
         GIT_REPOSITORY https://github.com/fmtlib/fmt.git
         GIT_TAG 8.0.1
 )
 FetchContent_MakeAvailable(fmt)
-include_directories(
-        ${fmt_SOURCE_DIR}/include
-)
 
-# SPDLOG
-message(STATUS "Downloading/Update SPDLOG")
+# SPDLOG pinned (using external fmt)
+message(STATUS "Downloading/Update SPDLOG (pinned)")
 FetchContent_Declare(
         spdlog
         GIT_REPOSITORY https://github.com/gabime/spdlog.git
@@ -288,48 +237,51 @@ FetchContent_Declare(
 option(SPDLOG_FMT_EXTERNAL "Use external fmt" ON)
 set(SPDLOG_FMT_EXTERNAL ON)
 FetchContent_MakeAvailable(spdlog)
-include_directories(
-        ${spdlog_SOURCE_DIR}/include
-)
 
-# GOOGLE TEST
-message(STATUS "Downloading/Update Google Test")
-FetchContent_Declare(
-        googletest
-        GIT_REPOSITORY https://github.com/google/googletest.git
-        GIT_TAG v1.13.0
-)
-FetchContent_Declare(googletest)
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-option(INSTALL_GMOCK "Install GMock" OFF)
-option(INSTALL_GTEST "Install GTest" OFF)
-FetchContent_MakeAvailable(googletest)
-include_directories(
-        ${googletest_SOURCE_DIR}/googletest/include
-)
+# GOOGLE TEST pinned (only if building tests)
+if (FRANKYCPP_BUILD_TESTS)
+    message(STATUS "Downloading/Update Google Test (pinned)")
+    FetchContent_Declare(
+            googletest
+            GIT_REPOSITORY https://github.com/google/googletest.git
+            GIT_TAG v1.13.0
+    )
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    option(INSTALL_GMOCK "Install GMock" OFF)
+    option(INSTALL_GTEST "Install GTest" OFF)
+    FetchContent_MakeAvailable(googletest)
+endif()
 
-# GOOGLE BENCHMARK
-FetchContent_Declare(
-        googlebenchmark
-        GIT_REPOSITORY https://github.com/google/benchmark.git
-        GIT_TAG v1.7.1) # need master for benchmark::benchmark
-option(BENCHMARK_ENABLE_LTO "Enable LTO" ON)
-option(BENCHMARK_ENABLE_GTEST_TESTS "Build benchmark unit tests" OFF)
-option(BENCHMARK_ENABLE_TESTING "Enable benchmark tests" OFF)
-option(BENCHMARK_ENABLE_INSTALL "Install benchmark" OFF)
-FetchContent_MakeAvailable(googlebenchmark)
-include_directories(
-        ${googlebenchmark_SOURCE_DIR}/include
-)
+# GOOGLE BENCHMARK pinned (only if building benchmarks)
+if (FRANKYCPP_BUILD_BENCHMARKS)
+    message(STATUS "Downloading/Update Google Benchmark (pinned)")
+    FetchContent_Declare(
+            googlebenchmark
+            GIT_REPOSITORY https://github.com/google/benchmark.git
+            GIT_TAG v1.7.1
+    )
+    option(BENCHMARK_ENABLE_LTO "Enable LTO" ON)
+    option(BENCHMARK_ENABLE_GTEST_TESTS "Build benchmark unit tests" OFF)
+    option(BENCHMARK_ENABLE_TESTING "Enable benchmark tests" OFF)
+    option(BENCHMARK_ENABLE_INSTALL "Install benchmark" OFF)
+    FetchContent_MakeAvailable(googlebenchmark)
+endif()
 
 # include sub directories
-include_directories(
-        ${PROJECT_SOURCE_DIR}/src
-        ${PROJECT_SOURCE_DIR}/test
-        ${PROJECT_SOURCE_DIR}/testbench
-)
+# Removed global include directories for src/test/testbench; handled per-target instead
+# include_directories(
+#         ${PROJECT_SOURCE_DIR}/src
+#         ${PROJECT_SOURCE_DIR}/test
+#         ${PROJECT_SOURCE_DIR}/testbench
+# )
 
 # project sub directories - need to have their own CMakeList.txt
 add_subdirectory(src)
-add_subdirectory(test)
-add_subdirectory(testbench)
+
+if (FRANKYCPP_BUILD_TESTS)
+    add_subdirectory(test)
+endif()
+
+if (FRANKYCPP_BUILD_BENCHMARKS)
+    add_subdirectory(testbench)
+endif()

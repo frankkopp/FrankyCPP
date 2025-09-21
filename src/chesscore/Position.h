@@ -21,10 +21,8 @@
 #define FRANKYCPP_POSITION_H
 
 #include "types/types.h"
-#include "Zobrist.h"
 
-#include "gtest/gtest_prod.h"
-
+#include <_deps/googletest-src/googletest/include/gtest/gtest_prod.h>
 #include <array>
 
 // Flag for boolean states with undetermined state

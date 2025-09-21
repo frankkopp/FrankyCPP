@@ -30,7 +30,6 @@
 
 // add headers for timing output similar to SpeedTests
 #include <chrono>
-#include <cstring>
 #include <functional>
 #include <iomanip>
 #include <limits>

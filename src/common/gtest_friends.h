@@ -17,33 +17,11 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef FRANKYCPP_TYPES_H
-#define FRANKYCPP_TYPES_H
-
-// Allow fmt to format types with operator<< (e.g., Value, Square)
-#include <fmt/ostream.h>
-
-// include all type headers for convenience
-#include "bitboard.h"
-#include "castlingrights.h"
-#include "color.h"
-#include "depth.h"
-#include "direction.h"
-#include "file.h"
-#include "globals.h"
-#include "init.h"
-#include "macros.h"
-#include "move.h"
-#include "movelist.h"
-#include "orientation.h"
-#include "piece.h"
-#include "piecetype.h"
-#include "rank.h"
-#include "score.h"
-#include "square.h"
-#include "timeunits.h"
-#include "value.h"
-#include "valuetype.h"
-#include "zobristkey.h"
-
-#endif//FRANKYCPP_TYPES_H
+// FrankyCPP
+// Minimal FRIEND_TEST macro for production headers without depending on GoogleTest.
+// This mirrors the expansion from gtest/gtest_prod.h but avoids including gtest.
+#pragma once
+#ifndef FRIEND_TEST
+  #define FRIEND_TEST(test_case_name, test_name) \
+    friend class test_case_name##_##test_name##_Test
+#endif

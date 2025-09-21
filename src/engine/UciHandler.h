@@ -25,7 +25,7 @@
 #include <iosfwd>
 #include <memory>
 
-#include "gtest/gtest_prod.h"
+#include "common/gtest_friends.h"
 
 #include "SearchLimits.h"
 #include "UciOptions.h"

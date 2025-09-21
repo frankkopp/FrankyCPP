@@ -12,6 +12,19 @@ add_executable(
         ChessCoreBench.cpp
         TimingBench.cpp
         )
+
+# Ensure access to generated headers (e.g., version.h)
+target_include_directories(
+        ${benchExeName}
+        PRIVATE
+        ${PROJECT_BINARY_DIR}
+)
+
+# STRICT_WARNINGS for CI: treat warnings as errors when enabled
+if (MSVC AND STRICT_WARNINGS)
+    target_compile_options(${benchExeName} PRIVATE /WX)
+endif()
+
 target_link_libraries(
         ${benchExeName}
         PUBLIC
@@ -19,4 +32,3 @@ target_link_libraries(
         benchmark
         benchmark_main
 )
-
