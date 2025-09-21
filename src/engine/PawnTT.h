@@ -56,7 +56,7 @@ public:
     Value endvalue = VALUE_NONE;
 
     [[nodiscard]] std::string str() const {
-      return fmt::format("id {} midvalue {} endvalue {}", key, midvalue, endvalue);
+      return std::format("id {} midvalue {} endvalue {}", key, midvalue, endvalue);
     }
 
     std::ostream& operator<<(std::ostream& os) const {

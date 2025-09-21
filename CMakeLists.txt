@@ -111,7 +111,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     # Base and per-config flags (no manual /GL, /arch gated via option)
     set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /favor:INTEL64 /W4 /GR /EHsc /MP /Oi /Ot /FS")
     set(CMAKE_CXX_FLAGS_RELEASE "/O2 /Ob3 /Oy /Oi /Ot /GT /Gw /Gy /DNDEBUG")
-    # Remove explicit /Zi to let CMake control debug info via CMAKE_MSVC_DEBUG_INFORMATION_FORMAT
+    # Remove explicit /Zi to let CMake control debug info via CMAKE_MSVC_\DEBUG_INFORMATION_FORMAT
     set(CMAKE_CXX_FLAGS_DEBUG "/Od /Ob0 /RTC1 /permissive-")
 
     # Feature toggles
@@ -166,7 +166,7 @@ message(STATUS "Downloading/Update SPDLOG (pinned, std::format)")
 FetchContent_Declare(
         spdlog
         GIT_REPOSITORY https://github.com/gabime/spdlog.git
-        GIT_TAG v1.10.0
+        GIT_TAG v1.15.3
 )
 # Ensure spdlog uses std::format (C++20)
 option(SPDLOG_USE_STD_FORMAT "Use std::format instead of fmt" ON)
@@ -185,7 +185,7 @@ if (FRANKYCPP_BUILD_TESTS)
     FetchContent_Declare(
             googletest
             GIT_REPOSITORY https://github.com/google/googletest.git
-            GIT_TAG v1.13.0
+            GIT_TAG v1.17.0
     )
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
     option(INSTALL_GMOCK "Install GMock" OFF)
@@ -199,7 +199,7 @@ if (FRANKYCPP_BUILD_BENCHMARKS)
     FetchContent_Declare(
             googlebenchmark
             GIT_REPOSITORY https://github.com/google/benchmark.git
-            GIT_TAG v1.7.1
+            GIT_TAG v1.9.4
     )
     option(BENCHMARK_ENABLE_LTO "Enable LTO" ON)
     option(BENCHMARK_ENABLE_GTEST_TESTS "Build benchmark unit tests" OFF)

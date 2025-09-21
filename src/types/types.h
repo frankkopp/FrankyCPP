@@ -20,9 +20,6 @@
 #ifndef FRANKYCPP_TYPES_H
 #define FRANKYCPP_TYPES_H
 
-// Provide fmt::format via std::format shim (no external fmt required)
-#include "common/format_compat.h"
-
 // include all type headers for convenience
 #include "bitboard.h"
 #include "castlingrights.h"

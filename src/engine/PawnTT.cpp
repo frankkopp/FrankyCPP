@@ -160,7 +160,7 @@ void PawnTT::put(Entry* entryPtr, const Key key, const Score score) {
 }
 
 std::string PawnTT::str() {
-  return fmt::format(
+  return std::format(
     "PawnTT: size {:L} MB max entries {:L} of size {:L} Bytes entries {:L} puts {:L} "
     "updates {:L} collisions {:L} overwrites {:L} hits {:L} ({:L}%) misses {:L} ({:L}%)",
     sizeInByte / MB, maxNumberOfEntries, sizeof(Entry), numberOfEntries,

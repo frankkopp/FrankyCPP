@@ -1320,7 +1320,7 @@ void Search::initialize() {
     if (!book) {
       // only initialize once
       if (!std::filesystem::exists(SearchConfig::BOOK_PATH)) {
-        const std::string message = fmt::format("Opening Book '{}' not found. Disabling book usage.", SearchConfig::BOOK_PATH);
+        const std::string message = std::format("Opening Book '{}' not found. Disabling book usage.", SearchConfig::BOOK_PATH);
         LOG__ERROR(Logger::get().BOOK_LOG, "{}", message);
         SearchConfig::USE_BOOK = false;
       }

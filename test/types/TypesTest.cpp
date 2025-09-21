@@ -305,7 +305,7 @@ TEST_F(TypesTest, elapsed) {
   const TimePoint start = clock::now();
   TimePoint jetzt = clock::now();
   for (int i = 0; i < 500; ++i){
-    std::cout << fmt::format(deLocale, "{:3}. Since start: {:L} ns - last jetzt: {:L} ns\n", i, elapsedSince(start).count(), elapsedSince(jetzt).count());
+    std::cout << std::format(deLocale, "{:3}. Since start: {:L} ns - last jetzt: {:L} ns\n", i, elapsedSince(start).count(), elapsedSince(jetzt).count());
     jetzt = clock::now();
   }
   std::cout << std::endl;

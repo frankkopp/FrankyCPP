@@ -44,7 +44,7 @@ class Perft {
 
 public:
   Perft();
-  explicit Perft(const std::string &fen);
+  explicit Perft(const std::string &f);
 
   void perft(int maxDepth);
   void perft(int maxDepth, bool onDemand);
@@ -67,8 +67,8 @@ public:
 
 private:
   void resetCounter();
-  uint64_t miniMax(int depth, Position &position, MoveGenerator *moveGeneratorList);
-  uint64_t miniMaxOD(int depth, Position &position, MoveGenerator *moveGeneratorList);
+  uint64_t miniMax(int depth, Position &position, MoveGenerator *pMg);
+  uint64_t miniMaxOD(int depth, Position &position, MoveGenerator *pMg);
 };
 
 

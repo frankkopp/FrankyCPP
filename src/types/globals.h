@@ -20,14 +20,13 @@
 #ifndef FRANKYCPP_GLOBALS_H
 #define FRANKYCPP_GLOBALS_H
 
-#include "common/format_compat.h"
 #include <locale>
 #include <cstdint>
 #include <iostream>
 #include <chrono>
 
 // Here we define some global constants  to be used throughout the code.
-// As types are imported likely everywhere this will be included in types.h
+// As types are imported, likely everywhere this will be included in types.h
 
 // standard chess starting position
 constexpr auto START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";

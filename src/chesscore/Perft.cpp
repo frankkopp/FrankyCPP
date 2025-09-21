@@ -29,11 +29,11 @@ Perft::Perft() { fen = START_POSITION_FEN; }
 
 Perft::Perft(const std::string& f) { fen = f; }
 
-void Perft::perft(int maxDepth) { perft(maxDepth, false); }
+void Perft::perft(const int maxDepth) { perft(maxDepth, false); }
 
 void Perft::stop() { stopFlag = true; }
 
-void Perft::perft(int startDepth, int endDepth, bool onDemand) {
+void Perft::perft(const int startDepth, const int endDepth, const bool onDemand) {
   stopFlag = false;
   for (int depth = startDepth; depth <= endDepth; ++depth) {
     if (stopFlag) {
@@ -44,13 +44,13 @@ void Perft::perft(int startDepth, int endDepth, bool onDemand) {
   }
 }
 
-void Perft::perft(int maxDepth, bool onDemand) {
+void Perft::perft(const int maxDepth, const bool onDemand) {
   stopFlag = false;
   resetCounter();
 
   Position position;
   try { position = Position(fen); } catch (std::invalid_argument& e) {
-    std::cerr << fmt::format("Fen for perft invalid: {}", e.what()) << std::endl;
+    std::cerr << std::format("Fen for perft invalid: {}", e.what()) << std::endl;
     return;
   }
   MoveGenerator mg[MAX_DEPTH];
@@ -69,7 +69,7 @@ void Perft::perft(int maxDepth, bool onDemand) {
   os.clear();
 
   uint64_t result;
-  auto start = high_resolution_clock::now();
+  const auto start = high_resolution_clock::now();
 
   if (onDemand) { result = miniMaxOD(maxDepth, position, mg); }
   else { result = miniMax(maxDepth, position, mg); }
@@ -79,8 +79,8 @@ void Perft::perft(int maxDepth, bool onDemand) {
     return;
   }
 
-  auto finish       = high_resolution_clock::now();
-  uint64_t duration = std::chrono::duration_cast<milliseconds>(finish - start).count();
+  const auto finish       = high_resolution_clock::now();
+  const uint64_t duration = std::chrono::duration_cast<milliseconds>(finish - start).count();
 
   nodes = result;
 
@@ -102,7 +102,7 @@ void Perft::perft(int maxDepth, bool onDemand) {
   std::cout << os.str() << std::endl;
 }
 
-uint64_t Perft::miniMaxOD(int depth, Position& position, MoveGenerator* pMg) {
+uint64_t Perft::miniMaxOD(const int depth, Position& position, MoveGenerator* pMg) {
   pMg[depth].reset();
 
   // Iterate over moves
@@ -127,16 +127,16 @@ uint64_t Perft::miniMaxOD(int depth, Position& position, MoveGenerator* pMg) {
 }
 
 
-uint64_t Perft::miniMax(int depth, Position& position, MoveGenerator* pMg) {
+uint64_t Perft::miniMax(const int depth, Position& position, MoveGenerator* pMg) {
   pMg[depth].reset();
 
   // Iterate over moves
   uint64_t totalNodes = 0;
 
   // moves to search recursively
-  MoveList moves = *pMg[depth].generatePseudoLegalMoves(position, GenAll);
+  const MoveList moves = *pMg[depth].generatePseudoLegalMoves(position, GenAll);
 
-  for (Move move : moves) {
+  for (const Move move : moves) {
     if (stopFlag) { return 0; }
 
     position.doMove(move);
@@ -178,12 +178,12 @@ inline void Perft::leaf_node(const Position& position, const Move move)
 }
 
 
-void Perft::perft_divide(int maxDepth, bool onDemand) {
+void Perft::perft_divide(const int maxDepth, const bool onDemand) {
   resetCounter();
 
   Position position;
   try { position = Position(fen); } catch (std::invalid_argument& e) {
-    std::cerr << fmt::format("Fen for perft invalid: {}", e.what()) << std::endl;
+    std::cerr << std::format("Fen for perft invalid: {}", e.what()) << std::endl;
     return;
   }
   MoveGenerator mg[MAX_DEPTH];
