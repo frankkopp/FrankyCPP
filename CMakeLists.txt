@@ -1,14 +1,14 @@
-message("====================================================================")
-message("FrankyCPP Main")
-message("CMAKE " ${CMAKE_VERSION} " " ${CMAKE_COMMAND})
-message("Compiler is " ${CMAKE_CXX_COMPILER_ID} " " ${CMAKE_CXX_COMPILER_VERSION} " " ${CMAKE_CXX_COMPILER})
-message("====================================================================")
+message(STATUS "====================================================================")
+message(STATUS "FrankyCPP Main")
+message(STATUS "CMAKE ${CMAKE_VERSION} ${CMAKE_COMMAND}")
+message(STATUS "Compiler is ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION} ${CMAKE_CXX_COMPILER}")
+message(STATUS "====================================================================")
 
 cmake_minimum_required(VERSION 3.16)
 
 # Project name and version
 project(FrankyCPP VERSION 0.5)
-message("FrankyCPP v" ${PROJECT_VERSION_MAJOR} "." ${PROJECT_VERSION_MINOR})
+message(STATUS "FrankyCPP v${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
 
 # Build all third-party libs statically unless a subproject overrides it
 set(BUILD_SHARED_LIBS OFF)
@@ -19,6 +19,8 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # C++ settings
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Unit testing enabled
 enable_testing()
@@ -27,10 +29,10 @@ enable_testing()
 add_compile_definitions(BOOST_ALL_NO_LIB)
 
 # Platform
-message("Recognized platform is " ${CMAKE_SYSTEM_NAME} " " ${CMAKE_SYSTEM_VERSION})
+message(STATUS "Recognized platform is ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_VERSION}")
 
 # Compiler Settings
-message("Compiler is " ${CMAKE_CXX_COMPILER_ID} " " ${CMAKE_CXX_COMPILER_VERSION} " " ${CMAKE_CXX_COMPILER})
+message(STATUS "Compiler is ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION} ${CMAKE_CXX_COMPILER}")
 
 # On MSVC choose the static vcpkg triplet by default so third-party libs (e.g., Boost)
 # are linked statically while keeping the MSVC CRT dynamic (/MD).
@@ -62,113 +64,143 @@ if (WIN32)
     endif()
 endif()
 
-# Microsoft Visual Compiler
+# Microsoft Visual Compiler only (non-MSVC toolchains are commented out below for later work)
 if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-# this needs to be added to CLION cmake options
-# -G Ninja
-# /LTCG  throws errors
-message("Compiler Settings: MSVC")
-set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /favor:INTEL64 /Gr /W4 /w14640 /GR /EHsc /arch:AVX2 /MP /Oi /Ot /GL")
-set(CMAKE_CXX_FLAGS_RELEASE "/Qpar /O2 /Ob3 /Oy /Oi /Ot /GT /Gw /Gy /GL /MD /DNDEBUG")
-set(CMAKE_CXX_FLAGS_DEBUG "/Od /Ob0 /MDd /Zi /RTC1 /permissive-")
 
-# std::execution lib for parallel std operations. Not available on all platforms
-message("Using HAS_EXECUTION_LIB")
-add_compile_definitions(HAS_EXECUTION_LIB)
-# Availability of PEXT compiler intrinsic. Not available on all platforms
-message("Using HAS_PEXT")
-add_compile_definitions(HAS_PEXT)
+    # this needs to be added to CLION cmake options: -G Ninja
+    message(STATUS "Compiler Settings: MSVC")
 
- # GNU compiler for Windows WSL and Travis
-elseif (CMAKE_COMPILER_IS_GNUCXX)
-    message("Compiler Settings: GNU")
+    # Prefer IPO over manual /GL and /LTCG flags
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO ON)
 
-    set(CMAKE_CXX_FLAGS "-std=c++2a -m64 -msse -msse3 -msse4 -mpopcnt -mbmi2 -Wall -Wextra -Wpedantic -Wno-error=pedantic -Wno-unknown-pragmas -Wno-variadic-macros -Wno-sign-compare -Wno-subobject-linkage")
-    set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 --coverage -Wno-unused-parameter -Wno-unused-variable")
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-    # additional: -Wshadow  -Wno-unknown-pragmas -Weffc++ -Wimplicit-fallthrough -Wswitch -Wpointer-arith -Wcast-qual -Wconversion -Wno-sign-conversion -Wno-error=padded -Wno-error=inline")
+    # Ensure linker is compatible with LTCG in Release
+    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /INCREMENTAL:NO")
 
-    # link time optimization on Travis does not work (yet)
-    # # Test for -flto support
-    # include(CheckCXXCompilerFlag)
-    # include(CheckCCompilerFlag)
-    # CHECK_CXX_COMPILER_FLAG(-flto CXX_SUPPORTS_FLTO)
-    # CHECK_C_COMPILER_FLAG(-flto C_SUPPORTS_FLTO)
-    # if(CXX_SUPPORTS_FLTO AND C_SUPPORTS_FLTO)
-    #     message(STATUS "Compiling with FLTO support")
-    #     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto")
-    #     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
-    #     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -flto")
-    #     set(CMAKE_AR "gcc-ar")
-    #     set(CMAKE_C_ARCHIVE_CREATE "<CMAKE_AR> qcs <LINK_FLAGS> ")
-    #     set(CMAKE_C_ARCHIVE_FINISH true)
-    #     set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> qcs <LINK_FLAGS> ")
-    #     set(CMAKE_CXX_ARCHIVE_FINISH true)
-    # endif()
+    # Ensure we use dynamic CRT (/MD in Release, /MDd in Debug) consistently
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 
-    # Test if we are on a Travis environment
-    if(DEFINED ENV{TRAVIS})
-        message("TRAVIS BUILD")
-    else()
-        message("NONE TRAVIS BUILD")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
+    # Base and per-config flags (no manual /GL, /arch gated via option)
+    set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /favor:INTEL64 /W4 /GR /EHsc /MP /Oi /Ot")
+    set(CMAKE_CXX_FLAGS_RELEASE "/O2 /Ob3 /Oy /Oi /Ot /GT /Gw /Gy /DNDEBUG")
+    set(CMAKE_CXX_FLAGS_DEBUG "/Od /Ob0 /Zi /RTC1 /permissive-")
+
+    # Feature toggles
+    option(ENABLE_STD_EXECUTION "Define HAS_EXECUTION_LIB to enable <execution> usage" ON)
+    if(ENABLE_STD_EXECUTION)
+        add_compile_definitions(HAS_EXECUTION_LIB)
+        message(STATUS "HAS_EXECUTION_LIB enabled")
     endif()
 
-    # Availability of PEXT compiler intrinsic. Not available on all platforms
-    message("Using HAS_PEXT")
-    add_compile_definitions(HAS_PEXT)
+    option(ENABLE_BMI2_PEXT "Define HAS_PEXT and enable BMI2-related code paths" ON)
+    if(ENABLE_BMI2_PEXT)
+        add_compile_definitions(HAS_PEXT)
+        add_compile_options(/arch:AVX2)
+        message(STATUS "HAS_PEXT enabled; adding /arch:AVX2 for BMI2 support")
+    endif()
 
-    # std::execution lib for parallel std operations. Only on gcc-10 and above
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "10")
-        message("GCC >= 10.x")
-        message("Using HAS_EXECUTION_LIB")
-#        add_compile_definitions(HAS_EXECUTION_LIB)
-    else ()
-        message("GCC < 10.x")
-    endif ()
+    option(ENABLE_AVX2 "Enable AVX2 instruction set (/arch:AVX2)" ON)
+    if(ENABLE_AVX2)
+        add_compile_options(/arch:AVX2)
+        message(STATUS "AVX2 enabled (/arch:AVX2)")
+    endif()
 
-# Clang compiler - needs more testing
-elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    message("Compiler Settings: Clang")
-    set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra -mpopcnt -mbmi2")
-    set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fprofile-instr-generate -fcoverage-mapping -Wpedantic -Wshadow -Wno-conversion -Wunreachable-code -Wuninitialized  -Wold-style-cast -Wunused-variable -Wfloat-equal -Wno-gnu-zero-variadic-macro-arguments")
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-
-    # std::execution lib for parallel std operations. Not available on all platforms
-    message("Using HAS_EXECUTION_LIB")
-    add_compile_definitions(HAS_EXECUTION_LIB)
-    # Availability of PEXT compiler intrinsic. Not available on all platforms
-    message("Using HAS_PEXT")
-    add_compile_definitions(HAS_PEXT)
-
-# Apple OS X compiler
-elseif (CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
-    message("Compiler Settings: AppleClang")
-    set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra -mpopcnt -mbmi2")
-    set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fprofile-instr-generate -fcoverage-mapping -Wpedantic -Wshadow -Wno-conversion -Wunreachable-code -Wuninitialized  -Wold-style-cast -Wunused-variable -Wfloat-equal -Wno-gnu-zero-variadic-macro-arguments")
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-
-    # std::execution lib for parallel std operations. Not available on all platforms
-    # message("Using HAS_EXECUTION_LIB")
-    # add_compile_definitions(HAS_EXECUTION_LIB)
-    # Availability of PEXT compiler intrinsic. Not available on all platforms
-    message("Using HAS_PEXT")
-    add_compile_definitions(HAS_PEXT)
 endif ()
 
+# -----------------------------------------------------------------------------
+# Non-MSVC toolchains are intentionally commented out for now and will be
+# revisited later. Keeping them here for reference.
+# -----------------------------------------------------------------------------
+#  # GNU compiler for Windows WSL and Travis
+# elseif (CMAKE_COMPILER_IS_GNUCXX)
+#     message(STATUS "Compiler Settings: GNU")
+#
+#     set(CMAKE_CXX_FLAGS "-std=c++2a -m64 -msse -msse3 -msse4 -mpopcnt -mbmi2 -Wall -Wextra -Wpedantic -Wno-error=pedantic -Wno-unknown-pragmas -Wno-variadic-macros -Wno-sign-compare -Wno-subobject-linkage")
+#     set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 --coverage -Wno-unused-parameter -Wno-unused-variable")
+#     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+#     # additional: -Wshadow  -Wno-unknown-pragmas -Weffc++ -Wimplicit-fallthrough -Wswitch -Wpointer-arith -Wcast-qual -Wconversion -Wno-sign-conversion -Wno-error=padded -Wno-error=inline")
+#
+#     # link time optimization on Travis does not work (yet)
+#     # # Test for -flto support
+#     # include(CheckCXXCompilerFlag)
+#     # include(CheckCCompilerFlag)
+#     # CHECK_CXX_COMPILER_FLAG(-flto CXX_SUPPORTS_FLTO)
+#     # CHECK_C_COMPILER_FLAG(-flto C_SUPPORTS_FLTO)
+#     # if(CXX_SUPPORTS_FLTO AND C_SUPPORTS_FLTO)
+#     #     message(STATUS "Compiling with FLTO support")
+#     #     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto")
+#     #     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
+#     #     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -flto")
+#     #     set(CMAKE_AR "gcc-ar")
+#     #     set(CMAKE_C_ARCHIVE_CREATE "<CMAKE_AR> qcs <LINK_FLAGS> ")
+#     #     set(CMAKE_C_ARCHIVE_FINISH true)
+#     #     set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> qcs <LINK_FLAGS> ")
+#     #     set(CMAKE_CXX_ARCHIVE_FINISH true)
+#     # endif()
+#
+#     # Test if we are on a Travis environment
+#     if(DEFINED ENV{TRAVIS})
+#         message(STATUS "TRAVIS BUILD")
+#     else()
+#         message(STATUS "NONE TRAVIS BUILD")
+#         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto")
+#         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
+#     endif()
+#
+#     # Availability of PEXT compiler intrinsic. Not available on all platforms
+#     message(STATUS "Using HAS_PEXT")
+#     add_compile_definitions(HAS_PEXT)
+#
+#     # std::execution lib for parallel std operations. Only on gcc-10 and above
+#     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "10")
+#         message(STATUS "GCC >= 10.x")
+#         message(STATUS "Using HAS_EXECUTION_LIB")
+# #        add_compile_definitions(HAS_EXECUTION_LIB)
+#     else ()
+#         message(STATUS "GCC < 10.x")
+#     endif ()
+#
+# # Clang compiler - needs more testing
+# elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+#     message(STATUS "Compiler Settings: Clang")
+#     set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra -mpopcnt -mbmi2")
+#     set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fprofile-instr-generate -fcoverage-mapping -Wpedantic -Wshadow -Wno-conversion -Wunreachable-code -Wuninitialized  -Wold-style-cast -Wunused-variable -Wfloat-equal -Wno-gnu-zero-variadic-macro-arguments")
+#     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+#
+#     # std::execution lib for parallel std operations. Not available on all platforms
+#     message(STATUS "Using HAS_EXECUTION_LIB")
+#     add_compile_definitions(HAS_EXECUTION_LIB)
+#     # Availability of PEXT compiler intrinsic. Not available on all platforms
+#     message(STATUS "Using HAS_PEXT")
+#     add_compile_definitions(HAS_PEXT)
+#
+# # Apple OS X compiler
+# elseif (CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
+#     message(STATUS "Compiler Settings: AppleClang")
+#     set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra -mpopcnt -mbmi2")
+#     set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fprofile-instr-generate -fcoverage-mapping -Wpedantic -Wshadow -Wno-conversion -Wunreachable-code -Wuninitialized  -Wold-style-cast -Wunused-variable -Wfloat-equal -Wno-gnu-zero-variadic-macro-arguments")
+#     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+#
+#     # std::execution lib for parallel std operations. Not available on all platforms
+#     # message(STATUS "Using HAS_EXECUTION_LIB")
+#     # add_compile_definitions(HAS_EXECUTION_LIB)
+#     # Availability of PEXT compiler intrinsic. Not available on all platforms
+#     message(STATUS "Using HAS_PEXT")
+#     add_compile_definitions(HAS_PEXT)
+# endif ()
+
 # Print some info to be able to check which compiler has been picked
-message("Generator: " ${CMAKE_GENERATOR} " " ${CMAKE_MAKE_PROGRAM})
-message("Compiler flags: " ${CMAKE_CXX_FLAGS})
-message("Compiler DEBUG flags: " ${CMAKE_CXX_FLAGS_DEBUG})
-message("Compiler RELEASE flags: " ${CMAKE_CXX_FLAGS_RELEASE})
+message(STATUS "Generator: ${CMAKE_GENERATOR} ${CMAKE_MAKE_PROGRAM}")
+message(STATUS "Compiler flags: ${CMAKE_CXX_FLAGS}")
+message(STATUS "Compiler DEBUG flags: ${CMAKE_CXX_FLAGS_DEBUG}")
+message(STATUS "Compiler RELEASE flags: ${CMAKE_CXX_FLAGS_RELEASE}")
 
 # For downloading with GIT
-message("Finding GIT...")
+message(STATUS "Finding GIT...")
 set(GIT_EXECUTABLE)
 find_package(Git)
 if (GIT_FOUND)
-    message("GIT found: ${GIT_EXECUTABLE}")
+    message(STATUS "GIT found: ${GIT_EXECUTABLE}")
 else()
     message(FATAL_ERROR "GIT NOT found:")
 endif ()
@@ -187,7 +219,7 @@ include(FetchContent)
 #set(Boost_NO_WARN_NEW_VERSIONS 1)
 #find_package(Boost 1.72.0 REQUIRED COMPONENTS serialization program_options CONFIG)
 #if (Boost_FOUND)
-#    message("BOOST found: " ${Boost_ROOT} " " ${Boost_INCLUDE_DIRS})
+#    message(STATUS "BOOST found: ${Boost_ROOT} ${Boost_INCLUDE_DIRS}")
 #    include_directories(${Boost_INCLUDE_DIRS})
 #else ()
 #    message(FATAL_ERROR "BOOST NOT found:")
@@ -206,7 +238,7 @@ if(POLICY CMP0167)
 endif()
 
 # Then later in your Boost section:
-message("Finding Boost...")
+message(STATUS "Finding Boost...")
 set(Boost_NO_WARN_NEW_VERSIONS 1)
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
@@ -225,8 +257,8 @@ set(BOOST_LIBRARYDIR "${_VCPKG_TRIPLET_DIR}/lib")
 find_package(Boost 1.72.0 REQUIRED COMPONENTS program_options serialization)
 
 if (Boost_FOUND)
-    message("BOOST found: version ${Boost_VERSION}")
-    message("BOOST include dirs: ${Boost_INCLUDE_DIRS}")
+    message(STATUS "BOOST found: version ${Boost_VERSION}")
+    message(STATUS "BOOST include dirs: ${Boost_INCLUDE_DIRS}")
     include_directories(${Boost_INCLUDE_DIRS})
     link_directories(${Boost_LIBRARY_DIRS})
 else()
@@ -235,7 +267,7 @@ endif()
 
 
 # FMT
-message("Downloading/Update FMT")
+message(STATUS "Downloading/Update FMT")
 FetchContent_Declare(
         fmt
         GIT_REPOSITORY https://github.com/fmtlib/fmt.git
@@ -247,7 +279,7 @@ include_directories(
 )
 
 # SPDLOG
-message("Downloading/Update SPDLOG")
+message(STATUS "Downloading/Update SPDLOG")
 FetchContent_Declare(
         spdlog
         GIT_REPOSITORY https://github.com/gabime/spdlog.git
@@ -261,7 +293,7 @@ include_directories(
 )
 
 # GOOGLE TEST
-message("Downloading/Update Google Test")
+message(STATUS "Downloading/Update Google Test")
 FetchContent_Declare(
         googletest
         GIT_REPOSITORY https://github.com/google/googletest.git
