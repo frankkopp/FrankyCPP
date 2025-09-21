@@ -165,19 +165,19 @@ include(FetchContent)
 # Use spdlog from vcpkg instead of FetchContent
 find_package(spdlog CONFIG REQUIRED)
 
-# GOOGLE TEST pinned (only if building tests)
-if (FRANKYCPP_BUILD_TESTS)
-    message(STATUS "Downloading/Update Google Test (pinned)")
-    FetchContent_Declare(
-            googletest
-            GIT_REPOSITORY https://github.com/google/googletest.git
-            GIT_TAG v1.17.0
-    )
-    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-    option(INSTALL_GMOCK "Install GMock" OFF)
-    option(INSTALL_GTEST "Install GTest" OFF)
-    FetchContent_MakeAvailable(googletest)
-endif()
+# GOOGLE TEST removed: now provided by vcpkg (see test/CMakeLists.txt)
+# if (FRANKYCPP_BUILD_TESTS)
+#     message(STATUS "Downloading/Update Google Test (pinned)")
+#     FetchContent_Declare(
+#             googletest
+#             GIT_REPOSITORY https://github.com/google/googletest.git
+#             GIT_TAG v1.17.0
+#     )
+#     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+#     option(INSTALL_GMOCK "Install GMock" OFF)
+#     option(INSTALL_GTEST "Install GTest" OFF)
+#     FetchContent_MakeAvailable(googletest)
+# endif()
 
 # GOOGLE BENCHMARK pinned (only if building benchmarks)
 if (FRANKYCPP_BUILD_BENCHMARKS)

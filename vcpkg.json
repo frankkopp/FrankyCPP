@@ -4,6 +4,18 @@
   "dependencies": [
     "boost-program-options",
     "boost-serialization",
-    "spdlog"
-  ]
+    "spdlog",
+    "gtest"
+  ],
+  "overrides": [
+    {
+      "name": "gtest",
+      "version": "1.14.0"
+    },
+    {
+      "name": "spdlog",
+      "version": "1.15.3"
+    }
+  ],
+  "builtin-baseline": "29ff5b8131d0c6c8fcb8fbaef35992f0d507cd7c"
 }

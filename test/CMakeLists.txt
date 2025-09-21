@@ -4,6 +4,9 @@ message("====================================================================")
 
 cmake_minimum_required(VERSION 3.16)
 
+# GoogleTest via vcpkg
+find_package(GTest CONFIG REQUIRED)
+
 # Google Test executable
 set(testExeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR}_Test)
 include(GoogleTest)
@@ -61,12 +64,13 @@ if (MSVC AND STRICT_WARNINGS)
     target_compile_options(${testExeName} PRIVATE /WX)
 endif()
 
+# Link against project lib and vcpkg-provided GoogleTest targets
 target_link_libraries(
         ${testExeName}
         PUBLIC
         FrankyCPPlib
-        gtest
-        gtest_main
+        GTest::gtest
+        GTest::gtest_main
 )
 
 # copy config files and opening books to the build directories
@@ -76,4 +80,5 @@ add_custom_command(
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/books $<TARGET_FILE_DIR:${testExeName}>/books
 )
 
+# Register tests via CMake's GoogleTest module
 gtest_discover_tests(${testExeName})
