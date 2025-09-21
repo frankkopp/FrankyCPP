@@ -17,17 +17,26 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include "init.h"
 #include "common/Logging.h"
-#include "types/types.h"
-#include "version.h"
 #include "engine/SearchConfig.h"
 #include "enginetest/TestSuite.h"
+#include "init.h"
+#include "types/types.h"
+#include "version.h"
 
 #include <gtest/gtest.h>
 using testing::Eq;
 
-class TestSuite_Test : public ::testing::Test {
+inline bool isBulkRun() {
+  const auto* ut  = testing::UnitTest::GetInstance();
+  const bool cond = ut && ut->test_to_run_count() > 1;
+  if (cond) {
+    std::cout << "Bulk run detected - limiting depth to shorten test time" << std::endl;
+  }
+  return cond;
+}
+
+class TestSuite_Test : public testing::Test {
 public:
   static void SetUpTestSuite() {
     NEWLINE;
@@ -44,17 +53,17 @@ protected:
 };
 
 TEST_F(TestSuite_Test, readFile) {
-  milliseconds moveTime{0};
-  Depth depth{0};
+  constexpr milliseconds moveTime{0};
+  constexpr Depth depth{0};
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath += +"/test/testsets/franky_tests.epd";
-  TestSuite ts{moveTime, depth, filePath};
+  const TestSuite ts{moveTime, depth, filePath};
   ASSERT_EQ(13, ts.testCases.size());
 }
 
 TEST_F(TestSuite_Test, franky_test) {
-  milliseconds moveTime{200ms};
-  Depth depth{0};
+  constexpr auto moveTime{200ms};
+  constexpr Depth depth{0};
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath += +"/test/testsets/franky_tests.epd";
   TestSuite ts{moveTime, depth, filePath};
@@ -62,9 +71,11 @@ TEST_F(TestSuite_Test, franky_test) {
 }
 
 TEST_F(TestSuite_Test, mate_test) {
-  GTEST_SKIP();
-  milliseconds moveTime{15s};
-  Depth depth{0};
+  if (isBulkRun()) {
+    GTEST_SKIP();
+  }
+  constexpr milliseconds moveTime{15s};
+  constexpr Depth depth{0};
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath += +"/test/testsets/mate_test_suite.epd";
   TestSuite ts{moveTime, depth, filePath};
@@ -72,9 +83,11 @@ TEST_F(TestSuite_Test, mate_test) {
 }
 
 TEST_F(TestSuite_Test, wac_test) {
-  GTEST_SKIP();
-  milliseconds moveTime{5s};
-  Depth depth{0};
+  if (isBulkRun()) {
+    GTEST_SKIP();
+  }
+  constexpr milliseconds moveTime{5s};
+  constexpr Depth depth{0};
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath += +"/test/testsets/wac.epd";
   TestSuite ts{moveTime, depth, filePath};
@@ -82,9 +95,11 @@ TEST_F(TestSuite_Test, wac_test) {
 }
 
 TEST_F(TestSuite_Test, crafty_test) {
-  GTEST_SKIP();
-  milliseconds moveTime{5s};
-  Depth depth{0};
+  if (isBulkRun()) {
+    GTEST_SKIP();
+  }
+  constexpr milliseconds moveTime{5s};
+  constexpr Depth depth{0};
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath += +"/test/testsets/crafty_test.epd";
   TestSuite ts{moveTime, depth, filePath};
@@ -92,10 +107,12 @@ TEST_F(TestSuite_Test, crafty_test) {
 }
 
 TEST_F(TestSuite_Test, ecm98_test) {
-  GTEST_SKIP();
+  if (isBulkRun()) {
+    GTEST_SKIP();
+  }
   SearchConfig::USE_BOOK = false;
-  milliseconds moveTime{5s};
-  Depth depth{0};
+  constexpr milliseconds moveTime{5s};
+  constexpr Depth depth{0};
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath += +"/test/testsets/ecm98.epd";
   TestSuite ts{moveTime, depth, filePath};

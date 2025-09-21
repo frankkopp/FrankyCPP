@@ -112,29 +112,29 @@ namespace fstr {
   //   return std::vformat(fmt_str, fargs);
   // }
 
-  /**
-   * \brief Formats a string using \c std::vformat with an explicit locale.
-   *
-   * \tparam Args Variadic argument types.
-   * \param loc The \c std::locale to use for locale-sensitive formatting.
-   * \param fmt_str Runtime format string using \c std::format syntax.
-   * \param args Arguments to be formatted.
-   * \return The formatted \c std::string.
-   * \throws std::format_error If the format string is invalid or formatting fails.
-   *
-   * \code
-   * std::locale loc{"C"};
-   * auto s = fstr::lformat(loc, "number: {:L}", 1234567);
-   * \endcode
-   */
-  template <typename... Args>
-  std::string lformat(const std::locale& loc, std::string_view fmt_str, Args&&... args) {
-    auto tup = std::make_tuple(std::forward<Args>(args)...);
-    auto fargs = std::apply([](auto&... elems) {
-      return std::make_format_args(elems...);
-    }, tup);
-    return std::vformat(loc, fmt_str, fargs);
-  }
+  // /**
+  //  * \brief Formats a string using \c std::vformat with an explicit locale.
+  //  *
+  //  * \tparam Args Variadic argument types.
+  //  * \param loc The \c std::locale to use for locale-sensitive formatting.
+  //  * \param fmt_str Runtime format string using \c std::format syntax.
+  //  * \param args Arguments to be formatted.
+  //  * \return The formatted \c std::string.
+  //  * \throws std::format_error If the format string is invalid or formatting fails.
+  //  *
+  //  * \code
+  //  * std::locale loc{"C"};
+  //  * auto s = fstr::lformat(loc, "number: {:L}", 1234567);
+  //  * \endcode
+  //  */
+  // template <typename... Args>
+  // std::string lformat(const std::locale& loc, std::string_view fmt_str, Args&&... args) {
+  //   auto tup = std::make_tuple(std::forward<Args>(args)...);
+  //   auto fargs = std::apply([](auto&... elems) {
+  //     return std::make_format_args(elems...);
+  //   }, tup);
+  //   return std::vformat(loc, fmt_str, fargs);
+  // }
 }
 
 #endif // FRANKYCPP_FORMAT_COMPAT_H

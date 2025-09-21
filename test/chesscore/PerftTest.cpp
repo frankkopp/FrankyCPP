@@ -21,7 +21,6 @@
 #include "chesscore/MoveGenerator.h"
 #include "chesscore/Position.h"
 #include "init.h"
-#include "types/types.h"
 #include <gtest/gtest.h>
 #include <ostream>
 #include <string>
@@ -437,9 +436,9 @@ TEST_F(PerftTest, pos5Perft) {
  */
 void variousPerftTests(const string& s, int depth, int result);
 TEST_F(PerftTest, Various) {
-#ifndef NDEBUG
-  GTEST_SKIP();
-#endif
+  if (isBulkRun()) {
+    GTEST_SKIP();
+  }
   variousPerftTests("3k4/3p4/8/K1P4r/8/8/8/8 b - - 0 1", 6, 1134888);
   variousPerftTests("8/8/4k3/8/2p5/8/B2P2K1/8 w - - 0 1", 6, 1015133);
   variousPerftTests("8/8/1k6/2b5/2pP4/8/5K2/8 b - d3 0 1", 6, 1440467);

@@ -122,20 +122,20 @@ void Search::clearTT() const {
   if (isSearching()) {
     const std::string msg = "Can't clear hash while searching.";
     sendString(msg);
-    LOG__WARN(Logger::get().SEARCH_LOG, msg);
+    LOG__WARN(Logger::get().SEARCH_LOG, "{}", msg);
     return;
   }
   tt->clear();
   const std::string msg = "Hash cleared.";
   sendString(msg);
-  LOG__INFO(Logger::get().SEARCH_LOG, msg);
+  LOG__INFO(Logger::get().SEARCH_LOG, "{}", msg);
 }
 
 void Search::resizeTT() {
   if (isSearching()) {
     const std::string msg = "Can't resize hash while searching.";
     sendString(msg);
-    LOG__WARN(Logger::get().SEARCH_LOG, msg);
+    LOG__WARN(Logger::get().SEARCH_LOG, "{}", msg);
     return;
   }
   tt = std::make_unique<TT>(0);// clear the old TT (is a smart pointer and memory is freed)
@@ -154,7 +154,7 @@ void Search::run() {
     return;
   }
 
-  LOG__INFO(Logger::get().SEARCH_LOG, "Searching " + position.strFen());
+  LOG__INFO(Logger::get().SEARCH_LOG, "Searching {}", position.strFen());
 
   // initialize search
   stopSearchFlag    = false;
@@ -175,7 +175,7 @@ void Search::run() {
 
   // age tt entries
   if (tt->getMaxNumberOfEntries()) {
-    LOG__INFO(Logger::get().SEARCH_LOG, "Transposition Table: Using TT: " + tt->str());
+    LOG__INFO(Logger::get().SEARCH_LOG, "Transposition Table: Using TT: {}", tt->str());
     tt->ageEntries();
   }
   else { LOG__INFO(Logger::get().SEARCH_LOG, "Transposition Table: Not using TT."); }
@@ -201,11 +201,11 @@ void Search::run() {
     // TODO: instead of a random book move we could select a book move based on
     //  some score and some variation (randomness)
     bookMove = book->getRandomMove(position.getZobristKey());
-    LOG__DEBUG(Logger::get().SEARCH_LOG, "Opening Book: Choosing book move " + str(bookMove));
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Opening Book: Choosing book move {}", str(bookMove));
   }
   else { LOG__INFO(Logger::get().SEARCH_LOG, "Opening Book: Not using book."); }
 
-  LOG__INFO(Logger::get().SEARCH_LOG, fmt::format("Search using: PVS={} ASP={}", SearchConfig::USE_PVS, SearchConfig::USE_ASP));
+  LOG__INFO(Logger::get().SEARCH_LOG, "Search using: PVS={} ASP={}", SearchConfig::USE_PVS, SearchConfig::USE_ASP);
 
   // If we have found a book-move an update result and omit search.
   // Otherwise, start search with iterative deepening.
@@ -270,7 +270,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
                               ? "Ponder called on DRAW by Repetition or 50-moves-rule"
                               : "Search called on DRAW by Repetition or 50-moves-rule";
     sendString(msg);
-    LOG__WARN(Logger::get().SEARCH_LOG, msg);
+    LOG__WARN(Logger::get().SEARCH_LOG, "{}", msg);
     searchResult.bestMoveValue = VALUE_DRAW;
     return searchResult;
   }
@@ -286,7 +286,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
                                 ? "Ponder called on a check mate position"
                                 : "Search called on a check mate position";
       sendString(msg);
-      LOG__WARN(Logger::get().SEARCH_LOG, msg);
+      LOG__WARN(Logger::get().SEARCH_LOG, "{}", msg);
       searchResult.bestMoveValue = -VALUE_CHECKMATE;
     }
     else {
@@ -295,7 +295,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
                                 ? "Ponder called on a stale mate position"
                                 : "Search called on a stale mate position";
       sendString(msg);
-      LOG__WARN(Logger::get().SEARCH_LOG, msg);
+      LOG__WARN(Logger::get().SEARCH_LOG, "{}", msg);
       searchResult.bestMoveValue = VALUE_DRAW;
     }
     return searchResult;
@@ -1321,7 +1321,7 @@ void Search::initialize() {
       // only initialize once
       if (!std::filesystem::exists(SearchConfig::BOOK_PATH)) {
         const std::string message = fmt::format("Opening Book '{}' not found. Disabling book usage.", SearchConfig::BOOK_PATH);
-        LOG__ERROR(Logger::get().BOOK_LOG, message);
+        LOG__ERROR(Logger::get().BOOK_LOG, "{}", message);
         SearchConfig::USE_BOOK = false;
       }
       else {
@@ -1454,7 +1454,7 @@ void Search::sendString(const std::string& msg) const {
     uciHandler->sendString(msg);
     return;
   }
-  LOG__INFO(Logger::get().SEARCH_LOG, "uci >> " + msg);
+  LOG__INFO(Logger::get().SEARCH_LOG, "uci >> {}", msg);
 }
 
 void Search::sendResult(const SearchResult& result) const {

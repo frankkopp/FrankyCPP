@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "init.h"
-#include "types/types.h"
 #include <memory>
 #include <thread>
 
@@ -58,13 +57,13 @@ TEST_F(UCITest, uciTest) {
   string expectedStart = "id name";
   string expectedEnd   = "uciok\n";
 
-  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
   istringstream is(command);
   ostringstream os;
   UciHandler uciHandler(&is, &os);
   uciHandler.loop();
   string result = os.str();
-  LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE: \n" + result);
+  LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE: \n{}", result);
 
   EXPECT_EQ(expectedStart, result.substr(0, 7));
   EXPECT_EQ(expectedEnd, result.substr(result.size() - 6, result.size()));
@@ -74,19 +73,19 @@ TEST_F(UCITest, isreadyTest) {
   string command  = "isready";
   string expected = "readyok\n";
 
-  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
   istringstream is(command);
   ostringstream os;
   UciHandler uciHandler(&is, &os);
   uciHandler.loop();
-  LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE: " + os.str());
+  LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE: {}", os.str());
   EXPECT_TRUE(os.str().find("readyok") != string::npos);
 }
 
 TEST_F(UCITest, setoptionTest) {
   ostringstream os;
   const string command = "setoption name Hash value 2048";
-  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
   istringstream is(command);
   UciHandler uciHandler(&is, &os);
   uciHandler.loop();
@@ -97,12 +96,12 @@ TEST_F(UCITest, clearHashTest) {
   SearchConfig::USE_TT = true;
   ostringstream os;
   string command = "isready\nsetoption name Clear Hash";
-  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
   istringstream is(command);
   UciHandler uciHandler(&is, &os);
   uciHandler.loop();
   string result = os.str();
-  LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE: \n" + result);
+  LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE: \n{}", result);
   EXPECT_TRUE(result.find("Hash cleared") != string::npos);
 }
 
@@ -110,12 +109,12 @@ TEST_F(UCITest, resizeHashTest) {
   SearchConfig::USE_TT = true;
   ostringstream os;
   string command = "isready\nsetoption name Hash value 512";
-  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
   istringstream is(command);
   UciHandler uciHandler(&is, &os);
   uciHandler.loop();
   string result = os.str();
-  LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE: \n" + result);
+  LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE: \n{}", result);
   EXPECT_TRUE(result.find("Resized hash") != string::npos);
 }
 
@@ -124,7 +123,7 @@ TEST_F(UCITest, positionTest) {
   // normal
   {
     string command = "position startpos moves e2e4 e7e5";
-    LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+    LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
     istringstream is(command);
     UciHandler uciHandler(&is, &os);
     uciHandler.loop();
@@ -134,7 +133,7 @@ TEST_F(UCITest, positionTest) {
   // castling
   {
     string command = "position fen r1bqkb1r/pppp1ppp/2n2n2/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 0 moves e1g1";
-    LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+    LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
     istringstream is(command);
     UciHandler uciHandler(&is, &os);
     uciHandler.loop();
@@ -144,7 +143,7 @@ TEST_F(UCITest, positionTest) {
   // promotion
   {
     string command = "position fen 8/3P4/6K1/8/8/1k6/8/8 w - - 0 0 moves d7d8Q";
-    LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+    LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
     istringstream is(command);
     UciHandler uciHandler(&is, &os);
     uciHandler.loop();
@@ -154,7 +153,7 @@ TEST_F(UCITest, positionTest) {
   // normal
   {
     string command = "position moves e2e4 e7e5";
-    LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+    LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
     istringstream is(command);
     UciHandler uciHandler(&is, &os);
     uciHandler.loop();
@@ -164,7 +163,7 @@ TEST_F(UCITest, positionTest) {
   // normal
   {
     string command = "position fen rnbqkbnr/8/8/8/8/8/8/RNBQKBNR w KQkq - 0 1 moves e1e2 e8e7";
-    LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+    LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
     istringstream is(command);
     UciHandler uciHandler(&is, &os);
     uciHandler.loop();
@@ -174,7 +173,7 @@ TEST_F(UCITest, positionTest) {
   // normal
   {
     string command = "position fen 7K/8/5pPk/6pP/1p1p2P1/1p1p4/1P1P4/8 w - - 0 12 moves g6g7";
-    LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+    LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
     istringstream is(command);
     UciHandler uciHandler(&is, &os);
     uciHandler.loop();
@@ -184,7 +183,7 @@ TEST_F(UCITest, positionTest) {
   // normal
   {
     string command = "position fen 7K/6P1/5p1k/6pP/1p1p2P1/1p1p4/1P1P4/8 b - - 0 12 moves f6f5";
-    LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+    LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
     istringstream is(command);
     UciHandler uciHandler(&is, &os);
     uciHandler.loop();
@@ -200,7 +199,7 @@ TEST_F(UCITest, goPerft) {
 #endif
 
   const string command = "perft 1 " + to_string(endDepth);
-  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
   istringstream is(command);
   UciHandler uciHandler(&is, &os);
   uciHandler.loop();
@@ -212,7 +211,7 @@ TEST_F(UCITest, goPerft) {
 TEST_F(UCITest, goError) {
   ostringstream os;
   string command = "go nothing";
-  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
   istringstream is(command);
   UciHandler uciHandler(&is, &os);
   std::string token;
@@ -224,7 +223,7 @@ TEST_F(UCITest, goError) {
 TEST_F(UCITest, goInfinite) {
   ostringstream os;
   string command = "go infinite";
-  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
   istringstream is(command);
   UciHandler uciHandler(&is, &os);
   std::string token;
@@ -240,7 +239,7 @@ TEST_F(UCITest, goInfinite) {
 TEST_F(UCITest, goPonder) {
   ostringstream os;
   string command = "go ponder";
-  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
   istringstream is(command);
   UciHandler uciHandler(&is, &os);
   std::string token;
@@ -256,7 +255,7 @@ TEST_F(UCITest, goPonder) {
 TEST_F(UCITest, goMate) {
   ostringstream os;
   string command = "go mate 4";
-  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
   istringstream is(command);
   UciHandler uciHandler(&is, &os);
   std::string token;
@@ -273,12 +272,12 @@ TEST_F(UCITest, goMate) {
 TEST_F(UCITest, testingBugs) {
   // 8/7R/3K4/8/8/P3k3/7p/4r3 b - - 5 75
   const string command = "position fen 8/7R/3K4/8/8/P3k3/7p/4r3 b - - 5 75 moves h2h1q h7h3";
-  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
   istringstream is(command);
   ostringstream os;
   UciHandler uciHandler(&is, &os);
   uciHandler.loop();
-  LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE: " + os.str());
+  LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE: {}", os.str());
   EXPECT_TRUE(os.str().find("Invalid move") == string::npos);
 }
 
@@ -288,7 +287,7 @@ TEST_F(UCITest, testingBugs) {
 //  Engine engine;
 //
 //  string command = "go mate 4 depth 4";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  istringstream is(command);
 //  UCIHandler uciHandler( &is, &os);
 //  uciHandler.loop();
@@ -309,7 +308,7 @@ TEST_F(UCITest, testingBugs) {
 //  Engine engine;
 //
 //  string command = "go mate 4 movetime 15";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  istringstream is(command);
 //  UCIHandler uciHandler( &is, &os);
 //  uciHandler.loop();
@@ -331,7 +330,7 @@ TEST_F(UCITest, testingBugs) {
 //  Engine engine;
 //
 //  string command = "go mate 4 depth 4 movetime 15";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  istringstream is(command);
 //  UCIHandler uciHandler( &is, &os);
 //  uciHandler.loop();
@@ -354,7 +353,7 @@ TEST_F(UCITest, testingBugs) {
 //  Engine engine;
 //
 //  string command = "go wtime 500001 btime 500002";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  istringstream is(command);
 //  UCIHandler uciHandler( &is, &os);
 //  uciHandler.loop();
@@ -377,7 +376,7 @@ TEST_F(UCITest, testingBugs) {
 //
 //  // normal game with time for each player and remaining moves until time control
 //  string command = "go wtime 300001 btime 300002 movestogo 20";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  istringstream is(command);
 //  UCIHandler uciHandler( &is, &os);
 //  uciHandler.loop();
@@ -401,7 +400,7 @@ TEST_F(UCITest, testingBugs) {
 //
 //  // normal game with time for each player and increases per move
 //  string command = "go wtime 300001 btime 300002 winc 2001 binc 2002";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  istringstream is(command);
 //  UCIHandler uciHandler( &is, &os);
 //  uciHandler.loop();
@@ -426,7 +425,7 @@ TEST_F(UCITest, testingBugs) {
 //
 //  // move time limited
 //  string command = "go movetime 5000";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  istringstream is(command);
 //  UCIHandler uciHandler( &is, &os);
 //  uciHandler.loop();
@@ -448,7 +447,7 @@ TEST_F(UCITest, testingBugs) {
 //  Engine engine;
 //  // depth only limited
 //  string command = "go depth 5";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  istringstream is(command);
 //  UCIHandler uciHandler( &is, &os);
 //  uciHandler.loop();
@@ -472,7 +471,7 @@ TEST_F(UCITest, testingBugs) {
 //  Engine engine;
 //  // nodes only limited
 //  string command = "go nodes 1000000";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  istringstream is(command);
 //  UCIHandler uciHandler( &is, &os);
 //  uciHandler.loop();
@@ -494,7 +493,7 @@ TEST_F(UCITest, testingBugs) {
 //  Engine engine;
 //  // nodes and depth limited
 //  string command = "go nodes 1000000 depth 5";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  istringstream is(command);
 //  UCIHandler uciHandler( &is, &os);
 //  uciHandler.loop();
@@ -516,7 +515,7 @@ TEST_F(UCITest, testingBugs) {
 //  Engine engine;
 //  // move time limited with a list of moves to search
 //  string command = "go movetime 15 searchmoves d2d4 e2e4";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  istringstream is(command);
 //  UCIHandler uciHandler( &is, &os);
 //  uciHandler.loop();
@@ -540,13 +539,13 @@ TEST_F(UCITest, testingBugs) {
 //  Engine engine;
 //
 //  string command = "position startpos moves e2e4";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  istringstream is(command);
 //  UCIHandler uciHandler( &is, &os);
 //  uciHandler.loop();
 //
 //  command = "go wtime 60000 btime 60000 winc 2000 binc 2000 movestogo 40";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  is = istringstream(command);
 //  uciHandler.loop(&is);
 //
@@ -563,13 +562,13 @@ TEST_F(UCITest, testingBugs) {
 //  Engine engine;
 //
 //  string command = "position startpos moves e2e4";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  istringstream is(command);
 //  UCIHandler uciHandler( &is, &os);
 //  uciHandler.loop();
 //
 //  command = "go depth 5";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  is = istringstream(command);
 //  uciHandler.loop(&is);
 //
@@ -585,13 +584,13 @@ TEST_F(UCITest, testingBugs) {
 //
 //  // stop while pondering
 //  string command = "position startpos moves e2e4 e7e5";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  istringstream is(command);
 //  UCIHandler uciHandler( &is, &os);
 //  uciHandler.loop();
 //
 //  command = "go ponder wtime 600000 btime 600000";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  is = istringstream(command);
 //  uciHandler.loop(&is);
 //
@@ -600,7 +599,7 @@ TEST_F(UCITest, testingBugs) {
 //  EXPECT_TRUE(engine.getSearchLimitsPtr()->isPonder());
 //
 //  command = "stop";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  is = istringstream(command);
 //  uciHandler.loop(&is);
 //
@@ -619,13 +618,13 @@ TEST_F(UCITest, testingBugs) {
 //
 //  // stop when pondering has already finished
 //  string command = "position fen 8/8/8/8/8/6K1/R7/6k1 w - - 0 8";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  istringstream is(command);
 //  UCIHandler uciHandler( &is, &os);
 //  uciHandler.loop();
 //
 //  command = "go ponder wtime 600000 btime 600000";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  is = istringstream(command);
 //  uciHandler.loop(&is);
 //
@@ -635,7 +634,7 @@ TEST_F(UCITest, testingBugs) {
 //  EXPECT_TRUE(engine.getSearchLimitsPtr()->isPonder());
 //
 //  command = "stop";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  is = istringstream(command);
 //  uciHandler.loop(&is);
 //
@@ -653,14 +652,14 @@ TEST_F(UCITest, testingBugs) {
 //
 //  // black just played e7e6 and sent ponder on d2d4
 //  string command = "position startpos moves e2e4 e7e6 d2d4";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  istringstream is(command);
 //  UCIHandler uciHandler( &is, &os);
 //  uciHandler.loop();
 //
 //  // black to ponder on d2d4
 //  command = "go wtime 600000 btime 600000 ponder";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  is = istringstream(command);
 //  uciHandler.loop(&is);
 //
@@ -671,7 +670,7 @@ TEST_F(UCITest, testingBugs) {
 //
 //  // user played different move (g1h3) - ponder miss
 //  command = "stop";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  is = istringstream(command);
 //  uciHandler.loop(&is);
 //
@@ -682,13 +681,13 @@ TEST_F(UCITest, testingBugs) {
 //
 //  // black getting new position after ponder miss
 //  command = "position startpos moves e2e4 e7e6 g1h3";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  is = istringstream(command);
 //  uciHandler.loop(&is);
 //
 //  // black to search on new position
 //  command = "go wtime 600000 btime 600000";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  is = istringstream(command);
 //  uciHandler.loop(&is);
 //
@@ -698,7 +697,7 @@ TEST_F(UCITest, testingBugs) {
 //
 //  // stop search
 //  command = "stop";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  is = istringstream(command);
 //  uciHandler.loop(&is);
 //
@@ -720,14 +719,14 @@ TEST_F(UCITest, testingBugs) {
 //
 //  // black just played e7e6 and sent ponder on d2d4
 //  string command = "position fen 8/8/8/8/8/6K1/R7/6k1 w - - 0 8";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  istringstream is(command);
 //  UCIHandler uciHandler( &is, &os);
 //  uciHandler.loop();
 //
 //  // black to ponder on d2d4
 //  command = "go wtime 600000 btime 600000 ponder";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  is = istringstream(command);
 //  uciHandler.loop(&is);
 //
@@ -738,7 +737,7 @@ TEST_F(UCITest, testingBugs) {
 //
 //  // user played different move (g1h3) - ponder miss
 //  command = "stop";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  is = istringstream(command);
 //  uciHandler.loop(&is);
 //
@@ -749,13 +748,13 @@ TEST_F(UCITest, testingBugs) {
 //
 //  // black getting new position after ponder miss
 //  command = "position startpos moves e2e4 e7e6 g1h3";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  is = istringstream(command);
 //  uciHandler.loop(&is);
 //
 //  // black to search on new position
 //  command = "go wtime 600000 btime 600000";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  is = istringstream(command);
 //  uciHandler.loop(&is);
 //
@@ -765,7 +764,7 @@ TEST_F(UCITest, testingBugs) {
 //
 //  // stop search
 //  command = "stop";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  is = istringstream(command);
 //  uciHandler.loop(&is);
 //
@@ -786,18 +785,18 @@ TEST_F(UCITest, testingBugs) {
 //  SearchConfig::USE_BOOK = false;
 //
 //  string command = "setoption name Ponder value true";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  istringstream is = istringstream(command);
 //  UCIHandler uciHandler( &is, &os);
 //  uciHandler.loop();
 //
 //  command = "position startpos";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  is = istringstream(command);
 //  uciHandler.loop();
 //
 //  command = "go wtime 300000 btime 300000 ponder";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  is = istringstream(command);
 //  uciHandler.loop(&is);
 //
@@ -807,7 +806,7 @@ TEST_F(UCITest, testingBugs) {
 //  sleepForSec(1);
 //
 //  command = "ponderhit";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  is = istringstream(command);
 //  uciHandler.loop(&is);
 //
@@ -817,7 +816,7 @@ TEST_F(UCITest, testingBugs) {
 //
 //  // stop search
 //  command = "stop";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  is = istringstream(command);
 //  uciHandler.loop(&is);
 //
@@ -839,18 +838,18 @@ TEST_F(UCITest, testingBugs) {
 //  SearchConfig::USE_BOOK = false;
 //
 //  string command = "setoption name Ponder value true";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  istringstream is = istringstream(command);
 //  UCIHandler uciHandler( &is, &os);
 //  uciHandler.loop();
 //
 //  command = "position startpos moves e2e4 e7e6 d2d4";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  is = istringstream(command);
 //  uciHandler.loop();
 //
 //  command = "go wtime 300000 btime 300000 ponder";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  is = istringstream(command);
 //  uciHandler.loop(&is);
 //
@@ -860,7 +859,7 @@ TEST_F(UCITest, testingBugs) {
 //  sleepForSec(1);
 //
 //  command = "ponderhit";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  is = istringstream(command);
 //  uciHandler.loop(&is);
 //
@@ -870,7 +869,7 @@ TEST_F(UCITest, testingBugs) {
 //
 //  // stop search
 //  command = "stop";
-//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: " + command);
+//  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
 //  is = istringstream(command);
 //  uciHandler.loop(&is);
 //

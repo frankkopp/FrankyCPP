@@ -46,37 +46,37 @@
 #define LOG__LEVEL DEBUG__LVL
 
 #if LOG__LEVEL > ZERO__LVL
-#define LOG__CRITICAL(logger, ...) (logger)->log(spdlog::level::critical, fstr::lformat(deLocale, __VA_ARGS__))
+#define LOG__CRITICAL(logger, ...) (logger)->log(spdlog::level::critical, std::format(deLocale, __VA_ARGS__))
 #else
 #define LOG__CRITICAL(logger, ...) void(0)
 #endif
 
 #if LOG__LEVEL > CRITICAL__LVL
-#define LOG__ERROR(logger, ...)    (logger)->log(spdlog::level::err,      fstr::lformat(deLocale, __VA_ARGS__))
+#define LOG__ERROR(logger, ...)    (logger)->log(spdlog::level::err,      std::format(deLocale, __VA_ARGS__))
 #else
 #define LOG__ERROR(logger, ...) void(0)
 #endif
 
 #if LOG__LEVEL > ERROR__LVL
-#define LOG__WARN(logger, ...)     (logger)->log(spdlog::level::warn,     fstr::lformat(deLocale, __VA_ARGS__))
+#define LOG__WARN(logger, ...)     (logger)->log(spdlog::level::warn,     std::format(deLocale, __VA_ARGS__))
 #else
 #define LOG__WARN(logger, ...) void(0)
 #endif
 
 #if LOG__LEVEL > WARN__LVL
-#define LOG__INFO(logger, ...)     (logger)->log(spdlog::level::info,     fstr::lformat(deLocale, __VA_ARGS__))
+#define LOG__INFO(logger, ...)     (logger)->log(spdlog::level::info,     std::format(deLocale, __VA_ARGS__))
 #else
 #define LOG__INFO(logger, ...) void(0)
 #endif
 
 #if LOG__LEVEL > INFO__LVL
-#define LOG__DEBUG(logger, ...)    (logger)->log(spdlog::level::debug,    fstr::lformat(deLocale, __VA_ARGS__))
+#define LOG__DEBUG(logger, ...)    (logger)->log(spdlog::level::debug,    std::format(deLocale, __VA_ARGS__))
 #else
 #define LOG__DEBUG(logger, ...) void(0)
 #endif
 
 #if LOG__LEVEL > DEBUG__LVL
-#define LOG__TRACE(logger, ...)    (logger)->log(spdlog::level::trace,    fstr::lformat(deLocale, __VA_ARGS__))
+#define LOG__TRACE(logger, ...)    (logger)->log(spdlog::level::trace,    std::format(deLocale, __VA_ARGS__))
 #else
 #define LOG__TRACE(logger, ...) void(0)
 #endif

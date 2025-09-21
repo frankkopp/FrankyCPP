@@ -76,24 +76,25 @@ bool UciHandler::handleCommand(const std::string& cmd) {
   inStream >> std::skipws >> token;
 
   // @formatter:off
-  if      (token == "quit")       { return true; }
-  if      (token == "uci")        { uciCommand(); }
-  else if (token == "isready")    { isReadyCommand(); }
-  else if (token == "setoption")  { setOptionCommand(inStream); }
+  if (token == "quit") { return true; }
+  if (token == "uci") { uciCommand(); }
+  else if (token == "isready") { isReadyCommand(); }
+  else if (token == "setoption") { setOptionCommand(inStream); }
   else if (token == "ucinewgame") { uciNewGameCommand(); }
-  else if (token == "position")   { positionCommand(inStream); }
-  else if (token == "go")         { goCommand(inStream); }
-  else if (token == "stop")       { stopCommand(); }
-  else if (token == "ponderhit")  { ponderHitCommand(); }
-  else if (token == "register")   { registerCommand(); }
-  else if (token == "debug")      { debugCommand(); }
-  else if (token == "perft")      { perftCommand(inStream); }
-  else if (token == "noop")       { /* noop */ }
+  else if (token == "position") { positionCommand(inStream); }
+  else if (token == "go") { goCommand(inStream); }
+  else if (token == "stop") { stopCommand(); }
+  else if (token == "ponderhit") { ponderHitCommand(); }
+  else if (token == "register") { registerCommand(); }
+  else if (token == "debug") { debugCommand(); }
+  else if (token == "perft") { perftCommand(inStream); }
+  else if (token == "noop") { /* noop */
+  }
   else
     uciError(std::format("Unknown UCI command: {}", token));
   // @formatter:on
 
-// TODO: add a help option for manual usage of uci commands
+  // TODO: add a help option for manual usage of uci commands
 
   LOG__DEBUG(Logger::get().UCIHAND_LOG, "UCI Handler processed command: {}", token);
   return false;
@@ -410,7 +411,8 @@ void UciHandler::perftCommand(std::istringstream& inStream) const {
   std::thread perftThread([&](const int s, const int e) {
     pPerft->perft(s, e, true);
     sendString("Perft finished.");
-  }, startDepth, endDepth);
+  },
+                          startDepth, endDepth);
   perftThread.detach();
 }
 
@@ -468,6 +470,6 @@ void UciHandler::sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint6
 }
 
 void UciHandler::uciError(const std::string& msg) const {
-  LOG__ERROR(Logger::get().UCIHAND_LOG, msg);
+  LOG__ERROR(Logger::get().UCIHAND_LOG, "{}", msg);
   sendString(msg);
 }

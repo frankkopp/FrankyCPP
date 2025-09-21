@@ -29,6 +29,15 @@
 using namespace std;
 using testing::Eq;
 
+inline bool isBulkRun() {
+  const auto* ut = testing::UnitTest::GetInstance();
+  const bool cond      = ut && ut->test_to_run_count() > 1;
+  if (cond) {
+    cout << "Bulk run detected - limiting depth to shorten test time" << endl;
+  }
+  return cond;
+}
+
 class MoveGenTest : public ::testing::Test {
 public:
   static void SetUpTestSuite() {
@@ -768,10 +777,10 @@ using namespace std::chrono;
 // Test per sec 3.543.354 tps
 // 480.000.000 moves generated: 170.081.031 mps
 TEST_F(MoveGenTest, PseudoMoveGenSpeedTest) {
-  GTEST_SKIP();
-#ifndef NDEBUG
-  GTEST_SKIP();
-#endif
+  if (isBulkRun()) {
+    GTEST_SKIP();
+  }
+
   MoveGenerator mg;
 
   constexpr int rounds = 5;
