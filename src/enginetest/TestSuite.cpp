@@ -20,6 +20,9 @@
 
 
 #include "TestSuite.h"
+
+#include "common/Logging.h"
+#include "common/stringutil.h"
 #include "engine/SearchConfig.h"
 
 #include <fmt/chrono.h>
@@ -29,7 +32,7 @@
 #include <iostream>
 #include <regex>
 
-TestSuite::TestSuite(const milliseconds& time, Depth searchDepth, const std::string& filePath)
+TestSuite::TestSuite(const milliseconds& time, const Depth searchDepth, const std::string& filePath)
     : searchTime(time), searchDepth(searchDepth), filePath(filePath) {
 
   LOG__INFO(Logger::get().TSUITE_LOG, "Preparing Test Suite {}", filePath);
@@ -349,10 +352,9 @@ bool TestSuite::readOneEPD(std::string& line, Test& test) {
 
 std::string& TestSuite::cleanUpLine(std::string& line) {
   line = trimFast(line);
-  std::regex leadCommentTrim(R"(^\s*#.*$)");
+  const std::regex leadCommentTrim(R"(^\s*#.*$)");
   line = std::regex_replace(line, leadCommentTrim, "");
-  std::regex trailCommentTrim(R"(^(.*)#([^;]*)$)");
+  const std::regex trailCommentTrim(R"(^(.*)#([^;]*)$)");
   line = std::regex_replace(line, trailCommentTrim, "$1;");
   return line;
 }
-

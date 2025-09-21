@@ -41,6 +41,9 @@ add_executable(
         TimingTests.cpp
 )
 
+# Ensure unit tests explicitly request C++20
+target_compile_features(${testExeName} PRIVATE cxx_std_20)
+
 # Enable Unity/Jumbo build opt-in
 if (ENABLE_UNITY_BUILD)
     set_target_properties(${testExeName} PROPERTIES UNITY_BUILD ON)

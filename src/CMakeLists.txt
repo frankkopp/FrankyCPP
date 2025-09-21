@@ -29,7 +29,8 @@ set(FrankyCPPlib_SRCS
 
         enginetest/SearchTreeSizeTest.cpp enginetest/SearchTreeSizeTest.h
         enginetest/TestSuite.cpp enginetest/TestSuite.h
-        )
+        types/types.h
+)
 
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})
 
@@ -97,6 +98,9 @@ set(exeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR})
 
 # define executable
 add_executable(${exeName} main.cpp)
+
+# Ensure the executable also requests C++20 explicitly
+target_compile_features(${exeName} PRIVATE cxx_std_20)
 
 # Enable Unity/Jumbo build on demand
 if (ENABLE_UNITY_BUILD)

@@ -20,17 +20,18 @@
 #ifndef FRANKYCPP_MISC_H
 #define FRANKYCPP_MISC_H
 
-#include <fmt/printf.h>
 #include <string>
+#include <format>
 
 inline std::string printProgress(double percentage) {
-  constexpr const int pbarw  = 60;
-  constexpr const char* pbar = "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||";
+  constexpr int pbarw  = 60;
+  constexpr auto pbar = "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||";
 
-  int val  = static_cast<int>(percentage * 100);
-  int lpad = static_cast<int>(percentage * pbarw);
-  int rpad = pbarw - lpad;
-  return fmt::sprintf("%3d%% [%.*s%*s]", val, lpad, pbar, rpad, "");
+  const int val  = static_cast<int>(percentage * 100);
+  const int lpad = static_cast<int>(percentage * pbarw);
+  const int rpad = pbarw - lpad;
+
+  return std::format("%3d%% [%.*s%*s]", val, lpad, pbar, rpad, "");
 }
 
 #endif// FRANKYCPP_MISC_H

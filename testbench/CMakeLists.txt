@@ -13,6 +13,14 @@ add_executable(
         TimingBench.cpp
         )
 
+# Ensure benchmark explicitly requests C++20
+target_compile_features(${benchExeName} PRIVATE cxx_std_20)
+
+# Enable Unity/Jumbo build opt-in
+if (ENABLE_UNITY_BUILD)
+    set_target_properties(${benchExeName} PROPERTIES UNITY_BUILD ON)
+endif()
+
 # Ensure access to generated headers (e.g., version.h)
 target_include_directories(
         ${benchExeName}

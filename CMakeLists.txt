@@ -28,6 +28,10 @@ option(FRANKYCPP_BUILD_BENCHMARKS "Build benchmarks" ON)
 option(FRANKYCPP_USE_PCH "Enable precompiled headers" ON)
 option(ENABLE_UNITY_BUILD "Enable Unity/Jumbo builds" OFF)
 
+# Ensure no compiler launcher is set from a previous cache
+unset(CMAKE_C_COMPILER_LAUNCHER CACHE)
+unset(CMAKE_CXX_COMPILER_LAUNCHER CACHE)
+
 # Unit testing enabled only if requested
 if (FRANKYCPP_BUILD_TESTS)
     enable_testing()
@@ -78,9 +82,21 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     # this needs to be added to CLION cmake options: -G Ninja
     message(STATUS "Compiler Settings: MSVC")
 
-    # Prefer IPO over manual /GL and /LTCG flags
-    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
-    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO ON)
+    # Use Embedded debug info to avoid PDB contention with parallel builds
+    set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<$<CONFIG:Debug,RelWithDebInfo>:Embedded>" CACHE STRING "MSVC debug info format" FORCE)
+    message(STATUS "MSVC debug info: ${CMAKE_MSVC_DEBUG_INFORMATION_FORMAT}")
+
+    # Prefer IPO over manual flags; enable only if supported
+    include(CheckIPOSupported)
+    check_ipo_supported(RESULT _ipo_supported OUTPUT _ipo_msg)
+    if(_ipo_supported)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO ON)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_MINSIZEREL ON)
+        message(STATUS "IPO/LTO enabled for Release/RelWithDebInfo/MinSizeRel")
+    else()
+        message(STATUS "IPO/LTO not supported: ${_ipo_msg}")
+    endif()
 
     # Ensure linker is compatible with LTCG in Release
     set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /INCREMENTAL:NO")
@@ -89,9 +105,10 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 
     # Base and per-config flags (no manual /GL, /arch gated via option)
-    set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /favor:INTEL64 /W4 /GR /EHsc /MP /Oi /Ot")
+    set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /favor:INTEL64 /W4 /GR /EHsc /MP /Oi /Ot /FS")
     set(CMAKE_CXX_FLAGS_RELEASE "/O2 /Ob3 /Oy /Oi /Ot /GT /Gw /Gy /DNDEBUG")
-    set(CMAKE_CXX_FLAGS_DEBUG "/Od /Ob0 /Zi /RTC1 /permissive-")
+    # Remove explicit /Zi to let CMake control debug info via CMAKE_MSVC_DEBUG_INFORMATION_FORMAT
+    set(CMAKE_CXX_FLAGS_DEBUG "/Od /Ob0 /RTC1 /permissive-")
 
     # Feature toggles
     option(ENABLE_STD_EXECUTION "Define HAS_EXECUTION_LIB to enable <execution> usage" ON)
@@ -113,8 +130,95 @@ endif ()
 
 # -----------------------------------------------------------------------------
 # Non-MSVC toolchains are intentionally commented out for now and will be
-# revisited later. Keeping them here for reference.
+# revisited later. Keeping them below for reference.
 # -----------------------------------------------------------------------------
+
+# Print some info to be able to check which compiler has been picked
+message(STATUS "Generator: ${CMAKE_GENERATOR} ${CMAKE_MAKE_PROGRAM}")
+message(STATUS "Compiler flags: ${CMAKE_CXX_FLAGS}")
+message(STATUS "Compiler DEBUG flags: ${CMAKE_CXX_FLAGS_DEBUG}")
+message(STATUS "Compiler RELEASE flags: ${CMAKE_CXX_FLAGS_RELEASE}")
+
+# Boost via vcpkg CONFIG package (kept)
+set(Boost_NO_WARN_NEW_VERSIONS ON)
+find_package(Boost CONFIG REQUIRED COMPONENTS program_options serialization)
+
+# For downloading with GIT (required by FetchContent)
+message(STATUS "Finding GIT...")
+set(GIT_EXECUTABLE)
+find_package(Git)
+if (GIT_FOUND)
+    message(STATUS "GIT found: ${GIT_EXECUTABLE}")
+else()
+    message(FATAL_ERROR "GIT NOT found:")
+endif ()
+
+set(FETCHCONTENT_QUIET OFF)
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
+include(FetchContent)
+
+# FMT pinned
+message(STATUS "Downloading/Update FMT (pinned)")
+FetchContent_Declare(
+        fmt
+        GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+        GIT_TAG 8.0.1
+)
+FetchContent_MakeAvailable(fmt)
+
+# SPDLOG pinned (using external fmt)
+message(STATUS "Downloading/Update SPDLOG (pinned)")
+FetchContent_Declare(
+        spdlog
+        GIT_REPOSITORY https://github.com/gabime/spdlog.git
+        GIT_TAG v1.10.0
+)
+option(SPDLOG_FMT_EXTERNAL "Use external fmt" ON)
+set(SPDLOG_FMT_EXTERNAL ON)
+FetchContent_MakeAvailable(spdlog)
+
+# GOOGLE TEST pinned (only if building tests)
+if (FRANKYCPP_BUILD_TESTS)
+    message(STATUS "Downloading/Update Google Test (pinned)")
+    FetchContent_Declare(
+            googletest
+            GIT_REPOSITORY https://github.com/google/googletest.git
+            GIT_TAG v1.13.0
+    )
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    option(INSTALL_GMOCK "Install GMock" OFF)
+    option(INSTALL_GTEST "Install GTest" OFF)
+    FetchContent_MakeAvailable(googletest)
+endif()
+
+# GOOGLE BENCHMARK pinned (only if building benchmarks)
+if (FRANKYCPP_BUILD_BENCHMARKS)
+    message(STATUS "Downloading/Update Google Benchmark (pinned)")
+    FetchContent_Declare(
+            googlebenchmark
+            GIT_REPOSITORY https://github.com/google/benchmark.git
+            GIT_TAG v1.7.1
+    )
+    option(BENCHMARK_ENABLE_LTO "Enable LTO" ON)
+    option(BENCHMARK_ENABLE_GTEST_TESTS "Build benchmark unit tests" OFF)
+    option(BENCHMARK_ENABLE_TESTING "Enable benchmark tests" OFF)
+    option(BENCHMARK_ENABLE_INSTALL "Install benchmark" OFF)
+    FetchContent_MakeAvailable(googlebenchmark)
+endif()
+
+# project sub directories - need to have their own CMakeList.txt
+add_subdirectory(src)
+
+if (FRANKYCPP_BUILD_TESTS)
+    add_subdirectory(test)
+endif()
+
+if (FRANKYCPP_BUILD_BENCHMARKS)
+    add_subdirectory(testbench)
+endif()
+
+
+
 #  # GNU compiler for Windows WSL and Travis
 # elseif (CMAKE_COMPILER_IS_GNUCXX)
 #     message(STATUS "Compiler Settings: GNU")
@@ -192,95 +296,3 @@ endif ()
 #     message(STATUS "Using HAS_PEXT")
 #     add_compile_definitions(HAS_PEXT)
 # endif ()
-
-# Print some info to be able to check which compiler has been picked
-message(STATUS "Generator: ${CMAKE_GENERATOR} ${CMAKE_MAKE_PROGRAM}")
-message(STATUS "Compiler flags: ${CMAKE_CXX_FLAGS}")
-message(STATUS "Compiler DEBUG flags: ${CMAKE_CXX_FLAGS_DEBUG}")
-message(STATUS "Compiler RELEASE flags: ${CMAKE_CXX_FLAGS_RELEASE}")
-
-# Boost via vcpkg CONFIG package (kept)
-set(Boost_NO_WARN_NEW_VERSIONS ON)
-find_package(Boost CONFIG REQUIRED COMPONENTS program_options serialization)
-
-# For downloading with GIT (required by FetchContent)
-message(STATUS "Finding GIT...")
-set(GIT_EXECUTABLE)
-find_package(Git)
-if (GIT_FOUND)
-    message(STATUS "GIT found: ${GIT_EXECUTABLE}")
-else()
-    message(FATAL_ERROR "GIT NOT found:")
-endif ()
-
-set(FETCHCONTENT_QUIET OFF)
-set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
-include(FetchContent)
-
-# FMT pinned
-message(STATUS "Downloading/Update FMT (pinned)")
-FetchContent_Declare(
-        fmt
-        GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-        GIT_TAG 8.0.1
-)
-FetchContent_MakeAvailable(fmt)
-
-# SPDLOG pinned (using external fmt)
-message(STATUS "Downloading/Update SPDLOG (pinned)")
-FetchContent_Declare(
-        spdlog
-        GIT_REPOSITORY https://github.com/gabime/spdlog.git
-        GIT_TAG v1.10.0
-)
-option(SPDLOG_FMT_EXTERNAL "Use external fmt" ON)
-set(SPDLOG_FMT_EXTERNAL ON)
-FetchContent_MakeAvailable(spdlog)
-
-# GOOGLE TEST pinned (only if building tests)
-if (FRANKYCPP_BUILD_TESTS)
-    message(STATUS "Downloading/Update Google Test (pinned)")
-    FetchContent_Declare(
-            googletest
-            GIT_REPOSITORY https://github.com/google/googletest.git
-            GIT_TAG v1.13.0
-    )
-    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-    option(INSTALL_GMOCK "Install GMock" OFF)
-    option(INSTALL_GTEST "Install GTest" OFF)
-    FetchContent_MakeAvailable(googletest)
-endif()
-
-# GOOGLE BENCHMARK pinned (only if building benchmarks)
-if (FRANKYCPP_BUILD_BENCHMARKS)
-    message(STATUS "Downloading/Update Google Benchmark (pinned)")
-    FetchContent_Declare(
-            googlebenchmark
-            GIT_REPOSITORY https://github.com/google/benchmark.git
-            GIT_TAG v1.7.1
-    )
-    option(BENCHMARK_ENABLE_LTO "Enable LTO" ON)
-    option(BENCHMARK_ENABLE_GTEST_TESTS "Build benchmark unit tests" OFF)
-    option(BENCHMARK_ENABLE_TESTING "Enable benchmark tests" OFF)
-    option(BENCHMARK_ENABLE_INSTALL "Install benchmark" OFF)
-    FetchContent_MakeAvailable(googlebenchmark)
-endif()
-
-# include sub directories
-# Removed global include directories for src/test/testbench; handled per-target instead
-# include_directories(
-#         ${PROJECT_SOURCE_DIR}/src
-#         ${PROJECT_SOURCE_DIR}/test
-#         ${PROJECT_SOURCE_DIR}/testbench
-# )
-
-# project sub directories - need to have their own CMakeList.txt
-add_subdirectory(src)
-
-if (FRANKYCPP_BUILD_TESTS)
-    add_subdirectory(test)
-endif()
-
-if (FRANKYCPP_BUILD_BENCHMARKS)
-    add_subdirectory(testbench)
-endif()
