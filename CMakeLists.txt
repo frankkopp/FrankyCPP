@@ -145,22 +145,7 @@ message(STATUS "Compiler DEBUG flags: ${CMAKE_CXX_FLAGS_DEBUG}")
 message(STATUS "Compiler RELEASE flags: ${CMAKE_CXX_FLAGS_RELEASE}")
 
 # Boost via vcpkg CONFIG package (kept)
-set(Boost_NO_WARN_NEW_VERSIONS ON)
 find_package(Boost CONFIG REQUIRED COMPONENTS program_options serialization)
-
-# For downloading with GIT (required by FetchContent)
-message(STATUS "Finding GIT...")
-set(GIT_EXECUTABLE)
-find_package(Git)
-if (GIT_FOUND)
-    message(STATUS "GIT found: ${GIT_EXECUTABLE}")
-else()
-    message(FATAL_ERROR "GIT NOT found:")
-endif ()
-
-set(FETCHCONTENT_QUIET OFF)
-set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
-include(FetchContent)
 
 # Use spdlog from vcpkg instead of FetchContent
 find_package(spdlog CONFIG REQUIRED)

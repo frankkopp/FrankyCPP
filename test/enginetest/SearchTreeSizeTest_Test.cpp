@@ -30,6 +30,15 @@
 
 using testing::Eq;
 
+inline bool isBulkRun() {
+  const auto* ut  = testing::UnitTest::GetInstance();
+  const bool cond = ut && ut->test_to_run_count() > 1;
+  if (cond) {
+    std::cout << "Bulk run detected - limiting depth and number of tests to shorten test time" << std::endl;
+  }
+  return cond;
+}
+
 class SearchTreeSizeTest_Test : public ::testing::Test {
 public:
   static void SetUpTestSuite() {
@@ -47,14 +56,6 @@ protected:
   void TearDown() override {}
 };
 
-inline bool isBulkRun() {
-  const auto* ut  = testing::UnitTest::GetInstance();
-  const bool cond = ut && ut->test_to_run_count() > 1;
-  if (cond) {
-    std::cout << "Bulk run detected - limiting depth and number of tests to shorten test time" << std::endl;
-  }
-  return cond;
-}
 
 TEST_F(SearchTreeSizeTest_Test, size_test) {
   //  GTEST_SKIP();

@@ -6,7 +6,6 @@ cmake_minimum_required(VERSION 3.16)
 
 # define library files
 set(FrankyCPPlib_SRCS
-
         common/ThreadPool.cpp
         common/Logging.cpp
 
