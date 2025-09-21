@@ -90,27 +90,27 @@ inline std::tm localtime(std::time_t t) {
  */
 namespace fstr {
 
-  /**
-   * \brief Formats a string using \c std::vformat with the global locale.
-   *
-   * \tparam Args Variadic argument types.
-   * \param fmt_str Runtime format string using \c std::format syntax.
-   * \param args Arguments to be formatted.
-   * \return The formatted \c std::string.
-   * \throws std::format_error If the format string is invalid or formatting fails.
-   *
-   * \code
-   * auto s = fstr::sformat("value = {}, hex = {:#x}", 42, 42);
-   * \endcode
-   */
-  template <typename... Args>
-  std::string sformat(std::string_view fmt_str, Args&&... args) {
-    auto tup = std::make_tuple(std::forward<Args>(args)...);
-    auto fargs = std::apply([](auto&... elems) {
-      return std::make_format_args(elems...);
-    }, tup);
-    return std::vformat(fmt_str, fargs);
-  }
+  // /**
+  //  * \brief Formats a string using \c std::vformat with the global locale.
+  //  *
+  //  * \tparam Args Variadic argument types.
+  //  * \param fmt_str Runtime format string using \c std::format syntax.
+  //  * \param args Arguments to be formatted.
+  //  * \return The formatted \c std::string.
+  //  * \throws std::format_error If the format string is invalid or formatting fails.
+  //  *
+  //  * \code
+  //  * auto s = fstr::sformat("value = {}, hex = {:#x}", 42, 42);
+  //  * \endcode
+  //  */
+  // template <typename... Args>
+  // std::string sformat(std::string_view fmt_str, Args&&... args) {
+  //   auto tup = std::make_tuple(std::forward<Args>(args)...);
+  //   auto fargs = std::apply([](auto&... elems) {
+  //     return std::make_format_args(elems...);
+  //   }, tup);
+  //   return std::vformat(fmt_str, fargs);
+  // }
 
   /**
    * \brief Formats a string using \c std::vformat with an explicit locale.

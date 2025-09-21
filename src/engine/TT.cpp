@@ -246,7 +246,7 @@ void TT::ageEntries() {
 }
 
 std::string TT::str() {
-  return fstr::lformat(
+  return std::format(
     deLocale,
     "TT: size {:L} MB max entries {:L} of size {:L} Bytes entries {:L} ({:L}%) puts {:L} "
     "updates {:L} collisions {:L} overwrites {:L} probes {:L} hits {:L} ({:L}%) misses {:L} ({:L}%)",

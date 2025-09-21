@@ -312,9 +312,7 @@ bool Position::isAttacked(const Square sq, const Color by) const {
   const Bitboard occupiedAll = getOccupiedBb();
 
   // non sliding
-  if (Bitboards::pawnAttacks[~by][sq] & piecesBb[by][PAWN] ||
-      getAttacksBb(KNIGHT, sq, BbZero) & piecesBb[by][KNIGHT] ||
-      getAttacksBb(KING, sq, BbZero) & piecesBb[by][KING]) {
+  if (Bitboards::pawnAttacks[~by][sq] & piecesBb[by][PAWN] || getAttacksBb(KNIGHT, sq, BbZero) & piecesBb[by][KNIGHT] || getAttacksBb(KING, sq, BbZero) & piecesBb[by][KING]) {
     return true;
   }
 
@@ -322,9 +320,7 @@ bool Position::isAttacked(const Square sq, const Color by) const {
   // we do check a reverse attack and check if there is piece of the right color
   // in the reversed attack line. If yes they also could hit us which means
   // the square is attacked.
-  if ((getAttacksBb(BISHOP, sq, occupiedAll) & piecesBb[by][BISHOP]) ||
-      (getAttacksBb(ROOK, sq, occupiedAll) & piecesBb[by][ROOK]) ||
-      (getAttacksBb(QUEEN, sq, occupiedAll) & piecesBb[by][QUEEN])) {
+  if ((getAttacksBb(BISHOP, sq, occupiedAll) & piecesBb[by][BISHOP]) || (getAttacksBb(ROOK, sq, occupiedAll) & piecesBb[by][ROOK]) || (getAttacksBb(QUEEN, sq, occupiedAll) & piecesBb[by][QUEEN])) {
     return true;
   }
 
@@ -627,12 +623,7 @@ bool Position::checkInsufficientMaterial() const {
   }
 
   // still a pawn, rook or a queen around
-  if (popcount(piecesBb[WHITE][PAWN]) ||
-      popcount(piecesBb[BLACK][PAWN]) ||
-      popcount(piecesBb[WHITE][ROOK]) ||
-      popcount(piecesBb[BLACK][ROOK]) ||
-      popcount(piecesBb[WHITE][QUEEN]) ||
-      popcount(piecesBb[BLACK][QUEEN])) {
+  if (popcount(piecesBb[WHITE][PAWN]) || popcount(piecesBb[BLACK][PAWN]) || popcount(piecesBb[WHITE][ROOK]) || popcount(piecesBb[BLACK][ROOK]) || popcount(piecesBb[WHITE][QUEEN]) || popcount(piecesBb[BLACK][QUEEN])) {
     return false;
   }
 
@@ -644,13 +635,11 @@ bool Position::checkInsufficientMaterial() const {
     return true;
   }
   // the weaker side has a minor piece against two knights
-  if ((materialNonPawn[WHITE] == 2 * valueOf(KNIGHT) && materialNonPawn[BLACK] <= valueOf(BISHOP)) ||
-      (materialNonPawn[BLACK] == 2 * valueOf(KNIGHT) && materialNonPawn[WHITE] <= valueOf(BISHOP))) {
+  if ((materialNonPawn[WHITE] == 2 * valueOf(KNIGHT) && materialNonPawn[BLACK] <= valueOf(BISHOP)) || (materialNonPawn[BLACK] == 2 * valueOf(KNIGHT) && materialNonPawn[WHITE] <= valueOf(BISHOP))) {
     return true;
   }
   // two bishops draw against a bishop
-  if ((materialNonPawn[WHITE] == 2 * valueOf(BISHOP) && materialNonPawn[BLACK] == valueOf(BISHOP)) ||
-      (materialNonPawn[BLACK] == 2 * valueOf(BISHOP) && materialNonPawn[WHITE] == valueOf(BISHOP))) {
+  if ((materialNonPawn[WHITE] == 2 * valueOf(BISHOP) && materialNonPawn[BLACK] == valueOf(BISHOP)) || (materialNonPawn[BLACK] == 2 * valueOf(BISHOP) && materialNonPawn[WHITE] == valueOf(BISHOP))) {
     return true;
   }
   // one side has two bishops a mate can be forced
@@ -658,8 +647,7 @@ bool Position::checkInsufficientMaterial() const {
     return false;
   }
   // two minor pieces against one draw, except when the stronger side has a bishop pair
-  return (materialNonPawn[WHITE] < 2 * valueOf(BISHOP) && materialNonPawn[BLACK] <= valueOf(BISHOP)) ||
-         (materialNonPawn[WHITE] <= valueOf(BISHOP) && materialNonPawn[BLACK] < 2 * valueOf(BISHOP));
+  return (materialNonPawn[WHITE] < 2 * valueOf(BISHOP) && materialNonPawn[BLACK] <= valueOf(BISHOP)) || (materialNonPawn[WHITE] <= valueOf(BISHOP) && materialNonPawn[BLACK] < 2 * valueOf(BISHOP));
 }
 
 ////////////////////////////////////////////////
@@ -933,41 +921,41 @@ void Position::setupBoard(const std::string& fen) {
     if (std::isdigit(token)) {// number
       file += token - '0';
       if (file > 8) {
-        throw std::invalid_argument(fstr::sformat("FEN has too many squares ({}) in rank {}:  {}", file, rank + 1, fenParts[0]));
+        throw std::invalid_argument(std::format("FEN has too many squares ({}) in rank {}:  {}", file, rank + 1, fenParts[0]));
       }
     }
     else if (token == '/') {// rank separator
       if (file < 8) {
-        throw std::invalid_argument(fstr::sformat("FEN has not enough squares ({}) in rank {}:  {}", file, rank + 1, fenParts[0]));
+        throw std::invalid_argument(std::format("FEN has not enough squares ({}) in rank {}:  {}", file, rank + 1, fenParts[0]));
       }
       if (file > 8) {
-        throw std::invalid_argument(fstr::sformat("too many squares ({}) in rank {}:  {}", file, rank + 1, fenParts[0]));
+        throw std::invalid_argument(std::format("too many squares ({}) in rank {}:  {}", file, rank + 1, fenParts[0]));
       }
       // reset file counter and decrease rank
       file = 0;
       rank--;
       if (rank < 0) {
-        throw std::invalid_argument(fstr::sformat("FEN has too many ranks ({}):  {}", 8 - rank, fenParts[0]));
+        throw std::invalid_argument(std::format("FEN has too many ranks ({}):  {}", 8 - rank, fenParts[0]));
       }
     }
     else {// find piece type from piece symbol
       const Piece piece = makePiece(token);
       if (piece == PIECE_NONE) {// redundant
-        throw std::invalid_argument(fstr::sformat("FEN has invalid piece character '{}' in {}", token, fenParts[0]));
+        throw std::invalid_argument(std::format("FEN has invalid piece character '{}' in {}", token, fenParts[0]));
       }
       if (file > 7) {
-        throw std::invalid_argument(fstr::sformat("FEN has too many squares ({}) in rank {}:  {}", file, rank + 1, fenParts[0]));
+        throw std::invalid_argument(std::format("FEN has too many squares ({}) in rank {}:  {}", file, rank + 1, fenParts[0]));
       }
       Square currentSquare = squareOf(static_cast<File>(file), static_cast<Rank>(rank));
       if (currentSquare == SQ_NONE) {
-        throw std::invalid_argument(fstr::sformat("FEN has invalid square {} ({}): {}", currentSquare, ::str(currentSquare), fenParts[0]));
+        throw std::invalid_argument(std::format("FEN has invalid square {} ({}): {}", currentSquare, ::str(currentSquare), fenParts[0]));
       }
       putPiece(piece, currentSquare);
       file++;
     }
   }
   if (file != 8 || rank != 0) {
-    throw std::invalid_argument(fstr::sformat("FEN not complete. Did not reached last square (file={}, rank={}) after reading fen", file, rank));
+    throw std::invalid_argument(std::format("FEN not complete. Did not reached last square (file={}, rank={}) after reading fen", file, rank));
   }
 
   // set defaults
@@ -983,7 +971,7 @@ void Position::setupBoard(const std::string& fen) {
       zobristKey ^= Zobrist::nextPlayer;
     }
     else if (fenParts[1] != "w") {
-      throw std::invalid_argument(fstr::sformat("FEN next player is invalid: {}", fenParts[1]));
+      throw std::invalid_argument(std::format("FEN next player is invalid: {}", fenParts[1]));
     }
   }
 

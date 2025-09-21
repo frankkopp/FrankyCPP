@@ -117,7 +117,7 @@ std::string OpeningBook::str(const int level) {
   const Position p{};
   const Key zobristKey  = p.getZobristKey();
   const BookEntry* node = &bookMap[zobristKey];
-  return fstr::lformat(deLocale, "Root ({:L})\n{}", bookMap[zobristKey].counter, getLevelStr(1, level, node));
+  return std::format(deLocale, "Root ({:L})\n{}", bookMap[zobristKey].counter, getLevelStr(1, level, node));
 }
 
 std::string OpeningBook::getLevelStr(int level, const int maxLevel, const BookEntry* node) {
@@ -125,7 +125,7 @@ std::string OpeningBook::getLevelStr(int level, const int maxLevel, const BookEn
   const size_t size = node->moves.size();
   for (int i = 0; i < size; i++) {
     const BookEntry* newNode = &bookMap[(node->nextPosition)[i]];
-    out += fstr::lformat(deLocale, "{:{}}{} ({:L})\n", "", level, ::str(node->moves[i]), newNode->counter);
+    out += std::format(deLocale, "{:{}}{} ({:L})\n", "", level, ::str(node->moves[i]), newNode->counter);
     if (level < maxLevel) {
       out += getLevelStr(level + 1, maxLevel, newNode);
     }

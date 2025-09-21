@@ -126,7 +126,7 @@ TEST_F(EvaluatorTest, EvaluateMaterialOnly) {
     if (!isBulkRun() && printed < 3) {
       fprintln("MaterialOnly Fen: {}", fen);
       fprintln("Expected: {}  Got: {}", expectedFinal, v);
-      fprintln(p.strBoard());
+      println(p.strBoard());
       ++printed;
     }
 
@@ -156,9 +156,9 @@ TEST_F(EvaluatorTest, KnightMobility_CentralBeatsCorner) {
 
   // Human visual check
   fprintln("Central Knight Eval: {}", vCentral);
-  fprintln(central.strBoard());
+  println(central.strBoard());
   fprintln("Corner Knight Eval:  {}", vCorner);
-  fprintln(corner.strBoard());
+  println(corner.strBoard());
   fprintln("Knight mobility favors central knight over corner knight: {} > {}", vCentral, vCorner);
 }
 
@@ -179,9 +179,9 @@ TEST_F(EvaluatorTest, Pawn_PassedBeatsBlocked) {
 
   // Human visual check
   fprintln("Passed pawn eval: {}", vPassed);
-  fprintln(passed.strBoard());
+  println(passed.strBoard());
   fprintln("Blocked pawn eval: {}", vBlocked);
-  fprintln(blocked.strBoard());
+  println(blocked.strBoard());
   fprintln("Passed > Blocked: {} > {}", vPassed, vBlocked);
 
   ASSERT_GT(vPassed, vBlocked) << "Passed pawn should evaluate higher than blocked pawn";
@@ -205,9 +205,9 @@ TEST_F(EvaluatorTest, BishopMobility_CentralBeatsCorner) {
 
   // Human visual check
   fprintln("Central Bishop Eval: {}", vCentral);
-  fprintln(central.strBoard());
+  println(central.strBoard());
   fprintln("Corner Bishop Eval:  {}", vCorner);
-  fprintln(corner.strBoard());
+  println(corner.strBoard());
   fprintln("Bishop mobility favors central over corner: {} > {}", vCentral, vCorner);
 
   ASSERT_GT(vCentral, vCorner) << "Bishop mobility should favor central bishop over corner bishop";
@@ -235,11 +235,11 @@ TEST_F(EvaluatorTest, Rook_FileBonus_Open_gt_SemiOpen_gt_Closed) {
 
   // Human visual check
   fprintln("Rook closed-file eval: {}", vClosed);
-  fprintln(closed.strBoard());
+  println(closed.strBoard());
   fprintln("Rook semi-open-file eval: {}", vSemiOpen);
-  fprintln(semiOpen.strBoard());
+  println(semiOpen.strBoard());
   fprintln("Rook open-file eval: {}", vOpen);
-  fprintln(open.strBoard());
+  println(open.strBoard());
   fprintln("Open > Semi-open > Closed: {} > {} > {}", vOpen, vSemiOpen, vClosed);
 
   ASSERT_GT(vSemiOpen, vClosed) << "Semi-open file should be better than closed file for rook";
@@ -265,9 +265,9 @@ TEST_F(EvaluatorTest, Rook_PSQT_SeventhRank_BetterThan_BackRank) {
 
   // Human visual check
   fprintln("Rook 7th-rank eval: {}", v7th);
-  fprintln(seventh.strBoard());
+  println(seventh.strBoard());
   fprintln("Rook back-rank eval: {}", vBack);
-  fprintln(backrank.strBoard());
+  println(backrank.strBoard());
   fprintln("7th rank > back rank: {} > {}", v7th, vBack);
 
   ASSERT_GT(v7th, vBack) << "PSQT should reward rook on the 7th rank more than back rank";
@@ -290,9 +290,9 @@ TEST_F(EvaluatorTest, QueenMobility_CentralBeatsCorner) {
 
   // Human visual check
   fprintln("Central Queen Eval: {}", vCentral);
-  fprintln(central.strBoard());
+  println(central.strBoard());
   fprintln("Corner Queen Eval:  {}", vCorner);
-  fprintln(corner.strBoard());
+  println(corner.strBoard());
   fprintln("Queen mobility favors central over corner: {} > {}", vCentral, vCorner);
 
   ASSERT_GT(vCentral, vCorner) << "Queen mobility should favor central queen over corner queen";
@@ -317,9 +317,9 @@ TEST_F(EvaluatorTest, King_PSQT_CenterBeatsCorner_Endgameish) {
 
   // Human visual check
   fprintln("Central King Eval: {}", vCentral);
-  fprintln(central.strBoard());
+  println(central.strBoard());
   fprintln("Corner King Eval:  {}", vCorner);
-  fprintln(cornerK.strBoard());
+  println(cornerK.strBoard());
   fprintln("PSQT favors central king in endgame: {} > {}", vCentral, vCorner);
 
   ASSERT_GT(vCentral, vCorner) << "PSQT should favor central king in endgame-like positions";
@@ -349,9 +349,9 @@ TEST_F(EvaluatorTest, BishopPairBonus_TwoBishopsBeats_BishopKnight) {
 
   // Human visual check
   fprintln("Bishop pair eval: {}", vPair);
-  fprintln(pairPos.strBoard());
+  println(pairPos.strBoard());
   fprintln("Bishop+Knight eval: {}", vNoPair);
-  fprintln(noPairPos.strBoard());
+  println(noPairPos.strBoard());
   fprintln("Pair > NoPair: {} > {}", vPair, vNoPair);
 
   ASSERT_GT(vPair, vNoPair) << "Bishop pair bonus should favor two bishops over bishop+knight when material/PSQT are off";
@@ -380,9 +380,9 @@ TEST_F(EvaluatorTest, RookMobility_CentralBeatsEdge_FileBonusesOff) {
 
   // Human visual check
   fprintln("Central rook eval: {}", vCentral);
-  fprintln(central.strBoard());
+  println(central.strBoard());
   fprintln("Edge rook eval:    {}", vEdge);
-  fprintln(edge.strBoard());
+  println(edge.strBoard());
   fprintln("Central > Edge (mobility): {} > {}", vCentral, vEdge);
 
   ASSERT_GT(vCentral, vEdge) << "Rook mobility should favor central rook when file bonuses and PSQT are off";
@@ -411,9 +411,9 @@ TEST_F(EvaluatorTest, QueenTropism_CloserBeatsFarther_EndgameOnly) {
 
   // Human visual check
   fprintln("Queen closer eval:  {}", vCloser);
-  fprintln(closer.strBoard());
+  println(closer.strBoard());
   fprintln("Queen farther eval: {}", vFarther);
-  fprintln(farther.strBoard());
+  println(farther.strBoard());
   fprintln("Closer > Farther (tropism): {} > {}", vCloser, vFarther);
 
   ASSERT_GT(vCloser, vFarther) << "Queen tropism should reward being closer to enemy king (endgame-only), with mobility/PSQT/material off";

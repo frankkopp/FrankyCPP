@@ -28,7 +28,6 @@
 #include "types/types.h"
 #include "version.h"
 
-#include <exception>
 #include <memory>
 #include <thread>
 
@@ -91,7 +90,7 @@ bool UciHandler::handleCommand(const std::string& cmd) {
   else if (token == "perft")      { perftCommand(inStream); }
   else if (token == "noop")       { /* noop */ }
   else
-    uciError(fstr::sformat("Unknown UCI command: {}", token));
+    uciError(std::format("Unknown UCI command: {}", token));
   // @formatter:on
 
 // TODO: add a help option for manual usage of uci commands
@@ -114,7 +113,7 @@ void UciHandler::isReadyCommand() const {
 void UciHandler::setOptionCommand(std::istringstream& inStream) const {
   std::string token, name, value;
   if (inStream >> token && token != "name") {
-    uciError(fstr::sformat("Command setoption is malformed - expected 'name': {}", token));
+    uciError(std::format("Command setoption is malformed - expected 'name': {}", token));
     return;
   }
   // read name which could contain spaces
@@ -131,7 +130,7 @@ void UciHandler::setOptionCommand(std::istringstream& inStream) const {
   }
 
   if (!UciOptions::getInstance()->setOption(const_cast<UciHandler*>(this), name, value)) {
-    uciError(fstr::sformat("Unknown option: {}", name.c_str()));
+    uciError(std::format("Unknown option: {}", name.c_str()));
   }
   LOG__INFO(Logger::get().UCIHAND_LOG, "Set option: {} = {}", name, value);
 }
@@ -175,7 +174,7 @@ void UciHandler::positionCommand(std::istringstream& inStream) {
     for (const std::string& move : moves) {
       const Move moveFromUci = pMoveGen->getMoveFromUci(*pPosition, move);
       if (moveFromUci == MOVE_NONE) {
-        uciError(fstr::sformat("Invalid move {}", move));
+        uciError(std::format("Invalid move {}", move));
         return;
       }
       pPosition->doMove(moveFromUci);
@@ -194,17 +193,17 @@ void UciHandler::goCommand(std::istringstream& inStream) const {
   // Sanity check search limits
   // sanity check / minimum settings
   if (!(searchLimits.infinite || searchLimits.ponder || searchLimits.depth > 0 || searchLimits.nodes > 0 || searchLimits.mate > 0 || searchLimits.timeControl)) {
-    uciError(fstr::sformat("UCI command go malformed. No effective limits set: {}", searchLimits.str()));
+    uciError(std::format("UCI command go malformed. No effective limits set: {}", searchLimits.str()));
     return;
   }
   // sanity check time control
   if (searchLimits.timeControl && searchLimits.moveTime.count() == 0) {
     if (pPosition->getNextPlayer() == WHITE && searchLimits.whiteTime.count() == 0) {
-      uciError(fstr::sformat("UCI command go invalid. White to move but time for white is zero! {}", searchLimits.str()));
+      uciError(std::format("UCI command go invalid. White to move but time for white is zero! {}", searchLimits.str()));
       return;
     }
     else if (pPosition->getNextPlayer() == BLACK && searchLimits.blackTime.count() == 0) {
-      uciError(fstr::sformat("UCI command go invalid. Black to move but time for white is zero! {}", searchLimits.str()));
+      uciError(std::format("UCI command go invalid. Black to move but time for white is zero! {}", searchLimits.str()));
       return;
     }
   }
@@ -261,7 +260,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
       } catch (...) { /* ignored */
       }
       if (searchLimits.moveTime.count() <= 0) {
-        uciError(fstr::sformat("Invalid movetime: {}", token));
+        uciError(std::format("Invalid movetime: {}", token));
         return false;
       }
     }
@@ -274,7 +273,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
       } catch (...) { /* ignored */
       }
       if (searchLimits.whiteTime.count() <= 0) {
-        uciError(fstr::sformat("Invalid wtime: {}", token));
+        uciError(std::format("Invalid wtime: {}", token));
         return false;
       }
     }
@@ -287,7 +286,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
       } catch (...) { /* ignored */
       }
       if (searchLimits.blackTime.count() <= 0) {
-        uciError(fstr::sformat("Invalid btime: {}", token));
+        uciError(std::format("Invalid btime: {}", token));
         return false;
       }
     }
@@ -299,7 +298,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
       } catch (...) { /* ignored */
       }
       if (searchLimits.whiteInc.count() < 0) {
-        uciError(fstr::sformat("Invalid winc: {}", token));
+        uciError(std::format("Invalid winc: {}", token));
         return false;
       }
     }
@@ -311,7 +310,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
       } catch (...) { /* ignored */
       }
       if (searchLimits.blackInc.count() < 0) {
-        uciError(fstr::sformat("Invalid binc: {}", token));
+        uciError(std::format("Invalid binc: {}", token));
         return false;
       }
     }
@@ -323,7 +322,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
       } catch (...) { /* ignored */
       }
       if (searchLimits.movesToGo <= 0) {
-        uciError(fstr::sformat("Invalid movestogo: {}", token));
+        uciError(std::format("Invalid movestogo: {}", token));
         return false;
       }
     }
@@ -335,7 +334,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
       } catch (...) { /* ignored */
       }
       if (searchLimits.depth <= 0 || searchLimits.depth > MAX_DEPTH) {
-        uciError(fstr::sformat("depth not between 1 and {}. Was '{}'", MAX_DEPTH, token));
+        uciError(std::format("depth not between 1 and {}. Was '{}'", MAX_DEPTH, token));
         return false;
       }
     }
@@ -347,7 +346,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
       } catch (...) { /* ignored */
       }
       if (searchLimits.nodes <= 0) {
-        uciError(fstr::sformat("Invalid nodes: {}", token));
+        uciError(std::format("Invalid nodes: {}", token));
         return false;
       }
     }
@@ -359,13 +358,13 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
       } catch (...) { /* ignored */
       }
       if (searchLimits.mate <= 0 || searchLimits.mate > MAX_DEPTH) {
-        uciError(fstr::sformat("mate not between 1 and {}. Was '{}'", MAX_DEPTH, token));
+        uciError(std::format("mate not between 1 and {}. Was '{}'", MAX_DEPTH, token));
         return false;
       }
     }
 
     else {
-      uciError(fstr::sformat("Unknown go subcommand. Was '{}'", token));
+      uciError(std::format("Unknown go subcommand. Was '{}'", token));
       return false;
     }
   }
@@ -395,7 +394,7 @@ void UciHandler::perftCommand(std::istringstream& inStream) const {
     startDepth = 1;
   }
   if (startDepth <= 0 || startDepth > MAX_DEPTH) {
-    uciError(fstr::sformat("perft start depth not between 1 and {}. Was '{}'", MAX_DEPTH, token));
+    uciError(std::format("perft start depth not between 1 and {}. Was '{}'", MAX_DEPTH, token));
     return;
   }
   int endDepth = startDepth;
@@ -405,7 +404,7 @@ void UciHandler::perftCommand(std::istringstream& inStream) const {
     } catch (...) { /* Ignore */
     }
     if (endDepth <= 0 || endDepth > MAX_DEPTH) {
-      uciError(fstr::sformat("perft end depth not between 1 and {}. Was '{}'", MAX_DEPTH, token));
+      uciError(std::format("perft end depth not between 1 and {}. Was '{}'", MAX_DEPTH, token));
     }
   }
   std::thread perftThread([&](const int s, const int e) {
@@ -429,7 +428,7 @@ void UciHandler::send(const std::string& toSend) const {
 }
 
 void UciHandler::sendString(const std::string& anyString) const {
-  send(fstr::sformat("info string {}", anyString));
+  send(std::format("info string {}", anyString));
 }
 
 void UciHandler::sendReadyOk() const {
@@ -437,34 +436,34 @@ void UciHandler::sendReadyOk() const {
 }
 
 void UciHandler::sendResult(const Move bestMove, const Move ponderMove) const {
-  send(fstr::sformat("bestmove {}{}", str(bestMove), (ponderMove ? " ponder " + str(ponderMove) : "")));
+  send(std::format("bestmove {}{}", str(bestMove), (ponderMove ? " ponder " + str(ponderMove) : "")));
 }
 
 void UciHandler::sendCurrentLine(const MoveList& moveList) const {
-  send(fstr::sformat("currline {}", str(moveList)));
+  send(std::format("currline {}", str(moveList)));
 }
 
 void UciHandler::sendIterationEndInfo(int depth, int seldepth, const Value value, uint64_t nodes,
                                       uint64_t nps, const milliseconds time, const MoveList& pv) const {
-  send(fstr::sformat("info depth {} seldepth {} multipv 1 score {} nodes {} nps {} time {} pv {}",
+  send(std::format("info depth {} seldepth {} multipv 1 score {} nodes {} nps {} time {} pv {}",
                    depth, seldepth, str(value), nodes, nps, time.count(), str(pv)));
 }
 
 void UciHandler::sendAspirationResearchInfo(int depth, int seldepth, const Value value,
                                             const std::string& boundString, uint64_t nodes, uint64_t nps,
                                             const milliseconds time, const MoveList& pv) const {
-  send(fstr::sformat("info depth {} seldepth {} multipv 1 score {} {} nodes {} nps {} time {} pv {}",
+  send(std::format("info depth {} seldepth {} multipv 1 score {} {} nodes {} nps {} time {} pv {}",
                    depth, seldepth, str(value), boundString, nodes, nps, time.count(), str(pv)));
 }
 
 void UciHandler::sendCurrentRootMove(const Move currmove, std::size_t movenumber) const {
-  send(fstr::sformat("info currmove {} currmovenumber {}", str(currmove),
+  send(std::format("info currmove {} currmovenumber {}", str(currmove),
                    movenumber));
 }
 
 void UciHandler::sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps,
                                   const milliseconds time, int hashfull) const {
-  send(fstr::sformat("info depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
+  send(std::format("info depth {} seldepth {} nodes {} nps {} time {} hashfull {}",
                    depth, seldepth, nodes, nps, time.count(), hashfull));
 }
 

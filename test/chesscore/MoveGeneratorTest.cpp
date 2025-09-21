@@ -67,7 +67,7 @@ TEST_F(MoveGenTest, pawnMoves) {
     return valueOf(lhs) > valueOf(rhs);
   });
   for (const Move m : moves) {
-    fprintln(strVerbose(m));
+    println(strVerbose(m));
   }
 }
 
@@ -91,7 +91,7 @@ TEST_F(MoveGenTest, kingMoves) {
     return valueOf(lhs) > valueOf(rhs);
   });
   for (const Move m : moves) {
-    fprintln(strVerbose(m));
+    println(strVerbose(m));
   }
 }
 
@@ -125,7 +125,7 @@ TEST_F(MoveGenTest, normalMoves) {
     return valueOf(lhs) > valueOf(rhs);
   });
   for (Move m : moves) {
-    fprintln(strVerbose(m));
+    println(strVerbose(m));
   }
 }
 
@@ -149,7 +149,7 @@ TEST_F(MoveGenTest, castlingMoves) {
     return valueOf(lhs) > valueOf(rhs);
   });
   for (const Move m : moves) {
-    fprintln(strVerbose(m));
+    println(strVerbose(m));
   }
 }
 
@@ -821,7 +821,7 @@ TEST_F(MoveGenTest, debug) {
   moves = *mg.generatePseudoLegalMoves(p, GenAll);
   fprintln("{}", moves.size());
   for (const Move m : moves) {
-    fprintln(strVerbose(m));
+    println(strVerbose(m));
   }
 
   fprintln("{}", mg.generateLegalMoves(p, GenAll)->size());

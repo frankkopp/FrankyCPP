@@ -49,7 +49,7 @@ inline std::string format_now(const char* fmt = "%Y-%m-%d %H:%M:%S") {
 //  Examples:
 //  5,021 s
 inline std::string str(const milliseconds s) {
-  return fstr::lformat(deLocale, "{:.3f} s", static_cast<double>(s.count()) / 1e3);
+  return std::format(deLocale, "{:.3f} s", static_cast<double>(s.count()) / 1e3);
 }
 
 // returns a string representation of the nanoseconds as a fraction of a second
@@ -57,7 +57,7 @@ inline std::string str(const milliseconds s) {
 //  Examples:
 //  5,021456234 s
 inline std::string str(const nanoseconds s) {
-  return fstr::lformat(deLocale, "{:.9f} s", static_cast<double>(s.count()) / 1e9);
+  return std::format(deLocale, "{:.9f} s", static_cast<double>(s.count()) / 1e9);
 }
 
 // returns a string representation of the duration as a human readable string

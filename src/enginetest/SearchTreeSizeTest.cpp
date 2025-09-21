@@ -178,7 +178,7 @@ void SearchTreeSizeTest::start() {
       const Position testPosition(fen);
       (void)testPosition; // avoid unused variable warning
     } catch (std::invalid_argument& e) {
-      std::cerr << fstr::sformat("Invalid fen skipped: {} ({})", e.what(), fen) << std::endl;
+      std::cerr << std::format("Invalid fen skipped: {} ({})", e.what(), fen) << std::endl;
       continue;
     }
     results.push_back(featureMeasurements(depth, movetime, fen));

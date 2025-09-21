@@ -20,6 +20,7 @@
 #include <gtest/gtest.h>
 #include <ostream>
 #include <string>
+#include <format>
 
 #include "chesscore/Position.h"
 #include "chesscore/Zobrist.h"
@@ -1088,11 +1089,11 @@ TEST_F(PositionTest, attacksTo) {
 TEST_F(PositionTest, debug) {
 
   Position p("r3k2r/Pppp1ppp/1b3nbN/nP6/BBPPP3/q4N2/Pp4PP/R2Q1RK1 b kq d3 0 1");
-  const Move m = createMove(SQ_B2, SQ_A1, PROMOTION, QUEEN);
-  fprintln(strVerbose(m));
-  fprintln(p.strFen());
+  constexpr Move m = createMove(SQ_B2, SQ_A1, PROMOTION, QUEEN);
+  println(strVerbose(m));
+  println(p.strFen());
   p.doMove(m);
-  fprintln(p.strFen());
+  println(p.strFen());
 }
 
 TEST_F(PositionTest, PrintZobristConstants) {

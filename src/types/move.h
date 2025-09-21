@@ -68,7 +68,7 @@ constexpr bool validMoveType(const MoveType mt) {
 inline auto moveTypeLabel = std::string("npec");
 
 // single char label for the piece type (one of " npec")
-constexpr char str(MoveType mt) {
+constexpr char str(const MoveType mt) {
   if (!validMoveType(mt)) return '-';
   return moveTypeLabel[mt];
 }
@@ -101,7 +101,7 @@ enum Move : uint_fast32_t {
 };
 
 // creates a move
-constexpr Move createMove(Square from, Square to, MoveType mt = NORMAL, PieceType promType = KNIGHT) {
+constexpr Move createMove(const Square from, const Square to, const MoveType mt = NORMAL, PieceType promType = KNIGHT) {
   assert(validSquare(from) && validSquare(to));
   if (promType < KNIGHT) promType = KNIGHT;
   // promType will be reduced to 2 bits (4 values) Knight, Bishop, Rook, Queen
@@ -114,7 +114,7 @@ constexpr Move createMove(Square from, Square to, MoveType mt = NORMAL, PieceTyp
 }
 
 // creates a move
-constexpr Move createMove(Square from, Square to, MoveType mt, Value value) {
+constexpr Move createMove(const Square from, const Square to, const MoveType mt, const Value value) {
   assert(validSquare(from) && validSquare(to));
   return static_cast<Move>(to |
                            from << MoveShifts::FROM_SHIFT |
@@ -123,7 +123,7 @@ constexpr Move createMove(Square from, Square to, MoveType mt, Value value) {
 }
 
 // creates a move
-constexpr Move createMove(Square from, Square to, MoveType mt, PieceType promType, Value value) {
+constexpr Move createMove(const Square from, const Square to, const MoveType mt, PieceType promType, const Value value) {
   assert(validSquare(from) && validSquare(to));
   if (promType < KNIGHT) promType = KNIGHT;
   // promType will be reduced to 2 bits (4 values) Knight, Bishop, Rook, Queen
@@ -137,39 +137,39 @@ constexpr Move createMove(Square from, Square to, MoveType mt, PieceType promTyp
 }
 
 // returns the from-Square of the move
-inline Square fromSquare(Move m) {
+inline Square fromSquare(const Move m) {
   return static_cast<Square>((m & MoveShifts::FROM_MASK) >> MoveShifts::FROM_SHIFT);
 }
 
 // returns the to-Square of the move
-inline Square toSquare(Move m) {
+inline Square toSquare(const Move m) {
   return static_cast<Square>(m & MoveShifts::TO_MASK);
 }
 
 // PromotionType returns the PieceType considered for promotion when
 // move type is also MoveType.Promotion.
 // Must be ignored when move type is not MoveType.Promotion.
-inline PieceType promotionTypeOf(Move m) {
+inline PieceType promotionTypeOf(const Move m) {
   return static_cast<PieceType>(((m & MoveShifts::PROM_TYPE_MASK) >> MoveShifts::PROM_TYPE_SHIFT) + KNIGHT);
 }
 
 // MoveType returns the type of the move as defined in MoveType
-inline MoveType typeOf(Move m) {
+inline MoveType typeOf(const Move m) {
   return static_cast<MoveType>((m & MoveShifts::MOVE_TYPE_MASK));
 }
 
 // returns the move without any value (least 16-bits)
-inline Move moveOf(Move m) {
+inline Move moveOf(const Move m) {
   return static_cast<Move>(m & MoveShifts::MOVE_MASK);
 }
 
 // returns the sort value for the move used in the move generator
-inline Value valueOf(Move m) {
+inline Value valueOf(const Move m) {
   return static_cast<Value>(((m & MoveShifts::VALUE_MASK) >> MoveShifts::VALUE_SHIFT)) + VALUE_NONE;
 }
 
 // stores/encodes the value into the given move (changes given move) and also returns the new value.
-inline Move setValueOf(Move& m, Value v) {
+inline Move setValueOf(Move& m, const Value v) {
   // can't store a value on MoveNone
   if (moveOf(m) == MOVE_NONE) return m;
   // when saving a value to a move we shift value to a positive integer
@@ -178,7 +178,7 @@ inline Move setValueOf(Move& m, Value v) {
   return m = static_cast<Move>((m & MoveShifts::MOVE_MASK) | ((v - VALUE_NONE) << MoveShifts::VALUE_SHIFT));
 }
 
-constexpr bool validMove(Move m) {
+constexpr bool validMove(const Move m) {
   return m != MOVE_NONE &&
          // validSquare(fromSquare(m)) &&
          // validSquare(toSquare(m)) &&
@@ -189,7 +189,7 @@ constexpr bool validMove(Move m) {
 }
 
 // returns a short representation of the move as string (UCI protocol)
-inline std::string str(Move move) {
+inline std::string str(const Move move) {
   if (moveOf(move) == MOVE_NONE) return "no move";
   if ((typeOf(move) == PROMOTION)) {
     return str(fromSquare(move)) + str(toSquare(move)) + str(promotionTypeOf(move));
@@ -198,7 +198,7 @@ inline std::string str(Move move) {
 }
 
 // returns a verbose representation of the move as string
-inline std::string strVerbose(Move move) {
+inline std::string strVerbose(const Move move) {
   if (!move) return "no move " + std::to_string(move);
   std::string tp;
   std::string promPt;
