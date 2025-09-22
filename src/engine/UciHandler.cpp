@@ -57,7 +57,7 @@ void UciHandler::loop(std::istream* pIstream) {
     // only blocks on cin!!
     if (!getline(*pIstream, cmd)) cmd = "quit";
 
-    // if handleCommand returns true it has received a quit.
+    // if handleCommand returns true, it has received a quit-command.
     if (handleCommand(cmd)) return;
 
     LOG__DEBUG(Logger::get().UCIHAND_LOG, "UCI Handler waiting for command:");
@@ -77,21 +77,20 @@ bool UciHandler::handleCommand(const std::string& cmd) {
   inStream >> std::skipws >> token;
 
   // @formatter:off
-  if (token == "quit") { return true; }
-  if (token == "uci") { uciCommand(); }
-  else if (token == "isready") { isReadyCommand(); }
-  else if (token == "setoption") { setOptionCommand(inStream); }
+  if      (token == "quit")       { return true; }
+  if      (token == "uci")        { uciCommand(); }
+  else if (token == "isready")    { isReadyCommand(); }
+  else if (token == "setoption")  { setOptionCommand(inStream); }
   else if (token == "ucinewgame") { uciNewGameCommand(); }
-  else if (token == "position") { positionCommand(inStream); }
-  else if (token == "go") { goCommand(inStream); }
-  else if (token == "stop") { stopCommand(); }
-  else if (token == "ponderhit") { ponderHitCommand(); }
-  else if (token == "register") { registerCommand(); }
-  else if (token == "debug") { debugCommand(); }
-  else if (token == "perft") { perftCommand(inStream); }
-  else if (token == "noop") { /* noop */
-  }
-  else if (token == "help") { helpCommand(); }
+  else if (token == "position")   { positionCommand(inStream); }
+  else if (token == "go")         { goCommand(inStream); }
+  else if (token == "stop")       { stopCommand(); }
+  else if (token == "ponderhit")  { ponderHitCommand(); }
+  else if (token == "register")   { registerCommand(); }
+  else if (token == "debug")      { debugCommand(); }
+  else if (token == "perft")      { perftCommand(inStream); }
+  else if (token == "help")       { helpCommand(); }
+  else if (token == "noop")       { /* noop */  }
   else
     uciError(std::format("Unknown UCI command: {}", token));
   // @formatter:on
