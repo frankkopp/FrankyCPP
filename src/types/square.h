@@ -56,7 +56,7 @@ enum Square : uint_fast8_t {
 constexpr bool validSquare(const Square s) { return s < 64; }
 
 // returns the square of the intersection of file and rank
-constexpr Square squareOf(const File f, const Rank r) { return static_cast<Square>((r << 3) + f); }
+constexpr Square squareOf(const File f, const Rank r) { return static_cast<Square>((static_cast<int>(r) << 3) + static_cast<int>(f)); }
 
 // returns the file of this square
 constexpr File fileOf(const Square s) { return static_cast<File>(s & 0b00000111u); }
@@ -69,9 +69,9 @@ constexpr Rank rankOf(const Square s) { return static_cast<Rank>(s >> 3); }
 // returns SQ_NONE if not a valid square
 inline Square makeSquare(const std::string_view s) {
   if (s.length() < 2) return SQ_NONE;
-  const File f = makeFile(s[0]);
-  const Rank r = makeRank(s[1]);
-  if (validFile(f) && validRank(r)) {
+  const File f = File::fromChar(s[0]);
+  const Rank r = Rank::fromChar(s[1]);
+  if (f.isValid() && r.isValid()) {
     return squareOf(f, r);
   }
   return SQ_NONE;
@@ -99,8 +99,8 @@ namespace Squares {
           const int f2   = fileOf(sq2);
           const int r1   = rankOf(sq1);
           const int r2   = rankOf(sq2);
-          const int df   = f1 > f2 ? (f1 - f2) : (f2 - f1);
-          const int dr   = r1 > r2 ? (r1 - r2) : (r2 - r1);
+          const int df   = f1 > f2 ? f1 - f2 : f2 - f1;
+          const int dr   = r1 > r2 ? r1 - r2 : r2 - r1;
           dist[sq1][sq2] = df > dr ? df : dr;
         }
       }
@@ -113,21 +113,22 @@ namespace Squares {
   constexpr std::array<int, SQ_LENGTH> centerDistancePreCompute() {
     std::array<int, SQ_LENGTH> cd{};
     for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
-      if (fileOf(sq) <= FILE_D && rankOf(sq) >= RANK_5) {
+      if (static_cast<int>(fileOf(sq)) <= static_cast<int>(FILE_D) && static_cast<int>(rankOf(sq)) >= static_cast<int>(RANK_5)) {
         cd[sq] = squareDistance[sq][SQ_D5];
       }
-      else if (fileOf(sq) >= FILE_E && rankOf(sq) >= RANK_5) {
+      else if (static_cast<int>(fileOf(sq)) >= static_cast<int>(FILE_E) && static_cast<int>(rankOf(sq)) >= static_cast<int>(RANK_5)) {
         cd[sq] = squareDistance[sq][SQ_E5];
       }
-      else if (fileOf(sq) <= FILE_D && rankOf(sq) <= RANK_4) {
+      else if (static_cast<int>(fileOf(sq)) <= static_cast<int>(FILE_D) && static_cast<int>(rankOf(sq)) <= static_cast<int>(RANK_4)) {
         cd[sq] = squareDistance[sq][SQ_D4];
       }
-      else if (fileOf(sq) >= FILE_E && rankOf(sq) <= RANK_4) {
+      else if (static_cast<int>(fileOf(sq)) >= static_cast<int>(FILE_E) && static_cast<int>(rankOf(sq)) <= static_cast<int>(RANK_4)) {
         cd[sq] = squareDistance[sq][SQ_E4];
       }
     }
     return cd;
   }
+
   // precomputed distances from center squares (d4, d5, e4, e5)
   inline constexpr std::array<int, SQ_LENGTH> centerDistance = centerDistancePreCompute();
 
@@ -135,7 +136,7 @@ namespace Squares {
   inline constexpr std::array<std::array<char, 3>, SQ_LENGTH> squareNames = []() {
     std::array<std::array<char, 3>, SQ_LENGTH> names{};
     for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
-      names[sq] = {str(fileOf(sq)), str(rankOf(sq)), '\0'};
+      names[sq] = {fileOf(sq).str(), rankOf(sq).str(), '\0'};
     }
     return names;
   }();

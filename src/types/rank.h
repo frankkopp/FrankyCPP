@@ -6,8 +6,7 @@
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
+// copies of the Software, and to permit persons to do so, subject to the following conditions:
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -23,67 +22,81 @@
 #include "macros.h"
 #include "color.h"
 
-// Rank represents a chess board rank 1-8
-//  RANK_1,
-//  RANK_2,
-//  RANK_3,
-//  RANK_4,
-//  RANK_5,
-//  RANK_6,
-//  RANK_7,
-//  RANK_8,
-//  RANK_NONE,
-//  RANK_LENGTH = 8
-enum Rank : uint_fast8_t  {
-  RANK_1,
-  RANK_2,
-  RANK_3,
-  RANK_4,
-  RANK_5,
-  RANK_6,
-  RANK_7,
-  RANK_8,
-  RANK_NONE,
-  RANK_LENGTH = 9
+// Rank represents a chess board rank 1-8 as a small class with an unsigned underlying value [0..8]
+class Rank {
+  unsigned v_{}; // 0..7 = 1..8, 8 = NONE
+public:
+  // constructors
+  constexpr Rank() : v_(8) {}
+  constexpr explicit Rank(const unsigned v) : v_(v) {}
+  constexpr explicit Rank(const int v) : v_(static_cast<unsigned>(v)) {}
+
+  // underlying value access
+  constexpr unsigned value() const { return v_; }
+
+  // implicit conversion for arithmetic/comparisons/array indexing
+  // ReSharper disable once CppNonExplicitConversionOperator
+  constexpr operator int() const { return static_cast<int>(v_); }
+
+  // member helpers
+  [[nodiscard]] constexpr bool isValid() const { return static_cast<int>(*this) < 8; }
+  constexpr char toChar() const { return isValid() ? static_cast<char>('1' + static_cast<char>(static_cast<int>(*this))) : '-'; }
+  constexpr char str() const { return toChar(); }
+  constexpr int  distance(const Rank other) const {
+    const int d = static_cast<int>(other) - static_cast<int>(*this);
+    return d < 0 ? -d : d;
+  }
+
+  // static helpers
+  static constexpr Rank fromChar(const char rankLabel) {
+    const int idx = rankLabel - '1';
+    return (0 <= idx && idx < 8) ? Rank{idx} : Rank{8};
+  }
+  static constexpr Rank promotionFor(const Color c) { return c == WHITE ? Rank{7} : Rank{0}; }
+  static constexpr Rank pawnDoubleFor(const Color c) { return c == WHITE ? Rank{2} : Rank{5}; }
 };
 
-// checks if rank is a value of 0-7
-constexpr bool validRank(const Rank r) {
-  return r < 8;
-}
-
-// creates a rank from a char
-constexpr Rank makeRank(const char rankLabel) {
-  const Rank r = static_cast<Rank>(rankLabel - '1');
-  return validRank(r) ? r : RANK_NONE;
-}
-
-// returns the rank for promotion of a color
-constexpr Rank promotionRank(const Color c) {
-  return c == WHITE ? RANK_8 : RANK_1;
-}
-
-// returns the rank for a double pawn move of a color
-constexpr Rank pawnDoubleRank(const Color c) {
-  return c == WHITE ? RANK_3 : RANK_6;
-}
-
-// returns the distance between two ranks in king moves
-inline int distance(const Rank r1, const Rank r2) {
-  return abs(static_cast<int>(r2) - static_cast<int>(r1));
-}
-
-// returns a char representing the rank (e.g. 1 or 8)
-constexpr char str(const Rank r) {
-  if (!validRank(r)) return '-';
-  return static_cast<char>('1' + static_cast<char>(r));
-}
+// Rank constants
+inline constexpr Rank RANK_1{0};
+inline constexpr Rank RANK_2{1};
+inline constexpr Rank RANK_3{2};
+inline constexpr Rank RANK_4{3};
+inline constexpr Rank RANK_5{4};
+inline constexpr Rank RANK_6{5};
+inline constexpr Rank RANK_7{6};
+inline constexpr Rank RANK_8{7};
+inline constexpr Rank RANK_NONE{8};
+inline constexpr unsigned RANK_LENGTH = 9;
 
 inline std::ostream& operator<< (std::ostream& os, const Rank r) {
-  os << str(r);
+  os << r.str();
   return os;
 }
 
 ENABLE_INCR_OPERATORS_ON (Rank)
+
+// Comparison operators for Rank
+constexpr bool operator==(const Rank a, const Rank b) { return a.value() == b.value(); }
+constexpr bool operator!=(const Rank a, const Rank b) { return a.value() != b.value(); }
+constexpr bool operator<(const Rank a, const Rank b) { return a.value() < b.value(); }
+constexpr bool operator<=(const Rank a, const Rank b) { return a.value() <= b.value(); }
+constexpr bool operator>(const Rank a, const Rank b) { return a.value() > b.value(); }
+constexpr bool operator>=(const Rank a, const Rank b) { return a.value() >= b.value(); }
+
+// Mixed comparisons: Rank vs int
+constexpr bool operator==(const Rank a, const int b) { return static_cast<int>(a.value()) == b; }
+constexpr bool operator!=(const Rank a, const int b) { return static_cast<int>(a.value()) != b; }
+constexpr bool operator<(const Rank a, const int b) { return static_cast<int>(a.value()) < b; }
+constexpr bool operator<=(const Rank a, const int b) { return static_cast<int>(a.value()) <= b; }
+constexpr bool operator>(const Rank a, const int b) { return static_cast<int>(a.value()) > b; }
+constexpr bool operator>=(const Rank a, const int b) { return static_cast<int>(a.value()) >= b; }
+
+// Mixed comparisons: int vs Rank
+constexpr bool operator==(const int a, const Rank b) { return a == static_cast<int>(b.value()); }
+constexpr bool operator!=(const int a, const Rank b) { return a != static_cast<int>(b.value()); }
+constexpr bool operator<(const int a, const Rank b) { return a < static_cast<int>(b.value()); }
+constexpr bool operator<=(const int a, const Rank b) { return a <= static_cast<int>(b.value()); }
+constexpr bool operator>(const int a, const Rank b) { return a > static_cast<int>(b.value()); }
+constexpr bool operator>=(const int a, const Rank b) { return a >= static_cast<int>(b.value()); }
 
 #endif//FRANKYCPP_RANK_H

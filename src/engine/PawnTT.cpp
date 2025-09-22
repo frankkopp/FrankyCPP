@@ -127,7 +127,8 @@ void PawnTT::clear() {
   numberOfMisses  = 0;
 
   const auto finish = high_resolution_clock::now();
-  auto time   = std::chrono::duration_cast<milliseconds>(finish - startTime).count();
+  const auto time   = std::chrono::duration_cast<milliseconds>(finish - startTime).count();
+  (void)time;
 
   LOG__DEBUG(Logger::get().EVAL_LOG, "PawnTT cleared {:L} entries in {:L} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }

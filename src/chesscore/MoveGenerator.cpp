@@ -215,7 +215,7 @@ bool MoveGenerator::hasLegalMove(const Position& position) {
   // pawns - check step one to unoccupied squares
   tmpMoves = shiftBb(pawnPush(us), ourPawns) & ~position.getOccupiedBb();
   Bitboard tmpMovesDouble = shiftBb(pawnPush(us), tmpMoves &
-    Bitboards::rankBb[pawnDoubleRank(us)]) & ~position.getOccupiedBb();
+    Bitboards::rankBb[Rank::pawnDoubleFor(us)]) & ~position.getOccupiedBb();
 
   while (tmpMoves) {
     const Square toSquare   = popLSB(tmpMoves);
@@ -429,11 +429,11 @@ Move MoveGenerator::getMoveFromSan(const Position& position, const std::string& 
         continue;
       }
       // Disambiguation File
-      if (!disambFile.empty() && std::string(1, static_cast<char>('a' + fileOf(fromSquare(m)))) != disambFile) {
+      if (!disambFile.empty() && std::string(1, fileOf(fromSquare(m)).str()) != disambFile) {
         continue;
       }
       // Disambiguation Rank
-      if (!disambRank.empty() && std::string(1, static_cast<char>('1' + rankOf(fromSquare(m)))) != disambRank) {
+      if (!disambRank.empty() && std::string(1, rankOf(fromSquare(m)).str()) != disambRank) {
         continue;
       }
       // promotion
@@ -660,7 +660,7 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
       }
 
       // normal pawn captures - promotions first
-      Bitboard promCaptures = tmpCaptures & Bitboards::rankBb[promotionRank(nextPlayer)];
+      Bitboard promCaptures = tmpCaptures & Bitboards::rankBb[Rank::promotionFor(nextPlayer)];
       // promotion captures
       while (promCaptures) {
         const Square toSquare   = popLSB(promCaptures);
@@ -676,7 +676,7 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
         pMoves->push_back(createMove(fromSquare, toSquare, PROMOTION, BISHOP, value + valueOf(BISHOP) - 5000));
       }
 
-      tmpCaptures &= ~Bitboards::rankBb[promotionRank(nextPlayer)];
+      tmpCaptures &= ~Bitboards::rankBb[Rank::promotionFor(nextPlayer)];
       while (tmpCaptures) {
         const Square toSquare   = popLSB(tmpCaptures);
         const Square fromSquare = toSquare + pawnPush(~nextPlayer) - dir;
@@ -701,7 +701,7 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
     }
 
     // we treat Queen and Knight promotions as non-quiet moves
-    Bitboard promMoves = shiftBb(pawnPush(nextPlayer), myPawns) & ~position.getOccupiedBb() & Bitboards::rankBb[promotionRank(nextPlayer)];
+    Bitboard promMoves = shiftBb(pawnPush(nextPlayer), myPawns) & ~position.getOccupiedBb() & Bitboards::rankBb[Rank::promotionFor(nextPlayer)];
 
     // filter evasion targets if in check
     if (evasion) {
@@ -732,7 +732,7 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
     Bitboard tmpMoves = shiftBb(pawnPush(nextPlayer), myPawns) & ~position.getOccupiedBb();
 
     // pawns double - check step two to unoccupied squares
-    Bitboard tmpMovesDouble = shiftBb(pawnPush(nextPlayer), tmpMoves & Bitboards::rankBb[pawnDoubleRank(nextPlayer)]) & ~position.getOccupiedBb();
+    Bitboard tmpMovesDouble = shiftBb(pawnPush(nextPlayer), tmpMoves & Bitboards::rankBb[Rank::pawnDoubleFor(nextPlayer)]) & ~position.getOccupiedBb();
 
     // filter evasion targets if in check
     if (evasion) {
@@ -741,7 +741,7 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
     }
 
     // single pawn steps - promotions first
-    Bitboard promMoves = tmpMoves & Bitboards::rankBb[promotionRank(nextPlayer)];
+    Bitboard promMoves = tmpMoves & Bitboards::rankBb[Rank::promotionFor(nextPlayer)];
     while (promMoves) {
       const Square toSquare   = popLSB(promMoves);
       const Square fromSquare = toSquare + pawnPush(~nextPlayer);
@@ -762,7 +762,7 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
     }
 
     // normal single pawn steps
-    tmpMoves = tmpMoves & ~Bitboards::rankBb[promotionRank(nextPlayer)];
+    tmpMoves = tmpMoves & ~Bitboards::rankBb[Rank::promotionFor(nextPlayer)];
     while (tmpMoves) {
       const Square toSquare   = popLSB(tmpMoves);
       const Square fromSquare = toSquare + pawnPush(~nextPlayer);

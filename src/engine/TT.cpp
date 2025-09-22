@@ -125,7 +125,8 @@ void TT::clear() {
   numberOfProbes     = 0;
 
   const auto finish = high_resolution_clock::now();
-  auto time   = std::chrono::duration_cast<milliseconds>(finish - startTime).count();
+  const auto time   = std::chrono::duration_cast<milliseconds>(finish - startTime).count();
+  (void)time;
 
   LOG__DEBUG(Logger::get().TT_LOG, "TT cleared {:L} entries in {:L} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }
@@ -241,7 +242,8 @@ void TT::ageEntries() {
   for (std::thread& th : threads) th.join();
 
   const auto finish = high_resolution_clock::now();
-  auto time   = std::chrono::duration_cast<milliseconds>(finish - timePoint).count();
+  const auto time   = std::chrono::duration_cast<milliseconds>(finish - timePoint).count();
+  (void)time;
   LOG__DEBUG(Logger::get().TT_LOG, "TT aged {:L} entries in {:L} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }
 

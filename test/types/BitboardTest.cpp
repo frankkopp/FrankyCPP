@@ -17,7 +17,6 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include "types/types.h"
 #include <gtest/gtest.h>
 
 using testing::Eq;
@@ -81,8 +80,8 @@ TEST_F(BitboardsTest, BitboardSquareTest) {
 }
 
 TEST_F(BitboardsTest, SquareDistanceTest) {
-  ASSERT_EQ(6, distance(FILE_A, FILE_G));
-  ASSERT_EQ(7, distance(RANK_1, RANK_8));
+  ASSERT_EQ(6, FILE_A.distance(FILE_G));
+  ASSERT_EQ(7, RANK_1.distance(RANK_8));
   ASSERT_EQ(7, distance(SQ_A1, SQ_H1));
   ASSERT_EQ(7, distance(SQ_A1, SQ_H8));
   ASSERT_EQ(2, distance(SQ_A1, SQ_A3));

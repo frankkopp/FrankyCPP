@@ -16,6 +16,7 @@ add_executable(
         types/TypesTest.cpp
         types/BitboardTest.cpp
         types/ValuesTest.cpp
+        types/FileRankTest.cpp
 
         common/FifoTest.cpp
         common/ThreadPoolTest.cpp
