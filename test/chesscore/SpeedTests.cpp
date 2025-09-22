@@ -52,10 +52,12 @@ protected:
 
 TEST_F(SpeedTests, TimingSetupPosition) {
 
-  const int rounds     = 5;
-  const int iterations = 200'000;
+  constexpr int rounds     = 5;
+  // ReSharper disable once CppTooWideScope
+  constexpr int iterations = 200'000;
 
-  const char* const fen = "r3k2r/1ppn3p/4q1n1/8/4Pp2/3R4/p1p2PPP/R5K1 b kq e3 0 1";
+  // ReSharper disable once CppTooWideScope
+  const auto fen = "r3k2r/1ppn3p/4q1n1/8/4Pp2/3R4/p1p2PPP/R5K1 b kq e3 0 1";
   Position position;
 
   for (int r = 1; r <= rounds; r++) {
@@ -91,8 +93,9 @@ TEST_F(SpeedTests, TimingSetupPosition) {
 
 TEST_F(SpeedTests, TimingDoMoveUndoMove) {
 
-  const int rounds     = 5;
-  const int iterations = 50'000'000;
+  constexpr int rounds     = 5;
+  // ReSharper disable once CppTooWideScope
+  constexpr int iterations = 50'000'000;
 
   // position for each move type
   // fxe3 enpassant
@@ -101,11 +104,11 @@ TEST_F(SpeedTests, TimingDoMoveUndoMove) {
   // Rc1 normal non capturing
   // c1Q promotion
   Position position("r3k2r/1ppn3p/4q1n1/8/4Pp2/3R4/p1p2PPP/R5K1 b kq e3 0 1");
-  const Move move1  = createMove(SQ_F4, SQ_E3, ENPASSANT);
-  const Move move2  = createMove(SQ_F2, SQ_E3);
-  const Move move3  = createMove(SQ_E8, SQ_G8, CASTLING);
-  const Move move4  = createMove(SQ_D3, SQ_C3);
-  const Move move5  = createMove(SQ_C2, SQ_C1, PROMOTION, QUEEN);
+  constexpr Move move1  = createMove(SQ_F4, SQ_E3, ENPASSANT);
+  constexpr Move move2  = createMove(SQ_F2, SQ_E3);
+  constexpr Move move3  = createMove(SQ_E8, SQ_G8, CASTLING);
+  constexpr Move move4  = createMove(SQ_D3, SQ_C3);
+  constexpr Move move5  = createMove(SQ_C2, SQ_C1, PROMOTION, QUEEN);
 
   for (int r = 1; r <= rounds; r++) {
     fprintln("Round {}", r);
@@ -203,16 +206,17 @@ TEST_F(SpeedTests, TimingExtendedDoMoveUndoMove) {
 TEST_F(SpeedTests, onDemandPseudoMoveGen) {
   MoveGenerator mg;
 
-  const int rounds     = 5;
-  const int iterations = 5'000'000;
+  constexpr int rounds     = 5;
+  // ReSharper disable once CppTooWideScope
+  constexpr int iterations = 5'000'000;
 
-  Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3");
-  auto k1 = mg.getMoveFromUci(position, "g6h4");
-  auto k2 = mg.getMoveFromUci(position, "b7b6");
-  auto pv = mg.getMoveFromUci(position, "a2b1Q");
+  const Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3");
+  const auto k1 = mg.getMoveFromUci(position, "g6h4");
+  const auto k2 = mg.getMoveFromUci(position, "b7b6");
+  const auto pv = mg.getMoveFromUci(position, "a2b1Q");
 
   uint64_t generated = 0;
-  Move move;
+  Move move = MOVE_NONE;
   for (int r = 1; r <= rounds; r++) {
     fprintln("Round {}", r);
     auto start = high_resolution_clock::now();
@@ -227,6 +231,7 @@ TEST_F(SpeedTests, onDemandPseudoMoveGen) {
       }
     }
     auto elapsed = duration_cast<nanoseconds>(high_resolution_clock::now() - start);
+    (void)move;
 
     std::ostringstream os;
     os.flags(std::cout.flags());
@@ -251,6 +256,15 @@ TEST_F(SpeedTests, onDemandPseudoMoveGen) {
 // Performing PERFT Test for Depth 7
 // Time         : 133.768 ms
 // NPS          : 23.891.199 nps
+// 22.9.2025 GROOT
+// Performing PERFT Test for Depth 7
+// Time         : 232.393 ms
+// NPS          : 13.752.084 nps
+// New statistics (stalemate) slows down perft
+// Non-fullstats  result:
+// Performing PERFT Test for Depth 7
+// Time         : 111.316 ms
+// NPS          : 28.709.917 nps
 TEST_F(SpeedTests, stdPerftOD) {
   MoveGenerator mg;
   Perft p;
@@ -259,6 +273,7 @@ TEST_F(SpeedTests, stdPerftOD) {
   cout << "==============================" << endl;
 
   // clang-format off
+ // ReSharper disable once CppTooWideScope
   const uint64_t results[10][8] = {
     //N                 Nodes            Captures              EP             Checks              Mates           Castles      Promotions
     { 0,                 1ULL,               0ULL,           0ULL,              0ULL,              0ULL,             0ULL ,          0ULL },
@@ -274,19 +289,32 @@ TEST_F(SpeedTests, stdPerftOD) {
   };
   // clang-format on
 
-  constexpr int startDepth = 1;
-  constexpr int maxDepth   = 7;
+  constexpr int warmup = 1;
+  constexpr int warmupDepth = 6;
+  constexpr int repetitions = 5;
+  constexpr int maxDepth   = 6;
+  p.setFullStats(false);
 
-  for (int i = startDepth; i <= maxDepth; i++) {
-    p.perft(i);
+  // warmup
+  fprintln("Warming up with {} runs of depth {}", warmup, warmupDepth);
+  for (int i = 0; i < warmup; i++) {
+    p.perft(warmupDepth);
+  }
+
+  // timed runs
+  fprintln("Performing PERFT Test for Depth {}", maxDepth);
+  for (int i = 0; i < repetitions; i++) {
+    p.perft(maxDepth);
     NEWLINE;
-    EXPECT_EQ(results[i][1], p.getNodes());
-    EXPECT_EQ(results[i][2], p.getCaptureCounter());
-    EXPECT_EQ(results[i][3], p.getEnpassantCounter());
-    EXPECT_EQ(results[i][4], p.getCheckCounter());
-    EXPECT_EQ(results[i][5], p.getCheckMateCounter());
-    EXPECT_EQ(results[i][6], p.getCastleCounter());
-    EXPECT_EQ(results[i][7], p.getPromotionCounter());
+    EXPECT_EQ(results[maxDepth][1], p.getNodes());
+    if (p.isFullStats()) {
+      EXPECT_EQ(results[maxDepth][2], p.getCaptureCounter());
+      EXPECT_EQ(results[maxDepth][3], p.getEnpassantCounter());
+      EXPECT_EQ(results[maxDepth][4], p.getCheckCounter());
+      EXPECT_EQ(results[maxDepth][5], p.getCheckMateCounter());
+      EXPECT_EQ(results[maxDepth][6], p.getCastleCounter());
+      EXPECT_EQ(results[maxDepth][7], p.getPromotionCounter());
+    }
   }
   cout << "==============================" << endl;
 }
