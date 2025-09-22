@@ -183,20 +183,20 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
       supported |= myPawns & neighbours & Bitboards::sqToRankBb[sq + pawnPush(color)];
     }
 
-    // @formatter:off
-    int midvalue = popcount(isolated) * EvalConfig::ISOLATED_PAWN_MID_WEIGHT;
-    int endvalue = popcount(isolated) * EvalConfig::ISOLATED_PAWN_END_WEIGHT;
-    midvalue += popcount(doubled) * EvalConfig::DOUBLED_PAWN_MID_WEIGHT;
-    endvalue += popcount(doubled) * EvalConfig::DOUBLED_PAWN_END_WEIGHT;
-    midvalue += popcount(passed) * EvalConfig::PASSED_PAWN_MID_WEIGHT;
-    endvalue += popcount(passed) * EvalConfig::PASSED_PAWN_END_WEIGHT;
-    midvalue += popcount(blocked) * EvalConfig::BLOCKED_PAWN_MID_WEIGHT;
-    endvalue += popcount(blocked) * EvalConfig::BLOCKED_PAWN_END_WEIGHT;
-    midvalue += popcount(phalanx) * EvalConfig::PHALANX_PAWN_MID_WEIGHT;
-    endvalue += popcount(phalanx) * EvalConfig::PHALANX_PAWN_END_WEIGHT;
-    midvalue += popcount(supported) * EvalConfig::SUPPORTED_PAWN_MID_WEIGHT;
-    endvalue += popcount(supported) * EvalConfig::SUPPORTED_PAWN_END_WEIGHT;
-    // @formatter:on
+    // clang-format off
+    int midvalue = popcount(isolated) *  EvalConfig::ISOLATED_PAWN_MID_WEIGHT;
+    int endvalue = popcount(isolated) *  EvalConfig::ISOLATED_PAWN_END_WEIGHT;
+    midvalue    += popcount(doubled) *   EvalConfig::DOUBLED_PAWN_MID_WEIGHT;
+    endvalue    += popcount(doubled) *   EvalConfig::DOUBLED_PAWN_END_WEIGHT;
+    midvalue    += popcount(passed) *    EvalConfig::PASSED_PAWN_MID_WEIGHT;
+    endvalue    += popcount(passed) *    EvalConfig::PASSED_PAWN_END_WEIGHT;
+    midvalue    += popcount(blocked) *   EvalConfig::BLOCKED_PAWN_MID_WEIGHT;
+    endvalue    += popcount(blocked) *   EvalConfig::BLOCKED_PAWN_END_WEIGHT;
+    midvalue    += popcount(phalanx) *   EvalConfig::PHALANX_PAWN_MID_WEIGHT;
+    endvalue    += popcount(phalanx) *   EvalConfig::PHALANX_PAWN_END_WEIGHT;
+    midvalue    += popcount(supported) * EvalConfig::SUPPORTED_PAWN_MID_WEIGHT;
+    endvalue    += popcount(supported) * EvalConfig::SUPPORTED_PAWN_END_WEIGHT;
+    // clang-format on
 
     if (color == WHITE) {
       tmpScore.midgame += static_cast<Value>(midvalue);

@@ -51,7 +51,7 @@ int main(int argc, char* argv[]) {
 
   // Command line options
   try {
-    // @formatter:off
+    // clang-format off
 
     // Declare a group of options that will be allowed only on command line
     po::options_description generic("Generic options");
@@ -81,7 +81,8 @@ int main(int argc, char* argv[]) {
     po::options_description hidden("Hidden options");
     hidden.add_options()
       ("test,t", po::value<std::string>(), "test_hidden");
-    // @formatter:on
+
+    // clang-format on
 
     // Consolidate
     po::options_description cmdline_options;

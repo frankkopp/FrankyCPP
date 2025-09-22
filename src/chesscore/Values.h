@@ -27,7 +27,7 @@ namespace Values {
 
   /// Tables are upright for easier reading - will be transposed in compile-time initialization
 
-  // @formatter:off
+  // clang-format off
   // PAWN Tables
   constexpr int pawnsMidGame[SQ_LENGTH] = {
     0,  0,  0,  0,  0,  0,  0,  0,
@@ -161,7 +161,7 @@ namespace Values {
     -30,-30,  0,  0,  0,  0,-30,-30,
     -50,-30,-30,-30,-30,-30,-30,-50
   };
-  // @formatter:on
+  // clang-format on
 
   // Helper to compute mirrored/blended PSQT values
   constexpr int calcPosValueWhite(const Square sq, const int gamePhase, const int posMidTable[], const int posEndTable[]) {

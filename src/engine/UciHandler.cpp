@@ -76,7 +76,7 @@ bool UciHandler::handleCommand(const std::string& cmd) {
   std::string token;
   inStream >> std::skipws >> token;
 
-  // @formatter:off
+  // clang-format off
   if      (token == "quit")       { return true; }
   if      (token == "uci")        { uciCommand(); }
   else if (token == "isready")    { isReadyCommand(); }
@@ -92,10 +92,8 @@ bool UciHandler::handleCommand(const std::string& cmd) {
   else if (token == "help")       { helpCommand(); }
   else if (token == "noop")       { /* noop */  }
   else
-    uciError(std::format("Unknown UCI command: {}", token));
-  // @formatter:on
-
-  // TODO: add a help option for manual usage of uci commands
+   uciError(std::format("Unknown UCI command: {}", token));
+  // clang-format on
 
   LOG__DEBUG(Logger::get().UCIHAND_LOG, "UCI Handler processed command: {}", token);
   return false;

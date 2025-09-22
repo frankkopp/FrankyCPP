@@ -29,8 +29,8 @@ using namespace std;
 using testing::Eq;
 
 inline bool isBulkRun() {
-  const auto* ut = testing::UnitTest::GetInstance();
-  const bool cond      = ut && ut->test_to_run_count() > 1;
+  const auto* ut  = testing::UnitTest::GetInstance();
+  const bool cond = ut && ut->test_to_run_count() > 1;
   if (cond) {
     cout << "Bulk run detected - limiting depth to shorten test time" << endl;
   }
@@ -74,23 +74,24 @@ TEST_F(PerftTest, stdPerft) {
   cout << "Standard PERFT Test" << endl;
   cout << "==============================" << endl;
 
-  // @formatter:off
-  static const uint64_t results[10][8] = {
-    // N                 Nodes            Captures              EP             Checks              Mates           Castles      Promotions
-    {0, 1ULL, 0ULL, 0ULL, 0ULL, 0ULL, 0ULL, 0ULL},
-    {1, 20ULL, 0ULL, 0ULL, 0ULL, 0ULL, 0ULL, 0ULL},
-    {2, 400ULL, 0ULL, 0ULL, 0ULL, 0ULL, 0ULL, 0ULL},
-    {3, 8'902ULL, 34ULL, 0ULL, 12ULL, 0ULL, 0ULL, 0ULL},
-    {4, 197'281ULL, 1'576ULL, 0ULL, 469ULL, 8ULL, 0ULL, 0ULL},
-    {5, 4'865'609ULL, 82'719ULL, 258ULL, 27'351ULL, 347ULL, 0ULL, 0ULL},
-    {6, 119'060'324ULL, 2'812'008ULL, 5'248ULL, 809'099ULL, 10'828ULL, 0ULL, 0ULL},
-    {7, 3'195'901'860ULL, 108'329'926ULL, 319'617ULL, 33'103'848ULL, 435'767ULL, 883'453ULL, 0ULL},
-    {8, 84'998'978'956ULL, 3'523'740'106ULL, 7'187'977ULL, 968'981'593ULL, 9'852'036ULL, 23'605'205ULL, 0ULL},
-    {9, 2'439'530'234'167ULL, 125'208'536'153ULL, 319'496'827ULL, 36'095'901'903ULL, 400'191'963ULL, 1'784'356'000ULL, 17'334'376ULL}};
-  // @formatter:on
+  // clang-format off
+static const uint64_t results[10][8] = {
+  //N                 Nodes              Captures              EP             Checks              Mates           Castles      Promotions
+  { 0,                 1ULL,               0ULL,               0ULL,             0ULL,              0ULL,             0ULL,           0ULL },
+  { 1,                20ULL,               0ULL,               0ULL,             0ULL,              0ULL,             0ULL,           0ULL },
+  { 2,               400ULL,               0ULL,               0ULL,             0ULL,              0ULL,             0ULL,           0ULL },
+  { 3,             8'902ULL,              34ULL,               0ULL,            12ULL,              0ULL,             0ULL,           0ULL },
+  { 4,           197'281ULL,           1'576ULL,               0ULL,           469ULL,              8ULL,             0ULL,           0ULL },
+  { 5,         4'865'609ULL,          82'719ULL,             258ULL,        27'351ULL,            347ULL,             0ULL,           0ULL },
+  { 6,       119'060'324ULL,       2'812'008ULL,           5'248ULL,       809'099ULL,         10'828ULL,             0ULL,           0ULL },
+  { 7,     3'195'901'860ULL,     108'329'926ULL,         319'617ULL,    33'103'848ULL,        435'767ULL,       883'453ULL,           0ULL },
+  { 8,    84'998'978'956ULL,   3'523'740'106ULL,       7'187'977ULL,   968'981'593ULL,      9'852'036ULL,    23'605'205ULL,           0ULL },
+  { 9, 2'439'530'234'167ULL, 125'208'536'153ULL,     319'496'827ULL, 36'095'901'903ULL,    400'191'963ULL, 1'784'356'000ULL,   17'334'376ULL }
+};
+  // clang-format on
 
   constexpr int startDepth = 1;
-  int maxDepth = 6;
+  int maxDepth             = 6;
   if (isBulkRun()) {
     maxDepth = 4;
   }
@@ -135,20 +136,21 @@ TEST_F(PerftTest, stdPerftOD) {
   cout << "Standard PERFT OnDemand Test" << endl;
   cout << "==============================" << endl;
 
-  // @formatter:off
-  static const uint64_t results[10][8] = {
-    // N                 Nodes            Captures              EP             Checks              Mates           Castles      Promotions
-    {0, 1ULL, 0ULL, 0ULL, 0ULL, 0ULL, 0ULL, 0ULL},
-    {1, 20ULL, 0ULL, 0ULL, 0ULL, 0ULL, 0ULL, 0ULL},
-    {2, 400ULL, 0ULL, 0ULL, 0ULL, 0ULL, 0ULL, 0ULL},
-    {3, 8'902ULL, 34ULL, 0ULL, 12ULL, 0ULL, 0ULL, 0ULL},
-    {4, 197'281ULL, 1'576ULL, 0ULL, 469ULL, 8ULL, 0ULL, 0ULL},
-    {5, 4'865'609ULL, 82'719ULL, 258ULL, 27'351ULL, 347ULL, 0ULL, 0ULL},
-    {6, 119'060'324ULL, 2'812'008ULL, 5'248ULL, 809'099ULL, 10'828ULL, 0ULL, 0ULL},
-    {7, 3'195'901'860ULL, 108'329'926ULL, 319'617ULL, 33'103'848ULL, 435'767ULL, 883'453ULL, 0ULL},
-    {8, 84'998'978'956ULL, 3'523'740'106ULL, 7'187'977ULL, 968'981'593ULL, 9'852'036ULL, 23'605'205ULL, 0ULL},
-    {9, 2'439'530'234'167ULL, 125'208'536'153ULL, 319'496'827ULL, 36'095'901'903ULL, 400'191'963ULL, 1'784'356'000ULL, 17'334'376ULL}};
-  // @formatter:on
+  // clang-format off
+static const uint64_t results[10][8] = {
+  // N                 Nodes            Captures              EP             Checks              Mates           Castles      Promotions
+  { 0,                 1ULL,               0ULL,           0ULL,              0ULL,              0ULL,             0ULL,           0ULL },
+  { 1,                20ULL,               0ULL,           0ULL,              0ULL,              0ULL,             0ULL,           0ULL },
+  { 2,               400ULL,               0ULL,           0ULL,              0ULL,              0ULL,             0ULL,           0ULL },
+  { 3,             8'902ULL,              34ULL,           0ULL,             12ULL,              0ULL,             0ULL,           0ULL },
+  { 4,           197'281ULL,           1'576ULL,           0ULL,            469ULL,              8ULL,             0ULL,           0ULL },
+  { 5,         4'865'609ULL,          82'719ULL,         258ULL,         27'351ULL,            347ULL,             0ULL,           0ULL },
+  { 6,       119'060'324ULL,       2'812'008ULL,       5'248ULL,        809'099ULL,         10'828ULL,             0ULL,           0ULL },
+  { 7,     3'195'901'860ULL,     108'329'926ULL,     319'617ULL,     33'103'848ULL,        435'767ULL,       883'453ULL,           0ULL },
+  { 8,    84'998'978'956ULL,   3'523'740'106ULL,   7'187'977ULL,    968'981'593ULL,      9'852'036ULL,    23'605'205ULL,           0ULL },
+  { 9, 2'439'530'234'167ULL, 125'208'536'153ULL, 319'496'827ULL, 36'095'901'903ULL,    400'191'963ULL, 1'784'356'000ULL,  17'334'376ULL }
+};
+  // clang-format on
 
   constexpr int startDepth = 1;
   int maxDepth             = 7;
@@ -179,7 +181,6 @@ TEST_F(PerftTest, dividePerft) {
   cout << "Standard PERFT Test" << endl;
   cout << "==============================" << endl;
 
-  // @formatter:off
   static const uint64_t results[10][8] = {
     // N                 Nodes            Captures              EP             Checks              Mates           Castles      Promotions
     {0, 1ULL, 0ULL, 0ULL, 0ULL, 0ULL, 0ULL, 0ULL},
@@ -192,7 +193,6 @@ TEST_F(PerftTest, dividePerft) {
     {7, 3'195'901'860ULL, 108'329'926ULL, 319'617ULL, 33'103'848ULL, 435'767ULL, 883'453ULL, 0ULL},
     {8, 84'998'978'956ULL, 3'523'740'106ULL, 7'187'977ULL, 968'981'593ULL, 9'852'036ULL, 23'605'205ULL, 0ULL},
     {9, 2'439'530'234'167ULL, 125'208'536'153ULL, 319'496'827ULL, 36'095'901'903ULL, 400'191'963ULL, 1'784'356'000ULL, 17'334'376ULL}};
-  // @formatter:on
 
   constexpr int maxDepth = 4;
 
@@ -220,18 +220,18 @@ TEST_F(PerftTest, kiwiPetePerft) {
 
   Perft p("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
 
-  // @formatter:off
-  static const uint64_t results[7][8] = {
-    // N  Nodes        Captures    EP       Checks    Mates    Castles    Promotions
-    {0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 48, 8, 0, 0, 0, 2, 0},
-    {2, 2039, 351, 1, 3, 0, 91, 0},
-    {3, 97862, 17102, 45, 993, 1, 3162, 0},
-    {4, 4085603, 757163, 1929, 25523, 43, 128013, 15172},
-    {5, 193690690, 35043416, 73365, 3309887, 30171, 4993637, 8392},
-    {6, 8031647685, 1558445089, 3577504, 92238050, 360003, 184513607, 56627920},
-  };
-  // @formatter:on
+  // clang-format off
+static const uint64_t results[7][8] = {
+  // N                 Nodes              Captures              EP             Checks              Mates           Castles      Promotions
+  { 0,                 0ULL,               0ULL,               0ULL,             0ULL,              0ULL,            0ULL,           0ULL },
+  { 1,                48ULL,               8ULL,               0ULL,             0ULL,              0ULL,            2ULL,           0ULL },
+  { 2,             2'039ULL,             351ULL,               1ULL,             3ULL,              0ULL,           91ULL,           0ULL },
+  { 3,            97'862ULL,          17'102ULL,              45ULL,           993ULL,              1ULL,        3'162ULL,           0ULL },
+  { 4,         4'085'603ULL,         757'163ULL,           1'929ULL,        25'523ULL,             43ULL,      128'013ULL,      15'172ULL },
+  { 5,       193'690'690ULL,      35'043'416ULL,          73'365ULL,     3'309'887ULL,         30'171ULL,    4'993'637ULL,       8'392ULL },
+  { 6,     8'031'647'685ULL,   1'558'445'089ULL,       3'577'504ULL,    92'238'050ULL,        360'003ULL,  184'513'607ULL,  56'627'920ULL }
+};
+  // clang-format on
 
   int startDepth = 1;
   int maxDepth   = 7;
@@ -263,19 +263,20 @@ TEST_F(PerftTest, pos3Perft) {
 
   Perft p("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -");
 
-  // @formatter:off
-  static const uint64_t results[9][6] = {
-    // N  Nodes       Captures   EP       Checks     Mates
-    {0, 0, 0, 0, 0, 0},
-    {1, 14, 1, 0, 2, 0},
-    {2, 191, 14, 0, 10, 0},
-    {3, 2812, 209, 2, 267, 0},
-    {4, 43238, 3348, 123, 1680, 17},
-    {5, 674624, 52051, 1165, 52950, 0},
-    {6, 11030083, 940350, 33325, 452473, 2733},
-    {7, 178633661, 14519036, 294874, 12797406, 87},
-    {8, 3009794393, 267586558, 8009239, 135626805, 450410}};
-  // @formatter:on
+  // clang-format off
+static const uint64_t results[9][6] = {
+  // N         Nodes         Captures        EP        Checks      Mates
+  { 0,              0ULL,            0ULL,         0ULL,           0ULL,       0ULL },
+  { 1,             14ULL,            1ULL,         0ULL,           2ULL,       0ULL },
+  { 2,            191ULL,           14ULL,         0ULL,          10ULL,       0ULL },
+  { 3,          2'812ULL,          209ULL,         2ULL,         267ULL,       0ULL },
+  { 4,         43'238ULL,        3'348ULL,       123ULL,       1'680ULL,      17ULL },
+  { 5,        674'624ULL,       52'051ULL,     1'165ULL,      52'950ULL,       0ULL },
+  { 6,     11'030'083ULL,      940'350ULL,    33'325ULL,     452'473ULL,   2'733ULL },
+  { 7,    178'633'661ULL,   14'519'036ULL,   294'874ULL,  12'797'406ULL,      87ULL },
+  { 8,  3'009'794'393ULL,  267'586'558ULL, 8'009'239ULL, 135'626'805ULL, 450'410ULL }
+};
+  // clang-format on
 
   constexpr int startDepth = 1;
   int maxDepth             = 7;
@@ -306,17 +307,18 @@ TEST_F(PerftTest, pos4Perft) {
 
   Perft p("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1");
 
-  // @formatter:off
-  static const uint64_t results[7][6] = {
-    // N  Nodes      Captures EP     Checks   Mates
-    {0, 0, 0, 0, 0, 0},
-    {1, 6, 0, 0, 0, 0},
-    {2, 264, 87, 0, 10, 0},
-    {3, 9467, 1021, 4, 38, 22},
-    {4, 422333, 131393, 0, 15492, 5},
-    {5, 15833292, 2046173, 6512, 200568, 50562},
-    {6, 706045033, 210369132, 212, 26973664, 81076}};
-  // @formatter:on
+  // clang-format off
+static const uint64_t results[7][6] = {
+  // N           Nodes        Captures      EP      Checks     Mates
+  { 0,              0,             0,       0,         0,        0 },
+  { 1,              6,             0,       0,         0,        0 },
+  { 2,            264,            87,       0,        10,        0 },
+  { 3,           9467,          1021,       4,        38,       22 },
+  { 4,         422333,        131393,       0,     15492,        5 },
+  { 5,       15833292,       2046173,    6512,    200568,    50562 },
+  { 6,      706045033,     210369132,     212,  26973664,    81076 }
+};
+  // clang-format on
 
   constexpr int startDepth = 1;
   int maxDepth             = 6;
@@ -341,17 +343,18 @@ TEST_F(PerftTest, pos4Perft) {
 
   Perft p2("r2q1rk1/pP1p2pp/Q4n2/bbp1p3/Np6/1B3NBn/pPPP1PPP/R3K2R b KQ - 0 1");
 
-  // @formatter:off
-  static const uint64_t results2[7][6] = {
-    // N  Nodes      Captures EP     Checks   Mates
-    {0, 0, 0, 0, 0, 0},
-    {1, 6, 0, 0, 0, 0},
-    {2, 264, 87, 0, 10, 0},
-    {3, 9467, 1021, 4, 38, 22},
-    {4, 422333, 131393, 0, 15492, 5},
-    {5, 15833292, 2046173, 6512, 200568, 50562},
-    {6, 706045033, 210369132, 212, 26973664, 81076}};
-  // @formatter:on
+  // clang-format off
+static const uint64_t results2[7][6] = {
+  // N         Nodes         Captures         EP         Checks      Mates
+  { 0,              0,              0,         0,           0,        0 },
+  { 1,              6,              0,         0,           0,        0 },
+  { 2,            264,             87,         0,          10,        0 },
+  { 3,           9467,           1021,         4,          38,       22 },
+  { 4,         422333,         131393,         0,       15492,        5 },
+  { 5,       15833292,        2046173,      6512,      200568,    50562 },
+  { 6,      706045033,      210369132,       212,    26973664,    81076 }
+};
+  // clang-format on
 
   for (int i = startDepth; i <= maxDepth; i++) {
     p2.perft(i, true);
@@ -375,16 +378,16 @@ TEST_F(PerftTest, pos5Perft) {
 
   Perft p("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ -");
 
-  // @formatter:off
+  // clang-format off
   static const uint64_t results[6][6] = {
     // N  Nodes      Captures EP     Checks   Mates
-    {0, 0},
-    {1, 44},
-    {2, 1486},
-    {3, 62379},
-    {4, 2103487},
+    {0,        0},
+    {1,       44},
+    {2,     1486},
+    {3,    62379},
+    {4,  2103487},
     {5, 89941194}};
-  // @formatter:on
+  // clang-format on
 
   constexpr int startDepth = 1;
   int maxDepth             = 7;

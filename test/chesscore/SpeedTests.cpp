@@ -258,7 +258,7 @@ TEST_F(SpeedTests, stdPerftOD) {
   cout << "Standard PERFT OnDemand Test" << endl;
   cout << "==============================" << endl;
 
-  // @formatter:off
+  // clang-format off
   const uint64_t results[10][8] = {
     //N                 Nodes            Captures              EP             Checks              Mates           Castles      Promotions
     { 0,                 1ULL,               0ULL,           0ULL,              0ULL,              0ULL,             0ULL ,          0ULL },
@@ -272,7 +272,7 @@ TEST_F(SpeedTests, stdPerftOD) {
     { 8,    84'998'978'956ULL,   3'523'740'106ULL,   7'187'977ULL,    968'981'593ULL,      9'852'036ULL,    23'605'205ULL ,          0ULL },
     { 9, 2'439'530'234'167ULL, 125'208'536'153ULL, 319'496'827ULL, 36'095'901'903ULL,    400'191'963ULL, 1'784'356'000ULL , 17'334'376ULL }
   };
-  // @formatter:on
+  // clang-format on
 
   constexpr int startDepth = 1;
   constexpr int maxDepth   = 7;

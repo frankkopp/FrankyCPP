@@ -108,7 +108,7 @@ public:
   const std::shared_ptr<spdlog::sinks::basic_file_sink_mt> sharedFileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logfile);
   const std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> uciOutSink   = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
 
-  // @formatter:off
+  // clang-format off
   //  const std::shared_ptr<spdlog::logger> MAIN_LOG    = spdlog::stdout_color_mt("Main_Logger");
   const std::shared_ptr<spdlog::logger> TEST_LOG    = spdlog::stdout_color_mt("Test_Logger");
   const std::shared_ptr<spdlog::logger> UCIHAND_LOG = spdlog::stdout_color_mt("UCIHandler_Logger");
@@ -118,7 +118,7 @@ public:
   const std::shared_ptr<spdlog::logger> SEARCH_LOG  = spdlog::stdout_color_mt("Search_Logger");
   const std::shared_ptr<spdlog::logger> EVAL_LOG    = spdlog::stdout_color_mt("Eval_Logger");
   const std::shared_ptr<spdlog::logger> TSUITE_LOG  = spdlog::stdout_color_mt("TSuite_Logger");
-  // @formatter:on
+  // clang-format on
 };
 
 #endif// FRANKYCPP_LOGGING_H

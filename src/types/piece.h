@@ -42,12 +42,12 @@
 //  BlackQueen = 0b01110
 //  PieceLength= 0b10000
 enum Piece : int_fast8_t {
- // @formatter:off
+ // clang-format off
   PIECE_NONE,
   WHITE_KING = 1, WHITE_PAWN, WHITE_KNIGHT, WHITE_BISHOP, WHITE_ROOK, WHITE_QUEEN,
   BLACK_KING = 9, BLACK_PAWN, BLACK_KNIGHT, BLACK_BISHOP, BLACK_ROOK, BLACK_QUEEN,
   PIECE_LENGTH = 16
-};// @formatter:on
+};// clang-format on
 
 // checks if piece type is a value of 0 - 6
 constexpr bool validPiece(const Piece p) { return p < 15 && p != 7 && p != 8; }
@@ -58,7 +58,7 @@ constexpr Piece makePiece(const Color c, const PieceType pt) { return static_cas
 // creates the piece based on the FEN char
 constexpr Piece makePiece(const unsigned char p) {
   switch (p) {
- // @formatter:off
+ // clang-format off
     case 'K': return WHITE_KING;
     case 'P': return WHITE_PAWN;
     case 'N': return WHITE_KNIGHT;
@@ -72,7 +72,7 @@ constexpr Piece makePiece(const unsigned char p) {
     case 'r': return BLACK_ROOK;
     case 'q': return BLACK_QUEEN;
     default: return PIECE_NONE;
-  }// @formatter:on
+  }// clang-format on
 }
 
 // returns the color of the given piece

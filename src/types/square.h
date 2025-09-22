@@ -37,7 +37,7 @@
 //  SqG8
 //  SqH8   // 63
 //  SqNone // 64
-// @formatter:off
+// clang-format off
 enum Square : uint_fast8_t {
   SQ_A1, SQ_B1, SQ_C1, SQ_D1, SQ_E1, SQ_F1, SQ_G1, SQ_H1,
   SQ_A2, SQ_B2, SQ_C2, SQ_D2, SQ_E2, SQ_F2, SQ_G2, SQ_H2,
@@ -50,7 +50,7 @@ enum Square : uint_fast8_t {
   SQ_NONE,
   SQ_LENGTH = 64
 };
-// @formatter:on
+// clang-format on
 
 // checks if this is a valid square (int >= 0 and <64)
 constexpr bool validSquare(const Square s) { return s < 64; }
