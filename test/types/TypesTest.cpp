@@ -70,13 +70,13 @@ TEST_F(TypesTest, makeSquare) {
 }
 
 TEST_F(TypesTest, ColorLabel) {
-  EXPECT_EQ('w', str(WHITE));
-  EXPECT_EQ('b', str(BLACK));
+  EXPECT_EQ('w', WHITE.str());
+  EXPECT_EQ('b', BLACK.str());
 }
 
 TEST_F(TypesTest, MoveDirection) {
-  EXPECT_EQ(1, moveDirection(WHITE));
-  EXPECT_EQ(-1, moveDirection(BLACK));
+  EXPECT_EQ(1, WHITE.sign());
+  EXPECT_EQ(-1, BLACK.sign());
 }
 
 TEST_F(TypesTest, castling) {

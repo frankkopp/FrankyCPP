@@ -205,7 +205,7 @@ namespace Bitboards {
       const int r = static_cast<int>(s >> 3);
       // consolidated loop over colors to avoid redundancy
       for (unsigned c = 0; c < COLOR_LENGTH; ++c) {
-        const int dir = c == WHITE ? 1 : -1;
+        const int dir = Color{c}.sign();
         Bitboard m    = 0;
         const int nr  = r + dir;
         if (0 <= nr && nr < 8) {

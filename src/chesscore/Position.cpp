@@ -104,7 +104,7 @@ void Position::doMove(const Move move) {
 
     case PROMOTION: {
       assert(getPiece(fromSquare(move)) == makePiece(colorOf(getPiece(fromSquare(move))), PAWN));
-      assert(rankOf(toSq) == (colorOf(getPiece(fromSquare(move))) == WHITE ? RANK_8 : RANK_1));
+      assert(rankOf(toSq) == Rank::promotionFor(colorOf(getPiece(fromSquare(move)))));
       // capture
       if (getPiece(toSq) != PIECE_NONE) {
         removePiece(toSq);

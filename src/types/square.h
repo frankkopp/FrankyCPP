@@ -146,7 +146,7 @@ namespace Squares {
 constexpr int distance(const Square s1, const Square s2) { return Squares::squareDistance[s1][s2]; }
 
 // pawnPush returns the square of a pawn move of the given color
-constexpr Square pawnPush(const Square s, const Color c) { return static_cast<Square>(s + (c == WHITE ? 8 : -8)); }
+constexpr Square pawnPush(const Square s, const Color c) { return static_cast<Square>(s + 8 * c.sign()); }
 
 // returns a string representing the square (e.g. a1 or h8)
 inline std::string str(const Square sq) {

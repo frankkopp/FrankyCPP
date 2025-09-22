@@ -20,40 +20,50 @@
 #ifndef FRANKYCPP_COLOR_H
 #define FRANKYCPP_COLOR_H
 
-#include <ostream>
 #include "macros.h"
 
-// Color represents constants for each chess color White and Black
-//  WHITE        = 0,
-//  BLACK        = 1,
-//  NOCOLOR      = 2,
-//  COLOR_LENGTH = 2
-enum Color : uint_fast8_t {
-  WHITE        = 0,
-  BLACK        = 1,
-  NOCOLOR      = 2,
-  COLOR_LENGTH = 2
+// Color represents chess side to move as a small class with an unsigned underlying value
+//  WHITE   = 0,
+//  BLACK   = 1,
+//  NOCOLOR = 2
+class Color {
+  unsigned v_{}; // 0..1 valid, 2 = NONE
+public:
+  // constructors
+  constexpr Color() : v_(2) {}
+  constexpr explicit Color(const unsigned v) : v_(v) {}
+  constexpr explicit Color(const int v) : v_(static_cast<unsigned>(v)) {}
+
+  // underlying value access
+  [[nodiscard]] constexpr unsigned value() const { return v_; }
+
+  // implicit conversion for arithmetic/comparisons/array indexing
+  // ReSharper disable once CppNonExplicitConversionOperator
+  constexpr operator int() const { return static_cast<int>(v_); }
+
+  // member helpers
+  [[nodiscard]] constexpr bool isValid() const { return static_cast<int>(*this) < 2; }
+  [[nodiscard]] constexpr char toChar() const { return isValid() ? (static_cast<int>(*this) == 0 ? 'w' : 'b') : '-'; }
+  [[nodiscard]] constexpr char str() const { return toChar(); }
+
+  // convenience
+  [[nodiscard]] constexpr Color opposite() const { return Color{(value() ^ 1U)}; }
+  // sign() allows to avoid branches in some calculations
+  [[nodiscard]] constexpr int   sign() const { return static_cast<int>(*this) == 0 ? 1 : -1; }
 };
 
-// checks if rank is a value of 0-7
-constexpr bool validColor(const Color c) {
-  return c < 2;
-}
+// Backward-compatible constants and sizes
+inline constexpr Color WHITE{0};
+inline constexpr Color BLACK{1};
+inline constexpr Color NOCOLOR{2};
+inline constexpr unsigned COLOR_LENGTH = 2;
 
-// returns the opposite color
-constexpr Color operator~(const Color c) { return static_cast<Color>(c ^ 1); }
+// returns the opposite color (kept for compatibility)
+constexpr Color operator~(const Color c) { return Color{(c.value() ^ 1U)}; }
 
-// moveDirection returns positive 1 for White and negative 1 (-1) for Black
-constexpr int moveDirection(Color c) { return c == WHITE ? 1 : -1; }
-
-// returns a char representing the color (e.g. w or b)
-constexpr char str(Color c) {
-  if (!validColor(c)) return '-';
-  return c == WHITE ? 'w' : 'b';
-}
-
+// stream output operator for Color
 inline std::ostream& operator<<(std::ostream& os, const Color c) {
-  os << str(c);
+  os << c.str();
   return os;
 }
 

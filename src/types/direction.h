@@ -43,8 +43,8 @@ enum Direction : int_fast8_t {
   NORTH_WEST = NORTH + WEST
 };
 
-// return direction of pawns for the color
-constexpr Direction pawnPush(const Color c) { return c == WHITE ? NORTH : SOUTH; }
+// return direction of pawns for the color (branchless)
+constexpr Direction pawnPush(const Color c) { return static_cast<Direction>(c.sign() * static_cast<int>(NORTH)); }
 
 // Additional operators to add a Direction to a Square
 // Could be invalid Square if int value of Direction + int value of Square are >63

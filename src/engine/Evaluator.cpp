@@ -116,7 +116,7 @@ Value Evaluator::evaluate(const Position& p) {
 }
 
 inline Value Evaluator::finalEval(const Position& p, const Value value) {
-  return value * (p.getNextPlayer() == WHITE ? 1 : -1);
+  return value * p.getNextPlayer().sign();
 }
 
 inline Value Evaluator::valueFromScore(const Score& score, const double gamePhaseFactor) {
@@ -198,14 +198,9 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
     endvalue    += popcount(supported) * EvalConfig::SUPPORTED_PAWN_END_WEIGHT;
     // clang-format on
 
-    if (color == WHITE) {
-      tmpScore.midgame += static_cast<Value>(midvalue);
-      tmpScore.endgame += static_cast<Value>(endvalue);
-    }
-    else {
-      tmpScore.midgame -= static_cast<Value>(midvalue);
-      tmpScore.endgame -= static_cast<Value>(endvalue);
-    }
+    // accumulate signed by color
+    tmpScore.midgame += static_cast<Value>(midvalue * color.sign());
+    tmpScore.endgame += static_cast<Value>(endvalue * color.sign());
     //    LOG__DEBUG(Logger::get().EVAL_LOG, "Raw pawn eval for {} results midvalue = {} and endvalue = {}", color ? "BLACK" : "WHITE", midvalue, endvalue);
   }// color loop
 
@@ -295,14 +290,8 @@ inline void Evaluator::knightEval(const Position& p, Score& s, const Color us, C
       end += EvalConfig::KNIGHT_LOW_MOBILITY_LEQ2_END;
     }
 
-    if (us == WHITE) {
-      s.midgame += static_cast<Value>(mid);
-      s.endgame += static_cast<Value>(end);
-    }
-    else {
-      s.midgame -= static_cast<Value>(mid);
-      s.endgame -= static_cast<Value>(end);
-    }
+    s.midgame += static_cast<Value>(mid * us.sign());
+    s.endgame += static_cast<Value>(end * us.sign());
   }
 }
 
@@ -322,14 +311,8 @@ inline void Evaluator::bishopEval(const Position& p, Score& s, const Color us, C
       end += EvalConfig::BISHOP_LOW_MOBILITY_LEQ3_END;
     }
 
-    if (us == WHITE) {
-      s.midgame += static_cast<Value>(mid);
-      s.endgame += static_cast<Value>(end);
-    }
-    else {
-      s.midgame -= static_cast<Value>(mid);
-      s.endgame -= static_cast<Value>(end);
-    }
+    s.midgame += static_cast<Value>(mid * us.sign());
+    s.endgame += static_cast<Value>(end * us.sign());
   }
 }
 
@@ -374,14 +357,8 @@ inline void Evaluator::rookEval(const Position& p, Score& s, const Color us, con
   }
 
   if (mid || end) {
-    if (us == WHITE) {
-      s.midgame += static_cast<Value>(mid);
-      s.endgame += static_cast<Value>(end);
-    }
-    else {
-      s.midgame -= static_cast<Value>(mid);
-      s.endgame -= static_cast<Value>(end);
-    }
+    s.midgame += static_cast<Value>(mid * us.sign());
+    s.endgame += static_cast<Value>(end * us.sign());
   }
 }
 
@@ -410,14 +387,8 @@ inline void Evaluator::queenEval(const Position& p, Score& s, const Color us, co
   }
 
   if (mid || end) {
-    if (us == WHITE) {
-      s.midgame += static_cast<Value>(mid);
-      s.endgame += static_cast<Value>(end);
-    }
-    else {
-      s.midgame -= static_cast<Value>(mid);
-      s.endgame -= static_cast<Value>(end);
-    }
+    s.midgame += static_cast<Value>(mid * us.sign());
+    s.endgame += static_cast<Value>(end * us.sign());
   }
 }
 
@@ -430,7 +401,7 @@ inline void Evaluator::kingEval(const Position& p, Score& s, const Color us) {
   // Pawn shield in front of king (midgame focus)
   if (EvalConfig::USE_KING_SAFETY_SHIELD) {
     int shieldCount = 0;
-    const int dir   = (us == WHITE ? 1 : -1);
+    const int dir   = us.sign();
     const int kr    = rankOf(ksq);
     const int kf    = fileOf(ksq);
 
@@ -450,12 +421,6 @@ inline void Evaluator::kingEval(const Position& p, Score& s, const Color us) {
     end += shieldCount * EvalConfig::KING_SHIELD_END_PER_PAWN;
   }
 
-  if (us == WHITE) {
-    s.midgame += static_cast<Value>(mid);
-    s.endgame += static_cast<Value>(end);
-  }
-  else {
-    s.midgame -= static_cast<Value>(mid);
-    s.endgame -= static_cast<Value>(end);
-  }
+  s.midgame += static_cast<Value>(mid * us.sign());
+  s.endgame += static_cast<Value>(end * us.sign());
 }

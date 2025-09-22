@@ -49,7 +49,7 @@ public:
   // static helpers
   static constexpr File fromChar(const char fileLabel) {
     const int idx = fileLabel - 'a';
-    return (0 <= idx && idx < 8) ? File{idx} : File{8};
+    return 0 <= idx && idx < 8 ? File{idx} : File{8};
   }
 };
 

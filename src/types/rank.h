@@ -50,10 +50,10 @@ public:
   // static helpers
   static constexpr Rank fromChar(const char rankLabel) {
     const int idx = rankLabel - '1';
-    return (0 <= idx && idx < 8) ? Rank{idx} : Rank{8};
+    return 0 <= idx && idx < 8 ? Rank{idx} : Rank{8};
   }
-  static constexpr Rank promotionFor(const Color c) { return c == WHITE ? Rank{7} : Rank{0}; }
-  static constexpr Rank pawnDoubleFor(const Color c) { return c == WHITE ? Rank{2} : Rank{5}; }
+  static constexpr Rank promotionFor(const Color c) { return Rank{static_cast<unsigned>((c.sign() + 1) / 2 * 7)}; }
+  static constexpr Rank pawnDoubleFor(const Color c) { return Rank{static_cast<unsigned>((7 - 3 * c.sign()) / 2)}; }
 };
 
 // Rank constants
