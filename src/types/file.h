@@ -21,7 +21,6 @@
 #define FRANKYCPP_FILE_H
 
 #include "macros.h"
-#include <ostream>
 
 // File represents a chess board file a-h
 //  FILE_A      // 0
@@ -54,7 +53,7 @@ constexpr bool validFile(const File f) {
 
 // creates a file from a char
 constexpr File makeFile(const char fileLabel) {
-  const File f = static_cast<File>(fileLabel - 'a');
+  const auto f = static_cast<File>(fileLabel - 'a');
   return validFile(f) ? f : FILE_NONE;
 }
 
