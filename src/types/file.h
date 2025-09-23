@@ -31,7 +31,7 @@ public:
   constexpr explicit File(const int v) : v_(static_cast<unsigned>(v)) {}
 
   // underlying value access
-  constexpr unsigned value() const { return v_; }
+  constexpr auto value() const { return v_; }
 
   // implicit conversion for arithmetic/comparisons/array indexing
   // ReSharper disable once CppNonExplicitConversionOperator
