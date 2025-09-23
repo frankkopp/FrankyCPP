@@ -25,6 +25,7 @@
 // Rank represents a chess board rank 1-8 as a small class with an unsigned underlying value [0..8]
 class Rank {
   std::uint8_t v_{};// 0..7 = 1..8, 8 = NONE
+
 public:
   // constructors
   constexpr Rank() : v_(8) {}

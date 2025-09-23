@@ -95,11 +95,11 @@ void TestSuite::runTestSuite() {
     i++;
     if (t.type == DM) {
       fprintln(" {:<4d} | {:<10} | {:<8} | {:<8} | {} {:<15d} | {} | {}",
-               i, resultTypeStr[t.result], str(t.actualMove), str(t.actualValue), testTypeStr[t.type], t.mateDepth, t.fen, t.id);
+               i, resultTypeStr[t.result], str(t.actualMove), t.actualValue.str(), testTypeStr[t.type], t.mateDepth, t.fen, t.id);
     }
     else {
       fprintln(" {:<4d} | {:<10} | {:<8} | {:<8} | {} {:<15} | {} | {}",
-               i, resultTypeStr[t.result], str(t.actualMove), str(t.actualValue), testTypeStr[t.type], str(t.targetMoves), t.fen, t.id);
+               i, resultTypeStr[t.result], str(t.actualMove), t.actualValue.str(), testTypeStr[t.type], str(t.targetMoves), t.fen, t.id);
     }
   }
   fprintln("====================================================================================================================================");
@@ -185,7 +185,7 @@ void TestSuite::directMateTest(Search& search, SearchLimits& limits, const Posit
   search.startSearch(position, limits);
   search.waitWhileSearching();
   // check and store result
-  if ("mate " + std::to_string(limits.mate) == str(search.getLastSearchResult().bestMoveValue)) {
+  if ("mate " + std::to_string(limits.mate) == search.getLastSearchResult().bestMoveValue.str()) {
     LOG__INFO(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" SUCCESS", test.id);
     test.result = SUCCESS;
   }

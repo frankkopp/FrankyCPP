@@ -26,7 +26,7 @@
 // History is a data structure updated during search to provide the move
 // generator with valuable information for move sorting.
 struct History {
-  int64_t historyCount[2][64][64]{};
+  int historyCount[2][64][64]{};
   Move counterMoves[64][64]{};
 };
 

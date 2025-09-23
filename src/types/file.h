@@ -24,6 +24,7 @@
 // File represents a chess board file a-h as a small class with an unsigned underlying value [0..8]
 class File {
   std::uint8_t v_{};// 0..7 = A..H, 8 = NONE
+
 public:
   // constructors
   constexpr File() : v_(8) {}

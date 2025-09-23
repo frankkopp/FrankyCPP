@@ -36,6 +36,7 @@
 //  A1 = 0 .. H8 = 63, NONE = 64
 class Square {
   std::uint8_t v_{};// 0..63 valid squares, 64 = NONE (fits in one byte)
+
 public:
   // constructors
   constexpr Square() : v_(64) {}

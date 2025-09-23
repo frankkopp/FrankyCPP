@@ -236,7 +236,7 @@ private:
   // generated, call the evaluation heuristic on the position.
   // This gives us a numerical value of this quiet position which we will return
   // to the search.
-  Value evaluate(Position& p);
+  Value evaluate(const Position& p);
 
   // reduce the number of moves searched in quiescence search by trying
   // to only look at good captures.

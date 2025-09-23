@@ -165,7 +165,7 @@ inline Move moveOf(const Move m) {
 
 // returns the sort value for the move used in the move generator
 inline Value valueOf(const Move m) {
-  return static_cast<Value>(((m & MoveShifts::VALUE_MASK) >> MoveShifts::VALUE_SHIFT)) + VALUE_NONE;
+  return Value{static_cast<int>((m & MoveShifts::VALUE_MASK) >> MoveShifts::VALUE_SHIFT)} + VALUE_NONE;
 }
 
 // stores/encodes the value into the given move (changes given move) and also returns the new value.
@@ -185,7 +185,7 @@ constexpr bool validMove(const Move m) {
          // due to the way we encode the move, we can not have an invalid square (6 bits = 0-63)
          validPieceType(promotionTypeOf(m)) &&
          validMoveType(typeOf(m)) &&
-         (valueOf(m) == VALUE_NONE || validValue(valueOf(m)));
+         (valueOf(m) == VALUE_NONE || valueOf(m).isValid());
 }
 
 // returns a short representation of the move as string (UCI protocol)

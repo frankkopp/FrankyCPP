@@ -546,7 +546,7 @@ Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Valu
   return bestNodeValue;
 }
 
-Value Search::search(Position& p, const Depth depth, Depth ply, Value alpha, Value beta, const Node_Type isPv, const Do_Null doNull) {
+Value Search::search(Position& p, const Depth depth, const Depth ply, Value alpha, Value beta, const Node_Type isPv, const Do_Null doNull) {
   //  LOG__DEBUG(Logger::get().SEARCH_LOG, "Search {} {} {}", depth, ply, str(statistics.currentVariation));
 
   // Enter quiescence search when depth == 0 or max ply has been reached
@@ -596,7 +596,7 @@ Value Search::search(Position& p, const Depth depth, Depth ply, Value alpha, Val
       ttMove = static_cast<Move>(ttEntryPtr->move);
       if (ttEntryPtr->depth >= depth) {
         const Value ttValue = valueFromTt(ttEntryPtr->value, ply);
-        if (validValue(ttValue)
+        if (ttValue.isValid()
             && (ttEntryPtr->type == EXACT || (ttEntryPtr->type == ALPHA && ttValue <= alpha) || (ttEntryPtr->type == BETA && ttValue >= beta))
             && SearchConfig::USE_TT_VALUE) {
           // get PV line from tt as we prune here
@@ -1019,7 +1019,7 @@ Value Search::search(Position& p, const Depth depth, Depth ply, Value alpha, Val
   return bestNodeValue;
 }
 
-Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, const Node_Type isPv) {
+Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, const Node_Type isPv) {
   //  LOG__DEBUG(Logger::get().SEARCH_LOG, "QSearch {} {}", ply, str(statistics.currentVariation));
 
   if (statistics.currentExtraSearchDepth < ply) { statistics.currentExtraSearchDepth = ply; }
@@ -1059,7 +1059,7 @@ Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, const Nod
       statistics.ttHit++;
       ttMove              = static_cast<Move>(ttEntryPtr->move);
       const Value ttValue = valueFromTt(ttEntryPtr->value, ply);
-      if (validValue(ttValue) && (ttEntryPtr->type == EXACT || (ttEntryPtr->type == ALPHA && ttValue <= alpha) || (ttEntryPtr->type == BETA && ttValue >= beta)) && SearchConfig::USE_TT_VALUE) {
+      if (ttValue.isValid() && (ttEntryPtr->type == EXACT || (ttEntryPtr->type == ALPHA && ttValue <= alpha) || (ttEntryPtr->type == BETA && ttValue >= beta)) && SearchConfig::USE_TT_VALUE) {
         statistics.TtCuts++;
         return ttValue;
       }
@@ -1108,7 +1108,7 @@ Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, const Nod
   else { statistics.NoTtMove++; }
 
   // prepare move loop
-  Value value       = VALUE_NONE;
+  Value value;
   Move move         = MOVE_NONE;
   int movesSearched = 0;// to detect mate situations
 
@@ -1236,7 +1236,7 @@ Value Search::qsearch(Position& p, Depth ply, Value alpha, Value beta, const Nod
   return bestNodeValue;
 }
 
-inline Value Search::evaluate(Position& p) {
+inline Value Search::evaluate(const Position& p) {
   statistics.leafPositionsEvaluated++;
   statistics.evaluations++;
   return evaluator->evaluate(p);
@@ -1282,16 +1282,16 @@ void Search::savePV(const Move move, MoveList& src, MoveList& dest) {
   dest.insert(dest.end(), src.begin(), src.end());
 }
 
-Value Search::valueToTt(const Value value, Depth ply) {
-  if (isCheckMateValue(value)) {
+Value Search::valueToTt(const Value value, const Depth ply) {
+  if (value.isCheckMate()) {
     if (value > 0) { return value + static_cast<Value>(ply); }
     return value - static_cast<Value>(ply);
   }
   return value;
 }
 
-Value Search::valueFromTt(const Value value, Depth ply) {
-  if (isCheckMateValue(value)) {
+Value Search::valueFromTt(const Value value, const Depth ply) {
+  if (value.isCheckMate()) {
     if (value > 0) { return value - static_cast<Value>(ply); }
     return value + static_cast<Value>(ply);
   }
@@ -1479,7 +1479,7 @@ void Search::sendIterationEndInfoToUci() {
   LOG__INFO(Logger::get().SEARCH_LOG, "depth {} seldepth {} value {} nodes {:L} nps {:L} time {:L} pv {}",
             statistics.currentSearchDepth,
             statistics.currentExtraSearchDepth,
-            str(statistics.currentBestRootMoveValue),
+            statistics.currentBestRootMoveValue.str(),
             nodesVisited,
             nps(nodesVisited, since),
             MILLISECONDS(since).count(),
@@ -1489,7 +1489,7 @@ void Search::sendIterationEndInfoToUci() {
 void Search::sendSearchUpdateToUci() {
 
   // to minimize performance impact we only check time every 1M nodes
-  if ((nodesVisited - lastUciUpdateNodes < 1'000'000)) { return; }
+  if (nodesVisited - lastUciUpdateNodes < 1'000'000) { return; }
   lastUciUpdateNodes = nodesVisited;
 
   // we only update every UCI_UPDATE_INTERVAL ns
@@ -1548,7 +1548,7 @@ void Search::sendAspirationResearchInfo(const std::string& boundString) {
   LOG__INFO(Logger::get().SEARCH_LOG, "depth {} seldepth {} value {} {} nodes {:L} nps {:L} time {:L} pv {}",
             statistics.currentSearchDepth,
             statistics.currentExtraSearchDepth,
-            str(statistics.currentBestRootMoveValue),
+            statistics.currentBestRootMoveValue.str(),
             boundString,
             nodesVisited,
             nps(nodesVisited, since),
