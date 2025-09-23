@@ -30,7 +30,6 @@
 #include <format>
 #include <string>
 #include <string_view>
-#include <ostream>
 
 // Square represents exactly one square on a chess board backed by an unsigned value.
 //  A1 = 0 .. H8 = 63, NONE = 64
@@ -131,7 +130,6 @@ namespace Squares {
     }
     return cd;
   }
-
   // precomputed distances from center squares (d4, d5, e4, e5)
   inline constexpr std::array<int, SQ_LENGTH> centerDistance = centerDistancePreCompute();
 

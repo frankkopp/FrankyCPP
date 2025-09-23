@@ -23,7 +23,7 @@
 
 // File represents a chess board file a-h as a small class with an unsigned underlying value [0..8]
 class File {
-  unsigned v_{}; // 0..7 = A..H, 8 = NONE
+  std::uint8_t v_{};// 0..7 = A..H, 8 = NONE
 public:
   // constructors
   constexpr File() : v_(8) {}
@@ -35,13 +35,13 @@ public:
 
   // implicit conversion for arithmetic/comparisons/array indexing
   // ReSharper disable once CppNonExplicitConversionOperator
-  constexpr operator int() const { return static_cast<int>(v_); }
+  constexpr operator int() const { return v_; }
 
   // member helpers
   [[nodiscard]] constexpr bool isValid() const { return static_cast<int>(*this) < 8; }
   constexpr char toChar() const { return isValid() ? static_cast<char>('a' + static_cast<char>(static_cast<int>(*this))) : '-'; }
   constexpr char str() const { return toChar(); }
-  constexpr int  distance(const File other) const {
+  constexpr int distance(const File other) const {
     const int d = static_cast<int>(other) - static_cast<int>(*this);
     return d < 0 ? -d : d;
   }
@@ -96,4 +96,4 @@ constexpr bool operator<=(const int a, const File b) { return a <= static_cast<i
 constexpr bool operator>(const int a, const File b) { return a > static_cast<int>(b.value()); }
 constexpr bool operator>=(const int a, const File b) { return a >= static_cast<int>(b.value()); }
 
-#endif//FRANKYCPP_FILE_H
+#endif// FRANKYCPP_FILE_H

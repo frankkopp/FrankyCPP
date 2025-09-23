@@ -19,12 +19,12 @@
 #ifndef FRANKYCPP_RANK_H
 #define FRANKYCPP_RANK_H
 
-#include "macros.h"
 #include "color.h"
+#include "macros.h"
 
 // Rank represents a chess board rank 1-8 as a small class with an unsigned underlying value [0..8]
 class Rank {
-  unsigned v_{}; // 0..7 = 1..8, 8 = NONE
+  std::uint8_t v_{};// 0..7 = 1..8, 8 = NONE
 public:
   // constructors
   constexpr Rank() : v_(8) {}
@@ -36,13 +36,13 @@ public:
 
   // implicit conversion for arithmetic/comparisons/array indexing
   // ReSharper disable once CppNonExplicitConversionOperator
-  constexpr operator int() const { return static_cast<int>(v_); }
+  constexpr operator int() const { return v_; }
 
   // member helpers
   [[nodiscard]] constexpr bool isValid() const { return static_cast<int>(*this) < 8; }
   constexpr char toChar() const { return isValid() ? static_cast<char>('1' + static_cast<char>(static_cast<int>(*this))) : '-'; }
   constexpr char str() const { return toChar(); }
-  constexpr int  distance(const Rank other) const {
+  constexpr int distance(const Rank other) const {
     const int d = static_cast<int>(other) - static_cast<int>(*this);
     return d < 0 ? -d : d;
   }
@@ -68,12 +68,12 @@ inline constexpr Rank RANK_8{7};
 inline constexpr Rank RANK_NONE{8};
 inline constexpr unsigned RANK_LENGTH = 9;
 
-inline std::ostream& operator<< (std::ostream& os, const Rank r) {
+inline std::ostream& operator<<(std::ostream& os, const Rank r) {
   os << r.str();
   return os;
 }
 
-ENABLE_INCR_OPERATORS_ON (Rank)
+ENABLE_INCR_OPERATORS_ON(Rank)
 
 // Comparison operators for Rank
 constexpr bool operator==(const Rank a, const Rank b) { return a.value() == b.value(); }
@@ -99,4 +99,4 @@ constexpr bool operator<=(const int a, const Rank b) { return a <= static_cast<i
 constexpr bool operator>(const int a, const Rank b) { return a > static_cast<int>(b.value()); }
 constexpr bool operator>=(const int a, const Rank b) { return a >= static_cast<int>(b.value()); }
 
-#endif//FRANKYCPP_RANK_H
+#endif// FRANKYCPP_RANK_H
