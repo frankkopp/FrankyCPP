@@ -453,22 +453,23 @@ inline Bitboard shiftBb(const Direction d, const Bitboard b) {
   // move the bits and clear the left our right file
   // after the shift to erase bit jumping over
   switch (d) {
-    case NORTH:
+    case static_cast<int>(NORTH):
       return b << 8;
-    case EAST:
+    case static_cast<int>(EAST):
       return b << 1 & ~FileABB;
-    case SOUTH:
+    case static_cast<int>(SOUTH):
       return b >> 8;
-    case WEST:
+    case static_cast<int>(WEST):
       return b >> 1 & ~FileHBB;
-    case NORTH_EAST:
+    case static_cast<int>(NORTH_EAST):
       return b << 9 & ~FileABB;
-    case SOUTH_EAST:
+    case static_cast<int>(SOUTH_EAST):
       return b >> 7 & ~FileABB;
-    case SOUTH_WEST:
+    case static_cast<int>(SOUTH_WEST):
       return b >> 9 & ~FileHBB;
-    case NORTH_WEST:
+    case static_cast<int>(NORTH_WEST):
       return b << 7 & ~FileHBB;
+    default:;
   }
   return b;
 }

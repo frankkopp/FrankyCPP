@@ -43,6 +43,13 @@
   constexpr T& operator+=(T& d1, T d2) { return d1 = d1 + d2; }                                             \
   constexpr T& operator-=(T& d1, T d2) { return d1 = d1 - d2; }
 
+#define ENABLE_BASE2_OPERATORS_ON(T1, T2)                                                                     \
+constexpr T1 operator+(T1 d1, T2 d2) { return static_cast<T1>(static_cast<int>(d1) + static_cast<int>(d2)); } \
+constexpr T1 operator-(T1 d1, T2 d2) { return static_cast<T1>(static_cast<int>(d1) - static_cast<int>(d2)); } \
+constexpr T1 operator-(T1 d) { return static_cast<T1>(-static_cast<int>(d)); }                               \
+constexpr T1& operator+=(T1& d1, T2 d2) { return d1 = d1 + d2; }                                              \
+constexpr T1& operator-=(T1& d1, T2 d2) { return d1 = d1 - d2; }
+
 #define ENABLE_INCR_OPERATORS_ON(T)                                                     \
   constexpr T& operator++(T& d) { return d = static_cast<T>(static_cast<int>(d) + 1); } \
   constexpr T& operator--(T& d) { return d = static_cast<T>(static_cast<int>(d) - 1); }

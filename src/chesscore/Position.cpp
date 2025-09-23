@@ -235,7 +235,7 @@ void Position::undoMove() {
     case ENPASSANT:
       // ignore Zobrist Key as it will be restored via history
       movePiece(toSquare(move), fromSquare(move));
-      putPiece(makePiece(~nextPlayer, PAWN), toSquare(move) + pawnPush(~nextPlayer));
+      putPiece(makePiece(~nextPlayer, PAWN), toSquare(move) + Direction::pawnPush(~nextPlayer));
       break;
 
     case CASTLING:
@@ -441,7 +441,7 @@ bool Position::givesCheck(const Move move) const {
       break;
     case ENPASSANT:
       // set en passant capture square
-      epTargetSq = toSq + pawnPush(them);
+      epTargetSq = toSq + Direction::pawnPush(them);
       break;
     default:
       break;

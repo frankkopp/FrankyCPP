@@ -180,7 +180,7 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
                    : BbZero;
 
       // pawn as neighbours in the row forward = supported pawns
-      supported |= myPawns & neighbours & Bitboards::sqToRankBb[sq + pawnPush(color)];
+      supported |= myPawns & neighbours & Bitboards::sqToRankBb[sq + Direction::pawnPush(color)];
     }
 
     // clang-format off

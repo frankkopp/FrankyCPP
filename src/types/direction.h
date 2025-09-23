@@ -23,49 +23,46 @@
 #include "macros.h"
 #include "square.h"
 
-// Direction is a set of constants for moving squares within a Bb
-//  NORTH      = 8,
-//  EAST       = 1,
-//  SOUTH      = -NORTH,
-//  WEST       = -EAST,
-//  NORTH_EAST = NORTH + EAST,
-//  SOUTH_EAST = SOUTH + EAST,
-//  SOUTH_WEST = SOUTH + WEST,
-//  NORTH_WEST = NORTH + WEST
-enum Direction : int_fast8_t {
-  NORTH      = 8,
-  EAST       = 1,
-  SOUTH      = -NORTH,
-  WEST       = -EAST,
-  NORTH_EAST = NORTH + EAST,
-  SOUTH_EAST = SOUTH + EAST,
-  SOUTH_WEST = SOUTH + WEST,
-  NORTH_WEST = NORTH + WEST
+#include <cstdint>
+
+// Direction is a lightweight value-type wrapper around a signed step offset
+// in mailbox-64 representation (A1=0 ... H8=63). Positive values move north/east.
+class Direction {
+  int_fast8_t v_{}; // step in [-9, +9] domain for our use cases
+
+public:
+  // constructors
+  constexpr Direction() = default;
+  constexpr explicit Direction(const int v) : v_{static_cast<int_fast8_t>(v)} {}
+
+  // underlying value access
+  constexpr int_fast8_t value() const { return v_; }
+
+  // implicit conversion for arithmetic/macros compatibility
+  // ReSharper disable once CppNonExplicitConversionOperator
+  constexpr operator int() const { return v_; }
+
+  // factory: pawn push direction for a color (branchless)
+  static constexpr Direction pawnPush(const Color c) { return Direction{c.sign() * 8}; }
 };
 
-// return direction of pawns for the color (branchless)
-constexpr Direction pawnPush(const Color c) { return static_cast<Direction>(c.sign() * static_cast<int>(NORTH)); }
+// Inline constexpr direction constants
+inline constexpr Direction NORTH{8};
+inline constexpr Direction EAST{1};
+inline constexpr Direction SOUTH{-8};
+inline constexpr Direction WEST{-1};
+inline constexpr Direction NORTH_EAST{9};
+inline constexpr Direction SOUTH_EAST{-7};
+inline constexpr Direction SOUTH_WEST{-9};
+inline constexpr Direction NORTH_WEST{7};
 
-// Additional operators to add a Direction to a Square
+// Additional operators to add/subtract a Direction to/from a Square
 // Could be invalid Square if int value of Direction + int value of Square are >63
-constexpr Square operator+(const Square s, const Direction d) {
-  return static_cast<Square>(static_cast<int>(s) + static_cast<int>(d));
-}
+ENABLE_BASE2_OPERATORS_ON(Square, Direction)
+// Enable arithmetic and increment operators via existing macros
+ENABLE_FULL_OPERATORS_ON(Direction)
 
-// Additional operators to add a Direction to a Square
-// Could be invalid Square if int value of Direction + int value of Square are >63
-constexpr Square& operator+=(Square& s, const Direction d) { return s = s + d; }
-
-// Additional operators to subtract a Direction to a Square
-// Could be invalid Square if int value of Direction is > int value of Square
-constexpr Square operator-(const Square s, const Direction d) {
-  return static_cast<Square>(static_cast<int>(s) - static_cast<int>(d));
-}
-
-// Additional operators to subtract a Direction to a Square
-// Could be invalid Square if int value of Direction is > int value of Square
-constexpr Square& operator-=(Square& s, const Direction d) { return s = s - d; }
-
-ENABLE_FULL_OPERATORS_ON (Direction)
+// Compile-time sanity checks
+static_assert(sizeof(Direction) == sizeof(int_fast8_t), "Direction should be 1 byte");
 
 #endif//FRANKYCPP_DIRECTION_H
