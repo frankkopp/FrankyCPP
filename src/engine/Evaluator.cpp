@@ -140,7 +140,7 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
   tmpScore.endgame = VALUE_ZERO;
 
   // evaluations inspired by Stockfish
-  for (Color color = WHITE; color <= BLACK; ++color) {
+  for (const Color color : Color::all()) {
     const Bitboard myPawns  = p.getPieceBb(color, PAWN);
     const Bitboard oppPawns = p.getPieceBb(~color, PAWN);
 

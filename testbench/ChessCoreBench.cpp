@@ -35,6 +35,7 @@ public:
   }
 };
 
+#if 0
 BENCHMARK_F(ChessCoreBench, BM_SetupPosition)(benchmark::State& state) {
   Position position{};
   const char* const fen = "r3k2r/1ppn3p/4q1n1/8/4Pp2/3R4/p1p2PPP/R5K1 b kq e3 0 1";
@@ -99,6 +100,8 @@ BENCHMARK_F(ChessCoreBench, BM_MoveGen)(benchmark::State& state) {
   state.counters["GenTime"] = benchmark::Counter(counter, benchmark::Counter::kIsRate | benchmark::Counter::kInvert);
   state.counters["Move"] = move;
 }
+#endif
+
 
 // 25.8.2020
 // -------------------------------------------------------------------------------------------

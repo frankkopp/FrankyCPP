@@ -18,10 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-#include "chesscore/Position.h"
 #include "engine/TT.h"
 #include "init.h"
-#include "types/types.h"
 
 #include <benchmark/benchmark.h>
 
@@ -32,19 +30,21 @@
 // of certain code pieces to find the fastest alternative.
 class TimingBench : public benchmark::Fixture {
 public:
-  void SetUp(const ::benchmark::State&) {
+  void SetUp(const benchmark::State&) override {
     init::init();
   }
 
-  void TearDown(const ::benchmark::State&) {
+  void TearDown(const benchmark::State&) override {
   }
 
 };
 
+#if 0
 BENCHMARK_F(TimingBench, TTAge1)(benchmark::State& state) {
   double counter = 0;
   TT tt{1'000};
-  for (auto _ : state) {
+  for (const auto _ : state) {
+    (void)_; // silence unused variable warning
     tt.ageEntries();
     counter++;
   }
@@ -54,9 +54,10 @@ BENCHMARK_F(TimingBench, TTAge1)(benchmark::State& state) {
 }
 
 BENCHMARK_F(TimingBench, cleanUp)(benchmark::State& state) {
-  std::string testString{"e4(d4) d5!!2.c4$50(Nf3?)e5 Nf3{Comment !}Nc6 Nc3 Nf6 Bc4 {another comment} Bc5 O-O O-O a1=Q  @@@æææ {unexpected characters are skipped}  <> {These symbols are reserved}  1/2-1/2  ; comment     "};
+  const std::string testString{"e4(d4) d5!!2.c4$50(Nf3?)e5 Nf3{Comment !}Nc6 Nc3 Nf6 Bc4 {another comment} Bc5 O-O O-O a1=Q  @@@æææ {unexpected characters are skipped}  <> {These symbols are reserved}  1/2-1/2  ; comment     "};
   double counter = 0;
-  for (auto _ : state) {
+  for (const auto _ : state) {
+    (void)_; // silence unused variable warning
     std::string test = removeTrailingComments(testString, ";");
     OpeningBook::cleanUpPgnMoveSection(test);
     counter++;
@@ -70,18 +71,20 @@ BENCHMARK_F(TimingBench, BM_IllegalCharacter1)(benchmark::State& state) {
   const std::string fen{"r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1"};
   const std::regex illegalInFenPosition{R"([^1-8pPnNbBrRqQkK/]+)"};
   double counter{};
-  for (auto _ : state) {
+  for (const auto _ : state) {
+    (void)_; // silence unused variable warning
     if (!std::regex_search(fen, illegalInFenPosition)) {
       counter++;
     }
   }
 }
 
-BENCHMARK_F(TimingBench, BM_IllegalCharacter2)(benchmark::State& state) {
+BENCHMARK_F(TimingBench, DISABLED_BM_IllegalCharacter2)(benchmark::State& state) {
   const std::string fen{"r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1"};
   const std::string allowedChars{"12345678pPnNbBrRqQkK/"};
   double counter{};
-  for (auto _ : state) {
+  for (const auto _ : state) {
+    (void)_; // silence unused variable warning
     bool illegalFound = false;
     const auto l = fen.length();
     for (int i = 0; i < l; i++) {
@@ -94,4 +97,48 @@ BENCHMARK_F(TimingBench, BM_IllegalCharacter2)(benchmark::State& state) {
       counter++;
     }
   }
+}
+#endif
+
+// ---------------- Color iteration micro-benchmarks ----------------
+BENCHMARK_F(TimingBench, BM_ColorIter_Range)(benchmark::State& state) {
+  int sink = 0;
+  for (const auto _ : state) {
+    (void)_; // silence unused variable warning
+    int sum = 0;
+    for (const Color c : Color::all()) {
+      sum += c.sign();
+    }
+    benchmark::DoNotOptimize(sum);
+    sink += sum;
+  }
+  benchmark::DoNotOptimize(sink);
+}
+
+BENCHMARK_F(TimingBench, BM_ColorIter_Classic)(benchmark::State& state) {
+  int sink = 0;
+  for (const auto _ : state) {
+    (void)_; // silence unused variable warning
+    int sum = 0;
+    for (Color c = WHITE; c <= BLACK; ++c) {
+      sum += c.sign();
+    }
+    benchmark::DoNotOptimize(sum);
+    sink += sum;
+  }
+  benchmark::DoNotOptimize(sink);
+}
+
+BENCHMARK_F(TimingBench, BM_ColorIter_Int)(benchmark::State& state) {
+  int sink = 0;
+  for (const auto _ : state) {
+    (void)_; // silence unused variable warning
+    int sum = 0;
+    for (int ci = 0; ci < static_cast<int>(COLOR_LENGTH); ++ci) {
+      sum += Color{ci}.sign();
+    }
+    benchmark::DoNotOptimize(sum);
+    sink += sum;
+  }
+  benchmark::DoNotOptimize(sink);
 }

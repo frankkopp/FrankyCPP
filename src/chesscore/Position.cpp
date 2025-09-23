@@ -872,7 +872,7 @@ void Position::initializeBoard() {
 
   moveNumber = 1;
 
-  for (Color color = WHITE; color <= BLACK; ++color) {// foreach color
+  for (const Color color : Color::all()) {// foreach color
     occupiedBb[color] = BbZero;
     std::fill_n(&piecesBb[color][0], sizeof(piecesBb[color]), BbZero);
     kingSquare[color]      = SQ_NONE;

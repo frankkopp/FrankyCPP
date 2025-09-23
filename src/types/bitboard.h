@@ -596,7 +596,7 @@ inline std::string strBoard(const Bitboard b) {
   os << "+---+---+---+---+---+---+---+---+\n";
   for (Rank r = RANK_8;; --r) {
     for (File f = FILE_A; f <= FILE_H; ++f) {
-      os << ((b & squareOf(f, r)) ? "| X " : "|   ");
+      os << (b & squareOf(f, r) ? "| X " : "|   ");
     }
     os << "|\n+---+---+---+---+---+---+---+---+\n";
     if (r == 0) break;

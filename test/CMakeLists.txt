@@ -17,6 +17,7 @@ add_executable(
         types/BitboardTest.cpp
         types/ValuesTest.cpp
         types/FileRankTest.cpp
+        types/ColorTest.cpp
 
         common/FifoTest.cpp
         common/ThreadPoolTest.cpp
@@ -43,6 +44,7 @@ add_executable(
         enginetest/TestSuite_Test.cpp
 
         TimingTests.cpp
+        types/ColorTest.cpp
 )
 
 # Ensure unit tests explicitly request C++20
