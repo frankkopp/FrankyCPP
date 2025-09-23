@@ -28,14 +28,14 @@
 #include <array>
 #include <cstdint>
 #include <format>
+#include <iterator>
 #include <string>
 #include <string_view>
-#include <iterator>
 
 // Square represents exactly one square on a chess board backed by an unsigned value.
 //  A1 = 0 .. H8 = 63, NONE = 64
 class Square {
-  std::uint8_t v_{}; // 0..63 valid squares, 64 = NONE (fits in one byte)
+  std::uint8_t v_{};// 0..63 valid squares, 64 = NONE (fits in one byte)
 public:
   // constructors
   constexpr Square() : v_(64) {}
@@ -76,45 +76,26 @@ public:
   // Zero-overhead iteration support
   // -----------------------------
   struct iterator {
-    using value_type = Square;
-    using difference_type = int;
-    using iterator_category = std::random_access_iterator_tag; // simple, contiguous numeric progression
-    using pointer = void;
-    using reference = Square;
+    using value_type        = Square;
+    using difference_type   = int;
+    using iterator_category = std::random_access_iterator_tag;// simple, contiguous numeric progression
+    using pointer           = void;
+    using reference         = Square;
 
-    int i{}; // current index (0..64)
+    int i{};// current index (0..64)
 
+    // clang-format off
     constexpr value_type operator*() const { return Square{i}; }
-    constexpr iterator& operator++() {
-      ++i;
-      return *this;
-    }
-    constexpr iterator operator++(int) {
-      iterator tmp{*this};
-      ++(*this);
-      return tmp;
-    }
-    constexpr iterator& operator--() {
-      --i;
-      return *this;
-    }
-    constexpr iterator operator--(int) {
-      iterator tmp{*this};
-      --(*this);
-      return tmp;
-    }
-    constexpr iterator& operator+=(difference_type n) {
-      i += n;
-      return *this;
-    }
-    constexpr iterator& operator-=(difference_type n) {
-      i -= n;
-      return *this;
-    }
-    friend constexpr iterator operator+(iterator it, difference_type n) { it += n; return it; }
-    friend constexpr iterator operator+(difference_type n, iterator it) { it += n; return it; }
-    friend constexpr iterator operator-(iterator it, difference_type n) { it -= n; return it; }
-    friend constexpr difference_type operator-(iterator a, iterator b) { return a.i - b.i; }
+    constexpr iterator& operator++() { ++i; return *this; }
+    constexpr iterator operator++(int) { const iterator tmp{*this}; ++(*this); return tmp; }
+    constexpr iterator& operator--() { --i; return *this; }
+    constexpr iterator operator--(int) { const iterator tmp{*this}; --(*this); return tmp; }
+    constexpr iterator& operator+=(const difference_type n) { i += n; return *this; }
+    constexpr iterator& operator-=(const difference_type n) { i -= n; return *this; }
+    friend constexpr iterator operator+(iterator it, const difference_type n) { it += n; return it; }
+    friend constexpr iterator operator+(const difference_type n, iterator it) { it += n; return it; }
+    friend constexpr iterator operator-(iterator it, const difference_type n) { it -= n; return it; }
+    friend constexpr difference_type operator-(const iterator a, const iterator b) { return a.i - b.i; }
 
     // equality/ordering comparisons
     constexpr bool operator==(const iterator& other) const { return i == other.i; }
@@ -123,11 +104,12 @@ public:
     constexpr bool operator>(const iterator& other) const { return i > other.i; }
     constexpr bool operator<=(const iterator& other) const { return i <= other.i; }
     constexpr bool operator>=(const iterator& other) const { return i >= other.i; }
+    // clang-format on
   };
 
   struct range {
-    int b{}; // begin (inclusive)
-    int e{}; // end (exclusive)
+    int b{};// begin (inclusive)
+    int e{};// end (exclusive)
     constexpr iterator begin() const { return iterator{b}; }
     constexpr iterator end() const { return iterator{e}; }
     [[nodiscard]] constexpr int size() const { return e - b; }
@@ -143,7 +125,6 @@ public:
   constexpr range to(const Square lastInclusive) const {
     return range{static_cast<int>(value()), static_cast<int>(lastInclusive) + 1};
   }
-
 };
 
 // Square constants (global, to keep existing code unchanged)
@@ -165,7 +146,7 @@ ENABLE_INCR_OPERATORS_ON(Square)
 
 namespace Squares {
   constexpr std::array<std::array<int, SQ_LENGTH>, SQ_LENGTH> squareDistancePreCompute() {
-    std::array<std::array<int, SQ_LENGTH>, SQ_LENGTH> dist{}; // zero-initialize (diagonal stays 0)
+    std::array<std::array<int, SQ_LENGTH>, SQ_LENGTH> dist{};// zero-initialize (diagonal stays 0)
     // distance between squares (Chebyshev distance)
     for (Square sq1 = SQ_A1; sq1 <= SQ_H8; ++sq1) {
       for (Square sq2 = SQ_A1; sq2 <= SQ_H8; ++sq2) {
@@ -225,11 +206,17 @@ inline Square Square::fromString(const std::string_view s) {
   return SQ_NONE;
 }
 
-constexpr int Square::distanceTo(const Square other) const { return Squares::squareDistance[*this][other]; }
+constexpr int Square::distanceTo(const Square other) const {
+  return Squares::squareDistance[*this][other];
+}
 
-constexpr Square Square::pawnPush(const Color c) const { return Square{static_cast<int>(*this) + 8 * c.sign()}; }
+constexpr Square Square::pawnPush(const Color c) const {
+  return Square{static_cast<int>(*this) + 8 * c.sign()};
+}
 
-inline std::string Square::str() const { return Squares::squareNames[*this].data(); }
+inline std::string Square::str() const {
+  return Squares::squareNames[*this].data();
+}
 
 // stream output operator for Square
 inline std::ostream& operator<<(std::ostream& os, const Square sq) {

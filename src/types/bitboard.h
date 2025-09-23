@@ -118,7 +118,7 @@ namespace Bitboards {
 
   constexpr std::array<Bitboard, SQ_LENGTH> makeSqBb() {
     std::array<Bitboard, SQ_LENGTH> a{};
-    for (unsigned s = 0; s < SQ_LENGTH; ++s) a[s] = BbOne << s;
+    for (Square s : Square::all()) a[s] = BbOne << static_cast<unsigned>(s);
     return a;
   }
   // holds a bitboard with only one bit set at the given square
@@ -127,7 +127,7 @@ namespace Bitboards {
   constexpr unsigned fileIdx(const unsigned s) { return s & 7U; }
   constexpr std::array<Bitboard, SQ_LENGTH> makeSqToFileBb() {
     std::array<Bitboard, SQ_LENGTH> a{};
-    for (Square s = SQ_A1; s <= SQ_H8; ++s) a[s] = fileBb[fileIdx(s)];
+    for (Square s : Square::all()) a[s] = fileBb[fileIdx(s)];
     return a;
   }
   // holds bitboards for each square's file
@@ -137,7 +137,7 @@ namespace Bitboards {
   constexpr unsigned rankIdx(const unsigned s) { return s >> 3U; }
   constexpr std::array<Bitboard, SQ_LENGTH> makeSqToRankBb() {
     std::array<Bitboard, SQ_LENGTH> a{};
-    for (Square s = SQ_A1; s <= SQ_H8; ++s) a[s] = rankBb[rankIdx(s)];
+    for (Square s : Square::all()) a[s] = rankBb[rankIdx(s)];
     return a;
   }
   // holds bitboards for each square's rank
@@ -164,7 +164,7 @@ namespace Bitboards {
   }
   constexpr std::array<Bitboard, SQ_LENGTH> makeSquareDiagUpBb() {
     std::array<Bitboard, SQ_LENGTH> a{};
-    for (Square s = SQ_A1; s <= SQ_H8; ++s) a[s] = diagUpForIdx(s);
+    for (Square s : Square::all()) a[s] = diagUpForIdx(s);
     return a;
   }
   // holds precomputed bitboards for each square's diagonal (A1-H8)
@@ -191,7 +191,7 @@ namespace Bitboards {
   }
   constexpr std::array<Bitboard, SQ_LENGTH> makeSquareDiagDownBb() {
     std::array<Bitboard, SQ_LENGTH> a{};
-    for (Square s = SQ_A1; s <= SQ_H8; ++s) a[s] = diagDownForIdx(s);
+    for (Square s : Square::all()) a[s] = diagDownForIdx(s);
     return a;
   }
   // holds precomputed bitboards for each square's anti-diagonal (H1-A8)
@@ -256,7 +256,7 @@ namespace Bitboards {
 
   constexpr std::array<Bitboard, SQ_LENGTH> makeFilesWestMask() {
     std::array<Bitboard, SQ_LENGTH> a{};
-    for (unsigned s = 0; s < SQ_LENGTH; ++s) {
+    for (Square s : Square::all()) {
       const unsigned f = fileIdx(s);
       Bitboard m       = 0;
       for (unsigned k = 0; k < f; ++k) m |= FileABB << k;
@@ -269,7 +269,7 @@ namespace Bitboards {
 
   constexpr std::array<Bitboard, SQ_LENGTH> makeFilesEastMask() {
     std::array<Bitboard, SQ_LENGTH> a{};
-    for (unsigned s = 0; s < SQ_LENGTH; ++s) {
+    for (Square s : Square::all()) {
       const unsigned f = fileIdx(s);
       Bitboard m       = 0;
       for (unsigned k = f + 1; k < 8; ++k) m |= FileABB << k;
@@ -282,7 +282,7 @@ namespace Bitboards {
 
   constexpr std::array<Bitboard, SQ_LENGTH> makeRanksNorthMask() {
     std::array<Bitboard, SQ_LENGTH> a{};
-    for (unsigned s = 0; s < SQ_LENGTH; ++s) {
+    for (Square s : Square::all()) {
       const unsigned r = rankIdx(s);
       Bitboard m       = 0;
       for (unsigned k = r + 1; k < 8; ++k) m |= Rank1BB << (8 * k);
@@ -295,7 +295,7 @@ namespace Bitboards {
 
   constexpr std::array<Bitboard, SQ_LENGTH> makeRanksSouthMask() {
     std::array<Bitboard, SQ_LENGTH> a{};
-    for (unsigned s = 0; s < SQ_LENGTH; ++s) {
+    for (Square s : Square::all()) {
       const unsigned r = rankIdx(s);
       Bitboard m       = 0;
       for (unsigned k = 0; k < r; ++k) m |= Rank1BB << (8 * k);
@@ -308,7 +308,7 @@ namespace Bitboards {
 
   constexpr std::array<Bitboard, SQ_LENGTH> makeFileWestMask() {
     std::array<Bitboard, SQ_LENGTH> a{};
-    for (unsigned s = 0; s < SQ_LENGTH; ++s) {
+    for (Square s : Square::all()) {
       const unsigned f = fileIdx(s);
       a[s]             = f > 0 ? FileABB << (f - 1) : BbZero;
     }
@@ -319,7 +319,7 @@ namespace Bitboards {
 
   constexpr std::array<Bitboard, SQ_LENGTH> makeFileEastMask() {
     std::array<Bitboard, SQ_LENGTH> a{};
-    for (unsigned s = 0; s < SQ_LENGTH; ++s) {
+    for (Square s : Square::all()) {
       const unsigned f = fileIdx(s);
       a[s]             = f < 7 ? FileABB << (f + 1) : BbZero;
     }
@@ -330,7 +330,7 @@ namespace Bitboards {
 
   constexpr std::array<Bitboard, SQ_LENGTH> makeNeighbourFilesMask() {
     std::array<Bitboard, SQ_LENGTH> a{};
-    for (unsigned s = 0; s < SQ_LENGTH; ++s) {
+    for (Square s : Square::all()) {
       const unsigned f = fileIdx(s);
       Bitboard m       = 0;
       if (f > 0) m |= FileABB << (f - 1);
@@ -344,7 +344,7 @@ namespace Bitboards {
 
   constexpr std::array<Bitboard, COLOR_LENGTH> makeColorBb() {
     std::array<Bitboard, COLOR_LENGTH> a{};
-    for (unsigned s = 0; s < SQ_LENGTH; ++s) {
+    for (Square s : Square::all()) {
       const unsigned f   = fileIdx(s);
       const unsigned r   = rankIdx(s);
       const Bitboard bit = sqBb[s];
@@ -370,7 +370,7 @@ namespace Bitboards {
   constexpr std::array<std::array<Bitboard, SQ_LENGTH>, OR_LENGTH> makeRays() {
     std::array<std::array<Bitboard, SQ_LENGTH>, OR_LENGTH> a{};
 
-    for (unsigned s = 0; s < SQ_LENGTH; ++s) {
+    for (Square s : Square::all()) {
       const Bitboard file     = sqToFileBb[s];
       const Bitboard rank     = sqToRankBb[s];
       const Bitboard diagUp   = squareDiagUpBb[s];  // NE-SW diagonal
@@ -756,7 +756,7 @@ namespace Bitboards {
   // Fill a table using precomputed masks+offsets; enumerate all subsets via carry-rippler
   inline void init_one(Bitboard table[], const std::array<Magic, SQ_LENGTH>& magics,
                        const Direction dirs[4]) {
-    for (Square s = SQ_A1; s <= SQ_H8; ++s) {
+    for (Square s : Square::all()) {
       const auto& m    = magics[s];
       const Bitboard M = m.mask;
 
