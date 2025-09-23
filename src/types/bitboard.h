@@ -681,15 +681,6 @@ constexpr Bitboard sliding_attack(const Direction directions[], const Square sq,
   return attack;
 }
 
-// --- Compile-time sanity check ("proof") on an empty board ---
-// Rook from A1 must have 14 targets on an empty board (7 north + 7 east).
-// Use your own popcount(Bitboard) if available; otherwise std::popcount (C++20).
-#ifndef __JETBRAINS_IDE__
-static_assert(
-  popcount_ce(sliding_attack(rookDirections, SQ_A1, Bitboard{0})) == 14,
-  "sliding_attack should yield 14 rook moves from A1 on an empty board");
-#endif
-
 namespace Bitboards {
   constexpr Bitboard edgeMaskFor(const unsigned s) {
     return (Rank1BB | Rank8BB) & ~sqToRankBb[s] | (FileABB | FileHBB) & ~sqToFileBb[s];

@@ -33,7 +33,7 @@
 #include <string_view>
 
 // Square represents exactly one square on a chess board backed by an unsigned value.
-//  A1 = 0 .. H8 = 63, NONE = 64
+//  A1 = 0 ... H8 = 63, NONE = 64
 class Square {
   std::uint8_t v_{};// 0..63 valid squares, 64 = NONE (fits in one byte)
 
@@ -43,6 +43,9 @@ public:
   constexpr explicit Square(const unsigned v) : v_(static_cast<std::uint8_t>(v)) {}
   constexpr explicit Square(const int v) : v_(static_cast<std::uint8_t>(v)) {}
 
+  // factory
+  static constexpr Square of(const File f, const Rank r) { return Square{(static_cast<int>(r) << 3) + static_cast<int>(f)}; }
+
   // underlying value access
   constexpr auto value() const { return v_; }
 
@@ -50,16 +53,17 @@ public:
   // ReSharper disable once CppNonExplicitConversionOperator
   constexpr operator int() const { return v_; }
 
-  // helpers
+  /// Returns true if the square is valid (A1-H8).
   [[nodiscard]] constexpr bool isValid() const {
     const int x = *this;
     return x >= 0 && x < 64;
   }
-  constexpr File file() const { return File{(v_ & 0b00000111u)}; }
-  constexpr Rank rank() const { return Rank{static_cast<unsigned>(v_ >> 3U)}; }
 
-  // factory
-  static constexpr Square of(const File f, const Rank r) { return Square{(static_cast<int>(r) << 3) + static_cast<int>(f)}; }
+  /// Returns the file (column) of the square.
+  constexpr File file() const { return File{(v_ & 0b00000111u)}; }
+
+  /// Returns the rank (row) of the square.
+  constexpr Rank rank() const { return Rank{static_cast<unsigned>(v_ >> 3U)}; }
 
   // parsing from UCI-like string (e.g., "e2")
   static Square fromString(std::string_view s);
@@ -142,9 +146,13 @@ inline constexpr Square SQ_NONE{64};
 inline constexpr unsigned SQ_LENGTH = 64;
 // clang-format on
 
-// Provide ++/-- like before
 ENABLE_INCR_OPERATORS_ON(Square)
+ENABLE_COMPARISON_OPERATORS_ON(Square)
+ENABLE_MIXED_COMPARISONS_ON(Square)
+ENABLE_FORMATTER_AS_STRING_VIEW_ON(Square);
+ENABLE_OSTREAM_OPERATOR_ON(Square);
 
+// Precomputed square distances and names for fast access
 namespace Squares {
   constexpr std::array<std::array<int, SQ_LENGTH>, SQ_LENGTH> squareDistancePreCompute() {
     std::array<std::array<int, SQ_LENGTH>, SQ_LENGTH> dist{};// zero-initialize (diagonal stays 0)
@@ -198,7 +206,8 @@ namespace Squares {
   }();
 }// namespace Squares
 
-// Out-of-class inline definitions depending on Squares and SQ_NONE
+// Out-of-class inline definitions depending on the pre-computations above
+
 inline Square Square::fromString(const std::string_view s) {
   if (s.length() < 2) return SQ_NONE;
   const File f = File::fromChar(s[0]);
@@ -218,45 +227,6 @@ constexpr Square Square::pawnPush(const Color c) const {
 inline std::string Square::str() const {
   return Squares::squareNames[*this].data();
 }
-
-// stream output operator for Square
-inline std::ostream& operator<<(std::ostream& os, const Square sq) {
-  os << sq.str();
-  return os;
-}
-
-// Comparison operators for Square
-constexpr bool operator==(const Square a, const Square b) { return a.value() == b.value(); }
-constexpr bool operator!=(const Square a, const Square b) { return a.value() != b.value(); }
-constexpr bool operator<(const Square a, const Square b) { return a.value() < b.value(); }
-constexpr bool operator<=(const Square a, const Square b) { return a.value() <= b.value(); }
-constexpr bool operator>(const Square a, const Square b) { return a.value() > b.value(); }
-constexpr bool operator>=(const Square a, const Square b) { return a.value() >= b.value(); }
-
-// Mixed comparisons: Square vs int
-constexpr bool operator==(const Square a, const int b) { return static_cast<int>(a.value()) == b; }
-constexpr bool operator!=(const Square a, const int b) { return static_cast<int>(a.value()) != b; }
-constexpr bool operator<(const Square a, const int b) { return static_cast<int>(a.value()) < b; }
-constexpr bool operator<=(const Square a, const int b) { return static_cast<int>(a.value()) <= b; }
-constexpr bool operator>(const Square a, const int b) { return static_cast<int>(a.value()) > b; }
-constexpr bool operator>=(const Square a, const int b) { return static_cast<int>(a.value()) >= b; }
-
-// Mixed comparisons: int vs Square
-constexpr bool operator==(const int a, const Square b) { return a == static_cast<int>(b.value()); }
-constexpr bool operator!=(const int a, const Square b) { return a != static_cast<int>(b.value()); }
-constexpr bool operator<(const int a, const Square b) { return a < static_cast<int>(b.value()); }
-constexpr bool operator<=(const int a, const Square b) { return a <= static_cast<int>(b.value()); }
-constexpr bool operator>(const int a, const Square b) { return a > static_cast<int>(b.value()); }
-constexpr bool operator>=(const int a, const Square b) { return a >= static_cast<int>(b.value()); }
-
-// Make Square usable with std::format
-template<>
-struct std::formatter<Square> : formatter<string_view> {
-  template<typename FormatContext>
-  auto format(const Square sq, FormatContext& ctx) const {
-    return formatter<string_view>::format(sq.str(), ctx);
-  }
-};
 
 // Compile-time sanity checks to lock in representation guarantees
 static_assert(sizeof(Square) == 1, "Square should be 1 byte");

@@ -61,5 +61,68 @@
   constexpr T& operator*=(T& d, int i) { return d = static_cast<T>(static_cast<int>(d) * i); } \
   constexpr T& operator/=(T& d, int i) { return d = static_cast<T>(static_cast<int>(d) / i); }
 
+// New: enable comparison operators for T vs T using implicit conversion to int
+#define ENABLE_COMPARISON_OPERATORS_ON(T)                               \
+  constexpr bool operator==(T a, T b) { return static_cast<int>(a) == static_cast<int>(b); } \
+  constexpr bool operator!=(T a, T b) { return static_cast<int>(a) != static_cast<int>(b); } \
+  constexpr bool operator<(T a, T b) { return static_cast<int>(a) < static_cast<int>(b); }   \
+  constexpr bool operator<=(T a, T b) { return static_cast<int>(a) <= static_cast<int>(b); } \
+  constexpr bool operator>(T a, T b) { return static_cast<int>(a) > static_cast<int>(b); }   \
+  constexpr bool operator>=(T a, T b) { return static_cast<int>(a) >= static_cast<int>(b); }
+
+// New: enable mixed comparisons between T and int in both directions
+#define ENABLE_MIXED_COMPARISONS_ON(T)                                  \
+  constexpr bool operator==(T a, int b) { return static_cast<int>(a) == b; }                  \
+  constexpr bool operator!=(T a, int b) { return static_cast<int>(a) != b; }                  \
+  constexpr bool operator<(T a, int b) { return static_cast<int>(a) < b; }                    \
+  constexpr bool operator<=(T a, int b) { return static_cast<int>(a) <= b; }                  \
+  constexpr bool operator>(T a, int b) { return static_cast<int>(a) > b; }                    \
+  constexpr bool operator>=(T a, int b) { return static_cast<int>(a) >= b; }                  \
+  constexpr bool operator==(int a, T b) { return a == static_cast<int>(b); }                  \
+  constexpr bool operator!=(int a, T b) { return a != static_cast<int>(b); }                  \
+  constexpr bool operator<(int a, T b) { return a < static_cast<int>(b); }                    \
+  constexpr bool operator<=(int a, T b) { return a <= static_cast<int>(b); }                  \
+  constexpr bool operator>(int a, T b) { return a > static_cast<int>(b); }                    \
+  constexpr bool operator>=(int a, T b) { return a >= static_cast<int>(b); }
+
+// New: enable compound assignment with int (+= and -=)
+#define ENABLE_INT_COMPOUND_ADDSUB_ON(T)                                                      \
+  constexpr T& operator+=(T& d, int i) { return d = static_cast<T>(static_cast<int>(d) + i); } \
+  constexpr T& operator-=(T& d, int i) { return d = static_cast<T>(static_cast<int>(d) - i); }
+
+// New: std::formatter<T> specializations via macros
+// Use when T has str() returning std::string or std::string_view-compatible value
+#define ENABLE_FORMATTER_AS_STRING_VIEW_ON(T)                                                     \
+  template<>                                                                                      \
+  struct std::formatter<T> : std::formatter<std::string_view> {                                   \
+    template <typename FormatContext>                                                              \
+    auto format(const T v, FormatContext& ctx) const {                                            \
+      return std::formatter<std::string_view>::format(v.str(), ctx);                              \
+    }                                                                                             \
+  }
+
+// Use when T has str() returning a single char
+#define ENABLE_FORMATTER_AS_CHAR_ON(T)                                                             \
+  template<>                                                                                      \
+  struct std::formatter<T> : std::formatter<char> {                                               \
+    template <typename FormatContext>                                                              \
+    auto format(const T v, FormatContext& ctx) const {                                            \
+      return std::formatter<char>::format(v.str(), ctx);                                          \
+    }                                                                                             \
+  }
+
+// Use when T can be formatted as int (via implicit or explicit conversion)
+#define ENABLE_FORMATTER_AS_INT_ON(T)                                                              \
+  template<>                                                                                      \
+  struct std::formatter<T> : std::formatter<int> {                                                \
+    template <typename FormatContext>                                                              \
+    auto format(const T v, FormatContext& ctx) const {                                            \
+      return std::formatter<int>::format(static_cast<int>(v), ctx);                               \
+    }                                                                                             \
+  }
+
+// New: ostream operator<< via macro using str()
+#define ENABLE_OSTREAM_OPERATOR_ON(T)                                                      \
+  inline std::ostream& operator<<(std::ostream& os, const T v) { os << v.str(); return os; }
 
 #endif//FRANKYCPP_MACROS_H

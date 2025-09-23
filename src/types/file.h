@@ -20,8 +20,10 @@
 #define FRANKYCPP_FILE_H
 
 #include "macros.h"
+#include <format>
 
-// File represents a chess board file a-h as a small class with an unsigned underlying value [0..8]
+// File represents a chess board file a-h as a small class with an unsigned
+// underlying value [0..8]
 class File {
   std::uint8_t v_{};// 0..7 = A..H, 8 = NONE
 
@@ -34,20 +36,26 @@ public:
   // underlying value access
   constexpr auto value() const { return v_; }
 
-  // implicit conversion for arithmetic/comparisons/array indexing
+  /// implicit conversion for arithmetic/comparisons/array indexing
   // ReSharper disable once CppNonExplicitConversionOperator
   constexpr operator int() const { return v_; }
 
-  // member helpers
+  /// Returns true if the file is valid (A-H).
   [[nodiscard]] constexpr bool isValid() const { return static_cast<int>(*this) < 8; }
+
+  /// Returns the file as a character ('a'-'h'), or '-' if invalid.
   constexpr char toChar() const { return isValid() ? static_cast<char>('a' + static_cast<char>(static_cast<int>(*this))) : '-'; }
+
+  /// Returns the file as a character string.
   constexpr char str() const { return toChar(); }
+
+  /// Returns the distance between this file and another.
   constexpr int distance(const File other) const {
     const int d = static_cast<int>(other) - static_cast<int>(*this);
     return d < 0 ? -d : d;
   }
 
-  // static helpers
+  /// Converts a file label ('a'-'h') to a File object, returns File{8} if invalid.
   static constexpr File fromChar(const char fileLabel) {
     const int idx = fileLabel - 'a';
     return 0 <= idx && idx < 8 ? File{idx} : File{8};
@@ -66,35 +74,10 @@ inline constexpr File FILE_H{7};
 inline constexpr File FILE_NONE{8};
 inline constexpr unsigned FILE_LENGTH = 9;
 
-inline std::ostream& operator<<(std::ostream& os, const File f) {
-  os << f.str();
-  return os;
-}
-
 ENABLE_INCR_OPERATORS_ON(File)
-
-// Comparison operators for File
-constexpr bool operator==(const File a, const File b) { return a.value() == b.value(); }
-constexpr bool operator!=(const File a, const File b) { return a.value() != b.value(); }
-constexpr bool operator<(const File a, const File b) { return a.value() < b.value(); }
-constexpr bool operator<=(const File a, const File b) { return a.value() <= b.value(); }
-constexpr bool operator>(const File a, const File b) { return a.value() > b.value(); }
-constexpr bool operator>=(const File a, const File b) { return a.value() >= b.value(); }
-
-// Mixed comparisons: File vs int
-constexpr bool operator==(const File a, const int b) { return static_cast<int>(a.value()) == b; }
-constexpr bool operator!=(const File a, const int b) { return static_cast<int>(a.value()) != b; }
-constexpr bool operator<(const File a, const int b) { return static_cast<int>(a.value()) < b; }
-constexpr bool operator<=(const File a, const int b) { return static_cast<int>(a.value()) <= b; }
-constexpr bool operator>(const File a, const int b) { return static_cast<int>(a.value()) > b; }
-constexpr bool operator>=(const File a, const int b) { return static_cast<int>(a.value()) >= b; }
-
-// Mixed comparisons: int vs File
-constexpr bool operator==(const int a, const File b) { return a == static_cast<int>(b.value()); }
-constexpr bool operator!=(const int a, const File b) { return a != static_cast<int>(b.value()); }
-constexpr bool operator<(const int a, const File b) { return a < static_cast<int>(b.value()); }
-constexpr bool operator<=(const int a, const File b) { return a <= static_cast<int>(b.value()); }
-constexpr bool operator>(const int a, const File b) { return a > static_cast<int>(b.value()); }
-constexpr bool operator>=(const int a, const File b) { return a >= static_cast<int>(b.value()); }
+ENABLE_COMPARISON_OPERATORS_ON(File)
+ENABLE_MIXED_COMPARISONS_ON(File)
+ENABLE_FORMATTER_AS_CHAR_ON(File);
+ENABLE_OSTREAM_OPERATOR_ON(File);
 
 #endif// FRANKYCPP_FILE_H

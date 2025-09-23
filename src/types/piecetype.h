@@ -36,20 +36,13 @@
 //  Queen    = 0b0110 // sliding
 //  PtLength = 0b0111
 enum PieceType : uint_fast8_t {
-  PT_NONE,
-  // 0
-  KING,
-  // 1 non sliding
-  PAWN,
-  // 2 non sliding
-  KNIGHT,
-  // 3 non sliding
-  BISHOP,
-  // 4 sliding
-  ROOK,
-  // 5 sliding
-  QUEEN,
-  // 6 sliding
+  PT_NONE, // 0
+  KING,    // 1 non sliding
+  PAWN,    // 2 non sliding
+  KNIGHT,  // 3 non sliding
+  BISHOP,  // 4 sliding
+  ROOK,    // 5 sliding
+  QUEEN,   // 6 sliding
   PT_LENGTH// 7
 };
 
@@ -87,4 +80,4 @@ inline std::ostream& operator<<(std::ostream& os, const PieceType pt) {
 
 ENABLE_INCR_OPERATORS_ON(PieceType)
 
-#endif//FRANKYCPP_PIECETYPE_H
+#endif// FRANKYCPP_PIECETYPE_H
