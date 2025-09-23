@@ -22,65 +22,10 @@
 
 #include "piecetype.h"
 #include "value.h"
+#include "movetype.h"
 
 #include <cassert>
 #include <string>
-
-namespace MoveShifts {
-  constexpr unsigned int FROM_SHIFT      = 6u;
-  constexpr unsigned int PROM_TYPE_SHIFT = 12u;
-  constexpr unsigned int MOVE_TYPE_SHIFT = 14u;
-  constexpr unsigned int VALUE_SHIFT     = 16u;
-
-  constexpr unsigned int SQUARE_MASK    = 0b111111u;
-  constexpr unsigned int TO_MASK        = SQUARE_MASK;
-  constexpr unsigned int FROM_MASK      = SQUARE_MASK << FROM_SHIFT;
-  constexpr unsigned int PROM_TYPE_MASK = 0b11u << PROM_TYPE_SHIFT;
-  constexpr unsigned int MOVE_TYPE_MASK = 0b11u << MOVE_TYPE_SHIFT;
-
-  constexpr unsigned int MOVE_MASK  = 0xFFFFu;               // first 16-bit
-  constexpr unsigned int VALUE_MASK = 0xFFFFu << VALUE_SHIFT;// second 16-bit
-}// namespace MoveShifts
-
-// //////////////////////////////////
-// MoveType
-// //////////////////////////////////
-
-// MoveType is used for the different move types we use to encode moves.
-//  Normal
-//  Promotion
-//  EnPassant
-//  Castling
-// Enum values are already shifted to their place in a move to save
-// the time to shift them when creating a move or reading the type.
-enum MoveType : unsigned int {
-  NORMAL    = 0 << MoveShifts::MOVE_TYPE_SHIFT,
-  PROMOTION = 1 << MoveShifts::MOVE_TYPE_SHIFT,
-  ENPASSANT = 2 << MoveShifts::MOVE_TYPE_SHIFT,
-  CASTLING  = 3 << MoveShifts::MOVE_TYPE_SHIFT
-};
-
-// checks if move type is a value of 0 - 3
-constexpr bool validMoveType(const MoveType mt) {
-  return mt <= CASTLING;
-}
-
-inline auto moveTypeLabel = std::string("npec");
-
-// single char label for the piece type (one of " npec")
-constexpr char str(const MoveType mt) {
-  if (!validMoveType(mt)) return '-';
-  return moveTypeLabel[mt];
-}
-
-inline std::ostream& operator<<(std::ostream& os, const MoveType mt) {
-  os << str(mt);
-  return os;
-}
-
-// //////////////////////////////////
-// Move
-// //////////////////////////////////
 
 // Move is a 32bit unsigned int type for encoding chess moves as a primitive data type
 // 16 bits for move encoding - 16 bits for sort value
