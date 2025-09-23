@@ -47,9 +47,9 @@ TEST_F(TypesTest, colors) {
 TEST_F(TypesTest, labels) {
   // all squares and label of squares
   std::string actual;
-  for (int i = 0; i < SQ_NONE; ++i) {
-    ASSERT_TRUE(validSquare(static_cast<Square>(i)));
-    actual += str(static_cast<Square>(i));
+  for (Square s = SQ_A1; s <= SQ_H8; ++s) {
+    ASSERT_TRUE(s.isValid());
+    actual += s.str();
   }
   const std::string expected = "a1b1c1d1e1f1g1h1a2b2c2d2e2f2g2h2a3b3c3d3e3f3g3h3a4b4c4"
                                "d4e4f4g4h4a5b5c5d5e5f5g5h5a6b6c6d6e6f6g6h6a7b7c7d7e7f7"
@@ -59,14 +59,14 @@ TEST_F(TypesTest, labels) {
 
 TEST_F(TypesTest, filesAndRanks) {
   // all squares and label of squares
-  for (int i = 0; i < SQ_NONE; ++i) {
-    EXPECT_EQ(static_cast<Square>(i), squareOf(fileOf(static_cast<Square>(i)), rankOf(static_cast<Square>(i))));
+  for (Square s = SQ_A1; s <= SQ_H8; ++s) {
+    EXPECT_EQ(s, Square::of(s.file(), s.rank()));
   }
 }
 
 TEST_F(TypesTest, makeSquare) {
-  EXPECT_EQ(SQ_A1, makeSquare(std::string{"a1"}));
-  EXPECT_EQ(SQ_H8, makeSquare(std::string{"h8"}));
+  EXPECT_EQ(SQ_A1, Square::fromString(std::string{"a1"}));
+  EXPECT_EQ(SQ_H8, Square::fromString(std::string{"h8"}));
 }
 
 TEST_F(TypesTest, ColorLabel) {
@@ -192,7 +192,7 @@ TEST_F(TypesTest, pieces) {
 TEST_F(TypesTest, directionOperators) {
   EXPECT_EQ(SQ_A2, SQ_A1 + NORTH);
   ASSERT_TRUE(SQ_H8 + NORTH > 63);
-  ASSERT_FALSE(validSquare(SQ_H1 + SOUTH));
+  ASSERT_FALSE((SQ_H1 + SOUTH).isValid());
   EXPECT_EQ(SQ_H8, SQ_A1 + (7 * NORTH_EAST));
   EXPECT_EQ(SQ_A8, SQ_H1 + (7 * NORTH_WEST));
 }
@@ -321,13 +321,13 @@ TEST_F(TypesTest, ltgt) {
 }
 
 TEST_F(TypesTest, CenterDistance) {
-  ASSERT_EQ(Squares::centerDistance[Square::SQ_D4], 0);
-  ASSERT_EQ(Squares::centerDistance[Square::SQ_A1], 3);
-  ASSERT_EQ(Squares::centerDistance[Square::SQ_H8], 3);
+  ASSERT_EQ(Squares::centerDistance[SQ_D4], 0);
+  ASSERT_EQ(Squares::centerDistance[SQ_A1], 3);
+  ASSERT_EQ(Squares::centerDistance[SQ_H8], 3);
 }
 
 TEST_F(TypesTest, SquareDistance) {
-  ASSERT_EQ(Squares::squareDistance[Square::SQ_A1][Square::SQ_A1], 0);
-  ASSERT_EQ(Squares::squareDistance[Square::SQ_A1][Square::SQ_H8], 7);
-  ASSERT_EQ(Squares::squareDistance[Square::SQ_D4][Square::SQ_E5], 1);
+  ASSERT_EQ(SQ_A1.distanceTo(SQ_A1), 0);
+  ASSERT_EQ(SQ_A1.distanceTo(SQ_H8), 7);
+  ASSERT_EQ(SQ_D4.distanceTo(SQ_E5), 1);
 }

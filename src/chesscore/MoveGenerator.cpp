@@ -419,7 +419,7 @@ Move MoveGenerator::getMoveFromSan(const Position& position, const std::string& 
     }
 
     // normal move
-    const std::string& moveTarget = ::str(toSquare(m));
+    const std::string& moveTarget = toSquare(m).str();
     if (moveTarget == toSq) {
       // Find out piece
       PieceType movePieceType = typeOf(position.getPiece(fromSquare(m)));
@@ -429,11 +429,11 @@ Move MoveGenerator::getMoveFromSan(const Position& position, const std::string& 
         continue;
       }
       // Disambiguation File
-      if (!disambFile.empty() && std::string(1, fileOf(fromSquare(m)).str()) != disambFile) {
+      if (!disambFile.empty() && std::string(1, fromSquare(m).file().str()) != disambFile) {
         continue;
       }
       // Disambiguation Rank
-      if (!disambRank.empty() && std::string(1, rankOf(fromSquare(m)).str()) != disambRank) {
+      if (!disambRank.empty() && std::string(1, fromSquare(m).rank().str()) != disambRank) {
         continue;
       }
       // promotion
@@ -455,7 +455,7 @@ Move MoveGenerator::getMoveFromSan(const Position& position, const std::string& 
 }
 
 std::string MoveGenerator::str() {
-  return std::string("To be implemented");
+  return {"To be implemented"};
 }
 
 void MoveGenerator::fillOnDemandMoveList(const Position& position, const GenMode genMode, const bool evasion) {

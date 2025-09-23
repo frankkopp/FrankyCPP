@@ -31,6 +31,15 @@
 
 using namespace std::chrono;
 
+inline bool isBulkRun() {
+  const auto* ut  = testing::UnitTest::GetInstance();
+  const bool cond = ut && ut->test_to_run_count() > 1;
+  if (cond) {
+    std::cout << "Bulk run detected - limiting depth to shorten test time" << std::endl;
+  }
+  return cond;
+}
+
 class TimingTests : public testing::Test {
 public:
   static void SetUpTestSuite() {
@@ -68,11 +77,11 @@ TEST_F(TimingTests, distancevsdiff) {
   volatile bool t = false;
 
   const std::function f1 = [&] {
-    t = distance(SQ_E2, SQ_E4) == 2;
+    t = SQ_E2.distanceTo(SQ_E4) == 2;
   };
   const std::function f2 = [&] {
     t = std::abs(static_cast<int>(SQ_E2) - static_cast<int>(SQ_E4)) == 16;
-    (void)t;
+    (void) t;
   };
   std::vector<std::function<void()>> tests;
   tests.push_back(f1);
@@ -269,7 +278,7 @@ TEST_F(TimingTests, split) {
                            "Bb7 9. c3 h5 10. Qe2 Nf8 11. b4 a5 12. b5 Na7 13. a4 c6 14. Ba3 cxb5 15. Bxe7 "
                            "Qxe7 16. axb5 g5 17. Bg2 Ng6 18. Rab1 h4 19. Qe3 g4 20. Ne1 Rc8 21. c4 Qf8 22. "
                            "Nd3 Rc7 23. c5 Nc8 24. c6 Ba8 25. f3 hxg3 26. hxg3 gxf3 27. Rxf3 Nce7 28. Rbf1 "
-                           "Rh7 29. Rf6 Qh8 30. Qg5 Bxc6 31. bxc6 Rxc6 32. Nf4 Nxf4 33. Qxf4 Ng6 34. Qg4 "
+                           "Rh7 29. Rf6 Qh8 30. Qg5 Bxc6 31. bxc6 Nxc6 32. Nf4 Nxf4 33. Qxf4 Ng6 34. Qg4 "
                            "Ne7 35. Qe2 Qg8 36. Qd3 Rg7 37. R1f3 Qh8 38. Qf1 Qg8 39. Qd3 Qh8 40. Qf1 Qg8 "
                            "41. Qf2 Ng6 42. Nf1 Ke7 43. Qd2 Nf8 44. Rc3 Rxc3 45. Qxc3 Nd7 46. Qa3+ Kd8 47. "
                            "Rf3 Qf8 48. Qa4 Qb4 49. Qxb4 axb4 50. Bh3 Nb8 51. Nd2 Nc6 52. Nb3 Ke7 53. Kf2 "
@@ -277,9 +286,9 @@ TEST_F(TimingTests, split) {
                            "60. Bb5 Rh2 61. Be2 Rh1+ 63. Bf1 Rh2 64. Nb3 Rc8 65. Be2 Nc4 66. Nd2 Na5 67. Kd1 "
                            "Rh2 68. Rf3 Rh1+ 73. Nf1 Rh8 74. Ke1 Rc8 75. Nd2 Rh8 76. Bf3 Rh2 77. Kf1 Rh8 "
                            "78. Kg1 Rc8 79. Bh5 Rc2 80. Kf1 Nc4 81. Nb3 Rb2 82. Kg1 Na5 83. Bd1 Rb1 84. Nxa5 "
-                           "Kf7 86. Ke2 a4 87. Kd2 b3 88. Kc3 Rc4 89. Kb2 Rc4 90. Rd2 Rc8 91. Be2 Rh8 "
+                           "Kf7 86. Ke2 a4 87. Kd2 b3 88. Kc3 Rc4 89. Kb2 Rc4 90. Rd2 Rc4 91. Be2 Rh8 "
                            "92. Bb5 Rg8 93. Rd3 Ra8 94. Rd2 Rg8 95. Bxa4 Rxg3 96. Bxb3 f6 97. exf6+ Kxf6 "
-                           "98. Rf2+ Ke7 99. Kc2 Re3 100. Rh2 e5 101. dxe5 Rxe5 102. Kd3 Kd6 103. Bc2 Rg5 "
+                           "98. Rf2+ Ke7 99. Kc2 Re3 100. Rh2 e5 101. d5 Rxe5 102. Kd3 Kd6 103. Bc2 Rg5 "
                            "104. Rh8 Rg3+ 105. Kd4 Rg4+ 106. Kc3 Rc4+ 107. Kb3 Rg4 108. Rd8+ Kc5 109. Rc8+ "
                            "Kd6 110. Bh7 Rc4 111. Rd8+ Kc5 112. Bg8 Rb4+ 113. Ka3 Rd4 114. Kb3 Rb4+ 115. "
                            "Kc3 Rc4+ 116. Kd3 Rd4+ 117. Ke3 Re4+ 118. Kf3 Re5 119. Kf4 Rh5 120. Bf7 Rh4+ "
@@ -365,9 +374,9 @@ void TimingTests::testTiming(std::ostringstream& os, const int rounds, const int
         accDuration += duration_cast<nanoseconds>(currentTime() - startTime);
       }
 
-      const nanoseconds cpuTime = accDuration;
-      const nanoseconds avgCpu  = cpuTime / iterations;
-      const uint64_t percentFromLast  = lastRound.count() ? (avgCpu * 10'000) / lastRound : 10'000;
+      const nanoseconds cpuTime      = accDuration;
+      const nanoseconds avgCpu       = cpuTime / iterations;
+      const uint64_t percentFromLast = lastRound.count() ? (avgCpu * 10'000) / lastRound : 10'000;
 
       os << "Round " << std::setfill(' ') << std::setw(2) << round << " Test "
          << std::setw(2) << testNr++ << ": " << std::setfill(' ') << std::setw(12)
@@ -389,12 +398,16 @@ void TimingTests::testTiming(std::ostringstream& os, const int rounds, const int
 }
 
 TEST_F(TimingTests, ColorIteration) {
+  if (isBulkRun()) {
+    GTEST_SKIP();
+  }
+
   std::ostringstream os;
 
   // Compare three variants of iterating over colors
-  int sinkRange = 0;
+  int sinkRange   = 0;
   int sinkClassic = 0;
-  int sinkInt = 0;
+  int sinkInt     = 0;
 
   // range-based for loop
   const std::function fRange = [&] {
@@ -730,7 +743,7 @@ TEST_F(TimingTests, ColorIteration) {
 //  //// TESTS END
 //
 //  testTiming(os, 5, 100, 10'000, tests);
-//
+////
 ////  Move tmp = movesArray[0];
 ////  for (int i = 0; i < items; ++i) {
 //////    fprintln("{}", movesArray[i]);
@@ -784,7 +797,7 @@ TEST_F(TimingTests, ColorIteration) {
 //  //// TESTS END
 //
 //  testTiming(os, 5, 100, 10'000, tests);
-//
+////
 ////  Move tmp = movesArray[0];
 ////  for (int i = 0; i < items; ++i) {
 //////    fprintln("{}", movesArray[i]);

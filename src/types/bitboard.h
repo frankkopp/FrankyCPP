@@ -127,7 +127,7 @@ namespace Bitboards {
   constexpr unsigned fileIdx(const unsigned s) { return s & 7U; }
   constexpr std::array<Bitboard, SQ_LENGTH> makeSqToFileBb() {
     std::array<Bitboard, SQ_LENGTH> a{};
-    for (Square s = SQ_A1; s < SQ_LENGTH; ++s) a[s] = fileBb[fileIdx(s)];
+    for (Square s = SQ_A1; s <= SQ_H8; ++s) a[s] = fileBb[fileIdx(s)];
     return a;
   }
   // holds bitboards for each square's file
@@ -137,7 +137,7 @@ namespace Bitboards {
   constexpr unsigned rankIdx(const unsigned s) { return s >> 3U; }
   constexpr std::array<Bitboard, SQ_LENGTH> makeSqToRankBb() {
     std::array<Bitboard, SQ_LENGTH> a{};
-    for (Square s = SQ_A1; s < SQ_LENGTH; ++s) a[s] = rankBb[rankIdx(s)];
+    for (Square s = SQ_A1; s <= SQ_H8; ++s) a[s] = rankBb[rankIdx(s)];
     return a;
   }
   // holds bitboards for each square's rank
@@ -164,7 +164,7 @@ namespace Bitboards {
   }
   constexpr std::array<Bitboard, SQ_LENGTH> makeSquareDiagUpBb() {
     std::array<Bitboard, SQ_LENGTH> a{};
-    for (Square s = SQ_A1; s < SQ_LENGTH; ++s) a[s] = diagUpForIdx(s);
+    for (Square s = SQ_A1; s <= SQ_H8; ++s) a[s] = diagUpForIdx(s);
     return a;
   }
   // holds precomputed bitboards for each square's diagonal (A1-H8)
@@ -191,7 +191,7 @@ namespace Bitboards {
   }
   constexpr std::array<Bitboard, SQ_LENGTH> makeSquareDiagDownBb() {
     std::array<Bitboard, SQ_LENGTH> a{};
-    for (Square s = SQ_A1; s < SQ_LENGTH; ++s) a[s] = diagDownForIdx(s);
+    for (Square s = SQ_A1; s <= SQ_H8; ++s) a[s] = diagDownForIdx(s);
     return a;
   }
   // holds precomputed bitboards for each square's anti-diagonal (H1-A8)
@@ -596,7 +596,7 @@ inline std::string strBoard(const Bitboard b) {
   os << "+---+---+---+---+---+---+---+---+\n";
   for (Rank r = RANK_8;; --r) {
     for (File f = FILE_A; f <= FILE_H; ++f) {
-      os << (b & squareOf(f, r) ? "| X " : "|   ");
+      os << (b & Square::of(f, r) ? "| X " : "|   ");
     }
     os << "|\n+---+---+---+---+---+---+---+---+\n";
     if (r == 0) break;
@@ -669,9 +669,10 @@ constexpr Direction bishopDirections[4] = {NORTH_EAST, SOUTH_EAST, SOUTH_WEST, N
 constexpr Bitboard sliding_attack(const Direction directions[], const Square sq, const Bitboard occupied) {
   Bitboard attack = 0;
   for (int i = 0; i < 4; ++i) {
-    for (Square s = sq + directions[i];
-         validSquare(s) && distance(s, s - directions[i]) == 1;
-         s += directions[i]) {
+    for (Square s = sq + directions[i];; s += directions[i]) {
+      if (!s.isValid()) break;
+      // ensure we don't wrap around across files/ranks; guard before distance()
+      if (s.distanceTo(s - directions[i]) != 1) break;
       attack |= s;
       if (occupied & s)
         break;
@@ -683,10 +684,11 @@ constexpr Bitboard sliding_attack(const Direction directions[], const Square sq,
 // --- Compile-time sanity check ("proof") on an empty board ---
 // Rook from A1 must have 14 targets on an empty board (7 north + 7 east).
 // Use your own popcount(Bitboard) if available; otherwise std::popcount (C++20).
+#ifndef __JETBRAINS_IDE__
 static_assert(
   popcount_ce(sliding_attack(rookDirections, SQ_A1, Bitboard{0})) == 14,
   "sliding_attack should yield 14 rook moves from A1 on an empty board");
-
+#endif
 
 namespace Bitboards {
   constexpr Bitboard edgeMaskFor(const unsigned s) {
@@ -754,7 +756,7 @@ namespace Bitboards {
   // Fill a table using precomputed masks+offsets; enumerate all subsets via carry-rippler
   inline void init_one(Bitboard table[], const std::array<Magic, SQ_LENGTH>& magics,
                        const Direction dirs[4]) {
-    for (Square s = SQ_A1; s < SQ_LENGTH; ++s) {
+    for (Square s = SQ_A1; s <= SQ_H8; ++s) {
       const auto& m    = magics[s];
       const Bitboard M = m.mask;
 

@@ -109,7 +109,7 @@ Bitboard See::attacksTo(Position& p, Square square, Color color) {
   Bitboard epAttacks     = BbZero;
   Square enPassantSquare = p.getEnPassantSquare();
   if (enPassantSquare != SQ_NONE && enPassantSquare == square) {
-    const Square pawnSquare   = pawnPush(enPassantSquare, ~color);
+    const Square pawnSquare   = enPassantSquare.pawnPush(~color);
     if (Bitboards::neighbourFilesMask[pawnSquare] &
         Bitboards::sqToRankBb[pawnSquare] &
         p.getPieceBb(color, PAWN)) {

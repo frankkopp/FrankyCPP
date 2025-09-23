@@ -104,10 +104,10 @@ TEST_F(PositionTest, ZobristTest) {
   // cout << "Zobrist= " << z << std::endl;
   EXPECT_EQ(expected, z);
 
-  z ^= Zobrist::enPassantFile[fileOf(SQ_D3)];
+  z ^= Zobrist::enPassantFile[SQ_D3.file()];
   // cout << "Zobrist= " << z << std::endl;
 
-  z ^= Zobrist::enPassantFile[fileOf(SQ_D3)];
+  z ^= Zobrist::enPassantFile[SQ_D3.file()];
   // cout << "Zobrist= " << z << std::endl;
   EXPECT_EQ(expected, z);
 

@@ -82,11 +82,11 @@ TEST_F(BitboardsTest, BitboardSquareTest) {
 TEST_F(BitboardsTest, SquareDistanceTest) {
   ASSERT_EQ(6, FILE_A.distance(FILE_G));
   ASSERT_EQ(7, RANK_1.distance(RANK_8));
-  ASSERT_EQ(7, distance(SQ_A1, SQ_H1));
-  ASSERT_EQ(7, distance(SQ_A1, SQ_H8));
-  ASSERT_EQ(2, distance(SQ_A1, SQ_A3));
-  ASSERT_EQ(4, distance(SQ_A1, SQ_E1));
-  ASSERT_EQ(7, distance(SQ_A1, SQ_G8));
+  ASSERT_EQ(7, SQ_A1.distanceTo(SQ_H1));
+  ASSERT_EQ(7, SQ_A1.distanceTo(SQ_H8));
+  ASSERT_EQ(2, SQ_A1.distanceTo(SQ_A3));
+  ASSERT_EQ(4, SQ_A1.distanceTo(SQ_E1));
+  ASSERT_EQ(7, SQ_A1.distanceTo(SQ_G8));
 }
 
 TEST_F(BitboardsTest, shiftTest) {

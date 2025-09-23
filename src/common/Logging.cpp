@@ -38,26 +38,24 @@ void Logger::init() const {
     if (logLvL == "critical") {
       return spdlog::level::critical;
     }
-    else if (logLvL == "error") {
+    if (logLvL == "error") {
       return spdlog::level::err;
     }
-    else if (logLvL == "warn") {
+    if (logLvL == "warn") {
       return spdlog::level::warn;
     }
-    else if (logLvL == "info") {
+    if (logLvL == "info") {
       return spdlog::level::info;
     }
-    else if (logLvL == "debug") {
+    if (logLvL == "debug") {
       return spdlog::level::debug;
     }
-    else if (logLvL == "trace") {
+    if (logLvL == "trace") {
       return spdlog::level::trace;
     }
-    else {
-      std::cerr << "unknown log level '" << logLvL << "' - using default.\n";
-      logLvL = "warn";
-      return spdlog::level::warn;
-    }
+    std::cerr << "unknown log level '" << logLvL << "' - using default.\n";
+    logLvL = "warn";
+    return spdlog::level::warn;
   }();
 
   // default log level
@@ -65,26 +63,24 @@ void Logger::init() const {
     if (searchLogLvL == "critical") {
       return spdlog::level::critical;
     }
-    else if (searchLogLvL == "error") {
+    if (searchLogLvL == "error") {
       return spdlog::level::err;
     }
-    else if (searchLogLvL == "warn") {
+    if (searchLogLvL == "warn") {
       return spdlog::level::warn;
     }
-    else if (searchLogLvL == "info") {
+    if (searchLogLvL == "info") {
       return spdlog::level::info;
     }
-    else if (searchLogLvL == "debug") {
+    if (searchLogLvL == "debug") {
       return spdlog::level::debug;
     }
-    else if (searchLogLvL == "trace") {
+    if (searchLogLvL == "trace") {
       return spdlog::level::trace;
     }
-    else {
-      std::cerr << "unknown search log level '" << searchLogLvL << "' - using default.\n";
-      searchLogLvL = "warn";
-      return spdlog::level::warn;
-    }
+    std::cerr << "unknown search log level '" << searchLogLvL << "' - using default.\n";
+    searchLogLvL = "warn";
+    return spdlog::level::warn;
   }();
 
 

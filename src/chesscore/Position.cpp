@@ -50,8 +50,8 @@ Position::Position(const std::string& fen) {
 
 void Position::doMove(const Move move) {
   assert(validMove(move));
-  assert(validSquare(fromSquare(move)));
-  assert(validSquare(toSquare(move)));
+  assert(fromSquare(move).isValid());
+  assert(toSquare(move).isValid());
   assert(getPiece(fromSquare(move)) != PIECE_NONE);
   assert(colorOf(getPiece(fromSquare(move))) == nextPlayer);
   assert((historyCounter < MAX_MOVES - 1) && "Can't have more move than MAX_MOVES");
@@ -90,10 +90,10 @@ void Position::doMove(const Move move) {
       }
       else if (typeOf(getPiece(fromSq)) == PAWN) {
         halfMoveClock = 0;                // reset half move clock because of pawn move
-        if (distance(fromSq, toSq) == 2) {// pawn double - set en passant
+        if (fromSq.distanceTo(toSq) == 2) {// pawn double - set en passant
           // set new en passant target field - always one "behind" the toSquare
-          enPassantSquare = toSq + pawnPush(~colorOf(getPiece(fromSq)));
-          zobristKey      = zobristKey ^ Zobrist::enPassantFile[fileOf(enPassantSquare)];// in
+          enPassantSquare = toSq.pawnPush(~colorOf(getPiece(fromSq)));
+          zobristKey      = zobristKey ^ Zobrist::enPassantFile[enPassantSquare.file()];// in
         }
       }
       else {
@@ -104,7 +104,7 @@ void Position::doMove(const Move move) {
 
     case PROMOTION: {
       assert(getPiece(fromSquare(move)) == makePiece(colorOf(getPiece(fromSquare(move))), PAWN));
-      assert(rankOf(toSq) == Rank::promotionFor(colorOf(getPiece(fromSquare(move)))));
+      assert(toSq.rank() == Rank::promotionFor(colorOf(getPiece(fromSquare(move)))));
       // capture
       if (getPiece(toSq) != PIECE_NONE) {
         removePiece(toSq);
@@ -128,7 +128,7 @@ void Position::doMove(const Move move) {
     case ENPASSANT: {
       assert(getPiece(fromSquare(move)) == makePiece(colorOf(getPiece(fromSquare(move))), PAWN));
       assert(enPassantSquare != SQ_NONE);
-      const Square capSq = toSq + pawnPush(~colorOf(getPiece(fromSq)));
+      const Square capSq = toSq.pawnPush(~colorOf(getPiece(fromSq)));
       assert(getPiece(capSq) == makePiece(~colorOf(getPiece(fromSquare(move))), PAWN));
       clearEnPassant();
       removePiece(capSq);
@@ -357,12 +357,12 @@ bool Position::isAttacked(const Square sq, const Color by) const {
 }
 
 Bitboard Position::attacksTo(const Square square, const Color color) const {
-  assert(validSquare(square) && "Position::attacksTo needs a valid square");
+  assert(square.isValid() && "Position::attacksTo needs a valid square");
 
   // prepare en passant attacks
   Bitboard epAttacks = BbZero;
   if (enPassantSquare != SQ_NONE) {
-    const Square pawnSquare = enPassantSquare + pawnPush(~color);
+    const Square pawnSquare = enPassantSquare.pawnPush(~color);
     if (pawnSquare == square) {
       epAttacks |= Bitboards::neighbourFilesMask[pawnSquare] & Bitboards::sqToRankBb[pawnSquare] & piecesBb[color][PAWN];
     }
@@ -680,7 +680,7 @@ std::string Position::strBoard() const {
   for (Rank r = RANK_8;; --r) {
     output << (r + 1) << " |";
     for (File f = FILE_A; f <= FILE_H; ++f) {
-      const Piece pc = getPiece(squareOf(f, r));
+      const Piece pc = getPiece(Square::of(f, r));
       if (pc == PIECE_NONE) {
         output << "   |";
       }
@@ -708,7 +708,7 @@ std::string Position::strFen() const {
   for (Rank r = RANK_8;; --r) {
     int emptySquares = 0;
     for (File f = FILE_A; f <= FILE_H; ++f) {
-      const Piece pc = getPiece(squareOf(f, r));
+      const Piece pc = getPiece(Square::of(f, r));
       if (pc == PIECE_NONE) {
         emptySquares++;
       }
@@ -853,7 +853,7 @@ Piece Position::removePiece(const Square square) {
 
 inline void Position::clearEnPassant() {
   if (enPassantSquare != SQ_NONE) {
-    zobristKey      = zobristKey ^ Zobrist::enPassantFile[fileOf(enPassantSquare)];// out
+    zobristKey      = zobristKey ^ Zobrist::enPassantFile[enPassantSquare.file()];// out
     enPassantSquare = SQ_NONE;
   }
 }
@@ -946,9 +946,9 @@ void Position::setupBoard(const std::string& fen) {
       if (file > 7) {
         throw std::invalid_argument(std::format("FEN has too many squares ({}) in rank {}:  {}", file, rank + 1, fenParts[0]));
       }
-      Square currentSquare = squareOf(static_cast<File>(file), static_cast<Rank>(rank));
+      Square currentSquare = Square::of(static_cast<File>(file), static_cast<Rank>(rank));
       if (currentSquare == SQ_NONE) {
-        throw std::invalid_argument(std::format("FEN has invalid square {} ({}): {}", currentSquare, ::str(currentSquare), fenParts[0]));
+        throw std::invalid_argument(std::format("FEN has invalid square {} ({}): {}", currentSquare, currentSquare.str(), fenParts[0]));
       }
       putPiece(piece, currentSquare);
       file++;
@@ -1014,7 +1014,7 @@ void Position::setupBoard(const std::string& fen) {
       throw std::invalid_argument("FEN en passant contains invalid characters: " + fenParts[3]);
     }
     if (fenParts[3] != "-") {
-      enPassantSquare = makeSquare(fenParts[3]);
+      enPassantSquare = Square::fromString(fenParts[3]);
       if (enPassantSquare == SQ_NONE) {
         throw std::invalid_argument("FEN en passant invalid square: " + fenParts[3]);
       }

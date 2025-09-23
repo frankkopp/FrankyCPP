@@ -102,7 +102,7 @@ enum Move : uint_fast32_t {
 
 // creates a move
 constexpr Move createMove(const Square from, const Square to, const MoveType mt = NORMAL, PieceType promType = KNIGHT) {
-  assert(validSquare(from) && validSquare(to));
+  assert(from.isValid() && to.isValid());
   if (promType < KNIGHT) promType = KNIGHT;
   // promType will be reduced to 2 bits (4 values) Knight, Bishop, Rook, Queen
   // therefore we subtract the Knight value from the promType to get
@@ -115,7 +115,7 @@ constexpr Move createMove(const Square from, const Square to, const MoveType mt 
 
 // creates a move
 constexpr Move createMove(const Square from, const Square to, const MoveType mt, const Value value) {
-  assert(validSquare(from) && validSquare(to));
+  assert(from.isValid() && to.isValid());
   return static_cast<Move>(to |
                            from << MoveShifts::FROM_SHIFT |
                            mt |
@@ -124,7 +124,7 @@ constexpr Move createMove(const Square from, const Square to, const MoveType mt,
 
 // creates a move
 constexpr Move createMove(const Square from, const Square to, const MoveType mt, PieceType promType, const Value value) {
-  assert(validSquare(from) && validSquare(to));
+  assert(from.isValid() && to.isValid());
   if (promType < KNIGHT) promType = KNIGHT;
   // promType will be reduced to 2 bits (4 values) Knight, Bishop, Rook, Queen
   // therefore we subtract the Knight value from the promType to get
@@ -192,9 +192,9 @@ constexpr bool validMove(const Move m) {
 inline std::string str(const Move move) {
   if (moveOf(move) == MOVE_NONE) return "no move";
   if ((typeOf(move) == PROMOTION)) {
-    return str(fromSquare(move)) + str(toSquare(move)) + str(promotionTypeOf(move));
+    return fromSquare(move).str() + toSquare(move).str() + str(promotionTypeOf(move));
   }
-  return str(fromSquare(move)) + str(toSquare(move));
+  return fromSquare(move).str() + toSquare(move).str();
 }
 
 // returns a verbose representation of the move as string
@@ -219,7 +219,7 @@ inline std::string strVerbose(const Move move) {
   }
   // return str(fromSquare(move)) + str(toSquare(move)) + promPt + " (" + tp + " " + std::to_string(valueOf(move)) + " " + std::to_string(move) + ")";
   return std::format("Move: {:2}{:2}{:1}  type:{:<1}  prom:{:<1}  value:{:<6}  ({})",
-                     str(fromSquare(move)), str(toSquare(move)), promPt, tp, promPt,
+                     fromSquare(move).str(), toSquare(move).str(), promPt, tp, promPt,
                      std::to_string(valueOf(move)), std::to_string(move));
 }
 

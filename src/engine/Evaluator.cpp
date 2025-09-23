@@ -380,7 +380,7 @@ inline void Evaluator::queenEval(const Position& p, Score& s, const Color us, co
   // Simple tropism towards enemy king (Tier 0/phase-scaled)
   if (EvalConfig::USE_QUEEN_TROPISM) {
     const Square ksq = p.getKingSquare(them);
-    const int dist   = distance(sq, ksq); // 0..7
+    const int dist   = sq.distanceTo(ksq); // 0..7
     const int closeness = 8 - dist;       // 1..8 (or 8 if dist==0)
     mid += closeness * EvalConfig::QUEEN_TROPISM_MID_PER_STEP;
     end += closeness * EvalConfig::QUEEN_TROPISM_END_PER_STEP;
@@ -402,8 +402,8 @@ inline void Evaluator::kingEval(const Position& p, Score& s, const Color us) {
   if (EvalConfig::USE_KING_SAFETY_SHIELD) {
     int shieldCount = 0;
     const int dir   = us.sign();
-    const int kr    = rankOf(ksq);
-    const int kf    = fileOf(ksq);
+    const int kr    = ksq.rank();
+    const int kf    = ksq.file();
 
     for (int df = -1; df <= 1; ++df) {
       const int f = kf + df;
@@ -411,7 +411,7 @@ inline void Evaluator::kingEval(const Position& p, Score& s, const Color us) {
       for (int dr = 1; dr <= 2; ++dr) {
         const int r = kr + dir * dr;
         if (r < RANK_1 || r > RANK_8) continue;
-        const Square sq2 = squareOf(static_cast<File>(f), static_cast<Rank>(r));
+        const Square sq2 = Square::of(static_cast<File>(f), static_cast<Rank>(r));
         if (p.getPiece(sq2) == makePiece(us, PAWN)) {
           ++shieldCount;
         }
