@@ -30,6 +30,7 @@
 #include <format>
 #include <string>
 #include <string_view>
+#include <iterator>
 
 // Square represents exactly one square on a chess board backed by an unsigned value.
 //  A1 = 0 .. H8 = 63, NONE = 64
@@ -70,6 +71,78 @@ public:
 
   // string representation (e.g., "a1")
   std::string str() const;
+
+  // -----------------------------
+  // Zero-overhead iteration support
+  // -----------------------------
+  struct iterator {
+    using value_type = Square;
+    using difference_type = int;
+    using iterator_category = std::random_access_iterator_tag; // simple, contiguous numeric progression
+    using pointer = void;
+    using reference = Square;
+
+    int i{}; // current index (0..64)
+
+    constexpr value_type operator*() const { return Square{i}; }
+    constexpr iterator& operator++() {
+      ++i;
+      return *this;
+    }
+    constexpr iterator operator++(int) {
+      iterator tmp{*this};
+      ++(*this);
+      return tmp;
+    }
+    constexpr iterator& operator--() {
+      --i;
+      return *this;
+    }
+    constexpr iterator operator--(int) {
+      iterator tmp{*this};
+      --(*this);
+      return tmp;
+    }
+    constexpr iterator& operator+=(difference_type n) {
+      i += n;
+      return *this;
+    }
+    constexpr iterator& operator-=(difference_type n) {
+      i -= n;
+      return *this;
+    }
+    friend constexpr iterator operator+(iterator it, difference_type n) { it += n; return it; }
+    friend constexpr iterator operator+(difference_type n, iterator it) { it += n; return it; }
+    friend constexpr iterator operator-(iterator it, difference_type n) { it -= n; return it; }
+    friend constexpr difference_type operator-(iterator a, iterator b) { return a.i - b.i; }
+
+    // equality/ordering comparisons
+    constexpr bool operator==(const iterator& other) const { return i == other.i; }
+    constexpr bool operator!=(const iterator& other) const { return i != other.i; }
+    constexpr bool operator<(const iterator& other) const { return i < other.i; }
+    constexpr bool operator>(const iterator& other) const { return i > other.i; }
+    constexpr bool operator<=(const iterator& other) const { return i <= other.i; }
+    constexpr bool operator>=(const iterator& other) const { return i >= other.i; }
+  };
+
+  struct range {
+    int b{}; // begin (inclusive)
+    int e{}; // end (exclusive)
+    constexpr iterator begin() const { return iterator{b}; }
+    constexpr iterator end() const { return iterator{e}; }
+    [[nodiscard]] constexpr int size() const { return e - b; }
+    [[nodiscard]] constexpr bool empty() const { return e <= b; }
+  };
+
+  // Factory helpers for ranges
+  static constexpr range all() { return range{0, 64}; }
+  static constexpr range valid() { return all(); }
+  static constexpr range between(const Square firstInclusive, const Square lastInclusive) {
+    return range{static_cast<int>(firstInclusive), static_cast<int>(lastInclusive) + 1};
+  }
+  constexpr range to(const Square lastInclusive) const {
+    return range{static_cast<int>(value()), static_cast<int>(lastInclusive) + 1};
+  }
 
 };
 
@@ -202,5 +275,8 @@ static_assert(sizeof(Square) == 1, "Square should be 1 byte");
 static_assert(alignof(Square) == alignof(std::uint8_t), "Square alignment should match uint8_t");
 static_assert(static_cast<int>(SQ_A1) == 0 && static_cast<int>(SQ_H8) == 63, "Square constants must map 0..63");
 static_assert(static_cast<int>(SQ_NONE) == 64, "SQ_NONE must be 64");
+// Iterator/range sanity
+static_assert(std::is_trivially_copyable_v<Square::iterator>, "Iterator should be trivially copyable");
+static_assert(std::is_trivially_copyable_v<Square::range>, "Range should be trivially copyable");
 
 #endif// FRANKYCPP_SQUARE_H

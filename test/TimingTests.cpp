@@ -29,6 +29,18 @@
 #include <random>
 #include <regex>
 
+// Add near the top (after includes), once:
+namespace {
+  // Prevent constant folding in micro-benchmarks while keeping the work identical
+  volatile int g_zero = 0;
+#if defined(_MSC_VER)
+  __declspec(noinline)
+  #else
+  __attribute__((noinline))
+  #endif
+  int opaque(const int x) { return x + g_zero; }
+}
+
 using namespace std::chrono;
 
 inline bool isBulkRun() {
@@ -57,7 +69,67 @@ protected:
                          int repetitions, const std::vector<std::function<void(void)>>& tests);
 };
 
+void TimingTests::testTiming(std::ostringstream& os, const int rounds, const int iterations,
+                             const int repetitions, const std::vector<std::function<void()>>& tests) {
+  std::cout.imbue(deLocale);
+  os.imbue(deLocale);
+  os << std::setprecision(9);
+
+  os << std::endl;
+  os << "Starting timing test: rounds=" << rounds
+     << " iterations=" << iterations << " repetitions=" << repetitions << std::endl;
+  os << "======================================================================"
+     << std::endl;
+
+  nanoseconds lastRound(0);
+
+  // rounds
+  for (int round = 1; round <= rounds; ++round) {
+    std::cout << "Round " << round << " of " << rounds << " timing tests." << std::endl;
+
+    nanoseconds accDuration(0);
+
+    // tests
+    int testNr = 1;
+    for (auto f : tests) {
+      // iterations
+      int i = 0;
+
+      while (i++ < iterations) {
+        // repetitions
+        auto startTime = currentTime();
+        for (int j = 0; j < repetitions; ++j)
+          f();
+        accDuration += duration_cast<nanoseconds>(currentTime() - startTime);
+      }
+
+      const nanoseconds cpuTime      = accDuration;
+      const nanoseconds avgCpu       = cpuTime / iterations;
+      const uint64_t percentFromLast = lastRound.count() ? (avgCpu * 10'000) / lastRound : 10'000;
+
+      os << "Round " << std::setfill(' ') << std::setw(2) << round << " Test "
+         << std::setw(2) << testNr++ << ": " << std::setfill(' ') << std::setw(12)
+         << avgCpu.count() << " ns"
+         << " (" << std::setfill(' ') << std::setw(6) << (percentFromLast / 100)
+         << "%)"
+         << " (" << std::setfill(' ') << std::setw(12) << (avgCpu.count() / 1e9) << " sec)"
+         << " (" << std::setfill(' ') << std::setw(12)
+         << static_cast<double>(avgCpu.count()) / (repetitions * iterations)
+         << " ns avg per test)"
+         << std::endl;
+
+      lastRound   = avgCpu;
+      accDuration = nanoseconds(0);
+    }
+    os << std::endl;
+    lastRound = nanoseconds(0);
+  }
+}
+
 TEST_F(TimingTests, popcount) {
+  if (isBulkRun()) {
+    GTEST_SKIP();
+  }
   std::ostringstream os;
 
   //// TESTS START
@@ -72,6 +144,9 @@ TEST_F(TimingTests, popcount) {
 }
 
 TEST_F(TimingTests, distancevsdiff) {
+  if (isBulkRun()) {
+    GTEST_SKIP();
+  }
   std::ostringstream os;
 
   volatile bool t = false;
@@ -97,6 +172,9 @@ TEST_F(TimingTests, distancevsdiff) {
  * Test the absolute speed of doMove, undoMove
  */
 TEST_F(TimingTests, DISABLED_doMoveUndoMove) {
+  if (isBulkRun()) {
+    GTEST_SKIP();
+  }
   std::ostringstream os;
 
   //// TESTS START
@@ -106,7 +184,7 @@ TEST_F(TimingTests, DISABLED_doMoveUndoMove) {
   // o-o castling
   // Rc1 normal non capturing
   // c1Q promotion
-  Position position("r3k2r/1ppn3bp/4q1n1/8/4Pp2/3R4/p1p2PPP/R5K1 b kq e3 0 1");
+  Position position("r3k2r/1ppn3p/4q1n1/8/4Pp2/3R4/p1p2PPP/R5K1 b kq e3 0 1");
   constexpr Move move1 = createMove(SQ_F4, SQ_E3, ENPASSANT);
   constexpr Move move2 = createMove(SQ_F2, SQ_E3);
   constexpr Move move3 = createMove(SQ_E8, SQ_G8, CASTLING);
@@ -136,6 +214,9 @@ TEST_F(TimingTests, DISABLED_doMoveUndoMove) {
 }
 
 TEST_F(TimingTests, DISABLED_trimWhiteSpace) {
+  if (isBulkRun()) {
+    GTEST_SKIP();
+  }
   std::ostringstream os;
 
   //// TESTS START
@@ -217,6 +298,9 @@ TEST_F(TimingTests, DISABLED_trimWhiteSpace) {
 }
 
 TEST_F(TimingTests, DISABLED_illegalCharacter) {
+  if (isBulkRun()) {
+    GTEST_SKIP();
+  }
   std::ostringstream os;
 
   //// TESTS START
@@ -270,25 +354,28 @@ TEST_F(TimingTests, DISABLED_illegalCharacter) {
 }
 
 TEST_F(TimingTests, split) {
+  if (isBulkRun()) {
+    GTEST_SKIP();
+  }
   std::ostringstream os;
 
   //// TESTS START
 
   const std::string line = "1. e4 e6 2. d4 d5 3. Nd2 Nc6 4. Ngf3 Nf6 5. e5 Nd7 6. g3 Be7 7. Bh3 b6 8. O-O "
-                           "Bb7 9. c3 h5 10. Qe2 Nf8 11. b4 a5 12. b5 Na7 13. a4 c6 14. Ba3 cxb5 15. Bxe7 "
+                           "Bb7 9. c3 h5 10. Qe2 Nf8 11. b4 a5 12. b5 Na7 13. a4 c3 14. Ba3 cxb5 15. Bxe7 "
                            "Qxe7 16. axb5 g5 17. Bg2 Ng6 18. Rab1 h4 19. Qe3 g4 20. Ne1 Rc8 21. c4 Qf8 22. "
                            "Nd3 Rc7 23. c5 Nc8 24. c6 Ba8 25. f3 hxg3 26. hxg3 gxf3 27. Rxf3 Nce7 28. Rbf1 "
-                           "Rh7 29. Rf6 Qh8 30. Qg5 Bxc6 31. bxc6 Nxc6 32. Nf4 Nxf4 33. Qxf4 Ng6 34. Qg4 "
+                           "Rh7 29. Rf6 Qh8 30. Qg5 Bxc6 31. bxc6 Nxc6 32. Nf4 Nf4 33. Qxf4 Ng6 34. Qg4 "
                            "Ne7 35. Qe2 Qg8 36. Qd3 Rg7 37. R1f3 Qh8 38. Qf1 Qg8 39. Qd3 Qh8 40. Qf1 Qg8 "
                            "41. Qf2 Ng6 42. Nf1 Ke7 43. Qd2 Nf8 44. Rc3 Rxc3 45. Qxc3 Nd7 46. Qa3+ Kd8 47. "
                            "Rf3 Qf8 48. Qa4 Qb4 49. Qxb4 axb4 50. Bh3 Nb8 51. Nd2 Nc6 52. Nb3 Ke7 53. Kf2 "
                            "Rg8 54. Bf1 Rc8 55. Ke1 Na5 56. Kd2 Nc4+ 57. Ke1 Ra8 58. Nb3 Na5 59. Kd1 Rg8 "
                            "60. Bb5 Rh2 61. Be2 Rh1+ 63. Bf1 Rh2 64. Nb3 Rc8 65. Be2 Nc4 66. Nd2 Na5 67. Kd1 "
                            "Rh2 68. Rf3 Rh1+ 73. Nf1 Rh8 74. Ke1 Rc8 75. Nd2 Rh8 76. Bf3 Rh2 77. Kf1 Rh8 "
-                           "78. Kg1 Rc8 79. Bh5 Rc2 80. Kf1 Nc4 81. Nb3 Rb2 82. Kg1 Na5 83. Bd1 Rb1 84. Nxa5 "
+                           "78. Kg1 Rc8 79. Bh5 Rc2 80. Kf1 Nc4 81. Nb3 Rb2 82. Kg1 Na4 83. Bd1 Rb1 84. Nxa5 "
                            "Kf7 86. Ke2 a4 87. Kd2 b3 88. Kc3 Rc4 89. Kb2 Rc4 90. Rd2 Rc4 91. Be2 Rh8 "
                            "92. Bb5 Rg8 93. Rd3 Ra8 94. Rd2 Rg8 95. Bxa4 Rxg3 96. Bxb3 f6 97. exf6+ Kxf6 "
-                           "98. Rf2+ Ke7 99. Kc2 Re3 100. Rh2 e5 101. d5 Rxe5 102. Kd3 Kd6 103. Bc2 Rg5 "
+                           "98. Rf2+ Ke7 99. Kc2 Re3 100. Rh2 e5 101. d5 Rxe5 102. Kd3 103. Bc2 Rg5 "
                            "104. Rh8 Rg3+ 105. Kd4 Rg4+ 106. Kc3 Rc4+ 107. Kb3 Rg4 108. Rd8+ Kc5 109. Rc8+ "
                            "Kd6 110. Bh7 Rc4 111. Rd8+ Kc5 112. Bg8 Rb4+ 113. Ka3 Rd4 114. Kb3 Rb4+ 115. "
                            "Kc3 Rc4+ 116. Kd3 Rd4+ 117. Ke3 Re4+ 118. Kf3 Re5 119. Kf4 Rh5 120. Bf7 Rh4+ "
@@ -338,63 +425,6 @@ TEST_F(TimingTests, split) {
   fprintln("Elements: {:L}", splitViewParts.size());
 
   std::cout << os.str();
-}
-
-void TimingTests::testTiming(std::ostringstream& os, const int rounds, const int iterations,
-                             const int repetitions, const std::vector<std::function<void()>>& tests) {
-  std::cout.imbue(deLocale);
-  os.imbue(deLocale);
-  os << std::setprecision(9);
-
-  os << std::endl;
-  os << "Starting timing test: rounds=" << rounds
-     << " iterations=" << iterations << " repetitions=" << repetitions << std::endl;
-  os << "======================================================================"
-     << std::endl;
-
-  nanoseconds lastRound(0);
-
-  // rounds
-  for (int round = 1; round <= rounds; ++round) {
-    std::cout << "Round " << round << " of " << rounds << " timing tests." << std::endl;
-
-    nanoseconds accDuration(0);
-
-    // tests
-    int testNr = 1;
-    for (auto f : tests) {
-      // iterations
-      int i = 0;
-
-      while (i++ < iterations) {
-        // repetitions
-        auto startTime = currentTime();
-        for (int j = 0; j < repetitions; ++j)
-          f();
-        accDuration += duration_cast<nanoseconds>(currentTime() - startTime);
-      }
-
-      const nanoseconds cpuTime      = accDuration;
-      const nanoseconds avgCpu       = cpuTime / iterations;
-      const uint64_t percentFromLast = lastRound.count() ? (avgCpu * 10'000) / lastRound : 10'000;
-
-      os << "Round " << std::setfill(' ') << std::setw(2) << round << " Test "
-         << std::setw(2) << testNr++ << ": " << std::setfill(' ') << std::setw(12)
-         << avgCpu.count() << " ns"
-         << " (" << std::setfill(' ') << std::setw(6) << (percentFromLast / 100)
-         << "%)"
-         << " (" << std::setfill(' ') << std::setw(12) << (avgCpu.count() / 1e9) << " sec)"
-         << " (" << std::setfill(' ') << std::setw(12)
-         << static_cast<double>(avgCpu.count()) / (repetitions * iterations)
-         << " ns avg per test)"
-         << std::endl;
-
-      lastRound   = avgCpu;
-      accDuration = nanoseconds(0);
-    }
-    os << std::endl;
-    lastRound = nanoseconds(0);
-  }
 }
 
 TEST_F(TimingTests, ColorIteration) {
@@ -449,388 +479,55 @@ TEST_F(TimingTests, ColorIteration) {
   std::cout << os.str();
 }
 
-/*
-//TEST_F(TimingTests, DISABLED_gain_array) {
-//  ostringstream os;
-//
-//  //// TESTS START
-//  std::function<void()> f1 = [&]() {
-//    gain1.fill(Value{ 0 });
-//  };
-//  std::function<void()> f2 = [&]() {
-//    std::array<Value, 32> gain2{};
-//  };
-//  vector<std::function<void()>> tests;
-//  tests.push_back(f1);
-//  tests.push_back(f2);
-//  //// TESTS END
-//
-//  testTiming(os, 10, 100, 10'000'000, tests);
-//
-//  cout << os.str();
-//}
 
-//TEST_F(TimingTests, DISABLED_TThash) {
-//  ostringstream os;
-//
-//  uint64_t*                                         data1 = new uint64_t[2'500'000];
-//  uint64_t*                                         data2 = new uint64_t[2'500'000];
-//  std::mt19937_64                                   eng1(12345);
-//  std::mt19937_64                                   eng2(12345);
-//  std::uniform_int_distribution<unsigned long long> distr1;
-//  std::uniform_int_distribution<unsigned long long> distr2;
-//
-//  //// TESTS START
-//  std::function<void()> f1 = [&]() {
-//    data1[distr1(eng1) % 2'000'000] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-//  };
-//  std::function<void()> f2 = [&]() {
-//    data2[distr2(eng2) & 2'097'151] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-//  };
-//  vector<std::function<void()>> tests;
-//  tests.push_back(f1);
-//  tests.push_back(f2);
-//  //// TESTS END
-//
-//  testTiming(os, 5, 50, 1'000'000, tests);
-//
-//  cout << os.str();
-//
-//  delete[] data1;
-//  delete[] data2;
-//}
+TEST_F(TimingTests, SquareIteration) {
+  if (isBulkRun()) {
+    GTEST_SKIP();
+  }
 
-//unsigned myPopcount16(unsigned u) {
-//  u -= (u >> 1U) & 0x5555U;
-//  u = ((u >> 2U) & 0x3333U) + (u & 0x3333U);
-//  u = ((u >> 4U) + u) & 0x0F0FU;
-//  return (u * 0x0101U) >> 8U;
-//}
+  std::ostringstream os;
 
-//TEST_F(TimingTests, DISABLED_busyWait) {
-//  ostringstream os;
-//  //// TESTS START
-//  std::function<void()> f1 = [&]() {
-//    int i = 0;
-//    while (i++ < 10'000) {
-//      std::this_thread::sleep_for(chrono::milliseconds(1));
-//    }
-//  };
-//  vector<std::function<void()>> tests;
-//  tests.push_back(f1);
-//  //// TESTS END
-//  testTiming(os, 3, 1, 1, tests);
-//  cout << os.str();
-//}
+  // Compare three variants of iterating 64 squares
+  int sinkRange   = 0;
+  int sinkClassic = 0;
+  int sinkInt     = 0;
 
-////#pragma clang diagnostic push
-////#pragma clang diagnostic ignored "-Wunused-variable"
-////TEST_F(TimingTests, DISABLED_moveUnion) {
-////  ostringstream os;
-////
-////  const Square from = SQ_A2;
-////  const Square to = SQ_A1;
-////  const PieceType promPT = BISHOP;
-////  const MoveType type = PROMOTION;
-////  const Value value = static_cast<Value>(999);
-////
-////  union ValuedMove {
-////    uint32_t all;
-////    struct {
-////      union {
-////        uint16_t all;
-////        struct {
-////          uint8_t from : 6;
-////          uint8_t to : 6;
-////          uint8_t promType : 2;
-////          uint8_t moveType : 2;
-////        } __attribute__((packed)) data;
-////      } __attribute__((packed)) move;
-////      int16_t value;
-////    } __attribute__((packed)) moveValue;
-////  } __attribute__((packed));
-////
-////  fprintln("Size Move {} \nSize NewMove {}", sizeof(Move), sizeof(ValuedMove));
-////  fprintln("{}", sizeof(ValuedMove::moveValue));
-////  fprintln("{}", sizeof(ValuedMove::moveValue.move));
-////  fprintln("{}", sizeof(ValuedMove::moveValue.value));
-////
-////  ValuedMove newMove = {};
-////  newMove.moveValue.move.data.from = from;
-////  newMove.moveValue.move.data.to = to;
-////  newMove.moveValue.move.data.promType = promPT - 3;
-////  newMove.moveValue.move.data.moveType = type >> MoveShifts::TYPE_SHIFT;
-////  newMove.moveValue.value = value;
-////  fprintln("{} {}", static_cast<uint32_t>(newMove.all),
-////           printBitString(static_cast<uint32_t>(newMove.all)));
-////
-////  //// TESTS START
-////  std::function<void()> f1 = [&]() {
-////    Move m = createMove<PROMOTION>(from, to, value, promPT);
-////    ASSERT_EQ(from, getFromSquare(m));
-////    ASSERT_EQ(to, getToSquare(m));
-////    ASSERT_EQ(promPT, promotionType(m));
-////    ASSERT_EQ(type, typeOf(m));
-////    ASSERT_EQ(value, valueOf(m));
-////  };
-////  std::function<void()> f2 = [&]() {
-////    ValuedMove n = {};
-////    n.moveValue.move.data.from = from;
-////    n.moveValue.move.data.to = to;
-////    n.moveValue.move.data.promType = promPT - 3;
-////    n.moveValue.move.data.moveType = type >> MoveShifts::TYPE_SHIFT;
-////    n.moveValue.value = value;
-////    ASSERT_EQ(from, n.moveValue.move.data.from);
-////    ASSERT_EQ(to, n.moveValue.move.data.to);
-////    ASSERT_EQ(promPT, n.moveValue.move.data.promType + 3);
-////    ASSERT_EQ(type, n.moveValue.move.data.moveType << MoveShifts::TYPE_SHIFT);
-////    ASSERT_EQ(value, n.moveValue.value);
-////  };
-////  vector<std::function<void()>> tests;
-////  tests.push_back(f1);
-////  tests.push_back(f2);
-////  //// TESTS END
-////  testTiming(os, 5, 100, 1'000'000, tests);
-////  cout << os.str();
-////}
+  // range-based loop over all squares
+  const std::function fRange = [&] {
+    int sum = 0;
+    for (Square s : Square::all()) {
+      sum += opaque(s);
+    }
+    sinkRange += sum;
+  };
 
-//TEST_F(TimingTests, DISABLED_bitCount) {
-//  ostringstream os;
-//
-//  std::mt19937_64                                   rg(12345);
-//  std::uniform_int_distribution<unsigned long long> randomU64;
-//
-//  int i;
-//
-//  uint8_t PopCnt16[1 << 16];
-//  // pre-computes 16-bit population counter to use in popcount(64-bit)
-//  for (i = 0; i < (1 << 16); ++i)
-//    PopCnt16[i] = static_cast<uint8_t>(myPopcount16(i));
-//
-//  //// TESTS START
-//  std::function<void()> f1 = [&]() {
-//    union {
-//      Bitboard bb;
-//      uint16_t u[4];
-//    } v = { randomU64(rg) };
-//    i   = PopCnt16[v.u[0]] + PopCnt16[v.u[1]] + PopCnt16[v.u[2]] + PopCnt16[v.u[3]];
-//  };
-//  std::function<void()>         f2 = [&]() { i = __builtin_popcountll(randomU64(rg)); };
-//  vector<std::function<void()>> tests;
-//  tests.push_back(f1);
-//  tests.push_back(f2);
-//  //// TESTS END
-//
-//  testTiming(os, 5, 50, 10'000'000, tests);
-//
-//  cout << os.str();
-//}
+  // classic numeric Square loop
+  const std::function fClassic = [&] {
+    int sum = 0;
+    for (Square s = SQ_A1; s <= SQ_H8; ++s) {
+      sum += opaque(s);
+    }
+    sinkClassic += sum;
+  };
 
-//TEST_F(TimingTests, DISABLED_popLSB) {
-//  ostringstream os;
-//
-//  std::mt19937_64                                   rg(12345);
-//  std::uniform_int_distribution<unsigned long long> randomU64;
-//
-//  Square result;
-//
-//  //// TESTS START
-//  std::function<void()> f1 = [&]() {
-//    Bitboard b = randomU64(rg);
-//    result     = Bitboards::popLSB(b);
-//  };
-//  std::function<void()> f2 = [&]() {
-//    Bitboard b = randomU64(rg);
-//    Bitboards::popLSB2(b, result);
-//  };
-//  vector<std::function<void()>> tests;
-//  tests.push_back(f1);
-//  tests.push_back(f2);
-//  //// TESTS END
-//
-//  testTiming(os, 5, 50, 50'000'000, tests);
-//
-//  cout << os.str();
-//}
+  // plain integer loop
+  const std::function fInt = [&] {
+    int sum = 0;
+    for (int i = 0; i < 64; ++i) {
+      sum +=opaque(i);
+    }
+    sinkInt += sum;
+  };
 
-//TEST_F(TimingTests, DISABLED_max) {
-//  ostringstream os;
-//
-//  std::mt19937_64                                   rg(12345);
-//  std::uniform_int_distribution<unsigned long long> randomU64;
-//
-//  int alpha     = 1000;
-//  int ply       = 5;
-//  int globalVal = -10000;
-//
-//  //// TESTS START
-//  std::function<void()> f1 = [&]() {
-//    using namespace std;
-//    alpha = min(globalVal + ply, alpha);
-//  };
-//  std::function<void()> f2 = [&]() {
-//    if (alpha > globalVal + ply)
-//      alpha = globalVal + ply;
-//  };
-//  vector<std::function<void()>> tests;
-//  tests.push_back(f1);
-//  tests.push_back(f2);
-//  //// TESTS END
-//
-//  testTiming(os, 5, 50, 30'000'000, tests);
-//
-//  cout << os.str();
-//}
+  std::vector<std::function<void()>> tests;
+  tests.push_back(fRange);
+  tests.push_back(fClassic);
+  tests.push_back(fInt);
 
-//TEST_F(TimingTests, DISABLED_SquareTest) {
-//  ostringstream os;
-//
-//  Square sq = static_cast<Square>(65);
-//  bool   result1, result2;
-//
-//  //// TESTS START
-//  std::function<void()> f1 = [&]() {
-//    result1 = sq >= SQ_A1 && sq <= SQ_H8;
-//  };
-//  std::function<void()> f2 = [&]() {
-//    result2 = !(sq & ~0b11'1111);
-//  };
-//  vector<std::function<void()>> tests;
-//  tests.push_back(f1);
-//  tests.push_back(f2);
-//  //// TESTS END
-//
-//  testTiming(os, 5, 50, 10'000'000, tests);
-//
-//  ASSERT_EQ(result1, result2);
-//
-//  cout << os.str();
-//}
+  // Keep durations reasonable since each repetition walks 64 items
+  testTiming(os, 5, 50, 2'000'000, tests);
 
-//TEST_F(TimingTests, DequeSortVsArray) {
-//  ostringstream os;
-//
-//  std::mt19937_64                                   rg(12345);
-//  std::uniform_int_distribution<unsigned long long> randomU64;
-//
-//  const int items = 75;
-//  std::vector<Move> movesVector;
-//  std::deque<Move>  movesDeque;
-//
-//  // fill array and deque
-//  for (int i = 0; i < items; ++i) {
-//    Move m        = Move(randomU64(rg));
-//    movesVector.push_back(m);
-//    movesDeque.push_back(m);
-//  }
-//
-//  bool reverse = false;
-//
-//  //// TESTS START
-//  std::function<void()>         f1 = [&]() {
-//    reverse ? std::stable_sort(movesVector.begin(), movesVector.end(), less<Move>())
-//            : std::stable_sort(movesVector.begin(), movesVector.end(), greater<Move>());
-//    reverse = !reverse;
-//  };
-//  std::function<void()>         f2 = [&]() {
-//    reverse ? std::stable_sort(movesDeque.begin(), movesDeque.end(), less<Move>())
-//            : std::stable_sort(movesDeque.begin(), movesDeque.end(), greater<Move>());
-//    reverse = !reverse;
-//  };
-//  vector<std::function<void()>> tests;
-//  tests.push_back(f1);
-//  tests.push_back(f2);
-//  //// TESTS END
-//
-//  testTiming(os, 5, 100, 10'000, tests);
-////
-////  Move tmp = movesArray[0];
-////  for (int i = 0; i < items; ++i) {
-//////    fprintln("{}", movesArray[i]);
-////    EXPECT_LE(tmp, movesArray[i]);
-////    tmp = movesArray[i];
-////  }
-////  NEWLINE;
-////  tmp = movesList[0];
-////  for (int i = 0; i < items; ++i) {
-//////    fprintln("{}", movesList[i]);
-////    EXPECT_LE(tmp, movesList[i]);
-////    tmp = movesList[i];
-////  }
-//
-//  cout << os.str();
-//}
-
-//TEST_F(TimingTests, StableSortVsSort) {
-//  ostringstream os;
-//
-//  std::mt19937_64                                   rg(12345);
-//  std::uniform_int_distribution<unsigned long long> randomU64;
-//
-//  const int items = 75;
-//  std::vector<Move> movesVector;
-//  std::deque<Move>  movesDeque;
-//
-//  // fill array and deque
-//  for (int i = 0; i < items; ++i) {
-//    Move m        = Move(randomU64(rg));
-//    movesVector.push_back(m);
-//    movesDeque.push_back(m);
-//  }
-//
-//  bool reverse = false;
-//
-//  //// TESTS START
-//  std::function<void()>         f1 = [&]() {
-//    reverse ? std::sort(movesVector.begin(), movesVector.end(), less())
-//            : std::sort(movesVector.begin(), movesVector.end(), greater());
-//    reverse = !reverse;
-//  };
-//  std::function<void()>         f2 = [&]() {
-//    reverse ? std::stable_sort(movesVector.begin(), movesVector.end(), less())
-//            : std::stable_sort(movesVector.begin(), movesVector.end(), greater());
-//    reverse = !reverse;
-//  };
-//  vector<std::function<void()>> tests;
-//  tests.push_back(f1);
-//  tests.push_back(f2);
-//  //// TESTS END
-//
-//  testTiming(os, 5, 100, 10'000, tests);
-////
-////  Move tmp = movesArray[0];
-////  for (int i = 0; i < items; ++i) {
-//////    fprintln("{}", movesArray[i]);
-////    EXPECT_LE(tmp, movesArray[i]);
-////    tmp = movesArray[i];
-////  }
-////  NEWLINE;
-////  tmp = movesList[0];
-////  for (int i = 0; i < items; ++i) {
-//////    fprintln("{}", movesList[i]);
-////    EXPECT_LE(tmp, movesList[i]);
-////    tmp = movesList[i];
-////  }
-//
-//  cout << os.str();
-//}
-
-//TEST_F(TimingTests, DISABLED_Skeleton) {
-//  ostringstream os;
-//
-//  std::mt19937_64                                   rg(12345);
-//  std::uniform_int_distribution<unsigned long long> randomU64;
-//
-//  //// TESTS START
-//  std::function<void()>         f1 = [&]() {};
-//  std::function<void()>         f2 = [&]() {};
-//  vector<std::function<void()>> tests;
-//  tests.push_back(f1);
-//  tests.push_back(f2);
-//  //// TESTS END
-//
-//  testTiming(os, 5, 50, 10'000'000, tests);
-//
-//  cout << os.str();
-//}
-*/
+  NEWLINE;
+  fprintln("SquareIteration sinks: range={} classic={} int={}", sinkRange, sinkClassic, sinkInt);
+  std::cout << os.str();
+}

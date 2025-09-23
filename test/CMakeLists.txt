@@ -18,6 +18,7 @@ add_executable(
         types/ValuesTest.cpp
         types/FileRankTest.cpp
         types/ColorTest.cpp
+        types/SquareIteratorTest.cpp
 
         common/FifoTest.cpp
         common/ThreadPoolTest.cpp
@@ -43,9 +44,8 @@ add_executable(
         enginetest/SearchTreeSizeTest_Test.cpp
         enginetest/TestSuite_Test.cpp
 
-        TimingTests.cpp
-        types/ColorTest.cpp
-)
+        TimingTests.cpp)
+
 
 # Ensure unit tests explicitly request C++20
 target_compile_features(${testExeName} PRIVATE cxx_std_20)
