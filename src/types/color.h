@@ -27,6 +27,7 @@
 //  NOCOLOR = 2
 class Color {
   unsigned v_{}; // 0..1 valid, 2 = NONE
+
 public:
   // number of valid colors (without NOCOLOR)
   static constexpr int LENGTH = 2;
@@ -91,12 +92,7 @@ inline constexpr unsigned COLOR_LENGTH = Color::LENGTH;
 // returns the opposite color (kept for compatibility)
 constexpr Color operator~(const Color c) { return Color{(c.value() ^ 1U)}; }
 
-// stream output operator for Color
-inline std::ostream& operator<<(std::ostream& os, const Color c) {
-  os << c.str();
-  return os;
-}
-
 ENABLE_INCR_OPERATORS_ON (Color)
+ENABLE_OSTREAM_OPERATOR_ON (Color)
 
 #endif//FRANKYCPP_COLOR_H

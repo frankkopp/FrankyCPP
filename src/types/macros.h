@@ -93,7 +93,7 @@ constexpr T1& operator-=(T1& d1, T2 d2) { return d1 = d1 - d2; }
   constexpr bool operator>=(int a, T b) { return a >= static_cast<int>(b); }
 
 // New: enable compound assignment with int (+= and -=)
-#define ENABLE_INT_COMPOUND_ADDSUB_ON(T)                                                      \
+#define ENABLE_INT_COMPOUND_ADDSUB_ON(T)                                                       \
   constexpr T& operator+=(T& d, int i) { return d = static_cast<T>(static_cast<int>(d) + i); } \
   constexpr T& operator-=(T& d, int i) { return d = static_cast<T>(static_cast<int>(d) - i); }
 
@@ -102,34 +102,36 @@ constexpr T1& operator-=(T1& d1, T2 d2) { return d1 = d1 - d2; }
 #define ENABLE_FORMATTER_AS_STRING_VIEW_ON(T)                                                     \
   template<>                                                                                      \
   struct std::formatter<T> : std::formatter<std::string_view> {                                   \
-    template <typename FormatContext>                                                              \
+    template <typename FormatContext>                                                             \
     auto format(const T v, FormatContext& ctx) const {                                            \
       return std::formatter<std::string_view>::format(v.str(), ctx);                              \
     }                                                                                             \
   }
 
 // Use when T has str() returning a single char
-#define ENABLE_FORMATTER_AS_CHAR_ON(T)                                                             \
+#define ENABLE_FORMATTER_AS_CHAR_ON(T)                                                            \
   template<>                                                                                      \
   struct std::formatter<T> : std::formatter<char> {                                               \
-    template <typename FormatContext>                                                              \
+    template <typename FormatContext>                                                             \
     auto format(const T v, FormatContext& ctx) const {                                            \
       return std::formatter<char>::format(v.str(), ctx);                                          \
     }                                                                                             \
   }
 
 // Use when T can be formatted as int (via implicit or explicit conversion)
-#define ENABLE_FORMATTER_AS_INT_ON(T)                                                              \
+#define ENABLE_FORMATTER_AS_INT_ON(T)                                                             \
   template<>                                                                                      \
   struct std::formatter<T> : std::formatter<int> {                                                \
-    template <typename FormatContext>                                                              \
+    template <typename FormatContext>                                                             \
     auto format(const T v, FormatContext& ctx) const {                                            \
       return std::formatter<int>::format(static_cast<int>(v), ctx);                               \
     }                                                                                             \
   }
 
-// New: ostream operator<< via macro using str()
-#define ENABLE_OSTREAM_OPERATOR_ON(T)                                                      \
-  inline std::ostream& operator<<(std::ostream& os, const T v) { os << v.str(); return os; }
+// ostream operator<< via macro using static_cast<int64_t>
+#define ENABLE_OSTREAM_OPERATOR_ON(T)                            \
+  inline std::ostream& operator<<(std::ostream& os, const T v) { \
+    os << static_cast<int64_t>(v); return os;                    \
+  }
 
 #endif//FRANKYCPP_MACROS_H
