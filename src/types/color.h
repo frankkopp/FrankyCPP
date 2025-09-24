@@ -93,6 +93,6 @@ inline constexpr unsigned COLOR_LENGTH = Color::LENGTH;
 constexpr Color operator~(const Color c) { return Color{(c.value() ^ 1U)}; }
 
 ENABLE_INCR_OPERATORS_ON (Color)
-ENABLE_OSTREAM_OPERATOR_ON (Color)
+ENABLE_OSTREAM_OPERATOR_AS_INT_ON (Color)
 
 #endif//FRANKYCPP_COLOR_H

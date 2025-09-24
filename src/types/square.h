@@ -150,7 +150,7 @@ ENABLE_INCR_OPERATORS_ON(Square)
 ENABLE_COMPARISON_OPERATORS_ON(Square)
 ENABLE_MIXED_COMPARISONS_ON(Square)
 ENABLE_FORMATTER_AS_STRING_VIEW_ON(Square);
-ENABLE_OSTREAM_OPERATOR_ON(Square);
+ENABLE_OSTREAM_OPERATOR_AS_STR_ON (Square)
 
 // Precomputed square distances and names for fast access
 namespace Squares {

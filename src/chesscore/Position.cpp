@@ -76,7 +76,7 @@ void Position::doMove(const Move move) {
     case NORMAL:
       // If we still have castling rights and the move touches castling squares then invalidate
       // the corresponding castling right
-      if (castlingRights) {
+      if (!castlingRights.isEmpty()) {
         if (const CastlingRights cr = Castling::castlingRights[fromSq] + Castling::castlingRights[toSq]) {
           zobristKey ^= Zobrist::castlingRights[castlingRights];// out
           castlingRights -= cr;
@@ -111,7 +111,7 @@ void Position::doMove(const Move move) {
       }
       // If we still have castling rights and the move touches castling squares then invalidate
       // the corresponding castling right
-      if (castlingRights) {
+      if (!castlingRights.isEmpty()) {
         if (const CastlingRights cr = Castling::castlingRights[fromSq] + Castling::castlingRights[toSq]) {
           zobristKey ^= Zobrist::castlingRights[castlingRights];// out
           castlingRights -= cr;
@@ -733,27 +733,11 @@ std::string Position::strFen() const {
   fen << (nextPlayer ? " b " : " w ");
 
   // castling
-  if (castlingRights == NO_CASTLING) {
-    fen << "-";
-  }
-  else {
-    if (castlingRights & WHITE_OO) {
-      fen << "K";
-    }
-    if (castlingRights & WHITE_OOO) {
-      fen << "Q";
-    }
-    if (castlingRights & BLACK_OO) {
-      fen << "k";
-    }
-    if (castlingRights & BLACK_OOO) {
-      fen << "q";
-    }
-  }
+  fen << (castlingRights.isEmpty() ? "-" : castlingRights.str());
 
   // en passant
   if (enPassantSquare != SQ_NONE) {
-    fen << " " << enPassantSquare << " ";
+    fen << " " << enPassantSquare.str() << " ";
   }
   else {
     fen << " - ";
@@ -773,9 +757,9 @@ std::ostream& operator<<(std::ostream& os, const Position& position) {
   return os;
 }
 
-////////////////////////////////////////////////
+//////////////////////////////////////////////
 ///// PRIVATE
-////////////////////////////////////////////////
+//////////////////////////////////////////////
 
 inline void Position::movePiece(const Square fromSq, const Square toSq) {
   putPiece(removePiece(fromSq), toSq);
@@ -988,16 +972,16 @@ void Position::setupBoard(const std::string& fen) {
     // are there  rights to be encoded?
     if (fenParts[2] != "-") {
       for (const char c : fenParts[2]) {
-        if (c == 'K' && castlingRights != WHITE_OO) {
+        if (c == 'K' && !castlingRights.hasAny(WHITE_OO)) {
           castlingRights += WHITE_OO;
         }
-        else if (c == 'Q' && castlingRights != WHITE_OOO) {
+        else if (c == 'Q' && !castlingRights.hasAny(WHITE_OOO)) {
           castlingRights += WHITE_OOO;
         }
-        else if (c == 'k' && castlingRights != BLACK_OO) {
+        else if (c == 'k' && !castlingRights.hasAny(BLACK_OO)) {
           castlingRights += BLACK_OO;
         }
-        else if (c == 'q' && castlingRights != BLACK_OOO) {
+        else if (c == 'q' && !castlingRights.hasAny(BLACK_OOO)) {
           castlingRights += BLACK_OOO;
         }
         else {

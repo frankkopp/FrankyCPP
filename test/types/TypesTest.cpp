@@ -115,11 +115,11 @@ TEST_F(TypesTest, castling) {
 }
 
 TEST_F(TypesTest, CastlingStr) {
-  EXPECT_EQ("KQkq", str(ANY_CASTLING));
-  EXPECT_EQ("KQ", str(WHITE_CASTLING));
-  EXPECT_EQ("kq", str(BLACK_CASTLING));
-  EXPECT_EQ("k", str(BLACK_OO));
-  EXPECT_EQ("Q", str(WHITE_OOO));
+  EXPECT_EQ("KQkq", ANY_CASTLING.str());
+  EXPECT_EQ("KQ", WHITE_CASTLING.str());
+  EXPECT_EQ("kq", BLACK_CASTLING.str());
+  EXPECT_EQ("k", BLACK_OO.str());
+  EXPECT_EQ("Q", WHITE_OOO.str());
 }
 
 TEST_F(TypesTest, pieceTypeLabels) {
