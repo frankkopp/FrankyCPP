@@ -30,6 +30,8 @@ set(FrankyCPPlib_SRCS
         enginetest/TestSuite.cpp enginetest/TestSuite.h
         types/types.h
         types/movetype.h
+        types/attacks.h
+        types/attacks.h
 )
 
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})

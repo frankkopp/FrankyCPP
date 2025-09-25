@@ -26,13 +26,9 @@
 #include "square.h"
 
 #include <array>
+#include <bit>
 #include <bitset>
 #include <cstdint>
-#include <immintrin.h>
-
-#ifndef HAS_PEXT
-#error "PEXT-only path requested, but HAS_PEXT is not defined. Enable BMI2 (/arch:AVX2 or -mbmi2) and add -DHAS_PEXT."
-#endif
 
 // 64-bit Bitboard type for storing boards as bits
 typedef uint64_t Bitboard;
@@ -474,79 +470,25 @@ inline Bitboard shiftBb(const Direction d, const Bitboard b) {
   return b;
 }
 
-// if C++20 feature library <bit> is available, use the new bit operations
-#if __cpp_lib_bitops >= 201907L
-#include <bit>
-#endif
 
 // popcount() counts the number of non-zero bits in a bitboard
-inline int popcount(Bitboard b) {
-#if __cpp_lib_bitops >= 201907L
+// Kept in a separate function to allow easy replacement if no built-in
+// popcount is available for compiler.
+// @return number of non-zero bits
+inline int popcount(const Bitboard b) {
   return std::popcount(b);
-#else
-#if defined(__GNUC__)// GCC, Clang, ICC
-  return __builtin_popcountll(b);
-#elif defined(_MSC_VER)
-  return static_cast<int>(_mm_popcnt_u64(b));
-#else// Compiler is not GCC
-  // pre-computed table of population counter for 16-bit
-  extern uint8_t PopCnt16[1 << 16];
-  // nice trick to address 16-bit groups in a 64-bit int
-  union {
-    Bitboard bb;
-    uint16_t u[4];
-  } v = {b};
-  // adding all 16-bit population counters referenced in the 64-bit union
-  return PopCnt16[v.u[0]] + PopCnt16[v.u[1]] + PopCnt16[v.u[2]] + PopCnt16[v.u[3]];
-#endif
-#endif// _cpp_bit
 }
 
-// Used when no build-in popcount is available for compiler.
-// @return popcount16() counts the non-zero bits using SWAR-Popcount algorithm
-[[maybe_unused]] inline unsigned popcount16(unsigned u) {
-  u -= u >> 1U & 0x5555U;
-  u = (u >> 2U & 0x3333U) + (u & 0x3333U);
-  u = (u >> 4U) + u & 0x0F0FU;
-  return (u * 0x0101U) >> 8U;
-}
-
-// lsb() and msb() return the least/most significant bit in a non-zero
-// bitboard
-inline Square lsb(Bitboard b) {
+// lsb() and msb() return the least/most significant bit in a non-zero bitboard
+inline Square lsb(const Bitboard b) {
   if (!b) return SQ_NONE;
-#if __cpp_lib_bitops >= 201907L
   return static_cast<Square>(std::countr_zero(b));
-#else
-#ifdef __GNUC__// GCC, Clang, ICC
-  return static_cast<Square>(__builtin_ctzll(b));
-#elif defined(_MSC_VER)
-  unsigned long index;
-  if (_BitScanForward64(&index, b)) { return static_cast<Square>(index); }
-  else { return SQ_NONE; }
-#else// Compiler is not GCC
-#error "Compiler not yet supported."
-#endif
-#endif
 }
 
-// lsb() and msb() return the least/most significant bit in a non-zero
-// bitboard
-inline Square msb(Bitboard b) {
+// lsb() and msb() return the least/most significant bit in a non-zero bitboard
+inline Square msb(const Bitboard b) {
   if (!b) return SQ_NONE;
-#if __cpp_lib_bitops >= 201907L
   return static_cast<Square>(63 - std::countl_zero(b));
-#else
-#if defined(__GNUC__)// GCC, Clang, ICC
-  return static_cast<Square>(63 - __builtin_clzll(b));
-#elif defined(_MSC_VER)
-  unsigned long index;
-  if (_BitScanReverse64(&index, b)) { return static_cast<Square>(index); }
-  else { return SQ_NONE; }
-#else// Compiler is not GCC
-#error "Compiler not yet supported."
-#endif
-#endif
 }
 
 // pop_lsb() finds and clears the least significant bit in a non-zero
@@ -618,183 +560,5 @@ inline std::string strGrouped(const Bitboard b) {
   os << " (" + std::to_string(b) + ")";
   return os.str();
 }
-
-// //////////////////////////////////////////////////////////////////
-// Magic bitboards
-// Bitboard initialization and pre-computation
-// //////////////////////////////////////////////////////////////////
-
-// constexpr popcount to avoid non-constexpr intrinsics on some compilers
-constexpr unsigned popcount_ce(Bitboard b) {
-  unsigned c = 0;
-  while (b) {
-    b &= b - 1;
-    ++c;
-  }
-  return c;
-}
-
-// constexpr software pext (bit compress)
-constexpr uint64_t pext_soft(const uint64_t src, uint64_t mask) {
-  uint64_t res = 0;
-  uint64_t bit = 1;
-  while (mask) {
-    const uint64_t lsb = mask & -mask;
-    if (src & lsb) res |= bit;
-    mask ^= lsb;
-    bit <<= 1;
-  }
-  return res;
-}
-
-// Magic holds all magic bitboards relevant for a single square
-// Ideas taken from Stockfish
-// License see https://stockfishchess.org/about/
-struct Magic {
-  Bitboard mask{};
-  Bitboard magic{}; // unused on PEXT path
-  unsigned shift{}; // unused on PEXT path
-  uint32_t offset{};// start index into the global table
-
-  [[nodiscard]] constexpr unsigned index(const Bitboard occupied) const {
-    if (std::is_constant_evaluated())
-      return static_cast<unsigned>(pext_soft(occupied, mask));
-    else
-      return static_cast<unsigned>(_pext_u64(occupied, mask));
-  }
-};
-
-constexpr Direction rookDirections[4]   = {NORTH, EAST, SOUTH, WEST};
-constexpr Direction bishopDirections[4] = {NORTH_EAST, SOUTH_EAST, SOUTH_WEST, NORTH_WEST};
-
-constexpr Bitboard sliding_attack(const Direction directions[], const Square sq, const Bitboard occupied) {
-  Bitboard attack = 0;
-  for (int i = 0; i < 4; ++i) {
-    for (Square s = sq + directions[i];; s += directions[i]) {
-      if (!s.isValid()) break;
-      // ensure we don't wrap around across files/ranks; guard before distance()
-      if (s.distanceTo(s - directions[i]) != 1) break;
-      attack |= s;
-      if (occupied & s)
-        break;
-    }
-  }
-  return attack;
-}
-
-namespace Bitboards {
-  constexpr Bitboard edgeMaskFor(const unsigned s) {
-    return (Rank1BB | Rank8BB) & ~sqToRankBb[s] | (FileABB | FileHBB) & ~sqToFileBb[s];
-  }
-
-  constexpr Bitboard rookMaskFor(const unsigned s) {
-    return (rays[N][s] | rays[S][s] | rays[E][s] | rays[W][s]) & ~edgeMaskFor(s);
-  }
-
-  constexpr Bitboard bishopMaskFor(const unsigned s) {
-    return (rays[NE][s] | rays[NW][s] | rays[SE][s] | rays[SW][s]) & ~edgeMaskFor(s);
-  }
-
-  constexpr std::array<Bitboard, SQ_LENGTH> makeRookMasks() {
-    std::array<Bitboard, SQ_LENGTH> a{};
-    for (unsigned s = 0; s < SQ_LENGTH; ++s) a[s] = rookMaskFor(s);
-    return a;
-  }
-
-  constexpr std::array<Bitboard, SQ_LENGTH> makeBishopMasks() {
-    std::array<Bitboard, SQ_LENGTH> a{};
-    for (unsigned s = 0; s < SQ_LENGTH; ++s) a[s] = bishopMaskFor(s);
-    return a;
-  }
-
-  constexpr std::array<uint32_t, SQ_LENGTH + 1> makeOffsets(const std::array<Bitboard, SQ_LENGTH>& masks) {
-    std::array<uint32_t, SQ_LENGTH + 1> off{};
-    off[0] = 0;
-    for (unsigned s = 0; s < SQ_LENGTH; ++s) {
-      const unsigned bits = popcount_ce(masks[s]);
-      off[s + 1]          = static_cast<uint32_t>(off[s] + (1u << bits));
-    }
-    return off;
-  }
-
-  constexpr std::array<Magic, SQ_LENGTH> makeMagics(const std::array<Bitboard, SQ_LENGTH>& masks,
-                                                    const std::array<uint32_t, SQ_LENGTH + 1>& offsets) {
-    std::array<Magic, SQ_LENGTH> m{};
-    for (unsigned s = 0; s < SQ_LENGTH; ++s)
-      m[s] = Magic{masks[s], 0, 0, offsets[s]};
-    return m;
-  }
-
-  inline constexpr auto rookMasks     = makeRookMasks();
-  inline constexpr auto bishopMasks   = makeBishopMasks();
-  inline constexpr auto rookOffsets   = makeOffsets(rookMasks);
-  inline constexpr auto bishopOffsets = makeOffsets(bishopMasks);
-
-  // Clion has a problem with static_assert on large constexpr arrays and shows these lines as errors,
-  // so we disable these checks when building in the IDE
-#ifndef __JETBRAINS_IDE__
-  static_assert(rookOffsets.back() == 0x19000, "Unexpected rookTable size");
-  static_assert(bishopOffsets.back() == 0x1480, "Unexpected bishopTable size");
-#endif
-
-  inline constexpr std::array<Magic, SQ_LENGTH> rookMagics   = makeMagics(rookMasks, rookOffsets);
-  inline constexpr std::array<Magic, SQ_LENGTH> bishopMagics = makeMagics(bishopMasks, bishopOffsets);
-
-  // Global tables (runtime-filled to avoid MSVC constexpr step limit)
-  // Trying to also make these constexpr leads to "error C1061: compiler limit : blocks nested too deeply"
-  inline Bitboard rookTable[0x19000];
-  inline Bitboard bishopTable[0x1480];
-
-  // Fill a table using precomputed masks+offsets; enumerate all subsets via carry-rippler
-  inline void init_one(Bitboard table[], const std::array<Magic, SQ_LENGTH>& magics,
-                       const Direction dirs[4]) {
-    for (Square s : Square::all()) {
-      const auto& m    = magics[s];
-      const Bitboard M = m.mask;
-
-      Bitboard b = 0;
-      do {
-        const unsigned idx    = static_cast<unsigned>(_pext_u64(b, M));
-        table[m.offset + idx] = sliding_attack(dirs, s, b);
-        b                     = b - M & M;
-      } while (b);
-    }
-  }
-
-  // Initialize both rook and bishop magic bitboards
-  inline void initMagicBitboards() {
-    init_one(rookTable, rookMagics, rookDirections);
-    init_one(bishopTable, bishopMagics, bishopDirections);
-  }
-
-}// namespace Bitboards
-
-// Attack lookup
-// gets all attacks from non-pawn pieces on a given square considering the occupied squares
-inline Bitboard getAttacksBb(const PieceType pt, const Square sq, const Bitboard occupied) {
-  switch (pt) {
-    case BISHOP: {
-      const auto& m = Bitboards::bishopMagics[sq];
-      return Bitboards::bishopTable[m.offset + m.index(occupied)];
-    }
-    case ROOK: {
-      const auto& m = Bitboards::rookMagics[sq];
-      return Bitboards::rookTable[m.offset + m.index(occupied)];
-    }
-    case QUEEN: {
-      const auto& rb = Bitboards::bishopMagics[sq];
-      const auto& rr = Bitboards::rookMagics[sq];
-      return Bitboards::bishopTable[rb.offset + rb.index(occupied)]
-             | Bitboards::rookTable[rr.offset + rr.index(occupied)];
-    }
-    case KNIGHT:
-      [[fallthrough]];
-    case KING:
-      return Bitboards::nonSliderAttacks[pt][sq];
-    default:
-      return BbZero;
-  }
-}
-
 
 #endif// FRANKYCPP_BITBOARD_H

@@ -665,10 +665,10 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
         // value is the delta of values from the two pieces involved minus the promotion value
         const Value value = valueOf(position.getPiece(toSquare)) - (2 * valueOf(PAWN));
         // add the possible promotion moves to the move list and also add value of the promoted piece type
-        pMoves->push_back(Move(fromSquare, toSquare, PROMOTION, QUEEN, value + valueOf(QUEEN) + 5000));
-        pMoves->push_back(Move(fromSquare, toSquare, PROMOTION, KNIGHT, value + valueOf(KNIGHT) + 1500));
-        pMoves->push_back(Move(fromSquare, toSquare, PROMOTION, ROOK, value + valueOf(ROOK) - 5000));
-        pMoves->push_back(Move(fromSquare, toSquare, PROMOTION, BISHOP, value + valueOf(BISHOP) - 5000));
+        pMoves->push_back(Move::promotion(fromSquare, toSquare, QUEEN, value + valueOf(QUEEN) + 5000));
+        pMoves->push_back(Move::promotion(fromSquare, toSquare, KNIGHT, value + valueOf(KNIGHT) + 1500));
+        pMoves->push_back(Move::promotion(fromSquare, toSquare, ROOK, value + valueOf(ROOK) - 5000));
+        pMoves->push_back(Move::promotion(fromSquare, toSquare, BISHOP, value + valueOf(BISHOP) - 5000));
       }
 
       tmpCaptures &= ~Bitboards::rankBb[Rank::promotionFor(nextPlayer)];
@@ -677,7 +677,7 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
         const Square fromSquare = toSquare + Direction::pawnPush(~nextPlayer) - dir;
         // value is the delta of values from the two pieces involved plus the positional value
         const Value value = valueOf(position.getPiece(toSquare)) - valueOf(position.getPiece(fromSquare)) + Values::posValue[piece][toSquare][gamePhase];
-        pMoves->push_back(Move(fromSquare, toSquare, NORMAL, value));
+        pMoves->push_back(Move::normal(fromSquare, toSquare, value));
       }
     }
 
@@ -707,8 +707,8 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
       const Square toSquare   = popLSB(promMoves);
       const Square fromSquare = toSquare + Direction::pawnPush(~nextPlayer);
       // value is done manually for sorting of queen prom first, then knight and others
-      pMoves->push_back(Move(fromSquare, toSquare, PROMOTION, QUEEN, 2000 - valueOf(PAWN) + valueOf(QUEEN)));
-      pMoves->push_back(Move(fromSquare, toSquare, PROMOTION, KNIGHT, 1500 - valueOf(PAWN) + valueOf(KNIGHT)));
+      pMoves->push_back(Move::promotion(fromSquare, toSquare, QUEEN, 2000 - valueOf(PAWN) + valueOf(QUEEN)));
+      pMoves->push_back(Move::promotion(fromSquare, toSquare, KNIGHT, 1500 - valueOf(PAWN) + valueOf(KNIGHT)));
     }
   }
 
@@ -744,8 +744,8 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
       // we treat Queen and Knight promotions as non-quiet moves, and they are generated above
       // rook and bishops are usually redundant to queen promotion (except in stalemate situations)
       // therefore we give them lower sort order
-      pMoves->push_back(Move(fromSquare, toSquare, PROMOTION, ROOK, valueOf(ROOK) - 6'000));
-      pMoves->push_back(Move(fromSquare, toSquare, PROMOTION, BISHOP, valueOf(BISHOP) - 6'000));
+      pMoves->push_back(Move::promotion(fromSquare, toSquare, ROOK, valueOf(ROOK) - 6'000));
+      pMoves->push_back(Move::promotion(fromSquare, toSquare, BISHOP, valueOf(BISHOP) - 6'000));
     }
 
     // double pawn steps

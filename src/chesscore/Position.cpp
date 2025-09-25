@@ -89,7 +89,7 @@ void Position::doMove(const Move move) {
         halfMoveClock = 0;// reset half move clock because of capture
       }
       else if (typeOf(getPiece(fromSq)) == PAWN) {
-        halfMoveClock = 0;                // reset half move clock because of pawn move
+        halfMoveClock = 0;                 // reset half move clock because of pawn move
         if (fromSq.distanceTo(toSq) == 2) {// pawn double - set en passant
           // set new en passant target field - always one "behind" the toSquare
           enPassantSquare = toSq.pawnPush(~colorOf(getPiece(fromSq)));
@@ -414,7 +414,7 @@ bool Position::givesCheck(const Move move) const {
 
   switch (moveType) {
     case PROMOTION:
-      // promotion moves - use new piece type
+      // promotion moves - use a new piece type
       fromPt = move.promotionType();
       break;
     case CASTLING:
@@ -559,57 +559,67 @@ bool Position::isLegalMove(const Move move) const {
 }
 
 bool Position::checkRepetitions(const int reps) const {
-  /*
-   [0]     3185849660387886977 << 1st
-   [1]     447745478729458041
-   [2]     3230145143131659788
-   [3]     491763876012767476
-   [4]     3185849660387886977 << 2nd
-   [5]     447745478729458041
-   [6]     3230145143131659788
-   [7]     491763876012767476  <<< history
-   [8]     3185849660387886977 <<< 3rd REPETITION from current zobrist
-    */
-  int counter      = 0;
-  int i            = historyCounter - 2;
-  int lastHalfMove = halfMoveClock;
+  // We look only at positions with the same side to move, so we step back by 2.
+  // We stop when we cross an irreversible move (capture or pawn move) detected via
+  // a half–move clock "jump": scanning backward, the halfMoveClock normally
+  // decreases strictly; when we hit the position just before a reset, the
+  // previous (older) entry will have a larger (>=) halfMoveClock value.
+  //
+  // Explanation of the >= break:
+  // After a pawn move or capture, the halfMoveClock becomes 0. The entry before
+  // that reset still has a (larger) value from before the irreversible move.
+  // While walking backward:
+  //   current lastHalfMoveClock: 0 (position after reset)
+  //   older historyState[i].halfMoveClock: e.g., 17 (position before reset)
+  // Since 17 >= 0 we break — no repetitions can span over that irreversible move.
+  //
+  // reps: how many prior occurrences we need (e.g., reps == 2 for a threefold).
+  assert(reps > 0);
+  int counter           = 0;
+  int i                 = historyCounter - 2;
+  int lastHalfMoveClock = halfMoveClock;
+
   while (i >= 0) {
-    // every time the half move clock gets reset (non-reversible position) there
-    // can't be any more repetition of positions before this position
-    if (historyState[i].halfMoveClock >= lastHalfMove) {
-      break;
+    if (historyState[i].halfMoveClock >= lastHalfMoveClock) {
+      break;// crossed an irreversible boundary
     }
-    else {
-      lastHalfMove = historyState[i].halfMoveClock;
-    }
+    lastHalfMoveClock = historyState[i].halfMoveClock;
+
     if (zobristKey == historyState[i].zobristKey) {
       counter++;
+      if (counter >= reps) {
+        return true;
+      }
     }
-    if (counter >= reps) {
-      return true;
+
+    // Micro-optimization: if even in the best case (every remaining even step matches)
+    // we cannot reach the required reps, exit early.
+    // Maximum additional matches left <= lastHalfMoveClock / 2.
+    if (counter + (lastHalfMoveClock >> 1) < reps) {
+      return false;
     }
+
     i -= 2;
   }
   return false;
 }
 
 int Position::countRepetitions() const {
+  // Count prior occurrences (same side to move) of the current position
+  // stopping at the last irreversible boundary (pawn move or capture),
+  // detected by a non‑strictly decreasing halfMoveClock when walking back.
+  if (historyCounter < 2) return 0;
+
   int counter      = 0;
-  int i            = historyCounter - 2;
   int lastHalfMove = halfMoveClock;
-  while (i >= 0) {
-    // every time the half move clock gets reset (non-reversible position) there
-    // can't be any more repetition of positions before this position
-    if (historyState[i].halfMoveClock >= lastHalfMove) {
-      break;
-    }
-    else {
-      lastHalfMove = historyState[i].halfMoveClock;
-    }
+
+  for (int i = historyCounter - 2; i >= 0; i -= 2) {
+    const int hm = historyState[i].halfMoveClock;
+    if (hm >= lastHalfMove) break;// crossed an irreversible boundary
+    lastHalfMove = hm;
     if (zobristKey == historyState[i].zobristKey) {
-      counter++;
+      ++counter;
     }
-    i -= 2;
   }
   return counter;
 }
@@ -765,7 +775,7 @@ inline void Position::movePiece(const Square fromSq, const Square toSq) {
   putPiece(removePiece(fromSq), toSq);
 }
 
-void Position::putPiece(const Piece piece, const Square square) {
+inline void Position::putPiece(const Piece piece, const Square square) {
   assert(getPiece(square) == PIECE_NONE);
   assert((piecesBb[colorOf(piece)][typeOf(piece)] & square) == 0);
   assert((occupiedBb[colorOf(piece)] & square) == 0);
@@ -800,7 +810,7 @@ void Position::putPiece(const Piece piece, const Square square) {
   psqEndValue[color] += Values::posEndValue[piece][square];
 }
 
-Piece Position::removePiece(const Square square) {
+inline Piece Position::removePiece(const Square square) {
   assert(getPiece(square) != PIECE_NONE);
   assert(piecesBb[colorOf(getPiece(square))][typeOf(getPiece(square))] & square);
   assert(occupiedBb[colorOf(getPiece(square))] & square);

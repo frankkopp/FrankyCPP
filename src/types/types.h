@@ -21,6 +21,7 @@
 #define FRANKYCPP_TYPES_H
 
 // include all type headers for convenience
+#include "attacks.h"
 #include "bitboard.h"
 #include "castlingrights.h"
 #include "color.h"

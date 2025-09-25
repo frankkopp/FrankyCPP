@@ -20,7 +20,7 @@
 #ifndef FRANKYCPP_TYPES_INIT_H
 #define FRANKYCPP_TYPES_INIT_H
 
-#include "bitboard.h"
+#include "attacks.h"
 
 namespace Types {
   inline void init() {

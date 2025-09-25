@@ -197,7 +197,7 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
   moves.clear();
   moves = *mg.generatePseudoLegalMoves(position, GenAll, false);
   EXPECT_EQ(86, moves.size());
-  EXPECT_EQ("c2b1Q a2b1Q a2a1Q c2c1Q c2b1N a2b1N b2a3 a8a3 g6e5 d7e5 b2e5 a2a1N c2c1N e6e5 c4e4 c6e4 f4g3 f4e3 e8g8 e8c8 d7c5 a8c8 a8d8 h8f8 d7f6 g6e7 b2d4 f4f3 h7h6 d7b6 b2c3 c4c5 c4d5 c6c5 c6d5 c6d6 e6d5 e6f5 e6d6 e6f6 e6e7 e6f7 c4d4 b7b5 h7h5 a2a4 a2a5 a2a6 a2a7 c4e2 c4b3 c4c3 c4d3 c4b4 c4b5 c6b5 c6b6 e6g4 e8f8 b7b6 c4a4 c6a4 b2c1 a8b8 h8g8 c4f1 c4a6 c6a6 e6h3 e6g8 b2a1 e8e7 e8f7 e8d8 g6h4 g6f8 d7f8 d7b8 c2b1R a2b1R c2b1B a2b1B a2a1R c2c1R a2a1B c2c1B", str(moves));
+  EXPECT_EQ("c2b1Q a2b1Q a2a1Q c2c1Q c2b1N a2b1N b2a3 a8a3 g6e5 d7e5 b2e5 a2a1N c2c1N e6e5 c4e4 c6e4 f4g3 f4e3 e8g8 e8c8 d7c5 a8c8 a8d8 h8f8 d7f6 g6e7 b2d4 f4f3 h7h6 d7b6 b2c3 c4c5 c4d5 c6c5 c6d5 c6d6 e6d5 e6f5 e6d6 e6f6 e6e7 e6f7 c4d4 b7b5 h7h5 a8a4 a8a5 a8a6 a8a7 c4e2 c4b3 c4c3 c4d3 c4b4 c4b5 c6b5 c6b6 e6g4 e8f8 b7b6 c4a4 c6a4 b2c1 a8b8 h8g8 c4f1 c4a6 c6a6 e6h3 e6g8 b2a1 e8e7 e8f7 e8d8 g6h4 g6f8 d7f8 d7b8 c2b1R a2b1R c2b1B a2b1B a2a1R c2c1R a2a1B c2c1B", str(moves));
   //  for (Move m : moves) {
   //    fprintln("{}", m.strVerbose());
   //  }
@@ -752,7 +752,7 @@ TEST_F(MoveGenTest, PseudoMoveGenSpeedTest) {
 
   constexpr int rounds = 5;
 
-  auto position         = Position("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+  const auto position         = Position("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
   const MoveList* moves = mg.generatePseudoLegalMoves(position, GenAll);
 
   for (int r = 1; r <= rounds; r++) {
