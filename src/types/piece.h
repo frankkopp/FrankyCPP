@@ -82,7 +82,7 @@ constexpr Color colorOf(const Piece p) { return static_cast<Color>(p >> 3); }
 constexpr PieceType typeOf(const Piece p) { return static_cast<PieceType>(p & 0b00000111u); }
 
 /** returns a char representing the piece. Upper case letters for white, lower case for black */
-constexpr const char* pieceToChar = " KPNBRQ  kpnbrq   ";
+constexpr auto pieceToChar = " KPNBRQ  kpnbrq   ";
 
 // single char label for the piece as used in a FEN (one of " KPNBRQ  kpnbrq")
 constexpr char str(const Piece p) {

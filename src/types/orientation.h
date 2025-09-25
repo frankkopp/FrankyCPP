@@ -20,6 +20,8 @@
 #ifndef FRANKYCPP_ORIENTATION_H
 #define FRANKYCPP_ORIENTATION_H
 
+#include <cstdint>
+
 // Orientation is a set of constants for directions from a squares
 //  NW,       // 0
 //  N,        // 1

@@ -35,7 +35,7 @@ inline std::string format_now(const char* fmt = "%Y-%m-%d %H:%M:%S") {
   std::time_t t = std::time(nullptr);
   std::tm tm{};
 #if defined(_WIN32)
-  ::localtime_s(&tm, &t);
+  localtime_s(&tm, &t);
 #else
   ::localtime_r(&t, &tm);
 #endif

@@ -21,7 +21,6 @@
 #define FRANKYCPP_PIECETYPE_H
 
 #include "macros.h"
-#include <ostream>
 #include <string>
 
 // PieceType is a set of constants for piece types in chess
