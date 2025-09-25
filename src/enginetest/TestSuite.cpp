@@ -202,7 +202,7 @@ void TestSuite::bestMoveTest(Search& search, const SearchLimits& limits, const P
   search.startSearch(position, limits);
   search.waitWhileSearching();
   // get the result
-  const Move actual = moveOf(search.getLastSearchResult().bestMove);
+  const Move actual = search.getLastSearchResult().bestMove.stripped();
   // check against expected moves
   for (const Move m : test.targetMoves) {
     if (m == actual) {
@@ -224,7 +224,7 @@ void TestSuite::avoidMoveTest(Search& search, const SearchLimits& limits, const 
   search.startSearch(position, limits);
   search.waitWhileSearching();
   // get the result
-  const Move actual = moveOf(search.getLastSearchResult().bestMove);
+  const Move actual = search.getLastSearchResult().bestMove.stripped();
   // check against expected moves to avoid
   for (const Move m : test.targetMoves) {
     if (m == actual) {
@@ -321,7 +321,7 @@ bool TestSuite::readOneEPD(std::string& line, Test& test) {
     for (auto s : results) {
       boost::trim(s);
       Move m = mg.getMoveFromSan(p, s);
-      if (validMove(m)) {
+      if (m.isValid()) {
         resultMoves.emplace_back(m);
       }
     }

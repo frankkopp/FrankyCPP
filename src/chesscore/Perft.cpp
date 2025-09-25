@@ -155,16 +155,16 @@ uint64_t Perft::miniMax(const int depth, Position& position, MoveGenerator* pMg)
 inline void Perft::leaf_node(const Position& position, const Move move)
 {
   // enpassant
-  if (typeOf(move) == ENPASSANT) {
+  if (move.type() == ENPASSANT) {
     enpassantCounter++;
     captureCounter++;
   }
   // castling
-  else if (typeOf(move) == CASTLING) {
+  else if (move.type() == CASTLING) {
     castleCounter++;
     //          fprintln("No: {:2d} Last: {:5s} Move: {:5s}   Fen: {:s} ", castleCounter, str(position.getLastMove()), str(move), position.strFen());
   }
-  else if (typeOf(move) == PROMOTION) { promotionCounter++; }
+  else if (move.type() == PROMOTION) { promotionCounter++; }
   // capture
   if (position.getLastCapturedPiece() != PIECE_NONE) { captureCounter++; }
   // check
@@ -220,8 +220,8 @@ void Perft::perft_divide(const int maxDepth, const bool onDemand) {
       position.undoMove();
     }
     else {
-      const bool cap = position.getPiece(toSquare(move)) != PIECE_NONE;
-      const bool ep  = typeOf(move) == ENPASSANT;
+      const bool cap = position.getPiece(move.to()) != PIECE_NONE;
+      const bool ep  = move.type() == ENPASSANT;
       position.doMove(move);
       if (position.wasLegalMove()) {
         totalNodes++;
@@ -237,7 +237,7 @@ void Perft::perft_divide(const int maxDepth, const bool onDemand) {
       position.undoMove();
     }
 
-    os << strVerbose(move) << " (" << totalNodes << ")" << std::endl;
+    os << move.strVerbose() << " (" << totalNodes << ")" << std::endl;
     std::cout << os.str();
     std::cout.flush();
     os.str("");

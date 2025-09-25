@@ -51,11 +51,11 @@ BENCHMARK_F(ChessCoreBench, BM_SetupPosition)(benchmark::State& state) {
 
 BENCHMARK_F(ChessCoreBench, BM_DoUndoMove)(benchmark::State& state) {
   Position position("r3k2r/1ppn3p/4q1n1/8/4Pp2/3R4/p1p2PPP/R5K1 b kq e3 0 1");
-  const Move move1  = createMove(SQ_F4, SQ_E3, ENPASSANT);
-  const Move move2  = createMove(SQ_F2, SQ_E3);
-  const Move move3  = createMove(SQ_E8, SQ_G8, CASTLING);
-  const Move move4  = createMove(SQ_D3, SQ_C3);
-  const Move move5  = createMove(SQ_C2, SQ_C1, PROMOTION, QUEEN);
+  const Move move1  = Move(SQ_F4, SQ_E3, ENPASSANT);
+  const Move move2  = Move(SQ_F2, SQ_E3, NORMAL);
+  const Move move3  = Move(SQ_E8, SQ_G8, CASTLING);
+  const Move move4  = Move(SQ_D3, SQ_C3, NORMAL);
+  const Move move5  = Move(SQ_C2, SQ_C1, PROMOTION, QUEEN);
   double counter = 0;
   for (auto _ : state) {
     position.doMove(move1);

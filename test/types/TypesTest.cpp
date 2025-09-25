@@ -198,71 +198,71 @@ TEST_F(TypesTest, directionOperators) {
 }
 
 TEST_F(TypesTest, moves) {
-  Move move = createMove(SQ_A1, SQ_H1, NORMAL);
-  ASSERT_TRUE(validMove(move));
-  EXPECT_EQ(SQ_A1, fromSquare(move));
-  EXPECT_EQ(SQ_H1, toSquare(move));
-  EXPECT_EQ(NORMAL, typeOf(move));
-  EXPECT_EQ(KNIGHT, promotionTypeOf(move));// not useful is not type PROMOTION
+  Move move = Move::normal(SQ_A1, SQ_H1);
+  ASSERT_TRUE(move.isValid());
+  EXPECT_EQ(SQ_A1, move.from());
+  EXPECT_EQ(SQ_H1, move.to());
+  EXPECT_EQ(NORMAL, move.type());
+  EXPECT_EQ(KNIGHT, move.promotionType());// not useful if not type PROMOTION
 
-  move = createMove(SQ_A7, SQ_A8, PROMOTION, QUEEN);
-  ASSERT_TRUE(validMove(move));
-  EXPECT_EQ(SQ_A7, fromSquare(move));
-  EXPECT_EQ(SQ_A8, toSquare(move));
-  EXPECT_EQ(PROMOTION, typeOf(move));
-  EXPECT_EQ(QUEEN, promotionTypeOf(move));// not useful is not type PROMOTION
+  move = Move::promotion(SQ_A7, SQ_A8, QUEEN);
+  ASSERT_TRUE(move.isValid());
+  EXPECT_EQ(SQ_A7, move.from());
+  EXPECT_EQ(SQ_A8, move.to());
+  EXPECT_EQ(PROMOTION, move.type());
+  EXPECT_EQ(QUEEN, move.promotionType());
 
   std::stringstream buffer1, buffer2;
   buffer1 << "a7a8Q";
   buffer2 << move;
   EXPECT_EQ(buffer1.str(), buffer2.str());
-  EXPECT_EQ("Move: a7a8Q  type:p  prom:Q  value:-15001  (31800)", strVerbose(move));
+  EXPECT_EQ("Move: a7a8Q  type:p  prom:Q  value:-15001  (31800)", move.strVerbose());
 }
 
 TEST_F(TypesTest, movesValue) {
   NEWLINE;
-  Move move = createMove(SQ_A1, SQ_H1, NORMAL);
+  Move move = Move::normal(SQ_A1, SQ_H1);
 
-  EXPECT_EQ(VALUE_NONE, valueOf(move));
+  EXPECT_EQ(VALUE_NONE, move.value());
 
   Value v = VALUE_MAX;
-  setValueOf(move, v);
-  EXPECT_EQ(v, valueOf(move));
+  move.setValue(v);
+  EXPECT_EQ(v, move.value());
 
   v = VALUE_MIN;
-  setValueOf(move, v);
-  EXPECT_EQ(v, valueOf(move));
+  move.setValue(v);
+  EXPECT_EQ(v, move.value());
 
   v = static_cast<Value>(100);
-  setValueOf(move, v);
-  EXPECT_EQ(v, valueOf(move));
+  move.setValue(v);
+  EXPECT_EQ(v, move.value());
 
   v = VALUE_CHECKMATE_THRESHOLD;
-  setValueOf(move, v);
-  EXPECT_EQ(v, valueOf(move));
+  move.setValue(v);
+  EXPECT_EQ(v, move.value());
 
-  move = createMove(SQ_A1, SQ_H1, NORMAL, VALUE_DRAW);
-  EXPECT_EQ(VALUE_DRAW, valueOf(move));
-  move = createMove(SQ_A1, SQ_H1, NORMAL, static_cast<Value>(-100));
-  EXPECT_EQ(static_cast<Value>(-100), valueOf(move));
-  move = createMove(SQ_A1, SQ_H1, NORMAL, static_cast<Value>(100));
-  EXPECT_EQ(static_cast<Value>(100), valueOf(move));
+  move = Move::normal(SQ_A1, SQ_H1, VALUE_DRAW);
+  EXPECT_EQ(VALUE_DRAW, move.value());
+  move = Move::normal(SQ_A1, SQ_H1, static_cast<Value>(-100));
+  EXPECT_EQ(static_cast<Value>(-100), move.value());
+  move = Move::normal(SQ_A1, SQ_H1, static_cast<Value>(100));
+  EXPECT_EQ(static_cast<Value>(100), move.value());
 
-  move = createMove(SQ_A1, SQ_H1, PROMOTION, QUEEN, -pieceTypeValue[QUEEN]);
-  EXPECT_EQ(-pieceTypeValue[QUEEN], valueOf(move));
+  move = Move::promotion(SQ_A1, SQ_H1, QUEEN, -pieceTypeValue[QUEEN]);
+  EXPECT_EQ(-pieceTypeValue[QUEEN], move.value());
 
   // test equality without value / pure move
-  move                 = createMove(SQ_A1, SQ_H1, NORMAL, static_cast<Value>(100));
-  constexpr Move move2 = createMove(SQ_A1, SQ_H1, NORMAL, static_cast<Value>(-100));
+  move                 = Move::normal(SQ_A1, SQ_H1, static_cast<Value>(100));
+  constexpr Move move2 = Move::normal(SQ_A1, SQ_H1, static_cast<Value>(-100));
   ASSERT_NE(move, move2);
-  EXPECT_EQ(moveOf(move), moveOf(move2));
+  EXPECT_EQ(move.stripped(), move2.stripped());
 }
 
 TEST_F(TypesTest, moveListPrint) {
 
-  constexpr Move move1 = createMove(SQ_A1, SQ_H1, NORMAL);
-  constexpr Move move2 = createMove(SQ_A7, SQ_A8, PROMOTION, QUEEN);
-  constexpr Move move3 = createMove(SQ_E1, SQ_G1, CASTLING);
+  constexpr Move move1 = Move::normal(SQ_A1, SQ_H1);
+  constexpr Move move2 = Move::promotion(SQ_A7, SQ_A8, QUEEN);
+  constexpr Move move3 = Move::castling(SQ_E1, SQ_G1);
   MoveList moveList;
   moveList.push_back(move1);
   moveList.push_back(move2);
@@ -275,9 +275,9 @@ TEST_F(TypesTest, moveListPrint) {
 }
 
 TEST_F(TypesTest, sortMoveListByValue) {
-  constexpr Move move1 = createMove(SQ_C2, SQ_C4, NORMAL, static_cast<Value>(-100));
-  constexpr Move move2 = createMove(SQ_D2, SQ_D4, NORMAL, static_cast<Value>(0));
-  constexpr Move move3 = createMove(SQ_E2, SQ_E4, NORMAL, static_cast<Value>(100));
+  constexpr Move move1 = Move::normal(SQ_C2, SQ_C4, static_cast<Value>(-100));
+  constexpr Move move2 = Move::normal(SQ_D2, SQ_D4, static_cast<Value>(0));
+  constexpr Move move3 = Move::normal(SQ_E2, SQ_E4, static_cast<Value>(100));
   MoveList ml{};
   ml.push_back(move1);
   ml.push_back(move2);

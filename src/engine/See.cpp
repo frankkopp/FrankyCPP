@@ -24,7 +24,7 @@ Value See::see(Position& p, Move move) {
 
   // enpassant moves are ignored in a sense that it will be winning
   // capture and therefore should lead to no cut-offs when using see()
-  if (typeOf(move) == ENPASSANT) {
+  if (move.type() == ENPASSANT) {
     return Value{100};
   }
 
@@ -32,8 +32,8 @@ Value See::see(Position& p, Move move) {
   std::array<Value, 32> gain{};
 
   int ply               = 0;
-  const Square toSquare = ::toSquare(move);
-  Square fromSquare     = ::fromSquare(move);
+  const Square toSquare = move.to();
+  Square fromSquare     = move.from();
   Piece movedPiece      = p.getPiece(fromSquare);
   Color nextPlayer      = p.getNextPlayer();
 
@@ -54,8 +54,8 @@ Value See::see(Position& p, Move move) {
     nextPlayer = ~nextPlayer;// change side
 
     // speculative store, if defended
-    gain[ply] = (typeOf(move) == PROMOTION
-                   ? valueOf(promotionTypeOf(move)) - valueOf(PAWN)
+    gain[ply] = (move.type() == PROMOTION
+                   ? valueOf(move.promotionType()) - valueOf(PAWN)
                    : valueOf(movedPiece)) -
                 gain[ply - 1];
 

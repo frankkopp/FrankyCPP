@@ -201,7 +201,7 @@ void Search::run() {
     // TODO: instead of a random book move we could select a book move based on
     //  some score and some variation (randomness)
     bookMove = book->getRandomMove(position.getZobristKey());
-    LOG__DEBUG(Logger::get().SEARCH_LOG, "Opening Book: Choosing book move {}", str(bookMove));
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Opening Book: Choosing book move {}", bookMove.str());
   }
   else { LOG__INFO(Logger::get().SEARCH_LOG, "Opening Book: Not using book."); }
 
@@ -243,7 +243,7 @@ void Search::run() {
   LOG__DEBUG(Logger::get().SEARCH_LOG, "Search stats: {}", statistics.str());
 
   // print result to log
-  if (searchLimits.mate && searchResult.mateFound) { LOG__INFO(Logger::get().SEARCH_LOG, "Mate in {} found: {}", searchLimits.mate, str(pv[0].at(0))); }
+  if (searchLimits.mate && searchResult.mateFound) { LOG__INFO(Logger::get().SEARCH_LOG, "Mate in {} found: {}", searchLimits.mate, pv[0].at(0).str()); }
   LOG__INFO(Logger::get().SEARCH_LOG, "Search result: {}", searchResult.str());
 
   // save the result until overwritten by the next search
@@ -342,10 +342,10 @@ SearchResult Search::iterativeDeepening(Position& p) {
     else { bestValue = rootSearch(p, iterationDepth, alpha, beta); }
     // ###########################################
 
-    assert((bestValue == valueOf(pv[0].at(0)) || stopSearchFlag) && "bestValue should be equal value of pv[0].at(0)");
+    assert((bestValue == pv[0].at(0).value() || stopSearchFlag) && "bestValue should be equal value of pv[0].at(0)");
 
     // if mate search check if we found a mate within the mate limit
-    if (searchLimits.mate && abs(valueOf(pv[0].at(0))) >= VALUE_CHECKMATE_THRESHOLD && searchLimits.mate * 2 - 1 == VALUE_CHECKMATE - valueOf(pv[0].at(0))) {
+    if (searchLimits.mate && abs(pv[0].at(0).value()) >= VALUE_CHECKMATE_THRESHOLD && searchLimits.mate * 2 - 1 == VALUE_CHECKMATE - pv[0].at(0).value()) {
       searchResult.mateFound = true;
       break;
     }
@@ -359,7 +359,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
       // sort root moves for the next iteration
       std::ranges::stable_sort(rootMoves, moveValueGreaterComparator());
       statistics.currentBestRootMove      = pv[0].at(0);
-      statistics.currentBestRootMoveValue = valueOf(pv[0].at(0));
+      statistics.currentBestRootMoveValue = pv[0].at(0).value();
       assert(pv[0].at(0) == rootMoves.at(0) && "Best root move should be equal to pv[0].at(0)");
       // update UCI GUI
       sendIterationEndInfoToUci();
@@ -372,14 +372,14 @@ SearchResult Search::iterativeDeepening(Position& p) {
   // update searchResult
   // the best move is pv[0][0] - we need to make sure this array entry exists at this time
   // the best value is pv[0][0].valueOf
-  searchResult.bestMove      = moveOf(pv[0].at(0));
-  searchResult.bestMoveValue = valueOf(pv[0].at(0));
+  searchResult.bestMove      = pv[0].at(0).stripped();
+  searchResult.bestMoveValue = pv[0].at(0).value();
   searchResult.depth         = statistics.currentIterationDepth;
   searchResult.extraDepth    = statistics.currentExtraSearchDepth;
   searchResult.bookMove      = false;
 
   // see if we have a move we could ponder on
-  if (pv[0].size() > 1) { searchResult.ponderMove = moveOf(pv[0].at(1)); }
+  if (pv[0].size() > 1) { searchResult.ponderMove = pv[0].at(1).stripped(); }
   else {
     // we do not have a ponder-move in the pv-list,
     // so let's check the TT
@@ -388,7 +388,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
       if (const auto* ttEntryPtr = tt->probe(p.getZobristKey())) {
         statistics.ttHit++;
         searchResult.ponderMove = static_cast<Move>(ttEntryPtr->move);
-        LOG__DEBUG(Logger::get().SEARCH_LOG, "Using ponder move from hash table: {}", str(searchResult.ponderMove));
+        LOG__DEBUG(Logger::get().SEARCH_LOG, "Using ponder move from hash table: {}", searchResult.ponderMove.str());
       }
       p.undoMove();
     }
@@ -517,7 +517,7 @@ Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Valu
 
     // set the value into he root move to later be able to sort
     // root moves according to value
-    setValueOf(moveRef, value);
+    moveRef.setValue(value);
 
     // Did we find a new best move?
     // For the first move with a full window (alpha=-inf)
@@ -730,7 +730,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // get the best move from the reduced search if available
       if (!pv[ply].empty()) {
         statistics.iidMoves++;
-        ttMove = moveOf(pv[ply][0]);
+        ttMove = pv[ply][0].stripped();
       }
     }
   }
@@ -759,8 +759,8 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // ///////////////////////////////////////////////////////
   // MOVE LOOP
   while ((move = myMg->getNextPseudoLegalMove(p, GenAll, hasCheck)) != MOVE_NONE) {
-    const Square from     = fromSquare(move);
-    const Square to       = toSquare(move);
+    const Square from     = move.from();
+    const Square to       = move.to();
     const bool givesCheck = p.givesCheck(move);
 
     // prepare newDepth
@@ -806,7 +806,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         && move != ttMove
         && move != myMg->getKillerMoves()[0]
         && move != myMg->getKillerMoves()[1]
-        && typeOf(move) != PROMOTION
+        && move.type() != PROMOTION
         && !p.isCapturingMove(move)
         && !hasCheck
         && !givesCheck
@@ -968,7 +968,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
           // store a successful counter move to the previous opponent move
           if (SearchConfig::USE_HISTORY_MOVES) {
             const Move lastMove = p.getLastMove();
-            if (lastMove != MOVE_NONE) { history.counterMoves[fromSquare(lastMove)][toSquare(lastMove)] = move; }
+            if (lastMove != MOVE_NONE) { history.counterMoves[lastMove.from()][lastMove.to()] = move; }
           }
           ttType = BETA;
           break;
@@ -1118,8 +1118,8 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
   // ///////////////////////////////////////////////////////
   // MOVE LOOP
   while ((move = myMg->getNextPseudoLegalMove(p, genMode, hasCheck)) != MOVE_NONE) {
-    const Square from     = fromSquare(move);
-    const Square to       = toSquare(move);
+    const Square from     = move.from();
+    const Square to       = move.to();
     const bool givesCheck = p.givesCheck(move);
 
     // Forward Pruning
@@ -1130,7 +1130,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
         && move != ttMove
         && move != myMg->getKillerMoves()[0]
         && move != myMg->getKillerMoves()[1]
-        && typeOf(move) != PROMOTION
+        && move.type() != PROMOTION
         && !hasCheck
         && !givesCheck// post move
     ) {
@@ -1192,7 +1192,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
           if (SearchConfig::USE_HISTORY_COUNTER) { history.historyCount[us][from][to] += 1 << 1; }
           if (SearchConfig::USE_HISTORY_MOVES) {
             const Move lastMove = p.getLastMove();
-            if (lastMove != MOVE_NONE) { history.counterMoves[fromSquare(lastMove)][toSquare(lastMove)] = move; }
+            if (lastMove != MOVE_NONE) { history.counterMoves[lastMove.from()][lastMove.to()] = move; }
           }
           ttType = BETA;
           break;
@@ -1203,7 +1203,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
       }
     }
     if (SearchConfig::USE_HISTORY_COUNTER) {
-      history.historyCount[us][from][to] -= 1U << 1;
+      history.historyCount[us][from][to] -= 1 << 1;
       if (history.historyCount[us][from][to] < 0) { history.historyCount[us][from][to] = 0; }
     }
   }
@@ -1253,16 +1253,16 @@ bool Search::goodCapture(Position& p, const Move move) const {
 
     // Lower value piece captures higher value piece
     // With a margin to also look at Bishop x Knight
-    (valueOf(position.getPiece(fromSquare(move))) + 50) < valueOf(position.getPiece(toSquare(move)))
+    (valueOf(position.getPiece(move.from())) + 50) < valueOf(position.getPiece(move.to()))
 
     // all recaptures should be looked at
-    || (position.getLastMove() != MOVE_NONE && position.getLastCapturedPiece() != PIECE_NONE && toSquare(position.getLastMove()) == toSquare(move))
+    || (position.getLastMove() != MOVE_NONE && position.getLastCapturedPiece() != PIECE_NONE && position.getLastMove().to() == move.to())
 
     // undefended pieces captures are good
     // If the defender is "behind" the attacker this will not be recognized
     // here This is not too bad as it only adds a move to qsearch which we
     // could otherwise ignore
-    || !position.isAttacked(toSquare(move), ~position.getNextPlayer());
+    || !position.isAttacked(move.to(), ~position.getNextPlayer());
 }
 
 void Search::storeTt(

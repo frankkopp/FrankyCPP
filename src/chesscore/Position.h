@@ -258,7 +258,7 @@ public:
    * @param move
    * @return true if move captures (incl. en passant)
    */
-  bool isCapturingMove(const Move& move) const { return (occupiedBb[~nextPlayer] & toSquare(move)) || typeOf(move) == ENPASSANT; };
+  bool isCapturingMove(const Move& move) const { return (occupiedBb[~nextPlayer] & move.to()) || move.type() == ENPASSANT; };
 
   // LastCapturedPiece returns the captured piece of the last
   // move made on the position or MoveNone if the move was

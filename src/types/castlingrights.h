@@ -87,7 +87,7 @@ public:
   // "Has castling right" semantics for equality (compatibility):
   // returns true if (lhs & rhs) != 0, or both are 0
   friend constexpr bool operator==(const CastlingRights lhs, const CastlingRights rhs) {
-    return (lhs.v_ & rhs.v_) != 0u || lhs.v_ ;
+    return (lhs.v_ & rhs.v_) != 0u || (lhs.v_ == 0u && rhs.v_ == 0u);
   }
   friend constexpr bool operator!=(const CastlingRights lhs, const CastlingRights rhs) { return !(lhs == rhs); }
 };

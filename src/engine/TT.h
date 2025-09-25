@@ -22,8 +22,8 @@
 
 #include <iosfwd>
 
-#include "types/types.h"
 #include "common/gtest_friends.h"
+#include "types/types.h"
 
 // pre-fetching of TT entries into CPU caches
 #ifdef __GNUC__
@@ -70,7 +70,7 @@ public:
     // sorted by size to achieve the smallest struct size
     // using bitfield for the smallest size
     Key key       = 0;         // 64 bit
-    uint16_t move = MOVE_NONE; // 16 bit
+    uint16_t move = 0;         // MOVE_NONE as 16-bit
     Value eval    = VALUE_NONE;// 16-bit signed
     Value value   = VALUE_NONE;// 16-bit signed
     int8_t depth : 7 {};       // 0-127

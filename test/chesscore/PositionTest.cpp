@@ -343,8 +343,8 @@ TEST_F(PositionTest, Output) {
 
 TEST_F(PositionTest, Copy) {
   string fen("r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3 10 113");
-  Move move1 = createMove(SQ_A2, SQ_B1, PROMOTION, QUEEN);
-  Move move2 = createMove(SQ_C2, SQ_B1, PROMOTION, QUEEN);
+  Move move1 = Move::promotion(SQ_A2, SQ_B1, QUEEN);
+  Move move2 = Move::promotion(SQ_C2, SQ_B1, QUEEN);
 
   // original position
   Position position(fen.c_str());
@@ -423,17 +423,17 @@ TEST_F(PositionTest, doUndoMoveNormal) {
   //  cout << position.str() << endl;
 
   // do move tests
-  position.doMove(createMove(SQ_E2, SQ_E4, NORMAL));
+  position.doMove(Move::normal(SQ_E2, SQ_E4));
   //  cout << position.str() << endl;
   EXPECT_EQ(SQ_E3, position.getEnPassantSquare());
   EXPECT_EQ("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1", position.strFen());
 
-  position.doMove(createMove(SQ_D7, SQ_D5, NORMAL));
+  position.doMove(Move::normal(SQ_D7, SQ_D5));
   //  cout << position.str() << endl;
   EXPECT_EQ(SQ_D6, position.getEnPassantSquare());
   EXPECT_EQ("rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 2", position.strFen());
 
-  position.doMove(createMove(SQ_E4, SQ_D5, NORMAL));
+  position.doMove(Move::normal(SQ_E4, SQ_D5));
   //  cout << position.str() << endl;
   EXPECT_EQ(SQ_NONE, position.getEnPassantSquare());
   EXPECT_EQ(BLACK, position.getNextPlayer());
@@ -462,7 +462,7 @@ TEST_F(PositionTest, doUndoMovePromotion) {
 
   // do move
 
-  position.doMove(createMove(SQ_A7, SQ_A8, PROMOTION, QUEEN));
+  position.doMove(Move::promotion(SQ_A7, SQ_A8, QUEEN));
   //  cout << position.str() << endl;
   EXPECT_EQ(BLACK, position.getNextPlayer());
   EXPECT_EQ(2900, position.getMaterial(WHITE));
@@ -480,7 +480,7 @@ TEST_F(PositionTest, doUndoMoveEnPassantCapture) {
   // do move
   Position position("rnbqkbnr/ppp1pppp/8/8/3pP3/2N2N2/PPPP1PPP/R1BQKB1R b KQkq e3 0 3");
   //  cout << position.str() << endl;
-  position.doMove(createMove(SQ_D4, SQ_E3, ENPASSANT));
+  position.doMove(Move::enPassant(SQ_D4, SQ_E3));
   //  cout << position.str() << endl;
   EXPECT_EQ(WHITE, position.getNextPlayer());
   EXPECT_EQ(5900, position.getMaterial(WHITE));
@@ -497,7 +497,7 @@ TEST_F(PositionTest, doUndoMoveEnPassantCapture) {
   position = Position(
     "r1bqkb1r/pppp1ppp/2n2n2/3Pp3/8/8/PPP1PPPP/RNBQKBNR w KQkq e6 0 1");
   //  cout << position.str() << endl;
-  position.doMove(createMove(SQ_D5, SQ_E6, ENPASSANT));
+  position.doMove(Move::enPassant(SQ_D5, SQ_E6));
   //  cout << position.str() << endl;
   EXPECT_EQ(BLACK, position.getNextPlayer());
   EXPECT_EQ(5900, position.getMaterial(BLACK));
@@ -518,7 +518,7 @@ TEST_F(PositionTest, doMoveCASTLING) {
 
 
   // cout << position.str() << endl;
-  position.doMove(createMove(SQ_E1, SQ_G1, CASTLING));
+  position.doMove(Move::castling(SQ_E1, SQ_G1));
   // cout << position.str() << endl;
   EXPECT_EQ("r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R4RK1 b kq - 1 1", position.strFen());
 
@@ -531,7 +531,7 @@ TEST_F(PositionTest, doMoveCASTLING) {
 
 
   // cout << position.str() << endl;
-  position.doMove(createMove(SQ_E1, SQ_C1, CASTLING));
+  position.doMove(Move::castling(SQ_E1, SQ_C1));
   // cout << position.str() << endl;
   EXPECT_EQ("r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/2KR3R b kq - 1 1", position.strFen());
 
@@ -544,7 +544,7 @@ TEST_F(PositionTest, doMoveCASTLING) {
 
 
   // cout << position.str() << endl;
-  position.doMove(createMove(SQ_E8, SQ_G8, CASTLING));
+  position.doMove(Move::castling(SQ_E8, SQ_G8));
   // cout << position.str() << endl;
   EXPECT_EQ("r4rk1/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQ - 1 2", position.strFen());
 
@@ -557,7 +557,7 @@ TEST_F(PositionTest, doMoveCASTLING) {
 
 
   // cout << position.str() << endl;
-  position.doMove(createMove(SQ_E8, SQ_C8, CASTLING));
+  position.doMove(Move::castling(SQ_E8, SQ_C8));
   // cout << position.str() << endl;
   EXPECT_EQ("2kr3r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQ - 1 2", position.strFen());
 
@@ -570,7 +570,7 @@ TEST_F(PositionTest, doMoveCASTLING) {
 
 
   // cout << position.str() << endl;
-  position.doMove(createMove(SQ_E1, SQ_F1, NORMAL));
+  position.doMove(Move::normal(SQ_E1, SQ_F1));
   // cout << position.str() << endl;
   EXPECT_EQ("r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R4K1R b kq - 1 1", position.strFen());
 
@@ -583,7 +583,7 @@ TEST_F(PositionTest, doMoveCASTLING) {
 
 
   // cout << position.str() << endl;
-  position.doMove(createMove(SQ_H1, SQ_F1, NORMAL));
+  position.doMove(Move::normal(SQ_H1, SQ_F1));
   // cout << position.str() << endl;
   EXPECT_EQ("r3k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3KR2 b Qkq - 1 1", position.strFen());
 
@@ -596,7 +596,7 @@ TEST_F(PositionTest, doMoveCASTLING) {
 
 
   // cout << position.str() << endl;
-  position.doMove(createMove(SQ_A8, SQ_C8, NORMAL));
+  position.doMove(Move::normal(SQ_A8, SQ_C8));
   // cout << position.str() << endl;
   EXPECT_EQ("2r1k2r/pppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/PPPQ1PPP/R3K2R w KQk - 1 2", position.strFen());
 
@@ -607,7 +607,7 @@ TEST_F(PositionTest, doMoveCASTLING) {
   // do move
   position = Position("r3k2r/1ppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/1PPQ1PPP/R3K2R b KQkq - 0 1");
   // cout << position.str() << endl;
-  position.doMove(createMove(SQ_A8, SQ_A1, NORMAL));
+  position.doMove(Move::normal(SQ_A8, SQ_A1));
   // cout << position.str() << endl;
   EXPECT_EQ("4k2r/1ppqbppp/2np1n2/1B2p1B1/4P1b1/2NP1N2/1PPQ1PPP/r3K2R w Kk - 0 2", position.strFen());
 
@@ -634,8 +634,8 @@ TEST_F(PositionTest, doNullMove) {
 TEST_F(PositionTest, repetitionSimple) {
   Position position;
 
-  position.doMove(createMove(SQ_E2, SQ_E4, NORMAL));
-  position.doMove(createMove(SQ_E7, SQ_E5, NORMAL));
+  position.doMove(Move::normal(SQ_E2, SQ_E4));
+  position.doMove(Move::normal(SQ_E7, SQ_E5));
 
   // cout << "Repetitions: " << position.countRepetitions() << endl;
   EXPECT_EQ(0, position.countRepetitions());
@@ -643,10 +643,10 @@ TEST_F(PositionTest, repetitionSimple) {
   // Simple repetition
   // takes 3 loops to get to repetition
   for (int i = 0; i <= 2; i++) {
-    position.doMove(createMove(SQ_G1, SQ_F3, NORMAL));
-    position.doMove(createMove(SQ_B8, SQ_C6, NORMAL));
-    position.doMove(createMove(SQ_F3, SQ_G1, NORMAL));
-    position.doMove(createMove(SQ_C6, SQ_B8, NORMAL));
+    position.doMove(Move::normal(SQ_G1, SQ_F3));
+    position.doMove(Move::normal(SQ_B8, SQ_C6));
+    position.doMove(Move::normal(SQ_F3, SQ_G1));
+    position.doMove(Move::normal(SQ_C6, SQ_B8));
     // cout << "Repetitions: " << position.countRepetitions() << endl;
   }
 
@@ -659,18 +659,18 @@ TEST_F(PositionTest, repetitionAdvanced) {
   Position position("6k1/p3q2p/1n1Q2pB/8/5P2/6P1/PP5P/3R2K1 b - -");
 
 
-  position.doMove(createMove(SQ_E7, SQ_E3, NORMAL));
-  position.doMove(createMove(SQ_G1, SQ_G2, NORMAL));
+  position.doMove(Move::normal(SQ_E7, SQ_E3));
+  position.doMove(Move::normal(SQ_G1, SQ_G2));
 
   //  cout << "Repetitions: " << position.countRepetitions() << endl;
   EXPECT_EQ(0, position.countRepetitions());
 
   // takes 2 loops to get to repetition
   for (int i = 0; i < 2; i++) {
-    position.doMove(createMove(SQ_E3, SQ_E2, NORMAL));
-    position.doMove(createMove(SQ_G2, SQ_G1, NORMAL));
-    position.doMove(createMove(SQ_E2, SQ_E3, NORMAL));
-    position.doMove(createMove(SQ_G1, SQ_G2, NORMAL));
+    position.doMove(Move::normal(SQ_E3, SQ_E2));
+    position.doMove(Move::normal(SQ_G2, SQ_G1));
+    position.doMove(Move::normal(SQ_E2, SQ_E3));
+    position.doMove(Move::normal(SQ_G1, SQ_G2));
     //    cout << "Repetitions: " << position.countRepetitions() << endl;
   }
 
@@ -835,168 +835,168 @@ TEST_F(PositionTest, giveCheck) {
 
   // Pawns
   p    = Position("4r3/1pn3k1/4p1b1/p1Pp1P1r/3P2NR/1P3B2/3K2P1/4R3 w - -");
-  move = createMove(SQ_F5, SQ_F6, NORMAL, PT_NONE);
+  move = Move::normal(SQ_F5, SQ_F6);
   EXPECT_TRUE(p.givesCheck(move));
 
   p    = Position("5k2/4pp2/1N2n1p1/r3P2p/P5PP/2rR1K2/P7/3R4 b - -");
-  move = createMove(SQ_H5, SQ_G4, NORMAL, PT_NONE);
+  move = Move::normal(SQ_H5, SQ_G4);
   EXPECT_TRUE(p.givesCheck(move));
 
   // promotion
   p    = Position("1k3r2/1p1bP3/2p2p1Q/Ppb5/4Rp1P/2q2N1P/5PB1/6K1 w - -");
-  move = createMove(SQ_E7, SQ_F8, PROMOTION, QUEEN);
+  move = Move::promotion(SQ_E7, SQ_F8, QUEEN);
   EXPECT_TRUE(p.givesCheck(move));
 
   p    = Position("1r3r2/1p1bP2k/2p2n2/p1Pp4/P2N1PpP/1R2p3/1P2P1BP/3R2K1 w - -");
-  move = createMove(SQ_E7, SQ_F8, PROMOTION, KNIGHT);
+  move = Move::promotion(SQ_E7, SQ_F8, KNIGHT);
   EXPECT_TRUE(p.givesCheck(move));
 
   // Knights
   p    = Position("5k2/4pp2/1N2n1p1/r3P2p/P5PP/2rR1K2/P7/3R4 w - -");
-  move = createMove(SQ_B6, SQ_D7, NORMAL, PT_NONE);
+  move = Move::normal(SQ_B6, SQ_D7);
   EXPECT_TRUE(p.givesCheck(move));
 
   p    = Position("5k2/4pp2/1N2n1p1/r3P2p/P5PP/2rR1K2/P7/3R4 b - -");
-  move = createMove(SQ_E6, SQ_D4, NORMAL, PT_NONE);
+  move = Move::normal(SQ_E6, SQ_D4);
   EXPECT_TRUE(p.givesCheck(move));
 
   // Rooks
   p    = Position("5k2/4pp2/1N2n1pp/r3P3/P5PP/2rR4/P3K3/3R4 w - -");
-  move = createMove(SQ_D3, SQ_D8, NORMAL, PT_NONE);
+  move = Move::normal(SQ_D3, SQ_D8);
   EXPECT_TRUE(p.givesCheck(move));
 
   p    = Position("5k2/4pp2/1N2n1pp/r3P3/P5PP/2rR4/P3K3/3R4 b - -");
-  move = createMove(SQ_C3, SQ_C2, NORMAL, PT_NONE);
+  move = Move::normal(SQ_C3, SQ_C2);
   EXPECT_TRUE(p.givesCheck(move));
 
   // blocked opponent piece - no check
   p    = Position("5k2/4pp2/1N2n1pp/r3P3/P5PP/2rR4/P2RK3/8 b - -");
-  move = createMove(SQ_C3, SQ_C2, NORMAL, PT_NONE);
+  move = Move::normal(SQ_C3, SQ_C2);
   EXPECT_FALSE(p.givesCheck(move));
 
   // blocked own piece - no check
   p    = Position("5k2/4pp2/1N2n1pp/r3P3/P5PP/2rR4/P2nK3/3R4 b - -");
-  move = createMove(SQ_C3, SQ_C2, NORMAL, PT_NONE);
+  move = Move::normal(SQ_C3, SQ_C2);
   EXPECT_FALSE(p.givesCheck(move));
 
   // Bishop
   p    = Position("6k1/3q2b1/p1rrnpp1/P3p3/2B1P3/1p1R3Q/1P4PP/1B1R3K w - -");
-  move = createMove(SQ_C4, SQ_E6, NORMAL, PT_NONE);
+  move = Move::normal(SQ_C4, SQ_E6);
   EXPECT_TRUE(p.givesCheck(move));
 
   // Queen
   p    = Position("5k2/4pp2/1N2n1pp/r3P3/P5PP/2qR4/P3K3/3R4 b - -");
-  move = createMove(SQ_C3, SQ_C2, NORMAL, PT_NONE);
+  move = Move::normal(SQ_C3, SQ_C2);
   EXPECT_TRUE(p.givesCheck(move));
 
   p    = Position("6k1/3q2b1/p1rrnpp1/P3p3/2B1P3/1p1R3Q/1P4PP/1B1R3K w - -");
-  move = createMove(SQ_H3, SQ_E6, NORMAL, PT_NONE);
+  move = Move::normal(SQ_H3, SQ_E6);
   EXPECT_TRUE(p.givesCheck(move));
 
   p    = Position("6k1/p3q2p/1n1Q2pB/8/5P2/6P1/PP5P/3R2K1 b - -");
-  move = createMove(SQ_E7, SQ_E3, NORMAL, PT_NONE);
+  move = Move::normal(SQ_E7, SQ_E3);
   EXPECT_TRUE(p.givesCheck(move));
 
   // no check
   p    = Position("6k1/p3q2p/1n1Q2pB/8/5P2/6P1/PP5P/3R2K1 b - -");
-  move = createMove(SQ_E7, SQ_E4, NORMAL, PT_NONE);
+  move = Move::normal(SQ_E7, SQ_E4);
   EXPECT_FALSE(p.givesCheck(move));
 
   // CASTLING checks
   p    = Position("r4k1r/8/8/8/8/8/8/R3K2R w KQ -");
-  move = createMove(SQ_E1, SQ_G1, CASTLING, PT_NONE);
+  move = Move::castling(SQ_E1, SQ_G1);
   EXPECT_TRUE(p.givesCheck(move));
 
   p    = Position("r2k3r/8/8/8/8/8/8/R3K2R w KQ -");
-  move = createMove(SQ_E1, SQ_C1, CASTLING, PT_NONE);
+  move = Move::castling(SQ_E1, SQ_C1);
   EXPECT_TRUE(p.givesCheck(move));
 
   p    = Position("r3k2r/8/8/8/8/8/8/R4K1R b kq -");
-  move = createMove(SQ_E8, SQ_G8, CASTLING, PT_NONE);
+  move = Move::castling(SQ_E8, SQ_G8);
   EXPECT_TRUE(p.givesCheck(move));
 
   p    = Position("r3k2r/8/8/8/8/8/8/R2K3R b kq -");
-  move = createMove(SQ_E8, SQ_C8, CASTLING, PT_NONE);
+  move = Move::castling(SQ_E8, SQ_C8);
   EXPECT_TRUE(p.givesCheck(move));
 
   p    = Position("r6r/8/8/8/8/8/8/2k1K2R w K -");
-  move = createMove(SQ_E1, SQ_G1, CASTLING, PT_NONE);
+  move = Move::castling(SQ_E1, SQ_G1);
   EXPECT_TRUE(p.givesCheck(move));
 
   // en passant checks
   p    = Position("8/3r1pk1/p1R2p2/1p5p/r2Pp3/PRP3P1/4KP1P/8 b - d3");
-  move = createMove(SQ_E4, SQ_D3, ENPASSANT, PT_NONE);
+  move = Move::enPassant(SQ_E4, SQ_D3);
   EXPECT_TRUE(p.givesCheck(move));
 
   // REVEALED CHECKS
   p    = Position("6k1/8/3P1bp1/2BNp3/8/1Q3P1q/7r/1K2R3 w - -");
-  move = createMove(SQ_D5, SQ_E7, NORMAL, PT_NONE);
+  move = Move::normal(SQ_D5, SQ_E7);
   EXPECT_TRUE(p.givesCheck(move));
 
   p    = Position("6k1/8/3P1bp1/2BNp3/8/1Q3P1q/7r/1K2R3 w - -");
-  move = createMove(SQ_D5, SQ_C7, NORMAL, PT_NONE);
+  move = Move::normal(SQ_D5, SQ_C7);
   EXPECT_TRUE(p.givesCheck(move));
 
   p    = Position("1Q1N2k1/8/3P1bp1/2B1p3/8/5P1q/7r/1K2R3 w - -");
-  move = createMove(SQ_D8, SQ_E6, NORMAL, PT_NONE);
+  move = Move::normal(SQ_D8, SQ_E6);
   EXPECT_TRUE(p.givesCheck(move));
 
   p    = Position("1R1N2k1/8/3P1bp1/2B1p3/8/5P1q/7r/1K2R3 w - -");
-  move = createMove(SQ_D8, SQ_E6, NORMAL, PT_NONE);
+  move = Move::normal(SQ_D8, SQ_E6);
   EXPECT_TRUE(p.givesCheck(move));
 
   // revealed by en passant capture
   p    = Position("8/b2r1pk1/p1R2p2/1p5p/r2Pp3/PRP3P1/5K1P/8 b - d3");
-  move = createMove(SQ_E4, SQ_D3, ENPASSANT, PT_NONE);
+  move = Move::enPassant(SQ_E4, SQ_D3);
   EXPECT_TRUE(p.givesCheck(move));
 
   // Misc
   p    = Position("2r1r3/pb1n1kpn/1p1qp3/6p1/2PP4/8/P2Q1PPP/3R1RK1 w - -");
-  move = createMove(SQ_F2, SQ_F4, NORMAL, PT_NONE);
+  move = Move::normal(SQ_F2, SQ_F4);
   EXPECT_FALSE(p.givesCheck(move));
 
   p    = Position("2r1r1k1/pb3pp1/1p1qpn2/4n1p1/2PP4/6KP/P2Q1PP1/3RR3 b - -");
-  move = createMove(SQ_E5, SQ_D3, NORMAL, PT_NONE);
+  move = Move::normal(SQ_E5, SQ_D3);
   EXPECT_TRUE(p.givesCheck(move));
 
   p    = Position("R6R/3Q4/1Q4Q1/4Q3/2Q4Q/Q1NNQQ2/1p6/qk3KB1 b - -");
-  move = createMove(SQ_B1, SQ_C2, NORMAL, PT_NONE);
+  move = Move::normal(SQ_B1, SQ_C2);
   EXPECT_TRUE(p.givesCheck(move));
 
   p    = Position("8/8/8/8/8/5K2/R7/7k w - -");
-  move = createMove(SQ_A2, SQ_H2, NORMAL, PT_NONE);
+  move = Move::normal(SQ_A2, SQ_H2);
   EXPECT_TRUE(p.givesCheck(move));
 
   p    = Position("r1bqkb1r/ppp1pppp/2n2n2/1B1P4/8/8/PPPP1PPP/RNBQK1NR w KQkq -");
-  move = createMove(SQ_D5, SQ_C6, NORMAL, PT_NONE);
+  move = Move::normal(SQ_D5, SQ_C6);
   EXPECT_FALSE(p.givesCheck(move));
 
   p    = Position("rnbq1bnr/pppkpppp/8/3p4/3P4/3Q4/PPP1PPPP/RNB1KBNR w KQ -");
-  move = createMove(SQ_D3, SQ_H7, NORMAL, PT_NONE);
+  move = Move::normal(SQ_D3, SQ_H7);
   EXPECT_FALSE(p.givesCheck(move));
 }
 
 TEST_F(PositionTest, isCapturingMove) {
   const string fen    = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3";
   const auto position = Position(fen);
-  EXPECT_TRUE(position.isCapturingMove(createMove(SQ_A2, SQ_B1, PROMOTION)));
-  EXPECT_FALSE(position.isCapturingMove(createMove(SQ_A2, SQ_A1, PROMOTION)));
-  EXPECT_TRUE(position.isCapturingMove(createMove(SQ_C6, SQ_E4, NORMAL)));
-  EXPECT_FALSE(position.isCapturingMove(createMove(SQ_C4, SQ_F1, NORMAL)));
+  EXPECT_TRUE(position.isCapturingMove(Move::promotion(SQ_A2, SQ_B1, QUEEN)));
+  EXPECT_FALSE(position.isCapturingMove(Move::promotion(SQ_A2, SQ_A1, QUEEN)));
+  EXPECT_TRUE(position.isCapturingMove(Move::normal(SQ_C6, SQ_E4)));
+  EXPECT_FALSE(position.isCapturingMove(Move::normal(SQ_C4, SQ_F1)));
 }
 
 TEST_F(PositionTest, isLegalMove) {
   // no o-o castling
   string fen    = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3";
   auto position = Position(fen);
-  EXPECT_FALSE(position.isLegalMove(createMove(SQ_E8, SQ_G8, CASTLING)));
-  EXPECT_TRUE(position.isLegalMove(createMove(SQ_E8, SQ_C8, CASTLING)));
+  EXPECT_FALSE(position.isLegalMove(Move::castling(SQ_E8, SQ_G8)));
+  EXPECT_TRUE(position.isLegalMove(Move::castling(SQ_E8, SQ_C8)));
 
   // in check - no castling at all
   fen      = "r3k2r/1ppn3p/2q1qNn1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3";
   position = Position(fen);
-  EXPECT_FALSE(position.isLegalMove(createMove(SQ_E8, SQ_G8, CASTLING)));
-  EXPECT_FALSE(position.isLegalMove(createMove(SQ_E8, SQ_C8, CASTLING)));
+  EXPECT_FALSE(position.isLegalMove(Move::castling(SQ_E8, SQ_G8)));
+  EXPECT_FALSE(position.isLegalMove(Move::castling(SQ_E8, SQ_C8)));
 }
 
 TEST_F(PositionTest, wasLegalMove) {
@@ -1005,11 +1005,11 @@ TEST_F(PositionTest, wasLegalMove) {
   string fen    = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3";
   auto position = Position(fen);
 
-  position.doMove(createMove(SQ_E8, SQ_G8, CASTLING));
+  position.doMove(Move::castling(SQ_E8, SQ_G8));
   EXPECT_FALSE(position.wasLegalMove());
   position.undoMove();
 
-  position.doMove(createMove(SQ_E8, SQ_C8, CASTLING));
+  position.doMove(Move::castling(SQ_E8, SQ_C8));
   EXPECT_TRUE(position.wasLegalMove());
   position.undoMove();
 
@@ -1017,11 +1017,11 @@ TEST_F(PositionTest, wasLegalMove) {
   fen      = "r3k2r/1ppn3p/2q1qNn1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3";
   position = Position(fen);
 
-  position.doMove(createMove(SQ_E8, SQ_G8, CASTLING));
+  position.doMove(Move::castling(SQ_E8, SQ_G8));
   EXPECT_FALSE(position.wasLegalMove());
   position.undoMove();
 
-  position.doMove(createMove(SQ_E8, SQ_C8, CASTLING));
+  position.doMove(Move::castling(SQ_E8, SQ_C8));
   EXPECT_FALSE(position.wasLegalMove());
   position.undoMove();
 }
@@ -1089,8 +1089,8 @@ TEST_F(PositionTest, attacksTo) {
 TEST_F(PositionTest, debug) {
 
   Position p("r3k2r/Pppp1ppp/1b3nbN/nP6/BBPPP3/q4N2/Pp4PP/R2Q1RK1 b kq d3 0 1");
-  constexpr Move m = createMove(SQ_B2, SQ_A1, PROMOTION, QUEEN);
-  println(strVerbose(m));
+  constexpr Move m = Move::promotion(SQ_B2, SQ_A1, QUEEN);
+  println(m.strVerbose());
   println(p.strFen());
   p.doMove(m);
   println(p.strFen());

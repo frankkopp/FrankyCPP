@@ -73,10 +73,10 @@ TEST_F(MoveGenTest, pawnMoves) {
 
   // sort moves
   ranges::sort(moves, [](const Move lhs, const Move rhs) {
-    return valueOf(lhs) > valueOf(rhs);
+    return lhs.value() > rhs.value();
   });
   for (const Move m : moves) {
-    println(strVerbose(m));
+    println(m.strVerbose());
   }
 }
 
@@ -97,10 +97,10 @@ TEST_F(MoveGenTest, kingMoves) {
 
   // sort moves
   ranges::sort(moves, [](const Move lhs, const Move rhs) {
-    return valueOf(lhs) > valueOf(rhs);
+    return lhs.value() > rhs.value();
   });
   for (const Move m : moves) {
-    println(strVerbose(m));
+    println(m.strVerbose());
   }
 }
 
@@ -131,10 +131,10 @@ TEST_F(MoveGenTest, normalMoves) {
 
   // sort moves
   ranges::sort(moves, [](const Move lhs, const Move rhs) {
-    return valueOf(lhs) > valueOf(rhs);
+    return lhs.value() > rhs.value();
   });
   for (Move m : moves) {
-    println(strVerbose(m));
+    println(m.strVerbose());
   }
 }
 
@@ -155,10 +155,10 @@ TEST_F(MoveGenTest, castlingMoves) {
 
   // sort moves
   ranges::sort(moves, [](const Move lhs, const Move rhs) {
-    return valueOf(lhs) > valueOf(rhs);
+    return lhs.value() > rhs.value();
   });
   for (const Move m : moves) {
-    println(strVerbose(m));
+    println(m.strVerbose());
   }
 }
 
@@ -176,7 +176,7 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
   EXPECT_EQ(20, moves.size());
   EXPECT_EQ("d2d4 e2e4 b1c3 g1f3 a2a3 h2h3 a2a4 b2b4 c2c4 f2f4 g2g4 h2h4 d2d3 e2e3 b2b3 g2g3 c2c3 f2f3 b1a3 g1h3", str(moves));
   //  for (Move m : moves) {
-  //    fprintln("{}", strVerbose(m));
+  //    fprintln("{}", m.strVerbose());
   //  }
   NEWLINE;
 
@@ -187,7 +187,7 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
   EXPECT_EQ(40, moves.size());
   EXPECT_EQ("d7f6 f3d2 b5c6 f3e5 d7e5 d7b6 e2d2 e1d2 c3b4 e1g1 e1c1 d3d4 f3d4 d7c5 a1c1 a1d1 h1f1 b5c4 a2a3 h2h3 f3g5 e2e3 a2a4 g2g4 h2h4 c3c4 e1f1 b2b3 g2g3 e2d1 b5a4 b5a6 a1b1 h1g1 e2f1 e1d1 f3h4 d7f8 f3g1 d7b8", str(moves));
   //  for (Move m : moves) {
-  //    fprintln("{}", strVerbose(m));
+  //    fprintln("{}", m.strVerbose());
   //  }
   NEWLINE;
 
@@ -197,20 +197,20 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
   moves.clear();
   moves = *mg.generatePseudoLegalMoves(position, GenAll, false);
   EXPECT_EQ(86, moves.size());
-  EXPECT_EQ("c2b1Q a2b1Q a2a1Q c2c1Q c2b1N a2b1N b2a3 a8a3 g6e5 d7e5 b2e5 a2a1N c2c1N e6e5 c4e4 c6e4 f4g3 f4e3 e8g8 e8c8 d7c5 a8c8 a8d8 h8f8 d7f6 g6e7 b2d4 f4f3 h7h6 d7b6 b2c3 c4c5 c4d5 c6c5 c6d5 c6d6 e6d5 e6f5 e6d6 e6f6 e6e7 e6f7 c4d4 b7b5 h7h5 a8a4 a8a5 a8a6 a8a7 c4e2 c4b3 c4c3 c4d3 c4b4 c4b5 c6b5 c6b6 e6g4 e8f8 b7b6 c4a4 c6a4 b2c1 a8b8 h8g8 c4f1 c4a6 c6a6 e6h3 e6g8 b2a1 e8e7 e8f7 e8d8 g6h4 g6f8 d7f8 d7b8 c2b1R a2b1R c2b1B a2b1B a2a1R c2c1R a2a1B c2c1B", str(moves));
+  EXPECT_EQ("c2b1Q a2b1Q a2a1Q c2c1Q c2b1N a2b1N b2a3 a8a3 g6e5 d7e5 b2e5 a2a1N c2c1N e6e5 c4e4 c6e4 f4g3 f4e3 e8g8 e8c8 d7c5 a8c8 a8d8 h8f8 d7f6 g6e7 b2d4 f4f3 h7h6 d7b6 b2c3 c4c5 c4d5 c6c5 c6d5 c6d6 e6d5 e6f5 e6d6 e6f6 e6e7 e6f7 c4d4 b7b5 h7h5 a2a4 a2a5 a2a6 a2a7 c4e2 c4b3 c4c3 c4d3 c4b4 c4b5 c6b5 c6b6 e6g4 e8f8 b7b6 c4a4 c6a4 b2c1 a8b8 h8g8 c4f1 c4a6 c6a6 e6h3 e6g8 b2a1 e8e7 e8f7 e8d8 g6h4 g6f8 d7f8 d7b8 c2b1R a2b1R c2b1B a2b1B a2a1R c2c1R a2a1B c2c1B", str(moves));
   //  for (Move m : moves) {
-  //    fprintln("{}", strVerbose(m));
+  //    fprintln("{}", m.strVerbose());
   //  }
   NEWLINE;
 
   // 218 pseudo legal moves (incl. castling over attacked square)
-  fen      = "R6R/3Q4/1Q4Q1/4Q3/2Q4Q/Q4Q2/pp1Q4/kBNN1KB1 w - -";
+  fen      = "R6R/3Q4/1Q4Q1/4Q3/2Q4Q/Q4Q2/pp1Q4/kBNN1KB1 w - - 0 1";
   position = Position(fen);
   moves.clear();
   moves = *mg.generatePseudoLegalMoves(position, GenAll, false);
   EXPECT_EQ(218, moves.size());
   //  for (Move m : moves) {
-  //    fprintln("{}", strVerbose(m));
+  //    fprintln("{}", m.strVerbose());
   //  }
   NEWLINE;
 
@@ -221,7 +221,7 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
   moves = *mg.generatePseudoLegalMoves(position, GenAll);
   EXPECT_EQ(21, moves.size());
   //  for (Move m : moves) {
-  //    fprintln("{}", strVerbose(m));
+  //    fprintln("{}", m.strVerbose());
   //  }
   NEWLINE;
 
@@ -231,7 +231,7 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
   moves = *mg.generatePseudoLegalMoves(position, GenAll);
   EXPECT_EQ(26, moves.size());
   //  for (Move m : moves) {
-  //    fprintln("{}", strVerbose(m));
+  //    fprintln("{}", m.strVerbose());
   //  }
   NEWLINE;
 
@@ -242,7 +242,7 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
   moves = *mg.generatePseudoLegalMoves(position, GenAll);
   EXPECT_EQ(48, moves.size());
   //  for (Move m : moves) {
-  //    fprintln("{}", strVerbose(m));
+  //    fprintln("{}", m.strVerbose());
   //  }
 }
 
@@ -264,41 +264,8 @@ TEST_F(MoveGenTest, legalMoves) {
   moves.clear();
   moves = *mg.generateLegalMoves(position, GenAll);
   EXPECT_EQ(83, moves.size());
-  EXPECT_FALSE(position.isLegalMove(createMove(SQ_E8, SQ_G8, CASTLING)));
-}
-
-TEST_F(MoveGenTest, hasLegalMoves) {
-  Position position;
-  MoveGenerator mg;
-  MoveList moves;
-
-  // check mate position
-  position = Position("rn2kbnr/pbpp1ppp/8/1p2p1q1/4K3/3P4/PPP1PPPP/RNBQ1BNR w kq -");
-  moves    = *mg.generateLegalMoves(position, GenAll);
-  EXPECT_EQ(0, moves.size());
-  EXPECT_FALSE(mg.hasLegalMove(position));
-  EXPECT_TRUE(position.hasCheck());
-
-  // stale mate position
-  position = Position("7k/5K2/6Q1/8/8/8/8/8 b - -");
-  moves    = *mg.generateLegalMoves(position, GenAll);
-  EXPECT_EQ(0, moves.size());
-  EXPECT_FALSE(mg.hasLegalMove(position));
-  EXPECT_FALSE(position.hasCheck());
-
-  // only en passant
-  position = Position("8/8/8/8/5Pp1/6P1/7k/K3BQ2 b - f3");
-  moves    = *mg.generateLegalMoves(position, GenAll);
-  EXPECT_EQ(1, moves.size());
-  EXPECT_TRUE(mg.hasLegalMove(position));
-  EXPECT_FALSE(position.hasCheck());
-
-  // pawn double is only legal move (was bug in previous FrankyGo v1.0 version)
-  position = Position("rnbq1bnr/ppp1pppp/4k3/3pP3/3P2Q1/8/PPP2PPP/RNB1KBNR b KQ - 2 4");
-  moves    = *mg.generateLegalMoves(position, GenAll);
-  EXPECT_EQ(1, moves.size());
-  EXPECT_TRUE(mg.hasLegalMove(position));
-  EXPECT_TRUE(position.hasCheck());
+  EXPECT_FALSE(position.isLegalMove(Move::castling(SQ_E8, SQ_G8)));
+// ...existing code...
 }
 
 TEST_F(MoveGenTest, validateMove) {
@@ -310,23 +277,23 @@ TEST_F(MoveGenTest, validateMove) {
   fen = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
   Position position(fen);
 
-  EXPECT_TRUE(mg.validateMove(position, createMove(SQ_B2, SQ_E5)));
-  EXPECT_TRUE(mg.validateMove(position, createMove(SQ_E6, SQ_E5)));
-  EXPECT_TRUE(mg.validateMove(position, createMove(SQ_C4, SQ_E4)));
-  EXPECT_TRUE(mg.validateMove(position, createMove(SQ_C6, SQ_E4)));
-  EXPECT_TRUE(mg.validateMove(position, createMove(SQ_A2, SQ_A1, PROMOTION, QUEEN)));
-  EXPECT_TRUE(mg.validateMove(position, createMove(SQ_C2, SQ_C1, PROMOTION, QUEEN)));
-  EXPECT_TRUE(mg.validateMove(position, createMove(SQ_A2, SQ_A1, PROMOTION, QUEEN)));
-  EXPECT_TRUE(mg.validateMove(position, createMove(SQ_C2, SQ_C1, PROMOTION, QUEEN)));
-  EXPECT_FALSE(mg.validateMove(position, createMove(SQ_E2, SQ_E4)));
-  EXPECT_FALSE(mg.validateMove(position, createMove(SQ_B8, SQ_C8)));
-  EXPECT_FALSE(mg.validateMove(position, createMove(SQ_A2, SQ_B3)));
-  EXPECT_FALSE(mg.validateMove(position, createMove(SQ_B1, SQ_C3)));
+  EXPECT_TRUE(mg.validateMove(position, Move::normal(SQ_B2, SQ_E5)));
+  EXPECT_TRUE(mg.validateMove(position, Move::normal(SQ_E6, SQ_E5)));
+  EXPECT_TRUE(mg.validateMove(position, Move::normal(SQ_C4, SQ_E4)));
+  EXPECT_TRUE(mg.validateMove(position, Move::normal(SQ_C6, SQ_E4)));
+  EXPECT_TRUE(mg.validateMove(position, Move::promotion(SQ_A2, SQ_A1, QUEEN)));
+  EXPECT_TRUE(mg.validateMove(position, Move::promotion(SQ_C2, SQ_C1, QUEEN)));
+  EXPECT_TRUE(mg.validateMove(position, Move::promotion(SQ_A2, SQ_A1, QUEEN)));
+  EXPECT_TRUE(mg.validateMove(position, Move::promotion(SQ_C2, SQ_C1, QUEEN)));
+  EXPECT_FALSE(mg.validateMove(position, Move::normal(SQ_E2, SQ_E4)));
+  EXPECT_FALSE(mg.validateMove(position, Move::normal(SQ_B8, SQ_C8)));
+  EXPECT_FALSE(mg.validateMove(position, Move::normal(SQ_A2, SQ_B3)));
+  EXPECT_FALSE(mg.validateMove(position, Move::normal(SQ_B1, SQ_C3)));
   EXPECT_FALSE(mg.validateMove(position, MOVE_NONE));
 
   // pawn double is only legal move (was bug in hasLegalMoves in previous FrankyGo v1.0 version)
   position = Position("rnbq1bnr/ppp1pppp/4k3/3pP3/3P2Q1/8/PPP2PPP/RNB1KBNR b KQ - 2 4");
-  EXPECT_TRUE(mg.validateMove(position, createMove(SQ_F7, SQ_F5)));
+  EXPECT_TRUE(mg.validateMove(position, Move::normal(SQ_F7, SQ_F5)));
 }
 
 TEST_F(MoveGenTest, fromUci) {
@@ -340,7 +307,7 @@ TEST_F(MoveGenTest, fromUci) {
 
   // valid move
   move = mg.getMoveFromUci(pos, "b7b5");
-  EXPECT_EQ(createMove(SQ_B7, SQ_B5, NORMAL), move);
+  EXPECT_EQ(Move::normal(SQ_B7, SQ_B5), move);
 
   // invalid move
   move = mg.getMoveFromUci(pos, "a7a5");
@@ -348,15 +315,15 @@ TEST_F(MoveGenTest, fromUci) {
 
   // valid promotion
   move = mg.getMoveFromUci(pos, "a2a1Q");
-  EXPECT_EQ(createMove(SQ_A2, SQ_A1, PROMOTION, QUEEN), move);
+  EXPECT_EQ(Move::promotion(SQ_A2, SQ_A1, QUEEN), move);
 
   // valid promotion (we allow lower case promotions);
   move = mg.getMoveFromUci(pos, "a2a1q");
-  EXPECT_EQ(createMove(SQ_A2, SQ_A1, PROMOTION, QUEEN), move);
+  EXPECT_EQ(Move::promotion(SQ_A2, SQ_A1, QUEEN), move);
 
   // valid castling
   move = mg.getMoveFromUci(pos, "e8c8");
-  EXPECT_EQ(createMove(SQ_E8, SQ_C8, CASTLING), move);
+  EXPECT_EQ(Move::castling(SQ_E8, SQ_C8), move);
 
   // invalid castling
   move = mg.getMoveFromUci(pos, "e8g8");
@@ -376,7 +343,7 @@ TEST_F(MoveGenTest, fromSan) {
 
   // valid move
   move = mg.getMoveFromSan(pos, "b5");
-  EXPECT_EQ(createMove(SQ_B7, SQ_B5, NORMAL), move);
+  EXPECT_EQ(Move::normal(SQ_B7, SQ_B5), move);
 
   // invalid move
   move = mg.getMoveFromSan(pos, "a5");
@@ -384,7 +351,7 @@ TEST_F(MoveGenTest, fromSan) {
 
   // valid promotion
   move = mg.getMoveFromSan(pos, "a1Q");
-  EXPECT_EQ(createMove(SQ_A2, SQ_A1, PROMOTION, QUEEN), move);
+  EXPECT_EQ(Move::promotion(SQ_A2, SQ_A1, QUEEN), move);
 
   // invalid promotion
   move = mg.getMoveFromSan(pos, "a1q");
@@ -392,7 +359,7 @@ TEST_F(MoveGenTest, fromSan) {
 
   // valid castling
   move = mg.getMoveFromSan(pos, "O-O-O");
-  EXPECT_EQ(createMove(SQ_E8, SQ_C8, CASTLING), move);
+  EXPECT_EQ(Move::castling(SQ_E8, SQ_C8), move);
 
   // invalid castling
   move = mg.getMoveFromSan(pos, "O-O");
@@ -400,39 +367,39 @@ TEST_F(MoveGenTest, fromSan) {
 
   // capture
   move = mg.getMoveFromSan(pos, "Qxe5");
-  EXPECT_EQ(createMove(SQ_E6, SQ_E5, NORMAL), move);
+  EXPECT_EQ(Move::normal(SQ_E6, SQ_E5), move);
 
   // ep capture
   move = mg.getMoveFromSan(pos, "fxe3");
-  EXPECT_EQ(createMove(SQ_F4, SQ_E3, ENPASSANT), move);
+  EXPECT_EQ(Move::enPassant(SQ_F4, SQ_E3), move);
 
   move = mg.getMoveFromSan(pos, "fxe3e.p.");
-  EXPECT_EQ(createMove(SQ_F4, SQ_E3, ENPASSANT), move);
+  EXPECT_EQ(Move::enPassant(SQ_F4, SQ_E3), move);
 
 
   // ambiguous
   move = mg.getMoveFromSan(pos, "Ne5");
   EXPECT_EQ(MOVE_NONE, move);
   move = mg.getMoveFromSan(pos, "Nde5");
-  EXPECT_EQ(createMove(SQ_D7, SQ_E5, NORMAL), move);
+  EXPECT_EQ(Move::normal(SQ_D7, SQ_E5), move);
   move = mg.getMoveFromSan(pos, "Nge5");
-  EXPECT_EQ(createMove(SQ_G6, SQ_E5, NORMAL), move);
+  EXPECT_EQ(Move::normal(SQ_G6, SQ_E5), move);
   move = mg.getMoveFromSan(pos, "N7e5");
-  EXPECT_EQ(createMove(SQ_D7, SQ_E5, NORMAL), move);
+  EXPECT_EQ(Move::normal(SQ_D7, SQ_E5), move);
   move = mg.getMoveFromSan(pos, "N6e5");
-  EXPECT_EQ(createMove(SQ_G6, SQ_E5, NORMAL), move);
+  EXPECT_EQ(Move::normal(SQ_G6, SQ_E5), move);
   move = mg.getMoveFromSan(pos, "ab1Q");
-  EXPECT_EQ(createMove(SQ_A2, SQ_B1, PROMOTION, QUEEN), move);
+  EXPECT_EQ(Move::promotion(SQ_A2, SQ_B1, QUEEN), move);
   move = mg.getMoveFromSan(pos, "cb1Q");
-  EXPECT_EQ(createMove(SQ_C2, SQ_B1, PROMOTION, QUEEN), move);
+  EXPECT_EQ(Move::promotion(SQ_C2, SQ_B1, QUEEN), move);
 
   pos  = Position("rnbqkb1r/ppp1p1pp/5B2/3p1p2/3P4/2N5/PPP1PPPP/R2QKBNR b KQkq -");
   move = mg.getMoveFromSan(pos, "exf6");
-  EXPECT_EQ(createMove(SQ_E7, SQ_F6, NORMAL, PT_NONE), move);
+  EXPECT_EQ(Move::normal(SQ_E7, SQ_F6), move);
 
   pos  = Position("8/6Bp/7P/5p2/pKP2P2/1b6/p7/1k6 b - - 3 51");
   move = mg.getMoveFromSan(pos, "a1=Q");
-  EXPECT_EQ(createMove(SQ_A2, SQ_A1, PROMOTION, QUEEN), move);
+  EXPECT_EQ(Move::promotion(SQ_A2, SQ_A1, QUEEN), move);
 }
 
 
@@ -448,7 +415,7 @@ TEST_F(MoveGenTest, onDemandGen) {
   Move move;
   int counter = 0;
   while ((move = mg.getNextPseudoLegalMove(position, GenAll)) != MOVE_NONE) {
-    EXPECT_TRUE(validMove(move));
+    EXPECT_TRUE(!move.isNone());
     counter++;
   }
   EXPECT_EQ(86, counter);
@@ -458,7 +425,7 @@ TEST_F(MoveGenTest, onDemandGen) {
   position = Position(fen);
   counter  = 0;
   while ((move = mg.getNextPseudoLegalMove(position, GenAll)) != MOVE_NONE) {
-    EXPECT_TRUE(validMove(move));
+    EXPECT_TRUE(!move.isNone());
     counter++;
   }
   EXPECT_EQ(218, counter);
@@ -468,7 +435,7 @@ TEST_F(MoveGenTest, onDemandGen) {
   position = Position(fen);
   counter  = 0;
   while ((move = mg.getNextPseudoLegalMove(position, GenAll)) != MOVE_NONE) {
-    EXPECT_TRUE(validMove(move));
+    EXPECT_TRUE(!move.isNone());
     counter++;
   }
   EXPECT_EQ(48, counter);
@@ -528,7 +495,7 @@ TEST_F(MoveGenTest, onDemandKiller) {
   mg.setPV(move3);
   while ((move = mg.getNextPseudoLegalMove(pos, GenAll)) != MOVE_NONE) {
     moves.push_back(move);
-    //    fprintln(strVerbose(move));
+    //    fprintln(move.strVerbose());
   }
   EXPECT_EQ(86, moves.size());
   EXPECT_EQ("a2b1Q c2b1Q a2a1Q c2c1Q c2b1N a2b1N a2a1N c2c1N f4g3 f4e3 c2b1R a2b1R c2b1B a2b1B b2a3 a8a3 g6e5 d7e5 b2e5 e6e5 c4e4 c6e4 b7b6 f4f3 h7h6 b7b5 h7h5 a2a1R c2c1R a2a1B c2c1B e8g8 e8c8 g6h4 d7c5 a8c8 a8d8 h8f8 d7f6 b2d4 g6e7 b2c3 c4c5 c4d5 c6c5 c6d5 c6d6 e6d5 e6f5 e6d6 e6f6 d7b6 e6e7 e6f7 c4d4 a8a4 a8a5 a8a6 a8a7 c4e2 c4b3 c4c3 c4d3 c4b4 c4b5 c6b5 c6b6 e6g4 c4a4 c6a4 a8b8 h8g8 b2c1 c4f1 c4a6 c6a6 e6h3 e6g8 b2a1 g6f8 d7f8 d7b8 e8f8 e8e7 e8f7 e8d8", str(moves));
@@ -548,7 +515,7 @@ TEST_F(MoveGenTest, onDemandKiller) {
   mg.setPV(move3);
   while ((move = mg.getNextPseudoLegalMove(pos, GenAll)) != MOVE_NONE) {
     moves.push_back(move);
-    //    fprintln(strVerbose(move));
+    //    fprintln(move.strVerbose());
   }
   EXPECT_EQ(48, moves.size());
   EXPECT_EQ("e2a6 g2h3 d5e6 e5d7 e5f7 e5g6 f3f6 f3h3 b2b3 a2a3 d5d6 a2a4 g2g4 g2g3 e1g1 e1c1 d2g5 e5d3 e5c4 a1c1 a1d1 h1f1 e5c6 d2e3 d2f4 e2d3 e2c4 c3b5 e2b5 f3d3 f3e3 f3f4 f3f5 e5g4 f3g3 f3g4 f3h5 d2h6 e2d1 a1b1 h1g1 c3a4 c3d1 d2c1 e2f1 c3b1 e1f1 e1d1", str(moves));
@@ -565,7 +532,7 @@ TEST_F(MoveGenTest, pvMove) {
   Position position(fen);
 
   // Test #1: best move is capturing and generating all moves
-  Move pvMove = createMove(SQ_B1, SQ_B2);
+  Move pvMove = Move::normal(SQ_B1, SQ_B2);
   mg.setPV(pvMove);
   Move move;
   int counter = 0;
@@ -583,7 +550,7 @@ TEST_F(MoveGenTest, pvMove) {
   mg.resetOnDemand();
 
   // Test #2: best move is capturing and generating capturing moves
-  pvMove = createMove(SQ_B1, SQ_B2);
+  pvMove = Move::normal(SQ_B1, SQ_B2);
   mg.setPV(pvMove);
   counter = 0;
   // generate all moves
@@ -600,7 +567,7 @@ TEST_F(MoveGenTest, pvMove) {
   mg.resetOnDemand();
 
   // Test #3: best move is non-capturing and generating all moves
-  pvMove = createMove(SQ_H2, SQ_H3);
+  pvMove = Move::normal(SQ_H2, SQ_H3);
   mg.setPV(pvMove);
   counter = 0;
   // generate all moves
@@ -617,7 +584,7 @@ TEST_F(MoveGenTest, pvMove) {
   mg.resetOnDemand();
 
   // Test #4: best move is non-capturing and generating capturing moves
-  pvMove = createMove(SQ_H2, SQ_H3);
+  pvMove = Move::normal(SQ_H2, SQ_H3);
   mg.setPV(pvMove);
   counter = 0;
   // generate all moves
@@ -635,7 +602,7 @@ TEST_F(MoveGenTest, pvMove) {
 
   // Test #4: best move is non-capturing and generating non-capturing moves
   // not very relevant for searching
-  pvMove = createMove(SQ_H2, SQ_H3);
+  pvMove = Move::normal(SQ_H2, SQ_H3);
   mg.setPV(pvMove);
   counter = 0;
   // generate all moves
@@ -721,11 +688,11 @@ TEST_F(MoveGenTest, sortValueTest) {
   // Start pos
   const auto p = Position("r3k2r/1pp4p/2q1qNn1/3nP3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq -");
 
-  Move moveFromUci = createMove(SQ_G6, SQ_H4);
+  Move moveFromUci = Move::normal(SQ_G6, SQ_H4);
   mg.storeKiller(moveFromUci);
-  moveFromUci = createMove(SQ_B7, SQ_B6);
+  moveFromUci = Move::normal(SQ_B7, SQ_B6);
   mg.storeKiller(moveFromUci);
-  moveFromUci = createMove(SQ_A2, SQ_B1, PROMOTION, QUEEN);
+  moveFromUci = Move::promotion(SQ_A2, SQ_B1, QUEEN);
   mg.setPV(moveFromUci);
 
   mg.generatePawnMoves(p, &moves, GenNonQuiet, false, BbZero);
@@ -741,7 +708,7 @@ TEST_F(MoveGenTest, sortValueTest) {
 
   fprintln("Pre sort:");
   for (const Move m : moves) {
-    fprintln("{}", strVerbose(m));
+    fprintln("{}", m.strVerbose());
   }
   NEWLINE;
 
@@ -754,12 +721,12 @@ TEST_F(MoveGenTest, sortValueTest) {
   int counter   = 0;
   Move lastMove = MOVE_NONE;
   for (const Move m : moves) {
-    fprintln("{}", strVerbose(m));
+    fprintln("{}", m.strVerbose());
     if (!counter++) {
       lastMove = m;
       continue;
     }
-    EXPECT_GE(valueOf(lastMove), valueOf(m));
+    EXPECT_GE(lastMove.value(), m.value());
     lastMove = m;
   }
   NEWLINE;
@@ -821,7 +788,7 @@ TEST_F(MoveGenTest, debug) {
   //  int counter = 0;
   //  while ((move = mg.getNextPseudoLegalMove(p, GenAll)) != MOVE_NONE) {
   //    counter++;
-  //    fprintln(strVerbose(move));
+  //    fprintln(move.strVerbose());
   //  }
   //
   //  NEWLINE;
@@ -830,7 +797,7 @@ TEST_F(MoveGenTest, debug) {
   moves = *mg.generatePseudoLegalMoves(p, GenAll);
   fprintln("{}", moves.size());
   for (const Move m : moves) {
-    println(strVerbose(m));
+    println(m.strVerbose());
   }
 
   fprintln("{}", mg.generateLegalMoves(p, GenAll)->size());

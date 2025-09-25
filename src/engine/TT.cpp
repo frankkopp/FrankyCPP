@@ -102,7 +102,7 @@ void TT::clear() {
       if (t == noOfThreads - 1) end = maxNumberOfEntries;
       for (std::size_t i = start; i < end; ++i) {
         _data[i].key        = 0;
-        _data[i].move       = MOVE_NONE;
+        _data[i].move       = 0; // MOVE_NONE as 16-bit
         _data[i].depth      = DEPTH_NONE;
         _data[i].value      = VALUE_NONE;
         _data[i].eval       = VALUE_NONE;

@@ -55,7 +55,7 @@ TEST_F(TT_Test, entrySize) {
     // sorted by size to achieve smallest struct size
     // using bitfield for smallest size
     Key key       = 0;         // 64 bit
-    uint16_t move = MOVE_NONE; // 16 bit
+    uint16_t move = 0;         // MOVE_NONE as 16-bit
     Value eval    = VALUE_NONE;// 16 bit signed
     Value value   = VALUE_NONE;// 16 bit signed
     int8_t depth : 7;          // 0-127
@@ -211,7 +211,7 @@ TEST_F(TT_Test, put) {
   const Key key3 = key1 + collisionDistance;// same bucket - collision
 
   // new entry in empty bucket at pos 0
-  tt.put(key1, static_cast<Depth>(6), createMove(SQ_E2, SQ_E4), static_cast<Value>(101), EXACT, static_cast<Value>(1001));
+  tt.put(key1, static_cast<Depth>(6), Move(SQ_E2, SQ_E4), static_cast<Value>(101), EXACT, static_cast<Value>(1001));
   EXPECT_EQ(1, tt.getNumberOfPuts());
   EXPECT_EQ(1, tt.getNumberOfEntries());
   EXPECT_EQ(0, tt.getNumberOfUpdates());
@@ -222,7 +222,7 @@ TEST_F(TT_Test, put) {
   EXPECT_EQ(tt.getMatch(key1)->eval, static_cast<Value>(1001));
 
   // new entry
-  tt.put(key2, static_cast<Depth>(5), createMove(SQ_E2, SQ_E4), static_cast<Value>(102), EXACT, static_cast<Value>(1002));
+  tt.put(key2, static_cast<Depth>(5), Move(SQ_E2, SQ_E4), static_cast<Value>(102), EXACT, static_cast<Value>(1002));
   EXPECT_EQ(2, tt.getNumberOfPuts());
   EXPECT_EQ(2, tt.getNumberOfEntries());
   EXPECT_EQ(0, tt.getNumberOfUpdates());
@@ -235,7 +235,7 @@ TEST_F(TT_Test, put) {
 
 
   // new entry (collision)
-  tt.put(key3, static_cast<Depth>(6), createMove(SQ_E2, SQ_E4), static_cast<Value>(103), EXACT, static_cast<Value>(1003));
+  tt.put(key3, static_cast<Depth>(6), Move(SQ_E2, SQ_E4), static_cast<Value>(103), EXACT, static_cast<Value>(1003));
   EXPECT_EQ(3, tt.getNumberOfPuts());
   EXPECT_EQ(2, tt.getNumberOfEntries());
   EXPECT_EQ(0, tt.getNumberOfUpdates());
@@ -261,17 +261,17 @@ TEST_F(TT_Test, get) {
   const Key key4 = key1 + 17;
 
   // new entry in empty slot
-  tt.put(key1, static_cast<Depth>(6), createMove(SQ_E2, SQ_E4), static_cast<Value>(101), EXACT, static_cast<Value>(1001));
+  tt.put(key1, static_cast<Depth>(6), Move(SQ_E2, SQ_E4), static_cast<Value>(101), EXACT, static_cast<Value>(1001));
   const TT::Entry* e1 = tt.getMatch(key1);
   EXPECT_EQ(101, e1->value);
 
   // new entry in empty slot
-  tt.put(key2, static_cast<Depth>(5), createMove(SQ_E2, SQ_E4), static_cast<Value>(102), EXACT, static_cast<Value>(1002));
+  tt.put(key2, static_cast<Depth>(5), Move(SQ_E2, SQ_E4), static_cast<Value>(102), EXACT, static_cast<Value>(1002));
   const TT::Entry* e2 = tt.getMatch(key2);
   EXPECT_EQ(102, e2->value);
 
   // new entry in occupied slot
-  tt.put(key3, static_cast<Depth>(7), createMove(SQ_E2, SQ_E4), static_cast<Value>(103), EXACT, static_cast<Value>(1003));
+  tt.put(key3, static_cast<Depth>(7), Move(SQ_E2, SQ_E4), static_cast<Value>(103), EXACT, static_cast<Value>(1003));
   const TT::Entry* e3 = tt.getMatch(key3);
   EXPECT_EQ(103, e3->value);
 
@@ -294,17 +294,17 @@ TEST_F(TT_Test, TT_PPS) {
   fprintln("Start perft test for TT...");
   fprintln("TT Stats: {:s}", tt.str());
 
-  constexpr Move move = createMove(SQ_E2, SQ_E4);
-  constexpr int rounds     = 5;
+  constexpr Move move(SQ_E2, SQ_E4);
+  constexpr int rounds = 5;
   // ReSharper disable once CppTooWideScope
   constexpr int iterations = 100'000'000;
 
   for (int j = 0; j < rounds; ++j) {
-    uint64_t sum  = 0;
-    const Key key = randomKey(rg1);
-    const auto depth    = static_cast<Depth>(randomDepth(rg1));
-    const auto value    = static_cast<Value>(randomValue(rg1));
-    const auto type     = static_cast<ValueType>(randomType(rg1));
+    uint64_t sum     = 0;
+    const Key key    = randomKey(rg1);
+    const auto depth = static_cast<Depth>(randomDepth(rg1));
+    const auto value = static_cast<Value>(randomValue(rg1));
+    const auto type  = static_cast<ValueType>(randomType(rg1));
 
     auto start = high_resolution_clock::now();
     // puts
@@ -315,7 +315,7 @@ TEST_F(TT_Test, TT_PPS) {
     for (int i = 0; i < iterations; ++i) {
       if (const auto e = tt.probe(key + 2 * i)) {
         const volatile auto v = e->value;
-        (void)v;
+        (void) v;
       }
     }
     auto finish = high_resolution_clock::now();

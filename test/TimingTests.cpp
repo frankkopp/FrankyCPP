@@ -171,7 +171,7 @@ TEST_F(TimingTests, distancevsdiff) {
 /**
  * Test the absolute speed of doMove, undoMove
  */
-TEST_F(TimingTests, DISABLED_doMoveUndoMove) {
+TEST_F(TimingTests, doMoveUndoMove) {
   if (isBulkRun()) {
     GTEST_SKIP();
   }
@@ -185,11 +185,11 @@ TEST_F(TimingTests, DISABLED_doMoveUndoMove) {
   // Rc1 normal non capturing
   // c1Q promotion
   Position position("r3k2r/1ppn3p/4q1n1/8/4Pp2/3R4/p1p2PPP/R5K1 b kq e3 0 1");
-  constexpr Move move1 = createMove(SQ_F4, SQ_E3, ENPASSANT);
-  constexpr Move move2 = createMove(SQ_F2, SQ_E3);
-  constexpr Move move3 = createMove(SQ_E8, SQ_G8, CASTLING);
-  constexpr Move move4 = createMove(SQ_D3, SQ_C3);
-  constexpr Move move5 = createMove(SQ_C2, SQ_C1, PROMOTION, QUEEN);
+  constexpr auto move1 = Move::enPassant(SQ_F4, SQ_E3);
+  constexpr auto move2 = Move::normal(SQ_F2, SQ_E3);
+  constexpr auto move3 = Move::castling(SQ_E8, SQ_G8);
+  constexpr auto move4 = Move::normal(SQ_D3, SQ_C3);
+  constexpr auto move5 = Move::promotion(SQ_C2, SQ_C1, QUEEN);
 
   const std::function f1 = [&] {
     position.doMove(move1);
@@ -213,7 +213,7 @@ TEST_F(TimingTests, DISABLED_doMoveUndoMove) {
   std::cout << os.str();
 }
 
-TEST_F(TimingTests, DISABLED_trimWhiteSpace) {
+TEST_F(TimingTests, trimWhiteSpace) {
   if (isBulkRun()) {
     GTEST_SKIP();
   }
@@ -297,7 +297,7 @@ TEST_F(TimingTests, DISABLED_trimWhiteSpace) {
   std::cout << os.str();
 }
 
-TEST_F(TimingTests, DISABLED_illegalCharacter) {
+TEST_F(TimingTests, illegalCharacter) {
   if (isBulkRun()) {
     GTEST_SKIP();
   }

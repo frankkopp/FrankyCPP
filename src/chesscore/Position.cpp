@@ -49,15 +49,15 @@ Position::Position(const std::string& fen) {
 // //////////////////////////////////////////////
 
 void Position::doMove(const Move move) {
-  assert(validMove(move));
-  assert(fromSquare(move).isValid());
-  assert(toSquare(move).isValid());
-  assert(getPiece(fromSquare(move)) != PIECE_NONE);
-  assert(colorOf(getPiece(fromSquare(move))) == nextPlayer);
+  assert(move.isValid());
+  assert(move.from().isValid());
+  assert(move.to().isValid());
+  assert(getPiece(move.from()) != PIECE_NONE);
+  assert(colorOf(getPiece(move.from())) == nextPlayer);
   assert((historyCounter < MAX_MOVES - 1) && "Can't have more move than MAX_MOVES");
 
-  const Square fromSq = fromSquare(move);
-  const Square toSq   = toSquare(move);
+  const Square fromSq = move.from();
+  const Square toSq   = move.to();
 
   // Save state of board for undo
   historyState[historyCounter++] = {zobristKey,
@@ -71,7 +71,7 @@ void Position::doMove(const Move move) {
                                     hasCheckFlag};
 
   // change the position data according to the move
-  switch (typeOf(move)) {
+  switch (move.type()) {
 
     case NORMAL:
       // If we still have castling rights and the move touches castling squares then invalidate
@@ -103,8 +103,8 @@ void Position::doMove(const Move move) {
       break;
 
     case PROMOTION: {
-      assert(getPiece(fromSquare(move)) == makePiece(colorOf(getPiece(fromSquare(move))), PAWN));
-      assert(toSq.rank() == Rank::promotionFor(colorOf(getPiece(fromSquare(move)))));
+      assert(getPiece(move.from()) == makePiece(colorOf(getPiece(move.from())), PAWN));
+      assert(toSq.rank() == Rank::promotionFor(colorOf(getPiece(move.from()))));
       // capture
       if (getPiece(toSq) != PIECE_NONE) {
         removePiece(toSq);
@@ -120,16 +120,16 @@ void Position::doMove(const Move move) {
       }
       clearEnPassant();
       removePiece(fromSq);
-      putPiece(makePiece(nextPlayer, promotionTypeOf(move)), toSq);
+      putPiece(makePiece(nextPlayer, move.promotionType()), toSq);
       halfMoveClock = 0;// reset half move clock because of pawn move
       break;
     }
 
     case ENPASSANT: {
-      assert(getPiece(fromSquare(move)) == makePiece(colorOf(getPiece(fromSquare(move))), PAWN));
+      assert(getPiece(move.from()) == makePiece(colorOf(getPiece(move.from())), PAWN));
       assert(enPassantSquare != SQ_NONE);
       const Square capSq = toSq.pawnPush(~colorOf(getPiece(fromSq)));
-      assert(getPiece(capSq) == makePiece(~colorOf(getPiece(fromSquare(move))), PAWN));
+      assert(getPiece(capSq) == makePiece(~colorOf(getPiece(move.from())), PAWN));
       clearEnPassant();
       removePiece(capSq);
       movePiece(fromSq, toSq);
@@ -138,7 +138,7 @@ void Position::doMove(const Move move) {
     }
 
     case CASTLING:
-      assert(getPiece(fromSquare(move)) == makePiece(colorOf(getPiece(fromSquare(move))), KING));
+      assert(getPiece(move.from()) == makePiece(colorOf(getPiece(move.from())), KING));
       switch (toSq) {
         case SQ_G1:
           assert(castlingRights == WHITE_OO);
@@ -215,34 +215,34 @@ void Position::undoMove() {
   const Move move                      = lastHistoryState.move;
 
   // undo piece move / restore board
-  switch (typeOf(move)) {
+  switch (move.type()) {
 
     case NORMAL:
-      movePiece(toSquare(move), fromSquare(move));
+      movePiece(move.to(), move.from());
       if (lastHistoryState.capturedPiece != PIECE_NONE) {
-        putPiece(lastHistoryState.capturedPiece, toSquare(move));
+        putPiece(lastHistoryState.capturedPiece, move.to());
       }
       break;
 
     case PROMOTION:
-      removePiece(toSquare(move));
-      putPiece(makePiece(nextPlayer, PAWN), fromSquare(move));
+      removePiece(move.to());
+      putPiece(makePiece(nextPlayer, PAWN), move.from());
       if (lastHistoryState.capturedPiece != PIECE_NONE) {
-        putPiece(lastHistoryState.capturedPiece, toSquare(move));
+        putPiece(lastHistoryState.capturedPiece, move.to());
       }
       break;
 
     case ENPASSANT:
       // ignore Zobrist Key as it will be restored via history
-      movePiece(toSquare(move), fromSquare(move));
-      putPiece(makePiece(~nextPlayer, PAWN), toSquare(move) + Direction::pawnPush(~nextPlayer));
+      movePiece(move.to(), move.from());
+      putPiece(makePiece(~nextPlayer, PAWN), move.to() + Direction::pawnPush(~nextPlayer));
       break;
 
     case CASTLING:
       // ignore Zobrist Key as it will be restored via history
       // castling rights are restored via history
-      movePiece(toSquare(move), fromSquare(move));// King
-      switch (toSquare(move)) {
+      movePiece(move.to(), move.from());// King
+      switch (move.to()) {
         case SQ_G1:
           movePiece(SQ_F1, SQ_H1);// Rook
           break;
@@ -405,17 +405,17 @@ bool Position::givesCheck(const Move move) const {
   const Square kingSq = kingSquare[them];
 
   // move details
-  const Square fromSq     = fromSquare(move);
+  const Square fromSq     = move.from();
   const Piece fromPc      = board[fromSq];
-  const MoveType moveType = typeOf(move);
+  const MoveType moveType = move.type();
   PieceType fromPt        = typeOf(fromPc);
-  Square toSq             = toSquare(move);
+  Square toSq             = move.to();
   Square epTargetSq{};
 
   switch (moveType) {
     case PROMOTION:
       // promotion moves - use new piece type
-      fromPt = promotionTypeOf(move);
+      fromPt = move.promotionType();
       break;
     case CASTLING:
       // set the target square to the rook square and
@@ -490,13 +490,13 @@ bool Position::wasLegalMove() const {
   // look back and check if castling was legal
   if (historyCounter > 0) {
     const Move lastMove = historyState[historyCounter - 1].move;
-    if (typeOf(lastMove) == CASTLING) {
+    if (lastMove.type() == CASTLING) {
       // no castling when in check
-      if (isAttacked(fromSquare(lastMove), nextPlayer)) {
+      if (isAttacked(lastMove.from(), nextPlayer)) {
         return false;
       }
       // king is not allowed to pass a square which is attacked by opponent
-      switch (toSquare(lastMove)) {
+      switch (lastMove.to()) {
         case SQ_G1:
           if (isAttacked(SQ_F1, nextPlayer)) return false;
           break;
@@ -519,17 +519,17 @@ bool Position::wasLegalMove() const {
 
 bool Position::isLegalMove(const Move move) const {
   // king is not allowed to pass a square which is attacked by opponent
-  if (typeOf(move) == CASTLING) {
+  if (move.type() == CASTLING) {
     // castling not allowed when in check
     // we can simply check the from-square of the castling move
     // and check if the current opponent attacks it. Castling would not
     // be possible if the attack would be influenced by the castling
     // itself.
-    if (isAttacked(fromSquare(move), ~nextPlayer)) {
+    if (isAttacked(move.from(), ~nextPlayer)) {
       return false;
     }
     // castling crossing attacked square?
-    switch (toSquare(move)) {
+    switch (move.to()) {
       case SQ_G1:
         if (isAttacked(SQ_F1, ~nextPlayer)) return false;
         break;

@@ -69,27 +69,27 @@
   constexpr T& operator/=(T& d, int i) { return d = static_cast<T>(static_cast<int>(d) / i); }
 
 // New: enable comparison operators for T vs T using implicit conversion to int
-#define ENABLE_COMPARISON_OPERATORS_ON(T)                                                    \
-  constexpr bool operator==(T a, T b) { return static_cast<int>(a) == static_cast<int>(b); } \
-  constexpr bool operator!=(T a, T b) { return static_cast<int>(a) != static_cast<int>(b); } \
-  constexpr bool operator<(T a, T b) { return static_cast<int>(a) < static_cast<int>(b); }   \
-  constexpr bool operator<=(T a, T b) { return static_cast<int>(a) <= static_cast<int>(b); } \
-  constexpr bool operator>(T a, T b) { return static_cast<int>(a) > static_cast<int>(b); }   \
+#define ENABLE_COMPARISON_OPERATORS_ON(T)                                                      \
+  constexpr bool operator==(T a, T b) { return static_cast<int>(a) == static_cast<int>(b); }   \
+  constexpr bool operator!=(T a, T b) { return static_cast<int>(a) != static_cast<int>(b); }   \
+  constexpr bool operator<(T a, T b) { return static_cast<int>(a) < static_cast<int>(b); }     \
+  constexpr bool operator<=(T a, T b) { return static_cast<int>(a) <= static_cast<int>(b); }   \
+  constexpr bool operator>(T a, T b) { return static_cast<int>(a) > static_cast<int>(b); }     \
   constexpr bool operator>=(T a, T b) { return static_cast<int>(a) >= static_cast<int>(b); }
 
 // New: enable mixed comparisons between T and int in both directions
-#define ENABLE_MIXED_COMPARISONS_ON(T)                                       \
-  constexpr bool operator==(T a, int b) { return static_cast<int>(a) == b; } \
-  constexpr bool operator!=(T a, int b) { return static_cast<int>(a) != b; } \
-  constexpr bool operator<(T a, int b) { return static_cast<int>(a) < b; }   \
-  constexpr bool operator<=(T a, int b) { return static_cast<int>(a) <= b; } \
-  constexpr bool operator>(T a, int b) { return static_cast<int>(a) > b; }   \
-  constexpr bool operator>=(T a, int b) { return static_cast<int>(a) >= b; } \
-  constexpr bool operator==(int a, T b) { return a == static_cast<int>(b); } \
-  constexpr bool operator!=(int a, T b) { return a != static_cast<int>(b); } \
-  constexpr bool operator<(int a, T b) { return a < static_cast<int>(b); }   \
-  constexpr bool operator<=(int a, T b) { return a <= static_cast<int>(b); } \
-  constexpr bool operator>(int a, T b) { return a > static_cast<int>(b); }   \
+#define ENABLE_MIXED_COMPARISONS_ON(T)                                         \
+  constexpr bool operator==(T a, int b) { return static_cast<int>(a) == b; }   \
+  constexpr bool operator!=(T a, int b) { return static_cast<int>(a) != b; }   \
+  constexpr bool operator<(T a, int b) { return static_cast<int>(a) < b; }     \
+  constexpr bool operator<=(T a, int b) { return static_cast<int>(a) <= b; }   \
+  constexpr bool operator>(T a, int b) { return static_cast<int>(a) > b; }     \
+  constexpr bool operator>=(T a, int b) { return static_cast<int>(a) >= b; }   \
+  constexpr bool operator==(int a, T b) { return a == static_cast<int>(b); }   \
+  constexpr bool operator!=(int a, T b) { return a != static_cast<int>(b); }   \
+  constexpr bool operator<(int a, T b) { return a < static_cast<int>(b); }     \
+  constexpr bool operator<=(int a, T b) { return a <= static_cast<int>(b); }   \
+  constexpr bool operator>(int a, T b) { return a > static_cast<int>(b); }     \
   constexpr bool operator>=(int a, T b) { return a >= static_cast<int>(b); }
 
 // New: enable compound assignment with int (+= and -=)
