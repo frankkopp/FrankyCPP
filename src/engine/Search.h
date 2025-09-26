@@ -271,7 +271,7 @@ private:
 
   // setupTimeControl sets up time control according to the given search limits
   // and returns a limit on the duration for the current search.
-  static milliseconds setupTimeControl(const Position& position, const SearchLimits& limits);
+  milliseconds setupTimeControl(const Position& position, const SearchLimits& limits);
   FRIEND_TEST(SearchTest, setupTime);
 
   // addExtraTime certain situations might call for an extension or reduction
