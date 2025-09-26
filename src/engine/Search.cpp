@@ -160,7 +160,7 @@ void Search::run() {
   stopSearchFlag    = false;
   hasResultFlag     = false;
   timeLimit         = milliseconds{};
-  extraTime         = milliseconds{};
+  extraTimeMs       = 0;
   nodesVisited      = 0;
   statistics        = SearchStats{};
   lastUciUpdateTime = nowFast();
@@ -308,7 +308,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
   // a book move.
   if (hadBookMove && searchLimits.timeControl && searchLimits.moveTime.count() == 0) {
     LOG__DEBUG(Logger::get().SEARCH_LOG, "First non-book move to search. Adding extra time: Before: {}, after: {}",
-               str(timeLimit + extraTime), str(2 * timeLimit + extraTime));
+               str(timeLimit + milliseconds(extraTimeMs.load())), str(2 * timeLimit + milliseconds(extraTimeMs.load())));
     addExtraTime(2.0);
     hadBookMove = false;
   }
@@ -1397,7 +1397,7 @@ void Search::setupSearchLimits(const Position& p, SearchLimits& sl) {
   if (sl.mate > 0) { LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Mate in {}", sl.mate); }
   if (sl.timeControl) {
     timeLimit = setupTimeControl(p, sl);
-    extraTime = milliseconds{0};
+    extraTimeMs = 0;
     if (sl.moveTime.count()) { LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Time Controlled: Time per Move {}", str(sl.moveTime)); }
     else {
       LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Time Controlled: White = {} (inc {}) Black = {} (inc {}) Moves to go: {}",
@@ -1451,9 +1451,9 @@ milliseconds Search::setupTimeControl(const Position& position, const SearchLimi
 
 void Search::addExtraTime(const double f) {
   if (searchLimits.timeControl && !searchLimits.moveTime.count()) {
-    const auto duration = static_cast<uint64_t>(timeLimit.count() * (f - 1.0));
-    extraTime += milliseconds(duration);
-    LOG__DEBUG(Logger::get().SEARCH_LOG, "Time added/reduced by {} to {} ", str(milliseconds(duration)), str(timeLimit + extraTime));
+    const auto deltaMs = static_cast<int64_t>(timeLimit.count() * (f - 1.0));
+    (void)extraTimeMs.fetch_add(deltaMs, std::memory_order_relaxed);
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Time added/reduced by {} to {} ", str(milliseconds(deltaMs)), str(timeLimit + milliseconds(extraTimeMs.load(std::memory_order_relaxed))));
   }
 }
 
@@ -1462,10 +1462,12 @@ void Search::startTimer() {
     startSearchTime = currentTime();
     LOG__DEBUG(Logger::get().SEARCH_LOG, "Timer started with time limit of {} ms", str(timeLimit));
     // relaxed busy wait
-    while ((currentTime() - startSearchTime) < (timeLimit + extraTime) && !stopSearchFlag) { std::this_thread::sleep_for(std::chrono::milliseconds(5)); }
+    while (currentTime() - startSearchTime < timeLimit + milliseconds(extraTimeMs.load()) && !stopSearchFlag) {
+      std::this_thread::sleep_for(milliseconds(5));
+    }
     if (!this->stopSearchFlag) {
       this->stopSearchFlag = true;
-      LOG__INFO(Logger::get().SEARCH_LOG, "Stop search by Timer after wall time: {} (time limit {} and extra time {})", str(currentTime() - startTime), str(timeLimit), str(extraTime));
+      LOG__INFO(Logger::get().SEARCH_LOG, "Stop search by Timer after wall time: {} (time limit {} and extra time {})", str(currentTime() - startSearchTime), str(timeLimit), str(milliseconds(extraTimeMs.load())));
     }
   });
 }

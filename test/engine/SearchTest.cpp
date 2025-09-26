@@ -98,14 +98,14 @@ TEST_F(SearchTest, extraTime) {
   Search s{};
   s.searchLimits.timeControl = true;
   s.timeLimit                = 10s;
-  s.extraTime                = 0ms;
+  s.extraTimeMs              = 0;
   s.addExtraTime(0.9);
-  fprintln("{}", str(s.extraTime));
-  EXPECT_EQ(-999ms, s.extraTime);
-  s.extraTime = 0ms;
+  fprintln("{}", str(milliseconds(s.extraTimeMs.load())));
+  EXPECT_EQ(-999, s.extraTimeMs.load());
+  s.extraTimeMs = 0;
   s.addExtraTime(1.2);
-  fprintln("{}", str(s.extraTime));
-  EXPECT_EQ(1999ms, s.extraTime);
+  fprintln("{}", str(milliseconds(s.extraTimeMs.load())));
+  EXPECT_EQ(1999, s.extraTimeMs.load());
 }
 
 TEST_F(SearchTest, startTimer) {
@@ -114,7 +114,7 @@ TEST_F(SearchTest, startTimer) {
   s.searchLimits.timeControl = true;
   s.startTime                = high_resolution_clock::now();
   s.timeLimit                = 2s;
-  s.extraTime                = 1s;
+  s.extraTimeMs              = 1000; // 1s
   s.startTimer();
   s.timerThread.join();
   EXPECT_LT(3s, (high_resolution_clock::now() - s.startTime));

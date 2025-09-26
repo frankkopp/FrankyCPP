@@ -35,6 +35,7 @@
 
 #include <thread>
 #include <semaphore>
+#include <atomic>
 
 // forward declaration
 class UciHandler;
@@ -73,7 +74,7 @@ class Search {
   TimePoint startTime{};    // when startSearch has been called
   TimePoint startSearchTime;// actual start time of search - only different from startTime after ponderhit()
   milliseconds timeLimit{};
-  milliseconds extraTime{};
+  std::atomic<int64_t> extraTimeMs{0};
   std::thread timerThread{};
 
   // Control UCI updates to avoid flooding
@@ -271,7 +272,7 @@ private:
 
   // setupTimeControl sets up time control according to the given search limits
   // and returns a limit on the duration for the current search.
-  milliseconds setupTimeControl(const Position& position, const SearchLimits& limits);
+  static milliseconds setupTimeControl(const Position& position, const SearchLimits& limits);
   FRIEND_TEST(SearchTest, setupTime);
 
   // addExtraTime certain situations might call for an extension or reduction
