@@ -210,8 +210,8 @@ void SearchTreeSizeTest::start() {
       sums[test.name].special2 += test.special2;
 
       fprintln("{:<15} | {:>6} | {:>8} | {:>15L} | {:>12L} | {:>12L} | {:>3d}/{:<3d} | {:>12L} | {:>12L} | {} | {}",
-               test.name, str(test.move), str(test.value), test.nodes, test.nps,
-               (test.time / 1'000'000), test.depth, test.extra, test.special1, test.special2, test.pv, result.fen);
+               test.name, test.move.str(), test.value.str(), test.nodes, test.nps,
+               test.time / 1'000'000, test.depth, test.extra, test.special1, test.special2, test.pv, result.fen);
     }
     NEWLINE;
   }

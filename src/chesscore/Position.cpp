@@ -375,11 +375,7 @@ Bitboard Position::attacksTo(const Square square, const Color color) const {
   // the piece bitboard.
 
   //     Pawns
-  return (Bitboards::pawnAttacks[~color][square] & piecesBb[color][PAWN]) |
-         (Attacks::attacks(KNIGHT, square, occupiedAll) & piecesBb[color][KNIGHT]) |
-         (Attacks::attacks(KING, square, occupiedAll) & piecesBb[color][KING]) |
-         (Attacks::attacks(ROOK, square, occupiedAll) & (piecesBb[color][ROOK] | piecesBb[color][QUEEN])) |
-         (Attacks::attacks(BISHOP, square, occupiedAll) & (piecesBb[color][BISHOP] | piecesBb[color][QUEEN])) |
+  return (Bitboards::pawnAttacks[~color][square] & piecesBb[color][PAWN]) | (Attacks::attacks(KNIGHT, square, occupiedAll) & piecesBb[color][KNIGHT]) | (Attacks::attacks(KING, square, occupiedAll) & piecesBb[color][KING]) | (Attacks::attacks(ROOK, square, occupiedAll) & (piecesBb[color][ROOK] | piecesBb[color][QUEEN])) | (Attacks::attacks(BISHOP, square, occupiedAll) & (piecesBb[color][BISHOP] | piecesBb[color][QUEEN])) |
          // consider en passant attacks
          epAttacks;
 }
@@ -629,7 +625,12 @@ bool Position::checkInsufficientMaterial() const {
   }
 
   // still a pawn, rook or a queen around
-  if (popcount(piecesBb[WHITE][PAWN]) || popcount(piecesBb[BLACK][PAWN]) || popcount(piecesBb[WHITE][ROOK]) || popcount(piecesBb[BLACK][ROOK]) || popcount(piecesBb[WHITE][QUEEN]) || popcount(piecesBb[BLACK][QUEEN])) {
+  if (piecesBb[WHITE][PAWN].popcount()
+      || piecesBb[BLACK][PAWN].popcount()
+      || piecesBb[WHITE][ROOK].popcount()
+      || piecesBb[BLACK][ROOK].popcount()
+      || piecesBb[WHITE][QUEEN].popcount()
+      || piecesBb[BLACK][QUEEN].popcount()) {
     return false;
   }
 

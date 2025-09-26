@@ -27,16 +27,18 @@ struct SearchResult {
   Move bestMove       = MOVE_NONE;
   Value bestMoveValue = VALUE_NONE;
   Move ponderMove     = MOVE_NONE;
-  int depth      = 0;
-  int extraDepth = 0;
-  uint64_t nodes = 0;
-  bool bookMove = false;
-  bool mateFound = false;
+  int depth           = 0;
+  int extraDepth      = 0;
+  uint64_t nodes      = 0;
+  bool bookMove       = false;
+  bool mateFound      = false;
   nanoseconds time{};
   MoveList pv{};
 
   std::string str() const {
-    return "Best Move: " + ::str(bestMove) + " (" + (bookMove ? "book move" : bestMoveValue.str()) + ") " + "Ponder Move: " + ::str(ponderMove) + " Depth: " + std::to_string(depth) + "/" + std::to_string(extraDepth);
+    return "Best Move: " + bestMove.str() + " (" + (bookMove ? "book move" : bestMoveValue.str())
+           + ") " + "Ponder Move: " + ponderMove.str() + " Depth: " + std::to_string(depth)
+           + "/" + std::to_string(extraDepth);
   }
 };
 
@@ -45,4 +47,4 @@ inline std::ostream& operator<<(std::ostream& os, const SearchResult& searchResu
   return os;
 }
 
-#endif//FRANKYCPP_SEARCHRESULT_H
+#endif// FRANKYCPP_SEARCHRESULT_H

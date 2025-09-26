@@ -154,7 +154,7 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
     // LOOP through all pawns of this color
     Bitboard pawns = myPawns;
     while (pawns) {
-      const Square sq           = popLSB(pawns);
+      const Square sq           = pawns.popLSB();
       const Bitboard neighbours = myPawns & Bitboards::neighbourFilesMask[sq];
       const Bitboard rayForward = Bitboards::rays[color == WHITE ? N : S][sq];
 
@@ -184,18 +184,18 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
     }
 
     // clang-format off
-    int midvalue = popcount(isolated) *  EvalConfig::ISOLATED_PAWN_MID_WEIGHT;
-    int endvalue = popcount(isolated) *  EvalConfig::ISOLATED_PAWN_END_WEIGHT;
-    midvalue    += popcount(doubled) *   EvalConfig::DOUBLED_PAWN_MID_WEIGHT;
-    endvalue    += popcount(doubled) *   EvalConfig::DOUBLED_PAWN_END_WEIGHT;
-    midvalue    += popcount(passed) *    EvalConfig::PASSED_PAWN_MID_WEIGHT;
-    endvalue    += popcount(passed) *    EvalConfig::PASSED_PAWN_END_WEIGHT;
-    midvalue    += popcount(blocked) *   EvalConfig::BLOCKED_PAWN_MID_WEIGHT;
-    endvalue    += popcount(blocked) *   EvalConfig::BLOCKED_PAWN_END_WEIGHT;
-    midvalue    += popcount(phalanx) *   EvalConfig::PHALANX_PAWN_MID_WEIGHT;
-    endvalue    += popcount(phalanx) *   EvalConfig::PHALANX_PAWN_END_WEIGHT;
-    midvalue    += popcount(supported) * EvalConfig::SUPPORTED_PAWN_MID_WEIGHT;
-    endvalue    += popcount(supported) * EvalConfig::SUPPORTED_PAWN_END_WEIGHT;
+    int midvalue = isolated.popcount() *  EvalConfig::ISOLATED_PAWN_MID_WEIGHT;
+    int endvalue = isolated.popcount() *  EvalConfig::ISOLATED_PAWN_END_WEIGHT;
+    midvalue    += doubled.popcount() *   EvalConfig::DOUBLED_PAWN_MID_WEIGHT;
+    endvalue    += doubled.popcount() *   EvalConfig::DOUBLED_PAWN_END_WEIGHT;
+    midvalue    += passed.popcount() *    EvalConfig::PASSED_PAWN_MID_WEIGHT;
+    endvalue    += passed.popcount() *    EvalConfig::PASSED_PAWN_END_WEIGHT;
+    midvalue    += blocked.popcount() *   EvalConfig::BLOCKED_PAWN_MID_WEIGHT;
+    endvalue    += blocked.popcount() *   EvalConfig::BLOCKED_PAWN_END_WEIGHT;
+    midvalue    += phalanx.popcount() *   EvalConfig::PHALANX_PAWN_MID_WEIGHT;
+    endvalue    += phalanx.popcount() *   EvalConfig::PHALANX_PAWN_END_WEIGHT;
+    midvalue    += supported.popcount() * EvalConfig::SUPPORTED_PAWN_MID_WEIGHT;
+    endvalue    += supported.popcount() * EvalConfig::SUPPORTED_PAWN_END_WEIGHT;
     // clang-format on
 
     // accumulate signed by color
@@ -234,21 +234,21 @@ inline void Evaluator::pieceEval(const Position& p, Score& s, const Color us, co
 
       // loop through all knights of this color
       while (pieceBb) {
-        knightEval(p, s, us, ~us, popLSB(pieceBb));
+        knightEval(p, s, us, ~us, pieceBb.popLSB());
       }
       break;
     case BISHOP:
       // general evaluation for all pieces of this color
 
       // bonus for a pair
-      if (EvalConfig::USE_BISHOP_PAIR_BONUS && popcount(pieceBb) > 1) {
+      if (EvalConfig::USE_BISHOP_PAIR_BONUS && pieceBb.popcount() > 1) {
         s.midgame += EvalConfig::BISHOP_PAIR_MID_BONUS;
         s.endgame += EvalConfig::BISHOP_PAIR_END_BONUS;
       }
 
       // loop through all bishops of this color
       while (pieceBb) {
-        bishopEval(p, s, us, ~us, popLSB(pieceBb));
+        bishopEval(p, s, us, ~us, pieceBb.popLSB());
       }
       break;
     case ROOK:
@@ -256,7 +256,7 @@ inline void Evaluator::pieceEval(const Position& p, Score& s, const Color us, co
 
       // loop through all rooks of this color
       while (pieceBb) {
-        rookEval(p, s, us, ~us, popLSB(pieceBb));
+        rookEval(p, s, us, ~us, pieceBb.popLSB());
       }
       break;
     case QUEEN:
@@ -264,7 +264,7 @@ inline void Evaluator::pieceEval(const Position& p, Score& s, const Color us, co
 
       // loop through all queens of this color
       while (pieceBb) {
-        queenEval(p, s, us, ~us, popLSB(pieceBb));
+        queenEval(p, s, us, ~us, pieceBb.popLSB());
       }
       break;
     default:
@@ -276,7 +276,7 @@ inline void Evaluator::knightEval(const Position& p, Score& s, const Color us, C
   if (EvalConfig::USE_KNIGHT_MOBILITY) {
     const Bitboard myOcc   = p.getOccupiedBb(us);
     const Bitboard attacks = Attacks::attacks(KNIGHT, sq, BbZero);
-    const int mobility     = popcount(attacks & ~myOcc);
+    const int mobility     = (attacks & ~myOcc).popcount();
 
     int mid = mobility * EvalConfig::KNIGHT_MOBILITY_MID_PER_MOVE;
     int end = mobility * EvalConfig::KNIGHT_MOBILITY_END_PER_MOVE;
@@ -301,7 +301,7 @@ inline void Evaluator::bishopEval(const Position& p, Score& s, const Color us, C
     const Bitboard myOcc     = p.getOccupiedBb(us);
     const Bitboard occupied  = p.getOccupiedBb();
     const Bitboard attacks   = Attacks::attacks(BISHOP, sq, occupied);
-    const int mobility       = popcount(attacks & ~myOcc);
+    const int mobility       = (attacks & ~myOcc).popcount();
 
     int mid = mobility * EvalConfig::BISHOP_MOBILITY_MID_PER_MOVE;
     int end = mobility * EvalConfig::BISHOP_MOBILITY_END_PER_MOVE;
@@ -325,7 +325,7 @@ inline void Evaluator::rookEval(const Position& p, Score& s, const Color us, con
     const Bitboard myOcc    = p.getOccupiedBb(us);
     const Bitboard occupied = p.getOccupiedBb();
     const Bitboard attacks  = Attacks::attacks(ROOK, sq, occupied);
-    const int mobility      = popcount(attacks & ~myOcc);
+    const int mobility      = (attacks & ~myOcc).popcount();
 
     mid += mobility * EvalConfig::ROOK_MOBILITY_MID_PER_MOVE;
     end += mobility * EvalConfig::ROOK_MOBILITY_END_PER_MOVE;
@@ -371,7 +371,7 @@ inline void Evaluator::queenEval(const Position& p, Score& s, const Color us, co
     const Bitboard myOcc    = p.getOccupiedBb(us);
     const Bitboard occupied = p.getOccupiedBb();
     const Bitboard attacks  = Attacks::attacks(QUEEN, sq, occupied);
-    const int mobility      = popcount(attacks & ~myOcc);
+    const int mobility      = (attacks & ~myOcc).popcount();
 
     mid += mobility * EvalConfig::QUEEN_MOBILITY_MID_PER_MOVE;
     end += mobility * EvalConfig::QUEEN_MOBILITY_END_PER_MOVE;

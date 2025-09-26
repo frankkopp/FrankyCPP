@@ -508,7 +508,7 @@ void UciHandler::sendReadyOk() const {
 }
 
 void UciHandler::sendResult(const Move bestMove, const Move ponderMove) const {
-  send(std::format("bestmove {}{}", str(bestMove), (ponderMove ? " ponder " + str(ponderMove) : "")));
+  send(std::format("bestmove {}{}", bestMove.str(), (ponderMove ? " ponder " + ponderMove.str() : "")));
 }
 
 void UciHandler::sendCurrentLine(const MoveList& moveList) const {
@@ -518,18 +518,18 @@ void UciHandler::sendCurrentLine(const MoveList& moveList) const {
 void UciHandler::sendIterationEndInfo(int depth, int seldepth, const Value value, uint64_t nodes,
                                       uint64_t nps, const milliseconds time, const MoveList& pv) const {
   send(std::format("info depth {} seldepth {} multipv 1 score {} nodes {} nps {} time {} pv {}",
-                   depth, seldepth, str(value), nodes, nps, time.count(), str(pv)));
+                   depth, seldepth, value.str(), nodes, nps, time.count(), str(pv)));
 }
 
 void UciHandler::sendAspirationResearchInfo(int depth, int seldepth, const Value value,
                                             const std::string& boundString, uint64_t nodes, uint64_t nps,
                                             const milliseconds time, const MoveList& pv) const {
   send(std::format("info depth {} seldepth {} multipv 1 score {} {} nodes {} nps {} time {} pv {}",
-                   depth, seldepth, str(value), boundString, nodes, nps, time.count(), str(pv)));
+                   depth, seldepth, value.str(), boundString, nodes, nps, time.count(), str(pv)));
 }
 
 void UciHandler::sendCurrentRootMove(const Move currmove, std::size_t movenumber) const {
-  send(std::format("info currmove {} currmovenumber {}", str(currmove),
+  send(std::format("info currmove {} currmovenumber {}", currmove.str(),
                    movenumber));
 }
 

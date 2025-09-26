@@ -204,41 +204,41 @@ bool MoveGenerator::hasLegalMove(const Position& position) {
   const Square kingSquare = position.getKingSquare(us);
   Bitboard tmpMoves       = Attacks::attacks(KING, kingSquare, BbZero) & ~ourBb;
   while (tmpMoves) {
-    const Square toSquare = popLSB(tmpMoves);
+    const Square toSquare = tmpMoves.popLSB();
     if (position.isLegalMove(Move(kingSquare, toSquare))) return true;
   }
 
   // PAWNS
 
   // pawns - check step one to unoccupied squares
-  tmpMoves                = shiftBb(Direction::pawnPush(us), ourPawns) & ~position.getOccupiedBb();
-  Bitboard tmpMovesDouble = shiftBb(Direction::pawnPush(us), tmpMoves & Bitboards::rankBb[Rank::pawnDoubleFor(us)]) & ~position.getOccupiedBb();
+  tmpMoves                = ourPawns.shifted(Direction::pawnPush(us)) & ~position.getOccupiedBb();
+  Bitboard tmpMovesDouble = (tmpMoves & Bitboards::rankBb[Rank::pawnDoubleFor(us)]).shifted(Direction::pawnPush(us)) & ~position.getOccupiedBb();
 
   while (tmpMoves) {
-    const Square toSquare   = popLSB(tmpMoves);
+    const Square toSquare   = tmpMoves.popLSB();
     const Square fromSquare = toSquare.pawnPush(them);
     if (position.isLegalMove(Move(fromSquare, toSquare))) return true;
   }
 
   // pawns double - check step two to unoccupied squares
   while (tmpMovesDouble) {
-    const Square toSquare   = popLSB(tmpMovesDouble);
+    const Square toSquare   = tmpMovesDouble.popLSB();
     const Square fromSquare = toSquare + 2 * Direction::pawnPush(them);
     if (position.isLegalMove(Move(fromSquare, toSquare))) return true;
   }
 
   // normal pawn captures to the west - promotions first
-  tmpMoves = shiftBb(Direction::pawnPush(us) + WEST, ourPawns) & theirBb;
+  tmpMoves = ourPawns.shifted(Direction::pawnPush(us) + WEST) & theirBb;
   while (tmpMoves) {
-    const Square toSquare   = popLSB(tmpMoves);
+    const Square toSquare   = tmpMoves.popLSB();
     const Square fromSquare = toSquare.pawnPush(them) + EAST;
     if (position.isLegalMove(Move(fromSquare, toSquare))) return true;
   }
 
   // normal pawn captures to the east - promotions first
-  tmpMoves = shiftBb(Direction::pawnPush(us) + EAST, ourPawns) & theirBb;
+  tmpMoves = ourPawns.shifted(Direction::pawnPush(us) + EAST) & theirBb;
   while (tmpMoves) {
-    const Square toSquare   = popLSB(tmpMoves);
+    const Square toSquare   = tmpMoves.popLSB();
     const Square fromSquare = toSquare.pawnPush(them) + WEST;
     if (position.isLegalMove(Move(fromSquare, toSquare))) return true;
   }
@@ -247,10 +247,10 @@ bool MoveGenerator::hasLegalMove(const Position& position) {
   for (PieceType pt = KNIGHT; pt <= QUEEN; ++pt) {
     Bitboard pieces = position.getPieceBb(us, pt);
     while (pieces) {
-      const Square fromSquare = popLSB(pieces);
+      const Square fromSquare = pieces.popLSB();
       Bitboard moves          = Attacks::attacks(pt, fromSquare, position.getOccupiedBb()) & ~ourBb;
       while (moves) {
-        const Square toSquare = popLSB(moves);
+        const Square toSquare = moves.popLSB();
         if (position.isLegalMove(Move(fromSquare, toSquare))) return true;
       }
     }
@@ -260,17 +260,17 @@ bool MoveGenerator::hasLegalMove(const Position& position) {
   const Square enPassantSquare = position.getEnPassantSquare();
   if (enPassantSquare != SQ_NONE) {
     // left
-    tmpMoves = shiftBb(Direction::pawnPush(them) + WEST, Bitboards::sqBb[enPassantSquare]) & ourPawns;
+    tmpMoves = Bitboards::sqBb[enPassantSquare].shifted(Direction::pawnPush(them) + WEST) & ourPawns;
     if (tmpMoves) {
-      const Square fromSquare = lsb(tmpMoves);
+      const Square fromSquare = tmpMoves.lsb();
       if (position.isLegalMove(Move::enPassant(fromSquare, fromSquare + Direction::pawnPush(us) + EAST))) {
         return true;
       }
     }
     // right
-    tmpMoves = shiftBb(Direction::pawnPush(them) + EAST, Bitboards::sqBb[enPassantSquare]) & ourPawns;
+    tmpMoves = Bitboards::sqBb[enPassantSquare].shifted(Direction::pawnPush(them) + EAST) & ourPawns;
     if (tmpMoves) {
-      const Square fromSquare = lsb(tmpMoves);
+      const Square fromSquare = tmpMoves.lsb();
       if (position.isLegalMove(Move::enPassant(fromSquare, fromSquare + Direction::pawnPush(us) + WEST))) {
         return true;
       }
@@ -607,9 +607,9 @@ Bitboard MoveGenerator::getEvasionTargets(const Position& p) {
   assert(evasionTargets != BbZero && "evasion target should not be empty");
   // we can only block attacks of sliders if there is not more
   // than one attacker
-  const int popCount = popcount(evasionTargets);
+  const int popCount = evasionTargets.popcount();
   if (popCount == 1) {
-    const Square atck = lsb(evasionTargets);
+    const Square atck = evasionTargets.lsb();
     // sliding pieces
     if (typeOf(p.getPiece(atck)) > KNIGHT) {
       evasionTargets |= Bitboards::intermediateBb[atck][ourKing];
@@ -649,7 +649,7 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
 
     for (const Direction dir : {WEST, EAST}) {
       // normal pawn captures
-      tmpCaptures = shiftBb(Direction::pawnPush(nextPlayer) + dir, myPawns) & position.getOccupiedBb(~nextPlayer);
+      tmpCaptures = myPawns.shifted(Direction::pawnPush(nextPlayer) + dir) & position.getOccupiedBb(~nextPlayer);
 
       // filter evasion targets if in check
       if (evasion) {
@@ -660,7 +660,7 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
       Bitboard promCaptures = tmpCaptures & Bitboards::rankBb[Rank::promotionFor(nextPlayer)];
       // promotion captures
       while (promCaptures) {
-        const Square toSquare   = popLSB(promCaptures);
+        const Square toSquare   = promCaptures.popLSB();
         const Square fromSquare = toSquare + Direction::pawnPush(~nextPlayer) - dir;
         // value is the delta of values from the two pieces involved minus the promotion value
         const Value value = valueOf(position.getPiece(toSquare)) - (2 * valueOf(PAWN));
@@ -673,7 +673,7 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
 
       tmpCaptures &= ~Bitboards::rankBb[Rank::promotionFor(nextPlayer)];
       while (tmpCaptures) {
-        const Square toSquare   = popLSB(tmpCaptures);
+        const Square toSquare   = tmpCaptures.popLSB();
         const Square fromSquare = toSquare + Direction::pawnPush(~nextPlayer) - dir;
         // value is the delta of values from the two pieces involved plus the positional value
         const Value value = valueOf(position.getPiece(toSquare)) - valueOf(position.getPiece(fromSquare)) + Values::posValue[piece][toSquare][gamePhase];
@@ -685,9 +685,9 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
     const Square enPassantSquare = position.getEnPassantSquare();
     if (enPassantSquare != SQ_NONE) {
       for (const Direction dir : {WEST, EAST}) {
-        tmpCaptures = shiftBb(Direction::pawnPush(~nextPlayer) + dir, Bitboards::sqBb[enPassantSquare]) & myPawns;
+        tmpCaptures = Bitboards::sqBb[enPassantSquare].shifted(Direction::pawnPush(~nextPlayer) + dir) & myPawns;
         if (tmpCaptures) {
-          const Square fromSquare = lsb(tmpCaptures);
+          const Square fromSquare = tmpCaptures.lsb();
           const Square toSquare   = fromSquare + Direction::pawnPush(nextPlayer) - dir;// target square behind the captured pawn
           const Value value       = Values::posValue[piece][toSquare][gamePhase];
           pMoves->push_back(Move::enPassant(fromSquare, toSquare, value));
@@ -696,7 +696,7 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
     }
 
     // we treat Queen and Knight promotions as non-quiet moves
-    Bitboard promMoves = shiftBb(Direction::pawnPush(nextPlayer), myPawns) & ~position.getOccupiedBb() & Bitboards::rankBb[Rank::promotionFor(nextPlayer)];
+    Bitboard promMoves = myPawns.shifted(Direction::pawnPush(nextPlayer)) & ~position.getOccupiedBb() & Bitboards::rankBb[Rank::promotionFor(nextPlayer)];
 
     // filter evasion targets if in check
     if (evasion) {
@@ -704,7 +704,7 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
     }
     // single pawn steps - promotions first
     while (promMoves) {
-      const Square toSquare   = popLSB(promMoves);
+      const Square toSquare   = promMoves.popLSB();
       const Square fromSquare = toSquare + Direction::pawnPush(~nextPlayer);
       // value is done manually for sorting of queen prom first, then knight and others
       pMoves->push_back(Move::promotion(fromSquare, toSquare, QUEEN, 2000 - valueOf(PAWN) + valueOf(QUEEN)));
@@ -724,10 +724,10 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
     // a sliding attacker.
 
     // pawns - check step one to unoccupied squares
-    Bitboard tmpMoves = shiftBb(Direction::pawnPush(nextPlayer), myPawns) & ~position.getOccupiedBb();
+    Bitboard tmpMoves = myPawns.shifted(Direction::pawnPush(nextPlayer)) & ~position.getOccupiedBb();
 
     // pawns double - check step two to unoccupied squares
-    Bitboard tmpMovesDouble = shiftBb(Direction::pawnPush(nextPlayer), tmpMoves & Bitboards::rankBb[Rank::pawnDoubleFor(nextPlayer)]) & ~position.getOccupiedBb();
+    Bitboard tmpMovesDouble = (tmpMoves & Bitboards::rankBb[Rank::pawnDoubleFor(nextPlayer)]).shifted(Direction::pawnPush(nextPlayer)) & ~position.getOccupiedBb();
 
     // filter evasion targets if in check
     if (evasion) {
@@ -738,7 +738,7 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
     // single pawn steps - promotions first
     Bitboard promMoves = tmpMoves & Bitboards::rankBb[Rank::promotionFor(nextPlayer)];
     while (promMoves) {
-      const Square toSquare   = popLSB(promMoves);
+      const Square toSquare   = promMoves.popLSB();
       const Square fromSquare = toSquare + Direction::pawnPush(~nextPlayer);
       // value for non captures is lowered
       // we treat Queen and Knight promotions as non-quiet moves, and they are generated above
@@ -750,7 +750,7 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
 
     // double pawn steps
     while (tmpMovesDouble) {
-      const Square toSquare = popLSB(tmpMovesDouble);
+      const Square toSquare = tmpMovesDouble.popLSB();
       // value is the positional value of the piece at this game phase
       const auto value = Values::posValue[piece][toSquare][gamePhase] - 2'000;
       pMoves->push_back(Move::normal(toSquare + 2 * Direction::pawnPush(~nextPlayer), toSquare, value));
@@ -759,7 +759,7 @@ void MoveGenerator::generatePawnMoves(const Position& position, MoveList* const 
     // normal single pawn steps
     tmpMoves = tmpMoves & ~Bitboards::rankBb[Rank::promotionFor(nextPlayer)];
     while (tmpMoves) {
-      const Square toSquare   = popLSB(tmpMoves);
+      const Square toSquare   = tmpMoves.popLSB();
       const Square fromSquare = toSquare + Direction::pawnPush(~nextPlayer);
       // value is the positional value of the piece at this game phase
       const Value value = Values::posValue[piece][toSquare][gamePhase] - 2'000;
@@ -783,7 +783,7 @@ void MoveGenerator::generateMoves(const Position& position, MoveList* const pMov
     const Piece piece = makePiece(nextPlayer, pt);
 
     while (pieces) {
-      const Square fromSquare    = popLSB(pieces);
+      const Square fromSquare    = pieces.popLSB();
       const Bitboard pseudoMoves = Attacks::attacks(pt, fromSquare, occupiedBb);
 
       // captures
@@ -793,7 +793,7 @@ void MoveGenerator::generateMoves(const Position& position, MoveList* const pMov
           captures &= evasionTargets;
         }
         while (captures) {
-          const Square toSquare = popLSB(captures);
+          const Square toSquare = captures.popLSB();
           const Value value     = 2000 + valueOf(position.getPiece(toSquare)) - valueOf(position.getPiece(fromSquare)) + Values::posValue[piece][toSquare][gamePhase];
           pMoves->push_back(Move::normal(fromSquare, toSquare, value));
         }
@@ -806,7 +806,7 @@ void MoveGenerator::generateMoves(const Position& position, MoveList* const pMov
           nonCaptures &= evasionTargets;
         }
         while (nonCaptures) {
-          const Square toSquare = popLSB(nonCaptures);
+          const Square toSquare = nonCaptures.popLSB();
           const Value value     = Values::posValue[piece][toSquare][gamePhase] - 2000;
           pMoves->push_back(Move::normal(fromSquare, toSquare, value));
         }
@@ -820,8 +820,8 @@ void MoveGenerator::generateKingMoves(const Position& position, MoveList* const 
   const Piece piece      = makePiece(nextPlayer, KING);
   const int gamePhase    = position.getGamePhase();
   Bitboard kingSquareBb  = position.getPieceBb(nextPlayer, KING);
-  assert(popcount(kingSquareBb) == 1 && "Only exactly one king allowed!");
-  const Square fromSquare = popLSB(kingSquareBb);
+  assert(kingSquareBb.popcount() == 1 && "Only exactly one king allowed!");
+  const Square fromSquare = kingSquareBb.popLSB();
 
   // attacks include all moves no matter if the king would be in check
   const Bitboard pseudoMoves = Attacks::attacks(KING, fromSquare, BbZero);
@@ -830,7 +830,7 @@ void MoveGenerator::generateKingMoves(const Position& position, MoveList* const 
   if (genMode & GenNonQuiet) {
     Bitboard captures = pseudoMoves & position.getOccupiedBb(~nextPlayer);
     while (captures) {
-      const Square toSquare = popLSB(captures);
+      const Square toSquare = captures.popLSB();
       if (!evasion) {
         const Value value = 2000 + valueOf(position.getPiece(toSquare)) - valueOf(position.getPiece(fromSquare)) + Values::posValue[piece][toSquare][gamePhase];
         pMoves->push_back(Move::normal(fromSquare, toSquare, value));
@@ -847,7 +847,7 @@ void MoveGenerator::generateKingMoves(const Position& position, MoveList* const 
   if (genMode & GenQuiet) {
     Bitboard nonCaptures = pseudoMoves & ~position.getOccupiedBb();
     while (nonCaptures) {
-      const Square toSquare = popLSB(nonCaptures);
+      const Square toSquare = nonCaptures.popLSB();
       if (!evasion) {
         const Value value = Values::posValue[piece][toSquare][gamePhase] - 2'000;
         pMoves->push_back(Move::normal(fromSquare, toSquare, value));

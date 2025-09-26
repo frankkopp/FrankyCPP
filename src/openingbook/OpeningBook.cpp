@@ -125,7 +125,7 @@ std::string OpeningBook::getLevelStr(int level, const int maxLevel, const BookEn
   const size_t size = node->moves.size();
   for (int i = 0; i < size; i++) {
     const BookEntry* newNode = &bookMap[(node->nextPosition)[i]];
-    out += std::format(deLocale, "{:{}}{} ({:L})\n", "", level, ::str(node->moves[i]), newNode->counter);
+    out += std::format(deLocale, "{:{}}{} ({:L})\n", "", level, node->moves[i].str(), newNode->counter);
     if (level < maxLevel) {
       out += getLevelStr(level + 1, maxLevel, newNode);
     }

@@ -801,5 +801,5 @@ TEST_F(MoveGenTest, debug) {
   }
 
   fprintln("{}", mg.generateLegalMoves(p, GenAll)->size());
-  fprintln("{}", str(mg.generateLegalMoves(p, GenAll)->at(0)));
+  fprintln("{}", (mg.generateLegalMoves(p, GenAll)->at(0)).str());
 }

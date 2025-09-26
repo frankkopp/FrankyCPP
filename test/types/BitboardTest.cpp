@@ -38,36 +38,54 @@ protected:
 // test if everything is initialized and precomputed
 TEST_F(BitboardsTest, init) {
   EXPECT_EQ(7, Squares::squareDistance[SQ_A1][SQ_H8]);
-  EXPECT_EQ("1111111100000000000000000000000000000000000000000000000000000000", str(Bitboards::rankBb[RANK_8]));
-  EXPECT_EQ("0000000011111111000000000000000000000000000000000000000000000000", str(Bitboards::rankBb[RANK_7]));
-  EXPECT_EQ("1000000010000000100000001000000010000000100000001000000010000000", str(Bitboards::fileBb[FILE_H]));
-  EXPECT_EQ("0100000001000000010000000100000001000000010000000100000001000000", str(Bitboards::fileBb[FILE_G]));
-  EXPECT_EQ("0000000000000000000000000000000000000000000000000000000000000001", str(Bitboards::sqBb[SQ_A1]));
-  EXPECT_EQ("1000000000000000000000000000000000000000000000000000000000000000", str(Bitboards::sqBb[SQ_H8]));
-  EXPECT_EQ("0000000000000000000000000000000000010000000000000000000000000000", str(Bitboards::sqBb[SQ_E4]));
+  EXPECT_EQ("1111111100000000000000000000000000000000000000000000000000000000", Bitboards::rankBb[RANK_8].str());
+  EXPECT_EQ("0000000011111111000000000000000000000000000000000000000000000000", Bitboards::rankBb[RANK_7].str());
+  EXPECT_EQ("1000000010000000100000001000000010000000100000001000000010000000", Bitboards::fileBb[FILE_H].str());
+  EXPECT_EQ("0100000001000000010000000100000001000000010000000100000001000000", Bitboards::fileBb[FILE_G].str());
+  EXPECT_EQ("0000000000000000000000000000000000000000000000000000000000000001", Bitboards::sqBb[SQ_A1].str());
+  EXPECT_EQ("1000000000000000000000000000000000000000000000000000000000000000", Bitboards::sqBb[SQ_H8].str());
+  EXPECT_EQ("0000000000000000000000000000000000010000000000000000000000000000", Bitboards::sqBb[SQ_E4].str());
   EXPECT_EQ(Bitboards::fileBb[FILE_H], Bitboards::sqToFileBb[SQ_H8]);
   EXPECT_EQ(Bitboards::rankBb[RANK_8], Bitboards::sqToRankBb[SQ_H8]);
-  EXPECT_EQ("0000000000000000000000000000000000000000010000000010000000000000", str(Bitboards::nonSliderAttacks[KNIGHT][SQ_H1]));
-  EXPECT_EQ("0111111101111111011111110111111101111111011111110111111101111111", str(Bitboards::filesWestMask[SQ_H1]));
-  // EXPECT_EQ("1000000010000000100000001000000010000000100000001000000001111111", str(Bitboards::rookMagics[SQ_H1].attacks[Bitboards::rookMagics[SQ_H1].index(BbZero)]));
-  EXPECT_EQ("0000000000000000000000000000000011111110000000000000000000000000", str(Bitboards::rays[E][SQ_A4]));
-  EXPECT_EQ("0000000000000000000000000000000000000000000000000000000000111110", str(Bitboards::intermediateBb[SQ_A1][SQ_G1]));
-  EXPECT_EQ("0011100000111000001110000011100000000000000000000000000000000000", str(Bitboards::passedPawnMask[WHITE][SQ_E4]));
-  EXPECT_EQ("0000000000000000000000000000000000000000000000000000000011100000", str(Bitboards::kingSideCastleMask[WHITE]));
-  EXPECT_EQ("0101010110101010010101011010101001010101101010100101010110101010", str(Bitboards::colorBb[WHITE]));
+  EXPECT_EQ("0000000000000000000000000000000000000000010000000010000000000000", Bitboards::nonSliderAttacks[KNIGHT][SQ_H1].str());
+  EXPECT_EQ("0111111101111111011111110111111101111111011111110111111101111111", Bitboards::filesWestMask[SQ_H1].str());
+  // EXPECT_EQ("1000000010000000100000001000000010000000100000001000000001111111", Bitboards::rookMagics[SQ_H1].attacks[Bitboards::rookMagics[SQ_H1].index(BbZero)].str());
+  EXPECT_EQ("0000000000000000000000000000000011111110000000000000000000000000", Bitboards::rays[E][SQ_A4].str());
+  EXPECT_EQ("0000000000000000000000000000000000000000000000000000000000111110", Bitboards::intermediateBb[SQ_A1][SQ_G1].str());
+  EXPECT_EQ("0011100000111000001110000011100000000000000000000000000000000000", Bitboards::passedPawnMask[WHITE][SQ_E4].str());
+  EXPECT_EQ("0000000000000000000000000000000000000000000000000000000011100000", Bitboards::kingSideCastleMask[WHITE].str());
+  EXPECT_EQ("0101010110101010010101011010101001010101101010100101010110101010", Bitboards::colorBb[WHITE].str());
 }
 
 TEST_F(BitboardsTest, str) {
-  EXPECT_EQ("1111111100000000000000000000000000000000000000000000000000000000", str(Bitboards::rankBb[RANK_8]));
-  EXPECT_EQ("00000000.00000000.00000000.00000000.00000000.00000000.00000000.11111111 (18374686479671623680)", strGrouped(Bitboards::rankBb[RANK_8]));
-  EXPECT_EQ("+---+---+---+---+---+---+---+---+\n| X | X | X | X | X | X | X | X |\n+---+---+---+---+---+---+---+---+\n|   |   |   |   |   |   |   |   |\n+---+---+---+---+---+---+---+---+\n|   |   |   |   |   |   |   |   |\n+---+---+---+---+---+---+---+---+\n|   |   |   |   |   |   |   |   |\n+---+---+---+---+---+---+---+---+\n|   |   |   |   |   |   |   |   |\n+---+---+---+---+---+---+---+---+\n|   |   |   |   |   |   |   |   |\n+---+---+---+---+---+---+---+---+\n|   |   |   |   |   |   |   |   |\n+---+---+---+---+---+---+---+---+\n|   |   |   |   |   |   |   |   |\n+---+---+---+---+---+---+---+---+\n", strBoard(Bitboards::rankBb[RANK_8]));
+  EXPECT_EQ("1111111100000000000000000000000000000000000000000000000000000000", Bitboards::rankBb[RANK_8].str());
+  EXPECT_EQ("00000000.00000000.00000000.00000000.00000000.00000000.00000000.11111111 (18374686479671623680)", Bitboards::rankBb[RANK_8].strGrouped());
+  EXPECT_EQ(
+    "+---+---+---+---+---+---+---+---+\n"
+    "| X | X | X | X | X | X | X | X |\n"
+    "+---+---+---+---+---+---+---+---+\n"
+    "|   |   |   |   |   |   |   |   |\n"
+    "+---+---+---+---+---+---+---+---+\n"
+    "|   |   |   |   |   |   |   |   |\n"
+    "+---+---+---+---+---+---+---+---+\n"
+    "|   |   |   |   |   |   |   |   |\n"
+    "+---+---+---+---+---+---+---+---+\n"
+    "|   |   |   |   |   |   |   |   |\n"
+    "+---+---+---+---+---+---+---+---+\n"
+    "|   |   |   |   |   |   |   |   |\n"
+    "+---+---+---+---+---+---+---+---+\n"
+    "|   |   |   |   |   |   |   |   |\n"
+    "+---+---+---+---+---+---+---+---+\n"
+    "|   |   |   |   |   |   |   |   |\n"
+    "+---+---+---+---+---+---+---+---+\n",
+    Bitboards::rankBb[RANK_8].strBoard());
 }
 
 TEST_F(BitboardsTest, popcount) {
-  uint64_t b = 0b0010000000010000000000000010000000000000000000000000000000000000ULL;
-  ASSERT_EQ(3, popcount(b));
+  Bitboard b = 0b0010000000010000000000000010000000000000000000000000000000000000ULL;
+  ASSERT_EQ(3, b.popcount());
   b = BbZero;
-  ASSERT_EQ(0, popcount(b));
+  ASSERT_EQ(0, b.popcount());
 }
 
 TEST_F(BitboardsTest, BitboardSquareTest) {
@@ -90,31 +108,31 @@ TEST_F(BitboardsTest, SquareDistanceTest) {
 }
 
 TEST_F(BitboardsTest, shiftTest) {
-  Bitboard shifted = shiftBb(EAST, FileABB);
+  Bitboard shifted = FileABB.shifted(EAST);
   ASSERT_EQ(FileBBB, shifted);
 
-  shifted = shiftBb(WEST, FileABB);
+  shifted = FileABB.shifted(WEST);
   ASSERT_EQ(BbZero, shifted);
 
-  shifted = shiftBb(NORTH, Rank1BB);
+  shifted = Rank1BB.shifted(NORTH);
   ASSERT_EQ(Rank2BB, shifted);
 
-  shifted = shiftBb(SOUTH, Rank8BB);
+  shifted = Rank8BB.shifted(SOUTH);
   ASSERT_EQ(Rank7BB, shifted);
 
-  shifted = shiftBb(NORTH, Rank8BB);
+  shifted = Rank8BB.shifted(NORTH);
   ASSERT_EQ(BbZero, shifted);
 
-  shifted = shiftBb(NORTH_EAST, Bitboards::sqBb[SQ_E4]);
+  shifted = Bitboards::sqBb[SQ_E4].shifted(NORTH_EAST);
   ASSERT_EQ(Bitboards::sqBb[SQ_F5], shifted);
 
-  shifted = shiftBb(SOUTH_EAST, Bitboards::sqBb[SQ_E4]);
+  shifted = Bitboards::sqBb[SQ_E4].shifted(SOUTH_EAST);
   ASSERT_EQ(Bitboards::sqBb[SQ_F3], shifted);
 
-  shifted = shiftBb(SOUTH_WEST, Bitboards::sqBb[SQ_E4]);
+  shifted = Bitboards::sqBb[SQ_E4].shifted(SOUTH_WEST);
   ASSERT_EQ(Bitboards::sqBb[SQ_D3], shifted);
 
-  shifted = shiftBb(NORTH_WEST, Bitboards::sqBb[SQ_E4]);
+  shifted = Bitboards::sqBb[SQ_E4].shifted(NORTH_WEST);
   ASSERT_EQ(Bitboards::sqBb[SQ_D5], shifted);
 }
 
@@ -132,78 +150,74 @@ TEST_F(BitboardsTest, Diagonals) {
 TEST_F(BitboardsTest, lsb_msb) {
   // set least significant bit
   Bitboard b = BbOne;
-  fprintln("{}", str(b));
-  Square sql = lsb(b);
-  Square sqm = msb(b);
+  fprintln("{}", b.str());
+  Square sql = b.lsb();
+  Square sqm = b.msb();
   ASSERT_EQ(SQ_A1, sql);
   ASSERT_EQ(SQ_A1, sqm);
 
-  b   = (BbOne << 63);
-  fprintln("{}", str(b));
-  sql = lsb(b);
-  sqm = msb(b);
+  b = (BbOne << 63);
+  fprintln("{}", b.str());
+  sql = b.lsb();
+  sqm = b.msb();
   ASSERT_EQ(SQ_H8, sql);
   ASSERT_EQ(SQ_H8, sqm);
 
-  b   = BbZero | SQ_H1 | SQ_G8;
-  fprintln("{}", str(b));
-  sql = lsb(b);
-  sqm = msb(b);
+  b = BbZero | SQ_H1 | SQ_G8;
+  fprintln("{}", b.str());
+  sql = b.lsb();
+  sqm = b.msb();
   ASSERT_EQ(SQ_H1, sql);
   ASSERT_EQ(SQ_G8, sqm);
 
   NEWLINE;
 
-  b         =  BbZero | SQ_A1 | SQ_H8;
-  fprintln("{}", str(b));
-  Square sq = popLSB(b);
-  fprintln("{}", str(b));
+  b = BbZero | SQ_A1 | SQ_H8;
+  fprintln("{}", b.str());
+  Square sq = b.popLSB();
+  fprintln("{}", b.str());
   ASSERT_EQ(SQ_A1, sq);
-  sq = popLSB(b);
-  fprintln("{}", str(b));
+  sq = b.popLSB();
+  fprintln("{}", b.str());
   ASSERT_EQ(SQ_H8, sq);
-
 }
 
 TEST_F(BitboardsTest, bitScans) {
-  ASSERT_EQ(1, popcount(Bitboards::sqBb[SQ_D3]));
-  ASSERT_EQ(2, popcount(Bitboards::sqBb[SQ_D3] | Bitboards::sqBb[SQ_H2]));
-  ASSERT_EQ(8, popcount(DiagUpA1));
+  ASSERT_EQ(1, Bitboards::sqBb[SQ_D3].popcount());
+  ASSERT_EQ(2, (Bitboards::sqBb[SQ_D3] | Bitboards::sqBb[SQ_H2]).popcount());
+  ASSERT_EQ(8, DiagUpA1.popcount());
 
-  ASSERT_EQ(19, lsb(Bitboards::sqBb[SQ_D3]));
-  ASSERT_EQ(19, msb(Bitboards::sqBb[SQ_D3]));
+  ASSERT_EQ(19, Bitboards::sqBb[SQ_D3].lsb());
+  ASSERT_EQ(19, Bitboards::sqBb[SQ_D3].msb());
 
   Bitboard tmp = DiagUpA1;
   int i        = 0;
   while (tmp) {
     i++;
-    popLSB(tmp);
+    tmp.popLSB();
   }
   ASSERT_EQ(8, i);
 }
 
 TEST_F(BitboardsTest, pawnAttacksMoves) {
-
-  std::string expected =
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   | X |   |   |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n";
-  std::string actual = strBoard(Bitboards::pawnAttacks[WHITE][SQ_A2]);
-    //  std::cout << actual;
+  std::string expected = "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   | X |   |   |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n";
+  std::string actual   = Bitboards::pawnAttacks[WHITE][SQ_A2].strBoard();
   ASSERT_EQ(expected, actual);
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -223,8 +237,7 @@ TEST_F(BitboardsTest, pawnAttacksMoves) {
              "+---+---+---+---+---+---+---+---+\n"
              "|   |   |   |   |   |   |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
-  actual = strBoard(Bitboards::pawnAttacks[BLACK][SQ_H7]);
-  //  std::cout << actual;
+  actual   = Bitboards::pawnAttacks[BLACK][SQ_H7].strBoard();
   ASSERT_EQ(expected, actual);
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -244,34 +257,29 @@ TEST_F(BitboardsTest, pawnAttacksMoves) {
              "+---+---+---+---+---+---+---+---+\n"
              "|   |   |   |   |   |   |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
-  actual = strBoard(Bitboards::pawnAttacks[BLACK][SQ_D5]);
-  //  std::cout << actual;
+  actual   = Bitboards::pawnAttacks[BLACK][SQ_D5].strBoard();
   ASSERT_EQ(expected, actual);
 }
 
-
 TEST_F(BitboardsTest, knightAttacks) {
-
-  std::string expected =
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   | X |   | X |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   | X |   |   |   | X |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   | X |   |   |   | X |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   | X |   | X |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n";
-  std::string actual = strBoard(Attacks::attacks(KNIGHT, SQ_E4, BbZero));
-  //  std::cout << actual;
+  std::string expected = "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   | X |   | X |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   | X |   |   |   | X |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   | X |   |   |   | X |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   | X |   | X |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n";
+  std::string actual   = Attacks::attacks(KNIGHT, SQ_E4, BbZero).strBoard();
   ASSERT_EQ(expected, actual);
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -291,33 +299,29 @@ TEST_F(BitboardsTest, knightAttacks) {
              "+---+---+---+---+---+---+---+---+\n"
              "|   |   |   |   |   | X |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
-  actual = strBoard(Attacks::attacks(KNIGHT, SQ_H2, BbZero));
-  //  std::cout << actual;
+  actual   = Attacks::attacks(KNIGHT, SQ_H2, BbZero).strBoard();
   ASSERT_EQ(expected, actual);
 }
 
 TEST_F(BitboardsTest, kingAttacks) {
-
-  std::string expected =
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   | X | X | X |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   | X |   | X |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   | X | X | X |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n";
-  std::string actual = strBoard(Attacks::attacks(KING, SQ_E4, BbZero));
-  //  std::cout << actual;
+  std::string expected = "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   | X | X | X |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   | X |   | X |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   | X | X | X |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n";
+  std::string actual   = Attacks::attacks(KING, SQ_E4, BbZero).strBoard();
   ASSERT_EQ(expected, actual);
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -337,33 +341,29 @@ TEST_F(BitboardsTest, kingAttacks) {
              "+---+---+---+---+---+---+---+---+\n"
              "|   |   |   |   |   |   | X | X |\n"
              "+---+---+---+---+---+---+---+---+\n";
-  actual = strBoard(Attacks::attacks(KING, SQ_H2, BbZero));
-  //  std::cout << actual;
+  actual   = Attacks::attacks(KING, SQ_H2, BbZero).strBoard();
   ASSERT_EQ(expected, actual);
 }
 
 TEST_F(BitboardsTest, slidingAttacks) {
-
-  std::string expected =
-    "+---+---+---+---+---+---+---+---+\n"
-    "| X |   |   |   |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   | X |   |   |   |   |   | X |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   | X |   |   |   | X |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   | X |   | X |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   | X |   | X |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   | X |   |   |   | X |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   | X |   |   |   |   |   | X |\n"
-    "+---+---+---+---+---+---+---+---+\n";
-  std::string actual = strBoard(Attacks::attacks(BISHOP, SQ_E4, BbZero));
-  //  std::cout << actual;
+  std::string expected = "+---+---+---+---+---+---+---+---+\n"
+                         "| X |   |   |   |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   | X |   |   |   |   |   | X |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   | X |   |   |   | X |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   | X |   | X |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   | X |   | X |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   | X |   |   |   | X |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   | X |   |   |   |   |   | X |\n"
+                         "+---+---+---+---+---+---+---+---+\n";
+  std::string actual   = Attacks::attacks(BISHOP, SQ_E4, BbZero).strBoard();
   ASSERT_EQ(expected, actual);
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -383,8 +383,7 @@ TEST_F(BitboardsTest, slidingAttacks) {
              "+---+---+---+---+---+---+---+---+\n"
              "|   |   |   |   | X |   |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
-  actual = strBoard(Attacks::attacks(ROOK, SQ_E4, BbZero));
-  //  std::cout << actual;
+  actual   = Attacks::attacks(ROOK, SQ_E4, BbZero).strBoard();
   ASSERT_EQ(expected, actual);
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -404,34 +403,30 @@ TEST_F(BitboardsTest, slidingAttacks) {
              "+---+---+---+---+---+---+---+---+\n"
              "|   | X |   |   | X |   |   | X |\n"
              "+---+---+---+---+---+---+---+---+\n";
-  actual = strBoard(Attacks::attacks(QUEEN, SQ_E4, BbZero));
-  //  std::cout << actual;
+  actual   = Attacks::attacks(QUEEN, SQ_E4, BbZero).strBoard();
   ASSERT_EQ(expected, actual);
   ASSERT_EQ(Attacks::attacks(QUEEN, SQ_E4, BbZero), (Attacks::attacks(BISHOP, SQ_E4, BbZero) | Attacks::attacks(ROOK, SQ_E4, BbZero)));
 }
 
 TEST_F(BitboardsTest, masks) {
-
-  std::string expected =
-    "+---+---+---+---+---+---+---+---+\n"
-    "| X | X | X | X |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "| X | X | X | X |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "| X | X | X | X |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "| X | X | X | X |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "| X | X | X | X |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "| X | X | X | X |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "| X | X | X | X |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "| X | X | X | X |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n";
-  std::string actual = strBoard(Bitboards::filesWestMask[SQ_E4]);
-  //  std::cout << actual;
+  std::string expected = "+---+---+---+---+---+---+---+---+\n"
+                         "| X | X | X | X |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "| X | X | X | X |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "| X | X | X | X |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "| X | X | X | X |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "| X | X | X | X |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "| X | X | X | X |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "| X | X | X | X |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "| X | X | X | X |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n";
+  std::string actual   = Bitboards::filesWestMask[SQ_E4].strBoard();
   ASSERT_EQ(expected, actual);
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -451,8 +446,7 @@ TEST_F(BitboardsTest, masks) {
              "+---+---+---+---+---+---+---+---+\n"
              "|   |   |   |   |   | X | X | X |\n"
              "+---+---+---+---+---+---+---+---+\n";
-  actual = strBoard(Bitboards::filesEastMask[SQ_E4]);
-  //  std::cout << actual;
+  actual   = Bitboards::filesEastMask[SQ_E4].strBoard();
   ASSERT_EQ(expected, actual);
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -472,8 +466,7 @@ TEST_F(BitboardsTest, masks) {
              "+---+---+---+---+---+---+---+---+\n"
              "|   |   |   |   |   |   |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
-  actual = strBoard(Bitboards::ranksNorthMask[SQ_E4]);
-  //  std::cout << actual;
+  actual   = Bitboards::ranksNorthMask[SQ_E4].strBoard();
   ASSERT_EQ(expected, actual);
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -493,33 +486,29 @@ TEST_F(BitboardsTest, masks) {
              "+---+---+---+---+---+---+---+---+\n"
              "| X | X | X | X | X | X | X | X |\n"
              "+---+---+---+---+---+---+---+---+\n";
-  actual = strBoard(Bitboards::ranksSouthMask[SQ_E4]);
-  //  std::cout << actual;
+  actual   = Bitboards::ranksSouthMask[SQ_E4].strBoard();
   ASSERT_EQ(expected, actual);
 }
 
 TEST_F(BitboardsTest, rays) {
-
-  std::string expected =
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   | X |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   | X |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   | X |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   | X |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n";
-  std::string actual = strBoard(Bitboards::rays[N][SQ_E4]);
-//  std::cout << actual;
+  std::string expected = "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   | X |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   | X |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   | X |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   | X |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n";
+  std::string actual   = Bitboards::rays[N][SQ_E4].strBoard();
   ASSERT_EQ(expected, actual);
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -539,33 +528,30 @@ TEST_F(BitboardsTest, rays) {
              "+---+---+---+---+---+---+---+---+\n"
              "|   |   |   |   |   |   |   | X |\n"
              "+---+---+---+---+---+---+---+---+\n";
-  actual = strBoard(Bitboards::rays[SE][SQ_E4]);
-//  std::cout << actual;
+  actual   = Bitboards::rays[SE][SQ_E4].strBoard();
   ASSERT_EQ(expected, actual);
 }
 
 TEST_F(BitboardsTest, intermediates) {
 
-  std::string expected =
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   |   | X |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   | X |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   | X |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n"
-    "|   |   |   |   |   |   |   |   |\n"
-    "+---+---+---+---+---+---+---+---+\n";
-  std::string actual = strBoard(Bitboards::intermediateBb[SQ_C3][SQ_G7]);
-//  cout << actual;
+  std::string expected = "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   |   | X |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   | X |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   | X |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n"
+                         "|   |   |   |   |   |   |   |   |\n"
+                         "+---+---+---+---+---+---+---+---+\n";
+  std::string actual   = Bitboards::intermediateBb[SQ_C3][SQ_G7].strBoard();
   ASSERT_EQ(expected, actual);
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -585,8 +571,7 @@ TEST_F(BitboardsTest, intermediates) {
              "+---+---+---+---+---+---+---+---+\n"
              "|   |   |   |   |   |   |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
-  actual = strBoard(Bitboards::intermediateBb[SQ_A7][SQ_F2]);
-//  cout << actual;
+  actual   = Bitboards::intermediateBb[SQ_A7][SQ_F2].strBoard();
   ASSERT_EQ(expected, actual);
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -606,29 +591,7 @@ TEST_F(BitboardsTest, intermediates) {
              "+---+---+---+---+---+---+---+---+\n"
              "|   |   |   |   |   |   |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
-  actual = strBoard(Bitboards::intermediateBb[SQ_A7][SQ_A2]);
-//  cout << actual;
-  ASSERT_EQ(expected, actual);
-
-  expected = "+---+---+---+---+---+---+---+---+\n"
-             "|   |   |   |   |   |   |   |   |\n"
-             "+---+---+---+---+---+---+---+---+\n"
-             "|   |   |   |   |   |   |   |   |\n"
-             "+---+---+---+---+---+---+---+---+\n"
-             "|   |   |   |   |   |   |   |   |\n"
-             "+---+---+---+---+---+---+---+---+\n"
-             "|   |   |   |   |   |   |   |   |\n"
-             "+---+---+---+---+---+---+---+---+\n"
-             "|   |   |   |   |   |   |   |   |\n"
-             "+---+---+---+---+---+---+---+---+\n"
-             "|   |   |   |   |   |   |   |   |\n"
-             "+---+---+---+---+---+---+---+---+\n"
-             "|   |   |   |   |   |   |   |   |\n"
-             "+---+---+---+---+---+---+---+---+\n"
-             "|   |   |   |   |   |   |   |   |\n"
-             "+---+---+---+---+---+---+---+---+\n";
-  actual = strBoard(Bitboards::intermediateBb[SQ_A7][SQ_H1]);
-//  cout << actual;
+  actual   = Bitboards::intermediateBb[SQ_A7][SQ_A2].strBoard();
   ASSERT_EQ(expected, actual);
 
   expected = "+---+---+---+---+---+---+---+---+\n"
@@ -648,8 +611,7 @@ TEST_F(BitboardsTest, intermediates) {
              "+---+---+---+---+---+---+---+---+\n"
              "|   |   |   |   |   |   |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
-  actual = strBoard(Bitboards::intermediateBb[SQ_H7][SQ_D7]);
-//  cout << actual;
+  actual   = Bitboards::intermediateBb[SQ_H7][SQ_D7].strBoard();
   ASSERT_EQ(expected, actual);
 }
 

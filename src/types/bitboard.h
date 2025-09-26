@@ -27,121 +27,131 @@
 #include <bit>
 #include <bitset>
 #include <cstdint>
-
-// 64-bit Bitboard type for storing boards as bits
-typedef uint64_t Bitboard;
+#include <sstream>
+#include <string>
+#include <type_traits>
 
 // //////////////////////////////////////////////////////////////////
-// Bitboard functions
+// Bitboard value-type
 // //////////////////////////////////////////////////////////////////
 
-/**
- * Shifts a bitboard in the given direction.
- * @param d Direction
- * @param b Bitboard
- * @return shifted bitboard
- */
-inline Bitboard shiftBb(const Direction d, const Bitboard b) {
-  constexpr Bitboard FileABB = 0x0101010101010101ULL;
-  constexpr Bitboard FileHBB = FileABB << 7;
-  // move the bits and clear the left our right file
-  // after the shift to erase bit jumping over
-  switch (d) {
-    case static_cast<int>(NORTH):
-      return b << 8;
-    case static_cast<int>(EAST):
-      return b << 1 & ~FileABB;
-    case static_cast<int>(SOUTH):
-      return b >> 8;
-    case static_cast<int>(WEST):
-      return b >> 1 & ~FileHBB;
-    case static_cast<int>(NORTH_EAST):
-      return b << 9 & ~FileABB;
-    case static_cast<int>(SOUTH_EAST):
-      return b >> 7 & ~FileABB;
-    case static_cast<int>(SOUTH_WEST):
-      return b >> 9 & ~FileHBB;
-    case static_cast<int>(NORTH_WEST):
-      return b << 7 & ~FileHBB;
-    default:;
+// Small, trivially copyable wrapper around an unsigned 64-bit integer.
+// Designed to be zero-cost: all operators are constexpr/inlined to keep
+// existing performance characteristics of raw uint64_t bitboards.
+class Bitboard {
+  std::uint64_t v_{}; // underlying 64-bit mask
+
+public:
+  // constructors
+  constexpr Bitboard() = default;
+
+  // implicit to allow constexpr literal initializers like: constexpr Bitboard BbZero = 0;
+  constexpr Bitboard(const std::uint64_t v) : v_{v} {}
+
+  // access
+  constexpr std::uint64_t value() const { return v_; }
+
+  // implicit conversion to underlying for interop with intrinsics/APIs
+  // ReSharper disable once CppNonExplicitConversionOperator
+  constexpr operator std::uint64_t() const { return v_; }
+
+  // truthiness (used in many fast-paths)
+  constexpr explicit operator bool() const { return v_ != 0ULL; }
+
+  // clang-format off
+  // compounds arithmetic and shifts
+  constexpr Bitboard operator~() const { return Bitboard{~v_}; }
+  constexpr Bitboard& operator&=(const Bitboard b) { v_ &= b.v_; return *this; }
+  constexpr Bitboard& operator|=(const Bitboard b) { v_ |= b.v_; return *this; }
+  constexpr Bitboard& operator^=(const Bitboard b) { v_ ^= b.v_; return *this; }
+  constexpr Bitboard& operator+=(const Bitboard b) { v_ += b.v_; return *this; }
+  constexpr Bitboard& operator-=(const Bitboard b) { v_ -= b.v_; return *this; }
+  constexpr Bitboard& operator<<=(const int sh) { v_ <<= sh; return *this; }
+  constexpr Bitboard& operator>>=(const int sh) { v_ >>= sh; return *this; }
+  // arithmetic and shifts (friends to allow symmetric conversions)
+  friend constexpr Bitboard operator&(const Bitboard a, const Bitboard b) { return Bitboard{a.v_ & b.v_}; }
+  friend constexpr Bitboard operator|(const Bitboard a, const Bitboard b) { return Bitboard{a.v_ | b.v_}; }
+  friend constexpr Bitboard operator^(const Bitboard a, const Bitboard b) { return Bitboard{a.v_ ^ b.v_}; }
+  friend constexpr Bitboard operator+(const Bitboard a, const Bitboard b) { return Bitboard{a.v_ + b.v_}; }
+  friend constexpr Bitboard operator-(const Bitboard a, const Bitboard b) { return Bitboard{a.v_ - b.v_}; }
+  friend constexpr Bitboard operator<<(const Bitboard a, const int sh) { return Bitboard{a.v_ << sh}; }
+  friend constexpr Bitboard operator>>(const Bitboard a, const int sh) { return Bitboard{a.v_ >> sh}; }
+  // // clang-format on
+
+  // population count
+  constexpr int popcount() const { return std::popcount(v_); }
+
+  // index of least/most significant bit (Square), or SQ_NONE if empty
+  constexpr Square lsb() const {
+    if (v_ == 0ULL) return SQ_NONE;
+    return static_cast<Square>(std::countr_zero(v_));
   }
-  return b;
-}
 
+  // index of most significant bit (Square), or SQ_NONE if empty
+  constexpr Square msb() const {
+    if (v_ == 0ULL) return SQ_NONE;
+    return static_cast<Square>(63 - std::countl_zero(v_));
+  }
 
-// popcount() counts the number of non-zero bits in a bitboard
-// Kept in a separate function to allow easy replacement if no built-in
-// popcount is available for compiler.
-// @return number of non-zero bits
-inline int popcount(const Bitboard b) {
-  return std::popcount(b);
-}
+  // clears and returns least significant bit (Square), or SQ_NONE if empty
+  constexpr Square popLSB() {
+    if (v_ == 0ULL) return SQ_NONE;
+    const Square s = lsb();
+    v_ &= v_ - 1ULL;
+    return s;
+  }
 
-// lsb() and msb() return the least/most significant bit in a non-zero bitboard
-inline Square lsb(const Bitboard b) {
-  if (!b) return SQ_NONE;
-  return static_cast<Square>(std::countr_zero(b));
-}
-
-// lsb() and msb() return the least/most significant bit in a non-zero bitboard
-inline Square msb(const Bitboard b) {
-  if (!b) return SQ_NONE;
-  return static_cast<Square>(63 - std::countl_zero(b));
-}
-
-// pop_lsb() finds and clears the least significant bit in a non-zero
-// bitboard. Returns the cleared bit as a Square or SQ_NONE if
-// bitboard was zero. The given Bitboard is changed in-place.
-// Example:
-// Bitboard b = ...;
-// while (b) {
-//   Square s = pop_lsb(b);
-//   ...
-// }
-inline Square popLSB(Bitboard& b) {
-  if (!b) return SQ_NONE;
-  const Square s = lsb(b);
-  b &= b - 1;
-  return s;
-}
-
-// //////////////////////////////////////////////////////////////////
-// Bitboard print functions
-// //////////////////////////////////////////////////////////////////
-
-// Prints a bitboard as a bitset
-inline std::string str(const Bitboard b) {
-  std::ostringstream os;
-  os << std::bitset<64>(b);
-  return os.str();
-}
-
-// Prints a bitboard in an 8x8 matrix for output on a console
-inline std::string strBoard(const Bitboard b) {
-  std::ostringstream os;
-  os << "+---+---+---+---+---+---+---+---+\n";
-  for (Rank r = RANK_8;; --r) {
-    for (File f = FILE_A; f <= FILE_H; ++f) {
-      os << (b & Square::of(f, r) ? "| X " : "|   ");
+  // directional shift (with edge masking, same semantics as old shiftBb)
+  constexpr Bitboard shifted(const Direction d) const {
+    constexpr std::uint64_t FileABB = 0x0101010101010101ULL;
+    constexpr std::uint64_t FileHBB = FileABB << 7;
+    switch (static_cast<int>(d)) {
+      case static_cast<int>(NORTH): return Bitboard{v_ << 8};
+      case static_cast<int>(EAST): return Bitboard{(v_ << 1) & ~FileABB};
+      case static_cast<int>(SOUTH): return Bitboard{v_ >> 8};
+      case static_cast<int>(WEST): return Bitboard{(v_ >> 1) & ~FileHBB};
+      case static_cast<int>(NORTH_EAST): return Bitboard{(v_ << 9) & ~FileABB};
+      case static_cast<int>(SOUTH_EAST): return Bitboard{(v_ >> 7) & ~FileABB};
+      case static_cast<int>(SOUTH_WEST): return Bitboard{(v_ >> 9) & ~FileHBB};
+      case static_cast<int>(NORTH_WEST): return Bitboard{(v_ << 7) & ~FileHBB};
+      default:;
     }
-    os << "|\n+---+---+---+---+---+---+---+---+\n";
-    if (r == 0) break;
+    return *this;
   }
-  return os.str();
-}
 
-// StringGrouped returns a string representation of the 64 bits grouped in 8.
-// Order is LSB to msb ==> A1 B1 ... G8 H8
-inline std::string strGrouped(const Bitboard b) {
-  std::ostringstream os;
-  for (uint16_t i = 0; i < 64; i++) {
-    if (i > 0 && i % 8 == 0) {
-      os << ".";
-    }
-    os << (b & 1 << i ? "1" : "0");
+  // string helpers
+  std::string str() const {
+    std::ostringstream os;
+    os << std::bitset<64>(v_);
+    return os.str();
   }
-  os << " (" + std::to_string(b) + ")";
-  return os.str();
-}
+  std::string strBoard() const {
+    std::ostringstream os;
+    os << "+---+---+---+---+---+---+---+---+\n";
+    for (Rank r = RANK_8;; --r) {
+      for (File f = FILE_A; f <= FILE_H; ++f) {
+        const int idx = (static_cast<int>(r) << 3) + static_cast<int>(f);
+        const std::uint64_t mask = 1ULL << idx;
+        os << (v_ & mask ? "| X " : "|   ");
+      }
+      os << "|\n+---+---+---+---+---+---+---+---+\n";
+      if (r == 0) break;
+    }
+    return os.str();
+  }
+  std::string strGrouped() const {
+    std::ostringstream os;
+    for (unsigned i = 0; i < 64; ++i) {
+      if (i > 0 && i % 8 == 0) os << ".";
+      os << (v_ >> i & 1ULL ? "1" : "0");
+    }
+    os << " (" << v_ << ")";
+    return os.str();
+  }
+};
+
+// Compile-time sanity
+static_assert(sizeof(Bitboard) == sizeof(std::uint64_t), "Bitboard must be 8 bytes");
+static_assert(std::is_trivially_copyable_v<Bitboard>, "Bitboard should be trivially copyable");
 
 #endif// FRANKYCPP_BITBOARD_H

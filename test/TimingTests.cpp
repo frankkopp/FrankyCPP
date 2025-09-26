@@ -126,23 +126,6 @@ void TimingTests::testTiming(std::ostringstream& os, const int rounds, const int
   }
 }
 
-TEST_F(TimingTests, popcount) {
-  if (isBulkRun()) {
-    GTEST_SKIP();
-  }
-  std::ostringstream os;
-
-  //// TESTS START
-  const std::function f1 = [] { popcount(0b0010000000010000000000000010000000000000000000000000000000000000ULL); };
-  std::vector<std::function<void()>> tests;
-  tests.push_back(f1);
-  //// TESTS END
-
-  testTiming(os, 5, 50, 10'000'000, tests);
-
-  std::cout << os.str();
-}
-
 TEST_F(TimingTests, distancevsdiff) {
   if (isBulkRun()) {
     GTEST_SKIP();

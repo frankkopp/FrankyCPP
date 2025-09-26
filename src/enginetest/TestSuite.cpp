@@ -95,11 +95,11 @@ void TestSuite::runTestSuite() {
     i++;
     if (t.type == DM) {
       fprintln(" {:<4d} | {:<10} | {:<8} | {:<8} | {} {:<15d} | {} | {}",
-               i, resultTypeStr[t.result], str(t.actualMove), t.actualValue.str(), testTypeStr[t.type], t.mateDepth, t.fen, t.id);
+               i, resultTypeStr[t.result], t.actualMove.str(), t.actualValue.str(), testTypeStr[t.type], t.mateDepth, t.fen, t.id);
     }
     else {
       fprintln(" {:<4d} | {:<10} | {:<8} | {:<8} | {} {:<15} | {} | {}",
-               i, resultTypeStr[t.result], str(t.actualMove), t.actualValue.str(), testTypeStr[t.type], str(t.targetMoves), t.fen, t.id);
+               i, resultTypeStr[t.result], t.actualMove.str(), t.actualValue.str(), testTypeStr[t.type], str(t.targetMoves), t.fen, t.id);
     }
   }
   fprintln("====================================================================================================================================");
@@ -153,7 +153,7 @@ void TestSuite::runAllTests(Search& search, SearchLimits& searchLimits) {
     test.time        = search.getLastSearchResult().time;
     test.nps         = nps(search.getLastSearchResult().nodes, search.getLastSearchResult().time);
     fprintln("Test finished in {} with result {} ({}) - nps: {:L}\n\n",
-             format(elapsedTime), resultTypeStr[test.result], str(test.actualMove), test.nps);
+             format(elapsedTime), resultTypeStr[test.result], test.actualMove.str(), test.nps);
   }
 }
 

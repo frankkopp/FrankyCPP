@@ -54,7 +54,7 @@ namespace Attacks {
     constexpr unsigned popcount_ce(Bitboard b) {
       unsigned c = 0;
       while (b) {
-        b &= b - 1;
+        b &= b - static_cast<Bitboard>(1);
         ++c;
       }
       return c;

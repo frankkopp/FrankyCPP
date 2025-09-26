@@ -84,22 +84,22 @@ Value See::see(Position& p, Move move) {
 Square See::getLeastValuablePiece(Position& p, Bitboard bitboard, Color color) {
   // check all piece types with increasing value
   if ((bitboard & p.getPieceBb(color, PAWN)) != 0)
-    return lsb(bitboard & p.getPieceBb(color, PAWN));
+    return (bitboard & p.getPieceBb(color, PAWN)).lsb();
 
   if ((bitboard & p.getPieceBb(color, KNIGHT)) != 0)
-    return lsb(bitboard & p.getPieceBb(color, KNIGHT));
+    return (bitboard & p.getPieceBb(color, KNIGHT)).lsb();
 
   if ((bitboard & p.getPieceBb(color, BISHOP)) != 0)
-    return lsb(bitboard & p.getPieceBb(color, BISHOP));
+    return (bitboard & p.getPieceBb(color, BISHOP)).lsb();
 
   if ((bitboard & p.getPieceBb(color, ROOK)) != 0)
-    return lsb(bitboard & p.getPieceBb(color, ROOK));
+    return (bitboard & p.getPieceBb(color, ROOK)).lsb();
 
   if ((bitboard & p.getPieceBb(color, QUEEN)) != 0)
-    return lsb(bitboard & p.getPieceBb(color, QUEEN));
+    return (bitboard & p.getPieceBb(color, QUEEN)).lsb();
 
   if ((bitboard & p.getPieceBb(color, KING)) != 0)
-    return lsb(bitboard & p.getPieceBb(color, KING));
+    return (bitboard & p.getPieceBb(color, KING)).lsb();
 
   return SQ_NONE;
 }

@@ -54,7 +54,7 @@ struct BookEntry {
     os << this->key << " (" << this->counter << ")"
        << " [ ";
     for (std::size_t i = 0; i < moves.size(); i++) {
-      os << ::str(this->moves[i]) << " ";
+      os << this->moves[i].str() << " ";
     }
     os << "] ";
     return os.str();

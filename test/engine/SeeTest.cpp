@@ -46,34 +46,34 @@ protected:
 TEST_F(SeeTest, attacksTo) {
   Position position("2brr1k1/1pq1b1p1/p1np1p1p/P1p1p2n/1PNPPP2/2P1BNP1/4Q1BP/R2R2K1 w - -");
   Bitboard attacksTo = See::attacksTo(position, SQ_E5, WHITE);
-  fprint("{}", strBoard(attacksTo));
-  fprintln("{}", strGrouped(attacksTo));
+  fprint("{}", attacksTo.strBoard());
+  fprintln("{}", attacksTo.strGrouped());
   EXPECT_EQ(740294656ULL, attacksTo);
 
   attacksTo = See::attacksTo(position, SQ_E5, BLACK);
-  fprint("{}", strBoard(attacksTo));
-  fprintln("{}", strGrouped(attacksTo));
+  fprint("{}", attacksTo.strBoard());
+  fprintln("{}", attacksTo.strGrouped());
   EXPECT_EQ(48378511622144ULL, attacksTo);
 
   attacksTo = See::attacksTo(position, SQ_D4, WHITE);
-  fprint("{}", strBoard(attacksTo));
-  fprintln("{}", strGrouped(attacksTo));
+  fprint("{}", attacksTo.strBoard());
+  fprintln("{}", attacksTo.strGrouped());
   EXPECT_EQ(3407880ULL, attacksTo);
 
   attacksTo = See::attacksTo(position, SQ_D4, BLACK);
-  fprint("{}", strBoard(attacksTo));
-  fprintln("{}", strGrouped(attacksTo));
+  fprint("{}", attacksTo.strBoard());
+  fprintln("{}", attacksTo.strGrouped());
   EXPECT_EQ(4483945857024ULL, attacksTo);
 
   position  = Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
   attacksTo = See::attacksTo(position, SQ_E5, BLACK);
-  fprint("{}", strBoard(attacksTo));
-  fprintln("{}", strGrouped(attacksTo));
+  fprint("{}", attacksTo.strBoard());
+  fprintln("{}", attacksTo.strGrouped());
   EXPECT_EQ(2339760743907840ULL, attacksTo);
 
   attacksTo = See::attacksTo(position, SQ_A3, BLACK);
-  fprint("{}", strBoard(attacksTo));
-  fprintln("{}", strGrouped(attacksTo));
+  fprint("{}", attacksTo.strBoard());
+  fprintln("{}", attacksTo.strGrouped());
   EXPECT_EQ(72057594037928448ULL, attacksTo);
 }
 
@@ -86,8 +86,8 @@ TEST_F(SeeTest, revealedAttacks) {
 
   Bitboard attacksTo = See::attacksTo(position, square, BLACK) | See::attacksTo(position, square, WHITE);
   fprintln("Direkt:");
-  fprint("{}", strBoard(attacksTo));
-  fprintln("{}", strGrouped(attacksTo));
+  fprint("{}", attacksTo.strBoard());
+  fprintln("{}", attacksTo.strGrouped());
   EXPECT_EQ(2286984186302464ULL, attacksTo);
 
   // take away bishop on f6
@@ -97,8 +97,8 @@ TEST_F(SeeTest, revealedAttacks) {
   attacksTo |= See::revealedAttacks(position, square, occupiedBitboard, BLACK) | See::revealedAttacks(position, square, occupiedBitboard, WHITE);
 
   fprintln("Revealed after removing bishop on f6:");
-  fprint("{}", strBoard(attacksTo));
-  fprintln("{}", strGrouped(attacksTo));
+  fprint("{}", attacksTo.strBoard());
+  fprintln("{}", attacksTo.strGrouped());
   EXPECT_EQ(9225623836668989440ULL, attacksTo);
 
   // take away rook on e2
@@ -109,8 +109,8 @@ TEST_F(SeeTest, revealedAttacks) {
                | See::revealedAttacks(position, square, occupiedBitboard, WHITE);
 
   fprintln("Revealed after removing rook on e2:");
-  fprint("{}", strBoard(attacksTo));
-  fprintln("{}", strGrouped(attacksTo));
+  fprint("{}", attacksTo.strBoard());
+  fprintln("{}", attacksTo.strGrouped());
   EXPECT_EQ(9225623836668985360ULL, attacksTo);
 }
 
@@ -119,40 +119,40 @@ TEST_F(SeeTest, leastValuablePiece) {
   Bitboard attacksTo = See::attacksTo(position, SQ_E5, BLACK);
 
   fprintln("All attackers");
-  fprint("{}", strBoard(attacksTo));
-  fprintln("{}", strGrouped(attacksTo));
+  fprint("{}", attacksTo.strBoard());
+  fprintln("{}", attacksTo.strGrouped());
   fprintln("{}", position.strBoard());
 
   Square lva = See::getLeastValuablePiece(position, attacksTo, BLACK);
-  fprintln("Least valuable attacker: {}", str(lva));
+  fprintln("Least valuable attacker: {}", lva.str());
   EXPECT_EQ(SQ_G6, lva);
 
   // remove the attacker
   attacksTo ^= lva;
 
   lva = See::getLeastValuablePiece(position, attacksTo, BLACK);
-  fprintln("Least valuable attacker: {}", str(lva));
+  fprintln("Least valuable attacker: {}", lva.str());
   EXPECT_EQ(SQ_D7, lva);
 
   // remove the attacker
   attacksTo ^= lva;
 
   lva = See::getLeastValuablePiece(position, attacksTo, BLACK);
-  fprintln("Least valuable attacker: {}", str(lva));
+  fprintln("Least valuable attacker: {}", lva.str());
   EXPECT_EQ(SQ_B2, lva);
 
   // remove the attacker
   attacksTo ^= lva;
 
   lva = See::getLeastValuablePiece(position, attacksTo, BLACK);
-  fprintln("Least valuable attacker: {}", str(lva));
+  fprintln("Least valuable attacker: {}", lva.str());
   EXPECT_EQ(SQ_E6, lva);
 
   // remove the attacker
   attacksTo ^= lva;
 
   lva = See::getLeastValuablePiece(position, attacksTo, BLACK);
-  fprintln("Least valuable attacker: {}", str(lva));
+  fprintln("Least valuable attacker: {}", lva.str());
   EXPECT_EQ(SQ_NONE, lva);
 }
 
@@ -174,7 +174,7 @@ TEST_F(SeeTest, seeTest) {
   EXPECT_EQ(100, seeScore);
 
   // 5q1k/8/8/8/RRQ2nrr/8/8/K7 w - - 0 1
-  position = Position("5q1k/8/8/8/RRQ2nrr/8/8/K7 w - -");
+  position = Position("5q1k/8/8/8/RRQ2nrr/8/8/K7 w - - 0 1");
   move     = mg.getMoveFromUci(position, "c4f4");
   seeScore = See::see(position, move);
   LOG__DEBUG(Logger::get().TEST_LOG, "See score = {}", seeScore);
