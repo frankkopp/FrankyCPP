@@ -40,14 +40,14 @@ namespace See {
 
   // Returns a square with the least valuable attacker. When several of same
   // type are available it uses the least significant bit of the bitboard.
-  Square getLeastValuablePiece(Position& p, Bitboard bitboard, Color color);
+  Square getLeastValuablePiece(const Position& p, Bitboard bitboard, Color color);
 
   // AttacksTo determines all attacks to the given square for the given color.
-  Bitboard attacksTo(Position& p, Square square, Color color);
+  Bitboard attacksTo(const Position& p, Square square, Color color);
 
   // RevealedAttacks returns sliding attacks after a piece has been removed to reveal new attacks.
   // It is only necessary to look at slider pieces as only their attacks can be revealed.
-  Bitboard revealedAttacks(Position& p, Square square, Bitboard occupied, Color color);
+  Bitboard revealedAttacks(const Position& p, Square square, Bitboard occupied, Color color);
 
 }
 

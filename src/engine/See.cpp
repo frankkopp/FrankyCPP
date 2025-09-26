@@ -20,7 +20,7 @@
 #include "See.h"
 #include "chesscore/Position.h"
 
-Value See::see(Position& p, Move move) {
+Value See::see(Position& p, const Move move) {
 
   // enpassant moves are ignored in a sense that it will be winning
   // capture and therefore should lead to no cut-offs when using see()
@@ -45,7 +45,7 @@ Value See::see(Position& p, Move move) {
   Bitboard remainingAttacks = attacksTo(p, toSquare, WHITE) | attacksTo(p, toSquare, BLACK);
 
   // initial value of the first capture
-  Value capturedValue = valueOf(p.getPiece(toSquare));
+  const Value capturedValue = valueOf(p.getPiece(toSquare));
   gain[ply]           = capturedValue;
 
   // loop through all remaining attacks/captures
@@ -81,7 +81,7 @@ Value See::see(Position& p, Move move) {
   return gain[0];
 }
 
-Square See::getLeastValuablePiece(Position& p, Bitboard bitboard, Color color) {
+Square See::getLeastValuablePiece(const Position& p, const Bitboard bitboard, const Color color) {
   // check all piece types with increasing value
   if ((bitboard & p.getPieceBb(color, PAWN)) != 0)
     return (bitboard & p.getPieceBb(color, PAWN)).lsb();
@@ -104,10 +104,10 @@ Square See::getLeastValuablePiece(Position& p, Bitboard bitboard, Color color) {
   return SQ_NONE;
 }
 
-Bitboard See::attacksTo(Position& p, Square square, Color color) {
+Bitboard See::attacksTo(const Position& p, const Square square, const Color color) {
   // prepare en passant attacks
   Bitboard epAttacks     = BbZero;
-  Square enPassantSquare = p.getEnPassantSquare();
+  const Square enPassantSquare = p.getEnPassantSquare();
   if (enPassantSquare != SQ_NONE && enPassantSquare == square) {
     const Square pawnSquare   = enPassantSquare.pawnPush(~color);
     if (Bitboards::neighbourFilesMask[pawnSquare] &
@@ -117,7 +117,7 @@ Bitboard See::attacksTo(Position& p, Square square, Color color) {
     }
   }
 
-  Bitboard occupiedAll = p.getOccupiedBb();
+  const Bitboard occupiedAll = p.getOccupiedBb();
 
   // this uses a reverse approach - it uses the target square as from square
   // to generate attacks for each type and then intersects the result with
@@ -137,7 +137,7 @@ Bitboard See::attacksTo(Position& p, Square square, Color color) {
          epAttacks;
 }
 
-Bitboard See::revealedAttacks(Position& p, Square square, Bitboard occupied, Color color) {
+Bitboard See::revealedAttacks(const Position& p, const Square square, const Bitboard occupied, const Color color) {
   // Sliding rooks and queens
   return (Attacks::attacks(ROOK, square, occupied) & (p.getPieceBb(color, ROOK) | p.getPieceBb(color, QUEEN)) & occupied) |
          // Sliding bishops and queens

@@ -192,7 +192,6 @@ public:
   FRIEND_TEST(OpeningBookTest, readGamesPgnXLLarge);
   FRIEND_TEST(OpeningBookTest, pgnCleanUpTest);
 
-public:
   // returns if a cache is used during initialization
   constexpr bool useCache() const { return _useCache; }
 

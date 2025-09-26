@@ -69,14 +69,14 @@ public:
   struct Entry {
     // sorted by size to achieve the smallest struct size
     // using bitfield for the smallest size
-    ZobristKey key       = 0;         // 64 bit
-    uint16_t move = 0;         // MOVE_NONE as 16-bit
-    Value eval    = VALUE_NONE;// 16-bit signed
-    Value value   = VALUE_NONE;// 16-bit signed
-    int8_t depth : 7 {};       // 0-127
-    uint8_t age : 3 {};        // 0-7
-    ValueType type : 2 {};     // 4 values
-    bool mateThreat : 1 {};    // 1-bit bool
+    ZobristKey key = 0;         // 64 bit
+    uint16_t move  = 0;         // MOVE_NONE as 16-bit
+    Value eval     = VALUE_NONE;// 16-bit signed
+    Value value    = VALUE_NONE;// 16-bit signed
+    int8_t depth : 7 {};        // 0-127
+    uint8_t age : 3 {};         // 0-7
+    ValueType type : 2 {};      // 4 values
+    bool mateThreat : 1 {};     // 1-bit bool
     friend std::ostream& operator<<(std::ostream& os, const Entry& entry);
   };
 
@@ -190,64 +190,29 @@ public:
 
 private:
   /* generates the index hash key from the position key  */
-  inline std::size_t getHash(const ZobristKey key) const {
+  std::size_t getHash(const ZobristKey key) const {
     return key & hashKeyMask;
   }
 
   /* This retrieves a direct pointer to the entry of this node from cache */
-  inline TT::Entry* getEntryPtr(const ZobristKey key) const {
+  Entry* getEntryPtr(const ZobristKey key) const {
     return &_data[getHash(key)];
   }
 
   /** GETTER and SETTER */
 public:
-  uint64_t getSizeInByte() const {
-    return sizeInByte;
-  }
-
-  std::size_t getMaxNumberOfEntries() const {
-    return maxNumberOfEntries;
-  }
-
-  std::size_t getNumberOfEntries() const {
-    return numberOfEntries;
-  }
-
-  uint64_t getNumberOfPuts() const {
-    return numberOfPuts;
-  }
-
-  uint64_t getNumberOfCollisions() const {
-    return numberOfCollisions;
-  }
-
-  uint64_t getNumberOfOverwrites() const {
-    return numberOfOverwrites;
-  }
-
-  uint64_t getNumberOfUpdates() const {
-    return numberOfUpdates;
-  }
-
-  uint64_t getNumberOfProbes() const {
-    return numberOfProbes;
-  }
-
-  uint64_t getNumberOfHits() const {
-    return numberOfHits;
-  }
-
-  uint64_t getNumberOfMisses() const {
-    return numberOfMisses;
-  }
-
-  unsigned int getThreads() const {
-    return noOfThreads;
-  }
-
-  void setThreads(const int threads) {
-    noOfThreads = threads;
-  }
+  uint64_t getSizeInByte() const { return sizeInByte; }
+  std::size_t getMaxNumberOfEntries() const { return maxNumberOfEntries; }
+  std::size_t getNumberOfEntries() const { return numberOfEntries; }
+  uint64_t getNumberOfPuts() const { return numberOfPuts; }
+  uint64_t getNumberOfCollisions() const { return numberOfCollisions; }
+  uint64_t getNumberOfOverwrites() const { return numberOfOverwrites; }
+  uint64_t getNumberOfUpdates() const { return numberOfUpdates; }
+  uint64_t getNumberOfProbes() const { return numberOfProbes; }
+  uint64_t getNumberOfHits() const { return numberOfHits; }
+  uint64_t getNumberOfMisses() const { return numberOfMisses; }
+  unsigned int getThreads() const { return noOfThreads; }
+  void setThreads(const int threads) { noOfThreads = threads; }
 
   static std::string str(const ValueType type) {
     switch (type) {

@@ -51,7 +51,7 @@ public:
 
   /** Entry struct for the eval cache */
   struct Entry {
-    ZobristKey key          = 0;
+    ZobristKey key = 0;
     Value midvalue = VALUE_NONE;
     Value endvalue = VALUE_NONE;
 
@@ -70,7 +70,6 @@ public:
   static_assert(CacheLineSize % ENTRY_SIZE == 0, "Cluster size incorrect");
 
 private:
-
   // threads for clearing hash
   unsigned int noOfThreads = 1;
 
@@ -80,14 +79,14 @@ private:
   std::size_t hashKeyMask        = 0;
   std::size_t numberOfEntries    = 0;
 
-  mutable uint64_t numberOfQueries   = 0;
+  mutable uint64_t numberOfQueries = 0;
   mutable uint64_t numberOfHits    = 0;// entries with identical key found
   mutable uint64_t numberOfMisses  = 0;// no entry with key found
 
   mutable uint64_t numberOfPuts       = 0;
   mutable uint64_t numberOfCollisions = 0;
   mutable uint64_t numberOfOverwrites = 0;
-  mutable uint64_t numberOfUpdates = 0;
+  mutable uint64_t numberOfUpdates    = 0;
 
   // this array hold the actual entries for the transposition table
   std::unique_ptr<Entry[]> _data = std::make_unique<Entry[]>(maxNumberOfEntries);
@@ -102,16 +101,16 @@ public:
   ~PawnTT() = default;
 
   // disallow copies
-  PawnTT(PawnTT const& tt) = delete;         // copy
-  PawnTT& operator=(const PawnTT&) = delete; // copy assignment
-  PawnTT(PawnTT const&& tt)        = delete; // move
+  PawnTT(PawnTT const& tt)          = delete;// copy
+  PawnTT& operator=(const PawnTT&)  = delete;// copy assignment
+  PawnTT(PawnTT const&& tt)         = delete;// move
   PawnTT& operator=(const PawnTT&&) = delete;// move assignment
 
   /**
- * Changes the size of the transposition table and clears all entries.
- * @param newSizeInMByte in Byte which will be reduced to the next
- * lowest power of 2 size. Limited to 32.000 MB.
- */
+   * Changes the size of the transposition table and clears all entries.
+   * @param newSizeInMByte in Byte which will be reduced to the next
+   * lowest power of 2 size. Limited to 32.000 MB.
+   */
   void resize(uint64_t newSizeInMByte);
 
   /** Clears the transposition table be resetting all entries to 0. */
@@ -148,41 +147,16 @@ public:
 #endif
 
 private:
-
-
-/** GETTER and SETTER */
+  /** GETTER and SETTER */
 public:
-uint64_t getSizeInByte() const {
-  return sizeInByte;
-}
-
-std::size_t getMaxNumberOfEntries() const {
-  return maxNumberOfEntries;
-}
-
-std::size_t getNumberOfEntries() const {
-  return numberOfEntries;
-}
-
-  uint64_t getNumberOfHits() const {
-    return numberOfHits;
-  }
-
-  uint64_t getNumberOfMisses() const {
-    return numberOfMisses;
-  }
-
-  uint64_t getNumberOfUpdates() const {
-    return numberOfUpdates;
-  }
-
-  uint64_t getNumberOfPuts() const {
-    return numberOfPuts;
-  }
-
-  uint64_t getNumberOfCollisions() const {
-    return numberOfCollisions;
-  }
+  uint64_t getSizeInByte() const { return sizeInByte; }
+  std::size_t getMaxNumberOfEntries() const { return maxNumberOfEntries; }
+  std::size_t getNumberOfEntries() const { return numberOfEntries; }
+  uint64_t getNumberOfHits() const { return numberOfHits; }
+  uint64_t getNumberOfMisses() const { return numberOfMisses; }
+  uint64_t getNumberOfUpdates() const { return numberOfUpdates; }
+  uint64_t getNumberOfPuts() const { return numberOfPuts; }
+  uint64_t getNumberOfCollisions() const { return numberOfCollisions; }
 };
 
-#endif//FRANKYCPP_PAWNTT_H
+#endif// FRANKYCPP_PAWNTT_H

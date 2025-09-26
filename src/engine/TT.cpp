@@ -47,11 +47,7 @@ void TT::resize(const uint64_t newSizeInMByte) {
   }
   else {
     // find the highest power of 2 smaller than maxPossibleEntries
-#if __cpp_lib_int_pow2 >= 202002L
     maxNumberOfEntries = std::bit_floor(sizeInByte / ENTRY_SIZE);
-#else
-    maxNumberOfEntries = (1ULL << static_cast<uint64_t>(std::floor(std::log2(sizeInByte / ENTRY_SIZE))));
-#endif
   }
 
   hashKeyMask = maxNumberOfEntries - 1;
@@ -98,15 +94,15 @@ void TT::clear() {
     threads.emplace_back([&, this, t]() {
       const auto range = maxNumberOfEntries / noOfThreads;
       const auto start = t * range;
-      auto end   = start + range;
+      auto end         = start + range;
       if (t == noOfThreads - 1) end = maxNumberOfEntries;
       for (std::size_t i = start; i < end; ++i) {
-        _data[i].key        = 0;
-        _data[i].move       = 0; // MOVE_NONE as 16-bit
-        _data[i].depth      = DEPTH_NONE;
-        _data[i].value      = VALUE_NONE;
-        _data[i].eval       = VALUE_NONE;
-        _data[i].age        = 1;
+        _data[i].key   = 0;
+        _data[i].move  = 0;// MOVE_NONE as 16-bit
+        _data[i].depth = DEPTH_NONE;
+        _data[i].value = VALUE_NONE;
+        _data[i].eval  = VALUE_NONE;
+        _data[i].age   = 1;
       }
     });
   }
@@ -126,7 +122,7 @@ void TT::clear() {
 
   const auto finish = high_resolution_clock::now();
   const auto time   = std::chrono::duration_cast<milliseconds>(finish - startTime).count();
-  (void)time;
+  (void) time;
 
   LOG__DEBUG(Logger::get().TT_LOG, "TT cleared {:L} entries in {:L} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }
@@ -145,13 +141,13 @@ void TT::put(const ZobristKey key, const Depth depth, const Move move, const Val
   // New entry
   if (entryDataPtr->key == 0) {
     numberOfEntries++;
-    entryDataPtr->key        = key;
-    entryDataPtr->move       = static_cast<uint16_t>(move);
-    entryDataPtr->depth      = depth;
-    entryDataPtr->value      = value;
-    entryDataPtr->type       = type;
-    entryDataPtr->age        = 1;
-    entryDataPtr->eval       = eval;
+    entryDataPtr->key   = key;
+    entryDataPtr->move  = static_cast<uint16_t>(move);
+    entryDataPtr->depth = depth;
+    entryDataPtr->value = value;
+    entryDataPtr->type  = type;
+    entryDataPtr->age   = 1;
+    entryDataPtr->eval  = eval;
     return;
   }
 
@@ -161,16 +157,15 @@ void TT::put(const ZobristKey key, const Depth depth, const Move move, const Val
     // overwrite if
     // - the new entry's depth is higher
     // - the new entry's depth is same and the previous entry has not been used (is aged)
-    if (depth > entryDataPtr->depth ||
-        (depth == entryDataPtr->depth && entryDataPtr->age > 0)) {
+    if (depth > entryDataPtr->depth || (depth == entryDataPtr->depth && entryDataPtr->age > 0)) {
       numberOfOverwrites++;
-      entryDataPtr->key        = key;
-      entryDataPtr->move       = static_cast<uint16_t>(move);
-      entryDataPtr->depth      = depth;
-      entryDataPtr->value      = value;
-      entryDataPtr->type       = type;
-      entryDataPtr->age        = 1;
-      entryDataPtr->eval       = eval;
+      entryDataPtr->key   = key;
+      entryDataPtr->move  = static_cast<uint16_t>(move);
+      entryDataPtr->depth = depth;
+      entryDataPtr->value = value;
+      entryDataPtr->type  = type;
+      entryDataPtr->age   = 1;
+      entryDataPtr->eval  = eval;
     }
     return;
   }
@@ -228,7 +223,7 @@ void TT::ageEntries() {
     threads.emplace_back([&, this, idx]() {
       const auto range = maxNumberOfEntries / noOfThreads;
       const auto start = idx * range;
-      auto end   = start + range;
+      auto end         = start + range;
       if (idx == noOfThreads - 1) end = maxNumberOfEntries;
       for (std::size_t i = start; i < end; ++i) {
         if (_data[i].key == 0) continue;
@@ -243,7 +238,7 @@ void TT::ageEntries() {
 
   const auto finish = high_resolution_clock::now();
   const auto time   = std::chrono::duration_cast<milliseconds>(finish - timePoint).count();
-  (void)time;
+  (void) time;
   LOG__DEBUG(Logger::get().TT_LOG, "TT aged {:L} entries in {:L} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }
 
