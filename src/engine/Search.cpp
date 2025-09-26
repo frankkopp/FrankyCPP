@@ -324,7 +324,28 @@ SearchResult Search::iterativeDeepening(Position& p) {
 
   // ###########################################
   // ### BEGIN Iterative Deepening
+  milliseconds lastIterationMs{0};
   for (auto iterationDepth = Depth{1}; iterationDepth <= maxDepth; ++iterationDepth) {
+
+    // Before starting a new iteration, check if we have enough time left to likely complete it.
+    if (searchLimits.timeControl && !searchLimits.ponder && iterationDepth > 1) {
+      const nanoseconds sinceNs = elapsedSince(startSearchTime);
+      const milliseconds elapsed = MILLISECONDS(sinceNs);
+      const milliseconds budget  = timeLimit + milliseconds(extraTimeMs.load());
+      if (elapsed >= budget) {
+        LOG__DEBUG(Logger::get().SEARCH_LOG, "Stop before iteration {}: time budget exhausted (elapsed {} >= budget {})", iterationDepth, str(elapsed), str(budget));
+        break;
+      }
+      const milliseconds remaining = budget - elapsed;
+      // Estimate needed time for next iteration as 1.5x of last iteration; keep a small safety buffer
+      constexpr milliseconds buffer{5};
+      const milliseconds needed = lastIterationMs.count() > 0 ? milliseconds{(lastIterationMs.count() * 3) / 2} : milliseconds{0};
+      if (remaining <= buffer || (needed.count() > 0 && remaining < needed)) {
+        LOG__DEBUG(Logger::get().SEARCH_LOG, "Stop before iteration {}: remaining {} < needed {} (buffer {})", iterationDepth, str(remaining), str(needed), str(buffer));
+        break;
+      }
+    }
+
     // update search counter
     nodesVisited++;
 
@@ -336,6 +357,9 @@ SearchResult Search::iterativeDeepening(Position& p) {
     // reset perft counter for last depth to
     statistics.perftNodeCount = 0;
 
+    // Measure iteration duration
+    const TimePoint iterationStartTime = currentTime();
+
     // ###########################################
     // Start actual alpha beta search
     // ASPIRATION SEARCH
@@ -343,6 +367,9 @@ SearchResult Search::iterativeDeepening(Position& p) {
     // PVS SEARCH (or pure ALPHA BETA when PVS deactivated)
     else { bestValue = rootSearch(p, iterationDepth, alpha, beta); }
     // ###########################################
+
+    // record iteration duration for next pre-check
+    lastIterationMs = MILLISECONDS(currentTime() - iterationStartTime);
 
     assert((bestValue == pv[0].at(0).value() || stopSearchFlag) && "bestValue should be equal value of pv[0].at(0)");
 
