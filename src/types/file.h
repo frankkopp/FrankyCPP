@@ -41,7 +41,7 @@ public:
   constexpr operator int() const { return v_; }
 
   /// Returns true if the file is valid (A-H).
-  [[nodiscard]] constexpr bool isValid() const { return static_cast<int>(*this) < 8; }
+  constexpr bool isValid() const { return static_cast<int>(*this) < 8; }
 
   /// Returns the file as a character ('a'-'h'), or '-' if invalid.
   constexpr char toChar() const { return isValid() ? static_cast<char>('a' + static_cast<char>(static_cast<int>(*this))) : '-'; }

@@ -38,21 +38,21 @@ public:
   constexpr explicit Color(const int v) : v_(static_cast<unsigned>(v)) {}
 
   // underlying value access
-  [[nodiscard]] constexpr unsigned value() const { return v_; }
+  constexpr unsigned value() const { return v_; }
 
   // implicit conversion for arithmetic/comparisons/array indexing
   // ReSharper disable once CppNonExplicitConversionOperator
   constexpr operator int() const { return static_cast<int>(v_); }
 
   // member helpers
-  [[nodiscard]] constexpr bool isValid() const { return static_cast<int>(*this) < 2; }
-  [[nodiscard]] constexpr char toChar() const { return isValid() ? (static_cast<int>(*this) == 0 ? 'w' : 'b') : '-'; }
-  [[nodiscard]] constexpr char str() const { return toChar(); }
+  constexpr bool isValid() const { return static_cast<int>(*this) < 2; }
+  constexpr char toChar() const { return isValid() ? (static_cast<int>(*this) == 0 ? 'w' : 'b') : '-'; }
+  constexpr char str() const { return toChar(); }
 
   // convenience
-  [[nodiscard]] constexpr Color opposite() const { return Color{(value() ^ 1U)}; }
+  constexpr Color opposite() const { return Color{(value() ^ 1U)}; }
   // sign() allows to avoid branches in some calculations
-  [[nodiscard]] constexpr int   sign() const { return static_cast<int>(*this) == 0 ? 1 : -1; }
+  constexpr int   sign() const { return static_cast<int>(*this) == 0 ? 1 : -1; }
 
   // iterator support over valid colors [WHITE, BLACK]
   class iterator {
@@ -80,7 +80,7 @@ public:
   };
 
   // Returns an iterable over WHITE and BLACK (excludes NOCOLOR)
-  [[nodiscard]] static constexpr range all() { return range{}; }
+  static constexpr range all() { return range{}; }
 };
 
 // Backward-compatible constants and sizes

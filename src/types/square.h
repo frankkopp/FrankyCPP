@@ -54,7 +54,7 @@ public:
   constexpr operator int() const { return v_; }
 
   /// Returns true if the square is valid (A1-H8).
-  [[nodiscard]] constexpr bool isValid() const {
+  constexpr bool isValid() const {
     const int x = *this;
     return x >= 0 && x < 64;
   }
@@ -117,8 +117,8 @@ public:
     int e{};// end (exclusive)
     constexpr iterator begin() const { return iterator{b}; }
     constexpr iterator end() const { return iterator{e}; }
-    [[nodiscard]] constexpr int size() const { return e - b; }
-    [[nodiscard]] constexpr bool empty() const { return e <= b; }
+    constexpr int size() const { return e - b; }
+    constexpr bool empty() const { return e <= b; }
   };
 
   // Factory helpers for ranges

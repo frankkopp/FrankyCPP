@@ -90,7 +90,7 @@ namespace Attacks {
 
     // Edge / mask helpers
     constexpr Bitboard edgeMaskFor(const unsigned s) {
-      return ((Rank1BB | Rank8BB) & ~Bitboards::sqToRankBb[s]) | ((FileABB | FileHBB) & ~Bitboards::sqToFileBb[s]);
+      return (Rank1BB | Rank8BB) & ~Bitboards::sqToRankBb[s] | ((FileABB | FileHBB) & ~Bitboards::sqToFileBb[s]);
     }
     constexpr Bitboard rookMaskFor(const unsigned s) {
       return (Bitboards::rays[N][s] | Bitboards::rays[S][s] | Bitboards::rays[E][s] | Bitboards::rays[W][s]) & ~edgeMaskFor(s);

@@ -45,8 +45,8 @@ public:
   constexpr int16_t value() const { return v_; }
 
   // validation and classification (defined after VALUE_* constants)
-  [[nodiscard]] constexpr bool isValid() const;
-  [[nodiscard]] bool isCheckMate() const;
+  constexpr bool isValid() const;
+  bool isCheckMate() const;
 
   // string representation (UCI-compatible: cp X or mate N) (defined after VALUE_* constants)
   std::string str() const;
