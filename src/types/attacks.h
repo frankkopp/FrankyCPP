@@ -33,6 +33,9 @@
 #define FRANKYCPP_ATTACKS_H
 
 #include "bitboard.h"
+#include "bitboards.h"
+#include "orientation.h"
+
 #include <array>
 
 #ifdef HAS_PEXT

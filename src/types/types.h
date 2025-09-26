@@ -23,6 +23,7 @@
 // include all type headers for convenience
 #include "attacks.h"
 #include "bitboard.h"
+#include "bitboards.h"
 #include "castlingrights.h"
 #include "color.h"
 #include "depth.h"

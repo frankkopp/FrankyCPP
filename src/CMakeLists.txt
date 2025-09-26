@@ -29,6 +29,7 @@ set(FrankyCPPlib_SRCS
         enginetest/SearchTreeSizeTest.cpp enginetest/SearchTreeSizeTest.h
         enginetest/TestSuite.cpp enginetest/TestSuite.h
         types/attacks.cpp
+        types/bitboards.h
 )
 
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})
