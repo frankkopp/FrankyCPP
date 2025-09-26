@@ -256,7 +256,7 @@ SingleTest SearchTreeSizeTest::measureTreeSize(Search& search, const Position& p
   test.extra    = search.getLastSearchResult().extraDepth;
   test.special1 = ptrToSpecial1 ? *ptrToSpecial1 : 0;
   test.special2 = ptrToSpecial2 ? *ptrToSpecial2 : 0;
-  test.pv       = str(search.getPV());
+  test.pv       = search.getPV().str();
 
   return test;
 }

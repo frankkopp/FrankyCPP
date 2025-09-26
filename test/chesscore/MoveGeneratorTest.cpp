@@ -87,13 +87,13 @@ TEST_F(MoveGenTest, kingMoves) {
   auto pos = Position("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R w KQkq -");
   mg.generateKingMoves(pos, &moves, GenAll, false);
   EXPECT_EQ(3, moves.size());
-  EXPECT_EQ("e1d2 e1d1 e1f1", str(moves));
+  EXPECT_EQ("e1d2 e1d1 e1f1", moves.str());
   moves.clear();
 
   pos = Position("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R b KQkq -");
   mg.generateKingMoves(pos, &moves, GenAll, false);
   EXPECT_EQ(3, moves.size());
-  EXPECT_EQ("e8d7 e8d8 e8f8", str(moves));
+  EXPECT_EQ("e8d7 e8d8 e8f8", moves.str());
 
   // sort moves
   ranges::sort(moves, [](const Move lhs, const Move rhs) {
@@ -115,19 +115,19 @@ TEST_F(MoveGenTest, normalMoves) {
   pos = Position("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R w KQkq -");
   mg.generateMoves(pos, &moves, GenNonQuiet, false, BbZero);
   EXPECT_EQ(7, moves.size());
-  EXPECT_EQ("f3d2 f3e5 d7e5 d7b6 d7f6 b5c6 e2d2", str(moves));
+  EXPECT_EQ("f3d2 f3e5 d7e5 d7b6 d7f6 b5c6 e2d2", moves.str());
   moves.clear();
 
   pos = Position("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R b KQkq -");
   mg.generateMoves(pos, &moves, GenQuiet, false, BbZero);
   EXPECT_EQ(28, moves.size());
-  EXPECT_EQ("d2b1 d2f1 d2b3 d2c4 c6d4 c6a5 c6b8 c6d8 f6g4 f6d5 f6h5 f6g8 b4a3 b4a5 b4c5 b4d6 b7a6 b7c8 a8b8 a8c8 a8d8 h8f8 h8g8 e7c5 e7d6 e7e6 e7d8 e7f8", str(moves));
+  EXPECT_EQ("d2b1 d2f1 d2b3 d2c4 c6d4 c6a5 c6b8 c6d8 f6g4 f6d5 f6h5 f6g8 b4a3 b4a5 b4c5 b4d6 b7a6 b7c8 a8b8 a8c8 a8d8 h8f8 h8g8 e7c5 e7d6 e7e6 e7d8 e7f8", moves.str());
   moves.clear();
 
   pos = Position("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R b KQkq -");
   mg.generateMoves(pos, &moves, GenAll, false, BbZero);
   EXPECT_EQ(34, moves.size());
-  EXPECT_EQ("d2f3 d2e4 d2b1 d2f1 d2b3 d2c4 c6d4 c6a5 c6b8 c6d8 f6e4 f6d7 f6g4 f6d5 f6h5 f6g8 b4c3 b4a3 b4a5 b4c5 b4d6 b7a6 b7c8 a8b8 a8c8 a8d8 h8f8 h8g8 e7d7 e7c5 e7d6 e7e6 e7d8 e7f8", str(moves));
+  EXPECT_EQ("d2f3 d2e4 d2b1 d2f1 d2b3 d2c4 c6d4 c6a5 c6b8 c6d8 f6e4 f6d7 f6g4 f6d5 f6h5 f6g8 b4c3 b4a3 b4a5 b4c5 b4d6 b7a6 b7c8 a8b8 a8c8 a8d8 h8f8 h8g8 e7d7 e7c5 e7d6 e7e6 e7d8 e7f8", moves.str());
 
   // sort moves
   ranges::sort(moves, [](const Move lhs, const Move rhs) {
@@ -145,13 +145,13 @@ TEST_F(MoveGenTest, castlingMoves) {
   auto pos = Position("r3k2r/pbppqppp/1pn2n2/1B2p3/1b2P3/N1PP1N2/PP1BQPPP/R3K2R w KQkq -");
   mg.generateCastling(pos, &moves, GenAll);
   EXPECT_EQ(2, moves.size());
-  EXPECT_EQ("e1g1 e1c1", str(moves));
+  EXPECT_EQ("e1g1 e1c1", moves.str());
   moves.clear();
 
   pos = Position("r3k2r/pbppqppp/1pn2n2/1B2p3/1b2P3/N1PP1N2/PP1BQPPP/R3K2R b KQkq -");
   mg.generateCastling(pos, &moves, GenAll);
   EXPECT_EQ(2, moves.size());
-  EXPECT_EQ("e8g8 e8c8", str(moves));
+  EXPECT_EQ("e8g8 e8c8", moves.str());
 
   // sort moves
   ranges::sort(moves, [](const Move lhs, const Move rhs) {
@@ -174,7 +174,7 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
   moves.clear();
   moves = *mg.generatePseudoLegalMoves(position, GenAll, false);
   EXPECT_EQ(20, moves.size());
-  EXPECT_EQ("d2d4 e2e4 b1c3 g1f3 a2a3 h2h3 a2a4 b2b4 c2c4 f2f4 g2g4 h2h4 d2d3 e2e3 b2b3 g2g3 c2c3 f2f3 b1a3 g1h3", str(moves));
+  EXPECT_EQ("d2d4 e2e4 b1c3 g1f3 a2a3 h2h3 a2a4 b2b4 c2c4 f2f4 g2g4 h2h4 d2d3 e2e3 b2b3 g2g3 c2c3 f2f3 b1a3 g1h3", moves.str());
   //  for (Move m : moves) {
   //    fprintln("{}", m.strVerbose());
   //  }
@@ -185,7 +185,7 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
   moves.clear();
   moves = *mg.generatePseudoLegalMoves(position, GenAll, false);
   EXPECT_EQ(40, moves.size());
-  EXPECT_EQ("d7f6 f3d2 b5c6 f3e5 d7e5 d7b6 e2d2 e1d2 c3b4 e1g1 e1c1 d3d4 f3d4 d7c5 a1c1 a1d1 h1f1 b5c4 a2a3 h2h3 f3g5 e2e3 a2a4 g2g4 h2h4 c3c4 e1f1 b2b3 g2g3 e2d1 b5a4 b5a6 a1b1 h1g1 e2f1 e1d1 f3h4 d7f8 f3g1 d7b8", str(moves));
+  EXPECT_EQ("d7f6 f3d2 b5c6 f3e5 d7e5 d7b6 e2d2 e1d2 c3b4 e1g1 e1c1 d3d4 f3d4 d7c5 a1c1 a1d1 h1f1 b5c4 a2a3 h2h3 f3g5 e2e3 a2a4 g2g4 h2h4 c3c4 e1f1 b2b3 g2g3 e2d1 b5a4 b5a6 a1b1 h1g1 e2f1 e1d1 f3h4 d7f8 f3g1 d7b8", moves.str());
   //  for (Move m : moves) {
   //    fprintln("{}", m.strVerbose());
   //  }
@@ -197,7 +197,7 @@ TEST_F(MoveGenTest, pseudoLegalMoves) {
   moves.clear();
   moves = *mg.generatePseudoLegalMoves(position, GenAll, false);
   EXPECT_EQ(86, moves.size());
-  EXPECT_EQ("c2b1Q a2b1Q a2a1Q c2c1Q c2b1N a2b1N b2a3 a8a3 g6e5 d7e5 b2e5 a2a1N c2c1N e6e5 c4e4 c6e4 f4g3 f4e3 e8g8 e8c8 d7c5 a8c8 a8d8 h8f8 d7f6 g6e7 b2d4 f4f3 h7h6 d7b6 b2c3 c4c5 c4d5 c6c5 c6d5 c6d6 e6d5 e6f5 e6d6 e6f6 e6e7 e6f7 c4d4 b7b5 h7h5 a8a4 a8a5 a8a6 a8a7 c4e2 c4b3 c4c3 c4d3 c4b4 c4b5 c6b5 c6b6 e6g4 e8f8 b7b6 c4a4 c6a4 b2c1 a8b8 h8g8 c4f1 c4a6 c6a6 e6h3 e6g8 b2a1 e8e7 e8f7 e8d8 g6h4 g6f8 d7f8 d7b8 c2b1R a2b1R c2b1B a2b1B a2a1R c2c1R a2a1B c2c1B", str(moves));
+  EXPECT_EQ("c2b1Q a2b1Q a2a1Q c2c1Q c2b1N a2b1N b2a3 a8a3 g6e5 d7e5 b2e5 a2a1N c2c1N e6e5 c4e4 c6e4 f4g3 f4e3 e8g8 e8c8 d7c5 a8c8 a8d8 h8f8 d7f6 g6e7 b2d4 f4f3 h7h6 d7b6 b2c3 c4c5 c4d5 c6c5 c6d5 c6d6 e6d5 e6f5 e6d6 e6f6 e6e7 e6f7 c4d4 b7b5 h7h5 a8a4 a8a5 a8a6 a8a7 c4e2 c4b3 c4c3 c4d3 c4b4 c4b5 c6b5 c6b6 e6g4 e8f8 b7b6 c4a4 c6a4 b2c1 a8b8 h8g8 c4f1 c4a6 c6a6 e6h3 e6g8 b2a1 e8e7 e8f7 e8d8 g6h4 g6f8 d7f8 d7b8 c2b1R a2b1R c2b1B a2b1B a2a1R c2c1R a2a1B c2c1B", moves.str());
   //  for (Move m : moves) {
   //    fprintln("{}", m.strVerbose());
   //  }
@@ -265,7 +265,6 @@ TEST_F(MoveGenTest, legalMoves) {
   moves = *mg.generateLegalMoves(position, GenAll);
   EXPECT_EQ(83, moves.size());
   EXPECT_FALSE(position.isLegalMove(Move::castling(SQ_E8, SQ_G8)));
-// ...existing code...
 }
 
 TEST_F(MoveGenTest, validateMove) {
@@ -498,7 +497,7 @@ TEST_F(MoveGenTest, onDemandKiller) {
     //    fprintln(move.strVerbose());
   }
   EXPECT_EQ(86, moves.size());
-  EXPECT_EQ("a2b1Q c2b1Q a2a1Q c2c1Q c2b1N a2b1N a2a1N c2c1N f4g3 f4e3 c2b1R a2b1R c2b1B a2b1B b2a3 a8a3 g6e5 d7e5 b2e5 e6e5 c4e4 c6e4 b7b6 f4f3 h7h6 b7b5 h7h5 a2a1R c2c1R a2a1B c2c1B e8g8 e8c8 g6h4 d7c5 a8c8 a8d8 h8f8 d7f6 b2d4 g6e7 b2c3 c4c5 c4d5 c6c5 c6d5 c6d6 e6d5 e6f5 e6d6 e6f6 d7b6 e6e7 e6f7 c4d4 a8a4 a8a5 a8a6 a8a7 c4e2 c4b3 c4c3 c4d3 c4b4 c4b5 c6b5 c6b6 e6g4 c4a4 c6a4 a8b8 h8g8 b2c1 c4f1 c4a6 c6a6 e6h3 e6g8 b2a1 g6f8 d7f8 d7b8 e8f8 e8e7 e8f7 e8d8", str(moves));
+  EXPECT_EQ("a2b1Q c2b1Q a2a1Q c2c1Q c2b1N a2b1N a2a1N c2c1N f4g3 f4e3 c2b1R a2b1R c2b1B a2b1B b2a3 a8a3 g6e5 d7e5 b2e5 a2a1N c2c1N e6e5 c4e4 c6e4 b7b6 f4f3 h7h6 b7b5 h7h5 a2a1R c2c1R a2a1B c2c1B e8g8 e8c8 g6h4 d7c5 a8c8 a8d8 h8f8 d7f6 b2d4 g6e7 b2c3 c4c5 c4d5 c6c5 c6d5 c6d6 e6d5 e6f5 e6d6 e6f6 d7b6 e6e7 e6f7 c4d4 a8a4 a8a5 a8a6 a8a7 c4e2 c4b3 c4c3 c4d3 c4b4 c4b5 c6b5 c6b6 e6g4 c4a4 c6a4 a8b8 h8g8 b2c1 c4f1 c4a6 c6a6 e6h3 e6g8 b2a1 g6f8 d7f8 d7b8 e8f8 e8e7 e8f7 e8d8", moves.str());
   moves.clear();
 
   mg.reset();
@@ -518,7 +517,7 @@ TEST_F(MoveGenTest, onDemandKiller) {
     //    fprintln(move.strVerbose());
   }
   EXPECT_EQ(48, moves.size());
-  EXPECT_EQ("e2a6 g2h3 d5e6 e5d7 e5f7 e5g6 f3f6 f3h3 b2b3 a2a3 d5d6 a2a4 g2g4 g2g3 e1g1 e1c1 d2g5 e5d3 e5c4 a1c1 a1d1 h1f1 e5c6 d2e3 d2f4 e2d3 e2c4 c3b5 e2b5 f3d3 f3e3 f3f4 f3f5 e5g4 f3g3 f3g4 f3h5 d2h6 e2d1 a1b1 h1g1 c3a4 c3d1 d2c1 e2f1 c3b1 e1f1 e1d1", str(moves));
+  EXPECT_EQ("e2a6 g2h3 d5e6 e5d7 e5f7 e5g6 f3f6 f3h3 b2b3 a2a3 d5d6 a2a4 g2g4 g2g3 e1g1 e1c1 d2g5 e5d3 e5c4 a1c1 a1d1 h1f1 e5c6 d2e3 d2f4 e2d3 e2c4 c3b5 e2b5 f3d3 f3e3 f3f4 f3f5 e5g4 f3g3 f3g4 f3h5 d2h6 e2d1 a1b1 h1g1 c3a4 c3d1 d2c1 e2f1 c3b1 e1f1 e1d1", moves.str());
   moves.clear();
 }
 
@@ -628,56 +627,56 @@ TEST_F(MoveGenTest, evasion) {
 
   p                = Position("r3k2r/1pp4p/2q1qNn1/3nP3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq -");
   pseudoLegalMoves = mg.generatePseudoLegalMoves(p, GenAll, false);
-  fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), str(*pseudoLegalMoves));
+  fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), pseudoLegalMoves->str());
   evasionMoves = mg.generatePseudoLegalMoves(p, GenAll, true);
-  fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), str(*evasionMoves));
+  fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), evasionMoves->str());
   legalMoves = mg.generateLegalMoves(p, GenAll);
-  fprintln("Legal      : {:3d} {:s}", legalMoves->size(), str(*legalMoves));
+  fprintln("Legal      : {:3d} {:s}", legalMoves->size(), legalMoves->str());
   fprintln("");
 
   p                = Position("5k2/8/8/8/8/8/6p1/3K1R2 b - -");
   pseudoLegalMoves = mg.generatePseudoLegalMoves(p, GenAll, false);
-  fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), str(*pseudoLegalMoves));
+  fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), pseudoLegalMoves->str());
   evasionMoves = mg.generatePseudoLegalMoves(p, GenAll, true);
-  fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), str(*evasionMoves));
+  fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), evasionMoves->str());
   legalMoves = mg.generateLegalMoves(p, GenAll);
-  fprintln("Legal      : {:3d} {:s}", legalMoves->size(), str(*legalMoves));
+  fprintln("Legal      : {:3d} {:s}", legalMoves->size(), legalMoves->str());
   fprintln("");
 
   p                = Position("5k2/8/8/8/8/6p1/5R2/3K4 b - -");
   pseudoLegalMoves = mg.generatePseudoLegalMoves(p, GenAll, false);
-  fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), str(*pseudoLegalMoves));
+  fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), pseudoLegalMoves->str());
   evasionMoves = mg.generatePseudoLegalMoves(p, GenAll, true);
-  fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), str(*evasionMoves));
+  fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), evasionMoves->str());
   legalMoves = mg.generateLegalMoves(p, GenAll);
-  fprintln("Legal      : {:3d} {:s}", legalMoves->size(), str(*legalMoves));
+  fprintln("Legal      : {:3d} {:s}", legalMoves->size(), legalMoves->str());
   fprintln("");
 
   p                = Position("8/8/8/3k4/4Pp2/8/8/3K4 b - e3");
   pseudoLegalMoves = mg.generatePseudoLegalMoves(p, GenAll, false);
-  fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), str(*pseudoLegalMoves));
+  fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), pseudoLegalMoves->str());
   evasionMoves = mg.generatePseudoLegalMoves(p, GenAll, true);
-  fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), str(*evasionMoves));
+  fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), evasionMoves->str());
   legalMoves = mg.generateLegalMoves(p, GenAll);
-  fprintln("Legal      : {:3d} {:s}", legalMoves->size(), str(*legalMoves));
+  fprintln("Legal      : {:3d} {:s}", legalMoves->size(), legalMoves->str());
   fprintln("");
 
   p                = Position("8/8/8/3k2n1/8/8/6B1/3K4 b - -");
   pseudoLegalMoves = mg.generatePseudoLegalMoves(p, GenAll, false);
-  fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), str(*pseudoLegalMoves));
+  fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), pseudoLegalMoves->str());
   evasionMoves = mg.generatePseudoLegalMoves(p, GenAll, true);
-  fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), str(*evasionMoves));
+  fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), evasionMoves->str());
   legalMoves = mg.generateLegalMoves(p, GenAll);
-  fprintln("Legal      : {:3d} {:s}", legalMoves->size(), str(*legalMoves));
+  fprintln("Legal      : {:3d} {:s}", legalMoves->size(), legalMoves->str());
   fprintln("");
 
   p                = Position("5k2/3N4/8/8/8/8/6p1/3K1R2 b - - 1 1");
   pseudoLegalMoves = mg.generatePseudoLegalMoves(p, GenAll, false);
-  fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), str(*pseudoLegalMoves));
+  fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), pseudoLegalMoves->str());
   evasionMoves = mg.generatePseudoLegalMoves(p, GenAll, true);
-  fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), str(*evasionMoves));
+  fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), evasionMoves->str());
   legalMoves = mg.generateLegalMoves(p, GenAll);
-  fprintln("Legal      : {:3d} {:s}", legalMoves->size(), str(*legalMoves));
+  fprintln("Legal      : {:3d} {:s}", legalMoves->size(), legalMoves->str());
   fprintln("");
 }
 

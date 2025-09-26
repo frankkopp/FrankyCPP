@@ -1379,7 +1379,7 @@ void Search::setupSearchLimits(const Position& p, SearchLimits& sl) {
   else { LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: No time control"); }
   if (sl.depth) { LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Depth limited  : {}", sl.depth); }
   if (sl.nodes) { LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Nodes limited  : {}", sl.nodes); }
-  if (!sl.moves.empty()) { LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Moves limited  : {}", str(sl.moves)); }
+  if (!sl.moves.empty()) { LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Moves limited  : {}", sl.moves.str()); }
 }
 
 milliseconds Search::setupTimeControl(const Position& position, const SearchLimits& limits) {
@@ -1483,7 +1483,7 @@ void Search::sendIterationEndInfoToUci() {
             nodesVisited,
             nps(nodesVisited, since),
             MILLISECONDS(since).count(),
-            str(pv[0]));
+            pv[0].str());
 }
 
 void Search::sendSearchUpdateToUci() {
@@ -1553,5 +1553,5 @@ void Search::sendAspirationResearchInfo(const std::string& boundString) {
             nodesVisited,
             nps(nodesVisited, since),
             MILLISECONDS(since).count(),
-            str(pv[0]));
+            pv[0].str());
 }

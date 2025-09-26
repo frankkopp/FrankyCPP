@@ -512,20 +512,20 @@ void UciHandler::sendResult(const Move bestMove, const Move ponderMove) const {
 }
 
 void UciHandler::sendCurrentLine(const MoveList& moveList) const {
-  send(std::format("currline {}", str(moveList)));
+  send(std::format("currline {}", moveList.str()));
 }
 
 void UciHandler::sendIterationEndInfo(int depth, int seldepth, const Value value, uint64_t nodes,
                                       uint64_t nps, const milliseconds time, const MoveList& pv) const {
   send(std::format("info depth {} seldepth {} multipv 1 score {} nodes {} nps {} time {} pv {}",
-                   depth, seldepth, value.str(), nodes, nps, time.count(), str(pv)));
+                   depth, seldepth, value.str(), nodes, nps, time.count(), pv.str()));
 }
 
 void UciHandler::sendAspirationResearchInfo(int depth, int seldepth, const Value value,
                                             const std::string& boundString, uint64_t nodes, uint64_t nps,
                                             const milliseconds time, const MoveList& pv) const {
   send(std::format("info depth {} seldepth {} multipv 1 score {} {} nodes {} nps {} time {} pv {}",
-                   depth, seldepth, value.str(), boundString, nodes, nps, time.count(), str(pv)));
+                   depth, seldepth, value.str(), boundString, nodes, nps, time.count(), pv.str()));
 }
 
 void UciHandler::sendCurrentRootMove(const Move currmove, std::size_t movenumber) const {

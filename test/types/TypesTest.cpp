@@ -282,9 +282,9 @@ TEST_F(TypesTest, sortMoveListByValue) {
   ml.push_back(move1);
   ml.push_back(move2);
   ml.push_back(move3);
-  fprintln("{}", str(ml));
+  fprintln("{}", ml.str());
   std::ranges::stable_sort(ml, moveValueGreaterComparator());
-  fprintln("{}", str(ml));
+  fprintln("{}", ml.str());
   EXPECT_EQ(move3, ml.at(0));
 }
 

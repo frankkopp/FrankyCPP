@@ -20,37 +20,43 @@
 #ifndef FRANKYCPP_MOVELIST_H
 #define FRANKYCPP_MOVELIST_H
 
-#include <vector>
-#include <sstream>
 #include "move.h"
+#include <ostream>
+#include <sstream>
+#include <vector>
 
-/// A collection of moves using a std::vector
-typedef std::vector<Move> MoveList;
+/// A collection of moves inheriting from std::vector
+class MoveList : public std::vector<Move> {
+public:
+  using std::vector<Move>::vector;
 
-// returns a uci compatible string representation of the move list
-inline std::string str(const MoveList& moveList) {
-  std::ostringstream os;
-  for (const Move m : moveList) {
-    os << m;
-    if (m != moveList.back()) os << " ";
+  // returns a uci compatible string representation of the move list
+  std::string str() const {
+    std::ostringstream os;
+    const auto n = this->size();
+    for (std::size_t i = 0; i < n; ++i) {
+      os << this->at(i);
+      if (i + 1 < n) os << ' ';
+    }
+    return os.str();
   }
-  return os.str();
-}
 
-inline std::string strVerbose(const MoveList& moveList) {
-  std::ostringstream os;
-  os << "MoveList: size=" << moveList.size() << " [";
-  for (auto itr = moveList.begin(); itr != moveList.end(); ++itr) {
-    os << *itr;
-    if (itr != moveList.end() - 1) os << ", ";
+  std::string strVerbose() const {
+    std::ostringstream os;
+    os << "MoveList: size=" << this->size() << " [";
+    for (auto itr = this->begin(); itr != this->end(); ++itr) {
+      os << *itr;
+      if (itr + 1 != this->end()) os << ", ";
+    }
+    os << "]";
+    return os.str();
   }
-  os << "]";
-  return os.str();
-}
 
-inline std::ostream& operator<< (std::ostream& os, const MoveList& moveList) {
-  os << str(moveList);
-  return os;
-}
+  friend std::ostream& operator<<(std::ostream& os, const MoveList& moveList) {
+    os << moveList.str();
+    return os;
+  }
+};
 
-#endif//FRANKYCPP_MOVELIST_H
+
+#endif// FRANKYCPP_MOVELIST_H

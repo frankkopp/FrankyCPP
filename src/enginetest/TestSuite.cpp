@@ -99,7 +99,7 @@ void TestSuite::runTestSuite() {
     }
     else {
       fprintln(" {:<4d} | {:<10} | {:<8} | {:<8} | {} {:<15} | {} | {}",
-               i, resultTypeStr[t.result], t.actualMove.str(), t.actualValue.str(), testTypeStr[t.type], str(t.targetMoves), t.fen, t.id);
+               i, resultTypeStr[t.result], t.actualMove.str(), t.actualValue.str(), testTypeStr[t.type], t.targetMoves.str(), t.fen, t.id);
     }
   }
   fprintln("====================================================================================================================================");
@@ -145,7 +145,7 @@ void TestSuite::runAllTests(Search& search, SearchLimits& searchLimits) {
   // loop over all test cases and execute the test
   for (auto& test : testCases) {
     fprintln("Test {} of {}\nTest: {} -- Target Result {}",
-             ++i, testCases.size(), test.line, str(test.targetMoves));
+             ++i, testCases.size(), test.line, test.targetMoves.str());
     const auto startTime2 = currentTime();
     runSingleTest(search, searchLimits, test);
     const auto elapsedTime = elapsedSince(startTime2);
