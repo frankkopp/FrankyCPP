@@ -22,6 +22,6 @@
 #include <cstdint>
 
 /** 64 bit Key for zobrist etc. */
-typedef uint64_t Key;
+typedef uint64_t ZobristKey;
 
 #endif//FRANKYCPP_ZOBRISTKEY_H

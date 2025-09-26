@@ -54,7 +54,7 @@ TEST_F(TT_Test, entrySize) {
   struct EntryTest {
     // sorted by size to achieve smallest struct size
     // using bitfield for smallest size
-    Key key       = 0;         // 64 bit
+    ZobristKey key       = 0;         // 64 bit
     uint16_t move = 0;         // MOVE_NONE as 16-bit
     Value eval    = VALUE_NONE;// 16 bit signed
     Value value   = VALUE_NONE;// 16 bit signed
@@ -206,9 +206,9 @@ TEST_F(TT_Test, put) {
 
   uint64_t collisionDistance = tt.maxNumberOfEntries;
 
-  const Key key1 = randomKey(rg);
-  const Key key2 = key1 + 13;               // different bucket
-  const Key key3 = key1 + collisionDistance;// same bucket - collision
+  const ZobristKey key1 = randomKey(rg);
+  const ZobristKey key2 = key1 + 13;               // different bucket
+  const ZobristKey key3 = key1 + collisionDistance;// same bucket - collision
 
   // new entry in empty bucket at pos 0
   tt.put(key1, static_cast<Depth>(6), Move(SQ_E2, SQ_E4), static_cast<Value>(101), EXACT, static_cast<Value>(1001));
@@ -255,10 +255,10 @@ TEST_F(TT_Test, get) {
 
   const uint64_t collisionDistance = tt.maxNumberOfEntries;
 
-  const Key key1 = randomKey(rg);
-  const Key key2 = key1 + 13;               // different bucket
-  const Key key3 = key1 + collisionDistance;// same bucket - collision
-  const Key key4 = key1 + 17;
+  const ZobristKey key1 = randomKey(rg);
+  const ZobristKey key2 = key1 + 13;               // different bucket
+  const ZobristKey key3 = key1 + collisionDistance;// same bucket - collision
+  const ZobristKey key4 = key1 + 17;
 
   // new entry in empty slot
   tt.put(key1, static_cast<Depth>(6), Move(SQ_E2, SQ_E4), static_cast<Value>(101), EXACT, static_cast<Value>(1001));
@@ -301,7 +301,7 @@ TEST_F(TT_Test, TT_PPS) {
 
   for (int j = 0; j < rounds; ++j) {
     uint64_t sum     = 0;
-    const Key key    = randomKey(rg1);
+    const ZobristKey key    = randomKey(rg1);
     const auto depth = static_cast<Depth>(randomDepth(rg1));
     const auto value = static_cast<Value>(randomValue(rg1));
     const auto type  = static_cast<ValueType>(randomType(rg1));

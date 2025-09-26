@@ -36,8 +36,8 @@ enum Flag {
 // acts as a stack by adding a position state after doMove and removing
 // a state after undoMove.
 struct HistoryState {
-  Key zobristKey                = 0;
-  Key pawnKey                   = 0;
+  ZobristKey zobristKey                = 0;
+  ZobristKey pawnKey                   = 0;
   Move move                     = MOVE_NONE;
   Piece fromPiece               = PIECE_NONE;
   Piece capturedPiece           = PIECE_NONE;
@@ -57,11 +57,11 @@ class Position {
   // The zobrist key to use as a hash key in transposition tables
   // The zobrist key will be updated incrementally every time one of the
   // state variables changes.
-  Key zobristKey{};
+  ZobristKey zobristKey{};
 
   // We also maintain a zobrist key for all pawns to support a pawn
   // evaluation table
-  Key pawnKey{};
+  ZobristKey pawnKey{};
 
   // **********************************************************
   // Board State
@@ -285,8 +285,8 @@ public:
   // /// GETTER / SETTER
 
   Piece getPiece(const Square square) const { return board[square]; }
-  Key getZobristKey() const { return zobristKey; }
-  Key getPawnZobristKey() const { return pawnKey; }
+  ZobristKey getZobristKey() const { return zobristKey; }
+  ZobristKey getPawnZobristKey() const { return pawnKey; }
   Color getNextPlayer() const { return nextPlayer; }
   Square getEnPassantSquare() const { return enPassantSquare; }
   Square getKingSquare(const Color color) const { return kingSquare[color]; };

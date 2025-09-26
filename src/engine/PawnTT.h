@@ -51,7 +51,7 @@ public:
 
   /** Entry struct for the eval cache */
   struct Entry {
-    Key key          = 0;
+    ZobristKey key          = 0;
     Value midvalue = VALUE_NONE;
     Value endvalue = VALUE_NONE;
 
@@ -121,15 +121,15 @@ public:
   // pawn zobrist key in the cache. As usually a query happens before this
   // we can expect that the pointer to the entry is already known
   // and can be provided. Otherwise a call to getEntryPtr is necessary.
-  void put(Entry* entryPtr, Key key, Score score);
+  void put(Entry* entryPtr, ZobristKey key, Score score);
 
   /* This retrieves a direct pointer to the entry of this node from cache */
-  Entry* getEntryPtr(const Key key) const {
+  Entry* getEntryPtr(const ZobristKey key) const {
     return &_data[getHash(key)];
   }
 
   /* generates the index hash key from the position key  */
-  std::size_t getHash(const Key key) const {
+  std::size_t getHash(const ZobristKey key) const {
     return key & hashKeyMask;
   }
 
@@ -138,7 +138,7 @@ public:
 
   // using prefetch improves probe lookup speed significantly
 #ifdef EVAL_ENABLE_PREFETCH
-  void prefetch(const Key key) {
+  void prefetch(const ZobristKey key) {
 #ifdef __GNUC__
     _mm_prefetch(&_data[(key & hashKeyMask)], _MM_HINT_T0);
 #elif _MSC_VER

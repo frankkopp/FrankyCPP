@@ -133,7 +133,7 @@ void PawnTT::clear() {
   LOG__DEBUG(Logger::get().EVAL_LOG, "PawnTT cleared {:L} entries in {:L} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }
 
-void PawnTT::put(Entry* entryPtr, const Key key, const Score score) {
+void PawnTT::put(Entry* entryPtr, const ZobristKey key, const Score score) {
 
   // Replace any existing entries as this should be collisions.
   // Updates should not happen as we should have read this entry and

@@ -63,10 +63,10 @@ namespace Zobrist {
   }
 
   struct Tables {
-    std::array<std::array<Key, SQ_LENGTH>, PIECE_LENGTH> pieces{};
-    std::array<Key, CR_LENGTH> castlingRights{};
-    std::array<Key, FILE_LENGTH> enPassantFile{};
-    Key nextPlayer{};
+    std::array<std::array<ZobristKey, SQ_LENGTH>, PIECE_LENGTH> pieces{};
+    std::array<ZobristKey, CR_LENGTH> castlingRights{};
+    std::array<ZobristKey, FILE_LENGTH> enPassantFile{};
+    ZobristKey nextPlayer{};
 
     // Fill all tables from a single PRNG stream seeded like before
     constexpr Tables() {
@@ -104,7 +104,7 @@ namespace Zobrist {
   inline constexpr auto& enPassantFile = T.enPassantFile;
 
   // Zobrist key for the side to move
-  inline constexpr Key nextPlayer = T.nextPlayer;
+  inline constexpr ZobristKey nextPlayer = T.nextPlayer;
 }// namespace Zobrist
 
 #endif // FRANKYCPP_ZOBRIST_H

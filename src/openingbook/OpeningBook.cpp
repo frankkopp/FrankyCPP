@@ -54,7 +54,7 @@ OpeningBook::OpeningBook(std::string bookPath, const BookFormat bFormat)
   numberOfThreads = getNoOfThreads();
 }
 
-Move OpeningBook::getRandomMove(const Key zobrist) const {
+Move OpeningBook::getRandomMove(const ZobristKey zobrist) const {
   Move bookMove = MOVE_NONE;
   // Find the entry for this key (zobrist key of position) in the map and
   // choose a random move from the list of moves in the entry
@@ -115,7 +115,7 @@ void OpeningBook::reset() {
 
 std::string OpeningBook::str(const int level) {
   const Position p{};
-  const Key zobristKey  = p.getZobristKey();
+  const ZobristKey zobristKey  = p.getZobristKey();
   const BookEntry* node = &bookMap[zobristKey];
   return std::format(deLocale, "Root ({:L})\n{}", bookMap[zobristKey].counter, getLevelStr(1, level, node));
 }
@@ -326,7 +326,6 @@ void OpeningBook::readOneGameSan(const std::string_view& lineView) {
   1. f4 d5 2. Nf3 Nf6 3. e3 Bg4 4. Be2 e6 5. O-O Bd6 6. b3 O-O 7. Bb2 c5 1/2-1/2
   */
 
-  MoveGenerator mg{};
   std::vector<std::string_view> moveStrings{};
   splitFast(line, moveStrings, " ");
 
@@ -527,7 +526,7 @@ void OpeningBook::addGameToBook(const Moves& game) {
   MoveGenerator mg{};
 
   // initialize lastKey with start position (aka root position)
-  Key lastKey = rootZobristKey;
+  ZobristKey lastKey = rootZobristKey;
   // increase counter for root entry for each game
   {// lock scope
 #ifdef PARALLEL_LINE_PROCESSING
@@ -564,7 +563,7 @@ void OpeningBook::addGameToBook(const Moves& game) {
   }
 }
 
-void OpeningBook::writeToBook(const Move move, Key currentKey, const Key lastKey) {
+void OpeningBook::writeToBook(const Move move, ZobristKey currentKey, const ZobristKey lastKey) {
 
 #ifdef PARALLEL_LINE_PROCESSING
   // get the lock on the data map
@@ -611,7 +610,7 @@ void OpeningBook::saveToCache() {
 /* Loads the bookMap data from a binary data cache file. This is considerably
    faster than reading the text based game files again */
 bool OpeningBook::loadFromCache() {
-  std::unordered_map<Key, BookEntry> binMap;
+  std::unordered_map<ZobristKey, BookEntry> binMap;
   {// load data from archive
     const auto start               = high_resolution_clock::now();
     const std::string serCacheFile = bookFilePath + cacheExt;

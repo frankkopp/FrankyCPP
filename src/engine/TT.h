@@ -69,7 +69,7 @@ public:
   struct Entry {
     // sorted by size to achieve the smallest struct size
     // using bitfield for the smallest size
-    Key key       = 0;         // 64 bit
+    ZobristKey key       = 0;         // 64 bit
     uint16_t move = 0;         // MOVE_NONE as 16-bit
     Value eval    = VALUE_NONE;// 16-bit signed
     Value value   = VALUE_NONE;// 16-bit signed
@@ -146,7 +146,7 @@ public:
    * @param type EXACT, ALPHA or BETA
    * @param eval Static evaluation of the position
    */
-  void put(Key key, Depth depth, Move move, Value value, ValueType type, Value eval);
+  void put(ZobristKey key, Depth depth, Move move, Value value, ValueType type, Value eval);
 
   /**
    * This retrieves a ptr to the entry of this node from cache.
@@ -154,7 +154,7 @@ public:
    * @param key Position key (usually Zobrist key)
    * @return Pointer to entry for key or nullptr if not found
    */
-  const Entry* getMatch(const Key key) const {
+  const Entry* getMatch(const ZobristKey key) const {
     const Entry* const entryPtr = getEntryPtr(key);
     return entryPtr->key == key ? entryPtr : nullptr;
   }
@@ -163,7 +163,7 @@ public:
    * Looks up and returns a pointer to an TT Entry. Decreases age of the entry
    * if an entry was found
    */
-  const Entry* probe(const Key& key) const;
+  const Entry* probe(const ZobristKey& key) const;
 
   /** Age all entries by 1 */
   void ageEntries();
@@ -176,7 +176,7 @@ public:
 
   // using prefetch improves probe lookup speed significantly
 #ifdef TT_ENABLE_PREFETCH
-  void prefetch(const Key key) {
+  void prefetch(const ZobristKey key) {
 #ifdef __GNUC__
     _mm_prefetch(&_data[(key & hashKeyMask)], _MM_HINT_T0);
 #elif _MSC_VER
@@ -190,12 +190,12 @@ public:
 
 private:
   /* generates the index hash key from the position key  */
-  inline std::size_t getHash(const Key key) const {
+  inline std::size_t getHash(const ZobristKey key) const {
     return key & hashKeyMask;
   }
 
   /* This retrieves a direct pointer to the entry of this node from cache */
-  inline TT::Entry* getEntryPtr(const Key key) const {
+  inline TT::Entry* getEntryPtr(const ZobristKey key) const {
     return &_data[getHash(key)];
   }
 

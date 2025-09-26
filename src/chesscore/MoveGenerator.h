@@ -54,7 +54,7 @@ class MoveGenerator {
   MoveList onDemandMoves    = MoveList{};
 
   // States for the on demand move generator
-  Key currentODZobrist            = 0;
+  ZobristKey currentODZobrist            = 0;
   Bitboard onDemandEvasionTargets = BbZero;
   std::size_t takeIndex           = 0;
   enum onDemandStage {

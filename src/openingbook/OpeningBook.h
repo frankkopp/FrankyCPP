@@ -20,6 +20,7 @@
 #ifndef FRANKYCPP_OPENINGBOOK_H
 #define FRANKYCPP_OPENINGBOOK_H
 
+#include "bookentry.h"
 #include "chesscore/Position.h"
 #include "types/types.h"
 
@@ -33,43 +34,6 @@
 #include "common/gtest_friends.h"
 
 typedef std::vector<std::string> Moves;
-
-/**
- * An entry in the opening book data structure. Stores a key (e.g. zobrist key)
- * for the position, the current fen, a count of how often a position is in the
- * book and two vectors storing the moves from the position and the key to the
- * book entry for the corresponding move.
- */
-struct BookEntry {
-  Key key{};
-  int counter{1};
-  std::vector<Move> moves{};
-  std::vector<Key> nextPosition{};
-
-  BookEntry() = default;// necessary for serialization
-  explicit BookEntry(const Key zobrist) : key(zobrist) {}
-
-  [[nodiscard]] std::string str() const {
-    std::ostringstream os;
-    os << this->key << " (" << this->counter << ")"
-       << " [ ";
-    for (std::size_t i = 0; i < moves.size(); i++) {
-      os << this->moves[i].str() << " ";
-    }
-    os << "] ";
-    return os.str();
-  }
-
-  // BOOST Serialization
-  friend class boost::serialization::access;
-  template<class Archive>
-  void serialize(Archive& ar, [[maybe_unused]] const unsigned int version) {
-    ar& BOOST_SERIALIZATION_NVP(key);
-    ar& BOOST_SERIALIZATION_NVP(counter);
-    ar& BOOST_SERIALIZATION_NVP(moves);
-    ar& BOOST_SERIALIZATION_NVP(nextPosition);
-  }
-};
 
 /**
  * The OpeningBook reads game databases of different formats into an internal
@@ -102,7 +66,7 @@ public:
 
 private:
   // the book data structure
-  std::unordered_map<Key, BookEntry> bookMap{};
+  std::unordered_map<ZobristKey, BookEntry> bookMap{};
 
   // book information
   BookFormat bookFormat{};
@@ -125,7 +89,7 @@ private:
   static constexpr auto cacheExt = ".cache.bin";
 
   // the root position's zobrist key is required often - so we cache it here
-  const Key rootZobristKey = Position{}.getZobristKey();
+  const ZobristKey rootZobristKey = Position{}.getZobristKey();
 
 public:
   /**
@@ -154,19 +118,19 @@ public:
   /**
    * Returns the number of positions in the book
    */
-  [[nodiscard]] inline uint64_t size() const { return bookMap.size(); }
+  uint64_t size() const { return bookMap.size(); }
 
   /**
    * returns a hierarchical string of the book entries with given depth
    */
-  [[nodiscard]] std::string str(int level);
+  std::string str(int level);
   std::string getLevelStr(int level, int maxLevel, const BookEntry* node);
 
   /**
    * Returns a random move for the given position.
    * @param zobrist key of the position
    */
-  [[nodiscard]] Move getRandomMove(Key zobrist) const;
+  Move getRandomMove(ZobristKey zobrist) const;
 
 private:
   // reads all lines from a file into a vector of string_views
@@ -199,7 +163,7 @@ private:
   void addGameToBook(const Moves& game);
 
   // writing to the book map with synchronization
-  void writeToBook(Move move, Key currentKey, Key lastKey);
+  void writeToBook(Move move, ZobristKey currentKey, ZobristKey lastKey);
 
   // fast removal of unwanted parts of a PGN move section (not using slow std::regex)
 public:
@@ -212,7 +176,7 @@ public:
   }
 
   // checks if a cache file exists
-  [[nodiscard]] bool hasCache() const;
+  bool hasCache() const;
 
   // saves the book to a cache file
   void saveToCache();
@@ -230,14 +194,14 @@ public:
 
 public:
   // returns if a cache is used during initialization
-  [[nodiscard]] constexpr bool useCache() const { return _useCache; }
+  constexpr bool useCache() const { return _useCache; }
 
   // sets if a cache is used during initialization
   void constexpr setUseCache(const bool aBool) { _useCache = aBool; }
 
   // returns true if the cache file will be regenerated during
   // initialization even if it already exists
-  [[nodiscard]] constexpr bool recreateCache() const { return _recreateCache; }
+  constexpr bool recreateCache() const { return _recreateCache; }
 
   // sets if the cache file will be regenerated during initialization
   void constexpr setRecreateCache(const bool recreateCache) { _recreateCache = recreateCache; }

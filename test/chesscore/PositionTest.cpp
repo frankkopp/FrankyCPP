@@ -56,7 +56,7 @@ TEST_F(PositionTest, initialization) {
 TEST_F(PositionTest, HistoryStruct) {
   const Position position;
   fprintln("int:            {}", sizeof(int));
-  fprintln("Key:            {}", sizeof(Key));
+  fprintln("Key:            {}", sizeof(ZobristKey));
   fprintln("Move:           {}", sizeof(Move));
   fprintln("Piece:          {}", sizeof(Piece));
   fprintln("CastlingRights: {}", sizeof(CastlingRights));
@@ -71,13 +71,13 @@ TEST_F(PositionTest, ZobristTest) {
   const Position position;
   EXPECT_EQ(WHITE, position.getNextPlayer());
 
-  Key z = 0ULL;
+  ZobristKey z = 0ULL;
 
   z ^= Zobrist::pieces[WHITE_KING][SQ_E1];
   z ^= Zobrist::pieces[BLACK_KING][SQ_E8];
   z ^= Zobrist::castlingRights[ANY_CASTLING];
   z ^= Zobrist::enPassantFile[FILE_NONE];
-  const Key expected = z;
+  const ZobristKey expected = z;
   // cout << "Zobrist= " << z << std::endl;
   EXPECT_EQ(8408280106960045251ULL, z);
 

@@ -66,7 +66,7 @@ public:
 
   // do a prefetch for the pawn cache data
 #ifdef EVAL_ENABLE_PREFETCH
-  void prefetch(const Key key) {
+  void prefetch(const ZobristKey key) {
     pawnCache.prefetch(key);
   }
 #endif

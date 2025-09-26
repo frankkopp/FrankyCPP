@@ -44,7 +44,7 @@ protected:
 
 TEST_F(PawnTT_Test, entrySize) {
   struct EntryTest {
-    Key key          = 0;
+    ZobristKey key          = 0;
     int16_t midvalue = 0;
     int16_t endvalue = 0;
   };

@@ -131,7 +131,7 @@ void TT::clear() {
   LOG__DEBUG(Logger::get().TT_LOG, "TT cleared {:L} entries in {:L} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
 }
 
-void TT::put(const Key key, const Depth depth, const Move move, const Value value, const ValueType type, const Value eval) {
+void TT::put(const ZobristKey key, const Depth depth, const Move move, const Value value, const ValueType type, const Value eval) {
 
   // if the size of the TT = 0 we
   // do not store anything
@@ -200,7 +200,7 @@ void TT::put(const Key key, const Depth depth, const Move move, const Value valu
   assert(numberOfPuts == (numberOfEntries + numberOfCollisions + numberOfUpdates));
 }
 
-const TT::Entry* TT::probe(const Key& key) const {
+const TT::Entry* TT::probe(const ZobristKey& key) const {
   numberOfProbes++;
 
   Entry* ttEntryPtr = getEntryPtr(key);

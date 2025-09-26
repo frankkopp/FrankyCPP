@@ -124,7 +124,7 @@ inline Value Evaluator::valueFromScore(const Score& score, const double gamePhas
 }
 
 inline void Evaluator::pawnEval(const Position& p, Score& s) {
-  const Key key = p.getPawnZobristKey();
+  const ZobristKey key = p.getPawnZobristKey();
 
   // Branch-minimal TT probe: always safe (dummy slot when mask == 0)
   PawnTT::Entry* ep = pawnCache.getEntryPtr(key);
