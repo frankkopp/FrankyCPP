@@ -24,8 +24,8 @@
 
 namespace Types {
   inline void init() {
-    Bitboards::initMagicBitboards();
+    Attacks::init();
   }
-}// namespace types
+}// namespace Types
 
 #endif//FRANKYCPP_TYPES_INIT_H

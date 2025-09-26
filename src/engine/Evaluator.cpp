@@ -275,7 +275,7 @@ inline void Evaluator::pieceEval(const Position& p, Score& s, const Color us, co
 inline void Evaluator::knightEval(const Position& p, Score& s, const Color us, Color, const Square sq) {
   if (EvalConfig::USE_KNIGHT_MOBILITY) {
     const Bitboard myOcc   = p.getOccupiedBb(us);
-    const Bitboard attacks = getAttacksBb(KNIGHT, sq, BbZero);
+    const Bitboard attacks = Attacks::attacks(KNIGHT, sq, BbZero);
     const int mobility     = popcount(attacks & ~myOcc);
 
     int mid = mobility * EvalConfig::KNIGHT_MOBILITY_MID_PER_MOVE;
@@ -300,7 +300,7 @@ inline void Evaluator::bishopEval(const Position& p, Score& s, const Color us, C
   if (EvalConfig::USE_BISHOP_MOBILITY) {
     const Bitboard myOcc     = p.getOccupiedBb(us);
     const Bitboard occupied  = p.getOccupiedBb();
-    const Bitboard attacks   = getAttacksBb(BISHOP, sq, occupied);
+    const Bitboard attacks   = Attacks::attacks(BISHOP, sq, occupied);
     const int mobility       = popcount(attacks & ~myOcc);
 
     int mid = mobility * EvalConfig::BISHOP_MOBILITY_MID_PER_MOVE;
@@ -324,7 +324,7 @@ inline void Evaluator::rookEval(const Position& p, Score& s, const Color us, con
   if (EvalConfig::USE_ROOK_MOBILITY) {
     const Bitboard myOcc    = p.getOccupiedBb(us);
     const Bitboard occupied = p.getOccupiedBb();
-    const Bitboard attacks  = getAttacksBb(ROOK, sq, occupied);
+    const Bitboard attacks  = Attacks::attacks(ROOK, sq, occupied);
     const int mobility      = popcount(attacks & ~myOcc);
 
     mid += mobility * EvalConfig::ROOK_MOBILITY_MID_PER_MOVE;
@@ -370,7 +370,7 @@ inline void Evaluator::queenEval(const Position& p, Score& s, const Color us, co
   if (EvalConfig::USE_QUEEN_MOBILITY) {
     const Bitboard myOcc    = p.getOccupiedBb(us);
     const Bitboard occupied = p.getOccupiedBb();
-    const Bitboard attacks  = getAttacksBb(QUEEN, sq, occupied);
+    const Bitboard attacks  = Attacks::attacks(QUEEN, sq, occupied);
     const int mobility      = popcount(attacks & ~myOcc);
 
     mid += mobility * EvalConfig::QUEEN_MOBILITY_MID_PER_MOVE;

@@ -312,7 +312,7 @@ bool Position::isAttacked(const Square sq, const Color by) const {
   const Bitboard occupiedAll = getOccupiedBb();
 
   // non sliding
-  if (Bitboards::pawnAttacks[~by][sq] & piecesBb[by][PAWN] || getAttacksBb(KNIGHT, sq, BbZero) & piecesBb[by][KNIGHT] || getAttacksBb(KING, sq, BbZero) & piecesBb[by][KING]) {
+  if (Bitboards::pawnAttacks[~by][sq] & piecesBb[by][PAWN] || Attacks::attacks(KNIGHT, sq, BbZero) & piecesBb[by][KNIGHT] || Attacks::attacks(KING, sq, BbZero) & piecesBb[by][KING]) {
     return true;
   }
 
@@ -320,7 +320,7 @@ bool Position::isAttacked(const Square sq, const Color by) const {
   // we do check a reverse attack and check if there is piece of the right color
   // in the reversed attack line. If yes they also could hit us which means
   // the square is attacked.
-  if ((getAttacksBb(BISHOP, sq, occupiedAll) & piecesBb[by][BISHOP]) || (getAttacksBb(ROOK, sq, occupiedAll) & piecesBb[by][ROOK]) || (getAttacksBb(QUEEN, sq, occupiedAll) & piecesBb[by][QUEEN])) {
+  if ((Attacks::attacks(BISHOP, sq, occupiedAll) & piecesBb[by][BISHOP]) || (Attacks::attacks(ROOK, sq, occupiedAll) & piecesBb[by][ROOK]) || (Attacks::attacks(QUEEN, sq, occupiedAll) & piecesBb[by][QUEEN])) {
     return true;
   }
 
@@ -376,14 +376,10 @@ Bitboard Position::attacksTo(const Square square, const Color color) const {
 
   //     Pawns
   return (Bitboards::pawnAttacks[~color][square] & piecesBb[color][PAWN]) |
-         // Knight
-         (getAttacksBb(KNIGHT, square, occupiedAll) & piecesBb[color][KNIGHT]) |
-         // King
-         (getAttacksBb(KING, square, occupiedAll) & piecesBb[color][KING]) |
-         // Sliding rooks and queens
-         (getAttacksBb(ROOK, square, occupiedAll) & (piecesBb[color][ROOK] | piecesBb[color][QUEEN])) |
-         // Sliding bishops and queens
-         (getAttacksBb(BISHOP, square, occupiedAll) & (piecesBb[color][BISHOP] | piecesBb[color][QUEEN])) |
+         (Attacks::attacks(KNIGHT, square, occupiedAll) & piecesBb[color][KNIGHT]) |
+         (Attacks::attacks(KING, square, occupiedAll) & piecesBb[color][KING]) |
+         (Attacks::attacks(ROOK, square, occupiedAll) & (piecesBb[color][ROOK] | piecesBb[color][QUEEN])) |
+         (Attacks::attacks(BISHOP, square, occupiedAll) & (piecesBb[color][BISHOP] | piecesBb[color][QUEEN])) |
          // consider en passant attacks
          epAttacks;
 }
@@ -467,7 +463,7 @@ bool Position::givesCheck(const Move move) const {
       // ignore - can't give check
       break;
     default:
-      if (getAttacksBb(fromPt, toSq, boardAfterMove) & kingSq)
+      if (Attacks::attacks(fromPt, toSq, boardAfterMove) & kingSq)
         return true;
       break;
   }
@@ -476,9 +472,9 @@ bool Position::givesCheck(const Move move) const {
   // we only need to check for rook, bishop and queens
   // knight and pawn attacks can't be revealed
   // exception is en passant where the captured piece can reveal check
-  if (getAttacksBb(BISHOP, kingSq, boardAfterMove) & piecesBb[us][BISHOP]) return true;
-  if (getAttacksBb(ROOK, kingSq, boardAfterMove) & piecesBb[us][ROOK]) return true;
-  if (getAttacksBb(QUEEN, kingSq, boardAfterMove) & piecesBb[us][QUEEN]) return true;
+  if (Attacks::attacks(BISHOP, kingSq, boardAfterMove) & piecesBb[us][BISHOP]) return true;
+  if (Attacks::attacks(ROOK, kingSq, boardAfterMove) & piecesBb[us][ROOK]) return true;
+  if (Attacks::attacks(QUEEN, kingSq, boardAfterMove) & piecesBb[us][QUEEN]) return true;
 
   // we did not find a check
   return false;

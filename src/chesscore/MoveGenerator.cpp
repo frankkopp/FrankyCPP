@@ -202,7 +202,7 @@ bool MoveGenerator::hasLegalMove(const Position& position) {
 
   // KING
   const Square kingSquare = position.getKingSquare(us);
-  Bitboard tmpMoves       = getAttacksBb(KING, kingSquare, BbZero) & ~ourBb;
+  Bitboard tmpMoves       = Attacks::attacks(KING, kingSquare, BbZero) & ~ourBb;
   while (tmpMoves) {
     const Square toSquare = popLSB(tmpMoves);
     if (position.isLegalMove(Move(kingSquare, toSquare))) return true;
@@ -248,7 +248,7 @@ bool MoveGenerator::hasLegalMove(const Position& position) {
     Bitboard pieces = position.getPieceBb(us, pt);
     while (pieces) {
       const Square fromSquare = popLSB(pieces);
-      Bitboard moves          = getAttacksBb(pt, fromSquare, position.getOccupiedBb()) & ~ourBb;
+      Bitboard moves          = Attacks::attacks(pt, fromSquare, position.getOccupiedBb()) & ~ourBb;
       while (moves) {
         const Square toSquare = popLSB(moves);
         if (position.isLegalMove(Move(fromSquare, toSquare))) return true;
@@ -784,7 +784,7 @@ void MoveGenerator::generateMoves(const Position& position, MoveList* const pMov
 
     while (pieces) {
       const Square fromSquare    = popLSB(pieces);
-      const Bitboard pseudoMoves = getAttacksBb(pt, fromSquare, occupiedBb);
+      const Bitboard pseudoMoves = Attacks::attacks(pt, fromSquare, occupiedBb);
 
       // captures
       if (genMode & GenNonQuiet) {
@@ -824,7 +824,7 @@ void MoveGenerator::generateKingMoves(const Position& position, MoveList* const 
   const Square fromSquare = popLSB(kingSquareBb);
 
   // attacks include all moves no matter if the king would be in check
-  const Bitboard pseudoMoves = getAttacksBb(KING, fromSquare, BbZero);
+  const Bitboard pseudoMoves = Attacks::attacks(KING, fromSquare, BbZero);
 
   // captures
   if (genMode & GenNonQuiet) {

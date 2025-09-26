@@ -126,20 +126,20 @@ Bitboard See::attacksTo(Position& p, Square square, Color color) {
   //      Pawns
   return (Bitboards::pawnAttacks[~color][square] & p.getPieceBb(color, PAWN)) |
          // Knight
-         (getAttacksBb(KNIGHT, square, occupiedAll) & p.getPieceBb(color, KNIGHT)) |
+         (Attacks::attacks(KNIGHT, square, occupiedAll) & p.getPieceBb(color, KNIGHT)) |
          // King
-         (getAttacksBb(KING, square, occupiedAll) & p.getPieceBb(color, KING)) |
+         (Attacks::attacks(KING, square, occupiedAll) & p.getPieceBb(color, KING)) |
          // Sliding rooks and queens
-         (getAttacksBb(ROOK, square, occupiedAll) & (p.getPieceBb(color, ROOK) | p.getPieceBb(color, QUEEN))) |
+         (Attacks::attacks(ROOK, square, occupiedAll) & (p.getPieceBb(color, ROOK) | p.getPieceBb(color, QUEEN))) |
          // Sliding bishops and queens
-         (getAttacksBb(BISHOP, square, occupiedAll) & (p.getPieceBb(color, BISHOP) | p.getPieceBb(color, QUEEN))) |
+         (Attacks::attacks(BISHOP, square, occupiedAll) & (p.getPieceBb(color, BISHOP) | p.getPieceBb(color, QUEEN))) |
          // consider en passant attacks
          epAttacks;
 }
 
 Bitboard See::revealedAttacks(Position& p, Square square, Bitboard occupied, Color color) {
   // Sliding rooks and queens
-  return (getAttacksBb(ROOK, square, occupied) & (p.getPieceBb(color, ROOK) | p.getPieceBb(color, QUEEN)) & occupied) |
+  return (Attacks::attacks(ROOK, square, occupied) & (p.getPieceBb(color, ROOK) | p.getPieceBb(color, QUEEN)) & occupied) |
          // Sliding bishops and queens
-         (getAttacksBb(BISHOP, square, occupied) & (p.getPieceBb(color, BISHOP) | p.getPieceBb(color, QUEEN)) & occupied);
+         (Attacks::attacks(BISHOP, square, occupied) & (p.getPieceBb(color, BISHOP) | p.getPieceBb(color, QUEEN)) & occupied);
 }

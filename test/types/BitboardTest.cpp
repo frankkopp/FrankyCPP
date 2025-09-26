@@ -270,7 +270,7 @@ TEST_F(BitboardsTest, knightAttacks) {
     "+---+---+---+---+---+---+---+---+\n"
     "|   |   |   |   |   |   |   |   |\n"
     "+---+---+---+---+---+---+---+---+\n";
-  std::string actual = strBoard(getAttacksBb(KNIGHT, SQ_E4, BbZero));
+  std::string actual = strBoard(Attacks::attacks(KNIGHT, SQ_E4, BbZero));
   //  std::cout << actual;
   ASSERT_EQ(expected, actual);
 
@@ -291,7 +291,7 @@ TEST_F(BitboardsTest, knightAttacks) {
              "+---+---+---+---+---+---+---+---+\n"
              "|   |   |   |   |   | X |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
-  actual = strBoard(getAttacksBb(KNIGHT, SQ_H2, BbZero));
+  actual = strBoard(Attacks::attacks(KNIGHT, SQ_H2, BbZero));
   //  std::cout << actual;
   ASSERT_EQ(expected, actual);
 }
@@ -316,7 +316,7 @@ TEST_F(BitboardsTest, kingAttacks) {
     "+---+---+---+---+---+---+---+---+\n"
     "|   |   |   |   |   |   |   |   |\n"
     "+---+---+---+---+---+---+---+---+\n";
-  std::string actual = strBoard(getAttacksBb(KING, SQ_E4, BbZero));
+  std::string actual = strBoard(Attacks::attacks(KING, SQ_E4, BbZero));
   //  std::cout << actual;
   ASSERT_EQ(expected, actual);
 
@@ -337,7 +337,7 @@ TEST_F(BitboardsTest, kingAttacks) {
              "+---+---+---+---+---+---+---+---+\n"
              "|   |   |   |   |   |   | X | X |\n"
              "+---+---+---+---+---+---+---+---+\n";
-  actual = strBoard(getAttacksBb(KING, SQ_H2, BbZero));
+  actual = strBoard(Attacks::attacks(KING, SQ_H2, BbZero));
   //  std::cout << actual;
   ASSERT_EQ(expected, actual);
 }
@@ -362,7 +362,7 @@ TEST_F(BitboardsTest, slidingAttacks) {
     "+---+---+---+---+---+---+---+---+\n"
     "|   | X |   |   |   |   |   | X |\n"
     "+---+---+---+---+---+---+---+---+\n";
-  std::string actual = strBoard(getAttacksBb(BISHOP, SQ_E4, BbZero));
+  std::string actual = strBoard(Attacks::attacks(BISHOP, SQ_E4, BbZero));
   //  std::cout << actual;
   ASSERT_EQ(expected, actual);
 
@@ -383,7 +383,7 @@ TEST_F(BitboardsTest, slidingAttacks) {
              "+---+---+---+---+---+---+---+---+\n"
              "|   |   |   |   | X |   |   |   |\n"
              "+---+---+---+---+---+---+---+---+\n";
-  actual = strBoard(getAttacksBb(ROOK, SQ_E4, BbZero));
+  actual = strBoard(Attacks::attacks(ROOK, SQ_E4, BbZero));
   //  std::cout << actual;
   ASSERT_EQ(expected, actual);
 
@@ -404,10 +404,10 @@ TEST_F(BitboardsTest, slidingAttacks) {
              "+---+---+---+---+---+---+---+---+\n"
              "|   | X |   |   | X |   |   | X |\n"
              "+---+---+---+---+---+---+---+---+\n";
-  actual = strBoard(getAttacksBb(QUEEN, SQ_E4, BbZero));
+  actual = strBoard(Attacks::attacks(QUEEN, SQ_E4, BbZero));
   //  std::cout << actual;
   ASSERT_EQ(expected, actual);
-  ASSERT_EQ(getAttacksBb(QUEEN, SQ_E4, BbZero), (getAttacksBb(BISHOP, SQ_E4, BbZero) | getAttacksBb(ROOK, SQ_E4, BbZero)));
+  ASSERT_EQ(Attacks::attacks(QUEEN, SQ_E4, BbZero), (Attacks::attacks(BISHOP, SQ_E4, BbZero) | Attacks::attacks(ROOK, SQ_E4, BbZero)));
 }
 
 TEST_F(BitboardsTest, masks) {

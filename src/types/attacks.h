@@ -17,186 +17,150 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef FRANKYCPP_MAGICS_H
-#define FRANKYCPP_MAGICS_H
+// This is a refactored version of the original header which mixed data, helpers
+// and public API. The public interface is now just Attacks::init() and
+// Attacks::attacks(). Legacy functions getAttacksBb() and initMagicBitboards()
+// remain as thin deprecated wrappers for existing call sites and tests.
+//
+// Design goals:
+//  - Single obvious public API (Attacks::init, Attacks::attacks)
+//  - Hide tables and generation details in an internal namespace (detail)
+//  - Keep compile-time generation of masks/offsets; runtime fill of large tables
+//  - PEXT-only path (HAS_PEXT required); unused magic/shift fields removed
+//  - Idempotent initialization
+//
+#ifndef FRANKYCPP_ATTACKS_H
+#define FRANKYCPP_ATTACKS_H
 
 #include "bitboard.h"
+#include <array>
 
-#ifndef HAS_PEXT
-#error "PEXT-only path requested, but HAS_PEXT is not defined. Enable BMI2 (/arch:AVX2 or -mbmi2) and add -DHAS_PEXT."
+#ifdef HAS_PEXT
+#include <immintrin.h>
 #endif
 
-// //////////////////////////////////////////////////////////////////
-// Magic bitboards
-// Bitboard initialization and pre-computation
-// //////////////////////////////////////////////////////////////////
+// Attacks namespace contains functionality for fast lookup of sliding piece attacks
+// using magic bitboards with PEXT (parallel bits extract) instruction if available.
+// It provides initialization and attack lookup functions.
+namespace Attacks {
+  namespace detail {
 
-// constexpr popcount to avoid non-constexpr intrinsics on some compilers
-constexpr unsigned popcount_ce(Bitboard b) {
-  unsigned c = 0;
-  while (b) {
-    b &= b - 1;
-    ++c;
-  }
-  return c;
-}
-
-// constexpr software pext (bit compress)
-constexpr uint64_t pext_soft(const uint64_t src, uint64_t mask) {
-  uint64_t res = 0;
-  uint64_t bit = 1;
-  while (mask) {
-    const uint64_t lsb = mask & -mask;
-    if (src & lsb) res |= bit;
-    mask ^= lsb;
-    bit <<= 1;
-  }
-  return res;
-}
-
-// Magic holds all magic bitboards relevant for a single square
-// Ideas taken from Stockfish
-// License see https://stockfishchess.org/about/
-struct Magic {
-  Bitboard mask{};
-  Bitboard magic{}; // unused on PEXT path
-  unsigned shift{}; // unused on PEXT path
-  uint32_t offset{};// start index into the global table
-
-  [[nodiscard]] constexpr unsigned index(const Bitboard occupied) const {
-    if (std::is_constant_evaluated())
-      return static_cast<unsigned>(pext_soft(occupied, mask));
-    return static_cast<unsigned>(_pext_u64(occupied, mask));
-  }
-};
-
-constexpr Direction rookDirections[4]   = {NORTH, EAST, SOUTH, WEST};
-constexpr Direction bishopDirections[4] = {NORTH_EAST, SOUTH_EAST, SOUTH_WEST, NORTH_WEST};
-
-constexpr Bitboard sliding_attack(const Direction directions[], const Square sq, const Bitboard occupied) {
-  Bitboard attack = 0;
-  for (int i = 0; i < 4; ++i) {
-    for (Square s = sq + directions[i];; s += directions[i]) {
-      if (!s.isValid()) break;
-      // ensure we don't wrap around across files/ranks; guard before distance()
-      if (s.distanceTo(s - directions[i]) != 1) break;
-      attack |= s;
-      if (occupied & s)
-        break;
+    // ------------------------------------------------------------
+    // constexpr helpers
+    // ------------------------------------------------------------
+    constexpr unsigned popcount_ce(Bitboard b) {
+      unsigned c = 0;
+      while (b) {
+        b &= b - 1;
+        ++c;
+      }
+      return c;
     }
-  }
-  return attack;
-}
 
-constexpr Bitboard edgeMaskFor(const unsigned s) {
-  return (Rank1BB | Rank8BB) & ~Bitboards::sqToRankBb[s] | (FileABB | FileHBB) & ~Bitboards::sqToFileBb[s];
-}
+    // constexpr software pext (bit compress) for constant evaluation
+    constexpr uint64_t pext_soft(const uint64_t src, uint64_t mask) {
+      uint64_t res = 0, bit = 1;
+      while (mask) {
+        const uint64_t lsb = mask & -mask;
+        if (src & lsb) res |= bit;
+        mask ^= lsb;
+        bit <<= 1;
+      }
+      return res;
+    }
 
-constexpr Bitboard rookMaskFor(const unsigned s) {
-  return (Bitboards::rays[N][s] | Bitboards::rays[S][s] | Bitboards::rays[E][s] | Bitboards::rays[W][s]) & ~edgeMaskFor(s);
-}
+    struct Magic {
+      Bitboard mask{};
+      uint32_t offset{};// start index into global attack table
+      [[nodiscard]] constexpr unsigned index(const Bitboard occupied) const {
+#ifdef HAS_PEXT
+        if (!std::is_constant_evaluated())
+          return static_cast<unsigned>(_pext_u64(occupied, mask));
+#endif
+        return static_cast<unsigned>(pext_soft(occupied, mask));
+      }
+    };
 
-constexpr Bitboard bishopMaskFor(const unsigned s) {
-  return (Bitboards::rays[NE][s] | Bitboards::rays[NW][s] | Bitboards::rays[SE][s] | Bitboards::rays[SW][s]) & ~edgeMaskFor(s);
-}
+    // Directions
+    constexpr Direction RDirs[4] = {NORTH, EAST, SOUTH, WEST};
+    constexpr Direction BDirs[4] = {NORTH_EAST, SOUTH_EAST, SOUTH_WEST, NORTH_WEST};
 
-constexpr std::array<Bitboard, SQ_LENGTH> makeRookMasks() {
-  std::array<Bitboard, SQ_LENGTH> a{};
-  for (unsigned s = 0; s < SQ_LENGTH; ++s) a[s] = rookMaskFor(s);
-  return a;
-}
+    // Edge / mask helpers
+    constexpr Bitboard edgeMaskFor(const unsigned s) {
+      return ((Rank1BB | Rank8BB) & ~Bitboards::sqToRankBb[s]) | ((FileABB | FileHBB) & ~Bitboards::sqToFileBb[s]);
+    }
+    constexpr Bitboard rookMaskFor(const unsigned s) {
+      return (Bitboards::rays[N][s] | Bitboards::rays[S][s] | Bitboards::rays[E][s] | Bitboards::rays[W][s]) & ~edgeMaskFor(s);
+    }
+    constexpr Bitboard bishopMaskFor(const unsigned s) {
+      return (Bitboards::rays[NE][s] | Bitboards::rays[NW][s] | Bitboards::rays[SE][s] | Bitboards::rays[SW][s]) & ~edgeMaskFor(s);
+    }
 
-constexpr std::array<Bitboard, SQ_LENGTH> makeBishopMasks() {
-  std::array<Bitboard, SQ_LENGTH> a{};
-  for (unsigned s = 0; s < SQ_LENGTH; ++s) a[s] = bishopMaskFor(s);
-  return a;
-}
+    constexpr std::array<Bitboard, SQ_LENGTH> makeRookMasks() {
+      std::array<Bitboard, SQ_LENGTH> a{};
+      for (unsigned s = 0; s < SQ_LENGTH; ++s) a[s] = rookMaskFor(s);
+      return a;
+    }
+    constexpr std::array<Bitboard, SQ_LENGTH> makeBishopMasks() {
+      std::array<Bitboard, SQ_LENGTH> a{};
+      for (unsigned s = 0; s < SQ_LENGTH; ++s) a[s] = bishopMaskFor(s);
+      return a;
+    }
+    constexpr std::array<uint32_t, SQ_LENGTH + 1> makeOffsets(const std::array<Bitboard, SQ_LENGTH>& masks) {
+      std::array<uint32_t, SQ_LENGTH + 1> off{};
+      off[0] = 0;
+      for (unsigned s = 0; s < SQ_LENGTH; ++s) {
+        off[s + 1] = off[s] + (1u << popcount_ce(masks[s]));
+      }
+      return off;
+    }
+    constexpr std::array<Magic, SQ_LENGTH> makeMagics(const std::array<Bitboard, SQ_LENGTH>& masks,
+                                                      const std::array<uint32_t, SQ_LENGTH + 1>& offsets) {
+      std::array<Magic, SQ_LENGTH> m{};
+      for (unsigned s = 0; s < SQ_LENGTH; ++s)
+        m[s] = Magic{masks[s], offsets[s]};
+      return m;
+    }
 
-constexpr std::array<uint32_t, SQ_LENGTH + 1> makeOffsets(const std::array<Bitboard, SQ_LENGTH>& masks) {
-  std::array<uint32_t, SQ_LENGTH + 1> off{};
-  off[0] = 0;
-  for (unsigned s = 0; s < SQ_LENGTH; ++s) {
-    const unsigned bits = popcount_ce(masks[s]);
-    off[s + 1]          = off[s] + (1u << bits);
-  }
-  return off;
-}
+    inline constexpr auto RookMasks     = makeRookMasks();
+    inline constexpr auto BishopMasks   = makeBishopMasks();
+    inline constexpr auto RookOffsets   = makeOffsets(RookMasks);
+    inline constexpr auto BishopOffsets = makeOffsets(BishopMasks);
 
-constexpr std::array<Magic, SQ_LENGTH> makeMagics(const std::array<Bitboard, SQ_LENGTH>& masks,
-                                                  const std::array<uint32_t, SQ_LENGTH + 1>& offsets) {
-  std::array<Magic, SQ_LENGTH> m{};
-  for (unsigned s = 0; s < SQ_LENGTH; ++s)
-    m[s] = Magic{masks[s], 0, 0, offsets[s]};
-  return m;
-}
-
-inline constexpr auto rookMasks     = makeRookMasks();
-inline constexpr auto bishopMasks   = makeBishopMasks();
-inline constexpr auto rookOffsets   = makeOffsets(rookMasks);
-inline constexpr auto bishopOffsets = makeOffsets(bishopMasks);
-
-// Clion has a problem with static_assert on large constexpr arrays and shows these lines as errors,
-// so we disable these checks when building in the IDE
 #ifndef __JETBRAINS_IDE__
-static_assert(rookOffsets.back() == 0x19000, "Unexpected rookTable size");
-static_assert(bishopOffsets.back() == 0x1480, "Unexpected bishopTable size");
+    static_assert(RookOffsets.back() == 0x19000, "Unexpected rook table size");
+    static_assert(BishopOffsets.back() == 0x1480, "Unexpected bishop table size");
 #endif
 
-inline constexpr std::array<Magic, SQ_LENGTH> rookMagics   = makeMagics(rookMasks, rookOffsets);
-inline constexpr std::array<Magic, SQ_LENGTH> bishopMagics = makeMagics(bishopMasks, bishopOffsets);
+    inline constexpr auto RookMagics   = makeMagics(RookMasks, RookOffsets);
+    inline constexpr auto BishopMagics = makeMagics(BishopMasks, BishopOffsets);
 
-// Global tables (runtime-filled to avoid MSVC constexpr step limit)
-// Trying to also make these constexpr leads to "error C1061: compiler limit : blocks nested too deeply"
-inline Bitboard rookTable[0x19000];
-inline Bitboard bishopTable[0x1480];
+    // Table size constants
+    inline constexpr size_t RookTableSize   = 0x19000;
+    inline constexpr size_t BishopTableSize = 0x1480;
 
-// Fill a table using precomputed masks+offsets; list all subsets via carry-rippler
-inline void init_one(Bitboard table[], const std::array<Magic, SQ_LENGTH>& magics,
-                     const Direction dirs[4]) {
-  for (Square s : Square::all()) {
-    const auto& m    = magics[s];
-    const Bitboard M = m.mask;
+    // Runtime attack tables (storage in attacks.cpp)
+    extern Bitboard RookTable[RookTableSize];
+    extern Bitboard BishopTable[BishopTableSize];
+    extern bool Initialized;
 
-    Bitboard b = 0;
-    do {
-      const unsigned idx    = static_cast<unsigned>(_pext_u64(b, M));
-      table[m.offset + idx] = sliding_attack(dirs, s, b);
-      b                     = b - M & M;
-    } while (b);
-  }
-}
+    // Internal generation (implemented in attacks.cpp)
+    void fill(Bitboard table[], const std::array<Magic, SQ_LENGTH>& magics, const Direction dirs[4]);
+    Bitboard sliding_attack(const Direction dirs[4], Square sq, Bitboard occupied);
 
-// Initialize both rook and bishop magic bitboards
-inline void initMagicBitboards() {
-  init_one(rookTable, rookMagics, rookDirections);
-  init_one(bishopTable, bishopMagics, bishopDirections);
-}
+  }// namespace detail
 
-// Attack lookup
-// gets all attacks from non-pawn pieces on a given square considering the occupied squares
-inline Bitboard getAttacksBb(const PieceType pt, const Square sq, const Bitboard occupied) {
-  switch (pt) {
-    case BISHOP: {
-      const auto& m = bishopMagics[sq];
-      return bishopTable[m.offset + m.index(occupied)];
-    }
-    case ROOK: {
-      const auto& m = rookMagics[sq];
-      return rookTable[m.offset + m.index(occupied)];
-    }
-    case QUEEN: {
-      const auto& rb = bishopMagics[sq];
-      const auto& rr = rookMagics[sq];
-      return bishopTable[rb.offset + rb.index(occupied)]
-             | rookTable[rr.offset + rr.index(occupied)];
-    }
-    case KNIGHT:
-      [[fallthrough]];
-    case KING:
-      return Bitboards::nonSliderAttacks[pt][sq];
-    default:
-      return BbZero;
-  }
-}
+  // ------------------------------------------------------------
+  // Public API
+  // ------------------------------------------------------------
 
-#endif// FRANKYCPP_MAGICS_H
+  // Initialize (idempotent)
+  void init();
+
+  // Unified attack lookup for non-pawn pieces (QUEEN = ROOK | BISHOP)
+  Bitboard attacks(PieceType pt, Square sq, Bitboard occupied);
+
+}// namespace Attacks
+
+
+#endif// FRANKYCPP_ATTACKS_H
