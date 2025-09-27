@@ -1467,13 +1467,17 @@ milliseconds Search::setupTimeControl(const Position& position, const SearchLimi
   else { timeLeft = limits.whiteTime + (movesLeft * limits.whiteInc); }
   // estimate time per move
   const auto tl = static_cast<milliseconds>(timeLeft.count() / movesLeft);
+  // tiny fixed reserve to reduce micro overshoots (remaining-time mode only)
+  constexpr milliseconds reserve{5};
   // account for runtime of our code
   if (tl.count() < 100) {
     // limits for very short available time reduced by another 20%
-    return static_cast<milliseconds>(static_cast<uint64_t>(0.8 * tl.count()));
+    const auto t = static_cast<milliseconds>(static_cast<uint64_t>(0.8 * tl.count()));
+    return t > reserve ? (t - reserve) : t;
   }
   // reduced by 10%
-  return static_cast<milliseconds>(static_cast<uint64_t>(0.9 * tl.count()));
+  const auto t = static_cast<milliseconds>(static_cast<uint64_t>(0.9 * tl.count()));
+  return t > reserve ? (t - reserve) : t;
 }
 
 void Search::addExtraTime(const double f) {
@@ -1488,9 +1492,17 @@ void Search::startTimer() {
   this->timerThread = std::thread([&] {
     startSearchTime = currentTime();
     LOG__DEBUG(Logger::get().SEARCH_LOG, "Timer started with time limit of {} ms", str(timeLimit));
-    // relaxed busy wait
+    // relaxed busy wait with adaptive sleep (1ms..5ms)
     while (currentTime() - startSearchTime < timeLimit + milliseconds(extraTimeMs.load()) && !stopSearchFlag) {
-      std::this_thread::sleep_for(milliseconds(5));
+      const auto now      = currentTime();
+      const auto elapsed  = now - startSearchTime;
+      const auto budget   = timeLimit + milliseconds(extraTimeMs.load());
+      if (elapsed >= budget || stopSearchFlag) { break; }
+      const auto remaining_ms = std::chrono::duration_cast<milliseconds>(budget - elapsed);
+      milliseconds sleepFor   = remaining_ms / 5;
+      if (sleepFor < milliseconds(1)) sleepFor = milliseconds(1);
+      if (sleepFor > milliseconds(5)) sleepFor = milliseconds(5);
+      std::this_thread::sleep_for(sleepFor);
     }
     if (!this->stopSearchFlag) {
       this->stopSearchFlag = true;
