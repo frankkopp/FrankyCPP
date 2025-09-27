@@ -32,6 +32,10 @@ void UciOptions::initOptions() {
   optionVector.emplace_back("Ponder", SearchConfig::USE_PONDER,
                             [&](UciHandler*) { SearchConfig::USE_PONDER = getOption("Ponder")->currentValue == "true"; });
 
+  // Time management
+  optionVector.emplace_back("Move Overhead", SearchConfig::MOVE_OVERHEAD_MS, 0, 5000,
+                            [&](UciHandler*) { SearchConfig::MOVE_OVERHEAD_MS = getInt(getOption("Move Overhead")->currentValue); });
+
   optionVector.emplace_back("Use AlphaBeta", SearchConfig::USE_ALPHABETA,
                             [&](UciHandler*) { SearchConfig::USE_ALPHABETA = getOption("Use AlphaBeta")->currentValue == "true"; });
 

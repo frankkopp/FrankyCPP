@@ -1443,7 +1443,7 @@ milliseconds Search::setupTimeControl(const Position& position, const SearchLimi
   if (limits.moveTime.count()) {
     // mode time per move
     // we need a little room for executing the code
-    const milliseconds duration = limits.moveTime - milliseconds{20};
+    const milliseconds duration = limits.moveTime - milliseconds{SearchConfig::MOVE_OVERHEAD_MS};
     // if the duration is now negative return the original value and issue a warning
     if (duration.count() < 0) {
       LOG__WARN(Logger::get().SEARCH_LOG, "Very short move time: {} ms", limits.moveTime.count());
@@ -1468,7 +1468,7 @@ milliseconds Search::setupTimeControl(const Position& position, const SearchLimi
   // estimate time per move
   const auto tl = static_cast<milliseconds>(timeLeft.count() / movesLeft);
   // tiny fixed reserve to reduce micro overshoots (remaining-time mode only)
-  constexpr milliseconds reserve{5};
+  const milliseconds reserve{SearchConfig::MOVE_OVERHEAD_MS};
   // account for runtime of our code
   if (tl.count() < 100) {
     // limits for very short available time reduced by another 20%

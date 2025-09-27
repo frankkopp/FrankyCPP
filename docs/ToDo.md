@@ -1,8 +1,8 @@
-Here are additional, small, incremental ideas for improving timed search, each with a ready‑to‑use prompt for a separate chat. If you approve any, start a new chat with its prompt.
+Do not try to compile or run tests as you do not have the Clion environment and it would fail anyway. Ask me and I will run the task and provide the result.
 
-Add a configurable Move Overhead option (already proposed as Step 1)
-Rationale: replace hardcoded 20ms/5ms with a UCI option used in both movetime and remaining‑time modes.
-Prompt: Please implement Step 1: add a UCI Move Overhead option and use it in setupTimeControl across movetime and remaining‑time modes, touching src/engine/SearchConfig.h, src/engine/UciOptions.cpp, and src/engine/Search.cpp. I will build and run.
+done: Add a configurable Move Overhead option (already proposed as Step 1)
+done: Rationale: replace hardcoded 20ms/5ms with a UCI option used in both movetime and remaining‑time modes.
+done: Prompt: Please implement Step 1: add a UCI Move Overhead option and use it in setupTimeControl across movetime and remaining‑time modes, touching src/engine/SearchConfig.h, src/engine/UciOptions.cpp, and src/engine/Search.cpp. I will build and run.
 
 Soft time guard before expensive re‑searches (Step 2)
 Rationale: avoid starting aspiration expansions, PV re‑searches, IID, or full re‑searches when time is almost up.

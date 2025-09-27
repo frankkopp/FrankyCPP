@@ -25,6 +25,9 @@
 
 namespace SearchConfig {
 
+  // time management to account for overhead of code execution etc.
+  inline int MOVE_OVERHEAD_MS = 10;
+
   // opening book
   inline bool USE_BOOK         = true;
   inline std::string BOOK_PATH = "./books/book.txt";
