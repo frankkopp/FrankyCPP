@@ -325,8 +325,11 @@ SearchResult Search::iterativeDeepening(Position& p) {
   // ###########################################
   // ### BEGIN Iterative Deepening
   milliseconds lastIterationMs{0};
+  uint64_t lastIterationNodes = 0;
+  uint64_t prevIterationNodes = 0;
   for (auto iterationDepth = Depth{1}; iterationDepth <= maxDepth; ++iterationDepth) {
 
+    // ===========================================
     // Before starting a new iteration, check if we have enough time left to likely complete it.
     if (searchLimits.timeControl && !searchLimits.ponder && iterationDepth > 1) {
       const nanoseconds sinceNs  = elapsedSince(startSearchTime);
@@ -339,17 +342,46 @@ SearchResult Search::iterativeDeepening(Position& p) {
         break;
       }
       const milliseconds remaining = budget - elapsed;
-      // Estimate needed time for next iteration as 1.5x of last iteration;
-      // keep a small safety buffer
+
+      // Estimate needed time for the next iteration based on last iteration nodes,
+      // observed node growth, and current NPS; keep a small safety buffer.
       constexpr milliseconds buffer{5};
-      const milliseconds needed = lastIterationMs.count() > 0
-                                    ? milliseconds{lastIterationMs.count() * 3 / 2}
-                                    : milliseconds{0};
+
+      // Determine current NPS: prefer recent window (since last UCI update), fallback to average.
+      const uint64_t nowTimeFast = nowFast();
+      uint64_t currentNps        = 0;
+      if (nowTimeFast > npsTime) { currentNps = nps(nodesVisited - npsNodes, nowTimeFast - npsTime); }
+      if (currentNps == 0) { currentNps = nps(nodesVisited, sinceNs); }
+      if (currentNps == 0) { currentNps = 1; }
+
+      // Predict the node count of the next iteration using observed growth.
+      double growth = prevIterationNodes > 0
+                        ? static_cast<double>(lastIterationNodes) / static_cast<double>(prevIterationNodes)
+                        : 1.7;// default growth when we only have one observation
+      if (growth < 1.2) growth = 1.2;
+      if (growth > 3.0) growth = 3.0;
+      const uint64_t predictedNodesNext = lastIterationNodes > 0
+                                            ? static_cast<uint64_t>(lastIterationNodes * growth)
+                                            : 0ULL;
+
+      milliseconds needed{0};
+      if (predictedNodesNext > 0) {
+        const uint64_t neededMsU64 = (predictedNodesNext * 1000ULL) / currentNps;
+        needed                     = milliseconds{neededMsU64};
+      }
+      else if (lastIterationMs.count() > 0) {
+        // fallback: use wall-time of last iteration
+        needed = lastIterationMs;
+      }
+
       if (remaining <= buffer || (needed.count() > 0 && remaining < needed)) {
-        LOG__DEBUG(Logger::get().SEARCH_LOG, "Stop before iteration {}: remaining {} < needed {} (buffer {})", iterationDepth, str(remaining), str(needed), str(buffer));
+        LOG__DEBUG(Logger::get().SEARCH_LOG,
+                   "Stop before iteration {}: remaining {} < needed {} (buffer {}, nodesNext {:L}, nps {:L}, growth {:.2f})",
+                   iterationDepth, str(remaining), str(needed), str(buffer), predictedNodesNext, currentNps, growth);
         break;
       }
     }
+    // ===========================================
 
     // update search counter
     nodesVisited++;
@@ -364,6 +396,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
 
     // Measure iteration duration
     const TimePoint iterationStartTime = currentTime();
+    const uint64_t iterStartNodes      = nodesVisited;
 
     // ###########################################
     // Start actual alpha beta search
@@ -375,6 +408,10 @@ SearchResult Search::iterativeDeepening(Position& p) {
 
     // record iteration duration for next pre-check
     lastIterationMs = MILLISECONDS(currentTime() - iterationStartTime);
+
+    // record node counts for growth prediction
+    prevIterationNodes = lastIterationNodes;
+    lastIterationNodes = nodesVisited - iterStartNodes;
 
     assert((bestValue == pv[0].at(0).value() || stopSearchFlag) && "bestValue should be equal value of pv[0].at(0)");
 
