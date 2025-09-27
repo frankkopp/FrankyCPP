@@ -23,6 +23,7 @@
 #include "bookentry.h"
 #include "chesscore/Position.h"
 #include "types/types.h"
+#include "version.h"
 
 #include <boost/serialization/unordered_map.hpp>
 #include <boost/serialization/vector.hpp>
@@ -30,6 +31,7 @@
 #include <filesystem>
 #include <mutex>
 #include <thread>
+#include <format>
 
 #include "common/gtest_friends.h"
 
@@ -86,7 +88,7 @@ private:
   bool _useCache      = true;
   bool _recreateCache = false;
   // the extension cache files use after the given opening book filename
-  static constexpr auto cacheExt = ".cache.bin";
+  const std::string cacheExt = std::format(".cache.v{}.{}.bin", FrankyCPP_VERSION_MAJOR, FrankyCPP_VERSION_MINOR);
 
   // the root position's zobrist key is required often - so we cache it here
   const ZobristKey rootZobristKey = Position{}.getZobristKey();
