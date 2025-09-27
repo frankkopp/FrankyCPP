@@ -72,18 +72,17 @@ TEST_F(SearchTest, setupTime) {
   sl.moveTime = milliseconds{1500};
   EXPECT_EQ(1490, Search::setupTimeControl(p, sl).count());
 
-  // the 0.85 is from the root complexity calculation
   sl           = SearchLimits{};
   sl.whiteTime = 30s;
   sl.blackTime = 30s;
   fprintln("{}", str(Search::setupTimeControl(p, sl)));
-  EXPECT_EQ(static_cast<int>(0.85 *665), Search::setupTimeControl(p, sl).count());
+  EXPECT_EQ(628, Search::setupTimeControl(p, sl).count());
 
   sl           = SearchLimits{};
   sl.whiteTime = 3s;
   sl.blackTime = 3s;
   fprintln("{}", str(Search::setupTimeControl(p, sl)));
-  EXPECT_EQ(static_cast<int>(0.85 * 50), Search::setupTimeControl(p, sl).count());
+  EXPECT_EQ(47, Search::setupTimeControl(p, sl).count());
 
   sl           = SearchLimits{};
   sl.whiteTime = 30s;
@@ -91,11 +90,10 @@ TEST_F(SearchTest, setupTime) {
   sl.blackTime = 30s;
   sl.blackInc  = 1s;
   fprintln("{}", str(Search::setupTimeControl(p, sl)));
-  EXPECT_EQ(static_cast<int>(0.85 *1565), Search::setupTimeControl(p, sl).count());
+  EXPECT_EQ(1393, Search::setupTimeControl(p, sl).count());
 }
 
 TEST_F(SearchTest, extraTime) {
-  SearchLimits sl{};
   Search s{};
   s.searchLimits.timeControl = true;
   s.timeLimit                = 10s;
@@ -110,7 +108,6 @@ TEST_F(SearchTest, extraTime) {
 }
 
 TEST_F(SearchTest, startTimer) {
-  SearchLimits sl{};
   Search s{};
   s.searchLimits.timeControl = true;
   s.startTime                = high_resolution_clock::now();
@@ -370,6 +367,52 @@ TEST_F(SearchTest, quiescenceTest) {
   ASSERT_GT(nodes2, nodes1);
   ASSERT_GT(extra2, extra1);
 }
+
+TEST_F(SearchTest, movesLeftBucketsOpeningVsQueenlessVsLowMaterial) {
+  // Same remaining time setup for all scenarios
+  SearchLimits sl{};
+  sl.whiteTime = 30s;
+  sl.blackTime = 30s;
+  sl.whiteInc  = 0s;
+  sl.blackInc  = 0s;
+
+  // Opening-like position (start position with queens): should allocate the least per-move time
+  Position opening{"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"};
+  const auto t_opening = Search::setupTimeControl(opening, sl);
+
+  // Queenless middlegame: fewer movesLeft bucket -> more per-move time than opening
+  Position queenless{"rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 0 1"};
+  const auto t_queenless = Search::setupTimeControl(queenless, sl);
+
+  // Very low material endgame (KPK vs K): fewest movesLeft bucket -> largest per-move time
+  Position lowMat{"8/8/8/8/8/4k3/4P3/4K3 w - - 0 1"};
+  const auto t_lowMat = Search::setupTimeControl(lowMat, sl);
+
+  fprintln("Opening: {} Queenless: {} LowMat: {}", str(t_opening), str(t_queenless), str(t_lowMat));
+
+  // Expect ordering of allocated time per move: opening < queenless < low material
+  EXPECT_LT(t_opening, t_queenless);
+  EXPECT_LT(t_queenless, t_lowMat);
+}
+
+TEST_F(SearchTest, movesLeftRepetitionRiskIncreasesTime) {
+  // Use a queenless position to keep the bucket clear
+  Position queenless_low{"rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 0 1"};
+  Position queenless_high{"rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 80 1"}; // high half-move clock
+
+  SearchLimits sl{};
+  sl.whiteTime = 30s;
+  sl.blackTime = 30s;
+
+  const auto t_lowHmc  = Search::setupTimeControl(queenless_low, sl);
+  const auto t_highHmc = Search::setupTimeControl(queenless_high, sl);
+
+  fprintln("Queenless hmc=0: {} hmc=80: {}", str(t_lowHmc), str(t_highHmc));
+
+  // With high half-move clock repetition/50-move risk, movesLeft is reduced -> more time per move
+  EXPECT_LT(t_lowHmc, t_highHmc);
+}
+
 
 TEST_F(SearchTest, debug) {
   if (isBulkRun()) {

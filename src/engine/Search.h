@@ -274,6 +274,8 @@ private:
   // and returns a limit on the duration for the current search.
   static milliseconds setupTimeControl(const Position& position, const SearchLimits& limits);
   FRIEND_TEST(SearchTest, setupTime);
+  FRIEND_TEST(SearchTest, movesLeftBucketsOpeningVsQueenlessVsLowMaterial);
+  FRIEND_TEST(SearchTest, movesLeftRepetitionRiskIncreasesTime);
 
   // addExtraTime certain situations might call for an extension or reduction
   // of the given time limit for the search. This function adds/subtracts

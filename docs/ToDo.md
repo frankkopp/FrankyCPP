@@ -24,6 +24,10 @@ done: Higher‑precision timer tail
 done: Rationale: reduce overshoot on Windows by busy‑waiting the last few milliseconds instead of sleeping.
 done: Prompt: Please modify startTimer() in src/engine/Search.cpp to switch from sleep to a short busy‑wait for the final ~2–3ms before deadline. I will build and run.
 
+done: Improved movesLeft model
+done: Rationale: estimate moves to go using game phase, material, and repetition risk rather than a linear factor.
+done: Prompt: Please refactor movesLeft estimation in setupTimeControl in src/engine/Search.cpp to use phase/material buckets with tunables in src/engine/SearchConfig.h. I will build and run.
+
 NPS‑based dynamic budget tracking
 Rationale: track NPS during the search and estimate whether the next iteration (or re‑search) can finish within remaining time.
 Prompt: Please track rolling NPS and use it to gate starting the next iteration and re‑searches in src/engine/Search.cpp. I will build and run.
@@ -36,7 +40,6 @@ Ponder credit budgeting
 Rationale: if the pondered move is played, reuse part of ponder time as credit for the move; otherwise decay.
 Prompt: Please track ponderCreditMs and, on ponderhit() in src/engine/Search.cpp, add a bounded credit to extraTimeMs. I will build and run.
 
-
 Decimated time checks inside hot loops
 Rationale: add a very cheap periodic time check (e.g., every N nodes) to stopConditions() using an atomic deadline to minimize overhead.
 Prompt: Please add an atomic deadlineNs, update it when time changes, and check it every N nodes in stopConditions() and key loops in src/engine/Search.cpp. I will build and run.
@@ -44,10 +47,6 @@ Prompt: Please add an atomic deadlineNs, update it when time changes, and check 
 Quiescence bailout under time pressure
 Rationale: cap qsearch depth or switch to stand‑pat only when time is almost up.
 Prompt: Please add a time‑pressure guard in qsearch to early‑return (stand‑pat) when isTimeAlmostUp() in src/engine/Search.cpp. I will build and run.
-
-Improved movesLeft model
-Rationale: estimate moves to go using game phase, material, and repetition risk rather than a linear factor.
-Prompt: Please refactor movesLeft estimation in setupTimeControl in src/engine/Search.cpp to use phase/material buckets with tunables in src/engine/SearchConfig.h. I will build and run.
 
 Emergency move mode
 Rationale: when remaining time below a threshold, enforce a very fast, shallow search to avoid flagging.

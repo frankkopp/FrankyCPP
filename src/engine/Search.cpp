@@ -332,6 +332,11 @@ SearchResult Search::iterativeDeepening(Position& p) {
     hadBookMove = false;
   }
 
+  // Debug: planned time budget before starting Iterative Deepening (no in-search extensions)
+  LOG__DEBUG(Logger::get().SEARCH_LOG,
+             "Planned time budget for this move (no in-search extensions): {}",
+             str(timeLimit));
+
   // prepare max depth from search limits
   const int maxDepth = searchLimits.depth ? searchLimits.depth : DEPTH_MAX;
 
@@ -1548,7 +1553,8 @@ bool Search::isTimeAlmostUp() const {
 
 milliseconds Search::setupTimeControl(const Position& position, const SearchLimits& limits) {
   if (limits.moveTime.count()) {
-    // mode time per move
+    // Search mode time per move
+
     // we need a little room for executing the code
     const milliseconds duration = limits.moveTime - milliseconds{SearchConfig::MOVE_OVERHEAD_MS};
     // if the duration is now negative return the original value and issue a warning
@@ -1560,15 +1566,62 @@ milliseconds Search::setupTimeControl(const Position& position, const SearchLimi
     return duration;
   }
 
-  // mode is remaining time - estimated time per move
-  // moves left
+  // Search mode is remaining time - estimated time per move
+
+  // Improved moves-left model using phase/material buckets and repetition risk.
   int movesLeft = limits.movesToGo;
   if (!movesLeft) {
-    // default
-    // we estimate minimum 15 more moves in final game phases
-    // in early game phases this grows up to 40
-    movesLeft = 15 + static_cast<int>(25 * position.getGamePhaseFactor());
+    // Derive game phase and material features
+    const double phase = position.getGamePhaseFactor();// ~1.0 opening/mid, ~0.0 endgame
+
+    // Count non-pawn pieces across both sides (KNIGHT/BISHOP/ROOK/QUEEN)
+    auto countPieces = [&](const PieceType pt) -> int {
+      return position.getPieceBb(WHITE, pt).popcount() + position.getPieceBb(BLACK, pt).popcount();
+    };
+    const int knights = countPieces(KNIGHT);
+    const int bishops = countPieces(BISHOP);
+    const int rooks   = countPieces(ROOK);
+    const int queensW = position.getPieceBb(WHITE, QUEEN).popcount();
+    const int queensB = position.getPieceBb(BLACK, QUEEN).popcount();
+    const int queens  = queensW + queensB;
+    const int npp     = knights + bishops + rooks + queens;// non-pawn piece count (kings excluded)
+
+    // Select a base bucket
+    int base;
+    if (npp <= SearchConfig::NPP_LIGHT_THRESHOLD) {
+      base = SearchConfig::MOVES_LEFT_LOW_MAT;// very low material
+    }
+    else if (queens == 0) {
+      // Queenless middlegames/endgames tend to resolve faster
+      base = npp <= SearchConfig::NPP_LIGHT_THRESHOLD + 2
+               ? SearchConfig::MOVES_LEFT_LOW_MAT
+               : SearchConfig::MOVES_LEFT_QUEENLESS;
+    }
+    else if (phase >= 0.66
+             || npp >= SearchConfig::NPP_HEAVY_THRESHOLD) {
+      base = SearchConfig::MOVES_LEFT_OPENING;
+    }
+    else if (phase <= 0.33) {
+      base = SearchConfig::MOVES_LEFT_ENDGAME;
+    }
+    else {
+      base = SearchConfig::MOVES_LEFT_MIDGAME;
+    }
+
+    // Adjust for repetition/50-move risk
+    if (position.getHalfMoveClock() >= SearchConfig::REPETITION_HMC_HIGH) {
+      base -= SearchConfig::REPETITION_RISK_PENALTY;
+    }
+
+    // Clamp
+    base = std::clamp(base, SearchConfig::MOVES_LEFT_MIN_CLAMP, SearchConfig::MOVES_LEFT_MAX_CLAMP);
+
+    movesLeft = base;
+    LOG__DEBUG(Logger::get().SEARCH_LOG,
+               "TimeCtl: movesLeft={} (phase {:.2f}, npp {}, queens {}), hmc {}",
+               movesLeft, phase, npp, queens, position.getHalfMoveClock());
   }
+
   // time left for current player
   milliseconds timeLeft;
   if (position.getNextPlayer()) { timeLeft = limits.blackTime + (movesLeft * limits.blackInc); }
@@ -1643,7 +1696,7 @@ double Search::computeComplexityFactorFromMoves(const Position& p, const MoveLis
   constexpr int pivotMoves = 30;  // neutral pivot
   constexpr double slope   = 0.01;// +/-1% per move relative to pivot
   constexpr double baseCap = 0.25;// baseline capture ratio
-  constexpr double capW    = 0.50;// weight for (ratio - base)
+  constexpr double capW    = 0.50;// weight for (ratio - baseCap)
   constexpr double inChkB  = 0.10;// +10% when in check
   constexpr double minF    = 0.85;// min factor
   constexpr double maxF    = 1.30;// max factor

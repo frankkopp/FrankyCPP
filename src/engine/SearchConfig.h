@@ -120,6 +120,26 @@ namespace SearchConfig {
   inline bool USE_THREAT_EXT    = false;
   inline bool USE_EXT_ADD_DEPTH = true;
 
+  // These define adjustable parameters for the phase/material-based
+  // moves-left model used in time control budgeting.
+
+  // Improved moves-left model (time management) tunables
+  inline int MOVES_LEFT_OPENING   = 36; // early/opening phase
+  inline int MOVES_LEFT_MIDGAME   = 28; // middlegame default
+  inline int MOVES_LEFT_ENDGAME   = 16; // generic endgame
+  inline int MOVES_LEFT_LOW_MAT   = 10; // very low material endgames
+  inline int MOVES_LEFT_QUEENLESS = 22; // typical queenless middlegame/endgame
+
+  // Non-pawn piece count thresholds (sum across both sides)
+  inline int NPP_HEAVY_THRESHOLD = 10; // many pieces
+  inline int NPP_LIGHT_THRESHOLD = 4;  // few pieces -> late endgame
+
+  // Repetition/50-move risk handling and clamps
+  inline int REPETITION_HMC_HIGH     = 80; // half-move clock threshold considered risky
+  inline int REPETITION_RISK_PENALTY = 6;  // subtract from moves-left on high repetition risk
+  inline int MOVES_LEFT_MIN_CLAMP    = 6;  // never go below this
+  inline int MOVES_LEFT_MAX_CLAMP    = 50; // never go above this
+
 }// namespace SearchConfig
 
 #endif// FRANKYCPP_SEARCHCONFIG_H
