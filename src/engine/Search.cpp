@@ -266,6 +266,11 @@ void Search::run() {
 SearchResult Search::iterativeDeepening(Position& p) {
   SearchResult searchResult{};
 
+  // Volatility tracking within this search
+  Value prevBestRootValue           = VALUE_NONE; // best root eval from previous iteration
+  bool addedVolatilityExtraTime     = false;      // guard to add extra time due to eval swing at most once
+  bool addedRootCheckExtraTime      = false;      // guard to add extra time due to root-in-check at most once
+
   // check repetition and 50-moves rule
   if (checkDrawRepAnd50(p, 2)) {
     const std::string msg = this->searchLimits.ponder
@@ -303,6 +308,14 @@ SearchResult Search::iterativeDeepening(Position& p) {
     return searchResult;
   }
 
+  // If the root side is in check, the position is often tactically sharp.
+  // Add a small amount of extra time once, conservatively.
+  if (p.hasCheck() && searchLimits.timeControl && !addedRootCheckExtraTime && !isTimeAlmostUp()) {
+    addExtraTime(1.10); // +10%
+    addedRootCheckExtraTime = true;
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Volatility: root in-check detected. Adding small extra time (10%).");
+  }
+
   // add some extra time for the move after the last book move
   // hadBookMove move will be true at his point if we ever had
   // a book move.
@@ -316,7 +329,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
   // prepare max depth from search limits
   const int maxDepth = searchLimits.depth ? searchLimits.depth : DEPTH_MAX;
 
-  // Max window search in preparation for aspiration window search
+  // Max window search in preparation for aspiration window
   // is not needed yet
   constexpr Value alpha = VALUE_MIN;
   constexpr Value beta  = VALUE_MAX;
@@ -414,6 +427,26 @@ SearchResult Search::iterativeDeepening(Position& p) {
     lastIterationNodes = nodesVisited - iterStartNodes;
 
     assert((bestValue == pv[0].at(0).value() || stopSearchFlag) && "bestValue should be equal value of pv[0].at(0)");
+
+    // Conservative volatility detector: big evaluation swings between consecutive iterations
+    if (!addedVolatilityExtraTime && !isTimeAlmostUp()) {
+      const Value currBest = pv[0].at(0).value();
+      // Only consider reasonably deep iterations to avoid noise from shallow depths
+      constexpr int VOL_SWING_MIN_DEPTH = 6;
+      constexpr auto VOL_SWING_THRESH  = Value{150}; // ~1.5 pawns
+      if (iterationDepth >= VOL_SWING_MIN_DEPTH && currBest.isValid() && prevBestRootValue.isValid()) {
+        Value delta = currBest - prevBestRootValue;
+        if (delta < VALUE_ZERO) delta = -delta;
+        if (delta >= VOL_SWING_THRESH) {
+          addExtraTime(1.15); // +15%
+          addedVolatilityExtraTime = true;
+          LOG__DEBUG(Logger::get().SEARCH_LOG, "Volatility: large eval swing at depth {} (Δ{} >= {}). Adding small extra time (15%).",
+                     iterationDepth, delta.str(), VOL_SWING_THRESH.str());
+        }
+      }
+      // remember current value for next iteration comparison
+      if (currBest.isValid()) { prevBestRootValue = currBest; }
+    }
 
     // if mate search check if we found a mate within the mate limit
     if (searchLimits.mate && abs(pv[0].at(0).value()) >= VALUE_CHECKMATE_THRESHOLD && searchLimits.mate * 2 - 1 == VALUE_CHECKMATE - pv[0].at(0).value()) {

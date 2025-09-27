@@ -8,17 +8,18 @@ done: Soft time guard before expensive re‑searches (Step 2)
 done: Rationale: avoid starting aspiration expansions, PV re‑searches, IID, or full re‑searches when time is almost up.
 done: Prompt: Please add an isTimeAlmostUp() helper and call it at re‑search trigger points in src/engine/Search.cpp (root PVS re‑search, LMR re‑search, aspiration expansion, IID). I will build and run.
 
-Adaptive iteration duration predictor
-Rationale: replace fixed 1.5× last iteration heuristic with a predictor using node growth factor and current NPS to estimate next iteration cost.
-Prompt: Please replace the 1.5× heuristic in iterativeDeepening with an ETA based on last iteration nodes and current NPS in src/engine/Search.cpp. I will build and run.
+done: Adaptive iteration duration predictor
+done: Rationale: replace fixed 1.5× last iteration heuristic with a predictor using node growth factor and current NPS to estimate next iteration cost.
+done: Prompt: Please replace the 1.5× heuristic in iterativeDeepening with an ETA based on last iteration nodes and current NPS in src/engine/Search.cpp. I will build and run.
+
+done: Panic time extension on volatility
+done: Rationale: add extra time when fail‑low, big eval swings, or checks at root indicate tactical complexity.
+done: Prompt: Please add a volatility detector (fail‑low, |Δeval| threshold, root in‑check) and call addExtraTime() conservatively in src/engine/Search.cpp. I will build and run.
+
 
 NPS‑based dynamic budget tracking
 Rationale: track NPS during the search and estimate whether the next iteration (or re‑search) can finish within remaining time.
 Prompt: Please track rolling NPS and use it to gate starting the next iteration and re‑searches in src/engine/Search.cpp. I will build and run.
-
-Panic time extension on volatility
-Rationale: add extra time when fail‑low, big eval swings, or checks at root indicate tactical complexity.
-Prompt: Please add a volatility detector (fail‑low, |Δeval| threshold, root in‑check) and call addExtraTime() conservatively in src/engine/Search.cpp. I will build and run.
 
 Complexity‑aware time allocation
 Rationale: spend more time when root move count is high, position is in check, or many legal captures exist; spend less on trivial or forced positions.

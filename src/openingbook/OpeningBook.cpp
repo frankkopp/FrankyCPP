@@ -115,8 +115,8 @@ void OpeningBook::reset() {
 
 std::string OpeningBook::str(const int level) {
   const Position p{};
-  const ZobristKey zobristKey  = p.getZobristKey();
-  const BookEntry* node = &bookMap[zobristKey];
+  const ZobristKey zobristKey = p.getZobristKey();
+  const BookEntry* node       = &bookMap[zobristKey];
   return std::format(deLocale, "Root ({:L})\n{}", bookMap[zobristKey].counter, getLevelStr(1, level, node));
 }
 
@@ -204,14 +204,16 @@ void OpeningBook::readGames(const std::vector<std::string_view>& lines) {
   }
 
   const auto stop    = high_resolution_clock::now();
-  const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+  const auto elapsed = std::chrono::duration_cast<milliseconds>(stop - start);
   (void) elapsed;
   LOG__DEBUG(Logger::get().BOOK_LOG, "Read games in {}.", ::str(elapsed));
 }
 
 void OpeningBook::readGamesSimple(const std::vector<std::string_view>& lines) {
 
+
 #ifdef PARALLEL_LINE_PROCESSING
+  const unsigned int noOfThreads = getNoOfThreads();
   LOG__DEBUG(Logger::get().BOOK_LOG, "Using {} threads", noOfThreads);
 
 #ifdef HAS_EXECUTION_LIB// use parallel lambda
@@ -220,7 +222,6 @@ void OpeningBook::readGamesSimple(const std::vector<std::string_view>& lines) {
                   readOneGameSimple(line);
                 });
 #else// no <execution> library (< C++17)
-  const unsigned int noOfThreads = getNoOfThreads();
   const auto noOfLines = lines.size();
   std::vector<std::thread> threads;
   threads.reserve(noOfThreads);
@@ -277,6 +278,7 @@ void OpeningBook::readOneGameSimple(const std::string_view& lineView) {
 void OpeningBook::readGamesSan(const std::vector<std::string_view>& lines) {
 
 #ifdef PARALLEL_LINE_PROCESSING
+  const unsigned int noOfThreads = getNoOfThreads();
   LOG__DEBUG(Logger::get().BOOK_LOG, "Using {} threads", noOfThreads);
 
 #ifdef HAS_EXECUTION_LIB// use parallel lambda
@@ -285,8 +287,7 @@ void OpeningBook::readGamesSan(const std::vector<std::string_view>& lines) {
                   readOneGameSan(line);
                 });
 #else// no <execution> library (< C++17)
-  const unsigned int noOfThreads = getNoOfThreads();
-  const auto noOfLines = lines.size();
+  const auto noOfLines           = lines.size();
   std::vector<std::thread> threads;
   threads.reserve(noOfThreads);
   for (unsigned int t = 0; t < noOfThreads; ++t) {
@@ -601,7 +602,7 @@ void OpeningBook::saveToCache() {
     oa << BOOST_SERIALIZATION_NVP(bookMap);
     const auto stop    = std::chrono::high_resolution_clock::now();
     const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-    (void)elapsed;
+    (void) elapsed;
     LOG__DEBUG(Logger::get().BOOK_LOG, "Book saved to binary cache in ({:L} ms) ({})", elapsed.count(), serCacheFile);
   }// archive and stream closed when destructors are called
   _recreateCache = false;
@@ -642,7 +643,7 @@ bool OpeningBook::hasCache() const {
     return false;
   }
   const uint64_t fsize = std::filesystem::file_size(serCacheFile);
-  (void)fsize;
+  (void) fsize;
   LOG__DEBUG(Logger::get().BOOK_LOG, "Cache file {} ({:L} kB) available", serCacheFile, fsize / 1'024);
   return true;
 }

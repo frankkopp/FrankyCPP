@@ -136,13 +136,13 @@ TEST_F(OpeningBookTest, getMove) {
   Position position;
   MoveGenerator mg;
   Move bookMove = book.getRandomMove(position.getZobristKey());
-  LOG__DEBUG(Logger::get().TEST_LOG, "Book returned move: {}", strVerbose(bookMove));
+  LOG__DEBUG(Logger::get().TEST_LOG, "Book returned move: {}", bookMove.strVerbose());
   EXPECT_TRUE(bookMove.isValid());
   EXPECT_TRUE(mg.validateMove(position, bookMove));
 
   position = Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
   bookMove = book.getRandomMove(position.getZobristKey());
-  LOG__DEBUG(Logger::get().TEST_LOG, "Book returned move: {}", strVerbose(bookMove));
+  LOG__DEBUG(Logger::get().TEST_LOG, "Book returned move: {}", bookMove.strVerbose());
   EXPECT_FALSE(bookMove.isValid());
 }
 
@@ -194,13 +194,13 @@ TEST_F(OpeningBookTest, serializationLarge) {
   MoveGenerator mg;
   Position position;
   Move bookMove = book.getRandomMove(position.getZobristKey());
-  LOG__DEBUG(Logger::get().TEST_LOG, "Book returned move: {}", strVerbose(bookMove));
+  LOG__DEBUG(Logger::get().TEST_LOG, "Book returned move: {}", bookMove.strVerbose());
   EXPECT_TRUE(bookMove.isValid());
   EXPECT_TRUE(mg.validateMove(position, bookMove));
 
   position.doMove(mg.getMoveFromUci(position, "e2e4"));
   bookMove = book.getRandomMove(position.getZobristKey());
-  LOG__DEBUG(Logger::get().TEST_LOG, "Book returned move: {}", strVerbose(bookMove));
+  LOG__DEBUG(Logger::get().TEST_LOG, "Book returned move: {}", bookMove.strVerbose());
   EXPECT_TRUE(bookMove.isValid());
   EXPECT_TRUE(mg.validateMove(position, bookMove));
 }
