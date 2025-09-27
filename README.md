@@ -10,12 +10,10 @@ dev_v0.6
 [![CodeQL](https://github.com/frankkopp/FrankyCPP/actions/workflows/codeql-analysis.yml/badge.svg?branch=dev_v0.6)](https://github.com/frankkopp/FrankyCPP/actions/workflows/codeql-analysis.yml)
 
 ## Version
-v0.5 Enhanced eval
-
-v0.5 Simple eval
-
+v0.6 (in development)
+v0.5 Enhanced eval and move to wrapper classes for Bitboard, Square, Move, etc.
+v0.4 Simple eval
 v0.3 See FrankyGo - except Evaluation
-
 v0.2 See FrankyGo - except Evaluation
 
 ---
