@@ -16,14 +16,14 @@ done: Panic time extension on volatility
 done: Rationale: add extra time when fail‑low, big eval swings, or checks at root indicate tactical complexity.
 done: Prompt: Please add a volatility detector (fail‑low, |Δeval| threshold, root in‑check) and call addExtraTime() conservatively in src/engine/Search.cpp. I will build and run.
 
+done: Complexity‑aware time allocation
+done: Rationale: spend more time when root move count is high, position is in check, or many legal captures exist; spend less on trivial or forced positions.
+done: Prompt: Please weight per‑move budget by root complexity indicators (legal move count, in‑check, captures ratio) in setupTimeControl and root iteration gating in src/engine/Search.cpp. I will build and run.
+
 
 NPS‑based dynamic budget tracking
 Rationale: track NPS during the search and estimate whether the next iteration (or re‑search) can finish within remaining time.
 Prompt: Please track rolling NPS and use it to gate starting the next iteration and re‑searches in src/engine/Search.cpp. I will build and run.
-
-Complexity‑aware time allocation
-Rationale: spend more time when root move count is high, position is in check, or many legal captures exist; spend less on trivial or forced positions.
-Prompt: Please weight per‑move budget by root complexity indicators (legal move count, in‑check, captures ratio) in setupTimeControl and root iteration gating in src/engine/Search.cpp. I will build and run.
 
 Min/Max per‑move clamps (UCI options)
 Rationale: prevent pathological allocations by clamping computed budget.

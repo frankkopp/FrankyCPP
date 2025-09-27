@@ -22,6 +22,7 @@
 #include "SearchConfig.h"
 #include "See.h"
 
+#include <algorithm>
 #include <chrono>
 
 ////////////////////////////////////////////////
@@ -267,9 +268,9 @@ SearchResult Search::iterativeDeepening(Position& p) {
   SearchResult searchResult{};
 
   // Volatility tracking within this search
-  Value prevBestRootValue           = VALUE_NONE; // best root eval from previous iteration
-  bool addedVolatilityExtraTime     = false;      // guard to add extra time due to eval swing at most once
-  bool addedRootCheckExtraTime      = false;      // guard to add extra time due to root-in-check at most once
+  Value prevBestRootValue       = VALUE_NONE;// best root eval from previous iteration
+  bool addedVolatilityExtraTime = false;     // guard to add extra time due to eval swing at most once
+  bool addedRootCheckExtraTime  = false;     // guard to add extra time due to root-in-check at most once
 
   // check repetition and 50-moves rule
   if (checkDrawRepAnd50(p, 2)) {
@@ -284,6 +285,11 @@ SearchResult Search::iterativeDeepening(Position& p) {
 
   // generate all legal root moves for the position
   rootMoves = *mg[0].generateLegalMoves(p, GenAll);
+
+  // Derive a root complexity factor for iteration gating using already generated rootMoves
+  const double rootComplexityFactor = computeComplexityFactorFromMoves(p, rootMoves);
+  LOG__INFO(Logger::get().SEARCH_LOG, "Root complexity factor: {:.2f} (moves {}, inCheck {}, captures share ~)",
+            rootComplexityFactor, rootMoves.size(), p.hasCheck());
 
   // check if there are legal moves - if not, it's mate or stalemate
   if (rootMoves.empty()) {
@@ -311,7 +317,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
   // If the root side is in check, the position is often tactically sharp.
   // Add a small amount of extra time once, conservatively.
   if (p.hasCheck() && searchLimits.timeControl && !addedRootCheckExtraTime && !isTimeAlmostUp()) {
-    addExtraTime(1.10); // +10%
+    addExtraTime(1.10);// +10%
     addedRootCheckExtraTime = true;
     LOG__DEBUG(Logger::get().SEARCH_LOG, "Volatility: root in-check detected. Adding small extra time (10%).");
   }
@@ -349,8 +355,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
       const milliseconds elapsed = MILLISECONDS(sinceNs);
       const milliseconds budget  = timeLimit + milliseconds(extraTimeMs.load());
       if (elapsed >= budget) {
-        LOG__DEBUG(Logger::get().SEARCH_LOG, "Stop before iteration {}: time budget "
-                                             "exhausted (elapsed {} >= budget {})",
+        LOG__DEBUG(Logger::get().SEARCH_LOG, "Stop before iteration {}: time budget exhausted (elapsed {} >= budget {})",
                    iterationDepth, str(elapsed), str(budget));
         break;
       }
@@ -387,10 +392,14 @@ SearchResult Search::iterativeDeepening(Position& p) {
         needed = lastIterationMs;
       }
 
-      if (remaining <= buffer || (needed.count() > 0 && remaining < needed)) {
+      // Complexity-aware gating: scale remaining by root complexity factor.
+      const auto effectiveRemaining = milliseconds{
+        static_cast<int64_t>(remaining.count() * rootComplexityFactor)};
+
+      if (effectiveRemaining <= buffer || (needed.count() > 0 && effectiveRemaining < needed)) {
         LOG__DEBUG(Logger::get().SEARCH_LOG,
-                   "Stop before iteration {}: remaining {} < needed {} (buffer {}, nodesNext {:L}, nps {:L}, growth {:.2f})",
-                   iterationDepth, str(remaining), str(needed), str(buffer), predictedNodesNext, currentNps, growth);
+                   "Stop before iteration {}: effRemaining {} < needed {} (buffer {}, rootFactor {:.2f})",
+                   iterationDepth, str(effectiveRemaining), str(needed), str(buffer), rootComplexityFactor);
         break;
       }
     }
@@ -433,12 +442,12 @@ SearchResult Search::iterativeDeepening(Position& p) {
       const Value currBest = pv[0].at(0).value();
       // Only consider reasonably deep iterations to avoid noise from shallow depths
       constexpr int VOL_SWING_MIN_DEPTH = 6;
-      constexpr auto VOL_SWING_THRESH  = Value{150}; // ~1.5 pawns
+      constexpr auto VOL_SWING_THRESH   = Value{150};// ~1.5 pawns
       if (iterationDepth >= VOL_SWING_MIN_DEPTH && currBest.isValid() && prevBestRootValue.isValid()) {
         Value delta = currBest - prevBestRootValue;
         if (delta < VALUE_ZERO) delta = -delta;
         if (delta >= VOL_SWING_THRESH) {
-          addExtraTime(1.15); // +15%
+          addExtraTime(1.15);// +15%
           addedVolatilityExtraTime = true;
           LOG__DEBUG(Logger::get().SEARCH_LOG, "Volatility: large eval swing at depth {} (Δ{} >= {}). Adding small extra time (15%).",
                      iterationDepth, delta.str(), VOL_SWING_THRESH.str());
@@ -1547,6 +1556,7 @@ milliseconds Search::setupTimeControl(const Position& position, const SearchLimi
       LOG__WARN(Logger::get().SEARCH_LOG, "Very short move time: {} ms", limits.moveTime.count());
       return limits.moveTime;
     }
+    // In fixed movetime mode do not scale by complexity; just use the adjusted duration.
     return duration;
   }
 
@@ -1568,14 +1578,22 @@ milliseconds Search::setupTimeControl(const Position& position, const SearchLimi
   // tiny fixed reserve to reduce micro overshoots (remaining-time mode only)
   const milliseconds reserve{SearchConfig::MOVE_OVERHEAD_MS};
   // account for runtime of our code
+  milliseconds base;
   if (tl.count() < 100) {
     // limits for very short available time reduced by another 20%
-    const auto t = static_cast<milliseconds>(static_cast<uint64_t>(0.8 * tl.count()));
-    return t > reserve ? (t - reserve) : t;
+    base = static_cast<milliseconds>(static_cast<uint64_t>(0.8 * tl.count()));
   }
-  // reduced by 10%
-  const auto t = static_cast<milliseconds>(static_cast<uint64_t>(0.9 * tl.count()));
-  return t > reserve ? (t - reserve) : t;
+  else {
+    // reduced by 10%
+    base = static_cast<milliseconds>(static_cast<uint64_t>(0.9 * tl.count()));
+  }
+  // apply reserve
+  base = base > reserve ? (base - reserve) : base;
+
+  // Complexity-aware weighting
+  const double factor = computeComplexityFactorQuick(position);
+  const auto weighted = milliseconds{static_cast<int64_t>(base.count() * factor)};
+  return weighted;
 }
 
 void Search::addExtraTime(const double f) {
@@ -1607,6 +1625,43 @@ void Search::startTimer() {
       LOG__INFO(Logger::get().SEARCH_LOG, "Stop search by Timer after wall time: {} (time limit {} and extra time {})", str(currentTime() - startSearchTime), str(timeLimit), str(milliseconds(extraTimeMs.load())));
     }
   });
+}
+
+double Search::computeComplexityFactorFromMoves(const Position& p, const MoveList& legalMoves) {
+  // Defaults chosen conservatively to avoid large swings.
+  constexpr int pivotMoves = 30;  // neutral pivot
+  constexpr double slope   = 0.01;// +/-1% per move relative to pivot
+  constexpr double baseCap = 0.25;// baseline capture ratio
+  constexpr double capW    = 0.50;// weight for (ratio - base)
+  constexpr double inChkB  = 0.10;// +10% when in check
+  constexpr double minF    = 0.85;// min factor
+  constexpr double maxF    = 1.30;// max factor
+
+  const int total = static_cast<int>(legalMoves.size());
+  if (total <= 0) return 1.0;
+
+  int captures = 0;
+  for (const Move& m : legalMoves) {
+    if (p.isCapturingMove(m)) ++captures;
+  }
+  const double ratio = static_cast<double>(captures) / static_cast<double>(total);
+
+  double f = 1.0;
+  // Move-count component around pivot
+  f += slope * static_cast<double>(total - pivotMoves);
+  // Captures component relative to baseline
+  f += capW * (ratio - baseCap);
+  // In-check bonus
+  if (p.hasCheck()) f += inChkB;
+
+  return std::clamp(f, minF, maxF);
+}
+
+double Search::computeComplexityFactorQuick(const Position& p) {
+  // Generate once for root quickly; we only need counts
+  MoveGenerator mg;
+  const MoveList legal = *mg.generateLegalMoves(p, GenAll);
+  return computeComplexityFactorFromMoves(p, legal);
 }
 
 void Search::sendReadyOk() const {

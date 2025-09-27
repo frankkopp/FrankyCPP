@@ -33,9 +33,9 @@
 
 #include "common/gtest_friends.h"
 
-#include <thread>
-#include <semaphore>
 #include <atomic>
+#include <semaphore>
+#include <thread>
 
 // forward declaration
 class UciHandler;
@@ -122,9 +122,9 @@ public:
   ~Search();
 
   // disallow copies and moves
-  Search(Search const&) = delete;
-  Search& operator=(const Search&) = delete;
-  Search(Search const&&)           = delete;
+  Search(Search const&)             = delete;
+  Search& operator=(const Search&)  = delete;
+  Search(Search const&&)            = delete;
   Search& operator=(const Search&&) = delete;
 
   // ///////////////////////////////////////////
@@ -295,10 +295,16 @@ private:
   void startTimer();
   FRIEND_TEST(SearchTest, startTimer);
 
+  // generates all legal moves for the root position and calls computeComplexityFactorFromMoves
+  static double computeComplexityFactorQuick(const Position& p);
+
+  // Helper: compute a conservative complexity factor for the root position
+  // Factors >1.0 indicate higher complexity and increase time budget; <1.0 decrease it.
+  static double computeComplexityFactorFromMoves(const Position& p, const MoveList& legalMoves);
+
   // checks repetitions and 50-moves rule. Returns true if the position
   // has repeated itself at least the given number of times.
   static bool checkDrawRepAnd50(const Position& p, int numberOfRepetitions);
-
 
   // helper to send uci protocol messages.
   void sendReadyOk() const;
@@ -319,4 +325,4 @@ private:
   void sendAspirationResearchInfo(const std::string& boundString);
 };
 
-#endif//FRANKYCPP_SEARCH_H
+#endif// FRANKYCPP_SEARCH_H

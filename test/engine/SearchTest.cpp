@@ -70,19 +70,22 @@ TEST_F(SearchTest, setupTime) {
   SearchLimits sl{};
 
   sl.moveTime = milliseconds{1500};
-  EXPECT_EQ(1490, Search::setupTimeControl(p, sl).count());
+
+  // the 0.85 is from the root complexity calculation
+
+  EXPECT_EQ(static_cast<int>(0.85 * 1490), Search::setupTimeControl(p, sl).count());
 
   sl           = SearchLimits{};
   sl.whiteTime = 30s;
   sl.blackTime = 30s;
   fprintln("{}", str(Search::setupTimeControl(p, sl)));
-  EXPECT_EQ(665ms, Search::setupTimeControl(p, sl));
+  EXPECT_EQ(static_cast<int>(0.85 *665), Search::setupTimeControl(p, sl).count());
 
   sl           = SearchLimits{};
   sl.whiteTime = 3s;
   sl.blackTime = 3s;
   fprintln("{}", str(Search::setupTimeControl(p, sl)));
-  EXPECT_EQ(50ms, Search::setupTimeControl(p, sl));
+  EXPECT_EQ(static_cast<int>(0.85 * 50), Search::setupTimeControl(p, sl).count());
 
   sl           = SearchLimits{};
   sl.whiteTime = 30s;
@@ -90,7 +93,7 @@ TEST_F(SearchTest, setupTime) {
   sl.blackTime = 30s;
   sl.blackInc  = 1s;
   fprintln("{}", str(Search::setupTimeControl(p, sl)));
-  EXPECT_EQ(1565ms, Search::setupTimeControl(p, sl));
+  EXPECT_EQ(static_cast<int>(0.85 *1565), Search::setupTimeControl(p, sl).count());
 }
 
 TEST_F(SearchTest, extraTime) {
@@ -191,7 +194,8 @@ TEST_F(SearchTest, startPonderSearch) {
   s.ponderhit();
   s.waitWhileSearching();
   EXPECT_TRUE(s.hasResult());
-  EXPECT_LT(static_cast<int64_t>(nanoPerSec - 20'000'000), s.getLastSearchResult().time.count());
+  // 0.85 from the root complexity calculation - 20ms tolerance for code run time
+  EXPECT_LT(static_cast<int64_t>(0.85 * nanoPerSec - 20'000'000), s.getLastSearchResult().time.count());
   EXPECT_GT(static_cast<int64_t>(nanoPerSec * 1.1), s.getLastSearchResult().time.count());
   EXPECT_GT(static_cast<int64_t>(nanoPerSec * 2.5), elapsedSince(start).count());
 }
