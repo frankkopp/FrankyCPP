@@ -329,17 +329,22 @@ SearchResult Search::iterativeDeepening(Position& p) {
 
     // Before starting a new iteration, check if we have enough time left to likely complete it.
     if (searchLimits.timeControl && !searchLimits.ponder && iterationDepth > 1) {
-      const nanoseconds sinceNs = elapsedSince(startSearchTime);
+      const nanoseconds sinceNs  = elapsedSince(startSearchTime);
       const milliseconds elapsed = MILLISECONDS(sinceNs);
       const milliseconds budget  = timeLimit + milliseconds(extraTimeMs.load());
       if (elapsed >= budget) {
-        LOG__DEBUG(Logger::get().SEARCH_LOG, "Stop before iteration {}: time budget exhausted (elapsed {} >= budget {})", iterationDepth, str(elapsed), str(budget));
+        LOG__DEBUG(Logger::get().SEARCH_LOG, "Stop before iteration {}: time budget "
+                                             "exhausted (elapsed {} >= budget {})",
+                   iterationDepth, str(elapsed), str(budget));
         break;
       }
       const milliseconds remaining = budget - elapsed;
-      // Estimate needed time for next iteration as 1.5x of last iteration; keep a small safety buffer
+      // Estimate needed time for next iteration as 1.5x of last iteration;
+      // keep a small safety buffer
       constexpr milliseconds buffer{5};
-      const milliseconds needed = lastIterationMs.count() > 0 ? milliseconds{(lastIterationMs.count() * 3) / 2} : milliseconds{0};
+      const milliseconds needed = lastIterationMs.count() > 0
+                                    ? milliseconds{lastIterationMs.count() * 3 / 2}
+                                    : milliseconds{0};
       if (remaining <= buffer || (needed.count() > 0 && remaining < needed)) {
         LOG__DEBUG(Logger::get().SEARCH_LOG, "Stop before iteration {}: remaining {} < needed {} (buffer {})", iterationDepth, str(remaining), str(needed), str(buffer));
         break;
@@ -458,6 +463,10 @@ Value Search::aspirationSearch(Position& p, const Depth depth, const Value bestV
     // if search has been stopped and the value has missed the window, return
     // the value and the values of the root moves are invalid
     if (stopConditions() && (value <= alpha || value >= beta)) { return VALUE_NONE; }
+
+    // If time is almost up, avoid further aspiration expansions and return current value
+    if (isTimeAlmostUp()) { return value; }
+
     // check if the value was within the window or expand the window
     if (value <= alpha) {
       // FAIL LOW - decrease upper bound
@@ -466,6 +475,8 @@ Value Search::aspirationSearch(Position& p, const Depth depth, const Value bestV
       // we might have found a strong opponent's move
       addExtraTime(1.3);
       // if we fail low tests, it is best to immediately open up the window full
+      // If time is almost up, don't expand; return current value
+      if (isTimeAlmostUp()) { return value; }
       alpha = VALUE_MIN;
       // Alternatively we could do steps as well
       // alpha = Max(bestValue-aspirationSteps[i], ValueMin)
@@ -474,6 +485,8 @@ Value Search::aspirationSearch(Position& p, const Depth depth, const Value bestV
     else if (value >= beta) {
       // FAIL HIGH - increase upper bound
       sendAspirationResearchInfo("lowerbound");
+      // If time is almost up, don't expand; return current value
+      if (isTimeAlmostUp()) { return value; }
       beta = std::min(bestValue + aspirationSteps[i], VALUE_MAX);
       statistics.aspirationResearches++;
     }
@@ -530,7 +543,7 @@ Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Valu
         value = -search(p, depth - 1, ply, -alpha - 1, -alpha, NonPV, Do_Null_Move);
         // If this move improved alpha without exceeding beta we do a proper full window
         // search to get an accurate score.
-        if (value > alpha && value < beta && !stopConditions()) {
+        if (value > alpha && value < beta && !stopConditions() && !isTimeAlmostUp()) {
           statistics.rootPvsResearches++;
           value = -search(p, depth - 1, ply, -beta, -alpha, PV, Do_Null_Move);
         }
@@ -763,20 +776,22 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         && isPv) {// avoid in null move search
 
       // get the new depth and make sure it is >0
-      auto newDepth = depth - SearchConfig::IID_REDUCTION;
-      if (newDepth < 0) { newDepth = DEPTH_NONE; }
+      auto newDepthIid = depth - SearchConfig::IID_REDUCTION;
+      if (newDepthIid < 0) { newDepthIid = DEPTH_NONE; }
 
-      // do the actual reduced search
-      search(p, newDepth, ply, alpha, beta, isPv, doNull);
-      statistics.iidSearches++;
+      // do the actual reduced search only if we have time left
+      if (!isTimeAlmostUp()) {
+        search(p, newDepthIid, ply, alpha, beta, isPv, doNull);
+        statistics.iidSearches++;
 
-      // check if we should stop the search
-      if (stopConditions()) { return VALUE_NONE; }
+        // check if we should stop the search
+        if (stopConditions()) { return VALUE_NONE; }
 
-      // get the best move from the reduced search if available
-      if (!pv[ply].empty()) {
-        statistics.iidMoves++;
-        ttMove = pv[ply][0].stripped();
+        // get the best move from the reduced search if available
+        if (!pv[ply].empty()) {
+          statistics.iidMoves++;
+          ttMove = pv[ply][0].stripped();
+        }
       }
     }
   }
@@ -963,7 +978,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         // search to get an accurate score.
         // Without LMR we check for value > alpha && value < beta
         // With LMR we re-search when value > alpha
-        if (value > alpha && !stopConditions()) {
+        if (value > alpha && !stopConditions() && !isTimeAlmostUp()) {
           // did we actually have a LMR reduction?
           if (lmrDepth < newDepth) {
             statistics.lmrResearches++;
@@ -1423,7 +1438,7 @@ void Search::setupSearchLimits(const Position& p, SearchLimits& sl) {
   if (sl.ponder) { LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Ponder"); }
   if (sl.mate > 0) { LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Mate in {}", sl.mate); }
   if (sl.timeControl) {
-    timeLimit = setupTimeControl(p, sl);
+    timeLimit   = setupTimeControl(p, sl);
     extraTimeMs = 0;
     if (sl.moveTime.count()) { LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Time Controlled: Time per Move {}", str(sl.moveTime)); }
     else {
@@ -1437,6 +1452,19 @@ void Search::setupSearchLimits(const Position& p, SearchLimits& sl) {
   if (sl.depth) { LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Depth limited  : {}", sl.depth); }
   if (sl.nodes) { LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Nodes limited  : {}", sl.nodes); }
   if (!sl.moves.empty()) { LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Moves limited  : {}", sl.moves.str()); }
+}
+
+bool Search::isTimeAlmostUp() const {
+  if (!searchLimits.timeControl || searchLimits.ponder) return false;
+  const auto budget  = timeLimit + milliseconds(extraTimeMs.load(std::memory_order_relaxed));
+  const auto elapsed = currentTime() - startSearchTime;
+  if (elapsed >= budget) return true;
+  const auto remaining = std::chrono::duration_cast<milliseconds>(budget - elapsed);
+  // Define a threshold: max(5ms, 2% of the original budget)
+  constexpr milliseconds minBuffer{5};
+  const milliseconds relBuffer{budget.count() > 0 ? milliseconds{budget.count() / 50} : milliseconds{0}};// ~2%
+  const milliseconds threshold = relBuffer > minBuffer ? relBuffer : minBuffer;
+  return remaining <= threshold;
 }
 
 milliseconds Search::setupTimeControl(const Position& position, const SearchLimits& limits) {
@@ -1483,7 +1511,7 @@ milliseconds Search::setupTimeControl(const Position& position, const SearchLimi
 void Search::addExtraTime(const double f) {
   if (searchLimits.timeControl && !searchLimits.moveTime.count()) {
     const auto deltaMs = static_cast<int64_t>(timeLimit.count() * (f - 1.0));
-    (void)extraTimeMs.fetch_add(deltaMs, std::memory_order_relaxed);
+    (void) extraTimeMs.fetch_add(deltaMs, std::memory_order_relaxed);
     LOG__DEBUG(Logger::get().SEARCH_LOG, "Time added/reduced by {} to {} ", str(milliseconds(deltaMs)), str(timeLimit + milliseconds(extraTimeMs.load(std::memory_order_relaxed))));
   }
 }
@@ -1494,9 +1522,9 @@ void Search::startTimer() {
     LOG__DEBUG(Logger::get().SEARCH_LOG, "Timer started with time limit of {} ms", str(timeLimit));
     // relaxed busy wait with adaptive sleep (1ms..5ms)
     while (currentTime() - startSearchTime < timeLimit + milliseconds(extraTimeMs.load()) && !stopSearchFlag) {
-      const auto now      = currentTime();
-      const auto elapsed  = now - startSearchTime;
-      const auto budget   = timeLimit + milliseconds(extraTimeMs.load());
+      const auto now     = currentTime();
+      const auto elapsed = now - startSearchTime;
+      const auto budget  = timeLimit + milliseconds(extraTimeMs.load());
       if (elapsed >= budget || stopSearchFlag) { break; }
       const auto remaining_ms = std::chrono::duration_cast<milliseconds>(budget - elapsed);
       milliseconds sleepFor   = remaining_ms / 5;

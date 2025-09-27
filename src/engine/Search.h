@@ -285,6 +285,10 @@ private:
   void addExtraTime(double f);
   FRIEND_TEST(SearchTest, extraTime);
 
+  // Soft guard: returns true if time is almost up (within a small safety margin),
+  // to avoid kicking off expensive re-searches when we likely can't finish them.
+  bool isTimeAlmostUp() const;
+
   // startTimer starts a thread which regularly checks the elapsed time against
   // the time limit and extra time given. If the time limit is reached, this will set
   // the stopFlag to true and terminate itself.
@@ -294,6 +298,7 @@ private:
   // checks repetitions and 50-moves rule. Returns true if the position
   // has repeated itself at least the given number of times.
   static bool checkDrawRepAnd50(const Position& p, int numberOfRepetitions);
+
 
   // helper to send uci protocol messages.
   void sendReadyOk() const;

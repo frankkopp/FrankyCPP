@@ -4,9 +4,9 @@ done: Add a configurable Move Overhead option (already proposed as Step 1)
 done: Rationale: replace hardcoded 20ms/5ms with a UCI option used in both movetime and remaining‑time modes.
 done: Prompt: Please implement Step 1: add a UCI Move Overhead option and use it in setupTimeControl across movetime and remaining‑time modes, touching src/engine/SearchConfig.h, src/engine/UciOptions.cpp, and src/engine/Search.cpp. I will build and run.
 
-Soft time guard before expensive re‑searches (Step 2)
-Rationale: avoid starting aspiration expansions, PV re‑searches, IID, or full re‑searches when time is almost up.
-Prompt: Please add an isTimeAlmostUp() helper and call it at re‑search trigger points in src/engine/Search.cpp (root PVS re‑search, LMR re‑search, aspiration expansion, IID). I will build and run.
+done: Soft time guard before expensive re‑searches (Step 2)
+done: Rationale: avoid starting aspiration expansions, PV re‑searches, IID, or full re‑searches when time is almost up.
+done: Prompt: Please add an isTimeAlmostUp() helper and call it at re‑search trigger points in src/engine/Search.cpp (root PVS re‑search, LMR re‑search, aspiration expansion, IID). I will build and run.
 
 Adaptive iteration duration predictor
 Rationale: replace fixed 1.5× last iteration heuristic with a predictor using node growth factor and current NPS to estimate next iteration cost.
