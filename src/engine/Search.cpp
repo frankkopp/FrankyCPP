@@ -1608,17 +1608,28 @@ void Search::startTimer() {
   this->timerThread = std::thread([&] {
     startSearchTime = currentTime();
     LOG__DEBUG(Logger::get().SEARCH_LOG, "Timer started with time limit of {} ms", str(timeLimit));
-    // relaxed busy wait with adaptive sleep (1ms..5ms)
-    while (currentTime() - startSearchTime < timeLimit + milliseconds(extraTimeMs.load()) && !stopSearchFlag) {
+    // Busy-wait threshold for higher-precision tail (2-3ms)
+    constexpr milliseconds busyWaitThreshold{3};
+    while (true) {
       const auto now     = currentTime();
       const auto elapsed = now - startSearchTime;
       const auto budget  = timeLimit + milliseconds(extraTimeMs.load());
       if (elapsed >= budget || stopSearchFlag) { break; }
       const auto remaining_ms = std::chrono::duration_cast<milliseconds>(budget - elapsed);
-      milliseconds sleepFor   = remaining_ms / 5;
-      if (sleepFor < milliseconds(1)) sleepFor = milliseconds(1);
-      if (sleepFor > milliseconds(5)) sleepFor = milliseconds(5);
-      std::this_thread::sleep_for(sleepFor);
+      if (remaining_ms > busyWaitThreshold) {
+        // Sleep for a fraction of the remaining time (1-5ms)
+        milliseconds sleepFor = remaining_ms / 5;
+        if (sleepFor < milliseconds(1)) sleepFor = milliseconds(1);
+        if (sleepFor > milliseconds(5)) sleepFor = milliseconds(5);
+        std::this_thread::sleep_for(sleepFor);
+      }
+      else {
+        // Busy-wait for the final few ms
+        while (currentTime() - startSearchTime < budget && !stopSearchFlag) {
+          // tight loop, no sleep
+        }
+        break;
+      }
     }
     if (!this->stopSearchFlag) {
       this->stopSearchFlag = true;

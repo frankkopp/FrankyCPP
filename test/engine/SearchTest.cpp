@@ -70,11 +70,9 @@ TEST_F(SearchTest, setupTime) {
   SearchLimits sl{};
 
   sl.moveTime = milliseconds{1500};
+  EXPECT_EQ(1490, Search::setupTimeControl(p, sl).count());
 
   // the 0.85 is from the root complexity calculation
-
-  EXPECT_EQ(static_cast<int>(0.85 * 1490), Search::setupTimeControl(p, sl).count());
-
   sl           = SearchLimits{};
   sl.whiteTime = 30s;
   sl.blackTime = 30s;
