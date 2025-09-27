@@ -267,11 +267,6 @@ void Search::run() {
 SearchResult Search::iterativeDeepening(Position& p) {
   SearchResult searchResult{};
 
-  // Volatility tracking within this search
-  Value prevBestRootValue       = VALUE_NONE;// best root eval from previous iteration
-  bool addedVolatilityExtraTime = false;     // guard to add extra time due to eval swing at most once
-  bool addedRootCheckExtraTime  = false;     // guard to add extra time due to root-in-check at most once
-
   // check repetition and 50-moves rule
   if (checkDrawRepAnd50(p, 2)) {
     const std::string msg = this->searchLimits.ponder
@@ -285,11 +280,6 @@ SearchResult Search::iterativeDeepening(Position& p) {
 
   // generate all legal root moves for the position
   rootMoves = *mg[0].generateLegalMoves(p, GenAll);
-
-  // Derive a root complexity factor for iteration gating using already generated rootMoves
-  const double rootComplexityFactor = computeComplexityFactorFromMoves(p, rootMoves);
-  LOG__INFO(Logger::get().SEARCH_LOG, "Root complexity factor: {:.2f} (moves {}, inCheck {}, captures share ~)",
-            rootComplexityFactor, rootMoves.size(), p.hasCheck());
 
   // check if there are legal moves - if not, it's mate or stalemate
   if (rootMoves.empty()) {
@@ -314,14 +304,6 @@ SearchResult Search::iterativeDeepening(Position& p) {
     return searchResult;
   }
 
-  // If the root side is in check, the position is often tactically sharp.
-  // Add a small amount of extra time once, conservatively.
-  if (p.hasCheck() && searchLimits.timeControl && !addedRootCheckExtraTime && !isTimeAlmostUp()) {
-    addExtraTime(1.10);// +10%
-    addedRootCheckExtraTime = true;
-    LOG__DEBUG(Logger::get().SEARCH_LOG, "Volatility: root in-check detected. Adding small extra time (10%).");
-  }
-
   // add some extra time for the move after the last book move
   // hadBookMove move will be true at his point if we ever had
   // a book move.
@@ -332,10 +314,20 @@ SearchResult Search::iterativeDeepening(Position& p) {
     hadBookMove = false;
   }
 
+  // Derive a root complexity factor for iteration gating using already generated rootMoves
+  const double rootComplexityFactor = computeComplexityFactorFromMoves(p, rootMoves);
+  LOG__INFO(Logger::get().SEARCH_LOG, "Root complexity factor: {:.2f} (moves {}, inCheck {}, captures share ~)",
+            rootComplexityFactor, rootMoves.size(), p.hasCheck());
+
   // Debug: planned time budget before starting Iterative Deepening (no in-search extensions)
   LOG__DEBUG(Logger::get().SEARCH_LOG,
              "Planned time budget for this move (no in-search extensions): {}",
              str(timeLimit));
+
+
+  // Volatility tracking within this search
+  Value prevBestRootValue       = VALUE_NONE;// best root eval from previous iteration
+  bool addedVolatilityExtraTime = false;     // guard to add extra time due to eval swing at most once
 
   // prepare max depth from search limits
   const int maxDepth = searchLimits.depth ? searchLimits.depth : DEPTH_MAX;

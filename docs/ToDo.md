@@ -28,6 +28,8 @@ done: Improved movesLeft model
 done: Rationale: estimate moves to go using game phase, material, and repetition risk rather than a linear factor.
 done: Prompt: Please refactor movesLeft estimation in setupTimeControl in src/engine/Search.cpp to use phase/material buckets with tunables in src/engine/SearchConfig.h. I will build and run.
 
+
+
 NPS‑based dynamic budget tracking
 Rationale: track NPS during the search and estimate whether the next iteration (or re‑search) can finish within remaining time.
 Prompt: Please track rolling NPS and use it to gate starting the next iteration and re‑searches in src/engine/Search.cpp. I will build and run.
