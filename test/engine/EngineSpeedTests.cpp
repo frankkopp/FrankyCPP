@@ -23,8 +23,8 @@
 #include "init.h"
 #include "types/types.h"
 
-#include <engine/EvalConfig.h>
 #include <gtest/gtest.h>
+
 using testing::Eq;
 
 using namespace std::chrono;
@@ -52,6 +52,8 @@ protected:
 // 4.5.2025 GROOT: Search depth was 14(38) with 149.971.501 nodes visited. NPS = 5.000.489 nps
 // 22.9.2025 GROOT: Search depth was 13(36) with 96.508.284 nodes visited. NPS = 3.218.665 nps
 // (new evaluation features)
+// 27.9.2925 GROOT: Search depth was 13(31) with 93.946.149 nodes visited. NPS = 3.716.830 nps
+// after migrations to classes and time management changes
 TEST_F(EngineSpeedTests, npsTest) {
   SearchConfig::TT_SIZE_MB          = 64;
   SearchConfig::USE_BOOK            = false;

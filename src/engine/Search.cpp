@@ -58,15 +58,17 @@ void Search::isReady() {
 
 void Search::startSearch(const Position& p, SearchLimits sl) {
   // acquire init phase lock
-  if (!initSemaphore.try_acquire()) { LOG__WARN(Logger::get().SEARCH_LOG, "Search init failed as another initialization is ongoing."); }
+  if (!initSemaphore.try_acquire()) {
+    LOG__WARN(Logger::get().SEARCH_LOG, "Search init failed as another initialization is ongoing.");
+  }
 
   // start search time
   startTime       = currentTime();
   startSearchTime = startTime;
 
   // move the received copy of position and search limits to instance variables
-  this->position     = p;
-  this->searchLimits = std::move(sl);
+  this->position = p;
+  searchLimits   = std::move(sl);
 
   // join() previous thread
   if (searchThread.joinable()) { searchThread.join(); }
@@ -269,7 +271,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
 
   // check repetition and 50-moves rule
   if (checkDrawRepAnd50(p, 2)) {
-    const std::string msg = this->searchLimits.ponder
+    const std::string msg = searchLimits.ponder
                               ? "Ponder called on DRAW by Repetition or 50-moves-rule"
                               : "Search called on DRAW by Repetition or 50-moves-rule";
     sendString(msg);
@@ -285,7 +287,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
   if (rootMoves.empty()) {
     if (p.hasCheck()) {
       statistics.checkmates++;
-      const std::string msg = this->searchLimits.ponder
+      const std::string msg = searchLimits.ponder
                                 ? "Ponder called on a check mate position"
                                 : "Search called on a check mate position";
       sendString(msg);
@@ -294,7 +296,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
     }
     else {
       statistics.stalemates++;
-      const std::string msg = this->searchLimits.ponder
+      const std::string msg = searchLimits.ponder
                                 ? "Ponder called on a stale mate position"
                                 : "Search called on a stale mate position";
       sendString(msg);
@@ -315,6 +317,10 @@ SearchResult Search::iterativeDeepening(Position& p) {
   }
 
   // Derive a root complexity factor for iteration gating using already generated rootMoves
+  // This factor is used to scale the remaining time when checking if we have enough
+  // time left to likely complete the next iteration.
+  // Factors >1.0 indicate higher complexity and increase time budget; <1.0 decrease it.
+  // This also checks for single legal move and reduces time in this case.
   const double rootComplexityFactor = computeComplexityFactorFromMoves(p, rootMoves);
   LOG__INFO(Logger::get().SEARCH_LOG, "Root complexity factor: {:.2f} (moves {}, inCheck {}, captures share ~)",
             rootComplexityFactor, rootMoves.size(), p.hasCheck());
@@ -348,9 +354,9 @@ SearchResult Search::iterativeDeepening(Position& p) {
     // ===========================================
     // Before starting a new iteration, check if we have enough time left to likely complete it.
     if (searchLimits.timeControl && !searchLimits.ponder && iterationDepth > 1) {
-      const nanoseconds sinceNs  = elapsedSince(startSearchTime);
-      const milliseconds elapsed = MILLISECONDS(sinceNs);
-      const milliseconds budget  = timeLimit + milliseconds(extraTimeMs.load());
+      const nanoseconds sinceNs = elapsedSince(startSearchTime);
+      const auto elapsed        = MILLISECONDS(sinceNs);
+      const milliseconds budget = timeLimit + milliseconds(extraTimeMs.load());
       if (elapsed >= budget) {
         LOG__DEBUG(Logger::get().SEARCH_LOG, "Stop before iteration {}: time budget exhausted (elapsed {} >= budget {})",
                    iterationDepth, str(elapsed), str(budget));
@@ -358,7 +364,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
       }
       const milliseconds remaining = budget - elapsed;
 
-      // Estimate needed time for the next iteration based on last iteration nodes,
+      // Estimate the necessary time for the next iteration based on last iteration nodes,
       // observed node growth, and current NPS; keep a small safety buffer.
       constexpr milliseconds buffer{5};
 
@@ -432,6 +438,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
     prevIterationNodes = lastIterationNodes;
     lastIterationNodes = nodesVisited - iterStartNodes;
 
+    assert(!pv[0].empty() && pv[0].at(0) != MOVE_NONE && "pv[0] must contain a valid first move");
     assert((bestValue == pv[0].at(0).value() || stopSearchFlag) && "bestValue should be equal value of pv[0].at(0)");
 
     // Conservative volatility detector: big evaluation swings between consecutive iterations
@@ -465,7 +472,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
     // we have done at least one complete search and have
     // a pv (best) move.
     // If we only have one move to play also stop the search
-    if (!stopConditions() && rootMoves.size() > 1) {
+    if (!stopConditions()) {
       // sort root moves for the next iteration
       std::ranges::stable_sort(rootMoves, moveValueGreaterComparator());
       statistics.currentBestRootMove      = pv[0].at(0);
@@ -474,7 +481,9 @@ SearchResult Search::iterativeDeepening(Position& p) {
       // update UCI GUI
       sendIterationEndInfoToUci();
     }
-    else { break; }
+    else {
+      break;
+    }
   }
   // ### END OF Iterative Deepening
   // ###########################################
@@ -670,7 +679,10 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   //  LOG__DEBUG(Logger::get().SEARCH_LOG, "Search {} {} {}", depth, ply, str(statistics.currentVariation));
 
   // Enter quiescence search when depth == 0 or max ply has been reached
-  if (depth == 0 || ply >= MAX_DEPTH) { return qsearch(p, ply, alpha, beta, isPv); }
+  if (depth == 0 || ply >= MAX_DEPTH) {
+    const auto value = qsearch(p, ply, alpha, beta, isPv);
+    return value;
+  }
 
   // check if search should be stopped
   if (stopConditions()) { return VALUE_NONE; }
@@ -1094,9 +1106,9 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // node we would play. We will return alpha and store a alpha
       // node in TT.
       if (value > alpha) {
-        // If we found a move that is better or equal than beta
+        // If we found a move that is better or equal than beta,
         // this means that the opponent can/will avoid this
-        // position altogether, so we can stop search this node.
+        // position altogether, so we can stop to search this node.
         // We will not know if our best move is really the
         // best move or how good it really is (value is a lower bound)
         // as we cut off the rest of the search of the node here.
@@ -1105,15 +1117,15 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         if (value >= beta && SearchConfig::USE_ALPHABETA) {
           // Count beta cuts
           statistics.betaCuts++;
-          // Count beta cuts on first move
+          // Count beta cuts on the first move
           if (movesSearched == 1) { statistics.betaCuts1st++; }
-          // store move which caused a beta cut off in this ply
+          // store move which caused a beta cutoff in this ply
           if (SearchConfig::USE_KILLER_MOVES && !p.isCapturingMove(move)) { myMg->storeKiller(move); }
-          // counter for moves which caused a beta cut off
+          // Counter for moves which caused a beta cutoff
           // we use 1 << depth as an increment to favor deeper searches
           // a more repetitions
-          if (SearchConfig::USE_HISTORY_COUNTER) { history.historyCount[us][from][to] += 1LL << depth; }
-          // store a successful counter move to the previous opponent move
+          if (SearchConfig::USE_HISTORY_COUNTER) { history.historyCount[us][from][to] += 1L << depth; }
+          // store a successful counter-move to the previous opponent move
           if (SearchConfig::USE_HISTORY_MOVES) {
             const Move lastMove = p.getLastMove();
             if (lastMove != MOVE_NONE) { history.counterMoves[lastMove.from()][lastMove.to()] = move; }
@@ -1135,7 +1147,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     // no beta cutoff - decrease historyCounter for the move
     // we decrease it by only half the increase amount
     if (SearchConfig::USE_HISTORY_COUNTER) {
-      history.historyCount[us][from][to] -= 1LL << depth;
+      history.historyCount[us][from][to] -= 1L << depth;
       if (history.historyCount[us][from][to] < 0) { history.historyCount[us][from][to] = 0; }
     }
   }
@@ -1174,13 +1186,10 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
 
   // if we have deactivated qsearch or we have reached our maximum depth
   // we evaluate the position and return the value
-  if (!SearchConfig::USE_QUIESCENCE || ply >= MAX_DEPTH) {
+  if (!SearchConfig::USE_QUIESCENCE || ply >= MAX_DEPTH || stopConditions()) {
     statistics.perftNodeCount++;
     return evaluate(p);
   }
-
-  // check if search should be stopped
-  if (stopConditions()) { return VALUE_NONE; }
 
   // Mate Distance Pruning
   if (SearchConfig::USE_MDP) {
@@ -1225,7 +1234,9 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
   // if in check we simply do a normal search (all moves) in qsearch
   if (!hasCheck) {
     // get an evaluation for the position
-    if (staticEval == VALUE_NONE) { staticEval = evaluate(p); }
+    if (staticEval == VALUE_NONE) {
+      staticEval = evaluate(p);
+    }
     // Quiescence StandPat
     // Use evaluation as a standing pat (lower bound)
     // https://www.chessprogramming.org/Quiescence_Search#Standing_Pat
@@ -1478,7 +1489,9 @@ void Search::initialize() {
       }
     }
   }
-  else { LOG__INFO(Logger::get().SEARCH_LOG, "Opening Book disabled in configuration"); }
+  else {
+    LOG__INFO(Logger::get().SEARCH_LOG, "Opening Book disabled in configuration");
+  }
 
   // init transposition table
   if (SearchConfig::USE_TT) {
@@ -1510,24 +1523,42 @@ bool Search::checkDrawRepAnd50(const Position& p, const int numberOfRepetitions)
 }
 
 void Search::setupSearchLimits(const Position& p, SearchLimits& sl) {
-  if (sl.infinite) { LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Infinite"); }
-  if (sl.ponder) { LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Ponder"); }
-  if (sl.mate > 0) { LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Mate in {}", sl.mate); }
+  if (sl.infinite) {
+    LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Infinite");
+  }
+  if (sl.ponder) {
+    LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Ponder");
+  }
+  if (sl.mate > 0) {
+    LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Mate in {}", sl.mate);
+  }
   if (sl.timeControl) {
     timeLimit   = setupTimeControl(p, sl);
     extraTimeMs = 0;
-    if (sl.moveTime.count()) { LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Time Controlled: Time per Move {}", str(sl.moveTime)); }
+    if (sl.moveTime.count()) {
+      LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Time Controlled: Time per Move {}", str(sl.moveTime));
+    }
     else {
       LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Time Controlled: White = {} (inc {}) Black = {} (inc {}) Moves to go: {}",
                 str(sl.whiteTime), str(sl.whiteInc), str(sl.blackTime), str(sl.blackInc), sl.movesToGo);
-      LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Time limit: {}", str(timeLimit));
+      LOG__INFO(Logger::get().SEARCH_LOG, "Time limit for move: {}", str(timeLimit));
     }
-    if (sl.ponder) { LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Ponder - time control postponed until ponderhit received"); }
+    if (sl.ponder) {
+      LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Ponder - time control postponed until ponderhit received");
+    }
   }
-  else { LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: No time control"); }
-  if (sl.depth) { LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Depth limited  : {}", sl.depth); }
-  if (sl.nodes) { LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Nodes limited  : {}", sl.nodes); }
-  if (!sl.moves.empty()) { LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Moves limited  : {}", sl.moves.str()); }
+  else {
+    LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: No time control");
+  }
+  if (sl.depth) {
+    LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Depth limited  : {}", sl.depth);
+  }
+  if (sl.nodes) {
+    LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Nodes limited  : {}", sl.nodes);
+  }
+  if (!sl.moves.empty()) {
+    LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Moves limited  : {}", sl.moves.str());
+  }
 }
 
 bool Search::isTimeAlmostUp() const {
@@ -1544,12 +1575,11 @@ bool Search::isTimeAlmostUp() const {
 }
 
 milliseconds Search::setupTimeControl(const Position& position, const SearchLimits& limits) {
+  // Search mode time per move
   if (limits.moveTime.count()) {
-    // Search mode time per move
-
     // we need a little room for executing the code
     const milliseconds duration = limits.moveTime - milliseconds{SearchConfig::MOVE_OVERHEAD_MS};
-    // if the duration is now negative return the original value and issue a warning
+    // if the duration is now negative, return the original value and issue a warning
     if (duration.count() < 0) {
       LOG__WARN(Logger::get().SEARCH_LOG, "Very short move time: {} ms", limits.moveTime.count());
       return limits.moveTime;
@@ -1560,6 +1590,7 @@ milliseconds Search::setupTimeControl(const Position& position, const SearchLimi
 
   // Search mode is remaining time - estimated time per move
 
+  // Estimate moves left
   // Improved moves-left model using phase/material buckets and repetition risk.
   int movesLeft = limits.movesToGo;
   if (!movesLeft) {
@@ -1589,8 +1620,7 @@ milliseconds Search::setupTimeControl(const Position& position, const SearchLimi
                ? SearchConfig::MOVES_LEFT_LOW_MAT
                : SearchConfig::MOVES_LEFT_QUEENLESS;
     }
-    else if (phase >= 0.66
-             || npp >= SearchConfig::NPP_HEAVY_THRESHOLD) {
+    else if (phase >= 0.66 || npp >= SearchConfig::NPP_HEAVY_THRESHOLD) {
       base = SearchConfig::MOVES_LEFT_OPENING;
     }
     else if (phase <= 0.33) {
@@ -1612,9 +1642,9 @@ milliseconds Search::setupTimeControl(const Position& position, const SearchLimi
     LOG__DEBUG(Logger::get().SEARCH_LOG,
                "TimeCtl: movesLeft={} (phase {:.2f}, npp {}, queens {}), hmc {}",
                movesLeft, phase, npp, queens, position.getHalfMoveClock());
-  }
+  } // if (!movesLeft)
 
-  // time left for current player
+  // Estimate time left for current player
   milliseconds timeLeft;
   if (position.getNextPlayer()) { timeLeft = limits.blackTime + (movesLeft * limits.blackInc); }
   else { timeLeft = limits.whiteTime + (movesLeft * limits.whiteInc); }
@@ -1622,10 +1652,10 @@ milliseconds Search::setupTimeControl(const Position& position, const SearchLimi
   const auto tl = static_cast<milliseconds>(timeLeft.count() / movesLeft);
   // tiny fixed reserve to reduce micro overshoots (remaining-time mode only)
   const milliseconds reserve{SearchConfig::MOVE_OVERHEAD_MS};
-  // account for runtime of our code
+  // account for the runtime of our code
   milliseconds base;
   if (tl.count() < 100) {
-    // limits for very short available time reduced by another 20%
+    // limits for a very short available time reduced by another 20%
     base = static_cast<milliseconds>(static_cast<uint64_t>(0.8 * tl.count()));
   }
   else {
@@ -1633,11 +1663,12 @@ milliseconds Search::setupTimeControl(const Position& position, const SearchLimi
     base = static_cast<milliseconds>(static_cast<uint64_t>(0.9 * tl.count()));
   }
   // apply reserve
-  base = base > reserve ? (base - reserve) : base;
+  base = base > reserve ? base - reserve : base;
 
   // Complexity-aware weighting
   const double factor = computeComplexityFactorQuick(position);
   const auto weighted = milliseconds{static_cast<int64_t>(base.count() * factor)};
+  LOG__DEBUG(Logger::get().SEARCH_LOG, "TimeCtl: base:  {} ms factor: {} ms weighted: {}", base.count(), factor, weighted.count());
   return weighted;
 }
 
@@ -1693,8 +1724,15 @@ double Search::computeComplexityFactorFromMoves(const Position& p, const MoveLis
   constexpr double minF    = 0.85;// min factor
   constexpr double maxF    = 1.30;// max factor
 
+
   const int total = static_cast<int>(legalMoves.size());
+
+  // This should not happen, as this is checked before calling this function.
+  // But just in case, return a neutral factor.
   if (total <= 0) return 1.0;
+
+  // Special-case: if there is only one legal move, scale time way down
+  if (total == 1) return 0.1;
 
   int captures = 0;
   for (const Move& m : legalMoves) {

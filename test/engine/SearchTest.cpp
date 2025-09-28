@@ -24,6 +24,7 @@
 
 #include <engine/EvalConfig.h>
 #include <gtest/gtest.h>
+
 using testing::Eq;
 
 inline bool isBulkRun() {
@@ -413,6 +414,56 @@ TEST_F(SearchTest, movesLeftRepetitionRiskIncreasesTime) {
   EXPECT_LT(t_lowHmc, t_highHmc);
 }
 
+TEST_F(SearchTest, singleMoveRootStopsEarlyAtVerifyDepth) {
+  // Position with exactly one legal move for White: Kb1 only
+  // FEN breakdown:
+  // 8: r......k  (black rook at a8, black king at h8)
+  // 2: ....q...  (black queen at e2 controlling b2 and helping restrict king moves)
+  // 1: K.......  (white king at a1 in check along the a-file)
+  const Position p{"r6k/8/8/8/8/8/4q3/K7 w - -"};
+  println(p.strBoard());
+
+  SearchConfig::USE_BOOK = false;
+  Search s{};
+  s.isReady();
+
+  SearchLimits sl{};
+  sl.timeControl = true; // no time control
+  sl.whiteTime = 1000s;
+  sl.blackTime = 1000s;
+
+  s.startSearch(p, sl);
+  s.waitWhileSearching();
+
+  const auto result = s.getLastSearchResult();
+
+  // With a single legal root move and no time control, iterative deepening stops after the first iteration
+  EXPECT_LT(result.time, 10s);
+  EXPECT_EQ(Move(SQ_A1, SQ_B1), result.bestMove);
+}
+
+TEST_F(SearchTest, singleMoveComplexRoot) {
+  // More complex single-move position: only Bxf2 is legal for White
+  // FEN: White to move, in check by Black knight on f2; queen on g3 controls g1, g2, h2
+  const Position p{"k7/p7/8/8/8/6q1/P4n2/4B2K w - - 0 1"};
+  println(p.strBoard());
+
+  SearchConfig::USE_BOOK = false;
+  Search s{};
+  s.isReady();
+
+  SearchLimits sl{};
+  sl.timeControl = true;
+  sl.whiteTime   = 1000s;
+  sl.blackTime   = 1000s;
+
+  s.startSearch(p, sl);
+  s.waitWhileSearching();
+
+  const auto result = s.getLastSearchResult();
+  EXPECT_LT(result.time, 10s);
+  EXPECT_EQ(Move(SQ_E1, SQ_F2), result.bestMove);
+}
 
 TEST_F(SearchTest, debug) {
   if (isBulkRun()) {

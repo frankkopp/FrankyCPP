@@ -949,6 +949,9 @@ void Position::setupBoard(const std::string& fen) {
     throw std::invalid_argument(std::format("FEN not complete. Did not reached last square (file={}, rank={}) after reading fen", file, rank));
   }
 
+  // The Pawn Zobrist key can be zero at this point if there are no pawns on the board.
+  // This might lead to problems in the hash table implementation if not handled properly.
+
   // set defaults
   moveNumber      = 1;
   enPassantSquare = SQ_NONE;

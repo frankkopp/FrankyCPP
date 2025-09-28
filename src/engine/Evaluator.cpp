@@ -124,16 +124,21 @@ inline Value Evaluator::valueFromScore(const Score& score, const double gamePhas
 }
 
 inline void Evaluator::pawnEval(const Position& p, Score& s) {
-  const ZobristKey key = p.getPawnZobristKey();
-
-  // Branch-minimal TT probe: always safe (dummy slot when mask == 0)
-  PawnTT::Entry* ep = pawnCache.getEntryPtr(key);
-
-  // Fast hit check; when TT is off this is an inexpensive, well-predicted branch
-  if (EvalConfig::USE_PAWN_TT && ep->key == key) {
-    s.midgame += ep->midvalue;
-    s.endgame += ep->endvalue;
-    return;
+  // check pawn hash first
+  ZobristKey key{0};
+  PawnTT::Entry* ep = nullptr;
+  if (EvalConfig::USE_PAWN_TT) {
+    key = p.getPawnZobristKey();
+    ep = pawnCache.getEntryPtr(key);
+    // The key must not be 0 as this would be a valid entry and the function
+    // would always return.
+    // A 0 key can happen on a position where no pawns are on the board
+    // which is a valid position.
+    if (key != 0 && ep->key == key) {
+      s.midgame += ep->midvalue;
+      s.endgame += ep->endvalue;
+      return;
+    }
   }
 
   tmpScore.midgame = VALUE_ZERO;
@@ -205,7 +210,7 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
   }// color loop
 
   // Store back only when enabled; ep already points to the correct slot
-  if (EvalConfig::USE_PAWN_TT) {
+  if (EvalConfig::USE_PAWN_TT && key != 0) {
     pawnCache.put(ep, key, tmpScore);
   }
 

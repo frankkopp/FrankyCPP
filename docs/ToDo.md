@@ -28,6 +28,9 @@ done: Improved movesLeft model
 done: Rationale: estimate moves to go using game phase, material, and repetition risk rather than a linear factor.
 done: Prompt: Please refactor movesLeft estimation in setupTimeControl in src/engine/Search.cpp to use phase/material buckets with tunables in src/engine/SearchConfig.h. I will build and run.
 
+Root single‑move fast path
+Rationale: if only one legal root move, skip deep search or cap depth/time.
+Prompt: Please add a single‑move early exit in iterativeDeepening with minimal verification in src/engine/Search.cpp. I will build and run.
 
 
 NPS‑based dynamic budget tracking
@@ -65,10 +68,6 @@ Prompt: Please enrich timing logs in src/engine/Search.cpp and add a SearchConfi
 Ponder time cap option
 Rationale: avoid runaway ponder by capping max ponder time per move.
 Prompt: Please add UCI Max Ponder Time and enforce it in startTimer()/ponderhit() paths in src/engine/Search.cpp. I will build and run.
-
-Root single‑move fast path
-Rationale: if only one legal root move, skip deep search or cap depth/time.
-Prompt: Please add a single‑move early exit in iterativeDeepening with minimal verification in src/engine/Search.cpp. I will build and run.
 
 Min/Max per‑move clamps (UCI options)
 Rationale: prevent pathological allocations by clamping computed budget.

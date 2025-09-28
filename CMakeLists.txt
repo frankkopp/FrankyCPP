@@ -109,10 +109,9 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 
     # Base and per-config flags (no manual /GL, /arch gated via option)
-    set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /favor:INTEL64 /W4 /GR /EHsc /MP /Oi /Ot /FS")
+    set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /favor:INTEL64 /W4 /GR /EHsc /MP /FS")
     set(CMAKE_CXX_FLAGS_RELEASE "/O2 /Ob3 /Oy /Oi /Ot /GT /Gw /Gy /DNDEBUG")
-    # Remove explicit /Zi to let CMake control debug info via CMAKE_MSVC_\DEBUG_INFORMATION_FORMAT
-    set(CMAKE_CXX_FLAGS_DEBUG "/Od /Ob0 /RTC1 /permissive-")
+    set(CMAKE_CXX_FLAGS_DEBUG "/Od /Ob0 /RTC1 /permissive- /Zi")
 
     # Feature toggles
     option(ENABLE_STD_EXECUTION "Define HAS_EXECUTION_LIB to enable <execution> usage" ON)

@@ -34,7 +34,7 @@ class Value {
 
 public:
   // constructors
-  constexpr Value()             = default;
+  constexpr Value() : v_{-15001}  {}
   constexpr Value(const Value&) = default;
   constexpr explicit Value(const int v) : v_{static_cast<int16_t>(v)} {}
 
