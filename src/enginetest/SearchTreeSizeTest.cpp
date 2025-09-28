@@ -120,7 +120,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "37 TT Eval"));
 
   SearchConfig::USE_QUIESCENCE = true;
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "40 QS"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "40 QS"));
 
   SearchConfig::USE_QS_TT = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "41 QS TT"));

@@ -21,8 +21,8 @@
 #define FRANKYCPP_TESTSUITE_H
 
 /**
- * \file TestSuite.h
- * \brief Test harness for running EPD-like chess test suites against the engine.
+ * @file TestSuite.h
+ * @brief Test harness for running EPD-like chess test suites against the engine.
  *
  * This component loads an EPD-like test file, runs the engine on each position with
  * configurable limits, evaluates the outcome against the expected directive, and

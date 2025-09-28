@@ -39,7 +39,7 @@ inline bool isBulkRun() {
   return cond;
 }
 
-class SearchTreeSizeTest_Test : public ::testing::Test {
+class SearchTreeSizeTest_Test : public testing::Test {
 public:
   static void SetUpTestSuite() {
     NEWLINE;
@@ -56,15 +56,12 @@ protected:
   void TearDown() override {}
 };
 
-
 TEST_F(SearchTreeSizeTest_Test, size_test) {
-  //  GTEST_SKIP();
-
   static constexpr milliseconds MOVE_TIME{0};
   static constexpr int START_FEN = 0;
 
   const int DEPTH   = isBulkRun() ? 5 : 8;
-  const int END_FEN = isBulkRun() ? 5 : 50;
+  const int END_FEN = isBulkRun() ? 5 : 20;
 
   // Prepare test fens
   // get sub vector of fens to test
@@ -79,3 +76,37 @@ TEST_F(SearchTreeSizeTest_Test, size_test) {
   SearchTreeSizeTest stst(DEPTH, MOVE_TIME, testFens);
   stst.start();
 }
+
+
+/*
+################## Totals/Avg results for each feature test ##################
+
+Date:                  : 2025-09-29 15:15:14
+SearchTime             : 0.000 s
+MaxDepth               : 8
+Number of feature tests: 21
+Number of fens         : 20
+Total tests            : 420
+
+Test: 10 AlphaBeta  Nodes:       12.766.281  Nps:        6.006.681  Time:            2.116 Depth:   8/8   Special1:                0 Special2:                0
+Test: 15 PVS        Nodes:        8.203.912  Nps:        5.860.349  Time:            1.379 Depth:   8/8   Special1:                0 Special2:                0
+Test: 18 ASP        Nodes:        8.550.269  Nps:        5.901.356  Time:            1.435 Depth:   8/8   Special1:                0 Special2:                0
+Test: 20 History    Nodes:        7.688.573  Nps:        5.711.835  Time:            1.324 Depth:   8/8   Special1:                0 Special2:                0
+Test: 25 IID        Nodes:        7.772.694  Nps:        5.810.893  Time:            1.330 Depth:   8/8   Special1:                0 Special2:                0
+Test: 30 TT         Nodes:        7.689.835  Nps:        4.269.452  Time:            1.571 Depth:   8/8   Special1:        1.497.276 Special2:          649.706
+Test: 35 PVSort     Nodes:        5.768.173  Nps:        5.168.289  Time:            1.092 Depth:   8/8   Special1:        1.227.944 Special2:          529.630
+Test: 36 TT Cuts    Nodes:        2.266.578  Nps:        4.398.074  Time:              481 Depth:   8/8   Special1:          252.361 Special2:          472.820
+Test: 37 TT Eval    Nodes:        2.266.578  Nps:        4.320.910  Time:              487 Depth:   8/8   Special1:          252.362 Special2:          472.820
+Test: 41 QS TT      Nodes:        4.380.979  Nps:        2.785.247  Time:            1.484 Depth:   8/27  Special1:          732.758 Special2:        3.648.270
+Test: 42 QS SPAT    Nodes:        1.583.266  Nps:        3.070.011  Time:              498 Depth:   8/18  Special1:          429.191 Special2:        1.154.106
+Test: 43 QS SEE     Nodes:        1.561.537  Nps:        2.944.521  Time:              500 Depth:   8/18  Special1:          390.247 Special2:        1.171.325
+Test: 50 MDP        Nodes:        1.251.968  Nps:        2.918.246  Time:              397 Depth:   8/17  Special1:          301.118 Special2:          948.570
+Test: 50 RAZOR      Nodes:        1.151.381  Nps:        2.843.066  Time:              374 Depth:   8/16  Special1:          280.721 Special2:          872.206
+Test: 51 RFP        Nodes:          721.472  Nps:        2.942.379  Time:              220 Depth:   8/16  Special1:          217.476 Special2:          505.662
+Test: 52 NMP        Nodes:          234.484  Nps:        2.632.239  Time:               71 Depth:   8/15  Special1:           61.391 Special2:          173.831
+Test: 60 FP         Nodes:          217.506  Nps:        2.459.789  Time:               71 Depth:   8/15  Special1:           55.778 Special2:          162.786
+Test: 65 LMR        Nodes:          203.562  Nps:        2.442.830  Time:               66 Depth:   8/15  Special1:           52.146 Special2:          152.524
+Test: 66 LMP        Nodes:          189.591  Nps:        2.370.515  Time:               63 Depth:   8/15  Special1:           46.261 Special2:          144.614
+Test: 67 QFP        Nodes:          185.605  Nps:        2.338.179  Time:               63 Depth:   8/15  Special1:           46.032 Special2:          140.858
+Test: 70 CEXT       Nodes:          219.606  Nps:        2.361.098  Time:               76 Depth:   8/16  Special1:           53.384 Special2:          168.198
+*/
