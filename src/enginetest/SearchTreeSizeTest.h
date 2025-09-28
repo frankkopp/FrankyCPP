@@ -27,7 +27,7 @@
 #include <engine/Search.h>
 #include <types/types.h>
 
-namespace {
+namespace SearchTreeSize {
   struct SingleTest {
     std::string name;
     uint64_t nodes    = 0;
@@ -65,7 +65,7 @@ class SearchTreeSizeTest {
   int depth;
   milliseconds movetime;
   std::vector<std::string> fens;
-  std::vector<Result> results{};
+  std::vector<SearchTreeSize::Result> results{};
 
   /* special is used to collect a dedicated stat */
   const uint64_t* ptrToSpecial1 = nullptr;
@@ -78,8 +78,8 @@ public:
   void start();
 
 private:
-  Result featureMeasurements(int d, milliseconds mt, const std::string& fen);
-  SingleTest measureTreeSize(Search& search, const Position& position, SearchLimits searchLimits, const std::string& featureName) const;
+  SearchTreeSize::Result featureMeasurements(int d, milliseconds mt, const std::string& fen);
+  SearchTreeSize::SingleTest measureTreeSize(Search& search, const Position& position, SearchLimits searchLimits, const std::string& featureName) const;
 };
 
 

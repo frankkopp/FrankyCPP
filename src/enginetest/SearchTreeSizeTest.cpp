@@ -25,7 +25,8 @@
 #include "SearchTreeSizeTest.h"
 #include <engine/SearchConfig.h>
 
-Result SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, const std::string& fen) {
+SearchTreeSize::Result
+SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, const std::string& fen) {
   Search search{};
   SearchLimits searchLimits{};
   searchLimits.depth = d;
@@ -33,7 +34,7 @@ Result SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds m
     searchLimits.moveTime    = mt;
     searchLimits.timeControl = true;
   }
-  Result result(fen);
+  SearchTreeSize::Result result(fen);
   const Position position(fen);
 
   // turn off all options
@@ -173,10 +174,10 @@ void SearchTreeSizeTest::start() {
   results.reserve(fens.size());
 
   // Execute tests and store results
-  for (auto & fen : fens) {
+  for (auto& fen : fens) {
     try {
       const Position testPosition(fen);
-      (void)testPosition; // avoid unused variable warning
+      (void) testPosition;// avoid unused variable warning
     } catch (std::invalid_argument& e) {
       std::cerr << std::format("Invalid fen skipped: {} ({})", e.what(), fen) << std::endl;
       continue;
@@ -194,12 +195,12 @@ void SearchTreeSizeTest::start() {
           "-----------------------------------------------------------------------");
 
   setlocale(LC_NUMERIC, "de_DE.UTF-8");
-  std::map<std::string, TestSums> sums{};
+  std::map<std::string, SearchTreeSize::TestSums> sums{};
 
-  for (const Result& result : results) {
+  for (const SearchTreeSize::Result& result : results) {
     fprintln("Fen: {}", result.fen);
     // ReSharper disable once CppUseStructuredBinding
-    for (const SingleTest& test : result.tests) {
+    for (const SearchTreeSize::SingleTest& test : result.tests) {
       sums[test.name].sumCounter++;
       sums[test.name].sumNodes += test.nodes;
       sums[test.name].sumNps += test.nps;
@@ -234,8 +235,8 @@ void SearchTreeSizeTest::start() {
   }
 }
 
-SingleTest SearchTreeSizeTest::measureTreeSize(Search& search, const Position& position,
-                                               SearchLimits searchLimits, const std::string& featureName) const {
+SearchTreeSize::SingleTest SearchTreeSizeTest::measureTreeSize(Search& search, const Position& position,
+                                                               SearchLimits searchLimits, const std::string& featureName) const {
 
   NEWLINE;
   fprintln("Testing {} ####################################", featureName);
@@ -245,7 +246,7 @@ SingleTest SearchTreeSizeTest::measureTreeSize(Search& search, const Position& p
   search.startSearch(position, std::move(searchLimits));
   search.waitWhileSearching();
 
-  SingleTest test{};
+  SearchTreeSize::SingleTest test{};
   test.name     = featureName;
   test.nodes    = search.getLastSearchResult().nodes;
   test.move     = search.getLastSearchResult().bestMove;
