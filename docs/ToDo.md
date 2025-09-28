@@ -28,9 +28,18 @@ done: Improved movesLeft model
 done: Rationale: estimate moves to go using game phase, material, and repetition risk rather than a linear factor.
 done: Prompt: Please refactor movesLeft estimation in setupTimeControl in src/engine/Search.cpp to use phase/material buckets with tunables in src/engine/SearchConfig.h. I will build and run.
 
-Root single‑move fast path
-Rationale: if only one legal root move, skip deep search or cap depth/time.
-Prompt: Please add a single‑move early exit in iterativeDeepening with minimal verification in src/engine/Search.cpp. I will build and run.
+done: Root single‑move fast path
+done: Rationale: if only one legal root move, skip deep search or cap depth/time.
+done: Prompt: Please add a single‑move early exit in iterativeDeepening with minimal verification in src/engine/Search.cpp. I will build and run.
+
+Time‑aware feature shedding
+Rationale: disable or reduce costly features (IID, large LMR re‑search, history updates) under time pressure.
+Prompt: Please conditionally skip IID and limit LMR re‑search when isTimeAlmostUp() in src/engine/Search.cpp. I will build and run.
+
+Quiescence bailout under time pressure
+Rationale: cap qsearch depth or switch to stand‑pat only when time is almost up.
+Prompt: Please add a time‑pressure guard in qsearch to early‑return (stand‑pat) when isTimeAlmostUp() in src/engine/Search.cpp. I will build and run.
+
 
 
 NPS‑based dynamic budget tracking
@@ -49,17 +58,9 @@ Decimated time checks inside hot loops
 Rationale: add a very cheap periodic time check (e.g., every N nodes) to stopConditions() using an atomic deadline to minimize overhead.
 Prompt: Please add an atomic deadlineNs, update it when time changes, and check it every N nodes in stopConditions() and key loops in src/engine/Search.cpp. I will build and run.
 
-Quiescence bailout under time pressure
-Rationale: cap qsearch depth or switch to stand‑pat only when time is almost up.
-Prompt: Please add a time‑pressure guard in qsearch to early‑return (stand‑pat) when isTimeAlmostUp() in src/engine/Search.cpp. I will build and run.
-
 Emergency move mode
 Rationale: when remaining time below a threshold, enforce a very fast, shallow search to avoid flagging.
 Prompt: Please add a UCI Emergency Move Time threshold and, when triggered, cap depth and avoid re‑search paths in src/engine/Search.cpp. I will build and run.
-
-Time‑aware feature shedding
-Rationale: disable or reduce costly features (IID, large LMR re‑search, history updates) under time pressure.
-Prompt: Please conditionally skip IID and limit LMR re‑search when isTimeAlmostUp() in src/engine/Search.cpp. I will build and run.
 
 Enhanced timing telemetry
 Rationale: log computed budgets, reserves, extra time changes, iteration ETAs, and overruns for tuning.

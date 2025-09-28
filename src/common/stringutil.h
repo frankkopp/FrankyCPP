@@ -29,7 +29,7 @@
 
 // splits a string or string view into a vector of parts at each delimiter
 template<typename StringType>
-inline void splitFast(const StringType& str, std::vector<StringType>& container, const std::string& delims = " ") {
+void splitFast(const StringType& str, std::vector<StringType>& container, const std::string& delims = " ") {
   for (auto first = str.data(), second = str.data(), end = first + str.size();
        second != end && first != end;
        first = second + 1) {
@@ -43,7 +43,7 @@ inline void splitFast(const StringType& str, std::vector<StringType>& container,
 // removes whitespace characters from beginning and end of string s
 // whitespaces are defined as:  ' ' || '\t' || '\n' || '\v' || '\f' || '\r'
 template<typename StringType>
-inline StringType trimFast(const StringType& s) {
+StringType trimFast(const StringType& s) {
   const int l = static_cast<int>(s.length());
   int a = 0, b = l - 1;
   char c;
@@ -54,7 +54,7 @@ inline StringType trimFast(const StringType& s) {
 
 // removes trailing parts of a string after a given commentMarker
 template<typename StringType>
-inline StringType removeTrailingComments(const StringType& s, const std::string& commentMarker) {
+StringType removeTrailingComments(const StringType& s, const std::string& commentMarker) {
   const auto pos = s.find(commentMarker);
   if (pos != StringType::npos) {
     return s.substr(0, pos);
@@ -65,25 +65,25 @@ inline StringType removeTrailingComments(const StringType& s, const std::string&
 // transforms the given string to lower case
 inline std::string toLowerCase(const std::string& s) {
   std::string str(s);
-  std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return char(std::tolower(c)); });
+  std::ranges::transform(str, str.begin(), [](unsigned char c) { return char(std::tolower(c)); });
   return str;
 }
 
 // transforms the given string to lower case in place
 inline void toLowerCase(std::string& str) {
-  std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return char(std::tolower(c)); });
+  std::ranges::transform(str, str.begin(), [](unsigned char c) { return char(std::tolower(c)); });
 }
 
 // transforms the given string to upper case
 inline std::string toUpperCase(const std::string& s) {
   std::string str(s);
-  std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return char(std::toupper(c)); });
+  std::ranges::transform(str, str.begin(), [](unsigned char c) { return char(std::toupper(c)); });
   return str;
 }
 
 // transforms the given string to upper case in place
 inline void toUpperCase(std::string& str) {
-  std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return char(std::toupper(c)); });
+  std::ranges::transform(str, str.begin(), [](unsigned char c) { return char(std::toupper(c)); });
 }
 
 constexpr const char* boolStr(bool b) {

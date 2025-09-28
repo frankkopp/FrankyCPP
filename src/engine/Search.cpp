@@ -401,7 +401,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
 
       if (effectiveRemaining <= buffer || (needed.count() > 0 && effectiveRemaining < needed)) {
         LOG__DEBUG(Logger::get().SEARCH_LOG,
-                   "Stop before iteration {}: effRemaining {} < needed {} (buffer {}, rootFactor {:.2f})",
+                   "Stop before iteration {}: effRemaining {} < needed {} (buffer {}, rootComplexityFactor {:.2f})",
                    iterationDepth, str(effectiveRemaining), str(needed), str(buffer), rootComplexityFactor);
         break;
       }
@@ -1640,9 +1640,9 @@ milliseconds Search::setupTimeControl(const Position& position, const SearchLimi
 
     movesLeft = base;
     LOG__DEBUG(Logger::get().SEARCH_LOG,
-               "TimeCtl: movesLeft={} (phase {:.2f}, npp {}, queens {}), hmc {}",
+               "TimeCtl: Estimated movesLeft={} (phase {:.2f}, npp {}, queens {}), hmc {}",
                movesLeft, phase, npp, queens, position.getHalfMoveClock());
-  } // if (!movesLeft)
+  }// if (!movesLeft)
 
   // Estimate time left for current player
   milliseconds timeLeft;
@@ -1668,7 +1668,8 @@ milliseconds Search::setupTimeControl(const Position& position, const SearchLimi
   // Complexity-aware weighting
   const double factor = computeComplexityFactorQuick(position);
   const auto weighted = milliseconds{static_cast<int64_t>(base.count() * factor)};
-  LOG__DEBUG(Logger::get().SEARCH_LOG, "TimeCtl: base:  {} ms factor: {} ms weighted: {}", base.count(), factor, weighted.count());
+  LOG__DEBUG(Logger::get().SEARCH_LOG, "TimeCtl: Estimated time left: base: {:L} ms factor: {:L} ms weighted: {:L}",
+             base.count(), factor, weighted.count());
   return weighted;
 }
 
