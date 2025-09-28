@@ -24,6 +24,7 @@ add_executable(
         common/ThreadPoolTest.cpp
         common/StringUtilsTest.cpp
         common/TimeUtilsTest.cpp
+        common/LoggingTest.cpp
 
         chesscore/PositionTest.cpp
         chesscore/MoveGeneratorTest.cpp

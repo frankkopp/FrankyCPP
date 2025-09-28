@@ -398,8 +398,8 @@ TEST_F(SearchTest, movesLeftBucketsOpeningVsQueenlessVsLowMaterial) {
 
 TEST_F(SearchTest, movesLeftRepetitionRiskIncreasesTime) {
   // Use a queenless position to keep the bucket clear
-  Position queenless_low{"rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 0 1"};
-  Position queenless_high{"rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 80 1"}; // high half-move clock
+  const Position queenless_low{"rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 0 1"};
+  const Position queenless_high{"rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 80 1"}; // high half-move clock
 
   SearchLimits sl{};
   sl.whiteTime = 30s;
