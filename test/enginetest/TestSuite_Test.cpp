@@ -68,6 +68,8 @@ TEST_F(TestSuite_Test, franky_test) {
   filePath += +"/test/testsets/franky_tests.epd";
   TestSuite ts{moveTime, depth, filePath};
   ts.runTestSuite();
+  ASSERT_EQ(13, ts.getLastResult().counter);
+  ASSERT_EQ(13, ts.getLastResult().successCounter);
 }
 
 TEST_F(TestSuite_Test, mate_test) {

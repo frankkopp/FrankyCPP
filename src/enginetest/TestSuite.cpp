@@ -46,22 +46,15 @@ TestSuite::TestSuite(const milliseconds& time, const Depth searchDepth, const st
   fprintln("");
 }
 
+
 void TestSuite::runTestSuite() {
   if (testCases.empty()) {
     LOG__WARN(Logger::get().TSUITE_LOG, "No tests to run in {}", filePath);
     return;
   }
 
+  printReportHeader();
   const auto startTime = currentTime();
-
-  fprintln("Running Test Suite");
-  fprintln("==================================================================");
-  fprintln("EPD File:    {}", filePath);
-  fprintln("SearchTime:  {}", str(searchTime));
-  fprintln("MaxDepth:    {}", searchDepth);
-  fprintln("No of tests: {}", testCases.size());
-  fprintln("Date:        {}", format_now());
-  fprintln("");
 
   // setup search
   Search search{};
@@ -79,7 +72,21 @@ void TestSuite::runTestSuite() {
   lastResult = sumUpTests();
 
   const auto elapsed = elapsedSince(startTime);
+  printReport(elapsed);
+}
 
+void TestSuite::printReportHeader() {
+  fprintln("Running Test Suite");
+  fprintln("==================================================================");
+  fprintln("EPD File:    {}", filePath);
+  fprintln("SearchTime:  {}", str(searchTime));
+  fprintln("MaxDepth:    {}", searchDepth);
+  fprintln("No of tests: {}", testCases.size());
+  fprintln("Date:        {}", format_now());
+  fprintln("");
+}
+
+void TestSuite::printReport(const nanoseconds elapsed) {
   // print report
   fprintln("Results for Test Suite", filePath);
   fprintln("------------------------------------------------------------------------------------------------------------------------------------");
