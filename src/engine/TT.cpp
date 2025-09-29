@@ -26,6 +26,12 @@
 #include "TT.h"
 #include "common/Logging.h"
 
+std::ostream& operator<<(std::ostream& os, const TT::Entry& entry) {
+  os << "key: " << entry.key << " depth: " << entry.depth << " move: " << entry.move << " value: "
+     << entry.value << " type: " << entry.type << " age: " << entry.age;
+  return os;
+}
+
 TT::TT(const uint64_t newSizeInMByte) {
   noOfThreads = std::thread::hardware_concurrency();
   resize(newSizeInMByte);
@@ -195,16 +201,16 @@ void TT::put(const ZobristKey key, const Depth depth, const Move move, const Val
   assert(numberOfPuts == (numberOfEntries + numberOfCollisions + numberOfUpdates));
 }
 
-const TT::Entry* TT::probe(const ZobristKey& key) const {
+// ReSharper disable once CppMemberFunctionMayBeConst
+const TT::Entry* TT::probe(const ZobristKey& key) {
   numberOfProbes++;
-
   Entry* ttEntryPtr = getEntryPtr(key);
   if (ttEntryPtr->key == key) {
-    numberOfHits++;                        // entries with identical keys found
-    if (ttEntryPtr->age) ttEntryPtr->age--;// mark the entry as used
+    numberOfHits++;// entries with identical keys found
+    if (ttEntryPtr->age)
+      ttEntryPtr->age--;// mark the entry as used
     return ttEntryPtr;
   }
-
   numberOfMisses++;// keys not found (not equal to TT misses)
   return nullptr;
 }
@@ -251,10 +257,4 @@ std::string TT::str() {
     numberOfPuts, numberOfUpdates, numberOfCollisions, numberOfOverwrites, numberOfProbes,
     numberOfHits, numberOfProbes ? (numberOfHits * 100) / numberOfProbes : 0,
     numberOfMisses, numberOfProbes ? (numberOfMisses * 100) / numberOfProbes : 0);
-}
-
-std::ostream& operator<<(std::ostream& os, const TT::Entry& entry) {
-  os << "key: " << entry.key << " depth: " << entry.depth << " move: " << entry.move << " value: "
-     << entry.value << " type: " << entry.type << " age: " << entry.age;
-  return os;
 }

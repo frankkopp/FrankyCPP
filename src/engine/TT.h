@@ -73,7 +73,7 @@ public:
     uint16_t move  = 0;         // MOVE_NONE as 16-bit
     Value eval     = VALUE_NONE;// 16-bit signed
     Value value    = VALUE_NONE;// 16-bit signed
-    int8_t depth : 7 {};        // 0-127
+    uint8_t depth : 7 {};        // 0-127
     uint8_t age : 3 {};         // 0-7
     ValueType type : 2 {};      // 4 values
     bool mateThreat : 1 {};     // 1-bit bool
@@ -163,7 +163,7 @@ public:
    * Looks up and returns a pointer to an TT Entry. Decreases age of the entry
    * if an entry was found
    */
-  const Entry* probe(const ZobristKey& key) const;
+  const Entry* probe(const ZobristKey& key);
 
   /** Age all entries by 1 */
   void ageEntries();
