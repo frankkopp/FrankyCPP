@@ -168,7 +168,7 @@ public:
   void clearTT() const;
 
   // resize the hash to the value in the global config SearchConfig::TT_SIZE_MB
-  void resizeTT();
+  void resizeTT() const;
 
   // return search stats instance
   const SearchStats& getSearchStats() const { return statistics; };

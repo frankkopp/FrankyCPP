@@ -134,15 +134,15 @@ void Search::clearTT() const {
   LOG__INFO(Logger::get().SEARCH_LOG, "{}", msg);
 }
 
-void Search::resizeTT() {
+void Search::resizeTT() const {
   if (isSearching()) {
     const std::string msg = "Can't resize hash while searching.";
     sendString(msg);
     LOG__WARN(Logger::get().SEARCH_LOG, "{}", msg);
     return;
   }
-  tt = std::make_unique<TT>(0);// clear the old TT (is a smart pointer and memory is freed)
-  initialize();                // re-initialize
+  // Resize the existing TT to the configured size and clear it
+  tt->resize(SearchConfig::TT_SIZE_MB);
   sendString("Resized hash: " + tt->str());
 }
 
@@ -177,7 +177,7 @@ void Search::run() {
   if (searchLimits.timeControl && !searchLimits.ponder) { startTimer(); }
 
   // age tt entries
-  if (tt->getMaxNumberOfEntries()) {
+  if (SearchConfig::USE_TT) {
     LOG__INFO(Logger::get().SEARCH_LOG, "Transposition Table: Using TT: {}", tt->str());
     tt->ageEntries();
   }
@@ -1495,14 +1495,15 @@ void Search::initialize() {
 
   // init transposition table
   if (SearchConfig::USE_TT) {
-    if (tt->getMaxNumberOfEntries() == 0) {
-      // only initialize once
-      tt = std::make_unique<TT>(SearchConfig::TT_SIZE_MB);
+    // When constructed with size 0 MB, TT ensures at least 1 entry; treat that as uninitialized sentinel
+    if (tt->getMaxNumberOfEntries() == 1) {
+      tt->resize(SearchConfig::TT_SIZE_MB);
     }
   }
   else {
     LOG__INFO(Logger::get().SEARCH_LOG, "Transposition Table disabled in configuration");
-    tt = std::make_unique<TT>(0);
+    // Keep TT allocated but minimize its size to 0 MB (internally becomes 1 entry)
+    tt->resize(0);
   }
 
   // init evaluator

@@ -1,5 +1,25 @@
 Do not try to compile or run tests as you do not have the Clion environment and it would fail anyway. Ask me and I will run the task and provide the result.
 
+Step 1: Identify and Fix Potential Bugs
+Prompt: "Please review the TT.h and TT.cpp files for potential bugs, such as incorrect memory management, thread safety issues, logic errors, or incorrect statistics tracking. List any bugs found, suggest fixes, and provide a patch for each. After applying the patch, build and test the project, then provide the output here."
+
+Step 2: Easy Quick Wins (Code Cleanups & Minor Optimizations)
+Prompt: "Review TT.h and TT.cpp for easy improvements, such as removing redundant code, improving variable naming, adding missing const qualifiers, simplifying logic, or improving comments/documentation. Suggest and implement these quick wins. After applying the changes, build and test the project, then provide the output here."
+
+Step 3: Performance Improvements (Low-Hanging Fruit)
+Prompt: "Analyze TT.h and TT.cpp for simple performance improvements, such as reducing unnecessary memory allocations, optimizing loops, or minimizing locking/contention. Suggest and implement these optimizations. After applying the changes, build and test the project, then provide the output here."
+
+Step 4: Thread Safety and Concurrency Review
+Prompt: "Review the TT implementation for thread safety and concurrency issues. Suggest and implement improvements, such as using atomic operations or mutexes where needed, or clarifying thread ownership. After applying the changes, build and test the project, then provide the output here."
+
+Step 5: More Complex Refactoring (Design/Architecture)
+Prompt: "Suggest and implement more complex refactoring for TT.h and TT.cpp, such as improving class design, separating concerns, or making the code more extensible/testable. After applying the changes, build and test the project, then provide the output here."
+
+
+
+
+
+
 Logging:
 Here is the same small‑steps refactor plan, with updated prompts that explicitly state you will build and run tests and provide the results. I will not attempt to compile or run.
 

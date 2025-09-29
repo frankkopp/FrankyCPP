@@ -168,7 +168,7 @@ TEST_F(TT_Test, resize) {
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of max entries:     {:L}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries:         {:L}", tt.getNumberOfEntries());
-  EXPECT_EQ(0, tt.getMaxNumberOfEntries());
+  EXPECT_EQ(1, tt.getMaxNumberOfEntries());
   EXPECT_EQ(0, tt.getNumberOfEntries());
   tt.resize(64);
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());

@@ -34,6 +34,7 @@ std::ostream& operator<<(std::ostream& os, const TT::Entry& entry) {
 
 TT::TT(const uint64_t newSizeInMByte) {
   noOfThreads = std::thread::hardware_concurrency();
+  if (noOfThreads == 0) noOfThreads = 1; // ensure at least one thread
   resize(newSizeInMByte);
 }
 
@@ -43,18 +44,15 @@ void TT::resize(const uint64_t newSizeInMByte) {
     sizeInByte = MAX_SIZE_MB * MB;
   }
   else {
-    LOG__TRACE(Logger::get().TT_LOG, "Resizing TT from {:L} MB to {:L} MB", sizeInByte, newSizeInMByte);
+    LOG__TRACE(Logger::get().TT_LOG, "Resizing TT from {:L} MB to {:L} MB", sizeInByte / MB, newSizeInMByte);
     sizeInByte = newSizeInMByte * MB;
   }
 
-  // if TT is resized to 0 we can't have any entries.
-  if (sizeInByte == 0) {
-    maxNumberOfEntries = 0;
-  }
-  else {
-    // find the highest power of 2 smaller than maxPossibleEntries
-    maxNumberOfEntries = std::bit_floor(sizeInByte / ENTRY_SIZE);
-  }
+  // compute capacity (at least 1 entry) and derived fields
+  uint64_t entriesRequested = sizeInByte / ENTRY_SIZE;
+  if (entriesRequested < 1) entriesRequested = 1;
+  maxNumberOfEntries = std::bit_floor(entriesRequested);
+  if (maxNumberOfEntries < 1) maxNumberOfEntries = 1;
 
   hashKeyMask = maxNumberOfEntries - 1;
   sizeInByte  = maxNumberOfEntries * ENTRY_SIZE;
@@ -69,11 +67,16 @@ void TT::resize(const uint64_t newSizeInMByte) {
       break;
     } catch (std::bad_alloc const&) {
       // we could not allocate enough memory, so we reduce TT size by a power of 2
-      uint64_t oldSize   = sizeInByte;
+      const uint64_t oldSize   = sizeInByte;
+      if (maxNumberOfEntries <= 1) {
+        LOG__CRITICAL(Logger::get().TT_LOG, "Unable to allocate minimal TT of 1 entry ({} bytes). Out of memory.", sizeof(Entry));
+        throw; // fatal OOM condition for TT invariant (>=1 entry)
+      }
       maxNumberOfEntries = maxNumberOfEntries >> 1ULL;
-      hashKeyMask        = maxNumberOfEntries - 1;
-      sizeInByte         = maxNumberOfEntries * ENTRY_SIZE;
-      LOG__ERROR(Logger::get().TT_LOG, "Not enough memory for requested TT size {:L} MB reducing to {:L} MB", oldSize, sizeInByte);
+      if (maxNumberOfEntries < 1) maxNumberOfEntries = 1;
+      hashKeyMask = maxNumberOfEntries - 1;
+      sizeInByte  = maxNumberOfEntries * ENTRY_SIZE;
+      LOG__ERROR(Logger::get().TT_LOG, "Not enough memory for requested TT size {:L} MB reducing to {:L} MB", oldSize / MB, sizeInByte / MB);
     }
   }
 
@@ -83,25 +86,24 @@ void TT::resize(const uint64_t newSizeInMByte) {
 }
 
 void TT::clear() {
-  if (!maxNumberOfEntries) {
-    LOG__DEBUG(Logger::get().TT_LOG, "TT cleared - no entries");
-    return;
-  }
   // This clears the TT by overwriting each entry with 0.
   // It uses multiple threads if noOfThreads is > 1.
-  LOG__TRACE(Logger::get().TT_LOG, "Clearing TT ({} threads)...", noOfThreads);
+  unsigned int threadsToUse = noOfThreads == 0 ? 1u : noOfThreads;
+  if (threadsToUse > maxNumberOfEntries) threadsToUse = static_cast<unsigned int>(maxNumberOfEntries);
+  if (threadsToUse == 0) threadsToUse = 1; // defensive
+  LOG__TRACE(Logger::get().TT_LOG, "Clearing TT ({} threads)...", threadsToUse);
 
   const auto startTime = high_resolution_clock::now();
   std::vector<std::thread> threads;
-  threads.reserve(noOfThreads);
+  threads.reserve(threadsToUse);
 
   // split work onto multiple threads
-  for (unsigned int t = 0; t < noOfThreads; ++t) {
+  for (unsigned int t = 0; t < threadsToUse; ++t) {
     threads.emplace_back([&, this, t]() {
-      const auto range = maxNumberOfEntries / noOfThreads;
+      const auto range = maxNumberOfEntries / threadsToUse;
       const auto start = t * range;
       auto end         = start + range;
-      if (t == noOfThreads - 1) end = maxNumberOfEntries;
+      if (t == threadsToUse - 1) end = maxNumberOfEntries;
       for (std::size_t i = start; i < end; ++i) {
         _data[i].key   = 0;
         _data[i].move  = 0;// MOVE_NONE as 16-bit
@@ -130,14 +132,10 @@ void TT::clear() {
   const auto time   = std::chrono::duration_cast<milliseconds>(finish - startTime).count();
   (void) time;
 
-  LOG__DEBUG(Logger::get().TT_LOG, "TT cleared {:L} entries in {:L} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
+  LOG__DEBUG(Logger::get().TT_LOG, "TT cleared {:L} entries in {:L} ms ({} threads)", maxNumberOfEntries, time, threadsToUse);
 }
 
 void TT::put(const ZobristKey key, const Depth depth, const Move move, const Value value, const ValueType type, const Value eval) {
-
-  // if the size of the TT = 0 we
-  // do not store anything
-  if (!maxNumberOfEntries) return;
 
   // read the entries for this hash
   Entry* entryDataPtr = getEntryPtr(key);
@@ -216,21 +214,21 @@ const TT::Entry* TT::probe(const ZobristKey& key) {
 }
 
 void TT::ageEntries() {
-  if (!maxNumberOfEntries) {
-    return;
-  }
-  LOG__TRACE(Logger::get().TT_LOG, "Aging TT ({} threads)...", noOfThreads);
+  unsigned int threadsToUse = noOfThreads == 0 ? 1u : noOfThreads;
+  if (threadsToUse > maxNumberOfEntries) threadsToUse = static_cast<unsigned int>(maxNumberOfEntries);
+  if (threadsToUse == 0) threadsToUse = 1;
+  LOG__TRACE(Logger::get().TT_LOG, "Aging TT ({} threads)...", threadsToUse);
   const auto timePoint = high_resolution_clock::now();
 
   // split work onto multiple threads
   std::vector<std::thread> threads;
-  threads.reserve(noOfThreads);
-  for (unsigned int idx = 0; idx < noOfThreads; ++idx) {
+  threads.reserve(threadsToUse);
+  for (unsigned int idx = 0; idx < threadsToUse; ++idx) {
     threads.emplace_back([&, this, idx]() {
-      const auto range = maxNumberOfEntries / noOfThreads;
+      const auto range = maxNumberOfEntries / threadsToUse;
       const auto start = idx * range;
       auto end         = start + range;
-      if (idx == noOfThreads - 1) end = maxNumberOfEntries;
+      if (idx == threadsToUse - 1) end = maxNumberOfEntries;
       for (std::size_t i = start; i < end; ++i) {
         if (_data[i].key == 0) continue;
         _data[i].age++;
@@ -245,7 +243,7 @@ void TT::ageEntries() {
   const auto finish = high_resolution_clock::now();
   const auto time   = std::chrono::duration_cast<milliseconds>(finish - timePoint).count();
   (void) time;
-  LOG__DEBUG(Logger::get().TT_LOG, "TT aged {:L} entries in {:L} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
+  LOG__DEBUG(Logger::get().TT_LOG, "TT aged {:L} entries in {:L} ms ({} threads)", maxNumberOfEntries, time, threadsToUse);
 }
 
 std::string TT::str() {

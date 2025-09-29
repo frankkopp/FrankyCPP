@@ -170,20 +170,17 @@ public:
 
   /** Returns how full the transposition table is in permill as per UCI */
   int hashFull() const {
-    if (!maxNumberOfEntries) return 0;
     return static_cast<int>((1000 * numberOfEntries) / maxNumberOfEntries);
   };
 
   // using prefetch improves probe lookup speed significantly
+  void prefetch(const ZobristKey key) const {
 #ifdef TT_ENABLE_PREFETCH
-  void prefetch(const ZobristKey key) {
-#ifdef __GNUC__
-    _mm_prefetch(&_data[(key & hashKeyMask)], _MM_HINT_T0);
-#elif _MSC_VER
     _mm_prefetch((reinterpret_cast<const char*>(&_data[(key & hashKeyMask)])), _MM_HINT_T0);
+#else
+    (void)key;
 #endif
   }
-#endif
 
   /** return a string representation of the TT instance */
   std::string str();
@@ -212,7 +209,7 @@ public:
   uint64_t getNumberOfHits() const { return numberOfHits; }
   uint64_t getNumberOfMisses() const { return numberOfMisses; }
   unsigned int getThreads() const { return noOfThreads; }
-  void setThreads(const int threads) { noOfThreads = threads; }
+  void setThreads(const int threads) { noOfThreads = threads > 0 ? static_cast<unsigned int>(threads) : 1u; }
 
   static std::string str(const ValueType type) {
     switch (type) {
@@ -228,7 +225,6 @@ public:
     return "";
   }
 
-  FRIEND_TEST(TT_Test, put);
   FRIEND_TEST(TT_Test, put);
   FRIEND_TEST(TT_Test, get);
   FRIEND_TEST(TT_Test, probe);
