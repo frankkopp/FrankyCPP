@@ -17,15 +17,17 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#include <bit>
 #include <chrono>
 #include <iostream>
 #include <new>
 #include <thread>
-#include <vector>
-#include <bit>
 
 #include "TT.h"
 #include "common/Logging.h"
+
+#include <execution>
+#include <algorithm>
 
 std::ostream& operator<<(std::ostream& os, const TT::Entry& entry) {
   os << "key: " << entry.key << " depth: " << static_cast<int>(entry.depth)
@@ -88,37 +90,23 @@ void TT::resize(const uint64_t newSizeInMByte) {
 }
 
 void TT::clear() {
-  // This clears the TT by overwriting each entry with 0.
-  // It uses multiple threads if noOfThreads is > 1.
-  unsigned int threadsToUse = noOfThreads == 0 ? 1u : noOfThreads;
-  if (threadsToUse > maxNumberOfEntries) threadsToUse = static_cast<unsigned int>(maxNumberOfEntries);
-  if (threadsToUse == 0) threadsToUse = 1; // defensive
-  LOG__TRACE(Logger::get().TT_LOG, "Clearing TT ({} threads)...", threadsToUse);
+ // Clear TT using a standard parallel algorithm (implementation-defined threading).
+ LOG__TRACE(Logger::get().TT_LOG, "Clearing TT (std::execution::par_unseq)...");
+ const auto startTime = high_resolution_clock::now();
 
-  const auto startTime = high_resolution_clock::now();
-  std::vector<std::thread> threads;
-  threads.reserve(threadsToUse);
-
-  // split work onto multiple threads
-  for (unsigned int t = 0; t < threadsToUse; ++t) {
-    threads.emplace_back([&, this, t]() {
-      const auto range = maxNumberOfEntries / threadsToUse;
-      const auto start = t * range;
-      auto end         = start + range;
-      if (t == threadsToUse - 1) end = maxNumberOfEntries;
-      for (std::size_t i = start; i < end; ++i) {
-        _data[i].key   = 0;
-        _data[i].move  = 0;// MOVE_NONE as 16-bit
-        _data[i].depth = DEPTH_NONE;
-        _data[i].value = VALUE_NONE;
-        _data[i].eval  = VALUE_NONE;
-        _data[i].age   = 1;
-      }
-    });
-  }
-
-  // wait until all threads have finished their work
-  for (std::thread& th : threads) th.join();
+ std::for_each(
+   std::execution::par_unseq,
+   _data.get(),
+   _data.get() + maxNumberOfEntries,
+   [](Entry& e) {
+     e.key   = 0;
+     e.move  = 0; // MOVE_NONE as 16-bit
+     e.depth = DEPTH_NONE;
+     e.value = VALUE_NONE;
+     e.eval  = VALUE_NONE;
+     e.age   = 1;
+   }
+ );
 
   // reset statistics
   numberOfPuts       = 0;
@@ -130,11 +118,11 @@ void TT::clear() {
   numberOfOverwrites = 0;
   numberOfProbes     = 0;
 
-  const auto finish = std::chrono::high_resolution_clock::now();
-  const auto time   = std::chrono::duration_cast<std::chrono::milliseconds>(finish - startTime).count();
+  const auto finish = high_resolution_clock::now();
+  const auto time   = std::chrono::duration_cast<milliseconds>(finish - startTime).count();
   (void) time;
 
-  LOG__DEBUG(Logger::get().TT_LOG, "TT cleared {:L} entries in {:L} ms ({} threads)", maxNumberOfEntries, time, threadsToUse);
+  LOG__DEBUG(Logger::get().TT_LOG, "TT cleared {:L} entries in {:L} ms (policy=par_unseq)", maxNumberOfEntries, time);
 }
 
 void TT::put(const ZobristKey key, const Depth depth, const Move move, const Value value, const ValueType type, const Value eval) {
@@ -212,35 +200,23 @@ const TT::Entry* TT::probe(const ZobristKey& key) {
 }
 
 void TT::ageEntries() {
-  unsigned int threadsToUse = noOfThreads == 0 ? 1u : noOfThreads;
-  if (threadsToUse > maxNumberOfEntries) threadsToUse = static_cast<unsigned int>(maxNumberOfEntries);
-  if (threadsToUse == 0) threadsToUse = 1;
-  LOG__TRACE(Logger::get().TT_LOG, "Aging TT ({} threads)...", threadsToUse);
+  LOG__TRACE(Logger::get().TT_LOG, "Aging TT (std::execution::par_unseq)...");
   const auto timePoint = high_resolution_clock::now();
 
-  // split work onto multiple threads
-  std::vector<std::thread> threads;
-  threads.reserve(threadsToUse);
-  for (unsigned int idx = 0; idx < threadsToUse; ++idx) {
-    threads.emplace_back([&, this, idx]() {
-      const auto range = maxNumberOfEntries / threadsToUse;
-      const auto start = idx * range;
-      auto end         = start + range;
-      if (idx == threadsToUse - 1) end = maxNumberOfEntries;
-      for (std::size_t i = start; i < end; ++i) {
-        if (_data[i].key == 0) continue;
-        if (_data[i].age < 7) _data[i].age++;
-      }
-    });
-  }
-
-  // wait for the threads to finish
-  for (std::thread& th : threads) th.join();
+  std::for_each(
+    std::execution::par_unseq,
+    _data.get(),
+    _data.get() + maxNumberOfEntries,
+    [](Entry& e) {
+      if (e.key == 0) return;
+      if (e.age < 7) e.age++;
+    }
+  );
 
   const auto finish = high_resolution_clock::now();
   const auto time   = std::chrono::duration_cast<milliseconds>(finish - timePoint).count();
   (void) time;
-  LOG__DEBUG(Logger::get().TT_LOG, "TT aged {:L} entries in {:L} ms ({} threads)", maxNumberOfEntries, time, threadsToUse);
+  LOG__DEBUG(Logger::get().TT_LOG, "TT aged {:L} entries in {:L} ms (policy=par_unseq)", maxNumberOfEntries, time);
 }
 
 std::string TT::str() const {
