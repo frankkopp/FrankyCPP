@@ -155,7 +155,7 @@ public:
    * @return Pointer to entry for key or nullptr if not found
    */
   const Entry* getMatch(const ZobristKey key) const {
-    const Entry* const entryPtr = getEntryPtr(key);
+    const Entry* const entryPtr = getEntryPtrConst(key);
     return entryPtr->key == key ? entryPtr : nullptr;
   }
 
@@ -169,7 +169,7 @@ public:
   void ageEntries();
 
   /** Returns how full the transposition table is in permill as per UCI */
-  int hashFull() const {
+  [[nodiscard]] int hashFull() const {
     return static_cast<int>((1000 * numberOfEntries) / maxNumberOfEntries);
   };
 
@@ -183,7 +183,7 @@ public:
   }
 
   /** return a string representation of the TT instance */
-  std::string str();
+  std::string str() const;
 
 private:
   /* generates the index hash key from the position key  */
@@ -193,6 +193,11 @@ private:
 
   /* This retrieves a direct pointer to the entry of this node from cache */
   Entry* getEntryPtr(const ZobristKey key) const {
+    return &_data[getHash(key)];
+  }
+
+  /* Const-friendly accessor used in const methods */
+  const Entry* getEntryPtrConst(const ZobristKey key) const {
     return &_data[getHash(key)];
   }
 

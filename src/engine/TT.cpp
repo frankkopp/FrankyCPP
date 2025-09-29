@@ -22,13 +22,15 @@
 #include <new>
 #include <thread>
 #include <vector>
+#include <bit>
 
 #include "TT.h"
 #include "common/Logging.h"
 
 std::ostream& operator<<(std::ostream& os, const TT::Entry& entry) {
-  os << "key: " << entry.key << " depth: " << entry.depth << " move: " << entry.move << " value: "
-     << entry.value << " type: " << entry.type << " age: " << entry.age;
+  os << "key: " << entry.key << " depth: " << static_cast<int>(entry.depth)
+     << " move: " << entry.move << " value: " << entry.value
+     << " type: " << TT::str(entry.type) << " age: " << static_cast<int>(entry.age);
   return os;
 }
 
@@ -128,8 +130,8 @@ void TT::clear() {
   numberOfOverwrites = 0;
   numberOfProbes     = 0;
 
-  const auto finish = high_resolution_clock::now();
-  const auto time   = std::chrono::duration_cast<milliseconds>(finish - startTime).count();
+  const auto finish = std::chrono::high_resolution_clock::now();
+  const auto time   = std::chrono::duration_cast<std::chrono::milliseconds>(finish - startTime).count();
   (void) time;
 
   LOG__DEBUG(Logger::get().TT_LOG, "TT cleared {:L} entries in {:L} ms ({} threads)", maxNumberOfEntries, time, threadsToUse);
@@ -138,62 +140,58 @@ void TT::clear() {
 void TT::put(const ZobristKey key, const Depth depth, const Move move, const Value value, const ValueType type, const Value eval) {
 
   // read the entries for this hash
-  Entry* entryDataPtr = getEntryPtr(key);
+  Entry* entry = getEntryPtr(key);
 
   numberOfPuts++;
 
-  // New entry
-  if (entryDataPtr->key == 0) {
+  // New entry slot
+  if (entry->key == 0) {
     numberOfEntries++;
-    entryDataPtr->key   = key;
-    entryDataPtr->move  = static_cast<uint16_t>(move);
-    entryDataPtr->depth = depth;
-    entryDataPtr->value = value;
-    entryDataPtr->type  = type;
-    entryDataPtr->age   = 1;
-    entryDataPtr->eval  = eval;
+    entry->key   = key;
+    entry->move  = static_cast<uint16_t>(move);
+    entry->depth = depth;
+    entry->value = value;
+    entry->type  = type;
+    entry->age   = 1;
+    entry->eval  = eval;
     return;
   }
 
-  // Same hash but different position
-  if (entryDataPtr->key != key) {
+  // Different position colliding in the same slot
+  if (entry->key != key) {
     numberOfCollisions++;
     // overwrite if
     // - the new entry's depth is higher
     // - the new entry's depth is same and the previous entry has not been used (is aged)
-    if (depth > entryDataPtr->depth || (depth == entryDataPtr->depth && entryDataPtr->age > 0)) {
+    if (depth > entry->depth || (depth == entry->depth && entry->age > 0)) {
       numberOfOverwrites++;
-      entryDataPtr->key   = key;
-      entryDataPtr->move  = static_cast<uint16_t>(move);
-      entryDataPtr->depth = depth;
-      entryDataPtr->value = value;
-      entryDataPtr->type  = type;
-      entryDataPtr->age   = 1;
-      entryDataPtr->eval  = eval;
+      entry->key   = key;
+      entry->move  = static_cast<uint16_t>(move);
+      entry->depth = depth;
+      entry->value = value;
+      entry->type  = type;
+      entry->age   = 1;
+      entry->eval  = eval;
     }
     return;
   }
 
-  // Same hash and same position -> update entry?
-  if (entryDataPtr->key == key) {
-    numberOfUpdates++;
-    // we always update as the stored moved can't be any good otherwise
-    // we would have found this during the search in a previous probe,
-    // and we would not have come to store it again
-    entryDataPtr->key = key;
-    if (move) {// preserve existing move if no move is given
-      entryDataPtr->move = static_cast<uint16_t>(move);
-    }
-    if (value != VALUE_NONE) {// preserve existing entry if no valid value is given
-      entryDataPtr->depth = depth;
-      entryDataPtr->value = value;
-      entryDataPtr->type  = type;
-      entryDataPtr->age   = 1;
-    }
-    if (eval != VALUE_NONE) {// preserve existing entry if no valid value is given
-      entryDataPtr->eval = eval;
-    }
-    return;
+  // Same position -> update existing entry
+  numberOfUpdates++;
+  // keep existing move if no move is given
+  if (move) {
+    entry->move = static_cast<uint16_t>(move);
+  }
+  // preserve existing value/depth/type if no valid value is given
+  if (value != VALUE_NONE) {
+    entry->depth = depth;
+    entry->value = value;
+    entry->type  = type;
+    entry->age   = 1;
+  }
+  // preserve existing eval if no valid value is given
+  if (eval != VALUE_NONE) {
+    entry->eval = eval;
   }
 
   assert(numberOfPuts == (numberOfEntries + numberOfCollisions + numberOfUpdates));
@@ -231,8 +229,7 @@ void TT::ageEntries() {
       if (idx == threadsToUse - 1) end = maxNumberOfEntries;
       for (std::size_t i = start; i < end; ++i) {
         if (_data[i].key == 0) continue;
-        _data[i].age++;
-        if (_data[i].age > 7) _data[i].age = 7;
+        if (_data[i].age < 7) _data[i].age++;
       }
     });
   }
@@ -246,7 +243,7 @@ void TT::ageEntries() {
   LOG__DEBUG(Logger::get().TT_LOG, "TT aged {:L} entries in {:L} ms ({} threads)", maxNumberOfEntries, time, threadsToUse);
 }
 
-std::string TT::str() {
+std::string TT::str() const {
   return std::format(
     deLocale,
     "TT: size {:L} MB max entries {:L} of size {:L} Bytes entries {:L} ({:L}%) puts {:L} "
