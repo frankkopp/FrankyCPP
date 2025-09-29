@@ -35,6 +35,7 @@ public:
     NEWLINE;
     Logger::get().TEST_LOG->set_level(spdlog::level::debug);
     Logger::get().EVAL_LOG->set_level(spdlog::level::debug);
+    Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
   }
 
 protected:

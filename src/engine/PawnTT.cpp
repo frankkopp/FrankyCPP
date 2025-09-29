@@ -17,14 +17,17 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#include <algorithm>
 #include <bit>
+#include <cmath>
+#include <execution>
 #include <thread>
 
 #include "PawnTT.h"
 #include "common/Logging.h"
 
 PawnTT::PawnTT(const uint64_t newSizeInMByte) {
-  noOfThreads = std::thread::hardware_concurrency();
+  noOfThreads = std::max(1u, std::thread::hardware_concurrency());
   resize(newSizeInMByte);
 }
 
@@ -34,7 +37,7 @@ void PawnTT::resize(const uint64_t newSizeInMByte) {
     sizeInByte = MAX_SIZE_MB * MB;
   }
   else {
-    LOG__TRACE(Logger::get().EVAL_LOG, "Resizing PawnTT from {:L} MB to {:L} MB", sizeInByte, newSizeInMByte);
+    LOG__TRACE(Logger::get().EVAL_LOG, "Resizing PawnTT from {:L} MB to {:L} MB", sizeInByte / MB, newSizeInMByte);
     sizeInByte = newSizeInMByte * MB;
   }
 
@@ -53,32 +56,38 @@ void PawnTT::resize(const uint64_t newSizeInMByte) {
 
   // Even when logically disabled (maxNumberOfEntries==0), allocate a single dummy entry
   // so hot-path functions can remain branchless and safely index _data[0].
-  const std::size_t allocEntries = maxNumberOfEntries ? maxNumberOfEntries : 1u;
-
   hashKeyMask = maxNumberOfEntries ? (maxNumberOfEntries - 1) : 0;
   sizeInByte  = maxNumberOfEntries * ENTRY_SIZE;
 
   // release old tt memory
   _data.reset(nullptr);
 
-  // try to allocate memory for TT - repeat until allocation is successful
+  // try to allocate memory for TT - reduce on failure until success (down to dummy)
+  std::size_t tryEntries = maxNumberOfEntries ? maxNumberOfEntries : 1u;
   while (true) {
     try {
-      _data = std::make_unique<Entry[]>(allocEntries);
+      _data = std::make_unique<Entry[]>(tryEntries);
       break;
     } catch (std::bad_alloc const&) {
-      // we could not allocate enough memory, so we reduce PawnTT size by a power of 2
-      uint64_t oldSize   = sizeInByte;
-      maxNumberOfEntries = maxNumberOfEntries >> 1ULL;
-      const std::size_t alloc2 = maxNumberOfEntries ? maxNumberOfEntries : 1u;
-      hashKeyMask        = maxNumberOfEntries ? maxNumberOfEntries - 1 : 0;
-      sizeInByte         = maxNumberOfEntries * ENTRY_SIZE;
-      LOG__ERROR(Logger::get().EVAL_LOG, "Not enough memory for requested PawnTT size {:L} MB reducing to {:L} MB", oldSize, sizeInByte);
-      // retry with smaller allocation in next loop
+      if (maxNumberOfEntries) {
+        const uint64_t oldSizeMb = sizeInByte / MB;
+        maxNumberOfEntries >>= 1ULL;
+        hashKeyMask = maxNumberOfEntries ? (maxNumberOfEntries - 1) : 0;
+        sizeInByte  = maxNumberOfEntries * ENTRY_SIZE;
+        LOG__ERROR(Logger::get().EVAL_LOG,
+                   "Not enough memory for requested PawnTT size {:L} MB reducing to {:L} MB",
+                   oldSizeMb, sizeInByte / MB);
+        tryEntries = maxNumberOfEntries ? maxNumberOfEntries : 1u;
+        continue;
+      }
+      // already at dummy size -> last resort
+      tryEntries = 1u;
       try {
-        _data = std::make_unique<Entry[]>(alloc2);
+        _data = std::make_unique<Entry[]>(tryEntries);
         break;
       } catch (...) {
+        // If even a single entry cannot be allocated, rethrow to fail fast
+        throw;
       }
     }
   }
@@ -90,47 +99,37 @@ void PawnTT::resize(const uint64_t newSizeInMByte) {
 
 
 void PawnTT::clear() {
+  // reset statistics (also when table is logically disabled)
+  numberOfEntries    = 0;
+  numberOfHits       = 0;
+  numberOfUpdates    = 0;
+  numberOfMisses     = 0;
+  numberOfPuts       = 0;
+  numberOfCollisions = 0;
+  numberOfOverwrites = 0;
+  numberOfQueries    = 0;
+
   if (!maxNumberOfEntries) {
     LOG__DEBUG(Logger::get().EVAL_LOG, "PawnTT cleared - no entries");
     return;
   }
-  // This clears the PawnTT by overwriting each entry with 0.
-  // It uses multiple threads if noOfThreads is > 1.
-  LOG__TRACE(Logger::get().EVAL_LOG, "Clearing PawnTT ({} threads)...", noOfThreads);
 
+  LOG__TRACE(Logger::get().EVAL_LOG, "Clearing PawnTT (parallel algorithms)...");
   const auto startTime = high_resolution_clock::now();
-  std::vector<std::thread> threads;
-  threads.reserve(noOfThreads);
 
-  // split work onto multiple threads
-  for (unsigned int t = 0; t < noOfThreads; ++t) {
-    threads.emplace_back([&, this, t]() {
-      const auto range = maxNumberOfEntries / noOfThreads;
-      const auto start = t * range;
-      auto end   = start + range;
-      if (t == noOfThreads - 1) end = maxNumberOfEntries;
-      for (std::size_t i = start; i < end; ++i) {
-        _data[i].key      = 0;
-        _data[i].midvalue = VALUE_NONE;
-        _data[i].endvalue = VALUE_NONE;
-      }
-    });
-  }
+  Entry* beginPtr = _data.get();
+  Entry* endPtr   = beginPtr + maxNumberOfEntries;
 
-  // wait until all threads have finished their work
-  for (std::thread& th : threads) th.join();
-
-  // reset statistics
-  numberOfEntries = 0;
-  numberOfHits    = 0;
-  numberOfUpdates = 0;
-  numberOfMisses  = 0;
+  std::for_each(std::execution::par, beginPtr, endPtr, [](Entry& e) {
+    e.key      = 0;
+    e.midvalue = VALUE_NONE;
+    e.endvalue = VALUE_NONE;
+  });
 
   const auto finish = high_resolution_clock::now();
   const auto time   = std::chrono::duration_cast<milliseconds>(finish - startTime).count();
-  (void)time;
 
-  LOG__DEBUG(Logger::get().EVAL_LOG, "PawnTT cleared {:L} entries in {:L} ms ({} threads)", maxNumberOfEntries, time, noOfThreads);
+  LOG__DEBUG(Logger::get().EVAL_LOG, "PawnTT cleared {:L} entries in {:L} ms", maxNumberOfEntries, time);
 }
 
 void PawnTT::put(Entry* entryPtr, const ZobristKey key, const Score score) {

@@ -21,6 +21,8 @@
 #define FRANKYCPP_PAWNTT_H
 
 #include "types/types.h"
+#include <format>
+#include <string>
 
 // pre-fetching of TT entries into CPU caches
 #ifdef __GNUC__
@@ -139,7 +141,7 @@ public:
 #ifdef EVAL_ENABLE_PREFETCH
   void prefetch(const ZobristKey key) {
 #ifdef __GNUC__
-    _mm_prefetch(&_data[(key & hashKeyMask)], _MM_HINT_T0);
+    _mm_prefetch((reinterpret_cast<const char*>(&_data[(key & hashKeyMask)])), _MM_HINT_T0);
 #elif _MSC_VER
     _mm_prefetch((reinterpret_cast<const char*>(&_data[(key & hashKeyMask)])), _MM_HINT_T0);
 #endif
