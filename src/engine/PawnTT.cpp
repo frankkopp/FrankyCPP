@@ -82,13 +82,8 @@ void PawnTT::resize(const uint64_t newSizeInMByte) {
       }
       // already at dummy size -> last resort
       tryEntries = 1u;
-      try {
-        _data = std::make_unique<Entry[]>(tryEntries);
-        break;
-      } catch (...) {
-        // If even a single entry cannot be allocated, rethrow to fail fast
-        throw;
-      }
+      _data      = std::make_unique<Entry[]>(tryEntries);
+      break;
     }
   }
 
