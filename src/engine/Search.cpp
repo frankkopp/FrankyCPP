@@ -846,7 +846,9 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       if (nValue >= beta) {
         statistics.nullMoveCuts++;
         // Store TT
-        if (SearchConfig::USE_TT) { storeTt(p, depth, ply, ttMove, nValue, BETA, staticEval); }
+        if (SearchConfig::USE_TT) {
+          storeTt(p, depth, ply, MOVE_NONE, nValue, BETA, staticEval);
+        }
         return nValue;
       }
     }
@@ -1404,27 +1406,27 @@ inline Value Search::evaluate(const Position& p) {
   return evaluator->evaluate(p);
 }
 
-bool Search::goodCapture(Position& p, const Move move) const {
+bool Search::goodCapture(Position& p, const Move move) {
   if (SearchConfig::USE_QS_SEE) {
     // Check SEE score of higher-value pieces to low-value pieces
-    return See::see(p, move) > 0;
+    return See::see(p, move) >= 0;
   }
   return
-    // all pawn captures - they never loose material
+    // all pawn captures - they never lose material
     // typeOf(position.getPiece(getFromSquare(move))) == PAWN
 
-    // Lower value piece captures higher value piece
+    // Lower value piece captures a higher value piece
     // With a margin to also look at Bishop x Knight
-    (valueOf(position.getPiece(move.from())) + 50) < valueOf(position.getPiece(move.to()))
+    valueOf(p.getPiece(move.from())) + 50 < valueOf(p.getPiece(move.to()))
 
     // all recaptures should be looked at
-    || (position.getLastMove() != MOVE_NONE && position.getLastCapturedPiece() != PIECE_NONE && position.getLastMove().to() == move.to())
+    || (p.getLastMove() != MOVE_NONE && p.getLastCapturedPiece() != PIECE_NONE && p.getLastMove().to() == move.to())
 
     // undefended pieces captures are good
-    // If the defender is "behind" the attacker this will not be recognized
+    // If the defender is "behind" the attacker, this will not be recognized
     // here This is not too bad as it only adds a move to qsearch which we
     // could otherwise ignore
-    || !position.isAttacked(move.to(), ~position.getNextPlayer());
+    || !p.isAttacked(move.to(), ~p.getNextPlayer());
 }
 
 void Search::storeTt(

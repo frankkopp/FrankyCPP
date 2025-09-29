@@ -241,7 +241,7 @@ private:
 
   // reduce the number of moves searched in quiescence search by trying
   // to only look at good captures.
-  bool goodCapture(Position& p, Move move) const;
+  static bool goodCapture(Position& p, Move move) ;
 
   // storeTT stores a position into the TT
   void storeTt(const Position& p, Depth depth, Depth ply, Move move, Value value, ValueType valueType, Value eval) const;
