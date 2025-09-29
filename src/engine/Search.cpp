@@ -96,7 +96,7 @@ void Search::stopSearch() {
   waitWhileSearching();
 }
 
-bool Search::isSearching() const { // NOLINT(*-convert-member-functions-to-static)
+bool Search::isSearching() const {// NOLINT(*-convert-member-functions-to-static)
   // Try to get running semaphore.
   // If not available, the search is running
   if (isRunningSemaphore.try_acquire()) {
@@ -429,9 +429,13 @@ SearchResult Search::iterativeDeepening(Position& p) {
     // ###########################################
     // Start actual alpha beta search
     // ASPIRATION SEARCH
-    if (SearchConfig::USE_ASP && iterationDepth > 3) { bestValue = aspirationSearch(p, iterationDepth, bestValue); }
+    if (SearchConfig::USE_ASP && iterationDepth > 3) {
+      bestValue = aspirationSearch(p, iterationDepth, bestValue);
+    }
     // PVS SEARCH (or pure ALPHA BETA when PVS deactivated)
-    else { bestValue = rootSearch(p, iterationDepth, alpha, beta); }
+    else {
+      bestValue = rootSearch(p, iterationDepth, alpha, beta);
+    }
     // ###########################################
 
     // record iteration duration for next pre-check
@@ -562,12 +566,12 @@ Value Search::aspirationSearch(Position& p, const Depth depth, const Value bestV
       // add some extra time because of fail low
       // we might have found a strong opponent's move
       addExtraTime(1.3);
-      // if we fail low tests, it is best to immediately open up the window full
       // If time is almost up, don't expand; return current value
       if (isTimeAlmostUp()) { return value; }
-      alpha = VALUE_MIN;
-      // Alternatively we could do steps as well
-      // alpha = Max(bestValue-aspirationSteps[i], ValueMin)
+      // if we fail low tests, it is best to immediately open up the window full
+      // Alternatively, we could do steps as well
+      // alpha = VALUE_MIN;
+      alpha = std::max(bestValue - aspirationSteps[i], VALUE_MIN);
       statistics.aspirationResearches++;
     }
     else if (value >= beta) {
@@ -1197,6 +1201,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
   }
 
   // Mate Distance Pruning
+  // Did we already find a shorter mate then ignore this one.
   if (SearchConfig::USE_MDP) {
     alpha = std::max(alpha, -VALUE_CHECKMATE + static_cast<Value>(ply));
     beta  = std::min(beta, VALUE_CHECKMATE - static_cast<Value>(ply));
@@ -1206,27 +1211,26 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
     }
   }
 
-  // prepare node search
-  const Color us      = p.getNextPlayer();
-  Value bestNodeValue = VALUE_NONE;
-  Move bestNodeMove   = MOVE_NONE;// used to store in the TT
-  Move ttMove         = MOVE_NONE;
-  ValueType ttType    = ALPHA;
-  Value staticEval    = VALUE_NONE;
-
   // TT Lookup
+  Move ttMove      = MOVE_NONE;
+  Value staticEval = VALUE_NONE;
   if (SearchConfig::USE_TT && SearchConfig::USE_QS_TT) {
     if (const TT::Entry* ttEntryPtr = tt->probe(p.getZobristKey())) {
       // tt hit
       statistics.ttHit++;
       ttMove              = static_cast<Move>(ttEntryPtr->move);
       const Value ttValue = valueFromTt(ttEntryPtr->value, ply);
-      if (ttValue.isValid() && (ttEntryPtr->type == EXACT || (ttEntryPtr->type == ALPHA && ttValue <= alpha) || (ttEntryPtr->type == BETA && ttValue >= beta)) && SearchConfig::USE_TT_VALUE) {
+      if (SearchConfig::USE_TT_VALUE
+          && ttValue.isValid()
+          && (ttEntryPtr->type == EXACT
+              || (ttEntryPtr->type == ALPHA && ttValue <= alpha)
+              || (ttEntryPtr->type == BETA && ttValue >= beta))) {
         statistics.TtCuts++;
         return ttValue;
       }
       // if we have a static eval stored we can reuse it
-      if (SearchConfig::USE_EVAL_TT && ttEntryPtr->eval != VALUE_NONE) {
+      if (SearchConfig::USE_EVAL_TT
+          && ttEntryPtr->eval != VALUE_NONE) {
         statistics.evalFromTT++;
         staticEval = ttEntryPtr->eval;
       }
@@ -1234,6 +1238,11 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
     else { statistics.ttMiss++; }
   }// use TT
 
+  // prepare node search
+  const Color us      = p.getNextPlayer();
+  Value bestNodeValue = VALUE_NONE;
+  Move bestNodeMove   = MOVE_NONE;// used to store in the TT
+  ValueType ttType    = ALPHA;
   const bool hasCheck = p.hasCheck();
 
   // if in check we simply do a normal search (all moves) in qsearch
@@ -1251,7 +1260,11 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
       if (staticEval >= beta) {
         statistics.standpatCuts++;
         // Storing this value might save us calls to eval on the same position.
-        if (SearchConfig::USE_TT && SearchConfig::USE_QS_TT && SearchConfig::USE_EVAL_TT) { storeTt(p, DEPTH_NONE, ply, MOVE_NONE, VALUE_NONE, NONE, staticEval); }
+        if (SearchConfig::USE_TT
+            && SearchConfig::USE_QS_TT
+            && SearchConfig::USE_EVAL_TT) {
+          storeTt(p, DEPTH_NONE, ply, MOVE_NONE, VALUE_NONE, NONE, staticEval);
+        }
         return staticEval;
       }
       alpha = staticEval;
@@ -1269,7 +1282,9 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
     statistics.TtMoveUsed++;
     myMg->setPV(ttMove);
   }
-  else { statistics.NoTtMove++; }
+  else {
+    statistics.NoTtMove++;
+  }
 
   // prepare move loop
   Value value;
@@ -1308,14 +1323,13 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
       }
     }
 
-    // reduce number of moves searched in quiescence
+    // reduce the number of moves searched in quiescence
     // by looking at good captures only
     if (!hasCheck && !goodCapture(p, move)) { continue; }
 
     // ///////////////////////////////////////////////////////
     // DO MOVE
     p.doMove(move);
-
     if (!p.wasLegalMove()) {
       p.undoMove();
       continue;
@@ -1332,8 +1346,13 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
     sendSearchUpdateToUci();
 
     // check repetition and 50 moves
-    if (checkDrawRepAnd50(p, 2)) { value = VALUE_DRAW; }
-    else { value = -qsearch(p, ply + 1, -beta, -alpha, isPv); }
+    if (checkDrawRepAnd50(p, 2)) {
+      value = VALUE_DRAW;
+    }
+    else {
+      // recursion into qsearch
+      value = -qsearch(p, ply + 1, -beta, -alpha, isPv);
+    }
 
     movesSearched++;
     statistics.currentVariation.pop_back();
@@ -1344,7 +1363,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
     // check if we should stop the search
     if (stopConditions()) { return VALUE_NONE; }
 
-    // See search function above for documentation
+    // See the search function above for documentation
     if (value > bestNodeValue) {
       bestNodeValue = value;
       bestNodeMove  = move;
@@ -1374,10 +1393,10 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
   // MOVE LOOP
   // ///////////////////////////////////////////////////////
 
-  // If we did not have at least one legal move
+  // If we did not have at least one legal move,
   // then we might have a mate or stalemate
   if (movesSearched == 0 && !stopConditions()) {
-    // if we have a mate we had a check before and therefore
+    // if we have a mate, we had a check before and therefore
     // generated all moves. We can be sure this is a mate.
     if (hasCheck) {
       // mate
@@ -1395,7 +1414,9 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
 
   // Store TT
   // Store search result for this node into the transposition table
-  if (SearchConfig::USE_TT && SearchConfig::USE_QS_TT) { storeTt(p, DEPTH_ONE, ply, bestNodeMove, bestNodeValue, ttType, staticEval); }
+  if (SearchConfig::USE_TT && SearchConfig::USE_QS_TT) {
+    storeTt(p, DEPTH_NONE, ply, bestNodeMove, bestNodeValue, ttType, staticEval);
+  }
 
   return bestNodeValue;
 }
@@ -1713,6 +1734,7 @@ void Search::startTimer() {
         // Busy-wait for the final few ms
         while (currentTime() - startSearchTime < budget && !stopSearchFlag) {
           // tight loop, no sleep
+          std::this_thread::yield();
         }
         break;
       }
