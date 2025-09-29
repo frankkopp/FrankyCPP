@@ -96,7 +96,7 @@ void Search::stopSearch() {
   waitWhileSearching();
 }
 
-bool Search::isSearching() const {
+bool Search::isSearching() const { // NOLINT(*-convert-member-functions-to-static)
   // Try to get running semaphore.
   // If not available, the search is running
   if (isRunningSemaphore.try_acquire()) {
@@ -382,7 +382,9 @@ SearchResult Search::iterativeDeepening(Position& p) {
       if (growth < 1.2) growth = 1.2;
       if (growth > 3.0) growth = 3.0;
       const uint64_t predictedNodesNext = lastIterationNodes > 0
-                                            ? static_cast<uint64_t>(lastIterationNodes * growth)
+                                            ? static_cast<uint64_t>(std::llround(
+                                                static_cast<long double>(lastIterationNodes)
+                                                * static_cast<long double>(growth)))
                                             : 0ULL;
 
       milliseconds needed{0};
@@ -397,7 +399,8 @@ SearchResult Search::iterativeDeepening(Position& p) {
 
       // Complexity-aware gating: scale remaining by root complexity factor.
       const auto effectiveRemaining = milliseconds{
-        static_cast<int64_t>(remaining.count() * rootComplexityFactor)};
+        std::llround(static_cast<long double>(remaining.count())
+                     * static_cast<long double>(rootComplexityFactor))};
 
       if (effectiveRemaining <= buffer || (needed.count() > 0 && effectiveRemaining < needed)) {
         LOG__DEBUG(Logger::get().SEARCH_LOG,
@@ -1513,7 +1516,7 @@ void Search::initialize() {
   }
 }
 
-bool Search::stopConditions() {
+bool Search::stopConditions() {// NOLINT(*-make-member-function-const)
   if (stopSearchFlag) return true;
   if (searchLimits.nodes > 0 && nodesVisited >= searchLimits.nodes) { stopSearchFlag = true; }
   return stopSearchFlag;
@@ -1657,18 +1660,19 @@ milliseconds Search::setupTimeControl(const Position& position, const SearchLimi
   milliseconds base;
   if (tl.count() < 100) {
     // limits for a very short available time reduced by another 20%
-    base = static_cast<milliseconds>(static_cast<uint64_t>(0.8 * tl.count()));
+    base = tl - tl / 5;// ~80% without floating-point (avoids narrowing)
   }
   else {
     // reduced by 10%
-    base = static_cast<milliseconds>(static_cast<uint64_t>(0.9 * tl.count()));
+    base = tl - tl / 10;// ~90% without floating-point
   }
   // apply reserve
   base = base > reserve ? base - reserve : base;
 
   // Complexity-aware weighting
   const double factor = computeComplexityFactorQuick(position);
-  const auto weighted = milliseconds{static_cast<int64_t>(base.count() * factor)};
+  const auto weighted = milliseconds{
+    (std::llround(static_cast<long double>(base.count()) * static_cast<long double>(factor)))};
   LOG__DEBUG(Logger::get().SEARCH_LOG, "TimeCtl: Estimated time left: base: {:L} ms factor: {:L} ms weighted: {:L}",
              base.count(), factor, weighted.count());
   return weighted;
@@ -1676,7 +1680,9 @@ milliseconds Search::setupTimeControl(const Position& position, const SearchLimi
 
 void Search::addExtraTime(const double f) {
   if (searchLimits.timeControl && !searchLimits.moveTime.count()) {
-    const auto deltaMs = static_cast<int64_t>(timeLimit.count() * (f - 1.0));
+    const auto deltaMs = std::llround(
+      static_cast<long double>(timeLimit.count())
+      * (static_cast<long double>(f) - 1.0L));
     (void) extraTimeMs.fetch_add(deltaMs, std::memory_order_relaxed);
     LOG__DEBUG(Logger::get().SEARCH_LOG, "Time added/reduced by {} to {} ", str(milliseconds(deltaMs)), str(timeLimit + milliseconds(extraTimeMs.load(std::memory_order_relaxed))));
   }
