@@ -23,6 +23,7 @@
 #include "common/stringutil.h"
 #include "engine/SearchConfig.h"
 #include "engine/UciOptions.h"
+#include "engine/EvalConfig.h"
 
 #include "types/timeunits.h"
 #include <boost/algorithm/string.hpp>
@@ -141,6 +142,8 @@ TestSuiteResult TestSuite::sumUpTests() const {
 
 void TestSuite::runAllTests() {
   int i = 0;
+  // Ensure evaluator configuration is at defaults for this suite run
+  EvalConfig::resetToDefaults();
   // loop over all test cases and execute the test
   for (auto& test : testCases) {
     fprintln("Test {} of {}\nTest: {} -- Target Result {}",

@@ -24,6 +24,7 @@
 #include "init.h"
 #include "types/types.h"
 #include "version.h"
+#include "engine/EvalConfig.h"
 
 #include <gtest/gtest.h>
 using testing::Eq;
@@ -44,8 +45,12 @@ public:
     init::init();
     NEWLINE;
 
+    // Ensure evaluation settings are restored to defaults for this fixture,
+    // as other tests (e.g., EvaluatorTest) toggle EvalConfig globals.
+    EvalConfig::resetToDefaults();
+
     Logger::get().TEST_LOG->set_level(spdlog::level::debug);
-    Logger::get().SEARCH_LOG->set_level(spdlog::level::warn);
+    Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
     Logger::get().TT_LOG->set_level(spdlog::level::warn);
     Logger::get().EVAL_LOG->set_level(spdlog::level::warn);
     Logger::get().UCI_LOG->set_level(spdlog::level::info);
