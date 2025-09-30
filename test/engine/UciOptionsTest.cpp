@@ -19,10 +19,9 @@
 
 #include <string>
 
-#include "init.h"
-#include "types/types.h"
 #include "engine/SearchConfig.h"
 #include "engine/UciOptions.h"
+#include "init.h"
 
 #include <engine/UciHandler.h>
 #include <gtest/gtest.h>
@@ -52,7 +51,7 @@ TEST_F(UciOptionsTest, initAndStr) {
 
   o = pUciOptions->getOption("Hash");
   fprintln("Option: {}", o->str());
-  EXPECT_EQ("option name Hash type spin default 64 min 0 max 4096", o->str());
+  EXPECT_TRUE(o->str().rfind("option name Hash type spin default 64 min 0 max 4096 current ", 0) == 0);
   fprintln("Option current value: {}", o->currentValue);
   EXPECT_EQ("64", o->defaultValue);
 

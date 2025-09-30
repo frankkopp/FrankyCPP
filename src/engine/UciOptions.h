@@ -117,6 +117,8 @@ public:
 
   // helper for converting a string option to an int
   static int getInt(const std::string& value);
+
+
 };
 
 inline std::ostream& operator<<(std::ostream& os, const UciOptions& options) {

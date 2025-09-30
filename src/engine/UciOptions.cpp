@@ -221,6 +221,9 @@ std::string UciOption::str() const {
       str += "string default " + defaultValue;
       break;
   }
+  if (type != BUTTON && !currentValue.empty()) {
+    str += " current " + currentValue;
+  }
   return str;
 }
 
