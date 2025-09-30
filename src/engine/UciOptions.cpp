@@ -64,6 +64,10 @@ void UciOptions::initOptions() {
   optionVector.emplace_back("Clear Hash",
                             [&](const UciHandler* uciHandler) { uciHandler->getSearchPtr()->clearTT(); });
 
+  // Expose a button to reset all options back to defaults.
+  optionVector.emplace_back("Reset to Defaults",
+                            [&](UciHandler* uciHandler) { this->resetToDefaults(uciHandler); });
+
   optionVector.emplace_back("Use Killer Moves", SearchConfig::USE_KILLER_MOVES,
                             [&](UciHandler*) { SearchConfig::USE_KILLER_MOVES = getOption("Use Killer Moves")->currentValue == "true"; });
 
@@ -233,5 +237,15 @@ int UciOptions::getInt(const std::string& value) {
     return intValue;
   } catch (...) {
     return 0;
+  }
+}
+
+void UciOptions::resetToDefaults(UciHandler* uciHandler) const {
+  if (!uciHandler) return;
+  // Reset every non-BUTTON option to its default by reusing setOption,
+  // which also invokes the option's handler to propagate the change.
+  for (const auto& o : optionVector) {
+    if (o.type == BUTTON) continue; // buttons have no persistent value
+    setOption(uciHandler, o.nameID, o.defaultValue);
   }
 }

@@ -82,3 +82,86 @@ TEST_F(UciOptionsTest, setOption) {
   EXPECT_EQ("128", o->currentValue);
   EXPECT_EQ(SearchConfig::TT_SIZE_MB, 128);
 }
+
+TEST_F(UciOptionsTest, resetToDefaults_restores_defaults_and_applies_handlers) {
+  const UciOptions* pUciOptions = UciOptions::getInstance();
+  UciHandler uciHandler{};
+
+  // Gather some options and their defaults
+  const auto oHash    = pUciOptions->getOption("Hash");
+  const auto oPonder  = pUciOptions->getOption("Ponder");
+  const auto oThreat  = pUciOptions->getOption("Use Threat Extension");
+  ASSERT_NE(oHash, nullptr);
+  ASSERT_NE(oPonder, nullptr);
+  ASSERT_NE(oThreat, nullptr);
+
+  const int  defaultHash     = UciOptions::getInt(oHash->defaultValue);
+  const bool defaultPonder   = (oPonder->defaultValue == std::string("true"));
+  const bool defaultThreat   = (oThreat->defaultValue == std::string("true"));
+
+  // Change values away from defaults
+  const int  altHash = (defaultHash == 4096 ? defaultHash - 1 : defaultHash + 1);
+  const char* altPonder = defaultPonder ? "false" : "true";
+  const char* altThreat = defaultThreat ? "false" : "true";
+
+  EXPECT_TRUE(pUciOptions->setOption(&uciHandler, "Hash", std::to_string(altHash)));
+  EXPECT_EQ(oHash->currentValue, std::to_string(altHash));
+  EXPECT_EQ(SearchConfig::TT_SIZE_MB, altHash);
+
+  EXPECT_TRUE(pUciOptions->setOption(&uciHandler, "Ponder", altPonder));
+  EXPECT_EQ(oPonder->currentValue, std::string(altPonder));
+  EXPECT_EQ(SearchConfig::USE_PONDER, (std::string(altPonder) == "true"));
+
+  EXPECT_TRUE(pUciOptions->setOption(&uciHandler, "Use Threat Extension", altThreat));
+  EXPECT_EQ(oThreat->currentValue, std::string(altThreat));
+  EXPECT_EQ(SearchConfig::USE_THREAT_EXT, (std::string(altThreat) == "true"));
+
+  // Now reset to defaults and verify both option current values and configs
+  pUciOptions->resetToDefaults(&uciHandler);
+
+  EXPECT_EQ(oHash->currentValue, oHash->defaultValue);
+  EXPECT_EQ(SearchConfig::TT_SIZE_MB, defaultHash);
+
+  EXPECT_EQ(oPonder->currentValue, oPonder->defaultValue);
+  EXPECT_EQ(SearchConfig::USE_PONDER, defaultPonder);
+
+  EXPECT_EQ(oThreat->currentValue, oThreat->defaultValue);
+  EXPECT_EQ(SearchConfig::USE_THREAT_EXT, defaultThreat);
+}
+
+TEST_F(UciOptionsTest, resetButton_exists_and_resets) {
+  const UciOptions* pUciOptions = UciOptions::getInstance();
+  UciHandler uciHandler{};
+
+  const auto oReset = pUciOptions->getOption("Reset to Defaults");
+  ASSERT_NE(oReset, nullptr);
+  EXPECT_EQ("option name Reset to Defaults type button", oReset->str());
+
+  // Change some options
+  const auto oHash   = pUciOptions->getOption("Hash");
+  const auto oPonder = pUciOptions->getOption("Ponder");
+  ASSERT_NE(oHash, nullptr);
+  ASSERT_NE(oPonder, nullptr);
+
+  const int  defaultHash   = UciOptions::getInt(oHash->defaultValue);
+  const bool defaultPonder = (oPonder->defaultValue == std::string("true"));
+
+  const int altHash = (defaultHash == 4096 ? defaultHash - 1 : defaultHash + 1);
+  const char* altPonder = defaultPonder ? "false" : "true";
+
+  EXPECT_TRUE(pUciOptions->setOption(&uciHandler, "Hash", std::to_string(altHash)));
+  EXPECT_EQ(SearchConfig::TT_SIZE_MB, altHash);
+
+  EXPECT_TRUE(pUciOptions->setOption(&uciHandler, "Ponder", altPonder));
+  EXPECT_EQ(SearchConfig::USE_PONDER, (std::string(altPonder) == "true"));
+
+  // Invoke the button (value is ignored by the handler)
+  EXPECT_TRUE(pUciOptions->setOption(&uciHandler, "Reset to Defaults", ""));
+
+  // Verify reset happened
+  EXPECT_EQ(oHash->currentValue, oHash->defaultValue);
+  EXPECT_EQ(SearchConfig::TT_SIZE_MB, defaultHash);
+
+  EXPECT_EQ(oPonder->currentValue, oPonder->defaultValue);
+  EXPECT_EQ(SearchConfig::USE_PONDER, defaultPonder);
+}

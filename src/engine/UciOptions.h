@@ -111,6 +111,10 @@ public:
   // Otherwise, if the option was not found, it returns false.
   bool setOption(UciHandler* uciHandler, const std::string& name, const std::string& value) const;
 
+  // Reset all options to their default values and apply their handlers.
+  // BUTTON options are skipped. Requires a valid uciHandler when handlers depend on it.
+  void resetToDefaults(UciHandler* uciHandler) const;
+
   // String for uciOption will return a representation of the uci option as required by
   // the UCI protocol during the initialization phase of the UCI protocol
   [[nodiscard]] std::string str() const;
