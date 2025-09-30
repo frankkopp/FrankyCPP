@@ -45,9 +45,11 @@ public:
     NEWLINE;
 
     Logger::get().TEST_LOG->set_level(spdlog::level::debug);
-    Logger::get().TSUITE_LOG->set_level(spdlog::level::info);
     Logger::get().SEARCH_LOG->set_level(spdlog::level::warn);
+    Logger::get().TT_LOG->set_level(spdlog::level::warn);
+    Logger::get().EVAL_LOG->set_level(spdlog::level::warn);
     Logger::get().UCI_LOG->set_level(spdlog::level::info);
+    Logger::get().TSUITE_LOG->set_level(spdlog::level::info);
   }
 
 protected:
@@ -68,8 +70,7 @@ TEST_F(TestSuite_Test, readFile) {
 TEST_F(TestSuite_Test, franky_test) {
   UciHandler uciHandler{};
   UciOptions::getInstance()->resetToDefaults(&uciHandler);
-
-
+  UciOptions::getInstance()->setOption(&uciHandler, "OwnBook", "false");
   constexpr auto moveTime{1s};
   constexpr Depth depth{0};
   std::string filePath = FrankyCPP_PROJECT_ROOT;

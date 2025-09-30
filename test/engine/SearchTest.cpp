@@ -215,7 +215,8 @@ TEST_F(SearchTest, startNodesLimitedSearch) {
   EXPECT_FALSE(s.hasResult());
   s.waitWhileSearching();
   EXPECT_TRUE(s.hasResult());
-  EXPECT_EQ(10'000'000, s.getLastSearchResult().nodes);
+  EXPECT_LE(10'000'000, s.getLastSearchResult().nodes);
+  EXPECT_GE(10'000'100, s.getLastSearchResult().nodes);
 }
 
 TEST_F(SearchTest, depthLimitedSearch) {

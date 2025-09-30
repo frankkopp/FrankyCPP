@@ -74,7 +74,7 @@ struct UciOption {
       : nameID(name), type(STRING), defaultValue(val), currentValue(def), pHandler(std::move(handler)) {}
 
   // COMBO option with explicit allowed values and a default/current value
-  UciOption(const char* name, std::initializer_list<const char*> vars, const char* def, std::function<void(UciHandler*)> handler)
+  UciOption(const char* name, const std::initializer_list<const char*> vars, const char* def, std::function<void(UciHandler*)> handler)
       : nameID(name), type(COMBO), defaultValue(def), currentValue(def), pHandler(std::move(handler)) {
     comboVars.reserve(vars.size());
     for (auto v : vars) comboVars.emplace_back(v);

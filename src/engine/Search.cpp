@@ -646,14 +646,14 @@ Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Valu
     statistics.currentVariation.pop_back();
     p.undoMove();
 
+    // set the value into the root move to later be able to sort
+    // root moves according to value
+    moveRef.setValue(value);
+
     // we want to do at least one complete search with depth 1
     // After that we can stop any time - any new best moves will
     // have been stored in pv[0]
     if (stopConditions() && depth > 1) { return VALUE_NONE; }
-
-    // set the value into he root move to later be able to sort
-    // root moves according to value
-    moveRef.setValue(value);
 
     // Did we find a new best move?
     // For the first move with a full window (alpha=-inf)
@@ -692,7 +692,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   }
 
   // check if search should be stopped
-  if (stopConditions()) { return VALUE_NONE; }
+  if (stopConditions() && depth > 1) { return VALUE_NONE; }
 
   // Mate Distance Pruning
   // Did we already find a shorter mate then ignore
@@ -1131,7 +1131,9 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     // ///////////////////////////////////////////////////////
 
     // check if we should stop the search
-    if (stopConditions()) { return VALUE_NONE; }
+    // We want to guarantee at least one complete depth-1 root search.
+    // Do not abort mid-loop at depth==1 to keep results deterministic under time pressure.
+    if (stopConditions() && depth > 1) { return VALUE_NONE; }
 
     // Did we find a better move for this node (not ply)?
     // For the first move this is always the case.
