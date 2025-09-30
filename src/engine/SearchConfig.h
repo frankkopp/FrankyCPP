@@ -71,6 +71,13 @@ namespace SearchConfig {
   inline bool USE_NMP       = true;// Null Move Pruning
   inline auto NMP_DEPTH     = Depth{3};
   inline auto NMP_REDUCTION = Depth{2};
+  // NMP verification and safety guards
+  inline bool USE_NMP_VERIFY           = true;     // enable verification re-search on null-move fail-high
+  inline auto NMP_VERIFY_MIN_DEPTH     = Depth{6}; // verify only at or beyond this depth
+  inline auto NMP_VERIFY_MARGIN        = Depth{2}; // verifyDepth = depth - r - margin
+  inline auto NMP_NEAR_MATE_MARGIN     = Value{64};// disable NMP when near mate window by this margin
+  inline bool USE_NMP_ZUG_GUARD        = true;     // disable NMP in zugzwang-prone endgames
+  inline int NMP_ZUG_NONPAWN_THRESHOLD = 0;
 
   inline bool USE_FP        = true;                                                                               // futility pruning
   inline bool USE_QFP       = true;                                                                               // futility pruning qsearch
@@ -124,21 +131,21 @@ namespace SearchConfig {
   // moves-left model used in time control budgeting.
 
   // Improved moves-left model (time management) tunables
-  inline int MOVES_LEFT_OPENING   = 36; // early/opening phase
-  inline int MOVES_LEFT_MIDGAME   = 28; // middlegame default
-  inline int MOVES_LEFT_ENDGAME   = 16; // generic endgame
-  inline int MOVES_LEFT_LOW_MAT   = 10; // very low material endgames
-  inline int MOVES_LEFT_QUEENLESS = 22; // typical queenless middlegame/endgame
+  inline int MOVES_LEFT_OPENING   = 36;// early/opening phase
+  inline int MOVES_LEFT_MIDGAME   = 28;// middlegame default
+  inline int MOVES_LEFT_ENDGAME   = 16;// generic endgame
+  inline int MOVES_LEFT_LOW_MAT   = 10;// very low material endgames
+  inline int MOVES_LEFT_QUEENLESS = 22;// typical queenless middlegame/endgame
 
   // Non-pawn piece count thresholds (sum across both sides)
-  inline int NPP_HEAVY_THRESHOLD = 10; // many pieces
-  inline int NPP_LIGHT_THRESHOLD = 4;  // few pieces -> late endgame
+  inline int NPP_HEAVY_THRESHOLD = 10;// many pieces
+  inline int NPP_LIGHT_THRESHOLD = 4; // few pieces -> late endgame
 
   // Repetition/50-move risk handling and clamps
-  inline int REPETITION_HMC_HIGH     = 80; // half-move clock threshold considered risky
-  inline int REPETITION_RISK_PENALTY = 6;  // subtract from moves-left on high repetition risk
-  inline int MOVES_LEFT_MIN_CLAMP    = 6;  // never go below this
-  inline int MOVES_LEFT_MAX_CLAMP    = 50; // never go above this
+  inline int REPETITION_HMC_HIGH     = 80;// half-move clock threshold considered risky
+  inline int REPETITION_RISK_PENALTY = 6; // subtract from moves-left on high repetition risk
+  inline int MOVES_LEFT_MIN_CLAMP    = 6; // never go below this
+  inline int MOVES_LEFT_MAX_CLAMP    = 50;// never go above this
 
 }// namespace SearchConfig
 

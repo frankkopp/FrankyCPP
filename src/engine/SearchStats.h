@@ -74,6 +74,9 @@ struct SearchStats {
   uint64_t checkExtension;
   uint64_t threatExtension;
 
+  // New: count of null-move verification re-searches that prevented a cutoff
+  uint64_t nullMoveVerifications;
+
   [[nodiscard]] std::string str() const {
     std::ostringstream os;
     os << *this;
@@ -97,6 +100,7 @@ struct SearchStats {
        << " razorings: " << stats.razorings
        << " rfp_cuts: " << stats.rfp_cuts
        << " nmp_cuts: " << stats.nullMoveCuts
+       << " nmp_verify: " << stats.nullMoveVerifications
        << " fp_prunings: " << stats.fpPrunings
        << " qfp_prunings: " << stats.qfpPrunings
        << " lmrReductions: " << stats.lmrReductions

@@ -61,11 +61,12 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   SearchConfig::USE_HISTORY_COUNTER = false;
   SearchConfig::USE_HISTORY_MOVES   = false;
 
-  SearchConfig::USE_MDP      = false;
-  SearchConfig::USE_RAZORING = false;
-  SearchConfig::USE_RFP      = false;
-  SearchConfig::USE_NMP      = false;
-  SearchConfig::USE_IID      = false;
+  SearchConfig::USE_MDP        = false;
+  SearchConfig::USE_RAZORING   = false;
+  SearchConfig::USE_RFP        = false;
+  SearchConfig::USE_NMP        = false;
+  SearchConfig::USE_NMP_VERIFY = false;
+  SearchConfig::USE_IID        = false;
 
   SearchConfig::USE_FP  = false;
   SearchConfig::USE_QFP = false;
@@ -142,6 +143,9 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
 
   SearchConfig::USE_NMP = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "52 NMP"));
+
+  SearchConfig::USE_NMP_VERIFY = true;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "53 NMP Ver"));
 
   SearchConfig::USE_FP = true;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "60 FP"));

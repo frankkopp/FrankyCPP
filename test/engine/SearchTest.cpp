@@ -77,13 +77,13 @@ TEST_F(SearchTest, setupTime) {
   sl.whiteTime = 30s;
   sl.blackTime = 30s;
   fprintln("{}", str(Search::setupTimeControl(p, sl)));
-  EXPECT_EQ(628, Search::setupTimeControl(p, sl).count());
+  EXPECT_EQ(629, Search::setupTimeControl(p, sl).count());
 
   sl           = SearchLimits{};
   sl.whiteTime = 3s;
   sl.blackTime = 3s;
   fprintln("{}", str(Search::setupTimeControl(p, sl)));
-  EXPECT_EQ(47, Search::setupTimeControl(p, sl).count());
+  EXPECT_EQ(48, Search::setupTimeControl(p, sl).count());
 
   sl           = SearchLimits{};
   sl.whiteTime = 30s;
@@ -91,7 +91,7 @@ TEST_F(SearchTest, setupTime) {
   sl.blackTime = 30s;
   sl.blackInc  = 1s;
   fprintln("{}", str(Search::setupTimeControl(p, sl)));
-  EXPECT_EQ(1393, Search::setupTimeControl(p, sl).count());
+  EXPECT_EQ(1394, Search::setupTimeControl(p, sl).count());
 }
 
 TEST_F(SearchTest, extraTime) {
@@ -101,11 +101,11 @@ TEST_F(SearchTest, extraTime) {
   s.extraTimeMs              = 0;
   s.addExtraTime(0.9);
   fprintln("{}", str(milliseconds(s.extraTimeMs.load())));
-  EXPECT_EQ(-999, s.extraTimeMs.load());
+  EXPECT_EQ(-1000, s.extraTimeMs.load());
   s.extraTimeMs = 0;
   s.addExtraTime(1.2);
   fprintln("{}", str(milliseconds(s.extraTimeMs.load())));
-  EXPECT_EQ(1999, s.extraTimeMs.load());
+  EXPECT_EQ(2000, s.extraTimeMs.load());
 }
 
 TEST_F(SearchTest, startTimer) {

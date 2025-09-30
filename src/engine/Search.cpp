@@ -781,7 +781,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 
   // Reverse Futility Pruning, (RFP, Static Null Move Pruning)
   // https://www.chessprogramming.org/Reverse_Futility_Pruning
-  // Anticipate likely alpha low in the next ply by a beta cut
+  // Anticipate a likely alpha low in the next ply by a beta cut
   // off before making and evaluating the move
   if (SearchConfig::USE_RFP
       && doNull
@@ -806,11 +806,19 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // - in check - this would lead to an illegal situation where the king is captured
   // - recursive null moves should be avoided
   if (SearchConfig::USE_NMP) {
+    // Disable near mate bounds and in zugzwang-prone endgames
+    const bool nearMateWindow = SearchConfig::USE_NMP_ZUG_GUARD
+                                && (beta > VALUE_CHECKMATE_THRESHOLD - SearchConfig::NMP_NEAR_MATE_MARGIN
+                                    || alpha < -VALUE_CHECKMATE_THRESHOLD + SearchConfig::NMP_NEAR_MATE_MARGIN);
+    const bool zugProne = SearchConfig::USE_NMP_ZUG_GUARD
+                          && p.getMaterialNonPawn(us) <= SearchConfig::NMP_ZUG_NONPAWN_THRESHOLD;
+
     if (doNull
         && !isPv
         && depth >= SearchConfig::NMP_DEPTH
-        && p.getMaterialNonPawn(us) > 0// to reduce risk of zugzwang
-        && !hasCheck) {
+        && !hasCheck
+        && !zugProne
+        && !nearMateWindow) {
       // possible other criteria: eval > beta
 
       // determine depth reduction
@@ -845,15 +853,31 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       }
 
       // if the value is higher than beta even after not making
-      // a move it is not worth searching as it will very likely
+      // a move, it is not worth searching as it will very likely
       // be above beta if we make a move
       if (nValue >= beta) {
-        statistics.nullMoveCuts++;
-        // Store TT
-        if (SearchConfig::USE_TT) {
-          storeTt(p, depth, ply, MOVE_NONE, nValue, BETA, staticEval);
+        // Verification search to reduce tactical false positives
+        if (SearchConfig::USE_NMP_VERIFY
+            && depth >= SearchConfig::NMP_VERIFY_MIN_DEPTH) {
+          Depth verifyDepth = depth - r - SearchConfig::NMP_VERIFY_MARGIN;
+          if (verifyDepth < 0) { verifyDepth = DEPTH_NONE; }
+          Value v = search(p, verifyDepth, ply, beta - 1, beta, NonPV, Do_Null_Move);
+          if (stopConditions()) { return VALUE_NONE; }
+          if (v < beta) {
+            statistics.nullMoveVerifications++;
+            // fall through: no cutoff
+          }
+          else {
+            if (SearchConfig::USE_TT) { storeTt(p, depth, ply, MOVE_NONE, nValue, BETA, staticEval); }
+            statistics.nullMoveCuts++;
+            return nValue;
+          }
         }
-        return nValue;
+        else {
+          if (SearchConfig::USE_TT) { storeTt(p, depth, ply, MOVE_NONE, nValue, BETA, staticEval); }
+          statistics.nullMoveCuts++;
+          return nValue;
+        }
       }
     }
   }
@@ -1433,6 +1457,11 @@ inline Value Search::evaluate(const Position& p) {
 }
 
 bool Search::goodCapture(Position& p, const Move move) {
+  // Captures that give check are always good
+  if (p.isCapturingMove(move) && p.givesCheck(move)) {
+    return true;
+  }
+
   if (SearchConfig::USE_QS_SEE) {
     // Check SEE score of higher-value pieces to low-value pieces
     return See::see(p, move) >= 0;
