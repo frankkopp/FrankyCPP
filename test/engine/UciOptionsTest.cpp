@@ -165,3 +165,44 @@ TEST_F(UciOptionsTest, resetButton_exists_and_resets) {
   EXPECT_EQ(oPonder->currentValue, oPonder->defaultValue);
   EXPECT_EQ(SearchConfig::USE_PONDER, defaultPonder);
 }
+
+TEST_F(UciOptionsTest, searchConfig_nonArray_options_present_and_settable) {
+  const UciOptions* pUciOptions = UciOptions::getInstance();
+  UciHandler uciHandler{};
+
+  // Presence checks for newly added options
+  EXPECT_NE(pUciOptions->getOption("Book Path"), nullptr);
+  EXPECT_NE(pUciOptions->getOption("Book Format"), nullptr);
+  EXPECT_NE(pUciOptions->getOption("Moves Left Opening"), nullptr);
+  EXPECT_NE(pUciOptions->getOption("Moves Left Midgame"), nullptr);
+  EXPECT_NE(pUciOptions->getOption("Moves Left Endgame"), nullptr);
+  EXPECT_NE(pUciOptions->getOption("Moves Left Low Material"), nullptr);
+  EXPECT_NE(pUciOptions->getOption("Moves Left Queenless"), nullptr);
+  EXPECT_NE(pUciOptions->getOption("NPP Heavy Threshold"), nullptr);
+  EXPECT_NE(pUciOptions->getOption("NPP Light Threshold"), nullptr);
+  EXPECT_NE(pUciOptions->getOption("Repetition HMC High"), nullptr);
+  EXPECT_NE(pUciOptions->getOption("Repetition Risk Penalty"), nullptr);
+  EXPECT_NE(pUciOptions->getOption("Moves Left Min Clamp"), nullptr);
+  EXPECT_NE(pUciOptions->getOption("Moves Left Max Clamp"), nullptr);
+  EXPECT_NE(pUciOptions->getOption("LMR Min Depth"), nullptr);
+  EXPECT_NE(pUciOptions->getOption("LMR Min Moves"), nullptr);
+
+  // Behavior checks: set a few and verify SearchConfig updates
+  // Book Format
+  EXPECT_TRUE(pUciOptions->setOption(&uciHandler, "Book Format", "SAN"));
+  EXPECT_EQ(SearchConfig::BOOK_TYPE, OpeningBook::BookFormat::SAN);
+  EXPECT_TRUE(pUciOptions->setOption(&uciHandler, "Book Format", "SIMPLE"));
+  EXPECT_EQ(SearchConfig::BOOK_TYPE, OpeningBook::BookFormat::SIMPLE);
+
+  // Moves Left Opening
+  const int oldMlo = SearchConfig::MOVES_LEFT_OPENING;
+  const int newMlo = oldMlo == 36 ? 35 : 36;
+  EXPECT_TRUE(pUciOptions->setOption(&uciHandler, "Moves Left Opening", std::to_string(newMlo)));
+  EXPECT_EQ(SearchConfig::MOVES_LEFT_OPENING, newMlo);
+
+  // LMR Min Depth
+  const int oldLmd = static_cast<int>(SearchConfig::LMR_MIN_DEPTH);
+  const int newLmd = oldLmd == 3 ? 4 : 3;
+  EXPECT_TRUE(pUciOptions->setOption(&uciHandler, "LMR Min Depth", std::to_string(newLmd)));
+  EXPECT_EQ(static_cast<int>(SearchConfig::LMR_MIN_DEPTH), newLmd);
+}
