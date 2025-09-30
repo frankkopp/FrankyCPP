@@ -19,6 +19,7 @@
 
 #include "common/Logging.h"
 #include "engine/SearchConfig.h"
+#include "engine/UciOptions.h"
 #include "enginetest/TestSuite.h"
 #include "init.h"
 #include "types/types.h"
@@ -46,6 +47,7 @@ public:
     Logger::get().TEST_LOG->set_level(spdlog::level::debug);
     Logger::get().TSUITE_LOG->set_level(spdlog::level::info);
     Logger::get().SEARCH_LOG->set_level(spdlog::level::warn);
+    Logger::get().UCI_LOG->set_level(spdlog::level::info);
   }
 
 protected:
@@ -64,6 +66,10 @@ TEST_F(TestSuite_Test, readFile) {
 }
 
 TEST_F(TestSuite_Test, franky_test) {
+  UciHandler uciHandler{};
+  UciOptions::getInstance()->resetToDefaults(&uciHandler);
+
+
   constexpr auto moveTime{1s};
   constexpr Depth depth{0};
   std::string filePath = FrankyCPP_PROJECT_ROOT;

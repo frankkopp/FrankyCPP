@@ -23,6 +23,8 @@
 #include <functional>
 #include <utility>
 #include <vector>
+#include <string>
+#include <initializer_list>
 
 class UciHandler;
 
@@ -52,6 +54,9 @@ struct UciOption {
   std::string currentValue;
   std::function<void(UciHandler*)> pHandler;
 
+  // Allowed values for COMBO options
+  std::vector<std::string> comboVars{};
+
   explicit UciOption(const char* name, std::function<void(UciHandler*)> handler)
       : nameID(name), type(BUTTON), defaultValue(boolStr(false)), pHandler(std::move(handler)) {}
 
@@ -68,6 +73,13 @@ struct UciOption {
   UciOption(const char* name, const char* val, const char* def, std::function<void(UciHandler*)> handler)
       : nameID(name), type(STRING), defaultValue(val), currentValue(def), pHandler(std::move(handler)) {}
 
+  // COMBO option with explicit allowed values and a default/current value
+  UciOption(const char* name, std::initializer_list<const char*> vars, const char* def, std::function<void(UciHandler*)> handler)
+      : nameID(name), type(COMBO), defaultValue(def), currentValue(def), pHandler(std::move(handler)) {
+    comboVars.reserve(vars.size());
+    for (auto v : vars) comboVars.emplace_back(v);
+  }
+
   UciOption(const UciOption& o) = default;
 
   // String for uciOption will return a representation of the uci option as required by
@@ -79,7 +91,6 @@ struct UciOption {
     return os;
   }
 };
-
 
 // Singleton class to store for all available options
 // This singleton instance can be used through the engine to access options.

@@ -36,19 +36,30 @@ void UciOptions::initOptions() {
                             [&](UciHandler*) { SearchConfig::USE_BOOK = getOption("OwnBook")->currentValue == "true"; });
   optionVector.emplace_back("Book Path", SearchConfig::BOOK_PATH.c_str(),
                             [&](UciHandler*) { SearchConfig::BOOK_PATH = getOption("Book Path")->currentValue; });
-  optionVector.emplace_back("Book Format", [] {
-                              switch (SearchConfig::BOOK_TYPE) {
-                                case OpeningBook::BookFormat::SAN: return "SAN";
-                                case OpeningBook::BookFormat::PGN: return "PGN";
-                                default: return "SIMPLE";
-                              }
-                            }(),
-                            [&](UciHandler*) {
-                              const auto& s = getOption("Book Format")->currentValue;
-                              if (s == "SAN") SearchConfig::BOOK_TYPE = OpeningBook::BookFormat::SAN;
-                              else if (s == "PGN") SearchConfig::BOOK_TYPE = OpeningBook::BookFormat::PGN;
-                              else SearchConfig::BOOK_TYPE = OpeningBook::BookFormat::SIMPLE;
-                            });
+  // Book Format as COMBO with allowed values
+  {
+    const char* def;
+    switch (SearchConfig::BOOK_TYPE) {
+      case OpeningBook::BookFormat::SAN:
+        def = "SAN";
+        break;
+      case OpeningBook::BookFormat::PGN:
+        def = "PGN";
+        break;
+      default:
+        def = "SIMPLE";
+        break;
+    }
+    optionVector.emplace_back("Book Format", std::initializer_list{"SIMPLE", "SAN", "PGN"}, def,
+                              [&](UciHandler*) {
+                                const auto& s = getOption("Book Format")->currentValue;
+                                if (s == "SAN") SearchConfig::BOOK_TYPE = OpeningBook::BookFormat::SAN;
+                                else if (s == "PGN")
+                                  SearchConfig::BOOK_TYPE = OpeningBook::BookFormat::PGN;
+                                else
+                                  SearchConfig::BOOK_TYPE = OpeningBook::BookFormat::SIMPLE;
+                              });
+  }
 
   // 3) Ponder
   optionVector.emplace_back("Ponder", SearchConfig::USE_PONDER,
@@ -213,6 +224,16 @@ const UciOption* UciOptions::getOption(const std::string& name) const {
 
 bool UciOptions::setOption(UciHandler* uciHandler, const std::string& name, const std::string& value) const {
   if (const auto o = const_cast<UciOption*>(getOption(name))) {
+    if (o->type == COMBO) {
+      bool ok = false;
+      for (const auto& v : o->comboVars) {
+        if (v == value) {
+          ok = true;
+          break;
+        }
+      }
+      if (!ok) return false;
+    }
     o->currentValue = value;
     o->pHandler(uciHandler);
     return true;
@@ -239,7 +260,10 @@ std::string UciOption::str() const {
       str += "spin default " + defaultValue + " min " + minValue + " max " + maxValue;
       break;
     case COMBO:
-      str += "combo default " + defaultValue + " var " + varValue;
+      str += "combo default " + defaultValue;
+      for (const auto& v : comboVars) {
+        str += " var " + v;
+      }
       break;
     case BUTTON:
       str += "button";
@@ -267,8 +291,10 @@ void UciOptions::resetToDefaults(UciHandler* uciHandler) const {
   if (!uciHandler) return;
   // Reset every non-BUTTON option to its default by reusing setOption,
   // which also invokes the option's handler to propagate the change.
+  LOG__INFO(Logger::get().UCI_LOG, "Resetting all options to their default values");
   for (const auto& o : optionVector) {
-    if (o.type == BUTTON) continue; // buttons have no persistent value
+    if (o.type == BUTTON) continue;// buttons have no persistent value
     setOption(uciHandler, o.nameID, o.defaultValue);
+    LOG__DEBUG(Logger::get().UCI_LOG, "  Option '{}' reset to default value '{}'", o.nameID, o.defaultValue);
   }
 }

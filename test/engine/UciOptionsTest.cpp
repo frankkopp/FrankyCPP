@@ -27,7 +27,7 @@
 #include <gtest/gtest.h>
 using testing::Eq;
 
-class UciOptionsTest : public ::testing::Test {
+class UciOptionsTest : public testing::Test {
 public:
   static void SetUpTestSuite() {
     NEWLINE;
