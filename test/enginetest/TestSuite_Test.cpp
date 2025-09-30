@@ -42,17 +42,16 @@ public:
     NEWLINE;
     init::init();
     NEWLINE;
-  }
 
-protected:
-  void SetUp() override {
     Logger::get().TEST_LOG->set_level(spdlog::level::debug);
     Logger::get().TSUITE_LOG->set_level(spdlog::level::info);
     Logger::get().SEARCH_LOG->set_level(spdlog::level::warn);
   }
 
-  void TearDown() override {
-  }
+protected:
+  void SetUp() override {}
+
+  void TearDown() override {}
 };
 
 TEST_F(TestSuite_Test, readFile) {
