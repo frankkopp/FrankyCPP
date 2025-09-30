@@ -1014,12 +1014,17 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // if conditions apply.
       if (SearchConfig::USE_LMR) {
         // compute reduction from depth and move searched
-        if (depth >= SearchConfig::LMR_MIN_DEPTH && movesSearched >= SearchConfig::LMR_MIN_MOVES) {
-          if (depth >= 32 || movesSearched >= 64) {
-            lmrDepth -= static_cast<Depth>(SearchConfig::LMR_REDUCTION[31][63]);
+        if (depth >= SearchConfig::LMR_MIN_DEPTH
+            && movesSearched >= SearchConfig::LMR_MIN_MOVES
+            && !isPv
+            && !givesCheck
+            && !p.isCapturingMove(move)
+            && !move.promotionType()) {
+          if (depth < 32 && movesSearched < 64) {
+            lmrDepth -= static_cast<Depth>(SearchConfig::LMR_REDUCTION[depth][movesSearched]);
           }
           else {
-            lmrDepth -= static_cast<Depth>(SearchConfig::LMR_REDUCTION[depth][movesSearched]);
+            lmrDepth -= static_cast<Depth>(SearchConfig::LMR_REDUCTION[31][63]);
           }
           statistics.lmrReductions++;
         }
