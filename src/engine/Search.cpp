@@ -861,7 +861,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
             && depth >= SearchConfig::NMP_VERIFY_MIN_DEPTH) {
           Depth verifyDepth = depth - r - SearchConfig::NMP_VERIFY_MARGIN;
           if (verifyDepth < 0) { verifyDepth = DEPTH_NONE; }
-          Value v = search(p, verifyDepth, ply, beta - 1, beta, NonPV, Do_Null_Move);
+          const Value v = search(p, verifyDepth, ply, beta - 1, beta, NonPV, Do_Null_Move);
           if (stopConditions()) { return VALUE_NONE; }
           if (v < beta) {
             statistics.nullMoveVerifications++;
@@ -1036,7 +1036,8 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // newDepth is the "standard" new depth (depth - 1)
       // lmrDepth is set to newDepth and only reduced
       // if conditions apply.
-      if (SearchConfig::USE_LMR) {
+      if (SearchConfig::USE_LMR
+          && !matethreat) {
         // compute reduction from depth and move searched
         if (depth >= SearchConfig::LMR_MIN_DEPTH
             && movesSearched >= SearchConfig::LMR_MIN_MOVES
