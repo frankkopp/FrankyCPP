@@ -861,7 +861,8 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
             && depth >= SearchConfig::NMP_VERIFY_MIN_DEPTH) {
           Depth verifyDepth = depth - r - SearchConfig::NMP_VERIFY_MARGIN;
           if (verifyDepth < 0) { verifyDepth = DEPTH_NONE; }
-          const Value v = search(p, verifyDepth, ply, beta - 1, beta, NonPV, Do_Null_Move);
+          const auto do_null = matethreat  ? No_Null_Move : Do_Null_Move;
+          const Value v = search(p, verifyDepth, ply, beta - 1, beta, NonPV, do_null);
           if (stopConditions()) { return VALUE_NONE; }
           if (v < beta) {
             statistics.nullMoveVerifications++;
@@ -1018,7 +1019,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       }
 
       // LMP - Late Move Pruning
-      // aka Move Count Based Pruning
+      // aka Move-Count-Based Pruning
       if (SearchConfig::USE_LMP) {
         if (movesSearched >= SearchConfig::LMP_MOVES[(depth > 15 ? 15 : depth)]) {
           statistics.lmpCuts++;
@@ -1029,7 +1030,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // LMR
       // Late Move Reduction assumes that later moves a rarely
       // exceeding alpha and therefore the search is reduced in
-      // depth. This is in effect a soft transition into
+      // depth. This is, in effect, a soft transition into
       // quiescence search as we usually try the pv move and
       // capturing moves first. In quiescence only capturing
       // moves are searched anyway.
@@ -1085,6 +1086,9 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     // check repetition and 50 moves
     if (checkDrawRepAnd50(p, 2)) { value = VALUE_DRAW; }
     else {
+
+      const auto do_null = matethreat  ? No_Null_Move : Do_Null_Move;
+
       // ///////////////////////////////////////////////////////////////////
       // PVS
       // First move in Node will be searched with the full window. Due to move
@@ -1094,13 +1098,13 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // to research the move again with a full window.
       // https://www.chessprogramming.org/Principal_Variation_Search
       if (!SearchConfig::USE_PVS || movesSearched == 0) {
-        value = -search(p, newDepth, ply + 1, -beta, -alpha, PV, Do_Null_Move);
+        value = -search(p, newDepth, ply + 1, -beta, -alpha, PV, do_null);
       }
       else {
         // Null window search after the initial PV search.
         // As depth we use a potentially reduced depth if Late Move Reduction
         // conditions have been met above.
-        value = -search(p, lmrDepth, ply + 1, -alpha - 1, -alpha, NonPV, Do_Null_Move);
+        value = -search(p, lmrDepth, ply + 1, -alpha - 1, -alpha, NonPV, do_null);
         // If this move improved alpha without exceeding beta we do a proper full window
         // search to get an accurate score.
         // Without LMR we check for value > alpha && value < beta
@@ -1109,11 +1113,11 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
           // did we actually have a LMR reduction?
           if (lmrDepth < newDepth) {
             statistics.lmrResearches++;
-            value = -search(p, newDepth, ply + 1, -beta, -alpha, PV, Do_Null_Move);
+            value = -search(p, newDepth, ply + 1, -beta, -alpha, PV, do_null);
           }
           else if (value < beta) {
             statistics.pvsResearches++;
-            value = -search(p, newDepth, ply + 1, -beta, -alpha, PV, Do_Null_Move);
+            value = -search(p, newDepth, ply + 1, -beta, -alpha, PV, do_null);
           }
         }
       }
