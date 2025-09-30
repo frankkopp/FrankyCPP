@@ -56,17 +56,9 @@ void TestSuite::runTestSuite() {
   printReportHeader();
   const auto startTime = currentTime();
 
-  // setup search
-  Search search{};
-  SearchLimits searchLimits{};
-  searchLimits.depth = searchDepth;
-  if (searchTime.count()) {
-    searchLimits.moveTime    = searchTime;
-    searchLimits.timeControl = true;
-  }
 
   // execute all tests and store results in the test instance
-  runAllTests(search, searchLimits);
+  runAllTests();
 
   // count and sum up the results
   lastResult = sumUpTests();
@@ -147,12 +139,22 @@ TestSuiteResult TestSuite::sumUpTests() const {
   return tsr;
 }
 
-void TestSuite::runAllTests(Search& search, SearchLimits& searchLimits) {
+void TestSuite::runAllTests() {
   int i = 0;
   // loop over all test cases and execute the test
   for (auto& test : testCases) {
     fprintln("Test {} of {}\nTest: {} -- Target Result {}",
              ++i, testCases.size(), test.line, test.targetMoves.str());
+
+    // setup search
+    Search search{};
+    SearchLimits searchLimits{};
+    searchLimits.depth = searchDepth;
+    if (searchTime.count()) {
+      searchLimits.moveTime    = searchTime;
+      searchLimits.timeControl = true;
+    }
+
     const auto startTime2 = currentTime();
     runSingleTest(search, searchLimits, test);
     const auto elapsedTime = elapsedSince(startTime2);

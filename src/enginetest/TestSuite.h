@@ -157,7 +157,7 @@ public:
   // with given search time and max search depth
   // Reads all tests from the file. To run the tests call runTestSuite()
   TestSuite(const milliseconds& time, Depth searchDepth, const std::string& filePath);
-  void printReportHeader();
+
 
   // runs the tests
   void runTestSuite();
@@ -175,20 +175,21 @@ private:
   // removes leading and trailing whitespace and comments
   static std::string& cleanUpLine(std::string& line);
 
+  // runs all tests in the testCases list
+  void runAllTests();
+
+  // determines which test type the test is and call the appropriate test function.
+  static void runSingleTest(Search& search, SearchLimits& limits, Test& test);
+
   static void directMateTest(Search& search, SearchLimits& limits, const Position& position, Test& test);
   static void bestMoveTest(Search& search, const SearchLimits& limits, const Position& position, Test& test);
   static void avoidMoveTest(Search& search, const SearchLimits& limits, const Position& position, Test& test);
-
-  void runAllTests(Search& search, SearchLimits& searchLimits);
-
-  // determines which test type the test is and call the appropriate
-  // test function.
-  static void runSingleTest(Search& search, SearchLimits& limits, Test& test);
 
   // goes through all results and sums up the result type for each test
   TestSuiteResult sumUpTests() const;
 
   // prints a report of the test results
+  void printReportHeader();
   void printReport(nanoseconds elapsed);
 
   FRIEND_TEST(TestSuite_Test, readFile);

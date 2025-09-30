@@ -42,14 +42,17 @@ public:
     NEWLINE;
     init::init();
     NEWLINE;
+  }
+
+protected:
+  void SetUp() override {
     Logger::get().TEST_LOG->set_level(spdlog::level::debug);
     Logger::get().TSUITE_LOG->set_level(spdlog::level::info);
     Logger::get().SEARCH_LOG->set_level(spdlog::level::warn);
   }
 
-protected:
-  void SetUp() override {}
-  void TearDown() override {}
+  void TearDown() override {
+  }
 };
 
 TEST_F(TestSuite_Test, readFile) {
@@ -62,7 +65,7 @@ TEST_F(TestSuite_Test, readFile) {
 }
 
 TEST_F(TestSuite_Test, franky_test) {
-  constexpr auto moveTime{3s};
+  constexpr auto moveTime{1s};
   constexpr Depth depth{0};
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath += +"/test/testsets/franky_tests.epd";

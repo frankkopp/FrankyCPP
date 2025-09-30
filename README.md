@@ -13,8 +13,7 @@ dev_v0.6
 v0.6 (in development)
 v0.5 Enhanced eval and move to wrapper classes for Bitboard, Square, Move, etc.
 v0.4 Simple eval
-v0.3 See FrankyGo - except Evaluation
-v0.2 See FrankyGo - except Evaluation
+v0.3 Migration from FrankyGo
 
 ---
 
@@ -46,9 +45,11 @@ Boost components (program_options, serialization) are consumed via vcpkg as well
 - `VCPKG_TARGET_TRIPLET` (x64-windows-static-md default on MSVC): Override vcpkg triplet if needed
 
 Notes:
-- Guard against dynamic vcpkg triplets on Windows: dynamic triplets (e.g., `x64-windows`) are rejected to ensure a DLL-free executable; use a `-static` triplet (default is `x64-windows-static-md`).
+- Guard against dynamic vcpkg triplets on Windows: dynamic triplets (e.g., `x64-windows`) are rejected 
+  to ensure a DLL-free executable; use a `-static` triplet (default is `x64-windows-static-md`).
 - LTO/IPO is enabled for Release/RelWithDebInfo/MinSizeRel when supported by the toolchain.
-- Library links (PUBLIC): `Boost::serialization`, `Boost::program_options`. Logging uses spdlog header-only with std::format (no fmt linkage).
+- Library links (PUBLIC): `Boost::serialization`, `Boost::program_options`. Logging uses spdlog header-only 
+  with std::format (no fmt linkage).
 
 ### Quick build (Windows, cmd.exe)
 If building outside an IDE, initialize the MSVC environment first.

@@ -36,6 +36,7 @@ void UciOptions::initOptions() {
   optionVector.emplace_back("Move Overhead", SearchConfig::MOVE_OVERHEAD_MS, 0, 5000,
                             [&](UciHandler*) { SearchConfig::MOVE_OVERHEAD_MS = getInt(getOption("Move Overhead")->currentValue); });
 
+  // Search features
   optionVector.emplace_back("Use AlphaBeta", SearchConfig::USE_ALPHABETA,
                             [&](UciHandler*) { SearchConfig::USE_ALPHABETA = getOption("Use AlphaBeta")->currentValue == "true"; });
 
@@ -101,6 +102,24 @@ void UciOptions::initOptions() {
 
   optionVector.emplace_back("Null Depth Reduction", SearchConfig::NMP_REDUCTION, 0, DEPTH_MAX,
                             [&](UciHandler*) { SearchConfig::NMP_REDUCTION = static_cast<Depth>(getInt(getOption("Null Depth Reduction")->currentValue)); });
+
+  optionVector.emplace_back("Use Null Move Verification", SearchConfig::USE_NMP_VERIFY,
+                            [&](UciHandler*) { SearchConfig::USE_NMP_VERIFY = getOption("Use Null Move Verification")->currentValue == "true"; });
+
+  optionVector.emplace_back("Null Move Verify Min Depth", SearchConfig::NMP_VERIFY_MIN_DEPTH, 0, DEPTH_MAX,
+                            [&](UciHandler*) { SearchConfig::NMP_VERIFY_MIN_DEPTH = static_cast<Depth>(getInt(getOption("Null Move Verify Min Depth")->currentValue)); });
+
+  optionVector.emplace_back("Null Move Verify Margin", SearchConfig::NMP_VERIFY_MARGIN, 0, DEPTH_MAX,
+                            [&](UciHandler*) { SearchConfig::NMP_VERIFY_MARGIN = static_cast<Depth>(getInt(getOption("Null Move Verify Margin")->currentValue)); });
+
+  optionVector.emplace_back("Null Move Near Mate Margin", SearchConfig::NMP_NEAR_MATE_MARGIN, VALUE_MIN, VALUE_MAX,
+                            [&](UciHandler*) { SearchConfig::NMP_NEAR_MATE_MARGIN = static_cast<Value>(getInt(getOption("Null Move Near Mate Margin")->currentValue)); });
+
+  optionVector.emplace_back("Use Null Move Zugzwang Guard", SearchConfig::USE_NMP_ZUG_GUARD,
+                            [&](UciHandler*) { SearchConfig::USE_NMP_ZUG_GUARD = getOption("Use Null Move Zugzwang Guard")->currentValue == "true"; });
+
+  optionVector.emplace_back("Null Move Zug NonPawn Threshold", SearchConfig::NMP_ZUG_NONPAWN_THRESHOLD, 0, 32,
+                            [&](UciHandler*) { SearchConfig::NMP_ZUG_NONPAWN_THRESHOLD = getInt(getOption("Null Move Zug NonPawn Threshold")->currentValue); });
 
   optionVector.emplace_back("Use Internal Iterative Deepening", SearchConfig::USE_IID,
                             [&](UciHandler*) { SearchConfig::USE_IID = getOption("Use Internal Iterative Deepening")->currentValue == "true"; });
