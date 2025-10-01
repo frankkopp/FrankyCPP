@@ -22,7 +22,7 @@
 #include "init.h"
 #include "types/types.h"
 
-#include <engine/EvalConfig.h>
+#include "engine/config/ConfigManager.h"
 #include <gtest/gtest.h>
 #include <iomanip>
 #include <sstream>
@@ -517,7 +517,7 @@ TEST_F(SearchTest, lmrReductionTable) {
 
   // Known extreme
   {
-    const int expected = 1 + (31 * 63 * 35 + 5000) / 10000; // should be 8
+    constexpr int expected = 1 + (31 * 63 * 35 + 5000) / 10000; // should be 8
     EXPECT_EQ(expected, T[31][63]);
   }
 
@@ -554,9 +554,11 @@ TEST_F(SearchTest, debug) {
   SearchConfig::USE_QS_SEE          = false;
   SearchConfig::USE_QS_TT           = false;
 
-  EvalConfig::USE_MATERIAL   = true;
-  EvalConfig::USE_POSITIONAL = true;
-  EvalConfig::TEMPO          = 34;
+  engine::config::ConfigManager::instance().applyOverrides([&](auto&, engine::config::EvalConfigData& e) {
+    e.USE_MATERIAL   = true;
+    e.USE_POSITIONAL = true;
+    e.TEMPO          = 34;
+  });
 
   const Position p{"2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - - 0 1"};
   SearchLimits sl{};

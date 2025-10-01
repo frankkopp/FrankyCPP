@@ -23,7 +23,7 @@ set(FrankyCPPlib_SRCS
         engine/SearchResult.h engine/SearchLimits.h engine/SearchConfig.h
         engine/SearchStats.h
         engine/See.cpp engine/See.h
-        engine/Evaluator.cpp engine/Evaluator.h engine/EvalConfig.h
+        engine/Evaluator.cpp engine/Evaluator.h
         engine/PawnTT.cpp engine/PawnTT.h
 
         enginetest/SearchTreeSizeTest.cpp enginetest/SearchTreeSizeTest.h

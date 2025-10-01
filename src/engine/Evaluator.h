@@ -20,7 +20,6 @@
 #ifndef FRANKYCPP_EVALUATOR_H
 #define FRANKYCPP_EVALUATOR_H
 
-#include "EvalConfig.h"
 #include "PawnTT.h"
 #include "chesscore/Position.h"
 #include "config/EvalConfigData.h"
@@ -65,11 +64,11 @@ public:
   static Value finalEval(const Position& p, Value value);
 
   void pieceEval(const Position& p, Score& s, Color us, PieceType pieceType);
-  static void knightEval(const Position& p, Score& s, Color us, Color them, Square sq);
-  static void bishopEval(const Position& p, Score& s, Color us, Color them, Square sq);
-  static void rookEval(const Position& p, Score& s, Color us, Color them, Square sq);
-  static void queenEval(const Position& p, Score& s, Color us, Color them, Square sq);
-  static void kingEval(const Position& p, Score& s, Color us);
+  void knightEval(const Position& p, Score& s, Color us, Color them, Square sq) const;
+  void bishopEval(const Position& p, Score& s, Color us, Color them, Square sq) const;
+  void rookEval(const Position& p, Score& s, Color us, Color them, Square sq) const;
+  void queenEval(const Position& p, Score& s, Color us, Color them, Square sq) const;
+  void kingEval(const Position& p, Score& s, Color us) const;
 
   // do a prefetch for the pawn cache data
 #ifdef EVAL_ENABLE_PREFETCH
@@ -81,8 +80,8 @@ public:
   // Call this when EvalConfig has changed to resize the pawn TT
   // Mainly for unit tests to change the config on the fly
   void onEvalConfigChanged() {
-    if (EvalConfig::USE_PAWN_TT && EvalConfig::PAWN_TT_SIZE_MB > 0) {
-      pawnCache.resize(static_cast<uint64_t>(EvalConfig::PAWN_TT_SIZE_MB));
+    if (Config->USE_PAWN_TT && Config->PAWN_TT_SIZE_MB > 0) {
+      pawnCache.resize(static_cast<uint64_t>(Config->PAWN_TT_SIZE_MB));
     }
     else {
       // Keep the TT in the "disabled" state (mask==0, dummy slot allocated)

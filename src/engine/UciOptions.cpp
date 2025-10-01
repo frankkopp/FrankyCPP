@@ -18,11 +18,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "UciOptions.h"
-#include "EvalConfig.h"
 #include "Search.h"
 #include "SearchConfig.h"
 #include "UciHandler.h"
 #include "common/stringutil.h"
+#include "engine/config/ConfigManager.h"
 
 void UciOptions::initOptions() {
 
@@ -203,14 +203,30 @@ void UciOptions::initOptions() {
                             [&](UciHandler* uciHandler) { this->resetToDefaults(uciHandler); });
 
   // EvalConfig-related options
-  optionVector.emplace_back("Use Lazy Eval", EvalConfig::USE_LAZY_EVAL,
-                            [&](UciHandler*) { EvalConfig::USE_LAZY_EVAL = getOption("Use Lazy Eval")->currentValue == "true"; });
-  optionVector.emplace_back("Use Pawn Eval", EvalConfig::USE_PAWN_EVAL,
-                            [&](UciHandler*) { EvalConfig::USE_PAWN_EVAL = getOption("Use Pawn Eval")->currentValue == "true"; });
-  optionVector.emplace_back("Use Pawn Hash", EvalConfig::USE_PAWN_TT,
-                            [&](UciHandler*) { EvalConfig::USE_PAWN_TT = getOption("Use Pawn Hash")->currentValue == "true"; });
-  optionVector.emplace_back("Pawn Hash Size", EvalConfig::PAWN_TT_SIZE_MB, 0, 1024,
-                            [&](UciHandler*) { EvalConfig::PAWN_TT_SIZE_MB = static_cast<Depth>(getInt(getOption("Pawn Hash Size")->currentValue)); });
+  optionVector.emplace_back("Use Lazy Eval", Eval_Config->USE_LAZY_EVAL,
+                            [&](UciHandler*) {
+                              engine::config::ConfigManager::instance().applyOverrides([&](auto&, engine::config::EvalConfigData& e) {
+                                e.USE_LAZY_EVAL = getOption("Use Lazy Eval")->currentValue == "true";
+                              });
+                            });
+  optionVector.emplace_back("Use Pawn Eval", Eval_Config->USE_PAWN_EVAL,
+                            [&](UciHandler*) {
+                              engine::config::ConfigManager::instance().applyOverrides([&](auto&, engine::config::EvalConfigData& e) {
+                                e.USE_PAWN_EVAL = getOption("Use Pawn Eval")->currentValue == "true";
+                              });
+                            });
+  optionVector.emplace_back("Use Pawn Hash", Eval_Config->USE_PAWN_TT,
+                            [&](UciHandler*) {
+                              engine::config::ConfigManager::instance().applyOverrides([&](auto&, engine::config::EvalConfigData& e) {
+                                e.USE_PAWN_TT = getOption("Use Pawn Hash")->currentValue == "true";
+                              });
+                            });
+  optionVector.emplace_back("Pawn Hash Size", Eval_Config->PAWN_TT_SIZE_MB, 0, 1024,
+                            [&](UciHandler*) {
+                              engine::config::ConfigManager::instance().applyOverrides([&](auto&, engine::config::EvalConfigData& e) {
+                                e.PAWN_TT_SIZE_MB = static_cast<Depth>(getInt(getOption("Pawn Hash Size")->currentValue));
+                              });
+                            });
 
   // optionVector.emplace_back("***", [&](UciHandler* uciHandler) { });
 }
