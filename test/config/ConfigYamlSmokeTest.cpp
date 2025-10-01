@@ -17,14 +17,16 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#include "config/ConfigPaths.h"
+#include <filesystem>
 #include <gtest/gtest.h>
 #include <yaml-cpp/yaml.h>
-#include <filesystem>
-#include "config/ConfigPaths.h"
 
 namespace {
 
-TEST(ConfigYamlSmokeTest, LoadsSearchYamlAndHasExpectedFlatKeys) {
+// Smoke test: loads config/search.yaml and checks representative flat keys exist
+// to ensure file presence and basic YAML parsing work.
+  TEST(ConfigYamlSmokeTest, LoadsSearchYamlAndHasExpectedFlatKeys) {
     const auto path = ConfigPaths::SearchYaml();
     ASSERT_TRUE(std::filesystem::exists(path)) << "Missing file: " << path.string();
     YAML::Node root = YAML::LoadFile(path.string());
@@ -41,7 +43,9 @@ TEST(ConfigYamlSmokeTest, LoadsSearchYamlAndHasExpectedFlatKeys) {
     EXPECT_TRUE(root["FP_MARGIN"]) << "FP_MARGIN array should be present";
 }
 
-TEST(ConfigYamlSmokeTest, LoadsEvalYamlAndHasExpectedFlatKeys) {
+// Smoke test: loads config/eval.yaml and checks representative flat keys exist
+// to ensure file presence and basic YAML parsing work.
+  TEST(ConfigYamlSmokeTest, LoadsEvalYamlAndHasExpectedFlatKeys) {
     const auto path = ConfigPaths::EvalYaml();
     ASSERT_TRUE(std::filesystem::exists(path)) << "Missing file: " << path.string();
     YAML::Node root = YAML::LoadFile(path.string());
@@ -56,4 +60,4 @@ TEST(ConfigYamlSmokeTest, LoadsEvalYamlAndHasExpectedFlatKeys) {
     EXPECT_TRUE(root["BISHOP_PAIR_MID_BONUS"]);
 }
 
-} // namespace
+}// namespace
