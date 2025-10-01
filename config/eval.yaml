@@ -1,6 +1,9 @@
 # FrankyCPP Evaluation Configuration (flat keys)
 # Mirrors defaults in src/engine/EvalConfig.h
 
+# Debugging
+EVAL_CONFIG_DUMMY: "yaml-file"
+
 # Enable base material evaluation (piece values)
 USE_MATERIAL: true
 # Enable positional evaluation (all non-material heuristics)
@@ -94,6 +97,3 @@ KING_SHIELD_END_PER_PAWN: 0
 
 # Use gamephase value blending (e.g., tapered eval)
 USE_GAMEPHASE_VALUE: true
-
-# Debugging
-EVAL_CONFIG_DUMMY: false

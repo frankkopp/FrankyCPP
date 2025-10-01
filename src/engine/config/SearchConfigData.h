@@ -35,6 +35,9 @@ namespace engine::config {
   // All members have default values which are used as fallback
   // if no YAML config file is found or a value is missing in the file.
   struct SearchConfigData {
+    // debug
+    std::string CONFIG_DUMMY = "fallback";
+
     // time mgmt
     int MOVE_OVERHEAD_MS = 10;
 
@@ -125,9 +128,6 @@ namespace engine::config {
     int MOVES_LEFT_MIN_CLAMP    = 6;
     int MOVES_LEFT_MAX_CLAMP    = 50;
 
-    // debug
-    bool CONFIG_DUMMY = false;
-
     std::string str() const {
       std::ostringstream os;
       os << "MOVE_OVERHEAD_MS: " << MOVE_OVERHEAD_MS << '\n'
@@ -156,6 +156,8 @@ template<>
 struct YAML::convert<engine::config::SearchConfigData> {
   static Node encode(const engine::config::SearchConfigData& c) {
     Node n;
+    n["CONFIG_DUMMY"] = c.CONFIG_DUMMY;
+
     n["MOVE_OVERHEAD_MS"]    = c.MOVE_OVERHEAD_MS;
     n["USE_BOOK"]            = c.USE_BOOK;
     n["BOOK_PATH"]           = c.BOOK_PATH;
@@ -229,7 +231,6 @@ struct YAML::convert<engine::config::SearchConfigData> {
     n["MOVES_LEFT_MIN_CLAMP"]    = c.MOVES_LEFT_MIN_CLAMP;
     n["MOVES_LEFT_MAX_CLAMP"]    = c.MOVES_LEFT_MAX_CLAMP;
 
-    n["CONFIG_DUMMY"] = c.CONFIG_DUMMY;
     return n;
   }
 
@@ -239,6 +240,7 @@ struct YAML::convert<engine::config::SearchConfigData> {
     using engine::config::yaml::set_if_present;
     std::unordered_set<std::string> seen;
 
+    set_if_present(n, "CONFIG_DUMMY", c.CONFIG_DUMMY, seen);
     set_if_present(n, "MOVE_OVERHEAD_MS", c.MOVE_OVERHEAD_MS, seen);
     set_if_present(n, "USE_BOOK", c.USE_BOOK, seen);
     set_if_present(n, "BOOK_PATH", c.BOOK_PATH, seen);
@@ -299,7 +301,6 @@ struct YAML::convert<engine::config::SearchConfigData> {
     set_if_present(n, "REPETITION_RISK_PENALTY", c.REPETITION_RISK_PENALTY, seen);
     set_if_present(n, "MOVES_LEFT_MIN_CLAMP", c.MOVES_LEFT_MIN_CLAMP, seen);
     set_if_present(n, "MOVES_LEFT_MAX_CLAMP", c.MOVES_LEFT_MAX_CLAMP, seen);
-    set_if_present(n, "CONFIG_DUMMY", c.CONFIG_DUMMY, seen);
 
     // Log unknown keys
     for (auto it : n) {

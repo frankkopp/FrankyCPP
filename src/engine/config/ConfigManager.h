@@ -31,6 +31,12 @@ namespace engine::config {
   class ConfigManager {
     ConfigManager();
 
+    // Non-copyable, non-movable singleton
+    ConfigManager(const ConfigManager&)            = delete;
+    ConfigManager& operator=(const ConfigManager&) = delete;
+    ConfigManager(ConfigManager&&)                 = delete;
+    ConfigManager& operator=(ConfigManager&&)      = delete;
+
     // Hard-coded fallback values (constructed defaults). Only used if YAML is missing or invalid.
     SearchConfigData fallbackSearch_{};
     EvalConfigData fallbackEval_{};

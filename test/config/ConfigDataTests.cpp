@@ -93,7 +93,7 @@ namespace {
 
   // Sanity-checks that str() contains representative fields for quick human inspection.
   TEST(EvalConfigDataTests, StrContainsExpectedFields) {
-    constexpr EvalConfigData c;
+    const EvalConfigData c;
     const auto s = c.str();
     EXPECT_NE(s.find("USE_MATERIAL:"), std::string::npos);
     EXPECT_NE(s.find("TEMPO:"), std::string::npos);

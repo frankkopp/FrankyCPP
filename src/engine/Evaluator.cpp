@@ -54,13 +54,13 @@ Value Evaluator::evaluate(const Position& p) {
 
   // material
   // DEBUG - test of new config system
-  if (EvalConfig->USE_MATERIAL) {
+  if (EvalConfig.USE_MATERIAL) {
     score.midgame = static_cast<Value>(p.getMaterial(WHITE) - p.getMaterial(BLACK));
     score.endgame = score.midgame;
   }
 
   // positional value
-  if (EvalConfig->USE_POSITIONAL) {
+  if (EvalConfig.USE_POSITIONAL) {
     score.midgame += static_cast<Value>(p.getMidPosValue(WHITE) - p.getMidPosValue(BLACK));
     score.endgame += static_cast<Value>(p.getEndPosValue(WHITE) - p.getEndPosValue(BLACK));
   }
@@ -68,20 +68,20 @@ Value Evaluator::evaluate(const Position& p) {
   // early exit
   // arbitrary threshold - in early phases (game phase = 1.0) this is doubled
   // in late phases it stands as it is
-  if (EvalConfig->USE_LAZY_EVAL) {
+  if (EvalConfig.USE_LAZY_EVAL) {
     const Value value = valueFromScore(score, gamePhaseFactor);
-    if (value > static_cast<Value>(EvalConfig->LAZY_THRESHOLD + EvalConfig->LAZY_THRESHOLD * gamePhaseFactor)) {
+    if (value > static_cast<Value>(EvalConfig.LAZY_THRESHOLD + EvalConfig.LAZY_THRESHOLD * gamePhaseFactor)) {
       return finalEval(p, value);
     }
   }
 
   // evaluate pawns
-  if (EvalConfig->USE_PAWN_EVAL) {
+  if (EvalConfig.USE_PAWN_EVAL) {
     pawnEval(p, score);
   }
 
   // evaluate pieces
-  if (EvalConfig->USE_PIECE_EVAL) {
+  if (EvalConfig.USE_PIECE_EVAL) {
     pieceEval(p, score, WHITE, KNIGHT);
     pieceEval(p, score, BLACK, KNIGHT);
     pieceEval(p, score, WHITE, BISHOP);
@@ -93,7 +93,7 @@ Value Evaluator::evaluate(const Position& p) {
   }
 
   // evaluate kings
-  if (EvalConfig->USE_KING_EVAL) {
+  if (EvalConfig.USE_KING_EVAL) {
     kingEval(p, score, WHITE);
     kingEval(p, score, BLACK);
   }
@@ -101,13 +101,13 @@ Value Evaluator::evaluate(const Position& p) {
   // TEMPO Bonus for the side to move (helps with evaluation alternation -
   // less difference between side which makes aspiration search faster
   // (not empirically tested)
-  if (EvalConfig->USE_TEMPO) {
-    score.midgame += static_cast<Value>(EvalConfig->TEMPO);
+  if (EvalConfig.USE_TEMPO) {
+    score.midgame += static_cast<Value>(EvalConfig.TEMPO);
   }
 
   // calculate value depending on game phases
   Value value;
-  if (EvalConfig->USE_GAMEPHASE_VALUE) {
+  if (EvalConfig.USE_GAMEPHASE_VALUE) {
     value = valueFromScore(score, gamePhaseFactor);
   }
   else {
@@ -132,7 +132,7 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
   // check pawn hash first
   ZobristKey key{0};
   PawnTT::Entry* ep = nullptr;
-  if (EvalConfig->USE_PAWN_TT) {
+  if (EvalConfig.USE_PAWN_TT) {
     key = p.getPawnZobristKey();
     ep = pawnCache.getEntryPtr(key);
     // The key must not be 0 as this would be a valid entry and the function
@@ -194,18 +194,18 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
     }
 
     // clang-format off
-    int midvalue = isolated.popcount() *  EvalConfig->ISOLATED_PAWN_MID_WEIGHT;
-    int endvalue = isolated.popcount() *  EvalConfig->ISOLATED_PAWN_END_WEIGHT;
-    midvalue    += doubled.popcount() *   EvalConfig->DOUBLED_PAWN_MID_WEIGHT;
-    endvalue    += doubled.popcount() *   EvalConfig->DOUBLED_PAWN_END_WEIGHT;
-    midvalue    += passed.popcount() *    EvalConfig->PASSED_PAWN_MID_WEIGHT;
-    endvalue    += passed.popcount() *    EvalConfig->PASSED_PAWN_END_WEIGHT;
-    midvalue    += blocked.popcount() *   EvalConfig->BLOCKED_PAWN_MID_WEIGHT;
-    endvalue    += blocked.popcount() *   EvalConfig->BLOCKED_PAWN_END_WEIGHT;
-    midvalue    += phalanx.popcount() *   EvalConfig->PHALANX_PAWN_MID_WEIGHT;
-    endvalue    += phalanx.popcount() *   EvalConfig->PHALANX_PAWN_END_WEIGHT;
-    midvalue    += supported.popcount() * EvalConfig->SUPPORTED_PAWN_MID_WEIGHT;
-    endvalue    += supported.popcount() * EvalConfig->SUPPORTED_PAWN_END_WEIGHT;
+    int midvalue = isolated.popcount() *  EvalConfig.ISOLATED_PAWN_MID_WEIGHT;
+    int endvalue = isolated.popcount() *  EvalConfig.ISOLATED_PAWN_END_WEIGHT;
+    midvalue    += doubled.popcount() *   EvalConfig.DOUBLED_PAWN_MID_WEIGHT;
+    endvalue    += doubled.popcount() *   EvalConfig.DOUBLED_PAWN_END_WEIGHT;
+    midvalue    += passed.popcount() *    EvalConfig.PASSED_PAWN_MID_WEIGHT;
+    endvalue    += passed.popcount() *    EvalConfig.PASSED_PAWN_END_WEIGHT;
+    midvalue    += blocked.popcount() *   EvalConfig.BLOCKED_PAWN_MID_WEIGHT;
+    endvalue    += blocked.popcount() *   EvalConfig.BLOCKED_PAWN_END_WEIGHT;
+    midvalue    += phalanx.popcount() *   EvalConfig.PHALANX_PAWN_MID_WEIGHT;
+    endvalue    += phalanx.popcount() *   EvalConfig.PHALANX_PAWN_END_WEIGHT;
+    midvalue    += supported.popcount() * EvalConfig.SUPPORTED_PAWN_MID_WEIGHT;
+    endvalue    += supported.popcount() * EvalConfig.SUPPORTED_PAWN_END_WEIGHT;
     // clang-format on
 
     // accumulate signed by color
@@ -215,7 +215,7 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
   }// color loop
 
   // Store back only when enabled; ep already points to the correct slot
-  if (EvalConfig->USE_PAWN_TT && key != 0) {
+  if (EvalConfig.USE_PAWN_TT && key != 0) {
     pawnCache.put(ep, key, tmpScore);
   }
 
@@ -251,9 +251,9 @@ inline void Evaluator::pieceEval(const Position& p, Score& s, const Color us, co
       // general evaluation for all pieces of this color
 
       // bonus for a pair
-      if (EvalConfig->USE_BISHOP_PAIR_BONUS && pieceBb.popcount() > 1) {
-        s.midgame += EvalConfig->BISHOP_PAIR_MID_BONUS;
-        s.endgame += EvalConfig->BISHOP_PAIR_END_BONUS;
+      if (EvalConfig.USE_BISHOP_PAIR_BONUS && pieceBb.popcount() > 1) {
+        s.midgame += EvalConfig.BISHOP_PAIR_MID_BONUS;
+        s.endgame += EvalConfig.BISHOP_PAIR_END_BONUS;
       }
 
       // loop through all bishops of this color
@@ -283,21 +283,21 @@ inline void Evaluator::pieceEval(const Position& p, Score& s, const Color us, co
 }
 
 inline void Evaluator::knightEval(const Position& p, Score& s, const Color us, Color, const Square sq) const {
-  if (EvalConfig->USE_KNIGHT_MOBILITY) {
+  if (EvalConfig.USE_KNIGHT_MOBILITY) {
     const Bitboard myOcc   = p.getOccupiedBb(us);
     const Bitboard attacks = Attacks::attacks(KNIGHT, sq, BbZero);
     const int mobility     = (attacks & ~myOcc).popcount();
 
-    int mid = mobility * EvalConfig->KNIGHT_MOBILITY_MID_PER_MOVE;
-    int end = mobility * EvalConfig->KNIGHT_MOBILITY_END_PER_MOVE;
+    int mid = mobility * EvalConfig.KNIGHT_MOBILITY_MID_PER_MOVE;
+    int end = mobility * EvalConfig.KNIGHT_MOBILITY_END_PER_MOVE;
 
     if (mobility <= 1) {
-      mid += EvalConfig->KNIGHT_LOW_MOBILITY_LEQ1_MID;
-      end += EvalConfig->KNIGHT_LOW_MOBILITY_LEQ1_END;
+      mid += EvalConfig.KNIGHT_LOW_MOBILITY_LEQ1_MID;
+      end += EvalConfig.KNIGHT_LOW_MOBILITY_LEQ1_END;
     }
     else if (mobility <= 2) {
-      mid += EvalConfig->KNIGHT_LOW_MOBILITY_LEQ2_MID;
-      end += EvalConfig->KNIGHT_LOW_MOBILITY_LEQ2_END;
+      mid += EvalConfig.KNIGHT_LOW_MOBILITY_LEQ2_MID;
+      end += EvalConfig.KNIGHT_LOW_MOBILITY_LEQ2_END;
     }
 
     s.midgame += static_cast<Value>(mid * us.sign());
@@ -307,18 +307,18 @@ inline void Evaluator::knightEval(const Position& p, Score& s, const Color us, C
 
 inline void Evaluator::bishopEval(const Position& p, Score& s, const Color us, Color , const Square sq) const {
   // Mobility for bishops (Tier 1)
-  if (EvalConfig->USE_BISHOP_MOBILITY) {
+  if (EvalConfig.USE_BISHOP_MOBILITY) {
     const Bitboard myOcc     = p.getOccupiedBb(us);
     const Bitboard occupied  = p.getOccupiedBb();
     const Bitboard attacks   = Attacks::attacks(BISHOP, sq, occupied);
     const int mobility       = (attacks & ~myOcc).popcount();
 
-    int mid = mobility * EvalConfig->BISHOP_MOBILITY_MID_PER_MOVE;
-    int end = mobility * EvalConfig->BISHOP_MOBILITY_END_PER_MOVE;
+    int mid = mobility * EvalConfig.BISHOP_MOBILITY_MID_PER_MOVE;
+    int end = mobility * EvalConfig.BISHOP_MOBILITY_END_PER_MOVE;
 
     if (mobility <= 3) {
-      mid += EvalConfig->BISHOP_LOW_MOBILITY_LEQ3_MID;
-      end += EvalConfig->BISHOP_LOW_MOBILITY_LEQ3_END;
+      mid += EvalConfig.BISHOP_LOW_MOBILITY_LEQ3_MID;
+      end += EvalConfig.BISHOP_LOW_MOBILITY_LEQ3_END;
     }
 
     s.midgame += static_cast<Value>(mid * us.sign());
@@ -331,23 +331,23 @@ inline void Evaluator::rookEval(const Position& p, Score& s, const Color us, con
   int end = 0;
 
   // Mobility
-  if (EvalConfig->USE_ROOK_MOBILITY) {
+  if (EvalConfig.USE_ROOK_MOBILITY) {
     const Bitboard myOcc    = p.getOccupiedBb(us);
     const Bitboard occupied = p.getOccupiedBb();
     const Bitboard attacks  = Attacks::attacks(ROOK, sq, occupied);
     const int mobility      = (attacks & ~myOcc).popcount();
 
-    mid += mobility * EvalConfig->ROOK_MOBILITY_MID_PER_MOVE;
-    end += mobility * EvalConfig->ROOK_MOBILITY_END_PER_MOVE;
+    mid += mobility * EvalConfig.ROOK_MOBILITY_MID_PER_MOVE;
+    end += mobility * EvalConfig.ROOK_MOBILITY_END_PER_MOVE;
 
     if (mobility <= 3) {
-      mid += EvalConfig->ROOK_LOW_MOBILITY_LEQ3_MID;
-      end += EvalConfig->ROOK_LOW_MOBILITY_LEQ3_END;
+      mid += EvalConfig.ROOK_LOW_MOBILITY_LEQ3_MID;
+      end += EvalConfig.ROOK_LOW_MOBILITY_LEQ3_END;
     }
   }
 
   // Open/semi-open file bonuses
-  if (EvalConfig->USE_ROOK_OPEN_FILE_BONUS) {
+  if (EvalConfig.USE_ROOK_OPEN_FILE_BONUS) {
     const Bitboard fileMask   = Bitboards::sqToFileBb[sq];
     const Bitboard myPawns    = p.getPieceBb(us, PAWN);
     const Bitboard theirPawns = p.getPieceBb(them, PAWN);
@@ -356,12 +356,12 @@ inline void Evaluator::rookEval(const Position& p, Score& s, const Color us, con
 
     if (!myPawnOnFile) {
       if (!theirPawnOnFile) {
-        mid += EvalConfig->ROOK_OPEN_FILE_MID_BONUS;
-        end += EvalConfig->ROOK_OPEN_FILE_END_BONUS;
+        mid += EvalConfig.ROOK_OPEN_FILE_MID_BONUS;
+        end += EvalConfig.ROOK_OPEN_FILE_END_BONUS;
       }
       else{
-        mid += EvalConfig->ROOK_SEMIOPEN_FILE_MID_BONUS;
-        end += EvalConfig->ROOK_SEMIOPEN_FILE_END_BONUS;
+        mid += EvalConfig.ROOK_SEMIOPEN_FILE_MID_BONUS;
+        end += EvalConfig.ROOK_SEMIOPEN_FILE_END_BONUS;
       }
     }
   }
@@ -377,23 +377,23 @@ inline void Evaluator::queenEval(const Position& p, Score& s, const Color us, co
   int end = 0;
 
   // Mobility (Tier 1)
-  if (EvalConfig->USE_QUEEN_MOBILITY) {
+  if (EvalConfig.USE_QUEEN_MOBILITY) {
     const Bitboard myOcc    = p.getOccupiedBb(us);
     const Bitboard occupied = p.getOccupiedBb();
     const Bitboard attacks  = Attacks::attacks(QUEEN, sq, occupied);
     const int mobility      = (attacks & ~myOcc).popcount();
 
-    mid += mobility * EvalConfig->QUEEN_MOBILITY_MID_PER_MOVE;
-    end += mobility * EvalConfig->QUEEN_MOBILITY_END_PER_MOVE;
+    mid += mobility * EvalConfig.QUEEN_MOBILITY_MID_PER_MOVE;
+    end += mobility * EvalConfig.QUEEN_MOBILITY_END_PER_MOVE;
   }
 
   // Simple tropism towards enemy king (Tier 0/phase-scaled)
-  if (EvalConfig->USE_QUEEN_TROPISM) {
+  if (EvalConfig.USE_QUEEN_TROPISM) {
     const Square ksq = p.getKingSquare(them);
     const int dist   = sq.distanceTo(ksq); // 0..7
     const int closeness = 8 - dist;       // 1..8 (or 8 if dist==0)
-    mid += closeness * EvalConfig->QUEEN_TROPISM_MID_PER_STEP;
-    end += closeness * EvalConfig->QUEEN_TROPISM_END_PER_STEP;
+    mid += closeness * EvalConfig.QUEEN_TROPISM_MID_PER_STEP;
+    end += closeness * EvalConfig.QUEEN_TROPISM_END_PER_STEP;
   }
 
   if (mid || end) {
@@ -409,7 +409,7 @@ inline void Evaluator::kingEval(const Position& p, Score& s, const Color us) con
   const Square ksq = p.getKingSquare(us);
 
   // Pawn shield in front of king (midgame focus)
-  if (EvalConfig->USE_KING_SAFETY_SHIELD) {
+  if (EvalConfig.USE_KING_SAFETY_SHIELD) {
     int shieldCount = 0;
     const int dir   = us.sign();
     const int kr    = ksq.rank();
@@ -427,8 +427,8 @@ inline void Evaluator::kingEval(const Position& p, Score& s, const Color us) con
         }
       }
     }
-    mid += shieldCount * EvalConfig->KING_SHIELD_MID_PER_PAWN;
-    end += shieldCount * EvalConfig->KING_SHIELD_END_PER_PAWN;
+    mid += shieldCount * EvalConfig.KING_SHIELD_MID_PER_PAWN;
+    end += shieldCount * EvalConfig.KING_SHIELD_END_PER_PAWN;
   }
 
   s.midgame += static_cast<Value>(mid * us.sign());

@@ -45,7 +45,7 @@ inline bool isBulkRun() {
   return cond;
 }
 
-auto cm = engine::config::ConfigManager::instance();
+auto& cm = engine::config::ConfigManager::instance(); // Bind cm to ConfigManager singleton by reference
 
 // centralize test eval config: set all USE_* flags
 // to the given onoff value
@@ -518,7 +518,7 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
   positions.reserve(allFens.size());
   for (const auto& f : allFens) positions.emplace_back(f.c_str());
 
-  Evaluator e{};
+  Evaluator evaluator{};
 
   // Timing parameters: keep modest to avoid long test duration
   constexpr int repeats    = 5;    // take best-of 'repeats' to reduce noise
@@ -529,7 +529,7 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
     const auto start     = high_resolution_clock::now();
     for (int i = 0; i < iters; ++i) {
       for (auto& p : positions) {
-        const Value v{e.evaluate(p)};
+        const Value v{evaluator.evaluate(p)};
         acc += static_cast<int64_t>(v);
       }
     }
@@ -551,7 +551,7 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
     std::function<void()> apply;
   };
 
-  auto make_cases = [&]() {
+  auto make_cases = [&] {
     std::vector<Case> cases;
 
     // Helper: turn all features ON, disable LAZY, then apply a mutator to EvalConfig
@@ -698,6 +698,8 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
   bool first           = true;
   for (const auto& [label, apply] : cases) {
     apply();
+    // Ensure Evaluator adapts to changed config (e.g., PAWN_TT size/toggle)
+    evaluator.onEvalConfigChanged();
     const uint64_t ns     = best_of_n(iterations);
     const bool isBaseline = first;
     if (first) {

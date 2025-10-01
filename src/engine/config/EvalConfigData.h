@@ -33,6 +33,9 @@ namespace engine::config {
   // All members have default values which are used as fallback
   // if no YAML config file is found or a value is missing in the file.
   struct EvalConfigData {
+    // Debug
+    std::string EVAL_CONFIG_DUMMY = "fallback";
+
     // master toggles
     bool USE_MATERIAL   = true;
     bool USE_POSITIONAL = true;
@@ -116,9 +119,6 @@ namespace engine::config {
 
     bool USE_GAMEPHASE_VALUE = true;
 
-    // Debug
-    bool EVAL_CONFIG_DUMMY = false;
-
     std::string str() const {
       std::ostringstream os;
       os << "USE_MATERIAL: " << USE_MATERIAL << '\n'
@@ -145,6 +145,7 @@ namespace YAML {
   struct convert<engine::config::EvalConfigData> {
     static Node encode(const engine::config::EvalConfigData& c) {
       Node n;
+      n["EVAL_CONFIG_DUMMY"]            = c.EVAL_CONFIG_DUMMY;
       n["USE_MATERIAL"]                 = c.USE_MATERIAL;
       n["USE_POSITIONAL"]               = c.USE_POSITIONAL;
       n["USE_TEMPO"]                    = c.USE_TEMPO;
@@ -203,7 +204,6 @@ namespace YAML {
       n["KING_SHIELD_MID_PER_PAWN"]     = c.KING_SHIELD_MID_PER_PAWN;
       n["KING_SHIELD_END_PER_PAWN"]     = c.KING_SHIELD_END_PER_PAWN;
       n["USE_GAMEPHASE_VALUE"]          = c.USE_GAMEPHASE_VALUE;
-      n["EVAL_CONFIG_DUMMY"]            = c.EVAL_CONFIG_DUMMY;
       return n;
     }
 
@@ -212,6 +212,7 @@ namespace YAML {
       using engine::config::yaml::set_if_present;
       std::unordered_set<std::string> seen;
 
+      set_if_present(n, "EVAL_CONFIG_DUMMY", c.EVAL_CONFIG_DUMMY, seen);
       set_if_present(n, "USE_MATERIAL", c.USE_MATERIAL, seen);
       set_if_present(n, "USE_POSITIONAL", c.USE_POSITIONAL, seen);
       set_if_present(n, "USE_TEMPO", c.USE_TEMPO, seen);
@@ -270,7 +271,6 @@ namespace YAML {
       set_if_present(n, "KING_SHIELD_MID_PER_PAWN", c.KING_SHIELD_MID_PER_PAWN, seen);
       set_if_present(n, "KING_SHIELD_END_PER_PAWN", c.KING_SHIELD_END_PER_PAWN, seen);
       set_if_present(n, "USE_GAMEPHASE_VALUE", c.USE_GAMEPHASE_VALUE, seen);
-      set_if_present(n, "EVAL_CONFIG_DUMMY", c.EVAL_CONFIG_DUMMY, seen);
 
       for (auto it : n) {
         const std::string key = it.first.as<std::string>("");

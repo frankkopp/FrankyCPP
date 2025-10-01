@@ -31,7 +31,7 @@
 Search::Search() : Search(nullptr) {}
 
 Search::Search(UciHandler* pUciHandler)
-    : Config(&engine::config::ConfigManager::instance().search()) {
+    : Config(engine::config::ConfigManager::instance().search()) {
   this->uciHandler = pUciHandler;
   this->tt         = std::make_unique<TT>(0);
 }
@@ -64,7 +64,7 @@ void Search::startSearch(const Position& p, SearchLimits sl) {
   }
 
   // DEBUG to test the new config approach
-  LOG__INFO(Logger::get().SEARCH_LOG, "DEBUG: CONFIG_DUMMY: {}", Config->CONFIG_DUMMY);
+  LOG__INFO(Logger::get().SEARCH_LOG, "DEBUG: CONFIG_DUMMY: {}", Config.CONFIG_DUMMY);
 
   // start search time
   startTime       = currentTime();
@@ -1650,7 +1650,7 @@ milliseconds Search::setupTimeControl(const Position& p, const SearchLimits& lim
   // Search mode time per move
   if (limits.moveTime.count()) {
     // we need a little room for executing the code
-    const milliseconds duration = limits.moveTime - milliseconds{Config->MOVE_OVERHEAD_MS};
+    const milliseconds duration = limits.moveTime - milliseconds{Config.MOVE_OVERHEAD_MS};
     // if the duration is now negative, return the original value and issue a warning
     if (duration.count() < 0) {
       LOG__WARN(Logger::get().SEARCH_LOG, "Very short move time: {} ms", limits.moveTime.count());
@@ -1723,7 +1723,7 @@ milliseconds Search::setupTimeControl(const Position& p, const SearchLimits& lim
   // estimate time per move
   const auto tl = static_cast<milliseconds>(timeLeft.count() / movesLeft);
   // tiny fixed reserve to reduce micro overshoots (remaining-time mode only)
-  const milliseconds reserve{Config->MOVE_OVERHEAD_MS};
+  const milliseconds reserve{Config.MOVE_OVERHEAD_MS};
   // account for the runtime of our code
   milliseconds base;
   if (tl.count() < 100) {

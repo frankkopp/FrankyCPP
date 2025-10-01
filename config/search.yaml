@@ -2,6 +2,9 @@
 # Mirrors defaults in src/engine/SearchConfig.h
 # Note: The large LMR_REDUCTION table is intentionally omitted and will be moved to code later.
 
+# Debugging and profiling options
+CONFIG_DUMMY: "yaml-file"
+
 # Fixed overhead (milliseconds) deducted from available time per move to account for engine housekeeping
 MOVE_OVERHEAD_MS: 10
 
@@ -145,6 +148,3 @@ REPETITION_RISK_PENALTY: 6
 # Clamp lower/upper bounds of moves-left estimates
 MOVES_LEFT_MIN_CLAMP: 6
 MOVES_LEFT_MAX_CLAMP: 50
-
-# Debugging and profiling options
-CONFIG_DUMMY: false

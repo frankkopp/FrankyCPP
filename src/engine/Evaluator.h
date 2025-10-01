@@ -80,8 +80,8 @@ public:
   // Call this when EvalConfig has changed to resize the pawn TT
   // Mainly for unit tests to change the config on the fly
   void onEvalConfigChanged() {
-    if (EvalConfig->USE_PAWN_TT && EvalConfig->PAWN_TT_SIZE_MB > 0) {
-      pawnCache.resize(static_cast<uint64_t>(EvalConfig->PAWN_TT_SIZE_MB));
+    if (EvalConfig.USE_PAWN_TT && EvalConfig.PAWN_TT_SIZE_MB > 0) {
+      pawnCache.resize(static_cast<uint64_t>(EvalConfig.PAWN_TT_SIZE_MB));
     }
     else {
       // Keep the TT in the "disabled" state (mask==0, dummy slot allocated)
