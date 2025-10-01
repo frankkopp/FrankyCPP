@@ -45,7 +45,10 @@ add_executable(
         enginetest/SearchTreeSizeTest_Test.cpp
         enginetest/TestSuite_Test.cpp
 
-        TimingTests.cpp)
+        TimingTests.cpp
+
+        # Config smoke test for YAML presence/parsing
+        config/ConfigYamlSmokeTest.cpp)
 
 
 # Ensure unit tests explicitly request C++20
@@ -69,12 +72,14 @@ if (MSVC AND STRICT_WARNINGS)
 endif()
 
 # Link against project lib and vcpkg-provided GoogleTest targets
+# Also link yaml-cpp for config YAML parsing in smoke test
 target_link_libraries(
         ${testExeName}
         PUBLIC
         FrankyCPPlib
         GTest::gtest
         GTest::gtest_main
+        yaml-cpp::yaml-cpp
 )
 
 # copy config files and opening books to the build directories

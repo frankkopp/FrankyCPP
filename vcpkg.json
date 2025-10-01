@@ -6,7 +6,8 @@
     "boost-serialization",
     "spdlog",
     "gtest",
-    "benchmark"
+    "benchmark",
+    "yaml-cpp"
   ],
   "overrides": [
     {

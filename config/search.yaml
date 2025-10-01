@@ -1,0 +1,147 @@
+# FrankyCPP Search Configuration (flat keys)
+# Mirrors defaults in src/engine/SearchConfig.h
+# Note: The large LMR_REDUCTION table is intentionally omitted and will be moved to code later.
+
+# Fixed overhead (milliseconds) deducted from available time per move to account for engine housekeeping
+MOVE_OVERHEAD_MS: 10
+
+# Enable/disable opening book usage
+USE_BOOK: true
+# Path to the opening book file (relative to working directory)
+BOOK_PATH: "./books/book.txt"
+# Book format (SIMPLE/PGN/…) as string for readability; parsed in code
+BOOK_TYPE: "SIMPLE"  # OpeningBook::BookFormat::SIMPLE
+
+# Enable thinking during opponent time (pondering)
+USE_PONDER: true
+
+# Core search strategies
+# Enable alpha-beta pruning
+USE_ALPHABETA: true
+# Use Principal Variation Search (null-window first)
+USE_PVS: true
+# Use aspiration windows around the previous score to speed up convergence
+USE_ASP: true
+
+# Enable quiescence search to resolve tactical instability at leaf nodes
+USE_QUIESCENCE: true
+
+# Transposition table (TT) controls
+# Enable TT usage
+USE_TT: true
+# Allow pruning using TT stored values when safe
+USE_TT_VALUE: true
+# Store static evaluation in TT entries
+USE_EVAL_TT: true
+# TT size in megabytes
+TT_SIZE_MB: 64
+# Use TT also inside quiescence search
+USE_QS_TT: true
+
+# Move ordering features
+# Use TT best move as a first candidate (PV move)
+USE_TT_PV_MOVE_SORT: true
+# Enable killer move heuristic
+USE_KILLER_MOVES: true
+# Enable history counters table
+USE_HISTORY_COUNTER: true
+# Enable history move heuristic
+USE_HISTORY_MOVES: true
+# Enable Internal Iterative Deepening (IID)
+USE_IID: true
+# Depth at which IID triggers (in plies)
+IID_DEPTH: 6
+# Reduction (in plies) applied by IID before searching best moves
+IID_REDUCTION: 2
+
+# Pruning features (selective search)
+# Mate distance pruning
+USE_MDP: true
+# Stand pat cutoff in quiescence
+USE_QS_STANDPAT_CUT: true
+# SEE-based capture filtering in quiescence
+USE_QS_SEE: true
+# Razoring heuristic to prune obviously bad nodes near leafs
+USE_RAZORING: true
+# Margin (centipawns) for razoring decisions
+RAZOR_MARGIN: 531
+# Reverse Futility Pruning toggle and margins per remaining depth (centipawns)
+USE_RFP: true
+RFP_MARGIN: [0, 200, 400, 800]
+
+# Null Move Pruning (NMP)
+# Enable null-move pruning
+USE_NMP: true
+# Minimum depth (plies) to attempt NMP
+NMP_DEPTH: 3
+# Reduction (plies) applied after null-move
+NMP_REDUCTION: 2
+# Verify fail-highs with a re-search (safer NMP)
+USE_NMP_VERIFY: true
+# Minimum depth (plies) for verification to kick in
+NMP_VERIFY_MIN_DEPTH: 6
+# Extra margin (plies) used when computing verification depth
+NMP_VERIFY_MARGIN: 2
+# Disable NMP near mate windows within this margin (centipawns)
+NMP_NEAR_MATE_MARGIN: 64
+# Guard against zugzwang-prone positions (e.g., low-material endgames)
+USE_NMP_ZUG_GUARD: true
+# Minimum number of non-pawn pieces required to attempt NMP (0 disables guard)
+NMP_ZUG_NONPAWN_THRESHOLD: 0
+
+# Futility Pruning (normal and quiescence)
+# Enable futility pruning in main search
+USE_FP: true
+# Enable futility pruning in quiescence
+USE_QFP: true
+# Futility margins (centipawns) indexed by remaining depth (0..6)
+FP_MARGIN: [0, 100, 200, 300, 500, 900, 1200]
+
+# Late Move Reduction / Pruning
+# Enable LMR
+USE_LMR: true
+# Minimum depth (plies) to start reducing late moves
+LMR_MIN_DEPTH: 3
+# Start reducing from this move index (i.e., after this many moves searched)
+LMR_MIN_MOVES: 3
+# LMR_REDUCTION: omitted (very large table)
+
+# Late Move Pruning (LMP): prune moves after a threshold per depth bucket
+USE_LMP: true
+# Thresholds (move counts) for depth buckets 0..15
+LMP_MOVES: [0, 7, 9, 11, 13, 15, 17, 19, 22, 24, 27, 29, 32, 35, 38, 41]
+
+# Extensions
+# Enable search extensions framework
+USE_EXTENSIONS: true
+# Extend when in check
+USE_CHECK_EXT: true
+# Extend on threats
+USE_THREAT_EXT: false
+# Add extension depth rather than replacing node depth
+USE_EXT_ADD_DEPTH: true
+
+# Improved moves-left model (time management) tunables
+# Estimated remaining moves in opening/midgame/endgame to budget time
+MOVES_LEFT_OPENING: 36
+MOVES_LEFT_MIDGAME: 28
+MOVES_LEFT_ENDGAME: 16
+# Low material endgames tend to have fewer remaining moves
+MOVES_LEFT_LOW_MAT: 10
+# Queenless middlegame/endgames often last longer than low-mat but less than midgame
+MOVES_LEFT_QUEENLESS: 22
+
+# Non-pawn piece (NPP) thresholds for phase detection
+# High piece count -> earlier phases
+NPP_HEAVY_THRESHOLD: 10
+# Low piece count -> late endgame
+NPP_LIGHT_THRESHOLD: 4
+
+# Repetition/50-move risk handling and clamps for time model
+# Half-move clock threshold where repetition risk is considered high
+REPETITION_HMC_HIGH: 80
+# Reduce estimated moves-left by this penalty if risk is high
+REPETITION_RISK_PENALTY: 6
+# Clamp lower/upper bounds of moves-left estimates
+MOVES_LEFT_MIN_CLAMP: 6
+MOVES_LEFT_MAX_CLAMP: 50

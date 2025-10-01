@@ -1,0 +1,301 @@
+Goal:
+    I want to refactor how configuration is handled.
+
+Context
+- Language: C++20
+- OS and shell: Windows with PowerShell
+- IDE: CLion `2025.2.2`
+- Build system: CMake (confirm root `CMakeLists.txt` path)
+- Test framework: specify one of `GoogleTest` 1.14.0 installed via vcpkg
+- YAML parser: `yaml-cpp` - install latest stable via vcpkg and use find_package in CMake
+- Existing configuration headers to keep backward‑compatible names:
+  - `src/engine/SearchConfig.h`
+  - `src/engine/EvalConfig.h`
+- UCI options integration file:
+  - `src/engine/UciOptions.cpp`
+- Logging: specify existing logging facility (e.g., `spdlog`, custom logger, or fallback to `std::cerr`)
+- Default YAML file locations:
+  - `config/search.yaml`
+  - `config/eval.yaml`
+- Performance constraints:
+  - Fast access is critical during search. Retain direct static access patterns (e.g., `SearchConfig::MOVE_OVERHEAD_MS`) with zero/near‑zero overhead. Prefer `constexpr`/`inline` where feasible and avoid locks and allocations on hot paths.
+- Thread safety:
+  - Not required. Configuration changes happen only when no search is active.
+- Runtime behavior:
+  - Load at startup from files.
+  - Support reset to defaults and reload from disk (non‑concurrent).
+  - Support programmatic changes during initialization and for unit tests, and via UCI options.
+- Output and diagnostics:
+  - Provide `str()` for default and current config, human‑readable, similar to `src/engine/UciOptions.cpp`.
+  - Graceful error handling with clear messages for missing/malformed files.
+  - Logging for load/reload and errors.
+- Backward compatibility:
+  - Keep existing configuration names and public accessors. If introducing new structures/singletons, keep existing static variables as views/adapters until a later cleanup step.
+- Documentation:
+  - Include brief docs explaining structure, file locations, precedence, and how to extend.
+
+What you should deliver
+- A step‑by‑step plan, where each step is independently useful and leaves the project in a running/green state with
+ unit tests and docs.
+- For each step, provide a dedicated prompt to use in a new chat, including
+  1) A concise context recap so the new chat has all necessary info.
+  2) A precise prompt for that step so the new chat can focus on that step.
+  3) Each step will then produce: (not part of the plan but what you should deliver in the step)
+     -) The list of files to add/modify with full paths in single backticks.
+     -) The code to add/change.
+     -) Unit tests.
+     -) Documentation notes.
+  4) Acceptance criteria for the step
+
+Constraints and conventions
+- Keep it simple and maintainable. Avoid over‑engineering.
+- Favor small, header‑only, or `inline` constructs for hot paths.
+- YAML files must include comments that explain each parameter.
+- Define a clear precedence model:
+  - Defaults in code < YAML files < runtime overrides (UCI/options/test harness).
+- Singletons are acceptable as global access points for `Search` and `Evaluation`.
+- Use `yaml-cpp` for parsing and mapping YAML to C++.
+- Do not compile or run anything on your side; ask me to run and report results.
+
+Artifacts I can provide before you start but you should have access to the full repository
+- Esp. important: current contents of:
+  - `src/engine/SearchConfig.h`
+  - `src/engine/EvalConfig.h`
+  - `src/engine/UciOptions.cpp`
+  - Root `CMakeLists.txt` and any related `CMakeLists.txt` that need edits
+  - Logging: src/common/Logging.h and .cpp
+- The selected test framework and how it is integrated in CMake.
+- Preferred `yaml-cpp` version and integration method.
+
+Deliver the step plan now, and for each step include its dedicated prompt
+exactly as I should paste it into a new chat, following the above constraints
+and conventions.
+
+===============================================================================
+
+Here is a concise, incremental plan adapted for Agent mode. I will apply changes directly in the repo on branch `dev_v0.6_new_config`. Each step keeps the project buildable and green, adds unit tests and docs in\-repo, and ends by asking you to build and run tests in CLion or PowerShell.
+
+Step 1 — Dependencies, scaffolding, and YAML templates
+- Purpose:
+  - Integrate `yaml-cpp` and `GoogleTest` via vcpkg and CMake.
+  - Add `config/` with commented YAML templates.
+  - Add `ConfigPaths` helper for default file locations.
+  - Add a smoke test parsing the YAML.
+- Acceptance criteria:
+  - CMake finds `yaml-cpp` and `GTest`.
+  - `config/search.yaml` and `config/eval.yaml` exist with comments.
+  - A GTest loads both YAML files without errors.
+  - Project builds and tests pass on Windows in CLion.
+
+Prompt to paste for Step 1:
+Context recap:
+- C++20 on Windows with PowerShell, CLion 2025\.2\.2, CMake build, tests via GoogleTest 1\.14\.0 (vcpkg), YAML via yaml\-cpp (vcpkg).
+- Default YAML paths: `config/search.yaml`, `config/eval.yaml`.
+- Logging via `src/common/Logging.h/.cpp` if present; else fallback to `std::cerr`.
+- Work on branch `dev_v0.6_new_config`. Keep the project green and incremental. Do not compile yourself.
+
+Task:
+- Update CMake to link `yaml-cpp` via `find_package(... CONFIG REQUIRED)`. (GTest already integrated.)
+- Add `src/config/ConfigPaths.h/.cpp` with helpers returning default YAML paths using `std::filesystem`. (in general all config related code should go under `src/config/`)
+- Add commented template YAML files at `config/search.yaml`, `config/eval.yaml`.
+- Add a simple GTest that loads both YAML files with `yaml-cpp` and asserts presence of expected top\-level sections.
+- Apply changes directly in the repo. Then ask me to build and run tests; I will report results.
+
+Acceptance criteria:
+- Build finds `yaml-cpp` and `GTest`.
+- YAML templates loaded by a smoke test.
+- All tests pass.
+
+Step 2 — Define configuration data structures and defaults
+- Purpose:
+  - Introduce `SearchConfigData` and `EvalConfigData` header\-only POD structs with inline defaults.
+  - Add `str()` for human\-readable output.
+  - Add `yaml-cpp` conversions to map YAML to/from these structs with lenient parsing.
+- Acceptance criteria:
+  - New header\-only structs under `src/engine/config/`.
+  - `str()` returns readable output.
+  - `yaml-cpp` conversion specializations parse defaults and partial YAML.
+  - Unit tests cover defaults, YAML mapping, and `str()` basics.
+
+Prompt to paste for Step 2:
+Context recap:
+- yaml\-cpp and GTest are integrated. YAML templates and `ConfigPaths` exist.
+- Need data models for search and eval with code defaults, YAML mapping, and `str()`.
+
+Task:
+- Add `src/engine/config/SearchConfigData.h` and `src/engine/config/EvalConfigData.h` as header\-only PODs with inline defaults (no allocations).
+- Provide `std::string str() const`.
+- Add `yaml-cpp` `convert<T>` specializations to load from YAML nodes. Unknown keys log warn; missing keys use defaults.
+- Add unit tests for defaults, minimal YAML overrides, and `str()`.
+- Apply changes directly in the repo. Then ask me to build and run tests.
+
+Acceptance criteria:
+- Defaults compile and match expectations.
+- Partial YAML overrides work; unknown keys don’t fail.
+- Tests pass.
+
+Step 3 — ConfigManager singleton with precedence and file I/O
+- Purpose:
+  - Add `ConfigManager` singleton owning defaults and current values.
+  - Implement precedence: defaults \< YAML files \< runtime overrides.
+  - Provide `load`, `reset`, `applyOverrides`, and `str()` for current/default.
+- Acceptance criteria:
+  - `ConfigManager` exposes `search()`, `eval()`, `loadFromFiles(...)`, `resetToDefaults()`, `applyOverrides(...)`, `strCurrent()`, `strDefaults()`.
+  - Uses `ConfigPaths` for default file locations.
+  - Graceful error handling with logging; keeps last good config on failure.
+  - Unit tests cover precedence, missing/invalid YAML, and `str()`.
+
+Prompt to paste for Step 3:
+Context recap:
+- We have config PODs with defaults and YAML mapping.
+- Need a singleton to load from files, hold current vs. defaults, apply overrides, and expose reads.
+
+Task:
+- Add `src/engine/config/ConfigManager.h/.cpp` implementing:
+  - `static ConfigManager& instance();`
+  - Accessors for `SearchConfigData`/`EvalConfigData` (const refs).
+  - `bool loadFromFiles(std::optional<std::filesystem::path> searchPath = {}, std::optional<std::filesystem::path> evalPath = {});`
+  - `void resetToDefaults();`
+  - `template<typename F> void applyOverrides(F&& fn);` to mutate current config.
+  - `std::string strCurrent() const;` and `strDefaults() const;`
+- Log info/warn/error during load and parse. On error, retain last good values, return false.
+- Add unit tests for defaults\-only, YAML overrides, runtime overrides, and error paths.
+- Apply changes directly, then ask me to build and run tests.
+
+Acceptance criteria:
+- Precedence respected. Errors handled gracefully.
+- Tests pass.
+
+Step 4 — Backward\-compatible adapters in `SearchConfig.h` and `EvalConfig.h`
+- Purpose:
+  - Preserve existing configuration names and accessors with near\-zero overhead.
+  - Delegate to `ConfigManager` under the hood.
+- Acceptance criteria:
+  - No engine call sites change.
+  - Compile\-time constants remain `constexpr` where possible; others as `inline` getters or `const&`.
+  - Unit tests verify parity between legacy names and `ConfigManager` values.
+
+Prompt to paste for Step 4:
+Context recap:
+- `ConfigManager` provides current/default configs.
+- We must update legacy headers to delegate to it while preserving identifiers and performance.
+
+Task:
+- Modify `src/engine/SearchConfig.h` and `src/engine/EvalConfig.h`:
+  - Keep public names and signatures intact.
+  - Implement adapters as `constexpr` or `inline` accessors reading from `ConfigManager::instance()`.
+- Add unit tests asserting old names match manager fields.
+- Apply changes directly, then ask me to build and run tests.
+
+Acceptance criteria:
+- No behavioral change by default.
+- Hot\-path reads remain allocation/lock free.
+- Tests pass.
+
+Step 5 — Load at startup and graceful error handling
+- Purpose:
+  - Initialize configuration at engine startup using default YAML paths.
+  - Ensure graceful failure with defaults and logging if files are missing/malformed.
+- Acceptance criteria:
+  - A central init calls `ConfigManager::instance().loadFromFiles()` using `ConfigPaths`.
+  - On failure, engine runs with defaults; logs appropriately.
+  - Unit tests validate init with present/missing files.
+
+Prompt to paste for Step 5:
+Context recap:
+- Manager and legacy adapters exist.
+- Need startup initialization using default YAML paths.
+
+Task:
+- Add `src/engine/ConfigInit.h/.cpp` with `void InitializeEngineConfig();`:
+  - Calls `ConfigManager::instance().loadFromFiles()` with default paths from `ConfigPaths`.
+  - Logs results and falls back to defaults on error.
+- Hook `InitializeEngineConfig()` into a central startup point (documented comment if provisional).
+- Add tests that invoke init in scenarios with and without YAML files.
+- Apply changes directly, then ask me to build and run tests.
+
+Acceptance criteria:
+- Startup uses YAML when available; otherwise defaults.
+- Tests pass.
+
+Step 6 — UCI options integration and runtime overrides
+- Purpose:
+  - Expose selected configuration fields via `src/engine/UciOptions.cpp`.
+  - Apply runtime overrides with highest precedence, plus reset/reload commands.
+- Acceptance criteria:
+  - UCI options map to config fields and update `ConfigManager` on set.
+  - Commands exist to reset to defaults and reload from disk.
+  - Unit tests simulate setting options and verify precedence.
+
+Prompt to paste for Step 6:
+Context recap:
+- Config loads at startup; legacy accessors delegate to manager.
+- Need UCI options for runtime changes and maintenance commands.
+
+Task:
+- Update `src/engine/UciOptions.cpp` to:
+  - Add options for a representative subset of search and eval parameters.
+  - On set, call `ConfigManager::instance().applyOverrides(...)`.
+  - Add commands to reset to defaults and reload from disk (reapply overrides if needed).
+  - Ensure `str()` can be shown similarly to existing UCI output.
+- Add tests that call the same handlers used by UCI to verify updates, reset, and reload.
+- Apply changes directly, then ask me to build and run tests.
+
+Acceptance criteria:
+- Options update current config and take precedence over YAML.
+- Reset/reload behave correctly.
+- Tests pass.
+
+Step 7 — Diagnostics: `str()` and dump commands
+- Purpose:
+  - Provide human\-readable dumps for current and default configs for troubleshooting.
+  - Keep formatting consistent with how it is done in the current `UciOptions.cpp`.
+- Acceptance criteria:
+  - `ConfigManager::strCurrent()` and `strDefaults()` return readable multi-line text.
+  - A handler or helper prints current/default config on demand.
+  - Unit tests check key/value presence in dumps.
+
+Prompt to paste for Step 7:
+Context recap:
+- Manager and UCI integration exist.
+- Need diagnostic output consistent with `UciOptions`.
+
+Task:
+- Ensure `strCurrent()`/`strDefaults()` produce compact, readable text.
+- Add a UCI or debug handler to dump current/default config.
+- Add tests validating dump content contains key names and values.
+- Apply changes directly, then ask me to build and run tests.
+
+Acceptance criteria:
+- Dumps are readable and complete.
+- Tests pass.
+
+Step 8 — Documentation and final polish
+- Purpose:
+  - Document the configuration system: structure, locations, precedence, extension guide.
+  - Ensure YAML examples are fully commented.
+  - Final performance polish for hot paths.
+- Acceptance criteria:
+  - `docs/configuration.md` exists with overview, locations, precedence, reload/reset, how to add a parameter, troubleshooting/logging.
+  - `config/search.yaml` and `config/eval.yaml` have inline comments for every parameter.
+  - Hot\-path accessors remain `inline`/header\-only without allocations/locks.
+  - All tests green.
+
+Prompt to paste for Step 8:
+Context recap:
+- System implemented with manager, adapters, YAML files, UCI integration, and tests.
+- Need docs and a final pass.
+
+Task:
+- Add `docs/configuration.md` covering:
+  - Overview and goals.
+  - File locations and precedence: defaults in code \< YAML files \< runtime overrides.
+  - Reload/reset instructions.
+  - How to add a new parameter (defaults, YAML mapping, UCI option).
+  - Troubleshooting and logging notes.
+- Ensure YAML templates contain explanatory comments for each parameter.
+- Optionally add a tiny test asserting accessor call patterns remain simple (no allocations).
+- Apply changes directly, then ask me to build and run tests.
+
+Acceptance criteria:
+- Documentation complete. YAML commented. Tests pass.

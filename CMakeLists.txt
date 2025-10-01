@@ -148,6 +148,9 @@ find_package(Boost CONFIG REQUIRED COMPONENTS program_options serialization)
 # Use spdlog from vcpkg instead of FetchContent
 find_package(spdlog CONFIG REQUIRED)
 
+# yaml-cpp via vcpkg CONFIG package
+find_package(yaml-cpp CONFIG REQUIRED)
+
 # project sub directories - need to have their own CMakeList.txt
 add_subdirectory(src)
 
