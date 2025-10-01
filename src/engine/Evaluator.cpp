@@ -22,8 +22,11 @@
 
 #include "Evaluator.h"
 
-Evaluator::Evaluator() {
-  if (EvalConfig::USE_PAWN_TT) {
+#include "config/ConfigManager.h"
+
+Evaluator::Evaluator()
+  : Config(&engine::config::ConfigManager::instance().eval()) {
+  if (engine::config::ConfigManager::instance().eval().USE_PAWN_TT) {
     pawnCache.resize(EvalConfig::PAWN_TT_SIZE_MB);
   }
   else {
@@ -32,6 +35,7 @@ Evaluator::Evaluator() {
 }
 
 Value Evaluator::evaluate(const Position& p) {
+
   // if not enough material on the board to achieve a mate it is a draw
   if (p.checkInsufficientMaterial()) {
     return VALUE_DRAW;
@@ -49,7 +53,8 @@ Value Evaluator::evaluate(const Position& p) {
   const double gamePhaseFactor = p.getGamePhaseFactor();
 
   // material
-  if (EvalConfig::USE_MATERIAL) {
+  // DEBUG - test of new config system
+  if (Config->USE_MATERIAL) {
     score.midgame = static_cast<Value>(p.getMaterial(WHITE) - p.getMaterial(BLACK));
     score.endgame = score.midgame;
   }

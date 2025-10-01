@@ -145,3 +145,6 @@ REPETITION_RISK_PENALTY: 6
 # Clamp lower/upper bounds of moves-left estimates
 MOVES_LEFT_MIN_CLAMP: 6
 MOVES_LEFT_MAX_CLAMP: 50
+
+# Debugging and profiling options
+CONFIG_DUMMY: false

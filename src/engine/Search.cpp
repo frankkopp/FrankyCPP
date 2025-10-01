@@ -30,7 +30,8 @@
 
 Search::Search() : Search(nullptr) {}
 
-Search::Search(UciHandler* pUciHandler) {
+Search::Search(UciHandler* pUciHandler)
+    : Config(&engine::config::ConfigManager::instance().search()) {
   this->uciHandler = pUciHandler;
   this->tt         = std::make_unique<TT>(0);
 }
@@ -61,6 +62,9 @@ void Search::startSearch(const Position& p, SearchLimits sl) {
   if (!initSemaphore.try_acquire()) {
     LOG__WARN(Logger::get().SEARCH_LOG, "Search init failed as another initialization is ongoing.");
   }
+
+  // DEBUG to test the new config approach
+  LOG__INFO(Logger::get().SEARCH_LOG, "DEBUG: CONFIG_DUMMY: {}", Config->CONFIG_DUMMY);
 
   // start search time
   startTime       = currentTime();
@@ -861,8 +865,8 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
             && depth >= SearchConfig::NMP_VERIFY_MIN_DEPTH) {
           Depth verifyDepth = depth - r - SearchConfig::NMP_VERIFY_MARGIN;
           if (verifyDepth < 0) { verifyDepth = DEPTH_NONE; }
-          const auto do_null = matethreat  ? No_Null_Move : Do_Null_Move;
-          const Value v = search(p, verifyDepth, ply, beta - 1, beta, NonPV, do_null);
+          const auto do_null = matethreat ? No_Null_Move : Do_Null_Move;
+          const Value v      = search(p, verifyDepth, ply, beta - 1, beta, NonPV, do_null);
           if (stopConditions()) { return VALUE_NONE; }
           if (v < beta) {
             statistics.nullMoveVerifications++;
@@ -1087,7 +1091,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     if (checkDrawRepAnd50(p, 2)) { value = VALUE_DRAW; }
     else {
 
-      const auto do_null = matethreat  ? No_Null_Move : Do_Null_Move;
+      const auto do_null = matethreat ? No_Null_Move : Do_Null_Move;
 
       // ///////////////////////////////////////////////////////////////////
       // PVS

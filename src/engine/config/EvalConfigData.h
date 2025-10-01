@@ -113,6 +113,9 @@ struct EvalConfigData {
 
     bool USE_GAMEPHASE_VALUE = true;
 
+    // Debug
+    bool EVAL_CONFIG_DUMMY = false;
+
     std::string str() const {
         std::ostringstream os;
         os << "USE_MATERIAL: " << USE_MATERIAL << '\n'
@@ -195,6 +198,7 @@ template<> struct convert<engine::config::EvalConfigData> {
         n["KING_SHIELD_MID_PER_PAWN"] = c.KING_SHIELD_MID_PER_PAWN;
         n["KING_SHIELD_END_PER_PAWN"] = c.KING_SHIELD_END_PER_PAWN;
         n["USE_GAMEPHASE_VALUE"] = c.USE_GAMEPHASE_VALUE;
+        n["EVAL_CONFIG_DUMMY"] = c.EVAL_CONFIG_DUMMY;
         return n;
     }
 
@@ -261,10 +265,11 @@ template<> struct convert<engine::config::EvalConfigData> {
         set_if_present(n, "KING_SHIELD_MID_PER_PAWN", c.KING_SHIELD_MID_PER_PAWN, seen);
         set_if_present(n, "KING_SHIELD_END_PER_PAWN", c.KING_SHIELD_END_PER_PAWN, seen);
         set_if_present(n, "USE_GAMEPHASE_VALUE", c.USE_GAMEPHASE_VALUE, seen);
+        set_if_present(n, "EVAL_CONFIG_DUMMY", c.EVAL_CONFIG_DUMMY, seen);
 
         for (auto it : n) {
             const std::string key = it.first.as<std::string>("");
-            if (!key.empty() && !seen.count(key)) {
+            if (!key.empty() && !seen.contains(key)) {
                 engine::config::detail::warnUnknownKey(key);
             }
         }

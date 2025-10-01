@@ -32,6 +32,7 @@
 #include "types/types.h"
 
 #include "common/gtest_friends.h"
+#include "config/ConfigManager.h"
 
 #include <atomic>
 #include <semaphore>
@@ -96,6 +97,9 @@ class Search {
 
   // to mark the last move was a book move
   bool hadBookMove = false;
+
+  // reference to the Search Config Data
+  const engine::config::SearchConfigData* Config;
 
 public:
   // in PV we search the full window in NonPV we try a zero window first
@@ -241,7 +245,7 @@ private:
 
   // reduce the number of moves searched in quiescence search by trying
   // to only look at good captures.
-  static bool goodCapture(Position& p, Move move) ;
+  static bool goodCapture(Position& p, Move move);
 
   // storeTT stores a position into the TT
   void storeTt(const Position& p, Depth depth, Depth ply, Move move, Value value, ValueType valueType, Value eval) const;

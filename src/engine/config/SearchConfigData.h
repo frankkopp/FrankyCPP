@@ -122,6 +122,9 @@ namespace engine::config {
     int MOVES_LEFT_MIN_CLAMP    = 6;
     int MOVES_LEFT_MAX_CLAMP    = 50;
 
+    // debug
+    bool CONFIG_DUMMY = false;
+
     std::string str() const {
       std::ostringstream os;
       os << "MOVE_OVERHEAD_MS: " << MOVE_OVERHEAD_MS << '\n'
@@ -222,6 +225,8 @@ struct YAML::convert<engine::config::SearchConfigData> {
     n["REPETITION_RISK_PENALTY"] = c.REPETITION_RISK_PENALTY;
     n["MOVES_LEFT_MIN_CLAMP"]    = c.MOVES_LEFT_MIN_CLAMP;
     n["MOVES_LEFT_MAX_CLAMP"]    = c.MOVES_LEFT_MAX_CLAMP;
+
+    n["CONFIG_DUMMY"] = c.CONFIG_DUMMY;
     return n;
   }
 
@@ -291,6 +296,7 @@ struct YAML::convert<engine::config::SearchConfigData> {
     set_if_present(n, "REPETITION_RISK_PENALTY", c.REPETITION_RISK_PENALTY, seen);
     set_if_present(n, "MOVES_LEFT_MIN_CLAMP", c.MOVES_LEFT_MIN_CLAMP, seen);
     set_if_present(n, "MOVES_LEFT_MAX_CLAMP", c.MOVES_LEFT_MAX_CLAMP, seen);
+    set_if_present(n, "CONFIG_DUMMY", c.CONFIG_DUMMY, seen);
 
     // Log unknown keys
     for (auto it : n) {

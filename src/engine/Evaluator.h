@@ -20,11 +20,15 @@
 #ifndef FRANKYCPP_EVALUATOR_H
 #define FRANKYCPP_EVALUATOR_H
 
+#include "EvalConfig.h"
 #include "PawnTT.h"
 #include "chesscore/Position.h"
+#include "config/EvalConfigData.h"
 #include "types/types.h"
-#include "EvalConfig.h"
 
+namespace engine::config {
+  struct SearchConfigData;
+}
 // Evaluator calculates a value for a chess position by
 // using various evaluation heuristics like material,
 // positional values, pawn structure, etc.
@@ -34,6 +38,9 @@ class Evaluator {
 
   Score score{};
   Score tmpScore{};
+
+  // reference to the Search Config Data
+  const engine::config::EvalConfigData* Config;
 
 public:
   Evaluator();
