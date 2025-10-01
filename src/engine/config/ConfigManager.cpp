@@ -37,11 +37,11 @@ ConfigManager& ConfigManager::instance() {
 }
 
 ConfigManager::ConfigManager() {
-    // Initialize current values from hard-coded fallback
+    // Initialize current values from a hard-coded fallback
     currentSearch_ = fallbackSearch_;
     currentEval_   = fallbackEval_;
 
-    // Auto-load from default YAML paths on first instantiation.
+    // Autoload from default YAML paths on the first instantiation.
     autoLoadAttempted_ = true;
     lastLoadOk_ = loadFromFiles();
 
@@ -55,7 +55,7 @@ void ConfigManager::resetToDefaults() {
     // Restore to the initially loaded defaults (from YAML at startup, or fallback if unavailable)
     currentSearch_ = defaultSearch_;
     currentEval_   = defaultEval_;
-    LOG__INFO(Logger::get().SEARCH_LOG, "Config reset to defaults (initial YAML)");
+    LOG__INFO(Logger::get().CONFIG_LOG, "Config reset to defaults (initial YAML)");
 }
 
 static bool file_exists(const std::filesystem::path& p) {
@@ -79,15 +79,15 @@ bool ConfigManager::loadFromFiles(std::optional<std::filesystem::path> searchPat
 
         // Load search.yaml (missing is OK -> keep fallback)
         if (file_exists(sPath)) {
-            LOG__INFO(Logger::get().SEARCH_LOG, "Loading Search config from {}", sPath.string());
+            LOG__INFO(Logger::get().CONFIG_LOG, "Loading Search config from {}", sPath.string());
             YAML::Node n = YAML::LoadFile(sPath.string());
             if (!n.IsMap()) {
-                LOG__WARN(Logger::get().SEARCH_LOG, "Search config at {} is not a map; using fallback", sPath.string());
+                LOG__WARN(Logger::get().CONFIG_LOG, "Search config at {} is not a map; using fallback", sPath.string());
             } else {
                 newSearch = n.as<SearchConfigData>();
             }
         } else {
-            LOG__INFO(Logger::get().SEARCH_LOG, "Search config file not found: {} (using fallback)", sPath.string());
+            LOG__INFO(Logger::get().CONFIG_LOG, "Search config file not found: {} (using fallback)", sPath.string());
         }
 
         // Load eval.yaml (missing is OK -> keep fallback)
@@ -110,14 +110,14 @@ bool ConfigManager::loadFromFiles(std::optional<std::filesystem::path> searchPat
         return true;
 
     } catch (const YAML::Exception& ex) {
-        LOG__ERROR(Logger::get().SEARCH_LOG, "YAML error while loading configs: {}", ex.what());
+        LOG__ERROR(Logger::get().CONFIG_LOG, "YAML error while loading configs: {}", ex.what());
         // rollback
         currentSearch_ = backupSearch;
         currentEval_   = backupEval;
         lastLoadOk_    = false;
         return false;
     } catch (const std::exception& ex) {
-        LOG__ERROR(Logger::get().SEARCH_LOG, "Exception while loading configs: {}", ex.what());
+        LOG__ERROR(Logger::get().CONFIG_LOG, "Exception while loading configs: {}", ex.what());
         currentSearch_ = backupSearch;
         currentEval_   = backupEval;
         lastLoadOk_    = false;

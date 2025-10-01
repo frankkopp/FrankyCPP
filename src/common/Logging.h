@@ -200,6 +200,7 @@ public:
   const std::shared_ptr<spdlog::logger> SEARCH_LOG  = spdlog::stdout_color_mt("Search_Logger");
   const std::shared_ptr<spdlog::logger> EVAL_LOG    = spdlog::stdout_color_mt("Eval_Logger");
   const std::shared_ptr<spdlog::logger> TSUITE_LOG  = spdlog::stdout_color_mt("TSuite_Logger");
+  const std::shared_ptr<spdlog::logger> CONFIG_LOG  = spdlog::stdout_color_mt("Config_Logger");
   // clang-format on
 };
 

@@ -28,13 +28,31 @@
 
 namespace engine::config {
 
-class ConfigManager {
-public:
+  class ConfigManager {
+    ConfigManager();
+
+    // Hard-coded fallback values (constructed defaults). Only used if YAML is missing or invalid.
+    SearchConfigData fallbackSearch_{};
+    EvalConfigData fallbackEval_{};
+
+    // Defaults captured from the initial autoload (YAML at startup, or fallback if not available)
+    SearchConfigData defaultSearch_{};
+    EvalConfigData defaultEval_{};
+
+    // Current active configuration
+    SearchConfigData currentSearch_{};
+    EvalConfigData currentEval_{};
+
+    // Auto-init flags
+    bool autoLoadAttempted_{false};
+    bool lastLoadOk_{false};
+
+  public:
     static ConfigManager& instance();
 
     // Accessors (const refs) to current configuration
     const SearchConfigData& search() const noexcept { return currentSearch_; }
-    const EvalConfigData&   eval() const noexcept { return currentEval_; }
+    const EvalConfigData& eval() const noexcept { return currentEval_; }
 
     // Reset current configs back to the initially loaded defaults (from YAML at startup, or fallback if YAML unavailable)
     void resetToDefaults();
@@ -64,7 +82,7 @@ public:
     ///       s.USE_PVS = true;          // enable PVS
     ///       e.TEMPO = 40;              // Eval tweak
     ///   });
-    template <typename F>
+    template<typename F>
     void applyOverrides(F&& fn) { fn(currentSearch_, currentEval_); }
 
     // Diagnostics
@@ -73,26 +91,7 @@ public:
 
     // Human-readable dumps
     std::string strCurrent() const;
-    std::string strDefaults() const; // dumps the initially loaded defaults
+    std::string strDefaults() const;// dumps the initially loaded defaults
+  };
 
-private:
-    ConfigManager();
-
-    // Hard-coded fallback values (constructed defaults). Only used if YAML is missing or invalid.
-    SearchConfigData fallbackSearch_{};
-    EvalConfigData   fallbackEval_{};
-
-    // Defaults captured from the initial auto-load (YAML at startup, or fallback if not available)
-    SearchConfigData defaultSearch_{};
-    EvalConfigData   defaultEval_{};
-
-    // Current active configuration
-    SearchConfigData currentSearch_{};
-    EvalConfigData   currentEval_{};
-
-    // Auto-init flags
-    bool autoLoadAttempted_ { false };
-    bool lastLoadOk_ { false };
-};
-
-} // namespace engine::config
+}// namespace engine::config

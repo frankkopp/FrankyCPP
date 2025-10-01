@@ -17,9 +17,9 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include <iostream>
-#include <chrono>
 #include "Logging.h"
+#include <chrono>
+#include <iostream>
 
 // BOOST program options
 #include "boost/program_options.hpp"
@@ -29,11 +29,11 @@ inline po::variables_map programOptions{};
 
 // Local helper: add sink to logger only if it's not already present.
 // We compare the underlying pointer addresses to avoid duplicates when init() is called multiple times.
-static void add_unique_sink(spdlog::logger &logger,
-                            const std::shared_ptr<spdlog::sinks::sink> &sink) {
-  auto &sinks = logger.sinks();
-  for (const auto &s : sinks) {
-    if (s.get() == sink.get()) return; // already present
+static void add_unique_sink(spdlog::logger& logger,
+                            const std::shared_ptr<spdlog::sinks::sink>& sink) {
+  auto& sinks = logger.sinks();
+  for (const auto& s : sinks) {
+    if (s.get() == sink.get()) return;// already present
   }
   sinks.push_back(sink);
 }
@@ -67,14 +67,16 @@ spdlog::level::level_enum Logger::parseLevel(const std::string_view s) {
 // Set spdlog's global level. This affects default filtering for all loggers not having explicit levels.
 // Optionally, we also make warn+ flush immediately to bound data loss on crashes.
 void Logger::setGlobalLevel(const spdlog::level::level_enum lvl) {
+  fprintln("Setting global log level to {}", spdlog::level::to_string_view(lvl));
   spdlog::set_level(lvl);
-  spdlog::apply_all([](const std::shared_ptr<spdlog::logger>& lg){
+  spdlog::apply_all([](const std::shared_ptr<spdlog::logger>& lg) {
     if (lg) lg->flush_on(spdlog::level::warn);
   });
 }
 
 // Set a particular logger's level when you already have the pointer.
 void Logger::setLoggerLevel(const std::shared_ptr<spdlog::logger>& lg, const spdlog::level::level_enum lvl) {
+  fprintln("Setting logger level to {} for logger {}", spdlog::level::to_string_view(lvl), lg ? lg->name() : "<null>");
   if (lg) lg->set_level(lvl);
 }
 
@@ -90,7 +92,7 @@ void Logger::init() const {
 
   // Parse requested log levels using spdlog's canonical parser.
   // Using from_str centralizes accepted names (e.g., "warn", "error") and keeps behavior in sync with spdlog.
-  auto get_level = [](const char *opt_name, std::string &lvl_str) -> spdlog::level::level_enum {
+  auto get_level = [](const char* opt_name, std::string& lvl_str) -> spdlog::level::level_enum {
     const auto lvl = spdlog::level::from_str(lvl_str);
     // If parsing returned 'off' but the user didn't explicitly request 'off', treat as invalid and fall back.
     // This produces a single, clear message and avoids surprising silent fallbacks.
@@ -103,7 +105,7 @@ void Logger::init() const {
   };
 
   // Get level strings from programOptions; default to "warn" if missing.
-  std::string logLvL = "warn";
+  std::string logLvL       = "warn";
   std::string searchLogLvL = "warn";
   if (!programOptions.empty()) {
     if (programOptions.contains("log_lvl")) {
@@ -114,12 +116,12 @@ void Logger::init() const {
     }
   }
 
-  const auto logLevel = get_level("log_lvl", logLvL);
+  const auto logLevel       = get_level("log_lvl", logLvL);
   const auto searchLogLevel = get_level("search_log_lvl", searchLogLvL);
 
   // Global log level and pattern once.
   spdlog::set_level(logLevel);
-  spdlog::set_pattern(defaultPattern); // set the default pattern globally once
+  spdlog::set_pattern(defaultPattern);// set the default pattern globally once
 
   // Shared file sink follows the global default log level
   sharedFileSink->set_level(logLevel);
@@ -128,17 +130,18 @@ void Logger::init() const {
   constexpr auto nonUciFlushLevel = spdlog::level::warn;
 
   // Configure repeated logger blocks via helper
-  configure_logger(SEARCH_LOG,  searchLogLevel, defaultPattern, sharedFileSink, nonUciFlushLevel);
-  configure_logger(TSUITE_LOG,  logLevel,       defaultPattern, sharedFileSink, nonUciFlushLevel);
-  configure_logger(EVAL_LOG,    logLevel,       defaultPattern, sharedFileSink, nonUciFlushLevel);
-  configure_logger(TT_LOG,      logLevel,       defaultPattern, sharedFileSink, nonUciFlushLevel);
-  configure_logger(UCIHAND_LOG, logLevel,       defaultPattern, sharedFileSink, nonUciFlushLevel);
-  configure_logger(BOOK_LOG,    logLevel,       defaultPattern, sharedFileSink, nonUciFlushLevel);
+  configure_logger(SEARCH_LOG, searchLogLevel, defaultPattern, sharedFileSink, nonUciFlushLevel);
+  configure_logger(TSUITE_LOG, logLevel, defaultPattern, sharedFileSink, nonUciFlushLevel);
+  configure_logger(EVAL_LOG, logLevel, defaultPattern, sharedFileSink, nonUciFlushLevel);
+  configure_logger(TT_LOG, logLevel, defaultPattern, sharedFileSink, nonUciFlushLevel);
+  configure_logger(UCIHAND_LOG, logLevel, defaultPattern, sharedFileSink, nonUciFlushLevel);
+  configure_logger(BOOK_LOG, logLevel, defaultPattern, sharedFileSink, nonUciFlushLevel);
+  configure_logger(CONFIG_LOG, logLevel, defaultPattern, sharedFileSink, nonUciFlushLevel);
 
   // UCI logger keeps its dedicated console sink and its own simple pattern
   add_unique_sink(*UCI_LOG, uciOutSink);
   UCI_LOG->set_pattern("[%H:%M:%S:%f] %v");
-  UCI_LOG->set_level(spdlog::level::trace); // keep as-is (trace) for UCI
+  UCI_LOG->set_level(spdlog::level::trace);// keep as-is (trace) for UCI
   UCI_LOG->flush_on(spdlog::level::trace);
 
   // Logger for Unit Tests (stdout logger only, no file sink wiring)
