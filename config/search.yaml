@@ -104,7 +104,7 @@ USE_LMR: true
 LMR_MIN_DEPTH: 3
 # Start reducing from this move index (i.e., after this many moves searched)
 LMR_MIN_MOVES: 3
-# LMR_REDUCTION: omitted (very large table)
+# LMR_REDUCTION: large table defined in code for efficiency
 
 # Late Move Pruning (LMP): prune moves after a threshold per depth bucket
 USE_LMP: true

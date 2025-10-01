@@ -101,6 +101,21 @@ class Search {
   // reference to the Search Config Data
   const engine::config::SearchConfigData* Config;
 
+  // LMR reduction table pre-computed for depth 0..31 and moves searched 0..63
+  static constexpr int lmr_reduction(const int depth, const int movesSearched) {
+    // 1 + round(depth * movesSearched * 0.0035)
+    // exact integer rounding of 35/10000
+    return 1 + (depth * movesSearched * 35 + 5000) / 10000;
+  }
+  static constexpr std::array<std::array<int, 64>, 32> make_lmr_table() {
+    std::array<std::array<int, 64>, 32> t{};
+    for (std::size_t d = 0; d < 32; ++d)
+      for (std::size_t m = 0; m < 64; ++m)
+        t[d][m] = lmr_reduction(static_cast<int>(d), static_cast<int>(m));
+    return t;
+  }
+  inline static auto LMR_REDUCTION = make_lmr_table();
+
 public:
   // in PV we search the full window in NonPV we try a zero window first
   enum Node_Type : bool { NonPV = false,

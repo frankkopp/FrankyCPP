@@ -1051,10 +1051,10 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
             && !p.isCapturingMove(move)
             && !move.promotionType()) {
           if (depth < 32 && movesSearched < 64) {
-            lmrDepth -= static_cast<Depth>(SearchConfig::LMR_REDUCTION[depth][movesSearched]);
+            lmrDepth -= static_cast<Depth>(LMR_REDUCTION[depth][movesSearched]);
           }
           else {
-            lmrDepth -= static_cast<Depth>(SearchConfig::LMR_REDUCTION[31][63]);
+            lmrDepth -= static_cast<Depth>(LMR_REDUCTION[31][63]);
           }
           statistics.lmrReductions++;
         }
