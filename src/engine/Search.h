@@ -115,6 +115,7 @@ class Search {
     return t;
   }
   inline static auto LMR_REDUCTION = make_lmr_table();
+  FRIEND_TEST(SearchTest, lmrReductionTable);
 
 public:
   // in PV we search the full window in NonPV we try a zero window first

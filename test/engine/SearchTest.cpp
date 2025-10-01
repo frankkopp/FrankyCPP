@@ -24,6 +24,8 @@
 
 #include <engine/EvalConfig.h>
 #include <gtest/gtest.h>
+#include <iomanip>
+#include <sstream>
 
 using testing::Eq;
 
@@ -474,6 +476,63 @@ TEST_F(SearchTest, singleMoveComplexRoot) {
   EXPECT_LT(result.time, 10s);
   EXPECT_EQ(Move(SQ_E1, SQ_F2), result.bestMove);
 }
+
+// New test: verify and pretty-print the LMR reduction table
+TEST_F(SearchTest, lmrReductionTable) {
+  // Access the private static table via FRIEND_TEST
+  const auto& T = Search::LMR_REDUCTION;
+
+  // Dimensions
+  ASSERT_EQ(32u, T.size()) << "Depth dimension must be 32 (0..31)";
+  for (const auto& row : T) ASSERT_EQ(64u, row.size()) << "Moves dimension must be 64 (0..63)";
+
+  // Check exact formula match for all entries and basic boundary conditions
+  for (int d = 0; d < 32; ++d) {
+    for (int m = 0; m < 64; ++m) {
+      const int expected = 1 + (d * m * 35 + 5000) / 10000; // exact rounding of 0.0035
+      EXPECT_EQ(expected, T[d][m]) << "Mismatch at d=" << d << " m=" << m;
+
+      // Minimum reduction is 1
+      EXPECT_GE(T[d][m], 1) << "Reduction below 1 at d=" << d << " m=" << m;
+    }
+    // movesSearched == 0 must yield 1 for all depths
+    EXPECT_EQ(1, T[d][0]) << "m=0 must be 1 at d=" << d;
+  }
+  for (int m = 0; m < 64; ++m) {
+    // depth == 0 must yield 1 for all moves
+    EXPECT_EQ(1, T[0][m]) << "d=0 must be 1 at m=" << m;
+  }
+
+  // Monotonicity: non-decreasing in both dimensions
+  for (int d = 0; d < 32; ++d) {
+    for (int m = 0; m + 1 < 64; ++m) {
+      EXPECT_LE(T[d][m], T[d][m + 1]) << "Row not non-decreasing at d=" << d << " m=" << m;
+    }
+  }
+  for (int m = 0; m < 64; ++m) {
+    for (int d = 0; d + 1 < 32; ++d) {
+      EXPECT_LE(T[d][m], T[d + 1][m]) << "Column not non-decreasing at m=" << m << " d=" << d;
+    }
+  }
+
+  // Known extreme
+  {
+    const int expected = 1 + (31 * 63 * 35 + 5000) / 10000; // should be 8
+    EXPECT_EQ(expected, T[31][63]);
+  }
+
+  // Pretty print the entire table for manual inspection
+  std::ostringstream oss;
+  oss << "LMR_REDUCTION[depth][moves] (depth 0..31, moves 0..63)\n";
+  for (int d = 0; d < 32; ++d) {
+    oss << "d=" << std::setw(2) << d << ": ";
+    for (int m = 0; m < 64; ++m) {
+      oss << std::setw(2) << T[d][m] << (m + 1 < 64 ? ' ' : '\n');
+    }
+  }
+  LOG__INFO(Logger::get().TEST_LOG, "{}", oss.str());
+}
+
 
 TEST_F(SearchTest, debug) {
   if (isBulkRun()) {
