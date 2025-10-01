@@ -28,7 +28,7 @@ namespace engine::config::yaml {
 
   // If key exists in node, assign to out and record key in seen
   template<typename T>
-  inline void set_if_present(const YAML::Node& n, const char* key, T& out, std::unordered_set<std::string>& seen) {
+  void set_if_present(const YAML::Node& n, const char* key, T& out, std::unordered_set<std::string>& seen) {
     if (auto v = n[key]) {
       out = v.as<T>();
       seen.emplace(key);
@@ -37,7 +37,7 @@ namespace engine::config::yaml {
 
   // If key exists and is a sequence, copy up to N ints into out and record key in seen
   template<size_t N>
-  inline void set_array_if_present(const YAML::Node& n, const char* key, std::array<int, N>& out, std::unordered_set<std::string>& seen) {
+  void set_array_if_present(const YAML::Node& n, const char* key, std::array<int, N>& out, std::unordered_set<std::string>& seen) {
     if (auto v = n[key]) {
       if (v.IsSequence()) {
         size_t i = 0;

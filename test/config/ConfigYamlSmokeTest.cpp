@@ -17,15 +17,15 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include "config/ConfigPaths.h"
+#include "../../src/engine/config/ConfigPaths.h"
 #include <filesystem>
 #include <gtest/gtest.h>
 #include <yaml-cpp/yaml.h>
 
 namespace {
 
-// Smoke test: loads config/search.yaml and checks representative flat keys exist
-// to ensure file presence and basic YAML parsing work.
+  // Smoke test: loads config/search.yaml and checks representative flat keys exist
+  // to ensure file presence and basic YAML parsing work.
   TEST(ConfigYamlSmokeTest, LoadsSearchYamlAndHasExpectedFlatKeys) {
     const auto path = ConfigPaths::SearchYaml();
     ASSERT_TRUE(std::filesystem::exists(path)) << "Missing file: " << path.string();
@@ -41,10 +41,10 @@ namespace {
     EXPECT_TRUE(root["TT_SIZE_MB"]);
     EXPECT_TRUE(root["RFP_MARGIN"]) << "RFP_MARGIN array should be present";
     EXPECT_TRUE(root["FP_MARGIN"]) << "FP_MARGIN array should be present";
-}
+  }
 
-// Smoke test: loads config/eval.yaml and checks representative flat keys exist
-// to ensure file presence and basic YAML parsing work.
+  // Smoke test: loads config/eval.yaml and checks representative flat keys exist
+  // to ensure file presence and basic YAML parsing work.
   TEST(ConfigYamlSmokeTest, LoadsEvalYamlAndHasExpectedFlatKeys) {
     const auto path = ConfigPaths::EvalYaml();
     ASSERT_TRUE(std::filesystem::exists(path)) << "Missing file: " << path.string();
@@ -58,6 +58,6 @@ namespace {
     EXPECT_TRUE(root["TEMPO"]);
     EXPECT_TRUE(root["USE_PAWN_EVAL"]);
     EXPECT_TRUE(root["BISHOP_PAIR_MID_BONUS"]);
-}
+  }
 
 }// namespace

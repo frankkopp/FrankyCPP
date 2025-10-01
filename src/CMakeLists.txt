@@ -30,6 +30,8 @@ set(FrankyCPPlib_SRCS
         enginetest/TestSuite.cpp enginetest/TestSuite.h
         types/attacks.cpp
         types/bitboards.h
+
+        engine/config/ConfigManager.cpp
 )
 
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})

@@ -126,8 +126,7 @@ struct EvalConfigData {
 
 namespace detail {
     inline void warnUnknownKey(const std::string& key) {
-        auto lg = Logger::get().EVAL_LOG;
-        if (lg) lg->warn("Unknown key in Eval config: {}", key);
+        LOG__WARN(Logger::get().EVAL_LOG, "Unknown key in Eval config: {}", key);
     }
 }
 

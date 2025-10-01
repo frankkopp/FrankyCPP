@@ -26,6 +26,7 @@
 
 #include "common/Logging.h"
 #include "engine/config/YamlHelpers.h"
+#include "types/globals.h"
 #include <yaml-cpp/yaml.h>
 
 namespace engine::config {
@@ -139,8 +140,7 @@ namespace engine::config {
 
   namespace detail {
     inline void warnUnknownKey(const std::string& key, const char* context) {
-      if (const auto lg = Logger::get().SEARCH_LOG)
-        lg->warn("Unknown key in {} config: {}", context, key);
+      LOG__WARN(Logger::get().SEARCH_LOG, "Unknown key in {} config: {}", context, key);
     }
   }// namespace detail
 

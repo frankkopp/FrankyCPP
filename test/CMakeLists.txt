@@ -47,11 +47,9 @@ add_executable(
 
         TimingTests.cpp
 
-        # Config smoke test for YAML presence/parsing
         config/ConfigYamlSmokeTest.cpp
-
-        # New config data struct tests (moved here)
-        config/ConfigDataTests.cpp)
+        config/ConfigDataTests.cpp
+        config/ConfigManagerTests.cpp)
 
 
 # Ensure unit tests explicitly request C++20
