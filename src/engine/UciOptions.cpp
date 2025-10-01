@@ -28,8 +28,13 @@ void UciOptions::initOptions() {
 
   // SearchConfig order alignment
   // 1) Time management overhead
-  optionVector.emplace_back("Move Overhead", SearchConfig::MOVE_OVERHEAD_MS, 0, 5000,
-                            [&](UciHandler*) { SearchConfig::MOVE_OVERHEAD_MS = getInt(getOption("Move Overhead")->currentValue); });
+  optionVector.emplace_back(
+    "Move Overhead", Search_Config->MOVE_OVERHEAD_MS, 0, 5000,
+    [&](UciHandler*) {
+      engine::config::ConfigManager::instance().applyOverrides([&](auto& s, auto&) {
+        s.MOVE_OVERHEAD_MS = getInt(getOption("Move Overhead")->currentValue);// Search tweak
+      });
+    });
 
   // 2) Opening book
   optionVector.emplace_back("OwnBook", SearchConfig::USE_BOOK,

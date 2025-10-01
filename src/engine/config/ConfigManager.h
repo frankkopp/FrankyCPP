@@ -45,7 +45,25 @@ public:
     bool loadFromFiles(std::optional<std::filesystem::path> searchPath = {},
                        std::optional<std::filesystem::path> evalPath   = {});
 
-    // Apply runtime overrides with the highest precedence.
+    /// Apply ad-hoc runtime overrides to the currently active configuration.
+    ///
+    /// Contract:
+    /// - Invokes the provided callable with two non-const references: (SearchConfigData&, EvalConfigData&).
+    /// - The callable may mutate both objects in-place; changes take effect immediately.
+    /// - Overrides persist until you call resetToDefaults() or loadFromFiles() again.
+    ///
+    /// Notes:
+    /// - Precedence: values changed here take the highest precedence at runtime. A subsequent loadFromFiles()
+    ///   will replace current values, so if you want to combine YAML with overrides, call applyOverrides() after loading.
+    /// - Thread-safety: ConfigManager has no internal locking. Call this during initialization or ensure
+    ///   external synchronization so other threads do not read/modify config concurrently.
+    ///
+    /// Example:
+    ///   engine::config::ConfigManager::instance().applyOverrides([](auto& s, auto& e) {
+    ///       s.MOVE_OVERHEAD_MS = 25;   // Search tweak
+    ///       s.USE_PVS = true;          // enable PVS
+    ///       e.TEMPO = 40;              // Eval tweak
+    ///   });
     template <typename F>
     void applyOverrides(F&& fn) { fn(currentSearch_, currentEval_); }
 

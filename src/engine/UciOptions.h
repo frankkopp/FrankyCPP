@@ -20,12 +20,19 @@
 #ifndef FRANKYCPP_UCIOPTIONS_H
 #define FRANKYCPP_UCIOPTIONS_H
 
+#include "config/ConfigManager.h"
+
+
 #include <functional>
+#include <initializer_list>
+#include <string>
 #include <utility>
 #include <vector>
-#include <string>
-#include <initializer_list>
 
+namespace engine::config {
+  struct EvalConfigData;
+  struct SearchConfigData;
+}// namespace engine::config
 class UciHandler;
 
 // Uci option types
@@ -97,10 +104,21 @@ struct UciOption {
 // The str() call returns a list of all options as required by the "uci" command.
 class UciOptions {
   std::vector<UciOption> optionVector{};
-  UciOptions() { initOptions(); }// private constructor
-  void initOptions();
-  friend std::ostream& operator<<(std::ostream& os, const UciOptions& options);
 
+  // reference to the Search Config Data
+  const engine::config::SearchConfigData* Search_Config;
+  // reference to the Search Config Data
+  const engine::config::EvalConfigData* Eval_Config;
+
+  UciOptions()
+      : Search_Config(&engine::config::ConfigManager::instance().search()),
+        Eval_Config(&engine::config::ConfigManager::instance().eval()) {
+    initOptions();
+  }// private constructor
+
+  void initOptions();
+
+  friend std::ostream& operator<<(std::ostream& os, const UciOptions& options);
 
 
 public:
@@ -134,8 +152,6 @@ public:
 
   // helper for converting a string option to an int
   static int getInt(const std::string& value);
-
-
 };
 
 inline std::ostream& operator<<(std::ostream& os, const UciOptions& options) {

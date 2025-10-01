@@ -68,15 +68,16 @@ TEST_F(SearchTest, resizeHash) {
 
 TEST_F(SearchTest, setupTime) {
   Position p{};
+  Search search{};
   SearchLimits sl{};
 
   sl.moveTime = milliseconds{1500};
-  EXPECT_EQ(1490, Search::setupTimeControl(p, sl).count());
+  EXPECT_EQ(1490, search.setupTimeControl(p, sl).count());
 
   sl           = SearchLimits{};
   sl.whiteTime = 30s;
   sl.blackTime = 30s;
-  auto t_ms = Search::setupTimeControl(p, sl);
+  auto t_ms = search.setupTimeControl(p, sl);
   fprintln("{}", str(t_ms));
   EXPECT_GE(t_ms.count(), 600);
   EXPECT_LE(t_ms.count(), 660);
@@ -84,7 +85,7 @@ TEST_F(SearchTest, setupTime) {
   sl           = SearchLimits{};
   sl.whiteTime = 3s;
   sl.blackTime = 3s;
-  t_ms = Search::setupTimeControl(p, sl);
+  t_ms = search.setupTimeControl(p, sl);
   fprintln("{}", str(t_ms));
   EXPECT_GE(t_ms.count(), 45);
   EXPECT_LE(t_ms.count(), 50);
@@ -94,7 +95,7 @@ TEST_F(SearchTest, setupTime) {
   sl.whiteInc  = 1s;
   sl.blackTime = 30s;
   sl.blackInc  = 1s;
-  t_ms = Search::setupTimeControl(p, sl);
+  t_ms = search.setupTimeControl(p, sl);
   fprintln("{}", str(t_ms));
   EXPECT_GE(t_ms.count(), 1390);
   EXPECT_LE(t_ms.count(), 1420);
@@ -378,6 +379,7 @@ TEST_F(SearchTest, quiescenceTest) {
 
 TEST_F(SearchTest, movesLeftBucketsOpeningVsQueenlessVsLowMaterial) {
   // Same remaining time setup for all scenarios
+  Search search{};
   SearchLimits sl{};
   sl.whiteTime = 30s;
   sl.blackTime = 30s;
@@ -386,15 +388,15 @@ TEST_F(SearchTest, movesLeftBucketsOpeningVsQueenlessVsLowMaterial) {
 
   // Opening-like position (start position with queens): should allocate the least per-move time
   Position opening{"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"};
-  const auto t_opening = Search::setupTimeControl(opening, sl);
+  const auto t_opening = search.setupTimeControl(opening, sl);
 
   // Queenless middlegame: fewer movesLeft bucket -> more per-move time than opening
   Position queenless{"rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 0 1"};
-  const auto t_queenless = Search::setupTimeControl(queenless, sl);
+  const auto t_queenless = search.setupTimeControl(queenless, sl);
 
   // Very low material endgame (KPK vs K): fewest movesLeft bucket -> largest per-move time
   Position lowMat{"8/8/8/8/8/4k3/4P3/4K3 w - - 0 1"};
-  const auto t_lowMat = Search::setupTimeControl(lowMat, sl);
+  const auto t_lowMat = search.setupTimeControl(lowMat, sl);
 
   fprintln("Opening: {} Queenless: {} LowMat: {}", str(t_opening), str(t_queenless), str(t_lowMat));
 
@@ -408,12 +410,13 @@ TEST_F(SearchTest, movesLeftRepetitionRiskIncreasesTime) {
   const Position queenless_low{"rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 0 1"};
   const Position queenless_high{"rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 80 1"}; // high half-move clock
 
+  const Search search{};
   SearchLimits sl{};
   sl.whiteTime = 30s;
   sl.blackTime = 30s;
 
-  const auto t_lowHmc  = Search::setupTimeControl(queenless_low, sl);
-  const auto t_highHmc = Search::setupTimeControl(queenless_high, sl);
+  const auto t_lowHmc  = search.setupTimeControl(queenless_low, sl);
+  const auto t_highHmc = search.setupTimeControl(queenless_high, sl);
 
   fprintln("Queenless hmc=0: {} hmc=80: {}", str(t_lowHmc), str(t_highHmc));
 

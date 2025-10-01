@@ -1646,11 +1646,11 @@ bool Search::isTimeAlmostUp() const {
   return remaining <= threshold;
 }
 
-milliseconds Search::setupTimeControl(const Position& position, const SearchLimits& limits) {
+milliseconds Search::setupTimeControl(const Position& p, const SearchLimits& limits) const {
   // Search mode time per move
   if (limits.moveTime.count()) {
     // we need a little room for executing the code
-    const milliseconds duration = limits.moveTime - milliseconds{SearchConfig::MOVE_OVERHEAD_MS};
+    const milliseconds duration = limits.moveTime - milliseconds{Config->MOVE_OVERHEAD_MS};
     // if the duration is now negative, return the original value and issue a warning
     if (duration.count() < 0) {
       LOG__WARN(Logger::get().SEARCH_LOG, "Very short move time: {} ms", limits.moveTime.count());
@@ -1667,17 +1667,17 @@ milliseconds Search::setupTimeControl(const Position& position, const SearchLimi
   int movesLeft = limits.movesToGo;
   if (!movesLeft) {
     // Derive game phase and material features
-    const double phase = position.getGamePhaseFactor();// ~1.0 opening/mid, ~0.0 endgame
+    const double phase = p.getGamePhaseFactor();// ~1.0 opening/mid, ~0.0 endgame
 
     // Count non-pawn pieces across both sides (KNIGHT/BISHOP/ROOK/QUEEN)
     auto countPieces = [&](const PieceType pt) -> int {
-      return position.getPieceBb(WHITE, pt).popcount() + position.getPieceBb(BLACK, pt).popcount();
+      return p.getPieceBb(WHITE, pt).popcount() + p.getPieceBb(BLACK, pt).popcount();
     };
     const int knights = countPieces(KNIGHT);
     const int bishops = countPieces(BISHOP);
     const int rooks   = countPieces(ROOK);
-    const int queensW = position.getPieceBb(WHITE, QUEEN).popcount();
-    const int queensB = position.getPieceBb(BLACK, QUEEN).popcount();
+    const int queensW = p.getPieceBb(WHITE, QUEEN).popcount();
+    const int queensB = p.getPieceBb(BLACK, QUEEN).popcount();
     const int queens  = queensW + queensB;
     const int npp     = knights + bishops + rooks + queens;// non-pawn piece count (kings excluded)
 
@@ -1703,7 +1703,7 @@ milliseconds Search::setupTimeControl(const Position& position, const SearchLimi
     }
 
     // Adjust for repetition/50-move risk
-    if (position.getHalfMoveClock() >= SearchConfig::REPETITION_HMC_HIGH) {
+    if (p.getHalfMoveClock() >= SearchConfig::REPETITION_HMC_HIGH) {
       base -= SearchConfig::REPETITION_RISK_PENALTY;
     }
 
@@ -1713,17 +1713,17 @@ milliseconds Search::setupTimeControl(const Position& position, const SearchLimi
     movesLeft = base;
     LOG__DEBUG(Logger::get().SEARCH_LOG,
                "TimeCtl: Estimated movesLeft={} (phase {:.2f}, npp {}, queens {}), hmc {}",
-               movesLeft, phase, npp, queens, position.getHalfMoveClock());
+               movesLeft, phase, npp, queens, p.getHalfMoveClock());
   }// if (!movesLeft)
 
   // Estimate time left for current player
   milliseconds timeLeft;
-  if (position.getNextPlayer()) { timeLeft = limits.blackTime + (movesLeft * limits.blackInc); }
+  if (p.getNextPlayer()) { timeLeft = limits.blackTime + (movesLeft * limits.blackInc); }
   else { timeLeft = limits.whiteTime + (movesLeft * limits.whiteInc); }
   // estimate time per move
   const auto tl = static_cast<milliseconds>(timeLeft.count() / movesLeft);
   // tiny fixed reserve to reduce micro overshoots (remaining-time mode only)
-  const milliseconds reserve{SearchConfig::MOVE_OVERHEAD_MS};
+  const milliseconds reserve{Config->MOVE_OVERHEAD_MS};
   // account for the runtime of our code
   milliseconds base;
   if (tl.count() < 100) {
@@ -1738,7 +1738,7 @@ milliseconds Search::setupTimeControl(const Position& position, const SearchLimi
   base = base > reserve ? base - reserve : base;
 
   // Complexity-aware weighting
-  const double factor = computeComplexityFactorQuick(position);
+  const double factor = computeComplexityFactorQuick(p);
   const auto weighted = milliseconds{
     (std::llround(static_cast<long double>(base.count()) * static_cast<long double>(factor)))};
   LOG__DEBUG(Logger::get().SEARCH_LOG, "TimeCtl: Estimated time left: base: {:L} ms factor: {:L} ms weighted: {:L}",

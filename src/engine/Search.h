@@ -291,7 +291,7 @@ private:
 
   // setupTimeControl sets up time control according to the given search limits
   // and returns a limit on the duration for the current search.
-  static milliseconds setupTimeControl(const Position& position, const SearchLimits& limits);
+  milliseconds setupTimeControl(const Position& p, const SearchLimits& limits) const;
   FRIEND_TEST(SearchTest, setupTime);
   FRIEND_TEST(SearchTest, movesLeftBucketsOpeningVsQueenlessVsLowMaterial);
   FRIEND_TEST(SearchTest, movesLeftRepetitionRiskIncreasesTime);
