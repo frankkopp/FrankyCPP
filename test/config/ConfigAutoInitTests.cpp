@@ -156,11 +156,11 @@ namespace {
     EXPECT_EQ(mgr.eval().TEMPO, 34);
 
     // Now move to a dir with missing config and load defaults (fallback)
-    const auto tmp = makeTempDir("reset_defaults_preserved");
     {
-        ScopedCwd cwd(tmp);
+      const auto tmp = makeTempDir("reset_defaults_preserved");
+      ScopedCwd cwd(tmp);
         ASSERT_TRUE(mgr.loadFromFiles());
-        // In absence of YAML, fallback values apply (TT_SIZE_MB defaults to hard-coded 64, TEMPO to 34 in current repo)
+        // In the absence of YAML, fallback values apply (TT_SIZE_MB defaults to hard-coded 64, TEMPO to 34 in current repo)
         // but crucially, defaults stored at startup should remain unchanged.
     }
 

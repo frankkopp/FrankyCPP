@@ -31,6 +31,9 @@
 
 namespace engine::config {
 
+  // Configuration struct for Search
+  // All members have default values which are used as fallback
+  // if no YAML config file is found or a value is missing in the file.
   struct SearchConfigData {
     // time mgmt
     int MOVE_OVERHEAD_MS = 10;

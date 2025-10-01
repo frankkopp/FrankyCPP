@@ -29,7 +29,7 @@ namespace engine::config::yaml {
   // If key exists in node, assign to out and record key in seen
   template<typename T>
   void set_if_present(const YAML::Node& n, const char* key, T& out, std::unordered_set<std::string>& seen) {
-    if (auto v = n[key]) {
+    if (const auto v = n[key]) {
       out = v.as<T>();
       seen.emplace(key);
     }

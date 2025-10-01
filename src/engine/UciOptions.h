@@ -101,6 +101,8 @@ class UciOptions {
   void initOptions();
   friend std::ostream& operator<<(std::ostream& os, const UciOptions& options);
 
+
+
 public:
   UciOptions(UciOptions const&)             = delete;// copy
   UciOptions(UciOptions const&&)            = delete;// move

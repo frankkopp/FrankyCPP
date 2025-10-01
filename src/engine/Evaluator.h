@@ -39,7 +39,7 @@ class Evaluator {
   Score score{};
   Score tmpScore{};
 
-  // reference to the Search Config Data
+  // reference to the Eval Config Data
   const engine::config::EvalConfigData* Config;
 
 public:
