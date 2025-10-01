@@ -52,6 +52,12 @@ public:
         fn(currentSearch_, currentEval_);
     }
 
+    // Diagnostics
+    // Indicates whether an automatic load attempt was performed during singleton instantiation.
+    bool wasAutoLoaded() const noexcept { return autoLoadAttempted_; }
+    // Indicates the result of the most recent loadFromFiles (including auto-load).
+    bool lastLoadOk() const noexcept { return lastLoadOk_; }
+
     // Human-readable dumps
     std::string strCurrent() const;
     std::string strDefaults() const;
@@ -66,6 +72,10 @@ private:
     // Current active configuration (initialized from defaults)
     SearchConfigData currentSearch_{};
     EvalConfigData   currentEval_{};
+
+    // Auto-init flags
+    bool autoLoadAttempted_ { false };
+    bool lastLoadOk_ { false };
 };
 
 } // namespace engine::config

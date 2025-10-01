@@ -49,7 +49,8 @@ add_executable(
 
         config/ConfigYamlSmokeTest.cpp
         config/ConfigDataTests.cpp
-        config/ConfigManagerTests.cpp)
+        config/ConfigManagerTests.cpp
+        config/ConfigAutoInitTests.cpp)
 
 
 # Ensure unit tests explicitly request C++20

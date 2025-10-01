@@ -97,7 +97,8 @@ target_link_libraries(
         FrankyCPPlib
         PUBLIC
         Boost::serialization
-        Boost::program_options)
+        Boost::program_options
+        yaml-cpp::yaml-cpp)
 
 # set the name of the executable
 set(exeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR})

@@ -40,6 +40,11 @@ ConfigManager::ConfigManager() {
     // start current with defaults
     currentSearch_ = defaultsSearch_;
     currentEval_   = defaultsEval_;
+
+    // Auto-load from default YAML paths on first instantiation.
+    // This should never throw; loadFromFiles handles exceptions and rollbacks.
+    autoLoadAttempted_ = true;
+    lastLoadOk_ = loadFromFiles();
 }
 
 void ConfigManager::resetToDefaults() {
@@ -96,6 +101,7 @@ bool ConfigManager::loadFromFiles(std::optional<std::filesystem::path> searchPat
         // Commit
         currentSearch_ = std::move(newSearch);
         currentEval_   = std::move(newEval);
+        lastLoadOk_    = true;
         return true;
 
     } catch (const YAML::Exception& ex) {
@@ -103,11 +109,13 @@ bool ConfigManager::loadFromFiles(std::optional<std::filesystem::path> searchPat
         // rollback
         currentSearch_ = backupSearch;
         currentEval_   = backupEval;
+        lastLoadOk_    = false;
         return false;
     } catch (const std::exception& ex) {
         LOG__ERROR(Logger::get().SEARCH_LOG, "Exception while loading configs: {}", ex.what());
         currentSearch_ = backupSearch;
         currentEval_   = backupEval;
+        lastLoadOk_    = false;
         return false;
     }
 }
