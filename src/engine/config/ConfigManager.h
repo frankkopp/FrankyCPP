@@ -36,40 +36,39 @@ public:
     const SearchConfigData& search() const noexcept { return currentSearch_; }
     const EvalConfigData&   eval() const noexcept { return currentEval_; }
 
-    // Reset current configs back to built-in defaults
+    // Reset current configs back to the initially loaded defaults (from YAML at startup, or fallback if YAML unavailable)
     void resetToDefaults();
 
     // Load from YAML files (paths optional). If a path is not provided, use default ConfigPaths.
-    // Return true on success. Missing files are not considered fatal and fall back to defaults.
+    // Return true on success. Missing files are not considered fatal and fall back to hard-coded values.
     // Malformed YAML returns false and preserves last good configuration.
     bool loadFromFiles(std::optional<std::filesystem::path> searchPath = {},
                        std::optional<std::filesystem::path> evalPath   = {});
 
     // Apply runtime overrides with the highest precedence.
-    // The provided functor receives (SearchConfigData&, EvalConfigData&) to mutate current values.
     template <typename F>
-    void applyOverrides(F&& fn) {
-        fn(currentSearch_, currentEval_);
-    }
+    void applyOverrides(F&& fn) { fn(currentSearch_, currentEval_); }
 
     // Diagnostics
-    // Indicates whether an automatic load attempt was performed during singleton instantiation.
     bool wasAutoLoaded() const noexcept { return autoLoadAttempted_; }
-    // Indicates the result of the most recent loadFromFiles (including auto-load).
     bool lastLoadOk() const noexcept { return lastLoadOk_; }
 
     // Human-readable dumps
     std::string strCurrent() const;
-    std::string strDefaults() const;
+    std::string strDefaults() const; // dumps the initially loaded defaults
 
 private:
     ConfigManager();
 
-    // Keep defaults as pristine baselines
-    SearchConfigData defaultsSearch_{};
-    EvalConfigData   defaultsEval_{};
+    // Hard-coded fallback values (constructed defaults). Only used if YAML is missing or invalid.
+    SearchConfigData fallbackSearch_{};
+    EvalConfigData   fallbackEval_{};
 
-    // Current active configuration (initialized from defaults)
+    // Defaults captured from the initial auto-load (YAML at startup, or fallback if not available)
+    SearchConfigData defaultSearch_{};
+    EvalConfigData   defaultEval_{};
+
+    // Current active configuration
     SearchConfigData currentSearch_{};
     EvalConfigData   currentEval_{};
 

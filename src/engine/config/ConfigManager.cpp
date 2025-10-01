@@ -37,20 +37,25 @@ ConfigManager& ConfigManager::instance() {
 }
 
 ConfigManager::ConfigManager() {
-    // start current with defaults
-    currentSearch_ = defaultsSearch_;
-    currentEval_   = defaultsEval_;
+    // Initialize current values from hard-coded fallback
+    currentSearch_ = fallbackSearch_;
+    currentEval_   = fallbackEval_;
 
     // Auto-load from default YAML paths on first instantiation.
-    // This should never throw; loadFromFiles handles exceptions and rollbacks.
     autoLoadAttempted_ = true;
     lastLoadOk_ = loadFromFiles();
+
+    // Capture the initially loaded configuration as "defaults" for future resets.
+    // If YAML loading failed or was missing, this will equal the fallback values.
+    defaultSearch_ = currentSearch_;
+    defaultEval_   = currentEval_;
 }
 
 void ConfigManager::resetToDefaults() {
-    currentSearch_ = defaultsSearch_;
-    currentEval_   = defaultsEval_;
-    LOG__INFO(Logger::get().SEARCH_LOG, "Config reset to defaults");
+    // Restore to the initially loaded defaults (from YAML at startup, or fallback if unavailable)
+    currentSearch_ = defaultSearch_;
+    currentEval_   = defaultEval_;
+    LOG__INFO(Logger::get().SEARCH_LOG, "Config reset to defaults (initial YAML)");
 }
 
 static bool file_exists(const std::filesystem::path& p) {
@@ -68,34 +73,34 @@ bool ConfigManager::loadFromFiles(std::optional<std::filesystem::path> searchPat
     const auto backupEval   = currentEval_;
 
     try {
-        // Start from defaults for both
-        SearchConfigData newSearch;
-        EvalConfigData   newEval;
+        // Start from hard-coded fallback for both; apply file overrides if present
+        SearchConfigData newSearch = fallbackSearch_;
+        EvalConfigData   newEval   = fallbackEval_;
 
-        // Load search.yaml (missing is OK -> keep defaults)
+        // Load search.yaml (missing is OK -> keep fallback)
         if (file_exists(sPath)) {
             LOG__INFO(Logger::get().SEARCH_LOG, "Loading Search config from {}", sPath.string());
             YAML::Node n = YAML::LoadFile(sPath.string());
             if (!n.IsMap()) {
-                LOG__WARN(Logger::get().SEARCH_LOG, "Search config at {} is not a map; using defaults", sPath.string());
+                LOG__WARN(Logger::get().SEARCH_LOG, "Search config at {} is not a map; using fallback", sPath.string());
             } else {
                 newSearch = n.as<SearchConfigData>();
             }
         } else {
-            LOG__INFO(Logger::get().SEARCH_LOG, "Search config file not found: {} (using defaults)", sPath.string());
+            LOG__INFO(Logger::get().SEARCH_LOG, "Search config file not found: {} (using fallback)", sPath.string());
         }
 
-        // Load eval.yaml (missing is OK -> keep defaults)
+        // Load eval.yaml (missing is OK -> keep fallback)
         if (file_exists(ePath)) {
             LOG__INFO(Logger::get().EVAL_LOG, "Loading Eval config from {}", ePath.string());
             YAML::Node n = YAML::LoadFile(ePath.string());
             if (!n.IsMap()) {
-                LOG__WARN(Logger::get().EVAL_LOG, "Eval config at {} is not a map; using defaults", ePath.string());
+                LOG__WARN(Logger::get().EVAL_LOG, "Eval config at {} is not a map; using fallback", ePath.string());
             } else {
                 newEval = n.as<EvalConfigData>();
             }
         } else {
-            LOG__INFO(Logger::get().EVAL_LOG, "Eval config file not found: {} (using defaults)", ePath.string());
+            LOG__INFO(Logger::get().EVAL_LOG, "Eval config file not found: {} (using fallback)", ePath.string());
         }
 
         // Commit
@@ -129,8 +134,8 @@ std::string ConfigManager::strCurrent() const {
 
 std::string ConfigManager::strDefaults() const {
     std::ostringstream os;
-    os << "[Search]\n" << defaultsSearch_.str();
-    os << "[Eval]\n" << defaultsEval_.str();
+    os << "[Search]\n" << defaultSearch_.str();
+    os << "[Eval]\n" << defaultEval_.str();
     return os.str();
 }
 
