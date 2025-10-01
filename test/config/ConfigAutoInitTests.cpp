@@ -57,12 +57,14 @@ namespace {
     return base;
   }
 
+  // Description: Verifies the ConfigManager singleton auto-loads on first access and sets the auto-loaded flag.
   TEST(ConfigAutoInitTests, AutoLoadFlagIsSetOnFirstUse) {
     // Accessing the singleton should have triggered auto-load in its constructor
     const auto& mgr = ConfigManager::instance();
     EXPECT_TRUE(mgr.wasAutoLoaded());
   }
 
+  // Description: Ensures default repo config files at standard paths are loaded and known values are read.
   TEST(ConfigAutoInitTests, DefaultPathsLoadWhenPresent) {
     // Use the repository-provided config copied next to the test executable
     auto& mgr = ConfigManager::instance();
@@ -79,6 +81,7 @@ namespace {
     EXPECT_EQ(mgr.eval().TEMPO, 34);       // from config/eval.yaml
   }
 
+  // Description: Confirms that when default config files are missing, loadFromFiles succeeds and keeps hard-coded defaults.
   TEST(ConfigAutoInitTests, DefaultPathsMissingUsesDefaultsAndSucceeds) {
     // Switch to a fresh temp directory with no config folder
     const auto tmp = makeTempDir("missing");
@@ -96,6 +99,7 @@ namespace {
     EXPECT_EQ(mgr.eval().TEMPO, EvalConfigData{}.TEMPO);
   }
 
+  // Description: Checks that malformed YAML at default paths causes loadFromFiles to return false and roll back to the prior state.
   TEST(ConfigAutoInitTests, DefaultPathsMalformedRollsBackAndReturnsFalse) {
     // Prepare temp directory with malformed YAML files in ./config
     const auto tmp = makeTempDir("malformed");
@@ -129,6 +133,7 @@ namespace {
     EXPECT_EQ(mgr.eval().TEMPO, 66);
   }
 
+  // Description: Ensures resetToDefaults restores values captured at initial auto-load, even after loads in other directories.
   TEST(ConfigAutoInitTests, ResetReturnsToInitiallyLoadedDefaults) {
     // Ensure we have repo YAML configs in current dir
     ASSERT_TRUE(std::filesystem::exists(ConfigPaths::SearchYaml()));
