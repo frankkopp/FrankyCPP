@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "common/Logging.h"
-#include "engine/SearchConfig.h"
 #include "engine/UciOptions.h"
 #include "enginetest/TestSuite.h"
 #include "init.h"
@@ -125,7 +124,7 @@ TEST_F(TestSuite_Test, ecm98_test) {
   if (isBulkRun()) {
     GTEST_SKIP();
   }
-  SearchConfig::USE_BOOK = false;
+  CONFIG_OVERRIDE(s.USE_BOOK = false);
   constexpr milliseconds moveTime{5s};
   constexpr Depth depth{0};
   std::string filePath = FrankyCPP_PROJECT_ROOT;

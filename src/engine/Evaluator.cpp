@@ -25,7 +25,7 @@
 #include "config/ConfigManager.h"
 
 Evaluator::Evaluator()
-  : EvalConfig(engine::config::ConfigManager::instance().eval()) {
+    : EvalConfig(engine::config::ConfigManager::instance().eval()) {
   if (engine::config::ConfigManager::instance().eval().USE_PAWN_TT) {
     pawnCache.resize(engine::config::ConfigManager::instance().eval().PAWN_TT_SIZE_MB);
   }
@@ -70,7 +70,7 @@ Value Evaluator::evaluate(const Position& p) {
   // in late phases it stands as it is
   if (EvalConfig.USE_LAZY_EVAL) {
     const Value value = valueFromScore(score, gamePhaseFactor);
-    if (value > static_cast<Value>(EvalConfig.LAZY_THRESHOLD + EvalConfig.LAZY_THRESHOLD * gamePhaseFactor)) {
+    if (value > static_cast<Value>(static_cast<int>(EvalConfig.LAZY_THRESHOLD + EvalConfig.LAZY_THRESHOLD * gamePhaseFactor))) {
       return finalEval(p, value);
     }
   }
@@ -134,7 +134,7 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
   PawnTT::Entry* ep = nullptr;
   if (EvalConfig.USE_PAWN_TT) {
     key = p.getPawnZobristKey();
-    ep = pawnCache.getEntryPtr(key);
+    ep  = pawnCache.getEntryPtr(key);
     // The key must not be 0 as this would be a valid entry and the function
     // would always return.
     // A 0 key can happen on a position where no pawns are on the board
@@ -305,13 +305,13 @@ inline void Evaluator::knightEval(const Position& p, Score& s, const Color us, C
   }
 }
 
-inline void Evaluator::bishopEval(const Position& p, Score& s, const Color us, Color , const Square sq) const {
+inline void Evaluator::bishopEval(const Position& p, Score& s, const Color us, Color, const Square sq) const {
   // Mobility for bishops (Tier 1)
   if (EvalConfig.USE_BISHOP_MOBILITY) {
-    const Bitboard myOcc     = p.getOccupiedBb(us);
-    const Bitboard occupied  = p.getOccupiedBb();
-    const Bitboard attacks   = Attacks::attacks(BISHOP, sq, occupied);
-    const int mobility       = (attacks & ~myOcc).popcount();
+    const Bitboard myOcc    = p.getOccupiedBb(us);
+    const Bitboard occupied = p.getOccupiedBb();
+    const Bitboard attacks  = Attacks::attacks(BISHOP, sq, occupied);
+    const int mobility      = (attacks & ~myOcc).popcount();
 
     int mid = mobility * EvalConfig.BISHOP_MOBILITY_MID_PER_MOVE;
     int end = mobility * EvalConfig.BISHOP_MOBILITY_END_PER_MOVE;
@@ -348,18 +348,18 @@ inline void Evaluator::rookEval(const Position& p, Score& s, const Color us, con
 
   // Open/semi-open file bonuses
   if (EvalConfig.USE_ROOK_OPEN_FILE_BONUS) {
-    const Bitboard fileMask   = Bitboards::sqToFileBb[sq];
-    const Bitboard myPawns    = p.getPieceBb(us, PAWN);
-    const Bitboard theirPawns = p.getPieceBb(them, PAWN);
-    const bool myPawnOnFile   = (myPawns & fileMask) != 0;
-    const bool theirPawnOnFile= (theirPawns & fileMask) != 0;
+    const Bitboard fileMask    = Bitboards::sqToFileBb[sq];
+    const Bitboard myPawns     = p.getPieceBb(us, PAWN);
+    const Bitboard theirPawns  = p.getPieceBb(them, PAWN);
+    const bool myPawnOnFile    = (myPawns & fileMask) != 0;
+    const bool theirPawnOnFile = (theirPawns & fileMask) != 0;
 
     if (!myPawnOnFile) {
       if (!theirPawnOnFile) {
         mid += EvalConfig.ROOK_OPEN_FILE_MID_BONUS;
         end += EvalConfig.ROOK_OPEN_FILE_END_BONUS;
       }
-      else{
+      else {
         mid += EvalConfig.ROOK_SEMIOPEN_FILE_MID_BONUS;
         end += EvalConfig.ROOK_SEMIOPEN_FILE_END_BONUS;
       }
@@ -389,9 +389,9 @@ inline void Evaluator::queenEval(const Position& p, Score& s, const Color us, co
 
   // Simple tropism towards enemy king (Tier 0/phase-scaled)
   if (EvalConfig.USE_QUEEN_TROPISM) {
-    const Square ksq = p.getKingSquare(them);
-    const int dist   = sq.distanceTo(ksq); // 0..7
-    const int closeness = 8 - dist;       // 1..8 (or 8 if dist==0)
+    const Square ksq    = p.getKingSquare(them);
+    const int dist      = sq.distanceTo(ksq);// 0..7
+    const int closeness = 8 - dist;          // 1..8 (or 8 if dist==0)
     mid += closeness * EvalConfig.QUEEN_TROPISM_MID_PER_STEP;
     end += closeness * EvalConfig.QUEEN_TROPISM_END_PER_STEP;
   }

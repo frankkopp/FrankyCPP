@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "engine/Search.h"
-#include "engine/SearchConfig.h"
 #include "init.h"
 #include "types/types.h"
 
@@ -64,7 +63,7 @@ TEST_F(SearchTest, construct) {
 TEST_F(SearchTest, resizeHash) {
   Search search{};
   search.isReady();
-  SearchConfig::TT_SIZE_MB = 1024;
+  CONFIG_OVERRIDE(s.TT_SIZE_MB = 1024;);
   search.resizeTT();
 }
 
@@ -130,7 +129,7 @@ TEST_F(SearchTest, startTimer) {
 }
 
 TEST_F(SearchTest, startStopSearch) {
-  SearchConfig::USE_BOOK = false;
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
   const Position p{};
   SearchLimits sl{};
   Search s{};
@@ -147,7 +146,7 @@ TEST_F(SearchTest, startStopSearch) {
 }
 
 TEST_F(SearchTest, startTimedSearch) {
-  SearchConfig::USE_BOOK = false;
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
   const Position p{};
   SearchLimits sl{};
   Search s{};
@@ -164,7 +163,7 @@ TEST_F(SearchTest, startTimedSearch) {
 }
 
 TEST_F(SearchTest, bookMoveSearch) {
-  SearchConfig::USE_BOOK = true;
+  CONFIG_OVERRIDE(s.USE_BOOK = true;);
   const Position p{};
   SearchLimits sl{};
   Search s{};
@@ -182,8 +181,8 @@ TEST_F(SearchTest, bookMoveSearch) {
 }
 
 TEST_F(SearchTest, startPonderSearch) {
-  SearchConfig::USE_BOOK   = false;
-  SearchConfig::USE_PONDER = true;
+  CONFIG_OVERRIDE(s.USE_BOOK   = false;);
+  CONFIG_OVERRIDE(s.USE_PONDER = true;);
   const Position p{};
   SearchLimits sl{};
   Search s{};
@@ -206,7 +205,7 @@ TEST_F(SearchTest, startPonderSearch) {
 }
 
 TEST_F(SearchTest, startNodesLimitedSearch) {
-  SearchConfig::USE_BOOK = false;
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
   const Position p{};
   SearchLimits sl{};
   Search s{};
@@ -223,7 +222,7 @@ TEST_F(SearchTest, startNodesLimitedSearch) {
 }
 
 TEST_F(SearchTest, depthLimitedSearch) {
-  SearchConfig::USE_BOOK = false;
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
   const Position p{};
   SearchLimits sl{};
   Search s{};
@@ -239,7 +238,7 @@ TEST_F(SearchTest, depthLimitedSearch) {
 }
 
 TEST_F(SearchTest, stalemate0Search) {
-  SearchConfig::USE_BOOK = false;
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
   const Position p{"6R1/8/8/8/8/5K2/R7/7k b - -"};
   SearchLimits sl{};
   Search s{};
@@ -252,7 +251,7 @@ TEST_F(SearchTest, stalemate0Search) {
 }
 
 TEST_F(SearchTest, mate0Search) {
-  SearchConfig::USE_BOOK = false;
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
   const Position p{"8/8/8/8/8/5K2/8/R4k2 b - -"};
   SearchLimits sl{};
   Search s{};
@@ -266,7 +265,7 @@ TEST_F(SearchTest, mate0Search) {
 }
 
 TEST_F(SearchTest, mate1Search) {
-  SearchConfig::USE_BOOK = false;
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
   const Position p{"8/8/8/8/8/6K1/R7/6k1 w - - 0 8"};
   SearchLimits sl{};
   Search s{};
@@ -281,7 +280,7 @@ TEST_F(SearchTest, mate1Search) {
 }
 
 TEST_F(SearchTest, mate2Search) {
-  SearchConfig::USE_BOOK = false;
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
   const Position p{"8/8/8/8/8/5K2/R7/7k w - - 0 7"};
   SearchLimits sl{};
   Search s{};
@@ -296,7 +295,7 @@ TEST_F(SearchTest, mate2Search) {
 }
 
 TEST_F(SearchTest, mate3Search) {
-  SearchConfig::USE_BOOK = false;
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
   const Position p{"8/8/8/8/8/4K3/R7/6k1 w - - 0 6"};
   SearchLimits sl{};
   Search s{};
@@ -311,7 +310,7 @@ TEST_F(SearchTest, mate3Search) {
 }
 
 TEST_F(SearchTest, mate4Search) {
-  SearchConfig::USE_BOOK = false;
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
   const Position p{"8/8/8/8/8/3K4/R7/5k2 w - - 0 5"};
   SearchLimits sl{};
   Search s{};
@@ -326,8 +325,8 @@ TEST_F(SearchTest, mate4Search) {
 }
 
 TEST_F(SearchTest, mate5Search) {
-  SearchConfig::USE_BOOK      = false;
-  SearchConfig::USE_ALPHABETA = true;
+  CONFIG_OVERRIDE(s.USE_BOOK      = false;);
+  CONFIG_OVERRIDE(s.USE_ALPHABETA = true;);
   const Position p{"8/8/8/8/4K3/8/R7/4k3 w - - 0 4"};
   SearchLimits sl{};
   Search s{};
@@ -348,25 +347,25 @@ TEST_F(SearchTest, quiescenceTest) {
   const Position position("r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 w kq - 10 113");
   searchLimits.depth = 2;
 
-  SearchConfig::USE_BOOK       = false;
-  SearchConfig::USE_ALPHABETA  = false;
-  SearchConfig::USE_PVS        = false;
-  SearchConfig::USE_TT         = false;
-  SearchConfig::USE_QUIESCENCE = false;
-  SearchConfig::USE_QS_SEE     = false;
+  CONFIG_OVERRIDE(s.USE_BOOK       = false;);
+  CONFIG_OVERRIDE(s.USE_ALPHABETA  = false;);
+  CONFIG_OVERRIDE(s.USE_PVS        = false;);
+  CONFIG_OVERRIDE(s.USE_TT         = false;);
+  CONFIG_OVERRIDE(s.USE_QUIESCENCE = false;);
+  CONFIG_OVERRIDE(s.USE_QS_SEE     = false;);
 
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
   auto nodes1 = search.getLastSearchResult().nodes;
   auto extra1 = search.getSearchStats().currentExtraSearchDepth;
 
-  SearchConfig::USE_QUIESCENCE = true;
+  CONFIG_OVERRIDE(s.USE_QUIESCENCE = true;);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
   auto nodes2 = search.getLastSearchResult().nodes;
   auto extra2 = search.getSearchStats().currentExtraSearchDepth;
 
-  SearchConfig::USE_QS_SEE = true;
+  CONFIG_OVERRIDE(s.USE_QS_SEE = true;);
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
   auto nodes3 = search.getLastSearchResult().nodes;
@@ -435,7 +434,7 @@ TEST_F(SearchTest, singleMoveRootStopsEarlyAtVerifyDepth) {
   const Position p{"r6k/8/8/8/8/8/4q3/K7 w - -"};
   println(p.strBoard());
 
-  SearchConfig::USE_BOOK = false;
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
   Search s{};
   s.isReady();
 
@@ -460,7 +459,7 @@ TEST_F(SearchTest, singleMoveComplexRoot) {
   const Position p{"k7/p7/8/8/8/6q1/P4n2/4B2K w - - 0 1"};
   println(p.strBoard());
 
-  SearchConfig::USE_BOOK = false;
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
   Search s{};
   s.isReady();
 
@@ -538,21 +537,21 @@ TEST_F(SearchTest, debug) {
   if (isBulkRun()) {
     GTEST_SKIP() << "Skipping debug test in bulk run to save time";
   }
-  SearchConfig::TT_SIZE_MB          = 64;
-  SearchConfig::USE_BOOK            = false;
-  SearchConfig::USE_ALPHABETA       = false;
-  SearchConfig::USE_PVS             = false;
-  SearchConfig::USE_ASP             = false;
-  SearchConfig::USE_TT              = false;
-  SearchConfig::USE_TT_VALUE        = false;
-  SearchConfig::USE_EVAL_TT         = false;
-  SearchConfig::USE_MDP             = false;
-  SearchConfig::USE_HISTORY_COUNTER = false;
-  SearchConfig::USE_HISTORY_MOVES   = false;
-  SearchConfig::USE_QUIESCENCE      = true;
-  SearchConfig::USE_QS_STANDPAT_CUT = false;
-  SearchConfig::USE_QS_SEE          = false;
-  SearchConfig::USE_QS_TT           = false;
+  CONFIG_OVERRIDE(s.TT_SIZE_MB          = 64;);
+  CONFIG_OVERRIDE(s.USE_BOOK            = false;);
+  CONFIG_OVERRIDE(s.USE_ALPHABETA       = false;);
+  CONFIG_OVERRIDE(s.USE_PVS             = false;);
+  CONFIG_OVERRIDE(s.USE_ASP             = false;);
+  CONFIG_OVERRIDE(s.USE_TT              = false;);
+  CONFIG_OVERRIDE(s.USE_TT_VALUE        = false;);
+  CONFIG_OVERRIDE(s.USE_EVAL_TT         = false;);
+  CONFIG_OVERRIDE(s.USE_MDP             = false;);
+  CONFIG_OVERRIDE(s.USE_HISTORY_COUNTER = false;);
+  CONFIG_OVERRIDE(s.USE_HISTORY_MOVES   = false;);
+  CONFIG_OVERRIDE(s.USE_QUIESCENCE      = true;);
+  CONFIG_OVERRIDE(s.USE_QS_STANDPAT_CUT = false;);
+  CONFIG_OVERRIDE(s.USE_QS_SEE          = false;);
+  CONFIG_OVERRIDE(s.USE_QS_TT           = false;);
 
   engine::config::ConfigManager::instance().applyOverrides([&](auto&, engine::config::EvalConfigData& e) {
     e.USE_MATERIAL   = true;

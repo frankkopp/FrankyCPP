@@ -21,7 +21,6 @@
 
 #include "common/Logging.h"
 #include "common/stringutil.h"
-#include "engine/SearchConfig.h"
 #include "engine/UciOptions.h"
 
 #include "types/timeunits.h"
@@ -37,7 +36,7 @@ TestSuite::TestSuite(const milliseconds& time, const Depth searchDepth, const st
 
   LOG__INFO(Logger::get().TSUITE_LOG, "Preparing Test Suite {}", filePath);
 
-  SearchConfig::USE_BOOK = false;
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
 
   // read EPD file
   fprintln("Reading EPD File: ...");

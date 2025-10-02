@@ -106,13 +106,13 @@ class UciOptions {
   std::vector<UciOption> optionVector{};
 
   // reference to the Search Config Data
-  const engine::config::SearchConfigData* Search_Config;
+  const engine::config::SearchConfigData& SearchConfig;
   // reference to the Search Config Data
-  const engine::config::EvalConfigData* Eval_Config;
+  const engine::config::EvalConfigData& EvalConfig;
 
   UciOptions()
-      : Search_Config(&engine::config::ConfigManager::instance().search()),
-        Eval_Config(&engine::config::ConfigManager::instance().eval()) {
+      : SearchConfig(engine::config::ConfigManager::instance().search()),
+        EvalConfig(engine::config::ConfigManager::instance().eval()) {
     initOptions();
   }// private constructor
 

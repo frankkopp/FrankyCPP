@@ -20,7 +20,6 @@
 #include "init.h"
 #include "version.h"
 #include <chesscore/Perft.h>
-#include <engine/SearchConfig.h>
 #include <engine/UciHandler.h>
 #include <enginetest/TestSuite.h>
 #include <fstream>
@@ -118,7 +117,7 @@ int main(int argc, char* argv[]) {
 
     // opening book
     if (programOptions.contains("nobook")) {
-      SearchConfig::USE_BOOK = false;
+      CONFIG_OVERRIDE(s.USE_BOOK = false;);
       LOG__INFO(Logger::get().BOOK_LOG, "Not using opening book.");
     }
     else if (programOptions.contains("book")) {
@@ -128,20 +127,21 @@ int main(int argc, char* argv[]) {
       else {
         const auto& bookPath = programOptions["book"].as<std::string>();
         if (!std::filesystem::exists(bookPath)) {
-          LOG__ERROR(Logger::get().BOOK_LOG, "Opening book '{}' not found. Using default {}", bookPath, SearchConfig::BOOK_PATH);
+          LOG__ERROR(Logger::get().BOOK_LOG, "Opening book '{}' not found. Using default {}",
+            bookPath, SEARCH_CONFIG.BOOK_PATH);
         }
         else {
-          SearchConfig::BOOK_PATH = bookPath;
+          CONFIG_OVERRIDE(s.BOOK_PATH = bookPath;);
         }
         const auto& bookType = programOptions["booktype"].as<std::string>();
         if (bookType == "simple" || bookType == "SIMPLE") {
-          SearchConfig::BOOK_TYPE = OpeningBook::BookFormat::SIMPLE;
+          CONFIG_OVERRIDE(s.BOOK_TYPE = "SIMPLE";);
         }
         else if (bookType == "san" || bookType == "SAN") {
-          SearchConfig::BOOK_TYPE = OpeningBook::BookFormat::SAN;
+          CONFIG_OVERRIDE(s.BOOK_TYPE = "SIMPLE";);
         }
         else if (bookType == "pgn" || bookType == "PGN") {
-          SearchConfig::BOOK_TYPE = OpeningBook::BookFormat::PGN;
+          CONFIG_OVERRIDE(s.BOOK_TYPE = "PGN";);
         }
       }
     }

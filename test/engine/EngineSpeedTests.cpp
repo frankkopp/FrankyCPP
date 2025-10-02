@@ -19,7 +19,6 @@
 
 #include "chesscore/Position.h"
 #include "engine/Search.h"
-#include "engine/SearchConfig.h"
 #include "init.h"
 #include "types/types.h"
 
@@ -56,28 +55,29 @@ protected:
 // 27.9.2925 GROOT: Search depth was 13(31) with 93.946.149 nodes visited. NPS = 3.716.830 nps
 // after migrations to classes and time management changes
 TEST_F(EngineSpeedTests, npsTest) {
-  SearchConfig::TT_SIZE_MB          = 64;
-  SearchConfig::USE_BOOK            = false;
-  SearchConfig::USE_ALPHABETA       = true;
-  SearchConfig::USE_PVS             = true;
-  SearchConfig::USE_TT              = true;
-  SearchConfig::USE_TT_VALUE        = true;
-  SearchConfig::USE_EVAL_TT         = true;
-  SearchConfig::USE_MDP             = true;
-  SearchConfig::USE_HISTORY_COUNTER = true;
-  SearchConfig::USE_HISTORY_MOVES   = true;
-  SearchConfig::USE_QUIESCENCE      = true;
-  SearchConfig::USE_QS_STANDPAT_CUT = true;
-  SearchConfig::USE_QS_SEE          = true;
-  SearchConfig::USE_QS_TT           = true;
-  SearchConfig::USE_RAZORING        = true;
-  SearchConfig::USE_RFP             = true;
-  SearchConfig::USE_NMP             = true;
-  SearchConfig::USE_IID             = true;
-  SearchConfig::USE_FP              = true;
-  SearchConfig::USE_LMR             = true;
-  SearchConfig::USE_LMP             = true;
-
+  CONFIG_OVERRIDE_START()
+  s.TT_SIZE_MB          = 64;
+  s.USE_BOOK            = false;
+  s.USE_ALPHABETA       = true;
+  s.USE_PVS             = true;
+  s.USE_TT              = true;
+  s.USE_TT_VALUE        = true;
+  s.USE_EVAL_TT         = true;
+  s.USE_MDP             = true;
+  s.USE_HISTORY_COUNTER = true;
+  s.USE_HISTORY_MOVES   = true;
+  s.USE_QUIESCENCE      = true;
+  s.USE_QS_STANDPAT_CUT = true;
+  s.USE_QS_SEE          = true;
+  s.USE_QS_TT           = true;
+  s.USE_RAZORING        = true;
+  s.USE_RFP             = true;
+  s.USE_NMP             = true;
+  s.USE_IID             = true;
+  s.USE_FP              = true;
+  s.USE_LMR             = true;
+  s.USE_LMP             = true;
+  CONFIG_OVERRIDE_END();
   // EvalConfig::TEMPO                 = 34;
   // EvalConfig::USE_MATERIAL          = true;
   // EvalConfig::USE_POSITIONAL        = true;

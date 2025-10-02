@@ -99,7 +99,7 @@ class Search {
   bool hadBookMove = false;
 
   // reference to the Search Config Data
-  const engine::config::SearchConfigData& Config;
+  const engine::config::SearchConfigData& SearchConfig;
 
   // LMR reduction table pre-computed for depth 0..31 and moves searched 0..63
   static constexpr int lmr_reduction(const int depth, const int movesSearched) {
@@ -261,7 +261,7 @@ private:
 
   // reduce the number of moves searched in quiescence search by trying
   // to only look at good captures.
-  static bool goodCapture(Position& p, Move move);
+  bool goodCapture(Position& p, Move move) const;
 
   // storeTT stores a position into the TT
   void storeTt(const Position& p, Depth depth, Depth ply, Move move, Value value, ValueType valueType, Value eval) const;

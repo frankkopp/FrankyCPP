@@ -19,7 +19,6 @@
 
 #include "UciHandler.h"
 #include "Search.h"
-#include "SearchConfig.h"
 #include "SearchLimits.h"
 #include "UciOptions.h"
 #include "chesscore/MoveGenerator.h"
@@ -28,6 +27,7 @@
 #include "common/Logging.h"
 #include "types/types.h"
 #include "version.h"
+#include "engine/config/ConfigManager.h"
 
 #include <memory>
 #include <thread>
@@ -216,7 +216,7 @@ void UciHandler::goCommand(std::istringstream& inStream) const {
     pSearch->stopSearch();
   }
   // do not start pondering if not a ponder option is set
-  if (searchLimits.ponder && !SearchConfig::USE_PONDER) {
+  if (searchLimits.ponder && !SEARCH_CONFIG.USE_PONDER) {
     uciError("go ponder command but ponder option is set to false.");
     return;
   }
@@ -453,7 +453,7 @@ void UciHandler::helpCommand() const {
   out("  Starts a search from the current position. Subcommands:");
   out("    searchmoves <m1> <m2> ...   Limit root search to given UCI moves.");
   out("    ponder                        Search in ponder mode (requires option Ponder).");
-  out(std::format("      Ponder option is currently {}.", SearchConfig::USE_PONDER ? "enabled" : "disabled"));
+  out(std::format("      Ponder option is currently {}.", SEARCH_CONFIG.USE_PONDER ? "enabled" : "disabled"));
   out("    infinite                      Search until 'stop'.");
   out("    movetime <ms>                 Fixed time for the whole move in milliseconds.");
   out("    wtime <ms> btime <ms>         Remaining time for each side in milliseconds.");

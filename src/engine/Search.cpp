@@ -19,7 +19,6 @@
 
 #include "Search.h"
 #include "Evaluator.h"
-#include "SearchConfig.h"
 #include "See.h"
 
 #include <algorithm>
@@ -31,7 +30,7 @@
 Search::Search() : Search(nullptr) {}
 
 Search::Search(UciHandler* pUciHandler)
-    : Config(engine::config::ConfigManager::instance().search()) {
+    : SearchConfig(engine::config::ConfigManager::instance().search()) {
   this->uciHandler = pUciHandler;
   this->tt         = std::make_unique<TT>(0);
 }
@@ -64,7 +63,7 @@ void Search::startSearch(const Position& p, SearchLimits sl) {
   }
 
   // DEBUG to test the new config approach
-  LOG__INFO(Logger::get().SEARCH_LOG, "DEBUG: CONFIG_DUMMY: {}", Config.CONFIG_DUMMY);
+  LOG__INFO(Logger::get().SEARCH_LOG, "DEBUG: CONFIG_DUMMY: {}", SearchConfig.CONFIG_DUMMY);
 
   // start search time
   startTime       = currentTime();
@@ -146,7 +145,7 @@ void Search::resizeTT() const {
     return;
   }
   // Resize the existing TT to the configured size and clear it
-  tt->resize(SearchConfig::TT_SIZE_MB);
+  tt->resize(SearchConfig.TT_SIZE_MB);
   sendString("Resized hash: " + tt->str());
 }
 
@@ -181,7 +180,7 @@ void Search::run() {
   if (searchLimits.timeControl && !searchLimits.ponder) { startTimer(); }
 
   // age tt entries
-  if (SearchConfig::USE_TT) {
+  if (SearchConfig.USE_TT) {
     LOG__INFO(Logger::get().SEARCH_LOG, "Transposition Table: Using TT: {}", tt->str());
     tt->ageEntries();
   }
@@ -194,7 +193,7 @@ void Search::run() {
   // field to avoid object creation during search.
   for (int i = DEPTH_NONE; i < DEPTH_MAX; i++) {
     this->mg[i] = MoveGenerator{};
-    if (SearchConfig::USE_HISTORY_COUNTER || SearchConfig::USE_HISTORY_MOVES) { this->mg[i].setHistoryData(&history); }
+    if (SearchConfig.USE_HISTORY_COUNTER || SearchConfig.USE_HISTORY_MOVES) { this->mg[i].setHistoryData(&history); }
     pv[i].clear();
   }
 
@@ -204,7 +203,7 @@ void Search::run() {
 
   // check for opening book move when we have a time-controlled game
   Move bookMove = MOVE_NONE;
-  if (book && SearchConfig::USE_BOOK && searchLimits.timeControl) {
+  if (book && SearchConfig.USE_BOOK && searchLimits.timeControl) {
     // TODO: instead of a random book move we could select a book move based on
     //  some score and some variation (randomness)
     bookMove = book->getRandomMove(position.getZobristKey());
@@ -212,7 +211,7 @@ void Search::run() {
   }
   else { LOG__INFO(Logger::get().SEARCH_LOG, "Opening Book: Not using book."); }
 
-  LOG__INFO(Logger::get().SEARCH_LOG, "Search using: PVS={} ASP={}", SearchConfig::USE_PVS, SearchConfig::USE_ASP);
+  LOG__INFO(Logger::get().SEARCH_LOG, "Search using: PVS={} ASP={}", SearchConfig.USE_PVS, SearchConfig.USE_ASP);
 
   // If we have found a book-move an update result and omit search.
   // Otherwise, start search with iterative deepening.
@@ -433,7 +432,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
     // ###########################################
     // Start actual alpha beta search
     // ASPIRATION SEARCH
-    if (SearchConfig::USE_ASP && iterationDepth > 3) {
+    if (SearchConfig.USE_ASP && iterationDepth > 3) {
       bestValue = aspirationSearch(p, iterationDepth, bestValue);
     }
     // PVS SEARCH (or pure ALPHA BETA when PVS deactivated)
@@ -513,7 +512,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
   else {
     // we do not have a ponder-move in the pv-list,
     // so let's check the TT
-    if (SearchConfig::USE_TT) {
+    if (SearchConfig.USE_TT) {
       p.doMove(searchResult.bestMove);
       if (const auto* ttEntryPtr = tt->probe(p.getZobristKey())) {
         statistics.ttHit++;
@@ -631,7 +630,7 @@ Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Valu
       // ///////////////////////////////////////////////////////////////////
       // PVS
       // First move in a node is an assumed PV and searched with full search window
-      if (!SearchConfig::USE_PVS || i == 0) {
+      if (!SearchConfig.USE_PVS || i == 0) {
         value = -search(p, depth - 1, ply, -beta, -alpha, PV, Do_Null_Move);
       }
       else {
@@ -669,7 +668,7 @@ Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Valu
       statistics.bestMoveChange++;
       if (value > alpha) {
         // fail high in root only when using aspiration search
-        if (value >= beta && SearchConfig::USE_ALPHABETA) {
+        if (value >= beta && SearchConfig.USE_ALPHABETA) {
           statistics.betaCuts++;
           return value;
         }
@@ -701,7 +700,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // Mate Distance Pruning
   // Did we already find a shorter mate then ignore
   // this one.
-  if (SearchConfig::USE_MDP) {
+  if (SearchConfig.USE_MDP) {
     alpha = std::max(alpha, -VALUE_CHECKMATE + static_cast<Value>(ply));
     beta  = std::min(beta, VALUE_CHECKMATE - static_cast<Value>(ply));
     if (alpha >= beta) {
@@ -732,14 +731,14 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // this branch and return the value.
   // Alpha or Beta entries will only be used if they improve
   // the current values.
-  if (SearchConfig::USE_TT) {
+  if (SearchConfig.USE_TT) {
     if (const TT::Entry* ttEntryPtr = tt->probe(p.getZobristKey())) {
       // tt hit
       statistics.ttHit++;
       ttMove = static_cast<Move>(ttEntryPtr->move);
       if (ttEntryPtr->depth >= depth) {
         const Value ttValue = valueFromTt(ttEntryPtr->value, ply);
-        if (SearchConfig::USE_TT_VALUE
+        if (SearchConfig.USE_TT_VALUE
             && ttValue.isValid()
             && (ttEntryPtr->type == EXACT
                 || (ttEntryPtr->type == ALPHA && ttValue <= alpha)
@@ -753,7 +752,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         statistics.TtNoCuts++;
       }
       // if we have a static eval stored, we can reuse it
-      if (SearchConfig::USE_EVAL_TT && ttEntryPtr->eval != VALUE_NONE) {
+      if (SearchConfig.USE_EVAL_TT && ttEntryPtr->eval != VALUE_NONE) {
         statistics.evalFromTT++;
         staticEval = ttEntryPtr->eval;
       }
@@ -767,7 +766,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   if (!hasCheck && staticEval == VALUE_NONE) {
     staticEval = evaluate(p);
     // Storing this value might save us calls to eval on the same position.
-    if (SearchConfig::USE_TT && SearchConfig::USE_EVAL_TT) {
+    if (SearchConfig.USE_TT && SearchConfig.USE_EVAL_TT) {
       storeTt(p, DEPTH_NONE, DEPTH_NONE, MOVE_NONE, VALUE_NONE, NONE, staticEval);
     }
   }
@@ -775,10 +774,10 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // Razoring from Stockfish
   // When static eval is well below alpha at the last node
   // jump directly into qsearch
-  if (SearchConfig::USE_RAZORING
+  if (SearchConfig.USE_RAZORING
       && depth == 1
       && staticEval != VALUE_NONE
-      && staticEval <= alpha - SearchConfig::RAZOR_MARGIN) {
+      && staticEval <= alpha - SearchConfig.RAZOR_MARGIN) {
     statistics.razorings++;
     return qsearch(p, ply, alpha, beta, PV);
   }
@@ -787,12 +786,12 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // https://www.chessprogramming.org/Reverse_Futility_Pruning
   // Anticipate a likely alpha low in the next ply by a beta cut
   // off before making and evaluating the move
-  if (SearchConfig::USE_RFP
+  if (SearchConfig.USE_RFP
       && doNull
       && depth <= 3
       && !isPv
       && !hasCheck) {
-    const Value margin = SearchConfig::RFP_MARGIN[depth];
+    const auto margin = Value{SearchConfig.RFP_MARGIN[depth]};
     if (staticEval - margin >= beta) {
       statistics.rfp_cuts++;
       return staticEval - margin;// fail-hard: beta / fail-soft: staticEval - evalMargin;
@@ -809,17 +808,17 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // - Zugzwang - it would be better not to move
   // - in check - this would lead to an illegal situation where the king is captured
   // - recursive null moves should be avoided
-  if (SearchConfig::USE_NMP) {
+  if (SearchConfig.USE_NMP) {
     // Disable near mate bounds and in zugzwang-prone endgames
-    const bool nearMateWindow = SearchConfig::USE_NMP_ZUG_GUARD
-                                && (beta > VALUE_CHECKMATE_THRESHOLD - SearchConfig::NMP_NEAR_MATE_MARGIN
-                                    || alpha < -VALUE_CHECKMATE_THRESHOLD + SearchConfig::NMP_NEAR_MATE_MARGIN);
-    const bool zugProne = SearchConfig::USE_NMP_ZUG_GUARD
-                          && p.getMaterialNonPawn(us) <= SearchConfig::NMP_ZUG_NONPAWN_THRESHOLD;
+    const bool nearMateWindow = SearchConfig.USE_NMP_ZUG_GUARD
+                                && (beta > VALUE_CHECKMATE_THRESHOLD - SearchConfig.NMP_NEAR_MATE_MARGIN
+                                    || alpha < -VALUE_CHECKMATE_THRESHOLD + SearchConfig.NMP_NEAR_MATE_MARGIN);
+    const bool zugProne = SearchConfig.USE_NMP_ZUG_GUARD
+                          && p.getMaterialNonPawn(us) <= SearchConfig.NMP_ZUG_NONPAWN_THRESHOLD;
 
     if (doNull
         && !isPv
-        && depth >= SearchConfig::NMP_DEPTH
+        && depth >= SearchConfig.NMP_DEPTH
         && !hasCheck
         && !zugProne
         && !nearMateWindow) {
@@ -829,7 +828,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // ICCA Journal, Vol. 22, No. 3
       // Ernst A. Heinz, Adaptive Null-Move Pruning, postscript
       // http://people.csail.mit.edu/heinz/ps/adpt_null.ps.gz
-      Depth r = SearchConfig::NMP_REDUCTION;
+      auto r = Depth{SearchConfig.NMP_REDUCTION};
       if (depth > 8 || (depth > 6 && p.getGamePhase() >= 3)) { ++r; }
       Depth newDepth = depth - r - 1;
       // double check that depth does not get negative
@@ -861,9 +860,9 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // be above beta if we make a move
       if (nValue >= beta) {
         // Verification search to reduce tactical false positives
-        if (SearchConfig::USE_NMP_VERIFY
-            && depth >= SearchConfig::NMP_VERIFY_MIN_DEPTH) {
-          Depth verifyDepth = depth - r - SearchConfig::NMP_VERIFY_MARGIN;
+        if (SearchConfig.USE_NMP_VERIFY
+            && depth >= SearchConfig.NMP_VERIFY_MIN_DEPTH) {
+          Depth verifyDepth = depth - r - SearchConfig.NMP_VERIFY_MARGIN;
           if (verifyDepth < 0) { verifyDepth = DEPTH_NONE; }
           const auto do_null = matethreat ? No_Null_Move : Do_Null_Move;
           const Value v      = search(p, verifyDepth, ply, beta - 1, beta, NonPV, do_null);
@@ -873,13 +872,13 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
             // fall through: no cutoff
           }
           else {
-            if (SearchConfig::USE_TT) { storeTt(p, depth, ply, MOVE_NONE, nValue, BETA, staticEval); }
+            if (SearchConfig.USE_TT) { storeTt(p, depth, ply, MOVE_NONE, nValue, BETA, staticEval); }
             statistics.nullMoveCuts++;
             return nValue;
           }
         }
         else {
-          if (SearchConfig::USE_TT) { storeTt(p, depth, ply, MOVE_NONE, nValue, BETA, staticEval); }
+          if (SearchConfig.USE_TT) { storeTt(p, depth, ply, MOVE_NONE, nValue, BETA, staticEval); }
           statistics.nullMoveCuts++;
           return nValue;
         }
@@ -895,14 +894,14 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // the best move of that search as the first move at the real depth.
   // Does not make a big difference in search tree size when move
   // order already is good.
-  if (SearchConfig::USE_IID) {
-    if (depth >= SearchConfig::IID_DEPTH
+  if (SearchConfig.USE_IID) {
+    if (depth >= SearchConfig.IID_DEPTH
         && !ttMove// no move from TT
         && doNull
         && isPv) {// avoid in null move search
 
       // get the new depth and make sure it is >0
-      auto newDepthIid = depth - SearchConfig::IID_REDUCTION;
+      auto newDepthIid = depth - SearchConfig.IID_REDUCTION;
       if (newDepthIid < 0) { newDepthIid = DEPTH_NONE; }
 
       // do the actual reduced search only if we have time left
@@ -932,7 +931,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // When we received a best move for the position from the
   // TT or IID we set it as PV move in the move-gen so it will
   // be searched first.
-  if (SearchConfig::USE_TT_PV_MOVE_SORT && ttMove != MOVE_NONE) {
+  if (SearchConfig.USE_TT_PV_MOVE_SORT && ttMove != MOVE_NONE) {
     statistics.TtMoveUsed++;
     myMg->setPV(ttMove);
   }
@@ -958,13 +957,13 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     // Here we try some search extensions. This has to be done
     // very carefully as it usually is more effective to prune
     // than to extend.
-    if (SearchConfig::USE_EXTENSIONS) {
+    if (SearchConfig.USE_EXTENSIONS) {
       // The check extensions is a bit redundant as our QS search
       // searches all moves anyway when in check. But with this
       // extension we hope to profit from using the pruning
       // of the normal search which are not available in
       // qsearch.
-      if (SearchConfig::USE_CHECK_EXT && givesCheck) {
+      if (SearchConfig.USE_CHECK_EXT && givesCheck) {
         statistics.checkExtension++;
         extension = DEPTH_ONE;
       }
@@ -974,14 +973,14 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // a way out.
       // Deactivated in config as this grows the search tree
       // too much.
-      if (SearchConfig::USE_THREAT_EXT && matethreat) {
+      if (SearchConfig.USE_THREAT_EXT && matethreat) {
         statistics.threatExtension++;
         extension = DEPTH_ONE;
       }
 
       // With this turned off we still can use extension to
       // at least avoid reductions for these moves.
-      if (SearchConfig::USE_EXT_ADD_DEPTH) {
+      if (SearchConfig.USE_EXT_ADD_DEPTH) {
         newDepth += extension;
       }
     }
@@ -1013,8 +1012,8 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // This is a typical forward pruning technique
       // which might lead to errors.
       // Limited Razoring / Extended FP are covered by this.
-      if (SearchConfig::USE_FP && depth < 7) {
-        const auto futilityMargin = SearchConfig::FP_MARGIN[depth];
+      if (SearchConfig.USE_FP && depth < 7) {
+        const auto futilityMargin = SearchConfig.FP_MARGIN[depth];
         if (staticEval + moveGain + futilityMargin <= alpha) {
           if (staticEval + moveGain > bestNodeValue) { bestNodeValue = staticEval + moveGain; }
           statistics.fpPrunings++;
@@ -1024,8 +1023,8 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 
       // LMP - Late Move Pruning
       // aka Move-Count-Based Pruning
-      if (SearchConfig::USE_LMP) {
-        if (movesSearched >= SearchConfig::LMP_MOVES[(depth > 15 ? 15 : depth)]) {
+      if (SearchConfig.USE_LMP) {
+        if (movesSearched >= SearchConfig.LMP_MOVES[(depth > 15 ? 15 : depth)]) {
           statistics.lmpCuts++;
           continue;
         }
@@ -1041,11 +1040,11 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // newDepth is the "standard" new depth (depth - 1)
       // lmrDepth is set to newDepth and only reduced
       // if conditions apply.
-      if (SearchConfig::USE_LMR
+      if (SearchConfig.USE_LMR
           && !matethreat) {
         // compute reduction from depth and move searched
-        if (depth >= SearchConfig::LMR_MIN_DEPTH
-            && movesSearched >= SearchConfig::LMR_MIN_MOVES
+        if (depth >= SearchConfig.LMR_MIN_DEPTH
+            && movesSearched >= SearchConfig.LMR_MIN_MOVES
             && !isPv
             && !givesCheck
             && !p.isCapturingMove(move)
@@ -1101,7 +1100,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // or that the move is too good (>beta). If this prove fails we need
       // to research the move again with a full window.
       // https://www.chessprogramming.org/Principal_Variation_Search
-      if (!SearchConfig::USE_PVS || movesSearched == 0) {
+      if (!SearchConfig.USE_PVS || movesSearched == 0) {
         value = -search(p, newDepth, ply + 1, -beta, -alpha, PV, do_null);
       }
       else {
@@ -1163,19 +1162,19 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         // as we cut off the rest of the search of the node here.
         // We will save the move as a killer to be able to search it
         // earlier in another node of the ply.
-        if (value >= beta && SearchConfig::USE_ALPHABETA) {
+        if (value >= beta && SearchConfig.USE_ALPHABETA) {
           // Count beta cuts
           statistics.betaCuts++;
           // Count beta cuts on the first move
           if (movesSearched == 1) { statistics.betaCuts1st++; }
           // store move which caused a beta cutoff in this ply
-          if (SearchConfig::USE_KILLER_MOVES && !p.isCapturingMove(move)) { myMg->storeKiller(move); }
+          if (SearchConfig.USE_KILLER_MOVES && !p.isCapturingMove(move)) { myMg->storeKiller(move); }
           // Counter for moves which caused a beta cutoff
           // we use 1 << depth as an increment to favor deeper searches
           // a more repetitions
-          if (SearchConfig::USE_HISTORY_COUNTER) { history.historyCount[us][from][to] += 1L << depth; }
+          if (SearchConfig.USE_HISTORY_COUNTER) { history.historyCount[us][from][to] += 1L << depth; }
           // store a successful counter-move to the previous opponent move
-          if (SearchConfig::USE_HISTORY_MOVES) {
+          if (SearchConfig.USE_HISTORY_MOVES) {
             const Move lastMove = p.getLastMove();
             if (lastMove != MOVE_NONE) { history.counterMoves[lastMove.from()][lastMove.to()] = move; }
           }
@@ -1195,7 +1194,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     }
     // no beta cutoff - decrease historyCounter for the move
     // we decrease it by only half the increase amount
-    if (SearchConfig::USE_HISTORY_COUNTER) {
+    if (SearchConfig.USE_HISTORY_COUNTER) {
       history.historyCount[us][from][to] -= 1L << depth;
       if (history.historyCount[us][from][to] < 0) { history.historyCount[us][from][to] = 0; }
     }
@@ -1223,7 +1222,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 
   // Store TT
   // Store search result for this node into the transposition table
-  if (SearchConfig::USE_TT) { storeTt(p, depth, ply, bestNodeMove, bestNodeValue, ttType, staticEval); }
+  if (SearchConfig.USE_TT) { storeTt(p, depth, ply, bestNodeMove, bestNodeValue, ttType, staticEval); }
 
   return bestNodeValue;
 }
@@ -1235,14 +1234,14 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
 
   // if we have deactivated qsearch or we have reached our maximum depth
   // we evaluate the position and return the value
-  if (!SearchConfig::USE_QUIESCENCE || ply >= MAX_DEPTH || stopConditions()) {
+  if (!SearchConfig.USE_QUIESCENCE || ply >= MAX_DEPTH || stopConditions()) {
     statistics.perftNodeCount++;
     return evaluate(p);
   }
 
   // Mate Distance Pruning
   // Did we already find a shorter mate then ignore this one.
-  if (SearchConfig::USE_MDP) {
+  if (SearchConfig.USE_MDP) {
     alpha = std::max(alpha, -VALUE_CHECKMATE + static_cast<Value>(ply));
     beta  = std::min(beta, VALUE_CHECKMATE - static_cast<Value>(ply));
     if (alpha >= beta) {
@@ -1254,13 +1253,13 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
   // TT Lookup
   Move ttMove      = MOVE_NONE;
   Value staticEval = VALUE_NONE;
-  if (SearchConfig::USE_TT && SearchConfig::USE_QS_TT) {
+  if (SearchConfig.USE_TT && SearchConfig.USE_QS_TT) {
     if (const TT::Entry* ttEntryPtr = tt->probe(p.getZobristKey())) {
       // tt hit
       statistics.ttHit++;
       ttMove              = static_cast<Move>(ttEntryPtr->move);
       const Value ttValue = valueFromTt(ttEntryPtr->value, ply);
-      if (SearchConfig::USE_TT_VALUE
+      if (SearchConfig.USE_TT_VALUE
           && ttValue.isValid()
           && (ttEntryPtr->type == EXACT
               || (ttEntryPtr->type == ALPHA && ttValue <= alpha)
@@ -1269,7 +1268,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
         return ttValue;
       }
       // if we have a static eval stored we can reuse it
-      if (SearchConfig::USE_EVAL_TT
+      if (SearchConfig.USE_EVAL_TT
           && ttEntryPtr->eval != VALUE_NONE) {
         statistics.evalFromTT++;
         staticEval = ttEntryPtr->eval;
@@ -1296,13 +1295,13 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
     // https://www.chessprogramming.org/Quiescence_Search#Standing_Pat
     // Assumption is that there is at least on move which would improve the
     // current position. So if we are already >beta we don't need to look at it.
-    if (SearchConfig::USE_QS_STANDPAT_CUT && staticEval > alpha) {
+    if (SearchConfig.USE_QS_STANDPAT_CUT && staticEval > alpha) {
       if (staticEval >= beta) {
         statistics.standpatCuts++;
         // Storing this value might save us calls to eval on the same position.
-        if (SearchConfig::USE_TT
-            && SearchConfig::USE_QS_TT
-            && SearchConfig::USE_EVAL_TT) {
+        if (SearchConfig.USE_TT
+            && SearchConfig.USE_QS_TT
+            && SearchConfig.USE_EVAL_TT) {
           storeTt(p, DEPTH_NONE, ply, MOVE_NONE, VALUE_NONE, NONE, staticEval);
         }
         return staticEval;
@@ -1318,7 +1317,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
   pv[ply].clear();
 
   // PV Move Sort
-  if (SearchConfig::USE_TT_PV_MOVE_SORT && ttMove != MOVE_NONE) {
+  if (SearchConfig.USE_TT_PV_MOVE_SORT && ttMove != MOVE_NONE) {
     statistics.TtMoveUsed++;
     myMg->setPV(ttMove);
   }
@@ -1344,7 +1343,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
     // Forward Pruning
     // FP will only be done when the move is not
     // interesting - no check, no capture, etc.
-    if (SearchConfig::USE_QFP
+    if (SearchConfig.USE_QFP
         && !isPv
         && move != ttMove
         && move != myMg->getKillerMoves()[0]
@@ -1408,12 +1407,12 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
       bestNodeValue = value;
       bestNodeMove  = move;
       if (value > alpha) {
-        if (value >= beta && SearchConfig::USE_ALPHABETA) {
+        if (value >= beta && SearchConfig.USE_ALPHABETA) {
           statistics.betaCuts++;
           if (movesSearched == 1) { statistics.betaCuts1st++; }
-          if (SearchConfig::USE_KILLER_MOVES && !p.isCapturingMove(move)) { myMg->storeKiller(move); }
-          if (SearchConfig::USE_HISTORY_COUNTER) { history.historyCount[us][from][to] += 1 << 1; }
-          if (SearchConfig::USE_HISTORY_MOVES) {
+          if (SearchConfig.USE_KILLER_MOVES && !p.isCapturingMove(move)) { myMg->storeKiller(move); }
+          if (SearchConfig.USE_HISTORY_COUNTER) { history.historyCount[us][from][to] += 1 << 1; }
+          if (SearchConfig.USE_HISTORY_MOVES) {
             const Move lastMove = p.getLastMove();
             if (lastMove != MOVE_NONE) { history.counterMoves[lastMove.from()][lastMove.to()] = move; }
           }
@@ -1425,7 +1424,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
         ttType = EXACT;
       }
     }
-    if (SearchConfig::USE_HISTORY_COUNTER) {
+    if (SearchConfig.USE_HISTORY_COUNTER) {
       history.historyCount[us][from][to] -= 1 << 1;
       if (history.historyCount[us][from][to] < 0) { history.historyCount[us][from][to] = 0; }
     }
@@ -1454,7 +1453,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
 
   // Store TT
   // Store search result for this node into the transposition table
-  if (SearchConfig::USE_TT && SearchConfig::USE_QS_TT) {
+  if (SearchConfig.USE_TT && SearchConfig.USE_QS_TT) {
     storeTt(p, DEPTH_NONE, ply, bestNodeMove, bestNodeValue, ttType, staticEval);
   }
 
@@ -1467,13 +1466,13 @@ inline Value Search::evaluate(const Position& p) {
   return evaluator->evaluate(p);
 }
 
-bool Search::goodCapture(Position& p, const Move move) {
+bool Search::goodCapture(Position& p, const Move move) const {
   // Captures that give check are always good
   if (p.isCapturingMove(move) && p.givesCheck(move)) {
     return true;
   }
 
-  if (SearchConfig::USE_QS_SEE) {
+  if (SearchConfig.USE_QS_SEE) {
     // Check SEE score of higher-value pieces to low-value pieces
     return See::see(p, move) >= 0;
   }
@@ -1546,16 +1545,19 @@ void Search::getPvLine(Position& p, MoveList& pvList, const Depth depth) const {
 void Search::initialize() {
   LOG__INFO(Logger::get().SEARCH_LOG, "Search initialization.");
   // init opening book
-  if (SearchConfig::USE_BOOK) {
+  if (SearchConfig.USE_BOOK) {
     if (!book) {
       // only initialize once
-      if (!std::filesystem::exists(SearchConfig::BOOK_PATH)) {
-        const std::string message = std::format("Opening Book '{}' not found. Disabling book usage.", SearchConfig::BOOK_PATH);
+      if (!std::filesystem::exists(SearchConfig.BOOK_PATH)) {
+        const std::string message = std::format("Opening Book '{}' not found. Disabling book usage.", SearchConfig.BOOK_PATH);
         LOG__ERROR(Logger::get().BOOK_LOG, "{}", message);
-        SearchConfig::USE_BOOK = false;
+        engine::config::ConfigManager::instance().applyOverrides([&](engine::config::SearchConfigData& s, auto& ) {
+          s.USE_BOOK = false;
+        });
       }
       else {
-        book = std::make_unique<OpeningBook>(SearchConfig::BOOK_PATH, SearchConfig::BOOK_TYPE);
+
+        book = std::make_unique<OpeningBook>(SearchConfig.BOOK_PATH, OpeningBook::fromString(SearchConfig.BOOK_TYPE));
         book->initialize();
       }
     }
@@ -1565,10 +1567,10 @@ void Search::initialize() {
   }
 
   // init transposition table
-  if (SearchConfig::USE_TT) {
+  if (SearchConfig.USE_TT) {
     // When constructed with size 0 MB, TT ensures at least 1 entry; treat that as uninitialized sentinel
     if (tt->getMaxNumberOfEntries() == 1) {
-      tt->resize(SearchConfig::TT_SIZE_MB);
+      tt->resize(SearchConfig.TT_SIZE_MB);
     }
   }
   else {
@@ -1650,7 +1652,7 @@ milliseconds Search::setupTimeControl(const Position& p, const SearchLimits& lim
   // Search mode time per move
   if (limits.moveTime.count()) {
     // we need a little room for executing the code
-    const milliseconds duration = limits.moveTime - milliseconds{Config.MOVE_OVERHEAD_MS};
+    const milliseconds duration = limits.moveTime - milliseconds{SearchConfig.MOVE_OVERHEAD_MS};
     // if the duration is now negative, return the original value and issue a warning
     if (duration.count() < 0) {
       LOG__WARN(Logger::get().SEARCH_LOG, "Very short move time: {} ms", limits.moveTime.count());
@@ -1683,32 +1685,32 @@ milliseconds Search::setupTimeControl(const Position& p, const SearchLimits& lim
 
     // Select a base bucket
     int base;
-    if (npp <= SearchConfig::NPP_LIGHT_THRESHOLD) {
-      base = SearchConfig::MOVES_LEFT_LOW_MAT;// very low material
+    if (npp <= SearchConfig.NPP_LIGHT_THRESHOLD) {
+      base = SearchConfig.MOVES_LEFT_LOW_MAT;// very low material
     }
     else if (queens == 0) {
       // Queenless middlegames/endgames tend to resolve faster
-      base = npp <= SearchConfig::NPP_LIGHT_THRESHOLD + 2
-               ? SearchConfig::MOVES_LEFT_LOW_MAT
-               : SearchConfig::MOVES_LEFT_QUEENLESS;
+      base = npp <= SearchConfig.NPP_LIGHT_THRESHOLD + 2
+               ? SearchConfig.MOVES_LEFT_LOW_MAT
+               : SearchConfig.MOVES_LEFT_QUEENLESS;
     }
-    else if (phase >= 0.66 || npp >= SearchConfig::NPP_HEAVY_THRESHOLD) {
-      base = SearchConfig::MOVES_LEFT_OPENING;
+    else if (phase >= 0.66 || npp >= SearchConfig.NPP_HEAVY_THRESHOLD) {
+      base = SearchConfig.MOVES_LEFT_OPENING;
     }
     else if (phase <= 0.33) {
-      base = SearchConfig::MOVES_LEFT_ENDGAME;
+      base = SearchConfig.MOVES_LEFT_ENDGAME;
     }
     else {
-      base = SearchConfig::MOVES_LEFT_MIDGAME;
+      base = SearchConfig.MOVES_LEFT_MIDGAME;
     }
 
     // Adjust for repetition/50-move risk
-    if (p.getHalfMoveClock() >= SearchConfig::REPETITION_HMC_HIGH) {
-      base -= SearchConfig::REPETITION_RISK_PENALTY;
+    if (p.getHalfMoveClock() >= SearchConfig.REPETITION_HMC_HIGH) {
+      base -= SearchConfig.REPETITION_RISK_PENALTY;
     }
 
     // Clamp
-    base = std::clamp(base, SearchConfig::MOVES_LEFT_MIN_CLAMP, SearchConfig::MOVES_LEFT_MAX_CLAMP);
+    base = std::clamp(base, SearchConfig.MOVES_LEFT_MIN_CLAMP, SearchConfig.MOVES_LEFT_MAX_CLAMP);
 
     movesLeft = base;
     LOG__DEBUG(Logger::get().SEARCH_LOG,
@@ -1723,7 +1725,7 @@ milliseconds Search::setupTimeControl(const Position& p, const SearchLimits& lim
   // estimate time per move
   const auto tl = static_cast<milliseconds>(timeLeft.count() / movesLeft);
   // tiny fixed reserve to reduce micro overshoots (remaining-time mode only)
-  const milliseconds reserve{Config.MOVE_OVERHEAD_MS};
+  const milliseconds reserve{SearchConfig.MOVE_OVERHEAD_MS};
   // account for the runtime of our code
   milliseconds base;
   if (tl.count() < 100) {

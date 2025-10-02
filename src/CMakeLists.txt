@@ -20,7 +20,7 @@ set(FrankyCPPlib_SRCS
         engine/UciOptions.cpp engine/UciOptions.h
         engine/TT.cpp engine/TT.h
         engine/Search.cpp engine/Search.h
-        engine/SearchResult.h engine/SearchLimits.h engine/SearchConfig.h
+        engine/SearchResult.h engine/SearchLimits.h
         engine/SearchStats.h
         engine/See.cpp engine/See.h
         engine/Evaluator.cpp engine/Evaluator.h

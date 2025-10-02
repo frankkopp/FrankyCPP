@@ -29,9 +29,9 @@
 #include <boost/serialization/vector.hpp>
 
 #include <filesystem>
+#include <format>
 #include <mutex>
 #include <thread>
-#include <format>
 
 #include "common/gtest_friends.h"
 
@@ -133,6 +133,18 @@ public:
    * @param zobrist key of the position
    */
   Move getRandomMove(ZobristKey zobrist) const;
+
+  // Converts a string to a BookFormat enum value. Defaults to SIMPLE
+  static BookFormat fromString(const std::string& str) {
+    if (str == "SAN") {
+      return BookFormat::SAN;
+    }
+    if (str == "PGN") {
+      return BookFormat::PGN;
+    }
+    // default
+    return BookFormat::SIMPLE;
+  }
 
 private:
   // reads all lines from a file into a vector of string_views

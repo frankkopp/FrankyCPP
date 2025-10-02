@@ -22,7 +22,6 @@
 #include "Test_Fens.h"
 #include "common/Logging.h"
 #include "engine/Search.h"
-#include "engine/SearchConfig.h"
 #include "enginetest/SearchTreeSizeTest.h"
 #include "init.h"
 

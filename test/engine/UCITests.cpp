@@ -24,7 +24,6 @@
 #include "chesscore/Position.h"
 #include "common/Logging.h"
 #include "engine/Search.h"
-#include "engine/SearchConfig.h"
 #include "engine/UciHandler.h"
 #include "engine/UciOptions.h"
 
@@ -33,7 +32,7 @@ using testing::Eq;
 
 using namespace std;
 
-class UCITest : public ::testing::Test {
+class UCITest : public testing::Test {
 public:
   static void SetUpTestSuite() {
     NEWLINE;
@@ -47,7 +46,7 @@ public:
 
 protected:
   void SetUp() override {
-    SearchConfig::USE_BOOK = false;
+    CONFIG_OVERRIDE(s.USE_BOOK = false;);
   }
   void TearDown() override {}
 };
@@ -94,7 +93,7 @@ TEST_F(UCITest, setoptionTest) {
 }
 
 TEST_F(UCITest, clearHashTest) {
-  SearchConfig::USE_TT = true;
+  CONFIG_OVERRIDE(s.USE_TT = true;);
   ostringstream os;
   string command = "isready\nsetoption name Clear Hash";
   LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
@@ -107,7 +106,7 @@ TEST_F(UCITest, clearHashTest) {
 }
 
 TEST_F(UCITest, resizeHashTest) {
-  SearchConfig::USE_TT = true;
+  CONFIG_OVERRIDE(s.USE_TT = true;);
   ostringstream os;
   string command = "isready\nsetoption name Hash value 512";
   LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);

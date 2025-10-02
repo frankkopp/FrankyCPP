@@ -101,3 +101,39 @@ namespace engine::config {
   };
 
 }// namespace engine::config
+
+//
+//
+// using cm   = engine::config::ConfigManager;
+// using scfg = engine::config::SearchConfigData;
+//
+// auto& cfg = cm::instance();
+//
+// cfg.applyOverrides([&](scfg& s, auto&) {
+//
+
+// Helper
+#define SEARCH_CONFIG engine::config::ConfigManager::instance().search()
+
+// Helper macro to simplify usage of applyOverrides in lambdas
+// Use s for SearchConfigData and e for EvalConfigData
+// Example: CONFIG_OVERRIDE(s.MOVE_OVERHEAD_MS = 25; s.USE_PVS = true;)
+#define CONFIG_OVERRIDE(expr) engine::config::ConfigManager::instance().applyOverrides([&]([[maybe_unused]] engine::config::SearchConfigData& s, [[maybe_unused]]engine::config::EvalConfigData& e) { expr; })
+
+// For multi-line overrides
+// Use s for SearchConfigData and e for EvalConfigData
+// Example:
+// CONFIG_OVERRIDE_START()
+//    s.MOVE_OVERHEAD_MS = 25;   // Search tweak
+//    s.USE_PVS = true;          // enable PVS
+// CONFIG_OVERRIDE_END();
+#define CONFIG_OVERRIDE_START() engine::config::ConfigManager::instance().applyOverrides([&]([[maybe_unused]] engine::config::SearchConfigData& s, [[maybe_unused]] engine::config::EvalConfigData& e) {
+
+// For multi-line overrides
+// Use s for SearchConfigData and e for EvalConfigData
+// Example:
+// CONFIG_OVERRIDE_START()
+//    s.MOVE_OVERHEAD_MS = 25;   // Search tweak
+//    s.USE_PVS = true;          // enable PVS
+// CONFIG_OVERRIDE_END();
+#define CONFIG_OVERRIDE_END() })
