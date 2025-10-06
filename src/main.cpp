@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
     po::options_description generic("Generic options");
     generic.add_options()
       ("help,?", "produce help message")("version,v", "print version string")
-      ("config,c", po::value<std::string>(&config_file)->default_value("./config/FrankyCPP.cfg"), "name of a file of a configuration.");
+      ("config,c", po::value<std::string>(&config_file)->default_value("./config/FrankyCPP.cfg"), "configuration file name");
 
     // Declare a group of options that will be allowed both on command line
     // and in config file
@@ -105,10 +105,10 @@ int main(int argc, char* argv[]) {
       return 0;
     }
 
-    // read config file
+    // read the config file
     std::ifstream ifs(config_file.c_str());
     if (!ifs) {
-      std::cerr << "could not open config file: " << config_file << "\n";
+      std::cerr << "could not open the config file: " << config_file << "\n";
     }
     else {
       store(parse_config_file(ifs, config_file_options), programOptions);
