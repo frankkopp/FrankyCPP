@@ -47,8 +47,8 @@ StringType trimFast(const StringType& s) {
   const int l = static_cast<int>(s.length());
   int a = 0, b = l - 1;
   char c;
-  while (a < l && ((c = s[a]) == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' || c == '\r')) a++;
-  while (b > a && ((c = s[b]) == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' || c == '\r')) b--;
+  while (a < l && ((c = s[a]) == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' || c == '\r')) ++a;
+  while (b > a && ((c = s[b]) == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' || c == '\r')) --b;
   return s.substr(a, 1 + b - a);
 }
 
@@ -65,33 +65,33 @@ StringType removeTrailingComments(const StringType& s, const std::string& commen
 // transforms the given string to lower case
 inline std::string toLowerCase(const std::string& s) {
   std::string str(s);
-  std::ranges::transform(str, str.begin(), [](unsigned char c) { return char(std::tolower(c)); });
+  std::ranges::transform(str, str.begin(), [](const unsigned char c) { return static_cast<char>(std::tolower(c)); });
   return str;
 }
 
 // transforms the given string to lower case in place
 inline void toLowerCase(std::string& str) {
-  std::ranges::transform(str, str.begin(), [](unsigned char c) { return char(std::tolower(c)); });
+  std::ranges::transform(str, str.begin(), [](const unsigned char c) { return static_cast<char>(std::tolower(c)); });
 }
 
 // transforms the given string to upper case
 inline std::string toUpperCase(const std::string& s) {
   std::string str(s);
-  std::ranges::transform(str, str.begin(), [](unsigned char c) { return char(std::toupper(c)); });
+  std::ranges::transform(str, str.begin(), [](const unsigned char c) { return static_cast<char>(std::toupper(c)); });
   return str;
 }
 
 // transforms the given string to upper case in place
 inline void toUpperCase(std::string& str) {
-  std::ranges::transform(str, str.begin(), [](unsigned char c) { return char(std::toupper(c)); });
+  std::ranges::transform(str, str.begin(), [](const unsigned char c) { return static_cast<char>(std::toupper(c)); });
 }
 
-constexpr const char* boolStr(bool b) {
+constexpr const char* boolStr(const bool b) {
   return b ? "true" : "false";
 }
 
-constexpr const char* boolStr(int b) {
-  return boolStr(bool(b));
+constexpr const char* boolStr(const int b) {
+  return boolStr(static_cast<bool>(b));
 }
 
 
