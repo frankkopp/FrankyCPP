@@ -20,11 +20,10 @@
 #ifndef FRANKYCPP_FIFO_H
 #define FRANKYCPP_FIFO_H
 
-#include <queue>
-#include <deque>
-#include <mutex>
 #include <condition_variable>
+#include <mutex>
 #include <optional>
+#include <queue>
 
 /**
  * Synchronized FIFO queue based on std::queue and std::deque
@@ -34,35 +33,34 @@ class Fifo {
 
   mutable std::mutex fifoLock;
   mutable std::condition_variable cv;
-  std::queue<T, std::deque<T>> fifo;
+  std::queue<T> fifo;
   bool closedFlag = false;
 
 public:
-
-  Fifo() = default;
+  Fifo()  = default;
   ~Fifo() = default;
 
   // copy
-  Fifo(Fifo const &other) {
+  Fifo(Fifo const& other) {
     std::scoped_lock lock{other.fifoLock};
     fifo = other.fifo;
   }
 
   // copy assignment
-  Fifo &operator=(const Fifo &other) {
+  Fifo& operator=(const Fifo& other) {
     std::scoped_lock lock(fifoLock, other.fifoLock);
     fifo = other.fifo;
     return *this;
   }
 
   // move
-  Fifo(Fifo const &&other) noexcept {
+  Fifo(Fifo const&& other) noexcept {
     std::scoped_lock lock{other.fifoLock};
     fifo = std::move(other.fifo);
   }
 
   // move assignment
-  Fifo &operator=(const Fifo &&other) noexcept {
+  Fifo& operator=(Fifo&& other) noexcept {
     if (this != &other) {
       std::scoped_lock lock(fifoLock, other.fifoLock);
       fifo = std::move(other.fifo);
@@ -73,9 +71,9 @@ public:
   /**
    * Pushes an item onto the fifo queue
    */
-  void push(T &t) {
+  void push(T& t) {
     {
-      std::scoped_lock<std::mutex> lock{fifoLock};
+      std::scoped_lock lock{fifoLock};
       fifo.push(t);
     }
     cv.notify_one();
@@ -84,9 +82,9 @@ public:
   /**
    * Pushes an item onto the fifo queue using a move reference
    */
-  void push(T &&t) {
+  void push(T&& t) {
     {
-      std::scoped_lock<std::mutex> lock{fifoLock};
+      std::scoped_lock lock{fifoLock};
       fifo.push(std::move(t));
     }
     cv.notify_one();
@@ -98,7 +96,7 @@ public:
    * Returns an empty optional if called on empty list.
    */
   std::optional<T> pop() {
-    std::scoped_lock<std::mutex> lock{fifoLock};
+    std::scoped_lock lock{fifoLock};
     if (fifo.empty()) return std::nullopt;
     std::optional<T> t{fifo.front()};
     fifo.pop();
@@ -111,8 +109,8 @@ public:
    * Changes the given std::optional reference and returns it.
    * the optional will be an empty optional if called on empty list.
    */
-  std::optional<T> pop(std::optional<T>  &t) {
-    std::scoped_lock<std::mutex> lock{fifoLock};
+  std::optional<T> pop(std::optional<T>& t) {
+    std::scoped_lock lock{fifoLock};
     if (fifo.empty()) return std::nullopt;
     t.emplace(fifo.front());
     fifo.pop();
@@ -125,7 +123,7 @@ public:
    * Fifo.close in which case this will return nullptr.
    */
   std::optional<T> pop_wait() {
-    std::unique_lock<std::mutex> lock{fifoLock};
+    std::unique_lock lock{fifoLock};
     if (closedFlag && fifo.empty()) return std::nullopt;
     cv.wait(lock, [this] { return !fifo.empty() || closedFlag; });
     if (fifo.empty()) return std::nullopt;
@@ -139,8 +137,8 @@ public:
    * waits until an item becomes available. Block can be canceled be calling
    * Fifo.close in which case this will return nullptr.
    */
-  std::optional<T> pop_wait(std::optional<T>  &t) {
-    std::unique_lock<std::mutex> lock{fifoLock};
+  std::optional<T> pop_wait(std::optional<T>& t) {
+    std::unique_lock lock{fifoLock};
     if (closedFlag && fifo.empty()) return std::nullopt;
     cv.wait(lock, [this] { return !fifo.empty() || closedFlag; });
     if (fifo.empty()) return std::nullopt;
@@ -154,7 +152,7 @@ public:
    * longer.
    */
   void close() {
-    std::scoped_lock<std::mutex> lock{fifoLock};
+    std::scoped_lock lock{fifoLock};
     closedFlag = true;
     cv.notify_all();
   }
@@ -164,7 +162,7 @@ public:
    * default but can be disabled by a call to close().
    */
   void open() {
-    std::scoped_lock<std::mutex> lock{fifoLock};
+    std::scoped_lock lock{fifoLock};
     closedFlag = false;
   }
 
@@ -173,8 +171,8 @@ public:
    * If returning true the call to pop_wait() will not wait but return
    * immediately wither with an item if available or with an empty std::optional
    */
-  bool isClosed() {
-    std::scoped_lock<std::mutex> lock{fifoLock};
+  bool isClosed() const {
+    std::scoped_lock lock{fifoLock};
     return closedFlag;
   }
 
@@ -182,7 +180,7 @@ public:
    * Checks if fif queue is empty.
    */
   bool empty() const {
-    std::scoped_lock<std::mutex> lock{fifoLock};
+    std::scoped_lock lock{fifoLock};
     return fifo.empty();
   }
 
@@ -190,10 +188,9 @@ public:
    * Number of items in the fifo queue.
    */
   std::size_t size() const {
-    std::scoped_lock<std::mutex> lock{fifoLock};
+    std::scoped_lock lock{fifoLock};
     return fifo.size();
   }
-
 };
 
-#endif //FRANKYCPP_FIFO_H
+#endif// FRANKYCPP_FIFO_H
