@@ -23,7 +23,6 @@
 #include <condition_variable>
 #include <functional>
 #include <future>
-#include <iostream>
 #include <queue>
 #include <thread>
 #include <vector>
@@ -55,7 +54,7 @@ public:
   auto enqueue (T task) -> std::future<decltype (task ())> {
     auto wrapper = std::make_shared<std::packaged_task<decltype (task ()) ()>> (std::move (task));
     { // lock block
-      std::unique_lock<std::mutex> lock{ mEventMutex };
+      std::unique_lock lock{ mEventMutex };
       mTasks.emplace ([=] { (*wrapper) (); });
     }
     mEventVar.notify_one ();
@@ -64,7 +63,7 @@ public:
 
   /* Return the number of open (not started) tasks */
   auto openTasks () {
-    std::unique_lock<std::mutex> lock{ mEventMutex };
+    std::unique_lock lock{ mEventMutex };
     return mTasks.size ();
   }
 
