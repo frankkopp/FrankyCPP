@@ -71,9 +71,7 @@ TEST_F(TestSuite_Test, readFile) {
 }
 
 TEST_F(TestSuite_Test, franky_test) {
-  UciHandler uciHandler{};
-  UciOptions::getInstance()->resetToDefaults(&uciHandler);
-  UciOptions::getInstance()->setOption(&uciHandler, "OwnBook", "false");
+  CONFIG_OVERRIDE(s.USE_BOOK = false);
   constexpr auto moveTime{1s};
   constexpr Depth depth{0};
   std::string filePath = FrankyCPP_PROJECT_ROOT;
