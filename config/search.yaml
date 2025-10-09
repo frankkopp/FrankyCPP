@@ -3,7 +3,7 @@
 # Note: The large LMR_REDUCTION table is intentionally omitted and will be moved to code later.
 
 # Debugging and profiling options
-CONFIG_DUMMY: "yaml-file"
+CONFIG_SOURCE: "yaml-file"
 
 # Fixed overhead (milliseconds) deducted from available time per move to account for engine housekeeping
 MOVE_OVERHEAD_MS: 10

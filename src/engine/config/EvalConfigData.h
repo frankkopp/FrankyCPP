@@ -34,7 +34,7 @@ namespace engine::config {
   // if no YAML config file is found or a value is missing in the file.
   struct EvalConfigData {
     // Debug
-    std::string EVAL_CONFIG_DUMMY = "fallback";
+    std::string EVAL_CONFIG_SOURCE = "fallback";
 
     // master toggles
     bool USE_MATERIAL   = true;
@@ -145,7 +145,7 @@ namespace YAML {
   struct convert<engine::config::EvalConfigData> {
     static Node encode(const engine::config::EvalConfigData& c) {
       Node n;
-      n["EVAL_CONFIG_DUMMY"]            = c.EVAL_CONFIG_DUMMY;
+      n["EVAL_CONFIG_SOURCE"]            = c.EVAL_CONFIG_SOURCE;
       n["USE_MATERIAL"]                 = c.USE_MATERIAL;
       n["USE_POSITIONAL"]               = c.USE_POSITIONAL;
       n["USE_TEMPO"]                    = c.USE_TEMPO;
@@ -212,7 +212,7 @@ namespace YAML {
       using engine::config::yaml::set_if_present;
       std::unordered_set<std::string> seen;
 
-      set_if_present(n, "EVAL_CONFIG_DUMMY", c.EVAL_CONFIG_DUMMY, seen);
+      set_if_present(n, "EVAL_CONFIG_SOURCE", c.EVAL_CONFIG_SOURCE, seen);
       set_if_present(n, "USE_MATERIAL", c.USE_MATERIAL, seen);
       set_if_present(n, "USE_POSITIONAL", c.USE_POSITIONAL, seen);
       set_if_present(n, "USE_TEMPO", c.USE_TEMPO, seen);

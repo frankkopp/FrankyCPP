@@ -50,8 +50,8 @@ namespace engine::config {
     defaultEval_   = currentEval_;
 
 
-    currentSearch_.CONFIG_DUMMY    = "current";
-    currentEval_.EVAL_CONFIG_DUMMY = "current";
+    currentSearch_.CONFIG_SOURCE    = "current";
+    currentEval_.EVAL_CONFIG_SOURCE = "current";
   }
 
   void ConfigManager::resetToDefaults() {

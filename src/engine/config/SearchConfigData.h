@@ -36,7 +36,7 @@ namespace engine::config {
   // if no YAML config file is found or a value is missing in the file.
   struct SearchConfigData {
     // debug
-    std::string CONFIG_DUMMY = "fallback";
+    std::string CONFIG_SOURCE = "fallback";
 
     // time mgmt
     int MOVE_OVERHEAD_MS = 10;
@@ -156,7 +156,7 @@ template<>
 struct YAML::convert<engine::config::SearchConfigData> {
   static Node encode(const engine::config::SearchConfigData& c) {
     Node n;
-    n["CONFIG_DUMMY"] = c.CONFIG_DUMMY;
+    n["CONFIG_SOURCE"] = c.CONFIG_SOURCE;
 
     n["MOVE_OVERHEAD_MS"]    = c.MOVE_OVERHEAD_MS;
     n["USE_BOOK"]            = c.USE_BOOK;
@@ -240,7 +240,7 @@ struct YAML::convert<engine::config::SearchConfigData> {
     using engine::config::yaml::set_if_present;
     std::unordered_set<std::string> seen;
 
-    set_if_present(n, "CONFIG_DUMMY", c.CONFIG_DUMMY, seen);
+    set_if_present(n, "CONFIG_SOURCE", c.CONFIG_SOURCE, seen);
     set_if_present(n, "MOVE_OVERHEAD_MS", c.MOVE_OVERHEAD_MS, seen);
     set_if_present(n, "USE_BOOK", c.USE_BOOK, seen);
     set_if_present(n, "BOOK_PATH", c.BOOK_PATH, seen);

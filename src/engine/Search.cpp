@@ -63,7 +63,7 @@ void Search::startSearch(const Position& p, SearchLimits sl) {
   }
 
   // DEBUG to test the new config approach
-  LOG__INFO(Logger::get().SEARCH_LOG, "DEBUG: CONFIG_DUMMY: {}", SearchConfig.CONFIG_DUMMY);
+  LOG__INFO(Logger::get().SEARCH_LOG, "DEBUG: CONFIG_SOURCE: {}", SearchConfig.CONFIG_SOURCE);
 
   // start search time
   startTime       = currentTime();

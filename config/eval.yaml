@@ -2,7 +2,7 @@
 # Mirrors defaults in src/engine/EvalConfig.h
 
 # Debugging
-EVAL_CONFIG_DUMMY: "yaml-file"
+EVAL_CONFIG_SOURCE: "yaml-file"
 
 # Enable base material evaluation (piece values)
 USE_MATERIAL: true
