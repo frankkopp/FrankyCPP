@@ -118,6 +118,9 @@ TEST_F(TestSuite_Test, crafty_test) {
   ts.runTestSuite();
 }
 
+// 9.10.2025 v0.6
+// Successful: 521 (67 %)
+// Failed:     248 (32 %)
 TEST_F(TestSuite_Test, ecm98_test) {
   if (isBulkRun()) {
     GTEST_SKIP();

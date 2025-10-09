@@ -5,12 +5,13 @@ Master
 [![CMake](https://github.com/frankkopp/FrankyCPP/actions/workflows/cmake.yml/badge.svg)](https://github.com/frankkopp/FrankyCPP/actions/workflows/cmake.yml)
 [![CodeQL](https://github.com/frankkopp/FrankyCPP/actions/workflows/codeql-analysis.yml/badge.svg?branch=master)](https://github.com/frankkopp/FrankyCPP/actions/workflows/codeql-analysis.yml)
 
-dev_v0.6
-[![CMake](https://github.com/frankkopp/FrankyCPP/actions/workflows/cmake.yml/badge.svg?branch=dev_v0.6)](https://github.com/frankkopp/FrankyCPP/actions/workflows/cmake.yml)
-[![CodeQL](https://github.com/frankkopp/FrankyCPP/actions/workflows/codeql-analysis.yml/badge.svg?branch=dev_v0.6)](https://github.com/frankkopp/FrankyCPP/actions/workflows/codeql-analysis.yml)
+dev_v0.7
+[![CMake](https://github.com/frankkopp/FrankyCPP/actions/workflows/cmake.yml/badge.svg?branch=dev_v0.7)](https://github.com/frankkopp/FrankyCPP/actions/workflows/cmake.yml)
+[![CodeQL](https://github.com/frankkopp/FrankyCPP/actions/workflows/codeql-analysis.yml/badge.svg?branch=dev_v0.7)](https://github.com/frankkopp/FrankyCPP/actions/workflows/codeql-analysis.yml)
 
 ## Version
-v0.6 (in development)
+v0.7 <in development> new configuration framework
+v0.6 Enhanced search, enhanced logging
 v0.5 Enhanced eval and move to wrapper classes for Bitboard, Square, Move, etc.
 v0.4 Simple eval
 v0.3 Migration from FrankyGo
