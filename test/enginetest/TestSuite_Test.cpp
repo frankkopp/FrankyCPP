@@ -94,6 +94,9 @@ TEST_F(TestSuite_Test, mate_test) {
   ts.runTestSuite();
 }
 
+// Date:       2025-10-09 17:29:56 v0.6
+// Successful: 193 (96 %)
+// Failed:     8   (3 %)
 TEST_F(TestSuite_Test, wac_test) {
   if (isBulkRun()) {
     GTEST_SKIP();
@@ -106,6 +109,9 @@ TEST_F(TestSuite_Test, wac_test) {
   ts.runTestSuite();
 }
 
+// 9.10.2025 v0.6
+// Successful: 181 (52 %)
+// Failed:     164 (47 %)
 TEST_F(TestSuite_Test, crafty_test) {
   if (isBulkRun()) {
     GTEST_SKIP();
