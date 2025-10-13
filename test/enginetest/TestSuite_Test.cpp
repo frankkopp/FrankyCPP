@@ -82,6 +82,9 @@ TEST_F(TestSuite_Test, franky_test) {
   ASSERT_EQ(13, ts.getLastResult().successCounter);
 }
 
+// Date:       2025-10-13 13:17:50 v0.6
+// Successful: 14  (70 %)
+// Failed:     6   (30 %)
 TEST_F(TestSuite_Test, mate_test) {
   if (isBulkRun()) {
     GTEST_SKIP();
