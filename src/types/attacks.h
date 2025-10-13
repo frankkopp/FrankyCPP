@@ -51,7 +51,7 @@ namespace Attacks {
     // ------------------------------------------------------------
     // constexpr helpers
     // ------------------------------------------------------------
-    constexpr unsigned popcount_ce(Bitboard b) {
+    consteval unsigned popcount_ce(Bitboard b) {
       unsigned c = 0;
       while (b) {
         b &= b - static_cast<Bitboard>(1);
@@ -75,7 +75,7 @@ namespace Attacks {
     struct Magic {
       Bitboard mask{};
       uint32_t offset{};// start index into global attack table
-      [[nodiscard]] constexpr unsigned index(const Bitboard occupied) const {
+      constexpr unsigned index(const Bitboard occupied) const {
 #ifdef HAS_PEXT
         if (!std::is_constant_evaluated())
           return static_cast<unsigned>(_pext_u64(occupied, mask));
@@ -89,27 +89,27 @@ namespace Attacks {
     constexpr Direction BDirs[4] = {NORTH_EAST, SOUTH_EAST, SOUTH_WEST, NORTH_WEST};
 
     // Edge / mask helpers
-    constexpr Bitboard edgeMaskFor(const unsigned s) {
+    consteval Bitboard edgeMaskFor(const unsigned s) {
       return (Rank1BB | Rank8BB) & ~Bitboards::sqToRankBb[s] | ((FileABB | FileHBB) & ~Bitboards::sqToFileBb[s]);
     }
-    constexpr Bitboard rookMaskFor(const unsigned s) {
+    consteval Bitboard rookMaskFor(const unsigned s) {
       return (Bitboards::rays[N][s] | Bitboards::rays[S][s] | Bitboards::rays[E][s] | Bitboards::rays[W][s]) & ~edgeMaskFor(s);
     }
-    constexpr Bitboard bishopMaskFor(const unsigned s) {
+    consteval Bitboard bishopMaskFor(const unsigned s) {
       return (Bitboards::rays[NE][s] | Bitboards::rays[NW][s] | Bitboards::rays[SE][s] | Bitboards::rays[SW][s]) & ~edgeMaskFor(s);
     }
 
-    constexpr std::array<Bitboard, SQ_LENGTH> makeRookMasks() {
+    consteval std::array<Bitboard, SQ_LENGTH> makeRookMasks() {
       std::array<Bitboard, SQ_LENGTH> a{};
       for (unsigned s = 0; s < SQ_LENGTH; ++s) a[s] = rookMaskFor(s);
       return a;
     }
-    constexpr std::array<Bitboard, SQ_LENGTH> makeBishopMasks() {
+    consteval std::array<Bitboard, SQ_LENGTH> makeBishopMasks() {
       std::array<Bitboard, SQ_LENGTH> a{};
       for (unsigned s = 0; s < SQ_LENGTH; ++s) a[s] = bishopMaskFor(s);
       return a;
     }
-    constexpr std::array<uint32_t, SQ_LENGTH + 1> makeOffsets(const std::array<Bitboard, SQ_LENGTH>& masks) {
+    consteval std::array<uint32_t, SQ_LENGTH + 1> makeOffsets(const std::array<Bitboard, SQ_LENGTH>& masks) {
       std::array<uint32_t, SQ_LENGTH + 1> off{};
       off[0] = 0;
       for (unsigned s = 0; s < SQ_LENGTH; ++s) {
@@ -117,7 +117,7 @@ namespace Attacks {
       }
       return off;
     }
-    constexpr std::array<Magic, SQ_LENGTH> makeMagics(const std::array<Bitboard, SQ_LENGTH>& masks,
+    consteval std::array<Magic, SQ_LENGTH> makeMagics(const std::array<Bitboard, SQ_LENGTH>& masks,
                                                       const std::array<uint32_t, SQ_LENGTH + 1>& offsets) {
       std::array<Magic, SQ_LENGTH> m{};
       for (unsigned s = 0; s < SQ_LENGTH; ++s)

@@ -44,9 +44,9 @@ public:
   constexpr operator int() const { return v_; }
 
   // Queries
-  [[nodiscard]] constexpr bool isEmpty() const { return v_ == 0; }
-  [[nodiscard]] constexpr bool hasAny(const CastlingRights other) const { return (v_ & other.v_) != 0; }
-  [[nodiscard]] constexpr bool hasAll(const CastlingRights other) const { return (v_ & other.v_) == other.v_; }
+  constexpr bool isEmpty() const { return v_ == 0; }
+  constexpr bool hasAny(const CastlingRights other) const { return (v_ & other.v_) != 0; }
+  constexpr bool hasAll(const CastlingRights other) const { return (v_ & other.v_) == other.v_; }
 
   // Mutating bitwise-combining operators (use OR and AND-NOT semantics)
   constexpr CastlingRights& operator+=(const CastlingRights rhs) {
