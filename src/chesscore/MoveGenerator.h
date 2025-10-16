@@ -59,15 +59,15 @@ class MoveGenerator {
   std::size_t takeIndex           = 0;
   enum onDemandStage {
     OD_NEW,
-    PV,
-    OD1,
-    OD2,
-    OD3,
-    OD4,
-    OD5,
-    OD6,
-    OD7,
-    OD8,
+    PV_MOVE,
+    PAWN_CAPTURES,
+    OFFICER_CAPTURES,
+    KING_CAPTURES,
+    QUIET_SWITCH,
+    PAWN_MOVES,
+    CASTLING_MOVES,
+    OFFICER_MOVES,
+    KING_MOVES,
     OD_END
   };
   onDemandStage currentODStage;

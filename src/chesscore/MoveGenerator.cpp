@@ -123,7 +123,7 @@ Move MoveGenerator::getNextPseudoLegalMove(const Position& p, const GenMode genM
     // Handle PvMove
     // if we pushed a pv move and the list is not empty we check if the pv is the
     // next move in list and skip it.
-    if (currentODStage != OD1 && pvMovePushed && onDemandMoves[takeIndex].stripped() == pvMove.stripped()) {
+    if (currentODStage != PAWN_CAPTURES && pvMovePushed && onDemandMoves[takeIndex].stripped() == pvMove.stripped()) {
 
       // skip pv move
       takeIndex++;
@@ -459,9 +459,9 @@ void MoveGenerator::fillOnDemandMoveList(const Position& position, const GenMode
   while (onDemandMoves.empty() && currentODStage < OD_END) {
     switch (currentODStage) {
       case OD_NEW:
-        currentODStage = PV;
+        currentODStage = PV_MOVE;
         [[fallthrough]];
-      case PV:
+      case PV_MOVE:
         // If a pvMove is set we return it first and filter it out before
         // returning a move
         assert(!pvMovePushed && "Stage PV should not have pvMovePushed set");
@@ -490,53 +490,53 @@ void MoveGenerator::fillOnDemandMoveList(const Position& position, const GenMode
         // decide which state we should continue with
         // captures or non captures or both
         if (genMode & GenNonQuiet) {
-          currentODStage = OD1;
+          currentODStage = PAWN_CAPTURES;
         }
         else {
-          currentODStage = OD4;
+          currentODStage = QUIET_SWITCH;
         }
         break;
-      case OD1:// capture
+      case PAWN_CAPTURES:// capture
         generatePawnMoves(position, &onDemandMoves, GenNonQuiet, evasion, onDemandEvasionTargets);
         updateSortValues(position, &onDemandMoves);
-        currentODStage = OD2;
+        currentODStage = OFFICER_CAPTURES;
         break;
-      case OD2:
+      case OFFICER_CAPTURES:
         generateMoves(position, &onDemandMoves, GenNonQuiet, evasion, onDemandEvasionTargets);
         updateSortValues(position, &onDemandMoves);
-        currentODStage = OD3;
+        currentODStage = KING_CAPTURES;
         break;
-      case OD3:
+      case KING_CAPTURES:
         generateKingMoves(position, &onDemandMoves, GenNonQuiet, evasion);
         updateSortValues(position, &onDemandMoves);
-        currentODStage = OD4;
+        currentODStage = QUIET_SWITCH;
         break;
-      case OD4:
+      case QUIET_SWITCH:
         if (genMode & GenQuiet) {
-          currentODStage = OD5;
+          currentODStage = PAWN_MOVES;
         }
         else {
           currentODStage = OD_END;
         }
         break;
-      case OD5:// non capture
+      case PAWN_MOVES:// non capture
         generatePawnMoves(position, &onDemandMoves, GenQuiet, evasion, onDemandEvasionTargets);
         updateSortValues(position, &onDemandMoves);
-        currentODStage = OD6;
+        currentODStage = CASTLING_MOVES;
         break;
-      case OD6:
+      case CASTLING_MOVES:
         if (!evasion) {
           generateCastling(position, &onDemandMoves, GenQuiet);
           updateSortValues(position, &onDemandMoves);
         }
-        currentODStage = OD7;
+        currentODStage = OFFICER_MOVES;
         break;
-      case OD7:
+      case OFFICER_MOVES:
         generateMoves(position, &onDemandMoves, GenQuiet, evasion, onDemandEvasionTargets);
         updateSortValues(position, &onDemandMoves);
-        currentODStage = OD8;
+        currentODStage = KING_MOVES;
         break;
-      case OD8:
+      case KING_MOVES:
         generateKingMoves(position, &onDemandMoves, GenQuiet, evasion);
         updateSortValues(position, &onDemandMoves);
         currentODStage = OD_END;
