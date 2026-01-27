@@ -281,6 +281,8 @@ The `types/` directory contains well-designed value types:
 | E6 | NNUE evaluation | 🔴 High (4-8 weeks) | 🔴 High | Implement efficiently updatable neural network evaluation. Major undertaking. |
 | E7 | Parameter tuning infrastructure | 🟡 Medium (1-2 weeks) | 🟡 Medium | Add SPSA/Texel tuning framework for the 100+ configurable parameters. |
 | E8 | Best-move instability time mgmt | 🟢 Low (2-3 days) | 🟡 Medium | Allocate more time when best move changes frequently between iterations. |
+| E9 | Selective checks in quiescence | 🟡 Medium (3-5 days) | 🟡 Medium | Search quiet checking moves after capture phase to find short mates. |
+| E10 | Check extensions | 🟢 Low (2-3 days) | 🟡 Medium | Extend +1 ply when a check leaves opponent with ≤2 legal replies. |
 
 ---
 
@@ -329,7 +331,7 @@ The `types/` directory contains well-designed value types:
 
 | # | Item | Effort | Status | Notes |
 |---|------|--------|--------|-------|
-| C1 | Consolidate ToDo files | 🟢 1-2 hours | ⬜ TODO | Merge ToDo.md + ToDo2.md |
+| C1 | Consolidate ToDo files | 🟢 1-2 hours | ✅ DONE | Deleted ToDo.md + ToDo2.md (obsolete/implemented items) |
 | C2 | Update copyright years | 🟢 1 hour | ⬜ TODO | 2018-2021 → 2018-2026 |
 | C3 | Clean up commented code | 🟡 2-3 days | ⬜ TODO | Remove/document dead code |
 | C4 | Standardize header guards | 🟢 1-2 hours | ⬜ TODO | Consistent `FRANKYCPP_*` |
@@ -369,6 +371,8 @@ The `types/` directory contains well-designed value types:
 | E6 | NNUE evaluation | 🔴 4-8 weeks | ⬜ TODO | Major undertaking |
 | E7 | Parameter tuning infrastructure | 🟡 1-2 weeks | ⬜ TODO | SPSA/Texel tuning |
 | E8 | Best-move instability time mgmt | 🟢 2-3 days | ⬜ TODO | Dynamic time allocation |
+| E9 | Selective checks in quiescence | 🟡 3-5 days | ⬜ TODO | Search checking moves after captures |
+| E10 | Check extensions | 🟢 2-3 days | ⬜ TODO | Extend when few legal replies to check |
 
 ---
 
