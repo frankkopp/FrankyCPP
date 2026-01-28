@@ -2,7 +2,7 @@
 
 #
 # FrankyCPP
-# Copyright (c) 2018-2021 Frank Kopp
+# Copyright (c) 2018-2026 Frank Kopp
 #
 # MIT License
 # Permission is hereby granted, free of charge, to any person obtaining a copy
