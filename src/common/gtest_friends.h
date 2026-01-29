@@ -20,8 +20,12 @@
 // FrankyCPP
 // Minimal FRIEND_TEST macro for production headers without depending on GoogleTest.
 // This mirrors the expansion from gtest/gtest_prod.h but avoids including gtest.
-#pragma once
+#ifndef FRANKYCPP_GTEST_FRIENDS_H
+#define FRANKYCPP_GTEST_FRIENDS_H
+
 #ifndef FRIEND_TEST
   #define FRIEND_TEST(test_case_name, test_name) \
     friend class test_case_name##_##test_name##_Test
 #endif
+
+#endif // FRANKYCPP_GTEST_FRIENDS_H

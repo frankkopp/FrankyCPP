@@ -17,7 +17,8 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#pragma once
+#ifndef FRANKYCPP_YAMLHELPERS_H
+#define FRANKYCPP_YAMLHELPERS_H
 
 #include <array>
 #include <string>
@@ -51,3 +52,5 @@ namespace engine::config::yaml {
   }
 
 }// namespace engine::config::yaml
+
+#endif // FRANKYCPP_YAMLHELPERS_H

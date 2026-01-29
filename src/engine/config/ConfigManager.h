@@ -17,7 +17,8 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#pragma once
+#ifndef FRANKYCPP_CONFIGMANAGER_H
+#define FRANKYCPP_CONFIGMANAGER_H
 
 #include <filesystem>
 #include <optional>
@@ -137,3 +138,5 @@ namespace engine::config {
 //    s.USE_PVS = true;          // enable PVS
 // CONFIG_OVERRIDE_END();
 #define CONFIG_OVERRIDE_END() })
+
+#endif // FRANKYCPP_CONFIGMANAGER_H

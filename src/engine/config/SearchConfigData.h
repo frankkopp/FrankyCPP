@@ -17,7 +17,8 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#pragma once
+#ifndef FRANKYCPP_SEARCHCONFIGDATA_H
+#define FRANKYCPP_SEARCHCONFIGDATA_H
 
 #include <array>
 #include <sstream>
@@ -312,3 +313,5 @@ struct YAML::convert<engine::config::SearchConfigData> {
     return true;
   }
 };// namespace YAML
+
+#endif // FRANKYCPP_SEARCHCONFIGDATA_H

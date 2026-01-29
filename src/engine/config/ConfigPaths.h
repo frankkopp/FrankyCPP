@@ -17,7 +17,8 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#pragma once
+#ifndef FRANKYCPP_CONFIGPATHS_H
+#define FRANKYCPP_CONFIGPATHS_H
 
 #include <filesystem>
 
@@ -35,3 +36,5 @@ namespace ConfigPaths {
         return std::filesystem::path("config") / "eval.yaml";
     }
 }
+
+#endif // FRANKYCPP_CONFIGPATHS_H

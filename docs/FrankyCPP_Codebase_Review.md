@@ -334,7 +334,7 @@ The `types/` directory contains well-designed value types:
 | C1 | Consolidate ToDo files | 🟢 1-2 hours | ✅ DONE | Deleted ToDo.md + ToDo2.md (obsolete/implemented items) |
 | C2 | Update copyright years | 🟢 1 hour | ✅ DONE | 2018-2021 → 2018-2026 (all source files) |
 | C3 | Clean up commented code | 🟡 2-3 days | ⬜ TODO | Remove/document dead code |
-| C4 | Standardize header guards | 🟢 1-2 hours | ⬜ TODO | Consistent `FRANKYCPP_*` |
+| C4 | Standardize header guards | 🟢 1-2 hours | ✅ DONE | Converted 6 `#pragma once` to `FRANKYCPP_*` guards |
 | C5 | Update CI version references | 🟢 1-2 hours | ⬜ TODO | v0.5 → parameterized |
 
 #### Documentation (D)
@@ -377,4 +377,4 @@ The `types/` directory contains well-designed value types:
 ---
 
 *Review conducted: 2026-01-26*  
-*Last updated: 2026-01-27*
+*Last updated: 2026-01-30*
