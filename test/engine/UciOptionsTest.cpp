@@ -46,7 +46,7 @@ protected:
 };
 
 TEST_F(UciOptionsTest, initAndStr) {
-  const UciOptions* pUciOptions = UciOptions::getInstance();
+  UciOptions* pUciOptions = UciOptions::getInstance();
   UciHandler uciHandler{};
 
   auto o = pUciOptions->getOption("Clear Hash");
@@ -65,13 +65,13 @@ TEST_F(UciOptionsTest, initAndStr) {
 }
 
 TEST_F(UciOptionsTest, getOption) {
-  const UciOptions* pUciOptions = UciOptions::getInstance();
-  const auto o                  = pUciOptions->getOption("Clear Hash");
+  UciOptions* pUciOptions = UciOptions::getInstance();
+  const auto *const o                  = pUciOptions->getOption("Clear Hash");
   EXPECT_EQ("Clear Hash", o->nameID);
 }
 
 TEST_F(UciOptionsTest, setOption) {
-  const UciOptions* pUciOptions = UciOptions::getInstance();
+   UciOptions* pUciOptions = UciOptions::getInstance();
   UciHandler uciHandler{};
 
   const auto o = pUciOptions->getOption("Hash");
@@ -88,7 +88,7 @@ TEST_F(UciOptionsTest, setOption) {
 }
 
 TEST_F(UciOptionsTest, resetToDefaults_restores_defaults_and_applies_handlers) {
-  const UciOptions* pUciOptions = UciOptions::getInstance();
+  UciOptions* pUciOptions = UciOptions::getInstance();
   UciHandler uciHandler{};
 
   // Gather some options and their defaults
@@ -134,7 +134,7 @@ TEST_F(UciOptionsTest, resetToDefaults_restores_defaults_and_applies_handlers) {
 }
 
 TEST_F(UciOptionsTest, resetButton_exists_and_resets) {
-  const UciOptions* pUciOptions = UciOptions::getInstance();
+  UciOptions* pUciOptions = UciOptions::getInstance();
   UciHandler uciHandler{};
 
   const auto oReset = pUciOptions->getOption("Reset to Defaults");
@@ -171,7 +171,7 @@ TEST_F(UciOptionsTest, resetButton_exists_and_resets) {
 }
 
 TEST_F(UciOptionsTest, searchConfig_nonArray_options_present_and_settable) {
-  const UciOptions* pUciOptions = UciOptions::getInstance();
+  UciOptions* pUciOptions = UciOptions::getInstance();
   UciHandler uciHandler{};
 
   // Presence checks for newly added options

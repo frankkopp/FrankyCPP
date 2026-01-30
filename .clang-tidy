@@ -1,0 +1,32 @@
+# clang-tidy configuration for FrankyCPP
+---
+Checks: >
+  clang-analyzer-*,
+  bugprone-*,
+  performance-*,
+  modernize-*,
+  readability-*,
+  cppcoreguidelines-*,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -readability-identifier-naming,
+  -readability-identifier-length,
+  -readability-implicit-bool-conversion,
+  -readability-magic-numbers,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-avoid-non-const-global-variables,
+  -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cppcoreguidelines-pro-type-vararg,
+  -cppcoreguidelines-macro-usage,
+  -modernize-use-trailing-return-type,
+  -modernize-use-using,
+  -modernize-use-auto,
+  -modernize-use-nodiscard,
+  -bugprone-easily-swappable-parameters
+WarningsAsErrors: ''
+HeaderFilterRegex: '^(src|test|testbench)/'
+FormatStyle: file
+CheckOptions:
+  - { key: readability-braces-around-statements.ShortStatementLines, value: 2 }
+...

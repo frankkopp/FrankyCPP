@@ -81,7 +81,7 @@ private:
   bool handleCommand(const std::string& cmd);
   void uciCommand() const;
   void isReadyCommand() const;
-  void setOptionCommand(std::istringstream& inStream) const;
+  void setOptionCommand(std::istringstream& inStream);
   void uciNewGameCommand() const;
 
   void positionCommand(std::istringstream& inStream);

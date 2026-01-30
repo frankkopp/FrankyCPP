@@ -28,11 +28,11 @@
 
 static constexpr bool REMOVE_SORT_VALUE = true;
 
-MoveGenerator::MoveGenerator() {
+MoveGenerator::MoveGenerator() :
+  currentODStage(OD_NEW) {
   pseudoLegalMoves.reserve(MAX_MOVES);
   legalMoves.reserve(MAX_MOVES);
   onDemandMoves.reserve(MAX_MOVES);
-  currentODStage = OD_NEW;
 }
 
 const MoveList* MoveGenerator::generatePseudoLegalMoves(const Position& p, const GenMode genMode, const bool evasion) {
@@ -194,25 +194,26 @@ bool MoveGenerator::hasLegalMove(const Position& position) {
   // and return immediately if we found one.
   // The order of our search is from approx. the most likely to the least likely
 
-  const Color us          = position.getNextPlayer();
-  const Color them        = ~us;
-  const Bitboard ourBb    = position.getOccupiedBb(us);
-  const Bitboard theirBb  = position.getOccupiedBb(them);
-  const Bitboard ourPawns = position.getPieceBb(us, PAWN);
+  const Color us = position.getNextPlayer();
 
   // KING
   const Square kingSquare = position.getKingSquare(us);
+  const Bitboard ourBb    = position.getOccupiedBb(us);
   Bitboard tmpMoves       = Attacks::attacks(KING, kingSquare, BbZero) & ~ourBb;
   while (tmpMoves) {
     const Square toSquare = tmpMoves.popLSB();
     if (position.isLegalMove(Move(kingSquare, toSquare))) return true;
   }
 
+  const Color them        = ~us;
+  const Bitboard ourPawns = position.getPieceBb(us, PAWN);
+  const Bitboard occupied = position.getOccupiedBb();
+
   // PAWNS
 
   // pawns - check step one to unoccupied squares
-  tmpMoves                = ourPawns.shifted(Direction::pawnPush(us)) & ~position.getOccupiedBb();
-  Bitboard tmpMovesDouble = (tmpMoves & Bitboards::rankBb[Rank::pawnDoubleFor(us)]).shifted(Direction::pawnPush(us)) & ~position.getOccupiedBb();
+  tmpMoves                = ourPawns.shifted(Direction::pawnPush(us)) & ~occupied;
+  Bitboard tmpMovesDouble = (tmpMoves & Bitboards::rankBb[Rank::pawnDoubleFor(us)]).shifted(Direction::pawnPush(us)) & ~occupied;
 
   while (tmpMoves) {
     const Square toSquare   = tmpMoves.popLSB();
@@ -227,11 +228,13 @@ bool MoveGenerator::hasLegalMove(const Position& position) {
     if (position.isLegalMove(Move(fromSquare, toSquare))) return true;
   }
 
+  const Bitboard theirBb = position.getOccupiedBb(them);
+
   // normal pawn captures to the west - promotions first
   tmpMoves = ourPawns.shifted(Direction::pawnPush(us) + WEST) & theirBb;
   while (tmpMoves) {
     const Square toSquare   = tmpMoves.popLSB();
-    const Square fromSquare = toSquare.pawnPush(them) + EAST;
+    const Square fromSquare = toSquare.pawnPush(them) - WEST;
     if (position.isLegalMove(Move(fromSquare, toSquare))) return true;
   }
 
@@ -239,7 +242,7 @@ bool MoveGenerator::hasLegalMove(const Position& position) {
   tmpMoves = ourPawns.shifted(Direction::pawnPush(us) + EAST) & theirBb;
   while (tmpMoves) {
     const Square toSquare   = tmpMoves.popLSB();
-    const Square fromSquare = toSquare.pawnPush(them) + WEST;
+    const Square fromSquare = toSquare.pawnPush(them) - EAST;
     if (position.isLegalMove(Move(fromSquare, toSquare))) return true;
   }
 
@@ -248,7 +251,7 @@ bool MoveGenerator::hasLegalMove(const Position& position) {
     Bitboard pieces = position.getPieceBb(us, pt);
     while (pieces) {
       const Square fromSquare = pieces.popLSB();
-      Bitboard moves          = Attacks::attacks(pt, fromSquare, position.getOccupiedBb()) & ~ourBb;
+      Bitboard moves          = Attacks::attacks(pt, fromSquare, occupied) & ~ourBb;
       while (moves) {
         const Square toSquare = moves.popLSB();
         if (position.isLegalMove(Move(fromSquare, toSquare))) return true;
@@ -259,20 +262,14 @@ bool MoveGenerator::hasLegalMove(const Position& position) {
   // en passant captures
   const Square enPassantSquare = position.getEnPassantSquare();
   if (enPassantSquare != SQ_NONE) {
-    // left
-    tmpMoves = Bitboards::sqBb[enPassantSquare].shifted(Direction::pawnPush(them) + WEST) & ourPawns;
-    if (tmpMoves) {
-      const Square fromSquare = tmpMoves.lsb();
-      if (position.isLegalMove(Move::enPassant(fromSquare, fromSquare + Direction::pawnPush(us) + EAST))) {
-        return true;
-      }
-    }
-    // right
-    tmpMoves = Bitboards::sqBb[enPassantSquare].shifted(Direction::pawnPush(them) + EAST) & ourPawns;
-    if (tmpMoves) {
-      const Square fromSquare = tmpMoves.lsb();
-      if (position.isLegalMove(Move::enPassant(fromSquare, fromSquare + Direction::pawnPush(us) + WEST))) {
-        return true;
+    for (const Direction dir : {WEST, EAST}) {
+      tmpMoves = Bitboards::sqBb[enPassantSquare].shifted(Direction::pawnPush(them) + dir) & ourPawns;
+      if (tmpMoves) {
+        const Square fromSquare = tmpMoves.lsb();
+        const Square toSquare   = fromSquare + Direction::pawnPush(us) - dir;
+        if (position.isLegalMove(Move::enPassant(fromSquare, toSquare))) {
+          return true;
+        }
       }
     }
   }
@@ -561,13 +558,13 @@ void MoveGenerator::updateSortValues(const Position& p, MoveList* const moveList
   const auto size = moveList->size();
   for (size_t i = 0; i < size; i++) {
     Move* move = &(*moveList)[i];
-    if (move->stripped() == pvMove)// PV move
+    if (move->stripped() == pvMove) { // PV move
       move->setValue(VALUE_MAX);
-    else if (move->stripped() == killerMoves[1])// Killer 2
+    } else if (move->stripped() == killerMoves[1]) { // Killer 2
       move->setValue(static_cast<Value>(1000));
-    else if (move->stripped() == killerMoves[0])// Killer 1
+    } else if (move->stripped() == killerMoves[0]) { // Killer 1
       move->setValue(static_cast<Value>(1001));
-    else if (historyData) {// historical search data
+    } else if (historyData) {// historical search data
 
       // History Count
       // Moves that cause a beta cut in the search get an increasing value

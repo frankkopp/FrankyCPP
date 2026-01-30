@@ -67,8 +67,8 @@ namespace engine::config {
     // Load from YAML files (paths optional). If a path is not provided, use default ConfigPaths.
     // Return true on success. Missing files are not considered fatal and fall back to hard-coded values.
     // Malformed YAML returns false and preserves last good configuration.
-    bool loadFromFiles(std::optional<std::filesystem::path> searchPath = {},
-                       std::optional<std::filesystem::path> evalPath   = {});
+    bool loadFromFiles(const std::optional<std::filesystem::path>& searchPath = {},
+                       const std::optional<std::filesystem::path>& evalPath   = {});
 
     /// Apply ad-hoc runtime overrides to the currently active configuration.
     ///

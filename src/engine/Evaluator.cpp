@@ -283,7 +283,7 @@ inline void Evaluator::pieceEval(const Position& p, Score& s, const Color us, co
   }
 }
 
-inline void Evaluator::knightEval(const Position& p, Score& s, const Color us, Color, const Square sq) const {
+inline void Evaluator::knightEval(const Position& p, Score& s, const Color us, Color /*unused*/, const Square sq) const {
   if (EvalConfig.USE_KNIGHT_MOBILITY) {
     const Bitboard myOcc   = p.getOccupiedBb(us);
     const Bitboard attacks = Attacks::attacks(KNIGHT, sq, BbZero);
@@ -306,7 +306,7 @@ inline void Evaluator::knightEval(const Position& p, Score& s, const Color us, C
   }
 }
 
-inline void Evaluator::bishopEval(const Position& p, Score& s, const Color us, Color, const Square sq) const {
+inline void Evaluator::bishopEval(const Position& p, Score& s, const Color us, Color /*unused*/, const Square sq) const {
   // Mobility for bishops (Tier 1)
   if (EvalConfig.USE_BISHOP_MOBILITY) {
     const Bitboard myOcc    = p.getOccupiedBb(us);

@@ -298,7 +298,7 @@ The `types/` directory contains well-designed value types:
 | **Doxygen** | ❌ Missing | No Doxyfile, no `@param`/`@return` tags in code |
 | **docs/ folder** | 🟡 Fragmented | Multiple ToDo files (ToDo.md, ToDo2.md), some outdated content |
 | **clang-format** | ✅ Present | `.clang-format` exists and is well-configured |
-| **clang-tidy** | ❌ Missing | No `.clang-tidy` configuration file |
+| **clang-tidy** | ✅ Present | `.clang-tidy` added and configured for the project |
 | **API documentation** | ❌ Missing | No generated HTML/PDF docs for library consumers |
 | **Architecture docs** | 🟡 Partial | This review provides overview, but no dedicated architecture guide |
 
@@ -353,7 +353,7 @@ The `types/` directory contains well-designed value types:
 | # | Item | Effort | Status | Notes |
 |---|------|--------|--------|-------|
 | Q1 | Add CMakePresets.json | 🟢 2-4 hours | ✅ DONE | IDE-agnostic build profiles (Debug, Release, CI) |
-| Q2 | Add clang-tidy config | 🟢 2-4 hours | ⬜ TODO | Static analysis checks |
+| Q2 | Add clang-tidy config | 🟢 2-4 hours | ✅ DONE | `.clang-tidy` added with project-aligned checks and exclusions |
 | Q3 | Add `ENABLE_SANITIZERS` option | 🟢 2-4 hours | ⬜ TODO | ASan/UBSan for Debug |
 | Q4 | Enable GCC/Clang toolchains | 🟡 3-5 days | ⬜ TODO | Cross-platform testing |
 | Q5 | Reduce header coupling | 🟡 1-2 weeks | ⬜ TODO | Incremental refactoring |
@@ -379,4 +379,4 @@ The `types/` directory contains well-designed value types:
 ---
 
 *Review conducted: 2026-01-26*  
-*Last updated: 2026-01-30*
+*Last updated: 2026-01-31*

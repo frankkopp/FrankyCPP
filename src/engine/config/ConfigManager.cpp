@@ -35,20 +35,15 @@ namespace engine::config {
     return inst;
   }
 
-  ConfigManager::ConfigManager() {
-    // Initialize current values from a hard-coded fallback
-    currentSearch_ = fallbackSearch_;
-    currentEval_   = fallbackEval_;
+  ConfigManager::ConfigManager() : currentSearch_(fallbackSearch_), currentEval_(fallbackEval_), autoLoadAttempted_(true) {
 
     // Autoload from default YAML paths on the first instantiation.
-    autoLoadAttempted_ = true;
     lastLoadOk_        = loadFromFiles();
 
     // Capture the initially loaded configuration as "defaults" for future resets.
     // If YAML loading failed or was missing, this will equal the fallback values.
     defaultSearch_ = currentSearch_;
     defaultEval_   = currentEval_;
-
 
     currentSearch_.CONFIG_SOURCE    = "current";
     currentEval_.EVAL_CONFIG_SOURCE = "current";
@@ -66,8 +61,8 @@ namespace engine::config {
     return std::filesystem::exists(p, ec) && !ec;
   }
 
-  bool ConfigManager::loadFromFiles(std::optional<std::filesystem::path> searchPath,
-                                    std::optional<std::filesystem::path> evalPath) {
+  bool ConfigManager::loadFromFiles(const std::optional<std::filesystem::path>& searchPath,
+                                    const std::optional<std::filesystem::path>& evalPath) {
     const auto sPath = searchPath.value_or(ConfigPaths::SearchYaml());
     const auto ePath = evalPath.value_or(ConfigPaths::EvalYaml());
 

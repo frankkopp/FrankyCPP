@@ -36,8 +36,7 @@ std::ostream& operator<<(std::ostream& os, const TT::Entry& entry) {
   return os;
 }
 
-TT::TT(const uint64_t newSizeInMByte) {
-  noOfThreads = std::thread::hardware_concurrency();
+TT::TT(const uint64_t newSizeInMByte) : noOfThreads(std::thread::hardware_concurrency()) {
   if (noOfThreads == 0) noOfThreads = 1; // ensure at least one thread
   resize(newSizeInMByte);
 }

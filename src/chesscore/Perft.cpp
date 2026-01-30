@@ -25,9 +25,9 @@
 #include "chesscore/MoveGenerator.h"
 #include "chesscore/Position.h"
 
-Perft::Perft() { fen = START_POSITION_FEN; }
+Perft::Perft() : fen(START_POSITION_FEN) { }
 
-Perft::Perft(const std::string& f) { fen = f; }
+Perft::Perft(const std::string& f) : fen(f) { }
 
 void Perft::perft(const int maxDepth) { perft(maxDepth, false); }
 
@@ -53,7 +53,7 @@ void Perft::perft(const int maxDepth, const bool onDemand) {
     std::cerr << std::format("Fen for perft invalid: {}", e.what()) << std::endl;
     return;
   }
-  MoveGenerator mg[MAX_DEPTH];
+  std::array<MoveGenerator, MAX_DEPTH> mg;
   std::ostringstream os;
   std::cout.imbue(deLocale);
   os.imbue(deLocale);
@@ -68,11 +68,11 @@ void Perft::perft(const int maxDepth, const bool onDemand) {
   os.str("");
   os.clear();
 
-  uint64_t result;
+  uint64_t result = 0;
   const auto start = high_resolution_clock::now();
 
-  if (onDemand) { result = miniMaxOD(maxDepth, position, mg); }
-  else { result = miniMax(maxDepth, position, mg); }
+  if (onDemand) { result = miniMaxOD(maxDepth, position, mg.data()); }
+  else { result = miniMax(maxDepth, position, mg.data()); }
 
   if (stopFlag) {
     std::cout << "Perft stopped.";
@@ -186,7 +186,7 @@ void Perft::perft_divide(const int maxDepth, const bool onDemand) {
     std::cerr << std::format("Fen for perft invalid: {}", e.what()) << std::endl;
     return;
   }
-  MoveGenerator mg[MAX_DEPTH];
+  std::array<MoveGenerator, MAX_DEPTH> mg;
   std::ostringstream os;
   std::cout.imbue(deLocale);
   os.imbue(deLocale);
@@ -213,8 +213,8 @@ void Perft::perft_divide(const int maxDepth, const bool onDemand) {
       position.doMove(move);
       // only go into recursion if move was legal
       if (position.wasLegalMove()) {
-        if (onDemand) { totalNodes = miniMaxOD(maxDepth - 1, position, mg); }
-        else { totalNodes = miniMax(maxDepth - 1, position, mg); }
+        if (onDemand) { totalNodes = miniMaxOD(maxDepth - 1, position, mg.data()); }
+        else { totalNodes = miniMax(maxDepth - 1, position, mg.data()); }
         result += totalNodes;
       }
       position.undoMove();

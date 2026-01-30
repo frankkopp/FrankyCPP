@@ -19,7 +19,7 @@
 
 #include "ThreadPool.h"
 
-ThreadPool::ThreadPool(std::size_t numThreads) {
+ThreadPool::ThreadPool(const std::size_t numThreads) {
   start(numThreads);
 }
 

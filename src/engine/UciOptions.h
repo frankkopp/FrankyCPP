@@ -202,19 +202,19 @@ public:
   /// Finds an option by name.
   /// @param name  Option name (case-sensitive)
   /// @return      Pointer to the option, or nullptr if not found
-  [[nodiscard]] const UciOption* getOption(const std::string& name) const;
+  [[nodiscard]] UciOption* getOption(const std::string& name);
 
   /// Sets an option value and calls its handler.
   /// @param uciHandler  UCI handler for handler callback
   /// @param name        Option name
   /// @param value       New value as string
   /// @return            True if option was found and set, false otherwise
-  bool setOption(UciHandler* uciHandler, const std::string& name, const std::string& value) const;
+  bool setOption(UciHandler* uciHandler, const std::string& name, const std::string& value);
 
   /// Resets all options to their default values and applies handlers.
   /// BUTTON options are skipped.
   /// @param uciHandler  UCI handler for handler callbacks
-  void resetToDefaults(UciHandler* uciHandler) const;
+  void resetToDefaults(UciHandler* uciHandler);
 
   /// Returns UCI protocol representation for all options.
   /// Used in response to the "uci" command.

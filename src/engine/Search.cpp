@@ -322,8 +322,8 @@ SearchResult Search::iterativeDeepening(Position& p) {
   // Derive a root complexity factor for iteration gating using already generated rootMoves
   // This factor is used to scale the remaining time when checking if we have enough
   // time left to likely complete the next iteration.
-  // Factors >1.0 indicate higher complexity and increase time budget; <1.0 decrease it.
-  // This also checks for single legal move and reduces time in this case.
+  // Factors >1.0 indicate higher complexity and increase time budget; <1.0 decreases it.
+  // This also checks for a single legal move and reduces time in this case.
   const double rootComplexityFactor = computeComplexityFactorFromMoves(p, rootMoves);
   LOG__INFO(Logger::get().SEARCH_LOG, "Root complexity factor: {:.2f} (moves {}, inCheck {}, captures share ~)",
             rootComplexityFactor, rootMoves.size(), p.hasCheck());
@@ -889,9 +889,9 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 
   // Internal Iterative Deepening (IID)
   // https://www.chessprogramming.org/Internal_Iterative_Deepening
-  // Used when no best move from the tt is available from a previous
+  // Used when no best move from the tt is available from previous
   // searches. IID is used to find a good move to search first by
-  // searching the current position to a reduced depth, and using
+  // searching the current position to a reduced depth and using
   // the best move of that search as the first move at the real depth.
   // Does not make a big difference in search tree size when move
   // order already is good.
@@ -924,13 +924,13 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 
   // reset search
   // !important to do this after IID!
-  const auto myMg = &mg[ply];
+  auto *const myMg = &mg[ply];
   myMg->resetOnDemand();
   pv[ply].clear();
 
   // PV Move Sort
   // When we received a best move for the position from the
-  // TT or IID we set it as PV move in the move-gen so it will
+  // TT or IID, we set it as PV move in the move-gen so it will
   // be searched first.
   if (SearchConfig.USE_TT_PV_MOVE_SORT && ttMove != MOVE_NONE) {
     statistics.TtMoveUsed++;
@@ -1313,7 +1313,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
   }
 
   // reset search
-  const auto myMg = &mg[ply];
+  auto *const myMg = &mg[ply];
   myMg->resetOnDemand();
   pv[ply].clear();
 
@@ -1533,7 +1533,7 @@ void Search::getPvLine(Position& p, MoveList& pvList, const Depth depth) const {
   // Recursion-less reading the chain of pv moves
   pvList.clear();
   int counter  = 0;
-  auto ttMatch = tt->getMatch(p.getZobristKey());
+  const auto *ttMatch = tt->getMatch(p.getZobristKey());
   while (ttMatch != nullptr && ttMatch->move != MOVE_NONE && counter < depth) {
     pvList.push_back(static_cast<Move>(ttMatch->move));
     p.doMove(static_cast<Move>(ttMatch->move));
@@ -1685,7 +1685,7 @@ milliseconds Search::setupTimeControl(const Position& p, const SearchLimits& lim
     const int npp     = knights + bishops + rooks + queens;// non-pawn piece count (kings excluded)
 
     // Select a base bucket
-    int base;
+    int base = 0;
     if (npp <= SearchConfig.NPP_LIGHT_THRESHOLD) {
       base = SearchConfig.MOVES_LEFT_LOW_MAT;// very low material
     }

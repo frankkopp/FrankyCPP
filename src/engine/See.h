@@ -70,7 +70,7 @@ namespace See {
   ///              Positive = winning, negative = losing, zero = equal.
   /// @note        En passant captures always return +100 (pawn value).
   /// @note        Non-capturing moves return Value(0).
-  Value see(Position& p, Move move);
+  Value see(const Position& p, Move move);
 
   /// Finds the least valuable piece of the given color in the bitboard.
   /// When multiple pieces of the same type are available, returns the

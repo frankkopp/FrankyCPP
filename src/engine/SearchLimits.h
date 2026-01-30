@@ -63,7 +63,7 @@
 #include <types/types.h>
 
 /// Holds all parameters controlling search behavior.
-/// Populated from UCI "go" command and read by the Search class.
+/// Populated from the UCI "go" command and read by the Search class.
 struct SearchLimits {
 
   // === Special Modes (no time control) ===

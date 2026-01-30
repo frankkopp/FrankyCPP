@@ -20,7 +20,7 @@
 #include "See.h"
 #include "chesscore/Position.h"
 
-Value See::see(Position& p, const Move move) {
+Value See::see(const Position& p, const Move move) {
 
   // enpassant moves are ignored in a sense that it will be winning
   // capture and therefore should lead to no cut-offs when using see()

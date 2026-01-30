@@ -477,35 +477,29 @@ bool Position::givesCheck(const Move move) const {
 }
 
 bool Position::wasLegalMove() const {
-  // king attacked?
-  if (isAttacked(kingSquare[~nextPlayer], nextPlayer)) return false;
-  // look back and check if castling was legal
-  if (historyCounter > 0) {
-    const Move lastMove = historyState[historyCounter - 1].move;
-    if (lastMove.type() == CASTLING) {
-      // no castling when in check
-      if (isAttacked(lastMove.from(), nextPlayer)) {
-        return false;
-      }
-      // king is not allowed to pass a square which is attacked by opponent
-      switch (lastMove.to()) {
-        case SQ_G1:
-          if (isAttacked(SQ_F1, nextPlayer)) return false;
-          break;
-        case SQ_C1:
-          if (isAttacked(SQ_D1, nextPlayer)) return false;
-          break;
-        case SQ_G8:
-          if (isAttacked(SQ_F8, nextPlayer)) return false;
-          break;
-        case SQ_C8:
-          if (isAttacked(SQ_D8, nextPlayer)) return false;
-          break;
-        default:
-          break;
-      }
-    }
+  if (isAttacked(kingSquare[~nextPlayer], nextPlayer)) {
+    return false;
   }
+
+  if (historyCounter == 0) {
+    return true;
+  }
+
+  const Move lastMove = historyState[historyCounter - 1].move;
+  if (lastMove.type() != CASTLING) {
+    return true;
+  }
+
+  if (isAttacked(lastMove.from(), nextPlayer)) {
+    return false;
+  }
+
+  const Square toSq = lastMove.to();
+  if (toSq == SQ_G1) return !isAttacked(SQ_F1, nextPlayer);
+  if (toSq == SQ_C1) return !isAttacked(SQ_D1, nextPlayer);
+  if (toSq == SQ_G8) return !isAttacked(SQ_F8, nextPlayer);
+  if (toSq == SQ_C8) return !isAttacked(SQ_D8, nextPlayer);
+
   return true;
 }
 
@@ -544,8 +538,10 @@ bool Position::isLegalMove(const Move move) const {
   // not having to call DoMove/UndoMove similar to GivesCheck() but
   // IsLegalMove is not used during normal search.
   // Used in generateLegalMoves and perft.
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast, hicpp-no-const-cast)
   const_cast<Position*>(this)->doMove(move);
   const bool legal = !isAttacked(kingSquare[~nextPlayer], nextPlayer);
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast, hicpp-no-const-cast)
   const_cast<Position*>(this)->undoMove();
   return legal;
 }
@@ -876,6 +872,8 @@ void Position::initializeBoard() {
   gamePhase    = 0;
 }
 
+// Keep FEN parsing in one function; the branching mirrors the spec and is easier to follow here.
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 void Position::setupBoard(const std::string& fen) {
   // also sets defaults if fen is short
   initializeBoard();
@@ -905,7 +903,7 @@ void Position::setupBoard(const std::string& fen) {
   int rank = 7;
 
   // pieces
-  unsigned char token;
+  unsigned char token = 0;
   std::istringstream iss(fenParts[0]);
   iss >> std::noskipws;
   while (iss >> token) {
@@ -1017,7 +1015,7 @@ void Position::setupBoard(const std::string& fen) {
 
   // half move clock (50 moves rule)
   if (fenParts.size() >= 5) {
-    char* p;
+    char* p = nullptr;
     const int tmp = strtol(fenParts[4].c_str(), &p, 10);
     if (*p) {
       throw std::invalid_argument("FEN half move clock is not a number: " + fenParts[4]);
@@ -1027,7 +1025,7 @@ void Position::setupBoard(const std::string& fen) {
 
   // move number
   if (fenParts.size() >= 6) {
-    char* p;
+    char* p = nullptr;
     const int tmp = strtol(fenParts[5].c_str(), &p, 10);
     if (*p) {
       throw std::invalid_argument("FEN move number is not a number: " + fenParts[5]);

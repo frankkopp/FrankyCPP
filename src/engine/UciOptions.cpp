@@ -331,7 +331,7 @@ void UciOptions::initOptions() {
   // optionVector.emplace_back("***", [&](UciHandler* uciHandler) { });
 }
 
-const UciOption* UciOptions::getOption(const std::string& name) const {
+UciOption* UciOptions::getOption(const std::string& name) {
   // find option entry
   const auto optionIterator = std::ranges::find_if(optionVector,
                                                    [&](const UciOption& p) {
@@ -343,8 +343,8 @@ const UciOption* UciOptions::getOption(const std::string& name) const {
   return nullptr;
 }
 
-bool UciOptions::setOption(UciHandler* uciHandler, const std::string& name, const std::string& value) const {
-  if (const auto o = const_cast<UciOption*>(getOption(name))) {
+bool UciOptions::setOption(UciHandler* uciHandler, const std::string& name, const std::string& value) {
+  if (const auto o = getOption(name)) {
     if (o->type == COMBO) {
       bool ok = false;
       for (const auto& v : o->comboVars) {
@@ -408,7 +408,7 @@ int UciOptions::getInt(const std::string& value) {
   }
 }
 
-void UciOptions::resetToDefaults(UciHandler* uciHandler) const {
+void UciOptions::resetToDefaults(UciHandler* uciHandler) {
   if (!uciHandler) return;
   // Reset every non-BUTTON option to its default by reusing setOption,
   // which also invokes the option's handler to propagate the change.

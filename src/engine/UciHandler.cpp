@@ -110,8 +110,10 @@ void UciHandler::isReadyCommand() const {
   pSearch->isReady();
 }
 
-void UciHandler::setOptionCommand(std::istringstream& inStream) const {
-  std::string token, name, value;
+void UciHandler::setOptionCommand(std::istringstream& inStream) {
+  std::string token;
+  std::string name;
+  std::string value;
   if (inStream >> token && token != "name") {
     uciError(std::format("Command setoption is malformed - expected 'name': {}", token));
     return;
@@ -129,7 +131,7 @@ void UciHandler::setOptionCommand(std::istringstream& inStream) const {
     value += token;
   }
 
-  if (!UciOptions::getInstance()->setOption(const_cast<UciHandler*>(this), name, value)) {
+  if (!UciOptions::getInstance()->setOption(this, name, value)) {
     uciError(std::format("Unknown option: {}", name.c_str()));
   }
   LOG__INFO(Logger::get().UCIHAND_LOG, "Set option: {} = {}", name, value);
@@ -192,7 +194,7 @@ void UciHandler::goCommand(std::istringstream& inStream) const {
 
   // Sanity check search limits
   // sanity check / minimum settings
-  if (!(searchLimits.infinite || searchLimits.ponder || searchLimits.depth > 0 || searchLimits.nodes > 0 || searchLimits.mate > 0 || searchLimits.timeControl)) {
+  if (!searchLimits.infinite && !searchLimits.ponder && searchLimits.depth <= 0 && searchLimits.nodes <= 0 && searchLimits.mate <= 0 && !searchLimits.timeControl) {
     uciError(std::format("UCI command go malformed. No effective limits set: {}", searchLimits.str()));
     return;
   }
@@ -226,6 +228,30 @@ void UciHandler::goCommand(std::istringstream& inStream) const {
 bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& searchLimits) const {
   std::string token;
 
+  auto readIntToken = [&](int& target) {
+    inStream >> token;
+    try {
+      target = std::stoi(token);
+    } catch (...) { /* ignored */ }
+  };
+
+  auto readUint64tToken = [&](uint64_t& target) {
+    inStream >> token;
+    try {
+      target = std::stoi(token);
+    } catch (...) { /* ignored */ }
+  };
+
+  auto readMillisToken = [&](milliseconds& target, const bool setTimeControl) {
+    inStream >> token;
+    try {
+      target = milliseconds(std::stoi(token));
+      if (setTimeControl) {
+        searchLimits.timeControl = true;
+      }
+    } catch (...) { /* ignored */ }
+  };
+
   while (inStream >> token) {
 
     if (token == "searchmoves") {
@@ -253,12 +279,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
     }
 
     else if (token == "movetime" || token == "moveTime") {
-      inStream >> token;
-      try {
-        searchLimits.moveTime    = milliseconds(stoi(token));
-        searchLimits.timeControl = true;
-      } catch (...) { /* ignored */
-      }
+      readMillisToken(searchLimits.moveTime, true);
       if (searchLimits.moveTime.count() <= 0) {
         uciError(std::format("Invalid movetime: {}", token));
         return false;
@@ -266,12 +287,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
     }
 
     else if (token == "wtime") {
-      inStream >> token;
-      try {
-        searchLimits.whiteTime   = milliseconds(stoi(token));
-        searchLimits.timeControl = true;
-      } catch (...) { /* ignored */
-      }
+      readMillisToken(searchLimits.whiteTime, true);
       if (searchLimits.whiteTime.count() <= 0) {
         uciError(std::format("Invalid wtime: {}", token));
         return false;
@@ -279,12 +295,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
     }
 
     else if (token == "btime") {
-      inStream >> token;
-      try {
-        searchLimits.blackTime   = milliseconds(std::stoi(token));
-        searchLimits.timeControl = true;
-      } catch (...) { /* ignored */
-      }
+      readMillisToken(searchLimits.blackTime, true);
       if (searchLimits.blackTime.count() <= 0) {
         uciError(std::format("Invalid btime: {}", token));
         return false;
@@ -292,11 +303,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
     }
 
     else if (token == "winc") {
-      inStream >> token;
-      try {
-        searchLimits.whiteInc = milliseconds(std::stoi(token));
-      } catch (...) { /* ignored */
-      }
+      readMillisToken(searchLimits.whiteInc, false);
       if (searchLimits.whiteInc.count() < 0) {
         uciError(std::format("Invalid winc: {}", token));
         return false;
@@ -304,11 +311,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
     }
 
     else if (token == "binc") {
-      inStream >> token;
-      try {
-        searchLimits.blackInc = milliseconds(std::stoi(token));
-      } catch (...) { /* ignored */
-      }
+      readMillisToken(searchLimits.blackInc, false);
       if (searchLimits.blackInc.count() < 0) {
         uciError(std::format("Invalid binc: {}", token));
         return false;
@@ -316,11 +319,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
     }
 
     else if (token == "movestogo") {
-      inStream >> token;
-      try {
-        searchLimits.movesToGo = std::stoi(token);
-      } catch (...) { /* ignored */
-      }
+      readIntToken(searchLimits.movesToGo);
       if (searchLimits.movesToGo <= 0) {
         uciError(std::format("Invalid movestogo: {}", token));
         return false;
@@ -328,11 +327,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
     }
 
     else if (token == "depth") {
-      inStream >> token;
-      try {
-        searchLimits.depth = std::stoi(token);
-      } catch (...) { /* ignored */
-      }
+      readIntToken(searchLimits.depth);
       if (searchLimits.depth <= 0 || searchLimits.depth > MAX_DEPTH) {
         uciError(std::format("depth not between 1 and {}. Was '{}'", MAX_DEPTH, token));
         return false;
@@ -340,11 +335,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
     }
 
     else if (token == "nodes") {
-      inStream >> token;
-      try {
-        searchLimits.nodes = std::stoi(token);
-      } catch (...) { /* ignored */
-      }
+      readUint64tToken(searchLimits.nodes);
       if (searchLimits.nodes <= 0) {
         uciError(std::format("Invalid nodes: {}", token));
         return false;
@@ -352,11 +343,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
     }
 
     else if (token == "mate") {
-      inStream >> token;
-      try {
-        searchLimits.mate = stoi(token);
-      } catch (...) { /* ignored */
-      }
+      readIntToken(searchLimits.mate);
       if (searchLimits.mate <= 0 || searchLimits.mate > MAX_DEPTH) {
         uciError(std::format("mate not between 1 and {}. Was '{}'", MAX_DEPTH, token));
         return false;
@@ -387,7 +374,7 @@ void UciHandler::perftCommand(std::istringstream& inStream) const {
   LOG__INFO(Logger::get().UCIHAND_LOG, "Start Perft Test");
   std::string token;
   inStream >> token;
-  int startDepth;
+  int startDepth = 0;
   try {
     startDepth = stoi(token);
   } catch (...) { /* Ignore */
