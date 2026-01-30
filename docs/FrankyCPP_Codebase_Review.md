@@ -333,16 +333,16 @@ The `types/` directory contains well-designed value types:
 |---|------|--------|--------|-------|
 | C1 | Consolidate ToDo files | 🟢 1-2 hours | ✅ DONE | Deleted ToDo.md + ToDo2.md (obsolete/implemented items) |
 | C2 | Update copyright years | 🟢 1 hour | ✅ DONE | 2018-2021 → 2018-2026 (all source files) |
-| C3 | Clean up commented code | 🟡 2-3 days | ⬜ TODO | Remove/document dead code |
+| C3 | Clean up commented code | 🟡 2-3 days | ⏭️ SKIP | TODOs are intentional reminders; CMake sections kept for Q4 |
 | C4 | Standardize header guards | 🟢 1-2 hours | ✅ DONE | Converted 6 `#pragma once` to `FRANKYCPP_*` guards |
-| C5 | Update CI version references | 🟢 1-2 hours | ⬜ TODO | v0.5 → parameterized |
+| C5 | Update CI version references | 🟢 1-2 hours | ⏭️ SKIP | GitHub CI not currently used; will fix when re-enabled |
 
 #### Documentation (D)
 
 | # | Item | Effort | Status | Notes |
 |---|------|--------|--------|-------|
-| D1 | Add Doxyfile | 🟢 2-4 hours | ⬜ TODO | Configure Doxygen |
-| D2 | Create Architecture.md | 🟡 1-2 days | ⬜ TODO | Component relationships |
+| D1 | Add Doxyfile | 🟢 2-4 hours | ⏭️ SKIP | Overkill; IDE navigation + inline comments sufficient |
+| D2 | Create Architecture.md | 🟡 1-2 days | ✅ DONE | Component relationships, data flow, threading |
 | D3 | Add Doxygen comments to public API | 🟡 3-5 days | ⬜ TODO | Position, Search, Evaluator, etc. |
 | D4 | Document types/ headers | 🟡 2-3 days | ⬜ TODO | Bitboard, Move, Square, Value |
 | D5 | Add CONTRIBUTING.md | 🟢 1-2 hours | ⬜ TODO | Code style, PR process |
