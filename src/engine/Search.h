@@ -20,6 +20,65 @@
 #ifndef FRANKYCPP_SEARCH_H
 #define FRANKYCPP_SEARCH_H
 
+//=============================================================================
+// Search.h - Alpha-Beta Search Engine
+//=============================================================================
+//
+// Search implements the core chess search algorithm using iterative deepening
+// with alpha-beta pruning and various enhancements.
+// Depends on: TT.h, Evaluator.h, MoveGenerator.h, Position.h, OpeningBook.h, etc.
+//
+// Search Algorithm:
+//   - Iterative deepening with aspiration windows
+//   - Principal Variation Search (PVS)
+//   - Alpha-beta pruning with fail-soft
+//
+// Pruning Techniques:
+//   - Null-move pruning (with verification)
+//   - Late Move Reductions (LMR)
+//   - Futility pruning
+//   - Razoring
+//   - Delta pruning (in quiescence)
+//   - SEE pruning for captures
+//
+// Move Ordering:
+//   - TT move (hash move)
+//   - Captures (MVV-LVA / SEE ordered)
+//   - Killer moves (2 per ply)
+//   - Counter move heuristic
+//   - History heuristic
+//
+// Components:
+//   - TT (Transposition Table) for position caching
+//   - Evaluator for leaf node evaluation
+//   - OpeningBook for book moves
+//   - History for move ordering heuristics
+//
+// Threading:
+//   - Search runs in dedicated thread (searchThread)
+//   - Stoppable via stopSearchFlag (atomic)
+//   - Timer thread monitors time limits
+//   - Semaphores manage init/running state
+//
+// Time Management:
+//   - Configurable via SearchLimits
+//   - Supports fixed time, increment, moves-to-go
+//   - Dynamic time extension for complex positions
+//
+// Key Methods:
+//   startSearch(position, limits)  - Begin search (async)
+//   stopSearch()                   - Abort search
+//   waitWhileSearching()           - Block until complete
+//   getLastSearchResult()          - Retrieve result
+//
+// Usage:
+//   Search search;
+//   search.startSearch(position, limits);
+//   search.waitWhileSearching();
+//   SearchResult result = search.getLastSearchResult();
+//
+//=============================================================================
+
 #include "SearchLimits.h"
 #include "SearchResult.h"
 #include "SearchStats.h"
@@ -118,25 +177,24 @@ class Search {
   FRIEND_TEST(SearchTest, lmrReductionTable);
 
 public:
-  // in PV we search the full window in NonPV we try a zero window first
+  /// Node type for PVS: PV nodes search full window, NonPV nodes try zero window first.
   enum Node_Type : bool { NonPV = false,
                           PV    = true };
 
-  // If this is true we are allowed to do a NULL move in this ply. This is to
-  // avoid recursive null move searches or other prunings which do not make sense
-  // in a null move search
+  /// Controls whether null-move pruning is allowed at this ply.
+  /// Disabled to avoid recursive null-move searches.
   enum Do_Null : bool { No_Null_Move = false,
                         Do_Null_Move = true };
 
   // //////////////////////////////////////////////
   // CONSTRUCTORS
 
-  // Creates a Search instance without an UciHandler. Prints uci
-  // output to std::cout.
+  /// Creates a Search instance without an UciHandler.
+  /// UCI output is printed to std::cout.
   Search();
 
-  // Creates a Search instance and sends any uci protocol messages
-  // to the UciHandler.
+  /// Creates a Search instance with a UciHandler for UCI protocol messages.
+  /// @param pUciHandler  Pointer to the UCI handler (not owned)
   explicit Search(UciHandler* pUciHandler);
 
   ~Search();
@@ -150,200 +208,220 @@ public:
   // ///////////////////////////////////////////
   // PUBLIC
 
-  // NewGame stops any running searches and resets the search state
-  // to be ready for a different game. Any caches or states will be reset.
+  /// Stops any running search and resets state for a new game.
+  /// Clears caches and history heuristics.
   void newGame();
 
-  // IsReady signals the uciHandler that the search is ready.
-  // This is part of the UCI protocol to make sure a chess
-  // engine is initialized and ready to receive commands.
-  // When called, this will initialize the search, which might
-  // take a while. When finished, this will call the uciHandler
-  // set in SetUciHandler to send "readyok" to the UCI user interface.
+  /// Signals readiness to the UCI interface after initialization.
+  /// Part of UCI protocol; may trigger time-consuming setup on first call.
   void isReady();
 
-  // starts the search in a separate thread with the given search limits
+  /// Starts an asynchronous search in a separate thread.
+  /// @param p   Position to search
+  /// @param sl  Search limits (time, depth, nodes, etc.)
   void startSearch(const Position& p, SearchLimits sl);
 
-  // Stops a running search gracefully - e.g. returns the best move found so far
+  /// Stops a running search gracefully, returning the best move found so far.
   void stopSearch();
 
-  // checks if the search is already running
+  /// Checks if the search is currently running.
+  /// @return True if search is in progress
   bool isSearching() const;
 
-  // signals if we have a result
+  /// Checks if a search result is available.
+  /// @return True if result is ready
   bool hasResult() const { return hasResultFlag; }
 
-  // wait while searching blocks execution of the current thread until
-  // the search has finished
+  /// Blocks the calling thread until the search completes.
   void waitWhileSearching() const;
 
-  // to signal the search that pondering was successful
+  /// Signals that pondering was successful (opponent played expected move).
   void ponderhit();
 
-  // return current root pv list
+  /// Returns the principal variation from the current/last search.
+  /// @return Reference to the PV move list
   const MoveList& getPV() const { return pv[0]; };
 
-  // clears the hash table
+  /// Clears the transposition table.
   void clearTT() const;
 
-  // resize the hash to the value in the global config SearchConfig::TT_SIZE_MB
+  /// Resizes the transposition table according to SearchConfig::TT_SIZE_MB.
   void resizeTT() const;
 
-  // return search stats instance
+  /// Returns the search statistics from the last search.
+  /// @return Reference to SearchStats
   const SearchStats& getSearchStats() const { return statistics; };
 
-  // return the last search result
+  /// Returns the result of the last completed search.
+  /// @return Reference to SearchResult
   const SearchResult& getLastSearchResult() const { return lastSearchResult; };
 
 private:
   ////////////////////////////////////////////////
   ///// PRIVATE
 
-  // Initialize sets up opening book, transposition table
-  // and other potentially time-consuming setup tasks
-  // This can be called several times without doing
-  // initialization again.
+  /// Initializes opening book, transposition table, and other setup tasks.
+  /// Idempotent: multiple calls have no additional effect.
   void initialize();
 
-  // Called after starting the search in a new thread. Configures the search
-  // and eventually calls iterativeDeepening. After the search it takes the
-  // result to send it to the UCI engine.
+  /// Called after starting search thread. Configures search, calls iterativeDeepening,
+  /// and sends result to UCI.
   void run();
 
-  // Iterative Deepening:
-  // It works as follows: the program starts with a one-ply search,
-  // then increments the search depth and does another search. This
-  // process is repeated until the time allocated for the search is
-  // exhausted. In case of an unfinished search, the current best
-  // move is returned by the search. The current best move is
-  // guaranteed to by at least as good as the best move from the
-  // last finished iteration as we sorted the root moves before
-  // the start of the new iteration and started with this best
-  // move. This way, also the results from the partial search
-  // can be accepted
+  /// Performs iterative deepening search, incrementing depth until time expires.
+  /// @param p  Position to search
+  /// @return   Search result with best move and score
   SearchResult iterativeDeepening(Position& p);
 
-  // Aspiration Search
-  // AspirationSearch tries to achieve more beta cutoffs by searching with a narrow
-  // search window around an expected value for the search. We establish
-  // a start value by doing a 3-ply normal search and expand the search window in
-  //  several steps to the maximal window if the search value returns outside the window.
+  /// Searches with a narrow window around expected value, widening on fail-high/low.
+  /// @param p          Position to search
+  /// @param depth      Current search depth
+  /// @param bestValue  Expected value from previous iteration
+  /// @return           Search value
   Value aspirationSearch(Position& p, Depth depth, Value bestValue);
 
-  // rootSearch starts the actual recursive alpha beta search with the root moves for the first ply.
-  // As root moves are treated a little differently, this separate function supports readability
-  // as mixing it with the normal search would require quite some "if ply==0" statements.
+  /// Searches root moves (ply 0) with special handling for root node.
+  /// @param p      Position to search
+  /// @param depth  Remaining depth
+  /// @param alpha  Alpha bound
+  /// @param beta   Beta bound
+  /// @return       Best value found
   Value rootSearch(Position& p, Depth depth, Value alpha, Value beta);
 
-  // search is the normal alpha beta search after the root move ply (ply > 0)
-  // it will be called recursively until the remaining depth == 0 and we would
-  // enter quiescence search. Search consumes about 60% of the search time and
-  // all major prunings are done here. Quiescence search uses about 40% of the
-  // search time and has fewer options for pruning as not all moves are searched.
+  /// Recursive alpha-beta search for non-root plies (ply > 0).
+  /// Handles all major pruning techniques.
+  /// @param p       Position to search
+  /// @param depth   Remaining depth
+  /// @param ply     Current ply from root
+  /// @param alpha   Alpha bound
+  /// @param beta    Beta bound
+  /// @param isPv    Whether this is a PV node
+  /// @param doNull  Whether null-move pruning is allowed
+  /// @return        Search value
   Value search(Position& p, Depth depth, Depth ply, Value alpha, Value beta, Node_Type isPv, Do_Null doNull);
 
-  // qsearch is a simplified search to counter the horizon effect in depth-based
-  // searches. It continues the search into deeper branches as long as there are
-  // so-called non-quiet moves (usually capture, checks, promotions). Only if the
-  // position is relatively quiet, we will compute an evaluation of the position
-  // to return to the previous depth.
-  // Look for non-quiet moves is supported be the move generator which only
-  // generates captures or promotions in qsearch (when not in check) and also
-  // by SEE (Static Exchange Evaluation) to determine winning captured sequences.
+  /// Quiescence search to resolve tactical sequences at leaf nodes.
+  /// Only searches captures, promotions, and checks.
+  /// @param p      Position to search
+  /// @param ply    Current ply from root
+  /// @param alpha  Alpha bound
+  /// @param beta   Beta bound
+  /// @param isPv   Whether this is a PV node
+  /// @return       Quiescence value
   Value qsearch(Position& p, Depth ply, Value alpha, Value beta, Node_Type isPv);
 
-  // After expanding the search to the required depth and all non-quiet moves were
-  // generated, call the evaluation heuristic on the position.
-  // This gives us a numerical value of this quiet position which we will return
-  // to the search.
+  /// Evaluates a quiet position using the Evaluator.
+  /// @param p  Position to evaluate
+  /// @return   Evaluation score from side-to-move perspective
   Value evaluate(const Position& p);
 
-  // reduce the number of moves searched in quiescence search by trying
-  // to only look at good captures.
+  /// Determines if a capture is likely good enough to search in quiescence.
+  /// @param p     Position
+  /// @param move  Capture move to evaluate
+  /// @return      True if capture should be searched
   bool goodCapture(Position& p, Move move) const;
 
-  // storeTT stores a position into the TT
+  /// Stores a position entry in the transposition table.
+  /// @param p          Position
+  /// @param depth      Search depth
+  /// @param ply        Current ply (for mate score adjustment)
+  /// @param move       Best move found
+  /// @param value      Search value
+  /// @param valueType  Bound type (EXACT, ALPHA, BETA)
+  /// @param eval       Static evaluation
   void storeTt(const Position& p, Depth depth, Depth ply, Move move, Value value, ValueType valueType, Value eval) const;
 
-  // savePV adds the given move as the first move to a dest move list and then appends
-  // all src moves to dest. Dest will be cleared before the appending.
+  /// Saves a move and appends source PV to destination PV.
+  /// @param move  Move to prepend
+  /// @param src   Source PV to append
+  /// @param dest  Destination PV (cleared first)
   static void savePV(Move move, MoveList& src, MoveList& dest);
 
-  // correct the value for mate distance when storing to TT
+  /// Adjusts mate score for TT storage (distance from root).
+  /// @param value  Score to adjust
+  /// @param ply    Current ply
+  /// @return       Adjusted score
   static Value valueToTt(Value value, Depth ply);
 
-  // correct the value for mate distance when reading from TT
+  /// Adjusts mate score when reading from TT (distance from root).
+  /// @param value  Score from TT
+  /// @param ply    Current ply
+  /// @return       Adjusted score
   static Value valueFromTt(Value value, Depth ply);
 
-  // getPVLine fills the given pv move list with the pv move starting from the given
-  // depth as long as these positions are in the TT.
-  // This is used when we retrieve a value and move from the TT and would not get a PV
-  // line otherwise.
+  /// Reconstructs PV line from TT entries.
+  /// @param p       Position at start of PV
+  /// @param pvList  List to fill with PV moves
+  /// @param depth   Maximum depth to probe
   void getPvLine(Position& p, MoveList& pvList, Depth depth) const;
 
-  // stopConditions checks if stopFlag is set or if nodesVisited have
-  // reached a potential maximum set in the search limits.
+  /// Checks if search should stop (stop flag or node limit reached).
+  /// @return True if search should terminate
   bool stopConditions();
 
-  // setupSearchLimits reports logging on search limits for the search
-  // and sets up time control.
+  /// Logs search limits and sets up time control.
+  /// @param p   Current position
+  /// @param sl  Search limits to configure
   void setupSearchLimits(const Position& p, SearchLimits& sl);
 
-  // setupTimeControl sets up time control according to the given search limits
-  // and returns a limit on the duration for the current search.
+  /// Calculates time limit for current search based on limits.
+  /// @param p       Current position
+  /// @param limits  Search limits
+  /// @return        Time limit for this search
   milliseconds setupTimeControl(const Position& p, const SearchLimits& limits) const;
   FRIEND_TEST(SearchTest, setupTime);
   FRIEND_TEST(SearchTest, movesLeftBucketsOpeningVsQueenlessVsLowMaterial);
   FRIEND_TEST(SearchTest, movesLeftRepetitionRiskIncreasesTime);
 
-  // addExtraTime certain situations might call for an extension or reduction
-  // of the given time limit for the search. This function adds/subtracts
-  // a portion (%) of the current time limit.
-  //  Example:
-  //  f = 1.0 --> no change in search time
-  //  f = 0.9 --> reduction by 10%
-  //  f = 1.1 --> extension by 10%
+  /// Adds/subtracts time to the current search limit.
+  /// @param f  Factor: 1.0 = no change, 0.9 = -10%, 1.1 = +10%
   void addExtraTime(double f);
   FRIEND_TEST(SearchTest, extraTime);
 
-  // Soft guard: returns true if time is almost up (within a small safety margin),
-  // to avoid kicking off expensive re-searches when we likely can't finish them.
+  /// Checks if time is almost exhausted (soft guard for re-searches).
+  /// @return True if remaining time is below safety margin
   bool isTimeAlmostUp() const;
 
-  // startTimer starts a thread which regularly checks the elapsed time against
-  // the time limit and extra time given. If the time limit is reached, this will set
-  // the stopFlag to true and terminate itself.
+  /// Starts timer thread that monitors time limit and sets stop flag.
   void startTimer();
   FRIEND_TEST(SearchTest, startTimer);
 
-  // generates all legal moves for the root position and calls computeComplexityFactorFromMoves
+  /// Computes position complexity factor (quick version).
+  /// @param p  Position to analyze
+  /// @return   Factor: >1.0 = more complex, <1.0 = simpler
   static double computeComplexityFactorQuick(const Position& p);
 
-  // Helper: compute a conservative complexity factor for the root position
-  // Factors >1.0 indicate higher complexity and increase time budget; <1.0 decrease it.
+  /// Computes position complexity factor from legal moves.
+  /// @param p           Position to analyze
+  /// @param legalMoves  List of legal moves
+  /// @return            Factor: >1.0 = more complex, <1.0 = simpler
   static double computeComplexityFactorFromMoves(const Position& p, const MoveList& legalMoves);
 
-  // checks repetitions and 50-moves rule. Returns true if the position
-  // has repeated itself at least the given number of times.
+  /// Checks for draw by repetition or 50-move rule.
+  /// @param p                    Position to check
+  /// @param numberOfRepetitions  Required repetition count
+  /// @return                     True if position is drawn
   static bool checkDrawRepAnd50(const Position& p, int numberOfRepetitions);
 
-  // helper to send uci protocol messages.
+  /// Sends "readyok" to UCI handler.
   void sendReadyOk() const;
 
-  // sends an info string to the uci handler if a handler is available.
+  /// Sends info string to UCI handler if available.
+  /// @param msg  Message to send
   void sendString(const std::string& msg) const;
 
-  // sends the search result to the uci handler if a handler is available.
+  /// Sends search result to UCI handler if available.
+  /// @param result  Search result to send
   void sendResult(const SearchResult& result) const;
 
-  // send UCI information after each depth iteration.
+  /// Sends iteration-end info (depth, score, PV, etc.) to UCI.
   void sendIterationEndInfoToUci();
 
-  // send UCI information about search - could be called each 500ms or so.
+  /// Sends periodic search update (nodes, nps, time, hashfull) to UCI.
   void sendSearchUpdateToUci();
 
-  // send UCI information after aspiration search.
+  /// Sends aspiration window research info to UCI.
+  /// @param boundString  Bound type ("upperbound" or "lowerbound")
   void sendAspirationResearchInfo(const std::string& boundString);
 };
 

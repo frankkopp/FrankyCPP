@@ -20,6 +20,66 @@
 #ifndef FRANKYCPP_MOVEGENERATOR_H
 #define FRANKYCPP_MOVEGENERATOR_H
 
+//=============================================================================
+// MoveGenerator.h - Chess Move Generation
+//=============================================================================
+//
+// MoveGenerator contains functionality to generate moves for a chess position.
+// It implements several variants: pseudo-legal moves, legal moves, and
+// on-demand (phased) generation of pseudo-legal moves.
+// Depends on: types.h, Position, History
+//
+// Generation Modes (GenMode):
+//   GenZero     = 0b00  - No moves
+//   GenNonQuiet = 0b01  - Captures and promotions only
+//   GenQuiet    = 0b10  - Non-capturing moves only
+//   GenAll      = 0b11  - All moves
+//
+// Ply Dependency:
+//   A MoveGenerator instance is bound to a specific ply because it stores
+//   PV moves and killer moves which are ply-specific. Usually one MoveGenerator
+//   is pre-created for each possible ply to be reused during search.
+//
+// Memory Management:
+//   The constructor is the only time memory is allocated. The instance reuses
+//   internal lists for all subsequent move generation calls. Be careful when
+//   storing generated move lists - the underlying list will change on the next
+//   generation call. A deep copy is necessary if you need to preserve moves.
+//
+// Move Ordering:
+//   1. PV move (if set via setPV())
+//   2. Captures (MVV-LVA ordering)
+//   3. Killer moves (as soon as generated)
+//   4. Quiet moves (history heuristic ordering)
+//
+// Evasion Mode:
+//   When the king is in check, evasion mode generates only moves that can
+//   potentially escape check. This significantly reduces the number of moves
+//   generated. However, some non-legal moves may still be included because
+//   fully calculating all scenarios (e.g., discovered checks, pins) would be
+//   more expensive than simply generating the move and dismissing it later
+//   when legality is checked. Due to beta cutoffs, we often never need to
+//   check full legality of all moves anyway.
+//
+// Key Methods:
+//   generatePseudoLegalMoves()  - Generate all pseudo-legal moves
+//   generateLegalMoves()        - Generate all legal moves (expensive)
+//   getNextPseudoLegalMove()    - Phased generation for search
+//   hasLegalMove()              - Quick check if any legal move exists
+//   getMoveFromUci/San()        - Parse move strings
+//
+// Usage:
+//   MoveGenerator mg;
+//   mg.setPV(ttMove);
+//   mg.storeKiller(killerMove);
+//   Move move;
+//   while ((move = mg.getNextPseudoLegalMove(pos, GenAll, inCheck)) != MOVE_NONE) {
+//     if (!pos.isLegalMove(move)) continue;
+//     // process move
+//   }
+//
+//=============================================================================
+
 #include "common/gtest_friends.h"
 #include <types/types.h>
 
@@ -27,26 +87,15 @@
 class Position;
 struct History;
 
-// GenMode generation modes for on demand move generation.
-//  GenZero     = 0b00
-//  GenNonQuiet = 0b01
-//  GenQuiet    = 0b10
-//  GenAll      = 0b11
+/// Generation modes for move generation.
+/// Can be combined as bit flags: GenAll = GenNonQuiet | GenQuiet.
 enum GenMode : uint8_t {
-  GenZero     = 0b00,
-  GenNonQuiet = 0b01,
-  GenQuiet    = 0b10,
-  GenAll      = 0b11
+  GenZero     = 0b00,  ///< No moves
+  GenNonQuiet = 0b01,  ///< Captures and promotions only
+  GenQuiet    = 0b10,  ///< Non-capturing moves only
+  GenAll      = 0b11   ///< All moves (captures + quiet)
 };
 
-// Class MoveGenerator contains functionality to create moves on a
-// chess position. It implements several variants like
-// generate pseudo legal moves, legal moves or on demand
-// generation of pseudo legal moves.
-// A MoveGenerator is depended on the ply as it might store
-// pv moves and killer moves which are bound to a ply.
-// Usually one MoveGenerator will be pre generated for each
-// possible ply to be used in.
 class MoveGenerator {
   // internal move lists to not allocate memory during move generation
   MoveList pseudoLegalMoves = MoveList{};
@@ -78,79 +127,80 @@ class MoveGenerator {
   History* historyData = nullptr;
 
 public:
-  // MoveGenerator() creates a new instance of a move generator
-  // This is the only time when we allocate new memory. The instance
-  // will not create any move lists during normal move generation
-  // as it will reuse pre-created internal lists which will
-  // be returned via pointer to a caller.
-  // OBS: Be careful when trying to store the list of generated
-  // moves as the underlying list will be changed when move gen
-  // is called again. A deep copy is necessary if you need a
-  // copy of the move list.
+  /// Creates a new MoveGenerator instance.
+  /// This is the only time memory is allocated. The instance will not create
+  /// any new move lists during normal move generation as it reuses pre-created
+  /// internal lists which are returned via pointer to the caller.
+  /// Note: Be careful when trying to store the list of generated moves as the
+  /// underlying list will be changed when move generation is called again.
+  /// A deep copy is necessary if you need to preserve the move list.
   MoveGenerator();
 
   ~MoveGenerator() = default;
 
-  // GeneratePseudoLegalMoves generates pseudo moves for the next player. Does not check if
-  // king is left in check or if it passes an attacked square when castling or has been in check
-  // before castling.
-  //
-  // If a PV move is set with setPV(Move pv) this move will be returned first and will
-  // not be returned at its normal place.
-  //
-  // Killer moves will be played as soon as possible after non-quiet moves. As Killer moves
-  // are stored for the whole ply a Killer move might not be valid for the current position.
-  // Therefore, we need to wait until they are generated. Killer moves will then be pushed
-  // to the top of the quiet moves.
-  //
-  // Evasion is a parameter given when the position is in check and only evasion moves should
-  // be generated. For testing purposes this is a parameter, but obviously we could determine
-  // checks very quickly internally in this function.
-  // The idea of evasion is to avoid generating moves which are obviously not getting the
-  // king out of check. This may reduce the total number of generated moves but there might
-  // still be a few non-legal moves. This is the case if considering and calculating all
-  // possible scenarios is more expensive than to just generate the move and dismiss it later.
-  // Because of beta cuts off we quite often will never have to check the full legality
-  // of these moves anyway.
+  /// Generates pseudo-legal moves for the next player.
+  /// Does not check if king is left in check or if it passes an attacked square
+  /// when castling, or if the king was in check before castling.
+  ///
+  /// If a PV move is set with setPV(Move pv), this move will be returned first
+  /// and will not be returned again at its normal position in the list.
+  ///
+  /// Killer moves will be played as soon as possible after non-quiet moves.
+  /// Since killer moves are stored for the whole ply, a killer move might not
+  /// be valid for the current position. Therefore, we wait until they are
+  /// generated normally, then push them to the top of the quiet moves.
+  ///
+  /// @param p        Position to generate moves for
+  /// @param genMode  Which types of moves to generate (captures, quiet, or both)
+  /// @param evasion  If true, only generate moves that might escape check.
+  ///                 This reduces the total moves generated but may still include
+  ///                 some non-legal moves when calculating all scenarios would
+  ///                 be more expensive than generating and dismissing later.
+  ///                 Due to beta cutoffs, we often never check full legality anyway.
+  /// @return         Pointer to an internal move list (do not store - will be reused)
   const MoveList* generatePseudoLegalMoves(const Position& p, GenMode genMode, bool evasion = false);
 
-  // GenerateLegalMoves generates legal moves for the next player.
-  // Uses GeneratePseudoLegalMoves and filters out illegal moves.
-  // Usually only used for root moves generation as this is expensive. During
-  // the AlphaBeta search we will only use pseudo legal move generation.
-  // Other than generatePseudoLegalMoves this determines check and evasion itself.
+  /// Generates legal moves for the next player.
+  /// Uses generatePseudoLegalMoves() and filters out illegal moves.
+  /// Usually only used for root move generation as this is expensive.
+  /// During alpha-beta search we use pseudo-legal move generation instead.
+  /// Unlike generatePseudoLegalMoves(), this determines check and evasion internally.
+  /// @param p        Position to generate moves for
+  /// @param genMode  Which types of moves to generate
+  /// @return         Pointer to an internal move list (do not store - will be reused)
   const MoveList* generateLegalMoves(const Position& p, GenMode genMode);
 
-  // GetNextMove is the main function for phased generation of pseudo legal moves.
-  // It returns the next move for the given position and will usually be called in a
-  // loop during search. As we hope for an early beta cut this will save time as not
-  // all moves will have been generated.
-  //
-  // To reuse this on the same position a call to ResetOnDemand() is necessary. This
-  // is not necessary when a different position is called as this func will reset itself
-  // in this case.
-  //
-  // If a PV move is set with setPV(Move pv) this will be returned first
-  // and will not be returned at its normal place.
-  //
-  // Killer moves will be played as soon as possible. As Killer moves are stored for
-  // the whole ply a Killer move might not be valid for the current position. Therefore,
-  // we need to wait until they are generated by the phased move generation. Killers will
-  // then be pushed to the top of the list of the generation stage.
-  //
-  // Evasion is a parameter given when the position is in check and only evasion moves should
-  // be generated. For testing purposes this is a parameter for now but obviously we could
-  // determine checks very quickly internally in this function.
-  // The idea of evasion is to avoid generating moves which are obviously not getting the
-  // king out of check. This may reduce the total number of generated moves but there might
-  // still be a few non-legal moves. This is the case if considering and calculating all
-  // possible scenarios is more expensive than to just generate the move and dismiss it later.
-  // Because of beta cuts off we quite often will never have to check the full legality
-  // of these moves anyway.
+  /// Returns the next pseudo-legal move using phased (on-demand) generation.
+  /// This is the main function for phased move generation during search.
+  /// It returns moves one at a time and is typically called in a loop.
+  /// Since we hope for an early beta cutoff, this saves time by not
+  /// generating all moves upfront.
+  ///
+  /// To reuse this on the same position, call resetOnDemand() first.
+  /// This is not necessary when called with a different position, as the
+  /// function will reset itself automatically in that case.
+  ///
+  /// If a PV move is set with setPV(Move pv), it will be returned first
+  /// and will not be returned again at its normal position.
+  ///
+  /// Killer moves will be played as soon as possible. Since killer moves are
+  /// stored for the whole ply, a killer move might not be valid for the current
+  /// position. Therefore, we wait until they are generated by the phased move
+  /// generation, then push them to the top of that generation stage.
+  ///
+  /// @param p        Position to generate moves for
+  /// @param genMode  Which types of moves to generate
+  /// @param evasion  If true, only generate moves that might escape check.
+  ///                 This reduces the total moves generated but may still include
+  ///                 some non-legal moves when calculating all scenarios would
+  ///                 be more expensive than generating and dismissing later.
+  ///                 Due to beta cutoffs, we often never check full legality anyway.
+  /// @return         Next move, or MOVE_NONE when all moves have been returned
   Move getNextPseudoLegalMove(const Position& p, GenMode genMode, bool evasion = false);
 
-  // Resets the move generator to start fresh. Clears all lists (e.g. killers) and resets on demand iterator
-  inline void reset() {
+  /// Resets the move generator to start fresh.
+  /// Clears all internal lists (including killers) and resets the on-demand iterator.
+  void reset() {
     pseudoLegalMoves.clear();
     legalMoves.clear();
     killerMoves[0] = MOVE_NONE;
@@ -158,9 +208,10 @@ public:
     resetOnDemand();
   }
 
-  // ResetOnDemand resets the move on demand generator to start fresh.
-  // Also deletes PV moves.
-  inline void resetOnDemand() {
+  /// Resets the on-demand move generator to start fresh.
+  /// Also clears the PV move. Call this to restart phased generation
+  /// on the same position without clearing killer moves.
+  void resetOnDemand() {
     onDemandMoves.clear();
     onDemandEvasionTargets = BbZero;
     currentODStage         = OD_NEW;
@@ -170,99 +221,124 @@ public:
     takeIndex              = 0;
   }
 
-  // SetPvMove sets a PV move which should be returned first by
-  // the OnDemand MoveGenerator.
+  /// Sets a PV move, which should be returned first by the on-demand generator.
+  /// @param move  The PV move to prioritize
   void setPV(Move move);
 
-  // StoreKiller provides the on demand move generator with a new killer move
-  // which should be returned as soon as possible when generating moves with
-  // the on demand generator.
+  /// Stores a killer move to be returned as soon as possible during on-demand generation.
+  /// Killer moves are quiet moves that caused a beta cutoff at the same ply.
+  /// @param killerMove  The killer move to store
   void storeKiller(Move killerMove);
 
-  // SetHistoryData provides a pointer to the search's history data
-  // for the move generator so it can optimize sorting.
+  /// Provides a pointer to the search's history data for move ordering.
+  /// History data is used to improve quiet move sorting based on past success.
+  /// @param pHistory  Pointer to History struct (not owned)
   void setHistoryData(History* pHistory);
 
-  // HasLegalMove determines if we have at least one legal move. We only have to find
-  // one legal move. We search for any KING, PAWN, KNIGHT, BISHOP, ROOK, QUEEN move
-  // and return immediately if we found one.
-  // The order of our search is approx from the most likely to the least likely.
+  /// Determines if the position has at least one legal move.
+  /// We only need to find one legal move, so we search for any
+  /// KING, PAWN, KNIGHT, BISHOP, ROOK, QUEEN move and return immediately
+  /// when one is found. The search order is approximately from most likely
+  /// to least likely piece to have a legal move.
+  /// @param position  Position to check
+  /// @return          True if at least one legal move exists
   static bool hasLegalMove(const Position& position);
 
-  // GetMoveFromUci Generates all legal moves and matches the given UCI
-  // move string against them. If there is a match the actual move is returned.
-  // Otherwise MoveNone is returned.
-  //
-  // As this uses string creation and comparison this is not very efficient.
-  // Use only when performance is not critical.
+  /// Parses a UCI move string and returns the corresponding Move.
+  /// Generates all legal moves and matches the given UCI move string against them.
+  /// If there is a match, the actual Move object is returned.
+  /// As this uses string creation and comparison, it is not very efficient.
+  /// Use only when performance is not critical.
+  /// @param position  Position the move is for
+  /// @param uciMove   UCI move string (e.g., "e2e4", "e7e8q")
+  /// @return          Matching Move, or MOVE_NONE if no match found
   Move getMoveFromUci(const Position& position, const std::string& uciMove);
 
-  // GetMoveFromSan Generates all legal moves and matches the given SAN
-  // move string against them. If there is a match the actual move is returned.
-  // Otherwise MoveNone is returned.
-  //
-  // As this uses string creation and comparison this is not very efficient.
-  // Use only when performance is not critical.
+  /// Parses a SAN move string and returns the corresponding Move.
+  /// Generates all legal moves and matches the given SAN move string against them.
+  /// If there is a match, the actual Move object is returned.
+  /// As this uses string creation and comparison, it is not very efficient.
+  /// Use only when performance is not critical.
+  /// @param position  Position the move is for
+  /// @param sanMove   SAN move string (e.g., "e4", "Nxf3+", "O-O")
+  /// @return          Matching Move, or MOVE_NONE if no match found
   Move getMoveFromSan(const Position& position, const std::string& sanMove);
 
-  // ValidateMove validates if a move is a valid legal move on the given position
+  /// Validates if a move is a legal move on the given position.
+  /// @param position  Position to validate against
+  /// @param move      Move to validate
+  /// @return          True if the move is legal
   bool validateMove(const Position& position, Move move);
 
-  // str() returns a string representation of a MoveGen instance
+  /// Returns a string representation of a MoveGenerator instance.
+  /// @return Debug string
   static std::string str();
 
-  // returns the current pv move
+  /// Returns the currently set PV move.
+  /// @return PV move, or MOVE_NONE if not set
   [[nodiscard]] Move getPvMove() const {
     return pvMove;
   }
 
-  // returns a pointer to the current killer move list
+  /// Returns a reference to the current killer move array.
+  /// @return Reference to array of 2 killer moves
   [[nodiscard]] std::array<Move, 2>& getKillerMoves() {
     return killerMoves;
   }
 
 private:
-  // Fills on demand move list by generating moves according to phase
+  /// Fills on-demand move list by generating moves according to the current phase.
+  /// @param position  Position to generate moves for
+  /// @param genMode   Which types of moves to generate
+  /// @param evasion   Whether to generate only evasion moves
   void fillOnDemandMoveList(const Position& position, GenMode genMode, bool evasion);
 
-  // Move order heuristics based on history data.
+  /// Updates move sort values based on history heuristic data.
+  /// Moves that have been successful in the past get higher sort values.
+  /// @param p         Position (for context)
+  /// @param moveList  List of moves to update sort values for
   void updateSortValues(const Position& p, MoveList* moveList) const;
 
-  // getEvasionTargets returns the number of attackers and a Bitboard with target
-  // squares for generated moves when the position has check against the next
-  // player. Most of the moves will not even be generated as they will not
-  // have these target squares. These target squares cover the attacking
-  // (checker) piece and any squares in between the attacker and the king
-  // in case of the attacker being a slider.
-  // If we have more than one attacker we can skip everything apart from
-  // king moves.
+  /// Returns a bitboard of target squares for evasion moves when in check.
+  /// These target squares cover the attacking (checker) piece and any squares
+  /// in between the attacker and the king (for sliding attackers).
+  /// Most moves will not even be generated if they don't target these squares.
+  /// If there are two or more attackers, only king moves are possible.
+  /// @param p  Position with check
+  /// @return   Bitboard of valid target squares for evasion
   static Bitboard getEvasionTargets(const Position& p);
 
-  // Generates pseudo pawn moves for the next player. Does not check if king is left in check
-  // @param genMode
-  // @param pPosition
-  // @param pMoves - generated moves will be added to this list
+  /// Generates pseudo-legal pawn moves for the next player.
+  /// Does not check if king is left in check.
+  /// @param position       Position to generate moves for
+  /// @param pMoves         Move list to append generated moves to
+  /// @param genMode        Which types of moves to generate
+  /// @param evasion        Whether in evasion mode
+  /// @param evasionTargets Target squares for evasion (if in check)
   static void generatePawnMoves(const Position& position, MoveList* pMoves, GenMode genMode, bool evasion, Bitboard evasionTargets);
 
-  // Generates pseudo knight, bishop, rook and queen moves for the next player.
-  // Does not check if king is left in check
-  // @param genMode
-  // @param pPosition
-  // @param pMoves - generated moves will be added to this list
+  /// Generates pseudo-legal knight, bishop, rook, and queen moves for the next player.
+  /// Does not check if king is left in check.
+  /// @param position       Position to generate moves for
+  /// @param pMoves         Move list to append generated moves to
+  /// @param genMode        Which types of moves to generate
+  /// @param evasion        Whether in evasion mode
+  /// @param evasionTargets Target squares for evasion (if in check)
   static void generateMoves(const Position& position, MoveList* pMoves, GenMode genMode, bool evasion, Bitboard evasionTargets);
 
-  // Generates pseudo king moves for the next player. Does not check if king
-  // lands on an attacked square.
-  // @param genMode
-  // @param pPosition
-  // @param pMoves - generated moves will be added to this list
+  /// Generates pseudo-legal king moves for the next player.
+  /// Does not check if king lands on an attacked square.
+  /// @param position  Position to generate moves for
+  /// @param pMoves    Move list to append generated moves to
+  /// @param genMode   Which types of moves to generate
+  /// @param evasion   Whether in evasion mode
   static void generateKingMoves(const Position& position, MoveList* pMoves, GenMode genMode, bool evasion);
 
-  // Generates pseudo castling move for the next player. Does not check if king passes or lands on an
-  // attacked square.
-  // @param genMode
-  // @param pPosition
-  // @param pMoves - generated moves will be added to this list
+  /// Generates pseudo-legal castling moves for the next player.
+  /// Does not check if king passes or lands on an attacked square.
+  /// @param position  Position to generate moves for
+  /// @param pMoves    Move list to append generated moves to
+  /// @param genMode   Which types of moves to generate
   static void generateCastling(const Position& position, MoveList* pMoves, GenMode genMode);
 
   FRIEND_TEST(MoveGenTest, pawnMoves);
