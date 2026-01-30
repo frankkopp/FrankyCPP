@@ -20,11 +20,34 @@
 #ifndef FRANKYCPP_FILE_H
 #define FRANKYCPP_FILE_H
 
+//=============================================================================
+// file.h - Chess Board File Type (a-h)
+//=============================================================================
+//
+// File represents a vertical column on the chess board (a through h).
+// Depends on: macros.h
+//
+// Values:
+//   FILE_A = 0  ...  FILE_H = 7    - Valid files
+//   FILE_NONE = 8                  - Invalid / sentinel
+//
+// Key Operations:
+//   toChar()       - Returns 'a'-'h' (or '-' if invalid)
+//   fromChar(c)    - Converts 'a'-'h' to File
+//   distance(f)    - Absolute distance to another file
+//   isValid()      - True if FILE_A through FILE_H
+//
+// Usage:
+//   File f = FILE_E;
+//   char c = f.toChar();           // 'e'
+//   File g = File::fromChar('g');  // FILE_G
+//   int dist = f.distance(FILE_A); // 4
+//
+//=============================================================================
+
 #include "macros.h"
 #include <format>
 
-// File represents a chess board file a-h as a small class with an unsigned
-// underlying value [0..8]
 class File {
   std::uint8_t v_{};// 0..7 = A..H, 8 = NONE
 

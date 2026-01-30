@@ -20,9 +20,36 @@
 #ifndef FRANKYCPP_SCORE_H
 #define FRANKYCPP_SCORE_H
 
+//=============================================================================
+// score.h - Tapered Evaluation Score (Midgame + Endgame Pair)
+//=============================================================================
+//
+// Score holds separate midgame and endgame evaluation values for tapered
+// evaluation. The final score is interpolated based on game phase.
+// Depends on: value.h
+//
+// Structure:
+//   struct Score {
+//     Value midgame;  - Evaluation in opening/middlegame
+//     Value endgame;  - Evaluation in endgame
+//   };
+//
+// Operators:
+//   +, -, *, /        - Component-wise arithmetic
+//   +=, -=, *=, /=    - Compound assignment
+//
+// Usage:
+//   Score s = {Value{50}, Value{30}};  // +50cp midgame, +30cp endgame
+//   s += Score{Value{10}, Value{20}};  // Now {60, 50}
+//
+//   // Tapered evaluation (in Evaluator):
+//   double phase = position.getGamePhaseFactor();  // 0.0 (endgame) to 1.0 (midgame)
+//   Value final = Value{int(s.midgame * phase + s.endgame * (1.0 - phase))};
+//
+//=============================================================================
+
 #include "types/value.h"
 
-// tuple to store two values during evaluation
 struct Score {
   Value midgame;
   Value endgame;

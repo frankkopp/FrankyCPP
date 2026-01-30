@@ -20,6 +20,35 @@
 #ifndef FRANKYCPP_TIMEUNITS_H
 #define FRANKYCPP_TIMEUNITS_H
 
+//=============================================================================
+// timeunits.h - Time Utilities and Chrono Helpers
+//=============================================================================
+//
+// Provides time measurement and formatting utilities using std::chrono.
+// No internal dependencies (uses only standard library).
+//
+// Types:
+//   TimePoint              - high_resolution_clock time point
+//   milliseconds, etc.     - std::chrono duration types (via using)
+//
+// Key Functions:
+//   currentTime()          - Get current time point
+//   elapsedSince(tp)       - Nanoseconds elapsed since time point
+//   str(milliseconds)      - Format as "X.XXX s"
+//   str(nanoseconds)       - Format as "X.XXXXXXXXX s"
+//   format_now(fmt)        - Format current local time
+//   nps(nodes, time)       - Calculate nodes per second
+//
+// Usage:
+//   TimePoint start = currentTime();
+//   // ... do work ...
+//   auto elapsed = elapsedSince(start);
+//   std::cout << str(duration_cast<milliseconds>(elapsed));
+//
+//   uint64_t speed = nps(nodeCount, elapsed);
+//
+//=============================================================================
+
 #include <chrono>
 #include <iomanip>
 #include <sstream>
@@ -30,7 +59,9 @@ using namespace std::chrono;
 
 typedef time_point<high_resolution_clock> TimePoint;
 
-// formats current local time as a string using std::put_time (no fmt dependency)
+/// Formats current local time as a string.
+/// @param fmt  strftime format string (default: "%Y-%m-%d %H:%M:%S")
+/// @return     Formatted time string (e.g., "2026-01-30 14:30:45")
 inline std::string format_now(const char* fmt = "%Y-%m-%d %H:%M:%S") {
   std::time_t t = std::time(nullptr);
   std::tm tm{};
@@ -44,36 +75,27 @@ inline std::string format_now(const char* fmt = "%Y-%m-%d %H:%M:%S") {
   return os.str();
 }
 
-// returns a string representation of the milliseconds as a fraction of a seconds
-// with a DE locale
-//  Examples:
-//  5,021 s
+/// Formats milliseconds as seconds with 3 decimal places (DE locale).
+/// @param s  Duration in milliseconds
+/// @return   String like "5,021 s"
 inline std::string str(const milliseconds s) {
   return std::format(deLocale, "{:.3f} s", static_cast<double>(s.count()) / 1e3);
 }
 
-// returns a string representation of the nanoseconds as a fraction of a second
-// with a DE locale
-//  Examples:
-//  5,021456234 s
+/// Formats nanoseconds as seconds with 9 decimal places (DE locale).
+/// @param s  Duration in nanoseconds
+/// @return   String like "5,021456234 s"
 inline std::string str(const nanoseconds s) {
   return std::format(deLocale, "{:.9f} s", static_cast<double>(s.count()) / 1e9);
 }
 
-// returns a string representation of the duration as a human readable string
-// with a DE locale.
-// This function is limited by the max of a long long (int64) integer as
-// chrono uses int64 for representing nanoseconds. Any input of a timeunnit
-// representing mor than 292 years will result in a an overflow and the result
-// will be undefined.
-// Examples:
-//  59y:325d:20h:33m:19s:008.800.999ns
-//  20d:13h:53m:19s:008.800.999ns
-//  33m:19s:008.800.999ns
-//  1s:000.000.999ns
-//  1.000.099ns
-//  10.000ns
-//  100ns
+/// Formats a duration as a human-readable string with full breakdown.
+/// Uses DE locale. Limited to ~292 years due to int64 nanosecond representation.
+/// @tparam Rep     Duration representation type
+/// @tparam Period  Duration period type
+/// @param timeunit Duration to format
+/// @return         String like "20d:13h:53m:19s:008.800.999ns" or "100ns"
+/// @throws std::overflow_error if duration exceeds int64 nanosecond range
 template <class Rep, class Period>
 std::string format(duration<Rep, Period> timeunit) {
 
@@ -140,13 +162,20 @@ std::string format(duration<Rep, Period> timeunit) {
   return os.str();
 }
 
-// returns the nodes per second from nano seconds given as uint64_t
+/// Calculates nodes per second from node count and elapsed nanoseconds.
+/// @param nodes  Number of nodes processed
+/// @param ns     Elapsed time in nanoseconds (as uint64_t)
+/// @return       Nodes per second (returns nodes if ns is 0)
 inline uint64_t nps(const uint64_t nodes, const uint64_t ns) {
   if (!ns) return nodes;
   return nodes * nanoPerSec / ns;
 }
 
-// returns the nodes per second from milliseconds
+/// Calculates nodes per second from node count and elapsed duration.
+/// @tparam T     Duration type (e.g., milliseconds, nanoseconds)
+/// @param nodes  Number of nodes processed
+/// @param timeunit  Elapsed time as chrono duration
+/// @return       Nodes per second (returns nodes if duration is 0)
 template <typename T>
 uint64_t nps(const uint64_t nodes, T timeunit) {
   const nanoseconds ns = duration_cast<nanoseconds>(timeunit);
@@ -154,18 +183,23 @@ uint64_t nps(const uint64_t nodes, T timeunit) {
   return nodes * nanoPerSec / ns.count();
 }
 
+/// Returns nanoseconds elapsed since the given time point.
+/// @param tp  Starting time point
+/// @return    Duration in nanoseconds
 inline nanoseconds elapsedSince(const TimePoint tp) {
   return high_resolution_clock::now() - tp;
 }
 
-// faster on Apple - returns nanoseconds
+/// Returns current time as raw nanosecond count (fast path for Apple).
+/// @return  Nanoseconds since epoch
 inline unsigned long long int nowFast() {
   return high_resolution_clock::now().time_since_epoch().count();
 }
 
-// convenience for std::chrono::high_resolution_clock::now()
+/// Alias for std::chrono::high_resolution_clock::now().
 constexpr auto currentTime = high_resolution_clock::now;
 
+/// Convenience macros for common chrono operations
 #define SLEEP(t) std::this_thread::sleep_for(t)
 #define NANOSECONDS(t) std::chrono::duration_cast<std::chrono::nanoseconds>(t)
 #define MILLISECONDS(t) std::chrono::duration_cast<std::chrono::milliseconds>(t)

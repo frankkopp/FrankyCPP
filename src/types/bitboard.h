@@ -20,6 +20,48 @@
 #ifndef FRANKYCPP_BITBOARD_H
 #define FRANKYCPP_BITBOARD_H
 
+//=============================================================================
+// bitboard.h - 64-bit Chess Board Representation
+//=============================================================================
+//
+// Bitboard is a 64-bit integer where each bit represents one square on
+// the chess board. Bit 0 = a1, Bit 7 = h1, Bit 56 = a8, Bit 63 = h8.
+// Depends on: direction.h, piecetype.h, square.h
+//
+// Square Mapping (Little-Endian Rank-File):
+//
+//     a  b  c  d  e  f  g  h
+//   +--+--+--+--+--+--+--+--+
+// 8 |56|57|58|59|60|61|62|63|
+// 7 |48|49|50|51|52|53|54|55|
+// 6 |40|41|42|43|44|45|46|47|
+// 5 |32|33|34|35|36|37|38|39|
+// 4 |24|25|26|27|28|29|30|31|
+// 3 |16|17|18|19|20|21|22|23|
+// 2 | 8| 9|10|11|12|13|14|15|
+// 1 | 0| 1| 2| 3| 4| 5| 6| 7|
+//   +--+--+--+--+--+--+--+--+
+//
+// Key Operations:
+//   popcount()       - Number of set bits (pieces on board)
+//   lsb() / msb()    - Least/most significant bit as Square
+//   popLSB()         - Pop and return least significant bit
+//   shifted(dir)     - Shift all bits in a direction (with edge masking)
+//   operator&,|,^,~  - Bitwise set operations
+//   operator<<,>>    - Bit shifts
+//
+// Usage:
+//   Bitboard whitePawns = position.getPieceBb(WHITE, PAWN);
+//   int count = whitePawns.popcount();
+//   while (whitePawns) {
+//     Square sq = whitePawns.popLSB();
+//     // process each pawn square
+//   }
+//
+//   Bitboard attacks = pawns.shifted(NORTH_EAST) | pawns.shifted(NORTH_WEST);
+//
+//=============================================================================
+
 #include "direction.h"
 #include "piecetype.h"
 #include "square.h"
@@ -31,13 +73,6 @@
 #include <string>
 #include <type_traits>
 
-// //////////////////////////////////////////////////////////////////
-// Bitboard value-type
-// //////////////////////////////////////////////////////////////////
-
-// Small, trivially copyable wrapper around an unsigned 64-bit integer.
-// Designed to be zero-cost: all operators are constexpr/inlined to keep
-// existing performance characteristics of raw uint64_t bitboards.
 class Bitboard {
   std::uint64_t v_{}; // underlying 64-bit mask
 

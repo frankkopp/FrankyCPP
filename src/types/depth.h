@@ -20,11 +20,34 @@
 #ifndef FRANKYCPP_DEPTH_H
 #define FRANKYCPP_DEPTH_H
 
+//=============================================================================
+// depth.h - Search Depth Type
+//=============================================================================
+//
+// Depth represents the remaining search depth in plies (half-moves).
+// Depends on: macros.h
+//
+// Values:
+//   DEPTH_NONE / DEPTH_ZERO = 0  - Leaf node (quiescence)
+//   DEPTH_ONE = 1                - Frontier node
+//   DEPTH_TWO = 2                - Pre-frontier node
+//   DEPTH_MAX = 127              - Maximum search depth
+//
+// Aliases (search terminology):
+//   DEPTH_FRONTIER        = 1    - One ply from horizon
+//   DEPTH_PRE_FRONTIER    = 2    - Two plies from horizon
+//   DEPTH_PREPRE_FRONTIER = 3    - Three plies from horizon
+//
+// Usage:
+//   Depth d = DEPTH_FOUR;
+//   d -= DEPTH_ONE;         // Now DEPTH_THREE
+//   if (d <= DEPTH_ZERO) { /* quiescence search */ }
+//
+//=============================================================================
+
 #include "macros.h"
 #include <format>
 
-///////////////////////////////////
-//// DEPTH
 enum Depth : int {
   DEPTH_NONE  = 0,
   DEPTH_ONE   = 1,

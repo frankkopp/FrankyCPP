@@ -20,27 +20,40 @@
 #ifndef FRANKYCPP_PIECE_H
 #define FRANKYCPP_PIECE_H
 
+//=============================================================================
+// piece.h - Chess Piece Type (Color + PieceType Combined)
+//=============================================================================
+//
+// Piece represents a colored chess piece (e.g., WHITE_KING, BLACK_PAWN).
+// Depends on: macros.h (implicitly uses Color, PieceType concepts)
+//
+// Encoding (4 bits):
+//   Bits 0-2: PieceType (KING=1, PAWN=2, KNIGHT=3, BISHOP=4, ROOK=5, QUEEN=6)
+//   Bit 3:    Color (0=WHITE, 1=BLACK)
+//
+//   PIECE_NONE   = 0b0000 (0)
+//   WHITE_KING   = 0b0001 (1)  ...  WHITE_QUEEN = 0b0110 (6)
+//   BLACK_KING   = 0b1001 (9)  ...  BLACK_QUEEN = 0b1110 (14)
+//   PIECE_LENGTH = 16 (array sizing)
+//
+// Key Operations:
+//   makePiece(color, pt)  - Create piece from color and type
+//   makePiece('K')        - Create piece from FEN character
+//   colorOf(piece)        - Extract color (WHITE/BLACK)
+//   typeOf(piece)         - Extract piece type
+//   str(piece)            - FEN character ('K', 'p', etc.)
+//   validPiece(piece)     - True if valid piece value
+//
+// Usage:
+//   Piece p = makePiece(WHITE, KNIGHT);  // WHITE_KNIGHT
+//   Color c = colorOf(p);                // WHITE
+//   PieceType pt = typeOf(p);            // KNIGHT
+//   char ch = str(p);                    // 'N'
+//
+//=============================================================================
+
 #include "macros.h"
 
-// Piece is a set of constants for pieces in chess
-// Can be used with masks:
-//  No Piece = 0
-//  White Piece is a non zero value with piece & 0b1000 == 0
-//  Black Piece is a non zero value with piece & 0b1000 == 1
-//  PieceNone  = 0b00000
-//  WhiteKing  = 0b00001
-//  WhitePawn  = 0b00010
-//  WhiteKnight= 0b00011
-//  WhiteBishop= 0b00100
-//  WhiteRook  = 0b00101
-//  WhiteQueen = 0b00110
-//  BlackKing  = 0b01001
-//  BlackPawn  = 0b01010
-//  BlackKnight= 0b01011
-//  BlackBishop= 0b01100
-//  BlackRook  = 0b01101
-//  BlackQueen = 0b01110
-//  PieceLength= 0b10000
 enum Piece : int_fast8_t {
  // clang-format off
   PIECE_NONE,

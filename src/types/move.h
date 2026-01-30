@@ -20,6 +20,58 @@
 #ifndef FRANKYCPP_MOVE_H
 #define FRANKYCPP_MOVE_H
 
+//=============================================================================
+// move.h - Chess Move Representation
+//=============================================================================
+//
+// Move is a 32-bit value encoding a chess move with sorting information.
+// Depends on: movetype.h, piecetype.h, value.h
+//
+// Bit Layout (32 bits):
+//
+//   Bits  0-5:  To square (0-63)
+//   Bits  6-11: From square (0-63)
+//   Bits 12-13: Promotion piece type (0-3 → KNIGHT, BISHOP, ROOK, QUEEN)
+//   Bits 14-15: Move type (NORMAL, PROMOTION, ENPASSANT, CASTLING)
+//   Bits 16-31: Sort value (for move ordering)
+//
+//   |-value ------------------------|-Move -------------------------|
+//   3 3 2 2 2 2 2 2 2 2 2 2 1 1 1 1 | 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0
+//   1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 | 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0
+//   --------------------------------|--------------------------------
+//                                   |                     1 1 1 1 1 1  to
+//                                   |         1 1 1 1 1 1              from
+//                                   |     1 1                          promotion piece type
+//                                   | 1 1                              move type
+//   1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |                                  sort value
+//
+// Special Values:
+//   MOVE_NONE = 0    - Invalid / no move
+//
+// Key Operations:
+//   from() / to()         - Source and destination squares
+//   moveType()            - NORMAL, PROMOTION, ENPASSANT, CASTLING
+//   promotionType()       - Piece type for promotions
+//   sortValue()           - Move ordering value
+//   stripped()            - Move without sort value (for comparison)
+//   str()                 - UCI notation ("e2e4", "e7e8q")
+//
+// Construction:
+//   Move::normal(from, to)
+//   Move::promotion(from, to, promType)
+//   Move::enPassant(from, to)
+//   Move::castling(from, to)
+//
+// Usage:
+//   Move m = Move::normal(SQ_E2, SQ_E4);
+//   Square from = m.from();              // SQ_E2
+//   std::string uci = m.str();           // "e2e4"
+//
+//   Move promo = Move::promotion(SQ_E7, SQ_E8, QUEEN);
+//   PieceType pt = promo.promotionType(); // QUEEN
+//
+//=============================================================================
+
 #include "movetype.h"
 #include "piecetype.h"
 #include "value.h"
@@ -30,25 +82,6 @@
 #include <format>
 #include <string>
 
-// Move is now a light-weight value type wrapping a 32bit unsigned integer.
-// Layout (unchanged): 16 bits (low) encode the move itself, upper 16 bits encode a sort value.
-//  MOVE_NONE (raw == 0) represents an invalid / no-move value.
-//
-//  BITMAP 32-bit
-//  |-value ------------------------|-Move -------------------------|
-//  3 3 2 2 2 2 2 2 2 2 2 2 1 1 1 1 | 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0
-//  1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 | 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0
-//  --------------------------------|--------------------------------
-//                                  |                     1 1 1 1 1 1  to
-//                                  |         1 1 1 1 1 1              from
-//                                  |     1 1                          promotion piece type (pt-2 => 0-3)
-//                                  | 1 1                              move type
-//  1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |                                  move sort value
-//
-// Goal of the refactor: encapsulation & expressiveness without degrading performance.
-// The underlying representation and bit manipulation remain identical to the former
-// enum-based implementation. All member functions are constexpr/inline to enable
-// full compile-time folding and inlining comparable to the old free functions.
 class Move {
 public:
   using Raw = uint32_t;// fixed width for stable serialization and cache compatibility

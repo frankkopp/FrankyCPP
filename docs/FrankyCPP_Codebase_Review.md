@@ -343,8 +343,8 @@ The `types/` directory contains well-designed value types:
 |---|------|--------|--------|-------|
 | D1 | Add Doxyfile | 🟢 2-4 hours | ⏭️ SKIP | Overkill; IDE navigation + inline comments sufficient |
 | D2 | Create Architecture.md | 🟡 1-2 days | ✅ DONE | Component relationships, data flow, threading |
-| D3 | Add Doxygen comments to public API | 🟡 3-5 days | ⬜ TODO | Position, Search, Evaluator, etc. |
-| D4 | Document types/ headers | 🟡 2-3 days | ⬜ TODO | Bitboard, Move, Square, Value |
+| D3 | Add Doxygen comments to public API | 🟡 3-5 days | ⏭️ SKIP | Same as D1; inline comments sufficient |
+| D4 | Document types/ headers | 🟡 2-3 days | ✅ DONE | All 24 headers documented with purpose, deps, usage |
 | D5 | Add CONTRIBUTING.md | 🟢 1-2 hours | ⬜ TODO | Code style, PR process |
 
 #### Quick Improvements (Q)

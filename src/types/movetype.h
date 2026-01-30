@@ -17,12 +17,38 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-//
-// Created by frank on 24.09.2025.
-//
-
 #ifndef FRANKYCPP_MOVETYPE_H
 #define FRANKYCPP_MOVETYPE_H
+
+//=============================================================================
+// movetype.h - Move Type Enumeration and Bit Encoding Constants
+//=============================================================================
+//
+// Defines the four types of chess moves and the bit layout constants
+// used to encode/decode moves in the Move class.
+// No internal dependencies.
+//
+// MoveType Values (pre-shifted for efficient encoding):
+//   NORMAL    = 0 << 14    - Regular move (non-special)
+//   PROMOTION = 1 << 14    - Pawn promotion
+//   ENPASSANT = 2 << 14    - En passant capture
+//   CASTLING  = 3 << 14    - Castling move
+//
+// MoveShifts Namespace:
+//   Bit positions and masks for Move encoding:
+//   - FROM_SHIFT (6), PROM_TYPE_SHIFT (12), MOVE_TYPE_SHIFT (14), VALUE_SHIFT (16)
+//   - TO_MASK, FROM_MASK, PROM_TYPE_MASK, MOVE_TYPE_MASK, MOVE_MASK, VALUE_MASK
+//
+// Key Operations:
+//   validMoveType(mt)  - True if valid move type (0-3)
+//   str(mt)            - Single char label ('n', 'p', 'e', 'c')
+//
+// Usage:
+//   MoveType mt = PROMOTION;
+//   bool valid = validMoveType(mt);  // true
+//   char c = str(mt);                // 'p'
+//
+//=============================================================================
 
 // MoveShifts defines the bit shifts and masks for encoding and decoding moves.
 namespace MoveShifts {
@@ -41,13 +67,6 @@ namespace MoveShifts {
   constexpr unsigned int VALUE_MASK = 0xFFFFu << VALUE_SHIFT;// second 16-bit
 }// namespace MoveShifts
 
-// MoveType is used for the different move types we use to encode moves.
-//  Normal
-//  Promotion
-//  EnPassant
-//  Castling
-// Enum values are already shifted to their place in a move to save
-// the time to shift them when creating a move or reading the type.
 enum MoveType : unsigned int {
   NORMAL    = 0 << MoveShifts::MOVE_TYPE_SHIFT,
   PROMOTION = 1 << MoveShifts::MOVE_TYPE_SHIFT,

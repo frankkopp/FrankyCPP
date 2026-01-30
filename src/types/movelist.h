@@ -20,12 +20,37 @@
 #ifndef FRANKYCPP_MOVELIST_H
 #define FRANKYCPP_MOVELIST_H
 
+//=============================================================================
+// movelist.h - Move Collection Container
+//=============================================================================
+//
+// MoveList is a container for chess moves, inheriting from std::vector<Move>.
+// Depends on: move.h
+//
+// Design:
+//   Inherits std::vector<Move> for full STL compatibility (iteration,
+//   push_back, reserve, etc.) while adding chess-specific string output.
+//
+// Key Operations:
+//   str()         - UCI-compatible space-separated move string
+//   strVerbose()  - Detailed debug output with size info
+//   operator<<    - Stream output (uses str())
+//
+// Usage:
+//   MoveList moves;
+//   moves.push_back(Move::normal(SQ_E2, SQ_E4));
+//   moves.push_back(Move::normal(SQ_D2, SQ_D4));
+//
+//   std::string uci = moves.str();  // "e2e4 d2d4"
+//   for (Move& m : moves) { ... }   // STL iteration
+//
+//=============================================================================
+
 #include "move.h"
 #include <ostream>
 #include <sstream>
 #include <vector>
 
-/// A collection of moves inheriting from std::vector
 class MoveList : public std::vector<Move> {
 public:
   using std::vector<Move>::vector;

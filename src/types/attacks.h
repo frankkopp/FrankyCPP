@@ -17,20 +17,37 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-// This is a refactored version of the original header which mixed data, helpers
-// and public API. The public interface is now just Attacks::init() and
-// Attacks::attacks(). Legacy functions getAttacksBb() and initMagicBitboards()
-// remain as thin deprecated wrappers for existing call sites and tests.
-//
-// Design goals:
-//  - Single obvious public API (Attacks::init, Attacks::attacks)
-//  - Hide tables and generation details in an internal namespace (detail)
-//  - Keep compile-time generation of masks/offsets; runtime fill of large tables
-//  - PEXT-only path (HAS_PEXT required); unused magic/shift fields removed
-//  - Idempotent initialization
-//
 #ifndef FRANKYCPP_ATTACKS_H
 #define FRANKYCPP_ATTACKS_H
+
+//=============================================================================
+// attacks.h - Sliding Piece Attack Lookup (Magic Bitboards with PEXT)
+//=============================================================================
+//
+// Provides fast lookup of bishop, rook, and queen attack bitboards using
+// magic bitboards with the PEXT (parallel bits extract) instruction.
+// Depends on: bitboard.h, bitboards.h, orientation.h
+//
+// Public API:
+//   Attacks::init()                    - Initialize attack tables (call once at startup)
+//   Attacks::attacks(pt, sq, occ)      - Get attack bitboard for sliding piece
+//
+// Design:
+//   - PEXT-only path (requires HAS_PEXT / BMI2 CPU support)
+//   - Compile-time generation of masks/offsets
+//   - Runtime fill of large attack tables (idempotent initialization)
+//   - Internal details hidden in Attacks::detail namespace
+//
+// Usage:
+//   Attacks::init();  // Once at startup
+//   Bitboard occ = position.getOccupiedBb();
+//   Bitboard rookAttacks = Attacks::attacks(ROOK, SQ_E4, occ);
+//   Bitboard bishopAttacks = Attacks::attacks(BISHOP, SQ_D5, occ);
+//
+// Note: For non-sliding pieces (king, knight, pawn), use the precomputed
+//       tables in Bitboards:: namespace (nonSliderAttacks, pawnAttacks).
+//
+//=============================================================================
 
 #include "bitboard.h"
 #include "bitboards.h"

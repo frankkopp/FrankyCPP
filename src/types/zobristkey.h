@@ -20,9 +20,33 @@
 #ifndef FRANKYCPP_ZOBRISTKEY_H
 #define FRANKYCPP_ZOBRISTKEY_H
 
+//=============================================================================
+// zobristkey.h - Zobrist Hash Key Type
+//=============================================================================
+//
+// ZobristKey is a 64-bit hash used for position identification in the
+// transposition table and repetition detection.
+// No internal dependencies.
+//
+// Type:
+//   typedef uint64_t ZobristKey;
+//
+// Properties:
+//   - Incrementally updated via XOR when position state changes
+//   - Piece placement, side to move, castling rights, en passant all contribute
+//   - Collision probability is ~1 in 2^64 per comparison
+//
+// Usage:
+//   ZobristKey key = position.getZobristKey();
+//   key ^= Zobrist::piece[piece][square];  // Toggle piece
+//   key ^= Zobrist::side;                  // Toggle side to move
+//
+// See also: chesscore/Zobrist.h for the random number tables
+//
+//=============================================================================
+
 #include <cstdint>
 
-/** 64 bit Key for zobrist etc. */
 typedef uint64_t ZobristKey;
 
 #endif//FRANKYCPP_ZOBRISTKEY_H

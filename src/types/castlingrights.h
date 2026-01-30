@@ -20,14 +20,48 @@
 #ifndef FRANKYCPP_CASTLINGRIGHTS_H
 #define FRANKYCPP_CASTLINGRIGHTS_H
 
+//=============================================================================
+// castlingrights.h - Castling Rights Bitmask
+//=============================================================================
+//
+// CastlingRights encapsulates the castling state as a 4-bit bitmask.
+// Depends on: macros.h, square.h
+//
+// Bit Layout (LSB to MSB):
+//   Bit 0: WHITE_OO   (White kingside,  O-O)   = 0001
+//   Bit 1: WHITE_OOO  (White queenside, O-O-O) = 0010
+//   Bit 2: BLACK_OO   (Black kingside,  O-O)   = 0100
+//   Bit 3: BLACK_OOO  (Black queenside, O-O-O) = 1000
+//
+// Constants:
+//   NO_CASTLING    = 0000    WHITE_CASTLING = 0011
+//   WHITE_OO       = 0001    BLACK_CASTLING = 1100
+//   WHITE_OOO      = 0010    ANY_CASTLING   = 1111
+//   BLACK_OO       = 0100
+//   BLACK_OOO      = 1000
+//
+// Key Operations:
+//   isEmpty()           - True if no castling rights
+//   hasAny(rights)      - True if any of the given rights are set
+//   hasAll(rights)      - True if all the given rights are set
+//   operator+, +=       - Add rights (OR)
+//   operator-, -=       - Remove rights (AND-NOT)
+//   operator&, |        - Bitwise operations
+//   str()               - FEN notation ("KQkq", "-", etc.)
+//
+// Usage:
+//   CastlingRights cr = WHITE_CASTLING | BLACK_OO;  // White both + Black kingside
+//   cr -= WHITE_OOO;                                // Remove white queenside
+//   bool canCastle = cr.hasAny(WHITE_OO);           // true
+//
+//=============================================================================
+
 #include <array>
 #include <string>
 
 #include "macros.h"
 #include "square.h"
 
-// CastlingRights now encapsulates the castling state as a tiny class with
-// a single 8-bit field while preserving existing bitwise semantics.
 class CastlingRights {
   uint_fast8_t v_{};// 4-bit bitmask used; kept as fast 8-bit storage
 

@@ -20,13 +20,30 @@
 #ifndef FRANKYCPP_GLOBALS_H
 #define FRANKYCPP_GLOBALS_H
 
+//=============================================================================
+// globals.h - Global Constants and Utilities
+//=============================================================================
+//
+// This header defines fundamental constants and utilities used throughout
+// FrankyCPP. It has no internal dependencies and is included transitively
+// via types.h.
+//
+// Constants:
+//   START_POSITION_FEN  - Standard chess starting position in FEN notation
+//   GAME_PHASE_MAX      - Maximum game phase value (24 = all pieces on board)
+//   MAX_DEPTH           - Maximum search depth (128 plies)
+//   MAX_MOVES           - Maximum moves in a position (512)
+//   KB, MB, GB          - Size constants for memory calculations
+//
+// Utilities:
+//   deLocale            - European-style number formatting (1.000,00)
+//
+//=============================================================================
+
 #include <locale>
 #include <cstdint>
 #include <iostream>
 #include <chrono>
-
-// Here we define some global constants  to be used throughout the code.
-// As types are imported, likely everywhere this will be included in types.h
 
 // standard chess starting position
 constexpr auto START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";

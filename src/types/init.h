@@ -20,6 +20,24 @@
 #ifndef FRANKYCPP_TYPES_INIT_H
 #define FRANKYCPP_TYPES_INIT_H
 
+//=============================================================================
+// init.h (types) - Type System Initialization
+//=============================================================================
+//
+// Provides initialization for runtime-computed type tables.
+// Depends on: attacks.h
+//
+// Currently initializes:
+//   - Attacks:: magic bitboard tables (sliding piece attacks)
+//
+// Usage:
+//   Types::init();  // Call once at program startup
+//
+// Note: Most type tables are constexpr and require no initialization.
+//       Only the Attacks tables need runtime initialization due to size.
+//
+//=============================================================================
+
 #include "attacks.h"
 
 namespace Types {

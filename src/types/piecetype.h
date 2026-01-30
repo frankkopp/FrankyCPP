@@ -20,20 +20,42 @@
 #ifndef FRANKYCPP_PIECETYPE_H
 #define FRANKYCPP_PIECETYPE_H
 
+//=============================================================================
+// piecetype.h - Chess Piece Type Enumeration
+//=============================================================================
+//
+// PieceType represents the type of a chess piece (without color).
+// Depends on: macros.h
+//
+// Values:
+//   PT_NONE   = 0    - No piece / invalid
+//   KING      = 1    - King (non-sliding)
+//   PAWN      = 2    - Pawn (non-sliding)
+//   KNIGHT    = 3    - Knight (non-sliding)
+//   BISHOP    = 4    - Bishop (sliding)
+//   ROOK      = 5    - Rook (sliding)
+//   QUEEN     = 6    - Queen (sliding)
+//   PT_LENGTH = 7    - Sentinel / array size
+//
+// Bit Pattern Design:
+//   Non-sliding pieces: (pt & 0b0100) == 0 && pt != 0
+//   Sliding pieces:     (pt & 0b0100) != 0 && pt < 7
+//
+// Key Operations:
+//   validPieceType(pt)   - True if PT_NONE through QUEEN
+//   gamePhaseValue(pt)   - Phase contribution (K=0, P=0, N=1, B=1, R=2, Q=4)
+//   str(pt)              - Single char label (" KPNBRQ")
+//
+// Usage:
+//   PieceType pt = KNIGHT;
+//   bool sliding = (pt & 0b0100) != 0;  // false
+//   int phase = gamePhaseValue(pt);     // 1
+//
+//=============================================================================
+
 #include "macros.h"
 #include <string>
 
-// PieceType is a set of constants for piece types in chess
-//  test for non sliding pt & 0b0100 == 0 (must also be none zero)
-//  test for sliding pt & 0b0100 == 1 (must also be < 7)
-//  PtNone   = 0b0000
-//  King     = 0b0001 // non sliding
-//  Pawn     = 0b0010 // non sliding
-//  Knight   = 0b0011 // non sliding
-//  Bishop   = 0b0100 // sliding
-//  Rook     = 0b0101 // sliding
-//  Queen    = 0b0110 // sliding
-//  PtLength = 0b0111
 enum PieceType : uint_fast8_t {
   PT_NONE, // 0
   KING,    // 1 non sliding

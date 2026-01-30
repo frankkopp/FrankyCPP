@@ -20,6 +20,41 @@
 #ifndef FRANKYCPP_VALUE_H
 #define FRANKYCPP_VALUE_H
 
+//=============================================================================
+// value.h - Chess Position Evaluation Value Type
+//=============================================================================
+//
+// Value represents a position evaluation score in centipawns.
+// Depends on: globals.h, macros.h, piece.h, piecetype.h
+//
+// Encoding:
+//   16-bit signed integer (int16_t), range roughly -15000 to +15000
+//   Positive = advantage for side to move, Negative = disadvantage
+//
+// Special Constants:
+//   VALUE_ZERO   = 0       - Draw / equal position
+//   VALUE_ONE    = 1       - Minimal unit
+//   VALUE_MIN    = -10000  - Minimum "normal" evaluation
+//   VALUE_MAX    = +10000  - Maximum "normal" evaluation (also checkmate)
+//   VALUE_INF    = 15000   - Infinity (for alpha-beta bounds)
+//   VALUE_NONE   = -15001  - Invalid / uninitialized
+//   VALUE_CHECKMATE           = VALUE_MAX
+//   VALUE_CHECKMATE_THRESHOLD = Threshold for mate scores
+//
+// Key Operations:
+//   isValid()        - True if within valid range or VALUE_NONE
+//   isCheckMate()    - True if value represents a checkmate score
+//   str()            - UCI format ("cp 125" or "mate 3")
+//   valueOf(pt)      - Piece type value (P=100, N=320, B=330, R=500, Q=900)
+//   valueOf(piece)   - Piece value
+//
+// Usage:
+//   Value eval = Value{150};           // +1.5 pawns advantage
+//   Value mate = VALUE_CHECKMATE - 4;  // Mate in 2
+//   std::string s = eval.str();        // "cp 150"
+//
+//=============================================================================
+
 #include "globals.h"
 #include "macros.h"
 #include "piece.h"
@@ -28,7 +63,6 @@
 #include <format>
 #include <string>
 
-// Small value class wrapping a 16-bit signed score.
 class Value {
   int16_t v_{};
 

@@ -20,18 +20,32 @@
 #ifndef FRANKYCPP_ORIENTATION_H
 #define FRANKYCPP_ORIENTATION_H
 
+//=============================================================================
+// orientation.h - Compass Direction Enumeration
+//=============================================================================
+//
+// Orientation represents the 8 compass directions from a square, used for
+// ray attacks and direction-based lookups.
+// No internal dependencies.
+//
+// Values (clockwise from NW):
+//   NW = 0    N = 1    NE = 2
+//   W  = 7             E  = 3
+//   SW = 6    S = 5    SE = 4
+//
+//   OR_LENGTH = 8  (array sizing sentinel)
+//
+// Note: Different from Direction which uses step offsets (+8, -1, etc.).
+//       Orientation is an index (0-7) for direction-indexed arrays.
+//
+// Usage:
+//   Orientation dir = NE;
+//   Bitboard rays = rayAttacks[sq][dir];
+//
+//=============================================================================
+
 #include <cstdint>
 
-// Orientation is a set of constants for directions from a squares
-//  NW,       // 0
-//  N,        // 1
-//  NE,       // 2
-//  E,        // 3
-//  SE,       // 4
-//  S,        // 5
-//  SW,       // 6
-//  W,        // 7
-//  OR_LENGTH // 8
 enum Orientation : uint_fast8_t {
   NW,      // 0
   N,       // 1

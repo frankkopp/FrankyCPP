@@ -20,20 +20,40 @@
 #ifndef FRANKYCPP_VALUETYPE_H
 #define FRANKYCPP_VALUETYPE_H
 
+//=============================================================================
+// valuetype.h - Transposition Table Entry Value Type
+//=============================================================================
+//
+// ValueType indicates the bound type for a value stored in the transposition
+// table. Used to determine how the cached value can be used during search.
+// No internal dependencies.
+//
+// Values:
+//   NONE  = 0  - No valid value (uninitialized entry)
+//   EXACT = 1  - Exact score (PV node, fully searched)
+//   ALPHA = 2  - Upper bound (fail-low, no move beat alpha)
+//   BETA  = 3  - Lower bound (fail-high, beta cutoff)
+//
+// Search Semantics:
+//   EXACT: Value is the true minimax score; can be used directly
+//   ALPHA: True value <= stored value; useful if stored <= alpha
+//   BETA:  True value >= stored value; useful if stored >= beta
+//
+// Usage:
+//   TTEntry entry = tt->probe(key);
+//   if (entry.type == EXACT) return entry.value;
+//   if (entry.type == BETA && entry.value >= beta) return entry.value;
+//   if (entry.type == ALPHA && entry.value <= alpha) return entry.value;
+//
+//=============================================================================
+
 #include <cstdint>
 
-///////////////////////////////////
-//// VALUE TYPE
 enum ValueType : uint_fast8_t {
-  NONE = 0,
-  // the node for the value was fully calculated and is exact
+  NONE  = 0,
   EXACT = 1,
-  // the node for the value has NOT found a value > alpha so alpha is
-  // upper bound (value could be worse)
   ALPHA = 2,
-  // the node for the value has found a refutation (value > beta) and has
-  // been cut off. Value is a lower bound (could be better).
-  BETA = 3,
+  BETA  = 3,
 };
 
 #endif//FRANKYCPP_VALUETYPE_H

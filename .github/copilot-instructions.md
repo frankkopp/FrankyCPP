@@ -4,7 +4,7 @@
 
 ## ⚠️ Code Change Authorization Rules
 
-**CRITICAL: Only make code changes when explicitly requested or clearly implied by user intent**
+**CRITICAL: Only make code changes of other write operations (e.g. git commit) when explicitly requested or clearly implied by user intent**
 
 ### When CODE CHANGES are allowed:
 - User uses action verbs: "implement", "fix", "change", "update", "add", "remove", "refactor", "proceed"
@@ -23,6 +23,21 @@
 - User reports a problem but doesn't explicitly say "fix it"
 - User shows logs/errors without requesting action
 - Ambiguous requests like "thoughts?" or "what about this?"
+
+### Non-code actions ALWAYS allowed:
+- Reading files
+- Searching text
+- Analyzing logs
+- Providing explanations or suggestions without code changes
+- Asking clarifying questions
+- Providing code snippets without applying changes
+- Guiding user through manual steps
+
+### Non-code actions FORBIDDEN:
+- Making code changes without explicit permission
+- Committing code without explicit permission
+- Pushing code to remote repositories without explicit permission
+- Any write operations not explicitly authorized by the user, e.g. modifying files, changing configurations, etc.
 
 ---
 

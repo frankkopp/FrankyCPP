@@ -20,10 +20,47 @@
 #ifndef FRANKYCPP_MACROS_H
 #define FRANKYCPP_MACROS_H
 
-#include "globals.h"
+//=============================================================================
+// macros.h - Convenience Macros and Operator Generators
+//=============================================================================
+//
+// This header provides utility macros for the FrankyCPP codebase.
+// Depends on: globals.h
+//
+// Categories:
+//
+// 1. OUTPUT MACROS
+//    println(s)          - Print string with newline
+//    fprint(...)         - Formatted print (European locale)
+//    fprintln(...)       - Formatted print with newline
+//    DEBUG(...)          - Debug output with file:line prefix
+//
+// 2. OPERATOR GENERATORS (Stockfish-style)
+//    These macros generate arithmetic/comparison operators for enum-like types:
+//
+//    ENABLE_BASE_OPERATORS_ON(T)       - +, -, unary-, +=, -=
+//    ENABLE_INCR_OPERATORS_ON(T)       - ++, --
+//    ENABLE_FULL_OPERATORS_ON(T)       - All above + *, /, mixed int ops
+//    ENABLE_COMPARISON_OPERATORS_ON(T) - ==, !=, <, <=, >, >=
+//    ENABLE_MIXED_COMPARISONS_ON(T)    - T vs int comparisons
+//
+// 3. FORMATTER GENERATORS
+//    ENABLE_FORMATTER_AS_STRING_VIEW_ON(T) - std::format via T::str()
+//    ENABLE_FORMATTER_AS_CHAR_ON(T)        - std::format for char types
+//    ENABLE_FORMATTER_AS_INT_ON(T)         - std::format as integer
+//
+// 4. OSTREAM GENERATORS
+//    ENABLE_OSTREAM_OPERATOR_AS_INT_ON(T)  - operator<< as int
+//    ENABLE_OSTREAM_OPERATOR_AS_STR_ON(T)  - operator<< via T::str()
+//
+// Usage:
+//    enum class MyType : int { ... };
+//    ENABLE_FULL_OPERATORS_ON(MyType)
+//    ENABLE_FORMATTER_AS_INT_ON(MyType)
+//
+//=============================================================================
 
-// Here we define some convenience macros to be used throughout the code.
-// As types are imported likely everywhere this will be included in types.h
+#include "globals.h"
 
 #define sleepForSec(x) std::this_thread::sleep_for(std::chrono::seconds(x));
 #define NEWLINE std::cout << std::endl

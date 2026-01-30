@@ -20,6 +20,48 @@
 #ifndef FRANKYCPP_SQUARE_H
 #define FRANKYCPP_SQUARE_H
 
+//=============================================================================
+// square.h - Chess Board Square Type
+//=============================================================================
+//
+// Square represents a single square on the chess board (a1 through h8).
+// Depends on: color.h, file.h, rank.h, macros.h
+//
+// Encoding (Little-Endian Rank-File):
+//   Value = rank * 8 + file
+//   SQ_A1 = 0, SQ_H1 = 7, SQ_A8 = 56, SQ_H8 = 63, SQ_NONE = 64
+//
+//     a  b  c  d  e  f  g  h
+//   +--+--+--+--+--+--+--+--+
+// 8 |56|57|58|59|60|61|62|63|
+// 7 |48|49|50|51|52|53|54|55|
+// 6 |40|41|42|43|44|45|46|47|
+// 5 |32|33|34|35|36|37|38|39|
+// 4 |24|25|26|27|28|29|30|31|
+// 3 |16|17|18|19|20|21|22|23|
+// 2 | 8| 9|10|11|12|13|14|15|
+// 1 | 0| 1| 2| 3| 4| 5| 6| 7|
+//   +--+--+--+--+--+--+--+--+
+//
+// Key Operations:
+//   Square::of(file, rank)  - Create from file and rank
+//   file() / rank()         - Extract file or rank
+//   distanceTo(sq)          - Chebyshev distance to another square
+//   pawnPush(color)         - Square after pawn push
+//   fromString("e4")        - Parse from UCI notation
+//   str()                   - Convert to UCI notation ("e4")
+//
+// Iteration:
+//   for (Square sq : Square::all()) { ... }  // 0..63
+//
+// Usage:
+//   Square sq = SQ_E4;
+//   File f = sq.file();           // FILE_E
+//   Rank r = sq.rank();           // RANK_4
+//   Square next = sq.pawnPush(WHITE);  // SQ_E5
+//
+//=============================================================================
+
 #include "color.h"
 #include "file.h"
 #include "macros.h"
@@ -32,8 +74,6 @@
 #include <string>
 #include <string_view>
 
-// Square represents exactly one square on a chess board backed by an unsigned value.
-//  A1 = 0 ... H8 = 63, NONE = 64
 class Square {
   std::uint8_t v_{};// 0..63 valid squares, 64 = NONE (fits in one byte)
 

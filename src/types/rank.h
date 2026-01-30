@@ -20,12 +20,38 @@
 #ifndef FRANKYCPP_RANK_H
 #define FRANKYCPP_RANK_H
 
+//=============================================================================
+// rank.h - Chess Board Rank Type (1-8)
+//=============================================================================
+//
+// Rank represents a horizontal row on the chess board (1 through 8).
+// Depends on: color.h, macros.h
+//
+// Values:
+//   RANK_1 = 0  ...  RANK_8 = 7    - Valid ranks
+//   RANK_NONE = 8                  - Invalid / sentinel
+//
+// Note: Internal value 0 = Rank 1, value 7 = Rank 8 (zero-indexed)
+//
+// Key Operations:
+//   toChar()           - Returns '1'-'8' (or '-' if invalid)
+//   fromChar(c)        - Converts '1'-'8' to Rank
+//   distance(r)        - Absolute distance to another rank
+//   isValid()          - True if RANK_1 through RANK_8
+//   promotionFor(c)    - Returns promotion rank for color (RANK_8/RANK_1)
+//   pawnDoubleFor(c)   - Returns double-push start rank (RANK_2/RANK_7)
+//
+// Usage:
+//   Rank r = RANK_4;
+//   char c = r.toChar();                    // '4'
+//   Rank promo = Rank::promotionFor(WHITE); // RANK_8
+//
+//=============================================================================
+
 #include "color.h"
 #include "macros.h"
 #include <format>
 
-// Rank represents a chess board rank 1-8 as a small class with an unsigned
-// underlying value [0..8]
 class Rank {
   std::uint8_t v_{};// 0..7 = 1..8, 8 = NONE
 

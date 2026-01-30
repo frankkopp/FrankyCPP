@@ -20,13 +20,41 @@
 #ifndef FRANKYCPP_DIRECTION_H
 #define FRANKYCPP_DIRECTION_H
 
+//=============================================================================
+// direction.h - Board Direction Offsets for Piece Movement
+//=============================================================================
+//
+// Direction represents a step offset for moving on the 64-square board.
+// Depends on: macros.h, square.h
+//
+// Encoding:
+//   Signed offset in mailbox-64 representation (A1=0, H8=63)
+//   Positive = north/east, Negative = south/west
+//
+// Constants:
+//   NORTH = +8    SOUTH = -8    (rank change)
+//   EAST  = +1    WEST  = -1    (file change)
+//   NORTH_EAST = +9    SOUTH_WEST = -9   (diagonals)
+//   NORTH_WEST = +7    SOUTH_EAST = -7   (anti-diagonals)
+//
+// Key Operations:
+//   Direction::pawnPush(color)  - Returns +8 (WHITE) or -8 (BLACK)
+//   Square + Direction          - Move square in direction
+//   Square - Direction          - Move square in opposite direction
+//
+// Usage:
+//   Square e4 = SQ_E4;
+//   Square e5 = e4 + NORTH;           // one rank up
+//   Square f5 = e4 + NORTH_EAST;      // diagonal
+//   Direction push = Direction::pawnPush(WHITE);  // +8
+//
+//=============================================================================
+
 #include "macros.h"
 #include "square.h"
 
 #include <cstdint>
 
-// Direction is a lightweight value-type wrapper around a signed step offset
-// in mailbox-64 representation (A1=0 ... H8=63). Positive values move north/east.
 class Direction {
   int_fast8_t v_{}; // step in [-9, +9] domain for our use cases
 

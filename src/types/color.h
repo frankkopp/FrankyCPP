@@ -20,12 +20,36 @@
 #ifndef FRANKYCPP_COLOR_H
 #define FRANKYCPP_COLOR_H
 
+//=============================================================================
+// color.h - Chess Side/Color Type
+//=============================================================================
+//
+// Color represents the side to move in chess (White or Black).
+// Depends on: macros.h
+//
+// Values:
+//   WHITE   = 0    - White pieces / White to move
+//   BLACK   = 1    - Black pieces / Black to move
+//   NOCOLOR = 2    - Invalid / no color (sentinel)
+//
+// Key Operations:
+//   opposite()     - Returns the other color (WHITE <-> BLACK)
+//   sign()         - Returns +1 for WHITE, -1 for BLACK (useful for pawn direction)
+//   operator~(c)   - Same as opposite() (bitwise NOT style)
+//   isValid()      - True if WHITE or BLACK
+//
+// Iteration:
+//   for (Color c : Color::all()) { ... }  // iterates WHITE, BLACK
+//
+// Usage:
+//   Color side = WHITE;
+//   Color enemy = side.opposite();   // BLACK
+//   int dir = side.sign() * 8;       // +8 for WHITE pawn push, -8 for BLACK
+//
+//=============================================================================
+
 #include "macros.h"
 
-// Color represents chess side to move as a small class with an unsigned underlying value
-//  WHITE   = 0,
-//  BLACK   = 1,
-//  NOCOLOR = 2
 class Color {
   unsigned v_{}; // 0..1 valid, 2 = NONE
 

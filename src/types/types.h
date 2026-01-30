@@ -20,6 +20,27 @@
 #ifndef FRANKYCPP_TYPES_H
 #define FRANKYCPP_TYPES_H
 
+//=============================================================================
+// types.h - Aggregate Include for All Core Types
+//=============================================================================
+//
+// Convenience header that includes all type definitions used throughout
+// FrankyCPP. Include this single header to get access to all core types.
+//
+// Included types:
+//   - Board: Bitboard, Square, File, Rank, Direction, Orientation
+//   - Pieces: Color, Piece, PieceType
+//   - Moves: Move, MoveType, MoveList
+//   - Values: Value, ValueType, Score, Depth
+//   - State: CastlingRights, ZobristKey
+//   - Tables: Bitboards::*, Attacks::*
+//   - Utilities: globals, macros, timeunits
+//
+// Usage:
+//   #include "types/types.h"  // Gets everything
+//
+//=============================================================================
+
 // include all type headers for convenience
 #include "attacks.h"
 #include "bitboard.h"
