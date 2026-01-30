@@ -35,8 +35,9 @@
 //    fprintln(...)       - Formatted print with newline
 //    DEBUG(...)          - Debug output with file:line prefix
 //
-// 2. OPERATOR GENERATORS (Stockfish-style)
-//    These macros generate arithmetic/comparison operators for enum-like types:
+// 2. OPERATOR GENERATORS
+//    These macros generate arithmetic/comparison operators for enum-like types.
+//    A common C++ pattern for strongly-typed enums that need arithmetic.
 //
 //    ENABLE_BASE_OPERATORS_ON(T)       - +, -, unary-, +=, -=
 //    ENABLE_INCR_OPERATORS_ON(T)       - ++, --
@@ -71,8 +72,9 @@
 #define DEBUG(...) std::cout << std::format(deLocale, "DEBUG {}:{} {}", __FILE__, __LINE__, __VA_ARGS__) << std::endl
 #define TICK(tp) fprintln("{:L} ns: function: {}() line: {}", elapsedSince(tp).count(), __FUNCTION__, __LINE__)
 
-// These are convenience macros to define custom operators on our types.
-// This idea and code is taken from Stockfish
+// Convenience macros to define custom operators on strongly-typed enum types.
+// A common C++ pattern for enums that need arithmetic operators.
+// See: https://www.chessprogramming.org/Score#702
 #define ENABLE_BASE_OPERATORS_ON(T)                                                                         \
   constexpr T operator+(T d1, T d2) { return static_cast<T>(static_cast<int>(d1) + static_cast<int>(d2)); } \
   constexpr T operator-(T d1, T d2) { return static_cast<T>(static_cast<int>(d1) - static_cast<int>(d2)); } \

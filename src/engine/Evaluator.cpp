@@ -149,7 +149,8 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
   tmpScore.midgame = VALUE_ZERO;
   tmpScore.endgame = VALUE_ZERO;
 
-  // evaluations inspired by Stockfish
+  // Pawn structure evaluation
+  // See: https://www.chessprogramming.org/Pawn_Structure
   for (const Color color : Color::all()) {
     const Bitboard myPawns  = p.getPieceBb(color, PAWN);
     const Bitboard oppPawns = p.getPieceBb(~color, PAWN);

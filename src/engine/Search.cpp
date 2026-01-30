@@ -771,9 +771,10 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     }
   }
 
-  // Razoring from Stockfish
-  // When static eval is well below alpha at the last node
-  // jump directly into qsearch
+  // Razoring
+  // https://www.chessprogramming.org/Razoring
+  // When static eval is well below alpha at the last node,
+  // jump directly into qsearch.
   if (SearchConfig.USE_RAZORING
       && depth == 1
       && staticEval != VALUE_NONE
