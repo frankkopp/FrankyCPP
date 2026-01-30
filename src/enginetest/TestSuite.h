@@ -20,6 +20,36 @@
 #ifndef FRANKYCPP_TESTSUITE_H
 #define FRANKYCPP_TESTSUITE_H
 
+//=============================================================================
+// TestSuite.h - EPD Test Suite Runner
+//=============================================================================
+//
+// Test harness for running EPD-like chess test suites against the engine.
+// Loads test positions, runs search on each, and evaluates results against
+// expected moves or mate depths.
+// Depends on: Search.h, types.h
+//
+// Supported Test Types:
+//   DM (direct mate)  - Expect search to find mate in N moves
+//   BM (best move)    - Expect engine's move to be in target set
+//   AM (avoid move)   - Expect engine's move NOT to be in target set
+//
+// EPD Input Format:
+//   <FEN> <type> <result> ; [ id "<ID>" ; ]
+//
+// Example:
+//   r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 2 3 bm Ng5 ; id "Test1" ;
+//   8/8/8/8/8/8/6K1/6Qr b - - 0 1 dm 1 ; id "Mate in 1" ;
+//
+// Usage:
+//   TestSuite suite(milliseconds{2000}, 30, "path/to/suite.epd");
+//   suite.runTestSuite();
+//   TestSuiteResult result = suite.getLastResult();
+//
+// See detailed documentation in the @file block below.
+//
+//=============================================================================
+
 /**
  * @file TestSuite.h
  * @brief Test harness for running EPD-like chess test suites against the engine.
@@ -91,59 +121,56 @@
 
 #include "common/gtest_friends.h"
 
-// supported test types
-// DM = direct mate
-// BM = best move
-// AM = avoid move
+/// Test types supported by the test suite.
 enum TestType {
-  NOOP,
-  DM,
-  BM,
-  AM
+  NOOP,  ///< Invalid/uninitialized test
+  DM,    ///< Direct mate - expect mate in N
+  BM,    ///< Best move - engine move must be in target set
+  AM     ///< Avoid move - engine move must NOT be in target set
 };
 
-// resultType define possible results for a test as a type and constants.
+/// Result of a single test.
 enum ResultType {
-  NOT_TESTED,
-  SKIPPED,
-  FAILED,
-  SUCCESS
+  NOT_TESTED,  ///< Test has not been run yet
+  SKIPPED,     ///< Test was skipped
+  FAILED,      ///< Test failed (wrong move or no mate found)
+  SUCCESS      ///< Test passed
 };
 
 inline const char* testTypeStr[]   = {"noop", "dm", "bm", "am"};
 inline const char* resultTypeStr[] = {"Not tested", "Skipped", "Failed", "Success"};
 
-// SuiteResult data structure to collect sum of the results of tests.
+/// Aggregated results from running a test suite.
 struct TestSuiteResult {
-  int counter          = 0;
-  int successCounter   = 0;
-  int failedCounter    = 0;
-  int skippedCounter   = 0;
-  int notTestedCounter = 0;
-  uint64_t nodes       = 0;
-  nanoseconds time     = 0s;
+  int counter          = 0;   ///< Total tests run
+  int successCounter   = 0;   ///< Tests that passed
+  int failedCounter    = 0;   ///< Tests that failed
+  int skippedCounter   = 0;   ///< Tests that were skipped
+  int notTestedCounter = 0;   ///< Tests not run
+  uint64_t nodes       = 0;   ///< Total nodes searched
+  nanoseconds time     = 0s;  ///< Total search time
 };
 
-// A Test struct holds all information to run a test and
-// has fields to store the test's result
-// Tests are created when reading a test file.
+/// Holds all information for a single test case.
+/// Created when reading test file, updated with results after running.
 struct Test {
-  std::string id{};
-  std::string fen{};
-  TestType type{NOOP};
-  MoveList targetMoves{};
-  Depth mateDepth{DEPTH_NONE};
-  Move expected{MOVE_NONE};
-  Move actualMove{MOVE_NONE};
-  Value actualValue{VALUE_NONE};
-  ResultType result{NOT_TESTED};
-  std::string line{};
-  uint64_t nodes{};
-  nanoseconds time{};
-  uint64_t nps{};
+  std::string id{};            ///< Test identifier from EPD
+  std::string fen{};           ///< Position FEN
+  TestType type{NOOP};         ///< Type of test (DM, BM, AM)
+  MoveList targetMoves{};      ///< Expected/avoided moves (BM/AM)
+  Depth mateDepth{DEPTH_NONE}; ///< Expected mate depth (DM)
+  Move expected{MOVE_NONE};    ///< First expected move (for display)
+  Move actualMove{MOVE_NONE};  ///< Engine's chosen move
+  Value actualValue{VALUE_NONE}; ///< Engine's reported score
+  ResultType result{NOT_TESTED}; ///< Test result
+  std::string line{};          ///< Original EPD line
+  uint64_t nodes{};            ///< Nodes searched for this test
+  nanoseconds time{};          ///< Time spent on this test
+  uint64_t nps{};              ///< Nodes per second
 };
 
-// A TestSuite provides the ability to run chess test positions
+/// Runs EPD test suites against the chess engine.
+/// Parses test files, executes searches, and reports results.
 class TestSuite {
 
   std::vector<Test> testCases;
@@ -153,43 +180,53 @@ class TestSuite {
   TestSuiteResult lastResult{};
 
 public:
-  // Creates a TestSuite instance for a given test file
-  // with given search time and max search depth
-  // Reads all tests from the file. To run the tests call runTestSuite()
+  /// Creates a TestSuite for the given test file.
+  /// Reads all tests from the file. Call runTestSuite() to execute.
+  /// @param time        Search time limit per test
+  /// @param searchDepth Maximum search depth per test
+  /// @param filePath    Path to EPD test file
   TestSuite(const milliseconds& time, Depth searchDepth, const std::string& filePath);
 
-
-  // runs the tests
+  /// Runs all tests in the suite and prints results.
   void runTestSuite();
 
-  // returns the last test result summary
+  /// Returns the aggregated results from the last run.
+  /// @return Reference to TestSuiteResult
   const TestSuiteResult& getLastResult() const { return lastResult; }
 
 private:
-  // reads all tests from the given file into the given list
+  /// Reads all test cases from file into the provided vector.
   static void readTestCases(const std::string& filePathStr, std::vector<Test>& tests);
 
-  // reads on EPD file and creates a Test
+  /// Parses one EPD line into a Test struct.
+  /// @return True if successfully parsed, false otherwise
   static bool readOneEPD(std::string& line, Test& test);
 
-  // removes leading and trailing whitespace and comments
+  /// Removes leading/trailing whitespace and comments from a line.
   static std::string& cleanUpLine(std::string& line);
 
-  // runs all tests in the testCases list
+  /// Runs all tests in testCases list.
   void runAllTests();
 
-  // determines which test type the test is and call the appropriate test function.
+  /// Dispatches a single test to the appropriate test function.
   static void runSingleTest(Search& search, SearchLimits& limits, Test& test);
 
+  /// Runs a direct mate test.
   static void directMateTest(Search& search, SearchLimits& limits, const Position& position, Test& test);
+
+  /// Runs a best-move test.
   static void bestMoveTest(Search& search, const SearchLimits& limits, const Position& position, Test& test);
+
+  /// Runs an avoid-move test.
   static void avoidMoveTest(Search& search, const SearchLimits& limits, const Position& position, Test& test);
 
-  // goes through all results and sums up the result type for each test
+  /// Aggregates results from all tests.
   TestSuiteResult sumUpTests() const;
 
-  // prints a report of the test results
+  /// Prints the report header.
   void printReportHeader();
+
+  /// Prints the final report with elapsed time.
   void printReport(nanoseconds elapsed);
 
   FRIEND_TEST(TestSuite_Test, readFile);

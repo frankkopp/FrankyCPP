@@ -20,14 +20,52 @@
 #ifndef FRANKYCPP_ZOBRIST_H
 #define FRANKYCPP_ZOBRIST_H
 
+//=============================================================================
+// Zobrist.h - Zobrist Hashing Tables and PRNG
+//=============================================================================
+//
+// Provides Zobrist hash keys for position identification in the transposition
+// table and repetition detection. Keys are pseudo-random 64-bit values
+// generated at compile time.
+// Depends on: types.h
+//
+// Zobrist Hashing:
+//   Each position component (piece placement, castling, en passant, side)
+//   has a unique random key. The position hash is computed by XORing all
+//   applicable keys together. XOR allows incremental updates: toggling a
+//   component twice returns to the original hash.
+//
+// Tables (in Zobrist:: namespace):
+//   pieces[piece][square]       - Key for each piece on each square
+//   castlingRights[cr]          - Key for each castling rights combination
+//   enPassantFile[file]         - Key for en passant on each file
+//   nextPlayer                  - Key XORed when Black to move
+//
+// PRNG:
+//   Uses xorshift64* algorithm for high-quality pseudo-random numbers.
+//   Algorithm by Sebastiano Vigna (2014), based on George Marsaglia's
+//   xorshift generators (2003). Used for Zobrist table generation and
+//   magic bitboard initialization.
+//
+// Usage:
+//   ZobristKey key = 0;
+//   key ^= Zobrist::pieces[WHITE_PAWN][SQ_E4];  // Add white pawn on e4
+//   key ^= Zobrist::nextPlayer;                  // Toggle side to move
+//   key ^= Zobrist::castlingRights[WHITE_OO];    // Add castling right
+//
+//=============================================================================
+
 #include "types/types.h"
 
 #include <array>
 #include <cassert>
 #include <cstdint>
 
-// PRNG moved from zobristkey.h
-// from Stockfish: xorshift64star Pseudo-Random Number Generator
+/// Performs one step of xorshift64* PRNG algorithm.
+/// Algorithm by Sebastiano Vigna (2014), based on Marsaglia's xorshift (2003).
+/// Produces high-quality pseudo-random 64-bit values.
+/// @param s  PRNG state (modified in place)
+/// @return   Next pseudo-random value
 constexpr uint64_t xorshift64star_step(uint64_t& s) {
   s ^= s >> 12;
   s ^= s << 25;
@@ -35,8 +73,9 @@ constexpr uint64_t xorshift64star_step(uint64_t& s) {
   return s * 2685821657736338717ULL;
 }
 
-// PRNG moved from zobristkey.h
-// from Stockfish: xorshift64star Pseudo-Random Number Generator
+/// Pseudo-Random Number Generator using xorshift64* algorithm.
+/// Algorithm by Sebastiano Vigna (2014). Used for magic number generation
+/// and Zobrist key initialization.
 class PRNG {
   uint64_t s;
 
@@ -45,32 +84,41 @@ class PRNG {
   }
 
 public:
+  /// Creates a PRNG with the given seed.
+  /// @param seed  Initial state (must be non-zero)
   explicit PRNG(const uint64_t seed) : s(seed) { assert(seed); }
 
+  /// Generates a random value of type T.
+  /// @tparam T  Return type (typically uint64_t or Bitboard)
+  /// @return    Random value
   template <typename T>
   T rand() { return T(rand64()); }
 
-  // Special generator used to fast init magic numbers.
-  // Output values only have 1/8th of their bits set on average.
+  /// Generates a sparse random value with ~1/8 of bits set on average.
+  /// Used for fast magic number initialization.
+  /// @tparam T  Return type
+  /// @return    Sparse random value
   template <typename T>
   T sparse_rand() { return T(rand64() & rand64() & rand64()); }
 };
 
+/// Zobrist hashing tables for position identification.
 namespace Zobrist {
-  // Compile-time generator reproducing the same PRNG stream as PRNG
+  /// Compile-time PRNG step (same algorithm as PRNG class).
   constexpr uint64_t xorshift64star_next(uint64_t& s) {
     return xorshift64star_step(s);
   }
 
+  /// Compile-time generated Zobrist tables.
   struct Tables {
     std::array<std::array<ZobristKey, SQ_LENGTH>, PIECE_LENGTH> pieces{};
     std::array<ZobristKey, CR_LENGTH> castlingRights{};
     std::array<ZobristKey, FILE_LENGTH> enPassantFile{};
     ZobristKey nextPlayer{};
 
-    // Fill all tables from a single PRNG stream seeded like before
+    /// Generates all Zobrist keys at compile time using a fixed seed.
     constexpr Tables() {
-      uint64_t state = 1070372ULL; // same seed as before
+      uint64_t state = 1070372ULL; // fixed seed for reproducibility
       // pieces
       for (int pc = 0; pc < PIECE_LENGTH; ++pc) {
         for (int sq = 0; sq < SQ_LENGTH; ++sq) {
@@ -90,20 +138,19 @@ namespace Zobrist {
     }
   };
 
+  /// Compile-time instantiated tables.
   inline constexpr Tables T{};
 
-  // Expose tables with the same names used across the project
-
-  // Zobrist piece keys [piece][square]
+  /// Zobrist piece keys indexed by [piece][square].
   inline constexpr auto& pieces = T.pieces;
 
-  // Zobrist castling rights keys [castlingRights]
+  /// Zobrist castling rights keys indexed by [castlingRights].
   inline constexpr auto& castlingRights = T.castlingRights;
 
-  // Zobrist en passant file keys [file]
+  /// Zobrist en passant file keys indexed by [file].
   inline constexpr auto& enPassantFile = T.enPassantFile;
 
-  // Zobrist key for the side to move
+  /// Zobrist key XORed when Black is to move.
   inline constexpr ZobristKey nextPlayer = T.nextPlayer;
 }// namespace Zobrist
 

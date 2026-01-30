@@ -20,9 +20,23 @@
 #ifndef FRANKYCPP_MISC_H
 #define FRANKYCPP_MISC_H
 
+//=============================================================================
+// misc.h - Miscellaneous Utility Functions
+//=============================================================================
+//
+// Contains various utility functions that don't fit into other categories.
+//
+// Functions:
+//   printProgress() - Generate ASCII progress bar string
+//
+//=============================================================================
+
 #include <string>
 #include <format>
 
+/// Generates an ASCII progress bar string.
+/// @param percentage  Progress value from 0.0 to 1.0
+/// @return            Formatted string like "50% [||||||||||          ]"
 inline std::string printProgress(double percentage) {
   constexpr int pbarw  = 60;
   constexpr auto pbar = "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||";

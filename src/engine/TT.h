@@ -20,6 +20,43 @@
 #ifndef FRANKYCPP_TT_H
 #define FRANKYCPP_TT_H
 
+//=============================================================================
+// TT.h - Transposition Table
+//=============================================================================
+//
+// The Transposition Table (TT) caches search results to avoid re-searching
+// positions that have been visited before via different move orders.
+// Depends on: types.h
+//
+// Design:
+//   - Heap-allocated array of Entry structs
+//   - Size is always a power of two for efficient hash masking
+//   - Single entry per hash slot (no buckets - testing showed 20% slower)
+//   - Struct with bitfields is 9% faster than manual bit manipulation
+//   - Not thread-safe (no synchronization)
+//
+// Entry Structure (16 bytes):
+//   - key:       64-bit Zobrist key for collision detection
+//   - move:      16-bit best move (without sort value)
+//   - eval:      16-bit static evaluation
+//   - value:     16-bit search value
+//   - depth:     7-bit search depth (0-127)
+//   - age:       3-bit generation counter (0-7)
+//   - type:      2-bit value type (NONE, EXACT, ALPHA, BETA)
+//   - mateThreat: 1-bit flag
+//
+// Prefetching:
+//   TT_PREFETCH macro prefetches entry into CPU cache before probe.
+//   Significantly improves lookup performance.
+//
+// Usage:
+//   TT tt(64);  // 64 MB table
+//   tt.put(key, depth, move, value, EXACT, eval);
+//   const TT::Entry* entry = tt.probe(key);
+//   if (entry && entry->depth >= depth) { ... }
+//
+//=============================================================================
+
 #include <iosfwd>
 
 #include "common/gtest_friends.h"
@@ -107,73 +144,80 @@ private:
   std::unique_ptr<Entry[]> _data = std::make_unique<Entry[]>(maxNumberOfEntries);
 
 public:
-  // TT default size is 2 MB
+  /// Creates a TT with default size (2 MB).
   TT() : TT(DEFAULT_TT_SIZE) {}
 
-  /**
-   * @param newSizeInMByte Size of TT in bytes which will be reduced to the next lowest power of 2 size
-   *                        Limited to 32.000MB
-   */
+  /// Creates a TT with the specified size.
+  /// Size will be reduced to the next lowest power of 2.
+  /// @param newSizeInMByte  Size in megabytes (limited to 32,768 MB)
   explicit TT(uint64_t newSizeInMByte);
 
   ~TT() = default;
 
-  // disallow copies
-  TT(TT const& tt)          = delete;// copy
-  TT& operator=(const TT&)  = delete;// copy assignment
-  TT(TT const&& tt)         = delete;// move
-  TT& operator=(const TT&&) = delete;// move assignment
+  // disallow copies and moves
+  TT(TT const& tt)          = delete;
+  TT& operator=(const TT&)  = delete;
+  TT(TT const&& tt)         = delete;
+  TT& operator=(const TT&&) = delete;
 
-  /**
-   * Changes the size of the transposition table and clears all entries.
-   * @param newSizeInMByte in Byte which will be reduced to the next
-   * lowest power of 2 size. Limited to 32.000 MB.
-   */
+  /// Changes the size of the transposition table and clears all entries.
+  /// @param newSizeInMByte  Size in megabytes, reduced to next lowest power of 2.
+  ///                        Limited to 32,768 MB.
   void resize(uint64_t newSizeInMByte);
 
-  /** Clears the transposition table be resetting all entries to 0. */
+  /// Clears the transposition table by resetting all entries to zero.
   void clear();
 
-  /**
-   * Stores the node value and the depth it has been calculated at.
-   * Also stores the best move for the node.
-   * OBS: move will be stripped of any value before storing as we store value
-   * separately and it may be surprising that a MOVE_NONE has a value.
-   * @param key Position key (usually Zobrist key)
-   * @param depth 0-DEPTH_MAX (usually 127)
-   * @param move best move of the node (when BETA best move until cut off)
-   * @param value Value of the position between VALUE_MIN and VALUE_MAX
-   * @param type EXACT, ALPHA or BETA
-   * @param eval Static evaluation of the position
-   */
+  /// Stores a position in the transposition table.
+  /// The move will be stripped of any sort value before storing, as value
+  /// is stored separately. This avoids surprising behavior where MOVE_NONE
+  /// might appear to have a value.
+  /// @param key    Position key (usually Zobrist key)
+  /// @param depth  Search depth (0 to DEPTH_MAX, usually 127)
+  /// @param move   Best move of the node (for BETA: best move until cutoff)
+  /// @param value  Search value between VALUE_MIN and VALUE_MAX
+  /// @param type   Value bound type: EXACT, ALPHA, or BETA
+  /// @param eval   Static evaluation of the position
   void put(ZobristKey key, Depth depth, Move move, Value value, ValueType type, Value eval);
 
-  /**
-   * This retrieves a ptr to the entry of this node from cache.
-   *
-   * @param key Position key (usually Zobrist key)
-   * @return Pointer to entry for key or nullptr if not found
-   */
+  /// Retrieves an entry matching the given key without updating statistics.
+  /// @param key  Position key (usually Zobrist key)
+  /// @return     Pointer to matching entry, or nullptr if not found
   const Entry* getMatch(const ZobristKey key) const {
     const Entry* const entryPtr = getEntryPtrConst(key);
     return entryPtr->key == key ? entryPtr : nullptr;
   }
 
-  /**
-   * Looks up and returns a pointer to an TT Entry. Decreases age of the entry
-   * if an entry was found
-   */
+  /// Probes the TT for an entry matching the key.
+  /// Updates hit/miss statistics and decreases age of found entry.
+  /// @param key  Position key (usually Zobrist key)
+  /// @return     Pointer to matching entry, or nullptr if not found
   const Entry* probe(const ZobristKey& key);
 
-  /** Age all entries by 1 */
+  /// Ages all entries by incrementing their age counter.
+  /// Called at the start of each new search to help with replacement.
   void ageEntries();
 
-  /** Returns how full the transposition table is in permill as per UCI */
+  /// Returns how full the transposition table is in permill (0-1000).
+  /// Used for UCI "hashfull" info output.
+  /// @return  Fill level in permill
   [[nodiscard]] int hashFull() const {
     return static_cast<int>((1000 * numberOfEntries) / maxNumberOfEntries);
   };
 
-  // using prefetch improves probe lookup speed significantly
+  /// Prefetches the TT entry for the given key into the CPU cache.
+  ///
+  /// Call this as early as possible before probe(), ideally with other work
+  /// in between (e.g., move generation, evaluation setup) to give the memory
+  /// subsystem time to fetch the data. The prefetch is asynchronous and does
+  /// not block execution. Optimal timing is 100-300 cycles before the actual
+  /// memory access, depending on memory latency.
+  ///
+  /// Uses _MM_HINT_T0 which fetches into all cache levels (L1, L2, L3).
+  /// Significantly improves probe() performance by hiding memory latency,
+  /// especially for large TT sizes that don't fit in CPU cache.
+  ///
+  /// @param key  Position key to prefetch
   void prefetch(const ZobristKey key) const {
 #ifdef TT_ENABLE_PREFETCH
     _mm_prefetch((reinterpret_cast<const char*>(&_data[(key & hashKeyMask)])), _MM_HINT_T0);
@@ -182,40 +226,75 @@ public:
 #endif
   }
 
-  /** return a string representation of the TT instance */
+  /// Returns a string representation of the TT instance for debugging.
+  /// @return  Debug string with size and statistics
   std::string str() const;
 
 private:
-  /* generates the index hash key from the position key  */
+  /// Generates the index from the position key using bitmask.
+  /// @param key  Position key
+  /// @return     Array index for the entry
   std::size_t getHash(const ZobristKey key) const {
     return key & hashKeyMask;
   }
 
-  /* This retrieves a direct pointer to the entry of this node from cache */
+  /// Returns a mutable pointer to the entry for the given key.
+  /// @param key  Position key
+  /// @return     Pointer to the entry slot
   Entry* getEntryPtr(const ZobristKey key) const {
     return &_data[getHash(key)];
   }
 
-  /* Const-friendly accessor used in const methods */
+  /// Returns a const pointer to the entry for the given key.
+  /// @param key  Position key
+  /// @return     Const pointer to the entry slot
   const Entry* getEntryPtrConst(const ZobristKey key) const {
     return &_data[getHash(key)];
   }
 
-  /** GETTER and SETTER */
 public:
+  // === Getters ===
+
+  /// Returns the size of the TT in bytes.
   uint64_t getSizeInByte() const { return sizeInByte; }
+
+  /// Returns the maximum number of entries the TT can hold.
   std::size_t getMaxNumberOfEntries() const { return maxNumberOfEntries; }
+
+  /// Returns the current number of entries stored.
   std::size_t getNumberOfEntries() const { return numberOfEntries; }
+
+  /// Returns the total number of put() calls.
   uint64_t getNumberOfPuts() const { return numberOfPuts; }
+
+  /// Returns the number of hash collisions (different position, same slot).
   uint64_t getNumberOfCollisions() const { return numberOfCollisions; }
+
+  /// Returns the number of overwrites (replaced existing entry).
   uint64_t getNumberOfOverwrites() const { return numberOfOverwrites; }
+
+  /// Returns the number of updates (same position, updated entry).
   uint64_t getNumberOfUpdates() const { return numberOfUpdates; }
+
+  /// Returns the total number of probe() calls.
   uint64_t getNumberOfProbes() const { return numberOfProbes; }
+
+  /// Returns the number of successful probes (entry with matching key found).
   uint64_t getNumberOfHits() const { return numberOfHits; }
+
+  /// Returns the number of failed probes (no matching entry found).
   uint64_t getNumberOfMisses() const { return numberOfMisses; }
+
+  /// Returns the number of threads used for clearing.
   unsigned int getThreads() const { return noOfThreads; }
+
+  /// Sets the number of threads used for clearing.
+  /// @param threads  Number of threads (minimum 1)
   void setThreads(const int threads) { noOfThreads = threads > 0 ? static_cast<unsigned int>(threads) : 1u; }
 
+  /// Converts a ValueType to its string representation.
+  /// @param type  ValueType to convert
+  /// @return      "NONE", "EXACT", "ALPHA", or "BETA"
   static std::string str(const ValueType type) {
     switch (type) {
       case NONE:

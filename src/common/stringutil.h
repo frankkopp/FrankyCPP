@@ -20,14 +20,45 @@
 #ifndef FRANKYCPP_STRINGUTIL_H
 #define FRANKYCPP_STRINGUTIL_H
 
-// see https://gitlab.com/tbeu/wcx_setfolderdate/-/blob/master/src/splitstring.h
-// see https://stackoverflow.com/a/236803/8520615
+//=============================================================================
+// stringutil.h - String Manipulation Utilities
+//=============================================================================
+//
+// Provides efficient string manipulation functions used throughout the engine.
+// All functions are designed for performance with minimal allocations.
+//
+// Functions:
+//   splitFast()              - Split string by delimiters into vector
+//   trimFast()               - Remove leading/trailing whitespace
+//   removeTrailingComments() - Strip comments from end of string
+//   toLowerCase()            - Convert to lowercase (copy or in-place)
+//   toUpperCase()            - Convert to uppercase (copy or in-place)
+//   boolStr()                - Convert bool to "true"/"false" string
+//
+// Template Support:
+//   splitFast and trimFast work with both std::string and std::string_view,
+//   avoiding unnecessary copies when views are sufficient.
+//
+// Performance Notes:
+//   trimFast is significantly faster than regex-based or find_first_not_of
+//   alternatives. See commented benchmarks at end of file.
+//
+// Credits:
+//   splitFast inspired by: https://gitlab.com/tbeu/wcx_setfolderdate
+//   See also: https://stackoverflow.com/a/236803/8520615
+//
+//=============================================================================
 
 #include <algorithm>
 #include <string>
 #include <vector>
 
-// splits a string or string view into a vector of parts at each delimiter
+/// Splits a string or string_view into parts at each delimiter character.
+/// Empty parts between consecutive delimiters are skipped.
+/// @tparam StringType  std::string or std::string_view
+/// @param str          String to split
+/// @param container    Vector to append parts to (not cleared first)
+/// @param delims       Delimiter characters (default: space)
 template<typename StringType>
 void splitFast(const StringType& str, std::vector<StringType>& container, const std::string& delims = " ") {
   for (auto first = str.data(), second = str.data(), end = first + str.size();
@@ -40,8 +71,11 @@ void splitFast(const StringType& str, std::vector<StringType>& container, const 
   }
 }
 
-// removes whitespace characters from beginning and end of string s
-// whitespaces are defined as:  ' ' || '\t' || '\n' || '\v' || '\f' || '\r'
+/// Removes whitespace from beginning and end of string.
+/// Whitespace: space, tab, newline, vertical tab, form feed, carriage return.
+/// @tparam StringType  std::string or std::string_view
+/// @param s            String to trim
+/// @return             Trimmed copy (or view if input is string_view)
 template<typename StringType>
 StringType trimFast(const StringType& s) {
   const int l = static_cast<int>(s.length());
@@ -52,7 +86,11 @@ StringType trimFast(const StringType& s) {
   return s.substr(a, 1 + b - a);
 }
 
-// removes trailing parts of a string after a given commentMarker
+/// Removes trailing portion of string after a comment marker.
+/// @tparam StringType   std::string or std::string_view
+/// @param s             String to process
+/// @param commentMarker Comment start string (e.g., "//" or "#")
+/// @return              String with comment removed, or original if no marker
 template<typename StringType>
 StringType removeTrailingComments(const StringType& s, const std::string& commentMarker) {
   const auto pos = s.find(commentMarker);
@@ -62,34 +100,46 @@ StringType removeTrailingComments(const StringType& s, const std::string& commen
   return s;
 }
 
-// transforms the given string to lower case
+/// Converts string to lowercase (returns copy).
+/// @param s  Input string
+/// @return   Lowercase copy
 inline std::string toLowerCase(const std::string& s) {
   std::string str(s);
   std::ranges::transform(str, str.begin(), [](const unsigned char c) { return static_cast<char>(std::tolower(c)); });
   return str;
 }
 
-// transforms the given string to lower case in place
+/// Converts string to lowercase in place.
+/// @param str  String to modify
 inline void toLowerCase(std::string& str) {
   std::ranges::transform(str, str.begin(), [](const unsigned char c) { return static_cast<char>(std::tolower(c)); });
 }
 
-// transforms the given string to upper case
+/// Converts string to uppercase (returns copy).
+/// @param s  Input string
+/// @return   Uppercase copy
 inline std::string toUpperCase(const std::string& s) {
   std::string str(s);
   std::ranges::transform(str, str.begin(), [](const unsigned char c) { return static_cast<char>(std::toupper(c)); });
   return str;
 }
 
-// transforms the given string to upper case in place
+/// Converts string to uppercase in place.
+/// @param str  String to modify
 inline void toUpperCase(std::string& str) {
   std::ranges::transform(str, str.begin(), [](const unsigned char c) { return static_cast<char>(std::toupper(c)); });
 }
 
+/// Converts boolean to "true" or "false" string literal.
+/// @param b  Boolean value
+/// @return   "true" or "false"
 constexpr const char* boolStr(const bool b) {
   return b ? "true" : "false";
 }
 
+/// Converts integer to "true" or "false" string literal.
+/// @param b  Integer value (0 = false, non-zero = true)
+/// @return   "true" or "false"
 constexpr const char* boolStr(const int b) {
   return boolStr(static_cast<bool>(b));
 }

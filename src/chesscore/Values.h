@@ -20,12 +20,47 @@
 #ifndef FRANKYCPP_EVALUATION_H
 #define FRANKYCPP_EVALUATION_H
 
+//=============================================================================
+// Values.h - Piece Values and Piece-Square Tables (PST)
+//=============================================================================
+//
+// Contains material values and piece-square tables used for position
+// evaluation. All tables are computed at compile time for zero runtime cost.
+// Depends on: types.h
+//
+// Material Values:
+//   Defined in types/value.h: Pawn=100, Knight=320, Bishop=330, Rook=500, Queen=900
+//
+// Piece-Square Tables (PST):
+//   Each piece type has midgame and endgame tables that give positional
+//   bonuses/penalties based on square placement. Tables are defined upright
+//   (a8 at top-left) for readability and transposed at compile time.
+//
+// Table Structure:
+//   - Raw tables: pawnsMidGame[], pawnsEndGame[], knightMidGame[], etc.
+//   - Precomputed lookups: posMidValue[piece][square], posEndValue[piece][square]
+//   - Blended lookup: posValue[piece][square][gamePhase]
+//
+// Game Phase Blending:
+//   Position values are interpolated between midgame and endgame based on
+//   game phase (0=endgame, GAME_PHASE_MAX=opening). This is called "tapered
+//   evaluation" and produces smooth transitions as pieces are exchanged.
+//
+// Usage:
+//   Value midBonus = Values::posMidValue[WHITE_KNIGHT][SQ_E4];
+//   Value endBonus = Values::posEndValue[WHITE_KNIGHT][SQ_E4];
+//   Value blended  = Values::posValue[WHITE_KNIGHT][SQ_E4][gamePhase];
+//
+//=============================================================================
+
 #include "types/types.h"
 #include <array>
 
 namespace Values {
 
-  /// Tables are upright for easier reading - will be transposed in compile-time initialization
+  /// Note: Tables are defined upright for easier reading (a8 at top-left).
+  /// They are transposed during compile-time initialization to match
+  /// the internal square mapping (a1=0).
 
   // clang-format off
   // PAWN Tables
@@ -235,9 +270,9 @@ namespace Values {
     }
   }
 
-  // Holds precomputed posMidValue[Piece][Square] for all pieces and squares
-  // Used to quickly update position value when a piece is added or removed
-  // during move making and unmaking
+  /// Precomputed midgame position values: posMidValue[piece][square].
+  /// Used for fast incremental updates during move making/unmaking.
+  /// Indexed by Piece enum and Square enum.
   inline constexpr std::array<std::array<Value, SQ_LENGTH>, PIECE_LENGTH> posMidValue = [] {
     std::array<std::array<Value, SQ_LENGTH>, PIECE_LENGTH> arr{};
     for (int pc = 0; pc < PIECE_LENGTH; ++pc) {
@@ -248,9 +283,9 @@ namespace Values {
     return arr;
   }();
 
-  // Holds precomputed posEndValue[Piece][Square] for all pieces and squares
-  // Used to quickly update position value when a piece is added or removed
-  // during move making and unmaking
+  /// Precomputed endgame position values: posEndValue[piece][square].
+  /// Used for fast incremental updates during move making/unmaking.
+  /// Indexed by Piece enum and Square enum.
   inline constexpr std::array<std::array<Value, SQ_LENGTH>, PIECE_LENGTH> posEndValue = [] {
     std::array<std::array<Value, SQ_LENGTH>, PIECE_LENGTH> arr{};
     for (int pc = 0; pc < PIECE_LENGTH; ++pc) {
@@ -261,9 +296,10 @@ namespace Values {
     return arr;
   }();
 
-  // Holds precomputed posValue[Piece][Square][GamePhase] for all pieces, squares and game phases
-  // Used to quickly get the blended position value during evaluation
-  // without having to do the blending calculation each time
+  /// Precomputed blended position values: posValue[piece][square][gamePhase].
+  /// Returns the tapered evaluation for any game phase without runtime blending.
+  /// gamePhase ranges from 0 (pure endgame) to GAME_PHASE_MAX (pure opening).
+  /// Indexed by Piece enum, Square enum, and game phase integer.
   inline constexpr std::array<std::array<std::array<Value, GAME_PHASE_MAX + 1>, SQ_LENGTH>, PIECE_LENGTH> posValue = [] {
     std::array<std::array<std::array<Value, GAME_PHASE_MAX + 1>, SQ_LENGTH>, PIECE_LENGTH> arr{};
     for (int pc = 0; pc < PIECE_LENGTH; ++pc) {

@@ -266,6 +266,7 @@ The `types/` directory contains well-designed value types:
 | Q3 | Add `ENABLE_SANITIZERS` option | 🟢 2-4 hours | 🟢 Low | Optional ASan/UBSan for Debug builds to catch memory issues |
 | Q4 | Enable GCC/Clang toolchains | 🟡 3-5 days | 🟡 Medium | Uncomment/update compiler sections, handle intrinsics, test on Linux/macOS |
 | Q5 | Reduce header coupling | 🟡 1-2 weeks | 🟡 Medium | Audit includes, add forward declarations, split large headers |
+| Q6 | Remove Stockfish references | 🟢 1-2 hours | 🟢 Low | Replace "from Stockfish" comments with proper technique citations due to GPL/MIT license incompatibility. Files: `macros.h`, `Search.cpp`. See: Razoring (chessprogramming.org), operator macros (common C++ pattern) |
 
 ---
 
@@ -356,6 +357,7 @@ The `types/` directory contains well-designed value types:
 | Q3 | Add `ENABLE_SANITIZERS` option | 🟢 2-4 hours | ⬜ TODO | ASan/UBSan for Debug |
 | Q4 | Enable GCC/Clang toolchains | 🟡 3-5 days | ⬜ TODO | Cross-platform testing |
 | Q5 | Reduce header coupling | 🟡 1-2 weeks | ⬜ TODO | Incremental refactoring |
+| Q6 | Remove Stockfish references | 🟢 1-2 hours | ⬜ TODO | GPL/MIT license fix in macros.h, Search.cpp |
 
 ---
 

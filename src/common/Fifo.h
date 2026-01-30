@@ -20,14 +20,48 @@
 #ifndef FRANKYCPP_FIFO_H
 #define FRANKYCPP_FIFO_H
 
+//=============================================================================
+// Fifo.h - Thread-Safe FIFO Queue
+//=============================================================================
+//
+// A synchronized FIFO (First-In-First-Out) queue for thread-safe producer/
+// consumer patterns. Built on std::queue with mutex and condition variable.
+//
+// Thread Safety:
+//   All operations are thread-safe. Multiple threads can push and pop
+//   concurrently without external synchronization.
+//
+// Blocking Operations:
+//   pop_wait() blocks until an item is available or close() is called.
+//   Useful for consumer threads that should wait for work.
+//
+// Close/Open:
+//   close() wakes all waiting threads and causes pop_wait() to return
+//   immediately with empty optional. open() re-enables waiting.
+//
+// Usage:
+//   Fifo<std::string> queue;
+//
+//   // Producer thread
+//   queue.push("work item");
+//
+//   // Consumer thread
+//   while (auto item = queue.pop_wait()) {
+//     process(*item);
+//   }
+//
+//   // Shutdown
+//   queue.close();  // Wakes consumer, pop_wait returns nullopt
+//
+//=============================================================================
+
 #include <condition_variable>
 #include <mutex>
 #include <optional>
 #include <queue>
 
-/**
- * Synchronized FIFO queue based on std::queue and std::deque
- */
+/// Thread-safe FIFO queue with blocking pop support.
+/// @tparam T  Element type stored in the queue
 template<class T>
 class Fifo {
 
@@ -40,26 +74,26 @@ public:
   Fifo()  = default;
   ~Fifo() = default;
 
-  // copy
+  /// Copy constructor (thread-safe).
   Fifo(Fifo const& other) {
     std::scoped_lock lock{other.fifoLock};
     fifo = other.fifo;
   }
 
-  // copy assignment
+  /// Copy assignment operator (thread-safe).
   Fifo& operator=(const Fifo& other) {
     std::scoped_lock lock(fifoLock, other.fifoLock);
     fifo = other.fifo;
     return *this;
   }
 
-  // move
+  /// Move constructor (thread-safe).
   Fifo(Fifo const&& other) noexcept {
     std::scoped_lock lock{other.fifoLock};
     fifo = std::move(other.fifo);
   }
 
-  // move assignment
+  /// Move assignment operator (thread-safe).
   Fifo& operator=(Fifo&& other) noexcept {
     if (this != &other) {
       std::scoped_lock lock(fifoLock, other.fifoLock);
@@ -68,9 +102,9 @@ public:
     return *this;
   }
 
-  /**
-   * Pushes an item onto the fifo queue
-   */
+  /// Pushes an item onto the queue (copy).
+  /// Wakes one waiting consumer thread.
+  /// @param t  Item to push
   void push(T& t) {
     {
       std::scoped_lock lock{fifoLock};
@@ -79,9 +113,9 @@ public:
     cv.notify_one();
   }
 
-  /**
-   * Pushes an item onto the fifo queue using a move reference
-   */
+  /// Pushes an item onto the queue (move).
+  /// Wakes one waiting consumer thread.
+  /// @param t  Item to move into queue
   void push(T&& t) {
     {
       std::scoped_lock lock{fifoLock};
@@ -90,11 +124,8 @@ public:
     cv.notify_one();
   }
 
-  /**
-   * Retrieves an std::optional with the next item from the Fifo and removes
-   * the item from the queue.
-   * Returns an empty optional if called on empty list.
-   */
+  /// Pops an item from the queue (non-blocking).
+  /// @return  Item if available, empty optional if queue is empty
   std::optional<T> pop() {
     std::scoped_lock lock{fifoLock};
     if (fifo.empty()) return std::nullopt;
@@ -103,12 +134,9 @@ public:
     return t;
   }
 
-  /**
-   * Retrieves an std::optional with the next item from the Fifo and removes
-   * the item from the queue.
-   * Changes the given std::optional reference and returns it.
-   * the optional will be an empty optional if called on empty list.
-   */
+  /// Pops an item from the queue into provided optional (non-blocking).
+  /// @param t  Optional to populate with item
+  /// @return   Same optional (for chaining), empty if queue was empty
   std::optional<T> pop(std::optional<T>& t) {
     std::scoped_lock lock{fifoLock};
     if (fifo.empty()) return std::nullopt;
@@ -117,11 +145,9 @@ public:
     return t;
   }
 
-  /**
-   * Retrieves the next item from the Fifo . Blocks if the Fifo is empty and
-   * waits until an item becomes available. Block can be canceled be calling
-   * Fifo.close in which case this will return nullptr.
-   */
+  /// Pops an item from the queue, blocking if empty.
+  /// Blocks until an item is available or close() is called.
+  /// @return  Item if available, empty optional if closed and empty
   std::optional<T> pop_wait() {
     std::unique_lock lock{fifoLock};
     if (closedFlag && fifo.empty()) return std::nullopt;
@@ -132,11 +158,10 @@ public:
     return t;
   }
 
-  /**
-   * Retrieves the next item from the Fifo. Blocks if the Fifo is empty and
-   * waits until an item becomes available. Block can be canceled be calling
-   * Fifo.close in which case this will return nullptr.
-   */
+  /// Pops an item into provided optional, blocking if empty.
+  /// Blocks until an item is available or close() is called.
+  /// @param t  Optional to populate with item
+  /// @return   Same optional, empty if closed and empty
   std::optional<T> pop_wait(std::optional<T>& t) {
     std::unique_lock lock{fifoLock};
     if (closedFlag && fifo.empty()) return std::nullopt;
@@ -147,46 +172,38 @@ public:
     return t;
   }
 
-  /**
-   * Wakes up waiting threads and does not wait when calling pop_wait() any
-   * longer.
-   */
+  /// Closes the queue, waking all waiting threads.
+  /// After close(), pop_wait() returns immediately with empty optional
+  /// if no items are available.
   void close() {
     std::scoped_lock lock{fifoLock};
     closedFlag = true;
     cv.notify_all();
   }
 
-  /**
-   * Allows pop_wait() to wait for new entries into the fifo. This is allowed by
-   * default but can be disabled by a call to close().
-   */
+  /// Reopens the queue, allowing pop_wait() to block again.
+  /// Reverses the effect of close().
   void open() {
     std::scoped_lock lock{fifoLock};
     closedFlag = false;
   }
 
-  /**
-   * Checks if a call to pop_wait() will actually wait for new entries.
-   * If returning true the call to pop_wait() will not wait but return
-   * immediately wither with an item if available or with an empty std::optional
-   */
+  /// Checks if the queue is closed.
+  /// @return  True if close() was called and open() was not called since
   bool isClosed() const {
     std::scoped_lock lock{fifoLock};
     return closedFlag;
   }
 
-  /**
-   * Checks if fif queue is empty.
-   */
+  /// Checks if the queue is empty.
+  /// @return  True if no items in queue
   bool empty() const {
     std::scoped_lock lock{fifoLock};
     return fifo.empty();
   }
 
-  /**
-   * Number of items in the fifo queue.
-   */
+  /// Returns the number of items in the queue.
+  /// @return  Current queue size
   std::size_t size() const {
     std::scoped_lock lock{fifoLock};
     return fifo.size();

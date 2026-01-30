@@ -20,22 +20,49 @@
 #ifndef FRANKYCPP_BOOKENTRY_H
 #define FRANKYCPP_BOOKENTRY_H
 
-/**
- * An entry in the opening book data structure. Stores a key (e.g. zobrist key)
- * for the position, the current fen, a count of how often a position is in the
- * book and two vectors storing the moves from the position and the key to the
- * book entry for the corresponding move.
- */
+//=============================================================================
+// bookentry.h - Opening Book Entry Data Structure
+//=============================================================================
+//
+// Represents a single entry in the opening book. Each entry corresponds to
+// a position and stores the moves that can be played from that position.
+// Depends on: types.h (for ZobristKey, Move)
+//
+// Structure:
+//   - key: Zobrist hash of the position for lookup
+//   - counter: How often this position appears in the book source
+//   - moves: Available moves from this position
+//   - nextPosition: Zobrist keys of resulting positions after each move
+//
+// Serialization:
+//   Uses Boost.Serialization for saving/loading book to binary format.
+//   This avoids re-parsing PGN/SAN files on every startup.
+//
+// Usage:
+//   BookEntry entry(position.getZobristKey());
+//   entry.moves.push_back(move);
+//   entry.nextPosition.push_back(newPositionKey);
+//   entry.counter++;
+//
+//=============================================================================
+
+/// An entry in the opening book representing a position and its available moves.
 class BookEntry {
 public:
-  ZobristKey key{};
-  int counter{1};
-  std::vector<Move> moves{};
-  std::vector<ZobristKey> nextPosition{};
+  ZobristKey key{};                      ///< Zobrist hash of the position
+  int counter{1};                        ///< Number of times this position appears in book source
+  std::vector<Move> moves{};             ///< Available moves from this position
+  std::vector<ZobristKey> nextPosition{};///< Zobrist keys after each corresponding move
 
-  BookEntry() = default;// necessary for serialization
+  /// Default constructor (required for Boost serialization).
+  BookEntry() = default;
+
+  /// Creates an entry for a position with the given Zobrist key.
+  /// @param zobrist  Zobrist hash of the position
   explicit BookEntry(const ZobristKey zobrist) : key(zobrist) {}
 
+  /// Returns a string representation for debugging.
+  /// @return  Debug string with key, counter, and moves
   [[nodiscard]] std::string str() const {
     std::ostringstream os;
     os << this->key << " (" << this->counter << ")"
@@ -49,6 +76,8 @@ public:
 
   // BOOST Serialization
   friend class boost::serialization::access;
+
+  /// Serializes/deserializes the entry for Boost.Serialization.
   template<class Archive>
   void serialize(Archive& ar, [[maybe_unused]] const unsigned int version) {
     ar& BOOST_SERIALIZATION_NVP(key);

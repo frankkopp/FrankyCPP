@@ -20,6 +20,43 @@
 #ifndef FRANKYCPP_PAWNTT_H
 #define FRANKYCPP_PAWNTT_H
 
+//=============================================================================
+// PawnTT.h - Pawn Structure Evaluation Cache
+//=============================================================================
+//
+// PawnTT caches pawn structure evaluations to avoid recalculating them.
+// Pawn structure changes infrequently (only on pawn moves or captures),
+// so caching provides significant speedup.
+// Depends on: types.h
+//
+// Design:
+//   - Heap-allocated array of Entry structs
+//   - Size is always a power of two for efficient hash masking
+//   - Uses pawn-specific Zobrist key (only pawn positions contribute)
+//   - Single entry per hash slot (no buckets)
+//   - Not thread-safe (no synchronization)
+//
+// Entry Structure (16 bytes):
+//   - key:      64-bit pawn Zobrist key
+//   - midvalue: 16-bit midgame pawn structure score
+//   - endvalue: 16-bit endgame pawn structure score
+//
+// Prefetching:
+//   EVAL_PREFETCH macro prefetches entry into CPU cache before evaluation.
+//   Call as early as possible before the actual lookup.
+//
+// Usage:
+//   PawnTT pawnCache(4);  // 4 MB cache
+//   Entry* entry = pawnCache.getEntryPtr(pawnKey);
+//   if (entry->key == pawnKey) {
+//     // Cache hit - use entry->midvalue and entry->endvalue
+//   } else {
+//     // Cache miss - calculate pawn eval, then store
+//     pawnCache.put(entry, pawnKey, score);
+//   }
+//
+//=============================================================================
+
 #include "types/types.h"
 #include <format>
 #include <string>
@@ -39,11 +76,8 @@
 #define EVAL_PREFETCH void(0);
 #endif
 
-/**
- * TT implementation for pawn evaluations using heap memory and simple hash for entries.
- * The number of entries are always a power of two fitting into the given size.
- * It is not yet thread safe as it has no synchronization.
- */
+/// Pawn structure evaluation cache using heap memory with simple hash indexing.
+/// Size is always a power of two. Not thread-safe.
 class PawnTT {
 
 public:
@@ -51,12 +85,13 @@ public:
   static constexpr uint64_t DEFAULT_TT_SIZE = 2;// MByte
   static constexpr uint64_t MAX_SIZE_MB     = 4'096;
 
-  /** Entry struct for the eval cache */
+  /// Entry struct storing cached pawn evaluation scores.
   struct Entry {
-    ZobristKey key = 0;
-    Value midvalue = VALUE_NONE;
-    Value endvalue = VALUE_NONE;
+    ZobristKey key = 0;      ///< Pawn-specific Zobrist key
+    Value midvalue = VALUE_NONE;  ///< Midgame pawn structure score
+    Value endvalue = VALUE_NONE;  ///< Endgame pawn structure score
 
+    /// Returns string representation for debugging.
     [[nodiscard]] std::string str() const {
       return std::format("id {} midvalue {} endvalue {}", key, midvalue, endvalue);
     }
@@ -94,50 +129,61 @@ private:
   std::unique_ptr<Entry[]> _data = std::make_unique<Entry[]>(maxNumberOfEntries);
 
 public:
-  // TT default size is 2 MB
+  /// Creates a PawnTT with default size (2 MB).
   PawnTT() : PawnTT(DEFAULT_TT_SIZE) {}
 
-  // newSizeInMByte Size of TT in bytes which will be reduced to the next lowest power of 2 size
+  /// Creates a PawnTT with the specified size.
+  /// Size will be reduced to the next lowest power of 2.
+  /// @param newSizeInMByte  Size in megabytes (limited to 4,096 MB)
   explicit PawnTT(uint64_t newSizeInMByte);
 
   ~PawnTT() = default;
 
-  // disallow copies
-  PawnTT(PawnTT const& tt)          = delete;// copy
-  PawnTT& operator=(const PawnTT&)  = delete;// copy assignment
-  PawnTT(PawnTT const&& tt)         = delete;// move
-  PawnTT& operator=(const PawnTT&&) = delete;// move assignment
+  // disallow copies and moves
+  PawnTT(PawnTT const& tt)          = delete;
+  PawnTT& operator=(const PawnTT&)  = delete;
+  PawnTT(PawnTT const&& tt)         = delete;
+  PawnTT& operator=(const PawnTT&&) = delete;
 
-  /**
-   * Changes the size of the transposition table and clears all entries.
-   * @param newSizeInMByte in Byte which will be reduced to the next
-   * lowest power of 2 size. Limited to 32.000 MB.
-   */
+  /// Changes the size of the pawn cache and clears all entries.
+  /// @param newSizeInMByte  Size in megabytes, reduced to next lowest power of 2.
+  ///                        Limited to 4,096 MB.
   void resize(uint64_t newSizeInMByte);
 
-  /** Clears the transposition table be resetting all entries to 0. */
+  /// Clears the pawn cache by resetting all entries to zero.
   void clear();
 
-  // putEntry stores a Score for a pawn structure represented by the
-  // pawn zobrist key in the cache. As usually a query happens before this
-  // we can expect that the pointer to the entry is already known
-  // and can be provided. Otherwise a call to getEntryPtr is necessary.
+  /// Stores a pawn evaluation score in the cache.
+  /// As usually a query happens before storing, the entry pointer is typically
+  /// already known from getEntryPtr(). This avoids a redundant hash lookup.
+  /// @param entryPtr  Pointer to the entry slot (from getEntryPtr)
+  /// @param key       Pawn Zobrist key
+  /// @param score     Pawn structure score (midgame + endgame)
   void put(Entry* entryPtr, ZobristKey key, Score score);
 
-  /* This retrieves a direct pointer to the entry of this node from cache */
+  /// Returns a pointer to the entry for the given pawn key.
+  /// The entry may or may not match the key - caller must verify.
+  /// @param key  Pawn Zobrist key
+  /// @return     Pointer to the entry slot
   Entry* getEntryPtr(const ZobristKey key) const {
     return &_data[getHash(key)];
   }
 
-  /* generates the index hash key from the position key  */
+  /// Generates the index from the pawn key using bitmask.
+  /// @param key  Pawn Zobrist key
+  /// @return     Array index for the entry
   std::size_t getHash(const ZobristKey key) const {
     return key & hashKeyMask;
   }
 
-  // return a string representation of the TT instance
+  /// Returns a string representation for debugging.
+  /// @return  Debug string with size and statistics
   std::string str();
 
-  // using prefetch improves probe lookup speed significantly
+  /// Prefetches the cache entry for the given key into CPU cache.
+  /// Call as early as possible before getEntryPtr(), ideally with other
+  /// work in between to give the memory subsystem time to fetch the data.
+  /// @param key  Pawn Zobrist key to prefetch
 #ifdef EVAL_ENABLE_PREFETCH
   void prefetch(const ZobristKey key) {
 #ifdef __GNUC__
@@ -148,16 +194,31 @@ public:
   }
 #endif
 
-private:
-  /** GETTER and SETTER */
 public:
+  // === Getters ===
+
+  /// Returns the size of the cache in bytes.
   uint64_t getSizeInByte() const { return sizeInByte; }
+
+  /// Returns the maximum number of entries the cache can hold.
   std::size_t getMaxNumberOfEntries() const { return maxNumberOfEntries; }
+
+  /// Returns the current number of entries stored.
   std::size_t getNumberOfEntries() const { return numberOfEntries; }
+
+  /// Returns the number of cache hits.
   uint64_t getNumberOfHits() const { return numberOfHits; }
+
+  /// Returns the number of cache misses.
   uint64_t getNumberOfMisses() const { return numberOfMisses; }
+
+  /// Returns the number of entry updates (same key, new value).
   uint64_t getNumberOfUpdates() const { return numberOfUpdates; }
+
+  /// Returns the total number of put() calls.
   uint64_t getNumberOfPuts() const { return numberOfPuts; }
+
+  /// Returns the number of hash collisions (different key, same slot).
   uint64_t getNumberOfCollisions() const { return numberOfCollisions; }
 };
 
