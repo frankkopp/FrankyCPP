@@ -18,6 +18,8 @@ set(BUILD_SHARED_LIBS OFF)
 
 # CI-friendly toggle: treat warnings as errors when enabled
 option(STRICT_WARNINGS "Treat all warnings as errors" OFF)
+# Debug-only sanitizers (ASan/UBSan where supported)
+option(ENABLE_SANITIZERS "Enable Address/Undefined sanitizers in Debug builds" OFF)
 
 # updates template file and replaces placeholder variables
 configure_file(src/version.h.in version.h)
@@ -30,6 +32,20 @@ option(FRANKYCPP_BUILD_TESTS "Build unit tests" ON)
 option(FRANKYCPP_BUILD_BENCHMARKS "Build benchmarks" ON)
 option(FRANKYCPP_USE_PCH "Enable precompiled headers" ON)
 option(ENABLE_UNITY_BUILD "Enable Unity/Jumbo builds" OFF)
+
+if(ENABLE_SANITIZERS)
+    if(MSVC)
+        message(STATUS "Sanitizers enabled (MSVC): AddressSanitizer in Debug")
+        add_compile_options($<$<CONFIG:Debug>:/fsanitize=address>)
+        add_link_options($<$<CONFIG:Debug>:/fsanitize=address>)
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+        message(STATUS "Sanitizers enabled: AddressSanitizer/UndefinedBehaviorSanitizer in Debug")
+        add_compile_options($<$<CONFIG:Debug>:-fsanitize=address,undefined -fno-omit-frame-pointer>)
+        add_link_options($<$<CONFIG:Debug>:-fsanitize=address,undefined>)
+    else()
+        message(WARNING "ENABLE_SANITIZERS is ON but compiler is not recognized for sanitizer support")
+    endif()
+endif()
 
 # Ensure no compiler launcher is set from a previous cache
 unset(CMAKE_C_COMPILER_LAUNCHER CACHE)

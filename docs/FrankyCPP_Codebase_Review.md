@@ -261,12 +261,12 @@ The `types/` directory contains well-designed value types:
 
 | # | Item | Effort | Complexity | Description |
 |---|------|--------|------------|-------------|
-| Q1 | Add CMakePresets.json | 🟢 2-4 hours | 🟢 Low | Create preset file with common configurations (Debug, Release, CI) |
-| Q2 | Add clang-tidy config | 🟢 2-4 hours | 🟢 Low | Create `.clang-tidy` file with appropriate checks for the codebase style |
-| Q3 | Add `ENABLE_SANITIZERS` option | 🟢 2-4 hours | 🟢 Low | Optional ASan/UBSan for Debug builds to catch memory issues |
-| Q4 | Enable GCC/Clang toolchains | 🟡 3-5 days | 🟡 Medium | Uncomment/update compiler sections, handle intrinsics, test on Linux/macOS |
-| Q5 | Reduce header coupling | 🟡 1-2 weeks | 🟡 Medium | Audit includes, add forward declarations, split large headers |
-| Q6 | Remove Stockfish references | 🟢 1-2 hours | 🟢 Low | Replace "from Stockfish" comments with proper technique citations due to GPL/MIT license incompatibility. Files: `macros.h`, `Search.cpp`. See: Razoring (chessprogramming.org), operator macros (common C++ pattern) |
+| Q1 | Add CMakePresets.json | 🟢 2-4 hours | ✅ DONE | IDE-agnostic build profiles (Debug, Release, CI) |
+| Q2 | Add clang-tidy config | 🟢 2-4 hours | ✅ DONE | `.clang-tidy` added with project-aligned checks and exclusions |
+| Q3 | Add `ENABLE_SANITIZERS` option | 🟢 2-4 hours | ✅ DONE | Debug-only ASan (MSVC) and ASan/UBSan (Clang/GNU) |
+| Q4 | Enable GCC/Clang toolchains | 🟡 3-5 days | ⬜ TODO | Cross-platform testing |
+| Q5 | Reduce header coupling | 🟡 1-2 weeks | ⬜ TODO | Audit includes, add forward declarations, split large headers |
+| Q6 | Remove Stockfish references | 🟢 1-2 hours | ✅ DONE | GPL/MIT license fix in macros.h, Search.cpp, Evaluator.cpp |
 
 ---
 
@@ -354,7 +354,7 @@ The `types/` directory contains well-designed value types:
 |---|------|--------|--------|-------|
 | Q1 | Add CMakePresets.json | 🟢 2-4 hours | ✅ DONE | IDE-agnostic build profiles (Debug, Release, CI) |
 | Q2 | Add clang-tidy config | 🟢 2-4 hours | ✅ DONE | `.clang-tidy` added with project-aligned checks and exclusions |
-| Q3 | Add `ENABLE_SANITIZERS` option | 🟢 2-4 hours | ⬜ TODO | ASan/UBSan for Debug |
+| Q3 | Add `ENABLE_SANITIZERS` option | 🟢 2-4 hours | ✅ DONE | Debug-only ASan (MSVC) and ASan/UBSan (Clang/GNU) |
 | Q4 | Enable GCC/Clang toolchains | 🟡 3-5 days | ⬜ TODO | Cross-platform testing |
 | Q5 | Reduce header coupling | 🟡 1-2 weeks | ⬜ TODO | Incremental refactoring |
 | Q6 | Remove Stockfish references | 🟢 1-2 hours | ✅ DONE | GPL/MIT license fix in macros.h, Search.cpp, Evaluator.cpp |
@@ -373,7 +373,7 @@ The `types/` directory contains well-designed value types:
 | E6 | NNUE evaluation | 🔴 4-8 weeks | ⬜ TODO | Major undertaking |
 | E7 | Parameter tuning infrastructure | 🟡 1-2 weeks | ⬜ TODO | SPSA/Texel tuning |
 | E8 | Best-move instability time mgmt | 🟢 2-3 days | ⬜ TODO | Dynamic time allocation |
-| E9 | Selective checks in quiescence | 🟡 3-5 days | ⬜ TODO | Search checking moves after captures |
+| E9 | Selective checks in quiescence | 🟡 3-5 days | ⬜ TODO | Search checking moves after capture phase to find short mates |
 | E10 | Check extensions | 🟢 2-3 days | ⬜ TODO | Extend when few legal replies to check |
 
 ---
