@@ -84,7 +84,7 @@ FrankyCPP/
 - ✅ Custom precompiled header strategy for common includes
 
 ### Suggestions
-1. **Reduce header coupling** – Some headers like `types.h` aggregate many includes. Consider forward declarations or splitting into smaller focused headers to improve compile times.
+1. **Aggregate header is intentional** – `types.h` includes all type headers for convenience. While this creates more dependencies, the trade-off is acceptable: PCH handles compile times, and the simplicity is valuable for maintenance.
 
 2. **Dependency injection for testability** – `Search` directly owns `TT`, `Evaluator`, `OpeningBook`. Consider injecting these via constructor for easier mocking in tests.
 
@@ -265,7 +265,7 @@ The `types/` directory contains well-designed value types:
 | Q2 | Add clang-tidy config | 🟢 2-4 hours | ✅ DONE | `.clang-tidy` added with project-aligned checks and exclusions |
 | Q3 | Add `ENABLE_SANITIZERS` option | 🟢 2-4 hours | ✅ DONE | Debug-only ASan (MSVC) and ASan/UBSan (Clang/GNU) |
 | Q4 | Enable GCC/Clang toolchains | 🟡 3-5 days | ⬜ TODO | Cross-platform testing |
-| Q5 | Reduce header coupling | 🟡 1-2 weeks | ⬜ TODO | Audit includes, add forward declarations, split large headers |
+| Q5 | Reduce header coupling | 🟡 1-2 weeks | ⏭️ SKIP | Low ROI - aggregate `types.h` is clear and convenient; compile times acceptable with PCH |
 | Q6 | Remove Stockfish references | 🟢 1-2 hours | ✅ DONE | GPL/MIT license fix in macros.h, Search.cpp, Evaluator.cpp |
 
 ---
@@ -356,7 +356,7 @@ The `types/` directory contains well-designed value types:
 | Q2 | Add clang-tidy config | 🟢 2-4 hours | ✅ DONE | `.clang-tidy` added with project-aligned checks and exclusions |
 | Q3 | Add `ENABLE_SANITIZERS` option | 🟢 2-4 hours | ✅ DONE | Debug-only ASan (MSVC) and ASan/UBSan (Clang/GNU) |
 | Q4 | Enable GCC/Clang toolchains | 🟡 3-5 days | ⬜ TODO | Cross-platform testing |
-| Q5 | Reduce header coupling | 🟡 1-2 weeks | ⬜ TODO | Incremental refactoring |
+| Q5 | Reduce header coupling | 🟡 1-2 weeks | ⏭️ SKIP | Not worth complexity; `types.h` aggregate is clear and PCH mitigates compile time |
 | Q6 | Remove Stockfish references | 🟢 1-2 hours | ✅ DONE | GPL/MIT license fix in macros.h, Search.cpp, Evaluator.cpp |
 
 ---
