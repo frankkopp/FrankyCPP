@@ -127,15 +127,15 @@ src/
 ```
 
 ### Key Classes
-| Class | Responsibility |
-|-------|----------------|
-| `Position` | Board state, move execution, Zobrist hashing |
-| `MoveGenerator` | Legal/pseudo-legal move generation |
-| `Search` | Alpha-beta search with iterative deepening |
-| `Evaluator` | Position evaluation |
-| `TT` | Transposition table |
-| `UciHandler` | UCI protocol implementation |
-| `ConfigManager` | YAML configuration management (singleton) |
+| Class           | Responsibility                               |
+|-----------------|----------------------------------------------|
+| `Position`      | Board state, move execution, Zobrist hashing |
+| `MoveGenerator` | Legal/pseudo-legal move generation           |
+| `Search`        | Alpha-beta search with iterative deepening   |
+| `Evaluator`     | Position evaluation                          |
+| `TT`            | Transposition table                          |
+| `UciHandler`    | UCI protocol implementation                  |
+| `ConfigManager` | YAML configuration management (singleton)    |
 
 ### Configuration System
 - Runtime config via YAML files in `config/` directory
