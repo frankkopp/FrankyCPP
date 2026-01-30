@@ -352,7 +352,7 @@ The `types/` directory contains well-designed value types:
 
 | # | Item | Effort | Status | Notes |
 |---|------|--------|--------|-------|
-| Q1 | Add CMakePresets.json | 🟢 2-4 hours | ⬜ TODO | Standard CMake feature |
+| Q1 | Add CMakePresets.json | 🟢 2-4 hours | ✅ DONE | IDE-agnostic build profiles (Debug, Release, CI) |
 | Q2 | Add clang-tidy config | 🟢 2-4 hours | ⬜ TODO | Static analysis checks |
 | Q3 | Add `ENABLE_SANITIZERS` option | 🟢 2-4 hours | ⬜ TODO | ASan/UBSan for Debug |
 | Q4 | Enable GCC/Clang toolchains | 🟡 3-5 days | ⬜ TODO | Cross-platform testing |
