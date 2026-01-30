@@ -20,42 +20,108 @@
 #ifndef FRANKYCPP_SEARCHLIMITS_H
 #define FRANKYCPP_SEARCHLIMITS_H
 
+//=============================================================================
+// SearchLimits.h - Search Control Parameters
+//=============================================================================
+//
+// SearchLimits holds all parameters that control how the search operates.
+// This includes time control, depth limits, node limits, and special modes.
+// Depends on: types.h
+//
+// Control Modes:
+//   - Infinite: Search until explicitly stopped (analysis mode)
+//   - Ponder: Think on opponent's time (search continues after bestmove)
+//   - Mate search: Search for mate in N moves
+//   - Fixed depth: Stop after reaching specified depth
+//   - Fixed nodes: Stop after visiting specified number of nodes
+//   - Fixed time: Stop after moveTime milliseconds
+//   - Time control: Manage time based on remaining clock and increment
+//
+// UCI Commands Mapped:
+//   go infinite       -> infinite = true
+//   go ponder         -> ponder = true
+//   go mate N         -> mate = N
+//   go depth N        -> depth = N
+//   go nodes N        -> nodes = N
+//   go movetime N     -> moveTime = N
+//   go wtime/btime    -> whiteTime/blackTime, timeControl = true
+//   go winc/binc      -> whiteInc/blackInc
+//   go movestogo N    -> movesToGo = N
+//   go searchmoves    -> moves list
+//
+// Usage:
+//   SearchLimits limits;
+//   limits.timeControl = true;
+//   limits.whiteTime = milliseconds{60000};
+//   limits.whiteInc = milliseconds{1000};
+//   search.startSearch(position, limits);
+//
+//=============================================================================
+
 #include <cstdint>
 #include <ostream>
 #include <types/types.h>
 
-// SearchLimits is a data structure to hold all information about how
-// a search of the chess games shall be controlled.
-// Search needs to read these and determine the necessary limits.
-// E.g., time-controlled game or not
+/// Holds all parameters controlling search behavior.
+/// Populated from UCI "go" command and read by the Search class.
 struct SearchLimits {
-  // no time control
-  bool infinite = false;
-  bool ponder   = false;
-  int mate      = 0;
 
-  // extra limits
-  int depth      = 0;
+  // === Special Modes (no time control) ===
+
+  /// If true, search indefinitely until stopped (UCI: "go infinite").
+  bool infinite = false;
+
+  /// If true, search in pondering mode on opponent's time.
+  /// Search continues after sending bestmove until "ponderhit" or "stop".
+  bool ponder = false;
+
+  /// If > 0, search for mate in this many moves (UCI: "go mate N").
+  int mate = 0;
+
+  // === Hard Limits ===
+
+  /// Maximum search depth in plies. 0 = no limit (UCI: "go depth N").
+  int depth = 0;
+
+  /// Maximum nodes to visit. 0 = no limit (UCI: "go nodes N").
   uint64_t nodes = 0;
+
+  /// Restrict search to these moves only (UCI: "go searchmoves ...").
   MoveList moves{};
 
-  //  time control;
-  bool timeControl   = false;
+  // === Time Control ===
+
+  /// If true, time management is active based on clock times below.
+  bool timeControl = false;
+
+  /// White's remaining time on clock (UCI: "go wtime N").
   milliseconds whiteTime{0};
+
+  /// Black's remaining time on clock (UCI: "go btime N").
   milliseconds blackTime{0};
+
+  /// White's increment per move (UCI: "go winc N").
   milliseconds whiteInc{0};
+
+  /// Black's increment per move (UCI: "go binc N").
   milliseconds blackInc{0};
+
+  /// Fixed time per move, overrides clock-based calculation (UCI: "go movetime N").
   milliseconds moveTime{0};
 
-  // parameter
+  /// Moves remaining until next time control. 0 = sudden death.
+  /// Used to divide remaining time appropriately (UCI: "go movestogo N").
   int movesToGo = 0;
 
+  /// Returns a string representation of all search limits for debugging.
+  /// @return Debug string with all field values
   [[nodiscard]] std::string str() const {
     std::ostringstream os;
     os << "infinite: " << infinite << " ponder: " << ponder << " mate: " << mate << " depth: " << depth << " nodes: " << nodes << " moves: " << moves << " timeControl: " << timeControl << " whiteTime: " << whiteTime.count() << " blackTime: " << blackTime.count() << " whiteInc: " << whiteInc.count() << " blackInc: " << blackInc.count() << " moveTime: " << moveTime.count() << " movesToGo: " << movesToGo;
     return os.str();
   }
 
+  /// Stream output operator for debugging.
   friend std::ostream& operator<<(std::ostream& os, const SearchLimits& limits) {
     os << limits.str();
     return os;

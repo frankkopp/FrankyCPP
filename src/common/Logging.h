@@ -20,6 +20,45 @@
 #ifndef FRANKYCPP_LOGGING_H
 #define FRANKYCPP_LOGGING_H
 
+//=============================================================================
+// Logging.h - Centralized Logging Infrastructure
+//=============================================================================
+//
+// Provides a singleton-based logging system using spdlog with compile-time
+// and runtime log level control.
+// Depends on: spdlog, version.h
+//
+// Log Levels (from most to least severe):
+//   CRITICAL (1), ERROR (2), WARN (3), INFO (4), DEBUG (5), TRACE (6)
+//   ZERO (0) disables all logging.
+//
+// Compile-Time Filtering:
+//   Define SPDLOG_ACTIVE_LEVEL before including this header to strip
+//   log calls at compile time:
+//     -DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_INFO  // removes DEBUG & TRACE
+//   Default is SPDLOG_LEVEL_DEBUG.
+//
+// Log Macros:
+//   LOG__CRITICAL(logger, fmt, ...)
+//   LOG__ERROR(logger, fmt, ...)
+//   LOG__WARN(logger, fmt, ...)
+//   LOG__INFO(logger, fmt, ...)
+//   LOG__DEBUG(logger, fmt, ...)
+//   LOG__TRACE(logger, fmt, ...)
+//
+// Available Loggers (via Logger::get()):
+//   TEST_LOG, UCIHAND_LOG, UCI_LOG, BOOK_LOG, TT_LOG,
+//   SEARCH_LOG, EVAL_LOG, TSUITE_LOG, CONFIG_LOG
+//
+// Usage:
+//   auto& log = Logger::get().SEARCH_LOG;
+//   LOG__INFO(log, "Search depth: {}", depth);
+//   LOG__DEBUG(log, "Move: {} score: {}", move.str(), score);
+//
+// See also: docs/Logger.md for detailed documentation
+//
+//=============================================================================
+
 // Compile-time log level gating (align with spdlog).
 // You can strip debug/trace at compile time by defining SPDLOG_ACTIVE_LEVEL via your build, e.g.:
 //   -DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_INFO   // removes debug & trace at compile time
@@ -154,53 +193,85 @@
 #define LOG__TRACE(logger, ...) void(0)
 #endif
 
-/** Singleton class for Logger */
+/// Singleton class providing centralized logging for FrankyCPP.
+/// Access via Logger::get() to get the singleton instance, then use
+/// the appropriate logger (e.g., Logger::get().SEARCH_LOG) with LOG__* macros.
 class Logger {
   Logger() { init(); };
   ~Logger() = default;
+
+  /// Initializes all loggers with default patterns and levels.
   void init() const;
 
 public:
-  // disallow copies
-  Logger(Logger const&)             = delete;// copy
-  Logger& operator=(const Logger&)  = delete;// copy assignment
-  Logger(Logger const&&)            = delete;// move
-  Logger& operator=(const Logger&&) = delete;// move assignment
+  // disallow copies and moves
+  Logger(Logger const&)             = delete;
+  Logger& operator=(const Logger&)  = delete;
+  Logger(Logger const&&)            = delete;
+  Logger& operator=(const Logger&&) = delete;
 
-  /** get the singleton instance of Logger */
+  /// Returns the singleton Logger instance.
+  /// @return Reference to the Logger singleton
   static Logger& get() {
     static Logger instance;
     return instance;
   }
 
-  // Convenience helpers for spdlog level handling and per-logger control.
-  // - parseLevel: convert user-provided string to spdlog level, defaults to 'warn' on unknown.
-  static spdlog::level::level_enum parseLevel(std::string_view);
-  // - setGlobalLevel: set spdlog's global level (does not override individual logger levels).
-  static void setGlobalLevel(spdlog::level::level_enum);
-  // - setLoggerLevel: set a specific logger's level when you have the pointer.
-  static void setLoggerLevel(const std::shared_ptr<spdlog::logger>&, spdlog::level::level_enum);
-  // - setLoggerLevelByName: look up a logger by name and set its level.
-  static void setLoggerLevelByName(std::string_view, spdlog::level::level_enum);
+  /// Parses a log level string to spdlog level enum.
+  /// Valid strings: "trace", "debug", "info", "warn", "error", "critical", "off".
+  /// Defaults to 'warn' on unknown input.
+  /// @param level  Log level name (case-insensitive)
+  /// @return       Corresponding spdlog level enum
+  static spdlog::level::level_enum parseLevel(std::string_view level);
 
+  /// Sets the global spdlog log level.
+  /// Does not override individual logger levels that were set explicitly.
+  /// @param level  Log level to set globally
+  static void setGlobalLevel(spdlog::level::level_enum level);
+
+  /// Sets a specific logger's level.
+  /// @param logger  Shared pointer to the logger
+  /// @param level   Log level to set
+  static void setLoggerLevel(const std::shared_ptr<spdlog::logger>& logger, spdlog::level::level_enum level);
+
+  /// Looks up a logger by name and sets its level.
+  /// @param name   Logger name (e.g., "Search_Logger")
+  /// @param level  Log level to set
+  static void setLoggerLevelByName(std::string_view name, spdlog::level::level_enum level);
+
+  /// Default log pattern: timestamp, thread, logger name, level, message.
   const std::string defaultPattern = "[%H:%M:%S:%f] [t:%-10!t] [%-17n] [%-8l]: %v";
 
+  /// Log file path for general logging.
   const std::string logfile     = std::format("FrankyCPP_v{}.{}.log", FrankyCPP_VERSION_MAJOR, FrankyCPP_VERSION_MINOR);
+
+  /// Log file path for UCI protocol logging.
   const std::string logfile_uci = std::format("FrankyCPP_v{}.{}_uci.log", FrankyCPP_VERSION_MAJOR, FrankyCPP_VERSION_MINOR);
 
+  /// Shared file sink for loggers that write to the main log file.
   const std::shared_ptr<spdlog::sinks::basic_file_sink_mt> sharedFileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logfile);
+
+  /// Sink for UCI output to stdout with color support.
   const std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> uciOutSink   = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
 
   // clang-format off
-  //  const std::shared_ptr<spdlog::logger> MAIN_LOG    = spdlog::stdout_color_mt("Main_Logger");
+  /// Logger for unit tests.
   const std::shared_ptr<spdlog::logger> TEST_LOG    = spdlog::stdout_color_mt("Test_Logger");
+  /// Logger for UCI handler operations.
   const std::shared_ptr<spdlog::logger> UCIHAND_LOG = spdlog::stdout_color_mt("UCIHandler_Logger");
+  /// Logger for raw UCI protocol messages (file output).
   const std::shared_ptr<spdlog::logger> UCI_LOG     = spdlog::basic_logger_mt("UCI_Logger", logfile_uci);
+  /// Logger for opening book operations.
   const std::shared_ptr<spdlog::logger> BOOK_LOG    = spdlog::stdout_color_mt("Book_Logger");
+  /// Logger for transposition table operations.
   const std::shared_ptr<spdlog::logger> TT_LOG      = spdlog::stdout_color_mt("TT_Logger");
+  /// Logger for search operations.
   const std::shared_ptr<spdlog::logger> SEARCH_LOG  = spdlog::stdout_color_mt("Search_Logger");
+  /// Logger for evaluation operations.
   const std::shared_ptr<spdlog::logger> EVAL_LOG    = spdlog::stdout_color_mt("Eval_Logger");
+  /// Logger for test suite operations.
   const std::shared_ptr<spdlog::logger> TSUITE_LOG  = spdlog::stdout_color_mt("TSuite_Logger");
+  /// Logger for configuration operations.
   const std::shared_ptr<spdlog::logger> CONFIG_LOG  = spdlog::stdout_color_mt("Config_Logger");
   // clang-format on
 };
