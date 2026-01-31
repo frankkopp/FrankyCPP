@@ -57,7 +57,7 @@ Quick reference to all project documentation.
 - Configuration options
 - Performance considerations
 
-### 🔌 [engine-interface.txt](engine-interface.txt)
+### 🔌 [engine-interface.txt](engine-interface.md)
 **UCI protocol reference**
 - Command reference
 - Option descriptions

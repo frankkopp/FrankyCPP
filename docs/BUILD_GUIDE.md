@@ -432,12 +432,13 @@ cmake --preset wsl-release
 - Designated initializers - Structure initialization
 
 **Compiler Requirements:**
-| Feature | GCC 13 | Clang 18 | MSVC 2022 |
-|---------|--------|----------|-----------|
-| std::format | ✅ Native | ✅ Via libstdc++ | ✅ Native |
-| constexpr | ✅ | ✅ | ✅ |
-| Ranges | ✅ | ✅ | ✅ |
-| Concepts | ✅ | ✅ | ✅ |
+
+| Feature     | GCC 13   | Clang 18        | MSVC 2022 |
+|-------------|----------|-----------------|-----------|
+| std::format | ✅ Native | ✅ Via libstdc++ | ✅ Native  |
+| constexpr   | ✅        | ✅               | ✅         |
+| Ranges      | ✅        | ✅               | ✅         |
+| Concepts    | ✅        | ✅               | ✅         |
 
 **Reference:** See `docs/CPP20_Feature_Support.md` for comprehensive feature matrix.
 
@@ -479,10 +480,10 @@ cmake --preset wsl-release
 ### Build Performance
 
 | Configuration | First Build | Incremental | PCH |
-|--------------|-------------|-------------|-----|
-| Windows MSVC | ~10-15 min | ~1-2 min | ✅ |
-| Linux GCC | ~5-10 min | ~1-2 min | ✅ |
-| Linux Clang | ~5-10 min | ~1-2 min | ✅ |
+|---------------|-------------|-------------|-----|
+| Windows MSVC  | ~10-15 min  | ~1-2 min    | ✅   |
+| Linux GCC     | ~5-10 min   | ~1-2 min    | ✅   |
+| Linux Clang   | ~5-10 min   | ~1-2 min    | ✅   |
 
 **Note:** First build includes vcpkg dependency compilation (Boost, etc.)
 
@@ -503,11 +504,11 @@ cmake --preset wsl-release
 
 ### All Platforms Working ✅
 
-| Platform | Compiler | Status | Tests | Build Time |
-|----------|----------|--------|-------|------------|
-| Windows | MSVC 2022 | ✅ | 266/266 | ~10-15 min |
-| Linux/WSL | GCC 13 | ✅ | 266/266 | ~5-10 min |
-| Linux/WSL | Clang 18 | ✅ | All pass | ~5-10 min |
+| Platform  | Compiler  | Status | Tests    | Build Time |
+|-----------|-----------|--------|----------|------------|
+| Windows   | MSVC 2022 | ✅      | 266/266  | ~10-15 min |
+| Linux/WSL | GCC 13    | ✅      | 266/266  | ~5-10 min  |
+| Linux/WSL | Clang 18  | ✅      | All pass | ~5-10 min  |
 
 ### Quick Commands Reference
 
