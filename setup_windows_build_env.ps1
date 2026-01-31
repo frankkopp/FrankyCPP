@@ -13,6 +13,7 @@
 
 param(
     [switch]$Install,
+    [switch]$SetEnvVar,
     [switch]$Help
 )
 
@@ -26,13 +27,15 @@ if ($Help) {
     Write-Host "FrankyCPP Windows Build Environment Setup" -ForegroundColor $Blue
     Write-Host ""
     Write-Host "Usage:"
-    Write-Host "  .\setup_windows_build_env.ps1           Validate environment (safe, no modifications)"
-    Write-Host "  .\setup_windows_build_env.ps1 -Install  Install vcpkg and validate"
-    Write-Host "  .\setup_windows_build_env.ps1 -Help     Show this help message"
+    Write-Host "  .\setup_windows_build_env.ps1              Validate environment (safe, no modifications)"
+    Write-Host "  .\setup_windows_build_env.ps1 -Install     Install vcpkg and validate"
+    Write-Host "  .\setup_windows_build_env.ps1 -SetEnvVar   Set VCPKG_ROOT for detected vcpkg"
+    Write-Host "  .\setup_windows_build_env.ps1 -Help        Show this help message"
     Write-Host ""
     Write-Host "SAFETY NOTE:"
     Write-Host "  Default behavior is validate-only to avoid unintended system modifications."
     Write-Host "  Use -Install explicitly when you want to install vcpkg."
+    Write-Host "  Use -SetEnvVar to set VCPKG_ROOT for an existing vcpkg installation."
     Write-Host ""
     Write-Host "PREREQUISITES (must be installed manually):"
     Write-Host "  - Visual Studio 2019 16.10+ or Visual Studio 2022 (with C++ Desktop Development)"
@@ -49,9 +52,11 @@ Write-Host "========================================" -ForegroundColor $Blue
 Write-Host ""
 
 if ($Install) {
-    Write-Host "INSTALLING vcpkg" -ForegroundColor $Yellow
+    Write-Host "Mode: INSTALLING vcpkg" -ForegroundColor $Yellow
+} elseif ($SetEnvVar) {
+    Write-Host "Mode: SETTING VCPKG_ROOT environment variable" -ForegroundColor $Yellow
 } else {
-    Write-Host "VALIDATING environment (safe, no modifications)" -ForegroundColor $Green
+    Write-Host "Mode: VALIDATING environment (safe, no modifications)" -ForegroundColor $Green
 }
 Write-Host ""
 
@@ -250,11 +255,26 @@ if ($env:VCPKG_ROOT) {
                 $vcpkgVersion = & $vcpkgExe version 2>&1 | Select-Object -First 1
                 Write-Host "  Version: $vcpkgVersion"
                 Write-Host "  Note: CLion manages this vcpkg automatically" -ForegroundColor $Yellow
-                Write-Host "  For command-line builds, consider setting VCPKG_ROOT or running with -Install" -ForegroundColor $Yellow
+
+                if ($SetEnvVar) {
+                    Write-Host ""
+                    Write-Host "Setting VCPKG_ROOT environment variable..." -ForegroundColor $Blue
+                    [System.Environment]::SetEnvironmentVariable('VCPKG_ROOT', $location, 'User')
+                    $env:VCPKG_ROOT = $location
+                    Write-Host "[OK]" -ForegroundColor $Green -NoNewline
+                    Write-Host " VCPKG_ROOT set to: $location"
+                    Write-Host "[WARN]" -ForegroundColor $Yellow -NoNewline
+                    Write-Host " Restart your terminal/IDE for VCPKG_ROOT to take effect"
+                    # Clear the error since we've set it
+                } else {
+                    Write-Host "  For command-line builds, set VCPKG_ROOT with:" -ForegroundColor $Yellow
+                    Write-Host "    `$env:VCPKG_ROOT = '$location'" -ForegroundColor $Yellow
+                    Write-Host "  Or run: .\setup_windows_build_env.ps1 -SetEnvVar" -ForegroundColor $Yellow
+                    $Warnings++
+                }
 
                 $vcpkgFound = $true
                 $vcpkgLocation = $location
-                $Warnings++
                 break
             }
         }

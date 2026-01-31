@@ -1,26 +1,27 @@
 {
-  "version": 6,
+  "version": 3,
   "cmakeMinimumRequired": {
     "major": 3,
-    "minor": 21
+    "minor": 22
   },
   "configurePresets": [
     {
       "name": "base",
       "hidden": true,
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/cmake-build-${presetName}",
       "cacheVariables": {
         "CMAKE_TOOLCHAIN_FILE": {
           "type": "FILEPATH",
           "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-        }
+        },
+        "FRANKYCPP_BUILD_TESTS": "ON"
       }
     },
     {
       "name": "windows-base",
       "hidden": true,
       "inherits": "base",
+      "binaryDir": "${sourceDir}/cmake-build-${presetName}",
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
@@ -32,7 +33,7 @@
     },
     {
       "name": "debug",
-      "displayName": "Debug",
+      "displayName": "Win Debug",
       "inherits": "windows-base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
@@ -40,7 +41,7 @@
     },
     {
       "name": "release",
-      "displayName": "Release",
+      "displayName": "Win Release",
       "inherits": "windows-base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
@@ -48,18 +49,54 @@
     },
     {
       "name": "relwithdebinfo",
-      "displayName": "RelWithDebInfo",
+      "displayName": "Win RelWithDebInfo",
       "inherits": "windows-base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo"
       }
     },
     {
-      "name": "minsizerel",
-      "displayName": "MinSizeRel",
-      "inherits": "windows-base",
+      "name": "wsl-base",
+      "hidden": true,
+      "inherits": "base",
+      "binaryDir": "${sourceDir}/cmake-build-wsl-${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "MinSizeRel"
+        "VCPKG_TARGET_TRIPLET": "x64-linux"
+      },
+      "environment": {
+        "VCPKG_ROOT": "/home/frank/vcpkg"
+      }
+    },
+    {
+      "name": "wsl-debug",
+      "displayName": "WSL Debug",
+      "inherits": "wsl-base",
+      "binaryDir": "${sourceDir}/cmake-build-wsl-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "wsl-release",
+      "displayName": "WSL Release",
+      "inherits": "wsl-base",
+      "binaryDir": "${sourceDir}/cmake-build-wsl-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "wsl-relwithdebinfo",
+      "displayName": "WSL RelWithDebInfo",
+      "inherits": "wsl-base",
+      "binaryDir": "${sourceDir}/cmake-build-wsl-relwithdebinfo",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
       }
     },
     {
@@ -69,33 +106,70 @@
       "cacheVariables": {
         "STRICT_WARNINGS": "ON"
       }
+    },
+    {
+      "name": "ci-linux",
+      "displayName": "CI Linux",
+      "inherits": "wsl-release",
+      "cacheVariables": {
+        "STRICT_WARNINGS": "ON"
+      }
     }
   ],
   "buildPresets": [
     {
       "name": "debug",
-      "configurePreset": "debug"
+      "displayName": "Win Debug",
+      "configurePreset": "debug",
+      "jobs": 16
     },
     {
       "name": "release",
-      "configurePreset": "release"
+      "displayName": "Win Release",
+      "configurePreset": "release",
+      "jobs": 16
     },
     {
       "name": "relwithdebinfo",
-      "configurePreset": "relwithdebinfo"
+      "displayName": "Win RelWithDebInfo",
+      "configurePreset": "relwithdebinfo",
+      "jobs": 16
     },
     {
-      "name": "minsizerel",
-      "configurePreset": "minsizerel"
+      "name": "wsl-debug",
+      "displayName": "WSL Debug",
+      "configurePreset": "wsl-debug",
+      "jobs": 30
+    },
+    {
+      "name": "wsl-release",
+      "displayName": "WSL Release",
+      "configurePreset": "wsl-release",
+      "jobs": 30
+    },
+    {
+      "name": "wsl-relwithdebinfo",
+      "displayName": "WSL RelWithDebInfo",
+      "configurePreset": "wsl-relwithdebinfo",
+      "jobs": 30
     },
     {
       "name": "ci-windows",
-      "configurePreset": "ci-windows"
+      "displayName": "CI Windows",
+      "configurePreset": "ci-windows",
+      "jobs": 16
+    },
+    {
+      "name": "ci-linux",
+      "displayName": "CI Linux",
+      "configurePreset": "ci-linux",
+      "jobs": 16
     }
   ],
   "testPresets": [
     {
       "name": "debug",
+      "displayName": "Win Debug Tests",
       "configurePreset": "debug",
       "output": {
         "outputOnFailure": true
@@ -103,7 +177,24 @@
     },
     {
       "name": "release",
+      "displayName": "Win Release Tests",
       "configurePreset": "release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "wsl-debug",
+      "displayName": "WSL Debug Tests",
+      "configurePreset": "wsl-debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "wsl-release",
+      "displayName": "WSL Release Tests",
+      "configurePreset": "wsl-release",
       "output": {
         "outputOnFailure": true
       }

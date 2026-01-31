@@ -612,7 +612,8 @@ void OpeningBook::saveToCache() {
    faster than reading the text based game files again */
 bool OpeningBook::loadFromCache() {
   std::unordered_map<ZobristKey, BookEntry> binMap;
-  {// load data from archive
+  try {
+    // load data from archive
     const auto start               = high_resolution_clock::now();
     const std::string serCacheFile = bookFilePath + cacheExt;
     LOG__DEBUG(Logger::get().BOOK_LOG, "Loading from cache file {} ({:L} kB)", serCacheFile, std::filesystem::file_size(serCacheFile) / 1'024);
@@ -630,6 +631,14 @@ bool OpeningBook::loadFromCache() {
     LOG__INFO(Logger::get().BOOK_LOG,
               "Book loaded from cache with {:L} entries in ({:L} ms) ({})",
               binMap.size(), elapsed.count(), serCacheFile);
+  } catch (const boost::archive::archive_exception& e) {
+    // Cache file is incompatible (e.g., old version or corrupted)
+    // Note: Since v0.7, platform-specific cache files are used (win/linux/macos)
+    LOG__WARN(Logger::get().BOOK_LOG, "Cache file incompatible or corrupted: {} - will recreate", e.what());
+    return false;
+  } catch (const std::exception& e) {
+    LOG__ERROR(Logger::get().BOOK_LOG, "Error loading cache file: {}", e.what());
+    return false;
   }
   bookMap = std::move(binMap);
   return true;

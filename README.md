@@ -68,15 +68,19 @@ For Linux/WSL, use the setup script:
 # Install dependencies (requires sudo, modifies system)
 ./setup_linux_build_env.sh --install
 
+# Set VCPKG_ROOT in ~/.bashrc for existing vcpkg (e.g., CLion's vcpkg)
+./setup_linux_build_env.sh --set-env
+
 # Show help
 ./setup_linux_build_env.sh --help
 ```
 
-**Default behavior is validation-only for safety.** Use `--install` explicitly when you want to modify the system.
+**Default behavior is validation-only for safety.** Use `--install` or `--set-env` explicitly when you want to make changes.
 
 This script:
 - **Validates** (default): Checks all tools, versions, CPU features without making changes
-- **Installs** (--install): Installs essential build tools, optional vcpkg tools, clones and bootstraps vcpkg
+- **Installs** (--install): Installs essential build tools, optional vcpkg tools, clones and bootstraps vcpkg, adds VCPKG_ROOT to ~/.bashrc
+- **Sets Env Var** (--set-env): Adds VCPKG_ROOT to ~/.bashrc for detected vcpkg (e.g., CLion's installation)
 - Detects CI/CD environments and adjusts behavior automatically
 - Reports what's missing with installation instructions
 - **Smart Detection**: Automatically detects CLion's vcpkg at `~/.vcpkg-clion/vcpkg`
@@ -92,11 +96,14 @@ For Windows, use the setup script:
 # Install vcpkg (if not already set up)
 .\setup_windows_build_env.ps1 -Install
 
+# Set VCPKG_ROOT for existing vcpkg (e.g., CLion's vcpkg)
+.\setup_windows_build_env.ps1 -SetEnvVar
+
 # Show help
 .\setup_windows_build_env.ps1 -Help
 ```
 
-**Default behavior is validation-only for safety.** Use `-Install` explicitly to set up vcpkg.
+**Default behavior is validation-only for safety.** Use `-Install` or `-SetEnvVar` explicitly when you want to make changes.
 
 **Prerequisites (must be installed manually):**
 - Visual Studio 2019 16.10+ or Visual Studio 2022 (with "Desktop development with C++" workload)
@@ -106,14 +113,71 @@ For Windows, use the setup script:
 
 The script:
 - **Validates** (default): Checks Visual Studio, CMake, vcpkg, build tools
-- **Installs** (-Install): Can automatically clone and bootstrap vcpkg to `C:\vcpkg`
+- **Installs** (-Install): Automatically clones and bootstraps vcpkg to `C:\vcpkg`, sets VCPKG_ROOT
+- **Sets Env Var** (-SetEnvVar): Sets VCPKG_ROOT for detected vcpkg (e.g., CLion's installation)
 - Cannot install Visual Studio, CMake, or Ninja (these require manual installation)
 - **Smart Detection**: Automatically detects CLion's vcpkg at `%USERPROFILE%\.vcpkg-clion\vcpkg`
 
-**Note:** If you use CLion, the script will detect its managed vcpkg. For command-line builds, you can optionally run with `-Install` to set up a separate system-wide vcpkg at `C:\vcpkg`.
+**Note:** If you use CLion, the script will detect its managed vcpkg. Use `-SetEnvVar` to make it available for command-line builds, or use `-Install` to set up a separate system-wide vcpkg at `C:\vcpkg`.
 
-### Linux Build Environment Setup
-### Quick build (Windows, cmd.exe)
+---
+
+## Quick Build Scripts
+
+### Windows Build Script
+
+Convenience script for building on Windows with CMake presets:
+
+```powershell
+# Release build (default)
+.\build_windows.ps1
+
+# Debug build
+.\build_windows.ps1 debug
+
+# Other configurations
+.\build_windows.ps1 relwithdebinfo
+.\build_windows.ps1 minsizerel
+
+# Show help
+.\build_windows.ps1 -Help
+```
+
+**Features:**
+- Uses CMake presets (debug, release, relwithdebinfo, minsizerel)
+- Validates VCPKG_ROOT and Visual Studio installation
+- Automatically detects CLion's vcpkg if not set
+- Builds with parallel compilation
+- Runs tests (excluding slow tests)
+- Reports build status and executable location
+
+**First build:** 10-20 minutes (vcpkg dependencies compilation)  
+**Subsequent builds:** 1-2 minutes (only project code)
+
+### Linux/WSL Build Script
+
+Convenience script for building on Linux/WSL:
+
+```bash
+# Release build (default)
+./build_wsl.sh
+
+# Debug build
+./build_wsl.sh debug
+```
+
+**Features:**
+- Uses CMake presets (linux-debug, linux-release)
+- Validates VCPKG_ROOT environment variable
+- Builds with parallel compilation (ninja)
+- Runs tests (excluding slow tests)
+- Reports build status and executable location
+
+**Prerequisites:** Run `./setup_linux_build_env.sh --install` first to set up build environment.
+
+---
+
+### Manual Build (Windows, cmd.exe)
 If building outside an IDE, initialize the MSVC environment first.
 
 1) Open “x64 Native Tools Command Prompt for VS 2022” (or run vcvars64.bat)
@@ -148,3 +212,24 @@ CLion users can just reload CMake; the IDE sets up the MSVC environment automati
 - Tests: `FrankyCPP_v<major>.<minor>_Test` (when `FRANKYCPP_BUILD_TESTS=ON`)
 - Benchmarks: `FrankyCPP_v<major>.<minor>_Bench` (when `FRANKYCPP_BUILD_BENCHMARKS=ON`)
 - Install (Release/RelWithDebInfo): copies `config/` and `books/` next to the binary in `Release/bin` (via `cmake --install`).
+
+### Opening Book Cache Files
+
+The opening book uses Boost serialization to cache compiled book data in `.bin` files for faster loading. These cache files are **platform-specific** and cannot be shared between Windows and Linux due to differences in native type sizes (e.g., `sizeof(long)`).
+
+**Cache file naming:**
+- Windows: `book.txt.cache.v0.7.win.bin`
+- Linux: `book.txt.cache.v0.7.linux.bin`
+- macOS: `book.txt.cache.v0.7.macos.bin`
+
+**What happens:**
+- First run: Opening book is parsed from `.txt` or `.pgn` files and a platform-specific `.cache.v<version>.<platform>.bin` file is created
+- Subsequent runs: Platform-specific cache file is loaded for faster startup
+- Cross-platform: Each platform has its own cache file, no conflicts or regeneration needed
+
+**Benefits:**
+- ✅ No cache regeneration when switching between Windows and Linux builds on same machine
+- ✅ Both caches can coexist in the same directory
+- ✅ Automatic platform detection
+
+**Note:** Cache files (`*.cache.*.bin`) are excluded from version control via `.gitignore`.

@@ -5,7 +5,7 @@ vtune/
 .idea/
 .vscode/
 /.run/
-*.cache.*
+*.cache.*.bin
 /Release/bin/*log
 /Release/bin/books/
 /Release/bin/config/

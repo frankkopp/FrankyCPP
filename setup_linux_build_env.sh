@@ -48,8 +48,12 @@ NC='\033[0m' # No Color
 
 # Parse command line arguments
 MODE="validate"  # Default: validate only (safe, no system modifications)
+SET_ENV=false
 if [ "$1" = "--install" ] || [ "$1" = "-i" ]; then
     MODE="install"
+elif [ "$1" = "--set-env" ] || [ "$1" = "-e" ]; then
+    MODE="validate"
+    SET_ENV=true
 elif [ "$1" = "--validate" ] || [ "$1" = "-v" ]; then
     MODE="validate"
 elif [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
@@ -58,12 +62,14 @@ elif [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
     echo "Usage:"
     echo "  $0              Validate environment (safe, no modifications)"
     echo "  $0 --install    Install dependencies and validate"
+    echo "  $0 --set-env    Set VCPKG_ROOT in ~/.bashrc for detected vcpkg"
     echo "  $0 --validate   Validate environment only (same as default)"
     echo "  $0 --help       Show this help message"
     echo ""
     echo "SAFETY NOTE:"
     echo "  Default behavior is validate-only to avoid unintended system modifications."
     echo "  Use --install explicitly when you want to install packages."
+    echo "  Use --set-env to add VCPKG_ROOT to ~/.bashrc if vcpkg is detected."
     echo ""
     exit 0
 fi
@@ -120,6 +126,31 @@ install_dependencies() {
     echo -e "${GREEN}✓ Essential build tools installed${NC}"
     echo ""
 
+    # Install GCC 13 for std::format support (C++20 feature, requires GCC 13+)
+    echo -e "${BLUE}Installing GCC 13 for full C++20 support (std::format)...${NC}"
+
+    # Add Ubuntu Toolchain PPA if not already added
+    if ! grep -q "ubuntu-toolchain-r/test" /etc/apt/sources.list /etc/apt/sources.list.d/* 2>/dev/null; then
+        echo -e "  Adding Ubuntu Toolchain PPA..."
+        $SUDO add-apt-repository ppa:ubuntu-toolchain-r/test -y
+        $SUDO apt-get update -qq
+        echo -e "  ${GREEN}✓ Toolchain PPA added${NC}"
+    else
+        echo -e "  ${GREEN}✓ Toolchain PPA already present${NC}"
+    fi
+
+    # Install GCC 13
+    $SUDO apt-get install -y -qq gcc-13 g++-13
+    echo -e "${GREEN}✓ GCC 13 installed${NC}"
+
+    # Set GCC 13 as default using update-alternatives
+    echo -e "  Setting GCC 13 as default compiler..."
+    $SUDO update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 130 --slave /usr/bin/g++ g++ /usr/bin/g++-13 2>/dev/null || true
+    $SUDO update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 110 --slave /usr/bin/g++ g++ /usr/bin/g++-11 2>/dev/null || true
+    $SUDO update-alternatives --set gcc /usr/bin/gcc-13 2>/dev/null || true
+    echo -e "${GREEN}✓ GCC 13 set as default${NC}"
+    echo ""
+
     # Install optional but recommended tools (for vcpkg packages)
     echo -e "${BLUE}Installing optional tools for vcpkg...${NC}"
     $SUDO apt-get install -y -qq \
@@ -138,8 +169,10 @@ install_dependencies() {
     GCC_VERSION=$(gcc --version | head -n 1)
     echo -e "  GCC: ${GCC_VERSION}"
     GCC_MAJOR=$(gcc -dumpversion | cut -d. -f1)
-    if [ "$GCC_MAJOR" -ge 10 ]; then
-        echo -e "  ${GREEN}✓ GCC supports C++20${NC}"
+    if [ "$GCC_MAJOR" -ge 13 ]; then
+        echo -e "  ${GREEN}✓ GCC $GCC_MAJOR supports full C++20 (including std::format)${NC}"
+    elif [ "$GCC_MAJOR" -ge 10 ]; then
+        echo -e "  ${YELLOW}! GCC $GCC_MAJOR supports C++20 but NOT std::format (need >= 13)${NC}"
     else
         echo -e "  ${RED}✗ GCC version too old for C++20 (need >= 10)${NC}"
         return 1
@@ -287,8 +320,12 @@ validate_environment() {
     if command -v gcc &> /dev/null; then
         GCC_VERSION=$(gcc -dumpversion)
         GCC_MAJOR=$(echo $GCC_VERSION | cut -d. -f1)
-        if [ "$GCC_MAJOR" -ge 10 ]; then
-            echo -e "${GREEN}✓${NC} GCC $GCC_VERSION supports C++20"
+        if [ "$GCC_MAJOR" -ge 13 ]; then
+            echo -e "${GREEN}✓${NC} GCC $GCC_VERSION supports full C++20 (including std::format)"
+        elif [ "$GCC_MAJOR" -ge 10 ]; then
+            echo -e "${YELLOW}!${NC} GCC $GCC_VERSION supports C++20 but NOT std::format (need >= 13)"
+            echo -e "  ${YELLOW}Run: ./setup_linux_build_env.sh --install (to upgrade to GCC 13)${NC}"
+            WARNINGS=$((WARNINGS + 1))
         else
             echo -e "${RED}✗${NC} GCC $GCC_VERSION does not fully support C++20 (need >= 10.0)"
             ERRORS=$((ERRORS + 1))
@@ -464,8 +501,34 @@ main() {
             validate_environment
             ;;
         validate)
-            echo -e "${GREEN}VALIDATING environment (safe, no modifications)${NC}"
-            echo ""
+            if [ "$SET_ENV" = true ]; then
+                echo -e "${YELLOW}SETTING VCPKG_ROOT environment variable${NC}"
+                echo ""
+
+                # Check if VCPKG_ROOT is already set
+                if [ -n "$VCPKG_ROOT" ]; then
+                    echo -e "${GREEN}✓ VCPKG_ROOT already set: $VCPKG_ROOT${NC}"
+
+                    # Check if it's in bashrc
+                    if grep -q "VCPKG_ROOT" "$HOME/.bashrc"; then
+                        echo -e "${GREEN}✓ VCPKG_ROOT already in ~/.bashrc${NC}"
+                    else
+                        echo -e "Adding VCPKG_ROOT to ~/.bashrc..."
+                        echo "" >> "$HOME/.bashrc"
+                        echo "# vcpkg root (added by FrankyCPP setup script)" >> "$HOME/.bashrc"
+                        echo "export VCPKG_ROOT=\"$VCPKG_ROOT\"" >> "$HOME/.bashrc"
+                        echo -e "${GREEN}✓ VCPKG_ROOT added to ~/.bashrc${NC}"
+                        echo -e "${YELLOW}! Run 'source ~/.bashrc' or restart your terminal${NC}"
+                    fi
+                else
+                    echo -e "${RED}✗ VCPKG_ROOT not set and no vcpkg detected${NC}"
+                    echo -e "${YELLOW}Run '$0 --install' to install vcpkg first${NC}"
+                fi
+                echo ""
+            else
+                echo -e "${GREEN}VALIDATING environment (safe, no modifications)${NC}"
+                echo ""
+            fi
             validate_environment
             ;;
     esac

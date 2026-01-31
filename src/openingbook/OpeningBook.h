@@ -88,7 +88,17 @@ private:
   bool _useCache      = true;
   bool _recreateCache = false;
   // the extension cache files use after the given opening book filename
-  const std::string cacheExt = std::format(".cache.v{}.{}.bin", FrankyCPP_VERSION_MAJOR, FrankyCPP_VERSION_MINOR);
+  // includes platform tag to avoid cross-platform serialization issues
+#if defined(_WIN32) || defined(_WIN64)
+  const std::string platformTag = "win";
+#elif defined(__linux__)
+  const std::string platformTag = "linux";
+#elif defined(__APPLE__)
+  const std::string platformTag = "macos";
+#else
+  const std::string platformTag = "unknown";
+#endif
+  const std::string cacheExt = std::format(".cache.v{}.{}.{}.bin", FrankyCPP_VERSION_MAJOR, FrankyCPP_VERSION_MINOR, platformTag);
 
   // the root position's zobrist key is required often - so we cache it here
   const ZobristKey rootZobristKey = Position{}.getZobristKey();

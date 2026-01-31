@@ -78,15 +78,15 @@ endif()
 
 # Validate compiler version requirements
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "10.0")
-        message(FATAL_ERROR "GCC 10.0 or higher is required for C++20 support. Found: ${CMAKE_CXX_COMPILER_VERSION}")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "13.0")
+        message(FATAL_ERROR "GCC 13.0 or higher is required for full C++20 support (std::format). Found: ${CMAKE_CXX_COMPILER_VERSION}")
     endif()
-    message(STATUS "✓ GCC ${CMAKE_CXX_COMPILER_VERSION} supports C++20")
+    message(STATUS "✓ GCC ${CMAKE_CXX_COMPILER_VERSION} supports full C++20 (including std::format)")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "10.0")
-        message(FATAL_ERROR "Clang 10.0 or higher is required for C++20 support. Found: ${CMAKE_CXX_COMPILER_VERSION}")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "15.0")
+        message(FATAL_ERROR "Clang 15.0 or higher is required for full C++20 support (std::format). Found: ${CMAKE_CXX_COMPILER_VERSION}")
     endif()
-    message(STATUS "✓ Clang ${CMAKE_CXX_COMPILER_VERSION} supports C++20")
+    message(STATUS "✓ Clang ${CMAKE_CXX_COMPILER_VERSION} supports full C++20 (including std::format)")
 elseif(MSVC)
     if(MSVC_VERSION LESS 1929)
         message(FATAL_ERROR "MSVC 2019 16.10 or higher is required for C++20 support. Found: ${MSVC_VERSION}")
@@ -285,12 +285,53 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
         message(STATUS "AVX2 enabled (/arch:AVX2)")
     endif()
 
-endif ()
+# =============================================================================
+# GCC/Clang Compiler Configuration (Linux/WSL)
+# =============================================================================
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    message(STATUS "Compiler Settings: ${CMAKE_CXX_COMPILER_ID}")
 
-# -----------------------------------------------------------------------------
-# Non-MSVC toolchains are intentionally commented out for now and will be
-# revisited later. Keeping them below for reference.
-# -----------------------------------------------------------------------------
+    # Prefer IPO over manual flags; enable only if supported
+    include(CheckIPOSupported)
+    check_ipo_supported(RESULT _ipo_supported OUTPUT _ipo_msg)
+    if(_ipo_supported)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO ON)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_MINSIZEREL ON)
+        message(STATUS "IPO/LTO enabled for Release/RelWithDebInfo/MinSizeRel")
+    else()
+        message(STATUS "IPO/LTO not supported: ${_ipo_msg}")
+    endif()
+
+    # Base flags: C++20, warnings, CPU features
+    set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wpedantic -march=native -mpopcnt -mbmi2")
+
+    # Per-config optimization flags
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+    set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g -DNDEBUG")
+
+    # Feature toggles
+    option(ENABLE_STD_EXECUTION "Define HAS_EXECUTION_LIB to enable <execution> usage" OFF)
+    if(ENABLE_STD_EXECUTION)
+        message(STATUS "HAS_EXECUTION_LIB enabled")
+        add_compile_definitions(HAS_EXECUTION_LIB)
+        if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+            # GCC requires explicit TBB linkage for parallel algorithms
+            find_package(TBB REQUIRED)
+            link_libraries(TBB::tbb)
+        endif()
+    endif()
+
+    option(ENABLE_BMI2_PEXT "Define HAS_PEXT and enable BMI2-related code paths" ON)
+    if(ENABLE_BMI2_PEXT)
+        message(STATUS "HAS_PEXT enabled (via -march=native -mbmi2)")
+        add_compile_definitions(HAS_PEXT)
+    endif()
+
+else()
+    message(FATAL_ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")
+endif ()
 
 # Print some info to be able to check which compiler has been picked
 message(STATUS "Generator: ${CMAKE_GENERATOR} ${CMAKE_MAKE_PROGRAM}")
@@ -362,82 +403,3 @@ endif()
 message(STATUS "====================================================================")
 message(STATUS "")
 # =============================================================================
-
-
-#  # GNU compiler for Windows WSL and Travis
-# elseif (CMAKE_COMPILER_IS_GNUCXX)
-#     message(STATUS "Compiler Settings: GNU")
-#
-#     set(CMAKE_CXX_FLAGS "-std=c++2a -m64 -msse -msse3 -msse4 -mpopcnt -mbmi2 -Wall -Wextra -Wpedantic -Wno-error=pedantic -Wno-unknown-pragmas -Wno-variadic-macros -Wno-sign-compare -Wno-subobject-linkage")
-#     set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 --coverage -Wno-unused-parameter -Wno-unused-variable")
-#     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-#     # additional: -Wshadow  -Wno-unknown-pragmas -Weffc++ -Wimplicit-fallthrough -Wswitch -Wpointer-arith -Wcast-qual -Wconversion -Wno-sign-conversion -Wno-error=padded -Wno-error=inline")
-#
-#     # link time optimization on Travis does not work (yet)
-#     # # Test for -flto support
-#     # include(CheckCXXCompilerFlag)
-#     # include(CheckCCompilerFlag)
-#     # CHECK_CXX_COMPILER_FLAG(-flto CXX_SUPPORTS_FLTO)
-#     # CHECK_C_COMPILER_FLAG(-flto C_SUPPORTS_FLTO)
-#     # if(CXX_SUPPORTS_FLTO AND C_SUPPORTS_FLTO)
-#     #     message(STATUS "Compiling with FLTO support")
-#     #     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto")
-#     #     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
-#     #     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -flto")
-#     #     set(CMAKE_AR "gcc-ar")
-#     #     set(CMAKE_C_ARCHIVE_CREATE "<CMAKE_AR> qcs <LINK_FLAGS> ")
-#     #     set(CMAKE_C_ARCHIVE_FINISH true)
-#     #     set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> qcs <LINK_FLAGS> ")
-#     #     set(CMAKE_CXX_ARCHIVE_FINISH true)
-#     # endif()
-#
-#     # Test if we are on a Travis environment
-#     if(DEFINED ENV{TRAVIS})
-#         message(STATUS "TRAVIS BUILD")
-#     else()
-#         message(STATUS "NONE TRAVIS BUILD")
-#         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto")
-#         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
-#     endif()
-#
-#     # Availability of PEXT compiler intrinsic. Not available on all platforms
-#     message(STATUS "Using HAS_PEXT")
-#     add_compile_definitions(HAS_PEXT)
-#
-#     # std::execution lib for parallel std operations. Only on gcc-10 and above
-#     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "10")
-#         message(STATUS "GCC >= 10.x")
-#         message(STATUS "Using HAS_EXECUTION_LIB")
-# #        add_compile_definitions(HAS_EXECUTION_LIB)
-#     else ()
-#         message(STATUS "GCC < 10.x")
-#     endif ()
-#
-# # Clang compiler - needs more testing
-# elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-#     message(STATUS "Compiler Settings: Clang")
-#     set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra -mpopcnt -mbmi2")
-#     set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fprofile-instr-generate -fcoverage-mapping -Wpedantic -Wshadow -Wno-conversion -Wunreachable-code -Wuninitialized  -Wold-style-cast -Wunused-variable -Wfloat-equal -Wno-gnu-zero-variadic-macro-arguments")
-#     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-#
-#     # std::execution lib for parallel std operations. Not available on all platforms
-#     message(STATUS "Using HAS_EXECUTION_LIB")
-#     add_compile_definitions(HAS_EXECUTION_LIB)
-#     # Availability of PEXT compiler intrinsic. Not available on all platforms
-#     message(STATUS "Using HAS_PEXT")
-#     add_compile_definitions(HAS_PEXT)
-#
-# # Apple OS X compiler
-# elseif (CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
-#     message(STATUS "Compiler Settings: AppleClang")
-#     set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra -mpopcnt -mbmi2")
-#     set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fprofile-instr-generate -fcoverage-mapping -Wpedantic -Wshadow -Wno-conversion -Wunreachable-code -Wuninitialized  -Wold-style-cast -Wunused-variable -Wfloat-equal -Wno-gnu-zero-variadic-macro-arguments")
-#     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-#
-#     # std::execution lib for parallel std operations. Not available on all platforms
-#     # message(STATUS "Using HAS_EXECUTION_LIB")
-#     # add_compile_definitions(HAS_EXECUTION_LIB)
-#     # Availability of PEXT compiler intrinsic. Not available on all platforms
-#     message(STATUS "Using HAS_PEXT")
-#     add_compile_definitions(HAS_PEXT)
-# endif ()

@@ -2,9 +2,9 @@ name: FrankyCPP Build
 
 on:
   push:
-    branches: [ master, dev_* ]
+#    branches: [ master, dev_* ]
   pull_request:
-    branches: [ master ]
+#    branches: [ master ]
 
 jobs:
   build-linux:

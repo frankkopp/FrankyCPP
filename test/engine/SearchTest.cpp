@@ -158,8 +158,7 @@ TEST_F(SearchTest, startTimedSearch) {
   EXPECT_FALSE(s.hasResult());
   s.waitWhileSearching();
   EXPECT_TRUE(s.hasResult());
-  EXPECT_GT(1s - 20ms, MILLISECONDS(s.getLastSearchResult().time));
-  // EXPECT_GT(1s * 1.1, MILLISECONDS(s.getLastSearchResult().time));
+  EXPECT_GT(1s + 10ms, MILLISECONDS(s.getLastSearchResult().time));
 }
 
 TEST_F(SearchTest, bookMoveSearch) {

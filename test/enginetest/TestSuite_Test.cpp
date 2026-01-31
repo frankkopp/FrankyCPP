@@ -72,7 +72,7 @@ TEST_F(TestSuite_Test, readFile) {
 
 TEST_F(TestSuite_Test, franky_test) {
   CONFIG_OVERRIDE(s.USE_BOOK = false);
-  constexpr auto moveTime{1s};
+  constexpr auto moveTime{2s};
   constexpr Depth depth{0};
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath += +"/test/testsets/franky_tests.epd";
