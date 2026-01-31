@@ -4,6 +4,10 @@
 
 FrankyCPP is a well-structured C++ chess engine (v0.7 in development) implementing the UCI protocol. It's a port/evolution from "FrankyGo" with modern C++20 features. The engine features alpha-beta search with advanced pruning techniques, a configurable evaluation function, opening book support, and comprehensive testing infrastructure.
 
+**v0.7 Development Focus:** This version cycle has emphasized code quality, documentation, and build infrastructure improvements. Major accomplishments include comprehensive header documentation, architecture documentation, standardized header guards, license compliance, clang-tidy integration, CMake presets, and sanitizer support.
+
+**Readiness:** The codebase is well-documented, maintainable, and ready for v1.0 release after enabling GCC/Clang toolchains for cross-platform testing.
+
 ---
 
 ## 1. BUILD APPROACH
@@ -29,16 +33,18 @@ FrankyCPP is a well-structured C++ chess engine (v0.7 in development) implementi
 - ✅ Optional Unity/Jumbo builds for faster clean builds
 - ✅ Separate build targets: main executable, tests, benchmarks
 
-### Suggestions
-1. **Update CI workflow version references** – The GitHub Actions workflow references `v0.5` executables while the project is at `v0.7`. Consider parameterizing the version or using CMake-generated names.
+### Recent Improvements (v0.7)
+- ✅ **CMake Presets added** – `CMakePresets.json` provides IDE-agnostic build profiles (Debug, Release, RelWithDebInfo, MinSizeRel)
+- ✅ **Sanitizers enabled** – `ENABLE_SANITIZERS` option for Debug-only ASan (MSVC) and ASan/UBSan (Clang/GCC)
+- ✅ **clang-tidy configuration** – `.clang-tidy` added with project-specific checks and exclusions aligned to coding standards
+- ✅ **Precompiled headers optimized** – PCH includes `types.h` and common headers, significantly reducing incremental build times
 
-2. **Enable non-MSVC toolchains** – The CMakeLists.txt has commented-out GCC/Clang sections. Consider re-enabling them with modern flags (C++20, updated intrinsic handling) to simplify cross-platform development.
+### Remaining Suggestions
+1. **Enable non-MSVC toolchains** – The CMakeLists.txt has commented-out GCC/Clang sections. Consider re-enabling them with modern flags (C++20, updated intrinsic handling) to simplify cross-platform development.
 
-3. **Add CMake presets** – Consider adding `CMakePresets.json` for standardized configure/build workflows across IDEs and CI.
+2. **Update CI workflow version references** – The GitHub Actions workflow references `v0.5` executables while the project is at `v0.7`. Consider parameterizing the version or using CMake-generated names. *(Note: CI currently disabled)*
 
-4. **Consider vcpkg binary caching** – For CI speed improvements, enable vcpkg binary caching to avoid rebuilding dependencies on every run.
-
-5. **Add `ENABLE_SANITIZERS` option** – For Debug builds, consider an optional address/undefined behavior sanitizer flag for catching memory issues.
+3. **Consider vcpkg binary caching** – For CI speed improvements, enable vcpkg binary caching to avoid rebuilding dependencies on every run.
 
 ---
 
@@ -81,18 +87,26 @@ FrankyCPP/
 - ✅ Singleton `ConfigManager` with lazy auto-initialization and override support
 - ✅ Comprehensive logging infrastructure with compile-time level stripping
 - ✅ Thread pool implementation for parallel operations
-- ✅ Custom precompiled header strategy for common includes
+- ✅ Optimized precompiled header strategy (includes `types.h` + common headers)
+- ✅ All headers comprehensively documented with purpose, dependencies, and usage examples
+- ✅ Dedicated Architecture.md documenting component relationships and data flow
 
-### Suggestions
-1. **Aggregate header is intentional** – `types.h` includes all type headers for convenience. While this creates more dependencies, the trade-off is acceptable: PCH handles compile times, and the simplicity is valuable for maintenance.
+### Recent Improvements (v0.7)
+- ✅ **Comprehensive header documentation** – All 24+ headers in types/, chesscore/, engine/, common/ now include detailed comments
+- ✅ **Architecture documentation** – New `docs/Architecture.md` explains component relationships, data flow, and threading model
+- ✅ **License compliance** – Removed Stockfish GPL references, ensured MIT license compatibility throughout
+- ✅ **Code quality improvements** – Applied clang-tidy fixes (const-correctness, modernization, readability)
 
-2. **Dependency injection for testability** – `Search` directly owns `TT`, `Evaluator`, `OpeningBook`. Consider injecting these via constructor for easier mocking in tests.
+### Remaining Suggestions
+### Remaining Suggestions
 
-3. **Abstract UCI I/O interface** – `UciHandler` already accepts streams for testing, but consider a formal interface (`IUciIO`) for cleaner test doubles.
+1. **Dependency injection for testability** – `Search` directly owns `TT`, `Evaluator`, `OpeningBook`. Consider injecting these via constructor for easier mocking in tests.
 
-4. **Consider `std::expected` for error handling** – The `ConfigManager::loadFromFiles()` returns `bool`. With C++23 (or a polyfill), `std::expected<void, Error>` would provide richer error information.
+2. **Abstract UCI I/O interface** – `UciHandler` already accepts streams for testing, but consider a formal interface (`IUciIO`) for cleaner test doubles.
 
-5. **Document thread safety guarantees** – `ConfigManager` notes it has no internal locking. Document expected usage patterns (single-threaded init) more prominently.
+3. **Consider `std::expected` for error handling** – The `ConfigManager::loadFromFiles()` returns `bool`. With C++23 (or a polyfill), `std::expected<void, Error>` would provide richer error information.
+
+4. **Document thread safety guarantees** – `ConfigManager` notes it has no internal locking. Document expected usage patterns (single-threaded init) more prominently.
 
 ---
 
@@ -123,19 +137,22 @@ The `types/` directory contains well-designed value types:
 - ✅ Clean separation of config data structures from logic (`SearchConfigData`, `EvalConfigData`)
 - ✅ Boost serialization for opening book caching
 - ✅ Modern `std::format` for string formatting (via spdlog configuration)
+- ✅ Consistent `FRANKYCPP_*` header guards throughout
+- ✅ clang-tidy configuration enforces best practices
+- ✅ Comprehensive code quality improvements applied (const-correctness, modernization)
 
-### Suggestions
+### Remaining Suggestions
+### Remaining Suggestions
+
 1. **Reduce raw pointer usage** – `UciHandler* uciHandler` in `Search` could be `std::weak_ptr` or a non-owning reference wrapper for clarity.
 
 2. **Replace magic numbers** – Some constants like `UCI_UPDATE_INTERVAL = nanoPerSec` are defined inline. Consider grouping such constants in a dedicated configuration section.
 
-3. **Add clang-format/clang-tidy configs** – Enforce code style consistency automatically. Some files show `// clang-format off` already – standardize the entire codebase.
+3. **Consider modules (C++20)** – For very large projects, C++20 modules could further improve build times, though this is experimental with MSVC still.
 
-4. **Consider modules (C++20)** – For very large projects, C++20 modules could further improve build times, though this is experimental with MSVC still.
+4. **Improve error messages** – `FATAL_ERROR` on wrong vcpkg triplet is good; consider similar guards for missing config files with actionable messages.
 
-5. **Improve error messages** – `FATAL_ERROR` on wrong vcpkg triplet is good; consider similar guards for missing config files with actionable messages.
-
-6. **Use `std::span` for move lists** – Instead of returning `const MoveList*`, consider `std::span<const Move>` for safer, more modern API.
+5. **Use `std::span` for move lists** – Instead of returning `const MoveList*`, consider `std::span<const Move>` for safer, more modern API.
 
 ---
 
@@ -291,26 +308,53 @@ The `types/` directory contains well-designed value types:
 
 ### Current State Assessment
 
-| Aspect                | Status        | Notes                                                              |
-|-----------------------|---------------|--------------------------------------------------------------------|
-| **README.md**         | ✅ Good        | Comprehensive build instructions, version history                  |
-| **Code comments**     | 🟡 Partial    | Class-level comments exist, but inconsistent method documentation  |
-| **Doxygen**           | ❌ Missing     | No Doxyfile, no `@param`/`@return` tags in code                    |
-| **docs/ folder**      | 🟡 Fragmented | Multiple ToDo files (ToDo.md, ToDo2.md), some outdated content     |
-| **clang-format**      | ✅ Present     | `.clang-format` exists and is well-configured                      |
-| **clang-tidy**        | ✅ Present     | `.clang-tidy` added and configured for the project                 |
-| **API documentation** | ❌ Missing     | No generated HTML/PDF docs for library consumers                   |
-| **Architecture docs** | 🟡 Partial    | This review provides overview, but no dedicated architecture guide |
+| Aspect                | Status     | Notes                                                                                                     |
+|-----------------------|------------|-----------------------------------------------------------------------------------------------------------|
+| **README.md**         | ✅ Good     | Comprehensive build instructions, version history                                                         |
+| **Code comments**     | ✅ Good     | All 50+ headers now have comprehensive documentation (purpose, dependencies, usage examples)              |
+| **Architecture docs** | ✅ Good     | New `docs/Architecture.md` documents component relationships, data flow, threading model                  |
+| **Header guards**     | ✅ Good     | All headers standardized to `FRANKYCPP_*` pattern                                                         |
+| **Copyright notices** | ✅ Good     | All source files updated to 2018-2026                                                                     |
+| **Doxygen**           | ⏭️ Skipped | Not needed - inline comments sufficient, IDE navigation adequate                                          |
+| **Copilot docs**      | ✅ Good     | Comprehensive `.github/copilot-instructions.md` with project structure, conventions, and coding standards |
+| **clang-format**      | ✅ Present  | `.clang-format` exists and is well-configured                                                             |
+| **clang-tidy**        | ✅ Present  | `.clang-tidy` added and configured for the project                                                        |
+| **ToDo files**        | ✅ Cleaned  | Obsolete ToDo.md and ToDo2.md removed; tasks migrated to this review                                      |
 
-### Priority Order for v1.0 Documentation Tasks
+### v0.7 Accomplishments
 
-1. **C1** - Consolidate ToDo files (quick win, reduces confusion)
-2. **C2** - Update copyright years (trivial but important)
-3. **D1** - Add Doxyfile (foundation for API docs)
-4. **D2** - Create Architecture.md (helps onboarding)
-5. **D3** - Document public API (most valuable for maintainability)
-6. **D4** - Document types/ headers (improves code understanding)
-7. **D5** - Add CONTRIBUTING.md (useful if accepting external contributions)
+The following tasks have been completed as part of the v0.7 development cycle:
+
+**Cleanup Tasks:**
+- ✅ **C1** - Consolidate ToDo files (obsolete ToDo.md and ToDo2.md removed)
+- ✅ **C2** - Update copyright years (all source files updated to 2018-2026)
+- ✅ **C4** - Standardize header guards (all headers now use `FRANKYCPP_*` pattern)
+
+**Documentation Tasks:**
+- ✅ **D2** - Create Architecture.md (comprehensive component relationships and data flow)
+- ✅ **D4** - Document types/ headers (all 24 type headers + 26 other headers documented)
+- ✅ **Copilot instructions** - Added comprehensive `.github/copilot-instructions.md`
+
+**Quick Improvements:**
+- ✅ **Q1** - Add CMakePresets.json (IDE-agnostic build profiles)
+- ✅ **Q2** - Add clang-tidy config (project-aligned checks and exclusions)
+- ✅ **Q3** - Add sanitizer support (Debug-only ASan/UBSan)
+- ✅ **Q6** - Remove Stockfish references (GPL/MIT license compliance)
+- ✅ **Code quality** - Applied clang-tidy fixes (const-correctness, modernization, readability)
+
+**Skipped Tasks:**
+- ⏭️ **C3** - Clean up commented code (intentional TODOs and future reference sections kept)
+- ⏭️ **C5** - Update CI version references (CI not currently in use)
+- ⏭️ **D1** - Add Doxyfile (inline comments sufficient for single developer project)
+- ⏭️ **D3** - Add Doxygen comments to public API (same reasoning as D1)
+- ⏭️ **D5** - Add CONTRIBUTING.md (single developer project)
+- ⏭️ **Q5** - Reduce header coupling (PCH makes aggregate `types.h` a non-issue)
+
+### Remaining v0.7 → v1.0 Tasks
+
+| #  | Item                        | Effort      | Status | Priority |
+|----|-----------------------------|-------------|--------|----------|
+| Q4 | Enable GCC/Clang toolchains | 🟡 3-5 days | ⬜ TODO | Medium   |
 
 ### Effort Legend
 - 🟢 **Low**: Less than 1 day of focused work
@@ -379,4 +423,4 @@ The `types/` directory contains well-designed value types:
 ---
 
 *Review conducted: 2026-01-26*  
-*Last updated: 2026-01-31*
+*Last updated: 2026-01-31 (comprehensive v0.7 accomplishments update)*
