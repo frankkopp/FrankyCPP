@@ -378,6 +378,9 @@ The following tasks have been completed as part of the v0.7 development cycle:
 - ✅ **Q1** - Add CMakePresets.json (IDE-agnostic build profiles)
 - ✅ **Q2** - Add clang-tidy config (project-aligned checks and exclusions)
 - ✅ **Q3** - Add sanitizer support (Debug-only ASan/UBSan)
+- ✅ **Q4a** - WSL Linux build (full GCC 13 and Clang 15 support)
+- ✅ **Q4b** - GitHub Actions CI - Windows (MSVC matrix builds with tests)
+- ✅ **Q4c** - GitHub Actions CI - Linux (GCC/Clang matrix builds with tests)
 - ✅ **Q6** - Remove Stockfish references (GPL/MIT license compliance)
 - ✅ **Code quality** - Applied clang-tidy fixes (const-correctness, modernization, readability)
 
