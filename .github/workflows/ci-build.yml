@@ -72,15 +72,30 @@ jobs:
             --output-on-failure `
             -E ".*SpeedTests.*|.*TimingTests.*"
 
+      - name: Prepare release package
+        shell: pwsh
+        run: |
+          # Create release package directory
+          New-Item -ItemType Directory -Force -Path release-package
+          
+          # Copy executable
+          Copy-Item build/src/FrankyCPP_*.exe release-package/
+          
+          # Copy config and books folders
+          Copy-Item -Recurse build/src/config release-package/
+          Copy-Item -Recurse build/src/books release-package/
+          
+          # Remove cache files
+          Get-ChildItem -Path release-package/books -Filter "*.cache.*" -Recurse | Remove-Item
+          
+          Write-Host "Release package contents:"
+          Get-ChildItem -Recurse release-package
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: frankycpp-windows-Release
-          path: |
-            build/src/FrankyCPP_*.exe
-            build/src/config/
-            build/src/books/
-            build/test/FrankyCPP_*_Test.exe
+          path: release-package/
           retention-days: 30
 
   build-linux:
@@ -150,16 +165,31 @@ jobs:
             --output-on-failure \
             -E ".*SpeedTests.*|.*TimingTests.*"
 
+      - name: Prepare release package
+        if: matrix.compiler == 'gcc'
+        run: |
+          # Create release package directory
+          mkdir -p release-package
+          
+          # Copy executable (only the main one, not test)
+          find build/src -maxdepth 1 -name "FrankyCPP_*" -type f -executable ! -name "*Test*" -exec cp {} release-package/ \;
+          
+          # Copy config and books folders
+          cp -r build/src/config release-package/
+          cp -r build/src/books release-package/
+          
+          # Remove cache files
+          find release-package/books -name "*.cache.*" -delete
+          
+          echo "Release package contents:"
+          ls -laR release-package
+
       - name: Upload build artifacts
         if: matrix.compiler == 'gcc'
         uses: actions/upload-artifact@v4
         with:
           name: frankycpp-linux-gcc-Release
-          path: |
-            build/src/FrankyCPP_*
-            build/src/config/
-            build/src/books/
-            build/test/FrankyCPP_*_Test
+          path: release-package/
           retention-days: 30
 
   build-summary:
@@ -203,30 +233,18 @@ jobs:
 
       - name: Create Release Archives
         run: |
-          # Prepare Windows release structure
-          mkdir -p windows-package
-          cp windows-release/build/src/FrankyCPP_*.exe windows-package/ 2>/dev/null || true
-          cp -r windows-release/build/src/config windows-package/
-          cp -r windows-release/build/src/books windows-package/
-          # Remove cache files from books
-          find windows-package/books -name "*.cache.*" -delete
-          
-          # Create Windows zip
-          cd windows-package
+          echo "Creating Windows release archive..."
+          cd windows-release
           zip -r ../FrankyCPP-${{ github.ref_name }}-Windows-MSVC.zip *
           cd ..
           
-          # Prepare Linux release structure
-          mkdir -p linux-package
-          cp linux-release/build/src/FrankyCPP_* linux-package/ 2>/dev/null || find linux-release/build/src -maxdepth 1 -name "FrankyCPP_*" -type f -executable -exec cp {} linux-package/ \;
-          cp -r linux-release/build/src/config linux-package/
-          cp -r linux-release/build/src/books linux-package/
-          # Remove cache files from books
-          find linux-package/books -name "*.cache.*" -delete
-          
-          # Create Linux tarball
-          cd linux-package
+          echo "Creating Linux release archive..."
+          cd linux-release
           tar czf ../FrankyCPP-${{ github.ref_name }}-Linux-GCC13.tar.gz *
+          cd ..
+          
+          echo "Release archives created:"
+          ls -lh FrankyCPP-*.{zip,tar.gz}
 
       - name: Upload to Release
         uses: softprops/action-gh-release@v1
