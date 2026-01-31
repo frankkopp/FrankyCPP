@@ -2,13 +2,13 @@ name: Todo2Issue
 on:
   push:
     branches:
-      - master
-      - dev_*
+#      - master
+#      - dev_*
 
   pull_request:
     branches:
-      - master
-      - dev_*
+#      - master
+#      - dev_*
 jobs:
   build:
     runs-on: ubuntu-latest
