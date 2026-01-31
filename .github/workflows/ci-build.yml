@@ -78,6 +78,8 @@ jobs:
           name: frankycpp-windows-Release
           path: |
             build/src/FrankyCPP_*.exe
+            build/src/config/
+            build/src/books/
             build/test/FrankyCPP_*_Test.exe
           retention-days: 30
 
@@ -155,6 +157,8 @@ jobs:
           name: frankycpp-linux-gcc-Release
           path: |
             build/src/FrankyCPP_*
+            build/src/config/
+            build/src/books/
             build/test/FrankyCPP_*_Test
           retention-days: 30
 
@@ -199,9 +203,29 @@ jobs:
 
       - name: Create Release Archives
         run: |
-          cd windows-release
+          # Prepare Windows release structure
+          mkdir -p windows-package
+          cp windows-release/build/src/FrankyCPP_*.exe windows-package/ 2>/dev/null || true
+          cp -r windows-release/build/src/config windows-package/
+          cp -r windows-release/build/src/books windows-package/
+          # Remove cache files from books
+          find windows-package/books -name "*.cache.*" -delete
+          
+          # Create Windows zip
+          cd windows-package
           zip -r ../FrankyCPP-${{ github.ref_name }}-Windows-MSVC.zip *
-          cd ../linux-release
+          cd ..
+          
+          # Prepare Linux release structure
+          mkdir -p linux-package
+          cp linux-release/build/src/FrankyCPP_* linux-package/ 2>/dev/null || find linux-release/build/src -maxdepth 1 -name "FrankyCPP_*" -type f -executable -exec cp {} linux-package/ \;
+          cp -r linux-release/build/src/config linux-package/
+          cp -r linux-release/build/src/books linux-package/
+          # Remove cache files from books
+          find linux-package/books -name "*.cache.*" -delete
+          
+          # Create Linux tarball
+          cd linux-package
           tar czf ../FrankyCPP-${{ github.ref_name }}-Linux-GCC13.tar.gz *
 
       - name: Upload to Release
