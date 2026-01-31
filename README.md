@@ -3,7 +3,7 @@
 Modern C++20 UCI Chess Engine
 
 [![CI Build](https://github.com/frankkopp/FrankyCPP/actions/workflows/ci-build.yml/badge.svg?branch=master)](https://github.com/frankkopp/FrankyCPP/actions/workflows/ci-build.yml)
-[![CodeQL](https://github.com/frankkopp/FrankyCPP/actions/workflows/codeql-analysis.yml/badge.svg?branch=master)](https://github.com/frankkopp/FrankyCPP/actions/workflows/codeql-analysis.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ## Version
 
