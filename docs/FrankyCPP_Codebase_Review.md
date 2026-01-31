@@ -281,7 +281,9 @@ The `types/` directory contains well-designed value types:
 | Q1 | Add CMakePresets.json          | 🟢 2-4 hours | ✅ DONE     | IDE-agnostic build profiles (Debug, Release, CI)                                         |
 | Q2 | Add clang-tidy config          | 🟢 2-4 hours | ✅ DONE     | `.clang-tidy` added with project-aligned checks and exclusions                           |
 | Q3 | Add `ENABLE_SANITIZERS` option | 🟢 2-4 hours | ✅ DONE     | Debug-only ASan (MSVC) and ASan/UBSan (Clang/GNU)                                        |
-| Q4 | Enable GCC/Clang toolchains    | 🟡 3-5 days  | ⬜ TODO     | Cross-platform testing                                                                   |
+| Q4a | WSL Linux build                | 🟢 1-2 days  | ⬜ TODO     | Enable Linux build via WSL with GCC/Clang                                                 |
+| Q4b | GitHub Actions CI - Windows    | 🟡 2-3 days  | ⬜ TODO     | Set up Windows build pipeline                                                             |
+| Q4c | GitHub Actions CI - Linux      | 🟡 2-3 days  | ⬜ TODO     | Set up Linux build pipeline                                                               |
 | Q5 | Reduce header coupling         | 🟡 1-2 weeks | ⏭️ SKIP    | Low ROI - aggregate `types.h` is clear and convenient; compile times acceptable with PCH |
 | Q6 | Remove Stockfish references    | 🟢 1-2 hours | ✅ DONE     | GPL/MIT license fix in macros.h, Search.cpp, Evaluator.cpp                               |
 
@@ -352,9 +354,11 @@ The following tasks have been completed as part of the v0.7 development cycle:
 
 ### Remaining v0.7 → v1.0 Tasks
 
-| #  | Item                        | Effort      | Status | Priority |
-|----|-----------------------------|-------------|--------|----------|
-| Q4 | Enable GCC/Clang toolchains | 🟡 3-5 days | ⬜ TODO | Medium   |
+| #   | Item                           | Effort      | Status | Priority |
+|-----|--------------------------------|-------------|--------|----------|
+| Q4a | WSL Linux build                | 🟢 1-2 days | ⬜ TODO | Medium   |
+| Q4b | GitHub Actions CI - Windows    | 🟡 2-3 days | ⬜ TODO | Medium   |
+| Q4c | GitHub Actions CI - Linux      | 🟡 2-3 days | ⬜ TODO | Medium   |
 
 ### Effort Legend
 - 🟢 **Low**: Less than 1 day of focused work
@@ -399,7 +403,9 @@ The following tasks have been completed as part of the v0.7 development cycle:
 | Q1 | Add CMakePresets.json          | 🟢 2-4 hours | ✅ DONE  | IDE-agnostic build profiles (Debug, Release, CI)                                  |
 | Q2 | Add clang-tidy config          | 🟢 2-4 hours | ✅ DONE  | `.clang-tidy` added with project-aligned checks and exclusions                    |
 | Q3 | Add `ENABLE_SANITIZERS` option | 🟢 2-4 hours | ✅ DONE  | Debug-only ASan (MSVC) and ASan/UBSan (Clang/GNU)                                 |
-| Q4 | Enable GCC/Clang toolchains    | 🟡 3-5 days  | ⬜ TODO  | Cross-platform testing                                                            |
+| Q4a | WSL Linux build                | 🟢 1-2 days  | ⬜ TODO  | Enable Linux build via WSL with GCC/Clang                                                 |
+| Q4b | GitHub Actions CI - Windows    | 🟡 2-3 days  | ⬜ TODO  | Set up Windows build pipeline                                                             |
+| Q4c | GitHub Actions CI - Linux      | 🟡 2-3 days  | ⬜ TODO  | Set up Linux build pipeline                                                               |
 | Q5 | Reduce header coupling         | 🟡 1-2 weeks | ⏭️ SKIP | Not worth complexity; `types.h` aggregate is clear and PCH mitigates compile time |
 | Q6 | Remove Stockfish references    | 🟢 1-2 hours | ✅ DONE  | GPL/MIT license fix in macros.h, Search.cpp, Evaluator.cpp                        |
 

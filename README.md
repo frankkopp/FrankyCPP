@@ -51,7 +51,68 @@ Notes:
 - LTO/IPO is enabled for Release/RelWithDebInfo/MinSizeRel when supported by the toolchain.
 - Library links (PUBLIC): `Boost::serialization`, `Boost::program_options`. Logging uses spdlog header-only 
   with std::format (no fmt linkage).
+- **Build Environment Validation:** CMake configuration includes automatic checks for:
+  - Compiler version and C++20 support
+  - Required build tools (pkg-config, tar, unzip on Unix)
+  - vcpkg installation and configuration
+  - CPU architecture support
 
+### Linux Build Environment Setup
+
+For Linux/WSL, use the setup script:
+
+```bash
+# Validate environment (safe, no system modifications)
+./setup_linux_build_env.sh
+
+# Install dependencies (requires sudo, modifies system)
+./setup_linux_build_env.sh --install
+
+# Show help
+./setup_linux_build_env.sh --help
+```
+
+**Default behavior is validation-only for safety.** Use `--install` explicitly when you want to modify the system.
+
+This script:
+- **Validates** (default): Checks all tools, versions, CPU features without making changes
+- **Installs** (--install): Installs essential build tools, optional vcpkg tools, clones and bootstraps vcpkg
+- Detects CI/CD environments and adjusts behavior automatically
+- Reports what's missing with installation instructions
+- **Smart Detection**: Automatically detects CLion's vcpkg at `~/.vcpkg-clion/vcpkg`
+
+### Windows Build Environment Setup
+
+For Windows, use the setup script:
+
+```powershell
+# Validate environment (safe, no system modifications)
+.\setup_windows_build_env.ps1
+
+# Install vcpkg (if not already set up)
+.\setup_windows_build_env.ps1 -Install
+
+# Show help
+.\setup_windows_build_env.ps1 -Help
+```
+
+**Default behavior is validation-only for safety.** Use `-Install` explicitly to set up vcpkg.
+
+**Prerequisites (must be installed manually):**
+- Visual Studio 2019 16.10+ or Visual Studio 2022 (with "Desktop development with C++" workload)
+- CMake 3.16 or higher
+- Ninja build system (recommended)
+- Git
+
+The script:
+- **Validates** (default): Checks Visual Studio, CMake, vcpkg, build tools
+- **Installs** (-Install): Can automatically clone and bootstrap vcpkg to `C:\vcpkg`
+- Cannot install Visual Studio, CMake, or Ninja (these require manual installation)
+- **Smart Detection**: Automatically detects CLion's vcpkg at `%USERPROFILE%\.vcpkg-clion\vcpkg`
+
+**Note:** If you use CLion, the script will detect its managed vcpkg. For command-line builds, you can optionally run with `-Install` to set up a separate system-wide vcpkg at `C:\vcpkg`.
+
+### Linux Build Environment Setup
 ### Quick build (Windows, cmd.exe)
 If building outside an IDE, initialize the MSVC environment first.
 

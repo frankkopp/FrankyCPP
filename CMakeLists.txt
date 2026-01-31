@@ -65,6 +65,146 @@ message(STATUS "Recognized platform is ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_VERSI
 # Compiler Settings
 message(STATUS "Compiler is ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION} ${CMAKE_CXX_COMPILER}")
 
+# =============================================================================
+# Build Tool Validation (for local builds and CI/CD)
+# =============================================================================
+message(STATUS "")
+message(STATUS "Validating build environment...")
+
+# Check C++20 compiler support
+if(CMAKE_CXX_STANDARD LESS 20)
+    message(FATAL_ERROR "C++20 or higher is required. Current: C++${CMAKE_CXX_STANDARD}")
+endif()
+
+# Validate compiler version requirements
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "10.0")
+        message(FATAL_ERROR "GCC 10.0 or higher is required for C++20 support. Found: ${CMAKE_CXX_COMPILER_VERSION}")
+    endif()
+    message(STATUS "✓ GCC ${CMAKE_CXX_COMPILER_VERSION} supports C++20")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "10.0")
+        message(FATAL_ERROR "Clang 10.0 or higher is required for C++20 support. Found: ${CMAKE_CXX_COMPILER_VERSION}")
+    endif()
+    message(STATUS "✓ Clang ${CMAKE_CXX_COMPILER_VERSION} supports C++20")
+elseif(MSVC)
+    if(MSVC_VERSION LESS 1929)
+        message(FATAL_ERROR "MSVC 2019 16.10 or higher is required for C++20 support. Found: ${MSVC_VERSION}")
+    endif()
+    message(STATUS "✓ MSVC ${CMAKE_CXX_COMPILER_VERSION} supports C++20")
+endif()
+
+# Platform-specific build tool checks
+if(WIN32)
+    # Windows-specific checks
+    # Check if we're in a proper MSVC environment (if using MSVC)
+    if(MSVC)
+        # Check for vcvarsall.bat environment (only meaningful in fresh shell)
+        if(NOT DEFINED ENV{VSINSTALLDIR} AND NOT DEFINED ENV{DevEnvDir})
+            message(WARNING "MSVC environment may not be initialized.")
+            message(WARNING "If building outside an IDE, run vcvarsall.bat or use 'x64 Native Tools Command Prompt'")
+        else()
+            message(STATUS "✓ MSVC environment detected")
+        endif()
+    endif()
+
+    # Ninja is highly recommended on Windows for faster builds
+    if(CMAKE_GENERATOR MATCHES "Ninja")
+        message(STATUS "✓ Using Ninja generator (recommended)")
+    elseif(CMAKE_GENERATOR MATCHES "Visual Studio")
+        message(STATUS "Using Visual Studio generator")
+    else()
+        message(WARNING "Consider using Ninja generator for faster builds: -G Ninja")
+    endif()
+
+elseif(UNIX)
+    # Unix/Linux-specific checks
+    # Check for pkg-config (needed by vcpkg for some packages)
+    find_program(PKG_CONFIG_EXECUTABLE pkg-config)
+    if(NOT PKG_CONFIG_EXECUTABLE)
+        message(WARNING "pkg-config not found. Some vcpkg packages may fail to install.")
+        message(WARNING "Install with: sudo apt install pkg-config  (Ubuntu/Debian)")
+    else()
+        message(STATUS "✓ pkg-config found: ${PKG_CONFIG_EXECUTABLE}")
+    endif()
+
+    # Check for essential build tools
+    find_program(MAKE_EXECUTABLE make)
+    find_program(TAR_EXECUTABLE tar)
+    find_program(UNZIP_EXECUTABLE unzip)
+
+    if(NOT TAR_EXECUTABLE)
+        message(WARNING "tar not found. vcpkg may fail to extract archives.")
+    endif()
+    if(NOT UNZIP_EXECUTABLE)
+        message(WARNING "unzip not found. vcpkg may fail to extract archives.")
+    endif()
+endif()
+
+# Validate vcpkg setup
+if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg")
+    message(STATUS "✓ vcpkg toolchain detected: ${CMAKE_TOOLCHAIN_FILE}")
+
+    # Extract and validate VCPKG_ROOT
+    get_filename_component(VCPKG_ROOT_DERIVED "${CMAKE_TOOLCHAIN_FILE}" DIRECTORY)
+    get_filename_component(VCPKG_ROOT_DERIVED "${VCPKG_ROOT_DERIVED}" DIRECTORY)
+    get_filename_component(VCPKG_ROOT_DERIVED "${VCPKG_ROOT_DERIVED}" DIRECTORY)
+
+    # Check for vcpkg executable (platform-specific)
+    set(VCPKG_FOUND FALSE)
+    if(WIN32)
+        if(EXISTS "${VCPKG_ROOT_DERIVED}/vcpkg.exe")
+            message(STATUS "✓ vcpkg.exe found")
+            set(VCPKG_FOUND TRUE)
+        endif()
+    else()
+        if(EXISTS "${VCPKG_ROOT_DERIVED}/vcpkg")
+            message(STATUS "✓ vcpkg executable found")
+            set(VCPKG_FOUND TRUE)
+        endif()
+    endif()
+
+    if(NOT VCPKG_FOUND)
+        message(WARNING "vcpkg executable not found in ${VCPKG_ROOT_DERIVED}")
+        if(WIN32)
+            message(WARNING "Run bootstrap: ${VCPKG_ROOT_DERIVED}\\bootstrap-vcpkg.bat")
+        else()
+            message(WARNING "Run bootstrap: ${VCPKG_ROOT_DERIVED}/bootstrap-vcpkg.sh")
+        endif()
+    endif()
+
+    # Check for vcpkg.json manifest
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg.json")
+        message(STATUS "✓ vcpkg manifest mode (vcpkg.json found)")
+    else()
+        message(WARNING "vcpkg.json not found - classic mode or missing manifest")
+    endif()
+else()
+    message(WARNING "vcpkg toolchain not detected. Dependencies may not be found.")
+    message(WARNING "Set CMAKE_TOOLCHAIN_FILE to point to vcpkg.cmake")
+    if(WIN32)
+        message(WARNING "Example: -DCMAKE_TOOLCHAIN_FILE=C:/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake")
+    else()
+        message(WARNING "Example: -DCMAKE_TOOLCHAIN_FILE=~/vcpkg/scripts/buildsystems/vcpkg.cmake")
+        message(WARNING "Or set via environment: export VCPKG_ROOT=~/vcpkg")
+    endif()
+endif()
+
+# Check CPU features for optimization flags
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86_64|AMD64|amd64)")
+    message(STATUS "✓ x86_64 architecture detected")
+    # Note: Actual CPUID checks would require try_compile or external tools
+    # We'll rely on -march=native on GCC/Clang, which will fail at compile time if unsupported
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "(aarch64|ARM64)")
+    message(STATUS "✓ ARM64 architecture detected")
+else()
+    message(STATUS "Architecture: ${CMAKE_SYSTEM_PROCESSOR}")
+endif()
+
+message(STATUS "Build environment validation complete")
+message(STATUS "")
+# =============================================================================
+
 # On MSVC choose the static vcpkg triplet by default so third-party libs (e.g., Boost)
 # are linked statically while keeping the MSVC CRT dynamic (/MD).
 # Users can still override by passing -DVCPKG_TARGET_TRIPLET.
@@ -178,6 +318,50 @@ if (FRANKYCPP_BUILD_BENCHMARKS)
     add_subdirectory(testbench)
 endif()
 
+# =============================================================================
+# Configuration Summary (useful for CI/CD logs)
+# =============================================================================
+message(STATUS "")
+message(STATUS "====================================================================")
+message(STATUS "FrankyCPP Build Configuration Summary")
+message(STATUS "====================================================================")
+message(STATUS "Version:            ${PROJECT_VERSION}")
+message(STATUS "Build Type:         ${CMAKE_BUILD_TYPE}")
+message(STATUS "Platform:           ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_VERSION}")
+message(STATUS "Architecture:       ${CMAKE_SYSTEM_PROCESSOR}")
+message(STATUS "Compiler:           ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
+message(STATUS "C++ Standard:       C++${CMAKE_CXX_STANDARD}")
+message(STATUS "Generator:          ${CMAKE_GENERATOR}")
+if(CMAKE_MAKE_PROGRAM)
+    message(STATUS "Build Tool:         ${CMAKE_MAKE_PROGRAM}")
+endif()
+message(STATUS "")
+message(STATUS "Options:")
+message(STATUS "  Build Tests:      ${FRANKYCPP_BUILD_TESTS}")
+message(STATUS "  Build Benchmarks: ${FRANKYCPP_BUILD_BENCHMARKS}")
+message(STATUS "  Use PCH:          ${FRANKYCPP_USE_PCH}")
+message(STATUS "  Unity Build:      ${ENABLE_UNITY_BUILD}")
+message(STATUS "  Strict Warnings:  ${STRICT_WARNINGS}")
+message(STATUS "  Sanitizers:       ${ENABLE_SANITIZERS}")
+if(DEFINED ENABLE_STD_EXECUTION)
+    message(STATUS "  std::execution:   ${ENABLE_STD_EXECUTION}")
+endif()
+if(DEFINED ENABLE_BMI2_PEXT)
+    message(STATUS "  BMI2/PEXT:        ${ENABLE_BMI2_PEXT}")
+endif()
+if(DEFINED ENABLE_AVX2)
+    message(STATUS "  AVX2:             ${ENABLE_AVX2}")
+endif()
+message(STATUS "")
+if(DEFINED VCPKG_TARGET_TRIPLET)
+    message(STATUS "vcpkg Triplet:      ${VCPKG_TARGET_TRIPLET}")
+endif()
+if(DEFINED VCPKG_INSTALLED_DIR)
+    message(STATUS "vcpkg Install Dir:  ${VCPKG_INSTALLED_DIR}")
+endif()
+message(STATUS "====================================================================")
+message(STATUS "")
+# =============================================================================
 
 
 #  # GNU compiler for Windows WSL and Travis

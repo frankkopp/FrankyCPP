@@ -76,6 +76,33 @@ cmake --build cmake-build-release --target FrankyCPP_v0.7_Test
 - GoogleTest (unit testing)
 - Google Benchmark (performance benchmarks)
 
+### Build Environment Validation
+- `setup_windows_build_env.ps1` - Windows build environment setup and validation script (PowerShell)
+  - **DEFAULT: Validate-only** (safe, no system modifications)
+  - Requires explicit `-Install` flag to set up vcpkg
+  - Checks Visual Studio version (>= 2019 16.10 for C++20)
+  - Checks CMake, Ninja, Git availability
+  - Can automatically clone and bootstrap vcpkg to C:\vcpkg
+  - Cannot install VS/CMake/Ninja (must be done manually)
+  - Usage: `.\setup_windows_build_env.ps1 [-Install] [-Help]`
+- `setup_linux_build_env.sh` - Unified Linux build environment setup and validation script
+  - **DEFAULT: Validate-only** (safe, no system modifications)
+  - Requires explicit `--install` flag to modify system
+  - Can run in install or validate modes
+  - Installs all build tools (gcc, cmake, ninja, pkg-config, etc.)
+  - Installs optional vcpkg dependencies (autoconf, automake, libtool)
+  - Clones and bootstraps vcpkg
+  - Configures VCPKG_ROOT environment variable
+  - Detects CI/CD mode and adjusts paths (/opt/vcpkg for CI, ~/vcpkg for local)
+  - Validates compiler versions, tool availability, CPU features
+  - Idempotent - safe to run multiple times
+  - Usage: `./setup_linux_build_env.sh [--install|--help]`
+- CMakeLists.txt includes automatic validation during configuration
+  - Enforces minimum compiler versions (GCC 10+, Clang 10+, MSVC 2019 16.10+)
+  - Checks for required tools on Unix (pkg-config, tar, unzip)
+  - Validates vcpkg toolchain setup
+  - Provides detailed status messages for debugging
+
 ---
 
 ## Code Style & Conventions
