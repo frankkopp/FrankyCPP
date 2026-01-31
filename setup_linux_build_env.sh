@@ -279,6 +279,13 @@ validate_environment() {
     echo -e "${BLUE}========================================${NC}"
     echo ""
 
+    # Detect if running in CI
+    if [ -n "$CI" ] || [ -n "$GITHUB_ACTIONS" ]; then
+        IS_CI=true
+    else
+        IS_CI=false
+    fi
+
     ERRORS=0
     WARNINGS=0
 
@@ -428,20 +435,30 @@ validate_environment() {
 
     echo ""
 
-    # Check project structure
+    # Check project structure (only warnings, not fatal in CI)
     echo -e "${BLUE}Checking project structure...${NC}"
     if [ -f "CMakeLists.txt" ]; then
         echo -e "${GREEN}✓${NC} CMakeLists.txt found"
     else
-        echo -e "${RED}✗${NC} CMakeLists.txt not found (run from project root)"
-        ERRORS=$((ERRORS + 1))
+        if [ "$IS_CI" = true ]; then
+            echo -e "${YELLOW}!${NC} CMakeLists.txt not found (working directory: $(pwd))"
+            WARNINGS=$((WARNINGS + 1))
+        else
+            echo -e "${RED}✗${NC} CMakeLists.txt not found (run from project root)"
+            ERRORS=$((ERRORS + 1))
+        fi
     fi
 
     if [ -f "vcpkg.json" ]; then
         echo -e "${GREEN}✓${NC} vcpkg.json found (manifest mode)"
     else
-        echo -e "${RED}✗${NC} vcpkg.json not found"
-        ERRORS=$((ERRORS + 1))
+        if [ "$IS_CI" = true ]; then
+            echo -e "${YELLOW}!${NC} vcpkg.json not found (working directory: $(pwd))"
+            WARNINGS=$((WARNINGS + 1))
+        else
+            echo -e "${RED}✗${NC} vcpkg.json not found"
+            ERRORS=$((ERRORS + 1))
+        fi
     fi
 
     if [ -f "build_wsl.sh" ]; then

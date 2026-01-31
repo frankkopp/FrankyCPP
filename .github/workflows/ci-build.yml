@@ -22,10 +22,19 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup vcpkg
+        shell: pwsh
         run: |
-          git clone https://github.com/microsoft/vcpkg.git C:\vcpkg
-          C:\vcpkg\bootstrap-vcpkg.bat -disableMetrics
-          echo "VCPKG_ROOT=C:\vcpkg" >> $env:GITHUB_ENV
+          # Use pre-installed vcpkg on GitHub runners
+          Write-Host "vcpkg location: C:\vcpkg"
+          if (Test-Path C:\vcpkg\vcpkg.exe) {
+            Write-Host "vcpkg is available"
+            C:\vcpkg\vcpkg.exe version
+          } else {
+            Write-Host "Bootstrapping vcpkg..."
+            C:\vcpkg\bootstrap-vcpkg.bat -disableMetrics
+          }
+          # Set environment variable for subsequent steps
+          Add-Content -Path $env:GITHUB_ENV -Value "VCPKG_ROOT=C:\vcpkg"
 
       - name: Setup MSVC
         uses: microsoft/setup-msbuild@v2
@@ -36,20 +45,23 @@ jobs:
           ninja --version
 
       - name: Configure CMake
+        shell: pwsh
         run: |
           cmake -B build `
             -G Ninja `
             -DCMAKE_BUILD_TYPE=${{ matrix.config }} `
-            -DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake `
+            -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" `
             -DVCPKG_TARGET_TRIPLET=x64-windows-static-md `
             -DFRANKYCPP_BUILD_TESTS=ON `
             -DFRANKYCPP_BUILD_BENCHMARKS=OFF `
             -DSTRICT_WARNINGS=OFF
 
       - name: Build
+        shell: pwsh
         run: cmake --build build --config ${{ matrix.config }} -j $env:NUMBER_OF_PROCESSORS
 
       - name: Run tests
+        shell: pwsh
         working-directory: build
         run: |
           ctest -C ${{ matrix.config }} `
@@ -90,13 +102,25 @@ jobs:
       - name: Setup build environment
         run: |
           chmod +x ./setup_linux_build_env.sh
-          sudo ./setup_linux_build_env.sh --install
+          # Pass environment variables through sudo and preserve working directory
+          sudo -E bash -c "cd $(pwd) && ./setup_linux_build_env.sh --install"
         env:
           CI: true
+          GITHUB_ACTIONS: true
 
       - name: Setup vcpkg environment
         run: |
-          echo "VCPKG_ROOT=/opt/vcpkg" >> $GITHUB_ENV
+          # In CI, vcpkg is installed to /opt/vcpkg by the setup script
+          if [ -d "/opt/vcpkg" ]; then
+            echo "VCPKG_ROOT=/opt/vcpkg" >> $GITHUB_ENV
+            echo "Using vcpkg at /opt/vcpkg"
+          elif [ -d "$HOME/vcpkg" ]; then
+            echo "VCPKG_ROOT=$HOME/vcpkg" >> $GITHUB_ENV
+            echo "Using vcpkg at $HOME/vcpkg"
+          else
+            echo "ERROR: vcpkg not found"
+            exit 1
+          fi
 
       - name: Configure CMake
         env:
