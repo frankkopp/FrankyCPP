@@ -35,6 +35,11 @@ jobs:
       - name: Setup MSVC
         uses: microsoft/setup-msbuild@v2
 
+      - name: Setup MSVC Developer Environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
       - name: Add Ninja to PATH
         run: |
           choco install ninja -y
@@ -43,8 +48,11 @@ jobs:
       - name: Configure CMake
         shell: pwsh
         run: |
+          # Explicitly specify MSVC compilers to avoid MinGW
           cmake -B build `
             -G Ninja `
+            -DCMAKE_C_COMPILER=cl `
+            -DCMAKE_CXX_COMPILER=cl `
             -DCMAKE_BUILD_TYPE=Release `
             -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" `
             -DVCPKG_TARGET_TRIPLET=x64-windows-static-md `
