@@ -128,14 +128,11 @@ Removed `inline` keyword from private helper functions:
 **Build Matrix:**
 ```yaml
 Windows:
-  - Debug (MSVC 2022)
   - Release (MSVC 2022) → artifacts
 
 Linux:
-  - GCC 13 Debug
   - GCC 13 Release → artifacts
-  - Clang 18 Debug
-  - Clang 18 Release
+  - Clang 18 Release (validation)
 ```
 
 **Next Steps:**

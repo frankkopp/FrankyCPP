@@ -9,13 +9,9 @@ on:
 
 jobs:
   build-windows:
-    name: Windows (${{ matrix.config }})
+    name: Windows Release
     runs-on: windows-latest
 
-    strategy:
-      fail-fast: false
-      matrix:
-        config: [Debug, Release]
 
     steps:
       - name: Checkout repository
@@ -49,7 +45,7 @@ jobs:
         run: |
           cmake -B build `
             -G Ninja `
-            -DCMAKE_BUILD_TYPE=${{ matrix.config }} `
+            -DCMAKE_BUILD_TYPE=Release `
             -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" `
             -DVCPKG_TARGET_TRIPLET=x64-windows-static-md `
             -DFRANKYCPP_BUILD_TESTS=ON `
@@ -58,35 +54,33 @@ jobs:
 
       - name: Build
         shell: pwsh
-        run: cmake --build build --config ${{ matrix.config }} -j $env:NUMBER_OF_PROCESSORS
+        run: cmake --build build --config Release -j $env:NUMBER_OF_PROCESSORS
 
       - name: Run tests
         shell: pwsh
         working-directory: build
         run: |
-          ctest -C ${{ matrix.config }} `
+          ctest -C Release `
             --output-on-failure `
             -E ".*SpeedTests.*|.*TimingTests.*"
 
       - name: Upload build artifacts
-        if: matrix.config == 'Release'
         uses: actions/upload-artifact@v4
         with:
-          name: frankycpp-windows-${{ matrix.config }}
+          name: frankycpp-windows-Release
           path: |
             build/src/FrankyCPP_*.exe
             build/test/FrankyCPP_*_Test.exe
           retention-days: 30
 
   build-linux:
-    name: Linux (${{ matrix.compiler }}, ${{ matrix.config }})
+    name: Linux (${{ matrix.compiler }}) Release
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
         compiler: [gcc, clang]
-        config: [Debug, Release]
         include:
           - compiler: gcc
             cc: gcc-13
@@ -129,7 +123,7 @@ jobs:
         run: |
           cmake -B build \
             -G Ninja \
-            -DCMAKE_BUILD_TYPE=${{ matrix.config }} \
+            -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake \
             -DVCPKG_TARGET_TRIPLET=x64-linux \
             -DFRANKYCPP_BUILD_TESTS=ON \
@@ -137,20 +131,20 @@ jobs:
             -DSTRICT_WARNINGS=OFF
 
       - name: Build
-        run: cmake --build build --config ${{ matrix.config }} -j $(nproc)
+        run: cmake --build build --config Release -j $(nproc)
 
       - name: Run tests
         working-directory: build
         run: |
-          ctest -C ${{ matrix.config }} \
+          ctest -C Release \
             --output-on-failure \
             -E ".*SpeedTests.*|.*TimingTests.*"
 
       - name: Upload build artifacts
-        if: matrix.config == 'Release' && matrix.compiler == 'gcc'
+        if: matrix.compiler == 'gcc'
         uses: actions/upload-artifact@v4
         with:
-          name: frankycpp-linux-gcc-${{ matrix.config }}
+          name: frankycpp-linux-gcc-Release
           path: |
             build/src/FrankyCPP_*
             build/test/FrankyCPP_*_Test
