@@ -170,7 +170,8 @@ void Search::run() {
   nodesVisited      = 0;
   statistics        = SearchStats{};
   lastUciUpdateTime = nowFast();
-  npsTime           = lastUciUpdateTime;
+  // Note: npsTime and npsNodes are initialized later, right before iterative deepening,
+  // to avoid including initialization overhead in NPS calculations
   initialize();
 
   // set up and report search limits
@@ -349,6 +350,9 @@ SearchResult Search::iterativeDeepening(Position& p) {
 
   // ###########################################
   // ### BEGIN Iterative Deepening
+  // Initialize NPS tracking right before starting search to exclude initialization overhead
+  npsTime                     = nowFast();
+  npsNodes                    = nodesVisited;
   milliseconds lastIterationMs{0};
   uint64_t lastIterationNodes = 0;
   uint64_t prevIterationNodes = 0;
