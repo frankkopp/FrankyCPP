@@ -21,6 +21,7 @@
 #include "chesscore/MoveGenerator.h"
 #include "chesscore/Position.h"
 #include "init.h"
+#include "Test_Utils.h"
 #include <gtest/gtest.h>
 #include <ostream>
 #include <string>
@@ -28,14 +29,6 @@
 using namespace std;
 using testing::Eq;
 
-inline bool isBulkRun() {
-  const auto* ut  = testing::UnitTest::GetInstance();
-  const bool cond = ut && ut->test_to_run_count() > 1;
-  if (cond) {
-    cout << "Bulk run detected - limiting depth to shorten test time" << endl;
-  }
-  return cond;
-}
 
 class PerftTest : public testing::Test {
 public:

@@ -20,6 +20,7 @@
 #include "engine/Search.h"
 #include "init.h"
 #include "types/types.h"
+#include "Test_Utils.h"
 
 #include "engine/config/ConfigManager.h"
 #include <gtest/gtest.h>
@@ -28,14 +29,6 @@
 
 using testing::Eq;
 
-inline bool isBulkRun() {
-  const auto* ut  = testing::UnitTest::GetInstance();
-  const bool cond = ut && ut->test_to_run_count() > 1;
-  if (cond) {
-    std::cout << "Bulk run detected - limiting depth to shorten test time" << std::endl;
-  }
-  return cond;
-}
 
 class SearchTest : public testing::Test {
 public:

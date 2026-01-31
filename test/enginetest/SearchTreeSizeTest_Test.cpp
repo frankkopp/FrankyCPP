@@ -20,6 +20,7 @@
 #include <ctime>
 
 #include "Test_Fens.h"
+#include "Test_Utils.h"
 #include "common/Logging.h"
 #include "engine/Search.h"
 #include "enginetest/SearchTreeSizeTest.h"
@@ -29,14 +30,6 @@
 
 using testing::Eq;
 
-inline bool isBulkRun() {
-  const auto* ut  = testing::UnitTest::GetInstance();
-  const bool cond = ut && ut->test_to_run_count() > 1;
-  if (cond) {
-    std::cout << "Bulk run detected - limiting depth and number of tests to shorten test time" << std::endl;
-  }
-  return cond;
-}
 
 class SearchTreeSizeTest_Test : public testing::Test {
 public:

@@ -22,18 +22,11 @@
 #include "common/Logging.h"
 #include "engine/TT.h"
 #include "init.h"
+#include "Test_Utils.h"
 
 #include <gtest/gtest.h>
 using testing::Eq;
 
-inline bool isBulkRun() {
-  const auto* ut  = testing::UnitTest::GetInstance();
-  const bool cond = ut && ut->test_to_run_count() > 1;
-  if (cond) {
-    std::cout << "Bulk run detected - limiting depth to shorten test time" << std::endl;
-  }
-  return cond;
-}
 
 class TT_Test : public ::testing::Test {
 public:

@@ -20,6 +20,7 @@
 #include "common/stringutil.h"
 #include "init.h"
 #include "types/types.h"
+#include "Test_Utils.h"
 #include <chesscore/Position.h>
 
 #include <gtest/gtest.h>
@@ -43,14 +44,6 @@ namespace {
 
 using namespace std::chrono;
 
-inline bool isBulkRun() {
-  const auto* ut  = testing::UnitTest::GetInstance();
-  const bool cond = ut && ut->test_to_run_count() > 1;
-  if (cond) {
-    std::cout << "Bulk run detected - limiting depth to shorten test time" << std::endl;
-  }
-  return cond;
-}
 
 class TimingTests : public testing::Test {
 public:
