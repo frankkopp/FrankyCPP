@@ -20,6 +20,8 @@ v0.3 Migration from FrankyGo
 
 ## Build
 
+**📖 For comprehensive build instructions, see [docs/BUILD_GUIDE.md](docs/BUILD_GUIDE.md)**
+
 FrankyCPP uses CMake with target-scoped includes and third‑party libraries via vcpkg manifest mode.
 
 - C++ standard: C++20

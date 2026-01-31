@@ -472,3 +472,18 @@ The following tasks have been completed as part of the v0.7 development cycle:
 
 *Review conducted: 2026-01-26*  
 *Last updated: 2026-01-31 (comprehensive v0.7 accomplishments update)*
+
+---
+
+## Documentation Reference
+
+### Build & Development
+- **BUILD_GUIDE.md** - Comprehensive build instructions for all platforms (Windows, Linux/WSL with GCC/Clang)
+- **README.md** - Project overview and quick start
+- **Architecture.md** - System architecture and design decisions
+- **CPP20_Feature_Support.md** - C++20 feature support matrix across compilers
+
+### Technical References
+- **Logger.md** - Logging system documentation
+- **CLion_WSL_Setup.md** - CLion with WSL configuration
+- **engine-interface.txt** - UCI protocol reference
