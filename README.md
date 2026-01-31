@@ -2,18 +2,20 @@
 
 Modern C++20 UCI Chess Engine
 
-[![CI Build](https://github.com/frankkopp/FrankyCPP/actions/workflows/ci-build.yml/badge.svg?branch=dev_v0.7)](https://github.com/frankkopp/FrankyCPP/actions/workflows/ci-build.yml)
-[![CodeQL](https://github.com/frankkopp/FrankyCPP/actions/workflows/codeql-analysis.yml/badge.svg?branch=dev_v0.7)](https://github.com/frankkopp/FrankyCPP/actions/workflows/codeql-analysis.yml)
+[![CI Build](https://github.com/frankkopp/FrankyCPP/actions/workflows/ci-build.yml/badge.svg?branch=master)](https://github.com/frankkopp/FrankyCPP/actions/workflows/ci-build.yml)
+[![CodeQL](https://github.com/frankkopp/FrankyCPP/actions/workflows/codeql-analysis.yml/badge.svg?branch=master)](https://github.com/frankkopp/FrankyCPP/actions/workflows/codeql-analysis.yml)
 
 ## Version
 
-**v0.7** - Production-ready release candidate
+**v1.0.0** - Production Release 🎉
 - ✅ Complete cross-platform support (Windows, Linux, macOS-ready)
 - ✅ Modern C++20 codebase with full CI/CD
 - ✅ Comprehensive test coverage (266+ tests)
 - ✅ Professional build infrastructure
 - ✅ YAML-based configuration framework
 - ✅ Enhanced search and evaluation
+- ✅ Opening book support
+- ✅ UCI protocol implementation
 
 **Previous versions:**
 - v0.6 - Enhanced search, enhanced logging
