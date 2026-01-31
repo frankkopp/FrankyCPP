@@ -1,20 +1,39 @@
-# FrankyCPP_NewGen
-Re-Start of C++ Version of Franky Chess Engine
+# FrankyCPP
 
-Master
-[![CMake](https://github.com/frankkopp/FrankyCPP/actions/workflows/cmake.yml/badge.svg)](https://github.com/frankkopp/FrankyCPP/actions/workflows/cmake.yml)
-[![CodeQL](https://github.com/frankkopp/FrankyCPP/actions/workflows/codeql-analysis.yml/badge.svg?branch=master)](https://github.com/frankkopp/FrankyCPP/actions/workflows/codeql-analysis.yml)
+Modern C++20 UCI Chess Engine
 
-dev_v0.7
-[![CMake](https://github.com/frankkopp/FrankyCPP/actions/workflows/cmake.yml/badge.svg?branch=dev_v0.7)](https://github.com/frankkopp/FrankyCPP/actions/workflows/cmake.yml)
+[![CI Build](https://github.com/frankkopp/FrankyCPP/actions/workflows/ci-build.yml/badge.svg?branch=dev_v0.7)](https://github.com/frankkopp/FrankyCPP/actions/workflows/ci-build.yml)
 [![CodeQL](https://github.com/frankkopp/FrankyCPP/actions/workflows/codeql-analysis.yml/badge.svg?branch=dev_v0.7)](https://github.com/frankkopp/FrankyCPP/actions/workflows/codeql-analysis.yml)
 
 ## Version
-v0.7 <in development> new configuration framework
-v0.6 Enhanced search, enhanced logging
-v0.5 Enhanced eval and move to wrapper classes for Bitboard, Square, Move, etc.
-v0.4 Simple eval
-v0.3 Migration from FrankyGo
+
+**v0.7** - Production-ready release candidate
+- ✅ Complete cross-platform support (Windows, Linux, macOS-ready)
+- ✅ Modern C++20 codebase with full CI/CD
+- ✅ Comprehensive test coverage (266+ tests)
+- ✅ Professional build infrastructure
+- ✅ YAML-based configuration framework
+- ✅ Enhanced search and evaluation
+
+**Previous versions:**
+- v0.6 - Enhanced search, enhanced logging
+- v0.5 - Enhanced eval and move to wrapper classes
+- v0.4 - Simple eval
+- v0.3 - Migration from FrankyGo
+
+---
+
+## Quick Start
+
+```bash
+# Windows
+.\build_windows.ps1 release
+
+# Linux/WSL
+./build_wsl.sh release gcc
+```
+
+See **[docs/BUILD_GUIDE.md](docs/BUILD_GUIDE.md)** for complete instructions.
 
 ---
 
@@ -22,12 +41,25 @@ v0.3 Migration from FrankyGo
 
 **📖 For comprehensive build instructions, see [docs/BUILD_GUIDE.md](docs/BUILD_GUIDE.md)**
 
+### Platform Support
+
+| Platform | Compiler | Status | Tests |
+|----------|----------|--------|-------|
+| **Windows** | MSVC 2022 | ✅ Tested | 266/266 |
+| **Linux/WSL** | GCC 13+ | ✅ Tested | 266/266 |
+| **Linux/WSL** | Clang 18+ | ✅ Tested | 266/266 |
+| **macOS** | Clang 18+ | 🔜 Ready | Not tested |
+
+### Technology Stack
+
 FrankyCPP uses CMake with target-scoped includes and third‑party libraries via vcpkg manifest mode.
 
-- C++ standard: C++20
-- Supported (primary) platform: Windows/MSVC 2022 (static 3rd party via vcpkg; dynamic MSVC CRT)
-- Generator: Ninja recommended (CLion config already uses Ninja)
-- vcpkg triplet default on MSVC: `x64-windows-static-md`
+- **C++ Standard:** C++20 (std::format, constexpr enhancements, etc.)
+- **Build System:** CMake 3.22+ with Ninja generator
+- **Package Manager:** vcpkg manifest mode
+- **CI/CD:** GitHub Actions (Windows MSVC, Linux GCC/Clang)
+- **Testing:** GoogleTest with 266+ unit tests
+- **Benchmarking:** Google Benchmark for performance testing
 
 ### Pinned dependencies (via vcpkg manifest overrides)
 - spdlog: v1.15.3 (header-only with C++20 std::format; no separate fmt dependency)

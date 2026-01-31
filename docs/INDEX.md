@@ -6,6 +6,16 @@ Quick reference to all project documentation.
 
 ## Getting Started
 
+### 🎯 [V1.0_RELEASE_READINESS.md](V1.0_RELEASE_READINESS.md)
+**v1.0 Release preparation and status**
+- Complete v0.7 accomplishment summary
+- Platform status across Windows/Linux/macOS
+- Release criteria and checklist
+- Post-release v1.x roadmap
+- Metrics and validation status
+
+**Review this for v1.0 release preparation!**
+
 ### 🚀 [BUILD_GUIDE.md](BUILD_GUIDE.md)
 **Comprehensive build instructions for all platforms**
 - Windows (MSVC 2022)
