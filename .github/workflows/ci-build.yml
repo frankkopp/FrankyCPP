@@ -176,3 +176,39 @@ jobs:
           else
             echo "✅ All builds succeeded"
           fi
+
+  # Automated release artifact upload (triggered only on version tags)
+  release:
+    name: Upload Release Artifacts
+    runs-on: ubuntu-latest
+    needs: [build-windows, build-linux]
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: frankycpp-windows-Release
+          path: windows-release
+
+      - name: Download Linux GCC artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: frankycpp-linux-gcc-Release
+          path: linux-release
+
+      - name: Create Release Archives
+        run: |
+          cd windows-release
+          zip -r ../FrankyCPP-${{ github.ref_name }}-Windows-MSVC.zip *
+          cd ../linux-release
+          tar czf ../FrankyCPP-${{ github.ref_name }}-Linux-GCC13.tar.gz *
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            FrankyCPP-${{ github.ref_name }}-Windows-MSVC.zip
+            FrankyCPP-${{ github.ref_name }}-Linux-GCC13.tar.gz
+          draft: false
+          prerelease: false
