@@ -1,0 +1,53 @@
+# FrankyCPP Git Attributes
+# Enforce consistent line endings across platforms
+
+# Auto detect text files and normalize to LF
+* text=auto eol=lf
+
+# Shell scripts must always use LF (Unix line endings)
+*.sh text eol=lf
+
+# Windows scripts must use CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Source files use LF
+*.cpp text eol=lf
+*.h text eol=lf
+*.c text eol=lf
+*.hpp text eol=lf
+*.cc text eol=lf
+*.cxx text eol=lf
+
+# CMake files use LF
+CMakeLists.txt text eol=lf
+*.cmake text eol=lf
+
+# Configuration files use LF
+*.yaml text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.cfg text eol=lf
+
+# Documentation uses LF
+*.md text eol=lf
+*.txt text eol=lf
+
+# Binary files (no conversion)
+*.exe binary
+*.dll binary
+*.so binary
+*.a binary
+*.lib binary
+*.o binary
+*.obj binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.zip binary
+*.gz binary
+*.tar binary
+*.7z binary
