@@ -764,11 +764,11 @@ std::ostream& operator<<(std::ostream& os, const Position& position) {
 ///// PRIVATE
 //////////////////////////////////////////////
 
-inline void Position::movePiece(const Square fromSq, const Square toSq) {
+void Position::movePiece(const Square fromSq, const Square toSq) {
   putPiece(removePiece(fromSq), toSq);
 }
 
-inline void Position::putPiece(const Piece piece, const Square square) {
+void Position::putPiece(const Piece piece, const Square square) {
   assert(getPiece(square) == PIECE_NONE);
   assert((piecesBb[colorOf(piece)][typeOf(piece)] & square) == 0);
   assert((occupiedBb[colorOf(piece)] & square) == 0);
@@ -803,7 +803,7 @@ inline void Position::putPiece(const Piece piece, const Square square) {
   psqEndValue[color] += Values::posEndValue[piece][square];
 }
 
-inline Piece Position::removePiece(const Square square) {
+Piece Position::removePiece(const Square square) {
   assert(getPiece(square) != PIECE_NONE);
   assert(piecesBb[colorOf(getPiece(square))][typeOf(getPiece(square))] & square);
   assert(occupiedBb[colorOf(getPiece(square))] & square);

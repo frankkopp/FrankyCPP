@@ -23,18 +23,46 @@
 
 set -e  # Exit on error
 
-# Build mode: debug or release (default: release)
-BUILD_MODE="${1:-release}"
+# Parse arguments
+BUILD_MODE="release"
+COMPILER="gcc"
 
-if [ "$BUILD_MODE" != "debug" ] && [ "$BUILD_MODE" != "release" ]; then
-    echo "Usage: $0 [debug|release]"
-    echo "Defaulting to release build"
-    BUILD_MODE="release"
-fi
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        debug|release|relwithdebinfo)
+            BUILD_MODE="$1"
+            shift
+            ;;
+        gcc|clang)
+            COMPILER="$1"
+            shift
+            ;;
+        -h|--help)
+            echo "Usage: $0 [BUILD_MODE] [COMPILER]"
+            echo ""
+            echo "BUILD_MODE: debug, release, relwithdebinfo (default: release)"
+            echo "COMPILER:   gcc, clang (default: gcc)"
+            echo ""
+            echo "Examples:"
+            echo "  $0                    # Release build with GCC"
+            echo "  $0 debug              # Debug build with GCC"
+            echo "  $0 release clang      # Release build with Clang"
+            echo "  $0 debug clang        # Debug build with Clang"
+            exit 0
+            ;;
+        *)
+            echo "Unknown argument: $1"
+            echo "Use --help for usage information"
+            exit 1
+            ;;
+    esac
+done
 
 echo "=========================================="
 echo "FrankyCPP v0.7 - Linux/WSL Build Script"
 echo "Build Mode: $BUILD_MODE"
+echo "Compiler: $COMPILER"
 echo "=========================================="
 
 # Validate VCPKG_ROOT
@@ -52,13 +80,23 @@ export VCPKG_MAX_CONCURRENCY=$CPU_CORES
 echo "Enabling vcpkg parallel builds: $CPU_CORES cores"
 echo ""
 
+# Determine preset based on compiler
+if [ "$COMPILER" = "clang" ]; then
+    PRESET="wsl-clang-$BUILD_MODE"
+else
+    PRESET="wsl-$BUILD_MODE"
+fi
+
 # Configure using CMake preset
-PRESET="linux-$BUILD_MODE"
 echo "Configuring with preset: $PRESET"
 cmake --preset "$PRESET"
 
 # Build
-BUILD_DIR="cmake-build-$PRESET"
+if [ "$COMPILER" = "clang" ]; then
+    BUILD_DIR="cmake-build-wsl-clang-$BUILD_MODE"
+else
+    BUILD_DIR="cmake-build-wsl-$BUILD_MODE"
+fi
 echo "Building in: $BUILD_DIR"
 cmake --build "$BUILD_DIR" --parallel
 

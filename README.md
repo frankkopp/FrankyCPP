@@ -159,15 +159,25 @@ Convenience script for building on Windows with CMake presets:
 Convenience script for building on Linux/WSL:
 
 ```bash
-# Release build (default)
+# Release build with GCC (default)
 ./build_wsl.sh
 
-# Debug build
+# Debug build with GCC
 ./build_wsl.sh debug
+
+# Release build with Clang (cross-compiler testing)
+./build_wsl.sh release clang
+
+# Debug build with Clang
+./build_wsl.sh debug clang
+
+# Show help
+./build_wsl.sh --help
 ```
 
 **Features:**
-- Uses CMake presets (linux-debug, linux-release)
+- Supports both GCC 13 and Clang 15 compilers
+- Uses CMake presets (wsl-debug, wsl-release, wsl-clang-debug, wsl-clang-release)
 - Validates VCPKG_ROOT environment variable
 - Builds with parallel compilation (ninja)
 - Runs tests (excluding slow tests)

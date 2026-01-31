@@ -151,6 +151,25 @@ install_dependencies() {
     echo -e "${GREEN}✓ GCC 13 set as default${NC}"
     echo ""
 
+    # Install Clang 18 for cross-compiler testing
+    echo -e "${BLUE}Installing Clang 18 for cross-compiler testing...${NC}"
+    # Add LLVM apt repository for Clang 18
+    if ! grep -q "llvm-toolchain" /etc/apt/sources.list.d/* 2>/dev/null; then
+        echo -e "  Adding LLVM repository..."
+        wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | $SUDO tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc > /dev/null
+        $SUDO add-apt-repository -y "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-18 main"
+        $SUDO apt-get update -qq
+    fi
+    $SUDO apt-get install -y -qq clang-18 || {
+        echo -e "${YELLOW}! Clang 18 not available, trying clang-17...${NC}"
+        $SUDO apt-get install -y -qq clang-17 || {
+            echo -e "${YELLOW}! Clang 17 not available, trying default clang...${NC}"
+            $SUDO apt-get install -y -qq clang
+        }
+    }
+    echo -e "${GREEN}✓ Clang installed${NC}"
+    echo ""
+
     # Install optional but recommended tools (for vcpkg packages)
     echo -e "${BLUE}Installing optional tools for vcpkg...${NC}"
     $SUDO apt-get install -y -qq \
@@ -321,7 +340,25 @@ validate_environment() {
     echo -e "${BLUE}Checking compilers...${NC}"
     check_command "gcc" "required" "sudo apt install build-essential"
     check_command "g++" "required" "sudo apt install build-essential"
-    check_command "clang" "optional" "sudo apt install clang"
+
+    # Check for Clang 18 or 17 (preferred versions)
+    if command -v clang-18 &> /dev/null; then
+        CLANG_VERSION=$(clang-18 --version | head -n 1)
+        echo -e "${GREEN}✓${NC} clang-18 found: $CLANG_VERSION"
+    elif command -v clang-17 &> /dev/null; then
+        CLANG_VERSION=$(clang-17 --version | head -n 1)
+        echo -e "${GREEN}✓${NC} clang-17 found: $CLANG_VERSION"
+    elif command -v clang &> /dev/null; then
+        CLANG_VERSION=$(clang --version | head -n 1)
+        echo -e "${YELLOW}!${NC} clang found: $CLANG_VERSION"
+        echo -e "  ${YELLOW}Clang 18+ recommended for full C++20 support${NC}"
+        echo -e "  ${YELLOW}Run: ./setup_linux_build_env.sh --install (to install Clang 18)${NC}"
+        WARNINGS=$((WARNINGS + 1))
+    else
+        echo -e "${YELLOW}!${NC} clang not found (optional)"
+        echo -e "  Install: ${YELLOW}sudo apt install clang${NC}"
+        WARNINGS=$((WARNINGS + 1))
+    fi
 
     # Check GCC version for C++20 support
     if command -v gcc &> /dev/null; then

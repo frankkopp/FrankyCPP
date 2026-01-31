@@ -83,10 +83,31 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     endif()
     message(STATUS "✓ GCC ${CMAKE_CXX_COMPILER_VERSION} supports full C++20 (including std::format)")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "15.0")
-        message(FATAL_ERROR "Clang 15.0 or higher is required for full C++20 support (std::format). Found: ${CMAKE_CXX_COMPILER_VERSION}")
+    # On Linux, always use libstdc++ for compatibility with vcpkg libraries
+    # vcpkg builds libraries with GCC's libstdc++, so we need to match that
+    if(UNIX AND NOT APPLE)
+        add_compile_options(-stdlib=libstdc++)
+        add_link_options(-stdlib=libstdc++)
+
+        # Verify GCC 13+ is available (provides libstdc++ with std::format)
+        find_program(GXX_PATH g++-13 g++)
+        if(GXX_PATH)
+            execute_process(
+                COMMAND ${GXX_PATH} -dumpversion
+                OUTPUT_VARIABLE GCC_VERSION
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+            )
+            if(GCC_VERSION VERSION_LESS "13.0")
+                message(FATAL_ERROR "GCC 13+ required for libstdc++ with std::format. Found GCC ${GCC_VERSION}")
+            else()
+                message(STATUS "✓ Clang ${CMAKE_CXX_COMPILER_VERSION} with libstdc++ from GCC ${GCC_VERSION} (std::format available)")
+            endif()
+        else()
+            message(FATAL_ERROR "GCC 13+ not found. Install with: sudo apt install g++-13")
+        endif()
+    else()
+        message(STATUS "✓ Clang ${CMAKE_CXX_COMPILER_VERSION} configured for C++20")
     endif()
-    message(STATUS "✓ Clang ${CMAKE_CXX_COMPILER_VERSION} supports full C++20 (including std::format)")
 elseif(MSVC)
     if(MSVC_VERSION LESS 1929)
         message(FATAL_ERROR "MSVC 2019 16.10 or higher is required for C++20 support. Found: ${MSVC_VERSION}")
@@ -292,13 +313,16 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     message(STATUS "Compiler Settings: ${CMAKE_CXX_COMPILER_ID}")
 
     # Prefer IPO over manual flags; enable only if supported
+    # Note: Disable LTO for Clang due to linking issues with static libraries
     include(CheckIPOSupported)
     check_ipo_supported(RESULT _ipo_supported OUTPUT _ipo_msg)
-    if(_ipo_supported)
+    if(_ipo_supported AND NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
         set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO ON)
         set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_MINSIZEREL ON)
         message(STATUS "IPO/LTO enabled for Release/RelWithDebInfo/MinSizeRel")
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        message(STATUS "IPO/LTO disabled for Clang (linking issues with static libraries)")
     else()
         message(STATUS "IPO/LTO not supported: ${_ipo_msg}")
     endif()

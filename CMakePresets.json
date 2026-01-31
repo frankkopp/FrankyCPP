@@ -100,6 +100,33 @@
       }
     },
     {
+      "name": "wsl-clang-base",
+      "hidden": true,
+      "inherits": "wsl-base",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang-18",
+        "CMAKE_CXX_COMPILER": "clang++-18"
+      }
+    },
+    {
+      "name": "wsl-clang-debug",
+      "displayName": "WSL Clang Debug",
+      "inherits": "wsl-clang-base",
+      "binaryDir": "${sourceDir}/cmake-build-wsl-clang-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "wsl-clang-release",
+      "displayName": "WSL Clang Release",
+      "inherits": "wsl-clang-base",
+      "binaryDir": "${sourceDir}/cmake-build-wsl-clang-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
       "name": "ci-windows",
       "displayName": "CI Windows",
       "inherits": "release",
@@ -154,6 +181,18 @@
       "jobs": 30
     },
     {
+      "name": "wsl-clang-debug",
+      "displayName": "WSL Clang Debug",
+      "configurePreset": "wsl-clang-debug",
+      "jobs": 30
+    },
+    {
+      "name": "wsl-clang-release",
+      "displayName": "WSL Clang Release",
+      "configurePreset": "wsl-clang-release",
+      "jobs": 30
+    },
+    {
       "name": "ci-windows",
       "displayName": "CI Windows",
       "configurePreset": "ci-windows",
@@ -195,6 +234,22 @@
       "name": "wsl-release",
       "displayName": "WSL Release Tests",
       "configurePreset": "wsl-release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "wsl-clang-debug",
+      "displayName": "WSL Clang Debug Tests",
+      "configurePreset": "wsl-clang-debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "wsl-clang-release",
+      "displayName": "WSL Clang Release Tests",
+      "configurePreset": "wsl-clang-release",
       "output": {
         "outputOnFailure": true
       }

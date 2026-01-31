@@ -70,6 +70,7 @@ FrankyCPP is a well-structured C++ chess engine (v0.7 in development) implementi
 ### Test Results
 - ✅ **Windows (MSVC):** All 266 tests passing
 - ✅ **Linux/WSL (GCC 13):** All 266 tests passing
+- ✅ **Linux/WSL (Clang 18):** All tests passing locally
 - ✅ **Cross-platform validation:** Complete
 
 ### Build Performance
@@ -78,9 +79,9 @@ FrankyCPP is a well-structured C++ chess engine (v0.7 in development) implementi
 - **Speedup:** 5-10x faster than serial vcpkg builds
 
 ### Remaining Suggestions
-1. ✅ **COMPLETED: Enable non-MSVC toolchains** – GCC 13 and Clang 15 now fully supported with proper C++20 flags
-2. **Update CI workflow** – Enable GitHub Actions with multi-platform matrix (Windows, Linux) using new build scripts
-3. **macOS validation** – Test builds on macOS with Clang 15+ (infrastructure ready, needs testing)
+1. ✅ **COMPLETED: Enable non-MSVC toolchains** – GCC 13 and Clang 18 now fully supported with proper C++20 flags
+2. ✅ **COMPLETED: Update CI workflow** – GitHub Actions with multi-platform matrix (Windows MSVC, Linux GCC/Clang 18) ready for deployment
+3. **macOS validation** – Test builds on macOS with Clang 18+ (infrastructure ready, needs testing)
 4. **Consider vcpkg binary caching** – For CI speed improvements, enable vcpkg binary caching
 
 ---
@@ -378,11 +379,12 @@ The following tasks have been completed as part of the v0.7 development cycle:
 - ✅ **Q1** - Add CMakePresets.json (IDE-agnostic build profiles)
 - ✅ **Q2** - Add clang-tidy config (project-aligned checks and exclusions)
 - ✅ **Q3** - Add sanitizer support (Debug-only ASan/UBSan)
-- ✅ **Q4a** - WSL Linux build (full GCC 13 and Clang 15 support)
-- ✅ **Q4b** - GitHub Actions CI - Windows (MSVC matrix builds with tests)
-- ✅ **Q4c** - GitHub Actions CI - Linux (GCC/Clang matrix builds with tests)
+- ✅ **Q4a** - WSL Linux build (full GCC 13 and Clang 18 support)
+- ✅ **Q4b** - GitHub Actions CI - Windows (MSVC matrix builds with tests) - ready for deployment
+- ✅ **Q4c** - GitHub Actions CI - Linux (GCC/Clang 18 matrix builds with tests) - ready for deployment
 - ✅ **Q6** - Remove Stockfish references (GPL/MIT license compliance)
 - ✅ **Code quality** - Applied clang-tidy fixes (const-correctness, modernization, readability)
+- ✅ **Clang 18 support** - Cross-compiler testing with full C++20 support
 
 **Skipped Tasks:**
 - ⏭️ **C3** - Clean up commented code (intentional TODOs and future reference sections kept)
