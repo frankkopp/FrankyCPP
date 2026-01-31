@@ -22,7 +22,31 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <memory>
 #include <gtest/gtest.h>
+
+/**
+ * @brief Cross-platform safe environment variable getter
+ * @param varName Environment variable name
+ * @return true if the variable exists and is non-empty, false otherwise
+ */
+inline bool getEnvVarExists(const char* varName) {
+#ifdef _MSC_VER
+  // Use MSVC-safe _dupenv_s with RAII
+  char* rawValue = nullptr;
+  size_t len = 0;
+  if (_dupenv_s(&rawValue, &len, varName) == 0 && rawValue != nullptr) {
+    // Wrap in unique_ptr with custom deleter for automatic cleanup
+    std::unique_ptr<char, decltype(&free)> value(rawValue, &free);
+    return true;
+  }
+  return false;
+#else
+  // Use standard getenv on other platforms
+  const char* value = std::getenv(varName);
+  return value != nullptr;
+#endif
+}
 
 /**
  * @brief Check if tests are running in bulk mode (CI or multiple tests locally)
@@ -35,9 +59,7 @@
  */
 inline bool isBulkRun() {
   // Check if running in CI environment
-  const char* ci = std::getenv("CI");
-  const char* githubActions = std::getenv("GITHUB_ACTIONS");
-  if (ci != nullptr || githubActions != nullptr) {
+  if (getEnvVarExists("CI") || getEnvVarExists("GITHUB_ACTIONS")) {
     std::cout << "CI environment detected - skipping long-running tests" << std::endl;
     return true;
   }
