@@ -54,9 +54,9 @@ MatchRunner
 
 ---
 
-## Design Options
+## Design Options Analysis
 
-### Option 1: Add UCI Wrapper to TestSuiteRunner (Recommended)
+### Option 1: Add UCI Wrapper to TestSuiteRunner ✅ **RECOMMENDED**
 
 **Approach:** Create a UCI adapter that can communicate with external engines, mimicking the internal Search interface.
 
@@ -73,44 +73,48 @@ TestSuiteRunner
 ```
 
 **Pros:**
-- Clean separation between internal and external testing
-- Reuses existing TestSuite logic for internal engine
-- Similar pattern to MatchRunner (subprocess + UCI)
-- No changes to existing TestSuite/Search classes
-- Can test ANY UCI engine, not just FrankyCPP versions
+- ✅ Clean separation between internal and external testing
+- ✅ Reuses existing TestSuite logic for internal engine
+- ✅ Similar pattern to MatchRunner (subprocess + UCI)
+- ✅ No changes to existing TestSuite/Search classes
+- ✅ Can test ANY UCI engine, not just FrankyCPP versions
+- ✅ Full control over EPD parsing and per-position testing
+- ✅ Proper support for all EPD operations (bm, am, dm)
 
 **Cons:**
-- More complex implementation (UCI protocol handling)
-- Need subprocess management and I/O parsing
-- Slower than internal testing (UCI overhead)
+- ⚠️ More complex implementation (UCI protocol handling)
+- ⚠️ Need subprocess management and I/O parsing
+- ⚠️ Slower than internal testing (UCI overhead)
 
 ---
 
-### Option 2: Use cutechess-cli for Test Suites
+### Option 2: Use cutechess-cli for Test Suites ❌ **NOT VIABLE**
 
-**Approach:** Convert EPD test suites to run through cutechess-cli like matches.
+**Status:** After detailed analysis, this option has been **ruled out** as not feasible.
 
-**Architecture:**
-```
-TestSuiteRunner
-    ↓
-  cutechess-cli with EPD positions
-    ↓
-  External engine via UCI
-    ↓
-  Parse cutechess output → Results
-```
+**Why cutechess-cli Cannot Be Used:**
 
-**Pros:**
-- Reuses cutechess-cli infrastructure
-- Leverages proven UCI communication
-- Simpler implementation (similar to MatchRunner)
+cutechess-cli is a **tournament manager** designed to play complete chess games, not a tactical test suite runner. While it can read EPD files, it has fundamental limitations:
 
-**Cons:**
-- cutechess-cli not designed for tactical test suites
-- Less control over position-by-position testing
-- May not support all EPD test types (dm, bm, am)
-- More complex result parsing
+**Critical Issues:**
+- ❌ Cannot parse EPD operations (bm, am, dm) - ignores them completely
+- ❌ Cannot check if engine found correct tactical move
+- ❌ Plays full games from positions instead of evaluating single moves
+- ❌ Provides no per-position pass/fail results
+- ❌ Cannot handle mate-in-N tests (dm operations) properly
+- ❌ Cannot stop after finding best move
+- ❌ Would require extensive wrapper scripts that defeat the purpose
+
+**What cutechess-cli DOES with EPD files:**
+- Reads EPD as opening positions for games
+- Extracts FEN portion only
+- Uses positions as starting points for complete games
+- Reports game outcomes (W/D/L), not tactical correctness
+
+**Conclusion:**
+cutechess-cli is fundamentally the wrong tool for EPD test suites. It would require so many workarounds that direct UCI communication (Option 1) is simpler and more effective.
+
+**Reference:** See `docs/analysis/cutechess_epd_capabilities.md` for detailed analysis.
 
 ---
 
@@ -131,21 +135,24 @@ TestSuiteRunner
 ```
 
 **Pros:**
-- Most flexible architecture
-- Single test suite execution path
-- Future-proof for other engine types
+- ✅ Most flexible architecture
+- ✅ Single test suite execution path
+- ✅ Future-proof for other engine types
 
 **Cons:**
-- Requires significant refactoring of TestSuite
-- Changes to core engine test infrastructure
-- May break existing tests
-- Higher implementation complexity
+- ❌ Requires significant refactoring of TestSuite
+- ❌ Changes to core engine test infrastructure
+- ❌ May break existing tests
+- ❌ Higher implementation complexity
+- ❌ Invasive changes to working code
+
+**Status:** Not recommended due to high risk and refactoring burden.
 
 ---
 
-## Recommended Approach: Option 1 (UCI Adapter)
+## Selected Approach: Option 1 (UCI Adapter)
 
-### Why Option 1?
+### Why Option 1 is the Best Solution
 
 1. **Non-invasive:** No changes to existing TestSuite or Search classes
 2. **Similar to MatchRunner:** Reuses subprocess + UCI communication pattern
@@ -468,19 +475,6 @@ testSuites:
 
 ---
 
-## Alternative: Simpler Approach
-
-If full UCI implementation is too complex, consider a **hybrid approach:**
-
-1. **Keep internal engine testing as-is** (fast, detailed)
-2. **Use MatchRunner pattern for external engines:**
-   - Create a "tactical test runner" using cutechess-cli's EPD support
-   - Parse cutechess output for test results
-   - Simpler but less flexible
-
-This would be ~200 lines of code instead of ~1250, but with less control.
-
----
 
 ## Risks & Considerations
 
@@ -507,8 +501,10 @@ This would be ~200 lines of code instead of ~1250, but with less control.
 
 **Before proceeding with implementation, decide:**
 
-1. **Is Option 1 (UCI Adapter) the right approach?**
-   - Alternatives: Option 2 (cutechess-cli) or Option 3 (refactor TestSuite)
+1. **Proceed with Option 1 (UCI Adapter)?**
+   - Option 2 (cutechess-cli) has been ruled out as not viable (see analysis above)
+   - Option 3 (refactor TestSuite) is too invasive and risky
+   - Option 1 is the only practical approach
 
 2. **Is 10-14 hours of work justified for this feature?**
    - Benefit: Compare tactical strength across all versions
@@ -524,7 +520,11 @@ This would be ~200 lines of code instead of ~1250, but with less control.
 
 **Current State:** Test suites only work with built-in engine
 
-**Proposed Solution:** Add UCI adapter to TestSuiteRunner for external engines
+**Proposed Solution:** Add UCI adapter to TestSuiteRunner for external engines (Option 1)
+
+**Rejected Options:**
+- ❌ **Option 2 (cutechess-cli):** Not viable - cannot parse EPD operations or check tactical moves
+- ❌ **Option 3 (refactor TestSuite):** Too invasive and risky
 
 **Effort:** 10-14 hours, ~1250 lines of code
 
@@ -532,9 +532,10 @@ This would be ~200 lines of code instead of ~1250, but with less control.
 
 **Risk:** Moderate complexity (UCI protocol, subprocess management)
 
-**Recommendation:** Implement if historical tactical strength comparison is important. Otherwise, use matches for version comparison and keep test suites for internal development only.
+**Recommendation:** Implement Option 1 if historical tactical strength comparison is important. Otherwise, use matches for version comparison and keep test suites for internal development only.
 
 ---
 
 *Design document created: 2026-02-01*
-*Status: Awaiting approval to proceed with implementation*
+*Design document updated: 2026-02-01 (Option 2 ruled out after analysis)*
+*Status: Awaiting approval to proceed with Option 1 implementation*
