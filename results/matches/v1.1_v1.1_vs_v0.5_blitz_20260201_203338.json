@@ -1,0 +1,19 @@
+{
+  "version": "v1.1",
+  "matchName": "v1.1_vs_v0.5_blitz",
+  "timestamp": "2026-02-01T19:33:38Z",
+  "engines": {
+    "engine1": "FrankyCPP_v1.1",
+    "engine2": "FrankyCPP_v0.5"
+  },
+  "results": {
+    "engine1Wins": 23,
+    "engine2Wins": 34,
+    "draws": 43,
+    "engine1Score": 44.5,
+    "engine2Score": 55.5,
+    "eloDifference": -38.4
+  },
+  "pgnPath": "results/matches/v1.1_vs_v0.5_blitz.pgn",
+  "durationMs": 4057986
+}

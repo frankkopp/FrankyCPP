@@ -372,6 +372,9 @@ find_package(spdlog CONFIG REQUIRED)
 # yaml-cpp via vcpkg CONFIG package
 find_package(yaml-cpp CONFIG REQUIRED)
 
+# nlohmann_json for JSON parsing in Arena (header-only)
+find_package(nlohmann_json CONFIG REQUIRED)
+
 # project sub directories - need to have their own CMakeList.txt
 add_subdirectory(src)
 

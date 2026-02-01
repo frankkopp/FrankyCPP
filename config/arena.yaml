@@ -12,10 +12,10 @@ testSuites:
     timePerMove: 5000  # milliseconds
     maxDepth: 30
 
-  # - name: "mate_test"
-  #   epdPath: "test/testsets/mate_test_suite.epd"
-  #   timePerMove: 15000
-  #   maxDepth: 30
+  - name: "mate_test"
+    epdPath: "test/testsets/mate_test_suite.epd"
+    timePerMove: 15000
+    maxDepth: 30
 
   - name: "WAC"
     epdPath: "test/testsets/wac.epd"
@@ -51,23 +51,23 @@ debugMode: false
 
 matches:
   # for DEBUGGING PURPOSES ONLY - to be commented for quick tests
-  - name: "v1.1_vs_v1.0_debug"
-    engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
-    engine2Path: "Release/FrankyCPP_V1.0/FrankyCPP_v1.0.exe"
-    openingBook: "books/8moves_GM_LB.pgn"  # PGN format required for cutechess-cli
-    timeControl: "10+0.1"  # Format: "base+increment" - 10s total per game + 0.1s added after each move
-    rounds: 4
-    concurrency: 4  # Number of games to run in parallel (1=sequential, 2+=parallel, faster but non-deterministic)
-    outputPgn: "results/matches/v1.1_vs_v1.0_debug.pgn"
-
-#  - name: "v1.1_vs_v1.0_blitz"
+#  - name: "v1.1_vs_v1.0_debug"
 #    engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
 #    engine2Path: "Release/FrankyCPP_V1.0/FrankyCPP_v1.0.exe"
 #    openingBook: "books/8moves_GM_LB.pgn"  # PGN format required for cutechess-cli
-#    timeControl: "60+0.6"  # Format: "base+increment"
-#    rounds: 100
-#    concurrency: 4  # Run 4 games in parallel for faster execution
-#    outputPgn: "results/matches/v1.1_vs_v1.0_blitz.pgn"
+#    timeControl: "10+0.1"  # Format: "base+increment" - 10s total per game + 0.1s added after each move
+#    rounds: 4
+#    concurrency: 4  # Number of games to run in parallel (1=sequential, 2+=parallel, faster but non-deterministic)
+#    outputPgn: "results/matches/v1.1_vs_v1.0_debug.pgn"
+
+  - name: "v1.1_vs_v0.5_blitz"
+    engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+    engine2Path: "Release/FrankyCPP_V0.5/FrankyCPP_v0.5.exe"
+    openingBook: "books/8moves_GM_LB.pgn"  # PGN format required for cutechess-cli
+    timeControl: "60+0.6"  # Format: "base+increment"
+    rounds: 100
+    concurrency: 4  # Run 4 games in parallel for faster execution
+    outputPgn: "results/matches/v1.1_vs_v0.5_blitz.pgn"
 
   # - name: "v1.1_vs_v1.0_rapid"
   #   engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"

@@ -139,6 +139,7 @@ message(STATUS "Arena executable name: ${arenaExeName}")
 add_executable(${arenaExeName}
     engine_arena_main.cpp
     engine_arena/ArenaConfig.cpp
+    engine_arena/ArenaRunner.cpp
     engine_arena/ResultWriter.cpp
     engine_arena/TestSuiteRunner.cpp
     engine_arena/MatchRunner.cpp
@@ -151,6 +152,7 @@ target_link_libraries(${arenaExeName}
     FrankyCPPlib
     yaml-cpp::yaml-cpp
     Boost::program_options
+    nlohmann_json::nlohmann_json
 )
 
 target_include_directories(${arenaExeName}

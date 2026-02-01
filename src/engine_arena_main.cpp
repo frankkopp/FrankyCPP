@@ -38,10 +38,7 @@
 //
 //=============================================================================
 
-#include "engine_arena/ArenaConfig.h"
-#include "engine_arena/ResultWriter.h"
-#include "engine_arena/TestSuiteRunner.h"
-#include "engine_arena/MatchRunner.h"
+#include "engine_arena/ArenaRunner.h"
 #include "init.h"
 
 #include <boost/program_options.hpp>
@@ -106,9 +103,8 @@ int main(int argc, char* argv[]) {
 
     std::cout << "Configuration validated successfully!" << std::endl;
 
-    // Create ResultWriter to ensure directories exist
-    arena::ResultWriter resultWriter(config.resultsDir);
-    std::cout << "Result directories created/verified." << std::endl;
+    // Create ArenaRunner - main orchestrator
+    arena::ArenaRunner arenaRunner(config);
 
     // Process commands
     if (vm.contains("compare")) {
@@ -117,81 +113,20 @@ int main(int argc, char* argv[]) {
         std::cerr << "ERROR: --compare requires exactly 2 version arguments" << std::endl;
         return 1;
       }
-      std::cout << "\n[COMPARE MODE]" << std::endl;
-      std::cout << "Comparing versions: " << versions[0] << " vs " << versions[1] << std::endl;
-      std::cout << "NOTE: Comparison functionality will be implemented in Phase 4" << std::endl;
+      arenaRunner.compareVersions(versions[0], versions[1]);
 
     } else if (vm.contains("testsuites")) {
-      std::cout << "\n[TEST SUITES MODE]" << std::endl;
-      std::cout << "Will run " << config.testSuites.size() << " test suite(s)" << std::endl;
-
-      // Create TestSuiteRunner and run all suites
-      arena::TestSuiteRunner runner(config);
-      auto results = runner.runAllTestSuites();
-
-      // Write results to JSON files
-      std::cout << "\nSaving results..." << std::endl;
-      for (const auto& result : results) {
-        std::string jsonPath = resultWriter.writeTestSuiteResult(result);
-        std::cout << "  Saved: " << jsonPath << std::endl;
-      }
-
-      std::cout << "\n=== Test Suites Complete ===" << std::endl;
+      arenaRunner.runTestSuitesOnly();
 
     } else if (vm.contains("matches")) {
-      std::cout << "\n[MATCHES MODE]" << std::endl;
-      std::cout << "Will run " << config.matches.size() << " match(es)" << std::endl;
-
-      // Create MatchRunner and run all matches
-      arena::MatchRunner runner(config);
-      auto results = runner.runAllMatches();
-
-      // Write results to JSON files
-      std::cout << "\nSaving results..." << std::endl;
-      for (const auto& result : results) {
-        std::string jsonPath = resultWriter.writeMatchResult(result);
-        std::cout << "  Saved: " << jsonPath << std::endl;
-      }
-
-      std::cout << "\n=== Matches Complete ===" << std::endl;
+      arenaRunner.runMatchesOnly();
 
     } else {
-      std::cout << "\n[FULL RUN MODE]" << std::endl;
-      std::cout << "Will run all test suites and matches" << std::endl;
-
-      // Run test suites
-      if (!config.testSuites.empty()) {
-        std::cout << "\n--- Running Test Suites ---" << std::endl;
-        arena::TestSuiteRunner runner(config);
-        auto results = runner.runAllTestSuites();
-
-        // Write results
-        std::cout << "\nSaving test suite results..." << std::endl;
-        for (const auto& result : results) {
-          std::string jsonPath = resultWriter.writeTestSuiteResult(result);
-          std::cout << "  Saved: " << jsonPath << std::endl;
-        }
-      }
-
-      // Run matches
-      if (!config.matches.empty()) {
-        std::cout << "\n--- Running Matches ---" << std::endl;
-        arena::MatchRunner matchRunner(config);
-        auto matchResults = matchRunner.runAllMatches();
-
-        // Write results
-        std::cout << "\nSaving match results..." << std::endl;
-        for (const auto& result : matchResults) {
-          std::string jsonPath = resultWriter.writeMatchResult(result);
-          std::cout << "  Saved: " << jsonPath << std::endl;
-        }
-      }
-
-      std::cout << "\n=== Full Run Complete ===" << std::endl;
+      arenaRunner.runAll();
     }
 
-    std::cout << "\n=== Phase 3 Complete ===" << std::endl;
-    std::cout << "Arena framework with test suites and match execution ready!" << std::endl;
+    std::cout << "\n=== Arena Complete ===" << std::endl;
+    std::cout << "All operations finished successfully!" << std::endl;
 
     return 0;
 
