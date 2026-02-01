@@ -91,17 +91,17 @@ public:
   /// @param resultsDir Root directory for results (e.g., "./results")
   explicit ResultWriter(const std::string& resultsDir);
 
-  /// Write test suite results to JSON file
+  /// Write test suite results to a JSON file
   /// @param result Test suite result data
   /// @return Path to the created file
   std::string writeTestSuiteResult(const TestSuiteResult& result);
 
-  /// Write match results to JSON file
+  /// Write match results to the JSON file
   /// @param result Match result data
   /// @return Path to the created file
   std::string writeMatchResult(const MatchResult& result);
 
-  /// Write comparison report between two versions
+  /// Write a comparison report between two versions
   /// @param v1Results Results from version 1
   /// @param v2Results Results from version 2
   /// @return Path to the created file
@@ -121,10 +121,10 @@ private:
                                 const std::string& version) const;
 
   /// Get current timestamp in YYYYMMDD_HHMMSS format
-  std::string getTimestamp() const;
+  static std::string getTimestamp() ;
 
   /// Ensure directory exists, create if needed
-  void ensureDirectoryExists(const std::string& path);
+  static void ensureDirectoryExists(const std::string& path);
 };
 
 } // namespace arena

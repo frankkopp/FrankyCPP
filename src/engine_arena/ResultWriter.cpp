@@ -23,73 +23,72 @@
 
 #include "ResultWriter.h"
 
-#include <fstream>
-#include <filesystem>
 #include <chrono>
+#include <filesystem>
+#include <fstream>
 #include <iomanip>
 #include <sstream>
 
 namespace arena {
 
-ResultWriter::ResultWriter(const std::string& resultsDir)
-  : resultsDir(resultsDir) {
-  // Ensure base results directory exists
-  ensureDirectoryExists(resultsDir);
-  ensureDirectoryExists(resultsDir + "/testsuites");
-  ensureDirectoryExists(resultsDir + "/matches");
-  ensureDirectoryExists(resultsDir + "/comparisons");
-}
-
-std::string ResultWriter::writeTestSuiteResult(const TestSuiteResult& result) {
-  // Placeholder implementation - will be completed in Phase 2
-  // For now, just return expected filename
-  return generateFilename("testsuite", result.suiteName, result.version);
-}
-
-std::string ResultWriter::writeMatchResult(const MatchResult& result) {
-  // Placeholder implementation - will be completed in Phase 3
-  // For now, just return expected filename
-  return generateFilename("match", result.matchName, result.version);
-}
-
-std::string ResultWriter::writeComparison(const std::vector<TestSuiteResult>& v1Results,
-                                          const std::vector<TestSuiteResult>& v2Results) {
-  // Placeholder implementation - will be completed in Phase 4
-  // For now, just return expected filename
-  if (v1Results.empty() || v2Results.empty()) {
-    return "";
+  ResultWriter::ResultWriter(const std::string& resultsDir)
+      : resultsDir(resultsDir) {
+    // Ensure base results directory exists
+    ensureDirectoryExists(resultsDir);
+    ensureDirectoryExists(resultsDir + "/testsuites");
+    ensureDirectoryExists(resultsDir + "/matches");
+    ensureDirectoryExists(resultsDir + "/comparisons");
   }
-  std::string filename = resultsDir + "/comparisons/" +
-                         v1Results[0].version + "_vs_" + v2Results[0].version +
-                         "_" + getTimestamp() + ".txt";
-  return filename;
-}
 
-std::string ResultWriter::generateFilename(const std::string& prefix,
-                                            const std::string& name,
-                                            const std::string& version) const {
-  std::string sanitizedName = name;
-  // Replace spaces with underscores
-  std::replace(sanitizedName.begin(), sanitizedName.end(), ' ', '_');
-
-  std::string dir = prefix == "testsuite" ? "/testsuites" : "/matches";
-  return resultsDir + dir + "/" + version + "_" + sanitizedName + "_" +
-         getTimestamp() + ".json";
-}
-
-std::string ResultWriter::getTimestamp() const {
-  auto now = std::chrono::system_clock::now();
-  auto time = std::chrono::system_clock::to_time_t(now);
-
-  std::stringstream ss;
-  ss << std::put_time(std::localtime(&time), "%Y%m%d_%H%M%S");
-  return ss.str();
-}
-
-void ResultWriter::ensureDirectoryExists(const std::string& path) {
-  if (!std::filesystem::exists(path)) {
-    std::filesystem::create_directories(path);
+  std::string ResultWriter::writeTestSuiteResult(const TestSuiteResult& result) {
+    // Placeholder implementation - will be completed in Phase 2
+    // For now, just return expected filename
+    return generateFilename("testsuite", result.suiteName, result.version);
   }
-}
 
-} // namespace arena
+  std::string ResultWriter::writeMatchResult(const MatchResult& result) {
+    // Placeholder implementation - will be completed in Phase 3
+    // For now, just return expected filename
+    return generateFilename("match", result.matchName, result.version);
+  }
+
+  std::string ResultWriter::writeComparison(const std::vector<TestSuiteResult>& v1Results,
+                                            const std::vector<TestSuiteResult>& v2Results) {
+    // Placeholder implementation - will be completed in Phase 4
+    // For now, just return expected filename
+    if (v1Results.empty() || v2Results.empty()) {
+      return "";
+    }
+    std::string filename = resultsDir + "/comparisons/" + v1Results[0].version + "_vs_" + v2Results[0].version + "_" + getTimestamp() + ".txt";
+    return filename;
+  }
+
+  std::string ResultWriter::generateFilename(const std::string& prefix,
+                                             const std::string& name,
+                                             const std::string& version) const {
+    std::string sanitizedName = name;
+    // Replace spaces with underscores
+    std::ranges::replace(sanitizedName, ' ', '_');
+
+    const std::string dir = prefix == "testsuite" ? "/testsuites" : "/matches";
+    return resultsDir + dir + "/" + version + "_" + sanitizedName + "_" + getTimestamp() + ".json";
+  }
+
+  std::string ResultWriter::getTimestamp() {
+    const auto now  = system_clock::now();
+    const auto time = system_clock::to_time_t(now);
+
+    std::stringstream ss;
+    std::tm timeInfo{};
+    localtime_s(&timeInfo, &time);
+    ss << std::put_time(&timeInfo, "%Y%m%d_%H%M%S");
+    return ss.str();
+  }
+
+  void ResultWriter::ensureDirectoryExists(const std::string& path) {
+    if (!std::filesystem::exists(path)) {
+      std::filesystem::create_directories(path);
+    }
+  }
+
+}// namespace arena

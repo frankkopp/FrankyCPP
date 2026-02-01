@@ -21,7 +21,7 @@
 // engine_arena_main.cpp - Engine Arena Main Entry Point
 //=============================================================================
 //
-// Main executable for the Engine Arena testing framework. Provides command-line
+// Main executable for the Engine Arena testing framework. Provides a command-line
 // interface for running test suites, engine matches, and version comparisons.
 //
 // Command-Line Modes:
@@ -40,7 +40,6 @@
 
 #include "engine_arena/ArenaConfig.h"
 #include "engine_arena/ResultWriter.h"
-#include "common/Logging.h"
 #include "init.h"
 
 #include <boost/program_options.hpp>
@@ -71,7 +70,7 @@ int main(int argc, char* argv[]) {
     po::notify(vm);
 
     // Show help
-    if (vm.count("help")) {
+    if (vm.contains("help")) {
       std::cout << desc << std::endl;
       std::cout << "\nExamples:\n";
       std::cout << "  Run all tests:       FrankyCPP_Arena\n";
@@ -82,7 +81,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Load configuration
-    std::string configPath = vm["config"].as<std::string>();
+    auto configPath = vm["config"].as<std::string>();
     std::cout << "Current working directory: " << std::filesystem::current_path() << std::endl;
     std::cout << "Loading configuration from: " << configPath << std::endl;
 
@@ -110,7 +109,7 @@ int main(int argc, char* argv[]) {
     std::cout << "Result directories created/verified." << std::endl;
 
     // Process commands
-    if (vm.count("compare")) {
+    if (vm.contains("compare")) {
       auto versions = vm["compare"].as<std::vector<std::string>>();
       if (versions.size() != 2) {
         std::cerr << "ERROR: --compare requires exactly 2 version arguments" << std::endl;
@@ -120,7 +119,7 @@ int main(int argc, char* argv[]) {
       std::cout << "Comparing versions: " << versions[0] << " vs " << versions[1] << std::endl;
       std::cout << "NOTE: Comparison functionality will be implemented in Phase 4" << std::endl;
 
-    } else if (vm.count("testsuites")) {
+    } else if (vm.contains("testsuites")) {
       std::cout << "\n[TEST SUITES MODE]" << std::endl;
       std::cout << "Will run " << config.testSuites.size() << " test suite(s)" << std::endl;
       for (const auto& suite : config.testSuites) {
@@ -128,7 +127,7 @@ int main(int argc, char* argv[]) {
       }
       std::cout << "NOTE: Test suite execution will be implemented in Phase 2" << std::endl;
 
-    } else if (vm.count("matches")) {
+    } else if (vm.contains("matches")) {
       std::cout << "\n[MATCHES MODE]" << std::endl;
       std::cout << "Will run " << config.matches.size() << " match(es)" << std::endl;
       for (const auto& match : config.matches) {
