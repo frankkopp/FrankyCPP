@@ -39,6 +39,15 @@ Quick reference to all project documentation.
 - Roadmap and future improvements
 - Accomplishment tracking
 
+### 🎯 [V1_ENGINE_ENHANCEMENT_PLAN.md](V1_ENGINE_ENHANCEMENT_PLAN.md)
+**v1.x Engine Enhancement Roadmap**
+- Phase-based implementation plan
+- Search enhancements (singular extensions, check extensions, Lazy SMP)
+- Evaluation improvements (NNUE neural networks)
+- Endgame tablebases (Syzygy)
+- Automated parameter tuning infrastructure
+- Detailed specifications and success metrics
+
 ---
 
 ## Technical References
@@ -101,6 +110,7 @@ Quick reference to all project documentation.
 | **First-time setup** | BUILD_GUIDE.md |
 | **Architecture overview** | Architecture.md |
 | **Project status** | FrankyCPP_Codebase_Review.md |
+| **v1.x Enhancement plan** | V1_ENGINE_ENHANCEMENT_PLAN.md |
 | **C++20 features** | CPP20_Feature_Support.md |
 | **Logging** | Logger.md |
 | **UCI protocol** | engine-interface.txt |
@@ -121,13 +131,14 @@ Quick reference to all project documentation.
 
 ## Documentation Status ✅
 
-All documentation is current as of **2026-01-31**:
+All documentation is current as of **2026-02-01**:
 - ✅ Build instructions for all platforms
 - ✅ Architecture and design documentation
+- ✅ v1.x Enhancement roadmap and implementation plan
 - ✅ Technical references up to date
 - ✅ IDE setup guides available
 - ✅ Obsolete files removed
 
 ---
 
-**Last updated:** 2026-01-31
+**Last updated:** 2026-02-01

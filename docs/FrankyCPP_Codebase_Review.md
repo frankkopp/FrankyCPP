@@ -506,3 +506,6 @@ Future improvements are tracked in the v1.x roadmap below.
 - **Logger.md** - Logging system documentation
 - **CLion_WSL_Setup.md** - CLion with WSL configuration
 - **engine-interface.txt** - UCI protocol reference
+
+### Planning & Roadmap
+- **V1_ENGINE_ENHANCEMENT_PLAN.md** - Detailed v1.x enhancement roadmap with phase-based implementation plans, detailed specifications, and success metrics
