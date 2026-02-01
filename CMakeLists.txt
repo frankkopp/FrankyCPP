@@ -6,7 +6,7 @@ message(STATUS "================================================================
 cmake_minimum_required(VERSION 3.16)
 
 # Project name and version
-project(FrankyCPP VERSION 1.0.0)
+project(FrankyCPP VERSION 1.1.0)
 message(STATUS "FrankyCPP v${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
 
 # Enforce C++20 globally so all targets (including FetchContent deps) see the right standard
