@@ -1,0 +1,40 @@
+version: "v1.1"
+resultsDir: "./results"
+
+# Cutechess-cli path (Windows)
+# Adjust this path to match your cutechess-cli installation
+cutechessPath: "D:/Games/Cute Chess/cutechess-cli.exe"
+
+# Test suite configurations
+testSuites:
+  - name: "franky_tests"
+    epdPath: "test/testsets/franky_tests.epd"
+    timePerMove: 5000  # milliseconds
+    maxDepth: 30
+
+  - name: "WAC"
+    epdPath: "test/testsets/wac.epd"
+    timePerMove: 5000
+    maxDepth: 30
+
+  # Uncomment to enable more test suites
+  # - name: "STS"
+  #   epdPath: "test/testsets/STS1-STS15_LAN.EPD"
+  #   timePerMove: 5000
+  #   maxDepth: 30
+
+  # - name: "mate_test"
+  #   epdPath: "test/testsets/mate_test_suite.epd"
+  #   timePerMove: 15000
+  #   maxDepth: 30
+
+# Match configurations
+# Note: Uncomment and adjust paths to enable matches
+matches: []
+  # - name: "v1.1_vs_v1.0_rapid"
+  #   engine1Path: "./cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+  #   engine2Path: "./Release/FrankyCPP_v1.0/FrankyCPP_v1.0.exe"
+  #   openingBook: "books/8moves_GM_LB.pgn"
+  #   timeControl: "10+0.1"  # 10s + 0.1s increment
+  #   rounds: 100
+  #   outputPgn: "results/matches/v1.1_vs_v1.0_rapid.pgn"

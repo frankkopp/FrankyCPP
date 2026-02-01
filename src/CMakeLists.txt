@@ -129,6 +129,51 @@ target_include_directories(
         ${PROJECT_BINARY_DIR}
 )
 
+# ============================================================================
+# Engine Arena executable
+# ============================================================================
+message(STATUS "Configuring Engine Arena executable...")
+set(arenaExeName ${exeName}_Arena)
+message(STATUS "Arena executable name: ${arenaExeName}")
+
+add_executable(${arenaExeName}
+    engine_arena_main.cpp
+    engine_arena/ArenaConfig.cpp
+    engine_arena/ResultWriter.cpp
+)
+
+target_compile_features(${arenaExeName} PRIVATE cxx_std_20)
+
+target_link_libraries(${arenaExeName}
+    PRIVATE
+    FrankyCPPlib
+    yaml-cpp::yaml-cpp
+    Boost::program_options
+)
+
+target_include_directories(${arenaExeName}
+    PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+    ${PROJECT_BINARY_DIR}
+)
+
+# Copy config and books for arena executable as well
+add_custom_command(
+    TARGET ${arenaExeName} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/config $<TARGET_FILE_DIR:${arenaExeName}>/config
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/books $<TARGET_FILE_DIR:${arenaExeName}>/books
+)
+
+if (ENABLE_UNITY_BUILD)
+    set_target_properties(${arenaExeName} PROPERTIES UNITY_BUILD ON)
+endif()
+
+if (MSVC AND STRICT_WARNINGS)
+    target_compile_options(${arenaExeName} PRIVATE /WX)
+endif()
+
+# ============================================================================
+
 # STRICT_WARNINGS for CI: treat warnings as errors when enabled
 if (MSVC AND STRICT_WARNINGS)
     target_compile_options(FrankyCPPlib PRIVATE /WX)
