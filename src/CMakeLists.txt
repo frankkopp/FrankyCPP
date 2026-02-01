@@ -141,6 +141,7 @@ add_executable(${arenaExeName}
     engine_arena/ArenaConfig.cpp
     engine_arena/ResultWriter.cpp
     engine_arena/TestSuiteRunner.cpp
+    engine_arena/MatchRunner.cpp
 )
 
 target_compile_features(${arenaExeName} PRIVATE cxx_std_20)

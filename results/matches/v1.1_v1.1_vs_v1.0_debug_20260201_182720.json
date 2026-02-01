@@ -1,0 +1,19 @@
+{
+  "version": "v1.1",
+  "matchName": "v1.1_vs_v1.0_debug",
+  "timestamp": "2026-02-01T17:27:20Z",
+  "engines": {
+    "engine1": "FrankyCPP_v1.1",
+    "engine2": "FrankyCPP_v1.0"
+  },
+  "results": {
+    "engine1Wins": 0,
+    "engine2Wins": 2,
+    "draws": 2,
+    "engine1Score": 1.0,
+    "engine2Score": 3.0,
+    "eloDifference": -190.8
+  },
+  "pgnPath": "results/matches/v1.1_vs_v1.0_debug.pgn",
+  "durationMs": 109745
+}

@@ -123,14 +123,14 @@ struct MatchResult {
   std::string timestamp;      ///< ISO 8601 timestamp
   std::string engine1Name;    ///< First engine name
   std::string engine2Name;    ///< Second engine name
-  int engine1Wins;            ///< Wins by engine 1
-  int engine2Wins;            ///< Wins by engine 2
-  int draws;                  ///< Number of draws
-  double engine1Score;        ///< Score for engine 1 (win=1, draw=0.5)
-  double engine2Score;        ///< Score for engine 2
-  double eloDifference;       ///< Calculated ELO difference
+  int engine1Wins = 0;        ///< Wins by engine 1
+  int engine2Wins = 0;        ///< Wins by engine 2
+  int draws = 0;              ///< Number of draws
+  double engine1Score = 0.0;  ///< Score for engine 1 (win=1, draw=0.5)
+  double engine2Score = 0.0;  ///< Score for engine 2
+  double eloDifference = 0.0; ///< Calculated ELO difference
   std::string pgnPath;        ///< Path to PGN file
-  int64_t durationMs;         ///< Match duration in milliseconds
+  int64_t durationMs = 0;     ///< Match duration in milliseconds
 };
 
 } // namespace arena

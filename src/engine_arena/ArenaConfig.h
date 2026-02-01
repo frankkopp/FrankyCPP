@@ -121,6 +121,8 @@ struct MatchConfig {
 struct ArenaConfig {
   std::string version;       ///< Engine version being tested
   std::string resultsDir;    ///< Root directory for results
+  std::string cutechessPath; ///< Path to cutechess-cli executable (global)
+  bool debugMode = false;    ///< Enable cutechess-cli debug output (prints engine I/O)
   std::vector<TestSuiteConfig> testSuites; ///< Test suite configurations
   std::vector<MatchConfig> matches;        ///< Match configurations
 

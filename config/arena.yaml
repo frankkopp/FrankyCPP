@@ -3,7 +3,8 @@ resultsDir: "./results"
 
 # Cutechess-cli path (Windows)
 # Adjust this path to match your cutechess-cli installation
-cutechessPath: "D:/Games/Cute Chess/cutechess-cli.exe"
+cutechessPath: "D:/Games/CuteChess/cutechess-cli.exe"
+
 
 # Test suite configurations
 testSuites:
@@ -41,11 +42,36 @@ testSuites:
 
 # Match configurations
 # Note: Uncomment and adjust paths to enable matches
-matches: []
+# Opening book must be in PGN format for cutechess-cli
+
+# Debug mode - prints engine I/O communication during matches
+# Set to true to see all UCI commands/responses for debugging
+# Uses cutechess-cli "-debug all" flag to display engine communication
+# Default: false (cleaner output)
+debugMode: false
+
+matches:
+# for DEBUGGING PURPOSES ONLY - to be commented for quick tests
+#  - name: "v1.1_vs_v1.0_debug"
+#    engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+#    engine2Path: "Release/FrankyCPP_V1.0/FrankyCPP_v1.0.exe"
+#    openingBook: "books/8moves_GM_LB.pgn"  # PGN format required for cutechess-cli
+#    timeControl: "10+0.1"  # Format: "base+increment" - 10s total per game + 0.1s added after each move
+#    rounds: 4
+#    outputPgn: "results/matches/v1.1_vs_v1.0_debug.pgn"
+
+  - name: "v1.1_vs_v1.0_blitz"
+    engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+    engine2Path: "Release/FrankyCPP_V1.0/FrankyCPP_v1.0.exe"
+    openingBook: "books/8moves_GM_LB.pgn"  # PGN format required for cutechess-cli
+    timeControl: "60+0.6"  # Format: "base+increment"
+    rounds: 100
+    outputPgn: "results/matches/v1.1_vs_v1.0_blitz.pgn"
+
   # - name: "v1.1_vs_v1.0_rapid"
-  #   engine1Path: "./cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+  #   engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
   #   engine2Path: "Release/FrankyCPP_V1.0/FrankyCPP_v1.0.exe"
-  #   openingBook: "books/book.txt"
-  #   timeControl: "10+0.1"  # 10s + 0.1s increment
-  #   rounds: 100
+  #   openingBook: "books/8moves_GM_LB.pgn"
+  #   timeControl: "180+2"  # Format: "base+increment"
+  #   rounds: 50
   #   outputPgn: "results/matches/v1.1_vs_v1.0_rapid.pgn"

@@ -41,6 +41,7 @@
 #include "engine_arena/ArenaConfig.h"
 #include "engine_arena/ResultWriter.h"
 #include "engine_arena/TestSuiteRunner.h"
+#include "engine_arena/MatchRunner.h"
 #include "init.h"
 
 #include <boost/program_options.hpp>
@@ -140,10 +141,19 @@ int main(int argc, char* argv[]) {
     } else if (vm.contains("matches")) {
       std::cout << "\n[MATCHES MODE]" << std::endl;
       std::cout << "Will run " << config.matches.size() << " match(es)" << std::endl;
-      for (const auto& match : config.matches) {
-        std::cout << "  - " << match.name << " (" << match.rounds << " rounds)" << std::endl;
+
+      // Create MatchRunner and run all matches
+      arena::MatchRunner runner(config);
+      auto results = runner.runAllMatches();
+
+      // Write results to JSON files
+      std::cout << "\nSaving results..." << std::endl;
+      for (const auto& result : results) {
+        std::string jsonPath = resultWriter.writeMatchResult(result);
+        std::cout << "  Saved: " << jsonPath << std::endl;
       }
-      std::cout << "NOTE: Match execution will be implemented in Phase 3" << std::endl;
+
+      std::cout << "\n=== Matches Complete ===" << std::endl;
 
     } else {
       std::cout << "\n[FULL RUN MODE]" << std::endl;
@@ -163,17 +173,25 @@ int main(int argc, char* argv[]) {
         }
       }
 
-      // Run matches (Phase 3 - not yet implemented)
+      // Run matches
       if (!config.matches.empty()) {
         std::cout << "\n--- Running Matches ---" << std::endl;
-        std::cout << "NOTE: Match execution will be implemented in Phase 3" << std::endl;
+        arena::MatchRunner matchRunner(config);
+        auto matchResults = matchRunner.runAllMatches();
+
+        // Write results
+        std::cout << "\nSaving match results..." << std::endl;
+        for (const auto& result : matchResults) {
+          std::string jsonPath = resultWriter.writeMatchResult(result);
+          std::cout << "  Saved: " << jsonPath << std::endl;
+        }
       }
 
       std::cout << "\n=== Full Run Complete ===" << std::endl;
     }
 
-    std::cout << "\n=== Phase 2 Complete ===" << std::endl;
-    std::cout << "Arena framework with test suite execution ready!" << std::endl;
+    std::cout << "\n=== Phase 3 Complete ===" << std::endl;
+    std::cout << "Arena framework with test suites and match execution ready!" << std::endl;
 
     return 0;
 

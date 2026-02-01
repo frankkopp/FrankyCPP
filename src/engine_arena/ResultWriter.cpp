@@ -93,9 +93,40 @@ namespace arena {
   }
 
   std::string ResultWriter::writeMatchResult(const MatchResult& result) {
-    // Placeholder implementation - will be completed in Phase 3
-    // For now, just return expected filename
-    return generateFilename("match", result.matchName, result.version);
+    std::string filename = generateFilename("match", result.matchName, result.version);
+
+    std::ofstream file(filename);
+    if (!file.is_open()) {
+      throw std::runtime_error("Failed to open file for writing: " + filename);
+    }
+
+    // Write JSON
+    file << "{\n";
+    file << "  \"version\": \"" << result.version << "\",\n";
+    file << "  \"matchName\": \"" << result.matchName << "\",\n";
+    file << "  \"timestamp\": \"" << result.timestamp << "\",\n";
+    file << "  \"engines\": {\n";
+    file << "    \"engine1\": \"" << result.engine1Name << "\",\n";
+    file << "    \"engine2\": \"" << result.engine2Name << "\"\n";
+    file << "  },\n";
+    file << "  \"results\": {\n";
+    file << "    \"engine1Wins\": " << result.engine1Wins << ",\n";
+    file << "    \"engine2Wins\": " << result.engine2Wins << ",\n";
+    file << "    \"draws\": " << result.draws << ",\n";
+
+    file << std::fixed << std::setprecision(1);
+    file << "    \"engine1Score\": " << result.engine1Score << ",\n";
+    file << "    \"engine2Score\": " << result.engine2Score << ",\n";
+    file << "    \"eloDifference\": " << result.eloDifference << "\n";
+    file << std::defaultfloat;
+
+    file << "  },\n";
+    file << "  \"pgnPath\": \"" << result.pgnPath << "\",\n";
+    file << "  \"durationMs\": " << result.durationMs << "\n";
+    file << "}\n";
+
+    file.close();
+    return filename;
   }
 
   std::string ResultWriter::writeComparison(const std::vector<TestSuiteResult>& v1Results,
@@ -126,7 +157,11 @@ namespace arena {
 
     std::stringstream ss;
     std::tm timeInfo{};
+#ifdef _WIN32
     localtime_s(&timeInfo, &time);
+#else
+    localtime_r(&time, &timeInfo);
+#endif
     ss << std::put_time(&timeInfo, "%Y%m%d_%H%M%S");
     return ss.str();
   }

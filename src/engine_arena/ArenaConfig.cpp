@@ -56,6 +56,16 @@ ArenaConfig ArenaConfig::loadFromYaml(const std::string& configPath) {
       config.resultsDir = "./results";
     }
 
+    // Load cutechess-cli path (global configuration)
+    if (root["cutechessPath"]) {
+      config.cutechessPath = root["cutechessPath"].as<std::string>();
+    }
+
+    // Load debug mode (optional, defaults to false)
+    if (root["debugMode"]) {
+      config.debugMode = root["debugMode"].as<bool>();
+    }
+
     // Load test suites
     if (root["testSuites"]) {
       for (const auto& suiteNode : root["testSuites"]) {
@@ -81,11 +91,11 @@ ArenaConfig ArenaConfig::loadFromYaml(const std::string& configPath) {
         match.engine1Path = matchNode["engine1Path"].as<std::string>();
         match.engine2Path = matchNode["engine2Path"].as<std::string>();
 
-        // cutechessPath can be specified globally or per-match
+        // cutechessPath can be specified per-match or use global default
         if (matchNode["cutechessPath"]) {
           match.cutechessPath = matchNode["cutechessPath"].as<std::string>();
-        } else if (root["cutechessPath"]) {
-          match.cutechessPath = root["cutechessPath"].as<std::string>();
+        } else if (!config.cutechessPath.empty()) {
+          match.cutechessPath = config.cutechessPath;
         } else {
           throw std::runtime_error("cutechessPath not specified for match: " + match.name);
         }

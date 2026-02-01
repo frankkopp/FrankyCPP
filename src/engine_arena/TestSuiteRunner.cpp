@@ -136,7 +136,7 @@ std::vector<TestSuiteResult> TestSuiteRunner::runAllTestSuites() {
 std::string TestSuiteRunner::getCurrentTimestamp() {
   const auto now = system_clock::now();
   auto time_t = system_clock::to_time_t(now);
-  std::tm tm;
+  std::tm tm{};
 
 #ifdef _WIN32
   gmtime_s(&tm, &time_t);

@@ -39,6 +39,17 @@
 - Pushing code to remote repositories without explicit permission
 - Any write operations not explicitly authorized by the user, e.g. modifying files, changing configurations, etc.
 
+### Build Policy:
+**DO NOT attempt to compile/build code using terminal commands**
+- The terminal environment may not have the proper build tools or configuration
+- Always ask the user to build after making code changes
+- Instead of running `cmake`, `ninja`, `make`, etc., provide instructions like:
+  - "Please rebuild the project in CLion"
+  - "Run: `cmake --build cmake-build-release`"
+  - "Build the target using your IDE"
+- Exception: You may check if files exist or list directories
+- After providing a fix, say: "Please rebuild and test to verify the fix"
+
 ---
 
 ## Project Overview
