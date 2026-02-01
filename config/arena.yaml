@@ -12,6 +12,11 @@ testSuites:
     timePerMove: 5000  # milliseconds
     maxDepth: 30
 
+  # - name: "mate_test"
+  #   epdPath: "test/testsets/mate_test_suite.epd"
+  #   timePerMove: 15000
+  #   maxDepth: 30
+
   - name: "WAC"
     epdPath: "test/testsets/wac.epd"
     timePerMove: 5000
@@ -23,10 +28,16 @@ testSuites:
   #   timePerMove: 5000
   #   maxDepth: 30
 
-  # - name: "mate_test"
-  #   epdPath: "test/testsets/mate_test_suite.epd"
-  #   timePerMove: 15000
+  # - name: "Crafty"
+  #   epdPath: "test/testsets/crafty_test.epd"
+  #   timePerMove: 5000
   #   maxDepth: 30
+
+  # - name: "ECM98"
+  #   epdPath: "test/testsets/ecm98.epd"
+  #   timePerMove: 5000
+  #   maxDepth: 30
+
 
 # Match configurations
 # Note: Uncomment and adjust paths to enable matches

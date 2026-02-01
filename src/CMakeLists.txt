@@ -140,6 +140,7 @@ add_executable(${arenaExeName}
     engine_arena_main.cpp
     engine_arena/ArenaConfig.cpp
     engine_arena/ResultWriter.cpp
+    engine_arena/TestSuiteRunner.cpp
 )
 
 target_compile_features(${arenaExeName} PRIVATE cxx_std_20)

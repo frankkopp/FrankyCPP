@@ -41,9 +41,55 @@ namespace arena {
   }
 
   std::string ResultWriter::writeTestSuiteResult(const TestSuiteResult& result) {
-    // Placeholder implementation - will be completed in Phase 2
-    // For now, just return expected filename
-    return generateFilename("testsuite", result.suiteName, result.version);
+    std::string filename = generateFilename("testsuite", result.suiteName, result.version);
+
+    std::ofstream file(filename);
+    if (!file.is_open()) {
+      throw std::runtime_error("Failed to open file for writing: " + filename);
+    }
+
+    // Write JSON manually (simple approach without external JSON library)
+    file << "{\n";
+    file << "  \"version\": \"" << result.version << "\",\n";
+    file << "  \"suiteName\": \"" << result.suiteName << "\",\n";
+    file << "  \"timestamp\": \"" << result.timestamp << "\",\n";
+    file << "  \"summary\": {\n";
+    file << "    \"totalTests\": " << result.totalTests << ",\n";
+    file << "    \"passed\": " << result.passed << ",\n";
+    file << "    \"failed\": " << result.failed << ",\n";
+    file << "    \"skipped\": " << result.skipped << ",\n";
+
+    double successRate = result.totalTests > 0
+        ? (result.passed * 100.0 / result.totalTests)
+        : 0.0;
+    file << std::fixed << std::setprecision(2);
+    file << "    \"successRate\": " << successRate << ",\n";
+    file << std::defaultfloat;
+
+    file << "    \"totalNodes\": " << result.totalNodes << ",\n";
+    file << "    \"totalTimeMs\": " << result.totalTimeMs << "\n";
+    file << "  },\n";
+    file << "  \"details\": [\n";
+
+    // Write per-test details
+    for (size_t i = 0; i < result.details.size(); ++i) {
+      const auto& detail = result.details[i];
+      file << "    {\n";
+      file << "      \"testId\": \"" << detail.testId << "\",\n";
+      file << "      \"fen\": \"" << detail.fen << "\",\n";
+      file << "      \"expected\": \"" << detail.expected << "\",\n";
+      file << "      \"actual\": \"" << detail.actual << "\",\n";
+      file << "      \"passed\": " << (detail.passed ? "true" : "false") << ",\n";
+      file << "      \"nodes\": " << detail.nodes << ",\n";
+      file << "      \"timeMs\": " << detail.timeMs << "\n";
+      file << "    }" << (i < result.details.size() - 1 ? ",\n" : "\n");
+    }
+
+    file << "  ]\n";
+    file << "}\n";
+
+    file.close();
+    return filename;
   }
 
   std::string ResultWriter::writeMatchResult(const MatchResult& result) {

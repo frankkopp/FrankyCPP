@@ -194,6 +194,10 @@ public:
   /// @return Reference to TestSuiteResult
   const TestSuiteResult& getLastResult() const { return lastResult; }
 
+  /// Returns the vector of test cases with detailed per-test results.
+  /// @return Reference to test cases vector
+  const std::vector<Test>& getTestCases() const { return testCases; }
+
 private:
   /// Reads all test cases from file into the provided vector.
   static void readTestCases(const std::string& filePathStr, std::vector<Test>& tests);

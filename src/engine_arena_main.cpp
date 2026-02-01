@@ -40,6 +40,7 @@
 
 #include "engine_arena/ArenaConfig.h"
 #include "engine_arena/ResultWriter.h"
+#include "engine_arena/TestSuiteRunner.h"
 #include "init.h"
 
 #include <boost/program_options.hpp>
@@ -122,10 +123,19 @@ int main(int argc, char* argv[]) {
     } else if (vm.contains("testsuites")) {
       std::cout << "\n[TEST SUITES MODE]" << std::endl;
       std::cout << "Will run " << config.testSuites.size() << " test suite(s)" << std::endl;
-      for (const auto& suite : config.testSuites) {
-        std::cout << "  - " << suite.name << " (" << suite.epdPath << ")" << std::endl;
+
+      // Create TestSuiteRunner and run all suites
+      arena::TestSuiteRunner runner(config);
+      auto results = runner.runAllTestSuites();
+
+      // Write results to JSON files
+      std::cout << "\nSaving results..." << std::endl;
+      for (const auto& result : results) {
+        std::string jsonPath = resultWriter.writeTestSuiteResult(result);
+        std::cout << "  Saved: " << jsonPath << std::endl;
       }
-      std::cout << "NOTE: Test suite execution will be implemented in Phase 2" << std::endl;
+
+      std::cout << "\n=== Test Suites Complete ===" << std::endl;
 
     } else if (vm.contains("matches")) {
       std::cout << "\n[MATCHES MODE]" << std::endl;
@@ -138,11 +148,32 @@ int main(int argc, char* argv[]) {
     } else {
       std::cout << "\n[FULL RUN MODE]" << std::endl;
       std::cout << "Will run all test suites and matches" << std::endl;
-      std::cout << "NOTE: Full execution will be implemented in later phases" << std::endl;
+
+      // Run test suites
+      if (!config.testSuites.empty()) {
+        std::cout << "\n--- Running Test Suites ---" << std::endl;
+        arena::TestSuiteRunner runner(config);
+        auto results = runner.runAllTestSuites();
+
+        // Write results
+        std::cout << "\nSaving test suite results..." << std::endl;
+        for (const auto& result : results) {
+          std::string jsonPath = resultWriter.writeTestSuiteResult(result);
+          std::cout << "  Saved: " << jsonPath << std::endl;
+        }
+      }
+
+      // Run matches (Phase 3 - not yet implemented)
+      if (!config.matches.empty()) {
+        std::cout << "\n--- Running Matches ---" << std::endl;
+        std::cout << "NOTE: Match execution will be implemented in Phase 3" << std::endl;
+      }
+
+      std::cout << "\n=== Full Run Complete ===" << std::endl;
     }
 
-    std::cout << "\n=== Phase 1 Complete ===" << std::endl;
-    std::cout << "Arena framework initialized successfully!" << std::endl;
+    std::cout << "\n=== Phase 2 Complete ===" << std::endl;
+    std::cout << "Arena framework with test suite execution ready!" << std::endl;
 
     return 0;
 
