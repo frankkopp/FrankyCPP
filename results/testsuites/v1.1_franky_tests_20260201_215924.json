@@ -1,15 +1,15 @@
 {
   "version": "v1.1",
   "suiteName": "franky_tests",
-  "timestamp": "2026-02-01T15:38:42Z",
+  "timestamp": "2026-02-01T20:46:39Z",
   "summary": {
     "totalTests": 13,
     "passed": 13,
     "failed": 0,
     "skipped": 0,
     "successRate": 100.00,
-    "totalNodes": 124293196,
-    "totalTimeMs": 27436
+    "totalNodes": 124426002,
+    "totalTimeMs": 27120
   },
   "details": [
     {
@@ -28,7 +28,7 @@
       "actual": "d3e3",
       "passed": true,
       "nodes": 946891,
-      "timeMs": 111
+      "timeMs": 70
     },
     {
       "testId": "FRANKY-1 #3",
@@ -37,7 +37,7 @@
       "actual": "e4d3",
       "passed": true,
       "nodes": 112263,
-      "timeMs": 16
+      "timeMs": 13
     },
     {
       "testId": "FRANKY-1 #4",
@@ -46,7 +46,7 @@
       "actual": "a7a8Q",
       "passed": true,
       "nodes": 12336387,
-      "timeMs": 2219
+      "timeMs": 2426
     },
     {
       "testId": "FRANKY-1 #5",
@@ -54,8 +54,8 @@
       "expected": "bm a4a5",
       "actual": "a4a5",
       "passed": true,
-      "nodes": 26895245,
-      "timeMs": 4990
+      "nodes": 26954529,
+      "timeMs": 4995
     },
     {
       "testId": "FRANKY-1 #6",
@@ -64,7 +64,7 @@
       "actual": "e5f3",
       "passed": true,
       "nodes": 11539629,
-      "timeMs": 2344
+      "timeMs": 2339
     },
     {
       "testId": "FRANKY-1 #7",
@@ -72,8 +72,8 @@
       "expected": "bm h3f2 d3f2",
       "actual": "h3f2",
       "passed": true,
-      "nodes": 23247312,
-      "timeMs": 4981
+      "nodes": 23320834,
+      "timeMs": 4916
     },
     {
       "testId": "Franky-1 #8",
@@ -82,7 +82,7 @@
       "actual": "c3d4",
       "passed": true,
       "nodes": 14128395,
-      "timeMs": 3545
+      "timeMs": 3515
     },
     {
       "testId": "FRANKY-1 #9",
@@ -91,7 +91,7 @@
       "actual": "e4d3",
       "passed": true,
       "nodes": 7900696,
-      "timeMs": 2067
+      "timeMs": 1947
     },
     {
       "testId": "Franky-1 #10",
@@ -100,7 +100,7 @@
       "actual": "e1g1",
       "passed": true,
       "nodes": 6570132,
-      "timeMs": 1934
+      "timeMs": 1854
     },
     {
       "testId": "FRANKY-1 #11",
@@ -109,7 +109,7 @@
       "actual": "f3h1",
       "passed": true,
       "nodes": 10731239,
-      "timeMs": 2739
+      "timeMs": 2614
     },
     {
       "testId": "no ID",
@@ -118,7 +118,7 @@
       "actual": "f1e2",
       "passed": true,
       "nodes": 111570,
-      "timeMs": 24
+      "timeMs": 32
     },
     {
       "testId": "WAC.294",
@@ -127,7 +127,7 @@
       "actual": "g4f4",
       "passed": true,
       "nodes": 9754087,
-      "timeMs": 2457
+      "timeMs": 2391
     }
   ]
 }
