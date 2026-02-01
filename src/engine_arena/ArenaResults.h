@@ -20,6 +20,72 @@
 #ifndef FRANKYCPP_ENGINE_ARENA_RESULTS_H
 #define FRANKYCPP_ENGINE_ARENA_RESULTS_H
 
+//=============================================================================
+// ArenaResults.h - Engine Arena Result Data Structures
+//=============================================================================
+//
+// Defines data structures for capturing and storing test suite and match
+// results from the Engine Arena framework.
+// Depends on: types.h
+//
+// TestSuiteResult:
+//   Aggregates results from running an EPD test suite (e.g., WAC, STS).
+//   Contains overall statistics and per-test details for later analysis.
+//
+//   Fields:
+//   - version: Engine version tested (e.g., "v1.1")
+//   - suiteName: Test suite identifier (e.g., "WAC")
+//   - timestamp: ISO 8601 timestamp of test execution
+//   - totalTests: Number of positions tested
+//   - passed/failed/skipped: Breakdown by result type
+//   - totalNodes: Sum of nodes searched across all tests
+//   - totalTimeMs: Sum of time spent (milliseconds)
+//   - details: Vector of per-test case information
+//
+// TestCaseDetail:
+//   Per-position breakdown within a test suite.
+//
+//   Fields:
+//   - testId: Position identifier (e.g., "WAC.001")
+//   - fen: Position FEN string
+//   - expected: Expected move(s) or result
+//   - actual: Engine's chosen move
+//   - passed: Whether test succeeded
+//   - nodes: Nodes searched for this position
+//   - timeMs: Time spent on this position
+//
+// MatchResult:
+//   Aggregates results from an engine-vs-engine match via cutechess-cli.
+//   Contains game outcomes and calculated ELO difference.
+//
+//   Fields:
+//   - version: Engine version being tested
+//   - matchName: Match identifier (e.g., "v1.1 vs v1.0 rapid")
+//   - timestamp: ISO 8601 timestamp of match start
+//   - engine1Name/engine2Name: Engine identifiers
+//   - engine1Wins/engine2Wins/draws: Game outcomes
+//   - engine1Score/engine2Score: Total points (win=1, draw=0.5, loss=0)
+//   - eloDifference: Calculated ELO rating difference
+//   - pgnPath: Path to saved game records
+//   - durationMs: Total match duration
+//
+// Serialization:
+//   These structures are serialized to JSON by ResultWriter for:
+//   - Long-term storage and historical tracking
+//   - Automated comparison between versions
+//   - Analysis and visualization tools
+//
+// Usage:
+//   TestSuiteResult result;
+//   result.version = "v1.1";
+//   result.suiteName = "WAC";
+//   result.totalTests = 300;
+//   result.passed = 285;
+//   // ... populate details ...
+//   resultWriter.writeTestSuiteResult(result);
+//
+//=============================================================================
+
 #include "types/types.h"
 #include "types/timeunits.h"
 

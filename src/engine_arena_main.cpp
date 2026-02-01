@@ -17,6 +17,27 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+//=============================================================================
+// engine_arena_main.cpp - Engine Arena Main Entry Point
+//=============================================================================
+//
+// Main executable for the Engine Arena testing framework. Provides command-line
+// interface for running test suites, engine matches, and version comparisons.
+//
+// Command-Line Modes:
+//   --help              Show usage information
+//   --testsuites        Run EPD test suites only
+//   --matches           Run engine matches only
+//   --compare v1 v2     Compare results between two versions
+//   (no args)           Run all configured tests and matches
+//
+// Requirements:
+//   - Must be run from project root directory
+//   - Config file at config/arena.yaml (or specify with --config)
+//   - Paths in config are relative to project root
+//
+//=============================================================================
+
 #include "engine_arena/ArenaConfig.h"
 #include "engine_arena/ResultWriter.h"
 #include "common/Logging.h"
@@ -78,7 +99,7 @@ int main(int argc, char* argv[]) {
       std::cerr << "\nERROR: Configuration validation failed!" << std::endl;
       std::cerr << "Please check that all paths exist and values are correct." << std::endl;
       std::cerr << "\nIMPORTANT: Make sure you are running from the project root directory." << std::endl;
-      std::cerr << "Example: cd D:\\_DEV\\FrankyCPP && .\\cmake-build-win-release\\src\\FrankyCPP_v1.1_Arena.exe" << std::endl;
+      std::cerr << R"(Example: cd D:\_DEV\FrankyCPP && .\cmake-build-win-release\src\FrankyCPP_v1.1_Arena.exe)" << std::endl;
       return 1;
     }
 

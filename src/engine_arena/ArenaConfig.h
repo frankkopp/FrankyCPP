@@ -20,6 +20,76 @@
 #ifndef FRANKYCPP_ENGINE_ARENA_ARENACONFIG_H
 #define FRANKYCPP_ENGINE_ARENA_ARENACONFIG_H
 
+//=============================================================================
+// ArenaConfig.h - Engine Arena Configuration Management
+//=============================================================================
+//
+// ArenaConfig loads and validates configuration for the Engine Arena testing
+// framework from YAML files.
+// Depends on: types.h, yaml-cpp
+//
+// Configuration Structure:
+//   - Version identifier for the engine being tested
+//   - Results directory path (for JSON output)
+//   - List of test suite configurations (EPD tactical tests)
+//   - List of match configurations (cutechess-cli engine matches)
+//
+// Test Suite Configuration:
+//   - Name: identifier for the test suite (e.g., "WAC", "STS")
+//   - EPD path: location of test position file
+//   - Time per move: milliseconds to search each position
+//   - Max depth: maximum search depth limit
+//
+// Match Configuration:
+//   - Name: identifier for the match (e.g., "v1.1 vs v1.0")
+//   - Engine paths: executables for both engines
+//   - Cutechess path: location of cutechess-cli executable
+//   - Opening book: PGN file for game openings
+//   - Time control: format "base+increment" (e.g., "10+0.1")
+//   - Rounds: number of games to play
+//   - Output PGN: where to save game records
+//
+// YAML Format Example:
+//   version: "v1.1"
+//   resultsDir: "./results"
+//   testSuites:
+//     - name: "WAC"
+//       epdPath: "test/testsets/wac.epd"
+//       timePerMove: 5000
+//       maxDepth: 30
+//   matches:
+//     - name: "v1.1 vs v1.0"
+//       engine1Path: "./FrankyCPP_v1.1.exe"
+//       engine2Path: "./FrankyCPP_v1.0.exe"
+//       cutechessPath: "D:/Games/Cute Chess/cutechess-cli.exe"
+//       openingBook: "books/8moves_GM_LB.pgn"
+//       timeControl: "10+0.1"
+//       rounds: 100
+//       outputPgn: "results/matches/v1.1_vs_v1.0.pgn"
+//
+// Validation:
+//   - Checks all required fields are present
+//   - Verifies file paths exist (EPD files, executables, books)
+//   - Validates numeric values (positive depths, rounds)
+//   - Provides detailed error messages for failures
+//
+// Path Handling:
+//   - All paths in config are relative to project root
+//   - Arena executable must be run from project root
+//   - Validation uses std::filesystem to check existence
+//
+// Usage:
+//   ArenaConfig config = ArenaConfig::loadFromYaml("config/arena.yaml");
+//   if (!config.validate()) {
+//     std::cerr << "Configuration validation failed!" << std::endl;
+//     return 1;
+//   }
+//   for (const auto& suite : config.testSuites) {
+//     runTestSuite(suite);
+//   }
+//
+//=============================================================================
+
 #include "types/types.h"
 #include "types/timeunits.h"
 

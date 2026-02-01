@@ -20,6 +20,63 @@
 #ifndef FRANKYCPP_ENGINE_ARENA_RESULTWRITER_H
 #define FRANKYCPP_ENGINE_ARENA_RESULTWRITER_H
 
+//=============================================================================
+// ResultWriter.h - Engine Arena Result Persistence
+//=============================================================================
+//
+// ResultWriter handles serialization and storage of arena test results to
+// JSON files for long-term tracking and version comparison.
+// Depends on: ArenaResults.h
+//
+// Responsibilities:
+//   - Write test suite results to JSON files
+//   - Write match results to JSON files
+//   - Generate comparison reports between versions
+//   - Manage output directory structure
+//   - Generate timestamped filenames
+//
+// Output Directory Structure:
+//   results/
+//     testsuites/     - EPD test suite results (JSON)
+//     matches/        - Engine match results (JSON + PGN)
+//     comparisons/    - Version comparison reports (text)
+//
+// File Naming Convention:
+//   {version}_{name}_{timestamp}.json
+//   Example: v1.1_WAC_20260201_143022.json
+//
+// Timestamp Format:
+//   YYYYMMDD_HHMMSS (sortable, no spaces)
+//
+// JSON Output Format (Test Suite):
+//   {
+//     "version": "v1.1",
+//     "suiteName": "WAC",
+//     "timestamp": "2026-02-01T14:30:22Z",
+//     "summary": {
+//       "totalTests": 300,
+//       "passed": 285,
+//       "failed": 15,
+//       "successRate": 95.0
+//     },
+//     "details": [ ... ]
+//   }
+//
+// Directory Creation:
+//   - Automatically creates result directories if they don't exist
+//   - Called during construction to ensure output paths are valid
+//
+// Thread Safety:
+//   - Not thread-safe (intended for single-threaded arena execution)
+//   - Each write operation is atomic at filesystem level
+//
+// Usage:
+//   ResultWriter writer("./results");
+//   std::string path = writer.writeTestSuiteResult(result);
+//   std::cout << "Results saved to: " << path << std::endl;
+//
+//=============================================================================
+
 #include "ArenaResults.h"
 
 #include <string>
