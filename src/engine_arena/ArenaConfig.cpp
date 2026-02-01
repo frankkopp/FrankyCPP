@@ -103,6 +103,12 @@ ArenaConfig ArenaConfig::loadFromYaml(const std::string& configPath) {
         match.openingBook = matchNode["openingBook"].as<std::string>();
         match.timeControl = matchNode["timeControl"].as<std::string>();
         match.rounds = matchNode["rounds"].as<int>();
+
+        // Concurrency (optional, defaults to 1 for deterministic results)
+        if (matchNode["concurrency"]) {
+          match.concurrency = matchNode["concurrency"].as<int>();
+        }
+
         match.outputPgn = matchNode["outputPgn"].as<std::string>();
 
         config.matches.push_back(match);

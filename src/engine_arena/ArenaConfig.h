@@ -114,6 +114,7 @@ struct MatchConfig {
   std::string openingBook;   ///< Path to opening book (PGN format)
   std::string timeControl;   ///< Time control (e.g., "10+0.1")
   int rounds;                ///< Number of rounds to play
+  int concurrency = 1;       ///< Number of games to run in parallel (default: 1 for deterministic)
   std::string outputPgn;     ///< Path to save PGN games
 };
 

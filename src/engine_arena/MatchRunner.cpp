@@ -180,8 +180,9 @@ std::string MatchRunner::buildCutechessCommand(const MatchConfig& matchConfig) c
   // Wait time between games (milliseconds)
   cmd << " -wait 1000";
 
-  // Concurrency (single thread for deterministic results)
-  cmd << " -concurrency 1";
+  // Concurrency (number of games to run in parallel)
+  // Note: concurrency > 1 can make results non-deterministic due to thread scheduling
+  cmd << " -concurrency " << matchConfig.concurrency;
 
 
   return cmd.str();
