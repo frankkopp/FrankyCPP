@@ -39,6 +39,32 @@ See **[docs/BUILD_GUIDE.md](docs/BUILD_GUIDE.md)** for complete instructions.
 
 ---
 
+## Engine Arena - Strength Testing Framework
+
+**NEW in v1.1:** Automated testing framework for measuring and tracking engine strength across versions.
+
+```powershell
+# Run all test suites and matches
+.\cmake-build-win-release\src\FrankyCPP_v1.1_Arena.exe
+
+# Compare versions
+.\cmake-build-win-release\src\FrankyCPP_v1.1_Arena.exe --compare v1.1 v1.0
+```
+
+**Features:**
+- 🎯 EPD tactical test suites (WAC, STS, etc.)
+- ⚔️ Automated engine matches via cutechess-cli
+- 📊 Version comparison with detailed reports
+- 💾 JSON result persistence for historical tracking
+
+**Documentation:** See **[docs/arena/](docs/arena/)** for complete guide:
+- [Quick Start](docs/arena/README.md)
+- [Configuration Reference](docs/arena/Configuration.md)
+- [Result Analysis](docs/arena/Results.md)
+- [Development Guide](docs/arena/Development.md)
+
+---
+
 ## Build
 
 **📖 For comprehensive build instructions, see [docs/BUILD_GUIDE.md](docs/BUILD_GUIDE.md)**

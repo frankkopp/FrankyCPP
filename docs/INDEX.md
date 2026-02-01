@@ -20,6 +20,44 @@ Quick reference to all project documentation.
 
 ---
 
+## Engine Arena - Testing Framework
+
+### 🏟️ [arena/README.md](arena/README.md) **(NEW in v1.1)**
+**Quick start guide for Engine Arena**
+- Overview and key features
+- Quick start commands
+- Common workflows (testing, comparison, matching)
+- Troubleshooting
+- Command-line reference
+
+### 📝 [arena/Configuration.md](arena/Configuration.md)
+**Complete configuration reference**
+- YAML configuration structure
+- Test suite configuration (EPD tests)
+- Match configuration (cutechess-cli)
+- Global settings and validation
+- Configuration examples
+
+### 📊 [arena/Results.md](arena/Results.md)
+**Result file formats and analysis**
+- Test suite JSON format
+- Match result JSON format
+- PGN file structure
+- Comparison report format
+- Analysis workflows and scripts
+- Exporting results (CSV, database)
+
+### 🛠️ [arena/Development.md](arena/Development.md)
+**Developer guide for extending Arena**
+- Architecture overview
+- Class responsibilities
+- Adding new features
+- Testing guidelines
+- Code style and conventions
+- Future enhancement roadmap
+
+---
+
 ## Architecture & Design
 
 ### 📐 [Architecture.md](Architecture.md)
