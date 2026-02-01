@@ -9,6 +9,8 @@ vtune/
 /Release/bin/*log
 /Release/bin/books/
 /Release/bin/config/
+/Release/FrankyCPP_v*/
+!/Release/FrankyCPP_v*.zip
 /books/superbook_xl.pgn
 /Testing/
 

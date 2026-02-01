@@ -223,6 +223,55 @@ Convenience script for building on Linux/WSL:
 
 ---
 
+## Creating a Release Package
+
+To create a distributable release package with executable, books, and configuration:
+
+### Using CLion
+1. Open the **Build** menu
+2. Click **Install**
+
+**Note**: Install automatically performs a clean rebuild to ensure the release contains the latest code.
+
+### Using Command Line
+
+**Windows:**
+```powershell
+cmake --install cmake-build-release --config Release
+```
+
+**Linux/WSL:**
+```bash
+cmake --install cmake-build-wsl-release
+```
+
+**Note**: The install command automatically cleans and rebuilds the project before packaging to ensure a fresh release.
+### What Gets Created
+
+```
+Release/
+├── FrankyCPP_v1.1/              # Versioned folder (git ignored)
+│   ├── FrankyCPP_v1.1.exe       # Executable
+│   ├── books/                    # Opening books (no cache files)
+│   │   ├── book.txt
+│   │   ├── 8moves_GM_LB.pgn
+│   │   └── ...
+│   └── config/                   # Configuration files
+│       ├── search.yaml
+│       ├── eval.yaml
+│       └── FrankyCPP.cfg
+└── FrankyCPP_v1.1.zip           # ZIP archive (git tracked)
+```
+
+**Notes:**
+- Cache files (`*.cache.*.bin`) are automatically excluded
+- Large test files (`superbook_xl.pgn`) are excluded
+- The versioned folder is ignored by git (build artifact)
+- The ZIP file is tracked in git (distribution artifact)
+- Version number updates automatically when you bump the project version
+
+---
+
 ### Manual Build (Windows, cmd.exe)
 If building outside an IDE, initialize the MSVC environment first.
 
@@ -245,11 +294,13 @@ cmake --build D:\_DEV\FrankyCPP\cmake-build-relwithdebinfo -j 8
 ctest -C RelWithDebInfo --test-dir D:\_DEV\FrankyCPP\cmake-build-relwithdebinfo --output-on-failure
 ```
 
-5) Install app, config, and books to `Release/bin` (optional):
+5) Create release package (optional):
 
 ```cmd
 cmake --install D:\_DEV\FrankyCPP\cmake-build-relwithdebinfo --config RelWithDebInfo
 ```
+
+This creates a versioned release package with filtered books and config files.
 
 CLion users can just reload CMake; the IDE sets up the MSVC environment automatically.
 
@@ -257,7 +308,7 @@ CLion users can just reload CMake; the IDE sets up the MSVC environment automati
 - App: `FrankyCPP_v<major>.<minor>`
 - Tests: `FrankyCPP_v<major>.<minor>_Test` (when `FRANKYCPP_BUILD_TESTS=ON`)
 - Benchmarks: `FrankyCPP_v<major>.<minor>_Bench` (when `FRANKYCPP_BUILD_BENCHMARKS=ON`)
-- Install (Release/RelWithDebInfo): copies `config/` and `books/` next to the binary in `Release/bin` (via `cmake --install`).
+- Release Package: Use `cmake --install` to create `Release/FrankyCPP_v<version>/` folder and ZIP (see "Creating a Release Package" section above).
 
 ### Opening Book Cache Files
 

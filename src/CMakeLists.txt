@@ -142,17 +142,97 @@ add_custom_command(
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/books $<TARGET_FILE_DIR:${exeName}>/books
 )
 
-# install executable, config and opening books into the release folder
-install(TARGETS ${exeName}
-        CONFIGURATIONS Release RelWithDebInfo
-        RUNTIME DESTINATION ${PROJECT_SOURCE_DIR}/Release/bin
-)
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/config
-        DESTINATION ${PROJECT_SOURCE_DIR}/Release/bin
-)
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/books
-        DESTINATION ${PROJECT_SOURCE_DIR}/Release/bin
-        PATTERN "*.cache.*" EXCLUDE
+# Release packaging via install command
+# Creates versioned Release/FrankyCPP_v<version>/ folder and ZIP with filtered books
+set(RELEASE_VERSION "v${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
+set(RELEASE_DIR "${PROJECT_SOURCE_DIR}/Release/FrankyCPP_${RELEASE_VERSION}")
+set(RELEASE_ZIP "${PROJECT_SOURCE_DIR}/Release/FrankyCPP_${RELEASE_VERSION}.zip")
+
+install(CODE "
+    message(STATUS \"===========================================\")
+    message(STATUS \"Creating release package for FrankyCPP ${RELEASE_VERSION}...\")
+    message(STATUS \"===========================================\")
+
+    # Build fresh Release executable
+    message(STATUS \"Rebuilding for fresh release...\")
+    execute_process(
+        COMMAND \"${CMAKE_COMMAND}\" --build \"${CMAKE_BINARY_DIR}\" --config Release --clean-first
+        RESULT_VARIABLE _build_result
+        OUTPUT_VARIABLE _build_output
+        ERROR_VARIABLE _build_error
+    )
+
+    # Check if executable exists after build
+    set(_exe_path \"$<TARGET_FILE:${exeName}>\")
+    if(NOT EXISTS \"\${_exe_path}\")
+        if(_build_result)
+            message(WARNING \"Build failed with error code: \${_build_result}\")
+            message(WARNING \"Build output: \${_build_output}\")
+            message(WARNING \"Build error: \${_build_error}\")
+        endif()
+        message(WARNING \"Executable not found at: \${_exe_path}\")
+        message(WARNING \"Please build the project manually first: cmake --build ${CMAKE_BINARY_DIR} --config Release\")
+        message(FATAL_ERROR \"Cannot create release package without executable\")
+    else()
+        message(STATUS \"Fresh executable built successfully\")
+    endif()
+
+    # Clean up old release folder and ZIP
+    message(STATUS \"Cleaning previous release...\")
+    file(REMOVE_RECURSE \"${RELEASE_DIR}\")
+    file(REMOVE \"${RELEASE_ZIP}\")
+
+    # Create directory structure
+    message(STATUS \"Creating directory structure...\")
+    file(MAKE_DIRECTORY \"${RELEASE_DIR}\")
+    file(MAKE_DIRECTORY \"${RELEASE_DIR}/books\")
+    file(MAKE_DIRECTORY \"${RELEASE_DIR}/config\")
+
+    # Copy executable
+    message(STATUS \"Copying executable...\")
+    file(INSTALL \"$<TARGET_FILE:${exeName}>\"
+         DESTINATION \"${RELEASE_DIR}\"
+         FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+
+    # Copy config files
+    message(STATUS \"Copying config files...\")
+    file(INSTALL \"${PROJECT_SOURCE_DIR}/config/\"
+         DESTINATION \"${RELEASE_DIR}/config\"
+         FILES_MATCHING PATTERN \"*\")
+
+    # Copy books with filtering
+    message(STATUS \"Copying book files...\")
+    execute_process(
+        COMMAND \"${CMAKE_COMMAND}\"
+            -DSOURCE_DIR=${PROJECT_SOURCE_DIR}/books
+            -DDEST_DIR=${RELEASE_DIR}/books
+            -P ${PROJECT_SOURCE_DIR}/cmake/CopyBooksFiltered.cmake
+        RESULT_VARIABLE _copy_result
+    )
+    if(_copy_result)
+        message(WARNING \"Book file filtering had issues\")
+    endif()
+
+    # Create ZIP archive
+    message(STATUS \"Creating ZIP archive...\")
+    execute_process(
+        COMMAND \"${CMAKE_COMMAND}\" -E chdir \"${RELEASE_DIR}\"
+            \"${CMAKE_COMMAND}\" -E tar cfv \"${RELEASE_ZIP}\" --format=zip .
+        RESULT_VARIABLE _zip_result
+        OUTPUT_QUIET
+    )
+
+    if(_zip_result)
+        message(WARNING \"ZIP creation failed\")
+    else()
+        message(STATUS \"===========================================\")
+        message(STATUS \"Release package created successfully!\")
+        message(STATUS \"  Folder: ${RELEASE_DIR}\")
+        message(STATUS \"  ZIP:    ${RELEASE_ZIP}\")
+        message(STATUS \"===========================================\")
+    endif()
+    "
+    COMPONENT Runtime
 )
 
 # Note: No GoogleTest includes are injected into production targets anymore.

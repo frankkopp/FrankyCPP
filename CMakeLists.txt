@@ -383,6 +383,7 @@ if (FRANKYCPP_BUILD_BENCHMARKS)
     add_subdirectory(testbench)
 endif()
 
+
 # =============================================================================
 # Configuration Summary (useful for CI/CD logs)
 # =============================================================================
