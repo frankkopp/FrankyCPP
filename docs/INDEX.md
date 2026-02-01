@@ -39,7 +39,11 @@ Quick reference to all project documentation.
 - Roadmap and future improvements
 - Accomplishment tracking
 
-### 🎯 [V1_ENGINE_ENHANCEMENT_PLAN.md](V1_ENGINE_ENHANCEMENT_PLAN.md)
+---
+
+## Specifications & Roadmaps
+
+### 🎯 [V1_ENGINE_ENHANCEMENT_PLAN.md](specs/V1_ENGINE_ENHANCEMENT_PLAN.md)
 **v1.x Engine Enhancement Roadmap**
 - Phase-based implementation plan
 - Search enhancements (singular extensions, check extensions, Lazy SMP)
@@ -47,6 +51,22 @@ Quick reference to all project documentation.
 - Endgame tablebases (Syzygy)
 - Automated parameter tuning infrastructure
 - Detailed specifications and success metrics
+
+### 📊 [V1_ENGINE_STRENGTH_ROADMAP.md](specs/V1_ENGINE_STRENGTH_ROADMAP.md)
+**Engine Strength Development Roadmap**
+- Comprehensive v1.x to v2.0 development plan
+- Tactical test suite baselines and targets
+- Benchmark match configurations
+- Risk assessment and mitigation
+- References and resources
+
+### 🏟️ [Engine_Arena_Implementation_Plan.md](specs/Engine_Arena_Implementation_Plan.md)
+**Engine Testing & Comparison Framework**
+- Automated test suite execution
+- cutechess-cli match integration
+- Version comparison and strength tracking
+- Result persistence and reporting
+- Implementation phases and design principles
 
 ---
 
@@ -110,7 +130,9 @@ Quick reference to all project documentation.
 | **First-time setup** | BUILD_GUIDE.md |
 | **Architecture overview** | Architecture.md |
 | **Project status** | FrankyCPP_Codebase_Review.md |
-| **v1.x Enhancement plan** | V1_ENGINE_ENHANCEMENT_PLAN.md |
+| **v1.x Enhancement plan** | specs/V1_ENGINE_ENHANCEMENT_PLAN.md |
+| **v1.x Strength roadmap** | specs/V1_ENGINE_STRENGTH_ROADMAP.md |
+| **Engine Arena framework** | specs/Engine_Arena_Implementation_Plan.md |
 | **C++20 features** | CPP20_Feature_Support.md |
 | **Logging** | Logger.md |
 | **UCI protocol** | engine-interface.txt |
