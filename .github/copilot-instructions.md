@@ -39,6 +39,22 @@
 - Pushing code to remote repositories without explicit permission
 - Any write operations not explicitly authorized by the user, e.g. modifying files, changing configurations, etc.
 
+### Documentation Policy:
+**DO NOT create summary .md documents unless explicitly requested**
+- Provide summaries in chat responses instead
+- User will ask for documentation if needed
+- Keep detailed explanations in conversation, not new files
+
+**Exceptions - When documentation IS appropriate:**
+- Required documentation (API docs, design docs explicitly requested by user)
+- Planning documents (plan, specs, design discussions) - if they exist, update them with progress
+- Status tracking in existing planning documents:
+  - Mark completed phases/tasks with ✅
+  - Update status fields (In Progress, Complete, etc.)
+  - Add brief notes (1-2 lines) so another chat session can continue
+  - Keep details in chat, only high-level status in document
+- DO NOT create "implementation summary" or "changes summary" documents
+
 ### Build Policy:
 **DO NOT attempt to compile/build code using terminal commands**
 - The terminal environment may not have the proper build tools or configuration
@@ -140,6 +156,79 @@ Use `#ifndef FRANKYCPP_*` pattern consistently:
 - Use `// clang-format off` only for alignment-sensitive tables (piece-square tables, etc.)
 - Maximum line length: 120 characters
 - Braces: Allman style for functions, attached for control structures
+
+### Class Layout Guidelines
+Classes should follow this consistent structure for readability:
+
+```cpp
+class ClassName {
+  // 1. Constants (static constexpr)
+  static constexpr int MAX_SIZE = 100;
+  
+  // 2. Member fields (private by default)
+  std::string name;
+  int value;
+  
+public:
+  // 3. Public methods (constructors, destructors, core functionality)
+  ClassName();
+  ~ClassName();
+  
+  void doSomething();
+  bool processThing();
+  
+private:
+  // 4. Private methods (helpers, implementation details)
+  void helperMethod();
+  bool validateInternal();
+  
+public:
+  // 5. Getters/Setters (at the end)
+  [[nodiscard]] const std::string& getName() const { return name; }
+  void setName(const std::string& n) { name = n; }
+  [[nodiscard]] int getValue() const { return value; }
+};
+```
+
+**Rationale:** This layout makes classes easy to read and understand:
+- Constants are visible at the top
+- Fields are grouped together
+- Public interface is prominent
+- Private implementation details are separated
+- Getters/setters are at the end (often trivial)
+
+### Implementation File Order
+Implementation files (.cpp) should follow the same order as the header file (.h):
+
+```cpp
+// Header declares:
+class Example {
+  int value;
+public:
+  Example();           // 1. Constructor
+  void methodA();      // 2. Public method A
+  void methodB();      // 3. Public method B
+private:
+  void helperX();      // 4. Private helper X
+  void helperY();      // 5. Private helper Y
+public:
+  int getValue() const; // 6. Getter
+};
+
+// Implementation follows same order:
+Example::Example() { }           // 1. Constructor
+void Example::methodA() { }      // 2. Public method A
+void Example::methodB() { }      // 3. Public method B
+void Example::helperX() { }      // 4. Private helper X
+void Example::helperY() { }      // 5. Private helper Y
+int Example::getValue() const { } // 6. Getter
+```
+
+**Benefits:**
+- Easy to navigate between header and implementation
+- Consistent structure across all files
+- No hunting for method implementations
+- Clear correspondence between declaration and definition
 
 ### Modern C++ Guidelines
 - Prefer `constexpr` for compile-time constants
