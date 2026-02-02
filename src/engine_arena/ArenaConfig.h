@@ -99,10 +99,12 @@ namespace arena {
 
 /// Configuration for a single EPD test suite
 struct TestSuiteConfig {
-  std::string name;           ///< Test suite name (e.g., "WAC", "STS")
-  std::string epdPath;        ///< Path to EPD file
-  milliseconds timePerMove;   ///< Time limit per move
-  Depth maxDepth;            ///< Maximum search depth
+  std::string name;             ///< Test suite name (e.g., "WAC", "STS")
+  std::string epdPath;          ///< Path to EPD file
+  milliseconds timePerMove;     ///< Time limit per move
+  Depth maxDepth;               ///< Maximum search depth
+  std::string enginePath;       ///< Optional: Path to external UCI engine (empty = use internal engine)
+  bool isolatePositions = true; ///< Clear engine state (TT/history) between positions (default: true)
 };
 
 /// Configuration for a single engine match

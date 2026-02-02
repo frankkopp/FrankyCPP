@@ -79,6 +79,16 @@ ArenaConfig ArenaConfig::loadFromYaml(const std::string& configPath) {
 
         suite.maxDepth = static_cast<Depth>(suiteNode["maxDepth"].as<int>());
 
+        // Optional: external engine path (empty = use internal engine)
+        if (suiteNode["enginePath"]) {
+          suite.enginePath = suiteNode["enginePath"].as<std::string>();
+        }
+
+        // Optional: isolate positions flag (default: true for fair comparison)
+        if (suiteNode["isolatePositions"]) {
+          suite.isolatePositions = suiteNode["isolatePositions"].as<bool>();
+        }
+
         config.testSuites.push_back(suite);
       }
     }
@@ -150,6 +160,15 @@ bool ArenaConfig::validate() const {
     if (!std::filesystem::exists(suite.epdPath)) {
       std::cerr << "Validation error: EPD file not found for suite '" << suite.name
                 << "': " << suite.epdPath << std::endl;
+      std::cerr << "  Current working directory: "
+                << std::filesystem::current_path() << std::endl;
+      std::cerr << "  Tip: Make sure to run from project root or use absolute paths" << std::endl;
+      return false;
+    }
+    // Check external engine exists if specified
+    if (!suite.enginePath.empty() && !std::filesystem::exists(suite.enginePath)) {
+      std::cerr << "Validation error: External engine not found for suite '" << suite.name
+                << "': " << suite.enginePath << std::endl;
       std::cerr << "  Current working directory: "
                 << std::filesystem::current_path() << std::endl;
       std::cerr << "  Tip: Make sure to run from project root or use absolute paths" << std::endl;

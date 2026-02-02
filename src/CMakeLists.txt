@@ -146,6 +146,7 @@ add_executable(${arenaExeName}
     engine_arena/ResultWriter.cpp
     engine_arena/TestSuiteRunner.cpp
     engine_arena/MatchRunner.cpp
+    engine_arena/UCIEngine.cpp
 )
 
 target_compile_features(${arenaExeName} PRIVATE cxx_std_20)
