@@ -3,7 +3,7 @@
 ## Status: IN PROGRESS
 
 **Started:** 2026-02-02
-**Last Updated:** 2026-02-02
+**Last Updated:** 2026-02-03
 
 **Related Documents:**
 - `External_Engine_TestSuite_Support_Outline.md` - Main implementation plan
@@ -159,11 +159,22 @@ struct UCISearchResult {
 - [x] Code compiles without errors
 - [x] Both Windows and Linux implementations included
 - [x] `newGame()` method implemented
-- [ ] Manual testing with FrankyCPP v1.0 (pending)
+- [x] Manual testing with FrankyCPP v1.1 (successful - 2026-02-03)
+- [x] **Refactored to Boost.Process v1 (2026-02-03)**
+
+**Boost.Process Refactoring (2026-02-03):**
+- [x] Replaced Windows CreateProcess (~200 lines) with Boost.Process v1 (~100 lines)
+- [x] 50% code reduction, fully cross-platform implementation
+- [x] Added boost-process dependency to vcpkg.json
+- [x] Added Boost::filesystem to CMake (required by boost-process)
+- [x] Thread-based timeout handling for blocking I/O
+- [x] Handles FrankyCPP logger output mixed with UCI responses
+- [x] Uses boost::process::v1::child, opstream, ipstream
+- [x] Detects 'uciok' and 'readyok' within lines (not exact match)
+- [x] All manual tests pass successfully
 
 **Next Steps:**
-- Ready to proceed to Phase 3: Search implementation (already included!)
-- Need to test with actual engine executable
+- Ready to proceed to Phase 4: Move comparison logic
 
 **Note:** Phase 3 (Search Implementation) was completed together with Phase 2,
 as the search functionality is integral to the UCIEngine class design.
@@ -207,7 +218,10 @@ as the search functionality is integral to the UCIEngine class design.
 
 **Validation:**
 - [x] Code compiles without errors
-- [ ] Manual testing with real positions (pending)
+- [x] Manual testing with real positions (successful - 2026-02-03)
+- [x] Test 1 (Starting position): Returns valid move
+- [x] Test 2 (Tactical position h5f7): Correctly finds best move
+- [x] Engine reuse with newGame() works correctly
 
 **UCI newGame Fix (2026-02-02):**
 - [x] Fixed `UciHandler::uciNewGameCommand()` to call `Search::newGame()` instead of just `clearTT()`
@@ -218,7 +232,7 @@ as the search functionality is integral to the UCIEngine class design.
 - [x] Added `engineName` and `enginePath` fields to `TestSuiteResult`
 - [x] Updated JSON serialization/deserialization in `ResultWriter` and `ArenaRunner`
 - [x] Enhanced comparison reports to display engine names
-- [x] Backward compatible with old JSON files (fallback to "Unknown")
+- [x] Old JSON files without engine info must be regenerated (no backward compatibility needed)
 
 ---
 
@@ -289,13 +303,13 @@ testSuites:
 ## Total Progress
 
 **Estimated Total Time:** 14-18 hours
-**Time Spent:** 6.5 hours
-**Time Remaining:** 7.5-11.5 hours
+**Time Spent:** 10 hours (Phase 0: 3h, Phase 1: 0.5h, Phases 2+3: 6.5h)
+**Time Remaining:** 4-8 hours
 
 **Phase Completion:**
 - Phase 0: ✅ Complete
 - Phase 1: ✅ Complete
-- Phase 2: ✅ Complete
+- Phase 2: ✅ Complete (includes Boost.Process refactoring)
 - Phase 3: ✅ Complete
 - Phases 4-8: ⏳ Pending
 
@@ -305,11 +319,11 @@ testSuites:
 
 ## Next Actions
 
-1. **Manual Testing:** Test UCIEngine with FrankyCPP v1.0 executable
-2. **Start Phase 4:** Implement move comparison logic
-3. **Priority:** Support both long algebraic and SAN move formats
-4. **Testing:** Validate move matching with various notations
+1. **Start Phase 4:** Implement move comparison logic
+2. **Priority:** Support both long algebraic and SAN move formats
+3. **Testing:** Validate move matching with various notations
+4. **Integration:** Connect UCIEngine to TestSuiteRunner in Phase 5
 
 ---
 
-*Last updated: 2026-02-02*
+*Last updated: 2026-02-03*
