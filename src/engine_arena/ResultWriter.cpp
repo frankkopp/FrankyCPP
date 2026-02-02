@@ -53,6 +53,10 @@ namespace arena {
     file << "  \"version\": \"" << result.version << "\",\n";
     file << "  \"suiteName\": \"" << result.suiteName << "\",\n";
     file << "  \"timestamp\": \"" << result.timestamp << "\",\n";
+    file << "  \"engine\": {\n";
+    file << "    \"name\": \"" << result.engineName << "\",\n";
+    file << "    \"path\": \"" << result.enginePath << "\"\n";
+    file << "  },\n";
     file << "  \"summary\": {\n";
     file << "    \"totalTests\": " << result.totalTests << ",\n";
     file << "    \"passed\": " << result.passed << ",\n";

@@ -104,9 +104,11 @@ struct TestCaseDetail {
 
 /// Result from running a test suite
 struct TestSuiteResult {
-  std::string version;        ///< Engine version
+  std::string version;        ///< Engine version (e.g., "v1.1")
   std::string suiteName;      ///< Test suite name
   std::string timestamp;      ///< ISO 8601 timestamp
+  std::string engineName;     ///< Engine name (from UCI "id name" or "Internal")
+  std::string enginePath;     ///< Path to engine executable (empty if internal)
   int totalTests;             ///< Total number of tests
   int passed;                 ///< Number of passed tests
   int failed;                 ///< Number of failed tests

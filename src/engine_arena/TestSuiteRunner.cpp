@@ -39,6 +39,11 @@ TestSuiteResult TestSuiteRunner::runTestSuite(const TestSuiteConfig& suiteConfig
   std::cout << "EPD Path:       " << suiteConfig.epdPath << std::endl;
   std::cout << "Time per Move:  " << suiteConfig.timePerMove.count() << "ms" << std::endl;
   std::cout << "Max Depth:      " << suiteConfig.maxDepth << std::endl;
+  if (!suiteConfig.enginePath.empty()) {
+    std::cout << "Engine:         " << suiteConfig.enginePath << " (external)" << std::endl;
+  } else {
+    std::cout << "Engine:         Internal FrankyCPP" << std::endl;
+  }
   std::cout << std::endl;
 
   // Check if EPD file exists
@@ -160,6 +165,17 @@ TestSuiteResult TestSuiteRunner::convertToArenaResult(
   result.version = arenaConfig.version;
   result.suiteName = suiteConfig.name;
   result.timestamp = getCurrentTimestamp();
+
+  // Engine identification
+  if (suiteConfig.enginePath.empty()) {
+    // Internal engine
+    result.engineName = "FrankyCPP " + arenaConfig.version + " (Internal)";
+    result.enginePath = "";
+  } else {
+    // External engine - name will be set by caller (from UCI "id name")
+    result.engineName = "External Engine";  // Placeholder, should be overwritten
+    result.enginePath = suiteConfig.enginePath;
+  }
 
   // Copy aggregate statistics
   result.totalTests = internalResult.counter;

@@ -188,6 +188,8 @@ std::map<std::string, TestSuiteResult> ArenaRunner::loadTestSuiteResults(const s
       result.version = data["version"];
       result.suiteName = data["suiteName"];
       result.timestamp = data["timestamp"];
+      result.engineName = data["engine"]["name"];
+      result.enginePath = data["engine"]["path"];
 
       // Parse summary section
       const auto& summary = data["summary"];
@@ -317,9 +319,11 @@ std::string ArenaRunner::generateComparisonReport(
         const double passRate1 = suite1.totalTests > 0 ? (suite1.passed * 100.0 / suite1.totalTests) : 0.0;
         const double passRate2 = suite2.totalTests > 0 ? (suite2.passed * 100.0 / suite2.totalTests) : 0.0;
 
-        report << "  " << version2 << ": " << suite2.passed << "/" << suite2.totalTests
+        report << "  " << version2 << " (" << suite2.engineName << "): "
+               << suite2.passed << "/" << suite2.totalTests
                << " (" << std::fixed << std::setprecision(1) << passRate2 << "%)" << std::endl;
-        report << "  " << version1 << ": " << suite1.passed << "/" << suite1.totalTests
+        report << "  " << version1 << " (" << suite1.engineName << "): "
+               << suite1.passed << "/" << suite1.totalTests
                << " (" << std::fixed << std::setprecision(1) << passRate1 << "%)" << std::endl;
 
         const int deltaTests = suite1.passed - suite2.passed;
