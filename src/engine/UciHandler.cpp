@@ -137,10 +137,10 @@ void UciHandler::setOptionCommand(std::istringstream& inStream) {
   LOG__INFO(Logger::get().UCIHAND_LOG, "Set option: {} = {}", name, value);
 }
 
+// TODO: check if we need to clear more state here!
 void UciHandler::uciNewGameCommand() const {
   LOG__INFO(Logger::get().UCIHAND_LOG, "New Game");
-  if (pSearch->isSearching()) pSearch->stopSearch();
-  pSearch->clearTT();
+  pSearch->newGame();  // Clears TT, History, and recreates Evaluator (clears PawnTT)
 }
 
 void UciHandler::positionCommand(std::istringstream& inStream) {
