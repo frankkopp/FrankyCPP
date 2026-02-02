@@ -45,7 +45,7 @@ add_executable(
         enginetest/SearchTreeSizeTest_Test.cpp
         enginetest/TestSuite_Test.cpp
         enginetest/EpdParser_Test.cpp
-        enginetest/Test_Test.cpp
+        enginetest/EdpTest_Test.cpp
         enginetest/TestTypes_Test.cpp
 
         TimingTests.cpp

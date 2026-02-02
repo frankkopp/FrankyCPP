@@ -26,7 +26,7 @@
 #include <gtest/gtest.h>
 
 
-class Test_Test : public testing::Test {
+class EdpTest_Test : public testing::Test {
 public:
   static void SetUpTestSuite() {
     init::init();
@@ -41,7 +41,7 @@ protected:
 // Builder Pattern Tests
 // ============================================================================
 
-TEST_F(Test_Test, Builder_BasicConstruction) {
+TEST_F(EdpTest_Test, Builder_BasicConstruction) {
   EpdTest::Builder builder;
 
   EpdTest test = builder
@@ -57,7 +57,7 @@ TEST_F(Test_Test, Builder_BasicConstruction) {
   EXPECT_EQ(test.getType(), TestType::BM);
 }
 
-TEST_F(Test_Test, Builder_BestMoveTest) {
+TEST_F(EdpTest_Test, Builder_BestMoveTest) {
   MoveList moves;
   moves.emplace_back(Move(SQ_E2, SQ_E4));
   moves.emplace_back(Move(SQ_D2, SQ_D4));
@@ -76,7 +76,7 @@ TEST_F(Test_Test, Builder_BestMoveTest) {
   EXPECT_TRUE(test.getExpectedMove().isValid());
 }
 
-TEST_F(Test_Test, Builder_DirectMateTest) {
+TEST_F(EdpTest_Test, Builder_DirectMateTest) {
   EpdTest::Builder builder;
   EpdTest test = builder
     .setId("DM Test")
@@ -89,7 +89,7 @@ TEST_F(Test_Test, Builder_DirectMateTest) {
   EXPECT_EQ(test.getMateDepth(), DEPTH_ONE);
 }
 
-TEST_F(Test_Test, Builder_AvoidMoveTest) {
+TEST_F(EdpTest_Test, Builder_AvoidMoveTest) {
   MoveList moves;
   moves.emplace_back(Move(SQ_A2, SQ_A3));
   moves.emplace_back(Move(SQ_H2, SQ_H3));
@@ -110,7 +110,7 @@ TEST_F(Test_Test, Builder_AvoidMoveTest) {
 // Default Values Tests
 // ============================================================================
 
-TEST_F(Test_Test, DefaultValues) {
+TEST_F(EdpTest_Test, DefaultValues) {
   EpdTest::Builder builder;
   EpdTest test = builder.build();
 
@@ -135,7 +135,7 @@ TEST_F(Test_Test, DefaultValues) {
 // Mutator Tests (for TestSuite to set results)
 // ============================================================================
 
-TEST_F(Test_Test, Mutators_SetResults) {
+TEST_F(EdpTest_Test, Mutators_SetResults) {
   EpdTest::Builder builder;
   EpdTest test = builder
     .setId("Test")
@@ -162,7 +162,7 @@ TEST_F(Test_Test, Mutators_SetResults) {
   EXPECT_EQ(test.getNps(), 100000);
 }
 
-TEST_F(Test_Test, Mutators_AllResultTypes) {
+TEST_F(EdpTest_Test, Mutators_AllResultTypes) {
   EpdTest::Builder builder;
   EpdTest test = builder.build();
 
@@ -183,7 +183,7 @@ TEST_F(Test_Test, Mutators_AllResultTypes) {
 // Immutability Tests (Test definition should not change after construction)
 // ============================================================================
 
-TEST_F(Test_Test, Immutability_TestDefinition) {
+TEST_F(EdpTest_Test, Immutability_TestDefinition) {
   EpdTest::Builder builder;
   EpdTest test = builder
     .setId("Immutable")
@@ -208,7 +208,7 @@ TEST_F(Test_Test, Immutability_TestDefinition) {
 // Builder Method Chaining Tests
 // ============================================================================
 
-TEST_F(Test_Test, Builder_MethodChaining) {
+TEST_F(EdpTest_Test, Builder_MethodChaining) {
   // All builder methods should return reference to builder for chaining
   MoveList moves;
   moves.emplace_back(Move(SQ_E2, SQ_E4));

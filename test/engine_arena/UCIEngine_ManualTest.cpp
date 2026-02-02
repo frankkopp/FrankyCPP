@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
       return 1;
     }
 
-    UCISearchResult result1 = engine.search(milliseconds{1000}, 10);
+    UCISearchResult result1 = engine.search(milliseconds{1000}, static_cast<Depth>(10));
 
     if (result1.bestMove.empty()) {
       std::cerr << "ERROR: No best move returned" << std::endl;
@@ -101,7 +101,7 @@ int main(int argc, char* argv[]) {
       return 1;
     }
 
-    UCISearchResult result2 = engine.search(milliseconds{3000}, 20);
+    UCISearchResult result2 = engine.search(milliseconds{3000}, static_cast<Depth>(20));
 
     if (result2.bestMove.empty()) {
       std::cerr << "ERROR: No best move returned" << std::endl;
