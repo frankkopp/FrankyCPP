@@ -116,124 +116,67 @@
  * - On Windows builds, output goes to standard logging/console as configured by Logging.
  */
 
+#include "EdpTest.h"
+#include "TestTypes.h"
 #include "engine/Search.h"
-#include "types/types.h"
 
-#include "common/gtest_friends.h"
-
-/// Test types supported by the test suite.
-enum TestType {
-  NOOP,  ///< Invalid/uninitialized test
-  DM,    ///< Direct mate - expect mate in N
-  BM,    ///< Best move - engine move must be in target set
-  AM     ///< Avoid move - engine move must NOT be in target set
-};
-
-/// Result of a single test.
-enum ResultType {
-  NOT_TESTED,  ///< Test has not been run yet
-  SKIPPED,     ///< Test was skipped
-  FAILED,      ///< Test failed (wrong move or no mate found)
-  SUCCESS      ///< Test passed
-};
-
-inline const char* testTypeStr[]   = {"noop", "dm", "bm", "am"};
-inline const char* resultTypeStr[] = {"Not tested", "Skipped", "Failed", "Success"};
-
-/// Aggregated results from running a test suite.
-struct TestSuiteResult {
-  int counter          = 0;   ///< Total tests run
-  int successCounter   = 0;   ///< Tests that passed
-  int failedCounter    = 0;   ///< Tests that failed
-  int skippedCounter   = 0;   ///< Tests that were skipped
-  int notTestedCounter = 0;   ///< Tests not run
-  uint64_t nodes       = 0;   ///< Total nodes searched
-  nanoseconds time     = 0s;  ///< Total search time
-};
-
-/// Holds all information for a single test case.
-/// Created when reading test file, updated with results after running.
-struct Test {
-  std::string id{};            ///< Test identifier from EPD
-  std::string fen{};           ///< Position FEN
-  TestType type{NOOP};         ///< Type of test (DM, BM, AM)
-  MoveList targetMoves{};      ///< Expected/avoided moves (BM/AM)
-  Depth mateDepth{DEPTH_NONE}; ///< Expected mate depth (DM)
-  Move expected{MOVE_NONE};    ///< First expected move (for display)
-  Move actualMove{MOVE_NONE};  ///< Engine's chosen move
-  Value actualValue{VALUE_NONE}; ///< Engine's reported score
-  ResultType result{NOT_TESTED}; ///< Test result
-  std::string line{};          ///< Original EPD line
-  uint64_t nodes{};            ///< Nodes searched for this test
-  nanoseconds time{};          ///< Time spent on this test
-  uint64_t nps{};              ///< Nodes per second
-};
+#include <string>
+#include <string_view>
+#include <vector>
 
 /// Runs EPD test suites against the chess engine.
-/// Parses test files, executes searches, and reports results.
+/// Uses EpdParser to load tests, executes searches, and reports results.
 class TestSuite {
 
-  std::vector<Test> testCases;
-  milliseconds searchTime;
-  Depth searchDepth;
-  std::string filePath;
-  TestSuiteResult lastResult{};
+  std::vector<EpdTest> testCases_;
+  milliseconds searchTime_;
+  Depth searchDepth_;
+  std::string filePath_;
+  TestSuiteResult lastResult_{};
 
 public:
   /// Creates a TestSuite for the given test file.
-  /// Reads all tests from the file. Call runTestSuite() to execute.
+  /// Reads all tests from the file using EpdParser. Call runTestSuite() to execute.
   /// @param time        Search time limit per test
   /// @param searchDepth Maximum search depth per test
   /// @param filePath    Path to EPD test file
-  TestSuite(const milliseconds& time, Depth searchDepth, const std::string& filePath);
+  TestSuite(milliseconds time, Depth searchDepth, std::string_view filePath);
 
   /// Runs all tests in the suite and prints results.
   void runTestSuite();
 
   /// Returns the aggregated results from the last run.
   /// @return Reference to TestSuiteResult
-  const TestSuiteResult& getLastResult() const { return lastResult; }
+  [[nodiscard]] const TestSuiteResult& getLastResult() const { return lastResult_; }
 
   /// Returns the vector of test cases with detailed per-test results.
   /// @return Reference to test cases vector
-  const std::vector<Test>& getTestCases() const { return testCases; }
+  [[nodiscard]] const std::vector<EpdTest>& getTestCases() const { return testCases_; }
 
 private:
-  /// Reads all test cases from file into the provided vector.
-  static void readTestCases(const std::string& filePathStr, std::vector<Test>& tests);
-
-  /// Parses one EPD line into a Test struct.
-  /// @return True if successfully parsed, false otherwise
-  static bool readOneEPD(std::string& line, Test& test);
-
-  /// Removes leading/trailing whitespace and comments from a line.
-  static std::string& cleanUpLine(std::string& line);
-
   /// Runs all tests in testCases list.
   void runAllTests();
 
   /// Dispatches a single test to the appropriate test function.
-  static void runSingleTest(Search& search, SearchLimits& limits, Test& test);
+  static void runSingleTest(Search& search, SearchLimits& limits, EpdTest& test);
 
   /// Runs a direct mate test.
-  static void directMateTest(Search& search, SearchLimits& limits, const Position& position, Test& test);
+  static void directMateTest(Search& search, SearchLimits& limits, const Position& position, EpdTest& test);
 
   /// Runs a best-move test.
-  static void bestMoveTest(Search& search, const SearchLimits& limits, const Position& position, Test& test);
+  static void bestMoveTest(Search& search, const SearchLimits& limits, const Position& position, EpdTest& test);
 
   /// Runs an avoid-move test.
-  static void avoidMoveTest(Search& search, const SearchLimits& limits, const Position& position, Test& test);
+  static void avoidMoveTest(Search& search, const SearchLimits& limits, const Position& position, EpdTest& test);
 
   /// Aggregates results from all tests.
-  TestSuiteResult sumUpTests() const;
+  [[nodiscard]] TestSuiteResult sumUpTests() const;
 
   /// Prints the report header.
-  void printReportHeader();
+  void printReportHeader() const;
 
   /// Prints the final report with elapsed time.
-  void printReport(nanoseconds elapsed);
-
-  FRIEND_TEST(TestSuite_Test, readFile);
+  void printReport(nanoseconds elapsed) const;
 };
 
 

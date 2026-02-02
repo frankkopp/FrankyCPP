@@ -28,6 +28,9 @@ set(FrankyCPPlib_SRCS
 
         enginetest/SearchTreeSizeTest.cpp enginetest/SearchTreeSizeTest.h
         enginetest/TestSuite.cpp enginetest/TestSuite.h
+        enginetest/EpdParser.cpp enginetest/EpdParser.h
+        enginetest/EdpTest.h
+        enginetest/TestTypes.h
         types/attacks.cpp
         types/bitboards.h
 

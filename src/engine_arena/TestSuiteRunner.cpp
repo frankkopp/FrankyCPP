@@ -32,7 +32,7 @@ TestSuiteRunner::TestSuiteRunner(const ArenaConfig& config)
     : arenaConfig(config) {
 }
 
-TestSuiteResult TestSuiteRunner::runTestSuite(const TestSuiteConfig& suiteConfig) {
+TestSuiteResult TestSuiteRunner::runTestSuite(const TestSuiteConfig& suiteConfig) const {
   std::cout << "\n==================================================================" << std::endl;
   std::cout << "Running Test Suite: " << suiteConfig.name << std::endl;
   std::cout << "==================================================================" << std::endl;
@@ -72,7 +72,7 @@ TestSuiteResult TestSuiteRunner::runTestSuite(const TestSuiteConfig& suiteConfig
   return result;
 }
 
-std::vector<TestSuiteResult> TestSuiteRunner::runAllTestSuites() {
+std::vector<TestSuiteResult> TestSuiteRunner::runAllTestSuites() const {
   std::vector<TestSuiteResult> results;
   results.reserve(arenaConfig.testSuites.size());
 
@@ -152,7 +152,7 @@ std::string TestSuiteRunner::getCurrentTimestamp() {
 TestSuiteResult TestSuiteRunner::convertToArenaResult(
     const TestSuiteConfig& suiteConfig,
     const ::TestSuiteResult& internalResult,
-    const std::vector<::Test>& testCases) const {
+    const std::vector<EpdTest>& testCases) const {
 
   TestSuiteResult result;
 
@@ -173,25 +173,25 @@ TestSuiteResult TestSuiteRunner::convertToArenaResult(
   result.details.reserve(testCases.size());
   for (const auto& test : testCases) {
     TestCaseDetail detail;
-    detail.testId = test.id.empty() ? "N/A" : test.id;
-    detail.fen = test.fen;
+    detail.testId = test.getId().empty() ? "N/A" : test.getId();
+    detail.fen = test.getFen();
 
     // Format expected result based on test type
-    if (test.type == DM) {
-      detail.expected = "mate " + std::to_string(test.mateDepth);
-    } else if (test.type == BM) {
-      detail.expected = "bm " + test.targetMoves.str();
-    } else if (test.type == AM) {
-      detail.expected = "am " + test.targetMoves.str();
+    if (test.getType() == TestType::DM) {
+      detail.expected = "mate " + std::to_string(test.getMateDepth());
+    } else if (test.getType() == TestType::BM) {
+      detail.expected = "bm " + test.getTargetMoves().str();
+    } else if (test.getType() == TestType::AM) {
+      detail.expected = "am " + test.getTargetMoves().str();
     } else {
       detail.expected = "unknown";
     }
 
     // Actual move and result
-    detail.actual = test.actualMove.str();
-    detail.passed = (test.result == SUCCESS);
-    detail.nodes = test.nodes;
-    detail.timeMs = std::chrono::duration_cast<milliseconds>(test.time).count();
+    detail.actual = test.getActualMove().str();
+    detail.passed = (test.getResult() == ResultType::SUCCESS);
+    detail.nodes = test.getNodes();
+    detail.timeMs = std::chrono::duration_cast<milliseconds>(test.getTime()).count();
 
     result.details.push_back(std::move(detail));
   }

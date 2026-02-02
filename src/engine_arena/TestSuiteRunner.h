@@ -71,9 +71,9 @@
 
 #include <vector>
 
-// Forward declarations from global namespace (enginetest/TestSuite.h)
-struct TestSuiteResult;
-struct Test;
+// Forward declarations from global namespace (enginetest/TestSuite.h and Test.h)
+struct TestSuiteResult;  // from TestTypes.h
+class EpdTest;           // from Test.h
 
 namespace arena {
 
@@ -88,12 +88,12 @@ public:
   /// @param suiteConfig Test suite configuration
   /// @return TestSuiteResult with full metadata and per-test details
   /// @throws std::runtime_error if EPD file not found or execution fails
-  TestSuiteResult runTestSuite(const TestSuiteConfig& suiteConfig);
+  TestSuiteResult runTestSuite(const TestSuiteConfig& suiteConfig) const;
 
   /// Runs all configured test suites sequentially
   /// @return Vector of TestSuiteResult, one per configured suite
   /// @throws std::runtime_error if any suite fails
-  std::vector<TestSuiteResult> runAllTestSuites();
+  std::vector<TestSuiteResult> runAllTestSuites() const;
 
 private:
   const ArenaConfig& arenaConfig; ///< Reference to arena configuration
@@ -105,12 +105,12 @@ private:
   /// Converts TestSuite internal result to arena result format
   /// @param suiteConfig Test suite configuration
   /// @param internalResult Result from TestSuite::getLastResult()
-  /// @param testCases Vector of Test structs from TestSuite
+  /// @param testCases Vector of EpdTest from TestSuite
   /// @return Populated TestSuiteResult with metadata
   TestSuiteResult convertToArenaResult(
       const TestSuiteConfig& suiteConfig,
       const ::TestSuiteResult& internalResult,
-      const std::vector<::Test>& testCases) const;
+      const std::vector<EpdTest>& testCases) const;
 };
 
 } // namespace arena

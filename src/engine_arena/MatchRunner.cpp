@@ -25,7 +25,6 @@
 
 #include <array>
 #include <chrono>
-#include <cmath>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
@@ -33,6 +32,7 @@
 #include <regex>
 #include <sstream>
 #include <stdexcept>
+#include <cmath>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -50,7 +50,7 @@ MatchRunner::MatchRunner(const ArenaConfig& config)
     : arenaConfig(config) {
 }
 
-MatchResult MatchRunner::runMatch(const MatchConfig& matchConfig) {
+MatchResult MatchRunner::runMatch(const MatchConfig& matchConfig) const {
   std::cout << "\n==================================================================" << std::endl;
   std::cout << "Running Match: " << matchConfig.name << std::endl;
   std::cout << "==================================================================" << std::endl;
@@ -93,13 +93,13 @@ MatchResult MatchRunner::runMatch(const MatchConfig& matchConfig) {
   std::cout << "  Score: " << result.engine1Score << " - " << result.engine2Score << std::endl;
   std::cout << "  ELO Difference: " << std::fixed << std::setprecision(1)
             << (result.eloDifference > 0 ? "+" : "") << result.eloDifference << std::endl;
-  std::cout << "  Duration: " << result.durationMs / 1000.0 << "s" << std::endl;
+  std::cout << "  Duration: " << static_cast<double>(result.durationMs) / 1000.0 << "s" << std::endl;
   std::cout << "==================================================================" << std::endl;
 
   return result;
 }
 
-std::vector<MatchResult> MatchRunner::runAllMatches() {
+std::vector<MatchResult> MatchRunner::runAllMatches() const {
   std::vector<MatchResult> results;
   results.reserve(arenaConfig.matches.size());
 
@@ -200,7 +200,7 @@ bool MatchRunner::executeCutechess(const std::string& command, std::string& outp
 
   // Read output
   std::array<char, 256> buffer{};
-  while (fgets(buffer.data(), buffer.size(), pipe) != nullptr) {
+  while (fgets(buffer.data(), static_cast<int>(buffer.size()), pipe) != nullptr) {
     output += buffer.data();
     // Print live output
     std::cout << buffer.data();
@@ -223,12 +223,12 @@ bool MatchRunner::executeCutechess(const std::string& command, std::string& outp
     std::cout << buffer.data();
   }
 
-  int returnCode = pclose(pipe);
+  const int returnCode = pclose(pipe);
   return returnCode == 0;
 #endif
 }
 
-MatchResult MatchRunner::parseOutput(const std::string& output, const MatchConfig& matchConfig) {
+MatchResult MatchRunner::parseOutput(const std::string& output, const MatchConfig& matchConfig) const {
   MatchResult result;
   result.version = arenaConfig.version;
   result.matchName = matchConfig.name;

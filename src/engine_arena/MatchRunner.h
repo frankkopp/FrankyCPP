@@ -103,12 +103,12 @@ public:
   /// @param matchConfig Match configuration
   /// @return MatchResult with game outcomes and ELO calculation
   /// @throws std::runtime_error if cutechess-cli not found or execution fails
-  MatchResult runMatch(const MatchConfig& matchConfig);
+  MatchResult runMatch(const MatchConfig& matchConfig) const;
 
   /// Runs all configured matches sequentially
   /// @return Vector of MatchResult, one per configured match
   /// @throws std::runtime_error if any match fails
-  std::vector<MatchResult> runAllMatches();
+  std::vector<MatchResult> runAllMatches() const;
 
 private:
   const ArenaConfig& arenaConfig; ///< Reference to arena configuration
@@ -122,14 +122,14 @@ private:
   /// @param command Full cutechess-cli command line
   /// @param output [out] Captured stdout/stderr from cutechess
   /// @return true if execution succeeded, false otherwise
-  bool executeCutechess(const std::string& command, std::string& output);
+  static bool executeCutechess(const std::string& command, std::string& output);
 
   /// Parses cutechess-cli output for match results
   /// @param output cutechess-cli stdout/stderr text
   /// @param matchConfig Original match configuration
   /// @return Parsed MatchResult structure
   /// @throws std::runtime_error if parsing fails
-  MatchResult parseOutput(const std::string& output, const MatchConfig& matchConfig);
+  MatchResult parseOutput(const std::string& output, const MatchConfig& matchConfig) const;
 
   /// Calculates ELO difference from match score
   /// @param score Match score for engine1 (0.0 to 1.0)
