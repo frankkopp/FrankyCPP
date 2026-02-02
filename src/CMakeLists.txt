@@ -101,6 +101,7 @@ target_link_libraries(
         PUBLIC
         Boost::serialization
         Boost::program_options
+        Boost::filesystem
         yaml-cpp::yaml-cpp)
 
 # set the name of the executable
@@ -156,6 +157,7 @@ target_link_libraries(${arenaExeName}
     FrankyCPPlib
     yaml-cpp::yaml-cpp
     Boost::program_options
+    Boost::filesystem
     nlohmann_json::nlohmann_json
 )
 
@@ -178,6 +180,40 @@ endif()
 
 if (MSVC AND STRICT_WARNINGS)
     target_compile_options(${arenaExeName} PRIVATE /WX)
+endif()
+
+# ============================================================================
+# UCIEngine Manual Test executable (optional, for testing external engines)
+# ============================================================================
+message(STATUS "Configuring UCIEngine Manual Test executable...")
+set(uciTestExeName UCIEngine_ManualTest)
+message(STATUS "UCIEngine test executable name: ${uciTestExeName}")
+
+add_executable(${uciTestExeName}
+    ../test/engine_arena/UCIEngine_ManualTest.cpp
+    engine_arena/UCIEngine.cpp
+)
+
+target_compile_features(${uciTestExeName} PRIVATE cxx_std_20)
+
+target_link_libraries(${uciTestExeName}
+    PRIVATE
+    FrankyCPPlib
+    Boost::filesystem
+)
+
+target_include_directories(${uciTestExeName}
+    PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+    ${PROJECT_BINARY_DIR}
+)
+
+if (ENABLE_UNITY_BUILD)
+    set_target_properties(${uciTestExeName} PROPERTIES UNITY_BUILD ON)
+endif()
+
+if (MSVC AND STRICT_WARNINGS)
+    target_compile_options(${uciTestExeName} PRIVATE /WX)
 endif()
 
 # ============================================================================

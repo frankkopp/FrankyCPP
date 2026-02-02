@@ -23,6 +23,7 @@
 
 #include "UCIEngine.h"
 
+#include <atomic>
 #include <chrono>
 #include <filesystem>
 #include <iostream>
@@ -30,15 +31,9 @@
 #include <stdexcept>
 #include <thread>
 
-#ifdef _WIN32
-#include <windows.h>
-#else
-#include <sys/select.h>
-#include <unistd.h>
-#endif
-
 namespace arena {
 
+namespace bp = boost::process::v1;
 using std::chrono::steady_clock;
 using std::chrono::duration_cast;
 
@@ -54,17 +49,23 @@ UCIEngine::UCIEngine(const std::string& enginePath)
     throw std::runtime_error("UCI engine not found: " + enginePath);
   }
 
-  // Start engine subprocess
-#ifdef _WIN32
-  // Windows: Use _popen with cmd.exe wrapper for proper I/O handling
-  std::string command = "cmd.exe /c \"" + enginePath + "\"";
-  engineProcess = _popen(command.c_str(), "w+");
-#else
-  // Linux: Use popen directly
-  engineProcess = popen(enginePath.c_str(), "r+");
-#endif
+  // Create pipes and streams
+  pipeIn = std::make_unique<bp::opstream>();
+  pipeOut = std::make_unique<bp::ipstream>();
 
-  if (!engineProcess) {
+  // Start engine subprocess with pipe redirection
+  // Note: Boost.Process will create the underlying pipes when we use the redirection operators
+  try {
+    childProcess = std::make_unique<bp::child>(
+      enginePath,
+      bp::std_in < *pipeIn,
+      bp::std_out > *pipeOut
+    );
+  } catch (const std::exception& e) {
+    throw std::runtime_error("Failed to start UCI engine: " + std::string(e.what()));
+  }
+
+  if (!childProcess || !childProcess->running()) {
     throw std::runtime_error("Failed to start UCI engine: " + enginePath);
   }
 
@@ -73,13 +74,9 @@ UCIEngine::UCIEngine(const std::string& enginePath)
     initializeUCI();
   } catch (const std::exception& e) {
     // Cleanup on initialization failure
-    if (engineProcess) {
-#ifdef _WIN32
-      _pclose(engineProcess);
-#else
-      pclose(engineProcess);
-#endif
-      engineProcess = nullptr;
+    if (childProcess) {
+      childProcess->terminate();
+      childProcess->wait();
     }
     throw std::runtime_error("UCI initialization failed: " + std::string(e.what()));
   }
@@ -88,20 +85,22 @@ UCIEngine::UCIEngine(const std::string& enginePath)
 }
 
 UCIEngine::~UCIEngine() {
-  if (engineProcess) {
+  if (childProcess && childProcess->running()) {
     // Send quit command
-    sendCommand("quit");
+    try {
+      sendCommand("quit");
+    } catch (...) {
+      // Ignore errors during shutdown
+    }
 
     // Give engine time to shutdown gracefully
     std::this_thread::sleep_for(milliseconds(100));
 
-    // Close process
-#ifdef _WIN32
-    _pclose(engineProcess);
-#else
-    pclose(engineProcess);
-#endif
-    engineProcess = nullptr;
+    // Terminate if still running
+    if (childProcess->running()) {
+      childProcess->terminate();
+    }
+    childProcess->wait();
   }
 }
 
@@ -110,7 +109,7 @@ UCIEngine::~UCIEngine() {
 //=============================================================================
 
 void UCIEngine::newGame() {
-  if (!engineProcess) {
+  if (!childProcess || !childProcess->running()) {
     std::cerr << "ERROR: Engine process not running" << std::endl;
     return;
   }
@@ -123,7 +122,7 @@ void UCIEngine::newGame() {
 }
 
 bool UCIEngine::setPosition(const std::string& fen) {
-  if (!engineProcess) {
+  if (!childProcess || !childProcess->running()) {
     std::cerr << "ERROR: Engine process not running" << std::endl;
     return false;
   }
@@ -139,7 +138,7 @@ bool UCIEngine::setPosition(const std::string& fen) {
 UCISearchResult UCIEngine::search(milliseconds timeMs, Depth maxDepth) {
   UCISearchResult result;
 
-  if (!engineProcess) {
+  if (!childProcess || !childProcess->running()) {
     std::cerr << "ERROR: Engine process not running" << std::endl;
     return result;
   }
@@ -202,71 +201,46 @@ UCISearchResult UCIEngine::search(milliseconds timeMs, Depth maxDepth) {
 //=============================================================================
 
 void UCIEngine::sendCommand(const std::string& command) {
-  if (!engineProcess) {
+  if (!pipeIn || !childProcess || !childProcess->running()) {
     throw std::runtime_error("Engine process not running");
   }
-
-  // Write command with newline
-  fprintf(engineProcess, "%s\n", command.c_str());
-  fflush(engineProcess);
+  *pipeIn << command << std::endl;
+  pipeIn->flush();
 }
 
 bool UCIEngine::readLine(std::string& line, milliseconds timeoutMs) {
-  if (!engineProcess) {
+  if (!pipeOut || !childProcess || !childProcess->running()) {
     return false;
   }
 
   line.clear();
+
+  // Boost.Process pipes are blocking, so we need to use a thread with timeout
+  // to avoid hanging forever if the engine doesn't respond
+  std::atomic<bool> completed{false};
+  std::atomic<bool> success{false};
+
+  std::thread readerThread([&]() {
+    if (std::getline(*pipeOut, line)) {
+      success = true;
+    }
+    completed = true;
+  });
+
+  // Wait for completion or timeout
   const auto deadline = steady_clock::now() + timeoutMs;
-
-  while (steady_clock::now() < deadline) {
-    // Try to read one character at a time with timeout
-#ifdef _WIN32
-    // Windows: Check if data available using _kbhit equivalent for FILE*
-    // For simplicity, we use non-blocking read with short sleep
-    int c = fgetc(engineProcess);
-    if (c == EOF) {
-      if (feof(engineProcess)) {
-        return false; // Engine closed
-      }
-      // No data yet, sleep briefly and retry
-      std::this_thread::sleep_for(milliseconds(10));
-      continue;
-    }
-#else
-    // Linux: Use select() for timeout on file descriptor
-    int fd = fileno(engineProcess);
-    fd_set readfds;
-    FD_ZERO(&readfds);
-    FD_SET(fd, &readfds);
-
-    struct timeval tv;
-    tv.tv_sec = 0;
-    tv.tv_usec = 10000; // 10ms
-
-    int ret = select(fd + 1, &readfds, nullptr, nullptr, &tv);
-    if (ret <= 0) {
-      continue; // Timeout or error, retry
-    }
-
-    int c = fgetc(engineProcess);
-    if (c == EOF) {
-      return false; // Engine closed
-    }
-#endif
-
-    // Got a character
-    if (c == '\n') {
-      // Complete line received
-      return true;
-    }
-    if (c != '\r') { // Skip carriage returns
-      line += static_cast<char>(c);
-    }
+  while (!completed && steady_clock::now() < deadline) {
+    std::this_thread::sleep_for(milliseconds(10));
   }
 
-  // Timeout
-  return false;
+  if (!completed) {
+    // Timeout - detach thread (it will complete eventually but we move on)
+    readerThread.detach();
+    return false;
+  }
+
+  readerThread.join();
+  return success;
 }
 
 bool UCIEngine::waitForResponse(const std::string& expectedResponse, milliseconds timeoutMs) {
@@ -277,7 +251,8 @@ bool UCIEngine::waitForResponse(const std::string& expectedResponse, millisecond
     const auto remaining = duration_cast<milliseconds>(deadline - steady_clock::now());
 
     if (readLine(line, remaining)) {
-      if (line == expectedResponse) {
+      // Search for response within line to handle log prefixes
+      if (line.find(expectedResponse) != std::string::npos) {
         return true;
       }
       // Keep reading until we find the expected response or timeout
@@ -310,8 +285,8 @@ void UCIEngine::initializeUCI() {
       engineName = line.substr(8); // Skip "id name "
     }
 
-    // Check for uciok
-    if (line == "uciok") {
+    // Check for uciok (search within line to handle log prefixes)
+    if (line.find("uciok") != std::string::npos) {
       receivedUciOk = true;
       break;
     }

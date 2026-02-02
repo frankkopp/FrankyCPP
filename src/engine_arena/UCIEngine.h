@@ -64,7 +64,11 @@
 
 #include "types/types.h"
 
+#include <boost/process/v1/child.hpp>
+#include <boost/process/v1/pipe.hpp>
+#include <boost/process/v1/io.hpp>
 #include <string>
+#include <memory>
 
 namespace arena {
 
@@ -80,10 +84,12 @@ struct UCISearchResult {
 /// External UCI chess engine interface
 class UCIEngine {
   // Member fields
-  std::string enginePath;               ///< Path to engine executable
-  std::string engineName;               ///< Engine name from "id name"
-  FILE* engineProcess = nullptr;        ///< Engine subprocess handle
-  milliseconds searchTimeout{30000};    ///< Default 30 second timeout
+  std::string enginePath;                                  ///< Path to engine executable
+  std::string engineName;                                  ///< Engine name from "id name"
+  std::unique_ptr<boost::process::v1::child> childProcess;    ///< Engine subprocess
+  std::unique_ptr<boost::process::v1::opstream> pipeIn;       ///< Input stream to engine
+  std::unique_ptr<boost::process::v1::ipstream> pipeOut;      ///< Output stream from engine
+  milliseconds searchTimeout{30000};                       ///< Default 30 second timeout
 
 public:
   // Constructors/Destructor

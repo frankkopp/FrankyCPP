@@ -4,6 +4,7 @@
   "dependencies": [
     "boost-program-options",
     "boost-serialization",
+    "boost-process",
     "spdlog",
     "gtest",
     "benchmark",

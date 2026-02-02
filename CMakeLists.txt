@@ -364,7 +364,7 @@ message(STATUS "Compiler DEBUG flags: ${CMAKE_CXX_FLAGS_DEBUG}")
 message(STATUS "Compiler RELEASE flags: ${CMAKE_CXX_FLAGS_RELEASE}")
 
 # Boost via vcpkg CONFIG package (kept)
-find_package(Boost CONFIG REQUIRED COMPONENTS program_options serialization)
+find_package(Boost CONFIG REQUIRED COMPONENTS program_options serialization filesystem)
 
 # Use spdlog from vcpkg instead of FetchContent
 find_package(spdlog CONFIG REQUIRED)
