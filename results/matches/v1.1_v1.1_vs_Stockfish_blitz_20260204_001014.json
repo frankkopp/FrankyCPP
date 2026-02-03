@@ -1,0 +1,19 @@
+{
+  "version": "v1.1",
+  "matchName": "v1.1_vs_Stockfish_blitz",
+  "timestamp": "2026-02-03T23:10:14Z",
+  "engines": {
+    "engine1": "FrankyCPP_v1.1",
+    "engine2": "stockfish"
+  },
+  "results": {
+    "engine1Wins": 0,
+    "engine2Wins": 10,
+    "draws": 0,
+    "engine1Score": 0.0,
+    "engine2Score": 10.0,
+    "eloDifference": 0.0
+  },
+  "pgnPath": "results/matches/v1.1_vs_Stockfish_blitz.pgn",
+  "durationMs": 426348
+}
