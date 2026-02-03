@@ -24,25 +24,37 @@
 // TestSuiteRunner.h - Engine Arena Test Suite Execution
 //=============================================================================
 //
-// TestSuiteRunner wraps the existing TestSuite class to execute EPD test
-// suites and capture results with metadata for version comparison.
-// Depends on: ArenaConfig.h, ArenaResults.h, enginetest/TestSuite.h
+// TestSuiteRunner executes EPD test suites against external UCI chess engines
+// and captures results with metadata for version comparison.
 //
 // Responsibilities:
-//   - Execute EPD test suites using existing TestSuite class
-//   - Capture detailed per-test results
-//   - Add metadata (version, timestamp, system info)
-//   - Convert TestSuite results to ArenaResults format
+//   - Execute EPD test suites via external UCI engines
+//   - Parse EPD files and evaluate each position
+//   - Support BM (best move), AM (avoid move), and DM (direct mate) tests
+//   - Capture detailed per-test results with statistics
+//   - Add metadata (version, timestamp, engine info)
 //   - Provide simple interface for running all configured suites
 //
-// Metadata Added:
-//   - Engine version (from ArenaConfig)
-//   - Test execution timestamp (ISO 8601 format)
-//   - System info (OS, compiler, build type) - future enhancement
+// Architecture:
+//   - External-only: All engines tested via UCI protocol
+//   - Engine reuse: One UCIEngine instance per test suite (not per position)
+//   - Position isolation: Optional state clearing between positions (via isolatePositions flag)
+//   - Error resilience: Continue suite on position failures
 //
-// Result Conversion:
-//   Converts from enginetest::TestSuiteResult + Test vector to
-//   arena::TestSuiteResult with TestCaseDetail breakdown.
+// UCI Engine Lifecycle:
+//   1. Create UCIEngine instance once at suite start
+//   2. For each position:
+//      a. Call newGame() to clear state (if isolatePositions=true)
+//      b. Set position via setPosition(fen)
+//      c. Execute search with time/depth limits
+//      d. Evaluate result against expected moves
+//   3. Destroy UCIEngine once at suite end (sends "quit")
+//
+// Metadata Captured:
+//   - Engine name (from UCI "id name")
+//   - Engine path (executable location)
+//   - Test execution timestamp (ISO 8601 format)
+//   - Per-position statistics (nodes, depth, time, score)
 //
 // Usage:
 //   TestSuiteRunner runner(config);
@@ -57,11 +69,12 @@
 //
 // Error Handling:
 //   - Throws std::runtime_error if EPD file not found
-//   - Throws std::runtime_error if TestSuite execution fails
-//   - Caller should catch and log errors appropriately
+//   - Throws std::runtime_error if engine fails to start
+//   - Logs and continues if individual positions fail
+//   - Caller should catch and log suite-level errors
 //
 // Thread Safety:
-//   - Not thread-safe (TestSuite is not thread-safe)
+//   - Not thread-safe (UCI communication is sequential)
 //   - Run test suites sequentially from single thread
 //
 //=============================================================================
@@ -71,13 +84,9 @@
 
 #include <vector>
 
-// Forward declarations from global namespace (enginetest/TestSuite.h and Test.h)
-struct TestSuiteResult;  // from TestTypes.h
-class EpdTest;           // from Test.h
-
 namespace arena {
 
-/// Executes EPD test suites and captures results with metadata
+/// Executes EPD test suites against external UCI engines
 class TestSuiteRunner {
 public:
   /// Creates a TestSuiteRunner with the given configuration
@@ -101,16 +110,6 @@ private:
   /// Generates ISO 8601 timestamp for current time
   /// @return Timestamp string (e.g., "2026-02-01T14:30:22Z")
   static std::string getCurrentTimestamp();
-
-  /// Converts TestSuite internal result to arena result format
-  /// @param suiteConfig Test suite configuration
-  /// @param internalResult Result from TestSuite::getLastResult()
-  /// @param testCases Vector of EpdTest from TestSuite
-  /// @return Populated TestSuiteResult with metadata
-  TestSuiteResult convertToArenaResult(
-      const TestSuiteConfig& suiteConfig,
-      const ::TestSuiteResult& internalResult,
-      const std::vector<EpdTest>& testCases) const;
 };
 
 } // namespace arena

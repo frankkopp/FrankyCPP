@@ -18,7 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "TestSuiteRunner.h"
-#include "enginetest/TestSuite.h"
+#include "UCIEngine.h"
+#include "chesscore/MoveUtils.h"
+#include "chesscore/Position.h"
+#include "enginetest/EpdParser.h"
 
 #include <chrono>
 #include <filesystem>
@@ -36,32 +39,174 @@ TestSuiteResult TestSuiteRunner::runTestSuite(const TestSuiteConfig& suiteConfig
   std::cout << "\n==================================================================" << std::endl;
   std::cout << "Running Test Suite: " << suiteConfig.name << std::endl;
   std::cout << "==================================================================" << std::endl;
-  std::cout << "EPD Path:       " << suiteConfig.epdPath << std::endl;
-  std::cout << "Time per Move:  " << suiteConfig.timePerMove.count() << "ms" << std::endl;
-  std::cout << "Max Depth:      " << suiteConfig.maxDepth << std::endl;
-  if (!suiteConfig.enginePath.empty()) {
-    std::cout << "Engine:         " << suiteConfig.enginePath << " (external)" << std::endl;
-  } else {
-    std::cout << "Engine:         Internal FrankyCPP" << std::endl;
-  }
+  std::cout << "EPD Path:          " << suiteConfig.epdPath << std::endl;
+  std::cout << "Time per Move:     " << suiteConfig.timePerMove.count() << "ms" << std::endl;
+  std::cout << "Max Depth:         " << suiteConfig.maxDepth << std::endl;
+  std::cout << "Engine:            " << suiteConfig.enginePath << std::endl;
+  std::cout << "Position Isolation: " << (suiteConfig.isolatePositions ? "enabled" : "disabled") << std::endl;
   std::cout << std::endl;
 
-  // Check if EPD file exists
+  // Validate EPD file exists
   if (!std::filesystem::exists(suiteConfig.epdPath)) {
     throw std::runtime_error("EPD file not found: " + suiteConfig.epdPath);
   }
 
-  // Create and run TestSuite
-  TestSuite suite(suiteConfig.timePerMove, suiteConfig.maxDepth, suiteConfig.epdPath);
-  suite.runTestSuite();
+  // Parse EPD file
+  std::cout << "Parsing EPD file..." << std::endl;
+  std::vector<EpdTest> epdTests = EpdParser::parseFile(suiteConfig.epdPath);
+  if (epdTests.empty()) {
+    throw std::runtime_error("No valid tests found in EPD file: " + suiteConfig.epdPath);
+  }
+  std::cout << "Loaded " << epdTests.size() << " test positions" << std::endl;
 
-  // Get results
-  const auto& internalResult = suite.getLastResult();
-  const auto& testCases = suite.getTestCases();
+  // Initialize result structure
+  TestSuiteResult result;
+  result.version = arenaConfig.version;
+  result.suiteName = suiteConfig.name;
+  result.timestamp = getCurrentTimestamp();
+  result.enginePath = suiteConfig.enginePath;
+  result.totalTests = static_cast<int>(epdTests.size());
+  result.passed = 0;
+  result.failed = 0;
+  result.skipped = 0;
+  result.totalNodes = 0;
+  result.totalTimeMs = 0;
 
-  // Convert to arena result format with metadata
-  TestSuiteResult result = convertToArenaResult(suiteConfig, internalResult, testCases);
+  // Start external UCI engine
+  std::cout << "\nStarting UCI engine..." << std::endl;
+  UCIEngine engine(suiteConfig.enginePath);
+  result.engineName = engine.getEngineName();
+  std::cout << "Engine: " << result.engineName << std::endl;
+  std::cout << "\n------------------------------------------------------------------" << std::endl;
 
+  // Execute tests
+  int testNumber = 0;
+  for (const auto& test : epdTests) {
+    testNumber++;
+
+    TestCaseDetail detail;
+    detail.testId = test.getId().empty() ? ("Test" + std::to_string(testNumber)) : test.getId();
+    detail.fen = test.getFen();
+
+    // Format expected result based on test type
+    if (test.getType() == TestType::DM) {
+      detail.expected = "mate " + std::to_string(test.getMateDepth());
+    } else if (test.getType() == TestType::BM) {
+      detail.expected = "bm " + test.getTargetMoves().str();
+    } else if (test.getType() == TestType::AM) {
+      detail.expected = "am " + test.getTargetMoves().str();
+    } else {
+      detail.expected = "unknown";
+    }
+
+    std::cout << "[" << testNumber << "/" << epdTests.size() << "] "
+              << detail.testId << ": " << std::flush;
+
+    try {
+      // Clear engine state between positions if isolation is enabled
+      if (suiteConfig.isolatePositions) {
+        engine.newGame();
+      }
+
+      // Set position
+      if (!engine.setPosition(test.getFen())) {
+        detail.actual = "ERROR: Failed to set position";
+        detail.passed = false;
+        detail.nodes = 0;
+        detail.timeMs = 0;
+        result.failed++;
+        result.details.push_back(std::move(detail));
+        std::cout << "FAILED (position setup error)" << std::endl;
+        continue;
+      }
+
+      // Execute search
+      UCISearchResult searchResult = engine.search(suiteConfig.timePerMove, suiteConfig.maxDepth);
+
+      // Check if engine returned a move
+      if (searchResult.bestMove.empty()) {
+        detail.actual = "ERROR: No move returned";
+        detail.passed = false;
+        detail.nodes = searchResult.nodes;
+        detail.timeMs = searchResult.time.count();
+        result.failed++;
+        result.totalNodes += searchResult.nodes;
+        result.totalTimeMs += searchResult.time.count();
+        result.details.push_back(std::move(detail));
+        std::cout << "FAILED (no move)" << std::endl;
+        continue;
+      }
+
+      // Store actual move and statistics
+      detail.actual = searchResult.bestMove;
+      detail.nodes = searchResult.nodes;
+      detail.timeMs = searchResult.time.count();
+
+      // Create Position for move comparison (needed for SAN conversion)
+      Position position(test.getFen());
+
+      // Evaluate test result based on test type
+      bool testPassed = false;
+      if (test.getType() == TestType::BM) {
+        // Best Move: engine move must match one of the expected moves
+        std::vector<std::string> expectedMoveStrings;
+        for (const auto& move : test.getTargetMoves()) {
+          expectedMoveStrings.push_back(move.str());
+        }
+        testPassed = matchesExpectedMove(searchResult.bestMove, expectedMoveStrings, position);
+      } else if (test.getType() == TestType::AM) {
+        // Avoid Move: engine move must NOT match any of the expected moves
+        std::vector<std::string> expectedMoveStrings;
+        for (const auto& move : test.getTargetMoves()) {
+          expectedMoveStrings.push_back(move.str());
+        }
+        testPassed = !matchesExpectedMove(searchResult.bestMove, expectedMoveStrings, position);
+      } else if (test.getType() == TestType::DM) {
+        // Direct Mate: check if score indicates mate in expected depth
+        if (searchResult.score != VALUE_NONE && searchResult.score.isCheckMate()) {
+          // Calculate mate distance in moves from the score
+          // Mate scores: VALUE_CHECKMATE (10000) - ply_to_mate
+          // Example: VALUE_CHECKMATE - 4 = mate in 2 moves (4 ply)
+          const int absScore = abs(static_cast<int>(searchResult.score));
+          const int mateInPly = static_cast<int>(VALUE_CHECKMATE) - absScore;
+          const int mateInMoves = (mateInPly + 1) / 2;  // Convert ply to moves
+          testPassed = (mateInMoves <= test.getMateDepth());
+        } else {
+          testPassed = false;
+        }
+      }
+
+      // Store result
+      detail.passed = testPassed;
+      if (testPassed) {
+        result.passed++;
+        std::cout << "PASS";
+      } else {
+        result.failed++;
+        std::cout << "FAIL";
+      }
+      std::cout << " (" << searchResult.bestMove << ", "
+                << searchResult.nodes << " nodes, "
+                << searchResult.time.count() << "ms)" << std::endl;
+
+      // Accumulate statistics
+      result.totalNodes += searchResult.nodes;
+      result.totalTimeMs += searchResult.time.count();
+
+    } catch (const std::exception& e) {
+      // Position-level error - log and continue
+      detail.actual = std::string("ERROR: ") + e.what();
+      detail.passed = false;
+      detail.nodes = 0;
+      detail.timeMs = 0;
+      result.failed++;
+      std::cout << "FAILED (exception: " << e.what() << ")" << std::endl;
+    }
+
+    result.details.push_back(std::move(detail));
+  }
+
+  // Print summary
   std::cout << "\n------------------------------------------------------------------" << std::endl;
   std::cout << "Test Suite Complete: " << suiteConfig.name << std::endl;
   std::cout << "  Total Tests:  " << result.totalTests << std::endl;
@@ -154,65 +299,5 @@ std::string TestSuiteRunner::getCurrentTimestamp() {
   return oss.str();
 }
 
-TestSuiteResult TestSuiteRunner::convertToArenaResult(
-    const TestSuiteConfig& suiteConfig,
-    const ::TestSuiteResult& internalResult,
-    const std::vector<EpdTest>& testCases) const {
-
-  TestSuiteResult result;
-
-  // Add metadata
-  result.version = arenaConfig.version;
-  result.suiteName = suiteConfig.name;
-  result.timestamp = getCurrentTimestamp();
-
-  // Engine identification
-  if (suiteConfig.enginePath.empty()) {
-    // Internal engine
-    result.engineName = "FrankyCPP " + arenaConfig.version + " (Internal)";
-    result.enginePath = "";
-  } else {
-    // External engine - name will be set by caller (from UCI "id name")
-    result.engineName = "External Engine";  // Placeholder, should be overwritten
-    result.enginePath = suiteConfig.enginePath;
-  }
-
-  // Copy aggregate statistics
-  result.totalTests = internalResult.counter;
-  result.passed = internalResult.successCounter;
-  result.failed = internalResult.failedCounter;
-  result.skipped = internalResult.skippedCounter;
-  result.totalNodes = internalResult.nodes;
-  result.totalTimeMs = std::chrono::duration_cast<milliseconds>(internalResult.time).count();
-
-  // Convert per-test details
-  result.details.reserve(testCases.size());
-  for (const auto& test : testCases) {
-    TestCaseDetail detail;
-    detail.testId = test.getId().empty() ? "N/A" : test.getId();
-    detail.fen = test.getFen();
-
-    // Format expected result based on test type
-    if (test.getType() == TestType::DM) {
-      detail.expected = "mate " + std::to_string(test.getMateDepth());
-    } else if (test.getType() == TestType::BM) {
-      detail.expected = "bm " + test.getTargetMoves().str();
-    } else if (test.getType() == TestType::AM) {
-      detail.expected = "am " + test.getTargetMoves().str();
-    } else {
-      detail.expected = "unknown";
-    }
-
-    // Actual move and result
-    detail.actual = test.getActualMove().str();
-    detail.passed = (test.getResult() == ResultType::SUCCESS);
-    detail.nodes = test.getNodes();
-    detail.timeMs = std::chrono::duration_cast<milliseconds>(test.getTime()).count();
-
-    result.details.push_back(std::move(detail));
-  }
-
-  return result;
-}
 
 } // namespace arena

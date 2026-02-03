@@ -3,12 +3,17 @@ resultsDir: "./results"
 
 # Cutechess-cli path (Windows)
 # Adjust this path to match your cutechess-cli installation
+# Note: Use forward slashes (/) or double backslashes (\\) for Windows paths
 cutechessPath: "D:/Games/CuteChess/cutechess-cli.exe"
 
 # Test suite configurations
-# Each test suite can optionally specify an external UCI engine to test against.
-# If enginePath is omitted or empty, the internal FrankyCPP engine is used.
+# Each test suite requires an external UCI engine path.
 # External engines must support UCI protocol and respond to standard commands.
+#
+# Path Format:
+#   Windows: Use forward slashes (/) or double backslashes (\\)
+#   Examples: "D:/Games/engine.exe" or "D:\\Games\\engine.exe"
+#   Linux: Standard Unix paths: "/usr/local/bin/engine"
 #
 # Position Isolation:
 #   isolatePositions: true (default) - Sends "ucinewgame" between positions
@@ -25,13 +30,22 @@ cutechessPath: "D:/Games/CuteChess/cutechess-cli.exe"
 #   - "ucinewgame" is sent between positions if isolatePositions=true
 #   - Engine is terminated after suite completes
 testSuites:
-  # Internal engine test (no enginePath specified)
-  - name: "franky_tests"
-    epdPath: "test/testsets/franky_tests.epd"
-    timePerMove: 5000  # milliseconds
-    maxDepth: 30
 
   # External engine test example (uncomment and adjust path to enable)
+  - name: "franky_tests_v0.5"
+    epdPath: "test/testsets/franky_tests.epd"
+    timePerMove: 5000
+    maxDepth: 30
+    enginePath: "Release/FrankyCPP_V0.5/FrankyCPP_v0.5.exe"  # Path to external UCI engine
+    isolatePositions: true  # Default: true - clear state between positions for fair comparison
+
+  - name: "franky_tests_v1.0"
+    epdPath: "test/testsets/franky_tests.epd"
+    timePerMove: 5000
+    maxDepth: 30
+    enginePath: "Release/FrankyCPP_V1.0/FrankyCPP_v1.0.exe"  # Path to external UCI engine
+    isolatePositions: true  # Default: true - clear state between positions for fair comparison
+
   - name: "franky_tests_v1.1"
     epdPath: "test/testsets/franky_tests.epd"
     timePerMove: 5000
@@ -39,17 +53,23 @@ testSuites:
     enginePath: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"  # Path to external UCI engine
     isolatePositions: true  # Default: true - clear state between positions for fair comparison
 
-  - name: "mate_test"
-    epdPath: "test/testsets/mate_test_suite.epd"
-    timePerMove: 15000
-    maxDepth: 30
-
-  - name: "WAC"
-    epdPath: "test/testsets/wac.epd"
+  - name: "franky_tests_FrankyGo"
+    epdPath: "test/testsets/franky_tests.epd"
     timePerMove: 5000
     maxDepth: 30
+    enginePath: "D:/Games/FrankyChess/FrankyGo/FrankyGo.exe"  # Path to external UCI engine (use forward slashes)
+    isolatePositions: true  # Default: true - clear state between positions for fair comparison
 
-  # Uncomment to enable more test suites
+#  - name: "mate_test"
+#    epdPath: "test/testsets/mate_test_suite.epd"
+#    timePerMove: 15000
+#    maxDepth: 30
+#
+#  - name: "WAC"
+#    epdPath: "test/testsets/wac.epd"
+#    timePerMove: 5000
+#    maxDepth: 30
+
   # - name: "STS"
   #   epdPath: "test/testsets/STS1-STS15_LAN.EPD"
   #   timePerMove: 5000

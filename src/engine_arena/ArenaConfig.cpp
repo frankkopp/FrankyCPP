@@ -165,8 +165,13 @@ bool ArenaConfig::validate() const {
       std::cerr << "  Tip: Make sure to run from project root or use absolute paths" << std::endl;
       return false;
     }
-    // Check external engine exists if specified
-    if (!suite.enginePath.empty() && !std::filesystem::exists(suite.enginePath)) {
+    // Validate external engine path is provided and exists
+    if (suite.enginePath.empty()) {
+      std::cerr << "Validation error: enginePath is required for suite '" << suite.name << "'" << std::endl;
+      std::cerr << "  Arena test suites require an external UCI engine executable" << std::endl;
+      return false;
+    }
+    if (!std::filesystem::exists(suite.enginePath)) {
       std::cerr << "Validation error: External engine not found for suite '" << suite.name
                 << "': " << suite.enginePath << std::endl;
       std::cerr << "  Current working directory: "

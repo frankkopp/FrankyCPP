@@ -103,7 +103,7 @@ struct TestSuiteConfig {
   std::string epdPath;          ///< Path to EPD file
   milliseconds timePerMove;     ///< Time limit per move
   Depth maxDepth;               ///< Maximum search depth
-  std::string enginePath;       ///< Optional: Path to external UCI engine (empty = use internal engine)
+  std::string enginePath;       ///< Path to external UCI engine (required)
   bool isolatePositions = true; ///< Clear engine state (TT/history) between positions (default: true)
 };
 
