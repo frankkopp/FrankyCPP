@@ -293,6 +293,47 @@ src/
 - Place test files in corresponding `test/<module>/` directory
 - Use `Test_Fens.h` for standard test positions
 
+### ⚠️ CRITICAL: Test Class Initialization
+**Every test class that uses MoveGenerator, Position, or any chess move functionality MUST initialize the attack tables (magic bitboards).**
+
+Without initialization, sliding piece moves (bishops, rooks, queens) will NOT be generated correctly.
+
+**Required pattern for ALL chess-related test classes:**
+```cpp
+class YourTestClass : public ::testing::Test {
+public:
+  static void SetUpTestSuite() {
+    NEWLINE;
+    init::init();  // ← CRITICAL: Initializes attack tables/magics
+    NEWLINE;
+  }
+
+protected:
+  void SetUp() override {
+    // Your per-test setup here
+  }
+};
+```
+
+**Why this is required:**
+- Move generation relies on pre-computed magic bitboards for sliding pieces
+- `init::init()` sets up attack tables, Zobrist keys, and other static data
+- Without initialization, `MoveGenerator` will not generate bishop/rook/queen moves
+- This is a one-time setup per test suite (not per test)
+
+**Symptoms of missing initialization:**
+- Bishop, rook, queen moves missing from legal move lists
+- Castling moves may fail (requires attack detection)
+- Position evaluation may be incorrect
+- Tests that should pass will fail mysteriously
+
+**Always add this when creating new test files for:**
+- `MoveGenerator` tests
+- `Position` tests
+- `Search` tests
+- Any test using `matchesExpectedMove()` or move comparison
+- Integration tests involving chess moves
+
 ---
 
 ## Chess-Specific Notes

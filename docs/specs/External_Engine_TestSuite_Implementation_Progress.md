@@ -3,7 +3,7 @@
 ## Status: IN PROGRESS
 
 **Started:** 2026-02-02
-**Last Updated:** 2026-02-03
+**Last Updated:** 2026-02-03 (Phase 4 Complete)
 
 **Related Documents:**
 - `External_Engine_TestSuite_Support_Outline.md` - Main implementation plan
@@ -236,9 +236,105 @@ as the search functionality is integral to the UCIEngine class design.
 
 ---
 
-### ⏳ Phase 4: Move Comparison Logic (PENDING)
-**Status:** Not started
-**Estimated Time:** 1-2 hours
+### ✅ Phase 4: Move Comparison Logic (COMPLETE)
+**Completed:** 2026-02-03
+**Time:** ~1 hour
+
+**Tasks Completed:**
+- [x] Created `src/chesscore/MoveUtils.h`
+- [x] Created `src/chesscore/MoveUtils.cpp`
+- [x] Created `test/chesscore/MoveUtils_Test.cpp`
+- [x] Implemented `matchesExpectedMove()` function
+- [x] Implemented `normalizeMove()` helper function
+- [x] Support for long algebraic notation (direct string match)
+- [x] Support for SAN notation (via conversion using MoveGenerator)
+- [x] Handles multiple expected moves (for BM tests)
+- [x] Comprehensive unit tests covering all notation types
+- [x] Updated CMakeLists.txt to include new files
+- [x] **Refactored to `chesscore/` for better architecture**
+
+**Files Created:**
+- Created: `src/chesscore/MoveUtils.h` (moved from `engine_arena/MoveComparison.h`)
+- Created: `src/chesscore/MoveUtils.cpp` (moved from `engine_arena/MoveComparison.cpp`)
+- Created: `test/chesscore/MoveUtils_Test.cpp` (moved from `engine_arena/MoveComparison_Test.cpp`)
+
+**Files Modified:**
+- Modified: `src/CMakeLists.txt` (added MoveUtils.cpp to FrankyCPPlib_SRCS)
+- Modified: `test/CMakeLists.txt` (added MoveUtils_Test.cpp to test sources)
+
+**Architectural Decision:**
+- **Initial location:** `engine_arena/MoveComparison`
+- **Final location:** `chesscore/MoveUtils`
+- **Rationale:** 
+  - MoveUtils depends on `chesscore/` classes (MoveGenerator, Position)
+  - Keeps all dependencies in same architectural layer
+  - More reusable - can be used by TestSuite, opening book, etc.
+  - Better than `common/` which should have minimal dependencies
+  - Cleaner dependency graph: stays within chesscore layer
+
+**Implementation Details:**
+
+**Location: `chesscore/MoveUtils`**
+- Functions are at global scope (no namespace)
+- Clean integration with other chesscore components
+- Can be used by any module needing move comparison
+
+**matchesExpectedMove() Strategy:**
+1. **Fast Path:** Direct normalized string comparison
+   - Handles UCI long algebraic format (e.g., "e2e4")
+   - Case-insensitive comparison
+   - Removes decoration characters (+, #, !, ?)
+
+2. **Slow Path:** SAN conversion using existing code
+   - Uses `MoveGenerator::getMoveFromUci()` for UCI parsing
+   - Uses `MoveGenerator::getMoveFromSan()` for SAN parsing
+   - Converts to long algebraic for comparison
+   - Reuses battle-tested internal move parsing
+
+**normalizeMove() Function:**
+- Converts to lowercase
+- Removes decoration characters (+, #, !, ?)
+- Preserves equals sign for promotion notation (e.g., "e8=q")
+
+**Supported Notations:**
+- ✅ UCI Long Algebraic: "e2e4", "g1f3", "e1g1", "e7e8q"
+- ✅ SAN Pawn Moves: "e4", "d5"
+- ✅ SAN Piece Moves: "Nf3", "Bc4", "Qh5"
+- ✅ SAN Castling: "O-O", "O-O-O"
+- ✅ SAN Captures: "exd5", "Nxe5", "Qxf7+"
+- ✅ SAN Promotions: "e8=Q", "e8Q", "a1=N"
+- ✅ SAN Disambiguated: "Nbd2", "R1a3", "Qh4e1"
+
+**Unit Test Coverage:**
+- ✅ Direct long algebraic matching (case-insensitive)
+- ✅ Decoration removal (+, #, !, ?)
+- ✅ SAN pawn moves
+- ✅ SAN piece moves (N, B, R, Q, K)
+- ✅ SAN castling (both sides)
+- ✅ SAN captures
+- ✅ SAN promotions (multiple notations)
+- ✅ SAN ambiguous notation
+- ✅ Multiple expected moves
+- ✅ Empty/invalid inputs
+- ✅ Real-world EPD examples
+
+**Validation:**
+- [x] Code compiles without errors
+- [x] No IDE errors or warnings
+- [x] Comprehensive unit tests (29 test cases)
+- [x] Tests cover all supported notation types
+- [x] Tests cover edge cases and error conditions
+- [x] Ready for integration in TestSuiteRunner
+
+**Design Benefits:**
+- ✅ Separate utility for better testability
+- ✅ Reuses existing MoveGenerator code (no duplication)
+- ✅ Clean separation of concerns
+- ✅ Easy to unit test independently
+- ✅ Maximum EPD compatibility
+
+**Next Steps:**
+- Ready to proceed to Phase 5: TestSuiteRunner Integration
 
 ---
 
@@ -303,26 +399,27 @@ testSuites:
 ## Total Progress
 
 **Estimated Total Time:** 14-18 hours
-**Time Spent:** 10 hours (Phase 0: 3h, Phase 1: 0.5h, Phases 2+3: 6.5h)
-**Time Remaining:** 4-8 hours
+**Time Spent:** 11 hours (Phase 0: 3h, Phase 1: 0.5h, Phases 2+3: 6.5h, Phase 4: 1h)
+**Time Remaining:** 3-7 hours
 
 **Phase Completion:**
 - Phase 0: ✅ Complete
 - Phase 1: ✅ Complete
 - Phase 2: ✅ Complete (includes Boost.Process refactoring)
 - Phase 3: ✅ Complete
-- Phases 4-8: ⏳ Pending
+- Phase 4: ✅ Complete
+- Phases 5-8: ⏳ Pending
 
-**Overall Progress:** 4/9 phases complete (44%)
+**Overall Progress:** 5/9 phases complete (56%)
 
 ---
 
 ## Next Actions
 
-1. **Start Phase 4:** Implement move comparison logic
-2. **Priority:** Support both long algebraic and SAN move formats
-3. **Testing:** Validate move matching with various notations
-4. **Integration:** Connect UCIEngine to TestSuiteRunner in Phase 5
+1. **Start Phase 5:** Integrate UCIEngine and MoveUtils into TestSuiteRunner
+2. **Priority:** Implement external engine test execution loop
+3. **Testing:** Validate with franky_tests.epd against v1.0 engine
+4. **Integration:** Connect all components for end-to-end testing
 
 ---
 

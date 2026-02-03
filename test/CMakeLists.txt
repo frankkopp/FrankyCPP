@@ -30,6 +30,7 @@ add_executable(
         chesscore/MoveGeneratorTest.cpp
         chesscore/PerftTest.cpp
         chesscore/SpeedTests.cpp
+        chesscore/MoveUtils_Test.cpp
 
         openingbook/OpeningbookTest.cpp
 

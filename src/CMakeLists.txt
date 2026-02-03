@@ -13,6 +13,7 @@ set(FrankyCPPlib_SRCS
         chesscore/MoveGenerator.cpp
         chesscore/Perft.cpp
         chesscore/History.cpp
+        chesscore/MoveUtils.cpp
 
         openingbook/OpeningBook.cpp openingbook/OpeningBook.h
 
