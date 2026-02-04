@@ -344,7 +344,7 @@ UciOption* UciOptions::getOption(const std::string& name) {
 }
 
 bool UciOptions::setOption(UciHandler* uciHandler, const std::string& name, const std::string& value) {
-  if (const auto o = getOption(name)) {
+  if (auto *const o = getOption(name)) {
     if (o->type == COMBO) {
       bool ok = false;
       for (const auto& v : o->comboVars) {
@@ -393,9 +393,11 @@ std::string UciOption::str() const {
       str += "string default " + defaultValue;
       break;
   }
-  if (type != BUTTON && !currentValue.empty()) {
-    str += " current " + currentValue;
-  }
+  // The "current" field is non-standard UCI but used by FrankyCPP to report the actual current value
+  // Needs to be reviewed for other engines - may not be supported everywhere
+  // if (type != BUTTON && !currentValue.empty()) {
+  //   str += " current " + currentValue;
+  // }
   return str;
 }
 

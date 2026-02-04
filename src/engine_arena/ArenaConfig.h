@@ -105,6 +105,9 @@ struct TestSuiteConfig {
   Depth maxDepth;               ///< Maximum search depth
   std::string enginePath;       ///< Path to external UCI engine (required)
   bool isolatePositions = true; ///< Clear engine state (TT/history) between positions (default: true)
+  bool debugMode = false;       ///< Print all UCI communication for debugging
+  std::string commandLineArgs;  ///< Command-line arguments to pass to engine (e.g., "--nobook -hash 128")
+  std::string uciOptions;       ///< UCI options as semicolon-separated pairs (e.g., "Hash=256; Threads=4")
 };
 
 /// Configuration for a single engine match

@@ -69,6 +69,7 @@
 #include <boost/process/v1/io.hpp>
 #include <string>
 #include <memory>
+#include <map>
 
 namespace arena {
 
@@ -84,19 +85,21 @@ struct UCISearchResult {
 /// External UCI chess engine interface
 class UCIEngine {
   // Member fields
-  std::string enginePath;                                  ///< Path to engine executable
-  std::string engineName;                                  ///< Engine name from "id name"
+  std::string enginePath;                                     ///< Path to engine executable
+  std::string engineName;                                     ///< Engine name from "id name"
   std::unique_ptr<boost::process::v1::child> childProcess;    ///< Engine subprocess
   std::unique_ptr<boost::process::v1::opstream> pipeIn;       ///< Input stream to engine
   std::unique_ptr<boost::process::v1::ipstream> pipeOut;      ///< Output stream from engine
-  milliseconds searchTimeout{30000};                       ///< Default 30 second timeout
+  milliseconds searchTimeout{30000};                      ///< Default 30 second timeout
+  bool debugMode{false};                                      ///< Debug mode: print all UCI communication
 
 public:
   // Constructors/Destructor
   /// Construct and initialize UCI engine
   /// @param enginePath Path to UCI engine executable
+  /// @param commandLineArgs Command-line arguments to pass to engine (e.g., "--nobook -hash 128")
   /// @throws std::runtime_error if engine not found or initialization fails
-  explicit UCIEngine(const std::string& enginePath);
+  explicit UCIEngine(const std::string& enginePath, const std::string& commandLineArgs = "");
 
   /// Destructor - stops engine
   ~UCIEngine();
@@ -125,6 +128,41 @@ public:
   /// Set absolute timeout for search operations
   /// @param timeout Maximum time to wait for engine response
   void setSearchTimeout(milliseconds timeout) { searchTimeout = timeout; }
+
+  /// Enable/disable debug mode (prints all UCI communication)
+  /// @param debug True to enable debug output, false to disable
+  void setDebugMode(bool debug) { debugMode = debug; }
+
+  /// Send UCI option to engine
+  /// @param name Option name
+  /// @param value Option value
+  void setOption(const std::string& name, const std::string& value);
+
+  /// Set multiple UCI options from string
+  /// Format: "Hash=256; Threads=4" or "Hash=256 Threads=4"
+  /// @param options Semicolon or space-separated "name=value" pairs
+  ///
+  /// Note: To verify options were applied, you can send "uci" command again
+  /// and parse the "option" lines in the response. The engine will report
+  /// current values in the format: "option name <name> type <type> default <value> ..."
+  void setUciOptions(const std::string& options);
+
+  /// Get current option values from engine
+  /// Sends "uci" command again and parses "option" lines to extract current values.
+  ///
+  /// FrankyCPP Extension: Prefers "current" field if available (non-standard but accurate)
+  /// Standard UCI: Falls back to "default" field (may not reflect changes for other engines)
+  ///
+  /// Examples:
+  ///   FrankyCPP: option name Hash type spin default 64 min 0 max 4096 current 512
+  ///   Stockfish: option name Hash type spin default 16 min 1 max 33554432
+  ///
+  /// Note: For standard UCI engines (like Stockfish), "default" may not reflect changes.
+  ///       After setting options, the returned values may still show original defaults.
+  ///       This is a limitation of the UCI protocol - no standard way to query current values.
+  ///
+  /// @return Map of option names to current values (or defaults for standard engines)
+  std::map<std::string, std::string> getOptions();
 
 private:
   // Private helper methods

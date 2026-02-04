@@ -89,6 +89,21 @@ ArenaConfig ArenaConfig::loadFromYaml(const std::string& configPath) {
           suite.isolatePositions = suiteNode["isolatePositions"].as<bool>();
         }
 
+        // Optional: debug mode (print UCI communication)
+        if (suiteNode["debugMode"]) {
+          suite.debugMode = suiteNode["debugMode"].as<bool>();
+        }
+
+        // Optional: command-line arguments for engine startup
+        if (suiteNode["commandLineArgs"]) {
+          suite.commandLineArgs = suiteNode["commandLineArgs"].as<std::string>();
+        }
+
+        // Optional: UCI options (setoption commands sent after initialization)
+        if (suiteNode["uciOptions"]) {
+          suite.uciOptions = suiteNode["uciOptions"].as<std::string>();
+        }
+
         config.testSuites.push_back(suite);
       }
     }

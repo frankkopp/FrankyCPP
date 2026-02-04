@@ -41,7 +41,7 @@ using std::chrono::duration_cast;
 // Constructors/Destructor
 //=============================================================================
 
-UCIEngine::UCIEngine(const std::string& enginePath)
+UCIEngine::UCIEngine(const std::string& enginePath, const std::string& commandLineArgs)
     : enginePath(enginePath) {
 
   // Check if engine file exists
@@ -53,14 +53,24 @@ UCIEngine::UCIEngine(const std::string& enginePath)
   pipeIn = std::make_unique<bp::opstream>();
   pipeOut = std::make_unique<bp::ipstream>();
 
-  // Start engine subprocess with pipe redirection
+  // Start engine subprocess with pipe redirection and optional command-line arguments
   // Note: Boost.Process will create the underlying pipes when we use the redirection operators
   try {
-    childProcess = std::make_unique<bp::child>(
-      enginePath,
-      bp::std_in < *pipeIn,
-      bp::std_out > *pipeOut
-    );
+    if (commandLineArgs.empty()) {
+      // No arguments - simple case
+      childProcess = std::make_unique<bp::child>(
+        enginePath,
+        bp::std_in < *pipeIn,
+        bp::std_out > *pipeOut
+      );
+    } else {
+      // With arguments - pass as single string to shell
+      childProcess = std::make_unique<bp::child>(
+        enginePath + " " + commandLineArgs,
+        bp::std_in < *pipeIn,
+        bp::std_out > *pipeOut
+      );
+    }
   } catch (const std::exception& e) {
     throw std::runtime_error("Failed to start UCI engine: " + std::string(e.what()));
   }
@@ -196,6 +206,191 @@ UCISearchResult UCIEngine::search(milliseconds timeMs, Depth maxDepth) {
   return result;
 }
 
+void UCIEngine::setOption(const std::string& name, const std::string& value) {
+  if (!childProcess || !childProcess->running()) {
+    std::cerr << "ERROR: Engine process not running" << std::endl;
+    return;
+  }
+
+  // Build setoption command
+  std::ostringstream cmd;
+  cmd << "setoption name " << name << " value " << value;
+
+  // Send command
+  sendCommand(cmd.str());
+
+  // Wait for engine to be ready
+  waitUntilReady();
+}
+
+void UCIEngine::setUciOptions(const std::string& options) {
+  if (options.empty()) {
+    return;
+  }
+
+  // Parse UCI options in format: "name1=value1; name2=value2"
+  // Option names and values CAN contain spaces (per UCI spec)
+  // Split by semicolon to get individual option pairs
+  std::vector<std::string> pairs;
+
+  if (options.find(';') != std::string::npos) {
+    // Split by semicolon
+    std::istringstream iss(options);
+    std::string pair;
+    while (std::getline(iss, pair, ';')) {
+      // Trim whitespace
+      pair.erase(0, pair.find_first_not_of(" \t\r\n"));
+      pair.erase(pair.find_last_not_of(" \t\r\n") + 1);
+      if (!pair.empty()) {
+        pairs.push_back(pair);
+      }
+    }
+  } else {
+    // No semicolons - treat as single option or try space-split
+    // If contains '=', it's a single option
+    if (options.find('=') != std::string::npos) {
+      pairs.push_back(options);
+    } else {
+      // Try space-split as fallback (for backward compatibility)
+      std::istringstream iss(options);
+      std::string pair;
+      while (iss >> pair) {
+        if (pair.find('=') != std::string::npos) {
+          pairs.push_back(pair);
+        }
+      }
+    }
+  }
+
+  // Parse each "name=value" pair
+  // Note: Both name and value can contain spaces per UCI spec
+  for (const auto& pair : pairs) {
+    size_t eqPos = pair.find('=');
+    if (eqPos == std::string::npos) {
+      std::cerr << "WARNING: Invalid UCI option format (missing '='): " << pair << std::endl;
+      continue;
+    }
+
+    std::string name = pair.substr(0, eqPos);
+    std::string value = pair.substr(eqPos + 1);
+
+    // Trim whitespace
+    name.erase(0, name.find_first_not_of(" \t"));
+    name.erase(name.find_last_not_of(" \t") + 1);
+    value.erase(0, value.find_first_not_of(" \t"));
+    value.erase(value.find_last_not_of(" \t") + 1);
+
+    if (name.empty() || value.empty()) {
+      std::cerr << "WARNING: Invalid UCI option (empty name or value): " << pair << std::endl;
+      continue;
+    }
+
+    // Send option
+    setOption(name, value);
+  }
+}
+
+std::map<std::string, std::string> UCIEngine::getOptions() {
+  std::map<std::string, std::string> options;
+
+  if (!childProcess || !childProcess->running()) {
+    std::cerr << "ERROR: Engine process not running" << std::endl;
+    return options;
+  }
+
+  // Send uci command to get current option values
+  sendCommand("uci");
+
+  // Read response until uciok
+  const auto deadline = steady_clock::now() + milliseconds(5000);
+
+  while (steady_clock::now() < deadline) {
+    std::string line;
+    const auto remaining = duration_cast<milliseconds>(deadline - steady_clock::now());
+
+    if (!readLine(line, remaining)) {
+      break; // Timeout or error
+    }
+
+    // Parse: "option name <name> type <type> default <value> [current <value>] ..."
+    // Note: FrankyCPP extends UCI with "current" field for debugging
+    //       Stockfish and most engines only have "default"
+    if (line.find("option name ") == 0) {
+      // Find the positions of key markers
+      size_t nameStart = 12; // After "option name "
+      size_t typePos = line.find(" type ", nameStart);
+
+      if (typePos == std::string::npos) {
+        continue; // Invalid option line
+      }
+
+      // Extract option name
+      std::string name = line.substr(nameStart, typePos - nameStart);
+
+      // Try to find "current" keyword first (FrankyCPP extension - most accurate)
+      size_t currentPos = line.find(" current ", typePos);
+
+      if (currentPos != std::string::npos) {
+        // FrankyCPP style: use "current" field (actual current value)
+        size_t valueStart = currentPos + 9; // After " current "
+
+        // Find end of value (end of line or next space)
+        size_t valueEnd = line.find_first_of(" \t\r\n", valueStart);
+
+        std::string value;
+        if (valueEnd != std::string::npos) {
+          value = line.substr(valueStart, valueEnd - valueStart);
+        } else {
+          value = line.substr(valueStart);
+        }
+
+        // Trim trailing whitespace
+        value.erase(value.find_last_not_of(" \t\r\n") + 1);
+
+        options[name] = value;
+      } else {
+        // Standard UCI: use "default" field (may not reflect changes)
+        size_t defaultPos = line.find(" default ", typePos);
+
+        if (defaultPos != std::string::npos) {
+          size_t valueStart = defaultPos + 9; // After " default "
+
+          // Find end of value (next UCI keyword or end of line)
+          size_t valueEnd = line.find(" min ", valueStart);
+          if (valueEnd == std::string::npos) {
+            valueEnd = line.find(" max ", valueStart);
+          }
+          if (valueEnd == std::string::npos) {
+            valueEnd = line.find(" var ", valueStart);
+          }
+          if (valueEnd == std::string::npos) {
+            valueEnd = line.find(" current ", valueStart); // In case current comes after default
+          }
+
+          std::string value;
+          if (valueEnd != std::string::npos) {
+            value = line.substr(valueStart, valueEnd - valueStart);
+          } else {
+            value = line.substr(valueStart);
+          }
+
+          // Trim trailing whitespace
+          value.erase(value.find_last_not_of(" \t\r\n") + 1);
+
+          options[name] = value;
+        }
+      }
+    }
+
+    // Check for uciok
+    if (line.find("uciok") != std::string::npos) {
+      break;
+    }
+  }
+
+  return options;
+}
+
 //=============================================================================
 // Private helper methods
 //=============================================================================
@@ -204,6 +399,11 @@ void UCIEngine::sendCommand(const std::string& command) {
   if (!pipeIn || !childProcess || !childProcess->running()) {
     throw std::runtime_error("Engine process not running");
   }
+
+  if (debugMode) {
+    std::cout << "[UCIEngine] >>> " << command << std::endl;
+  }
+
   *pipeIn << command << std::endl;
   pipeIn->flush();
 }
@@ -240,6 +440,11 @@ bool UCIEngine::readLine(std::string& line, milliseconds timeoutMs) {
   }
 
   readerThread.join();
+
+  if (debugMode && success) {
+    std::cout << "[UCIEngine] <<< " << line << std::endl;
+  }
+
   return success;
 }
 

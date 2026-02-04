@@ -74,9 +74,25 @@ TestSuiteResult TestSuiteRunner::runTestSuite(const TestSuiteConfig& suiteConfig
 
   // Start external UCI engine
   std::cout << "\nStarting UCI engine..." << std::endl;
-  UCIEngine engine(suiteConfig.enginePath);
+  if (!suiteConfig.commandLineArgs.empty()) {
+    std::cout << "Command-line arguments: " << suiteConfig.commandLineArgs << std::endl;
+  }
+
+  UCIEngine engine(suiteConfig.enginePath, suiteConfig.commandLineArgs);
   result.engineName = engine.getEngineName();
   std::cout << "Engine: " << result.engineName << std::endl;
+
+  // Configure engine options
+  if (suiteConfig.debugMode) {
+    std::cout << "Debug mode: ENABLED (printing all UCI communication)" << std::endl;
+    engine.setDebugMode(true);
+  }
+
+  if (!suiteConfig.uciOptions.empty()) {
+    std::cout << "Setting UCI options: " << suiteConfig.uciOptions << std::endl;
+    engine.setUciOptions(suiteConfig.uciOptions);
+  }
+
   std::cout << "\n------------------------------------------------------------------" << std::endl;
 
   // Execute tests

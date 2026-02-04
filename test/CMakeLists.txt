@@ -49,6 +49,15 @@ add_executable(
         enginetest/EdpTest_Test.cpp
         enginetest/TestTypes_Test.cpp
 
+        engine_arena/TestSuiteRunner_IntegrationTest.cpp
+        engine_arena/UCIEngine_ErrorHandlingTest.cpp
+        engine_arena/UCIEngine_OptionsTest.cpp
+
+        # Engine arena source files needed by tests
+        ../src/engine_arena/ArenaConfig.cpp
+        ../src/engine_arena/TestSuiteRunner.cpp
+        ../src/engine_arena/UCIEngine.cpp
+
         TimingTests.cpp
 
         config/ConfigYamlSmokeTest.cpp
@@ -70,7 +79,8 @@ target_include_directories(
         ${testExeName}
         PRIVATE
         ${PROJECT_BINARY_DIR}
-        ${PROJECT_SOURCE_DIR}/test)
+        ${PROJECT_SOURCE_DIR}/test
+        ${PROJECT_SOURCE_DIR}/src)  # Add src directory for engine_arena headers
 
 # STRICT_WARNINGS for CI: treat warnings as errors when enabled
 if (MSVC AND STRICT_WARNINGS)
@@ -79,6 +89,7 @@ endif()
 
 # Link against project lib and vcpkg-provided GoogleTest targets
 # Also link yaml-cpp for config YAML parsing in smoke test
+# Also link nlohmann_json for engine_arena components
 target_link_libraries(
         ${testExeName}
         PUBLIC
@@ -86,6 +97,7 @@ target_link_libraries(
         GTest::gtest
         GTest::gtest_main
         yaml-cpp::yaml-cpp
+        nlohmann_json::nlohmann_json
 )
 
 # copy config files and opening books to the build directories
