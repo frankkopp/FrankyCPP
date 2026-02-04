@@ -89,6 +89,7 @@ bool UciHandler::handleCommand(const std::string& cmd) {
   else if (token == "register")   { registerCommand(); }
   else if (token == "debug")      { debugCommand(); }
   else if (token == "perft")      { perftCommand(inStream); }
+  else if (token == "getoptions") { getOptionsCommand(); }
   else if (token == "help")       { helpCommand(); }
   else if (token == "noop")       { /* noop */  }
   else
@@ -463,6 +464,10 @@ void UciHandler::helpCommand() const {
   out("perft <startDepth> [endDepth]");
   out(std::format("  Runs a perft from the current position for depths {}..{}. If endDepth omitted, only startDepth is used.", 1, MAX_DEPTH));
 
+  out("getoptions");
+  out("  Non-standard extension: Lists all options with their current values (for testing).");
+  out("  Format: 'option name <name> type <type> current <value>' followed by 'optionsok'.");
+
   out("register");
   out("  Not implemented.");
 
@@ -479,6 +484,11 @@ void UciHandler::helpCommand() const {
   out("  position startpos");
   out("  go movetime 1000");
   out("  stop");
+}
+
+void UciHandler::getOptionsCommand() const {
+  send(UciOptions::getInstance()->strWithCurrentValues());
+  send("optionsok");
 }
 
 void UciHandler::send(const std::string& toSend) const {

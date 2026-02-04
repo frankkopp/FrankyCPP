@@ -557,9 +557,9 @@ TEST_F(UCIEngineOptionsTest, VerifyOptionsApplied_GetOptions) {
   // Get current options and verify they were applied
   auto options = engine.getOptions();
 
-  // Note: This verification works with FrankyCPP because it reports "current" field
-  // For standard UCI engines (like Stockfish), this may return original defaults
-  // since UCI protocol has no standard way to query current option values.
+  // Note: This verification works with FrankyCPP because it uses the "getoptions" command
+  // which is a FrankyCPP extension that reports current values.
+  // For standard UCI engines, this would require using the "uci" command and parsing defaults.
 
   // Verify OwnBook was set to false
   ASSERT_TRUE(options.find("OwnBook") != options.end())
@@ -584,8 +584,8 @@ TEST_F(UCIEngineOptionsTest, VerifyMultipleOptionChanges) {
   UCIEngine engine(testEnginePath);
   engine.setDebugMode(true);
 
-  // Note: This test works with FrankyCPP (reports "current" field)
-  // For standard UCI engines, this may not detect changes correctly
+  // Note: This test works with FrankyCPP which supports the "getoptions" command
+  // (a non-standard UCI extension that reports current values)
 
   // Set initial options
   engine.setUciOptions("Hash=128; Ponder=true");

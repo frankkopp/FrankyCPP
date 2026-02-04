@@ -371,6 +371,15 @@ std::string UciOptions::str() const {
   return str;
 }
 
+std::string UciOptions::strWithCurrentValues() const {
+  std::string str;
+  for (const auto& o : optionVector) {
+    str += o.strWithCurrentValue() + "\n";
+  }
+  str = trimFast(str);// remove last newline
+  return str;
+}
+
 std::string UciOption::str() const {
   std::string str = "option name " + nameID + " type ";
   switch (type) {
@@ -398,6 +407,28 @@ std::string UciOption::str() const {
   // if (type != BUTTON && !currentValue.empty()) {
   //   str += " current " + currentValue;
   // }
+  return str;
+}
+
+std::string UciOption::strWithCurrentValue() const {
+  std::string str = "option name " + nameID + " type ";
+  switch (type) {
+    case CHECK:
+      str += "check current " + currentValue;
+      break;
+    case SPIN:
+      str += "spin current " + currentValue;
+      break;
+    case COMBO:
+      str += "combo current " + currentValue;
+      break;
+    case BUTTON:
+      str += "button";
+      break;
+    case STRING:
+      str += "string current " + currentValue;
+      break;
+  }
   return str;
 }
 

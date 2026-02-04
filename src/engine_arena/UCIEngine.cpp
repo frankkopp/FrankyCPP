@@ -298,10 +298,13 @@ std::map<std::string, std::string> UCIEngine::getOptions() {
     return options;
   }
 
-  // Send uci command to get current option values
-  sendCommand("uci");
+  // Send getoptions command to get current option values
+  // Note: "getoptions" is a FrankyCPP extension for testing/debugging
+  // For standard UCI engines, use "uci" command and parse "default" values
+  sendCommand("getoptions");
 
-  // Read response until uciok
+  // Read response - each line is: "option name <name> type <type> current <value>"
+  // Terminated by "optionsok" (similar to "uciok" for "uci" command)
   const auto deadline = steady_clock::now() + milliseconds(5000);
 
   while (steady_clock::now() < deadline) {
@@ -312,12 +315,17 @@ std::map<std::string, std::string> UCIEngine::getOptions() {
       break; // Timeout or error
     }
 
-    // Parse: "option name <name> type <type> default <value> [current <value>] ..."
-    // Note: FrankyCPP extends UCI with "current" field for debugging
-    //       Stockfish and most engines only have "default"
-    if (line.find("option name ") == 0) {
+    // Check for termination signal (use find to handle log prefixes)
+    if (line.find("optionsok") != std::string::npos) {
+      break;
+    }
+
+    // Parse: "option name <name> type <type> current <value>"
+    // Use find to handle log prefixes like "[timestamp] >> option name ..."
+    size_t optionNamePos = line.find("option name ");
+    if (optionNamePos != std::string::npos) {
       // Find the positions of key markers
-      size_t nameStart = 12; // After "option name "
+      size_t nameStart = optionNamePos + 12; // After "option name "
       size_t typePos = line.find(" type ", nameStart);
 
       if (typePos == std::string::npos) {
@@ -327,14 +335,13 @@ std::map<std::string, std::string> UCIEngine::getOptions() {
       // Extract option name
       std::string name = line.substr(nameStart, typePos - nameStart);
 
-      // Try to find "current" keyword first (FrankyCPP extension - most accurate)
+      // Find "current" keyword (getoptions always provides this)
       size_t currentPos = line.find(" current ", typePos);
 
       if (currentPos != std::string::npos) {
-        // FrankyCPP style: use "current" field (actual current value)
         size_t valueStart = currentPos + 9; // After " current "
 
-        // Find end of value (end of line or next space)
+        // Find end of value (end of line or whitespace)
         size_t valueEnd = line.find_first_of(" \t\r\n", valueStart);
 
         std::string value;
@@ -348,43 +355,8 @@ std::map<std::string, std::string> UCIEngine::getOptions() {
         value.erase(value.find_last_not_of(" \t\r\n") + 1);
 
         options[name] = value;
-      } else {
-        // Standard UCI: use "default" field (may not reflect changes)
-        size_t defaultPos = line.find(" default ", typePos);
-
-        if (defaultPos != std::string::npos) {
-          size_t valueStart = defaultPos + 9; // After " default "
-
-          // Find end of value (next UCI keyword or end of line)
-          size_t valueEnd = line.find(" min ", valueStart);
-          if (valueEnd == std::string::npos) {
-            valueEnd = line.find(" max ", valueStart);
-          }
-          if (valueEnd == std::string::npos) {
-            valueEnd = line.find(" var ", valueStart);
-          }
-          if (valueEnd == std::string::npos) {
-            valueEnd = line.find(" current ", valueStart); // In case current comes after default
-          }
-
-          std::string value;
-          if (valueEnd != std::string::npos) {
-            value = line.substr(valueStart, valueEnd - valueStart);
-          } else {
-            value = line.substr(valueStart);
-          }
-
-          // Trim trailing whitespace
-          value.erase(value.find_last_not_of(" \t\r\n") + 1);
-
-          options[name] = value;
-        }
       }
-    }
-
-    // Check for uciok
-    if (line.find("uciok") != std::string::npos) {
-      break;
+      // Note: Button options have no "current" field, so they won't be added to the map
     }
   }
 

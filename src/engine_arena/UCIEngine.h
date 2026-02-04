@@ -148,20 +148,16 @@ public:
   void setUciOptions(const std::string& options);
 
   /// Get current option values from engine
-  /// Sends "uci" command again and parses "option" lines to extract current values.
+  /// Sends "getoptions" command (FrankyCPP extension) and parses response.
   ///
-  /// FrankyCPP Extension: Prefers "current" field if available (non-standard but accurate)
-  /// Standard UCI: Falls back to "default" field (may not reflect changes for other engines)
+  /// FrankyCPP Extension: Uses "getoptions" command which reports current values
+  /// Format: option name <name> type <type> current <value>
   ///
-  /// Examples:
-  ///   FrankyCPP: option name Hash type spin default 64 min 0 max 4096 current 512
-  ///   Stockfish: option name Hash type spin default 16 min 1 max 33554432
+  /// Note: This only works with FrankyCPP. For standard UCI engines, you would
+  ///       need to send "uci" and parse "default" values, which may not reflect
+  ///       changes made via setoption commands.
   ///
-  /// Note: For standard UCI engines (like Stockfish), "default" may not reflect changes.
-  ///       After setting options, the returned values may still show original defaults.
-  ///       This is a limitation of the UCI protocol - no standard way to query current values.
-  ///
-  /// @return Map of option names to current values (or defaults for standard engines)
+  /// @return Map of option names to current values
   std::map<std::string, std::string> getOptions();
 
 private:
