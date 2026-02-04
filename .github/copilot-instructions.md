@@ -373,6 +373,64 @@ $env:VAR = "value"
 [System.Environment]::SetEnvironmentVariable('VAR','value','User')
 ```
 
+### Git Operations
+
+**CRITICAL: Avoid commands that pause for user input!**
+
+#### ✅ Safe Git Commands (No User Input)
+```powershell
+# Check status (always safe)
+git status
+git status --short
+
+# Show commit history (use flags to prevent paging)
+git log --oneline -5
+git log --oneline --graph -10
+
+# Show specific commit (use --no-pager or limit output)
+git --no-pager log -1
+git --no-pager show --stat HEAD
+
+# Check diff (use --no-pager for safety)
+git --no-pager diff
+git --no-pager diff --cached
+```
+
+#### ❌ Commands That Pause for Input (AVOID in automation)
+```powershell
+# These will pause if output is too long:
+git log              # Opens pager (less/more)
+git show             # Opens pager
+git diff             # Opens pager for large diffs
+git log -1 --stat    # May open pager
+
+# Use --no-pager prefix or limit output:
+git --no-pager log
+git log --oneline -5
+```
+
+#### Verifying Commits
+
+**After running `git commit`, verify with these safe commands:**
+```powershell
+# Method 1: Check if files are no longer staged (best)
+git status --short
+# Empty output or no 'M' prefix on committed files = success
+
+# Method 2: Quick commit verification
+git --no-pager log --oneline -1
+# Shows the latest commit hash and message
+
+# Method 3: Show commit details (safe)
+git --no-pager show --stat HEAD
+# Shows commit with file changes, no paging
+```
+
+**What to check:**
+- `git status --short` shows NO staged changes (files committed successfully)
+- If files still appear as 'M' (modified) or 'A' (added), commit may have failed
+- Empty output or only untracked files = commit successful
+
 ---
 
 ## Common Tasks
