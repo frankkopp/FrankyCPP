@@ -52,13 +52,21 @@ See **[docs/BUILD_GUIDE.md](docs/BUILD_GUIDE.md)** for complete instructions.
 ```
 
 **Features:**
-- 🎯 EPD tactical test suites (WAC, STS, etc.)
+- 🎯 EPD tactical test suites (WAC, STS, etc.) via **external UCI engines**
 - ⚔️ Automated engine matches via cutechess-cli
 - 📊 Version comparison with detailed reports
 - 💾 JSON result persistence for historical tracking
+- 🔧 Flexible engine configuration (UCI options, command-line args, position isolation)
+
+**External UCI Engine Testing:**
+- All test suites use external UCI engines for production-like testing
+- Supports any UCI-compliant engine (FrankyCPP, Stockfish, etc.)
+- Configure via `config/arena.yaml` with `enginePath`, `uciOptions`, and more
+- Position isolation ensures fair comparisons between versions
 
 **Documentation:** See **[docs/arena/](docs/arena/)** for complete guide:
 - [Quick Start](docs/arena/README.md)
+- [External Engine Testing](docs/arena/External_Engine_Testing.md) - **Comprehensive guide**
 - [Configuration Reference](docs/arena/Configuration.md)
 - [Result Analysis](docs/arena/Results.md)
 - [Development Guide](docs/arena/Development.md)
@@ -71,12 +79,12 @@ See **[docs/BUILD_GUIDE.md](docs/BUILD_GUIDE.md)** for complete instructions.
 
 ### Platform Support
 
-| Platform | Compiler | Status | Tests |
-|----------|----------|--------|-------|
-| **Windows** | MSVC 2022 | ✅ Tested | 266/266 |
-| **Linux/WSL** | GCC 13+ | ✅ Tested | 266/266 |
-| **Linux/WSL** | Clang 18+ | ✅ Tested | 266/266 |
-| **macOS** | Clang 18+ | 🔜 Ready | Not tested |
+| Platform      | Compiler  | Status   | Tests      |
+|---------------|-----------|----------|------------|
+| **Windows**   | MSVC 2022 | ✅ Tested | 266/266    |
+| **Linux/WSL** | GCC 13+   | ✅ Tested | 266/266    |
+| **Linux/WSL** | Clang 18+ | ✅ Tested | 266/266    |
+| **macOS**     | Clang 18+ | 🔜 Ready | Not tested |
 
 ### Technology Stack
 

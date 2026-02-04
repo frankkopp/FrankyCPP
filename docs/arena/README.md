@@ -194,15 +194,33 @@ results/
 
 **Timestamp Format:** `YYYYMMDD_HHMMSS` for sortability
 
----
-
 ## Configuration
+
+**Location:** `config/arena.yaml`
+
+**Important:** All test suites now require an external UCI engine executable path. The Arena tests engines via UCI protocol for consistent, production-like testing.
+
+**Key Configuration Fields:**
 
 Edit `config/arena.yaml` to customize:
 
-- **Test suites:** EPD file paths, time limits, depth limits
+- **Test suites:** EPD file paths, time limits, depth limits, **engine paths** (required)
 - **Matches:** Engine paths, opening books, time controls, rounds
 - **Paths:** Results directory, cutechess-cli location
+- **Engine options:** Command-line args, UCI options, position isolation
+
+**Minimal Test Suite Example:**
+```yaml
+testSuites:
+  - name: "franky_tests"
+    epdPath: "test/testsets/franky_tests.epd"
+    timePerMove: 5000
+    maxDepth: 30
+    enginePath: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+    isolatePositions: true
+    commandLineArgs: ""
+    uciOptions: "OwnBook=false"
+```
 
 See [Configuration.md](Configuration.md) for detailed reference.
 
@@ -272,6 +290,7 @@ Examples:
 
 ## Next Steps
 
+- **[External_Engine_Testing.md](External_Engine_Testing.md)** - Complete guide to external UCI engine testing
 - **[Configuration.md](Configuration.md)** - Detailed configuration reference
 - **[Results.md](Results.md)** - Result file format and analysis
 - **[Development.md](Development.md)** - Extending the arena framework

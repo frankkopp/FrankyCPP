@@ -140,6 +140,11 @@ testSuites:
     epdPath: "test/testsets/wac.epd"        # Path to EPD file
     timePerMove: 5000                        # Milliseconds per position
     maxDepth: 30                             # Maximum search depth
+    enginePath: "path/to/engine.exe"        # External UCI engine (required)
+    isolatePositions: true                   # Clear state between positions (optional)
+    commandLineArgs: ""                      # Engine startup arguments (optional)
+    uciOptions: ""                           # UCI setoption commands (optional)
+    debugMode: false                         # Enable UCI debug output (optional)
 ```
 
 ### Fields
@@ -251,33 +256,281 @@ maxDepth: 100    # Effectively unlimited (time controls first)
 
 ---
 
+#### `enginePath` (Required)
+
+**Type:** String (path)
+
+**Purpose:** Path to external UCI chess engine executable
+
+**Usage:** All test suites now run with external UCI engines for consistent testing
+
+**Format:** Same as `cutechessPath` - forward slashes work on all platforms
+
+**Examples:**
+```yaml
+# Current version (built by CMake)
+enginePath: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+
+# Previous release version
+enginePath: "Release/FrankyCPP_V1.0/FrankyCPP_v1.0.exe"
+
+# Absolute path
+enginePath: "D:/Games/Engines/stockfish.exe"
+
+# Linux
+enginePath: "/usr/local/bin/gnuchess"
+```
+
+**Requirements:**
+- Engine must support UCI protocol
+- Must respond to: `uci`, `uciok`, `isready`, `readyok`, `position`, `go`, `bestmove`
+- Engine process is started once per suite, reused across positions
+
+**Validation:** Arena checks if file exists before running suite
+
+---
+
+#### `isolatePositions` (Optional)
+
+**Type:** Boolean
+
+**Purpose:** Control whether engine state is cleared between test positions
+
+**Default:** `true` (recommended)
+
+**Values:**
+```yaml
+isolatePositions: true    # Send "ucinewgame" between positions (default)
+isolatePositions: false   # Reuse engine state (TT + history)
+```
+
+**Effect:**
+- `true`: Sends `ucinewgame` before each position
+  - Clears transposition table
+  - Clears history heuristics
+  - Ensures fair position-by-position comparison
+  - Slightly slower but more accurate
+- `false`: Keeps engine state across positions
+  - Faster execution (no state reset)
+  - TT/history from previous positions may affect results
+  - Only use for speed or if you understand implications
+
+**When to use `false`:**
+- Quick regression testing (speed over precision)
+- Testing with engines that have expensive state reset
+- You explicitly want to test TT/history carryover effects
+
+**Recommendation:** Leave as `true` for accurate version comparisons
+
+---
+
+#### `commandLineArgs` (Optional)
+
+**Type:** String
+
+**Purpose:** Command-line arguments passed when starting the engine
+
+**Default:** `""` (no arguments)
+
+**Timing:** Passed BEFORE UCI initialization
+
+**Format:** Exactly as you would type in a shell
+
+**Examples:**
+```yaml
+commandLineArgs: ""                        # No arguments (default)
+commandLineArgs: "--nobook"                # Single argument
+commandLineArgs: "--nobook --threads 4"    # Multiple arguments
+commandLineArgs: "-hash 256 -book off"     # Engine-specific syntax
+```
+
+**FrankyCPP Arguments:**
+```yaml
+commandLineArgs: "--nobook"                # Disable opening book
+commandLineArgs: "--help"                  # Show help (testing)
+```
+
+**Use Cases:**
+- Engine-specific options not available via UCI
+- Legacy engines with non-standard option syntax
+- Debug flags or logging control
+
+**Warning:** Engine-specific syntax - not portable across engines
+
+**Recommendation:** Use `uciOptions` instead when possible (standard UCI protocol)
+
+---
+
+#### `uciOptions` (Optional)
+
+**Type:** String (semicolon-separated key=value pairs)
+
+**Purpose:** UCI setoption commands sent after engine initialization
+
+**Default:** `""` (no options, use engine defaults)
+
+**Timing:** Sent AFTER UCI initialization (after `uciok`)
+
+**Format:** `"name1=value1; name2=value2; name3=value3"`
+
+**Examples:**
+```yaml
+# Disable opening book
+uciOptions: "OwnBook=false"
+
+# Multiple options
+uciOptions: "OwnBook=false; Hash=256"
+
+# Full configuration
+uciOptions: "Hash=512; Threads=4; Ponder=false; MultiPV=1"
+```
+
+**UCI Standard Options:**
+| Option | Type | Description |
+|--------|------|-------------|
+| `Hash` | Integer | Hash table size in MB |
+| `Threads` | Integer | Number of search threads |
+| `Ponder` | Boolean | Think on opponent's time |
+| `MultiPV` | Integer | Number of principal variations |
+| `OwnBook` | Boolean | Use engine's opening book |
+
+**FrankyCPP Supported Options:**
+- All UCI standard options above
+- Additional engine-specific options (see `src/engine/UciOptions.cpp`)
+
+**Format Rules:**
+- Use semicolon (`;`) to separate options (required for multi-word names)
+- Whitespace around `=` and `;` is trimmed automatically
+- Option names CAN contain spaces per UCI spec (though FrankyCPP uses single-word names)
+- No quotes around values (even if they contain spaces)
+
+**Parser Behavior:**
+- Invalid format warnings logged but continue processing
+- Empty names or values are skipped
+- Sends: `setoption name <name> value <value>` to engine
+
+**commandLineArgs vs uciOptions:**
+| Feature | commandLineArgs | uciOptions |
+|---------|----------------|------------|
+| **Timing** | Before UCI init | After UCI init |
+| **Format** | Engine-specific | Standard UCI protocol |
+| **Portability** | Engine-specific | Works across all UCI engines |
+| **Use case** | Non-UCI options | Standard configuration |
+| **Recommendation** | Avoid if possible | Preferred method |
+
+**Best Practice:** Use `uciOptions` for all standard UCI options, reserve `commandLineArgs` only for engine-specific startup flags not available via UCI.
+
+---
+
+#### `debugMode` (Optional)
+
+**Type:** Boolean
+
+**Purpose:** Enable detailed UCI communication logging for test suite
+
+**Default:** `false`
+
+**Effect:** Prints all UCI commands sent to/received from the engine
+
+**Examples:**
+```yaml
+debugMode: false    # Normal operation (clean output)
+debugMode: true     # Verbose UCI protocol logging
+```
+
+**Output Example (debugMode: true):**
+```
+[UCI] -> uci
+[UCI] <- id name FrankyCPP v1.1
+[UCI] <- id author Frank Kopp
+[UCI] <- uciok
+[UCI] -> isready
+[UCI] <- readyok
+[UCI] -> position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+[UCI] -> go movetime 5000 depth 30
+[UCI] <- info depth 1 score cp 25 nodes 123 time 5
+[UCI] <- bestmove e2e4
+```
+
+**Use Cases:**
+- Debugging engine UCI implementation issues
+- Investigating unexpected move selection
+- Verifying engine receives correct FEN strings
+- Understanding search behavior
+
+**Warning:** Very verbose - produces large amounts of output
+
+---
+
 ### Complete Test Suite Example
 
 ```yaml
 testSuites:
-  # Quick regression test
-  - name: "franky_tests"
+  # Quick regression test with current build
+  - name: "franky_tests_v1.1"
     epdPath: "test/testsets/franky_tests.epd"
     timePerMove: 2000
     maxDepth: 30
+    enginePath: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+    isolatePositions: true
+    commandLineArgs: ""
+    uciOptions: "OwnBook=false"
+    debugMode: false
+
+  # Previous version for comparison
+  - name: "franky_tests_v1.0"
+    epdPath: "test/testsets/franky_tests.epd"
+    timePerMove: 2000
+    maxDepth: 30
+    enginePath: "Release/FrankyCPP_V1.0/FrankyCPP_v1.0.exe"
+    isolatePositions: true
+    commandLineArgs: ""
+    uciOptions: "OwnBook=false; Hash=128"
+    debugMode: false
 
   # Standard tactical test
   - name: "WAC"
     epdPath: "test/testsets/wac.epd"
     timePerMove: 5000
     maxDepth: 30
+    enginePath: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+    isolatePositions: true
+    commandLineArgs: ""
+    uciOptions: "OwnBook=false"
+    debugMode: false
 
-  # Strategic test suite
+  # Strategic test with longer time
   - name: "STS"
     epdPath: "test/testsets/STS1-STS15_LAN.EPD"
     timePerMove: 10000
     maxDepth: 40
+    enginePath: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+    isolatePositions: true
+    commandLineArgs: ""
+    uciOptions: "OwnBook=false; Hash=256"
+    debugMode: false
 
-  # Mate problems
+  # Mate problems with deep search
   - name: "mate_test"
     epdPath: "test/testsets/mate_test_suite.epd"
     timePerMove: 15000
     maxDepth: 50
+    enginePath: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+    isolatePositions: true
+    commandLineArgs: ""
+    uciOptions: "OwnBook=false"
+    debugMode: false
+
+  # Test with external engine (Stockfish)
+  - name: "stockfish_WAC"
+    epdPath: "test/testsets/wac.epd"
+    timePerMove: 5000
+    maxDepth: 30
+    enginePath: "D:/Engines/stockfish.exe"
+    isolatePositions: true
+    commandLineArgs: ""
+    uciOptions: "Hash=512; Threads=4"
+    debugMode: false
 ```
 
 ---
