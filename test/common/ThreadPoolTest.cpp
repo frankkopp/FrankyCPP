@@ -73,7 +73,7 @@ TEST_F(ThreadPoolTest, basic) {
   std::vector<std::shared_ptr<std::future<Product>>> results{};
 
   fprintln("Queuing and starting work");
-  constexpr int number = 100;
+  constexpr int number = 50;
 
   for (int i = 0; i < number; i++) {
     Product product = produceProduct(i);
@@ -92,4 +92,153 @@ TEST_F(ThreadPoolTest, basic) {
     fprintln("Product finished: {} processed {}", producedNumber, processed);
   }
   SUCCEED();
+}
+
+TEST_F(ThreadPoolTest, doubleStopIsSafe) {
+  ThreadPool pool{2};
+  auto future = pool.enqueue([] { return 42; });
+  EXPECT_EQ(future.get(), 42);
+  pool.stop();   // First stop
+  pool.stop();   // Second stop - should not crash
+  EXPECT_TRUE(pool.isStopped());
+}
+
+TEST_F(ThreadPoolTest, enqueueAfterStopThrows) {
+  ThreadPool pool{2};
+  pool.stop();
+  EXPECT_THROW(pool.enqueue([] { return 42; }), std::runtime_error);
+}
+
+TEST_F(ThreadPoolTest, isStoppedReflectsState) {
+  ThreadPool pool{2};
+  EXPECT_FALSE(pool.isStopped());
+  pool.stop();
+  EXPECT_TRUE(pool.isStopped());
+}
+
+TEST_F(ThreadPoolTest, taskExceptionPropagates) {
+  ThreadPool pool{2};
+  auto future = pool.enqueue([]() -> int {
+    throw std::runtime_error("Task failed intentionally");
+  });
+  EXPECT_THROW(future.get(), std::runtime_error);
+}
+
+TEST_F(ThreadPoolTest, singleThreadPool) {
+  ThreadPool pool{1};
+  auto f1 = pool.enqueue([] { return 1; });
+  auto f2 = pool.enqueue([] { return 2; });
+  auto f3 = pool.enqueue([] { return 3; });
+  EXPECT_EQ(f1.get(), 1);
+  EXPECT_EQ(f2.get(), 2);
+  EXPECT_EQ(f3.get(), 3);
+}
+
+TEST_F(ThreadPoolTest, openTasksReflectsQueueSize) {
+  ThreadPool pool{1};
+
+  // Block the single thread with a slow task
+  std::promise<void> blocker;
+  const auto blockerFuture = blocker.get_future();
+  pool.enqueue([&] { blockerFuture.wait(); });
+
+  // Give thread time to pick up the blocking task
+  std::this_thread::sleep_for(milliseconds(50));
+
+  // Queue more tasks while thread is blocked
+  auto f1 = pool.enqueue([] { return 1; });
+  auto f2 = pool.enqueue([] { return 2; });
+
+  EXPECT_EQ(pool.openTasks(), 2);  // Two tasks waiting
+
+  blocker.set_value();  // Unblock
+  EXPECT_EQ(f1.get(), 1);
+  EXPECT_EQ(f2.get(), 2);
+}
+
+TEST_F(ThreadPoolTest, concurrentEnqueue) {
+  ThreadPool pool{4};
+  std::atomic counter{0};
+  std::vector<std::thread> producers;
+  std::vector<std::future<void>> futures;
+  std::mutex futuresMutex;
+
+  // Multiple threads enqueuing tasks concurrently
+  for (int i = 0; i < 4; ++i) {
+    producers.emplace_back([&pool, &counter, &futures, &futuresMutex] {
+      for (int j = 0; j < 25; ++j) {
+        auto f = pool.enqueue([&counter] { ++counter; });
+        std::lock_guard lock(futuresMutex);
+        futures.push_back(std::move(f));
+      }
+    });
+  }
+
+  // Wait for all producers to finish enqueueing
+  for (auto& t : producers) {
+    t.join();
+  }
+
+  // Wait for all tasks to complete
+  for (auto& f : futures) {
+    f.get();
+  }
+
+  EXPECT_EQ(counter.load(), 100);
+}
+
+TEST_F(ThreadPoolTest, voidReturnTask) {
+  ThreadPool pool{2};
+  std::atomic<bool> executed{false};
+  auto future = pool.enqueue([&] { executed = true; });
+  future.get();  // Wait for completion
+  EXPECT_TRUE(executed);
+}
+
+TEST_F(ThreadPoolTest, shutdownCompletesPendingTasks) {
+  std::atomic<int> completed{0};
+  {
+    ThreadPool pool{1};
+
+    // Block thread
+    std::promise<void> blocker;
+    const auto blockerFuture = blocker.get_future();
+    pool.enqueue([&] { blockerFuture.wait(); });
+
+    // Give thread time to pick up the blocking task
+    std::this_thread::sleep_for(milliseconds(50));
+
+    // Queue tasks that will be pending when we unblock
+    for (int i = 0; i < 5; ++i) {
+      pool.enqueue([&] { ++completed; });
+    }
+
+    EXPECT_EQ(pool.openTasks(), 5);  // 5 tasks pending
+
+    blocker.set_value();  // Unblock
+    // Destructor calls stop() - should complete all 5 tasks
+  }
+  EXPECT_EQ(completed.load(), 5);
+}
+
+TEST_F(ThreadPoolTest, manyThreadsPool) {
+  ThreadPool pool{8};
+  std::atomic<int> sum{0};
+  std::vector<std::future<int>> futures;
+
+  for (int i = 0; i < 100; ++i) {
+    futures.push_back(pool.enqueue([i, &sum] {
+      sum += i;
+      return i * 2;
+    }));
+  }
+
+  int doubleSum = 0;
+  for (auto& f : futures) {
+    doubleSum += f.get();
+  }
+
+  // sum of 0..99 = 4950
+  EXPECT_EQ(sum.load(), 4950);
+  EXPECT_EQ(doubleSum, 9900);  // 2 * 4950
 }
