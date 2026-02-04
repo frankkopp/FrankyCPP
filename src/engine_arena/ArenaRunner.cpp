@@ -90,17 +90,16 @@ void ArenaRunner::runTestSuitesOnly() {
   std::cout << "Number of suites: " << arenaConfig.testSuites.size() << std::endl;
   std::cout << "===================================================================" << std::endl;
 
-  auto results = testSuiteRunner.runAllTestSuites();
+  // Pass callback that saves results immediately after each suite completes
+  const auto results = testSuiteRunner.runAllTestSuites(
+      [this](const TestSuiteResult& result) {
+        std::string jsonPath = resultWriter.writeTestSuiteResult(result);
+        std::cout << "  -> Saved: " << jsonPath << std::endl;
+      });
 
-  // Save results
-  std::cout << "\nSaving test suite results..." << std::endl;
-  for (const auto& result : results) {
-    std::string jsonPath = resultWriter.writeTestSuiteResult(result);
-    std::cout << "  Saved: " << jsonPath << std::endl;
-  }
-
+  // Results already saved via callback, just print summary
   std::cout << "\n===================================================================" << std::endl;
-  std::cout << "Test Suites Complete" << std::endl;
+  std::cout << "Test Suites Complete - " << results.size() << " results saved" << std::endl;
   std::cout << "===================================================================" << std::endl;
 }
 

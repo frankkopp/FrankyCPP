@@ -158,7 +158,7 @@ void ArenaRunner::runTestSuitesOnly() {
 4. Check no duplicate saves occur
 
 ### Status
-- [ ] Implementation complete
+- [x] Implementation complete
 - [ ] Tested with multiple suites
 - [ ] Crash resilience verified
 

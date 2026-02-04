@@ -82,9 +82,14 @@
 #include "ArenaConfig.h"
 #include "ArenaResults.h"
 
+#include <functional>
 #include <vector>
 
 namespace arena {
+
+/// Callback invoked when a test suite completes
+/// @param result The completed test suite result
+using SuiteResultCallback = std::function<void(const TestSuiteResult&)>;
 
 /// Executes EPD test suites against external UCI engines
 class TestSuiteRunner {
@@ -100,9 +105,11 @@ public:
   TestSuiteResult runTestSuite(const TestSuiteConfig& suiteConfig) const;
 
   /// Runs all configured test suites sequentially
+  /// @param onSuiteComplete Optional callback invoked after each suite completes
   /// @return Vector of TestSuiteResult, one per configured suite
   /// @throws std::runtime_error if any suite fails
-  std::vector<TestSuiteResult> runAllTestSuites() const;
+  std::vector<TestSuiteResult> runAllTestSuites(
+      const SuiteResultCallback& onSuiteComplete = nullptr) const;
 
 private:
   const ArenaConfig& arenaConfig; ///< Reference to arena configuration

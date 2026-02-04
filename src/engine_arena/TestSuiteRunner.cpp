@@ -238,7 +238,8 @@ TestSuiteResult TestSuiteRunner::runTestSuite(const TestSuiteConfig& suiteConfig
   return result;
 }
 
-std::vector<TestSuiteResult> TestSuiteRunner::runAllTestSuites() const {
+std::vector<TestSuiteResult> TestSuiteRunner::runAllTestSuites(
+    const SuiteResultCallback& onSuiteComplete) const {
   std::vector<TestSuiteResult> results;
   results.reserve(arenaConfig.testSuites.size());
 
@@ -256,6 +257,12 @@ std::vector<TestSuiteResult> TestSuiteRunner::runAllTestSuites() const {
 
     try {
       TestSuiteResult result = runTestSuite(suiteConfig);
+
+      // Invoke callback immediately after suite completes (for crash resilience)
+      if (onSuiteComplete) {
+        onSuiteComplete(result);
+      }
+
       results.push_back(std::move(result));
     } catch (const std::exception& e) {
       std::cerr << "\nERROR: Failed to run test suite '" << suiteConfig.name << "': "

@@ -22,6 +22,7 @@
 //=============================================================================
 
 #include "UCIEngine.h"
+#include "common/stringutil.h"
 
 #include <atomic>
 #include <chrono>
@@ -389,11 +390,13 @@ bool UCIEngine::readLine(std::string& line, milliseconds timeoutMs) {
 
   // Boost.Process pipes are blocking, so we need to use a thread with timeout
   // to avoid hanging forever if the engine doesn't respond
-  std::atomic<bool> completed{false};
-  std::atomic<bool> success{false};
+  std::atomic completed{false};
+  std::atomic success{false};
 
   std::thread readerThread([&]() {
     if (std::getline(*pipeOut, line)) {
+      // Trim whitespace including trailing carriage return (Windows CRLF)
+      line = trimFast(line);
       success = true;
     }
     completed = true;
