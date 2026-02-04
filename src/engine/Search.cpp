@@ -692,6 +692,12 @@ Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Valu
 Value Search::search(Position& p, const Depth depth, const Depth ply, Value alpha, Value beta, const Node_Type isPv, const Do_Null doNull) {
   //  LOG__DEBUG(Logger::get().SEARCH_LOG, "Search {} {} {}", depth, ply, str(statistics.currentVariation));
 
+  // Clear PV for this node to prevent stale data from previous iterations/branches
+  // from being propagated up via savePV(). Stale PV data can contain moves from
+  // different positions that are illegal in the current position.
+  // FIXME: Verify that this is sufficient to prevent stale PV data.
+  pv[ply].clear();
+
   // Enter quiescence search when depth == 0 or max ply has been reached
   if (depth == 0 || ply >= MAX_DEPTH) {
     const auto value = qsearch(p, ply, alpha, beta, isPv);
@@ -1235,6 +1241,9 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, const Node_Type isPv) {
   //  LOG__DEBUG(Logger::get().SEARCH_LOG, "QSearch {} {}", ply, str(statistics.currentVariation));
 
+  // Clear PV for this node (same reason as in search())
+  pv[ply].clear();
+
   if (statistics.currentExtraSearchDepth < ply) { statistics.currentExtraSearchDepth = ply; }
 
   // if we have deactivated qsearch or we have reached our maximum depth
@@ -1539,8 +1548,19 @@ void Search::getPvLine(Position& p, MoveList& pvList, const Depth depth) const {
   int counter  = 0;
   const auto *ttMatch = tt->getMatch(p.getZobristKey());
   while (ttMatch != nullptr && ttMatch->move != MOVE_NONE && counter < depth) {
-    pvList.push_back(static_cast<Move>(ttMatch->move));
-    p.doMove(static_cast<Move>(ttMatch->move));
+    const Move ttMove = static_cast<Move>(ttMatch->move);
+
+    // Sanity check: detect hash collisions by verifying piece exists and is correct color
+    // This prevents executing moves from wrong positions that happen to have same Zobrist key.
+    // Cost: ~2 array lookups per move (~5 instructions, negligible overhead)
+    if (p.getPiece(ttMove.from()) == PIECE_NONE ||
+        colorOf(p.getPiece(ttMove.from())) != p.getNextPlayer()) {
+      // Hash collision detected - stop PV extraction
+      break;
+    }
+
+    pvList.push_back(ttMove);
+    p.doMove(ttMove);
     counter++;
     ttMatch = tt->getMatch(p.getZobristKey());
   }
