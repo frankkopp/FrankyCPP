@@ -194,14 +194,14 @@ matches:
 #    concurrency: 4  # Number of games to run in parallel (1=sequential, 2+=parallel, faster but non-deterministic)
 #    outputPgn: "results/matches/v1.1_vs_v1.0_debug.pgn"
 
-- name: "Franky_v1.1_vs_v0.5_blitz"
-  engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
-  engine2Path: "Release/FrankyCPP_V0.5/FrankyCPP_v0.5.exe"
-  openingBook: "books/8moves_GM_LB.pgn"  # PGN format required for cutechess-cli
-  timeControl: "60+0.6"  # Format: "base+increment"
-  rounds: 10
-  concurrency: 4  # Run 4 games in parallel for faster execution
-  outputPgn: "results/matches/v1.1_vs_v0.5_blitz.pgn"
+#- name: "Franky_v1.1_vs_v0.5_blitz"
+#  engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+#  engine2Path: "Release/FrankyCPP_V0.5/FrankyCPP_v0.5.exe"
+#  openingBook: "books/8moves_GM_LB.pgn"  # PGN format required for cutechess-cli
+#  timeControl: "60+0.6"  # Format: "base+increment"
+#  rounds: 10
+#  concurrency: 4  # Run 4 games in parallel for faster execution
+#  outputPgn: "results/matches/v1.1_vs_v0.5_blitz.pgn"
 
 #- name: "v1.1_vs_v1.0_blitz"
 #  engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
@@ -221,14 +221,14 @@ matches:
 #  concurrency: 4
 #  outputPgn: "results/matches/v1.1_vs_FrankyGo_blitz.pgn"
 #
-#- name: "v1.1_vs_Stockfish_blitz"
-#  engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
-#  engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
-#  openingBook: "books/8moves_GM_LB.pgn"
-#  timeControl: "60+0.6"
-#  rounds: 10
-#  concurrency: 4
-#  outputPgn: "results/matches/v1.1_vs_Stockfish_blitz.pgn"
+  - name: "v1.1_vs_Stockfish_blitz"
+    engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+    engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
+    openingBook: "books/8moves_GM_LB.pgn"
+    timeControl: "60+0.6"
+    rounds: 10
+    concurrency: 4
+    outputPgn: "results/matches/v1.1_vs_Stockfish_blitz.pgn"
 
   # - name: "v1.1_vs_v1.0_rapid"
   #   engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
