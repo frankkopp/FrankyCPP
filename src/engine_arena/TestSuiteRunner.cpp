@@ -31,9 +31,53 @@
 #include <iomanip>
 #include <iostream>
 #include <mutex>
+#include <regex>
 #include <sstream>
 
 namespace arena {
+
+  namespace {
+    /// Parse engine name string into separate name and version components
+    /// Input: "FrankyCPP v0.5" or "FrankyGo 1.2.3" or "Stockfish 16"
+    /// Returns: pair<name, version> e.g., {"FrankyCPP", "v0.5"}
+    std::pair<std::string, std::string> parseEngineName(const std::string& fullName) {
+      // Try to match pattern: "Name vX.Y" or "Name X.Y" or "Name vX.Y.Z"
+      std::regex versionPattern(R"(^(.+?)\s+(v?\d+(?:\.\d+)*(?:[.-]?\w+)?)$)");
+      std::smatch match;
+
+      if (std::regex_match(fullName, match, versionPattern)) {
+        return {match[1].str(), match[2].str()};
+      }
+
+      // No version found, return full name as name and empty version
+      return {fullName, ""};
+    }
+
+    /// Extract clean test suite name from config name
+    /// Input: "franky_tests_v0.5" or "WAC" or "mate_test_v1.1"
+    /// Returns: "franky_tests" or "WAC" or "mate_test"
+    /// Note: This is for backward compatibility with old-style config names
+    std::string extractTestSuiteName(const std::string& configName, const std::string& epdPath) {
+      // Prefer deriving from EPD filename if available
+      if (!epdPath.empty()) {
+        std::filesystem::path path(epdPath);
+        std::string stem = path.stem().string();
+        // Remove common suffixes like "_test", "_suite"
+        // But keep the meaningful name
+        return stem;
+      }
+
+      // Fall back to parsing config name - remove engine version suffixes
+      std::regex suffixPattern(R"(^(.+?)(?:_v\d+(?:\.\d+)*|_FrankyGo|_Stockfish)$)");
+      std::smatch match;
+
+      if (std::regex_match(configName, match, suffixPattern)) {
+        return match[1].str();
+      }
+
+      return configName;
+    }
+  }// anonymous namespace
 
   TestSuiteRunner::TestSuiteRunner(const ArenaConfig& config)
       : arenaConfig(config) {
@@ -98,7 +142,13 @@ namespace arena {
       totalNodes += result.totalNodes;
       totalTime += result.totalTimeMs;
 
-      std::cout << "  " << result.suiteName << ": "
+      // Include engine name and version in summary
+      std::string engineInfo = result.engineName;
+      if (!result.engineVersion.empty()) {
+        engineInfo += " " + result.engineVersion;
+      }
+
+      std::cout << "  " << result.testSuiteName << " (" << engineInfo << "): "
                 << result.passed << "/" << result.totalTests << " passed ("
                 << (result.totalTests > 0 ? (result.passed * 100.0 / result.totalTests) : 0.0)
                 << "%)" << std::endl;
@@ -141,16 +191,16 @@ namespace arena {
 
     // Initialize result structure
     TestSuiteResult result;
-    result.version     = arenaConfig.version;
-    result.suiteName   = suiteConfig.name;
-    result.timestamp   = getCurrentTimestamp();
-    result.enginePath  = suiteConfig.enginePath;
-    result.totalTests  = static_cast<int>(epdTests.size());
-    result.passed      = 0;
-    result.failed      = 0;
-    result.skipped     = 0;
-    result.totalNodes  = 0;
-    result.totalTimeMs = 0;
+    result.arenaVersion  = arenaConfig.version;
+    result.timestamp     = getCurrentTimestamp();
+    result.epdPath       = suiteConfig.epdPath;
+    result.enginePath    = suiteConfig.enginePath;
+    result.totalTests    = static_cast<int>(epdTests.size());
+    result.passed        = 0;
+    result.failed        = 0;
+    result.skipped       = 0;
+    result.totalNodes    = 0;
+    result.totalTimeMs   = 0;
 
     // Start external UCI engine
     std::cout << "\nStarting UCI engine..." << std::endl;
@@ -159,8 +209,27 @@ namespace arena {
     }
 
     UCIEngine engine(suiteConfig.enginePath, suiteConfig.commandLineArgs);
+
+    // Use configured engine version if provided, otherwise try to parse from UCI name
     result.engineName = engine.getEngineName();
-    std::cout << "Engine: " << result.engineName << std::endl;
+    if (!suiteConfig.engineVersion.empty()) {
+      result.engineVersion = suiteConfig.engineVersion;
+    } else {
+      // Fallback: try to parse version from UCI name (not reliable)
+      auto [parsedName, parsedVersion] = parseEngineName(engine.getEngineName());
+      result.engineName = parsedName;
+      result.engineVersion = parsedVersion;
+    }
+
+    // Extract clean test suite name
+    result.testSuiteName = extractTestSuiteName(suiteConfig.name, suiteConfig.epdPath);
+
+    std::cout << "Engine: " << result.engineName;
+    if (!result.engineVersion.empty()) {
+      std::cout << " " << result.engineVersion;
+    }
+    std::cout << std::endl;
+    std::cout << "Test Suite: " << result.testSuiteName << std::endl;
 
     // Configure engine options
     if (suiteConfig.debugMode) {
@@ -452,22 +521,39 @@ namespace arena {
 
     // Build final result
     TestSuiteResult result;
-    result.version     = arenaConfig.version;
-    result.suiteName   = suiteConfig.name;
-    result.timestamp   = getCurrentTimestamp();
-    result.engineName  = engineName;
-    result.enginePath  = suiteConfig.enginePath;
-    result.totalTests  = totalPositions;
-    result.passed      = passedCount;
-    result.failed      = failedCount;
-    result.skipped     = 0;
-    result.totalNodes  = totalNodes;
-    result.totalTimeMs = totalTimeMs;
-    result.details     = std::move(results);
+    result.arenaVersion  = arenaConfig.version;
+    result.timestamp     = getCurrentTimestamp();
+    result.testSuiteName = extractTestSuiteName(suiteConfig.name, suiteConfig.epdPath);
+    result.epdPath       = suiteConfig.epdPath;
+    result.enginePath    = suiteConfig.enginePath;
+
+    // Use configured engine version if provided, otherwise try to parse from UCI name
+    if (!suiteConfig.engineVersion.empty()) {
+      result.engineName = engineName;  // Use full UCI name
+      result.engineVersion = suiteConfig.engineVersion;
+    } else {
+      // Fallback: try to parse version from UCI name (not reliable)
+      auto [parsedEngineName, parsedEngineVersion] = parseEngineName(engineName);
+      result.engineName = parsedEngineName;
+      result.engineVersion = parsedEngineVersion;
+    }
+
+    result.totalTests    = totalPositions;
+    result.passed        = passedCount;
+    result.failed        = failedCount;
+    result.skipped       = 0;
+    result.totalNodes    = totalNodes;
+    result.totalTimeMs   = totalTimeMs;
+    result.details       = std::move(results);
 
     // Print summary
     std::cout << "\n------------------------------------------------------------------" << std::endl;
-    std::cout << "Test Suite Complete: " << suiteConfig.name << " (parallel)" << std::endl;
+    std::cout << "Test Suite Complete: " << result.testSuiteName << " (parallel)" << std::endl;
+    std::cout << "  Engine:       " << result.engineName;
+    if (!result.engineVersion.empty()) {
+      std::cout << " " << result.engineVersion;
+    }
+    std::cout << std::endl;
     std::cout << "  Total Tests:  " << result.totalTests << std::endl;
     std::cout << "  Passed:       " << result.passed << " ("
               << (result.totalTests > 0 ? (result.passed * 100.0 / result.totalTests) : 0.0)

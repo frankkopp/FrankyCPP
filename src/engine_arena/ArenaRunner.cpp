@@ -28,6 +28,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <regex>
 #include <set>
 #include <sstream>
 #include <stdexcept>
@@ -157,24 +158,20 @@ void ArenaRunner::compareVersions(const std::string& version1, const std::string
   std::cout << "===================================================================" << std::endl;
 }
 
-std::map<std::string, TestSuiteResult> ArenaRunner::loadTestSuiteResults(const std::string& version) {
+std::map<std::string, TestSuiteResult> ArenaRunner::loadTestSuiteResults(const std::string& engineId) {
   std::map<std::string, TestSuiteResult> results;
 
   const std::filesystem::path testsuitesDir = std::filesystem::path(arenaConfig.resultsDir) / "testsuites";
 
   if (!std::filesystem::exists(testsuitesDir)) {
-    std::cout << "  Warning: No testsuites directory found for " << version << std::endl;
+    std::cout << "  Warning: No testsuites directory found" << std::endl;
     return results;
   }
 
-  // Find all JSON files matching the version pattern: v1.1_suitename_timestamp.json
+  // Find all JSON files matching the engine identifier pattern
+  // Format: {TestSuite}_{EngineId}_{Timestamp}.json (e.g., WAC_FrankyCPP-v0.5_20260205.json)
   for (const auto& entry : std::filesystem::directory_iterator(testsuitesDir)) {
     if (entry.path().extension() != ".json") continue;
-
-    const std::string filename = entry.path().filename().string();
-
-    // Check if filename starts with the version prefix
-    if (filename.substr(0, version.length()) != version) continue;
 
     // Load JSON file
     try {
@@ -182,13 +179,25 @@ std::map<std::string, TestSuiteResult> ArenaRunner::loadTestSuiteResults(const s
       // NOLINTNEXTLINE - Clangd false positive about nlohmann::json template instantiation
       json data = json::parse(file);
 
-      // Parse TestSuiteResult from JSON
       TestSuiteResult result;
-      result.version = data["version"];
-      result.suiteName = data["suiteName"];
+
+      // Parse new JSON format
+      result.arenaVersion = data["arenaVersion"];
       result.timestamp = data["timestamp"];
+      result.testSuiteName = data["testSuite"]["name"];
+      result.epdPath = data["testSuite"]["epdPath"];
       result.engineName = data["engine"]["name"];
+      result.engineVersion = data["engine"]["version"];
       result.enginePath = data["engine"]["path"];
+
+      // Build engine identifier for matching
+      std::string resultEngineId = result.engineName + "-" + result.engineVersion;
+
+      // Check if this result matches the requested engine identifier
+      if (!engineId.empty() && resultEngineId.find(engineId) == std::string::npos &&
+          engineId.find(resultEngineId) == std::string::npos) {
+        continue;  // Skip non-matching engines
+      }
 
       // Parse summary section
       const auto& summary = data["summary"];
@@ -214,10 +223,16 @@ std::map<std::string, TestSuiteResult> ArenaRunner::loadTestSuiteResults(const s
         }
       }
 
-      results[result.suiteName] = result;
+      // Use testSuiteName + engineId as key
+      // If multiple results exist for same suite/engine, keep the latest
+      std::string key = result.testSuiteName + "_" + resultEngineId;
+      auto existing = results.find(key);
+      if (existing == results.end() || result.timestamp > existing->second.timestamp) {
+        results[key] = result;
+      }
 
     } catch (const std::exception& e) {
-      std::cerr << "  Warning: Failed to load " << filename << ": " << e.what() << std::endl;
+      std::cerr << "  Warning: Failed to load " << entry.path().filename().string() << ": " << e.what() << std::endl;
     }
   }
 

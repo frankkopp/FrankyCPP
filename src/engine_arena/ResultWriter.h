@@ -42,22 +42,32 @@
 //     comparisons/    - Version comparison reports (text)
 //
 // File Naming Convention:
-//   {version}_{name}_{timestamp}.json
-//   Example: v1.1_WAC_20260201_143022.json
+//   {TestSuite}_{EngineId}_{timestamp}.json
+//   Example: WAC_FrankyCPP-v0.5_20260201_143022.json
 //
 // Timestamp Format:
 //   YYYYMMDD_HHMMSS (sortable, no spaces)
 //
 // JSON Output Format (Test Suite):
 //   {
-//     "version": "v1.1",
-//     "suiteName": "WAC",
+//     "arenaVersion": "v1.1",
 //     "timestamp": "2026-02-01T14:30:22Z",
+//     "testSuite": {
+//       "name": "WAC",
+//       "epdPath": "test/testsets/wac.epd"
+//     },
+//     "engine": {
+//       "name": "FrankyCPP",
+//       "version": "v0.5",
+//       "path": "Release/FrankyCPP_V0.5/FrankyCPP_v0.5.exe"
+//     },
 //     "summary": {
 //       "totalTests": 300,
 //       "passed": 285,
 //       "failed": 15,
-//       "successRate": 95.0
+//       "successRate": 95.0,
+//       "avgTimeMs": 1234.5,
+//       "avgNodes": 12345678
 //     },
 //     "details": [ ... ]
 //   }
@@ -113,12 +123,12 @@ private:
 
   /// Generate filename with timestamp
   /// @param prefix Prefix for filename (e.g., "testsuite", "match")
-  /// @param name Test/match name
-  /// @param version Version string
-  /// @return Filename in format: {version}_{name}_{timestamp}.json
+  /// @param name Test suite or match name
+  /// @param engineId Engine identifier (e.g., "FrankyCPP-v0.5")
+  /// @return Filename in format: {name}_{engineId}_{timestamp}.json
   std::string generateFilename(const std::string& prefix,
                                 const std::string& name,
-                                const std::string& version) const;
+                                const std::string& engineId) const;
 
   /// Get current timestamp in YYYYMMDD_HHMMSS format
   static std::string getTimestamp() ;

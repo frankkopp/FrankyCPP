@@ -84,6 +84,11 @@ ArenaConfig ArenaConfig::loadFromYaml(const std::string& configPath) {
           suite.enginePath = suiteNode["enginePath"].as<std::string>();
         }
 
+        // Optional: engine version (explicit, not parsed from UCI name)
+        if (suiteNode["engineVersion"]) {
+          suite.engineVersion = suiteNode["engineVersion"].as<std::string>();
+        }
+
         // Optional: isolate positions flag (default: true for fair comparison)
         if (suiteNode["isolatePositions"]) {
           suite.isolatePositions = suiteNode["isolatePositions"].as<bool>();

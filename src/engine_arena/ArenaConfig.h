@@ -104,6 +104,7 @@ struct TestSuiteConfig {
   milliseconds timePerMove;     ///< Time limit per move
   Depth maxDepth;               ///< Maximum search depth
   std::string enginePath;       ///< Path to external UCI engine (required)
+  std::string engineVersion;    ///< Engine version for results (e.g., "v0.5", "v1.1") - explicit, not parsed from UCI
   bool isolatePositions = true; ///< Clear engine state (TT/history) between positions (default: true)
   bool debugMode = false;       ///< Print all UCI communication for debugging
   std::string commandLineArgs;  ///< Command-line arguments to pass to engine (e.g., "--nobook -hash 128")

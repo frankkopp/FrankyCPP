@@ -106,71 +106,48 @@ testSuites:
     timePerMove: 5000
     maxDepth: 30
     enginePath: "Release/FrankyCPP_V0.5/FrankyCPP_v0.5.exe"
+    engineVersion: "v0.5"
     isolatePositions: true
     debugMode: false
     commandLineArgs: ""              # No command-line args needed
     uciOptions: "OwnBook=false"      # UCI standard option name
-#
+    parallelWorkers: 4               # Optional: number of parallel workers for this suite
+
 #  - name: "franky_tests_v1.0"
 #    epdPath: "test/testsets/franky_tests.epd"
 #    timePerMove: 5000
 #    maxDepth: 30
 #    enginePath: "Release/FrankyCPP_V1.0/FrankyCPP_v1.0.exe"
+#    engineVersion: "v1.0"
 #    isolatePositions: true
 #    debugMode: false
 #    commandLineArgs: ""                       # No command-line args
 #    uciOptions: "OwnBook=false; Hash=128"     # Multiple UCI options
+#    parallelWorkers: 4               # Optional: number of parallel workers for this suite
 
   - name: "franky_tests_v1.1"
     epdPath: "test/testsets/franky_tests.epd"
     timePerMove: 5000
     maxDepth: 30
     enginePath: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
+    engineVersion: "v1.1"
     isolatePositions: true
     debugMode: false
     commandLineArgs: "--nobook"      # Alternative: use command-line arg
     uciOptions: ""                   # Or use UCI option instead
+    parallelWorkers: 4               # Optional: number of parallel workers for this suite
 
   - name: "franky_tests_FrankyGo"
     epdPath: "test/testsets/franky_tests.epd"
     timePerMove: 5000
     maxDepth: 30
     enginePath: "D:/Games/FrankyChess/FrankyGo/FrankyGo.exe"
+    engineVersion: "v1.0.3"
     isolatePositions: true
     debugMode: false
     commandLineArgs: ""              # Check FrankyGo docs for options
     uciOptions: ""                   # Check FrankyGo UCI options
-
-  # Example: Stockfish with custom arguments (if Stockfish used command-line args)
-  # - name: "stockfish_test"
-  #   enginePath: "D:/_DEV/Stockfish/src/stockfish.exe"
-  #   commandLineArgs: ""                    # Stockfish has no command-line options
-  #   uciOptions: "Hash=512; Threads=8"      # Use UCI options instead
-
-#  - name: "mate_test"
-#    epdPath: "test/testsets/mate_test_suite.epd"
-#    timePerMove: 15000
-#    maxDepth: 30
-#
-#  - name: "WAC"
-#    epdPath: "test/testsets/wac.epd"
-#    timePerMove: 5000
-#    maxDepth: 30
-
-  # - name: "STS"
-  #   epdPath: "test/testsets/STS1-STS15_LAN.EPD"
-  #   timePerMove: 5000
-  #   maxDepth: 30
-
-  # - name: "Crafty"
-  #   epdPath: "test/testsets/crafty_test.epd"
-  #   timePerMove: 5000
-  #   maxDepth: 30
-
-  # - name: "ECM98"
-  #   epdPath: "test/testsets/ecm98.epd"
-  #   timePerMove: 5000
-  #   maxDepth: 30
+    parallelWorkers: 4               # Optional: number of parallel workers for this suite
 
   # === mate_test with all 3 engines ===
   - name: "mate_test_v0.5"
@@ -178,30 +155,36 @@ testSuites:
     timePerMove: 15000
     maxDepth: 30
     enginePath: "Release/FrankyCPP_V0.5/FrankyCPP_v0.5.exe"
+    engineVersion: "v0.5"
     isolatePositions: true
     debugMode: false
     commandLineArgs: ""
     uciOptions: "OwnBook=false"
+    parallelWorkers: 8
 
   - name: "mate_test_v1.1"
     epdPath: "test/testsets/mate_test_suite.epd"
     timePerMove: 15000
     maxDepth: 30
     enginePath: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
+    engineVersion: "v1.1"
     isolatePositions: true
     debugMode: false
     commandLineArgs: "--nobook"
     uciOptions: ""
+    parallelWorkers: 8
 
   - name: "mate_test_FrankyGo"
     epdPath: "test/testsets/mate_test_suite.epd"
     timePerMove: 15000
     maxDepth: 30
     enginePath: "D:/Games/FrankyChess/FrankyGo/FrankyGo.exe"
+    engineVersion: "v1.0.3"
     isolatePositions: true
     debugMode: false
     commandLineArgs: ""
     uciOptions: ""
+    parallelWorkers: 8
 
   # === WAC with all 3 engines ===
   - name: "WAC_v0.5"
@@ -209,30 +192,36 @@ testSuites:
     timePerMove: 5000
     maxDepth: 30
     enginePath: "Release/FrankyCPP_V0.5/FrankyCPP_v0.5.exe"
+    engineVersion: "v0.5"
     isolatePositions: true
     debugMode: false
     commandLineArgs: ""
     uciOptions: "OwnBook=false"
+    parallelWorkers: 8
 
   - name: "WAC_v1.1"
     epdPath: "test/testsets/wac.epd"
     timePerMove: 5000
     maxDepth: 30
     enginePath: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
+    engineVersion: "v1.1"
     isolatePositions: true
     debugMode: false
     commandLineArgs: "--nobook"
     uciOptions: ""
+    parallelWorkers: 8
 
   - name: "WAC_FrankyGo"
     epdPath: "test/testsets/wac.epd"
     timePerMove: 5000
     maxDepth: 30
     enginePath: "D:/Games/FrankyChess/FrankyGo/FrankyGo.exe"
+    engineVersion: "v1.0.3"
     isolatePositions: true
     debugMode: false
     commandLineArgs: ""
     uciOptions: ""
+    parallelWorkers: 8
 
   # === STS with all 3 engines ===
   - name: "STS_v0.5"
@@ -240,30 +229,36 @@ testSuites:
     timePerMove: 5000
     maxDepth: 30
     enginePath: "Release/FrankyCPP_V0.5/FrankyCPP_v0.5.exe"
+    engineVersion: "v0.5"
     isolatePositions: true
     debugMode: false
     commandLineArgs: ""
     uciOptions: "OwnBook=false"
+    parallelWorkers: 8
 
   - name: "STS_v1.1"
     epdPath: "test/testsets/STS1-STS15_LAN.EPD"
     timePerMove: 5000
     maxDepth: 30
     enginePath: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
+    engineVersion: "v1.1"
     isolatePositions: true
     debugMode: false
     commandLineArgs: "--nobook"
     uciOptions: ""
+    parallelWorkers: 8
 
   - name: "STS_FrankyGo"
     epdPath: "test/testsets/STS1-STS15_LAN.EPD"
     timePerMove: 5000
     maxDepth: 30
     enginePath: "D:/Games/FrankyChess/FrankyGo/FrankyGo.exe"
+    engineVersion: "v1.0.3"
     isolatePositions: true
     debugMode: false
     commandLineArgs: ""
     uciOptions: ""
+    parallelWorkers: 8
 
   # === Crafty with all 3 engines ===
   - name: "Crafty_v0.5"
@@ -271,30 +266,36 @@ testSuites:
     timePerMove: 5000
     maxDepth: 30
     enginePath: "Release/FrankyCPP_V0.5/FrankyCPP_v0.5.exe"
+    engineVersion: "v0.5"
     isolatePositions: true
     debugMode: false
     commandLineArgs: ""
     uciOptions: "OwnBook=false"
+    parallelWorkers: 8
 
   - name: "Crafty_v1.1"
     epdPath: "test/testsets/crafty_test.epd"
     timePerMove: 5000
     maxDepth: 30
     enginePath: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
+    engineVersion: "v1.1"
     isolatePositions: true
     debugMode: false
     commandLineArgs: "--nobook"
     uciOptions: ""
+    parallelWorkers: 8
 
   - name: "Crafty_FrankyGo"
     epdPath: "test/testsets/crafty_test.epd"
     timePerMove: 5000
     maxDepth: 30
     enginePath: "D:/Games/FrankyChess/FrankyGo/FrankyGo.exe"
+    engineVersion: "v1.0.3"
     isolatePositions: true
     debugMode: false
     commandLineArgs: ""
     uciOptions: ""
+    parallelWorkers: 8
 
   # === ECM98 with all 3 engines ===
   - name: "ECM98_v0.5"
@@ -302,30 +303,36 @@ testSuites:
     timePerMove: 5000
     maxDepth: 30
     enginePath: "Release/FrankyCPP_V0.5/FrankyCPP_v0.5.exe"
+    engineVersion: "v0.5"
     isolatePositions: true
     debugMode: false
     commandLineArgs: ""
     uciOptions: "OwnBook=false"
+    parallelWorkers: 8
 
   - name: "ECM98_v1.1"
     epdPath: "test/testsets/ecm98.epd"
     timePerMove: 5000
     maxDepth: 30
     enginePath: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
+    engineVersion: "v1.1"
     isolatePositions: true
     debugMode: false
     commandLineArgs: "--nobook"
     uciOptions: ""
+    parallelWorkers: 8
 
   - name: "ECM98_FrankyGo"
     epdPath: "test/testsets/ecm98.epd"
     timePerMove: 5000
     maxDepth: 30
     enginePath: "D:/Games/FrankyChess/FrankyGo/FrankyGo.exe"
+    engineVersion: "v1.0.3"
     isolatePositions: true
     debugMode: false
     commandLineArgs: ""
     uciOptions: ""
+    parallelWorkers: 8
 
 
 # Match configurations
@@ -339,6 +346,26 @@ testSuites:
 debugMode: false
 
 matches:
+
+  # === Blitz matches between all 3 engines (100 games each) ===
+  - name: "v0.5_vs_v1.1_blitz_100"
+    engine1Path: "Release/FrankyCPP_V0.5/FrankyCPP_v0.5.exe"
+    engine2Path: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
+    openingBook: "books/8moves_GM_LB.pgn"
+    timeControl: "60+0.6"
+    rounds: 100
+    concurrency: 4
+    outputPgn: "results/matches/v0.5_vs_v1.1_blitz_100.pgn"
+
+  - name: "v1.1_vs_FrankyGo_blitz_100"
+    engine1Path: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
+    engine2Path: "D:/Games/FrankyChess/FrankyGo/FrankyGo.exe"
+    openingBook: "books/8moves_GM_LB.pgn"
+    timeControl: "60+0.6"
+    rounds: 100
+    concurrency: 4
+    outputPgn: "results/matches/v1.1_vs_FrankyGo_blitz_100.pgn"
+
   # for DEBUGGING PURPOSES ONLY - to be commented for quick tests
 #  - name: "v1.1_vs_v1.0_debug"
 #    engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
@@ -375,25 +402,6 @@ matches:
 #  rounds: 10
 #  concurrency: 4
 #  outputPgn: "results/matches/v1.1_vs_FrankyGo_blitz.pgn"
-
-  # === Blitz matches between all 3 engines (100 games each) ===
-  - name: "v0.5_vs_v1.1_blitz_100"
-    engine1Path: "Release/FrankyCPP_V0.5/FrankyCPP_v0.5.exe"
-    engine2Path: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
-    openingBook: "books/8moves_GM_LB.pgn"
-    timeControl: "60+0.6"
-    rounds: 100
-    concurrency: 4
-    outputPgn: "results/matches/v0.5_vs_v1.1_blitz_100.pgn"
-
-  - name: "v1.1_vs_FrankyGo_blitz_100"
-    engine1Path: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
-    engine2Path: "D:/Games/FrankyChess/FrankyGo/FrankyGo.exe"
-    openingBook: "books/8moves_GM_LB.pgn"
-    timeControl: "60+0.6"
-    rounds: 100
-    concurrency: 4
-    outputPgn: "results/matches/v1.1_vs_FrankyGo_blitz_100.pgn"
 
 #  - name: "v1.1_vs_Stockfish_blitz"
 #    engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"

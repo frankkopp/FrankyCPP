@@ -104,17 +104,28 @@ struct TestCaseDetail {
 
 /// Result from running a test suite
 struct TestSuiteResult {
-  std::string version;        ///< Engine version (e.g., "v1.1")
-  std::string suiteName;      ///< Test suite name
-  std::string timestamp;      ///< ISO 8601 timestamp
-  std::string engineName;     ///< Engine name (from UCI "id name" or "Internal")
-  std::string enginePath;     ///< Path to engine executable (empty if internal)
-  int totalTests;             ///< Total number of tests
-  int passed;                 ///< Number of passed tests
-  int failed;                 ///< Number of failed tests
-  int skipped;                ///< Number of skipped tests
-  uint64_t totalNodes;        ///< Total nodes searched
-  int64_t totalTimeMs;        ///< Total time in milliseconds
+  // Arena metadata
+  std::string arenaVersion;     ///< Arena version that ran this test (e.g., "v1.1")
+  std::string timestamp;        ///< ISO 8601 timestamp
+
+  // Test suite identification
+  std::string testSuiteName;    ///< Clean test suite name (e.g., "WAC", "Crafty")
+  std::string epdPath;          ///< Path to EPD file
+
+  // Engine identification
+  std::string engineName;       ///< Engine name (e.g., "FrankyCPP", "FrankyGo")
+  std::string engineVersion;    ///< Engine version (e.g., "v0.5", "v1.1")
+  std::string enginePath;       ///< Path to engine executable (empty if internal)
+
+  // Results summary
+  int totalTests;               ///< Total number of tests
+  int passed;                   ///< Number of passed tests
+  int failed;                   ///< Number of failed tests
+  int skipped;                  ///< Number of skipped tests
+  uint64_t totalNodes;          ///< Total nodes searched
+  int64_t totalTimeMs;          ///< Total time in milliseconds
+
+  // Per-test details (optional, can be pruned)
   std::vector<TestCaseDetail> details; ///< Per-test details
 };
 

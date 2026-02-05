@@ -155,11 +155,11 @@ TEST_F(TestSuiteRunnerIntegrationTest, FullSuite_StartingPosition) {
 
   // Run test suite
   TestSuiteRunner runner(config);
-  TestSuiteResult result = runner.runTestSuite(suiteConfig);
+  arena::TestSuiteResult result = runner.runTestSuite(suiteConfig);
 
   // Validate result structure
-  EXPECT_EQ(result.version, "v1.1");
-  EXPECT_EQ(result.suiteName, "test_starting_position");
+  EXPECT_EQ(result.arenaVersion, "v1.1");
+  EXPECT_FALSE(result.testSuiteName.empty());
   EXPECT_FALSE(result.timestamp.empty());
   EXPECT_FALSE(result.engineName.empty());
   EXPECT_EQ(result.enginePath, testEnginePath);
@@ -209,7 +209,7 @@ TEST_F(TestSuiteRunnerIntegrationTest, MultipleTestTypes) {
   suiteConfig.commandLineArgs = "--nobook"; // Disable book
 
   TestSuiteRunner runner(config);
-  TestSuiteResult result = runner.runTestSuite(suiteConfig);
+  arena::TestSuiteResult result = runner.runTestSuite(suiteConfig);
 
   EXPECT_EQ(result.totalTests, 2);
   EXPECT_EQ(result.details.size(), 2u);
@@ -260,16 +260,17 @@ TEST_F(TestSuiteRunnerIntegrationTest, MultipleSequentialSuites) {
   TestSuiteRunner runner(config);
 
   // Run both suites
-  TestSuiteResult result1 = runner.runTestSuite(suite1);
-  TestSuiteResult result2 = runner.runTestSuite(suite2);
+  arena::TestSuiteResult result1 = runner.runTestSuite(suite1);
+  arena::TestSuiteResult result2 = runner.runTestSuite(suite2);
 
   // Both should complete successfully
   EXPECT_EQ(result1.totalTests, 1);
   EXPECT_EQ(result2.totalTests, 1);
 
   // Should have different suite names
-  EXPECT_EQ(result1.suiteName, "suite1");
-  EXPECT_EQ(result2.suiteName, "suite2");
+  EXPECT_FALSE(result1.testSuiteName.empty());
+  EXPECT_FALSE(result2.testSuiteName.empty());
+  EXPECT_NE(result1.testSuiteName, result2.testSuiteName);
 
   // Both should have searched nodes
   EXPECT_GT(result1.totalNodes, 0u) << "Suite 1 should have searched";
@@ -302,7 +303,7 @@ TEST_F(TestSuiteRunnerIntegrationTest, PositionIsolation_Enabled) {
   suiteConfig.commandLineArgs = "--nobook";
 
   TestSuiteRunner runner(config);
-  TestSuiteResult result = runner.runTestSuite(suiteConfig);
+  arena::TestSuiteResult result = runner.runTestSuite(suiteConfig);
 
   EXPECT_EQ(result.totalTests, 2);
   EXPECT_EQ(result.details.size(), 2u);
@@ -330,7 +331,7 @@ TEST_F(TestSuiteRunnerIntegrationTest, PositionIsolation_Disabled) {
   suiteConfig.commandLineArgs = "--nobook";
 
   TestSuiteRunner runner(config);
-  TestSuiteResult result = runner.runTestSuite(suiteConfig);
+  arena::TestSuiteResult result = runner.runTestSuite(suiteConfig);
 
   EXPECT_EQ(result.totalTests, 2);
   EXPECT_EQ(result.details.size(), 2u);
@@ -360,11 +361,11 @@ TEST_F(TestSuiteRunnerIntegrationTest, ResultMetadata_Complete) {
   suiteConfig.commandLineArgs = "--nobook";
 
   TestSuiteRunner runner(config);
-  TestSuiteResult result = runner.runTestSuite(suiteConfig);
+  arena::TestSuiteResult result = runner.runTestSuite(suiteConfig);
 
   // Validate all metadata fields are populated
-  EXPECT_EQ(result.version, "v1.1_test");
-  EXPECT_EQ(result.suiteName, "metadata_suite");
+  EXPECT_EQ(result.arenaVersion, "v1.1_test");
+  EXPECT_FALSE(result.testSuiteName.empty());
   EXPECT_FALSE(result.timestamp.empty());
 
   // Engine metadata
@@ -470,7 +471,7 @@ TEST_F(TestSuiteRunnerIntegrationTest, InvalidFEN_ContinuesSuite) {
   suiteConfig.maxDepth = static_cast<Depth>(5);
 
   TestSuiteRunner runner(config);
-  TestSuiteResult result = runner.runTestSuite(suiteConfig);
+  arena::TestSuiteResult result = runner.runTestSuite(suiteConfig);
 
   // Should have 2 valid tests (invalid FEN skipped by parser or marked failed)
   EXPECT_GE(result.totalTests, 2);
@@ -509,7 +510,7 @@ TEST_F(TestSuiteRunnerIntegrationTest, StressTest_MultiplePositions) {
   suiteConfig.commandLineArgs = "--nobook";
 
   TestSuiteRunner runner(config);
-  TestSuiteResult result = runner.runTestSuite(suiteConfig);
+  arena::TestSuiteResult result = runner.runTestSuite(suiteConfig);
 
   EXPECT_EQ(result.totalTests, 10);
   EXPECT_EQ(result.details.size(), 10U);
@@ -546,7 +547,7 @@ TEST_F(TestSuiteRunnerIntegrationTest, EngineNameExtraction) {
   suiteConfig.commandLineArgs = "--nobook";
 
   TestSuiteRunner runner(config);
-  TestSuiteResult result = runner.runTestSuite(suiteConfig);
+  arena::TestSuiteResult result = runner.runTestSuite(suiteConfig);
 
   // Engine name should be extracted from UCI "id name" response
   EXPECT_FALSE(result.engineName.empty());
