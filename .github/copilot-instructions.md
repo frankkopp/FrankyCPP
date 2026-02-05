@@ -359,8 +359,10 @@ protected:
 ## Windows & PowerShell Notes
 
 ### General
+- **You are in a Windows PowerShell terminal - use PowerShell syntax only**
+- **DO NOT use Unix/bash syntax**: no `&&` for command chaining, no `||`, no bash-isms
+- **Use `;` (semicolon)** to chain multiple commands in PowerShell: `cmd1 ; cmd2`
 - Assume Windows PowerShell for all shell commands
-- Do not chain commands with `&&` or `;` - use separate code blocks
 - Use `.\` prefix to run local executables
 - Do not attempt to compile code - ask user to compile in CLion and report errors
 
