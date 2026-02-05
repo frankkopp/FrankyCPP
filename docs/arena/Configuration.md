@@ -491,12 +491,13 @@ parallelWorkers: 8     # 8 parallel engines (for large suites)
 - Results collected in original position order via futures
 
 **Performance:**
+
 | Workers | Engine Processes | Memory (est.) | Speedup |
 |---------|------------------|---------------|---------|
-| 1 | 1 | ~200 MB | 1x |
-| 2 | 2 | ~400 MB | ~1.9x |
-| 4 | 4 | ~800 MB | ~3.5x |
-| 8 | 8 | ~1.6 GB | ~6x |
+| 1       | 1                | ~200 MB       | 1x      |
+| 2       | 2                | ~400 MB       | ~1.9x   |
+| 4       | 4                | ~800 MB       | ~3.5x   |
+| 8       | 8                | ~1.6 GB       | ~6x     |
 
 **Output:**
 - Progress display: `Progress: 150/300 (50%) [120 passed, 30 failed]`

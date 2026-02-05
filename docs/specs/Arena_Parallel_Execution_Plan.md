@@ -143,12 +143,12 @@ void ArenaRunner::runTestSuitesOnly() {
 
 ### Benefits
 
-| Aspect | Before | After |
-|--------|--------|-------|
-| **Crash resilience** | All results lost | Completed suites preserved |
-| **Progress feedback** | None until end | Real-time save confirmation |
-| **Memory usage** | Holds all results | Can process/discard immediately |
-| **Future parallelism** | Not supported | Callback enables thread-safe saving |
+| Aspect                 | Before            | After                               |
+|------------------------|-------------------|-------------------------------------|
+| **Crash resilience**   | All results lost  | Completed suites preserved          |
+| **Progress feedback**  | None until end    | Real-time save confirmation         |
+| **Memory usage**       | Holds all results | Can process/discard immediately     |
+| **Future parallelism** | Not supported     | Callback enables thread-safe saving |
 
 ### Validation
 
@@ -501,7 +501,7 @@ try {
 - [x] Result aggregation with sorting
 - [x] Error handling
 - [x] Progress display
-- [ ] Testing and validation
+- [x] Testing and validation
 
 ### Estimated Time: 4-6 hours
 
@@ -509,10 +509,10 @@ try {
 
 ## Implementation Order
 
-| Phase | Description | Dependencies | Time |
-|-------|-------------|--------------|------|
-| **1** | Suite-level callback | None | 1-2h |
-| **2** | Parallel positions | Phase 1 | 4-6h |
+| Phase | Description          | Dependencies | Time |
+|-------|----------------------|--------------|------|
+| **1** | Suite-level callback | None         | 1-2h |
+| **2** | Parallel positions   | Phase 1      | 4-6h |
 
 **Total estimated time:** 5-8 hours
 
