@@ -104,11 +104,23 @@ struct EngineId {
 
   /// Returns string representation: "EngineName-Version" (e.g., "FrankyCPP-v1.1")
   [[nodiscard]] std::string toString() const {
+    if (version.empty()) return name;
     return name + "-" + version;
   }
 
   /// Returns display string: "EngineName Version" (e.g., "FrankyCPP v1.1")
+  /// Avoids duplicating version if name already contains it
   [[nodiscard]] std::string toDisplayString() const {
+    if (version.empty()) return name;
+    // Check if name already ends with the version
+    if (name.length() >= version.length() &&
+        name.substr(name.length() - version.length()) == version) {
+      return name;
+    }
+    // Check if name already contains the version somewhere
+    if (name.find(version) != std::string::npos) {
+      return name;
+    }
     return name + " " + version;
   }
 

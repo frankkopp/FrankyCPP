@@ -111,15 +111,16 @@ inline std::string colorDelta(const std::string& text, double delta, double thre
 
 } // namespace Color
 
-/// Unicode symbols for quick visual indicators
+/// Symbols for quick visual indicators
+/// Using ASCII characters for Windows console compatibility
 namespace Symbol {
-  inline const char* CHECK     = "✅";  // Improvement/pass
-  inline const char* CROSS     = "❌";  // Regression/fail
-  inline const char* EQUAL     = "⚖️";   // Equal/no change
-  inline const char* WARNING   = "⚠️";   // Warning
-  inline const char* ARROW_UP  = "▲";   // Improvement
-  inline const char* ARROW_DOWN= "▼";   // Regression
-  inline const char* DASH      = "—";   // N/A or missing
+  inline const char* CHECK     = "[+]";   // Improvement/pass
+  inline const char* CROSS     = "[X]";   // Regression/fail
+  inline const char* EQUAL     = "[=]";   // Equal/no change
+  inline const char* WARNING   = "[!]";   // Warning
+  inline const char* ARROW_UP  = "^";     // Improvement
+  inline const char* ARROW_DOWN= "v";     // Regression
+  inline const char* DASH      = "N/A";   // N/A or missing
 }
 
 } // namespace arena
