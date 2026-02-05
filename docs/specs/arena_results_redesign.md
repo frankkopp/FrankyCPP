@@ -340,9 +340,14 @@ TEST SUITE SUMMARY (v1.2-dev vs v1.1)
   Improvement:          +45 positions (+1.6%)
   Regressions:          0 test suites worse
   Status:               ✅ IMPROVEMENT
---------------------------------------------------------------------------------
+================================================================================
+```
 
-MATCH RESULTS
+> **Note:** The match results section shown below is for FUTURE implementation.
+> Initial reporting will focus on test suites only. See Section 3.9.
+
+```
+MATCH RESULTS (FUTURE - not in initial implementation)
 --------------------------------------------------------------------------------
 v1.2-dev vs v1.1 (100 games, 60+0.6):
   Score:                +56.5 - 43.5 (56.5%)
@@ -522,6 +527,47 @@ comparison:
    - Use ANSI colors: green for improvements, red for regressions, yellow for warnings
    - ✅/❌/⚖️ symbols for quick visual scanning
    - Other formats (JSON, Markdown) can be added later if needed
+
+### 3.9 Match Reporting (Future)
+
+**Status:** ⏳ OUT OF SCOPE for initial implementation
+
+Match reporting will be added AFTER test suite reporting is complete and working.
+
+#### Why Deferred?
+- Match result storage has not been redesigned yet (still uses old format)
+- Test suite reporting provides immediate value for regression detection
+- Matches are more expensive to run (100 games vs seconds for test suites)
+- Focus on one thing at a time
+
+#### Future Match Report Structure
+
+When implemented, match reports will show:
+
+```
+MATCH RESULTS
+--------------------------------------------------------------------------------
+Engine Pair                 Games   Score       W/D/L       ELO Diff
+--------------------------------------------------------------------------------
+v1.2-dev vs v1.1            100     56.5%       32/49/19    +45 ± 30
+v1.2-dev vs v0.5            100     71.0%       52/38/10    +156 ± 35
+v1.2-dev vs FrankyGo        100     48.5%       25/47/28    -10 ± 30
+
+HEAD-TO-HEAD MATRIX
+--------------------------------------------------------------------------------
+                v1.2-dev    v1.1        v0.5        FrankyGo
+v1.2-dev        —           +45 ELO     +156 ELO    -10 ELO
+v1.1            -45 ELO     —           +110 ELO    +15 ELO
+v0.5            -156 ELO    -110 ELO    —           -95 ELO
+FrankyGo        +10 ELO     -15 ELO     +95 ELO     —
+```
+
+#### Tasks for Match Reporting (Later)
+- [ ] Redesign `MatchResult` structure (similar to TestSuiteResult changes)
+- [ ] Update match result JSON format
+- [ ] Add match loading to `ReportData`
+- [ ] Implement `generateMatchReport()` function
+- [ ] Add `--matches-only` filter to CLI
 
 ---
 
