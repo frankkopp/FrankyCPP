@@ -500,34 +500,201 @@ comparison:
     - "FrankyCPP-v0.5"
     - "FrankyCPP-v1.1"
     - "FrankyGo"
-  
-  # Regression thresholds
-  regressionThresholds:
-    testSuiteDropPercent: 2.0          # Fail if any suite drops >2%
-    matchEloDropMargin: 30             # Warn if ELO drops >30
 ```
 
-### 3.8 Open Questions
+### 3.8 Design Decisions ✅
 
 1. **What thresholds define "regression"?**
-   - Test suites: >2% drop on any suite? >1% drop overall?
-   - Matches: >30 ELO drop? Statistical significance?
+   - ✅ **No predefined thresholds** - Human judgment required
+   - The report shows the data; the developer interprets significance
+   - Changes need to be evaluated in context of what was modified
+   - Automated pass/fail would give false sense of security
 
 2. **How to handle missing data?**
-   - If v1.2-dev hasn't run WAC yet, show "NOT RUN" vs "NOT TESTED"
-   - Should comparison fail if data is incomplete?
+   - ✅ Show as much data as possible
+   - Use **"N/A"** or **"—"** for missing entries
+   - Add **"NOT RUN"** indicator with guidance on what's missing
+   - Example: "WAC: N/A (run with: --suite WAC --engine v1.2-dev)"
+   - Report should help user know what still needs to be tested
 
 3. **Output formats?**
-   - Console (default) - colored output with symbols
-   - Plain text - for logs/files
-   - JSON - for tooling/automation
-   - Markdown - for documentation/reports
+   - ✅ **Console with colors** (primary, for now)
+   - Use ANSI colors: green for improvements, red for regressions, yellow for warnings
+   - ✅/❌/⚖️ symbols for quick visual scanning
+   - Other formats (JSON, Markdown) can be added later if needed
 
 ---
 
 ## 4. Implementation Plan
 
-*(To be filled in after discussing Section 3)*
+### 4.1 Overview
+
+The reporting feature needs to:
+1. Load test suite results from JSON files
+2. Group results by test suite (not by engine)
+3. Generate comparison reports with deltas
+4. Support colored console output
+
+### 4.2 Phases
+
+#### Phase 1: Refactor Result Loading
+**Goal:** Load and organize results for comparison
+
+**Tasks:**
+- [ ] Modify `loadTestSuiteResults()` to load ALL results (not filtered by engine)
+- [ ] Create data structure to group results: `Map<TestSuite, Map<EngineId, Result>>`
+- [ ] Handle multiple timestamps per engine/suite (use latest by default)
+- [ ] Add function to list available engines from results
+
+**Files to modify:**
+- `ArenaRunner.cpp` - Result loading logic
+- `ArenaResults.h` - Add grouping structures if needed
+
+#### Phase 2: Baseline Report
+**Goal:** Show current state of all engines (simplest report)
+
+**Tasks:**
+- [ ] Add `--report` or `--baselines` CLI option
+- [ ] Implement `generateBaselineReport()` function
+- [ ] Group by test suite, show all engines side by side
+- [ ] Calculate and display: solved, rate%, avg time, avg nodes
+- [ ] Add ANSI color support utility
+
+**Output:**
+```
+TEST SUITE: WAC (201 positions)
+--------------------------------------------------------------------------------
+Engine              Solved      Rate        Avg Time    Avg Nodes
+FrankyGo v1.0.3     197         98.0%       0.9s        12.4M
+FrankyCPP v1.1      194         96.5%       1.4s        18.2M
+FrankyCPP v0.5      188         93.5%       1.8s        22.1M
+```
+
+**Files to modify:**
+- `ArenaRunner.cpp` - Add report generation
+- `engine_arena_main.cpp` - Add CLI option
+- New: `ConsoleColors.h` - ANSI color utilities
+
+#### Phase 3: Comparison Report
+**Goal:** Compare target engine against baselines with deltas
+
+**Tasks:**
+- [ ] Add `--compare <engine>` CLI option
+- [ ] Add `--baseline <engine>` CLI option (repeatable)
+- [ ] Implement `generateComparisonReport()` function
+- [ ] Calculate deltas (solved diff, rate diff %)
+- [ ] Add visual indicators: ✅ improvement, ❌ regression, ⚖️ equal
+- [ ] Handle missing data gracefully (show N/A)
+
+**Output:** (as shown in Section 3.2)
+
+**Files to modify:**
+- `ArenaRunner.cpp` - Comparison logic
+- `engine_arena_main.cpp` - CLI options
+
+#### Phase 4: Configuration
+**Goal:** Add comparison settings to arena.yaml
+
+**Tasks:**
+- [ ] Add `comparison` section to `ArenaConfig`
+- [ ] Parse `primaryBaseline` and `baselines` list
+- [ ] Use config defaults when CLI options not provided
+
+**Files to modify:**
+- `ArenaConfig.h` - Add comparison config struct
+- `ArenaConfig.cpp` - YAML parsing
+
+#### Phase 5: Polish & Edge Cases
+**Goal:** Handle edge cases, improve UX
+
+**Tasks:**
+- [ ] Handle no results found
+- [ ] Handle partial results (some suites missing)
+- [ ] Add `--testsuites-only` and `--matches-only` filters
+- [ ] Sort engines consistently (primary baseline first, then others)
+- [ ] Format numbers nicely (thousands separators, decimal places)
+
+### 4.3 Data Structures
+
+```cpp
+// Engine identifier (name + version)
+struct EngineId {
+  std::string name;     // "FrankyCPP"
+  std::string version;  // "v1.1"
+  
+  std::string toString() const;  // "FrankyCPP v1.1"
+  bool operator<(const EngineId& other) const;
+};
+
+// Results organized for reporting
+struct ReportData {
+  // All test suites found
+  std::set<std::string> testSuites;
+  
+  // All engines found
+  std::set<EngineId> engines;
+  
+  // Results: testSuite -> engineId -> result
+  std::map<std::string, std::map<EngineId, TestSuiteResult>> suiteResults;
+  
+  // Match results (if any)
+  std::map<std::string, MatchResult> matchResults;
+};
+
+// Comparison settings from config
+struct ComparisonConfig {
+  EngineId primaryBaseline;
+  std::vector<EngineId> baselines;
+};
+```
+
+### 4.4 CLI Interface
+
+```
+FrankyCPP_Arena [options]
+
+Reporting options:
+  --report, --baselines     Show baseline report (all engines, all suites)
+  --compare <engine>        Compare engine against baselines
+  --baseline <engine>       Specify baseline (can repeat, default from config)
+  --testsuites-only         Show only test suite results
+  --matches-only            Show only match results
+
+Engine format: "EngineName-Version" (e.g., "FrankyCPP-v1.1", "FrankyGo-v1.0.3")
+
+Examples:
+  FrankyCPP_Arena --report
+  FrankyCPP_Arena --compare FrankyCPP-v1.2-dev
+  FrankyCPP_Arena --compare FrankyCPP-v1.2-dev --baseline FrankyCPP-v1.1
+```
+
+### 4.5 Priority & Effort Estimate
+
+| Phase | Priority | Effort | Dependencies |
+|-------|----------|--------|--------------|
+| Phase 1: Result Loading | HIGH | Small | None |
+| Phase 2: Baseline Report | HIGH | Medium | Phase 1 |
+| Phase 3: Comparison Report | HIGH | Medium | Phase 2 |
+| Phase 4: Configuration | LOW | Small | Phase 3 |
+| Phase 5: Polish | LOW | Small | Phase 3 |
+
+**Suggested order:** 1 → 2 → 3 → 5 → 4
+
+Phases 1-3 deliver the core value. Phase 4 (config) is nice-to-have since CLI options work fine. Phase 5 (polish) can be done incrementally.
+
+### 4.6 Design Decisions ✅
+
+1. **Match results in comparison?**
+   - ✅ **Test suites first** - Focus on test suite reporting initially
+   - Match results can be added later once test suite reporting works
+   - Match result storage redesign is a separate task
+
+2. **Result file cleanup?**
+   - ✅ **User will clean up manually** - Delete old format files before implementing
+   - No need for migration or backward compatibility logic in loader
+
+3. **Which CLI library?**
+   - ✅ **Keep boost::program_options** - Consistency with existing codebase
 
 ---
 
@@ -538,3 +705,4 @@ comparison:
 | 2026-02-05 | Initial draft - Section 1 discussion |
 | 2026-02-05 | Added Section 2 (data collection) and Section 3 (reporting) |
 | 2026-02-05 | ✅ Implemented Section 2: New JSON structure, file naming, backward compat |
+| 2026-02-05 | Added Section 4: Implementation plan for reporting |
