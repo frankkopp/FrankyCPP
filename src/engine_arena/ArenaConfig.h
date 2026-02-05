@@ -108,6 +108,7 @@ struct TestSuiteConfig {
   bool debugMode = false;       ///< Print all UCI communication for debugging
   std::string commandLineArgs;  ///< Command-line arguments to pass to engine (e.g., "--nobook -hash 128")
   std::string uciOptions;       ///< UCI options as semicolon-separated pairs (e.g., "Hash=256; Threads=4")
+  int parallelWorkers = 1;      ///< Number of parallel workers (1 = sequential, N>1 = parallel)
 };
 
 /// Configuration for a single engine match
@@ -119,7 +120,7 @@ struct MatchConfig {
   std::string openingBook;   ///< Path to opening book (PGN format)
   std::string timeControl;   ///< Time control (e.g., "10+0.1")
   int rounds;                ///< Number of rounds to play
-  int concurrency = 1;       ///< Number of games to run in parallel (default: 1 for deterministic)
+  int concurrency = 1;       ///< Number of games to run in parallel by cutechess-cli (default: 1 for deterministic)
   std::string outputPgn;     ///< Path to save PGN games
 };
 

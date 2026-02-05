@@ -104,6 +104,14 @@ ArenaConfig ArenaConfig::loadFromYaml(const std::string& configPath) {
           suite.uciOptions = suiteNode["uciOptions"].as<std::string>();
         }
 
+        // Optional: parallel workers (1 = sequential, N>1 = parallel execution)
+        if (suiteNode["parallelWorkers"]) {
+          suite.parallelWorkers = suiteNode["parallelWorkers"].as<int>();
+          if (suite.parallelWorkers < 1) {
+            suite.parallelWorkers = 1;  // Minimum 1 worker
+          }
+        }
+
         config.testSuites.push_back(suite);
       }
     }

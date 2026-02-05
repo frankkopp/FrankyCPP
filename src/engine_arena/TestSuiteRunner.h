@@ -81,11 +81,15 @@
 
 #include "ArenaConfig.h"
 #include "ArenaResults.h"
+#include "enginetest/EdpTest.h"
 
 #include <functional>
 #include <vector>
 
 namespace arena {
+
+// Forward declaration
+class UCIEngine;
 
 /// Callback invoked when a test suite completes
 /// @param result The completed test suite result
@@ -99,6 +103,7 @@ public:
   explicit TestSuiteRunner(const ArenaConfig& config);
 
   /// Runs a single test suite and returns detailed results
+  /// Auto-selects sequential or parallel based on parallelWorkers config
   /// @param suiteConfig Test suite configuration
   /// @return TestSuiteResult with full metadata and per-test details
   /// @throws std::runtime_error if EPD file not found or execution fails
@@ -113,6 +118,28 @@ public:
 
 private:
   const ArenaConfig& arenaConfig; ///< Reference to arena configuration
+
+  /// Runs test suite sequentially (original implementation)
+  TestSuiteResult runTestSuiteSequential(const TestSuiteConfig& suiteConfig) const;
+
+  /// Runs test suite with parallel position execution
+  /// @param suiteConfig Test suite configuration
+  /// @param numWorkers Number of parallel worker threads
+  TestSuiteResult runTestSuiteParallel(
+      const TestSuiteConfig& suiteConfig,
+      int numWorkers) const;
+
+  /// Runs a single position test and returns the result
+  /// @param engine UCI engine instance (thread-local)
+  /// @param test EPD test to run
+  /// @param config Suite configuration
+  /// @param testNumber Position number for display
+  /// @return Test case detail with a result
+  TestCaseDetail runSinglePosition(
+      UCIEngine& engine,
+      const EpdTest& test,
+      const TestSuiteConfig& config,
+      int testNumber) const;
 
   /// Generates ISO 8601 timestamp for current time
   /// @return Timestamp string (e.g., "2026-02-01T14:30:22Z")
