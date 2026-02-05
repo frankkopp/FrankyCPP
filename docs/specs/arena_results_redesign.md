@@ -583,60 +583,48 @@ The reporting feature needs to:
 
 ### 4.2 Phases
 
-#### Phase 1: Refactor Result Loading
+#### Phase 1: Refactor Result Loading ✅ COMPLETE
 **Goal:** Load and organize results for comparison
 
 **Tasks:**
-- [ ] Modify `loadTestSuiteResults()` to load ALL results (not filtered by engine)
-- [ ] Create data structure to group results: `Map<TestSuite, Map<EngineId, Result>>`
-- [ ] Handle multiple timestamps per engine/suite (use latest by default)
-- [ ] Add function to list available engines from results
+- [x] Modify `loadTestSuiteResults()` to load ALL results (not filtered by engine)
+- [x] Create data structure to group results: `Map<TestSuite, Map<EngineId, Result>>`
+- [x] Handle multiple timestamps per engine/suite (use latest by default)
+- [x] Add function to list available engines from results
 
-**Files to modify:**
-- `ArenaRunner.cpp` - Result loading logic
-- `ArenaResults.h` - Add grouping structures if needed
+**Files modified:**
+- `ArenaRunner.cpp` - Added `loadAllResults()`, `listAvailableEngines()`
+- `ArenaResults.h` - Added `EngineId`, `ReportData` structures
 
-#### Phase 2: Baseline Report
+#### Phase 2: Baseline Report ✅ COMPLETE
 **Goal:** Show current state of all engines (simplest report)
 
 **Tasks:**
-- [ ] Add `--report` or `--baselines` CLI option
-- [ ] Implement `generateBaselineReport()` function
-- [ ] Group by test suite, show all engines side by side
-- [ ] Calculate and display: solved, rate%, avg time, avg nodes
-- [ ] Add ANSI color support utility
+- [x] Add `--report` or `--baselines` CLI option
+- [x] Implement `generateBaselineReport()` function
+- [x] Group by test suite, show all engines side by side
+- [x] Calculate and display: solved, rate%, avg time, avg nodes
+- [x] Add ANSI color support utility
 
-**Output:**
-```
-TEST SUITE: WAC (201 positions)
---------------------------------------------------------------------------------
-Engine              Solved      Rate        Avg Time    Avg Nodes
-FrankyGo v1.0.3     197         98.0%       0.9s        12.4M
-FrankyCPP v1.1      194         96.5%       1.4s        18.2M
-FrankyCPP v0.5      188         93.5%       1.8s        22.1M
-```
-
-**Files to modify:**
-- `ArenaRunner.cpp` - Add report generation
-- `engine_arena_main.cpp` - Add CLI option
+**Files modified:**
+- `ArenaRunner.cpp` - Added `generateBaselineReport()`
+- `engine_arena_main.cpp` - Added `--report`, `--baselines`, `--engines` CLI options
 - New: `ConsoleColors.h` - ANSI color utilities
 
-#### Phase 3: Comparison Report
+#### Phase 3: Comparison Report ✅ COMPLETE
 **Goal:** Compare target engine against baselines with deltas
 
 **Tasks:**
-- [ ] Add `--compare <engine>` CLI option
-- [ ] Add `--baseline <engine>` CLI option (repeatable)
-- [ ] Implement `generateComparisonReport()` function
-- [ ] Calculate deltas (solved diff, rate diff %)
-- [ ] Add visual indicators: ✅ improvement, ❌ regression, ⚖️ equal
-- [ ] Handle missing data gracefully (show N/A)
+- [x] Add `--compare <engine>` CLI option (`--cmp`)
+- [x] Add `--baseline <engine>` CLI option (repeatable)
+- [x] Implement `generateComparisonReport()` function
+- [x] Calculate deltas (solved diff, rate diff %)
+- [x] Add visual indicators: ✅ improvement, ❌ regression, ⚖️ equal
+- [x] Handle missing data gracefully (show N/A)
 
-**Output:** (as shown in Section 3.2)
-
-**Files to modify:**
-- `ArenaRunner.cpp` - Comparison logic
-- `engine_arena_main.cpp` - CLI options
+**Files modified:**
+- `ArenaRunner.cpp` - Added `generateComparisonReport()` with ReportData
+- `engine_arena_main.cpp` - Added `--cmp`, `--baseline` CLI options
 
 #### Phase 4: Configuration
 **Goal:** Add comparison settings to arena.yaml
@@ -752,3 +740,4 @@ Phases 1-3 deliver the core value. Phase 4 (config) is nice-to-have since CLI op
 | 2026-02-05 | Added Section 2 (data collection) and Section 3 (reporting) |
 | 2026-02-05 | ✅ Implemented Section 2: New JSON structure, file naming, backward compat |
 | 2026-02-05 | Added Section 4: Implementation plan for reporting |
+| 2026-02-05 | ✅ Implemented Phases 1-3: Result loading, baseline report, comparison report |

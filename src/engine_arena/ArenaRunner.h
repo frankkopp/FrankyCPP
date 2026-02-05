@@ -91,11 +91,33 @@ public:
   /// Runs only matches (no test suites)
   void runMatchesOnly();
 
-  /// Compares results between two versions and generates report
-  /// @param version1 First version to compare (e.g., "v1.1")
-  /// @param version2 Second version to compare (e.g., "v1.0")
-  /// @throws std::runtime_error if result files not found
-  void compareVersions(const std::string& version1, const std::string& version2);
+  //=========================================================================
+  // NEW Reporting Methods (Phase 1-3)
+  //=========================================================================
+
+  /// Loads ALL test suite results into ReportData structure
+  /// Groups by test suite, then by engine, keeping latest result per combo
+  /// @return ReportData with all results organized for reporting
+  ReportData loadAllResults();
+
+  /// Generates baseline report showing all engines side by side
+  /// @param data ReportData with loaded results
+  /// @return Formatted report string
+  std::string generateBaselineReport(const ReportData& data);
+
+  /// Generates comparison report for target engine against baselines
+  /// @param data ReportData with loaded results
+  /// @param targetEngine Engine to compare (e.g., "FrankyCPP-v1.2-dev")
+  /// @param baselineEngines Baselines to compare against (uses all if empty)
+  /// @return Formatted comparison report string
+  std::string generateComparisonReport(
+      const ReportData& data,
+      const EngineId& targetEngine,
+      const std::vector<EngineId>& baselineEngines = {});
+
+  /// Lists all available engines from stored results
+  /// @return Set of EngineIds found in results
+  std::set<EngineId> listAvailableEngines();
 
 private:
   const ArenaConfig& arenaConfig;  ///< Reference to arena configuration
@@ -103,45 +125,30 @@ private:
   MatchRunner matchRunner;         ///< Match execution engine
   ResultWriter resultWriter;       ///< Result persistence handler
 
-  /// Loads all test suite results for a specific version
-  /// @param version Version to load results for (e.g., "v1.1")
-  /// @return Map of suite name -> TestSuiteResult
-  std::map<std::string, TestSuiteResult> loadTestSuiteResults(const std::string& version);
+  //=========================================================================
+  // Formatting Utilities
+  //=========================================================================
 
-  /// Loads all match results for a specific version
-  /// @param version Version to load results for (e.g., "v1.1")
-  /// @return Map of match name -> MatchResult
-  std::map<std::string, MatchResult> loadMatchResults(const std::string& version);
+  /// Formats a number with thousands separator (e.g., 1234567 -> "1,234,567")
+  static std::string formatNumber(int64_t value);
 
-  /// Generates and prints comparison report
-  /// @param version1 First version name
-  /// @param version2 Second version name
-  /// @param suites1 Test suite results for version 1
-  /// @param suites2 Test suite results for version 2
-  /// @param matches1 Match results for version 1
-  /// @param matches2 Match results for version 2
-  /// @return Formatted comparison report as string
-  std::string generateComparisonReport(
-      const std::string& version1,
-      const std::string& version2,
-      const std::map<std::string, TestSuiteResult>& suites1,
-      const std::map<std::string, TestSuiteResult>& suites2,
-      const std::map<std::string, MatchResult>& matches1,
-      const std::map<std::string, MatchResult>& matches2);
+  /// Formats node count with suffix (e.g., 12400000 -> "12.4M")
+  static std::string formatNodes(double nodes);
 
-  /// Saves comparison report to file
-  /// @param version1 First version name
-  /// @param version2 Second version name
-  /// @param report Report content
-  /// @return Path to saved report file
-  std::string saveComparisonReport(
-      const std::string& version1,
-      const std::string& version2,
-      const std::string& report);
+  /// Formats time in seconds (e.g., 1234 ms -> "1.2s")
+  static std::string formatTime(double timeMs);
+
+  /// Formats a delta value with sign and color hint (e.g., +5, -3)
+  static std::string formatDelta(int delta);
+
+  /// Formats a delta percentage with sign (e.g., +2.5%, -1.0%)
+  static std::string formatDeltaPercent(double delta);
 
   /// Generates current timestamp in format YYYYMMDD_HHMMSS
-  /// @return Timestamp string for file naming
   static std::string getCurrentTimestamp();
+
+  /// Generates ISO 8601 timestamp
+  static std::string getIsoTimestamp();
 };
 
 } // namespace arena

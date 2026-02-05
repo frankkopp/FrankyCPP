@@ -86,10 +86,52 @@
 //
 //=============================================================================
 
+#include <map>
+#include <set>
 #include <string>
 #include <vector>
 
 namespace arena {
+
+//=============================================================================
+// EngineId - Engine identifier (name + version)
+//=============================================================================
+
+/// Uniquely identifies an engine by name and version
+struct EngineId {
+  std::string name;     ///< Engine name (e.g., "FrankyCPP", "FrankyGo")
+  std::string version;  ///< Engine version (e.g., "v1.1", "v1.0.3")
+
+  /// Returns string representation: "EngineName-Version" (e.g., "FrankyCPP-v1.1")
+  [[nodiscard]] std::string toString() const {
+    return name + "-" + version;
+  }
+
+  /// Returns display string: "EngineName Version" (e.g., "FrankyCPP v1.1")
+  [[nodiscard]] std::string toDisplayString() const {
+    return name + " " + version;
+  }
+
+  /// Comparison operator for use in std::map/set (sorts by name, then version)
+  bool operator<(const EngineId& other) const {
+    if (name != other.name) return name < other.name;
+    return version < other.version;
+  }
+
+  /// Equality operator
+  bool operator==(const EngineId& other) const {
+    return name == other.name && version == other.version;
+  }
+
+  /// Parse from string format "EngineName-Version"
+  static EngineId fromString(const std::string& str) {
+    auto pos = str.rfind('-');
+    if (pos == std::string::npos) {
+      return {str, ""};
+    }
+    return {str.substr(0, pos), str.substr(pos + 1)};
+  }
+};
 
 /// Detail for a single test case within a test suite
 struct TestCaseDetail {
@@ -127,6 +169,26 @@ struct TestSuiteResult {
 
   // Per-test details (optional, can be pruned)
   std::vector<TestCaseDetail> details; ///< Per-test details
+
+  /// Returns EngineId from this result
+  [[nodiscard]] EngineId getEngineId() const {
+    return {engineName, engineVersion};
+  }
+
+  /// Returns pass rate as percentage (0.0 - 100.0)
+  [[nodiscard]] double getPassRate() const {
+    return totalTests > 0 ? (passed * 100.0 / totalTests) : 0.0;
+  }
+
+  /// Returns average time per test in milliseconds
+  [[nodiscard]] double getAvgTimeMs() const {
+    return totalTests > 0 ? (static_cast<double>(totalTimeMs) / totalTests) : 0.0;
+  }
+
+  /// Returns average nodes per test
+  [[nodiscard]] double getAvgNodes() const {
+    return totalTests > 0 ? (static_cast<double>(totalNodes) / totalTests) : 0.0;
+  }
 };
 
 /// Result from running an engine match
@@ -144,6 +206,45 @@ struct MatchResult {
   double eloDifference = 0.0; ///< Calculated ELO difference
   std::string pgnPath;        ///< Path to PGN file
   int64_t durationMs = 0;     ///< Match duration in milliseconds
+};
+
+//=============================================================================
+// ReportData - Results organized for reporting
+//=============================================================================
+
+/// Holds all results organized by test suite and engine for report generation
+struct ReportData {
+  /// All test suites found (e.g., "WAC", "Crafty", "STS")
+  std::set<std::string> testSuites;
+
+  /// All engines found (e.g., FrankyCPP v1.1, FrankyGo v1.0.3)
+  std::set<EngineId> engines;
+
+  /// Results indexed by: testSuite -> engineId -> result
+  /// Uses latest result if multiple exist for same suite/engine
+  std::map<std::string, std::map<EngineId, TestSuiteResult>> suiteResults;
+
+  /// Match results (future use)
+  std::map<std::string, MatchResult> matchResults;
+
+  /// Returns true if any results are loaded
+  [[nodiscard]] bool hasResults() const {
+    return !suiteResults.empty() || !matchResults.empty();
+  }
+
+  /// Returns true if results exist for given engine
+  [[nodiscard]] bool hasEngine(const EngineId& engine) const {
+    return engines.contains(engine);
+  }
+
+  /// Returns result for given suite and engine, or nullptr if not found
+  [[nodiscard]] const TestSuiteResult* getResult(const std::string& suite, const EngineId& engine) const {
+    auto suiteIt = suiteResults.find(suite);
+    if (suiteIt == suiteResults.end()) return nullptr;
+    auto engineIt = suiteIt->second.find(engine);
+    if (engineIt == suiteIt->second.end()) return nullptr;
+    return &engineIt->second;
+  }
 };
 
 } // namespace arena

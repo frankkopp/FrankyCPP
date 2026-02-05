@@ -22,6 +22,7 @@
 //=============================================================================
 
 #include "ArenaRunner.h"
+#include "ConsoleColors.h"
 
 #include <chrono>
 #include <filesystem>
@@ -125,374 +126,9 @@ void ArenaRunner::runMatchesOnly() {
   std::cout << "===================================================================" << std::endl;
 }
 
-void ArenaRunner::compareVersions(const std::string& version1, const std::string& version2) {
-  std::cout << "\n===================================================================" << std::endl;
-  std::cout << "Version Comparison: " << version1 << " vs " << version2 << std::endl;
-  std::cout << "===================================================================" << std::endl;
-
-  // Load results for both versions
-  std::cout << "Loading results for " << version1 << "..." << std::endl;
-  auto suites1 = loadTestSuiteResults(version1);
-  auto matches1 = loadMatchResults(version1);
-  std::cout << "  Test suites: " << suites1.size() << std::endl;
-  std::cout << "  Matches: " << matches1.size() << std::endl;
-
-  std::cout << "Loading results for " << version2 << "..." << std::endl;
-  auto suites2 = loadTestSuiteResults(version2);
-  auto matches2 = loadMatchResults(version2);
-  std::cout << "  Test suites: " << suites2.size() << std::endl;
-  std::cout << "  Matches: " << matches2.size() << std::endl;
-
-  // Generate comparison report
-  std::string report = generateComparisonReport(version1, version2, suites1, suites2, matches1, matches2);
-
-  // Print report to console
-  std::cout << "\n" << report << std::endl;
-
-  // Save report to file
-  std::string reportPath = saveComparisonReport(version1, version2, report);
-  std::cout << "\nComparison report saved to: " << reportPath << std::endl;
-
-  std::cout << "\n===================================================================" << std::endl;
-  std::cout << "Comparison Complete" << std::endl;
-  std::cout << "===================================================================" << std::endl;
-}
-
-std::map<std::string, TestSuiteResult> ArenaRunner::loadTestSuiteResults(const std::string& engineId) {
-  std::map<std::string, TestSuiteResult> results;
-
-  const std::filesystem::path testsuitesDir = std::filesystem::path(arenaConfig.resultsDir) / "testsuites";
-
-  if (!std::filesystem::exists(testsuitesDir)) {
-    std::cout << "  Warning: No testsuites directory found" << std::endl;
-    return results;
-  }
-
-  // Find all JSON files matching the engine identifier pattern
-  // Format: {TestSuite}_{EngineId}_{Timestamp}.json (e.g., WAC_FrankyCPP-v0.5_20260205.json)
-  for (const auto& entry : std::filesystem::directory_iterator(testsuitesDir)) {
-    if (entry.path().extension() != ".json") continue;
-
-    // Load JSON file
-    try {
-      std::ifstream file(entry.path());
-      // NOLINTNEXTLINE - Clangd false positive about nlohmann::json template instantiation
-      json data = json::parse(file);
-
-      TestSuiteResult result;
-
-      // Parse new JSON format
-      result.arenaVersion = data["arenaVersion"];
-      result.timestamp = data["timestamp"];
-      result.testSuiteName = data["testSuite"]["name"];
-      result.epdPath = data["testSuite"]["epdPath"];
-      result.engineName = data["engine"]["name"];
-      result.engineVersion = data["engine"]["version"];
-      result.enginePath = data["engine"]["path"];
-
-      // Build engine identifier for matching
-      std::string resultEngineId = result.engineName + "-" + result.engineVersion;
-
-      // Check if this result matches the requested engine identifier
-      if (!engineId.empty() && resultEngineId.find(engineId) == std::string::npos &&
-          engineId.find(resultEngineId) == std::string::npos) {
-        continue;  // Skip non-matching engines
-      }
-
-      // Parse summary section
-      const auto& summary = data["summary"];
-      result.totalTests = summary["totalTests"];
-      result.passed = summary["passed"];
-      result.failed = summary["failed"];
-      result.skipped = summary["skipped"];
-      result.totalNodes = summary["totalNodes"];
-      result.totalTimeMs = summary["totalTimeMs"];
-
-      // Parse test case details
-      if (data.contains("details")) {
-        for (const auto& detail : data["details"]) {
-          TestCaseDetail testDetail;
-          testDetail.testId = detail["testId"];
-          testDetail.fen = detail["fen"];
-          testDetail.expected = detail["expected"];
-          testDetail.actual = detail["actual"];
-          testDetail.passed = detail["passed"];
-          testDetail.nodes = detail["nodes"];
-          testDetail.timeMs = detail["timeMs"];
-          result.details.push_back(testDetail);
-        }
-      }
-
-      // Use testSuiteName + engineId as key
-      // If multiple results exist for same suite/engine, keep the latest
-      std::string key = result.testSuiteName + "_" + resultEngineId;
-      auto existing = results.find(key);
-      if (existing == results.end() || result.timestamp > existing->second.timestamp) {
-        results[key] = result;
-      }
-
-    } catch (const std::exception& e) {
-      std::cerr << "  Warning: Failed to load " << entry.path().filename().string() << ": " << e.what() << std::endl;
-    }
-  }
-
-  return results;
-}
-
-std::map<std::string, MatchResult> ArenaRunner::loadMatchResults(const std::string& version) {
-  std::map<std::string, MatchResult> results;
-
-  const std::filesystem::path matchesDir = std::filesystem::path(arenaConfig.resultsDir) / "matches";
-
-  if (!std::filesystem::exists(matchesDir)) {
-    std::cout << "  Warning: No matches directory found for " << version << std::endl;
-    return results;
-  }
-
-  // Find all JSON files matching the version pattern
-  for (const auto& entry : std::filesystem::directory_iterator(matchesDir)) {
-    if (entry.path().extension() != ".json") continue;
-
-    const std::string filename = entry.path().filename().string();
-
-    // Check if filename starts with the version prefix
-    if (filename.substr(0, version.length()) != version) continue;
-
-    // Load JSON file
-    try {
-      std::ifstream file(entry.path());
-      // NOLINTNEXTLINE - Clangd false positive about nlohmann::json template instantiation
-      json data = json::parse(file);
-
-      // Parse MatchResult from JSON
-      MatchResult result;
-      result.version = data["version"];
-      result.matchName = data["matchName"];
-      result.timestamp = data["timestamp"];
-      result.engine1Name = data["engines"]["engine1"];
-      result.engine2Name = data["engines"]["engine2"];
-      result.engine1Wins = data["results"]["engine1Wins"];
-      result.engine2Wins = data["results"]["engine2Wins"];
-      result.draws = data["results"]["draws"];
-      result.engine1Score = data["results"]["engine1Score"];
-      result.engine2Score = data["results"]["engine2Score"];
-      result.eloDifference = data["results"]["eloDifference"];
-      result.pgnPath = data["pgnPath"];
-      result.durationMs = data["durationMs"];
-
-      results[result.matchName] = result;
-
-    } catch (const std::exception& e) {
-      std::cerr << "  Warning: Failed to load " << filename << ": " << e.what() << std::endl;
-    }
-  }
-
-  return results;
-}
-
-std::string ArenaRunner::generateComparisonReport(
-    const std::string& version1,
-    const std::string& version2,
-    const std::map<std::string, TestSuiteResult>& suites1,
-    const std::map<std::string, TestSuiteResult>& suites2,
-    const std::map<std::string, MatchResult>& matches1,
-    const std::map<std::string, MatchResult>& matches2) {
-
-  std::ostringstream report;
-
-  report << "===================================================================" << std::endl;
-  report << "Engine Version Comparison Report" << std::endl;
-  report << "===================================================================" << std::endl;
-  report << "Version 1: " << version1 << std::endl;
-  report << "Version 2: " << version2 << std::endl;
-  report << "Generated: " << getCurrentTimestamp() << std::endl;
-  report << "===================================================================" << std::endl;
-
-  // Test Suite Comparison
-  if (!suites1.empty() || !suites2.empty()) {
-    report << "\nTEST SUITE COMPARISON:" << std::endl;
-    report << "-------------------------------------------------------------------" << std::endl;
-
-    // Find all unique suite names
-    std::set<std::string> allSuiteNames;
-    for (const auto& [name, _] : suites1) allSuiteNames.insert(name);
-    for (const auto& [name, _] : suites2) allSuiteNames.insert(name);
-
-    for (const auto& suiteName : allSuiteNames) {
-      auto it1 = suites1.find(suiteName);
-      auto it2 = suites2.find(suiteName);
-
-      report << "\n" << suiteName << ":" << std::endl;
-
-      if (it1 != suites1.end() && it2 != suites2.end()) {
-        // Both versions have this suite
-        const auto& suite1 = it1->second;
-        const auto& suite2 = it2->second;
-
-        // Calculate pass rates
-        const double passRate1 = suite1.totalTests > 0 ? (suite1.passed * 100.0 / suite1.totalTests) : 0.0;
-        const double passRate2 = suite2.totalTests > 0 ? (suite2.passed * 100.0 / suite2.totalTests) : 0.0;
-
-        report << "  " << version2 << " (" << suite2.engineName << "): "
-               << suite2.passed << "/" << suite2.totalTests
-               << " (" << std::fixed << std::setprecision(1) << passRate2 << "%)" << std::endl;
-        report << "  " << version1 << " (" << suite1.engineName << "): "
-               << suite1.passed << "/" << suite1.totalTests
-               << " (" << std::fixed << std::setprecision(1) << passRate1 << "%)" << std::endl;
-
-        const int deltaTests = suite1.passed - suite2.passed;
-        const double deltaRate = passRate1 - passRate2;
-
-        if (deltaTests > 0) {
-          report << "  Improvement: +" << deltaTests << " positions (+"
-                 << std::fixed << std::setprecision(1) << deltaRate << "%)" << std::endl;
-        } else if (deltaTests < 0) {
-          report << "  Regression: " << deltaTests << " positions ("
-                 << std::fixed << std::setprecision(1) << deltaRate << "%)" << std::endl;
-        } else {
-          report << "  No change" << std::endl;
-        }
-
-        // Show timing improvement (average time per test)
-        const double avgTime1 = suite1.totalTests > 0 ? (suite1.totalTimeMs / static_cast<double>(suite1.totalTests)) : 0.0;
-        const double avgTime2 = suite2.totalTests > 0 ? (suite2.totalTimeMs / static_cast<double>(suite2.totalTests)) : 0.0;
-        const double timeDelta = avgTime1 - avgTime2;
-
-        if (std::abs(timeDelta) > 1.0) {
-          report << "  Avg time: " << std::fixed << std::setprecision(1) << avgTime2 << "ms → " << avgTime1 << "ms ("
-                 << (timeDelta > 0 ? "+" : "") << std::fixed << std::setprecision(1)
-                 << timeDelta << "ms)" << std::endl;
-        }
-
-      } else if (it1 != suites1.end()) {
-        // Only version 1 has this suite
-        const auto& suite1 = it1->second;
-        const double passRate1 = suite1.totalTests > 0 ? (suite1.passed * 100.0 / suite1.totalTests) : 0.0;
-        report << "  " << version1 << ": " << suite1.passed << "/" << suite1.totalTests
-               << " (" << std::fixed << std::setprecision(1) << passRate1 << "%)" << std::endl;
-        report << "  " << version2 << ": NOT TESTED" << std::endl;
-
-      } else {
-        // Only version 2 has this suite
-        const auto& suite2 = it2->second;
-        const double passRate2 = suite2.totalTests > 0 ? (suite2.passed * 100.0 / suite2.totalTests) : 0.0;
-        report << "  " << version1 << ": NOT TESTED" << std::endl;
-        report << "  " << version2 << ": " << suite2.passed << "/" << suite2.totalTests
-               << " (" << std::fixed << std::setprecision(1) << passRate2 << "%)" << std::endl;
-      }
-    }
-  }
-
-  // Match Comparison
-  if (!matches1.empty() || !matches2.empty()) {
-    report << "\n\nMATCH COMPARISON:" << std::endl;
-    report << "-------------------------------------------------------------------" << std::endl;
-
-    // Find all unique match names
-    std::set<std::string> allMatchNames;
-    for (const auto& [name, _] : matches1) allMatchNames.insert(name);
-    for (const auto& [name, _] : matches2) allMatchNames.insert(name);
-
-    for (const auto& matchName : allMatchNames) {
-      auto it1 = matches1.find(matchName);
-
-      if (it1 != matches1.end()) {
-        const auto& match = it1->second;
-
-        report << "\n" << matchName << ":" << std::endl;
-        report << "  " << match.engine1Name << ": " << match.engine1Wins << " wins, "
-               << match.draws << " draws, " << match.engine2Wins << " losses" << std::endl;
-        report << "  " << match.engine2Name << ": " << match.engine2Wins << " wins, "
-               << match.draws << " draws, " << match.engine1Wins << " losses" << std::endl;
-        report << "  Score: " << std::fixed << std::setprecision(1)
-               << match.engine1Score << " - " << match.engine2Score << std::endl;
-        report << "  ELO Difference: " << (match.eloDifference > 0 ? "+" : "")
-               << std::fixed << std::setprecision(1) << match.eloDifference << " ELO" << std::endl;
-        report << "  Duration: " << std::fixed << std::setprecision(1)
-               << match.durationMs / 1000.0 << " seconds" << std::endl;
-      }
-    }
-  }
-
-  // Overall Summary
-  report << "\n\nSUMMARY:" << std::endl;
-  report << "-------------------------------------------------------------------" << std::endl;
-
-  // Calculate average ELO from matches
-  if (!matches1.empty()) {
-    double totalElo = 0.0;
-    int matchCount = 0;
-    for (const auto& [name, match] : matches1) {
-      totalElo += match.eloDifference;
-      matchCount++;
-    }
-    const double avgElo = totalElo / matchCount;
-
-    if (avgElo > 5.0) {
-      report << version1 << " is approximately " << std::fixed << std::setprecision(0)
-             << "+" << avgElo << " ELO stronger than " << version2 << std::endl;
-    } else if (avgElo < -5.0) {
-      report << version1 << " is approximately " << std::fixed << std::setprecision(0)
-             << avgElo << " ELO weaker than " << version2 << std::endl;
-    } else {
-      report << version1 << " and " << version2 << " are approximately equal in strength" << std::endl;
-    }
-  }
-
-  // Calculate total test suite improvements
-  if (!suites1.empty() && !suites2.empty()) {
-    int totalImprovement = 0;
-    int totalTests = 0;
-
-    for (const auto& [name, suite1] : suites1) {
-      auto it2 = suites2.find(name);
-      if (it2 != suites2.end()) {
-        const auto& suite2 = it2->second;
-        totalImprovement += (suite1.passed - suite2.passed);
-        totalTests += suite1.totalTests;
-      }
-    }
-
-    if (totalImprovement > 0) {
-      report << "Test suite improvement: +" << totalImprovement << " positions solved" << std::endl;
-    } else if (totalImprovement < 0) {
-      report << "Test suite regression: " << totalImprovement << " positions lost" << std::endl;
-    } else {
-      report << "Test suite results: no change" << std::endl;
-    }
-  }
-
-  report << "===================================================================" << std::endl;
-
-  return report.str();
-}
-
-std::string ArenaRunner::saveComparisonReport(
-    const std::string& version1,
-    const std::string& version2,
-    const std::string& report) {
-
-  // Create comparisons directory
-  const std::filesystem::path comparisonsDir = std::filesystem::path(arenaConfig.resultsDir) / "comparisons";
-  std::filesystem::create_directories(comparisonsDir);
-
-  // Generate filename: v1.1_vs_v1.0_20260201_153000.txt
-  std::ostringstream filename;
-  filename << version1 << "_vs_" << version2 << "_" << getCurrentTimestamp() << ".txt";
-
-  const std::filesystem::path reportPath = comparisonsDir / filename.str();
-
-  // Write report to file
-  std::ofstream file(reportPath);
-  if (!file) {
-    throw std::runtime_error("Failed to create comparison report file: " + reportPath.string());
-  }
-
-  file << report;
-  file.close();
-
-  return reportPath.string();
-}
+//=============================================================================
+// Reporting Implementation (Phase 1-3)
+//=============================================================================
 
 std::string ArenaRunner::getCurrentTimestamp() {
   const auto now = system_clock::now();
@@ -509,5 +145,537 @@ std::string ArenaRunner::getCurrentTimestamp() {
   oss << std::put_time(&tm, "%Y%m%d_%H%M%S");
   return oss.str();
 }
+
+std::string ArenaRunner::getIsoTimestamp() {
+  const auto now = system_clock::now();
+  auto time_t = system_clock::to_time_t(now);
+  std::tm tm{};
+
+#ifdef _WIN32
+  localtime_s(&tm, &time_t);
+#else
+  localtime_r(&time_t, &tm);
+#endif
+
+  std::ostringstream oss;
+  oss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
+  return oss.str();
+}
+
+std::string ArenaRunner::formatNumber(int64_t value) {
+  std::string str = std::to_string(std::abs(value));
+  std::string result;
+  int count = 0;
+  for (auto it = str.rbegin(); it != str.rend(); ++it) {
+    if (count > 0 && count % 3 == 0) {
+      result = ',' + result;
+    }
+    result = *it + result;
+    ++count;
+  }
+  return value < 0 ? "-" + result : result;
+}
+
+std::string ArenaRunner::formatNodes(double nodes) {
+  if (nodes >= 1e9) {
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(1) << (nodes / 1e9) << "B";
+    return oss.str();
+  }
+  if (nodes >= 1e6) {
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(1) << (nodes / 1e6) << "M";
+    return oss.str();
+  }
+  if (nodes >= 1e3) {
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(1) << (nodes / 1e3) << "K";
+    return oss.str();
+  }
+  return std::to_string(static_cast<int64_t>(nodes));
+}
+
+std::string ArenaRunner::formatTime(double timeMs) {
+  if (timeMs >= 60000) {
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(1) << (timeMs / 60000) << "m";
+    return oss.str();
+  }
+  if (timeMs >= 1000) {
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(1) << (timeMs / 1000) << "s";
+    return oss.str();
+  }
+  std::ostringstream oss;
+  oss << std::fixed << std::setprecision(0) << timeMs << "ms";
+  return oss.str();
+}
+
+std::string ArenaRunner::formatDelta(int delta) {
+  if (delta > 0) return "+" + std::to_string(delta);
+  if (delta < 0) return std::to_string(delta);
+  return "0";
+}
+
+std::string ArenaRunner::formatDeltaPercent(double delta) {
+  std::ostringstream oss;
+  oss << std::fixed << std::setprecision(1);
+  if (delta > 0) oss << "+";
+  oss << delta << "%";
+  return oss.str();
+}
+
+ReportData ArenaRunner::loadAllResults() {
+  ReportData data;
+
+  const std::filesystem::path testsuitesDir = std::filesystem::path(arenaConfig.resultsDir) / "testsuites";
+
+  if (!std::filesystem::exists(testsuitesDir)) {
+    std::cout << "  Warning: No testsuites directory found at " << testsuitesDir << std::endl;
+    return data;
+  }
+
+  // Load all JSON files from testsuites directory
+  for (const auto& entry : std::filesystem::directory_iterator(testsuitesDir)) {
+    if (entry.path().extension() != ".json") continue;
+
+    try {
+      std::ifstream file(entry.path());
+      json jsonData = json::parse(file);
+
+      TestSuiteResult result;
+
+      // Parse new JSON format
+      result.arenaVersion = jsonData["arenaVersion"];
+      result.timestamp = jsonData["timestamp"];
+      result.testSuiteName = jsonData["testSuite"]["name"];
+      result.epdPath = jsonData["testSuite"]["epdPath"];
+      result.engineName = jsonData["engine"]["name"];
+      result.engineVersion = jsonData["engine"]["version"];
+      result.enginePath = jsonData["engine"]["path"];
+
+      // Parse summary section
+      const auto& summary = jsonData["summary"];
+      result.totalTests = summary["totalTests"];
+      result.passed = summary["passed"];
+      result.failed = summary["failed"];
+      result.skipped = summary["skipped"];
+      result.totalNodes = summary["totalNodes"];
+      result.totalTimeMs = summary["totalTimeMs"];
+
+      // Skip details for reporting (not needed, saves memory)
+      // result.details can be populated if needed
+
+      // Get engine identifier
+      EngineId engineId = result.getEngineId();
+      const std::string& suiteName = result.testSuiteName;
+
+      // Add to data structures
+      data.testSuites.insert(suiteName);
+      data.engines.insert(engineId);
+
+      // Check if we already have a result for this suite/engine
+      auto& suiteMap = data.suiteResults[suiteName];
+      auto existing = suiteMap.find(engineId);
+      if (existing == suiteMap.end() || result.timestamp > existing->second.timestamp) {
+        // Keep the latest result
+        suiteMap[engineId] = result;
+      }
+
+    } catch (const std::exception& e) {
+      std::cerr << "  Warning: Failed to load " << entry.path().filename().string()
+                << ": " << e.what() << std::endl;
+    }
+  }
+
+  return data;
+}
+
+std::set<EngineId> ArenaRunner::listAvailableEngines() {
+  ReportData data = loadAllResults();
+  return data.engines;
+}
+
+std::string ArenaRunner::generateBaselineReport(const ReportData& data) {
+  std::ostringstream report;
+
+  // Helper to pad/truncate string to exact width
+  auto fixedWidth = [](const std::string& str, size_t width) -> std::string {
+    if (str.length() >= width) {
+      return str.substr(0, width - 2) + "..";
+    }
+    return str + std::string(width - str.length(), ' ');
+  };
+
+  // Column widths
+  constexpr size_t COL_ENGINE = 28;
+  constexpr size_t COL_SOLVED = 12;
+  constexpr size_t COL_RATE = 10;
+  constexpr size_t COL_TIME = 12;
+  constexpr size_t COL_NODES = 12;
+
+  // Header
+  report << Color::color(Color::BOLD);
+  report << "================================================================================\n";
+  report << "BASELINE RESULTS - All Engines\n";
+  report << "================================================================================\n";
+  report << Color::color(Color::RESET);
+  report << "Generated: " << getIsoTimestamp() << "\n";
+  report << "================================================================================\n";
+
+  if (!data.hasResults()) {
+    report << "\nNo results found.\n";
+    report << "Run test suites first: FrankyCPP_Arena --testsuites\n";
+    return report.str();
+  }
+
+  // List of engines sorted for consistent display
+  std::vector<EngineId> engines(data.engines.begin(), data.engines.end());
+
+  // For each test suite, show all engines side by side
+  for (const auto& suiteName : data.testSuites) {
+    const auto& suiteResultsMap = data.suiteResults.at(suiteName);
+
+    // Get total tests from first result (should be same for all)
+    int totalTests = 0;
+    if (!suiteResultsMap.empty()) {
+      totalTests = suiteResultsMap.begin()->second.totalTests;
+    }
+
+    report << "\n";
+    report << Color::color(Color::BOLD);
+    report << "TEST SUITE: " << suiteName << " (" << totalTests << " positions)\n";
+    report << Color::color(Color::RESET);
+    report << "--------------------------------------------------------------------------------\n";
+    report << fixedWidth("Engine", COL_ENGINE)
+           << fixedWidth("Solved", COL_SOLVED)
+           << fixedWidth("Rate", COL_RATE)
+           << fixedWidth("Avg Time", COL_TIME)
+           << fixedWidth("Avg Nodes", COL_NODES) << "\n";
+    report << "--------------------------------------------------------------------------------\n";
+
+    // Sort engines by pass rate for this suite (best first)
+    std::vector<std::pair<EngineId, const TestSuiteResult*>> sortedResults;
+    for (const auto& engine : engines) {
+      const TestSuiteResult* result = data.getResult(suiteName, engine);
+      sortedResults.emplace_back(engine, result);
+    }
+    std::sort(sortedResults.begin(), sortedResults.end(),
+              [](const auto& a, const auto& b) {
+                if (!a.second) return false;
+                if (!b.second) return true;
+                return a.second->getPassRate() > b.second->getPassRate();
+              });
+
+    for (const auto& [engine, result] : sortedResults) {
+      // Engine name - truncated to fit column
+      report << fixedWidth(engine.toDisplayString(), COL_ENGINE);
+
+      if (result) {
+        // Solved column
+        std::ostringstream solved;
+        solved << result->passed << "/" << result->totalTests;
+        report << fixedWidth(solved.str(), COL_SOLVED);
+
+        // Rate column
+        std::ostringstream rate;
+        rate << std::fixed << std::setprecision(1) << result->getPassRate() << "%";
+        report << fixedWidth(rate.str(), COL_RATE);
+
+        // Avg Time column
+        report << fixedWidth(formatTime(result->getAvgTimeMs()), COL_TIME);
+
+        // Avg Nodes column
+        report << fixedWidth(formatNodes(result->getAvgNodes()), COL_NODES);
+      } else {
+        report << fixedWidth(Symbol::DASH, COL_SOLVED)
+               << fixedWidth(Symbol::DASH, COL_RATE)
+               << fixedWidth(Symbol::DASH, COL_TIME)
+               << fixedWidth(Symbol::DASH, COL_NODES);
+      }
+      report << "\n";
+    }
+  }
+
+  report << "\n================================================================================\n";
+
+  return report.str();
+}
+
+std::string ArenaRunner::generateComparisonReport(
+    const ReportData& data,
+    const EngineId& targetEngine,
+    const std::vector<EngineId>& baselineEngines) {
+
+  std::ostringstream report;
+
+  // Helper to pad/truncate string to exact width
+  auto fixedWidth = [](const std::string& str, size_t width) -> std::string {
+    if (str.length() >= width) {
+      return str.substr(0, width - 2) + "..";
+    }
+    return str + std::string(width - str.length(), ' ');
+  };
+
+  // Column widths
+  constexpr size_t COL_LABEL = 24;
+  constexpr size_t COL_ENGINE = 16;
+
+  // Determine baselines: if empty, use all engines except target
+  std::vector<EngineId> baselines;
+  if (baselineEngines.empty()) {
+    for (const auto& engine : data.engines) {
+      if (!(engine == targetEngine)) {
+        baselines.push_back(engine);
+      }
+    }
+  } else {
+    baselines = baselineEngines;
+  }
+
+  // Header
+  report << Color::color(Color::BOLD);
+  report << "================================================================================\n";
+  report << "ENGINE COMPARISON REPORT\n";
+  report << "================================================================================\n";
+  report << Color::color(Color::RESET);
+  report << "Generated: " << getIsoTimestamp() << "\n";
+  report << "Comparing: " << Color::colorize(targetEngine.toDisplayString(), Color::CYAN) << "\n";
+  report << "Baselines: ";
+  for (size_t i = 0; i < baselines.size(); ++i) {
+    if (i > 0) report << ", ";
+    report << baselines[i].toDisplayString();
+  }
+  report << "\n";
+  report << "================================================================================\n";
+
+  if (!data.hasEngine(targetEngine)) {
+    report << "\n" << Color::colorize("ERROR: Target engine not found in results!", Color::RED) << "\n";
+    report << "Available engines:\n";
+    for (const auto& engine : data.engines) {
+      report << "  - " << engine.toString() << "\n";
+    }
+    return report.str();
+  }
+
+  // Determine primary baseline (first in list)
+  EngineId primaryBaseline = baselines.empty() ? EngineId{"", ""} : baselines[0];
+
+  report << "\n";
+  report << Color::color(Color::BOLD);
+  report << "TEST SUITE RESULTS\n";
+  report << Color::color(Color::RESET);
+  report << "--------------------------------------------------------------------------------\n";
+
+  // Build header row with all engines
+  report << fixedWidth("", COL_LABEL);
+  report << fixedWidth(targetEngine.toDisplayString(), COL_ENGINE);
+  for (const auto& baseline : baselines) {
+    report << fixedWidth(baseline.toDisplayString(), COL_ENGINE);
+  }
+  report << "\n";
+
+  // Underline
+  report << fixedWidth("", COL_LABEL);
+  report << fixedWidth("--------", COL_ENGINE);
+  for (size_t i = 0; i < baselines.size(); ++i) {
+    report << fixedWidth("--------", COL_ENGINE);
+  }
+  report << "\n";
+
+  // Track summary statistics
+  int totalImprovement = 0;
+  int totalPositions = 0;
+  int suitesImproved = 0;
+  int suitesRegressed = 0;
+
+  // For each test suite
+  for (const auto& suiteName : data.testSuites) {
+    const TestSuiteResult* targetResult = data.getResult(suiteName, targetEngine);
+
+    // Get total tests
+    int totalTests = 0;
+    if (targetResult) {
+      totalTests = targetResult->totalTests;
+    } else {
+      // Try to get from any baseline
+      for (const auto& baseline : baselines) {
+        const TestSuiteResult* baseResult = data.getResult(suiteName, baseline);
+        if (baseResult) {
+          totalTests = baseResult->totalTests;
+          break;
+        }
+      }
+    }
+
+    // Suite name row
+    report << "\n" << Color::color(Color::BOLD) << suiteName
+           << " (" << totalTests << " positions)" << Color::color(Color::RESET) << "\n";
+
+    // Solved row
+    report << fixedWidth("  Solved:", COL_LABEL);
+    if (targetResult) {
+      report << fixedWidth(std::to_string(targetResult->passed), COL_ENGINE);
+    } else {
+      report << fixedWidth(Symbol::DASH, COL_ENGINE);
+    }
+    for (const auto& baseline : baselines) {
+      const TestSuiteResult* baseResult = data.getResult(suiteName, baseline);
+      if (baseResult) {
+        report << fixedWidth(std::to_string(baseResult->passed), COL_ENGINE);
+      } else {
+        report << fixedWidth(Symbol::DASH, COL_ENGINE);
+      }
+    }
+    report << "\n";
+
+    // Rate row
+    report << fixedWidth("  Rate:", COL_LABEL);
+    if (targetResult) {
+      std::ostringstream rate;
+      rate << std::fixed << std::setprecision(1) << targetResult->getPassRate() << "%";
+      report << fixedWidth(rate.str(), COL_ENGINE);
+    } else {
+      report << fixedWidth(Symbol::DASH, COL_ENGINE);
+    }
+    for (const auto& baseline : baselines) {
+      const TestSuiteResult* baseResult = data.getResult(suiteName, baseline);
+      if (baseResult) {
+        std::ostringstream rate;
+        rate << std::fixed << std::setprecision(1) << baseResult->getPassRate() << "%";
+        report << fixedWidth(rate.str(), COL_ENGINE);
+      } else {
+        report << fixedWidth(Symbol::DASH, COL_ENGINE);
+      }
+    }
+    report << "\n";
+
+    // Delta row (vs primary baseline)
+    if (!primaryBaseline.name.empty()) {
+      std::string deltaLabel = "  vs " + primaryBaseline.toDisplayString() + ":";
+      if (deltaLabel.length() > COL_LABEL - 1) {
+        deltaLabel = "  vs baseline:";
+      }
+      report << fixedWidth(deltaLabel, COL_LABEL);
+
+      const TestSuiteResult* primaryResult = data.getResult(suiteName, primaryBaseline);
+
+      if (targetResult && primaryResult) {
+        int delta = targetResult->passed - primaryResult->passed;
+        double deltaRate = targetResult->getPassRate() - primaryResult->getPassRate();
+
+        std::ostringstream deltaStr;
+        deltaStr << formatDelta(delta) << " (" << formatDeltaPercent(deltaRate) << ")";
+
+        // Color based on delta, then pad
+        std::string coloredDelta = Color::colorDelta(deltaStr.str(), delta);
+        report << coloredDelta;
+        // Pad after colored string (color codes don't take visual space)
+        if (deltaStr.str().length() < COL_ENGINE) {
+          report << std::string(COL_ENGINE - deltaStr.str().length(), ' ');
+        }
+
+        // Track stats
+        totalImprovement += delta;
+        totalPositions += targetResult->totalTests;
+        if (delta > 0) suitesImproved++;
+        if (delta < 0) suitesRegressed++;
+
+      } else if (targetResult) {
+        report << fixedWidth("N/A", COL_ENGINE);
+      } else {
+        report << fixedWidth(Symbol::DASH, COL_ENGINE);
+      }
+
+      // Mark baseline column
+      report << fixedWidth("baseline", COL_ENGINE);
+
+      // Other baselines - show vs primary
+      for (size_t i = 1; i < baselines.size(); ++i) {
+        const TestSuiteResult* otherResult = data.getResult(suiteName, baselines[i]);
+        if (otherResult && primaryResult) {
+          int delta = otherResult->passed - primaryResult->passed;
+          double deltaRate = otherResult->getPassRate() - primaryResult->getPassRate();
+          std::ostringstream deltaStr;
+          deltaStr << formatDelta(delta) << " (" << formatDeltaPercent(deltaRate) << ")";
+          std::string coloredDelta = Color::colorDelta(deltaStr.str(), delta);
+          report << coloredDelta;
+          if (deltaStr.str().length() < COL_ENGINE) {
+            report << std::string(COL_ENGINE - deltaStr.str().length(), ' ');
+          }
+        } else {
+          report << fixedWidth(Symbol::DASH, COL_ENGINE);
+        }
+      }
+      report << "\n";
+    }
+
+    // Avg Time row
+    report << fixedWidth("  Avg Time:", COL_LABEL);
+    if (targetResult) {
+      report << fixedWidth(formatTime(targetResult->getAvgTimeMs()), COL_ENGINE);
+    } else {
+      report << fixedWidth(Symbol::DASH, COL_ENGINE);
+    }
+    for (const auto& baseline : baselines) {
+      const TestSuiteResult* baseResult = data.getResult(suiteName, baseline);
+      if (baseResult) {
+        report << fixedWidth(formatTime(baseResult->getAvgTimeMs()), COL_ENGINE);
+      } else {
+        report << fixedWidth(Symbol::DASH, COL_ENGINE);
+      }
+    }
+    report << "\n";
+  }
+
+  // Summary section
+  report << "\n";
+  report << "--------------------------------------------------------------------------------\n";
+  report << Color::color(Color::BOLD);
+  report << "TEST SUITE SUMMARY (" << targetEngine.toDisplayString()
+         << " vs " << primaryBaseline.toDisplayString() << ")\n";
+  report << Color::color(Color::RESET);
+  report << "--------------------------------------------------------------------------------\n";
+
+  report << "  Total positions:      " << totalPositions << "\n";
+
+  // Improvement/regression
+  if (totalImprovement > 0) {
+    std::ostringstream impStr;
+    impStr << "+" << totalImprovement << " positions (+"
+           << std::fixed << std::setprecision(1)
+           << (totalPositions > 0 ? totalImprovement * 100.0 / totalPositions : 0) << "%)";
+    report << "  Improvement:          " << Color::colorize(impStr.str(), Color::GREEN) << "\n";
+  } else if (totalImprovement < 0) {
+    std::ostringstream regStr;
+    regStr << totalImprovement << " positions ("
+           << std::fixed << std::setprecision(1)
+           << (totalPositions > 0 ? totalImprovement * 100.0 / totalPositions : 0) << "%)";
+    report << "  Regression:           " << Color::colorize(regStr.str(), Color::RED) << "\n";
+  } else {
+    report << "  Change:               " << Color::colorize("No change", Color::YELLOW) << "\n";
+  }
+
+  report << "  Suites improved:      " << suitesImproved << "\n";
+  report << "  Suites regressed:     " << suitesRegressed << "\n";
+
+  // Status
+  report << "  Status:               ";
+  if (totalImprovement > 0 && suitesRegressed == 0) {
+    report << Symbol::CHECK << " " << Color::colorize("IMPROVEMENT", Color::GREEN);
+  } else if (totalImprovement < 0 || suitesRegressed > suitesImproved) {
+    report << Symbol::CROSS << " " << Color::colorize("REGRESSION", Color::RED);
+  } else if (totalImprovement > 0) {
+    report << Symbol::WARNING << " " << Color::colorize("MIXED (some suites regressed)", Color::YELLOW);
+  } else {
+    report << Symbol::EQUAL << " " << Color::colorize("NO CHANGE", Color::YELLOW);
+  }
+  report << "\n";
+
+  report << "================================================================================\n";
+
+  return report.str();
+}
+
 
 } // namespace arena
