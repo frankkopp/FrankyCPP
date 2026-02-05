@@ -260,7 +260,6 @@ Let me analyze what the current system captures:
 
 **Note:** Engine version is now explicitly configured in `arena.yaml` via `engineVersion` field,
 not parsed from UCI `id name` response (which has no standard format for version).
-```
 
 ### 2.4 NEW File Naming ✅ IMPLEMENTED
 
