@@ -145,6 +145,7 @@ testSuites:
     commandLineArgs: ""                      # Engine startup arguments (optional)
     uciOptions: ""                           # UCI setoption commands (optional)
     debugMode: false                         # Enable UCI debug output (optional)
+    parallelWorkers: 1                       # Parallel engine instances (optional)
 ```
 
 ### Fields
@@ -462,11 +463,84 @@ debugMode: true     # Verbose UCI protocol logging
 
 ---
 
+#### `parallelWorkers` (Optional)
+
+**Type:** Integer
+
+**Purpose:** Number of parallel engine instances for concurrent position testing
+
+**Default:** `1` (sequential execution)
+
+**Range:** 1-16 (practical range: 1-8)
+
+**Examples:**
+```yaml
+parallelWorkers: 1     # Sequential execution (default)
+parallelWorkers: 4     # 4 parallel engine instances
+parallelWorkers: 8     # 8 parallel engines (for large suites)
+```
+
+**Effect:**
+- `1`: Positions tested one at a time (original behavior)
+- `N>1`: N engine processes run concurrently, each testing different positions
+
+**Architecture:**
+- Uses ThreadPool from `common/ThreadPool.h`
+- Each worker thread manages its own UCIEngine instance
+- Thread-local engine storage ensures proper isolation
+- Results collected in original position order via futures
+
+**Performance:**
+| Workers | Engine Processes | Memory (est.) | Speedup |
+|---------|------------------|---------------|---------|
+| 1 | 1 | ~200 MB | 1x |
+| 2 | 2 | ~400 MB | ~1.9x |
+| 4 | 4 | ~800 MB | ~3.5x |
+| 8 | 8 | ~1.6 GB | ~6x |
+
+**Output:**
+- Progress display: `Progress: 150/300 (50%) [120 passed, 30 failed]`
+- Summary shows both engine time (sum) and wall time (actual elapsed)
+- Speedup factor calculated: `Engine Time / Wall Time`
+
+**Example Output:**
+```
+Test Suite Complete: WAC (parallel)
+  Total Tests:  300
+  Passed:       285 (95%)
+  Failed:       15
+  Skipped:      0
+  Total Nodes:  123456789
+  Engine Time:  1500000ms (sum of all positions)
+  Wall Time:    450000ms (actual elapsed)
+  Speedup:      3.33x
+```
+
+**When to use:**
+- Large test suites (100+ positions)
+- Time-per-move >= 2 seconds
+- Sufficient RAM for multiple engines
+- CPU has multiple cores available
+
+**When NOT to use:**
+- Debugging (use sequential for clear output)
+- Small test suites (<20 positions, startup overhead dominates)
+- Limited RAM systems
+- Comparing exact search behavior (parallel may affect timing)
+
+**Recommendations:**
+- Start with `parallelWorkers: 4` and adjust based on system
+- Monitor memory usage with large worker counts
+- Keep `isolatePositions: true` for accurate results
+- For debugging, set `parallelWorkers: 1`
+
+---
+
 ### Complete Test Suite Example
 
 ```yaml
 testSuites:
-  # Quick regression test with current build
+  # Quick regression test with current build (sequential)
   - name: "franky_tests_v1.1"
     epdPath: "test/testsets/franky_tests.epd"
     timePerMove: 2000
@@ -476,6 +550,7 @@ testSuites:
     commandLineArgs: ""
     uciOptions: "OwnBook=false"
     debugMode: false
+    parallelWorkers: 1            # Sequential for small suite
 
   # Previous version for comparison
   - name: "franky_tests_v1.0"
@@ -487,8 +562,9 @@ testSuites:
     commandLineArgs: ""
     uciOptions: "OwnBook=false; Hash=128"
     debugMode: false
+    parallelWorkers: 1
 
-  # Standard tactical test
+  # Standard tactical test (parallel)
   - name: "WAC"
     epdPath: "test/testsets/wac.epd"
     timePerMove: 5000
@@ -498,8 +574,9 @@ testSuites:
     commandLineArgs: ""
     uciOptions: "OwnBook=false"
     debugMode: false
+    parallelWorkers: 4            # 4 parallel workers for ~3x speedup
 
-  # Strategic test with longer time
+  # Strategic test with longer time (parallel)
   - name: "STS"
     epdPath: "test/testsets/STS1-STS15_LAN.EPD"
     timePerMove: 10000
@@ -508,6 +585,7 @@ testSuites:
     isolatePositions: true
     commandLineArgs: ""
     uciOptions: "OwnBook=false; Hash=256"
+    parallelWorkers: 8            # More workers for large suite
     debugMode: false
 
   # Mate problems with deep search
