@@ -287,7 +287,7 @@ testSuites:
 
 **Then compare:**
 ```powershell
-.\cmake-build-win-release\src\FrankyCPP_v1.1_Arena.exe --compare v1.1 v1.0
+.\cmake-build-win-release\src\FrankyCPP_v1.1_Arena.exe --cmp FrankyCPP-v1.1 --baseline FrankyCPP-v1.0
 ```
 
 ### Test External Engine
@@ -387,35 +387,48 @@ r1b1kb1r/pppp1ppp/5q2/4n3/3KP3/2N3PN/PPP4P/R1BQ1B1R b kq - dm 2; id "mate.001";
 
 **Location:** `results/testsuites/`  
 **Format:** JSON  
-**Naming:** `{version}_{suite_name}_{timestamp}.json`
+**Naming:** `{TestSuite}_{EngineName-Version}_{Timestamp}.json`
 
-**Example:** `v1.1_franky_tests_20260201_143022.json`
+**Example:** `WAC_FrankyCPP-v1.1_20260201_143022.json`
 
 **Content:**
 ```json
 {
-  "version": "v1.1",
-  "suiteName": "franky_tests",
-  "engineName": "FrankyCPP v1.1",
-  "enginePath": "cmake-build-win-release/src/FrankyCPP_v1.1.exe",
-  "timestamp": "20260201_143022",
-  "totalTests": 50,
-  "passed": 48,
-  "failed": 2,
-  "skipped": 0,
-  "totalNodes": 1234567,
-  "totalTime": 250000,
-  "results": [
+  "arenaVersion": "v1.1",
+  "timestamp": "2026-02-01T14:30:22Z",
+
+  "testSuite": {
+    "name": "WAC",
+    "epdPath": "test/testsets/wac.epd"
+  },
+
+  "engine": {
+    "name": "FrankyCPP",
+    "version": "v1.1",
+    "path": "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+  },
+
+  "summary": {
+    "totalTests": 300,
+    "passed": 285,
+    "failed": 15,
+    "skipped": 0,
+    "successRate": 95.0,
+    "totalNodes": 45000000,
+    "totalTimeMs": 85000,
+    "avgTimeMs": 283.3,
+    "avgNodes": 150000
+  },
+
+  "details": [
     {
-      "id": "test.001",
+      "testId": "WAC.001",
       "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-      "bestMove": "e2e4",
-      "expectedMoves": ["e2e4", "d2d4"],
-      "testType": "bm",
+      "expected": "bm e2e4 d2d4",
+      "actual": "e2e4",
       "passed": true,
       "nodes": 24567,
-      "time": 5000,
-      "depth": 12
+      "timeMs": 5000
     }
   ]
 }
@@ -425,12 +438,11 @@ r1b1kb1r/pppp1ppp/5q2/4n3/3KP3/2N3PN/PPP4P/R1BQ1B1R b kq - dm 2; id "mate.001";
 
 **Command:**
 ```powershell
-.\cmake-build-win-release\src\FrankyCPP_v1.1_Arena.exe --compare v1.1 v1.0
+.\cmake-build-win-release\src\FrankyCPP_v1.1_Arena.exe --cmp FrankyCPP-v1.1 --baseline FrankyCPP-v1.0
 ```
 
-**Output Location:** `results/comparisons/`  
-**Format:** Plain text report  
-**Naming:** `{version1}_vs_{version2}_{timestamp}.txt`
+**Output:** Printed to console (use redirection to save)  
+**Example Save:** `FrankyCPP_Arena --cmp FrankyCPP-v1.1 --baseline FrankyCPP-v1.0 > results/comparisons/FrankyCPP-v1.1_vs_FrankyCPP-v1.0_20260201_153000.txt`
 
 **Report Sections:**
 1. **Header** - Versions compared, timestamp

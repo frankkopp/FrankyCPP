@@ -9,17 +9,17 @@ Complete guide to Arena result file formats and how to analyze them.
 ```
 results/
 ├── testsuites/          # EPD tactical test results
-│   ├── v1.1_franky_tests_20260201_143022.json
-│   ├── v1.1_wac_20260201_144530.json
-│   └── v1.0_wac_20260115_091245.json
+│   ├── franky_tests_FrankyCPP-v1.1_20260201_143022.json
+│   ├── WAC_FrankyCPP-v1.1_20260201_144530.json
+│   └── WAC_FrankyCPP-v1.0_20260115_091245.json
 │
 ├── matches/             # Engine-vs-engine match results
-│   ├── v1.1_vs_v1.0_blitz_20260201_150033.json
-│   ├── v1.1_vs_v1.0_blitz_20260201_150033.pgn
+│   ├── FrankyCPP-v1.1_vs_FrankyGo-v1.0.3_60_0.6_20260201_150033.json
+│   ├── FrankyCPP-v1.1_vs_FrankyGo-v1.0.3_60_0.6_20260201_150033.pgn
 │   └── ...
 │
 └── comparisons/         # Version comparison reports
-    ├── v1.1_vs_v1.0_20260201_153000.txt
+    ├── FrankyCPP-v1.1_vs_FrankyCPP-v1.0_20260201_153000.txt
     └── ...
 ```
 
@@ -70,9 +70,20 @@ FrankyCPP-v1.1_vs_FrankyCPP-v0.5_60_0.6_20260201_160000.json   # Self-play match
 
 ```json
 {
-  "version": "v1.1",
-  "suiteName": "WAC",
+  "arenaVersion": "v1.1",
   "timestamp": "2026-02-01T14:30:22Z",
+
+  "testSuite": {
+    "name": "WAC",
+    "epdPath": "test/testsets/wac.epd"
+  },
+
+  "engine": {
+    "name": "FrankyCPP",
+    "version": "v1.1",
+    "path": "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+  },
+
   "summary": {
     "totalTests": 300,
     "passed": 285,
@@ -80,7 +91,9 @@ FrankyCPP-v1.1_vs_FrankyCPP-v0.5_60_0.6_20260201_160000.json   # Self-play match
     "skipped": 0,
     "successRate": 95.0,
     "totalNodes": 45000000,
-    "totalTimeMs": 85000
+    "totalTimeMs": 85000,
+    "avgTimeMs": 283.3,
+    "avgNodes": 150000
   },
   "details": [
     {
@@ -112,11 +125,27 @@ FrankyCPP-v1.1_vs_FrankyCPP-v0.5_60_0.6_20260201_160000.json   # Self-play match
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `version` | String | Engine version identifier |
-| `suiteName` | String | Test suite name |
+| `arenaVersion` | String | Arena version identifier (typically the engine version under test) |
 | `timestamp` | String | ISO 8601 timestamp (UTC) |
+| `testSuite` | Object | Test suite metadata |
+| `engine` | Object | Engine identification |
 | `summary` | Object | Aggregate statistics |
 | `details` | Array | Per-test case results |
+
+#### TestSuite Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | String | Test suite name |
+| `epdPath` | String | Path to EPD file |
+
+#### Engine Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | String | Engine name (e.g., "FrankyCPP") |
+| `version` | String | Engine version (e.g., "v1.1") |
+| `path` | String | Path to engine executable |
 
 #### Summary Object
 
@@ -129,6 +158,8 @@ FrankyCPP-v1.1_vs_FrankyCPP-v0.5_60_0.6_20260201_160000.json   # Self-play match
 | `successRate` | Float | Pass percentage (0-100) |
 | `totalNodes` | Integer | Sum of nodes searched across all tests |
 | `totalTimeMs` | Integer | Sum of time spent in milliseconds |
+| `avgTimeMs` | Float | Average time per test in milliseconds |
+| `avgNodes` | Float | Average nodes per test |
 
 **Derived Metrics:**
 - **Average nodes per test:** `totalNodes / totalTests`
@@ -351,7 +382,7 @@ See **[Reporting.md](Reporting.md)** for detailed report formats, examples, and 
 .\cmake-build-win-release\src\FrankyCPP_v1.1_Arena.exe --testsuites
 
 # Compare with baseline
-.\cmake-build-win-release\src\FrankyCPP_v1.1_Arena.exe --compare v1.1_new v1.1_baseline
+.\cmake-build-win-release\src\FrankyCPP_v1.1_Arena.exe --cmp FrankyCPP-v1.1_new --baseline FrankyCPP-v1.1_baseline
 ```
 
 **Look for:**
@@ -386,9 +417,9 @@ See **[Reporting.md](Reporting.md)** for detailed report formats, examples, and 
 # Python script example
 import json
 
-with open('results/testsuites/v1.1_new_wac.json') as f:
+with open('results/testsuites/WAC_FrankyCPP-v1.1_new_20260201_143022.json') as f:
     new = json.load(f)
-with open('results/testsuites/v1.1_old_wac.json') as f:
+with open('results/testsuites/WAC_FrankyCPP-v1.1_baseline_20260201_091245.json') as f:
     old = json.load(f)
 
 # Find new failures
@@ -429,9 +460,10 @@ for filepath in glob.glob('results/testsuites/*.json'):
     with open(filepath) as f:
         data = json.load(f)
     
+    engine_id = f"{data['engine']['name']}-{data['engine']['version']}"
     results.append({
-        'version': data['version'],
-        'suite': data['suiteName'],
+        'engine': engine_id,
+        'suite': data['testSuite']['name'],
         'pass_rate': data['summary']['successRate'],
         'timestamp': data['timestamp']
     })
@@ -441,7 +473,7 @@ results.sort(key=lambda x: x['timestamp'])
 
 # Print summary
 for r in results:
-    print(f"{r['timestamp']}: {r['version']} - {r['suite']}: {r['pass_rate']:.1f}%")
+    print(f"{r['timestamp']}: {r['engine']} - {r['suite']}: {r['pass_rate']:.1f}%")
 ```
 
 ### PowerShell Example: Compare Versions
@@ -451,8 +483,8 @@ for r in results:
 Get-ChildItem "results/matches/*.json" | ForEach-Object {
     $data = Get-Content $_ | ConvertFrom-Json
     [PSCustomObject]@{
-        Version = $data.version
-        Match = $data.matchName
+        Version = $data.arenaVersion
+        Match = $data.match.name
         ELO = $data.results.eloDifference
         Date = $data.timestamp
     }
@@ -491,7 +523,7 @@ import json
 import csv
 
 # Export test suite results to CSV
-with open('results/testsuites/v1.1_wac.json') as f:
+with open('results/testsuites/WAC_FrankyCPP-v1.1_20260201_143530.json') as f:
     data = json.load(f)
 
 with open('wac_results.csv', 'w', newline='') as csvfile:
@@ -534,15 +566,15 @@ CREATE TABLE IF NOT EXISTS test_results (
 ''')
 
 # Import JSON
-with open('results/testsuites/v1.1_wac.json') as f:
+with open('results/testsuites/WAC_FrankyCPP-v1.1_20260201_143530.json') as f:
     data = json.load(f)
 
 for detail in data['details']:
     cursor.execute('''
     INSERT INTO test_results VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
-        data['version'],
-        data['suiteName'],
+        data['engine']['version'],
+        data['testSuite']['name'],
         detail['testId'],
         detail['expected'],
         detail['actual'],

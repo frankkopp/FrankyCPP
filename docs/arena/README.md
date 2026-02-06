@@ -151,8 +151,8 @@ Shows all engines found in stored results.
 .\cmake-build-win-release\src\FrankyCPP_v1.1_Arena.exe --testsuites
 
 # Results saved to:
-# results/testsuites/v1.1_franky_tests_20260201_143022.json
-# results/testsuites/v1.1_wac_20260201_143530.json
+# results/testsuites/franky_tests_FrankyCPP-v1.1_20260201_143022.json
+# results/testsuites/WAC_FrankyCPP-v1.1_20260201_143530.json
 ```
 
 ### 2. Compare with Previous Version

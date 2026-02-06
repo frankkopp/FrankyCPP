@@ -533,8 +533,8 @@ throw std::runtime_error(
    - Use simple text-based progress (e.g., [====>    ] 50%)
 
 3. **Add result filtering**
-   - `--compare v1.1 v1.0 --suite WAC` (compare specific suite)
-   - `--compare v1.1 v1.0 --matches-only` (skip test suites)
+   - `--cmp FrankyCPP-v1.1 --baseline FrankyCPP-v1.0 --suite WAC` (compare specific suite)
+   - `--cmp FrankyCPP-v1.1 --baseline FrankyCPP-v1.0 --matches-only` (skip test suites)
 
 4. **Add configuration validation**
    - Warn if time control is too short

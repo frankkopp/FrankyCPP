@@ -946,11 +946,13 @@ testSuites:
     epdPath: "test/testsets/franky_tests.epd"
     timePerMove: 5000
     maxDepth: 30
+    enginePath: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
   
   - name: "WAC"
     epdPath: "test/testsets/wac.epd"
     timePerMove: 5000
     maxDepth: 30
+    enginePath: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
 
 matches:
   - name: "v1.1_vs_v1.0_blitz"
