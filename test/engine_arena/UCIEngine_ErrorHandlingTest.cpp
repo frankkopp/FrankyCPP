@@ -35,6 +35,7 @@
 #include "engine_arena/UCIEngine.h"
 #include "init.h"
 #include "Test_Utils.h"
+#include "TestEnginePath.h"
 
 #include <gtest/gtest.h>
 #include <filesystem>
@@ -96,16 +97,7 @@ TEST_F(UCIEngineErrorHandlingTest, Constructor_EmptyPath_ThrowsError) {
 
 TEST_F(UCIEngineErrorHandlingTest, SetPosition_InvalidFEN_ReturnsFalse) {
   // Try to find a valid engine for testing
-  std::string enginePath;
-
-  // Try cmake-build-win-release first
-  if (std::filesystem::exists("cmake-build-win-release/src/FrankyCPP_v1.1.exe")) {
-    enginePath = "cmake-build-win-release/src/FrankyCPP_v1.1.exe";
-  } else if (std::filesystem::exists("../src/FrankyCPP_v1.1.exe")) {
-    enginePath = "../src/FrankyCPP_v1.1.exe";
-  } else if (std::filesystem::exists("FrankyCPP_v1.1.exe")) {
-    enginePath = "FrankyCPP_v1.1.exe";
-  }
+  std::string enginePath = getTestEnginePath();
 
   if (enginePath.empty()) {
     GTEST_SKIP() << "Test engine not found. Skipping invalid FEN test.";
@@ -131,14 +123,7 @@ TEST_F(UCIEngineErrorHandlingTest, SetPosition_InvalidFEN_ReturnsFalse) {
 
 TEST_F(UCIEngineErrorHandlingTest, Search_VeryShortTimeout_ReturnsPartialOrEmpty) {
   // Find engine
-  std::string enginePath;
-  if (std::filesystem::exists("cmake-build-win-release/src/FrankyCPP_v1.1.exe")) {
-    enginePath = "cmake-build-win-release/src/FrankyCPP_v1.1.exe";
-  } else if (std::filesystem::exists("../src/FrankyCPP_v1.1.exe")) {
-    enginePath = "../src/FrankyCPP_v1.1.exe";
-  } else if (std::filesystem::exists("FrankyCPP_v1.1.exe")) {
-    enginePath = "FrankyCPP_v1.1.exe";
-  }
+  std::string enginePath = getTestEnginePath();
 
   if (enginePath.empty()) {
     GTEST_SKIP() << "Test engine not found. Skipping timeout test.";
@@ -169,14 +154,7 @@ TEST_F(UCIEngineErrorHandlingTest, Search_VeryShortTimeout_ReturnsPartialOrEmpty
 //=============================================================================
 
 TEST_F(UCIEngineErrorHandlingTest, MultipleRapidSearches_NoResourceLeaks) {
-  std::string enginePath;
-  if (std::filesystem::exists("cmake-build-win-release/src/FrankyCPP_v1.1.exe")) {
-    enginePath = "cmake-build-win-release/src/FrankyCPP_v1.1.exe";
-  } else if (std::filesystem::exists("../src/FrankyCPP_v1.1.exe")) {
-    enginePath = "../src/FrankyCPP_v1.1.exe";
-  } else if (std::filesystem::exists("FrankyCPP_v1.1.exe")) {
-    enginePath = "FrankyCPP_v1.1.exe";
-  }
+  std::string enginePath = getTestEnginePath();
 
   if (enginePath.empty()) {
     GTEST_SKIP() << "Test engine not found. Skipping stress test.";
@@ -206,14 +184,7 @@ TEST_F(UCIEngineErrorHandlingTest, MultipleRapidSearches_NoResourceLeaks) {
 //=============================================================================
 
 TEST_F(UCIEngineErrorHandlingTest, NewGame_MultipleCalls_NoCrash) {
-  std::string enginePath;
-  if (std::filesystem::exists("cmake-build-win-release/src/FrankyCPP_v1.1.exe")) {
-    enginePath = "cmake-build-win-release/src/FrankyCPP_v1.1.exe";
-  } else if (std::filesystem::exists("../src/FrankyCPP_v1.1.exe")) {
-    enginePath = "../src/FrankyCPP_v1.1.exe";
-  } else if (std::filesystem::exists("FrankyCPP_v1.1.exe")) {
-    enginePath = "FrankyCPP_v1.1.exe";
-  }
+  std::string enginePath = getTestEnginePath();
 
   if (enginePath.empty()) {
     GTEST_SKIP() << "Test engine not found.";
@@ -238,14 +209,7 @@ TEST_F(UCIEngineErrorHandlingTest, NewGame_MultipleCalls_NoCrash) {
 //=============================================================================
 
 TEST_F(UCIEngineErrorHandlingTest, GetEngineName_VeryLongName_NoBufferOverflow) {
-  std::string enginePath;
-  if (std::filesystem::exists("cmake-build-win-release/src/FrankyCPP_v1.1.exe")) {
-    enginePath = "cmake-build-win-release/src/FrankyCPP_v1.1.exe";
-  } else if (std::filesystem::exists("../src/FrankyCPP_v1.1.exe")) {
-    enginePath = "../src/FrankyCPP_v1.1.exe";
-  } else if (std::filesystem::exists("FrankyCPP_v1.1.exe")) {
-    enginePath = "FrankyCPP_v1.1.exe";
-  }
+  std::string enginePath = getTestEnginePath();
 
   if (enginePath.empty()) {
     GTEST_SKIP() << "Test engine not found.";
@@ -269,14 +233,7 @@ TEST_F(UCIEngineErrorHandlingTest, GetEngineName_VeryLongName_NoBufferOverflow) 
 
 TEST_F(UCIEngineErrorHandlingTest, Constructor_RelativeAndAbsolutePaths_BothWork) {
   // Find engine with relative path
-  std::string relativePath;
-  if (std::filesystem::exists("cmake-build-win-release/src/FrankyCPP_v1.1.exe")) {
-    relativePath = "cmake-build-win-release/src/FrankyCPP_v1.1.exe";
-  } else if (std::filesystem::exists("../src/FrankyCPP_v1.1.exe")) {
-    relativePath = "../src/FrankyCPP_v1.1.exe";
-  } else if (std::filesystem::exists("FrankyCPP_v1.1.exe")) {
-    relativePath = "FrankyCPP_v1.1.exe";
-  }
+  std::string relativePath = getTestEnginePath();
 
   if (relativePath.empty()) {
     GTEST_SKIP() << "Test engine not found.";
@@ -301,14 +258,7 @@ TEST_F(UCIEngineErrorHandlingTest, Constructor_RelativeAndAbsolutePaths_BothWork
 //=============================================================================
 
 TEST_F(UCIEngineErrorHandlingTest, Search_ZeroTime_ReturnsQuickly) {
-  std::string enginePath;
-  if (std::filesystem::exists("cmake-build-win-release/src/FrankyCPP_v1.1.exe")) {
-    enginePath = "cmake-build-win-release/src/FrankyCPP_v1.1.exe";
-  } else if (std::filesystem::exists("../src/FrankyCPP_v1.1.exe")) {
-    enginePath = "../src/FrankyCPP_v1.1.exe";
-  } else if (std::filesystem::exists("FrankyCPP_v1.1.exe")) {
-    enginePath = "FrankyCPP_v1.1.exe";
-  }
+  std::string enginePath = getTestEnginePath();
 
   if (enginePath.empty()) {
     GTEST_SKIP() << "Test engine not found.";

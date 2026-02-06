@@ -36,33 +36,13 @@
 #include "engine_arena/UCIEngine.h"
 #include "init.h"
 #include "Test_Utils.h"
+#include "TestEnginePath.h"
 
 #include <gtest/gtest.h>
 #include <filesystem>
-#include <sstream>
 
 using namespace arena;
 
-namespace {
-
-// Helper: Get path to test engine
-std::string getTestEnginePath() {
-  std::string path = "cmake-build-win-release/src/FrankyCPP_v1.1.exe";
-  if (std::filesystem::exists(path)) {
-    return path;
-  }
-  path = "../src/FrankyCPP_v1.1.exe";
-  if (std::filesystem::exists(path)) {
-    return path;
-  }
-  path = "FrankyCPP_v1.1.exe";
-  if (std::filesystem::exists(path)) {
-    return path;
-  }
-  return "";
-}
-
-} // anonymous namespace
 
 class UCIEngineOptionsTest : public ::testing::Test {
 public:
