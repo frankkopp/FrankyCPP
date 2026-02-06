@@ -82,13 +82,13 @@ public:
   explicit ArenaRunner(const ArenaConfig& config);
 
   /// Runs all configured test suites and matches
-  void runAll();
+  void runAll() const;
 
   /// Runs only test suites (no matches)
-  void runTestSuitesOnly();
+  void runTestSuitesOnly() const;
 
   /// Runs only matches (no test suites)
-  void runMatchesOnly();
+  void runMatchesOnly() const;
 
   //=========================================================================
   // NEW Reporting Methods (Phase 1-3)
@@ -97,42 +97,42 @@ public:
   /// Loads ALL test suite results into ReportData structure
   /// Groups by test suite, then by engine, keeping latest result per combo
   /// @return ReportData with all results organized for reporting
-  ReportData loadAllResults();
+  ReportData loadAllResults() const;
 
   /// Generates baseline report showing all engines side by side
   /// @param data ReportData with loaded results
   /// @return Formatted report string
-  std::string generateBaselineReport(const ReportData& data);
+  static std::string generateBaselineReport(const ReportData& data);
 
   /// Generates comparison report for target engine against baselines
   /// @param data ReportData with loaded results
   /// @param targetEngine Engine to compare (e.g., "FrankyCPP-v1.2-dev")
   /// @param baselineEngines Baselines to compare against (uses all if empty)
   /// @return Formatted comparison report string
-  std::string generateComparisonReport(
+  static std::string generateComparisonReport(
       const ReportData& data,
       const EngineId& targetEngine,
       const std::vector<EngineId>& baselineEngines = {});
 
   /// Lists all available engines from stored results
   /// @return Set of EngineIds found in results
-  std::set<EngineId> listAvailableEngines();
+  std::set<EngineId> listAvailableEngines() const;
 
   /// Loads match results into ReportData structure
   /// @param data ReportData to populate (modifies in place)
-  void loadMatchResults(ReportData& data);
+  void loadMatchResults(ReportData& data) const;
 
   /// Generates match baseline report showing all engine pairs
   /// @param data ReportData with loaded match results
   /// @return Formatted match report string
-  std::string generateMatchBaselineReport(const ReportData& data);
+  static std::string generateMatchBaselineReport(const ReportData& data);
 
   /// Generates match comparison report for target engine vs baselines
   /// @param data ReportData with loaded match results
   /// @param targetEngine Engine to compare
   /// @param baselineEngines Baselines to compare against
-  /// @return Formatted match comparison report string
-  std::string generateMatchComparisonReport(
+  /// @return Formatted match comparison report strstatic ing
+  static std::string generateMatchComparisonReport(
       const ReportData& data,
       const EngineId& targetEngine,
       const std::vector<EngineId>& baselineEngines = {});
