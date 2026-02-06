@@ -696,6 +696,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // from being propagated up via savePV(). Stale PV data can contain moves from
   // different positions that are illegal in the current position.
   // FIXME: Verify that this is sufficient to prevent stale PV data.
+  // FIXME: Also check why we do this twice in the search and qsearch and if we can optimize this.
   pv[ply].clear();
 
   // Enter quiescence search when depth == 0 or max ply has been reached
@@ -731,10 +732,10 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // TT Lookup
   // Results of searches are stored in the TT to be used to
   // avoid searching positions several times. If a position
-  // is stored in the TT we retrieve a pointer to the entry.
+  // is stored in the TT, we retrieve a pointer to the entry.
   // We use the stored move as a best move from previous searches
   // and search it first (through setting PV move in move gen).
-  // If we have a value from a similar or deeper search we check
+  // If we have a value from a similar or deeper search, we check
   // if the value is usable. Exact values mean that the previously
   // stored result already was a precise result, and we do not
   // need to search the position again. We can stop searching
@@ -1556,6 +1557,7 @@ void Search::getPvLine(Position& p, MoveList& pvList, const Depth depth) const {
     if (p.getPiece(ttMove.from()) == PIECE_NONE ||
         colorOf(p.getPiece(ttMove.from())) != p.getNextPlayer()) {
       // Hash collision detected - stop PV extraction
+      LOG__WARN(Logger::get().SEARCH_LOG, "Hash collision detected in PV extraction at depth {}. Stopping PV extraction.", counter);
       break;
     }
 

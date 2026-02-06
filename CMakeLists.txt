@@ -256,8 +256,7 @@ if (WIN32)
     endif()
 endif()
 
-# Microsoft Visual Compiler only (non-MSVC toolchains are commented out for now and will be
-# revisited later. Keeping them below for reference.)
+# Microsoft Visual Compiler configuration (Windows/MSVC)
 if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 
     # this needs to be added to CLION cmake options: -G Ninja

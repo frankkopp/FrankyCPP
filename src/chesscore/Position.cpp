@@ -382,7 +382,7 @@ Bitboard Position::attacksTo(const Square square, const Color color) const {
 
 bool Position::hasCheck() const {
   if (hasCheckFlag != FLAG_TBD) {
-    return (hasCheckFlag == FLAG_TRUE);
+    return hasCheckFlag == FLAG_TRUE;
   }
   const bool check = isAttacked(kingSquare[nextPlayer], ~nextPlayer);
   hasCheckFlag     = check ? FLAG_TRUE : FLAG_FALSE;
