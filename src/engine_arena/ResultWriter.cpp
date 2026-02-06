@@ -118,22 +118,45 @@ namespace arena {
   }
 
   std::string ResultWriter::writeMatchResult(const MatchResult& result) {
-    std::string filename = generateFilename("match", result.matchName, result.version);
+    // New file naming: {Engine1Id}_vs_{Engine2Id}_{TimeControl}_{Timestamp}.json
+    // e.g., FrankyCPP-v1.1_vs_FrankyGo-v1.0.3_60+0.6_20260205_143000.json
+    std::string engine1Id = result.engine1Name + "-" + result.engine1Version;
+    std::string engine2Id = result.engine2Name + "-" + result.engine2Version;
+    std::string sanitizedTC = result.timeControl;
+    std::ranges::replace(sanitizedTC, '+', '_');
+    std::ranges::replace(sanitizedTC, '/', '_');
+
+    std::string matchId = engine1Id + "_vs_" + engine2Id + "_" + sanitizedTC;
+    std::string filename = generateFilename("match", matchId, "");
 
     std::ofstream file(filename);
     if (!file.is_open()) {
       throw std::runtime_error("Failed to open file for writing: " + filename);
     }
 
-    // Write JSON
+    // Write JSON with new structure per spec
     file << "{\n";
-    file << "  \"version\": \"" << result.version << "\",\n";
-    file << "  \"matchName\": \"" << result.matchName << "\",\n";
+    file << "  \"arenaVersion\": \"" << result.arenaVersion << "\",\n";
     file << "  \"timestamp\": \"" << result.timestamp << "\",\n";
-    file << "  \"engines\": {\n";
-    file << "    \"engine1\": \"" << result.engine1Name << "\",\n";
-    file << "    \"engine2\": \"" << result.engine2Name << "\"\n";
+    file << "\n";
+    file << "  \"match\": {\n";
+    file << "    \"name\": \"" << result.matchName << "\",\n";
+    file << "    \"timeControl\": \"" << result.timeControl << "\",\n";
+    file << "    \"rounds\": " << result.rounds << "\n";
     file << "  },\n";
+    file << "\n";
+    file << "  \"engine1\": {\n";
+    file << "    \"name\": \"" << result.engine1Name << "\",\n";
+    file << "    \"version\": \"" << result.engine1Version << "\",\n";
+    file << "    \"path\": \"" << result.engine1Path << "\"\n";
+    file << "  },\n";
+    file << "\n";
+    file << "  \"engine2\": {\n";
+    file << "    \"name\": \"" << result.engine2Name << "\",\n";
+    file << "    \"version\": \"" << result.engine2Version << "\",\n";
+    file << "    \"path\": \"" << result.engine2Path << "\"\n";
+    file << "  },\n";
+    file << "\n";
     file << "  \"results\": {\n";
     file << "    \"engine1Wins\": " << result.engine1Wins << ",\n";
     file << "    \"engine2Wins\": " << result.engine2Wins << ",\n";
@@ -146,6 +169,7 @@ namespace arena {
     file << std::defaultfloat;
 
     file << "  },\n";
+    file << "\n";
     file << "  \"pgnPath\": \"" << result.pgnPath << "\",\n";
     file << "  \"durationMs\": " << result.durationMs << "\n";
     file << "}\n";

@@ -205,19 +205,64 @@ struct TestSuiteResult {
 
 /// Result from running an engine match
 struct MatchResult {
-  std::string version;        ///< Engine version
-  std::string matchName;      ///< Match name
-  std::string timestamp;      ///< ISO 8601 timestamp
-  std::string engine1Name;    ///< First engine name
-  std::string engine2Name;    ///< Second engine name
-  int engine1Wins = 0;        ///< Wins by engine 1
-  int engine2Wins = 0;        ///< Wins by engine 2
-  int draws = 0;              ///< Number of draws
-  double engine1Score = 0.0;  ///< Score for engine 1 (win=1, draw=0.5)
-  double engine2Score = 0.0;  ///< Score for engine 2
-  double eloDifference = 0.0; ///< Calculated ELO difference
-  std::string pgnPath;        ///< Path to PGN file
-  int64_t durationMs = 0;     ///< Match duration in milliseconds
+  // Arena metadata
+  std::string arenaVersion;     ///< Arena version that ran this match (e.g., "v1.1")
+  std::string timestamp;        ///< ISO 8601 timestamp
+
+  // Match identification
+  std::string matchName;        ///< Match identifier (e.g., "Rapid 60+0.6")
+
+  // Engine 1 identification
+  std::string engine1Name;      ///< Engine 1 name (e.g., "FrankyCPP")
+  std::string engine1Version;   ///< Engine 1 version (e.g., "v1.1")
+  std::string engine1Path;      ///< Path to engine 1 executable
+
+  // Engine 2 identification
+  std::string engine2Name;      ///< Engine 2 name (e.g., "FrankyGo")
+  std::string engine2Version;   ///< Engine 2 version (e.g., "v1.0.3")
+  std::string engine2Path;      ///< Path to engine 2 executable
+
+  // Match settings
+  std::string timeControl;      ///< Time control (e.g., "60+0.6")
+  int rounds = 0;               ///< Number of games
+
+  // Results
+  int engine1Wins = 0;          ///< Wins by engine 1
+  int engine2Wins = 0;          ///< Wins by engine 2
+  int draws = 0;                ///< Number of draws
+  double engine1Score = 0.0;    ///< Score for engine 1 (win=1, draw=0.5)
+  double engine2Score = 0.0;    ///< Score for engine 2
+  double eloDifference = 0.0;   ///< Calculated ELO difference (engine1 - engine2)
+
+  // Additional data
+  std::string pgnPath;          ///< Path to PGN file
+  int64_t durationMs = 0;       ///< Match duration in milliseconds
+
+  /// Returns EngineId for engine 1
+  [[nodiscard]] EngineId getEngine1Id() const {
+    return {engine1Name, engine1Version};
+  }
+
+  /// Returns EngineId for engine 2
+  [[nodiscard]] EngineId getEngine2Id() const {
+    return {engine2Name, engine2Version};
+  }
+
+  /// Returns match key for indexing: "Engine1-v1 vs Engine2-v2"
+  [[nodiscard]] std::string getMatchKey() const {
+    return getEngine1Id().toString() + " vs " + getEngine2Id().toString();
+  }
+
+  /// Returns total number of games played
+  [[nodiscard]] int getTotalGames() const {
+    return engine1Wins + engine2Wins + draws;
+  }
+
+  /// Returns win rate for engine 1 as percentage (0.0 - 100.0)
+  [[nodiscard]] double getEngine1WinRate() const {
+    int total = getTotalGames();
+    return total > 0 ? (engine1Score * 100.0 / total) : 0.0;
+  }
 };
 
 //=============================================================================
@@ -236,12 +281,22 @@ struct ReportData {
   /// Uses latest result if multiple exist for same suite/engine
   std::map<std::string, std::map<EngineId, TestSuiteResult>> suiteResults;
 
-  /// Match results (future use)
+  /// Match results indexed by match key: "Engine1-v1 vs Engine2-v2"
   std::map<std::string, MatchResult> matchResults;
 
   /// Returns true if any results are loaded
   [[nodiscard]] bool hasResults() const {
     return !suiteResults.empty() || !matchResults.empty();
+  }
+
+  /// Returns true if test suite results exist
+  [[nodiscard]] bool hasTestSuiteResults() const {
+    return !suiteResults.empty();
+  }
+
+  /// Returns true if match results exist
+  [[nodiscard]] bool hasMatchResults() const {
+    return !matchResults.empty();
   }
 
   /// Returns true if results exist for given engine
@@ -256,6 +311,33 @@ struct ReportData {
     auto engineIt = suiteIt->second.find(engine);
     if (engineIt == suiteIt->second.end()) return nullptr;
     return &engineIt->second;
+  }
+
+  /// Returns match result for given engine pair, or nullptr if not found
+  /// Order doesn't matter: checks both "e1 vs e2" and "e2 vs e1"
+  [[nodiscard]] const MatchResult* getMatch(const EngineId& engine1, const EngineId& engine2) const {
+    // Try both orderings
+    std::string key1 = engine1.toString() + " vs " + engine2.toString();
+    std::string key2 = engine2.toString() + " vs " + engine1.toString();
+
+    auto it = matchResults.find(key1);
+    if (it != matchResults.end()) return &it->second;
+
+    it = matchResults.find(key2);
+    if (it != matchResults.end()) return &it->second;
+
+    return nullptr;
+  }
+
+  /// Returns all matches involving the given engine
+  [[nodiscard]] std::vector<const MatchResult*> getMatchesForEngine(const EngineId& engine) const {
+    std::vector<const MatchResult*> matches;
+    for (const auto& [key, match] : matchResults) {
+      if (match.getEngine1Id() == engine || match.getEngine2Id() == engine) {
+        matches.push_back(&match);
+      }
+    }
+    return matches;
   }
 };
 

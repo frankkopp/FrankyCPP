@@ -288,12 +288,86 @@ ReportData ArenaRunner::loadAllResults() {
     }
   }
 
+  // Also load match results
+  loadMatchResults(data);
+
   return data;
 }
 
 std::set<EngineId> ArenaRunner::listAvailableEngines() {
   ReportData data = loadAllResults();
   return data.engines;
+}
+
+void ArenaRunner::loadMatchResults(ReportData& data) {
+  const std::filesystem::path matchesDir = std::filesystem::path(arenaConfig.resultsDir) / "matches";
+
+  if (!std::filesystem::exists(matchesDir)) {
+    // No matches directory - this is ok, just means no matches have been run
+    return;
+  }
+
+  // Load all JSON files from matches directory
+  for (const auto& entry : std::filesystem::directory_iterator(matchesDir)) {
+    if (entry.path().extension() != ".json") continue;
+
+    try {
+      std::ifstream file(entry.path());
+      json jsonData = json::parse(file);
+
+      MatchResult result;
+
+      // Parse new JSON format
+      result.arenaVersion = jsonData["arenaVersion"];
+      result.timestamp = jsonData["timestamp"];
+
+      // Match info
+      result.matchName = jsonData["match"]["name"];
+      result.timeControl = jsonData["match"]["timeControl"];
+      result.rounds = jsonData["match"]["rounds"];
+
+      // Engine 1
+      result.engine1Name = jsonData["engine1"]["name"];
+      result.engine1Version = jsonData["engine1"]["version"];
+      result.engine1Path = jsonData["engine1"]["path"];
+
+      // Engine 2
+      result.engine2Name = jsonData["engine2"]["name"];
+      result.engine2Version = jsonData["engine2"]["version"];
+      result.engine2Path = jsonData["engine2"]["path"];
+
+      // Results
+      const auto& results = jsonData["results"];
+      result.engine1Wins = results["engine1Wins"];
+      result.engine2Wins = results["engine2Wins"];
+      result.draws = results["draws"];
+      result.engine1Score = results["engine1Score"];
+      result.engine2Score = results["engine2Score"];
+      result.eloDifference = results["eloDifference"];
+
+      // Additional data
+      result.pgnPath = jsonData["pgnPath"];
+      result.durationMs = jsonData["durationMs"];
+
+      // Add engines to set
+      data.engines.insert(result.getEngine1Id());
+      data.engines.insert(result.getEngine2Id());
+
+      // Get match key
+      std::string matchKey = result.getMatchKey();
+
+      // Check if we already have a result for this match pair
+      auto existing = data.matchResults.find(matchKey);
+      if (existing == data.matchResults.end() || result.timestamp > existing->second.timestamp) {
+        // Keep the latest result
+        data.matchResults[matchKey] = result;
+      }
+
+    } catch (const std::exception& e) {
+      std::cerr << "  Warning: Failed to load " << entry.path().filename().string()
+                << ": " << e.what() << std::endl;
+    }
+  }
 }
 
 std::string ArenaRunner::generateBaselineReport(const ReportData& data) {
@@ -398,6 +472,226 @@ std::string ArenaRunner::generateBaselineReport(const ReportData& data) {
   }
 
   report << "\n================================================================================\n";
+
+  return report.str();
+}
+
+std::string ArenaRunner::generateMatchBaselineReport(const ReportData& data) {
+  std::ostringstream report;
+
+  // Helper to pad/truncate string to exact width
+  auto fixedWidth = [](const std::string& str, size_t width) -> std::string {
+    if (str.length() >= width) {
+      return str.substr(0, width - 2) + "..";
+    }
+    return str + std::string(width - str.length(), ' ');
+  };
+
+  // Column widths
+  constexpr size_t COL_PAIR = 42;
+  constexpr size_t COL_GAMES = 10;
+  constexpr size_t COL_SCORE = 12;
+  constexpr size_t COL_WDL = 16;
+  constexpr size_t COL_ELO = 12;
+
+  // Header
+  report << "\n";
+  report << Color::color(Color::BOLD);
+  report << "================================================================================\n";
+  report << "MATCH RESULTS - All Engine Pairs\n";
+  report << "================================================================================\n";
+  report << Color::color(Color::RESET);
+
+  if (!data.hasMatchResults()) {
+    report << "\nNo match results found.\n";
+    report << "Run matches first: FrankyCPP_Arena --matches\n";
+    return report.str();
+  }
+
+  report << "--------------------------------------------------------------------------------\n";
+  report << fixedWidth("Engine Pair", COL_PAIR)
+         << fixedWidth("Games", COL_GAMES)
+         << fixedWidth("Score", COL_SCORE)
+         << fixedWidth("W/D/L", COL_WDL)
+         << fixedWidth("ELO Diff", COL_ELO) << "\n";
+  report << "--------------------------------------------------------------------------------\n";
+
+  // Display all matches
+  for (const auto& [matchKey, match] : data.matchResults) {
+    // Engine pair column
+    std::string pairStr = match.getEngine1Id().toDisplayString() + " vs " +
+                         match.getEngine2Id().toDisplayString();
+    report << fixedWidth(pairStr, COL_PAIR);
+
+    // Games column
+    report << fixedWidth(std::to_string(match.getTotalGames()), COL_GAMES);
+
+    // Score column (from engine1's perspective)
+    std::ostringstream scoreStr;
+    scoreStr << std::fixed << std::setprecision(1) << match.getEngine1WinRate() << "%";
+    report << fixedWidth(scoreStr.str(), COL_SCORE);
+
+    // W/D/L column
+    std::string wdlStr = std::to_string(match.engine1Wins) + "/" +
+                        std::to_string(match.draws) + "/" +
+                        std::to_string(match.engine2Wins);
+    report << fixedWidth(wdlStr, COL_WDL);
+
+    // ELO difference column
+    std::ostringstream eloStr;
+    if (match.eloDifference > 0) eloStr << "+";
+    eloStr << std::fixed << std::setprecision(0) << match.eloDifference;
+    report << fixedWidth(eloStr.str(), COL_ELO);
+
+    report << "\n";
+  }
+
+  report << "================================================================================\n";
+
+  return report.str();
+}
+
+std::string ArenaRunner::generateMatchComparisonReport(
+    const ReportData& data,
+    const EngineId& targetEngine,
+    const std::vector<EngineId>& baselineEngines) {
+
+  std::ostringstream report;
+
+  // Helper to pad/truncate string to exact width
+  auto fixedWidth = [](const std::string& str, size_t width) -> std::string {
+    if (str.length() >= width) {
+      return str.substr(0, width - 2) + "..";
+    }
+    return str + std::string(width - str.length(), ' ');
+  };
+
+  // Column widths
+  constexpr size_t COL_OPPONENT = 28;
+  constexpr size_t COL_GAMES = 10;
+  constexpr size_t COL_SCORE = 12;
+  constexpr size_t COL_WDL = 16;
+  constexpr size_t COL_ELO = 12;
+  constexpr size_t COL_VS = 14;
+
+  // Determine which baselines to use
+  std::vector<EngineId> baselines = baselineEngines;
+  if (baselines.empty()) {
+    // Use all engines as baselines
+    for (const auto& engine : data.engines) {
+      if (engine != targetEngine) {
+        baselines.push_back(engine);
+      }
+    }
+  }
+
+  // Header
+  report << "\n";
+  report << Color::color(Color::BOLD);
+  report << "================================================================================\n";
+  report << "MATCH COMPARISON: " << targetEngine.toDisplayString() << " vs Baselines\n";
+  report << "================================================================================\n";
+  report << Color::color(Color::RESET);
+
+  if (!data.hasMatchResults()) {
+    report << "\nNo match results found.\n";
+    return report.str();
+  }
+
+  // Find primary baseline (first in list)
+  const EngineId* primaryBaseline = baselines.empty() ? nullptr : &baselines[0];
+
+  report << "--------------------------------------------------------------------------------\n";
+  report << fixedWidth("Opponent", COL_OPPONENT)
+         << fixedWidth("Games", COL_GAMES)
+         << fixedWidth("Score", COL_SCORE)
+         << fixedWidth("W/D/L", COL_WDL)
+         << fixedWidth("ELO", COL_ELO);
+  if (primaryBaseline) {
+    report << fixedWidth("vs " + primaryBaseline->toDisplayString(), COL_VS);
+  }
+  report << "\n";
+  report << "--------------------------------------------------------------------------------\n";
+
+  // Get primary baseline's ELO for comparison
+  double primaryBaselineElo = 0.0;
+  bool hasPrimaryBaseline = false;
+  if (primaryBaseline) {
+    const MatchResult* primaryMatch = data.getMatch(targetEngine, *primaryBaseline);
+    if (primaryMatch) {
+      // Calculate ELO from target's perspective
+      if (primaryMatch->getEngine1Id() == targetEngine) {
+        primaryBaselineElo = primaryMatch->eloDifference;
+      } else {
+        primaryBaselineElo = -primaryMatch->eloDifference;
+      }
+      hasPrimaryBaseline = true;
+    }
+  }
+
+  // Display matches against each baseline
+  bool hasResults = false;
+  for (const auto& opponent : baselines) {
+    const MatchResult* match = data.getMatch(targetEngine, opponent);
+    if (!match) continue;
+
+    hasResults = true;
+
+    // Determine if target is engine1 or engine2
+    bool targetIsEngine1 = (match->getEngine1Id() == targetEngine);
+
+    // Opponent column
+    report << fixedWidth(opponent.toDisplayString(), COL_OPPONENT);
+
+    // Games column
+    report << fixedWidth(std::to_string(match->getTotalGames()), COL_GAMES);
+
+    // Score column (from target's perspective)
+    double targetScore = targetIsEngine1 ? match->getEngine1WinRate() : (100.0 - match->getEngine1WinRate());
+    std::ostringstream scoreStr;
+    scoreStr << std::fixed << std::setprecision(1) << targetScore << "%";
+    report << fixedWidth(scoreStr.str(), COL_SCORE);
+
+    // W/D/L column (from target's perspective)
+    int targetWins = targetIsEngine1 ? match->engine1Wins : match->engine2Wins;
+    int opponentWins = targetIsEngine1 ? match->engine2Wins : match->engine1Wins;
+    std::string wdlStr = std::to_string(targetWins) + "/" +
+                        std::to_string(match->draws) + "/" +
+                        std::to_string(opponentWins);
+    report << fixedWidth(wdlStr, COL_WDL);
+
+    // ELO column (from target's perspective)
+    double targetElo = targetIsEngine1 ? match->eloDifference : -match->eloDifference;
+    std::ostringstream eloStr;
+    if (targetElo > 0) eloStr << "+";
+    eloStr << std::fixed << std::setprecision(0) << targetElo;
+    report << fixedWidth(eloStr.str(), COL_ELO);
+
+    // vs baseline column
+    if (hasPrimaryBaseline && opponent == *primaryBaseline) {
+      report << fixedWidth("[baseline]", COL_VS);
+    } else if (hasPrimaryBaseline) {
+      double delta = targetElo - primaryBaselineElo;
+      std::ostringstream deltaStr;
+      if (delta > 0) {
+        deltaStr << Color::color(Color::GREEN) << "+" << std::fixed << std::setprecision(0) << delta << " ELO" << Color::color(Color::RESET);
+      } else if (delta < 0) {
+        deltaStr << Color::color(Color::RED) << std::fixed << std::setprecision(0) << delta << " ELO" << Color::color(Color::RESET);
+      } else {
+        deltaStr << "0 ELO";
+      }
+      report << fixedWidth(deltaStr.str(), COL_VS + 18); // +18 for ANSI codes
+    }
+
+    report << "\n";
+  }
+
+  if (!hasResults) {
+    report << "\n" << Color::color(Color::YELLOW) << "No match results found for " << targetEngine.toDisplayString() << Color::color(Color::RESET) << "\n";
+    report << "Run matches with this engine to see comparisons.\n";
+  }
+
+  report << "================================================================================\n";
 
   return report.str();
 }

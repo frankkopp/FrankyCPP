@@ -620,14 +620,16 @@ testSuites:
 
 ```yaml
 matches:
-  - name: "v1.1_vs_v1.0_blitz"                          # Match identifier
-    engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"  # First engine
-    engine2Path: "Release/FrankyCPP_V1.0/FrankyCPP_v1.0.exe"       # Second engine
-    openingBook: "books/8moves_GM_LB.pgn"               # Opening book PGN
-    timeControl: "60+0.6"                               # Time control
-    rounds: 100                                         # Number of games
-    concurrency: 4                                      # Parallel games
-    outputPgn: "results/matches/v1.1_vs_v1.0_blitz.pgn" # PGN output
+  - name: "v1.1_vs_FrankyGo_blitz_100"                 # Match identifier
+    engine1Path: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"  # First engine
+    engine1Version: "v1.1"                             # Engine 1 version (required)
+    engine2Path: "D:/Games/FrankyChess/FrankyGo/FrankyGo.exe"  # Second engine
+    engine2Version: "v1.0.3"                           # Engine 2 version (required)
+    openingBook: "books/8moves_GM_LB.pgn"              # Opening book PGN
+    timeControl: "60+0.6"                              # Time control
+    rounds: 100                                        # Number of games
+    concurrency: 4                                     # Parallel games
+    outputPgn: "results/matches/v1.1_vs_FrankyGo_blitz_100.pgn"  # PGN output
 ```
 
 ### Fields
@@ -675,6 +677,33 @@ engine1Path: "/opt/engines/frankycpp/v1.1/FrankyCPP"
 
 ---
 
+#### `engine1Version` (Required)
+
+**Type:** String
+
+**Purpose:** Explicit version identifier for engine 1
+
+**Usage:** Used in result files and reporting for clear engine identification
+
+**Format:** Free-form string, but recommend semantic versioning
+
+**Examples:**
+```yaml
+engine1Version: "v1.1"          # Standard version
+engine1Version: "v1.2-dev"      # Development version
+engine1Version: "v1.1.2"        # Detailed version
+engine1Version: "dev-20260206"  # Date-based version
+```
+
+**Best Practices:**
+- Match the actual engine version being tested
+- Use consistent naming across all configurations
+- Include enough detail for unique identification
+
+**Note:** If omitted, will be empty in results (not recommended)
+
+---
+
 #### `engine2Path` (Required)
 
 **Type:** String (path)
@@ -694,6 +723,26 @@ engine2Path: "Release/FrankyCPP_v0.5/FrankyCPP_v0.5.exe"
 # Test against external engine
 engine2Path: "D:/Engines/Stockfish/stockfish-windows.exe"
 ```
+
+---
+
+#### `engine2Version` (Required)
+
+**Type:** String
+
+**Purpose:** Explicit version identifier for engine 2
+
+**Same format and requirements as `engine1Version`**
+
+**Examples:**
+```yaml
+engine2Version: "v1.0"       # Previous release
+engine2Version: "v0.5"       # Older baseline
+engine2Version: "v1.0.3"     # External engine version (e.g., FrankyGo)
+engine2Version: "dev"        # Stockfish development build
+```
+
+**Note:** Especially important for external engines where version may not be obvious from path
 
 ---
 

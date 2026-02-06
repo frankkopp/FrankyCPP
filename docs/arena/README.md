@@ -72,53 +72,73 @@ Number of Test Suites: 2
 
 Runs engine-vs-engine matches defined in `config/arena.yaml`.
 
-### Compare Two Versions
+### View Baseline Report (All Engines)
 
 ```powershell
-.\cmake-build-win-release\src\FrankyCPP_v1.1_Arena.exe --compare v1.1 v1.0
+.\cmake-build-win-release\src\FrankyCPP_v1.1_Arena.exe --report
+```
+
+Shows all engines side-by-side for all test suites and matches.
+
+### Compare Target Engine vs Baselines
+
+```powershell
+.\cmake-build-win-release\src\FrankyCPP_v1.1_Arena.exe --cmp FrankyCPP-v1.2-dev
 ```
 
 **Example Output:**
 ```
-===================================================================
-Engine Version Comparison Report
-===================================================================
-Version 1: v1.1
-Version 2: v1.0
-Generated: 20260201_153000
-===================================================================
+================================================================================
+TEST SUITE COMPARISON: FrankyCPP v1.2-dev vs Baselines
+================================================================================
+Baseline: FrankyCPP v1.1
 
-TEST SUITE COMPARISON:
--------------------------------------------------------------------
-
-WAC:
-  v1.0: 250/300 (83.3%)
-  v1.1: 285/300 (95.0%)
-  Improvement: +35 positions (+11.7%)
-
-franky_tests:
-  v1.0: 48/50 (96.0%)
-  v1.1: 50/50 (100.0%)
-  Improvement: +2 positions (+4.0%)
+--------------------------------------------------------------------------------
+Test Suite           Target Pass    Baseline Pass    Delta       Status
+--------------------------------------------------------------------------------
+WAC                  288/300        285/300          +3          [+] BETTER
+franky_tests         50/50          50/50            +0          [=] EQUAL
+STS1-STS15_LAN       952/1500       945/1500         +7          [+] BETTER
+================================================================================
 
 
-MATCH COMPARISON:
--------------------------------------------------------------------
+================================================================================
+MATCH COMPARISON: FrankyCPP v1.2-dev vs Baselines
+================================================================================
+--------------------------------------------------------------------------------
+Opponent             Games   Score      W/D/L       ELO         vs v1.1
+--------------------------------------------------------------------------------
+FrankyCPP v1.1       100     58.0%      35/46/19    +56         [baseline]
+FrankyCPP v0.5       100     72.0%      55/34/11    +165        +109 ELO
+FrankyGo v1.0.3      100     51.5%      28/47/25    +10         -46 ELO
 
-v1.1_vs_v1.0_blitz:
-  FrankyCPP_v1.1: 65 wins, 20 draws, 15 losses
-  FrankyCPP_v1.0: 15 wins, 20 draws, 65 losses
-  Score: 75.0 - 25.0
-  ELO Difference: +174.0 ELO
-  Duration: 1234.5 seconds
-
-
-SUMMARY:
--------------------------------------------------------------------
-v1.1 is approximately +174 ELO stronger than v1.0
-Test suite improvement: +37 positions solved
-===================================================================
+SUMMARY
+--------------------------------------------------------------------------------
+vs v1.1:    +56 ELO   ✅ STRONGER
+Status:      ✅ IMPROVEMENT over baseline
+================================================================================
 ```
+
+### Filter Reports by Type
+
+```powershell
+# Show only test suite results
+.\cmake-build-win-release\src\FrankyCPP_v1.1_Arena.exe --report --testsuites-only
+
+# Show only match results
+.\cmake-build-win-release\src\FrankyCPP_v1.1_Arena.exe --report --matches-only
+
+# Compare only matches
+.\cmake-build-win-release\src\FrankyCPP_v1.1_Arena.exe --cmp FrankyCPP-v1.2-dev --matches-only
+```
+
+### List Available Engines
+
+```powershell
+.\cmake-build-win-release\src\FrankyCPP_v1.1_Arena.exe --engines
+```
+
+Shows all engines found in stored results.
 
 ---
 
@@ -144,7 +164,10 @@ After making code changes:
 .\cmake-build-win-release\src\FrankyCPP_v1.1_Arena.exe --testsuites
 
 # Compare with baseline
-.\cmake-build-win-release\src\FrankyCPP_v1.1_Arena.exe --compare v1.1 v1.1_old
+.\cmake-build-win-release\src\FrankyCPP_v1.1_Arena.exe --cmp FrankyCPP-v1.2-dev --baseline FrankyCPP-v1.1
+
+# Or view baseline report to see all engines
+.\cmake-build-win-release\src\FrankyCPP_v1.1_Arena.exe --report
 ```
 
 ### 3. Run Engine Match
@@ -179,18 +202,19 @@ All results are saved to the `results/` directory:
 ```
 results/
 ├── testsuites/          # EPD test suite results
-│   ├── v1.1_franky_tests_20260201_143022.json
-│   └── v1.1_wac_20260201_144530.json
+│   ├── WAC_FrankyCPP-v1.1_20260201_143022.json
+│   ├── WAC_FrankyGo-v1.0.3_20260201_144530.json
+│   └── STS1-STS15_FrankyCPP-v0.5_20260201_145000.json
 │
-├── matches/             # Engine match results
-│   ├── v1.1_vs_v1.0_blitz_20260201_150033.json
-│   └── v1.1_vs_v1.0_blitz_20260201_150033.pgn
-│
-└── comparisons/         # Version comparison reports
-    └── v1.1_vs_v1.0_20260201_153000.txt
+└── matches/             # Engine match results
+    ├── FrankyCPP-v1.1_vs_FrankyGo-v1.0.3_60+0.6_20260201_150033.json
+    ├── FrankyCPP-v1.1_vs_FrankyGo-v1.0.3_60+0.6_20260201_150033.pgn
+    └── FrankyCPP-v1.1_vs_FrankyCPP-v0.5_60+0.6_20260201_160000.json
 ```
 
-**File Naming:** `{version}_{name}_{timestamp}.{ext}`
+**Test Suite File Naming:** `{TestSuite}_{EngineName-Version}_{Timestamp}.json`
+
+**Match File Naming:** `{Engine1-Version}_vs_{Engine2-Version}_{TimeControl}_{Timestamp}.json`
 
 **Timestamp Format:** `YYYYMMDD_HHMMSS` for sortability
 
@@ -257,12 +281,13 @@ See [Configuration.md](Configuration.md) for detailed reference.
 
 ### No comparison results
 
-**Problem:** `--compare` finds no results for specified version
+**Problem:** `--cmp` finds no results for specified engine
 
 **Solution:**
 1. Run test suites/matches first to generate results
-2. Check version string matches exactly (case-sensitive)
-3. Look in `results/testsuites/` and `results/matches/` for existing files
+2. Check engine ID format: `EngineName-version` (e.g., `FrankyCPP-v1.1`)
+3. Use `--engines` to list available engines
+4. Look in `results/testsuites/` and `results/matches/` for existing files
 
 ---
 
@@ -272,24 +297,43 @@ See [Configuration.md](Configuration.md) for detailed reference.
 FrankyCPP Arena - Engine Strength Testing
 
 Options:
-  -h, --help              Show this help message
-  -c, --config PATH       Configuration file path (default: config/arena.yaml)
-  -t, --testsuites        Run test suites only
-  -m, --matches           Run matches only
-  --compare V1 V2         Compare two versions: --compare v1.1 v1.0
+  -h, --help                      Show this help message
+  -c, --config PATH               Configuration file path (default: config/arena.yaml)
+
+Execution:
+  -t, --testsuites                Run test suites only
+  -m, --matches                   Run matches only
+
+Reporting:
+  -r, --report, --baselines       Show baseline report (all engines, all test suites)
+  --engines                       List all available engines from results
+  --cmp <engine>                  Compare engine against baselines (e.g., --cmp FrankyCPP-v1.2-dev)
+  -b, --baseline <engine>         Specify baseline(s) for comparison (can repeat)
+  --testsuites-only               Show only test suite results (filter out matches)
+  --matches-only                  Show only match results (filter out test suites)
 
 Examples:
-  Run all tests:       FrankyCPP_v1.1_Arena.exe
-  Test suites only:    FrankyCPP_v1.1_Arena.exe --testsuites
-  Matches only:        FrankyCPP_v1.1_Arena.exe --matches
-  Compare versions:    FrankyCPP_v1.1_Arena.exe --compare v1.1 v1.0
-  Custom config:       FrankyCPP_v1.1_Arena.exe --config my_arena.yaml
+  Run all tests:          FrankyCPP_v1.1_Arena.exe
+  Test suites only:       FrankyCPP_v1.1_Arena.exe --testsuites
+  Matches only:           FrankyCPP_v1.1_Arena.exe --matches
+
+  Baseline report:        FrankyCPP_v1.1_Arena.exe --report
+  Only test suites:       FrankyCPP_v1.1_Arena.exe --report --testsuites-only
+  Only matches:           FrankyCPP_v1.1_Arena.exe --report --matches-only
+
+  Compare vs baseline:    FrankyCPP_v1.1_Arena.exe --cmp FrankyCPP-v1.2-dev
+  Specify baseline:       FrankyCPP_v1.1_Arena.exe --cmp FrankyCPP-v1.2-dev --baseline FrankyCPP-v1.1
+  Compare matches only:   FrankyCPP_v1.1_Arena.exe --cmp FrankyCPP-v1.2-dev --matches-only
+
+  List engines:           FrankyCPP_v1.1_Arena.exe --engines
+  Custom config:          FrankyCPP_v1.1_Arena.exe --config my_arena.yaml
 ```
 
 ---
 
 ## Next Steps
 
+- **[Reporting.md](Reporting.md)** - Complete guide to reporting and comparison features (NEW)
 - **[External_Engine_Testing.md](External_Engine_Testing.md)** - Complete guide to external UCI engine testing
 - **[Configuration.md](Configuration.md)** - Detailed configuration reference
 - **[Results.md](Results.md)** - Result file format and analysis
@@ -301,14 +345,18 @@ Examples:
 
 💡 **Run test suites after every significant change** to track tactical strength improvements
 
+💡 **Use `--report` to see all engines side-by-side** for quick comparison
+
+💡 **Use `--cmp` for detailed comparison** against specific baselines with delta analysis
+
 💡 **Keep old results** for long-term historical comparison (results are small JSON files)
 
-💡 **Use descriptive version names** like `v1.1_before_ttfix` and `v1.1_after_ttfix` for easier comparison
+💡 **Use descriptive engine versions** like `FrankyCPP-v1.1` for clear identification in reports
 
 💡 **Run matches overnight** - 100+ rounds can take hours depending on time control
 
-💡 **Compare with multiple versions** to see progression: `v1.1` → `v1.0` → `v0.5`
+💡 **Use filtering options** (`--testsuites-only`, `--matches-only`) to focus on specific result types
 
 ---
 
-*Last updated: 2026-02-01*
+*Last updated: 2026-02-06*

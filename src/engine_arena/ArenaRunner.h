@@ -70,7 +70,6 @@
 #include "MatchRunner.h"
 #include "ResultWriter.h"
 
-#include <map>
 #include <string>
 
 namespace arena {
@@ -118,6 +117,25 @@ public:
   /// Lists all available engines from stored results
   /// @return Set of EngineIds found in results
   std::set<EngineId> listAvailableEngines();
+
+  /// Loads match results into ReportData structure
+  /// @param data ReportData to populate (modifies in place)
+  void loadMatchResults(ReportData& data);
+
+  /// Generates match baseline report showing all engine pairs
+  /// @param data ReportData with loaded match results
+  /// @return Formatted match report string
+  std::string generateMatchBaselineReport(const ReportData& data);
+
+  /// Generates match comparison report for target engine vs baselines
+  /// @param data ReportData with loaded match results
+  /// @param targetEngine Engine to compare
+  /// @param baselineEngines Baselines to compare against
+  /// @return Formatted match comparison report string
+  std::string generateMatchComparisonReport(
+      const ReportData& data,
+      const EngineId& targetEngine,
+      const std::vector<EngineId>& baselineEngines = {});
 
 private:
   const ArenaConfig& arenaConfig;  ///< Reference to arena configuration

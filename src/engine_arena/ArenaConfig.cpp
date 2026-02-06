@@ -129,6 +129,20 @@ ArenaConfig ArenaConfig::loadFromYaml(const std::string& configPath) {
         match.engine1Path = matchNode["engine1Path"].as<std::string>();
         match.engine2Path = matchNode["engine2Path"].as<std::string>();
 
+        // Engine versions (optional - if not specified, extract from path)
+        if (matchNode["engine1Version"]) {
+          match.engine1Version = matchNode["engine1Version"].as<std::string>();
+        } else {
+          // Try to extract version from path (e.g., "FrankyCPP_v1.1.exe" -> "v1.1")
+          match.engine1Version = "";  // Will be extracted from engine name later
+        }
+
+        if (matchNode["engine2Version"]) {
+          match.engine2Version = matchNode["engine2Version"].as<std::string>();
+        } else {
+          match.engine2Version = "";  // Will be extracted from engine name later
+        }
+
         // cutechessPath can be specified per-match or use global default
         if (matchNode["cutechessPath"]) {
           match.cutechessPath = matchNode["cutechessPath"].as<std::string>();

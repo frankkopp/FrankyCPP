@@ -638,8 +638,10 @@ matches:
 
   # === Blitz matches between all 3 engines (100 games each) ===
   - name: "v0.5_vs_v1.1_blitz_100"
-    engine1Path: "Release/FrankyCPP_V0.5/FrankyCPP_v0.5.exe"
-    engine2Path: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
+    engine1Path: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
+    engine1Version: "v1.1"
+    engine2Path: "Release/FrankyCPP_V0.5/FrankyCPP_v0.5.exe"
+    engine2Version: "v0.5"
     openingBook: "books/8moves_GM_LB.pgn"
     timeControl: "60+0.6"
     rounds: 100
@@ -648,7 +650,9 @@ matches:
 
   - name: "v1.1_vs_FrankyGo_blitz_100"
     engine1Path: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
+    engine1Version: "v1.1"
     engine2Path: "D:/Games/FrankyChess/FrankyGo/FrankyGo.exe"
+    engine2Version: "v1.0.3"
     openingBook: "books/8moves_GM_LB.pgn"
     timeControl: "60+0.6"
     rounds: 100

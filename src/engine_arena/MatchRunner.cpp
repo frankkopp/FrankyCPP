@@ -230,11 +230,27 @@ bool MatchRunner::executeCutechess(const std::string& command, std::string& outp
 
 MatchResult MatchRunner::parseOutput(const std::string& output, const MatchConfig& matchConfig) const {
   MatchResult result;
-  result.version = arenaConfig.version;
-  result.matchName = matchConfig.name;
+
+  // Arena metadata
+  result.arenaVersion = arenaConfig.version;
   result.timestamp = getCurrentTimestamp();
+
+  // Match identification
+  result.matchName = matchConfig.name;
+  result.timeControl = matchConfig.timeControl;
+  result.rounds = matchConfig.rounds;
+
+  // Engine 1 identification
   result.engine1Name = extractEngineName(matchConfig.engine1Path);
+  result.engine1Version = matchConfig.engine1Version;
+  result.engine1Path = matchConfig.engine1Path;
+
+  // Engine 2 identification
   result.engine2Name = extractEngineName(matchConfig.engine2Path);
+  result.engine2Version = matchConfig.engine2Version;
+  result.engine2Path = matchConfig.engine2Path;
+
+  // PGN path
   result.pgnPath = matchConfig.outputPgn;
 
   // Parse cutechess output for score line

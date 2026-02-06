@@ -70,7 +70,10 @@ int main(int argc, char* argv[]) {
       ("cmp", po::value<std::string>(),
        "Compare engine against baselines: --cmp FrankyCPP-v1.2-dev")
       ("baseline,b", po::value<std::vector<std::string>>()->multitoken(),
-       "Specify baseline(s) for comparison (can repeat)");
+       "Specify baseline(s) for comparison (can repeat)")
+      // Filtering options
+      ("testsuites-only", "Show only test suite results (filter out matches)")
+      ("matches-only", "Show only match results (filter out test suites)");
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -84,14 +87,19 @@ int main(int argc, char* argv[]) {
       std::cout << "  --engines                List available engines from results\n";
       std::cout << "  --cmp <engine>           Compare engine against baselines\n";
       std::cout << "  --baseline <engine>      Specify baseline(s) for --cmp\n";
+      std::cout << "  --testsuites-only        Show only test suite results\n";
+      std::cout << "  --matches-only           Show only match results\n";
       std::cout << "\nExecution Commands:\n";
       std::cout << "  (no args)                Run all tests and matches\n";
       std::cout << "  --testsuites, -t         Run test suites only\n";
       std::cout << "  --matches, -m            Run matches only\n";
       std::cout << "\nExamples:\n";
       std::cout << "  FrankyCPP_Arena --report\n";
+      std::cout << "  FrankyCPP_Arena --report --testsuites-only\n";
+      std::cout << "  FrankyCPP_Arena --report --matches-only\n";
       std::cout << "  FrankyCPP_Arena --cmp FrankyCPP-v1.2-dev\n";
       std::cout << "  FrankyCPP_Arena --cmp FrankyCPP-v1.2-dev --baseline FrankyCPP-v1.1\n";
+      std::cout << "  FrankyCPP_Arena --cmp FrankyCPP-v1.2-dev --matches-only\n";
       std::cout << "  FrankyCPP_Arena --testsuites\n";
       return 0;
     }
@@ -141,7 +149,27 @@ int main(int argc, char* argv[]) {
     } else if (vm.contains("report") || vm.contains("baselines")) {
       // Show baseline report
       auto data = arenaRunner.loadAllResults();
-      std::cout << arenaRunner.generateBaselineReport(data);
+
+      bool testSuitesOnly = vm.contains("testsuites-only");
+      bool matchesOnly = vm.contains("matches-only");
+
+      // Can't have both filters
+      if (testSuitesOnly && matchesOnly) {
+        std::cerr << "ERROR: Cannot use both --testsuites-only and --matches-only\n";
+        return 1;
+      }
+
+      if (matchesOnly) {
+        // Show only match results
+        std::cout << arenaRunner.generateMatchBaselineReport(data);
+      } else if (testSuitesOnly) {
+        // Show only test suite results
+        std::cout << arenaRunner.generateBaselineReport(data);
+      } else {
+        // Show both (default)
+        std::cout << arenaRunner.generateBaselineReport(data);
+        std::cout << arenaRunner.generateMatchBaselineReport(data);
+      }
 
     } else if (vm.contains("cmp")) {
       // Comparison report
@@ -157,7 +185,27 @@ int main(int argc, char* argv[]) {
       }
 
       auto data = arenaRunner.loadAllResults();
-      std::cout << arenaRunner.generateComparisonReport(data, targetEngine, baselines);
+
+      bool testSuitesOnly = vm.contains("testsuites-only");
+      bool matchesOnly = vm.contains("matches-only");
+
+      // Can't have both filters
+      if (testSuitesOnly && matchesOnly) {
+        std::cerr << "ERROR: Cannot use both --testsuites-only and --matches-only\n";
+        return 1;
+      }
+
+      if (matchesOnly) {
+        // Show only match comparison
+        std::cout << arenaRunner.generateMatchComparisonReport(data, targetEngine, baselines);
+      } else if (testSuitesOnly) {
+        // Show only test suite comparison
+        std::cout << arenaRunner.generateComparisonReport(data, targetEngine, baselines);
+      } else {
+        // Show both (default)
+        std::cout << arenaRunner.generateComparisonReport(data, targetEngine, baselines);
+        std::cout << arenaRunner.generateMatchComparisonReport(data, targetEngine, baselines);
+      }
 
     } else if (vm.contains("testsuites")) {
       arenaRunner.runTestSuitesOnly();

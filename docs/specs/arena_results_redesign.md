@@ -1,8 +1,9 @@
 # Arena Results Redesign Specification
 
-**Status:** Draft - Discussion Phase  
-**Created:** 2026-02-05  
-**Last Updated:** 2026-02-05
+**Status:** Implemented ✅
+**Created:** 2026-02-05
+**Last Updated:** 2026-02-06
+**Implementation Completed:** 2026-02-06
 
 ---
 
@@ -528,21 +529,56 @@ comparison:
    - ✅/❌/⚖️ symbols for quick visual scanning
    - Other formats (JSON, Markdown) can be added later if needed
 
-### 3.9 Match Reporting (Future)
+### 3.9 Match Reporting ✅ COMPLETE
 
-**Status:** ⏳ OUT OF SCOPE for initial implementation
+**Status:** ✅ Implemented (2026-02-06)
 
-Match reporting will be added AFTER test suite reporting is complete and working.
+**Implementation Summary:**
 
-#### Why Deferred?
-- Match result storage has not been redesigned yet (still uses old format)
-- Test suite reporting provides immediate value for regression detection
-- Matches are more expensive to run (100 games vs seconds for test suites)
-- Focus on one thing at a time
+Phases 1-8 complete, providing full match reporting capabilities parallel to test suite reporting.
 
-#### Future Match Report Structure
+**Data Structure Changes:**
+- New `MatchResult` structure with separate engine identification
+- Fields: `arenaVersion`, `engine1Name/Version/Path`, `engine2Name/Version/Path`
+- Added `timeControl` and `rounds` for match settings
+- Helper methods: `getEngine1Id()`, `getEngine2Id()`, `getMatchKey()`
 
-When implemented, match reports will show:
+**File Format:**
+- New JSON format with structured sections: `match`, `engine1`, `engine2`, `results`
+- New file naming: `{Engine1-v1}_vs_{Engine2-v2}_{TimeControl}_{Timestamp}.json`
+- Example: `FrankyCPP-v1.1_vs_FrankyGo-v1.0.3_60_0.6_20260206_100000.json`
+
+**Result Loading:**
+- `loadMatchResults()` implemented in ArenaRunner
+- Scans `results/matches/` directory
+- Keeps latest result per engine pair
+- Updates `ReportData.matchResults` map
+
+**Reporting Functions:**
+- `generateMatchBaselineReport()` - Shows all engine pairs side-by-side
+- `generateMatchComparisonReport()` - Compares target vs baselines with ELO deltas
+- Full CLI integration with filtering support
+
+**CLI Commands:**
+- `--report` - Show both test suites AND matches
+- `--report --matches-only` - Show only match results
+- `--cmp <engine>` - Compare engine (test suites + matches)
+- `--cmp <engine> --matches-only` - Compare matches only
+- `--engines` - List all available engines
+
+**Configuration:**
+- Added `engine1Version` and `engine2Version` to `MatchConfig`
+- YAML loader updated to read version fields (optional with fallback)
+
+**Documentation:**
+- README.md updated with new commands and examples
+- Results.md updated with new JSON format
+- Configuration.md updated with engine version fields
+- New Reporting.md guide created (comprehensive reporting documentation)
+
+#### Match Report Output Examples
+
+Match baseline report:
 
 ```
 MATCH RESULTS
@@ -741,3 +777,5 @@ Phases 1-3 deliver the core value. Phase 4 (config) is nice-to-have since CLI op
 | 2026-02-05 | ✅ Implemented Section 2: New JSON structure, file naming, backward compat |
 | 2026-02-05 | Added Section 4: Implementation plan for reporting |
 | 2026-02-05 | ✅ Implemented Phases 1-3: Result loading, baseline report, comparison report |
+| 2026-02-06 | ✅ Implemented Match Reporting (Phases 1-8 complete) |
+| 2026-02-06 | Updated status to "Implemented" - All phases complete |

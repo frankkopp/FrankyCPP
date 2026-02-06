@@ -27,20 +27,37 @@ results/
 
 ## File Naming Convention
 
-**Format:** `{version}_{name}_{timestamp}.{ext}`
+### Test Suite Results
+
+**Format:** `{TestSuite}_{EngineName-Version}_{Timestamp}.json`
 
 **Components:**
-- `version` - Engine version identifier (from config)
-- `name` - Test suite or match name
-- `timestamp` - `YYYYMMDD_HHMMSS` in local time
-- `ext` - File extension (json, pgn, txt)
+- `TestSuite` - Test suite name (e.g., "WAC", "STS1-STS15_LAN")
+- `EngineName-Version` - Engine identifier (e.g., "FrankyCPP-v1.1")
+- `Timestamp` - `YYYYMMDD_HHMMSS` in local time
 
 **Examples:**
 ```
-v1.1_WAC_20260201_143530.json              # Test suite result
-v1.1_vs_v1.0_blitz_20260201_150033.json    # Match result (JSON)
-v1.1_vs_v1.0_blitz_20260201_150033.pgn     # Match games (PGN)
-v1.1_vs_v1.0_20260201_153000.txt           # Comparison report
+WAC_FrankyCPP-v1.1_20260201_143530.json
+STS1-STS15_LAN_FrankyGo-v1.0.3_20260201_144530.json
+mate_test_Stockfish-dev_20260201_145000.json
+```
+
+### Match Results
+
+**Format:** `{Engine1-Version}_vs_{Engine2-Version}_{TimeControl}_{Timestamp}.json`
+
+**Components:**
+- `Engine1-Version` - First engine identifier (e.g., "FrankyCPP-v1.1")
+- `Engine2-Version` - Second engine identifier (e.g., "FrankyGo-v1.0.3")
+- `TimeControl` - Time control with sanitized characters (e.g., "60_0.6" from "60+0.6")
+- `Timestamp` - `YYYYMMDD_HHMMSS` in local time
+
+**Examples:**
+```
+FrankyCPP-v1.1_vs_FrankyGo-v1.0.3_60_0.6_20260201_150033.json  # Match result (JSON)
+FrankyCPP-v1.1_vs_FrankyGo-v1.0.3_60_0.6_20260201_150033.pgn   # Match games (PGN)
+FrankyCPP-v1.1_vs_FrankyCPP-v0.5_60_0.6_20260201_160000.json   # Self-play match
 ```
 
 **Sorting:** Files sort chronologically by timestamp
@@ -138,43 +155,82 @@ v1.1_vs_v1.0_20260201_153000.txt           # Comparison report
 
 ```json
 {
-  "version": "v1.1",
-  "matchName": "v1.1_vs_v1.0_blitz",
-  "timestamp": "2026-02-01T15:00:33Z",
-  "engines": {
-    "engine1": "FrankyCPP_v1.1",
-    "engine2": "FrankyCPP_v1.0"
+  "arenaVersion": "v1.1",
+  "timestamp": "2026-02-06T10:00:00Z",
+
+  "match": {
+    "name": "v1.1_vs_FrankyGo_blitz_100",
+    "timeControl": "60+0.6",
+    "rounds": 100
   },
+
+  "engine1": {
+    "name": "FrankyCPP",
+    "version": "v1.1",
+    "path": "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
+  },
+
+  "engine2": {
+    "name": "FrankyGo",
+    "version": "v1.0.3",
+    "path": "D:/Games/FrankyChess/FrankyGo/FrankyGo.exe"
+  },
+
   "results": {
-    "engine1Wins": 65,
-    "engine2Wins": 15,
-    "draws": 20,
-    "engine1Score": 75.0,
-    "engine2Score": 25.0,
-    "eloDifference": 174.0
+    "engine1Wins": 32,
+    "engine2Wins": 19,
+    "draws": 49,
+    "engine1Score": 56.5,
+    "engine2Score": 43.5,
+    "eloDifference": 45.2
   },
-  "pgnPath": "results/matches/v1.1_vs_v1.0_blitz.pgn",
-  "durationMs": 7234567
+
+  "pgnPath": "results/matches/v1.1_vs_FrankyGo_blitz_100.pgn",
+  "durationMs": 3600000
 }
 ```
 
 ### Field Descriptions
 
+#### Top-Level Fields
+
 | Field | Type | Description |
 |-------|------|-------------|
-| `version` | String | Version being tested (engine1) |
-| `matchName` | String | Match identifier |
-| `timestamp` | String | ISO 8601 timestamp (UTC) |
-| `engines.engine1` | String | First engine name |
-| `engines.engine2` | String | Second engine name |
-| `results.engine1Wins` | Integer | Wins by engine 1 |
-| `results.engine2Wins` | Integer | Wins by engine 2 |
-| `results.draws` | Integer | Number of drawn games |
-| `results.engine1Score` | Float | Total points (win=1, draw=0.5) |
-| `results.engine2Score` | Float | Total points for engine 2 |
-| `results.eloDifference` | Float | ELO rating difference |
+| `arenaVersion` | String | Arena version that ran this match |
+| `timestamp` | String | ISO 8601 timestamp (UTC) when match started |
+| `match` | Object | Match configuration details |
+| `engine1` | Object | First engine identification |
+| `engine2` | Object | Second engine identification |
+| `results` | Object | Match outcome statistics |
 | `pgnPath` | String | Path to PGN file with games |
 | `durationMs` | Integer | Match duration in milliseconds |
+
+#### Match Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | String | Match identifier |
+| `timeControl` | String | Time control (e.g., "60+0.6") |
+| `rounds` | Integer | Number of games played |
+
+#### Engine Objects (engine1, engine2)
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | String | Engine name (e.g., "FrankyCPP") |
+| `version` | String | Engine version (e.g., "v1.1") |
+| `path` | String | Path to engine executable |
+
+#### Results Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `engine1Wins` | Integer | Wins by engine 1 |
+| `engine2Wins` | Integer | Wins by engine 2 |
+| `draws` | Integer | Number of drawn games |
+| `engine1Score` | Float | Total points (win=1, draw=0.5) |
+| `engine2Score` | Float | Total points for engine 2 |
+| `eloDifference` | Float | ELO rating difference (engine1 - engine2) |
 
 **Game Count:** `engine1Wins + engine2Wins + draws` = total games played
 
@@ -241,82 +297,46 @@ Match PGN files contain all games in standard PGN format.
 
 ---
 
-## Comparison Report Format
+## Reporting Formats
 
-Comparison reports are plain text files generated by `--compare` command.
+The Arena provides powerful reporting and comparison features. Reports are displayed directly in the terminal (not saved to files).
 
-### Example Report
+For complete reporting documentation, see **[Reporting.md](Reporting.md)**.
 
-```
-===================================================================
-Engine Version Comparison Report
-===================================================================
-Version 1: v1.1
-Version 2: v1.0
-Generated: 20260201_153000
-===================================================================
+### Available Reports
 
-TEST SUITE COMPARISON:
--------------------------------------------------------------------
+**Baseline Reports** (`--report`):
+- Shows all engines side-by-side for all test suites
+- Shows all engine pairs for all matches
+- Useful for quick overview of all results
 
-WAC:
-  v1.0: 250/300 (83.3%)
-  v1.1: 285/300 (95.0%)
-  Improvement: +35 positions (+11.7%)
-  Avg time: 283.3ms → 280.5ms (-2.8ms)
+**Comparison Reports** (`--cmp`):
+- Compares target engine against baseline engine(s)
+- Shows deltas with color-coded indicators (✅/❌/⚖️)
+- Highlights improvements and regressions
+- Works for both test suites and matches
 
-franky_tests:
-  v1.0: 48/50 (96.0%)
-  v1.1: 50/50 (100.0%)
-  Improvement: +2 positions (+4.0%)
+**Filtering:**
+- `--testsuites-only` - Show only test suite results
+- `--matches-only` - Show only match results
 
+### Quick Examples
 
-MATCH COMPARISON:
--------------------------------------------------------------------
+```bash
+# View all results
+FrankyCPP_Arena --report
 
-v1.1_vs_v1.0_blitz:
-  FrankyCPP_v1.1: 65 wins, 20 draws, 15 losses
-  FrankyCPP_v1.0: 15 wins, 20 draws, 65 losses
-  Score: 75.0 - 25.0
-  ELO Difference: +174.0 ELO
-  Duration: 7234.6 seconds
+# Compare target vs baselines
+FrankyCPP_Arena --cmp FrankyCPP-v1.2-dev --baseline FrankyCPP-v1.1
 
+# Show only match results
+FrankyCPP_Arena --report --matches-only
 
-SUMMARY:
--------------------------------------------------------------------
-v1.1 is approximately +174 ELO stronger than v1.0
-Test suite improvement: +37 positions solved
-===================================================================
+# List available engines
+FrankyCPP_Arena --engines
 ```
 
-### Report Sections
-
-#### Header
-- Version 1 and Version 2 identifiers
-- Report generation timestamp
-
-#### Test Suite Comparison
-For each test suite found in both versions:
-- Pass counts and percentages
-- Improvement/regression delta
-- Timing comparison (if significant difference)
-
-**Indicators:**
-- `Improvement: +N positions` - v1 solved more
-- `Regression: -N positions` - v1 solved fewer
-- `No change` - identical pass rates
-
-#### Match Comparison
-For each match:
-- Win/draw/loss breakdown for both engines
-- Total scores
-- ELO difference
-- Match duration
-
-#### Summary
-- Overall ELO estimate (average from matches)
-- Total tactical improvement across all test suites
-- General strength assessment
+See **[Reporting.md](Reporting.md)** for detailed report formats, examples, and workflows
 
 ---
 
@@ -577,4 +597,4 @@ conn.close()
 
 ---
 
-*Last updated: 2026-02-01*
+*Last updated: 2026-02-06*
