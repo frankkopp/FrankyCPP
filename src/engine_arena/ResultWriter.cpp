@@ -24,12 +24,56 @@
 #include "ResultWriter.h"
 
 #include <chrono>
+#include <cstdio>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <sstream>
 
 namespace arena {
+
+  namespace {
+    std::string escapeJsonString(const std::string& value) {
+      std::string escaped;
+      escaped.reserve(value.size() + value.size() / 4);
+
+      for (unsigned char ch : value) {
+        switch (ch) {
+          case '\"':
+            escaped += "\\\"";
+            break;
+          case '\\':
+            escaped += "\\\\";
+            break;
+          case '\b':
+            escaped += "\\b";
+            break;
+          case '\f':
+            escaped += "\\f";
+            break;
+          case '\n':
+            escaped += "\\n";
+            break;
+          case '\r':
+            escaped += "\\r";
+            break;
+          case '\t':
+            escaped += "\\t";
+            break;
+          default:
+            if (ch < 0x20) {
+              char buffer[7];
+              std::snprintf(buffer, sizeof(buffer), "\\u%04x", ch);
+              escaped += buffer;
+            } else {
+              escaped += static_cast<char>(ch);
+            }
+        }
+      }
+
+      return escaped;
+    }
+  } // namespace
 
   ResultWriter::ResultWriter(const std::string& resultsDir)
       : resultsDir(resultsDir) {
@@ -64,18 +108,18 @@ namespace arena {
 
     // Write JSON with new structure per spec Section 2.3
     file << "{\n";
-    file << "  \"arenaVersion\": \"" << result.arenaVersion << "\",\n";
-    file << "  \"timestamp\": \"" << result.timestamp << "\",\n";
+    file << "  \"arenaVersion\": \"" << escapeJsonString(result.arenaVersion) << "\",\n";
+    file << "  \"timestamp\": \"" << escapeJsonString(result.timestamp) << "\",\n";
     file << "\n";
     file << "  \"testSuite\": {\n";
-    file << "    \"name\": \"" << result.testSuiteName << "\",\n";
-    file << "    \"epdPath\": \"" << result.epdPath << "\"\n";
+    file << "    \"name\": \"" << escapeJsonString(result.testSuiteName) << "\",\n";
+    file << "    \"epdPath\": \"" << escapeJsonString(result.epdPath) << "\"\n";
     file << "  },\n";
     file << "\n";
     file << "  \"engine\": {\n";
-    file << "    \"name\": \"" << result.engineName << "\",\n";
-    file << "    \"version\": \"" << result.engineVersion << "\",\n";
-    file << "    \"path\": \"" << result.enginePath << "\"\n";
+    file << "    \"name\": \"" << escapeJsonString(result.engineName) << "\",\n";
+    file << "    \"version\": \"" << escapeJsonString(result.engineVersion) << "\",\n";
+    file << "    \"path\": \"" << escapeJsonString(result.enginePath) << "\"\n";
     file << "  },\n";
     file << "\n";
     file << "  \"summary\": {\n";
@@ -100,10 +144,10 @@ namespace arena {
     for (size_t i = 0; i < result.details.size(); ++i) {
       const auto& detail = result.details[i];
       file << "    {\n";
-      file << "      \"testId\": \"" << detail.testId << "\",\n";
-      file << "      \"fen\": \"" << detail.fen << "\",\n";
-      file << "      \"expected\": \"" << detail.expected << "\",\n";
-      file << "      \"actual\": \"" << detail.actual << "\",\n";
+      file << "      \"testId\": \"" << escapeJsonString(detail.testId) << "\",\n";
+      file << "      \"fen\": \"" << escapeJsonString(detail.fen) << "\",\n";
+      file << "      \"expected\": \"" << escapeJsonString(detail.expected) << "\",\n";
+      file << "      \"actual\": \"" << escapeJsonString(detail.actual) << "\",\n";
       file << "      \"passed\": " << (detail.passed ? "true" : "false") << ",\n";
       file << "      \"nodes\": " << detail.nodes << ",\n";
       file << "      \"timeMs\": " << detail.timeMs << "\n";
@@ -136,25 +180,25 @@ namespace arena {
 
     // Write JSON with new structure per spec
     file << "{\n";
-    file << "  \"arenaVersion\": \"" << result.arenaVersion << "\",\n";
-    file << "  \"timestamp\": \"" << result.timestamp << "\",\n";
+    file << "  \"arenaVersion\": \"" << escapeJsonString(result.arenaVersion) << "\",\n";
+    file << "  \"timestamp\": \"" << escapeJsonString(result.timestamp) << "\",\n";
     file << "\n";
     file << "  \"match\": {\n";
-    file << "    \"name\": \"" << result.matchName << "\",\n";
-    file << "    \"timeControl\": \"" << result.timeControl << "\",\n";
+    file << "    \"name\": \"" << escapeJsonString(result.matchName) << "\",\n";
+    file << "    \"timeControl\": \"" << escapeJsonString(result.timeControl) << "\",\n";
     file << "    \"rounds\": " << result.rounds << "\n";
     file << "  },\n";
     file << "\n";
     file << "  \"engine1\": {\n";
-    file << "    \"name\": \"" << result.engine1Name << "\",\n";
-    file << "    \"version\": \"" << result.engine1Version << "\",\n";
-    file << "    \"path\": \"" << result.engine1Path << "\"\n";
+    file << "    \"name\": \"" << escapeJsonString(result.engine1Name) << "\",\n";
+    file << "    \"version\": \"" << escapeJsonString(result.engine1Version) << "\",\n";
+    file << "    \"path\": \"" << escapeJsonString(result.engine1Path) << "\"\n";
     file << "  },\n";
     file << "\n";
     file << "  \"engine2\": {\n";
-    file << "    \"name\": \"" << result.engine2Name << "\",\n";
-    file << "    \"version\": \"" << result.engine2Version << "\",\n";
-    file << "    \"path\": \"" << result.engine2Path << "\"\n";
+    file << "    \"name\": \"" << escapeJsonString(result.engine2Name) << "\",\n";
+    file << "    \"version\": \"" << escapeJsonString(result.engine2Version) << "\",\n";
+    file << "    \"path\": \"" << escapeJsonString(result.engine2Path) << "\"\n";
     file << "  },\n";
     file << "\n";
     file << "  \"results\": {\n";
@@ -170,7 +214,7 @@ namespace arena {
 
     file << "  },\n";
     file << "\n";
-    file << "  \"pgnPath\": \"" << result.pgnPath << "\",\n";
+    file << "  \"pgnPath\": \"" << escapeJsonString(result.pgnPath) << "\",\n";
     file << "  \"durationMs\": " << result.durationMs << "\n";
     file << "}\n";
 
