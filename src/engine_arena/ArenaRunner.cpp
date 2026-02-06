@@ -32,7 +32,6 @@
 #include <regex>
 #include <set>
 #include <sstream>
-#include <stdexcept>
 
 // Suppress false positive Clangd warning about nlohmann/json template instantiation
 #ifdef __clang__
@@ -59,7 +58,7 @@ ArenaRunner::ArenaRunner(const ArenaConfig& config)
     , resultWriter(config.resultsDir) {
 }
 
-void ArenaRunner::runAll() {
+void ArenaRunner::runAll() const {
   std::cout << "\n===================================================================" << std::endl;
   std::cout << "Engine Arena - Full Run Mode" << std::endl;
   std::cout << "===================================================================" << std::endl;
@@ -85,7 +84,7 @@ void ArenaRunner::runAll() {
   std::cout << "===================================================================" << std::endl;
 }
 
-void ArenaRunner::runTestSuitesOnly() {
+void ArenaRunner::runTestSuitesOnly() const {
   std::cout << "\n===================================================================" << std::endl;
   std::cout << "Running Test Suites Only" << std::endl;
   std::cout << "===================================================================" << std::endl;
@@ -95,7 +94,7 @@ void ArenaRunner::runTestSuitesOnly() {
   // Pass callback that saves results immediately after each suite completes
   const auto results = testSuiteRunner.runAllTestSuites(
       [this](const TestSuiteResult& result) {
-        std::string jsonPath = resultWriter.writeTestSuiteResult(result);
+      const std::string jsonPath = resultWriter.writeTestSuiteResult(result);
         std::cout << "  -> Saved: " << jsonPath << std::endl;
       });
 
@@ -105,14 +104,14 @@ void ArenaRunner::runTestSuitesOnly() {
   std::cout << "===================================================================" << std::endl;
 }
 
-void ArenaRunner::runMatchesOnly() {
+void ArenaRunner::runMatchesOnly() const {
   std::cout << "\n===================================================================" << std::endl;
   std::cout << "Running Matches Only" << std::endl;
   std::cout << "===================================================================" << std::endl;
   std::cout << "Number of matches: " << arenaConfig.matches.size() << std::endl;
   std::cout << "===================================================================" << std::endl;
 
-  auto results = matchRunner.runAllMatches();
+  const auto results = matchRunner.runAllMatches();
 
   // Save results
   std::cout << "\nSaving match results..." << std::endl;
@@ -162,7 +161,7 @@ std::string ArenaRunner::getIsoTimestamp() {
   return oss.str();
 }
 
-std::string ArenaRunner::formatNumber(int64_t value) {
+std::string ArenaRunner::formatNumber(const int64_t value) {
   std::string str = std::to_string(std::abs(value));
   std::string result;
   int count = 0;
@@ -176,7 +175,7 @@ std::string ArenaRunner::formatNumber(int64_t value) {
   return value < 0 ? "-" + result : result;
 }
 
-std::string ArenaRunner::formatNodes(double nodes) {
+std::string ArenaRunner::formatNodes(const double nodes) {
   if (nodes >= 1e9) {
     std::ostringstream oss;
     oss << std::fixed << std::setprecision(1) << (nodes / 1e9) << "B";
@@ -195,7 +194,7 @@ std::string ArenaRunner::formatNodes(double nodes) {
   return std::to_string(static_cast<int64_t>(nodes));
 }
 
-std::string ArenaRunner::formatTime(double timeMs) {
+std::string ArenaRunner::formatTime(const double timeMs) {
   if (timeMs >= 60000) {
     std::ostringstream oss;
     oss << std::fixed << std::setprecision(1) << (timeMs / 60000) << "m";
@@ -211,13 +210,13 @@ std::string ArenaRunner::formatTime(double timeMs) {
   return oss.str();
 }
 
-std::string ArenaRunner::formatDelta(int delta) {
+std::string ArenaRunner::formatDelta(const int delta) {
   if (delta > 0) return "+" + std::to_string(delta);
   if (delta < 0) return std::to_string(delta);
   return "0";
 }
 
-std::string ArenaRunner::formatDeltaPercent(double delta) {
+std::string ArenaRunner::formatDeltaPercent(const double delta) {
   std::ostringstream oss;
   oss << std::fixed << std::setprecision(1);
   if (delta > 0) oss << "+";
@@ -225,7 +224,7 @@ std::string ArenaRunner::formatDeltaPercent(double delta) {
   return oss.str();
 }
 
-ReportData ArenaRunner::loadAllResults() {
+ReportData ArenaRunner::loadAllResults() const {
   ReportData data;
 
   const std::filesystem::path testsuitesDir = std::filesystem::path(arenaConfig.resultsDir) / "testsuites";
@@ -294,12 +293,12 @@ ReportData ArenaRunner::loadAllResults() {
   return data;
 }
 
-std::set<EngineId> ArenaRunner::listAvailableEngines() {
+std::set<EngineId> ArenaRunner::listAvailableEngines() const {
   ReportData data = loadAllResults();
   return data.engines;
 }
 
-void ArenaRunner::loadMatchResults(ReportData& data) {
+void ArenaRunner::loadMatchResults(ReportData& data) const {
   const std::filesystem::path matchesDir = std::filesystem::path(arenaConfig.resultsDir) / "matches";
 
   if (!std::filesystem::exists(matchesDir)) {
@@ -374,19 +373,13 @@ std::string ArenaRunner::generateBaselineReport(const ReportData& data) {
   std::ostringstream report;
 
   // Helper to pad/truncate string to exact width
-  auto fixedWidth = [](const std::string& str, size_t width) -> std::string {
+  auto fixedWidth = [](const std::string& str, const size_t width) -> std::string {
     if (str.length() >= width) {
       return str.substr(0, width - 2) + "..";
     }
     return str + std::string(width - str.length(), ' ');
   };
 
-  // Column widths
-  constexpr size_t COL_ENGINE = 28;
-  constexpr size_t COL_SOLVED = 12;
-  constexpr size_t COL_RATE = 10;
-  constexpr size_t COL_TIME = 12;
-  constexpr size_t COL_NODES = 12;
 
   // Header
   report << Color::color(Color::BOLD);
@@ -404,10 +397,17 @@ std::string ArenaRunner::generateBaselineReport(const ReportData& data) {
   }
 
   // List of engines sorted for consistent display
-  std::vector<EngineId> engines(data.engines.begin(), data.engines.end());
+  std::vector engines(data.engines.begin(), data.engines.end());
 
   // For each test suite, show all engines side by side
   for (const auto& suiteName : data.testSuites) {
+    // Column widths
+    constexpr size_t COL_NODES  = 12;
+    constexpr size_t COL_TIME   = 12;
+    constexpr size_t COL_RATE   = 10;
+    constexpr size_t COL_SOLVED = 12;
+    constexpr size_t COL_ENGINE = 28;
+
     const auto& suiteResultsMap = data.suiteResults.at(suiteName);
 
     // Get total tests from first result (should be same for all)
@@ -434,7 +434,7 @@ std::string ArenaRunner::generateBaselineReport(const ReportData& data) {
       const TestSuiteResult* result = data.getResult(suiteName, engine);
       sortedResults.emplace_back(engine, result);
     }
-    std::sort(sortedResults.begin(), sortedResults.end(),
+    std::ranges::sort(sortedResults,
               [](const auto& a, const auto& b) {
                 if (!a.second) return false;
                 if (!b.second) return true;
@@ -480,7 +480,7 @@ std::string ArenaRunner::generateMatchBaselineReport(const ReportData& data) {
   std::ostringstream report;
 
   // Helper to pad/truncate string to exact width
-  auto fixedWidth = [](const std::string& str, size_t width) -> std::string {
+  auto fixedWidth = [](const std::string& str, const size_t width) -> std::string {
     if (str.length() >= width) {
       return str.substr(0, width - 2) + "..";
     }
@@ -517,7 +517,7 @@ std::string ArenaRunner::generateMatchBaselineReport(const ReportData& data) {
   report << "--------------------------------------------------------------------------------\n";
 
   // Display all matches
-  for (const auto& [matchKey, match] : data.matchResults) {
+  for (const auto& match : data.matchResults | std::views::values) {
     // Engine pair column
     std::string pairStr = match.getEngine1Id().toDisplayString() + " vs " +
                          match.getEngine2Id().toDisplayString();
@@ -559,7 +559,7 @@ std::string ArenaRunner::generateMatchComparisonReport(
   std::ostringstream report;
 
   // Helper to pad/truncate string to exact width
-  auto fixedWidth = [](const std::string& str, size_t width) -> std::string {
+  auto fixedWidth = [](const std::string& str, const size_t width) -> std::string {
     if (str.length() >= width) {
       return str.substr(0, width - 2) + "..";
     }
@@ -574,13 +574,27 @@ std::string ArenaRunner::generateMatchComparisonReport(
   constexpr size_t COL_ELO = 12;
   constexpr size_t COL_VS = 14;
 
+  // Resolve target engine using flexible matching
+  auto resolvedTarget = data.findEngine(targetEngine);
+  EngineId actualTarget = resolvedTarget ? *resolvedTarget : targetEngine;
+
   // Determine which baselines to use
-  std::vector<EngineId> baselines = baselineEngines;
-  if (baselines.empty()) {
+  std::vector<EngineId> baselines;
+  if (baselineEngines.empty()) {
     // Use all engines as baselines
     for (const auto& engine : data.engines) {
-      if (engine != targetEngine) {
+      if (engine != actualTarget) {
         baselines.push_back(engine);
+      }
+    }
+  } else {
+    // Resolve each baseline engine
+    for (const auto& baseline : baselineEngines) {
+      if (auto resolved = data.findEngine(baseline)) {
+        baselines.push_back(*resolved);
+      } else {
+        // Use as-is if not found (will show as missing in results)
+        baselines.push_back(baseline);
       }
     }
   }
@@ -589,7 +603,7 @@ std::string ArenaRunner::generateMatchComparisonReport(
   report << "\n";
   report << Color::color(Color::BOLD);
   report << "================================================================================\n";
-  report << "MATCH COMPARISON: " << targetEngine.toDisplayString() << " vs Baselines\n";
+  report << "MATCH COMPARISON: " << actualTarget.toDisplayString() << " vs Baselines\n";
   report << "================================================================================\n";
   report << Color::color(Color::RESET);
 
@@ -617,10 +631,9 @@ std::string ArenaRunner::generateMatchComparisonReport(
   double primaryBaselineElo = 0.0;
   bool hasPrimaryBaseline = false;
   if (primaryBaseline) {
-    const MatchResult* primaryMatch = data.getMatch(targetEngine, *primaryBaseline);
-    if (primaryMatch) {
+    if (const MatchResult* primaryMatch = data.getMatch(actualTarget, *primaryBaseline)) {
       // Calculate ELO from target's perspective
-      if (primaryMatch->getEngine1Id() == targetEngine) {
+      if (primaryMatch->getEngine1Id() == actualTarget) {
         primaryBaselineElo = primaryMatch->eloDifference;
       } else {
         primaryBaselineElo = -primaryMatch->eloDifference;
@@ -632,13 +645,13 @@ std::string ArenaRunner::generateMatchComparisonReport(
   // Display matches against each baseline
   bool hasResults = false;
   for (const auto& opponent : baselines) {
-    const MatchResult* match = data.getMatch(targetEngine, opponent);
+    const MatchResult* match = data.getMatch(actualTarget, opponent);
     if (!match) continue;
 
     hasResults = true;
 
     // Determine if target is engine1 or engine2
-    bool targetIsEngine1 = (match->getEngine1Id() == targetEngine);
+    bool targetIsEngine1 = (match->getEngine1Id() == actualTarget);
 
     // Opponent column
     report << fixedWidth(opponent.toDisplayString(), COL_OPPONENT);
@@ -668,6 +681,7 @@ std::string ArenaRunner::generateMatchComparisonReport(
     report << fixedWidth(eloStr.str(), COL_ELO);
 
     // vs baseline column
+    // ReSharper disable once CppDFANullDereference
     if (hasPrimaryBaseline && opponent == *primaryBaseline) {
       report << fixedWidth("[baseline]", COL_VS);
     } else if (hasPrimaryBaseline) {
@@ -687,7 +701,7 @@ std::string ArenaRunner::generateMatchComparisonReport(
   }
 
   if (!hasResults) {
-    report << "\n" << Color::color(Color::YELLOW) << "No match results found for " << targetEngine.toDisplayString() << Color::color(Color::RESET) << "\n";
+    report << "\n" << Color::color(Color::YELLOW) << "No match results found for " << actualTarget.toDisplayString() << Color::color(Color::RESET) << "\n";
     report << "Run matches with this engine to see comparisons.\n";
   }
 
@@ -704,7 +718,7 @@ std::string ArenaRunner::generateComparisonReport(
   std::ostringstream report;
 
   // Helper to pad/truncate string to exact width
-  auto fixedWidth = [](const std::string& str, size_t width) -> std::string {
+  auto fixedWidth = [](const std::string& str, const size_t width) -> std::string {
     if (str.length() >= width) {
       return str.substr(0, width - 2) + "..";
     }
@@ -715,16 +729,48 @@ std::string ArenaRunner::generateComparisonReport(
   constexpr size_t COL_LABEL = 24;
   constexpr size_t COL_ENGINE = 16;
 
+  // Resolve target engine using flexible matching
+  auto resolvedTarget = data.findEngine(targetEngine);
+  if (!resolvedTarget) {
+    // Header
+    report << Color::color(Color::BOLD);
+    report << "================================================================================\n";
+    report << "ENGINE COMPARISON REPORT\n";
+    report << "================================================================================\n";
+    report << Color::color(Color::RESET);
+    report << "Generated: " << getIsoTimestamp() << "\n";
+    report << "Comparing: " << Color::colorize(targetEngine.toDisplayString(), Color::CYAN) << "\n";
+    report << "Baselines: (not resolved)\n";
+    report << "================================================================================\n";
+
+    report << "\n" << Color::colorize("ERROR: Target engine not found in results!", Color::RED) << "\n";
+    report << "Available engines:\n";
+    for (const auto& engine : data.engines) {
+      report << "  - " << engine.toString() << "\n";
+    }
+    return report.str();
+  }
+
+  EngineId actualTarget = *resolvedTarget;
+
   // Determine baselines: if empty, use all engines except target
   std::vector<EngineId> baselines;
   if (baselineEngines.empty()) {
     for (const auto& engine : data.engines) {
-      if (!(engine == targetEngine)) {
+      if (engine != actualTarget) {
         baselines.push_back(engine);
       }
     }
   } else {
-    baselines = baselineEngines;
+    // Resolve each baseline engine
+    for (const auto& baseline : baselineEngines) {
+      if (auto resolved = data.findEngine(baseline)) {
+        baselines.push_back(*resolved);
+      } else {
+        // Use as-is if not found (will show as missing in results)
+        baselines.push_back(baseline);
+      }
+    }
   }
 
   // Header
@@ -734,7 +780,7 @@ std::string ArenaRunner::generateComparisonReport(
   report << "================================================================================\n";
   report << Color::color(Color::RESET);
   report << "Generated: " << getIsoTimestamp() << "\n";
-  report << "Comparing: " << Color::colorize(targetEngine.toDisplayString(), Color::CYAN) << "\n";
+  report << "Comparing: " << Color::colorize(actualTarget.toDisplayString(), Color::CYAN) << "\n";
   report << "Baselines: ";
   for (size_t i = 0; i < baselines.size(); ++i) {
     if (i > 0) report << ", ";
@@ -743,14 +789,6 @@ std::string ArenaRunner::generateComparisonReport(
   report << "\n";
   report << "================================================================================\n";
 
-  if (!data.hasEngine(targetEngine)) {
-    report << "\n" << Color::colorize("ERROR: Target engine not found in results!", Color::RED) << "\n";
-    report << "Available engines:\n";
-    for (const auto& engine : data.engines) {
-      report << "  - " << engine.toString() << "\n";
-    }
-    return report.str();
-  }
 
   // Determine primary baseline (first in list)
   EngineId primaryBaseline = baselines.empty() ? EngineId{"", ""} : baselines[0];
@@ -763,7 +801,7 @@ std::string ArenaRunner::generateComparisonReport(
 
   // Build header row with all engines
   report << fixedWidth("", COL_LABEL);
-  report << fixedWidth(targetEngine.toDisplayString(), COL_ENGINE);
+  report << fixedWidth(actualTarget.toDisplayString(), COL_ENGINE);
   for (const auto& baseline : baselines) {
     report << fixedWidth(baseline.toDisplayString(), COL_ENGINE);
   }
@@ -785,7 +823,7 @@ std::string ArenaRunner::generateComparisonReport(
 
   // For each test suite
   for (const auto& suiteName : data.testSuites) {
-    const TestSuiteResult* targetResult = data.getResult(suiteName, targetEngine);
+    const TestSuiteResult* targetResult = data.getResult(suiteName, actualTarget);
 
     // Get total tests
     int totalTests = 0;
@@ -794,8 +832,7 @@ std::string ArenaRunner::generateComparisonReport(
     } else {
       // Try to get from any baseline
       for (const auto& baseline : baselines) {
-        const TestSuiteResult* baseResult = data.getResult(suiteName, baseline);
-        if (baseResult) {
+        if (const TestSuiteResult* baseResult = data.getResult(suiteName, baseline)) {
           totalTests = baseResult->totalTests;
           break;
         }
@@ -814,8 +851,7 @@ std::string ArenaRunner::generateComparisonReport(
       report << fixedWidth(Symbol::DASH, COL_ENGINE);
     }
     for (const auto& baseline : baselines) {
-      const TestSuiteResult* baseResult = data.getResult(suiteName, baseline);
-      if (baseResult) {
+      if (const TestSuiteResult* baseResult = data.getResult(suiteName, baseline)) {
         report << fixedWidth(std::to_string(baseResult->passed), COL_ENGINE);
       } else {
         report << fixedWidth(Symbol::DASH, COL_ENGINE);
@@ -833,8 +869,7 @@ std::string ArenaRunner::generateComparisonReport(
       report << fixedWidth(Symbol::DASH, COL_ENGINE);
     }
     for (const auto& baseline : baselines) {
-      const TestSuiteResult* baseResult = data.getResult(suiteName, baseline);
-      if (baseResult) {
+      if (const TestSuiteResult* baseResult = data.getResult(suiteName, baseline)) {
         std::ostringstream rate;
         rate << std::fixed << std::setprecision(1) << baseResult->getPassRate() << "%";
         report << fixedWidth(rate.str(), COL_ENGINE);
@@ -912,8 +947,7 @@ std::string ArenaRunner::generateComparisonReport(
       report << fixedWidth(Symbol::DASH, COL_ENGINE);
     }
     for (const auto& baseline : baselines) {
-      const TestSuiteResult* baseResult = data.getResult(suiteName, baseline);
-      if (baseResult) {
+      if (const TestSuiteResult* baseResult = data.getResult(suiteName, baseline)) {
         report << fixedWidth(formatTime(baseResult->getAvgTimeMs()), COL_ENGINE);
       } else {
         report << fixedWidth(Symbol::DASH, COL_ENGINE);
@@ -926,7 +960,7 @@ std::string ArenaRunner::generateComparisonReport(
   report << "\n";
   report << "--------------------------------------------------------------------------------\n";
   report << Color::color(Color::BOLD);
-  report << "TEST SUITE SUMMARY (" << targetEngine.toDisplayString()
+  report << "TEST SUITE SUMMARY (" << actualTarget.toDisplayString()
          << " vs " << primaryBaseline.toDisplayString() << ")\n";
   report << Color::color(Color::RESET);
   report << "--------------------------------------------------------------------------------\n";

@@ -86,7 +86,9 @@
 //
 //=============================================================================
 
+#include <algorithm>
 #include <map>
+#include <optional>
 #include <set>
 #include <string>
 #include <vector>
@@ -137,7 +139,7 @@ struct EngineId {
 
   /// Parse from string format "EngineName-Version"
   static EngineId fromString(const std::string& str) {
-    auto pos = str.rfind('-');
+    const auto pos = str.rfind('-');
     if (pos == std::string::npos) {
       return {str, ""};
     }
@@ -260,7 +262,7 @@ struct MatchResult {
 
   /// Returns win rate for engine 1 as percentage (0.0 - 100.0)
   [[nodiscard]] double getEngine1WinRate() const {
-    int total = getTotalGames();
+    const int total = getTotalGames();
     return total > 0 ? (engine1Score * 100.0 / total) : 0.0;
   }
 };
@@ -304,6 +306,36 @@ struct ReportData {
     return engines.contains(engine);
   }
 
+  /// Find an engine by flexible matching
+  /// First tries exact match, then tries to match by version and base name
+  /// This handles cases where stored engine names include version (e.g., "FrankyCPP v1.1")
+  /// but user provides just base name (e.g., "FrankyCPP" with version "v1.1")
+  [[nodiscard]] std::optional<EngineId> findEngine(const EngineId& search) const {
+    // First try exact match
+    if (engines.contains(search)) {
+      return search;
+    }
+
+    // Try flexible matching: find engine where version matches and name contains the search name
+    for (const auto& engine : engines) {
+      if (engine.version == search.version) {
+        // Check if stored name starts with search name (e.g., "FrankyCPP v1.1" starts with "FrankyCPP")
+        if (engine.name.find(search.name) == 0) {
+          return engine;
+        }
+        // Also check if search name contains stored base name (for underscore variants)
+        // e.g., "FrankyCPP_v1.1" should match "FrankyCPP v1.1"
+        std::string searchNoUnderscore = search.name;
+        std::replace(searchNoUnderscore.begin(), searchNoUnderscore.end(), '_', ' ');
+        if (engine.name.find(searchNoUnderscore) == 0 || searchNoUnderscore.find(engine.name) == 0) {
+          return engine;
+        }
+      }
+    }
+
+    return std::nullopt;
+  }
+
   /// Returns result for given suite and engine, or nullptr if not found
   [[nodiscard]] const TestSuiteResult* getResult(const std::string& suite, const EngineId& engine) const {
     auto suiteIt = suiteResults.find(suite);
@@ -317,8 +349,8 @@ struct ReportData {
   /// Order doesn't matter: checks both "e1 vs e2" and "e2 vs e1"
   [[nodiscard]] const MatchResult* getMatch(const EngineId& engine1, const EngineId& engine2) const {
     // Try both orderings
-    std::string key1 = engine1.toString() + " vs " + engine2.toString();
-    std::string key2 = engine2.toString() + " vs " + engine1.toString();
+    const std::string key1 = engine1.toString() + " vs " + engine2.toString();
+    const std::string key2 = engine2.toString() + " vs " + engine1.toString();
 
     auto it = matchResults.find(key1);
     if (it != matchResults.end()) return &it->second;
