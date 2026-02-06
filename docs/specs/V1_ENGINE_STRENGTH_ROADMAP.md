@@ -200,32 +200,74 @@ This document provides a comprehensive, prioritized roadmap for enhancing Franky
 
 ## Prioritized Roadmap
 
-### Phase 1: Quick Wins (v1.1 → v1.2) - **2-3 weeks**
-**Goal:** Immediate strength gains with minimal risk  
-**Target:** +60-110 ELO
+### Phase 1: Strength Testing Infrastructure (v1.1) - **1-2 weeks** 🔄 IN PROGRESS
+**Goal:** Establish automated strength testing framework for validating improvements  
+**Target:** Foundation for measuring ELO gains
 
-| Task | Effort | Complexity | ELO Gain | Status |
-|------|--------|------------|----------|--------|
-| Singular Extensions | 🟢 2-3 days | 🟡 Medium | +20-30 | 📋 Planned |
-| Check Extensions | 🟢 2-3 days | 🟡 Medium | +10-20 | 📋 Planned |
-| Counter-Move History | 🟡 3-5 days | 🟡 Medium | +10-20 | 📋 Planned |
-| Best-Move Instability Time Mgmt | 🟢 2-3 days | 🟡 Medium | +5-15 | 📋 Planned |
-| Selective Checks in Quiescence | 🟡 3-5 days | 🟡 Medium | +15-25 | 📋 Planned |
+| Task                       | Effort      | Complexity | ELO Gain | Status         |
+|----------------------------|-------------|------------|----------|----------------|
+| Arena Integration          | 🟢 2-3 days | 🟡 Medium  | N/A      | 🔄 In Progress |
+| Automated Match Runner     | 🟢 2-3 days | 🟡 Medium  | N/A      | 📋 Planned     |
+| ELO Tracking & Statistics  | 🟢 1-2 days | 🟢 Low     | N/A      | 📋 Planned     |
+| Opponent Engine Collection | 🟢 1-2 days | 🟢 Low     | N/A      | 📋 Planned     |
+
+**Why Testing First?**
+1. **Measure twice, cut once:** Cannot validate ELO gains without proper testing
+2. **Scientific approach:** Every enhancement needs quantifiable proof
+3. **Regression detection:** Catch strength regressions early
+4. **Baseline establishment:** Know starting point for all improvements
+
+**Infrastructure Components:**
+- Arena GUI for interactive testing and tournament management
+- cutechess-cli for automated batch matches
+- Collection of calibrated opponent engines (various ELO levels)
+- Scripts for result parsing and ELO calculation
+
+**Success Criteria:**
+- Can run 100+ game matches automatically
+- ELO estimates have < ±30 confidence interval
+- Results are reproducible and logged
+
+---
+
+### Phase 2: Performance Fundamentals & Quick Wins (v1.2) - **2-3 weeks**
+**Goal:** Eliminate heap allocations, improve cache performance, add proven search enhancements  
+**Target:** +70-135 ELO
+
+| Task                            | Effort      | Complexity | ELO Gain | Status     |
+|---------------------------------|-------------|------------|----------|------------|
+| **Performance Fundamentals**    |             |            |          |            |
+| Triangular PV Table             | 🟢 1-2 days | 🟡 Medium  | +5-10    | 📋 Planned |
+| MoveList Static Array Refactor  | 🟡 3-5 days | 🟡 Medium  | +5-15    | 📋 Planned |
+| **Search Quick Wins**           |             |            |          |            |
+| Singular Extensions             | 🟢 2-3 days | 🟡 Medium  | +20-30   | 📋 Planned |
+| Check Extensions                | 🟢 2-3 days | 🟡 Medium  | +10-20   | 📋 Planned |
+| Counter-Move History            | 🟡 3-5 days | 🟡 Medium  | +10-20   | 📋 Planned |
+| Best-Move Instability Time Mgmt | 🟢 2-3 days | 🟡 Medium  | +5-15    | 📋 Planned |
+| Selective Checks in Quiescence  | 🟡 3-5 days | 🟡 Medium  | +15-25   | 📋 Planned |
+
+**Why Performance First?**
+1. **Zero heap allocations:** Foundation for faster NPS
+2. **Better cache locality:** Improves all search operations
+3. **Simpler per-thread state:** Prepares for Lazy SMP in Phase 3
+4. **Detailed plan:** `docs/specs/PLAN_PV_Triangular_Migration.md`
 
 **Why This Order?**
-1. **Extensions first:** Improve search depth quality
-2. **Move ordering next:** Makes extensions more effective
-3. **Time management:** Ensures we search to useful depths
-4. **Quiescence:** Improves tactical reliability
+1. **Performance fundamentals:** Enable faster searching
+2. **Extensions:** Improve search depth quality
+3. **Move ordering:** Makes extensions more effective
+4. **Time management:** Ensures we search to useful depths
+5. **Quiescence:** Improves tactical reliability
 
 **Success Criteria:**
 - All unit tests pass
-- Benchmark suite shows +60-110 ELO gain
+- NPS improvement measurable (performance fundamentals)
+- Benchmark suite shows +70-135 ELO gain
 - No search instability (verified via long TC games)
 
 ---
 
-### Phase 2: Multi-Threading (v1.2 → v1.3) - **3-4 weeks**
+### Phase 3: Multi-Threading (v1.3) - **3-4 weeks**
 **Goal:** Utilize modern multi-core CPUs  
 **Target:** +60-120 ELO (on 4-8 cores)
 
@@ -255,7 +297,7 @@ This document provides a comprehensive, prioritized roadmap for enhancing Franky
 
 ---
 
-### Phase 3: Enhanced Move Ordering (v1.3 → v1.4) - **1-2 weeks**
+### Phase 4: Enhanced Move Ordering (v1.4) - **1-2 weeks**
 **Goal:** Better move ordering for deeper effective search  
 **Target:** +35-65 ELO
 
@@ -279,7 +321,7 @@ This document provides a comprehensive, prioritized roadmap for enhancing Franky
 
 ---
 
-### Phase 4: Endgame Tablebases (v1.4 → v1.5) - **2-3 weeks**
+### Phase 5: Endgame Tablebases (v1.5) - **2-3 weeks**
 **Goal:** Perfect endgame play with Syzygy tablebases  
 **Target:** +35-60 ELO (in TB-relevant positions)
 
@@ -314,7 +356,7 @@ TB_CACHE_MB: 32
 
 ---
 
-### Phase 5: Advanced Search Refinements (v1.5 → v1.6) - **2-3 weeks**
+### Phase 6: Advanced Search Refinements (v1.6) - **2-3 weeks**
 **Goal:** Modern search techniques for deeper tactical vision  
 **Target:** +50-85 ELO
 
@@ -358,7 +400,7 @@ if (depth >= 5) {
 
 ---
 
-### Phase 6: Automated Tuning Infrastructure (v1.6 → v1.7) - **2-3 weeks**
+### Phase 7: Automated Tuning Infrastructure (v1.7) - **2-3 weeks**
 **Goal:** Scientific parameter optimization  
 **Target:** +30-60 ELO (from optimized parameters)
 
@@ -400,7 +442,7 @@ parameters:
 
 ---
 
-### Phase 7: NNUE Evaluation (v1.7 → v1.9) - **6-10 weeks**
+### Phase 8: NNUE Evaluation (v1.8 → v2.0) - **6-10 weeks**
 **Goal:** Neural network evaluation for dramatic strength gain  
 **Target:** +200-400 ELO (largest single improvement)
 
@@ -534,7 +576,7 @@ validation_split: 0.1
 
 ---
 
-### Phase 8: CPU Compatibility & Optimization (v1.9 → v2.0) - **1-2 weeks**
+### Phase 9: CPU Compatibility & Optimization (v2.0) - **1-2 weeks**
 **Goal:** Broader hardware support and performance optimization  
 **Target:** +15-35 ELO (performance, not tactical strength)
 
@@ -1017,10 +1059,10 @@ NNUE_FALLBACK_CLASSICAL: true
 
 ## Change Log
 
-| Version | Date | Changes | Author |
-|---------|------|---------|--------|
-| 2.0 | 2026-02-01 | Complete rewrite with detailed phase planning, ELO estimates, implementation specs | Frank Kopp |
-| 1.0 | 2026-02-01 | Initial V1_ENGINE_ENHANCEMENT_PLAN.md | Frank Kopp |
+| Version | Date       | Changes                                                                            | Author     |
+|---------|------------|------------------------------------------------------------------------------------|------------|
+| 2.0     | 2026-02-01 | Complete rewrite with detailed phase planning, ELO estimates, implementation specs | Frank Kopp |
+| 1.0     | 2026-02-01 | Initial V1_ENGINE_ENHANCEMENT_PLAN.md                                              | Frank Kopp |
 
 ---
 

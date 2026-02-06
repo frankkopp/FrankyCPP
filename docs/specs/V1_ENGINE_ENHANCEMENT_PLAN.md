@@ -52,31 +52,63 @@ Tablebase support and endgame-specific techniques.
 
 ## Phase-Based Roadmap
 
-### Phase 1: Quick Wins (v1.1) - **2-3 weeks**
-**Focus:** Low-hanging fruit that improves strength with minimal risk
+### Phase 1: Strength Testing Infrastructure (v1.1) - **1-2 weeks** 🔄 IN PROGRESS
+**Focus:** Establish automated strength testing framework for validating improvements
 
-| Task | Category | Effort | Complexity | ELO Gain | Priority |
-|------|----------|--------|------------|----------|----------|
-| Singular Extensions | Search | 🟢 2-3 days | 🟡 Medium | +20-30 | HIGH |
-| Check Extensions | Search | 🟢 2-3 days | 🟡 Medium | +10-20 | HIGH |
-| Best-Move Instability Time Mgmt | Search | 🟢 2-3 days | 🟡 Medium | +5-15 | MEDIUM |
-| Selective Checks in Quiescence | Search | 🟡 3-5 days | 🟡 Medium | +15-25 | MEDIUM |
-| Counter-Move History | Search | 🟡 3-5 days | 🟡 Medium | +10-20 | MEDIUM |
+| Task                       | Category       | Effort      | Complexity | ELO Gain | Priority |
+|----------------------------|----------------|-------------|------------|----------|----------|
+| Arena Integration          | Infrastructure | 🟢 2-3 days | 🟡 Medium  | N/A      | CRITICAL |
+| Automated Match Runner     | Infrastructure | 🟢 2-3 days | 🟡 Medium  | N/A      | HIGH     |
+| ELO Tracking & Statistics  | Infrastructure | 🟢 1-2 days | 🟢 Low     | N/A      | HIGH     |
+| Opponent Engine Collection | Infrastructure | 🟢 1-2 days | 🟢 Low     | N/A      | MEDIUM   |
 
-**Expected Total ELO Gain:** +60-110  
-**Risk:** Low - localized changes to well-tested search code
+**Expected Total ELO Gain:** N/A (infrastructure)  
+**Risk:** Low - setup and configuration work  
+**Notes:**
+- Arena GUI for interactive testing and tournament management
+- cutechess-cli for automated batch matches
+- Collection of calibrated opponent engines (various ELO levels)
+- Scripts for result parsing and ELO calculation
+- **Must complete before Phase 2** to validate improvements
 
 ---
 
-### Phase 2: Multi-Threading (v1.2) - **3-4 weeks**
+### Phase 2: Performance Fundamentals & Quick Wins (v1.2) - **2-3 weeks**
+**Focus:** Eliminate heap allocations, improve cache performance, add proven search enhancements
+
+| Task                            | Category    | Effort      | Complexity | ELO Gain | Priority |
+|---------------------------------|-------------|-------------|------------|----------|----------|
+| **Performance Fundamentals**    |             |             |            |          |          |
+| Triangular PV Table             | Performance | 🟢 1-2 days | 🟡 Medium  | +5-10    | HIGH     |
+| MoveList Static Array Refactor  | Performance | 🟡 3-5 days | 🟡 Medium  | +5-15    | HIGH     |
+| **Search Quick Wins**           |             |             |            |          |          |
+| Singular Extensions             | Search      | 🟢 2-3 days | 🟡 Medium  | +20-30   | HIGH     |
+| Check Extensions                | Search      | 🟢 2-3 days | 🟡 Medium  | +10-20   | HIGH     |
+| Counter-Move History            | Search      | 🟡 3-5 days | 🟡 Medium  | +10-20   | MEDIUM   |
+| Best-Move Instability Time Mgmt | Search      | 🟢 2-3 days | 🟡 Medium  | +5-15    | MEDIUM   |
+| Selective Checks in Quiescence  | Search      | 🟡 3-5 days | 🟡 Medium  | +15-25   | MEDIUM   |
+
+**Expected Total ELO Gain:** +70-135  
+**Risk:** Low - internal refactoring and proven techniques  
+**Notes:**
+- Triangular PV Table: Replace `std::array<MoveList, DEPTH_MAX+1>` with fixed 2D array
+- MoveList: Replace `std::vector<Move>` inheritance with fixed-capacity static array
+- Zero heap allocations during search
+- Better cache locality
+- Foundation for multi-threading (simpler per-thread state)
+- Detailed plan: `docs/specs/PLAN_PV_Triangular_Migration.md`
+
+---
+
+### Phase 3: Multi-Threading (v1.3) - **3-4 weeks**
 **Focus:** Parallel search for multi-core CPUs
 
-| Task | Category | Effort | Complexity | ELO Gain | Priority |
-|------|----------|--------|------------|----------|----------|
-| Thread-Safe TT | Performance | 🟡 1 week | 🔴 High | N/A | CRITICAL |
-| Lazy SMP Search | Performance | 🔴 2-3 weeks | 🔴 High | +50-100 | CRITICAL |
-| Thread Pool Integration | Performance | 🟢 2-3 days | 🟡 Medium | N/A | HIGH |
-| SMP Testing & Tuning | Performance | 🟡 3-5 days | 🟡 Medium | +10-20 | HIGH |
+| Task                    | Category    | Effort       | Complexity | ELO Gain | Priority |
+|-------------------------|-------------|--------------|------------|----------|----------|
+| Thread-Safe TT          | Performance | 🟡 1 week    | 🔴 High    | N/A      | CRITICAL |
+| Lazy SMP Search         | Performance | 🔴 2-3 weeks | 🔴 High    | +50-100  | CRITICAL |
+| Thread Pool Integration | Performance | 🟢 2-3 days  | 🟡 Medium  | N/A      | HIGH     |
+| SMP Testing & Tuning    | Performance | 🟡 3-5 days  | 🟡 Medium  | +10-20   | HIGH     |
 
 **Expected Total ELO Gain:** +60-120 (on multi-core hardware)  
 **Risk:** High - requires careful synchronization and testing  
@@ -87,31 +119,31 @@ Tablebase support and endgame-specific techniques.
 
 ---
 
-### Phase 3: Enhanced Move Ordering (v1.3) - **1-2 weeks**
+### Phase 4: Enhanced Move Ordering (v1.4) - **1-2 weeks**
 **Focus:** Better move ordering for deeper effective search
 
-| Task | Category | Effort | Complexity | ELO Gain | Priority |
-|------|----------|--------|------------|----------|----------|
-| Capture History Heuristic | Search | 🟡 3-5 days | 🟡 Medium | +10-20 | HIGH |
-| Continuation History | Search | 🟡 3-5 days | 🟡 Medium | +15-25 | HIGH |
-| Static Exchange Eval Enhancement | Search | 🟢 2-3 days | 🟡 Medium | +5-10 | MEDIUM |
-| Killer Move Slot Optimization | Search | 🟢 1-2 days | 🟢 Low | +5-10 | LOW |
+| Task                             | Category | Effort      | Complexity | ELO Gain | Priority |
+|----------------------------------|----------|-------------|------------|----------|----------|
+| Capture History Heuristic        | Search   | 🟡 3-5 days | 🟡 Medium  | +10-20   | HIGH     |
+| Continuation History             | Search   | 🟡 3-5 days | 🟡 Medium  | +15-25   | HIGH     |
+| Static Exchange Eval Enhancement | Search   | 🟢 2-3 days | 🟡 Medium  | +5-10    | MEDIUM   |
+| Killer Move Slot Optimization    | Search   | 🟢 1-2 days | 🟢 Low     | +5-10    | LOW      |
 
 **Expected Total ELO Gain:** +35-65  
 **Risk:** Low - proven techniques with minimal architectural impact
 
 ---
 
-### Phase 4: Endgame Tablebases (v1.4) - **2-3 weeks**
+### Phase 5: Endgame Tablebases (v1.5) - **2-3 weeks**
 **Focus:** Perfect endgame play with Syzygy tablebases
 
-| Task | Category | Effort | Complexity | ELO Gain | Priority |
-|------|----------|--------|------------|----------|----------|
-| Fathom Library Integration | Endgame | 🟢 2-3 days | 🟡 Medium | N/A | HIGH |
-| Root Tablebase Probing | Endgame | 🟢 2-3 days | 🟡 Medium | +20-30 | HIGH |
-| Search Tablebase Probing | Endgame | 🟡 1 week | 🟡 Medium | +10-20 | MEDIUM |
-| TB Configuration & Testing | Endgame | 🟢 2-3 days | 🟢 Low | N/A | MEDIUM |
-| TB Cache Optimization | Endgame | 🟢 2-3 days | 🟡 Medium | +5-10 | LOW |
+| Task                       | Category | Effort      | Complexity | ELO Gain | Priority |
+|----------------------------|----------|-------------|------------|----------|----------|
+| Fathom Library Integration | Endgame  | 🟢 2-3 days | 🟡 Medium  | N/A      | HIGH     |
+| Root Tablebase Probing     | Endgame  | 🟢 2-3 days | 🟡 Medium  | +20-30   | HIGH     |
+| Search Tablebase Probing   | Endgame  | 🟡 1 week   | 🟡 Medium  | +10-20   | MEDIUM   |
+| TB Configuration & Testing | Endgame  | 🟢 2-3 days | 🟢 Low     | N/A      | MEDIUM   |
+| TB Cache Optimization      | Endgame  | 🟢 2-3 days | 🟡 Medium  | +5-10    | LOW      |
 
 **Expected Total ELO Gain:** +35-60 (in TB-relevant endgames)  
 **Risk:** Low - well-defined API (Fathom)  
@@ -122,31 +154,31 @@ Tablebase support and endgame-specific techniques.
 
 ---
 
-### Phase 5: Advanced Search Refinements (v1.5) - **2-3 weeks**
+### Phase 6: Advanced Search Refinements (v1.6) - **2-3 weeks**
 **Focus:** Modern search techniques for deeper tactical vision
 
-| Task | Category | Effort | Complexity | ELO Gain | Priority |
-|------|----------|--------|------------|----------|----------|
-| Multi-Cut Pruning | Search | 🟡 3-5 days | 🟡 Medium | +10-20 | HIGH |
-| Probcut Pruning | Search | 🟡 3-5 days | 🟡 Medium | +10-15 | MEDIUM |
-| Late Move Pruning | Search | 🟢 2-3 days | 🟡 Medium | +10-15 | MEDIUM |
-| Improved LMR Formula | Search | 🟡 1 week | 🟡 Medium | +15-25 | HIGH |
-| SEE-Based Pruning Enhancement | Search | 🟢 2-3 days | 🟡 Medium | +5-10 | LOW |
+| Task                          | Category | Effort      | Complexity | ELO Gain | Priority |
+|-------------------------------|----------|-------------|------------|----------|----------|
+| Multi-Cut Pruning             | Search   | 🟡 3-5 days | 🟡 Medium  | +10-20   | HIGH     |
+| Probcut Pruning               | Search   | 🟡 3-5 days | 🟡 Medium  | +10-15   | MEDIUM   |
+| Late Move Pruning             | Search   | 🟢 2-3 days | 🟡 Medium  | +10-15   | MEDIUM   |
+| Improved LMR Formula          | Search   | 🟡 1 week   | 🟡 Medium  | +15-25   | HIGH     |
+| SEE-Based Pruning Enhancement | Search   | 🟢 2-3 days | 🟡 Medium  | +5-10    | LOW      |
 
 **Expected Total ELO Gain:** +50-85  
 **Risk:** Medium - requires careful tuning to avoid search instability
 
 ---
 
-### Phase 6: Automated Tuning Infrastructure (v1.6) - **2-3 weeks**
+### Phase 7: Automated Tuning Infrastructure (v1.7) - **2-3 weeks**
 **Focus:** Scientific parameter optimization
 
-| Task | Category | Effort | Complexity | ELO Gain | Priority |
-|------|----------|--------|------------|----------|----------|
-| SPSA Framework | Infrastructure | 🟡 1 week | 🟡 Medium | N/A | HIGH |
-| Texel Tuning Engine | Infrastructure | 🟡 1 week | 🟡 Medium | N/A | HIGH |
-| Automated Match Runner | Infrastructure | 🟡 3-5 days | 🟡 Medium | N/A | MEDIUM |
-| Parameter Tuning Sessions | Infrastructure | 🔴 2-4 weeks | 🟡 Medium | +30-60 | HIGH |
+| Task                      | Category       | Effort       | Complexity | ELO Gain | Priority |
+|---------------------------|----------------|--------------|------------|----------|----------|
+| SPSA Framework            | Infrastructure | 🟡 1 week    | 🟡 Medium  | N/A      | HIGH     |
+| Texel Tuning Engine       | Infrastructure | 🟡 1 week    | 🟡 Medium  | N/A      | HIGH     |
+| Automated Match Runner    | Infrastructure | 🟡 3-5 days  | 🟡 Medium  | N/A      | MEDIUM   |
+| Parameter Tuning Sessions | Infrastructure | 🔴 2-4 weeks | 🟡 Medium  | +30-60   | HIGH     |
 
 **Expected Total ELO Gain:** +30-60 (from optimized parameters)  
 **Risk:** Low - infrastructure project  
@@ -157,18 +189,18 @@ Tablebase support and endgame-specific techniques.
 
 ---
 
-### Phase 7: NNUE Evaluation (v1.7-v1.8) - **6-10 weeks**
+### Phase 8: NNUE Evaluation (v1.8 → v2.0) - **6-10 weeks**
 **Focus:** Neural network evaluation for dramatic strength gain
 
-| Task | Category | Effort | Complexity | ELO Gain | Priority |
-|------|----------|--------|------------|----------|----------|
-| NNUE Architecture Design | Evaluation | 🟡 1 week | 🔴 High | N/A | CRITICAL |
-| Incremental Update System | Evaluation | 🔴 2-3 weeks | 🔴 High | N/A | CRITICAL |
-| NNUE Inference Engine | Evaluation | 🟡 1-2 weeks | 🔴 High | N/A | CRITICAL |
-| Training Data Generation | Evaluation | 🟡 1 week | 🟡 Medium | N/A | HIGH |
-| Network Training Pipeline | Evaluation | 🟡 1-2 weeks | 🔴 High | N/A | HIGH |
-| NNUE Integration & Testing | Evaluation | 🟡 1 week | 🔴 High | N/A | HIGH |
-| Classical/NNUE Hybrid Mode | Evaluation | 🟢 2-3 days | 🟡 Medium | N/A | MEDIUM |
+| Task                       | Category   | Effort       | Complexity | ELO Gain | Priority |
+|----------------------------|------------|--------------|------------|----------|----------|
+| NNUE Architecture Design   | Evaluation | 🟡 1 week    | 🔴 High    | N/A      | CRITICAL |
+| Incremental Update System  | Evaluation | 🔴 2-3 weeks | 🔴 High    | N/A      | CRITICAL |
+| NNUE Inference Engine      | Evaluation | 🟡 1-2 weeks | 🔴 High    | N/A      | CRITICAL |
+| Training Data Generation   | Evaluation | 🟡 1 week    | 🟡 Medium  | N/A      | HIGH     |
+| Network Training Pipeline  | Evaluation | 🟡 1-2 weeks | 🔴 High    | N/A      | HIGH     |
+| NNUE Integration & Testing | Evaluation | 🟡 1 week    | 🔴 High    | N/A      | HIGH     |
+| Classical/NNUE Hybrid Mode | Evaluation | 🟢 2-3 days  | 🟡 Medium  | N/A      | MEDIUM   |
 
 **Expected Total ELO Gain:** +200-400  
 **Risk:** Very High - major architectural change  
@@ -180,15 +212,15 @@ Tablebase support and endgame-specific techniques.
 
 ---
 
-### Phase 8: CPU Compatibility & Optimization (v1.9) - **1-2 weeks**
+### Phase 9: CPU Compatibility & Optimization (v2.0) - **1-2 weeks**
 **Focus:** Broader hardware support and performance optimization
 
-| Task | Category | Effort | Complexity | ELO Gain | Priority |
-|------|----------|--------|------------|----------|----------|
-| Runtime PEXT Detection | Performance | 🟢 2-3 days | 🟡 Medium | N/A | HIGH |
-| Software PEXT Fallback | Performance | 🟡 3-5 days | 🟡 Medium | N/A | HIGH |
-| SIMD Optimization (AVX2/AVX-512) | Performance | 🟡 1 week | 🔴 High | +10-20 | MEDIUM |
-| Profile-Guided Optimization (PGO) | Performance | 🟢 2-3 days | 🟢 Low | +5-15 | MEDIUM |
+| Task                              | Category    | Effort      | Complexity | ELO Gain | Priority |
+|-----------------------------------|-------------|-------------|------------|----------|----------|
+| Runtime PEXT Detection            | Performance | 🟢 2-3 days | 🟡 Medium  | N/A      | HIGH     |
+| Software PEXT Fallback            | Performance | 🟡 3-5 days | 🟡 Medium  | N/A      | HIGH     |
+| SIMD Optimization (AVX2/AVX-512)  | Performance | 🟡 1 week   | 🔴 High    | +10-20   | MEDIUM   |
+| Profile-Guided Optimization (PGO) | Performance | 🟢 2-3 days | 🟢 Low     | +5-15    | MEDIUM   |
 
 **Expected Total ELO Gain:** +15-35 (performance, not tactical)  
 **Risk:** Medium - hardware compatibility critical  
@@ -200,7 +232,171 @@ Tablebase support and endgame-specific techniques.
 
 ## Detailed Enhancement Specifications
 
-### 1. Singular Extensions (E3)
+### 1. Strength Testing Infrastructure (Phase 1)
+
+**Description:**  
+Establish a comprehensive strength testing framework to validate ELO gains from all future enhancements. This is the foundation for evidence-based development.
+
+**Components:**
+
+#### Arena GUI Integration
+- Chess GUI for interactive testing and tournament management
+- Visual analysis of games
+- Engine-vs-engine matches with various time controls
+
+#### cutechess-cli for Automated Matches
+- Command-line tool for batch game execution
+- Support for gauntlets (one engine vs many opponents)
+- Round-robin tournaments
+- PGN output for analysis
+
+#### Opponent Engine Collection
+Calibrated engines at various ELO levels:
+- **Weak (1200-1600):** Stockfish with skill level limits
+- **Intermediate (1800-2200):** Older engine versions
+- **Strong (2400-2600):** Modern engines without NNUE
+- **Elite (2800+):** Latest Stockfish (for ceiling testing)
+
+#### ELO Tracking & Statistics
+- Bayesian ELO calculation from match results
+- Confidence intervals for estimates
+- Regression detection (comparing versions)
+- Historical tracking of improvements
+
+**Configuration Example:**
+```bash
+# Run 100-game match with cutechess-cli
+cutechess-cli \
+  -engine name=FrankyCPP_v1.1 cmd=./FrankyCPP_v1.1 \
+  -engine name=FrankyCPP_v1.0 cmd=./FrankyCPP_v1.0 \
+  -each tc=60+0.5 proto=uci \
+  -games 100 -rounds 1 -pgnout results.pgn
+```
+
+**Success Criteria:**
+- Can run 100+ game matches automatically
+- ELO estimates have < ±30 confidence interval
+- Results are reproducible and logged
+- Automated regression detection working
+
+**Expected Impact:** N/A (infrastructure - enables measurement of all future improvements)
+
+---
+
+### 2a. Triangular PV Table (Phase 2)
+
+**Description:**  
+Replace the current `std::array<MoveList, DEPTH_MAX+1>` PV storage with a fixed triangular 2D array. Eliminates heap allocations and improves cache locality.
+
+**Current Implementation:**
+```cpp
+std::array<MoveList, DEPTH_MAX + 1> pv{};  // MoveList inherits from std::vector<Move>
+```
+
+**New Implementation:**
+```cpp
+class PVTable {
+    std::array<std::array<Move, MAX_PLY>, MAX_PLY> table_{};
+public:
+    constexpr Move& operator()(Depth ply, int index) noexcept;
+    constexpr void clear(Depth ply) noexcept;
+    void clearAll() noexcept;
+    constexpr void update(Move move, Depth ply) noexcept;
+    MoveList extract(Depth ply = 0) const;
+    // ... other methods
+};
+```
+
+**Key Changes:**
+- Zero-overhead wrapper class with `constexpr`/`inline` methods
+- `operator()` for direct array access: `pv_(ply, index)`
+- Semantic methods: `clear()`, `update()`, `extract()`
+- 64KB fixed memory (128 × 128 × 4 bytes)
+- No heap allocations during search
+
+**Files Affected:**
+- `src/types/PVTable.h` (new file)
+- `src/engine/Search.h`
+- `src/engine/Search.cpp`
+
+**Testing:**
+- Unit tests for PVTable class
+- Verify UCI PV output unchanged
+- Benchmark NPS improvement
+
+**Expected Impact:** +5-10 ELO (from improved NPS)
+
+**Detailed Plan:** `docs/specs/PLAN_PV_Triangular_Migration.md`
+
+---
+
+### 2b. MoveList Static Array Refactor (Phase 2)
+
+**Description:**  
+Replace `std::vector<Move>` inheritance in MoveList with a fixed-capacity static array. Eliminates heap allocations in MoveGenerator and other hot paths.
+
+**Current Implementation:**
+```cpp
+class MoveList : public std::vector<Move> {
+    // Inherits all vector functionality
+    // Heap allocation on first push_back()
+};
+```
+
+**New Implementation:**
+```cpp
+class MoveList {
+    static constexpr size_t MAX_MOVES = 256;  // Covers all legal move scenarios
+    std::array<Move, MAX_MOVES> data_{};
+    size_t size_{0};
+public:
+    void push_back(Move m) { data_[size_++] = m; }
+    void clear() noexcept { size_ = 0; }
+    size_t size() const noexcept { return size_; }
+    bool empty() const noexcept { return size_ == 0; }
+    
+    Move& operator[](size_t i) { return data_[i]; }
+    const Move& operator[](size_t i) const { return data_[i]; }
+    Move& at(size_t i);  // With optional bounds checking
+    
+    // STL-compatible iterators
+    Move* begin() noexcept { return data_.data(); }
+    Move* end() noexcept { return data_.data() + size_; }
+    const Move* begin() const noexcept { return data_.data(); }
+    const Move* end() const noexcept { return data_.data() + size_; }
+    
+    // Existing string methods
+    std::string str() const;
+    std::string strVerbose() const;
+};
+```
+
+**Key Changes:**
+- Fixed 1KB per MoveList (256 × 4 bytes)
+- Zero heap allocations
+- STL-compatible interface preserved
+- No longer inherits from `std::vector`
+- `clear()` is O(1) - just resets size counter
+
+**Files Affected:**
+- `src/types/movelist.h`
+- Any code using `std::vector`-specific methods (if any)
+
+**Migration Considerations:**
+- Ensure all code uses STL-compatible interface
+- Update any code relying on vector-specific methods
+- Pass by reference (avoid 1KB copies)
+
+**Testing:**
+- Unit tests for MoveList
+- Verify MoveGenerator still works correctly
+- Benchmark NPS improvement
+
+**Expected Impact:** +5-15 ELO (from improved NPS and cache efficiency)
+
+---
+
+### 2c. Singular Extensions (Phase 2)
 
 **Description:**  
 When a move is significantly better than all alternatives (by a margin), extend its search depth by 1 ply. This prevents horizon effects in critical tactical lines.
@@ -227,7 +423,7 @@ SINGULAR_REDUCTION: 4         # plies for verification search
 
 ---
 
-### 2. Check Extensions (E10)
+### 2d. Check Extensions (Phase 2)
 
 **Description:**  
 Extend search by 1 ply when a move gives check and limits opponent's replies. Helps find forcing sequences (checks, captures) more reliably.
@@ -253,7 +449,7 @@ CHECK_EXT_MAX_DEPTH: 2        # max accumulated extensions per branch
 
 ---
 
-### 3. Lazy SMP Multi-Threaded Search (E1)
+### 3. Lazy SMP Multi-Threaded Search (Phase 3)
 
 **Description:**  
 Parallel search where N helper threads each run full alpha-beta searches independently, sharing only the transposition table. Simple, scalable, and effective.
@@ -322,7 +518,7 @@ SMP_MIN_SPLIT_DEPTH: 4          # minimum depth to spawn helper threads
 
 ---
 
-### 4. Counter-Move History (E5)
+### 4. Counter-Move History (Phase 4)
 
 **Description:**  
 Track which moves work well in response to opponent's last move. Improves move ordering by capturing "refutation move" patterns.
@@ -354,7 +550,7 @@ CMH_BONUS_SCALE: 32
 
 ---
 
-### 5. Syzygy Tablebase Support (E2)
+### 5. Syzygy Tablebase Support (Phase 5)
 
 **Description:**  
 Use pre-computed endgame databases for perfect play in 6-piece (and optionally 7-piece) endgames.
@@ -391,7 +587,7 @@ Use pre-computed endgame databases for perfect play in 6-piece (and optionally 7
 
 ---
 
-### 6. NNUE Evaluation (E6)
+### 8. NNUE Evaluation (Phase 8)
 
 **Description:**  
 Replace classical evaluation with efficiently updatable neural network. Requires architecture design, training pipeline, and inference engine.
@@ -456,7 +652,7 @@ NNUE_FALLBACK_CLASSICAL: true
 
 ---
 
-### 7. Automated Tuning Infrastructure (E7)
+### 7. Automated Tuning Infrastructure (Phase 7)
 
 **Description:**  
 Build tools to scientifically optimize the 100+ configurable parameters using game results.

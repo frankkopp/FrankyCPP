@@ -541,16 +541,106 @@ Update to work with new return type and access patterns.
 
 ---
 
+### 3.13 Phase 13: Optimize `currentVariation` in SearchStats
+
+**Issue:** `statistics.currentVariation` is a `MoveList` (inherits `std::vector<Move>`) that is modified in the hot path of search:
+
+```cpp
+// Called on EVERY move searched (millions of times)
+statistics.currentVariation.push_back(move);  // In search(), qsearch(), rootSearch()
+statistics.currentVariation.pop_back();        // After undoMove()
+```
+
+**Current Location:** `SearchStats.h` line 72
+```cpp
+MoveList currentVariation{};
+```
+
+**Problem:** While `push_back`/`pop_back` are O(1) amortized, this still involves:
+- Bounds checking
+- Potential reallocation (though unlikely after warmup)
+- Cache misses from heap pointer chasing
+- Called millions of times during search
+
+**Solution:** Replace with a fixed-size stack class similar to PVTable:
+
+**New class in `SearchStats.h` or separate file:**
+
+```cpp
+/// Fixed-size stack for tracking current search variation
+/// Zero heap allocation, cache-friendly, called millions of times in hot path
+class VariationStack {
+public:
+    static constexpr int MAX_PLY = DEPTH_MAX + 1;  // 128
+
+private:
+    std::array<Move, MAX_PLY> moves_{};
+    int size_{0};
+
+public:
+    constexpr void push_back(Move m) noexcept { moves_[size_++] = m; }
+    constexpr void pop_back() noexcept { --size_; }
+    constexpr void clear() noexcept { size_ = 0; }
+    
+    [[nodiscard]] constexpr int size() const noexcept { return size_; }
+    [[nodiscard]] constexpr bool empty() const noexcept { return size_ == 0; }
+    
+    [[nodiscard]] constexpr Move& operator[](int i) noexcept { return moves_[i]; }
+    [[nodiscard]] constexpr const Move& operator[](int i) const noexcept { return moves_[i]; }
+    
+    // Iterator support for range-based for loops
+    constexpr Move* begin() noexcept { return moves_.data(); }
+    constexpr Move* end() noexcept { return moves_.data() + size_; }
+    constexpr const Move* begin() const noexcept { return moves_.data(); }
+    constexpr const Move* end() const noexcept { return moves_.data() + size_; }
+    
+    // String output for UCI (only called periodically, not hot path)
+    [[nodiscard]] std::string str() const {
+        std::ostringstream os;
+        for (int i = 0; i < size_; ++i) {
+            if (i > 0) os << ' ';
+            os << moves_[i];
+        }
+        return os.str();
+    }
+};
+```
+
+**Update SearchStats.h:**
+```cpp
+// Old:
+MoveList currentVariation{};
+
+// New:
+VariationStack currentVariation{};
+```
+
+**Call sites remain unchanged** (same interface):
+- `statistics.currentVariation.push_back(move);`
+- `statistics.currentVariation.pop_back();`
+- `statistics.currentVariation.clear();`
+
+**Files Affected:**
+- `SearchStats.h` - Replace `MoveList` with `VariationStack`
+- `UciHandler.cpp` - May need to update `sendCurrentLine()` if it expects `MoveList`
+
+**Memory:** 128 × 4 = 512 bytes (negligible)
+
+**Expected Impact:** Eliminates heap operations in the innermost search loop.
+
+---
+
 ## 4. File Change Summary
 
-| File | Changes |
-|------|---------|
-| `src/types/PVTable.h` | **New file** - PVTable class implementation |
-| `Search.h` | Replace `pv` with `pv_`, update `getPV()`, add include |
-| `Search.cpp` | All `pv[ply]` → `pv_.xxx()`, remove `savePV()`, update/remove `getPvLine()` |
-| `SearchResult.h` | No change (keep `MoveList pv`) |
-| `UciHandler.cpp` | No change (receives `MoveList`) |
-| `test/engine/*` | Update tests accessing PV |
+| File                  | Changes                                                                     |
+|-----------------------|-----------------------------------------------------------------------------|
+| `src/types/PVTable.h` | **New file** - PVTable class implementation                                 |
+| `Search.h`            | Replace `pv` with `pv_`, update `getPV()`, add include                      |
+| `Search.cpp`          | All `pv[ply]` → `pv_.xxx()`, remove `savePV()`, update/remove `getPvLine()` |
+| `SearchStats.h`       | Replace `MoveList currentVariation` with `VariationStack currentVariation`  |
+| `SearchResult.h`      | No change (keep `MoveList pv`)                                              |
+| `UciHandler.cpp`      | Update `sendCurrentLine()` to work with `VariationStack`                    |
+| `test/engine/*`       | Update tests accessing PV                                                   |
 
 ---
 
@@ -566,6 +656,14 @@ Update to work with new return type and access patterns.
 - Test PV construction at various depths
 - Test sentinel termination
 - Test `clearAll()`
+
+**New test file: `test/engine/VariationStackTest.cpp`**
+
+- Test `push_back()`, `pop_back()`, `clear()`
+- Test `size()`, `empty()`
+- Test `operator[]` access
+- Test iterator support
+- Test `str()` output
 
 ### 5.2 Integration Tests
 - Verify UCI PV output matches expected lines
@@ -597,19 +695,20 @@ Remove flag after successful validation.
 
 ## 7. Estimated Effort
 
-| Phase | Effort | Risk |
-|-------|--------|------|
-| 1. Create PVTable class | 30 min | Low |
-| 2. Update Search.h | 15 min | Low |
-| 3-5. Update search/qsearch/root | 1 hour | Medium |
-| 6. Initialization | 15 min | Low |
-| 7. UCI output | 30 min | Low |
-| 8. iterativeDeepening access | 45 min | Medium |
-| 9. SearchResult | 15 min | Low |
-| 10. TT cutoff handling | 30 min | Medium |
-| 11. Remove old functions | 15 min | Low |
-| 12. Update tests | 1 hour | Medium |
-| **Total** | **~5-6 hours** | |
+| Phase                                   | Effort         | Risk   |
+|-----------------------------------------|----------------|--------|
+| 1. Create PVTable class                 | 30 min         | Low    |
+| 2. Update Search.h                      | 15 min         | Low    |
+| 3-5. Update search/qsearch/root         | 1 hour         | Medium |
+| 6. Initialization                       | 15 min         | Low    |
+| 7. UCI output                           | 30 min         | Low    |
+| 8. iterativeDeepening access            | 45 min         | Medium |
+| 9. SearchResult                         | 15 min         | Low    |
+| 10. TT cutoff handling                  | 30 min         | Medium |
+| 11. Remove old functions                | 15 min         | Low    |
+| 12. Update tests                        | 1 hour         | Medium |
+| 13. VariationStack for currentVariation | 30 min         | Low    |
+| **Total**                               | **~6-7 hours** |        |
 
 ---
 
@@ -650,6 +749,7 @@ Remove flag after successful validation.
 
 ## Changelog
 
-| Date | Change |
-|------|--------|
-| 2026-02-06 | Initial planning document created |
+| Date       | Change                                                           |
+|------------|------------------------------------------------------------------|
+| 2026-02-06 | Initial planning document created                                |
+| 2026-02-07 | Added Phase 13: VariationStack for currentVariation optimization |
