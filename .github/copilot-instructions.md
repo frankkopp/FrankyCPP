@@ -377,6 +377,14 @@ $env:VAR = "value"
 
 ### Git Operations
 
+**CRITICAL: Always ask user before committing! Never commit without explicit permission.**
+
+**CRITICAL: Do NOT attempt to verify commits after running `git commit`!**
+- The terminal output often doesn't display properly
+- Trust that the commit worked if no error was shown
+- Don't run `git status`, `git log`, or `git show` to verify commits
+- Just proceed with the next task after committing
+
 **CRITICAL: Avoid commands that pause for user input!**
 
 #### ✅ Safe Git Commands (No User Input)
@@ -411,27 +419,6 @@ git --no-pager log
 git log --oneline -5
 ```
 
-#### Verifying Commits
-
-**After running `git commit`, verify with these safe commands:**
-```powershell
-# Method 1: Check if files are no longer staged (best)
-git status --short
-# Empty output or no 'M' prefix on committed files = success
-
-# Method 2: Quick commit verification
-git --no-pager log --oneline -1
-# Shows the latest commit hash and message
-
-# Method 3: Show commit details (safe)
-git --no-pager show --stat HEAD
-# Shows commit with file changes, no paging
-```
-
-**What to check:**
-- `git status --short` shows NO staged changes (files committed successfully)
-- If files still appear as 'M' (modified) or 'A' (added), commit may have failed
-- Empty output or only untracked files = commit successful
 
 ---
 
