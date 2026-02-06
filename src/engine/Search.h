@@ -151,8 +151,10 @@ class Search {
   SearchStats statistics{};
 
   // ply related data
-  std::array<MoveList, DEPTH_MAX> pv{};
-  std::array<MoveGenerator, DEPTH_MAX> mg{};
+  // Size is DEPTH_MAX + 1 to safely handle ply values from 0 to DEPTH_MAX (127)
+  // and ply+1 indexing (up to 128) in savePV() calls
+  std::array<MoveList, DEPTH_MAX + 1> pv{};
+  std::array<MoveGenerator, DEPTH_MAX + 1> mg{};
 
   // to mark the last move was a book move
   bool hadBookMove = false;
