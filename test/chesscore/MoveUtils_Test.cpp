@@ -23,6 +23,7 @@
 
 #include "chesscore/MoveUtils.h"
 #include "chesscore/Position.h"
+#include "init.h"
 #include "types/globals.h"
 
 #include <gtest/gtest.h>
