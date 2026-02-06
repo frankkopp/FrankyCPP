@@ -86,8 +86,8 @@
 
 #include "ArenaConfig.h"
 #include "ArenaResults.h"
+#include "../common/gtest_friends.h"
 
-#include <gtest/gtest_prod.h>
 #include <string>
 #include <vector>
 
