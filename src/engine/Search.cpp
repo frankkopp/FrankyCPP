@@ -695,8 +695,8 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // Clear PV for this node to prevent stale data from previous iterations/branches
   // from being propagated up via savePV(). Stale PV data can contain moves from
   // different positions that are illegal in the current position.
-  // FIXME: Verify that this is sufficient to prevent stale PV data.
-  // FIXME: Also check why we do this twice in the search and qsearch and if we can optimize this.
+  // Note: IID may write to pv[ply] but clears it after extracting the ttMove.
+  // TODO: migrate to triangular PVTable
   pv[ply].clear();
 
   // Enter quiescence search when depth == 0 or max ply has been reached
@@ -928,16 +928,16 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         if (!pv[ply].empty()) {
           statistics.iidMoves++;
           ttMove = pv[ply][0].stripped();
+          // Clear pv after extracting the move - IID polluted it
+          pv[ply].clear();
         }
       }
     }
   }
 
-  // reset search
-  // !important to do this after IID!
+  // reset move generator for the actual search
   auto *const myMg = &mg[ply];
   myMg->resetOnDemand();
-  pv[ply].clear();
 
   // PV Move Sort
   // When we received a best move for the position from the
@@ -1326,10 +1326,9 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
     bestNodeValue = staticEval;
   }
 
-  // reset search
+  // reset move generator for the move loop
   auto *const myMg = &mg[ply];
   myMg->resetOnDemand();
-  pv[ply].clear();
 
   // PV Move Sort
   if (SearchConfig.USE_TT_PV_MOVE_SORT && ttMove != MOVE_NONE) {
@@ -1549,7 +1548,7 @@ void Search::getPvLine(Position& p, MoveList& pvList, const Depth depth) const {
   int counter  = 0;
   const auto *ttMatch = tt->getMatch(p.getZobristKey());
   while (ttMatch != nullptr && ttMatch->move != MOVE_NONE && counter < depth) {
-    const Move ttMove = static_cast<Move>(ttMatch->move);
+    const auto ttMove = static_cast<Move>(ttMatch->move);
 
     // Sanity check: detect hash collisions by verifying piece exists and is correct color
     // This prevents executing moves from wrong positions that happen to have same Zobrist key.
