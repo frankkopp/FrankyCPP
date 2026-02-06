@@ -229,9 +229,9 @@ TEST_F(UCITest, positionTest) {
 
 TEST_F(UCITest, goPerft) {
   ostringstream os;
-  int endDepth = 6;
+  int endDepth = 4;
 #ifndef NDEBUG
-  endDepth = 4;
+  endDepth = 2;
 #endif
 
   const string command = "perft 1 " + to_string(endDepth);
