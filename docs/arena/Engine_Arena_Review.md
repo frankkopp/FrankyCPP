@@ -21,9 +21,9 @@ Scope: `src/engine_arena/*`, `src/engine_arena_main.cpp`, `docs/arena/*.md`, `te
 
 ## Open Questions / Assumptions
 
-- Are Windows paths expected to always use forward slashes in configs (to avoid JSON escaping issues), or should the writer escape backslashes regardless?
-- Do you want to support reading legacy result files, or is skipping old schemas acceptable?
-- Should `timePerMove` implicitly raise `searchTimeout`, or should a new YAML field control the timeout explicitly?
+- Windows paths are expected to use forward slashes only for now; no backslash escaping is required yet.
+- Legacy result formats will not be supported.
+- `searchTimeout` should scale by a hardcoded factor of `timePerMove` for now.
 
 ## Change Summary
 
