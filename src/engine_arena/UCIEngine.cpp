@@ -28,6 +28,7 @@
 #include <chrono>
 #include <filesystem>
 #include <iostream>
+#include <limits>
 #include <sstream>
 #include <stdexcept>
 #include <thread>
@@ -167,8 +168,20 @@ UCISearchResult UCIEngine::search(milliseconds timeMs, Depth maxDepth) {
   // Send search command
   sendCommand(cmd.str());
 
+  // Scale timeout based on requested move time (fallback to default timeout)
+  constexpr milliseconds::rep timeoutFactor = 3;
+  milliseconds effectiveTimeout = searchTimeout;
+  if (timeMs.count() > 0) {
+    const auto maxRep = std::numeric_limits<milliseconds::rep>::max();
+    const auto baseMs = timeMs.count();
+    const auto scaledMs = (baseMs > maxRep / timeoutFactor)
+        ? maxRep
+        : baseMs * timeoutFactor;
+    effectiveTimeout = milliseconds(scaledMs);
+  }
+
   // Read response lines until we get "bestmove"
-  const auto deadline = steady_clock::now() + searchTimeout;
+  const auto deadline = steady_clock::now() + effectiveTimeout;
 
   while (steady_clock::now() < deadline) {
     std::string line;
