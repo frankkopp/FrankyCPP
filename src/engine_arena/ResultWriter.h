@@ -104,19 +104,19 @@ public:
   /// Write test suite results to a JSON file
   /// @param result Test suite result data
   /// @return Path to the created file
-  std::string writeTestSuiteResult(const TestSuiteResult& result);
+  std::string writeTestSuiteResult(const TestSuiteResult& result) const;
 
   /// Write match results to the JSON file
   /// @param result Match result data
   /// @return Path to the created file
-  std::string writeMatchResult(const MatchResult& result);
+  std::string writeMatchResult(const MatchResult& result) const;
 
   /// Write a comparison report between two versions
   /// @param v1Results Results from version 1
   /// @param v2Results Results from version 2
   /// @return Path to the created file
   std::string writeComparison(const std::vector<TestSuiteResult>& v1Results,
-                               const std::vector<TestSuiteResult>& v2Results);
+                               const std::vector<TestSuiteResult>& v2Results) const;
 
 private:
   std::string resultsDir;

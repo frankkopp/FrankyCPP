@@ -38,7 +38,7 @@ namespace arena {
       std::string escaped;
       escaped.reserve(value.size() + value.size() / 4);
 
-      for (unsigned char ch : value) {
+      for (const unsigned char ch : value) {
         switch (ch) {
           case '\"':
             escaped += "\\\"";
@@ -63,7 +63,7 @@ namespace arena {
             break;
           default:
             if (ch < 0x20) {
-              char buffer[7];
+              char buffer[7]; // NOLINT(*-avoid-c-arrays)
               std::snprintf(buffer, sizeof(buffer), "\\u%04x", ch);
               escaped += buffer;
             } else {
@@ -85,10 +85,10 @@ namespace arena {
     ensureDirectoryExists(resultsDir + "/comparisons");
   }
 
-  std::string ResultWriter::writeTestSuiteResult(const TestSuiteResult& result) {
+  std::string ResultWriter::writeTestSuiteResult(const TestSuiteResult& result) const {
     // New file naming: {TestSuite}_{EngineName}-{EngineVersion}_{Timestamp}.json
     // e.g., WAC_FrankyCPP-v0.5_20260205_143000.json
-    std::string engineId = result.engineName + "-" + result.engineVersion;
+    const std::string engineId = result.engineName + "-" + result.engineVersion;
     std::string filename = generateFilename("testsuite", result.testSuiteName, engineId);
 
     std::ofstream file(filename);
@@ -97,14 +97,14 @@ namespace arena {
     }
 
     // Calculate derived metrics
-    double successRate = result.totalTests > 0
-        ? (result.passed * 100.0 / result.totalTests)
+    const double successRate = result.totalTests > 0
+        ? result.passed * 100.0 / result.totalTests
         : 0.0;
-    double avgTimeMs = result.totalTests > 0
-        ? (static_cast<double>(result.totalTimeMs) / result.totalTests)
+    const double avgTimeMs = result.totalTests > 0
+        ? static_cast<double>(result.totalTimeMs) / result.totalTests
         : 0.0;
-    double avgNodes = result.totalTests > 0
-        ? (static_cast<double>(result.totalNodes) / result.totalTests)
+    const double avgNodes = result.totalTests > 0
+        ? static_cast<double>(result.totalNodes) / result.totalTests
         : 0.0;
 
     // Write JSON with new structure per spec Section 2.3
@@ -162,16 +162,16 @@ namespace arena {
     return filename;
   }
 
-  std::string ResultWriter::writeMatchResult(const MatchResult& result) {
+  std::string ResultWriter::writeMatchResult(const MatchResult& result) const {
     // New file naming: {Engine1Id}_vs_{Engine2Id}_{TimeControl}_{Timestamp}.json
     // e.g., FrankyCPP-v1.1_vs_FrankyGo-v1.0.3_60+0.6_20260205_143000.json
-    std::string engine1Id = result.engine1Name + "-" + result.engine1Version;
-    std::string engine2Id = result.engine2Name + "-" + result.engine2Version;
+    const std::string engine1Id = result.engine1Name + "-" + result.engine1Version;
+    const std::string engine2Id = result.engine2Name + "-" + result.engine2Version;
     std::string sanitizedTC = result.timeControl;
     std::ranges::replace(sanitizedTC, '+', '_');
     std::ranges::replace(sanitizedTC, '/', '_');
 
-    std::string matchId = engine1Id + "_vs_" + engine2Id + "_" + sanitizedTC;
+    const std::string matchId = engine1Id + "_vs_" + engine2Id + "_" + sanitizedTC;
     std::string filename = generateFilename("match", matchId, "");
 
     std::ofstream file(filename);
@@ -224,15 +224,15 @@ namespace arena {
   }
 
   std::string ResultWriter::writeComparison(const std::vector<TestSuiteResult>& v1Results,
-                                            const std::vector<TestSuiteResult>& v2Results) {
+                                            const std::vector<TestSuiteResult>& v2Results) const {
     // Placeholder implementation - will be completed in Phase 4
     // For now, just return expected filename
     if (v1Results.empty() || v2Results.empty()) {
       return "";
     }
     // Build engine identifiers for filename
-    std::string engine1Id = v1Results[0].engineName + "-" + v1Results[0].engineVersion;
-    std::string engine2Id = v2Results[0].engineName + "-" + v2Results[0].engineVersion;
+    const std::string engine1Id = v1Results[0].engineName + "-" + v1Results[0].engineVersion;
+    const std::string engine2Id = v2Results[0].engineName + "-" + v2Results[0].engineVersion;
     std::string filename = resultsDir + "/comparisons/" + engine1Id + "_vs_" + engine2Id + "_" + getTimestamp() + ".txt";
     return filename;
   }

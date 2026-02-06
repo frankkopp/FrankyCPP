@@ -31,7 +31,7 @@
 namespace po = boost::program_options;
 
 // global variable for program options
-inline po::variables_map programOptions;
+inline po::variables_map programOptions; // NOLINT(*-err58-cpp)
 
 int main(int argc, char* argv[]) {
 
@@ -45,8 +45,11 @@ int main(int argc, char* argv[]) {
   std::cout << appName << std::endl;
 
   std::string config_file, book_file, book_type, testsuite_file;
-  int testsuite_time, testsuite_depth, perftStart, perftEnd;
-  bool perftOnDemand;
+  int testsuite_time = 0;
+  int testsuite_depth = 0;
+  int perftStart = 0;
+  int perftEnd = 0;
+  bool perftOnDemand = false;
 
   // Command line options
   try {

@@ -57,7 +57,7 @@ protected:
 
   // Helper to read file content
   std::string readFile(const std::string& path) {
-    std::ifstream file(path);
+    const std::ifstream file(path);
     std::stringstream buffer;
     buffer << file.rdbuf();
     return buffer.str();
@@ -88,10 +88,10 @@ protected:
 //=============================================================================
 
 TEST_F(ResultWriterTest, BasicResult_ProducesValidJson) {
-  ResultWriter writer(testResultsDir);
-  TestSuiteResult result = createBasicResult();
+  const ResultWriter writer(testResultsDir);
+  const TestSuiteResult result = createBasicResult();
 
-  std::string filePath = writer.writeTestSuiteResult(result);
+  const std::string filePath = writer.writeTestSuiteResult(result);
 
   // Read and parse as JSON - should not throw
   std::string content = readFile(filePath);
@@ -101,14 +101,14 @@ TEST_F(ResultWriterTest, BasicResult_ProducesValidJson) {
 }
 
 TEST_F(ResultWriterTest, WindowsPath_BackslashesEscaped) {
-  ResultWriter writer(testResultsDir);
+  const ResultWriter writer(testResultsDir);
   TestSuiteResult result = createBasicResult();
 
   // Windows-style path with backslashes
-  result.enginePath = "D:\\Games\\Chess\\Engines\\FrankyCPP\\engine.exe";
-  result.epdPath = "C:\\Users\\Frank\\test\\suite.epd";
+  result.enginePath = R"(D:\Games\Chess\Engines\FrankyCPP\engine.exe)";
+  result.epdPath = R"(C:\Users\Frank\test\suite.epd)";
 
-  std::string filePath = writer.writeTestSuiteResult(result);
+  const std::string filePath = writer.writeTestSuiteResult(result);
 
   // Should produce valid JSON
   std::string content = readFile(filePath);
@@ -229,13 +229,13 @@ TEST_F(ResultWriterTest, MixedSpecialCharacters_AllEscaped) {
 }
 
 TEST_F(ResultWriterTest, EmptyStrings_HandledCorrectly) {
-  ResultWriter writer(testResultsDir);
+  const ResultWriter writer(testResultsDir);
   TestSuiteResult result = createBasicResult();
 
   // Empty version string
   result.engineVersion = "";
 
-  std::string filePath = writer.writeTestSuiteResult(result);
+  const std::string filePath = writer.writeTestSuiteResult(result);
 
   // Should produce valid JSON
   std::string content = readFile(filePath);
