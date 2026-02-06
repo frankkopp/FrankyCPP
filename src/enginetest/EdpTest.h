@@ -17,8 +17,8 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef FRANKYCPP_TEST_H
-#define FRANKYCPP_TEST_H
+#ifndef FRANKYCPP_EDPTEST_H
+#define FRANKYCPP_EDPTEST_H
 
 //=============================================================================
 // Test.h - Individual Test Case Representation
@@ -181,4 +181,4 @@ private:
   EpdTest test_;
 };
 
-#endif // FRANKYCPP_TEST_H
+#endif // FRANKYCPP_EDPTEST_H
