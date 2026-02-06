@@ -68,6 +68,8 @@ FrankyCPP-v1.1_vs_FrankyCPP-v0.5_60_0.6_20260201_160000.json   # Self-play match
 
 ### JSON Structure
 
+All string fields are JSON-escaped in the output.
+
 ```json
 {
   "arenaVersion": "v1.1",
@@ -183,6 +185,8 @@ FrankyCPP-v1.1_vs_FrankyCPP-v0.5_60_0.6_20260201_160000.json   # Self-play match
 ## Match Result Format
 
 ### JSON Structure
+
+All string fields are JSON-escaped in the output.
 
 ```json
 {

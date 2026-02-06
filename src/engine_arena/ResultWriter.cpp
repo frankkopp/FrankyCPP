@@ -33,6 +33,7 @@
 namespace arena {
 
   namespace {
+    // Escapes string values for JSON output.
     std::string escapeJsonString(const std::string& value) {
       std::string escaped;
       escaped.reserve(value.size() + value.size() / 4);

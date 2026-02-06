@@ -6,7 +6,7 @@ Scope: `src/engine_arena/*`, `src/engine_arena_main.cpp`, `docs/arena/*.md`, `te
 
 ## Findings (ordered by severity)
 
-- High: JSON output is built via raw string concatenation without escaping string fields, so Windows-style backslashes and any quotes in engine names/paths or FENs can produce invalid JSON and break reporting/automation. Evidence in `src/engine_arena/ResultWriter.cpp:65` and `src/engine_arena/ResultWriter.cpp:137`.
+- High: JSON output is built via raw string concatenation without escaping string fields, so Windows-style backslashes and any quotes in engine names/paths or FENs can produce invalid JSON and break reporting/automation. Evidence in `src/engine_arena/ResultWriter.cpp:65` and `src/engine_arena/ResultWriter.cpp:137`. Status: Resolved (escape added in `d2c3030`).
 - High: `readLine` spawns a new thread per read and detaches it on timeout; repeated timeouts can leak threads and cause concurrent reads from the same pipe, corrupting UCI output parsing. Evidence in `src/engine_arena/UCIEngine.cpp:384` and `src/engine_arena/UCIEngine.cpp:411`.
 - Medium: Engine startup with command-line args concatenates `enginePath + " " + commandLineArgs` and passes it as a single program string; this is fragile for paths with spaces or complex quoting, especially on Windows, and can prevent the engine from launching. Evidence in `src/engine_arena/UCIEngine.cpp:60`.
 - Medium: `searchTimeout` defaults to 30s and is not tied to `timePerMove`; long per-move limits (docs mention up to 1 hour) can time out early and mark positions as failed. Evidence in `src/engine_arena/UCIEngine.h:93` and `src/engine_arena/UCIEngine.cpp:170`.
