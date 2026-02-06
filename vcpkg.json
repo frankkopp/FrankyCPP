@@ -5,6 +5,7 @@
     "boost-program-options",
     "boost-serialization",
     "boost-process",
+    "boost-filesystem",
     "spdlog",
     "gtest",
     "benchmark",
