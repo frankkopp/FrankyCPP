@@ -20,18 +20,25 @@
 //=============================================================================
 // UCIEngine.cpp - External UCI Chess Engine Interface Implementation
 //=============================================================================
+//
+// Uses Boost.Asio async_pipe for reliable, cancellable I/O.
+// Key pattern:
+//   - io_context runs in a dedicated thread
+//   - async_read_until reads lines into a queue
+//   - readLine() pulls from queue with timeout via condition_variable
+//   - Shutdown: stop io_context, join thread, terminate process
+//
+//=============================================================================
 
 #include "UCIEngine.h"
 #include "common/stringutil.h"
 
-#include <atomic>
 #include <chrono>
 #include <filesystem>
 #include <iostream>
 #include <limits>
 #include <sstream>
 #include <stdexcept>
-#include <thread>
 
 namespace arena {
 
@@ -44,75 +51,113 @@ using std::chrono::duration_cast;
 //=============================================================================
 
 UCIEngine::UCIEngine(const std::string& enginePath, const std::string& commandLineArgs)
-    : enginePath(enginePath) {
+    : enginePath_(enginePath) {
 
   // Check if engine file exists
   if (!std::filesystem::exists(enginePath)) {
     throw std::runtime_error("UCI engine not found: " + enginePath);
   }
 
-  // Create pipes and streams
-  pipeIn = std::make_unique<bp::opstream>();
-  pipeOut = std::make_unique<bp::ipstream>();
+  // Create async pipe for stdout (using io_context)
+  pipeOut_ = std::make_unique<bp::async_pipe>(ioContext_);
 
-  // Start engine subprocess with pipe redirection and optional command-line arguments
-  // Note: Boost.Process will create the underlying pipes when we use the redirection operators
+  // Create sync stream for stdin
+  pipeIn_ = std::make_unique<bp::opstream>();
+
+  // Start engine subprocess with pipe redirection
   try {
     if (commandLineArgs.empty()) {
-      // No arguments - simple case
-      childProcess = std::make_unique<bp::child>(
+      childProcess_ = std::make_unique<bp::child>(
         enginePath,
-        bp::std_in < *pipeIn,
-        bp::std_out > *pipeOut
+        bp::std_in < *pipeIn_,
+        bp::std_out > *pipeOut_
       );
     } else {
-      // With arguments - pass as single string to shell
-      childProcess = std::make_unique<bp::child>(
+      childProcess_ = std::make_unique<bp::child>(
         enginePath + " " + commandLineArgs,
-        bp::std_in < *pipeIn,
-        bp::std_out > *pipeOut
+        bp::std_in < *pipeIn_,
+        bp::std_out > *pipeOut_
       );
     }
   } catch (const std::exception& e) {
     throw std::runtime_error("Failed to start UCI engine: " + std::string(e.what()));
   }
 
-  if (!childProcess || !childProcess->running()) {
+  if (!childProcess_ || !childProcess_->running()) {
     throw std::runtime_error("Failed to start UCI engine: " + enginePath);
   }
+
+  // Start async reading
+  startAsyncRead();
+
+  // Start I/O thread to run the io_context
+  ioThread_ = std::thread([this]() {
+    // Use work guard to keep io_context running until we explicitly stop it
+    auto workGuard = boost::asio::make_work_guard(ioContext_);
+    ioContext_.run();
+  });
 
   // Initialize UCI protocol
   try {
     initializeUCI();
   } catch (const std::exception& e) {
     // Cleanup on initialization failure
-    if (childProcess) {
-      childProcess->terminate();
-      childProcess->wait();
+    stopping_.store(true);
+    ioContext_.stop();
+    if (ioThread_.joinable()) {
+      ioThread_.join();
+    }
+    if (childProcess_) {
+      childProcess_->terminate();
+      childProcess_->wait();
     }
     throw std::runtime_error("UCI initialization failed: " + std::string(e.what()));
   }
 
-  std::cout << "UCI engine initialized: " << engineName << std::endl;
+  std::cout << "UCI engine initialized: " << engineName_ << std::endl;
 }
 
 UCIEngine::~UCIEngine() {
-  if (childProcess && childProcess->running()) {
-    // Send quit command
+  // Send quit command first (if process is running)
+  if (childProcess_ && childProcess_->running()) {
     try {
       sendCommand("quit");
     } catch (...) {
       // Ignore errors during shutdown
     }
-
     // Give engine time to shutdown gracefully
     std::this_thread::sleep_for(milliseconds(100));
+  }
 
-    // Terminate if still running
-    if (childProcess->running()) {
-      childProcess->terminate();
+  // Signal stopping
+  stopping_.store(true);
+
+  // Wake up any waiters
+  queueCV_.notify_all();
+
+  // Cancel pending async operations on the pipe FIRST
+  // This is critical - on Windows, io_context.stop() alone doesn't cancel in-flight reads
+  if (pipeOut_) {
+    boost::system::error_code ec;
+    pipeOut_->cancel();    // Cancel pending async operations (no argument on Windows)
+    pipeOut_->close(ec);   // Close the pipe
+  }
+
+  // Now stop the io_context
+  ioContext_.stop();
+
+  // Wait for I/O thread to finish
+  if (ioThread_.joinable()) {
+    ioThread_.join();
+  }
+
+
+  // Terminate process if still running
+  if (childProcess_) {
+    if (childProcess_->running()) {
+      childProcess_->terminate();
     }
-    childProcess->wait();
+    childProcess_->wait();
   }
 }
 
@@ -121,36 +166,30 @@ UCIEngine::~UCIEngine() {
 //=============================================================================
 
 void UCIEngine::newGame() {
-  if (!childProcess || !childProcess->running()) {
+  if (!childProcess_ || !childProcess_->running()) {
     std::cerr << "ERROR: Engine process not running" << std::endl;
     return;
   }
 
-  // Send ucinewgame to clear engine state (TT, history, etc.)
   sendCommand("ucinewgame");
-
-  // Wait for engine to be ready
   waitUntilReady();
 }
 
 bool UCIEngine::setPosition(const std::string& fen) {
-  if (!childProcess || !childProcess->running()) {
+  if (!childProcess_ || !childProcess_->running()) {
     std::cerr << "ERROR: Engine process not running" << std::endl;
     return false;
   }
 
-  // Send position command
   std::string command = "position fen " + fen;
   sendCommand(command);
-
-  // Wait for engine to be ready
   return waitUntilReady();
 }
 
 UCISearchResult UCIEngine::search(milliseconds timeMs, Depth maxDepth) {
   UCISearchResult result;
 
-  if (!childProcess || !childProcess->running()) {
+  if (!childProcess_ || !childProcess_->running()) {
     std::cerr << "ERROR: Engine process not running" << std::endl;
     return result;
   }
@@ -165,12 +204,11 @@ UCISearchResult UCIEngine::search(milliseconds timeMs, Depth maxDepth) {
     cmd << " depth " << maxDepth;
   }
 
-  // Send search command
   sendCommand(cmd.str());
 
-  // Scale timeout based on requested move time (fallback to default timeout)
+  // Scale timeout based on requested move time
   constexpr milliseconds::rep timeoutFactor = 3;
-  milliseconds effectiveTimeout = searchTimeout;
+  milliseconds effectiveTimeout = searchTimeout_;
   if (timeMs.count() > 0) {
     const auto maxRep = std::numeric_limits<milliseconds::rep>::max();
     const auto baseMs = timeMs.count();
@@ -192,15 +230,12 @@ UCISearchResult UCIEngine::search(milliseconds timeMs, Depth maxDepth) {
       break;
     }
 
-    // Parse info lines
     if (line.rfind("info ", 0) == 0) {
       parseInfoLine(line, result);
       continue;
     }
 
-    // Parse bestmove
     if (line.rfind("bestmove ", 0) == 0) {
-      // Extract move (format: "bestmove e2e4" or "bestmove e2e4 ponder e7e5")
       std::istringstream iss(line);
       std::string keyword, move;
       iss >> keyword >> move;
@@ -212,7 +247,6 @@ UCISearchResult UCIEngine::search(milliseconds timeMs, Depth maxDepth) {
     }
   }
 
-  // Timeout or error - return empty result
   if (result.bestMove.empty()) {
     std::cerr << "ERROR: Engine search failed or timed out" << std::endl;
   }
@@ -221,19 +255,14 @@ UCISearchResult UCIEngine::search(milliseconds timeMs, Depth maxDepth) {
 }
 
 void UCIEngine::setOption(const std::string& name, const std::string& value) {
-  if (!childProcess || !childProcess->running()) {
+  if (!childProcess_ || !childProcess_->running()) {
     std::cerr << "ERROR: Engine process not running" << std::endl;
     return;
   }
 
-  // Build setoption command
   std::ostringstream cmd;
   cmd << "setoption name " << name << " value " << value;
-
-  // Send command
   sendCommand(cmd.str());
-
-  // Wait for engine to be ready
   waitUntilReady();
 }
 
@@ -242,17 +271,12 @@ void UCIEngine::setUciOptions(const std::string& options) {
     return;
   }
 
-  // Parse UCI options in format: "name1=value1; name2=value2"
-  // Option names and values CAN contain spaces (per UCI spec)
-  // Split by semicolon to get individual option pairs
   std::vector<std::string> pairs;
 
   if (options.find(';') != std::string::npos) {
-    // Split by semicolon
     std::istringstream iss(options);
     std::string pair;
     while (std::getline(iss, pair, ';')) {
-      // Trim whitespace
       pair.erase(0, pair.find_first_not_of(" \t\r\n"));
       pair.erase(pair.find_last_not_of(" \t\r\n") + 1);
       if (!pair.empty()) {
@@ -260,12 +284,9 @@ void UCIEngine::setUciOptions(const std::string& options) {
       }
     }
   } else {
-    // No semicolons - treat as single option or try space-split
-    // If contains '=', it's a single option
     if (options.find('=') != std::string::npos) {
       pairs.push_back(options);
     } else {
-      // Try space-split as fallback (for backward compatibility)
       std::istringstream iss(options);
       std::string pair;
       while (iss >> pair) {
@@ -276,8 +297,6 @@ void UCIEngine::setUciOptions(const std::string& options) {
     }
   }
 
-  // Parse each "name=value" pair
-  // Note: Both name and value can contain spaces per UCI spec
   for (const auto& pair : pairs) {
     size_t eqPos = pair.find('=');
     if (eqPos == std::string::npos) {
@@ -288,7 +307,6 @@ void UCIEngine::setUciOptions(const std::string& options) {
     std::string name = pair.substr(0, eqPos);
     std::string value = pair.substr(eqPos + 1);
 
-    // Trim whitespace
     name.erase(0, name.find_first_not_of(" \t"));
     name.erase(name.find_last_not_of(" \t") + 1);
     value.erase(0, value.find_first_not_of(" \t"));
@@ -299,7 +317,6 @@ void UCIEngine::setUciOptions(const std::string& options) {
       continue;
     }
 
-    // Send option
     setOption(name, value);
   }
 }
@@ -307,18 +324,13 @@ void UCIEngine::setUciOptions(const std::string& options) {
 std::map<std::string, std::string> UCIEngine::getOptions() {
   std::map<std::string, std::string> options;
 
-  if (!childProcess || !childProcess->running()) {
+  if (!childProcess_ || !childProcess_->running()) {
     std::cerr << "ERROR: Engine process not running" << std::endl;
     return options;
   }
 
-  // Send getoptions command to get current option values
-  // Note: "getoptions" is a FrankyCPP extension for testing/debugging
-  // For standard UCI engines, use "uci" command and parse "default" values
   sendCommand("getoptions");
 
-  // Read response - each line is: "option name <name> type <type> current <value>"
-  // Terminated by "optionsok" (similar to "uciok" for "uci" command)
   const auto deadline = steady_clock::now() + milliseconds(5000);
 
   while (steady_clock::now() < deadline) {
@@ -326,36 +338,27 @@ std::map<std::string, std::string> UCIEngine::getOptions() {
     const auto remaining = duration_cast<milliseconds>(deadline - steady_clock::now());
 
     if (!readLine(line, remaining)) {
-      break; // Timeout or error
+      break;
     }
 
-    // Check for termination signal (use find to handle log prefixes)
     if (line.find("optionsok") != std::string::npos) {
       break;
     }
 
-    // Parse: "option name <name> type <type> current <value>"
-    // Use find to handle log prefixes like "[timestamp] >> option name ..."
     size_t optionNamePos = line.find("option name ");
     if (optionNamePos != std::string::npos) {
-      // Find the positions of key markers
-      size_t nameStart = optionNamePos + 12; // After "option name "
+      size_t nameStart = optionNamePos + 12;
       size_t typePos = line.find(" type ", nameStart);
 
       if (typePos == std::string::npos) {
-        continue; // Invalid option line
+        continue;
       }
 
-      // Extract option name
       std::string name = line.substr(nameStart, typePos - nameStart);
-
-      // Find "current" keyword (getoptions always provides this)
       size_t currentPos = line.find(" current ", typePos);
 
       if (currentPos != std::string::npos) {
-        size_t valueStart = currentPos + 9; // After " current "
-
-        // Find end of value (end of line or whitespace)
+        size_t valueStart = currentPos + 9;
         size_t valueEnd = line.find_first_of(" \t\r\n", valueStart);
 
         std::string value;
@@ -365,12 +368,9 @@ std::map<std::string, std::string> UCIEngine::getOptions() {
           value = line.substr(valueStart);
         }
 
-        // Trim trailing whitespace
         value.erase(value.find_last_not_of(" \t\r\n") + 1);
-
         options[name] = value;
       }
-      // Note: Button options have no "current" field, so they won't be added to the map
     }
   }
 
@@ -382,58 +382,88 @@ std::map<std::string, std::string> UCIEngine::getOptions() {
 //=============================================================================
 
 void UCIEngine::sendCommand(const std::string& command) {
-  if (!pipeIn || !childProcess || !childProcess->running()) {
+  if (!pipeIn_ || !childProcess_ || !childProcess_->running()) {
     throw std::runtime_error("Engine process not running");
   }
 
-  if (debugMode) {
+  if (debugMode_) {
     std::cout << "[UCIEngine] >>> " << command << std::endl;
   }
 
-  *pipeIn << command << std::endl;
-  pipeIn->flush();
+  *pipeIn_ << command << std::endl;
+  pipeIn_->flush();
 }
 
-bool UCIEngine::readLine(std::string& line, milliseconds timeoutMs) {
-  if (!pipeOut || !childProcess || !childProcess->running()) {
-    return false;
+void UCIEngine::startAsyncRead() {
+  if (stopping_.load()) {
+    return;
   }
 
-  line.clear();
-
-  // Boost.Process pipes are blocking, so we need to use a thread with timeout
-  // to avoid hanging forever if the engine doesn't respond
-  std::atomic completed{false};
-  std::atomic success{false};
-
-  std::thread readerThread([&]() {
-    if (std::getline(*pipeOut, line)) {
-      // Trim whitespace including trailing carriage return (Windows CRLF)
-      line = trimFast(line);
-      success = true;
+  // Async read until newline
+  boost::asio::async_read_until(
+    *pipeOut_,
+    readBuffer_,
+    '\n',
+    [this](const boost::system::error_code& ec, std::size_t bytesTransferred) {
+      handleRead(ec, bytesTransferred);
     }
-    completed = true;
-  });
+  );
+}
 
-  // Wait for completion or timeout
-  const auto deadline = steady_clock::now() + timeoutMs;
-  while (!completed && steady_clock::now() < deadline) {
-    std::this_thread::sleep_for(milliseconds(10));
+void UCIEngine::handleRead(const boost::system::error_code& ec, std::size_t bytesTransferred) {
+  if (stopping_.load()) {
+    return;
   }
 
-  if (!completed) {
-    // Timeout - detach thread (it will complete eventually but we move on)
-    readerThread.detach();
-    return false;
+  if (ec) {
+    // Error or EOF - signal to consumers
+    {
+      std::lock_guard lock(queueMutex_);
+      // Push empty string to signal EOF
+    }
+    queueCV_.notify_all();
+    return;
   }
 
-  readerThread.join();
+  // Extract line from buffer
+  std::istream is(&readBuffer_);
+  std::string line;
+  std::getline(is, line);
 
-  if (debugMode && success) {
+  // Trim whitespace (including Windows CRLF)
+  line = trimFast(line);
+
+  if (debugMode_) {
     std::cout << "[UCIEngine] <<< " << line << std::endl;
   }
 
-  return success;
+  // Push to queue and notify waiters
+  {
+    std::lock_guard lock(queueMutex_);
+    lineQueue_.push(std::move(line));
+  }
+  queueCV_.notify_one();
+
+  // Continue reading
+  startAsyncRead();
+}
+
+bool UCIEngine::readLine(std::string& line, milliseconds timeoutMs) {
+  line.clear();
+
+  std::unique_lock lock(queueMutex_);
+  const bool gotLine = queueCV_.wait_for(lock, timeoutMs, [this]() {
+    return !lineQueue_.empty() || stopping_.load();
+  });
+
+  if (!gotLine || lineQueue_.empty()) {
+    return false;
+  }
+
+  line = std::move(lineQueue_.front());
+  lineQueue_.pop();
+
+  return true;
 }
 
 bool UCIEngine::waitForResponse(const std::string& expectedResponse, milliseconds timeoutMs) {
@@ -444,13 +474,11 @@ bool UCIEngine::waitForResponse(const std::string& expectedResponse, millisecond
     const auto remaining = duration_cast<milliseconds>(deadline - steady_clock::now());
 
     if (readLine(line, remaining)) {
-      // Search for response within line to handle log prefixes
       if (line.find(expectedResponse) != std::string::npos) {
         return true;
       }
-      // Keep reading until we find the expected response or timeout
     } else {
-      break; // Timeout or error
+      break;
     }
   }
 
@@ -458,10 +486,8 @@ bool UCIEngine::waitForResponse(const std::string& expectedResponse, millisecond
 }
 
 void UCIEngine::initializeUCI() {
-  // Send "uci" command
   sendCommand("uci");
 
-  // Read response lines until we get "uciok"
   const auto deadline = steady_clock::now() + milliseconds(5000);
   bool receivedUciOk = false;
 
@@ -470,15 +496,13 @@ void UCIEngine::initializeUCI() {
     const auto remaining = duration_cast<milliseconds>(deadline - steady_clock::now());
 
     if (!readLine(line, remaining)) {
-      break; // Timeout or error
+      break;
     }
 
-    // Parse "id name" for engine name
     if (line.rfind("id name ", 0) == 0) {
-      engineName = line.substr(8); // Skip "id name "
+      engineName_ = line.substr(8);
     }
 
-    // Check for uciok (search within line to handle log prefixes)
     if (line.find("uciok") != std::string::npos) {
       receivedUciOk = true;
       break;
@@ -489,11 +513,10 @@ void UCIEngine::initializeUCI() {
     throw std::runtime_error("Engine did not respond with 'uciok'");
   }
 
-  if (engineName.empty()) {
-    engineName = "Unknown Engine";
+  if (engineName_.empty()) {
+    engineName_ = "Unknown Engine";
   }
 
-  // Send "isready" and wait for "readyok"
   if (!waitUntilReady()) {
     throw std::runtime_error("Engine did not respond to 'isready'");
   }
@@ -508,20 +531,18 @@ void UCIEngine::parseInfoLine(const std::string& line, UCISearchResult& result) 
   std::istringstream iss(line);
   std::string token;
 
-  // Skip "info" keyword
-  iss >> token;
+  iss >> token; // Skip "info"
 
-  // Parse key-value pairs
   while (iss >> token) {
     if (token == "depth") {
-      int depth;
+      int depth = 0;
       if (iss >> depth) {
         result.depth = static_cast<Depth>(depth);
       }
     } else if (token == "nodes") {
       iss >> result.nodes;
     } else if (token == "time") {
-      int timeMs;
+      int timeMs = 0;
       if (iss >> timeMs) {
         result.time = milliseconds(timeMs);
       }
@@ -529,14 +550,13 @@ void UCIEngine::parseInfoLine(const std::string& line, UCISearchResult& result) 
       std::string scoreType;
       if (iss >> scoreType) {
         if (scoreType == "cp") {
-          int centipawns;
+          int centipawns = 0;
           if (iss >> centipawns) {
             result.score = static_cast<Value>(centipawns);
           }
         } else if (scoreType == "mate") {
-          int mateIn;
+          int mateIn = 0;
           if (iss >> mateIn) {
-            // Convert mate score to value (positive = winning, negative = losing)
             result.score = mateIn > 0 ? VALUE_CHECKMATE - mateIn : -VALUE_CHECKMATE + mateIn;
           }
         }

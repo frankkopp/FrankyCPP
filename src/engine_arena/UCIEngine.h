@@ -28,6 +28,10 @@
 // via subprocess. It handles engine initialization, position setup, and search
 // execution for test suite evaluation.
 //
+// Implementation uses Boost.Asio async_pipe for reliable, cancellable I/O on
+// Windows and Linux. This avoids the common problem of blocking reads that
+// cannot be interrupted on process shutdown.
+//
 // Lifecycle:
 //   - One UCIEngine instance is reused across multiple positions in a test suite
 //   - Constructor starts engine process once
@@ -64,12 +68,18 @@
 
 #include "types/types.h"
 
+#include <boost/asio.hpp>
+#include <boost/process/v1/async_pipe.hpp>
 #include <boost/process/v1/child.hpp>
-#include <boost/process/v1/pipe.hpp>
 #include <boost/process/v1/io.hpp>
-#include <string>
-#include <memory>
+#include <atomic>
+#include <condition_variable>
 #include <map>
+#include <memory>
+#include <mutex>
+#include <queue>
+#include <string>
+#include <thread>
 
 namespace arena {
 
@@ -79,19 +89,32 @@ struct UCISearchResult {
   uint64_t nodes = 0;         ///< Total nodes searched
   Depth depth = DEPTH_ZERO;   ///< Search depth reached
   Value score = VALUE_NONE;   ///< Centipawn score from engine's perspective
-  milliseconds time{0};   ///< Time spent searching
+  milliseconds time{0};       ///< Time spent searching
 };
 
 /// External UCI chess engine interface
 class UCIEngine {
   // Member fields
-  std::string enginePath;                                     ///< Path to engine executable
-  std::string engineName;                                     ///< Engine name from "id name"
-  std::unique_ptr<boost::process::v1::child> childProcess;    ///< Engine subprocess
-  std::unique_ptr<boost::process::v1::opstream> pipeIn;       ///< Input stream to engine
-  std::unique_ptr<boost::process::v1::ipstream> pipeOut;      ///< Output stream from engine
-  milliseconds searchTimeout{30000};                      ///< Default 30 second timeout
-  bool debugMode{false};                                      ///< Debug mode: print all UCI communication
+  std::string enginePath_;                                    ///< Path to engine executable
+  std::string engineName_;                                    ///< Engine name from "id name"
+
+  // Boost.Asio for async I/O
+  boost::asio::io_context ioContext_;                         ///< Asio I/O context
+  std::unique_ptr<boost::process::v1::async_pipe> pipeOut_;   ///< Async pipe from engine stdout
+  std::unique_ptr<boost::process::v1::opstream> pipeIn_;      ///< Sync stream to engine stdin
+  std::unique_ptr<boost::process::v1::child> childProcess_;   ///< Engine subprocess
+
+  // Async reader state
+  boost::asio::streambuf readBuffer_;                         ///< Buffer for async reads
+  std::thread ioThread_;                                      ///< Thread running io_context
+  std::queue<std::string> lineQueue_;                         ///< Queue of lines read from engine
+  std::mutex queueMutex_;                                     ///< Protects lineQueue_
+  std::condition_variable queueCV_;                           ///< Signals when line available
+  std::atomic<bool> stopping_{false};                         ///< Signal to stop I/O
+
+  // Configuration
+  milliseconds searchTimeout_{30000};                         ///< Default 30 second timeout
+  bool debugMode_{false};                                     ///< Debug mode: print all UCI communication
 
 public:
   // Constructors/Destructor
@@ -104,9 +127,11 @@ public:
   /// Destructor - stops engine
   ~UCIEngine();
 
-  // Non-copyable
+  // Non-copyable, non-movable (owns threads and I/O resources)
   UCIEngine(const UCIEngine&) = delete;
   UCIEngine& operator=(const UCIEngine&) = delete;
+  UCIEngine(UCIEngine&&) = delete;
+  UCIEngine& operator=(UCIEngine&&) = delete;
 
   // Core functionality
   /// Send ucinewgame to clear engine state (TT, history, etc.)
@@ -127,11 +152,11 @@ public:
 
   /// Set absolute timeout for search operations
   /// @param timeout Maximum time to wait for engine response
-  void setSearchTimeout(milliseconds timeout) { searchTimeout = timeout; }
+  void setSearchTimeout(milliseconds timeout) { searchTimeout_ = timeout; }
 
   /// Enable/disable debug mode (prints all UCI communication)
   /// @param debug True to enable debug output, false to disable
-  void setDebugMode(bool debug) { debugMode = debug; }
+  void setDebugMode(bool debug) { debugMode_ = debug; }
 
   /// Send UCI option to engine
   /// @param name Option name
@@ -141,22 +166,9 @@ public:
   /// Set multiple UCI options from string
   /// Format: "Hash=256; Threads=4" or "Hash=256 Threads=4"
   /// @param options Semicolon or space-separated "name=value" pairs
-  ///
-  /// Note: To verify options were applied, you can send "uci" command again
-  /// and parse the "option" lines in the response. The engine will report
-  /// current values in the format: "option name <name> type <type> default <value> ..."
   void setUciOptions(const std::string& options);
 
-  /// Get current option values from engine
-  /// Sends "getoptions" command (FrankyCPP extension) and parses response.
-  ///
-  /// FrankyCPP Extension: Uses "getoptions" command which reports current values
-  /// Format: option name <name> type <type> current <value>
-  ///
-  /// Note: This only works with FrankyCPP. For standard UCI engines, you would
-  ///       need to send "uci" and parse "default" values, which may not reflect
-  ///       changes made via setoption commands.
-  ///
+  /// Get current option values from engine (FrankyCPP extension)
   /// @return Map of option names to current values
   std::map<std::string, std::string> getOptions();
 
@@ -187,10 +199,16 @@ private:
   /// Parse info line for search statistics
   void parseInfoLine(const std::string& line, UCISearchResult& result);
 
+  /// Start async reading from pipe
+  void startAsyncRead();
+
+  /// Handle completion of async read
+  void handleRead(const boost::system::error_code& ec, std::size_t bytesTransferred);
+
 public:
   // Getters
   /// Get engine name from "id name" response
-  [[nodiscard]] const std::string& getEngineName() const { return engineName; }
+  [[nodiscard]] const std::string& getEngineName() const { return engineName_; }
 };
 
 } // namespace arena

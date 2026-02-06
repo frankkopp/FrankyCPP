@@ -422,12 +422,8 @@ namespace arena {
     const int totalPositions = static_cast<int>(epdTests.size());
     std::cout << "Loaded " << totalPositions << " test positions" << std::endl;
 
-    // Engine name (captured from first worker)
+    // Engine name (captured from first engine)
     std::string engineName;
-    std::mutex engineNameMutex;
-
-    // Mutex for engine initialization (double-check locking)
-    std::mutex engineInitMutex;
 
     // Progress tracking
     std::atomic completedCount{0};
@@ -435,47 +431,61 @@ namespace arena {
     std::atomic failedCount{0};
     std::mutex coutMutex;
 
-    std::cout << "\nStarting ThreadPool with " << numWorkers << " workers..." << std::endl;
-
     auto startTime = steady_clock::now();
 
+    // Pre-create engines for each worker - avoid thread_local which causes
+    // shutdown issues on Windows (thread_local destructors can deadlock when
+    // joining threads during thread exit)
+    std::cout << "\nCreating " << numWorkers << " UCI engine instances..." << std::endl;
+    std::vector<std::unique_ptr<UCIEngine>> engines;
+    engines.reserve(numWorkers);
+    for (int w = 0; w < numWorkers; ++w) {
+      auto engine = std::make_unique<UCIEngine>(suiteConfig.enginePath, suiteConfig.commandLineArgs);
+
+      // Capture engine name from first engine
+      if (w == 0) {
+        engineName = engine->getEngineName();
+      }
+
+      // Configure engine options
+      if (!suiteConfig.uciOptions.empty()) {
+        engine->setUciOptions(suiteConfig.uciOptions);
+      }
+
+      engines.push_back(std::move(engine));
+    }
+    std::cout << "Engine: " << engineName << std::endl;
+
+    // Track which engine each worker thread should use
+    std::atomic<int> nextEngineIndex{0};
+    std::mutex engineMapMutex;
+
     // Create thread pool and enqueue all positions
+    std::cout << "\nStarting ThreadPool with " << numWorkers << " workers..." << std::endl;
     ThreadPool pool(numWorkers);
     std::vector<std::future<TestCaseDetail>> futures;
     futures.reserve(totalPositions);
 
     for (int i = 0; i < totalPositions; ++i) {
-      futures.push_back(pool.enqueue([this, &suiteConfig, &epdTests, &engineInitMutex,
-                                      &engineName, &engineNameMutex, &completedCount, &passedCount,
+      futures.push_back(pool.enqueue([this, &suiteConfig, &epdTests, &engines,
+                                      &nextEngineIndex, &engineMapMutex,
+                                      &completedCount, &passedCount,
                                       &failedCount, &coutMutex, i, totalPositions]() -> TestCaseDetail {
-        // Thread-local engine - each ThreadPool worker gets its own persistent engine
-        thread_local std::unique_ptr<UCIEngine> tlsEngine;
-
-        // Initialize thread-local engine on first use
-        if (!tlsEngine) {
-          std::lock_guard lock(engineInitMutex);
-          tlsEngine = std::make_unique<UCIEngine>(suiteConfig.enginePath, suiteConfig.commandLineArgs);
-
-          // Capture engine name from first worker
-          {
-            std::lock_guard nameLock(engineNameMutex);
-            if (engineName.empty()) {
-              engineName = tlsEngine->getEngineName();
-            }
-          }
-
-          // Configure engine options
-          if (!suiteConfig.uciOptions.empty()) {
-            tlsEngine->setUciOptions(suiteConfig.uciOptions);
-          }
+        // Get thread ID and map to an engine (thread_local for index only - not the engine itself)
+        thread_local int myEngineIndex = -1;
+        if (myEngineIndex == -1) {
+          std::lock_guard lock(engineMapMutex);
+          myEngineIndex = nextEngineIndex++;
         }
+
+        UCIEngine& engine = *engines[myEngineIndex];
 
         // Access test by reference from the vector (no copy needed)
         const EpdTest& test = epdTests[i];
 
         // Run the test
         TestCaseDetail detail = runSinglePosition(
-          *tlsEngine, test, suiteConfig, i + 1);
+          engine, test, suiteConfig, i + 1);
 
         // Update counters
         if (detail.passed) {
@@ -511,6 +521,14 @@ namespace arena {
       totalTimeMs += detail.timeMs;
       results.push_back(std::move(detail));
     }
+
+    // IMPORTANT: Stop the thread pool BEFORE destroying engines
+    // This ensures worker threads are joined before engines are destroyed
+    pool.stop();
+
+    // Now explicitly destroy engines (in the main thread, not during thread exit)
+    std::cout << "\nShutting down UCI engines..." << std::endl;
+    engines.clear();
 
     auto endTime    = steady_clock::now();
     auto wallTimeMs = std::chrono::duration_cast<milliseconds>(
