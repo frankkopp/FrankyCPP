@@ -174,6 +174,12 @@ namespace arena {
     std::cout << "Max Depth:         " << suiteConfig.maxDepth << std::endl;
     std::cout << "Engine:            " << suiteConfig.enginePath << std::endl;
     std::cout << "Position Isolation: " << (suiteConfig.isolatePositions ? "enabled" : "disabled") << std::endl;
+
+    // Warn if debugMode is enabled - it's ignored in parallel mode because
+    // interleaved UCI output from multiple engines would be unreadable
+    if (suiteConfig.debugMode) {
+      std::cout << "WARNING: debugMode is ignored in parallel execution (use parallelWorkers=1 for UCI logging)" << std::endl;
+    }
     std::cout << std::endl;
 
     // Validate EPD file exists

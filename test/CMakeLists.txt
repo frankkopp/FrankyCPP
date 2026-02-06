@@ -57,13 +57,17 @@ add_executable(
         ../src/engine_arena/ArenaConfig.cpp
         ../src/engine_arena/TestSuiteRunner.cpp
         ../src/engine_arena/UCIEngine.cpp
+        ../src/engine_arena/ResultWriter.cpp
+        ../src/engine_arena/MatchRunner.cpp
 
         TimingTests.cpp
 
         config/ConfigYamlSmokeTest.cpp
         config/ConfigDataTests.cpp
         config/ConfigManagerTests.cpp
-        config/ConfigAutoInitTests.cpp)
+        config/ConfigAutoInitTests.cpp
+        engine_arena/ResultWriter_Test.cpp
+        engine_arena/MatchRunner_Test.cpp)
 
 
 # Ensure unit tests explicitly request C++20

@@ -181,9 +181,27 @@ bool ArenaConfig::validate() const {
     return false;
   }
 
-  // Check results directory path is valid
+  // Check results directory path is valid and writable
   if (resultsDir.empty()) {
     std::cerr << "Validation error: resultsDir is empty" << std::endl;
+    return false;
+  }
+
+  // Check resultsDir is writable (create if needed, then verify)
+  try {
+    std::filesystem::create_directories(resultsDir);
+    // Test writability by creating a temp file
+    auto testFile = std::filesystem::path(resultsDir) / ".write_test";
+    std::ofstream ofs(testFile);
+    if (!ofs) {
+      std::cerr << "Validation error: resultsDir is not writable: " << resultsDir << std::endl;
+      return false;
+    }
+    ofs.close();
+    std::filesystem::remove(testFile);
+  } catch (const std::filesystem::filesystem_error& e) {
+    std::cerr << "Validation error: cannot create/access resultsDir: " << resultsDir
+              << " (" << e.what() << ")" << std::endl;
     return false;
   }
 
@@ -196,6 +214,18 @@ bool ArenaConfig::validate() const {
     if (suite.maxDepth <= 0) {
       std::cerr << "Validation error: test suite '" << suite.name
                 << "' has invalid maxDepth: " << suite.maxDepth << std::endl;
+      return false;
+    }
+    // Validate timePerMove > 0
+    if (suite.timePerMove.count() <= 0) {
+      std::cerr << "Validation error: test suite '" << suite.name
+                << "' has invalid timePerMove: " << suite.timePerMove.count() << "ms (must be > 0)" << std::endl;
+      return false;
+    }
+    // Validate parallelWorkers > 0
+    if (suite.parallelWorkers <= 0) {
+      std::cerr << "Validation error: test suite '" << suite.name
+                << "' has invalid parallelWorkers: " << suite.parallelWorkers << " (must be > 0)" << std::endl;
       return false;
     }
     // Check EPD file exists
@@ -234,6 +264,12 @@ bool ArenaConfig::validate() const {
     if (match.rounds <= 0) {
       std::cerr << "Validation error: match '" << match.name
                 << "' has invalid rounds: " << match.rounds << std::endl;
+      return false;
+    }
+    // Validate concurrency > 0
+    if (match.concurrency <= 0) {
+      std::cerr << "Validation error: match '" << match.name
+                << "' has invalid concurrency: " << match.concurrency << " (must be > 0)" << std::endl;
       return false;
     }
     // Check cutechess-cli exists

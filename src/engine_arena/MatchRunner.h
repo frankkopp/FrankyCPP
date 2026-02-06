@@ -87,6 +87,7 @@
 #include "ArenaConfig.h"
 #include "ArenaResults.h"
 
+#include <gtest/gtest_prod.h>
 #include <string>
 #include <vector>
 
@@ -94,6 +95,21 @@ namespace arena {
 
 /// Executes engine-vs-engine matches via cutechess-cli
 class MatchRunner {
+  // Allow test classes to access private methods
+  FRIEND_TEST(MatchRunnerParseTest, StandardScoreLine_ParsedCorrectly);
+  FRIEND_TEST(MatchRunnerParseTest, BreakdownLines_Skipped);
+  FRIEND_TEST(MatchRunnerParseTest, MultipleScoreLines_UsesLast);
+  FRIEND_TEST(MatchRunnerParseTest, NoScoreLine_ThrowsException);
+  FRIEND_TEST(MatchRunnerParseTest, EmptyOutput_ThrowsException);
+  FRIEND_TEST(MatchRunnerParseTest, AllDraws_ParsedCorrectly);
+  FRIEND_TEST(MatchRunnerParseTest, DecisiveResult_ParsedCorrectly);
+  FRIEND_TEST(MatchRunnerParseTest, SingleGame_ParsedCorrectly);
+  FRIEND_TEST(MatchRunnerParseTest, LargeNumbers_ParsedCorrectly);
+  FRIEND_TEST(MatchRunnerParseTest, EngineNamesWithSpaces_ParsedCorrectly);
+  FRIEND_TEST(MatchRunnerParseTest, MetadataPopulated_Correctly);
+  FRIEND_TEST(MatchRunnerParseTest, EloCalculation_Draw);
+  FRIEND_TEST(MatchRunnerParseTest, EloCalculation_Winning);
+
 public:
   /// Creates a MatchRunner with the given configuration
   /// @param config Arena configuration containing match definitions

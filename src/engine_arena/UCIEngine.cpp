@@ -33,12 +33,15 @@
 #include "UCIEngine.h"
 #include "common/stringutil.h"
 
+#include <boost/process/v1/args.hpp>
+
 #include <chrono>
 #include <filesystem>
 #include <iostream>
 #include <limits>
 #include <sstream>
 #include <stdexcept>
+#include <vector>
 
 namespace arena {
 
@@ -65,6 +68,8 @@ UCIEngine::UCIEngine(const std::string& enginePath, const std::string& commandLi
   pipeIn_ = std::make_unique<bp::opstream>();
 
   // Start engine subprocess with pipe redirection
+  // Pass enginePath separately (Boost.Process handles paths with spaces correctly)
+  // Pass arguments via bp::args to avoid command-line injection issues
   try {
     if (commandLineArgs.empty()) {
       childProcess_ = std::make_unique<bp::child>(
@@ -73,8 +78,18 @@ UCIEngine::UCIEngine(const std::string& enginePath, const std::string& commandLi
         bp::std_out > *pipeOut_
       );
     } else {
+      // Split arguments on whitespace - users needing complex quoting should
+      // use UCI setoption commands instead of command-line arguments
+      std::vector<std::string> args;
+      std::istringstream iss(commandLineArgs);
+      std::string arg;
+      while (iss >> arg) {
+        args.push_back(arg);
+      }
+
       childProcess_ = std::make_unique<bp::child>(
-        enginePath + " " + commandLineArgs,
+        enginePath,
+        bp::args(args),
         bp::std_in < *pipeIn_,
         bp::std_out > *pipeOut_
       );
@@ -404,13 +419,15 @@ void UCIEngine::startAsyncRead() {
     *pipeOut_,
     readBuffer_,
     '\n',
-    [this](const boost::system::error_code& ec, std::size_t bytesTransferred) {
+    [this](const boost::system::error_code& ec, const std::size_t bytesTransferred) {
       handleRead(ec, bytesTransferred);
     }
   );
 }
 
-void UCIEngine::handleRead(const boost::system::error_code& ec, std::size_t bytesTransferred) {
+void UCIEngine::handleRead(const boost::system::error_code& ec, const std::size_t bytesTransferred) {
+  (void)bytesTransferred;  // Unused - we read lines from the streambuf directly
+
   if (stopping_.load()) {
     return;
   }
