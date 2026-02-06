@@ -252,8 +252,9 @@ install(CODE "
         ERROR_VARIABLE _build_error
     )
 
-    # Check if executable exists after build
+    # Check if executables exist after build
     set(_exe_path \"$<TARGET_FILE:${exeName}>\")
+    set(_arena_exe_path \"$<TARGET_FILE:${arenaExeName}>\")
     if(NOT EXISTS \"\${_exe_path}\")
         if(_build_result)
             message(WARNING \"Build failed with error code: \${_build_result}\")
@@ -265,6 +266,13 @@ install(CODE "
         message(FATAL_ERROR \"Cannot create release package without executable\")
     else()
         message(STATUS \"Fresh executable built successfully\")
+    endif()
+
+    if(NOT EXISTS \"\${_arena_exe_path}\")
+        message(WARNING \"Arena executable not found at: \${_arena_exe_path}\")
+        message(WARNING \"Arena executable will not be included in the release package\")
+    else()
+        message(STATUS \"Arena executable found\")
     endif()
 
     # Clean up old release folder and ZIP
@@ -283,6 +291,14 @@ install(CODE "
     file(INSTALL \"$<TARGET_FILE:${exeName}>\"
          DESTINATION \"${RELEASE_DIR}\"
          FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+
+    # Copy Arena executable (if it exists)
+    if(EXISTS \"$<TARGET_FILE:${arenaExeName}>\")
+        message(STATUS \"Copying Arena executable...\")
+        file(INSTALL \"$<TARGET_FILE:${arenaExeName}>\"
+             DESTINATION \"${RELEASE_DIR}\"
+             FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+    endif()
 
     # Copy config files
     message(STATUS \"Copying config files...\")
