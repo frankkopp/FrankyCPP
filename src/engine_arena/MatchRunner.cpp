@@ -366,6 +366,9 @@ void MatchRunner::validateMatchConfig(const MatchConfig& matchConfig) {
 std::string MatchRunner::extractEngineName(const std::string& enginePath) {
   const std::filesystem::path path(enginePath);
   std::string filename = path.stem().string(); // Get filename without extension
+  // Normalize: replace underscores with spaces to match UCI naming convention
+  // (UCI "id name" typically uses spaces, e.g., "FrankyCPP v1.1")
+  std::ranges::replace(filename, '_', ' ');
   return filename;
 }
 

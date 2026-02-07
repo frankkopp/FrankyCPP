@@ -347,8 +347,9 @@ struct ReportData {
 
   /// Returns match result for given engine pair, or nullptr if not found
   /// Order doesn't matter: checks both "e1 vs e2" and "e2 vs e1"
+  /// Uses flexible matching to handle underscore vs space differences in engine names
   [[nodiscard]] const MatchResult* getMatch(const EngineId& engine1, const EngineId& engine2) const {
-    // Try both orderings
+    // First try exact key lookup for efficiency
     const std::string key1 = engine1.toString() + " vs " + engine2.toString();
     const std::string key2 = engine2.toString() + " vs " + engine1.toString();
 
@@ -358,18 +359,55 @@ struct ReportData {
     it = matchResults.find(key2);
     if (it != matchResults.end()) return &it->second;
 
+    // Fall back to flexible matching: iterate through all matches
+    for (const auto& [key, match] : matchResults) {
+      const EngineId e1 = match.getEngine1Id();
+      const EngineId e2 = match.getEngine2Id();
+
+      // Check if (engine1, engine2) matches (e1, e2) in either order
+      if ((enginesMatchFlexibly(engine1, e1) && enginesMatchFlexibly(engine2, e2)) ||
+          (enginesMatchFlexibly(engine1, e2) && enginesMatchFlexibly(engine2, e1))) {
+        return &match;
+      }
+    }
+
     return nullptr;
   }
 
-  /// Returns all matches involving the given engine
+  /// Returns all matches involving the given engine (using flexible matching)
   [[nodiscard]] std::vector<const MatchResult*> getMatchesForEngine(const EngineId& engine) const {
     std::vector<const MatchResult*> matches;
     for (const auto& [key, match] : matchResults) {
-      if (match.getEngine1Id() == engine || match.getEngine2Id() == engine) {
+      if (enginesMatchFlexibly(engine, match.getEngine1Id()) ||
+          enginesMatchFlexibly(engine, match.getEngine2Id())) {
         matches.push_back(&match);
       }
     }
     return matches;
+  }
+
+private:
+  /// Helper: Check if two engine IDs refer to the same engine
+  /// Handles differences like underscore vs space (FrankyCPP_v1.1 vs FrankyCPP v1.1)
+  [[nodiscard]] static bool enginesMatchFlexibly(const EngineId& a, const EngineId& b) {
+    // Exact match
+    if (a == b) return true;
+
+    // Version must match
+    if (a.version != b.version) return false;
+
+    // Normalize names by replacing underscores with spaces
+    std::string nameA = a.name;
+    std::string nameB = b.name;
+    std::replace(nameA.begin(), nameA.end(), '_', ' ');
+    std::replace(nameB.begin(), nameB.end(), '_', ' ');
+
+    if (nameA == nameB) return true;
+
+    // Check if one name starts with the other (for variations like "FrankyCPP" vs "FrankyCPP v1.1")
+    if (nameA.find(nameB) == 0 || nameB.find(nameA) == 0) return true;
+
+    return false;
   }
 };
 
