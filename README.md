@@ -7,17 +7,17 @@ Modern C++20 UCI Chess Engine
 
 ## Version
 
-**v1.0.0** - Production Release 🎉
-- ✅ Complete cross-platform support (Windows, Linux, macOS-ready)
-- ✅ Modern C++20 codebase with full CI/CD
-- ✅ Comprehensive test coverage (266+ tests)
-- ✅ Professional build infrastructure
-- ✅ YAML-based configuration framework
-- ✅ Enhanced search and evaluation
-- ✅ Opening book support
-- ✅ UCI protocol implementation
+**v1.1.0** - Arena Release 🎯
+- ✅ **Engine Arena** - Automated strength testing framework
+- ✅ EPD tactical test suites with external UCI engine support
+- ✅ Engine-vs-engine matches via cutechess-cli
+- ✅ Baseline reports and version comparison
+- ✅ JSON result persistence for historical tracking
+- ✅ Parallel test execution
 
 **Previous versions:**
+- v1.0 - Production Release (cross-platform, CI/CD, 266+ tests)
+- v0.7 - YAML configuration framework
 - v0.6 - Enhanced search, enhanced logging
 - v0.5 - Enhanced eval and move to wrapper classes
 - v0.4 - Simple eval
@@ -47,16 +47,23 @@ See **[docs/BUILD_GUIDE.md](docs/BUILD_GUIDE.md)** for complete instructions.
 # Run all test suites and matches
 .\cmake-build-win-release\src\FrankyCPP_v1.1_Arena.exe
 
-# Compare versions
-.\cmake-build-win-release\src\FrankyCPP_v1.1_Arena.exe --compare v1.1 v1.0
+# Run test suites only
+.\cmake-build-win-release\src\FrankyCPP_v1.1_Arena.exe --testsuites
+
+# View baseline report (all engines side-by-side)
+.\cmake-build-win-release\src\FrankyCPP_v1.1_Arena.exe --report
+
+# Compare target engine vs baselines
+.\cmake-build-win-release\src\FrankyCPP_v1.1_Arena.exe --cmp FrankyCPP-v1.2-dev
 ```
 
 **Features:**
 - 🎯 EPD tactical test suites (WAC, STS, etc.) via **external UCI engines**
 - ⚔️ Automated engine matches via cutechess-cli
-- 📊 Version comparison with detailed reports
+- 📊 Baseline reports and version comparison with detailed delta analysis
 - 💾 JSON result persistence for historical tracking
 - 🔧 Flexible engine configuration (UCI options, command-line args, position isolation)
+- 🔀 Parallel test execution for faster results
 
 **External UCI Engine Testing:**
 - All test suites use external UCI engines for production-like testing
@@ -66,7 +73,8 @@ See **[docs/BUILD_GUIDE.md](docs/BUILD_GUIDE.md)** for complete instructions.
 
 **Documentation:** See **[docs/arena/](docs/arena/)** for complete guide:
 - [Quick Start](docs/arena/README.md)
-- [External Engine Testing](docs/arena/External_Engine_Testing.md) - **Comprehensive guide**
+- [Reporting & Comparison](docs/arena/Reporting.md) - **Baseline reports and version comparison**
+- [External Engine Testing](docs/arena/External_Engine_Testing.md) - Comprehensive testing guide
 - [Configuration Reference](docs/arena/Configuration.md)
 - [Result Analysis](docs/arena/Results.md)
 - [Development Guide](docs/arena/Development.md)
@@ -340,6 +348,7 @@ CLion users can just reload CMake; the IDE sets up the MSVC environment automati
 
 ### Artifacts
 - App: `FrankyCPP_v<major>.<minor>`
+- Arena: `FrankyCPP_v<major>.<minor>_Arena` (strength testing framework)
 - Tests: `FrankyCPP_v<major>.<minor>_Test` (when `FRANKYCPP_BUILD_TESTS=ON`)
 - Benchmarks: `FrankyCPP_v<major>.<minor>_Bench` (when `FRANKYCPP_BUILD_BENCHMARKS=ON`)
 - Release Package: Use `cmake --install` to create `Release/FrankyCPP_v<version>/` folder and ZIP (see "Creating a Release Package" section above).
