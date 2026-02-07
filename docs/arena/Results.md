@@ -16,12 +16,43 @@ results/
 ├── matches/             # Engine-vs-engine match results
 │   ├── FrankyCPP-v1.1_vs_FrankyGo-v1.0.3_60_0.6_20260201_150033.json
 │   ├── FrankyCPP-v1.1_vs_FrankyGo-v1.0.3_60_0.6_20260201_150033.pgn
+│   ├── .state/          # Match state files (for resumable matches)
+│   │   └── v1.1_vs_v1.0_blitz.state.json  # Auto-deleted on completion
 │   └── ...
 │
 └── comparisons/         # Version comparison reports
     ├── FrankyCPP-v1.1_vs_FrankyCPP-v1.0_20260201_153000.txt
     └── ...
 ```
+
+### State Files (`.state/` directory)
+
+Matches run in batches and save progress after each batch. If interrupted:
+
+**State File Location:** `results/matches/.state/<match_name>.state.json`
+
+**State File Format:**
+```json
+{
+  "matchName": "v1.1_vs_v1.0_blitz",
+  "totalRounds": 100,
+  "completedRounds": 48,
+  "engine1Wins": 25,
+  "engine2Wins": 15,
+  "draws": 8,
+  "engine1Name": "FrankyCPP v1.1",
+  "engine2Name": "FrankyCPP v1.0",
+  "timestamp": "2026-02-07T12:30:00Z"
+}
+```
+
+**Behavior:**
+- Created when match starts
+- Updated after each batch completes
+- **Automatically deleted** when match completes successfully
+- If present on next run, match resumes from saved state
+
+**To restart a match:** Delete the state file manually
 
 ---
 
@@ -633,4 +664,4 @@ conn.close()
 
 ---
 
-*Last updated: 2026-02-06*
+*Last updated: 2026-02-07*

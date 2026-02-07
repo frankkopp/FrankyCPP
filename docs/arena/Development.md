@@ -104,10 +104,35 @@ ArenaRunner (Orchestrator)
 **File:** `src/engine_arena/MatchRunner.h/cpp`
 
 **Key Methods:**
-- `runMatch(config)` - Run a single match
+- `runMatch(config)` - Run a single match (with batch-based resumption)
 - `runAllMatches()` - Run all configured matches
 - `parseOutput(output, config)` - Parse cutechess-cli output
 - `calculateEloDifference(score, games)` - ELO calculation
+- `getStateFilePath(config)` - Get path to state file for a match
+- `loadMatchState(path, state)` - Load saved match state
+- `saveMatchState(path, state)` - Save current match state
+- `deleteMatchState(path)` - Delete state file (on completion)
+
+**State Persistence:**
+- Matches run in batches of `batchSize` games (configurable, default: auto)
+- State saved to `results/matches/.state/<match>.state.json` after each batch
+- On resume, loads state and continues from last completed batch
+- State file auto-deleted when match completes
+
+**Data Structures:**
+```cpp
+struct MatchState {
+  std::string matchName;
+  int totalRounds;
+  int completedRounds;
+  int engine1Wins;
+  int engine2Wins;
+  int draws;
+  std::string engine1Name;
+  std::string engine2Name;
+  std::string timestamp;
+};
+```
 
 **Dependencies:**
 - cutechess-cli executable (external)
@@ -118,6 +143,7 @@ ArenaRunner (Orchestrator)
 - Add opening suite support (not just PGN books)
 - Add adjudication rules (draw by repetition, tablebase adjudication)
 - Parse additional cutechess output (per-game times, opening statistics)
+- Add SPRT (Sequential Probability Ratio Test) for early termination
 
 ---
 
@@ -669,4 +695,4 @@ throw std::runtime_error(
 
 ---
 
-*Last updated: 2026-02-01*
+*Last updated: 2026-02-07*
