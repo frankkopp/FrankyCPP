@@ -33,6 +33,7 @@
 #include "engine_arena/ArenaConfig.h"
 
 #include <gtest/gtest.h>
+#include <filesystem>
 
 namespace arena {
 
@@ -276,6 +277,95 @@ Score of engine1 vs engine2: 65 - 15 - 20  [0.750] 100
 
   // ELO difference should be positive and significant
   EXPECT_GT(result.eloDifference, 100.0);
+}
+
+//=============================================================================
+// State File Tests (for match resumption)
+//=============================================================================
+
+class MatchRunnerStateTest : public ::testing::Test {
+protected:
+  MatchConfig matchConfig;
+
+  void SetUp() override {
+    matchConfig.name = "TestMatch";
+    matchConfig.outputPgn = "./test_state_dir/test_match.pgn";
+    matchConfig.rounds = 100;
+  }
+
+  void TearDown() override {
+    // Clean up test files
+    std::filesystem::remove_all("./test_state_dir");
+  }
+};
+
+TEST_F(MatchRunnerStateTest, GetStateFilePath_ReturnsCorrectPath) {
+  const std::string path = MatchRunner::getStateFilePath(matchConfig);
+
+  // Should be in .state subdirectory with .state.json extension
+  EXPECT_TRUE(path.find(".state") != std::string::npos);
+  EXPECT_TRUE(path.find("test_match.state.json") != std::string::npos);
+}
+
+TEST_F(MatchRunnerStateTest, SaveAndLoadMatchState_RoundTrip) {
+  const std::string testStatePath = MatchRunner::getStateFilePath(matchConfig);
+
+  // Create a state to save
+  MatchState stateToSave;
+  stateToSave.matchName = "TestMatch";
+  stateToSave.totalRounds = 100;
+  stateToSave.completedRounds = 47;
+  stateToSave.engine1Wins = 25;
+  stateToSave.engine2Wins = 15;
+  stateToSave.draws = 7;
+  stateToSave.engine1Name = "Engine1 v1.0";
+  stateToSave.engine2Name = "Engine2 v2.0";
+  stateToSave.timestamp = "2026-02-07T12:00:00Z";
+
+  // Save state
+  MatchRunner::saveMatchState(testStatePath, stateToSave);
+
+  // Verify file was created
+  EXPECT_TRUE(std::filesystem::exists(testStatePath));
+
+  // Load state back
+  MatchState loadedState;
+  const bool loaded = MatchRunner::loadMatchState(testStatePath, loadedState);
+
+  EXPECT_TRUE(loaded);
+  EXPECT_EQ(loadedState.matchName, "TestMatch");
+  EXPECT_EQ(loadedState.totalRounds, 100);
+  EXPECT_EQ(loadedState.completedRounds, 47);
+  EXPECT_EQ(loadedState.engine1Wins, 25);
+  EXPECT_EQ(loadedState.engine2Wins, 15);
+  EXPECT_EQ(loadedState.draws, 7);
+  EXPECT_EQ(loadedState.engine1Name, "Engine1 v1.0");
+  EXPECT_EQ(loadedState.engine2Name, "Engine2 v2.0");
+  EXPECT_EQ(loadedState.timestamp, "2026-02-07T12:00:00Z");
+}
+
+TEST_F(MatchRunnerStateTest, LoadMatchState_NonexistentFile) {
+  MatchState state;
+  const bool loaded = MatchRunner::loadMatchState("./nonexistent_file.state.json", state);
+
+  EXPECT_FALSE(loaded);
+}
+
+TEST_F(MatchRunnerStateTest, DeleteMatchState_RemovesFile) {
+  const std::string testStatePath = MatchRunner::getStateFilePath(matchConfig);
+
+  // Create a state file first
+  MatchState state;
+  state.matchName = "TestMatch";
+  state.completedRounds = 10;
+  MatchRunner::saveMatchState(testStatePath, state);
+
+  EXPECT_TRUE(std::filesystem::exists(testStatePath));
+
+  // Delete it
+  MatchRunner::deleteMatchState(testStatePath);
+
+  EXPECT_FALSE(std::filesystem::exists(testStatePath));
 }
 
 } // namespace arena

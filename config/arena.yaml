@@ -757,6 +757,7 @@ matches:
     timeControl: "300+0"
     rounds: 100
     concurrency: 4
+    batchSize: 4
     outputPgn: "results/matches/v0.4_vs_v1.1_blitz_100.pgn"
 #
 #    v0.5

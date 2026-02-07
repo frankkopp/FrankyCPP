@@ -169,6 +169,12 @@ ArenaConfig ArenaConfig::loadFromYaml(const std::string& configPath) {
           match.concurrency = matchNode["concurrency"].as<int>();
         }
 
+        // Batch size for resumable matches (optional, defaults to 0 = auto)
+        // Auto means: max(2, concurrency) rounded up to even number
+        if (matchNode["batchSize"]) {
+          match.batchSize = matchNode["batchSize"].as<int>();
+        }
+
         match.outputPgn = matchNode["outputPgn"].as<std::string>();
 
         config.matches.push_back(match);
@@ -279,6 +285,19 @@ bool ArenaConfig::validate() const {
       std::cerr << "Validation error: match '" << match.name
                 << "' has invalid concurrency: " << match.concurrency << " (must be > 0)" << std::endl;
       return false;
+    }
+    // Validate batchSize if specified (must be even and >= 2)
+    if (match.batchSize != 0) {
+      if (match.batchSize < 2) {
+        std::cerr << "Validation error: match '" << match.name
+                  << "' has invalid batchSize: " << match.batchSize << " (must be >= 2)" << std::endl;
+        return false;
+      }
+      if (match.batchSize % 2 != 0) {
+        std::cerr << "Validation error: match '" << match.name
+                  << "' has invalid batchSize: " << match.batchSize << " (must be even for color fairness)" << std::endl;
+        return false;
+      }
     }
     // Check cutechess-cli exists
     if (!std::filesystem::exists(match.cutechessPath)) {

@@ -126,6 +126,7 @@ struct MatchConfig {
   std::string timeControl;     ///< Time control (e.g., "10+0.1")
   int rounds;                  ///< Number of rounds to play
   int concurrency = 1;         ///< Number of games to run in parallel by cutechess-cli (default: 1 for deterministic)
+  int batchSize = 0;           ///< Games per batch for resumable matches (0 = auto: max(2, concurrency), must be even)
   std::string outputPgn;       ///< Path to save PGN games
 };
 

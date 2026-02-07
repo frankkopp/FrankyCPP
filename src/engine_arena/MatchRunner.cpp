@@ -52,6 +52,17 @@ MatchRunner::MatchRunner(const ArenaConfig& config)
 }
 
 MatchResult MatchRunner::runMatch(const MatchConfig& matchConfig) const {
+  // Calculate batch size: use configured value, or auto-calculate from concurrency
+  // Auto: max(2, concurrency) rounded up to next even number
+  int batchSize = matchConfig.batchSize;
+  if (batchSize == 0) {
+    // Auto-calculate: at least 2, at least concurrency, must be even
+    batchSize = std::max(2, matchConfig.concurrency);
+    if (batchSize % 2 != 0) {
+      batchSize++;  // Round up to even
+    }
+  }
+
   std::cout << "\n==================================================================" << std::endl;
   std::cout << "Running Match: " << matchConfig.name << std::endl;
   std::cout << "==================================================================" << std::endl;
@@ -60,15 +71,21 @@ MatchResult MatchRunner::runMatch(const MatchConfig& matchConfig) const {
   std::cout << "Opening Book:   " << matchConfig.openingBook << std::endl;
   std::cout << "Time Control:   " << matchConfig.timeControl << std::endl;
   std::cout << "Rounds:         " << matchConfig.rounds << std::endl;
+  std::cout << "Concurrency:    " << matchConfig.concurrency << std::endl;
+  std::cout << "Batch Size:     " << batchSize << (matchConfig.batchSize == 0 ? " (auto)" : "") << std::endl;
   std::cout << "Output PGN:     " << matchConfig.outputPgn << std::endl;
-  std::cout << std::endl;
 
-  // Validate configuration
+  // Rounds must be divisible by batch size for even distribution
+  if (matchConfig.rounds % batchSize != 0) {
+    throw std::runtime_error("Rounds (" + std::to_string(matchConfig.rounds) +
+                             ") must be divisible by batch size (" + std::to_string(batchSize) + ")");
+  }
+
+  // Validate configuration first
   validateMatchConfig(matchConfig);
 
   // Get UCI engine names by briefly starting each engine
-  // This validates engines work and gets canonical names from UCI protocol
-  std::cout << "Validating engines and getting UCI names..." << std::endl;
+  std::cout << "\nValidating engines and getting UCI names..." << std::endl;
   if (!matchConfig.engine1Options.empty()) {
     std::cout << "  Engine 1 UCI options: " << matchConfig.engine1Options << std::endl;
   }
@@ -79,28 +96,163 @@ MatchResult MatchRunner::runMatch(const MatchConfig& matchConfig) const {
   }
   const std::string engine2Name = getUciEngineName(matchConfig.engine2Path, matchConfig.engine2Options);
   std::cout << "  Engine 2: " << engine2Name << std::endl;
-  std::cout << std::endl;
 
-  // Build cutechess-cli command
-  const std::string command = buildCutechessCommand(matchConfig, engine1Name, engine2Name);
-  std::cout << "Executing cutechess-cli..." << std::endl;
-  std::cout << "Command: " << command << std::endl;
-  std::cout << std::endl;
+  // Check for saved state (resumable match)
+  const std::string stateFilePath = getStateFilePath(matchConfig);
+  MatchState currentState;
+  currentState.matchName = matchConfig.name;
+  currentState.totalRounds = matchConfig.rounds;
+  currentState.completedRounds = 0;
+  currentState.engine1Wins = 0;
+  currentState.engine2Wins = 0;
+  currentState.draws = 0;
+  currentState.engine1Name = engine1Name;
+  currentState.engine2Name = engine2Name;
 
-  // Execute cutechess-cli
-  const auto startTime = system_clock::now();
-  std::string output;
-  if (!executeCutechess(command, output)) {
-    throw std::runtime_error("cutechess-cli execution failed");
+  if (loadMatchState(stateFilePath, currentState)) {
+    // Validate state matches current config
+    if (currentState.totalRounds == matchConfig.rounds) {
+      std::cout << "\n*** RESUMING MATCH ***" << std::endl;
+      std::cout << "  State file:        " << stateFilePath << std::endl;
+      std::cout << "  Completed rounds:  " << currentState.completedRounds << std::endl;
+      std::cout << "  Remaining rounds:  " << (matchConfig.rounds - currentState.completedRounds) << std::endl;
+      std::cout << "  Current score:     " << currentState.engine1Wins << " - "
+                << currentState.engine2Wins << " - " << currentState.draws
+                << " (W-L-D)" << std::endl;
+    } else {
+      std::cout << "\n  State file found but totalRounds mismatch - starting fresh" << std::endl;
+      deleteMatchState(stateFilePath);
+      currentState.completedRounds = 0;
+      currentState.engine1Wins = 0;
+      currentState.engine2Wins = 0;
+      currentState.draws = 0;
+    }
   }
-  const auto endTime = system_clock::now();
-  const auto duration = duration_cast<milliseconds>(endTime - startTime).count();
 
-  // Parse output
-  MatchResult result = parseOutput(output, matchConfig, engine1Name, engine2Name);
-  result.durationMs = duration;
+  // Check if already complete
+  if (currentState.completedRounds >= matchConfig.rounds) {
+    std::cout << "\n*** MATCH ALREADY COMPLETE ***" << std::endl;
+    std::cout << "  All " << matchConfig.rounds << " games have been played." << std::endl;
+    std::cout << "  Delete state file to restart: " << stateFilePath << std::endl;
 
-  std::cout << "\n------------------------------------------------------------------" << std::endl;
+    // Build result from saved state
+    MatchResult result;
+    result.arenaVersion = arenaConfig.version;
+    result.timestamp = getCurrentTimestamp();
+    result.matchName = matchConfig.name;
+    result.timeControl = matchConfig.timeControl;
+    result.rounds = matchConfig.rounds;
+    result.engine1Name = currentState.engine1Name;
+    result.engine1Version = matchConfig.engine1Version;
+    result.engine1Path = matchConfig.engine1Path;
+    result.engine2Name = currentState.engine2Name;
+    result.engine2Version = matchConfig.engine2Version;
+    result.engine2Path = matchConfig.engine2Path;
+    result.pgnPath = matchConfig.outputPgn;
+    result.engine1Wins = currentState.engine1Wins;
+    result.engine2Wins = currentState.engine2Wins;
+    result.draws = currentState.draws;
+
+    const int totalGames = result.engine1Wins + result.draws + result.engine2Wins;
+    result.engine1Score = result.engine1Wins + result.draws * 0.5;
+    result.engine2Score = result.engine2Wins + result.draws * 0.5;
+    if (totalGames > 0) {
+      const double score = result.engine1Score / totalGames;
+      result.eloDifference = calculateEloDifference(score, totalGames);
+    }
+    result.durationMs = 0;
+
+    // Delete state file since match is complete
+    deleteMatchState(stateFilePath);
+
+    return result;
+  }
+
+  // Calculate batches
+  const int totalBatches = matchConfig.rounds / batchSize;
+  const int completedBatches = currentState.completedRounds / batchSize;
+  const int remainingBatches = totalBatches - completedBatches;
+
+  std::cout << "\n  Running " << remainingBatches << " batches of " << batchSize << " games each..." << std::endl;
+  std::cout << std::endl;
+
+  const auto matchStartTime = system_clock::now();
+
+  // Run batches
+  for (int batch = completedBatches; batch < totalBatches; ++batch) {
+    const int batchNumber = batch + 1;
+    const int gamesCompleted = currentState.completedRounds;
+
+    std::cout << "------------------------------------------------------------------" << std::endl;
+    std::cout << "Batch " << batchNumber << "/" << totalBatches
+              << " (games " << (gamesCompleted + 1) << "-" << (gamesCompleted + batchSize)
+              << " of " << matchConfig.rounds << ")" << std::endl;
+    std::cout << "  Current score: " << currentState.engine1Wins << " - "
+              << currentState.engine2Wins << " - " << currentState.draws << std::endl;
+
+    // Build command for this batch
+    const std::string command = buildCutechessCommand(matchConfig, engine1Name, engine2Name, batchSize);
+
+    // Execute cutechess-cli for this batch
+    std::string output;
+    if (!executeCutechess(command, output)) {
+      // Save state before throwing so we can resume
+      currentState.timestamp = getCurrentTimestamp();
+      saveMatchState(stateFilePath, currentState);
+      throw std::runtime_error("cutechess-cli execution failed - state saved for resumption");
+    }
+
+    // Parse batch result
+    MatchResult batchResult = parseOutput(output, matchConfig, engine1Name, engine2Name);
+
+    // Update cumulative state
+    currentState.completedRounds += batchSize;
+    currentState.engine1Wins += batchResult.engine1Wins;
+    currentState.engine2Wins += batchResult.engine2Wins;
+    currentState.draws += batchResult.draws;
+    currentState.timestamp = getCurrentTimestamp();
+
+    // Save state after each batch (enables resume on interrupt)
+    saveMatchState(stateFilePath, currentState);
+
+    std::cout << "  Batch result: +" << batchResult.engine1Wins << " - "
+              << batchResult.engine2Wins << " - " << batchResult.draws << std::endl;
+  }
+
+  const auto matchEndTime = system_clock::now();
+  const auto totalDuration = duration_cast<milliseconds>(matchEndTime - matchStartTime).count();
+
+  // Build final result
+  MatchResult result;
+  result.arenaVersion = arenaConfig.version;
+  result.timestamp = getCurrentTimestamp();
+  result.matchName = matchConfig.name;
+  result.timeControl = matchConfig.timeControl;
+  result.rounds = matchConfig.rounds;
+  result.engine1Name = engine1Name;
+  result.engine1Version = matchConfig.engine1Version;
+  result.engine1Path = matchConfig.engine1Path;
+  result.engine2Name = engine2Name;
+  result.engine2Version = matchConfig.engine2Version;
+  result.engine2Path = matchConfig.engine2Path;
+  result.pgnPath = matchConfig.outputPgn;
+  result.engine1Wins = currentState.engine1Wins;
+  result.engine2Wins = currentState.engine2Wins;
+  result.draws = currentState.draws;
+  result.durationMs = totalDuration;
+
+  const int totalGames = result.engine1Wins + result.draws + result.engine2Wins;
+  result.engine1Score = result.engine1Wins + result.draws * 0.5;
+  result.engine2Score = result.engine2Wins + result.draws * 0.5;
+  if (totalGames > 0) {
+    const double score = result.engine1Score / totalGames;
+    result.eloDifference = calculateEloDifference(score, totalGames);
+  }
+
+  // Match complete - delete state file
+  deleteMatchState(stateFilePath);
+
+  std::cout << "\n==================================================================" << std::endl;
   std::cout << "Match Complete: " << matchConfig.name << std::endl;
   std::cout << "  " << result.engine1Name << ": " << result.engine1Wins << " wins, ";
   std::cout << result.draws << " draws, " << result.engine2Wins << " losses" << std::endl;
@@ -161,7 +313,8 @@ std::vector<MatchResult> MatchRunner::runAllMatches() const {
 
 std::string MatchRunner::buildCutechessCommand(const MatchConfig& matchConfig,
                                                const std::string& engine1Name,
-                                               const std::string& engine2Name) const {
+                                               const std::string& engine2Name,
+                                               const int rounds) const {
   std::ostringstream cmd;
 
   // Use quoted path for cutechess-cli
@@ -214,8 +367,8 @@ std::string MatchRunner::buildCutechessCommand(const MatchConfig& matchConfig,
   // Common settings
   cmd << " -each proto=uci tc=" << matchConfig.timeControl;
 
-  // Rounds
-  cmd << " -rounds " << matchConfig.rounds;
+  // Rounds (may be less than config if resuming a match)
+  cmd << " -rounds " << rounds;
 
   // Opening book
   if (!matchConfig.openingBook.empty()) {
@@ -453,6 +606,89 @@ std::string MatchRunner::getCurrentTimestamp() {
   std::ostringstream oss;
   oss << std::put_time(&tm, "%Y-%m-%dT%H:%M:%SZ");
   return oss.str();
+}
+
+std::string MatchRunner::getStateFilePath(const MatchConfig& matchConfig) {
+  // State files go in results/matches/.state/
+  const std::filesystem::path pgnPath(matchConfig.outputPgn);
+  const std::filesystem::path stateDir = pgnPath.parent_path() / ".state";
+  const std::string stateFileName = pgnPath.stem().string() + ".state.json";
+  return (stateDir / stateFileName).string();
+}
+
+bool MatchRunner::loadMatchState(const std::string& stateFilePath, MatchState& state) {
+  if (!std::filesystem::exists(stateFilePath)) {
+    return false;
+  }
+
+  std::ifstream file(stateFilePath);
+  if (!file.is_open()) {
+    return false;
+  }
+
+  // Simple JSON parsing (no external library needed for this simple format)
+  std::string content((std::istreambuf_iterator<char>(file)),
+                       std::istreambuf_iterator<char>());
+  file.close();
+
+  // Parse fields using regex
+  const std::regex matchNameRegex("\"matchName\"\\s*:\\s*\"([^\"]+)\"");
+  const std::regex totalRoundsRegex("\"totalRounds\"\\s*:\\s*(\\d+)");
+  const std::regex completedRoundsRegex("\"completedRounds\"\\s*:\\s*(\\d+)");
+  const std::regex engine1WinsRegex("\"engine1Wins\"\\s*:\\s*(\\d+)");
+  const std::regex engine2WinsRegex("\"engine2Wins\"\\s*:\\s*(\\d+)");
+  const std::regex drawsRegex("\"draws\"\\s*:\\s*(\\d+)");
+  const std::regex engine1NameRegex("\"engine1Name\"\\s*:\\s*\"([^\"]+)\"");
+  const std::regex engine2NameRegex("\"engine2Name\"\\s*:\\s*\"([^\"]+)\"");
+  const std::regex timestampRegex("\"timestamp\"\\s*:\\s*\"([^\"]+)\"");
+
+  std::smatch match;
+  if (std::regex_search(content, match, matchNameRegex)) state.matchName = match[1].str();
+  if (std::regex_search(content, match, totalRoundsRegex)) state.totalRounds = std::stoi(match[1].str());
+  if (std::regex_search(content, match, completedRoundsRegex)) state.completedRounds = std::stoi(match[1].str());
+  if (std::regex_search(content, match, engine1WinsRegex)) state.engine1Wins = std::stoi(match[1].str());
+  if (std::regex_search(content, match, engine2WinsRegex)) state.engine2Wins = std::stoi(match[1].str());
+  if (std::regex_search(content, match, drawsRegex)) state.draws = std::stoi(match[1].str());
+  if (std::regex_search(content, match, engine1NameRegex)) state.engine1Name = match[1].str();
+  if (std::regex_search(content, match, engine2NameRegex)) state.engine2Name = match[1].str();
+  if (std::regex_search(content, match, timestampRegex)) state.timestamp = match[1].str();
+
+  return state.completedRounds > 0; // Only valid if we have some progress
+}
+
+void MatchRunner::saveMatchState(const std::string& stateFilePath, const MatchState& state) {
+  // Ensure state directory exists
+  const std::filesystem::path statePath(stateFilePath);
+  if (statePath.has_parent_path()) {
+    std::filesystem::create_directories(statePath.parent_path());
+  }
+
+  std::ofstream file(stateFilePath);
+  if (!file.is_open()) {
+    std::cerr << "Warning: Could not save match state to " << stateFilePath << std::endl;
+    return;
+  }
+
+  // Write simple JSON format
+  file << "{\n";
+  file << "  \"matchName\": \"" << state.matchName << "\",\n";
+  file << "  \"totalRounds\": " << state.totalRounds << ",\n";
+  file << "  \"completedRounds\": " << state.completedRounds << ",\n";
+  file << "  \"engine1Wins\": " << state.engine1Wins << ",\n";
+  file << "  \"engine2Wins\": " << state.engine2Wins << ",\n";
+  file << "  \"draws\": " << state.draws << ",\n";
+  file << "  \"engine1Name\": \"" << state.engine1Name << "\",\n";
+  file << "  \"engine2Name\": \"" << state.engine2Name << "\",\n";
+  file << "  \"timestamp\": \"" << state.timestamp << "\"\n";
+  file << "}\n";
+
+  file.close();
+}
+
+void MatchRunner::deleteMatchState(const std::string& stateFilePath) {
+  if (std::filesystem::exists(stateFilePath)) {
+    std::filesystem::remove(stateFilePath);
+  }
 }
 
 } // namespace arena

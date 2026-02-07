@@ -289,6 +289,33 @@ See [Configuration.md](Configuration.md) for detailed reference.
 3. Use `--engines` to list available engines
 4. Look in `results/testsuites/` and `results/matches/` for existing files
 
+### Match shows "RESUMING MATCH" or "ALREADY COMPLETE"
+
+**Expected behavior:** Matches are automatically resumable via state files. Matches run in batches of 2 games (one color swap pair) and save state after each batch.
+
+**Console output when resuming:**
+```
+*** RESUMING MATCH ***
+  State file:        results/matches/.state/v1.1_vs_v1.0.state.json
+  Completed rounds:  48
+  Remaining rounds:  52
+  Current score:     25 - 15 - 8 (W-L-D)
+```
+
+**Console output when complete:**
+```
+*** MATCH ALREADY COMPLETE ***
+  All 100 games have been played.
+  Delete state file to restart: results/matches/.state/v1.1_vs_v1.0.state.json
+```
+
+**To restart a match from scratch:**
+1. Delete the state file shown in the console output
+2. Optionally delete the output PGN file
+3. Re-run the match
+
+**Note:** Rounds must be an even number (matches run in pairs for color fairness).
+
 ---
 
 ## Command-Line Reference
@@ -355,8 +382,10 @@ Examples:
 
 💡 **Run matches overnight** - 100+ rounds can take hours depending on time control
 
+💡 **Matches are resumable** - matches run in batches of 2 games and save state after each batch. If interrupted, just run again to continue. State is saved to `results/matches/.state/`. Delete the state file to restart a match from scratch.
+
 💡 **Use filtering options** (`--testsuites-only`, `--matches-only`) to focus on specific result types
 
 ---
 
-*Last updated: 2026-02-06*
+*Last updated: 2026-02-07*

@@ -93,6 +93,19 @@
 
 namespace arena {
 
+/// State of a match in progress (for resumption)
+struct MatchState {
+  std::string matchName;          ///< Match identifier
+  int totalRounds = 0;            ///< Total rounds configured
+  int completedRounds = 0;        ///< Rounds completed so far
+  int engine1Wins = 0;            ///< Engine 1 wins
+  int engine2Wins = 0;            ///< Engine 2 wins
+  int draws = 0;                  ///< Draw count
+  std::string engine1Name;        ///< Engine 1 UCI name
+  std::string engine2Name;        ///< Engine 2 UCI name
+  std::string timestamp;          ///< Last update timestamp
+};
+
 /// Executes engine-vs-engine matches via cutechess-cli
 class MatchRunner {
   // Allow test classes to access private methods
@@ -109,6 +122,11 @@ class MatchRunner {
   FRIEND_TEST(MatchRunnerParseTest, MetadataPopulated_Correctly);
   FRIEND_TEST(MatchRunnerParseTest, EloCalculation_Draw);
   FRIEND_TEST(MatchRunnerParseTest, EloCalculation_Winning);
+  // State file tests for match resumption
+  FRIEND_TEST(MatchRunnerStateTest, GetStateFilePath_ReturnsCorrectPath);
+  FRIEND_TEST(MatchRunnerStateTest, SaveAndLoadMatchState_RoundTrip);
+  FRIEND_TEST(MatchRunnerStateTest, LoadMatchState_NonexistentFile);
+  FRIEND_TEST(MatchRunnerStateTest, DeleteMatchState_RemovesFile);
 
 public:
   /// Creates a MatchRunner with the given configuration
@@ -133,10 +151,12 @@ private:
   /// @param matchConfig Match configuration
   /// @param engine1Name UCI name of engine 1
   /// @param engine2Name UCI name of engine 2
+  /// @param rounds Number of rounds to play (may differ from config if resuming)
   /// @return Command line string for subprocess execution
   std::string buildCutechessCommand(const MatchConfig& matchConfig,
                                     const std::string& engine1Name,
-                                    const std::string& engine2Name) const;
+                                    const std::string& engine2Name,
+                                    int rounds) const;
 
   /// Executes cutechess-cli command and captures output
   /// @param command Full cutechess-cli command line
@@ -181,6 +201,26 @@ private:
   /// Generates current timestamp in ISO 8601 format
   /// @return Timestamp string (e.g., "2026-02-01T14:30:22Z")
   static std::string getCurrentTimestamp();
+
+  /// Gets the state file path for a match
+  /// @param matchConfig Match configuration
+  /// @return Path to state file (e.g., results/matches/.state/matchname.state.json)
+  static std::string getStateFilePath(const MatchConfig& matchConfig);
+
+  /// Loads match state from file if it exists
+  /// @param stateFilePath Path to state file
+  /// @param state [out] Loaded state
+  /// @return true if state was loaded, false if no state file exists
+  static bool loadMatchState(const std::string& stateFilePath, MatchState& state);
+
+  /// Saves match state to file
+  /// @param stateFilePath Path to state file
+  /// @param state State to save
+  static void saveMatchState(const std::string& stateFilePath, const MatchState& state);
+
+  /// Deletes match state file (called when match completes)
+  /// @param stateFilePath Path to state file
+  static void deleteMatchState(const std::string& stateFilePath);
 };
 
 } // namespace arena
