@@ -623,12 +623,15 @@ matches:
   - name: "v1.1_vs_FrankyGo_blitz_100"                 # Match identifier
     engine1Path: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"  # First engine
     engine1Version: "v1.1"                             # Engine 1 version (required)
+    engine1Options: "OwnBook=false"                    # UCI options for engine 1 (optional)
     engine2Path: "D:/Games/FrankyChess/FrankyGo/FrankyGo.exe"  # Second engine
     engine2Version: "v1.0.3"                           # Engine 2 version (required)
+    engine2Options: "OwnBook=false"                    # UCI options for engine 2 (optional)
     openingBook: "books/8moves_GM_LB.pgn"              # Opening book PGN
     timeControl: "60+0.6"                              # Time control
     rounds: 100                                        # Number of games
     concurrency: 4                                     # Parallel games
+    batchSize: 0                                       # Games per batch (0=auto)
     outputPgn: "results/matches/v1.1_vs_FrankyGo_blitz_100.pgn"  # PGN output
 ```
 
@@ -869,6 +872,62 @@ concurrency: 8     # 8 games at once (if CPU allows)
 
 ---
 
+#### `batchSize` (Optional)
+
+**Type:** Integer
+
+**Purpose:** Number of games per batch for resumable match execution
+
+**Default:** 0 (auto-calculate: `max(2, concurrency)` rounded up to even)
+
+**Range:** Must be even, >= 2
+
+**Examples:**
+```yaml
+batchSize: 0       # Auto-calculate (default, recommended)
+batchSize: 2       # Minimum batch size (finest granularity)
+batchSize: 4       # Match concurrency of 4
+batchSize: 10      # Larger batches (less overhead, coarser resume points)
+```
+
+**How it works:**
+- Matches run in batches of `batchSize` games
+- State is saved after each batch to `results/matches/.state/`
+- If interrupted (Ctrl+C), resume from last saved state
+- On completion, state file is automatically deleted
+
+**Auto-calculation (batchSize: 0):**
+- Takes `max(2, concurrency)`
+- Rounds up to next even number (for color fairness)
+- Example: concurrency=3 → batchSize=4
+
+**Constraints:**
+- Must be even (each batch has equal games per color)
+- `rounds` must be divisible by `batchSize`
+- Should be >= `concurrency` to fully utilize parallel games
+
+**Resumable matches:**
+```
+# If interrupted at batch 25 of 50:
+*** RESUMING MATCH ***
+  State file:        results/matches/.state/v1.1_vs_v1.0.state.json
+  Completed rounds:  50
+  Remaining rounds:  50
+  Current score:     28 - 18 - 4 (W-L-D)
+```
+
+**To restart a match from scratch:**
+1. Delete the state file in `results/matches/.state/`
+2. Optionally delete the output PGN file
+3. Re-run the match
+
+**Recommendations:**
+- Leave as 0 (auto) for most cases
+- Set explicitly if you need specific resume granularity
+- Larger batches = less overhead, but more games lost on interrupt
+
+---
+
 #### `outputPgn` (Required)
 
 **Type:** String (path)
@@ -903,31 +962,46 @@ matches:
   # Quick debug match
   - name: "v1.1_vs_v1.0_debug"
     engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+    engine1Version: "v1.1"
+    engine1Options: "OwnBook=false"
     engine2Path: "Release/FrankyCPP_V1.0/FrankyCPP_v1.0.exe"
+    engine2Version: "v1.0"
+    engine2Options: "OwnBook=false"
     openingBook: "books/test_openings.pgn"
     timeControl: "10+0.1"
     rounds: 10
     concurrency: 1
+    batchSize: 2                  # Minimum batch size for fine-grained resume
     outputPgn: "results/matches/debug_match.pgn"
 
-  # Standard blitz match
+  # Standard blitz match (resumable)
   - name: "v1.1_vs_v1.0_blitz"
     engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+    engine1Version: "v1.1"
+    engine1Options: "OwnBook=false"
     engine2Path: "Release/FrankyCPP_V1.0/FrankyCPP_v1.0.exe"
+    engine2Version: "v1.0"
+    engine2Options: "OwnBook=false"
     openingBook: "books/8moves_GM_LB.pgn"
     timeControl: "60+0.6"
     rounds: 100
     concurrency: 4
+    batchSize: 0                  # Auto: will use 4 (matches concurrency)
     outputPgn: "results/matches/v1.1_vs_v1.0_blitz.pgn"
 
   # Thorough rapid match
   - name: "v1.1_vs_v1.0_rapid"
     engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+    engine1Version: "v1.1"
+    engine1Options: "OwnBook=false"
     engine2Path: "Release/FrankyCPP_V1.0/FrankyCPP_v1.0.exe"
+    engine2Version: "v1.0"
+    engine2Options: "OwnBook=false"
     openingBook: "books/8moves_GM_LB.pgn"
     timeControl: "180+2"
     rounds: 500
     concurrency: 2
+    batchSize: 10                 # Larger batches for less overhead
     outputPgn: "results/matches/v1.1_vs_v1.0_rapid.pgn"
 ```
 
@@ -947,21 +1021,29 @@ testSuites:
     timePerMove: 5000
     maxDepth: 30
     enginePath: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+    uciOptions: "OwnBook=false"
   
   - name: "WAC"
     epdPath: "test/testsets/wac.epd"
     timePerMove: 5000
     maxDepth: 30
     enginePath: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+    uciOptions: "OwnBook=false"
+    parallelWorkers: 4
 
 matches:
   - name: "v1.1_vs_v1.0_blitz"
     engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+    engine1Version: "v1.1"
+    engine1Options: "OwnBook=false"
     engine2Path: "Release/FrankyCPP_V1.0/FrankyCPP_v1.0.exe"
+    engine2Version: "v1.0"
+    engine2Options: "OwnBook=false"
     openingBook: "books/8moves_GM_LB.pgn"
     timeControl: "60+0.6"
     rounds: 100
     concurrency: 4
+    batchSize: 0                  # Auto-calculate for resumable matches
     outputPgn: "results/matches/v1.1_vs_v1.0_blitz.pgn"
 ```
 
@@ -1018,4 +1100,4 @@ Example: cd D:\_DEV\FrankyCPP && .\cmake-build-win-release\src\FrankyCPP_v1.1_Ar
 
 ---
 
-*Last updated: 2026-02-01*
+*Last updated: 2026-02-07*
