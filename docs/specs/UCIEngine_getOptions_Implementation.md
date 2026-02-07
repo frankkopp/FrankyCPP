@@ -2,7 +2,9 @@
 
 ## Summary
 
-Implemented the `getOptions()` method for `UCIEngine` class to retrieve current option values from the engine by sending the `uci` command and parsing the response. This enables **verification** that UCI options were actually applied by the engine.
+Implemented the `getOptions()` method for `UCIEngine` class to retrieve option values from the engine by sending the `uci` command and parsing the response.
+
+**⚠️ Important Limitation:** Reliable verification of applied options is **only possible with FrankyCPP** via its non-standard `current` field extension. For standard UCI engines (Stockfish, etc.), `getOptions()` returns initial defaults only—there is no UCI-standard way to query current option values. See "Key Insight" section below for details.
 
 **Implementation Date:** 2026-02-04
 
@@ -16,14 +18,16 @@ Implemented the `getOptions()` method for `UCIEngine` class to retrieve current 
 std::map<std::string, std::string> UCIEngine::getOptions();
 ```
 
-**Returns:** Map of option names to their current values
+**Returns:** Map of option names to their values
+- **FrankyCPP:** Actual current values (via `current` field)
+- **Other engines:** Initial default values only (best-effort, cannot verify changes)
 
 **Behavior:**
 1. Sends `uci` command to engine
 2. Reads response lines until `uciok`
 3. Parses each `option name <name> type <type> default <value> ...` line
-4. Extracts option name and current value (from `default` field)
-5. Returns map of all options with their current values
+4. Extracts option name and value (prefers `current` field if present, falls back to `default`)
+5. Returns map of all options with their values
 
 ### Key Insight: FrankyCPP Extension vs UCI Standard
 
@@ -69,10 +73,11 @@ There is no way to verify this with standard UCI protocol!
 class UCIEngine {
   // ...existing methods...
   
-  /// Get current option values from engine
-  /// Sends "uci" command again and parses "option" lines to extract current values.
-  /// The "default" field contains the current value (not the initial default).
-  /// @return Map of option names to current values
+  /// Get option values from engine by re-sending "uci" and parsing option lines.
+  /// - For FrankyCPP: Returns actual current values via non-standard "current" field
+  /// - For other engines: Returns initial defaults only ("default" field is a fallback
+  ///   that does NOT reflect values changed via setoption - UCI has no standard query mechanism)
+  /// @return Map of option names to values (current for FrankyCPP, defaults for others)
   std::map<std::string, std::string> getOptions();
 };
 ```
@@ -313,18 +318,19 @@ if (options["Hash"] != "512") {
 
 ## Benefits
 
-### ✅ Verification
-- Can confirm options were actually applied
+### ✅ Verification (FrankyCPP Only)
+- Can confirm options were actually applied (via `current` field)
 - Not just silently ignored by engine
 - Catch configuration errors early
+- ⚠️ **Note:** Only works with FrankyCPP's non-standard `current` field extension
 
 ### ✅ Debugging
-- See all current option values
+- See all current option values (FrankyCPP) or defaults (other engines)
 - Compare expected vs actual
 - Identify option name typos
 
 ### ✅ Testing
-- Integration tests can verify correct configuration
+- Integration tests can verify correct configuration (with FrankyCPP)
 - Detect if engine behavior changed
 - Validate test suite setup
 
@@ -487,19 +493,24 @@ cmake --build cmake-build-win-release --config Release
 
 **Implementation:** ✅ Complete
 - `getOptions()` method fully implemented
-- Parses UCI protocol correctly
+- Parses UCI protocol correctly (prefers `current` field, falls back to `default`)
 - Handles all option types and edge cases
 
 **Testing:** ✅ Comprehensive
 - 23 total tests (20 original + 3 new)
-- Verification tests now functional
+- Verification tests functional (with FrankyCPP)
 - All parser tests still pass
 
-**Benefits:** ✅ Significant
-- Can verify options were applied
+**Benefits:** ✅ Useful for FrankyCPP Development
+- Can verify options were applied (FrankyCPP only via `current` field)
 - Better debugging capabilities
-- More reliable testing
-- Useful for future development
+- More reliable testing with FrankyCPP engine
+- For other engines: best-effort defaults only
+
+**Limitation:** ⚠️ UCI Protocol
+- Standard UCI has no way to query current option values
+- Only FrankyCPP's non-standard `current` field enables true verification
+- For other engines, must trust that `setoption` was accepted
 
 **Status:** Ready for production use! 🎉
 

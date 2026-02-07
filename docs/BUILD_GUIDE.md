@@ -416,7 +416,7 @@ Release/
 
 The packaging process automatically excludes:
 - **Cache files**: `*.cache.*.bin` (platform-specific, regenerated on first run)
-- **Large test files**: `superbook_xl.pgn` (600+ MB, not needed for distribution)
+- **Large test files**: All `superbook*.pgn` files (large test-only files, not needed for distribution)
 - **Build artifacts**: Temporary files from compilation
 
 ### Git Tracking

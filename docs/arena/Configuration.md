@@ -762,7 +762,7 @@ engine2Version: "dev"        # Stockfish development build
 **Examples:**
 ```yaml
 openingBook: "books/8moves_GM_LB.pgn"     # 8-move GM openings
-openingBook: "books/superbook.pgn"        # Large opening book
+openingBook: "books/superbook.pgn"        # Large opening book (dev only, not in releases)
 openingBook: "books/test_openings.pgn"    # Custom test positions
 ```
 

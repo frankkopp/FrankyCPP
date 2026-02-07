@@ -13,7 +13,7 @@ file(GLOB_RECURSE ALL_FILES
     "${SOURCE_DIR}/*"
 )
 
-# Filter out cache files and superbook_xl.pgn
+# Filter out cache files and all superbook*.pgn (large test files, not for distribution)
 set(EXCLUDED_PATTERNS
     ".*\\.cache\\..*\\.bin$"
     "superbook.*\\.pgn$"

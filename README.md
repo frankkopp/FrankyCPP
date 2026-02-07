@@ -307,7 +307,7 @@ Release/
 
 **Notes:**
 - Cache files (`*.cache.*.bin`) are automatically excluded
-- Large test files (`superbook_xl.pgn`) are excluded
+- Large test files (`superbook*.pgn`) are excluded (test-only files, not for distribution)
 - The versioned folder is ignored by git (build artifact)
 - The ZIP file is tracked in git (distribution artifact)
 - Version number updates automatically when you bump the project version

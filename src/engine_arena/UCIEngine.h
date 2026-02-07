@@ -177,8 +177,11 @@ public:
   /// @param options Semicolon or space-separated "name=value" pairs
   void setUciOptions(const std::string& options);
 
-  /// Get current option values from engine (FrankyCPP extension)
-  /// @return Map of option names to current values
+  /// Get option values from engine by re-sending "uci" and parsing option lines.
+  /// - For FrankyCPP: Returns actual current values via non-standard "current" field
+  /// - For other engines: Returns initial defaults only ("default" field is a fallback
+  ///   that does NOT reflect values changed via setoption - UCI has no standard query mechanism)
+  /// @return Map of option names to values (current for FrankyCPP, defaults for others)
   std::map<std::string, std::string> getOptions();
 
 private:
