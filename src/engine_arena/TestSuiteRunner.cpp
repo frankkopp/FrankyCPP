@@ -60,7 +60,7 @@ namespace arena {
     std::string extractTestSuiteName(const std::string& configName, const std::string& epdPath) {
       // Prefer deriving from EPD filename if available
       if (!epdPath.empty()) {
-        std::filesystem::path path(epdPath);
+        const std::filesystem::path path(epdPath);
         std::string stem = path.stem().string();
         // Remove common suffixes like "_test", "_suite"
         // But keep the meaningful name
@@ -68,7 +68,7 @@ namespace arena {
       }
 
       // Fall back to parsing config name - remove engine version suffixes
-      std::regex suffixPattern(R"(^(.+?)(?:_v\d+(?:\.\d+)*|_FrankyGo|_Stockfish)$)");
+      const std::regex suffixPattern(R"(^(.+?)(?:_v\d+(?:\.\d+)*|_FrankyGo|_Stockfish)$)");
       std::smatch match;
 
       if (std::regex_match(configName, match, suffixPattern)) {
@@ -174,12 +174,6 @@ namespace arena {
     std::cout << "Max Depth:         " << suiteConfig.maxDepth << std::endl;
     std::cout << "Engine:            " << suiteConfig.enginePath << std::endl;
     std::cout << "Position Isolation: " << (suiteConfig.isolatePositions ? "enabled" : "disabled") << std::endl;
-
-    // Warn if debugMode is enabled - it's ignored in parallel mode because
-    // interleaved UCI output from multiple engines would be unreadable
-    if (suiteConfig.debugMode) {
-      std::cout << "WARNING: debugMode is ignored in parallel execution (use parallelWorkers=1 for UCI logging)" << std::endl;
-    }
     std::cout << std::endl;
 
     // Validate EPD file exists
@@ -197,34 +191,43 @@ namespace arena {
 
     // Initialize result structure
     TestSuiteResult result;
-    result.arenaVersion  = arenaConfig.version;
-    result.timestamp     = getCurrentTimestamp();
-    result.epdPath       = suiteConfig.epdPath;
-    result.enginePath    = suiteConfig.enginePath;
-    result.totalTests    = static_cast<int>(epdTests.size());
-    result.passed        = 0;
-    result.failed        = 0;
-    result.skipped       = 0;
-    result.totalNodes    = 0;
-    result.totalTimeMs   = 0;
+    result.arenaVersion = arenaConfig.version;
+    result.timestamp    = getCurrentTimestamp();
+    result.epdPath      = suiteConfig.epdPath;
+    result.enginePath   = suiteConfig.enginePath;
+    result.totalTests   = static_cast<int>(epdTests.size());
+    result.passed       = 0;
+    result.failed       = 0;
+    result.skipped      = 0;
+    result.totalNodes   = 0;
+    result.totalTimeMs  = 0;
 
     // Start external UCI engine
     std::cout << "\nStarting UCI engine..." << std::endl;
     if (!suiteConfig.commandLineArgs.empty()) {
       std::cout << "Command-line arguments: " << suiteConfig.commandLineArgs << std::endl;
     }
+    if (suiteConfig.debugMode) {
+      std::cout << "Debug mode: ENABLED (printing all UCI communication)" << std::endl;
+    }
+    if (!suiteConfig.uciOptions.empty()) {
+      std::cout << "UCI options: " << suiteConfig.uciOptions << std::endl;
+    }
 
-    UCIEngine engine(suiteConfig.enginePath, suiteConfig.commandLineArgs);
+    // Pass uciOptions to constructor so they are sent BEFORE isready (before engine initializes)
+    UCIEngine engine(suiteConfig.enginePath, suiteConfig.commandLineArgs,
+                     suiteConfig.debugMode, suiteConfig.uciOptions);
 
     // Use configured engine version if provided, otherwise try to parse from UCI name
     result.engineName = engine.getEngineName();
     if (!suiteConfig.engineVersion.empty()) {
       result.engineVersion = suiteConfig.engineVersion;
-    } else {
+    }
+    else {
       // Fallback: try to parse version from UCI name (not reliable)
       auto [parsedName, parsedVersion] = parseEngineName(engine.getEngineName());
-      result.engineName = parsedName;
-      result.engineVersion = parsedVersion;
+      result.engineName                = parsedName;
+      result.engineVersion             = parsedVersion;
     }
 
     // Extract clean test suite name
@@ -237,16 +240,6 @@ namespace arena {
     std::cout << std::endl;
     std::cout << "Test Suite: " << result.testSuiteName << std::endl;
 
-    // Configure engine options
-    if (suiteConfig.debugMode) {
-      std::cout << "Debug mode: ENABLED (printing all UCI communication)" << std::endl;
-      engine.setDebugMode(true);
-    }
-
-    if (!suiteConfig.uciOptions.empty()) {
-      std::cout << "Setting UCI options: " << suiteConfig.uciOptions << std::endl;
-      engine.setUciOptions(suiteConfig.uciOptions);
-    }
 
     std::cout << "\n------------------------------------------------------------------" << std::endl;
 
@@ -412,6 +405,12 @@ namespace arena {
     std::cout << "Max Depth:         " << suiteConfig.maxDepth << std::endl;
     std::cout << "Engine:            " << suiteConfig.enginePath << std::endl;
     std::cout << "Position Isolation: " << (suiteConfig.isolatePositions ? "enabled" : "disabled") << std::endl;
+
+    // Warn if debugMode is enabled - it's ignored in parallel mode because
+    // interleaved UCI output from multiple engines would be unreadable
+    if (suiteConfig.debugMode) {
+      std::cout << "WARNING: debugMode is ignored in parallel execution (use parallelWorkers=1 for UCI logging)" << std::endl;
+    }
     std::cout << std::endl;
 
     // Validate EPD file exists
@@ -443,19 +442,20 @@ namespace arena {
     // shutdown issues on Windows (thread_local destructors can deadlock when
     // joining threads during thread exit)
     std::cout << "\nCreating " << numWorkers << " UCI engine instances..." << std::endl;
+    if (!suiteConfig.uciOptions.empty()) {
+      std::cout << "UCI options: " << suiteConfig.uciOptions << std::endl;
+    }
     std::vector<std::unique_ptr<UCIEngine>> engines;
     engines.reserve(numWorkers);
     for (int w = 0; w < numWorkers; ++w) {
-      auto engine = std::make_unique<UCIEngine>(suiteConfig.enginePath, suiteConfig.commandLineArgs);
+      // Pass uciOptions to constructor so they are sent BEFORE isready (before engine initializes)
+      // debugMode is false for parallel execution (output would be interleaved)
+      auto engine = std::make_unique<UCIEngine>(suiteConfig.enginePath, suiteConfig.commandLineArgs,
+                                                false, suiteConfig.uciOptions);
 
       // Capture engine name from first engine
       if (w == 0) {
         engineName = engine->getEngineName();
-      }
-
-      // Configure engine options
-      if (!suiteConfig.uciOptions.empty()) {
-        engine->setUciOptions(suiteConfig.uciOptions);
       }
 
       engines.push_back(std::move(engine));
@@ -553,22 +553,23 @@ namespace arena {
 
     // Use configured engine version if provided, otherwise try to parse from UCI name
     if (!suiteConfig.engineVersion.empty()) {
-      result.engineName = engineName;  // Use full UCI name
+      result.engineName    = engineName;// Use full UCI name
       result.engineVersion = suiteConfig.engineVersion;
-    } else {
+    }
+    else {
       // Fallback: try to parse version from UCI name (not reliable)
       auto [parsedEngineName, parsedEngineVersion] = parseEngineName(engineName);
-      result.engineName = parsedEngineName;
-      result.engineVersion = parsedEngineVersion;
+      result.engineName                            = parsedEngineName;
+      result.engineVersion                         = parsedEngineVersion;
     }
 
-    result.totalTests    = totalPositions;
-    result.passed        = passedCount;
-    result.failed        = failedCount;
-    result.skipped       = 0;
-    result.totalNodes    = totalNodes;
-    result.totalTimeMs   = totalTimeMs;
-    result.details       = std::move(results);
+    result.totalTests  = totalPositions;
+    result.passed      = passedCount;
+    result.failed      = failedCount;
+    result.skipped     = 0;
+    result.totalNodes  = totalNodes;
+    result.totalTimeMs = totalTimeMs;
+    result.details     = std::move(results);
 
     // Print summary
     std::cout << "\n------------------------------------------------------------------" << std::endl;
@@ -598,7 +599,7 @@ namespace arena {
     UCIEngine& engine,
     const EpdTest& test,
     const TestSuiteConfig& config,
-    int testNumber) const {
+    int testNumber) {
 
     TestCaseDetail detail;
     detail.testId = test.getId().empty() ? ("Test" + std::to_string(testNumber)) : test.getId();

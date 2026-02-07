@@ -113,16 +113,21 @@ class UCIEngine {
   std::atomic<bool> stopping_{false};                         ///< Signal to stop I/O
 
   // Configuration
-  milliseconds searchTimeout_{30000};                         ///< Default 30 second timeout
+  milliseconds initTimeout_{120000};                          ///< Default 2 minute timeout for initialization (book loading, etc.)
+  milliseconds searchTimeout_{30000};                         ///< Default 30 second timeout for search operations
   bool debugMode_{false};                                     ///< Debug mode: print all UCI communication
+  std::string pendingUciOptions_;                             ///< UCI options to send before first isready
 
 public:
   // Constructors/Destructor
   /// Construct and initialize UCI engine
   /// @param enginePath Path to UCI engine executable
   /// @param commandLineArgs Command-line arguments to pass to engine (e.g., "--nobook -hash 128")
+  /// @param debugMode Enable debug output (prints all UCI communication)
+  /// @param uciOptions UCI options to send before initialization (e.g., "OwnBook=false; Hash=128")
   /// @throws std::runtime_error if engine not found or initialization fails
-  explicit UCIEngine(const std::string& enginePath, const std::string& commandLineArgs = "");
+  explicit UCIEngine(const std::string& enginePath, const std::string& commandLineArgs = "",
+                     bool debugMode = false, const std::string& uciOptions = "");
 
   /// Destructor - stops engine
   ~UCIEngine();
@@ -150,13 +155,17 @@ public:
   /// @return Search result with best move (empty on error)
   UCISearchResult search(milliseconds timeMs, Depth maxDepth);
 
+  /// Set timeout for initialization operations (uci, isready after start)
+  /// @param timeout Maximum time to wait for engine to initialize (default: 120s for book loading)
+  void setInitTimeout(const milliseconds timeout) { initTimeout_ = timeout; }
+
   /// Set absolute timeout for search operations
   /// @param timeout Maximum time to wait for engine response
-  void setSearchTimeout(milliseconds timeout) { searchTimeout_ = timeout; }
+  void setSearchTimeout(const milliseconds timeout) { searchTimeout_ = timeout; }
 
   /// Enable/disable debug mode (prints all UCI communication)
   /// @param debug True to enable debug output, false to disable
-  void setDebugMode(bool debug) { debugMode_ = debug; }
+  void setDebugMode(const bool debug) { debugMode_ = debug; }
 
   /// Send UCI option to engine
   /// @param name Option name
@@ -175,7 +184,7 @@ public:
 private:
   // Private helper methods
   /// Send command to engine
-  void sendCommand(const std::string& command);
+  void sendCommand(const std::string& command) const;
 
   /// Read line from engine (with timeout)
   /// @param line Output buffer for line
@@ -192,12 +201,15 @@ private:
   /// Initialize UCI protocol
   void initializeUCI();
 
+  /// Send pending UCI options (called during initialization, before isready)
+  void sendPendingOptions() const;
+
   /// Send "isready" and wait for "readyok"
   /// @return True if engine ready, false on timeout
   bool waitUntilReady();
 
   /// Parse info line for search statistics
-  void parseInfoLine(const std::string& line, UCISearchResult& result);
+  static void parseInfoLine(const std::string& line, UCISearchResult& result);
 
   /// Start async reading from pipe
   void startAsyncRead();

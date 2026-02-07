@@ -135,11 +135,11 @@ private:
   /// @param config Suite configuration
   /// @param testNumber Position number for display
   /// @return Test case detail with a result
-  TestCaseDetail runSinglePosition(
+  static TestCaseDetail runSinglePosition(
       UCIEngine& engine,
       const EpdTest& test,
       const TestSuiteConfig& config,
-      int testNumber) const;
+      int testNumber);
 
   /// Generates ISO 8601 timestamp for current time
   /// @return Timestamp string (e.g., "2026-02-01T14:30:22Z")

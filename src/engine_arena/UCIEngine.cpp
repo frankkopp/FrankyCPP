@@ -53,12 +53,23 @@ using std::chrono::duration_cast;
 // Constructors/Destructor
 //=============================================================================
 
-UCIEngine::UCIEngine(const std::string& enginePath, const std::string& commandLineArgs)
-    : enginePath_(enginePath) {
+UCIEngine::UCIEngine(const std::string& enginePath, const std::string& commandLineArgs,
+                     const bool debugMode, const std::string& uciOptions)
+    : enginePath_(enginePath), debugMode_(debugMode), pendingUciOptions_(uciOptions) {
 
   // Check if engine file exists
   if (!std::filesystem::exists(enginePath)) {
     throw std::runtime_error("UCI engine not found: " + enginePath);
+  }
+
+  if (debugMode_) {
+    std::cout << "[UCIEngine] Starting engine: " << enginePath << std::endl;
+    if (!commandLineArgs.empty()) {
+      std::cout << "[UCIEngine] Command-line args: " << commandLineArgs << std::endl;
+    }
+    if (!uciOptions.empty()) {
+      std::cout << "[UCIEngine] UCI options (before init): " << uciOptions << std::endl;
+    }
   }
 
   // Create async pipe for stdout (using io_context)
@@ -196,7 +207,7 @@ bool UCIEngine::setPosition(const std::string& fen) {
     return false;
   }
 
-  std::string command = "position fen " + fen;
+  const std::string command = "position fen " + fen;
   sendCommand(command);
   return waitUntilReady();
 }
@@ -222,12 +233,12 @@ UCISearchResult UCIEngine::search(milliseconds timeMs, Depth maxDepth) {
   sendCommand(cmd.str());
 
   // Scale timeout based on requested move time
-  constexpr milliseconds::rep timeoutFactor = 3;
   milliseconds effectiveTimeout = searchTimeout_;
   if (timeMs.count() > 0) {
-    const auto maxRep = std::numeric_limits<milliseconds::rep>::max();
+    constexpr milliseconds::rep timeoutFactor = 3;
+    constexpr auto maxRep = std::numeric_limits<milliseconds::rep>::max();
     const auto baseMs = timeMs.count();
-    const auto scaledMs = (baseMs > maxRep / timeoutFactor)
+    const auto scaledMs = baseMs > maxRep / timeoutFactor
         ? maxRep
         : baseMs * timeoutFactor;
     effectiveTimeout = milliseconds(scaledMs);
@@ -360,21 +371,21 @@ std::map<std::string, std::string> UCIEngine::getOptions() {
       break;
     }
 
-    size_t optionNamePos = line.find("option name ");
+    const size_t optionNamePos = line.find("option name ");
     if (optionNamePos != std::string::npos) {
-      size_t nameStart = optionNamePos + 12;
-      size_t typePos = line.find(" type ", nameStart);
+      const size_t nameStart = optionNamePos + 12;
+      const size_t typePos = line.find(" type ", nameStart);
 
       if (typePos == std::string::npos) {
         continue;
       }
 
       std::string name = line.substr(nameStart, typePos - nameStart);
-      size_t currentPos = line.find(" current ", typePos);
+      const size_t currentPos = line.find(" current ", typePos);
 
       if (currentPos != std::string::npos) {
-        size_t valueStart = currentPos + 9;
-        size_t valueEnd = line.find_first_of(" \t\r\n", valueStart);
+        const size_t valueStart = currentPos + 9;
+        const size_t valueEnd = line.find_first_of(" \t\r\n", valueStart);
 
         std::string value;
         if (valueEnd != std::string::npos) {
@@ -396,7 +407,7 @@ std::map<std::string, std::string> UCIEngine::getOptions() {
 // Private helper methods
 //=============================================================================
 
-void UCIEngine::sendCommand(const std::string& command) {
+void UCIEngine::sendCommand(const std::string& command) const {
   if (!pipeIn_ || !childProcess_ || !childProcess_->running()) {
     throw std::runtime_error("Engine process not running");
   }
@@ -454,6 +465,14 @@ void UCIEngine::handleRead(const boost::system::error_code& ec, const std::size_
     std::cout << "[UCIEngine] <<< " << line << std::endl;
   }
 
+  // Skip empty lines and engine log lines (lines starting with '[' are typically timestamps/log output)
+  // UCI protocol responses never start with '[', so this filters out noise
+  if (line.empty() || line[0] == '[') {
+    // Continue reading without queuing this line
+    startAsyncRead();
+    return;
+  }
+
   // Push to queue and notify waiters
   {
     std::lock_guard lock(queueMutex_);
@@ -465,7 +484,7 @@ void UCIEngine::handleRead(const boost::system::error_code& ec, const std::size_
   startAsyncRead();
 }
 
-bool UCIEngine::readLine(std::string& line, milliseconds timeoutMs) {
+bool UCIEngine::readLine(std::string& line, const milliseconds timeoutMs) {
   line.clear();
 
   std::unique_lock lock(queueMutex_);
@@ -483,7 +502,7 @@ bool UCIEngine::readLine(std::string& line, milliseconds timeoutMs) {
   return true;
 }
 
-bool UCIEngine::waitForResponse(const std::string& expectedResponse, milliseconds timeoutMs) {
+bool UCIEngine::waitForResponse(const std::string& expectedResponse, const milliseconds timeoutMs) {
   const auto deadline = steady_clock::now() + timeoutMs;
 
   while (steady_clock::now() < deadline) {
@@ -503,9 +522,13 @@ bool UCIEngine::waitForResponse(const std::string& expectedResponse, millisecond
 }
 
 void UCIEngine::initializeUCI() {
+  if (debugMode_) {
+    std::cout << "[UCIEngine] Initializing UCI protocol (timeout: " << initTimeout_.count() / 1000 << "s)..." << std::endl;
+  }
+
   sendCommand("uci");
 
-  const auto deadline = steady_clock::now() + milliseconds(5000);
+  const auto deadline = steady_clock::now() + initTimeout_;
   bool receivedUciOk = false;
 
   while (steady_clock::now() < deadline) {
@@ -534,14 +557,84 @@ void UCIEngine::initializeUCI() {
     engineName_ = "Unknown Engine";
   }
 
+  // Send pending UCI options BEFORE isready
+  // This ensures options like OwnBook=false take effect before engine initializes
+  if (!pendingUciOptions_.empty()) {
+    if (debugMode_) {
+      std::cout << "[UCIEngine] Sending UCI options before initialization..." << std::endl;
+    }
+    // Use setUciOptions to parse and send each option
+    // But we need to avoid the waitUntilReady() call in setOption
+    // So we'll send the raw commands directly here
+    sendPendingOptions();
+  }
+
   if (!waitUntilReady()) {
     throw std::runtime_error("Engine did not respond to 'isready'");
   }
 }
 
+void UCIEngine::sendPendingOptions() const {
+  // Parse and send each option without waiting for readyok after each one
+  // This is similar to setUciOptions but doesn't call waitUntilReady()
+
+  const std::string& options = pendingUciOptions_;
+  std::vector<std::string> pairs;
+
+  if (options.find(';') != std::string::npos) {
+    std::istringstream iss(options);
+    std::string pair;
+    while (std::getline(iss, pair, ';')) {
+      pair.erase(0, pair.find_first_not_of(" \t\r\n"));
+      pair.erase(pair.find_last_not_of(" \t\r\n") + 1);
+      if (!pair.empty()) {
+        pairs.push_back(pair);
+      }
+    }
+  } else {
+    if (options.find('=') != std::string::npos) {
+      pairs.push_back(options);
+    } else {
+      std::istringstream iss(options);
+      std::string pair;
+      while (iss >> pair) {
+        if (pair.find('=') != std::string::npos) {
+          pairs.push_back(pair);
+        }
+      }
+    }
+  }
+
+  for (const auto& pair : pairs) {
+    size_t eqPos = pair.find('=');
+    if (eqPos == std::string::npos) {
+      std::cerr << "WARNING: Invalid UCI option format (missing '='): " << pair << std::endl;
+      continue;
+    }
+
+    std::string name = pair.substr(0, eqPos);
+    std::string value = pair.substr(eqPos + 1);
+
+    name.erase(0, name.find_first_not_of(" \t"));
+    name.erase(name.find_last_not_of(" \t") + 1);
+    value.erase(0, value.find_first_not_of(" \t"));
+    value.erase(value.find_last_not_of(" \t") + 1);
+
+    if (name.empty() || value.empty()) {
+      std::cerr << "WARNING: Invalid UCI option (empty name or value): " << pair << std::endl;
+      continue;
+    }
+
+    // Send the setoption command directly without waiting for readyok
+    std::ostringstream cmd;
+    cmd << "setoption name " << name << " value " << value;
+    sendCommand(cmd.str());
+  }
+}
+
 bool UCIEngine::waitUntilReady() {
   sendCommand("isready");
-  return waitForResponse("readyok", milliseconds(5000));
+  return waitForResponse("readyok", initTimeout_);
 }
 
 void UCIEngine::parseInfoLine(const std::string& line, UCISearchResult& result) {
