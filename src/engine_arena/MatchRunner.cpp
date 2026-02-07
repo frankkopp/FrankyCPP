@@ -69,9 +69,15 @@ MatchResult MatchRunner::runMatch(const MatchConfig& matchConfig) const {
   // Get UCI engine names by briefly starting each engine
   // This validates engines work and gets canonical names from UCI protocol
   std::cout << "Validating engines and getting UCI names..." << std::endl;
-  const std::string engine1Name = getUciEngineName(matchConfig.engine1Path);
+  if (!matchConfig.engine1Options.empty()) {
+    std::cout << "  Engine 1 UCI options: " << matchConfig.engine1Options << std::endl;
+  }
+  const std::string engine1Name = getUciEngineName(matchConfig.engine1Path, matchConfig.engine1Options);
   std::cout << "  Engine 1: " << engine1Name << std::endl;
-  const std::string engine2Name = getUciEngineName(matchConfig.engine2Path);
+  if (!matchConfig.engine2Options.empty()) {
+    std::cout << "  Engine 2 UCI options: " << matchConfig.engine2Options << std::endl;
+  }
+  const std::string engine2Name = getUciEngineName(matchConfig.engine2Path, matchConfig.engine2Options);
   std::cout << "  Engine 2: " << engine2Name << std::endl;
   std::cout << std::endl;
 
@@ -170,10 +176,40 @@ std::string MatchRunner::buildCutechessCommand(const MatchConfig& matchConfig,
   // Engine 1 - use UCI name for identification
   cmd << " -engine cmd=\"" << matchConfig.engine1Path << "\"";
   cmd << " name=\"" << engine1Name << "\"";
+  // Add UCI options for engine 1 (format: option.Name=Value)
+  if (!matchConfig.engine1Options.empty()) {
+    // Parse semicolon-separated options and convert to cutechess format
+    std::istringstream iss(matchConfig.engine1Options);
+    std::string option;
+    while (std::getline(iss, option, ';')) {
+      // Trim whitespace
+      option.erase(0, option.find_first_not_of(" \t"));
+      option.erase(option.find_last_not_of(" \t") + 1);
+      if (!option.empty()) {
+        // Convert "Name=Value" to "option.Name=Value"
+        cmd << " option." << option;
+      }
+    }
+  }
 
   // Engine 2 - use UCI name for identification
   cmd << " -engine cmd=\"" << matchConfig.engine2Path << "\"";
   cmd << " name=\"" << engine2Name << "\"";
+  // Add UCI options for engine 2 (format: option.Name=Value)
+  if (!matchConfig.engine2Options.empty()) {
+    // Parse semicolon-separated options and convert to cutechess format
+    std::istringstream iss(matchConfig.engine2Options);
+    std::string option;
+    while (std::getline(iss, option, ';')) {
+      // Trim whitespace
+      option.erase(0, option.find_first_not_of(" \t"));
+      option.erase(option.find_last_not_of(" \t") + 1);
+      if (!option.empty()) {
+        // Convert "Name=Value" to "option.Name=Value"
+        cmd << " option." << option;
+      }
+    }
+  }
 
   // Common settings
   cmd << " -each proto=uci tc=" << matchConfig.timeControl;
@@ -378,11 +414,12 @@ void MatchRunner::validateMatchConfig(const MatchConfig& matchConfig) {
   }
 }
 
-std::string MatchRunner::getUciEngineName(const std::string& enginePath) {
+std::string MatchRunner::getUciEngineName(const std::string& enginePath, const std::string& uciOptions) {
   // Start the engine briefly just to get its UCI name
   // This validates the engine works and gets the canonical name
+  // Pass uciOptions to ensure engine initializes correctly (e.g., OwnBook=false to skip book loading)
   try {
-    UCIEngine engine(enginePath);
+    UCIEngine engine(enginePath, "", false, uciOptions);
     std::string name = engine.getEngineName();
     if (name.empty()) {
       throw std::runtime_error("Engine returned empty name");

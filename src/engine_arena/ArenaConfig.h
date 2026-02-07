@@ -117,8 +117,10 @@ struct MatchConfig {
   std::string name;            ///< Match name (e.g., "v1.1 vs v1.0")
   std::string engine1Path;     ///< Path to first engine executable
   std::string engine1Version;  ///< Engine 1 version (e.g., "v1.1") - explicit, for results
+  std::string engine1Options;  ///< UCI options for engine 1 (e.g., "OwnBook=false")
   std::string engine2Path;     ///< Path to second engine executable
   std::string engine2Version;  ///< Engine 2 version (e.g., "v1.0") - explicit, for results
+  std::string engine2Options;  ///< UCI options for engine 2 (e.g., "OwnBook=false")
   std::string cutechessPath;   ///< Path to cutechess-cli executable
   std::string openingBook;     ///< Path to opening book (PGN format)
   std::string timeControl;     ///< Time control (e.g., "10+0.1")

@@ -143,6 +143,14 @@ ArenaConfig ArenaConfig::loadFromYaml(const std::string& configPath) {
           match.engine2Version = "";  // Will be extracted from engine name later
         }
 
+        // Engine UCI options (optional - sent before isready during validation)
+        if (matchNode["engine1Options"]) {
+          match.engine1Options = matchNode["engine1Options"].as<std::string>();
+        }
+        if (matchNode["engine2Options"]) {
+          match.engine2Options = matchNode["engine2Options"].as<std::string>();
+        }
+
         // cutechessPath can be specified per-match or use global default
         if (matchNode["cutechessPath"]) {
           match.cutechessPath = matchNode["cutechessPath"].as<std::string>();

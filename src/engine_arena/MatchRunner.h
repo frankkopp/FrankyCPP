@@ -171,7 +171,7 @@ private:
   /// @param enginePath Full path to engine executable
   /// @return Engine name from UCI protocol (e.g., "FrankyCPP v1.1")
   /// @throws std::runtime_error if engine fails to start or respond
-  static std::string getUciEngineName(const std::string& enginePath);
+  static std::string getUciEngineName(const std::string& enginePath, const std::string& uciOptions = "");
 
   /// Extracts engine name from path (fallback if UCI fails)
   /// @param enginePath Full path to engine executable
