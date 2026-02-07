@@ -103,6 +103,7 @@ testSuites:
   # ==========================================================================
   # FrankyCPP v0.5 test suites
   # ==========================================================================
+
 #  - name: "franky_tests_v0.5"
 #    epdPath: "test/testsets/franky_tests.epd"
 #    timePerMove: 5000
@@ -190,6 +191,7 @@ testSuites:
   # ==========================================================================
   # FrankyCPP v1.0 test suites
   # ==========================================================================
+
 #  - name: "franky_tests_v1.0"
 #    epdPath: "test/testsets/franky_tests.epd"
 #    timePerMove: 5000
@@ -277,17 +279,18 @@ testSuites:
   # ==========================================================================
   # FrankyCPP v1.1 test suites
   # ==========================================================================
-  - name: "franky_tests_v1.1"
-    epdPath: "test/testsets/franky_tests.epd"
-    timePerMove: 5000
-    maxDepth: 30
-    enginePath: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
-    engineVersion: "v1.1"
-    isolatePositions: true
-    debugMode: false
-    commandLineArgs: "--nobook"
-    uciOptions: ""
-    parallelWorkers: 4
+
+#  - name: "franky_tests_v1.1"
+#    epdPath: "test/testsets/franky_tests.epd"
+#    timePerMove: 5000
+#    maxDepth: 30
+#    enginePath: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
+#    engineVersion: "v1.1"
+#    isolatePositions: true
+#    debugMode: false
+#    commandLineArgs: "--nobook"
+#    uciOptions: ""
+#    parallelWorkers: 4
 #
 #  - name: "mate_test_v1.1"
 #    epdPath: "test/testsets/mate_test_suite.epd"
@@ -361,9 +364,10 @@ testSuites:
 #    uciOptions: ""
 #    parallelWorkers: 8
 
-  # ==========================================================================
-  # FrankyGo test suites
-  # ==========================================================================
+   # ==========================================================================
+   # FrankyGo test suites
+   # ==========================================================================
+
 #  - name: "franky_tests_FrankyGo"
 #    epdPath: "test/testsets/franky_tests.epd"
 #    timePerMove: 5000
@@ -448,9 +452,10 @@ testSuites:
 #    uciOptions: ""
 #    parallelWorkers: 8
 
-  # ==========================================================================
-  # Stockfish test suites (reference engine)
-  # ==========================================================================
+   # ==========================================================================
+   # Stockfish test suites (reference engine)
+   # ==========================================================================
+
 #  - name: "franky_tests_Stockfish"
 #    epdPath: "test/testsets/franky_tests.epd"
 #    timePerMove: 5000
@@ -535,9 +540,10 @@ testSuites:
 #    uciOptions: ""
 #    parallelWorkers: 8
 
-  # ==========================================================================
-  # Ruffian test suites
-  # ==========================================================================
+   # ==========================================================================
+   # Ruffian test suites
+   # ==========================================================================
+
 #  - name: "franky_tests_Ruffian"
 #    epdPath: "test/testsets/franky_tests.epd"
 #    timePerMove: 5000
@@ -637,25 +643,25 @@ debugMode: false
 matches:
 
 # TESTING AND DEBUGGING ONLY
-  - name: "v0.5_vs_v1.1_blitz_100"
-    engine1Path: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
-    engine1Version: "v1.1"
-    engine2Path: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
-    engine2Version: "v1.1"
-    openingBook: "books/8moves_GM_LB.pgn"
-    timeControl: "60+0.6"
-    rounds: 100
-    concurrency: 4
-    outputPgn: "results/matches/test/test_blitz_100.pgn"
+#  - name: "v0.5_vs_v1.1_blitz_100"
+#    engine1Path: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
+#    engine1Version: "v1.1"
+#    engine2Path: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
+#    engine2Version: "v1.1"
+#    openingBook: "books/8moves_GM_LB.pgn"
+#    timeControl: "60+0.6"
+#    rounds: 100
+#    concurrency: 4
+#    outputPgn: "results/matches/test/test_blitz_100.pgn"
 
-  # === Blitz matches between all 3 engines (100 games each) ===
+#  # === Blitz matches between v1.1 and references (100 games each) ===
 #  - name: "v0.5_vs_v1.1_blitz_100"
 #    engine1Path: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
 #    engine1Version: "v1.1"
 #    engine2Path: "Release/FrankyCPP_V0.5/FrankyCPP_v0.5.exe"
 #    engine2Version: "v0.5"
 #    openingBook: "books/8moves_GM_LB.pgn"
-#    timeControl: "60+0.6"
+#    timeControl: "300+0"
 #    rounds: 100
 #    concurrency: 4
 #    outputPgn: "results/matches/v0.5_vs_v1.1_blitz_100.pgn"
@@ -666,56 +672,56 @@ matches:
 #    engine2Path: "D:/Games/FrankyChess/FrankyGo/FrankyGo.exe"
 #    engine2Version: "v1.0.3"
 #    openingBook: "books/8moves_GM_LB.pgn"
-#    timeControl: "60+0.6"
+#    timeControl: "300+0"
 #    rounds: 100
 #    concurrency: 4
 #    outputPgn: "results/matches/v1.1_vs_FrankyGo_blitz_100.pgn"
 
   # for DEBUGGING PURPOSES ONLY - to be commented for quick tests
-#  - name: "v1.1_vs_v1.0_debug"
-#    engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
-#    engine2Path: "Release/FrankyCPP_V1.0/FrankyCPP_v1.0.exe"
-#    openingBook: "books/8moves_GM_LB.pgn"  # PGN format required for cutechess-cli
-#    timeControl: "10+0.1"  # Format: "base+increment" - 10s total per game + 0.1s added after each move
-#    rounds: 4
-#    concurrency: 4  # Number of games to run in parallel (1=sequential, 2+=parallel, faster but non-deterministic)
-#    outputPgn: "results/matches/v1.1_vs_v1.0_debug.pgn"
+  #  - name: "v1.1_vs_v1.0_debug"
+  #    engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+  #    engine2Path: "Release/FrankyCPP_V1.0/FrankyCPP_v1.0.exe"
+  #    openingBook: "books/8moves_GM_LB.pgn"  # PGN format required for cutechess-cli
+  #    timeControl: "10+0.1"  # Format: "base+increment" - 10s total per game + 0.1s added after each move
+  #    rounds: 4
+  #    concurrency: 4  # Number of games to run in parallel (1=sequential, 2+=parallel, faster but non-deterministic)
+  #    outputPgn: "results/matches/v1.1_vs_v1.0_debug.pgn"
 
-#- name: "Franky_v1.1_vs_v0.5_blitz"
-#  engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
-#  engine2Path: "Release/FrankyCPP_V0.5/FrankyCPP_v0.5.exe"
-#  openingBook: "books/8moves_GM_LB.pgn"  # PGN format required for cutechess-cli
-#  timeControl: "60+0.6"  # Format: "base+increment"
-#  rounds: 10
-#  concurrency: 4  # Run 4 games in parallel for faster execution
-#  outputPgn: "results/matches/v1.1_vs_v0.5_blitz.pgn"
+  #- name: "Franky_v1.1_vs_v0.5_blitz"
+  #  engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+  #  engine2Path: "Release/FrankyCPP_V0.5/FrankyCPP_v0.5.exe"
+  #  openingBook: "books/8moves_GM_LB.pgn"  # PGN format required for cutechess-cli
+  #  timeControl: "60+0.6"  # Format: "base+increment"
+  #  rounds: 10
+  #  concurrency: 4  # Run 4 games in parallel for faster execution
+  #  outputPgn: "results/matches/v1.1_vs_v0.5_blitz.pgn"
 
-#- name: "v1.1_vs_v1.0_blitz"
-#  engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
-#  engine2Path: "Release/FrankyCPP_V1.0/FrankyCPP_v1.0.exe"
-#  openingBook: "books/8moves_GM_LB.pgn"
-#  timeControl: "60+0.6"
-#  rounds: 10
-#  concurrency: 4
-#  outputPgn: "results/matches/v1.1_vs_v1.0_blitz.pgn"
-#
-#- name: "v1.1_vs_FrankyGo_blitz"
-#  engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
-#  engine2Path: "D:/Games/FrankyChess/FrankyGo/FrankyGo.exe"
-#  openingBook: "books/8moves_GM_LB.pgn"
-#  timeControl: "60+0.6"
-#  rounds: 10
-#  concurrency: 4
-#  outputPgn: "results/matches/v1.1_vs_FrankyGo_blitz.pgn"
+  #- name: "v1.1_vs_v1.0_blitz"
+  #  engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+  #  engine2Path: "Release/FrankyCPP_V1.0/FrankyCPP_v1.0.exe"
+  #  openingBook: "books/8moves_GM_LB.pgn"
+  #  timeControl: "60+0.6"
+  #  rounds: 10
+  #  concurrency: 4
+  #  outputPgn: "results/matches/v1.1_vs_v1.0_blitz.pgn"
+  #
+  #- name: "v1.1_vs_FrankyGo_blitz"
+  #  engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+  #  engine2Path: "D:/Games/FrankyChess/FrankyGo/FrankyGo.exe"
+  #  openingBook: "books/8moves_GM_LB.pgn"
+  #  timeControl: "60+0.6"
+  #  rounds: 10
+  #  concurrency: 4
+  #  outputPgn: "results/matches/v1.1_vs_FrankyGo_blitz.pgn"
 
-#  - name: "v1.1_vs_Stockfish_blitz"
-#    engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
-#    engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
-#    openingBook: "books/8moves_GM_LB.pgn"
-#    timeControl: "60+0.6"
-#    rounds: 10
-#    concurrency: 4
-#    outputPgn: "results/matches/v1.1_vs_Stockfish_blitz.pgn"
+  #  - name: "v1.1_vs_Stockfish_blitz"
+  #    engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+  #    engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
+  #    openingBook: "books/8moves_GM_LB.pgn"
+  #    timeControl: "60+0.6"
+  #    rounds: 10
+  #    concurrency: 4
+  #    outputPgn: "results/matches/v1.1_vs_Stockfish_blitz.pgn"
 
   # - name: "v1.1_vs_v1.0_rapid"
   #   engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"

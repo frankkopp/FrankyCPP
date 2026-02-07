@@ -1,0 +1,255 @@
+{
+  "arenaVersion": "v1.1",
+  "timestamp": "2026-02-06T17:35:07Z",
+
+  "testSuite": {
+    "name": "kaufman",
+    "epdPath": "test/testsets/kaufman.epd"
+  },
+
+  "engine": {
+    "name": "FrankyCPP v0.5",
+    "version": "v0.5",
+    "path": "Release/FrankyCPP_V0.5/FrankyCPP_v0.5.exe"
+  },
+
+  "summary": {
+    "totalTests": 25,
+    "passed": 21,
+    "failed": 4,
+    "skipped": 0,
+    "successRate": 84.00,
+    "totalNodes": 333722806,
+    "totalTimeMs": 93831,
+    "avgTimeMs": 3753.24,
+    "avgNodes": 13348912.24
+  },
+
+  "details": [
+    {
+      "testId": "L.Kaufman CCR Test No.1",
+      "fen": "1rbq1rk1/p1b1nppp/1p2p3/8/1B1pN3/P2B4/1P3PPP/2RQ1R1K w - -",
+      "expected": "bm e4f6",
+      "actual": "d1g4",
+      "passed": false,
+      "nodes": 16000000,
+      "timeMs": 4842
+    },
+    {
+      "testId": "L.Kaufman CCR Test No.2",
+      "fen": "3r2k1/p2r1p1p/1p2p1p1/q4n2/3P4/PQ5P/1P1RNPP1/3R2K1 b - -",
+      "expected": "bm f5d4",
+      "actual": "f5d4",
+      "passed": true,
+      "nodes": 13071439,
+      "timeMs": 3694
+    },
+    {
+      "testId": "L.Kaufman CCR Test No.3",
+      "fen": "3r2k1/1p3ppp/2pq4/p1n5/P6P/1P6/1PB2QP1/1K2R3 w - -",
+      "expected": "am e1d1",
+      "actual": "f2e3",
+      "passed": true,
+      "nodes": 10810385,
+      "timeMs": 3013
+    },
+    {
+      "testId": "L.Kaufman CCR Test No.4",
+      "fen": "r1b1r1k1/1ppn1p1p/3pnqp1/8/p1P1P3/5P2/PbNQNBPP/1R2RB1K w - -",
+      "expected": "bm b1b2",
+      "actual": "c2b4",
+      "passed": false,
+      "nodes": 14000000,
+      "timeMs": 4304
+    },
+    {
+      "testId": "L.Kaufman CCR Test No.5",
+      "fen": "2r4k/pB4bp/1p4p1/6q1/1P1n4/2N5/P4PPP/2R1Q1K1 b - -",
+      "expected": "bm g5c1",
+      "actual": "g5c1",
+      "passed": true,
+      "nodes": 11687225,
+      "timeMs": 3111
+    },
+    {
+      "testId": "L.Kaufman CCR Test No.6",
+      "fen": "r5k1/3n1ppp/1p6/3p1p2/3P1B2/r3P2P/PR3PP1/2R3K1 b - -",
+      "expected": "am a3a2",
+      "actual": "g7g6",
+      "passed": true,
+      "nodes": 17000000,
+      "timeMs": 4609
+    },
+    {
+      "testId": "L.Kaufman CCR Test No.7",
+      "fen": "2r2rk1/1bqnbpp1/1p1ppn1p/pP6/N1P1P3/P2B1N1P/1B2QPP1/R2R2K1 b - -",
+      "expected": "bm b7e4",
+      "actual": "b7e4",
+      "passed": true,
+      "nodes": 14027664,
+      "timeMs": 4208
+    },
+    {
+      "testId": "L.Kaufman CCR Test No.8",
+      "fen": "5r1k/6pp/1n2Q3/4p3/8/7P/PP4PK/R1B1q3 b - -",
+      "expected": "bm h7h6",
+      "actual": "h7h6",
+      "passed": true,
+      "nodes": 12012327,
+      "timeMs": 3163
+    },
+    {
+      "testId": "L.Kaufman CCR Test No.9",
+      "fen": "r3k2r/pbn2ppp/8/1P1pP3/P1qP4/5B2/3Q1PPP/R3K2R w - -",
+      "expected": "bm f3e2",
+      "actual": "f3e2",
+      "passed": true,
+      "nodes": 9996068,
+      "timeMs": 3140
+    },
+    {
+      "testId": "L.Kaufman CCR Test No.10",
+      "fen": "3r2k1/ppq2pp1/4p2p/3n3P/3N2P1/2P5/PP2QP2/K2R4 b - -",
+      "expected": "bm d5c3",
+      "actual": "d5c3",
+      "passed": true,
+      "nodes": 12313365,
+      "timeMs": 3648
+    },
+    {
+      "testId": "L.Kaufman CCR Test No.11",
+      "fen": "q3rn1k/2QR4/pp2pp2/8/P1P5/1P4N1/6n1/6K1 w - -",
+      "expected": "bm g3f5",
+      "actual": "g3f5",
+      "passed": true,
+      "nodes": 16063594,
+      "timeMs": 4886
+    },
+    {
+      "testId": "L.Kaufman CCR Test No.12",
+      "fen": "6k1/p3q2p/1nr3pB/8/3Q1P2/6P1/PP5P/3R2K1 b - -",
+      "expected": "bm c6d6",
+      "actual": "c6c2",
+      "passed": false,
+      "nodes": 9074271,
+      "timeMs": 2775
+    },
+    {
+      "testId": "L.Kaufman CCR Test No.13",
+      "fen": "1r4k1/7p/5np1/3p3n/8/2NB4/7P/3N1RK1 w - -",
+      "expected": "bm c3d5",
+      "actual": "c3d5",
+      "passed": true,
+      "nodes": 16739021,
+      "timeMs": 4836
+    },
+    {
+      "testId": "L.Kaufman CCR Test No.14",
+      "fen": "1r2r1k1/p4p1p/6pB/q7/8/3Q2P1/PbP2PKP/1R3R2 w - -",
+      "expected": "bm b1b2",
+      "actual": "b1b2",
+      "passed": true,
+      "nodes": 7392484,
+      "timeMs": 2308
+    },
+    {
+      "testId": "L.Kaufman CCR Test No.15",
+      "fen": "r2q1r1k/pb3p1p/2n1p2Q/5p2/8/3B2N1/PP3PPP/R3R1K1 w - -",
+      "expected": "bm d3f5",
+      "actual": "d3f5",
+      "passed": true,
+      "nodes": 10313783,
+      "timeMs": 3331
+    },
+    {
+      "testId": "L.Kaufman CCR Test No.16",
+      "fen": "8/4p3/p2p4/2pP4/2P1P3/1P4k1/1P1K4/8 w - -",
+      "expected": "bm b3b4",
+      "actual": "b3b4",
+      "passed": true,
+      "nodes": 14667065,
+      "timeMs": 3655
+    },
+    {
+      "testId": "L.Kaufman CCR Test No.17",
+      "fen": "1r1q1rk1/p1p2pbp/2pp1np1/6B1/4P3/2NQ4/PPP2PPP/3R1RK1 w - -",
+      "expected": "bm e4e5",
+      "actual": "e4e5",
+      "passed": true,
+      "nodes": 11175438,
+      "timeMs": 3757
+    },
+    {
+      "testId": "L.Kaufman CCR Test No.18",
+      "fen": "q4rk1/1n1Qbppp/2p5/1p2p3/1P2P3/2P4P/6P1/2B1NRK1 b - -",
+      "expected": "bm a8c8",
+      "actual": "a8c8",
+      "passed": true,
+      "nodes": 9545908,
+      "timeMs": 3182
+    },
+    {
+      "testId": "L.Kaufman CCR Test No.19",
+      "fen": "r2q1r1k/1b1nN2p/pp3pp1/8/Q7/PP5P/1BP2RPN/7K w - -",
+      "expected": "bm a4d7",
+      "actual": "a4d7",
+      "passed": true,
+      "nodes": 9646034,
+      "timeMs": 3095
+    },
+    {
+      "testId": "L.Kaufman CCR Test No.20",
+      "fen": "8/5p2/pk2p3/4P2p/2b1pP1P/P3P2B/8/7K w - -",
+      "expected": "bm h3g4",
+      "actual": "h3g4",
+      "passed": true,
+      "nodes": 17000005,
+      "timeMs": 4324
+    },
+    {
+      "testId": "L.Kaufman CCR Test No.21",
+      "fen": "8/2k5/4p3/1nb2p2/2K5/8/6B1/8 w - -",
+      "expected": "bm c4b5",
+      "actual": "c4c5",
+      "passed": false,
+      "nodes": 17000017,
+      "timeMs": 3952
+    },
+    {
+      "testId": "L.Kaufman CCR Test No.22",
+      "fen": "1B1b4/7K/1p6/1k6/8/8/8/8 w - -",
+      "expected": "bm b8a7",
+      "actual": "b8a7",
+      "passed": true,
+      "nodes": 20000016,
+      "timeMs": 4774
+    },
+    {
+      "testId": "L.Kaufman CCR Test No.23",
+      "fen": "rn1q1rk1/1b2bppp/1pn1p3/p2pP3/3P4/P2BBN1P/1P1N1PP1/R2Q1RK1 b - -",
+      "expected": "bm b7a6",
+      "actual": "b7a6",
+      "passed": true,
+      "nodes": 11444104,
+      "timeMs": 3629
+    },
+    {
+      "testId": "L.Kaufman CCR Test No.24",
+      "fen": "8/p1ppk1p1/2n2p2/8/4B3/2P1KPP1/1P5P/8 w - -",
+      "expected": "bm e4c6",
+      "actual": "e4c6",
+      "passed": true,
+      "nodes": 17171470,
+      "timeMs": 4059
+    },
+    {
+      "testId": "L.Kaufman CCR Test No.25",
+      "fen": "8/3nk3/3pp3/1B6/8/3PPP2/4K3/8 w - -",
+      "expected": "bm b5d7",
+      "actual": "b5d7",
+      "passed": true,
+      "nodes": 15571123,
+      "timeMs": 3536
+    }
+  ]
+}
