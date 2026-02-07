@@ -40,6 +40,8 @@ class MatchRunnerParseTest : public ::testing::Test {
 protected:
   ArenaConfig arenaConfig;
   MatchConfig matchConfig;
+  std::string engine1Name;
+  std::string engine2Name;
 
   void SetUp() override {
     // Set up minimal arena config
@@ -59,6 +61,10 @@ protected:
     matchConfig.rounds = 100;
     matchConfig.concurrency = 1;
     matchConfig.outputPgn = "output.pgn";
+
+    // Default engine names for testing
+    engine1Name = "engine1";
+    engine2Name = "engine2";
   }
 };
 
@@ -83,7 +89,7 @@ Score of engine1 vs engine2: 1 - 0 - 1  [0.750] 2
 Score of engine1 vs engine2: 65 - 15 - 20  [0.750] 100
 )";
 
-  MatchResult result = runner.parseOutput(output, matchConfig);
+  MatchResult result = runner.parseOutput(output, matchConfig, engine1Name, engine2Name);
 
   EXPECT_EQ(result.engine1Wins, 65);
   EXPECT_EQ(result.engine2Wins, 15);
@@ -102,7 +108,7 @@ Score of engine1 vs engine2: 65 - 15 - 20  [0.750] 100
 ...engine1 playing Black: 30 - 10 - 10  [0.700] 50
 )";
 
-  MatchResult result = runner.parseOutput(output, matchConfig);
+  MatchResult result = runner.parseOutput(output, matchConfig, engine1Name, engine2Name);
 
   // Should use the main score line, not the breakdown lines
   EXPECT_EQ(result.engine1Wins, 65);
@@ -120,7 +126,7 @@ Score of engine1 vs engine2: 5 - 3 - 2  [0.600] 10
 Score of engine1 vs engine2: 50 - 40 - 10  [0.550] 100
 )";
 
-  MatchResult result = runner.parseOutput(output, matchConfig);
+  MatchResult result = runner.parseOutput(output, matchConfig, engine1Name, engine2Name);
 
   // Should use the last (final) score line
   EXPECT_EQ(result.engine1Wins, 50);
@@ -136,7 +142,7 @@ Started game 1 of 100 (engine1 vs engine2)
 Error: Engine crashed
 )";
 
-  EXPECT_THROW(runner.parseOutput(output, matchConfig), std::runtime_error);
+  EXPECT_THROW(runner.parseOutput(output, matchConfig, engine1Name, engine2Name), std::runtime_error);
 }
 
 TEST_F(MatchRunnerParseTest, EmptyOutput_ThrowsException) {
@@ -144,7 +150,7 @@ TEST_F(MatchRunnerParseTest, EmptyOutput_ThrowsException) {
 
   std::string output = "";
 
-  EXPECT_THROW(runner.parseOutput(output, matchConfig), std::runtime_error);
+  EXPECT_THROW(runner.parseOutput(output, matchConfig, engine1Name, engine2Name), std::runtime_error);
 }
 
 TEST_F(MatchRunnerParseTest, AllDraws_ParsedCorrectly) {
@@ -154,7 +160,7 @@ TEST_F(MatchRunnerParseTest, AllDraws_ParsedCorrectly) {
 Score of engine1 vs engine2: 0 - 0 - 100  [0.500] 100
 )";
 
-  MatchResult result = runner.parseOutput(output, matchConfig);
+  MatchResult result = runner.parseOutput(output, matchConfig, engine1Name, engine2Name);
 
   EXPECT_EQ(result.engine1Wins, 0);
   EXPECT_EQ(result.engine2Wins, 0);
@@ -170,7 +176,7 @@ TEST_F(MatchRunnerParseTest, DecisiveResult_ParsedCorrectly) {
 Score of engine1 vs engine2: 100 - 0 - 0  [1.000] 100
 )";
 
-  MatchResult result = runner.parseOutput(output, matchConfig);
+  MatchResult result = runner.parseOutput(output, matchConfig, engine1Name, engine2Name);
 
   EXPECT_EQ(result.engine1Wins, 100);
   EXPECT_EQ(result.engine2Wins, 0);
@@ -186,7 +192,7 @@ TEST_F(MatchRunnerParseTest, SingleGame_ParsedCorrectly) {
 Score of engine1 vs engine2: 1 - 0 - 0  [1.000] 1
 )";
 
-  MatchResult result = runner.parseOutput(output, matchConfig);
+  MatchResult result = runner.parseOutput(output, matchConfig, engine1Name, engine2Name);
 
   EXPECT_EQ(result.engine1Wins, 1);
   EXPECT_EQ(result.engine2Wins, 0);
@@ -200,7 +206,7 @@ TEST_F(MatchRunnerParseTest, LargeNumbers_ParsedCorrectly) {
 Score of engine1 vs engine2: 5000 - 4000 - 1000  [0.550] 10000
 )";
 
-  MatchResult result = runner.parseOutput(output, matchConfig);
+  MatchResult result = runner.parseOutput(output, matchConfig, engine1Name, engine2Name);
 
   EXPECT_EQ(result.engine1Wins, 5000);
   EXPECT_EQ(result.engine2Wins, 4000);
@@ -214,7 +220,7 @@ TEST_F(MatchRunnerParseTest, EngineNamesWithSpaces_ParsedCorrectly) {
 Score of FrankyCPP v1.1 vs Stockfish 16 Dev: 65 - 15 - 20  [0.750] 100
 )";
 
-  MatchResult result = runner.parseOutput(output, matchConfig);
+  MatchResult result = runner.parseOutput(output, matchConfig, "FrankyCPP v1.1", "Stockfish 16 Dev");
 
   EXPECT_EQ(result.engine1Wins, 65);
   EXPECT_EQ(result.engine2Wins, 15);
@@ -228,7 +234,7 @@ TEST_F(MatchRunnerParseTest, MetadataPopulated_Correctly) {
 Score of engine1 vs engine2: 65 - 15 - 20  [0.750] 100
 )";
 
-  MatchResult result = runner.parseOutput(output, matchConfig);
+  MatchResult result = runner.parseOutput(output, matchConfig, engine1Name, engine2Name);
 
   // Check metadata is populated from config
   EXPECT_EQ(result.arenaVersion, "v1.1");
@@ -252,7 +258,7 @@ TEST_F(MatchRunnerParseTest, EloCalculation_Draw) {
 Score of engine1 vs engine2: 25 - 25 - 50  [0.500] 100
 )";
 
-  MatchResult result = runner.parseOutput(output, matchConfig);
+  MatchResult result = runner.parseOutput(output, matchConfig, engine1Name, engine2Name);
 
   // ELO difference should be close to 0 for 50% score
   EXPECT_NEAR(result.eloDifference, 0.0, 1.0);
@@ -266,7 +272,7 @@ TEST_F(MatchRunnerParseTest, EloCalculation_Winning) {
 Score of engine1 vs engine2: 65 - 15 - 20  [0.750] 100
 )";
 
-  MatchResult result = runner.parseOutput(output, matchConfig);
+  MatchResult result = runner.parseOutput(output, matchConfig, engine1Name, engine2Name);
 
   // ELO difference should be positive and significant
   EXPECT_GT(result.eloDifference, 100.0);

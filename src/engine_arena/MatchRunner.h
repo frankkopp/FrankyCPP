@@ -131,8 +131,12 @@ private:
 
   /// Builds cutechess-cli command line from match configuration
   /// @param matchConfig Match configuration
+  /// @param engine1Name UCI name of engine 1
+  /// @param engine2Name UCI name of engine 2
   /// @return Command line string for subprocess execution
-  std::string buildCutechessCommand(const MatchConfig& matchConfig) const;
+  std::string buildCutechessCommand(const MatchConfig& matchConfig,
+                                    const std::string& engine1Name,
+                                    const std::string& engine2Name) const;
 
   /// Executes cutechess-cli command and captures output
   /// @param command Full cutechess-cli command line
@@ -143,9 +147,14 @@ private:
   /// Parses cutechess-cli output for match results
   /// @param output cutechess-cli stdout/stderr text
   /// @param matchConfig Original match configuration
+  /// @param engine1Name UCI name of engine 1
+  /// @param engine2Name UCI name of engine 2
   /// @return Parsed MatchResult structure
   /// @throws std::runtime_error if parsing fails
-  MatchResult parseOutput(const std::string& output, const MatchConfig& matchConfig) const;
+  MatchResult parseOutput(const std::string& output,
+                          const MatchConfig& matchConfig,
+                          const std::string& engine1Name,
+                          const std::string& engine2Name) const;
 
   /// Calculates ELO difference from match score
   /// @param score Match score for engine1 (0.0 to 1.0)
@@ -158,9 +167,15 @@ private:
   /// @throws std::runtime_error if any required file is missing
   static void validateMatchConfig(const MatchConfig& matchConfig);
 
-  /// Extracts engine name from path (for display in results)
+  /// Gets UCI engine name by starting the engine and reading "id name" response
   /// @param enginePath Full path to engine executable
-  /// @return Engine name (e.g., "FrankyCPP_v1.1")
+  /// @return Engine name from UCI protocol (e.g., "FrankyCPP v1.1")
+  /// @throws std::runtime_error if engine fails to start or respond
+  static std::string getUciEngineName(const std::string& enginePath);
+
+  /// Extracts engine name from path (fallback if UCI fails)
+  /// @param enginePath Full path to engine executable
+  /// @return Engine name derived from filename
   static std::string extractEngineName(const std::string& enginePath);
 
   /// Generates current timestamp in ISO 8601 format

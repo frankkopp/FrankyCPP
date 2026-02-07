@@ -643,16 +643,16 @@ debugMode: false
 matches:
 
 # TESTING AND DEBUGGING ONLY
-#  - name: "v0.5_vs_v1.1_blitz_100"
-#    engine1Path: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
-#    engine1Version: "v1.1"
-#    engine2Path: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
-#    engine2Version: "v1.1"
-#    openingBook: "books/8moves_GM_LB.pgn"
-#    timeControl: "60+0.6"
-#    rounds: 100
-#    concurrency: 4
-#    outputPgn: "results/matches/test/test_blitz_100.pgn"
+  - name: "v1.1_vs_v0.5_test"
+    engine1Path: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
+    engine1Version: "v1.1"
+    engine2Path: "Release/FrankyCPP_V0.5/FrankyCPP_v0.5.exe"
+    engine2Version: "v0.5"
+    openingBook: "books/8moves_GM_LB.pgn"
+    timeControl: "10+0"
+    rounds: 8
+    concurrency: 4
+    outputPgn: "results/matches/test/test_blitz_100.pgn"
 
 #  # === Blitz matches between v1.1 and references (100 games each) ===
 #  - name: "v0.5_vs_v1.1_blitz_100"
