@@ -5,11 +5,12 @@ vtune/
 .idea/
 .vscode/
 /.run/
+*.cache.bin
 *.cache.*.bin
 /Release/bin/*log
 /Release/bin/books/
 /Release/bin/config/
+/Release/FrankyCPP_v*/
+!/Release/FrankyCPP_v*.zip
 /books/superbook_xl.pgn
 /Testing/
-
-books/superbook_xl.pgn

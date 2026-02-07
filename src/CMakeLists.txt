@@ -13,6 +13,7 @@ set(FrankyCPPlib_SRCS
         chesscore/MoveGenerator.cpp
         chesscore/Perft.cpp
         chesscore/History.cpp
+        chesscore/MoveUtils.cpp
 
         openingbook/OpeningBook.cpp openingbook/OpeningBook.h
 
@@ -28,6 +29,9 @@ set(FrankyCPPlib_SRCS
 
         enginetest/SearchTreeSizeTest.cpp enginetest/SearchTreeSizeTest.h
         enginetest/TestSuite.cpp enginetest/TestSuite.h
+        enginetest/EpdParser.cpp enginetest/EpdParser.h
+        enginetest/EdpTest.h
+        enginetest/TestTypes.h
         types/attacks.cpp
         types/bitboards.h
 
@@ -98,6 +102,7 @@ target_link_libraries(
         PUBLIC
         Boost::serialization
         Boost::program_options
+        Boost::filesystem
         yaml-cpp::yaml-cpp)
 
 # set the name of the executable
@@ -129,6 +134,91 @@ target_include_directories(
         ${PROJECT_BINARY_DIR}
 )
 
+# ============================================================================
+# Engine Arena executable
+# ============================================================================
+message(STATUS "Configuring Engine Arena executable...")
+set(arenaExeName ${exeName}_Arena)
+message(STATUS "Arena executable name: ${arenaExeName}")
+
+add_executable(${arenaExeName}
+    engine_arena_main.cpp
+    engine_arena/ArenaConfig.cpp
+    engine_arena/ArenaRunner.cpp
+    engine_arena/ResultWriter.cpp
+    engine_arena/TestSuiteRunner.cpp
+    engine_arena/MatchRunner.cpp
+    engine_arena/UCIEngine.cpp
+)
+
+target_compile_features(${arenaExeName} PRIVATE cxx_std_20)
+
+target_link_libraries(${arenaExeName}
+    PRIVATE
+    FrankyCPPlib
+    yaml-cpp::yaml-cpp
+    Boost::program_options
+    Boost::filesystem
+    nlohmann_json::nlohmann_json
+)
+
+target_include_directories(${arenaExeName}
+    PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+    ${PROJECT_BINARY_DIR}
+)
+
+# Copy config and books for arena executable as well
+add_custom_command(
+    TARGET ${arenaExeName} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/config $<TARGET_FILE_DIR:${arenaExeName}>/config
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/books $<TARGET_FILE_DIR:${arenaExeName}>/books
+)
+
+if (ENABLE_UNITY_BUILD)
+    set_target_properties(${arenaExeName} PROPERTIES UNITY_BUILD ON)
+endif()
+
+if (MSVC AND STRICT_WARNINGS)
+    target_compile_options(${arenaExeName} PRIVATE /WX)
+endif()
+
+# ============================================================================
+# UCIEngine Manual Test executable (optional, for testing external engines)
+# ============================================================================
+message(STATUS "Configuring UCIEngine Manual Test executable...")
+set(uciTestExeName UCIEngine_ManualTest)
+message(STATUS "UCIEngine test executable name: ${uciTestExeName}")
+
+add_executable(${uciTestExeName}
+    ../test/engine_arena/UCIEngine_ManualTest.cpp
+    engine_arena/UCIEngine.cpp
+)
+
+target_compile_features(${uciTestExeName} PRIVATE cxx_std_20)
+
+target_link_libraries(${uciTestExeName}
+    PRIVATE
+    FrankyCPPlib
+    Boost::filesystem
+)
+
+target_include_directories(${uciTestExeName}
+    PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+    ${PROJECT_BINARY_DIR}
+)
+
+if (ENABLE_UNITY_BUILD)
+    set_target_properties(${uciTestExeName} PROPERTIES UNITY_BUILD ON)
+endif()
+
+if (MSVC AND STRICT_WARNINGS)
+    target_compile_options(${uciTestExeName} PRIVATE /WX)
+endif()
+
+# ============================================================================
+
 # STRICT_WARNINGS for CI: treat warnings as errors when enabled
 if (MSVC AND STRICT_WARNINGS)
     target_compile_options(FrankyCPPlib PRIVATE /WX)
@@ -142,17 +232,113 @@ add_custom_command(
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/books $<TARGET_FILE_DIR:${exeName}>/books
 )
 
-# install executable, config and opening books into the release folder
-install(TARGETS ${exeName}
-        CONFIGURATIONS Release RelWithDebInfo
-        RUNTIME DESTINATION ${PROJECT_SOURCE_DIR}/Release/bin
-)
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/config
-        DESTINATION ${PROJECT_SOURCE_DIR}/Release/bin
-)
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/books
-        DESTINATION ${PROJECT_SOURCE_DIR}/Release/bin
-        PATTERN "*.cache.*" EXCLUDE
+# Release packaging via install command
+# Creates versioned Release/FrankyCPP_v<version>/ folder and ZIP with filtered books
+set(RELEASE_VERSION "v${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
+set(RELEASE_DIR "${PROJECT_SOURCE_DIR}/Release/FrankyCPP_${RELEASE_VERSION}")
+set(RELEASE_ZIP "${PROJECT_SOURCE_DIR}/Release/FrankyCPP_${RELEASE_VERSION}.zip")
+
+install(CODE "
+    message(STATUS \"===========================================\")
+    message(STATUS \"Creating release package for FrankyCPP ${RELEASE_VERSION}...\")
+    message(STATUS \"===========================================\")
+
+    # Build fresh Release executable
+    message(STATUS \"Rebuilding for fresh release...\")
+    execute_process(
+        COMMAND \"${CMAKE_COMMAND}\" --build \"${CMAKE_BINARY_DIR}\" --config Release --clean-first
+        RESULT_VARIABLE _build_result
+        OUTPUT_VARIABLE _build_output
+        ERROR_VARIABLE _build_error
+    )
+
+    # Check if executables exist after build
+    set(_exe_path \"$<TARGET_FILE:${exeName}>\")
+    set(_arena_exe_path \"$<TARGET_FILE:${arenaExeName}>\")
+    if(NOT EXISTS \"\${_exe_path}\")
+        if(_build_result)
+            message(WARNING \"Build failed with error code: \${_build_result}\")
+            message(WARNING \"Build output: \${_build_output}\")
+            message(WARNING \"Build error: \${_build_error}\")
+        endif()
+        message(WARNING \"Executable not found at: \${_exe_path}\")
+        message(WARNING \"Please build the project manually first: cmake --build ${CMAKE_BINARY_DIR} --config Release\")
+        message(FATAL_ERROR \"Cannot create release package without executable\")
+    else()
+        message(STATUS \"Fresh executable built successfully\")
+    endif()
+
+    if(NOT EXISTS \"\${_arena_exe_path}\")
+        message(WARNING \"Arena executable not found at: \${_arena_exe_path}\")
+        message(WARNING \"Arena executable will not be included in the release package\")
+    else()
+        message(STATUS \"Arena executable found\")
+    endif()
+
+    # Clean up old release folder and ZIP
+    message(STATUS \"Cleaning previous release...\")
+    file(REMOVE_RECURSE \"${RELEASE_DIR}\")
+    file(REMOVE \"${RELEASE_ZIP}\")
+
+    # Create directory structure
+    message(STATUS \"Creating directory structure...\")
+    file(MAKE_DIRECTORY \"${RELEASE_DIR}\")
+    file(MAKE_DIRECTORY \"${RELEASE_DIR}/books\")
+    file(MAKE_DIRECTORY \"${RELEASE_DIR}/config\")
+
+    # Copy executable
+    message(STATUS \"Copying executable...\")
+    file(INSTALL \"$<TARGET_FILE:${exeName}>\"
+         DESTINATION \"${RELEASE_DIR}\"
+         FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+
+    # Copy Arena executable (if it exists)
+    if(EXISTS \"$<TARGET_FILE:${arenaExeName}>\")
+        message(STATUS \"Copying Arena executable...\")
+        file(INSTALL \"$<TARGET_FILE:${arenaExeName}>\"
+             DESTINATION \"${RELEASE_DIR}\"
+             FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+    endif()
+
+    # Copy config files
+    message(STATUS \"Copying config files...\")
+    file(INSTALL \"${PROJECT_SOURCE_DIR}/config/\"
+         DESTINATION \"${RELEASE_DIR}/config\"
+         FILES_MATCHING PATTERN \"*\")
+
+    # Copy books with filtering
+    message(STATUS \"Copying book files...\")
+    execute_process(
+        COMMAND \"${CMAKE_COMMAND}\"
+            -DSOURCE_DIR=${PROJECT_SOURCE_DIR}/books
+            -DDEST_DIR=${RELEASE_DIR}/books
+            -P ${PROJECT_SOURCE_DIR}/cmake/CopyBooksFiltered.cmake
+        RESULT_VARIABLE _copy_result
+    )
+    if(_copy_result)
+        message(WARNING \"Book file filtering had issues\")
+    endif()
+
+    # Create ZIP archive
+    message(STATUS \"Creating ZIP archive...\")
+    execute_process(
+        COMMAND \"${CMAKE_COMMAND}\" -E chdir \"${RELEASE_DIR}\"
+            \"${CMAKE_COMMAND}\" -E tar cfv \"${RELEASE_ZIP}\" --format=zip .
+        RESULT_VARIABLE _zip_result
+        OUTPUT_QUIET
+    )
+
+    if(_zip_result)
+        message(WARNING \"ZIP creation failed\")
+    else()
+        message(STATUS \"===========================================\")
+        message(STATUS \"Release package created successfully!\")
+        message(STATUS \"  Folder: ${RELEASE_DIR}\")
+        message(STATUS \"  ZIP:    ${RELEASE_ZIP}\")
+        message(STATUS \"===========================================\")
+    endif()
+    "
+    COMPONENT Runtime
 )
 
 # Note: No GoogleTest includes are injected into production targets anymore.

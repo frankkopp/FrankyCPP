@@ -30,6 +30,7 @@ add_executable(
         chesscore/MoveGeneratorTest.cpp
         chesscore/PerftTest.cpp
         chesscore/SpeedTests.cpp
+        chesscore/MoveUtils_Test.cpp
 
         openingbook/OpeningbookTest.cpp
 
@@ -44,13 +45,29 @@ add_executable(
 
         enginetest/SearchTreeSizeTest_Test.cpp
         enginetest/TestSuite_Test.cpp
+        enginetest/EpdParser_Test.cpp
+        enginetest/EdpTest_Test.cpp
+        enginetest/TestTypes_Test.cpp
+
+        engine_arena/TestSuiteRunner_IntegrationTest.cpp
+        engine_arena/UCIEngine_ErrorHandlingTest.cpp
+        engine_arena/UCIEngine_OptionsTest.cpp
+
+        # Engine arena source files needed by tests
+        ../src/engine_arena/ArenaConfig.cpp
+        ../src/engine_arena/TestSuiteRunner.cpp
+        ../src/engine_arena/UCIEngine.cpp
+        ../src/engine_arena/ResultWriter.cpp
+        ../src/engine_arena/MatchRunner.cpp
 
         TimingTests.cpp
 
         config/ConfigYamlSmokeTest.cpp
         config/ConfigDataTests.cpp
         config/ConfigManagerTests.cpp
-        config/ConfigAutoInitTests.cpp)
+        config/ConfigAutoInitTests.cpp
+        engine_arena/ResultWriter_Test.cpp
+        engine_arena/MatchRunner_Test.cpp)
 
 
 # Ensure unit tests explicitly request C++20
@@ -66,7 +83,8 @@ target_include_directories(
         ${testExeName}
         PRIVATE
         ${PROJECT_BINARY_DIR}
-        ${PROJECT_SOURCE_DIR}/test)
+        ${PROJECT_SOURCE_DIR}/test
+        ${PROJECT_SOURCE_DIR}/src)  # Add src directory for engine_arena headers
 
 # STRICT_WARNINGS for CI: treat warnings as errors when enabled
 if (MSVC AND STRICT_WARNINGS)
@@ -75,6 +93,7 @@ endif()
 
 # Link against project lib and vcpkg-provided GoogleTest targets
 # Also link yaml-cpp for config YAML parsing in smoke test
+# Also link nlohmann_json for engine_arena components
 target_link_libraries(
         ${testExeName}
         PUBLIC
@@ -82,6 +101,7 @@ target_link_libraries(
         GTest::gtest
         GTest::gtest_main
         yaml-cpp::yaml-cpp
+        nlohmann_json::nlohmann_json
 )
 
 # copy config files and opening books to the build directories

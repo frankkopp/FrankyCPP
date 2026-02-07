@@ -344,7 +344,7 @@ UciOption* UciOptions::getOption(const std::string& name) {
 }
 
 bool UciOptions::setOption(UciHandler* uciHandler, const std::string& name, const std::string& value) {
-  if (const auto o = getOption(name)) {
+  if (auto *const o = getOption(name)) {
     if (o->type == COMBO) {
       bool ok = false;
       for (const auto& v : o->comboVars) {
@@ -366,6 +366,15 @@ std::string UciOptions::str() const {
   std::string str;
   for (const auto& o : optionVector) {
     str += o.str() + "\n";
+  }
+  str = trimFast(str);// remove last newline
+  return str;
+}
+
+std::string UciOptions::strWithCurrentValues() const {
+  std::string str;
+  for (const auto& o : optionVector) {
+    str += o.strWithCurrentValue() + "\n";
   }
   str = trimFast(str);// remove last newline
   return str;
@@ -393,8 +402,32 @@ std::string UciOption::str() const {
       str += "string default " + defaultValue;
       break;
   }
-  if (type != BUTTON && !currentValue.empty()) {
-    str += " current " + currentValue;
+  // The "current" field is non-standard UCI but used by FrankyCPP to report the actual current value
+  // Needs to be reviewed for other engines - may not be supported everywhere
+  // if (type != BUTTON && !currentValue.empty()) {
+  //   str += " current " + currentValue;
+  // }
+  return str;
+}
+
+std::string UciOption::strWithCurrentValue() const {
+  std::string str = "option name " + nameID + " type ";
+  switch (type) {
+    case CHECK:
+      str += "check current " + currentValue;
+      break;
+    case SPIN:
+      str += "spin current " + currentValue;
+      break;
+    case COMBO:
+      str += "combo current " + currentValue;
+      break;
+    case BUTTON:
+      str += "button";
+      break;
+    case STRING:
+      str += "string current " + currentValue;
+      break;
   }
   return str;
 }

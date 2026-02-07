@@ -89,6 +89,7 @@ bool UciHandler::handleCommand(const std::string& cmd) {
   else if (token == "register")   { registerCommand(); }
   else if (token == "debug")      { debugCommand(); }
   else if (token == "perft")      { perftCommand(inStream); }
+  else if (token == "getoptions") { getOptionsCommand(); }
   else if (token == "help")       { helpCommand(); }
   else if (token == "noop")       { /* noop */  }
   else
@@ -132,15 +133,15 @@ void UciHandler::setOptionCommand(std::istringstream& inStream) {
   }
 
   if (!UciOptions::getInstance()->setOption(this, name, value)) {
-    uciError(std::format("Unknown option: {}", name.c_str()));
+    uciError(std::format("Could not set option: {} = {}", name.c_str(), value.c_str()));
   }
   LOG__INFO(Logger::get().UCIHAND_LOG, "Set option: {} = {}", name, value);
 }
 
+// TODO: check if we need to clear more state here!
 void UciHandler::uciNewGameCommand() const {
   LOG__INFO(Logger::get().UCIHAND_LOG, "New Game");
-  if (pSearch->isSearching()) pSearch->stopSearch();
-  pSearch->clearTT();
+  pSearch->newGame();  // Clears TT, History, and recreates Evaluator (clears PawnTT)
 }
 
 void UciHandler::positionCommand(std::istringstream& inStream) {
@@ -463,6 +464,10 @@ void UciHandler::helpCommand() const {
   out("perft <startDepth> [endDepth]");
   out(std::format("  Runs a perft from the current position for depths {}..{}. If endDepth omitted, only startDepth is used.", 1, MAX_DEPTH));
 
+  out("getoptions");
+  out("  Non-standard extension: Lists all options with their current values (for testing).");
+  out("  Format: 'option name <name> type <type> current <value>' followed by 'optionsok'.");
+
   out("register");
   out("  Not implemented.");
 
@@ -479,6 +484,11 @@ void UciHandler::helpCommand() const {
   out("  position startpos");
   out("  go movetime 1000");
   out("  stop");
+}
+
+void UciHandler::getOptionsCommand() const {
+  send(UciOptions::getInstance()->strWithCurrentValues());
+  send("optionsok");
 }
 
 void UciHandler::send(const std::string& toSend) const {

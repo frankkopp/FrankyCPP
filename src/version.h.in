@@ -25,4 +25,7 @@
 
 #define FrankyCPP_PROJECT_ROOT "@PROJECT_SOURCE_DIR@"
 
+// Executable name without extension (e.g., "FrankyCPP_v1.1")
+#define FrankyCPP_EXE_NAME "FrankyCPP_v" "@FrankyCPP_VERSION_MAJOR@" "." "@FrankyCPP_VERSION_MINOR@"
+
 #endif

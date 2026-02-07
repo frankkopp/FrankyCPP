@@ -4,10 +4,13 @@
   "dependencies": [
     "boost-program-options",
     "boost-serialization",
+    "boost-process",
+    "boost-filesystem",
     "spdlog",
     "gtest",
     "benchmark",
-    "yaml-cpp"
+    "yaml-cpp",
+    "nlohmann-json"
   ],
   "overrides": [
     {

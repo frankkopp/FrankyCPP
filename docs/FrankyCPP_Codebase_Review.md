@@ -332,9 +332,9 @@ The `types/` directory contains well-designed value types:
 | Q1 | Add CMakePresets.json          | 🟢 2-4 hours | ✅ DONE     | IDE-agnostic build profiles (Debug, Release, CI)                                         |
 | Q2 | Add clang-tidy config          | 🟢 2-4 hours | ✅ DONE     | `.clang-tidy` added with project-aligned checks and exclusions                           |
 | Q3 | Add `ENABLE_SANITIZERS` option | 🟢 2-4 hours | ✅ DONE     | Debug-only ASan (MSVC) and ASan/UBSan (Clang/GNU)                                        |
-| Q4a | WSL Linux build                | 🟢 1-2 days  | ⬜ TODO     | Enable Linux build via WSL with GCC/Clang                                                 |
-| Q4b | GitHub Actions CI - Windows    | 🟡 2-3 days  | ⬜ TODO     | Set up Windows build pipeline                                                             |
-| Q4c | GitHub Actions CI - Linux      | 🟡 2-3 days  | ⬜ TODO     | Set up Linux build pipeline                                                               |
+| Q4a | WSL Linux build                | 🟢 1-2 days  | ✅ DONE     | Enable Linux build via WSL with GCC/Clang - **COMPLETE**                                 |
+| Q4b | GitHub Actions CI - Windows    | 🟡 2-3 days  | ✅ DONE     | Set up Windows build pipeline - **DEPLOYED & OPERATIONAL**                              |
+| Q4c | GitHub Actions CI - Linux      | 🟡 2-3 days  | ✅ DONE     | Set up Linux build pipeline - **DEPLOYED & OPERATIONAL**                                |
 | Q5 | Reduce header coupling         | 🟡 1-2 weeks | ⏭️ SKIP    | Low ROI - aggregate `types.h` is clear and convenient; compile times acceptable with PCH |
 | Q6 | Remove Stockfish references    | 🟢 1-2 hours | ✅ DONE     | GPL/MIT license fix in macros.h, Search.cpp, Evaluator.cpp                               |
 
@@ -388,18 +388,18 @@ The following tasks have been completed as part of the v0.7 development cycle:
 - ✅ **D4** - Document types/ headers (all 24 type headers + 26 other headers documented)
 - ✅ **Copilot instructions** - Added comprehensive `.github/copilot-instructions.md`
 
-**Quick Improvements (v0.7 - Complete):**
+**Quick Improvements (v0.7 - Complete ✅):**
 - ✅ **Q1** - Add CMakePresets.json (IDE-agnostic build profiles)
 - ✅ **Q2** - Add clang-tidy config (project-aligned checks and exclusions)
 - ✅ **Q3** - Add sanitizer support (Debug-only ASan/UBSan)
-- ✅ **Q4a** - WSL Linux build (full GCC 13 and Clang 18 support)
-- ✅ **Q4b** - GitHub Actions CI - Windows (MSVC) - **DEPLOYED**
-- ✅ **Q4c** - GitHub Actions CI - Linux (GCC/Clang 18) - **DEPLOYED**
+- ✅ **Q4a** - WSL Linux build (full GCC 13 and Clang 18 support) - **COMPLETE**
+- ✅ **Q4b** - GitHub Actions CI - Windows (MSVC 2022) - **DEPLOYED & OPERATIONAL**
+- ✅ **Q4c** - GitHub Actions CI - Linux (GCC 13/Clang 18) - **DEPLOYED & OPERATIONAL**
 - ✅ **Q6** - Remove Stockfish references (GPL/MIT license compliance)
 - ✅ **Code quality** - Applied clang-tidy fixes (const-correctness, modernization)
 - ✅ **Clang 18 support** - Cross-compiler testing with full C++20 support
 - ✅ **Documentation** - Comprehensive build guides and technical references
-- ✅ **Production-ready** - All platforms tested, CI/CD operational
+- ✅ **Production-ready** - All platforms tested, CI/CD operational with automated releases
 
 **Skipped Tasks:**
 - ⏭️ **C3** - Clean up commented code (intentional TODOs and future reference sections kept)
@@ -411,11 +411,15 @@ The following tasks have been completed as part of the v0.7 development cycle:
 
 ### Remaining v0.7 → v1.0 Tasks
 
-| #   | Item                           | Effort      | Status | Priority |
-|-----|--------------------------------|-------------|--------|----------|
-| Q4a | WSL Linux build                | 🟢 1-2 days | ⬜ TODO | Medium   |
-| Q4b | GitHub Actions CI - Windows    | 🟡 2-3 days | ⬜ TODO | Medium   |
-| Q4c | GitHub Actions CI - Linux      | 🟡 2-3 days | ⬜ TODO | Medium   |
+**All v0.7 → v1.0 tasks complete!** ✅
+
+The codebase is production-ready for v1.0 release:
+- ✅ Cross-platform support (Windows, Linux GCC/Clang)
+- ✅ GitHub Actions CI/CD deployed and operational
+- ✅ Complete documentation
+- ✅ Automated release workflow with artifacts
+
+Future improvements are tracked in the v1.x roadmap below.
 
 ### Effort Legend
 - 🟢 **Low**: Less than 1 day of focused work
@@ -460,9 +464,9 @@ The following tasks have been completed as part of the v0.7 development cycle:
 | Q1 | Add CMakePresets.json          | 🟢 2-4 hours | ✅ DONE  | IDE-agnostic build profiles (Debug, Release, CI)                                  |
 | Q2 | Add clang-tidy config          | 🟢 2-4 hours | ✅ DONE  | `.clang-tidy` added with project-aligned checks and exclusions                    |
 | Q3 | Add `ENABLE_SANITIZERS` option | 🟢 2-4 hours | ✅ DONE  | Debug-only ASan (MSVC) and ASan/UBSan (Clang/GNU)                                 |
-| Q4a | WSL Linux build                | 🟢 1-2 days  | ⬜ TODO  | Enable Linux build via WSL with GCC/Clang                                                 |
-| Q4b | GitHub Actions CI - Windows    | 🟡 2-3 days  | ⬜ TODO  | Set up Windows build pipeline                                                             |
-| Q4c | GitHub Actions CI - Linux      | 🟡 2-3 days  | ⬜ TODO  | Set up Linux build pipeline                                                               |
+| Q4a | WSL Linux build                | 🟢 1-2 days  | ✅ DONE  | Enable Linux build via WSL with GCC 13 and Clang 18 - **COMPLETE**               |
+| Q4b | GitHub Actions CI - Windows    | 🟡 2-3 days  | ✅ DONE  | Set up Windows build pipeline - **DEPLOYED & OPERATIONAL**                       |
+| Q4c | GitHub Actions CI - Linux      | 🟡 2-3 days  | ✅ DONE  | Set up Linux build pipeline - **DEPLOYED & OPERATIONAL**                         |
 | Q5 | Reduce header coupling         | 🟡 1-2 weeks | ⏭️ SKIP | Not worth complexity; `types.h` aggregate is clear and PCH mitigates compile time |
 | Q6 | Remove Stockfish references    | 🟢 1-2 hours | ✅ DONE  | GPL/MIT license fix in macros.h, Search.cpp, Evaluator.cpp                        |
 
@@ -502,3 +506,6 @@ The following tasks have been completed as part of the v0.7 development cycle:
 - **Logger.md** - Logging system documentation
 - **CLion_WSL_Setup.md** - CLion with WSL configuration
 - **engine-interface.txt** - UCI protocol reference
+
+### Planning & Roadmap
+- **V1_ENGINE_ENHANCEMENT_PLAN.md** - Detailed v1.x enhancement roadmap with phase-based implementation plans, detailed specifications, and success metrics

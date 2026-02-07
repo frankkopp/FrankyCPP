@@ -53,7 +53,8 @@ void Perft::perft(const int maxDepth, const bool onDemand) {
     std::cerr << std::format("Fen for perft invalid: {}", e.what()) << std::endl;
     return;
   }
-  std::array<MoveGenerator, MAX_DEPTH> mg;
+  // Size is MAX_DEPTH + 1 to safely handle depth values from 0 to MAX_DEPTH (128)
+  std::array<MoveGenerator, MAX_DEPTH + 1> mg;
   std::ostringstream os;
   std::cout.imbue(deLocale);
   os.imbue(deLocale);
@@ -186,7 +187,8 @@ void Perft::perft_divide(const int maxDepth, const bool onDemand) {
     std::cerr << std::format("Fen for perft invalid: {}", e.what()) << std::endl;
     return;
   }
-  std::array<MoveGenerator, MAX_DEPTH> mg;
+  // Size is MAX_DEPTH + 1 to safely handle depth values from 0 to MAX_DEPTH (128)
+  std::array<MoveGenerator, MAX_DEPTH + 1> mg;
   std::ostringstream os;
   std::cout.imbue(deLocale);
   os.imbue(deLocale);

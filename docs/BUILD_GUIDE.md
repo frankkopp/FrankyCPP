@@ -342,6 +342,165 @@ CI runs on:
 
 ---
 
+## Release Packaging
+
+FrankyCPP uses CMake's `install()` command to create distributable release packages with proper directory structure and filtering.
+
+### Overview
+
+Running `cmake --install` creates:
+- A versioned folder: `Release/FrankyCPP_v1.1/` containing:
+  - Executable (`FrankyCPP_v1.1.exe` or `FrankyCPP_v1.1`)
+  - `books/` folder (filtered - no cache files or test data)
+  - `config/` folder (all YAML configuration files)
+- A ZIP archive: `Release/FrankyCPP_v1.1.zip` ready for distribution
+
+### Creating a Release
+
+#### Option 1: CLion Install Menu (Recommended)
+
+1. Open the **Build** menu
+2. Click **Install**
+
+This will:
+- Create the versioned folder structure
+- Filter out unwanted files
+- Create the ZIP archive
+
+#### Option 2: Command Line
+
+**Windows:**
+```powershell
+cmake --install cmake-build-release --config Release
+```
+
+**Linux/WSL:**
+```bash
+cmake --install cmake-build-wsl-release
+```
+
+#### Option 3: Using Build Scripts
+
+**Windows:**
+```powershell
+# Build and then package
+.\build_windows.ps1 release
+cmake --build cmake-build-release --target package_release
+```
+
+### Release Structure
+
+After running `cmake --install`, you'll have:
+
+```
+Release/
+├── FrankyCPP_v1.1/                    # Versioned folder (git ignored)
+│   ├── FrankyCPP_v1.1.exe             # Main executable
+│   ├── books/                          # Opening books
+│   │   ├── book.txt                    # Default book
+│   │   ├── 8moves_GM_LB.pgn           # GM games book
+│   │   ├── ecoe.pgn                   # ECO book
+│   │   ├── superbook.pgn              # Large opening book
+│   │   ├── book_graham.txt            # Alternative books
+│   │   ├── book_smalltest.txt
+│   │   ├── pgn_test.pgn
+│   │   └── ...
+│   └── config/                         # Configuration files
+│       ├── search.yaml                 # Search parameters
+│       ├── eval.yaml                  # Evaluation parameters
+│       └── FrankyCPP.cfg              # UCI options
+└── FrankyCPP_v1.1.zip                 # ZIP archive (git tracked)
+```
+
+### What Gets Filtered Out
+
+The packaging process automatically excludes:
+- **Cache files**: `*.cache.*.bin` (platform-specific, regenerated on first run)
+- **Large test files**: All `superbook*.pgn` files (large test-only files, not needed for distribution)
+- **Build artifacts**: Temporary files from compilation
+
+### Git Tracking
+
+The `.gitignore` is configured to:
+- ✅ **Track ZIP files**: `Release/FrankyCPP_v*.zip` (distribution artifacts)
+- ❌ **Ignore folders**: `Release/FrankyCPP_v*/` (build artifacts)
+- ❌ **Ignore flat install**: `Release/bin/` (development testing)
+
+This means you can commit the ZIP files to version control for easy distribution, while keeping the source tree clean.
+
+### Version Management
+
+The package version is automatically derived from the CMake project version:
+
+```cmake
+project(FrankyCPP VERSION 1.1.0)
+```
+
+When you bump the version (e.g., to 1.2.0), the package target automatically creates:
+- `Release/FrankyCPP_v1.2/`
+- `Release/FrankyCPP_v1.2.zip`
+
+No manual path updates needed!
+
+### Platform-Specific Considerations
+
+**Windows:**
+- Executable has `.exe` extension
+- ZIP created using CMake's built-in `tar` command with `--format=zip`
+- Works with any Windows build directory (cmake-build-release, cmake-build-win-release, etc.)
+
+**Linux/WSL:**
+- Executable has no extension
+- Same ZIP mechanism (cross-platform compatible)
+- Works with Linux build directories (cmake-build-wsl-release, etc.)
+
+### Testing the Release
+
+After creating a package:
+
+1. **Extract the ZIP** to a test location
+2. **Navigate** to the extracted folder
+3. **Run the executable**:
+   ```powershell
+   # Windows
+   .\FrankyCPP_v1.1.exe
+   
+   # Linux
+   ./FrankyCPP_v1.1
+   ```
+4. **Verify** that the opening book loads (cache will be created on first run)
+5. **Test UCI commands**:
+   ```
+   uci
+   isready
+   position startpos
+   go depth 10
+   quit
+   ```
+
+### Advanced: Customizing the Package
+
+The packaging logic is defined in:
+- **Main target**: `CMakeLists.txt` (root) - `package_release` target
+- **Book filtering**: `cmake/CopyBooksFiltered.cmake` - filters files during copy
+
+To customize what gets included:
+
+1. Edit `cmake/CopyBooksFiltered.cmake` to modify exclusion patterns
+2. Edit the `install(CODE ...)` section in `src/CMakeLists.txt` to add new files/folders
+
+Example: Adding a README to releases:
+
+```cmake
+# In src/CMakeLists.txt, inside install(CODE ...) block
+# Add after the config files copy:
+file(INSTALL \"\${PROJECT_SOURCE_DIR}/README.md\"
+     DESTINATION \"\${RELEASE_DIR}\"
+     RENAME \"README.txt\")
+```
+
+---
+
 ## Troubleshooting
 
 ### Windows Issues

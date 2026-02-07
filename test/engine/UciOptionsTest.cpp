@@ -55,7 +55,7 @@ TEST_F(UciOptionsTest, initAndStr) {
 
   o = pUciOptions->getOption("Hash");
   fprintln("Option: {}", o->str());
-  EXPECT_TRUE(o->str().rfind("option name Hash type spin default 64 min 0 max 4096 current ", 0) == 0);
+  EXPECT_TRUE(o->str().rfind("option name Hash type spin default 64 min 0 max 4096", 0) == 0);
   fprintln("Option current value: {}", o->currentValue);
   EXPECT_EQ("64", o->defaultValue);
 

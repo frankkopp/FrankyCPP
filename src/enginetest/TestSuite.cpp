@@ -19,36 +19,32 @@
 
 #include "TestSuite.h"
 
+#include "EpdParser.h"
 #include "common/Logging.h"
 #include "common/stringutil.h"
 #include "engine/UciOptions.h"
-
 #include "types/timeunits.h"
-#include <boost/algorithm/string.hpp>
-#include <chrono>
 
-#include <fstream>
 #include <iostream>
-#include <regex>
 
-TestSuite::TestSuite(const milliseconds& time, const Depth searchDepth, const std::string& filePath)
-    : searchTime(time), searchDepth(searchDepth), filePath(filePath) {
+TestSuite::TestSuite(const milliseconds time, const Depth searchDepth, const std::string_view filePath)
+    : searchTime_(time), searchDepth_(searchDepth), filePath_(filePath) {
 
-  LOG__INFO(Logger::get().TSUITE_LOG, "Preparing Test Suite {}", filePath);
+  LOG__INFO(Logger::get().TSUITE_LOG, "Preparing Test Suite {}", filePath_);
 
   CONFIG_OVERRIDE(s.USE_BOOK = false;);
 
-  // read EPD file
+  // read EPD file using EpdParser
   fprintln("Reading EPD File: ...");
-  readTestCases(filePath, testCases);
+  testCases_ = EpdParser::parseFile(filePath_);
   fprintln("                  ... DONE");
   fprintln("");
 }
 
 
 void TestSuite::runTestSuite() {
-  if (testCases.empty()) {
-    LOG__WARN(Logger::get().TSUITE_LOG, "No tests to run in {}", filePath);
+  if (testCases_.empty()) {
+    LOG__WARN(Logger::get().TSUITE_LOG, "No tests to run in {}", filePath_);
     return;
   }
 
@@ -60,80 +56,82 @@ void TestSuite::runTestSuite() {
   runAllTests();
 
   // count and sum up the results
-  lastResult = sumUpTests();
+  lastResult_ = sumUpTests();
 
   const auto elapsed = elapsedSince(startTime);
   printReport(elapsed);
 }
 
-void TestSuite::printReportHeader() {
+void TestSuite::printReportHeader() const {
   fprintln("Running Test Suite");
   fprintln("==================================================================");
-  fprintln("EPD File:    {}", filePath);
-  fprintln("SearchTime:  {}", str(searchTime));
-  fprintln("MaxDepth:    {}", searchDepth);
-  fprintln("No of tests: {}", testCases.size());
+  fprintln("EPD File:    {}", filePath_);
+  fprintln("SearchTime:  {}", str(searchTime_));
+  fprintln("MaxDepth:    {}", searchDepth_);
+  fprintln("No of tests: {}", testCases_.size());
   fprintln("Date:        {}", format_now());
   fprintln("");
 }
 
-void TestSuite::printReport(const nanoseconds elapsed) {
+void TestSuite::printReport(const nanoseconds elapsed) const {
   // print report
-  fprintln("Results for Test Suite", filePath);
+  fprintln("Results for Test Suite", filePath_);
   fprintln("------------------------------------------------------------------------------------------------------------------------------------");
-  fprintln("EPD File:   {}", filePath);
-  fprintln("SearchTime: {}", str(searchTime));
-  fprintln("MaxDepth:   {}", searchDepth);
+  fprintln("EPD File:   {}", filePath_);
+  fprintln("SearchTime: {}", str(searchTime_));
+  fprintln("MaxDepth:   {}", searchDepth_);
   fprintln("Date:       {}", format_now());
   fprintln("===================================================================================================================================");
   fprintln(" {:<4} | {:<10} | {:<8} | {:<8} | {:<18} | {} | {}", " Nr.", "Result", "Move", "Value", "Expected Result", "Fen", "Id");
   fprintln("====================================================================================================================================");
   int i = 0;
-  for (const auto& t : testCases) {
+  for (const auto& t : testCases_) {
     i++;
-    if (t.type == DM) {
+    if (t.getType() == TestType::DM) {
       fprintln(" {:<4d} | {:<10} | {:<8} | {:<8} | {} {:<15d} | {} | {}",
-               i, resultTypeStr[t.result], t.actualMove.str(), t.actualValue.str(), testTypeStr[t.type], t.mateDepth, t.fen, t.id);
+               i, resultTypeToString(t.getResult()), t.getActualMove().str(), t.getActualValue().str(),
+               testTypeToString(t.getType()), t.getMateDepth(), t.getFen(), t.getId());
     }
     else {
       fprintln(" {:<4d} | {:<10} | {:<8} | {:<8} | {} {:<15} | {} | {}",
-               i, resultTypeStr[t.result], t.actualMove.str(), t.actualValue.str(), testTypeStr[t.type], t.targetMoves.str(), t.fen, t.id);
+               i, resultTypeToString(t.getResult()), t.getActualMove().str(), t.getActualValue().str(),
+               testTypeToString(t.getType()), t.getTargetMoves().str(), t.getFen(), t.getId());
     }
   }
   fprintln("====================================================================================================================================");
   fprintln("Summary:");
-  fprintln("EPD File:   {}", filePath);
-  fprintln("SearchTime: {}", str(searchTime));
-  fprintln("MaxDepth:   {}", searchDepth);
+  fprintln("EPD File:   {}", filePath_);
+  fprintln("SearchTime: {}", str(searchTime_));
+  fprintln("MaxDepth:   {}", searchDepth_);
   fprintln("Date:       {}", format_now());
-  fprintln("Successful: {:<3d} ({:d} %)", lastResult.successCounter, 100 * lastResult.successCounter / lastResult.counter);
-  fprintln("Failed:     {:<3d} ({:d} %)", lastResult.failedCounter, 100 * lastResult.failedCounter / lastResult.counter);
-  fprintln("Skipped:    {:<3d} ({:d} %)", lastResult.skippedCounter, 100 * lastResult.skippedCounter / lastResult.counter);
-  fprintln("Not tested: {:<3d} ({:d} %)", lastResult.notTestedCounter, 100 * lastResult.notTestedCounter / lastResult.counter);
+  fprintln("Successful: {:<3d} ({:d} %)", lastResult_.successCounter, 100 * lastResult_.successCounter / lastResult_.counter);
+  fprintln("Failed:     {:<3d} ({:d} %)", lastResult_.failedCounter, 100 * lastResult_.failedCounter / lastResult_.counter);
+  fprintln("Skipped:    {:<3d} ({:d} %)", lastResult_.skippedCounter, 100 * lastResult_.skippedCounter / lastResult_.counter);
+  fprintln("Not tested: {:<3d} ({:d} %)", lastResult_.notTestedCounter, 100 * lastResult_.notTestedCounter / lastResult_.counter);
   fprintln("Test time:  {}", format(elapsed));
   fprintln("\nConfiguration:\n{}\n", UciOptions::getInstance()->str());
 }
 
 TestSuiteResult TestSuite::sumUpTests() const {
   TestSuiteResult tsr{};
-  for (const auto& t : testCases) {
+  for (const auto& t : testCases_) {
     tsr.counter++;
-    switch (t.result) {
-      case NOT_TESTED:
+    switch (t.getResult()) {
+      case ResultType::NOT_TESTED:
         tsr.notTestedCounter++;
         break;
-      case SKIPPED:
+      case ResultType::SKIPPED:
         tsr.skippedCounter++;
         break;
-      case FAILED:
+      case ResultType::FAILED:
         tsr.failedCounter++;
         break;
-      case SUCCESS:
+      case ResultType::SUCCESS:
         tsr.successCounter++;
         break;
     }
-    tsr.nodes += t.nodes;
-    tsr.time += t.time;
+    tsr.nodes += t.getNodes();
+    tsr.time += t.getTime();
   }
   return tsr;
 }
@@ -143,225 +141,111 @@ void TestSuite::runAllTests() {
   // Ensure evaluator configuration is at defaults for this suite run
   engine::config::ConfigManager::instance().resetToDefaults();
   // loop over all test cases and execute the test
-  for (auto& test : testCases) {
+  for (auto& test : testCases_) {
     fprintln("Test {} of {}\nTest: {} -- Target Result {}",
-             ++i, testCases.size(), test.line, test.targetMoves.str());
+             ++i, testCases_.size(), test.getLine(), test.getTargetMoves().str());
 
     // setup search
     Search search{};
     SearchLimits searchLimits{};
-    searchLimits.depth = searchDepth;
-    if (searchTime.count()) {
-      searchLimits.moveTime    = searchTime;
+    searchLimits.depth = searchDepth_;
+    if (searchTime_.count()) {
+      searchLimits.moveTime    = searchTime_;
       searchLimits.timeControl = true;
     }
 
     const auto startTime2 = currentTime();
     runSingleTest(search, searchLimits, test);
     const auto elapsedTime = elapsedSince(startTime2);
-    test.nodes       = search.getLastSearchResult().nodes;
-    test.time        = search.getLastSearchResult().time;
-    test.nps         = nps(search.getLastSearchResult().nodes, search.getLastSearchResult().time);
+    test.setNodes(search.getLastSearchResult().nodes);
+    test.setTime(search.getLastSearchResult().time);
+    test.setNps(nps(search.getLastSearchResult().nodes, search.getLastSearchResult().time));
     fprintln("Test finished in {} with result {} ({}) - nps: {:L}\n\n",
-             format(elapsedTime), resultTypeStr[test.result], test.actualMove.str(), test.nps);
+             format(elapsedTime), resultTypeToString(test.getResult()), test.getActualMove().str(), test.getNps());
   }
 }
 
-void TestSuite::runSingleTest(Search& search, SearchLimits& limits, Test& test) {
+void TestSuite::runSingleTest(Search& search, SearchLimits& limits, EpdTest& test) {
   // reset search and search limits
   search.newGame();
   limits.mate = 0;
-  const Position p{test.fen};
+  const Position p{test.getFen()};
   // call the appropriate function for the test type
-  switch (test.type) {
-    case DM:
+  switch (test.getType()) {
+    case TestType::DM:
       directMateTest(search, limits, p, test);
       break;
-    case BM:
+    case TestType::BM:
       bestMoveTest(search, limits, p, test);
       break;
-    case AM:
+    case TestType::AM:
       avoidMoveTest(search, limits, p, test);
       break;
-    case NOOP:
+    case TestType::NOOP:
       return;
   }
 }
 
-void TestSuite::directMateTest(Search& search, SearchLimits& limits, const Position& position, Test& test) {
+void TestSuite::directMateTest(Search& search, SearchLimits& limits, const Position& position, EpdTest& test) {
   // get target mate depth
-  limits.mate = test.mateDepth;
+  limits.mate = test.getMateDepth();
   // start search
   search.startSearch(position, limits);
   search.waitWhileSearching();
   // check and store result
   if ("mate " + std::to_string(limits.mate) == search.getLastSearchResult().bestMoveValue.str()) {
-    LOG__INFO(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" SUCCESS", test.id);
-    test.result = SUCCESS;
+    LOG__INFO(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" SUCCESS", test.getId());
+    test.setResult(ResultType::SUCCESS);
   }
   else {
-    LOG__INFO(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" FAILED", test.id);
-    test.result = FAILED;
+    LOG__INFO(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" FAILED", test.getId());
+    test.setResult(ResultType::FAILED);
   }
-  test.actualMove  = search.getLastSearchResult().bestMove;
-  test.actualValue = search.getLastSearchResult().bestMoveValue;
+  test.setActualMove(search.getLastSearchResult().bestMove);
+  test.setActualValue(search.getLastSearchResult().bestMoveValue);
 }
 
-void TestSuite::bestMoveTest(Search& search, const SearchLimits& limits, const Position& position, Test& test) {
+void TestSuite::bestMoveTest(Search& search, const SearchLimits& limits, const Position& position, EpdTest& test) {
   // do the search
   search.startSearch(position, limits);
   search.waitWhileSearching();
   // get the result
   const Move actual = search.getLastSearchResult().bestMove.stripped();
   // check against expected moves
-  for (const Move m : test.targetMoves) {
+  for (const Move m : test.getTargetMoves()) {
     if (m == actual) {
-      LOG__INFO(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" SUCCESS", test.id);
-      test.actualMove  = search.getLastSearchResult().bestMove;
-      test.actualValue = search.getLastSearchResult().bestMoveValue;
-      test.result      = SUCCESS;
+      LOG__INFO(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" SUCCESS", test.getId());
+      test.setActualMove(search.getLastSearchResult().bestMove);
+      test.setActualValue(search.getLastSearchResult().bestMoveValue);
+      test.setResult(ResultType::SUCCESS);
       return;
     }
   }
-  LOG__INFO(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" FAILED", test.id);
-  test.actualMove  = search.getLastSearchResult().bestMove;
-  test.actualValue = search.getLastSearchResult().bestMoveValue;
-  test.result      = FAILED;
+  LOG__INFO(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" FAILED", test.getId());
+  test.setActualMove(search.getLastSearchResult().bestMove);
+  test.setActualValue(search.getLastSearchResult().bestMoveValue);
+  test.setResult(ResultType::FAILED);
 }
 
-void TestSuite::avoidMoveTest(Search& search, const SearchLimits& limits, const Position& position, Test& test) {
+void TestSuite::avoidMoveTest(Search& search, const SearchLimits& limits, const Position& position, EpdTest& test) {
   // do the search
   search.startSearch(position, limits);
   search.waitWhileSearching();
   // get the result
   const Move actual = search.getLastSearchResult().bestMove.stripped();
   // check against expected moves to avoid
-  for (const Move m : test.targetMoves) {
+  for (const Move m : test.getTargetMoves()) {
     if (m == actual) {
-      LOG__INFO(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" FAILED", test.id);
-      test.actualMove  = search.getLastSearchResult().bestMove;
-      test.actualValue = search.getLastSearchResult().bestMoveValue;
-      test.result      = FAILED;
+      LOG__INFO(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" FAILED", test.getId());
+      test.setActualMove(search.getLastSearchResult().bestMove);
+      test.setActualValue(search.getLastSearchResult().bestMoveValue);
+      test.setResult(ResultType::FAILED);
       return;
     }
-    else {
-      continue;
-    }
   }
-  LOG__INFO(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" SUCCESS", test.id);
-  test.actualMove  = search.getLastSearchResult().bestMove;
-  test.actualValue = search.getLastSearchResult().bestMoveValue;
-  test.result      = SUCCESS;
-}
-
-void TestSuite::readTestCases(const std::string& filePathStr, std::vector<Test>& tests) {
-  std::ifstream file(filePathStr);
-  if (file.is_open()) {
-    // read all lines from the file, parse the line into
-    // a test case and add it to the list of test cases
-    std::string line;
-    while (getline(file, line)) {
-      Test test{};
-      if (readOneEPD(line, test)) {
-        tests.push_back(test);
-      }
-    }
-    file.close();
-  }
-  else {
-    LOG__ERROR(Logger::get().TSUITE_LOG, "Could not open file: {}", filePathStr);
-    return;
-  }
-}
-
-bool TestSuite::readOneEPD(std::string& line, Test& test) {
-  LOG__DEBUG(Logger::get().TSUITE_LOG, "EPD: {}", line);
-  // skip empty lines and comments
-  cleanUpLine(line);
-  if (line.empty()) {
-    return false;
-  }
-  // Find a EPD line
-  std::regex regexPattern(R"(^\s*(.*) (bm|dm|am) (.*?);(.* id \"(.*?)\";)?.*$)");
-  std::smatch matcher;
-  if (!std::regex_match(line, matcher, regexPattern)) {
-    LOG__WARN(Logger::get().TSUITE_LOG, "No EPD match found in {}", line);
-    return false;
-  }
-  // get the parts
-  std::string fen    = matcher.str(1);
-  std::string type   = matcher.str(2);
-  std::string result = matcher.str(3);
-  std::string id     = matcher.str(5).empty() ? "no ID" : matcher.str(5);
-  LOG__DEBUG(Logger::get().TSUITE_LOG, "Fen: {}    Type: {}    Result: {}    ID: {}", fen, type, result, id);
-  // get position
-  Position p;
-  try {
-    p = Position(fen);
-  } catch (std::invalid_argument& e) {
-    LOG__WARN(Logger::get().TSUITE_LOG, "Invalid fen {} could not create position from: {}", e.what(), line);
-    return false;
-  }
-  // get test type
-  TestType testType;
-  if (type == "dm") {
-    testType = DM;
-  }
-  else if (type == "bm") {
-    testType = BM;
-  }
-  else if (type == "am") {
-    testType = AM;
-  }
-  else {
-    LOG__WARN(Logger::get().TSUITE_LOG, "Invalid TestType {}", type);
-    return false;
-  }
-  // target moves
-  MoveList resultMoves{};
-  int dmDepth{};
-  if (testType == BM || testType == AM) {
-    boost::replace_all(result, "!", "");
-    boost::replace_all(result, "?", "");
-    // check if results are even valid on the position
-    // and store the moves into the test
-    MoveGenerator mg{};
-    std::vector<std::string> results;
-    boost::split(results, result, [](const char c) { return c == ' '; });
-    for (auto s : results) {
-      boost::trim(s);
-      Move m = mg.getMoveFromSan(p, s);
-      if (m.isValid()) {
-        resultMoves.emplace_back(m);
-      }
-    }
-    if (resultMoves.empty()) {
-      LOG__WARN(Logger::get().TSUITE_LOG, "Result moves from EPD {} are invalid on this position {}", result, p.strFen());
-      return false;
-    }
-  }
-  else { // if (testType == DM)
-    std::istringstream(result) >> dmDepth;
-    if (!dmDepth) {
-      LOG__WARN(Logger::get().TSUITE_LOG, "Direct mate depth from EPD is invalid  {}", result);
-      return false;
-    }
-  }
-  // Configure the test
-  test.id          = id;
-  test.fen         = fen;
-  test.type        = testType;
-  test.targetMoves = resultMoves;
-  test.mateDepth   = static_cast<Depth>(dmDepth);
-  test.line        = line;
-  return true;
-}
-
-std::string& TestSuite::cleanUpLine(std::string& line) {
-  line = trimFast(line);
-  const std::regex leadCommentTrim(R"(^\s*#.*$)");
-  line = std::regex_replace(line, leadCommentTrim, "");
-  const std::regex trailCommentTrim(R"(^(.*)#([^;]*)$)");
-  line = std::regex_replace(line, trailCommentTrim, "$1;");
-  return line;
+  // No forbidden move was played - SUCCESS
+  LOG__INFO(Logger::get().TSUITE_LOG, "TestSet: ID \"{}\" SUCCESS", test.getId());
+  test.setActualMove(search.getLastSearchResult().bestMove);
+  test.setActualValue(search.getLastSearchResult().bestMoveValue);
+  test.setResult(ResultType::SUCCESS);
 }

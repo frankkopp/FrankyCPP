@@ -6,7 +6,7 @@ message(STATUS "================================================================
 cmake_minimum_required(VERSION 3.16)
 
 # Project name and version
-project(FrankyCPP VERSION 1.0.0)
+project(FrankyCPP VERSION 1.1.0)
 message(STATUS "FrankyCPP v${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
 
 # Enforce C++20 globally so all targets (including FetchContent deps) see the right standard
@@ -256,8 +256,7 @@ if (WIN32)
     endif()
 endif()
 
-# Microsoft Visual Compiler only (non-MSVC toolchains are commented out for now and will be
-# revisited later. Keeping them below for reference.)
+# Microsoft Visual Compiler configuration (Windows/MSVC)
 if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 
     # this needs to be added to CLION cmake options: -G Ninja
@@ -364,13 +363,16 @@ message(STATUS "Compiler DEBUG flags: ${CMAKE_CXX_FLAGS_DEBUG}")
 message(STATUS "Compiler RELEASE flags: ${CMAKE_CXX_FLAGS_RELEASE}")
 
 # Boost via vcpkg CONFIG package (kept)
-find_package(Boost CONFIG REQUIRED COMPONENTS program_options serialization)
+find_package(Boost CONFIG REQUIRED COMPONENTS program_options serialization filesystem)
 
 # Use spdlog from vcpkg instead of FetchContent
 find_package(spdlog CONFIG REQUIRED)
 
 # yaml-cpp via vcpkg CONFIG package
 find_package(yaml-cpp CONFIG REQUIRED)
+
+# nlohmann_json for JSON parsing in Arena (header-only)
+find_package(nlohmann_json CONFIG REQUIRED)
 
 # project sub directories - need to have their own CMakeList.txt
 add_subdirectory(src)
@@ -382,6 +384,7 @@ endif()
 if (FRANKYCPP_BUILD_BENCHMARKS)
     add_subdirectory(testbench)
 endif()
+
 
 # =============================================================================
 # Configuration Summary (useful for CI/CD logs)

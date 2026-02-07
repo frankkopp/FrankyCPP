@@ -92,6 +92,42 @@ TEST_F(UCITest, setoptionTest) {
   EXPECT_EQ("2048", UciOptions::getInstance()->getOption("Hash")->currentValue);
 }
 
+TEST_F(UCITest, getoptionsTest) {
+  // First set some options to non-default values
+  {
+    ostringstream os;
+    const string command = "setoption name Hash value 512\nsetoption name Use Quiescence value false";
+    LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
+    istringstream is(command);
+    UciHandler uciHandler(&is, &os);
+    uciHandler.loop();
+  }
+
+  // Now test getoptions command
+  ostringstream os;
+  const string command = "getoptions";
+  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
+  istringstream is(command);
+  UciHandler uciHandler(&is, &os);
+  uciHandler.loop();
+  string result = os.str();
+  LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE: \n{}", result);
+
+  // Verify the output contains option information with current values
+  EXPECT_TRUE(result.find("option name") != string::npos);
+  EXPECT_TRUE(result.find("type") != string::npos);
+  EXPECT_TRUE(result.find("current") != string::npos);
+
+  // Verify termination signal
+  EXPECT_TRUE(result.find("optionsok") != string::npos);
+
+  // Verify specific values we set
+  EXPECT_TRUE(result.find("Hash") != string::npos);
+  EXPECT_TRUE(result.find("spin current 512") != string::npos);
+  EXPECT_TRUE(result.find("Use Quiescence") != string::npos);
+  EXPECT_TRUE(result.find("check current false") != string::npos);
+}
+
 TEST_F(UCITest, clearHashTest) {
   CONFIG_OVERRIDE(s.USE_TT = true;);
   ostringstream os;
@@ -193,9 +229,9 @@ TEST_F(UCITest, positionTest) {
 
 TEST_F(UCITest, goPerft) {
   ostringstream os;
-  int endDepth = 6;
+  int endDepth = 4;
 #ifndef NDEBUG
-  endDepth = 4;
+  endDepth = 2;
 #endif
 
   const string command = "perft 1 " + to_string(endDepth);

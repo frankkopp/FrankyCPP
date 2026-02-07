@@ -39,6 +39,33 @@
 - Pushing code to remote repositories without explicit permission
 - Any write operations not explicitly authorized by the user, e.g. modifying files, changing configurations, etc.
 
+### Documentation Policy:
+**DO NOT create summary .md documents unless explicitly requested**
+- Provide summaries in chat responses instead
+- User will ask for documentation if needed
+- Keep detailed explanations in conversation, not new files
+
+**Exceptions - When documentation IS appropriate:**
+- Required documentation (API docs, design docs explicitly requested by user)
+- Planning documents (plan, specs, design discussions) - if they exist, update them with progress
+- Status tracking in existing planning documents:
+  - Mark completed phases/tasks with ✅
+  - Update status fields (In Progress, Complete, etc.)
+  - Add brief notes (1-2 lines) so another chat session can continue
+  - Keep details in chat, only high-level status in document
+- DO NOT create "implementation summary" or "changes summary" documents
+
+### Build Policy:
+**DO NOT attempt to compile/build code using terminal commands**
+- The terminal environment may not have the proper build tools or configuration
+- Always ask the user to build after making code changes
+- Instead of running `cmake`, `ninja`, `make`, etc., provide instructions like:
+  - "Please rebuild the project in CLion"
+  - "Run: `cmake --build cmake-build-release`"
+  - "Build the target using your IDE"
+- Exception: You may check if files exist or list directories
+- After providing a fix, say: "Please rebuild and test to verify the fix"
+
 ---
 
 ## Project Overview
@@ -130,6 +157,79 @@ Use `#ifndef FRANKYCPP_*` pattern consistently:
 - Maximum line length: 120 characters
 - Braces: Allman style for functions, attached for control structures
 
+### Class Layout Guidelines
+Classes should follow this consistent structure for readability:
+
+```cpp
+class ClassName {
+  // 1. Constants (static constexpr)
+  static constexpr int MAX_SIZE = 100;
+  
+  // 2. Member fields (private by default)
+  std::string name;
+  int value;
+  
+public:
+  // 3. Public methods (constructors, destructors, core functionality)
+  ClassName();
+  ~ClassName();
+  
+  void doSomething();
+  bool processThing();
+  
+private:
+  // 4. Private methods (helpers, implementation details)
+  void helperMethod();
+  bool validateInternal();
+  
+public:
+  // 5. Getters/Setters (at the end)
+  [[nodiscard]] const std::string& getName() const { return name; }
+  void setName(const std::string& n) { name = n; }
+  [[nodiscard]] int getValue() const { return value; }
+};
+```
+
+**Rationale:** This layout makes classes easy to read and understand:
+- Constants are visible at the top
+- Fields are grouped together
+- Public interface is prominent
+- Private implementation details are separated
+- Getters/setters are at the end (often trivial)
+
+### Implementation File Order
+Implementation files (.cpp) should follow the same order as the header file (.h):
+
+```cpp
+// Header declares:
+class Example {
+  int value;
+public:
+  Example();           // 1. Constructor
+  void methodA();      // 2. Public method A
+  void methodB();      // 3. Public method B
+private:
+  void helperX();      // 4. Private helper X
+  void helperY();      // 5. Private helper Y
+public:
+  int getValue() const; // 6. Getter
+};
+
+// Implementation follows same order:
+Example::Example() { }           // 1. Constructor
+void Example::methodA() { }      // 2. Public method A
+void Example::methodB() { }      // 3. Public method B
+void Example::helperX() { }      // 4. Private helper X
+void Example::helperY() { }      // 5. Private helper Y
+int Example::getValue() const { } // 6. Getter
+```
+
+**Benefits:**
+- Easy to navigate between header and implementation
+- Consistent structure across all files
+- No hunting for method implementations
+- Clear correspondence between declaration and definition
+
 ### Modern C++ Guidelines
 - Prefer `constexpr` for compile-time constants
 - Use `[[nodiscard]]` for functions where ignoring return value is likely a bug
@@ -137,6 +237,70 @@ Use `#ifndef FRANKYCPP_*` pattern consistently:
 - Use `std::string_view` for non-owning string parameters
 - Prefer range-based for loops
 - Use structured bindings where appropriate
+
+### Const-Correctness (IMPORTANT)
+**All generated code MUST be const-correct to minimize linter warnings.**
+
+**Function parameters:**
+```cpp
+// ✅ CORRECT - use const ref for input parameters
+void process(const std::string& input);
+void calculate(const std::vector<int>& data);
+
+// ❌ WRONG - non-const ref for read-only parameters
+void process(std::string& input);  // implies modification
+```
+
+**Local variables - use `const` by default:**
+```cpp
+// ✅ CORRECT
+const auto result = computeSomething();
+const auto& item = container.front();
+const int count = static_cast<int>(vec.size());
+
+// ❌ WRONG - missing const on variables that don't change
+auto result = computeSomething();
+auto& item = container.front();
+int count = static_cast<int>(vec.size());
+```
+
+**Range-based for loops:**
+```cpp
+// ✅ CORRECT - const ref when not modifying
+for (const auto& item : items) { /* read-only access */ }
+
+// ✅ CORRECT - non-const ref only when modifying
+for (auto& item : items) { item.value++; }
+
+// ❌ WRONG - non-const ref for read-only iteration
+for (auto& item : items) { std::cout << item; }
+```
+
+**Smart pointers:**
+```cpp
+// ✅ CORRECT - const unique_ptr when pointer itself doesn't change
+const auto ptr = std::make_unique<Widget>(args);
+ptr->doSomething();  // OK - can call non-const methods on pointee
+
+// ❌ WRONG - missing const
+auto ptr = std::make_unique<Widget>(args);
+```
+
+**Member variables:**
+- Use `const` for members initialized once and never modified
+- Consider if a member can be `const` based on class design
+
+**Method declarations:**
+```cpp
+// ✅ CORRECT - const method when not modifying state
+[[nodiscard]] int getValue() const { return value_; }
+[[nodiscard]] const std::string& getName() const { return name_; }
+
+// ✅ CORRECT - non-const only when modifying
+void setValue(int v) { value_ = v; }
+```
+
+**General rule:** When in doubt, add `const`. Remove it only if the compiler complains.
 
 ---
 
@@ -193,6 +357,47 @@ src/
 - Place test files in corresponding `test/<module>/` directory
 - Use `Test_Fens.h` for standard test positions
 
+### ⚠️ CRITICAL: Test Class Initialization
+**Every test class that uses MoveGenerator, Position, or any chess move functionality MUST initialize the attack tables (magic bitboards).**
+
+Without initialization, sliding piece moves (bishops, rooks, queens) will NOT be generated correctly.
+
+**Required pattern for ALL chess-related test classes:**
+```cpp
+class YourTestClass : public ::testing::Test {
+public:
+  static void SetUpTestSuite() {
+    NEWLINE;
+    init::init();  // ← CRITICAL: Initializes attack tables/magics
+    NEWLINE;
+  }
+
+protected:
+  void SetUp() override {
+    // Your per-test setup here
+  }
+};
+```
+
+**Why this is required:**
+- Move generation relies on pre-computed magic bitboards for sliding pieces
+- `init::init()` sets up attack tables, Zobrist keys, and other static data
+- Without initialization, `MoveGenerator` will not generate bishop/rook/queen moves
+- This is a one-time setup per test suite (not per test)
+
+**Symptoms of missing initialization:**
+- Bishop, rook, queen moves missing from legal move lists
+- Castling moves may fail (requires attack detection)
+- Position evaluation may be incorrect
+- Tests that should pass will fail mysteriously
+
+**Always add this when creating new test files for:**
+- `MoveGenerator` tests
+- `Position` tests
+- `Search` tests
+- Any test using `matchesExpectedMove()` or move comparison
+- Integration tests involving chess moves
+
 ---
 
 ## Chess-Specific Notes
@@ -218,8 +423,10 @@ src/
 ## Windows & PowerShell Notes
 
 ### General
+- **You are in a Windows PowerShell terminal - use PowerShell syntax only**
+- **DO NOT use Unix/bash syntax**: no `&&` for command chaining, no `||`, no bash-isms
+- **Use `;` (semicolon)** to chain multiple commands in PowerShell: `cmd1 ; cmd2`
 - Assume Windows PowerShell for all shell commands
-- Do not chain commands with `&&` or `;` - use separate code blocks
 - Use `.\` prefix to run local executables
 - Do not attempt to compile code - ask user to compile in CLion and report errors
 
@@ -231,6 +438,51 @@ $env:VAR = "value"
 # Persistent (user level)
 [System.Environment]::SetEnvironmentVariable('VAR','value','User')
 ```
+
+### Git Operations
+
+**CRITICAL: Always ask user before committing! Never commit without explicit permission.**
+
+**CRITICAL: Do NOT attempt to verify commits after running `git commit`!**
+- The terminal output often doesn't display properly
+- Trust that the commit worked if no error was shown
+- Don't run `git status`, `git log`, or `git show` to verify commits
+- Just proceed with the next task after committing
+
+**CRITICAL: Avoid commands that pause for user input!**
+
+#### ✅ Safe Git Commands (No User Input)
+```powershell
+# Check status (always safe)
+git status
+git status --short
+
+# Show commit history (use flags to prevent paging)
+git log --oneline -5
+git log --oneline --graph -10
+
+# Show specific commit (use --no-pager or limit output)
+git --no-pager log -1
+git --no-pager show --stat HEAD
+
+# Check diff (use --no-pager for safety)
+git --no-pager diff
+git --no-pager diff --cached
+```
+
+#### ❌ Commands That Pause for Input (AVOID in automation)
+```powershell
+# These will pause if output is too long:
+git log              # Opens pager (less/more)
+git show             # Opens pager
+git diff             # Opens pager for large diffs
+git log -1 --stat    # May open pager
+
+# Use --no-pager prefix or limit output:
+git --no-pager log
+git log --oneline -5
+```
+
 
 ---
 

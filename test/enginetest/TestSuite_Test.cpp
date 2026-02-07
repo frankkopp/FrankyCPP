@@ -60,7 +60,7 @@ TEST_F(TestSuite_Test, readFile) {
   std::string filePath = FrankyCPP_PROJECT_ROOT;
   filePath += +"/test/testsets/franky_tests.epd";
   const TestSuite ts{moveTime, depth, filePath};
-  ASSERT_EQ(13, ts.testCases.size());
+  ASSERT_EQ(13, ts.getTestCases().size());
 }
 
 TEST_F(TestSuite_Test, franky_test) {
