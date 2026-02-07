@@ -16,7 +16,7 @@ file(GLOB_RECURSE ALL_FILES
 # Filter out cache files and superbook_xl.pgn
 set(EXCLUDED_PATTERNS
     ".*\\.cache\\..*\\.bin$"
-    "superbook_xl\\.pgn$"
+    "superbook.*\\.pgn$"
 )
 
 foreach(FILE ${ALL_FILES})
