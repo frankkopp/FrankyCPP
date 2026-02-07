@@ -13,7 +13,7 @@ engine_arena_main.cpp
     ↓
 ArenaRunner (Orchestrator)
     ↓
-    ├─→ TestSuiteRunner → TestSuite (enginetest) → Search (engine)
+    ├─→ TestSuiteRunner → UCIEngine (external UCI engine via subprocess)
     ├─→ MatchRunner → cutechess-cli subprocess
     └─→ ResultWriter → JSON files
 ```
@@ -70,27 +70,30 @@ ArenaRunner (Orchestrator)
 
 ### TestSuiteRunner
 
-**Purpose:** Execute EPD test suites and capture detailed results
+**Purpose:** Execute EPD test suites against external UCI engines and capture detailed results
 
 **File:** `src/engine_arena/TestSuiteRunner.h/cpp`
 
 **Key Methods:**
 - `runTestSuite(config)` - Run a single test suite
 - `runAllTestSuites()` - Run all configured test suites
+- `runTestSuiteParallel(config, numWorkers)` - Run with parallel workers
 
 **Dependencies:**
-- `TestSuite` (from `enginetest/`) - Existing test infrastructure
-- Uses built-in `Search` engine
+- `UCIEngine` - External engine communication via UCI protocol
+- `EpdParser` - Parse EPD test files
+
+**Features:**
+- Tests any UCI-compatible engine (FrankyCPP, Stockfish, etc.)
+- Parallel execution with configurable worker count
+- Position isolation via `ucinewgame` between tests
+- Configurable UCI options and command-line arguments
 
 **Extension Points:**
-- Add support for external engines via UCI (see Phase 6 design doc)
 - Add custom test operations beyond bm/am/dm
 - Add timing breakdowns (move generation, evaluation, etc.)
 - Capture search statistics (hash hits, pruning counts)
 
-**Current Limitation:**
-- Only tests built-in engine
-- Cannot test older versions without rebuilding
 
 ---
 
@@ -533,8 +536,8 @@ throw std::runtime_error(
    - Use simple text-based progress (e.g., [====>    ] 50%)
 
 3. **Add result filtering**
-   - `--compare v1.1 v1.0 --suite WAC` (compare specific suite)
-   - `--compare v1.1 v1.0 --matches-only` (skip test suites)
+   - `--cmp FrankyCPP-v1.1 --baseline FrankyCPP-v1.0 --suite WAC` (compare specific suite)
+   - `--cmp FrankyCPP-v1.1 --baseline FrankyCPP-v1.0 --matches-only` (skip test suites)
 
 4. **Add configuration validation**
    - Warn if time control is too short

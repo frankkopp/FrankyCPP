@@ -256,8 +256,7 @@ if (WIN32)
     endif()
 endif()
 
-# Microsoft Visual Compiler only (non-MSVC toolchains are commented out for now and will be
-# revisited later. Keeping them below for reference.)
+# Microsoft Visual Compiler configuration (Windows/MSVC)
 if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 
     # this needs to be added to CLION cmake options: -G Ninja
@@ -364,7 +363,7 @@ message(STATUS "Compiler DEBUG flags: ${CMAKE_CXX_FLAGS_DEBUG}")
 message(STATUS "Compiler RELEASE flags: ${CMAKE_CXX_FLAGS_RELEASE}")
 
 # Boost via vcpkg CONFIG package (kept)
-find_package(Boost CONFIG REQUIRED COMPONENTS program_options serialization)
+find_package(Boost CONFIG REQUIRED COMPONENTS program_options serialization filesystem)
 
 # Use spdlog from vcpkg instead of FetchContent
 find_package(spdlog CONFIG REQUIRED)

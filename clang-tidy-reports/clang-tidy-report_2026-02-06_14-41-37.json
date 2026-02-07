@@ -1,0 +1,1097 @@
+{
+  "timestamp": "2026-02-06_14-41-37",
+  "filesSummary": [
+    {
+      "Count": 1,
+      "File": "src/engine_arena/UCIEngine.cpp"
+    },
+    {
+      "Count": 2,
+      "File": "src/engine_arena/TestSuiteRunner.cpp"
+    },
+    {
+      "Count": 7,
+      "File": "src/engine_arena/ArenaRunner.cpp"
+    },
+    {
+      "Count": 16,
+      "File": "src/openingbook/OpeningBook.cpp"
+    },
+    {
+      "Count": 1,
+      "File": "src/engine/Search.cpp"
+    },
+    {
+      "Count": 0,
+      "File": "src/engine_arena/MatchRunner.cpp"
+    },
+    {
+      "Count": 5,
+      "File": "src/types/attacks.cpp"
+    },
+    {
+      "Count": 4,
+      "File": "src/enginetest/TestSuite.cpp"
+    },
+    {
+      "Count": 0,
+      "File": "src/engine_arena/ArenaConfig.cpp"
+    },
+    {
+      "Count": 4,
+      "File": "src/engine/UciOptions.cpp"
+    },
+    {
+      "Count": 25,
+      "File": "src/engine_arena/ResultWriter.cpp"
+    },
+    {
+      "Count": 5,
+      "File": "src/engine/UciHandler.cpp"
+    },
+    {
+      "Count": 1,
+      "File": "src/engine/TT.cpp"
+    },
+    {
+      "Count": 6,
+      "File": "src/main.cpp"
+    },
+    {
+      "Count": 0,
+      "File": "src/engine/Evaluator.cpp"
+    },
+    {
+      "Count": 5,
+      "File": "src/engine/PawnTT.cpp"
+    },
+    {
+      "Count": 0,
+      "File": "src/chesscore/Position.cpp"
+    },
+    {
+      "Count": 1,
+      "File": "src/chesscore/Perft.cpp"
+    },
+    {
+      "Count": 0,
+      "File": "src/engine/See.cpp"
+    },
+    {
+      "Count": 0,
+      "File": "src/engine_arena_main.cpp"
+    },
+    {
+      "Count": 9,
+      "File": "src/common/Logging.cpp"
+    },
+    {
+      "Count": 0,
+      "File": "src/chesscore/MoveUtils.cpp"
+    },
+    {
+      "Count": 5,
+      "File": "src/enginetest/EpdParser.cpp"
+    },
+    {
+      "Count": 2,
+      "File": "src/chesscore/MoveGenerator.cpp"
+    },
+    {
+      "Count": 6,
+      "File": "src/enginetest/SearchTreeSizeTest.cpp"
+    },
+    {
+      "Count": 0,
+      "File": "src/chesscore/History.cpp"
+    },
+    {
+      "Count": 1,
+      "File": "src/engine/config/ConfigManager.cpp"
+    },
+    {
+      "Count": 0,
+      "File": "src/common/ThreadPool.cpp"
+    }
+  ],
+  "allWarnings": [
+    {
+      "Message": "method 'parseInfoLine' can be made static",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/UCIEngine.cpp",
+      "Line": 547,
+      "Category": "readability",
+      "Check": "readability-convert-member-functions-to-static",
+      "Col": 17,
+      "Severity": "warning"
+    },
+    {
+      "Message": "method 'runSinglePosition' can be made static",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/TestSuiteRunner.cpp",
+      "Line": 597,
+      "Category": "readability",
+      "Check": "readability-convert-member-functions-to-static",
+      "Col": 35,
+      "Severity": "warning"
+    },
+    {
+      "Message": "narrowing conversion from 'long long' to 'double'",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/TestSuiteRunner.cpp",
+      "Line": 590,
+      "Category": "cppcoreguidelines",
+      "Check": "cppcoreguidelines-narrowing-conversions",
+      "Col": 109,
+      "Severity": "warning"
+    },
+    {
+      "Message": "method 'generateComparisonReport' can be made static",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ArenaRunner.cpp",
+      "Line": 699,
+      "Category": "readability",
+      "Check": "readability-convert-member-functions-to-static",
+      "Col": 26,
+      "Severity": "warning"
+    },
+    {
+      "Message": "method 'generateMatchComparisonReport' can be made static",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ArenaRunner.cpp",
+      "Line": 554,
+      "Category": "readability",
+      "Check": "readability-convert-member-functions-to-static",
+      "Col": 26,
+      "Severity": "warning"
+    },
+    {
+      "Message": "method 'generateMatchBaselineReport' can be made static",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ArenaRunner.cpp",
+      "Line": 479,
+      "Category": "readability",
+      "Check": "readability-convert-member-functions-to-static",
+      "Col": 26,
+      "Severity": "warning"
+    },
+    {
+      "Message": "method 'generateBaselineReport' can be made static",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ArenaRunner.cpp",
+      "Line": 373,
+      "Category": "readability",
+      "Check": "readability-convert-member-functions-to-static",
+      "Col": 26,
+      "Severity": "warning"
+    },
+    {
+      "Message": "string concatenation results in allocation of unnecessary temporary strings; consider using 'operator+=' or 'string::append()' instead",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ArenaRunner.cpp",
+      "Line": 173,
+      "Category": "performance",
+      "Check": "performance-inefficient-string-concatenation",
+      "Col": 5,
+      "Severity": "warning"
+    },
+    {
+      "Message": "string concatenation results in allocation of unnecessary temporary strings; consider using 'operator+=' or 'string::append()' instead",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ArenaRunner.cpp",
+      "Line": 171,
+      "Category": "performance",
+      "Check": "performance-inefficient-string-concatenation",
+      "Col": 7,
+      "Severity": "warning"
+    },
+    {
+      "Message": "use range-based for loop instead",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ArenaRunner.cpp",
+      "Line": 169,
+      "Category": "modernize",
+      "Check": "modernize-loop-convert",
+      "Col": 3,
+      "Severity": "warning"
+    },
+    {
+      "Message": "use of undeclared identifier 'boost'",
+      "File": "src/openingbook/bookentry.h",
+      "Line": 78,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 16,
+      "Severity": "error"
+    },
+    {
+      "Message": "use of undeclared identifier 'std'",
+      "File": "src/openingbook/bookentry.h",
+      "Line": 70,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 10,
+      "Severity": "error"
+    },
+    {
+      "Message": "use of undeclared identifier 'std'",
+      "File": "src/openingbook/bookentry.h",
+      "Line": 67,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 5,
+      "Severity": "error"
+    },
+    {
+      "Message": "use of undeclared identifier 'std'",
+      "File": "src/openingbook/bookentry.h",
+      "Line": 66,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 17,
+      "Severity": "error"
+    },
+    {
+      "Message": "unknown type name 'ZobristKey'",
+      "File": "src/openingbook/bookentry.h",
+      "Line": 62,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 28,
+      "Severity": "error"
+    },
+    {
+      "Message": "use of undeclared identifier 'ZobristKey'",
+      "File": "src/openingbook/bookentry.h",
+      "Line": 55,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 15,
+      "Severity": "error"
+    },
+    {
+      "Message": "use of undeclared identifier 'std'",
+      "File": "src/openingbook/bookentry.h",
+      "Line": 55,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 3,
+      "Severity": "error"
+    },
+    {
+      "Message": "use of undeclared identifier 'Move'",
+      "File": "src/openingbook/bookentry.h",
+      "Line": 54,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 15,
+      "Severity": "error"
+    },
+    {
+      "Message": "use of undeclared identifier 'std'",
+      "File": "src/openingbook/bookentry.h",
+      "Line": 54,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 3,
+      "Severity": "error"
+    },
+    {
+      "Message": "unknown type name 'ZobristKey'",
+      "File": "src/openingbook/bookentry.h",
+      "Line": 52,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 3,
+      "Severity": "error"
+    },
+    {
+      "Message": "repeated branch body in conditional chain",
+      "File": "D:/_DEV/FrankyCPP/src/openingbook/OpeningBook.cpp",
+      "Line": 435,
+      "Category": "bugprone",
+      "Check": "bugprone-branch-clone",
+      "Col": 73,
+      "Severity": "warning"
+    },
+    {
+      "Message": "variable 'gameEnd' is not initialized",
+      "File": "D:/_DEV/FrankyCPP/src/openingbook/OpeningBook.cpp",
+      "Line": 360,
+      "Category": "cppcoreguidelines",
+      "Check": "cppcoreguidelines-init-variables",
+      "Col": 10,
+      "Severity": "warning"
+    },
+    {
+      "Message": "unnecessary temporary object created while calling emplace_back",
+      "File": "D:/_DEV/FrankyCPP/src/openingbook/OpeningBook.cpp",
+      "Line": 337,
+      "Category": "modernize",
+      "Check": "modernize-use-emplace",
+      "Col": 23,
+      "Severity": "warning"
+    },
+    {
+      "Message": "unnecessary temporary object created while calling emplace_back",
+      "File": "D:/_DEV/FrankyCPP/src/openingbook/OpeningBook.cpp",
+      "Line": 269,
+      "Category": "modernize",
+      "Check": "modernize-use-emplace",
+      "Col": 23,
+      "Severity": "warning"
+    },
+    {
+      "Message": "do not declare C-style arrays, use std::array<> instead",
+      "File": "D:/_DEV/FrankyCPP/src/openingbook/OpeningBook.cpp",
+      "Line": 162,
+      "Category": "cppcoreguidelines",
+      "Check": "cppcoreguidelines-avoid-c-arrays",
+      "Col": 29,
+      "Severity": "warning"
+    },
+    {
+      "Message": "'numberOfThreads' should be initialized in a member initializer of the constructor",
+      "File": "D:/_DEV/FrankyCPP/src/openingbook/OpeningBook.cpp",
+      "Line": 54,
+      "Category": "cppcoreguidelines",
+      "Check": "cppcoreguidelines-prefer-member-initializer",
+      "Col": 3,
+      "Severity": "warning"
+    },
+    {
+      "Message": "'uciHandler' should be initialized in a member initializer of the constructor",
+      "File": "D:/_DEV/FrankyCPP/src/engine/Search.cpp",
+      "Line": 34,
+      "Category": "cppcoreguidelines",
+      "Check": "cppcoreguidelines-prefer-member-initializer",
+      "Col": 3,
+      "Severity": "warning"
+    },
+    {
+      "Message": "do not declare C-style arrays, use std::array<> instead",
+      "File": "D:/_DEV/FrankyCPP/src/types/attacks.cpp",
+      "Line": 41,
+      "Category": "cppcoreguidelines",
+      "Check": "cppcoreguidelines-avoid-c-arrays",
+      "Col": 83,
+      "Severity": "warning"
+    },
+    {
+      "Message": "do not declare C-style arrays, use std::array<> instead",
+      "File": "D:/_DEV/FrankyCPP/src/types/attacks.cpp",
+      "Line": 41,
+      "Category": "cppcoreguidelines",
+      "Check": "cppcoreguidelines-avoid-c-arrays",
+      "Col": 15,
+      "Severity": "warning"
+    },
+    {
+      "Message": "do not declare C-style arrays, use std::array<> instead",
+      "File": "D:/_DEV/FrankyCPP/src/types/attacks.cpp",
+      "Line": 30,
+      "Category": "cppcoreguidelines",
+      "Check": "cppcoreguidelines-avoid-c-arrays",
+      "Col": 35,
+      "Severity": "warning"
+    },
+    {
+      "Message": "do not declare C-style arrays, use std::array<> instead",
+      "File": "D:/_DEV/FrankyCPP/src/types/attacks.cpp",
+      "Line": 26,
+      "Category": "cppcoreguidelines",
+      "Check": "cppcoreguidelines-avoid-c-arrays",
+      "Col": 5,
+      "Severity": "warning"
+    },
+    {
+      "Message": "do not declare C-style arrays, use std::array<> instead",
+      "File": "D:/_DEV/FrankyCPP/src/types/attacks.cpp",
+      "Line": 25,
+      "Category": "cppcoreguidelines",
+      "Check": "cppcoreguidelines-avoid-c-arrays",
+      "Col": 5,
+      "Severity": "warning"
+    },
+    {
+      "Message": "use of undeclared identifier 'nanoPerSec'",
+      "File": "src/types/timeunits.h",
+      "Line": 183,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 18,
+      "Severity": "error"
+    },
+    {
+      "Message": "use of undeclared identifier 'nanoPerSec'",
+      "File": "src/types/timeunits.h",
+      "Line": 171,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 18,
+      "Severity": "error"
+    },
+    {
+      "Message": "use of undeclared identifier 'deLocale'",
+      "File": "src/types/timeunits.h",
+      "Line": 89,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 22,
+      "Severity": "error"
+    },
+    {
+      "Message": "use of undeclared identifier 'deLocale'",
+      "File": "src/types/timeunits.h",
+      "Line": 82,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 22,
+      "Severity": "error"
+    },
+    {
+      "Message": "use of undeclared identifier 'nanoPerSec'",
+      "File": "src/types/timeunits.h",
+      "Line": 183,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 18,
+      "Severity": "error"
+    },
+    {
+      "Message": "use of undeclared identifier 'nanoPerSec'",
+      "File": "src/types/timeunits.h",
+      "Line": 171,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 18,
+      "Severity": "error"
+    },
+    {
+      "Message": "use of undeclared identifier 'deLocale'",
+      "File": "src/types/timeunits.h",
+      "Line": 89,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 22,
+      "Severity": "error"
+    },
+    {
+      "Message": "use of undeclared identifier 'deLocale'",
+      "File": "src/types/timeunits.h",
+      "Line": 82,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 22,
+      "Severity": "error"
+    },
+    {
+      "Message": "redundant call to 'c_str'",
+      "File": "D:/_DEV/FrankyCPP/src/enginetest/SearchTreeSizeTest.cpp",
+      "Line": 235,
+      "Category": "readability",
+      "Check": "readability-redundant-string-cstr",
+      "Col": 133,
+      "Severity": "warning"
+    },
+    {
+      "Message": "function is not thread safe",
+      "File": "D:/_DEV/FrankyCPP/src/enginetest/SearchTreeSizeTest.cpp",
+      "Line": 201,
+      "Category": "concurrency",
+      "Check": "concurrency-mt-unsafe",
+      "Col": 3,
+      "Severity": "warning"
+    },
+    {
+      "Message": "use of undeclared identifier 'deLocale'",
+      "File": "src/engine/config/EvalConfigData.h",
+      "Line": 136,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 7,
+      "Severity": "error"
+    },
+    {
+      "Message": "use of undeclared identifier 'boolStr'",
+      "File": "D:/_DEV/FrankyCPP/src/engine/UciOptions.h",
+      "Line": 112,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 79,
+      "Severity": "error"
+    },
+    {
+      "Message": "use of undeclared identifier 'boolStr'",
+      "File": "D:/_DEV/FrankyCPP/src/engine/UciOptions.h",
+      "Line": 112,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 49,
+      "Severity": "error"
+    },
+    {
+      "Message": "use of undeclared identifier 'boolStr'",
+      "File": "D:/_DEV/FrankyCPP/src/engine/UciOptions.h",
+      "Line": 105,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 50,
+      "Severity": "error"
+    },
+    {
+      "Message": "use of undeclared identifier 'system_clock'",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ResultWriter.cpp",
+      "Line": 257,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 23,
+      "Severity": "error"
+    },
+    {
+      "Message": "use of undeclared identifier 'system_clock'",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ResultWriter.cpp",
+      "Line": 256,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 23,
+      "Severity": "error"
+    },
+    {
+      "Message": "escaped string literal can be written as a raw string literal",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ResultWriter.cpp",
+      "Line": 218,
+      "Category": "modernize",
+      "Check": "modernize-raw-string-literal",
+      "Col": 13,
+      "Severity": "warning"
+    },
+    {
+      "Message": "escaped string literal can be written as a raw string literal",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ResultWriter.cpp",
+      "Line": 202,
+      "Category": "modernize",
+      "Check": "modernize-raw-string-literal",
+      "Col": 13,
+      "Severity": "warning"
+    },
+    {
+      "Message": "escaped string literal can be written as a raw string literal",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ResultWriter.cpp",
+      "Line": 201,
+      "Category": "modernize",
+      "Check": "modernize-raw-string-literal",
+      "Col": 13,
+      "Severity": "warning"
+    },
+    {
+      "Message": "escaped string literal can be written as a raw string literal",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ResultWriter.cpp",
+      "Line": 200,
+      "Category": "modernize",
+      "Check": "modernize-raw-string-literal",
+      "Col": 13,
+      "Severity": "warning"
+    },
+    {
+      "Message": "escaped string literal can be written as a raw string literal",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ResultWriter.cpp",
+      "Line": 196,
+      "Category": "modernize",
+      "Check": "modernize-raw-string-literal",
+      "Col": 13,
+      "Severity": "warning"
+    },
+    {
+      "Message": "escaped string literal can be written as a raw string literal",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ResultWriter.cpp",
+      "Line": 195,
+      "Category": "modernize",
+      "Check": "modernize-raw-string-literal",
+      "Col": 13,
+      "Severity": "warning"
+    },
+    {
+      "Message": "escaped string literal can be written as a raw string literal",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ResultWriter.cpp",
+      "Line": 194,
+      "Category": "modernize",
+      "Check": "modernize-raw-string-literal",
+      "Col": 13,
+      "Severity": "warning"
+    },
+    {
+      "Message": "escaped string literal can be written as a raw string literal",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ResultWriter.cpp",
+      "Line": 189,
+      "Category": "modernize",
+      "Check": "modernize-raw-string-literal",
+      "Col": 13,
+      "Severity": "warning"
+    },
+    {
+      "Message": "escaped string literal can be written as a raw string literal",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ResultWriter.cpp",
+      "Line": 188,
+      "Category": "modernize",
+      "Check": "modernize-raw-string-literal",
+      "Col": 13,
+      "Severity": "warning"
+    },
+    {
+      "Message": "escaped string literal can be written as a raw string literal",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ResultWriter.cpp",
+      "Line": 185,
+      "Category": "modernize",
+      "Check": "modernize-raw-string-literal",
+      "Col": 13,
+      "Severity": "warning"
+    },
+    {
+      "Message": "escaped string literal can be written as a raw string literal",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ResultWriter.cpp",
+      "Line": 184,
+      "Category": "modernize",
+      "Check": "modernize-raw-string-literal",
+      "Col": 13,
+      "Severity": "warning"
+    },
+    {
+      "Message": "escaped string literal can be written as a raw string literal",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ResultWriter.cpp",
+      "Line": 151,
+      "Category": "modernize",
+      "Check": "modernize-raw-string-literal",
+      "Col": 15,
+      "Severity": "warning"
+    },
+    {
+      "Message": "escaped string literal can be written as a raw string literal",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ResultWriter.cpp",
+      "Line": 150,
+      "Category": "modernize",
+      "Check": "modernize-raw-string-literal",
+      "Col": 15,
+      "Severity": "warning"
+    },
+    {
+      "Message": "escaped string literal can be written as a raw string literal",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ResultWriter.cpp",
+      "Line": 149,
+      "Category": "modernize",
+      "Check": "modernize-raw-string-literal",
+      "Col": 15,
+      "Severity": "warning"
+    },
+    {
+      "Message": "escaped string literal can be written as a raw string literal",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ResultWriter.cpp",
+      "Line": 148,
+      "Category": "modernize",
+      "Check": "modernize-raw-string-literal",
+      "Col": 15,
+      "Severity": "warning"
+    },
+    {
+      "Message": "escaped string literal can be written as a raw string literal",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ResultWriter.cpp",
+      "Line": 123,
+      "Category": "modernize",
+      "Check": "modernize-raw-string-literal",
+      "Col": 13,
+      "Severity": "warning"
+    },
+    {
+      "Message": "escaped string literal can be written as a raw string literal",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ResultWriter.cpp",
+      "Line": 122,
+      "Category": "modernize",
+      "Check": "modernize-raw-string-literal",
+      "Col": 13,
+      "Severity": "warning"
+    },
+    {
+      "Message": "escaped string literal can be written as a raw string literal",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ResultWriter.cpp",
+      "Line": 121,
+      "Category": "modernize",
+      "Check": "modernize-raw-string-literal",
+      "Col": 13,
+      "Severity": "warning"
+    },
+    {
+      "Message": "escaped string literal can be written as a raw string literal",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ResultWriter.cpp",
+      "Line": 117,
+      "Category": "modernize",
+      "Check": "modernize-raw-string-literal",
+      "Col": 13,
+      "Severity": "warning"
+    },
+    {
+      "Message": "escaped string literal can be written as a raw string literal",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ResultWriter.cpp",
+      "Line": 116,
+      "Category": "modernize",
+      "Check": "modernize-raw-string-literal",
+      "Col": 13,
+      "Severity": "warning"
+    },
+    {
+      "Message": "escaped string literal can be written as a raw string literal",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ResultWriter.cpp",
+      "Line": 113,
+      "Category": "modernize",
+      "Check": "modernize-raw-string-literal",
+      "Col": 13,
+      "Severity": "warning"
+    },
+    {
+      "Message": "escaped string literal can be written as a raw string literal",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ResultWriter.cpp",
+      "Line": 112,
+      "Category": "modernize",
+      "Check": "modernize-raw-string-literal",
+      "Col": 13,
+      "Severity": "warning"
+    },
+    {
+      "Message": "do not declare C-style arrays, use std::array<> instead",
+      "File": "D:/_DEV/FrankyCPP/src/engine_arena/ResultWriter.cpp",
+      "Line": 66,
+      "Category": "cppcoreguidelines",
+      "Check": "cppcoreguidelines-avoid-c-arrays",
+      "Col": 15,
+      "Severity": "warning"
+    },
+    {
+      "Message": "use of undeclared identifier 'boolStr'",
+      "File": "D:/_DEV/FrankyCPP/src/engine/UciOptions.h",
+      "Line": 112,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 79,
+      "Severity": "error"
+    },
+    {
+      "Message": "use of undeclared identifier 'boolStr'",
+      "File": "D:/_DEV/FrankyCPP/src/engine/UciOptions.h",
+      "Line": 112,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 49,
+      "Severity": "error"
+    },
+    {
+      "Message": "use of undeclared identifier 'boolStr'",
+      "File": "D:/_DEV/FrankyCPP/src/engine/UciOptions.h",
+      "Line": 105,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 50,
+      "Severity": "error"
+    },
+    {
+      "Message": "redundant call to 'c_str'",
+      "File": "D:/_DEV/FrankyCPP/src/engine/UciHandler.cpp",
+      "Line": 136,
+      "Category": "readability",
+      "Check": "readability-redundant-string-cstr",
+      "Col": 73,
+      "Severity": "warning"
+    },
+    {
+      "Message": "redundant call to 'c_str'",
+      "File": "D:/_DEV/FrankyCPP/src/engine/UciHandler.cpp",
+      "Line": 136,
+      "Category": "readability",
+      "Check": "readability-redundant-string-cstr",
+      "Col": 59,
+      "Severity": "warning"
+    },
+    {
+      "Message": "do not declare C-style arrays, use std::array<> instead",
+      "File": "D:/_DEV/FrankyCPP/src/engine/TT.cpp",
+      "Line": 69,
+      "Category": "cppcoreguidelines",
+      "Check": "cppcoreguidelines-avoid-c-arrays",
+      "Col": 32,
+      "Severity": "warning"
+    },
+    {
+      "Message": "use of undeclared identifier 'deLocale'",
+      "File": "src/engine/config/EvalConfigData.h",
+      "Line": 136,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 7,
+      "Severity": "error"
+    },
+    {
+      "Message": "variable 'perftOnDemand' is not initialized",
+      "File": "D:/_DEV/FrankyCPP/src/main.cpp",
+      "Line": 49,
+      "Category": "cppcoreguidelines",
+      "Check": "cppcoreguidelines-init-variables",
+      "Col": 8,
+      "Severity": "warning"
+    },
+    {
+      "Message": "variable 'perftEnd' is not initialized",
+      "File": "D:/_DEV/FrankyCPP/src/main.cpp",
+      "Line": 48,
+      "Category": "cppcoreguidelines",
+      "Check": "cppcoreguidelines-init-variables",
+      "Col": 52,
+      "Severity": "warning"
+    },
+    {
+      "Message": "variable 'perftStart' is not initialized",
+      "File": "D:/_DEV/FrankyCPP/src/main.cpp",
+      "Line": 48,
+      "Category": "cppcoreguidelines",
+      "Check": "cppcoreguidelines-init-variables",
+      "Col": 40,
+      "Severity": "warning"
+    },
+    {
+      "Message": "variable 'testsuite_depth' is not initialized",
+      "File": "D:/_DEV/FrankyCPP/src/main.cpp",
+      "Line": 48,
+      "Category": "cppcoreguidelines",
+      "Check": "cppcoreguidelines-init-variables",
+      "Col": 23,
+      "Severity": "warning"
+    },
+    {
+      "Message": "variable 'testsuite_time' is not initialized",
+      "File": "D:/_DEV/FrankyCPP/src/main.cpp",
+      "Line": 48,
+      "Category": "cppcoreguidelines",
+      "Check": "cppcoreguidelines-init-variables",
+      "Col": 7,
+      "Severity": "warning"
+    },
+    {
+      "Message": "initialization of 'programOptions' with static storage duration may throw an exception that cannot be caught",
+      "File": "D:/_DEV/FrankyCPP/src/main.cpp",
+      "Line": 34,
+      "Category": "cert",
+      "Check": "cert-err58-cpp",
+      "Col": 26,
+      "Severity": "warning"
+    },
+    {
+      "Message": "do not declare C-style arrays, use std::array<> instead",
+      "File": "D:/_DEV/FrankyCPP/src/engine/PawnTT.cpp",
+      "Line": 85,
+      "Category": "cppcoreguidelines",
+      "Check": "cppcoreguidelines-avoid-c-arrays",
+      "Col": 37,
+      "Severity": "warning"
+    },
+    {
+      "Message": "integer literal has suffix 'u', which is not uppercase",
+      "File": "D:/_DEV/FrankyCPP/src/engine/PawnTT.cpp",
+      "Line": 80,
+      "Category": "readability",
+      "Check": "readability-uppercase-literal-suffix",
+      "Col": 64,
+      "Severity": "warning"
+    },
+    {
+      "Message": "do not declare C-style arrays, use std::array<> instead",
+      "File": "D:/_DEV/FrankyCPP/src/engine/PawnTT.cpp",
+      "Line": 69,
+      "Category": "cppcoreguidelines",
+      "Check": "cppcoreguidelines-avoid-c-arrays",
+      "Col": 32,
+      "Severity": "warning"
+    },
+    {
+      "Message": "integer literal has suffix 'u', which is not uppercase",
+      "File": "D:/_DEV/FrankyCPP/src/engine/PawnTT.cpp",
+      "Line": 66,
+      "Category": "readability",
+      "Check": "readability-uppercase-literal-suffix",
+      "Col": 70,
+      "Severity": "warning"
+    },
+    {
+      "Message": "integer literal has suffix 'u', which is not uppercase",
+      "File": "D:/_DEV/FrankyCPP/src/engine/PawnTT.cpp",
+      "Line": 30,
+      "Category": "readability",
+      "Check": "readability-uppercase-literal-suffix",
+      "Col": 26,
+      "Severity": "warning"
+    },
+    {
+      "Message": "pass by value and use std::move",
+      "File": "D:/_DEV/FrankyCPP/src/chesscore/Perft.cpp",
+      "Line": 30,
+      "Category": "modernize",
+      "Check": "modernize-pass-by-value",
+      "Col": 14,
+      "Severity": "warning"
+    },
+    {
+      "Message": "function 'Logger::setLoggerLevelByName' has a definition with different parameter names",
+      "File": "D:/_DEV/FrankyCPP/src/common/Logging.h",
+      "Line": 240,
+      "Category": "readability",
+      "Check": "readability-inconsistent-declaration-parameter-name",
+      "Col": 15,
+      "Severity": "warning"
+    },
+    {
+      "Message": "function 'Logger::setLoggerLevel' has a definition with different parameter names",
+      "File": "D:/_DEV/FrankyCPP/src/common/Logging.h",
+      "Line": 235,
+      "Category": "readability",
+      "Check": "readability-inconsistent-declaration-parameter-name",
+      "Col": 15,
+      "Severity": "warning"
+    },
+    {
+      "Message": "function 'Logger::setGlobalLevel' has a definition with different parameter names",
+      "File": "D:/_DEV/FrankyCPP/src/common/Logging.h",
+      "Line": 230,
+      "Category": "readability",
+      "Check": "readability-inconsistent-declaration-parameter-name",
+      "Col": 15,
+      "Severity": "warning"
+    },
+    {
+      "Message": "function 'Logger::parseLevel' has a definition with different parameter names",
+      "File": "D:/_DEV/FrankyCPP/src/common/Logging.h",
+      "Line": 225,
+      "Category": "readability",
+      "Check": "readability-inconsistent-declaration-parameter-name",
+      "Col": 36,
+      "Severity": "warning"
+    },
+    {
+      "Message": "use of undeclared identifier 'milliseconds'; did you mean 'std::chrono::milliseconds'?",
+      "File": "D:/_DEV/FrankyCPP/src/common/Logging.cpp",
+      "Line": 152,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 23,
+      "Severity": "error"
+    },
+    {
+      "Message": "use of undeclared identifier 'fprintln'",
+      "File": "D:/_DEV/FrankyCPP/src/common/Logging.cpp",
+      "Line": 79,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 3,
+      "Severity": "error"
+    },
+    {
+      "Message": "cannot initialize a parameter of type 'FILE *' (aka '_iobuf *') with an lvalue of type 'const char[31]'",
+      "File": "D:/_DEV/FrankyCPP/src/common/Logging.cpp",
+      "Line": 70,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 12,
+      "Severity": "error"
+    },
+    {
+      "Message": "use of undeclared identifier 'fprintln'; did you mean 'fprintf'?",
+      "File": "D:/_DEV/FrankyCPP/src/common/Logging.cpp",
+      "Line": 70,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 3,
+      "Severity": "error"
+    },
+    {
+      "Message": "initialization of 'programOptions' with static storage duration may throw an exception that cannot be caught",
+      "File": "D:/_DEV/FrankyCPP/src/common/Logging.cpp",
+      "Line": 28,
+      "Category": "cert",
+      "Check": "cert-err58-cpp",
+      "Col": 26,
+      "Severity": "warning"
+    },
+    {
+      "Message": "use of undeclared identifier 'nanoPerSec'",
+      "File": "src/types/timeunits.h",
+      "Line": 183,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 18,
+      "Severity": "error"
+    },
+    {
+      "Message": "use of undeclared identifier 'nanoPerSec'",
+      "File": "src/types/timeunits.h",
+      "Line": 171,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 18,
+      "Severity": "error"
+    },
+    {
+      "Message": "use of undeclared identifier 'deLocale'",
+      "File": "src/types/timeunits.h",
+      "Line": 89,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 22,
+      "Severity": "error"
+    },
+    {
+      "Message": "use of undeclared identifier 'deLocale'",
+      "File": "src/types/timeunits.h",
+      "Line": 82,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 22,
+      "Severity": "error"
+    },
+    {
+      "Message": "avoid repeating the return type from the declaration; use a braced initializer list instead",
+      "File": "D:/_DEV/FrankyCPP/src/enginetest/EpdParser.cpp",
+      "Line": 128,
+      "Category": "modernize",
+      "Check": "modernize-return-braced-init-list",
+      "Col": 10,
+      "Severity": "warning"
+    },
+    {
+      "Message": "use of undeclared identifier 'toLowerCase'",
+      "File": "D:/_DEV/FrankyCPP/src/chesscore/MoveGenerator.cpp",
+      "Line": 292,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 36,
+      "Severity": "error"
+    },
+    {
+      "Message": "use of undeclared identifier 'toLowerCase'",
+      "File": "D:/_DEV/FrankyCPP/src/chesscore/MoveGenerator.cpp",
+      "Line": 292,
+      "Category": "clang",
+      "Check": "clang-diagnostic-error",
+      "Col": 9,
+      "Severity": "error"
+    }
+  ],
+  "warningsByCheck": {
+    "cppcoreguidelines-prefer-member-initializer": 2,
+    "readability-inconsistent-declaration-parameter-name": 4,
+    "bugprone-branch-clone": 1,
+    "modernize-raw-string-literal": 22,
+    "cppcoreguidelines-avoid-c-arrays": 10,
+    "readability-redundant-string-cstr": 3,
+    "readability-uppercase-literal-suffix": 3,
+    "modernize-pass-by-value": 1,
+    "performance-inefficient-string-concatenation": 2,
+    "modernize-return-braced-init-list": 1,
+    "readability-convert-member-functions-to-static": 6,
+    "cppcoreguidelines-narrowing-conversions": 1,
+    "modernize-loop-convert": 1,
+    "cert-err58-cpp": 2,
+    "modernize-use-emplace": 2,
+    "concurrency-mt-unsafe": 1,
+    "clang-diagnostic-error": 38,
+    "cppcoreguidelines-init-variables": 6
+  },
+  "filesAnalyzed": 28,
+  "totalWarnings": 106,
+  "elapsedSeconds": 61,
+  "uniqueChecks": 18
+}

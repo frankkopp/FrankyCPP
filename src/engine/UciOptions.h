@@ -154,6 +154,13 @@ struct UciOption {
   /// @return  UCI-formatted option string
   [[nodiscard]] std::string str() const;
 
+  /// Returns option information with current value.
+  /// Extension to UCI protocol for testing purposes.
+  /// Format: "option name <name> type <type> current <currentValue>"
+  /// BUTTON options return only name and type.
+  /// @return  Option string with current value
+  [[nodiscard]] std::string strWithCurrentValue() const;
+
   friend std::ostream& operator<<(std::ostream& os, const UciOption& option) {
     os << option.str();
     return os;
@@ -220,6 +227,12 @@ public:
   /// Used in response to the "uci" command.
   /// @return  Multi-line string with all option definitions
   [[nodiscard]] std::string str() const;
+
+  /// Returns option information with current values.
+  /// Extension to UCI protocol for testing. Used in response to the "getoptions" command.
+  /// Format: "option name <name> type <type> current <currentValue>"
+  /// @return  Multi-line string with all options and their current values
+  [[nodiscard]] std::string strWithCurrentValues() const;
 
   /// Helper to convert a string option value to int.
   /// @param value  String representation of integer

@@ -773,7 +773,7 @@ TEST_F(MoveGenTest, PseudoMoveGenSpeedTest) {
 
 TEST_F(MoveGenTest, debug) {
   MoveGenerator mg{};
-  const Position p("1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -");
+  const Position p("rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 1 2");
   MoveList moves{};
 
   // Move move;
@@ -793,5 +793,4 @@ TEST_F(MoveGenTest, debug) {
   }
 
   fprintln("{}", mg.generateLegalMoves(p, GenAll)->size());
-  fprintln("{}", (mg.generateLegalMoves(p, GenAll)->at(0)).str());
 }

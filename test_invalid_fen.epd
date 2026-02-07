@@ -1,0 +1,3 @@
+rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 bm e4; id "Valid";
+rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR bm e4; id "Invalid";
+rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1 bm e5; id "Valid2";

@@ -24,12 +24,57 @@
 #include "ResultWriter.h"
 
 #include <chrono>
+#include <cstdio>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <sstream>
 
 namespace arena {
+
+  namespace {
+    // Escapes string values for JSON output.
+    std::string escapeJsonString(const std::string& value) {
+      std::string escaped;
+      escaped.reserve(value.size() + value.size() / 4);
+
+      for (const unsigned char ch : value) {
+        switch (ch) {
+          case '\"':
+            escaped += "\\\"";
+            break;
+          case '\\':
+            escaped += "\\\\";
+            break;
+          case '\b':
+            escaped += "\\b";
+            break;
+          case '\f':
+            escaped += "\\f";
+            break;
+          case '\n':
+            escaped += "\\n";
+            break;
+          case '\r':
+            escaped += "\\r";
+            break;
+          case '\t':
+            escaped += "\\t";
+            break;
+          default:
+            if (ch < 0x20) {
+              char buffer[7]; // NOLINT(*-avoid-c-arrays)
+              std::snprintf(buffer, sizeof(buffer), "\\u%04x", ch);
+              escaped += buffer;
+            } else {
+              escaped += static_cast<char>(ch);
+            }
+        }
+      }
+
+      return escaped;
+    }
+  } // namespace
 
   ResultWriter::ResultWriter(const std::string& resultsDir)
       : resultsDir(resultsDir) {
@@ -40,45 +85,70 @@ namespace arena {
     ensureDirectoryExists(resultsDir + "/comparisons");
   }
 
-  std::string ResultWriter::writeTestSuiteResult(const TestSuiteResult& result) {
-    std::string filename = generateFilename("testsuite", result.suiteName, result.version);
+  std::string ResultWriter::writeTestSuiteResult(const TestSuiteResult& result) const {
+    // New file naming: {TestSuite}_{EngineName}-{EngineVersion}_{Timestamp}.json
+    // e.g., WAC_FrankyCPP-v0.5_20260205_143000.json
+    const std::string engineId = result.engineName + "-" + result.engineVersion;
+    std::string filename = generateFilename("testsuite", result.testSuiteName, engineId);
 
     std::ofstream file(filename);
     if (!file.is_open()) {
       throw std::runtime_error("Failed to open file for writing: " + filename);
     }
 
-    // Write JSON manually (simple approach without external JSON library)
+    // Calculate derived metrics
+    const double successRate = result.totalTests > 0
+        ? result.passed * 100.0 / result.totalTests
+        : 0.0;
+    const double avgTimeMs = result.totalTests > 0
+        ? static_cast<double>(result.totalTimeMs) / result.totalTests
+        : 0.0;
+    const double avgNodes = result.totalTests > 0
+        ? static_cast<double>(result.totalNodes) / result.totalTests
+        : 0.0;
+
+    // Write JSON with new structure per spec Section 2.3
     file << "{\n";
-    file << "  \"version\": \"" << result.version << "\",\n";
-    file << "  \"suiteName\": \"" << result.suiteName << "\",\n";
-    file << "  \"timestamp\": \"" << result.timestamp << "\",\n";
+    file << "  \"arenaVersion\": \"" << escapeJsonString(result.arenaVersion) << "\",\n";
+    file << "  \"timestamp\": \"" << escapeJsonString(result.timestamp) << "\",\n";
+    file << "\n";
+    file << "  \"testSuite\": {\n";
+    file << "    \"name\": \"" << escapeJsonString(result.testSuiteName) << "\",\n";
+    file << "    \"epdPath\": \"" << escapeJsonString(result.epdPath) << "\"\n";
+    file << "  },\n";
+    file << "\n";
+    file << "  \"engine\": {\n";
+    file << "    \"name\": \"" << escapeJsonString(result.engineName) << "\",\n";
+    file << "    \"version\": \"" << escapeJsonString(result.engineVersion) << "\",\n";
+    file << "    \"path\": \"" << escapeJsonString(result.enginePath) << "\"\n";
+    file << "  },\n";
+    file << "\n";
     file << "  \"summary\": {\n";
     file << "    \"totalTests\": " << result.totalTests << ",\n";
     file << "    \"passed\": " << result.passed << ",\n";
     file << "    \"failed\": " << result.failed << ",\n";
     file << "    \"skipped\": " << result.skipped << ",\n";
 
-    double successRate = result.totalTests > 0
-        ? (result.passed * 100.0 / result.totalTests)
-        : 0.0;
     file << std::fixed << std::setprecision(2);
     file << "    \"successRate\": " << successRate << ",\n";
+    file << "    \"totalNodes\": " << result.totalNodes << ",\n";
+    file << "    \"totalTimeMs\": " << result.totalTimeMs << ",\n";
+    file << "    \"avgTimeMs\": " << avgTimeMs << ",\n";
+    file << "    \"avgNodes\": " << avgNodes << "\n";
     file << std::defaultfloat;
 
-    file << "    \"totalNodes\": " << result.totalNodes << ",\n";
-    file << "    \"totalTimeMs\": " << result.totalTimeMs << "\n";
     file << "  },\n";
+    file << "\n";
     file << "  \"details\": [\n";
 
     // Write per-test details
     for (size_t i = 0; i < result.details.size(); ++i) {
       const auto& detail = result.details[i];
       file << "    {\n";
-      file << "      \"testId\": \"" << detail.testId << "\",\n";
-      file << "      \"fen\": \"" << detail.fen << "\",\n";
-      file << "      \"expected\": \"" << detail.expected << "\",\n";
-      file << "      \"actual\": \"" << detail.actual << "\",\n";
+      file << "      \"testId\": \"" << escapeJsonString(detail.testId) << "\",\n";
+      file << "      \"fen\": \"" << escapeJsonString(detail.fen) << "\",\n";
+      file << "      \"expected\": \"" << escapeJsonString(detail.expected) << "\",\n";
+      file << "      \"actual\": \"" << escapeJsonString(detail.actual) << "\",\n";
       file << "      \"passed\": " << (detail.passed ? "true" : "false") << ",\n";
       file << "      \"nodes\": " << detail.nodes << ",\n";
       file << "      \"timeMs\": " << detail.timeMs << "\n";
@@ -92,23 +162,46 @@ namespace arena {
     return filename;
   }
 
-  std::string ResultWriter::writeMatchResult(const MatchResult& result) {
-    std::string filename = generateFilename("match", result.matchName, result.version);
+  std::string ResultWriter::writeMatchResult(const MatchResult& result) const {
+    // New file naming: {Engine1Id}_vs_{Engine2Id}_{TimeControl}_{Timestamp}.json
+    // e.g., FrankyCPP-v1.1_vs_FrankyGo-v1.0.3_60+0.6_20260205_143000.json
+    const std::string engine1Id = result.engine1Name + "-" + result.engine1Version;
+    const std::string engine2Id = result.engine2Name + "-" + result.engine2Version;
+    std::string sanitizedTC = result.timeControl;
+    std::ranges::replace(sanitizedTC, '+', '_');
+    std::ranges::replace(sanitizedTC, '/', '_');
+
+    const std::string matchId = engine1Id + "_vs_" + engine2Id + "_" + sanitizedTC;
+    std::string filename = generateFilename("match", matchId, "");
 
     std::ofstream file(filename);
     if (!file.is_open()) {
       throw std::runtime_error("Failed to open file for writing: " + filename);
     }
 
-    // Write JSON
+    // Write JSON with new structure per spec
     file << "{\n";
-    file << "  \"version\": \"" << result.version << "\",\n";
-    file << "  \"matchName\": \"" << result.matchName << "\",\n";
-    file << "  \"timestamp\": \"" << result.timestamp << "\",\n";
-    file << "  \"engines\": {\n";
-    file << "    \"engine1\": \"" << result.engine1Name << "\",\n";
-    file << "    \"engine2\": \"" << result.engine2Name << "\"\n";
+    file << "  \"arenaVersion\": \"" << escapeJsonString(result.arenaVersion) << "\",\n";
+    file << "  \"timestamp\": \"" << escapeJsonString(result.timestamp) << "\",\n";
+    file << "\n";
+    file << "  \"match\": {\n";
+    file << "    \"name\": \"" << escapeJsonString(result.matchName) << "\",\n";
+    file << "    \"timeControl\": \"" << escapeJsonString(result.timeControl) << "\",\n";
+    file << "    \"rounds\": " << result.rounds << "\n";
     file << "  },\n";
+    file << "\n";
+    file << "  \"engine1\": {\n";
+    file << "    \"name\": \"" << escapeJsonString(result.engine1Name) << "\",\n";
+    file << "    \"version\": \"" << escapeJsonString(result.engine1Version) << "\",\n";
+    file << "    \"path\": \"" << escapeJsonString(result.engine1Path) << "\"\n";
+    file << "  },\n";
+    file << "\n";
+    file << "  \"engine2\": {\n";
+    file << "    \"name\": \"" << escapeJsonString(result.engine2Name) << "\",\n";
+    file << "    \"version\": \"" << escapeJsonString(result.engine2Version) << "\",\n";
+    file << "    \"path\": \"" << escapeJsonString(result.engine2Path) << "\"\n";
+    file << "  },\n";
+    file << "\n";
     file << "  \"results\": {\n";
     file << "    \"engine1Wins\": " << result.engine1Wins << ",\n";
     file << "    \"engine2Wins\": " << result.engine2Wins << ",\n";
@@ -121,7 +214,8 @@ namespace arena {
     file << std::defaultfloat;
 
     file << "  },\n";
-    file << "  \"pgnPath\": \"" << result.pgnPath << "\",\n";
+    file << "\n";
+    file << "  \"pgnPath\": \"" << escapeJsonString(result.pgnPath) << "\",\n";
     file << "  \"durationMs\": " << result.durationMs << "\n";
     file << "}\n";
 
@@ -130,25 +224,32 @@ namespace arena {
   }
 
   std::string ResultWriter::writeComparison(const std::vector<TestSuiteResult>& v1Results,
-                                            const std::vector<TestSuiteResult>& v2Results) {
+                                            const std::vector<TestSuiteResult>& v2Results) const {
     // Placeholder implementation - will be completed in Phase 4
     // For now, just return expected filename
     if (v1Results.empty() || v2Results.empty()) {
       return "";
     }
-    std::string filename = resultsDir + "/comparisons/" + v1Results[0].version + "_vs_" + v2Results[0].version + "_" + getTimestamp() + ".txt";
+    // Build engine identifiers for filename
+    const std::string engine1Id = v1Results[0].engineName + "-" + v1Results[0].engineVersion;
+    const std::string engine2Id = v2Results[0].engineName + "-" + v2Results[0].engineVersion;
+    std::string filename = resultsDir + "/comparisons/" + engine1Id + "_vs_" + engine2Id + "_" + getTimestamp() + ".txt";
     return filename;
   }
 
   std::string ResultWriter::generateFilename(const std::string& prefix,
                                              const std::string& name,
-                                             const std::string& version) const {
+                                             const std::string& engineId) const {
     std::string sanitizedName = name;
+    std::string sanitizedEngineId = engineId;
     // Replace spaces with underscores
     std::ranges::replace(sanitizedName, ' ', '_');
+    std::ranges::replace(sanitizedEngineId, ' ', '_');
 
     const std::string dir = prefix == "testsuite" ? "/testsuites" : "/matches";
-    return resultsDir + dir + "/" + version + "_" + sanitizedName + "_" + getTimestamp() + ".json";
+    // New naming: {TestSuite}_{EngineId}_{Timestamp}.json
+    // e.g., WAC_FrankyCPP-v0.5_20260205_143000.json
+    return resultsDir + dir + "/" + sanitizedName + "_" + sanitizedEngineId + "_" + getTimestamp() + ".json";
   }
 
   std::string ResultWriter::getTimestamp() {

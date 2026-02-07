@@ -9,11 +9,11 @@
 
 FrankyCPP requires **C++20** with full support for `std::format`, which has specific compiler version requirements:
 
-| Compiler | Minimum Version | Recommended | Notes |
-|----------|----------------|-------------|-------|
-| **GCC** | 13.0+ | 13.0+ | ✅ Full `std::format` support in libstdc++ |
-| **Clang** | 15.0+ | 18.0+ | ✅ Clang 18+ has `std::format` in libc++; Clang 15-17 use libstdc++ |
-| **MSVC** | 2019 16.10+ (v1929+) | 2022 | ✅ Full `std::format` support |
+| Compiler  | Minimum Version      | Recommended | Notes                                                              |
+|-----------|----------------------|-------------|--------------------------------------------------------------------|
+| **GCC**   | 13.0+                | 13.0+       | ✅ Full `std::format` support in libstdc++                          |
+| **Clang** | 15.0+                | 18.0+       | ✅ Clang 18+ has `std::format` in libc++; Clang 15-17 use libstdc++ |
+| **MSVC**  | 2019 16.10+ (v1929+) | 2022        | ✅ Full `std::format` support                                       |
 
 ---
 

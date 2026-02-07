@@ -1,16 +1,30 @@
 {
-  "version": "v1.1",
-  "suiteName": "franky_tests",
-  "timestamp": "2026-02-01T20:46:39Z",
+  "arenaVersion": "v1.1",
+  "timestamp": "2026-02-06T16:16:37Z",
+
+  "testSuite": {
+    "name": "franky_tests",
+    "epdPath": "test/testsets/franky_tests.epd"
+  },
+
+  "engine": {
+    "name": "Ruffian 1.0.5",
+    "version": "1.05",
+    "path": "D:/Games/arena_3.5.1/Engines/Ruffian/Ruffian_105.exe"
+  },
+
   "summary": {
     "totalTests": 13,
     "passed": 13,
     "failed": 0,
     "skipped": 0,
     "successRate": 100.00,
-    "totalNodes": 124426002,
-    "totalTimeMs": 27120
+    "totalNodes": 362624919,
+    "totalTimeMs": 28820,
+    "avgTimeMs": 2216.92,
+    "avgNodes": 27894224.54
   },
+
   "details": [
     {
       "testId": "FRANKY-1 #1",
@@ -18,8 +32,8 @@
       "expected": "mate 4",
       "actual": "d3e3",
       "passed": true,
-      "nodes": 19350,
-      "timeMs": 3
+      "nodes": 45937,
+      "timeMs": 0
     },
     {
       "testId": "FRANKY-1 #2",
@@ -27,8 +41,8 @@
       "expected": "bm d3e3",
       "actual": "d3e3",
       "passed": true,
-      "nodes": 946891,
-      "timeMs": 70
+      "nodes": 45937,
+      "timeMs": 0
     },
     {
       "testId": "FRANKY-1 #3",
@@ -36,17 +50,17 @@
       "expected": "mate 5",
       "actual": "e4d3",
       "passed": true,
-      "nodes": 112263,
-      "timeMs": 13
+      "nodes": 405531,
+      "timeMs": 10
     },
     {
       "testId": "FRANKY-1 #4",
       "fen": "6k1/P7/8/8/8/8/8/3K4 w - -",
       "expected": "bm a7a8Q",
-      "actual": "a7a8Q",
+      "actual": "a7a8q",
       "passed": true,
-      "nodes": 12336387,
-      "timeMs": 2426
+      "nodes": 13257320,
+      "timeMs": 930
     },
     {
       "testId": "FRANKY-1 #5",
@@ -54,8 +68,8 @@
       "expected": "bm a4a5",
       "actual": "a4a5",
       "passed": true,
-      "nodes": 26954529,
-      "timeMs": 4995
+      "nodes": 49768233,
+      "timeMs": 3980
     },
     {
       "testId": "FRANKY-1 #6",
@@ -63,8 +77,8 @@
       "expected": "bm e5f3",
       "actual": "e5f3",
       "passed": true,
-      "nodes": 11539629,
-      "timeMs": 2339
+      "nodes": 55731755,
+      "timeMs": 2500
     },
     {
       "testId": "FRANKY-1 #7",
@@ -72,8 +86,8 @@
       "expected": "bm h3f2 d3f2",
       "actual": "h3f2",
       "passed": true,
-      "nodes": 23320834,
-      "timeMs": 4916
+      "nodes": 45698108,
+      "timeMs": 2930
     },
     {
       "testId": "Franky-1 #8",
@@ -81,8 +95,8 @@
       "expected": "bm c3d4",
       "actual": "c3d4",
       "passed": true,
-      "nodes": 14128395,
-      "timeMs": 3515
+      "nodes": 40971318,
+      "timeMs": 2830
     },
     {
       "testId": "FRANKY-1 #9",
@@ -90,8 +104,8 @@
       "expected": "bm e4d3",
       "actual": "e4d3",
       "passed": true,
-      "nodes": 7900696,
-      "timeMs": 1947
+      "nodes": 39407584,
+      "timeMs": 2200
     },
     {
       "testId": "Franky-1 #10",
@@ -99,8 +113,8 @@
       "expected": "bm e1g1",
       "actual": "e1g1",
       "passed": true,
-      "nodes": 6570132,
-      "timeMs": 1854
+      "nodes": 34470971,
+      "timeMs": 3610
     },
     {
       "testId": "FRANKY-1 #11",
@@ -108,17 +122,17 @@
       "expected": "bm f3h1",
       "actual": "f3h1",
       "passed": true,
-      "nodes": 10731239,
-      "timeMs": 2614
+      "nodes": 35421970,
+      "timeMs": 4920
     },
     {
       "testId": "no ID",
       "fen": "4r1b1/1p4B1/pN2pR2/RB2k3/1P2N2p/2p3b1/n2P1p1r/5K1n w - -",
       "expected": "mate 3",
-      "actual": "f1e2",
+      "actual": "b5e8",
       "passed": true,
-      "nodes": 111570,
-      "timeMs": 32
+      "nodes": 66830,
+      "timeMs": 0
     },
     {
       "testId": "WAC.294",
@@ -126,8 +140,8 @@
       "expected": "bm d6f8 d4f5 g4f4",
       "actual": "g4f4",
       "passed": true,
-      "nodes": 9754087,
-      "timeMs": 2391
+      "nodes": 47333425,
+      "timeMs": 4910
     }
   ]
 }

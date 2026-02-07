@@ -22,10 +22,10 @@
 //=============================================================================
 
 #include "MatchRunner.h"
+#include "UCIEngine.h"
 
 #include <array>
 #include <chrono>
-#include <cmath>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
@@ -33,6 +33,7 @@
 #include <regex>
 #include <sstream>
 #include <stdexcept>
+#include <cmath>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -50,7 +51,7 @@ MatchRunner::MatchRunner(const ArenaConfig& config)
     : arenaConfig(config) {
 }
 
-MatchResult MatchRunner::runMatch(const MatchConfig& matchConfig) {
+MatchResult MatchRunner::runMatch(const MatchConfig& matchConfig) const {
   std::cout << "\n==================================================================" << std::endl;
   std::cout << "Running Match: " << matchConfig.name << std::endl;
   std::cout << "==================================================================" << std::endl;
@@ -65,8 +66,17 @@ MatchResult MatchRunner::runMatch(const MatchConfig& matchConfig) {
   // Validate configuration
   validateMatchConfig(matchConfig);
 
+  // Get UCI engine names by briefly starting each engine
+  // This validates engines work and gets canonical names from UCI protocol
+  std::cout << "Validating engines and getting UCI names..." << std::endl;
+  const std::string engine1Name = getUciEngineName(matchConfig.engine1Path);
+  std::cout << "  Engine 1: " << engine1Name << std::endl;
+  const std::string engine2Name = getUciEngineName(matchConfig.engine2Path);
+  std::cout << "  Engine 2: " << engine2Name << std::endl;
+  std::cout << std::endl;
+
   // Build cutechess-cli command
-  const std::string command = buildCutechessCommand(matchConfig);
+  const std::string command = buildCutechessCommand(matchConfig, engine1Name, engine2Name);
   std::cout << "Executing cutechess-cli..." << std::endl;
   std::cout << "Command: " << command << std::endl;
   std::cout << std::endl;
@@ -81,7 +91,7 @@ MatchResult MatchRunner::runMatch(const MatchConfig& matchConfig) {
   const auto duration = duration_cast<milliseconds>(endTime - startTime).count();
 
   // Parse output
-  MatchResult result = parseOutput(output, matchConfig);
+  MatchResult result = parseOutput(output, matchConfig, engine1Name, engine2Name);
   result.durationMs = duration;
 
   std::cout << "\n------------------------------------------------------------------" << std::endl;
@@ -93,13 +103,13 @@ MatchResult MatchRunner::runMatch(const MatchConfig& matchConfig) {
   std::cout << "  Score: " << result.engine1Score << " - " << result.engine2Score << std::endl;
   std::cout << "  ELO Difference: " << std::fixed << std::setprecision(1)
             << (result.eloDifference > 0 ? "+" : "") << result.eloDifference << std::endl;
-  std::cout << "  Duration: " << result.durationMs / 1000.0 << "s" << std::endl;
+  std::cout << "  Duration: " << static_cast<double>(result.durationMs) / 1000.0 << "s" << std::endl;
   std::cout << "==================================================================" << std::endl;
 
   return result;
 }
 
-std::vector<MatchResult> MatchRunner::runAllMatches() {
+std::vector<MatchResult> MatchRunner::runAllMatches() const {
   std::vector<MatchResult> results;
   results.reserve(arenaConfig.matches.size());
 
@@ -143,7 +153,9 @@ std::vector<MatchResult> MatchRunner::runAllMatches() {
   return results;
 }
 
-std::string MatchRunner::buildCutechessCommand(const MatchConfig& matchConfig) const {
+std::string MatchRunner::buildCutechessCommand(const MatchConfig& matchConfig,
+                                               const std::string& engine1Name,
+                                               const std::string& engine2Name) const {
   std::ostringstream cmd;
 
   // Use quoted path for cutechess-cli
@@ -155,13 +167,13 @@ std::string MatchRunner::buildCutechessCommand(const MatchConfig& matchConfig) c
     cmd << " -debug all";
   }
 
-  // Engine 1
+  // Engine 1 - use UCI name for identification
   cmd << " -engine cmd=\"" << matchConfig.engine1Path << "\"";
-  cmd << " name=\"" << extractEngineName(matchConfig.engine1Path) << "\"";
+  cmd << " name=\"" << engine1Name << "\"";
 
-  // Engine 2
+  // Engine 2 - use UCI name for identification
   cmd << " -engine cmd=\"" << matchConfig.engine2Path << "\"";
-  cmd << " name=\"" << extractEngineName(matchConfig.engine2Path) << "\"";
+  cmd << " name=\"" << engine2Name << "\"";
 
   // Common settings
   cmd << " -each proto=uci tc=" << matchConfig.timeControl;
@@ -200,7 +212,7 @@ bool MatchRunner::executeCutechess(const std::string& command, std::string& outp
 
   // Read output
   std::array<char, 256> buffer{};
-  while (fgets(buffer.data(), buffer.size(), pipe) != nullptr) {
+  while (fgets(buffer.data(), static_cast<int>(buffer.size()), pipe) != nullptr) {
     output += buffer.data();
     // Print live output
     std::cout << buffer.data();
@@ -223,18 +235,37 @@ bool MatchRunner::executeCutechess(const std::string& command, std::string& outp
     std::cout << buffer.data();
   }
 
-  int returnCode = pclose(pipe);
+  const int returnCode = pclose(pipe);
   return returnCode == 0;
 #endif
 }
 
-MatchResult MatchRunner::parseOutput(const std::string& output, const MatchConfig& matchConfig) {
+MatchResult MatchRunner::parseOutput(const std::string& output,
+                                     const MatchConfig& matchConfig,
+                                     const std::string& engine1Name,
+                                     const std::string& engine2Name) const {
   MatchResult result;
-  result.version = arenaConfig.version;
-  result.matchName = matchConfig.name;
+
+  // Arena metadata
+  result.arenaVersion = arenaConfig.version;
   result.timestamp = getCurrentTimestamp();
-  result.engine1Name = extractEngineName(matchConfig.engine1Path);
-  result.engine2Name = extractEngineName(matchConfig.engine2Path);
+
+  // Match identification
+  result.matchName = matchConfig.name;
+  result.timeControl = matchConfig.timeControl;
+  result.rounds = matchConfig.rounds;
+
+  // Engine 1 identification - use UCI name
+  result.engine1Name = engine1Name;
+  result.engine1Version = matchConfig.engine1Version;
+  result.engine1Path = matchConfig.engine1Path;
+
+  // Engine 2 identification - use UCI name
+  result.engine2Name = engine2Name;
+  result.engine2Version = matchConfig.engine2Version;
+  result.engine2Path = matchConfig.engine2Path;
+
+  // PGN path
   result.pgnPath = matchConfig.outputPgn;
 
   // Parse cutechess output for score line
@@ -347,9 +378,27 @@ void MatchRunner::validateMatchConfig(const MatchConfig& matchConfig) {
   }
 }
 
+std::string MatchRunner::getUciEngineName(const std::string& enginePath) {
+  // Start the engine briefly just to get its UCI name
+  // This validates the engine works and gets the canonical name
+  try {
+    UCIEngine engine(enginePath);
+    std::string name = engine.getEngineName();
+    if (name.empty()) {
+      throw std::runtime_error("Engine returned empty name");
+    }
+    return name;
+  } catch (const std::exception& e) {
+    throw std::runtime_error("Failed to get UCI name from engine '" + enginePath + "': " + e.what());
+  }
+}
+
 std::string MatchRunner::extractEngineName(const std::string& enginePath) {
   const std::filesystem::path path(enginePath);
   std::string filename = path.stem().string(); // Get filename without extension
+  // Normalize: replace underscores with spaces to match UCI naming convention
+  // (UCI "id name" typically uses spaces, e.g., "FrankyCPP v1.1")
+  std::ranges::replace(filename, '_', ' ');
   return filename;
 }
 

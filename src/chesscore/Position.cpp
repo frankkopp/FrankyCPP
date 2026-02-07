@@ -382,7 +382,7 @@ Bitboard Position::attacksTo(const Square square, const Color color) const {
 
 bool Position::hasCheck() const {
   if (hasCheckFlag != FLAG_TBD) {
-    return (hasCheckFlag == FLAG_TRUE);
+    return hasCheckFlag == FLAG_TRUE;
   }
   const bool check = isAttacked(kingSquare[nextPlayer], ~nextPlayer);
   hasCheckFlag     = check ? FLAG_TRUE : FLAG_FALSE;
@@ -538,7 +538,7 @@ bool Position::isLegalMove(const Move move) const {
   // not having to call DoMove/UndoMove similar to GivesCheck() but
   // IsLegalMove is not used during normal search.
   // Used in generateLegalMoves and perft.
-// NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast, hicpp-no-const-cast)
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast, hicpp-no-const-cast)
   const_cast<Position*>(this)->doMove(move);
   const bool legal = !isAttacked(kingSquare[~nextPlayer], nextPlayer);
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast, hicpp-no-const-cast)

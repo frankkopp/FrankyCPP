@@ -79,6 +79,44 @@ ArenaConfig ArenaConfig::loadFromYaml(const std::string& configPath) {
 
         suite.maxDepth = static_cast<Depth>(suiteNode["maxDepth"].as<int>());
 
+        // Optional: external engine path (empty = use internal engine)
+        if (suiteNode["enginePath"]) {
+          suite.enginePath = suiteNode["enginePath"].as<std::string>();
+        }
+
+        // Optional: engine version (explicit, not parsed from UCI name)
+        if (suiteNode["engineVersion"]) {
+          suite.engineVersion = suiteNode["engineVersion"].as<std::string>();
+        }
+
+        // Optional: isolate positions flag (default: true for fair comparison)
+        if (suiteNode["isolatePositions"]) {
+          suite.isolatePositions = suiteNode["isolatePositions"].as<bool>();
+        }
+
+        // Optional: debug mode (print UCI communication)
+        if (suiteNode["debugMode"]) {
+          suite.debugMode = suiteNode["debugMode"].as<bool>();
+        }
+
+        // Optional: command-line arguments for engine startup
+        if (suiteNode["commandLineArgs"]) {
+          suite.commandLineArgs = suiteNode["commandLineArgs"].as<std::string>();
+        }
+
+        // Optional: UCI options (setoption commands sent after initialization)
+        if (suiteNode["uciOptions"]) {
+          suite.uciOptions = suiteNode["uciOptions"].as<std::string>();
+        }
+
+        // Optional: parallel workers (1 = sequential, N>1 = parallel execution)
+        if (suiteNode["parallelWorkers"]) {
+          suite.parallelWorkers = suiteNode["parallelWorkers"].as<int>();
+          if (suite.parallelWorkers < 1) {
+            suite.parallelWorkers = 1;  // Minimum 1 worker
+          }
+        }
+
         config.testSuites.push_back(suite);
       }
     }
@@ -90,6 +128,20 @@ ArenaConfig ArenaConfig::loadFromYaml(const std::string& configPath) {
         match.name = matchNode["name"].as<std::string>();
         match.engine1Path = matchNode["engine1Path"].as<std::string>();
         match.engine2Path = matchNode["engine2Path"].as<std::string>();
+
+        // Engine versions (optional - if not specified, extract from path)
+        if (matchNode["engine1Version"]) {
+          match.engine1Version = matchNode["engine1Version"].as<std::string>();
+        } else {
+          // Try to extract version from path (e.g., "FrankyCPP_v1.1.exe" -> "v1.1")
+          match.engine1Version = "";  // Will be extracted from engine name later
+        }
+
+        if (matchNode["engine2Version"]) {
+          match.engine2Version = matchNode["engine2Version"].as<std::string>();
+        } else {
+          match.engine2Version = "";  // Will be extracted from engine name later
+        }
 
         // cutechessPath can be specified per-match or use global default
         if (matchNode["cutechessPath"]) {
@@ -129,9 +181,27 @@ bool ArenaConfig::validate() const {
     return false;
   }
 
-  // Check results directory path is valid
+  // Check results directory path is valid and writable
   if (resultsDir.empty()) {
     std::cerr << "Validation error: resultsDir is empty" << std::endl;
+    return false;
+  }
+
+  // Check resultsDir is writable (create if needed, then verify)
+  try {
+    std::filesystem::create_directories(resultsDir);
+    // Test writability by creating a temp file
+    auto testFile = std::filesystem::path(resultsDir) / ".write_test";
+    std::ofstream ofs(testFile);
+    if (!ofs) {
+      std::cerr << "Validation error: resultsDir is not writable: " << resultsDir << std::endl;
+      return false;
+    }
+    ofs.close();
+    std::filesystem::remove(testFile);
+  } catch (const std::filesystem::filesystem_error& e) {
+    std::cerr << "Validation error: cannot create/access resultsDir: " << resultsDir
+              << " (" << e.what() << ")" << std::endl;
     return false;
   }
 
@@ -146,10 +216,36 @@ bool ArenaConfig::validate() const {
                 << "' has invalid maxDepth: " << suite.maxDepth << std::endl;
       return false;
     }
+    // Validate timePerMove > 0
+    if (suite.timePerMove.count() <= 0) {
+      std::cerr << "Validation error: test suite '" << suite.name
+                << "' has invalid timePerMove: " << suite.timePerMove.count() << "ms (must be > 0)" << std::endl;
+      return false;
+    }
+    // Validate parallelWorkers > 0
+    if (suite.parallelWorkers <= 0) {
+      std::cerr << "Validation error: test suite '" << suite.name
+                << "' has invalid parallelWorkers: " << suite.parallelWorkers << " (must be > 0)" << std::endl;
+      return false;
+    }
     // Check EPD file exists
     if (!std::filesystem::exists(suite.epdPath)) {
       std::cerr << "Validation error: EPD file not found for suite '" << suite.name
                 << "': " << suite.epdPath << std::endl;
+      std::cerr << "  Current working directory: "
+                << std::filesystem::current_path() << std::endl;
+      std::cerr << "  Tip: Make sure to run from project root or use absolute paths" << std::endl;
+      return false;
+    }
+    // Validate external engine path is provided and exists
+    if (suite.enginePath.empty()) {
+      std::cerr << "Validation error: enginePath is required for suite '" << suite.name << "'" << std::endl;
+      std::cerr << "  Arena test suites require an external UCI engine executable" << std::endl;
+      return false;
+    }
+    if (!std::filesystem::exists(suite.enginePath)) {
+      std::cerr << "Validation error: External engine not found for suite '" << suite.name
+                << "': " << suite.enginePath << std::endl;
       std::cerr << "  Current working directory: "
                 << std::filesystem::current_path() << std::endl;
       std::cerr << "  Tip: Make sure to run from project root or use absolute paths" << std::endl;
@@ -168,6 +264,12 @@ bool ArenaConfig::validate() const {
     if (match.rounds <= 0) {
       std::cerr << "Validation error: match '" << match.name
                 << "' has invalid rounds: " << match.rounds << std::endl;
+      return false;
+    }
+    // Validate concurrency > 0
+    if (match.concurrency <= 0) {
+      std::cerr << "Validation error: match '" << match.name
+                << "' has invalid concurrency: " << match.concurrency << " (must be > 0)" << std::endl;
       return false;
     }
     // Check cutechess-cli exists

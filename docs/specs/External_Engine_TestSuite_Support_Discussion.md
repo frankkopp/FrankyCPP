@@ -350,7 +350,7 @@ Based on decisions made, implementation will proceed in carefully sequenced phas
 
 ---
 
-### **Phase 0: EPD Parser Extraction** (CRITICAL - Separate Step)
+### COMPLETE: **Phase 0: EPD Parser Extraction** (CRITICAL - Separate Step)
 **Effort:** 3-4 hours  
 **Priority:** HIGH - Must be done first and tested thoroughly
 
@@ -484,16 +484,24 @@ Based on decisions made, implementation will proceed in carefully sequenced phas
 
 **Tasks:**
 - [ ] Rename `runTestSuite()` to just run external mode (no routing)
-- [ ] Implement test loop:
+- [ ] Implement test loop with engine reuse:
   ```cpp
   // Always external - no mode switching
+  // IMPORTANT: Reuse one engine instance for entire test suite
   UCIEngine engine(config.enginePath);
   for (auto& test : epdTests) {
-    Position pos{test.fen};
+    // Clear engine state (TT/history) between positions for fair comparison
+    if (config.isolatePositions) {
+      engine.newGame();  // Sends "ucinewgame"
+    }
+    engine.setPosition(test.fen);
     UCISearchResult result = engine.search(timePerMove, maxDepth);
+    
+    Position pos{test.fen};
     bool passed = matchesExpectedMove(result.bestMove, test.expectedMoves, pos);
     // Store results...
   }
+  // Engine destroyed once at end (sends "quit")
   ```
 - [ ] Handle BM (best move) tests
 - [ ] Handle AM (avoid move) tests
@@ -503,11 +511,19 @@ Based on decisions made, implementation will proceed in carefully sequenced phas
 - [ ] Aggregate results into `TestSuiteResult`
 - [ ] No routing logic needed - always external
 
+**Engine Reuse Strategy:**
+- One UCIEngine instance per test suite (not per position)
+- Call `newGame()` between positions to clear TT/history
+- Controlled by `isolatePositions` config flag (default: true)
+- Much faster than creating new process per position
+- Matches real-world UCI GUI usage pattern
+
 **Validation:**
 - Run franky_tests.epd against v1.0 engine
 - Run franky_tests.epd against v1.1 engine (current)
 - Results match expected format
 - All test types work (BM, AM, DM)
+- Verify isolation works (same results with isolatePositions=true)
 
 ---
 

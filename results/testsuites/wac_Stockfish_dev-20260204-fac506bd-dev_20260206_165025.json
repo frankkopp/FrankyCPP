@@ -1,16 +1,30 @@
 {
-  "version": "v1.1",
-  "suiteName": "WAC",
-  "timestamp": "2026-02-01T20:59:24Z",
+  "arenaVersion": "v1.1",
+  "timestamp": "2026-02-06T15:50:25Z",
+
+  "testSuite": {
+    "name": "wac",
+    "epdPath": "test/testsets/wac.epd"
+  },
+
+  "engine": {
+    "name": "Stockfish dev-20260204-fac506bd",
+    "version": "dev",
+    "path": "D:/_DEV/Stockfish/src/stockfish.exe"
+  },
+
   "summary": {
     "totalTests": 201,
-    "passed": 194,
-    "failed": 7,
+    "passed": 199,
+    "failed": 2,
     "skipped": 0,
-    "successRate": 96.52,
-    "totalNodes": 2779103762,
-    "totalTimeMs": 644486
+    "successRate": 99.00,
+    "totalNodes": 967071190,
+    "totalTimeMs": 728158,
+    "avgTimeMs": 3622.68,
+    "avgNodes": 4811299.45
   },
+
   "details": [
     {
       "testId": "WAC.003",
@@ -18,8 +32,8 @@
       "expected": "bm e3g3",
       "actual": "e3g3",
       "passed": true,
-      "nodes": 15096893,
-      "timeMs": 4026
+      "nodes": 6589796,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.004",
@@ -27,8 +41,8 @@
       "expected": "bm h6h7",
       "actual": "h6h7",
       "passed": true,
-      "nodes": 51614,
-      "timeMs": 3
+      "nodes": 2339,
+      "timeMs": 2
     },
     {
       "testId": "WAC.005",
@@ -36,8 +50,8 @@
       "expected": "bm c6c4",
       "actual": "c6c4",
       "passed": true,
-      "nodes": 25909,
-      "timeMs": 2
+      "nodes": 1663,
+      "timeMs": 1
     },
     {
       "testId": "WAC.006",
@@ -45,8 +59,8 @@
       "expected": "bm b6b7",
       "actual": "b6b7",
       "passed": true,
-      "nodes": 10838262,
-      "timeMs": 1725
+      "nodes": 123559,
+      "timeMs": 50
     },
     {
       "testId": "WAC.007",
@@ -54,8 +68,8 @@
       "expected": "bm g4e3",
       "actual": "g4e3",
       "passed": true,
-      "nodes": 11446498,
-      "timeMs": 3201
+      "nodes": 7613936,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.008",
@@ -63,8 +77,8 @@
       "expected": "bm e7f7",
       "actual": "e7f7",
       "passed": true,
-      "nodes": 19435604,
-      "timeMs": 4503
+      "nodes": 355986,
+      "timeMs": 262
     },
     {
       "testId": "WAC.010",
@@ -72,8 +86,8 @@
       "expected": "bm h4h7",
       "actual": "h4h7",
       "passed": true,
-      "nodes": 9383734,
-      "timeMs": 2663
+      "nodes": 7611714,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.011",
@@ -81,8 +95,8 @@
       "expected": "bm f3c6",
       "actual": "f3c6",
       "passed": true,
-      "nodes": 6669052,
-      "timeMs": 1712
+      "nodes": 7862900,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.012",
@@ -90,8 +104,8 @@
       "expected": "bm g4f3",
       "actual": "g4f3",
       "passed": true,
-      "nodes": 22204,
-      "timeMs": 3
+      "nodes": 1754,
+      "timeMs": 1
     },
     {
       "testId": "WAC.013",
@@ -99,8 +113,8 @@
       "expected": "bm f1f8",
       "actual": "f1f8",
       "passed": true,
-      "nodes": 16304922,
-      "timeMs": 3994
+      "nodes": 5333899,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.014",
@@ -108,8 +122,8 @@
       "expected": "bm h3h7",
       "actual": "h3h7",
       "passed": true,
-      "nodes": 11989949,
-      "timeMs": 3018
+      "nodes": 23757,
+      "timeMs": 15
     },
     {
       "testId": "WAC.016",
@@ -117,8 +131,8 @@
       "expected": "bm e2c3",
       "actual": "e2c3",
       "passed": true,
-      "nodes": 19887399,
-      "timeMs": 4963
+      "nodes": 5097654,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.017",
@@ -126,8 +140,8 @@
       "expected": "bm c4e5",
       "actual": "c4e5",
       "passed": true,
-      "nodes": 7582658,
-      "timeMs": 2031
+      "nodes": 4509152,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.018",
@@ -135,8 +149,8 @@
       "expected": "bm a8h8",
       "actual": "a8h8",
       "passed": true,
-      "nodes": 23829602,
-      "timeMs": 4990
+      "nodes": 15496998,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.019",
@@ -144,8 +158,8 @@
       "expected": "bm c5c6",
       "actual": "c5c6",
       "passed": true,
-      "nodes": 18895624,
-      "timeMs": 4995
+      "nodes": 4413842,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.020",
@@ -153,8 +167,8 @@
       "expected": "bm d7b5",
       "actual": "d7b5",
       "passed": true,
-      "nodes": 18510713,
-      "timeMs": 4999
+      "nodes": 8402028,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.021",
@@ -162,17 +176,17 @@
       "expected": "bm d2h6",
       "actual": "d2h6",
       "passed": true,
-      "nodes": 20184551,
-      "timeMs": 4990
+      "nodes": 8855418,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.022",
       "fen": "r1bqk2r/ppp1nppp/4p3/n5N1/2BPp3/P1P5/2P2PPP/R1BQK2R w KQkq -",
       "expected": "bm g5f7",
-      "actual": "c4a2",
-      "passed": false,
-      "nodes": 6995733,
-      "timeMs": 1935
+      "actual": "g5f7",
+      "passed": true,
+      "nodes": 3900868,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.023",
@@ -180,7 +194,7 @@
       "expected": "bm g2g4",
       "actual": "g2g4",
       "passed": true,
-      "nodes": 19054936,
+      "nodes": 6053043,
       "timeMs": 5000
     },
     {
@@ -189,8 +203,8 @@
       "expected": "bm g7d4",
       "actual": "g7d4",
       "passed": true,
-      "nodes": 20030651,
-      "timeMs": 4993
+      "nodes": 8662289,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.025",
@@ -198,8 +212,8 @@
       "expected": "bm g4h4",
       "actual": "g4h4",
       "passed": true,
-      "nodes": 12903508,
-      "timeMs": 2265
+      "nodes": 4240214,
+      "timeMs": 2035
     },
     {
       "testId": "WAC.026",
@@ -207,8 +221,8 @@
       "expected": "bm d7f5",
       "actual": "d7f5",
       "passed": true,
-      "nodes": 19770591,
-      "timeMs": 4993
+      "nodes": 4922521,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.027",
@@ -216,8 +230,8 @@
       "expected": "bm a3f8",
       "actual": "a3f8",
       "passed": true,
-      "nodes": 14234,
-      "timeMs": 1
+      "nodes": 2397,
+      "timeMs": 2
     },
     {
       "testId": "WAC.028",
@@ -225,8 +239,8 @@
       "expected": "bm b4e1",
       "actual": "b4e1",
       "passed": true,
-      "nodes": 18510931,
-      "timeMs": 4760
+      "nodes": 6396423,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.029",
@@ -234,8 +248,8 @@
       "expected": "bm c5c6",
       "actual": "c5c6",
       "passed": true,
-      "nodes": 19860316,
-      "timeMs": 4990
+      "nodes": 4358008,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.030",
@@ -243,8 +257,8 @@
       "expected": "bm e4d6",
       "actual": "e4d6",
       "passed": true,
-      "nodes": 14748747,
-      "timeMs": 3871
+      "nodes": 4813333,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.032",
@@ -252,8 +266,8 @@
       "expected": "bm d1d8",
       "actual": "d1d8",
       "passed": true,
-      "nodes": 15826530,
-      "timeMs": 3728
+      "nodes": 7721289,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.034",
@@ -261,8 +275,8 @@
       "expected": "bm d4g1",
       "actual": "d4g1",
       "passed": true,
-      "nodes": 12651913,
-      "timeMs": 3174
+      "nodes": 5932106,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.035",
@@ -270,8 +284,8 @@
       "expected": "bm h4h7",
       "actual": "h4h7",
       "passed": true,
-      "nodes": 8400760,
-      "timeMs": 610
+      "nodes": 9613,
+      "timeMs": 5
     },
     {
       "testId": "WAC.036",
@@ -279,8 +293,8 @@
       "expected": "bm e7e1",
       "actual": "e7e1",
       "passed": true,
-      "nodes": 14044640,
-      "timeMs": 3798
+      "nodes": 8335145,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.037",
@@ -288,8 +302,8 @@
       "expected": "bm c6d4",
       "actual": "c6d4",
       "passed": true,
-      "nodes": 20091081,
-      "timeMs": 4992
+      "nodes": 4649312,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.039",
@@ -297,8 +311,8 @@
       "expected": "bm c3a4",
       "actual": "c3a4",
       "passed": true,
-      "nodes": 14048373,
-      "timeMs": 3607
+      "nodes": 5103337,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.040",
@@ -306,8 +320,8 @@
       "expected": "bm d8c8",
       "actual": "d8c8",
       "passed": true,
-      "nodes": 13955181,
-      "timeMs": 3373
+      "nodes": 8383459,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.042",
@@ -315,8 +329,8 @@
       "expected": "bm b4a5",
       "actual": "b4a5",
       "passed": true,
-      "nodes": 19156786,
-      "timeMs": 4998
+      "nodes": 5165363,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.044",
@@ -324,8 +338,8 @@
       "expected": "bm d5c4",
       "actual": "d5c4",
       "passed": true,
-      "nodes": 12337614,
-      "timeMs": 3165
+      "nodes": 4889464,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.045",
@@ -333,17 +347,17 @@
       "expected": "bm f1a1",
       "actual": "f1a1",
       "passed": true,
-      "nodes": 14347459,
-      "timeMs": 3589
+      "nodes": 7662990,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.046",
       "fen": "r1bqr1k1/pp1nb1p1/4p2p/3p1p2/3P4/P1N1PNP1/1PQ2PP1/3RKB1R w K -",
       "expected": "bm c3b5",
-      "actual": "f1d3",
-      "passed": false,
-      "nodes": 18593390,
-      "timeMs": 4999
+      "actual": "c3b5",
+      "passed": true,
+      "nodes": 4035353,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.047",
@@ -351,8 +365,8 @@
       "expected": "bm c6d4",
       "actual": "c6d4",
       "passed": true,
-      "nodes": 17780549,
-      "timeMs": 4714
+      "nodes": 4100106,
+      "timeMs": 5001
     },
     {
       "testId": "WAC.048",
@@ -360,8 +374,8 @@
       "expected": "bm b8b4",
       "actual": "b8b4",
       "passed": true,
-      "nodes": 18540378,
-      "timeMs": 4995
+      "nodes": 4685709,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.050",
@@ -369,8 +383,8 @@
       "expected": "bm b7b6",
       "actual": "b7b6",
       "passed": true,
-      "nodes": 187657,
-      "timeMs": 13
+      "nodes": 9378,
+      "timeMs": 6
     },
     {
       "testId": "WAC.051",
@@ -378,8 +392,8 @@
       "expected": "bm f4g4",
       "actual": "f4g4",
       "passed": true,
-      "nodes": 16642035,
-      "timeMs": 4020
+      "nodes": 139733,
+      "timeMs": 103
     },
     {
       "testId": "WAC.053",
@@ -387,8 +401,8 @@
       "expected": "bm e3e1",
       "actual": "e3e1",
       "passed": true,
-      "nodes": 17135950,
-      "timeMs": 4034
+      "nodes": 8316101,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.054",
@@ -396,8 +410,8 @@
       "expected": "bm h5h1",
       "actual": "h5h1",
       "passed": true,
-      "nodes": 50394,
-      "timeMs": 4
+      "nodes": 3238,
+      "timeMs": 2
     },
     {
       "testId": "WAC.055",
@@ -405,8 +419,8 @@
       "expected": "bm d4g7",
       "actual": "d4g7",
       "passed": true,
-      "nodes": 56758972,
-      "timeMs": 4260
+      "nodes": 42635,
+      "timeMs": 35
     },
     {
       "testId": "WAC.056",
@@ -414,8 +428,8 @@
       "expected": "bm c5f2",
       "actual": "c5f2",
       "passed": true,
-      "nodes": 15762620,
-      "timeMs": 4161
+      "nodes": 6441091,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.057",
@@ -423,8 +437,8 @@
       "expected": "bm f3f8",
       "actual": "f3f8",
       "passed": true,
-      "nodes": 575184,
-      "timeMs": 34
+      "nodes": 6656,
+      "timeMs": 3
     },
     {
       "testId": "WAC.058",
@@ -432,8 +446,8 @@
       "expected": "bm d3d1",
       "actual": "d3d1",
       "passed": true,
-      "nodes": 24916112,
-      "timeMs": 4999
+      "nodes": 888116,
+      "timeMs": 350
     },
     {
       "testId": "WAC.059",
@@ -441,8 +455,8 @@
       "expected": "bm c3d5",
       "actual": "c3d5",
       "passed": true,
-      "nodes": 18799008,
-      "timeMs": 4995
+      "nodes": 7764855,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.062",
@@ -450,8 +464,8 @@
       "expected": "bm g6g3",
       "actual": "g6g3",
       "passed": true,
-      "nodes": 19412714,
-      "timeMs": 4990
+      "nodes": 2676052,
+      "timeMs": 2832
     },
     {
       "testId": "WAC.063",
@@ -459,8 +473,8 @@
       "expected": "bm e5f7",
       "actual": "e5f7",
       "passed": true,
-      "nodes": 7500760,
-      "timeMs": 2073
+      "nodes": 5418576,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.064",
@@ -468,8 +482,8 @@
       "expected": "bm g2g4",
       "actual": "g2g4",
       "passed": true,
-      "nodes": 236522,
-      "timeMs": 14
+      "nodes": 5670,
+      "timeMs": 2
     },
     {
       "testId": "WAC.065",
@@ -477,8 +491,8 @@
       "expected": "bm d5e7",
       "actual": "d5e7",
       "passed": true,
-      "nodes": 10459039,
-      "timeMs": 2608
+      "nodes": 9289156,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.066",
@@ -486,8 +500,8 @@
       "expected": "bm c7e5",
       "actual": "c7e5",
       "passed": true,
-      "nodes": 12975935,
-      "timeMs": 3003
+      "nodes": 6035652,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.067",
@@ -495,8 +509,8 @@
       "expected": "bm e5d5",
       "actual": "e5d5",
       "passed": true,
-      "nodes": 21319597,
-      "timeMs": 4990
+      "nodes": 10597274,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.068",
@@ -504,8 +518,8 @@
       "expected": "bm e2e3",
       "actual": "e2e3",
       "passed": true,
-      "nodes": 19508677,
-      "timeMs": 4990
+      "nodes": 10271601,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.070",
@@ -513,8 +527,8 @@
       "expected": "bm b4a2",
       "actual": "b4a2",
       "passed": true,
-      "nodes": 11058801,
-      "timeMs": 2913
+      "nodes": 7349852,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.071",
@@ -522,8 +536,8 @@
       "expected": "bm b5a7",
       "actual": "b5a7",
       "passed": true,
-      "nodes": 18661559,
-      "timeMs": 4991
+      "nodes": 8901896,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.072",
@@ -531,8 +545,8 @@
       "expected": "bm e5e6",
       "actual": "e5e6",
       "passed": true,
-      "nodes": 20065515,
-      "timeMs": 4990
+      "nodes": 4842965,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.073",
@@ -540,8 +554,8 @@
       "expected": "bm e2d2",
       "actual": "e2d2",
       "passed": true,
-      "nodes": 10905694,
-      "timeMs": 2824
+      "nodes": 5150390,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.075",
@@ -549,8 +563,8 @@
       "expected": "bm d7d6",
       "actual": "d7d6",
       "passed": true,
-      "nodes": 19097034,
-      "timeMs": 4990
+      "nodes": 7517664,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.076",
@@ -558,8 +572,8 @@
       "expected": "bm g5f6",
       "actual": "g5f6",
       "passed": true,
-      "nodes": 13201380,
-      "timeMs": 3823
+      "nodes": 4638422,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.077",
@@ -567,8 +581,8 @@
       "expected": "bm f5g3",
       "actual": "f5g3",
       "passed": true,
-      "nodes": 7960509,
-      "timeMs": 2037
+      "nodes": 8353922,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.078",
@@ -576,8 +590,8 @@
       "expected": "bm e4g5",
       "actual": "e4g5",
       "passed": true,
-      "nodes": 14823623,
-      "timeMs": 4158
+      "nodes": 8541172,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.080",
@@ -585,17 +599,17 @@
       "expected": "bm d1a1",
       "actual": "d1a1",
       "passed": true,
-      "nodes": 5626886,
-      "timeMs": 1465
+      "nodes": 7075132,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.081",
       "fen": "r4rk1/1bR1bppp/4pn2/1p2N3/1P6/P3P3/4BPPP/3R2K1 b - -",
       "expected": "bm e7d6",
-      "actual": "b7e4",
-      "passed": false,
-      "nodes": 19879472,
-      "timeMs": 4997
+      "actual": "e7d6",
+      "passed": true,
+      "nodes": 4506947,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.082",
@@ -603,8 +617,8 @@
       "expected": "bm e4h7",
       "actual": "e4h7",
       "passed": true,
-      "nodes": 13343546,
-      "timeMs": 3270
+      "nodes": 8569183,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.084",
@@ -612,8 +626,8 @@
       "expected": "bm d5g8",
       "actual": "d5g8",
       "passed": true,
-      "nodes": 59396,
-      "timeMs": 4
+      "nodes": 2993,
+      "timeMs": 2
     },
     {
       "testId": "WAC.086",
@@ -621,8 +635,8 @@
       "expected": "bm f6g4",
       "actual": "f6g4",
       "passed": true,
-      "nodes": 16955706,
-      "timeMs": 3637
+      "nodes": 7344953,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.087",
@@ -630,8 +644,8 @@
       "expected": "bm e6e5",
       "actual": "e6e5",
       "passed": true,
-      "nodes": 18223712,
-      "timeMs": 3708
+      "nodes": 11421967,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.088",
@@ -639,8 +653,8 @@
       "expected": "bm g6g2",
       "actual": "g6g2",
       "passed": true,
-      "nodes": 22467198,
-      "timeMs": 4990
+      "nodes": 17762,
+      "timeMs": 16
     },
     {
       "testId": "WAC.090",
@@ -648,8 +662,8 @@
       "expected": "bm f5g7",
       "actual": "f5g7",
       "passed": true,
-      "nodes": 19698461,
-      "timeMs": 4995
+      "nodes": 4778023,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.091",
@@ -657,17 +671,17 @@
       "expected": "bm b3e6",
       "actual": "b3e6",
       "passed": true,
-      "nodes": 12574279,
-      "timeMs": 3291
+      "nodes": 4249754,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.092",
       "fen": "r4rk1/1p2ppbp/p2pbnp1/q7/3BPPP1/2N2B2/PPP4P/R2Q1RK1 b - -",
       "expected": "bm e6g4",
-      "actual": "f6g4",
-      "passed": false,
-      "nodes": 12856900,
-      "timeMs": 3377
+      "actual": "e6g4",
+      "passed": true,
+      "nodes": 4155872,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.093",
@@ -675,8 +689,8 @@
       "expected": "bm c1h6",
       "actual": "c1h6",
       "passed": true,
-      "nodes": 9864114,
-      "timeMs": 2540
+      "nodes": 4002012,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.094",
@@ -684,8 +698,8 @@
       "expected": "bm e5e4",
       "actual": "e5e4",
       "passed": true,
-      "nodes": 14149845,
-      "timeMs": 2534
+      "nodes": 13645976,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.095",
@@ -693,8 +707,8 @@
       "expected": "bm f6g4",
       "actual": "f6g4",
       "passed": true,
-      "nodes": 8945435,
-      "timeMs": 2044
+      "nodes": 9087304,
+      "timeMs": 4858
     },
     {
       "testId": "WAC.097",
@@ -702,8 +716,8 @@
       "expected": "bm g2a8",
       "actual": "g2a8",
       "passed": true,
-      "nodes": 369019,
-      "timeMs": 31
+      "nodes": 368870,
+      "timeMs": 391
     },
     {
       "testId": "WAC.098",
@@ -711,8 +725,8 @@
       "expected": "bm c5e4",
       "actual": "c5e4",
       "passed": true,
-      "nodes": 19261150,
-      "timeMs": 4990
+      "nodes": 7809910,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.099",
@@ -720,17 +734,17 @@
       "expected": "bm e5h5",
       "actual": "e5h5",
       "passed": true,
-      "nodes": 45301,
-      "timeMs": 3
+      "nodes": 45503,
+      "timeMs": 53
     },
     {
       "testId": "WAC.100",
       "fen": "8/k1b5/P4p2/1Pp2p1p/K1P2P1P/8/3B4/8 w - -",
       "expected": "bm d2e3 b5b6",
-      "actual": "a4b3",
-      "passed": false,
-      "nodes": 16650695,
-      "timeMs": 3437
+      "actual": "b5b6",
+      "passed": true,
+      "nodes": 18003295,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.101",
@@ -738,8 +752,8 @@
       "expected": "bm d4c3",
       "actual": "d4c3",
       "passed": true,
-      "nodes": 9239152,
-      "timeMs": 2067
+      "nodes": 5645141,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.103",
@@ -747,8 +761,8 @@
       "expected": "bm h6g6",
       "actual": "h6g6",
       "passed": true,
-      "nodes": 20123980,
-      "timeMs": 5001
+      "nodes": 3700388,
+      "timeMs": 1797
     },
     {
       "testId": "WAC.107",
@@ -756,8 +770,8 @@
       "expected": "bm d4b5",
       "actual": "d4b5",
       "passed": true,
-      "nodes": 15800676,
-      "timeMs": 3588
+      "nodes": 5576866,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.108",
@@ -765,8 +779,8 @@
       "expected": "bm c5e5",
       "actual": "c5e5",
       "passed": true,
-      "nodes": 8831375,
-      "timeMs": 2142
+      "nodes": 6275820,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.109",
@@ -774,8 +788,8 @@
       "expected": "bm c4c3",
       "actual": "c4c3",
       "passed": true,
-      "nodes": 8222762,
-      "timeMs": 2210
+      "nodes": 3763786,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.110",
@@ -783,17 +797,17 @@
       "expected": "bm a7e3",
       "actual": "a7e3",
       "passed": true,
-      "nodes": 13429662,
-      "timeMs": 3404
+      "nodes": 9219965,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.111",
       "fen": "6k1/p5p1/5p2/2P2Q2/3pN2p/3PbK1P/7P/6q1 b - -",
       "expected": "bm g1f1",
-      "actual": "g1f1",
-      "passed": true,
-      "nodes": 17801518,
-      "timeMs": 3839
+      "actual": "g1d1",
+      "passed": false,
+      "nodes": 7726227,
+      "timeMs": 3668
     },
     {
       "testId": "WAC.112",
@@ -801,8 +815,8 @@
       "expected": "bm e1e6",
       "actual": "e1e6",
       "passed": true,
-      "nodes": 11659426,
-      "timeMs": 2747
+      "nodes": 4781416,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.113",
@@ -810,8 +824,8 @@
       "expected": "bm d8f6",
       "actual": "d8f6",
       "passed": true,
-      "nodes": 8617198,
-      "timeMs": 2313
+      "nodes": 4145412,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.114",
@@ -819,8 +833,8 @@
       "expected": "bm d3h7",
       "actual": "d3h7",
       "passed": true,
-      "nodes": 15721403,
-      "timeMs": 4083
+      "nodes": 5049245,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.115",
@@ -828,8 +842,8 @@
       "expected": "bm e8d6",
       "actual": "e8d6",
       "passed": true,
-      "nodes": 14788294,
-      "timeMs": 3350
+      "nodes": 6035110,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.116",
@@ -837,8 +851,8 @@
       "expected": "bm d8d2",
       "actual": "d8d2",
       "passed": true,
-      "nodes": 19485501,
-      "timeMs": 4992
+      "nodes": 4926084,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.117",
@@ -846,8 +860,8 @@
       "expected": "bm d6e4",
       "actual": "d6e4",
       "passed": true,
-      "nodes": 10890599,
-      "timeMs": 2704
+      "nodes": 8360749,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.118",
@@ -855,8 +869,8 @@
       "expected": "bm f4h4",
       "actual": "f4h4",
       "passed": true,
-      "nodes": 20024233,
-      "timeMs": 4994
+      "nodes": 7705742,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.119",
@@ -864,8 +878,8 @@
       "expected": "bm d8d3",
       "actual": "d8d3",
       "passed": true,
-      "nodes": 18925648,
-      "timeMs": 4855
+      "nodes": 5568823,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.121",
@@ -873,8 +887,8 @@
       "expected": "bm c6f3",
       "actual": "c6f3",
       "passed": true,
-      "nodes": 7923380,
-      "timeMs": 1821
+      "nodes": 10307378,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.122",
@@ -882,7 +896,7 @@
       "expected": "bm d1f1",
       "actual": "d1f1",
       "passed": true,
-      "nodes": 20459195,
+      "nodes": 9743185,
       "timeMs": 5000
     },
     {
@@ -891,8 +905,8 @@
       "expected": "bm g4g3",
       "actual": "g4g3",
       "passed": true,
-      "nodes": 16198168,
-      "timeMs": 3572
+      "nodes": 3389689,
+      "timeMs": 1392
     },
     {
       "testId": "WAC.125",
@@ -900,8 +914,8 @@
       "expected": "bm b6d4",
       "actual": "b6d4",
       "passed": true,
-      "nodes": 11620380,
-      "timeMs": 3067
+      "nodes": 5316941,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.126",
@@ -909,8 +923,8 @@
       "expected": "bm f6c6",
       "actual": "f6c6",
       "passed": true,
-      "nodes": 6530635,
-      "timeMs": 1523
+      "nodes": 5578719,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.127",
@@ -918,8 +932,8 @@
       "expected": "bm b2b7",
       "actual": "b2b7",
       "passed": true,
-      "nodes": 6875181,
-      "timeMs": 1731
+      "nodes": 5151766,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.128",
@@ -927,8 +941,8 @@
       "expected": "bm f7g6",
       "actual": "f7g6",
       "passed": true,
-      "nodes": 19899588,
-      "timeMs": 4999
+      "nodes": 6605471,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.129",
@@ -936,8 +950,8 @@
       "expected": "bm b7f3",
       "actual": "b7f3",
       "passed": true,
-      "nodes": 13569939,
-      "timeMs": 3433
+      "nodes": 4888066,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.130",
@@ -945,8 +959,8 @@
       "expected": "bm g7h6",
       "actual": "g7h6",
       "passed": true,
-      "nodes": 10978052,
-      "timeMs": 2626
+      "nodes": 1407618,
+      "timeMs": 961
     },
     {
       "testId": "WAC.133",
@@ -954,8 +968,8 @@
       "expected": "bm g3h4",
       "actual": "g3h4",
       "passed": true,
-      "nodes": 12137576,
-      "timeMs": 3104
+      "nodes": 5520015,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.134",
@@ -963,8 +977,8 @@
       "expected": "bm d8d1",
       "actual": "d8d1",
       "passed": true,
-      "nodes": 9116733,
-      "timeMs": 649
+      "nodes": 16876,
+      "timeMs": 12
     },
     {
       "testId": "WAC.135",
@@ -972,8 +986,8 @@
       "expected": "bm e6d4",
       "actual": "e6d4",
       "passed": true,
-      "nodes": 18166885,
-      "timeMs": 4721
+      "nodes": 4496658,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.137",
@@ -981,8 +995,8 @@
       "expected": "bm d1d7",
       "actual": "d1d7",
       "passed": true,
-      "nodes": 13040485,
-      "timeMs": 3389
+      "nodes": 5390569,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.138",
@@ -990,8 +1004,8 @@
       "expected": "bm h4h5",
       "actual": "h4h5",
       "passed": true,
-      "nodes": 16226764,
-      "timeMs": 3853
+      "nodes": 4398204,
+      "timeMs": 4829
     },
     {
       "testId": "WAC.139",
@@ -999,8 +1013,8 @@
       "expected": "bm e4f6",
       "actual": "e4f6",
       "passed": true,
-      "nodes": 20829265,
-      "timeMs": 1616
+      "nodes": 80952,
+      "timeMs": 101
     },
     {
       "testId": "WAC.140",
@@ -1008,8 +1022,8 @@
       "expected": "bm e5c7 c3c7",
       "actual": "c3c7",
       "passed": true,
-      "nodes": 10948832,
-      "timeMs": 2723
+      "nodes": 9921189,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.141",
@@ -1017,8 +1031,8 @@
       "expected": "bm c1f4",
       "actual": "c1f4",
       "passed": true,
-      "nodes": 6896495,
-      "timeMs": 1840
+      "nodes": 8124011,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.143",
@@ -1026,8 +1040,8 @@
       "expected": "bm g6h6",
       "actual": "g6h6",
       "passed": true,
-      "nodes": 552337,
-      "timeMs": 34
+      "nodes": 10278,
+      "timeMs": 6
     },
     {
       "testId": "WAC.144",
@@ -1035,8 +1049,8 @@
       "expected": "bm d4d3",
       "actual": "d4d3",
       "passed": true,
-      "nodes": 16484375,
-      "timeMs": 4111
+      "nodes": 4530173,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.147",
@@ -1044,8 +1058,8 @@
       "expected": "bm f6g4",
       "actual": "f6g4",
       "passed": true,
-      "nodes": 9976690,
-      "timeMs": 2722
+      "nodes": 3412424,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.148",
@@ -1053,8 +1067,8 @@
       "expected": "bm g1g7",
       "actual": "g1g7",
       "passed": true,
-      "nodes": 18719636,
-      "timeMs": 4500
+      "nodes": 986860,
+      "timeMs": 683
     },
     {
       "testId": "WAC.149",
@@ -1062,8 +1076,8 @@
       "expected": "bm e4g2",
       "actual": "e4g2",
       "passed": true,
-      "nodes": 7440822,
-      "timeMs": 1816
+      "nodes": 5430436,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.151",
@@ -1071,8 +1085,8 @@
       "expected": "bm a4c3",
       "actual": "a4c3",
       "passed": true,
-      "nodes": 14448764,
-      "timeMs": 3377
+      "nodes": 4442663,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.152",
@@ -1080,8 +1094,8 @@
       "expected": "bm c3e4",
       "actual": "c3e4",
       "passed": true,
-      "nodes": 10259463,
-      "timeMs": 2693
+      "nodes": 4949995,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.154",
@@ -1089,8 +1103,8 @@
       "expected": "bm f2f7",
       "actual": "f2f7",
       "passed": true,
-      "nodes": 23687,
-      "timeMs": 2
+      "nodes": 2559,
+      "timeMs": 1
     },
     {
       "testId": "WAC.155",
@@ -1098,8 +1112,8 @@
       "expected": "bm d5d6",
       "actual": "d5d6",
       "passed": true,
-      "nodes": 11922728,
-      "timeMs": 2913
+      "nodes": 5702488,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.156",
@@ -1107,8 +1121,8 @@
       "expected": "bm h3h6",
       "actual": "h3h6",
       "passed": true,
-      "nodes": 42740,
-      "timeMs": 3
+      "nodes": 2585,
+      "timeMs": 1
     },
     {
       "testId": "WAC.157",
@@ -1116,8 +1130,8 @@
       "expected": "bm d5e7",
       "actual": "d5e7",
       "passed": true,
-      "nodes": 12087250,
-      "timeMs": 3109
+      "nodes": 5542920,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.159",
@@ -1125,8 +1139,8 @@
       "expected": "bm g5e6",
       "actual": "g5e6",
       "passed": true,
-      "nodes": 18882839,
-      "timeMs": 4909
+      "nodes": 8710455,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.162",
@@ -1134,8 +1148,8 @@
       "expected": "bm c4d5",
       "actual": "c4d5",
       "passed": true,
-      "nodes": 18127429,
-      "timeMs": 4997
+      "nodes": 4392143,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.163",
@@ -1143,8 +1157,8 @@
       "expected": "bm f3g2",
       "actual": "f3g2",
       "passed": true,
-      "nodes": 14072094,
-      "timeMs": 3670
+      "nodes": 89259,
+      "timeMs": 51
     },
     {
       "testId": "WAC.164",
@@ -1152,8 +1166,8 @@
       "expected": "bm c2c4",
       "actual": "c2c4",
       "passed": true,
-      "nodes": 16735660,
-      "timeMs": 3936
+      "nodes": 6605971,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.165",
@@ -1161,8 +1175,8 @@
       "expected": "bm e3e2",
       "actual": "e3e2",
       "passed": true,
-      "nodes": 16668476,
-      "timeMs": 4109
+      "nodes": 7733413,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.166",
@@ -1170,8 +1184,8 @@
       "expected": "bm d5d4",
       "actual": "d5d4",
       "passed": true,
-      "nodes": 7170770,
-      "timeMs": 1808
+      "nodes": 5085851,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.168",
@@ -1179,8 +1193,8 @@
       "expected": "bm d7d2",
       "actual": "d7d2",
       "passed": true,
-      "nodes": 18920477,
-      "timeMs": 4896
+      "nodes": 125787,
+      "timeMs": 103
     },
     {
       "testId": "WAC.169",
@@ -1188,8 +1202,8 @@
       "expected": "bm g7h6",
       "actual": "g7h6",
       "passed": true,
-      "nodes": 14963850,
-      "timeMs": 3650
+      "nodes": 4877664,
+      "timeMs": 3092
     },
     {
       "testId": "WAC.170",
@@ -1197,8 +1211,8 @@
       "expected": "bm a2c4",
       "actual": "a2c4",
       "passed": true,
-      "nodes": 21065268,
-      "timeMs": 4985
+      "nodes": 7427439,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.171",
@@ -1206,8 +1220,8 @@
       "expected": "bm e3h6",
       "actual": "e3h6",
       "passed": true,
-      "nodes": 19055374,
-      "timeMs": 4990
+      "nodes": 4922214,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.173",
@@ -1215,8 +1229,8 @@
       "expected": "bm e3h6",
       "actual": "e3h6",
       "passed": true,
-      "nodes": 1839799,
-      "timeMs": 142
+      "nodes": 12572,
+      "timeMs": 5
     },
     {
       "testId": "WAC.175",
@@ -1224,8 +1238,8 @@
       "expected": "bm f4h5",
       "actual": "f4h5",
       "passed": true,
-      "nodes": 20942714,
-      "timeMs": 4999
+      "nodes": 4751389,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.178",
@@ -1233,8 +1247,8 @@
       "expected": "bm f4e6",
       "actual": "f4e6",
       "passed": true,
-      "nodes": 8566083,
-      "timeMs": 2101
+      "nodes": 4369084,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.180",
@@ -1242,8 +1256,8 @@
       "expected": "bm f6d5",
       "actual": "f6d5",
       "passed": true,
-      "nodes": 17616039,
-      "timeMs": 4990
+      "nodes": 3858397,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.181",
@@ -1251,8 +1265,8 @@
       "expected": "bm f6g4",
       "actual": "f6g4",
       "passed": true,
-      "nodes": 11764401,
-      "timeMs": 3033
+      "nodes": 8111821,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.182",
@@ -1260,8 +1274,8 @@
       "expected": "bm d1h5",
       "actual": "d1h5",
       "passed": true,
-      "nodes": 12141785,
-      "timeMs": 3268
+      "nodes": 73412,
+      "timeMs": 51
     },
     {
       "testId": "WAC.187",
@@ -1269,8 +1283,8 @@
       "expected": "bm f4h3",
       "actual": "f4h3",
       "passed": true,
-      "nodes": 15878865,
-      "timeMs": 3935
+      "nodes": 8536802,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.188",
@@ -1278,8 +1292,8 @@
       "expected": "bm f6g7",
       "actual": "f6g7",
       "passed": true,
-      "nodes": 52202,
-      "timeMs": 5
+      "nodes": 5257,
+      "timeMs": 3
     },
     {
       "testId": "WAC.190",
@@ -1287,8 +1301,8 @@
       "expected": "bm d7h3",
       "actual": "d7h3",
       "passed": true,
-      "nodes": 20132354,
-      "timeMs": 4991
+      "nodes": 10032398,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.192",
@@ -1296,8 +1310,8 @@
       "expected": "bm b4d3",
       "actual": "b4d3",
       "passed": true,
-      "nodes": 18737044,
-      "timeMs": 4997
+      "nodes": 6815040,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.194",
@@ -1305,8 +1319,8 @@
       "expected": "bm f5h6",
       "actual": "f5h6",
       "passed": true,
-      "nodes": 20707699,
-      "timeMs": 4999
+      "nodes": 8918656,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.195",
@@ -1314,17 +1328,17 @@
       "expected": "bm g2g3",
       "actual": "g2g3",
       "passed": true,
-      "nodes": 15276872,
-      "timeMs": 3837
+      "nodes": 5531146,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.196",
       "fen": "rr4k1/p1pq2pp/Q1n1pn2/2bpp3/4P3/2PP1NN1/PP3PPP/R1B1K2R b KQ -",
       "expected": "bm c6b4",
-      "actual": "b8b6",
-      "passed": false,
-      "nodes": 13278045,
-      "timeMs": 3577
+      "actual": "c6b4",
+      "passed": true,
+      "nodes": 5469812,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.197",
@@ -1332,8 +1346,8 @@
       "expected": "bm f2f1",
       "actual": "f2f1",
       "passed": true,
-      "nodes": 97840,
-      "timeMs": 7
+      "nodes": 5328,
+      "timeMs": 3
     },
     {
       "testId": "WAC.198",
@@ -1341,8 +1355,8 @@
       "expected": "bm d8d3",
       "actual": "d8d3",
       "passed": true,
-      "nodes": 11973460,
-      "timeMs": 3095
+      "nodes": 6100914,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.200",
@@ -1350,8 +1364,8 @@
       "expected": "bm b2f6",
       "actual": "b2f6",
       "passed": true,
-      "nodes": 7330262,
-      "timeMs": 1978
+      "nodes": 4677260,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.201",
@@ -1359,8 +1373,8 @@
       "expected": "bm a1a7",
       "actual": "a1a7",
       "passed": true,
-      "nodes": 56654479,
-      "timeMs": 4992
+      "nodes": 54012,
+      "timeMs": 34
     },
     {
       "testId": "WAC.202",
@@ -1368,8 +1382,8 @@
       "expected": "bm c2a2",
       "actual": "c2a2",
       "passed": true,
-      "nodes": 20084575,
-      "timeMs": 4816
+      "nodes": 1096149,
+      "timeMs": 828
     },
     {
       "testId": "WAC.203",
@@ -1377,8 +1391,8 @@
       "expected": "bm g5h6",
       "actual": "g5h6",
       "passed": true,
-      "nodes": 1337568,
-      "timeMs": 176
+      "nodes": 12423,
+      "timeMs": 7
     },
     {
       "testId": "WAC.204",
@@ -1386,8 +1400,8 @@
       "expected": "bm e1e5",
       "actual": "e1e5",
       "passed": true,
-      "nodes": 12777208,
-      "timeMs": 3239
+      "nodes": 4962080,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.205",
@@ -1395,8 +1409,8 @@
       "expected": "bm d2g5",
       "actual": "d2g5",
       "passed": true,
-      "nodes": 7585031,
-      "timeMs": 2039
+      "nodes": 6660357,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.206",
@@ -1404,8 +1418,8 @@
       "expected": "bm d6c6",
       "actual": "d6c6",
       "passed": true,
-      "nodes": 19201012,
-      "timeMs": 4637
+      "nodes": 9425964,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.207",
@@ -1413,8 +1427,8 @@
       "expected": "bm g4g7",
       "actual": "g4g7",
       "passed": true,
-      "nodes": 9204745,
-      "timeMs": 2429
+      "nodes": 6656610,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.208",
@@ -1422,8 +1436,8 @@
       "expected": "bm h5f7",
       "actual": "h5f7",
       "passed": true,
-      "nodes": 19433314,
-      "timeMs": 4455
+      "nodes": 2323599,
+      "timeMs": 1350
     },
     {
       "testId": "WAC.210",
@@ -1431,8 +1445,8 @@
       "expected": "bm d1h1",
       "actual": "d1h1",
       "passed": true,
-      "nodes": 14391373,
-      "timeMs": 3793
+      "nodes": 7470333,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.212",
@@ -1440,17 +1454,17 @@
       "expected": "bm h8g7",
       "actual": "h8g7",
       "passed": true,
-      "nodes": 19616330,
-      "timeMs": 4990
+      "nodes": 107691,
+      "timeMs": 102
     },
     {
       "testId": "WAC.213",
       "fen": "3r1r1k/1b4pp/ppn1p3/4Pp1R/Pn5P/3P4/4QP2/1qB1NKR1 w - -",
       "expected": "bm h5h7",
-      "actual": "e2b2",
-      "passed": false,
-      "nodes": 12245150,
-      "timeMs": 3336
+      "actual": "h5h7",
+      "passed": true,
+      "nodes": 114486,
+      "timeMs": 98
     },
     {
       "testId": "WAC.215",
@@ -1458,8 +1472,8 @@
       "expected": "bm d3h7",
       "actual": "d3h7",
       "passed": true,
-      "nodes": 3975710,
-      "timeMs": 302
+      "nodes": 16368,
+      "timeMs": 15
     },
     {
       "testId": "WAC.219",
@@ -1467,8 +1481,8 @@
       "expected": "bm f7f1",
       "actual": "f7f1",
       "passed": true,
-      "nodes": 319280,
-      "timeMs": 19
+      "nodes": 6167,
+      "timeMs": 3
     },
     {
       "testId": "WAC.220",
@@ -1476,8 +1490,8 @@
       "expected": "bm e2f1",
       "actual": "e2f1",
       "passed": true,
-      "nodes": 13472665,
-      "timeMs": 3410
+      "nodes": 7053879,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.222",
@@ -1485,8 +1499,8 @@
       "expected": "bm h4f6",
       "actual": "h4f6",
       "passed": true,
-      "nodes": 14439791,
-      "timeMs": 3734
+      "nodes": 64414,
+      "timeMs": 37
     },
     {
       "testId": "WAC.227",
@@ -1494,8 +1508,8 @@
       "expected": "bm d6d5",
       "actual": "d6d5",
       "passed": true,
-      "nodes": 12657259,
-      "timeMs": 3414
+      "nodes": 4564041,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.228",
@@ -1503,8 +1517,8 @@
       "expected": "bm d3e4",
       "actual": "d3e4",
       "passed": true,
-      "nodes": 9191609,
-      "timeMs": 2428
+      "nodes": 4144776,
+      "timeMs": 5001
     },
     {
       "testId": "WAC.231",
@@ -1512,8 +1526,8 @@
       "expected": "bm c1g5",
       "actual": "c1g5",
       "passed": true,
-      "nodes": 7354831,
-      "timeMs": 1812
+      "nodes": 4646767,
+      "timeMs": 5001
     },
     {
       "testId": "WAC.236",
@@ -1521,8 +1535,8 @@
       "expected": "bm c3c1",
       "actual": "c3c1",
       "passed": true,
-      "nodes": 21319640,
-      "timeMs": 4990
+      "nodes": 4750301,
+      "timeMs": 3878
     },
     {
       "testId": "WAC.237",
@@ -1530,8 +1544,8 @@
       "expected": "bm c2c1",
       "actual": "c2c1",
       "passed": true,
-      "nodes": 15828334,
-      "timeMs": 3937
+      "nodes": 1224335,
+      "timeMs": 695
     },
     {
       "testId": "WAC.238",
@@ -1539,8 +1553,8 @@
       "expected": "bm g2b7",
       "actual": "g2b7",
       "passed": true,
-      "nodes": 8866033,
-      "timeMs": 2117
+      "nodes": 7335420,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.240",
@@ -1548,8 +1562,8 @@
       "expected": "bm c2c6",
       "actual": "c2c6",
       "passed": true,
-      "nodes": 20666799,
-      "timeMs": 4992
+      "nodes": 5453370,
+      "timeMs": 2855
     },
     {
       "testId": "WAC.242",
@@ -1557,8 +1571,8 @@
       "expected": "bm d1d7",
       "actual": "d1d7",
       "passed": true,
-      "nodes": 14923168,
-      "timeMs": 3830
+      "nodes": 6180664,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.250",
@@ -1566,8 +1580,8 @@
       "expected": "bm e3e8",
       "actual": "e3e8",
       "passed": true,
-      "nodes": 20969458,
-      "timeMs": 4991
+      "nodes": 26965,
+      "timeMs": 27
     },
     {
       "testId": "WAC.253",
@@ -1575,8 +1589,8 @@
       "expected": "bm e3e8",
       "actual": "e3e8",
       "passed": true,
-      "nodes": 1114475,
-      "timeMs": 90
+      "nodes": 9398,
+      "timeMs": 3
     },
     {
       "testId": "WAC.254",
@@ -1584,8 +1598,8 @@
       "expected": "bm f4h3",
       "actual": "f4h3",
       "passed": true,
-      "nodes": 9762452,
-      "timeMs": 2488
+      "nodes": 4587828,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.255",
@@ -1593,8 +1607,8 @@
       "expected": "bm f6g6",
       "actual": "f6g6",
       "passed": true,
-      "nodes": 20436932,
-      "timeMs": 4996
+      "nodes": 7429382,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.256",
@@ -1602,8 +1616,8 @@
       "expected": "bm d4f5",
       "actual": "d4f5",
       "passed": true,
-      "nodes": 12459649,
-      "timeMs": 3249
+      "nodes": 5263917,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.257",
@@ -1611,8 +1625,8 @@
       "expected": "bm d1d4",
       "actual": "d1d4",
       "passed": true,
-      "nodes": 19252511,
-      "timeMs": 4991
+      "nodes": 5449632,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.258",
@@ -1620,8 +1634,8 @@
       "expected": "bm h5g6",
       "actual": "h5g6",
       "passed": true,
-      "nodes": 19895754,
-      "timeMs": 4991
+      "nodes": 5188023,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.260",
@@ -1629,8 +1643,8 @@
       "expected": "bm d5e6",
       "actual": "d5e6",
       "passed": true,
-      "nodes": 6875203,
-      "timeMs": 1883
+      "nodes": 28571,
+      "timeMs": 30
     },
     {
       "testId": "WAC.262",
@@ -1638,8 +1652,8 @@
       "expected": "bm g6h6",
       "actual": "g6h6",
       "passed": true,
-      "nodes": 7207626,
-      "timeMs": 1732
+      "nodes": 5854189,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.263",
@@ -1647,8 +1661,8 @@
       "expected": "bm f7g8",
       "actual": "f7g8",
       "passed": true,
-      "nodes": 23011637,
-      "timeMs": 1664
+      "nodes": 24283,
+      "timeMs": 13
     },
     {
       "testId": "WAC.265",
@@ -1656,8 +1670,8 @@
       "expected": "bm e5f6",
       "actual": "e5f6",
       "passed": true,
-      "nodes": 19712806,
-      "timeMs": 4990
+      "nodes": 4216185,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.266",
@@ -1665,8 +1679,8 @@
       "expected": "bm h8h2",
       "actual": "h8h2",
       "passed": true,
-      "nodes": 16607748,
-      "timeMs": 4253
+      "nodes": 100873,
+      "timeMs": 130
     },
     {
       "testId": "WAC.267",
@@ -1674,8 +1688,8 @@
       "expected": "bm d5c7",
       "actual": "d5c7",
       "passed": true,
-      "nodes": 62099958,
-      "timeMs": 4665
+      "nodes": 36930,
+      "timeMs": 25
     },
     {
       "testId": "WAC.269",
@@ -1683,8 +1697,8 @@
       "expected": "bm a3b4",
       "actual": "a3b4",
       "passed": true,
-      "nodes": 8655650,
-      "timeMs": 2262
+      "nodes": 5316370,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.270",
@@ -1692,8 +1706,8 @@
       "expected": "bm d4g4",
       "actual": "d4g4",
       "passed": true,
-      "nodes": 11922211,
-      "timeMs": 2893
+      "nodes": 5780309,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.271",
@@ -1701,8 +1715,8 @@
       "expected": "bm e6d6",
       "actual": "e6d6",
       "passed": true,
-      "nodes": 11840298,
-      "timeMs": 2881
+      "nodes": 8345469,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.272",
@@ -1710,8 +1724,8 @@
       "expected": "bm e3c5",
       "actual": "e3c5",
       "passed": true,
-      "nodes": 8307275,
-      "timeMs": 2239
+      "nodes": 4119788,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.278",
@@ -1719,8 +1733,8 @@
       "expected": "bm c4f7",
       "actual": "c4f7",
       "passed": true,
-      "nodes": 28105286,
-      "timeMs": 2950
+      "nodes": 56702,
+      "timeMs": 46
     },
     {
       "testId": "WAC.281",
@@ -1728,8 +1742,8 @@
       "expected": "bm c7h7",
       "actual": "c7h7",
       "passed": true,
-      "nodes": 14404367,
-      "timeMs": 3215
+      "nodes": 10621774,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.282",
@@ -1737,8 +1751,8 @@
       "expected": "bm h1h8",
       "actual": "h1h8",
       "passed": true,
-      "nodes": 1924842,
-      "timeMs": 155
+      "nodes": 44593,
+      "timeMs": 37
     },
     {
       "testId": "WAC.283",
@@ -1746,8 +1760,8 @@
       "expected": "bm h3g5",
       "actual": "h3g5",
       "passed": true,
-      "nodes": 16237605,
-      "timeMs": 3892
+      "nodes": 30523,
+      "timeMs": 15
     },
     {
       "testId": "WAC.286",
@@ -1755,8 +1769,8 @@
       "expected": "bm d8d5",
       "actual": "d8d5",
       "passed": true,
-      "nodes": 14846636,
-      "timeMs": 3466
+      "nodes": 6936257,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.288",
@@ -1764,8 +1778,8 @@
       "expected": "bm h5f6",
       "actual": "h5f6",
       "passed": true,
-      "nodes": 6156718,
-      "timeMs": 1594
+      "nodes": 5647337,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.289",
@@ -1773,8 +1787,8 @@
       "expected": "bm e6e5",
       "actual": "e6e5",
       "passed": true,
-      "nodes": 20145867,
-      "timeMs": 4993
+      "nodes": 7325145,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.292",
@@ -1782,17 +1796,17 @@
       "expected": "bm d5d6",
       "actual": "d5d6",
       "passed": true,
-      "nodes": 21503565,
-      "timeMs": 4997
+      "nodes": 7227408,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.293",
       "fen": "1nbq1r1k/3rbp1p/p1p1pp1Q/1p6/P1pPN3/5NP1/1P2PPBP/R4RK1 w - -",
       "expected": "bm f3g5",
-      "actual": "f3g5",
-      "passed": true,
-      "nodes": 13471729,
-      "timeMs": 3742
+      "actual": "a4b5",
+      "passed": false,
+      "nodes": 4631621,
+      "timeMs": 5000
     },
     {
       "testId": "WAC.295",
@@ -1800,8 +1814,8 @@
       "expected": "bm d1d5",
       "actual": "d1d5",
       "passed": true,
-      "nodes": 544733,
-      "timeMs": 41
+      "nodes": 19043,
+      "timeMs": 13
     },
     {
       "testId": "WAC.298",
@@ -1809,8 +1823,8 @@
       "expected": "bm d8h8",
       "actual": "d8h8",
       "passed": true,
-      "nodes": 3292796,
-      "timeMs": 242
+      "nodes": 154402,
+      "timeMs": 129
     },
     {
       "testId": "WAC.300",
@@ -1818,8 +1832,8 @@
       "expected": "bm g5g6",
       "actual": "g5g6",
       "passed": true,
-      "nodes": 13051003,
-      "timeMs": 3226
+      "nodes": 12596861,
+      "timeMs": 5000
     }
   ]
 }

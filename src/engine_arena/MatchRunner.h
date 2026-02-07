@@ -86,6 +86,7 @@
 
 #include "ArenaConfig.h"
 #include "ArenaResults.h"
+#include "../common/gtest_friends.h"
 
 #include <string>
 #include <vector>
@@ -94,6 +95,21 @@ namespace arena {
 
 /// Executes engine-vs-engine matches via cutechess-cli
 class MatchRunner {
+  // Allow test classes to access private methods
+  FRIEND_TEST(MatchRunnerParseTest, StandardScoreLine_ParsedCorrectly);
+  FRIEND_TEST(MatchRunnerParseTest, BreakdownLines_Skipped);
+  FRIEND_TEST(MatchRunnerParseTest, MultipleScoreLines_UsesLast);
+  FRIEND_TEST(MatchRunnerParseTest, NoScoreLine_ThrowsException);
+  FRIEND_TEST(MatchRunnerParseTest, EmptyOutput_ThrowsException);
+  FRIEND_TEST(MatchRunnerParseTest, AllDraws_ParsedCorrectly);
+  FRIEND_TEST(MatchRunnerParseTest, DecisiveResult_ParsedCorrectly);
+  FRIEND_TEST(MatchRunnerParseTest, SingleGame_ParsedCorrectly);
+  FRIEND_TEST(MatchRunnerParseTest, LargeNumbers_ParsedCorrectly);
+  FRIEND_TEST(MatchRunnerParseTest, EngineNamesWithSpaces_ParsedCorrectly);
+  FRIEND_TEST(MatchRunnerParseTest, MetadataPopulated_Correctly);
+  FRIEND_TEST(MatchRunnerParseTest, EloCalculation_Draw);
+  FRIEND_TEST(MatchRunnerParseTest, EloCalculation_Winning);
+
 public:
   /// Creates a MatchRunner with the given configuration
   /// @param config Arena configuration containing match definitions
@@ -103,33 +119,42 @@ public:
   /// @param matchConfig Match configuration
   /// @return MatchResult with game outcomes and ELO calculation
   /// @throws std::runtime_error if cutechess-cli not found or execution fails
-  MatchResult runMatch(const MatchConfig& matchConfig);
+  MatchResult runMatch(const MatchConfig& matchConfig) const;
 
   /// Runs all configured matches sequentially
   /// @return Vector of MatchResult, one per configured match
   /// @throws std::runtime_error if any match fails
-  std::vector<MatchResult> runAllMatches();
+  std::vector<MatchResult> runAllMatches() const;
 
 private:
   const ArenaConfig& arenaConfig; ///< Reference to arena configuration
 
   /// Builds cutechess-cli command line from match configuration
   /// @param matchConfig Match configuration
+  /// @param engine1Name UCI name of engine 1
+  /// @param engine2Name UCI name of engine 2
   /// @return Command line string for subprocess execution
-  std::string buildCutechessCommand(const MatchConfig& matchConfig) const;
+  std::string buildCutechessCommand(const MatchConfig& matchConfig,
+                                    const std::string& engine1Name,
+                                    const std::string& engine2Name) const;
 
   /// Executes cutechess-cli command and captures output
   /// @param command Full cutechess-cli command line
   /// @param output [out] Captured stdout/stderr from cutechess
   /// @return true if execution succeeded, false otherwise
-  bool executeCutechess(const std::string& command, std::string& output);
+  static bool executeCutechess(const std::string& command, std::string& output);
 
   /// Parses cutechess-cli output for match results
   /// @param output cutechess-cli stdout/stderr text
   /// @param matchConfig Original match configuration
+  /// @param engine1Name UCI name of engine 1
+  /// @param engine2Name UCI name of engine 2
   /// @return Parsed MatchResult structure
   /// @throws std::runtime_error if parsing fails
-  MatchResult parseOutput(const std::string& output, const MatchConfig& matchConfig);
+  MatchResult parseOutput(const std::string& output,
+                          const MatchConfig& matchConfig,
+                          const std::string& engine1Name,
+                          const std::string& engine2Name) const;
 
   /// Calculates ELO difference from match score
   /// @param score Match score for engine1 (0.0 to 1.0)
@@ -142,9 +167,15 @@ private:
   /// @throws std::runtime_error if any required file is missing
   static void validateMatchConfig(const MatchConfig& matchConfig);
 
-  /// Extracts engine name from path (for display in results)
+  /// Gets UCI engine name by starting the engine and reading "id name" response
   /// @param enginePath Full path to engine executable
-  /// @return Engine name (e.g., "FrankyCPP_v1.1")
+  /// @return Engine name from UCI protocol (e.g., "FrankyCPP v1.1")
+  /// @throws std::runtime_error if engine fails to start or respond
+  static std::string getUciEngineName(const std::string& enginePath);
+
+  /// Extracts engine name from path (fallback if UCI fails)
+  /// @param enginePath Full path to engine executable
+  /// @return Engine name derived from filename
   static std::string extractEngineName(const std::string& enginePath);
 
   /// Generates current timestamp in ISO 8601 format

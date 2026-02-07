@@ -1,0 +1,34 @@
+{
+  "arenaVersion": "v1.1",
+  "timestamp": "2026-02-07T00:28:48Z",
+
+  "match": {
+    "name": "v1.1_vs_FrankyGo_blitz_100",
+    "timeControl": "300+0",
+    "rounds": 100
+  },
+
+  "engine1": {
+    "name": "FrankyCPP v1.1",
+    "version": "v1.1",
+    "path": "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
+  },
+
+  "engine2": {
+    "name": "FrankyGo",
+    "version": "v1.0.3",
+    "path": "D:/Games/FrankyChess/FrankyGo/FrankyGo.exe"
+  },
+
+  "results": {
+    "engine1Wins": 27,
+    "engine2Wins": 35,
+    "draws": 38,
+    "engine1Score": 46.0,
+    "engine2Score": 54.0,
+    "eloDifference": -27.9
+  },
+
+  "pgnPath": "results/matches/v1.1_vs_FrankyGo_blitz_100.pgn",
+  "durationMs": 13229800
+}

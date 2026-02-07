@@ -140,6 +140,12 @@ testSuites:
     epdPath: "test/testsets/wac.epd"        # Path to EPD file
     timePerMove: 5000                        # Milliseconds per position
     maxDepth: 30                             # Maximum search depth
+    enginePath: "path/to/engine.exe"        # External UCI engine (required)
+    isolatePositions: true                   # Clear state between positions (optional)
+    commandLineArgs: ""                      # Engine startup arguments (optional)
+    uciOptions: ""                           # UCI setoption commands (optional)
+    debugMode: false                         # Enable UCI debug output (optional)
+    parallelWorkers: 1                       # Parallel engine instances (optional)
 ```
 
 ### Fields
@@ -251,33 +257,359 @@ maxDepth: 100    # Effectively unlimited (time controls first)
 
 ---
 
+#### `enginePath` (Required)
+
+**Type:** String (path)
+
+**Purpose:** Path to external UCI chess engine executable
+
+**Usage:** All test suites now run with external UCI engines for consistent testing
+
+**Format:** Same as `cutechessPath` - forward slashes work on all platforms
+
+**Examples:**
+```yaml
+# Current version (built by CMake)
+enginePath: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+
+# Previous release version
+enginePath: "Release/FrankyCPP_V1.0/FrankyCPP_v1.0.exe"
+
+# Absolute path
+enginePath: "D:/Games/Engines/stockfish.exe"
+
+# Linux
+enginePath: "/usr/local/bin/gnuchess"
+```
+
+**Requirements:**
+- Engine must support UCI protocol
+- Must respond to: `uci`, `uciok`, `isready`, `readyok`, `position`, `go`, `bestmove`
+- Engine process is started once per suite, reused across positions
+
+**Validation:** Arena checks if file exists before running suite
+
+---
+
+#### `isolatePositions` (Optional)
+
+**Type:** Boolean
+
+**Purpose:** Control whether engine state is cleared between test positions
+
+**Default:** `true` (recommended)
+
+**Values:**
+```yaml
+isolatePositions: true    # Send "ucinewgame" between positions (default)
+isolatePositions: false   # Reuse engine state (TT + history)
+```
+
+**Effect:**
+- `true`: Sends `ucinewgame` before each position
+  - Clears transposition table
+  - Clears history heuristics
+  - Ensures fair position-by-position comparison
+  - Slightly slower but more accurate
+- `false`: Keeps engine state across positions
+  - Faster execution (no state reset)
+  - TT/history from previous positions may affect results
+  - Only use for speed or if you understand implications
+
+**When to use `false`:**
+- Quick regression testing (speed over precision)
+- Testing with engines that have expensive state reset
+- You explicitly want to test TT/history carryover effects
+
+**Recommendation:** Leave as `true` for accurate version comparisons
+
+---
+
+#### `commandLineArgs` (Optional)
+
+**Type:** String
+
+**Purpose:** Command-line arguments passed when starting the engine
+
+**Default:** `""` (no arguments)
+
+**Timing:** Passed BEFORE UCI initialization
+
+**Format:** Exactly as you would type in a shell
+
+**Examples:**
+```yaml
+commandLineArgs: ""                        # No arguments (default)
+commandLineArgs: "--nobook"                # Single argument
+commandLineArgs: "--nobook --threads 4"    # Multiple arguments
+commandLineArgs: "-hash 256 -book off"     # Engine-specific syntax
+```
+
+**FrankyCPP Arguments:**
+```yaml
+commandLineArgs: "--nobook"                # Disable opening book
+commandLineArgs: "--help"                  # Show help (testing)
+```
+
+**Use Cases:**
+- Engine-specific options not available via UCI
+- Legacy engines with non-standard option syntax
+- Debug flags or logging control
+
+**Warning:** Engine-specific syntax - not portable across engines
+
+**Recommendation:** Use `uciOptions` instead when possible (standard UCI protocol)
+
+---
+
+#### `uciOptions` (Optional)
+
+**Type:** String (semicolon-separated key=value pairs)
+
+**Purpose:** UCI setoption commands sent after engine initialization
+
+**Default:** `""` (no options, use engine defaults)
+
+**Timing:** Sent AFTER UCI initialization (after `uciok`)
+
+**Format:** `"name1=value1; name2=value2; name3=value3"`
+
+**Examples:**
+```yaml
+# Disable opening book
+uciOptions: "OwnBook=false"
+
+# Multiple options
+uciOptions: "OwnBook=false; Hash=256"
+
+# Full configuration
+uciOptions: "Hash=512; Threads=4; Ponder=false; MultiPV=1"
+```
+
+**UCI Standard Options:**
+| Option | Type | Description |
+|--------|------|-------------|
+| `Hash` | Integer | Hash table size in MB |
+| `Threads` | Integer | Number of search threads |
+| `Ponder` | Boolean | Think on opponent's time |
+| `MultiPV` | Integer | Number of principal variations |
+| `OwnBook` | Boolean | Use engine's opening book |
+
+**FrankyCPP Supported Options:**
+- All UCI standard options above
+- Additional engine-specific options (see `src/engine/UciOptions.cpp`)
+
+**Format Rules:**
+- Use semicolon (`;`) to separate options (required for multi-word names)
+- Whitespace around `=` and `;` is trimmed automatically
+- Option names CAN contain spaces per UCI spec (though FrankyCPP uses single-word names)
+- No quotes around values (even if they contain spaces)
+
+**Parser Behavior:**
+- Invalid format warnings logged but continue processing
+- Empty names or values are skipped
+- Sends: `setoption name <name> value <value>` to engine
+
+**commandLineArgs vs uciOptions:**
+| Feature | commandLineArgs | uciOptions |
+|---------|----------------|------------|
+| **Timing** | Before UCI init | After UCI init |
+| **Format** | Engine-specific | Standard UCI protocol |
+| **Portability** | Engine-specific | Works across all UCI engines |
+| **Use case** | Non-UCI options | Standard configuration |
+| **Recommendation** | Avoid if possible | Preferred method |
+
+**Best Practice:** Use `uciOptions` for all standard UCI options, reserve `commandLineArgs` only for engine-specific startup flags not available via UCI.
+
+---
+
+#### `debugMode` (Optional)
+
+**Type:** Boolean
+
+**Purpose:** Enable detailed UCI communication logging for test suite
+
+**Default:** `false`
+
+**Effect:** Prints all UCI commands sent to/received from the engine
+
+**Examples:**
+```yaml
+debugMode: false    # Normal operation (clean output)
+debugMode: true     # Verbose UCI protocol logging
+```
+
+**Output Example (debugMode: true):**
+```
+[UCI] -> uci
+[UCI] <- id name FrankyCPP v1.1
+[UCI] <- id author Frank Kopp
+[UCI] <- uciok
+[UCI] -> isready
+[UCI] <- readyok
+[UCI] -> position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+[UCI] -> go movetime 5000 depth 30
+[UCI] <- info depth 1 score cp 25 nodes 123 time 5
+[UCI] <- bestmove e2e4
+```
+
+**Use Cases:**
+- Debugging engine UCI implementation issues
+- Investigating unexpected move selection
+- Verifying engine receives correct FEN strings
+- Understanding search behavior
+
+**Warning:** Very verbose - produces large amounts of output
+
+---
+
+#### `parallelWorkers` (Optional)
+
+**Type:** Integer
+
+**Purpose:** Number of parallel engine instances for concurrent position testing
+
+**Default:** `1` (sequential execution)
+
+**Range:** 1-16 (practical range: 1-8)
+
+**Examples:**
+```yaml
+parallelWorkers: 1     # Sequential execution (default)
+parallelWorkers: 4     # 4 parallel engine instances
+parallelWorkers: 8     # 8 parallel engines (for large suites)
+```
+
+**Effect:**
+- `1`: Positions tested one at a time (original behavior)
+- `N>1`: N engine processes run concurrently, each testing different positions
+
+**Architecture:**
+- Uses ThreadPool from `common/ThreadPool.h`
+- Each worker thread manages its own UCIEngine instance
+- Thread-local engine storage ensures proper isolation
+- Results collected in original position order via futures
+
+**Performance:**
+
+| Workers | Engine Processes | Memory (est.) | Speedup |
+|---------|------------------|---------------|---------|
+| 1       | 1                | ~200 MB       | 1x      |
+| 2       | 2                | ~400 MB       | ~1.9x   |
+| 4       | 4                | ~800 MB       | ~3.5x   |
+| 8       | 8                | ~1.6 GB       | ~6x     |
+
+**Output:**
+- Progress display: `Progress: 150/300 (50%) [120 passed, 30 failed]`
+- Summary shows both engine time (sum) and wall time (actual elapsed)
+- Speedup factor calculated: `Engine Time / Wall Time`
+
+**Example Output:**
+```
+Test Suite Complete: WAC (parallel)
+  Total Tests:  300
+  Passed:       285 (95%)
+  Failed:       15
+  Skipped:      0
+  Total Nodes:  123456789
+  Engine Time:  1500000ms (sum of all positions)
+  Wall Time:    450000ms (actual elapsed)
+  Speedup:      3.33x
+```
+
+**When to use:**
+- Large test suites (100+ positions)
+- Time-per-move >= 2 seconds
+- Sufficient RAM for multiple engines
+- CPU has multiple cores available
+
+**When NOT to use:**
+- Debugging (use sequential for clear output)
+- Small test suites (<20 positions, startup overhead dominates)
+- Limited RAM systems
+- Comparing exact search behavior (parallel may affect timing)
+
+**Recommendations:**
+- Start with `parallelWorkers: 4` and adjust based on system
+- Monitor memory usage with large worker counts
+- Keep `isolatePositions: true` for accurate results
+- For debugging, set `parallelWorkers: 1`
+
+---
+
 ### Complete Test Suite Example
 
 ```yaml
 testSuites:
-  # Quick regression test
-  - name: "franky_tests"
+  # Quick regression test with current build (sequential)
+  - name: "franky_tests_v1.1"
     epdPath: "test/testsets/franky_tests.epd"
     timePerMove: 2000
     maxDepth: 30
+    enginePath: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+    isolatePositions: true
+    commandLineArgs: ""
+    uciOptions: "OwnBook=false"
+    debugMode: false
+    parallelWorkers: 1            # Sequential for small suite
 
-  # Standard tactical test
+  # Previous version for comparison
+  - name: "franky_tests_v1.0"
+    epdPath: "test/testsets/franky_tests.epd"
+    timePerMove: 2000
+    maxDepth: 30
+    enginePath: "Release/FrankyCPP_V1.0/FrankyCPP_v1.0.exe"
+    isolatePositions: true
+    commandLineArgs: ""
+    uciOptions: "OwnBook=false; Hash=128"
+    debugMode: false
+    parallelWorkers: 1
+
+  # Standard tactical test (parallel)
   - name: "WAC"
     epdPath: "test/testsets/wac.epd"
     timePerMove: 5000
     maxDepth: 30
+    enginePath: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+    isolatePositions: true
+    commandLineArgs: ""
+    uciOptions: "OwnBook=false"
+    debugMode: false
+    parallelWorkers: 4            # 4 parallel workers for ~3x speedup
 
-  # Strategic test suite
+  # Strategic test with longer time (parallel)
   - name: "STS"
     epdPath: "test/testsets/STS1-STS15_LAN.EPD"
     timePerMove: 10000
     maxDepth: 40
+    enginePath: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+    isolatePositions: true
+    commandLineArgs: ""
+    uciOptions: "OwnBook=false; Hash=256"
+    parallelWorkers: 8            # More workers for large suite
+    debugMode: false
 
-  # Mate problems
+  # Mate problems with deep search
   - name: "mate_test"
     epdPath: "test/testsets/mate_test_suite.epd"
     timePerMove: 15000
     maxDepth: 50
+    enginePath: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+    isolatePositions: true
+    commandLineArgs: ""
+    uciOptions: "OwnBook=false"
+    debugMode: false
+
+  # Test with external engine (Stockfish)
+  - name: "stockfish_WAC"
+    epdPath: "test/testsets/wac.epd"
+    timePerMove: 5000
+    maxDepth: 30
+    enginePath: "D:/Engines/stockfish.exe"
+    isolatePositions: true
+    commandLineArgs: ""
+    uciOptions: "Hash=512; Threads=4"
+    debugMode: false
 ```
 
 ---
@@ -288,14 +620,16 @@ testSuites:
 
 ```yaml
 matches:
-  - name: "v1.1_vs_v1.0_blitz"                          # Match identifier
-    engine1Path: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"  # First engine
-    engine2Path: "Release/FrankyCPP_V1.0/FrankyCPP_v1.0.exe"       # Second engine
-    openingBook: "books/8moves_GM_LB.pgn"               # Opening book PGN
-    timeControl: "60+0.6"                               # Time control
-    rounds: 100                                         # Number of games
-    concurrency: 4                                      # Parallel games
-    outputPgn: "results/matches/v1.1_vs_v1.0_blitz.pgn" # PGN output
+  - name: "v1.1_vs_FrankyGo_blitz_100"                 # Match identifier
+    engine1Path: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"  # First engine
+    engine1Version: "v1.1"                             # Engine 1 version (required)
+    engine2Path: "D:/Games/FrankyChess/FrankyGo/FrankyGo.exe"  # Second engine
+    engine2Version: "v1.0.3"                           # Engine 2 version (required)
+    openingBook: "books/8moves_GM_LB.pgn"              # Opening book PGN
+    timeControl: "60+0.6"                              # Time control
+    rounds: 100                                        # Number of games
+    concurrency: 4                                     # Parallel games
+    outputPgn: "results/matches/v1.1_vs_FrankyGo_blitz_100.pgn"  # PGN output
 ```
 
 ### Fields
@@ -343,6 +677,33 @@ engine1Path: "/opt/engines/frankycpp/v1.1/FrankyCPP"
 
 ---
 
+#### `engine1Version` (Required)
+
+**Type:** String
+
+**Purpose:** Explicit version identifier for engine 1
+
+**Usage:** Used in result files and reporting for clear engine identification
+
+**Format:** Free-form string, but recommend semantic versioning
+
+**Examples:**
+```yaml
+engine1Version: "v1.1"          # Standard version
+engine1Version: "v1.2-dev"      # Development version
+engine1Version: "v1.1.2"        # Detailed version
+engine1Version: "dev-20260206"  # Date-based version
+```
+
+**Best Practices:**
+- Match the actual engine version being tested
+- Use consistent naming across all configurations
+- Include enough detail for unique identification
+
+**Note:** If omitted, will be empty in results (not recommended)
+
+---
+
 #### `engine2Path` (Required)
 
 **Type:** String (path)
@@ -362,6 +723,26 @@ engine2Path: "Release/FrankyCPP_v0.5/FrankyCPP_v0.5.exe"
 # Test against external engine
 engine2Path: "D:/Engines/Stockfish/stockfish-windows.exe"
 ```
+
+---
+
+#### `engine2Version` (Required)
+
+**Type:** String
+
+**Purpose:** Explicit version identifier for engine 2
+
+**Same format and requirements as `engine1Version`**
+
+**Examples:**
+```yaml
+engine2Version: "v1.0"       # Previous release
+engine2Version: "v0.5"       # Older baseline
+engine2Version: "v1.0.3"     # External engine version (e.g., FrankyGo)
+engine2Version: "dev"        # Stockfish development build
+```
+
+**Note:** Especially important for external engines where version may not be obvious from path
 
 ---
 
@@ -565,11 +946,13 @@ testSuites:
     epdPath: "test/testsets/franky_tests.epd"
     timePerMove: 5000
     maxDepth: 30
+    enginePath: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
   
   - name: "WAC"
     epdPath: "test/testsets/wac.epd"
     timePerMove: 5000
     maxDepth: 30
+    enginePath: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
 
 matches:
   - name: "v1.1_vs_v1.0_blitz"

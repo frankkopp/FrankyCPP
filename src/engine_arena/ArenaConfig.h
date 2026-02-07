@@ -99,23 +99,32 @@ namespace arena {
 
 /// Configuration for a single EPD test suite
 struct TestSuiteConfig {
-  std::string name;           ///< Test suite name (e.g., "WAC", "STS")
-  std::string epdPath;        ///< Path to EPD file
-  milliseconds timePerMove;   ///< Time limit per move
-  Depth maxDepth;            ///< Maximum search depth
+  std::string name;             ///< Test suite name (e.g., "WAC", "STS")
+  std::string epdPath;          ///< Path to EPD file
+  milliseconds timePerMove;     ///< Time limit per move
+  Depth maxDepth;               ///< Maximum search depth
+  std::string enginePath;       ///< Path to external UCI engine (required)
+  std::string engineVersion;    ///< Engine version for results (e.g., "v0.5", "v1.1") - explicit, not parsed from UCI
+  bool isolatePositions = true; ///< Clear engine state (TT/history) between positions (default: true)
+  bool debugMode = false;       ///< Print all UCI communication for debugging
+  std::string commandLineArgs;  ///< Command-line arguments to pass to engine (e.g., "--nobook -hash 128")
+  std::string uciOptions;       ///< UCI options as semicolon-separated pairs (e.g., "Hash=256; Threads=4")
+  int parallelWorkers = 1;      ///< Number of parallel workers (1 = sequential, N>1 = parallel)
 };
 
 /// Configuration for a single engine match
 struct MatchConfig {
-  std::string name;          ///< Match name (e.g., "v1.1 vs v1.0")
-  std::string engine1Path;   ///< Path to first engine executable
-  std::string engine2Path;   ///< Path to second engine executable
-  std::string cutechessPath; ///< Path to cutechess-cli executable
-  std::string openingBook;   ///< Path to opening book (PGN format)
-  std::string timeControl;   ///< Time control (e.g., "10+0.1")
-  int rounds;                ///< Number of rounds to play
-  int concurrency = 1;       ///< Number of games to run in parallel (default: 1 for deterministic)
-  std::string outputPgn;     ///< Path to save PGN games
+  std::string name;            ///< Match name (e.g., "v1.1 vs v1.0")
+  std::string engine1Path;     ///< Path to first engine executable
+  std::string engine1Version;  ///< Engine 1 version (e.g., "v1.1") - explicit, for results
+  std::string engine2Path;     ///< Path to second engine executable
+  std::string engine2Version;  ///< Engine 2 version (e.g., "v1.0") - explicit, for results
+  std::string cutechessPath;   ///< Path to cutechess-cli executable
+  std::string openingBook;     ///< Path to opening book (PGN format)
+  std::string timeControl;     ///< Time control (e.g., "10+0.1")
+  int rounds;                  ///< Number of rounds to play
+  int concurrency = 1;         ///< Number of games to run in parallel by cutechess-cli (default: 1 for deterministic)
+  std::string outputPgn;       ///< Path to save PGN games
 };
 
 /// Main arena configuration

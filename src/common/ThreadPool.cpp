@@ -50,14 +50,22 @@ void ThreadPool::start(const std::size_t numThreads) {
   }
 }
 
-/* Stops all running threads and waits for them to end before returning */
+/* Stops all running threads and waits for them to end before returning.
+ * Safe to call multiple times - subsequent calls are no-ops. */
 void ThreadPool::stop() {
-  { // lock block
+  {
     std::unique_lock lock{mEventMutex};
+    if (mStopped) {
+      return;  // Already stopped, nothing to do
+    }
     mStopping = true;
   }
   mEventVar.notify_all();
-  for (auto &thread : mThreads) {
+  for (auto& thread : mThreads) {
     thread.join();
+  }
+  {
+    std::unique_lock lock{mEventMutex};
+    mStopped = true;
   }
 }
