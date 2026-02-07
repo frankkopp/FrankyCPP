@@ -238,6 +238,70 @@ int Example::getValue() const { } // 6. Getter
 - Prefer range-based for loops
 - Use structured bindings where appropriate
 
+### Const-Correctness (IMPORTANT)
+**All generated code MUST be const-correct to minimize linter warnings.**
+
+**Function parameters:**
+```cpp
+// ✅ CORRECT - use const ref for input parameters
+void process(const std::string& input);
+void calculate(const std::vector<int>& data);
+
+// ❌ WRONG - non-const ref for read-only parameters
+void process(std::string& input);  // implies modification
+```
+
+**Local variables - use `const` by default:**
+```cpp
+// ✅ CORRECT
+const auto result = computeSomething();
+const auto& item = container.front();
+const int count = static_cast<int>(vec.size());
+
+// ❌ WRONG - missing const on variables that don't change
+auto result = computeSomething();
+auto& item = container.front();
+int count = static_cast<int>(vec.size());
+```
+
+**Range-based for loops:**
+```cpp
+// ✅ CORRECT - const ref when not modifying
+for (const auto& item : items) { /* read-only access */ }
+
+// ✅ CORRECT - non-const ref only when modifying
+for (auto& item : items) { item.value++; }
+
+// ❌ WRONG - non-const ref for read-only iteration
+for (auto& item : items) { std::cout << item; }
+```
+
+**Smart pointers:**
+```cpp
+// ✅ CORRECT - const unique_ptr when pointer itself doesn't change
+const auto ptr = std::make_unique<Widget>(args);
+ptr->doSomething();  // OK - can call non-const methods on pointee
+
+// ❌ WRONG - missing const
+auto ptr = std::make_unique<Widget>(args);
+```
+
+**Member variables:**
+- Use `const` for members initialized once and never modified
+- Consider if a member can be `const` based on class design
+
+**Method declarations:**
+```cpp
+// ✅ CORRECT - const method when not modifying state
+[[nodiscard]] int getValue() const { return value_; }
+[[nodiscard]] const std::string& getName() const { return name_; }
+
+// ✅ CORRECT - non-const only when modifying
+void setValue(int v) { value_ = v; }
+```
+
+**General rule:** When in doubt, add `const`. Remove it only if the compiler complains.
+
 ---
 
 ## Architecture Overview
