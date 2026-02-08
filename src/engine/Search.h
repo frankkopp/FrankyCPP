@@ -79,6 +79,7 @@
 //
 //=============================================================================
 
+#include "PVTable.h"
 #include "SearchLimits.h"
 #include "SearchResult.h"
 #include "SearchStats.h"
@@ -151,9 +152,8 @@ class Search {
   SearchStats statistics{};
 
   // ply related data
-  // Size is DEPTH_MAX + 1 to safely handle ply values from 0 to DEPTH_MAX (127)
-  // and ply+1 indexing (up to 128) in savePV() calls
-  std::array<MoveList, DEPTH_MAX + 1> pv{};
+  // Triangular PV table for efficient PV storage (64KB, zero heap allocations)
+  PVTable pv;
   std::array<MoveGenerator, DEPTH_MAX + 1> mg{};
 
   // to mark the last move was a book move
@@ -241,8 +241,8 @@ public:
   void ponderhit();
 
   /// Returns the principal variation from the current/last search.
-  /// @return Reference to the PV move list
-  const MoveList& getPV() const { return pv[0]; };
+  /// @return The PV move list (extracted from triangular table)
+  [[nodiscard]] MoveList getPV() const { return pv.extract(); }
 
   /// Clears the transposition table.
   void clearTT() const;
@@ -321,7 +321,7 @@ private:
   /// @param p     Position
   /// @param move  Capture move to evaluate
   /// @return      True if capture should be searched
-  bool goodCapture(Position& p, Move move) const;
+  bool goodCapture(const Position& p, Move move) const;
 
   /// Stores a position entry in the transposition table.
   /// @param p          Position
@@ -332,12 +332,6 @@ private:
   /// @param valueType  Bound type (EXACT, ALPHA, BETA)
   /// @param eval       Static evaluation
   void storeTt(const Position& p, Depth depth, Depth ply, Move move, Value value, ValueType valueType, Value eval) const;
-
-  /// Saves a move and appends source PV to destination PV.
-  /// @param move  Move to prepend
-  /// @param src   Source PV to append
-  /// @param dest  Destination PV (cleared first)
-  static void savePV(Move move, MoveList& src, MoveList& dest);
 
   /// Adjusts mate score for TT storage (distance from root).
   /// @param value  Score to adjust
@@ -351,11 +345,6 @@ private:
   /// @return       Adjusted score
   static Value valueFromTt(Value value, Depth ply);
 
-  /// Reconstructs PV line from TT entries.
-  /// @param p       Position at start of PV
-  /// @param pvList  List to fill with PV moves
-  /// @param depth   Maximum depth to probe
-  void getPvLine(Position& p, MoveList& pvList, Depth depth) const;
 
   /// Checks if search should stop (stop flag or node limit reached).
   /// @return True if search should terminate
@@ -425,6 +414,12 @@ private:
   /// Sends aspiration window research info to UCI.
   /// @param boundString  Bound type ("upperbound" or "lowerbound")
   void sendAspirationResearchInfo(const std::string& boundString);
+
+  /// Extracts PV from triangular table, extending it using TT lookups.
+  /// This ensures full PV lines are available even after TT cutoffs.
+  /// @param p  Position to use for TT probing (will be modified and restored)
+  /// @return   Extended PV as MoveList
+  MoveList extractPvWithTT(Position& p);
 };
 
 #endif// FRANKYCPP_SEARCH_H

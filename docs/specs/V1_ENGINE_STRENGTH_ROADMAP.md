@@ -200,16 +200,16 @@ This document provides a comprehensive, prioritized roadmap for enhancing Franky
 
 ## Prioritized Roadmap
 
-### Phase 1: Strength Testing Infrastructure (v1.1) - **1-2 weeks** 🔄 IN PROGRESS
+### Phase 1: Strength Testing Infrastructure (v1.1) - **1-2 weeks** ✅ COMPLETE
 **Goal:** Establish automated strength testing framework for validating improvements  
 **Target:** Foundation for measuring ELO gains
 
-| Task                       | Effort      | Complexity | ELO Gain | Status         |
-|----------------------------|-------------|------------|----------|----------------|
-| Arena Integration          | 🟢 2-3 days | 🟡 Medium  | N/A      | 🔄 In Progress |
-| Automated Match Runner     | 🟢 2-3 days | 🟡 Medium  | N/A      | 📋 Planned     |
-| ELO Tracking & Statistics  | 🟢 1-2 days | 🟢 Low     | N/A      | 📋 Planned     |
-| Opponent Engine Collection | 🟢 1-2 days | 🟢 Low     | N/A      | 📋 Planned     |
+| Task                       | Effort      | Complexity | ELO Gain | Status     |
+|----------------------------|-------------|------------|----------|------------|
+| Arena Integration          | 🟢 2-3 days | 🟡 Medium  | N/A      | ✅ Complete |
+| Automated Match Runner     | 🟢 2-3 days | 🟡 Medium  | N/A      | ✅ Complete |
+| ELO Tracking & Statistics  | 🟢 1-2 days | 🟢 Low     | N/A      | ✅ Complete |
+| Opponent Engine Collection | 🟢 1-2 days | 🟢 Low     | N/A      | ✅ Complete |
 
 **Why Testing First?**
 1. **Measure twice, cut once:** Cannot validate ELO gains without proper testing
@@ -223,21 +223,18 @@ This document provides a comprehensive, prioritized roadmap for enhancing Franky
 - Collection of calibrated opponent engines (various ELO levels)
 - Scripts for result parsing and ELO calculation
 
-**Success Criteria:**
-- Can run 100+ game matches automatically
-- ELO estimates have < ±30 confidence interval
-- Results are reproducible and logged
+**Completed in v1.1:** Testing infrastructure established, ready for measuring improvements.
 
 ---
 
-### Phase 2: Performance Fundamentals & Quick Wins (v1.2) - **2-3 weeks**
+### Phase 2: Performance Fundamentals & Quick Wins (v1.2) - **2-3 weeks** 🔄 IN PROGRESS
 **Goal:** Eliminate heap allocations, improve cache performance, add proven search enhancements  
 **Target:** +70-135 ELO
 
 | Task                            | Effort      | Complexity | ELO Gain | Status     |
 |---------------------------------|-------------|------------|----------|------------|
 | **Performance Fundamentals**    |             |            |          |            |
-| Triangular PV Table             | 🟢 1-2 days | 🟡 Medium  | +5-10    | 📋 Planned |
+| Triangular PV Table             | 🟢 1-2 days | 🟡 Medium  | +5-10    | ✅ Complete |
 | MoveList Static Array Refactor  | 🟡 3-5 days | 🟡 Medium  | +5-15    | 📋 Planned |
 | **Search Quick Wins**           |             |            |          |            |
 | Singular Extensions             | 🟢 2-3 days | 🟡 Medium  | +20-30   | 📋 Planned |
@@ -816,17 +813,18 @@ TB_CACHE_MB: 32
 
 ### Progress Dashboard
 
-| Phase | Version | Tasks | Completed | In Progress | Planned | ELO Gain Target | ELO Gain Actual | Status |
-|-------|---------|-------|-----------|-------------|---------|-----------------|-----------------|--------|
-| 1 | v1.1 → v1.2 | 5 | 0 | 0 | 5 | +60-110 | TBD | 📋 Planned |
-| 2 | v1.2 → v1.3 | 5 | 0 | 0 | 5 | +60-120 | TBD | 📋 Planned |
-| 3 | v1.3 → v1.4 | 4 | 0 | 0 | 4 | +35-65 | TBD | 📋 Planned |
-| 4 | v1.4 → v1.5 | 5 | 0 | 0 | 5 | +35-60 | TBD | 📋 Planned |
-| 5 | v1.5 → v1.6 | 5 | 0 | 0 | 5 | +50-85 | TBD | 📋 Planned |
-| 6 | v1.6 → v1.7 | 4 | 0 | 0 | 4 | +30-60 | TBD | 📋 Planned |
-| 7 | v1.7 → v1.9 | 7 | 0 | 0 | 7 | +200-400 | TBD | 📋 Planned |
-| 8 | v1.9 → v2.0 | 4 | 0 | 0 | 4 | +15-35 | TBD | 📋 Planned |
-| **TOTAL** | **v1.1 → v2.0** | **39** | **0** | **0** | **39** | **+485-935** | **TBD** | 📋 **Planned** |
+| Phase     | Version         | Tasks  | Completed | In Progress | Planned | ELO Gain Target | ELO Gain Actual | Status             |
+|-----------|-----------------|--------|-----------|-------------|---------|-----------------|-----------------|--------------------|
+| 1         | v1.1            | 4      | 4         | 0           | 0       | N/A             | N/A             | ✅ Complete         |
+| 2         | v1.2            | 7      | 1         | 0           | 6       | +70-135         | TBD             | 🔄 In Progress     |
+| 3         | v1.3            | 5      | 0         | 0           | 5       | +60-120         | TBD             | 📋 Planned         |
+| 4         | v1.4            | 4      | 0         | 0           | 4       | +35-65          | TBD             | 📋 Planned         |
+| 5         | v1.5            | 5      | 0         | 0           | 5       | +35-60          | TBD             | 📋 Planned         |
+| 6         | v1.6            | 5      | 0         | 0           | 5       | +50-85          | TBD             | 📋 Planned         |
+| 7         | v1.7            | 4      | 0         | 0           | 4       | +30-60          | TBD             | 📋 Planned         |
+| 8         | v1.8-v1.9       | 7      | 0         | 0           | 7       | +200-400        | TBD             | 📋 Planned         |
+| 9         | v2.0            | 4      | 0         | 0           | 4       | +15-35          | TBD             | 📋 Planned         |
+| **TOTAL** | **v1.1 → v2.0** | **45** | **5**     | **0**       | **40**  | **+495-960**    | **TBD**         | 🔄 **In Progress** |
 
 ### Gantt Chart (Estimated Timeline)
 
@@ -867,12 +865,12 @@ Month 7 (Aug 2026):
 - CI/CD runs all tests on every commit
 
 ### 2. Tactical Test Suites (Tactical Strength)
-| Suite | Positions | Focus | Baseline | Target |
-|-------|-----------|-------|----------|--------|
-| **WAC** | 300 | Tactics | 250/300 | 285/300 |
-| **STS** | 1500 | Strategy | 60% | 75% |
-| **Arasan** | 2400 | Comprehensive | 55% | 70% |
-| **Mate in N** | 100 | Mating | 65/100 | 90/100 |
+| Suite         | Positions | Focus         | Baseline | Target  |
+|---------------|-----------|---------------|----------|---------|
+| **WAC**       | 300       | Tactics       | 250/300  | 285/300 |
+| **STS**       | 1500      | Strategy      | 60%      | 75%     |
+| **Arasan**    | 2400      | Comprehensive | 55%      | 70%     |
+| **Mate in N** | 100       | Mating        | 65/100   | 90/100  |
 
 ### 3. Benchmark Matches (Strength Validation)
 - Play 1000+ game matches after each phase
@@ -924,22 +922,22 @@ cutechess-cli \
 
 ### Technical Risks
 
-| Risk | Impact | Probability | Mitigation |
-|------|--------|-------------|------------|
-| **Search Instability (Lazy SMP)** | High | Medium | Extensive testing with 1 thread (deterministic), gradual rollout |
-| **NNUE Training Failure** | High | Medium | Start with existing trained nets, fallback to classical always available |
-| **Performance Regression** | Medium | Low | Continuous benchmarking in CI/CD, automated regression detection |
-| **TT Contention (SMP)** | Medium | Medium | Proper TT sizing (128 MB per thread), lock-free atomic ops |
-| **CPU Compatibility (PEXT)** | Low | High | Software fallback implementation, runtime detection |
+| Risk                              | Impact | Probability | Mitigation                                                               |
+|-----------------------------------|--------|-------------|--------------------------------------------------------------------------|
+| **Search Instability (Lazy SMP)** | High   | Medium      | Extensive testing with 1 thread (deterministic), gradual rollout         |
+| **NNUE Training Failure**         | High   | Medium      | Start with existing trained nets, fallback to classical always available |
+| **Performance Regression**        | Medium | Low         | Continuous benchmarking in CI/CD, automated regression detection         |
+| **TT Contention (SMP)**           | Medium | Medium      | Proper TT sizing (128 MB per thread), lock-free atomic ops               |
+| **CPU Compatibility (PEXT)**      | Low    | High        | Software fallback implementation, runtime detection                      |
 
 ### Project Risks
 
-| Risk | Impact | Probability | Mitigation |
-|------|--------|-------------|------------|
-| **Scope Creep** | Medium | Medium | Strict phase boundaries, no mixing of tasks |
-| **Time Overruns** | Low | Medium | Conservative effort estimates, prioritize high-impact items first |
-| **Loss of Motivation** | Medium | Low | Celebrate milestones, track progress visibly, focus on measurable gains |
-| **NNUE Complexity** | High | Medium | Break into small tasks, use existing libraries/frameworks, allow 10 weeks |
+| Risk                   | Impact | Probability | Mitigation                                                                |
+|------------------------|--------|-------------|---------------------------------------------------------------------------|
+| **Scope Creep**        | Medium | Medium      | Strict phase boundaries, no mixing of tasks                               |
+| **Time Overruns**      | Low    | Medium      | Conservative effort estimates, prioritize high-impact items first         |
+| **Loss of Motivation** | Medium | Low         | Celebrate milestones, track progress visibly, focus on measurable gains   |
+| **NNUE Complexity**    | High   | Medium      | Break into small tasks, use existing libraries/frameworks, allow 10 weeks |
 
 ### Risk Mitigation Summary
 
@@ -960,13 +958,13 @@ cutechess-cli \
 4. **"Parallel Alpha-Beta Search" by Feldmann (1993)** - Classical parallel search
 
 ### Open Source Engines
-| Engine | Language | Notable Features | GitHub |
-|--------|----------|------------------|--------|
-| **Stockfish** | C++17 | NNUE, Lazy SMP, reference implementation | [official-stockfish](https://github.com/official-stockfish/Stockfish) |
-| **Ethereal** | C | Clean classical eval, tuning infrastructure | [AndyGrant/Ethereal](https://github.com/AndyGrant/Ethereal) |
-| **Koivisto** | C++ | Modern C++, NNUE training pipeline | [Luecx/Koivisto](https://github.com/Luecx/Koivisto) |
-| **Berserk** | C | Recent NNUE implementation, good docs | [jhonnold/berserk](https://github.com/jhonnold/berserk) |
-| **RubiChess** | C++ | Clean SMP implementation | [Matthies/RubiChess](https://github.com/Matthies/RubiChess) |
+| Engine        | Language | Notable Features                            | GitHub                                                                |
+|---------------|----------|---------------------------------------------|-----------------------------------------------------------------------|
+| **Stockfish** | C++17    | NNUE, Lazy SMP, reference implementation    | [official-stockfish](https://github.com/official-stockfish/Stockfish) |
+| **Ethereal**  | C        | Clean classical eval, tuning infrastructure | [AndyGrant/Ethereal](https://github.com/AndyGrant/Ethereal)           |
+| **Koivisto**  | C++      | Modern C++, NNUE training pipeline          | [Luecx/Koivisto](https://github.com/Luecx/Koivisto)                   |
+| **Berserk**   | C        | Recent NNUE implementation, good docs       | [jhonnold/berserk](https://github.com/jhonnold/berserk)               |
+| **RubiChess** | C++      | Clean SMP implementation                    | [Matthies/RubiChess](https://github.com/Matthies/RubiChess)           |
 
 ### Libraries & Tools
 - **Fathom:** Syzygy tablebase probing (https://github.com/jdart1/Fathom)
@@ -992,16 +990,16 @@ cutechess-cli \
 
 ### ELO Gain Summary by Phase
 
-| Phase | Version | Timeframe | ELO Gain (Conservative) | ELO Gain (Optimistic) | Cumulative Total |
-|-------|---------|-----------|-------------------------|-----------------------|------------------|
-| 1 | v1.1 → v1.2 | Feb 2026 | +60 | +110 | 60-110 |
-| 2 | v1.2 → v1.3 | Mar 2026 | +60 | +120 | 120-230 |
-| 3 | v1.3 → v1.4 | Mar-Apr 2026 | +35 | +65 | 155-295 |
-| 4 | v1.4 → v1.5 | Apr 2026 | +35 | +60 | 190-355 |
-| 5 | v1.5 → v1.6 | May 2026 | +50 | +85 | 240-440 |
-| 6 | v1.6 → v1.7 | May-Jun 2026 | +30 | +60 | 270-500 |
-| 7 | v1.7 → v1.9 | Jun-Jul 2026 | +200 | +400 | 470-900 |
-| 8 | v1.9 → v2.0 | Aug 2026 | +15 | +35 | 485-935 |
+| Phase | Version     | Timeframe    | ELO Gain (Conservative) | ELO Gain (Optimistic) | Cumulative Total |
+|-------|-------------|--------------|-------------------------|-----------------------|------------------|
+| 1     | v1.1 → v1.2 | Feb 2026     | +60                     | +110                  | 60-110           |
+| 2     | v1.2 → v1.3 | Mar 2026     | +60                     | +120                  | 120-230          |
+| 3     | v1.3 → v1.4 | Mar-Apr 2026 | +35                     | +65                   | 155-295          |
+| 4     | v1.4 → v1.5 | Apr 2026     | +35                     | +60                   | 190-355          |
+| 5     | v1.5 → v1.6 | May 2026     | +50                     | +85                   | 240-440          |
+| 6     | v1.6 → v1.7 | May-Jun 2026 | +30                     | +60                   | 270-500          |
+| 7     | v1.7 → v1.9 | Jun-Jul 2026 | +200                    | +400                  | 470-900          |
+| 8     | v1.9 → v2.0 | Aug 2026     | +15                     | +35                   | 485-935          |
 
 **Final Target Strength:**
 - v1.1 baseline: ~2400-2450 ELO
@@ -1049,11 +1047,11 @@ NNUE_FALLBACK_CLASSICAL: true
 
 ---
 
-**Document Status:** Active Planning  
+**Document Status:** Active Development  
 **Maintainer:** Frank Kopp  
 **Created:** 2026-02-01  
-**Last Updated:** 2026-02-01  
-**Next Review:** After Phase 1 completion (v1.2 release)
+**Last Updated:** 2026-02-08  
+**Next Review:** After Phase 2 completion (v1.2 release)
 
 ---
 
@@ -1061,6 +1059,7 @@ NNUE_FALLBACK_CLASSICAL: true
 
 | Version | Date       | Changes                                                                            | Author     |
 |---------|------------|------------------------------------------------------------------------------------|------------|
+| 2.1     | 2026-02-08 | Phase 1 (v1.1) marked complete; Phase 2 in progress with Triangular PV Table done  | Frank Kopp |
 | 2.0     | 2026-02-01 | Complete rewrite with detailed phase planning, ELO estimates, implementation specs | Frank Kopp |
 | 1.0     | 2026-02-01 | Initial V1_ENGINE_ENHANCEMENT_PLAN.md                                              | Frank Kopp |
 

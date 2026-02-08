@@ -188,14 +188,14 @@ void Search::run() {
   else { LOG__INFO(Logger::get().SEARCH_LOG, "Transposition Table: Not using TT."); }
 
   // Initialize ply-based data
-  // move generators for each ply
-  // pv move list for each ply
-  // Each depth in search gets its own global
+  // Clear entire PV table once (uses memset internally, zero heap allocations)
+  pv.clearAll();
+
+  // Move generators for each ply - each depth in search gets its own
   // field to avoid object creation during search.
   for (int i = DEPTH_NONE; i < DEPTH_MAX; i++) {
     this->mg[i] = MoveGenerator{};
     if (SearchConfig.USE_HISTORY_COUNTER || SearchConfig.USE_HISTORY_MOVES) { this->mg[i].setHistoryData(&history); }
-    pv[i].clear();
   }
 
   // release the init phase lock to signal the calling go routine
@@ -243,7 +243,7 @@ void Search::run() {
 
   // update the search result with search time and pv
   searchResult.time  = currentTime() - startSearchTime;
-  searchResult.pv    = pv[0];
+  searchResult.pv    = pv.extract();
   searchResult.nodes = nodesVisited;
 
   // print stats to log
@@ -252,7 +252,7 @@ void Search::run() {
   LOG__DEBUG(Logger::get().SEARCH_LOG, "Search stats: {}", statistics.str());
 
   // print result to log
-  if (searchLimits.mate && searchResult.mateFound) { LOG__INFO(Logger::get().SEARCH_LOG, "Mate in {} found: {}", searchLimits.mate, pv[0].at(0).str()); }
+  if (searchLimits.mate && searchResult.mateFound) { LOG__INFO(Logger::get().SEARCH_LOG, "Mate in {} found: {}", searchLimits.mate, pv.first().str()); }
   LOG__INFO(Logger::get().SEARCH_LOG, "Search result: {}", searchResult.str());
 
   // save the result until overwritten by the next search
@@ -452,12 +452,12 @@ SearchResult Search::iterativeDeepening(Position& p) {
     prevIterationNodes = lastIterationNodes;
     lastIterationNodes = nodesVisited - iterStartNodes;
 
-    assert(!pv[0].empty() && pv[0].at(0) != MOVE_NONE && "pv[0] must contain a valid first move");
-    assert((bestValue == pv[0].at(0).value() || stopSearchFlag) && "bestValue should be equal value of pv[0].at(0)");
+    assert(!pv.empty() && pv.first() != MOVE_NONE && "pv must contain a valid first move");
+    assert((bestValue == pv.first().value() || stopSearchFlag) && "bestValue should be equal value of pv.first()");
 
     // Conservative volatility detector: big evaluation swings between consecutive iterations
     if (!addedVolatilityExtraTime && !isTimeAlmostUp()) {
-      const Value currBest = pv[0].at(0).value();
+      const Value currBest = pv.first().value();
       // Only consider reasonably deep iterations to avoid noise from shallow depths
       constexpr int VOL_SWING_MIN_DEPTH = 6;
       constexpr auto VOL_SWING_THRESH   = Value{150};// ~1.5 pawns
@@ -476,7 +476,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
     }
 
     // if mate search check if we found a mate within the mate limit
-    if (searchLimits.mate && abs(pv[0].at(0).value()) >= VALUE_CHECKMATE_THRESHOLD && searchLimits.mate * 2 - 1 == VALUE_CHECKMATE - pv[0].at(0).value()) {
+    if (searchLimits.mate && abs(pv.first().value()) >= VALUE_CHECKMATE_THRESHOLD && searchLimits.mate * 2 - 1 == VALUE_CHECKMATE - pv.first().value()) {
       searchResult.mateFound = true;
       break;
     }
@@ -489,9 +489,9 @@ SearchResult Search::iterativeDeepening(Position& p) {
     if (!stopConditions()) {
       // sort root moves for the next iteration
       std::ranges::stable_sort(rootMoves, moveValueGreaterComparator());
-      statistics.currentBestRootMove      = pv[0].at(0);
-      statistics.currentBestRootMoveValue = pv[0].at(0).value();
-      assert(pv[0].at(0) == rootMoves.at(0) && "Best root move should be equal to pv[0].at(0)");
+      statistics.currentBestRootMove      = pv.first();
+      statistics.currentBestRootMoveValue = pv.first().value();
+      assert(pv.first() == rootMoves.at(0) && "Best root move should be equal to pv.first()");
       // update UCI GUI
       sendIterationEndInfoToUci();
     }
@@ -503,16 +503,16 @@ SearchResult Search::iterativeDeepening(Position& p) {
   // ###########################################
 
   // update searchResult
-  // the best move is pv[0][0] - we need to make sure this array entry exists at this time
-  // the best value is pv[0][0].valueOf
-  searchResult.bestMove      = pv[0].at(0).stripped();
-  searchResult.bestMoveValue = pv[0].at(0).value();
+  // the best move is pv(0,0) - we need to make sure this entry exists at this time
+  // the best value is pv(0,0).value()
+  searchResult.bestMove      = pv.first().stripped();
+  searchResult.bestMoveValue = pv.first().value();
   searchResult.depth         = statistics.currentIterationDepth;
   searchResult.extraDepth    = statistics.currentExtraSearchDepth;
   searchResult.bookMove      = false;
 
   // see if we have a move we could ponder on
-  if (pv[0].size() > 1) { searchResult.ponderMove = pv[0].at(1).stripped(); }
+  if (pv.hasLength(DEPTH_NONE, 2)) { searchResult.ponderMove = pv(DEPTH_NONE, 1).stripped(); }
   else {
     // we do not have a ponder-move in the pv-list,
     // so let's check the TT
@@ -659,7 +659,7 @@ Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Valu
 
     // we want to do at least one complete search with depth 1
     // After that we can stop any time - any new best moves will
-    // have been stored in pv[0]
+    // have been stored in pv
     if (stopConditions() && depth > 1) { return VALUE_NONE; }
 
     // Did we find a new best move?
@@ -667,8 +667,8 @@ Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Valu
     // this is always the case.
     if (value > bestNodeValue) {
       bestNodeValue = value;
-      // we have a new best move and pv[0][0] - store pv+1 to pv
-      savePV(moveRef, pv[1], pv[0]);
+      // we have a new best move - update triangular PV table
+      pv.update(moveRef, DEPTH_NONE);
       statistics.bestMoveChange++;
       if (value > alpha) {
         // fail high in root only when using aspiration search
@@ -693,11 +693,10 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   //  LOG__DEBUG(Logger::get().SEARCH_LOG, "Search {} {} {}", depth, ply, str(statistics.currentVariation));
 
   // Clear PV for this node to prevent stale data from previous iterations/branches
-  // from being propagated up via savePV(). Stale PV data can contain moves from
+  // from being propagated up via pv.update(). Stale PV data can contain moves from
   // different positions that are illegal in the current position.
-  // Note: IID may write to pv[ply] but clears it after extracting the ttMove.
-  // TODO: migrate to triangular PVTable
-  pv[ply].clear();
+  // Note: IID may write to pv but clears it after extracting the ttMove.
+  pv.clear(ply);
 
   // Enter quiescence search when depth == 0 or max ply has been reached
   if (depth == 0 || ply >= MAX_DEPTH) {
@@ -747,16 +746,15 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // tt hit
       statistics.ttHit++;
       ttMove = static_cast<Move>(ttEntryPtr->move);
-      if (ttEntryPtr->depth >= depth) {
+      // Never cutoff on PV nodes - this ensures we always build a complete PV line
+      // Non-PV nodes can still use TT cutoffs as they don't contribute to the reported PV
+      if (!isPv && ttEntryPtr->depth >= depth) {
         const Value ttValue = valueFromTt(ttEntryPtr->value, ply);
         if (SearchConfig.USE_TT_VALUE
             && ttValue.isValid()
             && (ttEntryPtr->type == EXACT
                 || (ttEntryPtr->type == ALPHA && ttValue <= alpha)
                 || (ttEntryPtr->type == BETA && ttValue >= beta))) {
-          // get PV line from tt as we prune here
-          // and wouldn't have one otherwise
-          getPvLine(p, pv[ply], depth);
           statistics.TtCuts++;
           return ttValue;
         }
@@ -925,11 +923,11 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         if (stopConditions()) { return VALUE_NONE; }
 
         // get the best move from the reduced search if available
-        if (!pv[ply].empty()) {
+        if (!pv.empty(ply)) {
           statistics.iidMoves++;
-          ttMove = pv[ply][0].stripped();
+          ttMove = pv.first(ply).stripped();
           // Clear pv after extracting the move - IID polluted it
-          pv[ply].clear();
+          pv.clear(ply);
         }
       }
     }
@@ -1196,7 +1194,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         // We found a move between alpha and beta which means we
         // really have found the best move so far in the ply which
         // can be forced (opponent can't avoid it).
-        savePV(move, pv[ply + 1], pv[ply]);
+        pv.update(move, ply);
 
         // We raise alpha so the successive searches in this ply
         // need to find even better moves or dismiss the moves.
@@ -1243,7 +1241,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
   //  LOG__DEBUG(Logger::get().SEARCH_LOG, "QSearch {} {}", ply, str(statistics.currentVariation));
 
   // Clear PV for this node (same reason as in search())
-  pv[ply].clear();
+  pv.clear(ply);
 
   if (statistics.currentExtraSearchDepth < ply) { statistics.currentExtraSearchDepth = ply; }
 
@@ -1275,6 +1273,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
       ttMove              = static_cast<Move>(ttEntryPtr->move);
       const Value ttValue = valueFromTt(ttEntryPtr->value, ply);
       if (SearchConfig.USE_TT_VALUE
+          && !isPv
           && ttValue.isValid()
           && (ttEntryPtr->type == EXACT
               || (ttEntryPtr->type == ALPHA && ttValue <= alpha)
@@ -1433,7 +1432,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
           ttType = BETA;
           break;
         }
-        savePV(move, pv[ply + 1], pv[ply]);
+        pv.update(move, ply);
         alpha  = value;
         ttType = EXACT;
       }
@@ -1480,7 +1479,7 @@ inline Value Search::evaluate(const Position& p) {
   return evaluator->evaluate(p);
 }
 
-bool Search::goodCapture(Position& p, const Move move) const {
+bool Search::goodCapture(const Position& p, const Move move) const {
   // Captures that give check are always good
   if (p.isCapturingMove(move) && p.givesCheck(move)) {
     return true;
@@ -1519,12 +1518,6 @@ void Search::storeTt(
   tt->put(p.getZobristKey(), depth, move, valueToTt(value, ply), valueType, eval);
 }
 
-void Search::savePV(const Move move, MoveList& src, MoveList& dest) {
-  dest.clear();
-  dest.push_back(move);
-  dest.insert(dest.end(), src.begin(), src.end());
-}
-
 Value Search::valueToTt(const Value value, const Depth ply) {
   if (value.isCheckMate()) {
     if (value > 0) { return value + static_cast<Value>(ply); }
@@ -1541,32 +1534,6 @@ Value Search::valueFromTt(const Value value, const Depth ply) {
   return value;
 }
 
-
-void Search::getPvLine(Position& p, MoveList& pvList, const Depth depth) const {
-  // Recursion-less reading the chain of pv moves
-  pvList.clear();
-  int counter  = 0;
-  const auto *ttMatch = tt->getMatch(p.getZobristKey());
-  while (ttMatch != nullptr && ttMatch->move != MOVE_NONE && counter < depth) {
-    const auto ttMove = static_cast<Move>(ttMatch->move);
-
-    // Sanity check: detect hash collisions by verifying piece exists and is correct color
-    // This prevents executing moves from wrong positions that happen to have same Zobrist key.
-    // Cost: ~2 array lookups per move (~5 instructions, negligible overhead)
-    if (p.getPiece(ttMove.from()) == PIECE_NONE ||
-        colorOf(p.getPiece(ttMove.from())) != p.getNextPlayer()) {
-      // Hash collision detected - stop PV extraction
-      LOG__WARN(Logger::get().SEARCH_LOG, "Hash collision detected in PV extraction at depth {}. Stopping PV extraction.", counter);
-      break;
-    }
-
-    pvList.push_back(ttMove);
-    p.doMove(ttMove);
-    counter++;
-    ttMatch = tt->getMatch(p.getZobristKey());
-  }
-  for (int i = 0; i < counter; ++i) { p.undoMove(); }
-}
 
 void Search::initialize() {
   LOG__INFO(Logger::get().SEARCH_LOG, "Search initialization.");
@@ -1886,6 +1853,11 @@ void Search::sendResult(const SearchResult& result) const {
 void Search::sendIterationEndInfoToUci() {
   const nanoseconds& since = elapsedSince(startSearchTime);
   lastUciUpdateTime        = nowFast();
+
+  // Use a copy of the initial position to extract PV with TT extension
+  Position p            = position;
+  const MoveList pvLine = extractPvWithTT(p);
+
   if (uciHandler) {
     uciHandler->sendIterationEndInfo(
       statistics.currentSearchDepth,
@@ -1894,7 +1866,7 @@ void Search::sendIterationEndInfoToUci() {
       nodesVisited,
       nps(nodesVisited, since),
       MILLISECONDS(since),
-      pv[0]);
+      pvLine);
     return;
   }
 
@@ -1905,7 +1877,7 @@ void Search::sendIterationEndInfoToUci() {
             nodesVisited,
             nps(nodesVisited, since),
             MILLISECONDS(since).count(),
-            pv[0].str());
+            pvLine.str());
 }
 
 void Search::sendSearchUpdateToUci() {
@@ -1954,6 +1926,11 @@ void Search::sendSearchUpdateToUci() {
 
 void Search::sendAspirationResearchInfo(const std::string& boundString) {
   const nanoseconds& since = elapsedSince(startSearchTime);
+
+  // Use a copy of the initial position to extract PV with TT extension
+  Position p            = position;
+  const MoveList pvLine = extractPvWithTT(p);
+
   if (uciHandler) {
     uciHandler->sendAspirationResearchInfo(
       statistics.currentSearchDepth,
@@ -1963,7 +1940,7 @@ void Search::sendAspirationResearchInfo(const std::string& boundString) {
       nodesVisited,
       nps(nodesVisited, since),
       MILLISECONDS(since),
-      pv[0]);
+      pvLine);
     return;
   }
 
@@ -1975,5 +1952,54 @@ void Search::sendAspirationResearchInfo(const std::string& boundString) {
             nodesVisited,
             nps(nodesVisited, since),
             MILLISECONDS(since).count(),
-            pv[0].str());
+            pvLine.str());
+}
+
+MoveList Search::extractPvWithTT(Position& p) {
+  MoveList result;
+
+  // First, copy moves from the triangular PV table
+  const int pvLen = pv.length();
+  for (int i = 0; i < pvLen; ++i) {
+    const Move move = pv(DEPTH_NONE, i);
+    if (move == MOVE_NONE) break;
+    result.push_back(move);
+    p.doMove(move);
+  }
+
+  // Now extend using TT lookups
+  // Limit to prevent infinite loops (e.g., from TT collisions)
+  constexpr int maxExtension = MAX_DEPTH;
+  int extended               = 0;
+
+  while (extended < maxExtension) {
+    const TT::Entry* entry = tt->probe(p.getZobristKey());
+    if (!entry) break;
+
+    const auto ttMove = static_cast<Move>(entry->move);
+    if (ttMove == MOVE_NONE) break;
+
+    // Verify the move is legal in current position
+    // (TT entries can be stale due to collisions)
+    if (!p.isLegalMove(ttMove)) break;
+
+    // Check for repetition - don't extend into a repeated position
+    // Use 2 to check for threefold repetition (same as search uses)
+    p.doMove(ttMove);
+    if (p.checkRepetitions(2)) {
+      p.undoMove();
+      break;
+    }
+
+    result.push_back(ttMove);
+    ++extended;
+  }
+
+  // Undo all moves to restore position
+  const int totalMoves = pvLen + extended;
+  for (int i = 0; i < totalMoves; ++i) {
+    p.undoMove();
+  }
+
+  return result;
 }

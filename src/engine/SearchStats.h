@@ -45,6 +45,7 @@
 //
 //=============================================================================
 
+#include "VariationStack.h"
 #include "types/types.h"
 #include <ostream>
 
@@ -68,8 +69,8 @@ struct SearchStats {
   /// Evaluation of the current best root move.
   Value currentBestRootMoveValue;
 
-  /// Current principal variation being explored.
-  MoveList currentVariation{};
+  /// Current principal variation being explored (fixed-size stack, zero heap allocations).
+  VariationStack currentVariation{};
 
   /// Index of root move currently being searched (0-based).
   size_t currentRootMoveIndex;

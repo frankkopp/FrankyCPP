@@ -508,7 +508,7 @@ void UciHandler::sendResult(const Move bestMove, const Move ponderMove) const {
   send(std::format("bestmove {}{}", bestMove.str(), (ponderMove ? " ponder " + ponderMove.str() : "")));
 }
 
-void UciHandler::sendCurrentLine(const MoveList& moveList) const {
+void UciHandler::sendCurrentLine(const VariationStack& moveList) const {
   send(std::format("currline {}", moveList.str()));
 }
 

@@ -1,8 +1,8 @@
 # Plan: Migration to Triangular PV Table
 
-**Status:** Planning  
+**Status:** ✅ Complete  
 **Created:** 2026-02-06  
-**Last Updated:** 2026-02-06  
+**Last Updated:** 2026-02-08  
 
 ---
 
@@ -459,13 +459,13 @@ Note: Return type changes from `const MoveList&` to `MoveList` (value). Check al
 
 All accesses to `pv[0].at(0)`, `pv[0].at(1)`, `pv[0].size()`, etc. need updating:
 
-| Current | New |
-|---------|-----|
-| `pv[0].at(0)` | `pv_.first()` or `pv_(0, 0)` |
-| `pv[0].at(1)` | `pv_(0, 1)` |
+| Current            | New                                               |
+|--------------------|---------------------------------------------------|
+| `pv[0].at(0)`      | `pv_.first()` or `pv_(0, 0)`                      |
+| `pv[0].at(1)`      | `pv_(0, 1)`                                       |
 | `pv[0].size() > 1` | `pv_.hasLength(0, 2)` or `pv_(0, 1) != MOVE_NONE` |
-| `pv[0].empty()` | `pv_.empty()` |
-| `!pv[ply].empty()` | `!pv_.empty(ply)` |
+| `pv[0].empty()`    | `pv_.empty()`                                     |
+| `!pv[ply].empty()` | `!pv_.empty(ply)`                                 |
 
 **Locations (~lines 455, 456, 460, 479, 492-494, 508-509, 515):**
 - Assertions checking `pv[0].at(0)`
@@ -632,15 +632,17 @@ VariationStack currentVariation{};
 
 ## 4. File Change Summary
 
-| File                  | Changes                                                                     |
-|-----------------------|-----------------------------------------------------------------------------|
-| `src/types/PVTable.h` | **New file** - PVTable class implementation                                 |
-| `Search.h`            | Replace `pv` with `pv_`, update `getPV()`, add include                      |
-| `Search.cpp`          | All `pv[ply]` → `pv_.xxx()`, remove `savePV()`, update/remove `getPvLine()` |
-| `SearchStats.h`       | Replace `MoveList currentVariation` with `VariationStack currentVariation`  |
-| `SearchResult.h`      | No change (keep `MoveList pv`)                                              |
-| `UciHandler.cpp`      | Update `sendCurrentLine()` to work with `VariationStack`                    |
-| `test/engine/*`       | Update tests accessing PV                                                   |
+| File                                 | Changes                                                                      |
+|--------------------------------------|------------------------------------------------------------------------------|
+| `src/engine/PVTable.h`               | **New file** - PVTable class implementation ✅                                |
+| `src/engine/VariationStack.h`        | **New file** - VariationStack class implementation ✅                         |
+| `Search.h`                           | Replace `pv` with `pv_`, update `getPV()`, add include ✅                     |
+| `Search.cpp`                         | All `pv[ply]` → `pv_.xxx()`, remove `savePV()`, remove `getPvLine()` ✅       |
+| `SearchStats.h`                      | Replace `MoveList currentVariation` with `VariationStack currentVariation` ✅ |
+| `SearchResult.h`                     | No change (keep `MoveList pv`)                                               |
+| `UciHandler.h/cpp`                   | Update `sendCurrentLine()` to work with `VariationStack` ✅                   |
+| `test/engine/PVTableTest.cpp`        | **New file** - Unit tests for PVTable ✅                                      |
+| `test/engine/VariationStackTest.cpp` | **New file** - Unit tests for VariationStack ✅                               |
 
 ---
 
@@ -648,7 +650,7 @@ VariationStack currentVariation{};
 
 ### 5.1 Unit Tests
 
-**New test file: `test/types/PVTableTest.cpp`**
+**New test file: `test/engine/PVTableTest.cpp`** ✅
 
 - Test `clear()`, `update()`, `extract()`, `length()`
 - Test `operator()` direct access
@@ -657,7 +659,7 @@ VariationStack currentVariation{};
 - Test sentinel termination
 - Test `clearAll()`
 
-**New test file: `test/engine/VariationStackTest.cpp`**
+**New test file: `test/engine/VariationStackTest.cpp`** ✅
 
 - Test `push_back()`, `pop_back()`, `clear()`
 - Test `size()`, `empty()`
@@ -677,23 +679,7 @@ VariationStack currentVariation{};
 
 ---
 
-## 6. Rollback Plan
-
-Keep the old implementation available behind a preprocessor flag during initial testing:
-
-```cpp
-#ifdef USE_TRIANGULAR_PV
-    PVTable pv_;
-#else
-    std::array<MoveList, DEPTH_MAX + 1> pv{};
-#endif
-```
-
-Remove flag after successful validation.
-
----
-
-## 7. Estimated Effort
+## 6. Estimated Effort
 
 | Phase                                   | Effort         | Risk   |
 |-----------------------------------------|----------------|--------|
@@ -712,7 +698,7 @@ Remove flag after successful validation.
 
 ---
 
-## 8. Expected Benefits
+## 7. Expected Benefits
 
 1. **Performance**: Elimination of heap allocations during search
 2. **Cache efficiency**: Contiguous memory access
@@ -722,7 +708,7 @@ Remove flag after successful validation.
 
 ---
 
-## 9. Design Decisions
+## 8. Design Decisions
 
 1. **Keep 32-bit moves in PV table** (not 16-bit like some engines)
    - Stripping/reconstructing sort value costs more CPU than we'd save in memory
@@ -741,7 +727,7 @@ Remove flag after successful validation.
 
 ---
 
-## 10. References
+## 9. References
 
 - Chess Programming Wiki: [Triangular PV-Table](https://www.chessprogramming.org/Triangular_PV-Table)
 
@@ -749,7 +735,10 @@ Remove flag after successful validation.
 
 ## Changelog
 
-| Date       | Change                                                           |
-|------------|------------------------------------------------------------------|
-| 2026-02-06 | Initial planning document created                                |
-| 2026-02-07 | Added Phase 13: VariationStack for currentVariation optimization |
+| Date       | Change                                                                                      |
+|------------|---------------------------------------------------------------------------------------------|
+| 2026-02-06 | Initial planning document created                                                           |
+| 2026-02-07 | Added Phase 13: VariationStack for currentVariation optimization                            |
+| 2026-02-08 | Implementation complete: PVTable, VariationStack, Search updates, tests                     |
+| 2026-02-08 | Added `!isPv` to TT cutoff condition - PV nodes always search fully for complete PV lines   |
+| 2026-02-08 | Added `extractPvWithTT()` to extend PV using TT lookups for full PV lines in UCI output     |

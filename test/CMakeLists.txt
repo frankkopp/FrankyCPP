@@ -42,6 +42,8 @@ add_executable(
         engine/EvaluatorTest.cpp
         engine/PawnTT_Test.cpp
         engine/EngineSpeedTests.cpp
+        engine/PVTableTest.cpp
+        engine/VariationStackTest.cpp
 
         enginetest/SearchTreeSizeTest_Test.cpp
         enginetest/TestSuite_Test.cpp

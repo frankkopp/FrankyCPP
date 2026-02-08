@@ -55,6 +55,7 @@ protected:
 // 27.9.2925 GROOT: Search depth was 13(31) with 93.946.149 nodes visited. NPS = 3.716.830 nps
 // after migrations to classes and time management changes
 // 07.02.2026 GROOT: Search depth was 12(43) with 113.893.833 nodes visited. NPS = 3.470.354 nps
+// 08.02.2026 GROOT: Search depth was 12(43) with 87.289.648 nodes visited. NPS = 3.501.469 nps (after Triangular PVTable)
 TEST_F(EngineSpeedTests, npsTest) {
   CONFIG_OVERRIDE_START()
   s.TT_SIZE_MB          = 64;

@@ -1,8 +1,9 @@
 # FrankyCPP v1.x Engine Enhancement Plan
 
-**Document Version:** 1.0  
+**Document Version:** 1.1  
 **Created:** 2026-02-01  
-**Status:** Planning Phase  
+**Last Updated:** 2026-02-08  
+**Status:** Phase 2 In Progress  
 **Target:** FrankyCPP v1.0 → v1.x releases
 
 ---
@@ -52,15 +53,15 @@ Tablebase support and endgame-specific techniques.
 
 ## Phase-Based Roadmap
 
-### Phase 1: Strength Testing Infrastructure (v1.1) - **1-2 weeks** 🔄 IN PROGRESS
+### Phase 1: Strength Testing Infrastructure (v1.1) - **1-2 weeks** ✅ COMPLETE
 **Focus:** Establish automated strength testing framework for validating improvements
 
-| Task                       | Category       | Effort      | Complexity | ELO Gain | Priority |
-|----------------------------|----------------|-------------|------------|----------|----------|
-| Arena Integration          | Infrastructure | 🟢 2-3 days | 🟡 Medium  | N/A      | CRITICAL |
-| Automated Match Runner     | Infrastructure | 🟢 2-3 days | 🟡 Medium  | N/A      | HIGH     |
-| ELO Tracking & Statistics  | Infrastructure | 🟢 1-2 days | 🟢 Low     | N/A      | HIGH     |
-| Opponent Engine Collection | Infrastructure | 🟢 1-2 days | 🟢 Low     | N/A      | MEDIUM   |
+| Task                       | Category       | Effort      | Complexity | ELO Gain | Priority | Status     |
+|----------------------------|----------------|-------------|------------|----------|----------|------------|
+| Arena Integration          | Infrastructure | 🟢 2-3 days | 🟡 Medium  | N/A      | CRITICAL | ✅ Complete |
+| Automated Match Runner     | Infrastructure | 🟢 2-3 days | 🟡 Medium  | N/A      | HIGH     | ✅ Complete |
+| ELO Tracking & Statistics  | Infrastructure | 🟢 1-2 days | 🟢 Low     | N/A      | HIGH     | ✅ Complete |
+| Opponent Engine Collection | Infrastructure | 🟢 1-2 days | 🟢 Low     | N/A      | MEDIUM   | ✅ Complete |
 
 **Expected Total ELO Gain:** N/A (infrastructure)  
 **Risk:** Low - setup and configuration work  
@@ -69,24 +70,24 @@ Tablebase support and endgame-specific techniques.
 - cutechess-cli for automated batch matches
 - Collection of calibrated opponent engines (various ELO levels)
 - Scripts for result parsing and ELO calculation
-- **Must complete before Phase 2** to validate improvements
+- **Completed in v1.1** - Foundation for measuring all future improvements
 
 ---
 
-### Phase 2: Performance Fundamentals & Quick Wins (v1.2) - **2-3 weeks**
+### Phase 2: Performance Fundamentals & Quick Wins (v1.2) - **2-3 weeks** 🔄 IN PROGRESS
 **Focus:** Eliminate heap allocations, improve cache performance, add proven search enhancements
 
-| Task                            | Category    | Effort      | Complexity | ELO Gain | Priority |
-|---------------------------------|-------------|-------------|------------|----------|----------|
-| **Performance Fundamentals**    |             |             |            |          |          |
-| Triangular PV Table             | Performance | 🟢 1-2 days | 🟡 Medium  | +5-10    | HIGH     |
-| MoveList Static Array Refactor  | Performance | 🟡 3-5 days | 🟡 Medium  | +5-15    | HIGH     |
-| **Search Quick Wins**           |             |             |            |          |          |
-| Singular Extensions             | Search      | 🟢 2-3 days | 🟡 Medium  | +20-30   | HIGH     |
-| Check Extensions                | Search      | 🟢 2-3 days | 🟡 Medium  | +10-20   | HIGH     |
-| Counter-Move History            | Search      | 🟡 3-5 days | 🟡 Medium  | +10-20   | MEDIUM   |
-| Best-Move Instability Time Mgmt | Search      | 🟢 2-3 days | 🟡 Medium  | +5-15    | MEDIUM   |
-| Selective Checks in Quiescence  | Search      | 🟡 3-5 days | 🟡 Medium  | +15-25   | MEDIUM   |
+| Task                            | Category    | Effort      | Complexity | ELO Gain | Priority | Status     |
+|---------------------------------|-------------|-------------|------------|----------|----------|------------|
+| **Performance Fundamentals**    |             |             |            |          |          |            |
+| Triangular PV Table             | Performance | 🟢 1-2 days | 🟡 Medium  | +5-10    | HIGH     | ✅ Complete |
+| MoveList Static Array Refactor  | Performance | 🟡 3-5 days | 🟡 Medium  | +5-15    | HIGH     | 📋 Planned |
+| **Search Quick Wins**           |             |             |            |          |          |            |
+| Singular Extensions             | Search      | 🟢 2-3 days | 🟡 Medium  | +20-30   | HIGH     | 📋 Planned |
+| Check Extensions                | Search      | 🟢 2-3 days | 🟡 Medium  | +10-20   | HIGH     | 📋 Planned |
+| Counter-Move History            | Search      | 🟡 3-5 days | 🟡 Medium  | +10-20   | MEDIUM   | 📋 Planned |
+| Best-Move Instability Time Mgmt | Search      | 🟢 2-3 days | 🟡 Medium  | +5-15    | MEDIUM   | 📋 Planned |
+| Selective Checks in Quiescence  | Search      | 🟡 3-5 days | 🟡 Medium  | +15-25   | MEDIUM   | 📋 Planned |
 
 **Expected Total ELO Gain:** +70-135  
 **Risk:** Low - internal refactoring and proven techniques  
@@ -866,5 +867,5 @@ parameters:
 ---
 
 **Document Maintainer:** Frank Kopp  
-**Last Updated:** 2026-02-01  
-**Next Review:** After each phase completion
+**Last Updated:** 2026-02-08  
+**Next Review:** After Phase 2 completion (v1.2 release)

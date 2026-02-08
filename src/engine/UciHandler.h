@@ -27,6 +27,7 @@
 #include "common/gtest_friends.h"
 
 #include "SearchLimits.h"
+#include "VariationStack.h"
 
 // forward declaration
 class Position;
@@ -68,7 +69,7 @@ public:
   void sendAspirationResearchInfo(int depth, int seldepth, Value value, const std::string& boundString, uint64_t nodes, uint64_t nps, milliseconds time, const MoveList& pv) const;
   void sendCurrentRootMove(Move currmove, std::size_t movenumber) const;
   void sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps, milliseconds time, int hashfull) const;
-  void sendCurrentLine(const MoveList& moveList) const;
+  void sendCurrentLine(const VariationStack& moveList) const;
   void sendResult(Move bestMove, Move ponderMove) const;
   void sendString(const std::string& anyString) const;
   void sendReadyOk() const;
