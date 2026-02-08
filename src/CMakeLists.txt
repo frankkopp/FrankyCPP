@@ -26,6 +26,7 @@ set(FrankyCPPlib_SRCS
         engine/See.cpp engine/See.h
         engine/Evaluator.cpp engine/Evaluator.h
         engine/PawnTT.cpp engine/PawnTT.h
+        engine/Benchmark.cpp engine/Benchmark.h
 
         enginetest/SearchTreeSizeTest.cpp enginetest/SearchTreeSizeTest.h
         enginetest/TestSuite.cpp enginetest/TestSuite.h

@@ -98,6 +98,7 @@ private:
   void stopCommand() const;
   void ponderHitCommand() const;
   void perftCommand(std::istringstream& inStream) const;
+  void benchCommand(std::istringstream& inStream) const;
   void registerCommand() const;
   void debugCommand() const;
   void helpCommand() const;

@@ -45,6 +45,7 @@ add_executable(
         engine/EngineSpeedTests.cpp
         engine/PVTableTest.cpp
         engine/VariationStackTest.cpp
+        engine/BenchmarkTest.cpp
 
         enginetest/SearchTreeSizeTest_Test.cpp
         enginetest/TestSuite_Test.cpp

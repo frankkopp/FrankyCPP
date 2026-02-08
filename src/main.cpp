@@ -20,6 +20,7 @@
 #include "init.h"
 #include "version.h"
 #include <chesscore/Perft.h>
+#include <engine/Benchmark.h>
 #include <engine/UciHandler.h>
 #include <enginetest/TestSuite.h>
 #include <fstream>
@@ -76,7 +77,10 @@ int main(int argc, char* argv[]) {
       ("perft", "run perft test")
       ("startDepth", po::value<int>(&perftStart)->default_value(1), "start depth for perft test")
       ("endDepth", po::value<int>(&perftEnd)->default_value(5), "end depth for perft test")
-      ("onDemand", po::value<bool>(&perftOnDemand)->default_value(false), "use on demand move generation for perft test");
+      ("onDemand", po::value<bool>(&perftOnDemand)->default_value(false), "use on demand move generation for perft test")
+      ("bench", "run benchmark to measure NPS")
+      ("benchDepth", po::value<int>()->default_value(10), "search depth for benchmark (1-127)")
+      ("benchHash", po::value<int>()->default_value(128), "hash size in MB for benchmark (1-65536)");
 
     // Hidden options will be allowed both on command line and in config file,
     // but will not be shown to the user when printing help.
@@ -184,6 +188,26 @@ int main(int argc, char* argv[]) {
       std::cout << std::endl;
       Perft perft{};
       perft.perft(perftStart, perftEnd, perftOnDemand);
+      return 0;
+    }
+
+    // Benchmark run from cmd line
+    if (programOptions.contains("bench")) {
+      init::init();
+      const int benchDepth = programOptions["benchDepth"].as<int>();
+      const int benchHash = programOptions["benchHash"].as<int>();
+      std::cout << std::endl;
+      std::cout << "RUNNING BENCHMARK\n";
+      std::cout << "########################################################\n";
+      std::cout << "Version: " << appName << "\n";
+      std::cout << "Depth:   " << benchDepth << "\n";
+      std::cout << "Hash:    " << benchHash << " MB\n";
+      std::cout << std::endl;
+      engine::BenchConfig config;
+      config.depth = benchDepth;
+      config.hashSizeMB = benchHash;
+      const auto result = engine::Benchmark::run(config);
+      engine::Benchmark::printResults(result);
       return 0;
     }
 

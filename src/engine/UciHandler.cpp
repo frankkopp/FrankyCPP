@@ -18,6 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "UciHandler.h"
+#include "Benchmark.h"
 #include "Search.h"
 #include "SearchLimits.h"
 #include "UciOptions.h"
@@ -89,6 +90,7 @@ bool UciHandler::handleCommand(const std::string& cmd) {
   else if (token == "register")   { registerCommand(); }
   else if (token == "debug")      { debugCommand(); }
   else if (token == "perft")      { perftCommand(inStream); }
+  else if (token == "bench")      { benchCommand(inStream); }
   else if (token == "getoptions") { getOptionsCommand(); }
   else if (token == "help")       { helpCommand(); }
   else if (token == "noop")       { /* noop */  }
@@ -267,7 +269,7 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
         }
       }
       if (!searchMoves.empty()) {
-        searchLimits.moves = std::move(searchMoves);
+        searchLimits.moves = searchMoves;
       }
     }
 
@@ -403,6 +405,62 @@ void UciHandler::perftCommand(std::istringstream& inStream) const {
   perftThread.detach();
 }
 
+void UciHandler::benchCommand(std::istringstream& inStream) const {
+  LOG__INFO(Logger::get().UCIHAND_LOG, "Start Benchmark");
+
+  // Parse optional arguments: bench [depth] [hash] [threads]
+  engine::BenchConfig config;
+  std::string token;
+
+  if (inStream >> token) {
+    try {
+      config.depth = std::stoi(token);
+      if (config.depth <= 0 || config.depth > MAX_DEPTH) {
+        uciError(std::format("bench depth must be between 1 and {}. Was '{}'", MAX_DEPTH, token));
+        return;
+      }
+    }
+    catch (...) {
+      uciError(std::format("bench depth invalid: '{}'", token));
+      return;
+    }
+  }
+
+  if (inStream >> token) {
+    try {
+      config.hashSizeMB = std::stoi(token);
+      if (config.hashSizeMB <= 0 || config.hashSizeMB > 65536) {
+        uciError(std::format("bench hash must be between 1 and 65536 MB. Was '{}'", token));
+        return;
+      }
+    }
+    catch (...) {
+      uciError(std::format("bench hash invalid: '{}'", token));
+      return;
+    }
+  }
+
+  if (inStream >> token) {
+    try {
+      config.threads = std::stoi(token);
+      if (config.threads <= 0 || config.threads > 256) {
+        uciError(std::format("bench threads must be between 1 and 256. Was '{}'", token));
+        return;
+      }
+    }
+    catch (...) {
+      uciError(std::format("bench threads invalid: '{}'", token));
+      return;
+    }
+  }
+
+  // Run the benchmark
+  const auto result = engine::Benchmark::run(config);
+  engine::Benchmark::printResults(result);
+
+  LOG__INFO(Logger::get().UCIHAND_LOG, "Benchmark finished - NPS: {}", static_cast<uint64_t>(result.nps));
+}
+
 void UciHandler::registerCommand() const {
   uciError("UCI Protocol Command: register not implemented!");
 }
@@ -463,6 +521,13 @@ void UciHandler::helpCommand() const {
 
   out("perft <startDepth> [endDepth]");
   out(std::format("  Runs a perft from the current position for depths {}..{}. If endDepth omitted, only startDepth is used.", 1, MAX_DEPTH));
+
+  out("bench [depth] [hash] [threads]");
+  out("  Runs a standardized benchmark to measure NPS (nodes per second).");
+  out("  Default: bench 10 128 1");
+  out("    depth    Search depth (1-127, default 10)");
+  out("    hash     Hash table size in MB (1-65536, default 128)");
+  out("    threads  Number of threads (1-256, default 1, reserved for future SMP)");
 
   out("getoptions");
   out("  Non-standard extension: Lists all options with their current values (for testing).");
