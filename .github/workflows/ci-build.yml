@@ -19,6 +19,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Export GitHub Actions cache environment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
       - name: Setup vcpkg
         shell: pwsh
         run: |
@@ -33,6 +40,8 @@ jobs:
           }
           # Set environment variable for subsequent steps
           Add-Content -Path $env:GITHUB_ENV -Value "VCPKG_ROOT=C:\vcpkg"
+          # Enable binary caching to GitHub Actions cache
+          Add-Content -Path $env:GITHUB_ENV -Value "VCPKG_BINARY_SOURCES=clear;x-gha,readwrite"
 
       - name: Setup MSVC
         uses: microsoft/setup-msbuild@v2
@@ -50,17 +59,42 @@ jobs:
       - name: Configure CMake
         shell: pwsh
         run: |
-          # Explicitly specify MSVC compilers to avoid MinGW
-          cmake -B build `
-            -G Ninja `
-            -DCMAKE_C_COMPILER=cl `
-            -DCMAKE_CXX_COMPILER=cl `
-            -DCMAKE_BUILD_TYPE=Release `
-            -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" `
-            -DVCPKG_TARGET_TRIPLET=x64-windows-static-md `
-            -DFRANKYCPP_BUILD_TESTS=ON `
-            -DFRANKYCPP_BUILD_BENCHMARKS=OFF `
-            -DSTRICT_WARNINGS=OFF
+          # Retry logic for transient vcpkg download failures
+          $maxAttempts = 3
+          $attempt = 0
+          $success = $false
+          
+          do {
+            $attempt++
+            Write-Host "Configure attempt $attempt of $maxAttempts"
+            
+            # Explicitly specify MSVC compilers to avoid MinGW
+            cmake -B build `
+              -G Ninja `
+              -DCMAKE_C_COMPILER=cl `
+              -DCMAKE_CXX_COMPILER=cl `
+              -DCMAKE_BUILD_TYPE=Release `
+              -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" `
+              -DVCPKG_TARGET_TRIPLET=x64-windows-static-md `
+              -DFRANKYCPP_BUILD_TESTS=ON `
+              -DFRANKYCPP_BUILD_BENCHMARKS=OFF `
+              -DSTRICT_WARNINGS=OFF
+            
+            if ($LASTEXITCODE -eq 0) {
+              $success = $true
+              break
+            }
+            
+            if ($attempt -lt $maxAttempts) {
+              Write-Host "Configure failed, waiting 30 seconds before retry..."
+              Start-Sleep -Seconds 30
+            }
+          } while ($attempt -lt $maxAttempts)
+          
+          if (-not $success) {
+            Write-Host "Configure failed after $maxAttempts attempts"
+            exit 1
+          }
 
       - name: Build
         shell: pwsh
@@ -120,6 +154,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Export GitHub Actions cache environment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
       - name: Setup build environment
         run: |
           chmod +x ./setup_linux_build_env.sh
@@ -142,20 +183,45 @@ jobs:
             echo "ERROR: vcpkg not found"
             exit 1
           fi
+          # Enable binary caching to GitHub Actions cache
+          echo "VCPKG_BINARY_SOURCES=clear;x-gha,readwrite" >> $GITHUB_ENV
 
       - name: Configure CMake
         env:
           CC: ${{ matrix.cc }}
           CXX: ${{ matrix.cxx }}
         run: |
-          cmake -B build \
-            -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake \
-            -DVCPKG_TARGET_TRIPLET=x64-linux \
-            -DFRANKYCPP_BUILD_TESTS=ON \
-            -DFRANKYCPP_BUILD_BENCHMARKS=OFF \
-            -DSTRICT_WARNINGS=OFF
+          # Retry logic for transient vcpkg download failures
+          max_attempts=3
+          attempt=0
+          success=false
+          
+          while [ $attempt -lt $max_attempts ]; do
+            attempt=$((attempt + 1))
+            echo "Configure attempt $attempt of $max_attempts"
+            
+            if cmake -B build \
+              -G Ninja \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake \
+              -DVCPKG_TARGET_TRIPLET=x64-linux \
+              -DFRANKYCPP_BUILD_TESTS=ON \
+              -DFRANKYCPP_BUILD_BENCHMARKS=OFF \
+              -DSTRICT_WARNINGS=OFF; then
+              success=true
+              break
+            fi
+            
+            if [ $attempt -lt $max_attempts ]; then
+              echo "Configure failed, waiting 30 seconds before retry..."
+              sleep 30
+            fi
+          done
+          
+          if [ "$success" != "true" ]; then
+            echo "Configure failed after $max_attempts attempts"
+            exit 1
+          fi
 
       - name: Build
         run: cmake --build build --config Release -j $(nproc)
