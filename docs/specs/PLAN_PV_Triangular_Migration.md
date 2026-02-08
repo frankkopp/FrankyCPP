@@ -632,17 +632,21 @@ VariationStack currentVariation{};
 
 ## 4. File Change Summary
 
-| File                                 | Changes                                                                      |
-|--------------------------------------|------------------------------------------------------------------------------|
-| `src/engine/PVTable.h`               | **New file** - PVTable class implementation ✅                                |
-| `src/engine/VariationStack.h`        | **New file** - VariationStack class implementation ✅                         |
-| `Search.h`                           | Replace `pv` with `pv_`, update `getPV()`, add include ✅                     |
-| `Search.cpp`                         | All `pv[ply]` → `pv_.xxx()`, remove `savePV()`, remove `getPvLine()` ✅       |
-| `SearchStats.h`                      | Replace `MoveList currentVariation` with `VariationStack currentVariation` ✅ |
-| `SearchResult.h`                     | No change (keep `MoveList pv`)                                               |
-| `UciHandler.h/cpp`                   | Update `sendCurrentLine()` to work with `VariationStack` ✅                   |
-| `test/engine/PVTableTest.cpp`        | **New file** - Unit tests for PVTable ✅                                      |
-| `test/engine/VariationStackTest.cpp` | **New file** - Unit tests for VariationStack ✅                               |
+| File                                 | Changes                                                                         |
+|--------------------------------------|---------------------------------------------------------------------------------|
+| `src/engine/PVTable.h`               | **New file** - PVTable class implementation ✅                                   |
+| `src/types/staticmovelist.h`         | **New file** - Unified StaticMoveList<N> template (MoveList + VariationStack) ✅ |
+| `Search.h`                           | Replace `pv` with `pv_`, update `getPV()`, add include ✅                        |
+| `Search.cpp`                         | All `pv[ply]` → `pv_.xxx()`, remove `savePV()`, remove `getPvLine()` ✅          |
+| `SearchStats.h`                      | Replace `MoveList currentVariation` with `VariationStack currentVariation` ✅    |
+| `SearchResult.h`                     | No change (keep `MoveList pv`)                                                  |
+| `UciHandler.h/cpp`                   | Update `sendCurrentLine()` to work with `VariationStack` ✅                      |
+| `test/engine/PVTableTest.cpp`        | **New file** - Unit tests for PVTable ✅                                         |
+| `test/engine/VariationStackTest.cpp` | **New file** - Unit tests for VariationStack ✅                                  |
+| `test/types/StaticMoveListTest.cpp`  | **New file** - Unit tests for StaticMoveList template ✅                         |
+
+**Note:** `src/engine/VariationStack.h` and `src/types/movelist.h` were initially created as separate files,
+then later unified into `src/types/staticmovelist.h` with type aliases for both `MoveList` and `VariationStack`.
 
 ---
 
@@ -742,3 +746,4 @@ VariationStack currentVariation{};
 | 2026-02-08 | Implementation complete: PVTable, VariationStack, Search updates, tests                     |
 | 2026-02-08 | Added `!isPv` to TT cutoff condition - PV nodes always search fully for complete PV lines   |
 | 2026-02-08 | Added `extractPvWithTT()` to extend PV using TT lookups for full PV lines in UCI output     |
+| 2026-02-08 | Unified MoveList and VariationStack into `StaticMoveList<N>` template (Phase 2b complete)   |

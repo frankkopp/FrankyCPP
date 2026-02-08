@@ -170,7 +170,7 @@ MoveList EpdParser::parseMoves(const std::string_view movesStr, const Position& 
 
     Move m = mg.getMoveFromSan(pos, moveStr);
     if (m.isValid()) {
-      moves.emplace_back(m);
+      moves.push_back(m);
     }
   }
 

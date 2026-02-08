@@ -81,7 +81,7 @@ Tablebase support and endgame-specific techniques.
 |---------------------------------|-------------|-------------|------------|----------|----------|------------|
 | **Performance Fundamentals**    |             |             |            |          |          |            |
 | Triangular PV Table             | Performance | 🟢 1-2 days | 🟡 Medium  | +5-10    | HIGH     | ✅ Complete |
-| MoveList Static Array Refactor  | Performance | 🟡 3-5 days | 🟡 Medium  | +5-15    | HIGH     | 📋 Planned |
+| MoveList Static Array Refactor  | Performance | 🟡 3-5 days | 🟡 Medium  | +5-15    | HIGH     | ✅ Complete |
 | **Search Quick Wins**           |             |             |            |          |          |            |
 | Singular Extensions             | Search      | 🟢 2-3 days | 🟡 Medium  | +20-30   | HIGH     | 📋 Planned |
 | Check Extensions                | Search      | 🟢 2-3 days | 🟡 Medium  | +10-20   | HIGH     | 📋 Planned |
@@ -92,8 +92,8 @@ Tablebase support and endgame-specific techniques.
 **Expected Total ELO Gain:** +70-135  
 **Risk:** Low - internal refactoring and proven techniques  
 **Notes:**
-- Triangular PV Table: Replace `std::array<MoveList, DEPTH_MAX+1>` with fixed 2D array
-- MoveList: Replace `std::vector<Move>` inheritance with fixed-capacity static array
+- Triangular PV Table: Replace `std::array<MoveList, DEPTH_MAX+1>` with fixed 2D array ✅
+- MoveList/VariationStack: Unified into `StaticMoveList<N>` template with zero heap allocations ✅
 - Zero heap allocations during search
 - Better cache locality
 - Foundation for multi-threading (simpler per-thread state)
@@ -331,67 +331,93 @@ public:
 
 ---
 
-### 2b. MoveList Static Array Refactor (Phase 2)
+### 2b. MoveList Static Array Refactor (Phase 2) ✅ COMPLETE
 
 **Description:**  
-Replace `std::vector<Move>` inheritance in MoveList with a fixed-capacity static array. Eliminates heap allocations in MoveGenerator and other hot paths.
+Replace `std::vector<Move>` inheritance in MoveList with a unified `StaticMoveList<N>` template.
+Also replaces the separate `VariationStack` class. Eliminates heap allocations in MoveGenerator
+and other hot paths.
 
-**Current Implementation:**
+**Previous Implementation:**
 ```cpp
-class MoveList : public std::vector<Move> {
-    // Inherits all vector functionality
-    // Heap allocation on first push_back()
+// MoveList - heap allocation on first push_back()
+class MoveList : public std::vector<Move> { ... };
+
+// VariationStack - separate fixed-size class
+class VariationStack {
+    std::array<Move, 128> moves_{};
+    int size_{0};
+    ...
 };
 ```
 
 **New Implementation:**
 ```cpp
-class MoveList {
-    static constexpr size_t MAX_MOVES = 256;  // Covers all legal move scenarios
-    std::array<Move, MAX_MOVES> data_{};
+// Unified template in src/types/staticmovelist.h
+template<size_t Capacity>
+class StaticMoveList {
+    static constexpr size_t MAX_SIZE = Capacity;
+    std::array<Move, Capacity> data_{};
     size_t size_{0};
 public:
-    void push_back(Move m) { data_[size_++] = m; }
-    void clear() noexcept { size_ = 0; }
-    size_t size() const noexcept { return size_; }
-    bool empty() const noexcept { return size_ == 0; }
+    constexpr void push_back(Move m) noexcept;
+    constexpr void pop_back() noexcept;
+    constexpr void clear() noexcept;
+    constexpr void reserve(size_t) noexcept;  // No-op for backward compatibility
     
-    Move& operator[](size_t i) { return data_[i]; }
-    const Move& operator[](size_t i) const { return data_[i]; }
-    Move& at(size_t i);  // With optional bounds checking
+    [[nodiscard]] constexpr size_t size() const noexcept;
+    [[nodiscard]] constexpr bool empty() const noexcept;
+    [[nodiscard]] static constexpr size_t capacity() noexcept;
     
-    // STL-compatible iterators
-    Move* begin() noexcept { return data_.data(); }
-    Move* end() noexcept { return data_.data() + size_; }
-    const Move* begin() const noexcept { return data_.data(); }
-    const Move* end() const noexcept { return data_.data() + size_; }
+    [[nodiscard]] constexpr Move& operator[](size_t i) noexcept;
+    [[nodiscard]] constexpr Move& at(size_t i);  // With bounds checking
+    [[nodiscard]] constexpr Move& front() noexcept;
+    [[nodiscard]] constexpr Move& back() noexcept;
     
-    // Existing string methods
-    std::string str() const;
-    std::string strVerbose() const;
+    // STL-compatible iterators for range-based for and std::ranges algorithms
+    [[nodiscard]] constexpr Move* begin() noexcept;
+    [[nodiscard]] constexpr Move* end() noexcept;
+    
+    [[nodiscard]] std::string str() const;
+    [[nodiscard]] std::string strVerbose() const;
 };
+
+// Type aliases
+using MoveList = StaticMoveList<256>;        // For move generation
+using VariationStack = StaticMoveList<128>;  // For search variation (MAX_PLY)
 ```
 
 **Key Changes:**
-- Fixed 1KB per MoveList (256 × 4 bytes)
+- Unified template replaces both MoveList and VariationStack
+- MoveList: Fixed 1KB (256 × 4 bytes) - covers all legal move scenarios
+- VariationStack: Fixed 512 bytes (128 × 4 bytes) - MAX_PLY capacity
 - Zero heap allocations
-- STL-compatible interface preserved
-- No longer inherits from `std::vector`
-- `clear()` is O(1) - just resets size counter
+- STL-compatible interface preserved (iterators, std::ranges support)
+- Debug asserts on capacity overflow
+- `at()` provides bounds-checked access (throws std::out_of_range)
 
-**Files Affected:**
-- `src/types/movelist.h`
-- Any code using `std::vector`-specific methods (if any)
+**Files Changed:**
+- `src/types/staticmovelist.h` - New unified template (created)
+- `src/types/movelist.h` - Deleted (was std::vector-based)
+- `src/engine/VariationStack.h` - Deleted (merged into StaticMoveList)
+- `src/types/types.h` - Updated to include staticmovelist.h
+- `src/engine/SearchStats.h` - Updated to include staticmovelist.h
+- `src/engine/UciHandler.h` - Updated to include staticmovelist.h
+- `src/chesscore/MoveGenerator.cpp` - Removed reserve() calls
+- `test/types/StaticMoveListTest.cpp` - New comprehensive test suite
+- `test/engine/VariationStackTest.cpp` - Updated to use staticmovelist.h and MAX_SIZE
 
-**Migration Considerations:**
-- Ensure all code uses STL-compatible interface
-- Update any code relying on vector-specific methods
-- Pass by reference (avoid 1KB copies)
+**Migration Notes:**
+- `VariationStack::MAX_PLY` renamed to `VariationStack::MAX_SIZE`
+- `size()` returns `size_t` instead of `int` (VariationStack change)
+- `reserve()` method removed (not needed with fixed capacity)
+- Include `types/staticmovelist.h` instead of old headers
 
 **Testing:**
-- Unit tests for MoveList
-- Verify MoveGenerator still works correctly
-- Benchmark NPS improvement
+- Unit tests for StaticMoveList template (StaticMoveListTest.cpp)
+- VariationStack tests updated and passing
+- MoveGenerator, Search, and UCI functionality verified
+- std::ranges::stable_sort and std::ranges::for_each compatibility tested
 
 **Expected Impact:** +5-15 ELO (from improved NPS and cache efficiency)
 
@@ -838,6 +864,7 @@ parameters:
 - **Hybrid NNUE+Classical:** Use both evaluations strategically
 
 ### Infrastructure
+- **Bench Command (v1.3+):** UCI `bench` command for NPS measurement with full Arena integration for version-to-version performance comparison. Includes CI/CD regression detection. Optional `speedtest` command later if needed. **Detailed plan:** `docs/specs/PLAN_Speedtest_Benchmark.md`
 - **Distributed Tuning:** Cloud-based parameter optimization
 - **Opening Book Tuning:** Learn from game statistics
 - **Live ELO Tracking:** Web dashboard for strength monitoring

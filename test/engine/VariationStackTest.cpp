@@ -17,7 +17,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include "engine/VariationStack.h"
+#include "types/staticmovelist.h"
 
 #include <gtest/gtest.h>
 
@@ -173,11 +173,11 @@ TEST_F(VariationStackTest, pushPopMany) {
 }
 
 TEST_F(VariationStackTest, maxDepthCapacity) {
-  // Should be able to handle MAX_PLY (128) entries
-  for (int i = 0; i < VariationStack::MAX_PLY; ++i) {
+  // Should be able to handle MAX_SIZE (128) entries
+  for (size_t i = 0; i < VariationStack::MAX_SIZE; ++i) {
     stack.push_back(Move::normal(SQ_E2, SQ_E4));
   }
-  EXPECT_EQ(stack.size(), VariationStack::MAX_PLY);
+  EXPECT_EQ(stack.size(), VariationStack::MAX_SIZE);
 
   // Clear and verify
   stack.clear();

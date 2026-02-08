@@ -59,8 +59,8 @@ TEST_F(EdpTest_Test, Builder_BasicConstruction) {
 
 TEST_F(EdpTest_Test, Builder_BestMoveTest) {
   MoveList moves;
-  moves.emplace_back(Move(SQ_E2, SQ_E4));
-  moves.emplace_back(Move(SQ_D2, SQ_D4));
+  moves.push_back(Move(SQ_E2, SQ_E4));
+  moves.push_back(Move(SQ_D2, SQ_D4));
 
   EpdTest::Builder builder;
   EpdTest test = builder
@@ -91,8 +91,8 @@ TEST_F(EdpTest_Test, Builder_DirectMateTest) {
 
 TEST_F(EdpTest_Test, Builder_AvoidMoveTest) {
   MoveList moves;
-  moves.emplace_back(Move(SQ_A2, SQ_A3));
-  moves.emplace_back(Move(SQ_H2, SQ_H3));
+  moves.push_back(Move(SQ_A2, SQ_A3));
+  moves.push_back(Move(SQ_H2, SQ_H3));
 
   EpdTest::Builder builder;
   EpdTest test = builder
@@ -211,7 +211,7 @@ TEST_F(EdpTest_Test, Immutability_TestDefinition) {
 TEST_F(EdpTest_Test, Builder_MethodChaining) {
   // All builder methods should return reference to builder for chaining
   MoveList moves;
-  moves.emplace_back(Move(SQ_E2, SQ_E4));
+  moves.push_back(Move(SQ_E2, SQ_E4));
 
   EpdTest::Builder builder;
   EpdTest test = builder

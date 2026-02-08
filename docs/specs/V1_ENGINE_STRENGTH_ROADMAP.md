@@ -235,7 +235,7 @@ This document provides a comprehensive, prioritized roadmap for enhancing Franky
 |---------------------------------|-------------|------------|----------|------------|
 | **Performance Fundamentals**    |             |            |          |            |
 | Triangular PV Table             | 🟢 1-2 days | 🟡 Medium  | +5-10    | ✅ Complete |
-| MoveList Static Array Refactor  | 🟡 3-5 days | 🟡 Medium  | +5-15    | 📋 Planned |
+| MoveList Static Array Refactor  | 🟡 3-5 days | 🟡 Medium  | +5-15    | ✅ Complete |
 | **Search Quick Wins**           |             |            |          |            |
 | Singular Extensions             | 🟢 2-3 days | 🟡 Medium  | +20-30   | 📋 Planned |
 | Check Extensions                | 🟢 2-3 days | 🟡 Medium  | +10-20   | 📋 Planned |
@@ -244,8 +244,8 @@ This document provides a comprehensive, prioritized roadmap for enhancing Franky
 | Selective Checks in Quiescence  | 🟡 3-5 days | 🟡 Medium  | +15-25   | 📋 Planned |
 
 **Why Performance First?**
-1. **Zero heap allocations:** Foundation for faster NPS
-2. **Better cache locality:** Improves all search operations
+1. **Zero heap allocations:** Foundation for faster NPS ✅
+2. **Better cache locality:** Improves all search operations ✅
 3. **Simpler per-thread state:** Prepares for Lazy SMP in Phase 3
 4. **Detailed plan:** `docs/specs/PLAN_PV_Triangular_Migration.md`
 
@@ -268,13 +268,13 @@ This document provides a comprehensive, prioritized roadmap for enhancing Franky
 **Goal:** Utilize modern multi-core CPUs  
 **Target:** +60-120 ELO (on 4-8 cores)
 
-| Task | Effort | Complexity | ELO Gain | Status |
-|------|--------|------------|----------|--------|
-| Thread-Safe TT | 🟡 1 week | 🔴 High | N/A | 📋 Planned |
-| Per-Thread Search State | 🟡 1 week | 🔴 High | N/A | 📋 Planned |
-| Lazy SMP Implementation | 🟡 1-2 weeks | 🔴 High | +50-100 | 📋 Planned |
-| Thread Pool Integration | 🟢 2-3 days | 🟡 Medium | N/A | 📋 Planned |
-| SMP Testing & Tuning | 🟡 3-5 days | 🟡 Medium | +10-20 | 📋 Planned |
+| Task                    | Effort       | Complexity | ELO Gain | Status     |
+|-------------------------|--------------|------------|----------|------------|
+| Thread-Safe TT          | 🟡 1 week    | 🔴 High    | N/A      | 📋 Planned |
+| Per-Thread Search State | 🟡 1 week    | 🔴 High    | N/A      | 📋 Planned |
+| Lazy SMP Implementation | 🟡 1-2 weeks | 🔴 High    | +50-100  | 📋 Planned |
+| Thread Pool Integration | 🟢 2-3 days  | 🟡 Medium  | N/A      | 📋 Planned |
+| SMP Testing & Tuning    | 🟡 3-5 days  | 🟡 Medium  | +10-20   | 📋 Planned |
 
 **Implementation Strategy:**
 1. **Week 1:** Make TT thread-safe (atomic operations, lock-free probe/store)

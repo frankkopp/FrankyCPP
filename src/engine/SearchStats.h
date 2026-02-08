@@ -45,7 +45,6 @@
 //
 //=============================================================================
 
-#include "VariationStack.h"
 #include "types/types.h"
 #include <ostream>
 

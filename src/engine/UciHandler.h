@@ -27,7 +27,7 @@
 #include "common/gtest_friends.h"
 
 #include "SearchLimits.h"
-#include "VariationStack.h"
+#include "types/staticmovelist.h"
 
 // forward declaration
 class Position;

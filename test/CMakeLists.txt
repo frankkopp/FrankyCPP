@@ -19,6 +19,7 @@ add_executable(
         types/FileRankTest.cpp
         types/ColorTest.cpp
         types/SquareIteratorTest.cpp
+        types/StaticMoveListTest.cpp
 
         common/FifoTest.cpp
         common/ThreadPoolTest.cpp

@@ -30,9 +30,7 @@ static constexpr bool REMOVE_SORT_VALUE = true;
 
 MoveGenerator::MoveGenerator() :
   currentODStage(OD_NEW) {
-  pseudoLegalMoves.reserve(MAX_MOVES);
-  legalMoves.reserve(MAX_MOVES);
-  onDemandMoves.reserve(MAX_MOVES);
+  // StaticMoveList has fixed capacity - no reserve() needed
 }
 
 const MoveList* MoveGenerator::generatePseudoLegalMoves(const Position& p, const GenMode genMode, const bool evasion) {

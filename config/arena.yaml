@@ -836,7 +836,7 @@ matches:
 
 #  # === Blitz matches between v1.2 and references (100 games each) ===
 
-#    v1.1 triangular pvtable
+#    v1.1 static move list
   - name: "v1.1_vs_v1.2_blitz_100-tpvt"
     engine1Path: "Release/FrankyCPP_v1.2/FrankyCPP_v1.2.exe"
     engine1Version: "v1.2"

@@ -54,7 +54,7 @@
 #include "init.h"
 #include "macros.h"
 #include "move.h"
-#include "movelist.h"
+#include "staticmovelist.h"
 #include "orientation.h"
 #include "piece.h"
 #include "piecetype.h"
