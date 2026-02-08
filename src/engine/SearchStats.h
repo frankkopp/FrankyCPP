@@ -183,6 +183,12 @@ struct SearchStats {
   /// Threat extensions applied.
   uint64_t threatExtension;
 
+  /// Singular extension searches performed (verification searches).
+  uint64_t singularSearches;
+
+  /// Singular extensions applied (TT move proven singular).
+  uint64_t singularExtension;
+
   /// Null-move verification re-searches that prevented a cutoff.
   uint64_t nullMoveVerifications;
 
@@ -219,6 +225,8 @@ struct SearchStats {
        << " lmrResearches: " << stats.lmrResearches
        << " check ext: " << stats.checkExtension
        << " threat ext: " << stats.threatExtension
+       << " singular searches: " << stats.singularSearches
+       << " singular ext: " << stats.singularExtension
        << " ttHit: " << stats.ttHit
        << " ttMiss: " << stats.ttMiss
        << " TtCuts: " << stats.TtCuts

@@ -112,6 +112,12 @@ namespace engine::config {
     bool USE_THREAT_EXT    = false;
     bool USE_EXT_ADD_DEPTH = true;
 
+    // singular extensions
+    bool USE_SINGULAR_EXT   = true;
+    int SINGULAR_MARGIN     = 64;  // centipawns below TT value to consider singular
+    int SINGULAR_MIN_DEPTH  = 8;   // minimum depth to attempt singular extension
+    int SINGULAR_REDUCTION  = 4;   // depth reduction for verification search
+
     // moves-left model
     int MOVES_LEFT_OPENING   = 36;
     int MOVES_LEFT_MIDGAME   = 28;
@@ -220,6 +226,10 @@ struct YAML::convert<engine::config::SearchConfigData> {
     n["USE_CHECK_EXT"]           = c.USE_CHECK_EXT;
     n["USE_THREAT_EXT"]          = c.USE_THREAT_EXT;
     n["USE_EXT_ADD_DEPTH"]       = c.USE_EXT_ADD_DEPTH;
+    n["USE_SINGULAR_EXT"]        = c.USE_SINGULAR_EXT;
+    n["SINGULAR_MARGIN"]         = c.SINGULAR_MARGIN;
+    n["SINGULAR_MIN_DEPTH"]      = c.SINGULAR_MIN_DEPTH;
+    n["SINGULAR_REDUCTION"]      = c.SINGULAR_REDUCTION;
     n["MOVES_LEFT_OPENING"]      = c.MOVES_LEFT_OPENING;
     n["MOVES_LEFT_MIDGAME"]      = c.MOVES_LEFT_MIDGAME;
     n["MOVES_LEFT_ENDGAME"]      = c.MOVES_LEFT_ENDGAME;
@@ -291,6 +301,10 @@ struct YAML::convert<engine::config::SearchConfigData> {
     set_if_present(n, "USE_CHECK_EXT", c.USE_CHECK_EXT, seen);
     set_if_present(n, "USE_THREAT_EXT", c.USE_THREAT_EXT, seen);
     set_if_present(n, "USE_EXT_ADD_DEPTH", c.USE_EXT_ADD_DEPTH, seen);
+    set_if_present(n, "USE_SINGULAR_EXT", c.USE_SINGULAR_EXT, seen);
+    set_if_present(n, "SINGULAR_MARGIN", c.SINGULAR_MARGIN, seen);
+    set_if_present(n, "SINGULAR_MIN_DEPTH", c.SINGULAR_MIN_DEPTH, seen);
+    set_if_present(n, "SINGULAR_REDUCTION", c.SINGULAR_REDUCTION, seen);
     set_if_present(n, "MOVES_LEFT_OPENING", c.MOVES_LEFT_OPENING, seen);
     set_if_present(n, "MOVES_LEFT_MIDGAME", c.MOVES_LEFT_MIDGAME, seen);
     set_if_present(n, "MOVES_LEFT_ENDGAME", c.MOVES_LEFT_ENDGAME, seen);

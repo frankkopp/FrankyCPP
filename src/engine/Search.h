@@ -156,6 +156,14 @@ class Search {
   PVTable pv;
   std::array<MoveGenerator, DEPTH_MAX + 1> mg{};
 
+  // Per-ply excluded move for singular extension verification searches
+  // When set, this move is skipped in the move loop at that ply
+  std::array<Move, DEPTH_MAX + 1> excludedMove{};
+
+  // Per-ply flag to indicate we're in a singular verification search
+  // When true, TT storage is skipped to avoid polluting with shallow entries
+  std::array<bool, DEPTH_MAX + 1> singularSearch{};
+
   // to mark the last move was a book move
   bool hadBookMove = false;
 

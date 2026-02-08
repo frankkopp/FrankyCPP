@@ -18,9 +18,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "engine/Search.h"
+#include "Test_Utils.h"
 #include "init.h"
 #include "types/types.h"
-#include "Test_Utils.h"
 
 #include "engine/config/ConfigManager.h"
 #include <gtest/gtest.h>
@@ -44,7 +44,9 @@ public:
   }
 
 protected:
-  void SetUp() override {}
+  void SetUp() override {
+    engine::config::ConfigManager::instance().resetToDefaults();
+  }
   void TearDown() override {}
 };
 
@@ -71,7 +73,7 @@ TEST_F(SearchTest, setupTime) {
   sl           = SearchLimits{};
   sl.whiteTime = 30s;
   sl.blackTime = 30s;
-  auto t_ms = search.setupTimeControl(p, sl);
+  auto t_ms    = search.setupTimeControl(p, sl);
   fprintln("{}", str(t_ms));
   EXPECT_GE(t_ms.count(), 600);
   EXPECT_LE(t_ms.count(), 660);
@@ -79,7 +81,7 @@ TEST_F(SearchTest, setupTime) {
   sl           = SearchLimits{};
   sl.whiteTime = 3s;
   sl.blackTime = 3s;
-  t_ms = search.setupTimeControl(p, sl);
+  t_ms         = search.setupTimeControl(p, sl);
   fprintln("{}", str(t_ms));
   EXPECT_GE(t_ms.count(), 45);
   EXPECT_LE(t_ms.count(), 50);
@@ -89,7 +91,7 @@ TEST_F(SearchTest, setupTime) {
   sl.whiteInc  = 1s;
   sl.blackTime = 30s;
   sl.blackInc  = 1s;
-  t_ms = search.setupTimeControl(p, sl);
+  t_ms         = search.setupTimeControl(p, sl);
   fprintln("{}", str(t_ms));
   EXPECT_GE(t_ms.count(), 1390);
   EXPECT_LE(t_ms.count(), 1420);
@@ -114,7 +116,7 @@ TEST_F(SearchTest, startTimer) {
   s.searchLimits.timeControl = true;
   s.startTime                = high_resolution_clock::now();
   s.timeLimit                = 2s;
-  s.extraTimeMs              = 1000; // 1s
+  s.extraTimeMs              = 1000;// 1s
   s.startTimer();
   s.timerThread.join();
   EXPECT_LT(3s, (high_resolution_clock::now() - s.startTime));
@@ -173,7 +175,7 @@ TEST_F(SearchTest, bookMoveSearch) {
 }
 
 TEST_F(SearchTest, startPonderSearch) {
-  CONFIG_OVERRIDE(s.USE_BOOK   = false;);
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
   CONFIG_OVERRIDE(s.USE_PONDER = true;);
   const Position p{};
   SearchLimits sl{};
@@ -317,7 +319,7 @@ TEST_F(SearchTest, mate4Search) {
 }
 
 TEST_F(SearchTest, mate5Search) {
-  CONFIG_OVERRIDE(s.USE_BOOK      = false;);
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
   CONFIG_OVERRIDE(s.USE_ALPHABETA = true;);
   const Position p{"8/8/8/8/4K3/8/R7/4k3 w - - 0 4"};
   SearchLimits sl{};
@@ -339,12 +341,12 @@ TEST_F(SearchTest, quiescenceTest) {
   const Position position("r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 w kq - 10 113");
   searchLimits.depth = 2;
 
-  CONFIG_OVERRIDE(s.USE_BOOK       = false;);
-  CONFIG_OVERRIDE(s.USE_ALPHABETA  = false;);
-  CONFIG_OVERRIDE(s.USE_PVS        = false;);
-  CONFIG_OVERRIDE(s.USE_TT         = false;);
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  CONFIG_OVERRIDE(s.USE_ALPHABETA = false;);
+  CONFIG_OVERRIDE(s.USE_PVS = false;);
+  CONFIG_OVERRIDE(s.USE_TT = false;);
   CONFIG_OVERRIDE(s.USE_QUIESCENCE = false;);
-  CONFIG_OVERRIDE(s.USE_QS_SEE     = false;);
+  CONFIG_OVERRIDE(s.USE_QS_SEE = false;);
 
   search.startSearch(position, searchLimits);
   search.waitWhileSearching();
@@ -401,7 +403,7 @@ TEST_F(SearchTest, movesLeftBucketsOpeningVsQueenlessVsLowMaterial) {
 TEST_F(SearchTest, movesLeftRepetitionRiskIncreasesTime) {
   // Use a queenless position to keep the bucket clear
   const Position queenless_low{"rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 0 1"};
-  const Position queenless_high{"rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 80 1"}; // high half-move clock
+  const Position queenless_high{"rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 80 1"};// high half-move clock
 
   const Search search{};
   SearchLimits sl{};
@@ -431,9 +433,9 @@ TEST_F(SearchTest, singleMoveRootStopsEarlyAtVerifyDepth) {
   s.isReady();
 
   SearchLimits sl{};
-  sl.timeControl = true; // no time control
-  sl.whiteTime = 1000s;
-  sl.blackTime = 1000s;
+  sl.timeControl = true;// no time control
+  sl.whiteTime   = 1000s;
+  sl.blackTime   = 1000s;
 
   s.startSearch(p, sl);
   s.waitWhileSearching();
@@ -480,7 +482,7 @@ TEST_F(SearchTest, lmrReductionTable) {
   // Check exact formula match for all entries and basic boundary conditions
   for (int d = 0; d < 32; ++d) {
     for (int m = 0; m < 64; ++m) {
-      const int expected = 1 + (d * m * 35 + 5000) / 10000; // exact rounding of 0.0035
+      const int expected = 1 + (d * m * 35 + 5000) / 10000;// exact rounding of 0.0035
       EXPECT_EQ(expected, T[d][m]) << "Mismatch at d=" << d << " m=" << m;
 
       // Minimum reduction is 1
@@ -508,7 +510,7 @@ TEST_F(SearchTest, lmrReductionTable) {
 
   // Known extreme
   {
-    constexpr int expected = 1 + (31 * 63 * 35 + 5000) / 10000; // should be 8
+    constexpr int expected = 1 + (31 * 63 * 35 + 5000) / 10000;// should be 8
     EXPECT_EQ(expected, T[31][63]);
   }
 
@@ -524,26 +526,84 @@ TEST_F(SearchTest, lmrReductionTable) {
   LOG__INFO(Logger::get().TEST_LOG, "{}", oss.str());
 }
 
+TEST_F(SearchTest, singularExtension) {
+  // Test that singular extensions work correctly
+  // Use a complex middlegame position where singular extensions can trigger
+  Search search{};
+  search.isReady();
+
+  // Enable singular extensions and set params suitable for testing
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  CONFIG_OVERRIDE(s.USE_SINGULAR_EXT = true;);
+  CONFIG_OVERRIDE(s.SINGULAR_MIN_DEPTH = 6;);// Lower for testing
+  CONFIG_OVERRIDE(s.SINGULAR_MARGIN = 64;);
+  CONFIG_OVERRIDE(s.SINGULAR_REDUCTION = 3;);
+
+  // Complex middlegame position with tactical possibilities
+  // This position has multiple candidate moves and requires deep search
+  const Position p{"r1bq1rk1/pp2ppbp/2np1np1/8/3NP3/2N1BP2/PPPQ2PP/R3KB1R w KQ - 0 9"};
+
+  SearchLimits sl{};
+  sl.depth = 10;// Deep enough to trigger singular extension
+
+  search.startSearch(p, sl);
+  search.waitWhileSearching();
+
+  const auto& stats = search.getSearchStats();
+  fprintln("Singular searches: {}", stats.singularSearches);
+  fprintln("Singular extensions: {}", stats.singularExtension);
+
+  // We expect some singular extension activity at depth 10
+  // The exact numbers depend on the position, but there should be some
+  EXPECT_GT(stats.singularSearches, 0) << "Expected some singular extension searches";
+}
+
+TEST_F(SearchTest, singularExtensionDisabled) {
+  // Test that disabling singular extensions works
+  Search search{};
+  search.isReady();
+
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  CONFIG_OVERRIDE(s.USE_SINGULAR_EXT = false;);
+
+  // Same complex middlegame position as the enabled test
+  const Position p{"r1bq1rk1/pp2ppbp/2np1np1/8/3NP3/2N1BP2/PPPQ2PP/R3KB1R w KQ - 0 9"};
+
+  SearchLimits sl{};
+  sl.depth = 10;
+
+  search.startSearch(p, sl);
+  search.waitWhileSearching();
+
+  const auto& stats = search.getSearchStats();
+  fprintln("Singular searches (disabled): {}", stats.singularSearches);
+  fprintln("Singular extensions (disabled): {}", stats.singularExtension);
+
+  // With singular extensions disabled, we should have no activity
+  EXPECT_EQ(stats.singularSearches, 0) << "Expected no singular searches when disabled";
+  EXPECT_EQ(stats.singularExtension, 0) << "Expected no singular extensions when disabled";
+}
+
 
 TEST_F(SearchTest, debug) {
   if (isBulkRun()) {
     GTEST_SKIP() << "Skipping debug test in bulk run to save time";
   }
-  CONFIG_OVERRIDE(s.TT_SIZE_MB          = 64;);
-  CONFIG_OVERRIDE(s.USE_BOOK            = false;);
-  CONFIG_OVERRIDE(s.USE_ALPHABETA       = false;);
-  CONFIG_OVERRIDE(s.USE_PVS             = false;);
-  CONFIG_OVERRIDE(s.USE_ASP             = false;);
-  CONFIG_OVERRIDE(s.USE_TT              = false;);
-  CONFIG_OVERRIDE(s.USE_TT_VALUE        = false;);
-  CONFIG_OVERRIDE(s.USE_EVAL_TT         = false;);
-  CONFIG_OVERRIDE(s.USE_MDP             = false;);
+  CONFIG_OVERRIDE(s.TT_SIZE_MB = 64;);
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  CONFIG_OVERRIDE(s.USE_ALPHABETA = false;);
+  CONFIG_OVERRIDE(s.USE_PVS = false;);
+  CONFIG_OVERRIDE(s.USE_ASP = false;);
+  CONFIG_OVERRIDE(s.USE_TT = false;);
+  CONFIG_OVERRIDE(s.USE_TT_VALUE = false;);
+  CONFIG_OVERRIDE(s.USE_EVAL_TT = false;);
+  CONFIG_OVERRIDE(s.USE_MDP = false;);
   CONFIG_OVERRIDE(s.USE_HISTORY_COUNTER = false;);
-  CONFIG_OVERRIDE(s.USE_HISTORY_MOVES   = false;);
-  CONFIG_OVERRIDE(s.USE_QUIESCENCE      = true;);
+  CONFIG_OVERRIDE(s.USE_HISTORY_MOVES = false;);
+  CONFIG_OVERRIDE(s.USE_QUIESCENCE = true;);
   CONFIG_OVERRIDE(s.USE_QS_STANDPAT_CUT = false;);
-  CONFIG_OVERRIDE(s.USE_QS_SEE          = false;);
-  CONFIG_OVERRIDE(s.USE_QS_TT           = false;);
+  CONFIG_OVERRIDE(s.USE_QS_SEE = false;);
+  CONFIG_OVERRIDE(s.USE_QS_TT = false;);
 
   engine::config::ConfigManager::instance().applyOverrides([&](auto&, engine::config::EvalConfigData& e) {
     e.USE_MATERIAL   = true;

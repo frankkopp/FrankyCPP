@@ -264,7 +264,7 @@ The `types/` directory contains well-designed value types:
 
 3. **Implement Syzygy tablebase probing** – For endgame accuracy, Syzygy tablebases are invaluable. The Fathom library provides a clean C interface.
 
-4. **Add singular extensions** – When a move is clearly the best (by a margin), extend its search depth to avoid missing critical lines.
+4. **~~Add singular extensions~~** – ✅ **IMPLEMENTED (v1.2)** – When a move is clearly the best (by a margin), extend its search depth to avoid missing critical lines.
 
 5. **Consider counter-move history** – Expand history heuristic to include piece-to-square counter-move history for better move ordering.
 
@@ -342,18 +342,18 @@ The `types/` directory contains well-designed value types:
 
 ### v1.x: Major Engine/Strength Improvements
 
-| #   | Item                            | Effort                | Complexity | Description                                                                               |
-|-----|---------------------------------|-----------------------|------------|-------------------------------------------------------------------------------------------|
-| E1  | Lazy SMP multi-threaded search  | 🔴 High (2-4 weeks)   | 🔴 High    | Thread-safe TT, shared search state, careful synchronization. Major architectural change. |
-| E2  | Syzygy tablebase support        | 🟡 Medium (1-2 weeks) | 🟡 Medium  | Integrate Fathom library, add probing at root and during search.                          |
-| E3  | Singular extensions             | 🟢 Low (2-3 days)     | 🟡 Medium  | Modify search to detect singular moves via reduced-depth verification.                    |
-| E4  | Runtime PEXT fallback           | 🟡 Medium (3-5 days)  | 🟡 Medium  | Add CPUID detection, implement software PEXT path for non-BMI2 CPUs.                      |
-| E5  | Counter-move history            | 🟡 Medium (3-5 days)  | 🟡 Medium  | Expand history heuristic to include piece-to-square counter-move history.                 |
-| E6  | NNUE evaluation                 | 🔴 High (4-8 weeks)   | 🔴 High    | Implement efficiently updatable neural network evaluation. Major undertaking.             |
-| E7  | Parameter tuning infrastructure | 🟡 Medium (1-2 weeks) | 🟡 Medium  | Add SPSA/Texel tuning framework for the 100+ configurable parameters.                     |
-| E8  | Best-move instability time mgmt | 🟢 Low (2-3 days)     | 🟡 Medium  | Allocate more time when best move changes frequently between iterations.                  |
-| E9  | Selective checks in quiescence  | 🟡 Medium (3-5 days)  | 🟡 Medium  | Search quiet checking moves after capture phase to find short mates.                      |
-| E10 | Check extensions                | 🟢 Low (2-3 days)     | 🟡 Medium  | Extend +1 ply when a check leaves opponent with ≤2 legal replies.                         |
+| #   | Item                            | Effort                | Complexity | Description                                                                                 |
+|-----|---------------------------------|-----------------------|------------|---------------------------------------------------------------------------------------------|
+| E1  | Lazy SMP multi-threaded search  | 🔴 High (2-4 weeks)   | 🔴 High    | Thread-safe TT, shared search state, careful synchronization. Major architectural change.   |
+| E2  | Syzygy tablebase support        | 🟡 Medium (1-2 weeks) | 🟡 Medium  | Integrate Fathom library, add probing at root and during search.                            |
+| E3  | Singular extensions             | 🟢 Low (2-3 days)     | ✅ DONE     | Modify search to detect singular moves via reduced-depth verification. **Implemented v1.2** |
+| E4  | Runtime PEXT fallback           | 🟡 Medium (3-5 days)  | 🟡 Medium  | Add CPUID detection, implement software PEXT path for non-BMI2 CPUs.                        |
+| E5  | Counter-move history            | 🟡 Medium (3-5 days)  | 🟡 Medium  | Expand history heuristic to include piece-to-square counter-move history.                   |
+| E6  | NNUE evaluation                 | 🔴 High (4-8 weeks)   | 🔴 High    | Implement efficiently updatable neural network evaluation. Major undertaking.               |
+| E7  | Parameter tuning infrastructure | 🟡 Medium (1-2 weeks) | 🟡 Medium  | Add SPSA/Texel tuning framework for the 100+ configurable parameters.                       |
+| E8  | Best-move instability time mgmt | 🟢 Low (2-3 days)     | 🟡 Medium  | Allocate more time when best move changes frequently between iterations.                    |
+| E9  | Selective checks in quiescence  | 🟡 Medium (3-5 days)  | 🟡 Medium  | Search quiet checking moves after capture phase to find short mates.                        |
+| E10 | Check extensions                | 🟢 Low (2-3 days)     | 🟡 Medium  | Extend +1 ply when a check leaves opponent with ≤2 legal replies.                           |
 
 ---
 

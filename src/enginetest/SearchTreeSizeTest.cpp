@@ -76,6 +76,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
     s.USE_CHECK_EXT     = false;
     s.USE_THREAT_EXT    = false;
     s.USE_EXT_ADD_DEPTH = false;
+    s.USE_SINGULAR_EXT  = false;
   CONFIG_OVERRIDE_END();
 
   // ***********************************
@@ -165,6 +166,9 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "70 CEXT"));
   //  CONFIG_OVERRIDE(s.USE_THREAT_EXT = true;);
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "71 TEXT"));
+
+  CONFIG_OVERRIDE(s.USE_SINGULAR_EXT = true;);
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "72 SEXT"));
 
   return result;
 }

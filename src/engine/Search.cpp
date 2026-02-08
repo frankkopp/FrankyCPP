@@ -728,6 +728,10 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   Value staticEval    = VALUE_NONE;
   bool matethreat     = false;
 
+  // Variables for singular extension
+  Value ttValue       = VALUE_NONE;
+  Depth ttDepth       = DEPTH_NONE;
+
   // TT Lookup
   // Results of searches are stored in the TT to be used to
   // avoid searching positions several times. If a position
@@ -745,11 +749,12 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     if (const TT::Entry* ttEntryPtr = tt->probe(p.getZobristKey())) {
       // tt hit
       statistics.ttHit++;
-      ttMove = static_cast<Move>(ttEntryPtr->move);
+      ttMove  = static_cast<Move>(ttEntryPtr->move);
+      ttValue = valueFromTt(ttEntryPtr->value, ply);
+      ttDepth = static_cast<Depth>(ttEntryPtr->depth);
       // Never cutoff on PV nodes - this ensures we always build a complete PV line
       // Non-PV nodes can still use TT cutoffs as they don't contribute to the reported PV
-      if (!isPv && ttEntryPtr->depth >= depth) {
-        const Value ttValue = valueFromTt(ttEntryPtr->value, ply);
+      if (!isPv && ttDepth >= depth) {
         if (SearchConfig.USE_TT_VALUE
             && ttValue.isValid()
             && (ttEntryPtr->type == EXACT
@@ -775,7 +780,8 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   if (!hasCheck && staticEval == VALUE_NONE) {
     staticEval = evaluate(p);
     // Storing this value might save us calls to eval on the same position.
-    if (SearchConfig.USE_TT && SearchConfig.USE_EVAL_TT) {
+    // Skip during singular verification to avoid unnecessary TT writes
+    if (SearchConfig.USE_TT && SearchConfig.USE_EVAL_TT && !singularSearch[ply]) {
       storeTt(p, DEPTH_NONE, DEPTH_NONE, MOVE_NONE, VALUE_NONE, NONE, staticEval);
     }
   }
@@ -882,13 +888,13 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
             // fall through: no cutoff
           }
           else {
-            if (SearchConfig.USE_TT) { storeTt(p, depth, ply, MOVE_NONE, nValue, BETA, staticEval); }
+            if (SearchConfig.USE_TT && !singularSearch[ply]) { storeTt(p, depth, ply, MOVE_NONE, nValue, BETA, staticEval); }
             statistics.nullMoveCuts++;
             return nValue;
           }
         }
         else {
-          if (SearchConfig.USE_TT) { storeTt(p, depth, ply, MOVE_NONE, nValue, BETA, staticEval); }
+          if (SearchConfig.USE_TT && !singularSearch[ply]) { storeTt(p, depth, ply, MOVE_NONE, nValue, BETA, staticEval); }
           statistics.nullMoveCuts++;
           return nValue;
         }
@@ -955,6 +961,9 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // ///////////////////////////////////////////////////////
   // MOVE LOOP
   while ((move = myMg->getNextPseudoLegalMove(p, GenAll, hasCheck)) != MOVE_NONE) {
+    // Skip excluded move (used for singular extension verification searches)
+    if (move == excludedMove[ply]) { continue; }
+
     const Square from     = move.from();
     const Square to       = move.to();
     const bool givesCheck = p.givesCheck(move);
@@ -986,6 +995,53 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       if (SearchConfig.USE_THREAT_EXT && matethreat) {
         statistics.threatExtension++;
         extension = DEPTH_ONE;
+      }
+
+      // Singular Extensions
+      // https://www.chessprogramming.org/Singular_Extensions
+      // When we have a TT move that appears significantly better than all alternatives,
+      // extend its search to avoid missing critical tactical lines.
+      // We do a reduced-depth null-window search excluding the TT move to verify
+      // that no other move can reach close to the TT value.
+      if (SearchConfig.USE_SINGULAR_EXT
+          && extension == 0                                      // no other extension applied
+          && move == ttMove                                      // this is the TT move
+          && depth >= SearchConfig.SINGULAR_MIN_DEPTH            // sufficient depth
+          && ttValue != VALUE_NONE                               // valid TT value
+          && ttDepth >= depth - 3                                // TT entry was from similar or deeper search
+          && !hasCheck                                           // not in check (avoid instability)
+          && std::abs(ttValue) < VALUE_CHECKMATE_THRESHOLD) { // not a mate score
+
+        // Reduced beta for the verification search
+        const Value singularBeta = ttValue - Value{SearchConfig.SINGULAR_MARGIN};
+
+        // Reduced depth for the verification search
+        Depth singularDepth = (depth - SearchConfig.SINGULAR_REDUCTION) / 2;
+        if (singularDepth < 1) { singularDepth = DEPTH_ONE; }
+
+        // Set the excluded move for this ply so the verification search skips the TT move
+        excludedMove[ply] = ttMove;
+
+        // Mark that we're in a singular search to skip TT storage (avoid polluting with shallow entries)
+        singularSearch[ply] = true;
+
+        statistics.singularSearches++;
+
+        // Do a null-window search to see if any other move can reach singularBeta
+        const Value singularValue = search(p, singularDepth, ply, singularBeta - 1, singularBeta, NonPV, No_Null_Move);
+
+        // Clear the flags
+        excludedMove[ply]   = MOVE_NONE;
+        singularSearch[ply] = false;
+
+        // check if we should stop the search
+        if (stopConditions()) { return VALUE_NONE; }
+
+        // If no other move reaches singularBeta, the TT move is singular - extend it
+        if (singularValue < singularBeta) {
+          statistics.singularExtension++;
+          extension = DEPTH_ONE;
+        }
       }
 
       // With this turned off we still can use extension to
@@ -1232,7 +1288,8 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 
   // Store TT
   // Store search result for this node into the transposition table
-  if (SearchConfig.USE_TT) { storeTt(p, depth, ply, bestNodeMove, bestNodeValue, ttType, staticEval); }
+  // Skip storage during singular verification searches to avoid polluting TT with shallow entries
+  if (SearchConfig.USE_TT && !singularSearch[ply]) { storeTt(p, depth, ply, bestNodeMove, bestNodeValue, ttType, staticEval); }
 
   return bestNodeValue;
 }

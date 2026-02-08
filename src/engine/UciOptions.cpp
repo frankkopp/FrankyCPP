@@ -232,6 +232,24 @@ void UciOptions::initOptions() {
   optionVector.emplace_back(
     "Use Extension Add", SearchConfig.USE_EXT_ADD_DEPTH,
     [&](UciHandler*) { CONFIG_OVERRIDE(s.USE_EXT_ADD_DEPTH = getOption("Use Extension Add")->currentValue == "true";); });
+  optionVector.emplace_back(
+    "Use Singular Extension", SearchConfig.USE_SINGULAR_EXT,
+    [&](UciHandler*) { CONFIG_OVERRIDE(s.USE_SINGULAR_EXT = getOption("Use Singular Extension")->currentValue == "true";); });
+  optionVector.emplace_back(
+    "Singular Margin", SearchConfig.SINGULAR_MARGIN, 0, 500,
+    [&](UciHandler*) {
+      CONFIG_OVERRIDE(s.SINGULAR_MARGIN = getInt(getOption("Singular Margin")->currentValue););
+    });
+  optionVector.emplace_back(
+    "Singular Min Depth", SearchConfig.SINGULAR_MIN_DEPTH, 1, 20,
+    [&](UciHandler*) {
+      CONFIG_OVERRIDE(s.SINGULAR_MIN_DEPTH = getInt(getOption("Singular Min Depth")->currentValue););
+    });
+  optionVector.emplace_back(
+    "Singular Reduction", SearchConfig.SINGULAR_REDUCTION, 1, 10,
+    [&](UciHandler*) {
+      CONFIG_OVERRIDE(s.SINGULAR_REDUCTION = getInt(getOption("Singular Reduction")->currentValue););
+    });
 
   // 14) Moves-left model and thresholds/clamps
   optionVector.emplace_back(

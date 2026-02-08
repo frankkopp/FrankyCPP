@@ -41,7 +41,8 @@ This document provides a comprehensive, prioritized roadmap for enhancing Franky
 - ❌ Single-threaded search (underutilizes modern multi-core CPUs)
 - ❌ Classical evaluation only (NNUE offers +200-400 ELO improvement)
 - ❌ No endgame tablebase support (imperfect endgame play)
-- ❌ Missing modern search techniques (singular extensions, check extensions)
+- ✅ Singular extensions implemented (v1.2)
+- ❌ Missing check extensions
 - ❌ Limited move ordering heuristics (no continuation/capture history)
 
 ### Target State (v2.0 - End Goal)
@@ -77,15 +78,15 @@ This document provides a comprehensive, prioritized roadmap for enhancing Franky
 
 ### Strengths to Preserve
 
-| Component | Current State | Quality | Notes |
-|-----------|---------------|---------|-------|
-| **Build System** | CMake + vcpkg | ⭐⭐⭐⭐⭐ | Excellent cross-platform support |
-| **Testing** | 266+ unit tests | ⭐⭐⭐⭐⭐ | Comprehensive coverage, CI/CD integrated |
-| **Configuration** | YAML-based | ⭐⭐⭐⭐⭐ | Flexible, runtime-configurable |
-| **Code Quality** | Modern C++20 | ⭐⭐⭐⭐⭐ | Clean architecture, good separation of concerns |
-| **Move Generation** | Bitboard-based | ⭐⭐⭐⭐⭐ | Fast, PEXT-optimized, well-tested |
-| **UCI Protocol** | Full compliance | ⭐⭐⭐⭐⭐ | Compatible with all GUIs/tournament managers |
-| **Logging** | spdlog-based | ⭐⭐⭐⭐⭐ | Excellent debugging infrastructure |
+| Component           | Current State   | Quality | Notes                                           |
+|---------------------|-----------------|---------|-------------------------------------------------|
+| **Build System**    | CMake + vcpkg   | ⭐⭐⭐⭐⭐   | Excellent cross-platform support                |
+| **Testing**         | 266+ unit tests | ⭐⭐⭐⭐⭐   | Comprehensive coverage, CI/CD integrated        |
+| **Configuration**   | YAML-based      | ⭐⭐⭐⭐⭐   | Flexible, runtime-configurable                  |
+| **Code Quality**    | Modern C++20    | ⭐⭐⭐⭐⭐   | Clean architecture, good separation of concerns |
+| **Move Generation** | Bitboard-based  | ⭐⭐⭐⭐⭐   | Fast, PEXT-optimized, well-tested               |
+| **UCI Protocol**    | Full compliance | ⭐⭐⭐⭐⭐   | Compatible with all GUIs/tournament managers    |
+| **Logging**         | spdlog-based    | ⭐⭐⭐⭐⭐   | Excellent debugging infrastructure              |
 
 ### Areas for Improvement
 
@@ -237,7 +238,7 @@ This document provides a comprehensive, prioritized roadmap for enhancing Franky
 | Triangular PV Table             | 🟢 1-2 days | 🟡 Medium  | +5-10    | ✅ Complete |
 | MoveList Static Array Refactor  | 🟡 3-5 days | 🟡 Medium  | +5-15    | ✅ Complete |
 | **Search Quick Wins**           |             |            |          |            |
-| Singular Extensions             | 🟢 2-3 days | 🟡 Medium  | +20-30   | 📋 Planned |
+| Singular Extensions             | 🟢 2-3 days | 🟡 Medium  | +20-30   | ✅ Complete |
 | Check Extensions                | 🟢 2-3 days | 🟡 Medium  | +10-20   | 📋 Planned |
 | Counter-Move History            | 🟡 3-5 days | 🟡 Medium  | +10-20   | 📋 Planned |
 | Best-Move Instability Time Mgmt | 🟢 2-3 days | 🟡 Medium  | +5-15    | 📋 Planned |
@@ -616,40 +617,39 @@ Expected gain: +5-15 ELO from better inlining and branch prediction.
 
 ## Detailed Enhancement Specifications
 
-### 1. Singular Extensions (Phase 1)
+### 1. Singular Extensions (Phase 1) ✅ IMPLEMENTED
+
+**Status:** Implemented in v1.2
 
 **Concept:** Extend search depth by 1 ply when one move is significantly better than all alternatives.
 
-**Algorithm:**
-```cpp
-// In search(), after trying TT move
-if (ttMove != MOVE_NONE && depth >= SINGULAR_MIN_DEPTH) {
-    Value ttValue = ttEntry->value;
-    
-    // Reduced-depth search with null window, excluding TT move
-    Value rBeta = ttValue - SINGULAR_MARGIN;
-    Value singularValue = search(pos, depth - 4, rBeta - 1, rBeta, excludeTTMove);
-    
-    // If no other move beats (ttValue - margin), extend TT move
-    if (singularValue < rBeta) {
-        extension = 1;  // Extend by 1 ply
-    }
-}
-```
+**Implementation:**
+- Added per-ply `excludedMove` array to skip TT move during verification search
+- Added per-ply `singularSearch` flag to prevent TT pollution during verification
+- Verification search uses `No_Null_Move` to avoid NMP interference
+- Only triggers when TT entry depth is within 3 plies of current depth
 
 **Configuration:**
 ```yaml
-USE_SINGULAR_EXTENSIONS: true
-SINGULAR_MARGIN: 50             # centipawns
+USE_SINGULAR_EXT: true
+SINGULAR_MARGIN: 64             # centipawns
 SINGULAR_MIN_DEPTH: 8           # plies
 SINGULAR_REDUCTION: 4           # plies for verification search
-SINGULAR_MAX_EXTENSIONS: 16     # per branch
 ```
 
+**Files Changed:**
+- `src/engine/config/SearchConfigData.h` - Configuration parameters
+- `src/engine/Search.h` - `excludedMove` and `singularSearch` arrays
+- `src/engine/Search.cpp` - Singular extension logic with TT protection
+- `src/engine/SearchStats.h` - Statistics tracking
+- `src/engine/UciOptions.cpp` - UCI options
+- `config/search.yaml` - Default configuration
+- `test/engine/SearchTest.cpp` - Unit tests
+
 **Testing:**
-- Tactical test suites (WAC, STS)
-- Verify no search explosion (cap extensions per branch)
-- Measure depth increase and ELO gain
+- Unit tests verify extension triggers and disabled state
+- SearchTreeSizeTest includes singular extension measurement
+- Statistics track `singularSearches` and `singularExtension` counts
 
 **Expected Impact:** +20-30 ELO
 
@@ -1011,10 +1011,13 @@ Each phase adds new YAML parameters:
 
 **Phase 1 (v1.2):**
 ```yaml
-# config/search.yaml additions
-USE_SINGULAR_EXTENSIONS: true
-SINGULAR_MARGIN: 50
+# config/search.yaml additions (Singular Extensions - IMPLEMENTED)
+USE_SINGULAR_EXT: true
+SINGULAR_MARGIN: 64
 SINGULAR_MIN_DEPTH: 8
+SINGULAR_REDUCTION: 4
+
+# Planned for v1.2
 USE_CHECK_EXTENSIONS: true
 CHECK_EXT_MAX_REPLIES: 2
 USE_COUNTER_MOVE_HISTORY: true

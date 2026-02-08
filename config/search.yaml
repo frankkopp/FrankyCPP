@@ -124,6 +124,16 @@ USE_THREAT_EXT: false
 # Add extension depth rather than replacing node depth
 USE_EXT_ADD_DEPTH: true
 
+# Singular Extensions
+# When a TT move is significantly better than all alternatives, extend its search
+USE_SINGULAR_EXT: true
+# Margin (centipawns) below TT value - if no other move reaches (ttValue - margin), move is singular
+SINGULAR_MARGIN: 64
+# Minimum depth (plies) to attempt singular extension verification
+SINGULAR_MIN_DEPTH: 8
+# Depth reduction (plies) for the verification search
+SINGULAR_REDUCTION: 4
+
 # Improved moves-left model (time management) tunables
 # Estimated remaining moves in opening/midgame/endgame to budget time
 MOVES_LEFT_OPENING: 36

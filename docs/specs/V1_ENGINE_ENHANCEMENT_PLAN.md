@@ -86,7 +86,7 @@ Tablebase support and endgame-specific techniques.
 | UCI `bench` Command             | Infrastructure | 🟢 2-3 days | 🟢 Low     | N/A      | HIGH     | ✅ Complete |
 | Arena Bench Integration         | Infrastructure | 🟢 2-3 days | 🟢 Low     | N/A      | MEDIUM   | ✅ Complete |
 | **Search Quick Wins**           |                |             |            |          |          |            |
-| Singular Extensions             | Search         | 🟢 2-3 days | 🟡 Medium  | +20-30   | HIGH     | 📋 Planned |
+| Singular Extensions             | Search         | 🟢 2-3 days | 🟡 Medium  | +20-30   | HIGH     | ✅ Complete |
 | Check Extensions                | Search         | 🟢 2-3 days | 🟡 Medium  | +10-20   | HIGH     | 📋 Planned |
 | Counter-Move History            | Search         | 🟡 3-5 days | 🟡 Medium  | +10-20   | MEDIUM   | 📋 Planned |
 | Best-Move Instability Time Mgmt | Search         | 🟢 2-3 days | 🟡 Medium  | +5-15    | MEDIUM   | 📋 Planned |
@@ -437,28 +437,45 @@ using VariationStack = StaticMoveList<128>;  // For search variation (MAX_PLY)
 
 ---
 
-### 2c. Singular Extensions (Phase 2)
+### 2c. Singular Extensions (Phase 2) ✅ COMPLETE
 
 **Description:**  
 When a move is significantly better than all alternatives (by a margin), extend its search depth by 1 ply. This prevents horizon effects in critical tactical lines.
 
 **Implementation:**
-1. At PV nodes, after trying the TT/hash move
-2. If it produces a fail-high, do a reduced-depth search (depth - 4) with a null window
-3. If no other move beats (ttValue - singularMargin), extend the TT move by 1 ply
+1. When processing the TT move in the move loop
+2. If depth >= SINGULAR_MIN_DEPTH and TT has a valid value from similar depth
+3. Do a reduced-depth null-window search excluding the TT move
+4. If no other move beats (ttValue - singularMargin), extend the TT move by 1 ply
 
 **Configuration Parameters:**
 ```yaml
-USE_SINGULAR_EXTENSIONS: true
-SINGULAR_MARGIN: 50           # centipawns
+USE_SINGULAR_EXT: true
+SINGULAR_MARGIN: 64           # centipawns
 SINGULAR_MIN_DEPTH: 8         # plies
 SINGULAR_REDUCTION: 4         # plies for verification search
 ```
 
+**Files Changed:**
+- `src/engine/config/SearchConfigData.h` - Added configuration parameters
+- `src/engine/Search.h` - Added `excludedMove` and `singularSearch` arrays for per-ply tracking
+- `src/engine/Search.cpp` - Implemented singular extension logic in move loop, skip TT storage during verification
+- `src/engine/SearchStats.h` - Added `singularSearches` and `singularExtension` statistics
+- `src/engine/UciOptions.cpp` - Added UCI options for singular extension parameters
+- `config/search.yaml` - Added singular extension configuration
+- `test/engine/SearchTest.cpp` - Added unit tests
+- `src/enginetest/SearchTreeSizeTest.cpp` - Added to tree size test sequence
+
+**Implementation Details:**
+- Uses per-ply `excludedMove` array to skip TT move during verification search
+- Uses per-ply `singularSearch` flag to skip TT storage during verification (avoids TT pollution)
+- Verification search uses `No_Null_Move` to avoid NMP interference
+- Only triggers when TT entry depth is within 3 plies of current depth
+
 **Testing:**
-- Verify no search instability (beta cutoffs, fail-high rates)
-- Benchmark on tactical test suites (WAC, STS)
-- Compare search depth reached with/without extensions
+- Unit tests verify singular extension triggers and disabled state
+- SearchTreeSizeTest includes singular extension in test sequence
+- Statistics tracking for searches and extensions applied
 
 **Expected Impact:** +20-30 ELO
 
