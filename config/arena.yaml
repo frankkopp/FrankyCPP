@@ -916,3 +916,49 @@ matches:
   #   rounds: 50
   #   concurrency: 1  # Sequential for deterministic results
   #   outputPgn: "results/matches/v1.2_vs_v1.0_rapid.pgn"
+
+# =============================================================================
+# Benchmark Configuration
+# =============================================================================
+# Benchmarks measure engine performance (NPS - nodes per second) using a fixed
+# set of 50 positions. Results are stored in results/benchmarks/benchmarks.json
+# and can be viewed with: FrankyCPP_Arena --bench-report
+#
+# Configuration:
+#   name:           Descriptive name for this benchmark run
+#   engineVersion:  Version string for results (defaults to global 'version')
+#   depth:          Search depth (1-127, default: 10)
+#   hashSizeMB:     Hash table size in MB (1-65536, default: 128)
+#   threads:        Number of threads (1-256, default: 1, reserved for SMP)
+#   notes:          Optional notes about this benchmark (shown in reports)
+#   enginePath:     Path to external engine (empty = use internal engine)
+#   commandLineArgs: Command-line arguments for external engine
+#
+# Usage:
+#   FrankyCPP_Arena --bench          Run all configured benchmarks
+#   FrankyCPP_Arena -b               Same as --bench
+#   FrankyCPP_Arena --bench-report   Show benchmark history
+# =============================================================================
+
+benchmarks:
+  - name: "v1.2 Internal"
+    engineVersion: "v1.2"
+    depth: 10
+    hashSizeMB: 128
+    notes: "Current development version"
+
+  - name: "v1.2 External"
+    enginePath: "Release/FrankyCPP_V1.2/FrankyCPP_v1.2.exe"
+    commandLineArgs: "--nobook"
+    engineVersion: "v1.2"
+    depth: 10
+    hashSizeMB: 128
+    notes: "Current development version"
+
+#  - name: "v1.1 External"
+#    enginePath: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
+#    commandLineArgs: "--nobook"
+#    engineVersion: "v1.1"
+#    depth: 10
+#    hashSizeMB: 128
+#    notes: "v1.1"

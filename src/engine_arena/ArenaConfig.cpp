@@ -181,6 +181,55 @@ ArenaConfig ArenaConfig::loadFromYaml(const std::string& configPath) {
       }
     }
 
+    // Load benchmarks
+    if (root["benchmarks"]) {
+      for (const auto& benchNode : root["benchmarks"]) {
+        BenchmarkConfig bench;
+
+        // Required: name
+        bench.name = benchNode["name"].as<std::string>();
+
+        // Optional: enginePath (empty = use internal engine)
+        if (benchNode["enginePath"]) {
+          bench.enginePath = benchNode["enginePath"].as<std::string>();
+        }
+
+        // Optional: engineVersion (defaults to config.version)
+        if (benchNode["engineVersion"]) {
+          bench.engineVersion = benchNode["engineVersion"].as<std::string>();
+        } else {
+          bench.engineVersion = config.version;
+        }
+
+        // Optional: depth (default: 10)
+        if (benchNode["depth"]) {
+          bench.depth = benchNode["depth"].as<int>();
+        }
+
+        // Optional: hashSizeMB (default: 128)
+        if (benchNode["hashSizeMB"]) {
+          bench.hashSizeMB = benchNode["hashSizeMB"].as<int>();
+        }
+
+        // Optional: threads (default: 1)
+        if (benchNode["threads"]) {
+          bench.threads = benchNode["threads"].as<int>();
+        }
+
+        // Optional: commandLineArgs
+        if (benchNode["commandLineArgs"]) {
+          bench.commandLineArgs = benchNode["commandLineArgs"].as<std::string>();
+        }
+
+        // Optional: notes
+        if (benchNode["notes"]) {
+          bench.notes = benchNode["notes"].as<std::string>();
+        }
+
+        config.benchmarks.push_back(bench);
+      }
+    }
+
   } catch (const YAML::Exception& e) {
     throw std::runtime_error("YAML parsing error: " + std::string(e.what()));
   }
@@ -205,7 +254,7 @@ bool ArenaConfig::validate() const {
   try {
     std::filesystem::create_directories(resultsDir);
     // Test writability by creating a temp file
-    auto testFile = std::filesystem::path(resultsDir) / ".write_test";
+    const auto testFile = std::filesystem::path(resultsDir) / ".write_test";
     std::ofstream ofs(testFile);
     if (!ofs) {
       std::cerr << "Validation error: resultsDir is not writable: " << resultsDir << std::endl;
@@ -309,6 +358,35 @@ bool ArenaConfig::validate() const {
     if (!match.openingBook.empty() && !std::filesystem::exists(match.openingBook)) {
       std::cerr << "Validation error: opening book not found for match '" << match.name
                 << "': " << match.openingBook << std::endl;
+      return false;
+    }
+  }
+
+  // Validate benchmarks
+  for (const auto& bench : benchmarks) {
+    if (bench.name.empty()) {
+      std::cerr << "Validation error: benchmark has empty name" << std::endl;
+      return false;
+    }
+    if (bench.depth <= 0 || bench.depth > 127) {
+      std::cerr << "Validation error: benchmark '" << bench.name
+                << "' has invalid depth: " << bench.depth << " (must be 1-127)" << std::endl;
+      return false;
+    }
+    if (bench.hashSizeMB <= 0 || bench.hashSizeMB > 65536) {
+      std::cerr << "Validation error: benchmark '" << bench.name
+                << "' has invalid hashSizeMB: " << bench.hashSizeMB << " (must be 1-65536)" << std::endl;
+      return false;
+    }
+    if (bench.threads <= 0 || bench.threads > 256) {
+      std::cerr << "Validation error: benchmark '" << bench.name
+                << "' has invalid threads: " << bench.threads << " (must be 1-256)" << std::endl;
+      return false;
+    }
+    // If external engine specified, check it exists
+    if (!bench.enginePath.empty() && !std::filesystem::exists(bench.enginePath)) {
+      std::cerr << "Validation error: engine not found for benchmark '" << bench.name
+                << "': " << bench.enginePath << std::endl;
       return false;
     }
   }

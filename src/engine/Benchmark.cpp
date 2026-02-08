@@ -64,8 +64,8 @@ BenchResult Benchmark::run(const std::vector<std::string>& fens, const BenchConf
     limits.timeControl = false;  // We use moveTime, not time control
   }
 
-  // Track timing
-  const auto benchStartTime = steady_clock::now();
+  // Track cumulative search time (excludes TT clearing and position setup)
+  int64_t totalSearchTimeMs = 0;
 
   // Process each position
   int positionNum = 0;
@@ -85,13 +85,19 @@ BenchResult Benchmark::run(const std::vector<std::string>& fens, const BenchConf
     // Print progress to stderr
     std::cerr << "\rPosition " << positionNum << "/" << fens.size() << std::flush;
 
-    // Clear state between positions (like ucinewgame but keeps TT for efficiency)
-    // We don't clear TT to better simulate real game behavior where TT persists
-    // This is consistent with Stockfish's bench behavior
+    // Clear TT before each position for fair, independent measurement
+    // Done BEFORE timing so TT clearing doesn't affect NPS
+    search.newGame();
+
+    // Measure only search time
+    const auto searchStart = steady_clock::now();
 
     // Start search
     search.startSearch(position, limits);
     search.waitWhileSearching();
+
+    const auto searchEnd = steady_clock::now();
+    totalSearchTimeMs += duration_cast<milliseconds>(searchEnd - searchStart).count();
 
     // Collect results
     const auto& searchResult = search.getLastSearchResult();
@@ -99,9 +105,8 @@ BenchResult Benchmark::run(const std::vector<std::string>& fens, const BenchConf
     result.positionsRun++;
   }
 
-  // Calculate total time
-  const auto benchEndTime = steady_clock::now();
-  result.totalTime = std::chrono::duration_cast<milliseconds>(benchEndTime - benchStartTime);
+  // Set total time (only search time, no TT clearing overhead)
+  result.totalTime = milliseconds{totalSearchTimeMs};
 
   // Calculate NPS (avoid division by zero)
   if (result.totalTime.count() > 0) {

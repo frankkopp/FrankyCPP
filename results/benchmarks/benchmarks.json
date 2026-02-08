@@ -1,0 +1,49 @@
+{
+  "benchmarks": [
+    {
+      "arenaVersion": "v1.2",
+      "timestamp": "2026-02-08T17:10:15",
+      "engineName": "FrankyCPP",
+      "engineVersion": "v1.2",
+      "enginePath": "",
+      "depth": 10,
+      "hashSizeMB": 128,
+      "threads": 1,
+      "positions": 50,
+      "totalNodes": 223073620,
+      "totalTimeMs": 59001,
+      "nps": 3780844,
+      "notes": "Current development version"
+    },
+    {
+      "arenaVersion": "v1.2",
+      "timestamp": "2026-02-08T17:10:15",
+      "engineName": "External",
+      "engineVersion": "v1.2",
+      "enginePath": "Release/FrankyCPP_V1.2/FrankyCPP_v1.2.exe",
+      "depth": 10,
+      "hashSizeMB": 128,
+      "threads": 1,
+      "positions": 50,
+      "totalNodes": 223073620,
+      "totalTimeMs": 59042,
+      "nps": 3778219,
+      "notes": "Current development version"
+    },
+    {
+      "arenaVersion": "v1.2",
+      "timestamp": "2026-02-08T17:11:16",
+      "engineName": "External",
+      "engineVersion": "v1.1",
+      "enginePath": "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe",
+      "depth": 10,
+      "hashSizeMB": 128,
+      "threads": 1,
+      "positions": 50,
+      "totalNodes": 230385628,
+      "totalTimeMs": 63029,
+      "nps": 3655232,
+      "notes": "v1.1"
+    }
+  ]
+}

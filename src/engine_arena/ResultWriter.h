@@ -111,6 +111,16 @@ public:
   /// @return Path to the created file
   std::string writeMatchResult(const MatchResult& result) const;
 
+  /// Write benchmark result to the consolidated JSON file
+  /// Appends to existing results file (benchmarks.json)
+  /// @param result Benchmark result data
+  /// @return Path to the created/updated file
+  std::string writeBenchmarkResult(const BenchmarkResult& result) const;
+
+  /// Read all benchmark results from the consolidated JSON file
+  /// @return Vector of all stored benchmark results
+  std::vector<BenchmarkResult> readBenchmarkResults() const;
+
   /// Write a comparison report between two versions
   /// @param v1Results Results from version 1
   /// @param v2Results Results from version 2

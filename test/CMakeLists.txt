@@ -63,6 +63,7 @@ add_executable(
         ../src/engine_arena/UCIEngine.cpp
         ../src/engine_arena/ResultWriter.cpp
         ../src/engine_arena/MatchRunner.cpp
+        ../src/engine_arena/BenchmarkRunner.cpp
 
         TimingTests.cpp
 

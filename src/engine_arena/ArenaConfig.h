@@ -130,6 +130,18 @@ struct MatchConfig {
   std::string outputPgn;       ///< Path to save PGN games
 };
 
+/// Configuration for a benchmark run
+struct BenchmarkConfig {
+  std::string name;            ///< Benchmark name (e.g., "v1.2 release")
+  std::string enginePath;      ///< Path to engine executable (empty = use internal engine)
+  std::string engineVersion;   ///< Engine version (e.g., "v1.2") - explicit, for results
+  int depth = 10;              ///< Search depth (default: 10)
+  int hashSizeMB = 128;        ///< Hash table size in MB (default: 128)
+  int threads = 1;             ///< Number of threads (default: 1, reserved for future SMP)
+  std::string commandLineArgs; ///< Command-line arguments (e.g., "--nobook")
+  std::string notes;           ///< Optional notes for this benchmark configuration
+};
+
 /// Main arena configuration
 struct ArenaConfig {
   std::string version;       ///< Engine version being tested
@@ -138,6 +150,7 @@ struct ArenaConfig {
   bool debugMode = false;    ///< Enable cutechess-cli debug output (prints engine I/O)
   std::vector<TestSuiteConfig> testSuites; ///< Test suite configurations
   std::vector<MatchConfig> matches;        ///< Match configurations
+  std::vector<BenchmarkConfig> benchmarks; ///< Benchmark configurations
 
   /// Load configuration from YAML file
   /// @param configPath Path to arena.yaml configuration file

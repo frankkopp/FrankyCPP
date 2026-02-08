@@ -89,6 +89,7 @@
 #include <algorithm>
 #include <map>
 #include <optional>
+#include <ranges>
 #include <set>
 #include <string>
 #include <vector>
@@ -268,6 +269,46 @@ struct MatchResult {
 };
 
 //=============================================================================
+// BenchmarkResult - Performance benchmark results
+//=============================================================================
+
+/// Result from running a benchmark (NPS measurement)
+struct BenchmarkResult {
+  // Arena metadata
+  std::string arenaVersion;     ///< Arena version that ran this benchmark (e.g., "v1.2")
+  std::string timestamp;        ///< ISO 8601 timestamp
+
+  // Engine identification
+  std::string engineName;       ///< Engine name (e.g., "FrankyCPP")
+  std::string engineVersion;    ///< Engine version (e.g., "v1.2")
+  std::string enginePath;       ///< Path to engine executable (empty if internal)
+
+  // Benchmark configuration
+  int depth = 0;                ///< Search depth used
+  int hashSizeMB = 0;           ///< Hash table size in MB
+  int threads = 1;              ///< Number of threads used
+  int positions = 0;            ///< Number of positions benchmarked
+
+  // Results
+  uint64_t totalNodes = 0;      ///< Total nodes searched
+  int64_t totalTimeMs = 0;      ///< Total time in milliseconds
+  uint64_t nps = 0;             ///< Nodes per second
+
+  // User notes (manually editable in JSON)
+  std::string notes;            ///< User-provided notes about this benchmark run
+
+  /// Returns EngineId from this result
+  [[nodiscard]] EngineId getEngineId() const {
+    return {engineName, engineVersion};
+  }
+
+  /// Returns benchmark key for indexing: "EngineName-vX.Y_depth_hash"
+  [[nodiscard]] std::string getBenchmarkKey() const {
+    return getEngineId().toString() + "_d" + std::to_string(depth) + "_h" + std::to_string(hashSizeMB);
+  }
+};
+
+//=============================================================================
 // ReportData - Results organized for reporting
 //=============================================================================
 
@@ -286,9 +327,12 @@ struct ReportData {
   /// Match results indexed by match key: "Engine1-v1 vs Engine2-v2"
   std::map<std::string, MatchResult> matchResults;
 
+  /// Benchmark results indexed by timestamp (keeps all runs for history)
+  std::vector<BenchmarkResult> benchmarkResults;
+
   /// Returns true if any results are loaded
   [[nodiscard]] bool hasResults() const {
-    return !suiteResults.empty() || !matchResults.empty();
+    return !suiteResults.empty() || !matchResults.empty() || !benchmarkResults.empty();
   }
 
   /// Returns true if test suite results exist
@@ -299,6 +343,11 @@ struct ReportData {
   /// Returns true if match results exist
   [[nodiscard]] bool hasMatchResults() const {
     return !matchResults.empty();
+  }
+
+  /// Returns true if benchmark results exist
+  [[nodiscard]] bool hasBenchmarkResults() const {
+    return !benchmarkResults.empty();
   }
 
   /// Returns true if results exist for given engine
@@ -326,7 +375,7 @@ struct ReportData {
         // Also check if search name contains stored base name (for underscore variants)
         // e.g., "FrankyCPP_v1.1" should match "FrankyCPP v1.1"
         std::string searchNoUnderscore = search.name;
-        std::replace(searchNoUnderscore.begin(), searchNoUnderscore.end(), '_', ' ');
+        std::ranges::replace(searchNoUnderscore, '_', ' ');
         if (engine.name.find(searchNoUnderscore) == 0 || searchNoUnderscore.find(engine.name) == 0) {
           return engine;
         }
@@ -360,7 +409,7 @@ struct ReportData {
     if (it != matchResults.end()) return &it->second;
 
     // Fall back to flexible matching: iterate through all matches
-    for (const auto& [key, match] : matchResults) {
+    for (const auto& match : matchResults | std::views::values) {
       const EngineId e1 = match.getEngine1Id();
       const EngineId e2 = match.getEngine2Id();
 
@@ -377,7 +426,7 @@ struct ReportData {
   /// Returns all matches involving the given engine (using flexible matching)
   [[nodiscard]] std::vector<const MatchResult*> getMatchesForEngine(const EngineId& engine) const {
     std::vector<const MatchResult*> matches;
-    for (const auto& [key, match] : matchResults) {
+    for (const auto& match : matchResults | std::views::values) {
       if (enginesMatchFlexibly(engine, match.getEngine1Id()) ||
           enginesMatchFlexibly(engine, match.getEngine2Id())) {
         matches.push_back(&match);

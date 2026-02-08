@@ -43,17 +43,17 @@ TEST_F(BenchmarkTest, benchmarkPositionsAreValid) {
     EXPECT_FALSE(fen.empty()) << "Position " << i << " is empty";
     // Position constructor will throw if FEN is invalid
     EXPECT_NO_THROW({
-      Position pos{std::string{fen}};
+      [[maybe_unused]] Position pos{std::string{fen}};
     }) << "Position " << i << " has invalid FEN: " << fen;
   }
 }
 
 /// Test benchmark configuration defaults
 TEST_F(BenchmarkTest, benchConfigDefaults) {
-  const engine::BenchConfig config;
+  constexpr engine::BenchConfig config;
   EXPECT_EQ(config.hashSizeMB, 128);
   EXPECT_EQ(config.threads, 1);
-  EXPECT_EQ(config.depth, 13);
+  EXPECT_EQ(config.depth, 10);
   EXPECT_EQ(config.timeLimit.count(), 0);
 }
 

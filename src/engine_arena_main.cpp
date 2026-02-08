@@ -41,6 +41,9 @@
 //=============================================================================
 
 #include "engine_arena/ArenaRunner.h"
+#include "engine_arena/BenchmarkRunner.h"
+#include "engine_arena/ResultWriter.h"
+#include "engine/Benchmark.h"
 #include "init.h"
 
 #include <boost/program_options.hpp>
@@ -63,13 +66,16 @@ int main(int argc, char* argv[]) {
        "Configuration file path")
       ("testsuites,t", "Run test suites only")
       ("matches,m", "Run matches only")
+      // Benchmark options
+      ("bench,b", "Run benchmarks (NPS measurement)")
+      ("bench-report", "Show benchmark results history")
       // Reporting options
       ("report,r", "Show baseline report (all engines, all test suites)")
       ("baselines", "Alias for --report")
       ("engines", "List all available engines from results")
       ("cmp", po::value<std::string>(),
        "Compare engine against baselines: --cmp FrankyCPP-v1.2-dev")
-      ("baseline,b", po::value<std::vector<std::string>>()->multitoken(),
+      ("baseline", po::value<std::vector<std::string>>()->multitoken(),
        "Specify baseline(s) for comparison (can repeat)")
       // Filtering options
       ("testsuites-only", "Show only test suite results (filter out matches)")
@@ -82,6 +88,12 @@ int main(int argc, char* argv[]) {
     // Show help
     if (vm.contains("help")) {
       std::cout << desc << std::endl;
+      std::cout << "\nExecution Commands:\n";
+      std::cout << "  (no args)                Run all tests, matches, and benchmarks\n";
+      std::cout << "  --testsuites, -t         Run test suites only\n";
+      std::cout << "  --matches, -m            Run matches only\n";
+      std::cout << "  --bench, -b              Run benchmarks only\n";
+      std::cout << "  --bench-report           Show benchmark results history\n";
       std::cout << "\nReporting Commands:\n";
       std::cout << "  --report, --baselines    Show baseline report (all engines)\n";
       std::cout << "  --engines                List available engines from results\n";
@@ -89,18 +101,20 @@ int main(int argc, char* argv[]) {
       std::cout << "  --baseline <engine>      Specify baseline(s) for --cmp\n";
       std::cout << "  --testsuites-only        Show only test suite results\n";
       std::cout << "  --matches-only           Show only match results\n";
-      std::cout << "\nExecution Commands:\n";
-      std::cout << "  (no args)                Run all tests and matches\n";
-      std::cout << "  --testsuites, -t         Run test suites only\n";
-      std::cout << "  --matches, -m            Run matches only\n";
       std::cout << "\nExamples:\n";
+      std::cout << "  FrankyCPP_Arena --bench\n";
+      std::cout << "  FrankyCPP_Arena --bench-report\n";
       std::cout << "  FrankyCPP_Arena --report\n";
       std::cout << "  FrankyCPP_Arena --report --testsuites-only\n";
-      std::cout << "  FrankyCPP_Arena --report --matches-only\n";
       std::cout << "  FrankyCPP_Arena --cmp FrankyCPP-v1.2-dev\n";
-      std::cout << "  FrankyCPP_Arena --cmp FrankyCPP-v1.2-dev --baseline FrankyCPP-v1.1\n";
-      std::cout << "  FrankyCPP_Arena --cmp FrankyCPP-v1.2-dev --matches-only\n";
       std::cout << "  FrankyCPP_Arena --testsuites\n";
+      std::cout << "\nBenchmark Configuration (in arena.yaml):\n";
+      std::cout << "  benchmarks:\n";
+      std::cout << "    - name: \"v1.2 Release\"\n";
+      std::cout << "      engineVersion: \"v1.2\"\n";
+      std::cout << "      depth: 10\n";
+      std::cout << "      hashSizeMB: 128\n";
+      std::cout << "      notes: \"After StaticMoveList optimization\"\n";
       return 0;
     }
 
@@ -116,6 +130,15 @@ int main(int argc, char* argv[]) {
     std::cout << "  Results Directory: " << config.resultsDir << std::endl;
     std::cout << "  Test Suites: " << config.testSuites.size() << std::endl;
     std::cout << "  Matches: " << config.matches.size() << std::endl;
+    std::cout << "  Benchmarks: " << config.benchmarks.size() << std::endl;
+
+    // Handle bench-report before validation (doesn't need full config)
+    if (vm.contains("bench-report")) {
+      arena::ResultWriter writer(config.resultsDir);
+      auto results = writer.readBenchmarkResults();
+      arena::BenchmarkRunner::printResultsTable(results);
+      return 0;
+    }
 
     // Validate configuration
     if (!config.validate()) {
@@ -127,6 +150,55 @@ int main(int argc, char* argv[]) {
     }
 
     std::cout << "Configuration validated successfully!" << std::endl;
+
+    // Handle benchmark command
+    if (vm.contains("bench")) {
+      if (config.benchmarks.empty()) {
+        std::cerr << "ERROR: No benchmarks configured in " << configPath << std::endl;
+        std::cerr << "Add a 'benchmarks' section to your arena.yaml file." << std::endl;
+        return 1;
+      }
+
+      std::cout << "\n=== Running Benchmarks ===" << std::endl;
+      std::cout << "Configured benchmarks: " << config.benchmarks.size() << std::endl;
+
+      arena::ResultWriter writer(config.resultsDir);
+
+      for (const auto& benchConfig : config.benchmarks) {
+        std::cout << "\n--- Benchmark: " << benchConfig.name << " ---" << std::endl;
+        std::cout << "  Version: " << benchConfig.engineVersion << std::endl;
+        std::cout << "  Depth: " << benchConfig.depth << std::endl;
+        std::cout << "  Hash: " << benchConfig.hashSizeMB << " MB" << std::endl;
+        if (!benchConfig.notes.empty()) {
+          std::cout << "  Notes: " << benchConfig.notes << std::endl;
+        }
+        std::cout << std::endl;
+
+        // Run benchmark
+        arena::BenchmarkRunner runner(benchConfig, config.version);
+        auto result = runner.run();
+
+        // Print results
+        engine::Benchmark::printResults({
+          result.totalNodes,
+          milliseconds{result.totalTimeMs},
+          static_cast<double>(result.nps),
+          result.positions,
+          result.engineName + " " + result.engineVersion
+        });
+
+        // Save results
+        std::string path = writer.writeBenchmarkResult(result);
+        std::cout << "\nResults saved to: " << path << std::endl;
+      }
+
+      // Show history
+      std::cout << "\n";
+      auto allResults = writer.readBenchmarkResults();
+      arena::BenchmarkRunner::printResultsTable(allResults);
+
+      return 0;
+    }
 
     // Create ArenaRunner - main orchestrator
     arena::ArenaRunner arenaRunner(config);
@@ -161,14 +233,14 @@ int main(int argc, char* argv[]) {
 
       if (matchesOnly) {
         // Show only match results
-        std::cout << arenaRunner.generateMatchBaselineReport(data);
+        std::cout << arena::ArenaRunner::generateMatchBaselineReport(data);
       } else if (testSuitesOnly) {
         // Show only test suite results
-        std::cout << arenaRunner.generateBaselineReport(data);
+        std::cout << arena::ArenaRunner::generateBaselineReport(data);
       } else {
         // Show both (default)
-        std::cout << arenaRunner.generateBaselineReport(data);
-        std::cout << arenaRunner.generateMatchBaselineReport(data);
+        std::cout << arena::ArenaRunner::generateBaselineReport(data);
+        std::cout << arena::ArenaRunner::generateMatchBaselineReport(data);
       }
 
     } else if (vm.contains("cmp")) {
@@ -197,14 +269,14 @@ int main(int argc, char* argv[]) {
 
       if (matchesOnly) {
         // Show only match comparison
-        std::cout << arenaRunner.generateMatchComparisonReport(data, targetEngine, baselines);
+        std::cout << arena::ArenaRunner::generateMatchComparisonReport(data, targetEngine, baselines);
       } else if (testSuitesOnly) {
         // Show only test suite comparison
-        std::cout << arenaRunner.generateComparisonReport(data, targetEngine, baselines);
+        std::cout << arena::ArenaRunner::generateComparisonReport(data, targetEngine, baselines);
       } else {
         // Show both (default)
-        std::cout << arenaRunner.generateComparisonReport(data, targetEngine, baselines);
-        std::cout << arenaRunner.generateMatchComparisonReport(data, targetEngine, baselines);
+        std::cout << arena::ArenaRunner::generateComparisonReport(data, targetEngine, baselines);
+        std::cout << arena::ArenaRunner::generateMatchComparisonReport(data, targetEngine, baselines);
       }
 
     } else if (vm.contains("testsuites")) {

@@ -83,6 +83,7 @@ namespace arena {
     ensureDirectoryExists(resultsDir + "/testsuites");
     ensureDirectoryExists(resultsDir + "/matches");
     ensureDirectoryExists(resultsDir + "/comparisons");
+    ensureDirectoryExists(resultsDir + "/benchmarks");
   }
 
   std::string ResultWriter::writeTestSuiteResult(const TestSuiteResult& result) const {
@@ -221,6 +222,130 @@ namespace arena {
 
     file.close();
     return filename;
+  }
+
+  std::string ResultWriter::writeBenchmarkResult(const BenchmarkResult& result) const {
+    const std::string filename = resultsDir + "/benchmarks/benchmarks.json";
+
+    // Read existing results
+    std::vector<BenchmarkResult> allResults = readBenchmarkResults();
+
+    // Add new result
+    allResults.push_back(result);
+
+    // Write all results back (overwrite file)
+    std::ofstream file(filename);
+    if (!file.is_open()) {
+      throw std::runtime_error("Failed to open file for writing: " + filename);
+    }
+
+    file << "{\n";
+    file << "  \"benchmarks\": [\n";
+
+    for (size_t i = 0; i < allResults.size(); ++i) {
+      const auto& r = allResults[i];
+      file << "    {\n";
+      file << "      \"arenaVersion\": \"" << escapeJsonString(r.arenaVersion) << "\",\n";
+      file << "      \"timestamp\": \"" << escapeJsonString(r.timestamp) << "\",\n";
+      file << "      \"engineName\": \"" << escapeJsonString(r.engineName) << "\",\n";
+      file << "      \"engineVersion\": \"" << escapeJsonString(r.engineVersion) << "\",\n";
+      file << "      \"enginePath\": \"" << escapeJsonString(r.enginePath) << "\",\n";
+      file << "      \"depth\": " << r.depth << ",\n";
+      file << "      \"hashSizeMB\": " << r.hashSizeMB << ",\n";
+      file << "      \"threads\": " << r.threads << ",\n";
+      file << "      \"positions\": " << r.positions << ",\n";
+      file << "      \"totalNodes\": " << r.totalNodes << ",\n";
+      file << "      \"totalTimeMs\": " << r.totalTimeMs << ",\n";
+      file << "      \"nps\": " << r.nps << ",\n";
+      file << "      \"notes\": \"" << escapeJsonString(r.notes) << "\"\n";
+      file << "    }" << (i < allResults.size() - 1 ? ",\n" : "\n");
+    }
+
+    file << "  ]\n";
+    file << "}\n";
+
+    file.close();
+    return filename;
+  }
+
+  std::vector<BenchmarkResult> ResultWriter::readBenchmarkResults() const {
+    std::vector<BenchmarkResult> results;
+    const std::string filename = resultsDir + "/benchmarks/benchmarks.json";
+
+    if (!std::filesystem::exists(filename)) {
+      return results;  // Empty vector if file doesn't exist
+    }
+
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+      return results;
+    }
+
+    // Simple JSON parsing for our specific format
+    std::string content((std::istreambuf_iterator<char>(file)),
+                        std::istreambuf_iterator<char>());
+    file.close();
+
+    // Parse each benchmark entry
+    // This is a simple parser that assumes well-formed JSON from our writer
+    size_t pos = 0;
+    while ((pos = content.find("\"arenaVersion\"", pos)) != std::string::npos) {
+      BenchmarkResult r;
+
+      // Helper lambda to extract string value
+      auto extractString = [&content](size_t startPos, const std::string& key) -> std::string {
+        const size_t keyPos = content.find("\"" + key + "\"", startPos);
+        if (keyPos == std::string::npos) return "";
+        const size_t colonPos = content.find(':', keyPos);
+        if (colonPos == std::string::npos) return "";
+        const size_t quoteStart = content.find('"', colonPos + 1);
+        if (quoteStart == std::string::npos) return "";
+        const size_t quoteEnd = content.find('"', quoteStart + 1);
+        if (quoteEnd == std::string::npos) return "";
+        return content.substr(quoteStart + 1, quoteEnd - quoteStart - 1);
+      };
+
+      // Helper lambda to extract numeric value
+      auto extractNumber = [&content](size_t startPos, const std::string& key) -> int64_t {
+        const size_t keyPos = content.find("\"" + key + "\"", startPos);
+        if (keyPos == std::string::npos) return 0;
+        const size_t colonPos = content.find(':', keyPos);
+        if (colonPos == std::string::npos) return 0;
+        size_t numStart = colonPos + 1;
+        while (numStart < content.size() && (content[numStart] == ' ' || content[numStart] == '\n')) {
+          numStart++;
+        }
+        size_t numEnd = numStart;
+        while (numEnd < content.size() && (std::isdigit(content[numEnd]) || content[numEnd] == '-')) {
+          numEnd++;
+        }
+        if (numStart == numEnd) return 0;
+        return std::stoll(content.substr(numStart, numEnd - numStart));
+      };
+
+      // Find the closing brace for this entry
+      const size_t entryEnd = content.find('}', pos);
+      if (entryEnd == std::string::npos) break;
+
+      r.arenaVersion = extractString(pos, "arenaVersion");
+      r.timestamp = extractString(pos, "timestamp");
+      r.engineName = extractString(pos, "engineName");
+      r.engineVersion = extractString(pos, "engineVersion");
+      r.enginePath = extractString(pos, "enginePath");
+      r.depth = static_cast<int>(extractNumber(pos, "depth"));
+      r.hashSizeMB = static_cast<int>(extractNumber(pos, "hashSizeMB"));
+      r.threads = static_cast<int>(extractNumber(pos, "threads"));
+      r.positions = static_cast<int>(extractNumber(pos, "positions"));
+      r.totalNodes = static_cast<uint64_t>(extractNumber(pos, "totalNodes"));
+      r.totalTimeMs = extractNumber(pos, "totalTimeMs");
+      r.nps = static_cast<uint64_t>(extractNumber(pos, "nps"));
+      r.notes = extractString(pos, "notes");
+
+      results.push_back(r);
+      pos = entryEnd + 1;
+    }
+
+    return results;
   }
 
   std::string ResultWriter::writeComparison(const std::vector<TestSuiteResult>& v1Results,
