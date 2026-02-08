@@ -77,27 +77,31 @@ Tablebase support and endgame-specific techniques.
 ### Phase 2: Performance Fundamentals & Quick Wins (v1.2) - **2-3 weeks** 🔄 IN PROGRESS
 **Focus:** Eliminate heap allocations, improve cache performance, add proven search enhancements
 
-| Task                            | Category    | Effort      | Complexity | ELO Gain | Priority | Status     |
-|---------------------------------|-------------|-------------|------------|----------|----------|------------|
-| **Performance Fundamentals**    |             |             |            |          |          |            |
-| Triangular PV Table             | Performance | 🟢 1-2 days | 🟡 Medium  | +5-10    | HIGH     | ✅ Complete |
-| MoveList Static Array Refactor  | Performance | 🟡 3-5 days | 🟡 Medium  | +5-15    | HIGH     | ✅ Complete |
-| **Search Quick Wins**           |             |             |            |          |          |            |
-| Singular Extensions             | Search      | 🟢 2-3 days | 🟡 Medium  | +20-30   | HIGH     | 📋 Planned |
-| Check Extensions                | Search      | 🟢 2-3 days | 🟡 Medium  | +10-20   | HIGH     | 📋 Planned |
-| Counter-Move History            | Search      | 🟡 3-5 days | 🟡 Medium  | +10-20   | MEDIUM   | 📋 Planned |
-| Best-Move Instability Time Mgmt | Search      | 🟢 2-3 days | 🟡 Medium  | +5-15    | MEDIUM   | 📋 Planned |
-| Selective Checks in Quiescence  | Search      | 🟡 3-5 days | 🟡 Medium  | +15-25   | MEDIUM   | 📋 Planned |
+| Task                            | Category       | Effort      | Complexity | ELO Gain | Priority | Status     |
+|---------------------------------|----------------|-------------|------------|----------|----------|------------|
+| **Performance Fundamentals**    |                |             |            |          |          |            |
+| Triangular PV Table             | Performance    | 🟢 1-2 days | 🟡 Medium  | +5-10    | HIGH     | ✅ Complete |
+| MoveList Static Array Refactor  | Performance    | 🟡 3-5 days | 🟡 Medium  | +5-15    | HIGH     | ✅ Complete |
+| **Infrastructure**              |                |             |            |          |          |            |
+| UCI `bench` Command             | Infrastructure | 🟢 2-3 days | 🟢 Low     | N/A      | HIGH     | 📋 Planned |
+| Arena Bench Integration         | Infrastructure | 🟢 2-3 days | 🟢 Low     | N/A      | MEDIUM   | 📋 Planned |
+| **Search Quick Wins**           |                |             |            |          |          |            |
+| Singular Extensions             | Search         | 🟢 2-3 days | 🟡 Medium  | +20-30   | HIGH     | 📋 Planned |
+| Check Extensions                | Search         | 🟢 2-3 days | 🟡 Medium  | +10-20   | HIGH     | 📋 Planned |
+| Counter-Move History            | Search         | 🟡 3-5 days | 🟡 Medium  | +10-20   | MEDIUM   | 📋 Planned |
+| Best-Move Instability Time Mgmt | Search         | 🟢 2-3 days | 🟡 Medium  | +5-15    | MEDIUM   | 📋 Planned |
+| Selective Checks in Quiescence  | Search         | 🟡 3-5 days | 🟡 Medium  | +15-25   | MEDIUM   | 📋 Planned |
 
 **Expected Total ELO Gain:** +70-135  
 **Risk:** Low - internal refactoring and proven techniques  
 **Notes:**
 - Triangular PV Table: Replace `std::array<MoveList, DEPTH_MAX+1>` with fixed 2D array ✅
 - MoveList/VariationStack: Unified into `StaticMoveList<N>` template with zero heap allocations ✅
+- **`bench` command:** UCI benchmark for NPS measurement, enables comparing v1.2+ versions against each other
 - Zero heap allocations during search
 - Better cache locality
 - Foundation for multi-threading (simpler per-thread state)
-- Detailed plan: `docs/specs/PLAN_PV_Triangular_Migration.md`
+- Detailed plans: `docs/specs/PLAN_PV_Triangular_Migration.md`, `docs/specs/PLAN_Speedtest_Benchmark.md`
 
 ---
 
@@ -864,7 +868,7 @@ parameters:
 - **Hybrid NNUE+Classical:** Use both evaluations strategically
 
 ### Infrastructure
-- **Bench Command (v1.3+):** UCI `bench` command for NPS measurement with full Arena integration for version-to-version performance comparison. Includes CI/CD regression detection. Optional `speedtest` command later if needed. **Detailed plan:** `docs/specs/PLAN_Speedtest_Benchmark.md`
+- **`speedtest` Command (v1.3+ optional):** Comprehensive game-based benchmark if `bench` proves insufficient. Only implement if needed. **Detailed plan:** `docs/specs/PLAN_Speedtest_Benchmark.md`
 - **Distributed Tuning:** Cloud-based parameter optimization
 - **Opening Book Tuning:** Learn from game statistics
 - **Live ELO Tracking:** Web dashboard for strength monitoring
