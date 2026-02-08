@@ -1,9 +1,9 @@
 # FrankyCPP Speedtest Benchmark Plan
 
-**Document Version:** 1.4    
+**Document Version:** 1.5    
 **Created:** 2026-02-08  
 **Last Updated:** 2026-02-08  
-**Status:** Planned  
+**Status:** Phase 1 Complete ✅  
 **Target:** FrankyCPP v1.2 (Phase 1), v1.3+ (Phase 2 optional)  
 **Priority:** HIGH (needed to measure v1.2 performance improvements)
 
@@ -24,6 +24,45 @@ This plan starts with the simpler `bench` command, which provides immediate valu
 - `speedtest` - Comprehensive benchmark simulating realistic game play
 
 We implement `bench` first as it covers most use cases. `speedtest` remains an optional future enhancement.
+
+---
+
+## Phase 1 Implementation Summary ✅ COMPLETE
+
+**Completed: 2026-02-08**
+
+### What Was Implemented
+
+#### UCI `bench` Command
+- **Command:** `bench [depth] [hash] [threads]` (default: `bench 10 128 1`)
+- **Positions:** 50 curated positions from WAC, Kaufman, Eigenmann, and standard positions
+- **Files:** `src/engine/Benchmark.h`, `Benchmark.cpp`, `BenchmarkPositions.h`
+- **Output:** Total nodes, time, NPS to stderr (UCI-compatible)
+
+#### Command-Line Interface
+- **Command:** `FrankyCPP --bench [--benchDepth N] [--benchHash MB]`
+- **Shortcut:** `-b` equivalent to `--bench`
+
+#### Arena Integration
+- **Command:** `FrankyCPP_Arena --bench` or `-b`
+- **Report:** `FrankyCPP_Arena --bench-report`
+- **Config:** YAML-based configuration in `arena.yaml`
+- **Files:** `BenchmarkRunner.h`, `BenchmarkRunner.cpp`
+- **Storage:** `results/benchmarks/benchmarks.json`
+
+#### Key Design Decisions
+1. **TT Clearing:** Clears TT before each position for fair, independent measurement
+2. **Timing:** Measures only search time (excludes TT clearing overhead)
+3. **External Engines:** Supports any UCI engine via standard protocol
+4. **Results Table:** Shows timestamp, version, depth, hash, nodes, NPS, time
+
+#### Results Comparison (Internal vs External)
+```
+Internal: 223,073,620 nodes in 59.35s = 3,758,675 NPS
+External: 223,073,620 nodes in 59.94s = 3,721,801 NPS
+```
+- Identical node counts confirm TT clearing consistency
+- ~1% time difference due to minimal UCI overhead
 
 ---
 
@@ -593,3 +632,4 @@ If needed, `speedtest` would add:
 | 1.2     | 2026-02-08 | Copilot | Restructured into two phases: `bench` first with full Arena integration, `speedtest` as optional future enhancement                                     |
 | 1.3     | 2026-02-08 | Copilot | Moved Phase 1 (`bench`) to v1.2 to enable measuring StaticMoveList and other v1.2 performance improvements                                              |
 | 1.4     | 2026-02-08 | Copilot | Changed benchmark positions to use existing public domain testsets (WAC, Kaufman, Eigenmann) instead of Stockfish positions to avoid licensing concerns |
+| 1.5     | 2026-02-08 | Copilot | **Phase 1 Complete ✅** - UCI `bench` command and Arena integration fully implemented with TT clearing per position                                     |

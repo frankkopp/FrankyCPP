@@ -83,8 +83,8 @@ Tablebase support and endgame-specific techniques.
 | Triangular PV Table             | Performance    | 🟢 1-2 days | 🟡 Medium  | +5-10    | HIGH     | ✅ Complete |
 | MoveList Static Array Refactor  | Performance    | 🟡 3-5 days | 🟡 Medium  | +5-15    | HIGH     | ✅ Complete |
 | **Infrastructure**              |                |             |            |          |          |            |
-| UCI `bench` Command             | Infrastructure | 🟢 2-3 days | 🟢 Low     | N/A      | HIGH     | 📋 Planned |
-| Arena Bench Integration         | Infrastructure | 🟢 2-3 days | 🟢 Low     | N/A      | MEDIUM   | 📋 Planned |
+| UCI `bench` Command             | Infrastructure | 🟢 2-3 days | 🟢 Low     | N/A      | HIGH     | ✅ Complete |
+| Arena Bench Integration         | Infrastructure | 🟢 2-3 days | 🟢 Low     | N/A      | MEDIUM   | ✅ Complete |
 | **Search Quick Wins**           |                |             |            |          |          |            |
 | Singular Extensions             | Search         | 🟢 2-3 days | 🟡 Medium  | +20-30   | HIGH     | 📋 Planned |
 | Check Extensions                | Search         | 🟢 2-3 days | 🟡 Medium  | +10-20   | HIGH     | 📋 Planned |
@@ -97,7 +97,17 @@ Tablebase support and endgame-specific techniques.
 **Notes:**
 - Triangular PV Table: Replace `std::array<MoveList, DEPTH_MAX+1>` with fixed 2D array ✅
 - MoveList/VariationStack: Unified into `StaticMoveList<N>` template with zero heap allocations ✅
-- **`bench` command:** UCI benchmark for NPS measurement, enables comparing v1.2+ versions against each other
+- **`bench` command:** ✅ UCI benchmark for NPS measurement using 50 curated positions
+  - UCI command: `bench [depth] [hash] [threads]` (default: `bench 10 128 1`)
+  - Command-line: `FrankyCPP --bench --benchDepth 10 --benchHash 128`
+  - Clears TT before each position for fair, independent measurement
+  - Measures only search time (excludes TT clearing overhead)
+  - Results stored in `results/benchmarks/benchmarks.json`
+- **Arena Bench Integration:** ✅ Configured via `arena.yaml`, supports internal and external engines
+  - Arena CLI: `FrankyCPP_Arena --bench` or `-b`
+  - History report: `FrankyCPP_Arena --bench-report`
+  - External engines use UCI protocol with same 50 positions
+  - Results table shows version, depth, hash, nodes, NPS, time
 - Zero heap allocations during search
 - Better cache locality
 - Foundation for multi-threading (simpler per-thread state)
