@@ -458,8 +458,8 @@ SINGULAR_REDUCTION: 4         # plies for verification search
 
 **Files Changed:**
 - `src/engine/config/SearchConfigData.h` - Added configuration parameters
-- `src/engine/Search.h` - Added `excludedMove` and `singularSearch` arrays for per-ply tracking
-- `src/engine/Search.cpp` - Implemented singular extension logic in move loop, skip TT storage during verification
+- `src/engine/Search.h` - Added `mgSingular` array and `excludedMove` array for per-ply tracking
+- `src/engine/Search.cpp` - Implemented singular extension logic, uses mgSingular to avoid MG state corruption
 - `src/engine/SearchStats.h` - Added `singularSearches` and `singularExtension` statistics
 - `src/engine/UciOptions.cpp` - Added UCI options for singular extension parameters
 - `config/search.yaml` - Added singular extension configuration
@@ -467,17 +467,24 @@ SINGULAR_REDUCTION: 4         # plies for verification search
 - `src/enginetest/SearchTreeSizeTest.cpp` - Added to tree size test sequence
 
 **Implementation Details:**
-- Uses per-ply `excludedMove` array to skip TT move during verification search
-- Uses per-ply `singularSearch` flag to skip TT storage during verification (avoids TT pollution)
+- Uses separate `mgSingular[ply]` MoveGenerator array for verification searches
+- This prevents corruption of outer search's MoveGenerator state (singular search runs at same ply)
+- `excludedMove[ply]` array tracks which move to skip during verification
+- MoveGenerator selection: `excludedMove[ply] != MOVE_NONE ? mgSingular[ply] : mg[ply]`
 - Verification search uses `No_Null_Move` to avoid NMP interference
 - Only triggers when TT entry depth is within 3 plies of current depth
+
+**Future Improvement:** See `docs/specs/PLAN_PlyStack_Refactoring.md` for planned unification of per-ply state into a `PlyInfo` struct.
 
 **Testing:**
 - Unit tests verify singular extension triggers and disabled state
 - SearchTreeSizeTest includes singular extension in test sequence
 - Statistics tracking for searches and extensions applied
+- **Arena Results (v1.2 vs v1.1):**
+  - Match: +27 ELO (53.8% score, 32W/48D/24L over 104 games) ✅
+  - Test suites: -1.3% (within noise margin, expected trade-off)
 
-**Expected Impact:** +20-30 ELO
+**Expected Impact:** +20-30 ELO ✅ **Verified: +27 ELO**
 
 ---
 

@@ -154,15 +154,19 @@ class Search {
   // ply related data
   // Triangular PV table for efficient PV storage (64KB, zero heap allocations)
   PVTable pv;
-  std::array<MoveGenerator, DEPTH_MAX + 1> mg{};
+
+  // MoveGenerator arrays allocated on heap to keep Search class size small (~200 bytes vs ~865 KB)
+  // This allows Search to be stack-allocated without causing stack overflow
+  std::unique_ptr<std::array<MoveGenerator, DEPTH_MAX + 1>> mg;
+
+  // Separate MoveGenerator array for singular extension verification searches
+  // Needed because singular search runs at the same ply as the outer search,
+  // and using mg[ply] would corrupt the outer search's iteration state
+  std::unique_ptr<std::array<MoveGenerator, DEPTH_MAX + 1>> mgSingular;
 
   // Per-ply excluded move for singular extension verification searches
   // When set, this move is skipped in the move loop at that ply
   std::array<Move, DEPTH_MAX + 1> excludedMove{};
-
-  // Per-ply flag to indicate we're in a singular verification search
-  // When true, TT storage is skipped to avoid polluting with shallow entries
-  std::array<bool, DEPTH_MAX + 1> singularSearch{};
 
   // to mark the last move was a book move
   bool hadBookMove = false;

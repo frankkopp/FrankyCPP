@@ -203,10 +203,10 @@ int main(int argc, char* argv[]) {
       std::cout << "Depth:   " << benchDepth << "\n";
       std::cout << "Hash:    " << benchHash << " MB\n";
       std::cout << std::endl;
-      engine::BenchConfig config;
-      config.depth = benchDepth;
-      config.hashSizeMB = benchHash;
-      const auto result = engine::Benchmark::run(config);
+      engine::BenchConfig benchConfig;
+      benchConfig.depth = benchDepth;
+      benchConfig.hashSizeMB = benchHash;
+      const auto result = engine::Benchmark::run(benchConfig);
       engine::Benchmark::printResults(result);
       return 0;
     }

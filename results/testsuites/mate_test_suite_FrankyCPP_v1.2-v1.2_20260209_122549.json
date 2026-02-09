@@ -1,0 +1,210 @@
+{
+  "arenaVersion": "v1.2",
+  "timestamp": "2026-02-09T11:25:49Z",
+
+  "testSuite": {
+    "name": "mate_test_suite",
+    "epdPath": "test/testsets/mate_test_suite.epd"
+  },
+
+  "engine": {
+    "name": "FrankyCPP v1.2",
+    "version": "v1.2",
+    "path": "Release/FrankyCPP_v1.2/FrankyCPP_v1.2.exe"
+  },
+
+  "summary": {
+    "totalTests": 20,
+    "passed": 14,
+    "failed": 6,
+    "skipped": 0,
+    "successRate": 70.00,
+    "totalNodes": 1063081536,
+    "totalTimeMs": 119786,
+    "avgTimeMs": 5989.30,
+    "avgNodes": 53154076.80
+  },
+
+  "details": [
+    {
+      "testId": "no ID",
+      "fen": "4r1b1/1p4B1/pN2pR2/RB2k3/1P2N2p/2p3b1/n2P1p1r/5K1n w - -",
+      "expected": "mate 3",
+      "actual": "f1e2",
+      "passed": true,
+      "nodes": 1214927,
+      "timeMs": 143
+    },
+    {
+      "testId": "no ID",
+      "fen": "b7/p1BR2pK/B1p5/pNk3p1/Pp4Pp/1P3n2/4R2r/7n w - -",
+      "expected": "mate 3",
+      "actual": "a6b7",
+      "passed": true,
+      "nodes": 2642180,
+      "timeMs": 197
+    },
+    {
+      "testId": "no ID",
+      "fen": "6K1/n1P2N1p/6pr/b1pp3b/n2Bp1k1/1R2R1Pp/3p1P2/2qN1B2 w - -",
+      "expected": "mate 3",
+      "actual": "b3b6",
+      "passed": true,
+      "nodes": 8853713,
+      "timeMs": 774
+    },
+    {
+      "testId": "no ID",
+      "fen": "8/2P1P1P1/3PkP2/8/4K3/8/8/8 w - -",
+      "expected": "mate 3",
+      "actual": "e7e8B",
+      "passed": true,
+      "nodes": 235793,
+      "timeMs": 18
+    },
+    {
+      "testId": "no ID",
+      "fen": "r4rk1/pppqbp1p/3pp1p1/8/4P3/1P1P3R/PBP2PPP/R2Q2K1 w - -",
+      "expected": "mate 4",
+      "actual": "d1h5",
+      "passed": true,
+      "nodes": 19616003,
+      "timeMs": 1478
+    },
+    {
+      "testId": "no ID",
+      "fen": "r4qrk/ppp1b1pp/3p1p2/4pPPQ/4P2P/3PB3/PPP5/1K4RR w - -",
+      "expected": "mate 4",
+      "actual": "h5h7",
+      "passed": true,
+      "nodes": 26999812,
+      "timeMs": 2514
+    },
+    {
+      "testId": "no ID",
+      "fen": "r3r3/p1p2p1k/3p2pp/2p5/2P2n2/2N2B2/PPR1PP1q/3RQK2 b - -",
+      "expected": "mate 4",
+      "actual": "e8e3",
+      "passed": false,
+      "nodes": 26499660,
+      "timeMs": 8068
+    },
+    {
+      "testId": "no ID",
+      "fen": "3r4/1p1r4/1Pp5/3p4/p2R4/K1NN4/1P6/kqBB3R w - -",
+      "expected": "mate 4",
+      "actual": "d4a4",
+      "passed": false,
+      "nodes": 113000000,
+      "timeMs": 14679
+    },
+    {
+      "testId": "no ID",
+      "fen": "n7/3p1p2/NpkNp1p1/1p2P3/3Q4/6B1/b7/4K3 w - -",
+      "expected": "mate 4",
+      "actual": "d4g1",
+      "passed": true,
+      "nodes": 22762532,
+      "timeMs": 1753
+    },
+    {
+      "testId": "no ID",
+      "fen": "1b1R2B1/p1n1p3/p3P2K/N1k5/2N2P2/5P2/2PP4/R7 w - -",
+      "expected": "mate 4",
+      "actual": "d8c8",
+      "passed": true,
+      "nodes": 22546728,
+      "timeMs": 1831
+    },
+    {
+      "testId": "no ID",
+      "fen": "K6Q/1p6/pPq4P/P2p2P1/4pP1N/7k/n5R1/1n2BB2 w - -",
+      "expected": "mate 4",
+      "actual": "h8f8",
+      "passed": false,
+      "nodes": 57000005,
+      "timeMs": 14230
+    },
+    {
+      "testId": "no ID",
+      "fen": "1r4k1/1b2K1pp/7b/2pp3P/6NB/2Q2pp1/4p3/5r2 w - -",
+      "expected": "mate 5",
+      "actual": "g4h6",
+      "passed": true,
+      "nodes": 10497891,
+      "timeMs": 1020
+    },
+    {
+      "testId": "no ID",
+      "fen": "r2r4/1p1R3p/5pk1/b1B1Pp2/p4P2/P7/1P5P/1K1R4 w - -",
+      "expected": "mate 5",
+      "actual": "d1g1",
+      "passed": true,
+      "nodes": 115893924,
+      "timeMs": 9926
+    },
+    {
+      "testId": "no ID",
+      "fen": "5rk1/pp4p1/8/3N3p/2P4P/1P4K1/P2r1n2/R3R3 b - -",
+      "expected": "mate 5",
+      "actual": "f2h1",
+      "passed": false,
+      "nodes": 161000004,
+      "timeMs": 14877
+    },
+    {
+      "testId": "no ID",
+      "fen": "6b1/4Kpk1/5r2/8/3B2P1/7R/8/8 w - -",
+      "expected": "mate 5",
+      "actual": "h3h6",
+      "passed": true,
+      "nodes": 22726225,
+      "timeMs": 1997
+    },
+    {
+      "testId": "no ID",
+      "fen": "8/8/8/p7/8/8/R6p/2K2Rbk w - -",
+      "expected": "mate 5",
+      "actual": "a2e2",
+      "passed": false,
+      "nodes": 115000004,
+      "timeMs": 14806
+    },
+    {
+      "testId": "no ID",
+      "fen": "b7/8/7B/7p/8/2p3r1/2P1P1pp/4K1kq w - -",
+      "expected": "mate 5",
+      "actual": "h6c1",
+      "passed": true,
+      "nodes": 1293145,
+      "timeMs": 266
+    },
+    {
+      "testId": "no ID",
+      "fen": "5R2/6r1/3P4/1BBk4/8/3N4/8/K7 w - -",
+      "expected": "mate 5",
+      "actual": "f8e8",
+      "passed": true,
+      "nodes": 145481535,
+      "timeMs": 11958
+    },
+    {
+      "testId": "no ID",
+      "fen": "1r1r2k1/p4ppp/1qp5/4Pb2/3b1P2/1PP2N2/P2BQ1PP/2KR3R w - -",
+      "expected": "mate 5",
+      "actual": "c3d4",
+      "passed": false,
+      "nodes": 19507620,
+      "timeMs": 6253
+    },
+    {
+      "testId": "no ID",
+      "fen": "4k3/8/4K3/8/4N3/4B3/3P1P2/8 w - -",
+      "expected": "mate 6",
+      "actual": "e3c5",
+      "passed": true,
+      "nodes": 170309835,
+      "timeMs": 12998
+    }
+  ]
+}

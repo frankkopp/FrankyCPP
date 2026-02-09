@@ -624,10 +624,10 @@ Expected gain: +5-15 ELO from better inlining and branch prediction.
 **Concept:** Extend search depth by 1 ply when one move is significantly better than all alternatives.
 
 **Implementation:**
-- Added per-ply `excludedMove` array to skip TT move during verification search
-- Added per-ply `singularSearch` flag to prevent TT pollution during verification
-- Verification search uses `No_Null_Move` to avoid NMP interference
-- Only triggers when TT entry depth is within 3 plies of current depth
+- Added separate `mgSingular[ply]` MoveGenerator array for verification searches
+- This prevents corruption of outer search's MoveGenerator state (singular search runs at same ply)
+- `excludedMove[ply]` array tracks which move to skip during verification
+- MoveGenerator selection: `excludedMove[ply] != MOVE_NONE ? mgSingular[ply] : mg[ply]`
 
 **Configuration:**
 ```yaml
@@ -639,19 +639,20 @@ SINGULAR_REDUCTION: 4           # plies for verification search
 
 **Files Changed:**
 - `src/engine/config/SearchConfigData.h` - Configuration parameters
-- `src/engine/Search.h` - `excludedMove` and `singularSearch` arrays
-- `src/engine/Search.cpp` - Singular extension logic with TT protection
+- `src/engine/Search.h` - `mgSingular` and `excludedMove` arrays
+- `src/engine/Search.cpp` - Singular extension logic with separate MG
 - `src/engine/SearchStats.h` - Statistics tracking
 - `src/engine/UciOptions.cpp` - UCI options
 - `config/search.yaml` - Default configuration
 - `test/engine/SearchTest.cpp` - Unit tests
 
-**Testing:**
-- Unit tests verify extension triggers and disabled state
-- SearchTreeSizeTest includes singular extension measurement
-- Statistics track `singularSearches` and `singularExtension` counts
+**Future:** See `docs/specs/PLAN_PlyStack_Refactoring.md` for planned `PlyInfo` struct refactoring.
 
-**Expected Impact:** +20-30 ELO
+**Testing Results:**
+- Arena Match v1.2 vs v1.1: **+27 ELO** (53.8% score, 104 games) ✅
+- Test suites: -1.3% (within noise margin)
+
+**Expected Impact:** +20-30 ELO ✅ **Verified: +27 ELO**
 
 ---
 

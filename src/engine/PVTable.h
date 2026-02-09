@@ -92,6 +92,9 @@ public:
   void clearAll() noexcept {
     // std::array is contiguous, so memset works safely
     // MOVE_NONE has raw value 0, so zeroing the memory is correct
+    static_assert(std::is_trivially_copyable_v<Move>);
+    // causes a warning on clangd "use assignment or value-initialization instead"
+    // the assertion above ensures this is safe and intentional
     std::memset(table_.data(), 0, sizeof(table_));
   }
 

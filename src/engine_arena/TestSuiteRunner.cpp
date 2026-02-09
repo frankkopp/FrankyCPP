@@ -42,7 +42,7 @@ namespace arena {
     /// Returns: pair<name, version> e.g., {"FrankyCPP", "v0.5"}
     std::pair<std::string, std::string> parseEngineName(const std::string& fullName) {
       // Try to match pattern: "Name vX.Y" or "Name X.Y" or "Name vX.Y.Z"
-      std::regex versionPattern(R"(^(.+?)\s+(v?\d+(?:\.\d+)*(?:[.-]?\w+)?)$)");
+      const std::regex versionPattern(R"(^(.+?)\s+(v?\d+(?:\.\d+)*(?:[.-]?\w+)?)$)");
       std::smatch match;
 
       if (std::regex_match(fullName, match, versionPattern)) {

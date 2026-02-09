@@ -30,7 +30,9 @@
 Search::Search() : Search(nullptr) {}
 
 Search::Search(UciHandler* pUciHandler)
-    : SearchConfig(engine::config::ConfigManager::instance().search()) {
+    : mg(std::make_unique<std::array<MoveGenerator, DEPTH_MAX + 1>>()),
+      mgSingular(std::make_unique<std::array<MoveGenerator, DEPTH_MAX + 1>>()),
+      SearchConfig(engine::config::ConfigManager::instance().search()) {
   this->uciHandler = pUciHandler;
   this->tt         = std::make_unique<TT>(0);
 }
@@ -193,9 +195,10 @@ void Search::run() {
 
   // Move generators for each ply - each depth in search gets its own
   // field to avoid object creation during search.
+  // Reset existing MoveGenerators and set history data (avoids creating temporaries on stack)
   for (int i = DEPTH_NONE; i < DEPTH_MAX; i++) {
-    this->mg[i] = MoveGenerator{};
-    if (SearchConfig.USE_HISTORY_COUNTER || SearchConfig.USE_HISTORY_MOVES) { this->mg[i].setHistoryData(&history); }
+    (*mg)[i].reset();
+    if (SearchConfig.USE_HISTORY_COUNTER || SearchConfig.USE_HISTORY_MOVES) { (*mg)[i].setHistoryData(&history); }
   }
 
   // release the init phase lock to signal the calling go routine
@@ -285,7 +288,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
   }
 
   // generate all legal root moves for the position
-  rootMoves = *mg[0].generateLegalMoves(p, GenAll);
+  rootMoves = *(*mg)[0].generateLegalMoves(p, GenAll);
 
   // check if there are legal moves - if not, it's mate or stalemate
   if (rootMoves.empty()) {
@@ -534,7 +537,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
     p.doMove(searchResult.bestMove);
     p.doMove(searchResult.ponderMove);
     // check repetition and 50-moves rule or if there are legal moves when using ponder move
-    if (checkDrawRepAnd50(p, 2) || mg[0].generateLegalMoves(p, GenAll)->empty()) {
+    if (checkDrawRepAnd50(p, 2) || (*mg)[0].generateLegalMoves(p, GenAll)->empty()) {
       LOG__DEBUG(Logger::get().SEARCH_LOG, "ponder move omitted as game finished");
       searchResult.ponderMove = MOVE_NONE;
     }
@@ -781,7 +784,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     staticEval = evaluate(p);
     // Storing this value might save us calls to eval on the same position.
     // Skip during singular verification to avoid unnecessary TT writes
-    if (SearchConfig.USE_TT && SearchConfig.USE_EVAL_TT && !singularSearch[ply]) {
+    if (SearchConfig.USE_TT && SearchConfig.USE_EVAL_TT) {
       storeTt(p, DEPTH_NONE, DEPTH_NONE, MOVE_NONE, VALUE_NONE, NONE, staticEval);
     }
   }
@@ -888,13 +891,13 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
             // fall through: no cutoff
           }
           else {
-            if (SearchConfig.USE_TT && !singularSearch[ply]) { storeTt(p, depth, ply, MOVE_NONE, nValue, BETA, staticEval); }
+            if (SearchConfig.USE_TT) { storeTt(p, depth, ply, MOVE_NONE, nValue, BETA, staticEval); }
             statistics.nullMoveCuts++;
             return nValue;
           }
         }
         else {
-          if (SearchConfig.USE_TT && !singularSearch[ply]) { storeTt(p, depth, ply, MOVE_NONE, nValue, BETA, staticEval); }
+          if (SearchConfig.USE_TT) { storeTt(p, depth, ply, MOVE_NONE, nValue, BETA, staticEval); }
           statistics.nullMoveCuts++;
           return nValue;
         }
@@ -940,7 +943,9 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   }
 
   // reset move generator for the actual search
-  auto *const myMg = &mg[ply];
+  // Use mgSingular when in singular verification search (excludedMove is set)
+  // to avoid corrupting the outer search's MoveGenerator state
+  auto* const myMg = excludedMove[ply] != MOVE_NONE ? &(*mgSingular)[ply] : &(*mg)[ply];
   myMg->resetOnDemand();
 
   // PV Move Sort
@@ -1022,17 +1027,14 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         // Set the excluded move for this ply so the verification search skips the TT move
         excludedMove[ply] = ttMove;
 
-        // Mark that we're in a singular search to skip TT storage (avoid polluting with shallow entries)
-        singularSearch[ply] = true;
-
         statistics.singularSearches++;
 
         // Do a null-window search to see if any other move can reach singularBeta
+        // Uses mgSingular[ply] automatically because excludedMove[ply] is set
         const Value singularValue = search(p, singularDepth, ply, singularBeta - 1, singularBeta, NonPV, No_Null_Move);
 
-        // Clear the flags
-        excludedMove[ply]   = MOVE_NONE;
-        singularSearch[ply] = false;
+        // Clear the excluded move
+        excludedMove[ply] = MOVE_NONE;
 
         // check if we should stop the search
         if (stopConditions()) { return VALUE_NONE; }
@@ -1288,8 +1290,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 
   // Store TT
   // Store search result for this node into the transposition table
-  // Skip storage during singular verification searches to avoid polluting TT with shallow entries
-  if (SearchConfig.USE_TT && !singularSearch[ply]) { storeTt(p, depth, ply, bestNodeMove, bestNodeValue, ttType, staticEval); }
+  if (SearchConfig.USE_TT) { storeTt(p, depth, ply, bestNodeMove, bestNodeValue, ttType, staticEval); }
 
   return bestNodeValue;
 }
@@ -1383,7 +1384,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
   }
 
   // reset move generator for the move loop
-  auto *const myMg = &mg[ply];
+  auto* const myMg = &(*mg)[ply];
   myMg->resetOnDemand();
 
   // PV Move Sort

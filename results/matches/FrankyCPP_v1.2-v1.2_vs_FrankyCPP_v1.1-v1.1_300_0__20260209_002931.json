@@ -1,0 +1,34 @@
+{
+  "arenaVersion": "v1.2",
+  "timestamp": "2026-02-08T23:29:31Z",
+
+  "match": {
+    "name": "v1.1_vs_v1.2_blitz_100-sext",
+    "timeControl": "300+0",
+    "rounds": 104
+  },
+
+  "engine1": {
+    "name": "FrankyCPP v1.2",
+    "version": "v1.2",
+    "path": "Release/FrankyCPP_v1.2/FrankyCPP_v1.2.exe"
+  },
+
+  "engine2": {
+    "name": "FrankyCPP v1.1",
+    "version": "v1.1",
+    "path": "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
+  },
+
+  "results": {
+    "engine1Wins": 34,
+    "engine2Wins": 36,
+    "draws": 34,
+    "engine1Score": 51.0,
+    "engine2Score": 53.0,
+    "eloDifference": -6.7
+  },
+
+  "pgnPath": "results/matches/v1.1_vs_v1.2_blitz_100.pgn",
+  "durationMs": 7723315
+}

@@ -74,6 +74,36 @@
       "totalTimeMs": 68739,
       "nps": 3767842,
       "notes": "Current development version"
+    },
+    {
+      "arenaVersion": "v1.2",
+      "timestamp": "2026-02-09T12:23:04",
+      "engineName": "FrankyCPP",
+      "engineVersion": "v1.2",
+      "enginePath": "",
+      "depth": 10,
+      "hashSizeMB": 128,
+      "threads": 1,
+      "positions": 50,
+      "totalNodes": 239952311,
+      "totalTimeMs": 64227,
+      "nps": 3736003,
+      "notes": "Current development version"
+    },
+    {
+      "arenaVersion": "v1.2",
+      "timestamp": "2026-02-09T12:23:04",
+      "engineName": "External",
+      "engineVersion": "v1.2",
+      "enginePath": "Release/FrankyCPP_V1.2/FrankyCPP_v1.2.exe",
+      "depth": 10,
+      "hashSizeMB": 128,
+      "threads": 1,
+      "positions": 50,
+      "totalNodes": 239952311,
+      "totalTimeMs": 63289,
+      "nps": 3791374,
+      "notes": "Current development version"
     }
   ]
 }

@@ -14,3 +14,4 @@ vtune/
 !/Release/FrankyCPP_v*.zip
 /books/superbook_xl.pgn
 /Testing/
+temp_*/
