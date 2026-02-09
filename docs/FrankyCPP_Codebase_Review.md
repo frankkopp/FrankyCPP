@@ -112,6 +112,9 @@ FrankyCPP/
 │   ├── common/            # Utilities (logging, threading, string utils)
 │   ├── chesscore/         # Board representation, move generation
 │   ├── engine/            # Search, evaluation, UCI handler
+│   │   ├── Search.h/.cpp  # Alpha-beta with iterative deepening
+│   │   ├── PlyInfo.h      # Per-ply search state (MoveGenerators, moves, eval)
+│   │   └── ...            # Evaluator, TT, UciHandler, config/
 │   ├── enginetest/        # Test suite runner, tree size tests
 │   └── openingbook/       # Opening book handling (SIMPLE, SAN, PGN)
 ├── test/                  # GoogleTest unit tests
@@ -125,6 +128,7 @@ FrankyCPP/
 |-----------------|--------------------------------------------------------------------------|
 | `UciHandler`    | UCI protocol implementation, I/O management                              |
 | `Search`        | Alpha-beta with iterative deepening, aspiration windows, time management |
+| `PlyInfo`       | Per-ply search state (MoveGenerators, moves, static eval, check status)  |
 | `Evaluator`     | Position evaluation with game-phase interpolation                        |
 | `Position`      | Board state, move execution/undo, Zobrist hashing                        |
 | `MoveGenerator` | Legal/pseudo-legal move generation, phased on-demand generation          |
@@ -490,7 +494,7 @@ Future improvements are tracked in the v1.x roadmap below.
 ---
 
 *Review conducted: 2026-01-26*  
-*Last updated: 2026-01-31 (v0.7 complete - v1.0 ready)*
+*Last updated: 2026-02-09 (PlyStack refactoring - unified per-ply search state)*
 
 ---
 

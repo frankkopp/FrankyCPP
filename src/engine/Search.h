@@ -79,13 +79,13 @@
 //
 //=============================================================================
 
+#include "PlyInfo.h"
 #include "PVTable.h"
 #include "SearchLimits.h"
 #include "SearchResult.h"
 #include "SearchStats.h"
 #include "TT.h"
 #include "chesscore/History.h"
-#include "chesscore/MoveGenerator.h"
 #include "chesscore/Position.h"
 #include "engine/UciHandler.h"
 #include "openingbook/OpeningBook.h"
@@ -155,18 +155,9 @@ class Search {
   // Triangular PV table for efficient PV storage (64KB, zero heap allocations)
   PVTable pv;
 
-  // MoveGenerator arrays allocated on heap to keep Search class size small (~200 bytes vs ~865 KB)
-  // This allows Search to be stack-allocated without causing stack overflow
-  std::unique_ptr<std::array<MoveGenerator, DEPTH_MAX + 1>> mg;
-
-  // Separate MoveGenerator array for singular extension verification searches
-  // Needed because singular search runs at the same ply as the outer search,
-  // and using mg[ply] would corrupt the outer search's iteration state
-  std::unique_ptr<std::array<MoveGenerator, DEPTH_MAX + 1>> mgSingular;
-
-  // Per-ply excluded move for singular extension verification searches
-  // When set, this move is skipped in the move loop at that ply
-  std::array<Move, DEPTH_MAX + 1> excludedMove{};
+  // Per-ply search state - unified struct for all ply-specific data
+  // Each PlyInfo owns its MoveGenerators via unique_ptr (heap-allocated)
+  std::array<PlyInfo, DEPTH_MAX + 1> plyStack{};
 
   // to mark the last move was a book move
   bool hadBookMove = false;

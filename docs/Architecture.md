@@ -67,6 +67,8 @@ src/
 │
 ├── engine/               # Search and evaluation
 │   ├── Search.h/.cpp     # Alpha-beta with iterative deepening
+│   ├── PlyInfo.h         # Per-ply search state (MoveGenerators, moves, eval)
+│   ├── PVTable.h         # Triangular PV table for efficient PV storage
 │   ├── Evaluator.h/.cpp  # Position evaluation
 │   ├── TT.h/.cpp         # Transposition table
 │   ├── PawnTT.h          # Dedicated pawn hash table
@@ -205,6 +207,15 @@ The core search algorithm using alpha-beta with iterative deepening.
 - `Evaluator` - Position evaluation
 - `OpeningBook` - Opening library (optional)
 - `History` - History heuristic data
+- `plyStack` - Per-ply search state array
+
+**Per-Ply State (`PlyInfo`):**
+
+Each ply level has its own `PlyInfo` struct containing:
+- `MoveGenerator` instances (normal + singular verification)
+- Current/excluded move tracking
+- Static evaluation cache
+- Move count and check status
 
 ```cpp
 class Search {
@@ -212,6 +223,9 @@ class Search {
   std::unique_ptr<Evaluator> evaluator;
   std::unique_ptr<OpeningBook> book;
   History history;
+  
+  // Per-ply search state - each PlyInfo owns its MoveGenerators
+  std::array<PlyInfo, DEPTH_MAX + 1> plyStack;
   
   std::thread searchThread;
   std::atomic_bool stopSearchFlag;

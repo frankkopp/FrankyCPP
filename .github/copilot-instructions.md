@@ -323,6 +323,7 @@ src/
 | `Position`      | Board state, move execution, Zobrist hashing |
 | `MoveGenerator` | Legal/pseudo-legal move generation           |
 | `Search`        | Alpha-beta search with iterative deepening   |
+| `PlyInfo`       | Per-ply search state (MoveGenerators, moves) |
 | `Evaluator`     | Position evaluation                          |
 | `TT`            | Transposition table                          |
 | `UciHandler`    | UCI protocol implementation                  |
@@ -516,4 +517,4 @@ git log --oneline -5
 
 ---
 
-*Last updated: 2026-01-30* 
+*Last updated: 2026-02-09* 

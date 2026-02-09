@@ -30,9 +30,7 @@
 Search::Search() : Search(nullptr) {}
 
 Search::Search(UciHandler* pUciHandler)
-    : mg(std::make_unique<std::array<MoveGenerator, DEPTH_MAX + 1>>()),
-      mgSingular(std::make_unique<std::array<MoveGenerator, DEPTH_MAX + 1>>()),
-      SearchConfig(engine::config::ConfigManager::instance().search()) {
+    : SearchConfig(engine::config::ConfigManager::instance().search()) {
   this->uciHandler = pUciHandler;
   this->tt         = std::make_unique<TT>(0);
 }
@@ -197,8 +195,8 @@ void Search::run() {
   // field to avoid object creation during search.
   // Reset existing MoveGenerators and set history data (avoids creating temporaries on stack)
   for (int i = DEPTH_NONE; i < DEPTH_MAX; i++) {
-    (*mg)[i].reset();
-    if (SearchConfig.USE_HISTORY_COUNTER || SearchConfig.USE_HISTORY_MOVES) { (*mg)[i].setHistoryData(&history); }
+    plyStack[i].mg->reset();
+    if (SearchConfig.USE_HISTORY_COUNTER || SearchConfig.USE_HISTORY_MOVES) { plyStack[i].mg->setHistoryData(&history); }
   }
 
   // release the init phase lock to signal the calling go routine
@@ -288,7 +286,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
   }
 
   // generate all legal root moves for the position
-  rootMoves = *(*mg)[0].generateLegalMoves(p, GenAll);
+  rootMoves = *plyStack[0].mg->generateLegalMoves(p, GenAll);
 
   // check if there are legal moves - if not, it's mate or stalemate
   if (rootMoves.empty()) {
@@ -537,7 +535,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
     p.doMove(searchResult.bestMove);
     p.doMove(searchResult.ponderMove);
     // check repetition and 50-moves rule or if there are legal moves when using ponder move
-    if (checkDrawRepAnd50(p, 2) || (*mg)[0].generateLegalMoves(p, GenAll)->empty()) {
+    if (checkDrawRepAnd50(p, 2) || plyStack[0].mg->generateLegalMoves(p, GenAll)->empty()) {
       LOG__DEBUG(Logger::get().SEARCH_LOG, "ponder move omitted as game finished");
       searchResult.ponderMove = MOVE_NONE;
     }
@@ -945,7 +943,8 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // reset move generator for the actual search
   // Use mgSingular when in singular verification search (excludedMove is set)
   // to avoid corrupting the outer search's MoveGenerator state
-  auto* const myMg = excludedMove[ply] != MOVE_NONE ? &(*mgSingular)[ply] : &(*mg)[ply];
+  auto& info       = plyStack[ply];
+  auto* const myMg = info.excludedMove != MOVE_NONE ? info.mgSingular.get() : info.mg.get();
   myMg->resetOnDemand();
 
   // PV Move Sort
@@ -967,7 +966,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // MOVE LOOP
   while ((move = myMg->getNextPseudoLegalMove(p, GenAll, hasCheck)) != MOVE_NONE) {
     // Skip excluded move (used for singular extension verification searches)
-    if (move == excludedMove[ply]) { continue; }
+    if (move == info.excludedMove) { continue; }
 
     const Square from     = move.from();
     const Square to       = move.to();
@@ -1025,16 +1024,16 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         if (singularDepth < 1) { singularDepth = DEPTH_ONE; }
 
         // Set the excluded move for this ply so the verification search skips the TT move
-        excludedMove[ply] = ttMove;
+        info.excludedMove = ttMove;
 
         statistics.singularSearches++;
 
         // Do a null-window search to see if any other move can reach singularBeta
-        // Uses mgSingular[ply] automatically because excludedMove[ply] is set
+        // Uses mgSingular automatically because excludedMove is set
         const Value singularValue = search(p, singularDepth, ply, singularBeta - 1, singularBeta, NonPV, No_Null_Move);
 
         // Clear the excluded move
-        excludedMove[ply] = MOVE_NONE;
+        info.excludedMove = MOVE_NONE;
 
         // check if we should stop the search
         if (stopConditions()) { return VALUE_NONE; }
@@ -1384,7 +1383,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
   }
 
   // reset move generator for the move loop
-  auto* const myMg = &(*mg)[ply];
+  auto* const myMg = plyStack[ply].mg.get();
   myMg->resetOnDemand();
 
   // PV Move Sort
