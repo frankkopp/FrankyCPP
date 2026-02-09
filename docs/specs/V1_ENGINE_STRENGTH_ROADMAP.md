@@ -1,7 +1,8 @@
 # FrankyCPP v1.x Engine Strength Roadmap
 
-**Document Version:** 2.0  
+**Document Version:** 2.1  
 **Created:** 2026-02-01  
+**Last Updated:** 2026-02-09  
 **Status:** Active Planning  
 **Target:** FrankyCPP v1.1 → v2.0  
 **Focus:** Maximum Playing Strength Through Systematic Enhancement
@@ -95,8 +96,8 @@ This document provides a comprehensive, prioritized roadmap for enhancing Franky
 | Feature                 | Current State           | Industry Standard            | Gap Analysis    |
 |-------------------------|-------------------------|------------------------------|-----------------|
 | **Parallel Search**     | ❌ Single-threaded       | ✅ Lazy SMP (8-16 threads)    | **-60-120 ELO** |
-| **Singular Extensions** | ❌ Not implemented       | ✅ Standard in top engines    | **-20-30 ELO**  |
-| **Check Extensions**    | ❌ Not implemented       | ✅ Standard in top engines    | **-10-20 ELO**  |
+| **Singular Extensions** | ✅ Implemented (v1.2)    | ✅ Standard in top engines    | **+27 ELO**     |
+| **Check Extensions**    | ✅ Implemented (v1.2)    | ✅ Standard in top engines    | **+30 ELO**     |
 | **Multi-Cut Pruning**   | ❌ Not implemented       | ✅ Common in modern engines   | **-10-20 ELO**  |
 | **Probcut**             | ❌ Not implemented       | ✅ Used in Stockfish/Ethereal | **-10-15 ELO**  |
 | **LMR Formula**         | ⚠️ Basic implementation | ✅ Tuned formula              | **-15-25 ELO**  |
@@ -239,7 +240,7 @@ This document provides a comprehensive, prioritized roadmap for enhancing Franky
 | MoveList Static Array Refactor  | 🟡 3-5 days | 🟡 Medium  | +5-15    | ✅ Complete |
 | **Search Quick Wins**           |             |            |          |            |
 | Singular Extensions             | 🟢 2-3 days | 🟡 Medium  | +20-30   | ✅ Complete |
-| Check Extensions                | 🟢 2-3 days | 🟡 Medium  | +10-20   | 📋 Planned |
+| Check Extensions                | 🟢 2-3 days | 🟡 Medium  | +10-20   | ✅ Complete |
 | Counter-Move History            | 🟡 3-5 days | 🟡 Medium  | +10-20   | 📋 Planned |
 | Best-Move Instability Time Mgmt | 🟢 2-3 days | 🟡 Medium  | +5-15    | 📋 Planned |
 | Selective Checks in Quiescence  | 🟡 3-5 days | 🟡 Medium  | +15-25   | 📋 Planned |
@@ -299,12 +300,12 @@ This document provides a comprehensive, prioritized roadmap for enhancing Franky
 **Goal:** Better move ordering for deeper effective search  
 **Target:** +35-65 ELO
 
-| Task | Effort | Complexity | ELO Gain | Status |
-|------|--------|------------|----------|--------|
-| Continuation History (2-ply) | 🟡 3-5 days | 🟡 Medium | +15-25 | 📋 Planned |
-| Capture History Heuristic | 🟡 3-5 days | 🟡 Medium | +10-20 | 📋 Planned |
-| SEE Enhancement | 🟢 2-3 days | 🟡 Medium | +5-10 | 📋 Planned |
-| Killer Move Optimization | 🟢 1-2 days | 🟢 Low | +5-10 | 📋 Planned |
+| Task                         | Effort      | Complexity | ELO Gain | Status     |
+|------------------------------|-------------|------------|----------|------------|
+| Continuation History (2-ply) | 🟡 3-5 days | 🟡 Medium  | +15-25   | 📋 Planned |
+| Capture History Heuristic    | 🟡 3-5 days | 🟡 Medium  | +10-20   | 📋 Planned |
+| SEE Enhancement              | 🟢 2-3 days | 🟡 Medium  | +5-10    | 📋 Planned |
+| Killer Move Optimization     | 🟢 1-2 days | 🟢 Low     | +5-10    | 📋 Planned |
 
 **Implementation Notes:**
 - **Continuation History:** Track move effectiveness based on previous move context
@@ -323,13 +324,13 @@ This document provides a comprehensive, prioritized roadmap for enhancing Franky
 **Goal:** Perfect endgame play with Syzygy tablebases  
 **Target:** +35-60 ELO (in TB-relevant positions)
 
-| Task | Effort | Complexity | ELO Gain | Status |
-|------|--------|------------|----------|--------|
-| Fathom Library Integration | 🟢 2-3 days | 🟡 Medium | N/A | 📋 Planned |
-| Root Tablebase Probing | 🟢 2-3 days | 🟡 Medium | +20-30 | 📋 Planned |
-| Search Tablebase Probing | 🟡 1 week | 🟡 Medium | +10-20 | 📋 Planned |
-| TB Configuration & Testing | 🟢 2-3 days | 🟢 Low | N/A | 📋 Planned |
-| TB Cache Optimization | 🟢 2-3 days | 🟡 Medium | +5-10 | 📋 Planned |
+| Task                       | Effort      | Complexity | ELO Gain | Status     |
+|----------------------------|-------------|------------|----------|------------|
+| Fathom Library Integration | 🟢 2-3 days | 🟡 Medium  | N/A      | 📋 Planned |
+| Root Tablebase Probing     | 🟢 2-3 days | 🟡 Medium  | +20-30   | 📋 Planned |
+| Search Tablebase Probing   | 🟡 1 week   | 🟡 Medium  | +10-20   | 📋 Planned |
+| TB Configuration & Testing | 🟢 2-3 days | 🟢 Low     | N/A      | 📋 Planned |
+| TB Cache Optimization      | 🟢 2-3 days | 🟡 Medium  | +5-10    | 📋 Planned |
 
 **Implementation Strategy:**
 1. Add Fathom as vcpkg dependency
@@ -358,13 +359,13 @@ TB_CACHE_MB: 32
 **Goal:** Modern search techniques for deeper tactical vision  
 **Target:** +50-85 ELO
 
-| Task | Effort | Complexity | ELO Gain | Status |
-|------|--------|------------|----------|--------|
-| Improved LMR Formula | 🟡 1 week | 🟡 Medium | +15-25 | 📋 Planned |
-| Multi-Cut Pruning | 🟡 3-5 days | 🟡 Medium | +10-20 | 📋 Planned |
-| Probcut Pruning | 🟡 3-5 days | 🟡 Medium | +10-15 | 📋 Planned |
-| Late Move Pruning | 🟢 2-3 days | 🟡 Medium | +10-15 | 📋 Planned |
-| SEE-Based Pruning | 🟢 2-3 days | 🟡 Medium | +5-10 | 📋 Planned |
+| Task                 | Effort      | Complexity | ELO Gain | Status     |
+|----------------------|-------------|------------|----------|------------|
+| Improved LMR Formula | 🟡 1 week   | 🟡 Medium  | +15-25   | 📋 Planned |
+| Multi-Cut Pruning    | 🟡 3-5 days | 🟡 Medium  | +10-20   | 📋 Planned |
+| Probcut Pruning      | 🟡 3-5 days | 🟡 Medium  | +10-15   | 📋 Planned |
+| Late Move Pruning    | 🟢 2-3 days | 🟡 Medium  | +10-15   | 📋 Planned |
+| SEE-Based Pruning    | 🟢 2-3 days | 🟡 Medium  | +5-10    | 📋 Planned |
 
 **Implementation Notes:**
 
@@ -402,12 +403,12 @@ if (depth >= 5) {
 **Goal:** Scientific parameter optimization  
 **Target:** +30-60 ELO (from optimized parameters)
 
-| Task | Effort | Complexity | ELO Gain | Status |
-|------|--------|------------|----------|--------|
-| SPSA Framework | 🟡 1 week | 🟡 Medium | N/A | 📋 Planned |
-| Texel Tuning Engine | 🟡 1 week | 🟡 Medium | N/A | 📋 Planned |
-| Automated Match Runner | 🟡 3-5 days | 🟡 Medium | N/A | 📋 Planned |
-| Parameter Tuning Sessions | 🔴 2-4 weeks | 🟡 Medium | +30-60 | 📋 Planned |
+| Task                      | Effort       | Complexity | ELO Gain | Status     |
+|---------------------------|--------------|------------|----------|------------|
+| SPSA Framework            | 🟡 1 week    | 🟡 Medium  | N/A      | 📋 Planned |
+| Texel Tuning Engine       | 🟡 1 week    | 🟡 Medium  | N/A      | 📋 Planned |
+| Automated Match Runner    | 🟡 3-5 days  | 🟡 Medium  | N/A      | 📋 Planned |
+| Parameter Tuning Sessions | 🔴 2-4 weeks | 🟡 Medium  | +30-60   | 📋 Planned |
 
 **SPSA (Simultaneous Perturbation Stochastic Approximation):**
 - Gradient-free optimization via game results
@@ -444,15 +445,15 @@ parameters:
 **Goal:** Neural network evaluation for dramatic strength gain  
 **Target:** +200-400 ELO (largest single improvement)
 
-| Task | Effort | Complexity | ELO Gain | Status |
-|------|--------|------------|----------|--------|
-| NNUE Architecture Design | 🟡 1 week | 🔴 High | N/A | 📋 Planned |
-| Incremental Update System | 🔴 2-3 weeks | 🔴 High | N/A | 📋 Planned |
-| NNUE Inference Engine | 🟡 1-2 weeks | 🔴 High | N/A | 📋 Planned |
-| Training Data Generation | 🟡 1 week | 🟡 Medium | N/A | 📋 Planned |
-| Network Training Pipeline | 🟡 1-2 weeks | 🔴 High | N/A | 📋 Planned |
-| NNUE Integration & Testing | 🟡 1 week | 🔴 High | +200-400 | 📋 Planned |
-| Classical/NNUE Hybrid | 🟢 2-3 days | 🟡 Medium | N/A | 📋 Planned |
+| Task                       | Effort       | Complexity | ELO Gain | Status     |
+|----------------------------|--------------|------------|----------|------------|
+| NNUE Architecture Design   | 🟡 1 week    | 🔴 High    | N/A      | 📋 Planned |
+| Incremental Update System  | 🔴 2-3 weeks | 🔴 High    | N/A      | 📋 Planned |
+| NNUE Inference Engine      | 🟡 1-2 weeks | 🔴 High    | N/A      | 📋 Planned |
+| Training Data Generation   | 🟡 1 week    | 🟡 Medium  | N/A      | 📋 Planned |
+| Network Training Pipeline  | 🟡 1-2 weeks | 🔴 High    | N/A      | 📋 Planned |
+| NNUE Integration & Testing | 🟡 1 week    | 🔴 High    | +200-400 | 📋 Planned |
+| Classical/NNUE Hybrid      | 🟢 2-3 days  | 🟡 Medium  | N/A      | 📋 Planned |
 
 **Architecture (HalfKP-256x2):**
 ```
@@ -578,12 +579,12 @@ validation_split: 0.1
 **Goal:** Broader hardware support and performance optimization  
 **Target:** +15-35 ELO (performance, not tactical strength)
 
-| Task | Effort | Complexity | ELO Gain | Status |
-|------|--------|------------|----------|--------|
-| Runtime PEXT Detection | 🟢 2-3 days | 🟡 Medium | N/A | 📋 Planned |
-| Software PEXT Fallback | 🟡 3-5 days | 🟡 Medium | N/A | 📋 Planned |
-| SIMD Optimization (AVX2) | 🟡 1 week | 🔴 High | +10-20 | 📋 Planned |
-| Profile-Guided Optimization | 🟢 2-3 days | 🟢 Low | +5-15 | 📋 Planned |
+| Task                        | Effort      | Complexity | ELO Gain | Status     |
+|-----------------------------|-------------|------------|----------|------------|
+| Runtime PEXT Detection      | 🟢 2-3 days | 🟡 Medium  | N/A      | 📋 Planned |
+| Software PEXT Fallback      | 🟡 3-5 days | 🟡 Medium  | N/A      | 📋 Planned |
+| SIMD Optimization (AVX2)    | 🟡 1 week   | 🔴 High    | +10-20   | 📋 Planned |
+| Profile-Guided Optimization | 🟢 2-3 days | 🟢 Low     | +5-15    | 📋 Planned |
 
 **Current Limitation:** FrankyCPP requires BMI2 (PEXT instruction), excluding pre-2013 CPUs.
 
@@ -656,35 +657,52 @@ SINGULAR_REDUCTION: 4           # plies for verification search
 
 ---
 
-### 2. Check Extensions (Phase 1)
+### 2. Check Extensions (Phase 1) ✅ COMPLETE
 
-**Concept:** Extend search when a move gives check with few legal replies.
+**Concept:** Extend search when a move gives check, but only for well-ordered moves.
 
-**Algorithm:**
+**Implementation (Optimized - Early Move Limit):**
+Instead of counting legal replies (expensive with lazy move generation), we leverage move ordering:
+- Moves are sorted by quality: TT move → captures → killers → history
+- Checks appearing early in move order are more likely to be tactically important
+- Only extend checks in the first N moves per node
+
 ```cpp
-// After makeMove() in search()
-if (pos.inCheck()) {
-    int legalMoves = countLegalMoves(pos);  // Fast early-exit count
-    
-    if (legalMoves <= CHECK_EXT_MAX_REPLIES) {
-        extension = 1;
-    }
+// In search(), after move ordering but before recursion
+if (SearchConfig.USE_CHECK_EXT 
+    && givesCheck 
+    && movesSearched < SearchConfig.CHECK_EXT_EARLY_LIMIT) {
+    statistics.checkExtension++;
+    extension = DEPTH_ONE;
 }
 ```
 
 **Configuration:**
 ```yaml
-USE_CHECK_EXTENSIONS: true
-CHECK_EXT_MAX_REPLIES: 2        # Extend if ≤ 2 legal replies
-CHECK_EXT_MAX_DEPTH: 16         # Cap total extensions per branch
+USE_CHECK_EXT: true
+CHECK_EXT_EARLY_LIMIT: 3      # Only extend checks in first 3 moves per node
+                               # Set to 999 to extend all checks
 ```
 
-**Testing:**
-- Mating test suites (mate in N problems)
-- Measure mate-finding improvement
-- Verify no search explosion
+**Advantages:**
+- Zero overhead (just one integer comparison)
+- Natural tree size control
+- Focuses extensions on tactically important checks
 
-**Expected Impact:** +10-20 ELO
+**Testing & Results:**
+- Test Suite: -35 positions (-1.2%) - minor regression
+- Match Play: +30 ELO improvement
+- Combined with Singular Extensions: **+57 ELO total (v1.2 vs v1.1)**
+
+**Arena Results (v1.2 vs v1.1):**
+| Metric | Result |
+|--------|--------|
+| Games | 104 |
+| Score | 58.2% |
+| W/D/L | 38/45/21 |
+| ELO | +57 (combined) |
+
+**Expected Impact:** +10-20 ELO ✅ **Verified: ~+30 ELO**
 
 ---
 

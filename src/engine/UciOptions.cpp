@@ -227,6 +227,11 @@ void UciOptions::initOptions() {
     "Use Check Extension", SearchConfig.USE_CHECK_EXT,
     [&](UciHandler*) { CONFIG_OVERRIDE(s.USE_CHECK_EXT = getOption("Use Check Extension")->currentValue == "true";); });
   optionVector.emplace_back(
+    "Check Ext Early Limit", SearchConfig.CHECK_EXT_EARLY_LIMIT, 1, 10,
+    [&](UciHandler*) {
+      CONFIG_OVERRIDE(s.CHECK_EXT_EARLY_LIMIT = std::stoi(getOption("Check Ext Early Limit")->currentValue););
+    });
+  optionVector.emplace_back(
     "Use Threat Extension", SearchConfig.USE_THREAT_EXT,
     [&](UciHandler*) { CONFIG_OVERRIDE(s.USE_THREAT_EXT = getOption("Use Threat Extension")->currentValue == "true";); });
   optionVector.emplace_back(

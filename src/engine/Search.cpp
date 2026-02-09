@@ -981,12 +981,12 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     // very carefully as it usually is more effective to prune
     // than to extend.
     if (SearchConfig.USE_EXTENSIONS) {
-      // The check extensions is a bit redundant as our QS search
-      // searches all moves anyway when in check. But with this
-      // extension we hope to profit from using the pruning
-      // of the normal search which are not available in
-      // qsearch.
-      if (SearchConfig.USE_CHECK_EXT && givesCheck) {
+      // Check extension: extend when a move gives check, but only for the
+      // first few moves (which are the most promising due to move ordering).
+      // This limits search explosion while focusing extensions on important checks.
+      // The QS search already handles all check evasions, but this extension
+      // allows the normal search pruning techniques to be applied.
+      if (SearchConfig.USE_CHECK_EXT && givesCheck && movesSearched < SearchConfig.CHECK_EXT_EARLY_LIMIT) {
         statistics.checkExtension++;
         extension = DEPTH_ONE;
       }
@@ -1045,7 +1045,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         }
       }
 
-      // With this turned off we still can use extension to
+      // With this turned off, we still can use extension to
       // at least avoid reductions for these moves.
       if (SearchConfig.USE_EXT_ADD_DEPTH) {
         newDepth += extension;

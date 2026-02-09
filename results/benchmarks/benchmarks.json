@@ -164,6 +164,36 @@
       "totalTimeMs": 63451,
       "nps": 3781694,
       "notes": "Current development version (after PlyInfo introduction)"
+    },
+    {
+      "arenaVersion": "v1.2",
+      "timestamp": "2026-02-09T18:42:13",
+      "engineName": "FrankyCPP",
+      "engineVersion": "v1.2",
+      "enginePath": "",
+      "depth": 10,
+      "hashSizeMB": 128,
+      "threads": 1,
+      "positions": 50,
+      "totalNodes": 303914894,
+      "totalTimeMs": 82785,
+      "nps": 3671134,
+      "notes": "Current development version"
+    },
+    {
+      "arenaVersion": "v1.2",
+      "timestamp": "2026-02-09T18:42:13",
+      "engineName": "External",
+      "engineVersion": "v1.2",
+      "enginePath": "Release/FrankyCPP_V1.2/FrankyCPP_v1.2.exe",
+      "depth": 10,
+      "hashSizeMB": 128,
+      "threads": 1,
+      "positions": 50,
+      "totalNodes": 303914894,
+      "totalTimeMs": 83465,
+      "nps": 3641225,
+      "notes": "Current development version"
     }
   ]
 }

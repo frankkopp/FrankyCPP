@@ -1,8 +1,8 @@
 # FrankyCPP v1.x Engine Enhancement Plan
 
-**Document Version:** 1.1  
+**Document Version:** 1.2  
 **Created:** 2026-02-01  
-**Last Updated:** 2026-02-08  
+**Last Updated:** 2026-02-09  
 **Status:** Phase 2 In Progress  
 **Target:** FrankyCPP v1.0 → v1.x releases
 
@@ -87,7 +87,7 @@ Tablebase support and endgame-specific techniques.
 | Arena Bench Integration         | Infrastructure | 🟢 2-3 days | 🟢 Low     | N/A      | MEDIUM   | ✅ Complete |
 | **Search Quick Wins**           |                |             |            |          |          |            |
 | Singular Extensions             | Search         | 🟢 2-3 days | 🟡 Medium  | +20-30   | HIGH     | ✅ Complete |
-| Check Extensions                | Search         | 🟢 2-3 days | 🟡 Medium  | +10-20   | HIGH     | 📋 Planned |
+| Check Extensions                | Search         | 🟢 2-3 days | 🟡 Medium  | +10-20   | HIGH     | ✅ Complete |
 | Counter-Move History            | Search         | 🟡 3-5 days | 🟡 Medium  | +10-20   | MEDIUM   | 📋 Planned |
 | Best-Move Instability Time Mgmt | Search         | 🟢 2-3 days | 🟡 Medium  | +5-15    | MEDIUM   | 📋 Planned |
 | Selective Checks in Quiescence  | Search         | 🟡 3-5 days | 🟡 Medium  | +15-25   | MEDIUM   | 📋 Planned |
@@ -488,29 +488,51 @@ SINGULAR_REDUCTION: 4         # plies for verification search
 
 ---
 
-### 2d. Check Extensions (Phase 2)
+### 2d. Check Extensions (Phase 2) ✅ COMPLETE
 
 **Description:**  
-Extend search by 1 ply when a move gives check and limits opponent's replies. Helps find forcing sequences (checks, captures) more reliably.
+Extend search by 1 ply when a move gives check. Helps find forcing sequences (checks, captures) more reliably.
 
-**Implementation:**
-1. After making a move in search, if position.inCheck() for opponent
-2. Count legal replies using early-exit move generation
-3. If replies <= 2, extend by 1 ply (or cap at max extension depth)
+**Implementation (Optimized - Early Move Limit):**
+Instead of counting opponent's legal replies (expensive with lazy move generation), we leverage move ordering:
+1. Moves are sorted by quality: TT move → captures → killers → history
+2. Checks appearing early in move order are more likely to be tactically important
+3. Only extend checks in the first N moves per node (default: 3)
+4. Late-ordered checks (often weak/quiet) don't benefit from extension
+
+This approach provides:
+- Zero overhead (just one integer comparison)
+- Natural tree size control without explicit depth limits
+- Focus on tactically important checks
 
 **Configuration Parameters:**
 ```yaml
-USE_CHECK_EXTENSIONS: true
-CHECK_EXT_MAX_REPLIES: 2      # extend if opponent has ≤ this many moves
-CHECK_EXT_MAX_DEPTH: 2        # max accumulated extensions per branch
+USE_CHECK_EXT: true
+CHECK_EXT_EARLY_LIMIT: 3      # only extend checks in first N moves per node
+                               # set to 999 to extend all checks regardless
 ```
 
-**Testing:**
-- Tactical test suites (mating sequences)
-- Ensure no explosion in search time (extension limits)
-- Verify improved mate-finding depth
+**Files Modified:**
+- `src/engine/config/SearchConfigData.h` - added `CHECK_EXT_EARLY_LIMIT` parameter
+- `src/engine/Search.cpp` - updated extension logic with early move limit
+- `src/engine/UciOptions.cpp` - added UCI spin option (range 1-10)
+- `config/search.yaml` - added configuration parameter
 
-**Expected Impact:** +10-20 ELO
+**Testing & Results:**
+- Test Suite: -35 positions (-1.2%) - minor regression in puzzle solving
+- Match Play: +30 ELO improvement (combined with singular extensions: +57 ELO total)
+- Node count increased ~26% at fixed depth, but stronger in time-limited play
+
+**Arena Results (v1.2 vs v1.1 - Combined Singular + Check Extensions):**
+| Metric | Result |
+|--------|--------|
+| Games | 104 |
+| Score | 58.2% |
+| W/D/L | 38/45/21 |
+| ELO | +57 |
+| Test Suite | -1.2% (2873 positions) |
+
+**Expected Impact:** +10-20 ELO ✅ **Verified: ~+30 ELO**
 
 ---
 
@@ -932,5 +954,5 @@ parameters:
 ---
 
 **Document Maintainer:** Frank Kopp  
-**Last Updated:** 2026-02-08  
+**Last Updated:** 2026-02-09  
 **Next Review:** After Phase 2 completion (v1.2 release)

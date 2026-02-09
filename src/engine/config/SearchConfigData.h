@@ -107,10 +107,11 @@ namespace engine::config {
     std::array<int, 16> LMP_MOVES{0, 7, 9, 11, 13, 15, 17, 19, 22, 24, 27, 29, 32, 35, 38, 41};
 
     // extensions
-    bool USE_EXTENSIONS    = true;
-    bool USE_CHECK_EXT     = true;
-    bool USE_THREAT_EXT    = false;
-    bool USE_EXT_ADD_DEPTH = true;
+    bool USE_EXTENSIONS       = true;
+    bool USE_CHECK_EXT        = true;
+    int CHECK_EXT_EARLY_LIMIT = 3;  // only extend checks in first N moves per node
+    bool USE_THREAT_EXT       = false;
+    bool USE_EXT_ADD_DEPTH    = true;
 
     // singular extensions
     bool USE_SINGULAR_EXT   = true;
@@ -224,6 +225,7 @@ struct YAML::convert<engine::config::SearchConfigData> {
     }
     n["USE_EXTENSIONS"]          = c.USE_EXTENSIONS;
     n["USE_CHECK_EXT"]           = c.USE_CHECK_EXT;
+    n["CHECK_EXT_EARLY_LIMIT"]   = c.CHECK_EXT_EARLY_LIMIT;
     n["USE_THREAT_EXT"]          = c.USE_THREAT_EXT;
     n["USE_EXT_ADD_DEPTH"]       = c.USE_EXT_ADD_DEPTH;
     n["USE_SINGULAR_EXT"]        = c.USE_SINGULAR_EXT;
@@ -299,6 +301,7 @@ struct YAML::convert<engine::config::SearchConfigData> {
     set_array_if_present(n, "LMP_MOVES", c.LMP_MOVES, seen);
     set_if_present(n, "USE_EXTENSIONS", c.USE_EXTENSIONS, seen);
     set_if_present(n, "USE_CHECK_EXT", c.USE_CHECK_EXT, seen);
+    set_if_present(n, "CHECK_EXT_EARLY_LIMIT", c.CHECK_EXT_EARLY_LIMIT, seen);
     set_if_present(n, "USE_THREAT_EXT", c.USE_THREAT_EXT, seen);
     set_if_present(n, "USE_EXT_ADD_DEPTH", c.USE_EXT_ADD_DEPTH, seen);
     set_if_present(n, "USE_SINGULAR_EXT", c.USE_SINGULAR_EXT, seen);
