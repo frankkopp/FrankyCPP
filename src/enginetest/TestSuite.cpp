@@ -21,7 +21,7 @@
 
 #include "EpdParser.h"
 #include "common/Logging.h"
-#include "common/stringutil.h"
+#include "engine/SearchStats.h"
 #include "engine/UciOptions.h"
 #include "types/timeunits.h"
 
@@ -76,29 +76,32 @@ void TestSuite::printReportHeader() const {
 void TestSuite::printReport(const nanoseconds elapsed) const {
   // print report
   fprintln("Results for Test Suite", filePath_);
-  fprintln("------------------------------------------------------------------------------------------------------------------------------------");
+  fprintln("------------------------------------------------------------------------------------------------------------------------------------------------");
   fprintln("EPD File:   {}", filePath_);
   fprintln("SearchTime: {}", str(searchTime_));
   fprintln("MaxDepth:   {}", searchDepth_);
   fprintln("Date:       {}", format_now());
-  fprintln("===================================================================================================================================");
-  fprintln(" {:<4} | {:<10} | {:<8} | {:<8} | {:<18} | {} | {}", " Nr.", "Result", "Move", "Value", "Expected Result", "Fen", "Id");
-  fprintln("====================================================================================================================================");
+  fprintln("================================================================================================================================================");
+  fprintln(" {:<4} | {:<10} | {:<8} | {:<8} | {:<18} | {:<18} | {} | {}", " Nr.", "Result", "Move", "Value", "Expected Result", "BetaCuts %", "Fen", "Id");
+  fprintln("================================================================================================================================================");
   int i = 0;
   for (const auto& t : testCases_) {
     i++;
+    // Format beta cuts percentages as "XX.X/XX.X/XX.X"
+    const std::string betaCutsStr = std::format("{:.1f}/{:.1f}/{:.1f}",
+                                                 t.getBetaCutsPct(0), t.getBetaCutsPct(1), t.getBetaCutsPct(2));
     if (t.getType() == TestType::DM) {
-      fprintln(" {:<4d} | {:<10} | {:<8} | {:<8} | {} {:<15d} | {} | {}",
+      fprintln(" {:<4d} | {:<10} | {:<8} | {:<8} | {} {:<15d} | {:<18} | {} | {}",
                i, resultTypeToString(t.getResult()), t.getActualMove().str(), t.getActualValue().str(),
-               testTypeToString(t.getType()), t.getMateDepth(), t.getFen(), t.getId());
+               testTypeToString(t.getType()), t.getMateDepth(), betaCutsStr, t.getFen(), t.getId());
     }
     else {
-      fprintln(" {:<4d} | {:<10} | {:<8} | {:<8} | {} {:<15} | {} | {}",
+      fprintln(" {:<4d} | {:<10} | {:<8} | {:<8} | {} {:<15} | {:<18} | {} | {}",
                i, resultTypeToString(t.getResult()), t.getActualMove().str(), t.getActualValue().str(),
-               testTypeToString(t.getType()), t.getTargetMoves().str(), t.getFen(), t.getId());
+               testTypeToString(t.getType()), t.getTargetMoves().str(), betaCutsStr, t.getFen(), t.getId());
     }
   }
-  fprintln("====================================================================================================================================");
+  fprintln("================================================================================================================================================");
   fprintln("Summary:");
   fprintln("EPD File:   {}", filePath_);
   fprintln("SearchTime: {}", str(searchTime_));
@@ -160,6 +163,16 @@ void TestSuite::runAllTests() {
     test.setNodes(search.getLastSearchResult().nodes);
     test.setTime(search.getLastSearchResult().time);
     test.setNps(nps(search.getLastSearchResult().nodes, search.getLastSearchResult().time));
+
+    // Capture beta cutoff percentages
+    const auto& stats = search.getSearchStats();
+    if (stats.betaCuts > 0) {
+      const auto totalCuts = static_cast<double>(stats.betaCuts);
+      for (int idx = 0; idx < EpdTest::BETA_CUTS_STORED; ++idx) {
+        test.setBetaCutsPct(idx, 100.0 * static_cast<double>(stats.betaCutsByIndex[idx]) / totalCuts);
+      }
+    }
+
     fprintln("Test finished in {} with result {} ({}) - nps: {:L}\n\n",
              format(elapsedTime), resultTypeToString(test.getResult()), test.getActualMove().str(), test.getNps());
   }

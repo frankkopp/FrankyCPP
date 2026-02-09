@@ -77,6 +77,10 @@ class EpdTest {
   nanoseconds time_{0};
   uint64_t nps_{0};
 
+  // Beta cutoff percentages by move index (first 3 indices)
+  static constexpr int BETA_CUTS_STORED = 3;
+  double betaCutsPct_[BETA_CUTS_STORED] = {};
+
   // Private default constructor - use Builder
   EpdTest() = default;
 
@@ -105,6 +109,9 @@ public:
   void setNodes(const uint64_t n) noexcept { nodes_ = n; }
   void setTime(const nanoseconds t) noexcept { time_ = t; }
   void setNps(const uint64_t n) noexcept { nps_ = n; }
+  void setBetaCutsPct(const int idx, const double pct) noexcept {
+    if (idx >= 0 && idx < BETA_CUTS_STORED) { betaCutsPct_[idx] = pct; }
+  }
 
   // Test definition accessors (immutable)
   [[nodiscard]] const std::string& getId() const noexcept { return id_; }
@@ -122,6 +129,9 @@ public:
   [[nodiscard]] uint64_t getNodes() const noexcept { return nodes_; }
   [[nodiscard]] nanoseconds getTime() const noexcept { return time_; }
   [[nodiscard]] uint64_t getNps() const noexcept { return nps_; }
+  [[nodiscard]] double getBetaCutsPct(const int idx) const noexcept {
+    return (idx >= 0 && idx < BETA_CUTS_STORED) ? betaCutsPct_[idx] : 0.0;
+  }
 };
 
 /// Builder for constructing EpdTest instances.
