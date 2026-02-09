@@ -92,61 +92,61 @@ This document provides a comprehensive, prioritized roadmap for enhancing Franky
 
 #### 1. Search Algorithm (High Priority)
 
-| Feature | Current State | Industry Standard | Gap Analysis |
-|---------|---------------|-------------------|--------------|
-| **Parallel Search** | ❌ Single-threaded | ✅ Lazy SMP (8-16 threads) | **-60-120 ELO** |
-| **Singular Extensions** | ❌ Not implemented | ✅ Standard in top engines | **-20-30 ELO** |
-| **Check Extensions** | ❌ Not implemented | ✅ Standard in top engines | **-10-20 ELO** |
-| **Multi-Cut Pruning** | ❌ Not implemented | ✅ Common in modern engines | **-10-20 ELO** |
-| **Probcut** | ❌ Not implemented | ✅ Used in Stockfish/Ethereal | **-10-15 ELO** |
-| **LMR Formula** | ⚠️ Basic implementation | ✅ Tuned formula | **-15-25 ELO** |
+| Feature                 | Current State           | Industry Standard            | Gap Analysis    |
+|-------------------------|-------------------------|------------------------------|-----------------|
+| **Parallel Search**     | ❌ Single-threaded       | ✅ Lazy SMP (8-16 threads)    | **-60-120 ELO** |
+| **Singular Extensions** | ❌ Not implemented       | ✅ Standard in top engines    | **-20-30 ELO**  |
+| **Check Extensions**    | ❌ Not implemented       | ✅ Standard in top engines    | **-10-20 ELO**  |
+| **Multi-Cut Pruning**   | ❌ Not implemented       | ✅ Common in modern engines   | **-10-20 ELO**  |
+| **Probcut**             | ❌ Not implemented       | ✅ Used in Stockfish/Ethereal | **-10-15 ELO**  |
+| **LMR Formula**         | ⚠️ Basic implementation | ✅ Tuned formula              | **-15-25 ELO**  |
 
 **Estimated Total Search Gap:** -125-230 ELO
 
 #### 2. Evaluation Function (Critical Priority)
 
-| Feature | Current State | Industry Standard | Gap Analysis |
-|---------|---------------|-------------------|--------------|
-| **NNUE** | ❌ Not implemented | ✅ Standard in 2600+ engines | **-200-400 ELO** |
-| **Eval Tuning** | ⚠️ Manual tuning | ✅ Texel/SPSA automated | **-30-60 ELO** |
-| **Pawn Structure** | ✅ Basic implementation | ✅ Similar | ~0 ELO |
-| **King Safety** | ✅ Basic implementation | ✅ Similar | ~0 ELO |
-| **Mobility** | ✅ Implemented | ✅ Similar | ~0 ELO |
+| Feature            | Current State          | Industry Standard           | Gap Analysis     |
+|--------------------|------------------------|-----------------------------|------------------|
+| **NNUE**           | ❌ Not implemented      | ✅ Standard in 2600+ engines | **-200-400 ELO** |
+| **Eval Tuning**    | ⚠️ Manual tuning       | ✅ Texel/SPSA automated      | **-30-60 ELO**   |
+| **Pawn Structure** | ✅ Basic implementation | ✅ Similar                   | ~0 ELO           |
+| **King Safety**    | ✅ Basic implementation | ✅ Similar                   | ~0 ELO           |
+| **Mobility**       | ✅ Implemented          | ✅ Similar                   | ~0 ELO           |
 
 **Estimated Total Eval Gap:** -230-460 ELO
 
 #### 3. Move Ordering (Medium Priority)
 
-| Feature | Current State | Industry Standard | Gap Analysis |
-|---------|---------------|-------------------|--------------|
-| **History Heuristic** | ✅ Implemented | ✅ Standard | ~0 ELO |
-| **Killer Moves** | ✅ Implemented (2 slots) | ✅ Standard | ~0 ELO |
-| **Counter-Move History** | ❌ Not implemented | ✅ Standard | **-10-20 ELO** |
-| **Continuation History** | ❌ Not implemented | ✅ Standard | **-15-25 ELO** |
-| **Capture History** | ❌ Not implemented | ✅ Common | **-10-20 ELO** |
-| **SEE (Static Exchange)** | ✅ Basic implementation | ✅ Similar | ~0 ELO |
+| Feature                   | Current State           | Industry Standard | Gap Analysis   |
+|---------------------------|-------------------------|-------------------|----------------|
+| **History Heuristic**     | ✅ Implemented           | ✅ Standard        | ~0 ELO         |
+| **Killer Moves**          | ✅ Implemented (2 slots) | ✅ Standard        | ~0 ELO         |
+| **Counter-Move History**  | ❌ Not implemented       | ✅ Standard        | **-10-20 ELO** |
+| **Continuation History**  | ❌ Not implemented       | ✅ Standard        | **-15-25 ELO** |
+| **Capture History**       | ❌ Not implemented       | ✅ Common          | **-10-20 ELO** |
+| **SEE (Static Exchange)** | ✅ Basic implementation  | ✅ Similar         | ~0 ELO         |
 
 **Estimated Total Move Ordering Gap:** -35-65 ELO
 
 #### 4. Endgame Play (Medium Priority)
 
-| Feature | Current State | Industry Standard | Gap Analysis |
-|---------|---------------|-------------------|--------------|
-| **Syzygy Tablebases** | ❌ Not implemented | ✅ Standard (6-7 piece) | **-35-60 ELO** |
-| **Endgame Patterns** | ⚠️ Basic (draw detection) | ✅ Comprehensive | **-10-20 ELO** |
-| **Scaling Functions** | ✅ Basic implementation | ✅ Similar | ~0 ELO |
+| Feature               | Current State             | Industry Standard      | Gap Analysis   |
+|-----------------------|---------------------------|------------------------|----------------|
+| **Syzygy Tablebases** | ❌ Not implemented         | ✅ Standard (6-7 piece) | **-35-60 ELO** |
+| **Endgame Patterns**  | ⚠️ Basic (draw detection) | ✅ Comprehensive        | **-10-20 ELO** |
+| **Scaling Functions** | ✅ Basic implementation    | ✅ Similar              | ~0 ELO         |
 
 **Estimated Total Endgame Gap:** -45-80 ELO
 
 ### Total Estimated Strength Gap
 
-| Category | ELO Gap |
-|----------|---------|
-| Search Algorithm | -125 to -230 |
-| Evaluation Function | -230 to -460 |
-| Move Ordering | -35 to -65 |
-| Endgame Play | -45 to -80 |
-| **TOTAL** | **-435 to -835 ELO** |
+| Category            | ELO Gap              |
+|---------------------|----------------------|
+| Search Algorithm    | -125 to -230         |
+| Evaluation Function | -230 to -460         |
+| Move Ordering       | -35 to -65           |
+| Endgame Play        | -45 to -80           |
+| **TOTAL**           | **-435 to -835 ELO** |
 
 **Interpretation:** FrankyCPP v1.1 is performing 400-800 ELO below modern 2800+ engines. Closing this gap is achievable through systematic implementation of proven techniques.
 
