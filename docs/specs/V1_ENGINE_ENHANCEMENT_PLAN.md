@@ -77,20 +77,20 @@ Tablebase support and endgame-specific techniques.
 ### Phase 2: Performance Fundamentals & Quick Wins (v1.2) - **2-3 weeks** 🔄 IN PROGRESS
 **Focus:** Eliminate heap allocations, improve cache performance, add proven search enhancements
 
-| Task                            | Category       | Effort      | Complexity | ELO Gain | Priority | Status     |
-|---------------------------------|----------------|-------------|------------|----------|----------|------------|
-| **Performance Fundamentals**    |                |             |            |          |          |            |
-| Triangular PV Table             | Performance    | 🟢 1-2 days | 🟡 Medium  | +5-10    | HIGH     | ✅ Complete |
-| MoveList Static Array Refactor  | Performance    | 🟡 3-5 days | 🟡 Medium  | +5-15    | HIGH     | ✅ Complete |
-| **Infrastructure**              |                |             |            |          |          |            |
-| UCI `bench` Command             | Infrastructure | 🟢 2-3 days | 🟢 Low     | N/A      | HIGH     | ✅ Complete |
-| Arena Bench Integration         | Infrastructure | 🟢 2-3 days | 🟢 Low     | N/A      | MEDIUM   | ✅ Complete |
-| **Search Quick Wins**           |                |             |            |          |          |            |
-| Singular Extensions             | Search         | 🟢 2-3 days | 🟡 Medium  | +20-30   | HIGH     | ✅ Complete |
-| Check Extensions                | Search         | 🟢 2-3 days | 🟡 Medium  | +10-20   | HIGH     | ✅ Complete |
-| Counter-Move History            | Search         | 🟡 3-5 days | 🟡 Medium  | +10-20   | MEDIUM   | 📋 Planned |
-| Best-Move Instability Time Mgmt | Search         | 🟢 2-3 days | 🟡 Medium  | +5-15    | MEDIUM   | 📋 Planned |
-| Selective Checks in Quiescence  | Search         | 🟡 3-5 days | 🟡 Medium  | +15-25   | MEDIUM   | 📋 Planned |
+| Task                            | Category       | Effort      | Complexity | ELO Gain | Priority | Status        |
+|---------------------------------|----------------|-------------|------------|----------|----------|---------------|
+| **Performance Fundamentals**    |                |             |            |          |          |               |
+| Triangular PV Table             | Performance    | 🟢 1-2 days | 🟡 Medium  | +5-10    | HIGH     | ✅ Complete    |
+| MoveList Static Array Refactor  | Performance    | 🟡 3-5 days | 🟡 Medium  | +5-15    | HIGH     | ✅ Complete    |
+| **Infrastructure**              |                |             |            |          |          |               |
+| UCI `bench` Command             | Infrastructure | 🟢 2-3 days | 🟢 Low     | N/A      | HIGH     | ✅ Complete    |
+| Arena Bench Integration         | Infrastructure | 🟢 2-3 days | 🟢 Low     | N/A      | MEDIUM   | ✅ Complete    |
+| **Search Quick Wins**           |                |             |            |          |          |               |
+| Singular Extensions             | Search         | 🟢 2-3 days | 🟡 Medium  | +20-30   | HIGH     | ✅ Complete    |
+| Check Extensions                | Search         | 🟢 2-3 days | 🟡 Medium  | +10-20   | HIGH     | ✅ Complete    |
+| Counter-Move History            | Search         | 🟡 3-5 days | 🟡 Medium  | +10-20   | LOW      | ❌ Not Planned |
+| Best-Move Instability Time Mgmt | Search         | 🟢 2-3 days | 🟡 Medium  | +5-15    | MEDIUM   | 📋 Planned    |
+| Selective Checks in Quiescence  | Search         | 🟡 3-5 days | 🟡 Medium  | +15-25   | MEDIUM   | 📋 Planned    |
 
 **Expected Total ELO Gain:** +70-135  
 **Risk:** Low - internal refactoring and proven techniques  
@@ -605,15 +605,26 @@ SMP_MIN_SPLIT_DEPTH: 4          # minimum depth to spawn helper threads
 
 ---
 
-### 4. Counter-Move History (Phase 4)
+### 4. Counter-Move History ❌ NOT PLANNED
+
+**Status:** Not Planned
 
 **Description:**  
 Track which moves work well in response to opponent's last move. Improves move ordering by capturing "refutation move" patterns.
 
-**Implementation:**
+**Reason for Not Implementing:**  
+Current move ordering already achieves ~97% first-move beta cutoff rate (tracked via `betaCutsByIndex` stats). The diminishing returns from counter-move history (~1-5% fewer nodes in benchmarks) do not justify the 128MB+ memory cost for the 4D table `[prevFrom][prevTo][currFrom][currTo]`.
+
+The existing implementation already includes:
+- Simple counter-move table (`USE_HISTORY_MOVES`): stores one best reply per opponent move
+- History heuristic (`USE_HISTORY_COUNTER`): tracks move success globally
+- Killer moves, TT moves, and good captures for ordering
+
+These provide excellent move ordering without the memory overhead of full counter-move history.
+
+**If Reconsidered in Future:**
 ```cpp
-// Existing: History[side][from][to]
-// Add: CounterMoveHistory[opponentPiece][opponentTo][piece][to]
+// Would add: CounterMoveHistory[opponentPiece][opponentTo][piece][to]
 class CounterMoveHistory {
   int16_t table[PIECE_TYPE_NB][SQUARE_NB][PIECE_TYPE_NB][SQUARE_NB];
   
@@ -622,18 +633,7 @@ class CounterMoveHistory {
 };
 ```
 
-**Configuration Parameters:**
-```yaml
-USE_COUNTER_MOVE_HISTORY: true
-CMH_MAX_BONUS: 400
-CMH_BONUS_SCALE: 32
-```
-
-**Testing:**
-- Compare move ordering effectiveness (first move success rate)
-- Node count reduction on standard test positions
-
-**Expected Impact:** +10-20 ELO
+**Expected Impact:** +10-20 ELO (not worth memory cost given current 97% cutoff rate)
 
 ---
 
@@ -804,10 +804,9 @@ parameters:
 ## Priority Matrix
 
 ### High Priority (v1.1-v1.3)
-1. **Singular Extensions** - Quick win, proven technique
-2. **Check Extensions** - Simple, effective
+1. **Singular Extensions** - Quick win, proven technique ✅
+2. **Check Extensions** - Simple, effective ✅
 3. **Lazy SMP** - Significant strength gain on modern hardware
-4. **Counter-Move History** - Proven move ordering improvement
 
 ### Medium Priority (v1.4-v1.6)
 5. **Syzygy Tablebases** - Perfect endgame play
@@ -855,14 +854,14 @@ parameters:
 
 ## Success Metrics
 
-| Metric | Baseline (v1.0) | Target (v1.8) |
-|--------|----------------|---------------|
-| **ELO Rating** | ~2400 (estimate) | ~2800-2900 |
-| **Tactical Suite (WAC)** | 250/300 | 285/300 |
-| **NPS (Single Thread)** | ~1.5M | ~2.0M |
-| **NPS (8 Threads)** | N/A | ~8-10M |
-| **Endgame Accuracy (TB)** | ~85% | ~100% |
-| **Search Depth (Fixed Time)** | 10-12 ply | 14-16 ply |
+| Metric                        | Baseline (v1.0)  | Target (v1.8) |
+|-------------------------------|------------------|---------------|
+| **ELO Rating**                | ~2400 (estimate) | ~2800-2900    |
+| **Tactical Suite (WAC)**      | 250/300          | 285/300       |
+| **NPS (Single Thread)**       | ~1.5M            | ~2.0M         |
+| **NPS (8 Threads)**           | N/A              | ~8-10M        |
+| **Endgame Accuracy (TB)**     | ~85%             | ~100%         |
+| **Search Depth (Fixed Time)** | 10-12 ply        | 14-16 ply     |
 
 ---
 
