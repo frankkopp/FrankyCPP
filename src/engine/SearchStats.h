@@ -40,12 +40,13 @@
 // Usage:
 //   const SearchStats& stats = search.getSearchStats();
 //   std::cout << "Beta cuts: " << stats.betaCuts
-//             << " (1st move: " << stats.betaCuts1st << ")" << std::endl;
+//             << " (1st move: " << stats.betaCutsByIndex[0] << ")" << std::endl;
 //   std::cout << stats.str();  // Full statistics dump
 //
 //=============================================================================
 
 #include "types/types.h"
+#include <iomanip>
 #include <ostream>
 
 /// Collects detailed statistics about search behavior for analysis and tuning.
@@ -54,143 +55,145 @@ struct SearchStats {
   // === Current Search State ===
 
   /// Current iteration depth in iterative deepening.
-  int currentIterationDepth;
+  int currentIterationDepth = 0;
 
   /// Current nominal search depth.
-  int currentSearchDepth;
+  int currentSearchDepth = 0;
 
   /// Extra depth from extensions (selective depth).
-  int currentExtraSearchDepth;
+  int currentExtraSearchDepth = 0;
 
   /// Best move found so far at root.
-  Move currentBestRootMove;
+  Move currentBestRootMove = MOVE_NONE;
 
   /// Evaluation of the current best root move.
-  Value currentBestRootMoveValue;
+  Value currentBestRootMoveValue = VALUE_NONE;
 
   /// Current principal variation being explored (fixed-size stack, zero heap allocations).
   VariationStack currentVariation{};
 
   /// Index of root move currently being searched (0-based).
-  size_t currentRootMoveIndex;
+  size_t currentRootMoveIndex = 0;
 
   /// Root move currently being searched.
-  Move currentRootMove;
+  Move currentRootMove = MOVE_NONE;
 
   // === Terminal Node Counts ===
 
   /// Number of checkmate positions found.
-  uint64_t checkmates;
+  uint64_t checkmates = 0;
 
   /// Number of stalemate positions found.
-  uint64_t stalemates;
+  uint64_t stalemates = 0;
 
   /// Number of leaf positions evaluated (quiescence leaves).
-  uint64_t leafPositionsEvaluated;
+  uint64_t leafPositionsEvaluated = 0;
 
   /// Total evaluation function calls.
-  uint64_t evaluations;
+  uint64_t evaluations = 0;
 
   /// Node count for perft (if running perft).
-  uint64_t perftNodeCount;
+  uint64_t perftNodeCount = 0;
 
   // === Pruning Statistics ===
 
   /// Total beta cutoffs (fail-high).
-  uint64_t betaCuts;
+  uint64_t betaCuts = 0;
 
-  /// Beta cutoffs on first move (indicates good move ordering).
-  uint64_t betaCuts1st;
+  /// Beta cutoffs by move index (0-9, index 9 = moves 10+).
+  /// Index 0 = first-move cutoffs (indicates good move ordering).
+  static constexpr int BETA_CUTS_INDEX_SIZE = 10;
+  uint64_t betaCutsByIndex[BETA_CUTS_INDEX_SIZE] = {};
 
   /// Mate distance pruning cuts.
-  uint64_t mdp;
+  uint64_t mdp = 0;
 
   /// Stand-pat cutoffs in quiescence search.
-  uint64_t standpatCuts;
+  uint64_t standpatCuts = 0;
 
   /// Razoring prunings (near-leaf nodes).
-  uint64_t razorings;
+  uint64_t razorings = 0;
 
   /// Reverse futility pruning cuts.
-  uint64_t rfp_cuts;
+  uint64_t rfp_cuts = 0;
 
   /// Null-move pruning cutoffs.
-  uint64_t nullMoveCuts;
+  uint64_t nullMoveCuts = 0;
 
   /// Futility pruning cuts (moves skipped).
-  uint64_t fpPrunings;
+  uint64_t fpPrunings = 0;
 
   /// Quiescence futility pruning cuts.
-  uint64_t qfpPrunings;
+  uint64_t qfpPrunings = 0;
 
   // === Transposition Table Statistics ===
 
   /// TT probe hits (entry with matching key found).
-  uint64_t ttHit;
+  uint64_t ttHit = 0;
 
   /// TT probe misses (no matching entry).
-  uint64_t ttMiss;
+  uint64_t ttMiss = 0;
 
   /// TT hits that caused a cutoff (value usable).
-  uint64_t TtCuts;
+  uint64_t TtCuts = 0;
 
   /// TT hits that did not cause a cutoff.
-  uint64_t TtNoCuts;
+  uint64_t TtNoCuts = 0;
 
   /// Evaluations retrieved from TT instead of recalculating.
-  uint64_t evalFromTT;
+  uint64_t evalFromTT = 0;
 
   /// TT hits without a stored move.
-  uint64_t NoTtMove;
+  uint64_t NoTtMove = 0;
 
   /// Internal iterative deepening searches performed.
-  uint64_t iidSearches;
+  uint64_t iidSearches = 0;
 
   /// Moves found via IID.
-  uint64_t iidMoves;
+  uint64_t iidMoves = 0;
 
   /// TT moves used for move ordering.
-  uint64_t TtMoveUsed;
+  uint64_t TtMoveUsed = 0;
 
   // === Re-search Statistics ===
 
   /// PVS re-searches at root (zero-window failed).
-  uint64_t rootPvsResearches;
+  uint64_t rootPvsResearches = 0;
 
   /// PVS re-searches in non-root nodes.
-  uint64_t pvsResearches;
+  uint64_t pvsResearches = 0;
 
   /// Aspiration window re-searches (fail-high or fail-low).
-  uint64_t aspirationResearches;
+  uint64_t aspirationResearches = 0;
 
   /// Number of times best move changed during search.
-  uint64_t bestMoveChange;
+  uint64_t bestMoveChange = 0;
 
   /// LMR re-searches (reduced search found better move).
-  uint64_t lmrResearches;
+  uint64_t lmrResearches = 0;
 
   /// LMR reductions applied.
-  uint64_t lmrReductions;
+  uint64_t lmrReductions = 0;
 
   /// Late move pruning cuts.
-  uint64_t lmpCuts;
+  uint64_t lmpCuts = 0;
 
   // === Extension Statistics ===
 
   /// Check extensions applied.
-  uint64_t checkExtension;
+  uint64_t checkExtension = 0;
 
   /// Threat extensions applied.
-  uint64_t threatExtension;
+  uint64_t threatExtension = 0;
 
   /// Singular extension searches performed (verification searches).
-  uint64_t singularSearches;
+  uint64_t singularSearches = 0;
 
   /// Singular extensions applied (TT move proven singular).
-  uint64_t singularExtension;
+  uint64_t singularExtension = 0;
 
   /// Null-move verification re-searches that prevented a cutoff.
-  uint64_t nullMoveVerifications;
+  uint64_t nullMoveVerifications = 0;
 
   /// Returns a string representation of all statistics.
   /// @return  Formatted statistics string
@@ -209,7 +212,18 @@ struct SearchStats {
        << " leafPositionsEvaluated: " << stats.leafPositionsEvaluated
        << " evaluations: " << stats.evaluations
        << " betaCuts: " << stats.betaCuts
-       << " betaCuts1st: " << stats.betaCuts1st
+       << " betaCutsByIdx: [";
+    // Output percentages for each index bucket
+    if (stats.betaCuts > 0) {
+      for (int i = 0; i < BETA_CUTS_INDEX_SIZE; ++i) {
+        if (i > 0) os << ", ";
+        const double pct = 100.0 * static_cast<double>(stats.betaCutsByIndex[i]) / static_cast<double>(stats.betaCuts);
+        os << std::fixed << std::setprecision(1) << pct << "%";
+      }
+    } else {
+      os << "n/a";
+    }
+    os << "]"
        << " rootPvsResearches: " << stats.rootPvsResearches
        << " pvsResearches: " << stats.pvsResearches
        << " aspirationResearches: " << stats.aspirationResearches

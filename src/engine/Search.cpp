@@ -675,6 +675,7 @@ Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Valu
         // fail high in root only when using aspiration search
         if (value >= beta && SearchConfig.USE_ALPHABETA) {
           statistics.betaCuts++;
+          statistics.betaCutsByIndex[std::min(static_cast<int>(statistics.currentRootMoveIndex), SearchStats::BETA_CUTS_INDEX_SIZE - 1)]++;
           return value;
         }
         // value is < beta
@@ -1232,8 +1233,8 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         if (value >= beta && SearchConfig.USE_ALPHABETA) {
           // Count beta cuts
           statistics.betaCuts++;
-          // Count beta cuts on the first move
-          if (movesSearched == 1) { statistics.betaCuts1st++; }
+          // Track beta cuts by move index (0-based, clamped to array size)
+          statistics.betaCutsByIndex[std::min(movesSearched - 1, SearchStats::BETA_CUTS_INDEX_SIZE - 1)]++;
           // store move which caused a beta cutoff in this ply
           if (SearchConfig.USE_KILLER_MOVES && !p.isCapturingMove(move)) { myMg->storeKiller(move); }
           // Counter for moves which caused a beta cutoff
@@ -1479,7 +1480,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
       if (value > alpha) {
         if (value >= beta && SearchConfig.USE_ALPHABETA) {
           statistics.betaCuts++;
-          if (movesSearched == 1) { statistics.betaCuts1st++; }
+          statistics.betaCutsByIndex[std::min(movesSearched - 1, SearchStats::BETA_CUTS_INDEX_SIZE - 1)]++;
           if (SearchConfig.USE_KILLER_MOVES && !p.isCapturingMove(move)) { myMg->storeKiller(move); }
           if (SearchConfig.USE_HISTORY_COUNTER) { history.historyCount[us][from][to] += 1 << 1; }
           if (SearchConfig.USE_HISTORY_MOVES) {
