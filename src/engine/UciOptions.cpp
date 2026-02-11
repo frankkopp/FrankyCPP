@@ -363,6 +363,7 @@ UciOption* UciOptions::getOption(const std::string& name) {
   if (optionIterator != optionVector.end()) {
     return &*optionIterator;
   }
+  LOG__WARN(Logger::get().UCI_LOG, "Option '{}' not found", name);
   return nullptr;
 }
 
@@ -382,6 +383,7 @@ bool UciOptions::setOption(UciHandler* uciHandler, const std::string& name, cons
     o->pHandler(uciHandler);
     return true;
   }
+  LOG__ERROR(Logger::get().UCI_LOG, "Option '{}' not found", name);
   return false;
 }
 
@@ -459,7 +461,9 @@ int UciOptions::getInt(const std::string& value) {
   try {
     const int intValue = stoi(value);
     return intValue;
-  } catch (...) {
+  } catch (const std::exception& e) {
+    LOG__ERROR(Logger::get().UCI_LOG,
+               "Failed to parse integer from value '{}': {}", value, e.what());
     return 0;
   }
 }
