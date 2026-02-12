@@ -235,7 +235,7 @@ The `types/` directory contains well-designed value types:
 | **Transposition Table**              | ✅ 16-byte entries, configurable size           |
 | **Killer Moves**                     | ✅ 2 slots per ply                              |
 | **History Heuristic**                | ✅ History + Counter moves                      |
-| **Time Management**                  | ✅ Adaptive with complexity factor              |
+| **Time Management**                  | ✅ Adaptive with complexity factor, best-move instability |
 | **Pondering**                        | ✅ Supported                                    |
 
 ### Evaluation
@@ -276,7 +276,7 @@ The `types/` directory contains well-designed value types:
 
 7. **Tune parameters with SPSA/Texel** – The many configurable parameters could benefit from automated tuning. Consider adding tuning infrastructure.
 
-8. **Improve time management** – The complexity-based time allocation is good. Consider adding "best move instability" detection to allocate more time when the best move changes frequently.
+8. **~~Improve time management~~** – ✅ **IMPLEMENTED (v1.2)** – Best-move instability detection added. When the best move changes frequently across iterations, search time is extended (configurable via `INSTABILITY_EXTEND_FACTOR`). When the best move is stable for several consecutive iterations, time is reduced (via `INSTABILITY_STABLE_FACTOR`). Combines with existing eval volatility detection for comprehensive time management.
 
 9. **Validate PEXT availability at runtime** – Currently PEXT is a compile-time requirement. Consider software fallback for non-BMI2 CPUs (with performance warning).
 

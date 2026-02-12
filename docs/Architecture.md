@@ -194,7 +194,7 @@ The core search algorithm using alpha-beta with iterative deepening.
 - Futility pruning
 - Razoring
 - Quiescence search with SEE pruning
-- Time management with complexity-based allocation
+- Time management with complexity-based allocation and best-move instability detection
 
 **Threading Model:**
 - Search runs in a dedicated thread (`searchThread`)
