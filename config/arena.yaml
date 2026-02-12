@@ -836,15 +836,15 @@ matches:
 
 #  # === Blitz matches between v1.2 and references (100 games each) ===
 
-#    v1.1 singular extenstion
-  - name: "v1.1_vs_v1.2_blitz_100-sext"
+# current dev vs. v1.1
+  - name: "v1.1_vs_v1.2_blitz_100-dev"
     engine1Path: "Release/FrankyCPP_v1.2/FrankyCPP_v1.2.exe"
     engine1Version: "v1.2"
     engine2Path: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
     engine2Version: "v1.1"
     openingBook: "books/8moves_GM_LB.pgn"
     timeControl: "300+0"
-    rounds: 104
+    rounds: 416
     concurrency: 8
     outputPgn: "results/matches/v1.1_vs_v1.2_blitz_100.pgn"
 

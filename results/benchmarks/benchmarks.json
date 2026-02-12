@@ -224,6 +224,36 @@
       "totalTimeMs": 81423,
       "nps": 3732543,
       "notes": "Current development version (after new beta cutoff stats)"
+    },
+    {
+      "arenaVersion": "v1.2",
+      "timestamp": "2026-02-09T23:18:48",
+      "engineName": "FrankyCPP",
+      "engineVersion": "v1.2",
+      "enginePath": "",
+      "depth": 10,
+      "hashSizeMB": 128,
+      "threads": 1,
+      "positions": 50,
+      "totalNodes": 303914894,
+      "totalTimeMs": 80517,
+      "nps": 3774543,
+      "notes": "Current development version (after new best-move instability time mgmt)"
+    },
+    {
+      "arenaVersion": "v1.2",
+      "timestamp": "2026-02-09T23:18:48",
+      "engineName": "External",
+      "engineVersion": "v1.2",
+      "enginePath": "Release/FrankyCPP_V1.2/FrankyCPP_v1.2.exe",
+      "depth": 10,
+      "hashSizeMB": 128,
+      "threads": 1,
+      "positions": 50,
+      "totalNodes": 303914894,
+      "totalTimeMs": 80511,
+      "nps": 3774824,
+      "notes": "Current development version (after new best-move instability time mgmt)"
     }
   ]
 }

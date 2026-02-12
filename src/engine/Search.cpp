@@ -340,6 +340,9 @@ SearchResult Search::iterativeDeepening(Position& p) {
   Value prevBestRootValue       = VALUE_NONE;// best root eval from previous iteration
   bool addedVolatilityExtraTime = false;     // guard to add extra time due to eval swing at most once
 
+  // Reset best-move instability tracking for this search
+  bestMoveStability.reset();
+
   // prepare max depth from search limits
   const int maxDepth = searchLimits.depth ? searchLimits.depth : DEPTH_MAX;
 
@@ -474,6 +477,49 @@ SearchResult Search::iterativeDeepening(Position& p) {
       }
       // remember current value for next iteration comparison
       if (currBest.isValid()) { prevBestRootValue = currBest; }
+    }
+
+    // Best-move instability tracking for dynamic time management
+    // Tracks whether the best move is stable (same across iterations) or unstable (changing).
+    if (SearchConfig.USE_BESTMOVE_INSTABILITY && searchLimits.timeControl && !searchLimits.ponder && !isTimeAlmostUp()) {
+      const Move currentBestMove = pv.first().stripped();
+      const int minDepth         = SearchConfig.INSTABILITY_MIN_DEPTH;
+
+      if (iterationDepth >= minDepth) {
+        // Update stability/change counters
+        if (bestMoveStability.lastBestMove != MOVE_NONE) {
+          if (currentBestMove == bestMoveStability.lastBestMove) {
+            bestMoveStability.stabilityCount++;
+          }
+          else {
+            bestMoveStability.changeCount++;
+            bestMoveStability.stabilityCount = 0;
+            LOG__DEBUG(Logger::get().SEARCH_LOG, "BestMove instability: move changed from {} to {} at depth {} (changeCount={})",
+                       bestMoveStability.lastBestMove.str(), currentBestMove.str(), iterationDepth, bestMoveStability.changeCount);
+          }
+        }
+        bestMoveStability.lastBestMove = currentBestMove;
+
+        // Apply time adjustment based on stability
+        // Stable: reduce time (move sooner, we're confident)
+        if (!bestMoveStability.appliedStableFactor
+            && bestMoveStability.stabilityCount >= SearchConfig.INSTABILITY_STABLE_COUNT) {
+          const double factor = SearchConfig.INSTABILITY_STABLE_FACTOR;
+          addExtraTime(factor);
+          bestMoveStability.appliedStableFactor = true;
+          LOG__DEBUG(Logger::get().SEARCH_LOG, "BestMove stability: {} stable for {} iterations at depth {}. Reducing time (factor {:.2f}).",
+                     currentBestMove.str(), bestMoveStability.stabilityCount, iterationDepth, factor);
+        }
+        // Unstable: extend time (need more depth to find the true best move)
+        else if (!bestMoveStability.appliedExtendFactor
+                 && bestMoveStability.changeCount >= SearchConfig.INSTABILITY_CHANGE_THRESHOLD) {
+          const double factor = SearchConfig.INSTABILITY_EXTEND_FACTOR;
+          addExtraTime(factor);
+          bestMoveStability.appliedExtendFactor = true;
+          LOG__DEBUG(Logger::get().SEARCH_LOG, "BestMove instability: {} changes detected at depth {}. Extending time (factor {:.2f}).",
+                     bestMoveStability.changeCount, iterationDepth, factor);
+        }
+      }
     }
 
     // if mate search check if we found a mate within the mate limit
@@ -1607,7 +1653,6 @@ void Search::initialize() {
         });
       }
       else {
-
         book = std::make_unique<OpeningBook>(SearchConfig.BOOK_PATH, OpeningBook::fromString(SearchConfig.BOOK_TYPE));
         book->initialize();
       }

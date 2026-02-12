@@ -102,6 +102,24 @@
 class UciHandler;
 class Evaluator;
 
+/// Tracks best-move stability across iterations for time management.
+/// Used to detect when the search is confident (stable) or uncertain (unstable).
+struct BestMoveStability {
+  Move lastBestMove{MOVE_NONE};  // best move from previous iteration
+  int stabilityCount{0};         // consecutive iterations with same best move
+  int changeCount{0};            // number of times best move changed during search
+  bool appliedStableFactor{false};  // guard: only apply stable time factor once
+  bool appliedExtendFactor{false};  // guard: only apply extend time factor once
+
+  void reset() {
+    lastBestMove        = MOVE_NONE;
+    stabilityCount      = 0;
+    changeCount         = 0;
+    appliedStableFactor = false;
+    appliedExtendFactor = false;
+  }
+};
+
 class Search {
 
   // callback handler for UCI communication
@@ -137,6 +155,9 @@ class Search {
   milliseconds timeLimit{};
   std::atomic<int64_t> extraTimeMs{0};
   std::thread timerThread{};
+
+  // best-move instability tracking for dynamic time management
+  BestMoveStability bestMoveStability{};
 
   // Control UCI updates to avoid flooding
   constexpr static uint64_t UCI_UPDATE_INTERVAL = nanoPerSec;

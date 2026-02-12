@@ -136,6 +136,14 @@ namespace engine::config {
     int MOVES_LEFT_MIN_CLAMP    = 6;
     int MOVES_LEFT_MAX_CLAMP    = 50;
 
+    // best-move instability time management
+    bool USE_BESTMOVE_INSTABILITY    = true;   // enable best-move instability tracking
+    int INSTABILITY_MIN_DEPTH        = 5;      // minimum depth to start tracking
+    int INSTABILITY_STABLE_COUNT     = 3;      // consecutive stable iterations to trigger time reduction
+    int INSTABILITY_CHANGE_THRESHOLD = 2;      // number of best-move changes to trigger time extension
+    double INSTABILITY_STABLE_FACTOR = 0.80;   // multiply remaining time by this when stable (< 1.0)
+    double INSTABILITY_EXTEND_FACTOR = 1.25;   // multiply remaining time by this when unstable (> 1.0)
+
     std::string str() const {
       std::ostringstream os;
       os << "MOVE_OVERHEAD_MS: " << MOVE_OVERHEAD_MS << '\n'
@@ -244,6 +252,14 @@ struct YAML::convert<engine::config::SearchConfigData> {
     n["MOVES_LEFT_MIN_CLAMP"]    = c.MOVES_LEFT_MIN_CLAMP;
     n["MOVES_LEFT_MAX_CLAMP"]    = c.MOVES_LEFT_MAX_CLAMP;
 
+    // best-move instability time management
+    n["USE_BESTMOVE_INSTABILITY"]    = c.USE_BESTMOVE_INSTABILITY;
+    n["INSTABILITY_MIN_DEPTH"]       = c.INSTABILITY_MIN_DEPTH;
+    n["INSTABILITY_STABLE_COUNT"]    = c.INSTABILITY_STABLE_COUNT;
+    n["INSTABILITY_CHANGE_THRESHOLD"]= c.INSTABILITY_CHANGE_THRESHOLD;
+    n["INSTABILITY_STABLE_FACTOR"]   = c.INSTABILITY_STABLE_FACTOR;
+    n["INSTABILITY_EXTEND_FACTOR"]   = c.INSTABILITY_EXTEND_FACTOR;
+
     return n;
   }
 
@@ -319,6 +335,14 @@ struct YAML::convert<engine::config::SearchConfigData> {
     set_if_present(n, "REPETITION_RISK_PENALTY", c.REPETITION_RISK_PENALTY, seen);
     set_if_present(n, "MOVES_LEFT_MIN_CLAMP", c.MOVES_LEFT_MIN_CLAMP, seen);
     set_if_present(n, "MOVES_LEFT_MAX_CLAMP", c.MOVES_LEFT_MAX_CLAMP, seen);
+
+    // best-move instability time management
+    set_if_present(n, "USE_BESTMOVE_INSTABILITY", c.USE_BESTMOVE_INSTABILITY, seen);
+    set_if_present(n, "INSTABILITY_MIN_DEPTH", c.INSTABILITY_MIN_DEPTH, seen);
+    set_if_present(n, "INSTABILITY_STABLE_COUNT", c.INSTABILITY_STABLE_COUNT, seen);
+    set_if_present(n, "INSTABILITY_CHANGE_THRESHOLD", c.INSTABILITY_CHANGE_THRESHOLD, seen);
+    set_if_present(n, "INSTABILITY_STABLE_FACTOR", c.INSTABILITY_STABLE_FACTOR, seen);
+    set_if_present(n, "INSTABILITY_EXTEND_FACTOR", c.INSTABILITY_EXTEND_FACTOR, seen);
 
     // Log unknown keys
     for (auto it : n) {

@@ -161,3 +161,18 @@ REPETITION_RISK_PENALTY: 6
 # Clamp lower/upper bounds of moves-left estimates
 MOVES_LEFT_MIN_CLAMP: 6
 MOVES_LEFT_MAX_CLAMP: 50
+
+# Best-move instability time management
+# Dynamically adjust search time based on how stable the best move is across iterations
+# Enable best-move instability tracking
+USE_BESTMOVE_INSTABILITY: true
+# Minimum depth (iterations) to start tracking best-move stability
+INSTABILITY_MIN_DEPTH: 8
+# Number of consecutive iterations with same best move to trigger time reduction
+INSTABILITY_STABLE_COUNT: 5
+# Number of best-move changes to trigger time extension
+INSTABILITY_CHANGE_THRESHOLD: 3
+# Time factor when best move is stable (< 1.0 reduces time)
+INSTABILITY_STABLE_FACTOR: 0.9
+# Time factor when best move is unstable (> 1.0 extends time)
+INSTABILITY_EXTEND_FACTOR: 1.25

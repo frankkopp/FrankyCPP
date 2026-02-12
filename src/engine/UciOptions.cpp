@@ -313,6 +313,38 @@ void UciOptions::initOptions() {
       CONFIG_OVERRIDE(s.MOVES_LEFT_MAX_CLAMP = getInt(getOption("Moves Left Max Clamp")->currentValue););
     });
 
+  // 15) Best-move instability time management
+  optionVector.emplace_back(
+    "Use BestMove Instability", SearchConfig.USE_BESTMOVE_INSTABILITY,
+    [&](UciHandler*) {
+      CONFIG_OVERRIDE(s.USE_BESTMOVE_INSTABILITY = getOption("Use BestMove Instability")->currentValue == "true";);
+    });
+  optionVector.emplace_back(
+    "Instability Min Depth", SearchConfig.INSTABILITY_MIN_DEPTH, 1, 20,
+    [&](UciHandler*) {
+      CONFIG_OVERRIDE(s.INSTABILITY_MIN_DEPTH = getInt(getOption("Instability Min Depth")->currentValue););
+    });
+  optionVector.emplace_back(
+    "Instability Stable Count", SearchConfig.INSTABILITY_STABLE_COUNT, 1, 10,
+    [&](UciHandler*) {
+      CONFIG_OVERRIDE(s.INSTABILITY_STABLE_COUNT = getInt(getOption("Instability Stable Count")->currentValue););
+    });
+  optionVector.emplace_back(
+    "Instability Change Threshold", SearchConfig.INSTABILITY_CHANGE_THRESHOLD, 1, 10,
+    [&](UciHandler*) {
+      CONFIG_OVERRIDE(s.INSTABILITY_CHANGE_THRESHOLD = getInt(getOption("Instability Change Threshold")->currentValue););
+    });
+  optionVector.emplace_back(
+    "Instability Stable Factor Pct", static_cast<int>(SearchConfig.INSTABILITY_STABLE_FACTOR * 100), 50, 100,
+    [&](UciHandler*) {
+      CONFIG_OVERRIDE(s.INSTABILITY_STABLE_FACTOR = getInt(getOption("Instability Stable Factor Pct")->currentValue) / 100.0;);
+    });
+  optionVector.emplace_back(
+    "Instability Extend Factor Pct", static_cast<int>(SearchConfig.INSTABILITY_EXTEND_FACTOR * 100), 100, 200,
+    [&](UciHandler*) {
+      CONFIG_OVERRIDE(s.INSTABILITY_EXTEND_FACTOR = getInt(getOption("Instability Extend Factor Pct")->currentValue) / 100.0;);
+    });
+
   // UciOptions extras (non-SearchConfig)
   optionVector.emplace_back(
     "Clear Hash",
@@ -388,18 +420,34 @@ bool UciOptions::setOption(UciHandler* uciHandler, const std::string& name, cons
 }
 
 std::string UciOptions::str() const {
-  std::string str;
+  // Collect option strings and sort alphabetically by option name
+  std::vector<std::string> optionStrings;
+  optionStrings.reserve(optionVector.size());
   for (const auto& o : optionVector) {
-    str += o.str() + "\n";
+    optionStrings.push_back(o.str());
+  }
+  std::ranges::sort(optionStrings);
+
+  std::string str;
+  for (const auto& s : optionStrings) {
+    str += s + "\n";
   }
   str = trimFast(str);// remove last newline
   return str;
 }
 
 std::string UciOptions::strWithCurrentValues() const {
-  std::string str;
+  // Collect option strings and sort alphabetically by option name
+  std::vector<std::string> optionStrings;
+  optionStrings.reserve(optionVector.size());
   for (const auto& o : optionVector) {
-    str += o.strWithCurrentValue() + "\n";
+    optionStrings.push_back(o.strWithCurrentValue());
+  }
+  std::ranges::sort(optionStrings);
+
+  std::string str;
+  for (const auto& s : optionStrings) {
+    str += s + "\n";
   }
   str = trimFast(str);// remove last newline
   return str;

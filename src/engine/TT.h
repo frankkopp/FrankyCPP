@@ -161,6 +161,7 @@ public:
   TT& operator=(const TT&&) = delete;
 
   /// Changes the size of the transposition table and clears all entries.
+  /// If set to 0 MB, TT will ensure at least 1 entry, which can be used as an uninitialized sentinel.
   /// @param newSizeInMByte  Size in megabytes, reduced to next lowest power of 2.
   ///                        Limited to 32,768 MB.
   void resize(uint64_t newSizeInMByte);

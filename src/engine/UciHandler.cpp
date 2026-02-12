@@ -34,10 +34,10 @@
 #include <thread>
 
 UciHandler::UciHandler()
-    : pPosition(new Position),
-      pMoveGen(new MoveGenerator),
-      pPerft(new Perft),
-      pSearch(new Search(this)),
+    : pPosition(std::make_unique<Position>()),
+      pMoveGen(std::make_unique<MoveGenerator>()),
+      pPerft(std::make_unique<Perft>()),
+      pSearch(std::make_unique<Search>(this)),
       pInputStream(&std::cin),
       pOutputStream(&std::cout) {}
 

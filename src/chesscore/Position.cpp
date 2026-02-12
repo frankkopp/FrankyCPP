@@ -375,7 +375,13 @@ Bitboard Position::attacksTo(const Square square, const Color color) const {
   // the piece bitboard.
 
   //     Pawns
-  return (Bitboards::pawnAttacks[~color][square] & piecesBb[color][PAWN]) | (Attacks::attacks(KNIGHT, square, occupiedAll) & piecesBb[color][KNIGHT]) | (Attacks::attacks(KING, square, occupiedAll) & piecesBb[color][KING]) | (Attacks::attacks(ROOK, square, occupiedAll) & (piecesBb[color][ROOK] | piecesBb[color][QUEEN])) | (Attacks::attacks(BISHOP, square, occupiedAll) & (piecesBb[color][BISHOP] | piecesBb[color][QUEEN])) |
+  return (Bitboards::pawnAttacks[~color][square] & piecesBb[color][PAWN])
+          | (Attacks::attacks(KNIGHT, square, occupiedAll) & piecesBb[color][KNIGHT])
+          | (Attacks::attacks(KING, square, occupiedAll) & piecesBb[color][KING])
+          | (Attacks::attacks(ROOK, square, occupiedAll) & (piecesBb[color][ROOK]
+          | piecesBb[color][QUEEN]))
+          | (Attacks::attacks(BISHOP, square, occupiedAll)
+            & (piecesBb[color][BISHOP] | piecesBb[color][QUEEN])) |
          // consider en passant attacks
          epAttacks;
 }
