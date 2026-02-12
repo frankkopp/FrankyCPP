@@ -126,7 +126,6 @@ CHECK_EXT_EARLY_LIMIT: 3
 USE_THREAT_EXT: false
 # Add extension depth rather than replacing node depth
 USE_EXT_ADD_DEPTH: true
-
 # Singular Extensions
 # When a TT move is significantly better than all alternatives, extend its search
 USE_SINGULAR_EXT: true

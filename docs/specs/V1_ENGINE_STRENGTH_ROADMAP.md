@@ -2,7 +2,7 @@
 
 **Document Version:** 2.1  
 **Created:** 2026-02-01  
-**Last Updated:** 2026-02-09  
+**Last Updated:** 2026-02-12  
 **Status:** Active Planning  
 **Target:** FrankyCPP v1.1 → v2.0  
 **Focus:** Maximum Playing Strength Through Systematic Enhancement
@@ -242,7 +242,7 @@ This document provides a comprehensive, prioritized roadmap for enhancing Franky
 | Singular Extensions             | 🟢 2-3 days | 🟡 Medium  | +20-30   | ✅ Complete |
 | Check Extensions                | 🟢 2-3 days | 🟡 Medium  | +10-20   | ✅ Complete |
 | Counter-Move History            | 🟡 3-5 days | 🟡 Medium  | +10-20   | 📋 Planned |
-| Best-Move Instability Time Mgmt | 🟢 2-3 days | 🟡 Medium  | +5-15    | 📋 Planned |
+| Best-Move Instability Time Mgmt | 🟢 2-3 days | 🟡 Medium  | +5-15    | ✅ Complete |
 | Selective Checks in Quiescence  | 🟡 3-5 days | 🟡 Medium  | +15-25   | 📋 Planned |
 
 **Why Performance First?**
@@ -1072,7 +1072,7 @@ NNUE_FALLBACK_CLASSICAL: true
 **Document Status:** Active Development  
 **Maintainer:** Frank Kopp  
 **Created:** 2026-02-01  
-**Last Updated:** 2026-02-08  
+**Last Updated:** 2026-02-12  
 **Next Review:** After Phase 2 completion (v1.2 release)
 
 ---

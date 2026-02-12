@@ -2,7 +2,7 @@
 
 **Document Version:** 1.2  
 **Created:** 2026-02-01  
-**Last Updated:** 2026-02-09  
+**Last Updated:** 2026-02-12  
 **Status:** Phase 2 In Progress  
 **Target:** FrankyCPP v1.0 → v1.x releases
 
@@ -89,7 +89,7 @@ Tablebase support and endgame-specific techniques.
 | Singular Extensions             | Search         | 🟢 2-3 days | 🟡 Medium  | +20-30   | HIGH     | ✅ Complete    |
 | Check Extensions                | Search         | 🟢 2-3 days | 🟡 Medium  | +10-20   | HIGH     | ✅ Complete    |
 | Counter-Move History            | Search         | 🟡 3-5 days | 🟡 Medium  | +10-20   | LOW      | ❌ Not Planned |
-| Best-Move Instability Time Mgmt | Search         | 🟢 2-3 days | 🟡 Medium  | +5-15    | MEDIUM   | 📋 Planned    |
+| Best-Move Instability Time Mgmt | Search         | 🟢 2-3 days | 🟡 Medium  | +5-15    | MEDIUM   | ✅ Complete    |
 | Selective Checks in Quiescence  | Search         | 🟡 3-5 days | 🟡 Medium  | +15-25   | MEDIUM   | 📋 Planned    |
 
 **Expected Total ELO Gain:** +70-135  
@@ -536,6 +536,85 @@ CHECK_EXT_EARLY_LIMIT: 3      # only extend checks in first N moves per node
 
 ---
 
+### 2e. Best-Move Instability Time Management (Phase 2) ✅ COMPLETE
+
+**Description:**  
+Dynamically adjust search time based on how stable the best move is across iterations. When the best move changes frequently, the position is likely critical or complex, warranting more search time. When the best move remains stable for several consecutive iterations, search can be stopped earlier to save time for later moves.
+
+**Concept:**
+- Track the best move from each completed iteration
+- Count consecutive iterations where the best move has been stable
+- Count how many times the best move has changed during the search
+- Extend time when instability is detected (many best-move changes)
+- Reduce time when stability is confirmed (same move for several iterations)
+
+**Implementation:**
+```cpp
+// In iterative deepening loop:
+if (iterationDepth >= INSTABILITY_MIN_DEPTH) {
+    if (bestRootMove != prevBestRootMove) {
+        bestMoveStableCount = 0;
+        bestMoveChangeCount++;
+    } else {
+        bestMoveStableCount++;
+    }
+    prevBestRootMove = bestRootMove;
+    
+    // Extend time if best move is unstable
+    if (bestMoveChangeCount >= INSTABILITY_CHANGE_THRESHOLD && !addedInstabilityExtraTime) {
+        addExtraTime(INSTABILITY_EXTEND_FACTOR);
+        addedInstabilityExtraTime = true;
+    }
+    
+    // Stop early if best move is stable
+    if (bestMoveStableCount >= INSTABILITY_STABLE_COUNT) {
+        if (getElapsedSearchTime() > softTimeLimit * INSTABILITY_STABLE_FACTOR) {
+            stopSearch();
+        }
+    }
+}
+```
+
+**Configuration Parameters:**
+```yaml
+USE_BESTMOVE_INSTABILITY: true
+INSTABILITY_MIN_DEPTH: 8          # Minimum depth before tracking instability
+INSTABILITY_STABLE_COUNT: 5       # Iterations of stability before early stop
+INSTABILITY_CHANGE_THRESHOLD: 3   # Best-move changes to trigger time extension
+INSTABILITY_STABLE_FACTOR: 0.9    # Early stop after this fraction of soft limit
+INSTABILITY_EXTEND_FACTOR: 1.25   # Time multiplier when unstable (+25%)
+```
+
+**Relationship to Existing Volatility Detection:**
+This feature complements the existing eval volatility detection (which triggers on large evaluation swings between iterations). Best-move instability focuses on the actual move changing, while eval volatility focuses on score fluctuations. Both can occur independently:
+- Best move stable but eval volatile: Unclear position, same best move but uncertain value
+- Best move unstable but eval stable: Multiple equally-valued options competing
+- Both unstable: Critical position requiring extra search time
+
+**Files Changed:**
+- `src/engine/config/SearchConfigData.h` - Added 6 configuration parameters
+- `src/engine/Search.h` - Added tracking variables: `bestMoveStableCount`, `bestMoveChangeCount`, `prevBestRootMove`, `addedInstabilityExtraTime`
+- `src/engine/Search.cpp` - Implemented instability tracking and time adjustment logic
+- `src/engine/UciOptions.cpp` - Added UCI option for runtime toggle
+- `config/search.yaml` - Added configuration section
+
+**Testing & Results:**
+- Initial aggressive settings showed strength loss (-32 ELO)
+- Conservative settings (higher thresholds, less aggressive factors) maintained strength
+- **Arena Results (v1.2 vs v1.1 - with conservative settings):**
+  - Match: +26.8 ELO (53.8% score, 131W/186D/99L over 416 games)
+  - Feature expected to help more in longer time controls
+
+**Tuning Notes:**
+- Aggressive settings (low thresholds, high factors) hurt tactical play
+- Conservative defaults chosen to avoid strength loss in blitz
+- May benefit from different settings for different time controls
+- Parameters are exposed via UCI for user tuning
+
+**Expected Impact:** +5-15 ELO ✅ **Verified: Neutral to slightly positive with conservative settings**
+
+---
+
 ### 3. Lazy SMP Multi-Threaded Search (Phase 3)
 
 **Description:**  
@@ -953,5 +1032,5 @@ parameters:
 ---
 
 **Document Maintainer:** Frank Kopp  
-**Last Updated:** 2026-02-09  
+**Last Updated:** 2026-02-12  
 **Next Review:** After Phase 2 completion (v1.2 release)
