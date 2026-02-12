@@ -22,6 +22,7 @@
 #include <chesscore/Perft.h>
 #include <engine/Benchmark.h>
 #include <engine/UciHandler.h>
+#include <engine/UciOptions.h>
 #include <enginetest/TestSuite.h>
 #include <fstream>
 #include <iostream>
@@ -59,8 +60,24 @@ int main(int argc, char* argv[]) {
     // Declare a group of options that will be allowed only on command line
     po::options_description generic("Generic options");
     generic.add_options()
-      ("help,?", "produce help message")("version,v", "print version string")
-      ("config,c", po::value<std::string>(&config_file)->default_value("./config/FrankyCPP.cfg"), "configuration file name");
+      ("help,?", "produce help message")
+      ("config,c", po::value<std::string>(&config_file)->default_value("./config/FrankyCPP.cfg"), "configuration file name")
+      ("ucioptions,u", "print UCI options as if 'uci' command was sent")
+      ("version,v", "print version string")
+      // Perft options
+      ("perft", "run perft test")
+      ("startDepth", po::value<int>(&perftStart)->default_value(1), "start depth for perft test")
+      ("endDepth", po::value<int>(&perftEnd)->default_value(5), "end depth for perft test")
+      ("onDemand", po::value<bool>(&perftOnDemand)->default_value(false), "use on demand move generation for perft test")
+      // Benchmark options
+      ("bench", "run benchmark to measure NPS")
+      ("benchDepth", po::value<int>()->default_value(10), "search depth for benchmark (1-127)")
+      ("benchHash", po::value<int>()->default_value(128), "hash size in MB for benchmark (1-65536)")
+      // Testsuite options
+      ("testsuite", po::value<std::string>(&testsuite_file), "run testsuite in given file")
+      ("tsDepth", po::value<int>(&testsuite_depth)->default_value(0), "max search depth per test in testsuite")
+      ("tsTime", po::value<int>(&testsuite_time)->default_value(1'000), "time in ms per test in testsuite");
+
 
     // Declare a group of options that will be allowed both on command line
     // and in config file
@@ -70,23 +87,13 @@ int main(int argc, char* argv[]) {
       ("search_log_lvl,s", po::value<std::string>()->default_value("warn"), "set search log level <critical|error|warn|info|debug|trace>")
       ("nobook", "do not use opening book")
       ("book,b", po::value<std::string>(&book_file), "opening book to use")
-      ("booktype,t", po::value<std::string>(&book_type), "type of opening book <simple|san|pgn>")
-      ("testsuite", po::value<std::string>(&testsuite_file), "run testsuite in given file")
-      ("tsTime", po::value<int>(&testsuite_time)->default_value(1'000), "time in ms per test in testsuite")
-      ("tsDepth", po::value<int>(&testsuite_depth)->default_value(0), "max search depth per test in testsuite")
-      ("perft", "run perft test")
-      ("startDepth", po::value<int>(&perftStart)->default_value(1), "start depth for perft test")
-      ("endDepth", po::value<int>(&perftEnd)->default_value(5), "end depth for perft test")
-      ("onDemand", po::value<bool>(&perftOnDemand)->default_value(false), "use on demand move generation for perft test")
-      ("bench", "run benchmark to measure NPS")
-      ("benchDepth", po::value<int>()->default_value(10), "search depth for benchmark (1-127)")
-      ("benchHash", po::value<int>()->default_value(128), "hash size in MB for benchmark (1-65536)");
+      ("booktype,t", po::value<std::string>(&book_type), "type of opening book <simple|san|pgn>");
 
     // Hidden options will be allowed both on command line and in config file,
     // but will not be shown to the user when printing help.
     po::options_description hidden("Hidden options");
     hidden.add_options()
-      ("test,t", po::value<std::string>(), "test_hidden");
+      ("test", po::value<std::string>(), "test_hidden");
 
     // clang-format on
 
@@ -109,6 +116,16 @@ int main(int argc, char* argv[]) {
 
     if (programOptions.contains("version")) {
       std::cout << "Version: " << appName << "\n";
+      return 0;
+    }
+
+    if (programOptions.contains("ucioptions")) {
+      // Initialize to ensure all static data is ready
+      init::init();
+      // Print UCI options exactly like the "uci" command would
+      std::cout << "id name FrankyCPP v" << FrankyCPP_VERSION_MAJOR << "." << FrankyCPP_VERSION_MINOR << "\n";
+      std::cout << "id author Frank Kopp, Germany\n";
+      std::cout << UciOptions::getInstance()->str() << "\n";
       return 0;
     }
 
