@@ -37,6 +37,7 @@ set(FrankyCPPlib_SRCS
         types/bitboards.h
 
         config/ConfigManager.cpp
+        config/ConfigGenerators.cpp
         config/ConfigRegistry.cpp
 )
 

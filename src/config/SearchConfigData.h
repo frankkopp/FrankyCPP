@@ -21,7 +21,6 @@
 #define FRANKYCPP_SEARCHCONFIGDATA_H
 
 #include <array>
-#include <sstream>
 #include <string>
 #include <unordered_set>
 
@@ -142,20 +141,7 @@ struct SearchConfigData {
   double INSTABILITY_STABLE_FACTOR = 0.80;// multiply remaining time by this when stable (< 1.0)
   double INSTABILITY_EXTEND_FACTOR = 1.25;// multiply remaining time by this when unstable (> 1.0)
 
-  std::string str() const {
-    std::ostringstream os;
-    os << "MOVE_OVERHEAD_MS: " << MOVE_OVERHEAD_MS << '\n'
-       << "USE_BOOK: " << USE_BOOK << '\n'
-       << "BOOK_PATH: " << BOOK_PATH << '\n'
-       << "BOOK_TYPE: " << BOOK_TYPE << '\n'
-       << "USE_PONDER: " << USE_PONDER << '\n'
-       << "USE_ALPHABETA: " << USE_ALPHABETA << '\n'
-       << "USE_PVS: " << USE_PVS << '\n'
-       << "USE_ASP: " << USE_ASP << '\n'
-       << "USE_QUIESCENCE: " << USE_QUIESCENCE << '\n'
-       << "TT_SIZE_MB: " << TT_SIZE_MB << '\n';
-    return os.str();
-  }
+  std::string str() const;
 };
 
 inline void warnUnknownKey(const std::string& key, const char* context) {
@@ -340,7 +326,7 @@ struct YAML::convert<SearchConfigData> {
 
     // Log unknown keys
     for (auto it : n) {
-      const std::string key = it.first.as<std::string>("");
+      const auto key = it.first.as<std::string>("");
       if (!key.empty() && !seen.contains(key)) {
         warnUnknownKey(key, "Search");
       }

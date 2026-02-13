@@ -20,7 +20,6 @@
 #ifndef FRANKYCPP_EVALCONFIGDATA_H
 #define FRANKYCPP_EVALCONFIGDATA_H
 
-#include <sstream>
 #include <string>
 #include <unordered_set>
 
@@ -118,15 +117,7 @@ struct EvalConfigData {
 
     bool USE_GAMEPHASE_VALUE = true;
 
-    std::string str() const {
-      std::ostringstream os;
-      os << "USE_MATERIAL: " << USE_MATERIAL << '\n'
-         << "USE_POSITIONAL: " << USE_POSITIONAL << '\n'
-         << "USE_TEMPO: " << USE_TEMPO << '\n'
-         << "TEMPO: " << TEMPO << '\n'
-         << "USE_PAWN_EVAL: " << USE_PAWN_EVAL << '\n';
-    return os.str();
-  }
+    std::string str() const;
 };
 
   inline void warnUnknownKey(const std::string& key) {

@@ -72,6 +72,7 @@ add_executable(
         config/ConfigManagerTests.cpp
         config/ConfigAutoInitTests.cpp
         config/ConfigRegistryTest.cpp
+        config/ConfigGeneratorsTest.cpp
         engine_arena/ResultWriter_Test.cpp
         engine_arena/MatchRunner_Test.cpp)
 

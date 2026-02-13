@@ -9,6 +9,14 @@
 
 ---
 
+## Coding Style Notes
+
+> **⚠️ DO NOT USE NAMESPACES** - This project does not use C++ namespaces for its own code.
+> All new code should be at global scope (or within classes/structs) to stay consistent
+> with the existing codebase. This applies to all files created as part of this refactor.
+
+---
+
 ## Executive Summary
 
 Refactor FrankyCPP's configuration system to use a **single source of truth** for all configuration settings. Currently, configuration data is duplicated across multiple locations:
@@ -543,7 +551,7 @@ Each phase will be committed separately to enable easy rollback:
 
 ---
 
-### Phase 0: Directory Reorganization (Preparatory)
+### Phase 0: Directory Reorganization (Preparatory) ✅ COMPLETE
 **Goal:** Move all config-related files to a dedicated `src/config/` folder before starting the refactor.
 
 **Rationale:**
@@ -582,7 +590,7 @@ src/engine/config/EvalConfigData.h   → src/config/EvalConfigData.h
 
 ---
 
-### Phase 1: Foundation (Low Risk)
+### Phase 1: Foundation (Low Risk) ✅ COMPLETE
 **Goal:** Create ConfigDef and ConfigRegistry without changing existing behavior.
 
 | Task                                          | Effort | Files                                       |
@@ -595,17 +603,18 @@ src/engine/config/EvalConfigData.h   → src/config/EvalConfigData.h
 
 **Deliverable:** Registry exists but nothing uses it yet. No behavioral changes.
 
-### Phase 2: str() Auto-Generation
+### Phase 2: str() Auto-Generation ✅ COMPLETE
 **Goal:** Fix the immediate issue - complete `str()` output.
 
-| Task                                               | Effort | Files                  |
-|----------------------------------------------------|--------|------------------------|
-| Create `generateConfigString()` function           | 2h     | `ConfigGenerators.cpp` |
-| Replace `SearchConfigData::str()` to use generator | 0.5h   | `SearchConfigData.h`   |
-| Replace `EvalConfigData::str()` to use generator   | 0.5h   | `EvalConfigData.h`     |
-| Verify Arena bench output shows all configs        | 0.5h   | Manual test            |
+| Task                                               | Effort | Files                      |
+|----------------------------------------------------|--------|----------------------------|
+| Create `generateConfigString()` function           | 2h     | `ConfigGenerators.cpp`     |
+| Replace `SearchConfigData::str()` to use generator | 0.5h   | `SearchConfigData.h`       |
+| Replace `EvalConfigData::str()` to use generator   | 0.5h   | `EvalConfigData.h`         |
+| Unit tests for ConfigGenerators                    | 1h     | `ConfigGeneratorsTest.cpp` |
+| Verify output shows all configs                    | 0.5h   | Manual test                |
 
-**Deliverable:** `ConfigManager::strCurrent()` outputs all ~100+ settings.
+**Deliverable:** `SearchConfigData::str()` and `EvalConfigData::str()` output all ~117 settings grouped by domain.
 
 ### Phase 3: YAML Parsing from Registry
 **Goal:** Eliminate duplicate YAML decode code. (Note: We only *read* YAML, not write it.)
