@@ -25,9 +25,9 @@
 #include "config/ConfigManager.h"
 
 Evaluator::Evaluator()
-    : EvalConfig(engine::config::ConfigManager::instance().eval()) {
-  if (engine::config::ConfigManager::instance().eval().USE_PAWN_TT) {
-    pawnCache.resize(engine::config::ConfigManager::instance().eval().PAWN_TT_SIZE_MB);
+    : EvalConfig(ConfigManager::instance().eval()) {
+  if (ConfigManager::instance().eval().USE_PAWN_TT) {
+    pawnCache.resize(ConfigManager::instance().eval().PAWN_TT_SIZE_MB);
   }
   else {
     LOG__INFO(Logger::get().EVAL_LOG, "Pawn Cache is disabled in configuration");

@@ -68,10 +68,8 @@
 #include <utility>
 #include <vector>
 
-namespace engine::config {
-  struct EvalConfigData;
-  struct SearchConfigData;
-}// namespace engine::config
+struct EvalConfigData;
+struct SearchConfigData;
 class UciHandler;
 
 /// UCI option types as defined by the UCI protocol.
@@ -174,15 +172,15 @@ class UciOptions {
   std::vector<UciOption> optionVector{};
 
   /// Reference to the Search Config Data for initializing search-related options.
-  const engine::config::SearchConfigData& SearchConfig;
+  const SearchConfigData& SearchConfig;
 
   /// Reference to the Eval Config Data for initializing eval-related options.
-  const engine::config::EvalConfigData& EvalConfig;
+  const EvalConfigData& EvalConfig;
 
   /// Private constructor - use getInstance() to access.
   UciOptions()
-      : SearchConfig(engine::config::ConfigManager::instance().search()),
-        EvalConfig(engine::config::ConfigManager::instance().eval()) {
+      : SearchConfig(ConfigManager::instance().search()),
+        EvalConfig(ConfigManager::instance().eval()) {
     initOptions();
   }
 

@@ -28,7 +28,6 @@
 #include "common/Logging.h"
 #include "types/globals.h"
 
-namespace engine::config {
 
   ConfigManager& ConfigManager::instance() {
     static ConfigManager inst;
@@ -143,7 +142,5 @@ namespace engine::config {
        << defaultSearch_.str();
     os << "[Eval]\n"
        << defaultEval_.str();
-    return os.str();
-  }
-
-}// namespace engine::config
+  return os.str();
+}

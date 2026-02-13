@@ -21,11 +21,9 @@
 #include <string>
 #include <yaml-cpp/yaml.h>
 
-#include "engine/config/EvalConfigData.h"
-#include "engine/config/SearchConfigData.h"
+#include "config/EvalConfigData.h"
+#include "config/SearchConfigData.h"
 
-using engine::config::EvalConfigData;
-using engine::config::SearchConfigData;
 
 namespace {
 

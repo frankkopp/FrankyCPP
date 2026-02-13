@@ -25,15 +25,13 @@
 #include <unordered_set>
 
 #include "common/Logging.h"
-#include "engine/config/YamlHelpers.h"
+#include "config/YamlHelpers.h"
 #include <yaml-cpp/yaml.h>
 
-namespace engine::config {
-
-  // Configuration struct for Evaluation
-  // All members have default values which are used as fallback
-  // if no YAML config file is found or a value is missing in the file.
-  struct EvalConfigData {
+// Configuration struct for Evaluation
+// All members have default values which are used as fallback
+// if no YAML config file is found or a value is missing in the file.
+struct EvalConfigData {
     // Debug
     std::string EVAL_CONFIG_SOURCE = "fallback";
 
@@ -127,26 +125,19 @@ namespace engine::config {
          << "USE_TEMPO: " << USE_TEMPO << '\n'
          << "TEMPO: " << TEMPO << '\n'
          << "USE_PAWN_EVAL: " << USE_PAWN_EVAL << '\n';
-      return os.str();
-    }
-  };
+    return os.str();
+  }
+};
 
-  namespace detail {
-    inline void warnUnknownKey(const std::string& key) {
-      LOG__WARN(Logger::get().EVAL_LOG, "Unknown key in Eval config: {}", key);
-    }
-  }// namespace detail
+  inline void warnUnknownKey(const std::string& key) {
+    LOG__WARN(Logger::get().EVAL_LOG, "Unknown key in Eval config: {}", key);
+  }
 
-}// namespace engine::config
-
-// ReSharper disable once CppRedundantNamespaceDefinition
-namespace YAML {
-
-  template<>
-  struct convert<engine::config::EvalConfigData> {
-    static Node encode(const engine::config::EvalConfigData& c) {
+template<>
+  struct YAML::convert<EvalConfigData> {
+    static Node encode(const EvalConfigData& c) {
       Node n;
-      n["EVAL_CONFIG_SOURCE"]            = c.EVAL_CONFIG_SOURCE;
+      n["EVAL_CONFIG_SOURCE"]           = c.EVAL_CONFIG_SOURCE;
       n["USE_MATERIAL"]                 = c.USE_MATERIAL;
       n["USE_POSITIONAL"]               = c.USE_POSITIONAL;
       n["USE_TEMPO"]                    = c.USE_TEMPO;
@@ -208,9 +199,9 @@ namespace YAML {
       return n;
     }
 
-    static bool decode(const Node& n, engine::config::EvalConfigData& c) {
+    static bool decode(const Node& n, EvalConfigData& c) {
       if (!n || !n.IsMap()) return false;
-      using engine::config::yaml::set_if_present;
+      using yaml::set_if_present;
       std::unordered_set<std::string> seen;
 
       set_if_present(n, "EVAL_CONFIG_SOURCE", c.EVAL_CONFIG_SOURCE, seen);
@@ -276,13 +267,11 @@ namespace YAML {
       for (auto it : n) {
         const auto key = it.first.as<std::string>("");
         if (!key.empty() && !seen.contains(key)) {
-          engine::config::detail::warnUnknownKey(key);
+          warnUnknownKey(key);
         }
       }
       return true;
     }
-  };
-
-}// namespace YAML
+  };// namespace YAML
 
 #endif // FRANKYCPP_EVALCONFIGDATA_H

@@ -30,7 +30,7 @@
 Search::Search() : Search(nullptr) {}
 
 Search::Search(UciHandler* pUciHandler)
-    : uciHandler(pUciHandler), SearchConfig(engine::config::ConfigManager::instance().search()) {
+    : uciHandler(pUciHandler), SearchConfig(ConfigManager::instance().search()) {
   this->tt         = std::make_unique<TT>(0);
 }
 
@@ -1647,7 +1647,7 @@ void Search::initialize() {
       if (!std::filesystem::exists(SearchConfig.BOOK_PATH)) {
         const std::string message = std::format("Opening Book '{}' not found. Disabling book usage.", SearchConfig.BOOK_PATH);
         LOG__ERROR(Logger::get().BOOK_LOG, "{}", message);
-        engine::config::ConfigManager::instance().applyOverrides([&](engine::config::SearchConfigData& s, auto& ) {
+        ConfigManager::instance().applyOverrides([&](SearchConfigData& s, auto& ) {
           s.USE_BOOK = false;
         });
       }

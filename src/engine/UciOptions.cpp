@@ -21,7 +21,7 @@
 #include "Search.h"
 #include "UciHandler.h"
 #include "common/stringutil.h"
-#include "engine/config/ConfigManager.h"
+#include "config/ConfigManager.h"
 
 void UciOptions::initOptions() {
 
@@ -357,28 +357,28 @@ void UciOptions::initOptions() {
   optionVector.emplace_back(
     "Use Lazy Eval", EvalConfig.USE_LAZY_EVAL,
     [&](UciHandler*) {
-      engine::config::ConfigManager::instance().applyOverrides([&](auto&, engine::config::EvalConfigData& e) {
+      ConfigManager::instance().applyOverrides([&](auto&, EvalConfigData& e) {
         e.USE_LAZY_EVAL = getOption("Use Lazy Eval")->currentValue == "true";
       });
     });
   optionVector.emplace_back(
     "Use Pawn Eval", EvalConfig.USE_PAWN_EVAL,
     [&](UciHandler*) {
-      engine::config::ConfigManager::instance().applyOverrides([&](auto&, engine::config::EvalConfigData& e) {
+      ConfigManager::instance().applyOverrides([&](auto&, EvalConfigData& e) {
         e.USE_PAWN_EVAL = getOption("Use Pawn Eval")->currentValue == "true";
       });
     });
   optionVector.emplace_back(
     "Use Pawn Hash", EvalConfig.USE_PAWN_TT,
     [&](UciHandler*) {
-      engine::config::ConfigManager::instance().applyOverrides([&](auto&, engine::config::EvalConfigData& e) {
+      ConfigManager::instance().applyOverrides([&](auto&, EvalConfigData& e) {
         e.USE_PAWN_TT = getOption("Use Pawn Hash")->currentValue == "true";
       });
     });
   optionVector.emplace_back(
     "Pawn Hash Size", EvalConfig.PAWN_TT_SIZE_MB, 0, 1024,
     [&](UciHandler*) {
-      engine::config::ConfigManager::instance().applyOverrides([&](auto&, engine::config::EvalConfigData& e) {
+      ConfigManager::instance().applyOverrides([&](auto&, EvalConfigData& e) {
         e.PAWN_TT_SIZE_MB = static_cast<Depth>(getInt(getOption("Pawn Hash Size")->currentValue));
       });
     });

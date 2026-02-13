@@ -28,7 +28,7 @@
 #include "common/Logging.h"
 #include "types/types.h"
 #include "version.h"
-#include "engine/config/ConfigManager.h"
+#include "config/ConfigManager.h"
 
 #include <memory>
 #include <thread>

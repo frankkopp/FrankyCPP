@@ -26,11 +26,8 @@
 #include <gtest/gtest.h>
 #include <yaml-cpp/yaml.h>
 
-#include "engine/config/ConfigManager.h"
+#include "config/ConfigManager.h"
 
-using engine::config::ConfigManager;
-using engine::config::EvalConfigData;
-using engine::config::SearchConfigData;
 
 namespace {
 

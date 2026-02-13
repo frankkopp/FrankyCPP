@@ -44,7 +44,7 @@
 #include "engine_arena/BenchmarkRunner.h"
 #include "engine_arena/ResultWriter.h"
 #include "engine/Benchmark.h"
-#include "engine/config/ConfigManager.h"
+#include "config/ConfigManager.h"
 #include "init.h"
 
 #include <boost/program_options.hpp>
@@ -165,7 +165,7 @@ int main(int argc, char* argv[]) {
 
       // Print current engine configuration
       std::cout << "\n--- Current Engine Configuration ---" << std::endl;
-      std::cout << engine::config::ConfigManager::instance().strCurrent() << std::endl;
+      std::cout << ConfigManager::instance().strCurrent() << std::endl;
 
       arena::ResultWriter writer(config.resultsDir);
 

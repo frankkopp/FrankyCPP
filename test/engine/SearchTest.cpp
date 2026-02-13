@@ -22,7 +22,7 @@
 #include "init.h"
 #include "types/types.h"
 
-#include "engine/config/ConfigManager.h"
+#include "config/ConfigManager.h"
 #include <gtest/gtest.h>
 #include <iomanip>
 #include <sstream>
@@ -45,7 +45,7 @@ public:
 
 protected:
   void SetUp() override {
-    engine::config::ConfigManager::instance().resetToDefaults();
+    ConfigManager::instance().resetToDefaults();
   }
   void TearDown() override {}
 };
@@ -605,7 +605,7 @@ TEST_F(SearchTest, debug) {
   CONFIG_OVERRIDE(s.USE_QS_SEE = false;);
   CONFIG_OVERRIDE(s.USE_QS_TT = false;);
 
-  engine::config::ConfigManager::instance().applyOverrides([&](auto&, engine::config::EvalConfigData& e) {
+  ConfigManager::instance().applyOverrides([&](auto&, EvalConfigData& e) {
     e.USE_MATERIAL   = true;
     e.USE_POSITIONAL = true;
     e.TEMPO          = 34;

@@ -64,9 +64,7 @@
 #include "config/EvalConfigData.h"
 #include "types/types.h"
 
-namespace engine::config {
-  struct SearchConfigData;
-}
+struct SearchConfigData;
 
 class Evaluator {
 
@@ -76,7 +74,7 @@ class Evaluator {
   Score tmpScore{};
 
   // reference to the Eval Config Data
-  const engine::config::EvalConfigData& EvalConfig;
+  const EvalConfigData& EvalConfig;
 
 public:
   Evaluator();

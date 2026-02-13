@@ -142,7 +142,7 @@ TestSuiteResult TestSuite::sumUpTests() const {
 void TestSuite::runAllTests() {
   int i = 0;
   // Ensure evaluator configuration is at defaults for this suite run
-  engine::config::ConfigManager::instance().resetToDefaults();
+  ConfigManager::instance().resetToDefaults();
   // loop over all test cases and execute the test
   for (auto& test : testCases_) {
     fprintln("Test {} of {}\nTest: {} -- Target Result {}",

@@ -36,9 +36,9 @@ public:
   }
 
   // reference to the Search Config Data
-  const engine::config::SearchConfigData& SearchConfig = engine::config::ConfigManager::instance().search();
+  const SearchConfigData& SearchConfig = ConfigManager::instance().search();
   // reference to the Search Config Data
-  const engine::config::EvalConfigData& EvalConfig = engine::config::ConfigManager::instance().eval();
+  const EvalConfigData& EvalConfig = ConfigManager::instance().eval();
 
 protected:
   void SetUp() override {}

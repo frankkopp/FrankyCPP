@@ -25,7 +25,7 @@
 #include "init.h"
 #include "types/types.h"
 
-#include "engine/config/ConfigManager.h"
+#include "config/ConfigManager.h"
 #include <engine/Evaluator.h>
 #include <gtest/gtest.h>
 
@@ -38,13 +38,13 @@
 using testing::Eq;
 
 
-auto& cm = engine::config::ConfigManager::instance(); // Bind cm to ConfigManager singleton by reference
+auto& cm = ConfigManager::instance(); // Bind cm to ConfigManager singleton by reference
 
 // centralize test eval config: set all USE_* flags
 // to the given onoff value
 void set_eval_config(const bool onoff) {
   // Values taken from src/engine/EvalConfig.h
-  cm.applyOverrides([&](auto&, engine::config::EvalConfigData& e) {
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
     e.USE_MATERIAL   = onoff;
     e.USE_POSITIONAL = onoff;
     e.USE_TEMPO      = onoff;
@@ -97,7 +97,7 @@ TEST_F(EvaluatorTest, testFens) {
 // New test: ensure evaluation with only MATERIAL equals material difference from side to move
 TEST_F(EvaluatorTest, EvaluateMaterialOnly) {
   set_eval_config(false);
-  cm.applyOverrides([&](auto&, engine::config::EvalConfigData& e) {
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
     e.USE_MATERIAL = true;
   });
 
@@ -137,7 +137,7 @@ TEST_F(EvaluatorTest, EvaluateMaterialOnly) {
 TEST_F(EvaluatorTest, KnightMobility_CentralBeatsCorner) {
   // Enable only piece eval (knight mobility) to isolate the effect
   set_eval_config(false);
-  cm.applyOverrides([&](auto&, engine::config::EvalConfigData& e) {
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
     e.USE_PIECE_EVAL      = true;
     e.USE_KNIGHT_MOBILITY = true;
     e.USE_GAMEPHASE_VALUE = true;
@@ -166,7 +166,7 @@ TEST_F(EvaluatorTest, KnightMobility_CentralBeatsCorner) {
 
 TEST_F(EvaluatorTest, Pawn_PassedBeatsBlocked) {
   set_eval_config(false);
-  cm.applyOverrides([&](auto&, engine::config::EvalConfigData& e) {
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
     e.USE_PAWN_EVAL       = true;
     e.USE_GAMEPHASE_VALUE = true;
   });
@@ -193,7 +193,7 @@ TEST_F(EvaluatorTest, Pawn_PassedBeatsBlocked) {
 
 TEST_F(EvaluatorTest, BishopMobility_CentralBeatsCorner) {
   set_eval_config(false);
-  cm.applyOverrides([&](auto&, engine::config::EvalConfigData& e) {
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
     e.USE_PIECE_EVAL      = true;
     e.USE_BISHOP_MOBILITY = true;
     e.USE_GAMEPHASE_VALUE = true;
@@ -221,7 +221,7 @@ TEST_F(EvaluatorTest, BishopMobility_CentralBeatsCorner) {
 
 TEST_F(EvaluatorTest, Rook_FileBonus_Open_gt_SemiOpen_gt_Closed) {
   set_eval_config(false);
-  cm.applyOverrides([&](auto&, engine::config::EvalConfigData& e) {
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
     e.USE_PIECE_EVAL           = true;
     e.USE_ROOK_OPEN_FILE_BONUS = true;
     e.USE_ROOK_MOBILITY        = false;// isolate file bonus
@@ -256,7 +256,7 @@ TEST_F(EvaluatorTest, Rook_FileBonus_Open_gt_SemiOpen_gt_Closed) {
 
 TEST_F(EvaluatorTest, Rook_PSQT_SeventhRank_BetterThan_BackRank) {
   set_eval_config(false);
-  cm.applyOverrides([&](auto&, engine::config::EvalConfigData& e) {
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
     e.USE_POSITIONAL      = true; // use PSQT
     e.USE_PIECE_EVAL      = false;// avoid mobility/file
     e.USE_KING_EVAL       = false;// avoid shield
@@ -285,7 +285,7 @@ TEST_F(EvaluatorTest, Rook_PSQT_SeventhRank_BetterThan_BackRank) {
 
 TEST_F(EvaluatorTest, QueenMobility_CentralBeatsCorner) {
   set_eval_config(false);
-  cm.applyOverrides([&](auto&, engine::config::EvalConfigData& e) {
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
     e.USE_PIECE_EVAL      = true;
     e.USE_QUEEN_MOBILITY  = true;
     e.USE_QUEEN_TROPISM   = false;// isolate mobility
@@ -312,7 +312,7 @@ TEST_F(EvaluatorTest, QueenMobility_CentralBeatsCorner) {
 
 TEST_F(EvaluatorTest, King_PSQT_CenterBeatsCorner_Endgameish) {
   set_eval_config(false);
-  cm.applyOverrides([&](auto&, engine::config::EvalConfigData& e) {
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
     e.USE_POSITIONAL      = true;// PSQT
     e.USE_PIECE_EVAL      = false;
     e.USE_PAWN_EVAL       = false;
@@ -341,7 +341,7 @@ TEST_F(EvaluatorTest, King_PSQT_CenterBeatsCorner_Endgameish) {
 
 TEST_F(EvaluatorTest, BishopPairBonus_TwoBishopsBeats_BishopKnight) {
   set_eval_config(false);
-  cm.applyOverrides([&](auto&, engine::config::EvalConfigData& e) {
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
     e.USE_PIECE_EVAL        = true;
     e.USE_BISHOP_PAIR_BONUS = true;
     e.USE_BISHOP_MOBILITY   = false;// isolate pair bonus
@@ -375,7 +375,7 @@ TEST_F(EvaluatorTest, BishopPairBonus_TwoBishopsBeats_BishopKnight) {
 
 TEST_F(EvaluatorTest, RookMobility_CentralBeatsEdge_FileBonusesOff) {
   set_eval_config(false);
-  cm.applyOverrides([&](auto&, engine::config::EvalConfigData& e) {
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
     e.USE_PIECE_EVAL           = true;
     e.USE_ROOK_MOBILITY        = true;
     e.USE_ROOK_OPEN_FILE_BONUS = false;// isolate mobility
@@ -408,7 +408,7 @@ TEST_F(EvaluatorTest, RookMobility_CentralBeatsEdge_FileBonusesOff) {
 
 TEST_F(EvaluatorTest, QueenTropism_CloserBeatsFarther_EndgameOnly) {
   set_eval_config(false);
-  cm.applyOverrides([&](auto&, engine::config::EvalConfigData& e) {
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
     e.USE_PIECE_EVAL      = true;
     e.USE_QUEEN_MOBILITY  = false;// isolate tropism
     e.USE_QUEEN_TROPISM   = true; // endgame-only weight
@@ -454,7 +454,7 @@ TEST_F(EvaluatorTest, TimingEvaluateFens) {
 
   // Ensure evaluator configuration uses defaults from EvalConfig
   set_eval_config(true);
-  cm.applyOverrides([&](auto&, engine::config::EvalConfigData& e) {
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
     e.USE_LAZY_EVAL       = false;// disable lazy eval for timing test to have all positions fully evaluated
     e.USE_KNIGHT_MOBILITY = false;
   });
@@ -550,7 +550,7 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
     // Helper: turn all features ON, disable LAZY, then apply a mutator to EvalConfig
     auto disable = [&](auto fn) {
       set_eval_config(true);// all features ON
-      cm.applyOverrides([&](auto&, engine::config::EvalConfigData& e) {
+      cm.applyOverrides([&](auto&, EvalConfigData& e) {
         e.USE_LAZY_EVAL = false;// ensure lazy eval is OFF for timing
         fn(e);                  // apply specific disables
       });
@@ -559,66 +559,66 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
     // Baseline: all features ON, LAZY OFF
     cases.push_back({"Baseline (all features ON; LAZY OFF)", [&] {
                        set_eval_config(true);
-                       cm.applyOverrides([&](auto&, engine::config::EvalConfigData& e) { e.USE_LAZY_EVAL = false; });
+                       cm.applyOverrides([&](auto&, EvalConfigData& e) { e.USE_LAZY_EVAL = false; });
                      }});
 
     // Each case disables exactly the named feature(s) while leaving others ON
     cases.push_back({"Disable MATERIAL only", [&] {
-                       disable([](engine::config::EvalConfigData& e) { e.USE_MATERIAL = false; });
+                       disable([](EvalConfigData& e) { e.USE_MATERIAL = false; });
                      }});
     cases.push_back({"Disable POSITIONAL only", [&] {
-                       disable([](engine::config::EvalConfigData& e) { e.USE_POSITIONAL = false; });
+                       disable([](EvalConfigData& e) { e.USE_POSITIONAL = false; });
                      }});
     cases.push_back({"Disable TEMPO only", [&] {
-                       disable([](engine::config::EvalConfigData& e) { e.USE_TEMPO = false; });
+                       disable([](EvalConfigData& e) { e.USE_TEMPO = false; });
                      }});
 
     // Piece eval umbrella off
     cases.push_back({"Disable PIECE_EVAL only", [&] {
-                       disable([](engine::config::EvalConfigData& e) { e.USE_PIECE_EVAL = false; });
+                       disable([](EvalConfigData& e) { e.USE_PIECE_EVAL = false; });
                      }});
 
     // Piece sub-features (PIECE_EVAL stays ON)
     cases.push_back({"Disable BISHOP_PAIR_BONUS (with PIECE_EVAL)", [&] {
-                       disable([](engine::config::EvalConfigData& e) { e.USE_BISHOP_PAIR_BONUS = false; });
+                       disable([](EvalConfigData& e) { e.USE_BISHOP_PAIR_BONUS = false; });
                      }});
     cases.push_back({"Disable KNIGHT_MOBILITY (with PIECE_EVAL)", [&] {
-                       disable([](engine::config::EvalConfigData& e) { e.USE_KNIGHT_MOBILITY = false; });
+                       disable([](EvalConfigData& e) { e.USE_KNIGHT_MOBILITY = false; });
                      }});
     cases.push_back({"Disable BISHOP_MOBILITY (with PIECE_EVAL)", [&] {
-                       disable([](engine::config::EvalConfigData& e) { e.USE_BISHOP_MOBILITY = false; });
+                       disable([](EvalConfigData& e) { e.USE_BISHOP_MOBILITY = false; });
                      }});
     cases.push_back({"Disable ROOK_MOBILITY (with PIECE_EVAL)", [&] {
-                       disable([](engine::config::EvalConfigData& e) { e.USE_ROOK_MOBILITY = false; });
+                       disable([](EvalConfigData& e) { e.USE_ROOK_MOBILITY = false; });
                      }});
     cases.push_back({"Disable ROOK_OPEN_FILE_BONUS (with PIECE_EVAL)", [&] {
-                       disable([](engine::config::EvalConfigData& e) { e.USE_ROOK_OPEN_FILE_BONUS = false; });
+                       disable([](EvalConfigData& e) { e.USE_ROOK_OPEN_FILE_BONUS = false; });
                      }});
     cases.push_back({"Disable QUEEN_MOBILITY (with PIECE_EVAL)", [&] {
-                       disable([](engine::config::EvalConfigData& e) { e.USE_QUEEN_MOBILITY = false; });
+                       disable([](EvalConfigData& e) { e.USE_QUEEN_MOBILITY = false; });
                      }});
     cases.push_back({"Disable QUEEN_TROPISM (with PIECE_EVAL)", [&] {
-                       disable([](engine::config::EvalConfigData& e) { e.USE_QUEEN_TROPISM = false; });
+                       disable([](EvalConfigData& e) { e.USE_QUEEN_TROPISM = false; });
                      }});
 
     // King eval
     cases.push_back({"Disable KING_EVAL only", [&] {
-                       disable([](engine::config::EvalConfigData& e) { e.USE_KING_EVAL = false; });
+                       disable([](EvalConfigData& e) { e.USE_KING_EVAL = false; });
                      }});
     cases.push_back({"Disable KING_SAFETY_SHIELD (with KING_EVAL)", [&] {
-                       disable([](engine::config::EvalConfigData& e) { e.USE_KING_SAFETY_SHIELD = false; });
+                       disable([](EvalConfigData& e) { e.USE_KING_SAFETY_SHIELD = false; });
                      }});
 
     cases.push_back({"Disable GAMEPHASE_VALUE only", [&] {
-                       disable([](engine::config::EvalConfigData& e) { e.USE_GAMEPHASE_VALUE = false; });
+                       disable([](EvalConfigData& e) { e.USE_GAMEPHASE_VALUE = false; });
                      }});
 
     // Pawn eval
     cases.push_back({"Disable PAWN_EVAL only", [&] {
-                       disable([](engine::config::EvalConfigData& e) { e.USE_PAWN_EVAL = false; });
+                       disable([](EvalConfigData& e) { e.USE_PAWN_EVAL = false; });
                      }});
     cases.push_back({"Disable PAWN_TT (with PAWN_EVAL)", [&] {
-                       disable([](engine::config::EvalConfigData& e) { e.USE_PAWN_TT = false; });
+                       disable([](EvalConfigData& e) { e.USE_PAWN_TT = false; });
                      }});
 
     // Final base case: everything OFF (including LAZY)

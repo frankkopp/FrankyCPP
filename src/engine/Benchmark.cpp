@@ -48,8 +48,8 @@ BenchResult Benchmark::run(const std::vector<std::string>& fens, const BenchConf
                    std::to_string(FrankyCPP_VERSION_MINOR);
 
   // Configure hash size via config override
-  config::ConfigManager::instance().applyOverrides(
-    [&](config::SearchConfigData& s, config::EvalConfigData&) {
+  ConfigManager::instance().applyOverrides(
+    [&](SearchConfigData& s, EvalConfigData&) {
       s.TT_SIZE_MB = config.hashSizeMB;
     });
 

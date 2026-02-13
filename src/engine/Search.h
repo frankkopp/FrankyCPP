@@ -184,7 +184,7 @@ class Search {
   bool hadBookMove = false;
 
   // reference to the Search Config Data
-  const engine::config::SearchConfigData& SearchConfig;
+  const SearchConfigData& SearchConfig;
 
   // LMR reduction table pre-computed for depth 0..31 and moves searched 0..63
   static constexpr int lmr_reduction(const int depth, const int movesSearched) {

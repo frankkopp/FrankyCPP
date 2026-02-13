@@ -25,7 +25,7 @@
 #include <unordered_set>
 #include <yaml-cpp/yaml.h>
 
-namespace engine::config::yaml {
+namespace yaml {
 
   // If key exists in node, assign to out and record key in seen
   template<typename T>
@@ -51,6 +51,6 @@ namespace engine::config::yaml {
     }
   }
 
-}// namespace engine::config::yaml
+}// namespace yaml
 
 #endif // FRANKYCPP_YAMLHELPERS_H
