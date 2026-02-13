@@ -20,11 +20,9 @@
 #ifndef FRANKYCPP_EVALCONFIGDATA_H
 #define FRANKYCPP_EVALCONFIGDATA_H
 
+#include <set>
 #include <string>
-#include <unordered_set>
 
-#include "common/Logging.h"
-#include "config/YamlHelpers.h"
 #include <yaml-cpp/yaml.h>
 
 // Configuration struct for Evaluation
@@ -120,149 +118,25 @@ struct EvalConfigData {
     std::string str() const;
 };
 
-  inline void warnUnknownKey(const std::string& key) {
-    LOG__WARN(Logger::get().EVAL_LOG, "Unknown key in Eval config: {}", key);
-  }
+// Forward declaration for parseYamlConfig
+std::set<std::string> parseYamlConfig(
+    const YAML::Node& node,
+    EvalConfigData& eval,
+    bool warnUnknown);
 
 template<>
-  struct YAML::convert<EvalConfigData> {
-    static Node encode(const EvalConfigData& c) {
-      Node n;
-      n["EVAL_CONFIG_SOURCE"]           = c.EVAL_CONFIG_SOURCE;
-      n["USE_MATERIAL"]                 = c.USE_MATERIAL;
-      n["USE_POSITIONAL"]               = c.USE_POSITIONAL;
-      n["USE_TEMPO"]                    = c.USE_TEMPO;
-      n["TEMPO"]                        = c.TEMPO;
-      n["USE_LAZY_EVAL"]                = c.USE_LAZY_EVAL;
-      n["LAZY_THRESHOLD"]               = c.LAZY_THRESHOLD;
-      n["USE_PAWN_EVAL"]                = c.USE_PAWN_EVAL;
-      n["USE_PAWN_TT"]                  = c.USE_PAWN_TT;
-      n["PAWN_TT_SIZE_MB"]              = c.PAWN_TT_SIZE_MB;
-      n["ISOLATED_PAWN_MID_WEIGHT"]     = c.ISOLATED_PAWN_MID_WEIGHT;
-      n["ISOLATED_PAWN_END_WEIGHT"]     = c.ISOLATED_PAWN_END_WEIGHT;
-      n["DOUBLED_PAWN_MID_WEIGHT"]      = c.DOUBLED_PAWN_MID_WEIGHT;
-      n["DOUBLED_PAWN_END_WEIGHT"]      = c.DOUBLED_PAWN_END_WEIGHT;
-      n["PASSED_PAWN_MID_WEIGHT"]       = c.PASSED_PAWN_MID_WEIGHT;
-      n["PASSED_PAWN_END_WEIGHT"]       = c.PASSED_PAWN_END_WEIGHT;
-      n["BLOCKED_PAWN_MID_WEIGHT"]      = c.BLOCKED_PAWN_MID_WEIGHT;
-      n["BLOCKED_PAWN_END_WEIGHT"]      = c.BLOCKED_PAWN_END_WEIGHT;
-      n["PHALANX_PAWN_MID_WEIGHT"]      = c.PHALANX_PAWN_MID_WEIGHT;
-      n["PHALANX_PAWN_END_WEIGHT"]      = c.PHALANX_PAWN_END_WEIGHT;
-      n["SUPPORTED_PAWN_MID_WEIGHT"]    = c.SUPPORTED_PAWN_MID_WEIGHT;
-      n["SUPPORTED_PAWN_END_WEIGHT"]    = c.SUPPORTED_PAWN_END_WEIGHT;
-      n["USE_PIECE_EVAL"]               = c.USE_PIECE_EVAL;
-      n["USE_BISHOP_PAIR_BONUS"]        = c.USE_BISHOP_PAIR_BONUS;
-      n["BISHOP_PAIR_MID_BONUS"]        = c.BISHOP_PAIR_MID_BONUS;
-      n["BISHOP_PAIR_END_BONUS"]        = c.BISHOP_PAIR_END_BONUS;
-      n["USE_KNIGHT_MOBILITY"]          = c.USE_KNIGHT_MOBILITY;
-      n["KNIGHT_MOBILITY_MID_PER_MOVE"] = c.KNIGHT_MOBILITY_MID_PER_MOVE;
-      n["KNIGHT_MOBILITY_END_PER_MOVE"] = c.KNIGHT_MOBILITY_END_PER_MOVE;
-      n["KNIGHT_LOW_MOBILITY_LEQ1_MID"] = c.KNIGHT_LOW_MOBILITY_LEQ1_MID;
-      n["KNIGHT_LOW_MOBILITY_LEQ1_END"] = c.KNIGHT_LOW_MOBILITY_LEQ1_END;
-      n["KNIGHT_LOW_MOBILITY_LEQ2_MID"] = c.KNIGHT_LOW_MOBILITY_LEQ2_MID;
-      n["KNIGHT_LOW_MOBILITY_LEQ2_END"] = c.KNIGHT_LOW_MOBILITY_LEQ2_END;
-      n["USE_BISHOP_MOBILITY"]          = c.USE_BISHOP_MOBILITY;
-      n["BISHOP_MOBILITY_MID_PER_MOVE"] = c.BISHOP_MOBILITY_MID_PER_MOVE;
-      n["BISHOP_MOBILITY_END_PER_MOVE"] = c.BISHOP_MOBILITY_END_PER_MOVE;
-      n["BISHOP_LOW_MOBILITY_LEQ3_MID"] = c.BISHOP_LOW_MOBILITY_LEQ3_MID;
-      n["BISHOP_LOW_MOBILITY_LEQ3_END"] = c.BISHOP_LOW_MOBILITY_LEQ3_END;
-      n["USE_ROOK_MOBILITY"]            = c.USE_ROOK_MOBILITY;
-      n["ROOK_MOBILITY_MID_PER_MOVE"]   = c.ROOK_MOBILITY_MID_PER_MOVE;
-      n["ROOK_MOBILITY_END_PER_MOVE"]   = c.ROOK_MOBILITY_END_PER_MOVE;
-      n["ROOK_LOW_MOBILITY_LEQ3_MID"]   = c.ROOK_LOW_MOBILITY_LEQ3_MID;
-      n["ROOK_LOW_MOBILITY_LEQ3_END"]   = c.ROOK_LOW_MOBILITY_LEQ3_END;
-      n["USE_ROOK_OPEN_FILE_BONUS"]     = c.USE_ROOK_OPEN_FILE_BONUS;
-      n["ROOK_OPEN_FILE_MID_BONUS"]     = c.ROOK_OPEN_FILE_MID_BONUS;
-      n["ROOK_OPEN_FILE_END_BONUS"]     = c.ROOK_OPEN_FILE_END_BONUS;
-      n["ROOK_SEMIOPEN_FILE_MID_BONUS"] = c.ROOK_SEMIOPEN_FILE_MID_BONUS;
-      n["ROOK_SEMIOPEN_FILE_END_BONUS"] = c.ROOK_SEMIOPEN_FILE_END_BONUS;
-      n["USE_QUEEN_MOBILITY"]           = c.USE_QUEEN_MOBILITY;
-      n["QUEEN_MOBILITY_MID_PER_MOVE"]  = c.QUEEN_MOBILITY_MID_PER_MOVE;
-      n["QUEEN_MOBILITY_END_PER_MOVE"]  = c.QUEEN_MOBILITY_END_PER_MOVE;
-      n["USE_QUEEN_TROPISM"]            = c.USE_QUEEN_TROPISM;
-      n["QUEEN_TROPISM_MID_PER_STEP"]   = c.QUEEN_TROPISM_MID_PER_STEP;
-      n["QUEEN_TROPISM_END_PER_STEP"]   = c.QUEEN_TROPISM_END_PER_STEP;
-      n["USE_KING_EVAL"]                = c.USE_KING_EVAL;
-      n["USE_KING_SAFETY_SHIELD"]       = c.USE_KING_SAFETY_SHIELD;
-      n["KING_SHIELD_MID_PER_PAWN"]     = c.KING_SHIELD_MID_PER_PAWN;
-      n["KING_SHIELD_END_PER_PAWN"]     = c.KING_SHIELD_END_PER_PAWN;
-      n["USE_GAMEPHASE_VALUE"]          = c.USE_GAMEPHASE_VALUE;
-      return n;
-    }
+struct YAML::convert<EvalConfigData> {
+  static Node encode(const EvalConfigData&) {
+    // YAML encoding not used - config files are manually maintained.
+    // Use generateConfigString() for human-readable output.
+    return {};
+  }
 
-    static bool decode(const Node& n, EvalConfigData& c) {
-      if (!n || !n.IsMap()) return false;
-      using yaml::set_if_present;
-      std::unordered_set<std::string> seen;
-
-      set_if_present(n, "EVAL_CONFIG_SOURCE", c.EVAL_CONFIG_SOURCE, seen);
-      set_if_present(n, "USE_MATERIAL", c.USE_MATERIAL, seen);
-      set_if_present(n, "USE_POSITIONAL", c.USE_POSITIONAL, seen);
-      set_if_present(n, "USE_TEMPO", c.USE_TEMPO, seen);
-      set_if_present(n, "TEMPO", c.TEMPO, seen);
-      set_if_present(n, "USE_LAZY_EVAL", c.USE_LAZY_EVAL, seen);
-      set_if_present(n, "LAZY_THRESHOLD", c.LAZY_THRESHOLD, seen);
-      set_if_present(n, "USE_PAWN_EVAL", c.USE_PAWN_EVAL, seen);
-      set_if_present(n, "USE_PAWN_TT", c.USE_PAWN_TT, seen);
-      set_if_present(n, "PAWN_TT_SIZE_MB", c.PAWN_TT_SIZE_MB, seen);
-      set_if_present(n, "ISOLATED_PAWN_MID_WEIGHT", c.ISOLATED_PAWN_MID_WEIGHT, seen);
-      set_if_present(n, "ISOLATED_PAWN_END_WEIGHT", c.ISOLATED_PAWN_END_WEIGHT, seen);
-      set_if_present(n, "DOUBLED_PAWN_MID_WEIGHT", c.DOUBLED_PAWN_MID_WEIGHT, seen);
-      set_if_present(n, "DOUBLED_PAWN_END_WEIGHT", c.DOUBLED_PAWN_END_WEIGHT, seen);
-      set_if_present(n, "PASSED_PAWN_MID_WEIGHT", c.PASSED_PAWN_MID_WEIGHT, seen);
-      set_if_present(n, "PASSED_PAWN_END_WEIGHT", c.PASSED_PAWN_END_WEIGHT, seen);
-      set_if_present(n, "BLOCKED_PAWN_MID_WEIGHT", c.BLOCKED_PAWN_MID_WEIGHT, seen);
-      set_if_present(n, "BLOCKED_PAWN_END_WEIGHT", c.BLOCKED_PAWN_END_WEIGHT, seen);
-      set_if_present(n, "PHALANX_PAWN_MID_WEIGHT", c.PHALANX_PAWN_MID_WEIGHT, seen);
-      set_if_present(n, "PHALANX_PAWN_END_WEIGHT", c.PHALANX_PAWN_END_WEIGHT, seen);
-      set_if_present(n, "SUPPORTED_PAWN_MID_WEIGHT", c.SUPPORTED_PAWN_MID_WEIGHT, seen);
-      set_if_present(n, "SUPPORTED_PAWN_END_WEIGHT", c.SUPPORTED_PAWN_END_WEIGHT, seen);
-      set_if_present(n, "USE_PIECE_EVAL", c.USE_PIECE_EVAL, seen);
-      set_if_present(n, "USE_BISHOP_PAIR_BONUS", c.USE_BISHOP_PAIR_BONUS, seen);
-      set_if_present(n, "BISHOP_PAIR_MID_BONUS", c.BISHOP_PAIR_MID_BONUS, seen);
-      set_if_present(n, "BISHOP_PAIR_END_BONUS", c.BISHOP_PAIR_END_BONUS, seen);
-      set_if_present(n, "USE_KNIGHT_MOBILITY", c.USE_KNIGHT_MOBILITY, seen);
-      set_if_present(n, "KNIGHT_MOBILITY_MID_PER_MOVE", c.KNIGHT_MOBILITY_MID_PER_MOVE, seen);
-      set_if_present(n, "KNIGHT_MOBILITY_END_PER_MOVE", c.KNIGHT_MOBILITY_END_PER_MOVE, seen);
-      set_if_present(n, "KNIGHT_LOW_MOBILITY_LEQ1_MID", c.KNIGHT_LOW_MOBILITY_LEQ1_MID, seen);
-      set_if_present(n, "KNIGHT_LOW_MOBILITY_LEQ1_END", c.KNIGHT_LOW_MOBILITY_LEQ1_END, seen);
-      set_if_present(n, "KNIGHT_LOW_MOBILITY_LEQ2_MID", c.KNIGHT_LOW_MOBILITY_LEQ2_MID, seen);
-      set_if_present(n, "KNIGHT_LOW_MOBILITY_LEQ2_END", c.KNIGHT_LOW_MOBILITY_LEQ2_END, seen);
-      set_if_present(n, "USE_BISHOP_MOBILITY", c.USE_BISHOP_MOBILITY, seen);
-      set_if_present(n, "BISHOP_MOBILITY_MID_PER_MOVE", c.BISHOP_MOBILITY_MID_PER_MOVE, seen);
-      set_if_present(n, "BISHOP_MOBILITY_END_PER_MOVE", c.BISHOP_MOBILITY_END_PER_MOVE, seen);
-      set_if_present(n, "BISHOP_LOW_MOBILITY_LEQ3_MID", c.BISHOP_LOW_MOBILITY_LEQ3_MID, seen);
-      set_if_present(n, "BISHOP_LOW_MOBILITY_LEQ3_END", c.BISHOP_LOW_MOBILITY_LEQ3_END, seen);
-      set_if_present(n, "USE_ROOK_MOBILITY", c.USE_ROOK_MOBILITY, seen);
-      set_if_present(n, "ROOK_MOBILITY_MID_PER_MOVE", c.ROOK_MOBILITY_MID_PER_MOVE, seen);
-      set_if_present(n, "ROOK_MOBILITY_END_PER_MOVE", c.ROOK_MOBILITY_END_PER_MOVE, seen);
-      set_if_present(n, "ROOK_LOW_MOBILITY_LEQ3_MID", c.ROOK_LOW_MOBILITY_LEQ3_MID, seen);
-      set_if_present(n, "ROOK_LOW_MOBILITY_LEQ3_END", c.ROOK_LOW_MOBILITY_LEQ3_END, seen);
-      set_if_present(n, "USE_ROOK_OPEN_FILE_BONUS", c.USE_ROOK_OPEN_FILE_BONUS, seen);
-      set_if_present(n, "ROOK_OPEN_FILE_MID_BONUS", c.ROOK_OPEN_FILE_MID_BONUS, seen);
-      set_if_present(n, "ROOK_OPEN_FILE_END_BONUS", c.ROOK_OPEN_FILE_END_BONUS, seen);
-      set_if_present(n, "ROOK_SEMIOPEN_FILE_MID_BONUS", c.ROOK_SEMIOPEN_FILE_MID_BONUS, seen);
-      set_if_present(n, "ROOK_SEMIOPEN_FILE_END_BONUS", c.ROOK_SEMIOPEN_FILE_END_BONUS, seen);
-      set_if_present(n, "USE_QUEEN_MOBILITY", c.USE_QUEEN_MOBILITY, seen);
-      set_if_present(n, "QUEEN_MOBILITY_MID_PER_MOVE", c.QUEEN_MOBILITY_MID_PER_MOVE, seen);
-      set_if_present(n, "QUEEN_MOBILITY_END_PER_MOVE", c.QUEEN_MOBILITY_END_PER_MOVE, seen);
-      set_if_present(n, "USE_QUEEN_TROPISM", c.USE_QUEEN_TROPISM, seen);
-      set_if_present(n, "QUEEN_TROPISM_MID_PER_STEP", c.QUEEN_TROPISM_MID_PER_STEP, seen);
-      set_if_present(n, "QUEEN_TROPISM_END_PER_STEP", c.QUEEN_TROPISM_END_PER_STEP, seen);
-      set_if_present(n, "USE_KING_EVAL", c.USE_KING_EVAL, seen);
-      set_if_present(n, "USE_KING_SAFETY_SHIELD", c.USE_KING_SAFETY_SHIELD, seen);
-      set_if_present(n, "KING_SHIELD_MID_PER_PAWN", c.KING_SHIELD_MID_PER_PAWN, seen);
-      set_if_present(n, "KING_SHIELD_END_PER_PAWN", c.KING_SHIELD_END_PER_PAWN, seen);
-      set_if_present(n, "USE_GAMEPHASE_VALUE", c.USE_GAMEPHASE_VALUE, seen);
-
-      for (auto it : n) {
-        const auto key = it.first.as<std::string>("");
-        if (!key.empty() && !seen.contains(key)) {
-          warnUnknownKey(key);
-        }
-      }
-      return true;
-    }
-  };// namespace YAML
+  static bool decode(const Node& n, EvalConfigData& c) {
+    if (!n || !n.IsMap()) return false;
+    parseYamlConfig(n, c, /* warnUnknown= */ true);
+    return true;
+  }
+};// namespace YAML
 
 #endif // FRANKYCPP_EVALCONFIGDATA_H

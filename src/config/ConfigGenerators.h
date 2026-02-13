@@ -41,7 +41,10 @@
 #include "config/ConfigDef.h"
 
 #include <optional>
+#include <set>
 #include <string>
+
+#include <yaml-cpp/yaml.h>
 
 // Forward declarations
 struct SearchConfigData;
@@ -72,5 +75,45 @@ struct EvalConfigData;
     const SearchConfigData& search,
     const EvalConfigData& eval,
     ConfigDomain domain);
+
+//=============================================================================
+// YAML Parsing Functions (Phase 3)
+//=============================================================================
+
+/// Parse YAML node into config structs using registry metadata.
+/// Iterates registry entries with exposure.yaml=true and applies setters.
+///
+/// @param node        YAML node to parse
+/// @param search      SearchConfigData to populate
+/// @param eval        EvalConfigData to populate
+/// @param warnUnknown If true, log warning for unknown keys (default: true)
+/// @return Set of keys that were successfully parsed
+std::set<std::string> parseYamlConfig(
+    const YAML::Node& node,
+    SearchConfigData& search,
+    EvalConfigData& eval,
+    bool warnUnknown = true);
+
+/// Overload for Search-only parsing (uses default EvalConfigData internally)
+///
+/// @param node        YAML node to parse
+/// @param search      SearchConfigData to populate
+/// @param warnUnknown If true, log warning for unknown keys (default: true)
+/// @return Set of keys that were successfully parsed
+std::set<std::string> parseYamlConfig(
+    const YAML::Node& node,
+    SearchConfigData& search,
+    bool warnUnknown = true);
+
+/// Overload for Eval-only parsing (uses default SearchConfigData internally)
+///
+/// @param node        YAML node to parse
+/// @param eval        EvalConfigData to populate
+/// @param warnUnknown If true, log warning for unknown keys (default: true)
+/// @return parseYamlConfig Set of keys that were successfully parsed
+std::set<std::string> parseYamlConfig(
+    const YAML::Node& node,
+    EvalConfigData& eval,
+    bool warnUnknown = true);
 
 #endif  // FRANKYCPP_CONFIGGENERATORS_H

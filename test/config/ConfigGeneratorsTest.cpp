@@ -28,6 +28,12 @@ class ConfigGeneratorsTest : public ::testing::Test {
 protected:
   SearchConfigData search;
   EvalConfigData eval;
+
+  void SetUp() override {
+    // Reset to default values before each test
+    search = SearchConfigData{};
+    eval   = EvalConfigData{};
+  }
 };
 
 //=============================================================================
@@ -212,4 +218,166 @@ TEST_F(ConfigGeneratorsTest, ArrayValuesFormattedCorrectly) {
 
   // Check FP_MARGIN array is present and formatted as comma-separated
   EXPECT_NE(output.find("FP_MARGIN: 0,100,200,300,500,900,1200"), std::string::npos);
+}
+
+//=============================================================================
+// parseYamlConfig Tests (Phase 3)
+//=============================================================================
+
+TEST_F(ConfigGeneratorsTest, ParseYamlConfigBasicScalars) {
+  YAML::Node node;
+  node["USE_NMP"]     = false;
+  node["TT_SIZE_MB"]  = 256;
+  node["BOOK_PATH"]   = "/custom/path/book.txt";
+
+  SearchConfigData s;
+  const auto parsed = parseYamlConfig(node, s);
+
+  EXPECT_FALSE(s.USE_NMP);
+  EXPECT_EQ(s.TT_SIZE_MB, 256);
+  EXPECT_EQ(s.BOOK_PATH, "/custom/path/book.txt");
+  EXPECT_EQ(parsed.size(), 3);
+  EXPECT_TRUE(parsed.contains("USE_NMP"));
+  EXPECT_TRUE(parsed.contains("TT_SIZE_MB"));
+  EXPECT_TRUE(parsed.contains("BOOK_PATH"));
+}
+
+TEST_F(ConfigGeneratorsTest, ParseYamlConfigBoolValues) {
+  YAML::Node node;
+  node["USE_TT"]     = true;
+  node["USE_PONDER"] = false;
+
+  SearchConfigData s;
+  s.USE_TT     = false;  // Start with opposite values
+  s.USE_PONDER = true;
+
+  parseYamlConfig(node, s);
+
+  EXPECT_TRUE(s.USE_TT);
+  EXPECT_FALSE(s.USE_PONDER);
+}
+
+TEST_F(ConfigGeneratorsTest, ParseYamlConfigDoubleValues) {
+  YAML::Node node;
+  node["INSTABILITY_STABLE_FACTOR"] = 0.75;
+  node["INSTABILITY_EXTEND_FACTOR"] = 1.5;
+
+  SearchConfigData s;
+  parseYamlConfig(node, s);
+
+  EXPECT_NEAR(s.INSTABILITY_STABLE_FACTOR, 0.75, 1e-9);
+  EXPECT_NEAR(s.INSTABILITY_EXTEND_FACTOR, 1.5, 1e-9);
+}
+
+TEST_F(ConfigGeneratorsTest, ParseYamlConfigArrayAsSequence) {
+  YAML::Node node;
+  node["FP_MARGIN"] = std::vector{0, 150, 250, 350, 550, 950, 1250};
+
+  SearchConfigData s;
+  parseYamlConfig(node, s);
+
+  EXPECT_EQ(s.FP_MARGIN[0], 0);
+  EXPECT_EQ(s.FP_MARGIN[1], 150);
+  EXPECT_EQ(s.FP_MARGIN[2], 250);
+  EXPECT_EQ(s.FP_MARGIN[3], 350);
+  EXPECT_EQ(s.FP_MARGIN[4], 550);
+  EXPECT_EQ(s.FP_MARGIN[5], 950);
+  EXPECT_EQ(s.FP_MARGIN[6], 1250);
+}
+
+TEST_F(ConfigGeneratorsTest, ParseYamlConfigMissingKeysPreserveDefaults) {
+  const YAML::Node node;  // Empty node
+
+  SearchConfigData s        = {};
+  const int originalTTSize = s.TT_SIZE_MB;
+  const bool originalUseNMP = s.USE_NMP;
+
+  const auto parsed = parseYamlConfig(node, s);
+
+  EXPECT_EQ(parsed.size(), 0);
+  EXPECT_EQ(s.TT_SIZE_MB, originalTTSize);
+  EXPECT_EQ(s.USE_NMP, originalUseNMP);
+}
+
+TEST_F(ConfigGeneratorsTest, ParseYamlConfigUnknownKeysNotParsed) {
+  YAML::Node node;
+  node["UNKNOWN_KEY"]         = "value";
+  node["ANOTHER_UNKNOWN_KEY"] = 123;
+
+  SearchConfigData s;
+  // warnUnknown=false to suppress warning logs in test
+  const auto parsed = parseYamlConfig(node, s, /* warnUnknown= */ false);
+
+  EXPECT_EQ(parsed.size(), 0);
+}
+
+TEST_F(ConfigGeneratorsTest, ParseYamlConfigEvalConfig) {
+  YAML::Node node;
+  node["TEMPO"]            = 50;
+  node["LAZY_THRESHOLD"]   = 500;
+  node["USE_LAZY_EVAL"]    = false;
+
+  EvalConfigData e;
+  const auto parsed = parseYamlConfig(node, e);
+
+  EXPECT_EQ(e.TEMPO, 50);
+  EXPECT_EQ(e.LAZY_THRESHOLD, 500);
+  EXPECT_FALSE(e.USE_LAZY_EVAL);
+  EXPECT_EQ(parsed.size(), 3);
+}
+
+TEST_F(ConfigGeneratorsTest, ParseYamlConfigMixedSearchAndEval) {
+  YAML::Node node;
+  node["USE_NMP"]        = false;
+  node["TT_SIZE_MB"]     = 128;
+  node["TEMPO"]          = 40;
+  node["LAZY_THRESHOLD"] = 600;
+
+  SearchConfigData s;
+  EvalConfigData e;
+  const auto parsed = parseYamlConfig(node, s, e);
+
+  EXPECT_FALSE(s.USE_NMP);
+  EXPECT_EQ(s.TT_SIZE_MB, 128);
+  EXPECT_EQ(e.TEMPO, 40);
+  EXPECT_EQ(e.LAZY_THRESHOLD, 600);
+  EXPECT_EQ(parsed.size(), 4);
+}
+
+TEST_F(ConfigGeneratorsTest, ParseYamlConfigInvalidNodeReturnsEmpty) {
+  YAML::Node node;  // Default node is null/undefined
+
+  SearchConfigData s;
+  const auto parsed = parseYamlConfig(YAML::Node(), s);
+
+  EXPECT_EQ(parsed.size(), 0);
+}
+
+TEST_F(ConfigGeneratorsTest, ParseYamlConfigRFPMarginArray) {
+  YAML::Node node;
+  node["RFP_MARGIN"] = std::vector<int>{0, 250, 500, 1000};
+
+  SearchConfigData s;
+  parseYamlConfig(node, s);
+
+  EXPECT_EQ(s.RFP_MARGIN[0], 0);
+  EXPECT_EQ(s.RFP_MARGIN[1], 250);
+  EXPECT_EQ(s.RFP_MARGIN[2], 500);
+  EXPECT_EQ(s.RFP_MARGIN[3], 1000);
+}
+
+TEST_F(ConfigGeneratorsTest, ParseYamlConfigLMPMovesArray) {
+  YAML::Node node;
+  YAML::Node arr;
+  for (int i = 0; i < 16; ++i) {
+    arr.push_back(i * 2);
+  }
+  node["LMP_MOVES"] = arr;
+
+  SearchConfigData s;
+  parseYamlConfig(node, s);
+
+  for (int i = 0; i < 16; ++i) {
+    EXPECT_EQ(s.LMP_MOVES[i], i * 2);
+  }
 }

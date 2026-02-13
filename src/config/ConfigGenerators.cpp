@@ -22,7 +22,9 @@
 #include "config/EvalConfigData.h"
 #include "config/SearchConfigData.h"
 
-#include <algorithm>
+#include "common/Logging.h"
+
+#include <set>
 #include <sstream>
 #include <vector>
 
@@ -128,4 +130,111 @@ std::string EvalConfigData::str() const {
   // Use a default SearchConfigData - we only output Eval domain
   const SearchConfigData defaultSearch;
   return generateConfigStringForDomain(defaultSearch, *this, ConfigDomain::Eval);
+}
+
+//=============================================================================
+// YAML Parsing Functions (Phase 3)
+//=============================================================================
+
+namespace {
+
+/// Helper to convert YAML sequence to comma-separated string for array parsing
+std::string yamlSequenceToString(const YAML::Node& node) {
+  if (!node.IsSequence()) {
+    return node.as<std::string>();
+  }
+  std::ostringstream oss;
+  for (std::size_t i = 0; i < node.size(); ++i) {
+    if (i > 0) oss << ",";
+    oss << node[i].as<std::string>();
+  }
+  return oss.str();
+}
+
+/// Helper to warn about unknown keys
+void logUnknownKey(const std::string& key, const std::string& context) {
+  LOG__WARN(Logger::get().SEARCH_LOG, "Unknown key in {} config: {}", context, key);
+}
+
+}  // namespace
+
+std::set<std::string> parseYamlConfig(
+    const YAML::Node& node,
+    SearchConfigData& search,
+    EvalConfigData& eval,
+    const bool warnUnknown) {
+
+  std::set<std::string> parsedKeys;
+
+  if (!node || !node.IsMap()) {
+    return parsedKeys;
+  }
+
+  const auto& registry = ConfigRegistry::instance();
+
+  // Iterate all YAML-exposed config entries
+  for (const auto* def : registry.yamlOptions()) {
+    if (node[def->name]) {
+      try {
+        std::string value;
+
+        // Handle array types specially - convert YAML sequence to comma-separated string
+        if (def->valueType == ConfigValueType::IntArray) {
+          value = yamlSequenceToString(node[def->name]);
+        }
+        else if (def->valueType == ConfigValueType::Double) {
+          // For doubles, use as<double>() then convert to string to handle numeric YAML nodes
+          value = std::to_string(node[def->name].as<double>());
+        }
+        else if (def->valueType == ConfigValueType::Int) {
+          // For ints, use as<int>() then convert to string
+          value = std::to_string(node[def->name].as<int>());
+        }
+        else if (def->valueType == ConfigValueType::Bool) {
+          // For bools, use as<bool>() then convert to string
+          value = node[def->name].as<bool>() ? "true" : "false";
+        }
+        else {
+          // String and other types - get as string directly
+          value = node[def->name].as<std::string>();
+        }
+
+        // Apply the setter
+        def->setter(search, eval, value);
+        parsedKeys.insert(def->name);
+      }
+      catch (const std::exception& e) {
+        LOG__WARN(Logger::get().SEARCH_LOG,
+                  "Failed to parse config '{}': {}", def->name, e.what());
+      }
+    }
+  }
+
+  // Warn about unknown keys if requested
+  if (warnUnknown) {
+    for (const auto& kv : node) {
+      const auto key = kv.first.as<std::string>("");
+      if (!key.empty() && !parsedKeys.contains(key)) {
+        logUnknownKey(key, "YAML");
+      }
+    }
+  }
+
+  return parsedKeys;
+}
+
+std::set<std::string> parseYamlConfig(
+    const YAML::Node& node,
+    SearchConfigData& search,
+    const bool warnUnknown) {
+  EvalConfigData dummyEval;
+  return parseYamlConfig(node, search, dummyEval, warnUnknown);
+}
+
+std::set<std::string> parseYamlConfig(
+    const YAML::Node& node,
+    EvalConfigData& eval,
+    const bool warnUnknown) {
+  SearchConfigData dummySearch;
+  return parseYamlConfig(node, dummySearch, eval, warnUnknown);
 }

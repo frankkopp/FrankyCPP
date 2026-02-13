@@ -529,8 +529,8 @@ std::string generateConfigString(const SearchConfigData& search,
 
 /// Parse YAML node into config (returns false on error)
 /// Uses registry to know which keys to expect and their types
-bool parseYamlNode(const YAML::Node& node, SearchConfigData& search);
-bool parseYamlNode(const YAML::Node& node, EvalConfigData& eval);
+std::set<std::string> parseYamlConfig(const YAML::Node& node, SearchConfigData& search);
+std::set<std::string> parseYamlConfig(const YAML::Node& node, EvalConfigData& eval);
 
 /// Initialize UCI options from registry (called by UciOptions::initOptions)
 /// Creates UciOption objects by iterating registry entries with exposure.uci = true
@@ -616,18 +616,217 @@ src/engine/config/EvalConfigData.h   → src/config/EvalConfigData.h
 
 **Deliverable:** `SearchConfigData::str()` and `EvalConfigData::str()` output all ~117 settings grouped by domain.
 
-### Phase 3: YAML Parsing from Registry
+### Phase 3: YAML Parsing Using Registry Metadata ✅ COMPLETE
 **Goal:** Eliminate duplicate YAML decode code. (Note: We only *read* YAML, not write it.)
 
-| Task                                                             | Effort | Files                  |
-|------------------------------------------------------------------|--------|------------------------|
-| Create `parseYamlNode()` function                                | 2h     | `ConfigGenerators.cpp` |
-| Update `YAML::convert<SearchConfigData>::decode` to use registry | 1h     | `SearchConfigData.h`   |
-| Update `YAML::convert<EvalConfigData>::decode` to use registry   | 1h     | `EvalConfigData.h`     |
-| Remove or simplify unused `encode()` functions                   | 0.5h   | `*ConfigData.h`        |
-| Verify existing YAML files still load correctly                  | 0.5h   | Manual test            |
+| Task                                                             | Effort | Files                      |
+|------------------------------------------------------------------|--------|----------------------------|
+| Create `parseYamlConfig()` function                              | 2h     | `ConfigGenerators.h/cpp`   |
+| Update `YAML::convert<SearchConfigData>::decode` to use registry | 1h     | `SearchConfigData.h`       |
+| Update `YAML::convert<EvalConfigData>::decode` to use registry   | 1h     | `EvalConfigData.h`         |
+| Remove or simplify unused `encode()` functions                   | 0.5h   | `*ConfigData.h`            |
+| Add unit tests for `parseYamlConfig()`                           | 1h     | `ConfigGeneratorsTest.cpp` |
+| Verify existing YAML files still load correctly                  | 0.5h   | Manual test                |
 
 **Deliverable:** YAML parsing derived from registry. Adding new field = one place only.
+
+#### Phase 3 Implementation Details
+
+##### 3.1 Create `parseYamlConfig()` Function
+
+Add to `ConfigGenerators.h`:
+```cpp
+/// Parse YAML node into config structs using registry metadata.
+/// Iterates registry entries with exposure.yaml=true and applies setters.
+///
+/// @param node        YAML node to parse
+/// @param search      SearchConfigData to populate
+/// @param eval        EvalConfigData to populate
+/// @param warnUnknown If true, log warning for unknown keys (default: true)
+/// @return Set of keys that were successfully parsed
+std::set<std::string> parseYamlConfig(
+    const YAML::Node& node,
+    SearchConfigData& search,
+    EvalConfigData& eval,
+    bool warnUnknown = true);
+
+/// Overload for Search-only parsing (uses default EvalConfigData internally)
+std::set<std::string> parseYamlConfig(
+    const YAML::Node& node,
+    SearchConfigData& search,
+    bool warnUnknown = true);
+
+/// Overload for Eval-only parsing (uses default SearchConfigData internally)
+std::set<std::string> parseYamlConfig(
+    const YAML::Node& node,
+    EvalConfigData& eval,
+    bool warnUnknown = true);
+```
+
+Implementation in `ConfigGenerators.cpp`:
+```cpp
+std::set<std::string> parseYamlConfig(
+    const YAML::Node& node,
+    SearchConfigData& search,
+    EvalConfigData& eval,
+    bool warnUnknown) {
+    
+  std::set<std::string> parsedKeys;
+  const auto& registry = ConfigRegistry::instance();
+  
+  // Iterate all YAML-exposed config entries
+  for (const auto* def : registry.yamlOptions()) {
+    if (node[def->name]) {
+      try {
+        // Handle array types specially
+        if (def->valueType == ConfigValueType::IntArray) {
+          // Arrays stored as YAML sequences - convert to comma-separated string
+          std::string value;
+          if (node[def->name].IsSequence()) {
+            for (std::size_t i = 0; i < node[def->name].size(); ++i) {
+              if (i > 0) value += ",";
+              value += node[def->name][i].as<std::string>();
+            }
+          } else {
+            value = node[def->name].as<std::string>();
+          }
+          def->setter(search, eval, value);
+        } else {
+          // Scalar types
+          const std::string value = node[def->name].as<std::string>();
+          def->setter(search, eval, value);
+        }
+        parsedKeys.insert(def->name);
+      } catch (const std::exception& e) {
+        LOG__WARN(Logger::get().SEARCH_LOG, 
+                  "Failed to parse config '{}': {}", def->name, e.what());
+      }
+    }
+  }
+  
+  // Warn about unknown keys if requested
+  if (warnUnknown) {
+    for (const auto& kv : node) {
+      const std::string key = kv.first.as<std::string>();
+      if (parsedKeys.find(key) == parsedKeys.end()) {
+        warnUnknownKey(key, "config");
+      }
+    }
+  }
+  
+  return parsedKeys;
+}
+```
+
+##### 3.2 Update YAML::convert Specializations
+
+**Before (SearchConfigData.h)** - ~70 lines of manual field mapping:
+```cpp
+static bool decode(const Node& n, SearchConfigData& c) {
+  std::set<std::string> seen;
+  set_if_present(n, "MOVE_OVERHEAD_MS", c.MOVE_OVERHEAD_MS, seen);
+  set_if_present(n, "USE_BOOK", c.USE_BOOK, seen);
+  // ... 70+ more set_if_present calls
+  warnUnseenKeys(n, seen, "Search");
+  return true;
+}
+```
+
+**After** - single function call:
+```cpp
+static bool decode(const Node& n, SearchConfigData& c) {
+  parseYamlConfig(n, c);
+  return true;
+}
+```
+
+Same transformation applies to `EvalConfigData`.
+
+##### 3.3 Simplify encode() Functions
+
+The `encode()` functions are not used (we don't write YAML files programmatically).
+Replace with minimal stub:
+
+```cpp
+static Node encode(const SearchConfigData&) {
+  // YAML encoding not used - config files are manually maintained
+  // Use generateConfigString() for human-readable output
+  return Node();
+}
+```
+
+##### 3.4 Special Cases
+
+1. **Array types** (FP_MARGIN, LMP_MOVES, RFP_MARGIN, etc.)
+   - YAML stores as sequences: `[0, 100, 200, 300]`
+   - Registry setter expects comma-separated string: `"0,100,200,300"`
+   - `parseYamlConfig()` handles conversion (see implementation above)
+
+2. **Type validation**
+   - Int values: Validate against minValue/maxValue if present
+   - Bool values: Accept "true"/"false" and "1"/"0"
+   - String values: No validation needed
+
+3. **Unknown keys** 
+   - Logged as warnings (existing behavior preserved)
+   - Does not fail parsing (allows forward compatibility)
+
+##### 3.5 Test Cases for `parseYamlConfig()`
+
+```cpp
+TEST_F(ConfigGeneratorsTest, ParseYamlConfigBasic) {
+  YAML::Node node;
+  node["USE_NMP"] = true;
+  node["TT_SIZE_MB"] = 256;
+  
+  SearchConfigData search;
+  auto parsed = parseYamlConfig(node, search);
+  
+  EXPECT_TRUE(search.USE_NMP);
+  EXPECT_EQ(search.TT_SIZE_MB, 256);
+  EXPECT_EQ(parsed.size(), 2);
+}
+
+TEST_F(ConfigGeneratorsTest, ParseYamlConfigUnknownKeyWarns) {
+  YAML::Node node;
+  node["UNKNOWN_KEY"] = "value";
+  
+  SearchConfigData search;
+  // Should log warning but not fail
+  auto parsed = parseYamlConfig(node, search);
+  EXPECT_EQ(parsed.size(), 0);
+}
+
+TEST_F(ConfigGeneratorsTest, ParseYamlConfigArrayType) {
+  YAML::Node node;
+  node["FP_MARGIN"] = std::vector<int>{0, 150, 250, 350, 550, 950, 1250};
+  
+  SearchConfigData search;
+  parseYamlConfig(node, search);
+  
+  EXPECT_EQ(search.FP_MARGIN[0], 0);
+  EXPECT_EQ(search.FP_MARGIN[1], 150);
+  // ... etc
+}
+
+TEST_F(ConfigGeneratorsTest, ParseYamlConfigMissingKeysUseDefaults) {
+  YAML::Node node;  // Empty node
+  
+  SearchConfigData search;  // Has default values
+  parseYamlConfig(node, search);
+  
+  // Defaults should be unchanged
+  EXPECT_EQ(search.TT_SIZE_MB, 64);  // Default value
+  EXPECT_TRUE(search.USE_NMP);       // Default value
+}
+```
+
+##### 3.6 Migration Notes
+
+- Existing `config/search.yaml` and `config/eval.yaml` files require **no changes**
+- YAML key names match registry `name` field (already aligned)
+- Unknown keys in user YAML files will warn but continue to work
+- After migration: ~140 lines of `set_if_present()` calls removed
 
 ### Phase 4: UCI Auto-Generation
 **Goal:** UCI options derived from registry.
@@ -968,7 +1167,7 @@ What we actually need:
 - **YAML decode (read):** Parse YAML file → populate ConfigData struct ✅ (needed)
 - **YAML encode (write):** ConfigData struct → YAML file ❌ (not used currently)
 
-**Updated Phase 3 scope:** Focus only on `parseYamlNode()` (decoding). The `encode()` functions in the current YAML converters are unused and can be removed or left as-is.
+**Updated Phase 3 scope:** Focus only on `parseYamlConfig()` (decoding). The `encode()` functions in the current YAML converters are unused and can be removed or left as-is.
 
 ---
 

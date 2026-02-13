@@ -21,11 +21,9 @@
 #define FRANKYCPP_SEARCHCONFIGDATA_H
 
 #include <array>
+#include <set>
 #include <string>
-#include <unordered_set>
 
-#include "common/Logging.h"
-#include "config/YamlHelpers.h"
 #include "types/globals.h"
 #include <yaml-cpp/yaml.h>
 
@@ -144,193 +142,23 @@ struct SearchConfigData {
   std::string str() const;
 };
 
-inline void warnUnknownKey(const std::string& key, const char* context) {
-  LOG__WARN(Logger::get().SEARCH_LOG, "Unknown key in {} config: {}", context, key);
-}
+// Forward declaration for parseYamlConfig
+std::set<std::string> parseYamlConfig(
+    const YAML::Node& node,
+    SearchConfigData& search,
+    bool warnUnknown);
 
 template<>
 struct YAML::convert<SearchConfigData> {
-  static Node encode(const SearchConfigData& c) {
-    Node n;
-    n["CONFIG_SOURCE"] = c.CONFIG_SOURCE;
-
-    n["MOVE_OVERHEAD_MS"]    = c.MOVE_OVERHEAD_MS;
-    n["USE_BOOK"]            = c.USE_BOOK;
-    n["BOOK_PATH"]           = c.BOOK_PATH;
-    n["BOOK_TYPE"]           = c.BOOK_TYPE;
-    n["USE_PONDER"]          = c.USE_PONDER;
-    n["USE_ALPHABETA"]       = c.USE_ALPHABETA;
-    n["USE_PVS"]             = c.USE_PVS;
-    n["USE_ASP"]             = c.USE_ASP;
-    n["USE_QUIESCENCE"]      = c.USE_QUIESCENCE;
-    n["USE_TT"]              = c.USE_TT;
-    n["USE_TT_VALUE"]        = c.USE_TT_VALUE;
-    n["USE_EVAL_TT"]         = c.USE_EVAL_TT;
-    n["TT_SIZE_MB"]          = c.TT_SIZE_MB;
-    n["USE_QS_TT"]           = c.USE_QS_TT;
-    n["USE_TT_PV_MOVE_SORT"] = c.USE_TT_PV_MOVE_SORT;
-    n["USE_KILLER_MOVES"]    = c.USE_KILLER_MOVES;
-    n["USE_HISTORY_COUNTER"] = c.USE_HISTORY_COUNTER;
-    n["USE_HISTORY_MOVES"]   = c.USE_HISTORY_MOVES;
-    n["USE_IID"]             = c.USE_IID;
-    n["IID_DEPTH"]           = c.IID_DEPTH;
-    n["IID_REDUCTION"]       = c.IID_REDUCTION;
-    n["USE_MDP"]             = c.USE_MDP;
-    n["USE_QS_STANDPAT_CUT"] = c.USE_QS_STANDPAT_CUT;
-    n["USE_QS_SEE"]          = c.USE_QS_SEE;
-    n["USE_RAZORING"]        = c.USE_RAZORING;
-    n["RAZOR_MARGIN"]        = c.RAZOR_MARGIN;
-    n["USE_RFP"]             = c.USE_RFP;
-    {
-      Node arr;
-      for (int v : c.RFP_MARGIN) arr.push_back(v);
-      n["RFP_MARGIN"] = arr;
-    }
-    n["USE_NMP"]                   = c.USE_NMP;
-    n["NMP_DEPTH"]                 = c.NMP_DEPTH;
-    n["NMP_REDUCTION"]             = c.NMP_REDUCTION;
-    n["USE_NMP_VERIFY"]            = c.USE_NMP_VERIFY;
-    n["NMP_VERIFY_MIN_DEPTH"]      = c.NMP_VERIFY_MIN_DEPTH;
-    n["NMP_VERIFY_MARGIN"]         = c.NMP_VERIFY_MARGIN;
-    n["NMP_NEAR_MATE_MARGIN"]      = c.NMP_NEAR_MATE_MARGIN;
-    n["USE_NMP_ZUG_GUARD"]         = c.USE_NMP_ZUG_GUARD;
-    n["NMP_ZUG_NONPAWN_THRESHOLD"] = c.NMP_ZUG_NONPAWN_THRESHOLD;
-    n["USE_FP"]                    = c.USE_FP;
-    n["USE_QFP"]                   = c.USE_QFP;
-    {
-      Node arr;
-      for (int v : c.FP_MARGIN) arr.push_back(v);
-      n["FP_MARGIN"] = arr;
-    }
-    n["USE_LMR"]       = c.USE_LMR;
-    n["LMR_MIN_DEPTH"] = c.LMR_MIN_DEPTH;
-    n["LMR_MIN_MOVES"] = c.LMR_MIN_MOVES;
-    n["USE_LMP"]       = c.USE_LMP;
-    {
-      Node arr;
-      for (int v : c.LMP_MOVES) arr.push_back(v);
-      n["LMP_MOVES"] = arr;
-    }
-    n["USE_EXTENSIONS"]          = c.USE_EXTENSIONS;
-    n["USE_CHECK_EXT"]           = c.USE_CHECK_EXT;
-    n["CHECK_EXT_EARLY_LIMIT"]   = c.CHECK_EXT_EARLY_LIMIT;
-    n["USE_THREAT_EXT"]          = c.USE_THREAT_EXT;
-    n["USE_EXT_ADD_DEPTH"]       = c.USE_EXT_ADD_DEPTH;
-    n["USE_SINGULAR_EXT"]        = c.USE_SINGULAR_EXT;
-    n["SINGULAR_MARGIN"]         = c.SINGULAR_MARGIN;
-    n["SINGULAR_MIN_DEPTH"]      = c.SINGULAR_MIN_DEPTH;
-    n["SINGULAR_REDUCTION"]      = c.SINGULAR_REDUCTION;
-    n["MOVES_LEFT_OPENING"]      = c.MOVES_LEFT_OPENING;
-    n["MOVES_LEFT_MIDGAME"]      = c.MOVES_LEFT_MIDGAME;
-    n["MOVES_LEFT_ENDGAME"]      = c.MOVES_LEFT_ENDGAME;
-    n["MOVES_LEFT_LOW_MAT"]      = c.MOVES_LEFT_LOW_MAT;
-    n["MOVES_LEFT_QUEENLESS"]    = c.MOVES_LEFT_QUEENLESS;
-    n["NPP_HEAVY_THRESHOLD"]     = c.NPP_HEAVY_THRESHOLD;
-    n["NPP_LIGHT_THRESHOLD"]     = c.NPP_LIGHT_THRESHOLD;
-    n["REPETITION_HMC_HIGH"]     = c.REPETITION_HMC_HIGH;
-    n["REPETITION_RISK_PENALTY"] = c.REPETITION_RISK_PENALTY;
-    n["MOVES_LEFT_MIN_CLAMP"]    = c.MOVES_LEFT_MIN_CLAMP;
-    n["MOVES_LEFT_MAX_CLAMP"]    = c.MOVES_LEFT_MAX_CLAMP;
-
-    // best-move instability time management
-    n["USE_BESTMOVE_INSTABILITY"]     = c.USE_BESTMOVE_INSTABILITY;
-    n["INSTABILITY_MIN_DEPTH"]        = c.INSTABILITY_MIN_DEPTH;
-    n["INSTABILITY_STABLE_COUNT"]     = c.INSTABILITY_STABLE_COUNT;
-    n["INSTABILITY_CHANGE_THRESHOLD"] = c.INSTABILITY_CHANGE_THRESHOLD;
-    n["INSTABILITY_STABLE_FACTOR"]    = c.INSTABILITY_STABLE_FACTOR;
-    n["INSTABILITY_EXTEND_FACTOR"]    = c.INSTABILITY_EXTEND_FACTOR;
-
-    return n;
+  static Node encode(const SearchConfigData&) {
+    // YAML encoding not used - config files are manually maintained.
+    // Use generateConfigString() for human-readable output.
+    return {};
   }
 
   static bool decode(const Node& n, SearchConfigData& c) {
     if (!n || !n.IsMap()) return false;
-    using yaml::set_array_if_present;
-    using yaml::set_if_present;
-    std::unordered_set<std::string> seen;
-
-    set_if_present(n, "CONFIG_SOURCE", c.CONFIG_SOURCE, seen);
-    set_if_present(n, "MOVE_OVERHEAD_MS", c.MOVE_OVERHEAD_MS, seen);
-    set_if_present(n, "USE_BOOK", c.USE_BOOK, seen);
-    set_if_present(n, "BOOK_PATH", c.BOOK_PATH, seen);
-    set_if_present(n, "BOOK_TYPE", c.BOOK_TYPE, seen);
-    set_if_present(n, "USE_PONDER", c.USE_PONDER, seen);
-    set_if_present(n, "USE_ALPHABETA", c.USE_ALPHABETA, seen);
-    set_if_present(n, "USE_PVS", c.USE_PVS, seen);
-    set_if_present(n, "USE_ASP", c.USE_ASP, seen);
-    set_if_present(n, "USE_QUIESCENCE", c.USE_QUIESCENCE, seen);
-    set_if_present(n, "USE_TT", c.USE_TT, seen);
-    set_if_present(n, "USE_TT_VALUE", c.USE_TT_VALUE, seen);
-    set_if_present(n, "USE_EVAL_TT", c.USE_EVAL_TT, seen);
-    set_if_present(n, "TT_SIZE_MB", c.TT_SIZE_MB, seen);
-    set_if_present(n, "USE_QS_TT", c.USE_QS_TT, seen);
-    set_if_present(n, "USE_TT_PV_MOVE_SORT", c.USE_TT_PV_MOVE_SORT, seen);
-    set_if_present(n, "USE_KILLER_MOVES", c.USE_KILLER_MOVES, seen);
-    set_if_present(n, "USE_HISTORY_COUNTER", c.USE_HISTORY_COUNTER, seen);
-    set_if_present(n, "USE_HISTORY_MOVES", c.USE_HISTORY_MOVES, seen);
-    set_if_present(n, "USE_IID", c.USE_IID, seen);
-    set_if_present(n, "IID_DEPTH", c.IID_DEPTH, seen);
-    set_if_present(n, "IID_REDUCTION", c.IID_REDUCTION, seen);
-    set_if_present(n, "USE_MDP", c.USE_MDP, seen);
-    set_if_present(n, "USE_QS_STANDPAT_CUT", c.USE_QS_STANDPAT_CUT, seen);
-    set_if_present(n, "USE_QS_SEE", c.USE_QS_SEE, seen);
-    set_if_present(n, "USE_RAZORING", c.USE_RAZORING, seen);
-    set_if_present(n, "RAZOR_MARGIN", c.RAZOR_MARGIN, seen);
-    set_if_present(n, "USE_RFP", c.USE_RFP, seen);
-    set_array_if_present(n, "RFP_MARGIN", c.RFP_MARGIN, seen);
-    set_if_present(n, "USE_NMP", c.USE_NMP, seen);
-    set_if_present(n, "NMP_DEPTH", c.NMP_DEPTH, seen);
-    set_if_present(n, "NMP_REDUCTION", c.NMP_REDUCTION, seen);
-    set_if_present(n, "USE_NMP_VERIFY", c.USE_NMP_VERIFY, seen);
-    set_if_present(n, "NMP_VERIFY_MIN_DEPTH", c.NMP_VERIFY_MIN_DEPTH, seen);
-    set_if_present(n, "NMP_VERIFY_MARGIN", c.NMP_VERIFY_MARGIN, seen);
-    set_if_present(n, "NMP_NEAR_MATE_MARGIN", c.NMP_NEAR_MATE_MARGIN, seen);
-    set_if_present(n, "USE_NMP_ZUG_GUARD", c.USE_NMP_ZUG_GUARD, seen);
-    set_if_present(n, "NMP_ZUG_NONPAWN_THRESHOLD", c.NMP_ZUG_NONPAWN_THRESHOLD, seen);
-    set_if_present(n, "USE_FP", c.USE_FP, seen);
-    set_if_present(n, "USE_QFP", c.USE_QFP, seen);
-    set_array_if_present(n, "FP_MARGIN", c.FP_MARGIN, seen);
-    set_if_present(n, "USE_LMR", c.USE_LMR, seen);
-    set_if_present(n, "LMR_MIN_DEPTH", c.LMR_MIN_DEPTH, seen);
-    set_if_present(n, "LMR_MIN_MOVES", c.LMR_MIN_MOVES, seen);
-    set_if_present(n, "USE_LMP", c.USE_LMP, seen);
-    set_array_if_present(n, "LMP_MOVES", c.LMP_MOVES, seen);
-    set_if_present(n, "USE_EXTENSIONS", c.USE_EXTENSIONS, seen);
-    set_if_present(n, "USE_CHECK_EXT", c.USE_CHECK_EXT, seen);
-    set_if_present(n, "CHECK_EXT_EARLY_LIMIT", c.CHECK_EXT_EARLY_LIMIT, seen);
-    set_if_present(n, "USE_THREAT_EXT", c.USE_THREAT_EXT, seen);
-    set_if_present(n, "USE_EXT_ADD_DEPTH", c.USE_EXT_ADD_DEPTH, seen);
-    set_if_present(n, "USE_SINGULAR_EXT", c.USE_SINGULAR_EXT, seen);
-    set_if_present(n, "SINGULAR_MARGIN", c.SINGULAR_MARGIN, seen);
-    set_if_present(n, "SINGULAR_MIN_DEPTH", c.SINGULAR_MIN_DEPTH, seen);
-    set_if_present(n, "SINGULAR_REDUCTION", c.SINGULAR_REDUCTION, seen);
-    set_if_present(n, "MOVES_LEFT_OPENING", c.MOVES_LEFT_OPENING, seen);
-    set_if_present(n, "MOVES_LEFT_MIDGAME", c.MOVES_LEFT_MIDGAME, seen);
-    set_if_present(n, "MOVES_LEFT_ENDGAME", c.MOVES_LEFT_ENDGAME, seen);
-    set_if_present(n, "MOVES_LEFT_LOW_MAT", c.MOVES_LEFT_LOW_MAT, seen);
-    set_if_present(n, "MOVES_LEFT_QUEENLESS", c.MOVES_LEFT_QUEENLESS, seen);
-    set_if_present(n, "NPP_HEAVY_THRESHOLD", c.NPP_HEAVY_THRESHOLD, seen);
-    set_if_present(n, "NPP_LIGHT_THRESHOLD", c.NPP_LIGHT_THRESHOLD, seen);
-    set_if_present(n, "REPETITION_HMC_HIGH", c.REPETITION_HMC_HIGH, seen);
-    set_if_present(n, "REPETITION_RISK_PENALTY", c.REPETITION_RISK_PENALTY, seen);
-    set_if_present(n, "MOVES_LEFT_MIN_CLAMP", c.MOVES_LEFT_MIN_CLAMP, seen);
-    set_if_present(n, "MOVES_LEFT_MAX_CLAMP", c.MOVES_LEFT_MAX_CLAMP, seen);
-
-    // best-move instability time management
-    set_if_present(n, "USE_BESTMOVE_INSTABILITY", c.USE_BESTMOVE_INSTABILITY, seen);
-    set_if_present(n, "INSTABILITY_MIN_DEPTH", c.INSTABILITY_MIN_DEPTH, seen);
-    set_if_present(n, "INSTABILITY_STABLE_COUNT", c.INSTABILITY_STABLE_COUNT, seen);
-    set_if_present(n, "INSTABILITY_CHANGE_THRESHOLD", c.INSTABILITY_CHANGE_THRESHOLD, seen);
-    set_if_present(n, "INSTABILITY_STABLE_FACTOR", c.INSTABILITY_STABLE_FACTOR, seen);
-    set_if_present(n, "INSTABILITY_EXTEND_FACTOR", c.INSTABILITY_EXTEND_FACTOR, seen);
-
-    // Log unknown keys
-    for (auto it : n) {
-      const auto key = it.first.as<std::string>("");
-      if (!key.empty() && !seen.contains(key)) {
-        warnUnknownKey(key, "Search");
-      }
-    }
+    parseYamlConfig(n, c, /* warnUnknown= */ true);
     return true;
   }
 };// namespace YAML
