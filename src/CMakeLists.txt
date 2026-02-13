@@ -37,6 +37,7 @@ set(FrankyCPPlib_SRCS
         types/bitboards.h
 
         config/ConfigManager.cpp
+        config/ConfigRegistry.cpp
 )
 
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})
