@@ -274,7 +274,7 @@ namespace YAML {
       set_if_present(n, "USE_GAMEPHASE_VALUE", c.USE_GAMEPHASE_VALUE, seen);
 
       for (auto it : n) {
-        const std::string key = it.first.as<std::string>("");
+        const auto key = it.first.as<std::string>("");
         if (!key.empty() && !seen.contains(key)) {
           engine::config::detail::warnUnknownKey(key);
         }

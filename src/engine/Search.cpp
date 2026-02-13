@@ -30,8 +30,7 @@
 Search::Search() : Search(nullptr) {}
 
 Search::Search(UciHandler* pUciHandler)
-    : SearchConfig(engine::config::ConfigManager::instance().search()) {
-  this->uciHandler = pUciHandler;
+    : uciHandler(pUciHandler), SearchConfig(engine::config::ConfigManager::instance().search()) {
   this->tt         = std::make_unique<TT>(0);
 }
 

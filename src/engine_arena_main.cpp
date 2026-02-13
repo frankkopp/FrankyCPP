@@ -44,6 +44,7 @@
 #include "engine_arena/BenchmarkRunner.h"
 #include "engine_arena/ResultWriter.h"
 #include "engine/Benchmark.h"
+#include "engine/config/ConfigManager.h"
 #include "init.h"
 
 #include <boost/program_options.hpp>
@@ -161,6 +162,10 @@ int main(int argc, char* argv[]) {
 
       std::cout << "\n=== Running Benchmarks ===" << std::endl;
       std::cout << "Configured benchmarks: " << config.benchmarks.size() << std::endl;
+
+      // Print current engine configuration
+      std::cout << "\n--- Current Engine Configuration ---" << std::endl;
+      std::cout << engine::config::ConfigManager::instance().strCurrent() << std::endl;
 
       arena::ResultWriter writer(config.resultsDir);
 

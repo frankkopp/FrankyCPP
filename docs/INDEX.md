@@ -98,6 +98,14 @@ Quick reference to all project documentation.
 - Risk assessment and mitigation
 - References and resources
 
+### ⚙️ [PLAN_Configuration_Refactor.md](specs/PLAN_Configuration_Refactor.md) **(NEW)**
+**Configuration System Refactoring Plan**
+- Single source of truth for all config settings
+- Auto-generation of str(), YAML, UCI options
+- ConfigDef metadata system design
+- Phased implementation approach
+- Eliminates config duplication across 4-6 files
+
 ### 🏟️ [Engine_Arena_Implementation_Plan.md](specs/Engine_Arena_Implementation_Plan.md)
 **Engine Testing & Comparison Framework**
 - Automated test suite execution
@@ -163,18 +171,18 @@ Quick reference to all project documentation.
 
 ### Documentation by Topic
 
-| Topic | Document |
-|-------|----------|
-| **First-time setup** | BUILD_GUIDE.md |
-| **Architecture overview** | Architecture.md |
-| **Project status** | FrankyCPP_Codebase_Review.md |
-| **v1.x Enhancement plan** | specs/V1_ENGINE_ENHANCEMENT_PLAN.md |
-| **v1.x Strength roadmap** | specs/V1_ENGINE_STRENGTH_ROADMAP.md |
+| Topic                      | Document                                  |
+|----------------------------|-------------------------------------------|
+| **First-time setup**       | BUILD_GUIDE.md                            |
+| **Architecture overview**  | Architecture.md                           |
+| **Project status**         | FrankyCPP_Codebase_Review.md              |
+| **v1.x Enhancement plan**  | specs/V1_ENGINE_ENHANCEMENT_PLAN.md       |
+| **v1.x Strength roadmap**  | specs/V1_ENGINE_STRENGTH_ROADMAP.md       |
 | **Engine Arena framework** | specs/Engine_Arena_Implementation_Plan.md |
-| **C++20 features** | CPP20_Feature_Support.md |
-| **Logging** | Logger.md |
-| **UCI protocol** | engine-interface.txt |
-| **CLion IDE** | CLion_WSL_Setup.md |
+| **C++20 features**         | CPP20_Feature_Support.md                  |
+| **Logging**                | Logger.md                                 |
+| **UCI protocol**           | engine-interface.txt                      |
+| **CLion IDE**              | CLion_WSL_Setup.md                        |
 
 ### Key Files in Root Directory
 
