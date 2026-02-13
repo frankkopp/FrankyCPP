@@ -59,17 +59,12 @@
 //
 //=============================================================================
 
-#include "config/ConfigManager.h"
-
-
 #include <functional>
 #include <initializer_list>
 #include <string>
 #include <utility>
 #include <vector>
 
-struct EvalConfigData;
-struct SearchConfigData;
 class UciHandler;
 
 /// UCI option types as defined by the UCI protocol.
@@ -171,16 +166,8 @@ struct UciOption {
 class UciOptions {
   std::vector<UciOption> optionVector{};
 
-  /// Reference to the Search Config Data for initializing search-related options.
-  const SearchConfigData& SearchConfig;
-
-  /// Reference to the Eval Config Data for initializing eval-related options.
-  const EvalConfigData& EvalConfig;
-
   /// Private constructor - use getInstance() to access.
-  UciOptions()
-      : SearchConfig(ConfigManager::instance().search()),
-        EvalConfig(ConfigManager::instance().eval()) {
+  UciOptions() {
     initOptions();
   }
 

@@ -828,7 +828,7 @@ TEST_F(ConfigGeneratorsTest, ParseYamlConfigMissingKeysUseDefaults) {
 - Unknown keys in user YAML files will warn but continue to work
 - After migration: ~140 lines of `set_if_present()` calls removed
 
-### Phase 4: UCI Auto-Generation
+### Phase 4: UCI Auto-Generation ✅ COMPLETE
 **Goal:** UCI options derived from registry.
 
 | Task                                           | Effort | Files                  |
@@ -838,7 +838,21 @@ TEST_F(ConfigGeneratorsTest, ParseYamlConfigMissingKeysUseDefaults) {
 | Replace `UciOptions::initOptions()`            | 2h     | `UciOptions.cpp`       |
 | Verify all UCI options still work              | 1h     | Manual test + UCITests |
 
-**Deliverable:** UCI options derived from registry. ~400 lines of boilerplate removed.
+**Implementation Notes:**
+- Added `initUciOptionsFromRegistry()` and `addUciOnlyButtons()` to `ConfigGenerators.cpp`
+- Replaced ~350 lines of manual option registration in `UciOptions.cpp` with ~15 lines
+- All UCI-exposed config entries automatically generate UCI options based on type:
+  - Bool → CHECK option
+  - Int → SPIN option with min/max
+  - Double → SPIN option (value × 100 as percentage)
+  - String → STRING option
+  - Combo → STRING option with comboVars
+- Custom handlers (e.g., `resizeTT()` after Hash change) preserved via `customUciHandler`
+- UCI-only buttons (Clear Hash, Reset to Defaults) added via `addUciOnlyButtons()`
+- Fixed ~20 UCI name mismatches to maintain backward compatibility with existing GUIs
+- Added `customUciHandler` to `TT_SIZE_MB` registry entry for `resizeTT()` call
+
+**Deliverable:** UCI options derived from registry. ~350 lines of boilerplate removed.
 
 ### Phase 5: Cleanup & Documentation
 **Goal:** Remove legacy code, update documentation.

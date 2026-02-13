@@ -20,23 +20,10 @@
 #include "config/ConfigRegistry.h"
 #include "config/EvalConfigData.h"
 #include "config/SearchConfigData.h"
+#include "engine/Search.h"
+#include "engine/UciHandler.h"
 
 #include <algorithm>
-
-// Static assertions to catch struct size changes.
-// If you add/remove a member from SearchConfigData or EvalConfigData,
-// update these values AND add/remove the corresponding registry entry.
-// clang-format off
-#ifdef _MSC_VER
-static_assert(sizeof(SearchConfigData) == 408,
-  "SearchConfigData size changed! Did you add/remove a member? "
-  "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-
-static_assert(sizeof(EvalConfigData) == 248,
-  "EvalConfigData size changed! Did you add/remove a member? "
-  "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-#endif
-// clang-format on
 
 ConfigRegistry& ConfigRegistry::instance() {
   static ConfigRegistry instance;
@@ -44,6 +31,53 @@ ConfigRegistry& ConfigRegistry::instance() {
 }
 
 ConfigRegistry::ConfigRegistry() {
+  // Static assertions to catch struct size changes.
+  // If you add/remove a member from SearchConfigData or EvalConfigData,
+  // update these values AND add/remove the corresponding registry entry.
+  // Note: Debug builds may have larger sizes due to different alignment/padding.
+  // Uncomment fprintln and comment out static_assert to debug size changes.
+
+  // fprintln("Size of SearchConfigData: {}", sizeof(SearchConfigData));
+  // fprintln("Size of EvalConfigData: {}", sizeof(EvalConfigData));
+
+#ifdef _MSC_VER
+// Windows MSVC builds
+#ifdef _DEBUG
+  static_assert(sizeof(SearchConfigData) == 432,
+                "SearchConfigData size changed! Did you add/remove a member? "
+                "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
+  static_assert(sizeof(EvalConfigData) == 256,
+                "EvalConfigData size changed! Did you add/remove a member? "
+                "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
+#else
+  static_assert(sizeof(SearchConfigData) == 408,
+                "SearchConfigData size changed! Did you add/remove a member? "
+                "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
+  static_assert(sizeof(EvalConfigData) == 248,
+                "EvalConfigData size changed! Did you add/remove a member? "
+                "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
+#endif
+#elif defined(__GNUC__) || defined(__clang__)
+// Linux GCC/Clang builds (including WSL)
+#ifdef NDEBUG
+  // Release build
+  static_assert(sizeof(SearchConfigData) == 408,
+                "SearchConfigData size changed! Did you add/remove a member? "
+                "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
+  static_assert(sizeof(EvalConfigData) == 248,
+                "EvalConfigData size changed! Did you add/remove a member? "
+                "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
+#else
+  // Debug build
+  static_assert(sizeof(SearchConfigData) == 400,
+                "SearchConfigData size changed! Did you add/remove a member? "
+                "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
+  static_assert(sizeof(EvalConfigData) == 248,
+                "EvalConfigData size changed! Did you add/remove a member? "
+                "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
+#endif
+#endif
+
   initializeSearchDefinitions();
   initializeEvalDefinitions();
 }
@@ -54,7 +88,7 @@ std::span<const ConfigDef> ConfigRegistry::all() const {
 
 std::vector<const ConfigDef*> ConfigRegistry::byDomain(const ConfigDomain domain) const {
   std::vector<const ConfigDef*> result;
-  for (const auto & definition : definitions_) {
+  for (const auto& definition : definitions_) {
     if (definition.domain == domain) {
       result.push_back(&definition);
     }
@@ -220,7 +254,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
 
   definitions_.push_back({
     .name = "BOOK_TYPE",
-    .uciName = "Book Type",
+    .uciName = "Book Format",
     .description = "Opening book format (SIMPLE, PGN, etc.)",
     .valueType = String,
     .domain = General,
@@ -247,7 +281,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
   //===========================================================================
   definitions_.push_back({
     .name = "USE_ALPHABETA",
-    .uciName = "Use Alpha-Beta",
+    .uciName = "Use AlphaBeta",
     .description = "Enable alpha-beta pruning",
     .valueType = Bool,
     .domain = Search,
@@ -259,7 +293,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
 
   definitions_.push_back({
     .name = "USE_PVS",
-    .uciName = "Use PVS",
+    .uciName = "Use Pvs",
     .description = "Enable Principal Variation Search",
     .valueType = Bool,
     .domain = Search,
@@ -322,7 +356,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
 
   definitions_.push_back({
     .name = "USE_EVAL_TT",
-    .uciName = "Use Eval Hash",
+    .uciName = "Use Eval TT",
     .description = "Use TT for evaluation cache",
     .valueType = Bool,
     .domain = Search,
@@ -339,16 +373,22 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Int,
     .domain = Search,
     .defaultValue = "64",
-    .minValue = 1,
-    .maxValue = 65536,
+    .minValue = 0,
+    .maxValue = 4096,
     .exposure = {.uci = true, .yaml = true, .display = true},
     .getter = searchGetter(&SearchConfigData::TT_SIZE_MB),
-    .setter = searchSetter(&SearchConfigData::TT_SIZE_MB, parseInt)
+    .setter = searchSetter(&SearchConfigData::TT_SIZE_MB, parseInt),
+    // Custom handler: resize TT after changing size
+    .customUciHandler = [](const UciHandler* h) {
+      if (h && h->getSearchPtr()) {
+        h->getSearchPtr()->resizeTT();
+      }
+    }
   });
 
   definitions_.push_back({
     .name = "USE_QS_TT",
-    .uciName = "Use QS Hash",
+    .uciName = "Use Hash Quiescence",
     .description = "Use TT in quiescence search",
     .valueType = Bool,
     .domain = Search,
@@ -363,7 +403,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
   //===========================================================================
   definitions_.push_back({
     .name = "USE_TT_PV_MOVE_SORT",
-    .uciName = "Use TT PV Move Sort",
+    .uciName = "Use TT Move as PvMove",
     .description = "Prioritize TT/PV moves in move ordering",
     .valueType = Bool,
     .domain = Search,
@@ -411,7 +451,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
 
   definitions_.push_back({
     .name = "USE_IID",
-    .uciName = "Use IID",
+    .uciName = "Use Internal Iterative Deepening",
     .description = "Enable Internal Iterative Deepening",
     .valueType = Bool,
     .domain = Search,
@@ -423,7 +463,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
 
   definitions_.push_back({
     .name = "IID_DEPTH",
-    .uciName = "IID Depth",
+    .uciName = "IID Move Depth",
     .description = "Minimum depth to trigger IID",
     .valueType = Int,
     .domain = Search,
@@ -437,7 +477,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
 
   definitions_.push_back({
     .name = "IID_REDUCTION",
-    .uciName = "IID Reduction",
+    .uciName = "IID Depth Reduction",
     .description = "Depth reduction for IID search",
     .valueType = Int,
     .domain = Search,
@@ -454,7 +494,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
   //===========================================================================
   definitions_.push_back({
     .name = "USE_MDP",
-    .uciName = "Use MDP",
+    .uciName = "Use Mate Distance Pruning",
     .description = "Enable mate distance pruning",
     .valueType = Bool,
     .domain = Search,
@@ -466,7 +506,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
 
   definitions_.push_back({
     .name = "USE_QS_STANDPAT_CUT",
-    .uciName = "Use QS Standpat Cut",
+    .uciName = "Use Quiescence Standpat",
     .description = "Enable stand-pat cutoff in quiescence",
     .valueType = Bool,
     .domain = Search,
@@ -478,7 +518,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
 
   definitions_.push_back({
     .name = "USE_QS_SEE",
-    .uciName = "Use QS SEE",
+    .uciName = "Use Quiescence SEE",
     .description = "Enable SEE pruning in quiescence",
     .valueType = Bool,
     .domain = Search,
@@ -522,7 +562,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
   //===========================================================================
   definitions_.push_back({
     .name = "USE_RFP",
-    .uciName = "Use RFP",
+    .uciName = "Use Reverse Futility Pruning",
     .description = "Enable reverse futility pruning",
     .valueType = Bool,
     .domain = Search,
@@ -579,7 +619,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
 
   definitions_.push_back({
     .name = "NMP_REDUCTION",
-    .uciName = "Null Move Reduction",
+    .uciName = "Null Depth Reduction",
     .description = "Depth reduction for null move search",
     .valueType = Int,
     .domain = Search,
@@ -593,7 +633,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
 
   definitions_.push_back({
     .name = "USE_NMP_VERIFY",
-    .uciName = "Use Null Move Verify",
+    .uciName = "Use Null Move Verification",
     .description = "Enable null move verification search",
     .valueType = Bool,
     .domain = Search,
@@ -633,7 +673,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
 
   definitions_.push_back({
     .name = "NMP_NEAR_MATE_MARGIN",
-    .uciName = "Null Move Mate Margin",
+    .uciName = "Null Move Near Mate Margin",
     .description = "Margin for near-mate null move check",
     .valueType = Int,
     .domain = Search,
@@ -659,7 +699,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
 
   definitions_.push_back({
     .name = "NMP_ZUG_NONPAWN_THRESHOLD",
-    .uciName = "Null Move Zugzwang Threshold",
+    .uciName = "Null Move Zug NonPawn Threshold",
     .description = "Non-pawn piece threshold for zugzwang guard",
     .valueType = Int,
     .domain = Search,
@@ -688,7 +728,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
 
   definitions_.push_back({
     .name = "USE_QFP",
-    .uciName = "Use QS Futility Pruning",
+    .uciName = "Use Quiescence Futility Pruning",
     .description = "Enable futility pruning in quiescence",
     .valueType = Bool,
     .domain = Search,
@@ -719,7 +759,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
   //===========================================================================
   definitions_.push_back({
     .name = "USE_LMR",
-    .uciName = "Use LMR",
+    .uciName = "Use Late Move Reduction",
     .description = "Enable Late Move Reductions",
     .valueType = Bool,
     .domain = Search,
@@ -759,7 +799,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
 
   definitions_.push_back({
     .name = "USE_LMP",
-    .uciName = "Use LMP",
+    .uciName = "Use Late Move Pruning",
     .description = "Enable Late Move Pruning",
     .valueType = Bool,
     .domain = Search,
@@ -840,7 +880,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
 
   definitions_.push_back({
     .name = "USE_EXT_ADD_DEPTH",
-    .uciName = "Use Ext Add Depth",
+    .uciName = "Use Extension Add",
     .description = "Add depth for extensions",
     .valueType = Bool,
     .domain = Search,
@@ -1075,7 +1115,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
   //===========================================================================
   definitions_.push_back({
     .name = "USE_BESTMOVE_INSTABILITY",
-    .uciName = "Use Bestmove Instability",
+    .uciName = "Use BestMove Instability",
     .description = "Enable best-move instability tracking for time management",
     .valueType = Bool,
     .domain = Search,
@@ -1129,11 +1169,13 @@ void ConfigRegistry::initializeSearchDefinitions() {
 
   definitions_.push_back({
     .name = "INSTABILITY_STABLE_FACTOR",
-    .uciName = "Instability Stable Factor",
+    .uciName = "Instability Stable Factor Pct",
     .description = "Multiply remaining time by this when stable (< 1.0)",
     .valueType = Double,
     .domain = Search,
     .defaultValue = "0.80",
+    .minValue = 50,
+    .maxValue = 100,
     .exposure = {.uci = true, .yaml = true, .display = true},
     .getter = [](const SearchConfigData& s, const EvalConfigData&) {
       return configToString(s.INSTABILITY_STABLE_FACTOR);
@@ -1145,11 +1187,13 @@ void ConfigRegistry::initializeSearchDefinitions() {
 
   definitions_.push_back({
     .name = "INSTABILITY_EXTEND_FACTOR",
-    .uciName = "Instability Extend Factor",
+    .uciName = "Instability Extend Factor Pct",
     .description = "Multiply remaining time by this when unstable (> 1.0)",
     .valueType = Double,
     .domain = Search,
     .defaultValue = "1.25",
+    .minValue = 100,
+    .maxValue = 200,
     .exposure = {.uci = true, .yaml = true, .display = true},
     .getter = [](const SearchConfigData& s, const EvalConfigData&) {
       return configToString(s.INSTABILITY_EXTEND_FACTOR);
@@ -1314,7 +1358,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
 
   definitions_.push_back({
     .name = "PAWN_TT_SIZE_MB",
-    .uciName = "Pawn Hash",
+    .uciName = "Pawn Hash Size",
     .description = "Pawn hash table size in MB",
     .valueType = Int,
     .domain = Eval,

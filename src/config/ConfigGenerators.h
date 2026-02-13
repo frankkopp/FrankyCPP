@@ -25,11 +25,12 @@
 //=============================================================================
 //
 // Provides functions that iterate over ConfigRegistry to produce output.
-// These are runtime functions - no build-time code generation involved.
+// These are runtime functions - no build-time code generation is involved.
 //
 // Functions:
 //   generateConfigString() - Generate str() output for display
-//   (Future: parseYamlFromRegistry(), initUciOptionsFromRegistry())
+//   parseYamlConfig() - Parse YAML config using registry metadata
+//   initUciOptionsFromRegistry() - Initialize UCI options from registry
 //
 // Usage:
 //   SearchConfigData search;
@@ -43,12 +44,15 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <vector>
 
 #include <yaml-cpp/yaml.h>
 
 // Forward declarations
 struct SearchConfigData;
 struct EvalConfigData;
+struct UciOption;
+class UciHandler;
 
 /// Generate configuration string for display.
 /// Iterates over ConfigRegistry::displayOptions() and formats each value.
@@ -77,7 +81,7 @@ struct EvalConfigData;
     ConfigDomain domain);
 
 //=============================================================================
-// YAML Parsing Functions (Phase 3)
+// YAML Parsing Functions
 //=============================================================================
 
 /// Parse YAML node into config structs using registry metadata.
@@ -115,5 +119,32 @@ std::set<std::string> parseYamlConfig(
     const YAML::Node& node,
     EvalConfigData& eval,
     bool warnUnknown = true);
+
+//=============================================================================
+// UCI Options Generation
+//=============================================================================
+
+/// Initialize UCI options from registry (called by UciOptions::initOptions).
+/// Creates UciOption objects by iterating registry entries with exposure.uci = true.
+///
+/// This function generates UCI options automatically from ConfigRegistry metadata,
+/// eliminating the need for manual option registration in UciOptions.cpp.
+///
+/// For each registry entry with exposure.uci = true:
+/// - Bool types become CHECK options
+/// - Int types become SPIN options with min/max bounds
+/// - String types become STRING options
+/// - Combo types become COMBO options with predefined values
+///
+/// @param optionVector  Vector to populate with UciOption objects
+/// @param uciOptionsPtr Pointer to UciOptions instance (for handler callbacks)
+void initUciOptionsFromRegistry(std::vector<UciOption>& optionVector, void* uciOptionsPtr);
+
+/// Add UCI-only buttons that don't have struct members (e.g., "Clear Hash").
+/// These are special options that trigger actions but don't store values.
+///
+/// @param optionVector  Vector to add button options to
+/// @param uciOptionsPtr    Pointer to UciOptions instance (for handler callbacks)
+void addUciOnlyButtons(std::vector<UciOption>& optionVector, void* uciOptionsPtr);
 
 #endif  // FRANKYCPP_CONFIGGENERATORS_H

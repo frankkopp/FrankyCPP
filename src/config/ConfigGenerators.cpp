@@ -29,10 +29,10 @@
 #include <vector>
 
 std::string generateConfigString(
-    const SearchConfigData& search,
-    const EvalConfigData& eval,
-    const bool showAll,
-    const std::optional<ConfigDomain> domainFilter) {
+  const SearchConfigData& search,
+  const EvalConfigData& eval,
+  const bool showAll,
+  const std::optional<ConfigDomain> domainFilter) {
 
   const auto& registry = ConfigRegistry::instance();
   std::ostringstream oss;
@@ -57,11 +57,11 @@ std::string generateConfigString(
   // Group by domain for organized output
   // Order: General, Search, Eval, Tuning, Debug
   const std::vector domainOrder = {
-      ConfigDomain::General,
-      ConfigDomain::Search,
-      ConfigDomain::Eval,
-      ConfigDomain::Tuning,
-      ConfigDomain::Debug};
+    ConfigDomain::General,
+    ConfigDomain::Search,
+    ConfigDomain::Eval,
+    ConfigDomain::Tuning,
+    ConfigDomain::Debug};
 
   for (const auto domain : domainOrder) {
     // Skip if filtering to a different domain
@@ -98,9 +98,9 @@ std::string generateConfigString(
 }
 
 std::string generateConfigStringForDomain(
-    const SearchConfigData& search,
-    const EvalConfigData& eval,
-    const ConfigDomain domain) {
+  const SearchConfigData& search,
+  const EvalConfigData& eval,
+  const ConfigDomain domain) {
   return generateConfigString(search, eval, false, domain);
 }
 
@@ -133,36 +133,36 @@ std::string EvalConfigData::str() const {
 }
 
 //=============================================================================
-// YAML Parsing Functions (Phase 3)
+// YAML Parsing Functions
 //=============================================================================
 
 namespace {
 
-/// Helper to convert YAML sequence to comma-separated string for array parsing
-std::string yamlSequenceToString(const YAML::Node& node) {
-  if (!node.IsSequence()) {
-    return node.as<std::string>();
+  /// Helper to convert YAML sequence to comma-separated string for array parsing
+  std::string yamlSequenceToString(const YAML::Node& node) {
+    if (!node.IsSequence()) {
+      return node.as<std::string>();
+    }
+    std::ostringstream oss;
+    for (std::size_t i = 0; i < node.size(); ++i) {
+      if (i > 0) oss << ",";
+      oss << node[i].as<std::string>();
+    }
+    return oss.str();
   }
-  std::ostringstream oss;
-  for (std::size_t i = 0; i < node.size(); ++i) {
-    if (i > 0) oss << ",";
-    oss << node[i].as<std::string>();
+
+  /// Helper to warn about unknown keys
+  void logUnknownKey(const std::string& key, const std::string& context) {
+    LOG__WARN(Logger::get().SEARCH_LOG, "Unknown key in {} config: {}", context, key);
   }
-  return oss.str();
-}
 
-/// Helper to warn about unknown keys
-void logUnknownKey(const std::string& key, const std::string& context) {
-  LOG__WARN(Logger::get().SEARCH_LOG, "Unknown key in {} config: {}", context, key);
-}
-
-}  // namespace
+}// namespace
 
 std::set<std::string> parseYamlConfig(
-    const YAML::Node& node,
-    SearchConfigData& search,
-    EvalConfigData& eval,
-    const bool warnUnknown) {
+  const YAML::Node& node,
+  SearchConfigData& search,
+  EvalConfigData& eval,
+  const bool warnUnknown) {
 
   std::set<std::string> parsedKeys;
 
@@ -202,8 +202,7 @@ std::set<std::string> parseYamlConfig(
         // Apply the setter
         def->setter(search, eval, value);
         parsedKeys.insert(def->name);
-      }
-      catch (const std::exception& e) {
+      } catch (const std::exception& e) {
         LOG__WARN(Logger::get().SEARCH_LOG,
                   "Failed to parse config '{}': {}", def->name, e.what());
       }
@@ -224,17 +223,208 @@ std::set<std::string> parseYamlConfig(
 }
 
 std::set<std::string> parseYamlConfig(
-    const YAML::Node& node,
-    SearchConfigData& search,
-    const bool warnUnknown) {
+  const YAML::Node& node,
+  SearchConfigData& search,
+  const bool warnUnknown) {
   EvalConfigData dummyEval;
   return parseYamlConfig(node, search, dummyEval, warnUnknown);
 }
 
 std::set<std::string> parseYamlConfig(
-    const YAML::Node& node,
-    EvalConfigData& eval,
-    const bool warnUnknown) {
+  const YAML::Node& node,
+  EvalConfigData& eval,
+  const bool warnUnknown) {
   SearchConfigData dummySearch;
   return parseYamlConfig(node, dummySearch, eval, warnUnknown);
+}
+
+//=============================================================================
+// UCI Options Generation
+//=============================================================================
+
+// We need to include UciOptions.h here (not in header to avoid circular deps)
+#include "engine/Search.h"
+#include "engine/UciHandler.h"
+#include "engine/UciOptions.h"
+
+void initUciOptionsFromRegistry(std::vector<UciOption>& optionVector, void* uciOptionsPtr) {
+  // ReSharper disable once CppDFAUnusedValue
+  // ReSharper disable once CppDFAUnreadVariable
+  auto* uciOptions     = static_cast<UciOptions*>(uciOptionsPtr);
+  const auto& registry = ConfigRegistry::instance();
+
+  // Iterate all UCI-exposed config entries
+  for (const auto* def : registry.uciOptions()) {
+    // Skip entries with empty UCI name (internal-only)
+    if (def->uciName.empty()) {
+      continue;
+    }
+
+    // Skip IntArray types - they're not exposed via UCI
+    if (def->valueType == ConfigValueType::IntArray) {
+      continue;
+    }
+
+    // Capture the config name for use in lambdas (names are stable in registry)
+    const std::string configName = def->name;
+    const std::string uciName    = def->uciName;
+
+    // Check if this option has a custom handler
+    const bool hasCustomHandler = def->customUciHandler.has_value();
+
+    // Create appropriate option type based on valueType
+    switch (def->valueType) {
+      case ConfigValueType::Bool: {
+        const bool defaultVal = parseBool(def->defaultValue);
+
+        optionVector.emplace_back(uciName.c_str(), defaultVal,
+                                  [configName, uciName, uciOptions, hasCustomHandler](UciHandler* uciHandler) {
+                                    const UciOption* opt = uciOptions->getOption(uciName);
+                                    if (!opt) return;
+                                    const bool value = opt->currentValue == "true";
+
+                                    // Find the registry entry and use its setter
+                                    const ConfigDef* regDef = ConfigRegistry::instance().find(configName);
+                                    if (!regDef) return;
+
+                                    ConfigManager::instance().applyOverrides(
+                                      [regDef, value](SearchConfigData& s, EvalConfigData& e) {
+                                        regDef->setter(s, e, value ? "true" : "false");
+                                      });
+
+                                    // Call custom handler if present
+                                    if (hasCustomHandler && regDef->customUciHandler) {
+                                      (*regDef->customUciHandler)(uciHandler);
+                                    }
+                                  });
+        break;
+      }
+
+      case ConfigValueType::Int: {
+        const int defaultVal = parseInt(def->defaultValue);
+        const int minVal     = def->minValue.value_or(INT_MIN);
+        const int maxVal     = def->maxValue.value_or(INT_MAX);
+
+        optionVector.emplace_back(uciName.c_str(), defaultVal, minVal, maxVal,
+                                  [configName, uciName, uciOptions, hasCustomHandler](UciHandler* uciHandler) {
+                                    const UciOption* opt = uciOptions->getOption(uciName);
+                                    if (!opt) return;
+                                    const std::string valueStr = opt->currentValue;
+
+                                    const ConfigDef* regDef = ConfigRegistry::instance().find(configName);
+                                    if (!regDef) return;
+
+                                    ConfigManager::instance().applyOverrides(
+                                      [regDef, valueStr](SearchConfigData& s, EvalConfigData& e) {
+                                        regDef->setter(s, e, valueStr);
+                                      });
+
+                                    // Call custom handler if present
+                                    if (hasCustomHandler && regDef->customUciHandler) {
+                                      (*regDef->customUciHandler)(uciHandler);
+                                    }
+                                  });
+        break;
+      }
+
+      case ConfigValueType::Double: {
+        // Double values exposed as percentage integers in UCI (multiply by 100)
+        const int defaultPct = static_cast<int>(parseDouble(def->defaultValue) * 100);
+        const int minPct     = def->minValue.value_or(0);
+        const int maxPct     = def->maxValue.value_or(200);
+
+        optionVector.emplace_back(uciName.c_str(), defaultPct, minPct, maxPct,
+                                  [configName, uciName, uciOptions, hasCustomHandler](UciHandler* uciHandler) {
+                                    const UciOption* opt = uciOptions->getOption(uciName);
+                                    if (!opt) return;
+                                    const double value = UciOptions::getInt(opt->currentValue) / 100.0;
+
+                                    const ConfigDef* regDef = ConfigRegistry::instance().find(configName);
+                                    if (!regDef) return;
+
+                                    ConfigManager::instance().applyOverrides(
+                                      [regDef, value](SearchConfigData& s, EvalConfigData& e) {
+                                        regDef->setter(s, e, std::to_string(value));
+                                      });
+
+                                    // Call custom handler if present
+                                    if (hasCustomHandler && regDef->customUciHandler) {
+                                      (*regDef->customUciHandler)(uciHandler);
+                                    }
+                                  });
+        break;
+      }
+
+      case ConfigValueType::String: {
+        optionVector.emplace_back(uciName.c_str(), def->defaultValue.c_str(),
+                                  [configName, uciName, uciOptions, hasCustomHandler](UciHandler* uciHandler) {
+                                    const UciOption* opt = uciOptions->getOption(uciName);
+                                    if (!opt) return;
+                                    const std::string valueStr = opt->currentValue;
+
+                                    const ConfigDef* regDef = ConfigRegistry::instance().find(configName);
+                                    if (!regDef) return;
+
+                                    ConfigManager::instance().applyOverrides(
+                                      [regDef, valueStr](SearchConfigData& s, EvalConfigData& e) {
+                                        regDef->setter(s, e, valueStr);
+                                      });
+
+                                    // Call custom handler if present
+                                    if (hasCustomHandler && regDef->customUciHandler) {
+                                      (*regDef->customUciHandler)(uciHandler);
+                                    }
+                                  });
+        break;
+      }
+
+      case ConfigValueType::Combo: {
+        // Build a STRING option (UciOption doesn't have a vector-based COMBO constructor)
+        // But we need to manually set comboVars after creation
+        UciOption opt(uciName.c_str(), def->defaultValue.c_str(),
+                      [configName, uciName, uciOptions, hasCustomHandler](UciHandler* uciHandler) {
+                        const UciOption* o = uciOptions->getOption(uciName);
+                        if (!o) return;
+                        const std::string valueStr = o->currentValue;
+
+                        const ConfigDef* regDef = ConfigRegistry::instance().find(configName);
+                        if (!regDef) return;
+
+                        ConfigManager::instance().applyOverrides(
+                          [regDef, valueStr](SearchConfigData& s, EvalConfigData& e) {
+                            regDef->setter(s, e, valueStr);
+                          });
+
+                        // Call custom handler if present
+                        if (hasCustomHandler && regDef->customUciHandler) {
+                          (*regDef->customUciHandler)(uciHandler);
+                        }
+                      });
+        opt.comboVars = def->comboVars;
+        optionVector.push_back(std::move(opt));
+        break;
+      }
+
+      case ConfigValueType::IntArray:
+        // Already skipped above, but handle for completeness
+        break;
+    }
+  }
+}
+
+void addUciOnlyButtons(std::vector<UciOption>& optionVector, void* uciOptionsPtr) {
+  // Clear Hash button - clears the transposition table
+  optionVector.emplace_back("Clear Hash",
+                            [](const UciHandler* uciHandler) {
+                              if (uciHandler && uciHandler->getSearchPtr()) {
+                                uciHandler->getSearchPtr()->clearTT();
+                              }
+                            });
+
+  // Reset to Defaults button - resets all options to their default values
+  auto* uciOptions = static_cast<UciOptions*>(uciOptionsPtr);
+  optionVector.emplace_back("Reset to Defaults",
+                            [uciOptions](UciHandler* uciHandler) {
+                              uciOptions->resetToDefaults(uciHandler);
+                            });
 }

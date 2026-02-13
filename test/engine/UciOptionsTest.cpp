@@ -19,11 +19,13 @@
 
 #include <string>
 
+#include "config/ConfigManager.h"
 #include "engine/UciOptions.h"
 #include "init.h"
 
 #include <engine/UciHandler.h>
 #include <gtest/gtest.h>
+
 using testing::Eq;
 
 class UciOptionsTest : public testing::Test {
