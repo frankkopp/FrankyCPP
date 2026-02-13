@@ -1,9 +1,19 @@
 # Plan: Selective Quiet Checks in Quiescence Search
 
-**Status:** Planned  
+**Status:** Implementation Complete - Pending Testing  
 **Created:** 2026-02-11  
+**Updated:** 2026-02-12
 **Priority:** Medium  
 **Expected Impact:** +15-25 ELO
+
+---
+
+## Test Results
+
+**Test 1 (2026-02-12):** -23.4 ELO - **INVALID TEST** (feature was disabled)
+- The yaml config had `USE_QS_CHECKS: false` during the test
+- This regression was caused by other changes, not QS_CHECKS
+- Need to retest with `USE_QS_CHECKS: true`
 
 ---
 
@@ -255,19 +265,33 @@ Test cases:
 - `lastMoveWasQuietCheck()` returns true only for quiet check moves
 - Evasion mode with quiet checks
 
+### 11. Update documentation
+**Files:** `docs/` and `docs/specs/`
+
+Update the following documentation:
+
+- **`docs/specs/V1_ENGINE_STRENGTH_ROADMAP.md`** - Add QSearch Quiet Checks as a completed/in-progress feature
+- **`docs/specs/V1_ENGINE_ENHANCEMENT_PLAN.md`** - Reference this feature if applicable
+- **`docs/FrankyCPP_Codebase_Review.md`** - Update search/quiescence section if present
+- **`README.md`** - Add to feature list when feature is enabled by default
+
+Mark this plan document status as "Complete" when implementation is done.
+
 ---
 
 ## Files to Modify
 
-| File | Changes |
-|------|---------|
-| `src/chesscore/MoveGenerator.h` | Add `GenQuietChecks` to enum, add `QUIET_CHECKS` stage, add `lastReturnedStage` member, add `lastMoveWasQuietCheck()` method |
-| `src/chesscore/MoveGenerator.cpp` | Add check generation in `generateMoves()`, `generatePawnMoves()`, `fillOnDemandMoveList()`, track `lastReturnedStage` in `getNextPseudoLegalMove()` |
-| `src/engine/config/SearchConfigData.h` | Add `USE_QS_CHECKS`, `QS_CHECKS_DEPTH`, `QS_CHECKS_LIMIT` with YAML support |
-| `src/engine/Search.cpp` | Modify `qsearch()` to use `GenQuietChecks` conditionally, add quiet check limit counter using `lastMoveWasQuietCheck()` |
-| `src/engine/UciOptions.cpp` | Add UCI options for the new parameters (3 options) |
-| `config/search.yaml` | Add default values |
-| `test/chesscore/MoveGeneratorTest.cpp` | Add tests for quiet check generation and `lastMoveWasQuietCheck()` |
+| File                                       | Changes                                                                                                                                             |
+|--------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| `src/chesscore/MoveGenerator.h`            | Add `GenQuietChecks` to enum, add `QUIET_CHECKS` stage, add `lastReturnedStage` member, add `lastMoveWasQuietCheck()` method                        |
+| `src/chesscore/MoveGenerator.cpp`          | Add check generation in `generateMoves()`, `generatePawnMoves()`, `fillOnDemandMoveList()`, track `lastReturnedStage` in `getNextPseudoLegalMove()` |
+| `src/engine/config/SearchConfigData.h`     | Add `USE_QS_CHECKS`, `QS_CHECKS_DEPTH`, `QS_CHECKS_LIMIT` with YAML support                                                                         |
+| `src/engine/Search.cpp`                    | Modify `qsearch()` to use `GenQuietChecks` conditionally, add quiet check limit counter using `lastMoveWasQuietCheck()`                             |
+| `src/engine/UciOptions.cpp`                | Add UCI options for the new parameters (3 options)                                                                                                  |
+| `config/search.yaml`                       | Add default values                                                                                                                                  |
+| `test/chesscore/MoveGeneratorTest.cpp`     | Add tests for quiet check generation and `lastMoveWasQuietCheck()`                                                                                  |
+| `docs/specs/V1_ENGINE_STRENGTH_ROADMAP.md` | Add feature to roadmap                                                                                                                              |
+| `docs/specs/PLAN_QSearch_Quiet_Checks.md`  | Update status to Complete                                                                                                                           |
 
 ---
 
@@ -282,11 +306,11 @@ The move generation cost is approximately the same as full quiet move generation
 ### Search Cost Savings
 The savings come from **fewer moves searched**, not fewer moves generated:
 
-| Scenario | Moves Generated | Moves Searched |
-|----------|-----------------|----------------|
-| Normal QSearch | ~20 captures | ~20 |
-| QSearch + Checks | ~20 captures + ~3 checks | ~23 |
-| Normal Search | ~20 captures + ~30 quiet | ~50 |
+| Scenario         | Moves Generated          | Moves Searched |
+|------------------|--------------------------|----------------|
+| Normal QSearch   | ~20 captures             | ~20            |
+| QSearch + Checks | ~20 captures + ~3 checks | ~23            |
+| Normal Search    | ~20 captures + ~30 quiet | ~50            |
 
 ### Mitigation
 - Limit to `qsDepth == 0` (first ply of quiescence only) - controlled by `QS_CHECKS_DEPTH`
@@ -313,13 +337,13 @@ The savings come from **fewer moves searched**, not fewer moves generated:
 
 ## Design Decisions
 
-| Decision | Rationale |
-|----------|-----------|
-| Direct checks only | Discovered checks are complex; start simple |
-| Disabled by default | Safe rollout; enable after ELO testing |
-| New GenMode flag | Clean integration with existing bit flag system |
-| Stage after captures | Checks are tactical, should be tried early |
-| `QS_CHECKS_LIMIT` from start | Prevent runaway checking sequences (chessprogramming.org advice) |
+| Decision                         | Rationale                                                                                     |
+|----------------------------------|-----------------------------------------------------------------------------------------------|
+| Direct checks only               | Discovered checks are complex; start simple                                                   |
+| Disabled by default              | Safe rollout; enable after ELO testing                                                        |
+| New GenMode flag                 | Clean integration with existing bit flag system                                               |
+| Stage after captures             | Checks are tactical, should be tried early                                                    |
+| `QS_CHECKS_LIMIT` from start     | Prevent runaway checking sequences (chessprogramming.org advice)                              |
 | `lastMoveWasQuietCheck()` method | Zero-overhead detection using existing stage tracking; cleaner than analyzing move properties |
 
 ---
