@@ -535,6 +535,53 @@ void initUciOptionsFromRegistry(std::vector<UciOption>& optionVector);
 
 ## Implementation Phases
 
+### Version Control Strategy
+Each phase will be committed separately to enable easy rollback:
+- **Pre-refactor baseline:** Clean git state before starting (current state)
+- **Phase commits:** Each phase gets its own commit upon completion
+- **Rollback:** `git reset --hard <commit>` to return to any phase boundary
+
+---
+
+### Phase 0: Directory Reorganization (Preparatory)
+**Goal:** Move all config-related files to a dedicated `src/config/` folder before starting the refactor.
+
+**Rationale:**
+- Configuration is a cross-cutting concern, not specific to the engine module
+- All config-related files in one place for easier navigation
+- Natural home for new files (`ConfigDef.h`, `ConfigRegistry.h/cpp`, `ConfigGenerators.h/cpp`)
+- Cleaner structure before adding new code
+
+| Task                                                      | Effort | Notes                                      |
+|-----------------------------------------------------------|--------|--------------------------------------------|
+| Create `src/config/` directory                            | 0.1h   | New top-level source folder                |
+| Move `src/engine/config/ConfigManager.h/cpp`              | 0.1h   | → `src/config/ConfigManager.h/cpp`         |
+| Move `src/engine/config/SearchConfigData.h`               | 0.1h   | → `src/config/SearchConfigData.h`          |
+| Move `src/engine/config/EvalConfigData.h`                 | 0.1h   | → `src/config/EvalConfigData.h`            |
+| Update `#include` paths in all affected files             | 1h     | ~20-30 files reference these headers       |
+| Update CMakeLists.txt if needed                           | 0.1h   | Glob patterns should auto-discover         |
+| Verify build succeeds                                     | 0.5h   | Windows + WSL builds                       |
+
+**Files to move:**
+```
+src/engine/config/ConfigManager.h    → src/config/ConfigManager.h
+src/engine/config/ConfigManager.cpp  → src/config/ConfigManager.cpp
+src/engine/config/SearchConfigData.h → src/config/SearchConfigData.h
+src/engine/config/EvalConfigData.h   → src/config/EvalConfigData.h
+```
+
+**Namespace decision:** Keep `engine::config` namespace for now to minimize changes. Can revisit later.
+
+**Note:** `UciOptions.h/cpp` stays permanently in `src/engine/`. Rationale:
+- UCI options are engine-specific (part of UCI protocol handling)
+- After Phase 4 refactoring, `UciOptions.cpp` will be minimal (~50-100 lines) - just calling `initUciOptionsFromRegistry()` and handling UCI-specific logic
+- The config registry provides the data; UciOptions provides the UCI-specific presentation
+- No need to move what will become a thin UCI adapter layer
+
+**Deliverable:** Config files consolidated in `src/config/`. Build succeeds. No behavioral changes.
+
+---
+
 ### Phase 1: Foundation (Low Risk)
 **Goal:** Create ConfigDef and ConfigRegistry without changing existing behavior.
 
