@@ -41,6 +41,7 @@ set(FrankyCPPlib_SRCS
         config/ConfigRegistry.cpp
 
         tablebase/Tablebase.cpp tablebase/Tablebase.h
+        tablebase/TablebasePaths.cpp tablebase/TablebasePaths.h
 )
 
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})

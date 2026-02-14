@@ -839,23 +839,24 @@ A dedicated cache would only help if:
 ```
 src/
   tablebase/
-    Tablebase.h           # C++ wrapper interface
-    Tablebase.cpp         # Implementation
-    TablebasePaths.h      # Path resolution utilities
-    TablebasePaths.cpp
-    TablebaseDownloader.h # Download management
-    TablebaseDownloader.cpp
+    Tablebase.h           # C++ wrapper interface           ✅ Implemented
+    Tablebase.cpp         # Implementation                  ✅ Implemented
+    TablebasePaths.h      # Path resolution utilities       ✅ Implemented
+    TablebasePaths.cpp                                      ✅ Implemented
+    TablebaseDownloader.h # Download management             📋 Future
+    TablebaseDownloader.cpp                                 📋 Future
 
 cmake/
-  Fathom.cmake            # FetchContent configuration for Fathom
+  Fathom.cmake            # FetchContent configuration      ✅ Implemented
 
 test/
   tablebase/
-    TablebaseTest.cpp     # Unit tests
-    TablebaseDownloaderTest.cpp
+    TablebaseTest.cpp     # Tablebase unit tests            ✅ Implemented
+    TablebasePathsTest.cpp # Path utilities tests           ✅ Implemented
+    TablebaseDownloaderTest.cpp                             📋 Future
     
 config/
-  search.yaml             # TB configuration defaults
+  search.yaml             # TB configuration defaults       ✅ Updated
 
 # Note: Fathom source is automatically downloaded to build directory
 # via CMake FetchContent - no vendored source files in repo
@@ -915,10 +916,10 @@ Download from: http://tablebase.sesse.net/ or torrent
 | Phase | Task                          | Effort   | Status         |
 |-------|-------------------------------|----------|----------------|
 | 1     | Fathom Library Integration    | 2-3 days | ✅ Complete     |
-| 2     | Storage & Download Management | 2-3 days | 📋 Planned     |
+| 2     | Storage & Download Management | 2-3 days | ✅ Complete     |
 | 3     | Root Tablebase Probing        | 2-3 days | 📋 Planned     |
 | 4     | Search Tablebase Probing      | 1 week   | 📋 Planned     |
-| 5     | Configuration & UCI           | 2-3 days | 📋 Planned     |
+| 5     | Configuration & UCI           | 2-3 days | ✅ Complete     |
 | 6     | Testing                       | 2-3 days | ✅ Complete     |
 | 7     | Cache Optimization (Optional) | 2-3 days | 📋 Optional    |
 
@@ -933,6 +934,34 @@ Download from: http://tablebase.sesse.net/ or torrent
   - Position-to-Fathom conversion and Fathom-move-to-Move conversion
 - `src/CMakeLists.txt` - Links to fathom library
 - `test/tablebase/TablebaseTest.cpp` - Comprehensive unit tests (skips if TBs unavailable)
+
+### Phase 2 Completion Notes (2026-02-14)
+
+**Implemented:**
+- `src/tablebase/TablebasePaths.h/.cpp` - Path resolution utilities:
+  - `findTablebasePath()` - Priority-based path resolution (env > config > defaults)
+  - `getDefaultTablebasePath()` - Platform-specific defaults
+  - `validateTablebasePath()` - Checks for .rtbw/.rtbz files
+  - `countTablebaseFiles()` - Counts WDL and DTZ files
+  - `getTablebaseStatus()` - Human-readable status string
+- `test/tablebase/TablebasePathsTest.cpp` - Unit tests for path utilities
+- Configuration added to `SearchConfigData`:
+  - `TB_PATH` - Path to tablebase files (UCI: `SyzygyPath`)
+  - `TB_PROBE_DEPTH` - Minimum depth for search probing (UCI: `SyzygyProbeDepth`)
+  - `TB_PROBE_ROOT` - Enable root probing (UCI: `SyzygyProbeRoot`)
+- `config/search.yaml` - Default configuration with `TB_PATH: "D:/SYZYGY"`
+- Updated `TablebaseTest.cpp` to use `findTablebasePath()` for auto-detection
+
+**Deferred to future:**
+- `TablebaseDownloader` - CLI download feature (not essential for core functionality)
+- CI/GitHub Actions caching - Can be added when CI pipeline is set up
+
+### Phase 5 Partial Completion Notes (2026-02-14)
+
+**Implemented (merged into Phase 2):**
+- UCI options: `SyzygyPath`, `SyzygyProbeDepth`, `SyzygyProbeRoot`
+- YAML config support via ConfigRegistry
+- Configuration validation at startup
 
 **Total Estimated Time:** 2.5-3.5 weeks
 

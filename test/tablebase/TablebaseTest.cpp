@@ -18,6 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "tablebase/Tablebase.h"
+#include "tablebase/TablebasePaths.h"
 #include "Test_Utils.h"
 #include "chesscore/Position.h"
 #include "common/Logging.h"
@@ -216,7 +217,7 @@ TEST_F(TablebaseTest, probeRootNotInitialized) {
 // These tests are skipped if tablebases are not available
 //=============================================================================
 
-class TablebaseIntegrationTest : public ::testing::Test {
+class TablebaseIntegrationTest : public testing::Test {
 public:
   static void SetUpTestSuite() {
     NEWLINE;
@@ -230,12 +231,10 @@ protected:
   Tablebase tb;
 
   void SetUp() override {
-    // Try common tablebase paths
-    // Users should set TB_PATH environment variable or modify this
-
-    const char* tbPathEnv = std::getenv("TB_PATH");
-    if (tbPathEnv != nullptr) {
-      tb.initialize(tbPathEnv);
+    // Use centralized path resolution (checks env var, config, defaults)
+    const std::string tbPath = findTablebasePath();
+    if (!tbPath.empty()) {
+      tb.initialize(tbPath);
     }
   }
 

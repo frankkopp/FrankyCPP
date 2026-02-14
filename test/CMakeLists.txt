@@ -26,6 +26,7 @@ add_executable(
         common/StringUtilsTest.cpp
         common/TimeUtilsTest.cpp
         common/LoggingTest.cpp
+        common/MiscTest.cpp
 
         chesscore/PositionTest.cpp
         chesscore/MoveGeneratorTest.cpp
@@ -54,6 +55,7 @@ add_executable(
         enginetest/TestTypes_Test.cpp
 
         tablebase/TablebaseTest.cpp
+        tablebase/TablebasePathsTest.cpp
 
         engine_arena/TestSuiteRunner_IntegrationTest.cpp
         engine_arena/UCIEngine_ErrorHandlingTest.cpp

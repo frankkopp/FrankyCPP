@@ -42,6 +42,11 @@ struct SearchConfigData {
   std::string BOOK_PATH = "./books/book.txt";
   std::string BOOK_TYPE = "SIMPLE";// OpeningBook::BookFormat as string
 
+  // Syzygy tablebase settings
+  std::string TB_PATH;           // Path to Syzygy tablebase files (empty = disabled)
+  int TB_PROBE_DEPTH   = 1;      // Minimum depth to probe WDL in search
+  bool TB_PROBE_ROOT   = true;   // Probe tablebases at root for best move
+
   // pondering
   bool USE_PONDER = true;
 

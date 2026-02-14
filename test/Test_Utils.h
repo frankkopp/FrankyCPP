@@ -20,32 +20,18 @@
 #ifndef FRANKYCPP_TEST_UTILS_H
 #define FRANKYCPP_TEST_UTILS_H
 
-#include <cstdlib>
+#include "common/misc.h"
+
 #include <iostream>
-#include <memory>
 #include <gtest/gtest.h>
 
 /**
- * @brief Cross-platform safe environment variable getter
+ * @brief Cross-platform safe environment variable exists check
  * @param varName Environment variable name
  * @return true if the variable exists and is non-empty, false otherwise
  */
 inline bool getEnvVarExists(const char* varName) {
-#ifdef _MSC_VER
-  // Use MSVC-safe _dupenv_s with RAII
-  char* rawValue = nullptr;
-  size_t len = 0;
-  if (_dupenv_s(&rawValue, &len, varName) == 0 && rawValue != nullptr) {
-    // Wrap in unique_ptr with custom deleter for automatic cleanup
-    std::unique_ptr<char, decltype(&free)> value(rawValue, &free);
-    return true;
-  }
-  return false;
-#else
-  // Use standard getenv on other platforms
-  const char* value = std::getenv(varName);
-  return value != nullptr;
-#endif
+  return !getEnv(varName).empty();
 }
 
 /**
