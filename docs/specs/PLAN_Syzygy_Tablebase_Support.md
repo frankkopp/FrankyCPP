@@ -57,24 +57,69 @@ Key characteristics:
 
 #### 1.1 Add Fathom to Build System
 
-**Option A: vcpkg (Preferred)**
-```json
-// vcpkg.json
-{
-  "dependencies": [
-    "fathom"
-  ]
-}
+**Note:** Fathom is NOT available in vcpkg (verified 2026-02-14).
+
+**Approach: CMake FetchContent (Recommended)**
+
+Use CMake's `FetchContent` module to download Fathom automatically during configuration:
+
+```cmake
+# cmake/Fathom.cmake
+
+include(FetchContent)
+
+FetchContent_Declare(
+  fathom
+  GIT_REPOSITORY https://github.com/jdart1/Fathom.git
+  GIT_TAG        master  # Or pin to specific commit for reproducibility
+)
+
+FetchContent_MakeAvailable(fathom)
+
+# Fathom is a C library without CMake support, so we create a target manually
+FetchContent_GetProperties(fathom)
+if(NOT fathom_POPULATED)
+  FetchContent_Populate(fathom)
+endif()
+
+add_library(fathom STATIC
+  ${fathom_SOURCE_DIR}/src/tbprobe.c
+)
+
+target_include_directories(fathom PUBLIC
+  ${fathom_SOURCE_DIR}/src
+)
+
+# Fathom configuration - thread safety
+target_compile_definitions(fathom PRIVATE
+  TB_NO_THREADS=0  # Enable thread safety
+)
 ```
 
-**Option B: Direct Integration**
-If vcpkg doesn't have Fathom, integrate source directly:
+**Benefits of FetchContent:**
+- Version control - pin to specific commit/tag for reproducibility
+- No source code committed to repo - keeps repo clean and small
+- Reproducible builds - everyone gets the same version automatically
+- Easy updates - change one line to update Fathom version
+
+**Integration in main CMakeLists.txt:**
+```cmake
+# In src/CMakeLists.txt or main CMakeLists.txt
+include(cmake/Fathom.cmake)
+
+# Link to the tablebase module
+target_link_libraries(tablebase PRIVATE fathom)
+```
+
+**File structure after FetchContent:**
 ```
 src/
   tablebase/
-    fathom/           # Fathom source (tbprobe.c, tbprobe.h)
     Tablebase.h       # C++ wrapper
     Tablebase.cpp
+    TablebasePaths.h
+    TablebasePaths.cpp
+# Fathom source is downloaded to cmake build directory automatically
 ```
 
 #### 1.2 Create C++ Wrapper Class
@@ -800,10 +845,9 @@ src/
     TablebasePaths.cpp
     TablebaseDownloader.h # Download management
     TablebaseDownloader.cpp
-    fathom/               # Fathom library (if not via vcpkg)
-      tbprobe.h
-      tbprobe.c
-      tbconfig.h          # Fathom configuration
+
+cmake/
+  Fathom.cmake            # FetchContent configuration for Fathom
 
 test/
   tablebase/
@@ -812,6 +856,9 @@ test/
     
 config/
   search.yaml             # TB configuration defaults
+
+# Note: Fathom source is automatically downloaded to build directory
+# via CMake FetchContent - no vendored source files in repo
 ```
 
 ---
@@ -850,8 +897,8 @@ TB_CACHE_MB: 32
 
 - **Repository:** https://github.com/jdart1/Fathom
 - **License:** MIT
-- **Version:** Latest stable
-- **Integration:** vcpkg (preferred) or source copy
+- **Version:** Latest stable (pin to specific commit recommended)
+- **Integration:** CMake FetchContent (vcpkg not available, verified 2026-02-14)
 
 ### Syzygy Tablebases
 
@@ -865,15 +912,27 @@ Download from: http://tablebase.sesse.net/ or torrent
 
 ## Timeline
 
-| Phase | Task                          | Effort   | Status      |
-|-------|-------------------------------|----------|-------------|
-| 1     | Fathom Library Integration    | 2-3 days | 📋 Planned  |
-| 2     | Storage & Download Management | 2-3 days | 📋 Planned  |
-| 3     | Root Tablebase Probing        | 2-3 days | 📋 Planned  |
-| 4     | Search Tablebase Probing      | 1 week   | 📋 Planned  |
-| 5     | Configuration & UCI           | 2-3 days | 📋 Planned  |
-| 6     | Testing                       | 2-3 days | 📋 Planned  |
-| 7     | Cache Optimization (Optional) | 2-3 days | 📋 Optional |
+| Phase | Task                          | Effort   | Status         |
+|-------|-------------------------------|----------|----------------|
+| 1     | Fathom Library Integration    | 2-3 days | ✅ Complete     |
+| 2     | Storage & Download Management | 2-3 days | 📋 Planned     |
+| 3     | Root Tablebase Probing        | 2-3 days | 📋 Planned     |
+| 4     | Search Tablebase Probing      | 1 week   | 📋 Planned     |
+| 5     | Configuration & UCI           | 2-3 days | 📋 Planned     |
+| 6     | Testing                       | 2-3 days | ✅ Complete     |
+| 7     | Cache Optimization (Optional) | 2-3 days | 📋 Optional    |
+
+### Phase 1 Completion Notes (2026-02-14)
+
+**Implemented:**
+- `cmake/Fathom.cmake` - FetchContent integration (downloads Fathom automatically)
+- `src/tablebase/Tablebase.h/.cpp` - Full C++ wrapper with:
+  - `TBResult` enum (Win, CursedWin, Draw, BlessedLoss, Loss, Failed)
+  - `TBProbeResult` struct with WDL, DTZ, and best move
+  - `Tablebase` class with initialize/shutdown, probeWDL, probeRoot, canProbe
+  - Position-to-Fathom conversion and Fathom-move-to-Move conversion
+- `src/CMakeLists.txt` - Links to fathom library
+- `test/tablebase/TablebaseTest.cpp` - Comprehensive unit tests (skips if TBs unavailable)
 
 **Total Estimated Time:** 2.5-3.5 weeks
 
