@@ -1,9 +1,9 @@
 # FrankyCPP Configuration System Refactoring Plan
 
-**Document Version:** 1.6  
+**Document Version:** 1.7  
 **Created:** 2026-02-13  
-**Last Updated:** 2026-02-13  
-**Status:** Draft - Design Complete  
+**Last Updated:** 2026-02-14  
+**Status:** Complete (Phases 0-5)  
 **Target:** FrankyCPP v1.3+  
 **Priority:** Medium (Maintenance / Technical Debt Reduction)
 
@@ -854,7 +854,7 @@ TEST_F(ConfigGeneratorsTest, ParseYamlConfigMissingKeysUseDefaults) {
 
 **Deliverable:** UCI options derived from registry. ~350 lines of boilerplate removed.
 
-### Phase 5: Cleanup & Documentation
+### Phase 5: Cleanup & Documentation ✅ COMPLETE
 **Goal:** Remove legacy code, update documentation.
 
 | Task                                              | Effort | Files                             |
@@ -863,6 +863,21 @@ TEST_F(ConfigGeneratorsTest, ParseYamlConfigMissingKeysUseDefaults) {
 | Update copilot-instructions.md with new pattern   | 0.5h   | `.github/copilot-instructions.md` |
 | Update architecture documentation                 | 1h     | `docs/Architecture.md`            |
 | Add developer guide for adding new configs        | 1h     | `docs/arena/Development.md`       |
+
+**Implementation Notes:**
+- **Phase 5.1:** Deleted `src/config/YamlHelpers.h` (unused after Phase 3)
+- **Phase 5.2:** Consolidated string parsing into `stringutil.h`:
+  - Added throwing variants: `parseInt()`, `parseDouble()`, `parseBool()`, `parseString()`
+  - Added safe variants with logging: `parseIntOr()`, `parseDoubleOr()`
+  - Added optional variants: `tryParseInt()`, `tryParseDouble()`
+  - Removed duplicate functions from `ConfigDef.h`
+  - Removed `UciOptions::getInt()` - replaced by `parseIntOr()`
+  - Added 17 unit tests in `StringUtilsTest.cpp`
+- **Phase 5.3:** Updated documentation:
+  - `.github/copilot-instructions.md` - Updated "Modifying Configuration" section
+  - `docs/Architecture.md` - Updated directory structure to show `src/config/`
+
+**Deliverable:** Clean codebase with no unused code and up-to-date documentation.
 
 ### Phase 6: Enhanced Configuration Discovery (Optional)
 **Goal:** Help users discover available settings without documentation.

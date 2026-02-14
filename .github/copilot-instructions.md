@@ -312,6 +312,7 @@ src/
 ├── types/          # Core value types (Bitboard, Move, Square, Value, etc.)
 ├── common/         # Utilities (Logging, ThreadPool, string utils)
 ├── chesscore/      # Board representation, move generation, position
+├── config/         # Configuration system (ConfigRegistry, ConfigManager)
 ├── engine/         # Search, evaluation, UCI handler, TT
 ├── enginetest/     # Test suite runner
 └── openingbook/    # Opening book handling
@@ -502,10 +503,40 @@ git log --oneline -5
 4. Tests are auto-discovered by CMake
 
 ### Modifying Configuration
-1. Add new field to `SearchConfigData` or `EvalConfigData` with default value
-2. Add YAML parsing in the `convert<>` specialization
-3. Update `config/search.yaml` or `config/eval.yaml` with new parameter
-4. Access via `ConfigManager::instance().search().NEW_FIELD`
+
+Configuration uses a **ConfigRegistry** system that provides a single source of truth.
+Adding a new config option requires changes in **TWO linked places**:
+
+1. **Add struct member** in `src/config/SearchConfigData.h` or `EvalConfigData.h`:
+   ```cpp
+   bool USE_NEW_FEATURE = true;  // with default value
+   ```
+
+2. **Add registry entry** in `src/config/ConfigRegistry.cpp` (in `initializeSearchDefinitions()` or `initializeEvalDefinitions()`):
+   ```cpp
+   {
+     .name = "USE_NEW_FEATURE",
+     .uciName = "Use New Feature",  // UCI display name (empty = not exposed via UCI)
+     .description = "Enable the new feature",
+     .valueType = ConfigValueType::Bool,
+     .domain = ConfigDomain::Search,
+     .defaultValue = "true",
+     .exposure = {.uci = true, .yaml = true, .display = true},
+     .getter = [](const auto& s, const auto&) { return configToString(s.USE_NEW_FEATURE); },
+     .setter = [](auto& s, auto&, const std::string& v) { s.USE_NEW_FEATURE = parseBool(v); }
+   },
+   ```
+
+**Compile-time validation:** If the struct member name is misspelled in the getter/setter lambdas, compilation fails.
+
+**What gets auto-generated from the registry:**
+- `str()` output (all configs displayed by domain)
+- YAML parsing (no manual `set_if_present()` calls needed)
+- UCI options (auto-registered based on `exposure.uci`)
+
+**Optional:** Update `config/search.yaml` or `config/eval.yaml` to override the default.
+
+**Access:** `ConfigManager::instance().search().USE_NEW_FEATURE`
 
 ---
 
@@ -517,4 +548,4 @@ git log --oneline -5
 
 ---
 
-*Last updated: 2026-02-09* 
+*Last updated: 2026-02-14* 
