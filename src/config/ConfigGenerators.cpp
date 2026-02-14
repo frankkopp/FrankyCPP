@@ -337,7 +337,7 @@ void initUciOptionsFromRegistry(std::vector<UciOption>& optionVector, void* uciO
                                   [configName, uciName, uciOptions, hasCustomHandler](UciHandler* uciHandler) {
                                     const UciOption* opt = uciOptions->getOption(uciName);
                                     if (!opt) return;
-                                    const double value = UciOptions::getInt(opt->currentValue) / 100.0;
+                                    const double value = parseIntOr(opt->currentValue) / 100.0;
 
                                     const ConfigDef* regDef = ConfigRegistry::instance().find(configName);
                                     if (!regDef) return;

@@ -20,12 +20,12 @@
 #include "common/Logging.h"
 #include "common/stringutil.h"
 #include "init.h"
-#include "types/types.h"
 
 #include <gtest/gtest.h>
+
 using testing::Eq;
 
-class StringUtilsTest : public ::testing::Test {
+class StringUtilsTest : public testing::Test {
 public:
   static void SetUpTestSuite() {
     NEWLINE;
@@ -82,4 +82,180 @@ TEST_F(StringUtilsTest, removeTrailingCommentTest) {
 
   const auto trimmedView = removeTrailingComments(lineView, ";");
   EXPECT_EQ("This is a text. This is a text. This is a text. ", trimmedView);
+}
+
+//=============================================================================
+// parseInt Tests (throwing variant)
+//=============================================================================
+
+TEST_F(StringUtilsTest, parseIntValidInput) {
+  EXPECT_EQ(42, parseInt("42"));
+  EXPECT_EQ(-17, parseInt("-17"));
+  EXPECT_EQ(0, parseInt("0"));
+  EXPECT_EQ(2147483647, parseInt("2147483647"));
+  EXPECT_EQ(-2147483648, parseInt("-2147483648"));
+}
+
+TEST_F(StringUtilsTest, parseIntWithWhitespace) {
+  // std::stoi allows leading whitespace
+  EXPECT_EQ(42, parseInt("  42"));
+  EXPECT_EQ(42, parseInt("\t42"));
+}
+
+TEST_F(StringUtilsTest, parseIntInvalidInput) {
+  EXPECT_THROW((void)parseInt(""), std::invalid_argument);
+  EXPECT_THROW((void)parseInt("abc"), std::invalid_argument);
+  EXPECT_THROW((void)parseInt("99999999999999999999"), std::out_of_range);
+}
+
+TEST_F(StringUtilsTest, parseIntPartialMatch) {
+  // std::stoi parses until invalid character - this is expected behavior
+  EXPECT_EQ(12, parseInt("12.34"));  // stops at decimal point
+  EXPECT_EQ(42, parseInt("42abc"));  // stops at letter
+}
+
+//=============================================================================
+// parseDouble Tests (throwing variant)
+//=============================================================================
+
+TEST_F(StringUtilsTest, parseDoubleValidInput) {
+  EXPECT_DOUBLE_EQ(3.14, parseDouble("3.14"));
+  EXPECT_DOUBLE_EQ(-2.5, parseDouble("-2.5"));
+  EXPECT_DOUBLE_EQ(0.0, parseDouble("0"));
+  EXPECT_DOUBLE_EQ(42.0, parseDouble("42"));
+  EXPECT_DOUBLE_EQ(1e10, parseDouble("1e10"));
+}
+
+TEST_F(StringUtilsTest, parseDoubleInvalidInput) {
+  EXPECT_THROW((void)parseDouble(""), std::invalid_argument);
+  EXPECT_THROW((void)parseDouble("abc"), std::invalid_argument);
+}
+
+//=============================================================================
+// parseBool Tests (lenient, never throws)
+//=============================================================================
+
+TEST_F(StringUtilsTest, parseBoolTrueValues) {
+  // All recognized true values
+  EXPECT_TRUE(parseBool("true"));
+  EXPECT_TRUE(parseBool("TRUE"));
+  EXPECT_TRUE(parseBool("True"));
+  EXPECT_TRUE(parseBool("1"));
+  EXPECT_TRUE(parseBool("on"));
+  EXPECT_TRUE(parseBool("ON"));
+  EXPECT_TRUE(parseBool("yes"));
+  EXPECT_TRUE(parseBool("YES"));
+  EXPECT_TRUE(parseBool("+"));
+}
+
+TEST_F(StringUtilsTest, parseBoolFalseValues) {
+  // Everything else is false
+  EXPECT_FALSE(parseBool("false"));
+  EXPECT_FALSE(parseBool("FALSE"));
+  EXPECT_FALSE(parseBool("0"));
+  EXPECT_FALSE(parseBool("off"));
+  EXPECT_FALSE(parseBool("no"));
+  EXPECT_FALSE(parseBool("-"));
+  EXPECT_FALSE(parseBool(""));
+  EXPECT_FALSE(parseBool("maybe"));
+  EXPECT_FALSE(parseBool("2"));
+  EXPECT_FALSE(parseBool("truthy"));
+}
+
+//=============================================================================
+// parseString Tests (identity function)
+//=============================================================================
+
+TEST_F(StringUtilsTest, parseStringIdentity) {
+  EXPECT_EQ("hello", parseString("hello"));
+  EXPECT_EQ("", parseString(""));
+  EXPECT_EQ("  spaces  ", parseString("  spaces  "));
+}
+
+//=============================================================================
+// parseIntOr Tests (safe variant with logging)
+//=============================================================================
+
+TEST_F(StringUtilsTest, parseIntOrValidInput) {
+  EXPECT_EQ(42, parseIntOr("42"));
+  EXPECT_EQ(-17, parseIntOr("-17", 999));
+  EXPECT_EQ(0, parseIntOr("0", 999));
+}
+
+TEST_F(StringUtilsTest, parseIntOrInvalidInput) {
+  // Returns default on invalid input (and logs warning)
+  EXPECT_EQ(0, parseIntOr("abc"));           // default default is 0
+  EXPECT_EQ(999, parseIntOr("abc", 999));    // custom default
+  EXPECT_EQ(-1, parseIntOr("", -1));         // empty string
+  EXPECT_EQ(42, parseIntOr("not_a_number", 42));
+}
+
+//=============================================================================
+// parseDoubleOr Tests (safe variant with logging)
+//=============================================================================
+
+TEST_F(StringUtilsTest, parseDoubleOrValidInput) {
+  EXPECT_DOUBLE_EQ(3.14, parseDoubleOr("3.14"));
+  EXPECT_DOUBLE_EQ(-2.5, parseDoubleOr("-2.5", 999.0));
+  EXPECT_DOUBLE_EQ(0.0, parseDoubleOr("0", 999.0));
+}
+
+TEST_F(StringUtilsTest, parseDoubleOrInvalidInput) {
+  // Returns default on invalid input (and logs warning)
+  EXPECT_DOUBLE_EQ(0.0, parseDoubleOr("abc"));
+  EXPECT_DOUBLE_EQ(1.5, parseDoubleOr("abc", 1.5));
+  EXPECT_DOUBLE_EQ(-1.0, parseDoubleOr("", -1.0));
+}
+
+//=============================================================================
+// tryParseInt Tests (optional variant)
+//=============================================================================
+
+TEST_F(StringUtilsTest, tryParseIntValidInput) {
+  auto result = tryParseInt("42");
+  ASSERT_TRUE(result.has_value());
+  EXPECT_EQ(42, result.value());
+
+  result = tryParseInt("-17");
+  ASSERT_TRUE(result.has_value());
+  EXPECT_EQ(-17, result.value());
+
+  result = tryParseInt("0");
+  ASSERT_TRUE(result.has_value());
+  EXPECT_EQ(0, result.value());
+}
+
+TEST_F(StringUtilsTest, tryParseIntInvalidInput) {
+  EXPECT_FALSE(tryParseInt("abc").has_value());
+  EXPECT_FALSE(tryParseInt("").has_value());
+  EXPECT_FALSE(tryParseInt("99999999999999999999").has_value());
+}
+
+TEST_F(StringUtilsTest, tryParseIntDistinguishZeroFromInvalid) {
+  // This is the key use case for optional variant
+  const auto validZero = tryParseInt("0");
+  const auto invalid = tryParseInt("invalid");
+
+  EXPECT_TRUE(validZero.has_value());
+  EXPECT_EQ(0, validZero.value());
+  EXPECT_FALSE(invalid.has_value());
+}
+
+//=============================================================================
+// tryParseDouble Tests (optional variant)
+//=============================================================================
+
+TEST_F(StringUtilsTest, tryParseDoubleValidInput) {
+  auto result = tryParseDouble("3.14");
+  ASSERT_TRUE(result.has_value());
+  EXPECT_DOUBLE_EQ(3.14, result.value());
+
+  result = tryParseDouble("0.0");
+  ASSERT_TRUE(result.has_value());
+  EXPECT_DOUBLE_EQ(0.0, result.value());
+}
+
+TEST_F(StringUtilsTest, tryParseDoubleInvalidInput) {
+  EXPECT_FALSE(tryParseDouble("abc").has_value());
+  EXPECT_FALSE(tryParseDouble("").has_value());
 }

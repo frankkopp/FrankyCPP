@@ -218,11 +218,6 @@ public:
   /// Format: "option name <name> type <type> current <currentValue>"
   /// @return  Multi-line string with all options and their current values
   [[nodiscard]] std::string strWithCurrentValues() const;
-
-  /// Helper to convert a string option value to int.
-  /// @param value  String representation of integer
-  /// @return       Parsed integer value
-  static int getInt(const std::string& value);
 };
 
 /// Stream output operator for all options.

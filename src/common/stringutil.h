@@ -50,8 +50,11 @@
 //=============================================================================
 
 #include <algorithm>
+#include <optional>
 #include <string>
 #include <vector>
+
+#include "common/Logging.h"
 
 /// Splits a string or string_view into parts at each delimiter character.
 /// Empty parts between consecutive delimiters are skipped.
@@ -144,6 +147,105 @@ constexpr const char* boolStr(const int b) {
   return boolStr(static_cast<bool>(b));
 }
 
+//=============================================================================
+// String Parsing - Throwing variants (caller handles exceptions)
+//=============================================================================
+
+/// Parses string to integer. Throws std::invalid_argument or std::out_of_range on invalid input.
+/// @param v  String to parse
+/// @return   Parsed integer value
+/// @throws   std::invalid_argument if no conversion could be performed
+/// @throws   std::out_of_range if value is out of int range
+[[nodiscard]] inline int parseInt(const std::string& v) {
+  return std::stoi(v);
+}
+
+/// Parses string to double. Throws std::invalid_argument or std::out_of_range on invalid input.
+/// @param v  String to parse
+/// @return   Parsed double value
+/// @throws   std::invalid_argument if no conversion could be performed
+/// @throws   std::out_of_range if value is out of double range
+[[nodiscard]] inline double parseDouble(const std::string& v) {
+  return std::stod(v);
+}
+
+/// Parses string to boolean. Never throws.
+/// Returns true for: "true", "1", "on", "yes", "+" (case-insensitive)
+/// Returns false for all other values including empty string.
+/// @param v  String to parse
+/// @return   Parsed boolean value
+[[nodiscard]] inline bool parseBool(const std::string& v) {
+  if (v.empty()) return false;
+  const std::string lower = toLowerCase(v);
+  return lower == "true" || lower == "1" || lower == "on" || lower == "yes" || lower == "+";
+}
+
+/// Identity function for string parsing (for template consistency).
+/// @param v  String value
+/// @return   Same string value
+[[nodiscard]] inline std::string parseString(const std::string& v) {
+  return v;
+}
+
+//=============================================================================
+// String Parsing - Safe variants (return default on invalid, with warning)
+//=============================================================================
+
+/// Parses string to integer, returning default value on failure.
+/// Logs a warning if parsing fails.
+/// @param v            String to parse
+/// @param defaultValue Value to return if parsing fails (default: 0)
+/// @return             Parsed integer or default value
+[[nodiscard]] inline int parseIntOr(const std::string& v, const int defaultValue = 0) {
+  try {
+    return std::stoi(v);
+  } catch (const std::exception& e) {
+    LOG__WARN(Logger::get().CONFIG_LOG,
+              "Failed to parse integer from '{}': {} - using default {}", v, e.what(), defaultValue);
+    return defaultValue;
+  }
+}
+
+/// Parses string to double, returning default value on failure.
+/// Logs a warning if parsing fails.
+/// @param v            String to parse
+/// @param defaultValue Value to return if parsing fails (default: 0.0)
+/// @return             Parsed double or default value
+[[nodiscard]] inline double parseDoubleOr(const std::string& v, const double defaultValue = 0.0) {
+  try {
+    return std::stod(v);
+  } catch (const std::exception& e) {
+    LOG__WARN(Logger::get().CONFIG_LOG,
+              "Failed to parse double from '{}': {} - using default {}", v, e.what(), defaultValue);
+    return defaultValue;
+  }
+}
+
+//=============================================================================
+// String Parsing - Optional variants (distinguish invalid from valid-zero)
+//=============================================================================
+
+/// Parses string to integer, returning nullopt on failure.
+/// @param v  String to parse
+/// @return   Parsed integer or nullopt if invalid
+[[nodiscard]] inline std::optional<int> tryParseInt(const std::string& v) {
+  try {
+    return std::stoi(v);
+  } catch (...) {
+    return std::nullopt;
+  }
+}
+
+/// Parses string to double, returning nullopt on failure.
+/// @param v  String to parse
+/// @return   Parsed double or nullopt if invalid
+[[nodiscard]] inline std::optional<double> tryParseDouble(const std::string& v) {
+  try {
+    return std::stod(v);
+  } catch (...) {
+    return std::nullopt;
+  }
+}
 
 // slower alternatives for trimming
 // Round  1 Test  1: 5.684.239.320 ns (   100%) (  5,68423932 sec) ( 56.842,3932 ns avg per test)

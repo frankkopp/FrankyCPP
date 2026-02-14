@@ -203,26 +203,6 @@ template<std::size_t N>
   return oss.str();
 }
 
-/// Parse string to bool
-[[nodiscard]] inline bool parseBool(const std::string& v) {
-  return v == "true" || v == "1" || v == "yes";
-}
-
-/// Parse string to int
-[[nodiscard]] inline int parseInt(const std::string& v) {
-  return std::stoi(v);
-}
-
-/// Parse string to double
-[[nodiscard]] inline double parseDouble(const std::string& v) {
-  return std::stod(v);
-}
-
-/// Parse string to string (identity)
-[[nodiscard]] inline std::string parseString(const std::string& v) {
-  return v;
-}
-
 /// Parse comma-separated string to array
 template<std::size_t N>
 void parseArray(const std::string& str, std::array<int, N>& arr) {

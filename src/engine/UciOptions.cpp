@@ -149,17 +149,6 @@ std::string UciOption::strWithCurrentValue() const {
   return str;
 }
 
-int UciOptions::getInt(const std::string& value) {
-  try {
-    const int intValue = stoi(value);
-    return intValue;
-  } catch (const std::exception& e) {
-    LOG__ERROR(Logger::get().UCI_LOG,
-               "Failed to parse integer from value '{}': {}", value, e.what());
-    return 0;
-  }
-}
-
 void UciOptions::resetToDefaults(UciHandler* uciHandler) {
   if (!uciHandler) return;
   // Reset every non-BUTTON option to its default by reusing setOption,
