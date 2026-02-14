@@ -101,9 +101,9 @@ TEST_F(UciOptionsTest, resetToDefaults_restores_defaults_and_applies_handlers) {
   ASSERT_NE(oPonder, nullptr);
   ASSERT_NE(oThreat, nullptr);
 
-  const int defaultHash    = UciOptions::getInt(oHash->defaultValue);
-  const bool defaultPonder = (oPonder->defaultValue == std::string("true"));
-  const bool defaultThreat = (oThreat->defaultValue == std::string("true"));
+  const int defaultHash    = parseIntOr(oHash->defaultValue);
+  const bool defaultPonder = oPonder->defaultValue == std::string("true");
+  const bool defaultThreat = oThreat->defaultValue == std::string("true");
 
   // Change values away from defaults
   const int altHash     = (defaultHash == 4096 ? defaultHash - 1 : defaultHash + 1);
@@ -149,8 +149,8 @@ TEST_F(UciOptionsTest, resetButton_exists_and_resets) {
   ASSERT_NE(oHash, nullptr);
   ASSERT_NE(oPonder, nullptr);
 
-  const int defaultHash    = UciOptions::getInt(oHash->defaultValue);
-  const bool defaultPonder = (oPonder->defaultValue == std::string("true"));
+  const int defaultHash    = parseIntOr(oHash->defaultValue);
+  const bool defaultPonder = oPonder->defaultValue == std::string("true");
 
   const int altHash     = (defaultHash == 4096 ? defaultHash - 1 : defaultHash + 1);
   const char* altPonder = defaultPonder ? "false" : "true";

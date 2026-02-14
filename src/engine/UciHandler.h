@@ -103,6 +103,7 @@ private:
   void debugCommand() const;
   void helpCommand() const;
   void getOptionsCommand() const;
+  void getExtendedOptionsCommand() const;
 
   void uciError(const std::string& msg) const;
   FRIEND_TEST(UCITest, goError);

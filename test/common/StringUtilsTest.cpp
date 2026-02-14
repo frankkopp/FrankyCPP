@@ -259,3 +259,61 @@ TEST_F(StringUtilsTest, tryParseDoubleInvalidInput) {
   EXPECT_FALSE(tryParseDouble("abc").has_value());
   EXPECT_FALSE(tryParseDouble("").has_value());
 }
+
+//=============================================================================
+// truncate Tests (string truncation with ".." suffix)
+//=============================================================================
+
+TEST_F(StringUtilsTest, truncateStringFitsWidth) {
+  // String fits within width - no truncation
+  EXPECT_EQ("hello", truncate(std::string("hello"), 10));
+  EXPECT_EQ("hello", truncate(std::string("hello"), 5));
+  EXPECT_EQ("", truncate(std::string(""), 10));
+}
+
+TEST_F(StringUtilsTest, truncateStringExceedsWidth) {
+  // String exceeds width - truncate with ".."
+  EXPECT_EQ("he..", truncate(std::string("hello"), 4));
+  EXPECT_EQ("hello w..", truncate(std::string("hello world"), 9));
+  EXPECT_EQ("h..", truncate(std::string("hello"), 3));
+}
+
+TEST_F(StringUtilsTest, truncateEdgeCases) {
+  // Width <= 2: just return ".." for strings that need truncation
+  EXPECT_EQ("..", truncate(std::string("hello"), 2));
+  EXPECT_EQ("..", truncate(std::string("hello"), 1));
+
+  // Width <= 0: return empty
+  EXPECT_EQ("", truncate(std::string("hello"), 0));
+  EXPECT_EQ("", truncate(std::string("hello"), -5));
+
+  // Short strings that fit even in tiny widths
+  EXPECT_EQ("ab", truncate(std::string("ab"), 2));
+  EXPECT_EQ("a", truncate(std::string("a"), 1));
+}
+
+TEST_F(StringUtilsTest, truncateStringViewFitsWidth) {
+  // string_view version - fits within width
+  const std::string_view sv = "hello world";
+  EXPECT_EQ("hello world", truncate(sv, 20));
+  EXPECT_EQ("hello world", truncate(sv, 11));
+}
+
+TEST_F(StringUtilsTest, truncateStringViewExceedsWidth) {
+  // string_view version - exceeds width
+  const std::string_view sv = "hello world";
+  EXPECT_EQ("hello wo..", truncate(sv, 10));
+  EXPECT_EQ("hel..", truncate(sv, 5));
+  EXPECT_EQ("h..", truncate(sv, 3));
+}
+
+TEST_F(StringUtilsTest, truncateStringViewEdgeCases) {
+  const std::string_view sv = "hello";
+  EXPECT_EQ("..", truncate(sv, 2));
+  EXPECT_EQ("", truncate(sv, 0));
+
+  // Empty string_view
+  const std::string_view empty = "";
+  EXPECT_EQ("", truncate(empty, 10));
+  EXPECT_EQ("", truncate(empty, 0));
+}

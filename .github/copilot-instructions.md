@@ -538,12 +538,33 @@ Adding a new config option requires changes in **TWO linked places**:
 
 **Access:** `ConfigManager::instance().search().USE_NEW_FEATURE`
 
+### Discovering Available Configuration
+
+Use the `--show-config` CLI option to see all available settings:
+
+```bash
+# Show all settings in table format (default)
+FrankyCPP --show-config
+
+# Filter by domain
+FrankyCPP --show-config --domain search
+
+# Generate YAML template
+FrankyCPP --show-config --format yaml
+
+# Generate JSON for tooling
+FrankyCPP --show-config --format json
+```
+
+UCI command `extendedoptions` shows options with domain info.
+
 ---
 
 ## Documentation Reference
 
 - `docs/FrankyCPP_Codebase_Review.md` - Comprehensive codebase analysis and roadmap
 - `docs/Logger.md` - Logging system documentation
+- `docs/specs/PLAN_Configuration_Refactor.md` - Configuration system refactoring plan
 - `README.md` - Build instructions and version history
 
 ---

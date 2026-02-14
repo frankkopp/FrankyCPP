@@ -35,6 +35,41 @@ This document describes the high-level architecture of FrankyCPP, a UCI chess en
 
 ---
 
+## Command-Line Interface
+
+FrankyCPP supports various CLI options for different modes of operation:
+
+### Information Options
+```bash
+FrankyCPP --help           # Show all available options
+FrankyCPP --version        # Show version information
+FrankyCPP --ucioptions     # Print UCI options (like 'uci' command)
+```
+
+### Configuration Discovery
+```bash
+FrankyCPP --show-config                    # Show all settings (table format)
+FrankyCPP --show-config --format yaml      # Generate YAML template
+FrankyCPP --show-config --format json      # Generate JSON for tooling
+FrankyCPP --show-config --domain search    # Filter by domain
+```
+
+### Testing & Benchmarking
+```bash
+FrankyCPP --perft --startDepth 1 --endDepth 6    # Run perft test
+FrankyCPP --bench --benchDepth 12 --benchHash 256  # Run benchmark
+FrankyCPP --testsuite file.epd --tsTime 1000     # Run test suite
+```
+
+### Configuration
+```bash
+FrankyCPP --config path/to/config.cfg      # Use custom config file
+FrankyCPP --nobook                         # Disable opening book
+FrankyCPP --book path/to/book.txt --booktype simple  # Custom book
+```
+
+---
+
 ## Directory Structure
 
 ```
@@ -54,7 +89,7 @@ src/
 ├── common/               # Shared utilities
 │   ├── Logging.h         # spdlog-based logging with compile-time levels
 │   ├── ThreadPool.h      # Generic thread pool for parallel tasks
-│   ├── stringutil.h      # String manipulation helpers
+│   ├── stringutil.h      # String manipulation and parsing helpers
 │   └── misc.h            # Miscellaneous utilities
 │
 ├── chesscore/            # Chess logic (board, moves, rules)
@@ -65,6 +100,14 @@ src/
 │   ├── Perft.h           # Perft testing and validation
 │   └── Values.h          # Piece values, PST tables
 │
+├── config/               # Configuration system (single source of truth)
+│   ├── ConfigRegistry.h/.cpp  # Central registry of all config definitions
+│   ├── ConfigManager.h/.cpp   # Singleton config access, YAML loading
+│   ├── ConfigGenerators.h/.cpp # Auto-generated str(), YAML, UCI from registry
+│   ├── ConfigDef.h       # ConfigDef struct and value type helpers
+│   ├── SearchConfigData.h # Search parameters struct (~70 options)
+│   └── EvalConfigData.h  # Evaluation parameters struct (~50 options)
+│
 ├── engine/               # Search and evaluation
 │   ├── Search.h/.cpp     # Alpha-beta with iterative deepening
 │   ├── PlyInfo.h         # Per-ply search state (MoveGenerators, moves, eval)
@@ -74,15 +117,10 @@ src/
 │   ├── PawnTT.h          # Dedicated pawn hash table
 │   ├── See.h             # Static exchange evaluation
 │   ├── UciHandler.h/.cpp # UCI protocol implementation
+│   ├── UciOptions.h/.cpp # UCI option handling (uses ConfigRegistry)
 │   ├── SearchLimits.h    # Time/depth/node limits
 │   ├── SearchResult.h    # Search result container
-│   ├── SearchStats.h     # Statistics collection
-│   ├── UciOptions.h      # UCI option definitions
-│   └── config/           # YAML configuration system
-│       ├── ConfigManager.h    # Singleton config access
-│       ├── SearchConfigData.h # Search parameters (~60 options)
-│       ├── EvalConfigData.h   # Evaluation parameters (~40 options)
-│       └── ...
+│   └── SearchStats.h     # Statistics collection
 │
 ├── openingbook/          # Opening book support
 │   ├── OpeningBook.h/.cpp # Book loading, querying, caching
@@ -365,11 +403,11 @@ UciHandler::sendSearchUpdate() / sendResult()
 
 FrankyCPP currently uses **single-threaded search** with auxiliary threads for:
 
-| Thread | Purpose |
-|--------|---------|
-| Main thread | UCI command loop (`UciHandler::loop()`) |
-| Search thread | Executes search algorithm |
-| Timer thread | Monitors time limits, triggers stop |
+| Thread        | Purpose                                 |
+|---------------|-----------------------------------------|
+| Main thread   | UCI command loop (`UciHandler::loop()`) |
+| Search thread | Executes search algorithm               |
+| Timer thread  | Monitors time limits, triggers stop     |
 
 **Synchronization:**
 - `std::binary_semaphore` for init/running state
@@ -409,24 +447,24 @@ ConfigManager::instance().eval().USE_MOBILITY
 
 ## Build Targets
 
-| Target | Description |
-|--------|-------------|
-| `FrankyCPP_v0.7` | Main UCI engine executable |
-| `FrankyCPP_v0.7_Test` | GoogleTest unit tests |
+| Target                 | Description                      |
+|------------------------|----------------------------------|
+| `FrankyCPP_v0.7`       | Main UCI engine executable       |
+| `FrankyCPP_v0.7_Test`  | GoogleTest unit tests            |
 | `FrankyCPP_v0.7_Bench` | Google Benchmark microbenchmarks |
 
 ---
 
 ## Dependencies
 
-| Library | Purpose | Integration |
-|---------|---------|-------------|
-| Boost.ProgramOptions | CLI argument parsing | vcpkg |
-| Boost.Serialization | Opening book caching | vcpkg |
-| spdlog | Logging (header-only) | vcpkg |
-| yaml-cpp | YAML config parsing | vcpkg |
-| GoogleTest | Unit testing | vcpkg |
-| Google Benchmark | Performance testing | vcpkg |
+| Library              | Purpose               | Integration |
+|----------------------|-----------------------|-------------|
+| Boost.ProgramOptions | CLI argument parsing  | vcpkg       |
+| Boost.Serialization  | Opening book caching  | vcpkg       |
+| spdlog               | Logging (header-only) | vcpkg       |
+| yaml-cpp             | YAML config parsing   | vcpkg       |
+| GoogleTest           | Unit testing          | vcpkg       |
+| Google Benchmark     | Performance testing   | vcpkg       |
 
 ---
 

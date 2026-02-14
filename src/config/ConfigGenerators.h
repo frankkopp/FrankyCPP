@@ -147,4 +147,54 @@ void initUciOptionsFromRegistry(std::vector<UciOption>& optionVector, void* uciO
 /// @param uciOptionsPtr    Pointer to UciOptions instance (for handler callbacks)
 void addUciOnlyButtons(std::vector<UciOption>& optionVector, void* uciOptionsPtr);
 
+//=============================================================================
+// Configuration Discovery
+//=============================================================================
+
+/// Output format for configuration display
+enum class ConfigOutputFormat {
+  Table,  // Human-readable table with columns
+  Yaml,   // YAML template with comments
+  Json    // Machine-readable JSON
+};
+
+/// Generate formatted table of all config settings.
+/// Shows name, type, default, current, min/max, UCI name in columns.
+///
+/// @param search       SearchConfigData instance to read current values from
+/// @param eval         EvalConfigData instance to read current values from
+/// @param domainFilter If set, only include entries from specified domain
+/// @return Formatted table string
+[[nodiscard]] std::string generateConfigTable(
+    const SearchConfigData& search,
+    const EvalConfigData& eval,
+    std::optional<ConfigDomain> domainFilter = std::nullopt);
+
+/// Generate YAML template with all settings as comments.
+/// Users can copy sections they want to override into their config files.
+///
+/// @param domainFilter If set, only include entries from specified domain
+/// @return YAML template string with all settings commented out
+[[nodiscard]] std::string generateYamlTemplate(
+    std::optional<ConfigDomain> domainFilter = std::nullopt);
+
+/// Generate JSON representation of all config settings.
+/// Useful for tooling and automated configuration.
+///
+/// @param search       SearchConfigData instance to read current values from
+/// @param eval         EvalConfigData instance to read current values from
+/// @param domainFilter If set, only include entries from specified domain
+/// @return JSON string with config metadata
+[[nodiscard]] std::string generateConfigJson(
+    const SearchConfigData& search,
+    const EvalConfigData& eval,
+    std::optional<ConfigDomain> domainFilter = std::nullopt);
+
+/// Parse domain name string to ConfigDomain enum.
+/// Case-insensitive comparison.
+///
+/// @param name  Domain name (e.g., "search", "eval", "general")
+/// @return Optional ConfigDomain if name is valid, nullopt otherwise
+[[nodiscard]] std::optional<ConfigDomain> parseDomainName(const std::string& name);
+
 #endif  // FRANKYCPP_CONFIGGENERATORS_H

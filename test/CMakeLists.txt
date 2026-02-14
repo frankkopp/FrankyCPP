@@ -74,7 +74,9 @@ add_executable(
         config/ConfigRegistryTest.cpp
         config/ConfigGeneratorsTest.cpp
         engine_arena/ResultWriter_Test.cpp
-        engine_arena/MatchRunner_Test.cpp)
+        engine_arena/MatchRunner_Test.cpp
+
+        cli/CliIntegrationTest.cpp)
 
 
 # Ensure unit tests explicitly request C++20
@@ -117,6 +119,10 @@ add_custom_command(
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/config $<TARGET_FILE_DIR:${testExeName}>/config
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/books $<TARGET_FILE_DIR:${testExeName}>/books
 )
+
+# Ensure main executable is built before tests (needed for CLI integration tests)
+set(mainExeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR})
+add_dependencies(${testExeName} ${mainExeName})
 
 # Register tests via CMake's GoogleTest module
 gtest_discover_tests(${testExeName})

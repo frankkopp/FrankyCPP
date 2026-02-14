@@ -37,7 +37,7 @@
  */
 inline std::string getTestEnginePath() {
   // Build the exe name from version macro (defined in version.h via CMake)
-  std::string exeName = FrankyCPP_EXE_NAME;
+  const std::string exeName = FrankyCPP_EXE_NAME;
 
 #ifdef _WIN32
   const std::string ext = ".exe";
@@ -46,11 +46,23 @@ inline std::string getTestEnginePath() {
 #endif
 
   // Search paths in priority order
-  std::vector<std::string> searchPaths = {
-    "cmake-build-win-release/src/" + exeName + ext,
-    "cmake-build-wsl-release/src/" + exeName + ext,
+  // Includes common local dev paths and CI build paths
+  const std::vector searchPaths = {
+    // Relative to test executable (most common case)
     "../src/" + exeName + ext,
-    exeName + ext
+    // Same directory as test executable
+    exeName + ext,
+    // Windows local dev builds
+    "cmake-build-win-release/src/" + exeName + ext,
+    "cmake-build-win-debug/src/" + exeName + ext,
+    // WSL/Linux local dev builds
+    "cmake-build-wsl-release/src/" + exeName + ext,
+    // GitHub CI / generic CMake builds
+    "build/src/" + exeName + ext,
+    "build/Release/src/" + exeName + ext,
+    "out/build/Release/src/" + exeName + ext,
+    // CMake default build directory
+    "src/" + exeName + ext
   };
 
   for (const auto& path : searchPaths) {

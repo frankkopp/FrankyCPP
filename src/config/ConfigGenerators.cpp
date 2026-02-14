@@ -24,6 +24,9 @@
 
 #include "common/Logging.h"
 
+#include <array>
+#include <iomanip>
+#include <nlohmann/json.hpp>
 #include <set>
 #include <sstream>
 #include <vector>
@@ -427,4 +430,241 @@ void addUciOnlyButtons(std::vector<UciOption>& optionVector, void* uciOptionsPtr
                             [uciOptions](UciHandler* uciHandler) {
                               uciOptions->resetToDefaults(uciHandler);
                             });
+}
+
+//=============================================================================
+// Configuration Discovery
+//=============================================================================
+
+namespace {
+
+/// Calculate display width for proper column alignment
+constexpr int NAME_COL_WIDTH     = 30;
+constexpr int TYPE_COL_WIDTH     = 8;
+constexpr int DEFAULT_COL_WIDTH  = 14;
+constexpr int CURRENT_COL_WIDTH  = 14;
+constexpr int MIN_COL_WIDTH      = 8;
+constexpr int MAX_COL_WIDTH      = 8;
+constexpr int UCI_NAME_COL_WIDTH = 28;
+
+/// Standard domain order for output
+constexpr std::array kDomainOrder = {
+  ConfigDomain::General,
+  ConfigDomain::Search,
+  ConfigDomain::Eval,
+  ConfigDomain::Tuning,
+  ConfigDomain::Debug
+};
+
+}// namespace
+
+std::string generateConfigTable(
+  const SearchConfigData& search,
+  const EvalConfigData& eval,
+  const std::optional<ConfigDomain> domainFilter) {
+
+  const auto& registry = ConfigRegistry::instance();
+  std::ostringstream oss;
+
+  // Header
+  oss << std::left
+      << std::setw(NAME_COL_WIDTH) << "Name"
+      << std::setw(TYPE_COL_WIDTH) << "Type"
+      << std::setw(DEFAULT_COL_WIDTH) << "Default"
+      << std::setw(CURRENT_COL_WIDTH) << "Current"
+      << std::setw(MIN_COL_WIDTH) << "Min"
+      << std::setw(MAX_COL_WIDTH) << "Max"
+      << "UCI Name" << "\n";
+
+  // Separator line
+  oss << std::string(NAME_COL_WIDTH + TYPE_COL_WIDTH + DEFAULT_COL_WIDTH +
+                     CURRENT_COL_WIDTH + MIN_COL_WIDTH + MAX_COL_WIDTH + UCI_NAME_COL_WIDTH, '-') << "\n";
+
+  for (const auto domain : kDomainOrder) {
+    // Skip if filtering to a different domain
+    if (domainFilter.has_value() && domain != domainFilter.value()) {
+      continue;
+    }
+
+    // Collect entries for this domain
+    std::vector<const ConfigDef*> domainEntries;
+    for (const auto& def : registry.all()) {
+      if (def.domain == domain) {
+        domainEntries.push_back(&def);
+      }
+    }
+
+    // Skip empty domains
+    if (domainEntries.empty()) {
+      continue;
+    }
+
+    // Domain header
+    oss << "\n=== " << domainToString(domain) << " ===\n";
+
+    // Output each entry
+    for (const auto* def : domainEntries) {
+      const std::string currentValue = def->getter(search, eval);
+      const std::string minStr = def->minValue.has_value() ? std::to_string(*def->minValue) : "-";
+      const std::string maxStr = def->maxValue.has_value() ? std::to_string(*def->maxValue) : "-";
+
+      oss << std::left
+          << std::setw(NAME_COL_WIDTH) << truncate(def->name, NAME_COL_WIDTH - 1)
+          << std::setw(TYPE_COL_WIDTH) << valueTypeToString(def->valueType)
+          << std::setw(DEFAULT_COL_WIDTH) << truncate(def->defaultValue, DEFAULT_COL_WIDTH - 1)
+          << std::setw(CURRENT_COL_WIDTH) << truncate(currentValue, CURRENT_COL_WIDTH - 1)
+          << std::setw(MIN_COL_WIDTH) << minStr
+          << std::setw(MAX_COL_WIDTH) << maxStr
+          << def->uciName << "\n";
+    }
+  }
+
+  return oss.str();
+}
+
+std::string generateYamlTemplate(const std::optional<ConfigDomain> domainFilter) {
+  const auto& registry = ConfigRegistry::instance();
+  std::ostringstream oss;
+
+  // Header comment
+  oss << "# FrankyCPP Configuration Template\n";
+  oss << "# Generated from ConfigRegistry - copy settings you want to override\n";
+  oss << "# All settings are commented out - uncomment to activate\n";
+  oss << "#\n";
+
+  for (const auto domain : kDomainOrder) {
+    // Skip if filtering to a different domain
+    if (domainFilter.has_value() && domain != domainFilter.value()) {
+      continue;
+    }
+
+    // Collect YAML-exposed entries for this domain
+    std::vector<const ConfigDef*> domainEntries;
+    for (const auto* def : registry.yamlOptions()) {
+      if (def->domain == domain) {
+        domainEntries.push_back(def);
+      }
+    }
+
+    // Skip empty domains
+    if (domainEntries.empty()) {
+      continue;
+    }
+
+    // Domain header
+    oss << "\n# " << std::string(70, '=') << "\n";
+    oss << "# " << domainToString(domain) << " Settings\n";
+    oss << "# " << std::string(70, '=') << "\n\n";
+
+    // Output each entry as commented YAML
+    for (const auto* def : domainEntries) {
+      // Description comment
+      if (!def->description.empty()) {
+        oss << "# " << def->description;
+        // Add bounds info for numeric types
+        if (def->minValue.has_value() || def->maxValue.has_value()) {
+          oss << " [";
+          if (def->minValue.has_value()) {
+            oss << *def->minValue;
+          }
+          oss << "-";
+          if (def->maxValue.has_value()) {
+            oss << *def->maxValue;
+          }
+          oss << "]";
+        }
+        oss << "\n";
+      }
+
+      // Commented setting with default value
+      if (def->valueType == ConfigValueType::IntArray) {
+        // Array values as YAML sequence
+        oss << "# " << def->name << ": [" << def->defaultValue << "]\n";
+      }
+      else if (def->valueType == ConfigValueType::String) {
+        // Strings need quotes
+        oss << "# " << def->name << ": \"" << def->defaultValue << "\"\n";
+      }
+      else {
+        oss << "# " << def->name << ": " << def->defaultValue << "\n";
+      }
+      oss << "\n";
+    }
+  }
+
+  return oss.str();
+}
+
+std::string generateConfigJson(
+  const SearchConfigData& search,
+  const EvalConfigData& eval,
+  const std::optional<ConfigDomain> domainFilter) {
+
+  const auto& registry = ConfigRegistry::instance();
+
+  nlohmann::json root;
+  root["configVersion"] = "1.0";
+  root["settings"] = nlohmann::json::array();
+
+  for (const auto domain : kDomainOrder) {
+    // Skip if filtering to a different domain
+    if (domainFilter.has_value() && domain != domainFilter.value()) {
+      continue;
+    }
+
+    // Output entries for this domain
+    for (const auto& def : registry.all()) {
+      if (def.domain != domain) {
+        continue;
+      }
+
+      const std::string currentValue = def.getter(search, eval);
+
+      nlohmann::json setting;
+      setting["name"] = def.name;
+      setting["uciName"] = def.uciName;
+      setting["description"] = def.description;
+      setting["type"] = valueTypeToString(def.valueType);
+      setting["domain"] = domainToString(def.domain);
+      setting["defaultValue"] = def.defaultValue;
+      setting["currentValue"] = currentValue;
+
+      // Min/max for numeric types
+      if (def.minValue.has_value()) {
+        setting["minValue"] = *def.minValue;
+      }
+      else {
+        setting["minValue"] = nullptr;
+      }
+      if (def.maxValue.has_value()) {
+        setting["maxValue"] = *def.maxValue;
+      }
+      else {
+        setting["maxValue"] = nullptr;
+      }
+
+      // Exposure flags
+      setting["exposure"] = {
+        {"uci", def.exposure.uci},
+        {"yaml", def.exposure.yaml},
+        {"display", def.exposure.display},
+        {"tunable", def.exposure.tunable}
+      };
+
+      root["settings"].push_back(setting);
+    }
+  }
+
+  return root.dump(2);  // Pretty print with 2-space indent
+}
+
+std::optional<ConfigDomain> parseDomainName(const std::string& name) {
+  const std::string lower = toLowerCase(name);
+  if (lower == "general") return ConfigDomain::General;
+  if (lower == "search") return ConfigDomain::Search;
+  if (lower == "eval") return ConfigDomain::Eval;
+  if (lower == "tuning") return ConfigDomain::Tuning;
+  if (lower == "debug") return ConfigDomain::Debug;
+  if (lower == "all") return std::nullopt;  // nullopt = no filter = all domains
+  return std::nullopt;  // Unknown domain treated as "all"
 }

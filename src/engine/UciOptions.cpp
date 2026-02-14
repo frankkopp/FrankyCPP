@@ -23,6 +23,7 @@
 #include "common/stringutil.h"
 #include "config/ConfigGenerators.h"
 #include "config/ConfigManager.h"
+#include "config/ConfigRegistry.h"
 
 void UciOptions::initOptions() {
   // Phase 4: UCI options are now auto-generated from ConfigRegistry
@@ -159,4 +160,56 @@ void UciOptions::resetToDefaults(UciHandler* uciHandler) {
     setOption(uciHandler, o.nameID, o.defaultValue);
     LOG__DEBUG(Logger::get().UCI_LOG, "  Option '{}' reset to default value '{}'", o.nameID, o.defaultValue);
   }
+}
+
+std::string UciOptions::strExtended() const {
+  // Extended output including domain info from ConfigRegistry
+  // This is a non-standard extension for debugging/tooling
+
+  const auto& registry = ConfigRegistry::instance();
+
+  std::vector<std::string> optionStrings;
+  optionStrings.reserve(optionVector.size());
+
+  for (const auto& o : optionVector) {
+    std::string str = "option name " + o.nameID + " type ";
+
+    // Type info
+    switch (o.type) {
+      case CHECK:
+        str += "check default " + o.defaultValue + " current " + o.currentValue;
+        break;
+      case SPIN:
+        str += "spin default " + o.defaultValue + " current " + o.currentValue
+             + " min " + o.minValue + " max " + o.maxValue;
+        break;
+      case COMBO:
+        str += "combo default " + o.defaultValue + " current " + o.currentValue;
+        break;
+      case BUTTON:
+        str += "button";
+        break;
+      case STRING:
+        str += "string default " + o.defaultValue + " current " + o.currentValue;
+        break;
+    }
+
+    // Look up domain from registry
+    if (const ConfigDef* def = registry.findByUciName(o.nameID)) {
+      str += " domain " + domainToString(def->domain);
+    }
+    else {
+      str += " domain unknown";
+    }
+
+    optionStrings.push_back(str);
+  }
+
+  std::ranges::sort(optionStrings);
+
+  std::string result;
+  for (const auto& s : optionStrings) {
+    result += s + "\n";
+  }
+  return trimFast(result);
 }

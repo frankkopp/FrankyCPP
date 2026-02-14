@@ -34,10 +34,11 @@
 //   toLowerCase()            - Convert to lowercase (copy or in-place)
 //   toUpperCase()            - Convert to uppercase (copy or in-place)
 //   boolStr()                - Convert bool to "true"/"false" string
+//   truncate()               - Truncate string to width with ".." suffix
 //
 // Template Support:
-//   splitFast and trimFast work with both std::string and std::string_view,
-//   avoiding unnecessary copies when views are sufficient.
+//   splitFast, trimFast, and truncate work with both std::string and
+//   std::string_view, avoiding unnecessary copies when views are sufficient.
 //
 // Performance Notes:
 //   trimFast is significantly faster than regex-based or find_first_not_of
@@ -145,6 +146,27 @@ constexpr const char* boolStr(const bool b) {
 /// @return   "true" or "false"
 constexpr const char* boolStr(const int b) {
   return boolStr(static_cast<bool>(b));
+}
+
+/// Truncates a string to fit within a specified width.
+/// If the string is longer than width, it is truncated and ".." is appended.
+/// Works with both std::string and std::string_view.
+/// @tparam StringType  std::string or std::string_view
+/// @param str    String to truncate
+/// @param width  Maximum width (must be > 0; if <= 2, returns ".." for long strings)
+/// @return       Truncated string as std::string
+template<typename StringType>
+[[nodiscard]] std::string truncate(const StringType& str, const int width) {
+  if (width <= 0) {
+    return {};
+  }
+  if (static_cast<int>(str.length()) <= width) {
+    return std::string(str);
+  }
+  if (width <= 2) {
+    return "..";
+  }
+  return std::string(str.substr(0, width - 2)) + "..";
 }
 
 //=============================================================================

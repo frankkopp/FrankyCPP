@@ -78,22 +78,23 @@ bool UciHandler::handleCommand(const std::string& cmd) {
   inStream >> std::skipws >> token;
 
   // clang-format off
-  if      (token == "quit")       { return true; }
-  if      (token == "uci")        { uciCommand(); }
-  else if (token == "isready")    { isReadyCommand(); }
-  else if (token == "setoption")  { setOptionCommand(inStream); }
-  else if (token == "ucinewgame") { uciNewGameCommand(); }
-  else if (token == "position")   { positionCommand(inStream); }
-  else if (token == "go")         { goCommand(inStream); }
-  else if (token == "stop")       { stopCommand(); }
-  else if (token == "ponderhit")  { ponderHitCommand(); }
-  else if (token == "register")   { registerCommand(); }
-  else if (token == "debug")      { debugCommand(); }
-  else if (token == "perft")      { perftCommand(inStream); }
-  else if (token == "bench")      { benchCommand(inStream); }
-  else if (token == "getoptions") { getOptionsCommand(); }
-  else if (token == "help")       { helpCommand(); }
-  else if (token == "noop")       { /* noop */  }
+  if      (token == "quit")            { return true; }
+  if      (token == "uci")             { uciCommand(); }
+  else if (token == "isready")         { isReadyCommand(); }
+  else if (token == "setoption")       { setOptionCommand(inStream); }
+  else if (token == "ucinewgame")      { uciNewGameCommand(); }
+  else if (token == "position")        { positionCommand(inStream); }
+  else if (token == "go")              { goCommand(inStream); }
+  else if (token == "stop")            { stopCommand(); }
+  else if (token == "ponderhit")       { ponderHitCommand(); }
+  else if (token == "register")        { registerCommand(); }
+  else if (token == "debug")           { debugCommand(); }
+  else if (token == "perft")           { perftCommand(inStream); }
+  else if (token == "bench")           { benchCommand(inStream); }
+  else if (token == "getoptions")      { getOptionsCommand(); }
+  else if (token == "extendedoptions") { getExtendedOptionsCommand(); }
+  else if (token == "help")            { helpCommand(); }
+  else if (token == "noop")            { /* noop */  }
   else
    uciError(std::format("Unknown UCI command: {}", token));
   // clang-format on
@@ -533,6 +534,11 @@ void UciHandler::helpCommand() const {
   out("  Non-standard extension: Lists all options with their current values (for testing).");
   out("  Format: 'option name <name> type <type> current <value>' followed by 'optionsok'.");
 
+  out("extendedoptions");
+  out("  Non-standard extension: Lists all options with current values, defaults, and domain.");
+  out("  Format: 'option name <name> type <type> default <default> current <current> [min <min> max <max>] domain <domain>'");
+  out("  Followed by 'optionsok'.");
+
   out("register");
   out("  Not implemented.");
 
@@ -553,6 +559,11 @@ void UciHandler::helpCommand() const {
 
 void UciHandler::getOptionsCommand() const {
   send(UciOptions::getInstance()->strWithCurrentValues());
+  send("optionsok");
+}
+
+void UciHandler::getExtendedOptionsCommand() const {
+  send(UciOptions::getInstance()->strExtended());
   send("optionsok");
 }
 

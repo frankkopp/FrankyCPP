@@ -20,6 +20,8 @@
 #include "init.h"
 #include "version.h"
 #include <chesscore/Perft.h>
+#include <config/ConfigGenerators.h>
+#include <config/ConfigManager.h>
 #include <engine/Benchmark.h>
 #include <engine/UciHandler.h>
 #include <engine/UciOptions.h>
@@ -47,6 +49,7 @@ int main(int argc, char* argv[]) {
   std::cout << appName << std::endl;
 
   std::string config_file, book_file, book_type, testsuite_file;
+  std::string show_config_format, show_config_domain;
   int testsuite_time = 0;
   int testsuite_depth = 0;
   int perftStart = 0;
@@ -64,6 +67,10 @@ int main(int argc, char* argv[]) {
       ("config,c", po::value<std::string>(&config_file)->default_value("./config/FrankyCPP.cfg"), "configuration file name")
       ("ucioptions,u", "print UCI options as if 'uci' command was sent")
       ("version,v", "print version string")
+      // Show config options
+      ("show-config", "show all available configuration settings")
+      ("format", po::value<std::string>(&show_config_format)->default_value("table"), "output format for --show-config: table, yaml, json")
+      ("domain", po::value<std::string>(&show_config_domain)->default_value("all"), "filter by domain: general, search, eval, tuning, debug, all")
       // Perft options
       ("perft", "run perft test")
       ("startDepth", po::value<int>(&perftStart)->default_value(1), "start depth for perft test")
@@ -126,6 +133,33 @@ int main(int argc, char* argv[]) {
       std::cout << "id name FrankyCPP v" << FrankyCPP_VERSION_MAJOR << "." << FrankyCPP_VERSION_MINOR << "\n";
       std::cout << "id author Frank Kopp, Germany\n";
       std::cout << UciOptions::getInstance()->str() << "\n";
+      return 0;
+    }
+
+    if (programOptions.contains("show-config")) {
+      // Initialize to ensure all static data is ready
+      init::init();
+
+      // Parse domain filter
+      const std::optional<ConfigDomain> domainFilter = parseDomainName(show_config_domain);
+
+      // Get current config values
+      const auto& searchConfig = ConfigManager::instance().search();
+      const auto& evalConfig = ConfigManager::instance().eval();
+
+      // Generate output based on format
+      if (show_config_format == "yaml") {
+        std::cout << generateYamlTemplate(domainFilter);
+      }
+      else if (show_config_format == "json") {
+        std::cout << generateConfigJson(searchConfig, evalConfig, domainFilter);
+      }
+      else {
+        // Default: table format
+        std::cout << "FrankyCPP v" << FrankyCPP_VERSION_MAJOR << "." << FrankyCPP_VERSION_MINOR
+                  << " - Configuration Settings\n\n";
+        std::cout << generateConfigTable(searchConfig, evalConfig, domainFilter);
+      }
       return 0;
     }
 

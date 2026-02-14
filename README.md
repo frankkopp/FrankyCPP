@@ -39,6 +39,30 @@ See **[docs/BUILD_GUIDE.md](docs/BUILD_GUIDE.md)** for complete instructions.
 
 ---
 
+## Command-Line Options
+
+FrankyCPP supports various CLI options beyond the standard UCI mode:
+
+```bash
+# Information
+FrankyCPP --help              # Show all options
+FrankyCPP --version           # Show version
+FrankyCPP --ucioptions        # Print UCI options
+
+# Configuration Discovery
+FrankyCPP --show-config                     # Show all settings (table)
+FrankyCPP --show-config --format yaml       # Generate YAML template
+FrankyCPP --show-config --format json       # Generate JSON for tooling
+FrankyCPP --show-config --domain search     # Filter by domain
+
+# Testing & Benchmarking
+FrankyCPP --perft --startDepth 1 --endDepth 6   # Run perft test
+FrankyCPP --bench --benchDepth 12               # Run benchmark
+FrankyCPP --testsuite file.epd --tsTime 1000    # Run test suite
+```
+
+---
+
 ## Engine Arena - Strength Testing Framework
 
 **NEW in v1.1:** Automated testing framework for measuring and tracking engine strength across versions.

@@ -218,6 +218,12 @@ public:
   /// Format: "option name <name> type <type> current <currentValue>"
   /// @return  Multi-line string with all options and their current values
   [[nodiscard]] std::string strWithCurrentValues() const;
+
+  /// Returns extended option information including domain and default.
+  /// Non-standard extension that includes config domain from ConfigRegistry.
+  /// Format: "option name <name> type <type> default <default> current <current> domain <domain>"
+  /// @return  Multi-line string with extended option information
+  [[nodiscard]] std::string strExtended() const;
 };
 
 /// Stream output operator for all options.

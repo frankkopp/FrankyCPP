@@ -1,9 +1,9 @@
 # FrankyCPP Configuration System Refactoring Plan
 
-**Document Version:** 1.7  
+**Document Version:** 1.9  
 **Created:** 2026-02-13  
 **Last Updated:** 2026-02-14  
-**Status:** Complete (Phases 0-5)  
+**Status:** ✅ COMPLETE (All Phases 0-6)  
 **Target:** FrankyCPP v1.3+  
 **Priority:** Medium (Maintenance / Technical Debt Reduction)
 
@@ -879,19 +879,68 @@ TEST_F(ConfigGeneratorsTest, ParseYamlConfigMissingKeysUseDefaults) {
 
 **Deliverable:** Clean codebase with no unused code and up-to-date documentation.
 
-### Phase 6: Enhanced Configuration Discovery (Optional)
+### Phase 6: Enhanced Configuration Discovery (Optional) ✅ COMPLETE
 **Goal:** Help users discover available settings without documentation.
 
-| Task                                                        | Effort | Files                    |
-|-------------------------------------------------------------|--------|--------------------------|
-| Implement `--show-config` CLI command                       | 2h     | `main.cpp`               |
-| Add table formatter for config output                       | 1h     | `ConfigGenerators.cpp`   |
-| Add YAML template generator (commented, for reference)      | 1h     | `ConfigGenerators.cpp`   |
-| Add `--format` option (table, yaml, json)                   | 1h     | `main.cpp`               |
-| Extend UCI `getoptions` with domain/current value           | 1h     | `UciHandler.cpp`         |
-| Add `--domain` filter option                                | 0.5h   | `main.cpp`               |
+| Task                                                        | Effort | Files                    | Status |
+|-------------------------------------------------------------|--------|--------------------------|--------|
+| Implement `--show-config` CLI command                       | 2h     | `main.cpp`               | ✅ Done |
+| Add table formatter for config output                       | 1h     | `ConfigGenerators.cpp`   | ✅ Done |
+| Add YAML template generator (commented, for reference)      | 1h     | `ConfigGenerators.cpp`   | ✅ Done |
+| Add `--format` option (table, yaml, json)                   | 1h     | `main.cpp`               | ✅ Done |
+| Add JSON output format (using nlohmann::json)               | 1h     | `ConfigGenerators.cpp`   | ✅ Done |
+| Add `--domain` filter option                                | 0.5h   | `main.cpp`               | ✅ Done |
+| Extend UCI with `extendedoptions` command                   | 1h     | `UciHandler.cpp`         | ✅ Done |
+| Add `strExtended()` to UciOptions                           | 0.5h   | `UciOptions.cpp`         | ✅ Done |
+| Move `truncate()` to stringutil.h as template               | 0.5h   | `stringutil.h`           | ✅ Done |
+| Add CLI integration tests                                   | 1h     | `CliIntegrationTest.cpp` | ✅ Done |
+| Add CMake dependency for test→main exe                      | 0.1h   | `test/CMakeLists.txt`    | ✅ Done |
 
-**Deliverable:** Users can run `FrankyCPP --show-config` to see all available settings with defaults, bounds, and descriptions. Can generate YAML template on demand.
+**Implementation Notes:**
+- Added `generateConfigTable()` - formats all settings in aligned columns
+- Added `generateYamlTemplate()` - generates commented YAML for users to copy
+- Added `generateConfigJson()` - machine-readable JSON using nlohmann::json library
+- Added `parseDomainName()` - case-insensitive domain string parsing
+- CLI options: `--show-config`, `--format <table|yaml|json>`, `--domain <name|all>`
+- New UCI command: `extendedoptions` - shows options with default, current, min/max, and domain
+- Added `UciOptions::strExtended()` for extended UCI output
+- Moved `truncate()` to `stringutil.h` as template supporting string and string_view
+- Added CLI integration tests (`test/cli/CliIntegrationTest.cpp`) covering:
+  - `--help`, `-?`, `--version`, `-v`
+  - `--show-config` with all format/domain combinations
+  - `--ucioptions`, `-u`
+  - `--perft` with depth options
+  - `--bench` with benchDepth/benchHash options
+  - Invalid option error handling
+- Added CMake dependency so test executable automatically builds main executable
+- Updated `TestEnginePath.h` with additional search paths for CI compatibility
+
+**Usage examples:**
+```bash
+# Show all settings in table format (default)
+FrankyCPP --show-config
+
+# Show search settings only
+FrankyCPP --show-config --domain search
+
+# Generate YAML template for all settings
+FrankyCPP --show-config --format yaml
+
+# Generate JSON for tooling
+FrankyCPP --show-config --format json --domain eval
+```
+
+**UCI examples:**
+```
+> extendedoptions
+option name Book Path type string default ./books/book.txt current ./books/book.txt domain General
+option name Clear Hash type button domain unknown
+option name Hash type spin default 64 current 64 min 0 max 4096 domain Search
+...
+optionsok
+```
+
+**Deliverable:** Users can run `FrankyCPP --show-config` to see all available settings with defaults, bounds, and descriptions. Can generate YAML template on demand. CLI integration tests validate all CLI options.
 
 ---
 
@@ -1329,11 +1378,39 @@ option name Hash type spin default 64 current 256 min 0 max 4096 domain search
 
 ---
 
-**Next Steps:**
-1. Review this plan and provide feedback
-2. Decide on Phase 1 scope
-3. Create implementation branch
+## Completion Summary
+
+**All phases completed on 2026-02-14.**
+
+### Files Created
+- `src/config/ConfigDef.h` - Configuration metadata structures
+- `src/config/ConfigRegistry.h/.cpp` - Central registry singleton
+- `src/config/ConfigGenerators.h/.cpp` - Auto-generated str(), YAML, UCI, table, JSON
+- `test/cli/CliIntegrationTest.cpp` - CLI integration tests
+
+### Files Modified
+- `src/config/SearchConfigData.h` - Uses registry for str()
+- `src/config/EvalConfigData.h` - Uses registry for str()
+- `src/config/ConfigManager.h/.cpp` - Uses parseYamlConfig()
+- `src/engine/UciOptions.cpp` - Uses initUciOptionsFromRegistry()
+- `src/engine/UciHandler.h/.cpp` - Added `extendedoptions` command
+- `src/common/stringutil.h` - Added `truncate()` template, parsing functions
+- `src/main.cpp` - Added `--show-config`, `--format`, `--domain` options
+- `test/CMakeLists.txt` - Added CLI tests and exe dependency
+- `test/TestEnginePath.h` - Added CI-compatible search paths
+- `.github/copilot-instructions.md` - Updated configuration docs
+
+### Files Deleted
+- `src/config/YamlHelpers.h` - Replaced by ConfigGenerators
+
+### Key Achievements
+1. **Single source of truth** - All configs defined once in ConfigRegistry
+2. **Compile-time validation** - Misspelled members cause compilation errors
+3. **Auto-generated output** - str(), YAML parsing, UCI options from registry
+4. **~500 lines removed** - Eliminated duplicate field mappings
+5. **Configuration discovery** - `--show-config` CLI with table/yaml/json formats
+6. **CLI integration tests** - Automated testing of all CLI options
 
 ---
 
-*Last updated: 2026-02-13*
+*Last updated: 2026-02-14*
