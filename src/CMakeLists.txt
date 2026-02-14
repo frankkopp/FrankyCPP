@@ -39,6 +39,8 @@ set(FrankyCPPlib_SRCS
         config/ConfigManager.cpp
         config/ConfigGenerators.cpp
         config/ConfigRegistry.cpp
+
+        tablebase/Tablebase.cpp tablebase/Tablebase.h
 )
 
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})
@@ -106,7 +108,9 @@ target_link_libraries(
         Boost::serialization
         Boost::program_options
         Boost::filesystem
-        yaml-cpp::yaml-cpp)
+        yaml-cpp::yaml-cpp
+        PRIVATE
+        fathom)
 
 # set the name of the executable
 set(exeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR})

@@ -273,6 +273,8 @@ public:
   const std::shared_ptr<spdlog::logger> TSUITE_LOG  = spdlog::stdout_color_mt("TSuite_Logger");
   /// Logger for configuration operations.
   const std::shared_ptr<spdlog::logger> CONFIG_LOG  = spdlog::stdout_color_mt("Config_Logger");
+  /// Logger for tablebase operations.
+  const std::shared_ptr<spdlog::logger> TB_LOG      = spdlog::stdout_color_mt("Tablebase_Logger");
   // clang-format on
 };
 

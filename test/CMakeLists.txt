@@ -53,6 +53,8 @@ add_executable(
         enginetest/EdpTest_Test.cpp
         enginetest/TestTypes_Test.cpp
 
+        tablebase/TablebaseTest.cpp
+
         engine_arena/TestSuiteRunner_IntegrationTest.cpp
         engine_arena/UCIEngine_ErrorHandlingTest.cpp
         engine_arena/UCIEngine_OptionsTest.cpp
