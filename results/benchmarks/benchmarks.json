@@ -314,6 +314,36 @@
       "totalTimeMs": 81494,
       "nps": 3729291,
       "notes": "Current development version"
+    },
+    {
+      "arenaVersion": "v1.2",
+      "timestamp": "2026-02-14T14:36:29",
+      "engineName": "FrankyCPP",
+      "engineVersion": "v1.3",
+      "enginePath": "",
+      "depth": 10,
+      "hashSizeMB": 128,
+      "threads": 1,
+      "positions": 50,
+      "totalNodes": 303914894,
+      "totalTimeMs": 81271,
+      "nps": 3739524,
+      "notes": "Current development version"
+    },
+    {
+      "arenaVersion": "v1.2",
+      "timestamp": "2026-02-14T14:36:29",
+      "engineName": "External",
+      "engineVersion": "v1.3",
+      "enginePath": "Release/FrankyCPP_v1.3/FrankyCPP_v1.3.exe",
+      "depth": 10,
+      "hashSizeMB": 128,
+      "threads": 1,
+      "positions": 50,
+      "totalNodes": 303914894,
+      "totalTimeMs": 81348,
+      "nps": 3735984,
+      "notes": "Current development version"
     }
   ]
 }

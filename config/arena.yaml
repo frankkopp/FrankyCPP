@@ -101,94 +101,181 @@ cutechessPath: "D:/Games/CuteChess/cutechess-cli.exe"
 #   - Engine is terminated after suite completes
 testSuites:
 
+  # ==========================================================================
+  # FrankyCPP v1.3 test suites
+  # ==========================================================================
 
-# ==========================================================================
-# FrankyCPP v1.2 test suites
-# ==========================================================================
-
-  - name: "franky_tests_v1.2"
+  - name: "franky_tests_v1.3"
     epdPath: "test/testsets/franky_tests.epd"
     timePerMove: 5000
     maxDepth: 30
-    enginePath: "Release/FrankyCPP_v1.2/FrankyCPP_v1.2.exe"
-    engineVersion: "v1.2"
+    enginePath: "Release/FrankyCPP_v1.3/FrankyCPP_v1.3.exe"
+    engineVersion: "v1.3"
     isolatePositions: true
     debugMode: false
     commandLineArgs: "--nobook"
     uciOptions: ""
     parallelWorkers: 4
 
-  - name: "mate_test_v1.2"
+  - name: "mate_test_v1.3"
     epdPath: "test/testsets/mate_test_suite.epd"
     timePerMove: 15000
     maxDepth: 30
-    enginePath: "Release/FrankyCPP_v1.2/FrankyCPP_v1.2.exe"
-    engineVersion: "v1.2"
+    enginePath: "Release/FrankyCPP_v1.3/FrankyCPP_v1.3.exe"
+    engineVersion: "v1.3"
     isolatePositions: true
     debugMode: false
     commandLineArgs: "--nobook"
     uciOptions: ""
     parallelWorkers: 8
 
-  - name: "WAC_v1.2"
+  - name: "WAC_v1.3"
     epdPath: "test/testsets/wac.epd"
     timePerMove: 5000
     maxDepth: 30
-    enginePath: "Release/FrankyCPP_v1.2/FrankyCPP_v1.2.exe"
-    engineVersion: "v1.2"
+    enginePath: "Release/FrankyCPP_v1.3/FrankyCPP_v1.3.exe"
+    engineVersion: "v1.3"
     isolatePositions: true
     debugMode: false
     commandLineArgs: "--nobook"
     uciOptions: ""
     parallelWorkers: 8
 
-  - name: "STS_v1.2"
+  - name: "STS_v1.3"
     epdPath: "test/testsets/STS1-STS15_LAN.EPD"
     timePerMove: 5000
     maxDepth: 30
-    enginePath: "Release/FrankyCPP_v1.2/FrankyCPP_v1.2.exe"
-    engineVersion: "v1.2"
+    enginePath: "Release/FrankyCPP_v1.3/FrankyCPP_v1.3.exe"
+    engineVersion: "v1.3"
     isolatePositions: true
     debugMode: false
     commandLineArgs: "--nobook"
     uciOptions: ""
     parallelWorkers: 8
 
-  - name: "Crafty_v1.2"
+  - name: "Crafty_v1.3"
     epdPath: "test/testsets/crafty_test.epd"
     timePerMove: 5000
     maxDepth: 30
-    enginePath: "Release/FrankyCPP_v1.2/FrankyCPP_v1.2.exe"
-    engineVersion: "v1.2"
+    enginePath: "Release/FrankyCPP_v1.3/FrankyCPP_v1.3.exe"
+    engineVersion: "v1.3"
     isolatePositions: true
     debugMode: false
     commandLineArgs: "--nobook"
     uciOptions: ""
     parallelWorkers: 8
 
-  - name: "ECM98_v1.2"
+  - name: "ECM98_v1.3"
     epdPath: "test/testsets/ecm98.epd"
     timePerMove: 5000
     maxDepth: 30
-    enginePath: "Release/FrankyCPP_v1.2/FrankyCPP_v1.2.exe"
-    engineVersion: "v1.2"
+    enginePath: "Release/FrankyCPP_v1.3/FrankyCPP_v1.3.exe"
+    engineVersion: "v1.3"
     isolatePositions: true
     debugMode: false
     commandLineArgs: "--nobook"
     uciOptions: ""
     parallelWorkers: 8
 
-  - name: "Kaufman_v1.2"
+  - name: "Kaufman_v1.3"
     epdPath: "test/testsets/kaufman.epd"
     timePerMove: 5000
     maxDepth: 30
-    enginePath: "Release/FrankyCPP_v1.2/FrankyCPP_v1.2.exe"
-    engineVersion: "v1.2"
+    enginePath: "Release/FrankyCPP_v1.3/FrankyCPP_v1.3.exe"
+    engineVersion: "v1.3"
     isolatePositions: true
     debugMode: false
     commandLineArgs: "--nobook"
     uciOptions: ""
     parallelWorkers: 8
+
+# ==========================================================================
+# FrankyCPP v1.2 test suites
+# ==========================================================================
+
+#  - name: "franky_tests_v1.2"
+#    epdPath: "test/testsets/franky_tests.epd"
+#    timePerMove: 5000
+#    maxDepth: 30
+#    enginePath: "Release/FrankyCPP_v1.2/FrankyCPP_v1.2.exe"
+#    engineVersion: "v1.2"
+#    isolatePositions: true
+#    debugMode: false
+#    commandLineArgs: "--nobook"
+#    uciOptions: ""
+#    parallelWorkers: 4
+#
+#  - name: "mate_test_v1.2"
+#    epdPath: "test/testsets/mate_test_suite.epd"
+#    timePerMove: 15000
+#    maxDepth: 30
+#    enginePath: "Release/FrankyCPP_v1.2/FrankyCPP_v1.2.exe"
+#    engineVersion: "v1.2"
+#    isolatePositions: true
+#    debugMode: false
+#    commandLineArgs: "--nobook"
+#    uciOptions: ""
+#    parallelWorkers: 8
+#
+#  - name: "WAC_v1.2"
+#    epdPath: "test/testsets/wac.epd"
+#    timePerMove: 5000
+#    maxDepth: 30
+#    enginePath: "Release/FrankyCPP_v1.2/FrankyCPP_v1.2.exe"
+#    engineVersion: "v1.2"
+#    isolatePositions: true
+#    debugMode: false
+#    commandLineArgs: "--nobook"
+#    uciOptions: ""
+#    parallelWorkers: 8
+#
+#  - name: "STS_v1.2"
+#    epdPath: "test/testsets/STS1-STS15_LAN.EPD"
+#    timePerMove: 5000
+#    maxDepth: 30
+#    enginePath: "Release/FrankyCPP_v1.2/FrankyCPP_v1.2.exe"
+#    engineVersion: "v1.2"
+#    isolatePositions: true
+#    debugMode: false
+#    commandLineArgs: "--nobook"
+#    uciOptions: ""
+#    parallelWorkers: 8
+#
+#  - name: "Crafty_v1.2"
+#    epdPath: "test/testsets/crafty_test.epd"
+#    timePerMove: 5000
+#    maxDepth: 30
+#    enginePath: "Release/FrankyCPP_v1.2/FrankyCPP_v1.2.exe"
+#    engineVersion: "v1.2"
+#    isolatePositions: true
+#    debugMode: false
+#    commandLineArgs: "--nobook"
+#    uciOptions: ""
+#    parallelWorkers: 8
+#
+#  - name: "ECM98_v1.2"
+#    epdPath: "test/testsets/ecm98.epd"
+#    timePerMove: 5000
+#    maxDepth: 30
+#    enginePath: "Release/FrankyCPP_v1.2/FrankyCPP_v1.2.exe"
+#    engineVersion: "v1.2"
+#    isolatePositions: true
+#    debugMode: false
+#    commandLineArgs: "--nobook"
+#    uciOptions: ""
+#    parallelWorkers: 8
+#
+#  - name: "Kaufman_v1.2"
+#    epdPath: "test/testsets/kaufman.epd"
+#    timePerMove: 5000
+#    maxDepth: 30
+#    enginePath: "Release/FrankyCPP_v1.2/FrankyCPP_v1.2.exe"
+#    engineVersion: "v1.2"
+#    isolatePositions: true
+#    debugMode: false
+#    commandLineArgs: "--nobook"
+#    uciOptions: ""
+#    parallelWorkers: 8
 
 # ==========================================================================
 # FrankyCPP v1.1 test suites
@@ -834,19 +921,19 @@ matches:
 #    batchSize: 8
 #    outputPgn: "results/matches/test/test_blitz_100.pgn"
 
-#  # === Blitz matches between v1.2 and references (100 games each) ===
+#  # === Blitz matches between v1.3 and references (100 games each) ===
 
 # current dev vs. v1.1
-  - name: "v1.1_vs_v1.2_blitz_100-dev"
-    engine1Path: "Release/FrankyCPP_v1.2/FrankyCPP_v1.2.exe"
-    engine1Version: "v1.2"
+  - name: "v1.1_vs_v1.3_blitz_100-dev"
+    engine1Path: "Release/FrankyCPP_v1.3/FrankyCPP_v1.3.exe"
+    engine1Version: "v1.3"
     engine2Path: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
     engine2Version: "v1.1"
     openingBook: "books/8moves_GM_LB.pgn"
     timeControl: "300+0"
-    rounds: 416
+    rounds: 104
     concurrency: 8
-    outputPgn: "results/matches/v1.1_vs_v1.2_blitz_100.pgn"
+    outputPgn: "results/matches/v1.1_vs_v1.3_blitz_100.pgn"
 
 #    v0.5
 #  - name: "v0.5_vs_v1.2_blitz_100"
@@ -941,16 +1028,16 @@ matches:
 # =============================================================================
 
 benchmarks:
-  - name: "v1.2 Internal"
-    engineVersion: "v1.2"
+  - name: "v1.3 Internal"
+    engineVersion: "v1.3"
     depth: 10
     hashSizeMB: 128
     notes: "Current development version"
 
-  - name: "v1.2 External"
-    enginePath: "Release/FrankyCPP_V1.2/FrankyCPP_v1.2.exe"
+  - name: "v1.3 External"
+    enginePath: "Release/FrankyCPP_v1.3/FrankyCPP_v1.3.exe"
     commandLineArgs: "--nobook"
-    engineVersion: "v1.2"
+    engineVersion: "v1.3"
     depth: 10
     hashSizeMB: 128
     notes: "Current development version"
