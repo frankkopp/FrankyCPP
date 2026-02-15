@@ -31,7 +31,7 @@ Search::Search() : Search(nullptr) {}
 
 Search::Search(UciHandler* pUciHandler)
     : uciHandler(pUciHandler), SearchConfig(ConfigManager::instance().search()) {
-  this->tt         = std::make_unique<TT>(0);
+  this->tt = std::make_unique<TT>(0);
 }
 
 Search::~Search() {
@@ -319,27 +319,34 @@ SearchResult Search::iterativeDeepening(Position& p) {
   // Probe tablebase at root position
   // If TB_ROOT_IMMEDIATE=true and we get a hit, return TB move without searching
   // If TB_ROOT_IMMEDIATE=false, we store TB info and use it to guide the search
-  if (probeTablebaseAtRoot(p, searchResult)) {
-    if (SearchConfig.TB_ROOT_IMMEDIATE) {
-      // Return TB move immediately - skip search entirely
-      return searchResult;
+  if (SearchConfig.USE_TB
+      && SearchConfig.TB_PROBE_ROOT
+      && syzygy_tb
+      && syzygy_tb->isAvailable()) {
+
+    if (probeTablebaseAtRoot(p, searchResult)) {
+
+      if (SearchConfig.TB_ROOT_IMMEDIATE) {
+        // Return TB move immediately - skip search entirely
+        return searchResult;
+      }
+      // TB_ROOT_IMMEDIATE=false: Store TB info for use during search
+      // - Root moves will be filtered to only those maintaining TB result
+      // - TB move will be prioritized in root move ordering
+      // - Search produces proper PV while guaranteeing optimal play
+      tbRootMove  = searchResult.bestMove;
+      tbRootValue = searchResult.bestMoveValue;
+      // tbRootWdl and tbRootDtz already set in probeTablebaseAtRoot
+      LOG__INFO(Logger::get().SEARCH_LOG, "TB hit at root (non-immediate): move={} value={}, continuing search for PV",
+                tbRootMove.str(), tbRootValue.str());
+
+      // Filter root moves to only those that maintain the TB result
+      // This ensures we don't play a move that worsens our position
+      filterRootMovesByTB(p);
+
+      // Reset searchResult - we'll populate it from search
+      searchResult = SearchResult{};
     }
-    // TB_ROOT_IMMEDIATE=false: Store TB info for use during search
-    // - Root moves will be filtered to only those maintaining TB result
-    // - TB move will be prioritized in root move ordering
-    // - Search produces proper PV while guaranteeing optimal play
-    tbRootMove  = searchResult.bestMove;
-    tbRootValue = searchResult.bestMoveValue;
-    // tbRootWdl and tbRootDtz already set in probeTablebaseAtRoot
-    LOG__INFO(Logger::get().SEARCH_LOG, "TB hit at root (non-immediate): move={} value={}, continuing search for PV",
-              tbRootMove.str(), tbRootValue.str());
-
-    // Filter root moves to only those that maintain the TB result
-    // This ensures we don't play a move that worsens our position
-    filterRootMovesByTB(p);
-
-    // Reset searchResult - we'll populate it from search
-    searchResult = SearchResult{};
   }
 
   // add some extra time for the move after the last book move
@@ -401,8 +408,8 @@ SearchResult Search::iterativeDeepening(Position& p) {
   // ###########################################
   // ### BEGIN Iterative Deepening
   // Initialize NPS tracking right before starting search to exclude initialization overhead
-  npsTime                     = nowFast();
-  npsNodes                    = nodesVisited;
+  npsTime  = nowFast();
+  npsNodes = nodesVisited;
   milliseconds lastIterationMs{0};
   uint64_t lastIterationNodes = 0;
   uint64_t prevIterationNodes = 0;
@@ -611,7 +618,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
     searchResult.tbHit = true;
 
     // Check if search found a proven mate
-    const Value searchValue = pv.first().value();
+    const Value searchValue    = pv.first().value();
     const bool searchFoundMate = searchValue >= VALUE_CHECKMATE_THRESHOLD;
 
     // Calculate mate depth if search found mate (in plies/half-moves)
@@ -632,15 +639,17 @@ SearchResult Search::iterativeDeepening(Position& p) {
                 searchMateDepth, tbRootDtz, searchResult.bestMove.str());
       // Keep searchResult.bestMove and searchResult.bestMoveValue from search
       // But still mark as TB-backed since we verified with TB
-    } else {
+    }
+    else {
       // Use TB move - it's DTZ-optimal (shortest path to conversion)
       // Search's move might delay the win or risk 50-move rule
-      const Move searchMove = searchResult.bestMove;
-      searchResult.bestMove = tbRootMove;
+      const Move searchMove      = searchResult.bestMove;
+      searchResult.bestMove      = tbRootMove;
       searchResult.bestMoveValue = tbRootValue;
       if (searchMove == tbRootMove) {
         LOG__INFO(Logger::get().SEARCH_LOG, "Search confirmed TB-optimal move {}", tbRootMove.str());
-      } else {
+      }
+      else {
         LOG__INFO(Logger::get().SEARCH_LOG,
                   "Using TB-optimal move {} (DTZ={}), search suggested {}",
                   tbRootMove.str(), tbRootDtz, searchMove.str());
@@ -867,10 +876,10 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   bool matethreat     = false;
 
   // Variables for singular extension
-  Value ttValue       = VALUE_NONE;
-  Depth ttDepth       = DEPTH_NONE;
+  Value ttValue = VALUE_NONE;
+  Depth ttDepth = DEPTH_NONE;
 
-  // TT Lookup
+  // TT Lookup (before TB probe to avoid redundant TB probes for cached results)
   // Results of searches are stored in the TT to be used to
   // avoid searching positions several times. If a position
   // is stored in the TT, we retrieve a pointer to the entry.
@@ -911,6 +920,74 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     }
     else { statistics.ttMiss++; }
   }// use TT
+
+  // Tablebase probing in search (after TT lookup to use cached TB results)
+  // Probe WDL for positions within TB piece limit. This can provide
+  // early cutoffs for winning/losing positions or exact draws.
+  // Only probe at sufficient depth to avoid overhead in shallow searches.
+  // On PV nodes, only use TB to tighten bounds - don't cut off (need complete PV line).
+  if (SearchConfig.USE_TB
+      && syzygy_tb
+      && syzygy_tb->isAvailable()
+      && depth >= SearchConfig.TB_PROBE_DEPTH
+      && p.getOccupiedBb().popcount() <= SearchConfig.TB_PROBE_LIMIT
+      && p.getCastlingRights() == NO_CASTLING) {
+
+    const tablebase::TBResult wdl = syzygy_tb->probeWDL(p);
+
+    if (wdl != tablebase::TBResult::Failed) {
+      statistics.tbSearchHits++;
+
+      // Convert WDL to score with 50-move rule handling
+      const Value tbScore = getTBScoreForSearch(wdl, p.getHalfMoveClock(), ply);
+
+      // Use WDL as bound for alpha-beta
+      // On PV nodes: only tighten bounds, never cut off (need to build PV)
+      // On non-PV nodes: can cut off immediately
+      if (wdl == tablebase::TBResult::Win || wdl == tablebase::TBResult::CursedWin) {
+        // Position is winning - use as lower bound
+        if (!isPv && tbScore >= beta) {
+          statistics.tbSearchCutoffs++;
+          // Store in TT for future lookups
+          if (SearchConfig.USE_TT) {
+            storeTt(p, depth, ply, MOVE_NONE, tbScore, BETA, VALUE_NONE);
+          }
+          return tbScore;// Fail high (beta cutoff)
+        }
+        // Tighten alpha if TB score is better
+        alpha = std::max(alpha, tbScore);
+      }
+      else if (wdl == tablebase::TBResult::Loss || wdl == tablebase::TBResult::BlessedLoss) {
+        // Position is losing - use as upper bound
+        if (!isPv && tbScore <= alpha) {
+          statistics.tbSearchCutoffs++;
+          // Store in TT for future lookups
+          if (SearchConfig.USE_TT) {
+            storeTt(p, depth, ply, MOVE_NONE, tbScore, ALPHA, VALUE_NONE);
+          }
+          return tbScore;// Fail low (alpha cutoff)
+        }
+        // Tighten beta if TB score is worse
+        beta = std::min(beta, tbScore);
+      }
+      else if (wdl == tablebase::TBResult::Draw) {
+        // Exact draw - can return immediately on non-PV nodes
+        if (!isPv) {
+          statistics.tbSearchCutoffs++;
+          if (SearchConfig.USE_TT) {
+            storeTt(p, depth, ply, MOVE_NONE, VALUE_DRAW, EXACT, VALUE_NONE);
+          }
+          return VALUE_DRAW;
+        }
+        // On PV nodes, tighten both bounds to draw
+        alpha = std::max(alpha, VALUE_DRAW);
+        beta  = std::min(beta, VALUE_DRAW);
+      }
+    }
+    else {
+      statistics.tbSearchMisses++;
+    }
+  }
 
   const bool hasCheck = p.hasCheck();
 
@@ -1145,13 +1222,13 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // We do a reduced-depth null-window search excluding the TT move to verify
       // that no other move can reach close to the TT value.
       if (SearchConfig.USE_SINGULAR_EXT
-          && extension == 0                                      // no other extension applied
-          && move == ttMove                                      // this is the TT move
-          && depth >= SearchConfig.SINGULAR_MIN_DEPTH            // sufficient depth
-          && ttValue != VALUE_NONE                               // valid TT value
-          && ttDepth >= depth - 3                                // TT entry was from similar or deeper search
-          && !hasCheck                                           // not in check (avoid instability)
-          && std::abs(ttValue) < VALUE_CHECKMATE_THRESHOLD) { // not a mate score
+          && extension == 0                                  // no other extension applied
+          && move == ttMove                                  // this is the TT move
+          && depth >= SearchConfig.SINGULAR_MIN_DEPTH        // sufficient depth
+          && ttValue != VALUE_NONE                           // valid TT value
+          && ttDepth >= depth - 3                            // TT entry was from similar or deeper search
+          && !hasCheck                                       // not in check (avoid instability)
+          && std::abs(ttValue) < VALUE_CHECKMATE_THRESHOLD) {// not a mate score
 
         // Reduced beta for the verification search
         const Value singularBeta = ttValue - Value{SearchConfig.SINGULAR_MARGIN};
@@ -1738,7 +1815,7 @@ void Search::initialize() {
       if (!std::filesystem::exists(SearchConfig.BOOK_PATH)) {
         const std::string message = std::format("Opening Book '{}' not found. Disabling book usage.", SearchConfig.BOOK_PATH);
         LOG__ERROR(Logger::get().BOOK_LOG, "{}", message);
-        ConfigManager::instance().applyOverrides([&](SearchConfigData& s, auto& ) {
+        ConfigManager::instance().applyOverrides([&](SearchConfigData& s, auto&) {
           s.USE_BOOK = false;
         });
       }
@@ -1794,20 +1871,11 @@ void Search::initTablebase() {
   }
   else {
     LOG__WARN(Logger::get().SEARCH_LOG, "Syzygy Tablebase: Failed to initialize from '{}'", SearchConfig.TB_PATH);
-    syzygy_tb.reset();  // Release failed instance
+    syzygy_tb.reset();// Release failed instance
   }
 }
 
 bool Search::probeTablebaseAtRoot(const Position& pos, SearchResult& result) {
-  // Check if root probing is enabled
-  if (!SearchConfig.TB_PROBE_ROOT) {
-    return false;
-  }
-
-  // Check if tablebase is available
-  if (!syzygy_tb || !syzygy_tb->isAvailable()) {
-    return false;
-  }
 
   // Check if position can be probed
   if (!syzygy_tb->canProbe(pos)) {
@@ -1854,7 +1922,7 @@ void Search::filterRootMovesByTB(Position& pos) {
   // For a losing position, keep all moves (we're lost anyway).
 
   if (tbRootWdl == tablebase::TBResult::Failed) {
-    return;  // No TB result, nothing to filter
+    return;// No TB result, nothing to filter
   }
 
   const size_t originalCount = rootMoves.size();
@@ -1873,7 +1941,7 @@ void Search::filterRootMovesByTB(Position& pos) {
     pos.undoMove();
 
     if (childWdl == tablebase::TBResult::Failed) {
-      return true;  // Probe failed, keep the move
+      return true;// Probe failed, keep the move
     }
 
     // After our move, it's opponent's turn. WDL is from opponent's perspective.
@@ -1885,20 +1953,16 @@ void Search::filterRootMovesByTB(Position& pos) {
       case tablebase::TBResult::Win:
       case tablebase::TBResult::CursedWin:
         // We're winning - opponent must be losing
-        return childWdl == tablebase::TBResult::Loss ||
-               childWdl == tablebase::TBResult::BlessedLoss;
+        return childWdl == tablebase::TBResult::Loss || childWdl == tablebase::TBResult::BlessedLoss;
 
       case tablebase::TBResult::Draw:
         // We're drawing - opponent must not be winning
-        return childWdl != tablebase::TBResult::Win &&
-               childWdl != tablebase::TBResult::CursedWin;
+        return childWdl != tablebase::TBResult::Win && childWdl != tablebase::TBResult::CursedWin;
 
       case tablebase::TBResult::BlessedLoss: /* fallthrough */
-      case tablebase::TBResult::Loss:
-        // We're losing - keep all moves (try to find the best losing move)
-        return true;
-
+      case tablebase::TBResult::Loss: /* fallthrough */
       default:
+        // We're losing - keep all moves (try to find the best losing move)
         return true;
     }
   };
@@ -1928,6 +1992,48 @@ void Search::filterRootMovesByTB(Position& pos) {
   if (rootMoves.empty() && tbRootMove != MOVE_NONE) {
     LOG__WARN(Logger::get().SEARCH_LOG, "TB filter removed all moves! Restoring TB move {}", tbRootMove.str());
     rootMoves.push_back(tbRootMove);
+  }
+}
+
+
+Value Search::getTBScoreForSearch(const tablebase::TBResult wdl, const int halfMoveClock, const Depth ply) const {
+  // Fast path: far from 50-move limit, no special handling needed
+  if (halfMoveClock < SearchConfig.TB_RULE50_THRESHOLD) {
+    return tablebase::Tablebase::tbValueToScore(wdl, ply);
+  }
+
+  // Slow path: near 50-move limit, need to be careful about unreachable wins/losses
+  // This is only triggered when halfMoveClock >= TB_RULE50_THRESHOLD (default 80)
+  // Setting TB_RULE50_THRESHOLD >= 100 effectively disables this path
+
+  switch (wdl) {
+    case tablebase::TBResult::Win:
+    case tablebase::TBResult::Loss:
+      // Near the 50-move limit with a decisive result
+      // We don't have DTZ in search (only WDL), so be conservative:
+      // - Very close to 50-move (>=90): treat as draw to avoid claiming unreachable wins
+      // - Moderately close (threshold to 90): use WDL but it might be inaccurate
+      if (halfMoveClock >= 90) {
+        // Very close to 50-move rule - be conservative, treat as draw
+        // This prevents claiming wins that can't be achieved before the rule kicks in
+        return VALUE_DRAW;
+      }
+      // Between threshold and 90: use WDL score but acknowledge potential inaccuracy
+      return tablebase::Tablebase::tbValueToScore(wdl, ply);
+
+    case tablebase::TBResult::CursedWin:
+    case tablebase::TBResult::BlessedLoss:
+      // These already account for 50-move rule complications
+      // CursedWin: would be win but 50-move may draw - score as slight advantage
+      // BlessedLoss: would be loss but 50-move may save - score as slight disadvantage
+      return tablebase::Tablebase::tbValueToScore(wdl, ply);
+
+    case tablebase::TBResult::Draw:
+      return VALUE_DRAW;
+
+    case tablebase::TBResult::Failed:
+    default:
+      return VALUE_NONE;
   }
 }
 

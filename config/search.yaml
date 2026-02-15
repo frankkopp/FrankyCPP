@@ -15,15 +15,6 @@ BOOK_PATH: "./books/book.txt"
 # Book format (SIMPLE/PGN/…) as string for readability; parsed in code
 BOOK_TYPE: "SIMPLE"  # OpeningBook::BookFormat::SIMPLE
 
-# Syzygy Tablebase settings
-# Path to Syzygy tablebase files (semicolon-separated on Windows, colon on Linux)
-# Leave empty to disable tablebase probing
-TB_PATH: "D:/SYZYGY"
-# Minimum remaining depth to probe WDL during search (0 = always probe)
-TB_PROBE_DEPTH: 1
-# Probe tablebases at root for best move selection
-TB_PROBE_ROOT: true
-
 # Enable thinking during opponent time (pondering)
 USE_PONDER: true
 
@@ -49,6 +40,22 @@ USE_EVAL_TT: true
 TT_SIZE_MB: 64
 # Use TT also inside quiescence search
 USE_QS_TT: true
+
+# Syzygy Tablebase settings
+# Master switch to enable/disable all tablebase probing
+USE_TB: true
+# Path to Syzygy tablebase files (semicolon-separated on Windows, colon on Linux)
+# Leave empty to disable tablebase probing
+TB_PATH: "D:/SYZYGY"
+# Probe tablebases at root for best move selection
+TB_PROBE_ROOT: true
+# Minimum remaining depth to probe WDL during search (0 = always probe)
+TB_PROBE_DEPTH: 1
+# Maximum pieces for search TB probing (3-7, typically matches available TBs)
+TB_PROBE_LIMIT: 6
+# HalfMoveClock threshold for DTZ accuracy check (>=100 disables this check)
+# When halfMoveClock >= this value, be conservative about claiming wins/losses
+TB_RULE50_THRESHOLD: 80
 
 # Move ordering features
 # Use TT best move as a first candidate (PV move)

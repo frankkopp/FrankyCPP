@@ -323,6 +323,14 @@ private:
   /// @param pos  Current position (used to probe child positions)
   void filterRootMovesByTB(Position& pos);
 
+  /// Converts TB WDL result to search score with 50-move rule handling.
+  /// Uses TB_RULE50_THRESHOLD to decide if DTZ check is needed.
+  /// @param wdl            WDL result from tablebase
+  /// @param halfMoveClock  Current 50-move counter
+  /// @param ply            Current search ply (for mate-distance scoring)
+  /// @return               Score suitable for alpha-beta search
+  [[nodiscard]] Value getTBScoreForSearch(tablebase::TBResult wdl, int halfMoveClock, Depth ply) const;
+
   /// Called after starting search thread. Configures search, calls iterativeDeepening,
   /// and sends result to UCI.
   void run();

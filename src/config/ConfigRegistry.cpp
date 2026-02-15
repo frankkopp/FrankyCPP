@@ -43,14 +43,14 @@ ConfigRegistry::ConfigRegistry() {
 #ifdef _MSC_VER
 // Windows MSVC builds
 #ifdef _DEBUG
-  static_assert(sizeof(SearchConfigData) == 480,
+  static_assert(sizeof(SearchConfigData) == 488,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 256,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
-  static_assert(sizeof(SearchConfigData) == 448,
+  static_assert(sizeof(SearchConfigData) == 456,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -61,7 +61,7 @@ ConfigRegistry::ConfigRegistry() {
 // Linux GCC/Clang builds (including WSL)
 #ifdef NDEBUG
   // Release build
-  static_assert(sizeof(SearchConfigData) == 448,
+  static_assert(sizeof(SearchConfigData) == 456,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -69,7 +69,7 @@ ConfigRegistry::ConfigRegistry() {
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
   // Debug build
-  static_assert(sizeof(SearchConfigData) == 440,
+  static_assert(sizeof(SearchConfigData) == 456,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -264,59 +264,6 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .setter = searchSetter(&SearchConfigData::BOOK_TYPE, parseString)
   });
 
-  //===========================================================================
-  // SYZYGY TABLEBASE SETTINGS
-  //===========================================================================
-  definitions_.push_back({
-    .name = "TB_PATH",
-    .uciName = "SyzygyPath",
-    .description = "Path to Syzygy tablebase files (empty = disabled)",
-    .valueType = String,
-    .domain = General,
-    .defaultValue = "",
-    .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::TB_PATH),
-    .setter = searchSetter(&SearchConfigData::TB_PATH, parseString)
-  });
-
-  definitions_.push_back({
-    .name = "TB_PROBE_DEPTH",
-    .uciName = "SyzygyProbeDepth",
-    .description = "Minimum remaining depth to probe WDL during search",
-    .valueType = Int,
-    .domain = General,
-    .defaultValue = "1",
-    .minValue = 0,
-    .maxValue = 100,
-    .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::TB_PROBE_DEPTH),
-    .setter = searchSetter(&SearchConfigData::TB_PROBE_DEPTH, parseInt)
-  });
-
-  definitions_.push_back({
-    .name = "TB_PROBE_ROOT",
-    .uciName = "SyzygyProbeRoot",
-    .description = "Probe tablebases at root for best move selection",
-    .valueType = Bool,
-    .domain = General,
-    .defaultValue = "true",
-    .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::TB_PROBE_ROOT),
-    .setter = searchSetter(&SearchConfigData::TB_PROBE_ROOT, parseBool)
-  });
-
-  definitions_.push_back({
-    .name = "TB_ROOT_IMMEDIATE",
-    .uciName = "SyzygyRootImmediate",
-    .description = "Return TB move immediately without searching (false = search for better PV/DTM)",
-    .valueType = Bool,
-    .domain = General,
-    .defaultValue = "false",
-    .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::TB_ROOT_IMMEDIATE),
-    .setter = searchSetter(&SearchConfigData::TB_ROOT_IMMEDIATE, parseBool)
-  });
-
   definitions_.push_back({
     .name = "USE_PONDER",
     .uciName = "Ponder",
@@ -449,6 +396,99 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .exposure = {.uci = true, .yaml = true, .display = true},
     .getter = searchGetter(&SearchConfigData::USE_QS_TT),
     .setter = searchSetter(&SearchConfigData::USE_QS_TT, parseBool)
+  });
+
+  //===========================================================================
+  // SYZYGY TABLEBASE SETTINGS
+  //===========================================================================
+  definitions_.push_back({
+    .name = "USE_TB",
+    .uciName = "SyzygyEnabled",
+    .description = "Master switch to enable/disable all tablebase probing",
+    .valueType = Bool,
+    .domain = General,
+    .defaultValue = "true",
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::USE_TB),
+    .setter = searchSetter(&SearchConfigData::USE_TB, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "TB_PATH",
+    .uciName = "SyzygyPath",
+    .description = "Path to Syzygy tablebase files (empty = disabled)",
+    .valueType = String,
+    .domain = General,
+    .defaultValue = "",
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::TB_PATH),
+    .setter = searchSetter(&SearchConfigData::TB_PATH, parseString)
+  });
+
+  definitions_.push_back({
+    .name = "TB_PROBE_DEPTH",
+    .uciName = "SyzygyProbeDepth",
+    .description = "Minimum remaining depth to probe WDL during search (0 = always)",
+    .valueType = Int,
+    .domain = General,
+    .defaultValue = "1",
+    .minValue = 0,
+    .maxValue = 20,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::TB_PROBE_DEPTH),
+    .setter = searchSetter(&SearchConfigData::TB_PROBE_DEPTH, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "TB_PROBE_LIMIT",
+    .uciName = "SyzygyProbeLimit",
+    .description = "Maximum pieces for search TB probing (3-7)",
+    .valueType = Int,
+    .domain = General,
+    .defaultValue = "6",
+    .minValue = 3,
+    .maxValue = 7,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::TB_PROBE_LIMIT),
+    .setter = searchSetter(&SearchConfigData::TB_PROBE_LIMIT, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "TB_RULE50_THRESHOLD",
+    .uciName = "Syzygy50MoveRule",
+    .description = "HalfMoveClock threshold for DTZ accuracy check (>=100 disables)",
+    .valueType = Int,
+    .domain = General,
+    .defaultValue = "80",
+    .minValue = 0,
+    .maxValue = 100,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::TB_RULE50_THRESHOLD),
+    .setter = searchSetter(&SearchConfigData::TB_RULE50_THRESHOLD, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "TB_PROBE_ROOT",
+    .uciName = "SyzygyProbeRoot",
+    .description = "Probe tablebases at root for best move selection",
+    .valueType = Bool,
+    .domain = General,
+    .defaultValue = "true",
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::TB_PROBE_ROOT),
+    .setter = searchSetter(&SearchConfigData::TB_PROBE_ROOT, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "TB_ROOT_IMMEDIATE",
+    .uciName = "SyzygyRootImmediate",
+    .description = "Return TB move immediately without searching (false = search for better PV/DTM)",
+    .valueType = Bool,
+    .domain = General,
+    .defaultValue = "false",
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::TB_ROOT_IMMEDIATE),
+    .setter = searchSetter(&SearchConfigData::TB_ROOT_IMMEDIATE, parseBool)
   });
 
   //===========================================================================

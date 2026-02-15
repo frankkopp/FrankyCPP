@@ -200,6 +200,15 @@ struct SearchStats {
   /// Successful tablebase probes at root position.
   uint64_t tbRootHits = 0;
 
+  /// Successful tablebase WDL probes during search.
+  uint64_t tbSearchHits = 0;
+
+  /// Positions where TB probe failed during search (position not in TB).
+  uint64_t tbSearchMisses = 0;
+
+  /// Branches cut off due to TB result (beta cutoff or exact draw).
+  uint64_t tbSearchCutoffs = 0;
+
   /// Returns a string representation of all statistics.
   /// @return  Formatted statistics string
   [[nodiscard]] std::string str() const {
@@ -254,6 +263,9 @@ struct SearchStats {
        << " TtMoveUsed: " << stats.TtMoveUsed
        << " NoTtMove: " << stats.NoTtMove
        << " tbRootHits: " << stats.tbRootHits
+       << " tbSearchHits: " << stats.tbSearchHits
+       << " tbSearchMisses: " << stats.tbSearchMisses
+       << " tbSearchCutoffs: " << stats.tbSearchCutoffs
        << " IID Searches: " << stats.iidSearches
        << " IID Moves: " << stats.iidMoves;
     return os;

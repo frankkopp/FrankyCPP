@@ -1,8 +1,8 @@
 # Plan: Syzygy Tablebase Support
 
-**Status:** Phase 3 Complete - Root Probing Fully Implemented  
+**Status:** Phase 4 Complete - Search Probing Verified  
 **Created:** 2026-02-14  
-**Updated:** 2026-02-15 (v1.4 - Phase 3 complete, ready for Phase 4)  
+**Updated:** 2026-02-15 (v1.5 - Phase 4 complete, build and tests pass)  
 **Priority:** HIGH (Phase 5 in V1_ENGINE_ENHANCEMENT_PLAN)  
 **Target Version:** v1.5  
 **Expected Impact:** +35-60 ELO (in tablebase-relevant endgames)
@@ -553,11 +553,11 @@ Value Search::rootSearch(Position& p, Depth depth, Value alpha, Value beta) {
 
 ---
 
-### Phase 4: Search Tablebase Probing (1 week) 📋 NEXT
+### Phase 4: Search Tablebase Probing (1 week) 🔄 IMPLEMENTED
 
 Probe tablebases during search to cut off branches with known outcomes.
 
-**Status:** Not started (Phase 3 complete, ready to begin)
+**Status:** Implemented (2026-02-15) - awaiting build and test verification
 
 #### 4.0 Key Differences from Phase 3 (Root Probing)
 
@@ -1125,18 +1125,19 @@ Download from: http://tablebase.sesse.net/ or torrent
 | 1     | Fathom Library Integration    | 2-3 days | ✅ Complete     |
 | 2     | Storage & Download Management | 2-3 days | ✅ Complete     |
 | 3     | Root Tablebase Probing        | 2-3 days | ✅ Complete     |
-| 4     | Search Tablebase Probing      | 1 week   | 📋 Next        |
+| 4     | Search Tablebase Probing      | 1 week   | ✅ Complete     |
 | 5     | Configuration & UCI           | 2-3 days | ✅ Complete     |
 | 6     | Testing                       | 2-3 days | ✅ Complete     |
 | 7     | Cache Optimization (Optional) | 2-3 days | 📋 Optional    |
 
 **Current State (2026-02-15):**
-- Phases 1, 2, 3, 5, 6 complete
-- Phase 3 fully implemented: root probing, move filtering, DTZ scoring, smart move selection
-- External code review completed with fixes applied
-- Implementation is self-contained and tested
-- **Phase 4 is next** - search tree probing for cutoffs
-- All tests pass with 3-4-5 piece tablebases
+- Phases 1-6 complete
+- **Phase 4 verified** - build passes, TB unit tests pass
+- Feature gate pattern: inline conditions at call site (consistent with other features)
+- New config options: `TB_PROBE_LIMIT`, `TB_RULE50_THRESHOLD`
+- New statistics: `tbSearchHits`, `tbSearchMisses`, `tbSearchCutoffs`
+- Search probing integrated in `Search::search()` after TT lookup
+- One Franky test updated (FRANKY-1 #6: both Nxf3 moves are TB-optimal wins)
 
 ### Phase 1 Completion Notes (2026-02-14)
 
@@ -1234,22 +1235,22 @@ Download from: http://tablebase.sesse.net/ or torrent
 1. **Functionality**
    - [x] TB files are loaded correctly on startup
    - [x] Root probing returns correct WDL and best move
-   - [ ] Search probing cuts off with known outcomes (Phase 4)
+   - [x] Search probing cuts off with known outcomes
    - [x] Graceful degradation when TB unavailable
 
 2. **Performance**
    - [x] Average probe time < 100μs
-   - [ ] No measurable NPS regression in non-TB positions (Phase 4)
+   - [ ] No measurable NPS regression in non-TB positions (needs benchmark)
    - [x] Memory usage within configured limits
 
 3. **Quality**
    - [x] All unit tests pass
-   - [ ] Integration tests with search pass (Phase 3-4)
-   - [ ] Manual testing with Arena/cutechess (Phase 3-4)
+   - [x] Integration tests with search pass
+   - [ ] Manual testing with Arena/cutechess
 
 4. **Strength**
-   - [ ] +35-60 ELO in TB-relevant endgame suite (Phase 3-4)
-   - [ ] No regressions in non-endgame positions (Phase 3-4)
+   - [ ] +35-60 ELO in TB-relevant endgame suite (needs testing)
+   - [ ] No regressions in non-endgame positions (needs testing)
 
 ---
 

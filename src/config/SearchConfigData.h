@@ -42,12 +42,6 @@ struct SearchConfigData {
   std::string BOOK_PATH = "./books/book.txt";
   std::string BOOK_TYPE = "SIMPLE";// OpeningBook::BookFormat as string
 
-  // Syzygy tablebase settings
-  std::string TB_PATH;              // Path to Syzygy tablebase files (empty = disabled)
-  int TB_PROBE_DEPTH      = 1;      // Minimum depth to probe WDL in search
-  bool TB_PROBE_ROOT      = true;   // Probe tablebases at root for best move
-  bool TB_ROOT_IMMEDIATE  = false;  // Return TB move immediately without searching (false = search for better PV/DTM)
-
   // pondering
   bool USE_PONDER = true;
 
@@ -65,6 +59,15 @@ struct SearchConfigData {
   bool USE_EVAL_TT  = true;
   int TT_SIZE_MB    = 64;
   bool USE_QS_TT    = true;
+
+  // Syzygy tablebase settings
+  bool USE_TB                = true;   // Master switch for tablebase probing
+  std::string TB_PATH;                 // Path to Syzygy tablebase files (empty = disabled)
+  int TB_PROBE_DEPTH         = 1;      // Minimum depth to probe WDL in search (0 = always)
+  int TB_PROBE_LIMIT         = 6;      // Max pieces for search TB probing (3-7)
+  int TB_RULE50_THRESHOLD    = 80;     // HalfMoveClock threshold for DTZ check (>=100 disables)
+  bool TB_PROBE_ROOT         = true;   // Probe tablebases at root for best move
+  bool TB_ROOT_IMMEDIATE     = false;  // Return TB move immediately without searching (false = search for better PV/DTM)
 
   // move sorting
   bool USE_TT_PV_MOVE_SORT = true;

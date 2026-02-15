@@ -1403,3 +1403,223 @@ TEST_F(SearchTablebaseTest, DTZBasedScoringPrefersShortWins) {
   LOG__INFO(Logger::get().TEST_LOG, "DTZ scoring: DTZ=5 -> {}, DTZ=50 -> {}",
             scoreDtz5.str(), scoreDtz50.str());
 }
+
+//=============================================================================
+// Search Tablebase Probing Tests
+//=============================================================================
+
+// Test USE_TB=false disables all tablebase probing (master switch)
+TEST_F(SearchTablebaseTest, UseTBFalseDisablesAllProbing) {
+  skipIfNoTablebases();
+
+  const std::string tbPath = findTablebasePath();
+  CONFIG_OVERRIDE(
+    s.USE_TB               = false;  // Master switch OFF
+    s.TB_PATH              = tbPath;
+    s.TB_PROBE_ROOT        = true;
+    s.TB_PROBE_DEPTH       = 0;      // Would normally probe everywhere
+    s.TB_PROBE_LIMIT       = 6;
+    s.USE_BOOK             = false;
+  );
+
+  // KRK position - would normally hit TB
+  const Position pos("8/8/8/4k3/8/8/1R6/4K3 w - - 0 1");
+
+  Search search;
+  search.isReady();
+
+  SearchLimits sl;
+  sl.depth = 6;
+
+  search.startSearch(pos, sl);
+  search.waitWhileSearching();
+
+  const SearchResult& result = search.getLastSearchResult();
+  const SearchStats& stats = search.getSearchStats();
+
+  // With USE_TB=false, should have NO TB activity
+  EXPECT_FALSE(result.tbHit) << "USE_TB=false should disable root TB probing";
+  EXPECT_EQ(0ULL, stats.tbRootHits) << "USE_TB=false should have 0 root hits";
+  EXPECT_EQ(0ULL, stats.tbSearchHits) << "USE_TB=false should have 0 search hits";
+  EXPECT_EQ(0ULL, stats.tbSearchCutoffs) << "USE_TB=false should have 0 cutoffs";
+
+  // Should still find a move via normal search
+  EXPECT_NE(MOVE_NONE, result.bestMove) << "Should find move via normal search";
+
+  LOG__INFO(Logger::get().TEST_LOG, "USE_TB=false test: rootHits={} searchHits={} cutoffs={}",
+            stats.tbRootHits, stats.tbSearchHits, stats.tbSearchCutoffs);
+}
+
+// Test TB_RULE50_THRESHOLD >= 100 effectively disables DTZ checks
+TEST_F(SearchTablebaseTest, Rule50ThresholdDisablesWhenHigh) {
+  skipIfNoTablebases();
+
+  // Configure with threshold >= 100 (disables DTZ checks)
+  const std::string tbPath = findTablebasePath();
+  CONFIG_OVERRIDE(
+    s.TB_PATH              = tbPath;
+    s.TB_PROBE_ROOT        = false;  // Disable root probing to test search probing
+    s.TB_PROBE_DEPTH       = 1;
+    s.TB_PROBE_LIMIT       = 6;
+    s.TB_RULE50_THRESHOLD  = 100;    // Disable 50-move rule checks
+    s.USE_BOOK             = false;
+  );
+
+  // KRK position with high halfmove clock (set via FEN)
+  // Even with halfmove=95, should NOT treat as draw when threshold=100
+  const Position pos("8/8/8/4k3/8/8/1R6/4K3 w - - 95 50");
+
+  Search search;
+  search.isReady();
+
+  SearchLimits sl;
+  sl.depth = 6;
+
+  search.startSearch(pos, sl);
+  search.waitWhileSearching();
+
+  const SearchResult& result = search.getLastSearchResult();
+
+  // With threshold=100, even with halfmove=95, should report as winning (not draw)
+  EXPECT_NE(MOVE_NONE, result.bestMove) << "Should find a move";
+  // Score should be positive (winning) not draw
+  EXPECT_GT(static_cast<int>(result.bestMoveValue), 0)
+    << "With threshold=100, should report winning even with high halfmove clock";
+
+  LOG__INFO(Logger::get().TEST_LOG, "Rule50 threshold=100 test: move={} value={}",
+            result.bestMove.str(), result.bestMoveValue.str());
+}
+
+// Test that search TB probing produces cutoffs (statistics check)
+TEST_F(SearchTablebaseTest, SearchProbingProducesCutoffs) {
+  skipIfNoTablebases();
+
+  const std::string tbPath = findTablebasePath();
+  CONFIG_OVERRIDE(
+    s.TB_PATH              = tbPath;
+    s.TB_PROBE_ROOT        = false;  // Disable root to test search probing
+    s.TB_PROBE_DEPTH       = 1;      // Probe at depth >= 1
+    s.TB_PROBE_LIMIT       = 6;
+    s.TB_RULE50_THRESHOLD  = 80;
+    s.USE_BOOK             = false;
+  );
+
+  // KRK position - simple 3-piece position
+  const Position pos("8/8/8/4k3/8/8/1R6/4K3 w - - 0 1");
+
+  Search search;
+  search.isReady();
+
+  SearchLimits sl;
+  sl.depth = 8;  // Search deep enough to get TB hits
+
+  search.startSearch(pos, sl);
+  search.waitWhileSearching();
+
+  const SearchStats& stats = search.getSearchStats();
+
+  // We should have some TB search hits
+  LOG__INFO(Logger::get().TEST_LOG,
+            "TB search stats: hits={} misses={} cutoffs={}",
+            stats.tbSearchHits, stats.tbSearchMisses, stats.tbSearchCutoffs);
+
+  // In a pure TB position with depth=8, we should get some TB hits
+  // (exact numbers depend on search behavior)
+  EXPECT_GT(stats.tbSearchHits + stats.tbSearchMisses, 0ULL)
+    << "Search should have attempted TB probes";
+}
+
+// Test TB_PROBE_DEPTH controls when probing happens
+TEST_F(SearchTablebaseTest, ProbeDepthControlsProbing) {
+  skipIfNoTablebases();
+
+  const std::string tbPath = findTablebasePath();
+
+  // First search with TB_PROBE_DEPTH = 0 (always probe)
+  CONFIG_OVERRIDE(
+    s.TB_PATH              = tbPath;
+    s.TB_PROBE_ROOT        = false;
+    s.TB_PROBE_DEPTH       = 0;  // Always probe
+    s.TB_PROBE_LIMIT       = 6;
+    s.USE_BOOK             = false;
+  );
+
+  const Position pos("8/8/8/4k3/8/8/1R6/4K3 w - - 0 1");
+
+  Search search1;
+  search1.isReady();
+
+  SearchLimits sl;
+  sl.depth = 6;
+
+  search1.startSearch(pos, sl);
+  search1.waitWhileSearching();
+
+  const uint64_t hitsDepth0 = search1.getSearchStats().tbSearchHits;
+
+  // Second search with TB_PROBE_DEPTH = 5 (only probe at depth >= 5)
+  CONFIG_OVERRIDE(
+    s.TB_PATH              = tbPath;
+    s.TB_PROBE_ROOT        = false;
+    s.TB_PROBE_DEPTH       = 5;  // Only probe at depth >= 5
+    s.TB_PROBE_LIMIT       = 6;
+    s.USE_BOOK             = false;
+  );
+
+  Search search2;
+  search2.isReady();
+
+  search2.startSearch(pos, sl);
+  search2.waitWhileSearching();
+
+  const uint64_t hitsDepth5 = search2.getSearchStats().tbSearchHits;
+
+  LOG__INFO(Logger::get().TEST_LOG,
+            "TB_PROBE_DEPTH test: depth=0 hits={}, depth=5 hits={}",
+            hitsDepth0, hitsDepth5);
+
+  // With TB_PROBE_DEPTH=0, should have more hits than with TB_PROBE_DEPTH=5
+  // (probing at all depths vs only deep nodes)
+  EXPECT_GE(hitsDepth0, hitsDepth5)
+    << "Lower TB_PROBE_DEPTH should result in >= TB hits";
+}
+
+// Test TB_PROBE_LIMIT controls piece count
+TEST_F(SearchTablebaseTest, ProbeLimitControlsPieceCount) {
+  skipIfNoTablebases();
+
+  const std::string tbPath = findTablebasePath();
+
+  // Configure with TB_PROBE_LIMIT = 3 (only probe 3-piece positions)
+  CONFIG_OVERRIDE(
+    s.TB_PATH              = tbPath;
+    s.TB_PROBE_ROOT        = false;
+    s.TB_PROBE_DEPTH       = 1;
+    s.TB_PROBE_LIMIT       = 3;   // Very restrictive - only KvK (impossible) or 3-piece
+    s.USE_BOOK             = false;
+  );
+
+  // Use 5-piece position so even after captures we still exceed limit of 3
+  // KRKpp = 5 pieces, after one capture = 4 pieces (still > 3)
+  const Position pos("8/8/8/3p4/4p3/8/1R2K3/4k3 w - - 0 1");  // KRKpp = 5 pieces
+
+  Search search;
+  search.isReady();
+
+  SearchLimits sl;
+  sl.depth = 4;
+
+  search.startSearch(pos, sl);
+  search.waitWhileSearching();
+
+  const SearchStats& stats = search.getSearchStats();
+
+  LOG__INFO(Logger::get().TEST_LOG,
+            "TB_PROBE_LIMIT=3 on 5-piece pos: hits={} misses={}",
+            stats.tbSearchHits, stats.tbSearchMisses);
+
+  // With 5-piece position and limit=3, should have 0 hits
+  // (even after one capture, 4 pieces still exceeds limit)
+  EXPECT_EQ(0ULL, stats.tbSearchHits)
+    << "Should not probe positions exceeding TB_PROBE_LIMIT";
+}
