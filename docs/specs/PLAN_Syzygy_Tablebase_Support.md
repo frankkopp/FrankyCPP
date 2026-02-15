@@ -1070,12 +1070,15 @@ config/
 ```yaml
 # config/search.yaml
 
-# Tablebase Settings (Phase 3 - Root Probing)
+# Tablebase Settings
 TB_PATH: "D:/Chess/Syzygy/3-4-5-6"  # Windows path (semicolon-separated for multiple)
-TB_PROBE_ROOT: true                  # Enable root probing
+
+# Root probing (once per search, for best move selection)
+USE_TB_PROBE_ROOT: true              # Enable root probing
 TB_ROOT_IMMEDIATE: false             # false = search for PV, true = return TB move immediately
 
-# Tablebase Settings (Phase 4 - Search Probing)
+# Search probing (during tree search, for cutoffs)
+USE_TB_PROBE_SEARCH: true            # Enable search probing for cutoffs
 TB_PROBE_DEPTH: 1                    # Min remaining depth to probe in search (0 = always)
 TB_PROBE_LIMIT: 6                    # Max pieces for search probing (3-7)
 TB_RULE50_THRESHOLD: 80              # HalfMoveClock threshold for DTZ check (>=100 disables)
@@ -1093,6 +1096,7 @@ TB_RULE50_THRESHOLD: 80              # HalfMoveClock threshold for DTZ check (>=
 |---------------------|--------|---------|--------------------------------------------------|
 | `SyzygyPath`        | string | ""      | Path to tablebase files                          |
 | `SyzygyProbeRoot`   | check  | true    | Enable root probing                              |
+| `SyzygyProbeSearch` | check  | true    | Enable search probing for cutoffs                |
 | `SyzygyProbeDepth`  | spin   | 1       | Min depth to probe in search (0-10)              |
 | `SyzygyProbeLimit`  | spin   | 6       | Max pieces for probing (3-7)                     |
 | `Syzygy50MoveRule`  | spin   | 80      | HalfMoveClock threshold for DTZ (0-100, 100=off) |
@@ -1173,8 +1177,11 @@ Download from: http://tablebase.sesse.net/ or torrent
 - `test/tablebase/TablebaseDownloaderTest.cpp` - Unit tests for downloader
 - Configuration added to `SearchConfigData`:
   - `TB_PATH` - Path to tablebase files (UCI: `SyzygyPath`)
+  - `USE_TB_PROBE_ROOT` - Enable root probing (UCI: `SyzygyProbeRoot`)
+  - `USE_TB_PROBE_SEARCH` - Enable search probing (UCI: `SyzygyProbeSearch`)
   - `TB_PROBE_DEPTH` - Minimum depth for search probing (UCI: `SyzygyProbeDepth`)
-  - `TB_PROBE_ROOT` - Enable root probing (UCI: `SyzygyProbeRoot`)
+  - `TB_PROBE_LIMIT` - Maximum pieces for search probing (UCI: `SyzygyProbeLimit`)
+  - `TB_RULE50_THRESHOLD` - 50-move rule handling threshold (UCI: `Syzygy50MoveRule`)
 - `config/search.yaml` - Default configuration with `TB_PATH: "D:/SYZYGY"`
 - Updated `TablebaseTest.cpp` to use `findTablebasePath()` for auto-detection
 

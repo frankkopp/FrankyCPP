@@ -319,8 +319,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
   // Probe tablebase at root position
   // If TB_ROOT_IMMEDIATE=true and we get a hit, return TB move without searching
   // If TB_ROOT_IMMEDIATE=false, we store TB info and use it to guide the search
-  if (SearchConfig.USE_TB
-      && SearchConfig.TB_PROBE_ROOT
+  if (SearchConfig.USE_TB_PROBE_ROOT
       && syzygy_tb
       && syzygy_tb->isAvailable()) {
 
@@ -926,7 +925,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // early cutoffs for winning/losing positions or exact draws.
   // Only probe at sufficient depth to avoid overhead in shallow searches.
   // On PV nodes, only use TB to tighten bounds - don't cut off (need complete PV line).
-  if (SearchConfig.USE_TB
+  if (SearchConfig.USE_TB_PROBE_SEARCH
       && syzygy_tb
       && syzygy_tb->isAvailable()
       && depth >= SearchConfig.TB_PROBE_DEPTH

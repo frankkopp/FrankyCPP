@@ -42,13 +42,19 @@ TT_SIZE_MB: 64
 USE_QS_TT: true
 
 # Syzygy Tablebase settings
-# Master switch to enable/disable all tablebase probing
-USE_TB: true
 # Path to Syzygy tablebase files (semicolon-separated on Windows, colon on Linux)
 # Leave empty to disable tablebase probing
 TB_PATH: "D:/SYZYGY"
+
+# Root probing (once per search, for best move selection)
 # Probe tablebases at root for best move selection
 TB_PROBE_ROOT: true
+# Return TB move immediately without searching (false = search for PV)
+TB_ROOT_IMMEDIATE: false
+
+# Search probing (during tree search, for cutoffs)
+# Probe tablebases during search for cutoffs
+TB_PROBE_SEARCH: true
 # Minimum remaining depth to probe WDL during search (0 = always probe)
 TB_PROBE_DEPTH: 1
 # Maximum pieces for search TB probing (3-7, typically matches available TBs)

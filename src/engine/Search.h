@@ -60,7 +60,7 @@
 //   - Filters root moves to only TB-optimal moves (maintains WDL)
 //   - Uses DTZ-based scoring (shorter wins score higher)
 //   - Returns TB move unless search finds proven shorter mate
-//   - Configurable via TB_PROBE_ROOT and TB_ROOT_IMMEDIATE
+//   - Configurable via USE_TB_PROBE_ROOT and TB_ROOT_IMMEDIATE
 //
 // Threading:
 //   - Search runs in dedicated thread (searchThread)
@@ -311,7 +311,7 @@ private:
   void initTablebase();
 
   /// Probes tablebase at root position before iterative deepening.
-  /// If successful and TB_PROBE_ROOT is enabled, populates the search result.
+  /// If successful and USE_TB_PROBE_ROOT is enabled, populates the search result.
   /// @param pos     Position to probe
   /// @param result  Search result to populate on successful probe
   /// @return true if TB hit occurred and result was populated

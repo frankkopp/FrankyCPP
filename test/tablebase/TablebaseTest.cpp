@@ -1221,7 +1221,7 @@ TEST_F(SearchTablebaseTest, RootProbeReturnsTablebaseMove) {
   const std::string tbPath = findTablebasePath();
   CONFIG_OVERRIDE(
     s.TB_PATH            = tbPath;
-    s.TB_PROBE_ROOT      = true;
+    s.USE_TB_PROBE_ROOT      = true;
     s.TB_ROOT_IMMEDIATE  = true;  // Return TB move immediately
     s.USE_BOOK           = false;  // Disable book to ensure TB is used
   );
@@ -1253,7 +1253,7 @@ TEST_F(SearchTablebaseTest, RootProbeReturnsTablebaseMove) {
   }
 }
 
-// Test that TB probing is disabled when TB_PROBE_ROOT=false
+// Test that TB probing is disabled when USE_TB_PROBE_ROOT=false
 TEST_F(SearchTablebaseTest, RootProbeDisabledWhenConfigured) {
   skipIfNoTablebases();
 
@@ -1261,7 +1261,7 @@ TEST_F(SearchTablebaseTest, RootProbeDisabledWhenConfigured) {
   const std::string tbPath = findTablebasePath();
   CONFIG_OVERRIDE(
     s.TB_PATH       = tbPath;
-    s.TB_PROBE_ROOT = false;  // Disable root probing
+    s.USE_TB_PROBE_ROOT = false;  // Disable root probing
     s.USE_BOOK      = false;
   );
 
@@ -1280,7 +1280,7 @@ TEST_F(SearchTablebaseTest, RootProbeDisabledWhenConfigured) {
   const SearchResult& result = search.getLastSearchResult();
 
   // TB should NOT be used when disabled
-  EXPECT_FALSE(result.tbHit) << "TB should not be used when TB_PROBE_ROOT=false";
+  EXPECT_FALSE(result.tbHit) << "TB should not be used when USE_TB_PROBE_ROOT=false";
   EXPECT_NE(MOVE_NONE, result.bestMove) << "Search should still find a move";
 }
 
@@ -1292,7 +1292,7 @@ TEST_F(SearchTablebaseTest, RootProbeSkippedForLargePositions) {
   const std::string tbPath = findTablebasePath();
   CONFIG_OVERRIDE(
     s.TB_PATH       = tbPath;
-    s.TB_PROBE_ROOT = true;
+    s.USE_TB_PROBE_ROOT = true;
     s.USE_BOOK      = false;
   );
 
@@ -1323,7 +1323,7 @@ TEST_F(SearchTablebaseTest, RootProbeSkippedWithCastlingRights) {
   const std::string tbPath = findTablebasePath();
   CONFIG_OVERRIDE(
     s.TB_PATH       = tbPath;
-    s.TB_PROBE_ROOT = true;
+    s.USE_TB_PROBE_ROOT = true;
     s.USE_BOOK      = false;
   );
 
@@ -1354,7 +1354,7 @@ TEST_F(SearchTablebaseTest, RootProbeNonImmediateSearchesDespiteTBHit) {
   const std::string tbPath = findTablebasePath();
   CONFIG_OVERRIDE(
     s.TB_PATH            = tbPath;
-    s.TB_PROBE_ROOT      = true;
+    s.USE_TB_PROBE_ROOT      = true;
     s.TB_ROOT_IMMEDIATE  = false;  // Don't return immediately - search for PV
     s.USE_BOOK           = false;
   );
@@ -1408,15 +1408,15 @@ TEST_F(SearchTablebaseTest, DTZBasedScoringPrefersShortWins) {
 // Search Tablebase Probing Tests
 //=============================================================================
 
-// Test USE_TB=false disables all tablebase probing (master switch)
-TEST_F(SearchTablebaseTest, UseTBFalseDisablesAllProbing) {
+// Test USE_TB_PROBE_ROOT=false and USE_TB_PROBE_SEARCH=false disables all tablebase probing
+TEST_F(SearchTablebaseTest, DisableBothProbingDisablesAllTB) {
   skipIfNoTablebases();
 
   const std::string tbPath = findTablebasePath();
   CONFIG_OVERRIDE(
-    s.USE_TB               = false;  // Master switch OFF
     s.TB_PATH              = tbPath;
-    s.TB_PROBE_ROOT        = true;
+    s.USE_TB_PROBE_ROOT        = false;  // Disable root probing
+    s.USE_TB_PROBE_SEARCH      = false;  // Disable search probing
     s.TB_PROBE_DEPTH       = 0;      // Would normally probe everywhere
     s.TB_PROBE_LIMIT       = 6;
     s.USE_BOOK             = false;
@@ -1437,16 +1437,16 @@ TEST_F(SearchTablebaseTest, UseTBFalseDisablesAllProbing) {
   const SearchResult& result = search.getLastSearchResult();
   const SearchStats& stats = search.getSearchStats();
 
-  // With USE_TB=false, should have NO TB activity
-  EXPECT_FALSE(result.tbHit) << "USE_TB=false should disable root TB probing";
-  EXPECT_EQ(0ULL, stats.tbRootHits) << "USE_TB=false should have 0 root hits";
-  EXPECT_EQ(0ULL, stats.tbSearchHits) << "USE_TB=false should have 0 search hits";
-  EXPECT_EQ(0ULL, stats.tbSearchCutoffs) << "USE_TB=false should have 0 cutoffs";
+  // With both probing disabled, should have NO TB activity
+  EXPECT_FALSE(result.tbHit) << "USE_TB_PROBE_ROOT=false should disable root TB probing";
+  EXPECT_EQ(0ULL, stats.tbRootHits) << "USE_TB_PROBE_ROOT=false should have 0 root hits";
+  EXPECT_EQ(0ULL, stats.tbSearchHits) << "USE_TB_PROBE_SEARCH=false should have 0 search hits";
+  EXPECT_EQ(0ULL, stats.tbSearchCutoffs) << "USE_TB_PROBE_SEARCH=false should have 0 cutoffs";
 
   // Should still find a move via normal search
   EXPECT_NE(MOVE_NONE, result.bestMove) << "Should find move via normal search";
 
-  LOG__INFO(Logger::get().TEST_LOG, "USE_TB=false test: rootHits={} searchHits={} cutoffs={}",
+  LOG__INFO(Logger::get().TEST_LOG, "TB probing disabled test: rootHits={} searchHits={} cutoffs={}",
             stats.tbRootHits, stats.tbSearchHits, stats.tbSearchCutoffs);
 }
 
@@ -1458,7 +1458,7 @@ TEST_F(SearchTablebaseTest, Rule50ThresholdDisablesWhenHigh) {
   const std::string tbPath = findTablebasePath();
   CONFIG_OVERRIDE(
     s.TB_PATH              = tbPath;
-    s.TB_PROBE_ROOT        = false;  // Disable root probing to test search probing
+    s.USE_TB_PROBE_ROOT        = false;  // Disable root probing to test search probing
     s.TB_PROBE_DEPTH       = 1;
     s.TB_PROBE_LIMIT       = 6;
     s.TB_RULE50_THRESHOLD  = 100;    // Disable 50-move rule checks
@@ -1497,7 +1497,8 @@ TEST_F(SearchTablebaseTest, SearchProbingProducesCutoffs) {
   const std::string tbPath = findTablebasePath();
   CONFIG_OVERRIDE(
     s.TB_PATH              = tbPath;
-    s.TB_PROBE_ROOT        = false;  // Disable root to test search probing
+    s.USE_TB_PROBE_ROOT        = false;  // Disable root to test search probing
+    s.USE_TB_PROBE_SEARCH      = true;   // Enable search probing
     s.TB_PROBE_DEPTH       = 1;      // Probe at depth >= 1
     s.TB_PROBE_LIMIT       = 6;
     s.TB_RULE50_THRESHOLD  = 80;
@@ -1538,7 +1539,8 @@ TEST_F(SearchTablebaseTest, ProbeDepthControlsProbing) {
   // First search with TB_PROBE_DEPTH = 0 (always probe)
   CONFIG_OVERRIDE(
     s.TB_PATH              = tbPath;
-    s.TB_PROBE_ROOT        = false;
+    s.USE_TB_PROBE_ROOT        = false;
+    s.USE_TB_PROBE_SEARCH      = true;   // Enable search probing
     s.TB_PROBE_DEPTH       = 0;  // Always probe
     s.TB_PROBE_LIMIT       = 6;
     s.USE_BOOK             = false;
@@ -1560,7 +1562,8 @@ TEST_F(SearchTablebaseTest, ProbeDepthControlsProbing) {
   // Second search with TB_PROBE_DEPTH = 5 (only probe at depth >= 5)
   CONFIG_OVERRIDE(
     s.TB_PATH              = tbPath;
-    s.TB_PROBE_ROOT        = false;
+    s.USE_TB_PROBE_ROOT        = false;
+    s.USE_TB_PROBE_SEARCH      = true;   // Enable search probing
     s.TB_PROBE_DEPTH       = 5;  // Only probe at depth >= 5
     s.TB_PROBE_LIMIT       = 6;
     s.USE_BOOK             = false;
@@ -1593,7 +1596,8 @@ TEST_F(SearchTablebaseTest, ProbeLimitControlsPieceCount) {
   // Configure with TB_PROBE_LIMIT = 3 (only probe 3-piece positions)
   CONFIG_OVERRIDE(
     s.TB_PATH              = tbPath;
-    s.TB_PROBE_ROOT        = false;
+    s.USE_TB_PROBE_ROOT        = false;
+    s.USE_TB_PROBE_SEARCH      = true;   // Enable search probing
     s.TB_PROBE_DEPTH       = 1;
     s.TB_PROBE_LIMIT       = 3;   // Very restrictive - only KvK (impossible) or 3-piece
     s.USE_BOOK             = false;
