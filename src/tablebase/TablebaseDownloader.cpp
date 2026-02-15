@@ -371,7 +371,7 @@ std::string TablebaseDownloader::getManualDownloadInstructions() {
 MANUAL SYZYGY TABLEBASE DOWNLOAD INSTRUCTIONS
 ================================================================================
 
-The spdlog::color_mode::automatic download failed. You can download tablebases manually from these sources:
+The automatic download failed. You can download tablebases manually from these sources:
 
 DOWNLOAD SOURCES:
   1. Lichess (recommended):
