@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "tablebase/Tablebase.h"
+#include "chesscore/MoveGenerator.h"
 #include "common/Logging.h"
-#include "types/bitboards.h"// for Bitboards::pawnAttacks
 
 #include <algorithm>// for std::replace
 
@@ -77,17 +77,12 @@ namespace tablebase {
 
       // En passant square handling:
       // Fathom requires ep=0 unless an en passant capture is actually LEGAL for the side to move.
-      // Simply having an EP square set isn't enough - there must be a pawn that can capture.
-      ep                = 0;
-      const Square epSq = pos.getEnPassantSquare();
-      if (epSq != SQ_NONE) [[unlikely]] {
-        const Color stm         = pos.getNextPlayer();
-        const Bitboard stmPawns = pos.getPieceBb(stm, PAWN);
-        // Get squares that can attack the EP square (i.e., pawns that could capture there)
-        // pawnAttacks[enemy_color][epSq] gives squares from which OUR pawns could capture TO epSq
-        if (Bitboards::pawnAttacks[~stm][epSq] & stmPawns) {
-          ep = static_cast<unsigned>(epSq);
-        }
+      // Simply having an EP square set isn't enough - there must be a legal EP capture available.
+      // An EP capture can be pseudo-legal but illegal due to pins (horizontal, vertical, or diagonal).
+      // We use MoveGenerator::hasLegalEpCapture() which properly checks all pin cases.
+      ep = 0;
+      if (MoveGenerator::hasLegalEpCapture(pos)) [[unlikely]] {
+        ep = static_cast<unsigned>(pos.getEnPassantSquare());
       }
 
       // Side to move (Fathom: true = white to move)

@@ -521,6 +521,54 @@ TEST_F(TablebaseIntegrationTest, EnPassantPosition) {
   }
 }
 
+// Test EP positions with pinned pawns - EP square should be ignored when capture is illegal
+TEST_F(TablebaseIntegrationTest, EnPassantPinnedPawn) {
+  skipIfNoTablebases();
+
+  // Horizontal pin: White king a5, black rook h5, white pawn e5, black pawn d5
+  // EP capture exd6 would expose king to rook - illegal
+  // EP square should NOT be passed to Fathom
+  const Position posHorizontalPin("4k3/8/8/K2pP2r/8/8/8/8 w - d6 0 1");
+
+  if (tb.canProbe(posHorizontalPin)) {
+    const TBResult result = tb.probeWDL(posHorizontalPin);
+    // Should not fail - EP is correctly identified as illegal and not passed to Fathom
+    EXPECT_NE(TBResult::Failed, result);
+    LOG__INFO(Logger::get().TEST_LOG, "Horizontal pin EP result: {}", Tablebase::resultToString(result));
+  }
+
+  // Vertical pin: White king c1, black rook c8, white pawn c5, black pawn d5
+  // EP capture cxd6 would expose king to rook - illegal
+  const Position posVerticalPin("2r1k3/8/8/2Pp4/8/8/8/2K5 w - d6 0 1");
+
+  if (tb.canProbe(posVerticalPin)) {
+    const TBResult result = tb.probeWDL(posVerticalPin);
+    EXPECT_NE(TBResult::Failed, result);
+    LOG__INFO(Logger::get().TEST_LOG, "Vertical pin EP result: {}", Tablebase::resultToString(result));
+  }
+
+  // Diagonal pin: White king d3, black bishop h7, white pawn f5, black pawn e5
+  // EP capture fxe6 would expose king to bishop - illegal
+  const Position posDiagonalPin("8/7b/8/4pP2/8/3K4/8/k7 w - e6 0 1");
+
+  if (tb.canProbe(posDiagonalPin)) {
+    const TBResult result = tb.probeWDL(posDiagonalPin);
+    EXPECT_NE(TBResult::Failed, result);
+    LOG__INFO(Logger::get().TEST_LOG, "Diagonal pin EP result: {}", Tablebase::resultToString(result));
+  }
+
+  // Diagonal "pin" but capture is along the ray - legal!
+  // White king h3, black bishop d7, white pawn f5, black pawn e5
+  // EP capture fxe6 stays on the d7-h3 diagonal, so pin is not broken
+  const Position posDiagonalPinAlongRay("8/3b4/8/4pP2/8/7K/8/k7 w - e6 0 1");
+
+  if (tb.canProbe(posDiagonalPinAlongRay)) {
+    const TBResult result = tb.probeWDL(posDiagonalPinAlongRay);
+    EXPECT_NE(TBResult::Failed, result);
+    LOG__INFO(Logger::get().TEST_LOG, "Diagonal along ray EP result: {}", Tablebase::resultToString(result));
+  }
+}
+
 // Test probing from multiple different board positions (stress test)
 TEST_F(TablebaseIntegrationTest, MultipleProbes) {
   skipIfNoTablebases();
