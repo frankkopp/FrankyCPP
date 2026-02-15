@@ -105,38 +105,45 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ./test_syzygy
-          key: syzygy-3-4-v1
+          key: syzygy-3-4-wdl-dtz-v1
 
       - name: Download test tablebases
         if: steps.cache-syzygy-win.outputs.cache-hit != 'true'
         shell: pwsh
         run: |
           # Download minimal 3-4 piece Syzygy tablebases for testing
+          # Both WDL (.rtbw) and DTZ (.rtbz) files are needed for full functionality
           New-Item -ItemType Directory -Force -Path test_syzygy
           
-          # Correct URL structure: 3-4-5-wdl/ folder contains WDL files
-          $baseUrl = "https://tablebase.lichess.ovh/tables/standard/3-4-5-wdl/"
+          $wdlUrl = "https://tablebase.lichess.ovh/tables/standard/3-4-5-wdl/"
+          $dtzUrl = "https://tablebase.lichess.ovh/tables/standard/3-4-5-dtz/"
           $files = @(
-            # 3-piece WDL (5 files)
-            "KBvK.rtbw", "KNvK.rtbw", "KPvK.rtbw", "KQvK.rtbw", "KRvK.rtbw",
-            # 4-piece WDL - all 30 files (K+2 vs K: 15 files, K+1 vs K+1: 15 files)
-            "KBBvK.rtbw", "KBNvK.rtbw", "KBPvK.rtbw", "KBvKB.rtbw", "KBvKN.rtbw", "KBvKP.rtbw",
-            "KNNvK.rtbw", "KNPvK.rtbw", "KNvKN.rtbw", "KNvKP.rtbw",
-            "KPPvK.rtbw", "KPvKP.rtbw",
-            "KQBvK.rtbw", "KQNvK.rtbw", "KQPvK.rtbw", "KQQvK.rtbw", "KQRvK.rtbw",
-            "KQvKB.rtbw", "KQvKN.rtbw", "KQvKP.rtbw", "KQvKQ.rtbw", "KQvKR.rtbw",
-            "KRBvK.rtbw", "KRNvK.rtbw", "KRPvK.rtbw", "KRRvK.rtbw",
-            "KRvKB.rtbw", "KRvKN.rtbw", "KRvKP.rtbw", "KRvKR.rtbw"
+            # 3-piece (5 files)
+            "KBvK", "KNvK", "KPvK", "KQvK", "KRvK",
+            # 4-piece - all 30 files (K+2 vs K: 15 files, K+1 vs K+1: 15 files)
+            "KBBvK", "KBNvK", "KBPvK", "KBvKB", "KBvKN", "KBvKP",
+            "KNNvK", "KNPvK", "KNvKN", "KNvKP",
+            "KPPvK", "KPvKP",
+            "KQBvK", "KQNvK", "KQPvK", "KQQvK", "KQRvK",
+            "KQvKB", "KQvKN", "KQvKP", "KQvKQ", "KQvKR",
+            "KRBvK", "KRNvK", "KRPvK", "KRRvK",
+            "KRvKB", "KRvKN", "KRvKP", "KRvKR"
           )
           
           foreach ($file in $files) {
-            $url = "$baseUrl$file"
-            $dest = "test_syzygy/$file"
-            Write-Host "Downloading $file..."
+            # Download WDL file
+            Write-Host "Downloading ${file}.rtbw..."
             try {
-              Invoke-WebRequest -Uri $url -OutFile $dest -TimeoutSec 60
+              Invoke-WebRequest -Uri "${wdlUrl}${file}.rtbw" -OutFile "test_syzygy/${file}.rtbw" -TimeoutSec 60
             } catch {
-              Write-Host "Warning: Failed to download $file - $_"
+              Write-Host "Warning: Failed to download ${file}.rtbw - $_"
+            }
+            # Download DTZ file
+            Write-Host "Downloading ${file}.rtbz..."
+            try {
+              Invoke-WebRequest -Uri "${dtzUrl}${file}.rtbz" -OutFile "test_syzygy/${file}.rtbz" -TimeoutSec 60
+            } catch {
+              Write-Host "Warning: Failed to download ${file}.rtbz - $_"
             }
           }
           
@@ -276,32 +283,37 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ./test_syzygy
-          key: syzygy-3-4-v1
+          key: syzygy-3-4-wdl-dtz-v1
 
       - name: Download test tablebases
         if: steps.cache-syzygy-linux.outputs.cache-hit != 'true'
         run: |
           # Download minimal 3-4 piece Syzygy tablebases for testing
+          # Both WDL (.rtbw) and DTZ (.rtbz) files are needed for full functionality
           mkdir -p test_syzygy
           
-          # Correct URL structure: 3-4-5-wdl/ folder contains WDL files
-          BASE_URL="https://tablebase.lichess.ovh/tables/standard/3-4-5-wdl/"
+          WDL_URL="https://tablebase.lichess.ovh/tables/standard/3-4-5-wdl/"
+          DTZ_URL="https://tablebase.lichess.ovh/tables/standard/3-4-5-dtz/"
           FILES=(
-            # 3-piece WDL (5 files)
-            "KBvK.rtbw" "KNvK.rtbw" "KPvK.rtbw" "KQvK.rtbw" "KRvK.rtbw"
-            # 4-piece WDL - all 30 files (K+2 vs K: 15 files, K+1 vs K+1: 15 files)
-            "KBBvK.rtbw" "KBNvK.rtbw" "KBPvK.rtbw" "KBvKB.rtbw" "KBvKN.rtbw" "KBvKP.rtbw"
-            "KNNvK.rtbw" "KNPvK.rtbw" "KNvKN.rtbw" "KNvKP.rtbw"
-            "KPPvK.rtbw" "KPvKP.rtbw"
-            "KQBvK.rtbw" "KQNvK.rtbw" "KQPvK.rtbw" "KQQvK.rtbw" "KQRvK.rtbw"
-            "KQvKB.rtbw" "KQvKN.rtbw" "KQvKP.rtbw" "KQvKQ.rtbw" "KQvKR.rtbw"
-            "KRBvK.rtbw" "KRNvK.rtbw" "KRPvK.rtbw" "KRRvK.rtbw"
-            "KRvKB.rtbw" "KRvKN.rtbw" "KRvKP.rtbw" "KRvKR.rtbw"
+            # 3-piece (5 files)
+            "KBvK" "KNvK" "KPvK" "KQvK" "KRvK"
+            # 4-piece - all 30 files (K+2 vs K: 15 files, K+1 vs K+1: 15 files)
+            "KBBvK" "KBNvK" "KBPvK" "KBvKB" "KBvKN" "KBvKP"
+            "KNNvK" "KNPvK" "KNvKN" "KNvKP"
+            "KPPvK" "KPvKP"
+            "KQBvK" "KQNvK" "KQPvK" "KQQvK" "KQRvK"
+            "KQvKB" "KQvKN" "KQvKP" "KQvKQ" "KQvKR"
+            "KRBvK" "KRNvK" "KRPvK" "KRRvK"
+            "KRvKB" "KRvKN" "KRvKP" "KRvKR"
           )
           
           for file in "${FILES[@]}"; do
-            echo "Downloading $file..."
-            curl -fsSL -o "test_syzygy/$file" "${BASE_URL}${file}" || echo "Warning: Failed to download $file"
+            # Download WDL file
+            echo "Downloading ${file}.rtbw..."
+            curl -fsSL -o "test_syzygy/${file}.rtbw" "${WDL_URL}${file}.rtbw" || echo "Warning: Failed to download ${file}.rtbw"
+            # Download DTZ file
+            echo "Downloading ${file}.rtbz..."
+            curl -fsSL -o "test_syzygy/${file}.rtbz" "${DTZ_URL}${file}.rtbz" || echo "Warning: Failed to download ${file}.rtbz"
           done
           
           echo "Downloaded tablebase files:"
