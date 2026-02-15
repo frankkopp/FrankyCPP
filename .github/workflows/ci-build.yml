@@ -114,11 +114,12 @@ jobs:
           # Download minimal 3-4 piece Syzygy tablebases for testing
           New-Item -ItemType Directory -Force -Path test_syzygy
           
-          $baseUrl = "https://tablebase.lichess.ovh/tables/standard/3-4-5/"
+          # Correct URL structure: 3-4-5-wdl/ folder contains WDL files
+          $baseUrl = "https://tablebase.lichess.ovh/tables/standard/3-4-5-wdl/"
           $files = @(
             # 3-piece WDL (5 files)
             "KBvK.rtbw", "KNvK.rtbw", "KPvK.rtbw", "KQvK.rtbw", "KRvK.rtbw",
-            # 4-piece WDL - all 35 files
+            # 4-piece WDL - all 30 files (K+2 vs K: 15 files, K+1 vs K+1: 15 files)
             "KBBvK.rtbw", "KBNvK.rtbw", "KBPvK.rtbw", "KBvKB.rtbw", "KBvKN.rtbw", "KBvKP.rtbw",
             "KNNvK.rtbw", "KNPvK.rtbw", "KNvKN.rtbw", "KNvKP.rtbw",
             "KPPvK.rtbw", "KPvKP.rtbw",
@@ -283,7 +284,8 @@ jobs:
           # Download minimal 3-4 piece Syzygy tablebases for testing
           mkdir -p test_syzygy
           
-          BASE_URL="https://tablebase.lichess.ovh/tables/standard/3-4-5/"
+          # Correct URL structure: 3-4-5-wdl/ folder contains WDL files
+          BASE_URL="https://tablebase.lichess.ovh/tables/standard/3-4-5-wdl/"
           FILES=(
             # 3-piece WDL (5 files)
             "KBvK.rtbw" "KNvK.rtbw" "KPvK.rtbw" "KQvK.rtbw" "KRvK.rtbw"
@@ -299,7 +301,7 @@ jobs:
           
           for file in "${FILES[@]}"; do
             echo "Downloading $file..."
-            curl -sS -o "test_syzygy/$file" "${BASE_URL}${file}" || echo "Warning: Failed to download $file"
+            curl -fsSL -o "test_syzygy/$file" "${BASE_URL}${file}" || echo "Warning: Failed to download $file"
           done
           
           echo "Downloaded tablebase files:"
