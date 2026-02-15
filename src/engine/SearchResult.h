@@ -70,6 +70,9 @@ struct SearchResult {
   /// True if bestMove came from the opening book (not searched).
   bool bookMove = false;
 
+  /// True if bestMove came from tablebase probe at root.
+  bool tbHit = false;
+
   /// True if a forced mate was found.
   bool mateFound = false;
 
@@ -82,7 +85,8 @@ struct SearchResult {
   /// Returns a string representation for debugging/logging.
   /// @return  Debug string with best move, score, ponder, and depth
   std::string str() const {
-    return "Best Move: " + bestMove.str() + " (" + (bookMove ? "book move" : bestMoveValue.str())
+    const std::string source = bookMove ? "book move" : (tbHit ? "TB hit" : bestMoveValue.str());
+    return "Best Move: " + bestMove.str() + " (" + source
            + ") " + "Ponder Move: " + ponderMove.str() + " Depth: " + std::to_string(depth)
            + "/" + std::to_string(extraDepth);
   }

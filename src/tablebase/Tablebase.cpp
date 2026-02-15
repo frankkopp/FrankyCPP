@@ -350,6 +350,47 @@ namespace tablebase {
     return result;
   }
 
+  Value Tablebase::tbResultToScore(const TBResult result, const int dtz) {
+    // Convert TB result and DTZ to centipawn score.
+    // DTZ is used to prefer shorter wins (smaller DTZ = higher score).
+    // Score range: TB_WIN_SCORE (9000) down to TB_WIN_SCORE - 200 for very long wins.
+    // This keeps TB scores clearly above normal evaluation but distinguishes DTZ.
+    //
+    // DTZ values typically range from 1 to ~120 (max in Syzygy 6-piece).
+    // We scale DTZ to a reasonable range to affect scoring meaningfully.
+
+    switch (result) {
+      case TBResult::Win: {
+        // Clamp DTZ to reasonable range and scale
+        const int clampedDtz = std::clamp(dtz, 1, 200);
+        // Subtract DTZ directly - shorter wins score higher
+        return TB_WIN_SCORE - Value{clampedDtz};
+      }
+      case TBResult::CursedWin: {
+        // Cursed win = would be win but 50-move rule may draw
+        // Score below normal win, still use DTZ
+        const int clampedDtz = std::clamp(dtz, 1, 200);
+        return TB_WIN_SCORE - Value{300} - Value{clampedDtz};
+      }
+      case TBResult::Draw:
+        return VALUE_DRAW;
+      case TBResult::BlessedLoss: {
+        // Blessed loss = would be lost but 50-move rule may draw
+        // Score above normal loss, use DTZ (higher DTZ = closer to draw)
+        const int clampedDtz = std::clamp(dtz, 1, 200);
+        return TB_LOSS_SCORE + Value{300} + Value{clampedDtz};
+      }
+      case TBResult::Loss: {
+        // Loss - higher DTZ means opponent needs more moves, slightly better for us
+        const int clampedDtz = std::clamp(dtz, 1, 200);
+        return TB_LOSS_SCORE + Value{clampedDtz};
+      }
+      case TBResult::Failed:
+      default:
+        return VALUE_NONE;
+    }
+  }
+
   Value Tablebase::tbValueToScore(const TBResult result, const Depth ply) {
     // Convert TB result to centipawn score
     // We subtract ply to prefer shorter wins (like mate scoring)

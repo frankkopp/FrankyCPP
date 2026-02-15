@@ -195,6 +195,11 @@ struct SearchStats {
   /// Null-move verification re-searches that prevented a cutoff.
   uint64_t nullMoveVerifications = 0;
 
+  // === Tablebase Statistics ===
+
+  /// Successful tablebase probes at root position.
+  uint64_t tbRootHits = 0;
+
   /// Returns a string representation of all statistics.
   /// @return  Formatted statistics string
   [[nodiscard]] std::string str() const {
@@ -248,6 +253,7 @@ struct SearchStats {
        << " evalFromTT: " << stats.evalFromTT
        << " TtMoveUsed: " << stats.TtMoveUsed
        << " NoTtMove: " << stats.NoTtMove
+       << " tbRootHits: " << stats.tbRootHits
        << " IID Searches: " << stats.iidSearches
        << " IID Moves: " << stats.iidMoves;
     return os;

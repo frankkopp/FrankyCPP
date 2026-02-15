@@ -43,7 +43,7 @@ ConfigRegistry::ConfigRegistry() {
 #ifdef _MSC_VER
 // Windows MSVC builds
 #ifdef _DEBUG
-  static_assert(sizeof(SearchConfigData) == 472,
+  static_assert(sizeof(SearchConfigData) == 480,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 256,
@@ -303,6 +303,18 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .exposure = {.uci = true, .yaml = true, .display = true},
     .getter = searchGetter(&SearchConfigData::TB_PROBE_ROOT),
     .setter = searchSetter(&SearchConfigData::TB_PROBE_ROOT, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "TB_ROOT_IMMEDIATE",
+    .uciName = "SyzygyRootImmediate",
+    .description = "Return TB move immediately without searching (false = search for better PV/DTM)",
+    .valueType = Bool,
+    .domain = General,
+    .defaultValue = "false",
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::TB_ROOT_IMMEDIATE),
+    .setter = searchSetter(&SearchConfigData::TB_ROOT_IMMEDIATE, parseBool)
   });
 
   definitions_.push_back({

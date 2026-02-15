@@ -53,6 +53,14 @@
 //   - Evaluator for leaf node evaluation
 //   - OpeningBook for book moves
 //   - History for move ordering heuristics
+//   - Syzygy tablebases for endgame positions
+//
+// Tablebase Integration (Root Probing):
+//   - Probes Syzygy tablebases at root before search
+//   - Filters root moves to only TB-optimal moves (maintains WDL)
+//   - Uses DTZ-based scoring (shorter wins score higher)
+//   - Returns TB move unless search finds proven shorter mate
+//   - Configurable via TB_PROBE_ROOT and TB_ROOT_IMMEDIATE
 //
 // Threading:
 //   - Search runs in dedicated thread (searchThread)
@@ -79,8 +87,8 @@
 //
 //=============================================================================
 
-#include "PlyInfo.h"
 #include "PVTable.h"
+#include "PlyInfo.h"
 #include "SearchLimits.h"
 #include "SearchResult.h"
 #include "SearchStats.h"
@@ -89,6 +97,7 @@
 #include "chesscore/Position.h"
 #include "engine/UciHandler.h"
 #include "openingbook/OpeningBook.h"
+#include "tablebase/Tablebase.h"
 #include "types/types.h"
 
 #include "common/gtest_friends.h"
@@ -105,11 +114,11 @@ class Evaluator;
 /// Tracks best-move stability across iterations for time management.
 /// Used to detect when the search is confident (stable) or uncertain (unstable).
 struct BestMoveStability {
-  Move lastBestMove{MOVE_NONE};  // best move from previous iteration
-  int stabilityCount{0};         // consecutive iterations with same best move
-  int changeCount{0};            // number of times best move changed during search
-  bool appliedStableFactor{false};  // guard: only apply stable time factor once
-  bool appliedExtendFactor{false};  // guard: only apply extend time factor once
+  Move lastBestMove{MOVE_NONE};   // best move from previous iteration
+  int stabilityCount{0};          // consecutive iterations with same best move
+  int changeCount{0};             // number of times best move changed during search
+  bool appliedStableFactor{false};// guard: only apply stable time factor once
+  bool appliedExtendFactor{false};// guard: only apply extend time factor once
 
   void reset() {
     lastBestMove        = MOVE_NONE;
@@ -133,6 +142,13 @@ class Search {
   std::unique_ptr<OpeningBook> book;
   std::unique_ptr<TT> tt;
   std::unique_ptr<Evaluator> evaluator;
+  std::unique_ptr<tablebase::Tablebase> syzygy_tb;// Syzygy tablebase instance
+
+  // TB root probe result (when TB_ROOT_IMMEDIATE=false, used to guide search)
+  Move tbRootMove{MOVE_NONE};                                // Best move from TB at root
+  Value tbRootValue{VALUE_NONE};                             // TB score at root (DTZ-adjusted)
+  tablebase::TBResult tbRootWdl{tablebase::TBResult::Failed};// WDL result for filtering
+  int tbRootDtz{0};                                          // DTZ value for scoring
 
   // history heuristics
   History history{};
@@ -289,6 +305,23 @@ private:
   /// Initializes opening book, transposition table, and other setup tasks.
   /// Idempotent: multiple calls have no additional effect.
   void initialize();
+
+  /// Initializes Syzygy tablebases from configured path.
+  /// Called during initialize(). Safe to call multiple times.
+  void initTablebase();
+
+  /// Probes tablebase at root position before iterative deepening.
+  /// If successful and TB_PROBE_ROOT is enabled, populates the search result.
+  /// @param pos     Position to probe
+  /// @param result  Search result to populate on successful probe
+  /// @return true if TB hit occurred and result was populated
+  bool probeTablebaseAtRoot(const Position& pos, SearchResult& result);
+
+  /// Filters root moves to only those that maintain the TB result.
+  /// Called when TB_ROOT_IMMEDIATE=false to ensure optimal play while searching.
+  /// Removes moves that would worsen WDL (e.g., Win -> Draw or Draw -> Loss).
+  /// @param pos  Current position (used to probe child positions)
+  void filterRootMovesByTB(Position& pos);
 
   /// Called after starting search thread. Configures search, calls iterativeDeepening,
   /// and sends result to UCI.

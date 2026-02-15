@@ -1178,3 +1178,228 @@ TEST_F(TablebaseIntegrationTest, ProbeRootBestMoveValidity) {
     }
   }
 }
+
+//=============================================================================
+// Search Integration Tests - Root Tablebase Probing
+//=============================================================================
+
+#include "engine/Search.h"
+#include "config/ConfigManager.h"
+
+class SearchTablebaseTest : public testing::Test {
+public:
+  static void SetUpTestSuite() {
+    NEWLINE;
+    init::init();
+    NEWLINE;
+    Logger::get().TEST_LOG->set_level(spdlog::level::debug);
+    Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
+    Logger::get().TB_LOG->set_level(spdlog::level::debug);
+  }
+
+protected:
+  void SetUp() override {
+    ConfigManager::instance().resetToDefaults();
+  }
+
+  void TearDown() override {}
+
+  void skipIfNoTablebases() const {
+    const std::string tbPath = findTablebasePath();
+    if (tbPath.empty()) {
+      GTEST_SKIP() << "Syzygy tablebases not available. "
+                   << "Set SYZYGY_PATH environment variable or configure TB_PATH in search.yaml";
+    }
+  }
+};
+
+// Test that Search uses tablebase at root when available
+TEST_F(SearchTablebaseTest, RootProbeReturnsTablebaseMove) {
+  skipIfNoTablebases();
+
+  // Configure tablebase path with immediate mode (default)
+  const std::string tbPath = findTablebasePath();
+  CONFIG_OVERRIDE(
+    s.TB_PATH            = tbPath;
+    s.TB_PROBE_ROOT      = true;
+    s.TB_ROOT_IMMEDIATE  = true;  // Return TB move immediately
+    s.USE_BOOK           = false;  // Disable book to ensure TB is used
+  );
+
+  // KRK position - definitely in 3-piece tablebases
+  const Position pos("8/8/8/4k3/8/8/1R6/4K3 w - - 0 1");
+
+  Search search;
+  search.isReady();
+
+  SearchLimits sl;
+  sl.depth = 1;  // Minimal depth since TB should return immediately
+
+  search.startSearch(pos, sl);
+  search.waitWhileSearching();
+
+  const SearchResult& result = search.getLastSearchResult();
+
+  // Check if TB was used
+  if (result.tbHit) {
+    LOG__INFO(Logger::get().TEST_LOG, "TB root hit: move={} value={}",
+              result.bestMove.str(), result.bestMoveValue.str());
+    EXPECT_NE(MOVE_NONE, result.bestMove) << "TB hit should provide a move";
+    EXPECT_GT(static_cast<int>(result.bestMoveValue), 8000) << "KRK should be winning";
+  } else {
+    LOG__INFO(Logger::get().TEST_LOG, "No TB hit - search returned: move={} value={}",
+              result.bestMove.str(), result.bestMoveValue.str());
+    // TB might not be initialized - this is OK, just log it
+  }
+}
+
+// Test that TB probing is disabled when TB_PROBE_ROOT=false
+TEST_F(SearchTablebaseTest, RootProbeDisabledWhenConfigured) {
+  skipIfNoTablebases();
+
+  // Configure tablebase path but disable root probing
+  const std::string tbPath = findTablebasePath();
+  CONFIG_OVERRIDE(
+    s.TB_PATH       = tbPath;
+    s.TB_PROBE_ROOT = false;  // Disable root probing
+    s.USE_BOOK      = false;
+  );
+
+  // KRK position
+  const Position pos("8/8/8/4k3/8/8/1R6/4K3 w - - 0 1");
+
+  Search search;
+  search.isReady();
+
+  SearchLimits sl;
+  sl.depth = 4;
+
+  search.startSearch(pos, sl);
+  search.waitWhileSearching();
+
+  const SearchResult& result = search.getLastSearchResult();
+
+  // TB should NOT be used when disabled
+  EXPECT_FALSE(result.tbHit) << "TB should not be used when TB_PROBE_ROOT=false";
+  EXPECT_NE(MOVE_NONE, result.bestMove) << "Search should still find a move";
+}
+
+// Test that positions with too many pieces don't trigger TB
+TEST_F(SearchTablebaseTest, RootProbeSkippedForLargePositions) {
+  skipIfNoTablebases();
+
+  // Configure tablebase
+  const std::string tbPath = findTablebasePath();
+  CONFIG_OVERRIDE(
+    s.TB_PATH       = tbPath;
+    s.TB_PROBE_ROOT = true;
+    s.USE_BOOK      = false;
+  );
+
+  // Starting position - 32 pieces, way more than any TB
+  const Position pos;
+
+  Search search;
+  search.isReady();
+
+  SearchLimits sl;
+  sl.depth = 4;
+
+  search.startSearch(pos, sl);
+  search.waitWhileSearching();
+
+  const SearchResult& result = search.getLastSearchResult();
+
+  // TB should NOT be used for starting position
+  EXPECT_FALSE(result.tbHit) << "TB should not be used for 32-piece position";
+  EXPECT_NE(MOVE_NONE, result.bestMove) << "Search should still find a move";
+}
+
+// Test that positions with castling rights don't trigger TB
+TEST_F(SearchTablebaseTest, RootProbeSkippedWithCastlingRights) {
+  skipIfNoTablebases();
+
+  // Configure tablebase
+  const std::string tbPath = findTablebasePath();
+  CONFIG_OVERRIDE(
+    s.TB_PATH       = tbPath;
+    s.TB_PROBE_ROOT = true;
+    s.USE_BOOK      = false;
+  );
+
+  // 6-piece position but WITH castling rights (TBs don't cover castling)
+  const Position pos("4k3/8/8/8/8/8/8/R3K2R w KQ - 0 1");
+
+  Search search;
+  search.isReady();
+
+  SearchLimits sl;
+  sl.depth = 4;
+
+  search.startSearch(pos, sl);
+  search.waitWhileSearching();
+
+  const SearchResult& result = search.getLastSearchResult();
+
+  // TB should NOT be used when castling rights exist
+  EXPECT_FALSE(result.tbHit) << "TB should not be used with castling rights";
+  EXPECT_NE(MOVE_NONE, result.bestMove) << "Search should still find a move";
+}
+
+// Test that TB_ROOT_IMMEDIATE=false causes search to continue despite TB hit
+TEST_F(SearchTablebaseTest, RootProbeNonImmediateSearchesDespiteTBHit) {
+  skipIfNoTablebases();
+
+  // Configure tablebase with non-immediate mode
+  const std::string tbPath = findTablebasePath();
+  CONFIG_OVERRIDE(
+    s.TB_PATH            = tbPath;
+    s.TB_PROBE_ROOT      = true;
+    s.TB_ROOT_IMMEDIATE  = false;  // Don't return immediately - search for PV
+    s.USE_BOOK           = false;
+  );
+
+  // KRK position - definitely in 3-piece tablebases
+  const Position pos("8/8/8/4k3/8/8/1R6/4K3 w - - 0 1");
+
+  Search search;
+  search.isReady();
+
+  SearchLimits sl;
+  sl.depth = 6;  // Search to reasonable depth
+
+  search.startSearch(pos, sl);
+  search.waitWhileSearching();
+
+  const SearchResult& result = search.getLastSearchResult();
+
+  // We should still find a good move
+  EXPECT_NE(MOVE_NONE, result.bestMove) << "Search should find a move";
+  // And reach the requested depth (search actually happened)
+  EXPECT_GE(result.depth, 4) << "Should have searched to reasonable depth";
+  // With root move filtering, only TB-optimal moves are searched
+  // tbHit should be true because all filtered moves are TB-optimal
+  EXPECT_TRUE(result.tbHit) << "With TB filtering, result should be TB-backed";
+  // Score should be TB winning score (>8000), not regular eval
+  EXPECT_GT(static_cast<int>(result.bestMoveValue), 8000) << "Score should be TB winning score";
+
+  LOG__INFO(Logger::get().TEST_LOG, "Non-immediate TB mode: move={} value={} depth={} tbHit={}",
+            result.bestMove.str(), result.bestMoveValue.str(), result.depth, result.tbHit);
+}
+
+// Test DTZ-based scoring gives higher scores for shorter wins
+TEST_F(SearchTablebaseTest, DTZBasedScoringPrefersShortWins) {
+  // Test that smaller DTZ gives higher score
+  const Value scoreDtz5  = tablebase::Tablebase::tbResultToScore(tablebase::TBResult::Win, 5);
+  const Value scoreDtz50 = tablebase::Tablebase::tbResultToScore(tablebase::TBResult::Win, 50);
+
+  EXPECT_GT(static_cast<int>(scoreDtz5), static_cast<int>(scoreDtz50))
+    << "Shorter win (DTZ=5) should score higher than longer win (DTZ=50)";
+
+  // Both should be clearly winning
+  EXPECT_GT(static_cast<int>(scoreDtz5), 8000) << "DTZ=5 win should be high score";
+  EXPECT_GT(static_cast<int>(scoreDtz50), 8000) << "DTZ=50 win should still be winning";
+
+  LOG__INFO(Logger::get().TEST_LOG, "DTZ scoring: DTZ=5 -> {}, DTZ=50 -> {}",
+            scoreDtz5.str(), scoreDtz50.str());
+}

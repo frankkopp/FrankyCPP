@@ -310,6 +310,38 @@ SearchResult Search::iterativeDeepening(Position& p) {
     return searchResult;
   }
 
+  // Reset TB root info from previous search
+  tbRootMove  = MOVE_NONE;
+  tbRootValue = VALUE_NONE;
+  tbRootWdl   = tablebase::TBResult::Failed;
+  tbRootDtz   = 0;
+
+  // Probe tablebase at root position
+  // If TB_ROOT_IMMEDIATE=true and we get a hit, return TB move without searching
+  // If TB_ROOT_IMMEDIATE=false, we store TB info and use it to guide the search
+  if (probeTablebaseAtRoot(p, searchResult)) {
+    if (SearchConfig.TB_ROOT_IMMEDIATE) {
+      // Return TB move immediately - skip search entirely
+      return searchResult;
+    }
+    // TB_ROOT_IMMEDIATE=false: Store TB info for use during search
+    // - Root moves will be filtered to only those maintaining TB result
+    // - TB move will be prioritized in root move ordering
+    // - Search produces proper PV while guaranteeing optimal play
+    tbRootMove  = searchResult.bestMove;
+    tbRootValue = searchResult.bestMoveValue;
+    // tbRootWdl and tbRootDtz already set in probeTablebaseAtRoot
+    LOG__INFO(Logger::get().SEARCH_LOG, "TB hit at root (non-immediate): move={} value={}, continuing search for PV",
+              tbRootMove.str(), tbRootValue.str());
+
+    // Filter root moves to only those that maintain the TB result
+    // This ensures we don't play a move that worsens our position
+    filterRootMovesByTB(p);
+
+    // Reset searchResult - we'll populate it from search
+    searchResult = SearchResult{};
+  }
+
   // add some extra time for the move after the last book move
   // hadBookMove move will be true at his point if we ever had
   // a book move.
@@ -344,6 +376,21 @@ SearchResult Search::iterativeDeepening(Position& p) {
 
   // prepare max depth from search limits
   const int maxDepth = searchLimits.depth ? searchLimits.depth : DEPTH_MAX;
+
+  // If we have a TB root move (from non-immediate probe), give it a high sort value
+  // so it's searched first. This ensures the TB move is the PV if it's truly best.
+  if (tbRootMove != MOVE_NONE) {
+    for (Move& move : rootMoves) {
+      if (move == tbRootMove) {
+        // Give TB move a very high sort value to ensure it's searched first
+        move.setValue(tbRootValue);
+        LOG__DEBUG(Logger::get().SEARCH_LOG, "TB move {} prioritized with value {}", move.str(), tbRootValue.str());
+        break;
+      }
+    }
+    // Sort so TB move is first
+    std::ranges::stable_sort(rootMoves, moveValueGreaterComparator());
+  }
 
   // Max window search in preparation for aspiration window
   // is not needed yet
@@ -556,6 +603,50 @@ SearchResult Search::iterativeDeepening(Position& p) {
   searchResult.depth         = statistics.currentIterationDepth;
   searchResult.extraDepth    = statistics.currentExtraSearchDepth;
   searchResult.bookMove      = false;
+
+  // If we had a TB probe at root (non-immediate mode), decide which move to use.
+  // TB move is DTZ-optimal (shortest path to zeroing move / conversion).
+  // Only override TB move if search found a provable shorter mate.
+  if (tbRootWdl != tablebase::TBResult::Failed) {
+    searchResult.tbHit = true;
+
+    // Check if search found a proven mate
+    const Value searchValue = pv.first().value();
+    const bool searchFoundMate = searchValue >= VALUE_CHECKMATE_THRESHOLD;
+
+    // Calculate mate depth if search found mate (in plies/half-moves)
+    // VALUE_CHECKMATE - searchValue gives the mate distance
+    const int searchMateDepth = searchFoundMate
+                                  ? static_cast<int>(VALUE_CHECKMATE) - static_cast<int>(searchValue)
+                                  : INT_MAX;
+
+    // TB DTZ is distance to zeroing (capture/pawn move), NOT necessarily mate.
+    // A proven mate is always preferred over a TB "Win" because:
+    // 1. Mate is concrete and forced
+    // 2. TB DTZ=1 might be a capture leading to a longer mate sequence
+    // Use search result if it found a mate at least as short as TB's DTZ
+    if (searchFoundMate && searchMateDepth <= tbRootDtz) {
+      // Search found a proven mate - keep search's move and score
+      LOG__INFO(Logger::get().SEARCH_LOG,
+                "Search found mate in {} (TB DTZ={}), using search move {}",
+                searchMateDepth, tbRootDtz, searchResult.bestMove.str());
+      // Keep searchResult.bestMove and searchResult.bestMoveValue from search
+      // But still mark as TB-backed since we verified with TB
+    } else {
+      // Use TB move - it's DTZ-optimal (shortest path to conversion)
+      // Search's move might delay the win or risk 50-move rule
+      const Move searchMove = searchResult.bestMove;
+      searchResult.bestMove = tbRootMove;
+      searchResult.bestMoveValue = tbRootValue;
+      if (searchMove == tbRootMove) {
+        LOG__INFO(Logger::get().SEARCH_LOG, "Search confirmed TB-optimal move {}", tbRootMove.str());
+      } else {
+        LOG__INFO(Logger::get().SEARCH_LOG,
+                  "Using TB-optimal move {} (DTZ={}), search suggested {}",
+                  tbRootMove.str(), tbRootDtz, searchMove.str());
+      }
+    }
+  }
 
   // see if we have a move we could ponder on
   if (pv.hasLength(DEPTH_NONE, 2)) { searchResult.ponderMove = pv(DEPTH_NONE, 1).stripped(); }
@@ -1678,6 +1769,165 @@ void Search::initialize() {
   if (!evaluator) {
     // only initialize once
     evaluator = std::make_unique<Evaluator>();
+  }
+
+  // init tablebase
+  initTablebase();
+}
+
+void Search::initTablebase() {
+  // Only initialize once
+  if (syzygy_tb) {
+    return;
+  }
+
+  // Check if tablebase path is configured
+  if (SearchConfig.TB_PATH.empty()) {
+    LOG__INFO(Logger::get().SEARCH_LOG, "Syzygy Tablebase: No path configured, tablebases disabled");
+    return;
+  }
+
+  syzygy_tb = std::make_unique<tablebase::Tablebase>();
+  if (syzygy_tb->initialize(SearchConfig.TB_PATH)) {
+    LOG__INFO(Logger::get().SEARCH_LOG, "Syzygy Tablebase: Initialized with {} pieces from '{}'",
+              syzygy_tb->maxPieces(), SearchConfig.TB_PATH);
+  }
+  else {
+    LOG__WARN(Logger::get().SEARCH_LOG, "Syzygy Tablebase: Failed to initialize from '{}'", SearchConfig.TB_PATH);
+    syzygy_tb.reset();  // Release failed instance
+  }
+}
+
+bool Search::probeTablebaseAtRoot(const Position& pos, SearchResult& result) {
+  // Check if root probing is enabled
+  if (!SearchConfig.TB_PROBE_ROOT) {
+    return false;
+  }
+
+  // Check if tablebase is available
+  if (!syzygy_tb || !syzygy_tb->isAvailable()) {
+    return false;
+  }
+
+  // Check if position can be probed
+  if (!syzygy_tb->canProbe(pos)) {
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "TB Root: Position not probeable (pieces={}, castling={})",
+               pos.getOccupiedBb().popcount(), pos.getCastlingRights() != NO_CASTLING);
+    return false;
+  }
+
+  // Probe the tablebase at root (includes DTZ and best move)
+  const tablebase::TBProbeResult tbResult = syzygy_tb->probeRoot(pos);
+
+  if (!tbResult.success()) {
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "TB Root: Probe failed for position {}", pos.strFen());
+    return false;
+  }
+
+  // Store WDL and DTZ for later use (filtering, scoring)
+  tbRootWdl = tbResult.wdl;
+  tbRootDtz = tbResult.dtz;
+
+  // Log the TB hit
+  const std::string tbResultStr = tablebase::Tablebase::resultToString(tbResult.wdl);
+  LOG__INFO(Logger::get().SEARCH_LOG, "TB Root: {} DTZ={} move={}",
+            tbResultStr, tbResult.dtz, tbResult.bestMove.str());
+
+  // Send info string to UCI
+  sendString(std::format("TB hit: {} DTZ={} move={}", tbResultStr, tbResult.dtz, tbResult.bestMove.str()));
+
+  // Populate the search result with DTZ-based scoring
+  result.bestMove      = tbResult.bestMove;
+  result.bestMoveValue = tablebase::Tablebase::tbResultToScore(tbResult.wdl, tbResult.dtz);
+  result.tbHit         = true;
+
+  // Update statistics
+  statistics.tbRootHits++;
+
+  return true;
+}
+
+void Search::filterRootMovesByTB(Position& pos) {
+  // Filter root moves to only those that maintain the TB result.
+  // For a winning position, keep only moves where opponent is losing.
+  // For a drawn position, keep only moves where opponent is not winning.
+  // For a losing position, keep all moves (we're lost anyway).
+
+  if (tbRootWdl == tablebase::TBResult::Failed) {
+    return;  // No TB result, nothing to filter
+  }
+
+  const size_t originalCount = rootMoves.size();
+
+  // Determine what result we need from opponent's perspective after our move
+  auto shouldKeepMove = [&](const Move& move) -> bool {
+    pos.doMove(move);
+
+    // If child position can't be probed, keep the move (safe default)
+    if (!syzygy_tb->canProbe(pos)) {
+      pos.undoMove();
+      return true;
+    }
+
+    const tablebase::TBResult childWdl = syzygy_tb->probeWDL(pos);
+    pos.undoMove();
+
+    if (childWdl == tablebase::TBResult::Failed) {
+      return true;  // Probe failed, keep the move
+    }
+
+    // After our move, it's opponent's turn. WDL is from opponent's perspective.
+    // If we're winning, opponent should be losing (WDL = Loss or BlessedLoss)
+    // If we're drawing, opponent should be drawing (WDL = Draw)
+    // If we're losing, any move is acceptable
+
+    switch (tbRootWdl) {
+      case tablebase::TBResult::Win:
+      case tablebase::TBResult::CursedWin:
+        // We're winning - opponent must be losing
+        return childWdl == tablebase::TBResult::Loss ||
+               childWdl == tablebase::TBResult::BlessedLoss;
+
+      case tablebase::TBResult::Draw:
+        // We're drawing - opponent must not be winning
+        return childWdl != tablebase::TBResult::Win &&
+               childWdl != tablebase::TBResult::CursedWin;
+
+      case tablebase::TBResult::BlessedLoss: /* fallthrough */
+      case tablebase::TBResult::Loss:
+        // We're losing - keep all moves (try to find the best losing move)
+        return true;
+
+      default:
+        return true;
+    }
+  };
+
+  // Filter in-place by compacting kept moves to the front
+  size_t writeIdx = 0;
+  for (size_t readIdx = 0; readIdx < rootMoves.size(); ++readIdx) {
+    if (shouldKeepMove(rootMoves[readIdx])) {
+      if (writeIdx != readIdx) {
+        rootMoves[writeIdx] = rootMoves[readIdx];
+      }
+      ++writeIdx;
+    }
+  }
+
+  // Truncate the list to the number of kept moves
+  rootMoves.resize(writeIdx);
+
+  const size_t filteredCount = rootMoves.size();
+
+  if (filteredCount < originalCount) {
+    LOG__INFO(Logger::get().SEARCH_LOG, "TB filter: {} -> {} root moves (removed {} suboptimal)",
+              originalCount, filteredCount, originalCount - filteredCount);
+  }
+
+  // Safety check: if all moves were filtered (shouldn't happen), restore TB move
+  if (rootMoves.empty() && tbRootMove != MOVE_NONE) {
+    LOG__WARN(Logger::get().SEARCH_LOG, "TB filter removed all moves! Restoring TB move {}", tbRootMove.str());
+    rootMoves.push_back(tbRootMove);
   }
 }
 

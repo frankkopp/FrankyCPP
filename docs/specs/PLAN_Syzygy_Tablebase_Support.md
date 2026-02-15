@@ -1,8 +1,8 @@
 # Plan: Syzygy Tablebase Support
 
-**Status:** Phase 2 Complete - Ready for Search Integration  
+**Status:** Phase 3 Complete - Root Probing Fully Implemented  
 **Created:** 2026-02-14  
-**Updated:** 2026-02-15 (v1.2 - Phase 2 complete, external review incorporated)  
+**Updated:** 2026-02-15 (v1.4 - Phase 3 complete, ready for Phase 4)  
 **Priority:** HIGH (Phase 5 in V1_ENGINE_ENHANCEMENT_PLAN)  
 **Target Version:** v1.5  
 **Expected Impact:** +35-60 ELO (in tablebase-relevant endgames)
@@ -455,9 +455,35 @@ void skipIfNoTablebases() const {
 
 ---
 
-### Phase 3: Root Tablebase Probing (2-3 days)
+### Phase 3: Root Tablebase Probing (2-3 days) ✅ COMPLETE
 
 Probe tablebases at the root position before starting search.
+
+**Implementation Status (2026-02-15):**
+- ✅ Added `syzygy_tb` member to `Search` class
+- ✅ Added `initTablebase()` method - initializes TB from `TB_PATH` config
+- ✅ Added `probeTablebaseAtRoot()` method - probes TB and returns result
+- ✅ Integrated root probe in `iterativeDeepening()` before search loop
+- ✅ Added `tbHit` field to `SearchResult`
+- ✅ Added `tbRootHits` statistic to `SearchStats`
+- ✅ UCI info string output on TB hit
+- ✅ Added `TB_ROOT_IMMEDIATE` config option (default: **false**)
+  - `true`: Return TB move immediately without searching
+  - `false`: Filter root moves, search for PV, guarantee TB-optimal play
+- ✅ Added `tbRootMove`, `tbRootValue`, `tbRootWdl`, `tbRootDtz` members
+- ✅ **DTZ-based scoring** via `tbResultToScore(wdl, dtz)`:
+  - Shorter wins (smaller DTZ) score higher
+  - Score range: ~8800 (DTZ=200) to ~8999 (DTZ=1) for wins
+- ✅ **Root move filtering** via `filterRootMovesByTB()`:
+  - Winning position: Keep only moves where opponent is losing
+  - Drawing position: Keep only moves where opponent is not winning
+  - Losing position: Keep all moves (best effort)
+  - Probes WDL for each child position to verify
+- ✅ **Smart move selection** after search:
+  - Default: Use TB move (DTZ-optimal, avoids 50-move rule issues)
+  - Override: If search found a **proven mate** at least as short as TB's DTZ
+  - Proven mates always preferred (uses `<=` comparison with DTZ)
+  - Ensures mate scores (e.g., 9999 for mate-in-1) are preserved
 
 #### ⚠️ PERFORMANCE IMPLEMENTATION GUIDELINES
 

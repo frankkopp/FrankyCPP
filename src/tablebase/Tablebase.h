@@ -148,7 +148,14 @@ public:
   /// @return true if position is probeable
   [[nodiscard]] bool canProbe(const Position& pos) const;
 
-  /// Convert TBResult to centipawn value for search scoring.
+  /// Convert TBResult and DTZ to centipawn value for search scoring.
+  /// Uses DTZ to prefer shorter wins (smaller DTZ = higher score).
+  /// @param result  WDL result
+  /// @param dtz     Distance to zeroing move (from probeRoot)
+  /// @return Value in centipawns
+  [[nodiscard]] static Value tbResultToScore(TBResult result, int dtz);
+
+  /// Convert TBResult to centipawn value (legacy, no DTZ).
   /// @param result  WDL result
   /// @param ply     Current ply (for mate-distance-like scoring)
   /// @return Value in centipawns
