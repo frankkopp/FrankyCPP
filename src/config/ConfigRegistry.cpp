@@ -452,6 +452,18 @@ void ConfigRegistry::initializeSearchDefinitions() {
   });
 
   definitions_.push_back({
+    .name = "USE_TB_PROBE_PV",
+    .uciName = "",  // Not exposed via UCI - internal tuning option
+    .description = "Probe tablebases on PV nodes (false = only non-PV nodes for cutoffs)",
+    .valueType = Bool,
+    .domain = General,
+    .defaultValue = "true",
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::USE_TB_PROBE_PV),
+    .setter = searchSetter(&SearchConfigData::USE_TB_PROBE_PV, parseBool)
+  });
+
+  definitions_.push_back({
     .name = "TB_PROBE_DEPTH",
     .uciName = "SyzygyProbeDepth",
     .description = "Minimum remaining depth to probe WDL during search (0 = always)",

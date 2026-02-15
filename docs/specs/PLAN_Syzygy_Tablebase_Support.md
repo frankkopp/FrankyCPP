@@ -1,8 +1,8 @@
 # Plan: Syzygy Tablebase Support
 
-**Status:** Phase 4 Complete - Search Probing Verified  
+**Status:** Phase 4 Complete - Search Probing Verified + Bug Fixes  
 **Created:** 2026-02-14  
-**Updated:** 2026-02-15 (v1.5 - Phase 4 complete, build and tests pass)  
+**Updated:** 2026-02-15 (v1.5 - EP legality fix, rule-50 filtering fix, USE_TB_PROBE_PV option)  
 **Priority:** HIGH (Phase 5 in V1_ENGINE_ENHANCEMENT_PLAN)  
 **Target Version:** v1.5  
 **Expected Impact:** +35-60 ELO (in tablebase-relevant endgames)
@@ -1332,6 +1332,39 @@ Standard TB test positions:
 # KBBK vs K (White wins)
 8/8/8/8/8/8/8/KBB4k w - - 0 1
 ```
+
+---
+
+## Appendix C: Bug Fixes and Improvements (2026-02-15)
+
+### 1. En Passant Legality Fix
+
+**Problem:** Syzygy expects the EP square to be set only when an EP capture is *legal*, not just pseudo-legal. The original implementation only checked if a pawn could attack the EP square, but didn't verify the capture was legal (e.g., not pinned).
+
+**Solution:** Created `MoveGenerator::hasLegalEpCapture()` which checks all pin cases:
+- Horizontal pin (both pawns removed reveal rook/queen attack)
+- Vertical pin (capturing pawn pinned on file by rook/queen)
+- Diagonal pin (capturing pawn pinned by bishop/queen)
+
+Integrated into `convertPositionToFathom()` to properly set EP square for Syzygy probing.
+
+### 2. Rule-50 Mismatch in Root Move Filtering
+
+**Problem:** In `filterRootMovesByTB()`, the root probe uses DTZ (rule50-aware via `probeRoot`), but child probes use `probeWDL` (pure theory, rule50 ignored). Near the 50-move limit, this mismatch can cause incorrect filtering.
+
+**Solution:** Skip filtering when `halfMoveClock >= TB_RULE50_THRESHOLD`. This prevents incorrect filtering when DTZ-aware root probe doesn't match WDL-only child probes.
+
+### 3. New Config Option: USE_TB_PROBE_PV
+
+**Purpose:** Control whether TB probing occurs on PV nodes during search.
+
+**Rationale:** On PV nodes, TB probing only tightens bounds (no cutoffs), so the cost may outweigh the benefit. This option allows testing/tuning the performance impact.
+
+**Config:**
+- `USE_TB_PROBE_PV: true` (default) - Probe TBs on all nodes
+- `USE_TB_PROBE_PV: false` - Skip TB probing on PV nodes (performance optimization)
+
+Exposed via YAML but not UCI (internal tuning option).
 
 ---
 

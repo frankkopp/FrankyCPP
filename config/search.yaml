@@ -55,6 +55,8 @@ TB_ROOT_IMMEDIATE: false
 # Search probing (during tree search, for cutoffs)
 # Probe tablebases during search for cutoffs
 TB_PROBE_SEARCH: true
+# Probe tablebases on PV nodes (false = only non-PV nodes for cutoffs, saves overhead)
+USE_TB_PROBE_PV: true
 # Minimum remaining depth to probe WDL during search (0 = always probe)
 TB_PROBE_DEPTH: 1
 # Maximum pieces for search TB probing (3-7, typically matches available TBs)

@@ -55,6 +55,11 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
     s.USE_QS_TT           = false;
     s.USE_EVAL_TT         = false;
 
+    // Syzygy tablebase probing - disable for tree size measurements
+    s.USE_TB_PROBE_ROOT   = false;
+    s.USE_TB_PROBE_SEARCH = false;
+    s.USE_TB_PROBE_PV     = false;
+
     s.USE_TT_PV_MOVE_SORT = false;
     s.USE_KILLER_MOVES    = false;
     s.USE_HISTORY_COUNTER = false;

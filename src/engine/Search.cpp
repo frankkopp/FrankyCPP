@@ -924,8 +924,10 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // Probe WDL for positions within TB piece limit. This can provide
   // early cutoffs for winning/losing positions or exact draws.
   // Only probe at sufficient depth to avoid overhead in shallow searches.
-  // On PV nodes, only use TB to tighten bounds - don't cut off (need complete PV line).
+  // On PV nodes: only use TB to tighten bounds - don't cut off (need complete PV line).
+  // If USE_TB_PROBE_PV is false, skip probing on PV nodes entirely (performance optimization).
   if (SearchConfig.USE_TB_PROBE_SEARCH
+      && (SearchConfig.USE_TB_PROBE_PV || !isPv)
       && syzygy_tb
       && syzygy_tb->isAvailable()
       && depth >= SearchConfig.TB_PROBE_DEPTH
@@ -1922,6 +1924,18 @@ void Search::filterRootMovesByTB(Position& pos) {
 
   if (tbRootWdl == tablebase::TBResult::Failed) {
     return;// No TB result, nothing to filter
+  }
+
+  // Skip filtering when near the 50-move limit.
+  // Root probe uses DTZ (rule50-aware) but child probes use WDL (pure theory).
+  // Near the 50-move limit, this mismatch can cause incorrect filtering:
+  // - CursedWin/BlessedLoss at root may not match pure WDL in children
+  // - Moves that look suboptimal in pure WDL may be optimal given rule50
+  if (pos.getHalfMoveClock() >= SearchConfig.TB_RULE50_THRESHOLD) {
+    LOG__DEBUG(Logger::get().SEARCH_LOG,
+               "TB filter skipped: halfMoveClock {} >= threshold {}",
+               pos.getHalfMoveClock(), SearchConfig.TB_RULE50_THRESHOLD);
+    return;
   }
 
   const size_t originalCount = rootMoves.size();
