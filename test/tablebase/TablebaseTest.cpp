@@ -246,7 +246,8 @@ protected:
 
   void skipIfNoTablebases() const {
     if (!tb.isAvailable()) {
-      GTEST_SKIP() << "Tablebases not available (set TB_PATH environment variable)";
+      GTEST_SKIP() << "Syzygy tablebases not available. "
+                   << "Set SYZYGY_PATH environment variable or configure TB_PATH in search.yaml";
     }
   }
 };

@@ -108,6 +108,12 @@ std::string getDefaultTablebasePath() {
 }
 
 std::string getEnvironmentPath() {
+  // Check SYZYGY_PATH first (standard name used by Stockfish and other engines)
+  std::string path = getEnv("SYZYGY_PATH");
+  if (!path.empty()) {
+    return path;
+  }
+  // Fall back to TB_PATH for backwards compatibility
   return getEnv("TB_PATH");
 }
 

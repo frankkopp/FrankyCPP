@@ -29,7 +29,7 @@
 //
 // Path Resolution Order (highest to lowest priority):
 //   1. Explicit path parameter (if provided)
-//   2. Environment variable TB_PATH
+//   2. Environment variable SYZYGY_PATH (standard) or TB_PATH (legacy)
 //   3. ConfigManager TB_PATH setting (from search.yaml)
 //   4. Platform-specific default directories
 //
@@ -74,8 +74,9 @@ namespace tablebase {
 /// @return true if at least one valid TB file was found
 [[nodiscard]] bool validateTablebasePath(const std::string& path);
 
-/// Get the TB_PATH environment variable value.
-/// @return Environment variable value, or empty string if not set
+/// Get the SYZYGY_PATH or TB_PATH environment variable value.
+/// Checks SYZYGY_PATH first (standard), then TB_PATH (legacy).
+/// @return Environment variable value, or empty string if neither is set
 [[nodiscard]] std::string getEnvironmentPath();
 
 /// Get the configured TB_PATH from ConfigManager.

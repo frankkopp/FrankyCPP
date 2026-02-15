@@ -100,9 +100,53 @@ jobs:
         shell: pwsh
         run: cmake --build build --config Release -j $env:NUMBER_OF_PROCESSORS
 
+      - name: Cache Syzygy 3-4 piece tablebases
+        id: cache-syzygy-win
+        uses: actions/cache@v4
+        with:
+          path: ./test_syzygy
+          key: syzygy-3-4-v1
+
+      - name: Download test tablebases
+        if: steps.cache-syzygy-win.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          # Download minimal 3-4 piece Syzygy tablebases for testing
+          New-Item -ItemType Directory -Force -Path test_syzygy
+          
+          $baseUrl = "https://tablebase.lichess.ovh/tables/standard/3-4-5/"
+          $files = @(
+            # 3-piece WDL (5 files)
+            "KBvK.rtbw", "KNvK.rtbw", "KPvK.rtbw", "KQvK.rtbw", "KRvK.rtbw",
+            # 4-piece WDL - all 35 files
+            "KBBvK.rtbw", "KBNvK.rtbw", "KBPvK.rtbw", "KBvKB.rtbw", "KBvKN.rtbw", "KBvKP.rtbw",
+            "KNNvK.rtbw", "KNPvK.rtbw", "KNvKN.rtbw", "KNvKP.rtbw",
+            "KPPvK.rtbw", "KPvKP.rtbw",
+            "KQBvK.rtbw", "KQNvK.rtbw", "KQPvK.rtbw", "KQQvK.rtbw", "KQRvK.rtbw",
+            "KQvKB.rtbw", "KQvKN.rtbw", "KQvKP.rtbw", "KQvKQ.rtbw", "KQvKR.rtbw",
+            "KRBvK.rtbw", "KRNvK.rtbw", "KRPvK.rtbw", "KRRvK.rtbw",
+            "KRvKB.rtbw", "KRvKN.rtbw", "KRvKP.rtbw", "KRvKR.rtbw"
+          )
+          
+          foreach ($file in $files) {
+            $url = "$baseUrl$file"
+            $dest = "test_syzygy/$file"
+            Write-Host "Downloading $file..."
+            try {
+              Invoke-WebRequest -Uri $url -OutFile $dest -TimeoutSec 60
+            } catch {
+              Write-Host "Warning: Failed to download $file - $_"
+            }
+          }
+          
+          Write-Host "Downloaded tablebase files:"
+          Get-ChildItem test_syzygy
+
       - name: Run tests
         shell: pwsh
         working-directory: build
+        env:
+          SYZYGY_PATH: ${{ github.workspace }}/test_syzygy
         run: |
           ctest -C Release `
             --output-on-failure `
@@ -226,8 +270,45 @@ jobs:
       - name: Build
         run: cmake --build build --config Release -j $(nproc)
 
+      - name: Cache Syzygy 3-4 piece tablebases
+        id: cache-syzygy-linux
+        uses: actions/cache@v4
+        with:
+          path: ./test_syzygy
+          key: syzygy-3-4-v1
+
+      - name: Download test tablebases
+        if: steps.cache-syzygy-linux.outputs.cache-hit != 'true'
+        run: |
+          # Download minimal 3-4 piece Syzygy tablebases for testing
+          mkdir -p test_syzygy
+          
+          BASE_URL="https://tablebase.lichess.ovh/tables/standard/3-4-5/"
+          FILES=(
+            # 3-piece WDL (5 files)
+            "KBvK.rtbw" "KNvK.rtbw" "KPvK.rtbw" "KQvK.rtbw" "KRvK.rtbw"
+            # 4-piece WDL - all 30 files (K+2 vs K: 15 files, K+1 vs K+1: 15 files)
+            "KBBvK.rtbw" "KBNvK.rtbw" "KBPvK.rtbw" "KBvKB.rtbw" "KBvKN.rtbw" "KBvKP.rtbw"
+            "KNNvK.rtbw" "KNPvK.rtbw" "KNvKN.rtbw" "KNvKP.rtbw"
+            "KPPvK.rtbw" "KPvKP.rtbw"
+            "KQBvK.rtbw" "KQNvK.rtbw" "KQPvK.rtbw" "KQQvK.rtbw" "KQRvK.rtbw"
+            "KQvKB.rtbw" "KQvKN.rtbw" "KQvKP.rtbw" "KQvKQ.rtbw" "KQvKR.rtbw"
+            "KRBvK.rtbw" "KRNvK.rtbw" "KRPvK.rtbw" "KRRvK.rtbw"
+            "KRvKB.rtbw" "KRvKN.rtbw" "KRvKP.rtbw" "KRvKR.rtbw"
+          )
+          
+          for file in "${FILES[@]}"; do
+            echo "Downloading $file..."
+            curl -sS -o "test_syzygy/$file" "${BASE_URL}${file}" || echo "Warning: Failed to download $file"
+          done
+          
+          echo "Downloaded tablebase files:"
+          ls -la test_syzygy
+
       - name: Run tests
         working-directory: build
+        env:
+          SYZYGY_PATH: ${{ github.workspace }}/test_syzygy
         run: |
           ctest -C Release \
             --output-on-failure \

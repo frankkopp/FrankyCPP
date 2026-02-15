@@ -400,9 +400,9 @@ private:
 | Lichess | `https://tablebase.lichess.ovh/tables/standard/` | Fast CDN                         |
 | Torrent | Various                                          | Best for 6-7 piece bulk download |
 
-#### 2.5 Development & CI Setup
+#### 2.5 Development & CI Setup ✅
 
-**For Development Team:**
+**For Development Team:** (Not implemented - user-specific configuration)
 ```yaml
 # Option 1: Shared network location
 SYZYGY_PATH: "\\\\server\chess\syzygy\3-4-5-6"
@@ -412,44 +412,45 @@ TB_AUTO_DOWNLOAD: true
 TB_AUTO_DOWNLOAD_PIECES: "3-4-5"
 ```
 
-**For CI/GitHub Actions:**
+**For CI/GitHub Actions:** ✅ **Implemented in `.github/workflows/ci-build.yml`**
+- Added `actions/cache@v4` for Syzygy 3-4 piece tablebases (key: `syzygy-3-4-v1`)
+- Downloads WDL files from Lichess CDN when cache miss
+- Sets `SYZYGY_PATH` environment variable for test runs
+- Implemented for both Windows and Linux builds
+
 ```yaml
-# .github/workflows/test.yml
-- name: Cache Syzygy 3-4 piece
+# .github/workflows/ci-build.yml (actual implementation)
+- name: Cache Syzygy 3-4 piece tablebases
   uses: actions/cache@v4
   with:
     path: ./test_syzygy
     key: syzygy-3-4-v1
 
 - name: Download test tablebases
-  run: |
-    if [ ! -d "./test_syzygy" ]; then
-      ./FrankyCPP --syzygy download --pieces 3-4 --path ./test_syzygy
-    fi
+  if: steps.cache-syzygy-*.outputs.cache-hit != 'true'
+  run: # Downloads 3-4 piece WDL files from Lichess CDN
     
 - name: Run tests
   env:
-    SYZYGY_PATH: ./test_syzygy
+    SYZYGY_PATH: ${{ github.workspace }}/test_syzygy
   run: ctest --output-on-failure
 ```
 
-#### 2.6 Graceful Skip in Tests
+#### 2.6 Graceful Skip in Tests ✅
+
+**Implemented in `test/tablebase/TablebaseTest.cpp`:**
+- `TablebaseIntegrationTest` class uses `skipIfNoTablebases()` helper
+- Uses `GTEST_SKIP()` with helpful message when TBs unavailable
+- Path resolution supports both `SYZYGY_PATH` (standard) and `TB_PATH` (legacy)
 
 ```cpp
-// test/tablebase/TablebaseTest.cpp
-class TablebaseTest : public ::testing::Test {
-protected:
-  void SetUp() override {
-    const std::string tbPath = tablebase::findTablebasePath();
-    if (tbPath.empty()) {
-      GTEST_SKIP() << "Syzygy tablebases not available. "
-                   << "Set SYZYGY_PATH or run: FrankyCPP --syzygy download --pieces 3-4";
-    }
-    tb_.initialize(tbPath);
+// test/tablebase/TablebaseTest.cpp (actual implementation)
+void skipIfNoTablebases() const {
+  if (!tb.isAvailable()) {
+    GTEST_SKIP() << "Syzygy tablebases not available. "
+                 << "Set SYZYGY_PATH environment variable or configure TB_PATH in search.yaml";
   }
-  
-  tablebase::Tablebase tb_;
-};
+}
 ```
 
 ---
