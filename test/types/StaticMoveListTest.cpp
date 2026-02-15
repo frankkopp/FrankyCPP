@@ -86,6 +86,31 @@ TEST_F(StaticMoveListTest, clear) {
   EXPECT_EQ(moveList.size(), 0);
 }
 
+TEST_F(StaticMoveListTest, resize) {
+  constexpr Move move1 = Move::normal(SQ_E2, SQ_E4);
+  constexpr Move move2 = Move::normal(SQ_E7, SQ_E5);
+  constexpr Move move3 = Move::normal(SQ_G1, SQ_F3);
+
+  moveList.push_back(move1);
+  moveList.push_back(move2);
+  moveList.push_back(move3);
+  EXPECT_EQ(moveList.size(), 3);
+
+  // Resize to smaller size
+  moveList.resize(2);
+  EXPECT_EQ(moveList.size(), 2);
+  EXPECT_EQ(moveList[0], move1);
+  EXPECT_EQ(moveList[1], move2);
+
+  // Resize to same size (no-op)
+  moveList.resize(2);
+  EXPECT_EQ(moveList.size(), 2);
+
+  // Resize to zero
+  moveList.resize(0);
+  EXPECT_TRUE(moveList.empty());
+}
+
 // =============================================================================
 // Element Access
 // =============================================================================

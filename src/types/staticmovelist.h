@@ -103,6 +103,13 @@ public:
     size_ = 0;
   }
 
+  /// Resize the container to newSize elements (must be <= current size)
+  /// This is O(1) since the underlying array is fixed-size
+  constexpr void resize(const size_t newSize) noexcept {
+    assert(newSize <= size_ && "StaticMoveList::resize() can only shrink");
+    size_ = newSize;
+  }
+
   // =========================================================================
   // Size & Capacity
   // =========================================================================
