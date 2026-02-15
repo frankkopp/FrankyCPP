@@ -26,6 +26,8 @@
 #include <engine/UciHandler.h>
 #include <engine/UciOptions.h>
 #include <enginetest/TestSuite.h>
+#include <tablebase/TablebaseDownloader.h>
+#include <tablebase/TablebasePaths.h>
 #include <fstream>
 #include <iostream>
 
@@ -50,6 +52,7 @@ int main(int argc, char* argv[]) {
 
   std::string config_file, book_file, book_type, testsuite_file;
   std::string show_config_format, show_config_domain;
+  std::string syzygy_command, syzygy_path, syzygy_pieces;
   int testsuite_time = 0;
   int testsuite_depth = 0;
   int perftStart = 0;
@@ -83,7 +86,18 @@ int main(int argc, char* argv[]) {
       // Testsuite options
       ("testsuite", po::value<std::string>(&testsuite_file), "run testsuite in given file")
       ("tsDepth", po::value<int>(&testsuite_depth)->default_value(0), "max search depth per test in testsuite")
-      ("tsTime", po::value<int>(&testsuite_time)->default_value(1'000), "time in ms per test in testsuite");
+      ("tsTime", po::value<int>(&testsuite_time)->default_value(1'000), "time in ms per test in testsuite")
+      // Syzygy tablebase options
+      ("syzygy", po::value<std::string>(&syzygy_command),
+        "syzygy tablebase command:\n"
+        "  help     - show detailed syzygy help\n"
+        "  status   - show local tablebase status\n"
+        "  download - download tablebase files")
+      ("pieces", po::value<std::string>(&syzygy_pieces)->default_value("3-4-5"),
+        "piece counts for download (e.g., 3-4-5 or 3,4,5)")
+      ("path", po::value<std::string>(&syzygy_path),
+        "target path for tablebase files\n"
+        "(default: from config or platform default)");
 
 
     // Declare a group of options that will be allowed both on command line
@@ -260,6 +274,186 @@ int main(int argc, char* argv[]) {
       const auto result = engine::Benchmark::run(benchConfig);
       engine::Benchmark::printResults(result);
       return 0;
+    }
+
+    // Syzygy tablebase commands
+    if (programOptions.contains("syzygy")) {
+      init::init();
+      std::cout << std::endl;
+      std::cout << "SYZYGY TABLEBASE UTILITY\n";
+      std::cout << "########################################################\n";
+
+      // Parse piece counts from string like "3-4-5" or "3,4,5"
+      auto parsePieceCounts = [](const std::string& str) -> std::vector<int> {
+        std::vector<int> counts;
+        std::string s = str;
+        // Replace dashes with commas for uniform parsing
+        std::ranges::replace(s, '-', ',');
+        size_t pos = 0;
+        while ((pos = s.find(',')) != std::string::npos) {
+          const int val = std::stoi(s.substr(0, pos));
+          if (val >= 3 && val <= 6) counts.push_back(val);
+          s.erase(0, pos + 1);
+        }
+        if (!s.empty()) {
+          const int val = std::stoi(s);
+          if (val >= 3 && val <= 6) counts.push_back(val);
+        }
+        return counts;
+      };
+
+      if (syzygy_command == "help") {
+        std::cout << R"(
+Syzygy Tablebase Commands
+=========================
+
+COMMANDS:
+  --syzygy help      Show this help message
+  --syzygy status    Show status of local tablebases
+  --syzygy download  Download tablebase files from online mirrors
+
+OPTIONS:
+  --pieces <list>    Piece counts to download (default: 3-4-5)
+                     Format: 3-4-5 or 3,4,5
+                     Valid values: 3, 4, 5, 6
+  --path <dir>       Target directory for tablebase files
+                     Default: from TB_PATH config or platform default
+
+EXAMPLES:
+  # Check local tablebase status
+  FrankyCPP --syzygy status
+
+  # Check status of specific directory
+  FrankyCPP --syzygy status --path D:\SYZYGY
+
+  # Download 3, 4, 5-piece tablebases to default location
+  FrankyCPP --syzygy download
+
+  # Download only 3 and 4-piece (smallest, ~80MB)
+  FrankyCPP --syzygy download --pieces 3-4
+
+  # Download to specific directory
+  FrankyCPP --syzygy download --pieces 3-4-5 --path D:\Chess\Syzygy
+
+TABLEBASE SIZES (approximate):
+  3-piece:  ~7 MB
+  4-piece:  ~75 MB
+  5-piece:  ~1 GB
+  6-piece:  ~150 GB (recommend torrent download)
+
+DOWNLOAD SOURCES:
+  Primary:  https://tablebase.lichess.ovh/tables/standard/
+  Backup:   http://tablebase.sesse.net/syzygy/
+
+CONFIGURATION:
+  Set TB_PATH in config/search.yaml to auto-detect tablebases at startup.
+  Or set TB_PATH environment variable.
+
+)";
+        return 0;
+      }
+
+      if (syzygy_command == "status") {
+        // Show status of local tablebases
+        std::string tbPath = syzygy_path;
+        if (tbPath.empty()) {
+          tbPath = tablebase::findTablebasePath();
+        }
+
+        std::cout << "\nTablebase Status:\n";
+        std::cout << std::string(40, '-') << "\n";
+
+        if (tbPath.empty()) {
+          std::cout << "No tablebase path configured or found.\n";
+          std::cout << "\nTo configure:\n";
+          std::cout << "  - Set TB_PATH in config/search.yaml\n";
+          std::cout << "  - Or set TB_PATH environment variable\n";
+          std::cout << "  - Or use --path option\n";
+        } else {
+          std::cout << tablebase::getTablebaseStatus(tbPath) << "\n";
+        }
+        return 0;
+      }
+
+      if (syzygy_command == "download") {
+        // Download tablebases
+        std::string targetPath = syzygy_path;
+        if (targetPath.empty()) {
+          targetPath = tablebase::getDefaultTablebasePath();
+          if (targetPath.empty()) {
+            std::cerr << "Error: No target path specified. Use --path option.\n";
+            return 1;
+          }
+        }
+
+        const auto pieceCounts = parsePieceCounts(syzygy_pieces);
+        if (pieceCounts.empty()) {
+          std::cerr << "Error: No valid piece counts specified. Use --pieces 3-4-5\n";
+          return 1;
+        }
+
+        std::cout << "Target path: " << targetPath << "\n";
+        std::cout << "Piece counts: ";
+        for (size_t i = 0; i < pieceCounts.size(); ++i) {
+          if (i > 0) std::cout << ", ";
+          std::cout << pieceCounts[i];
+        }
+        std::cout << "\n";
+
+        const size_t estimatedSize = tablebase::TablebaseDownloader::estimateDownloadSize(pieceCounts);
+        std::cout << "Estimated download size: " << tablebase::TablebaseDownloader::formatSize(estimatedSize) << "\n";
+        std::cout << std::string(40, '-') << "\n";
+
+        // Check for 6-piece warning
+        if (std::ranges::find(pieceCounts, 6) != pieceCounts.end()) {
+          std::cout << "\nWARNING: 6-piece tablebases are ~150GB.\n";
+          std::cout << "Consider using torrent download for better reliability.\n";
+          std::cout << "Download sources:\n";
+          std::cout << "  - http://tablebase.sesse.net/syzygy/\n";
+          std::cout << "  - https://tablebase.lichess.ovh/tables/standard/\n\n";
+        }
+
+        tablebase::DownloadConfig downloadConfig;
+        downloadConfig.pieceCounts = pieceCounts;
+        downloadConfig.targetPath = targetPath;
+        downloadConfig.verbose = true;
+
+        tablebase::TablebaseDownloader downloader;
+        const auto downloadResult = downloader.download(downloadConfig,
+          [](const tablebase::DownloadProgress& progress) {
+            std::cout << "\r[" << progress.percentComplete() << "%] "
+                      << progress.filesCompleted << "/" << progress.totalFiles
+                      << " - " << progress.currentFile;
+            if (!progress.success && !progress.errorMessage.empty()) {
+              std::cout << " (FAILED)";
+            }
+            std::cout << std::string(20, ' ') << std::flush;
+          });
+
+        std::cout << "\n\n";
+        std::cout << "Download Summary:\n";
+        std::cout << std::string(40, '-') << "\n";
+        std::cout << "Downloaded: " << downloadResult.filesDownloaded << " files\n";
+        std::cout << "Skipped (existing): " << downloadResult.filesSkipped << " files\n";
+        std::cout << "Failed: " << downloadResult.filesFailed << " files\n";
+
+        if (!downloadResult.errors.empty()) {
+          std::cout << "\nErrors:\n";
+          for (const auto& err : downloadResult.errors) {
+            std::cout << "  - " << err << "\n";
+          }
+          // Show manual download instructions on failure
+          std::cout << tablebase::TablebaseDownloader::getManualDownloadInstructions();
+        }
+
+        return downloadResult.success ? 0 : 1;
+      }
+
+      // Unknown command
+      std::cerr << "Unknown syzygy command: " << syzygy_command << "\n";
+      std::cerr << "Available commands: help, status, download\n";
+      std::cerr << "Use --syzygy help for detailed usage information.\n";
+      return 1;
     }
 
     // just a test - does nothing

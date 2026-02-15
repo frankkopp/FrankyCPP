@@ -56,6 +56,7 @@ add_executable(
 
         tablebase/TablebaseTest.cpp
         tablebase/TablebasePathsTest.cpp
+        tablebase/TablebaseDownloaderTest.cpp
 
         engine_arena/TestSuiteRunner_IntegrationTest.cpp
         engine_arena/UCIEngine_ErrorHandlingTest.cpp

@@ -1,8 +1,8 @@
 # Plan: Syzygy Tablebase Support
 
-**Status:** Planning  
+**Status:** Phase 2 Complete - Ready for Search Integration  
 **Created:** 2026-02-14  
-**Updated:** 2026-02-14 (v1.1 - Added storage/download phase)  
+**Updated:** 2026-02-15 (v1.2 - Phase 2 complete, external review incorporated)  
 **Priority:** HIGH (Phase 5 in V1_ENGINE_ENHANCEMENT_PLAN)  
 **Target Version:** v1.5  
 **Expected Impact:** +35-60 ELO (in tablebase-relevant endgames)
@@ -458,6 +458,18 @@ protected:
 
 Probe tablebases at the root position before starting search.
 
+#### ⚠️ PERFORMANCE IMPLEMENTATION GUIDELINES
+
+While root probing itself is **NOT hot code** (called once per search), the patterns established here will be reused in **Phase 4 (search probing) which IS hot code**. Every nanosecond counts in chess engine hot paths. Implement with extreme care:
+
+| Concern                 | Guideline                                                                                                                |
+|-------------------------|--------------------------------------------------------------------------------------------------------------------------|
+| **Redundant checks**    | Avoid double `canProbe()` calls - if caller verified, trust it. Consider `_unchecked` internal variants.                 |
+| **Position conversion** | `convertPositionToFathom()` costs ~50-70 cycles. Acceptable, but add no unnecessary overhead.                            |
+| **EP legality check**   | Current check is correct (verifies pawn existence only, NOT king-in-check). Fathom handles full legality internally.     |
+| **Move conversion**     | `convertFathomMove()` is needed ONLY for root probing (best move). Search probing returns WDL only - no move conversion. |
+| **Profiling**           | Profile before/after integration. Measure with 3-4-5 piece TBs under realistic search conditions.                        |
+
 #### 3.1 Integration Points
 
 **In `Search::iterativeDeepening()` before search loop:**
@@ -843,8 +855,8 @@ src/
     Tablebase.cpp         # Implementation                  ✅ Implemented
     TablebasePaths.h      # Path resolution utilities       ✅ Implemented
     TablebasePaths.cpp                                      ✅ Implemented
-    TablebaseDownloader.h # Download management             📋 Future
-    TablebaseDownloader.cpp                                 📋 Future
+    TablebaseDownloader.h # Download management             ✅ Implemented
+    TablebaseDownloader.cpp                                 ✅ Implemented
 
 cmake/
   Fathom.cmake            # FetchContent configuration      ✅ Implemented
@@ -853,7 +865,7 @@ test/
   tablebase/
     TablebaseTest.cpp     # Tablebase unit tests            ✅ Implemented
     TablebasePathsTest.cpp # Path utilities tests           ✅ Implemented
-    TablebaseDownloaderTest.cpp                             📋 Future
+    TablebaseDownloaderTest.cpp # Downloader tests          ✅ Implemented
     
 config/
   search.yaml             # TB configuration defaults       ✅ Updated
@@ -917,11 +929,18 @@ Download from: http://tablebase.sesse.net/ or torrent
 |-------|-------------------------------|----------|----------------|
 | 1     | Fathom Library Integration    | 2-3 days | ✅ Complete     |
 | 2     | Storage & Download Management | 2-3 days | ✅ Complete     |
-| 3     | Root Tablebase Probing        | 2-3 days | 📋 Planned     |
+| 3     | Root Tablebase Probing        | 2-3 days | 📋 Next        |
 | 4     | Search Tablebase Probing      | 1 week   | 📋 Planned     |
 | 5     | Configuration & UCI           | 2-3 days | ✅ Complete     |
 | 6     | Testing                       | 2-3 days | ✅ Complete     |
 | 7     | Cache Optimization (Optional) | 2-3 days | 📋 Optional    |
+
+**Current State (2026-02-15):**
+- Phases 1, 2, 5, 6 complete
+- External code review completed with fixes applied
+- Implementation is self-contained and tested
+- **Not yet integrated with Search** - Phase 3 is next
+- All tests pass with 3-4-5 piece tablebases
 
 ### Phase 1 Completion Notes (2026-02-14)
 
@@ -944,7 +963,17 @@ Download from: http://tablebase.sesse.net/ or torrent
   - `validateTablebasePath()` - Checks for .rtbw/.rtbz files
   - `countTablebaseFiles()` - Counts WDL and DTZ files
   - `getTablebaseStatus()` - Human-readable status string
+- `src/tablebase/TablebaseDownloader.h/.cpp` - Download management:
+  - `download()` - Downloads TB files from mirrors with progress callback
+  - `getRequiredFiles()` - Lists files needed for piece counts
+  - `estimateDownloadSize()` - Estimates total download size
+  - `formatSize()` - Human-readable size formatting
+  - `checkStatus()` - Reports status of existing TBs
+- CLI commands in `main.cpp`:
+  - `--syzygy status` - Show local tablebase status
+  - `--syzygy download --pieces 3-4-5 --path D:/SYZYGY` - Download tablebases
 - `test/tablebase/TablebasePathsTest.cpp` - Unit tests for path utilities
+- `test/tablebase/TablebaseDownloaderTest.cpp` - Unit tests for downloader
 - Configuration added to `SearchConfigData`:
   - `TB_PATH` - Path to tablebase files (UCI: `SyzygyPath`)
   - `TB_PROBE_DEPTH` - Minimum depth for search probing (UCI: `SyzygyProbeDepth`)
@@ -952,9 +981,35 @@ Download from: http://tablebase.sesse.net/ or torrent
 - `config/search.yaml` - Default configuration with `TB_PATH: "D:/SYZYGY"`
 - Updated `TablebaseTest.cpp` to use `findTablebasePath()` for auto-detection
 
-**Deferred to future:**
-- `TablebaseDownloader` - CLI download feature (not essential for core functionality)
-- CI/GitHub Actions caching - Can be added when CI pipeline is set up
+### External Code Review (2026-02-15)
+
+**Review Process:** Three independent AI engines reviewed the implementation. Key findings addressed:
+
+**Fix 1: En Passant Legality Check (HIGH)**
+- **Issue:** EP square was passed to Fathom even when no legal EP capture existed
+- **Fix:** Added check using `Bitboards::pawnAttacks[~stm][epSq]` to verify an actual capturing pawn exists
+- **File:** `src/tablebase/Tablebase.cpp` - `convertPositionToFathom()`
+
+**Fix 2: Static Asserts for Fathom Compatibility**
+- Added compile-time verification that square encoding matches Fathom's expectations
+- Verifies: A1=0, H1=7, A8=56, H8=63, SQ_NONE=64
+- Verifies EP squares: A3=16, H3=23, A6=40, H6=47
+- **File:** `src/tablebase/Tablebase.cpp`
+
+**Fix 3: Improved Documentation**
+- Clarified that `probeWDL()` returns "pure" theoretical result (Fathom requires rule50=0)
+- Clarified that `probeRoot()` uses actual halfmove clock for cursed win/blessed loss
+- **Files:** `src/tablebase/Tablebase.h`, `src/tablebase/Tablebase.cpp`
+
+**Fix 4: Test FEN Corrections**
+- Fixed several illegal test positions where side-not-to-move was in check
+- Added `EnPassantPosition` test to verify EP legality handling
+- **File:** `test/tablebase/TablebaseTest.cpp`
+
+**Confirmed Correct (No Fix Needed):**
+- DTZ sign convention: Fathom returns absolute value (always positive), not signed
+- Fathom's `tb_probe_wdl` REQUIRES rule50=0 (returns FAILED otherwise) - this is correct behavior
+
 
 ### Phase 5 Partial Completion Notes (2026-02-14)
 
@@ -981,24 +1036,24 @@ Download from: http://tablebase.sesse.net/ or torrent
 ## Success Criteria
 
 1. **Functionality**
-   - [ ] TB files are loaded correctly on startup
-   - [ ] Root probing returns correct WDL and best move
-   - [ ] Search probing cuts off with known outcomes
-   - [ ] Graceful degradation when TB unavailable
+   - [x] TB files are loaded correctly on startup
+   - [x] Root probing returns correct WDL and best move
+   - [ ] Search probing cuts off with known outcomes (Phase 4)
+   - [x] Graceful degradation when TB unavailable
 
 2. **Performance**
-   - [ ] Average probe time < 100μs
-   - [ ] No measurable NPS regression in non-TB positions
-   - [ ] Memory usage within configured limits
+   - [x] Average probe time < 100μs
+   - [ ] No measurable NPS regression in non-TB positions (Phase 4)
+   - [x] Memory usage within configured limits
 
 3. **Quality**
-   - [ ] All unit tests pass
-   - [ ] Integration tests with search pass
-   - [ ] Manual testing with Arena/cutechess
+   - [x] All unit tests pass
+   - [ ] Integration tests with search pass (Phase 3-4)
+   - [ ] Manual testing with Arena/cutechess (Phase 3-4)
 
 4. **Strength**
-   - [ ] +35-60 ELO in TB-relevant endgame suite
-   - [ ] No regressions in non-endgame positions
+   - [ ] +35-60 ELO in TB-relevant endgame suite (Phase 3-4)
+   - [ ] No regressions in non-endgame positions (Phase 3-4)
 
 ---
 
@@ -1076,4 +1131,4 @@ Standard TB test positions:
 
 ---
 
-*Last Updated: 2026-02-14*
+*Last Updated: 2026-02-15*

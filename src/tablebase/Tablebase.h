@@ -96,7 +96,9 @@ struct TBProbeResult {
 };
 
 /// Syzygy tablebase probing interface using the Fathom library.
-/// Thread-safe for concurrent probing from multiple search threads.
+/// Thread safety:
+///   - probeWDL(): Thread-safe for concurrent probing from multiple search threads.
+///   - probeRoot(): NOT thread-safe. Call only once at root per search.
 class Tablebase {
   bool initialized_{false};
   int maxPieces_{0};        ///< Maximum pieces available in loaded tablebases (e.g., 6 or 7)
@@ -128,11 +130,15 @@ public:
   [[nodiscard]] const std::string& getPath() const { return tbPath_; }
 
   /// Probe WDL only (faster, suitable for search nodes).
+  /// Returns the "pure" theoretical WDL result without 50-move rule considerations.
+  /// For positions near the 50-move limit, use probeRoot which respects halfmove clock.
   /// @param pos  Position to probe
   /// @return WDL result or Failed if probe unsuccessful
   [[nodiscard]] TBResult probeWDL(const Position& pos) const;
 
   /// Probe WDL and DTZ with best move (slower, suitable for root).
+  /// Unlike probeWDL, this function uses the position's halfmove clock for
+  /// accurate cursed win / blessed loss detection near the 50-move limit.
   /// @param pos  Position to probe
   /// @return Full probe result including DTZ and best move
   [[nodiscard]] TBProbeResult probeRoot(const Position& pos) const;

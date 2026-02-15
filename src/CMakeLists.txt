@@ -42,6 +42,7 @@ set(FrankyCPPlib_SRCS
 
         tablebase/Tablebase.cpp tablebase/Tablebase.h
         tablebase/TablebasePaths.cpp tablebase/TablebasePaths.h
+        tablebase/TablebaseDownloader.cpp tablebase/TablebaseDownloader.h
 )
 
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})
