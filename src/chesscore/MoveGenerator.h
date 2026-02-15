@@ -244,6 +244,16 @@ public:
   /// @return          True if at least one legal move exists
   static bool hasLegalMove(const Position& position);
 
+  /// Determines if the position has at least one legal en passant capture.
+  /// This is a fast check that verifies the capturing pawn is not pinned:
+  /// - Horizontal pin: both pawns removed reveal rook/queen attack on king
+  /// - Vertical pin: capturing pawn pinned on file by rook/queen
+  /// - Diagonal pin: capturing pawn pinned by bishop/queen
+  /// Used by hasLegalMove() and tablebase probing.
+  /// @param position  Position to check
+  /// @return          True if at least one legal en passant capture exists
+  static bool hasLegalEpCapture(const Position& position);
+
   /// Parses a UCI move string and returns the corresponding Move.
   /// Generates all legal moves and matches the given UCI move string against them.
   /// If there is a match, the actual Move object is returned.

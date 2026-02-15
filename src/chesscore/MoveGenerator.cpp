@@ -75,7 +75,7 @@ const MoveList* MoveGenerator::generatePseudoLegalMoves(const Position& p, const
 const MoveList* MoveGenerator::generateLegalMoves(const Position& p, const GenMode genMode) {
   legalMoves.clear();
   generatePseudoLegalMoves(p, genMode, p.hasCheck());
-  for (Move m : pseudoLegalMoves) {
+  for (const Move m : pseudoLegalMoves) {
     if (p.isLegalMove(m)) legalMoves.push_back(m);
   }
   return &legalMoves;
@@ -257,23 +257,70 @@ bool MoveGenerator::hasLegalMove(const Position& position) {
     }
   }
 
-  // en passant captures
-  const Square enPassantSquare = position.getEnPassantSquare();
-  if (enPassantSquare != SQ_NONE) {
-    for (const Direction dir : {WEST, EAST}) {
-      tmpMoves = Bitboards::sqBb[enPassantSquare].shifted(Direction::pawnPush(them) + dir) & ourPawns;
-      if (tmpMoves) {
-        const Square fromSquare = tmpMoves.lsb();
-        const Square toSquare   = fromSquare + Direction::pawnPush(us) - dir;
-        if (position.isLegalMove(Move::enPassant(fromSquare, toSquare))) {
-          return true;
-        }
-      }
-    }
+  // en passant captures - use fast dedicated check instead of expensive isLegalMove()
+  if (hasLegalEpCapture(position)) {
+    return true;
   }
 
   // no move found
   return false;
+}
+
+bool MoveGenerator::hasLegalEpCapture(const Position& position) {
+  const Square epSq = position.getEnPassantSquare();
+  if (epSq == SQ_NONE) {
+    return false;
+  }
+
+  const Color us      = position.getNextPlayer();
+  const Square kingSq = position.getKingSquare(us);
+
+  // Find pawns that can capture to the EP square using pawn attack bitboards
+  // pawnAttacks[~us][epSq] gives squares from which our pawns can attack epSq
+  const Bitboard ourPawns = position.getPieceBb(us, PAWN);
+  Bitboard attackers      = Bitboards::pawnAttacks[~us][epSq] & ourPawns;
+
+  if (!attackers) {
+    return false;// No pawn can capture EP
+  }
+
+  // The captured pawn is one square behind the EP square from our perspective
+  const Square capturedSq = epSq.pawnPush(~us);
+
+  // Get enemy sliders for pin detection
+  const Bitboard enemyRQ = position.getPieceBb(~us, ROOK) | position.getPieceBb(~us, QUEEN);
+  const Bitboard enemyBQ = position.getPieceBb(~us, BISHOP) | position.getPieceBb(~us, QUEEN);
+
+  // Check each potential capturing pawn
+  while (attackers) {
+    const Square fromSq = attackers.popLSB();
+
+    // An EP capture can be pseudo-legal but illegal due to:
+    // 1. Horizontal pin: both capturing pawn AND captured pawn are removed from
+    //    the same rank as the king, revealing a rook/queen attack.
+    // 2. Vertical pin: the capturing pawn is pinned on a file by rook/queen.
+    // 3. Diagonal pin: the capturing pawn is pinned diagonally by bishop/queen.
+    //
+    // Remove both pawns from the occupied bitboard and check for slider attacks.
+    Bitboard occ = position.getOccupiedBb();
+    occ ^= Bitboards::sqBb[fromSq];      // remove capturing pawn
+    occ ^= Bitboards::sqBb[capturedSq];  // remove captured pawn
+    occ |= Bitboards::sqBb[epSq];        // add pawn on EP target square
+
+    // Check if any enemy rook/queen attacks king (horizontal or vertical)
+    if (Attacks::attacks(ROOK, kingSq, occ) & enemyRQ) {
+      continue;// This EP capture is illegal (rook/queen pin)
+    }
+
+    // Check if any enemy bishop/queen attacks king diagonally
+    if (Attacks::attacks(BISHOP, kingSq, occ) & enemyBQ) {
+      continue;// This EP capture is illegal (diagonal pin)
+    }
+
+    return true;// This EP capture is legal
+  }
+
+  return false;// All EP captures are illegal (pinned)
 }
 
 Move MoveGenerator::getMoveFromUci(const Position& position, const std::string& uciMove) {

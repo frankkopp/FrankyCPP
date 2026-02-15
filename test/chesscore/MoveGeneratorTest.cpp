@@ -794,3 +794,224 @@ TEST_F(MoveGenTest, debug) {
 
   fprintln("{}", mg.generateLegalMoves(p, GenAll)->size());
 }
+
+//=============================================================================
+// hasLegalEpCapture Tests
+//=============================================================================
+
+TEST_F(MoveGenTest, hasLegalEpCapture_noEpSquare) {
+  // Starting position - no EP square
+  const Position pos;
+  EXPECT_FALSE(MoveGenerator::hasLegalEpCapture(pos));
+}
+
+TEST_F(MoveGenTest, hasLegalEpCapture_epSquareButNoPawnCanCapture) {
+  // Position with EP square but no pawn can capture it
+  // White pawn on e5, black pawn moved d7-d5, but no white pawn on d or f file to capture
+  const Position pos("8/8/8/3pP3/8/8/8/4K2k w - d6 0 1");
+  // e5 pawn can capture on d6
+  EXPECT_TRUE(MoveGenerator::hasLegalEpCapture(pos));
+}
+
+TEST_F(MoveGenTest, hasLegalEpCapture_simpleLegalEpCapture) {
+  // Simple legal EP capture: white pawn on e5, black pawn just moved d7-d5
+  // White to move, can capture en passant on d6
+  const Position pos("4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1");
+  EXPECT_TRUE(MoveGenerator::hasLegalEpCapture(pos));
+}
+
+TEST_F(MoveGenTest, hasLegalEpCapture_simpleLegalEpCaptureBlack) {
+  // Simple legal EP capture for black: black pawn on d4, white pawn just moved e2-e4
+  // Black to move, can capture en passant on e3
+  const Position pos("4k3/8/8/8/3pP3/8/8/4K3 b - e3 0 1");
+  EXPECT_TRUE(MoveGenerator::hasLegalEpCapture(pos));
+}
+
+TEST_F(MoveGenTest, hasLegalEpCapture_twoPawnsCanCapture) {
+  // Two pawns can capture EP: white pawns on c5 and e5, black pawn moved d7-d5
+  const Position pos("4k3/8/8/2PpP3/8/8/8/4K3 w - d6 0 1");
+  EXPECT_TRUE(MoveGenerator::hasLegalEpCapture(pos));
+}
+
+TEST_F(MoveGenTest, hasLegalEpCapture_horizontalPinIllegal) {
+  // Horizontal pin makes EP capture illegal:
+  // White king on a5, black rook on h5, white pawn on e5, black pawn on d5 (just moved d7-d5)
+  // EP capture exd6 would remove both pawns from rank 5, exposing king to rook
+  const Position pos("4k3/8/8/K2pP2r/8/8/8/8 w - d6 0 1");
+  EXPECT_FALSE(MoveGenerator::hasLegalEpCapture(pos));
+}
+
+TEST_F(MoveGenTest, hasLegalEpCapture_horizontalPinIllegalBlack) {
+  // Horizontal pin makes EP capture illegal for black:
+  // Black king on h4, white rook on a4, black pawn on d4, white pawn on e4 (just moved e2-e4)
+  // EP capture dxe3 would remove both pawns from rank 4, exposing king to rook
+  const Position pos("8/8/8/8/R2pP2k/8/8/4K3 b - e3 0 1");
+  EXPECT_FALSE(MoveGenerator::hasLegalEpCapture(pos));
+}
+
+TEST_F(MoveGenTest, hasLegalEpCapture_verticalPinIllegal) {
+  // Vertical pin makes EP capture illegal:
+  // White king on c1, black rook on c8, white pawn on c5 pinned vertically
+  // Black pawn just moved d7-d5, EP capture cxd6 would expose king to rook
+  const Position pos("2r1k3/8/8/2Pp4/8/8/8/2K5 w - d6 0 1");
+  EXPECT_FALSE(MoveGenerator::hasLegalEpCapture(pos));
+}
+
+TEST_F(MoveGenTest, hasLegalEpCapture_verticalPinIllegalBlack) {
+  // Vertical pin makes EP capture illegal for black:
+  // Black king on f8, white rook on f1, black pawn on f4 pinned vertically
+  // White pawn just moved e2-e4, EP capture fxe3 would expose king to rook
+  const Position pos("5k2/8/8/8/4Pp2/8/8/5RK1 b - e3 0 1");
+  EXPECT_FALSE(MoveGenerator::hasLegalEpCapture(pos));
+}
+
+TEST_F(MoveGenTest, hasLegalEpCapture_horizontalPinWithQueen) {
+  // Same horizontal pin scenario but with queen instead of rook
+  const Position pos("4k3/8/8/K2pP2q/8/8/8/8 w - d6 0 1");
+  EXPECT_FALSE(MoveGenerator::hasLegalEpCapture(pos));
+}
+
+TEST_F(MoveGenTest, hasLegalEpCapture_diagonalPinIllegal) {
+  // Diagonal pin makes EP capture illegal:
+  // White king on d3, black bishop on h7, white pawn on f5 pinned diagonally
+  // Black pawn just moved e7-e5, EP capture fxe6 would expose king to bishop
+  const Position pos("8/7b/2B5/4pP2/8/3K4/8/k7 w - e6 0 1");
+  EXPECT_FALSE(MoveGenerator::hasLegalEpCapture(pos));
+}
+
+TEST_F(MoveGenTest, hasLegalEpCapture_diagonalPinIllegalBlack) {
+  // Diagonal pin makes EP capture illegal for black:
+  // Black king on d6, white bishop on h2, black pawn on f4 pinned diagonally
+  // White pawn just moved e2-e4, EP capture fxe3 would expose king to bishop
+  const Position pos("8/8/3k4/8/4Pp2/8/7B/K7 b - e3 0 1");
+  EXPECT_FALSE(MoveGenerator::hasLegalEpCapture(pos));
+}
+
+TEST_F(MoveGenTest, hasLegalEpCapture_diagonalPinWithQueen) {
+  // Diagonal pin with queen instead of bishop
+  const Position pos("8/7q/8/4pP2/8/3K4/8/k7 w - e6 0 1");
+  EXPECT_FALSE(MoveGenerator::hasLegalEpCapture(pos));
+}
+
+TEST_F(MoveGenTest, hasLegalEpCapture_diagonalPinButCaptureAlongRay) {
+  // Diagonal "pin" but EP capture moves along the same diagonal - legal!
+  // White king on h3, black bishop on d7, white pawn on f5
+  // Black pawn just moved e7-e5, EP capture fxe6 moves pawn to e6
+  // which is still on the d7-h3 diagonal, so pin is not broken
+  const Position pos("8/3b4/8/4pP2/2B5/7K/8/k7 w - e6 0 1");
+  EXPECT_TRUE(MoveGenerator::hasLegalEpCapture(pos));
+}
+
+TEST_F(MoveGenTest, hasLegalEpCapture_onePawnPinnedOtherNot) {
+  // Two pawns can capture, but one is horizontally pinned
+  // White king on a5, black rook on h5, white pawns on c5 and e5, black pawn on d5
+  // cxd6 is legal (c5 pawn not pinned), exd6 is illegal (e5 pawn pinned)
+  const Position pos("4k3/8/8/K1PpP2r/8/8/8/8 w - d6 0 1");
+  EXPECT_TRUE(MoveGenerator::hasLegalEpCapture(pos));// cxd6 is legal
+}
+
+TEST_F(MoveGenTest, hasLegalEpCapture_kingNotOnSameRank) {
+  // King on different rank - no horizontal pin possible, EP is legal
+  const Position pos("4k3/8/8/3pP3/8/8/8/K7 w - d6 0 1");
+  EXPECT_TRUE(MoveGenerator::hasLegalEpCapture(pos));
+}
+
+TEST_F(MoveGenTest, hasLegalEpCapture_diagonalAttackerNotPinning) {
+  // Diagonal attacker present but not creating a pin on the capturing pawn
+  // Bishop on a1, white pawn on e5, black pawn on d5 - bishop doesn't pin e5 pawn
+  // because pawn is not between king and bishop
+  const Position pos("4k3/8/8/3pP3/8/8/8/b3K3 w - d6 0 1");
+  EXPECT_TRUE(MoveGenerator::hasLegalEpCapture(pos));
+}
+
+TEST_F(MoveGenTest, hasLegalEpCapture_rookNotAttackingKing) {
+  // Rook on same rank but not attacking king (blocked by another piece)
+  const Position pos("4k3/8/8/K1NpP2r/8/8/8/8 w - d6 0 1");
+  EXPECT_TRUE(MoveGenerator::hasLegalEpCapture(pos));// Knight blocks, EP is legal
+}
+
+TEST_F(MoveGenTest, hasLegalEpCapture_rookOnDifferentRank) {
+  // Rook present but on different rank - no horizontal pin
+  const Position pos("4k3/8/8/K2pP3/7r/8/8/8 w - d6 0 1");
+  EXPECT_TRUE(MoveGenerator::hasLegalEpCapture(pos));
+}
+
+//=============================================================================
+// hasLegalMove Tests
+//=============================================================================
+
+TEST_F(MoveGenTest, hasLegalMove_startingPosition) {
+  const Position pos;
+  EXPECT_TRUE(MoveGenerator::hasLegalMove(pos));
+}
+
+TEST_F(MoveGenTest, hasLegalMove_checkmate) {
+  // Fool's mate position - black is checkmated
+  const Position pos("rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 1 3");
+  EXPECT_FALSE(MoveGenerator::hasLegalMove(pos));
+}
+
+TEST_F(MoveGenTest, hasLegalMove_stalemate) {
+  // Classic stalemate: black king on h8, white queen on g6, white king on f7
+  const Position pos("7k/5Q2/6K1/8/8/8/8/8 b - - 0 1");
+  EXPECT_FALSE(MoveGenerator::hasLegalMove(pos));
+}
+
+TEST_F(MoveGenTest, hasLegalMove_onlyEpCaptureLegal) {
+  // Position where only EP capture is legal
+  // This is a constructed position where all pieces are blocked except EP
+  const Position pos("8/8/8/8/k1PpK3/8/8/8 b - c3 0 1");
+  // Black king on a4 is in check from nothing, can't move due to white king
+  // Only move is dxc3 en passant
+  EXPECT_TRUE(MoveGenerator::hasLegalMove(pos));
+}
+
+TEST_F(MoveGenTest, hasLegalMove_pawnDoubleOnlyMove) {
+  // Position where pawn double is the only legal move (was bug in previous version)
+  const Position pos("rnbq1bnr/ppp1pppp/4k3/3pP3/3P2Q1/8/PPP2PPP/RNB1KBNR b KQ - 2 4");
+  EXPECT_TRUE(MoveGenerator::hasLegalMove(pos));
+}
+
+TEST_F(MoveGenTest, hasLegalMove_kingMoveOnly) {
+  // Only king can move
+  const Position pos("8/8/8/8/8/8/1k6/K7 w - - 0 1");
+  EXPECT_TRUE(MoveGenerator::hasLegalMove(pos));
+}
+
+TEST_F(MoveGenTest, hasLegalMove_epIllegalDueToHorizontalPin) {
+  // Position where only potential move is EP, but it's illegal due to horizontal pin
+  // Constructed so that EP would be the only move if legal
+  // King a5, rook h5, pawns on e5/d5, black to potentially capture
+  // Actually we need white with EP square
+  const Position pos("8/8/8/K2pP2r/8/8/8/7k w - d6 0 1");
+  // King has moves (Kb5, Kb4, Ka4, etc.), so hasLegalMove should be true
+  EXPECT_TRUE(MoveGenerator::hasLegalMove(pos));
+}
+
+TEST_F(MoveGenTest, hasLegalMove_vsGenerateLegalMoves) {
+  // Verify hasLegalMove returns true iff generateLegalMoves returns non-empty
+  MoveGenerator mg;
+
+  const std::vector<std::string> testFens = {
+      "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",                         // starting
+      "rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 1 3",                    // checkmate
+      "7k/5Q2/6K1/8/8/8/8/8 b - - 0 1",                                                   // stalemate
+      "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3",                       // complex
+      "4k3/8/8/K2pP2r/8/8/8/8 w - d6 0 1",                                                // EP pinned
+      "4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1",                                                // EP legal
+      "8/8/8/8/k1PpK3/8/8/8 b - c3 0 1",                                                  // EP only move
+  };
+
+  for (const auto& fen : testFens) {
+    const Position pos(fen);
+    const bool hasMove         = MoveGenerator::hasLegalMove(pos);
+    const MoveList* legalMoves = mg.generateLegalMoves(pos, GenAll);
+    const bool hasMoveFromList = !legalMoves->empty();
+
+    EXPECT_EQ(hasMove, hasMoveFromList)
+        << "Mismatch for position: " << fen
+        << "\nhasLegalMove: " << hasMove
+        << "\ngenerateLegalMoves empty: " << legalMoves->empty()
+        << "\nlegal moves count: " << legalMoves->size();
+  }
+}
