@@ -374,6 +374,36 @@
       "totalTimeMs": 82731,
       "nps": 3673357,
       "notes": "Current development version (USE_TB)"
+    },
+    {
+      "arenaVersion": "v1.2",
+      "timestamp": "2026-02-15T23:21:01",
+      "engineName": "FrankyCPP",
+      "engineVersion": "v1.3",
+      "enginePath": "",
+      "depth": 10,
+      "hashSizeMB": 128,
+      "threads": 1,
+      "positions": 50,
+      "totalNodes": 303900529,
+      "totalTimeMs": 81973,
+      "nps": 3707324,
+      "notes": "Current development version (USE_TB_PROBE_ROOT, USE_TB_PROBE_SEARCH)"
+    },
+    {
+      "arenaVersion": "v1.2",
+      "timestamp": "2026-02-15T23:21:01",
+      "engineName": "External",
+      "engineVersion": "v1.3",
+      "enginePath": "Release/FrankyCPP_v1.3/FrankyCPP_v1.3.exe",
+      "depth": 10,
+      "hashSizeMB": 128,
+      "threads": 1,
+      "positions": 50,
+      "totalNodes": 303900529,
+      "totalTimeMs": 82696,
+      "nps": 3674912,
+      "notes": "Current development version (USE_TB_PROBE_ROOT, USE_TB_PROBE_SEARCH)"
     }
   ]
 }

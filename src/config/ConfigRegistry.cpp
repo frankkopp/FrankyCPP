@@ -416,10 +416,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
   // Root probing settings (once per search, for best move selection)
   definitions_.push_back({
     .name = "USE_TB_PROBE_ROOT",
-    .uciName = "Use SyzygyProbeRoot",
+    .uciName = "Use Syzygy Probe Root",
     .description = "Probe tablebases at root for best move selection",
     .valueType = Bool,
-    .domain = General,
+    .domain = Search,
     .defaultValue = "true",
     .exposure = {.uci = true, .yaml = true, .display = true},
     .getter = searchGetter(&SearchConfigData::USE_TB_PROBE_ROOT),
@@ -428,10 +428,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
 
   definitions_.push_back({
     .name = "TB_ROOT_IMMEDIATE",
-    .uciName = "SyzygyRootImmediate",
+    .uciName = "Syzygy Root Immediate",
     .description = "Return TB move immediately without searching (false = search for PV)",
     .valueType = Bool,
-    .domain = General,
+    .domain = Search,
     .defaultValue = "false",
     .exposure = {.uci = true, .yaml = true, .display = true},
     .getter = searchGetter(&SearchConfigData::TB_ROOT_IMMEDIATE),
@@ -441,10 +441,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
   // Search probing settings (during tree search, for cutoffs)
   definitions_.push_back({
     .name = "USE_TB_PROBE_SEARCH",
-    .uciName = "Use SyzygyProbeSearch",
+    .uciName = "Use Syzygy Probe Search",
     .description = "Probe tablebases during search for cutoffs",
     .valueType = Bool,
-    .domain = General,
+    .domain = Search,
     .defaultValue = "true",
     .exposure = {.uci = true, .yaml = true, .display = true},
     .getter = searchGetter(&SearchConfigData::USE_TB_PROBE_SEARCH),
@@ -456,7 +456,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .uciName = "",  // Not exposed via UCI - internal tuning option
     .description = "Probe tablebases on PV nodes (false = only non-PV nodes for cutoffs)",
     .valueType = Bool,
-    .domain = General,
+    .domain = Search,
     .defaultValue = "true",
     .exposure = {.uci = false, .yaml = true, .display = true},
     .getter = searchGetter(&SearchConfigData::USE_TB_PROBE_PV),
@@ -465,10 +465,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
 
   definitions_.push_back({
     .name = "TB_PROBE_DEPTH",
-    .uciName = "SyzygyProbeDepth",
+    .uciName = "Syzygy Probe Depth",
     .description = "Minimum remaining depth to probe WDL during search (0 = always)",
     .valueType = Int,
-    .domain = General,
+    .domain = Search,
     .defaultValue = "1",
     .minValue = 0,
     .maxValue = 20,
@@ -479,10 +479,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
 
   definitions_.push_back({
     .name = "TB_PROBE_LIMIT",
-    .uciName = "SyzygyProbeLimit",
+    .uciName = "Syzygy Probe Limit",
     .description = "Maximum pieces for search TB probing (3-7)",
     .valueType = Int,
-    .domain = General,
+    .domain = Search,
     .defaultValue = "6",
     .minValue = 3,
     .maxValue = 7,
@@ -493,10 +493,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
 
   definitions_.push_back({
     .name = "TB_RULE50_THRESHOLD",
-    .uciName = "Syzygy50MoveRule",
+    .uciName = "Syzygy 50 Move Rule",
     .description = "HalfMoveClock threshold for DTZ accuracy check (>=100 disables)",
     .valueType = Int,
-    .domain = General,
+    .domain = Search,
     .defaultValue = "80",
     .minValue = 0,
     .maxValue = 100,
