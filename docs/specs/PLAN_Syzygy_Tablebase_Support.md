@@ -553,69 +553,229 @@ Value Search::rootSearch(Position& p, Depth depth, Value alpha, Value beta) {
 
 ---
 
-### Phase 4: Search Tablebase Probing (1 week)
+### Phase 4: Search Tablebase Probing (1 week) 📋 NEXT
 
 Probe tablebases during search to cut off branches with known outcomes.
+
+**Status:** Not started (Phase 3 complete, ready to begin)
+
+#### 4.0 Key Differences from Phase 3 (Root Probing)
+
+| Aspect          | Phase 3 (Root)                   | Phase 4 (Search)                  |
+|-----------------|----------------------------------|-----------------------------------|
+| **Frequency**   | Once per search                  | Thousands/millions per search     |
+| **Performance** | Not critical                     | **HOT CODE** - every cycle counts |
+| **Probing**     | `probeRoot()` (WDL + DTZ + move) | `probeWDL()` only (faster)        |
+| **Threading**   | Single-threaded                  | Must remain thread-safe           |
+| **Use case**    | Best move selection              | Branch cutoffs                    |
 
 #### 4.1 When to Probe
 
 **Key principle:** Only probe when it's likely to help and overhead is acceptable.
 
+**Fast rejection order (cheapest checks first):**
+1. `depth >= TB_PROBE_DEPTH` - skip shallow nodes
+2. `pieceCount <= TB_PROBE_LIMIT` - fast popcount check
+3. `castlingRights == NO_CASTLING` - fast bitwise check
+4. Call `probeWDL()` only after all checks pass
+
 ```cpp
-// In Search::search() after move loop setup
-if (SearchConfig.USE_TABLEBASES && 
-    depth >= SearchConfig.TB_PROBE_DEPTH &&
-    tb->canProbe(p)) {
+// In Search::search() early, after legal move check
+if (depth >= SearchConfig.TB_PROBE_DEPTH && canProbeTablebaseInSearch(pos)) {
+  const TBResult wdl = syzygy_tb->probeWDL(pos);
   
-  const TBResult wdl = tb->probeWDL(p);
-  if (wdl != TBResult::TB_FAILED) {
-    // Convert WDL to score
-    const Value tbScore = tablebase::Tablebase::tbValueToScore(wdl, ply);
+  if (wdl != TBResult::Failed) {
+    statistics.tbSearchHits++;
     
-    // Use as bound
-    if (wdl == TBResult::TB_WIN || wdl == TBResult::TB_CURSED_WIN) {
+    // Get TB score (with 50-move rule adjustment if needed)
+    const Value tbScore = getTBScoreForSearch(wdl, pos.getHalfMoveClock(), ply);
+    
+    // Use as bound for alpha-beta
+    if (wdl == TBResult::Win || wdl == TBResult::CursedWin) {
       // Position is winning - use as lower bound
-      if (tbScore >= beta) return tbScore;
+      if (tbScore >= beta) {
+        statistics.tbCutoffs++;
+        return tbScore;  // Fail high
+      }
       alpha = std::max(alpha, tbScore);
-    } else if (wdl == TBResult::TB_LOSS || wdl == TBResult::TB_BLESSED_LOSS) {
+    } 
+    else if (wdl == TBResult::Loss || wdl == TBResult::BlessedLoss) {
       // Position is losing - use as upper bound
-      if (tbScore <= alpha) return tbScore;
+      if (tbScore <= alpha) {
+        statistics.tbCutoffs++;
+        return tbScore;  // Fail low
+      }
       beta = std::min(beta, tbScore);
-    } else {
+    } 
+    else {
       // Draw - exact value
       return tbScore;
     }
+  } else {
+    statistics.tbSearchMisses++;
   }
 }
 ```
 
-#### 4.2 TB Probe Depth Control
-
-Only probe at sufficient depth to avoid overhead in shallow searches:
+#### 4.2 Configuration Options
 
 ```yaml
-# config/search.yaml
-TB_PROBE_DEPTH: 1    # Minimum remaining depth to probe (0 = always)
-TB_PROBE_LIMIT: 6    # Max pieces for search probing (may be < root limit)
+# config/search.yaml - Phase 4 additions
+TB_PROBE_DEPTH: 1       # Minimum remaining depth to probe (0 = always, higher = less probing)
+TB_PROBE_LIMIT: 6       # Max pieces for search probing (may be < root limit for speed)
+TB_RULE50_THRESHOLD: 80 # HalfMoveClock threshold for DTZ check (>=100 disables DTZ checks)
 ```
 
-#### 4.3 DTZ for 50-Move Rule
+**TB_RULE50_THRESHOLD behavior:**
+- `< 100`: When `halfMoveClock >= threshold`, probe DTZ to check if win/loss is achievable
+- `>= 100`: Effectively disables DTZ checks (since halfMoveClock maxes at 100)
+- **Default: 80** - balances accuracy vs performance (only ~20% of positions need DTZ check)
 
-Handle the 50-move rule correctly:
+#### 4.3 50-Move Rule Handling (Optimized)
+
+The 50-move rule complicates TB scoring. If `halfMoveClock + DTZ > 100`, a theoretical win/loss becomes a draw.
+
+**Two-tier approach for performance:**
 
 ```cpp
-// Adjust TB value based on 50-move counter
-Value adjustTBValue(TBResult wdl, int dtz, int rule50, Depth ply) {
-  if (wdl == TBResult::TB_WIN && dtz > 0) {
-    // Check if win is achievable before 50-move draw
-    if (rule50 + dtz > 100) {
-      // Cannot win before 50-move rule
+Value getTBScoreForSearch(TBResult wdl, int halfMoveClock, Depth ply) {
+  // Fast path: far from 50-move limit, no DTZ needed
+  if (halfMoveClock < SearchConfig.TB_RULE50_THRESHOLD) {
+    return tbValueToScore(wdl, ply);  // Use simple WDL scoring
+  }
+  
+  // Slow path: near 50-move limit, need DTZ for accuracy
+  // Only triggered when halfMoveClock >= TB_RULE50_THRESHOLD (default 80)
+  if (wdl == TBResult::Win || wdl == TBResult::Loss) {
+    // Option A: Probe DTZ separately (if Fathom exposes it)
+    // Option B: Be conservative - treat uncertain wins/losses as draws
+    // Option C: Call probeRoot() for DTZ (slower but accurate)
+    
+    // Conservative approach (recommended for search):
+    // If we can't verify the win is achievable, treat as draw
+    // This is safe - we won't miss wins, just won't cut as aggressively
+    if (halfMoveClock >= 90) {
+      // Very close to 50-move, be extra conservative
       return VALUE_DRAW;
     }
+    // Between threshold and 90: use WDL but with reduced confidence
+    return tbValueToScore(wdl, ply);
   }
-  return tablebase::Tablebase::tbValueToScore(wdl, ply);
+  
+  // CursedWin/BlessedLoss/Draw: return as-is
+  return tbValueToScore(wdl, ply);
 }
 ```
+
+**Why this works:**
+- Most positions have low halfMoveClock (resets on capture/pawn move)
+- Only ~1-5% of search positions will hit the slow path
+- Conservative scoring is safe: we never claim a win we can't achieve
+- `TB_RULE50_THRESHOLD >= 100` completely disables this check for maximum speed
+
+#### 4.4 Statistics Additions
+
+Add to `SearchStats`:
+
+```cpp
+// SearchStats.h additions
+uint64_t tbSearchHits   = 0;  // Successful WDL probes during search
+uint64_t tbSearchMisses = 0;  // Positions where probe returned Failed
+uint64_t tbCutoffs      = 0;  // Branches cut off due to TB result
+```
+
+#### 4.5 Helper Function
+
+```cpp
+// In Search class (private)
+[[nodiscard]] bool canProbeTablebaseInSearch(const Position& pos) const {
+  // Fast rejection checks in order of cost
+  if (!syzygy_tb || !syzygy_tb->isAvailable()) return false;
+  if (pos.getOccupiedBb().popcount() > SearchConfig.TB_PROBE_LIMIT) return false;
+  if (pos.getCastlingRights() != NO_CASTLING) return false;
+  return true;
+}
+```
+
+#### 4.6 Integration Point
+
+Primary insertion point in `Search::search()`:
+
+```cpp
+Value Search::search(Position& p, Depth depth, Value alpha, Value beta, ...) {
+  // ... node count, stop check, draw detection ...
+  
+  // Tablebase probing in search (early cutoff)
+  if (depth >= SearchConfig.TB_PROBE_DEPTH && canProbeTablebaseInSearch(p)) {
+    // ... probing code from 4.1 ...
+  }
+  
+  // ... TT probe, null move, etc. ...
+}
+```
+
+**Placement rationale:** After basic checks but before expensive operations (TT probe, move generation). TB cutoff is often conclusive and avoids wasted work.
+
+#### 4.7 TT Integration
+
+TB results should be stored in TT for efficiency:
+
+```cpp
+// After successful TB probe with cutoff
+if (tbScore >= beta) {
+  // Store as lower bound in TT
+  tt->store(pos.getZobristKey(), depth, tbScore, TT_LOWER_BOUND, MOVE_NONE);
+  return tbScore;
+}
+```
+
+This prevents re-probing the same position if TT entry survives.
+
+#### 4.8 Testing Plan
+
+1. **Unit tests:**
+   - Verify `canProbeTablebaseInSearch()` rejection logic
+   - Verify `getTBScoreForSearch()` with various halfMoveClock values
+   - Verify TB_RULE50_THRESHOLD >= 100 disables DTZ checks
+
+2. **Integration tests:**
+   - Verify cutoffs occur correctly in known TB positions
+   - Verify search doesn't break when TB unavailable
+
+3. **Benchmark tests:**
+   - Measure NPS impact in non-TB positions (target: <5% regression)
+   - Measure NPS improvement in TB positions
+
+4. **Strength tests:**
+   - Run endgame suite (e.g., WAC endgames, Nunn positions)
+   - Verify ELO improvement in TB-relevant positions
+
+#### 4.9 Performance Considerations
+
+| Concern               | Guideline                                    |
+|-----------------------|----------------------------------------------|
+| **Probe frequency**   | Use `TB_PROBE_DEPTH >= 1` to skip leaf nodes |
+| **Piece count check** | Single popcount (~1 cycle) - very fast       |
+| **Castling check**    | Bitwise compare (~1 cycle) - very fast       |
+| **probeWDL() cost**   | ~10-50μs typical, acceptable at depth >= 1   |
+| **TT caching**        | Store TB results to avoid re-probing         |
+| **50-move check**     | Only when halfMoveClock >= threshold         |
+
+#### 4.10 Estimated Effort
+
+- Implementation: 2-3 days
+- Testing & validation: 2 days
+- Performance tuning: 1-2 days
+- **Total: ~1 week**
+
+#### 4.11 Success Criteria
+
+- [ ] TB probing integrated in `Search::search()`
+- [ ] `TB_PROBE_DEPTH`, `TB_PROBE_LIMIT`, `TB_RULE50_THRESHOLD` configs working
+- [ ] Statistics tracking (tbSearchHits, tbSearchMisses, tbCutoffs)
+- [ ] All existing tests pass
+- [ ] NPS regression < 5% in non-TB positions
+- [ ] Measurable cutoffs in TB endgame positions
 
 ---
 
@@ -910,24 +1070,32 @@ config/
 ```yaml
 # config/search.yaml
 
-# Tablebase Settings
-USE_TABLEBASES: true
-TB_PATH: "D:/Chess/Syzygy/3-4-5-6"  # Windows path
-TB_PROBE_DEPTH: 1
-TB_PROBE_LIMIT: 6
-TB_ROOT_IMMEDIATE: false
-TB_ROOT_IN_SEARCH: true
-TB_CACHE_MB: 32
+# Tablebase Settings (Phase 3 - Root Probing)
+TB_PATH: "D:/Chess/Syzygy/3-4-5-6"  # Windows path (semicolon-separated for multiple)
+TB_PROBE_ROOT: true                  # Enable root probing
+TB_ROOT_IMMEDIATE: false             # false = search for PV, true = return TB move immediately
+
+# Tablebase Settings (Phase 4 - Search Probing)
+TB_PROBE_DEPTH: 1                    # Min remaining depth to probe in search (0 = always)
+TB_PROBE_LIMIT: 6                    # Max pieces for search probing (3-7)
+TB_RULE50_THRESHOLD: 80              # HalfMoveClock threshold for DTZ check (>=100 disables)
 ```
+
+**TB_RULE50_THRESHOLD explained:**
+- When `halfMoveClock >= threshold`, the engine checks DTZ to verify win/loss is achievable
+- Values 0-99: Enable 50-move rule accuracy checks when halfMoveClock reaches threshold
+- Value >= 100: Disables DTZ checks entirely (maximum speed, may claim unreachable wins)
+- **Default: 80** - good balance of accuracy vs performance
 
 ### UCI Options
 
-| Option             | Type   | Default | Description                  |
-|--------------------|--------|---------|------------------------------|
-| `SyzygyPath`       | string | ""      | Path to tablebase files      |
-| `SyzygyProbeDepth` | spin   | 1       | Min depth to probe in search |
-| `SyzygyProbeLimit` | spin   | 6       | Max pieces (3-7)             |
-| `SyzygyEnabled`    | check  | false   | Master enable switch         |
+| Option              | Type   | Default | Description                                      |
+|---------------------|--------|---------|--------------------------------------------------|
+| `SyzygyPath`        | string | ""      | Path to tablebase files                          |
+| `SyzygyProbeRoot`   | check  | true    | Enable root probing                              |
+| `SyzygyProbeDepth`  | spin   | 1       | Min depth to probe in search (0-10)              |
+| `SyzygyProbeLimit`  | spin   | 6       | Max pieces for probing (3-7)                     |
+| `Syzygy50MoveRule`  | spin   | 80      | HalfMoveClock threshold for DTZ (0-100, 100=off) |
 
 ---
 
@@ -956,17 +1124,18 @@ Download from: http://tablebase.sesse.net/ or torrent
 |-------|-------------------------------|----------|----------------|
 | 1     | Fathom Library Integration    | 2-3 days | ✅ Complete     |
 | 2     | Storage & Download Management | 2-3 days | ✅ Complete     |
-| 3     | Root Tablebase Probing        | 2-3 days | 📋 Next        |
-| 4     | Search Tablebase Probing      | 1 week   | 📋 Planned     |
+| 3     | Root Tablebase Probing        | 2-3 days | ✅ Complete     |
+| 4     | Search Tablebase Probing      | 1 week   | 📋 Next        |
 | 5     | Configuration & UCI           | 2-3 days | ✅ Complete     |
 | 6     | Testing                       | 2-3 days | ✅ Complete     |
 | 7     | Cache Optimization (Optional) | 2-3 days | 📋 Optional    |
 
 **Current State (2026-02-15):**
-- Phases 1, 2, 5, 6 complete
+- Phases 1, 2, 3, 5, 6 complete
+- Phase 3 fully implemented: root probing, move filtering, DTZ scoring, smart move selection
 - External code review completed with fixes applied
 - Implementation is self-contained and tested
-- **Not yet integrated with Search** - Phase 3 is next
+- **Phase 4 is next** - search tree probing for cutoffs
 - All tests pass with 3-4-5 piece tablebases
 
 ### Phase 1 Completion Notes (2026-02-14)
