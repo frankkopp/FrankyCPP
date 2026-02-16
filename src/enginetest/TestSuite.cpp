@@ -41,7 +41,6 @@ TestSuite::TestSuite(const milliseconds time, const Depth searchDepth, const std
   fprintln("");
 }
 
-
 void TestSuite::runTestSuite() {
   if (testCases_.empty()) {
     LOG__WARN(Logger::get().TSUITE_LOG, "No tests to run in {}", filePath_);

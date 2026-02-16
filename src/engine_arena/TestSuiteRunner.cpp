@@ -588,7 +588,7 @@ namespace arena {
     std::cout << "  Total Nodes:  " << result.totalNodes << std::endl;
     std::cout << "  Engine Time:  " << result.totalTimeMs << "ms (sum of all positions)" << std::endl;
     std::cout << "  Wall Time:    " << wallTimeMs << "ms (actual elapsed)" << std::endl;
-    std::cout << "  Speedup:      " << (result.totalTimeMs > 0 ? (static_cast<double>(result.totalTimeMs) / wallTimeMs) : 0.0)
+    std::cout << "  Speedup:      " << (result.totalTimeMs > 0 ? static_cast<double>(result.totalTimeMs) / wallTimeMs : 0.0)
               << "x" << std::endl;
     std::cout << "==================================================================" << std::endl;
 
