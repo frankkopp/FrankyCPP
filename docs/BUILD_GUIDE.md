@@ -1,7 +1,7 @@
 # FrankyCPP Build Guide
 
-**Version:** 0.7  
-**Last Updated:** 2026-01-31  
+**Version:** 1.3  
+**Last Updated:** 2026-02-16  
 **Status:** All platforms working ✅
 
 ---
@@ -14,10 +14,12 @@
 4. [Building on Windows](#building-on-windows)
 5. [Building on Linux/WSL](#building-on-linuxwsl)
 6. [Cross-Compiler Testing with Clang](#cross-compiler-testing-with-clang)
-7. [CMake Presets](#cmake-presets)
-8. [CI/CD Pipeline](#cicd-pipeline)
-9. [Troubleshooting](#troubleshooting)
-10. [Technical Details](#technical-details)
+7. [Syzygy Tablebase Setup (Optional)](#syzygy-tablebase-setup-optional)
+8. [CMake Presets](#cmake-presets)
+9. [CI/CD Pipeline](#cicd-pipeline)
+10. [Release Packaging](#release-packaging)
+11. [Troubleshooting](#troubleshooting)
+12. [Technical Details](#technical-details)
 
 ---
 
@@ -51,11 +53,11 @@
 
 ## Supported Platforms
 
-| Platform | Compiler | Version | C++20 Support | Status |
-|----------|----------|---------|---------------|--------|
-| **Windows** | MSVC | 2022 (17.x) | ✅ Full | ✅ Tested |
-| **Linux/WSL** | GCC | 13.0+ | ✅ Full | ✅ Tested |
-| **Linux/WSL** | Clang | 18.0+ | ✅ Full | ✅ Tested |
+| Platform      | Compiler | Version     | C++20 Support | Status   |
+|---------------|----------|-------------|---------------|----------|
+| **Windows**   | MSVC     | 2022 (17.x) | ✅ Full        | ✅ Tested |
+| **Linux/WSL** | GCC      | 13.0+       | ✅ Full        | ✅ Tested |
+| **Linux/WSL** | Clang    | 18.0+       | ✅ Full        | ✅ Tested |
 
 ### Test Results
 - Windows (MSVC 2022): ✅ All 266 tests passing
@@ -248,6 +250,73 @@ We upgraded from Clang 15 to Clang 18 because:
 
 # Both should succeed! ✅
 ```
+
+---
+
+## Syzygy Tablebase Setup (Optional)
+
+Syzygy tablebases provide perfect endgame play for positions with few pieces. FrankyCPP includes a built-in downloader for easy setup.
+
+### Tablebase Sizes
+
+| Pieces  | Size    | Recommended                    |
+|---------|---------|--------------------------------|
+| 3-piece | ~7 MB   | ✅ Yes                          |
+| 4-piece | ~75 MB  | ✅ Yes                          |
+| 5-piece | ~1 GB   | ✅ Yes                          |
+| 6-piece | ~150 GB | ⚠️ Large (torrent recommended) |
+
+### Quick Setup (3-4-5 piece)
+
+```bash
+# Windows
+.\cmake-build-win-release\src\FrankyCPP_v0.7.exe --syzygy download --pieces 3-4-5 --path D:\Chess\Syzygy
+
+# Linux/WSL
+./cmake-build-wsl-release/src/FrankyCPP_v0.7 --syzygy download --pieces 3-4-5 --path ~/syzygy
+```
+
+### Check Status
+
+```bash
+# Check configured tablebase status
+FrankyCPP --syzygy status
+
+# Check specific directory
+FrankyCPP --syzygy status --path D:\Chess\Syzygy
+```
+
+### Configuration
+
+After downloading, configure the path in one of these ways:
+
+**Option 1: UCI option (per session)**
+```
+setoption name SyzygyPath value D:\Chess\Syzygy
+```
+
+**Option 2: YAML config (persistent)**
+```yaml
+# config/search.yaml
+TB_PATH: "D:\\Chess\\Syzygy"
+```
+
+**Option 3: Environment variable**
+```bash
+# Linux
+export TB_PATH=~/syzygy
+
+# Windows PowerShell
+$env:TB_PATH = "D:\Chess\Syzygy"
+```
+
+### Download Sources
+
+The built-in downloader uses these mirrors:
+- **Primary:** https://tablebase.lichess.ovh/tables/standard/
+- **Backup:** http://tablebase.sesse.net/syzygy/
+
+For 6-piece tablebases (~150GB), consider downloading via torrent for better reliability.
 
 ---
 

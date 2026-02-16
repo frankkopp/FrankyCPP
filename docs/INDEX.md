@@ -98,7 +98,7 @@ Quick reference to all project documentation.
 - Risk assessment and mitigation
 - References and resources
 
-### ⚙️ [PLAN_Configuration_Refactor.md](specs/PLAN_Configuration_Refactor.md) **(NEW)**
+### ⚙️ [PLAN_Configuration_Refactor.md](specs/PLAN_Configuration_Refactor.md)
 **Configuration System Refactoring Plan**
 - Single source of truth for all config settings
 - Auto-generation of str(), YAML, UCI options
@@ -106,13 +106,27 @@ Quick reference to all project documentation.
 - Phased implementation approach
 - Eliminates config duplication across 4-6 files
 
-### 🏟️ [Engine_Arena_Implementation_Plan.md](specs/Engine_Arena_Implementation_Plan.md)
-**Engine Testing & Comparison Framework**
-- Automated test suite execution
-- cutechess-cli match integration
-- Version comparison and strength tracking
-- Result persistence and reporting
-- Implementation phases and design principles
+### 🎲 [PLAN_Syzygy_Tablebase_Support.md](specs/PLAN_Syzygy_Tablebase_Support.md)
+**Syzygy Endgame Tablebase Integration**
+- Fathom library integration
+- WDL/DTZ probing at root and in-search
+- Tablebase path discovery and validation
+- Built-in download utility
+- UCI options (SyzygyPath, SyzygyProbeDepth)
+
+### ⚔️ [PLAN_QSearch_Quiet_Checks.md](specs/PLAN_QSearch_Quiet_Checks.md)
+**Quiescence Search Quiet Check Enhancement**
+- Adding non-capturing checks to qsearch
+- Check evasion handling
+- Performance considerations
+- Implementation approach
+
+### ⏱️ [PLAN_Speedtest_Benchmark.md](specs/PLAN_Speedtest_Benchmark.md)
+**Performance Benchmark Infrastructure**
+- Benchmark suite design
+- Standardized test positions
+- NPS and node count comparisons
+- Regression detection
 
 ---
 
@@ -126,14 +140,22 @@ Quick reference to all project documentation.
 - std::format implementation details
 - Build system validation strategy
 
+### 🧵 [Lazy_SMP_Explained.md](Lazy_SMP_Explained.md)
+**Lazy SMP Parallel Search**
+- Lazy SMP algorithm explanation
+- Thread coordination via shared TT
+- Implementation considerations
+- Performance characteristics
+
 ### 📝 [Logger.md](Logger.md)
 **Logging system documentation**
 - spdlog integration
-- Log levels and categories
-- Configuration options
-- Performance considerations
+- Runtime level changes (parseLevel, setGlobalLevel, setLoggerLevel)
+- Named logger lookups
+- Compile-time vs runtime gating
+- Unit test reference
 
-### 🔌 [engine-interface.txt](engine-interface.md)
+### 🔌 [engine-interface.txt](engine-interface.txt)
 **UCI protocol reference**
 - Command reference
 - Option descriptions
@@ -178,8 +200,10 @@ Quick reference to all project documentation.
 | **Project status**         | FrankyCPP_Codebase_Review.md              |
 | **v1.x Enhancement plan**  | specs/V1_ENGINE_ENHANCEMENT_PLAN.md       |
 | **v1.x Strength roadmap**  | specs/V1_ENGINE_STRENGTH_ROADMAP.md       |
-| **Engine Arena framework** | specs/Engine_Arena_Implementation_Plan.md |
+| **Syzygy tablebases**      | specs/PLAN_Syzygy_Tablebase_Support.md    |
+| **Engine Arena framework** | arena/README.md                           |
 | **C++20 features**         | CPP20_Feature_Support.md                  |
+| **Lazy SMP**               | Lazy_SMP_Explained.md                     |
 | **Logging**                | Logger.md                                 |
 | **UCI protocol**           | engine-interface.txt                      |
 | **CLion IDE**              | CLion_WSL_Setup.md                        |
@@ -199,14 +223,15 @@ Quick reference to all project documentation.
 
 ## Documentation Status ✅
 
-All documentation is current as of **2026-02-01**:
+All documentation is current as of **2026-02-16**:
 - ✅ Build instructions for all platforms
 - ✅ Architecture and design documentation
 - ✅ v1.x Enhancement roadmap and implementation plan
+- ✅ Syzygy tablebase integration documented
 - ✅ Technical references up to date
 - ✅ IDE setup guides available
 - ✅ Obsolete files removed
 
 ---
 
-**Last updated:** 2026-02-01
+**Last updated:** 2026-02-16

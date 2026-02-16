@@ -24,13 +24,13 @@ This document describes the high-level architecture of FrankyCPP, a UCI chess en
 │ (board state) │     │ (alpha-beta)  │     │  (debugging)  │
 └───────────────┘     └───────┬───────┘     └───────────────┘
                               │
-        ┌─────────────────────┼─────────────────────┐
-        │                     │                     │
-        ▼                     ▼                     ▼
-┌───────────────┐     ┌───────────────┐     ┌───────────────┐
-│  Evaluator    │     │      TT       │     │  OpeningBook  │
-│  (scoring)    │     │ (hash table)  │     │   (library)   │
-└───────────────┘     └───────────────┘     └───────────────┘
+        ┌─────────────┬───────┴───────┬─────────────┐
+        │             │               │             │
+        ▼             ▼               ▼             ▼
+┌───────────────┐ ┌───────────┐ ┌───────────┐ ┌───────────────┐
+│  Evaluator    │ │    TT     │ │ Tablebase │ │  OpeningBook  │
+│  (scoring)    │ │(hash tbl) │ │ (Syzygy)  │ │   (library)   │
+└───────────────┘ └───────────┘ └───────────┘ └───────────────┘
 ```
 
 ---
@@ -66,6 +66,13 @@ FrankyCPP --testsuite file.epd --tsTime 1000     # Run test suite
 FrankyCPP --config path/to/config.cfg      # Use custom config file
 FrankyCPP --nobook                         # Disable opening book
 FrankyCPP --book path/to/book.txt --booktype simple  # Custom book
+```
+
+### Syzygy Tablebases
+```bash
+FrankyCPP --syzygy status                  # Show tablebase status
+FrankyCPP --syzygy download --pieces 3-4-5 --path D:\Chess\Syzygy  # Download TBs
+FrankyCPP --syzygy verify --path D:\Chess\Syzygy   # Verify TB files
 ```
 
 ---
@@ -125,6 +132,11 @@ src/
 ├── openingbook/          # Opening book support
 │   ├── OpeningBook.h/.cpp # Book loading, querying, caching
 │   └── bookentry.h       # Book entry data structure
+│
+├── tablebase/            # Syzygy endgame tablebase support
+│   ├── Tablebase.h/.cpp  # Fathom library interface (WDL/DTZ probing)
+│   ├── TablebasePaths.h/.cpp # TB path discovery and validation
+│   └── TablebaseDownloader.h/.cpp # TB download from Lichess mirror
 │
 └── enginetest/           # Built-in test suite runner
     ├── TestSuite.h       # EPD test suite execution
@@ -233,6 +245,13 @@ The core search algorithm using alpha-beta with iterative deepening.
 - Razoring
 - Quiescence search with SEE pruning
 - Time management with complexity-based allocation and best-move instability detection
+- Syzygy tablebase probing for endgame positions
+
+**Tablebase Integration:**
+- **Root probing:** Before search, probe tablebases to filter moves to only WDL-optimal moves
+- **In-search probing:** WDL probes at interior nodes when piece count is within TB range
+- **DTZ scoring:** Shorter wins score higher, longer losses score lower
+- Configurable via `SyzygyPath`, `SyzygyProbeDepth`, `USE_TB_PROBE_ROOT` options
 
 **Threading Model:**
 - Search runs in a dedicated thread (`searchThread`)
@@ -244,6 +263,7 @@ The core search algorithm using alpha-beta with iterative deepening.
 - `TT` - Transposition table
 - `Evaluator` - Position evaluation
 - `OpeningBook` - Opening library (optional)
+- `Tablebase` - Syzygy endgame tablebases (optional)
 - `History` - History heuristic data
 - `plyStack` - Per-ply search state array
 
@@ -260,6 +280,7 @@ class Search {
   std::unique_ptr<TT> tt;
   std::unique_ptr<Evaluator> evaluator;
   std::unique_ptr<OpeningBook> book;
+  std::unique_ptr<Tablebase> tablebase;
   History history;
   
   // Per-ply search state - each PlyInfo owns its MoveGenerators
@@ -352,6 +373,53 @@ CONFIG_OVERRIDE_END();
 
 ---
 
+### Tablebase (Syzygy)
+
+Interface to Syzygy endgame tablebases via the Fathom library.
+
+**Tablebase Types:**
+- **WDL (Win/Draw/Loss):** Fast probe for search decisions
+- **DTZ (Distance To Zeroing):** For optimal root move selection, accounts for 50-move rule
+
+**WDL Results:**
+
+| Result      | Meaning                                        |
+|-------------|------------------------------------------------|
+| Win         | Position is won with perfect play              |
+| CursedWin   | Would be won but may draw due to 50-move rule  |
+| Draw        | Position is drawn with perfect play            |
+| BlessedLoss | Would be lost but may draw due to 50-move rule |
+| Loss        | Position is lost with perfect play             |
+
+**Limitations:**
+- Only positions without castling rights
+- Piece count must be within available TB range (typically 6-7 pieces)
+- Requires tablebase files on disk (~150GB for 7-piece)
+
+**Key Operations:**
+- `probeWDL(pos)` - Fast WDL probe for search nodes (thread-safe)
+- `probeRoot(pos)` - Full probe with DTZ and best move (root only)
+- `canProbe(pos)` - Check if position is probeable
+
+**UCI Options:**
+- `SyzygyPath` - Path(s) to tablebase files (semicolon-separated on Windows)
+- `SyzygyProbeDepth` - Minimum depth for in-search probing
+- `SyzygyProbeRoot` - Enable root probing (move filtering)
+
+```cpp
+class Tablebase {
+  bool initialized_;
+  int maxPieces_;      // Max pieces in loaded TBs (e.g., 6 or 7)
+  std::string tbPath_;
+  
+  TBResult probeWDL(const Position& pos) const;
+  TBProbeResult probeRoot(const Position& pos) const;
+  bool canProbe(const Position& pos) const;
+};
+```
+
+---
+
 ## Data Flow
 
 ### Search Flow
@@ -363,6 +431,7 @@ UciHandler receives "go" command
 Search::startSearch(Position, SearchLimits)
          │
          ├──► Check opening book for book move
+         ├──► Probe tablebases at root (filter moves to TB-optimal)
          │
          ▼
 Search::iterativeDeepening()
@@ -378,6 +447,7 @@ Search::iterativeDeepening()
 Search::pvSearch(alpha, beta, depth)  ◄──┐
          │                               │
          ├──► TT probe                   │
+         ├──► Tablebase WDL probe        │
          ├──► Null-move pruning          │
          ├──► MoveGenerator (on-demand)  │
          │         │                     │
@@ -457,15 +527,16 @@ ConfigManager::instance().eval().USE_MOBILITY
 
 ## Dependencies
 
-| Library              | Purpose               | Integration |
-|----------------------|-----------------------|-------------|
-| Boost.ProgramOptions | CLI argument parsing  | vcpkg       |
-| Boost.Serialization  | Opening book caching  | vcpkg       |
-| spdlog               | Logging (header-only) | vcpkg       |
-| yaml-cpp             | YAML config parsing   | vcpkg       |
-| GoogleTest           | Unit testing          | vcpkg       |
-| Google Benchmark     | Performance testing   | vcpkg       |
+| Library              | Purpose                  | Integration        |
+|----------------------|--------------------------|--------------------|
+| Boost.ProgramOptions | CLI argument parsing     | vcpkg              |
+| Boost.Serialization  | Opening book caching     | vcpkg              |
+| spdlog               | Logging (header-only)    | vcpkg              |
+| yaml-cpp             | YAML config parsing      | vcpkg              |
+| GoogleTest           | Unit testing             | vcpkg              |
+| Google Benchmark     | Performance testing      | vcpkg              |
+| Fathom               | Syzygy tablebase probing | CMake FetchContent |
 
 ---
 
-*Last updated: 2026-01-30*
+*Last updated: 2026-02-16*

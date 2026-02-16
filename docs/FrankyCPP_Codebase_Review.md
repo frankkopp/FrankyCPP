@@ -19,10 +19,10 @@ FrankyCPP is a production-ready C++ chess engine (v0.7 → v1.0) implementing th
 | **Build System**       | CMake 3.16+ (3.22+ for WSL) with Ninja generator                                                     |
 | **C++ Standard**       | C++20 (enforced via `target_compile_features`)                                                       |
 | **Package Management** | vcpkg manifest mode with pinned dependencies                                                         |
-| **Platforms**          | ✅ Windows (MSVC 2022), ✅ Linux/WSL (GCC 13/Clang 18), ✅ macOS-ready (Clang 18+)                  |
-| **CI/CD**              | ✅ GitHub Actions - Windows, Linux GCC, Linux Clang (all passing)                                   |
+| **Platforms**          | ✅ Windows (MSVC 2022), ✅ Linux/WSL (GCC 13/Clang 18), ✅ macOS-ready (Clang 18+)                      |
+| **CI/CD**              | ✅ GitHub Actions - Windows, Linux GCC, Linux Clang (all passing)                                     |
 | **Dependencies**       | Boost (program_options, serialization), spdlog (header-only), yaml-cpp, GoogleTest, Google Benchmark |
-| **Triplets**           | `x64-windows-static-md` (Windows), `x64-linux` (Linux/WSL)                                          |
+| **Triplets**           | `x64-windows-static-md` (Windows), `x64-linux` (Linux/WSL)                                           |
 
 ### Strengths
 - ✅ Well-documented `README.md` with build instructions for both platforms
@@ -224,19 +224,19 @@ The `types/` directory contains well-designed value types:
 
 ### Search
 
-| Feature                              | Status                                         |
-|--------------------------------------|------------------------------------------------|
-| **Alpha-Beta**                       | ✅ Implemented                                  |
-| **Iterative Deepening**              | ✅ With aspiration windows                      |
-| **Principal Variation Search (PVS)** | ✅ Configurable                                 |
-| **Null Move Pruning**                | ✅ With verification search, Zugzwang detection |
-| **Late Move Reductions (LMR)**       | ✅ Pre-computed table                           |
-| **Quiescence Search**                | ✅ With SEE pruning                             |
-| **Transposition Table**              | ✅ 16-byte entries, configurable size           |
-| **Killer Moves**                     | ✅ 2 slots per ply                              |
-| **History Heuristic**                | ✅ History + Counter moves                      |
+| Feature                              | Status                                                   |
+|--------------------------------------|----------------------------------------------------------|
+| **Alpha-Beta**                       | ✅ Implemented                                            |
+| **Iterative Deepening**              | ✅ With aspiration windows                                |
+| **Principal Variation Search (PVS)** | ✅ Configurable                                           |
+| **Null Move Pruning**                | ✅ With verification search, Zugzwang detection           |
+| **Late Move Reductions (LMR)**       | ✅ Pre-computed table                                     |
+| **Quiescence Search**                | ✅ With SEE pruning                                       |
+| **Transposition Table**              | ✅ 16-byte entries, configurable size                     |
+| **Killer Moves**                     | ✅ 2 slots per ply                                        |
+| **History Heuristic**                | ✅ History + Counter moves                                |
 | **Time Management**                  | ✅ Adaptive with complexity factor, best-move instability |
-| **Pondering**                        | ✅ Supported                                    |
+| **Pondering**                        | ✅ Supported                                              |
 
 ### Evaluation
 
@@ -331,16 +331,16 @@ The `types/` directory contains well-designed value types:
 
 #### Quick Improvements (Build/Code Quality)
 
-| #  | Item                           | Effort       | Complexity | Description                                                                              |
-|----|--------------------------------|--------------|------------|------------------------------------------------------------------------------------------|
-| Q1 | Add CMakePresets.json          | 🟢 2-4 hours | ✅ DONE     | IDE-agnostic build profiles (Debug, Release, CI)                                         |
-| Q2 | Add clang-tidy config          | 🟢 2-4 hours | ✅ DONE     | `.clang-tidy` added with project-aligned checks and exclusions                           |
-| Q3 | Add `ENABLE_SANITIZERS` option | 🟢 2-4 hours | ✅ DONE     | Debug-only ASan (MSVC) and ASan/UBSan (Clang/GNU)                                        |
+| #   | Item                           | Effort       | Complexity | Description                                                                              |
+|-----|--------------------------------|--------------|------------|------------------------------------------------------------------------------------------|
+| Q1  | Add CMakePresets.json          | 🟢 2-4 hours | ✅ DONE     | IDE-agnostic build profiles (Debug, Release, CI)                                         |
+| Q2  | Add clang-tidy config          | 🟢 2-4 hours | ✅ DONE     | `.clang-tidy` added with project-aligned checks and exclusions                           |
+| Q3  | Add `ENABLE_SANITIZERS` option | 🟢 2-4 hours | ✅ DONE     | Debug-only ASan (MSVC) and ASan/UBSan (Clang/GNU)                                        |
 | Q4a | WSL Linux build                | 🟢 1-2 days  | ✅ DONE     | Enable Linux build via WSL with GCC/Clang - **COMPLETE**                                 |
-| Q4b | GitHub Actions CI - Windows    | 🟡 2-3 days  | ✅ DONE     | Set up Windows build pipeline - **DEPLOYED & OPERATIONAL**                              |
-| Q4c | GitHub Actions CI - Linux      | 🟡 2-3 days  | ✅ DONE     | Set up Linux build pipeline - **DEPLOYED & OPERATIONAL**                                |
-| Q5 | Reduce header coupling         | 🟡 1-2 weeks | ⏭️ SKIP    | Low ROI - aggregate `types.h` is clear and convenient; compile times acceptable with PCH |
-| Q6 | Remove Stockfish references    | 🟢 1-2 hours | ✅ DONE     | GPL/MIT license fix in macros.h, Search.cpp, Evaluator.cpp                               |
+| Q4b | GitHub Actions CI - Windows    | 🟡 2-3 days  | ✅ DONE     | Set up Windows build pipeline - **DEPLOYED & OPERATIONAL**                               |
+| Q4c | GitHub Actions CI - Linux      | 🟡 2-3 days  | ✅ DONE     | Set up Linux build pipeline - **DEPLOYED & OPERATIONAL**                                 |
+| Q5  | Reduce header coupling         | 🟡 1-2 weeks | ⏭️ SKIP    | Low ROI - aggregate `types.h` is clear and convenient; compile times acceptable with PCH |
+| Q6  | Remove Stockfish references    | 🟢 1-2 hours | ✅ DONE     | GPL/MIT license fix in macros.h, Search.cpp, Evaluator.cpp                               |
 
 ---
 
@@ -463,16 +463,16 @@ Future improvements are tracked in the v1.x roadmap below.
 
 #### Quick Improvements (Q)
 
-| #  | Item                           | Effort       | Status  | Notes                                                                             |
-|----|--------------------------------|--------------|---------|-----------------------------------------------------------------------------------|
-| Q1 | Add CMakePresets.json          | 🟢 2-4 hours | ✅ DONE  | IDE-agnostic build profiles (Debug, Release, CI)                                  |
-| Q2 | Add clang-tidy config          | 🟢 2-4 hours | ✅ DONE  | `.clang-tidy` added with project-aligned checks and exclusions                    |
-| Q3 | Add `ENABLE_SANITIZERS` option | 🟢 2-4 hours | ✅ DONE  | Debug-only ASan (MSVC) and ASan/UBSan (Clang/GNU)                                 |
-| Q4a | WSL Linux build                | 🟢 1-2 days  | ✅ DONE  | Enable Linux build via WSL with GCC 13 and Clang 18 - **COMPLETE**               |
-| Q4b | GitHub Actions CI - Windows    | 🟡 2-3 days  | ✅ DONE  | Set up Windows build pipeline - **DEPLOYED & OPERATIONAL**                       |
-| Q4c | GitHub Actions CI - Linux      | 🟡 2-3 days  | ✅ DONE  | Set up Linux build pipeline - **DEPLOYED & OPERATIONAL**                         |
-| Q5 | Reduce header coupling         | 🟡 1-2 weeks | ⏭️ SKIP | Not worth complexity; `types.h` aggregate is clear and PCH mitigates compile time |
-| Q6 | Remove Stockfish references    | 🟢 1-2 hours | ✅ DONE  | GPL/MIT license fix in macros.h, Search.cpp, Evaluator.cpp                        |
+| #   | Item                           | Effort       | Status  | Notes                                                                             |
+|-----|--------------------------------|--------------|---------|-----------------------------------------------------------------------------------|
+| Q1  | Add CMakePresets.json          | 🟢 2-4 hours | ✅ DONE  | IDE-agnostic build profiles (Debug, Release, CI)                                  |
+| Q2  | Add clang-tidy config          | 🟢 2-4 hours | ✅ DONE  | `.clang-tidy` added with project-aligned checks and exclusions                    |
+| Q3  | Add `ENABLE_SANITIZERS` option | 🟢 2-4 hours | ✅ DONE  | Debug-only ASan (MSVC) and ASan/UBSan (Clang/GNU)                                 |
+| Q4a | WSL Linux build                | 🟢 1-2 days  | ✅ DONE  | Enable Linux build via WSL with GCC 13 and Clang 18 - **COMPLETE**                |
+| Q4b | GitHub Actions CI - Windows    | 🟡 2-3 days  | ✅ DONE  | Set up Windows build pipeline - **DEPLOYED & OPERATIONAL**                        |
+| Q4c | GitHub Actions CI - Linux      | 🟡 2-3 days  | ✅ DONE  | Set up Linux build pipeline - **DEPLOYED & OPERATIONAL**                          |
+| Q5  | Reduce header coupling         | 🟡 1-2 weeks | ⏭️ SKIP | Not worth complexity; `types.h` aggregate is clear and PCH mitigates compile time |
+| Q6  | Remove Stockfish references    | 🟢 1-2 hours | ✅ DONE  | GPL/MIT license fix in macros.h, Search.cpp, Evaluator.cpp                        |
 
 ---
 
