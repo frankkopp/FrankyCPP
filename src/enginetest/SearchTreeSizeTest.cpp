@@ -170,8 +170,8 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   CONFIG_OVERRIDE(s.USE_EXT_ADD_DEPTH = true;);
   CONFIG_OVERRIDE(s.USE_CHECK_EXT = true;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "70 CEXT"));
-  //  CONFIG_OVERRIDE(s.USE_THREAT_EXT = true;);
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "71 TEXT"));
+  // CONFIG_OVERRIDE(s.USE_THREAT_EXT = true;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "71 TEXT"));
 
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 warmup"));
 
@@ -182,19 +182,19 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
 
   CONFIG_OVERRIDE(s.USE_TB_PROBE_ROOT = true;);
   CONFIG_OVERRIDE(s.TB_ROOT_IMMEDIATE = false;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "80 TB Root"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "80 TBRoot"));
 
   CONFIG_OVERRIDE(s.TB_ROOT_IMMEDIATE = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "81 TB Root i"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "81 TBRooti"));
 
   // For TB Search test, disable immediate return so search actually runs and can use in-search probing
   CONFIG_OVERRIDE(s.TB_ROOT_IMMEDIATE = false;);
   CONFIG_OVERRIDE(s.USE_TB_PROBE_SEARCH = true;);
   CONFIG_OVERRIDE(s.USE_TB_PROBE_PV = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "85 TB Search"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "85 TBSearch"));
 
   CONFIG_OVERRIDE(s.TB_ROOT_IMMEDIATE = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "86 TB Search i"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "86 TBSearchi"));
 
   return result;
 }
