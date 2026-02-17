@@ -31,6 +31,7 @@
 #include <thread>
 #include <vector>
 
+#include <curl/curl.h>
 #include <openssl/evp.h>
 
 namespace fs = std::filesystem;
@@ -51,38 +52,41 @@ constexpr auto FILE_LIST_URL = "https://tablebase.lichess.ovh/tables/standard/do
 /// URL for the MD5 checksums file from Lichess
 constexpr auto MD5_CHECKSUMS_URL = "https://tablebase.lichess.ovh/tables/standard/md5";
 
-/// Download a text file and return its contents
+/// CURL write callback for string data
+size_t curlWriteStringCallback(const char* ptr, const size_t size, const size_t nmemb, void* userdata) {
+  const size_t totalSize = size * nmemb;
+  auto* buffer = static_cast<std::string*>(userdata);
+  buffer->append(ptr, totalSize);
+  return totalSize;
+}
+
+/// CURL write callback for file data
+size_t curlWriteFileCallback(const char* ptr, const size_t size, const size_t nmemb, void* userdata) {
+  auto* file = static_cast<std::ofstream*>(userdata);
+  const size_t totalSize = size * nmemb;
+  file->write(ptr, static_cast<std::streamsize>(totalSize));
+  return file->good() ? totalSize : 0;
+}
+
+/// Download a text file and return its contents using libcurl
 std::string downloadTextFile(const std::string& url) {
-  const std::string tempFile = fs::temp_directory_path().string() + "/syzygy_filelist.txt";
-
-#ifdef _WIN32
-  const std::string command = std::format(
-    "powershell -NoProfile -Command \"Invoke-WebRequest -Uri '{}' -OutFile '{}' -UseBasicParsing\" 2>nul",
-    url, tempFile);
-#else
-  const std::string command = std::format(
-    "curl -sL -o '{}' '{}'",
-    tempFile, url);
-#endif
-
-  const int result = std::system(command.c_str());
-  if (result != 0) {
+  CURL* curl = curl_easy_init();
+  if (!curl) {
     return "";
   }
 
-  std::ifstream file(tempFile);
-  if (!file.is_open()) {
-    return "";
-  }
+  std::string response;
+  curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteStringCallback);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+  curl_easy_setopt(curl, CURLOPT_TIMEOUT, 60L);  // 60 second timeout
+  curl_easy_setopt(curl, CURLOPT_USERAGENT, "FrankyCPP/1.0");
 
-  std::stringstream buffer;
-  buffer << file.rdbuf();
-  file.close();
+  const CURLcode res = curl_easy_perform(curl);
+  curl_easy_cleanup(curl);
 
-  std::error_code ec;
-  fs::remove(tempFile, ec);
-
-  return buffer.str();
+  return res == CURLE_OK ? response : "";
 }
 
 /// Count pieces in a tablebase filename (e.g., "KQvK" = 3, "KRBvKN" = 5)
@@ -251,9 +255,7 @@ DownloadResult TablebaseDownloader::download(const DownloadConfig& config,
     }
 
     // Download from the URL (already has full path from download.txt)
-    const bool success = downloadFile(url, destPath, config.verbose);
-
-    if (success) {
+    if (downloadFile(url, destPath, config.verbose)) {
       result.filesDownloaded++;
       progressInfo.success = true;
     } else {
@@ -328,7 +330,6 @@ VerifyResult TablebaseDownloader::verify(const std::string& path,
   std::ranges::sort(filesToVerify);
 
   const int totalFiles = static_cast<int>(filesToVerify.size());
-  LOG__INFO(Logger::get().TB_LOG, "Verifying {} tablebase files in {} (parallel)", totalFiles, path);
 
   // Structure to hold per-file verification result
   struct FileVerifyResult {
@@ -341,15 +342,17 @@ VerifyResult TablebaseDownloader::verify(const std::string& path,
   };
 
   // Determine thread count - use hardware concurrency, but cap at reasonable number
-  const unsigned int numThreads = std::min(std::thread::hardware_concurrency(), 8u);
-  ThreadPool pool(numThreads > 0 ? numThreads : 4);
+  const unsigned int numThreads = std::max(1U, std::min(std::thread::hardware_concurrency(), 16U));
+  ThreadPool pool(numThreads);
+
+  LOG__INFO(Logger::get().TB_LOG, "Verifying {} tablebase files in {} ({} parallel)", totalFiles, path, numThreads);
 
   // Submit all verification tasks
   std::vector<std::future<FileVerifyResult>> futures;
   futures.reserve(filesToVerify.size());
 
   for (const auto& filename : filesToVerify) {
-    const std::string filePath = path + "/" + filename;
+    const std::string filePath = std::format("{}/{}", path, filename);
 
     // Look up expected checksum
     const auto checksumIt = checksums.find(filename);
@@ -530,27 +533,53 @@ bool TablebaseDownloader::downloadFile(const std::string& url,
   }
 
   try {
-#ifdef _WIN32
-    const std::string command = std::format(
-      "powershell -NoProfile -Command \"Invoke-WebRequest -Uri '{}' -OutFile '{}' -UseBasicParsing\" 2>nul",
-      url, destPath);
-#else
-    const std::string command = std::format(
-      "curl -sL -o '{}' '{}'",
-      destPath, url);
-#endif
+    CURL* curl = curl_easy_init();
+    if (!curl) {
+      LOG__ERROR(Logger::get().TB_LOG, "Failed to initialize curl");
+      return false;
+    }
 
-    const int result = std::system(command.c_str());
+    std::ofstream outFile(destPath, std::ios::binary);
+    if (!outFile.is_open()) {
+      LOG__ERROR(Logger::get().TB_LOG, "Failed to open output file: {}", destPath);
+      curl_easy_cleanup(curl);
+      return false;
+    }
 
-    if (result != 0) {
-      LOG__DEBUG(Logger::get().TB_LOG, "Download command failed with code: {}", result);
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteFileCallback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &outFile);
+    curl_easy_setopt(curl, CURLOPT_USERAGENT, "FrankyCPP/1.0");
+    // No timeout for large files - they can take a while
+    curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1024L);  // 1KB/s minimum
+    curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 60L);     // for 60 seconds
+
+    const CURLcode res = curl_easy_perform(curl);
+
+    long httpCode = 0;
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+    curl_easy_cleanup(curl);
+    outFile.close();
+
+    if (res != CURLE_OK) {
+      LOG__DEBUG(Logger::get().TB_LOG, "Download failed: {} (curl error: {})",
+                 url, curl_easy_strerror(res));
+      std::error_code ec;
+      fs::remove(destPath, ec);
+      return false;
+    }
+
+    if (httpCode != 200) {
+      LOG__DEBUG(Logger::get().TB_LOG, "Download failed: {} (HTTP {})", url, httpCode);
       std::error_code ec;
       fs::remove(destPath, ec);
       return false;
     }
 
     std::error_code ec;
-    if (!fs::exists(destPath, ec) || ec) {
+    bool exists = fs::exists(destPath, ec);
+    if (!exists || ec) {
       fs::remove(destPath, ec);
       return false;
     }
@@ -654,7 +683,7 @@ DOWNLOAD SOURCES:
      - File list: https://tablebase.lichess.ovh/tables/standard/download.txt
 
   2. Sesse (original mirror):
-     http://tablebase.sesse.net/syzygy/
+     https://tablebase.sesse.net/syzygy/
 
   3. Torrent (best for 6-piece, ~150GB):
      Search for "Syzygy tablebases torrent" - widely available

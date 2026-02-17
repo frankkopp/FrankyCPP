@@ -63,7 +63,9 @@ int main(int argc, char* argv[]) {
   try {
     // clang-format off
 
+    // =========================================================================
     // Declare a group of options that will be allowed only on command line
+    // =========================================================================
     po::options_description generic("Generic options");
     generic.add_options()
       ("help,?", "produce help message")
@@ -102,9 +104,10 @@ int main(int argc, char* argv[]) {
         "target path for tablebase files\n"
         "(default: from config or platform default)");
 
-
+    // =========================================================================
     // Declare a group of options that will be allowed both on command line
     // and in config file
+    // =========================================================================
     po::options_description config("Configuration");
     config.add_options()
       ("log_lvl,l", po::value<std::string>()->default_value("warn"), "set general log level <critical|error|warn|info|debug|trace>")
@@ -113,8 +116,10 @@ int main(int argc, char* argv[]) {
       ("book,b", po::value<std::string>(&book_file), "opening book to use")
       ("booktype,t", po::value<std::string>(&book_type), "type of opening book <simple|san|pgn>");
 
+    // =========================================================================
     // Hidden options will be allowed both on command line and in config file,
     // but will not be shown to the user when printing help.
+    // =========================================================================
     po::options_description hidden("Hidden options");
     hidden.add_options()
       ("test", po::value<std::string>(), "test_hidden");
@@ -353,7 +358,7 @@ TABLEBASE SIZES (approximate):
 
 DOWNLOAD SOURCES:
   Primary:  https://tablebase.lichess.ovh/tables/standard/
-  Backup:   http://tablebase.sesse.net/syzygy/
+  Backup:   https://tablebase.sesse.net/syzygy/
 
 CONFIGURATION:
   Set TB_PATH in config/search.yaml to auto-detect tablebases at startup.
@@ -489,7 +494,7 @@ CONFIGURATION:
           std::cout << "\nWARNING: 6-piece tablebases are ~150GB.\n";
           std::cout << "Consider using torrent download for better reliability.\n";
           std::cout << "Download sources:\n";
-          std::cout << "  - http://tablebase.sesse.net/syzygy/\n";
+          std::cout << "  - https://tablebase.sesse.net/syzygy/\n";
           std::cout << "  - https://tablebase.lichess.ovh/tables/standard/\n\n";
         }
 
@@ -498,8 +503,7 @@ CONFIGURATION:
         downloadConfig.targetPath = targetPath;
         downloadConfig.verbose = true;
 
-        tablebase::TablebaseDownloader downloader;
-        const auto downloadResult = downloader.download(downloadConfig,
+        const auto downloadResult = tablebase::TablebaseDownloader::download(downloadConfig,
           [](const tablebase::DownloadProgress& progress) {
             std::cout << "\r[" << progress.percentComplete() << "%] "
                       << progress.filesCompleted << "/" << progress.totalFiles

@@ -377,6 +377,9 @@ find_package(nlohmann_json CONFIG REQUIRED)
 # OpenSSL for MD5 checksums in tablebase verification
 find_package(OpenSSL REQUIRED)
 
+# CURL for HTTP downloads (tablebase download)
+find_package(CURL REQUIRED)
+
 # =============================================================================
 # Fathom Tablebase Library (Syzygy probing)
 # =============================================================================

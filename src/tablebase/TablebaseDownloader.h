@@ -25,13 +25,13 @@
 //=============================================================================
 //
 // Provides functionality to download Syzygy tablebase files from Lichess mirror.
-// Uses platform-native download tools (curl on Linux, PowerShell on Windows).
+// Uses libcurl for HTTP/HTTPS downloads (cross-platform).
 //
 // Features:
 //   - Download by piece count (3, 4, 5, 6)
 //   - Progress reporting via callback
 //   - Fetches file list from server to ensure correct URLs
-//   - File verification after download
+//   - File verification after download using MD5 checksums
 //
 // Usage:
 //   TablebaseDownloader downloader;

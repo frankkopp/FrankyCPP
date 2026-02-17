@@ -11,7 +11,8 @@
     "benchmark",
     "yaml-cpp",
     "nlohmann-json",
-    "openssl"
+    "openssl",
+    "curl"
   ],
   "overrides": [
     {

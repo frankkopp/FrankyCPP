@@ -112,6 +112,7 @@ target_link_libraries(
         Boost::filesystem
         yaml-cpp::yaml-cpp
         OpenSSL::Crypto
+        CURL::libcurl
         PRIVATE
         fathom)
 
