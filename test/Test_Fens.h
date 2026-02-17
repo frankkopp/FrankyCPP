@@ -52,16 +52,16 @@ namespace Test_Fens {
     fen.emplace_back("1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -");             // mate 3
 
     // endgames
+    fen.emplace_back("8/1p3p2/6p1/3pk3/8/8/1R2K3/8 w - - 0 1"); // KRvKPPPP (no root TB)
+    fen.emplace_back("1r2k3/p6p/8/8/8/8/PP6/R3K3 w - - 0 1"); // 8 pieces, TB positions after exchanges (no root TB)
+    fen.emplace_back("5rk1/6p1/8/8/3Q4/8/5pP1/7K w - - 0 1"); // KQPvKRPP (Queen vs Rook+Pawn, no root TB but probes after captures)
+    fen.emplace_back("8/3r2k1/p1p4p/8/8/2P5/P7/1R4K1 w - - 0 1"); // 9 pieces: Rook exchanges and pawn captures lead to simple TB positions
+    fen.emplace_back("4k3/pp5p/8/8/8/8/6P1/4K2R w - - 0 1"); // 7 pieces: Rxh7 immediately reaches 6-piece KRKPPP
     fen.emplace_back("8/8/8/4k3/8/8/3Q4/4K3 w - - 0 1");  // KQK (White has KQ vs K)
     fen.emplace_back("8/8/8/4k3/8/8/1R6/4K3 w - - 0 1");  // KRK (White has KR vs K)
     fen.emplace_back("8/4P3/8/4k3/8/8/8/4K3 w - - 0 1");  // KPK (Pawn about to promote)
     fen.emplace_back("8/8/8/4k3/8/8/8/2B1KB2 w - - 0 1"); // KBBK (two bishops)
     fen.emplace_back("8/8/8/4k3/8/8/8/1NB1K3 w - - 0 1"); // KBNK (bishop and knight)
-    fen.emplace_back("8/8/8/4k3/8/8/1N6/N3K3 w - - 0 1"); // KNNK (two knights)
-    fen.emplace_back("8/8/8/4k3/8/8/3Q4/r3K3 w - - 0 1"); // KQvKR (queen vs rook)
-    fen.emplace_back("8/8/8/4k3/8/1P6/1R6/4K3 w - - 0 1");// KRPvK
-    fen.emplace_back("8/8/8/4k3/8/1P6/2P5/4K3 w - - 0 1");// KPPvK
-    fen.emplace_back("8/8/8/4k3/4p3/8/1R6/4K3 w - - 0 1");// KRvKP
 
     // 21
     // fen.emplace_back("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");

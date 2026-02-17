@@ -1358,7 +1358,7 @@ TEST_F(SearchTablebaseTest, RootProbeSkippedForLargePositions) {
 
   const SearchResult& result = search.getLastSearchResult();
 
-  // TB should NOT be used for starting position
+  // TB should NOT be used for starting position (too many pieces)
   EXPECT_FALSE(result.tbHit) << "TB should not be used for 32-piece position";
   EXPECT_NE(MOVE_NONE, result.bestMove) << "Search should still find a move";
 }
@@ -1567,7 +1567,6 @@ TEST_F(SearchTablebaseTest, SearchProbingProducesCutoffs) {
 
   const SearchStats& stats = search.getSearchStats();
 
-  // We should have some TB search hits
   LOG__INFO(Logger::get().TEST_LOG,
             "TB search stats: hits={} misses={} cutoffs={}",
             stats.tbSearchHits, stats.tbSearchMisses, stats.tbSearchCutoffs);
@@ -1674,4 +1673,274 @@ TEST_F(SearchTablebaseTest, ProbeLimitControlsPieceCount) {
   // (even after one capture, 4 pieces still exceeds limit)
   EXPECT_EQ(0ULL, stats.tbSearchHits)
     << "Should not probe positions exceeding TB_PROBE_LIMIT";
+}
+
+//=============================================================================
+// Tablebase Probing During Search (not at root)
+// These positions have 7+ pieces at root but reach <=6 pieces after captures
+//=============================================================================
+
+// 7-piece position: After Rxd5, reaches 6-piece KRK position
+// White has decisive advantage - rook captures hanging pawn
+TEST_F(SearchTablebaseTest, SevenPieceTBProbeAfterCapture) {
+  skipIfNoTablebases();
+
+  const std::string tbPath = findTablebasePath();
+  CONFIG_OVERRIDE(
+    s.USE_BOOK             = false;
+    s.TB_PATH              = tbPath;
+    s.USE_TB_PROBE_ROOT    = true;   // Enable root probing - but 7-piece won't trigger it
+    s.USE_TB_PROBE_SEARCH  = true;   // Enable search probing
+    s.TB_PROBE_DEPTH       = 1;      // Probe at depth >= 1 (realistic setting)
+    s.TB_PROBE_LIMIT       = 6;      // Probe up to 6-piece positions
+  );
+
+  // 7 pieces: KR vs. KPP + extra pawn on d5 that can be captured
+  // Position: White Ke1, Rb2; Black Ke5, Pd5, Pf7, Pg6
+  // After Rxd5 or other exchanges, reaches 6-piece TB territory
+  const Position pos("8/1p3p2/6p1/3pk3/8/8/1R2K3/8 w - - 0 1");
+
+  EXPECT_EQ(7, pos.getOccupiedBb().popcount()) << "Should be 7-piece position";
+
+  Search search;
+  search.isReady();
+
+  SearchLimits sl;
+  sl.depth = 10;
+
+  search.startSearch(pos, sl);
+  search.waitWhileSearching();
+
+  const SearchStats& stats = search.getSearchStats();
+  const SearchResult& result = search.getLastSearchResult();
+
+  LOG__INFO(Logger::get().TEST_LOG,
+            "7-piece TB search: tbRootHits={} tbSearchHits={} tbSearchCutoffs={} move={} value={}",
+            stats.tbRootHits, stats.tbSearchHits, stats.tbSearchCutoffs, result.bestMove.str(), result.bestMoveValue.str());
+
+  // Should have TB hits from positions after captures
+  EXPECT_GT(stats.tbSearchHits, 0ULL)
+    << "Search should probe TB after reaching 6-piece positions via captures";
+
+  EXPECT_EQ(stats.tbRootHits, 0ULL)
+    << "Should not probe TB at root for 7-piece position";
+}
+
+// 8-piece position: After exchanges, reaches 6-piece TB territory
+// Rook vs two pawns with possible captures leading to TB probe
+TEST_F(SearchTablebaseTest, EightPieceTBProbeAfterExchanges) {
+  skipIfNoTablebases();
+
+  const std::string tbPath = findTablebasePath();
+  CONFIG_OVERRIDE(
+    s.TB_PATH              = tbPath;
+    s.USE_TB_PROBE_ROOT    = true;   // Enable root probing - but 8-piece won't trigger it
+    s.USE_TB_PROBE_SEARCH  = true;   // Enable search probing
+    s.TB_PROBE_DEPTH       = 1;      // Probe at depth >= 1 (realistic setting)
+    s.TB_PROBE_LIMIT       = 6;
+    s.USE_BOOK             = false;
+  );
+
+  // 8 pieces: White Ke1, Ra1, Pa2, Pb2; Black Ke8, Rb8, Pa7, Ph7
+  // Rook exchanges and pawn captures lead to TB positions
+  const Position pos("1r2k3/p6p/8/8/8/8/PP6/R3K3 w - - 0 1");
+
+  EXPECT_EQ(8, pos.getOccupiedBb().popcount()) << "Should be 8-piece position";
+
+  Search search;
+  search.isReady();
+
+  SearchLimits sl;
+  sl.depth = 10;
+
+  search.startSearch(pos, sl);
+  search.waitWhileSearching();
+
+  const SearchStats& stats = search.getSearchStats();
+
+  LOG__INFO(Logger::get().TEST_LOG,
+            "8-piece TB search: tbRootHits={} tbSearchHits={} tbSearchCutoffs={}",
+            stats.tbRootHits, stats.tbSearchHits, stats.tbSearchCutoffs);
+
+  EXPECT_GT(stats.tbSearchHits, 0ULL)
+    << "Search should probe TB after reaching <=6 piece positions";
+
+  EXPECT_EQ(stats.tbRootHits, 0ULL)
+    << "Should not probe TB at root for 8-piece position";
+}
+
+// 7-piece endgame: KQPKRP - Queen+Pawn vs Rook+Pawn
+// After captures, reaches 6-piece or smaller TB positions
+TEST_F(SearchTablebaseTest, QueenVsRookPawnTBProbe) {
+  skipIfNoTablebases();
+
+  const std::string tbPath = findTablebasePath();
+  CONFIG_OVERRIDE(
+    s.TB_PATH              = tbPath;
+    s.USE_TB_PROBE_ROOT    = true;   // Enable root probing - but 7-piece won't trigger it
+    s.USE_TB_PROBE_SEARCH  = true;   // Enable search probing
+    s.TB_PROBE_DEPTH       = 1;      // Probe at depth >= 1 (realistic setting)
+    s.TB_PROBE_LIMIT       = 6;
+    s.USE_BOOK             = false;
+  );
+
+  // 7 pieces: White Kh1, Qd4, Pg2; Black Kg8, Rf8, Pf2, Pg7
+  // Queen can capture f2 pawn, reaching 6-piece position
+  const Position pos("5rk1/6p1/8/8/3Q4/8/5pP1/7K w - - 0 1");
+
+  EXPECT_EQ(7, pos.getOccupiedBb().popcount()) << "Should be 7-piece position";
+
+  Search search;
+  search.isReady();
+
+  SearchLimits sl;
+  sl.depth = 10;
+
+  search.startSearch(pos, sl);
+  search.waitWhileSearching();
+
+  const SearchStats& stats = search.getSearchStats();
+  const SearchResult& result = search.getLastSearchResult();
+
+  LOG__INFO(Logger::get().TEST_LOG,
+            "KQKRP TB search: tbRootHits={} tbSearchHits={} move={} value={}",
+            stats.tbRootHits, stats.tbSearchHits, result.bestMove.str(), result.bestMoveValue.str());
+
+  EXPECT_GT(stats.tbSearchHits, 0ULL)
+    << "Should probe 6-piece TB after captures";
+
+  EXPECT_EQ(stats.tbRootHits, 0ULL)
+    << "Should not probe TB at root for 7-piece position";
+}
+
+// 7-piece tactical position: Forced sequence leads to TB position
+// White to play: After Bxf7+ Kxf7, Qxd8 reaching 5-piece KQKP
+TEST_F(SearchTablebaseTest, TacticalSequenceToTB) {
+  skipIfNoTablebases();
+
+  const std::string tbPath = findTablebasePath();
+  CONFIG_OVERRIDE(
+    s.TB_PATH              = tbPath;
+    s.USE_TB_PROBE_ROOT    = true;   // Enable root probing - but 7-piece won't trigger it
+    s.USE_TB_PROBE_SEARCH  = true;   // Enable search probing
+    s.TB_PROBE_DEPTH       = 1;      // Probe at depth >= 1 (realistic setting)
+    s.TB_PROBE_LIMIT       = 6;
+    s.USE_BOOK             = false;
+  );
+
+  // 7 pieces: White Ke1, Qe2, Bb5, Pg2; Black Kf8, Qd8, Pf7
+  // Tactical line: Bxf7+ threats lead to exchanges
+  const Position pos("3q1k2/5p2/8/1B6/8/8/4Q1P1/4K3 w - - 0 1");
+
+  EXPECT_EQ(7, pos.getOccupiedBb().popcount()) << "Should be 7-piece position";
+
+  Search search;
+  search.isReady();
+
+  SearchLimits sl;
+  sl.depth = 12;  // Need deeper search for tactical sequence
+
+  search.startSearch(pos, sl);
+  search.waitWhileSearching();
+
+  const SearchStats& stats = search.getSearchStats();
+  const SearchResult& result = search.getLastSearchResult();
+
+  LOG__INFO(Logger::get().TEST_LOG,
+            "Tactical TB search: tbRootHits={} tbSearchHits={} tbSearchCutoffs={} move={} value={}",
+            stats.tbRootHits, stats.tbSearchHits, stats.tbSearchCutoffs, result.bestMove.str(), result.bestMoveValue.str());
+
+  EXPECT_GT(stats.tbSearchHits, 0ULL)
+    << "Tactical sequence should reach TB positions";
+
+  EXPECT_EQ(stats.tbRootHits, 0ULL)
+    << "Should not probe TB at root for 7-piece position";
+}
+
+// 9-piece rook endgame: Multiple captures lead to TB
+// Common practical endgame type
+TEST_F(SearchTablebaseTest, NinePieceRookEndgameTBProbe) {
+  skipIfNoTablebases();
+
+  const std::string tbPath = findTablebasePath();
+  CONFIG_OVERRIDE(
+    s.TB_PATH              = tbPath;
+    s.USE_TB_PROBE_ROOT    = true;   // Enable root probing - but 9-piece won't trigger it
+    s.USE_TB_PROBE_SEARCH  = true;   // Enable search probing
+    s.TB_PROBE_DEPTH       = 1;      // Probe at depth >= 1 (realistic setting)
+    s.TB_PROBE_LIMIT       = 6;
+    s.USE_BOOK             = false;
+  );
+
+  // 9 pieces: White Kg1, Rb1, Pa2, Pc3; Black Kg7, Rd7, Pa6, Pc6, Ph6
+  // Rook exchanges and pawn captures lead to simple TB positions
+  const Position pos("8/3r2k1/p1p4p/8/8/2P5/P7/1R4K1 w - - 0 1");
+
+  EXPECT_EQ(9, pos.getOccupiedBb().popcount()) << "Should be 9-piece position";
+
+  Search search;
+  search.isReady();
+
+  SearchLimits sl;
+  sl.depth = 10;
+
+  search.startSearch(pos, sl);
+  search.waitWhileSearching();
+
+  const SearchStats& stats = search.getSearchStats();
+
+  LOG__INFO(Logger::get().TEST_LOG,
+            "9-piece rook endgame TB search: tbRootHits={} tbSearchHits={} tbSearchCutoffs={}",
+            stats.tbRootHits, stats.tbSearchHits, stats.tbSearchCutoffs);
+
+  // Should hit TB when reaching 6-piece positions after multiple captures
+  EXPECT_GT(stats.tbSearchHits, 0ULL)
+    << "Deep search in 9-piece endgame should reach TB positions";
+
+  EXPECT_EQ(stats.tbRootHits, 0ULL)
+    << "Should not probe TB at root for 9-piece position";
+}
+
+// 7-piece position with immediate capture option
+// White Rxh7 immediately creates 6-piece KRK position (with pawns)
+TEST_F(SearchTablebaseTest, ImmediateCaptureToTB) {
+  skipIfNoTablebases();
+
+  const std::string tbPath = findTablebasePath();
+  CONFIG_OVERRIDE(
+    s.TB_PATH              = tbPath;
+    s.USE_TB_PROBE_ROOT    = true;   // Enable root probing - but 7-piece won't trigger it
+    s.USE_TB_PROBE_SEARCH  = true;   // Enable search probing
+    s.TB_PROBE_DEPTH       = 1;      // Probe at depth >= 1 (realistic setting)
+    s.TB_PROBE_LIMIT       = 6;
+    s.USE_BOOK             = false;
+  );
+
+  // 7 pieces: White Ke1, Rh1, Pg2; Black Ke8, Ph7, Pa7, Pb7
+  // Rxh7 immediately reaches 6-piece KRKPPP
+  const Position pos("4k3/pp5p/8/8/8/8/6P1/4K2R w - - 0 1");
+
+  EXPECT_EQ(7, pos.getOccupiedBb().popcount()) << "Should be 7-piece position";
+
+  Search search;
+  search.isReady();
+
+  SearchLimits sl;
+  sl.depth = 8;
+
+  search.startSearch(pos, sl);
+  search.waitWhileSearching();
+
+  const SearchStats& stats = search.getSearchStats();
+  const SearchResult& result = search.getLastSearchResult();
+
+  LOG__INFO(Logger::get().TEST_LOG,
+            "Immediate capture TB: tbRootHits={} tbSearchHits={} move={} value={}",
+            stats.tbRootHits, stats.tbSearchHits, result.bestMove.str(), result.bestMoveValue.str());
+
+  EXPECT_GT(stats.tbSearchHits, 0ULL)
+    << "Immediate capture should allow TB probe at depth 1";
+
+  EXPECT_EQ(stats.tbRootHits, 0ULL)
+    << "Should not probe TB at root for 7-piece position";
 }

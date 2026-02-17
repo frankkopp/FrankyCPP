@@ -173,12 +173,11 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   // CONFIG_OVERRIDE(s.USE_THREAT_EXT = true;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "71 TEXT"));
 
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 warmup"));
-
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "01 pre"));
-
   CONFIG_OVERRIDE(s.USE_SINGULAR_EXT = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "72 SEXT"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "72 SEXT"));
+
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 warmup"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "01 pre"));
 
   CONFIG_OVERRIDE(s.USE_TB_PROBE_ROOT = true;);
   CONFIG_OVERRIDE(s.TB_ROOT_IMMEDIATE = false;);
