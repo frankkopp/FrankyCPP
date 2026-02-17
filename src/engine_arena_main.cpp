@@ -192,9 +192,14 @@ int main(int argc, char* argv[]) {
           result.engineName + " " + result.engineVersion
         });
 
-        // Save results
-        std::string path = writer.writeBenchmarkResult(result);
-        std::cout << "\nResults saved to: " << path << std::endl;
+        // Save results only if notes are provided (non-empty)
+        // This allows ad-hoc runs without polluting the results file
+        if (!result.notes.empty()) {
+          const std::string path = writer.writeBenchmarkResult(result);
+          std::cout << "\nResults saved to: " << path << std::endl;
+        } else {
+          std::cout << "\n[Ad-hoc run] Results not saved (no notes provided)" << std::endl;
+        }
       }
 
       // Show history

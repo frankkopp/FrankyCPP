@@ -1032,7 +1032,7 @@ benchmarks:
     engineVersion: "v1.3"
     depth: 10
     hashSizeMB: 128
-    notes: "Current development version"
+    # notes: "Current development version"
 
   - name: "v1.3 External"
     enginePath: "Release/FrankyCPP_v1.3/FrankyCPP_v1.3.exe"
@@ -1040,7 +1040,7 @@ benchmarks:
     engineVersion: "v1.3"
     depth: 10
     hashSizeMB: 128
-    notes: "Current development version"
+    # notes: "Current development version"
 
 #  - name: "v1.1 External"
 #    enginePath: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
