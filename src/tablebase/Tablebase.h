@@ -131,7 +131,7 @@ public:
 
   /// Probe WDL only (faster, suitable for search nodes).
   /// Returns the "pure" theoretical WDL result without 50-move rule considerations.
-  /// For positions near the 50-move limit, use probeRoot which respects halfmove clock.
+  /// For positions near the 50-move limit, use probeRoot, which respects halfmove clock.
   /// @param pos  Position to probe
   /// @return WDL result or Failed if probe unsuccessful
   [[nodiscard]] TBResult probeWDL(const Position& pos) const;

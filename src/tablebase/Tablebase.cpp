@@ -22,6 +22,7 @@
 #include "common/Logging.h"
 
 #include <algorithm>// for std::replace
+#include <filesystem>
 
 // Fathom C library header
 extern "C" {
@@ -105,9 +106,10 @@ namespace tablebase {
       // Fathom uses the same square mapping as FrankyCPP (A1=0, H1=7, A8=56, H8=63)
       const auto from      = static_cast<Square>(TB_GET_FROM(fathomMove));
       const auto to        = static_cast<Square>(TB_GET_TO(fathomMove));
-      const unsigned promo = TB_GET_PROMOTES(fathomMove);
 
       // Validate squares are within valid range (0-63)
+      // Square.isValid() checks for 0..63 but we can be sure the from/to are >= 0
+      // since they're unsigned, so we just check the upper bound against SQ_NONE (64)
       if (from >= SQ_NONE || to >= SQ_NONE) {
         LOG__WARN(Logger::get().TB_LOG, "Tablebase: Invalid move squares from={} to={}",
                   static_cast<int>(from), static_cast<int>(to));
@@ -117,20 +119,15 @@ namespace tablebase {
       // Get the piece on the from square for move type detection
       const Piece movingPiece = pos.getPiece(from);
 
-      // Defensive check: verify there's actually a piece on the from square
-      if (movingPiece == PIECE_NONE) {
-        LOG__WARN(Logger::get().TB_LOG, "Tablebase: No piece on from square {} in position {}",
-                  from.str(), pos.strFen());
-        return MOVE_NONE;
-      }
+      // Verify there's actually a piece on the from square
+      assert(movingPiece != PIECE_NONE);
 
       // Handle promotions
+      const unsigned promo = TB_GET_PROMOTES(fathomMove);
       if (promo != TB_PROMOTES_NONE) {
         // Verify it's actually a pawn moving
-        if (typeOf(movingPiece) != PAWN) {
-          LOG__WARN(Logger::get().TB_LOG, "Tablebase: Promotion move but piece is '{}' not pawn",
-                    str(movingPiece));
-        }
+        assert(typeOf(movingPiece) == PAWN);
+
         PieceType pt{};
         switch (promo) {
           case TB_PROMOTES_QUEEN:
@@ -211,11 +208,7 @@ namespace tablebase {
     }
 
     // Normalize path for the platform (Fathom expects native separators)
-    std::string normalizedPath = path;
-#ifdef _WIN32
-    // Convert forward slashes to backslashes for Windows
-    std::ranges::replace(normalizedPath, '/', '\\');
-#endif
+    const std::string normalizedPath = std::filesystem::path(path).make_preferred().string();
 
     LOG__INFO(Logger::get().TB_LOG, "Tablebase: Initializing from path: {}", normalizedPath);
 
