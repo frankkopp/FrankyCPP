@@ -22,8 +22,6 @@
 
 #include <vector>
 
-#include "types/types.h"
-
 namespace Test_Fens {
   static std::vector<std::string> getFENs() {
 
@@ -52,6 +50,18 @@ namespace Test_Fens {
     fen.emplace_back("4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -");                   // mate 3
     fen.emplace_back("1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -");             // mate 3
     fen.emplace_back("1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -");             // mate 3
+
+    // endgames
+    fen.emplace_back("8/8/8/4k3/8/8/3Q4/4K3 w - - 0 1");  // KQK (White has KQ vs K)
+    fen.emplace_back("8/8/8/4k3/8/8/1R6/4K3 w - - 0 1");  // KRK (White has KR vs K)
+    fen.emplace_back("8/4P3/8/4k3/8/8/8/4K3 w - - 0 1");  // KPK (Pawn about to promote)
+    fen.emplace_back("8/8/8/4k3/8/8/8/2B1KB2 w - - 0 1"); // KBBK (two bishops)
+    fen.emplace_back("8/8/8/4k3/8/8/8/1NB1K3 w - - 0 1"); // KBNK (bishop and knight)
+    fen.emplace_back("8/8/8/4k3/8/8/1N6/N3K3 w - - 0 1"); // KNNK (two knights)
+    fen.emplace_back("8/8/8/4k3/8/8/3Q4/r3K3 w - - 0 1"); // KQvKR (queen vs rook)
+    fen.emplace_back("8/8/8/4k3/8/1P6/1R6/4K3 w - - 0 1");// KRPvK
+    fen.emplace_back("8/8/8/4k3/8/1P6/2P5/4K3 w - - 0 1");// KPPvK
+    fen.emplace_back("8/8/8/4k3/4p3/8/1R6/4K3 w - - 0 1");// KRvKP
 
     // 21
     // fen.emplace_back("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -");
@@ -481,4 +491,4 @@ namespace Test_Fens {
 
 }// namespace Test_Fens
 
-#endif//FRANKYCPP_TEST_FENS_H
+#endif// FRANKYCPP_TEST_FENS_H

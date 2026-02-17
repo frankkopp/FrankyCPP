@@ -26,7 +26,7 @@
 
 using namespace tablebase;
 
-class TablebaseDownloaderTest : public ::testing::Test {
+class TablebaseDownloaderTest : public testing::Test {
 public:
   static void SetUpTestSuite() {
     NEWLINE;

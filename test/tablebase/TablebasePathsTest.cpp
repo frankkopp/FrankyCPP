@@ -107,6 +107,12 @@ TEST_F(TablebasePathsTest, validateTablebasePath_directoryWithoutTBFiles) {
   LOG__INFO(Logger::get().TEST_LOG, "Current directory has TB files: {}", result);
 }
 
+TEST_F(TablebasePathsTest, validateTablebasePath_hasTBFiles) {
+  // Current directory exists but likely has no .rtbw/.rtbz files
+  // This test may pass or fail depending on where tests are run
+  const bool result = validateTablebasePath(getConfiguredPath());
+  LOG__INFO(Logger::get().TEST_LOG, "Directory {} has TB files: {}", getConfiguredPath(), result);
+}
 //=============================================================================
 // countTablebaseFiles Tests
 //=============================================================================

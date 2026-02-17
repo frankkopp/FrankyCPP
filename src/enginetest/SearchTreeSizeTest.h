@@ -113,7 +113,7 @@ private:
   SearchTreeSize::Result featureMeasurements(int d, milliseconds mt, const std::string& fen);
 
   /// Measures tree size for a single configuration.
-  SearchTreeSize::SingleTest measureTreeSize(Search& search, const Position& position, SearchLimits searchLimits, const std::string& featureName) const;
+  SearchTreeSize::SingleTest measureTreeSize(Search& search, const Position& position, const SearchLimits& searchLimits, const std::string& featureName) const;
 };
 
 

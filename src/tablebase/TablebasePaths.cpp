@@ -23,6 +23,7 @@
 #include "config/ConfigManager.h"
 
 #include <filesystem>
+#include <vector>
 
 namespace fs = std::filesystem;
 
@@ -36,6 +37,24 @@ bool isTBFile(const fs::path& path, bool& isWDL, bool& isDTZ) {
   isWDL = ext == ".rtbw";
   isDTZ = ext == ".rtbz";
   return isWDL || isDTZ;
+}
+
+/// Count pieces in a tablebase filename (e.g., "KQvK" = 3, "KRBvKN" = 5)
+int countPiecesInFilename(const std::string& filename) {
+  // Strip extension and path
+  std::string name = filename;
+  const size_t dot = name.find('.');
+  if (dot != std::string::npos) {
+    name = name.substr(0, dot);
+  }
+
+  int count = 0;
+  for (const char c : name) {
+    if (c == 'K' || c == 'Q' || c == 'R' || c == 'B' || c == 'N' || c == 'P') {
+      count++;
+    }
+  }
+  return count;
 }
 
 } // anonymous namespace
@@ -178,6 +197,64 @@ std::pair<int, int> countTablebaseFiles(const std::string& path) {
   return {wdlCount, dtzCount};
 }
 
+/// Counts of files by piece count
+struct PieceCountStats {
+  int wdl3{0}, wdl4{0}, wdl5{0}, wdl6{0};
+  int dtz3{0}, dtz4{0}, dtz5{0}, dtz6{0};
+
+  [[nodiscard]] int totalWdl() const { return wdl3 + wdl4 + wdl5 + wdl6; }
+  [[nodiscard]] int totalDtz() const { return dtz3 + dtz4 + dtz5 + dtz6; }
+  [[nodiscard]] bool has3piece() const { return wdl3 > 0 || dtz3 > 0; }
+  [[nodiscard]] bool has4piece() const { return wdl4 > 0 || dtz4 > 0; }
+  [[nodiscard]] bool has5piece() const { return wdl5 > 0 || dtz5 > 0; }
+  [[nodiscard]] bool has6piece() const { return wdl6 > 0 || dtz6 > 0; }
+};
+
+/// Count tablebase files by piece count
+PieceCountStats countTablebaseFilesByPiece(const std::string& path) {
+  PieceCountStats stats;
+
+  if (path.empty()) {
+    return stats;
+  }
+
+  std::error_code ec;
+  if (!fs::exists(path, ec) || !fs::is_directory(path, ec)) {
+    return stats;
+  }
+
+  for (const auto& entry : fs::directory_iterator(path, ec)) {
+    if (ec) break;
+    if (!entry.is_regular_file()) continue;
+
+    bool isWDL = false;
+    bool isDTZ = false;
+    if (!isTBFile(entry.path(), isWDL, isDTZ)) continue;
+
+    const int pieces = countPiecesInFilename(entry.path().filename().string());
+
+    if (isWDL) {
+      switch (pieces) {
+        case 3: ++stats.wdl3; break;
+        case 4: ++stats.wdl4; break;
+        case 5: ++stats.wdl5; break;
+        case 6: ++stats.wdl6; break;
+        default: break;
+      }
+    } else if (isDTZ) {
+      switch (pieces) {
+        case 3: ++stats.dtz3; break;
+        case 4: ++stats.dtz4; break;
+        case 5: ++stats.dtz5; break;
+        case 6: ++stats.dtz6; break;
+        default: break;
+      }
+    }
+  }
+
+  return stats;
+}
+
 //=============================================================================
 // Status Reporting
 //=============================================================================
@@ -193,26 +270,30 @@ std::string getTablebaseStatus(const std::string& path) {
     return "Invalid tablebase path: " + tbPath;
   }
 
-  const auto [wdlCount, dtzCount] = countTablebaseFiles(tbPath);
+  // Count files by piece count for accurate reporting
+  const auto stats = countTablebaseFilesByPiece(tbPath);
+  const int wdlCount = stats.totalWdl();
+  const int dtzCount = stats.totalDtz();
 
   if (wdlCount == 0 && dtzCount == 0) {
     return "No tablebase files found in: " + tbPath;
   }
 
-  // Estimate piece count based on file count
-  // 3-piece: 6 files, 4-piece: 35 files, 5-piece: 290 files, 6-piece: ~2000 files
+  // Build description based on actual piece counts found
+  std::vector<int> pieceCounts;
+  if (stats.has3piece()) pieceCounts.push_back(3);
+  if (stats.has4piece()) pieceCounts.push_back(4);
+  if (stats.has5piece()) pieceCounts.push_back(5);
+  if (stats.has6piece()) pieceCounts.push_back(6);
+
   std::string pieceEstimate;
-  const int totalFiles = wdlCount + dtzCount;
-  if (totalFiles >= 3000) {
-    pieceEstimate = "6+ piece";
-  } else if (totalFiles >= 400) {
-    pieceEstimate = "5-6 piece";
-  } else if (totalFiles >= 50) {
-    pieceEstimate = "4-5 piece";
-  } else if (totalFiles >= 10) {
-    pieceEstimate = "3-4 piece";
-  } else {
+  if (pieceCounts.empty()) {
     pieceEstimate = "partial";
+  } else if (pieceCounts.size() == 1) {
+    pieceEstimate = std::to_string(pieceCounts[0]) + "-piece";
+  } else {
+    pieceEstimate = std::to_string(pieceCounts.front()) + "-" +
+                    std::to_string(pieceCounts.back()) + " piece";
   }
 
   return pieceEstimate + " tablebases available (" +

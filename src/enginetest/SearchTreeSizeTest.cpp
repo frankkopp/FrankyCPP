@@ -37,143 +37,164 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   const Position position(fen);
 
   CONFIG_OVERRIDE_START()
-    s.USE_BOOK   = false;
-    s.USE_PONDER = false;
+  s.USE_BOOK   = false;
+  s.USE_PONDER = false;
 
-    s.USE_ALPHABETA = false;
-    s.USE_PVS       = false;
-    s.USE_ASP       = false;
+  s.USE_ALPHABETA = false;
+  s.USE_PVS       = false;
+  s.USE_ASP       = false;
 
-    s.USE_QUIESCENCE      = false;
-    s.USE_QS_STANDPAT_CUT = false;
-    s.USE_QS_SEE          = false;
+  s.USE_QUIESCENCE      = false;
+  s.USE_QS_STANDPAT_CUT = false;
+  s.USE_QS_SEE          = false;
 
-    s.USE_TT              = false;
-    s.TT_SIZE_MB          = 64;
-    s.USE_TT_VALUE        = false;
-    s.USE_TT_PV_MOVE_SORT = false;
-    s.USE_QS_TT           = false;
-    s.USE_EVAL_TT         = false;
+  s.USE_TT              = false;
+  s.TT_SIZE_MB          = 64;
+  s.USE_TT_VALUE        = false;
+  s.USE_TT_PV_MOVE_SORT = false;
+  s.USE_QS_TT           = false;
+  s.USE_EVAL_TT         = false;
 
-    // Syzygy tablebase probing - disable for tree size measurements
-    s.USE_TB_PROBE_ROOT   = false;
-    s.USE_TB_PROBE_SEARCH = false;
-    s.USE_TB_PROBE_PV     = false;
+  // Syzygy tablebase probing - disable for tree size measurements
+  s.USE_TB_PROBE_ROOT   = false;
+  s.TB_ROOT_IMMEDIATE   = false;
+  s.USE_TB_PROBE_SEARCH = false;
+  s.USE_TB_PROBE_PV     = false;
 
-    s.USE_TT_PV_MOVE_SORT = false;
-    s.USE_KILLER_MOVES    = false;
-    s.USE_HISTORY_COUNTER = false;
-    s.USE_HISTORY_MOVES   = false;
+  s.USE_TT_PV_MOVE_SORT = false;
+  s.USE_KILLER_MOVES    = false;
+  s.USE_HISTORY_COUNTER = false;
+  s.USE_HISTORY_MOVES   = false;
 
-    s.USE_MDP        = false;
-    s.USE_RAZORING   = false;
-    s.USE_RFP        = false;
-    s.USE_NMP        = false;
-    s.USE_NMP_VERIFY = false;
-    s.USE_IID        = false;
+  s.USE_MDP        = false;
+  s.USE_RAZORING   = false;
+  s.USE_RFP        = false;
+  s.USE_NMP        = false;
+  s.USE_NMP_VERIFY = false;
+  s.USE_IID        = false;
 
-    s.USE_FP  = false;
-    s.USE_QFP = false;
-    s.USE_LMR = false;
-    s.USE_LMP = false;
+  s.USE_FP  = false;
+  s.USE_QFP = false;
+  s.USE_LMR = false;
+  s.USE_LMP = false;
 
-    s.USE_EXTENSIONS    = false;
-    s.USE_CHECK_EXT     = false;
-    s.USE_THREAT_EXT    = false;
-    s.USE_EXT_ADD_DEPTH = false;
-    s.USE_SINGULAR_EXT  = false;
+  s.USE_EXTENSIONS    = false;
+  s.USE_CHECK_EXT     = false;
+  s.USE_THREAT_EXT    = false;
+  s.USE_EXT_ADD_DEPTH = false;
+  s.USE_SINGULAR_EXT  = false;
   CONFIG_OVERRIDE_END();
 
   // ***********************************
   // TESTS
 
-  ptrToSpecial1 = &search.getSearchStats().ttHit;
-  ptrToSpecial2 = &search.getSearchStats().ttMiss;
+  ptrToSpecial1 = &search.getSearchStats().tbRootHits;
+  ptrToSpecial2 = &search.getSearchStats().tbSearchCutoffs;
 
   // pure MiniMax
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 MINIMAX"));
 
   CONFIG_OVERRIDE(s.USE_ALPHABETA = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "10 AlphaBeta"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "10 AlphaBeta"));
 
   CONFIG_OVERRIDE(s.USE_PVS = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "15 PVS"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "15 PVS"));
 
   CONFIG_OVERRIDE(s.USE_ASP = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "18 ASP"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "18 ASP"));
 
-  CONFIG_OVERRIDE(s.USE_KILLER_MOVES    = true;);
+  CONFIG_OVERRIDE(s.USE_KILLER_MOVES = true;);
   CONFIG_OVERRIDE(s.USE_HISTORY_COUNTER = true;);
-  CONFIG_OVERRIDE(s.USE_HISTORY_MOVES   = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "20 History"));
+  CONFIG_OVERRIDE(s.USE_HISTORY_MOVES = true;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "20 History"));
 
   CONFIG_OVERRIDE(s.USE_IID = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "25 IID"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "25 IID"));
 
   CONFIG_OVERRIDE(s.USE_TT = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "30 TT"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "30 TT"));
 
   //  CONFIG_OVERRIDE(s.TT_SIZE_MB = 1'024;);
   //  search.resizeTT();
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "23 TT 1.024"));
 
   CONFIG_OVERRIDE(s.USE_TT_PV_MOVE_SORT = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "35 PVSort"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "35 PVSort"));
 
   CONFIG_OVERRIDE(s.USE_TT_VALUE = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "36 TT Cuts"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "36 TT Cuts"));
 
   CONFIG_OVERRIDE(s.USE_EVAL_TT = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "37 TT Eval"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "37 TT Eval"));
 
   CONFIG_OVERRIDE(s.USE_QUIESCENCE = true;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "40 QS"));
 
   CONFIG_OVERRIDE(s.USE_QS_TT = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "41 QS TT"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "41 QS TT"));
 
   CONFIG_OVERRIDE(s.USE_QS_STANDPAT_CUT = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "42 QS SPAT"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "42 QS SPAT"));
 
   CONFIG_OVERRIDE(s.USE_QS_SEE = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "43 QS SEE"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "43 QS SEE"));
 
   CONFIG_OVERRIDE(s.USE_MDP = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "50 MDP"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "50 MDP"));
 
   CONFIG_OVERRIDE(s.USE_RAZORING = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "50 RAZOR"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "50 RAZOR"));
 
   CONFIG_OVERRIDE(s.USE_RFP = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "51 RFP"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "51 RFP"));
 
   CONFIG_OVERRIDE(s.USE_NMP = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "52 NMP"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "52 NMP"));
 
   CONFIG_OVERRIDE(s.USE_NMP_VERIFY = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "53 NMP Ver"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "53 NMP Ver"));
 
   CONFIG_OVERRIDE(s.USE_FP = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "60 FP"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "60 FP"));
 
   CONFIG_OVERRIDE(s.USE_LMR = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "65 LMR"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "65 LMR"));
 
   CONFIG_OVERRIDE(s.USE_LMP = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "66 LMP"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "66 LMP"));
 
   CONFIG_OVERRIDE(s.USE_QFP = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "67 QFP"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "67 QFP"));
 
-  CONFIG_OVERRIDE(s.USE_EXTENSIONS    = true;);
+  CONFIG_OVERRIDE(s.USE_EXTENSIONS = true;);
   CONFIG_OVERRIDE(s.USE_EXT_ADD_DEPTH = true;);
-  CONFIG_OVERRIDE(s.USE_CHECK_EXT     = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "70 CEXT"));
+  CONFIG_OVERRIDE(s.USE_CHECK_EXT = true;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "70 CEXT"));
   //  CONFIG_OVERRIDE(s.USE_THREAT_EXT = true;);
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "71 TEXT"));
 
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 warmup"));
+
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "01 pre"));
+
   CONFIG_OVERRIDE(s.USE_SINGULAR_EXT = true;);
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "72 SEXT"));
+
+  CONFIG_OVERRIDE(s.USE_TB_PROBE_ROOT = true;);
+  CONFIG_OVERRIDE(s.TB_ROOT_IMMEDIATE = false;);
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "80 TB Root"));
+
+  CONFIG_OVERRIDE(s.TB_ROOT_IMMEDIATE = true;);
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "81 TB Root i"));
+
+  // For TB Search test, disable immediate return so search actually runs and can use in-search probing
+  CONFIG_OVERRIDE(s.TB_ROOT_IMMEDIATE = false;);
+  CONFIG_OVERRIDE(s.USE_TB_PROBE_SEARCH = true;);
+  CONFIG_OVERRIDE(s.USE_TB_PROBE_PV = true;);
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "85 TB Search"));
+
+  CONFIG_OVERRIDE(s.TB_ROOT_IMMEDIATE = true;);
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "86 TB Search i"));
 
   return result;
 }
@@ -240,23 +261,25 @@ void SearchTreeSizeTest::start() {
   fprintln("Total tests            : {:d}\n", results[0].tests.size() * fens.size());
 
   // ReSharper disable once CppUseStructuredBinding
-  for (auto& sum : sums) {
-    fprintln("Test: {:<12s}  Nodes: {:>16L}  Nps: {:>16L}  Time: {:>16L} Depth: {:>3d}/{:<3d} Special1: {:>16L} Special2: {:>16L}", sum.first.c_str(),
+  for (const auto& sum : sums) {
+    const auto avgSpecial1 = sum.second.special1 / sum.second.sumCounter;
+    const auto avgSpecial2 = sum.second.special2 / sum.second.sumCounter;
+    fprintln("Test: {:<12s}  Nodes: {:>16L}  Nps: {:>16L}  Time: {:>16L} Depth: {:>3d}/{:<3d} Special1: {:>10L} ({:>5L}) Special2: {:>10L} ({:>5L})", sum.first.c_str(),
              sum.second.sumNodes / sum.second.sumCounter, sum.second.sumNps / sum.second.sumCounter,
              (sum.second.sumTime / 1'000'000) / sum.second.sumCounter, sum.second.sumDepth / sum.second.sumCounter, sum.second.sumExtra / sum.second.sumCounter,
-             sum.second.special1 / sum.second.sumCounter, sum.second.special2 / sum.second.sumCounter);
+             sum.second.special1, avgSpecial1, sum.second.special2, avgSpecial2);
   }
 }
 
 SearchTreeSize::SingleTest SearchTreeSizeTest::measureTreeSize(Search& search, const Position& position,
-                                                               SearchLimits searchLimits, const std::string& featureName) const {
+                                                               const SearchLimits& searchLimits, const std::string& featureName) const {
 
   NEWLINE;
   fprintln("Testing {} ####################################", featureName);
   fprintln("Position {}", position.strFen());
   NEWLINE;
   search.newGame();
-  search.startSearch(position, std::move(searchLimits));
+  search.startSearch(position, searchLimits);
   search.waitWhileSearching();
 
   SearchTreeSize::SingleTest test{};
