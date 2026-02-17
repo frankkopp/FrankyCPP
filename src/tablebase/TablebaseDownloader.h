@@ -44,6 +44,7 @@
 
 #include <functional>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace tablebase {
@@ -82,6 +83,16 @@ struct DownloadResult {
   std::vector<std::string> errors;///< Error messages for failed files
 };
 
+/// Result of a verification operation
+struct VerifyResult {
+  bool success{false};            ///< Overall success (all files valid)
+  int filesVerified{0};           ///< Number of files with matching MD5
+  int filesFailed{0};             ///< Number of files with MD5 mismatch
+  int filesMissing{0};            ///< Number of files not found
+  int filesNoChecksum{0};         ///< Number of files with no reference MD5
+  std::vector<std::string> errors;///< Error messages for failed/missing files
+};
+
 /// Syzygy tablebase download manager
 class TablebaseDownloader {
 public:
@@ -91,6 +102,15 @@ public:
   /// @return Result with success/failure counts
   [[nodiscard]] static DownloadResult download(const DownloadConfig& config,
                                         const ProgressCallback& progress = nullptr);
+
+  /// Verify tablebases using MD5 checksums from server
+  /// @param path         Directory containing tablebase files
+  /// @param pieceCounts  Piece counts to verify (empty = verify all found files)
+  /// @param progress     Optional progress callback
+  /// @return Result with verification counts
+  [[nodiscard]] static VerifyResult verify(const std::string& path,
+                                           const std::vector<int>& pieceCounts = {},
+                                           const ProgressCallback& progress = nullptr);
 
   /// Get list of files needed for given piece counts
   /// @param pieceCounts  Vector of piece counts (3-6)
@@ -126,6 +146,15 @@ private:
   [[nodiscard]] static bool downloadFile(const std::string& url,
                                   const std::string& destPath,
                                   bool verbose);
+
+  /// Compute MD5 checksum of a file
+  /// @param filePath  Path to file
+  /// @return MD5 hash as lowercase hex string, or empty string on error
+  [[nodiscard]] static std::string computeMD5(const std::string& filePath);
+
+  /// Fetch and parse MD5 checksums from server
+  /// @return Map of filename -> MD5 hash
+  [[nodiscard]] static std::unordered_map<std::string, std::string> fetchMD5Checksums();
 
 };
 

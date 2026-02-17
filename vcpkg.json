@@ -10,7 +10,8 @@
     "gtest",
     "benchmark",
     "yaml-cpp",
-    "nlohmann-json"
+    "nlohmann-json",
+    "openssl"
   ],
   "overrides": [
     {

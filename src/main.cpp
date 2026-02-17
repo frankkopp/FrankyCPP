@@ -92,9 +92,12 @@ int main(int argc, char* argv[]) {
         "syzygy tablebase command:\n"
         "  help     - show detailed syzygy help\n"
         "  status   - show local tablebase status\n"
+        "  verify   - verify files using MD5 checksums\n"
         "  download - download tablebase files")
-      ("pieces", po::value<std::string>(&syzygy_pieces)->default_value("3-4-5"),
-        "piece counts for download (e.g., 3-4-5 or 3,4,5)")
+      ("pieces", po::value<std::string>(&syzygy_pieces)->default_value(""),
+        "piece counts to process (e.g., 3-4-5 or 3,4,5,6)\n"
+        "  download: defaults to 3-4-5\n"
+        "  verify/status: defaults to all (3-6)")
       ("path", po::value<std::string>(&syzygy_path),
         "target path for tablebase files\n"
         "(default: from config or platform default)");
@@ -310,10 +313,11 @@ Syzygy Tablebase Commands
 COMMANDS:
   --syzygy help      Show this help message
   --syzygy status    Show status of local tablebases
+  --syzygy verify    Verify tablebase files using MD5 checksums
   --syzygy download  Download tablebase files from online mirrors
 
 OPTIONS:
-  --pieces <list>    Piece counts to download (default: 3-4-5)
+  --pieces <list>    Piece counts to download/verify (default: 3-4-5)
                      Format: 3-4-5 or 3,4,5
                      Valid values: 3, 4, 5, 6
   --path <dir>       Target directory for tablebase files
@@ -325,6 +329,12 @@ EXAMPLES:
 
   # Check status of specific directory
   FrankyCPP --syzygy status --path D:\SYZYGY
+
+  # Verify tablebase files against server checksums
+  FrankyCPP --syzygy verify --path D:\SYZYGY
+
+  # Verify only 3 and 4-piece tablebases
+  FrankyCPP --syzygy verify --path D:\SYZYGY --pieces 3-4
 
   # Download 3, 4, 5-piece tablebases to default location
   FrankyCPP --syzygy download
@@ -375,6 +385,74 @@ CONFIGURATION:
         return 0;
       }
 
+      if (syzygy_command == "verify") {
+        // Verify tablebases using MD5 checksums from server
+        std::string tbPath = syzygy_path;
+        if (tbPath.empty()) {
+          tbPath = tablebase::findTablebasePath();
+        }
+
+        if (tbPath.empty()) {
+          std::cerr << "Error: No tablebase path specified. Use --path option.\n";
+          return 1;
+        }
+
+        // Empty string = verify all files, otherwise parse specified pieces
+        const auto pieceCounts = parsePieceCounts(syzygy_pieces);
+
+        std::cout << "\nVerifying Tablebase Files:\n";
+        std::cout << std::string(40, '-') << "\n";
+        std::cout << "Path: " << tbPath << "\n";
+        if (pieceCounts.empty()) {
+          std::cout << "Piece counts: all (3-6)\n";
+        } else {
+          std::cout << "Piece counts: ";
+          for (size_t i = 0; i < pieceCounts.size(); ++i) {
+            if (i > 0) std::cout << ", ";
+            std::cout << pieceCounts[i];
+          }
+          std::cout << "\n";
+        }
+        std::cout << std::string(40, '-') << "\n\n";
+
+        const auto verifyResult = tablebase::TablebaseDownloader::verify(tbPath, pieceCounts,
+          [](const tablebase::DownloadProgress& progress) {
+            std::cout << "\r[" << progress.percentComplete() << "%] "
+                      << progress.filesCompleted << "/" << progress.totalFiles
+                      << " - " << progress.currentFile;
+            if (!progress.success) {
+              std::cout << " (FAILED)";
+            } else {
+              std::cout << " (OK)    ";
+            }
+            std::cout << std::string(10, ' ') << std::flush;
+          });
+
+        std::cout << "\n\n";
+        std::cout << "Verification Summary:\n";
+        std::cout << std::string(40, '-') << "\n";
+        std::cout << "Verified (OK):        " << verifyResult.filesVerified << " files\n";
+        std::cout << "Failed (MD5 mismatch):" << verifyResult.filesFailed << " files\n";
+        std::cout << "Missing:              " << verifyResult.filesMissing << " files\n";
+        std::cout << "No reference checksum:" << verifyResult.filesNoChecksum << " files\n";
+
+        if (!verifyResult.errors.empty()) {
+          std::cout << "\nErrors:\n";
+          for (const auto& err : verifyResult.errors) {
+            std::cout << "  - " << err << "\n";
+          }
+        }
+
+        if (verifyResult.success) {
+          std::cout << "\nAll files verified successfully!\n";
+        } else {
+          std::cout << "\nVerification failed. Some files may be corrupted.\n";
+          std::cout << "Consider re-downloading the failed files.\n";
+        }
+
+        return verifyResult.success ? 0 : 1;
+      }
+
       if (syzygy_command == "download") {
         // Download tablebases
         std::string targetPath = syzygy_path;
@@ -386,7 +464,9 @@ CONFIGURATION:
           }
         }
 
-        const auto pieceCounts = parsePieceCounts(syzygy_pieces);
+        // Default to 3-4-5 for download if not specified
+        const std::string piecesStr = syzygy_pieces.empty() ? "3-4-5" : syzygy_pieces;
+        const auto pieceCounts = parsePieceCounts(piecesStr);
         if (pieceCounts.empty()) {
           std::cerr << "Error: No valid piece counts specified. Use --pieces 3-4-5\n";
           return 1;
@@ -451,7 +531,7 @@ CONFIGURATION:
 
       // Unknown command
       std::cerr << "Unknown syzygy command: " << syzygy_command << "\n";
-      std::cerr << "Available commands: help, status, download\n";
+      std::cerr << "Available commands: help, status, verify, download\n";
       std::cerr << "Use --syzygy help for detailed usage information.\n";
       return 1;
     }

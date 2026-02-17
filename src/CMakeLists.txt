@@ -111,6 +111,7 @@ target_link_libraries(
         Boost::program_options
         Boost::filesystem
         yaml-cpp::yaml-cpp
+        OpenSSL::Crypto
         PRIVATE
         fathom)
 

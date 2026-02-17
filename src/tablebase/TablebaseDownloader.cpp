@@ -19,13 +19,19 @@
 
 #include "tablebase/TablebaseDownloader.h"
 #include "common/Logging.h"
+#include "common/ThreadPool.h"
 
 #include <algorithm>
-#include <cstdlib>
+#include <array>
+#include <cctype>
 #include <filesystem>
 #include <format>
 #include <fstream>
 #include <sstream>
+#include <thread>
+#include <vector>
+
+#include <openssl/evp.h>
 
 namespace fs = std::filesystem;
 
@@ -41,6 +47,9 @@ constexpr size_t SIZE_6_PIECE = 150ULL * 1024 * 1024 * 1024;// ~150 GB
 
 /// URL for the master file list from Lichess
 constexpr auto FILE_LIST_URL = "https://tablebase.lichess.ovh/tables/standard/download.txt";
+
+/// URL for the MD5 checksums file from Lichess
+constexpr auto MD5_CHECKSUMS_URL = "https://tablebase.lichess.ovh/tables/standard/md5";
 
 /// Download a text file and return its contents
 std::string downloadTextFile(const std::string& url) {
@@ -127,6 +136,50 @@ std::vector<std::string> parseFileList(const std::string& content, const std::ve
   }
 
   return urls;
+}
+
+/// Parse the MD5 checksums file from the server
+/// Format: "<md5hash>  <filename>" (hash, two spaces, filename)
+/// Returns map of filename -> MD5 hash (lowercase)
+std::unordered_map<std::string, std::string> parseMD5Checksums(const std::string& content) {
+  std::unordered_map<std::string, std::string> checksums;
+
+  std::istringstream stream(content);
+  std::string line;
+  while (std::getline(stream, line)) {
+    // Trim trailing whitespace
+    while (!line.empty() && (line.back() == '\r' || line.back() == '\n' || line.back() == ' ')) {
+      line.pop_back();
+    }
+    if (line.empty()) continue;
+
+    // Format: "<md5>  <filename>" - MD5 is 32 hex chars, then two spaces, then filename
+    if (line.size() < 35) continue;  // 32 + 2 + at least 1 char for filename
+
+    const std::string hash = line.substr(0, 32);
+    // Skip the two spaces separator
+    if (line[32] != ' ' || line[33] != ' ') continue;
+    const std::string filename = line.substr(34);
+
+    // Validate hash is all hex digits
+    bool validHash = true;
+    for (const char c : hash) {
+      if (!std::isxdigit(static_cast<unsigned char>(c))) {
+        validHash = false;
+        break;
+      }
+    }
+    if (!validHash) continue;
+
+    // Store with lowercase hash
+    std::string lowerHash = hash;
+    for (char& c : lowerHash) {
+      c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    }
+    checksums[filename] = lowerHash;
+  }
+
+  return checksums;
 }
 
 } // anonymous namespace
@@ -217,6 +270,157 @@ DownloadResult TablebaseDownloader::download(const DownloadConfig& config,
   }
 
   result.success = (result.filesFailed == 0);
+  return result;
+}
+
+VerifyResult TablebaseDownloader::verify(const std::string& path,
+                                         const std::vector<int>& pieceCounts,
+                                         const ProgressCallback& progress) {
+  VerifyResult result;
+
+  if (path.empty()) {
+    result.errors.emplace_back("No path specified");
+    return result;
+  }
+
+  std::error_code ec;
+  if (!fs::exists(path, ec)) {
+    result.errors.emplace_back("Directory does not exist: " + path);
+    return result;
+  }
+
+  // Fetch MD5 checksums from server
+  LOG__INFO(Logger::get().TB_LOG, "Fetching MD5 checksums from server...");
+  const auto checksums = fetchMD5Checksums();
+  if (checksums.empty()) {
+    result.errors.emplace_back("Failed to fetch MD5 checksums from server");
+    return result;
+  }
+  LOG__INFO(Logger::get().TB_LOG, "Loaded {} MD5 checksums from server", checksums.size());
+
+  // Collect files to verify
+  std::vector<std::string> filesToVerify;
+  for (const auto& entry : fs::directory_iterator(path, ec)) {
+    if (!entry.is_regular_file()) continue;
+
+    const auto ext = entry.path().extension().string();
+    if (ext != ".rtbw" && ext != ".rtbz") continue;
+
+    const std::string filename = entry.path().filename().string();
+
+    // Filter by piece count if specified
+    if (!pieceCounts.empty()) {
+      const int pieces = countPiecesInFilename(filename);
+      if (std::ranges::find(pieceCounts, pieces) == pieceCounts.end()) {
+        continue;
+      }
+    }
+
+    filesToVerify.push_back(filename);
+  }
+
+  if (filesToVerify.empty()) {
+    result.errors.emplace_back("No tablebase files found to verify");
+    return result;
+  }
+
+  // Sort for consistent output
+  std::ranges::sort(filesToVerify);
+
+  const int totalFiles = static_cast<int>(filesToVerify.size());
+  LOG__INFO(Logger::get().TB_LOG, "Verifying {} tablebase files in {} (parallel)", totalFiles, path);
+
+  // Structure to hold per-file verification result
+  struct FileVerifyResult {
+    std::string filename;
+    std::string expectedMD5;
+    std::string computedMD5;
+    bool hasChecksum{false};
+    bool success{false};
+    std::string errorMessage;
+  };
+
+  // Determine thread count - use hardware concurrency, but cap at reasonable number
+  const unsigned int numThreads = std::min(std::thread::hardware_concurrency(), 8u);
+  ThreadPool pool(numThreads > 0 ? numThreads : 4);
+
+  // Submit all verification tasks
+  std::vector<std::future<FileVerifyResult>> futures;
+  futures.reserve(filesToVerify.size());
+
+  for (const auto& filename : filesToVerify) {
+    const std::string filePath = path + "/" + filename;
+
+    // Look up expected checksum
+    const auto checksumIt = checksums.find(filename);
+    const bool hasChecksum = checksumIt != checksums.end();
+    const std::string expectedMD5 = hasChecksum ? checksumIt->second : "";
+
+    // Submit task to thread pool
+    futures.push_back(pool.enqueue([filePath, filename, expectedMD5, hasChecksum]() -> FileVerifyResult {
+      FileVerifyResult fileResult;
+      fileResult.filename = filename;
+      fileResult.expectedMD5 = expectedMD5;
+      fileResult.hasChecksum = hasChecksum;
+
+      if (!hasChecksum) {
+        fileResult.success = true;  // No checksum = skip (not a failure)
+        fileResult.errorMessage = "No reference checksum";
+        return fileResult;
+      }
+
+      // Compute MD5
+      fileResult.computedMD5 = computeMD5(filePath);
+      if (fileResult.computedMD5.empty()) {
+        fileResult.success = false;
+        fileResult.errorMessage = "Failed to compute MD5";
+        return fileResult;
+      }
+
+      // Compare
+      if (fileResult.computedMD5 == expectedMD5) {
+        fileResult.success = true;
+      } else {
+        fileResult.success = false;
+        fileResult.errorMessage = std::format("MD5 mismatch (expected: {}, got: {})",
+                                              expectedMD5, fileResult.computedMD5);
+      }
+
+      return fileResult;
+    }));
+  }
+
+  // Collect results and report progress
+  DownloadProgress progressInfo;
+  progressInfo.totalFiles = totalFiles;
+
+  for (auto& future : futures) {
+    const FileVerifyResult fileResult = future.get();
+
+    progressInfo.currentFile = fileResult.filename;
+    progressInfo.filesCompleted++;
+
+    if (!fileResult.hasChecksum) {
+      result.filesNoChecksum++;
+      progressInfo.success = true;
+      progressInfo.errorMessage = "No reference checksum: " + fileResult.filename;
+    } else if (fileResult.success) {
+      result.filesVerified++;
+      progressInfo.success = true;
+      progressInfo.errorMessage.clear();
+    } else {
+      result.filesFailed++;
+      progressInfo.success = false;
+      progressInfo.errorMessage = fileResult.filename + ": " + fileResult.errorMessage;
+      result.errors.push_back(progressInfo.errorMessage);
+    }
+
+    if (progress) {
+      progress(progressInfo);
+    }
+  }
+
+  result.success = (result.filesFailed == 0 && result.filesMissing == 0);
   return result;
 }
 
@@ -365,6 +569,77 @@ bool TablebaseDownloader::downloadFile(const std::string& url,
   }
 }
 
+std::string TablebaseDownloader::computeMD5(const std::string& filePath) {
+  try {
+    std::ifstream file(filePath, std::ios::binary);
+    if (!file.is_open()) {
+      LOG__ERROR(Logger::get().TB_LOG, "Failed to open file for MD5: {}", filePath);
+      return "";
+    }
+
+    // Use EVP API (OpenSSL 3.0+)
+    EVP_MD_CTX* ctx = EVP_MD_CTX_new();
+    if (!ctx) {
+      LOG__ERROR(Logger::get().TB_LOG, "Failed to create EVP_MD_CTX");
+      return "";
+    }
+
+    if (EVP_DigestInit_ex(ctx, EVP_md5(), nullptr) != 1) {
+      EVP_MD_CTX_free(ctx);
+      LOG__ERROR(Logger::get().TB_LOG, "Failed to initialize MD5 digest");
+      return "";
+    }
+
+    // Read file in chunks for efficiency
+    constexpr size_t BUFFER_SIZE = 64 * 1024;  // 64KB buffer
+    std::vector<char> buffer(BUFFER_SIZE);
+
+    while (file.read(buffer.data(), static_cast<std::streamsize>(BUFFER_SIZE)) || file.gcount() > 0) {
+      if (EVP_DigestUpdate(ctx, buffer.data(), static_cast<size_t>(file.gcount())) != 1) {
+        EVP_MD_CTX_free(ctx);
+        LOG__ERROR(Logger::get().TB_LOG, "Failed to update MD5 digest");
+        return "";
+      }
+    }
+
+    file.close();
+
+    // Finalize and get the hash
+    std::array<unsigned char, EVP_MAX_MD_SIZE> digest{};
+    unsigned int digestLen = 0;
+    if (EVP_DigestFinal_ex(ctx, digest.data(), &digestLen) != 1) {
+      EVP_MD_CTX_free(ctx);
+      LOG__ERROR(Logger::get().TB_LOG, "Failed to finalize MD5 digest");
+      return "";
+    }
+
+    EVP_MD_CTX_free(ctx);
+
+    // Convert to hex string (lowercase)
+    std::string md5;
+    md5.reserve(digestLen * 2);
+    for (unsigned int i = 0; i < digestLen; ++i) {
+      md5 += std::format("{:02x}", digest[i]);
+    }
+
+    return md5;
+
+  } catch (const std::exception& e) {
+    LOG__ERROR(Logger::get().TB_LOG, "MD5 computation exception: {}", e.what());
+    return "";
+  }
+}
+
+std::unordered_map<std::string, std::string> TablebaseDownloader::fetchMD5Checksums() {
+  const std::string content = downloadTextFile(MD5_CHECKSUMS_URL);
+  if (content.empty()) {
+    LOG__ERROR(Logger::get().TB_LOG, "Failed to download MD5 checksums from {}", MD5_CHECKSUMS_URL);
+    return {};
+  }
+
+  return parseMD5Checksums(content);
+}
+
 std::string TablebaseDownloader::getManualDownloadInstructions() {
   return R"(
 ================================================================================
@@ -412,7 +687,8 @@ AFTER DOWNLOAD:
   2. Configure FrankyCPP:
      - Set TB_PATH in config/search.yaml: TB_PATH: "D:/SYZYGY"
      - Or set environment variable: TB_PATH=D:\SYZYGY
-  3. Verify with: FrankyCPP --syzygy status --path D:\SYZYGY
+  3. Verify with: FrankyCPP --syzygy verify --path D:\SYZYGY
+  4. Check status: FrankyCPP --syzygy status --path D:\SYZYGY
 
 FILE SIZES (approximate):
   3-piece:  ~7 MB    (5 positions)

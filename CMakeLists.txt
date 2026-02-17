@@ -374,6 +374,9 @@ find_package(yaml-cpp CONFIG REQUIRED)
 # nlohmann_json for JSON parsing in Arena (header-only)
 find_package(nlohmann_json CONFIG REQUIRED)
 
+# OpenSSL for MD5 checksums in tablebase verification
+find_package(OpenSSL REQUIRED)
+
 # =============================================================================
 # Fathom Tablebase Library (Syzygy probing)
 # =============================================================================
