@@ -598,8 +598,8 @@ void MoveGenerator::updateSortValues(const Position& p, MoveList* const moveList
 
   // iterate over all available moves and update the
   // sort value if the move is the PV or a Killer move.
-  // Also update the sort value for history and counter
-  // move significance.
+  // Also, update the sort value for history and
+  // counter-move significance.
   const auto size = moveList->size();
   for (size_t i = 0; i < size; i++) {
     Move* move = &(*moveList)[i];

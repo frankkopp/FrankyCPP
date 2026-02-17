@@ -196,30 +196,50 @@ TEST_F(ThreadPoolTest, voidReturnTask) {
 }
 
 TEST_F(ThreadPoolTest, shutdownCompletesPendingTasks) {
-  std::atomic<int> completed{0};
+  // Test that destructor (which calls stop()) completes all pending tasks
+  // before returning, even when tasks are still queued.
+  std::atomic completed{0};
+
   {
+    std::promise<void> blocker;
+    auto blockerFuture = blocker.get_future().share();
     ThreadPool pool{1};
 
-    // Block thread
-    std::promise<void> blocker;
-    const auto blockerFuture = blocker.get_future();
-    pool.enqueue([&] { blockerFuture.wait(); });
+    // Signal when blocking task starts
+    std::promise<void> taskStarted;
+    const auto taskStartedFuture = taskStarted.get_future();
 
-    // Give thread time to pick up the blocking task
-    std::this_thread::sleep_for(milliseconds(50));
+    pool.enqueue([&taskStarted, blockerFuture] {
+      taskStarted.set_value();  // Signal that we've started
+      blockerFuture.wait();     // Block until test releases us
+    });
 
-    // Queue tasks that will be pending when we unblock
+    // Wait for blocking task to actually start (not just be queued)
+    taskStartedFuture.wait();
+
+    // Queue 5 tasks that will be pending when destructor is called
     for (int i = 0; i < 5; ++i) {
-      pool.enqueue([&] { ++completed; });
+      pool.enqueue([&completed] { ++completed; });
     }
 
     EXPECT_EQ(pool.openTasks(), 5);  // 5 tasks pending
 
-    blocker.set_value();  // Unblock
-    // Destructor calls stop() - should complete all 5 tasks
+    // Release blocker from a separate thread AFTER destructor starts waiting
+    // This simulates: destructor is called -> tasks are still pending ->
+    // stop() must wait for all tasks to complete
+    std::thread releaser([&blocker] {
+      std::this_thread::sleep_for(milliseconds(50));  // Let destructor start
+      blocker.set_value();  // Now unblock the worker
+    });
+    releaser.detach();
+
+    // Destructor is called here with 5 tasks still pending
+    // stop() should wait for all tasks to complete
   }
+  // If we get here, destructor completed - verify all tasks ran
   EXPECT_EQ(completed.load(), 5);
 }
+
 
 TEST_F(ThreadPoolTest, manyThreadsPool) {
   ThreadPool pool{8};

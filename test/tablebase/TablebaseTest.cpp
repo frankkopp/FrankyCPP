@@ -1652,7 +1652,7 @@ TEST_F(SearchTablebaseTest, ProbeLimitControlsPieceCount) {
 
   // Use 5-piece position so even after captures we still exceed limit of 3
   // KRKpp = 5 pieces, after one capture = 4 pieces (still > 3)
-  const Position pos("8/8/8/3p4/4p3/8/1R2K3/4k3 w - - 0 1");  // KRKpp = 5 pieces
+  const Position pos("8/8/8/3p4/4p3/8/1R2K3/7k w - - 0 1");  // KRKpp = 5 pieces
 
   Search search;
   search.isReady();

@@ -64,6 +64,9 @@ TEST_F(TestSuite_Test, readFile) {
 }
 
 TEST_F(TestSuite_Test, franky_test) {
+#ifndef NDEBUG
+  GTEST_SKIP() << "Skipping in debug builds";
+#endif
   CONFIG_OVERRIDE(s.USE_BOOK = false);
   constexpr auto moveTime{5s};
   constexpr Depth depth{0};

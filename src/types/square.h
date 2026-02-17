@@ -93,11 +93,10 @@ public:
   // ReSharper disable once CppNonExplicitConversionOperator
   constexpr operator int() const { return v_; }
 
-  /// Returns true if the square is valid (A1-H8).
-  constexpr bool isValid() const {
-    const int x = *this;
-    return x >= 0 && x < 64;
-  }
+/// Returns true if the square is valid (A1-H8).
+constexpr bool isValid() const {
+  return v_ < 64;
+}
 
   /// Returns the file (column) of the square.
   constexpr File file() const { return File{(v_ & 0b00000111u)}; }
@@ -265,6 +264,7 @@ constexpr Square Square::pawnPush(const Color c) const {
 }
 
 inline std::string Square::str() const {
+  if (!isValid()) return "none";
   return Squares::squareNames[*this].data();
 }
 

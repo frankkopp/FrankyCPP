@@ -195,8 +195,9 @@ public:
 
   // std::thread::hardware_concurrency() is not reliable - on some platforms
   // it returns 0 - in this case we chose a default of 4
-  static inline unsigned int getNoOfThreads() {
-    return std::thread::hardware_concurrency() == 0 ? 4 : std::thread::hardware_concurrency();
+  // -2 to avoid overloading the system with too many threads and to leave some resources for other processes
+  static unsigned int getNoOfThreads() {
+    return std::max(std::thread::hardware_concurrency(), 6U) - 2;
   }
 
   // checks if a cache file exists
