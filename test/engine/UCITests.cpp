@@ -17,17 +17,20 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include "init.h"
 #include <memory>
 #include <thread>
+#include <ranges>
 
+#include "init.h"
 #include "chesscore/Position.h"
 #include "common/Logging.h"
+#include "config/ConfigRegistry.h"
 #include "engine/Search.h"
 #include "engine/UciHandler.h"
 #include "engine/UciOptions.h"
 
 #include <gtest/gtest.h>
+
 using testing::Eq;
 
 using namespace std;
@@ -919,3 +922,95 @@ TEST_F(UCITest, testingBugs) {
 //
 //}
 //
+
+//=============================================================================
+// Test: Set All UCI Options to Defaults
+// Purpose: Simulate what Arena does when saving engine configuration.
+//          This helps debug freezing issues by showing exactly what happens
+//          when each option is set.
+//=============================================================================
+TEST_F(UCITest, setAllOptionsToDefaults) {
+  // Build a single command string with all setoption commands
+  // This simulates what Arena does: sends all options in one session
+  const auto& registry = ConfigRegistry::instance();
+  const auto uciOptionDefs = registry.uciOptions();
+
+  // Build command string: uci + isready + all setoptions
+  string commands = "uci\nisready\n";
+
+  int optionCount = 0;
+  for (const auto* def : uciOptionDefs) {
+    const string& optionName = def->uciName;
+    const string& defaultValue = def->defaultValue;
+
+    commands += "setoption name " + optionName + " value " + defaultValue + "\n";
+    optionCount++;
+
+    LOG__INFO(Logger::get().TEST_LOG, "  [{}] Will set: {} = {} (type={})",
+              optionCount, optionName, defaultValue, valueTypeToString(def->valueType));
+  }
+
+  LOG__INFO(Logger::get().TEST_LOG, "=== Sending {} setoption commands in single session ===", optionCount);
+  LOG__DEBUG(Logger::get().TEST_LOG, "Commands:\n{}", commands);
+
+  // Execute all commands in a single UciHandler session
+  ostringstream os;
+  istringstream is(commands);
+  UciHandler uciHandler(&is, &os);
+  uciHandler.loop();
+
+  const string response = os.str();
+  LOG__DEBUG(Logger::get().TEST_LOG, "Response:\n{}", response);
+
+  // Verify all options were set correctly
+  LOG__INFO(Logger::get().TEST_LOG, "=== Verifying options ===");
+  int successCount = 0;
+  for (const auto* def : uciOptionDefs) {
+    const string& optionName = def->uciName;
+    const string& defaultValue = def->defaultValue;
+
+    const UciOption* opt = UciOptions::getInstance()->getOption(optionName);
+    if (opt) {
+      if (opt->currentValue == defaultValue) {
+        successCount++;
+        LOG__DEBUG(Logger::get().TEST_LOG, "  OK: {} = {}", optionName, opt->currentValue);
+      } else {
+        LOG__WARN(Logger::get().TEST_LOG, "  MISMATCH: {} expected={}, actual={}",
+                  optionName, defaultValue, opt->currentValue);
+      }
+    } else {
+      LOG__ERROR(Logger::get().TEST_LOG, "  ERROR: Option '{}' not found!", optionName);
+    }
+  }
+
+  LOG__INFO(Logger::get().TEST_LOG, "=== Summary ===");
+  LOG__INFO(Logger::get().TEST_LOG, "Total options: {}", optionCount);
+  LOG__INFO(Logger::get().TEST_LOG, "Successfully set: {}", successCount);
+
+  EXPECT_GT(optionCount, 0) << "Should have processed at least some options";
+  EXPECT_EQ(successCount, optionCount) << "All options should be set successfully";
+}
+
+//=============================================================================
+// Test: Set All UCI Options Using resetToDefaults Method
+// Purpose: Test the built-in resetToDefaults() method that does the same thing
+//=============================================================================
+TEST_F(UCITest, resetAllOptionsToDefaults) {
+  ostringstream os;
+  istringstream is("isready");
+
+  LOG__INFO(Logger::get().TEST_LOG, "=== Creating UciHandler and resetting all options ===");
+  UciHandler uciHandler(&is, &os);
+  uciHandler.loop();
+
+  // Use the built-in reset function
+  UciOptions::getInstance()->resetToDefaults(&uciHandler);
+
+  LOG__INFO(Logger::get().TEST_LOG, "=== All options reset to defaults ===");
+
+  // Verify all options are at their default values
+  const string optionsStr = UciOptions::getInstance()->str();
+  LOG__DEBUG(Logger::get().TEST_LOG, "Current options:\n{}", optionsStr);
+
+  SUCCEED();
+}

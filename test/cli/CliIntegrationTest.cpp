@@ -34,9 +34,11 @@
 //=============================================================================
 
 #include "TestEnginePath.h"
+#include "config/ConfigRegistry.h"
 
 #include <array>
 #include <filesystem>
+#include <fstream>
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
@@ -78,6 +80,53 @@ std::pair<int, std::string> executeCommand(const std::string& cmd) {
   return {exitCode, output};
 }
 
+/// Execute a command with stdin input and capture stdout
+/// @param cmd Command to execute
+/// @param stdinInput Input to send to stdin
+/// @return Pair of (exit_code, stdout_output)
+std::pair<int, std::string> executeCommandWithInput(const std::string& cmd, const std::string& stdinInput) {
+  std::string output;
+  std::array<char, 4096> buffer{};
+
+  // Use echo to pipe input, or use a temp file approach on Windows
+  std::cout << "Executing command with input: " << cmd << std::endl;
+  std::cout << "Input:\n" << stdinInput << std::endl;
+
+#ifdef _WIN32
+  // On Windows, use cmd /c with echo and pipe
+  // Create a temporary file with the input
+  const std::string tempFile = std::filesystem::temp_directory_path().string() + "\\franky_uci_test_input.txt";
+  {
+    std::ofstream ofs(tempFile);
+    ofs << stdinInput;
+  }
+  const std::string fullCmd = "cmd /c \"type \"" + tempFile + "\" | " + cmd + "\" 2>&1";
+  FILE* pipe = _popen(fullCmd.c_str(), "r");
+#else
+  // On Unix, use echo with pipe
+  const std::string fullCmd = "echo '" + stdinInput + "' | " + cmd + " 2>&1";
+  FILE* pipe = popen(fullCmd.c_str(), "r");
+#endif
+
+  if (!pipe) {
+    return {-1, "Failed to execute command"};
+  }
+
+  while (fgets(buffer.data(), static_cast<int>(buffer.size()), pipe) != nullptr) {
+    output += buffer.data();
+  }
+
+#ifdef _WIN32
+  const int exitCode = _pclose(pipe);
+  // Clean up temp file
+  std::filesystem::remove(tempFile);
+#else
+  const int exitCode = pclose(pipe);
+#endif
+
+  return {exitCode, output};
+}
+
 }  // namespace
 
 class CliIntegrationTest : public testing::Test {
@@ -99,6 +148,12 @@ protected:
     // Build command - quotes around path handle spaces in path
     const std::string cmd = "\"" + enginePath + "\" " + args;
     return executeCommand(cmd);
+  }
+
+  /// Run the engine with stdin input (for UCI communication)
+  std::pair<int, std::string> runEngineWithInput(const std::string& stdinInput) const {
+    const std::string cmd = "\"" + enginePath + "\"";
+    return executeCommandWithInput(cmd, stdinInput);
   }
 };
 
@@ -345,4 +400,62 @@ TEST_F(CliIntegrationTest, UciOptionsShortOption) {
   EXPECT_EQ(0, exitCode) << "Exit code should be 0 for -u";
   EXPECT_TRUE(output.find("option name") != std::string::npos)
       << "UCI output should list options";
+}
+
+//=============================================================================
+// UCI Session Tests
+//=============================================================================
+
+TEST_F(CliIntegrationTest, UciSetAllOptionsToDefaults) {
+  // Build UCI commands to set all options to their defaults
+  // This simulates what Arena does when saving engine configuration
+
+  const auto& registry = ConfigRegistry::instance();
+  const auto uciOptionDefs = registry.uciOptions();
+
+  // Build command string: uci + isready + all setoptions + quit
+  std::string commands = "uci\nisready\n";
+
+  int optionCount = 0;
+  for (const auto* def : uciOptionDefs) {
+    const std::string& optionName = def->uciName;
+    std::string value = def->defaultValue;
+
+    // Override SyzygyPath with a path containing backslash to test path handling
+    if (optionName == "SyzygyPath") {
+      value = "D:\\SYZYGY";
+    }
+
+    commands += "setoption name " + optionName + " value " + value + "\n";
+    optionCount++;
+
+    std::cout << "  [" << optionCount << "] setoption name " << optionName
+              << " value " << value << std::endl;
+  }
+  commands += "quit\n";
+
+  std::cout << "=== Sending " << optionCount << " setoption commands to engine ===" << std::endl;
+
+  // Execute the engine with all commands
+  auto [exitCode, output] = runEngineWithInput(commands);
+
+  std::cout << "=== Engine output ===" << std::endl;
+  std::cout << output << std::endl;
+
+  // Verify basic UCI responses
+  EXPECT_TRUE(output.find("uciok") != std::string::npos)
+      << "Engine should respond with 'uciok'";
+  EXPECT_TRUE(output.find("readyok") != std::string::npos)
+      << "Engine should respond with 'readyok'";
+
+  // Check for any error messages
+  const bool hasError = output.find("error") != std::string::npos ||
+                        output.find("Error") != std::string::npos ||
+                        output.find("ERROR") != std::string::npos;
+  EXPECT_FALSE(hasError) << "Engine should not report any errors when setting options to defaults";
+
+  // Exit code 0 indicates clean quit
+  EXPECT_EQ(0, exitCode) << "Engine should exit cleanly after quit command";
+
+  std::cout << "=== Successfully sent " << optionCount << " setoption commands ===" << std::endl;
 }

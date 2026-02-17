@@ -70,34 +70,20 @@ bool UciOptions::setOption(UciHandler* uciHandler, const std::string& name, cons
 }
 
 std::string UciOptions::str() const {
-  // Collect option strings and sort alphabetically by option name
-  std::vector<std::string> optionStrings;
-  optionStrings.reserve(optionVector.size());
-  for (const auto& o : optionVector) {
-    optionStrings.push_back(o.str());
-  }
-  std::ranges::sort(optionStrings);
-
+  // Output options in registry order (not sorted alphabetically)
   std::string str;
-  for (const auto& s : optionStrings) {
-    str += s + "\n";
+  for (const auto& o : optionVector) {
+    str += o.str() + "\n";
   }
   str = trimFast(str);// remove last newline
   return str;
 }
 
 std::string UciOptions::strWithCurrentValues() const {
-  // Collect option strings and sort alphabetically by option name
-  std::vector<std::string> optionStrings;
-  optionStrings.reserve(optionVector.size());
-  for (const auto& o : optionVector) {
-    optionStrings.push_back(o.strWithCurrentValue());
-  }
-  std::ranges::sort(optionStrings);
-
+  // Output options in registry order (not sorted alphabetically)
   std::string str;
-  for (const auto& s : optionStrings) {
-    str += s + "\n";
+  for (const auto& o : optionVector) {
+    str += o.strWithCurrentValue() + "\n";
   }
   str = trimFast(str);// remove last newline
   return str;
