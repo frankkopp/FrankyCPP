@@ -221,7 +221,7 @@ public:
   /// @param key  Position key to prefetch
   void prefetch(const ZobristKey key) const {
 #ifdef TT_ENABLE_PREFETCH
-    _mm_prefetch((reinterpret_cast<const char*>(&_data[(key & hashKeyMask)])), _MM_HINT_T0);
+    _mm_prefetch(reinterpret_cast<const char*>(&_data[(key & hashKeyMask)]), _MM_HINT_T0);
 #else
     (void)key;
 #endif

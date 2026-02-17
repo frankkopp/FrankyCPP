@@ -242,7 +242,7 @@ ENABLE_OSTREAM_OPERATOR_AS_STR_ON(Move)
 // Comparator updated to use raw() while remaining trivially inline.
 struct moveValueGreaterComparator {
   constexpr bool operator()(const Move lhs, const Move rhs) const {
-    return (lhs.raw() & 0xFFFF0000u) > (rhs.raw() & 0xFFFF0000u);
+    return (lhs.raw() & MoveShifts::VALUE_MASK) > (rhs.raw() & MoveShifts::VALUE_MASK);
   }
 };
 

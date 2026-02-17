@@ -122,7 +122,7 @@ class MoveGenerator {
   onDemandStage currentODStage;
 
   Move pvMove          = MOVE_NONE;
-  bool pvMovePushed    = false;
+  bool pvMovePush    = false;
   std::array<Move, 2> killerMoves  = {MOVE_NONE, MOVE_NONE};
   History* historyData = nullptr;
 
@@ -217,7 +217,7 @@ public:
     currentODStage         = OD_NEW;
     currentODZobrist       = 0;
     pvMove                 = MOVE_NONE;
-    pvMovePushed           = false;
+    pvMovePush           = false;
     takeIndex              = 0;
   }
 

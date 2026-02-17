@@ -82,14 +82,14 @@ const MoveList* MoveGenerator::generateLegalMoves(const Position& p, const GenMo
 }
 
 Move MoveGenerator::getNextPseudoLegalMove(const Position& p, const GenMode genMode, const bool evasion) {
-  // if the position changes during iteration the iteration
+  // if the position changes during iteration, the iteration
   // will be reset and generation will be restarted with the
   // new position.
   if (p.getZobristKey() != currentODZobrist) {
     onDemandMoves.clear();
     onDemandEvasionTargets = BbZero;
     currentODStage         = OD_NEW;
-    pvMovePushed           = false;
+    pvMovePush           = false;
     takeIndex              = 0;
     currentODZobrist       = p.getZobristKey();
   }
@@ -101,7 +101,7 @@ Move MoveGenerator::getNextPseudoLegalMove(const Position& p, const GenMode genM
 
   // ad takeIndex
   // With the takeIndex we can take from the front of the vector
-  // without removing the element from the vector which would
+  // without removing the element from the vector/array, which would
   // be expensive as all elements would have to be shifted.
 
   // If the list is currently empty, and we have not generated all moves yet
@@ -111,24 +111,24 @@ Move MoveGenerator::getNextPseudoLegalMove(const Position& p, const GenMode genM
     fillOnDemandMoveList(p, genMode, evasion);
   }
 
-  // If we have generated moves we will return the first move and
-  // increase the takeIndex to the next move. If the list is emtpy
-  // even after all stages of generating we have no more moves
+  // If we have generated moves, we will return the first move and
+  // increase the takeIndex to the next move. If the list is empty
+  // even after all stages of generating, we have no more moves
   // and return MOVE_NONE
-  // If we have pushed a pvMove into the list we will need to
-  // skip this pvMove for each subsequent phases.
+  // If we have pushed a pvMove into the list, we will need to
+  // skip this pvMove for each subsequent phase.
   if (!onDemandMoves.empty()) {
     // Handle PvMove
-    // if we pushed a pv move and the list is not empty we check if the pv is the
+    // if we pushed a pv move and the list is not empty, we check if the pv is the
     // next move in list and skip it.
-    if (currentODStage != PAWN_CAPTURES && pvMovePushed && onDemandMoves[takeIndex].stripped() == pvMove.stripped()) {
+    if (currentODStage != PAWN_CAPTURES && pvMovePush && onDemandMoves[takeIndex].stripped() == pvMove.stripped()) {
 
       // skip pv move
       takeIndex++;
 
       // we found the pv move and skipped it
       // no need to check this for this generation cycle
-      pvMovePushed = false;
+      pvMovePush = false;
 
       if (takeIndex >= onDemandMoves.size()) {
         // The pv move was the last move in this iterations list.
@@ -158,7 +158,7 @@ Move MoveGenerator::getNextPseudoLegalMove(const Position& p, const GenMode genM
 
   // no more moves to be generated
   takeIndex    = 0;
-  pvMovePushed = false;
+  pvMovePush = false;
   return MOVE_NONE;
 }
 
@@ -187,7 +187,7 @@ bool MoveGenerator::validateMove(const Position& position, const Move move) {
 }
 
 bool MoveGenerator::hasLegalMove(const Position& position) {
-  // To determine if we have at least one legal move we only have to find
+  // To determine if we have at least one legal move, we only have to find
   // one legal move. We search for any KING, PAWN, KNIGHT, BISHOP, ROOK, QUEEN move
   // and return immediately if we found one.
   // The order of our search is from approx. the most likely to the least likely
@@ -506,22 +506,22 @@ void MoveGenerator::fillOnDemandMoveList(const Position& position, const GenMode
       case PV_MOVE:
         // If a pvMove is set we return it first and filter it out before
         // returning a move
-        assert(!pvMovePushed && "Stage PV should not have pvMovePushed set");
+        assert(!pvMovePushed && "Stage PV should not have pvMovePush set");
         if (pvMove) {
           switch (genMode) {
             case GenAll:
-              pvMovePushed = true;
+              pvMovePush = true;
               onDemandMoves.push_back(pvMove);
               break;
             case GenNonQuiet:
               if (position.isCapturingMove(pvMove)) {
-                pvMovePushed = true;
+                pvMovePush = true;
                 onDemandMoves.push_back(pvMove);
               }
               break;
             case GenQuiet:
               if (!position.isCapturingMove(pvMove)) {
-                pvMovePushed = true;
+                pvMovePush = true;
                 onDemandMoves.push_back(pvMove);
               }
               break;
