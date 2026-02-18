@@ -256,6 +256,10 @@ void initUciOptionsFromRegistry(std::vector<UciOption>& optionVector, void* uciO
   auto* uciOptions     = static_cast<UciOptions*>(uciOptionsPtr);
   const auto& registry = ConfigRegistry::instance();
 
+  // Get current config values (loaded from YAML) to use as initial currentValue
+  const auto& searchConfig = ConfigManager::instance().search();
+  const auto& evalConfig   = ConfigManager::instance().eval();
+
   // Iterate all UCI-exposed config entries
   for (const auto* def : registry.uciOptions()) {
     // Skip entries with empty UCI name (internal-only)
@@ -276,6 +280,9 @@ void initUciOptionsFromRegistry(std::vector<UciOption>& optionVector, void* uciO
     const bool hasCustomHandler = def->customUciHandler.has_value();
 
     // Create appropriate option type based on valueType
+    // Get the current value from ConfigManager (may differ from default if loaded from YAML)
+    const std::string currentVal = def->getter(searchConfig, evalConfig);
+
     switch (def->valueType) {
       case ConfigValueType::Bool: {
         const bool defaultVal = parseBool(def->defaultValue);
@@ -300,6 +307,8 @@ void initUciOptionsFromRegistry(std::vector<UciOption>& optionVector, void* uciO
                                       (*regDef->customUciHandler)(uciHandler);
                                     }
                                   });
+        // Update currentValue from ConfigManager (may differ from default if loaded from YAML)
+        optionVector.back().currentValue = currentVal;
         break;
       }
 
@@ -327,6 +336,8 @@ void initUciOptionsFromRegistry(std::vector<UciOption>& optionVector, void* uciO
                                       (*regDef->customUciHandler)(uciHandler);
                                     }
                                   });
+        // Update currentValue from ConfigManager (may differ from default if loaded from YAML)
+        optionVector.back().currentValue = currentVal;
         break;
       }
 
@@ -355,11 +366,16 @@ void initUciOptionsFromRegistry(std::vector<UciOption>& optionVector, void* uciO
                                       (*regDef->customUciHandler)(uciHandler);
                                     }
                                   });
+        // Update currentValue from ConfigManager (may differ from default if loaded from YAML)
+        // For Double, the current value is stored as percentage int
+        const int currentPct = static_cast<int>(parseDouble(currentVal) * 100);
+        optionVector.back().currentValue = std::to_string(currentPct);
         break;
       }
 
       case ConfigValueType::String: {
-        optionVector.emplace_back(uciName.c_str(), def->defaultValue.c_str(),
+        // Use the constructor that accepts both default and current values
+        optionVector.emplace_back(uciName.c_str(), def->defaultValue.c_str(), currentVal.c_str(),
                                   [configName, uciName, uciOptions, hasCustomHandler](UciHandler* uciHandler) {
                                     const UciOption* opt = uciOptions->getOption(uciName);
                                     if (!opt) return;
@@ -404,6 +420,8 @@ void initUciOptionsFromRegistry(std::vector<UciOption>& optionVector, void* uciO
                         }
                       });
         opt.comboVars = def->comboVars;
+        // Update currentValue from ConfigManager (may differ from default if loaded from YAML)
+        opt.currentValue = currentVal;
         optionVector.push_back(std::move(opt));
         break;
       }
