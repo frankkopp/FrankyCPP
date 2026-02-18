@@ -153,6 +153,7 @@ public:
 - **`[[nodiscard]]`** on functions where ignoring return value is likely a bug
 - **Implementation file order** must mirror header declaration order
 - Class layout: static constants → member fields → public methods → private methods → getters/setters
+- **Commenting/documenting style:** Match the existing style in the codebase. See `src/engine/Search.h` as a reference example — header files use a banner block (`//===...`) with a high-level overview of the component (purpose, algorithm, key methods, usage), followed by `///` Doxygen-style comments on individual declarations with `@param`/`@return` tags. Study nearby files before adding new comments to stay consistent.
 
 ## Adding Source Files
 
