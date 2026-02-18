@@ -153,6 +153,16 @@ Score: 108.5 - 99.5
 ELO Difference: +15.0
 Duration: 15350.0s
 ```
+## Tablebases (Blitz 208)
+USE_TB_PROBE_PV = OFF
+```text
+Match Complete: v1.1_vs_v1.3_blitz_208-dev
+FrankyCPP v1.3: 62 wins, 84 draws, 62 losses
+FrankyCPP v1.1: 62 wins, 84 draws, 62 losses
+Score: 104 - 104
+ELO Difference: -0.0
+Duration: 1779.2s
+```
 
 ---
 
