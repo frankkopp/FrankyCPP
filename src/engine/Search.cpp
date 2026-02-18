@@ -1649,7 +1649,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
 
     // reduce the number of moves searched in quiescence
     // by looking at good captures only
-    if (!hasCheck && !goodCapture(p, move)) { continue; }
+    if (!hasCheck && !goodCapture(p, move, givesCheck)) { continue; }
 
     // ///////////////////////////////////////////////////////
     // DO MOVE
@@ -1751,9 +1751,9 @@ inline Value Search::evaluate(const Position& p) {
   return evaluator->evaluate(p);
 }
 
-bool Search::goodCapture(const Position& p, const Move move) const {
+bool Search::goodCapture(const Position& p, const Move move, const bool givesCheck) const {
   // Captures that give check are always good
-  if (p.isCapturingMove(move) && p.givesCheck(move)) {
+  if (p.isCapturingMove(move) && givesCheck) {
     return true;
   }
 

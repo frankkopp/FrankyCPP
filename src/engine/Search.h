@@ -385,8 +385,11 @@ private:
   /// Determines if a capture is likely good enough to search in quiescence.
   /// @param p     Position
   /// @param move  Capture move to evaluate
+  /// @param givesCheck if the move on the position gives check (captures that give check are more likely to be good)
   /// @return      True if capture should be searched
-  bool goodCapture(const Position& p, Move move) const;
+  /// @note        As givesCheck is already available at the time we call this function, we pass it
+  ///              as an argument to avoid redundant calls to p.givesCheck() inside this function, which can be costly.
+  bool goodCapture(const Position& p, Move move, bool givesCheck) const;
 
   /// Stores a position entry in the transposition table.
   /// @param p          Position
