@@ -1023,11 +1023,15 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // When static eval is well below alpha at the last node,
   // jump directly into qsearch.
   if (SearchConfig.USE_RAZORING
+      && !isPvNode // fix 19.2.2026 - only razor on non-PV nodes to avoid missing critical moves in PV line
       && depth == 1
       && staticEval != VALUE_NONE
       && staticEval <= alpha - SearchConfig.RAZOR_MARGIN) {
     statistics.razorings++;
-    return qsearch(p, ply, alpha, beta, PV);
+    // fix 19.2.2026 - use NonPV for razor to avoid missing critical moves in PV line; razor is a
+    // heuristic that can afford to miss some moves, but we don't want it to miss critical moves in
+    // the PV line
+    return qsearch(p, ply, alpha, beta, NonPV);
   }
 
   // Reverse Futility Pruning, (RFP, Static Null Move Pruning)
