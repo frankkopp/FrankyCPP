@@ -78,7 +78,8 @@ TEST_F(SearchTreeSizeTest_Test, 10secondSearchNodesCount) {
   SearchLimits sl{};
   Search s{};
   sl.timeControl = true;
-  sl.moveTime    = 16s;
+  sl.moveTime    = 10s;
+  // sl.depth        = 12;
   s.isReady();
   s.startSearch(p, sl);
   s.waitWhileSearching();

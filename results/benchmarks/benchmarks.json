@@ -464,6 +464,36 @@
       "totalTimeMs": 81669,
       "nps": 3722696,
       "notes": "Current development version (USE_TB_PROBE_ROOT, USE_TB_PROBE_SEARCH)"
+    },
+    {
+      "arenaVersion": "v1.2",
+      "timestamp": "2026-02-19T14:20:59",
+      "engineName": "FrankyCPP",
+      "engineVersion": "v1.3",
+      "enginePath": "",
+      "depth": 10,
+      "hashSizeMB": 128,
+      "threads": 1,
+      "positions": 50,
+      "totalNodes": 166336964,
+      "totalTimeMs": 44228,
+      "nps": 3760897,
+      "notes": "Dev LMR improvement"
+    },
+    {
+      "arenaVersion": "v1.2",
+      "timestamp": "2026-02-19T14:20:59",
+      "engineName": "External",
+      "engineVersion": "v1.3",
+      "enginePath": "Release/FrankyCPP_v1.3/FrankyCPP_v1.3.exe",
+      "depth": 10,
+      "hashSizeMB": 128,
+      "threads": 1,
+      "positions": 50,
+      "totalNodes": 166336964,
+      "totalTimeMs": 43754,
+      "nps": 3801640,
+      "notes": "Dev LMR improvement"
     }
   ]
 }

@@ -115,7 +115,7 @@ testSuites:
     debugMode: false
     commandLineArgs: "--nobook"
     uciOptions: ""
-    parallelWorkers: 4
+    parallelWorkers: 8
 
   - name: "mate_test_v1.3"
     epdPath: "test/testsets/mate_test_suite.epd"
@@ -1032,7 +1032,7 @@ benchmarks:
     engineVersion: "v1.3"
     depth: 10
     hashSizeMB: 128
-    # notes: "Current development version"
+    notes: "Dev LMR improvement"
 
   - name: "v1.3 External"
     enginePath: "Release/FrankyCPP_v1.3/FrankyCPP_v1.3.exe"
@@ -1040,7 +1040,7 @@ benchmarks:
     engineVersion: "v1.3"
     depth: 10
     hashSizeMB: 128
-    # notes: "Current development version"
+    notes: "Dev LMR improvement"
 
 #  - name: "v1.1 External"
 #    enginePath: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
