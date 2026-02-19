@@ -1476,8 +1476,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
           if (SearchConfig.USE_KILLER_MOVES && !p.isCapturingMove(move)) { myMg->storeKiller(move); }
           // Counter for moves which caused a beta cutoff
           // we use 1 << depth as an increment to favor deeper searches
-          // a more repetitions
-          if (SearchConfig.USE_HISTORY_COUNTER) { history.historyCount[us][from][to] += 1L << depth; }
+          if (SearchConfig.USE_HISTORY_COUNTER && !p.isCapturingMove(move)) { history.historyCount[us][from][to] += 1L << depth; }
           // store a successful counter-move to the previous opponent move
           if (SearchConfig.USE_HISTORY_MOVES) {
             const Move lastMove = p.getLastMove();
@@ -1495,11 +1494,12 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         // need to find even better moves or dismiss the moves.
         alpha  = value;
         ttType = EXACT;
+        // Skip history penalty for the move that raised alpha
+        continue;
       }
     }
-    // no beta cutoff - decrease historyCounter for the move
-    // we decrease it by only half the increase amount
-    if (SearchConfig.USE_HISTORY_COUNTER) {
+    // Decrease history only for quiet moves that failed to improve alpha
+    if (SearchConfig.USE_HISTORY_COUNTER && !p.isCapturingMove(move)) {
       history.historyCount[us][from][to] -= 1L << depth;
       if (history.historyCount[us][from][to] < 0) { history.historyCount[us][from][to] = 0; }
     }
