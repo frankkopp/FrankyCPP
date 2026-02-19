@@ -494,6 +494,66 @@
       "totalTimeMs": 43754,
       "nps": 3801640,
       "notes": "Dev LMR improvement"
+    },
+    {
+      "arenaVersion": "v1.2",
+      "timestamp": "2026-02-19T19:11:15",
+      "engineName": "FrankyCPP",
+      "engineVersion": "v1.3",
+      "enginePath": "",
+      "depth": 10,
+      "hashSizeMB": 128,
+      "threads": 1,
+      "positions": 50,
+      "totalNodes": 21279023,
+      "totalTimeMs": 7269,
+      "nps": 2927365,
+      "notes": "isPvNode fixes in place"
+    },
+    {
+      "arenaVersion": "v1.2",
+      "timestamp": "2026-02-19T19:11:15",
+      "engineName": "External",
+      "engineVersion": "v1.3",
+      "enginePath": "Release/FrankyCPP_v1.3/FrankyCPP_v1.3.exe",
+      "depth": 10,
+      "hashSizeMB": 128,
+      "threads": 1,
+      "positions": 50,
+      "totalNodes": 21279023,
+      "totalTimeMs": 6989,
+      "nps": 3044644,
+      "notes": "isPvNode fixes in place"
+    },
+    {
+      "arenaVersion": "v1.2",
+      "timestamp": "2026-02-19T19:12:31",
+      "engineName": "FrankyCPP",
+      "engineVersion": "v1.3",
+      "enginePath": "",
+      "depth": 12,
+      "hashSizeMB": 128,
+      "threads": 1,
+      "positions": 50,
+      "totalNodes": 87418817,
+      "totalTimeMs": 29151,
+      "nps": 2998827,
+      "notes": "isPvNode fixes in place (incr. depth to 12)"
+    },
+    {
+      "arenaVersion": "v1.2",
+      "timestamp": "2026-02-19T19:12:31",
+      "engineName": "External",
+      "engineVersion": "v1.3",
+      "enginePath": "Release/FrankyCPP_v1.3/FrankyCPP_v1.3.exe",
+      "depth": 12,
+      "hashSizeMB": 128,
+      "threads": 1,
+      "positions": 50,
+      "totalNodes": 87418817,
+      "totalTimeMs": 29039,
+      "nps": 3010393,
+      "notes": "isPvNode fixes in place (incr. depth to 12)"
     }
   ]
 }
