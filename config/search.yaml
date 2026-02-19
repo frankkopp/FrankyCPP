@@ -128,9 +128,13 @@ FP_MARGIN: [0, 100, 200, 300, 500, 900, 1200]
 # Enable LMR
 USE_LMR: true
 # Minimum depth (plies) to start reducing late moves
-LMR_MIN_DEPTH: 1
+LMR_MIN_DEPTH: 2
 # Start reducing from this move index (i.e., after this many moves searched)
-LMR_MIN_MOVES: 3
+LMR_MIN_MOVES: 2
+# Use logarithmic formula instead of linear (log(d)*log(m)/divisor)
+LMR_USE_LOG_FORMULA: true
+# Divisor for logarithmic formula (lower = more aggressive reductions)
+LMR_LOG_BASE_DIV: 1.50
 # LMR_REDUCTION: large table defined in code for efficiency
 
 # Late Move Pruning (LMP): prune moves after a threshold per depth bucket

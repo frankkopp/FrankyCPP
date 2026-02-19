@@ -106,10 +106,15 @@ struct SearchConfigData {
   bool USE_QFP = true;
   std::array<int, 7> FP_MARGIN{0, 100, 200, 300, 500, 900, 1200};
 
-  // LMR/LMP
+  // LMR
   bool USE_LMR      = true;
-  int LMR_MIN_DEPTH = 3;
-  int LMR_MIN_MOVES = 3;
+  int LMR_MIN_DEPTH = 2;
+  int LMR_MIN_MOVES = 2;
+  // LMR formula selection (logarithmic vs linear)
+  bool LMR_USE_LOG_FORMULA  = true; // Use logarithmic formula instead of linear
+  double LMR_LOG_BASE_DIV   = 1.50; // Divisor for log formula: log(d)*log(m)/divisor
+
+  // LMP
   bool USE_LMP      = true;
   std::array<int, 16> LMP_MOVES{0, 7, 9, 11, 13, 15, 17, 19, 22, 24, 27, 29, 32, 35, 38, 41};
 

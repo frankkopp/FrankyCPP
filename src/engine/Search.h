@@ -104,6 +104,8 @@
 #include "config/ConfigManager.h"
 
 #include <atomic>
+#include <cmath>
+#include <optional>
 #include <semaphore>
 #include <thread>
 
@@ -153,8 +155,8 @@ class Search {
   // history heuristics
   History history{};
 
-  // result of previous search
-  SearchResult lastSearchResult{};
+  // result of previous search (empty until first search completes)
+  std::optional<SearchResult> lastSearchResult{};
 
   // current position and search limits for the search
   Position position{};
@@ -163,7 +165,6 @@ class Search {
 
   // manage running search
   std::atomic_bool stopSearchFlag = false;
-  std::atomic_bool hasResultFlag  = false;
 
   // time management for the search
   TimePoint startTime{};    // when startSearch has been called
@@ -203,20 +204,43 @@ class Search {
   const SearchConfigData& SearchConfig;
 
   // LMR reduction table pre-computed for depth 0..31 and moves searched 0..63
-  static constexpr int lmr_reduction(const int depth, const int movesSearched) noexcept {
-    // 1 + round(depth * movesSearched * 0.0035)
+  // Linear formula: 1 + round(depth * movesSearched * 0.0035)
+  static constexpr int lmr_reduction_linear(const int depth, const int movesSearched) noexcept {
     // exact integer rounding of 35/10000
     return 1 + (depth * movesSearched * 35 + 5000) / 10000;
   }
-  static constexpr std::array<std::array<int, 64>, 32> make_lmr_table() noexcept {
-    std::array<std::array<int, 64>, 32> t{};
-    for (std::size_t d = 0; d < 32; ++d)
-      for (std::size_t m = 0; m < 64; ++m)
-        t[d][m] = lmr_reduction(static_cast<int>(d), static_cast<int>(m));
-    return t;
+
+  // Logarithmic formula: log(depth) * log(moves) / divisor
+  // This provides more gradual reductions that scale better at higher depths
+  static int lmr_reduction_log(const int depth, const int movesSearched, const double divisor) noexcept {
+    if (depth <= 1 || movesSearched <= 1) return 1;
+    return static_cast<int>(std::lround(std::log(depth) * std::log(movesSearched) / divisor));
   }
-  inline static auto LMR_REDUCTION = make_lmr_table();
-  FRIEND_TEST(SearchTest, lmrReductionTable);
+
+  // LMR table - regenerated at search start based on config
+  std::array<std::array<int, 64>, 32> LMR_REDUCTION{};
+
+  // Regenerates the LMR table based on current config settings
+  void regenerateLmrTable() {
+    if (SearchConfig.LMR_USE_LOG_FORMULA) {
+      const double divisor = SearchConfig.LMR_LOG_BASE_DIV;
+      for (std::size_t d = 0; d < 32; ++d) {
+        for (std::size_t m = 0; m < 64; ++m) {
+          LMR_REDUCTION[d][m] = lmr_reduction_log(static_cast<int>(d), static_cast<int>(m), divisor);
+        }
+      }
+    }
+    else {
+      for (std::size_t d = 0; d < 32; ++d) {
+        for (std::size_t m = 0; m < 64; ++m) {
+          LMR_REDUCTION[d][m] = lmr_reduction_linear(static_cast<int>(d), static_cast<int>(m));
+        }
+      }
+    }
+  }
+
+  FRIEND_TEST(SearchTest, lmrReductionTableTest);
+  FRIEND_TEST(SearchTest, lmrReductionTablePrint);
 
 public:
   /// Node type for PVS: PV nodes search full window, NonPV nodes try zero window first.
@@ -270,10 +294,6 @@ public:
   /// @return True if search is in progress
   bool isSearching() const;
 
-  /// Checks if a search result is available.
-  /// @return True if result is ready
-  bool hasResult() const { return hasResultFlag; }
-
   /// Blocks the calling thread until the search completes.
   void waitWhileSearching() const;
 
@@ -295,8 +315,25 @@ public:
   const SearchStats& getSearchStats() const { return statistics; };
 
   /// Returns the result of the last completed search.
-  /// @return Reference to SearchResult
-  const SearchResult& getLastSearchResult() const { return lastSearchResult; };
+  /// @return Reference to SearchResult (undefined behavior if no search completed)
+  /// @pre hasResult() returns true
+  const SearchResult& getLastSearchResult() const { return *lastSearchResult; };
+
+  /// Checks if a search result is available.
+  /// @return True if result is ready
+  [[nodiscard]] bool hasResult() const { return lastSearchResult.has_value(); }
+
+  /// Formats detailed search statistics as a string for debugging/logging.
+  /// Static version that takes result and stats as parameters.
+  /// @param result  Search result with best move, score, depth, FEN, etc.
+  /// @param stats   Search statistics with pruning counts, TT hits, etc.
+  /// @return        Formatted multi-line string with all statistics
+  [[nodiscard]] static std::string formatDetailedStats(const SearchResult& result, const SearchStats& stats);
+
+  /// Formats detailed search statistics as a string for debugging/logging.
+  /// Uses this search instance's last result and statistics.
+  /// @return     Formatted multi-line string with all statistics
+  [[nodiscard]] std::string formatDetailedStats() const;
 
 private:
   ////////////////////////////////////////////////

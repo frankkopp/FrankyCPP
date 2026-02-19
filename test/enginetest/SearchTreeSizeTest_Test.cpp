@@ -52,8 +52,8 @@ TEST_F(SearchTreeSizeTest_Test, size_test) {
   static constexpr milliseconds MOVE_TIME{0};
 
   const int START_FEN = isBulkRun() ? 0 : 0;
-  const int END_FEN = isBulkRun() ? 4 : 30;
-  const int DEPTH   = isBulkRun() ? 4 : 12;
+  const int END_FEN   = isBulkRun() ? 4 : 30;
+  const int DEPTH     = isBulkRun() ? 4 : 10;
 
   // Prepare test fens
   // get sub vector of fens to test
@@ -67,6 +67,24 @@ TEST_F(SearchTreeSizeTest_Test, size_test) {
   // execute tests
   SearchTreeSizeTest stst(DEPTH, MOVE_TIME, testFens);
   stst.start();
+}
+
+TEST_F(SearchTreeSizeTest_Test, 10secondSearchNodesCount) {
+  if (isBulkRun()) {
+    GTEST_SKIP() << "Skipping debug test in bulk run to save time";
+  }
+
+  const Position p{"5k2/1rn2p2/3pb1p1/7p/p3PP2/PnNBK2P/3N2P1/1R6 w - - 0 1 "};
+  SearchLimits sl{};
+  Search s{};
+  sl.timeControl = true;
+  sl.moveTime    = 16s;
+  s.isReady();
+  s.startSearch(p, sl);
+  s.waitWhileSearching();
+
+  // Use the new formatDetailedStats method (FEN is stored in SearchResult)
+  fprintln("{}", s.formatDetailedStats());
 }
 
 

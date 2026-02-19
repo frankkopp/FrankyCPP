@@ -471,13 +471,18 @@ TEST_F(SearchTest, singleMoveComplexRoot) {
 }
 
 // New test: verify and pretty-print the LMR reduction table
-TEST_F(SearchTest, lmrReductionTable) {
+TEST_F(SearchTest, lmrReductionTableTest) {
   // Access the private static table via FRIEND_TEST
-  const auto& T = Search::LMR_REDUCTION;
+  CONFIG_OVERRIDE(s.LMR_USE_LOG_FORMULA = false;);
+
+  Search search{};
+  search.regenerateLmrTable();
+
+  const auto& T = search.LMR_REDUCTION;
 
   // Dimensions
-  ASSERT_EQ(32u, T.size()) << "Depth dimension must be 32 (0..31)";
-  for (const auto& row : T) ASSERT_EQ(64u, row.size()) << "Moves dimension must be 64 (0..63)";
+  ASSERT_EQ(32U, T.size()) << "Depth dimension must be 32 (0..31)";
+  for (const auto& row : T) ASSERT_EQ(64U, row.size()) << "Moves dimension must be 64 (0..63)";
 
   // Check exact formula match for all entries and basic boundary conditions
   for (int d = 0; d < 32; ++d) {
@@ -513,6 +518,30 @@ TEST_F(SearchTest, lmrReductionTable) {
     constexpr int expected = 1 + (31 * 63 * 35 + 5000) / 10000;// should be 8
     EXPECT_EQ(expected, T[31][63]);
   }
+
+  // Pretty print the entire table for manual inspection
+  std::ostringstream oss;
+  oss << "LMR_REDUCTION[depth][moves] (depth 0..31, moves 0..63)\n";
+  for (int d = 0; d < 32; ++d) {
+    oss << "d=" << std::setw(2) << d << ": ";
+    for (int m = 0; m < 64; ++m) {
+      oss << std::setw(2) << T[d][m] << (m + 1 < 64 ? ' ' : '\n');
+    }
+  }
+  LOG__INFO(Logger::get().TEST_LOG, "{}", oss.str());
+}
+
+TEST_F(SearchTest, lmrReductionTablePrint) {
+
+  // Access the private static table via FRIEND_TEST
+  // Using new defaults: logarithmic formula with divisor 1.50
+  CONFIG_OVERRIDE(s.LMR_USE_LOG_FORMULA = true;);
+  CONFIG_OVERRIDE(s.LMR_LOG_BASE_DIV = 1.50;);
+
+  Search search{};
+  search.regenerateLmrTable();
+
+  const auto& T = search.LMR_REDUCTION;
 
   // Pretty print the entire table for manual inspection
   std::ostringstream oss;
@@ -584,6 +613,23 @@ TEST_F(SearchTest, singularExtensionDisabled) {
   EXPECT_EQ(stats.singularExtension, 0) << "Expected no singular extensions when disabled";
 }
 
+TEST_F(SearchTest, 10secondSearchNodesCount) {
+  if (isBulkRun()) {
+    GTEST_SKIP() << "Skipping debug test in bulk run to save time";
+  }
+
+  const Position p{"5k2/1rn2p2/3pb1p1/7p/p3PP2/PnNBK2P/3N2P1/1R6 w - - 0 1 "};
+  SearchLimits sl{};
+  Search s{};
+  sl.timeControl = true;
+  sl.moveTime    = 16s;
+  s.isReady();
+  s.startSearch(p, sl);
+  s.waitWhileSearching();
+
+  const auto result = s.getLastSearchResult();
+  fprintln("Search completed in {} ms, nodes: {:L}", result.time.count(), result.nodes);
+}
 
 TEST_F(SearchTest, debug) {
   if (isBulkRun()) {

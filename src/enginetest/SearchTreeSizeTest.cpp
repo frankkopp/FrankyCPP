@@ -37,17 +37,21 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   const Position position(fen);
 
   CONFIG_OVERRIDE_START()
+  // Book and pondering
   s.USE_BOOK   = false;
   s.USE_PONDER = false;
 
+  // Core search algorithms
   s.USE_ALPHABETA = false;
   s.USE_PVS       = false;
   s.USE_ASP       = false;
 
+  // Quiescence search
   s.USE_QUIESCENCE      = false;
   s.USE_QS_STANDPAT_CUT = false;
   s.USE_QS_SEE          = false;
 
+  // Transposition table
   s.USE_TT              = false;
   s.TT_SIZE_MB          = 64;
   s.USE_TT_VALUE        = false;
@@ -55,34 +59,48 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   s.USE_QS_TT           = false;
   s.USE_EVAL_TT         = false;
 
-  // Syzygy tablebase probing - disable for tree size measurements
+  // Syzygy tablebase probing
   s.USE_TB_PROBE_ROOT   = false;
   s.TB_ROOT_IMMEDIATE   = false;
   s.USE_TB_PROBE_SEARCH = false;
   s.USE_TB_PROBE_PV     = false;
 
-  s.USE_TT_PV_MOVE_SORT = false;
+  // Move sorting
   s.USE_KILLER_MOVES    = false;
   s.USE_HISTORY_COUNTER = false;
   s.USE_HISTORY_MOVES   = false;
+  s.USE_IID             = false;
 
+  // Pruning techniques
   s.USE_MDP        = false;
   s.USE_RAZORING   = false;
   s.USE_RFP        = false;
   s.USE_NMP        = false;
   s.USE_NMP_VERIFY = false;
-  s.USE_IID        = false;
 
+  // Futility pruning
   s.USE_FP  = false;
   s.USE_QFP = false;
-  s.USE_LMR = false;
+
+  // Late move reductions
+  s.USE_LMR            = false;
+  s.LMR_MIN_DEPTH      = 1;
+  s.LMR_MIN_MOVES      = 3;
+  s.LMR_USE_LOG_FORMULA = false;
+  s.LMR_LOG_BASE_DIV   = 2.00;
+
+  // Late move pruning
   s.USE_LMP = false;
 
+  // Extensions
   s.USE_EXTENSIONS    = false;
   s.USE_CHECK_EXT     = false;
   s.USE_THREAT_EXT    = false;
   s.USE_EXT_ADD_DEPTH = false;
   s.USE_SINGULAR_EXT  = false;
+
+  // Best-move instability time management (disable for fixed-depth tests)
+  s.USE_BESTMOVE_INSTABILITY = false;
   CONFIG_OVERRIDE_END();
 
   // ***********************************
@@ -92,8 +110,9 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   ptrToSpecial2 = &search.getSearchStats().lmrResearches;
 
   // pure MiniMax
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 MINIMAX"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 MINIMAX"));
 
+  // Core search algorithms
   CONFIG_OVERRIDE(s.USE_ALPHABETA = true;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "10 AlphaBeta"));
 
@@ -103,20 +122,24 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   CONFIG_OVERRIDE(s.USE_ASP = true;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "18 ASP"));
 
+  // Move sorting
   CONFIG_OVERRIDE(s.USE_KILLER_MOVES = true;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "20a Killer"));
   CONFIG_OVERRIDE(s.USE_HISTORY_COUNTER = true;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "20b HistCnt"));
   CONFIG_OVERRIDE(s.USE_HISTORY_MOVES = true;);
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "20 History"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "20c History"));
 
   CONFIG_OVERRIDE(s.USE_IID = true;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "25 IID"));
 
+  // Transposition table
   CONFIG_OVERRIDE(s.USE_TT = true;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "30 TT"));
 
-  //  CONFIG_OVERRIDE(s.TT_SIZE_MB = 1'024;);
-  //  search.resizeTT();
-  //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "23 TT 1.024"));
+  // CONFIG_OVERRIDE(s.TT_SIZE_MB = 1'024;);
+  // search.resizeTT();
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "31 TT 1GB"));
 
   CONFIG_OVERRIDE(s.USE_TT_PV_MOVE_SORT = true;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "35 PVSort"));
@@ -127,6 +150,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   CONFIG_OVERRIDE(s.USE_EVAL_TT = true;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "37 TT Eval"));
 
+  // Quiescence search
   CONFIG_OVERRIDE(s.USE_QUIESCENCE = true;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "40 QS"));
 
@@ -139,58 +163,63 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   CONFIG_OVERRIDE(s.USE_QS_SEE = true;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "43 QS SEE"));
 
+  // Pruning techniques
   CONFIG_OVERRIDE(s.USE_MDP = true;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "50 MDP"));
 
   CONFIG_OVERRIDE(s.USE_RAZORING = true;);
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "50 RAZOR"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "51 RAZOR"));
 
   CONFIG_OVERRIDE(s.USE_RFP = true;);
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "51 RFP"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "52 RFP"));
 
   CONFIG_OVERRIDE(s.USE_NMP = true;);
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "52 NMP"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "53 NMP"));
 
   CONFIG_OVERRIDE(s.USE_NMP_VERIFY = true;);
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "53 NMP Ver"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "54 NMP Ver"));
 
+  // Futility pruning
   CONFIG_OVERRIDE(s.USE_FP = true;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "60 FP"));
 
-  // CONFIG_OVERRIDE(s.USE_LMR = true;);
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "65 LMR"));
+  CONFIG_OVERRIDE(s.USE_QFP = true;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "61 QFP"));
 
+  // Late move pruning (NOT LMR - keep LMR off for LMR tests below)
   CONFIG_OVERRIDE(s.USE_LMP = true;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "66 LMP"));
 
-  CONFIG_OVERRIDE(s.USE_QFP = true;);
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "67 QFP"));
-
+  // Extensions
   CONFIG_OVERRIDE(s.USE_EXTENSIONS = true;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "70a EXT"));
   CONFIG_OVERRIDE(s.USE_EXT_ADD_DEPTH = true;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "70b ExtAdd"));
   CONFIG_OVERRIDE(s.USE_CHECK_EXT = true;);
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "70 CEXT"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "70c CEXT"));
   // CONFIG_OVERRIDE(s.USE_THREAT_EXT = true;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "71 TEXT"));
 
   CONFIG_OVERRIDE(s.USE_SINGULAR_EXT = true;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "72 SEXT"));
 
+  // Syzygy tablebase probing
   CONFIG_OVERRIDE(s.USE_TB_PROBE_ROOT = true;);
-  CONFIG_OVERRIDE(s.TB_ROOT_IMMEDIATE = false;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "80 TBRoot"));
+  CONFIG_OVERRIDE(s.TB_ROOT_IMMEDIATE = false;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "81 TBRootS"));
 
   // CONFIG_OVERRIDE(s.TB_ROOT_IMMEDIATE = true;);
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "81 TBRooti"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "82 TBRooti"));
 
-  // For TB Search test, disable immediate return so search actually runs and can use in-search probing
-  // CONFIG_OVERRIDE(s.TB_ROOT_IMMEDIATE = false;);
   CONFIG_OVERRIDE(s.USE_TB_PROBE_SEARCH = true;);
-  CONFIG_OVERRIDE(s.USE_TB_PROBE_PV = true;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "85 TBSearch"));
+  CONFIG_OVERRIDE(s.USE_TB_PROBE_PV = true;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "86 TBPV"));
 
-  // CONFIG_OVERRIDE(s.TB_ROOT_IMMEDIATE = true;);
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "86 TBSearchi"));
+  // Note: LMR is intentionally kept OFF here - all features above are now enabled
+  // CONFIG_OVERRIDE(s.USE_LMR = true;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "65 LMR"));
 
   // ***********************************
   // LMR Parameter Tuning Tests
@@ -199,36 +228,90 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 warmup"));
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "01 pre"));
 
-  // Reset to defaults
+  // Enable LMR for parameter tuning tests
   CONFIG_OVERRIDE(s.USE_LMR = true;);
 
-  // Baseline with current defaults (LMR_MIN_DEPTH=3, LMR_MIN_MOVES=3)
-  CONFIG_OVERRIDE(s.LMR_MIN_DEPTH = 3;);
-  CONFIG_OVERRIDE(s.LMR_MIN_MOVES = 3;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR d3m3"));
-
-  // Test LMR_MIN_MOVES variations (lower = more aggressive LMR)
-  CONFIG_OVERRIDE(s.LMR_MIN_DEPTH = 1;);
-  CONFIG_OVERRIDE(s.LMR_MIN_MOVES = 3;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR d1m3"));
+  // // Test all combinations of LMR_MIN_DEPTH (1-4) x LMR_MIN_MOVES (1-4)
+  // CONFIG_OVERRIDE(s.LMR_MIN_DEPTH = 1;);
+  // CONFIG_OVERRIDE(s.LMR_MIN_MOVES = 1;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR d1m1"));
+  //
+  // CONFIG_OVERRIDE(s.LMR_MIN_DEPTH = 1;);
+  // CONFIG_OVERRIDE(s.LMR_MIN_MOVES = 2;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR d1m2"));
+  //
+  // CONFIG_OVERRIDE(s.LMR_MIN_DEPTH = 1;);
+  // CONFIG_OVERRIDE(s.LMR_MIN_MOVES = 3;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR d1m3"));
+  //
+  // CONFIG_OVERRIDE(s.LMR_MIN_DEPTH = 1;);
+  // CONFIG_OVERRIDE(s.LMR_MIN_MOVES = 4;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR d1m4"));
+  //
+  // CONFIG_OVERRIDE(s.LMR_MIN_DEPTH = 2;);
+  // CONFIG_OVERRIDE(s.LMR_MIN_MOVES = 1;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR d2m1"));
 
   CONFIG_OVERRIDE(s.LMR_MIN_DEPTH = 2;);
-  CONFIG_OVERRIDE(s.LMR_MIN_MOVES = 3;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR d2m3"));
-
-  // Test LMR_MIN_MOVES variations (lower = more aggressive LMR)
-  CONFIG_OVERRIDE(s.LMR_MIN_DEPTH = 4;);
-  CONFIG_OVERRIDE(s.LMR_MIN_MOVES = 3;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR d4m3"));
-
-  CONFIG_OVERRIDE(s.LMR_MIN_DEPTH = 3;);
   CONFIG_OVERRIDE(s.LMR_MIN_MOVES = 2;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR d3m2"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR d2m2"));
 
-  CONFIG_OVERRIDE(s.LMR_MIN_DEPTH = 3;);
-  CONFIG_OVERRIDE(s.LMR_MIN_MOVES = 1;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR d3m1"));
+  // CONFIG_OVERRIDE(s.LMR_MIN_DEPTH = 2;);
+  // CONFIG_OVERRIDE(s.LMR_MIN_MOVES = 3;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR d2m3"));
+  //
+  // CONFIG_OVERRIDE(s.LMR_MIN_DEPTH = 2;);
+  // CONFIG_OVERRIDE(s.LMR_MIN_MOVES = 4;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR d2m4"));
+  //
+  // CONFIG_OVERRIDE(s.LMR_MIN_DEPTH = 3;);
+  // CONFIG_OVERRIDE(s.LMR_MIN_MOVES = 1;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR d3m1"));
+  //
+  // CONFIG_OVERRIDE(s.LMR_MIN_DEPTH = 3;);
+  // CONFIG_OVERRIDE(s.LMR_MIN_MOVES = 2;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR d3m2"));
+  //
+  // CONFIG_OVERRIDE(s.LMR_MIN_DEPTH = 3;);
+  // CONFIG_OVERRIDE(s.LMR_MIN_MOVES = 3;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR d3m3"));
+  //
+  // CONFIG_OVERRIDE(s.LMR_MIN_DEPTH = 3;);
+  // CONFIG_OVERRIDE(s.LMR_MIN_MOVES = 4;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR d3m4"));
+  //
+  // CONFIG_OVERRIDE(s.LMR_MIN_DEPTH = 4;);
+  // CONFIG_OVERRIDE(s.LMR_MIN_MOVES = 1;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR d4m1"));
+  //
+  // CONFIG_OVERRIDE(s.LMR_MIN_DEPTH = 4;);
+  // CONFIG_OVERRIDE(s.LMR_MIN_MOVES = 2;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR d4m2"));
+  //
+  // CONFIG_OVERRIDE(s.LMR_MIN_DEPTH = 4;);
+  // CONFIG_OVERRIDE(s.LMR_MIN_MOVES = 3;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR d4m3"));
+  //
+  // CONFIG_OVERRIDE(s.LMR_MIN_DEPTH = 4;);
+  // CONFIG_OVERRIDE(s.LMR_MIN_MOVES = 4;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR d4m4"));
 
+  // Test logarithmic LMR formula (Stockfish-style)
+  // Uses log(depth) * log(moves) / divisor instead of linear formula
+  CONFIG_OVERRIDE(s.LMR_USE_LOG_FORMULA = true;);
+
+  // CONFIG_OVERRIDE(s.LMR_LOG_BASE_DIV = 2.00;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR log/2.0"));
+
+  // Test different divisor values for logarithmic formula
+  CONFIG_OVERRIDE(s.LMR_LOG_BASE_DIV = 1.50;);
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR log/1.5"));
+
+  // CONFIG_OVERRIDE(s.LMR_LOG_BASE_DIV = 1.25;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR log/1.25"));
+  //
+  // CONFIG_OVERRIDE(s.LMR_LOG_BASE_DIV = 1.00;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR log/1.0"));
 
   return result;
 }

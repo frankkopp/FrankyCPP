@@ -44,10 +44,14 @@
 //
 //=============================================================================
 
+#include "chesscore/Position.h"
 #include "types/types.h"
 
 /// Stores the result and metadata from a completed search.
 struct SearchResult {
+  /// FEN string of the position that was searched.
+  std::string fen{};
+
   /// Best move found by the search.
   Move bestMove = MOVE_NONE;
 
@@ -81,6 +85,17 @@ struct SearchResult {
 
   /// Principal variation (best line of play from both sides).
   MoveList pv{};
+
+  // ==========================================================================
+  // Constructors
+  // ==========================================================================
+
+  /// Default constructor deleted - SearchResult must be constructed with a Position.
+  SearchResult() = delete;
+
+  /// Constructs a SearchResult for the given position.
+  /// @param p  The position being searched (FEN is extracted and stored)
+  explicit SearchResult(const Position& p) : fen(p.strFen()) {}
 
   /// Returns a string representation for debugging/logging.
   /// @return  Debug string with best move, score, ponder, and depth

@@ -43,14 +43,14 @@ ConfigRegistry::ConfigRegistry() {
 #ifdef _MSC_VER
 // Windows MSVC builds
 #ifdef _DEBUG
-  static_assert(sizeof(SearchConfigData) == 496,
+  static_assert(sizeof(SearchConfigData) == 504,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 256,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
-  static_assert(sizeof(SearchConfigData) == 464,
+  static_assert(sizeof(SearchConfigData) == 472,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -61,7 +61,7 @@ ConfigRegistry::ConfigRegistry() {
 // Linux GCC/Clang builds (including WSL)
 #ifdef NDEBUG
   // Release build
-  static_assert(sizeof(SearchConfigData) == 464,
+  static_assert(sizeof(SearchConfigData) == 472,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -69,7 +69,7 @@ ConfigRegistry::ConfigRegistry() {
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
   // Debug build
-  static_assert(sizeof(SearchConfigData) == 456,
+  static_assert(sizeof(SearchConfigData) == 472,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -883,7 +883,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Minimum depth for LMR",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "1",
+    .defaultValue = "2",
     .minValue = 1,
     .maxValue = 10,
     .exposure = {.uci = true, .yaml = true, .display = true},
@@ -897,12 +897,42 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Minimum moves searched before LMR",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "3",
+    .defaultValue = "2",
     .minValue = 1,
     .maxValue = 10,
     .exposure = {.uci = true, .yaml = true, .display = true},
     .getter = searchGetter(&SearchConfigData::LMR_MIN_MOVES),
     .setter = searchSetter(&SearchConfigData::LMR_MIN_MOVES, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "LMR_USE_LOG_FORMULA",
+    .uciName = "LMR Use Log Formula",
+    .description = "Use logarithmic formula instead of linear for LMR",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = "true",
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::LMR_USE_LOG_FORMULA),
+    .setter = searchSetter(&SearchConfigData::LMR_USE_LOG_FORMULA, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "LMR_LOG_BASE_DIV",
+    .uciName = "LMR Log Base Divisor Pct",
+    .description = "Divisor for log formula: log(d)*log(m)/divisor",
+    .valueType = Double,
+    .domain = Search,
+    .defaultValue = "1.50",
+    .minValue = 50,
+    .maxValue = 500,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = [](const SearchConfigData& s, const EvalConfigData&) {
+      return configToString(s.LMR_LOG_BASE_DIV);
+    },
+    .setter = [](SearchConfigData& s, EvalConfigData&, const std::string& v) {
+      s.LMR_LOG_BASE_DIV = parseDouble(v);
+    }
   });
 
   definitions_.push_back({

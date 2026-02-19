@@ -45,7 +45,6 @@
 #include <vector>
 
 #include <engine/Search.h>
-#include <types/types.h>
 
 /// Namespace for search tree size test data structures.
 namespace SearchTreeSize {
@@ -102,7 +101,7 @@ public:
   /// @param depth      Maximum search depth
   /// @param movetime   Time limit per position
   /// @param fenVector  Positions to test
-  SearchTreeSizeTest(int depth, const milliseconds& movetime, std::vector<std::string> fenVector)
+  SearchTreeSizeTest(const int depth, const milliseconds& movetime, std::vector<std::string> fenVector)
       : depth(depth), movetime(movetime), fens(std::move(fenVector)) {}
 
   /// Runs all tests and prints results.

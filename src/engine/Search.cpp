@@ -23,6 +23,8 @@
 
 #include <algorithm>
 #include <chrono>
+#include <iomanip>
+#include <sstream>
 
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
@@ -163,7 +165,7 @@ void Search::run() {
 
   // initialize search
   stopSearchFlag    = false;
-  hasResultFlag     = false;
+  lastSearchResult.reset();  // clear previous result
   timeLimit         = milliseconds{};
   extraTimeMs       = 0;
   nodesVisited      = 0;
@@ -172,6 +174,9 @@ void Search::run() {
   // Note: npsTime and npsNodes are initialized later, right before iterative deepening,
   // to avoid including initialization overhead in NPS calculations
   initialize();
+
+  // Regenerate LMR table based on current config (linear vs logarithmic formula)
+  regenerateLmrTable();
 
   // set up and report search limits
   setupSearchLimits(position, searchLimits);
@@ -216,7 +221,7 @@ void Search::run() {
 
   // If we have found a book-move an update result and omit search.
   // Otherwise, start search with iterative deepening.
-  SearchResult searchResult{};
+  SearchResult searchResult{position};
   if (!bookMove) { searchResult = iterativeDeepening(position); }
   else {
     searchResult.bestMove = bookMove;
@@ -257,7 +262,6 @@ void Search::run() {
 
   // save the result until overwritten by the next search
   lastSearchResult = searchResult;
-  hasResultFlag    = true;
 
   // At the end of a search we send the result in any case even if
   // searched has been stopped.
@@ -271,7 +275,7 @@ void Search::run() {
 }
 
 SearchResult Search::iterativeDeepening(Position& p) {
-  SearchResult searchResult{};
+  SearchResult searchResult{p};
 
   // check repetition and 50-moves rule
   if (checkDrawRepAnd50(p, 2)) {
@@ -344,7 +348,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
       filterRootMovesByTB(p);
 
       // Reset searchResult - we'll populate it from search
-      searchResult = SearchResult{};
+      searchResult = SearchResult{p};
     }
   }
 
@@ -2475,4 +2479,106 @@ MoveList Search::extractPvWithTT(Position& p) {
   }
 
   return result;
+}
+
+std::string Search::formatDetailedStats(
+    const SearchResult& result,
+    const SearchStats& stats) {
+
+  std::ostringstream os;
+  os.imbue(deLocale);
+
+  const auto timeMs = duration_cast<milliseconds>(result.time).count();
+  const uint64_t nps = timeMs > 0 ? (result.nodes * 1000) / static_cast<uint64_t>(timeMs) : 0;
+
+  os << "\n==================== Search Results ====================\n";
+  if (!result.fen.empty()) {
+    os << "Position       : " << result.fen << "\n";
+  }
+  os << "Best Move      : " << result.bestMove.str() << "\n";
+  os << "Score          : " << result.bestMoveValue.str() << "\n";
+  os << "Ponder Move    : " << result.ponderMove.str() << "\n";
+  os << "Depth          : " << result.depth << "/" << result.extraDepth << " (regular/selective)\n";
+  os << "Time           : " << timeMs << " ms\n";
+  os << "Nodes          : " << result.nodes << "\n";
+  os << "NPS            : " << nps << "\n";
+  os << "Book Move      : " << (result.bookMove ? "yes" : "no") << "\n";
+  os << "TB Hit         : " << (result.tbHit ? "yes" : "no") << "\n";
+  os << "Mate Found     : " << (result.mateFound ? "yes" : "no") << "\n";
+  os << "PV             : " << result.pv.str() << "\n";
+
+  os << "\n------------------- Terminal Nodes --------------------\n";
+  os << "Checkmates     : " << stats.checkmates << "\n";
+  os << "Stalemates     : " << stats.stalemates << "\n";
+  os << "Leaf Positions : " << stats.leafPositionsEvaluated << "\n";
+  os << "Evaluations    : " << stats.evaluations << "\n";
+
+  os << "\n------------------- Pruning Stats ---------------------\n";
+  os << "Beta Cuts      : " << stats.betaCuts << "\n";
+  os << "MDP Cuts       : " << stats.mdp << "\n";
+  os << "Razorings      : " << stats.razorings << "\n";
+  os << "RFP Cuts       : " << stats.rfp_cuts << "\n";
+  os << "NMP Cuts       : " << stats.nullMoveCuts << "\n";
+  os << "NMP Verifies   : " << stats.nullMoveVerifications << "\n";
+  os << "FP Prunings    : " << stats.fpPrunings << "\n";
+  os << "QFP Prunings   : " << stats.qfpPrunings << "\n";
+  os << "Standpat Cuts  : " << stats.standpatCuts << "\n";
+
+  os << "\n------------------- LMR/LMP Stats ---------------------\n";
+  os << "LMR Reductions : " << stats.lmrReductions << "\n";
+  os << "LMR Researches : " << stats.lmrResearches << "\n";
+  os << "LMP Cuts       : " << stats.lmpCuts << "\n";
+
+  os << "\n------------------- Extension Stats -------------------\n";
+  os << "Check Ext      : " << stats.checkExtension << "\n";
+  os << "Threat Ext     : " << stats.threatExtension << "\n";
+  os << "Singular Srch  : " << stats.singularSearches << "\n";
+  os << "Singular Ext   : " << stats.singularExtension << "\n";
+
+  os << "\n------------------- TT Stats --------------------------\n";
+  os << "TT Hits        : " << stats.ttHit << "\n";
+  os << "TT Misses      : " << stats.ttMiss << "\n";
+  os << "TT Cuts        : " << stats.TtCuts << "\n";
+  os << "TT No Cuts     : " << stats.TtNoCuts << "\n";
+  os << "TT Move Used   : " << stats.TtMoveUsed << "\n";
+  os << "No TT Move     : " << stats.NoTtMove << "\n";
+  os << "Eval from TT   : " << stats.evalFromTT << "\n";
+
+  os << "\n------------------- IID Stats -------------------------\n";
+  os << "IID Searches   : " << stats.iidSearches << "\n";
+  os << "IID Moves      : " << stats.iidMoves << "\n";
+
+  os << "\n------------------- Re-search Stats -------------------\n";
+  os << "Root PVS Re    : " << stats.rootPvsResearches << "\n";
+  os << "PVS Researches : " << stats.pvsResearches << "\n";
+  os << "ASP Researches : " << stats.aspirationResearches << "\n";
+  os << "Best Move Chg  : " << stats.bestMoveChange << "\n";
+
+  os << "\n------------------- Tablebase Stats -------------------\n";
+  os << "TB Root Hits   : " << stats.tbRootHits << "\n";
+  os << "TB Search Hits : " << stats.tbSearchHits << "\n";
+  os << "TB Search Miss : " << stats.tbSearchMisses << "\n";
+  os << "TB Cutoffs     : " << stats.tbSearchCutoffs << "\n";
+
+  // Beta cuts distribution (move ordering quality)
+  if (stats.betaCuts > 0) {
+    os << "\n------------------- Beta Cuts Distribution ------------\n";
+    os << "(Shows which move index caused cutoff - lower index = better ordering)\n";
+    for (int i = 0; i < SearchStats::BETA_CUTS_INDEX_SIZE; ++i) {
+      const double pct = 100.0 * static_cast<double>(stats.betaCutsByIndex[i]) / static_cast<double>(stats.betaCuts);
+      os << "  Move " << std::setw(2) << i << (i == 9 ? "+" : " ")
+         << "   : " << std::fixed << std::setprecision(2) << std::setw(6) << pct << "% ("
+         << stats.betaCutsByIndex[i] << ")\n";
+    }
+  }
+  os << "========================================================\n";
+
+  return os.str();
+}
+
+std::string Search::formatDetailedStats() const {
+  if (!lastSearchResult.has_value()) {
+    return "\n==================== No Search Result Available ====================\n";
+  }
+  return formatDetailedStats(*lastSearchResult, statistics);
 }
