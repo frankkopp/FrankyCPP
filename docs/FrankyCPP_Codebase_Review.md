@@ -1,12 +1,16 @@
-# FrankyCPP Codebase Review
+1# FrankyCPP Codebase Review
 
 ## Executive Summary
 
-FrankyCPP is a production-ready C++ chess engine (v0.7 → v1.0) implementing the UCI protocol. It's a modern evolution from "FrankyGo" leveraging C++20 features. The engine features alpha-beta search with advanced pruning techniques, configurable evaluation function, opening book support, and comprehensive testing infrastructure.
+08ELOFrankyCPP is a production-ready C++ chess engine (v0.7 → v1.3) implementing the UCI protocol. It's a modern evolution from "FrankyGo" leveraging C++20 features. The engine features alpha-beta search with advanced pruning techniques, configurable evaluation function, opening book support, and comprehensive testing infrastructure.
 
-**v0.7 Development Cycle (Complete):** This version focused on professional-grade infrastructure: comprehensive documentation, cross-platform support (Windows MSVC, Linux GCC/Clang), modern C++20 features, GitHub Actions CI/CD, clang-tidy integration, sanitizer support, and production build scripts. All 266+ tests passing across all platforms.
+**v1.3 Development Cycle (Complete):** This version focused on search optimization: logarithmic LMR formula, LMR tuning, and critical bug fixes in isPvNode propagation and history heuristic. Total result: **+109 ELO** vs v1.1 baseline.
 
-**v1.0 Readiness:** ✅ The codebase is production-ready with professional build infrastructure, comprehensive documentation, full CI/CD pipeline, cross-platform support, and enterprise-grade code quality. Ready for v1.0 release.
+**v1.2 Development Cycle (Complete):** Syzygy tablebase integration with WDL/DTZ probing at root and in-search.
+
+**v1.1 Development Cycle (Complete):** Engine Arena automated testing framework for measuring strength across versions.
+
+**v1.0 Readiness:** ✅ The codebase is production-ready with professional build infrastructure, comprehensive documentation, full CI/CD pipeline, cross-platform support, and enterprise-grade code quality.
 
 ---
 

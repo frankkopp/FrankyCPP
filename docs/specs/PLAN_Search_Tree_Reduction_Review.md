@@ -1,11 +1,37 @@
 # FrankyCPP Search Tree Reduction Review Plan
 
-**Document Version:** 1.0  
+**Document Version:** 1.1  
 **Created:** 2026-02-18  
-**Last Updated:** 2026-02-18  
-**Status:** 🚀 NOT STARTED  
+**Last Updated:** 2026-02-20  
+**Status:** 🟡 IN PROGRESS (Phase 1 Partially Complete)  
 **Target:** FrankyCPP v1.4+  
 **Priority:** High (Performance / Strength Improvement)
+
+---
+
+## Progress Summary (v1.3 Release)
+
+### Completed Changes
+
+| Change       | Description                | ELO vs v1.1 | Status           |
+|--------------|----------------------------|-------------|------------------|
+| **Baseline** | TB + extensions (v1.2)     | +30         | ✅ Starting point |
+| **1.4.4**    | Logarithmic LMR formula    | +64         | ✅ Complete       |
+| **1.4.4b**   | LMR divisor tuning (1.5)   | +82         | ✅ Complete       |
+| **Bug Fix**  | isPvNode propagation fixes | +109        | ✅ Complete       |
+| **Bug Fix**  | History heuristic fixes    | TBD         | ✅ Complete       |
+
+**Total: +109 ELO** (v1.3 vs v1.1 baseline)
+
+### Bugs Discovered & Fixed
+
+1. **Razoring**: Used `PV` instead of `NonPV`, missing `!isPvNode` guard
+2. **PVS first move**: Hardcoded `PV` instead of inheriting `isPvNode`  
+3. **LMR/PVS re-searches**: Hardcoded `PV` instead of inheriting `isPvNode`
+4. **History penalty**: Penalized alpha-raising moves (best move got penalty)
+5. **History on captures**: Applied history to captures (should be quiet moves only)
+
+**Result:** PV node ratio improved from 20% → 0.02%
 
 ---
 
@@ -40,7 +66,7 @@ Stockfish reaches **2x the depth** while using **3.5x fewer nodes**. This massiv
 
 ## Phase 1: Late Move Reductions (LMR)
 
-**Status:** 🔴 Not Started  
+**Status:** 🟡 Partially Complete  
 **Priority:** Highest - LMR has the largest impact on tree size
 
 ### 1.1 Current Implementation Analysis
@@ -99,22 +125,19 @@ This grows **logarithmically** rather than linearly, providing:
 
 ### 1.3 Configuration Review
 
-**Current LMR Config Options:**
+**Current LMR Config Options (v1.3):**
 
-| Parameter       | Current Default  | Description               | Tunable?            |
-|-----------------|------------------|---------------------------|---------------------|
-| `USE_LMR`       | true             | Enable LMR                | Yes                 |
-| `LMR_MIN_DEPTH` | 3                | Minimum depth for LMR     | Yes                 |
-| `LMR_MIN_MOVES` | 3                | Moves before LMR kicks in | Yes                 |
-| LMR Formula     | `1 + d*m*0.0035` | Reduction factor          | **NO - Hardcoded!** |
+| Parameter             | Current Default | Description               | Tunable? |
+|-----------------------|-----------------|---------------------------|----------|
+| `USE_LMR`             | true            | Enable LMR                | Yes      |
+| `LMR_MIN_DEPTH`       | 2               | Minimum depth for LMR     | Yes      |
+| `LMR_MIN_MOVES`       | 2               | Moves before LMR kicks in | Yes      |
+| `LMR_USE_LOG_FORMULA` | true            | Use logarithmic vs linear | Yes ✅    |
+| `LMR_LOG_BASE_DIV`    | 1.5             | Divisor for log formula   | Yes ✅    |
 
-**⚠️ Critical Gap:** The LMR formula factor is hardcoded in `Search.h`. To tune it, we need to either:
-1. Make it configurable via `SearchConfigData`
-2. Switch to a logarithmic formula (Stockfish approach)
+**✅ Completed:** LMR formula is now configurable via `LMR_USE_LOG_FORMULA` and `LMR_LOG_BASE_DIV`
 
-**Missing Config Options to Consider:**
-- `LMR_BASE_FACTOR` - Make the 0.0035 factor configurable
-- `LMR_PV_REDUCTION_DIVISOR` - Reduce less on PV nodes (currently skipped entirely)
+**Remaining Config Options to Consider:**
 - `LMR_IMPROVING_BONUS` - Less reduction when improving
 - `LMR_HISTORY_DIVISOR` - History-based adjustment divisor
 - `LMR_CUTNODE_EXTRA` - Extra reduction on cut nodes
@@ -124,39 +147,29 @@ This grows **logarithmically** rather than linearly, providing:
 **⚠️ Each change requires a config flag for SearchTreeSizeTest validation!**
 
 #### Config-Only Quick Wins
-- [ ] **Task 1.4.1**: Test lower `LMR_MIN_MOVES` (2 instead of 3)
-- [ ] **Task 1.4.2**: Test lower `LMR_MIN_DEPTH` (2 instead of 3)
+- [x] **Task 1.4.1**: Test lower `LMR_MIN_MOVES` (2 instead of 3) ✅ Done
+- [x] **Task 1.4.2**: Test lower `LMR_MIN_DEPTH` (2 instead of 3) ✅ Done
 
 #### Code Changes Required
 
-**Change 1.4.3: Make LMR Factor Configurable** (Prerequisite for tuning)
-- **Config Flag:** `LMR_FACTOR` (double, default 0.0035)
+**Change 1.4.3: Make LMR Factor Configurable** ✅ COMPLETE
+- **Config Flag:** `LMR_LOG_BASE_DIV` (double, default 1.5)
+- Implemented as part of logarithmic formula switch
+- **Result:** Enables tuning via config
+
+**Change 1.4.4: Switch to Logarithmic LMR Formula** ✅ COMPLETE (+34 ELO)
+- **Config Flag:** `LMR_USE_LOG_FORMULA` (bool, default true)
 ```cpp
-// In SearchConfigData.h:
-double LMR_FACTOR = 0.0035;
-
-// In Search.h - compute at runtime or regenerate table on config change
+// Implemented logarithmic formula:
+lmrReduction[d][m] = std::lround(std::log(d) * std::log(m) / divisor);
 ```
-- **Effort:** Low-Medium
-- **Impact:** Enables tuning experiments
-- **Risk:** Low
-- **SearchTreeSizeTest:** Compare different factor values
+- **Result:** +34 ELO improvement
 
-**Change 1.4.4: Switch to Logarithmic LMR Formula** ⭐ HIGH IMPACT
-- **Config Flag:** `LMR_USE_LOG_FORMULA` (bool, default false initially)
-```cpp
-// Current linear formula:
-lmrReduction[d][m] = 1 + d * m * factor;
+**Change 1.4.4b: LMR Divisor Tuning** ✅ COMPLETE (+18 ELO)
+- Tuned `LMR_LOG_BASE_DIV` from 2.2 → 1.5
+- **Result:** Additional +18 ELO improvement
 
-// Proposed logarithmic formula:
-lmrReduction[d][m] = std::max(1, int(std::log(d) * std::log(m) / baseFactor));
-```
-- **Effort:** Low (table generation change only)
-- **Impact:** Medium-High
-- **Risk:** Low (easy to test/revert)
-- **SearchTreeSizeTest:** Run with flag on/off, compare node counts
-
-**Change 1.4.5: Add "Improving" Flag** ⭐⭐ HIGH IMPACT
+**Change 1.4.5: Add "Improving" Flag** ⭐⭐ HIGH IMPACT - TODO
 - **Config Flag:** `USE_LMR_IMPROVING` (bool, default false initially)
 ```cpp
 // staticEval is already tracked in PlyInfo! Just need to use it:
@@ -623,9 +636,10 @@ int reduction(int d, int m, bool improving, int history) {
 
 ## Change Log
 
-| Version | Date       | Changes                       |
-|---------|------------|-------------------------------|
-| 1.0     | 2026-02-18 | Initial plan document created |
+| Version | Date       | Changes                                                                                                             |
+|---------|------------|---------------------------------------------------------------------------------------------------------------------|
+| 1.0     | 2026-02-18 | Initial plan document created                                                                                       |
+| 1.1     | 2026-02-20 | Updated with v1.3 progress: LMR log formula, divisor tuning, isPvNode fixes, history fixes. Total +109 ELO vs v1.1. |
 
 ---
 

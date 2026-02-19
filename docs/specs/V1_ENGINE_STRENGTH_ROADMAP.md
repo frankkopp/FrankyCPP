@@ -1,10 +1,10 @@
 # FrankyCPP v1.x Engine Strength Roadmap
 
-**Document Version:** 2.1  
+**Document Version:** 2.2  
 **Created:** 2026-02-01  
-**Last Updated:** 2026-02-12  
-**Status:** Active Planning  
-**Target:** FrankyCPP v1.1 → v2.0  
+**Last Updated:** 2026-02-20  
+**Status:** Active Development  
+**Target:** FrankyCPP v1.3 → v2.0  
 **Focus:** Maximum Playing Strength Through Systematic Enhancement
 
 ---
@@ -25,9 +25,16 @@
 
 ## Executive Summary
 
-This document provides a comprehensive, prioritized roadmap for enhancing FrankyCPP's playing strength from v1.1 to v2.0. Based on extensive analysis of modern chess engine techniques and empirical data from top engines (Stockfish, Ethereal, Koivisto), this plan identifies **high-impact, feasible improvements** organized into logical implementation phases.
+This document provides a comprehensive, prioritized roadmap for enhancing FrankyCPP's playing strength from v1.3 to v2.0. Based on extensive analysis of modern chess engine techniques and empirical data from top engines (Stockfish, Ethereal, Koivisto), this plan identifies **high-impact, feasible improvements** organized into logical implementation phases.
 
-### Current State (v1.1.0 - February 2026)
+### Current State (v1.3.0 - February 2026)
+
+**Recent Improvements (v1.3):**
+- ✅ **+109 ELO** vs v1.1 baseline
+- ✅ Logarithmic LMR formula (configurable divisor)
+- ✅ Fixed isPvNode propagation bugs (PV ratio: 20% → 0.02%)
+- ✅ Fixed history heuristic (quiet moves only, skip alpha-raising)
+- ✅ PV/NonPV node tracking statistics
 
 **Strengths:**
 - ✅ Production-ready classical chess engine with UCI protocol
@@ -36,14 +43,15 @@ This document provides a comprehensive, prioritized roadmap for enhancing Franky
 - ✅ Comprehensive testing infrastructure (266+ tests, CI/CD)
 - ✅ Cross-platform support (Windows MSVC, Linux GCC/Clang)
 - ✅ 100+ configurable parameters via YAML
-- ✅ Estimated strength: ~2400-2450 ELO (amateur master level)
+- ✅ Syzygy tablebase support (v1.2)
+- ✅ Engine Arena testing framework (v1.1)
+- ✅ Estimated strength: ~2500+ ELO (strong amateur master level)
 
 **Key Limitations:**
 - ❌ Single-threaded search (underutilizes modern multi-core CPUs)
 - ❌ Classical evaluation only (NNUE offers +200-400 ELO improvement)
-- ❌ No endgame tablebase support (imperfect endgame play)
-- ✅ Singular extensions implemented (v1.2)
-- ❌ Missing check extensions
+- ❌ Missing "improving" flag for LMR
+- ❌ Missing history-based LMR adjustments
 - ❌ Limited move ordering heuristics (no continuation/capture history)
 
 ### Target State (v2.0 - End Goal)

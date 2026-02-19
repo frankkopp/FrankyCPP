@@ -128,7 +128,21 @@ Quick reference to all project documentation.
 - NPS and node count comparisons
 - Regression detection
 
----
+### 🔍 [PLAN_Search_Tree_Reduction_Review.md](specs/PLAN_Search_Tree_Reduction_Review.md) **(NEW in v1.3)**
+**Search Tree Reduction Techniques Review**
+- LMR (Late Move Reductions) optimization
+- Move ordering improvements
+- Pruning technique analysis
+- Comparison to Stockfish approaches
+- **Status:** Phase 1 partially complete (+109 ELO vs v1.1)
+
+### 📋 [Search_Features.md](Search_Features.md) **(NEW in v1.3)**
+**Search Feature Correctness Review**
+- Complete list of 24 search features
+- Bugs discovered and fixed (isPvNode, history heuristic)
+- "To Check" items for each feature
+- Comparison to Stockfish implementation
+- Priority order for further review---
 
 ## Technical References
 

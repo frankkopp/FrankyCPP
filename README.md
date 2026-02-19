@@ -7,21 +7,19 @@ Modern C++20 UCI Chess Engine
 
 ## Version
 
-**v1.1.0** - Arena Release 🎯
-- ✅ **Engine Arena** - Automated strength testing framework
-- ✅ EPD tactical test suites with external UCI engine support
-- ✅ Engine-vs-engine matches via cutechess-cli
-- ✅ Baseline reports and version comparison
-- ✅ JSON result persistence for historical tracking
-- ✅ Parallel test execution
+**v1.3.0** - Search Optimization Release 🔍
+- ✅ **+109 ELO** vs v1.1 baseline
+- ✅ Logarithmic LMR formula (configurable)
+- ✅ Fixed isPvNode propagation bugs (PV ratio: 20% → 0.02%)
+- ✅ Fixed history heuristic (quiet moves only, skip alpha-raising)
+- ✅ New search statistics: PV/NonPV node tracking
 
 **Previous versions:**
+- v1.2 - Tablebase support (Syzygy WDL/DTZ probing)
+- v1.1 - Arena Release (automated strength testing framework)
 - v1.0 - Production Release (cross-platform, CI/CD, 266+ tests)
 - v0.7 - YAML configuration framework
 - v0.6 - Enhanced search, enhanced logging
-- v0.5 - Enhanced eval and move to wrapper classes
-- v0.4 - Simple eval
-- v0.3 - Migration from FrankyGo
 
 ---
 
