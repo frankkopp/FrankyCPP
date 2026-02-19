@@ -1403,7 +1403,10 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // to research the move again with a full window.
       // https://www.chessprogramming.org/Principal_Variation_Search
       if (!SearchConfig.USE_PVS || movesSearched == 0) {
-        value = -search(p, newDepth, ply + 1, -beta, -alpha, PV, do_null);
+        // fix 19.2.2026: bug fix - this call was using PV instead of isPvNode which added a lot of
+        // PV nodes to the search tree and therefore search many extra node. PV nodes where ~16%
+        // where as after the fix they are down to 0.59% on a specific test position.
+        value = -search(p, newDepth, ply + 1, -beta, -alpha, isPvNode, do_null);  // inherit node type
       }
       else {
         // Null window search after the initial PV search.
@@ -1418,11 +1421,11 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
           // did we actually have a LMR reduction?
           if (lmrDepth < newDepthFixed) {
             statistics.lmrResearches++;
-            value = -search(p, newDepth, ply + 1, -beta, -alpha, PV, do_null);
+            value = -search(p, newDepth, ply + 1, -beta, -alpha, isPvNode, do_null);
           }
           else if (value < beta) {
             statistics.pvsResearches++;
-            value = -search(p, newDepth, ply + 1, -beta, -alpha, PV, do_null);
+            value = -search(p, newDepth, ply + 1, -beta, -alpha, isPvNode, do_null);
           }
         }
       }
