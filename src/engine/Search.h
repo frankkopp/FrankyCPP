@@ -399,10 +399,10 @@ private:
   /// @param ply     Current ply from root
   /// @param alpha   Alpha bound
   /// @param beta    Beta bound
-  /// @param isPv    Whether this is a PV node
+  /// @param isPvNode    Whether this is a PV node
   /// @param doNull  Whether null-move pruning is allowed
   /// @return        Search value
-  Value search(Position& p, Depth depth, Depth ply, Value alpha, Value beta, Node_Type isPv, Do_Null doNull);
+  Value search(Position& p, Depth depth, Depth ply, Value alpha, Value beta, Node_Type isPvNode, Do_Null doNull);
 
   /// Quiescence search to resolve tactical sequences at leaf nodes.
   /// Only searches captures, promotions, and checks.
@@ -410,9 +410,9 @@ private:
   /// @param ply    Current ply from root
   /// @param alpha  Alpha bound
   /// @param beta   Beta bound
-  /// @param isPv   Whether this is a PV node
+  /// @param isPvNode   Whether this is a PV node
   /// @return       Quiescence value
-  Value qsearch(Position& p, Depth ply, Value alpha, Value beta, Node_Type isPv);
+  Value qsearch(Position& p, Depth ply, Value alpha, Value beta, Node_Type isPvNode);
 
   /// Evaluates a quiet position using the Evaluator.
   /// @param p  Position to evaluate

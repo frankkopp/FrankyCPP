@@ -78,6 +78,14 @@ struct SearchStats {
   /// Root move currently being searched.
   Move currentRootMove = MOVE_NONE;
 
+  // === Node Type Counts ===
+
+  /// Number of PV nodes searched (full window).
+  uint64_t pvNodes = 0;
+
+  /// Number of non-PV nodes searched (null window).
+  uint64_t nonPvNodes = 0;
+
   // === Terminal Node Counts ===
 
   /// Number of checkmate positions found.
@@ -220,7 +228,15 @@ struct SearchStats {
   /// Stream output operator for full statistics dump.
   friend std::ostream& operator<<(std::ostream& os, const SearchStats& stats) {
     os.imbue(deLocale);
-    os << "checkmates: " << stats.checkmates
+    // PV vs non-PV node statistics
+    const uint64_t totalNodes = stats.pvNodes + stats.nonPvNodes;
+    os << "pvNodes: " << stats.pvNodes;
+    if (totalNodes > 0) {
+      const double pvPct = 100.0 * static_cast<double>(stats.pvNodes) / static_cast<double>(totalNodes);
+      os << " (" << std::fixed << std::setprecision(2) << pvPct << "%)";
+    }
+    os << " nonPvNodes: " << stats.nonPvNodes
+       << " checkmates: " << stats.checkmates
        << " stalemates: " << stats.stalemates
        << " perft: " << stats.perftNodeCount
        << " leafPositionsEvaluated: " << stats.leafPositionsEvaluated

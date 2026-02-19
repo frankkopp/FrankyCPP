@@ -164,8 +164,8 @@ void Search::run() {
   LOG__INFO(Logger::get().SEARCH_LOG, "Searching {}", position.strFen());
 
   // initialize search
-  stopSearchFlag    = false;
-  lastSearchResult.reset();  // clear previous result
+  stopSearchFlag = false;
+  lastSearchResult.reset();// clear previous result
   timeLimit         = milliseconds{};
   extraTimeMs       = 0;
   nodesVisited      = 0;
@@ -484,7 +484,9 @@ SearchResult Search::iterativeDeepening(Position& p) {
     // update depth statistics
     statistics.currentIterationDepth = iterationDepth;
     statistics.currentSearchDepth    = statistics.currentIterationDepth;
-    if (statistics.currentExtraSearchDepth < statistics.currentIterationDepth) { statistics.currentExtraSearchDepth = statistics.currentIterationDepth; }
+    if (statistics.currentExtraSearchDepth < statistics.currentIterationDepth) {
+      statistics.currentExtraSearchDepth = statistics.currentIterationDepth;
+    }
 
     // reset perft counter for last depth to
     statistics.perftNodeCount = 0;
@@ -579,7 +581,9 @@ SearchResult Search::iterativeDeepening(Position& p) {
     }
 
     // if mate search check if we found a mate within the mate limit
-    if (searchLimits.mate && abs(pv.first().value()) >= VALUE_CHECKMATE_THRESHOLD && searchLimits.mate * 2 - 1 == VALUE_CHECKMATE - pv.first().value()) {
+    if (searchLimits.mate
+        && abs(pv.first().value()) >= VALUE_CHECKMATE_THRESHOLD
+        && searchLimits.mate * 2 - 1 == VALUE_CHECKMATE - pv.first().value()) {
       searchResult.mateFound = true;
       break;
     }
@@ -661,7 +665,9 @@ SearchResult Search::iterativeDeepening(Position& p) {
   }
 
   // see if we have a move we could ponder on
-  if (pv.hasLength(DEPTH_NONE, 2)) { searchResult.ponderMove = pv(DEPTH_NONE, 1).stripped(); }
+  if (pv.hasLength(DEPTH_NONE, 2)) {
+    searchResult.ponderMove = pv(DEPTH_NONE, 1).stripped();
+  }
   else {
     // we do not have a ponder-move in the pv-list,
     // so let's check the TT
@@ -777,12 +783,14 @@ Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Valu
     statistics.currentRootMoveIndex = i;
     statistics.currentRootMove      = moveRef;
 
-    if (checkDrawRepAnd50(p, 2)) { value = VALUE_DRAW; }
+    if (checkDrawRepAnd50(p, 2)) {
+      value = VALUE_DRAW;
+    }
     else {
       constexpr Depth ply{1};
       // ///////////////////////////////////////////////////////////////////
       // PVS
-      // First move in a node is an assumed PV and searched with full search window
+      // First move in a node is an assumed PV Move and searched with full search window (PV Node)
       if (!SearchConfig.USE_PVS || i == 0) {
         value = -search(p, depth - 1, ply, -beta, -alpha, PV, Do_Null_Move);
       }
@@ -839,8 +847,12 @@ Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Valu
   return bestNodeValue;
 }
 
-Value Search::search(Position& p, const Depth depth, const Depth ply, Value alpha, Value beta, const Node_Type isPv, const Do_Null doNull) {
+Value Search::search(Position& p, const Depth depth, const Depth ply, Value alpha, Value beta, const Node_Type isPvNode, const Do_Null doNull) {
   //  LOG__DEBUG(Logger::get().SEARCH_LOG, "Search {} {} {}", depth, ply, str(statistics.currentVariation));
+
+  // Track PV vs non-PV node statistics
+  if (isPvNode) { statistics.pvNodes++; }
+  else { statistics.nonPvNodes++; }
 
   // Clear PV for this node to prevent stale data from previous iterations/branches
   // from being propagated up via pv.update(). Stale PV data can contain moves from
@@ -850,7 +862,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 
   // Enter quiescence search when depth == 0 or max ply has been reached
   if (depth == 0 || ply >= MAX_DEPTH) {
-    const auto value = qsearch(p, ply, alpha, beta, isPv);
+    const auto value = qsearch(p, ply, alpha, beta, isPvNode);
     return value;
   }
 
@@ -904,7 +916,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       ttDepth = static_cast<Depth>(ttEntryPtr->depth);
       // Never cutoff on PV nodes - this ensures we always build a complete PV line
       // Non-PV nodes can still use TT cutoffs as they don't contribute to the reported PV
-      if (!isPv && ttDepth >= depth) {
+      if (!isPvNode && ttDepth >= depth) {
         if (SearchConfig.USE_TT_VALUE
             && ttValue.isValid()
             && (ttEntryPtr->type == EXACT
@@ -931,7 +943,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // On PV nodes: only use TB to tighten bounds - don't cut off (need complete PV line).
   // If USE_TB_PROBE_PV is false, skip probing on PV nodes entirely (performance optimization).
   if (SearchConfig.USE_TB_PROBE_SEARCH
-      && (SearchConfig.USE_TB_PROBE_PV || !isPv)
+      && (SearchConfig.USE_TB_PROBE_PV || !isPvNode)
       && syzygy_tb
       && syzygy_tb->isAvailable()
       && depth >= SearchConfig.TB_PROBE_DEPTH
@@ -951,7 +963,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // On non-PV nodes: can cut off immediately
       if (wdl == tablebase::TBResult::Win || wdl == tablebase::TBResult::CursedWin) {
         // Position is winning - use as lower bound
-        if (!isPv && tbScore >= beta) {
+        if (!isPvNode && tbScore >= beta) {
           statistics.tbSearchCutoffs++;
           // Store in TT for future lookups
           if (SearchConfig.USE_TT) {
@@ -964,7 +976,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       }
       else if (wdl == tablebase::TBResult::Loss || wdl == tablebase::TBResult::BlessedLoss) {
         // Position is losing - use as upper bound
-        if (!isPv && tbScore <= alpha) {
+        if (!isPvNode && tbScore <= alpha) {
           statistics.tbSearchCutoffs++;
           // Store in TT for future lookups
           if (SearchConfig.USE_TT) {
@@ -977,7 +989,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       }
       else if (wdl == tablebase::TBResult::Draw) {
         // Exact draw - can return immediately on non-PV nodes
-        if (!isPv) {
+        if (!isPvNode) {
           statistics.tbSearchCutoffs++;
           if (SearchConfig.USE_TT) {
             storeTt(p, depth, ply, MOVE_NONE, VALUE_DRAW, EXACT, VALUE_NONE);
@@ -1025,7 +1037,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   if (SearchConfig.USE_RFP
       && doNull
       && depth <= 3
-      && !isPv
+      && !isPvNode
       && !hasCheck) {
     const auto margin = Value{SearchConfig.RFP_MARGIN[depth]};
     if (staticEval - margin >= beta) {
@@ -1053,7 +1065,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
                           && p.getMaterialNonPawn(us) <= SearchConfig.NMP_ZUG_NONPAWN_THRESHOLD;
 
     if (doNull
-        && !isPv
+        && !isPvNode
         && depth >= SearchConfig.NMP_DEPTH
         && !hasCheck
         && !zugProne
@@ -1134,7 +1146,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     if (depth >= SearchConfig.IID_DEPTH
         && !ttMove// no move from TT
         && doNull
-        && isPv) {// avoid in null move search
+        && isPvNode) {// avoid in null move search
 
       // get the new depth and make sure it is >0
       auto newDepthIid = depth - SearchConfig.IID_REDUCTION;
@@ -1142,7 +1154,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 
       // do the actual reduced search only if we have time left
       if (!isTimeAlmostUp()) {
-        search(p, newDepthIid, ply, alpha, beta, isPv, doNull);
+        search(p, newDepthIid, ply, alpha, beta, isPvNode, doNull);
         statistics.iidSearches++;
 
         // check if we should stop the search
@@ -1231,13 +1243,13 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // We do a reduced-depth null-window search excluding the TT move to verify
       // that no other move can reach close to the TT value.
       if (SearchConfig.USE_SINGULAR_EXT
-          && extension == 0                                      // no other extension applied
-          && move == ttMove                                      // this is the TT move
-          && depth >= SearchConfig.SINGULAR_MIN_DEPTH            // sufficient depth
-          && ttValue != VALUE_NONE                               // valid TT value
-          && ttDepth >= depth - 3                                // TT entry was from similar or deeper search
-          && !hasCheck                                           // not in check (avoid instability)
-          && std::abs(ttValue) < VALUE_CHECKMATE_THRESHOLD) { // not a mate score
+          && extension == 0                                  // no other extension applied
+          && move == ttMove                                  // this is the TT move
+          && depth >= SearchConfig.SINGULAR_MIN_DEPTH        // sufficient depth
+          && ttValue != VALUE_NONE                           // valid TT value
+          && ttDepth >= depth - 3                            // TT entry was from similar or deeper search
+          && !hasCheck                                       // not in check (avoid instability)
+          && std::abs(ttValue) < VALUE_CHECKMATE_THRESHOLD) {// not a mate score
 
         // Reduced beta for the verification search
         const Value singularBeta = ttValue - Value{SearchConfig.SINGULAR_MARGIN};
@@ -1279,7 +1291,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     // Forward Pruning
     // FP will only be done when the move is not
     // interesting - no check, no capture, etc.
-    if (!isPv
+    if (!isPvNode
         && extension == 0
         && move != ttMove
         && move != myMg->getKillerMoves()[0]
@@ -1288,8 +1300,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         && !p.isCapturingMove(move)
         && !hasCheck
         && !givesCheck
-        && !matethreat
-        ) {
+        && !matethreat) {
 
       // to check in futility pruning what material delta we have
       const auto moveGain = valueOf(p.getPiece(to));
@@ -1334,12 +1345,11 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       if (SearchConfig.USE_LMR
           && depth >= SearchConfig.LMR_MIN_DEPTH
           && movesSearched >= SearchConfig.LMR_MIN_MOVES
-          && !isPv
+          && !isPvNode
           && !givesCheck
           && !p.isCapturingMove(move)
           && move.type() != PROMOTION
-          && !matethreat
-          ) {
+          && !matethreat) {
         // fprintln("DEBUG: considering LMR for move {} at depth {} and move count {}", move.str(), depth, movesSearched);
         const int d = std::min(depth, Depth{31});
         const int m = std::min(movesSearched, 63);
@@ -1515,8 +1525,12 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   return bestNodeValue;
 }
 
-Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, const Node_Type isPv) {
+Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, const Node_Type isPvNode) {
   //  LOG__DEBUG(Logger::get().SEARCH_LOG, "QSearch {} {}", ply, str(statistics.currentVariation));
+
+  // Track PV vs non-PV node statistics
+  if (isPvNode) { statistics.pvNodes++; }
+  else { statistics.nonPvNodes++; }
 
   // Clear PV for this node (same reason as in search())
   pv.clear(ply);
@@ -1551,7 +1565,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
       ttMove              = static_cast<Move>(ttEntryPtr->move);
       const Value ttValue = valueFromTt(ttEntryPtr->value, ply);
       if (SearchConfig.USE_TT_VALUE
-          && !isPv
+          && !isPvNode
           && ttValue.isValid()
           && (ttEntryPtr->type == EXACT
               || (ttEntryPtr->type == ALPHA && ttValue <= alpha)
@@ -1635,7 +1649,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
     // FP will only be done when the move is not
     // interesting - no check, no capture, etc.
     if (SearchConfig.USE_QFP
-        && !isPv
+        && !isPvNode
         && move != ttMove
         && move != myMg->getKillerMoves()[0]
         && move != myMg->getKillerMoves()[1]
@@ -1681,7 +1695,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
     }
     else {
       // recursion into qsearch
-      value = -qsearch(p, ply + 1, -beta, -alpha, isPv);
+      value = -qsearch(p, ply + 1, -beta, -alpha, isPvNode);
     }
 
     movesSearched++;
@@ -2482,13 +2496,13 @@ MoveList Search::extractPvWithTT(Position& p) {
 }
 
 std::string Search::formatDetailedStats(
-    const SearchResult& result,
-    const SearchStats& stats) {
+  const SearchResult& result,
+  const SearchStats& stats) {
 
   std::ostringstream os;
   os.imbue(deLocale);
 
-  const auto timeMs = duration_cast<milliseconds>(result.time).count();
+  const auto timeMs  = duration_cast<milliseconds>(result.time).count();
   const uint64_t nps = timeMs > 0 ? (result.nodes * 1000) / static_cast<uint64_t>(timeMs) : 0;
 
   os << "\n==================== Search Results ====================\n";
@@ -2512,6 +2526,21 @@ std::string Search::formatDetailedStats(
   os << "Stalemates     : " << stats.stalemates << "\n";
   os << "Leaf Positions : " << stats.leafPositionsEvaluated << "\n";
   os << "Evaluations    : " << stats.evaluations << "\n";
+
+  os << "\n------------------- Node Type Stats -------------------\n";
+  const uint64_t totalNodes = stats.pvNodes + stats.nonPvNodes;
+  os << "PV Nodes       : " << stats.pvNodes;
+  if (totalNodes > 0) {
+    const double pvPct = 100.0 * static_cast<double>(stats.pvNodes) / static_cast<double>(totalNodes);
+    os << " (" << std::fixed << std::setprecision(2) << pvPct << "%)";
+  }
+  os << "\n";
+  os << "Non-PV Nodes   : " << stats.nonPvNodes;
+  if (totalNodes > 0) {
+    const double nonPvPct = 100.0 * static_cast<double>(stats.nonPvNodes) / static_cast<double>(totalNodes);
+    os << " (" << std::fixed << std::setprecision(2) << nonPvPct << "%)";
+  }
+  os << "\n";
 
   os << "\n------------------- Pruning Stats ---------------------\n";
   os << "Beta Cuts      : " << stats.betaCuts << "\n";
