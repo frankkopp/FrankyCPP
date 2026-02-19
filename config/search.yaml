@@ -128,7 +128,7 @@ FP_MARGIN: [0, 100, 200, 300, 500, 900, 1200]
 # Enable LMR
 USE_LMR: true
 # Minimum depth (plies) to start reducing late moves
-LMR_MIN_DEPTH: 3
+LMR_MIN_DEPTH: 1
 # Start reducing from this move index (i.e., after this many moves searched)
 LMR_MIN_MOVES: 3
 # LMR_REDUCTION: large table defined in code for efficiency

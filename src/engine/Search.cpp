@@ -1082,7 +1082,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         // unproven mate
         nValue = VALUE_CHECKMATE_THRESHOLD;
       }
-      else if (nValue < -VALUE_CHECKMATE_THRESHOLD) {
+      else if (nValue < -(VALUE_CHECKMATE - 6)) {// limit for mate in 3 or less
         // the player did not move and got mated ==> mate threat
         matethreat = true;
       }
@@ -1188,9 +1188,10 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     const bool givesCheck = p.givesCheck(move);
 
     // prepare newDepth
-    Depth newDepth  = depth - DEPTH_ONE;
-    Depth lmrDepth  = newDepth;
-    Depth extension = DEPTH_NONE;
+    const Depth newDepthFixed = depth - DEPTH_ONE;// default depth reduction for the next ply
+    Depth newDepth            = newDepthFixed;    // default depth for the next ply - might be extended later
+    Depth lmrDepth            = newDepthFixed;    // default depth for LMR reductions - might be reduced later
+    Depth extension           = DEPTH_NONE;
 
     // Here we try some search extensions. This has to be done
     // very carefully as it usually is more effective to prune
@@ -1201,7 +1202,9 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // This limits search explosion while focusing extensions on important checks.
       // The QS search already handles all check evasions, but this extension
       // allows the normal search pruning techniques to be applied.
-      if (SearchConfig.USE_CHECK_EXT && givesCheck && movesSearched < SearchConfig.CHECK_EXT_EARLY_LIMIT) {
+      if (SearchConfig.USE_CHECK_EXT
+          && givesCheck
+          && movesSearched < SearchConfig.CHECK_EXT_EARLY_LIMIT) {
         statistics.checkExtension++;
         extension = DEPTH_ONE;
       }
@@ -1211,7 +1214,8 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // a way out.
       // Deactivated in config as this grows the search tree
       // too much.
-      if (SearchConfig.USE_THREAT_EXT && matethreat) {
+      if (SearchConfig.USE_THREAT_EXT
+          && matethreat) {
         statistics.threatExtension++;
         extension = DEPTH_ONE;
       }
@@ -1223,13 +1227,13 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // We do a reduced-depth null-window search excluding the TT move to verify
       // that no other move can reach close to the TT value.
       if (SearchConfig.USE_SINGULAR_EXT
-          && extension == 0                                  // no other extension applied
-          && move == ttMove                                  // this is the TT move
-          && depth >= SearchConfig.SINGULAR_MIN_DEPTH        // sufficient depth
-          && ttValue != VALUE_NONE                           // valid TT value
-          && ttDepth >= depth - 3                            // TT entry was from similar or deeper search
-          && !hasCheck                                       // not in check (avoid instability)
-          && std::abs(ttValue) < VALUE_CHECKMATE_THRESHOLD) {// not a mate score
+          && extension == 0                                      // no other extension applied
+          && move == ttMove                                      // this is the TT move
+          && depth >= SearchConfig.SINGULAR_MIN_DEPTH            // sufficient depth
+          && ttValue != VALUE_NONE                               // valid TT value
+          && ttDepth >= depth - 3                                // TT entry was from similar or deeper search
+          && !hasCheck                                           // not in check (avoid instability)
+          && std::abs(ttValue) < VALUE_CHECKMATE_THRESHOLD) { // not a mate score
 
         // Reduced beta for the verification search
         const Value singularBeta = ttValue - Value{SearchConfig.SINGULAR_MARGIN};
@@ -1280,7 +1284,8 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         && !p.isCapturingMove(move)
         && !hasCheck
         && !givesCheck
-        && !matethreat) {
+        && !matethreat
+        ) {
 
       // to check in futility pruning what material delta we have
       const auto moveGain = valueOf(p.getPiece(to));
@@ -1323,26 +1328,23 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // lmrDepth is set to newDepth and only reduced
       // if conditions apply.
       if (SearchConfig.USE_LMR
-          && !matethreat) {
-        // compute reduction from depth and move searched
-        if (depth >= SearchConfig.LMR_MIN_DEPTH
-            && movesSearched >= SearchConfig.LMR_MIN_MOVES
-            && !isPv
-            && !givesCheck
-            && !p.isCapturingMove(move)
-            && !move.promotionType()) {
-          if (depth < 32 && movesSearched < 64) {
-            lmrDepth -= static_cast<Depth>(LMR_REDUCTION[depth][movesSearched]);
-          }
-          else {
-            lmrDepth -= static_cast<Depth>(LMR_REDUCTION[31][63]);
-          }
-          statistics.lmrReductions++;
-        }
-        // make sure not to become negative
-        if (lmrDepth < 0) { lmrDepth = DEPTH_NONE; }
+          && depth >= SearchConfig.LMR_MIN_DEPTH
+          && movesSearched >= SearchConfig.LMR_MIN_MOVES
+          && !isPv
+          && !givesCheck
+          && !p.isCapturingMove(move)
+          && move.type() != PROMOTION
+          && !matethreat
+          ) {
+        // fprintln("DEBUG: considering LMR for move {} at depth {} and move count {}", move.str(), depth, movesSearched);
+        const int d = std::min(depth, Depth{31});
+        const int m = std::min(movesSearched, 63);
+        lmrDepth -= static_cast<Depth>(LMR_REDUCTION[d][m]);
+        lmrDepth = std::max(lmrDepth, DEPTH_NONE);// make sure not to become negative
+        statistics.lmrReductions++;
       }
     }
+
     // ///////////////////////////////////////////////////////
 
     // ///////////////////////////////////////////////////////
@@ -1396,7 +1398,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         // With LMR we re-search when value > alpha
         if (value > alpha && !stopConditions() && !isTimeAlmostUp()) {
           // did we actually have a LMR reduction?
-          if (lmrDepth < newDepth) {
+          if (lmrDepth < newDepthFixed) {
             statistics.lmrResearches++;
             value = -search(p, newDepth, ply + 1, -beta, -alpha, PV, do_null);
           }
@@ -1973,7 +1975,7 @@ void Search::filterRootMovesByTB(Position& pos) {
         return childWdl != tablebase::TBResult::Win && childWdl != tablebase::TBResult::CursedWin;
 
       case tablebase::TBResult::BlessedLoss: /* fallthrough */
-      case tablebase::TBResult::Loss: /* fallthrough */
+      case tablebase::TBResult::Loss:        /* fallthrough */
       default:
         // We're losing - keep all moves (try to find the best losing move)
         return true;

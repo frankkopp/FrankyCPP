@@ -1,0 +1,324 @@
+################## Results for depth 12 ##########################
+
+Test Name       |   Move |    Value |           Nodes |          Nps |         Time |   Depth |     Special1 |     Special2 | PV | Fen
+----------------------------------------------------------------------------------------------------------------------------------------------
+Fen: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -
+00 warmup       |   d2d4 |    cp 79 |     110.404.624 |    3.400.522 |       32.466 |  12/36  |            0 |            0 | d2d4 d7d5 g1f3 g8f6 e2e3 c8g4 b1c3 e7e6 f1b5 c7c6 b5d3 g4f3 d1f3 b8d7 | rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -
+01 pre          |   d2d4 |    cp 79 |     118.607.110 |    3.438.720 |       34.491 |  12/39  |            0 |            0 | d2d4 d7d5 g1f3 g8f6 e2e3 c8g4 b1c3 e7e6 f1b5 c7c6 b5d3 g4f3 d1f3 b8d7 | rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -
+LMR d3m3        |   g1f3 |    cp 81 |      97.393.058 |    3.417.042 |       28.502 |  12/40  |      737.426 |       29.246 | g1f3 g8f6 d2d4 d7d5 e2e3 c8g4 b1c3 g4f3 d1f3 e7e6 f1b5 c7c6 b5d3 b8d7 | rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -
+LMR d1m3        |   e2e4 |    cp 79 |      50.606.762 |    3.408.724 |       14.846 |  12/37  |    2.239.680 |      162.259 | e2e4 e7e5 g1f3 g8f6 f1c4 b8c6 f3g5 f6e4 c4f7 e8e7 d2d3 e4d6 f7d5 | rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -
+LMR d2m3        |   e2e4 |    cp 83 |      56.361.995 |    3.428.193 |       16.440 |  12/35  |    1.336.383 |      189.704 | e2e4 e7e5 g1f3 g8f6 f1c4 b8c6 f3g5 f6e4 c4f7 e8e7 d2d3 e4d6 f7d5 | rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -
+LMR d4m3        |   e2e4 |    cp 80 |      91.339.530 |    3.418.185 |       26.721 |  12/37  |      224.464 |       20.922 | e2e4 e7e5 g1f3 b8c6 b1c3 f8c5 f1c4 g8e7 d2d3 e8g8 e1g1 d7d6 | rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -
+LMR d3m2        |   g1f3 |    cp 74 |      68.025.084 |    3.394.700 |       20.038 |  12/39  |      582.063 |       27.507 | g1f3 d7d5 e2e3 c8g4 b1c3 g4f3 d1f3 g8f6 f1b5 c7c6 b5d3 e7e5 | rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -
+LMR d3m1        |   e2e4 |    cp 86 |      72.498.731 |    3.314.621 |       21.872 |  12/37  |      656.308 |       29.528 | e2e4 e7e6 g1f3 d7d5 e4e5 a7a6 b1c3 b8c6 d2d4 f8b4 c1d2 g8e7 | rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -
+
+Fen: 8/1P6/6k1/8/8/8/p1K5/8 w - -
+00 warmup       |   c2b2 |  cp 8997 |          26.650 |      280.396 |           95 |  12/16  |            0 |            0 | c2b2 | 8/1P6/6k1/8/8/8/p1K5/8 w - -
+01 pre          |   c2b2 |  cp 8997 |          26.650 |    2.418.001 |           11 |  12/16  |            0 |            0 | c2b2 | 8/1P6/6k1/8/8/8/p1K5/8 w - -
+LMR d3m3        |   c2b2 |  cp 8997 |          26.650 |    2.456.492 |           10 |  12/16  |            0 |            0 | c2b2 | 8/1P6/6k1/8/8/8/p1K5/8 w - -
+LMR d1m3        |   c2b2 |  cp 8997 |          26.650 |    3.871.745 |            6 |  12/16  |            0 |            0 | c2b2 | 8/1P6/6k1/8/8/8/p1K5/8 w - -
+LMR d2m3        |   c2b2 |  cp 8997 |          26.650 |    3.533.592 |            7 |  12/16  |            0 |            0 | c2b2 | 8/1P6/6k1/8/8/8/p1K5/8 w - -
+LMR d4m3        |   c2b2 |  cp 8997 |          26.650 |    3.654.239 |            7 |  12/16  |            0 |            0 | c2b2 | 8/1P6/6k1/8/8/8/p1K5/8 w - -
+LMR d3m2        |   c2b2 |  cp 8997 |          26.650 |    3.056.543 |            8 |  12/16  |            0 |            0 | c2b2 | 8/1P6/6k1/8/8/8/p1K5/8 w - -
+LMR d3m1        |   c2b2 |  cp 8997 |          26.650 |    2.556.428 |           10 |  12/16  |            0 |            0 | c2b2 | 8/1P6/6k1/8/8/8/p1K5/8 w - -
+
+Fen: 1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -
+00 warmup       |   b4c6 |   mate 5 |       7.084.782 |    7.220.438 |          981 |  12/26  |            0 |            0 | b4c6 b7c6 f2a7 b8a7 e1a1 a7b6 h1b1 b6c5 a1a5 | 1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -
+01 pre          |   b4c6 |   mate 5 |       7.084.782 |    8.093.377 |          875 |  12/26  |            0 |            0 | b4c6 b7c6 f2a7 b8a7 e1a1 a7b6 h1b1 b6c5 a1a5 | 1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -
+LMR d3m3        |   b4c6 |   mate 5 |       9.956.136 |    8.670.127 |        1.148 |  12/29  |        5.401 |          295 | b4c6 b7c6 f2a7 b8a7 e1a1 a7b6 h1b1 b6c5 a1a5 | 1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -
+LMR d1m3        |   b4c6 |   mate 5 |       8.809.612 |    8.261.901 |        1.066 |  12/29  |       34.425 |        1.488 | b4c6 b7c6 f2a7 b8a7 e1a1 a7b6 h1b1 b6c5 a1a5 | 1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -
+LMR d2m3        |   b4c6 |   mate 5 |       8.796.570 |    8.390.200 |        1.048 |  12/29  |       19.421 |        1.487 | b4c6 b7c6 f2a7 b8a7 e1a1 a7b6 h1b1 b6c5 a1a5 | 1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -
+LMR d4m3        |   b4c6 |   mate 5 |       6.743.183 |    6.027.918 |        1.118 |  12/28  |        4.184 |          197 | b4c6 b7c6 f2a7 b8a7 e1a1 a7b6 h1b1 b6c5 a1a5 | 1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -
+LMR d3m2        |   b4c6 |   mate 5 |       9.336.052 |    9.701.949 |          962 |  12/29  |        4.394 |          237 | b4c6 b7c6 f2a7 b8a7 e1a1 a7b6 h1b1 b6c5 a1a5 | 1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -
+LMR d3m1        |   b4c6 |   mate 5 |       9.335.097 |    9.715.378 |          960 |  12/29  |        4.418 |          236 | b4c6 b7c6 f2a7 b8a7 e1a1 a7b6 h1b1 b6c5 a1a5 | 1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -
+
+Fen: rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -
+00 warmup       |   h2h3 |   cp 107 |      68.281.395 |    3.655.207 |       18.680 |  12/41  |            0 |            0 | h2h3 g4f3 e2f3 d5d7 d4c5 b8c6 c1e3 e8c8 d1d7 f6d7 f3c6 b7c6 e3g5 | rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -
+01 pre          |   h2h3 |   cp 107 |      68.323.070 |    3.672.785 |       18.602 |  12/41  |            0 |            0 | h2h3 g4f3 e2f3 d5d7 d4c5 b8c6 c1e3 e8c8 d1d7 f6d7 f3c6 b7c6 e3g5 | rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -
+LMR d3m3        |   e1g1 |   cp 107 |      54.361.920 |    3.618.652 |       15.022 |  12/40  |      242.996 |        3.566 | e1g1 b8c6 h2h3 g4f5 c1e3 c5d4 f3d4 c6d4 c3d4 e8c8 b1c3 d5a5 a1c1 f8d6 | rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -
+LMR d1m3        |   e1g1 |    cp 82 |      62.774.678 |    3.659.696 |       17.152 |  12/38  |      823.405 |       26.169 | e1g1 b8c6 c1e3 c5d4 c3d4 e8c8 b1d2 g4f3 e2f3 d5b5 a1c1 b5b2 f3c6 b7c6 c1c6 c8b8 | rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -
+LMR d2m3        |   e1g1 |    cp 77 |      59.937.955 |    3.644.437 |       16.446 |  12/38  |      514.391 |       26.769 | e1g1 b8c6 c1e3 e8c8 b1d2 c5d4 c3d4 g4f3 e2f3 d5b5 d1c2 f8d6 | rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -
+LMR d4m3        |   h2h3 |    cp 86 |      69.489.307 |    3.649.789 |       19.039 |  12/38  |       92.778 |        2.156 | h2h3 g4f3 e2f3 d5d7 d4c5 f8c5 d1d7 b8d7 f3b7 a8b8 b7c6 b8c8 c6f3 | rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -
+LMR d3m2        |   h2h3 |    cp 82 |      63.373.657 |    3.629.725 |       17.459 |  12/40  |      275.319 |        4.653 | h2h3 g4f3 e2f3 d5d7 d4c5 b8c6 c1e3 e8c8 b1d2 c6e5 f3e4 c8b8 | rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -
+LMR d3m1        |   h2h3 |   cp 102 |      51.062.381 |    3.676.307 |       13.889 |  12/37  |      229.209 |        3.552 | h2h3 g4f3 e2f3 d5d7 d4c5 d7d1 e1d1 b8c6 c1e3 f6d5 e3d4 e8c8 b1d2 e6e5 f3d5 d8d5 | rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -
+
+Fen: r3k2r/pp2qppp/2n1pn2/bN5b/3P4/P3BN1P/1P2BPP1/R2Q1RK1 w kq -
+00 warmup       |   a1c1 |    cp 77 |      94.740.138 |    3.700.061 |       25.605 |  12/38  |            0 |            0 | a1c1 e8g8 f3e5 h5e2 d1e2 f6d5 b2b4 a5b6 e5c6 b7c6 b5c3 a8d8 | r3k2r/pp2qppp/2n1pn2/bN5b/3P4/P3BN1P/1P2BPP1/R2Q1RK1 w kq -
+01 pre          |   a1c1 |    cp 82 |      79.258.302 |    3.632.444 |       21.819 |  12/36  |            0 |            0 | a1c1 e8g8 d4d5 e6d5 e3c5 e7e6 c5f8 h5f3 e2f3 a8f8 b5d4 e6d6 | r3k2r/pp2qppp/2n1pn2/bN5b/3P4/P3BN1P/1P2BPP1/R2Q1RK1 w kq -
+LMR d3m3        |   g2g4 |    cp 98 |      36.458.540 |    3.671.705 |        9.929 |  12/38  |      168.367 |        2.613 | g2g4 h5g6 b2b4 a5b6 b5c3 e8c8 a1c1 a7a6 c3a4 e7c7 a4b6 c7b6 d1b3 | r3k2r/pp2qppp/2n1pn2/bN5b/3P4/P3BN1P/1P2BPP1/R2Q1RK1 w kq -
+LMR d1m3        |   b2b4 |   cp 100 |      41.745.562 |    3.612.362 |       11.556 |  12/36  |      524.424 |       11.164 | b2b4 a5b6 b5c3 e8g8 c3a4 h5f3 e2f3 b6c7 b4b5 e7d6 g2g3 c6a5 a4c5 | r3k2r/pp2qppp/2n1pn2/bN5b/3P4/P3BN1P/1P2BPP1/R2Q1RK1 w kq -
+LMR d2m3        |   b2b4 |   cp 121 |      39.193.700 |    3.652.519 |       10.730 |  12/36  |      320.712 |       10.197 | b2b4 h5f3 e2f3 a5b6 d4d5 f6d5 f3d5 e8c8 e3b6 a7b6 d1g4 d8d5 g4g7 | r3k2r/pp2qppp/2n1pn2/bN5b/3P4/P3BN1P/1P2BPP1/R2Q1RK1 w kq -
+LMR d4m3        |   g2g4 |   cp 102 |      42.164.977 |    3.687.351 |       11.435 |  12/35  |       55.579 |        1.061 | g2g4 h5g6 a1c1 a7a6 f3e5 f6d5 c1c6 b7c6 e5c6 d5e3 f2e3 e7d7 | r3k2r/pp2qppp/2n1pn2/bN5b/3P4/P3BN1P/1P2BPP1/R2Q1RK1 w kq -
+LMR d3m2        |   g2g4 |    cp 88 |      52.022.753 |    3.613.939 |       14.395 |  12/37  |      251.985 |        4.872 | g2g4 h5g6 f3e5 e8g8 a1c1 f8c8 d1a4 a5b6 e5c6 c8c6 c1c6 b7c6 | r3k2r/pp2qppp/2n1pn2/bN5b/3P4/P3BN1P/1P2BPP1/R2Q1RK1 w kq -
+LMR d3m1        |   a1c1 |   cp 101 |      39.697.074 |    3.607.240 |       11.004 |  12/36  |      200.270 |        3.338 | a1c1 e8g8 g2g4 h5g6 d4d5 f6d5 e3c5 e7f6 b2b4 a7a6 c5f8 a8f8 b4a5 a6b5 e2b5 c6a5 | r3k2r/pp2qppp/2n1pn2/bN5b/3P4/P3BN1P/1P2BPP1/R2Q1RK1 w kq -
+
+Fen: 2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - -
+00 warmup       |   e2g4 |   cp 157 |      44.996.219 |    3.696.072 |       12.174 |  12/30  |            0 |            0 | e2g4 g8h8 f1d1 e7d7 g4f4 f6f5 f4e3 d7d5 a3a4 h8g7 b5c3 d5c4 | 2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - -
+01 pre          |   e2g4 |   cp 157 |      44.996.155 |    3.775.025 |       11.919 |  12/30  |            0 |            0 | e2g4 g8h8 f1d1 e7d7 g4f4 f6f5 f4e3 d7d5 a3a4 h8g7 b5c3 d5c4 | 2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - -
+LMR d3m3        |   e2g4 |   cp 140 |      28.222.304 |    3.738.360 |        7.549 |  12/32  |      189.388 |        5.978 | e2g4 g8h8 f1d1 d8d7 b2b4 d7d8 g4h4 c8a8 c1b1 f6f5 h4e7 c6e7 | 2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - -
+LMR d1m3        |   e2g4 |   cp 141 |      19.651.845 |    3.827.181 |        5.134 |  12/30  |      467.243 |       13.708 | e2g4 g8h8 c1d1 f6f5 g4f4 d8d7 d1d2 e7f6 f1d1 c6e7 b5c3 e7d5 f4e5 | 2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - -
+LMR d2m3        |   e2g4 |   cp 158 |      23.305.986 |    3.776.849 |        6.170 |  12/32  |      339.268 |       20.195 | e2g4 g8h8 c1d1 d8g8 g4f3 g8g7 d4d5 c6e5 f3e4 e6d5 d1d5 h8g8 | 2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - -
+LMR d4m3        |   e2g4 |   cp 165 |      17.525.754 |    3.787.757 |        4.626 |  12/30  |       39.159 |        1.539 | e2g4 g8f8 f1d1 f6f5 g4f4 e7f6 d1d2 h7h6 b5d6 c8a8 c1c4 f6g5 f4g5 h6g5 d6b7 | 2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - -
+LMR d3m2        |   e2g4 |   cp 154 |      19.889.627 |    3.759.534 |        5.290 |  12/31  |      136.922 |        4.455 | e2g4 g8h8 f1d1 c8a8 g4f4 a8a4 b2b3 a4a5 a3a4 f6f5 f4g3 d8c8 | 2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - -
+LMR d3m1        |   e2g4 |   cp 127 |      34.016.473 |    3.766.623 |        9.031 |  12/32  |      254.238 |        8.215 | e2g4 g8h8 c1d1 d8d7 g4e4 f6f5 e4d3 f5f4 d1c1 h8g8 f1e1 e6e5 | 2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - -
+
+Fen: 6rk/1p3p1p/2n2q2/1NQ2p2/3p4/PP5P/5PP1/2R3K1 w - -
+00 warmup       |   b5d6 |   cp 197 |      38.767.871 |    3.917.061 |        9.897 |  12/29  |            0 |            0 | b5d6 h7h6 b3b4 c6d8 c5d5 d8e6 d5b7 e6g5 h3h4 g5h3 g1h2 h3f2 d6f7 h8h7 | 6rk/1p3p1p/2n2q2/1NQ2p2/3p4/PP5P/5PP1/2R3K1 w - -
+01 pre          |   b5d6 |   cp 197 |      38.767.871 |    3.985.468 |        9.727 |  12/29  |            0 |            0 | b5d6 h7h6 b3b4 c6d8 c5d5 d8e6 d5b7 e6g5 h3h4 g5h3 g1h2 h3f2 d6f7 h8h7 | 6rk/1p3p1p/2n2q2/1NQ2p2/3p4/PP5P/5PP1/2R3K1 w - -
+LMR d3m3        |   b5d6 |   cp 229 |      26.147.424 |    3.954.531 |        6.612 |  12/31  |      171.242 |        5.977 | b5d6 c6d8 c1e1 d8e6 c5e5 f6e5 e1e5 d4d3 d6f7 h8g7 f7d6 d3d2 d6f5 g7f6 | 6rk/1p3p1p/2n2q2/1NQ2p2/3p4/PP5P/5PP1/2R3K1 w - -
+LMR d1m3        |   b5d6 |   cp 217 |      15.583.911 |    4.006.241 |        3.889 |  12/28  |      378.744 |       13.692 | b5d6 c6d8 c5d5 d8e6 d5b7 e6g5 b7d5 g5h3 g1f1 h3f4 d5e5 f6e5 d6f7 h8g7 f7e5 | 6rk/1p3p1p/2n2q2/1NQ2p2/3p4/PP5P/5PP1/2R3K1 w - -
+LMR d2m3        |   b5d6 |   cp 217 |      14.937.430 |    3.975.246 |        3.757 |  12/29  |      214.025 |       12.790 | b5d6 c6d8 c5d5 d8e6 d5b7 e6g5 b7d5 g5h3 g1f1 h3f4 d5e5 f6e5 d6f7 h8g7 f7e5 | 6rk/1p3p1p/2n2q2/1NQ2p2/3p4/PP5P/5PP1/2R3K1 w - -
+LMR d4m3        |   b5d6 |   cp 221 |      22.229.280 |    3.974.675 |        5.592 |  12/29  |       52.258 |        1.875 | b5d6 d4d3 c1d1 f6g6 c5d5 c6e7 d5d4 f7f6 g2g3 f5f4 d1e1 e7f5 d4f4 f5d6 f4d6 | 6rk/1p3p1p/2n2q2/1NQ2p2/3p4/PP5P/5PP1/2R3K1 w - -
+LMR d3m2        |   b5d6 |   cp 229 |      36.838.690 |    3.955.541 |        9.313 |  12/29  |      285.820 |       10.489 | b5d6 c6d8 c1e1 d8e6 c5e5 f6e5 e1e5 d4d3 d6f7 h8g7 f7d6 d3d2 d6f5 g7f6 | 6rk/1p3p1p/2n2q2/1NQ2p2/3p4/PP5P/5PP1/2R3K1 w - -
+LMR d3m1        |   b5d6 |   cp 189 |      14.337.188 |    3.914.893 |        3.662 |  12/28  |      114.811 |        3.884 | b5d6 f6e7 b3b4 g8g6 d6f5 e7g5 g2g3 b7b6 c5c2 d4d3 c2b2 h8g8 f5e3 | 6rk/1p3p1p/2n2q2/1NQ2p2/3p4/PP5P/5PP1/2R3K1 w - -
+
+Fen: 7k/2R2p1p/3N1q2/3Q4/3p4/PP3pPP/5n1K/4r3 w - -
+00 warmup       |   d6f7 |   cp 338 |       4.759.790 |    3.446.406 |        1.381 |  12/26  |            0 |            0 | d6f7 f6f7 d5d8 h8g7 c7f7 g7f7 d8d5 f7g6 d5c6 g6g5 h3h4 g5g4 c6d7 g4h5 d7d4 | 7k/2R2p1p/3N1q2/3Q4/3p4/PP3pPP/5n1K/4r3 w - -
+01 pre          |   d6f7 |   cp 338 |       4.759.737 |    4.051.395 |        1.174 |  12/26  |            0 |            0 | d6f7 f6f7 d5d8 h8g7 c7f7 g7f7 d8d5 f7g6 d5c6 g6g5 h3h4 g5g4 c6d7 g4h5 d7d4 | 7k/2R2p1p/3N1q2/3Q4/3p4/PP3pPP/5n1K/4r3 w - -
+LMR d3m3        |   d6f7 |   cp 356 |       3.934.632 |    3.977.069 |          989 |  12/26  |       21.263 |          411 | d6f7 f6f7 d5d8 h8g7 c7f7 g7f7 d8d5 f7e7 d5f3 f2e4 f3d3 h7h5 d3d4 e1e2 h2g1 e4g3 | 7k/2R2p1p/3N1q2/3Q4/3p4/PP3pPP/5n1K/4r3 w - -
+LMR d1m3        |   d6f7 |   cp 408 |       4.601.901 |    4.029.304 |        1.142 |  12/28  |       62.097 |        2.943 | d6f7 f6f7 d5d8 h8g7 c7f7 g7f7 d8d5 f7e7 d5f3 f2e4 f3h5 e7d6 h5h6 d6d5 h6h7 | 7k/2R2p1p/3N1q2/3Q4/3p4/PP3pPP/5n1K/4r3 w - -
+LMR d2m3        |   d6f7 |   cp 408 |       4.601.003 |    4.201.089 |        1.095 |  12/28  |       40.789 |        2.940 | d6f7 f6f7 d5d8 h8g7 c7f7 g7f7 d8d5 f7e7 d5f3 f2e4 f3h5 e7d6 h5h6 d6d5 h6h7 | 7k/2R2p1p/3N1q2/3Q4/3p4/PP3pPP/5n1K/4r3 w - -
+LMR d4m3        |   d6f7 |   cp 356 |       4.541.817 |    4.230.715 |        1.073 |  12/28  |       10.414 |          189 | d6f7 f6f7 d5d8 h8g7 c7f7 g7f7 d8d5 f7e7 d5f3 f2e4 f3d3 e1e3 d3d4 e3e2 h2g1 e4g3 | 7k/2R2p1p/3N1q2/3Q4/3p4/PP3pPP/5n1K/4r3 w - -
+LMR d3m2        |   d6f7 |   cp 409 |       4.704.962 |    3.977.087 |        1.183 |  12/28  |       24.634 |          576 | d6f7 f6f7 d5d8 h8g7 c7f7 g7f7 d8d5 f7e7 d5f3 f2e4 f3d3 e4c5 d3h7 e7d6 | 7k/2R2p1p/3N1q2/3Q4/3p4/PP3pPP/5n1K/4r3 w - -
+LMR d3m1        |   d6f7 |   cp 409 |       4.167.913 |    4.068.522 |        1.024 |  12/27  |       23.133 |          610 | d6f7 f6f7 d5d8 h8g7 c7f7 g7f7 d8d5 f7e7 d5f3 f2e4 f3d3 e4c5 d3h7 e7d6 | 7k/2R2p1p/3N1q2/3Q4/3p4/PP3pPP/5n1K/4r3 w - -
+
+Fen: 8/5k2/8/8/2N2N2/2B5/2K5/8 w - -
+00 warmup       |   c4e5 |  cp 8989 |      21.548.590 |    3.240.864 |        6.649 |  12/16  |            0 |            0 | c2d3 | 8/5k2/8/8/2N2N2/2B5/2K5/8 w - -
+01 pre          |   c4e5 |  cp 8989 |      21.548.590 |    3.363.880 |        6.405 |  12/16  |            0 |            0 | c2d3 | 8/5k2/8/8/2N2N2/2B5/2K5/8 w - -
+LMR d3m3        |   c4e5 |  cp 8989 |      21.548.590 |    3.355.509 |        6.421 |  12/16  |            0 |            0 | c2d3 | 8/5k2/8/8/2N2N2/2B5/2K5/8 w - -
+LMR d1m3        |   c4e5 |  cp 8989 |      21.548.590 |    3.352.919 |        6.426 |  12/16  |            0 |            0 | c2d3 | 8/5k2/8/8/2N2N2/2B5/2K5/8 w - -
+LMR d2m3        |   c4e5 |  cp 8989 |      21.548.590 |    3.350.661 |        6.431 |  12/16  |            0 |            0 | c2d3 | 8/5k2/8/8/2N2N2/2B5/2K5/8 w - -
+LMR d4m3        |   c4e5 |  cp 8989 |      21.548.590 |    3.308.462 |        6.513 |  12/16  |            0 |            0 | c2d3 | 8/5k2/8/8/2N2N2/2B5/2K5/8 w - -
+LMR d3m2        |   c4e5 |  cp 8989 |      21.548.590 |    3.331.727 |        6.467 |  12/16  |            0 |            0 | c2d3 | 8/5k2/8/8/2N2N2/2B5/2K5/8 w - -
+LMR d3m1        |   c4e5 |  cp 8989 |      21.548.590 |    3.336.320 |        6.458 |  12/16  |            0 |            0 | c2d3 | 8/5k2/8/8/2N2N2/2B5/2K5/8 w - -
+
+Fen: 8/8/6k1/8/8/8/P1K5/8 w - -
+00 warmup       |   a2a4 |  cp 8999 |             475 |        5.664 |           83 |  12/12  |            0 |            0 | a2a4 | 8/8/6k1/8/8/8/P1K5/8 w - -
+01 pre          |   a2a4 |  cp 8999 |             475 |      109.854 |            4 |  12/12  |            0 |            0 | a2a4 | 8/8/6k1/8/8/8/P1K5/8 w - -
+LMR d3m3        |   a2a4 |  cp 8999 |             475 |      173.636 |            2 |  12/12  |            0 |            0 | a2a4 | 8/8/6k1/8/8/8/P1K5/8 w - -
+LMR d1m3        |   a2a4 |  cp 8999 |             475 |      101.244 |            4 |  12/12  |            0 |            0 | a2a4 | 8/8/6k1/8/8/8/P1K5/8 w - -
+LMR d2m3        |   a2a4 |  cp 8999 |             475 |      113.001 |            4 |  12/12  |            0 |            0 | a2a4 | 8/8/6k1/8/8/8/P1K5/8 w - -
+LMR d4m3        |   a2a4 |  cp 8999 |             475 |      195.272 |            2 |  12/12  |            0 |            0 | a2a4 | 8/8/6k1/8/8/8/P1K5/8 w - -
+LMR d3m2        |   a2a4 |  cp 8999 |             475 |      185.706 |            2 |  12/12  |            0 |            0 | a2a4 | 8/8/6k1/8/8/8/P1K5/8 w - -
+LMR d3m1        |   a2a4 |  cp 8999 |             475 |       99.957 |            4 |  12/12  |            0 |            0 | a2a4 | 8/8/6k1/8/8/8/P1K5/8 w - -
+
+Fen: 8/5k2/8/8/8/8/1BK5/1B6 w - -
+00 warmup       |   c2b3 |  cp 8974 |       2.385.461 |    2.960.516 |          805 |  12/16  |            0 |            0 | b2e5 | 8/5k2/8/8/8/8/1BK5/1B6 w - -
+01 pre          |   c2b3 |  cp 8974 |       2.385.461 |    3.743.053 |          637 |  12/16  |            0 |            0 | b2e5 | 8/5k2/8/8/8/8/1BK5/1B6 w - -
+LMR d3m3        |   c2b3 |  cp 8974 |       2.385.461 |    3.886.212 |          613 |  12/16  |            0 |            0 | b2e5 | 8/5k2/8/8/8/8/1BK5/1B6 w - -
+LMR d1m3        |   c2b3 |  cp 8974 |       2.385.461 |    3.796.680 |          628 |  12/16  |            0 |            0 | b2e5 | 8/5k2/8/8/8/8/1BK5/1B6 w - -
+LMR d2m3        |   c2b3 |  cp 8974 |       2.385.461 |    3.816.211 |          625 |  12/16  |            0 |            0 | b2e5 | 8/5k2/8/8/8/8/1BK5/1B6 w - -
+LMR d4m3        |   c2b3 |  cp 8974 |       2.385.461 |    3.822.546 |          624 |  12/16  |            0 |            0 | b2e5 | 8/5k2/8/8/8/8/1BK5/1B6 w - -
+LMR d3m2        |   c2b3 |  cp 8974 |       2.385.461 |    3.863.032 |          617 |  12/16  |            0 |            0 | b2e5 | 8/5k2/8/8/8/8/1BK5/1B6 w - -
+LMR d3m1        |   c2b3 |  cp 8974 |       2.385.461 |    3.760.551 |          634 |  12/16  |            0 |            0 | b2e5 | 8/5k2/8/8/8/8/1BK5/1B6 w - -
+
+Fen: 5r1k/4Qpq1/4p3/1p1p2P1/2p2P2/1p2P3/1K1P4/B7 w - -
+00 warmup       |   b2b1 |   cp -91 |         634.187 |    2.147.894 |          295 |  12/31  |            0 |            0 | b2b1 f7f6 a1f6 f8f6 g5f6 g7g6 b1b2 g6c2 b2a3 b5b4 a3b4 c2d2 b4b5 d2g2 e7e6 | 5r1k/4Qpq1/4p3/1p1p2P1/2p2P2/1p2P3/1K1P4/B7 w - -
+01 pre          |   b2b1 |   cp -91 |         635.706 |    3.788.359 |          167 |  12/31  |            0 |            0 | b2b1 f7f6 a1f6 f8f6 g5f6 g7g6 b1b2 g6c2 b2a3 b5b4 a3b4 c2d2 b4b5 d2g2 e7e6 | 5r1k/4Qpq1/4p3/1p1p2P1/2p2P2/1p2P3/1K1P4/B7 w - -
+LMR d3m3        |   b2b1 |  cp -118 |         671.722 |    3.469.339 |          193 |  12/30  |        6.395 |           54 | b2b1 f7f6 a1f6 f8f6 g5f6 g7g1 b1b2 g1g2 e7e8 h8h7 e8e7 h7h6 b2c3 | 5r1k/4Qpq1/4p3/1p1p2P1/2p2P2/1p2P3/1K1P4/B7 w - -
+LMR d1m3        |   b2b1 |   cp -78 |         637.053 |    3.796.517 |          167 |  12/30  |       18.497 |          463 | b2b1 f7f6 a1f6 f8f6 g5f6 g7g4 b1c1 b5b4 c1b2 g4g2 e7f8 h8h7 f8b4 | 5r1k/4Qpq1/4p3/1p1p2P1/2p2P2/1p2P3/1K1P4/B7 w - -
+LMR d2m3        |   b2b1 |   cp -78 |         637.053 |    3.361.675 |          189 |  12/30  |       11.744 |          463 | b2b1 f7f6 a1f6 f8f6 g5f6 g7g4 b1c1 b5b4 c1b2 g4g2 e7f8 h8h7 f8b4 | 5r1k/4Qpq1/4p3/1p1p2P1/2p2P2/1p2P3/1K1P4/B7 w - -
+LMR d4m3        |   b2b1 |  cp -118 |         740.971 |    3.106.568 |          238 |  12/30  |        2.272 |           13 | b2b1 f7f6 a1f6 f8f6 g5f6 g7g1 b1b2 g1g2 b2c3 d5d4 e3d4 g2f3 c3b4 b3b2 | 5r1k/4Qpq1/4p3/1p1p2P1/2p2P2/1p2P3/1K1P4/B7 w - -
+LMR d3m2        |   b2b1 |  cp -118 |         666.269 |    3.763.778 |          177 |  12/30  |        6.818 |           70 | b2b1 f7f6 a1f6 f8f6 g5f6 g7g1 b1b2 g1g2 b2c3 d5d4 e3d4 g2f3 c3b4 b3b2 | 5r1k/4Qpq1/4p3/1p1p2P1/2p2P2/1p2P3/1K1P4/B7 w - -
+LMR d3m1        |   b2b1 |  cp -118 |         664.729 |    3.872.798 |          171 |  12/30  |        6.942 |           75 | b2b1 f7f6 a1f6 f8f6 g5f6 g7g1 b1b2 g1g2 b2c3 d5d4 e3d4 g2f3 c3b4 b3b2 | 5r1k/4Qpq1/4p3/1p1p2P1/2p2P2/1p2P3/1K1P4/B7 w - -
+
+Fen: 3r1k2/4npp1/1ppr3p/p6P/P2PPPP1/1NR5/5K2/2R5 w - -
+00 warmup       |   f2f3 |    cp 83 |       8.337.795 |    3.682.090 |        2.264 |  12/26  |            0 |            0 | f2f3 f7f6 e4e5 f6e5 f4e5 d6d4 b3d4 d8d4 c3c4 d4c4 c1c4 f8f7 | 3r1k2/4npp1/1ppr3p/p6P/P2PPPP1/1NR5/5K2/2R5 w - -
+01 pre          |   f2f3 |    cp 81 |       7.683.179 |    3.767.170 |        2.039 |  12/28  |            0 |            0 | f2f3 f8g8 e4e5 d6d4 b3d4 d8d4 c3c6 e7c6 c1c6 d4a4 c6b6 a4b4 | 3r1k2/4npp1/1ppr3p/p6P/P2PPPP1/1NR5/5K2/2R5 w - -
+LMR d3m3        |   f2f3 |    cp 83 |      21.153.243 |    4.070.699 |        5.196 |  12/30  |      157.018 |        3.094 | f2f3 f7f6 e4e5 f6e5 f4e5 d6d4 b3d4 d8d4 c3c4 d4c4 c1c4 f8f7 | 3r1k2/4npp1/1ppr3p/p6P/P2PPPP1/1NR5/5K2/2R5 w - -
+LMR d1m3        |   f2f3 |    cp 79 |       5.518.231 |    4.241.312 |        1.301 |  12/27  |      139.649 |        2.409 | f2f3 d6d7 e4e5 d8e8 f4f5 f8g8 c1e1 e8c8 e1c1 d7c7 b3d2 e7d5 | 3r1k2/4npp1/1ppr3p/p6P/P2PPPP1/1NR5/5K2/2R5 w - -
+LMR d2m3        |   f2f3 |    cp 79 |       5.457.647 |    4.194.671 |        1.301 |  12/27  |       92.462 |        2.363 | f2f3 d6d7 e4e5 d8e8 f4f5 f8g8 c1e1 e8c8 e1c1 d7c7 b3d2 e7d5 | 3r1k2/4npp1/1ppr3p/p6P/P2PPPP1/1NR5/5K2/2R5 w - -
+LMR d4m3        |   f2f3 |    cp 83 |       7.337.717 |    4.293.607 |        1.708 |  12/27  |       18.048 |          386 | f2f3 f7f6 e4e5 f6e5 f4e5 d6d4 b3d4 d8d4 c3c4 d4c4 c1c4 f8f7 | 3r1k2/4npp1/1ppr3p/p6P/P2PPPP1/1NR5/5K2/2R5 w - -
+LMR d3m2        |   f4f5 |    cp 85 |       6.119.896 |    4.210.394 |        1.453 |  12/28  |       48.926 |          863 | f4f5 d6d4 b3d4 d8d4 c3c4 d4c4 c1c4 f8g8 e4e5 c6c5 f2e3 e7d5 e3e4 | 3r1k2/4npp1/1ppr3p/p6P/P2PPPP1/1NR5/5K2/2R5 w - -
+LMR d3m1        |   e4e5 |    cp 70 |      17.749.975 |    4.138.774 |        4.288 |  12/27  |      134.728 |        3.229 | e4e5 d6d5 f2f3 b6b5 b3a5 b5a4 a5c6 e7c6 c3c6 d5d4 f4f5 d4d2 | 3r1k2/4npp1/1ppr3p/p6P/P2PPPP1/1NR5/5K2/2R5 w - -
+
+Fen: 2q1rr1k/3bbnnp/p2p1pp1/2pPp3/PpP1P1P1/1P2BNNP/2BQ1PRK/7R b - -
+00 warmup       |   e7d8 |   cp -99 |      31.320.554 |    3.657.258 |        8.563 |  12/35  |            0 |            0 | e7d8 d2d3 h8g8 h1e1 f7g5 e3g5 f6g5 d3e3 h7h5 h2g1 h5g4 h3g4 d7g4 f3g5 | 2q1rr1k/3bbnnp/p2p1pp1/2pPp3/PpP1P1P1/1P2BNNP/2BQ1PRK/7R b - -
+01 pre          |   e7d8 |   cp -99 |      31.323.657 |    3.693.800 |        8.480 |  12/35  |            0 |            0 | e7d8 d2d3 h8g8 h1e1 f7g5 e3g5 f6g5 d3e3 h7h5 h2g1 h5g4 h3g4 d7g4 f3g5 | 2q1rr1k/3bbnnp/p2p1pp1/2pPp3/PpP1P1P1/1P2BNNP/2BQ1PRK/7R b - -
+LMR d3m3        |   e7d8 |  cp -104 |      28.626.337 |    3.620.593 |        7.906 |  12/41  |      193.176 |        2.170 | e7d8 d2d3 h8g8 d3d2 d8b6 h1d1 h7h5 g4h5 d7h3 h5g6 f7h8 g2g1 h8g6 | 2q1rr1k/3bbnnp/p2p1pp1/2pPp3/PpP1P1P1/1P2BNNP/2BQ1PRK/7R b - -
+LMR d1m3        |   e7d8 |  cp -101 |      38.315.090 |    3.656.519 |       10.478 |  12/42  |      711.549 |       15.163 | e7d8 d2d3 h8g8 h1e1 f7g5 e3g5 f6g5 h2g1 h7h5 d3e3 h5g4 h3g4 d7g4 f3g5 | 2q1rr1k/3bbnnp/p2p1pp1/2pPp3/PpP1P1P1/1P2BNNP/2BQ1PRK/7R b - -
+LMR d2m3        |   e7d8 |  cp -114 |      25.684.900 |    3.676.589 |        6.986 |  12/37  |      315.568 |        9.953 | e7d8 d2d3 f7g5 f3g5 f6g5 d3d2 h7h5 e3g5 h5g4 h3g4 d7g4 h2g1 h8g8 | 2q1rr1k/3bbnnp/p2p1pp1/2pPp3/PpP1P1P1/1P2BNNP/2BQ1PRK/7R b - -
+LMR d4m3        |   e7d8 |   cp -98 |      46.577.637 |    3.647.574 |       12.769 |  12/38  |       81.918 |        1.703 | e7d8 d2d3 h8g8 h1d1 h7h5 g4h5 d7h3 g2g1 h3g4 h5g6 g4f3 g6f7 f8f7 | 2q1rr1k/3bbnnp/p2p1pp1/2pPp3/PpP1P1P1/1P2BNNP/2BQ1PRK/7R b - -
+LMR d3m2        |   e7d8 |   cp -98 |      24.134.453 |    3.661.598 |        6.591 |  12/35  |      154.403 |        2.303 | e7d8 d2d3 h8g8 h1c1 f7g5 f3g5 f6g5 e3d2 h7h5 f2f3 h5h4 g3e2 | 2q1rr1k/3bbnnp/p2p1pp1/2pPp3/PpP1P1P1/1P2BNNP/2BQ1PRK/7R b - -
+LMR d3m1        |   e7d8 |   cp -70 |      27.171.227 |    3.599.229 |        7.549 |  12/36  |      173.392 |        2.325 | e7d8 g3e2 f6f5 g4f5 g6f5 e3h6 d8f6 h1g1 f8g8 h6g7 f6g7 g2g3 g7f6 | 2q1rr1k/3bbnnp/p2p1pp1/2pPp3/PpP1P1P1/1P2BNNP/2BQ1PRK/7R b - -
+
+Fen: rnbqkb1r/p3pppp/1p6/2ppP3/3N4/2P5/PPP1QPPP/R1B1KB1R w KQkq -
+00 warmup       |   e5e6 |   cp 119 |     111.762.107 |    3.572.618 |       31.282 |  12/42  |            0 |            0 | e5e6 c8e6 d4e6 f7e6 e2e6 d8d6 e6d6 e7d6 f1b5 e8f7 c1e3 f7e6 e1g1 b8d7 a1d1 | rnbqkb1r/p3pppp/1p6/2ppP3/3N4/2P5/PPP1QPPP/R1B1KB1R w KQkq -
+01 pre          |   e5e6 |   cp 121 |      98.863.803 |    3.572.363 |       27.674 |  12/42  |            0 |            0 | e5e6 a7a6 e6f7 e8f7 d4f3 b8c6 c3c4 d5d4 e2e4 c8b7 f3g5 f7e8 g5h7 | rnbqkb1r/p3pppp/1p6/2ppP3/3N4/2P5/PPP1QPPP/R1B1KB1R w KQkq -
+LMR d3m3        |   e5e6 |    cp 87 |      33.314.031 |    3.614.318 |        9.217 |  12/40  |      212.469 |        5.847 | e5e6 a7a6 e2f3 f7e6 f3h5 e8d7 d4f3 b8c6 f1d3 d8e8 h5h4 c8b7 e1g1 | rnbqkb1r/p3pppp/1p6/2ppP3/3N4/2P5/PPP1QPPP/R1B1KB1R w KQkq -
+LMR d1m3        |   e5e6 |   cp 109 |      21.418.407 |    3.731.897 |        5.739 |  12/42  |      520.157 |       29.617 | e5e6 c8e6 d4e6 f7e6 e2e6 d8d6 e6d6 e7d6 c1e3 e8f7 e1c1 f7e6 | rnbqkb1r/p3pppp/1p6/2ppP3/3N4/2P5/PPP1QPPP/R1B1KB1R w KQkq -
+LMR d2m3        |   e5e6 |   cp 113 |      61.003.935 |    3.624.080 |       16.832 |  12/38  |      932.564 |       78.932 | e5e6 f7e6 d4e6 c8e6 e2e6 c5c4 e6f5 e7e6 f5e6 d8e7 e6e2 e8d7 c1f4 b8c6 | rnbqkb1r/p3pppp/1p6/2ppP3/3N4/2P5/PPP1QPPP/R1B1KB1R w KQkq -
+LMR d4m3        |   d4f3 |    cp 57 |      22.128.486 |    3.699.072 |        5.982 |  12/35  |       49.204 |        1.877 | d4f3 c8a6 e2a6 b8a6 f1b5 d8d7 b5d7 e8d7 f3g5 f7f6 e5e6 d7c6 g5f7 h8g8 c1f4 | rnbqkb1r/p3pppp/1p6/2ppP3/3N4/2P5/PPP1QPPP/R1B1KB1R w KQkq -
+LMR d3m2        |   e5e6 |    cp 90 |      29.848.261 |    3.613.193 |        8.260 |  12/39  |      220.033 |        6.961 | e5e6 a7a6 e6f7 e8f7 d4f3 b8c6 c1e3 e7e6 e1c1 f8d6 c1b1 f7g8 h2h3 | rnbqkb1r/p3pppp/1p6/2ppP3/3N4/2P5/PPP1QPPP/R1B1KB1R w KQkq -
+LMR d3m1        |   e5e6 |    cp 87 |      37.278.983 |    3.588.665 |       10.387 |  12/40  |      291.324 |       10.096 | e5e6 a7a6 e6f7 e8f7 d4f3 f7g8 c3c4 b8c6 c4d5 d8d5 c2c4 d5d6 c1e3 | rnbqkb1r/p3pppp/1p6/2ppP3/3N4/2P5/PPP1QPPP/R1B1KB1R w KQkq -
+
+Fen: 1r3rk1/1pnnq1bR/p1pp2B1/P2P1p2/1PP1pP2/2B3P1/5PK1/2Q4R w - -
+00 warmup       |   h7h8 |   mate 2 |          18.688 |      216.661 |           86 |  12/12  |            0 |            0 | h7h8 g7h8 h1h8 | 1r3rk1/1pnnq1bR/p1pp2B1/P2P1p2/1PP1pP2/2B3P1/5PK1/2Q4R w - -
+01 pre          |   h7h8 |   mate 2 |          18.688 |    6.054.362 |            3 |  12/12  |            0 |            0 | h7h8 g7h8 h1h8 | 1r3rk1/1pnnq1bR/p1pp2B1/P2P1p2/1PP1pP2/2B3P1/5PK1/2Q4R w - -
+LMR d3m3        |   h7h8 |   mate 2 |          18.688 |    6.577.270 |            2 |  12/12  |            0 |            0 | h7h8 g7h8 h1h8 | 1r3rk1/1pnnq1bR/p1pp2B1/P2P1p2/1PP1pP2/2B3P1/5PK1/2Q4R w - -
+LMR d1m3        |   h7h8 |   mate 2 |          18.688 |    5.570.193 |            3 |  12/12  |            0 |            0 | h7h8 g7h8 h1h8 | 1r3rk1/1pnnq1bR/p1pp2B1/P2P1p2/1PP1pP2/2B3P1/5PK1/2Q4R w - -
+LMR d2m3        |   h7h8 |   mate 2 |          18.688 |    5.586.679 |            3 |  12/12  |            0 |            0 | h7h8 g7h8 h1h8 | 1r3rk1/1pnnq1bR/p1pp2B1/P2P1p2/1PP1pP2/2B3P1/5PK1/2Q4R w - -
+LMR d4m3        |   h7h8 |   mate 2 |          18.688 |    5.183.623 |            3 |  12/12  |            0 |            0 | h7h8 g7h8 h1h8 | 1r3rk1/1pnnq1bR/p1pp2B1/P2P1p2/1PP1pP2/2B3P1/5PK1/2Q4R w - -
+LMR d3m2        |   h7h8 |   mate 2 |          18.688 |    4.495.765 |            4 |  12/12  |            0 |            0 | h7h8 g7h8 h1h8 | 1r3rk1/1pnnq1bR/p1pp2B1/P2P1p2/1PP1pP2/2B3P1/5PK1/2Q4R w - -
+LMR d3m1        |   h7h8 |   mate 2 |          18.688 |    6.131.837 |            3 |  12/12  |            0 |            0 | h7h8 g7h8 h1h8 | 1r3rk1/1pnnq1bR/p1pp2B1/P2P1p2/1PP1pP2/2B3P1/5PK1/2Q4R w - -
+
+Fen: 4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -
+00 warmup       |   c5e3 |   mate 2 |          20.374 |      180.889 |          112 |  12/14  |            0 |            0 | c5e3 g1f1 b7h1 | 4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -
+01 pre          |   c5e3 |   mate 2 |          20.374 |    3.969.218 |            5 |  12/14  |            0 |            0 | c5e3 g1f1 b7h1 | 4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -
+LMR d3m3        |   c5e3 |   mate 2 |          20.374 |    4.279.712 |            4 |  12/14  |            0 |            0 | c5e3 g1f1 b7h1 | 4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -
+LMR d1m3        |   c5e3 |   mate 2 |          20.377 |    4.334.333 |            4 |  12/14  |           13 |            0 | c5e3 g1f1 b7h1 | 4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -
+LMR d2m3        |   c5e3 |   mate 2 |          20.377 |    4.395.668 |            4 |  12/14  |            6 |            0 | c5e3 g1f1 b7h1 | 4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -
+LMR d4m3        |   c5e3 |   mate 2 |          20.374 |    4.723.420 |            4 |  12/14  |            0 |            0 | c5e3 g1f1 b7h1 | 4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -
+LMR d3m2        |   c5e3 |   mate 2 |          20.374 |    4.762.283 |            4 |  12/14  |            0 |            0 | c5e3 g1f1 b7h1 | 4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -
+LMR d3m1        |   c5e3 |   mate 2 |          20.374 |    4.043.904 |            5 |  12/14  |            0 |            0 | c5e3 g1f1 b7h1 | 4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -
+
+Fen: 4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -
+00 warmup       |   g3d6 |  cp 1534 |          31.897 |      235.306 |          135 |  12/24  |            0 |            0 | g3d6 | 4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -
+01 pre          |   g3d6 |  cp 1534 |          31.897 |    2.407.829 |           13 |  12/24  |            0 |            0 | g3d6 | 4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -
+LMR d3m3        |   g3d6 |  cp 1540 |          25.078 |    2.022.093 |           12 |  12/22  |          115 |            4 | g3d6 | 4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -
+LMR d1m3        |   g3d6 |  cp 1540 |          24.644 |    2.318.846 |           10 |  12/22  |          640 |           28 | g3d6 | 4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -
+LMR d2m3        |   g3d6 |  cp 1540 |          24.644 |    2.373.129 |           10 |  12/22  |          386 |           28 | g3d6 | 4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -
+LMR d4m3        |   g3d6 |  cp 1540 |          25.626 |    2.408.141 |           10 |  12/22  |           16 |            1 | g3d6 | 4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -
+LMR d3m2        |   g3d6 |  cp 1549 |          22.571 |    2.466.021 |            9 |  12/22  |          113 |            5 | g3d6 | 4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -
+LMR d3m1        |   g3d6 |  cp 1549 |          22.380 |    1.888.209 |           11 |  12/22  |          119 |            5 | g3d6 | 4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -
+
+Fen: 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -
+00 warmup       |   d6d1 |   mate 3 |         130.364 |    1.028.008 |          126 |  12/20  |            0 |            0 | d6d1 c1d1 d7g4 d1c1 d8d1 | 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -
+01 pre          |   d6d1 |   mate 3 |         130.364 |    4.664.670 |           27 |  12/20  |            0 |            0 | d6d1 c1d1 d7g4 d1c1 d8d1 | 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -
+LMR d3m3        |   d6d1 |   mate 3 |         207.487 |    3.274.685 |           63 |  12/17  |          408 |           23 | d6d1 c1d1 d7g4 d1c1 d8d1 | 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -
+LMR d1m3        |   d6d1 |   mate 3 |         104.664 |    3.784.577 |           27 |  12/17  |        1.231 |           67 | d6d1 c1d1 d7g4 d1c1 d8d1 | 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -
+LMR d2m3        |   d6d1 |   mate 3 |         104.664 |    4.050.464 |           25 |  12/17  |          470 |           67 | d6d1 c1d1 d7g4 d1c1 d8d1 | 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -
+LMR d4m3        |   d6d1 |   mate 3 |         131.328 |    3.611.444 |           36 |  12/18  |           49 |            4 | d6d1 c1d1 d7g4 d1c1 d8d1 | 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -
+LMR d3m2        |   d6d1 |   mate 3 |         197.875 |    3.402.550 |           58 |  12/17  |          426 |           29 | d6d1 c1d1 d7g4 d1c1 d8d1 | 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -
+LMR d3m1        |   d6d1 |   mate 3 |         204.260 |    3.915.231 |           52 |  12/17  |          472 |           39 | d6d1 c1d1 d7g4 d1c1 d8d1 | 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -
+
+Fen: 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -
+00 warmup       |   d6d1 |   mate 3 |         130.364 |      840.046 |          155 |  12/20  |            0 |            0 | d6d1 c1d1 d7g4 d1c1 d8d1 | 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -
+01 pre          |   d6d1 |   mate 3 |         130.364 |    4.988.711 |           26 |  12/20  |            0 |            0 | d6d1 c1d1 d7g4 d1c1 d8d1 | 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -
+LMR d3m3        |   d6d1 |   mate 3 |         207.487 |    3.551.333 |           58 |  12/17  |          408 |           23 | d6d1 c1d1 d7g4 d1c1 d8d1 | 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -
+LMR d1m3        |   d6d1 |   mate 3 |         104.664 |    4.920.571 |           21 |  12/17  |        1.231 |           67 | d6d1 c1d1 d7g4 d1c1 d8d1 | 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -
+LMR d2m3        |   d6d1 |   mate 3 |         104.664 |    4.145.437 |           25 |  12/17  |          470 |           67 | d6d1 c1d1 d7g4 d1c1 d8d1 | 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -
+LMR d4m3        |   d6d1 |   mate 3 |         131.328 |    3.695.268 |           35 |  12/18  |           49 |            4 | d6d1 c1d1 d7g4 d1c1 d8d1 | 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -
+LMR d3m2        |   d6d1 |   mate 3 |         197.875 |    3.699.676 |           53 |  12/17  |          426 |           29 | d6d1 c1d1 d7g4 d1c1 d8d1 | 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -
+LMR d3m1        |   d6d1 |   mate 3 |         204.260 |    3.797.423 |           53 |  12/17  |          472 |           39 | d6d1 c1d1 d7g4 d1c1 d8d1 | 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -
+
+Fen: 8/1p3p2/6p1/3pk3/8/8/1R2K3/8 w - - 0 1
+00 warmup       |   e2f1 |  cp 8994 |       2.445.203 |    2.051.942 |        1.191 |  12/19  |            0 |            0 | e2f1 b7b5 b2b5 | 8/1p3p2/6p1/3pk3/8/8/1R2K3/8 w - - 0 1
+01 pre          |   e2f1 |  cp 8992 |       2.485.025 |    2.382.723 |        1.042 |  12/19  |            0 |            0 | e2f1 b7b5 b2b5 | 8/1p3p2/6p1/3pk3/8/8/1R2K3/8 w - - 0 1
+LMR d3m3        |   b2b7 |  cp 8994 |       1.852.442 |    2.898.474 |          639 |  12/20  |        5.076 |          731 | b2b7 | 8/1p3p2/6p1/3pk3/8/8/1R2K3/8 w - - 0 1
+LMR d1m3        |   b2b4 |  cp 8994 |       2.399.377 |    3.227.159 |          743 |  12/20  |        5.896 |          743 | b2b4 f7f6 b4b2 b7b5 b2b5 | 8/1p3p2/6p1/3pk3/8/8/1R2K3/8 w - - 0 1
+LMR d2m3        |   b2b7 |  cp 8994 |       1.845.871 |    3.714.115 |          496 |  12/20  |        4.950 |          730 | b2b7 | 8/1p3p2/6p1/3pk3/8/8/1R2K3/8 w - - 0 1
+LMR d4m3        |   b2b7 |  cp 8994 |       1.846.031 |    3.558.867 |          518 |  12/20  |        4.897 |          705 | b2b7 | 8/1p3p2/6p1/3pk3/8/8/1R2K3/8 w - - 0 1
+LMR d3m2        |   b2b7 |  cp 8999 |       2.429.845 |    3.767.064 |          645 |  12/20  |        4.487 |          820 | b2b7 | 8/1p3p2/6p1/3pk3/8/8/1R2K3/8 w - - 0 1
+LMR d3m1        |   b2b7 |  cp 8992 |       2.333.883 |    3.476.171 |          671 |  12/19  |        7.223 |        1.169 | b2b7 | 8/1p3p2/6p1/3pk3/8/8/1R2K3/8 w - - 0 1
+
+Fen: 1r2k3/p6p/8/8/8/8/PP6/R3K3 w - - 0 1
+00 warmup       |   b2b3 |    cp 26 |      10.372.762 |    3.483.785 |        2.977 |  12/21  |            0 |            0 | b2b3 e8d7 e1e2 b8b7 a1h1 d7d6 e2d3 b7g7 d3e4 g7g2 h1h7 g2a2 | 1r2k3/p6p/8/8/8/8/PP6/R3K3 w - - 0 1
+01 pre          |   b2b3 |    cp 26 |      10.372.762 |    4.415.056 |        2.349 |  12/21  |            0 |            0 | b2b3 e8d7 e1e2 b8b7 a1h1 d7d6 e2d3 b7g7 d3e4 g7g2 h1h7 g2a2 | 1r2k3/p6p/8/8/8/8/PP6/R3K3 w - - 0 1
+LMR d3m3        |   b2b3 |    cp 18 |       4.691.732 |    4.230.101 |        1.109 |  12/22  |       51.821 |        2.484 | b2b3 a7a5 a1b1 e8e7 e1f2 b8b5 f2f3 e7d6 b1h1 b5f5 f3e4 f5e5 e4d4 | 1r2k3/p6p/8/8/8/8/PP6/R3K3 w - - 0 1
+LMR d1m3        |   b2b3 |    cp 20 |       3.522.926 |    4.363.758 |          807 |  12/21  |      198.599 |       13.815 | b2b3 e8d7 e1e2 b8g8 e2d3 g8g2 a2a4 g2b2 d3c3 b2h2 a1f1 d7e6 | 1r2k3/p6p/8/8/8/8/PP6/R3K3 w - - 0 1
+LMR d2m3        |   b2b3 |    cp 20 |       3.522.926 |    4.472.851 |          787 |  12/21  |       97.455 |       13.815 | b2b3 e8d7 e1e2 b8g8 e2d3 g8g2 a2a4 g2b2 d3c3 b2h2 a1f1 d7e6 | 1r2k3/p6p/8/8/8/8/PP6/R3K3 w - - 0 1
+LMR d4m3        |   b2b3 |    cp 15 |       5.199.445 |    4.302.191 |        1.208 |  12/21  |       21.262 |        1.833 | b2b3 a7a5 a1b1 e8e7 e1d2 b8g8 b1e1 e7d6 d2d3 g8g3 d3e4 g3g4 e4f3 h7h5 e1e4 | 1r2k3/p6p/8/8/8/8/PP6/R3K3 w - - 0 1
+LMR d3m2        |   b2b3 |    cp 17 |       4.982.107 |    4.331.891 |        1.150 |  12/21  |       65.884 |        3.140 | b2b3 a7a5 a1b1 e8e7 e1e2 e7e6 b1h1 a5a4 h1h6 e6d5 h6h5 d5d6 b3a4 b8b2 e2d3 b2a2 h5h7 a2a4 | 1r2k3/p6p/8/8/8/8/PP6/R3K3 w - - 0 1
+LMR d3m1        |   b2b3 |    cp 23 |       3.912.365 |    4.368.926 |          895 |  12/19  |       57.612 |        2.693 | b2b3 e8d7 e1e2 b8g8 e2f3 d7e6 a1c1 g8g7 f3e4 g7g4 e4f3 h7h5 c1c7 | 1r2k3/p6p/8/8/8/8/PP6/R3K3 w - - 0 1
+
+Fen: 5rk1/6p1/8/8/3Q4/8/5pP1/7K w - - 0 1
+00 warmup       |   d4c4 |   cp 157 |         897.232 |    1.296.869 |          691 |  12/25  |            0 |            0 | d4c4 f8f7 c4f1 g7g6 h1h2 g6g5 h2g3 f7f4 g3h2 f4h4 h2g3 h4f4 g3h2 | 5rk1/6p1/8/8/3Q4/8/5pP1/7K w - - 0 1
+01 pre          |   d4c4 |   cp 157 |         897.975 |    4.254.241 |          211 |  12/25  |            0 |            0 | d4c4 f8f7 c4f1 g7g6 h1h2 g6g5 h2g3 f7f4 g3h2 f4h4 h2g3 h4f4 g3h2 | 5rk1/6p1/8/8/3Q4/8/5pP1/7K w - - 0 1
+LMR d3m3        |   d4c4 |   cp 159 |         710.998 |    2.093.560 |          339 |  12/25  |       12.215 |          147 | d4c4 g8h8 c4f1 h8g8 h1h2 f8f4 g2g3 f4f3 f1c4 f3f7 c4f1 g7g5 g3g4 | 5rk1/6p1/8/8/3Q4/8/5pP1/7K w - - 0 1
+LMR d1m3        |   d4c4 |   cp 157 |         657.328 |    2.577.531 |          255 |  12/23  |       38.270 |          619 | d4c4 f8f7 c4f1 g7g5 h1h2 f7f5 f1c4 f5f7 c4f1 f7f4 g2g3 f4f6 | 5rk1/6p1/8/8/3Q4/8/5pP1/7K w - - 0 1
+LMR d2m3        |   d4c4 |   cp 156 |         691.403 |    3.358.009 |          205 |  12/23  |       22.292 |          666 | d4c4 f8f7 c4f1 f7f6 f1c4 g8f8 c4c5 f8f7 c5d5 f7g6 d5d3 f6f5 d3g3 g6f6 g3d6 f6f7 d6d7 f7f6 | 5rk1/6p1/8/8/3Q4/8/5pP1/7K w - - 0 1
+LMR d4m3        |   d4c4 |   cp 156 |         628.833 |    2.783.663 |          225 |  12/24  |        4.817 |           49 | d4c4 f8f7 c4f1 f7f4 g2g3 f4f6 f1c4 g8h7 c4e4 h7g8 e4d5 f6f7 d5d8 g8h7 d8h4 h7g8 | 5rk1/6p1/8/8/3Q4/8/5pP1/7K w - - 0 1
+LMR d3m2        |   d4c4 |   cp 157 |         777.478 |    3.084.330 |          252 |  12/24  |       16.119 |          176 | d4c4 f8f7 c4f1 g7g5 h1h2 f7f6 h2g3 f6f4 g3h2 f4h4 h2g3 h4f4 g3h2 | 5rk1/6p1/8/8/3Q4/8/5pP1/7K w - - 0 1
+LMR d3m1        |   d4c4 |   cp 159 |         707.131 |    2.672.848 |          264 |  12/25  |       14.830 |          226 | d4c4 f8f7 c4f1 g8f8 h1h2 f8e7 g2g4 e7d6 g4g5 d6c5 g5g6 f7f8 | 5rk1/6p1/8/8/3Q4/8/5pP1/7K w - - 0 1
+
+Fen: 8/3r2k1/p1p4p/8/8/2P5/P7/1R4K1 w - - 0 1
+00 warmup       |   b1b6 |   cp -86 |       1.579.117 |    2.245.007 |          703 |  12/21  |            0 |            0 | b1b6 d7d1 g1f2 d1d2 f2e3 d2a2 b6c6 a6a5 c6c7 g7f6 c7c6 f6g5 c3c4 a5a4 c4c5 | 8/3r2k1/p1p4p/8/8/2P5/P7/1R4K1 w - - 0 1
+01 pre          |   b1b6 |   cp -86 |       1.579.710 |    4.929.856 |          320 |  12/21  |            0 |            0 | b1b6 d7d1 g1f2 d1d2 f2e3 d2a2 b6c6 a6a5 c6c7 g7f6 c7c6 f6g5 c3c4 a5a4 c4c5 | 8/3r2k1/p1p4p/8/8/2P5/P7/1R4K1 w - - 0 1
+LMR d3m3        |   b1b6 |   cp -86 |       2.521.455 |    4.028.611 |          625 |  12/20  |       33.283 |          564 | b1b6 d7d1 g1f2 d1d2 f2e3 d2a2 b6c6 h6h5 c6d6 g7f7 d6h6 a2c2 h6h5 c2c3 e3d4 | 8/3r2k1/p1p4p/8/8/2P5/P7/1R4K1 w - - 0 1
+LMR d1m3        |   b1b6 |   cp -91 |       1.678.595 |    4.125.226 |          406 |  12/20  |       77.122 |        1.525 | b1b6 d7d1 g1f2 d1d2 f2e3 d2a2 b6c6 h6h5 c6c7 g7f6 c7c6 f6f7 c6h6 a2a5 | 8/3r2k1/p1p4p/8/8/2P5/P7/1R4K1 w - - 0 1
+LMR d2m3        |   b1b6 |   cp -91 |       1.678.511 |    4.771.960 |          351 |  12/20  |       47.487 |        1.525 | b1b6 d7d1 g1f2 d1d2 f2e3 d2a2 b6c6 h6h5 c6c7 g7f6 c7c6 f6f7 c6h6 a2a5 | 8/3r2k1/p1p4p/8/8/2P5/P7/1R4K1 w - - 0 1
+LMR d4m3        |   b1b6 |   cp -80 |       2.761.782 |    4.454.130 |          620 |  12/21  |       12.323 |          352 | b1b6 a6a5 a2a4 d7d1 g1f2 d1a1 b6c6 a1a4 f2e3 a4a2 c6a6 h6h5 a6a8 | 8/3r2k1/p1p4p/8/8/2P5/P7/1R4K1 w - - 0 1
+LMR d3m2        |   b1b6 |   cp -86 |       2.263.189 |    4.383.175 |          516 |  12/21  |       36.571 |          749 | b1b6 d7d1 g1f2 d1d2 f2e3 d2a2 b6c6 h6h5 c6c7 g7g6 c7c6 g6f7 c6h6 a2c2 h6h5 c2c3 e3e4 | 8/3r2k1/p1p4p/8/8/2P5/P7/1R4K1 w - - 0 1
+LMR d3m1        |   b1b6 |   cp -86 |       1.914.517 |    4.368.030 |          438 |  12/21  |       30.924 |          701 | b1b6 d7d1 g1f2 d1d2 f2e3 d2a2 b6c6 h6h5 c6b6 g7f7 b6h6 a2c2 h6h5 c2c3 e3e4 | 8/3r2k1/p1p4p/8/8/2P5/P7/1R4K1 w - - 0 1
+
+Fen: 4k3/pp5p/8/8/8/8/6P1/4K2R w - - 0 1
+00 warmup       |   h1h7 |  cp 8992 |       3.106.952 |    2.145.568 |        1.448 |  12/20  |            0 |            0 | h1h7 | 4k3/pp5p/8/8/8/8/6P1/4K2R w - - 0 1
+01 pre          |   h1h7 |  cp 8992 |       3.108.481 |    3.887.957 |          799 |  12/20  |            0 |            0 | h1h7 | 4k3/pp5p/8/8/8/8/6P1/4K2R w - - 0 1
+LMR d3m3        |   e1d2 |  cp 8992 |       3.110.798 |    3.092.353 |        1.005 |  12/19  |        7.388 |          786 | e1d2 a7a5 h1b1 a5a4 b1b4 b7b6 b4a4 | 4k3/pp5p/8/8/8/8/6P1/4K2R w - - 0 1
+LMR d1m3        |   e1d2 |  cp 8992 |       3.111.475 |    3.924.990 |          792 |  12/19  |        7.413 |          790 | e1d2 a7a5 h1b1 a5a4 b1b4 b7b6 b4a4 | 4k3/pp5p/8/8/8/8/6P1/4K2R w - - 0 1
+LMR d2m3        |   e1d2 |  cp 8992 |       3.111.475 |    3.899.739 |          797 |  12/19  |        7.413 |          790 | e1d2 a7a5 h1b1 a5a4 b1b4 b7b6 b4a4 | 4k3/pp5p/8/8/8/8/6P1/4K2R w - - 0 1
+LMR d4m3        |   h1h7 |  cp 8992 |       3.032.134 |    3.222.290 |          940 |  12/19  |        7.576 |          733 | h1h7 | 4k3/pp5p/8/8/8/8/6P1/4K2R w - - 0 1
+LMR d3m2        |   h1h7 |  cp 8992 |       3.189.485 |    3.564.615 |          894 |  12/20  |        9.398 |        1.223 | h1h7 | 4k3/pp5p/8/8/8/8/6P1/4K2R w - - 0 1
+LMR d3m1        |   h1h7 |  cp 8992 |       2.845.706 |    3.741.663 |          760 |  12/19  |        9.221 |        1.567 | h1h7 | 4k3/pp5p/8/8/8/8/6P1/4K2R w - - 0 1
+
+Fen: 8/8/8/4k3/8/8/3Q4/4K3 w - - 0 1
+00 warmup       |   d2d7 |  cp 8987 |       6.737.350 |    8.201.759 |          821 |  12/18  |            0 |            0 | d2g5 | 8/8/8/4k3/8/8/3Q4/4K3 w - - 0 1
+01 pre          |   d2d7 |  cp 8987 |       6.737.350 |    9.056.231 |          743 |  12/18  |            0 |            0 | d2g5 | 8/8/8/4k3/8/8/3Q4/4K3 w - - 0 1
+LMR d3m3        |   d2d7 |  cp 8987 |       6.737.350 |    9.104.544 |          739 |  12/18  |            0 |            0 | d2g5 | 8/8/8/4k3/8/8/3Q4/4K3 w - - 0 1
+LMR d1m3        |   d2d7 |  cp 8987 |       6.737.350 |    8.956.955 |          752 |  12/18  |            0 |            0 | d2g5 | 8/8/8/4k3/8/8/3Q4/4K3 w - - 0 1
+LMR d2m3        |   d2d7 |  cp 8987 |       6.737.350 |    9.080.808 |          741 |  12/18  |            0 |            0 | d2g5 | 8/8/8/4k3/8/8/3Q4/4K3 w - - 0 1
+LMR d4m3        |   d2d7 |  cp 8987 |       6.737.350 |    9.022.850 |          746 |  12/18  |            0 |            0 | d2g5 | 8/8/8/4k3/8/8/3Q4/4K3 w - - 0 1
+LMR d3m2        |   d2d7 |  cp 8987 |       6.737.350 |    8.923.543 |          755 |  12/18  |            0 |            0 | d2g5 | 8/8/8/4k3/8/8/3Q4/4K3 w - - 0 1
+LMR d3m1        |   d2d7 |  cp 8987 |       6.757.616 |    8.927.065 |          756 |  12/18  |            6 |            3 | d2g5 | 8/8/8/4k3/8/8/3Q4/4K3 w - - 0 1
+
+Fen: 8/8/8/4k3/8/8/1R6/4K3 w - - 0 1
+00 warmup       |   b2d2 |  cp 8973 |       1.152.153 |    5.185.739 |          222 |  12/16  |            0 |            0 | e1e2 | 8/8/8/4k3/8/8/1R6/4K3 w - - 0 1
+01 pre          |   b2d2 |  cp 8973 |       1.214.213 |    7.989.504 |          151 |  12/16  |            0 |            0 | e1e2 | 8/8/8/4k3/8/8/1R6/4K3 w - - 0 1
+LMR d3m3        |   b2d2 |  cp 8973 |       1.214.213 |    7.719.630 |          157 |  12/16  |            0 |            0 | e1e2 | 8/8/8/4k3/8/8/1R6/4K3 w - - 0 1
+LMR d1m3        |   b2d2 |  cp 8973 |       1.214.213 |    7.595.885 |          159 |  12/16  |            0 |            0 | e1e2 | 8/8/8/4k3/8/8/1R6/4K3 w - - 0 1
+LMR d2m3        |   b2d2 |  cp 8973 |       1.214.213 |    7.921.778 |          153 |  12/16  |            0 |            0 | e1e2 | 8/8/8/4k3/8/8/1R6/4K3 w - - 0 1
+LMR d4m3        |   b2d2 |  cp 8973 |       1.214.213 |    8.069.839 |          150 |  12/16  |            0 |            0 | e1e2 | 8/8/8/4k3/8/8/1R6/4K3 w - - 0 1
+LMR d3m2        |   b2d2 |  cp 8973 |       1.214.213 |    7.802.011 |          155 |  12/16  |            0 |            0 | e1e2 | 8/8/8/4k3/8/8/1R6/4K3 w - - 0 1
+LMR d3m1        |   b2d2 |  cp 8973 |       1.214.213 |    7.906.638 |          153 |  12/16  |            0 |            0 | e1e2 | 8/8/8/4k3/8/8/1R6/4K3 w - - 0 1
+
+Fen: 8/4P3/8/4k3/8/8/8/4K3 w - - 0 1
+00 warmup       |  e7e8Q |  cp 8999 |       1.037.176 |    4.284.903 |          242 |  12/18  |            0 |            0 | e7e8Q | 8/4P3/8/4k3/8/8/8/4K3 w - - 0 1
+01 pre          |  e7e8Q |  cp 8999 |       1.037.176 |    6.761.256 |          153 |  12/18  |            0 |            0 | e7e8Q | 8/4P3/8/4k3/8/8/8/4K3 w - - 0 1
+LMR d3m3        |  e7e8Q |  cp 8999 |       1.037.176 |    6.643.134 |          156 |  12/18  |            0 |            0 | e7e8Q | 8/4P3/8/4k3/8/8/8/4K3 w - - 0 1
+LMR d1m3        |  e7e8Q |  cp 8999 |       1.037.176 |    6.593.877 |          157 |  12/18  |            0 |            0 | e7e8Q | 8/4P3/8/4k3/8/8/8/4K3 w - - 0 1
+LMR d2m3        |  e7e8Q |  cp 8999 |       1.037.176 |    6.707.664 |          154 |  12/18  |            0 |            0 | e7e8Q | 8/4P3/8/4k3/8/8/8/4K3 w - - 0 1
+LMR d4m3        |  e7e8Q |  cp 8999 |       1.037.176 |    6.507.125 |          159 |  12/18  |            0 |            0 | e7e8Q | 8/4P3/8/4k3/8/8/8/4K3 w - - 0 1
+LMR d3m2        |  e7e8Q |  cp 8999 |       1.037.176 |    6.694.135 |          154 |  12/18  |            0 |            0 | e7e8Q | 8/4P3/8/4k3/8/8/8/4K3 w - - 0 1
+LMR d3m1        |  e7e8Q |  cp 8999 |       1.037.176 |    6.789.911 |          152 |  12/18  |            0 |            0 | e7e8Q | 8/4P3/8/4k3/8/8/8/4K3 w - - 0 1
+
+Fen: 8/8/8/4k3/8/8/8/2B1KB2 w - - 0 1
+00 warmup       |   e1d2 |  cp 8968 |       2.422.664 |    3.656.320 |          662 |  12/16  |            0 |            0 | c1b2 | 8/8/8/4k3/8/8/8/2B1KB2 w - - 0 1
+01 pre          |   e1d2 |  cp 8968 |       2.422.664 |    4.275.465 |          566 |  12/16  |            0 |            0 | c1b2 | 8/8/8/4k3/8/8/8/2B1KB2 w - - 0 1
+LMR d3m3        |   e1d2 |  cp 8968 |       2.422.664 |    4.276.889 |          566 |  12/16  |            0 |            0 | c1b2 | 8/8/8/4k3/8/8/8/2B1KB2 w - - 0 1
+LMR d1m3        |   e1d2 |  cp 8968 |       2.422.664 |    4.264.954 |          568 |  12/16  |            0 |            0 | c1b2 | 8/8/8/4k3/8/8/8/2B1KB2 w - - 0 1
+LMR d2m3        |   e1d2 |  cp 8968 |       2.422.664 |    4.200.382 |          576 |  12/16  |            0 |            0 | c1b2 | 8/8/8/4k3/8/8/8/2B1KB2 w - - 0 1
+LMR d4m3        |   e1d2 |  cp 8968 |       2.422.664 |    4.181.527 |          579 |  12/16  |            0 |            0 | c1b2 | 8/8/8/4k3/8/8/8/2B1KB2 w - - 0 1
+LMR d3m2        |   e1d2 |  cp 8968 |       2.422.664 |    4.279.691 |          566 |  12/16  |            0 |            0 | c1b2 | 8/8/8/4k3/8/8/8/2B1KB2 w - - 0 1
+LMR d3m1        |   e1d2 |  cp 8968 |       2.422.664 |    4.291.058 |          564 |  12/16  |            0 |            0 | c1b2 | 8/8/8/4k3/8/8/8/2B1KB2 w - - 0 1
+
+Fen: 8/8/8/4k3/8/8/8/1NB1K3 w - - 0 1
+00 warmup       |   e1d2 |  cp 8942 |       1.416.008 |    3.347.656 |          422 |  12/18  |            0 |            0 | b1d2 | 8/8/8/4k3/8/8/8/1NB1K3 w - - 0 1
+01 pre          |   e1d2 |  cp 8942 |       1.338.610 |    4.289.320 |          312 |  12/16  |            0 |            0 | c1a3 | 8/8/8/4k3/8/8/8/1NB1K3 w - - 0 1
+LMR d3m3        |   e1d2 |  cp 8942 |       1.338.610 |    4.383.095 |          305 |  12/16  |            0 |            0 | c1a3 | 8/8/8/4k3/8/8/8/1NB1K3 w - - 0 1
+LMR d1m3        |   e1d2 |  cp 8942 |       1.338.610 |    4.355.468 |          307 |  12/16  |            0 |            0 | c1a3 | 8/8/8/4k3/8/8/8/1NB1K3 w - - 0 1
+LMR d2m3        |   e1d2 |  cp 8942 |       1.338.610 |    4.267.615 |          313 |  12/16  |            0 |            0 | c1a3 | 8/8/8/4k3/8/8/8/1NB1K3 w - - 0 1
+LMR d4m3        |   e1d2 |  cp 8942 |       1.338.610 |    4.366.876 |          306 |  12/16  |            0 |            0 | c1a3 | 8/8/8/4k3/8/8/8/1NB1K3 w - - 0 1
+LMR d3m2        |   e1d2 |  cp 8942 |       1.338.610 |    4.283.131 |          312 |  12/16  |            0 |            0 | c1a3 | 8/8/8/4k3/8/8/8/1NB1K3 w - - 0 1
+LMR d3m1        |   e1d2 |  cp 8942 |       1.338.610 |    4.285.297 |          312 |  12/16  |            0 |            0 | c1a3 | 8/8/8/4k3/8/8/8/1NB1K3 w - - 0 1
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+
+################## Totals/Avg results for each feature test ##################
+
+Date:                  : 2026-02-19 01:22:10
+SearchTime             : 0.000 s
+MaxDepth               : 12
+Number of feature tests: 8
+Number of fens         : 30
+Total tests            : 240
+
+Test: 00 warmup     Nodes:       19.218.298  Nps:        2.899.450  Time:            5.374 Depth:  12/23  Special1:          0 (    0) Special2:          0 (    0)
+Test: 01 pre        Nodes:       18.526.340  Nps:        4.314.403  Time:            5.025 Depth:  12/23  Special1:          0 (    0) Special2:          0 (    0)
+Test: LMR d1m3      Nodes:       10.600.565  Nps:        4.275.618  Time:            2.818 Depth:  12/23  Special1:  6.250.285 (208.342) Special2:    296.729 (9.890)
+Test: LMR d2m3      Nodes:       11.591.752  Nps:        4.322.843  Time:            3.090 Depth:  12/22  Special1:  4.318.256 (143.941) Special2:    373.481 (12.449)
+Test: LMR d3m1      Nodes:       11.896.493  Nps:        4.254.017  Time:            3.201 Depth:  12/22  Special1:  2.209.652 (73.655) Special2:     71.530 (2.384)
+Test: LMR d3m2      Nodes:       12.192.346  Nps:        4.255.277  Time:            3.258 Depth:  12/23  Special1:  2.124.741 (70.824) Special2:     69.157 (2.305)
+Test: LMR d3m3      Nodes:       13.010.569  Nps:        4.128.992  Time:            3.503 Depth:  12/23  Special1:  2.215.855 (73.861) Special2:     64.013 (2.133)
+Test: LMR d4m3      Nodes:       12.710.847  Nps:        4.153.166  Time:            3.433 Depth:  12/22  Special1:    681.267 (22.708) Special2:     35.599 (1.186)
+Process finished with exit code 0

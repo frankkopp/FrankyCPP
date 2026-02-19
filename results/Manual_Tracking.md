@@ -164,6 +164,31 @@ ELO Difference: -0.0
 Duration: 1779.2s
 ```
 
+After LMR fix
+```text
+Match Complete: v1.1_vs_v1.3_blitz_208-dev-lmr
+FrankyCPP v1.3: 77 wins, 92 draws, 39 losses
+FrankyCPP v1.1: 39 wins, 92 draws, 77 losses
+Score: 123 - 85
+ELO Difference: +64.2
+Duration: 15461.5s
+
+TEST SUITE SUMMARY (FrankyCPP v1.3 vs FrankyCPP v1.1)
+
+Total positions:      2873
+Improvement:          +63 positions (+2.2%)
+Suites improved:      6
+Suites regressed:     0
+Status:               [+] IMPROVEMENT
+
+MATCH COMPARISON: FrankyCPP v1.3 vs Baselines
+--------------------------------------------------------------------------------
+Opponent                    Games     Score       W/D/L           ELO         vs FrankyCPP..
+--------------------------------------------------------------------------------
+FrankyCPP v1.1              208       59.1%       77/92/39        +64         [baseline]
+================================================================================
+```
+
 ---
 
 ## FrankyCPP v1.3 - Configuration Settings
@@ -221,7 +246,7 @@ Duration: 1779.2s
 | USE_QFP                      | bool   | true          | true          | -    | -    | Use Quiescence Futility Pruning  |
 | FP_MARGIN                    | int[]  | 0,100,200,3.. | 0,100,200,3.. | -    | -    |                                  |
 | USE_LMR                      | bool   | true          | true          | -    | -    | Use Late Move Reduction          |
-| LMR_MIN_DEPTH                | int    | 3             | 3             | 1    | 10   | LMR Min Depth                    |
+| LMR_MIN_DEPTH                | int    | 1             | 1             | 1    | 10   | LMR Min Depth                    |
 | LMR_MIN_MOVES                | int    | 3             | 3             | 1    | 10   | LMR Min Moves                    |
 | USE_LMP                      | bool   | true          | true          | -    | -    | Use Late Move Pruning            |
 | LMP_MOVES                    | int[]  | 0,7,9,11,13.. | 0,7,9,11,13.. | -    | -    |                                  |

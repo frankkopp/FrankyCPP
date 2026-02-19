@@ -883,7 +883,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Minimum depth for LMR",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "3",
+    .defaultValue = "1",
     .minValue = 1,
     .maxValue = 10,
     .exposure = {.uci = true, .yaml = true, .display = true},

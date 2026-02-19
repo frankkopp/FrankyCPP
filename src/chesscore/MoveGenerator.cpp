@@ -506,7 +506,7 @@ void MoveGenerator::fillOnDemandMoveList(const Position& position, const GenMode
       case PV_MOVE:
         // If a pvMove is set we return it first and filter it out before
         // returning a move
-        assert(!pvMovePushed && "Stage PV should not have pvMovePush set");
+        assert(!pvMovePush && "Stage PV should not have pvMovePush set");
         if (pvMove) {
           switch (genMode) {
             case GenAll:

@@ -88,8 +88,8 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   // ***********************************
   // TESTS
 
-  ptrToSpecial1 = &search.getSearchStats().tbRootHits;
-  ptrToSpecial2 = &search.getSearchStats().tbSearchCutoffs;
+  ptrToSpecial1 = &search.getSearchStats().lmrReductions;
+  ptrToSpecial2 = &search.getSearchStats().lmrResearches;
 
   // pure MiniMax
   //  result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 MINIMAX"));
@@ -157,7 +157,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   CONFIG_OVERRIDE(s.USE_FP = true;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "60 FP"));
 
-  CONFIG_OVERRIDE(s.USE_LMR = true;);
+  // CONFIG_OVERRIDE(s.USE_LMR = true;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "65 LMR"));
 
   CONFIG_OVERRIDE(s.USE_LMP = true;);
@@ -176,24 +176,59 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   CONFIG_OVERRIDE(s.USE_SINGULAR_EXT = true;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "72 SEXT"));
 
+  CONFIG_OVERRIDE(s.USE_TB_PROBE_ROOT = true;);
+  CONFIG_OVERRIDE(s.TB_ROOT_IMMEDIATE = false;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "80 TBRoot"));
+
+  // CONFIG_OVERRIDE(s.TB_ROOT_IMMEDIATE = true;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "81 TBRooti"));
+
+  // For TB Search test, disable immediate return so search actually runs and can use in-search probing
+  // CONFIG_OVERRIDE(s.TB_ROOT_IMMEDIATE = false;);
+  CONFIG_OVERRIDE(s.USE_TB_PROBE_SEARCH = true;);
+  CONFIG_OVERRIDE(s.USE_TB_PROBE_PV = true;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "85 TBSearch"));
+
+  // CONFIG_OVERRIDE(s.TB_ROOT_IMMEDIATE = true;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "86 TBSearchi"));
+
+  // ***********************************
+  // LMR Parameter Tuning Tests
+  // ***********************************
+
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 warmup"));
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "01 pre"));
 
-  CONFIG_OVERRIDE(s.USE_TB_PROBE_ROOT = true;);
-  CONFIG_OVERRIDE(s.TB_ROOT_IMMEDIATE = false;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "80 TBRoot"));
+  // Reset to defaults
+  CONFIG_OVERRIDE(s.USE_LMR = true;);
 
-  CONFIG_OVERRIDE(s.TB_ROOT_IMMEDIATE = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "81 TBRooti"));
+  // Baseline with current defaults (LMR_MIN_DEPTH=3, LMR_MIN_MOVES=3)
+  CONFIG_OVERRIDE(s.LMR_MIN_DEPTH = 3;);
+  CONFIG_OVERRIDE(s.LMR_MIN_MOVES = 3;);
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR d3m3"));
 
-  // For TB Search test, disable immediate return so search actually runs and can use in-search probing
-  CONFIG_OVERRIDE(s.TB_ROOT_IMMEDIATE = false;);
-  CONFIG_OVERRIDE(s.USE_TB_PROBE_SEARCH = true;);
-  CONFIG_OVERRIDE(s.USE_TB_PROBE_PV = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "85 TBSearch"));
+  // Test LMR_MIN_MOVES variations (lower = more aggressive LMR)
+  CONFIG_OVERRIDE(s.LMR_MIN_DEPTH = 1;);
+  CONFIG_OVERRIDE(s.LMR_MIN_MOVES = 3;);
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR d1m3"));
 
-  CONFIG_OVERRIDE(s.TB_ROOT_IMMEDIATE = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "86 TBSearchi"));
+  CONFIG_OVERRIDE(s.LMR_MIN_DEPTH = 2;);
+  CONFIG_OVERRIDE(s.LMR_MIN_MOVES = 3;);
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR d2m3"));
+
+  // Test LMR_MIN_MOVES variations (lower = more aggressive LMR)
+  CONFIG_OVERRIDE(s.LMR_MIN_DEPTH = 4;);
+  CONFIG_OVERRIDE(s.LMR_MIN_MOVES = 3;);
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR d4m3"));
+
+  CONFIG_OVERRIDE(s.LMR_MIN_DEPTH = 3;);
+  CONFIG_OVERRIDE(s.LMR_MIN_MOVES = 2;);
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR d3m2"));
+
+  CONFIG_OVERRIDE(s.LMR_MIN_DEPTH = 3;);
+  CONFIG_OVERRIDE(s.LMR_MIN_MOVES = 1;);
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR d3m1"));
+
 
   return result;
 }
