@@ -395,3 +395,5 @@ The opening book uses Boost serialization to cache compiled book data in `.bin` 
 - ✅ Automatic platform detection
 
 **Note:** Cache files (`*.cache.*.bin`) are excluded from version control via `.gitignore`.
+
+---
