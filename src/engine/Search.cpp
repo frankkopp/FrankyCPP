@@ -47,9 +47,23 @@ Search::~Search() {
 
 void Search::newGame() {
   if (isSearching()) stopSearch();
-  tt->clear();
+
   evaluator = std::make_unique<Evaluator>();
   history   = History{};
+
+  for (auto& plyInfo : plyStack) {
+    plyInfo.resetSearchState();
+  }
+
+  tt->clear();
+  rootMoves.clear();
+  bestMoveStability.reset();
+
+  tbRootMove  = MOVE_NONE;
+  tbRootValue = VALUE_NONE;
+  tbRootWdl   = tablebase::TBResult::Failed;
+  tbRootDtz   = 0;
+  hadBookMove = false;
 }
 
 void Search::isReady() {
@@ -72,7 +86,7 @@ void Search::startSearch(const Position& p, SearchLimits sl) {
 
   // move the received copy of position and search limits to instance variables
   this->position = p;
-  searchLimits   = std::move(sl);
+  searchLimits   = sl;
 
   // join() previous thread
   if (searchThread.joinable()) { searchThread.join(); }
@@ -195,11 +209,9 @@ void Search::run() {
   // Clear entire PV table once (uses memset internally, zero heap allocations)
   pv.clearAll();
 
-  // Move generators for each ply - each depth in search gets its own
-  // field to avoid object creation during search.
-  // Reset existing MoveGenerators and set history data (avoids creating temporaries on stack)
+  // Initialize per-ply search state (MoveGenerators, history pointers, etc.)
   for (int i = DEPTH_NONE; i < DEPTH_MAX; i++) {
-    plyStack[i].mg->reset();
+    plyStack[i].resetSearchState();
     if (SearchConfig.USE_HISTORY_COUNTER || SearchConfig.USE_HISTORY_MOVES) { plyStack[i].mg->setHistoryData(&history); }
   }
 

@@ -217,7 +217,7 @@ public:
     currentODStage         = OD_NEW;
     currentODZobrist       = 0;
     pvMove                 = MOVE_NONE;
-    pvMovePush           = false;
+    pvMovePush             = false;
     takeIndex              = 0;
   }
 

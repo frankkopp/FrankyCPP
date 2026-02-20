@@ -668,3 +668,88 @@ TEST_F(SearchTest, debug) {
   s.startSearch(p, sl);
   s.waitWhileSearching();
 }
+
+// Verifies that newGame() fully resets Search state so that
+// repeated depth-limited searches on the same position produce
+// identical, deterministic results. A depth-limited search has
+// no timing or random factors, so any difference in node count,
+// best move, score, or statistics between runs indicates stale
+// state leaking across searches.
+TEST_F(SearchTest, newGameResetsDeterministic) {
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+
+  // Use multiple positions to increase coverage
+  const std::vector<std::string> fens = {
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",        // start position
+    "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -",// Kiwi Pete
+    "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -",                           // endgame
+  };
+
+  // ReSharper disable once CppTooWideScope
+  constexpr int searchDepth   = 8;
+  // ReSharper disable once CppTooWideScope
+  constexpr int numIterations = 3;
+
+  Search search{};
+  search.isReady();
+
+  for (const auto& fen : fens) {
+    const Position position(fen);
+    SearchLimits sl{};
+    sl.depth = searchDepth;
+
+    // Run the first search to establish reference values
+    search.newGame();
+    search.startSearch(position, sl);
+    search.waitWhileSearching();
+    ASSERT_TRUE(search.hasResult()) << "First search must produce a result for: " << fen;
+
+    const auto refNodes    = search.getLastSearchResult().nodes;
+    const auto refMove     = search.getLastSearchResult().bestMove;
+    const auto refValue    = search.getLastSearchResult().bestMoveValue;
+    const auto refDepth    = search.getLastSearchResult().depth;
+    const auto& refStats   = search.getSearchStats();
+    const auto refPvNodes  = refStats.pvNodes;
+    const auto refNonPv    = refStats.nonPvNodes;
+    const auto refBetaCuts = refStats.betaCuts;
+    const auto refQsNodes  = refStats.qsearchNodes;
+
+    fprintln("Position: {}", fen);
+    fprintln("  Reference: nodes={}, move={}, value={}, depth={}",
+             refNodes, refMove.str(), refValue.str(), refDepth);
+
+    // Run subsequent searches and verify they match exactly
+    for (int i = 1; i < numIterations; ++i) {
+      search.newGame();
+      search.startSearch(position, sl);
+      search.waitWhileSearching();
+      ASSERT_TRUE(search.hasResult()) << "Search iteration " << i << " must produce a result";
+
+      const auto& result = search.getLastSearchResult();
+      const auto& stats  = search.getSearchStats();
+
+      fprintln("  Run {}: nodes={}, move={}, value={}, depth={}",
+               i, result.nodes, result.bestMove.str(), result.bestMoveValue.str(), result.depth);
+
+      // Core determinism checks
+      EXPECT_EQ(refNodes, result.nodes)
+        << "Node count differs on iteration " << i << " for: " << fen;
+      EXPECT_EQ(refMove, result.bestMove)
+        << "Best move differs on iteration " << i << " for: " << fen;
+      EXPECT_EQ(refValue, result.bestMoveValue)
+        << "Best move value differs on iteration " << i << " for: " << fen;
+      EXPECT_EQ(refDepth, result.depth)
+        << "Search depth differs on iteration " << i << " for: " << fen;
+
+      // Statistics determinism checks
+      EXPECT_EQ(refPvNodes, stats.pvNodes)
+        << "PV node count differs on iteration " << i << " for: " << fen;
+      EXPECT_EQ(refNonPv, stats.nonPvNodes)
+        << "Non-PV node count differs on iteration " << i << " for: " << fen;
+      EXPECT_EQ(refBetaCuts, stats.betaCuts)
+        << "Beta cut count differs on iteration " << i << " for: " << fen;
+      EXPECT_EQ(refQsNodes, stats.qsearchNodes)
+        << "QSearch node count differs on iteration " << i << " for: " << fen;
+    }
+  }
+}
