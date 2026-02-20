@@ -165,6 +165,14 @@ public:
       pawnCache.resize(0);
     }
   }
+
+  /// Resets the evaluator state for a new game.
+  /// Clears the pawn cache. More efficient than creating a new Evaluator instance.
+  /// Note: score and tmpScore don't need clearing - they are reset at the start
+  /// of evaluate() and pawnEval() respectively before each use.
+  void reset() {
+    pawnCache.clear();
+  }
 };
 
 #endif// FRANKYCPP_EVALUATOR_H

@@ -48,16 +48,14 @@ Search::~Search() {
 void Search::newGame() {
   if (isSearching()) stopSearch();
 
-  evaluator = std::make_unique<Evaluator>();
-  history   = History{};
-
   for (auto& plyInfo : plyStack) {
     plyInfo.resetSearchState();
   }
-
-  tt->clear();
   rootMoves.clear();
+  tt->clear();
+  if (evaluator) { evaluator->reset(); }
   bestMoveStability.reset();
+  history.reset();
 
   tbRootMove  = MOVE_NONE;
   tbRootValue = VALUE_NONE;

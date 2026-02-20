@@ -176,7 +176,7 @@ void MoveGenerator::storeKiller(const Move killerMove) {
 }
 
 void MoveGenerator::setHistoryData(History* pHistory) {
-  historyData = pHistory;
+  historyDataPtr = pHistory;
 }
 
 bool MoveGenerator::validateMove(const Position& position, const Move move) {
@@ -609,7 +609,7 @@ void MoveGenerator::updateSortValues(const Position& p, MoveList* const moveList
       move->setValue(static_cast<Value>(1000));
     } else if (move->stripped() == killerMoves[0]) { // Killer 1
       move->setValue(static_cast<Value>(1001));
-    } else if (historyData) {// historical search data
+    } else if (historyDataPtr) {// historical search data
 
       // History Count
       // Moves that cause a beta cut in the search get an increasing value
@@ -622,14 +622,14 @@ void MoveGenerator::updateSortValues(const Position& p, MoveList* const moveList
       // It is also yet unclear if the history count table should be
       // reused for several consecutive searches or just for one search.
       // TODO: Testing
-      const auto count = historyData->historyCount[us][move->from()][move->to()];
+      const auto count = historyDataPtr->historyCount[us][move->from()][move->to()];
       auto value       = static_cast<Value>(count / 100);
 
       // Counter Move History
       // When we have a counter move which caused a beta cut off before we
       // bump up its sort value
       // TODO: Testing
-      if (historyData->counterMoves[p.getLastMove().from()][p.getLastMove().to()] == move->stripped()) {
+      if (historyDataPtr->counterMoves[p.getLastMove().from()][p.getLastMove().to()] == move->stripped()) {
         value = value + 500;
       }
 
