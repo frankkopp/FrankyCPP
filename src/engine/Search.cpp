@@ -465,14 +465,16 @@ SearchResult Search::iterativeDeepening(Position& p) {
       }
 
       // Complexity-aware gating: scale remaining by root complexity factor.
+      // effectiveRemaining = remaining * rootComplexityFactor
+      // This reduces effective time for simple positions (e.g., single legal move -> factor 0.1)
       const auto effectiveRemaining = milliseconds{
         std::llround(static_cast<long double>(remaining.count())
                      * static_cast<long double>(rootComplexityFactor))};
 
       if (effectiveRemaining <= buffer || (needed.count() > 0 && effectiveRemaining < needed)) {
         LOG__DEBUG(Logger::get().SEARCH_LOG,
-                   "Stop before iteration {}: effRemaining {} < needed {} (buffer {}, rootComplexityFactor {:.2f})",
-                   iterationDepth, str(effectiveRemaining), str(needed), str(buffer), rootComplexityFactor);
+                   "Stop before iteration {}: budget {}, remaining {} * complexity {:.2f} = effRemaining {} < needed {} (buffer {})",
+                   iterationDepth, str(budget), str(remaining), rootComplexityFactor, str(effectiveRemaining), str(needed), str(buffer));
         break;
       }
     }
@@ -2241,11 +2243,13 @@ milliseconds Search::setupTimeControl(const Position& p, const SearchLimits& lim
 
 void Search::addExtraTime(const double f) {
   if (searchLimits.timeControl && !searchLimits.moveTime.count()) {
-    const auto deltaMs = std::llround(
-      static_cast<long double>(timeLimit.count())
-      * (static_cast<long double>(f) - 1.0L));
+    const auto deltaMs = std::llround( static_cast<long double>(timeLimit.count()) * (static_cast<long double>(f) - 1.0L));
     (void) extraTimeMs.fetch_add(deltaMs, std::memory_order_relaxed);
-    LOG__DEBUG(Logger::get().SEARCH_LOG, "Time added/reduced by {} to {} ", str(milliseconds(deltaMs)), str(timeLimit + milliseconds(extraTimeMs.load(std::memory_order_relaxed))));
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Time adjustment: {} -> total budget {} (base {} + extra {})",
+               str(milliseconds(deltaMs)),
+               str(timeLimit + milliseconds(extraTimeMs.load(std::memory_order_relaxed))),
+               str(timeLimit),
+               str(milliseconds(extraTimeMs.load(std::memory_order_relaxed))));
   }
 }
 
