@@ -1091,7 +1091,11 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       && depth <= 3
       && !isPvNode
       && !hasCheck) {
-    const auto margin = Value{SearchConfig.RFP_MARGIN[depth]};
+    auto margin = Value{SearchConfig.RFP_MARGIN[depth]};
+    // Reduce margin when not improving → prune more aggressively
+    if (SearchConfig.USE_RFP_IMPROVING && !improving) {
+      margin -= Value{SearchConfig.RFP_IMPROVING_MARGIN};
+    }
     if (staticEval - margin >= beta) {
       statistics.rfp_cuts++;
       return staticEval - margin;// fail-hard: beta / fail-soft: staticEval - evalMargin;
@@ -1371,7 +1375,11 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // which might lead to errors.
       // Limited Razoring / Extended FP are covered by this.
       if (SearchConfig.USE_FP && depth < 7) {
-        const auto futilityMargin = SearchConfig.FP_MARGIN[depth];
+        auto futilityMargin = SearchConfig.FP_MARGIN[depth];
+        // Reduce margin when not improving → prune more aggressively
+        if (SearchConfig.USE_FP_IMPROVING && !improving) {
+          futilityMargin -= SearchConfig.FP_IMPROVING_MARGIN;
+        }
         if (staticEval + moveGain + futilityMargin <= alpha) {
           if (staticEval + moveGain > bestNodeValue) { bestNodeValue = staticEval + moveGain; }
           statistics.fpPrunings++;

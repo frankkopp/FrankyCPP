@@ -1,9 +1,9 @@
 # FrankyCPP "Improving" Flag Implementation Plan
 
-**Document Version:** 1.5  
+**Document Version:** 1.6  
 **Created:** 2026-02-20  
 **Last Updated:** 2026-02-20  
-**Status:** 🟡 IN PROGRESS (Phase 3 Complete & Verified)  
+**Status:** 🟡 IN PROGRESS (Phase 4 Complete & Verified)  
 **Target:** FrankyCPP v1.4+  
 **Priority:** High (Identified as ⭐⭐ HIGH IMPACT in Search Tree Reduction Review)  
 **Related:** `PLAN_Search_Tree_Reduction_Review.md` (Change 1.4.5), `V1_ENGINE_STRENGTH_ROADMAP.md`
@@ -227,7 +227,7 @@ if (newDepth < 0) { newDepth = DEPTH_NONE; }
 
 ---
 
-### Phase 4: Apply to Futility Pruning / RFP
+### Phase 4: Apply to Futility Pruning / RFP ✅ COMPLETE
 
 **Effort:** Low (30 min)  
 **Config Flag:** `USE_FP_IMPROVING` (bool, default true)  
@@ -405,7 +405,7 @@ Phase 3: NMP + Improving  ✅ COMPLETE & VERIFIED
     ├── ✅ NPS stable (no overhead)
     ├── ✅ Selective depth maintained
     │
-Phase 4: FP/RFP + Improving
+Phase 4: FP/RFP + Improving  ✅ COMPLETE (tuned: FP 80cp, RFP 40cp)
     │
     ├── SearchTreeSizeTest + self-play
     │
@@ -465,14 +465,15 @@ Each feature has an independent config flag. If any individual feature causes re
 
 ## Change Log
 
-| Version | Date       | Changes                                                                                                         |
-|---------|------------|-----------------------------------------------------------------------------------------------------------------|
-| 1.0     | 2026-02-20 | Initial plan document                                                                                           |
-| 1.1     | 2026-02-20 | Phase 1 implemented: staticEval stored in PlyInfo, improving flag computed, stats added                         |
-| 1.2     | 2026-02-20 | Phase 1 verified: 59.9% improving ratio confirmed, added searchNodes/qsearchNodes, fixed pvNode double-count    |
-| 1.3     | 2026-02-20 | Phase 2 implemented: LMR+Improving — extra reduction when not improving, config flags, SearchTreeSizeTest entry |
-| 1.4     | 2026-02-20 | Phase 2 verified: −5.2% nodes, −7.1% re-searches, stable NPS                                                    |
-| 1.5     | 2026-02-20 | Phase 3 implemented & verified: NMP+Improving — −2.1% incremental, −7.3% cumulative node reduction               |
+| Version | Date       | Changes                                                                                                                  |
+|---------|------------|--------------------------------------------------------------------------------------------------------------------------|
+| 1.0     | 2026-02-20 | Initial plan document                                                                                                    |
+| 1.1     | 2026-02-20 | Phase 1 implemented: staticEval stored in PlyInfo, improving flag computed, stats added                                  |
+| 1.2     | 2026-02-20 | Phase 1 verified: 59.9% improving ratio confirmed, added searchNodes/qsearchNodes, fixed pvNode double-count             |
+| 1.3     | 2026-02-20 | Phase 2 implemented: LMR+Improving — extra reduction when not improving, config flags, SearchTreeSizeTest entry          |
+| 1.4     | 2026-02-20 | Phase 2 verified: −5.2% nodes, −7.1% re-searches, stable NPS                                                             |
+| 1.5     | 2026-02-20 | Phase 3 implemented & verified: NMP+Improving — −2.1% incremental, −7.3% cumulative node reduction                       |
+| 1.6     | 2026-02-20 | Phase 4 implemented & tuned: FP+Improving (80cp), RFP+Improving (40cp tuned from 60cp). RFP 40cp best: −2.1% at depth 12 |
 
 ---
 

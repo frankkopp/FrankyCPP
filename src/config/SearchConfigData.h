@@ -89,6 +89,9 @@ struct SearchConfigData {
   int RAZOR_MARGIN         = 531;
   bool USE_RFP             = true;
   std::array<int, 4> RFP_MARGIN{0, 200, 400, 800};
+  // RFP + improving: reduce margin when position is not improving
+  bool USE_RFP_IMPROVING   = true; // Use improving flag to modulate RFP margin
+  int RFP_IMPROVING_MARGIN = 40;   // Margin reduction (cp) when not improving
 
   // null move pruning
   bool USE_NMP                  = true;
@@ -108,6 +111,9 @@ struct SearchConfigData {
   bool USE_FP  = true;
   bool USE_QFP = true;
   std::array<int, 7> FP_MARGIN{0, 100, 200, 300, 500, 900, 1200};
+  // FP + improving: reduce margin when position is not improving
+  bool USE_FP_IMPROVING   = true; // Use improving flag to modulate FP margin
+  int FP_IMPROVING_MARGIN = 80;   // Margin reduction (cp) when not improving
 
   // improving flag
   bool USE_IMPROVING = true;// Master switch: track if eval is improving vs 2 plies ago

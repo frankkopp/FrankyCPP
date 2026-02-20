@@ -43,14 +43,14 @@ ConfigRegistry::ConfigRegistry() {
 #ifdef _MSC_VER
 // Windows MSVC builds
 #ifdef _DEBUG
-  static_assert(sizeof(SearchConfigData) == 520,
+  static_assert(sizeof(SearchConfigData) == 536,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 256,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
-  static_assert(sizeof(SearchConfigData) == 488,
+  static_assert(sizeof(SearchConfigData) == 504,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -61,7 +61,7 @@ ConfigRegistry::ConfigRegistry() {
 // Linux GCC/Clang builds (including WSL)
 #ifdef NDEBUG
   // Release build
-  static_assert(sizeof(SearchConfigData) == 488,
+  static_assert(sizeof(SearchConfigData) == 504,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -69,7 +69,7 @@ ConfigRegistry::ConfigRegistry() {
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
   // Debug build
-  static_assert(sizeof(SearchConfigData) == 488,
+  static_assert(sizeof(SearchConfigData) == 504,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -696,6 +696,32 @@ void ConfigRegistry::initializeSearchDefinitions() {
     }
   });
 
+  definitions_.push_back({
+    .name = "USE_RFP_IMPROVING",
+    .uciName = "RFP Improving",
+    .description = "Use improving flag to reduce RFP margin when not improving",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = "true",
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::USE_RFP_IMPROVING),
+    .setter = searchSetter(&SearchConfigData::USE_RFP_IMPROVING, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "RFP_IMPROVING_MARGIN",
+    .uciName = "RFP Improving Margin",
+    .description = "RFP margin reduction in centipawns when position is not improving",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = "40",
+    .minValue = 0,
+    .maxValue = 300,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::RFP_IMPROVING_MARGIN),
+    .setter = searchSetter(&SearchConfigData::RFP_IMPROVING_MARGIN, parseInt)
+  });
+
   //===========================================================================
   // NULL MOVE PRUNING
   //===========================================================================
@@ -886,6 +912,32 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .setter = [](SearchConfigData& s, EvalConfigData&, const std::string& v) {
       parseArray(v, s.FP_MARGIN);
     }
+  });
+
+  definitions_.push_back({
+    .name = "USE_FP_IMPROVING",
+    .uciName = "Futility Pruning Improving",
+    .description = "Use improving flag to reduce FP margin when not improving",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = "true",
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::USE_FP_IMPROVING),
+    .setter = searchSetter(&SearchConfigData::USE_FP_IMPROVING, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "FP_IMPROVING_MARGIN",
+    .uciName = "Futility Pruning Improving Margin",
+    .description = "FP margin reduction in centipawns when position is not improving",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = "80",
+    .minValue = 0,
+    .maxValue = 300,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::FP_IMPROVING_MARGIN),
+    .setter = searchSetter(&SearchConfigData::FP_IMPROVING_MARGIN, parseInt)
   });
 
   //===========================================================================

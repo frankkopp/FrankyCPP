@@ -72,24 +72,26 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   s.USE_IID             = false;
 
   // Pruning techniques
-  s.USE_MDP        = false;
-  s.USE_RAZORING   = false;
-  s.USE_RFP        = false;
-  s.USE_NMP        = false;
-  s.USE_NMP_VERIFY = false;
+  s.USE_MDP           = false;
+  s.USE_RAZORING      = false;
+  s.USE_RFP           = false;
+  s.USE_RFP_IMPROVING = false;
+  s.USE_NMP           = false;
+  s.USE_NMP_VERIFY    = false;
   s.USE_NMP_IMPROVING = false;
 
   // Futility pruning
-  s.USE_FP  = false;
-  s.USE_QFP = false;
+  s.USE_FP           = false;
+  s.USE_QFP          = false;
+  s.USE_FP_IMPROVING = false;
 
   // Late move reductions
-  s.USE_LMR            = false;
-  s.LMR_MIN_DEPTH      = 1;
-  s.LMR_MIN_MOVES      = 3;
+  s.USE_LMR             = false;
+  s.LMR_MIN_DEPTH       = 1;
+  s.LMR_MIN_MOVES       = 3;
   s.LMR_USE_LOG_FORMULA = false;
-  s.LMR_LOG_BASE_DIV   = 2.00;
-  s.USE_LMR_IMPROVING  = false;
+  s.LMR_LOG_BASE_DIV    = 2.00;
+  s.USE_LMR_IMPROVING   = false;
 
   // Late move pruning
   s.USE_LMP = false;
@@ -322,11 +324,27 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
 
   // Enable improving-based LMR: extra reduction when position is not improving
   CONFIG_OVERRIDE(s.USE_LMR_IMPROVING = true;);
+  CONFIG_OVERRIDE(s.LMR_IMPROVING_REDUCTION = 1;);// Test with 1 ply extra reduction
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "92 LMR+Impr"));
 
   // Enable improving-based NMP: extra reduction when position is not improving
   CONFIG_OVERRIDE(s.USE_NMP_IMPROVING = true;);
+  CONFIG_OVERRIDE(s.NMP_IMPROVING_REDUCTION = 1;);// Test with 1 ply extra reduction
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "93 NMP+Impr"));
+
+  // Enable improving-based FP: reduce margin when position is not improving
+  CONFIG_OVERRIDE(s.USE_FP_IMPROVING = true;);
+  CONFIG_OVERRIDE(s.FP_IMPROVING_MARGIN = 80;);// Test with 80 cp margin reduction
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "94 FP+Impr"));
+
+  // Enable improving-based RFP: reduce margin when position is not improving
+  CONFIG_OVERRIDE(s.USE_RFP_IMPROVING = true;);
+  CONFIG_OVERRIDE(s.RFP_IMPROVING_MARGIN = 30;);// Test with 80 cp margin reduction
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "95 RFP+Impr 30"));
+  CONFIG_OVERRIDE(s.RFP_IMPROVING_MARGIN = 40;);// Test with 80 cp margin reduction
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "95 RFP+Impr 40"));
+  CONFIG_OVERRIDE(s.RFP_IMPROVING_MARGIN = 50;);// Test with 80 cp margin reduction
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "95 RFP+Impr 50"));
 
   return result;
 }
