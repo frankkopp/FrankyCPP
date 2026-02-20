@@ -1118,6 +1118,10 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // http://people.csail.mit.edu/heinz/ps/adpt_null.ps.gz
       auto r = Depth{SearchConfig.NMP_REDUCTION};
       if (depth > 8 || (depth > 6 && p.getGamePhase() >= 3)) { ++r; }
+      // Increase NMP reduction when position is not improving
+      if (SearchConfig.USE_NMP_IMPROVING && !improving) {
+        r += static_cast<Depth>(SearchConfig.NMP_IMPROVING_REDUCTION);
+      }
       Depth newDepth = depth - r - 1;
       // double check that depth does not get negative
       if (newDepth < 0) { newDepth = DEPTH_NONE; }

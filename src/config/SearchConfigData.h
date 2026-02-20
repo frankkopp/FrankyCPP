@@ -100,6 +100,9 @@ struct SearchConfigData {
   int NMP_NEAR_MATE_MARGIN      = 64;
   bool USE_NMP_ZUG_GUARD        = true;
   int NMP_ZUG_NONPAWN_THRESHOLD = 0;
+  // NMP + improving: extra reduction when position is not improving
+  bool USE_NMP_IMPROVING        = true; // Use improving flag to modulate NMP reduction
+  int NMP_IMPROVING_REDUCTION   = 1;    // Extra NMP reduction depth when not improving
 
   // futility pruning
   bool USE_FP  = true;

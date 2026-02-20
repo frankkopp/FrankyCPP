@@ -115,6 +115,10 @@ NMP_NEAR_MATE_MARGIN: 64
 USE_NMP_ZUG_GUARD: true
 # Minimum number of non-pawn pieces required to attempt NMP (0 disables guard)
 NMP_ZUG_NONPAWN_THRESHOLD: 0
+# NMP + improving: extra reduction when position is not improving
+USE_NMP_IMPROVING: true
+# Extra NMP reduction depth when not improving (0-3)
+NMP_IMPROVING_REDUCTION: 1
 
 # Futility Pruning (normal and quiescence)
 # Enable futility pruning in main search

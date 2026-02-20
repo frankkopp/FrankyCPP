@@ -77,6 +77,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   s.USE_RFP        = false;
   s.USE_NMP        = false;
   s.USE_NMP_VERIFY = false;
+  s.USE_NMP_IMPROVING = false;
 
   // Futility pruning
   s.USE_FP  = false;
@@ -322,6 +323,10 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   // Enable improving-based LMR: extra reduction when position is not improving
   CONFIG_OVERRIDE(s.USE_LMR_IMPROVING = true;);
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "92 LMR+Impr"));
+
+  // Enable improving-based NMP: extra reduction when position is not improving
+  CONFIG_OVERRIDE(s.USE_NMP_IMPROVING = true;);
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "93 NMP+Impr"));
 
   return result;
 }

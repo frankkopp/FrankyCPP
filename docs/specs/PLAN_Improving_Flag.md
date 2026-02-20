@@ -1,9 +1,9 @@
 # FrankyCPP "Improving" Flag Implementation Plan
 
-**Document Version:** 1.4  
+**Document Version:** 1.5  
 **Created:** 2026-02-20  
 **Last Updated:** 2026-02-20  
-**Status:** 🟡 IN PROGRESS (Phase 2 Complete & Verified)  
+**Status:** 🟡 IN PROGRESS (Phase 3 Complete & Verified)  
 **Target:** FrankyCPP v1.4+  
 **Priority:** High (Identified as ⭐⭐ HIGH IMPACT in Search Tree Reduction Review)  
 **Related:** `PLAN_Search_Tree_Reduction_Review.md` (Change 1.4.5), `V1_ENGINE_STRENGTH_ROADMAP.md`
@@ -194,11 +194,16 @@ result.tests.push_back(measureTreeSize(..., "66 LMR+Improving"));
 
 ---
 
-### Phase 3: Apply to Null Move Pruning
+### Phase 3: Apply to Null Move Pruning ✅ COMPLETE & VERIFIED
 
 **Effort:** Low (30 min)  
 **Config Flag:** `USE_NMP_IMPROVING` (bool, default true)  
 **Config Parameter:** `NMP_IMPROVING_REDUCTION` (int, default 1)
+
+**Verified Results** (SearchTreeSizeTest, depth 10, 30 positions avg):
+- Node reduction: 195,855 → 191,655 (−2.1% incremental, −7.3% cumulative vs baseline)
+- NPS stable (~2.1M, no overhead)
+- Selective depth maintained (10/19)
 
 #### Implementation
 
@@ -394,9 +399,11 @@ Phase 2: LMR + Improving  ✅ COMPLETE & VERIFIED
     ├── If POSITIVE: continue to Phase 3
     ├── If NEGATIVE: tune LMR_IMPROVING_REDUCTION, investigate
     │
-Phase 3: NMP + Improving
+Phase 3: NMP + Improving  ✅ COMPLETE & VERIFIED
     │
-    ├── SearchTreeSizeTest + self-play
+    ├── ✅ SearchTreeSizeTest: −2.1% incremental (195,855 → 191,655), −7.3% cumulative
+    ├── ✅ NPS stable (no overhead)
+    ├── ✅ Selective depth maintained
     │
 Phase 4: FP/RFP + Improving
     │
@@ -465,6 +472,7 @@ Each feature has an independent config flag. If any individual feature causes re
 | 1.2     | 2026-02-20 | Phase 1 verified: 59.9% improving ratio confirmed, added searchNodes/qsearchNodes, fixed pvNode double-count    |
 | 1.3     | 2026-02-20 | Phase 2 implemented: LMR+Improving — extra reduction when not improving, config flags, SearchTreeSizeTest entry |
 | 1.4     | 2026-02-20 | Phase 2 verified: −5.2% nodes, −7.1% re-searches, stable NPS                                                    |
+| 1.5     | 2026-02-20 | Phase 3 implemented & verified: NMP+Improving — −2.1% incremental, −7.3% cumulative node reduction               |
 
 ---
 

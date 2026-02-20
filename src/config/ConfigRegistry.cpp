@@ -43,14 +43,14 @@ ConfigRegistry::ConfigRegistry() {
 #ifdef _MSC_VER
 // Windows MSVC builds
 #ifdef _DEBUG
-  static_assert(sizeof(SearchConfigData) == 512,
+  static_assert(sizeof(SearchConfigData) == 520,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 256,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
-  static_assert(sizeof(SearchConfigData) == 480,
+  static_assert(sizeof(SearchConfigData) == 488,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -61,7 +61,7 @@ ConfigRegistry::ConfigRegistry() {
 // Linux GCC/Clang builds (including WSL)
 #ifdef NDEBUG
   // Release build
-  static_assert(sizeof(SearchConfigData) == 480,
+  static_assert(sizeof(SearchConfigData) == 488,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -69,7 +69,7 @@ ConfigRegistry::ConfigRegistry() {
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
   // Debug build
-  static_assert(sizeof(SearchConfigData) == 480,
+  static_assert(sizeof(SearchConfigData) == 488,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -817,6 +817,32 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .exposure = {.uci = true, .yaml = true, .display = true},
     .getter = searchGetter(&SearchConfigData::NMP_ZUG_NONPAWN_THRESHOLD),
     .setter = searchSetter(&SearchConfigData::NMP_ZUG_NONPAWN_THRESHOLD, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "USE_NMP_IMPROVING",
+    .uciName = "Null Move Improving",
+    .description = "Use improving flag to increase NMP reduction when not improving",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = "true",
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::USE_NMP_IMPROVING),
+    .setter = searchSetter(&SearchConfigData::USE_NMP_IMPROVING, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "NMP_IMPROVING_REDUCTION",
+    .uciName = "Null Move Improving Reduction",
+    .description = "Extra NMP reduction depth when position is not improving",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = "1",
+    .minValue = 0,
+    .maxValue = 3,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::NMP_IMPROVING_REDUCTION),
+    .setter = searchSetter(&SearchConfigData::NMP_IMPROVING_REDUCTION, parseInt)
   });
 
   //===========================================================================
