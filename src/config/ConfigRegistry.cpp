@@ -43,14 +43,14 @@ ConfigRegistry::ConfigRegistry() {
 #ifdef _MSC_VER
 // Windows MSVC builds
 #ifdef _DEBUG
-  static_assert(sizeof(SearchConfigData) == 504,
+  static_assert(sizeof(SearchConfigData) == 512,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 256,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
-  static_assert(sizeof(SearchConfigData) == 472,
+  static_assert(sizeof(SearchConfigData) == 480,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -61,7 +61,7 @@ ConfigRegistry::ConfigRegistry() {
 // Linux GCC/Clang builds (including WSL)
 #ifdef NDEBUG
   // Release build
-  static_assert(sizeof(SearchConfigData) == 472,
+  static_assert(sizeof(SearchConfigData) == 480,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -69,7 +69,7 @@ ConfigRegistry::ConfigRegistry() {
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
   // Debug build
-  static_assert(sizeof(SearchConfigData) == 472,
+  static_assert(sizeof(SearchConfigData) == 480,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -948,6 +948,32 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .setter = [](SearchConfigData& s, EvalConfigData&, const std::string& v) {
       s.LMR_LOG_BASE_DIV = parseDouble(v);
     }
+  });
+
+  definitions_.push_back({
+    .name = "USE_LMR_IMPROVING",
+    .uciName = "Use LMR Improving",
+    .description = "Use improving flag to modulate LMR (extra reduction when not improving)",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = "true",
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::USE_LMR_IMPROVING),
+    .setter = searchSetter(&SearchConfigData::USE_LMR_IMPROVING, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "LMR_IMPROVING_REDUCTION",
+    .uciName = "LMR Improving Reduction",
+    .description = "Extra LMR reduction depth when position is not improving",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = "1",
+    .minValue = 0,
+    .maxValue = 4,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::LMR_IMPROVING_REDUCTION),
+    .setter = searchSetter(&SearchConfigData::LMR_IMPROVING_REDUCTION, parseInt)
   });
 
   definitions_.push_back({

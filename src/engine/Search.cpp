@@ -1394,6 +1394,10 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         const int d = std::min(depth, Depth{31});
         const int m = std::min(movesSearched, 63);
         lmrDepth -= static_cast<Depth>(LMR_REDUCTION[d][m]);
+        // Reduce more when position is NOT improving (eval not better than 2 plies ago)
+        if (SearchConfig.USE_LMR_IMPROVING && !improving) {
+          lmrDepth -= static_cast<Depth>(SearchConfig.LMR_IMPROVING_REDUCTION);
+        }
         lmrDepth = std::max(lmrDepth, DEPTH_NONE);// make sure not to become negative
         statistics.lmrReductions++;
       }

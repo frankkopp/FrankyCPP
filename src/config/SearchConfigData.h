@@ -116,6 +116,9 @@ struct SearchConfigData {
   // LMR formula selection (logarithmic vs linear)
   bool LMR_USE_LOG_FORMULA  = true; // Use logarithmic formula instead of linear
   double LMR_LOG_BASE_DIV   = 1.50; // Divisor for log formula: log(d)*log(m)/divisor
+  // LMR + improving: extra reduction when position is not improving
+  bool USE_LMR_IMPROVING      = true; // Use improving flag to modulate LMR
+  int LMR_IMPROVING_REDUCTION = 1;    // Extra reduction depth when not improving
 
   // LMP
   bool USE_LMP      = true;

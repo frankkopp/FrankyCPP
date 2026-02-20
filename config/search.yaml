@@ -140,6 +140,10 @@ LMR_USE_LOG_FORMULA: true
 # Divisor for logarithmic formula (lower = more aggressive reductions)
 LMR_LOG_BASE_DIV: 1.50
 # LMR_REDUCTION: large table defined in code for efficiency
+# Use improving flag to add extra LMR reduction when position is not improving
+USE_LMR_IMPROVING: true
+# Extra reduction depth when not improving (0 = disabled)
+LMR_IMPROVING_REDUCTION: 1
 
 # Late Move Pruning (LMP): prune moves after a threshold per depth bucket
 USE_LMP: true

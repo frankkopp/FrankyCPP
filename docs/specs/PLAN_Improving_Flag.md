@@ -1,9 +1,9 @@
 # FrankyCPP "Improving" Flag Implementation Plan
 
-**Document Version:** 1.2  
+**Document Version:** 1.4  
 **Created:** 2026-02-20  
 **Last Updated:** 2026-02-20  
-**Status:** 🟡 IN PROGRESS (Phase 1 Complete & Verified)  
+**Status:** 🟡 IN PROGRESS (Phase 2 Complete & Verified)  
 **Target:** FrankyCPP v1.4+  
 **Priority:** High (Identified as ⭐⭐ HIGH IMPACT in Search Tree Reduction Review)  
 **Related:** `PLAN_Search_Tree_Reduction_Review.md` (Change 1.4.5), `V1_ENGINE_STRENGTH_ROADMAP.md`
@@ -146,7 +146,7 @@ Expected ratio: ~40–60% improving in typical middlegame positions.
 
 ---
 
-### Phase 2: Apply to LMR (Primary Target)
+### Phase 2: Apply to LMR (Primary Target) ✅ COMPLETE & VERIFIED
 
 **Effort:** Low (30 min)  
 **Config Flag:** `USE_LMR_IMPROVING` (bool, default true)  
@@ -383,11 +383,13 @@ Phase 1: Foundation (staticEval storage + improving computation) ✅ COMPLETE & 
     ├── ✅ searchNodes/qsearchNodes split: 32.6% / 67.4%
     ├── ✅ pvNodes + nonPvNodes == searchNodes + qsearchNodes (invariant holds)
     │
-Phase 2: LMR + Improving  ← PRIMARY TARGET, highest impact
+Phase 2: LMR + Improving  ✅ COMPLETE & VERIFIED
     │
-    ├── SearchTreeSizeTest: expect node reduction
-    ├── Test suites: WAC/STS neutral or better
-    ├── Self-play: 200+ games → measure ELO
+    ├── ✅ SearchTreeSizeTest: −5.2% node reduction (206,678 → 195,855)
+    ├── ✅ LMR re-searches: −7.1% (extra reductions mostly correct)
+    ├── ✅ NPS stable (no overhead)
+    ├── Test suites: WAC/STS neutral or better (pending)
+    ├── Self-play: 200+ games → measure ELO (pending)
     │
     ├── If POSITIVE: continue to Phase 3
     ├── If NEGATIVE: tune LMR_IMPROVING_REDUCTION, investigate
@@ -456,11 +458,13 @@ Each feature has an independent config flag. If any individual feature causes re
 
 ## Change Log
 
-| Version | Date       | Changes                                                                                                      |
-|---------|------------|--------------------------------------------------------------------------------------------------------------|
-| 1.0     | 2026-02-20 | Initial plan document                                                                                        |
-| 1.1     | 2026-02-20 | Phase 1 implemented: staticEval stored in PlyInfo, improving flag computed, stats added                      |
-| 1.2     | 2026-02-20 | Phase 1 verified: 59.9% improving ratio confirmed, added searchNodes/qsearchNodes, fixed pvNode double-count |
+| Version | Date       | Changes                                                                                                         |
+|---------|------------|-----------------------------------------------------------------------------------------------------------------|
+| 1.0     | 2026-02-20 | Initial plan document                                                                                           |
+| 1.1     | 2026-02-20 | Phase 1 implemented: staticEval stored in PlyInfo, improving flag computed, stats added                         |
+| 1.2     | 2026-02-20 | Phase 1 verified: 59.9% improving ratio confirmed, added searchNodes/qsearchNodes, fixed pvNode double-count    |
+| 1.3     | 2026-02-20 | Phase 2 implemented: LMR+Improving — extra reduction when not improving, config flags, SearchTreeSizeTest entry |
+| 1.4     | 2026-02-20 | Phase 2 verified: −5.2% nodes, −7.1% re-searches, stable NPS                                                    |
 
 ---
 

@@ -88,6 +88,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   s.LMR_MIN_MOVES      = 3;
   s.LMR_USE_LOG_FORMULA = false;
   s.LMR_LOG_BASE_DIV   = 2.00;
+  s.USE_LMR_IMPROVING  = false;
 
   // Late move pruning
   s.USE_LMP = false;
@@ -225,8 +226,6 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   // LMR Parameter Tuning Tests
   // ***********************************
 
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 warmup"));
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "01 pre"));
 
   // Enable LMR for parameter tuning tests
   CONFIG_OVERRIDE(s.USE_LMR = true;);
@@ -254,7 +253,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
 
   CONFIG_OVERRIDE(s.LMR_MIN_DEPTH = 2;);
   CONFIG_OVERRIDE(s.LMR_MIN_MOVES = 2;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR d2m2"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "90 LMR d2m2"));
 
   // CONFIG_OVERRIDE(s.LMR_MIN_DEPTH = 2;);
   // CONFIG_OVERRIDE(s.LMR_MIN_MOVES = 3;);
@@ -305,13 +304,24 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
 
   // Test different divisor values for logarithmic formula
   CONFIG_OVERRIDE(s.LMR_LOG_BASE_DIV = 1.50;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR log/1.5"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "91 LMR log/1.5"));
 
   // CONFIG_OVERRIDE(s.LMR_LOG_BASE_DIV = 1.25;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR log/1.25"));
   //
   // CONFIG_OVERRIDE(s.LMR_LOG_BASE_DIV = 1.00;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR log/1.0"));
+
+  // ***********************************
+  // LMR + Improving Flag Tests
+  // ***********************************
+
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 warmup"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "01 pre"));
+
+  // Enable improving-based LMR: extra reduction when position is not improving
+  CONFIG_OVERRIDE(s.USE_LMR_IMPROVING = true;);
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "92 LMR+Impr"));
 
   return result;
 }
