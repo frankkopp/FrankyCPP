@@ -1,27 +1,45 @@
 # FrankyCPP Search Tree Reduction Review Plan
 
-**Document Version:** 1.1  
+**Document Version:** 1.2  
 **Created:** 2026-02-18  
 **Last Updated:** 2026-02-20  
-**Status:** 🟡 IN PROGRESS (Phase 1 Partially Complete)  
+**Status:** 🟡 IN PROGRESS (Phase 1 Improving Complete, Phases 2–5 Not Started)  
 **Target:** FrankyCPP v1.4+  
 **Priority:** High (Performance / Strength Improvement)
 
 ---
 
-## Progress Summary (v1.3 Release)
+## Progress Summary (v1.4)
 
 ### Completed Changes
 
-| Change       | Description                | ELO vs v1.1 | Status           |
-|--------------|----------------------------|-------------|------------------|
-| **Baseline** | TB + extensions (v1.2)     | +30         | ✅ Starting point |
-| **1.4.4**    | Logarithmic LMR formula    | +64         | ✅ Complete       |
-| **1.4.4b**   | LMR divisor tuning (1.5)   | +82         | ✅ Complete       |
-| **Bug Fix**  | isPvNode propagation fixes | +109        | ✅ Complete       |
-| **Bug Fix**  | History heuristic fixes    | TBD         | ✅ Complete       |
+| Change       | Description                   | ELO vs v1.1 | Status           |
+|--------------|-------------------------------|-------------|------------------|
+| **Baseline** | TB + extensions (v1.2)        | +30         | ✅ Starting point |
+| **1.4.4**    | Logarithmic LMR formula       | +64         | ✅ Complete       |
+| **1.4.4b**   | LMR divisor tuning (1.5)      | +82         | ✅ Complete       |
+| **Bug Fix**  | isPvNode propagation fixes    | +109        | ✅ Complete       |
+| **Bug Fix**  | History heuristic fixes       | TBD         | ✅ Complete       |
+| **1.4.5**    | Improving flag (all 5 phases) | +68 vs v1.3 | ✅ Complete       |
 
-**Total: +109 ELO** (v1.3 vs v1.1 baseline)
+**Total: +177 ELO** (v1.4 vs v1.1 baseline: +109 from v1.3 + +68 from improving flag)
+
+### Improving Flag Implementation (v1.4)
+
+All 5 improving-flag phases from `PLAN_Improving_Flag.md` are complete:
+
+| Phase | Feature        | Config Flag            | SearchTreeSizeTest Impact | Status |
+|-------|----------------|------------------------|---------------------------|--------|
+| 1     | Infrastructure | `USE_IMPROVING`        | n/a (master switch)       | ✅      |
+| 2     | LMR+Improving  | `USE_LMR_IMPROVING`    | −12.4% nodes (cumulative) | ✅      |
+| 3     | NMP+Improving  | `USE_NMP_IMPROVING`    | −5.9% nodes (cumulative)  | ✅      |
+| 4a    | FP+Improving   | `USE_FP_IMPROVING`     | −29.4% nodes (cumulative) | ✅      |
+| 4b    | RFP+Improving  | `USE_RFP_IMPROVING`    | −30.8% nodes (cumulative) | ✅      |
+| 5     | LMP+Improving  | `USE_LMP_IMPROVING`    | −40.0% nodes (cumulative) | ✅      |
+
+**Combined result:** −40% cumulative node reduction at depth 12, zero NPS overhead.  
+**Match result:** +68 ELO vs v1.3 (208 games, 59.6% score, W80/D88/L40).  
+**Test suites:** +59 positions (+2.1%) across 2873 positions, 6 suites improved, 1 regressed.
 
 ### Bugs Discovered & Fixed
 
@@ -66,7 +84,7 @@ Stockfish reaches **2x the depth** while using **3.5x fewer nodes**. This massiv
 
 ## Phase 1: Late Move Reductions (LMR)
 
-**Status:** 🟡 Partially Complete  
+**Status:** 🟡 Partially Complete (improving done, history/PV/cutnode TODO)  
 **Priority:** Highest - LMR has the largest impact on tree size
 
 ### 1.1 Current Implementation Analysis
@@ -125,22 +143,23 @@ This grows **logarithmically** rather than linearly, providing:
 
 ### 1.3 Configuration Review
 
-**Current LMR Config Options (v1.3):**
+**Current LMR Config Options (v1.4):**
 
-| Parameter             | Current Default | Description               | Tunable? |
-|-----------------------|-----------------|---------------------------|----------|
-| `USE_LMR`             | true            | Enable LMR                | Yes      |
-| `LMR_MIN_DEPTH`       | 2               | Minimum depth for LMR     | Yes      |
-| `LMR_MIN_MOVES`       | 2               | Moves before LMR kicks in | Yes      |
-| `LMR_USE_LOG_FORMULA` | true            | Use logarithmic vs linear | Yes ✅    |
-| `LMR_LOG_BASE_DIV`    | 1.5             | Divisor for log formula   | Yes ✅    |
+| Parameter                 | Current Default | Description                        | Tunable? |
+|---------------------------|-----------------|------------------------------------|----------|
+| `USE_LMR`                 | true            | Enable LMR                         | Yes      |
+| `LMR_MIN_DEPTH`           | 2               | Minimum depth for LMR              | Yes      |
+| `LMR_MIN_MOVES`           | 2               | Moves before LMR kicks in          | Yes      |
+| `LMR_USE_LOG_FORMULA`     | true            | Use logarithmic vs linear          | Yes ✅    |
+| `LMR_LOG_BASE_DIV`        | 1.5             | Divisor for log formula            | Yes ✅    |
+| `USE_LMR_IMPROVING`       | true            | Extra reduction when not improving | Yes ✅    |
+| `LMR_IMPROVING_REDUCTION` | 1               | Extra depth reduction              | Yes ✅    |
 
-**✅ Completed:** LMR formula is now configurable via `LMR_USE_LOG_FORMULA` and `LMR_LOG_BASE_DIV`
+**✅ Completed:** LMR formula configurable + improving flag modulation
 
 **Remaining Config Options to Consider:**
-- `LMR_IMPROVING_BONUS` - Less reduction when improving
-- `LMR_HISTORY_DIVISOR` - History-based adjustment divisor
-- `LMR_CUTNODE_EXTRA` - Extra reduction on cut nodes
+- `USE_LMR_HISTORY` - History-based adjustment
+- `USE_LMR_CUTNODE` - Extra reduction on cut nodes
 
 ### 1.4 Action Items
 
@@ -169,20 +188,11 @@ lmrReduction[d][m] = std::lround(std::log(d) * std::log(m) / divisor);
 - Tuned `LMR_LOG_BASE_DIV` from 2.2 → 1.5
 - **Result:** Additional +18 ELO improvement
 
-**Change 1.4.5: Add "Improving" Flag** ⭐⭐ HIGH IMPACT - TODO
-- **Config Flag:** `USE_LMR_IMPROVING` (bool, default false initially)
-```cpp
-// staticEval is already tracked in PlyInfo! Just need to use it:
-// Track if static eval improved vs 2 plies ago
-bool improving = (ply >= 2 && plyInfo[ply].staticEval > plyInfo[ply-2].staticEval);
-
-// Apply more reduction when NOT improving
-if (!improving) reduction += 1;
-```
-- **Effort:** LOW (PlyInfo already has staticEval!)
-- **Impact:** High - Stockfish considers this essential
-- **Risk:** Low
-- **SearchTreeSizeTest:** Add after "65 LMR" entry
+**Change 1.4.5: Add "Improving" Flag** ✅ COMPLETE (−40% cumulative nodes)
+- **Config Flags:** `USE_IMPROVING` (master), `USE_LMR_IMPROVING`, `USE_NMP_IMPROVING`, `USE_FP_IMPROVING`, `USE_RFP_IMPROVING`, `USE_LMP_IMPROVING`
+- Applied improving flag across all 5 pruning/reduction techniques
+- See `PLAN_Improving_Flag.md` for full details and per-phase results
+- **Result:** −40% cumulative node reduction at depth 12, +68 ELO vs v1.3, +59 test suite positions (+2.1%)
 
 **Change 1.4.6: History-Based LMR Adjustment** ⭐⭐ HIGH IMPACT
 - **Config Flag:** `USE_LMR_HISTORY` (bool, default false initially)
@@ -320,15 +330,15 @@ int16_t contHistory[PIECE_NB][SQUARE_NB][PIECE_NB][SQUARE_NB];
 
 **Existing Pruning in FrankyCPP:**
 
-| Technique                      | Implemented | Location             | Configurable |
-|--------------------------------|-------------|----------------------|--------------|
-| Razoring                       | ✅ Yes       | Search.cpp:1006-1014 | Yes          |
-| Reverse Futility Pruning (RFP) | ✅ Yes       | Search.cpp:1017-1031 | Yes          |
-| Null Move Pruning (NMP)        | ✅ Yes       | Search.cpp:1043-1119 | Yes          |
-| Futility Pruning               | ✅ Yes       | Search.cpp:1296-1306 | Yes          |
-| Late Move Pruning (LMP)        | ✅ Yes       | Search.cpp:1308-1313 | Yes          |
-| SEE Pruning                    | ✅ Partial   | Via bad captures     | Partial      |
-| Delta Pruning (QS)             | ✅ Yes       | Quiescence           | Yes          |
+| Technique                      | Implemented | Improving Modulation  | Configurable |
+|--------------------------------|-------------|-----------------------|--------------|
+| Razoring                       | ✅ Yes       | —                     | Yes          |
+| Reverse Futility Pruning (RFP) | ✅ Yes       | ✅ `USE_RFP_IMPROVING` | Yes          |
+| Null Move Pruning (NMP)        | ✅ Yes       | ✅ `USE_NMP_IMPROVING` | Yes          |
+| Futility Pruning               | ✅ Yes       | ✅ `USE_FP_IMPROVING`  | Yes          |
+| Late Move Pruning (LMP)        | ✅ Yes       | ✅ `USE_LMP_IMPROVING` | Yes          |
+| SEE Pruning                    | ✅ Partial   | —                     | Partial      |
+| Delta Pruning (QS)             | ✅ Yes       | —                     | Yes          |
 
 ### 3.2 Stockfish Comparison
 
@@ -465,13 +475,13 @@ if (!ttMove && depth >= IIR_DEPTH) {
 ```
 
 ### Quick Wins (Config-only, Test First)
-1. LMR factor tuning
-2. LMR min moves/depth tuning
+1. ✅ LMR factor tuning
+2. ✅ LMR min moves/depth tuning
 3. Pruning margin tuning
 
 ### Phase 1 Code Changes (Highest Impact)
-1. ⭐⭐⭐ Add "improving" flag tracking
-2. ⭐⭐⭐ Switch to logarithmic LMR formula
+1. ✅ ⭐⭐⭐ Add "improving" flag tracking (−40% nodes cumulative)
+2. ✅ ⭐⭐⭐ Switch to logarithmic LMR formula (+34 ELO)
 3. ⭐⭐ History-based LMR adjustments
 4. ⭐⭐ PV node LMR reduction
 
@@ -548,14 +558,18 @@ Only after Stage 1 & 2 pass:
 
 **⚠️ CRITICAL:** Every search tree reduction change MUST be gated by a config flag.
 
-| New Feature     | Required Config Flag  | SearchTreeSizeTest Entry |
-|-----------------|-----------------------|--------------------------|
-| LMR Improving   | `USE_LMR_IMPROVING`   | After "65 LMR"           |
-| LMR Log Formula | `LMR_USE_LOG_FORMULA` | Compare with linear      |
-| LMR History     | `USE_LMR_HISTORY`     | After LMR base           |
-| LMR Cut Node    | `USE_LMR_CUTNODE`     | After LMR base           |
-| Capture History | `USE_CAPTURE_HISTORY` | After History            |
-| SEE Pruning     | `USE_SEE_PRUNING`     | After SEE                |
+| New Feature     | Required Config Flag  | SearchTreeSizeTest Entry | Status |
+|-----------------|-----------------------|--------------------------|--------|
+| LMR Improving   | `USE_LMR_IMPROVING`   | After "65 LMR"           | ✅      |
+| LMR Log Formula | `LMR_USE_LOG_FORMULA` | Compare with linear      | ✅      |
+| NMP Improving   | `USE_NMP_IMPROVING`   | After NMP                | ✅      |
+| FP Improving    | `USE_FP_IMPROVING`    | After FP                 | ✅      |
+| RFP Improving   | `USE_RFP_IMPROVING`   | After RFP                | ✅      |
+| LMP Improving   | `USE_LMP_IMPROVING`   | After LMP                | ✅      |
+| LMR History     | `USE_LMR_HISTORY`     | After LMR base           | 🔴     |
+| LMR Cut Node    | `USE_LMR_CUTNODE`     | After LMR base           | 🔴     |
+| Capture History | `USE_CAPTURE_HISTORY` | After History            | 🔴     |
+| SEE Pruning     | `USE_SEE_PRUNING`     | After SEE                | 🔴     |
 
 This ensures:
 1. Easy A/B testing
@@ -596,23 +610,24 @@ Before/After comparison for each change:
 
 ## Appendix A: Current LMR Config Options
 
-From `SearchConfigData.h`:
+From `SearchConfigData.h` (v1.4):
 
 ```cpp
-// LMR/LMP
+// LMR
 bool USE_LMR      = true;
-int LMR_MIN_DEPTH = 3;
-int LMR_MIN_MOVES = 3;
-```
+int LMR_MIN_DEPTH = 2;
+int LMR_MIN_MOVES = 2;
+// LMR formula selection (logarithmic vs linear)
+bool LMR_USE_LOG_FORMULA  = true;  // Use logarithmic formula instead of linear
+double LMR_LOG_BASE_DIV   = 1.50;  // Divisor for log formula: log(d)*log(m)/divisor
+// LMR + improving: extra reduction when position is not improving
+bool USE_LMR_IMPROVING      = true; // Use improving flag to modulate LMR
+int LMR_IMPROVING_REDUCTION = 1;    // Extra reduction depth when not improving
 
-From `Search.h` (hardcoded):
-
-```cpp
-// LMR reduction table - HARDCODED formula
-static constexpr int lmr_reduction(const int depth, const int movesSearched) {
-  // 1 + round(depth * movesSearched * 0.0035)
-  return 1 + (depth * movesSearched * 35 + 5000) / 10000;
-}
+// LMP
+bool USE_LMP      = true;
+std::array<int, 16> LMP_MOVES{0, 7, 9, 11, 13, 15, 17, 19, 22, 24, 27, 29, 32, 35, 38, 41};
+bool USE_LMP_IMPROVING = true; // Use improving flag to modulate LMP threshold
 ```
 
 ## Appendix B: Stockfish LMR Reference
@@ -640,6 +655,7 @@ int reduction(int d, int m, bool improving, int history) {
 |---------|------------|---------------------------------------------------------------------------------------------------------------------|
 | 1.0     | 2026-02-18 | Initial plan document created                                                                                       |
 | 1.1     | 2026-02-20 | Updated with v1.3 progress: LMR log formula, divisor tuning, isPvNode fixes, history fixes. Total +109 ELO vs v1.1. |
+| 1.2     | 2026-02-20 | Improving flag all 5 phases complete. Match: +68 ELO vs v1.3, +59 test positions (+2.1%). −40% nodes.               |
 
 ---
 

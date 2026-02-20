@@ -1120,7 +1120,7 @@ benchmarks:
     engineVersion: "v1.4"
     depth: 12
     hashSizeMB: 128
-#    notes: "isPvNode fixes in place (incr. depth to 12)"
+    notes: "Improvement Flag"
 
   - name: "v1.4 External"
     enginePath: "Release/FrankyCPP_v1.4/FrankyCPP_v1.4.exe"
@@ -1128,7 +1128,7 @@ benchmarks:
     engineVersion: "v1.4"
     depth: 12
     hashSizeMB: 128
-#    notes: "isPvNode fixes in place (incr. depth to 12)"
+    notes: "Improvement Flag"
 
 #  - name: "v1.1 External"
 #    enginePath: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"

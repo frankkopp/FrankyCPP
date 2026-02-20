@@ -340,12 +340,8 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
 
   // Enable improving-based RFP: reduce margin when position is not improving
   CONFIG_OVERRIDE(s.USE_RFP_IMPROVING = true;);
-  CONFIG_OVERRIDE(s.RFP_IMPROVING_MARGIN = 30;);// Test with 80 cp margin reduction
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "95 RFP+Impr 30"));
   CONFIG_OVERRIDE(s.RFP_IMPROVING_MARGIN = 40;);// Test with 80 cp margin reduction
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "95 RFP+Impr 40"));
-  CONFIG_OVERRIDE(s.RFP_IMPROVING_MARGIN = 50;);// Test with 80 cp margin reduction
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "95 RFP+Impr 50"));
 
   // Enable improving-based LMP: allow more moves when position is improving
   CONFIG_OVERRIDE(s.USE_LMP_IMPROVING = true;);

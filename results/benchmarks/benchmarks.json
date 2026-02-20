@@ -554,6 +554,36 @@
       "totalTimeMs": 29039,
       "nps": 3010393,
       "notes": "isPvNode fixes in place (incr. depth to 12)"
+    },
+    {
+      "arenaVersion": "v1.2",
+      "timestamp": "2026-02-20T16:55:35",
+      "engineName": "FrankyCPP",
+      "engineVersion": "v1.4",
+      "enginePath": "",
+      "depth": 12,
+      "hashSizeMB": 128,
+      "threads": 1,
+      "positions": 50,
+      "totalNodes": 67469527,
+      "totalTimeMs": 22669,
+      "nps": 2976290,
+      "notes": "Improvement Flag"
+    },
+    {
+      "arenaVersion": "v1.2",
+      "timestamp": "2026-02-20T16:55:35",
+      "engineName": "External",
+      "engineVersion": "v1.4",
+      "enginePath": "Release/FrankyCPP_v1.4/FrankyCPP_v1.4.exe",
+      "depth": 12,
+      "hashSizeMB": 128,
+      "threads": 1,
+      "positions": 50,
+      "totalNodes": 67469527,
+      "totalTimeMs": 22895,
+      "nps": 2946910,
+      "notes": "Improvement Flag"
     }
   ]
 }
