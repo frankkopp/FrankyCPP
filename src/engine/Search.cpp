@@ -1390,7 +1390,13 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // LMP - Late Move Pruning
       // aka Move-Count-Based Pruning
       if (SearchConfig.USE_LMP) {
-        if (movesSearched >= SearchConfig.LMP_MOVES[(depth > 15 ? 15 : depth)]) {
+        const int lmpDepth = depth > 15 ? 15 : depth;
+        int lmpThreshold = SearchConfig.LMP_MOVES[lmpDepth];
+        // When improving, allow searching more moves before pruning
+        if (SearchConfig.USE_LMP_IMPROVING && improving) {
+          lmpThreshold += lmpThreshold / 2; // 50% more moves when improving
+        }
+        if (movesSearched >= lmpThreshold) {
           statistics.lmpCuts++;
           continue;
         }

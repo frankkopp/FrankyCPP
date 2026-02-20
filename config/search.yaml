@@ -161,6 +161,8 @@ LMR_IMPROVING_REDUCTION: 1
 USE_LMP: true
 # Thresholds (move counts) for depth buckets 0..15
 LMP_MOVES: [0, 7, 9, 11, 13, 15, 17, 19, 22, 24, 27, 29, 32, 35, 38, 41]
+# Use improving flag to allow more moves before LMP kicks in when position is improving
+USE_LMP_IMPROVING: true
 
 # Extensions
 # Enable search extensions framework

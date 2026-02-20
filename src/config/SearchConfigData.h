@@ -132,6 +132,8 @@ struct SearchConfigData {
   // LMP
   bool USE_LMP      = true;
   std::array<int, 16> LMP_MOVES{0, 7, 9, 11, 13, 15, 17, 19, 22, 24, 27, 29, 32, 35, 38, 41};
+  // LMP + improving: allow more moves when position is improving
+  bool USE_LMP_IMPROVING = true; // Use improving flag to modulate LMP threshold
 
   // extensions
   bool USE_EXTENSIONS       = true;

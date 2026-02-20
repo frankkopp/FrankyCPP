@@ -1,9 +1,9 @@
 # FrankyCPP "Improving" Flag Implementation Plan
 
-**Document Version:** 1.6  
+**Document Version:** 1.7  
 **Created:** 2026-02-20  
 **Last Updated:** 2026-02-20  
-**Status:** 🟡 IN PROGRESS (Phase 4 Complete & Verified)  
+**Status:** ✅ COMPLETE (All 5 Phases Implemented)  
 **Target:** FrankyCPP v1.4+  
 **Priority:** High (Identified as ⭐⭐ HIGH IMPACT in Search Tree Reduction Review)  
 **Related:** `PLAN_Search_Tree_Reduction_Review.md` (Change 1.4.5), `V1_ENGINE_STRENGTH_ROADMAP.md`
@@ -278,7 +278,7 @@ if (SearchConfig.USE_RFP && doNull && depth <= 3 && !isPvNode && !hasCheck) {
 
 ---
 
-### Phase 5: Apply to Late Move Pruning
+### Phase 5: Apply to Late Move Pruning ✅ COMPLETE
 
 **Effort:** Low (15 min)  
 **Config Flag:** `USE_LMP_IMPROVING` (bool, default true)
@@ -409,7 +409,7 @@ Phase 4: FP/RFP + Improving  ✅ COMPLETE (tuned: FP 80cp, RFP 40cp)
     │
     ├── SearchTreeSizeTest + self-play
     │
-Phase 5: LMP + Improving
+Phase 5: LMP + Improving  ✅ COMPLETE
     │
     └── Final combined test: all improving features enabled
 ```
@@ -465,15 +465,16 @@ Each feature has an independent config flag. If any individual feature causes re
 
 ## Change Log
 
-| Version | Date       | Changes                                                                                                                  |
-|---------|------------|--------------------------------------------------------------------------------------------------------------------------|
-| 1.0     | 2026-02-20 | Initial plan document                                                                                                    |
-| 1.1     | 2026-02-20 | Phase 1 implemented: staticEval stored in PlyInfo, improving flag computed, stats added                                  |
-| 1.2     | 2026-02-20 | Phase 1 verified: 59.9% improving ratio confirmed, added searchNodes/qsearchNodes, fixed pvNode double-count             |
-| 1.3     | 2026-02-20 | Phase 2 implemented: LMR+Improving — extra reduction when not improving, config flags, SearchTreeSizeTest entry          |
-| 1.4     | 2026-02-20 | Phase 2 verified: −5.2% nodes, −7.1% re-searches, stable NPS                                                             |
-| 1.5     | 2026-02-20 | Phase 3 implemented & verified: NMP+Improving — −2.1% incremental, −7.3% cumulative node reduction                       |
-| 1.6     | 2026-02-20 | Phase 4 implemented & tuned: FP+Improving (80cp), RFP+Improving (40cp tuned from 60cp). RFP 40cp best: −2.1% at depth 12 |
+| Version | Date       | Changes                                                                                                                            |
+|---------|------------|------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0     | 2026-02-20 | Initial plan document                                                                                                              |
+| 1.1     | 2026-02-20 | Phase 1 implemented: staticEval stored in PlyInfo, improving flag computed, stats added                                            |
+| 1.2     | 2026-02-20 | Phase 1 verified: 59.9% improving ratio confirmed, added searchNodes/qsearchNodes, fixed pvNode double-count                       |
+| 1.3     | 2026-02-20 | Phase 2 implemented: LMR+Improving — extra reduction when not improving, config flags, SearchTreeSizeTest entry                    |
+| 1.4     | 2026-02-20 | Phase 2 verified: −5.2% nodes, −7.1% re-searches, stable NPS                                                                       |
+| 1.5     | 2026-02-20 | Phase 3 implemented & verified: NMP+Improving — −2.1% incremental, −7.3% cumulative node reduction                                 |
+| 1.6     | 2026-02-20 | Phase 4 implemented & tuned: FP+Improving (80cp), RFP+Improving (40cp tuned from 60cp). RFP 40cp best: −2.1% at depth 12           |
+| 1.7     | 2026-02-20 | Phase 5 implemented: LMP+Improving — 50% more moves when improving, config flag + SearchTreeSizeTest entry. All 5 phases complete. |
 
 ---
 

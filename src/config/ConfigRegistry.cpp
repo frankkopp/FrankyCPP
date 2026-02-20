@@ -1082,6 +1082,18 @@ void ConfigRegistry::initializeSearchDefinitions() {
     }
   });
 
+  definitions_.push_back({
+    .name = "USE_LMP_IMPROVING",
+    .uciName = "Use LMP Improving",
+    .description = "Use improving flag to modulate LMP threshold (more moves when improving)",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = "true",
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::USE_LMP_IMPROVING),
+    .setter = searchSetter(&SearchConfigData::USE_LMP_IMPROVING, parseBool)
+  });
+
   //===========================================================================
   // EXTENSIONS
   //===========================================================================
