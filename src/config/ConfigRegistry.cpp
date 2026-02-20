@@ -863,6 +863,21 @@ void ConfigRegistry::initializeSearchDefinitions() {
   });
 
   //===========================================================================
+  // IMPROVING FLAG
+  //===========================================================================
+  definitions_.push_back({
+    .name = "USE_IMPROVING",
+    .uciName = "Use Improving Flag",
+    .description = "Track if eval is improving vs 2 plies ago for pruning modulation",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = "true",
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::USE_IMPROVING),
+    .setter = searchSetter(&SearchConfigData::USE_IMPROVING, parseBool)
+  });
+
+  //===========================================================================
   // LMR / LMP
   //===========================================================================
   definitions_.push_back({

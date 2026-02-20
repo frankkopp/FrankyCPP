@@ -106,6 +106,9 @@ struct SearchConfigData {
   bool USE_QFP = true;
   std::array<int, 7> FP_MARGIN{0, 100, 200, 300, 500, 900, 1200};
 
+  // improving flag
+  bool USE_IMPROVING = true;// Master switch: track if eval is improving vs 2 plies ago
+
   // LMR
   bool USE_LMR      = true;
   int LMR_MIN_DEPTH = 2;

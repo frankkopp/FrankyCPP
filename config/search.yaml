@@ -124,6 +124,10 @@ USE_QFP: true
 # Futility margins (centipawns) indexed by remaining depth (0..6)
 FP_MARGIN: [0, 100, 200, 300, 500, 900, 1200]
 
+# Improving flag: track if static eval is improving vs 2 plies ago
+# When not improving, pruning techniques can be more aggressive
+USE_IMPROVING: true
+
 # Late Move Reduction / Pruning
 # Enable LMR
 USE_LMR: true

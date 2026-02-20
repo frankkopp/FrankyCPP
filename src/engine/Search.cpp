@@ -852,10 +852,6 @@ Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Valu
 Value Search::search(Position& p, const Depth depth, const Depth ply, Value alpha, Value beta, const Node_Type isPvNode, const Do_Null doNull) {
   //  LOG__DEBUG(Logger::get().SEARCH_LOG, "Search {} {} {}", depth, ply, str(statistics.currentVariation));
 
-  // Track PV vs non-PV node statistics
-  if (isPvNode) { statistics.pvNodes++; }
-  else { statistics.nonPvNodes++; }
-
   // Clear PV for this node to prevent stale data from previous iterations/branches
   // from being propagated up via pv.update(). Stale PV data can contain moves from
   // different positions that are illegal in the current position.
@@ -863,10 +859,17 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   pv.clear(ply);
 
   // Enter quiescence search when depth == 0 or max ply has been reached
+  // pvNodes/nonPvNodes are tracked inside qsearch() — no need to count here.
   if (depth == 0 || ply >= MAX_DEPTH) {
     const auto value = qsearch(p, ply, alpha, beta, isPvNode);
     return value;
   }
+
+  // Track PV vs non-PV node statistics (after qsearch drop-through to avoid double-counting
+  // — qsearch() already tracks its own pvNodes/nonPvNodes at entry)
+  if (isPvNode) { statistics.pvNodes++; }
+  else { statistics.nonPvNodes++; }
+  statistics.searchNodes++;
 
   // check if search should be stopped
   if (stopConditions() && depth > 1) { return VALUE_NONE; }
@@ -1018,6 +1021,37 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     if (SearchConfig.USE_TT && SearchConfig.USE_EVAL_TT) {
       storeTt(p, DEPTH_NONE, DEPTH_NONE, MOVE_NONE, VALUE_NONE, NONE, staticEval);
     }
+  }
+
+  // Store static eval in PlyInfo for "improving" flag computation at deeper plies.
+  // When in check we have no meaningful eval, so store VALUE_NONE.
+  plyStack[ply].staticEval = hasCheck ? VALUE_NONE : staticEval;
+
+  // Compute "improving" flag: is our static eval better than 2 plies ago?
+  // This is used to modulate pruning aggressiveness - when not improving,
+  // we can prune more aggressively since our position isn't getting better.
+  // Edge cases:
+  //   - ply < 2: no prior data → assume false (conservative)
+  //   - in check now: no eval → not improving
+  //   - in check 2 plies ago (VALUE_NONE): fall back to ply-4, else assume improving
+  const bool improving = [&]() {
+    if (!SearchConfig.USE_IMPROVING) return false;
+    if (hasCheck || staticEval == VALUE_NONE) return false;
+    if (ply < 2) return false;
+    const Value prevEval = plyStack[ply - 2].staticEval;
+    if (prevEval != VALUE_NONE) return staticEval > prevEval;
+    // 2 plies ago was in check — try 4 plies ago
+    if (ply >= 4) {
+      const Value prevEval4 = plyStack[ply - 4].staticEval;
+      if (prevEval4 != VALUE_NONE) return staticEval > prevEval4;
+    }
+    return true;// Conservative: assume improving when no reference data
+  }();
+
+  // Track improving statistics
+  if (SearchConfig.USE_IMPROVING && !hasCheck) {
+    if (improving) { statistics.improvingTrue++; }
+    else { statistics.improvingFalse++; }
   }
 
   // Razoring
@@ -1540,6 +1574,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
   // Track PV vs non-PV node statistics
   if (isPvNode) { statistics.pvNodes++; }
   else { statistics.nonPvNodes++; }
+  statistics.qsearchNodes++;
 
   // Clear PV for this node (same reason as in search())
   pv.clear(ply);
@@ -2552,6 +2587,18 @@ std::string Search::formatDetailedStats(
     os << " (" << std::fixed << std::setprecision(2) << nonPvPct << "%)";
   }
   os << "\n";
+  os << "Search Nodes   : " << stats.searchNodes;
+  if (totalNodes > 0) {
+    const double searchPct = 100.0 * static_cast<double>(stats.searchNodes) / static_cast<double>(totalNodes);
+    os << " (" << std::fixed << std::setprecision(2) << searchPct << "%)";
+  }
+  os << "\n";
+  os << "QSearch Nodes  : " << stats.qsearchNodes;
+  if (totalNodes > 0) {
+    const double qsPct = 100.0 * static_cast<double>(stats.qsearchNodes) / static_cast<double>(totalNodes);
+    os << " (" << std::fixed << std::setprecision(2) << qsPct << "%)";
+  }
+  os << "\n";
 
   os << "\n------------------- Pruning Stats ---------------------\n";
   os << "Beta Cuts      : " << stats.betaCuts << "\n";
@@ -2568,6 +2615,18 @@ std::string Search::formatDetailedStats(
   os << "LMR Reductions : " << stats.lmrReductions << "\n";
   os << "LMR Researches : " << stats.lmrResearches << "\n";
   os << "LMP Cuts       : " << stats.lmpCuts << "\n";
+
+  os << "\n------------------- Improving Stats -------------------\n";
+  os << "Improving True : " << stats.improvingTrue;
+  {
+    const uint64_t improvingTotal = stats.improvingTrue + stats.improvingFalse;
+    if (improvingTotal > 0) {
+      const double pct = 100.0 * static_cast<double>(stats.improvingTrue) / static_cast<double>(improvingTotal);
+      os << " (" << std::fixed << std::setprecision(1) << pct << "%)";
+    }
+  }
+  os << "\n";
+  os << "Improving False: " << stats.improvingFalse << "\n";
 
   os << "\n------------------- Extension Stats -------------------\n";
   os << "Check Ext      : " << stats.checkExtension << "\n";

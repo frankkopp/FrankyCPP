@@ -86,6 +86,12 @@ struct SearchStats {
   /// Number of non-PV nodes searched (null window).
   uint64_t nonPvNodes = 0;
 
+  /// Number of main search nodes (depth > 0, excludes qsearch).
+  uint64_t searchNodes = 0;
+
+  /// Number of quiescence search nodes.
+  uint64_t qsearchNodes = 0;
+
   // === Terminal Node Counts ===
 
   /// Number of checkmate positions found.
@@ -186,6 +192,14 @@ struct SearchStats {
   /// Late move pruning cuts.
   uint64_t lmpCuts = 0;
 
+  // === Improving Flag Statistics ===
+
+  /// Nodes where position is improving (static eval > eval 2 plies ago).
+  uint64_t improvingTrue = 0;
+
+  /// Nodes where position is not improving.
+  uint64_t improvingFalse = 0;
+
   // === Extension Statistics ===
 
   /// Check extensions applied.
@@ -235,8 +249,10 @@ struct SearchStats {
       const double pvPct = 100.0 * static_cast<double>(stats.pvNodes) / static_cast<double>(totalNodes);
       os << " (" << std::fixed << std::setprecision(2) << pvPct << "%)";
     }
-    os << " nonPvNodes: " << stats.nonPvNodes
-       << " checkmates: " << stats.checkmates
+     os << " nonPvNodes: " << stats.nonPvNodes
+        << " searchNodes: " << stats.searchNodes
+        << " qsearchNodes: " << stats.qsearchNodes
+        << " checkmates: " << stats.checkmates
        << " stalemates: " << stats.stalemates
        << " perft: " << stats.perftNodeCount
        << " leafPositionsEvaluated: " << stats.leafPositionsEvaluated
@@ -267,6 +283,8 @@ struct SearchStats {
        << " qfp_prunings: " << stats.qfpPrunings
        << " lmrReductions: " << stats.lmrReductions
        << " lmrResearches: " << stats.lmrResearches
+       << " improvingTrue: " << stats.improvingTrue
+       << " improvingFalse: " << stats.improvingFalse
        << " check ext: " << stats.checkExtension
        << " threat ext: " << stats.threatExtension
        << " singular searches: " << stats.singularSearches
