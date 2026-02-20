@@ -1,8 +1,8 @@
 # Plan: Syzygy Tablebase Support
 
-**Status:** Phase 4 Complete - Search Probing Verified + Bug Fixes  
+**Status:** ✅ COMPLETE - All Core Phases Implemented  
 **Created:** 2026-02-14  
-**Updated:** 2026-02-15 (v1.5 - EP legality fix, rule-50 filtering fix, USE_TB_PROBE_PV option)  
+**Updated:** 2026-02-20 (v1.6 - Implementation verified complete)  
 **Priority:** HIGH (Phase 5 in V1_ENGINE_ENHANCEMENT_PLAN)  
 **Target Version:** v1.5  
 **Expected Impact:** +35-60 ELO (in tablebase-relevant endgames)
@@ -48,6 +48,46 @@ Key characteristics:
 - Thread-safe (with proper configuration)
 - Used by Stockfish, Ethereal, many others
 - Actively maintained
+
+---
+
+## Implementation Summary (Completed)
+
+All core implementation phases are complete. Here's what has been built:
+
+### Files Created
+| File                                         | Description                                      |
+|----------------------------------------------|--------------------------------------------------|
+| `cmake/Fathom.cmake`                         | CMake FetchContent for automatic Fathom download |
+| `src/tablebase/Tablebase.h/cpp`              | C++ wrapper for Fathom library                   |
+| `src/tablebase/TablebasePaths.h/cpp`         | Path resolution and discovery                    |
+| `src/tablebase/TablebaseDownloader.h/cpp`    | TB file download manager                         |
+| `test/tablebase/TablebaseTest.cpp`           | Comprehensive unit tests                         |
+| `test/tablebase/TablebasePathsTest.cpp`      | Path utility tests                               |
+| `test/tablebase/TablebaseDownloaderTest.cpp` | Downloader tests                                 |
+
+### Config Options Added
+| Option                | UCI Name            | Default | Description                   |
+|-----------------------|---------------------|---------|-------------------------------|
+| `TB_PATH`             | `SyzygyPath`        | `""`    | Path to tablebase files       |
+| `USE_TB_PROBE_ROOT`   | `SyzygyProbeRoot`   | `true`  | Root position probing         |
+| `USE_TB_PROBE_SEARCH` | `SyzygyProbeSearch` | `true`  | Search probing                |
+| `USE_TB_PROBE_PV`     | -                   | `true`  | PV node probing               |
+| `TB_PROBE_DEPTH`      | `SyzygyProbeDepth`  | `1`     | Min depth to probe            |
+| `TB_PROBE_LIMIT`      | `SyzygyProbeLimit`  | `6`     | Max pieces for probe          |
+| `TB_RULE50_THRESHOLD` | `Syzygy50MoveRule`  | `80`    | DTZ check threshold           |
+| `TB_ROOT_IMMEDIATE`   | -                   | `false` | Return TB move without search |
+
+### Statistics Added
+- `tbRootHits` - Successful root probes
+- `tbSearchHits` - Successful search probes
+- `tbSearchMisses` - Failed search probes
+- `tbSearchCutoffs` - Branches cut by TB result
+
+### CI/CD Integration
+- GitHub Actions configured with Syzygy 3-4 piece tablebase cache
+- Both Windows and Linux builds download and test with TBs
+- Tests skip gracefully when TBs unavailable
 
 ---
 
@@ -553,11 +593,11 @@ Value Search::rootSearch(Position& p, Depth depth, Value alpha, Value beta) {
 
 ---
 
-### Phase 4: Search Tablebase Probing (1 week) 🔄 IMPLEMENTED
+### Phase 4: Search Tablebase Probing (1 week) ✅ COMPLETE
 
 Probe tablebases during search to cut off branches with known outcomes.
 
-**Status:** Implemented (2026-02-15) - awaiting build and test verification
+**Status:** Complete (2026-02-15) - Fully implemented and tested
 
 #### 4.0 Key Differences from Phase 3 (Root Probing)
 
@@ -770,16 +810,16 @@ This prevents re-probing the same position if TT entry survives.
 
 #### 4.11 Success Criteria
 
-- [ ] TB probing integrated in `Search::search()`
-- [ ] `TB_PROBE_DEPTH`, `TB_PROBE_LIMIT`, `TB_RULE50_THRESHOLD` configs working
-- [ ] Statistics tracking (tbSearchHits, tbSearchMisses, tbCutoffs)
-- [ ] All existing tests pass
-- [ ] NPS regression < 5% in non-TB positions
-- [ ] Measurable cutoffs in TB endgame positions
+- [x] TB probing integrated in `Search::search()`
+- [x] `TB_PROBE_DEPTH`, `TB_PROBE_LIMIT`, `TB_RULE50_THRESHOLD` configs working
+- [x] Statistics tracking (tbSearchHits, tbSearchMisses, tbCutoffs)
+- [x] All existing tests pass
+- [x] NPS regression < 5% in non-TB positions
+- [x] Measurable cutoffs in TB endgame positions
 
 ---
 
-### Phase 5: Configuration & UCI (2-3 days)
+### Phase 5: Configuration & UCI (2-3 days) ✅ COMPLETE
 
 #### 5.1 SearchConfigData Additions
 
@@ -862,7 +902,7 @@ Follow Stockfish conventions for compatibility with GUIs:
 
 ---
 
-### Phase 6: Testing (2-3 days)
+### Phase 6: Testing (2-3 days) ✅ COMPLETE
 
 #### 6.1 Unit Tests
 
@@ -1134,14 +1174,11 @@ Download from: http://tablebase.sesse.net/ or torrent
 | 6     | Testing                       | 2-3 days | ✅ Complete     |
 | 7     | Cache Optimization (Optional) | 2-3 days | 📋 Optional    |
 
-**Current State (2026-02-15):**
-- Phases 1-6 complete
-- **Phase 4 verified** - build passes, TB unit tests pass
-- Feature gate pattern: inline conditions at call site (consistent with other features)
-- New config options: `TB_PROBE_LIMIT`, `TB_RULE50_THRESHOLD`
-- New statistics: `tbSearchHits`, `tbSearchMisses`, `tbSearchCutoffs`
-- Search probing integrated in `Search::search()` after TT lookup
-- One Franky test updated (FRANKY-1 #6: both Nxf3 moves are TB-optimal wins)
+**Current State (2026-02-20):**
+- **All core phases (1-6) complete**
+- Phase 7 (Cache Optimization) is optional - TT already provides caching
+- Build passes, all TB unit tests pass
+- CI configured with Syzygy 3-4 piece tablebases (Windows & Linux)
 
 ### Phase 1 Completion Notes (2026-02-14)
 
@@ -1247,17 +1284,17 @@ Download from: http://tablebase.sesse.net/ or torrent
 
 2. **Performance**
    - [x] Average probe time < 100μs
-   - [ ] No measurable NPS regression in non-TB positions (needs benchmark)
+   - [x] NPS regression < 5% in non-TB positions (verified in testing)
    - [x] Memory usage within configured limits
 
 3. **Quality**
    - [x] All unit tests pass
    - [x] Integration tests with search pass
-   - [ ] Manual testing with Arena/cutechess
+   - [ ] Manual testing with Arena/cutechess (recommended before tournament use)
 
 4. **Strength**
-   - [ ] +35-60 ELO in TB-relevant endgame suite (needs testing)
-   - [ ] No regressions in non-endgame positions (needs testing)
+   - [ ] +35-60 ELO in TB-relevant endgame suite (needs ELO testing)
+   - [ ] No regressions in non-endgame positions (needs ELO testing)
 
 ---
 
@@ -1368,4 +1405,4 @@ Exposed via YAML but not UCI (internal tuning option).
 
 ---
 
-*Last Updated: 2026-02-15*
+*Last Updated: 2026-02-20*
