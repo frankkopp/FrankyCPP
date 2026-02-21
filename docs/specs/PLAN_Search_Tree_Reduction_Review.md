@@ -1,9 +1,9 @@
 # FrankyCPP Search Tree Reduction Review Plan
 
-**Document Version:** 1.2  
+**Document Version:** 1.3  
 **Created:** 2026-02-18  
-**Last Updated:** 2026-02-20  
-**Status:** 🟡 IN PROGRESS (Phase 1 Improving Complete, Phases 2–5 Not Started)  
+**Last Updated:** 2026-02-21  
+**Status:** 🟡 IN PROGRESS (Phase 1 LMR Complete, Phases 2–5 Not Started)  
 **Target:** FrankyCPP v1.4+  
 **Priority:** High (Performance / Strength Improvement)
 
@@ -13,14 +13,15 @@
 
 ### Completed Changes
 
-| Change       | Description                   | ELO vs v1.1 | Status           |
-|--------------|-------------------------------|-------------|------------------|
-| **Baseline** | TB + extensions (v1.2)        | +30         | ✅ Starting point |
-| **1.4.4**    | Logarithmic LMR formula       | +64         | ✅ Complete       |
-| **1.4.4b**   | LMR divisor tuning (1.5)      | +82         | ✅ Complete       |
-| **Bug Fix**  | isPvNode propagation fixes    | +109        | ✅ Complete       |
-| **Bug Fix**  | History heuristic fixes       | TBD         | ✅ Complete       |
-| **1.4.5**    | Improving flag (all 5 phases) | +68 vs v1.3 | ✅ Complete       |
+| Change       | Description                   | ELO vs v1.1 | Status               |
+|--------------|-------------------------------|-------------|----------------------|
+| **Baseline** | TB + extensions (v1.2)        | +30         | ✅ Starting point     |
+| **1.4.4**    | Logarithmic LMR formula       | +64         | ✅ Complete           |
+| **1.4.4b**   | LMR divisor tuning (1.5)      | +82         | ✅ Complete           |
+| **Bug Fix**  | isPvNode propagation fixes    | +109        | ✅ Complete           |
+| **Bug Fix**  | History heuristic fixes       | TBD         | ✅ Complete           |
+| **1.4.5**    | Improving flag (all 5 phases) | +68 vs v1.3 | ✅ Complete           |
+| **1.4.6**    | History-based LMR adjustment  | ~0 vs v1.3  | ✅ Complete (neutral) |
 
 **Total: +177 ELO** (v1.4 vs v1.1 baseline: +109 from v1.3 + +68 from improving flag)
 
@@ -40,6 +41,38 @@ All 5 improving-flag phases from `PLAN_Improving_Flag.md` are complete:
 **Combined result:** −40% cumulative node reduction at depth 12, zero NPS overhead.  
 **Match result:** +68 ELO vs v1.3 (208 games, 59.6% score, W80/D88/L40).  
 **Test suites:** +59 positions (+2.1%) across 2873 positions, 6 suites improved, 1 regressed.
+
+### History-Based LMR Implementation (v1.4)
+
+**Change 1.4.6** implemented history-based LMR adjustment:
+
+| Config Flag           | Default | Description                                           |
+|-----------------------|---------|-------------------------------------------------------|
+| `USE_LMR_HISTORY`     | true    | Enable history-based LMR modulation                   |
+| `LMR_HISTORY_DIVISOR` | 8192    | Divisor for history → reduction conversion            |
+
+**How it works:**
+- Moves with positive history (caused beta cutoffs) get **less** reduction
+- History values are `(1 << depth)` per cutoff, so divisor 8192 (= `1 << 13`) means a single cutoff at depth 13 gives 1 ply less reduction
+- Reduction is clamped to never exceed `newDepth` (prevents search explosion)
+
+**Statistics added:**
+- `lmrHistoryLessReduction` — count of moves that got less reduction
+- `lmrHistoryDepthSaved` — total plies of depth saved
+
+**Results:**
+- **SearchTreeSizeTest:** +5.5% nodes at depth 10 (expected — searches good moves deeper)
+- **Match result:** +61 ELO vs v1.3 (208 games, 58.7% score, W79/D86/L43)
+- **Test suites:** +32 positions (+1.1%) across 2873 positions
+
+**Comparison with Improving Flag baseline:**
+
+| Metric          | Improving Only | +History LMR | Delta    |
+|-----------------|----------------|--------------|----------|
+| ELO vs v1.3     | +68            | +61          | −7 ELO   |
+| Test positions  | +59 (+2.1%)    | +32 (+1.1%)  | −27 pos  |
+
+**Conclusion:** Results are within measurement tolerance (~±20 ELO for 208 games). Feature kept enabled as it shows no clear regression and may provide benefits in specific positions. Further tuning of `LMR_HISTORY_DIVISOR` could be explored.
 
 ### Bugs Discovered & Fixed
 
@@ -194,17 +227,25 @@ lmrReduction[d][m] = std::lround(std::log(d) * std::log(m) / divisor);
 - See `PLAN_Improving_Flag.md` for full details and per-phase results
 - **Result:** −40% cumulative node reduction at depth 12, +68 ELO vs v1.3, +59 test suite positions (+2.1%)
 
-**Change 1.4.6: History-Based LMR Adjustment** ⭐⭐ HIGH IMPACT
-- **Config Flag:** `USE_LMR_HISTORY` (bool, default false initially)
+**Change 1.4.6: History-Based LMR Adjustment** ✅ COMPLETE (neutral ELO)
+- **Config Flags:** `USE_LMR_HISTORY` (bool, default true), `LMR_HISTORY_DIVISOR` (int, default 8192)
 ```cpp
 // Adjust reduction based on history score
-int historyReduction = -history.getQuietMoveScore(...) / HISTORY_LMR_DIVISOR;
-reduction += historyReduction;
+if (SearchConfig.USE_LMR_HISTORY) {
+  const int histScore = history.historyCount[us][from][to];
+  const int histReduction = -histScore / SearchConfig.LMR_HISTORY_DIVISOR;
+  if (histReduction < 0) {
+    statistics.lmrHistoryLessReduction++;
+    statistics.lmrHistoryDepthSaved -= histReduction;
+  }
+  lmrDepth -= static_cast<Depth>(histReduction);
+}
+lmrDepth = std::clamp(lmrDepth, DEPTH_NONE, newDepth);
 ```
-- **Effort:** Medium (need to integrate history into LMR)
-- **Impact:** High
-- **Risk:** Low
-- **SearchTreeSizeTest:** Add after LMR improving entry
+- **Effort:** Medium
+- **Impact:** Neutral (within measurement tolerance)
+- **Result:** +61 ELO vs v1.3 (vs +68 without), −7 ELO delta within noise margin
+- **SearchTreeSizeTest:** +5.5% nodes (expected — searches good moves deeper)
 
 **Change 1.4.7: PV Node Reduction Adjustment**
 - **Config Flag:** `USE_LMR_PV_REDUCE` (bool, default false initially)

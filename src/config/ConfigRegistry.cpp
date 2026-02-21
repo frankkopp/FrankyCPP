@@ -43,14 +43,14 @@ ConfigRegistry::ConfigRegistry() {
 #ifdef _MSC_VER
 // Windows MSVC builds
 #ifdef _DEBUG
-  static_assert(sizeof(SearchConfigData) == 536,
+  static_assert(sizeof(SearchConfigData) == 544,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 256,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
-  static_assert(sizeof(SearchConfigData) == 504,
+  static_assert(sizeof(SearchConfigData) == 512,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -61,7 +61,7 @@ ConfigRegistry::ConfigRegistry() {
 // Linux GCC/Clang builds (including WSL)
 #ifdef NDEBUG
   // Release build
-  static_assert(sizeof(SearchConfigData) == 504,
+  static_assert(sizeof(SearchConfigData) == 512,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -69,7 +69,7 @@ ConfigRegistry::ConfigRegistry() {
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
   // Debug build
-  static_assert(sizeof(SearchConfigData) == 504,
+  static_assert(sizeof(SearchConfigData) == 512,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -1052,6 +1052,32 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .exposure = {.uci = true, .yaml = true, .display = true},
     .getter = searchGetter(&SearchConfigData::LMR_IMPROVING_REDUCTION),
     .setter = searchSetter(&SearchConfigData::LMR_IMPROVING_REDUCTION, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "USE_LMR_HISTORY",
+    .uciName = "Use LMR History",
+    .description = "Use history score to modulate LMR (less reduction for moves with good history)",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = "true",
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::USE_LMR_HISTORY),
+    .setter = searchSetter(&SearchConfigData::USE_LMR_HISTORY, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "LMR_HISTORY_DIVISOR",
+    .uciName = "LMR History Divisor",
+    .description = "Divisor for history score to reduction conversion (higher = less effect)",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = "8192",
+    .minValue = 1024,
+    .maxValue = 32768,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::LMR_HISTORY_DIVISOR),
+    .setter = searchSetter(&SearchConfigData::LMR_HISTORY_DIVISOR, parseInt)
   });
 
   definitions_.push_back({

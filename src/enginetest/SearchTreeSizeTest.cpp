@@ -92,6 +92,8 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   s.LMR_USE_LOG_FORMULA = false;
   s.LMR_LOG_BASE_DIV    = 2.00;
   s.USE_LMR_IMPROVING   = false;
+  s.USE_LMR_HISTORY     = false;
+  s.LMR_HISTORY_DIVISOR = 8192;
 
   // Late move pruning
   s.USE_LMP           = false;
@@ -111,8 +113,9 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   // ***********************************
   // TESTS
 
-  ptrToSpecial1 = &search.getSearchStats().lmrReductions;
-  ptrToSpecial2 = &search.getSearchStats().lmrResearches;
+  ptrToSpecial1 = &search.getSearchStats().lmrHistoryLessReduction;
+  ptrToSpecial2 = &search.getSearchStats().lmrReductions;
+  ptrToSpecial3 = reinterpret_cast<const uint64_t*>(&search.getSearchStats().lmrHistoryDepthSaved);
 
   // pure MiniMax
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 MINIMAX"));
@@ -320,32 +323,38 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   // LMR + Improving Flag Tests
   // ***********************************
 
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 warmup"));
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "01 pre"));
-
   // Enable improving-based LMR: extra reduction when position is not improving
   CONFIG_OVERRIDE(s.USE_LMR_IMPROVING = true;);
   CONFIG_OVERRIDE(s.LMR_IMPROVING_REDUCTION = 1;);// Test with 1 ply extra reduction
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "92 LMR+Impr"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "92 LMR+Impr"));
 
   // Enable improving-based NMP: extra reduction when position is not improving
   CONFIG_OVERRIDE(s.USE_NMP_IMPROVING = true;);
   CONFIG_OVERRIDE(s.NMP_IMPROVING_REDUCTION = 1;);// Test with 1 ply extra reduction
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "93 NMP+Impr"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "93 NMP+Impr"));
 
   // Enable improving-based FP: reduce margin when position is not improving
   CONFIG_OVERRIDE(s.USE_FP_IMPROVING = true;);
   CONFIG_OVERRIDE(s.FP_IMPROVING_MARGIN = 80;);// Test with 80 cp margin reduction
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "94 FP+Impr"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "94 FP+Impr"));
 
   // Enable improving-based RFP: reduce margin when position is not improving
   CONFIG_OVERRIDE(s.USE_RFP_IMPROVING = true;);
   CONFIG_OVERRIDE(s.RFP_IMPROVING_MARGIN = 40;);// Test with 80 cp margin reduction
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "95 RFP+Impr 40"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "95 RFP+Impr 40"));
 
   // Enable improving-based LMP: allow more moves when position is improving
   CONFIG_OVERRIDE(s.USE_LMP_IMPROVING = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "96 LMP+Impr"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "96 LMP+Impr"));
+
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 warmup"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "01 pre"));
+
+  // Enable history-based LMR: less reduction for moves with good history - more nodes but hopefully
+  // finding better moves
+  CONFIG_OVERRIDE(s.USE_LMR_HISTORY = true;);
+  CONFIG_OVERRIDE(s.LMR_HISTORY_DIVISOR = 8192;);
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "92b LMR+Hist"));
 
   return result;
 }
@@ -374,10 +383,10 @@ void SearchTreeSizeTest::start() {
   NEWLINE;
   fprintln("################## Results for depth {} ##########################", depth);
   NEWLINE;
-  fprintln("{:<15} | {:>6} | {:>8} | {:>15} | {:>12} | {:>12} | {:>7} | {:>12} | {:>12} | {} | {}",
-           "Test Name", "Move", "Value", "Nodes", "Nps", "Time", "Depth", "Special1", "Special2", "PV", "Fen");
+  fprintln("{:<15} | {:>6} | {:>8} | {:>15} | {:>12} | {:>12} | {:>7} | {:>12} | {:>12} | {:>12} | {} | {}",
+           "Test Name", "Move", "Value", "Nodes", "Nps", "Time", "Depth", "Special1", "Special2", "Special3", "PV", "Fen");
   println("-----------------------------------------------------------------------"
-          "-----------------------------------------------------------------------");
+          "---------------------------------------------------------------------------------");
 
   setlocale(LC_NUMERIC, "de_DE.UTF-8");
   std::map<std::string, SearchTreeSize::TestSums> sums{};
@@ -394,10 +403,11 @@ void SearchTreeSizeTest::start() {
       sums[test.name].sumExtra += test.extra;
       sums[test.name].special1 += test.special1;
       sums[test.name].special2 += test.special2;
+      sums[test.name].special3 += test.special3;
 
-      fprintln("{:<15} | {:>6} | {:>8} | {:>15L} | {:>12L} | {:>12L} | {:>3d}/{:<3d} | {:>12L} | {:>12L} | {} | {}",
+      fprintln("{:<15} | {:>6} | {:>8} | {:>15L} | {:>12L} | {:>12L} | {:>3d}/{:<3d} | {:>12L} | {:>12L} | {:>12L} | {} | {}",
                test.name, test.move.str(), test.value.str(), test.nodes, test.nps,
-               test.time / 1'000'000, test.depth, test.extra, test.special1, test.special2, test.pv, result.fen);
+               test.time / 1'000'000, test.depth, test.extra, test.special1, test.special2, test.special3, test.pv, result.fen);
     }
     NEWLINE;
   }
@@ -415,10 +425,11 @@ void SearchTreeSizeTest::start() {
   for (const auto& sum : sums) {
     const auto avgSpecial1 = sum.second.special1 / sum.second.sumCounter;
     const auto avgSpecial2 = sum.second.special2 / sum.second.sumCounter;
-    fprintln("Test: {:<12s}  Nodes: {:>16L}  Nps: {:>16L}  Time: {:>16L} Depth: {:>3d}/{:<3d} Special1: {:>10L} ({:>5L}) Special2: {:>10L} ({:>5L})", sum.first.c_str(),
+    const auto avgSpecial3 = sum.second.special3 / sum.second.sumCounter;
+    fprintln("Test: {:<12s}  Nodes: {:>16L}  Nps: {:>16L}  Time: {:>16L} Depth: {:>3d}/{:<3d} Special1: {:>10L} ({:>5L}) Special2: {:>10L} ({:>5L}) Special3: {:>10L} ({:>5L})", sum.first.c_str(),
              sum.second.sumNodes / sum.second.sumCounter, sum.second.sumNps / sum.second.sumCounter,
              (sum.second.sumTime / 1'000'000) / sum.second.sumCounter, sum.second.sumDepth / sum.second.sumCounter, sum.second.sumExtra / sum.second.sumCounter,
-             sum.second.special1, avgSpecial1, sum.second.special2, avgSpecial2);
+             sum.second.special1, avgSpecial1, sum.second.special2, avgSpecial2, sum.second.special3, avgSpecial3);
   }
 }
 
@@ -444,6 +455,7 @@ SearchTreeSize::SingleTest SearchTreeSizeTest::measureTreeSize(Search& search, c
   test.extra    = search.getLastSearchResult().extraDepth;
   test.special1 = ptrToSpecial1 ? *ptrToSpecial1 : 0;
   test.special2 = ptrToSpecial2 ? *ptrToSpecial2 : 0;
+  test.special3 = ptrToSpecial3 ? *ptrToSpecial3 : 0;
   test.pv       = search.getPV().str();
 
   return test;

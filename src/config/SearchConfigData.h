@@ -128,6 +128,12 @@ struct SearchConfigData {
   // LMR + improving: extra reduction when position is not improving
   bool USE_LMR_IMPROVING      = true; // Use improving flag to modulate LMR
   int LMR_IMPROVING_REDUCTION = 1;    // Extra reduction depth when not improving
+  // LMR + history: adjust reduction based on move's history score
+  bool USE_LMR_HISTORY   = true;  // Use history score to modulate LMR reduction
+  // Divisor for history -> reduction conversion. History values are (1 << depth) per cutoff.
+  // With divisor 8192 (= 1 << 13), a single cutoff at depth 13 gives 1 ply less reduction.
+  // Lower divisor = more aggressive adjustment, higher = more conservative.
+  int LMR_HISTORY_DIVISOR = 8192;
 
   // LMP
   bool USE_LMP      = true;

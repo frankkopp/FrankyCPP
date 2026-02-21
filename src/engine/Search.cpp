@@ -1426,7 +1426,20 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         if (SearchConfig.USE_LMR_IMPROVING && !improving) {
           lmrDepth -= static_cast<Depth>(SearchConfig.LMR_IMPROVING_REDUCTION);
         }
-        lmrDepth = std::max(lmrDepth, DEPTH_NONE);// make sure not to become negative
+        // Reduce less for moves with good history (frequently caused beta cutoffs)
+        // histScore > 0 means good move -> negative reduction adjustment -> less reduction
+        if (SearchConfig.USE_LMR_HISTORY) {
+          const int histScore = history.historyCount[us][from][to];
+          const int histReduction = -histScore / SearchConfig.LMR_HISTORY_DIVISOR;
+          if (histReduction < 0) {
+            // Positive history -> less reduction (histReduction is negative)
+            statistics.lmrHistoryLessReduction++;
+            statistics.lmrHistoryDepthSaved -= histReduction; // Convert to positive for tracking
+          }
+          lmrDepth -= static_cast<Depth>(histReduction);
+        }
+        // Clamp: don't go below DEPTH_NONE and don't exceed newDepth (no extension via LMR!)
+        lmrDepth = std::clamp(lmrDepth, DEPTH_NONE, newDepth);
         statistics.lmrReductions++;
       }
     }
@@ -2646,6 +2659,18 @@ std::string Search::formatDetailedStats(
   os << "\n------------------- LMR/LMP Stats ---------------------\n";
   os << "LMR Reductions : " << stats.lmrReductions << "\n";
   os << "LMR Researches : " << stats.lmrResearches << "\n";
+  os << "LMR Hist Less  : " << stats.lmrHistoryLessReduction;
+  if (stats.lmrReductions > 0) {
+    const double pct = 100.0 * static_cast<double>(stats.lmrHistoryLessReduction) / static_cast<double>(stats.lmrReductions);
+    os << " (" << std::fixed << std::setprecision(1) << pct << "% of LMR)";
+  }
+  os << "\n";
+  os << "LMR Hist Saved : " << stats.lmrHistoryDepthSaved << " plies";
+  if (stats.lmrHistoryLessReduction > 0) {
+    const double avg = static_cast<double>(stats.lmrHistoryDepthSaved) / static_cast<double>(stats.lmrHistoryLessReduction);
+    os << " (avg " << std::fixed << std::setprecision(2) << avg << " per move)";
+  }
+  os << "\n";
   os << "LMP Cuts       : " << stats.lmpCuts << "\n";
 
   os << "\n------------------- Improving Stats -------------------\n";
