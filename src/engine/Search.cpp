@@ -735,7 +735,7 @@ Value Search::aspirationSearch(Position& p, const Depth depth, const Value bestV
 
     // check if the value was within the window or expand the window
     if (value <= alpha) {
-      // FAIL LOW - decrease upper bound
+      // FAIL LOW - widen alpha (lower bound)
       sendAspirationResearchInfo("upperbound");
       // add some extra time because of fail low
       // we might have found a strong opponent's move
@@ -1699,7 +1699,6 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
   }// use TT
 
   // prepare node search
-  const Color us      = p.getNextPlayer();
   Value bestNodeValue = VALUE_NONE;
   Move bestNodeMove   = MOVE_NONE;// used to store in the TT
   ValueType ttType    = ALPHA;
@@ -1756,7 +1755,6 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
   // ///////////////////////////////////////////////////////
   // MOVE LOOP
   while ((move = myMg->getNextPseudoLegalMove(p, genMode, hasCheck)) != MOVE_NONE) {
-    const Square from     = move.from();
     const Square to       = move.to();
     const bool givesCheck = p.givesCheck(move);
 
@@ -1830,12 +1828,8 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
         if (value >= beta && SearchConfig.USE_ALPHABETA) {
           statistics.betaCuts++;
           statistics.betaCutsByIndex[std::min(movesSearched - 1, SearchStats::BETA_CUTS_INDEX_SIZE - 1)]++;
-          if (SearchConfig.USE_KILLER_MOVES && !p.isCapturingMove(move)) { myMg->storeKiller(move); }
-          if (SearchConfig.USE_HISTORY_COUNTER) { history.historyCount[us][from][to] += 1 << 1; }
-          if (SearchConfig.USE_HISTORY_MOVES) {
-            const Move lastMove = p.getLastMove();
-            if (lastMove != MOVE_NONE) { history.counterMoves[lastMove.from()][lastMove.to()] = move; }
-          }
+          // Note: No killer/history updates in qsearch - we primarily search captures,
+          // and history/killers are for quiet move ordering in main search.
           ttType = BETA;
           break;
         }
@@ -1844,10 +1838,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
         ttType = EXACT;
       }
     }
-    if (SearchConfig.USE_HISTORY_COUNTER) {
-      history.historyCount[us][from][to] -= 1 << 1;
-      if (history.historyCount[us][from][to] < 0) { history.historyCount[us][from][to] = 0; }
-    }
+    // Note: No history penalty in qsearch - see comment above at beta cutoff.
   }
   // MOVE LOOP
   // ///////////////////////////////////////////////////////
