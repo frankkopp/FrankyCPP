@@ -95,9 +95,10 @@ RAZOR_MARGIN: 531
 # Reverse Futility Pruning toggle and margins per remaining depth (centipawns)
 USE_RFP: true
 RFP_MARGIN: [0, 200, 400, 800]
-# RFP + improving: reduce margin when position is not improving
+# RFP + improving: increase margin when not improving (prune less aggressively)
+# Rationale: "not improving" means eval may be unreliable, search more carefully
 USE_RFP_IMPROVING: true
-# RFP margin reduction in centipawns when not improving (0-300)
+# RFP margin increase in centipawns when not improving (0-300)
 RFP_IMPROVING_MARGIN: 40
 
 # Null Move Pruning (NMP)
@@ -131,9 +132,10 @@ USE_FP: true
 USE_QFP: true
 # Futility margins (centipawns) indexed by remaining depth (0..6)
 FP_MARGIN: [0, 100, 200, 300, 500, 900, 1200]
-# FP + improving: reduce margin when position is not improving
+# FP + improving: increase margin when not improving (prune less aggressively)
+# Rationale: "not improving" means eval may be unreliable, search more carefully
 USE_FP_IMPROVING: true
-# FP margin reduction in centipawns when not improving (0-300)
+# FP margin increase in centipawns when not improving (0-300)
 FP_IMPROVING_MARGIN: 80
 
 # Improving flag: track if static eval is improving vs 2 plies ago

@@ -1090,11 +1090,14 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       && doNull
       && depth <= 3
       && nodeType != PvNode
-      && !hasCheck) {
+      && !hasCheck
+      && std::abs(beta) < VALUE_CHECKMATE_THRESHOLD) {  // Don't prune when beta is a mate score
     auto margin = Value{SearchConfig.RFP_MARGIN[depth]};
-    // Reduce margin when not improving → prune more aggressively
+    // Increase margin when not improving → prune less aggressively (Stockfish-style)
+    // Rationale: "not improving" means eval may be unreliable, so search more carefully
     if (SearchConfig.USE_RFP_IMPROVING && !improving) {
-      margin -= Value{SearchConfig.RFP_IMPROVING_MARGIN};
+      // TODO: Test this with different values
+      margin += Value{SearchConfig.RFP_IMPROVING_MARGIN};
     }
     if (staticEval - margin >= beta) {
       statistics.rfp_cuts++;
@@ -1381,9 +1384,11 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // Limited Razoring / Extended FP are covered by this.
       if (SearchConfig.USE_FP && depth < 7) {
         auto futilityMargin = SearchConfig.FP_MARGIN[depth];
-        // Reduce margin when not improving → prune more aggressively
+        // Increase margin when not improving → prune less aggressively (Stockfish-style)
+        // Rationale: "not improving" means eval may be unreliable, so search more carefully
         if (SearchConfig.USE_FP_IMPROVING && !improving) {
-          futilityMargin -= SearchConfig.FP_IMPROVING_MARGIN;
+          // TODO: Test this with different values
+          futilityMargin += SearchConfig.FP_IMPROVING_MARGIN;
         }
         if (staticEval + moveGain + futilityMargin <= alpha) {
           if (staticEval + moveGain > bestNodeValue) { bestNodeValue = staticEval + moveGain; }

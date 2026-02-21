@@ -38,40 +38,40 @@ Focus is on finding bugs and correctness issues, not just tuning parameters.
 
 Features ordered by how a chess engine naturally evolves - core algorithm first.
 
-| Phase                   | #  | Feature                        | Status    | Notes                             |
-|-------------------------|----|--------------------------------|-----------|-----------------------------------|
-| **Core Algorithm**      |    |                                |           |                                   |
-|                         | 1  | Alpha-Beta / PVS               | ✅ Correct | Reviewed 2026-02-21               |
-|                         | 2  | Aspiration Windows             | ✅ Fixed   | Comment fix applied               |
-|                         | 3  | Quiescence Search              | ✅ Fixed   | Removed history/killer updates    |
-| **Infrastructure**      |    |                                |           |                                   |
-|                         | 4  | TT Lookup & Cutoff             | ✅ Correct | Textbook correct                  |
-|                         | 5  | TT Storage                     | ✅ Correct | Replacement + bound types correct |
-|                         | 6  | Draw Detection                 | ✅ Correct | Repetition + 50-move correct      |
-|                         | 7  | Static Eval                    | ✅ Correct | Integration correct               |
-| **Move Ordering**       |    |                                |           |                                   |
-|                         | 8  | Move Ordering (overall)        | ✅ Correct | MVV-LVA, killers, history correct |
-|                         | 9  | History Heuristic              | ✅ Correct | Bonus/penalty/ordering correct    |
-|                         | 10 | Killer Moves                   | ✅ Correct | Per-ply, FIFO, protected          |
-|                         | 11 | Counter Moves                  | ✅ Correct | Refutation tracking correct       |
-| **Simple Pruning**      |    |                                |           |                                   |
-|                         | 12 | Mate Distance Pruning          | ✅ Correct | Both bounds correct               |
-|                         | 13 | Razoring                       | ✅ Correct | Fixed in v1.3                     |
-|                         | 14 | Reverse Futility Pruning (RFP) | ⬜ Pending | Static eval based                 |
-|                         | 15 | Futility Pruning (FP)          | ⬜ Pending | Move-level pruning                |
-| **Advanced Pruning**    |    |                                |           |                                   |
-|                         | 16 | Null Move Pruning (NMP)        | ⬜ Pending | Zugzwang handling                 |
-|                         | 17 | Late Move Pruning (LMP)        | ⬜ Pending | Move count based                  |
-|                         | 18 | Late Move Reduction (LMR)      | ⬜ Pending | Already tuned (+82 ELO)           |
-| **Extensions**          |    |                                |           |                                   |
-|                         | 19 | Check Extension                | ⬜ Pending | Basic extension                   |
-|                         | 20 | Singular Extension             | ⬜ Pending | Complex implementation            |
-|                         | 21 | Threat Extension               | ⬜ Pending | Currently disabled                |
-| **Search Enhancements** |    |                                |           |                                   |
-|                         | 22 | IID / IIR                      | ⬜ Pending | Finding moves without TT          |
-|                         | 23 | Tablebase Probing              | ⬜ Pending | Endgame knowledge                 |
-| **Control**             |    |                                |           |                                   |
-|                         | 24 | Time Management                | ⬜ Pending | Resource allocation               |
+| Phase                   | #  | Feature                        | Status    | Notes                              |
+|-------------------------|----|--------------------------------|-----------|------------------------------------|
+| **Core Algorithm**      |    |                                |           |                                    |
+|                         | 1  | Alpha-Beta / PVS               | ✅ Correct | Reviewed 2026-02-21                |
+|                         | 2  | Aspiration Windows             | ✅ Fixed   | Comment fix applied                |
+|                         | 3  | Quiescence Search              | ✅ Fixed   | Removed history/killer updates     |
+| **Infrastructure**      |    |                                |           |                                    |
+|                         | 4  | TT Lookup & Cutoff             | ✅ Correct | Textbook correct                   |
+|                         | 5  | TT Storage                     | ✅ Correct | Replacement + bound types correct  |
+|                         | 6  | Draw Detection                 | ✅ Correct | Repetition + 50-move correct       |
+|                         | 7  | Static Eval                    | ✅ Correct | Integration correct                |
+| **Move Ordering**       |    |                                |           |                                    |
+|                         | 8  | Move Ordering (overall)        | ✅ Correct | MVV-LVA, killers, history correct  |
+|                         | 9  | History Heuristic              | ✅ Correct | Bonus/penalty/ordering correct     |
+|                         | 10 | Killer Moves                   | ✅ Correct | Per-ply, FIFO, protected           |
+|                         | 11 | Counter Moves                  | ✅ Correct | Refutation tracking correct        |
+| **Simple Pruning**      |    |                                |           |                                    |
+|                         | 12 | Mate Distance Pruning          | ✅ Correct | Both bounds correct                |
+|                         | 13 | Razoring                       | ✅ Correct | Fixed in v1.3                      |
+|                         | 14 | Reverse Futility Pruning (RFP) | ✅ Fixed   | Added mate guard + fixed improving |
+|                         | 15 | Futility Pruning (FP)          | ✅ Fixed   | Fixed improving logic              |
+| **Advanced Pruning**    |    |                                |           |                                    |
+|                         | 16 | Null Move Pruning (NMP)        | ✅ Correct | All guards and logic verified      |
+|                         | 17 | Late Move Pruning (LMP)        | ⬜ Pending | Move count based                   |
+|                         | 18 | Late Move Reduction (LMR)      | ⬜ Pending | Already tuned (+82 ELO)            |
+| **Extensions**          |    |                                |           |                                    |
+|                         | 19 | Check Extension                | ⬜ Pending | Basic extension                    |
+|                         | 20 | Singular Extension             | ⬜ Pending | Complex implementation             |
+|                         | 21 | Threat Extension               | ⬜ Pending | Currently disabled                 |
+| **Search Enhancements** |    |                                |           |                                    |
+|                         | 22 | IID / IIR                      | ⬜ Pending | Finding moves without TT           |
+|                         | 23 | Tablebase Probing              | ⬜ Pending | Endgame knowledge                  |
+| **Control**             |    |                                |           |                                    |
+|                         | 24 | Time Management                | ⬜ Pending | Resource allocation                |
 
 ---
 
@@ -1506,6 +1506,423 @@ int RAZOR_MARGIN = 531;  // ~5.3 pawns
 
 ---
 
+### Feature #14: Reverse Futility Pruning (RFP)
+**Date:** 2026-02-21  
+**Status:** ✅ Fixed (2 issues corrected)
+
+**Implementation Location:** 
+- `src/engine/Search.cpp` lines 1085-1103
+
+**Theory Background:**
+- RFP (also called "Static Null Move Pruning") prunes when static eval is far above beta
+- If we're winning by a large margin, there's no need to search moves - just return
+- Inverse of razoring: razoring prunes when too far below alpha, RFP prunes when too far above beta
+- Safe at shallow depths where tactical complications are less likely
+
+**Checks:**
+
+#### ✅ Guards (CORRECT)
+```cpp
+if (SearchConfig.USE_RFP
+    && doNull                 // Not in null-move verification
+    && depth <= 3             // Only at shallow depths
+    && nodeType != PvNode     // Never on PV nodes
+    && !hasCheck) {           // Not when in check
+```
+
+**Analysis of each guard:**
+1. `doNull` - Prevents RFP during null-move verification search ✅
+2. `depth <= 3` - RFP only safe at frontier nodes (shallow depth) ✅
+3. `nodeType != PvNode` - Never prune on PV, need complete line ✅
+4. `!hasCheck` - When in check, must search escape moves ✅
+
+#### ✅ Implicit staticEval Guard (CORRECT)
+The `!hasCheck` guard implicitly ensures `staticEval != VALUE_NONE`:
+- When in check, `staticEval` stays `VALUE_NONE` (line 1029)
+- RFP only runs when `!hasCheck`, so staticEval is guaranteed valid
+
+#### ✅ Margin Calculation (CORRECT)
+```cpp
+auto margin = Value{SearchConfig.RFP_MARGIN[depth]};
+// RFP_MARGIN = {0, 200, 400, 800} default
+```
+- Depth-dependent margins: deeper search = larger margin ✅
+- Margin at depth 1: 200 cp (~2 pawns)
+- Margin at depth 2: 400 cp (~4 pawns)
+- Margin at depth 3: 800 cp (~8 pawns)
+- Index 0 unused (depth 0 goes to qsearch)
+
+#### ⚠️ Improving Integration (INVERTED FROM STOCKFISH)
+```cpp
+if (SearchConfig.USE_RFP_IMPROVING && !improving) {
+  margin -= Value{SearchConfig.RFP_IMPROVING_MARGIN};  // 40 cp default
+}
+```
+
+**Current behavior:** When NOT improving → reduce margin → prune MORE aggressively.
+
+**Stockfish's approach:** The opposite!
+```cpp
+// Stockfish futility_margin:
+return 118 * (d - improving) - 45 * cutNode;
+// improving=true → smaller margin → prune more
+// improving=false → larger margin → prune less
+```
+
+**Stockfish's reasoning:**
+- When improving: eval is reliable (trending as expected), can prune confidently
+- When not improving: something unexpected, search more carefully
+
+**FrankyCPP's reasoning:**
+- When improving: keep searching to maximize gains
+- When not improving: cut losses, accept good-enough
+
+**Analysis:** Stockfish's approach is more theoretically sound. "Not improving" suggests
+our eval might be overoptimistic (position declining despite good-looking eval). Pruning
+more aggressively in this case could miss tactical problems.
+
+**⚠️ MARKED FOR STRENGTH TESTING:**
+1. Current: reduce margin when not improving (prune more)
+2. Stockfish-style: increase margin when not improving (prune less)
+
+#### ✅ Pruning Condition (CORRECT)
+```cpp
+if (staticEval - margin >= beta) {
+  statistics.rfp_cuts++;
+  return staticEval - margin;  // fail-soft return
+}
+```
+
+**Analysis:**
+- `staticEval - margin >= beta` - Only prune when SIGNIFICANTLY above beta ✅
+- Returns `staticEval - margin` (fail-soft) instead of just `beta` (fail-hard) ✅
+- Fail-soft return preserves score information for better bounds
+
+#### ⚠️ POTENTIAL BUG: No Mate Score Guard
+Unlike NMP which has `nearMateWindow` guard, RFP has no explicit mate score guard.
+
+**Problem scenario:**
+1. Deep in search, opponent found forced mate: beta = -9950 (mate in 5 against us)
+2. Position looks fine positionally: staticEval = +200
+3. RFP check: `200 - 800 >= -9950` → `-600 >= -9950` → **TRUE**
+4. RFP returns `-600`, claiming "no mate here"
+5. **BUG:** We skipped searching and missed the forced mate!
+
+**How this happens:**
+- At depth <= 3, mate scores in beta can come from TT or parent nodes
+- Static eval is always a positional score (~-3000 to +3000)
+- Any reasonable staticEval will "beat" a negative mate score
+
+**Concrete example:**
+- We're up material (+200 eval)
+- Opponent threatens Qh7+ Kf8 Qf7# (mate in 2)
+- Beta = -9998 (mate in 2 from earlier search)
+- RFP: `200 - 800 = -600 >= -9998` → TRUE, prune!
+- We return -600, incorrectly claiming we escaped the mate
+
+**Proposed fix:**
+```cpp
+if (SearchConfig.USE_RFP
+    && doNull
+    && depth <= 3
+    && nodeType != PvNode
+    && !hasCheck
+    && std::abs(beta) < VALUE_CHECKMATE_THRESHOLD) {  // ADD THIS GUARD
+```
+
+**⚠️ REQUIRES CODE FIX** - Add mate score guard to RFP condition.
+
+#### ✅ Statistics Tracking (CORRECT)
+```cpp
+statistics.rfp_cuts++;
+```
+- Tracks RFP activations for analysis ✅
+
+**Findings:**
+1. ✅ All basic guards present and correct
+2. ✅ Depth-dependent margins (0, 200, 400, 800 cp)
+3. ✅ **FIXED:** Improving flag now matches Stockfish (increase margin when not improving)
+4. ✅ Fail-soft return preserves score information
+5. ✅ Statistics tracking present
+6. ✅ **FIXED:** Added mate score guard
+
+**Changes Made:**
+1. Added `&& std::abs(beta) < VALUE_CHECKMATE_THRESHOLD` guard to RFP condition
+2. Changed `margin -= ...` to `margin += ...` for improving logic (Stockfish-style)
+3. Updated comments in Search.cpp, SearchConfigData.h, and search.yaml
+
+**<span style="background-color: yellow;">TODO:</span>** Testing required (SearchTreeSize and Strength) to verify fixes don't regress
+
+---
+
+### Feature #15: Futility Pruning (FP)
+**Date:** 2026-02-21  
+**Status:** ✅ Fixed (1 issue corrected)
+
+**Implementation Location:** 
+- `src/engine/Search.cpp` lines 1376-1396
+
+**Theory Background:**
+- FP is move-level forward pruning (unlike RFP which is node-level)
+- For quiet moves at low depth, if staticEval + margin is still below alpha, skip the move
+- The move is unlikely to raise alpha - would need to gain more than the margin
+- Applied inside the move loop, after generating each move
+
+**Checks:**
+
+#### ✅ Outer Guards (CORRECT - shared with LMP/LMR)
+```cpp
+if (nodeType != PvNode
+    && extension == 0
+    && move != ttMove
+    && move != myMg->getKillerMoves()[0]
+    && move != myMg->getKillerMoves()[1]
+    && move.type() != PROMOTION
+    && !p.isCapturingMove(move)
+    && !hasCheck
+    && !givesCheck
+    && !matethreat) {
+```
+
+**Analysis of each guard:**
+1. `nodeType != PvNode` - Never prune on PV ✅
+2. `extension == 0` - Don't prune extended moves ✅
+3. `move != ttMove` - Don't prune TT move ✅
+4. `move != killerMoves[0/1]` - Protect killer moves ✅
+5. `move.type() != PROMOTION` - Don't prune promotions ✅
+6. `!p.isCapturingMove(move)` - Only prune quiet moves ✅
+7. `!hasCheck` - Not when in check ✅
+8. `!givesCheck` - Don't prune checking moves ✅
+9. `!matethreat` - Don't prune if opponent has mate threat ✅
+
+#### ✅ FP-Specific Guards (CORRECT)
+```cpp
+if (SearchConfig.USE_FP && depth < 7) {
+```
+- Depth limit of 7 is reasonable for FP ✅
+
+#### ✅ Formula (CORRECT)
+```cpp
+if (staticEval + moveGain + futilityMargin <= alpha) {
+```
+- For quiet moves, `moveGain = 0` (target square is empty)
+- Effectively: `staticEval + margin <= alpha`
+- If current eval + optimistic margin can't reach alpha, prune ✅
+
+#### ✅ Mate Score Safety (CORRECT)
+Unlike RFP, FP compares against alpha, not beta:
+- If alpha is negative mate (we're getting mated): `staticEval + margin <= -9950` → FALSE (don't prune)
+- If alpha is positive mate (we found a mate): `staticEval + margin <= +9950` → TRUE (prune)
+
+Pruning when we already have a forced mate is correct behavior - no need for mate guard.
+
+#### ✅ bestNodeValue Update (CORRECT)
+```cpp
+if (staticEval + moveGain > bestNodeValue) { bestNodeValue = staticEval + moveGain; }
+```
+- Tracks best estimate for fail-soft return
+- Ensures we don't return VALUE_NONE if all moves pruned ✅
+
+#### ⚠️ Improving Integration (WAS INVERTED - NOW FIXED)
+**Old (wrong):**
+```cpp
+if (SearchConfig.USE_FP_IMPROVING && !improving) {
+  futilityMargin -= SearchConfig.FP_IMPROVING_MARGIN;  // WRONG: prune more when not improving
+}
+```
+
+**New (correct):**
+```cpp
+if (SearchConfig.USE_FP_IMPROVING && !improving) {
+  futilityMargin += SearchConfig.FP_IMPROVING_MARGIN;  // CORRECT: prune less when not improving
+}
+```
+
+Same reasoning as RFP: when not improving, eval may be unreliable, so search more carefully.
+
+#### ✅ Margin Values (REASONABLE)
+```cpp
+FP_MARGIN = {0, 100, 200, 300, 500, 900, 1200}
+```
+- Depth 1: 100 cp (~1 pawn)
+- Depth 2: 200 cp (~2 pawns)
+- Depth 3: 300 cp (~3 pawns)
+- ...increasing with depth ✅
+
+**Findings:**
+1. ✅ Comprehensive outer guards protect important moves
+2. ✅ Depth limit (< 7) is reasonable
+3. ✅ Formula is correct for quiet move pruning
+4. ✅ No mate score guard needed (alpha comparison is safe)
+5. ✅ bestNodeValue tracking for fail-soft
+6. ✅ **FIXED:** Improving logic now matches Stockfish (increase margin when not improving)
+
+**Changes Made:**
+1. Changed `futilityMargin -= ...` to `futilityMargin += ...` for improving logic
+2. Updated comments in Search.cpp, SearchConfigData.h, and search.yaml
+
+**<span style="background-color: yellow;">TODO:</span>** Testing required (SearchTreeSize and Strength) to verify fix doesn't regress
+
+---
+
+### Feature #16: Null Move Pruning (NMP)
+**Date:** 2026-02-21  
+**Status:** ✅ Correct
+
+**Implementation Location:** 
+- `src/engine/Search.cpp` lines 1108-1200
+
+**Theory Background:**
+- NMP assumes making a move is almost always better than passing
+- If we pass (null move) and STILL beat beta, we're winning so much we can prune
+- Dangerous in zugzwang positions where passing would actually be best
+- Verification search helps catch false positives
+
+**Checks:**
+
+#### ✅ Guards (CORRECT)
+```cpp
+if (doNull                    // Not already in null-move search
+    && nodeType != PvNode     // Never on PV nodes
+    && depth >= SearchConfig.NMP_DEPTH  // Minimum depth (3)
+    && !hasCheck              // Not when in check
+    && !zugProne              // Not in zugzwang-prone endgame
+    && !nearMateWindow) {     // Not when bounds contain mate scores
+```
+
+**Analysis of each guard:**
+1. `doNull` - Prevents recursive null moves ✅
+2. `nodeType != PvNode` - Never on PV, need complete line ✅
+3. `depth >= NMP_DEPTH` (3) - Need minimum depth for meaningful search ✅
+4. `!hasCheck` - Can't pass when in check (illegal) ✅
+5. `!zugProne` - Disabled when only pawns (zugzwang risk) ✅
+6. `!nearMateWindow` - Disabled near mate scores ✅
+
+#### ✅ Zugzwang Guard (CORRECT)
+```cpp
+const bool zugProne = SearchConfig.USE_NMP_ZUG_GUARD
+                      && p.getMaterialNonPawn(us) <= SearchConfig.NMP_ZUG_NONPAWN_THRESHOLD;
+```
+- `NMP_ZUG_NONPAWN_THRESHOLD = 0` means disabled when we have ONLY pawns (no pieces)
+- King+pawns vs King+pawns is zugzwang-prone ✅
+
+#### ✅ Near Mate Guard (CORRECT)
+```cpp
+const bool nearMateWindow = SearchConfig.USE_NMP_ZUG_GUARD
+                            && (beta > VALUE_CHECKMATE_THRESHOLD - SearchConfig.NMP_NEAR_MATE_MARGIN
+                                || alpha < -VALUE_CHECKMATE_THRESHOLD + SearchConfig.NMP_NEAR_MATE_MARGIN);
+```
+- Disables NMP when alpha or beta are near mate scores ✅
+- Prevents incorrect pruning when searching for mates ✅
+
+#### ✅ Reduction Calculation (CORRECT)
+```cpp
+auto r = Depth{SearchConfig.NMP_REDUCTION};  // Base: 2
+if (depth > 8 || (depth > 6 && p.getGamePhase() >= 3)) { ++r; }
+```
+- Base reduction of 2 (R=2 standard) ✅
+- Adaptive: increases at higher depths ✅
+
+#### ✅ Improving Integration (CORRECT - different from RFP/FP!)
+```cpp
+if (SearchConfig.USE_NMP_IMPROVING && !improving) {
+  r += static_cast<Depth>(SearchConfig.NMP_IMPROVING_REDUCTION);  // +1
+}
+```
+
+**Why this is CORRECT (opposite direction from RFP/FP is intentional):**
+
+The key insight is that NMP and RFP/FP have **different verification mechanisms**:
+
+**RFP/FP (no verification):**
+- Decision based purely on static eval
+- When not improving, eval may be unreliable
+- → Increase margin = prune LESS = be careful with unverified decisions
+
+**NMP (with verification search):**
+- Does an actual search (null-move search) before deciding
+- This search VERIFIES the position is good
+- When not improving, if we STILL beat beta after passing, we're very confident
+- → Increase reduction = prune MORE = trust the verified result
+
+**Stockfish confirms both directions:**
+- RFP: `margin = 118 * (d - improving)` → less pruning when not improving
+- NMP: `R = ... - improving` → more pruning when not improving
+
+This is exactly what FrankyCPP does. The opposite directions are correct because
+of the fundamental difference in verification: NMP verifies with a search,
+RFP/FP trust static eval without verification.
+
+**<span style="background-color: yellow;">TODO:</span>** Revisit this reasoning – confirm with strength testing that NMP improving
+direction is correct (more reduction when not improving).
+
+#### ✅ Null Move Search (CORRECT)
+```cpp
+p.doNullMove();
+nodesVisited++;
+Value nValue = -search(p, newDepth, ply + 1, -beta, -beta + 1, CutNode, No_Null_Move);
+p.undoNullMove();
+```
+- Null window search (`-beta, -beta + 1`) ✅
+- `No_Null_Move` prevents recursive null moves ✅
+- `CutNode` is correct (expecting fail-high) ✅
+- Increments nodesVisited ✅
+
+#### ✅ Mate Threat Detection (CORRECT)
+```cpp
+if (nValue > VALUE_CHECKMATE_THRESHOLD) {
+  nValue = VALUE_CHECKMATE_THRESHOLD;  // Cap unproven mate
+}
+else if (nValue < -(VALUE_CHECKMATE - 6)) {
+  matethreat = true;  // Opponent has mate threat
+}
+```
+- Caps mate scores to avoid returning unproven mates ✅
+- Detects mate threats (opponent mates us if we pass) ✅
+- `matethreat` flag used later to protect moves from pruning ✅
+
+#### ✅ Verification Search (CORRECT)
+```cpp
+if (SearchConfig.USE_NMP_VERIFY && depth >= SearchConfig.NMP_VERIFY_MIN_DEPTH) {
+  Depth verifyDepth = depth - r - SearchConfig.NMP_VERIFY_MARGIN;
+  const auto do_null = matethreat ? No_Null_Move : Do_Null_Move;
+  const Value v = search(p, verifyDepth, ply, beta - 1, beta, nodeType, do_null);
+  if (v < beta) {
+    // Verification failed - don't prune
+  }
+  else {
+    // Verification passed - prune
+    return nValue;
+  }
+}
+```
+- Only at sufficient depth (>= 6) ✅
+- Disables null moves if mate threat detected ✅
+- Uses same node type for verification ✅
+- Falls through (no pruning) if verification fails ✅
+
+#### ✅ TT Storage (CORRECT)
+```cpp
+if (SearchConfig.USE_TT) { storeTt(p, depth, ply, MOVE_NONE, nValue, BETA, staticEval); }
+```
+- Stores with BETA bound (lower bound, fail-high) ✅
+- Uses MOVE_NONE since we didn't search a real move ✅
+
+**Findings:**
+1. ✅ All guards comprehensive and correct
+2. ✅ Zugzwang protection (pawn-only endgames)
+3. ✅ Near-mate window protection
+4. ✅ Adaptive reduction calculation
+5. ✅ Improving logic is CORRECT (opposite direction from RFP/FP is intentional)
+6. ✅ Null-move search parameters correct
+7. ✅ Mate threat detection and handling
+8. ✅ Verification search implementation
+9. ✅ TT storage with correct bound type
+
+**Changes Made:** None required
+
+---
+
 ## Known Bugs Already Fixed (v1.3)
 
 For reference - these were found and fixed before this review:
@@ -1547,3 +1964,6 @@ For reference - these were found and fixed before this review:
 | 2026-02-21 | 1       | Reviewed Feature #11: Counter Moves ✅                          |
 | 2026-02-21 | 1       | Reviewed Feature #12: Mate Distance Pruning ✅                  |
 | 2026-02-21 | 1       | Reviewed Feature #13: Razoring ✅                               |
+| 2026-02-21 | 2       | Reviewed Feature #14: RFP - Fixed mate guard + improving logic |
+| 2026-02-21 | 2       | Reviewed Feature #15: FP - Fixed improving logic               |
+| 2026-02-21 | 2       | Reviewed Feature #16: NMP ✅ (all correct)                      |
