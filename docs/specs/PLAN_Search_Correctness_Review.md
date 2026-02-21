@@ -38,40 +38,40 @@ Focus is on finding bugs and correctness issues, not just tuning parameters.
 
 Features ordered by how a chess engine naturally evolves - core algorithm first.
 
-| Phase                   | #  | Feature                        | Status    | Notes                              |
-|-------------------------|----|--------------------------------|-----------|------------------------------------|
-| **Core Algorithm**      |    |                                |           |                                    |
-|                         | 1  | Alpha-Beta / PVS               | ✅ Correct | Reviewed 2026-02-21                |
-|                         | 2  | Aspiration Windows             | ✅ Fixed   | Comment fix applied                |
-|                         | 3  | Quiescence Search              | ✅ Fixed   | Removed history/killer updates     |
-| **Infrastructure**      |    |                                |           |                                    |
-|                         | 4  | TT Lookup & Cutoff             | ✅ Correct | Textbook correct                   |
-|                         | 5  | TT Storage                     | ✅ Correct | Replacement + bound types correct  |
-|                         | 6  | Draw Detection                 | ✅ Correct | Repetition + 50-move correct       |
-|                         | 7  | Static Eval                    | ✅ Correct | Integration correct                |
-| **Move Ordering**       |    |                                |           |                                    |
-|                         | 8  | Move Ordering (overall)        | ✅ Correct | MVV-LVA, killers, history correct  |
-|                         | 9  | History Heuristic              | ✅ Correct | Bonus/penalty/ordering correct     |
-|                         | 10 | Killer Moves                   | ✅ Correct | Per-ply, FIFO, protected           |
-|                         | 11 | Counter Moves                  | ✅ Correct | Refutation tracking correct        |
-| **Simple Pruning**      |    |                                |           |                                    |
-|                         | 12 | Mate Distance Pruning          | ✅ Correct | Both bounds correct                |
-|                         | 13 | Razoring                       | ✅ Correct | Fixed in v1.3                      |
-|                         | 14 | Reverse Futility Pruning (RFP) | ✅ Fixed   | Added mate guard + fixed improving |
-|                         | 15 | Futility Pruning (FP)          | ✅ Fixed   | Fixed improving logic              |
-| **Advanced Pruning**    |    |                                |           |                                    |
-|                         | 16 | Null Move Pruning (NMP)        | ✅ Correct | All guards and logic verified      |
-|                         | 17 | Late Move Pruning (LMP)        | ⬜ Pending | Move count based                   |
-|                         | 18 | Late Move Reduction (LMR)      | ⬜ Pending | Already tuned (+82 ELO)            |
-| **Extensions**          |    |                                |           |                                    |
-|                         | 19 | Check Extension                | ⬜ Pending | Basic extension                    |
-|                         | 20 | Singular Extension             | ⬜ Pending | Complex implementation             |
-|                         | 21 | Threat Extension               | ⬜ Pending | Currently disabled                 |
-| **Search Enhancements** |    |                                |           |                                    |
-|                         | 22 | IID / IIR                      | ⬜ Pending | Finding moves without TT           |
-|                         | 23 | Tablebase Probing              | ⬜ Pending | Endgame knowledge                  |
-| **Control**             |    |                                |           |                                    |
-|                         | 24 | Time Management                | ⬜ Pending | Resource allocation                |
+| Phase                   | #  | Feature                        | Status     | Notes                              |
+|-------------------------|----|--------------------------------|------------|------------------------------------|
+| **Core Algorithm**      |    |                                |            |                                    |
+|                         | 1  | Alpha-Beta / PVS               | ✅ Correct  | Reviewed 2026-02-21                |
+|                         | 2  | Aspiration Windows             | ✅ Fixed    | Comment fix applied                |
+|                         | 3  | Quiescence Search              | ✅ Fixed    | Removed history/killer updates     |
+| **Infrastructure**      |    |                                |            |                                    |
+|                         | 4  | TT Lookup & Cutoff             | ✅ Correct  | Textbook correct                   |
+|                         | 5  | TT Storage                     | ✅ Correct  | Replacement + bound types correct  |
+|                         | 6  | Draw Detection                 | ✅ Correct  | Repetition + 50-move correct       |
+|                         | 7  | Static Eval                    | ✅ Correct  | Integration correct                |
+| **Move Ordering**       |    |                                |            |                                    |
+|                         | 8  | Move Ordering (overall)        | ✅ Correct  | MVV-LVA, killers, history correct  |
+|                         | 9  | History Heuristic              | ✅ Correct  | Bonus/penalty/ordering correct     |
+|                         | 10 | Killer Moves                   | ✅ Correct  | Per-ply, FIFO, protected           |
+|                         | 11 | Counter Moves                  | ✅ Correct  | Refutation tracking correct        |
+| **Simple Pruning**      |    |                                |            |                                    |
+|                         | 12 | Mate Distance Pruning          | ✅ Correct  | Both bounds correct                |
+|                         | 13 | Razoring                       | ✅ Correct  | Fixed in v1.3                      |
+|                         | 14 | Reverse Futility Pruning (RFP) | ✅ Fixed    | Added mate guard + fixed improving |
+|                         | 15 | Futility Pruning (FP)          | ✅ Fixed    | Fixed improving logic              |
+| **Advanced Pruning**    |    |                                |            |                                    |
+|                         | 16 | Null Move Pruning (NMP)        | ✅ Correct  | All guards and logic verified      |
+|                         | 17 | Late Move Pruning (LMP)        | ✅ Correct  | Threshold-based, improving OK      |
+|                         | 18 | Late Move Reduction (LMR)      | ✅ Enhanced | Broadened scope, reduction adjust  |
+| **Extensions**          |    |                                |            |                                    |
+|                         | 19 | Check Extension                | ⬜ Pending  | Basic extension                    |
+|                         | 20 | Singular Extension             | ⬜ Pending  | Complex implementation             |
+|                         | 21 | Threat Extension               | ⬜ Pending  | Currently disabled                 |
+| **Search Enhancements** |    |                                |            |                                    |
+|                         | 22 | IID / IIR                      | ⬜ Pending  | Finding moves without TT           |
+|                         | 23 | Tablebase Probing              | ⬜ Pending  | Endgame knowledge                  |
+| **Control**             |    |                                |            |                                    |
+|                         | 24 | Time Management                | ⬜ Pending  | Resource allocation                |
 
 ---
 
@@ -528,8 +528,6 @@ Value Search::valueFromTt(const Value value, const Depth ply) {
   return value;
 }
 ```
-
-**Analysis:**
 - Mate scores are stored relative to the root (distance from root to mate)
 - When retrieved, they're adjusted to be relative to current ply
 - Positive mate (we're winning): store as `value + ply`, retrieve as `value - ply` ✅
@@ -996,16 +994,11 @@ const Value value = 2000 + valueOf(captured) - valueOf(attacker) + posValue;
 // Quiet moves: -2000 + positional + history
 const Value value = posValue - 2000 + historyBonus;
 ```
-
-**Priority order:**
-1. PV move: VALUE_MAX (10000)
-2. Captures: 2000 + (victim - attacker) → typically 2000-7000
-3. Killers: 1000-1001
-4. Counter moves: history + 500
-5. Quiet moves with history: -2000 + history bonus
-6. Other quiet moves: -2000 + positional value
-
-✅ This is the correct ordering!
+- PV move: VALUE_MAX (10000)
+- Captures: 2000 + (victim - attacker) → typically 2000-7000
+- Killer 1 (most recent) has higher priority (1001) ✅
+- Killer 2 has lower priority (1000) ✅
+- Both below captures (~2000+) but above regular quiet moves (~-2000) ✅
 
 #### ✅ MVV-LVA for Captures (CORRECT)
 ```cpp
@@ -1155,11 +1148,19 @@ if (value > 0) {
 if (SearchConfig.USE_LMR_HISTORY) {
   const int histScore = history.historyCount[us][from][to];
   const int histReduction = -histScore / SearchConfig.LMR_HISTORY_DIVISOR;
+  if (histReduction < 0) {
+    statistics.lmrHistoryLessReduction++;
+    statistics.lmrHistoryDepthSaved -= histReduction;
+  }
   lmrDepth -= static_cast<Depth>(histReduction);
 }
 ```
-- Positive history → negative histReduction → less LMR reduction ✅
-- Configurable divisor for tuning ✅
+
+**Logic analysis:**
+- `histScore > 0` (good move) → `histReduction < 0` → `lmrDepth -= negative` = increase → LESS reduction ✅
+- `histScore < 0` (bad move) → `histReduction > 0` → `lmrDepth -= positive` = decrease → MORE reduction ✅
+
+The sign handling is correct. Good moves get less reduction, bad moves get more.
 
 #### ✅ Reset Timing (CORRECT)
 ```cpp
@@ -1216,10 +1217,10 @@ std::array<Move, 2> killerMoves = {MOVE_NONE, MOVE_NONE};
 void MoveGenerator::storeKiller(const Move killerMove) {
   const Move m = killerMove.stripped();
   if (killerMoves[0] == m) {
-    return;  // Already first killer, don't duplicate
+    return;  // Don't duplicate
   }
-  killerMoves[1] = killerMoves[0];  // Demote old first to second
-  killerMoves[0] = m;               // New move becomes first
+  killerMoves[1] = killerMoves[0];  // Shift old killer
+  killerMoves[0] = m;               // New killer first
 }
 ```
 - Strips sort value before storing ✅
@@ -1350,7 +1351,7 @@ if (historyDataPtr->counterMoves[p.getLastMove().from()][p.getLastMove().to()] =
 ```
 - Checks if current move is the counter to opponent's last move ✅
 - Adds +500 bonus to sort value ✅
-- Combined with history bonus ✅
+- Combined with history score ✅
 
 #### ✅ Reset Timing (CORRECT)
 ```cpp
@@ -1482,7 +1483,7 @@ if (!hasCheck && staticEval == VALUE_NONE) {
 ```cpp
 return qsearch(p, ply, alpha, beta, AllNode);
 ```
-- Uses `AllNode` since we expect to fail low ✅ (fixed 19.2.2026)
+- Uses `AllNode` since we expect to fail high ✅ (fixed 19.2.2026)
 - Passes current alpha/beta bounds ✅
 - Returns qsearch result directly ✅
 
@@ -1656,10 +1657,10 @@ statistics.rfp_cuts++;
 ---
 
 ### Feature #15: Futility Pruning (FP)
-**Date:** 2026-02-21  
+**Date:** 2026-02-21
 **Status:** ✅ Fixed (1 issue corrected)
 
-**Implementation Location:** 
+**Implementation Location:**
 - `src/engine/Search.cpp` lines 1376-1396
 
 **Theory Background:**
@@ -1766,10 +1767,10 @@ FP_MARGIN = {0, 100, 200, 300, 500, 900, 1200}
 ---
 
 ### Feature #16: Null Move Pruning (NMP)
-**Date:** 2026-02-21  
+**Date:** 2026-02-21
 **Status:** ✅ Correct
 
-**Implementation Location:** 
+**Implementation Location:**
 - `src/engine/Search.cpp` lines 1108-1200
 
 **Theory Background:**
@@ -1791,9 +1792,9 @@ if (doNull                    // Not already in null-move search
 ```
 
 **Analysis of each guard:**
-1. `doNull` - Prevents recursive null moves ✅
-2. `nodeType != PvNode` - Never on PV, need complete line ✅
-3. `depth >= NMP_DEPTH` (3) - Need minimum depth for meaningful search ✅
+1. `doNull` - Prevents RFP during null-move verification search ✅
+2. `depth <= 3` - RFP only safe at frontier nodes ✅
+3. `nodeType != PvNode` - Never prune on PV, need complete line ✅
 4. `!hasCheck` - Can't pass when in check (illegal) ✅
 5. `!zugProne` - Disabled when only pawns (zugzwang risk) ✅
 6. `!nearMateWindow` - Disabled near mate scores ✅
@@ -1823,16 +1824,17 @@ if (depth > 8 || (depth > 6 && p.getGamePhase() >= 3)) { ++r; }
 - Base reduction of 2 (R=2 standard) ✅
 - Adaptive: increases at higher depths ✅
 
-#### ✅ Improving Integration (CORRECT - different from RFP/FP!)
+#### ✅ Improving Integration (CORRECT - matches NMP/LMP pattern)
 ```cpp
 if (SearchConfig.USE_NMP_IMPROVING && !improving) {
   r += static_cast<Depth>(SearchConfig.NMP_IMPROVING_REDUCTION);  // +1
 }
 ```
 
-**Why this is CORRECT (opposite direction from RFP/FP is intentional):**
-
-The key insight is that NMP and RFP/FP have **different verification mechanisms**:
+**Pattern consistency:**
+- When NOT improving → more reduction → prune MORE
+- This matches NMP and LMP direction
+- Opposite from RFP/FP (which prune LESS when not improving)
 
 **RFP/FP (no verification):**
 - Decision based purely on static eval
@@ -1923,6 +1925,361 @@ if (SearchConfig.USE_TT) { storeTt(p, depth, ply, MOVE_NONE, nValue, BETA, stati
 
 ---
 
+### Feature #17: Late Move Pruning (LMP)
+**Date:** 2026-02-21  
+**Status:** ✅ Correct
+
+**Implementation Location:** 
+- `src/engine/Search.cpp` lines 1400-1413
+
+**Theory Background:**
+- LMP (aka Move-Count-Based Pruning) prunes late moves that are unlikely to beat alpha
+- Based on the assumption that move ordering is good and early moves are best
+- After searching N moves without improving alpha, remaining moves are probably bad
+- N depends on depth (more moves at higher depths)
+
+**Checks:**
+
+#### ✅ Outer Guards (Shared with FP - CORRECT)
+LMP shares outer guards with Futility Pruning at lines 1362-1373:
+```cpp
+if (nodeType != PvNode
+    && extension == 0
+    && move != ttMove
+    && move != myMg->getKillerMoves()[0]
+    && move != myMg->getKillerMoves()[1]
+    && move.type() != PROMOTION
+    && !p.isCapturingMove(move)
+    && !hasCheck
+    && !givesCheck
+    && !matethreat) {
+```
+
+**Analysis of each guard:**
+1. `nodeType != PvNode` - Never prune on PV (need complete line) ✅
+2. `extension == 0` - Don't prune extended moves (they're important) ✅
+3. `move != ttMove` - Don't prune TT move (proven good in past) ✅
+4. `move != killerMoves[0/1]` - Protect killer moves (caused cutoffs) ✅
+5. `move.type() != PROMOTION` - Don't prune promotions (potentially winning) ✅
+6. `!p.isCapturingMove(move)` - Only prune quiet moves ✅
+7. `!hasCheck` - Not when in check (need all escape moves) ✅
+8. `!givesCheck` - Don't prune checking moves (tactical) ✅
+9. `!matethreat` - Don't prune if opponent has mate threat ✅
+
+#### ✅ LMP Core Logic (CORRECT)
+```cpp
+if (SearchConfig.USE_LMP) {
+  const int lmpDepth = depth > 15 ? 15 : depth;
+  int lmpThreshold = SearchConfig.LMP_MOVES[lmpDepth];
+  // When improving, allow searching more moves before pruning
+  if (SearchConfig.USE_LMP_IMPROVING && improving) {
+    lmpThreshold += lmpThreshold / 2; // 50% more moves when improving
+  }
+  if (movesSearched >= lmpThreshold) {
+    statistics.lmpCuts++;
+    continue;
+  }
+}
+```
+
+**Analysis:**
+- Depth clamping to 15 (array size) ✅
+- Uses configurable threshold array per depth ✅
+- Prunes when `movesSearched >= threshold` ✅
+
+#### ✅ Threshold Values (REASONABLE)
+```cpp
+LMP_MOVES = {0, 7, 9, 11, 13, 15, 17, 19, 22, 24, 27, 29, 32, 35, 38, 41}
+```
+- Depth 1: 7 moves before pruning
+- Depth 2: 9 moves
+- Depth 3: 11 moves
+- ...scaling up with depth ✅
+
+These values are reasonable - more moves searched at higher depths where
+move ordering may be less reliable.
+
+#### ✅ Improving Integration (CORRECT - different direction from RFP/FP)
+```cpp
+if (SearchConfig.USE_LMP_IMPROVING && improving) {
+  lmpThreshold += lmpThreshold / 2; // 50% more moves when improving
+}
+```
+
+**Current behavior:**
+- When improving → threshold INCREASES → prune LESS
+- When NOT improving → base threshold → prune MORE
+
+**Why this is the OPPOSITE direction from RFP/FP but still CORRECT:**
+
+The key insight is that LMP and RFP/FP are based on **different assumptions**:
+
+**RFP/FP (margin-based, trust static eval):**
+- Decision based purely on static evaluation
+- When NOT improving, static eval is unreliable → prune LESS (be careful)
+- Pattern: `margin += ...` when NOT improving
+
+**LMP (threshold-based, trust move ordering):**
+- Decision based on move ordering quality, not static eval
+- When improving, position is progressing → there might be more good moves → search MORE
+- When NOT improving, position is stuck → late moves won't help → prune MORE
+- Pattern: `threshold += ...` when improving
+
+This matches NMP's direction:
+- NMP: `reduction += ...` when NOT improving → prune MORE
+- LMP: `threshold += ...` when improving → prune LESS when improving → prune MORE when NOT improving
+
+**Consistency with Stockfish:**
+Stockfish uses `improving` to modulate LMP thresholds similarly - larger threshold
+(search more) when improving, smaller (prune more) when not improving.
+
+**Summary of patterns:**
+
+| Feature | Mechanism          | When NOT improving | Rationale                            |
+|---------|--------------------|--------------------|--------------------------------------|
+| RFP/FP  | margin += X        | prune LESS         | Static eval unreliable               |
+| NMP     | reduction += X     | prune MORE         | Search verified position             |
+| LMP     | use base threshold | prune MORE         | Late moves won't help stuck position |
+| LMR     | reduction += X     | prune MORE         | Late moves unlikely to improve       |
+
+#### ✅ No Mate Score Guard Needed (CORRECT)
+Unlike RFP, LMP doesn't compare against eval or alpha/beta directly.
+It only counts moves searched, so mate scores don't affect the decision.
+
+#### ⚠️ Minor Observation: No History Integration
+Some engines reduce LMP threshold for moves with bad history (prune earlier)
+or increase for moves with good history (protect from pruning). FrankyCPP
+doesn't do this currently.
+
+**Not a bug** - just a potential enhancement. History-based LMP modulation
+is more complex and requires tuning.
+
+**Findings:**
+1. ✅ Outer guards comprehensive (shared with FP)
+2. ✅ Depth-based threshold array is reasonable
+3. ✅ Depth clamping prevents array overflow
+4. ✅ Improving logic is CORRECT (opposite from RFP/FP is intentional)
+5. ✅ No mate score guard needed
+6. ⚠️ Could consider history-based threshold modulation (future enhancement)
+
+**Changes Made:** None required
+
+---
+
+### Feature #18: Late Move Reduction (LMR)
+**Date:** 2026-02-21
+**Status:** ✅ Correct
+
+**Implementation Location:**
+- `src/engine/Search.cpp` lines 1415-1462
+- `src/engine/Search.h` lines 205-240 (reduction table)
+- `src/config/SearchConfigData.h` lines 123-142
+
+**Theory Background:**
+- LMR reduces search depth for later moves that are unlikely to beat alpha
+- Based on the assumption that good moves are searched early (move ordering)
+- If a reduced search still beats alpha, re-search at full depth
+- Provides massive tree reduction while maintaining search quality
+
+**Checks:**
+
+#### ✅ Outer Guards (Shared with FP/LMP - CORRECT)
+LMR is inside the forward pruning block (lines 1362-1373):
+```cpp
+if (nodeType != PvNode
+    && extension == 0
+    && move != ttMove
+    && move != myMg->getKillerMoves()[0]
+    && move != myMg->getKillerMoves()[1]
+    && move.type() != PROMOTION
+    && !p.isCapturingMove(move)
+    && !hasCheck
+    && !givesCheck
+    && !matethreat) {
+```
+
+These guards protect important moves from any reduction/pruning.
+
+#### ✅ LMR-Specific Guards (CORRECT)
+```cpp
+if (SearchConfig.USE_LMR
+    && depth >= SearchConfig.LMR_MIN_DEPTH
+    && movesSearched >= SearchConfig.LMR_MIN_MOVES
+    && nodeType != PvNode
+    && !givesCheck
+    && !p.isCapturingMove(move)
+    && move.type() != PROMOTION
+    && !matethreat) {
+```
+
+**Note:** Some guards are redundant with outer block but not incorrect:
+- `nodeType != PvNode` (already checked)
+- `!givesCheck`, `!isCapturingMove`, `!PROMOTION`, `!matethreat` (already checked)
+
+**Additional LMR-specific:**
+- `depth >= LMR_MIN_DEPTH (2)` - Need depth for meaningful reduction ✅
+- `movesSearched >= LMR_MIN_MOVES (2)` - Don't reduce first moves ✅
+
+#### ✅ Reduction Table (CORRECT)
+```cpp
+// Logarithmic formula: log(depth) * log(moves) / divisor
+static int lmr_reduction_log(const int depth, const int movesSearched, const double divisor) noexcept {
+  if (depth <= 1 || movesSearched <= 1) return 1;
+  return static_cast<int>(std::lround(std::log(depth) * std::log(movesSearched) / divisor));
+}
+```
+
+- Uses classic logarithmic formula (Stockfish-style) ✅
+- Configurable divisor (default 1.5) for tuning ✅
+- Fallback to 1 for edge cases (depth ≤ 1 or moves ≤ 1) ✅
+
+#### ✅ Improving Integration (CORRECT - matches NMP/LMP pattern)
+```cpp
+// Reduce more when position is NOT improving (eval not better than 2 plies ago)
+if (SearchConfig.USE_LMR_IMPROVING && !improving) {
+  lmrDepth -= static_cast<Depth>(SearchConfig.LMR_IMPROVING_REDUCTION);
+}
+```
+
+**Pattern consistency:**
+- When NOT improving → more reduction → prune MORE
+- This matches NMP and LMP direction
+- Opposite from RFP/FP (which prune LESS when not improving)
+
+**Rationale:** LMR is search-based (verified by actual search), not eval-based.
+When not improving, late moves are unlikely to help → reduce more aggressively.
+
+#### ✅ Cut Node Extra Reduction (CORRECT)
+```cpp
+// Reduce more on expected cut nodes (expected to fail high)
+// Late moves on cut nodes are very unlikely to be the best move
+if (SearchConfig.USE_LMR_CUTNODE && nodeType == CutNode) {
+  lmrDepth -= static_cast<Depth>(SearchConfig.LMR_CUTNODE_REDUCTION);
+  statistics.lmrCutNodeReductions++;
+}
+```
+
+- Cut nodes expect fail-high → early moves should cause cutoff ✅
+- Late moves on cut nodes are very unlikely to be best → reduce more ✅
+- LMR_CUTNODE_REDUCTION = 2 (reasonable) ✅
+
+#### ✅ History-Based Adjustment (CORRECT)
+```cpp
+if (SearchConfig.USE_LMR_HISTORY) {
+  const int histScore = history.historyCount[us][from][to];
+  const int histReduction = -histScore / SearchConfig.LMR_HISTORY_DIVISOR;
+  if (histReduction < 0) {
+    statistics.lmrHistoryLessReduction++;
+    statistics.lmrHistoryDepthSaved -= histReduction;
+  }
+  lmrDepth -= static_cast<Depth>(histReduction);
+}
+```
+
+**Logic analysis:**
+- `histScore > 0` (good move) → `histReduction < 0` → `lmrDepth -= negative` = increase → LESS reduction ✅
+- `histScore < 0` (bad move) → `histReduction > 0` → `lmrDepth -= positive` = decrease → MORE reduction ✅
+
+The sign handling is correct. Good moves get less reduction, bad moves get more.
+
+#### ✅ Depth Clamping (CORRECT)
+```cpp
+// Clamp: don't go below DEPTH_NONE and don't exceed newDepth (no extension via LMR!)
+lmrDepth = std::clamp(lmrDepth, DEPTH_NONE, newDepth);
+```
+
+- Lower bound: DEPTH_NONE (don't drop into qsearch accidentally via negative) ✅
+- Upper bound: newDepth (LMR never increases depth) ✅
+
+#### ✅ Re-search Logic (CORRECT)
+```cpp
+value = -search(p, lmrDepth, ply + 1, -alpha - 1, -alpha, childType, do_null);
+if (value > alpha && !stopConditions() && !isTimeAlmostUp()) {
+  if (lmrDepth < newDepthFixed) {
+    // Re-search at full depth
+    statistics.lmrResearches++;
+    const NodeType researchType = (nodeType == PvNode) ? PvNode : childType;
+    value = -search(p, newDepth, ply + 1, -beta, -alpha, researchType, do_null);
+  }
+  else if (value < beta) {
+    // PVS re-search
+    statistics.pvsResearches++;
+    ...
+  }
+}
+```
+
+- Reduced search with null window ✅
+- Re-search at full depth if reduced search beats alpha ✅
+- Separates LMR re-search from PVS re-search for statistics ✅
+- Correct node type propagation on re-search ✅
+
+#### ⚠️ ~~Minor Observation: LMR Inside Pruning Block~~ → ENHANCED
+~~LMR is inside the same guard block as FP/LMP, which means:~~
+~~- TT moves are never reduced~~
+~~- Killer moves are never reduced~~
+~~- Extended moves are never reduced~~
+
+~~Modern Stockfish applies LMR more broadly (outside the pruning block).~~
+~~However, this conservative approach is **not incorrect**, just more restrictive.~~
+
+**UPDATE 2026-02-21:** LMR has been moved outside the FP/LMP guard block.
+Now uses **reduction adjustments** instead of binary exclusion:
+
+```cpp
+// LMR now outside pruning block with broader guards:
+if (SearchConfig.USE_LMR
+    && depth >= SearchConfig.LMR_MIN_DEPTH
+    && movesSearched >= SearchConfig.LMR_MIN_MOVES
+    && nodeType != PvNode
+    && !hasCheck
+    && !matethreat) {
+  // ... base reduction calculation ...
+
+  // Reduce less for special moves (still search them, but with less reduction)
+  if (move == ttMove) {
+    lmrDepth += DEPTH_ONE;  // TT move: reduce less
+  }
+  else if (move == killers[0] || move == killers[1]) {
+    lmrDepth += DEPTH_ONE;  // Killer moves: reduce less
+  }
+  else if (givesCheck) {
+    lmrDepth += DEPTH_ONE;  // Checking moves: reduce less
+  }
+
+  // Don't reduce captures and promotions
+  if (p.isCapturingMove(move) || move.type() == PROMOTION) {
+    lmrDepth = newDepth;  // No reduction
+  }
+}
+```
+
+**Benefits of this approach:**
+- TT moves, killers, checking moves are now considered for LMR (with +1 depth adjustment)
+- Captures and promotions still get no reduction (material-changing moves)
+- More aggressive tree pruning while protecting important moves
+- Matches modern Stockfish approach
+
+**Findings:**
+1. ✅ Outer guards protect important moves from reduction
+2. ✅ LMR-specific guards (depth, moves searched) are correct
+3. ✅ Reduction table uses correct logarithmic formula
+4. ✅ Improving integration matches NMP/LMP pattern (prune more when not improving)
+5. ✅ Cut node extra reduction is correct
+6. ✅ History-based adjustment has correct sign handling
+7. ✅ Depth clamping prevents negative depths and accidental extensions
+8. ✅ Re-search logic correctly handles LMR failures
+9. ✅ **ENHANCED:** LMR moved outside pruning block with reduction adjustments
+
+**Changes Made:** 
+- Moved LMR outside FP/LMP guard block
+- Added reduction adjustments for TT move, killer moves, checking moves (+1 depth)
+- Captures/promotions still get no reduction
+
+**<span style="background-color: yellow;">TODO:</span>** Test with SearchTreeSize and strength tests to verify enhancement
+
+---
+
 ## Known Bugs Already Fixed (v1.3)
 
 For reference - these were found and fixed before this review:
@@ -1964,6 +2321,80 @@ For reference - these were found and fixed before this review:
 | 2026-02-21 | 1       | Reviewed Feature #11: Counter Moves ✅                          |
 | 2026-02-21 | 1       | Reviewed Feature #12: Mate Distance Pruning ✅                  |
 | 2026-02-21 | 1       | Reviewed Feature #13: Razoring ✅                               |
-| 2026-02-21 | 2       | Reviewed Feature #14: RFP - Fixed mate guard + improving logic |
-| 2026-02-21 | 2       | Reviewed Feature #15: FP - Fixed improving logic               |
+| 2026-02-21 | 2       | Reviewed Feature #14: RFP ✅ Fixed mate guard + improving logic |
+| 2026-02-21 | 2       | Reviewed Feature #15: FP ✅ Fixed improving logic               |
 | 2026-02-21 | 2       | Reviewed Feature #16: NMP ✅ (all correct)                      |
+| 2026-02-21 | 3       | Reviewed Feature #17: LMP ✅ (all correct)                      |
+| 2026-02-21 | 3       | Reviewed Feature #18: LMR ✅ (all correct)                      |
+| 2026-02-21 | 3       | Enhanced Feature #18: LMR moved outside FP block ✅             |
+
+---
+
+## Testing TODO List
+
+After completing the feature review and making changes, the following tests should be run systematically.
+
+### Priority 1: Verify Bug Fixes (Critical)
+
+| # | Feature   | Change Made                                                           | Test Method                   | Status |
+|---|-----------|-----------------------------------------------------------------------|-------------------------------|--------|
+| 1 | RFP (#14) | Added mate score guard (`std::abs(beta) < VALUE_CHECKMATE_THRESHOLD`) | SearchTreeSize, Strength test | ⬜      |
+| 2 | RFP (#14) | Fixed improving logic (`margin +=` when not improving)                | SearchTreeSize, Strength test | ⬜      |
+| 3 | FP (#15)  | Fixed improving logic (`margin +=` when not improving)                | SearchTreeSize, Strength test | ⬜      |
+
+### Priority 2: Verify Enhancements
+
+| # | Feature   | Change Made                                           | Test Method                   | Status |
+|---|-----------|-------------------------------------------------------|-------------------------------|--------|
+| 4 | LMR (#18) | Moved outside FP guard block                          | SearchTreeSize                | ⬜      |
+| 5 | LMR (#18) | Added reduction adjustments for TT/killer/check moves | SearchTreeSize, Strength test | ⬜      |
+
+### Priority 3: Confirm Existing Logic (Lower Priority)
+
+| # | Feature   | Question                                                        | Test Method       | Status |
+|---|-----------|-----------------------------------------------------------------|-------------------|--------|
+| 6 | NMP (#16) | Confirm improving direction (more reduction when not improving) | Strength test A/B | ⬜      |
+
+### Test Procedures
+
+#### SearchTreeSize Test
+```powershell
+# Run from project root after building
+.\cmake-build-release\test\FrankyCPP_Test.exe --gtest_filter=SearchTreeSizeTest.*
+```
+
+**What to look for:**
+- Tree size should decrease (or stay similar) after LMR enhancement
+- No dramatic increase in tree size from RFP/FP fixes
+
+#### Strength Test (cutechess-cli)
+```powershell
+# Example: 100 games at 5+0.05 time control
+cutechess-cli -engine conf=FrankyCPP_new -engine conf=FrankyCPP_old ^
+  -each tc=5+0.05 -rounds 100 -pgnout results.pgn -recover
+```
+
+**Expected results:**
+- RFP/FP fixes: Should not regress (fixes were correctness, not performance)
+- LMR enhancement: Should be roughly neutral or slight improvement
+
+#### A/B Test for Specific Feature
+To test a specific feature toggle (e.g., NMP improving direction):
+1. Build two versions with different config values
+2. Run head-to-head match (100+ games)
+3. Analyze with SPRT or simple win/loss/draw
+
+### Test Results Log
+
+| Date | Test | Result | Notes |
+|------|------|--------|-------|
+|      |      |        |       |
+
+### Regression Checklist
+
+Before releasing, verify:
+- [ ] All unit tests pass (`FrankyCPP_Test.exe`)
+- [ ] Engine starts and responds to UCI commands
+- [ ] Engine plays reasonable moves in standard positions
+- [ ] No crashes in long games (1000+ nodes)
+- [ ] Time management works correctly
