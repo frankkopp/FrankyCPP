@@ -1411,53 +1411,70 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
           continue;
         }
       }
+    }
 
-      // LMR
-      // Late Move Reduction assumes that later moves a rarely
-      // exceeding alpha and therefore the search is reduced in
-      // depth. This is, in effect, a soft transition into
-      // quiescence search as we usually try the pv move and
-      // capturing moves first. In quiescence only capturing
-      // moves are searched anyway.
-      // newDepth is the "standard" new depth (depth - 1)
-      // lmrDepth is set to newDepth and only reduced
-      // if conditions apply.
-      if (SearchConfig.USE_LMR
-          && depth >= SearchConfig.LMR_MIN_DEPTH
-          && movesSearched >= SearchConfig.LMR_MIN_MOVES
-          && nodeType != PvNode
-          && !givesCheck
-          && !p.isCapturingMove(move)
-          && move.type() != PROMOTION
-          && !matethreat) {
-        // fprintln("DEBUG: considering LMR for move {} at depth {} and move count {}", move.str(), depth, movesSearched);
-        const int d = std::min(depth, Depth{31});
-        const int m = std::min(movesSearched, 63);
-        lmrDepth -= static_cast<Depth>(LMR_REDUCTION[d][m]);
-        // Reduce more when position is NOT improving (eval not better than 2 plies ago)
-        if (SearchConfig.USE_LMR_IMPROVING && !improving) {
-          lmrDepth -= static_cast<Depth>(SearchConfig.LMR_IMPROVING_REDUCTION);
+    // LMR - Late Move Reduction
+    // Applied more broadly than FP/LMP (outside the pruning guard block).
+    // Uses reduction adjustments for special moves instead of excluding them.
+    // Late Move Reduction assumes that later moves rarely exceed alpha, and
+    // therefore the search is reduced in depth. This is, in effect, a soft
+    // transition into quiescence search.
+    if (SearchConfig.USE_LMR
+        && depth >= SearchConfig.LMR_MIN_DEPTH
+        && movesSearched >= SearchConfig.LMR_MIN_MOVES
+        && nodeType != PvNode
+        && !hasCheck
+        && !matethreat) {
+
+      const int d = std::min(depth, Depth{31});
+      const int m = std::min(movesSearched, 63);
+      lmrDepth -= static_cast<Depth>(LMR_REDUCTION[d][m]);
+
+      // Reduce more when position is NOT improving (eval not better than 2 plies ago)
+      if (SearchConfig.USE_LMR_IMPROVING && !improving) {
+        lmrDepth -= static_cast<Depth>(SearchConfig.LMR_IMPROVING_REDUCTION);
+      }
+
+      // Reduce more on expected cut nodes (expected to fail high)
+      // Late moves on cut nodes are very unlikely to be the best move
+      if (SearchConfig.USE_LMR_CUTNODE && nodeType == CutNode) {
+        lmrDepth -= static_cast<Depth>(SearchConfig.LMR_CUTNODE_REDUCTION);
+        statistics.lmrCutNodeReductions++;
+      }
+
+      // Reduce less for moves with good history (frequently caused beta cutoffs)
+      // histScore > 0 means good move -> negative reduction adjustment -> less reduction
+      if (SearchConfig.USE_LMR_HISTORY) {
+        const int histScore = history.historyCount[us][from][to];
+        const int histReduction = -histScore / SearchConfig.LMR_HISTORY_DIVISOR;
+        if (histReduction < 0) {
+          // Positive history -> less reduction (histReduction is negative)
+          statistics.lmrHistoryLessReduction++;
+          statistics.lmrHistoryDepthSaved -= histReduction; // Convert to positive for tracking
         }
-        // Reduce more on expected cut nodes (expected to fail high)
-        // Late moves on cut nodes are very unlikely to be the best move
-        if (SearchConfig.USE_LMR_CUTNODE && nodeType == CutNode) {
-          lmrDepth -= static_cast<Depth>(SearchConfig.LMR_CUTNODE_REDUCTION);
-          statistics.lmrCutNodeReductions++;
-        }
-        // Reduce less for moves with good history (frequently caused beta cutoffs)
-        // histScore > 0 means good move -> negative reduction adjustment -> less reduction
-        if (SearchConfig.USE_LMR_HISTORY) {
-          const int histScore = history.historyCount[us][from][to];
-          const int histReduction = -histScore / SearchConfig.LMR_HISTORY_DIVISOR;
-          if (histReduction < 0) {
-            // Positive history -> less reduction (histReduction is negative)
-            statistics.lmrHistoryLessReduction++;
-            statistics.lmrHistoryDepthSaved -= histReduction; // Convert to positive for tracking
-          }
-          lmrDepth -= static_cast<Depth>(histReduction);
-        }
-        // Clamp: don't go below DEPTH_NONE and don't exceed newDepth (no extension via LMR!)
-        lmrDepth = std::clamp(lmrDepth, DEPTH_NONE, newDepth);
+        lmrDepth -= static_cast<Depth>(histReduction);
+      }
+
+      // Reduce less for special moves (still search them, but with less reduction)
+      // TT move: proven good in past searches
+      // Killer moves: caused beta cutoffs at this ply
+      // Checking moves: tactical, should be searched deeper
+      if (move == ttMove
+          || move == myMg->getKillerMoves()[0]
+          || move == myMg->getKillerMoves()[1]
+          || givesCheck) {
+        lmrDepth += DEPTH_ONE;
+      }
+
+      // Don't reduce captures and promotions (they change material balance)
+      if (p.isCapturingMove(move) || move.type() == PROMOTION) {
+        lmrDepth = newDepth; // No reduction for captures/promotions
+      }
+
+      // Clamp: don't go below DEPTH_NONE and don't exceed newDepth (no extension via LMR!)
+      lmrDepth = std::clamp(lmrDepth, DEPTH_NONE, newDepth);
+
+      if (lmrDepth < newDepth) {
         statistics.lmrReductions++;
       }
     }
