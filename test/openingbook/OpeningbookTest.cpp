@@ -93,6 +93,15 @@ TEST_F(OpeningBookTest, initPgn) {
   EXPECT_EQ(1'495, book.size());
 }
 
+TEST_F(OpeningBookTest, 8movesPgn) {
+  if (isBulkRun()) GTEST_SKIP();
+  OpeningBook book("./books/8moves_v3.pgn", OpeningBook::BookFormat::PGN);
+  book.setUseCache(false);
+  book.initialize();
+  fprintln("Book:  {:L} entries", book.size());
+  EXPECT_EQ(166'178, book.size());
+}
+
 TEST_F(OpeningBookTest, initPgnLarge) {
   if (isBulkRun()) GTEST_SKIP();
   OpeningBook book("./books/superbook.pgn", OpeningBook::BookFormat::PGN);
