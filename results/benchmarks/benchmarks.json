@@ -614,6 +614,36 @@
       "totalTimeMs": 20628,
       "nps": 3001630,
       "notes": "History-based LMR REduction"
+    },
+    {
+      "arenaVersion": "v1.2",
+      "timestamp": "2026-02-21T11:09:46",
+      "engineName": "FrankyCPP",
+      "engineVersion": "v1.4",
+      "enginePath": "",
+      "depth": 12,
+      "hashSizeMB": 128,
+      "threads": 1,
+      "positions": 50,
+      "totalNodes": 63593737,
+      "totalTimeMs": 21303,
+      "nps": 2985201,
+      "notes": "CutNode Reduction"
+    },
+    {
+      "arenaVersion": "v1.2",
+      "timestamp": "2026-02-21T11:09:46",
+      "engineName": "External",
+      "engineVersion": "v1.4",
+      "enginePath": "Release/FrankyCPP_v1.4/FrankyCPP_v1.4.exe",
+      "depth": 12,
+      "hashSizeMB": 128,
+      "threads": 1,
+      "positions": 50,
+      "totalNodes": 63593737,
+      "totalTimeMs": 21357,
+      "nps": 2977653,
+      "notes": "CutNode Reduction"
     }
   ]
 }

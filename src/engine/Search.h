@@ -243,9 +243,15 @@ class Search {
   FRIEND_TEST(SearchTest, lmrReductionTablePrint);
 
 public:
-  /// Node type for PVS: PV nodes search full window, NonPV nodes try zero window first.
-  enum Node_Type : bool { NonPV = false,
-                          PV    = true };
+  /// Node type classification for alpha-beta search.
+  /// - PvNode: Principal Variation node, full window (alpha, beta), expected exact score
+  /// - CutNode: Expected to fail high (beta cutoff), null window search
+  /// - AllNode: Expected to fail low (no move raises alpha), null window search
+  enum NodeType : uint8_t {
+    PvNode,   // Principal Variation node (full window)
+    CutNode,  // Expected fail-high node (null window)
+    AllNode   // Expected fail-low node (null window)
+  };
 
   /// Controls whether null-move pruning is allowed at this ply.
   /// Disabled to avoid recursive null-move searches.
@@ -394,25 +400,25 @@ private:
 
   /// Recursive alpha-beta search for non-root plies (ply > 0).
   /// Handles all major pruning techniques.
-  /// @param p       Position to search
-  /// @param depth   Remaining depth
-  /// @param ply     Current ply from root
-  /// @param alpha   Alpha bound
-  /// @param beta    Beta bound
-  /// @param isPvNode    Whether this is a PV node
-  /// @param doNull  Whether null-move pruning is allowed
-  /// @return        Search value
-  Value search(Position& p, Depth depth, Depth ply, Value alpha, Value beta, Node_Type isPvNode, Do_Null doNull);
+  /// @param p        Position to search
+  /// @param depth    Remaining depth
+  /// @param ply      Current ply from root
+  /// @param alpha    Alpha bound
+  /// @param beta     Beta bound
+  /// @param nodeType Node type: PvNode (full window), CutNode (expect fail-high), AllNode (expect fail-low)
+  /// @param doNull   Whether null-move pruning is allowed
+  /// @return         Search value
+  Value search(Position& p, Depth depth, Depth ply, Value alpha, Value beta, NodeType nodeType, Do_Null doNull);
 
   /// Quiescence search to resolve tactical sequences at leaf nodes.
   /// Only searches captures, promotions, and checks.
-  /// @param p      Position to search
-  /// @param ply    Current ply from root
-  /// @param alpha  Alpha bound
-  /// @param beta   Beta bound
-  /// @param isPvNode   Whether this is a PV node
+  /// @param p        Position to search
+  /// @param ply      Current ply from root
+  /// @param alpha    Alpha bound
+  /// @param beta     Beta bound
+  /// @param nodeType Node type: PvNode or non-PV (AllNode/CutNode treated same in qsearch)
   /// @return       Quiescence value
-  Value qsearch(Position& p, Depth ply, Value alpha, Value beta, Node_Type isPvNode);
+  Value qsearch(Position& p, Depth ply, Value alpha, Value beta, NodeType nodeType);
 
   /// Evaluates a quiet position using the Evaluator.
   /// @param p  Position to evaluate

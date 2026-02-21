@@ -803,17 +803,19 @@ Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Valu
       // ///////////////////////////////////////////////////////////////////
       // PVS
       // First move in a node is an assumed PV Move and searched with full search window (PV Node)
+      // Root's first child is a PV node (full window search)
       if (!SearchConfig.USE_PVS || i == 0) {
-        value = -search(p, depth - 1, ply, -beta, -alpha, PV, Do_Null_Move);
+        value = -search(p, depth - 1, ply, -beta, -alpha, PvNode, Do_Null_Move);
       }
       else {
         // Null window search after the initial PV search.
-        value = -search(p, depth - 1, ply, -alpha - 1, -alpha, NonPV, Do_Null_Move);
+        // After first move, children are CUT nodes (expected to fail high)
+        value = -search(p, depth - 1, ply, -alpha - 1, -alpha, CutNode, Do_Null_Move);
         // If this move improved alpha without exceeding beta we do a proper full window
         // search to get an accurate score.
         if (value > alpha && value < beta && !stopConditions() && !isTimeAlmostUp()) {
           statistics.rootPvsResearches++;
-          value = -search(p, depth - 1, ply, -beta, -alpha, PV, Do_Null_Move);
+          value = -search(p, depth - 1, ply, -beta, -alpha, PvNode, Do_Null_Move);
         }
       }
       // ///////////////////////////////////////////////////////////////////
@@ -859,7 +861,7 @@ Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Valu
   return bestNodeValue;
 }
 
-Value Search::search(Position& p, const Depth depth, const Depth ply, Value alpha, Value beta, const Node_Type isPvNode, const Do_Null doNull) {
+Value Search::search(Position& p, const Depth depth, const Depth ply, Value alpha, Value beta, const NodeType nodeType, const Do_Null doNull) {
   //  LOG__DEBUG(Logger::get().SEARCH_LOG, "Search {} {} {}", depth, ply, str(statistics.currentVariation));
 
   // Clear PV for this node to prevent stale data from previous iterations/branches
@@ -871,13 +873,13 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // Enter quiescence search when depth == 0 or max ply has been reached
   // pvNodes/nonPvNodes are tracked inside qsearch() — no need to count here.
   if (depth == 0 || ply >= MAX_DEPTH) {
-    const auto value = qsearch(p, ply, alpha, beta, isPvNode);
+    const auto value = qsearch(p, ply, alpha, beta, nodeType);
     return value;
   }
 
   // Track PV vs non-PV node statistics (after qsearch drop-through to avoid double-counting
   // — qsearch() already tracks its own pvNodes/nonPvNodes at entry)
-  if (isPvNode) { statistics.pvNodes++; }
+  if (nodeType == PvNode) { statistics.pvNodes++; }
   else { statistics.nonPvNodes++; }
   statistics.searchNodes++;
 
@@ -931,7 +933,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       ttDepth = static_cast<Depth>(ttEntryPtr->depth);
       // Never cutoff on PV nodes - this ensures we always build a complete PV line
       // Non-PV nodes can still use TT cutoffs as they don't contribute to the reported PV
-      if (!isPvNode && ttDepth >= depth) {
+      if (nodeType != PvNode && ttDepth >= depth) {
         if (SearchConfig.USE_TT_VALUE
             && ttValue.isValid()
             && (ttEntryPtr->type == EXACT
@@ -958,7 +960,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // On PV nodes: only use TB to tighten bounds - don't cut off (need complete PV line).
   // If USE_TB_PROBE_PV is false, skip probing on PV nodes entirely (performance optimization).
   if (SearchConfig.USE_TB_PROBE_SEARCH
-      && (SearchConfig.USE_TB_PROBE_PV || !isPvNode)
+      && (SearchConfig.USE_TB_PROBE_PV || nodeType != PvNode)
       && syzygy_tb
       && syzygy_tb->isAvailable()
       && depth >= SearchConfig.TB_PROBE_DEPTH
@@ -978,7 +980,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // On non-PV nodes: can cut off immediately
       if (wdl == tablebase::TBResult::Win || wdl == tablebase::TBResult::CursedWin) {
         // Position is winning - use as lower bound
-        if (!isPvNode && tbScore >= beta) {
+        if (nodeType != PvNode && tbScore >= beta) {
           statistics.tbSearchCutoffs++;
           // Store in TT for future lookups
           if (SearchConfig.USE_TT) {
@@ -991,7 +993,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       }
       else if (wdl == tablebase::TBResult::Loss || wdl == tablebase::TBResult::BlessedLoss) {
         // Position is losing - use as upper bound
-        if (!isPvNode && tbScore <= alpha) {
+        if (nodeType != PvNode && tbScore <= alpha) {
           statistics.tbSearchCutoffs++;
           // Store in TT for future lookups
           if (SearchConfig.USE_TT) {
@@ -1004,7 +1006,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       }
       else if (wdl == tablebase::TBResult::Draw) {
         // Exact draw - can return immediately on non-PV nodes
-        if (!isPvNode) {
+        if (nodeType != PvNode) {
           statistics.tbSearchCutoffs++;
           if (SearchConfig.USE_TT) {
             storeTt(p, depth, ply, MOVE_NONE, VALUE_DRAW, EXACT, VALUE_NONE);
@@ -1069,15 +1071,15 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // When static eval is well below alpha at the last node,
   // jump directly into qsearch.
   if (SearchConfig.USE_RAZORING
-      && !isPvNode // fix 19.2.2026 - only razor on non-PV nodes to avoid missing critical moves in PV line
+      && nodeType != PvNode // fix 19.2.2026 - only razor on non-PV nodes to avoid missing critical moves in PV line
       && depth == 1
       && staticEval != VALUE_NONE
       && staticEval <= alpha - SearchConfig.RAZOR_MARGIN) {
     statistics.razorings++;
-    // fix 19.2.2026 - use NonPV for razor to avoid missing critical moves in PV line; razor is a
+    // fix 19.2.2026 - use AllNode for razor to avoid missing critical moves in PV line; razor is a
     // heuristic that can afford to miss some moves, but we don't want it to miss critical moves in
-    // the PV line
-    return qsearch(p, ply, alpha, beta, NonPV);
+    // the PV line. Use AllNode since we're expecting to fail low (that's why we're razoring).
+    return qsearch(p, ply, alpha, beta, AllNode);
   }
 
   // Reverse Futility Pruning, (RFP, Static Null Move Pruning)
@@ -1087,7 +1089,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   if (SearchConfig.USE_RFP
       && doNull
       && depth <= 3
-      && !isPvNode
+      && nodeType != PvNode
       && !hasCheck) {
     auto margin = Value{SearchConfig.RFP_MARGIN[depth]};
     // Reduce margin when not improving → prune more aggressively
@@ -1119,7 +1121,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
                           && p.getMaterialNonPawn(us) <= SearchConfig.NMP_ZUG_NONPAWN_THRESHOLD;
 
     if (doNull
-        && !isPvNode
+        && nodeType != PvNode
         && depth >= SearchConfig.NMP_DEPTH
         && !hasCheck
         && !zugProne
@@ -1141,9 +1143,10 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       if (newDepth < 0) { newDepth = DEPTH_NONE; }
 
       // do null move search
+      // Null move child is a CUT node (we're trying to prove fail-high with null window)
       p.doNullMove();
       nodesVisited++;
-      Value nValue = -search(p, newDepth, ply + 1, -beta, -beta + 1, NonPV, No_Null_Move);
+      Value nValue = -search(p, newDepth, ply + 1, -beta, -beta + 1, CutNode, No_Null_Move);
       p.undoNullMove();
 
       // check if we should stop the search
@@ -1171,7 +1174,8 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
           Depth verifyDepth = depth - r - SearchConfig.NMP_VERIFY_MARGIN;
           if (verifyDepth < 0) { verifyDepth = DEPTH_NONE; }
           const auto do_null = matethreat ? No_Null_Move : Do_Null_Move;
-          const Value v      = search(p, verifyDepth, ply, beta - 1, beta, NonPV, do_null);
+          // Verification search inherits nodeType (verifying same node type)
+          const Value v      = search(p, verifyDepth, ply, beta - 1, beta, nodeType, do_null);
           if (stopConditions()) { return VALUE_NONE; }
           if (v < beta) {
             statistics.nullMoveVerifications++;
@@ -1204,7 +1208,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     if (depth >= SearchConfig.IID_DEPTH
         && !ttMove// no move from TT
         && doNull
-        && isPvNode) {// avoid in null move search
+        && nodeType == PvNode) {// avoid in null move search
 
       // get the new depth and make sure it is >0
       auto newDepthIid = depth - SearchConfig.IID_REDUCTION;
@@ -1212,7 +1216,8 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 
       // do the actual reduced search only if we have time left
       if (!isTimeAlmostUp()) {
-        search(p, newDepthIid, ply, alpha, beta, isPvNode, doNull);
+        // IID search inherits nodeType (searching same node at reduced depth)
+        search(p, newDepthIid, ply, alpha, beta, nodeType, doNull);
         statistics.iidSearches++;
 
         // check if we should stop the search
@@ -1323,7 +1328,8 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 
         // Do a null-window search to see if any other move can reach singularBeta
         // Uses mgSingular automatically because excludedMove is set
-        const Value singularValue = search(p, singularDepth, ply, singularBeta - 1, singularBeta, NonPV, No_Null_Move);
+        // Singular verification is a CUT node search (looking for fail-high)
+        const Value singularValue = search(p, singularDepth, ply, singularBeta - 1, singularBeta, CutNode, No_Null_Move);
 
         // Clear the excluded move
         info.excludedMove = MOVE_NONE;
@@ -1343,13 +1349,14 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       if (SearchConfig.USE_EXT_ADD_DEPTH) {
         newDepth += extension;
       }
+
     }
 
     // ///////////////////////////////////////////////////////
     // Forward Pruning
     // FP will only be done when the move is not
     // interesting - no check, no capture, etc.
-    if (!isPvNode
+    if (nodeType != PvNode
         && extension == 0
         && move != ttMove
         && move != myMg->getKillerMoves()[0]
@@ -1413,7 +1420,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       if (SearchConfig.USE_LMR
           && depth >= SearchConfig.LMR_MIN_DEPTH
           && movesSearched >= SearchConfig.LMR_MIN_MOVES
-          && !isPvNode
+          && nodeType != PvNode
           && !givesCheck
           && !p.isCapturingMove(move)
           && move.type() != PROMOTION
@@ -1425,6 +1432,12 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         // Reduce more when position is NOT improving (eval not better than 2 plies ago)
         if (SearchConfig.USE_LMR_IMPROVING && !improving) {
           lmrDepth -= static_cast<Depth>(SearchConfig.LMR_IMPROVING_REDUCTION);
+        }
+        // Reduce more on expected cut nodes (expected to fail high)
+        // Late moves on cut nodes are very unlikely to be the best move
+        if (SearchConfig.USE_LMR_CUTNODE && nodeType == CutNode) {
+          lmrDepth -= static_cast<Depth>(SearchConfig.LMR_CUTNODE_REDUCTION);
+          statistics.lmrCutNodeReductions++;
         }
         // Reduce less for moves with good history (frequently caused beta cutoffs)
         // histScore > 0 means good move -> negative reduction adjustment -> less reduction
@@ -1483,17 +1496,24 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // or that the move is too good (>beta). If this prove fails we need
       // to research the move again with a full window.
       // https://www.chessprogramming.org/Principal_Variation_Search
+      //
+      // Node type logic for children:
+      // - PV node's first child: PvNode (inherits PV status)
+      // - PV node's other children: CutNode (null window, expect fail-high)
+      // - CutNode's children: AllNode (expect fail-low)
+      // - AllNode's children: CutNode (expect fail-high)
       if (!SearchConfig.USE_PVS || movesSearched == 0) {
-        // fix 19.2.2026: bug fix - this call was using PV instead of isPvNode which added a lot of
-        // PV nodes to the search tree and therefore search many extra node. PV nodes where ~16%
-        // where as after the fix they are down to 0.59% on a specific test position.
-        value = -search(p, newDepth, ply + 1, -beta, -alpha, isPvNode, do_null);  // inherit node type
+        // First move: PV node's child inherits PV, CutNode's child is AllNode, AllNode's child is CutNode
+        const NodeType childType = (nodeType == PvNode) ? PvNode : (nodeType == CutNode ? AllNode : CutNode);
+        value = -search(p, newDepth, ply + 1, -beta, -alpha, childType, do_null);
       }
       else {
         // Null window search after the initial PV search.
         // As depth we use a potentially reduced depth if Late Move Reduction
         // conditions have been met above.
-        value = -search(p, lmrDepth, ply + 1, -alpha - 1, -alpha, NonPV, do_null);
+        // Later moves with null window: child is CutNode (expect fail-high) or AllNode (if we're CutNode)
+        const NodeType childType = (nodeType == CutNode) ? AllNode : CutNode;
+        value = -search(p, lmrDepth, ply + 1, -alpha - 1, -alpha, childType, do_null);
         // If this move improved alpha without exceeding beta we do a proper full window
         // search to get an accurate score.
         // Without LMR we check for value > alpha && value < beta
@@ -1502,11 +1522,15 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
           // did we actually have a LMR reduction?
           if (lmrDepth < newDepthFixed) {
             statistics.lmrResearches++;
-            value = -search(p, newDepth, ply + 1, -beta, -alpha, isPvNode, do_null);
+            // Re-search with full depth: if we're PV, child becomes PV; otherwise same alternation
+            const NodeType researchType = (nodeType == PvNode) ? PvNode : childType;
+            value = -search(p, newDepth, ply + 1, -beta, -alpha, researchType, do_null);
           }
           else if (value < beta) {
             statistics.pvsResearches++;
-            value = -search(p, newDepth, ply + 1, -beta, -alpha, isPvNode, do_null);
+            // PVS re-search: if we're PV, child becomes PV; otherwise same alternation
+            const NodeType researchType = (nodeType == PvNode) ? PvNode : childType;
+            value = -search(p, newDepth, ply + 1, -beta, -alpha, researchType, do_null);
           }
         }
       }
@@ -1518,6 +1542,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     p.undoMove();
     // UNDO MOVE
     // ///////////////////////////////////////////////////////
+
 
     // check if we should stop the search
     // We want to guarantee at least one complete depth-1 root search.
@@ -1613,11 +1638,12 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   return bestNodeValue;
 }
 
-Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, const Node_Type isPvNode) {
+Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, const NodeType nodeType) {
   //  LOG__DEBUG(Logger::get().SEARCH_LOG, "QSearch {} {}", ply, str(statistics.currentVariation));
 
   // Track PV vs non-PV node statistics
-  if (isPvNode) { statistics.pvNodes++; }
+  // In qsearch, CutNode/AllNode are treated the same as non-PV
+  if (nodeType == PvNode) { statistics.pvNodes++; }
   else { statistics.nonPvNodes++; }
   statistics.qsearchNodes++;
 
@@ -1654,7 +1680,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
       ttMove              = static_cast<Move>(ttEntryPtr->move);
       const Value ttValue = valueFromTt(ttEntryPtr->value, ply);
       if (SearchConfig.USE_TT_VALUE
-          && !isPvNode
+          && nodeType != PvNode
           && ttValue.isValid()
           && (ttEntryPtr->type == EXACT
               || (ttEntryPtr->type == ALPHA && ttValue <= alpha)
@@ -1738,7 +1764,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
     // FP will only be done when the move is not
     // interesting - no check, no capture, etc.
     if (SearchConfig.USE_QFP
-        && !isPvNode
+        && nodeType != PvNode
         && move != ttMove
         && move != myMg->getKillerMoves()[0]
         && move != myMg->getKillerMoves()[1]
@@ -1783,8 +1809,8 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
       value = VALUE_DRAW;
     }
     else {
-      // recursion into qsearch
-      value = -qsearch(p, ply + 1, -beta, -alpha, isPvNode);
+      // recursion into qsearch - inherit nodeType (PV nodes stay PV, non-PV stay non-PV)
+      value = -qsearch(p, ply + 1, -beta, -alpha, nodeType);
     }
 
     movesSearched++;

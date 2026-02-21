@@ -156,6 +156,17 @@ LMR_LOG_BASE_DIV: 1.50
 USE_LMR_IMPROVING: true
 # Extra reduction depth when not improving (0 = disabled)
 LMR_IMPROVING_REDUCTION: 1
+# Use history score to modulate LMR (less reduction for moves with good history)
+USE_LMR_HISTORY: true
+# Divisor for history -> reduction conversion (higher = less effect)
+# History values are (1 << depth) per cutoff, so 8192 = 1 << 13 means
+# a single cutoff at depth 13 gives 1 ply less reduction
+LMR_HISTORY_DIVISOR: 8192
+# Extra reduction on expected cut nodes (nodes expected to fail high)
+# Late moves on cut nodes are very unlikely to be the best move
+USE_LMR_CUTNODE: true
+# Extra reduction depth on cut nodes (0-4)
+LMR_CUTNODE_REDUCTION: 2
 
 # Late Move Pruning (LMP): prune moves after a threshold per depth bucket
 USE_LMP: true

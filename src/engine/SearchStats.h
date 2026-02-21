@@ -195,6 +195,9 @@ struct SearchStats {
   /// LMR history: total depth reduction avoided due to positive history (cumulative).
   int64_t lmrHistoryDepthSaved = 0;
 
+  /// LMR cut node reductions: count of moves where cut node status increased reduction.
+  uint64_t lmrCutNodeReductions = 0;
+
   /// Late move pruning cuts.
   uint64_t lmpCuts = 0;
 
@@ -288,6 +291,7 @@ struct SearchStats {
        << " fp_prunings: " << stats.fpPrunings
        << " qfp_prunings: " << stats.qfpPrunings
        << " lmrReductions: " << stats.lmrReductions
+       << " lmrCutNode: " << stats.lmrCutNodeReductions
        << " lmrHistLess: " << stats.lmrHistoryLessReduction
        << " lmrHistDepthSaved: " << stats.lmrHistoryDepthSaved
        << " lmrResearches: " << stats.lmrResearches

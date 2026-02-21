@@ -86,14 +86,16 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   s.USE_FP_IMPROVING = false;
 
   // Late move reductions
-  s.USE_LMR             = false;
-  s.LMR_MIN_DEPTH       = 1;
-  s.LMR_MIN_MOVES       = 3;
-  s.LMR_USE_LOG_FORMULA = false;
-  s.LMR_LOG_BASE_DIV    = 2.00;
-  s.USE_LMR_IMPROVING   = false;
-  s.USE_LMR_HISTORY     = false;
-  s.LMR_HISTORY_DIVISOR = 8192;
+  s.USE_LMR               = false;
+  s.LMR_MIN_DEPTH         = 1;
+  s.LMR_MIN_MOVES         = 3;
+  s.LMR_USE_LOG_FORMULA   = false;
+  s.LMR_LOG_BASE_DIV      = 2.00;
+  s.USE_LMR_IMPROVING     = false;
+  s.USE_LMR_CUTNODE       = false;
+  s.LMR_CUTNODE_REDUCTION = 2;
+  s.USE_LMR_HISTORY       = false;
+  s.LMR_HISTORY_DIVISOR   = 8192;
 
   // Late move pruning
   s.USE_LMP           = false;
@@ -113,9 +115,9 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   // ***********************************
   // TESTS
 
-  ptrToSpecial1 = &search.getSearchStats().lmrHistoryLessReduction;
-  ptrToSpecial2 = &search.getSearchStats().lmrReductions;
-  ptrToSpecial3 = reinterpret_cast<const uint64_t*>(&search.getSearchStats().lmrHistoryDepthSaved);
+  ptrToSpecial1 = &search.getSearchStats().lmrReductions;
+  ptrToSpecial2 = &search.getSearchStats().lmrResearches;
+  ptrToSpecial3 = &search.getSearchStats().lmrCutNodeReductions;
 
   // pure MiniMax
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "00 MINIMAX"));
@@ -355,6 +357,11 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   CONFIG_OVERRIDE(s.USE_LMR_HISTORY = true;);
   CONFIG_OVERRIDE(s.LMR_HISTORY_DIVISOR = 8192;);
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "92b LMR+Hist"));
+
+  // Enable cut node LMR: extra reduction on expected cut nodes
+  CONFIG_OVERRIDE(s.USE_LMR_CUTNODE = true;);
+  CONFIG_OVERRIDE(s.LMR_CUTNODE_REDUCTION = 2;);
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "92c CutNode"));
 
   return result;
 }

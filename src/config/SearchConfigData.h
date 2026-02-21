@@ -134,6 +134,10 @@ struct SearchConfigData {
   // With divisor 8192 (= 1 << 13), a single cutoff at depth 13 gives 1 ply less reduction.
   // Lower divisor = more aggressive adjustment, higher = more conservative.
   int LMR_HISTORY_DIVISOR = 8192;
+  // LMR + cut node: extra reduction on expected cut nodes
+  // Cut nodes are expected to fail high quickly; late moves on cut nodes are very unlikely to be best.
+  bool USE_LMR_CUTNODE = true;    // Use cut node flag to increase LMR reduction
+  int LMR_CUTNODE_REDUCTION = 2;  // Extra reduction depth on cut nodes
 
   // LMP
   bool USE_LMP      = true;

@@ -43,14 +43,14 @@ ConfigRegistry::ConfigRegistry() {
 #ifdef _MSC_VER
 // Windows MSVC builds
 #ifdef _DEBUG
-  static_assert(sizeof(SearchConfigData) == 544,
+  static_assert(sizeof(SearchConfigData) == 552,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 256,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
-  static_assert(sizeof(SearchConfigData) == 512,
+  static_assert(sizeof(SearchConfigData) == 520,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -61,7 +61,7 @@ ConfigRegistry::ConfigRegistry() {
 // Linux GCC/Clang builds (including WSL)
 #ifdef NDEBUG
   // Release build
-  static_assert(sizeof(SearchConfigData) == 512,
+  static_assert(sizeof(SearchConfigData) == 520,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -1078,6 +1078,32 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .exposure = {.uci = true, .yaml = true, .display = true},
     .getter = searchGetter(&SearchConfigData::LMR_HISTORY_DIVISOR),
     .setter = searchSetter(&SearchConfigData::LMR_HISTORY_DIVISOR, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "USE_LMR_CUTNODE",
+    .uciName = "Use LMR Cut Node",
+    .description = "Extra reduction on expected cut nodes (nodes expected to fail high)",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = "true",
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::USE_LMR_CUTNODE),
+    .setter = searchSetter(&SearchConfigData::USE_LMR_CUTNODE, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "LMR_CUTNODE_REDUCTION",
+    .uciName = "LMR Cut Node Reduction",
+    .description = "Extra LMR reduction depth on cut nodes",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = "2",
+    .minValue = 0,
+    .maxValue = 4,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::LMR_CUTNODE_REDUCTION),
+    .setter = searchSetter(&SearchConfigData::LMR_CUTNODE_REDUCTION, parseInt)
   });
 
   definitions_.push_back({
