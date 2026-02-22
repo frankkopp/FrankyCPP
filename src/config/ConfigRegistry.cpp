@@ -1253,6 +1253,18 @@ void ConfigRegistry::initializeSearchDefinitions() {
   });
 
   definitions_.push_back({
+    .name = "USE_SINGULAR_TT_BOUND",
+    .uciName = "Singular TT Bound",
+    .description = "Require BETA/EXACT TT bound for singular (too restrictive in practice)",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = "false",
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::USE_SINGULAR_TT_BOUND),
+    .setter = searchSetter(&SearchConfigData::USE_SINGULAR_TT_BOUND, parseBool)
+  });
+
+  definitions_.push_back({
     .name = "SINGULAR_MARGIN",
     .uciName = "Singular Margin",
     .description = "Centipawns below TT value to consider singular",

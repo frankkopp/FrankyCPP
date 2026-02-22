@@ -7438,3 +7438,12 @@ Test: Ext Singular     Nodes:          976.353  Nps:        3.345.221  Time:    
 Test: Ext Threat       Nodes:          976.400  Nps:        3.279.468  Time:              330 Depth:  12/26  Special1:  3.415.774 (113.859) Special2:    109.307 (3.643) Special3:  1.951.269 (65.042)
 Test: Ext AddDepth     Nodes:        1.925.282  Nps:        3.277.210  Time:              655 Depth:  12/28  Special1:  6.137.936 (204.597) Special2:    235.641 (7.854) Special3:  3.592.709 (119.756)
 Test: Tablebases       Nodes:        1.921.403  Nps:        2.723.656  Time:              652 Depth:  11/26  Special1:  6.050.002 (201.666) Special2:    240.016 (8.000) Special3:  3.593.595 (119.786)
+
+Test: Baseline              Nodes:        1.316.625  Nps:        1.660.045  Time:              551 Depth:  12/25  Special1:          0 (    0) Special2:          0 (    0) Special3:          0 (    0)
+Test: Ext Check             Nodes:        1.015.351  Nps:        3.441.129  Time:              344 Depth:  12/25  Special1:    238.056 (7.935) Special2:          0 (    0) Special3:          0 (    0)
+Test: Ext Check+SEE         Nodes:        1.015.793  Nps:        3.374.144  Time:              343 Depth:  12/25  Special1:    105.334 (3.511) Special2:          0 (    0) Special3:          0 (    0)
+Test: Ext Check+SEE NoLim   Nodes:          987.663  Nps:        3.427.185  Time:              336 Depth:  12/25  Special1:    248.629 (8.287) Special2:          0 (    0) Special3:          0 (    0)
+Test: Ext Singular          Nodes:        1.353.375  Nps:        3.384.125  Time:              462 Depth:  12/26  Special1:    309.884 (10.329) Special2:      2.491 (   83) Special3:          0 (    0)
+Test: Ext Threat            Nodes:        1.353.421  Nps:        3.365.109  Time:              463 Depth:  12/26  Special1:    309.932 (10.331) Special2:      2.490 (   83) Special3:      1.093 (   36)
+Test: Ext AddDepth          Nodes:        1.486.967  Nps:        3.326.352  Time:              507 Depth:  12/28  Special1:    368.081 (12.269) Special2:      2.634 (   87) Special3:      1.559 (   51)
+Test: Tablebases            Nodes:        1.496.809  Nps:        2.813.364  Time:              511 Depth:  11/26  Special1:    362.321 (12.077) Special2:      2.518 (   83) Special3:      1.560 (   52)

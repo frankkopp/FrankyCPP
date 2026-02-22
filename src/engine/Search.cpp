@@ -908,8 +908,9 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   bool matethreat     = false;
 
   // Variables for singular extension
-  Value ttValue = VALUE_NONE;
-  Depth ttDepth = DEPTH_NONE;
+  Value ttValue     = VALUE_NONE;
+  Depth ttDepth     = DEPTH_NONE;
+  ValueType ttBound = ALPHA;// TT entry's bound type (for singular extension)
 
   // TT Lookup (before TB probe to avoid redundant TB probes for cached results)
   // Results of searches are stored in the TT to be used to
@@ -931,6 +932,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       ttMove  = static_cast<Move>(ttEntryPtr->move);
       ttValue = valueFromTt(ttEntryPtr->value, ply);
       ttDepth = static_cast<Depth>(ttEntryPtr->depth);
+      ttBound = ttEntryPtr->type;// Capture bound type for singular extension
       // Never cutoff on PV nodes - this ensures we always build a complete PV line
       // Non-PV nodes can still use TT cutoffs as they don't contribute to the reported PV
       if (nodeType != PvNode && ttDepth >= depth) {
@@ -1312,41 +1314,50 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // We do a reduced-depth null-window search excluding the TT move to verify
       // that no other move can reach close to the TT value.
       if (SearchConfig.USE_SINGULAR_EXT
-          && extension == 0                                  // no other extension applied
-          && move == ttMove                                  // this is the TT move
-          && depth >= SearchConfig.SINGULAR_MIN_DEPTH        // sufficient depth
-          && ttValue != VALUE_NONE                           // valid TT value
-          && ttDepth >= depth - 3                            // TT entry was from similar or deeper search
-          && !hasCheck                                       // not in check (avoid instability)
-          && std::abs(ttValue) < VALUE_CHECKMATE_THRESHOLD) {// not a mate score
+          && extension == 0                                      // no other extension applied
+          && move == ttMove                                      // this is the TT move
+          && depth >= SearchConfig.SINGULAR_MIN_DEPTH            // sufficient depth
+          && ttValue != VALUE_NONE                               // valid TT value
+          && !hasCheck                                           // not in check (avoid instability)
+          && ttDepth >= depth - 3                                // TT entry was from similar or deeper search
+          && std::abs(ttValue) < VALUE_CHECKMATE_THRESHOLD) {    // not a mate score
 
-        // Reduced beta for the verification search
-        const Value singularBeta = ttValue - Value{SearchConfig.SINGULAR_MARGIN};
+        // Track ALPHA-bound entries for statistics
+        const bool isLowerBound = (ttBound == BETA || ttBound == EXACT);
+        if (!isLowerBound) {
+          statistics.singularFilteredByBound++;
+        }
 
-        // Reduced depth for the verification search
-        Depth singularDepth = (depth - SearchConfig.SINGULAR_REDUCTION) / 2;
-        if (singularDepth < 1) { singularDepth = DEPTH_ONE; }
+        // Optional: Require BETA/EXACT bound (theory says yes, practice says too restrictive)
+        if (isLowerBound || !SearchConfig.USE_SINGULAR_TT_BOUND) {
+          // Reduced beta for the verification search
+          const Value singularBeta = ttValue - Value{SearchConfig.SINGULAR_MARGIN};
 
-        // Set the excluded move for this ply so the verification search skips the TT move
-        info.excludedMove = ttMove;
+          // Reduced depth for the verification search
+          Depth singularDepth = (depth - SearchConfig.SINGULAR_REDUCTION) / 2;
+          if (singularDepth < 1) { singularDepth = DEPTH_ONE; }
 
-        statistics.singularSearches++;
+          // Set the excluded move for this ply so the verification search skips the TT move
+          info.excludedMove = ttMove;
 
-        // Do a null-window search to see if any other move can reach singularBeta
-        // Uses mgSingular automatically because excludedMove is set
-        // Singular verification is a CUT node search (looking for fail-high)
-        const Value singularValue = search(p, singularDepth, ply, singularBeta - 1, singularBeta, CutNode, No_Null_Move);
+          statistics.singularSearches++;
 
-        // Clear the excluded move
-        info.excludedMove = MOVE_NONE;
+          // Do a null-window search to see if any other move can reach singularBeta
+          // Uses mgSingular automatically because excludedMove is set
+          // Singular verification is a CUT node search (looking for fail-high)
+          const Value singularValue = search(p, singularDepth, ply, singularBeta - 1, singularBeta, CutNode, No_Null_Move);
 
-        // check if we should stop the search
-        if (stopConditions()) { return VALUE_NONE; }
+          // Clear the excluded move
+          info.excludedMove = MOVE_NONE;
 
-        // If no other move reaches singularBeta, the TT move is singular - extend it
-        if (singularValue < singularBeta) {
-          statistics.singularExtension++;
-          extension = DEPTH_ONE;
+          // check if we should stop the search
+          if (stopConditions()) { return VALUE_NONE; }
+
+          // If no other move reaches singularBeta, the TT move is singular - extend it
+          if (singularValue < singularBeta) {
+            statistics.singularExtension++;
+            extension = DEPTH_ONE;
+          }
         }
       }
 

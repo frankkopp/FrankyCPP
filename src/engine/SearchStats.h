@@ -220,6 +220,9 @@ struct SearchStats {
   /// Singular extension searches performed (verification searches).
   uint64_t singularSearches = 0;
 
+  /// Singular extension candidates filtered by ttBound (not BETA/EXACT).
+  uint64_t singularFilteredByBound = 0;
+
   /// Singular extensions applied (TT move proven singular).
   uint64_t singularExtension = 0;
 

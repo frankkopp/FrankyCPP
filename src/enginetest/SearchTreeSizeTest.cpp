@@ -104,12 +104,13 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   s.USE_LMP_IMPROVING = false;
 
   // Extensions
-  s.USE_EXTENSIONS    = false;
-  s.USE_CHECK_EXT     = false;
-  s.USE_CHECK_EXT_SEE = false;
-  s.USE_THREAT_EXT    = false;
-  s.USE_EXT_ADD_DEPTH = false;
-  s.USE_SINGULAR_EXT  = false;
+  s.USE_EXTENSIONS       = false;
+  s.USE_CHECK_EXT        = false;
+  s.USE_CHECK_EXT_SEE    = false;
+  s.USE_THREAT_EXT       = false;
+  s.USE_EXT_ADD_DEPTH    = false;
+  s.USE_SINGULAR_EXT     = false;
+  s.USE_SINGULAR_TT_BOUND = false;
 
   // Best-move instability time management (disable for fixed-depth tests)
   s.USE_BESTMOVE_INSTABILITY = false;
@@ -349,48 +350,57 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   // GROUP 10: SEARCH EXTENSIONS (Extend promising lines)
   // =====================================================================
 
-  // =====================================================================
-  // WARMUP/BASELINE - Must be before first actual test
-  // =====================================================================
-  ptrToSpecial1 = &search.getSearchStats().checkExtension;
-  ptrToSpecial2 = &search.getSearchStats().singularExtension;
-  ptrToSpecial3 = &search.getSearchStats().threatExtension;
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Warmup"));
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Baseline"));
-
-  // 10.1 Extensions Core: Enable extension framework
+  // 10.1 Extensions Core: Enable extension framework + AddDepth (realistic mode)
   CONFIG_OVERRIDE(s.USE_EXTENSIONS = true;);
+  CONFIG_OVERRIDE(s.USE_EXT_ADD_DEPTH = true;);  // Enable early for realistic testing
 
   // 10.2 Check Extension: Extend when move gives check
   CONFIG_OVERRIDE(s.USE_CHECK_EXT = true;);
   CONFIG_OVERRIDE(s.CHECK_EXT_MIN_DEPTH = 2;);
   CONFIG_OVERRIDE(s.CHECK_EXT_EARLY_LIMIT = 3;);  // Test with old limit first
   CONFIG_OVERRIDE(s.USE_CHECK_EXT_SEE = false;);  // Test without SEE first
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Check"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Check"));
 
   // 10.2b Check Extension + SEE: Only extend non-losing checks
   CONFIG_OVERRIDE(s.USE_CHECK_EXT_SEE = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Check+SEE"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Check+SEE"));
 
   // 10.2c Check Extension + SEE + No Limit (NEW DEFAULT)
   // With SEE filtering, we can safely extend all non-losing checks
   CONFIG_OVERRIDE(s.CHECK_EXT_EARLY_LIMIT = 99;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Check+SEE NoLim"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Check+SEE NoLim"));
+
+  // =====================================================================
+  // WARMUP/BASELINE - Must be before first actual test
+  // =====================================================================
+  ptrToSpecial1 = &search.getSearchStats().checkExtension;
+  ptrToSpecial2 = &search.getSearchStats().singularExtension;
+  ptrToSpecial3 = &search.getSearchStats().singularFilteredByBound;
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Warmup"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Baseline"));
 
   // 10.3 Singular Extension: Extend when one move is clearly best
   CONFIG_OVERRIDE(s.USE_SINGULAR_EXT = true;);
+  CONFIG_OVERRIDE(s.USE_SINGULAR_TT_BOUND = false;);  // Don't require BETA/EXACT (too restrictive)
   CONFIG_OVERRIDE(s.SINGULAR_MARGIN = 64;);
-  CONFIG_OVERRIDE(s.SINGULAR_MIN_DEPTH = 8;);
+  CONFIG_OVERRIDE(s.SINGULAR_MIN_DEPTH = 8;);  // Lowered from 8 to trigger more often
   CONFIG_OVERRIDE(s.SINGULAR_REDUCTION = 4;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Singular"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Sing NoTTBound"));
+
+  CONFIG_OVERRIDE(s.USE_SINGULAR_TT_BOUND = true;);  // Don't require BETA/EXACT (too restrictive)
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Sing TTBound"));
+
 
   // 10.4 Threat Extension: Extend on threat detection (experimental)
   CONFIG_OVERRIDE(s.USE_THREAT_EXT = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Threat"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Threat"));
 
-  // 10.5 Additional Depth: Use extension to actually add depth to search.
+  // 10.5 Protection Only: Disable AddDepth to show effect of extension protection without extra depth
+  // Extensions still protect moves from reductions (LMR/FP/LMP) but don't add depth
+  CONFIG_OVERRIDE(s.USE_EXT_ADD_DEPTH = false;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext NoAddDepth"));
+  // Re-enable AddDepth for subsequent tests
   CONFIG_OVERRIDE(s.USE_EXT_ADD_DEPTH = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext AddDepth"));
 
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Extensions"));
 
@@ -419,7 +429,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   CONFIG_OVERRIDE(s.USE_TB_PROBE_PV = true;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "TB PV"));
 
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Tablebases"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Tablebases"));
 
 
   return result;
@@ -448,7 +458,7 @@ void SearchTreeSizeTest::start() {
   NEWLINE;
   fprintln("################## Results for depth {} ##########################", depth);
   NEWLINE;
-  fprintln("{:<20} | {:>6} | {:>8} | {:>15} | {:>12} | {:>12} | {:>7} | {:>12} | {:>12} | {:>12} | {} | {}",
+  fprintln("{:<20} | {:>6} | {:>8} | {:>15} | {:>12} | {:>12} | {:>7} | {:>15} | {:>15} | {:>15} | {} | {}",
            "Test Name", "Move", "Value", "Nodes", "Nps", "Time", "Depth", "Special1", "Special2", "Special3", "PV", "Fen");
   println("-----------------------------------------------------------------------"
           "---------------------------------------------------------------------------------");
@@ -470,7 +480,7 @@ void SearchTreeSizeTest::start() {
       sums[test.name].special2 += test.special2;
       sums[test.name].special3 += test.special3;
 
-      fprintln("{:<20} | {:>6} | {:>8} | {:>15L} | {:>12L} | {:>12L} | {:>3d}/{:<3d} | {:>12L} | {:>12L} | {:>12L} | {} | {}",
+      fprintln("{:<20} | {:>6} | {:>8} | {:>15L} | {:>12L} | {:>12L} | {:>3d}/{:<3d} | {:>15L} | {:>15L} | {:>15L} | {} | {}",
                test.name, test.move.str(), test.value.str(), test.nodes, test.nps,
                test.time / 1'000'000, test.depth, test.extra, test.special1, test.special2, test.special3, test.pv, result.fen);
     }
@@ -492,7 +502,7 @@ void SearchTreeSizeTest::start() {
     const auto avgSpecial1 = sum.special1 / sum.sumCounter;
     const auto avgSpecial2 = sum.special2 / sum.sumCounter;
     const auto avgSpecial3 = sum.special3 / sum.sumCounter;
-    fprintln("Test: {:<20s}  Nodes: {:>16L}  Nps: {:>16L}  Time: {:>16L} Depth: {:>3d}/{:<3d} Special1: {:>10L} ({:>5L}) Special2: {:>10L} ({:>5L}) Special3: {:>10L} ({:>5L})", test.name.c_str(),
+    fprintln("Test: {:<20s}  Nodes: {:>16L}  Nps: {:>16L}  Time: {:>16L} Depth: {:>3d}/{:<3d} Special1: {:>12L} ({:>6L}) Special2: {:>12L} ({:>6L}) Special3: {:>12L} ({:>6L})", test.name.c_str(),
              sum.sumNodes / sum.sumCounter, sum.sumNps / sum.sumCounter,
              (sum.sumTime / 1'000'000) / sum.sumCounter, sum.sumDepth / sum.sumCounter, sum.sumExtra / sum.sumCounter,
              sum.special1, avgSpecial1, sum.special2, avgSpecial2, sum.special3, avgSpecial3);

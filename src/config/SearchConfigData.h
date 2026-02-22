@@ -157,10 +157,13 @@ struct SearchConfigData {
   bool USE_EXT_ADD_DEPTH    = true;
 
   // singular extensions
-  bool USE_SINGULAR_EXT  = true;
-  int SINGULAR_MARGIN    = 64;// centipawns below TT value to consider singular
-  int SINGULAR_MIN_DEPTH = 8; // minimum depth to attempt singular extension
-  int SINGULAR_REDUCTION = 4; // depth reduction for verification search
+  bool USE_SINGULAR_EXT      = true;
+  // Require BETA/EXACT TT bound - DISABLED: filters 99.98% of candidates, verification search is sufficient
+  // TODO: Consider removing this option entirely after strength testing
+  bool USE_SINGULAR_TT_BOUND = false;
+  int SINGULAR_MARGIN        = 64;   // centipawns below TT value to consider singular
+  int SINGULAR_MIN_DEPTH     = 8;    // minimum depth to attempt singular extension
+  int SINGULAR_REDUCTION     = 4;    // depth reduction for verification search
 
   // moves-left model
   int MOVES_LEFT_OPENING   = 36;
