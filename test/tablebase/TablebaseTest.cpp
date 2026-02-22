@@ -79,8 +79,8 @@ public:
     NEWLINE;
     init::init();
     NEWLINE;
-    Logger::get().TEST_LOG->set_level(spdlog::level::debug);
-    Logger::get().TB_LOG->set_level(spdlog::level::debug);
+    Logger::get().TEST_LOG->set_level(spdlog::level::info);
+    Logger::get().TB_LOG->set_level(spdlog::level::info);
   }
 
 protected:
