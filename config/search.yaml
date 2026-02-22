@@ -57,13 +57,20 @@ TB_ROOT_IMMEDIATE: false
 USE_TB_PROBE_SEARCH: true
 # Probe tablebases on PV nodes (false = only non-PV nodes for cutoffs, saves overhead)
 USE_TB_PROBE_PV: true
-# Minimum remaining depth to probe WDL during search (0 = always probe)
+# Minimum remaining depth to probe WDL during search (Stockfish default: 1)
+# Higher values reduce file I/O but may miss TB cutoffs at shallow depths
 TB_PROBE_DEPTH: 1
 # Maximum pieces for search TB probing (3-7, typically matches available TBs)
 TB_PROBE_LIMIT: 6
 # HalfMoveClock threshold for DTZ accuracy check (>=100 disables this check)
 # When halfMoveClock >= this value, be conservative about claiming wins/losses
 TB_RULE50_THRESHOLD: 80
+
+# Cache pre-warming (reduces latency on first TB probes)
+# Pre-warm OS file cache at startup by probing representative endgame positions
+TB_CACHE_PREWARM: true
+# Maximum pieces to pre-warm (3-6, higher values increase startup time)
+TB_CACHE_PREWARM_PIECES: 6
 
 # Move ordering features
 # Use TT best move as a first candidate (PV move)

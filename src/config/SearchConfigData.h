@@ -61,16 +61,18 @@ struct SearchConfigData {
   bool USE_QS_TT    = true;
 
   // Syzygy tablebase settings
-  std::string TB_PATH;                 // Path to Syzygy tablebase files (empty = disabled)
+  std::string TB_PATH;// Path to Syzygy tablebase files (empty = disabled)
   // Root probing (once per search, for best move selection)
-  bool USE_TB_PROBE_ROOT         = true;   // Probe tablebases at root for best move
-  bool TB_ROOT_IMMEDIATE     = false;  // Return TB move immediately without searching (false = search for PV)
+  bool USE_TB_PROBE_ROOT = true; // Probe tablebases at root for best move
+  bool TB_ROOT_IMMEDIATE = false;// Return TB move immediately without searching (false = search for PV)
   // Search probing (during tree search, for cutoffs)
-  bool USE_TB_PROBE_SEARCH       = true;   // Probe tablebases during search for cutoffs
-  bool USE_TB_PROBE_PV           = true;   // Probe tablebases on PV nodes (false = only non-PV for cutoffs)
-  int TB_PROBE_DEPTH         = 1;      // Minimum depth to probe WDL in search (0 = always)
-  int TB_PROBE_LIMIT         = 6;      // Max pieces for search TB probing (3-7)
-  int TB_RULE50_THRESHOLD    = 80;     // HalfMoveClock threshold for DTZ check (>=100 disables)
+  bool USE_TB_PROBE_SEARCH    = true;// Probe tablebases during search for cutoffs
+  bool USE_TB_PROBE_PV        = true;// Probe tablebases on PV nodes (false = only non-PV for cutoffs)
+  int TB_PROBE_DEPTH          = 1;   // Minimum depth to probe WDL in search (Stockfish default: 1)
+  int TB_PROBE_LIMIT          = 6;   // Max pieces for search TB probing (3-7)
+  int TB_RULE50_THRESHOLD     = 80;  // HalfMoveClock threshold for DTZ check (>=100 disables)
+  bool TB_CACHE_PREWARM       = true;// Pre-warm OS file cache at startup
+  int TB_CACHE_PREWARM_PIECES = 6;   // Max pieces to pre-warm (3-6, higher = more startup time)
 
   // move sorting
   bool USE_TT_PV_MOVE_SORT = true;
@@ -81,18 +83,18 @@ struct SearchConfigData {
   // Internal Iterative Deepening (IID) - legacy approach
   // Does a reduced-depth mini-search to find a good first move when no TT move
   // Note: Largely obsolete - PV-only restriction makes it rarely trigger due to TT
-  bool USE_IID             = false;  // Disabled - IIR is more effective
-  int IID_DEPTH            = 6;
-  int IID_REDUCTION        = 2;
+  bool USE_IID      = false;// Disabled - IIR is more effective
+  int IID_DEPTH     = 6;
+  int IID_REDUCTION = 2;
 
   // Internal Iterative Reduction (IIR) - modern alternative to IID
   // Simply reduces depth when no TT move available (Stockfish approach)
   // Much more effective than IID because it applies to ALL node types
   // Note: USE_IID and USE_IIR are mutually exclusive - only enable one!
-  bool USE_IIR             = true;   // Enabled - 36% node reduction in testing
-  int IIR_DEPTH            = 4;      // Minimum depth to apply IIR
-  int IIR_REDUCTION        = 2;      // How much to reduce depth
-  bool IIR_ALL_NODES       = true;   // Apply to all nodes (true) or PV only (false)
+  bool USE_IIR       = true;// Enabled - 36% node reduction in testing
+  int IIR_DEPTH      = 4;   // Minimum depth to apply IIR
+  int IIR_REDUCTION  = 2;   // How much to reduce depth
+  bool IIR_ALL_NODES = true;// Apply to all nodes (true) or PV only (false)
 
   // pruning
   bool USE_MDP             = true;
@@ -104,8 +106,8 @@ struct SearchConfigData {
   std::array<int, 4> RFP_MARGIN{0, 200, 400, 800};
   // RFP + improving: increase margin when not improving (prune less aggressively)
   // Rationale: "not improving" means eval may be unreliable, search more carefully
-  bool USE_RFP_IMPROVING   = true; // Use improving flag to modulate RFP margin
-  int RFP_IMPROVING_MARGIN = 40;   // Margin increase (cp) when not improving
+  bool USE_RFP_IMPROVING   = true;// Use improving flag to modulate RFP margin
+  int RFP_IMPROVING_MARGIN = 40;  // Margin increase (cp) when not improving
 
   // null move pruning
   bool USE_NMP                  = true;
@@ -118,8 +120,8 @@ struct SearchConfigData {
   bool USE_NMP_ZUG_GUARD        = true;
   int NMP_ZUG_NONPAWN_THRESHOLD = 0;
   // NMP + improving: extra reduction when position is not improving
-  bool USE_NMP_IMPROVING        = true; // Use improving flag to modulate NMP reduction
-  int NMP_IMPROVING_REDUCTION   = 1;    // Extra NMP reduction depth when not improving
+  bool USE_NMP_IMPROVING      = true;// Use improving flag to modulate NMP reduction
+  int NMP_IMPROVING_REDUCTION = 1;   // Extra NMP reduction depth when not improving
 
   // futility pruning
   bool USE_FP  = true;
@@ -127,8 +129,8 @@ struct SearchConfigData {
   std::array<int, 7> FP_MARGIN{0, 100, 200, 300, 500, 900, 1200};
   // FP + improving: increase margin when not improving (prune less aggressively)
   // Rationale: "not improving" means eval may be unreliable, search more carefully
-  bool USE_FP_IMPROVING   = true; // Use improving flag to modulate FP margin
-  int FP_IMPROVING_MARGIN = 80;   // Margin increase (cp) when not improving
+  bool USE_FP_IMPROVING   = true;// Use improving flag to modulate FP margin
+  int FP_IMPROVING_MARGIN = 80;  // Margin increase (cp) when not improving
 
   // improving flag
   bool USE_IMPROVING = true;// Master switch: track if eval is improving vs 2 plies ago
@@ -138,46 +140,46 @@ struct SearchConfigData {
   int LMR_MIN_DEPTH = 2;
   int LMR_MIN_MOVES = 2;
   // LMR formula selection (logarithmic vs linear)
-  bool LMR_USE_LOG_FORMULA  = true; // Use logarithmic formula instead of linear
-  double LMR_LOG_BASE_DIV   = 1.25; // Divisor for log formula: log(d)*log(m)/divisor
+  bool LMR_USE_LOG_FORMULA = true;// Use logarithmic formula instead of linear
+  double LMR_LOG_BASE_DIV  = 1.25;// Divisor for log formula: log(d)*log(m)/divisor
   // LMR + improving: extra reduction when position is not improving
-  bool USE_LMR_IMPROVING      = true; // Use improving flag to modulate LMR
-  int LMR_IMPROVING_REDUCTION = 1;    // Extra reduction depth when not improving
+  bool USE_LMR_IMPROVING      = true;// Use improving flag to modulate LMR
+  int LMR_IMPROVING_REDUCTION = 1;   // Extra reduction depth when not improving
   // LMR + history: adjust reduction based on move's history score
-  bool USE_LMR_HISTORY   = true;  // Use history score to modulate LMR reduction
+  bool USE_LMR_HISTORY = true;// Use history score to modulate LMR reduction
   // Divisor for history -> reduction conversion. History values are (1 << depth) per cutoff.
   // With divisor 8192 (= 1 << 13), a single cutoff at depth 13 gives 1 ply less reduction.
   // Lower divisor = more aggressive adjustment, higher = more conservative.
   int LMR_HISTORY_DIVISOR = 8192;
   // LMR + cut node: extra reduction on expected cut nodes
   // Cut nodes are expected to fail high quickly; late moves on cut nodes are very unlikely to be best.
-  bool USE_LMR_CUTNODE = true;    // Use cut node flag to increase LMR reduction
-  int LMR_CUTNODE_REDUCTION = 2;  // Extra reduction depth on cut nodes
+  bool USE_LMR_CUTNODE      = true;// Use cut node flag to increase LMR reduction
+  int LMR_CUTNODE_REDUCTION = 2;   // Extra reduction depth on cut nodes
 
   // LMP
-  bool USE_LMP      = true;
+  bool USE_LMP = true;
   std::array<int, 16> LMP_MOVES{0, 7, 9, 11, 13, 15, 17, 19, 22, 24, 27, 29, 32, 35, 38, 41};
   // LMP + improving: allow more moves when position is improving
-  bool USE_LMP_IMPROVING = true; // Use improving flag to modulate LMP threshold
+  bool USE_LMP_IMPROVING = true;// Use improving flag to modulate LMP threshold
 
   // extensions
   bool USE_EXTENSIONS       = true;
   bool USE_CHECK_EXT        = true;
-  int CHECK_EXT_MIN_DEPTH   = 2;  // minimum depth to apply check extension
-  int CHECK_EXT_EARLY_LIMIT = 99; // effectively no limit when SEE is enabled
+  int CHECK_EXT_MIN_DEPTH   = 2;   // minimum depth to apply check extension
+  int CHECK_EXT_EARLY_LIMIT = 99;  // effectively no limit when SEE is enabled
   bool USE_CHECK_EXT_SEE    = true;// only extend checks with SEE >= 0 (non-losing)
   bool USE_THREAT_EXT       = true;
-  int THREAT_EXT_MATE_DEPTH = 4;  // Mate-in-N threshold for threat detection (VALUE_CHECKMATE - 2*N)
+  int THREAT_EXT_MATE_DEPTH = 4;// Mate-in-N threshold for threat detection (VALUE_CHECKMATE - 2*N)
   bool USE_EXT_ADD_DEPTH    = true;
 
   // singular extensions
-  bool USE_SINGULAR_EXT      = true;
+  bool USE_SINGULAR_EXT = true;
   // Require BETA/EXACT TT bound - DISABLED: filters 99.98% of candidates, verification search is sufficient
   // TODO: Consider removing this option entirely after strength testing
   bool USE_SINGULAR_TT_BOUND = false;
-  int SINGULAR_MARGIN        = 64;   // centipawns below TT value to consider singular
-  int SINGULAR_MIN_DEPTH     = 8;    // minimum depth to attempt singular extension
-  int SINGULAR_REDUCTION     = 4;    // depth reduction for verification search
+  int SINGULAR_MARGIN        = 64;// centipawns below TT value to consider singular
+  int SINGULAR_MIN_DEPTH     = 8; // minimum depth to attempt singular extension
+  int SINGULAR_REDUCTION     = 4; // depth reduction for verification search
 
   // moves-left model
   int MOVES_LEFT_OPENING   = 36;
@@ -209,9 +211,9 @@ struct SearchConfigData {
 
 // Forward declaration for parseYamlConfig
 std::set<std::string> parseYamlConfig(
-    const YAML::Node& node,
-    SearchConfigData& search,
-    bool warnUnknown);
+  const YAML::Node& node,
+  SearchConfigData& search,
+  bool warnUnknown);
 
 template<>
 struct YAML::convert<SearchConfigData> {

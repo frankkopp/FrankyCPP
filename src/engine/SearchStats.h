@@ -237,6 +237,9 @@ struct SearchStats {
   /// Successful tablebase probes at root position.
   uint64_t tbRootHits = 0;
 
+  /// Number of times probeWDL() was called during search (passed all guards).
+  uint64_t tbSearchProbes = 0;
+
   /// Successful tablebase WDL probes during search.
   uint64_t tbSearchHits = 0;
 
@@ -315,6 +318,7 @@ struct SearchStats {
        << " TtMoveUsed: " << stats.TtMoveUsed
        << " NoTtMove: " << stats.NoTtMove
        << " tbRootHits: " << stats.tbRootHits
+       << " tbSearchProbes: " << stats.tbSearchProbes
        << " tbSearchHits: " << stats.tbSearchHits
        << " tbSearchMisses: " << stats.tbSearchMisses
        << " tbSearchCutoffs: " << stats.tbSearchCutoffs

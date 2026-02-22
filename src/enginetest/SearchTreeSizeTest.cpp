@@ -71,8 +71,8 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   s.USE_HISTORY_COUNTER = false;
   s.USE_HISTORY_MOVES   = false;
 
-  s.USE_IID             = false;
-  s.USE_IIR             = false;
+  s.USE_IID = false;
+  s.USE_IIR = false;
 
   // Pruning techniques
   s.USE_IMPROVING     = false;// Track if position is improving vs 2 plies ago
@@ -106,12 +106,12 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   s.USE_LMP_IMPROVING = false;
 
   // Extensions
-  s.USE_EXTENSIONS       = false;
-  s.USE_CHECK_EXT        = false;
-  s.USE_CHECK_EXT_SEE    = false;
-  s.USE_THREAT_EXT       = false;
-  s.USE_EXT_ADD_DEPTH    = false;
-  s.USE_SINGULAR_EXT     = false;
+  s.USE_EXTENSIONS        = false;
+  s.USE_CHECK_EXT         = false;
+  s.USE_CHECK_EXT_SEE     = false;
+  s.USE_THREAT_EXT        = false;
+  s.USE_EXT_ADD_DEPTH     = false;
+  s.USE_SINGULAR_EXT      = false;
   s.USE_SINGULAR_TT_BOUND = false;
 
   // Best-move instability time management (disable for fixed-depth tests)
@@ -162,21 +162,12 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   // GROUP 3: MOVE ORDERING (Critical for alpha-beta/PVS efficiency)
   // =====================================================================
 
-  // =====================================================================
-  // WARMUP/BASELINE - Must be before first actual test
-  // =====================================================================
-  ptrToSpecial1 = &search.getSearchStats().iidMoves;
-  ptrToSpecial2 = &search.getSearchStats().iidSearches;
-  ptrToSpecial3 = &search.getSearchStats().iirReductions;
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Warmup"));
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Baseline"));
-
   // 3.1a Internal Iterative Deepening (IID): Find good move when no TT hit (legacy)
-  CONFIG_OVERRIDE(s.USE_IID = true;);
-  CONFIG_OVERRIDE(s.USE_IIR = false;);
-  CONFIG_OVERRIDE(s.IID_DEPTH = 6;);
-  CONFIG_OVERRIDE(s.IID_REDUCTION = 2;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "IID"));
+  // CONFIG_OVERRIDE(s.USE_IID = true;);
+  // CONFIG_OVERRIDE(s.USE_IIR = false;);
+  // CONFIG_OVERRIDE(s.IID_DEPTH = 6;);
+  // CONFIG_OVERRIDE(s.IID_REDUCTION = 2;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "IID"));
 
   // 3.1b Internal Iterative Reduction (IIR): Modern alternative to IID
   // Note: IID and IIR are mutually exclusive - only enable one for testing
@@ -184,10 +175,10 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   CONFIG_OVERRIDE(s.USE_IIR = true;);
   CONFIG_OVERRIDE(s.IIR_DEPTH = 4;);
   CONFIG_OVERRIDE(s.IIR_REDUCTION = 2;);
-  CONFIG_OVERRIDE(s.IIR_ALL_NODES = false;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "IIR PV Only"));
+  // CONFIG_OVERRIDE(s.IIR_ALL_NODES = false;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "IIR PV Only"));
   CONFIG_OVERRIDE(s.IIR_ALL_NODES = true;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "IIR All Nodes"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "IIR All Nodes"));
 
   // 3.2 Killer Moves: Remember refutation moves
   CONFIG_OVERRIDE(s.USE_KILLER_MOVES = true;);
@@ -224,6 +215,16 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   // =====================================================================
   // GROUP 5: NULL MOVE PRUNING (Very high impact pruning)
   // =====================================================================
+
+  // =====================================================================
+  // WARMUP/BASELINE - Must be before first actual test
+  // =====================================================================
+  ptrToSpecial1 = &search.getSearchStats().pvNodes;
+  ptrToSpecial2 = &search.getSearchStats().pvsResearches;
+  ptrToSpecial3 = &search.getSearchStats().iirReductions;
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Warmup"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Baseline"));
+
   CONFIG_OVERRIDE(s.USE_IMPROVING = true;);
 
   // 5.1 Null Move Pruning: Skip move and search with reduced depth
@@ -246,7 +247,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   CONFIG_OVERRIDE(s.NMP_IMPROVING_REDUCTION = 1;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "NMP+Improving"));
 
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "NMP"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "NMP"));
 
   // =====================================================================
   // GROUP 6: LATE MOVE REDUCTIONS (Major pruning technique)
@@ -304,7 +305,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   // CONFIG_OVERRIDE(s.LMR_HISTORY_DIVISOR = 4096;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR+Hist 4096"));
 
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR"));
 
   // =====================================================================
   // GROUP 7: FORWARD PRUNING (Aggressive node reduction)
@@ -331,7 +332,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   CONFIG_OVERRIDE(s.RAZOR_MARGIN = 531;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Razoring"));
 
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Forward Pruning"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Forward Pruning"));
 
   // =====================================================================
   // GROUP 8: FUTILITY PRUNING (Prune hopeless moves)
@@ -350,7 +351,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   CONFIG_OVERRIDE(s.USE_QFP = true;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "QFP"));
 
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Futil Pruning"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Futil Pruning"));
 
   // =====================================================================
   // GROUP 9: LATE MOVE PRUNING (Prune late quiet moves)
@@ -369,19 +370,21 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   CONFIG_OVERRIDE(s.USE_LMP_IMPROVING = true;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMP+Improving"));
 
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMP"));
+
   // =====================================================================
   // GROUP 10: SEARCH EXTENSIONS (Extend promising lines)
   // =====================================================================
 
   // 10.1 Extensions Core: Enable extension framework + AddDepth (realistic mode)
   CONFIG_OVERRIDE(s.USE_EXTENSIONS = true;);
-  CONFIG_OVERRIDE(s.USE_EXT_ADD_DEPTH = true;);  // Enable early for realistic testing
+  CONFIG_OVERRIDE(s.USE_EXT_ADD_DEPTH = true;);// Enable early for realistic testing
 
   // 10.2 Check Extension: Extend when move gives check
   CONFIG_OVERRIDE(s.USE_CHECK_EXT = true;);
   CONFIG_OVERRIDE(s.CHECK_EXT_MIN_DEPTH = 2;);
-  CONFIG_OVERRIDE(s.CHECK_EXT_EARLY_LIMIT = 3;);  // Test with old limit first
-  CONFIG_OVERRIDE(s.USE_CHECK_EXT_SEE = false;);  // Test without SEE first
+  CONFIG_OVERRIDE(s.CHECK_EXT_EARLY_LIMIT = 3;);// Test with old limit first
+  CONFIG_OVERRIDE(s.USE_CHECK_EXT_SEE = false;);// Test without SEE first
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Check"));
 
   // 10.2b Check Extension + SEE: Only extend non-losing checks
@@ -395,9 +398,9 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
 
   // 10.3 Singular Extension: Extend when one move is clearly best
   CONFIG_OVERRIDE(s.USE_SINGULAR_EXT = true;);
-  CONFIG_OVERRIDE(s.USE_SINGULAR_TT_BOUND = false;);  // Don't require BETA/EXACT (too restrictive)
+  CONFIG_OVERRIDE(s.USE_SINGULAR_TT_BOUND = false;);// Don't require BETA/EXACT (too restrictive)
   CONFIG_OVERRIDE(s.SINGULAR_MARGIN = 64;);
-  CONFIG_OVERRIDE(s.SINGULAR_MIN_DEPTH = 8;);  // Lowered from 8 to trigger more often
+  CONFIG_OVERRIDE(s.SINGULAR_MIN_DEPTH = 8;);// Lowered from 8 to trigger more often
   CONFIG_OVERRIDE(s.SINGULAR_REDUCTION = 4;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Sing NoTTBound"));
   // CONFIG_OVERRIDE(s.USE_SINGULAR_TT_BOUND = true;);  // Don't require BETA/EXACT (too restrictive)
@@ -407,7 +410,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   CONFIG_OVERRIDE(s.USE_THREAT_EXT = true;);
   // CONFIG_OVERRIDE(s.THREAT_EXT_MATE_DEPTH = 3;);  // Test with mate-in-4 threshold first
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Threat 3"));
-  CONFIG_OVERRIDE(s.THREAT_EXT_MATE_DEPTH = 4;);  // Test with mate-in-4 threshold first
+  CONFIG_OVERRIDE(s.THREAT_EXT_MATE_DEPTH = 4;);// Test with mate-in-4 threshold first
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Threat 4"));
   // CONFIG_OVERRIDE(s.THREAT_EXT_MATE_DEPTH = 6;);  // Test with mate-in-6 threshold
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Threat 6"));
@@ -419,7 +422,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   // Re-enable AddDepth for subsequent tests
   // CONFIG_OVERRIDE(s.USE_EXT_ADD_DEPTH = true;);
 
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Extensions"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Extensions"));
 
   // =====================================================================
   // GROUP 11: SYZYGY TABLEBASES (Endgame perfection)
@@ -435,7 +438,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "TB Root"));
 
   // 11.2 TB Root Immediate: Return TB result immediately
-  CONFIG_OVERRIDE(s.TB_ROOT_IMMEDIATE = true;);
+  // CONFIG_OVERRIDE(s.TB_ROOT_IMMEDIATE = true;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "TB Root Immed"));
 
   // 11.3 TB Search Probing: Probe TB during search
@@ -446,9 +449,18 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   CONFIG_OVERRIDE(s.USE_TB_PROBE_PV = true;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "TB PV"));
 
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Tablebases"));
+  // CONFIG_OVERRIDE(s.TB_PROBE_DEPTH = 1;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "TB ProbeDepth 1"));
+  // CONFIG_OVERRIDE(s.TB_PROBE_DEPTH = 2;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "TB ProbeDepth 2"));
+  CONFIG_OVERRIDE(s.TB_PROBE_DEPTH = 4;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "TB ProbeDepth 4"));
+  // CONFIG_OVERRIDE(s.TB_PROBE_DEPTH = 6;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "TB ProbeDepth 6"));
 
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "All Features"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Tablebases"));
+
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "All Features"));
 
   return result;
 }

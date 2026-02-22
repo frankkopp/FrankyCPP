@@ -148,6 +148,12 @@ public:
   /// @return true if position is probeable
   [[nodiscard]] bool canProbe(const Position& pos) const;
 
+  /// Pre-warm OS file cache by probing representative endgame positions.
+  /// Call once at startup after tablebase initialization to reduce latency
+  /// on first in-game probes. Forces OS to load TB files into page cache.
+  /// @param maxPieces Maximum piece count to warm (3 to maxPieces_)
+  void prewarmCache(int maxPieces = 5) const;
+
   /// Convert TBResult and DTZ to centipawn value for search scoring.
   /// Uses DTZ to prefer shorter wins (smaller DTZ = higher score).
   /// @param result  WDL result

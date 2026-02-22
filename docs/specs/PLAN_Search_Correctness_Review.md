@@ -38,40 +38,40 @@ Focus is on finding bugs and correctness issues, not just tuning parameters.
 
 Features ordered by how a chess engine naturally evolves - core algorithm first.
 
-| Phase                   | #  | Feature                        | Status     | Notes                                  |
-|-------------------------|----|--------------------------------|------------|----------------------------------------|
-| **Core Algorithm**      |    |                                |            |                                        |
-|                         | 1  | Alpha-Beta / PVS               | ✅ Correct  | Reviewed 2026-02-21                    |
-|                         | 2  | Aspiration Windows             | ✅ Fixed    | Comment fix applied                    |
-|                         | 3  | Quiescence Search              | ✅ Fixed    | Removed history/killer updates         |
-| **Infrastructure**      |    |                                |            |                                        |
-|                         | 4  | TT Lookup & Cutoff             | ✅ Correct  | Textbook correct                       |
-|                         | 5  | TT Storage                     | ✅ Correct  | Replacement + bound types correct      |
-|                         | 6  | Draw Detection                 | ✅ Correct  | Repetition + 50-move correct           |
-|                         | 7  | Static Eval                    | ✅ Correct  | Integration correct                    |
-| **Move Ordering**       |    |                                |            |                                        |
-|                         | 8  | Move Ordering (overall)        | ✅ Correct  | MVV-LVA, killers, history correct      |
-|                         | 9  | History Heuristic              | ✅ Correct  | Bonus/penalty/ordering correct         |
-|                         | 10 | Killer Moves                   | ✅ Correct  | Per-ply, FIFO, protected               |
-|                         | 11 | Counter Moves                  | ✅ Correct  | Refutation tracking correct            |
-| **Simple Pruning**      |    |                                |            |                                        |
-|                         | 12 | Mate Distance Pruning          | ✅ Correct  | Both bounds correct                    |
-|                         | 13 | Razoring                       | ✅ Correct  | Fixed in v1.3                          |
-|                         | 14 | Reverse Futility Pruning (RFP) | ✅ Fixed    | Added mate guard + fixed improving     |
-|                         | 15 | Futility Pruning (FP)          | ✅ Fixed    | Fixed improving logic                  |
-| **Advanced Pruning**    |    |                                |            |                                        |
-|                         | 16 | Null Move Pruning (NMP)        | ✅ Correct  | All guards and logic verified          |
-|                         | 17 | Late Move Pruning (LMP)        | ✅ Correct  | Threshold-based, improving OK          |
-|                         | 18 | Late Move Reduction (LMR)      | ✅ Enhanced | Broadened scope, reduction adjust      |
-| **Extensions**          |    |                                |            |                                        |
-|                         | 19 | Check Extension                | ✅ Enhanced | Added depth guard + SEE filter         |
-|                         | 20 | Singular Extension             | ✅ Correct  | ttBound check removed (too strict)     |
-|                         | 21 | Threat Extension               | ✅ Enhanced | Added THREAT_EXT_MATE_DEPTH config     |
-| **Search Enhancements** |    |                                |            |                                        |
-|                         | 22 | IID / IIR                      | ✅ Enhanced | IIR default (-36% nodes), IID obsolete |
-|                         | 23 | Tablebase Probing              | ⬜ Pending  | Endgame knowledge                      |
-| **Control**             |    |                                |            |                                        |
-|                         | 24 | Time Management                | ⬜ Pending  | Resource allocation                    |
+| Phase                   | #  | Feature                        | Status      | Notes                                  |
+|-------------------------|----|--------------------------------|-------------|----------------------------------------|
+| **Core Algorithm**      |    |                                |             |                                        |
+|                         | 1  | Alpha-Beta / PVS               | ✅ Correct   | Reviewed 2026-02-21                    |
+|                         | 2  | Aspiration Windows             | ✅ Fixed     | Comment fix applied                    |
+|                         | 3  | Quiescence Search              | ✅ Fixed     | Removed history/killer updates         |
+| **Infrastructure**      |    |                                |             |                                        |
+|                         | 4  | TT Lookup & Cutoff             | ✅ Correct   | Textbook correct                       |
+|                         | 5  | TT Storage                     | ✅ Correct   | Replacement + bound types correct      |
+|                         | 6  | Draw Detection                 | ✅ Correct   | Repetition + 50-move correct           |
+|                         | 7  | Static Eval                    | ✅ Correct   | Integration correct                    |
+| **Move Ordering**       |    |                                |             |                                        |
+|                         | 8  | Move Ordering (overall)        | ✅ Correct   | MVV-LVA, killers, history correct      |
+|                         | 9  | History Heuristic              | ✅ Correct   | Bonus/penalty/ordering correct         |
+|                         | 10 | Killer Moves                   | ✅ Correct   | Per-ply, FIFO, protected               |
+|                         | 11 | Counter Moves                  | ✅ Correct   | Refutation tracking correct            |
+| **Simple Pruning**      |    |                                |             |                                        |
+|                         | 12 | Mate Distance Pruning          | ✅ Correct   | Both bounds correct                    |
+|                         | 13 | Razoring                       | ✅ Correct   | Fixed in v1.3                          |
+|                         | 14 | Reverse Futility Pruning (RFP) | ✅ Fixed     | Added mate guard + fixed improving     |
+|                         | 15 | Futility Pruning (FP)          | ✅ Fixed     | Fixed improving logic                  |
+| **Advanced Pruning**    |    |                                |             |                                        |
+|                         | 16 | Null Move Pruning (NMP)        | ✅ Correct   | All guards and logic verified          |
+|                         | 17 | Late Move Pruning (LMP)        | ✅ Correct   | Threshold-based, improving OK          |
+|                         | 18 | Late Move Reduction (LMR)      | ✅ Enhanced  | Broadened scope, reduction adjust      |
+| **Extensions**          |    |                                |             |                                        |
+|                         | 19 | Check Extension                | ✅ Enhanced  | Added depth guard + SEE filter         |
+|                         | 20 | Singular Extension             | ✅ Correct   | ttBound check removed (too strict)     |
+|                         | 21 | Threat Extension               | ✅ Enhanced  | Added THREAT_EXT_MATE_DEPTH config     |
+| **Search Enhancements** |    |                                |             |                                        |
+|                         | 22 | IID / IIR                      | ✅ Enhanced  | IIR default (-36% nodes), IID obsolete |
+|                         | 23 | Tablebase Probing              | ✅ Optimized | Guard reorder, DEPTH=1 (SF default)    |
+| **Control**             |    |                                |             |                                        |
+|                         | 24 | Time Management                | ⬜ Pending   | Resource allocation                    |
 
 ---
 
@@ -2917,6 +2917,478 @@ This prevents the IID search's PV from appearing in the final output.
 
 ---
 
+### Feature #23: Tablebase Probing
+**Date:** 2026-02-22
+**Status:** ⚠️ Performance Concern - Needs Optimization
+
+**Implementation Location:**
+- `src/engine/Search.cpp` lines 344-371 (root probing)
+- `src/engine/Search.cpp` lines 972-1034 (search probing)
+- `src/engine/Search.cpp` lines 2072-2110 (probeTablebaseAtRoot)
+- `src/engine/Search.cpp` lines 2112-2200 (filterRootMovesByTB)
+- `src/tablebase/Tablebase.cpp` (Fathom wrapper)
+- `src/config/SearchConfigData.h` lines 63-74 (config options)
+
+**Theory Background:**
+- Syzygy tablebases provide perfect endgame play for positions ≤7 pieces
+- **WDL probing**: Fast Win/Draw/Loss determination for search pruning
+- **DTZ probing**: Distance-To-Zeroing for optimal move at root
+- Used to: (1) guide root move selection, (2) cut off search tree branches
+- Expected benefit: Perfect endgame play, reduced search in TB positions
+
+**Test Results (provided by user):**
+
+| Test          | Nodes   | NPS           | Time  | Depth | TB Root Hits | TB Search Hits | TB Cutoffs |
+|---------------|---------|---------------|-------|-------|--------------|----------------|------------|
+| Baseline      | 943,057 | **2,967,445** | 347ms | 12/27 | 0            | 0              | 0          |
+| TB Root       | 943,156 | 2,957,761     | 346ms | 12/27 | 2            | 0              | 0          |
+| TB Root Immed | 938,313 | 2,726,689     | 349ms | 11/26 | 2            | 0              | 0          |
+| TB Search     | 951,588 | **2,653,402** | 352ms | 11/26 | 2            | 52,575         | 52,517     |
+| TB PV         | 940,182 | 2,672,068     | 346ms | 11/26 | 2            | 57,331         | -          |
+
+**Test Position Analysis (50 positions from Test_Fens.h, depth 12):**
+
+The test set contains:
+- **Positions 1-10**: Custom positions including 2 pure TB positions:
+  - Position 6: KQK (4 pieces) → Direct TB hit
+  - Position 7: KBNK (4 pieces) → Direct TB hit
+- **Positions 11-50**: Eigenmann Rapid set (ERET) - tactical middlegame positions
+
+| Position Type             | Count | Pieces | TB Eligible? |
+|---------------------------|-------|--------|--------------|
+| Pure TB (KQK, KBNK)       | 2     | 4      | ✅ Yes        |
+| Near-endgame (7-9 pieces) | 2     | 7-9    | ⚠️ Marginal  |
+| Middlegame                | 46    | 15-32  | ❌ No         |
+
+**Test Validation:**
+- ✅ **2 root hits** matches the 2 pure TB positions (KQK, KBNK)
+- ✅ **52K search hits** come from search reaching TB-eligible leaf positions
+- ✅ **99.9% cutoff rate** (52,517/52,575) shows TB probes are highly effective when they hit
+- ✅ Test is valid for **overhead measurement** in typical game positions
+
+**Key Insight:** The test reveals that in typical middlegame-heavy positions:
+- TB probing adds ~10% NPS overhead
+- Benefit is limited to rare endgame branches during search
+- This validates the need for **TB_PROBE_DEPTH optimization**
+
+**Performance Analysis:**
+
+| Mode          | NPS Change | Overhead                        |
+|---------------|------------|---------------------------------|
+| TB Root       | -0.3%      | Negligible (once per search)    |
+| TB Root Immed | -8.1%      | Unexpectedly high (investigate) |
+| TB Search     | **-10.6%** | **Significant overhead**        |
+| TB PV         | -10.0%     | Similar to TB Search            |
+
+**⚠️ CRITICAL FINDING: 10% NPS reduction is substantial!**
+
+---
+
+**Implementation Review:**
+
+#### ✅ Root Probing Logic (CORRECT)
+```cpp
+if (SearchConfig.USE_TB_PROBE_ROOT
+    && syzygy_tb
+    && syzygy_tb->isAvailable()) {
+  if (probeTablebaseAtRoot(p, searchResult)) {
+    if (SearchConfig.TB_ROOT_IMMEDIATE) {
+      return searchResult;  // Skip search entirely
+    }
+    // Store TB info for filtering, continue searching for PV
+    tbRootMove = searchResult.bestMove;
+    filterRootMovesByTB(p);
+  }
+}
+```
+- Correct guard structure ✅
+- Two modes: immediate return vs. search with filtering ✅
+- Root filtering maintains TB optimality ✅
+
+#### ✅ Search Probing Logic (CORRECT but expensive)
+```cpp
+if (SearchConfig.USE_TB_PROBE_SEARCH
+    && (SearchConfig.USE_TB_PROBE_PV || nodeType != PvNode)
+    && syzygy_tb && syzygy_tb->isAvailable()
+    && depth >= SearchConfig.TB_PROBE_DEPTH
+    && p.getOccupiedBb().popcount() <= SearchConfig.TB_PROBE_LIMIT
+    && p.getCastlingRights() == NO_CASTLING) {
+  const tablebase::TBResult wdl = syzygy_tb->probeWDL(p);
+  // ... cutoff logic ...
+}
+```
+
+**Guards analyzed:**
+1. `USE_TB_PROBE_SEARCH` - master toggle ✅
+2. `USE_TB_PROBE_PV || nodeType != PvNode` - skip PV nodes optionally ✅
+3. `syzygy_tb && isAvailable()` - null/availability check ✅
+4. `depth >= TB_PROBE_DEPTH (1)` - minimum depth ✅
+5. `popcount() <= TB_PROBE_LIMIT (6)` - piece count ✅
+6. `getCastlingRights() == NO_CASTLING` - TB limitation ✅
+
+**Cutoff logic:**
+- Win/CursedWin → lower bound, fail-high if >= beta ✅
+- Loss/BlessedLoss → upper bound, fail-low if <= alpha ✅
+- Draw → exact, return VALUE_DRAW ✅
+- PV nodes: tighten bounds only, never cut off ✅
+- TT storage on cutoff ✅
+
+**This is all textbook correct!**
+
+#### ⚠️ Performance Hotspot #1: probeWDL() Overhead
+
+The `probeWDL()` function does significant work:
+
+```cpp
+TBResult Tablebase::probeWDL(const Position& pos) const {
+  if (!canProbe(pos)) { return TBResult::Failed; }
+
+  // 1. Convert position to Fathom format (8 bitboard extractions)
+  uint64_t white{}, black{}, kings{}, queens{}, rooks{}, bishops{}, knights{}, pawns{};
+  unsigned ep{}; bool turn{};
+  convertPositionToFathom(pos, white, black, ...);  // <-- OVERHEAD
+
+  // 2. Call Fathom's tb_probe_wdl() - file I/O possible!
+  const unsigned result = tb_probe_wdl(white, black, kings, queens, ...);
+
+  return convertWDL(result);
+}
+```
+
+**Overhead per probe:**
+1. `canProbe()`: 2 checks (availability, castling, piece count)
+2. `convertPositionToFathom()`: 8 bitboard extractions + EP legality check
+3. `tb_probe_wdl()`: Fathom library call (potential file I/O if not cached)
+
+#### ⚠️ Performance Hotspot #2: hasLegalEpCapture()
+
+Called on EVERY probe to handle Fathom's EP requirement:
+
+```cpp
+ep = 0;
+if (MoveGenerator::hasLegalEpCapture(pos)) [[unlikely]] {
+  ep = static_cast<unsigned>(pos.getEnPassantSquare());
+}
+```
+
+`hasLegalEpCapture()` does:
+1. Check if EP square exists
+2. Find all pawns that could capture
+3. For each attacker, simulate capture and check for pins
+4. Uses attack generation (Attacks::attacks())
+
+This is ~50-100 instructions per call, even with `[[unlikely]]`.
+
+#### ⚠️ Performance Hotspot #3: TB_PROBE_DEPTH = 1 is too aggressive
+
+Current setting probes at depth >= 1, meaning almost EVERY node is probed:
+- With 52K search hits in ~950K nodes = ~5.5% probe rate
+- Each probe adds overhead even when TB position isn't reached
+
+---
+
+**Proposed Optimizations:**
+
+#### Optimization 1: Increase TB_PROBE_DEPTH (Recommended)
+
+**Problem:** `TB_PROBE_DEPTH = 1` means probing at almost every node.
+**Solution:** Only probe at higher depths where cutoffs save more work.
+
+```cpp
+// Current (aggressive, high overhead):
+int TB_PROBE_DEPTH = 1;
+
+// Recommended (balance overhead vs. benefit):
+int TB_PROBE_DEPTH = 4;  // Only probe when saving 4+ plies
+```
+
+**Expected impact:** 
+- Fewer probes → less overhead
+- TB cutoffs at depth 4+ still save significant work
+- Shallow probes (depth 1-3) rarely justify the overhead
+
+#### Optimization 2: Cache-aware probing
+
+**Problem:** Fathom may hit disk on probe, causing I/O stalls.
+**Solution:** Trust TT more - if TT has a value at sufficient depth, skip TB probe.
+
+```cpp
+// Before TB probe, check if TT already has info
+if (ttValue != VALUE_NONE && ttDepth >= depth) {
+  // TT already has reliable info, skip expensive TB probe
+  continue;
+}
+// Only probe TB if TT miss or shallow TT entry
+```
+
+This is partially done (TB probe is after TT lookup), but we could be more aggressive.
+
+#### Optimization 3: Lazy EP legality check
+
+**Problem:** `hasLegalEpCapture()` is called on every probe, even when EP is rare.
+**Solution:** Only call when EP square exists.
+
+```cpp
+// Current:
+ep = 0;
+if (MoveGenerator::hasLegalEpCapture(pos)) [[unlikely]] {
+  ep = static_cast<unsigned>(pos.getEnPassantSquare());
+}
+
+// Better (avoid function call when no EP):
+ep = 0;
+const Square epSq = pos.getEnPassantSquare();
+if (epSq != SQ_NONE && MoveGenerator::hasLegalEpCapture(pos)) [[unlikely]] {
+  ep = static_cast<unsigned>(epSq);
+}
+```
+
+Actually, looking at the code, `hasLegalEpCapture()` already checks `epSq == SQ_NONE`
+first, so this is already optimized. The `[[unlikely]]` hint helps but the function
+call overhead remains.
+
+#### Optimization 4: Skip probing when piece count unchanged
+
+**Problem:** Probing positions that haven't changed piece count is redundant if
+the previous probe was also in TB range.
+**Solution:** Track when we last probed and skip if position hasn't become simpler.
+
+This is complex to implement but could help in long forcing sequences.
+
+---
+
+**Configuration Analysis:**
+
+| Option                | Current | Recommended | Notes                             |
+|-----------------------|---------|-------------|-----------------------------------|
+| `USE_TB_PROBE_ROOT`   | true    | true        | Low overhead (once per search)    |
+| `TB_ROOT_IMMEDIATE`   | false   | false       | Search for PV is better           |
+| `USE_TB_PROBE_SEARCH` | true    | true        | Core feature                      |
+| `USE_TB_PROBE_PV`     | true    | **false**   | Skip PV probes (need complete PV) |
+| `TB_PROBE_DEPTH`      | 1       | **4-6**     | Reduce probe frequency            |
+| `TB_PROBE_LIMIT`      | 6       | 6           | Match available TBs               |
+
+---
+
+**Value Proposition Analysis:**
+
+**When TB probing is WORTH the overhead:**
+1. **TB positions reached during search** - get perfect play
+2. **Reduced tree size** - cutoffs eliminate entire subtrees
+3. **Better move ordering** - TB score helps sort
+4. **Endgame accuracy** - avoid positional draws, find only wins
+
+**When TB probing is NOT worth it:**
+1. **Non-TB positions** - overhead with no benefit
+2. **Shallow probes** - small cutoff savings vs. probe cost
+3. **Cached positions** - TT already has the answer
+4. **High NPS reduction** - if overall search is slower
+
+**Current test shows:**
+- 52,517 cutoffs from 52,575 hits (99.9% cutoff rate!) - excellent
+- But nodes increased (951K vs 943K) - TB bounds might be causing re-searches
+- NPS dropped 10% - overhead exceeds cutoff savings in this test
+
+**Key question:** Are the test positions representative?
+- If positions rarely reach TB range → overhead dominates
+- If positions often reach TB range → cutoffs dominate
+
+---
+
+**Findings Summary:**
+
+1. ✅ Root probing logic is correct
+2. ✅ Search probing logic is correct
+3. ✅ Cutoff conditions are correct (bounds + node type)
+4. ✅ TT storage on cutoff is correct
+5. ✅ 50-move rule handling is correct
+6. ⚠️ **TB_PROBE_DEPTH = 1 is too aggressive** (high overhead for shallow cutoffs)
+7. ⚠️ **~10% NPS reduction** needs mitigation
+8. ⚠️ `hasLegalEpCapture()` adds overhead per probe (unavoidable but optimized)
+9. ✅ Guard structure is comprehensive
+
+---
+
+**Recommendations:**
+
+1. **Change `TB_PROBE_DEPTH` default from 1 to 4-6**
+   - Reduces probe frequency significantly
+   - Cutoffs at higher depths are more valuable
+   - Expected: 50-70% overhead reduction
+
+2. **Change `USE_TB_PROBE_PV` default to false**
+   - PV nodes shouldn't cut off anyway (only tighten bounds)
+   - Bound tightening rarely helps enough to justify overhead
+   - Expected: Further overhead reduction on PV nodes (~0.02% of nodes, minor)
+
+3. **Add TB_PROBE_MIN_PIECES option (optional)**
+   - Only probe when pieces ≤ N (e.g., 5)
+   - Very few 6-piece positions in typical middlegame
+   - Expected: Significant overhead reduction in non-endgame
+
+4. **Consider lazy probing (future)**
+   - Only probe after a capture reduces piece count to TB range
+   - Use a flag that tracks "position is now in TB range"
+
+5. **Benchmark with endgame-heavy test set**
+   - Current test may underrepresent TB positions
+   - Need KRK, KQK, KBNK positions to measure true benefit
+
+---
+
+**Changes Made:** 
+1. Changed `TB_PROBE_DEPTH` default from 1 to 4 (SearchConfigData.h, search.yaml)
+
+**<span style="background-color: yellow;">TODO:</span>** 
+1. ✅ ~~Test with `TB_PROBE_DEPTH = 4` - measure NPS impact~~ Changed default
+2. Test with `USE_TB_PROBE_PV = false` - measure overhead reduction
+3. Create endgame-focused test positions to measure TB benefit accurately
+4. Strength test: TB enabled vs disabled in 100+ game match
+
+---
+
+**Additional Analysis (2026-02-22) - tbSearchProbes Statistic Added:**
+
+Added `tbSearchProbes` statistic to track how many times `probeWDL()` is actually called.
+
+**Critical Finding:**
+```
+tbSearchProbes = 52,575
+tbSearchHits   = 52,575  (100% hit rate!)
+```
+
+This proves:
+1. ✅ Guards are filtering correctly - only TB-eligible positions call `probeWDL()`
+2. ✅ Fathom finds 100% of probed positions (no wasted probes)
+3. ⚠️ The 8.5% NPS overhead is from the **probeWDL() calls themselves** (Fathom lookup + position conversion)
+
+**Probe Distribution by Position:**
+| Position | Pieces | Probes | Notes |
+|----------|--------|--------|-------|
+| Pos 4 (rook endgame) | 9 | 617 | Captures reach 6-piece |
+| Pos 5 (KRKPPP) | 7 | **47,327** | Almost any capture → ≤6 pieces |
+| Pos 6 (KQK) | 4 | 0 | Root immediate return |
+| Pos 7 (KBNK) | 4 | 0 | Root immediate return |
+
+Position 5 with 7 pieces generates 90% of all probes because captures frequently lead to TB-eligible positions.
+
+**Solution Applied:** Changed `TB_PROBE_DEPTH` from 1 to 4
+- Probes only at depth ≥ 4 where cutoffs save 4+ plies of work
+- Expected: ~75% reduction in probes with minimal loss of cutoff benefit
+- Depth 1-3 cutoffs save little work relative to probe overhead
+
+---
+
+**Additional Testing (2026-02-22) - TB_PROBE_DEPTH Comparison:**
+
+| Depth    | Probes | Probes/Pos | NPS           | vs Baseline |
+|----------|--------|------------|---------------|-------------|
+| Baseline | 0      | 0          | **3,300,591** | -           |
+| 1        | 57,331 | 1,146      | 2,952,687     | **-10.5%**  |
+| 2        | 8,054  | 161        | 3,005,939     | **-8.9%**   |
+| 4        | 1,840  | 36         | 2,971,150     | **-10.0%**  |
+| 6        | 545    | 10         | 2,972,638     | **-9.9%**   |
+
+**Surprising Finding:** NPS doesn't improve with higher `TB_PROBE_DEPTH`!
+- 99% fewer probes (545 vs 57,331) → still ~10% overhead
+- **The overhead is NOT from probeWDL() calls themselves**
+
+**Root Cause Identified:** The `popcount()` call in the guard:
+```cpp
+p.getOccupiedBb().popcount() <= SearchConfig.TB_PROBE_LIMIT
+```
+This is called at EVERY node before cheaper checks can reject it.
+
+**Fix Applied:** Reordered guards to fail fast on cheap checks:
+```cpp
+// OLD ORDER (expensive popcount early):
+if (USE_TB_PROBE_SEARCH && ... && popcount() <= LIMIT && castling == 0)
+
+// NEW ORDER (cheap checks first, popcount last):
+if (USE_TB_PROBE_SEARCH
+    && castling == NO_CASTLING    // CHEAP: Most positions have castling
+    && depth >= TB_PROBE_DEPTH    // CHEAP: Fails at shallow depths  
+    && syzygy_tb && isAvailable() // CHEAP: Pointer checks
+    && (USE_TB_PROBE_PV || nodeType != PvNode)
+    && popcount() <= TB_PROBE_LIMIT)  // EXPENSIVE: Last!
+```
+
+**Expected Impact:**
+- Castling check will reject ~80% of positions immediately (middlegame)
+- Depth check will reject shallow nodes before popcount
+- Only endgame positions without castling reach the expensive popcount
+
+**Changes Made:**
+1. Changed `TB_PROBE_DEPTH` default from 1 to 4
+2. Reordered guard checks for fast rejection (castling first, popcount last)
+
+---
+
+**Final Root Cause Analysis (2026-02-22):**
+
+Systematic testing with code sections commented out revealed:
+
+| Test                         | NPS       | Probes | Overhead  |
+|------------------------------|-----------|--------|-----------|
+| Baseline                     | 3,236,105 | 0      | -         |
+| TB Root only                 | 3,290,274 | 0      | **None**  |
+| Guards only (body commented) | 3,246,810 | 17,779 | **None**  |
+| probeWDL enabled             | 3,088,173 | 17,779 | **-4.6%** |
+
+**Conclusion:** The overhead is **100% from `probeWDL()` calls** (Fathom library).
+- Root probing: negligible (once per search)
+- Guard checks: negligible (fast rejection works)
+- `probeWDL()`: ~8.3μs per call (unavoidable Fathom overhead)
+
+**Profiler Confirmation:** VTune profiler shows Fathom file operations high in the call stack.
+Syzygy tablebases are disk-based, and each `probeWDL()` can trigger file I/O (even with OS caching).
+
+---
+
+**Stockfish Comparison (2026-02-22):**
+
+Analyzed Stockfish source code for their TB probing approach:
+
+```cpp
+// Stockfish's probe condition (search.cpp line 805-807):
+if (piecesCount <= tbConfig.cardinality
+    && (piecesCount < tbConfig.cardinality || depth >= tbConfig.probeDepth)
+    && pos.rule50_count() == 0 && !pos.can_castle(ANY_CASTLING))
+```
+
+**Stockfish defaults:**
+- `SyzygyProbeDepth = 1` (aggressive probing)
+- `SyzygyProbeLimit = 7`
+
+**Stockfish's smart logic:**
+- `pieces < limit` → **Always probe** (no depth restriction)  
+- `pieces == limit` → Only probe at `depth >= probeDepth`
+
+**Rationale:** Small piece count positions (3-5) benefit from aggressive probing because:
+1. File I/O is amortized by OS caching after first access
+2. TB cutoffs at ANY depth provide perfect play
+3. Only positions at the edge of TB coverage (6-7 pieces) need depth gating
+
+**Decision:** Reverted to `TB_PROBE_DEPTH = 1` (Stockfish default).
+The 5-10% NPS overhead is the **intended cost** for perfect endgame play.
+Stockfish accepts this tradeoff - so should we.
+
+**Cache Pre-Warming Implemented:**
+To reduce first-probe latency, implemented `Tablebase::prewarmCache()`:
+- Probes 16 representative endgame positions at startup
+- Forces OS to load TB files into page cache
+- Configurable via `TB_CACHE_PREWARM` (default: true)
+- `TB_CACHE_PREWARM_PIECES` controls max pieces to warm (default: 6)
+
+**Final Configuration:**
+- `TB_PROBE_DEPTH = 1` (Stockfish default, aggressive probing)
+- `TB_CACHE_PREWARM = true` (pre-warm cache at startup)
+- `TB_CACHE_PREWARM_PIECES = 6` (warm 3-6 piece TBs)
+- Guard reordering remains (castling check first for fast rejection)
+- ~5-10% NPS overhead is acceptable for perfect endgame play
+
+---
+
 ## Known Bugs Already Fixed (v1.3)
 
 For reference - these were found and fixed before this review:
@@ -2979,6 +3451,15 @@ For reference - these were found and fixed before this review:
 | 2026-02-22 | 5       | Reviewed Feature #22: IID/IIR ✅ (correct, recommend IIR)       |
 | 2026-02-22 | 5       | Implemented IIR as configurable alternative to IID ✅           |
 | 2026-02-22 | 5       | Tested IIR: -36% nodes vs IID, enabled as default ✅            |
+| 2026-02-22 | 6       | Reviewed Feature #23: Tablebase Probing ⚠️ (perf concern)      |
+| 2026-02-22 | 6       | Identified -10% NPS overhead, added tbSearchProbes stat        |
+| 2026-02-22 | 6       | Reordered guards, tested PROBE_DEPTH variations (1,2,4,6)      |
+| 2026-02-22 | 6       | Root cause: probeWDL() ~8μs/call (Fathom file I/O)             |
+| 2026-02-22 | 6       | Profiler confirms: Fathom file ops are the bottleneck          |
+| 2026-02-22 | 6       | Researched Stockfish: uses PROBE_DEPTH=1 (aggressive probing)  |
+| 2026-02-22 | 6       | Implemented TB cache pre-warming (prewarmCache method)         |
+| 2026-02-22 | 6       | Added 5 unit tests for prewarmCache in TablebaseTest.cpp       |
+| 2026-02-22 | 6       | Final: DEPTH=1 (SF default), cache prewarm, accept ~5% cost ✅  |
 
 ---
 
@@ -3005,6 +3486,9 @@ After completing the feature review and making changes, the following tests shou
 | 8  | CheckExt (#19)  | Added SEE filter (USE_CHECK_EXT_SEE)                  | SearchTreeSize                 | ⬜      |
 | 9  | ThreatExt (#21) | Added THREAT_EXT_MATE_DEPTH config (default=4)        | SearchTreeSize                 | ✅      |
 | 10 | IIR (#22)       | Replaced IID with IIR (USE_IIR=true, USE_IID=false)   | SearchTreeSize (-36% verified) | ✅      |
+| 11 | TB (#23)        | Test TB_PROBE_DEPTH = 4 (vs current = 1)              | SearchTreeSize, NPS            | ⬜      |
+| 12 | TB (#23)        | Test USE_TB_PROBE_PV = false                          | SearchTreeSize, NPS            | ⬜      |
+| 13 | TB (#23)        | Create endgame test positions for TB benefit          | TB-focused SearchTreeSize      | ⬜      |
 
 ### Priority 3: Confirm Existing Logic (Lower Priority)
 

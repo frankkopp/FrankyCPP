@@ -969,14 +969,16 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // Only probe at sufficient depth to avoid overhead in shallow searches.
   // On PV nodes: only use TB to tighten bounds - don't cut off (need complete PV line).
   // If USE_TB_PROBE_PV is false, skip probing on PV nodes entirely (performance optimization).
+  // Guard order optimized for fast rejection: cheap checks first, expensive popcount() last.
   if (SearchConfig.USE_TB_PROBE_SEARCH
+      && p.getCastlingRights() == NO_CASTLING// CHEAP: Most positions have castling rights
+      && depth >= SearchConfig.TB_PROBE_DEPTH// CHEAP: Fails at shallow depths
+      && syzygy_tb                           // CHEAP: Null pointer check
+      && syzygy_tb->isAvailable()            // CHEAP: Member access
       && (SearchConfig.USE_TB_PROBE_PV || nodeType != PvNode)
-      && syzygy_tb
-      && syzygy_tb->isAvailable()
-      && depth >= SearchConfig.TB_PROBE_DEPTH
-      && p.getOccupiedBb().popcount() <= SearchConfig.TB_PROBE_LIMIT
-      && p.getCastlingRights() == NO_CASTLING) {
+      && p.getOccupiedBb().popcount() <= SearchConfig.TB_PROBE_LIMIT) {// EXPENSIVE: Last!
 
+    statistics.tbSearchProbes++;
     const tablebase::TBResult wdl = syzygy_tb->probeWDL(p);
 
     if (wdl != tablebase::TBResult::Failed) {
@@ -1239,7 +1241,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     if (depth >= SearchConfig.IID_DEPTH
         && !ttMove// no move from TT
         && doNull
-        && nodeType == PvNode) { // avoid in null move search
+        && nodeType == PvNode) {// avoid in null move search
 
       // do the actual reduced search only if we have time left
       if (!isTimeAlmostUp()) {
@@ -2062,6 +2064,12 @@ void Search::initTablebase() {
   if (syzygy_tb->initialize(SearchConfig.TB_PATH)) {
     LOG__INFO(Logger::get().SEARCH_LOG, "Syzygy Tablebase: Initialized with {} pieces from '{}'",
               syzygy_tb->maxPieces(), SearchConfig.TB_PATH);
+
+    // Pre-warm OS file cache to reduce latency on first in-game probes
+    if (SearchConfig.TB_CACHE_PREWARM) {
+      const int maxPieces = std::min(SearchConfig.TB_CACHE_PREWARM_PIECES, syzygy_tb->maxPieces());
+      syzygy_tb->prewarmCache(maxPieces);
+    }
   }
   else {
     LOG__WARN(Logger::get().SEARCH_LOG, "Syzygy Tablebase: Failed to initialize from '{}'", SearchConfig.TB_PATH);

@@ -43,14 +43,14 @@ ConfigRegistry::ConfigRegistry() {
 #ifdef _MSC_VER
 // Windows MSVC builds
 #ifdef _DEBUG
-  static_assert(sizeof(SearchConfigData) == 584,
+  static_assert(sizeof(SearchConfigData) == 592,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 256,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
-  static_assert(sizeof(SearchConfigData) == 552,
+  static_assert(sizeof(SearchConfigData) == 560,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -61,7 +61,7 @@ ConfigRegistry::ConfigRegistry() {
 // Linux GCC/Clang builds (including WSL)
 #ifdef NDEBUG
   // Release build
-  static_assert(sizeof(SearchConfigData) == 552,
+  static_assert(sizeof(SearchConfigData) == 560,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -69,7 +69,7 @@ ConfigRegistry::ConfigRegistry() {
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
   // Debug build
-  static_assert(sizeof(SearchConfigData) == 552,
+  static_assert(sizeof(SearchConfigData) == 560,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -503,6 +503,32 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .exposure = {.uci = true, .yaml = true, .display = true},
     .getter = searchGetter(&SearchConfigData::TB_RULE50_THRESHOLD),
     .setter = searchSetter(&SearchConfigData::TB_RULE50_THRESHOLD, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "TB_CACHE_PREWARM",
+    .uciName = "",
+    .description = "Pre-warm OS file cache at startup for faster first probes",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = "true",
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::TB_CACHE_PREWARM),
+    .setter = searchSetter(&SearchConfigData::TB_CACHE_PREWARM, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "TB_CACHE_PREWARM_PIECES",
+    .uciName = "",
+    .description = "Max pieces to pre-warm (3-6, higher = more startup time)",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = "6",
+    .minValue = 3,
+    .maxValue = 6,
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::TB_CACHE_PREWARM_PIECES),
+    .setter = searchSetter(&SearchConfigData::TB_CACHE_PREWARM_PIECES, parseInt)
   });
 
 
