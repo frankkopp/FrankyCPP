@@ -52,8 +52,8 @@ TEST_F(SearchTreeSizeTest_Test, size_test) {
   static constexpr milliseconds MOVE_TIME{0};
 
   const int START_FEN = isBulkRun() ? 0 : 0;
-  const int END_FEN   = isBulkRun() ? 4 : 30;
-  const int DEPTH     = isBulkRun() ? 4 : 16;
+  const int END_FEN   = isBulkRun() ? 4 : 50;
+  const int DEPTH     = isBulkRun() ? 4 : 14;
 
   // Prepare test fens
   // get sub vector of fens to test

@@ -154,6 +154,7 @@ struct SearchConfigData {
   int CHECK_EXT_EARLY_LIMIT = 99; // effectively no limit when SEE is enabled
   bool USE_CHECK_EXT_SEE    = true;// only extend checks with SEE >= 0 (non-losing)
   bool USE_THREAT_EXT       = true;
+  int THREAT_EXT_MATE_DEPTH = 4;  // Mate-in-N threshold for threat detection (VALUE_CHECKMATE - 2*N)
   bool USE_EXT_ADD_DEPTH    = true;
 
   // singular extensions

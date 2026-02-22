@@ -7447,3 +7447,10 @@ Test: Ext Singular          Nodes:        1.353.375  Nps:        3.384.125  Time
 Test: Ext Threat            Nodes:        1.353.421  Nps:        3.365.109  Time:              463 Depth:  12/26  Special1:    309.932 (10.331) Special2:      2.490 (   83) Special3:      1.093 (   36)
 Test: Ext AddDepth          Nodes:        1.486.967  Nps:        3.326.352  Time:              507 Depth:  12/28  Special1:    368.081 (12.269) Special2:      2.634 (   87) Special3:      1.559 (   51)
 Test: Tablebases            Nodes:        1.496.809  Nps:        2.813.364  Time:              511 Depth:  11/26  Special1:    362.321 (12.077) Special2:      2.518 (   83) Special3:      1.560 (   52)
+
+
+
+Test: Baseline              Nodes:        3.663.677  Nps:        2.236.372  Time:            1.413 Depth:  14/30  Special1:    1.107.807 (36.926) Special2:        9.722 (   324) Special3:            0 (     0)
+Test: Ext Threat 3          Nodes:        4.841.908  Nps:        3.152.714  Time:            1.679 Depth:  14/31  Special1:    1.352.786 (45.092) Special2:       10.111 (   337) Special3:        2.086 (    69)
+Test: Ext Threat 4          Nodes:        4.056.722  Nps:        3.079.613  Time:            1.406 Depth:  14/30  Special1:    1.180.676 (39.355) Special2:        9.984 (   332) Special3:       12.838 (   427)
+Test: Ext Threat 6          Nodes:        4.921.680  Nps:        3.089.708  Time:            1.700 Depth:  14/30  Special1:    1.369.383 (45.646) Special2:       10.581 (   352) Special3:      112.224 ( 3.740)

@@ -370,37 +370,40 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   CONFIG_OVERRIDE(s.CHECK_EXT_EARLY_LIMIT = 99;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Check+SEE NoLim"));
 
-  // =====================================================================
-  // WARMUP/BASELINE - Must be before first actual test
-  // =====================================================================
-  ptrToSpecial1 = &search.getSearchStats().checkExtension;
-  ptrToSpecial2 = &search.getSearchStats().singularExtension;
-  ptrToSpecial3 = &search.getSearchStats().singularFilteredByBound;
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Warmup"));
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Baseline"));
-
   // 10.3 Singular Extension: Extend when one move is clearly best
   CONFIG_OVERRIDE(s.USE_SINGULAR_EXT = true;);
   CONFIG_OVERRIDE(s.USE_SINGULAR_TT_BOUND = false;);  // Don't require BETA/EXACT (too restrictive)
   CONFIG_OVERRIDE(s.SINGULAR_MARGIN = 64;);
   CONFIG_OVERRIDE(s.SINGULAR_MIN_DEPTH = 8;);  // Lowered from 8 to trigger more often
   CONFIG_OVERRIDE(s.SINGULAR_REDUCTION = 4;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Sing NoTTBound"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Sing NoTTBound"));
+  // CONFIG_OVERRIDE(s.USE_SINGULAR_TT_BOUND = true;);  // Don't require BETA/EXACT (too restrictive)
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Sing TTBound"));
 
-  CONFIG_OVERRIDE(s.USE_SINGULAR_TT_BOUND = true;);  // Don't require BETA/EXACT (too restrictive)
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Sing TTBound"));
-
+  // =====================================================================
+  // WARMUP/BASELINE - Must be before first actual test
+  // =====================================================================
+  ptrToSpecial1 = &search.getSearchStats().checkExtension;
+  ptrToSpecial2 = &search.getSearchStats().singularExtension;
+  ptrToSpecial3 = &search.getSearchStats().threatExtension;
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Warmup"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Baseline"));
 
   // 10.4 Threat Extension: Extend on threat detection (experimental)
   CONFIG_OVERRIDE(s.USE_THREAT_EXT = true;);
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Threat"));
+  CONFIG_OVERRIDE(s.THREAT_EXT_MATE_DEPTH = 3;);  // Test with mate-in-4 threshold first
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Threat 3"));
+  CONFIG_OVERRIDE(s.THREAT_EXT_MATE_DEPTH = 4;);  // Test with mate-in-4 threshold first
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Threat 4"));
+  CONFIG_OVERRIDE(s.THREAT_EXT_MATE_DEPTH = 6;);  // Test with mate-in-6 threshold
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Threat 6"));
 
   // 10.5 Protection Only: Disable AddDepth to show effect of extension protection without extra depth
   // Extensions still protect moves from reductions (LMR/FP/LMP) but don't add depth
-  CONFIG_OVERRIDE(s.USE_EXT_ADD_DEPTH = false;);
+  // CONFIG_OVERRIDE(s.USE_EXT_ADD_DEPTH = false;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext NoAddDepth"));
   // Re-enable AddDepth for subsequent tests
-  CONFIG_OVERRIDE(s.USE_EXT_ADD_DEPTH = true;);
+  // CONFIG_OVERRIDE(s.USE_EXT_ADD_DEPTH = true;);
 
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Extensions"));
 

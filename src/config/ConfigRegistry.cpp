@@ -43,14 +43,14 @@ ConfigRegistry::ConfigRegistry() {
 #ifdef _MSC_VER
 // Windows MSVC builds
 #ifdef _DEBUG
-  static_assert(sizeof(SearchConfigData) == 560,
+  static_assert(sizeof(SearchConfigData) == 568,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 256,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
-  static_assert(sizeof(SearchConfigData) == 528,
+  static_assert(sizeof(SearchConfigData) == 536,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -61,7 +61,7 @@ ConfigRegistry::ConfigRegistry() {
 // Linux GCC/Clang builds (including WSL)
 #ifdef NDEBUG
   // Release build
-  static_assert(sizeof(SearchConfigData) == 528,
+  static_assert(sizeof(SearchConfigData) == 536,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -69,7 +69,7 @@ ConfigRegistry::ConfigRegistry() {
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
   // Debug build
-  static_assert(sizeof(SearchConfigData) == 512,
+  static_assert(sizeof(SearchConfigData) == 536,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -1223,6 +1223,20 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .exposure = {.uci = true, .yaml = true, .display = true},
     .getter = searchGetter(&SearchConfigData::USE_THREAT_EXT),
     .setter = searchSetter(&SearchConfigData::USE_THREAT_EXT, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "THREAT_EXT_MATE_DEPTH",
+    .uciName = "",  // Not exposed via UCI
+    .description = "Mate depth threshold for threat extension (mate-in-N detection)",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = "4",
+    .minValue = 2,
+    .maxValue = 10,
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::THREAT_EXT_MATE_DEPTH),
+    .setter = searchSetter(&SearchConfigData::THREAT_EXT_MATE_DEPTH, parseInt)
   });
 
   definitions_.push_back({

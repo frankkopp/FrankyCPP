@@ -1164,7 +1164,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         // unproven mate
         nValue = VALUE_CHECKMATE_THRESHOLD;
       }
-      else if (nValue < -(VALUE_CHECKMATE - 6)) {// limit for mate in 3 or less
+      else if (nValue < -(VALUE_CHECKMATE - 2 * SearchConfig.THREAT_EXT_MATE_DEPTH)) { // configurable mate-in-N threshold
         // the player did not move and got mated ==> mate threat
         matethreat = true;
       }
