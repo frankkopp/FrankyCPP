@@ -43,14 +43,14 @@ ConfigRegistry::ConfigRegistry() {
 #ifdef _MSC_VER
 // Windows MSVC builds
 #ifdef _DEBUG
-  static_assert(sizeof(SearchConfigData) == 568,
+  static_assert(sizeof(SearchConfigData) == 584,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 256,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
-  static_assert(sizeof(SearchConfigData) == 536,
+  static_assert(sizeof(SearchConfigData) == 552,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -61,7 +61,7 @@ ConfigRegistry::ConfigRegistry() {
 // Linux GCC/Clang builds (including WSL)
 #ifdef NDEBUG
   // Release build
-  static_assert(sizeof(SearchConfigData) == 536,
+  static_assert(sizeof(SearchConfigData) == 552,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -69,7 +69,7 @@ ConfigRegistry::ConfigRegistry() {
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
   // Debug build
-  static_assert(sizeof(SearchConfigData) == 536,
+  static_assert(sizeof(SearchConfigData) == 552,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -560,10 +560,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
   definitions_.push_back({
     .name = "USE_IID",
     .uciName = "Use Internal Iterative Deepening",
-    .description = "Enable Internal Iterative Deepening",
+    .description = "Enable Internal Iterative Deepening (legacy - IIR is more effective)",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = "false",
     .exposure = {.uci = true, .yaml = true, .display = true},
     .getter = searchGetter(&SearchConfigData::USE_IID),
     .setter = searchSetter(&SearchConfigData::USE_IID, parseBool)
@@ -595,6 +595,59 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .exposure = {.uci = true, .yaml = true, .display = true},
     .getter = searchGetter(&SearchConfigData::IID_REDUCTION),
     .setter = searchSetter(&SearchConfigData::IID_REDUCTION, parseInt)
+  });
+
+  // Internal Iterative Reduction (IIR) - modern alternative to IID
+  definitions_.push_back({
+    .name = "USE_IIR",
+    .uciName = "Use Internal Iterative Reduction",
+    .description = "Enable IIR - 36% node reduction vs IID in testing",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = "true",
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::USE_IIR),
+    .setter = searchSetter(&SearchConfigData::USE_IIR, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "IIR_DEPTH",
+    .uciName = "IIR Min Depth",
+    .description = "Minimum depth to apply IIR reduction",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = "4",
+    .minValue = 1,
+    .maxValue = 20,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::IIR_DEPTH),
+    .setter = searchSetter(&SearchConfigData::IIR_DEPTH, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "IIR_REDUCTION",
+    .uciName = "IIR Depth Reduction",
+    .description = "How much to reduce depth when IIR triggers",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = "2",
+    .minValue = 1,
+    .maxValue = 5,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::IIR_REDUCTION),
+    .setter = searchSetter(&SearchConfigData::IIR_REDUCTION, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "IIR_ALL_NODES",
+    .uciName = "IIR All Nodes",
+    .description = "Apply IIR to all node types (true) or PV only (false)",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = "true",
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::IIR_ALL_NODES),
+    .setter = searchSetter(&SearchConfigData::IIR_ALL_NODES, parseBool)
   });
 
   //===========================================================================

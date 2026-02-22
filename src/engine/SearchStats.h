@@ -166,6 +166,9 @@ struct SearchStats {
   /// Moves found via IID.
   uint64_t iidMoves = 0;
 
+  /// Internal iterative reduction applied (IIR).
+  uint64_t iirReductions = 0;
+
   /// TT moves used for move ordering.
   uint64_t TtMoveUsed = 0;
 
@@ -316,7 +319,8 @@ struct SearchStats {
        << " tbSearchMisses: " << stats.tbSearchMisses
        << " tbSearchCutoffs: " << stats.tbSearchCutoffs
        << " IID Searches: " << stats.iidSearches
-       << " IID Moves: " << stats.iidMoves;
+       << " IID Moves: " << stats.iidMoves
+       << " IIR Reductions: " << stats.iirReductions;
     return os;
   }
 };

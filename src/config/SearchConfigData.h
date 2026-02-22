@@ -77,9 +77,22 @@ struct SearchConfigData {
   bool USE_KILLER_MOVES    = true;
   bool USE_HISTORY_COUNTER = true;
   bool USE_HISTORY_MOVES   = true;
-  bool USE_IID             = true;
+
+  // Internal Iterative Deepening (IID) - legacy approach
+  // Does a reduced-depth mini-search to find a good first move when no TT move
+  // Note: Largely obsolete - PV-only restriction makes it rarely trigger due to TT
+  bool USE_IID             = false;  // Disabled - IIR is more effective
   int IID_DEPTH            = 6;
   int IID_REDUCTION        = 2;
+
+  // Internal Iterative Reduction (IIR) - modern alternative to IID
+  // Simply reduces depth when no TT move available (Stockfish approach)
+  // Much more effective than IID because it applies to ALL node types
+  // Note: USE_IID and USE_IIR are mutually exclusive - only enable one!
+  bool USE_IIR             = true;   // Enabled - 36% node reduction in testing
+  int IIR_DEPTH            = 4;      // Minimum depth to apply IIR
+  int IIR_REDUCTION        = 2;      // How much to reduce depth
+  bool IIR_ALL_NODES       = true;   // Apply to all nodes (true) or PV only (false)
 
   // pruning
   bool USE_MDP             = true;

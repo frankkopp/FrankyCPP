@@ -70,7 +70,9 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   s.USE_KILLER_MOVES    = false;
   s.USE_HISTORY_COUNTER = false;
   s.USE_HISTORY_MOVES   = false;
+
   s.USE_IID             = false;
+  s.USE_IIR             = false;
 
   // Pruning techniques
   s.USE_IMPROVING     = false;// Track if position is improving vs 2 plies ago
@@ -160,11 +162,32 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   // GROUP 3: MOVE ORDERING (Critical for alpha-beta/PVS efficiency)
   // =====================================================================
 
-  // 3.1 Internal Iterative Deepening: Find good move when no TT hit
+  // =====================================================================
+  // WARMUP/BASELINE - Must be before first actual test
+  // =====================================================================
+  ptrToSpecial1 = &search.getSearchStats().iidMoves;
+  ptrToSpecial2 = &search.getSearchStats().iidSearches;
+  ptrToSpecial3 = &search.getSearchStats().iirReductions;
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Warmup"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Baseline"));
+
+  // 3.1a Internal Iterative Deepening (IID): Find good move when no TT hit (legacy)
   CONFIG_OVERRIDE(s.USE_IID = true;);
+  CONFIG_OVERRIDE(s.USE_IIR = false;);
   CONFIG_OVERRIDE(s.IID_DEPTH = 6;);
   CONFIG_OVERRIDE(s.IID_REDUCTION = 2;);
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "IID"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "IID"));
+
+  // 3.1b Internal Iterative Reduction (IIR): Modern alternative to IID
+  // Note: IID and IIR are mutually exclusive - only enable one for testing
+  CONFIG_OVERRIDE(s.USE_IID = false;);
+  CONFIG_OVERRIDE(s.USE_IIR = true;);
+  CONFIG_OVERRIDE(s.IIR_DEPTH = 4;);
+  CONFIG_OVERRIDE(s.IIR_REDUCTION = 2;);
+  CONFIG_OVERRIDE(s.IIR_ALL_NODES = false;);
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "IIR PV Only"));
+  CONFIG_OVERRIDE(s.IIR_ALL_NODES = true;);
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "IIR All Nodes"));
 
   // 3.2 Killer Moves: Remember refutation moves
   CONFIG_OVERRIDE(s.USE_KILLER_MOVES = true;);
@@ -380,23 +403,14 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   // CONFIG_OVERRIDE(s.USE_SINGULAR_TT_BOUND = true;);  // Don't require BETA/EXACT (too restrictive)
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Sing TTBound"));
 
-  // =====================================================================
-  // WARMUP/BASELINE - Must be before first actual test
-  // =====================================================================
-  ptrToSpecial1 = &search.getSearchStats().checkExtension;
-  ptrToSpecial2 = &search.getSearchStats().singularExtension;
-  ptrToSpecial3 = &search.getSearchStats().threatExtension;
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Warmup"));
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Baseline"));
-
   // 10.4 Threat Extension: Extend on threat detection (experimental)
   CONFIG_OVERRIDE(s.USE_THREAT_EXT = true;);
-  CONFIG_OVERRIDE(s.THREAT_EXT_MATE_DEPTH = 3;);  // Test with mate-in-4 threshold first
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Threat 3"));
+  // CONFIG_OVERRIDE(s.THREAT_EXT_MATE_DEPTH = 3;);  // Test with mate-in-4 threshold first
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Threat 3"));
   CONFIG_OVERRIDE(s.THREAT_EXT_MATE_DEPTH = 4;);  // Test with mate-in-4 threshold first
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Threat 4"));
-  CONFIG_OVERRIDE(s.THREAT_EXT_MATE_DEPTH = 6;);  // Test with mate-in-6 threshold
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Threat 6"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Threat 4"));
+  // CONFIG_OVERRIDE(s.THREAT_EXT_MATE_DEPTH = 6;);  // Test with mate-in-6 threshold
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Threat 6"));
 
   // 10.5 Protection Only: Disable AddDepth to show effect of extension protection without extra depth
   // Extensions still protect moves from reductions (LMR/FP/LMP) but don't add depth
@@ -434,6 +448,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
 
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Tablebases"));
 
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "All Features"));
 
   return result;
 }

@@ -287,6 +287,14 @@ void Search::run() {
 SearchResult Search::iterativeDeepening(Position& p) {
   SearchResult searchResult{p};
 
+  // Validate config: IID and IIR are mutually exclusive
+  // TODO: Remove after we have removed one of these approaches and the related config options
+  if (SearchConfig.USE_IID && SearchConfig.USE_IIR) {
+    LOG__ERROR(Logger::get().SEARCH_LOG,
+               "Configuration error: USE_IID and USE_IIR are both enabled! "
+               "These are mutually exclusive - only enable one. IIR will be used.");
+  }
+
   // check repetition and 50-moves rule
   if (checkDrawRepAnd50(p, 2)) {
     const std::string msg = searchLimits.ponder
@@ -1164,7 +1172,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         // unproven mate
         nValue = VALUE_CHECKMATE_THRESHOLD;
       }
-      else if (nValue < -(VALUE_CHECKMATE - 2 * SearchConfig.THREAT_EXT_MATE_DEPTH)) { // configurable mate-in-N threshold
+      else if (nValue < -(VALUE_CHECKMATE - 2 * SearchConfig.THREAT_EXT_MATE_DEPTH)) {// configurable mate-in-N threshold
         // the player did not move and got mated ==> mate threat
         matethreat = true;
       }
@@ -1201,7 +1209,24 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     }
   }
 
-  // Internal Iterative Deepening (IID)
+  assert(!SearchConfig.USE_IIR && !SearchConfig.USE_IID && "IIR and IID are mutually exclusive - please enable only one of them");
+
+  // Internal Iterative Reduction (IIR) - Modern alternative to IID
+  // https://www.chessprogramming.org/Internal_Iterative_Reductions
+  // Simply reduces depth when no TT move is available. The reduced search
+  // will populate the TT, providing a move for future iterations.
+  // Simpler and less overhead than IID, applies to all node types.
+  // Note: Creates local mutable copy of depth since parameter is const.
+  Depth searchDepth = depth;
+  if (SearchConfig.USE_IIR
+      && !ttMove
+      && searchDepth >= SearchConfig.IIR_DEPTH
+      && (SearchConfig.IIR_ALL_NODES || nodeType == PvNode)) {
+    searchDepth = searchDepth - SearchConfig.IIR_REDUCTION;
+    statistics.iirReductions++;
+  }
+
+  // Internal Iterative Deepening (IID) - Legacy approach
   // https://www.chessprogramming.org/Internal_Iterative_Deepening
   // Used when no best move from the tt is available from previous
   // searches. IID is used to find a good move to search first by
@@ -1209,18 +1234,19 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // the best move of that search as the first move at the real depth.
   // Does not make a big difference in search tree size when move
   // order already is good.
+  // Note: Only runs if IIR is disabled (they are mutually exclusive)
   if (SearchConfig.USE_IID) {
     if (depth >= SearchConfig.IID_DEPTH
         && !ttMove// no move from TT
         && doNull
-        && nodeType == PvNode) {// avoid in null move search
-
-      // get the new depth and make sure it is >0
-      auto newDepthIid = depth - SearchConfig.IID_REDUCTION;
-      if (newDepthIid < 0) { newDepthIid = DEPTH_NONE; }
+        && nodeType == PvNode) { // avoid in null move search
 
       // do the actual reduced search only if we have time left
       if (!isTimeAlmostUp()) {
+        // get the new depth and make sure it is >0
+        auto newDepthIid = depth - SearchConfig.IID_REDUCTION;
+        if (newDepthIid < 0) { newDepthIid = DEPTH_NONE; }
+
         // IID search inherits nodeType (searching same node at reduced depth)
         search(p, newDepthIid, ply, alpha, beta, nodeType, doNull);
         statistics.iidSearches++;
@@ -1272,10 +1298,13 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     const bool givesCheck = p.givesCheck(move);
 
     // prepare newDepth
-    const Depth newDepthFixed = depth - DEPTH_ONE;// default depth reduction for the next ply
-    Depth newDepth            = newDepthFixed;    // default depth for the next ply - might be extended later
-    Depth lmrDepth            = newDepthFixed;    // default depth for LMR reductions - might be reduced later
-    Depth extension           = DEPTH_NONE;
+    const Depth newDepthFixed = searchDepth - DEPTH_ONE;// default depth reduction for the next ply
+                                                        // might have already been reduced by IIR,
+                                                        // but can be further reduced by LMR or
+                                                        // extended by extensions
+    Depth newDepth  = newDepthFixed;                    // default depth for the next ply - might be extended later
+    Depth lmrDepth  = newDepthFixed;                    // default depth for LMR reductions - might be reduced later
+    Depth extension = DEPTH_NONE;                       // default extension for the next ply - none, but might be set by extensions
 
     // Here we try some search extensions. This has to be done
     // very carefully as it usually is more effective to prune
@@ -1314,13 +1343,13 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // We do a reduced-depth null-window search excluding the TT move to verify
       // that no other move can reach close to the TT value.
       if (SearchConfig.USE_SINGULAR_EXT
-          && extension == 0                                      // no other extension applied
-          && move == ttMove                                      // this is the TT move
-          && depth >= SearchConfig.SINGULAR_MIN_DEPTH            // sufficient depth
-          && ttValue != VALUE_NONE                               // valid TT value
-          && !hasCheck                                           // not in check (avoid instability)
-          && ttDepth >= depth - 3                                // TT entry was from similar or deeper search
-          && std::abs(ttValue) < VALUE_CHECKMATE_THRESHOLD) {    // not a mate score
+          && extension == 0                                  // no other extension applied
+          && move == ttMove                                  // this is the TT move
+          && depth >= SearchConfig.SINGULAR_MIN_DEPTH        // sufficient depth
+          && ttValue != VALUE_NONE                           // valid TT value
+          && !hasCheck                                       // not in check (avoid instability)
+          && ttDepth >= depth - 3                            // TT entry was from similar or deeper search
+          && std::abs(ttValue) < VALUE_CHECKMATE_THRESHOLD) {// not a mate score
 
         // Track ALPHA-bound entries for statistics
         const bool isLowerBound = (ttBound == BETA || ttBound == EXACT);
@@ -1670,7 +1699,8 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 
   // Store TT
   // Store search result for this node into the transposition table
-  if (SearchConfig.USE_TT) { storeTt(p, depth, ply, bestNodeMove, bestNodeValue, ttType, staticEval); }
+  // Use searchDepth (may be reduced by IIR) rather than original depth
+  if (SearchConfig.USE_TT) { storeTt(p, searchDepth, ply, bestNodeMove, bestNodeValue, ttType, staticEval); }
 
   return bestNodeValue;
 }
@@ -2754,9 +2784,10 @@ std::string Search::formatDetailedStats(
   os << "No TT Move     : " << stats.NoTtMove << "\n";
   os << "Eval from TT   : " << stats.evalFromTT << "\n";
 
-  os << "\n------------------- IID Stats -------------------------\n";
+  os << "\n------------------- IID/IIR Stats ---------------------\n";
   os << "IID Searches   : " << stats.iidSearches << "\n";
   os << "IID Moves      : " << stats.iidMoves << "\n";
+  os << "IIR Reductions : " << stats.iirReductions << "\n";
 
   os << "\n------------------- Re-search Stats -------------------\n";
   os << "Root PVS Re    : " << stats.rootPvsResearches << "\n";

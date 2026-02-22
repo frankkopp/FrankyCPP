@@ -1,0 +1,231 @@
+################## Results for depth 10 ##########################
+
+Test Name            |   Move |    Value |           Nodes |          Nps |         Time |   Depth |        Special1 |        Special2 |        Special3 | PV | Fen
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+Fen: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -
+Baseline             |   d2d4 |   cp -19 |      44.879.695 |    5.244.690 |        8.557 |  10/10  |               0 |               0 |               0 | d2d4 d7d5 e2e3 c8d7 g1f3 e7e6 f1d3 d8f6 f3d2 f6d4 | rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -
+IID                  |   d2d4 |   cp -19 |      44.879.695 |    5.434.194 |        8.258 |  10/10  |               0 |               0 |               0 | d2d4 d7d5 e2e3 c8d7 g1f3 e7e6 f1d3 d8f6 f3d2 f6d4 | rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -
+IIR All Nodes        |   b1c3 |   cp -11 |      34.003.411 |    5.450.538 |        6.238 |  10/10  |               0 |               0 |           8.138 | b1c3 e7e5 e2e4 g8f6 g1f3 f8c5 f1c4 c5b4 c3e2 f6e4 | rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -
+IIR PV Only          |   d2d4 |   cp -19 |      44.879.695 |    5.474.387 |        8.198 |  10/10  |               0 |               0 |               0 | d2d4 d7d5 e2e3 c8d7 g1f3 e7e6 f1d3 d8f6 f3d2 f6d4 | rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -
+All Features         |   e2e4 |    cp 79 |         333.932 |    3.007.876 |          111 |  10/28  |               0 |               0 |               9 | e2e4 e7e5 g1f3 b8c6 b1c3 f8b4 f1b5 g8f6 b5c6 b4c3 d2c3 b7c6 | rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -
+
+Fen: 4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -
+Baseline             |   c5e3 |   mate 2 |      22.347.983 |    6.970.509 |        3.206 |  10/10  |               0 |               0 |               0 | c5e3 e2f2 b7g2 | 4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -
+IID                  |   c5e3 |   mate 2 |      22.347.983 |    7.189.059 |        3.108 |  10/10  |               0 |               2 |               0 | c5e3 e2f2 b7g2 | 4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -
+IIR All Nodes        |   c5e3 |   mate 2 |      21.709.102 |    7.199.659 |        3.015 |  10/10  |               0 |               0 |           2.590 | c5e3 e2f2 b7g2 | 4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -
+IIR PV Only          |   c5e3 |   mate 2 |      22.347.983 |    7.230.521 |        3.090 |  10/10  |               0 |               0 |               4 | c5e3 e2f2 b7g2 | 4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -
+All Features         |   c5e3 |   mate 2 |           7.491 |    2.700.043 |            2 |  10/15  |               0 |               0 |               5 | c5e3 g1f1 b7h1 | 4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -
+
+Fen: 4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -
+Baseline             |   g3d6 |   mate 3 |       3.877.478 |    5.615.115 |          690 |  10/10  |               0 |               0 |               0 | g3d6 e8e7 d6d8 e7e8 e6e7 | 4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -
+IID                  |   g3d6 |   mate 3 |       3.877.478 |    6.554.432 |          591 |  10/10  |               0 |               0 |               0 | g3d6 e8e7 d6d8 e7e8 e6e7 | 4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -
+IIR All Nodes        |   g3d6 |   mate 3 |       3.863.493 |    6.583.311 |          586 |  10/10  |               0 |               0 |             139 | g3d6 e8e7 d6d8 e7e8 e6e7 | 4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -
+IIR PV Only          |   g3d6 |   mate 3 |       3.877.478 |    6.500.007 |          596 |  10/10  |               0 |               0 |               2 | g3d6 e8e7 d6d8 e7e8 e6e7 | 4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -
+All Features         |   g3d6 |  cp 1312 |           6.416 |    2.085.893 |            3 |  10/22  |               0 |               0 |               0 | g3d6 | 4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -
+
+Fen: 8/3r2k1/p1p4p/8/8/2P5/P7/1R4K1 w - - 0 1
+Baseline             |   b1b6 |   cp -92 |       1.217.231 |    4.960.644 |          245 |  10/10  |               0 |               0 |               0 | b1b6 d7d1 g1f2 d1d2 f2e3 d2a2 b6c6 h6h5 c6b6 g7f7 | 8/3r2k1/p1p4p/8/8/2P5/P7/1R4K1 w - - 0 1
+IID                  |   b1b6 |   cp -92 |       1.217.231 |    7.904.857 |          153 |  10/10  |               0 |               0 |               0 | b1b6 d7d1 g1f2 d1d2 f2e3 d2a2 b6c6 h6h5 c6b6 g7f7 | 8/3r2k1/p1p4p/8/8/2P5/P7/1R4K1 w - - 0 1
+IIR All Nodes        |   b1b6 |   cp -92 |       1.168.378 |    7.849.628 |          148 |  10/10  |               0 |               0 |           1.001 | b1b6 d7d1 g1f2 d1d2 f2e3 d2a2 b6c6 h6h5 c6b6 g7f7 | 8/3r2k1/p1p4p/8/8/2P5/P7/1R4K1 w - - 0 1
+IIR PV Only          |   b1b6 |   cp -92 |       1.217.231 |    7.623.068 |          159 |  10/10  |               0 |               0 |               0 | b1b6 d7d1 g1f2 d1d2 f2e3 d2a2 b6c6 h6h5 c6b6 g7f7 | 8/3r2k1/p1p4p/8/8/2P5/P7/1R4K1 w - - 0 1
+All Features         |   b1b6 |   cp -99 |          24.855 |    2.771.551 |            8 |  10/16  |               0 |               0 |               0 | b1b6 d7d1 g1f2 d1d2 f2e3 d2a2 b6c6 h6h5 c6c5 g7g6 c5d5 a2b2 | 8/3r2k1/p1p4p/8/8/2P5/P7/1R4K1 w - - 0 1
+
+Fen: 4k3/pp5p/8/8/8/8/6P1/4K2R w - - 0 1
+Baseline             |   h1h7 |   cp 640 |         397.199 |    2.721.275 |          145 |  10/10  |               0 |               0 |               0 | h1h7 b7b6 h7a7 e8d8 a7b7 d8c8 b7b6 c8c7 b6a6 c7d7 | 4k3/pp5p/8/8/8/8/6P1/4K2R w - - 0 1
+IID                  |   h1h7 |   cp 640 |         397.199 |    9.270.300 |           42 |  10/10  |               0 |               0 |               0 | h1h7 b7b6 h7a7 e8d8 a7b7 d8c8 b7b6 c8c7 b6a6 c7d7 | 4k3/pp5p/8/8/8/8/6P1/4K2R w - - 0 1
+IIR All Nodes        |   h1h7 |   cp 640 |         378.608 |    9.030.688 |           41 |  10/10  |               0 |               0 |             297 | h1h7 b7b6 h7a7 e8d8 a7b7 d8c8 b7b6 c8c7 b6a6 c7d7 | 4k3/pp5p/8/8/8/8/6P1/4K2R w - - 0 1
+IIR PV Only          |   h1h7 |   cp 640 |         397.199 |    9.028.316 |           43 |  10/10  |               0 |               0 |               0 | h1h7 b7b6 h7a7 e8d8 a7b7 d8c8 b7b6 c8c7 b6a6 c7d7 | 4k3/pp5p/8/8/8/8/6P1/4K2R w - - 0 1
+All Features         |   h1h7 |  cp 8998 |          20.973 |    1.538.997 |           13 |  10/12  |               0 |               0 |               9 | h1h7 | 4k3/pp5p/8/8/8/8/6P1/4K2R w - - 0 1
+
+Fen: 8/8/8/4k3/8/8/3Q4/4K3 w - - 0 1
+Baseline             |   e1e2 |   cp 954 |         409.464 |    2.962.163 |          138 |  10/10  |               0 |               0 |               0 | e1e2 e5e6 e2e3 e6f5 d2d6 f5g5 e3e4 g5h5 e4f4 h5h4 | 8/8/8/4k3/8/8/3Q4/4K3 w - - 0 1
+IID                  |   e1e2 |   cp 954 |         409.464 |   11.623.518 |           35 |  10/10  |               0 |               0 |               0 | e1e2 e5e6 e2e3 e6f5 d2d6 f5g5 e3e4 g5h5 e4f4 h5h4 | 8/8/8/4k3/8/8/3Q4/4K3 w - - 0 1
+IIR All Nodes        |   e1e2 |   cp 954 |         320.629 |   11.441.882 |           28 |  10/10  |               0 |               0 |              52 | e1e2 e5e6 e2e3 e6f5 d2d6 f5g5 e3e4 g5h5 e4f4 h5h4 | 8/8/8/4k3/8/8/3Q4/4K3 w - - 0 1
+IIR PV Only          |   e1e2 |   cp 954 |         409.464 |   11.618.109 |           35 |  10/10  |               0 |               0 |               0 | e1e2 e5e6 e2e3 e6f5 d2d6 f5g5 e3e4 g5h5 e4f4 h5h4 | 8/8/8/4k3/8/8/3Q4/4K3 w - - 0 1
+All Features         |   d2d7 |  cp 8987 |               0 |            0 |            2 |   0/0   |               0 |               0 |               0 |  | 8/8/8/4k3/8/8/3Q4/4K3 w - - 0 1
+
+Fen: 8/8/8/4k3/8/8/8/1NB1K3 w - - 0 1
+Baseline             |   b1c3 |     cp 0 |         211.388 |    1.739.216 |          121 |  10/10  |               0 |               0 |               0 | b1c3 e5d4 c3e4 d4e4 c1e3 e4e3 e1d1 e3d4 d1c2 d4e4 | 8/8/8/4k3/8/8/8/1NB1K3 w - - 0 1
+IID                  |   b1c3 |     cp 0 |         211.388 |   11.063.032 |           19 |  10/10  |               0 |               0 |               0 | b1c3 e5d4 c3e4 d4e4 c1e3 e4e3 e1d1 e3d4 d1c2 d4e4 | 8/8/8/4k3/8/8/8/1NB1K3 w - - 0 1
+IIR All Nodes        |   b1c3 |     cp 0 |         211.388 |    9.941.214 |           21 |  10/10  |               0 |               0 |               0 | b1c3 e5d4 c3e4 d4e4 c1e3 e4e3 e1d1 e3d4 d1c2 d4e4 | 8/8/8/4k3/8/8/8/1NB1K3 w - - 0 1
+IIR PV Only          |   b1c3 |     cp 0 |         211.388 |   11.332.958 |           18 |  10/10  |               0 |               0 |               0 | b1c3 e5d4 c3e4 d4e4 c1e3 e4e3 e1d1 e3d4 d1c2 d4e4 | 8/8/8/4k3/8/8/8/1NB1K3 w - - 0 1
+All Features         |   e1d2 |  cp 8942 |               0 |            0 |            2 |   0/0   |               0 |               0 |               0 |  | 8/8/8/4k3/8/8/8/1NB1K3 w - - 0 1
+
+Fen: 1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -
+Baseline             |   b4c6 |   mate 5 |       6.690.861 |    5.287.292 |        1.265 |  10/10  |               0 |               0 |               0 | b4c6 | 1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -
+IID                  |   b4c6 |   mate 5 |       6.690.861 |    5.699.919 |        1.173 |  10/10  |               0 |               0 |               0 | b4c6 | 1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -
+IIR All Nodes        |   b4c6 |   mate 5 |       5.259.946 |    5.640.384 |          932 |  10/10  |               0 |               0 |           1.136 | b4c6 | 1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -
+IIR PV Only          |   b4c6 |   mate 5 |       6.690.861 |    5.625.425 |        1.189 |  10/10  |               0 |               0 |               0 | b4c6 | 1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -
+All Features         |   b4c6 |   mate 5 |         485.383 |    3.065.079 |          158 |  10/25  |               0 |               0 |               8 | b4c6 | 1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -
+
+Fen: rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -
+Baseline             |   d1a4 |    cp -1 |      30.868.386 |    5.363.885 |        5.754 |  10/10  |               0 |               0 |               0 | d1a4 | rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -
+IID                  |   d1a4 |    cp -1 |      30.868.386 |    5.553.728 |        5.558 |  10/10  |               0 |               0 |               0 | d1a4 | rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -
+IIR All Nodes        |   d1a4 |    cp -1 |      23.842.447 |    5.341.125 |        4.463 |  10/10  |               0 |               0 |          10.516 | d1a4 | rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -
+IIR PV Only          |   d1a4 |    cp -1 |      30.868.386 |    5.551.608 |        5.560 |  10/10  |               0 |               0 |               0 | d1a4 | rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -
+All Features         |   e1g1 |    cp 99 |         624.370 |    2.882.086 |          216 |  10/30  |               0 |               0 |               3 | e1g1 b8c6 h2h3 g4f3 e2f3 d5d6 c1e3 e8c8 d1c2 c5d4 c3d4 | rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -
+
+Fen: r3k2r/pp2qppp/2n1pn2/bN5b/3P4/P3BN1P/1P2BPP1/R2Q1RK1 w kq -
+Baseline             |   d1c2 |    cp 34 |      62.395.773 |    5.684.814 |       10.975 |  10/10  |               0 |               0 |               0 | d1c2 | r3k2r/pp2qppp/2n1pn2/bN5b/3P4/P3BN1P/1P2BPP1/R2Q1RK1 w kq -
+IID                  |   d1c2 |    cp 34 |      62.395.773 |    5.742.450 |       10.865 |  10/10  |               0 |               0 |               0 | d1c2 | r3k2r/pp2qppp/2n1pn2/bN5b/3P4/P3BN1P/1P2BPP1/R2Q1RK1 w kq -
+IIR All Nodes        |   g2g4 |    cp 36 |      41.857.912 |    5.512.356 |        7.593 |  10/10  |               0 |               0 |          15.057 | g2g4 h5g4 h3g4 f6g4 e3g5 e7d7 b2b4 a5b6 a1c1 g4f2 | r3k2r/pp2qppp/2n1pn2/bN5b/3P4/P3BN1P/1P2BPP1/R2Q1RK1 w kq -
+IIR PV Only          |   d1c2 |    cp 34 |      62.395.773 |    5.743.598 |       10.863 |  10/10  |               0 |               0 |               0 | d1c2 | r3k2r/pp2qppp/2n1pn2/bN5b/3P4/P3BN1P/1P2BPP1/R2Q1RK1 w kq -
+All Features         |   b2b4 |   cp 127 |         235.990 |    3.015.303 |           78 |  10/30  |               0 |               0 |               3 | b2b4 h5f3 e2f3 a5b6 f3c6 b7c6 d1f3 e8g8 f3c6 a8c8 | r3k2r/pp2qppp/2n1pn2/bN5b/3P4/P3BN1P/1P2BPP1/R2Q1RK1 w kq -
+
+Fen: r1bqk1r1/1p1p1n2/p1n2pN1/2p1b2Q/2P1Pp2/1PN5/PB4PP/R4RK1 w q -
+Baseline             |   g6e5 |   cp -90 |      41.728.238 |    5.769.797 |        7.232 |  10/10  |               0 |               0 |               0 | g6e5 | r1bqk1r1/1p1p1n2/p1n2pN1/2p1b2Q/2P1Pp2/1PN5/PB4PP/R4RK1 w q -
+IID                  |   g6e5 |   cp -90 |      41.728.238 |    5.889.072 |        7.085 |  10/10  |               0 |               0 |               0 | g6e5 | r1bqk1r1/1p1p1n2/p1n2pN1/2p1b2Q/2P1Pp2/1PN5/PB4PP/R4RK1 w q -
+IIR All Nodes        |   g6e5 |   cp -75 |      19.625.761 |    5.262.625 |        3.729 |  10/10  |               0 |               0 |           7.605 | g6e5 | r1bqk1r1/1p1p1n2/p1n2pN1/2p1b2Q/2P1Pp2/1PN5/PB4PP/R4RK1 w q -
+IIR PV Only          |   g6e5 |   cp -90 |      41.728.238 |    5.980.887 |        6.976 |  10/10  |               0 |               0 |               0 | g6e5 | r1bqk1r1/1p1p1n2/p1n2pN1/2p1b2Q/2P1Pp2/1PN5/PB4PP/R4RK1 w q -
+All Features         |   a1c1 |   cp -86 |       1.447.091 |    2.985.085 |          484 |  10/36  |               0 |               0 |              39 | a1c1 d7d6 g1h1 b7b5 h5h7 c6e7 g6e7 e8e7 c4b5 a6b5 c3d5 e7f8 | r1bqk1r1/1p1p1n2/p1n2pN1/2p1b2Q/2P1Pp2/1PN5/PB4PP/R4RK1 w q -
+
+Fen: r1n2N1k/2n2K1p/3pp3/5Pp1/b5R1/8/1PPP4/8 w - -
+Baseline             |   f8e6 |  cp -555 |       7.821.240 |    6.155.471 |        1.270 |  10/10  |               0 |               0 |               0 | f8e6 c7e6 f5e6 a8a5 f7f6 a4c2 g4g5 c2f5 g5f5 a5f5 | r1n2N1k/2n2K1p/3pp3/5Pp1/b5R1/8/1PPP4/8 w - -
+IID                  |   f8e6 |  cp -555 |       7.821.240 |    6.666.089 |        1.173 |  10/10  |               0 |               0 |               0 | f8e6 c7e6 f5e6 a8a5 f7f6 a4c2 g4g5 c2f5 g5f5 a5f5 | r1n2N1k/2n2K1p/3pp3/5Pp1/b5R1/8/1PPP4/8 w - -
+IIR All Nodes        |   f8e6 |  cp -555 |       3.199.925 |    6.391.848 |          500 |  10/10  |               0 |               0 |           2.629 | f8e6 c7e6 f5e6 a8a5 f7f6 a4c2 g4g5 c2f5 g5f5 a5f5 | r1n2N1k/2n2K1p/3pp3/5Pp1/b5R1/8/1PPP4/8 w - -
+IIR PV Only          |   f8e6 |  cp -555 |       7.821.240 |    6.743.958 |        1.159 |  10/10  |               0 |               0 |               0 | f8e6 c7e6 f5e6 a8a5 f7f6 a4c2 g4g5 c2f5 g5f5 a5f5 | r1n2N1k/2n2K1p/3pp3/5Pp1/b5R1/8/1PPP4/8 w - -
+All Features         |   f8e6 |  cp -467 |          94.279 |    3.436.537 |           27 |  10/19  |               0 |               0 |               2 | f8e6 c7e6 f5e6 a8a7 f7f6 h7h6 b2b3 a4c6 g4d4 h8g8 d2d3 | r1n2N1k/2n2K1p/3pp3/5Pp1/b5R1/8/1PPP4/8 w - -
+
+Fen: r1b1r1k1/1pqn1pbp/p2pp1p1/P7/1n1NPP1Q/2NBBR2/1PP3PP/R6K w - -
+Baseline             |   h1g1 |   cp -74 |     152.283.522 |    6.034.098 |       25.237 |  10/10  |               0 |               0 |               0 | h1g1 | r1b1r1k1/1pqn1pbp/p2pp1p1/P7/1n1NPP1Q/2NBBR2/1PP3PP/R6K w - -
+IID                  |   h1g1 |   cp -74 |     152.283.522 |    6.062.918 |       25.117 |  10/10  |               0 |               0 |               0 | h1g1 | r1b1r1k1/1pqn1pbp/p2pp1p1/P7/1n1NPP1Q/2NBBR2/1PP3PP/R6K w - -
+IIR All Nodes        |   h1g1 |   cp -74 |      93.977.749 |    5.954.686 |       15.782 |  10/10  |               0 |               0 |          30.088 | h1g1 g6g5 h4g5 g8h8 d3e2 g7f6 g5g4 f6d4 | r1b1r1k1/1pqn1pbp/p2pp1p1/P7/1n1NPP1Q/2NBBR2/1PP3PP/R6K w - -
+IIR PV Only          |   h1g1 |   cp -74 |     152.283.522 |    6.031.645 |       25.247 |  10/10  |               0 |               0 |               0 | h1g1 | r1b1r1k1/1pqn1pbp/p2pp1p1/P7/1n1NPP1Q/2NBBR2/1PP3PP/R6K w - -
+All Features         |   d4e2 |    cp 59 |       1.111.685 |    2.911.840 |          381 |  10/31  |               0 |               0 |              26 | d4e2 g7c3 e2c3 b4d3 c2d3 d7c5 f3h3 h7h5 d3d4 e6e5 d4c5 c8h3 h4h3 d6c5 | r1b1r1k1/1pqn1pbp/p2pp1p1/P7/1n1NPP1Q/2NBBR2/1PP3PP/R6K w - -
+
+Fen: 5b2/p2k1p2/P3pP1p/n2pP1p1/1p1P2P1/1P1KBN2/7P/8 w - -
+Baseline             |   d3c2 |   cp -61 |       1.165.184 |    4.085.063 |          285 |  10/10  |               0 |               0 |               0 | d3c2 d7c6 e3g5 h6g5 f3g5 c6b6 g5f7 b6a6 c2d3 a5b3 | 5b2/p2k1p2/P3pP1p/n2pP1p1/1p1P2P1/1P1KBN2/7P/8 w - -
+IID                  |   d3c2 |   cp -61 |       1.165.184 |    6.343.402 |          183 |  10/10  |               0 |               0 |               0 | d3c2 d7c6 e3g5 h6g5 f3g5 c6b6 g5f7 b6a6 c2d3 a5b3 | 5b2/p2k1p2/P3pP1p/n2pP1p1/1p1P2P1/1P1KBN2/7P/8 w - -
+IIR All Nodes        |   d3c2 |   cp -61 |       1.030.472 |    6.469.132 |          159 |  10/10  |               0 |               0 |           1.200 | d3c2 d7c6 e3g5 h6g5 f3g5 c6b6 g5f7 b6a6 c2d3 a5b3 | 5b2/p2k1p2/P3pP1p/n2pP1p1/1p1P2P1/1P1KBN2/7P/8 w - -
+IIR PV Only          |   d3c2 |   cp -61 |       1.165.184 |    6.500.749 |          179 |  10/10  |               0 |               0 |               0 | d3c2 d7c6 e3g5 h6g5 f3g5 c6b6 g5f7 b6a6 c2d3 a5b3 | 5b2/p2k1p2/P3pP1p/n2pP1p1/1p1P2P1/1P1KBN2/7P/8 w - -
+All Features         |   f3d2 |    cp 12 |          97.828 |    3.821.913 |           25 |  10/18  |               0 |               0 |              17 | f3d2 a5c6 d2f3 c6b8 h2h4 g5h4 f3h4 b8a6 h4f3 a6c7 | 5b2/p2k1p2/P3pP1p/n2pP1p1/1p1P2P1/1P1KBN2/7P/8 w - -
+
+Fen: r3kbnr/1b3ppp/pqn5/1pp1P3/3p4/1BN2N2/PP2QPPP/R1BR2K1 w kq -
+Baseline             |   e5e6 |    cp 98 |      84.063.083 |    5.653.065 |       14.870 |  10/10  |               0 |               0 |               0 | e5e6 | r3kbnr/1b3ppp/pqn5/1pp1P3/3p4/1BN2N2/PP2QPPP/R1BR2K1 w kq -
+IID                  |   e5e6 |    cp 98 |      84.063.083 |    4.445.572 |       18.909 |  10/10  |               0 |               0 |               0 | e5e6 | r3kbnr/1b3ppp/pqn5/1pp1P3/3p4/1BN2N2/PP2QPPP/R1BR2K1 w kq -
+IIR All Nodes        |   c3d5 |   cp 114 |      40.868.069 |    3.370.650 |       12.124 |  10/10  |               0 |               0 |          13.983 | c3d5 | r3kbnr/1b3ppp/pqn5/1pp1P3/3p4/1BN2N2/PP2QPPP/R1BR2K1 w kq -
+IIR PV Only          |   e5e6 |    cp 98 |      84.061.055 |    3.566.162 |       23.571 |  10/10  |               0 |               0 |               1 | e5e6 | r3kbnr/1b3ppp/pqn5/1pp1P3/3p4/1BN2N2/PP2QPPP/R1BR2K1 w kq -
+All Features         |   e5e6 |   cp 152 |         837.126 |    2.134.565 |          392 |  10/37  |               0 |               0 |               9 | e5e6 f7f5 c3d5 b6d8 f3e5 c6e5 e2e5 a8c8 e5f5 g8f6 d5c3 | r3kbnr/1b3ppp/pqn5/1pp1P3/3p4/1BN2N2/PP2QPPP/R1BR2K1 w kq -
+
+Fen: r2r2k1/1p1n1pp1/4pnp1/8/PpBRqP2/1Q2B1P1/1P5P/R5K1 b - -
+Baseline             |   e4f3 |   cp -77 |      23.004.581 |    3.374.254 |        6.817 |  10/10  |               0 |               0 |               0 | e4f3 | r2r2k1/1p1n1pp1/4pnp1/8/PpBRqP2/1Q2B1P1/1P5P/R5K1 b - -
+IID                  |   e4f3 |   cp -77 |      23.004.581 |    2.103.609 |       10.935 |  10/10  |               0 |               0 |               0 | e4f3 | r2r2k1/1p1n1pp1/4pnp1/8/PpBRqP2/1Q2B1P1/1P5P/R5K1 b - -
+IIR All Nodes        |   e4c6 |   cp -84 |      13.202.198 |    4.465.741 |        2.956 |  10/10  |               0 |               0 |           4.938 | e4c6 | r2r2k1/1p1n1pp1/4pnp1/8/PpBRqP2/1Q2B1P1/1P5P/R5K1 b - -
+IIR PV Only          |   e4f3 |   cp -77 |      23.004.581 |    4.268.071 |        5.389 |  10/10  |               0 |               0 |               0 | e4f3 | r2r2k1/1p1n1pp1/4pnp1/8/PpBRqP2/1Q2B1P1/1P5P/R5K1 b - -
+All Features         |   e4c6 |   cp -37 |         194.473 |    2.193.090 |           88 |  10/24  |               0 |               0 |               6 | e4c6 b3b4 f6g4 e3d2 d7b6 c4b5 d8d4 b4d4 c6b5 a4b5 a8a1 g1g2 | r2r2k1/1p1n1pp1/4pnp1/8/PpBRqP2/1Q2B1P1/1P5P/R5K1 b - -
+
+Fen: 2rq1rk1/pb1n1ppN/4p3/1pb5/3P1Pn1/P1N5/1PQ1B1PP/R1B2RK1 b - -
+Baseline             |   c5d4 |   cp 122 |      36.847.462 |    4.439.866 |        8.299 |  10/10  |               0 |               0 |               0 | c5d4 | 2rq1rk1/pb1n1ppN/4p3/1pb5/3P1Pn1/P1N5/1PQ1B1PP/R1B2RK1 b - -
+IID                  |   c5d4 |   cp 122 |      36.847.462 |    4.438.993 |        8.300 |  10/10  |               0 |               0 |               0 | c5d4 | 2rq1rk1/pb1n1ppN/4p3/1pb5/3P1Pn1/P1N5/1PQ1B1PP/R1B2RK1 b - -
+IIR All Nodes        |   c5d4 |   cp 122 |      33.286.556 |    4.395.947 |        7.572 |  10/10  |               0 |               0 |           6.142 | c5d4 | 2rq1rk1/pb1n1ppN/4p3/1pb5/3P1Pn1/P1N5/1PQ1B1PP/R1B2RK1 b - -
+IIR PV Only          |   c5d4 |   cp 122 |      36.847.462 |    4.513.890 |        8.163 |  10/10  |               0 |               0 |               0 | c5d4 | 2rq1rk1/pb1n1ppN/4p3/1pb5/3P1Pn1/P1N5/1PQ1B1PP/R1B2RK1 b - -
+All Features         |   c5d4 |   cp -76 |         303.321 |    2.183.489 |          138 |  10/27  |               0 |               0 |               1 | c5d4 g1h1 g4h2 h7g5 d8g5 f4g5 h2f1 e2f1 d4c3 b2c3 | 2rq1rk1/pb1n1ppN/4p3/1pb5/3P1Pn1/P1N5/1PQ1B1PP/R1B2RK1 b - -
+
+Fen: r2qk2r/ppp1bppp/2n5/3p1b2/3P1Bn1/1QN1P3/PP3P1P/R3KBNR w KQkq -
+Baseline             |   b3b7 |    cp 61 |     111.329.098 |    3.535.692 |       31.487 |  10/10  |               0 |               0 |               0 | b3b7 | r2qk2r/ppp1bppp/2n5/3p1b2/3P1Bn1/1QN1P3/PP3P1P/R3KBNR w KQkq -
+IID                  |   b3b7 |    cp 61 |     111.329.098 |    3.500.034 |       31.808 |  10/10  |               0 |               0 |               0 | b3b7 | r2qk2r/ppp1bppp/2n5/3p1b2/3P1Bn1/1QN1P3/PP3P1P/R3KBNR w KQkq -
+IIR All Nodes        |   b3b7 |    cp 81 |      43.595.205 |    3.552.321 |       12.272 |  10/10  |               0 |               0 |          15.347 | b3b7 c6d4 e3d4 e8g8 b7d5 d8c8 f1e2 f8d8 d5c6 g4f2 | r2qk2r/ppp1bppp/2n5/3p1b2/3P1Bn1/1QN1P3/PP3P1P/R3KBNR w KQkq -
+IIR PV Only          |   b3b7 |    cp 61 |     111.328.654 |    3.530.893 |       31.529 |  10/10  |               0 |               0 |               1 | b3b7 | r2qk2r/ppp1bppp/2n5/3p1b2/3P1Bn1/1QN1P3/PP3P1P/R3KBNR w KQkq -
+All Features         |   b3b7 |   cp 115 |       1.318.961 |    1.993.271 |          661 |  10/32  |               0 |               0 |               1 | b3b7 c6b4 f1b5 e8f8 f4c7 d8c8 b5c6 c8b7 c6b7 b4c2 e1f1 a8e8 | r2qk2r/ppp1bppp/2n5/3p1b2/3P1Bn1/1QN1P3/PP3P1P/R3KBNR w KQkq -
+
+Fen: rnb1kb1r/p4p2/1qp1pn2/1p2N2p/2p1P1p1/2N3B1/PPQ1BPPP/3RK2R w Kkq -
+Baseline             |   e1g1 |    cp 21 |     113.273.135 |    3.583.561 |       31.609 |  10/10  |               0 |               0 |               0 | e1g1 | rnb1kb1r/p4p2/1qp1pn2/1p2N2p/2p1P1p1/2N3B1/PPQ1BPPP/3RK2R w Kkq -
+IID                  |   e1g1 |    cp 21 |     113.273.135 |    3.610.122 |       31.376 |  10/10  |               0 |               0 |               0 | e1g1 | rnb1kb1r/p4p2/1qp1pn2/1p2N2p/2p1P1p1/2N3B1/PPQ1BPPP/3RK2R w Kkq -
+IIR All Nodes        |   g3h4 |    cp 21 |      89.311.183 |    3.527.129 |       25.321 |  10/10  |               0 |               0 |          18.570 | g3h4 | rnb1kb1r/p4p2/1qp1pn2/1p2N2p/2p1P1p1/2N3B1/PPQ1BPPP/3RK2R w Kkq -
+IIR PV Only          |   e1g1 |    cp 21 |     113.273.135 |    3.723.635 |       30.420 |  10/10  |               0 |               0 |               0 | e1g1 | rnb1kb1r/p4p2/1qp1pn2/1p2N2p/2p1P1p1/2N3B1/PPQ1BPPP/3RK2R w Kkq -
+All Features         |   e1g1 |    cp 40 |       2.178.995 |    2.736.636 |          796 |  10/35  |               0 |               0 |              37 | e1g1 b8d7 c2d2 a7a6 d2c2 f8e7 c3a4 b6b7 a4c3 e8g8 | rnb1kb1r/p4p2/1qp1pn2/1p2N2p/2p1P1p1/2N3B1/PPQ1BPPP/3RK2R w Kkq -
+
+Fen: 5rk1/pp1b4/4pqp1/2Ppb2p/1P2p3/4Q2P/P3BPP1/1R3R1K b - -
+Baseline             |   a7a6 |   cp -65 |      78.119.023 |    6.477.670 |       12.059 |  10/10  |               0 |               0 |               0 | a7a6 | 5rk1/pp1b4/4pqp1/2Ppb2p/1P2p3/4Q2P/P3BPP1/1R3R1K b - -
+IID                  |   a7a6 |   cp -65 |      78.119.023 |    6.457.286 |       12.097 |  10/10  |               0 |               0 |               0 | a7a6 | 5rk1/pp1b4/4pqp1/2Ppb2p/1P2p3/4Q2P/P3BPP1/1R3R1K b - -
+IIR All Nodes        |   e5d4 |   cp -65 |      56.055.822 |    6.334.612 |        8.849 |  10/10  |               0 |               0 |          18.797 | e5d4 | 5rk1/pp1b4/4pqp1/2Ppb2p/1P2p3/4Q2P/P3BPP1/1R3R1K b - -
+IIR PV Only          |   a7a6 |   cp -65 |      78.119.023 |    6.209.252 |       12.581 |  10/10  |               0 |               0 |               0 | a7a6 | 5rk1/pp1b4/4pqp1/2Ppb2p/1P2p3/4Q2P/P3BPP1/1R3R1K b - -
+All Features         |   a7a6 |    cp 52 |         787.843 |    3.278.904 |          240 |  10/29  |               0 |               0 |              77 | a7a6 b4b5 a6b5 b1d1 f6f4 e3f4 e5f4 d1b1 e4e3 g2g3 e3f2 g3f4 f8f4 e2b5 d7b5 b1b5 | 5rk1/pp1b4/4pqp1/2Ppb2p/1P2p3/4Q2P/P3BPP1/1R3R1K b - -
+
+Fen: r1b2r1k/ppp2ppp/8/4p3/2BPQ3/P3P1K1/1B3PPP/n3q1NR w - -
+Baseline             |   d4e5 |  cp -172 |      82.427.137 |    5.857.426 |       14.072 |  10/10  |               0 |               0 |               0 | d4e5 f8e8 c4f7 e8d8 e4b4 e1b1 b4e7 c8f5 b2a1 b1a1 | r1b2r1k/ppp2ppp/8/4p3/2BPQ3/P3P1K1/1B3PPP/n3q1NR w - -
+IID                  |   d4e5 |  cp -172 |      82.427.137 |    6.054.691 |       13.613 |  10/10  |               0 |               0 |               0 | d4e5 f8e8 c4f7 e8d8 e4b4 e1b1 b4e7 c8f5 b2a1 b1a1 | r1b2r1k/ppp2ppp/8/4p3/2BPQ3/P3P1K1/1B3PPP/n3q1NR w - -
+IIR All Nodes        |   d4e5 |  cp -172 |      26.855.567 |    5.718.211 |        4.696 |  10/10  |               0 |               0 |          15.393 | d4e5 | r1b2r1k/ppp2ppp/8/4p3/2BPQ3/P3P1K1/1B3PPP/n3q1NR w - -
+IIR PV Only          |   d4e5 |  cp -172 |      82.427.137 |    5.918.476 |       13.927 |  10/10  |               0 |               0 |               0 | d4e5 f8e8 c4f7 e8d8 e4b4 e1b1 b4e7 c8f5 b2a1 b1a1 | r1b2r1k/ppp2ppp/8/4p3/2BPQ3/P3P1K1/1B3PPP/n3q1NR w - -
+All Features         |   c4d3 |   cp -87 |         950.980 |    2.868.593 |          331 |  10/32  |               0 |               0 |              50 | c4d3 f7f5 e4e5 e1d2 d4d5 f5f4 g3h4 f8g8 d3e2 a1c2 e3f4 | r1b2r1k/ppp2ppp/8/4p3/2BPQ3/P3P1K1/1B3PPP/n3q1NR w - -
+
+Fen: 1nkr1b1r/5p2/1q2p2p/1ppbP1p1/2pP4/2N3B1/1P1QBPPP/R4RK1 w - -
+Baseline             |   c3d5 |    cp 43 |      39.417.921 |    5.529.017 |        7.129 |  10/10  |               0 |               0 |               0 | c3d5 | 1nkr1b1r/5p2/1q2p2p/1ppbP1p1/2pP4/2N3B1/1P1QBPPP/R4RK1 w - -
+IID                  |   c3d5 |    cp 43 |      39.417.921 |    5.736.254 |        6.871 |  10/10  |               0 |               0 |               0 | c3d5 | 1nkr1b1r/5p2/1q2p2p/1ppbP1p1/2pP4/2N3B1/1P1QBPPP/R4RK1 w - -
+IIR All Nodes        |   d4c5 |    cp 44 |      29.300.584 |    5.593.501 |        5.238 |  10/10  |               0 |               0 |           7.075 | d4c5 d5g2 c5b6 d8d2 g1g2 f8c5 e2f3 c5b6 c3b5 d2b2 | 1nkr1b1r/5p2/1q2p2p/1ppbP1p1/2pP4/2N3B1/1P1QBPPP/R4RK1 w - -
+IIR PV Only          |   c3d5 |    cp 43 |      39.414.083 |    5.608.431 |        7.027 |  10/10  |               0 |               0 |               2 | c3d5 | 1nkr1b1r/5p2/1q2p2p/1ppbP1p1/2pP4/2N3B1/1P1QBPPP/R4RK1 w - -
+All Features         |   d4c5 |    cp 12 |       1.193.148 |    2.637.225 |          452 |  10/31  |               0 |               0 |              10 | d4c5 f8c5 d2c2 c5d4 e2h5 b8d7 h5f7 d7e5 g3e5 d4e5 f1d1 | 1nkr1b1r/5p2/1q2p2p/1ppbP1p1/2pP4/2N3B1/1P1QBPPP/R4RK1 w - -
+
+Fen: 1nrq1rk1/p4pp1/bp2pn1p/3p4/2PP1B2/P1PB2N1/4QPPP/1R2R1K1 w - -
+Baseline             |   c4c5 |    cp -1 |      80.304.756 |    5.368.243 |       14.959 |  10/10  |               0 |               0 |               0 | c4c5 | 1nrq1rk1/p4pp1/bp2pn1p/3p4/2PP1B2/P1PB2N1/4QPPP/1R2R1K1 w - -
+IID                  |   c4c5 |    cp -1 |      80.304.756 |    5.553.016 |       14.461 |  10/10  |               0 |               0 |               0 | c4c5 | 1nrq1rk1/p4pp1/bp2pn1p/3p4/2PP1B2/P1PB2N1/4QPPP/1R2R1K1 w - -
+IIR All Nodes        |   c4c5 |    cp -1 |      64.934.859 |    5.563.446 |       11.671 |  10/10  |               0 |               0 |          20.274 | c4c5 | 1nrq1rk1/p4pp1/bp2pn1p/3p4/2PP1B2/P1PB2N1/4QPPP/1R2R1K1 w - -
+IIR PV Only          |   c4c5 |    cp -1 |      80.304.578 |    5.580.983 |       14.388 |  10/10  |               0 |               0 |               1 | c4c5 | 1nrq1rk1/p4pp1/bp2pn1p/3p4/2PP1B2/P1PB2N1/4QPPP/1R2R1K1 w - -
+All Features         |   f4b8 |    cp 37 |         116.063 |    2.995.993 |           38 |  10/21  |               0 |               0 |               0 | f4b8 c8b8 c4d5 a6d3 e2d3 f6d5 g3e4 b8c8 c3c4 d5f4 | 1nrq1rk1/p4pp1/bp2pn1p/3p4/2PP1B2/P1PB2N1/4QPPP/1R2R1K1 w - -
+
+Fen: 5k2/1rn2p2/3pb1p1/7p/p3PP2/PnNBK2P/3N2P1/1R6 w - -
+Baseline             |   c3a4 |    cp 85 |      21.668.574 |    6.415.724 |        3.377 |  10/10  |               0 |               0 |               0 | c3a4 f7f6 d3c2 b3a5 b1b7 a5b7 d2f3 f8e7 a4c3 e6h3 | 5k2/1rn2p2/3pb1p1/7p/p3PP2/PnNBK2P/3N2P1/1R6 w - -
+IID                  |   c3a4 |    cp 85 |      21.668.574 |    6.665.622 |        3.250 |  10/10  |               0 |               0 |               0 | c3a4 f7f6 d3c2 b3a5 b1b7 a5b7 d2f3 f8e7 a4c3 e6h3 | 5k2/1rn2p2/3pb1p1/7p/p3PP2/PnNBK2P/3N2P1/1R6 w - -
+IIR All Nodes        |   f4f5 |    cp 83 |      15.994.053 |    6.573.328 |        2.433 |  10/10  |               0 |               0 |           5.767 | f4f5 | 5k2/1rn2p2/3pb1p1/7p/p3PP2/PnNBK2P/3N2P1/1R6 w - -
+IIR PV Only          |   c3a4 |    cp 85 |      21.668.574 |    6.706.234 |        3.231 |  10/10  |               0 |               0 |               0 | c3a4 f7f6 d3c2 b3a5 b1b7 a5b7 d2f3 f8e7 a4c3 e6h3 | 5k2/1rn2p2/3pb1p1/7p/p3PP2/PnNBK2P/3N2P1/1R6 w - -
+All Features         |   c3a4 |   cp 131 |         129.312 |    3.266.452 |           39 |  10/23  |               0 |               0 |               0 | c3a4 b7a7 d2b3 a7a4 b3d4 a4a3 b1c1 a3a7 f4f5 e6d7 | 5k2/1rn2p2/3pb1p1/7p/p3PP2/PnNBK2P/3N2P1/1R6 w - -
+
+Fen: 8/p2p4/r7/1k6/8/pK5Q/P7/b7 w - -
+Baseline             |   h3f1 |   cp 215 |       1.144.143 |    4.396.341 |          260 |  10/10  |               0 |               0 |               0 | h3f1 b5b6 f1a1 d7d5 a1e5 b6c5 e5c3 c5b6 b3c2 d5d4 | 8/p2p4/r7/1k6/8/pK5Q/P7/b7 w - -
+IID                  |   h3f1 |   cp 215 |       1.144.143 |    7.086.841 |          161 |  10/10  |               0 |               0 |               0 | h3f1 b5b6 f1a1 d7d5 a1e5 b6c5 e5c3 c5b6 b3c2 d5d4 | 8/p2p4/r7/1k6/8/pK5Q/P7/b7 w - -
+IIR All Nodes        |   h3f1 |   cp 213 |         910.828 |    7.265.501 |          125 |  10/10  |               0 |               0 |             573 | h3f1 b5b6 f1a1 d7d5 a1c3 a6a5 b3b4 a5a6 c3c5 b6b7 | 8/p2p4/r7/1k6/8/pK5Q/P7/b7 w - -
+IIR PV Only          |   h3f1 |   cp 215 |       1.144.143 |    7.116.737 |          160 |  10/10  |               0 |               0 |               0 | h3f1 b5b6 f1a1 d7d5 a1e5 b6c5 e5c3 c5b6 b3c2 d5d4 | 8/p2p4/r7/1k6/8/pK5Q/P7/b7 w - -
+All Features         |   h3f1 |   cp 251 |          67.604 |    3.057.455 |           22 |  10/20  |               0 |               0 |               1 | h3f1 b5b6 f1a1 a6a5 a1d4 b6c6 d4c4 c6d6 c4b4 d6e6 b3c3 a5f5 b4a3 | 8/p2p4/r7/1k6/8/pK5Q/P7/b7 w - -
+
+Fen: 1b1rr1k1/pp1q1pp1/8/NP1p1b1p/1B1Pp1n1/PQR1P1P1/4BP1P/5RK1 w - -
+Baseline             |   a3a4 |   cp -10 |      66.494.349 |    5.393.007 |       12.329 |  10/10  |               0 |               0 |               0 | a3a4 g4e3 c3e3 f5g4 e2g4 h5g4 b3b2 d8c8 a5b3 b8g3 | 1b1rr1k1/pp1q1pp1/8/NP1p1b1p/1B1Pp1n1/PQR1P1P1/4BP1P/5RK1 w - -
+IID                  |   a3a4 |   cp -10 |      66.494.349 |    5.412.838 |       12.284 |  10/10  |               0 |               0 |               0 | a3a4 g4e3 c3e3 f5g4 e2g4 h5g4 b3b2 d8c8 a5b3 b8g3 | 1b1rr1k1/pp1q1pp1/8/NP1p1b1p/1B1Pp1n1/PQR1P1P1/4BP1P/5RK1 w - -
+IIR All Nodes        |   a3a4 |   cp -10 |      47.272.018 |    5.328.416 |        8.871 |  10/10  |               0 |               0 |          20.560 | a3a4 g4h2 g1h2 g7g6 b3b2 d8c8 c3c8 e8c8 a5b3 b8g3 | 1b1rr1k1/pp1q1pp1/8/NP1p1b1p/1B1Pp1n1/PQR1P1P1/4BP1P/5RK1 w - -
+IIR PV Only          |   a3a4 |   cp -10 |      66.494.349 |    5.508.495 |       12.071 |  10/10  |               0 |               0 |               0 | a3a4 g4e3 c3e3 f5g4 e2g4 h5g4 b3b2 d8c8 a5b3 b8g3 | 1b1rr1k1/pp1q1pp1/8/NP1p1b1p/1B1Pp1n1/PQR1P1P1/4BP1P/5RK1 w - -
+All Features         |   b3b2 |    cp 38 |         931.731 |    2.770.369 |          336 |  10/30  |               0 |               0 |              42 | b3b2 g7g6 a3a4 d8c8 f1c1 a7a6 h2h4 c8c3 b2c3 b8a7 | 1b1rr1k1/pp1q1pp1/8/NP1p1b1p/1B1Pp1n1/PQR1P1P1/4BP1P/5RK1 w - -
+
+Fen: 1r3rk1/6p1/p1pb1qPp/3p4/4nPR1/2N4Q/PPP4P/2K1BR2 b - -
+Baseline             |   f6f5 |    cp -4 |      31.939.671 |    6.311.680 |        5.060 |  10/10  |               0 |               0 |               0 | f6f5 | 1r3rk1/6p1/p1pb1qPp/3p4/4nPR1/2N4Q/PPP4P/2K1BR2 b - -
+IID                  |   f6f5 |    cp -4 |      31.939.671 |    6.494.272 |        4.918 |  10/10  |               0 |               0 |               0 | f6f5 | 1r3rk1/6p1/p1pb1qPp/3p4/4nPR1/2N4Q/PPP4P/2K1BR2 b - -
+IIR All Nodes        |   f6f5 |    cp -4 |      17.101.602 |    6.543.714 |        2.613 |  10/10  |               0 |               0 |          10.927 | f6f5 | 1r3rk1/6p1/p1pb1qPp/3p4/4nPR1/2N4Q/PPP4P/2K1BR2 b - -
+IIR PV Only          |   f6f5 |    cp -4 |      31.939.671 |    6.505.378 |        4.909 |  10/10  |               0 |               0 |               0 | f6f5 | 1r3rk1/6p1/p1pb1qPp/3p4/4nPR1/2N4Q/PPP4P/2K1BR2 b - -
+All Features         |   d6e5 |   cp -27 |         258.013 |    3.249.337 |           79 |  10/24  |               0 |               0 |               5 | d6e5 f4f5 f8e8 a2a3 e5c3 e1c3 e4c3 h3c3 f6c3 b2c3 | 1r3rk1/6p1/p1pb1qPp/3p4/4nPR1/2N4Q/PPP4P/2K1BR2 b - -
+
+Fen: r1b1kb1r/1p1n1p2/p3pP1p/q7/3N3p/2N5/P1PQB1PP/1R3R1K b kq -
+Baseline             |   f8b4 |   cp -61 |      30.116.223 |    6.303.097 |        4.778 |  10/10  |               0 |               0 |               0 | f8b4 b1b4 a5b4 d4e6 f7e6 f1f4 b4c5 c3e4 c5e5 d2d7 | r1b1kb1r/1p1n1p2/p3pP1p/q7/3N3p/2N5/P1PQB1PP/1R3R1K b kq -
+IID                  |   f8b4 |   cp -61 |      30.116.223 |    6.263.659 |        4.808 |  10/10  |               0 |               0 |               0 | f8b4 b1b4 a5b4 d4e6 f7e6 f1f4 b4c5 c3e4 c5e5 d2d7 | r1b1kb1r/1p1n1p2/p3pP1p/q7/3N3p/2N5/P1PQB1PP/1R3R1K b kq -
+IIR All Nodes        |   f8b4 |   cp -61 |      26.726.491 |    6.443.020 |        4.148 |  10/10  |               0 |               0 |           6.476 | f8b4 b1b4 a5b4 d4e6 f7e6 f1f4 b4c5 c3e4 c5e5 d2d7 | r1b1kb1r/1p1n1p2/p3pP1p/q7/3N3p/2N5/P1PQB1PP/1R3R1K b kq -
+IIR PV Only          |   f8b4 |   cp -61 |      30.116.223 |    6.397.356 |        4.707 |  10/10  |               0 |               0 |               0 | f8b4 b1b4 a5b4 d4e6 f7e6 f1f4 b4c5 c3e4 c5e5 d2d7 | r1b1kb1r/1p1n1p2/p3pP1p/q7/3N3p/2N5/P1PQB1PP/1R3R1K b kq -
+All Features         |   f8b4 |    cp 89 |         103.107 |    2.819.812 |           36 |  10/24  |               0 |               0 |               0 | f8b4 b1b3 d7c5 d2e3 c8d7 f1f5 e8c8 f5h5 c5b3 h5a5 b3a5 | r1b1kb1r/1p1n1p2/p3pP1p/q7/3N3p/2N5/P1PQB1PP/1R3R1K b kq -
+
+Fen: 3kB3/5K2/7p/3p4/3pn3/4NN2/8/1b4B1 w - -
+Baseline             |   e3d5 |   cp 269 |       3.112.258 |    5.327.942 |          584 |  10/10  |               0 |               0 |               0 | e3d5 e4d6 f7e6 d6e8 g1d4 e8c7 d5c7 d8c7 d4e5 c7c6 | 3kB3/5K2/7p/3p4/3pn3/4NN2/8/1b4B1 w - -
+IID                  |   e3d5 |   cp 269 |       3.112.258 |    6.516.433 |          477 |  10/10  |               0 |               0 |               0 | e3d5 e4d6 f7e6 d6e8 g1d4 e8c7 d5c7 d8c7 d4e5 c7c6 | 3kB3/5K2/7p/3p4/3pn3/4NN2/8/1b4B1 w - -
+IIR All Nodes        |   f3d4 |   cp 268 |       2.383.868 |    6.974.242 |          341 |  10/10  |               0 |               0 |           1.134 | f3d4 e4d6 f7e6 d6e8 e3d5 e8c7 d5c7 d8c7 g1h2 c7b6 | 3kB3/5K2/7p/3p4/3pn3/4NN2/8/1b4B1 w - -
+IIR PV Only          |   e3d5 |   cp 269 |       3.112.258 |    6.727.763 |          462 |  10/10  |               0 |               0 |               0 | e3d5 e4d6 f7e6 d6e8 g1d4 e8c7 d5c7 d8c7 d4e5 c7c6 | 3kB3/5K2/7p/3p4/3pn3/4NN2/8/1b4B1 w - -
+All Features         |   e3f5 |   cp 295 |          77.282 |    2.597.042 |           29 |  10/17  |               0 |               0 |               0 | e3f5 e4g5 f3g5 b1f5 g5f3 f5g4 f3e5 g4h5 f7e6 h5e8 g1d4 d8c7 e6d5 | 3kB3/5K2/7p/3p4/3pn3/4NN2/8/1b4B1 w - -
+
+Fen: 1nrrb1k1/1qn1bppp/pp2p3/3pP3/N2P3P/1P1B1NP1/PBR1QPK1/2R5 w - -
+Baseline             |   e2e3 |    cp 63 |     199.432.873 |    5.556.749 |       35.890 |  10/10  |               0 |               0 |               0 | e2e3 | 1nrrb1k1/1qn1bppp/pp2p3/3pP3/N2P3P/1P1B1NP1/PBR1QPK1/2R5 w - -
+IID                  |   e2e3 |    cp 63 |     199.432.873 |    5.729.985 |       34.805 |  10/10  |               0 |               0 |               0 | e2e3 | 1nrrb1k1/1qn1bppp/pp2p3/3pP3/N2P3P/1P1B1NP1/PBR1QPK1/2R5 w - -
+IIR All Nodes        |   e2d2 |    cp 88 |     126.921.478 |    5.641.549 |       22.497 |  10/10  |               0 |               0 |          27.664 | e2d2 | 1nrrb1k1/1qn1bppp/pp2p3/3pP3/N2P3P/1P1B1NP1/PBR1QPK1/2R5 w - -
+IIR PV Only          |   e2e3 |    cp 63 |     199.432.873 |    5.748.908 |       34.690 |  10/10  |               0 |               0 |               0 | e2e3 | 1nrrb1k1/1qn1bppp/pp2p3/3pP3/N2P3P/1P1B1NP1/PBR1QPK1/2R5 w - -
+All Features         |   c2c3 |    cp 66 |         837.798 |    2.521.221 |          332 |  10/33  |               0 |               0 |              51 | c2c3 b8c6 a2a3 h7h6 g2g1 e8d7 e2c2 c7b5 d3b5 a6b5 | 1nrrb1k1/1qn1bppp/pp2p3/3pP3/N2P3P/1P1B1NP1/PBR1QPK1/2R5 w - -
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+
+################## Totals/Avg results for each feature test ##################
+
+Date:                  : 2026-02-22 17:06:46
+SearchTime             : 0,000 s
+MaxDepth               : 10
+Number of feature tests: 5
+Number of fens         : 30
+Total tests            : 150
+
+Test: Baseline              Nodes:       45.966.264  Nps:        5.070.578  Time:            8.957 Depth:  10/10  Special1:            0 (     0) Special2:            0 (     0) Special3:            0 (     0)
+Test: IID                   Nodes:       45.966.264  Nps:        6.235.539  Time:            9.081 Depth:  10/10  Special1:            0 (     0) Special2:            2 (     0) Special3:            0 (     0)
+Test: IIR All Nodes         Nodes:       29.505.653  Nps:        6.178.680  Time:            5.832 Depth:  10/10  Special1:            0 (     0) Special2:            0 (     0) Special3:      274.068 ( 9.135)
+Test: IIR PV Only           Nodes:       45.966.048  Nps:        6.287.196  Time:            9.018 Depth:  10/10  Special1:            0 (     0) Special2:            0 (     0) Special3:           11 (     0)
+Test: All Features          Nodes:          492.535  Nps:        2.584.188  Time:              184 Depth:   9/24  Special1:            0 (     0) Special2:            0 (     0) Special3:          411 (    13)
+Process finished with exit code 0

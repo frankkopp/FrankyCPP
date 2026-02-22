@@ -74,12 +74,28 @@ USE_KILLER_MOVES: true
 USE_HISTORY_COUNTER: true
 # Enable history move heuristic
 USE_HISTORY_MOVES: true
-# Enable Internal Iterative Deepening (IID)
-USE_IID: true
+
+# Internal Iterative Deepening (IID) - Legacy approach
+# Does a reduced-depth mini-search to find a good first move when no TT move
+# Note: Largely obsolete - PV-only restriction makes it rarely trigger
+# Note: USE_IID and USE_IIR are mutually exclusive - only enable one!
+USE_IID: false
 # Depth at which IID triggers (in plies)
 IID_DEPTH: 6
 # Reduction (in plies) applied by IID before searching best moves
 IID_REDUCTION: 2
+
+# Internal Iterative Reduction (IIR) - Modern alternative to IID
+# Simply reduces depth when no TT move available (Stockfish approach)
+# Much more effective than IID - 36% node reduction in testing
+# Note: USE_IID and USE_IIR are mutually exclusive - only enable one!
+USE_IIR: true
+# Minimum depth to apply IIR reduction
+IIR_DEPTH: 4
+# How much to reduce depth when IIR triggers
+IIR_REDUCTION: 2
+# Apply IIR to all node types (true) or PV only (false)
+IIR_ALL_NODES: true
 
 # Pruning features (selective search)
 # Mate distance pruning
