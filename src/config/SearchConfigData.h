@@ -126,7 +126,7 @@ struct SearchConfigData {
   int LMR_MIN_MOVES = 2;
   // LMR formula selection (logarithmic vs linear)
   bool LMR_USE_LOG_FORMULA  = true; // Use logarithmic formula instead of linear
-  double LMR_LOG_BASE_DIV   = 1.50; // Divisor for log formula: log(d)*log(m)/divisor
+  double LMR_LOG_BASE_DIV   = 1.25; // Divisor for log formula: log(d)*log(m)/divisor
   // LMR + improving: extra reduction when position is not improving
   bool USE_LMR_IMPROVING      = true; // Use improving flag to modulate LMR
   int LMR_IMPROVING_REDUCTION = 1;    // Extra reduction depth when not improving
@@ -151,7 +151,7 @@ struct SearchConfigData {
   bool USE_EXTENSIONS       = true;
   bool USE_CHECK_EXT        = true;
   int CHECK_EXT_EARLY_LIMIT = 3;// only extend checks in first N moves per node
-  bool USE_THREAT_EXT       = false;
+  bool USE_THREAT_EXT       = true;
   bool USE_EXT_ADD_DEPTH    = true;
 
   // singular extensions

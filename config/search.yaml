@@ -152,7 +152,7 @@ LMR_MIN_MOVES: 2
 # Use logarithmic formula instead of linear (log(d)*log(m)/divisor)
 LMR_USE_LOG_FORMULA: true
 # Divisor for logarithmic formula (lower = more aggressive reductions)
-LMR_LOG_BASE_DIV: 1.50
+LMR_LOG_BASE_DIV: 1.25
 # LMR_REDUCTION: large table defined in code for efficiency
 # Use improving flag to add extra LMR reduction when position is not improving
 USE_LMR_IMPROVING: true
@@ -186,7 +186,7 @@ USE_CHECK_EXT: true
 # set to 999 to extend all checks regardless of move index
 CHECK_EXT_EARLY_LIMIT: 3
 # Extend on threats
-USE_THREAT_EXT: false
+USE_THREAT_EXT: true
 # Add extension depth rather than replacing node depth
 USE_EXT_ADD_DEPTH: true
 # Singular Extensions

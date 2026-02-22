@@ -530,7 +530,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
     assert((bestValue == pv.first().value() || stopSearchFlag) && "bestValue should be equal value of pv.first()");
 
     // Conservative volatility detector: big evaluation swings between consecutive iterations
-    if (!addedVolatilityExtraTime && !isTimeAlmostUp()) {
+    if (searchLimits.timeControl && !addedVolatilityExtraTime && !isTimeAlmostUp()) {
       const Value currBest = pv.first().value();
       // Only consider reasonably deep iterations to avoid noise from shallow depths
       constexpr int VOL_SWING_MIN_DEPTH = 6;
@@ -1066,22 +1066,6 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     else { statistics.improvingFalse++; }
   }
 
-  // Razoring
-  // https://www.chessprogramming.org/Razoring
-  // When static eval is well below alpha at the last node,
-  // jump directly into qsearch.
-  if (SearchConfig.USE_RAZORING
-      && nodeType != PvNode // fix 19.2.2026 - only razor on non-PV nodes to avoid missing critical moves in PV line
-      && depth == 1
-      && staticEval != VALUE_NONE
-      && staticEval <= alpha - SearchConfig.RAZOR_MARGIN) {
-    statistics.razorings++;
-    // fix 19.2.2026 - use AllNode for razor to avoid missing critical moves in PV line; razor is a
-    // heuristic that can afford to miss some moves, but we don't want it to miss critical moves in
-    // the PV line. Use AllNode since we're expecting to fail low (that's why we're razoring).
-    return qsearch(p, ply, alpha, beta, AllNode);
-  }
-
   // Reverse Futility Pruning, (RFP, Static Null Move Pruning)
   // https://www.chessprogramming.org/Reverse_Futility_Pruning
   // Anticipate a likely alpha low in the next ply by a beta cut
@@ -1091,7 +1075,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       && depth <= 3
       && nodeType != PvNode
       && !hasCheck
-      && std::abs(beta) < VALUE_CHECKMATE_THRESHOLD) {  // Don't prune when beta is a mate score
+      && std::abs(beta) < VALUE_CHECKMATE_THRESHOLD) {// Don't prune when beta is a mate score
     auto margin = Value{SearchConfig.RFP_MARGIN[depth]};
     // Increase margin when not improving → prune less aggressively (Stockfish-style)
     // Rationale: "not improving" means eval may be unreliable, so search more carefully
@@ -1103,6 +1087,22 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       statistics.rfp_cuts++;
       return staticEval - margin;// fail-hard: beta / fail-soft: staticEval - evalMargin;
     }
+  }
+
+  // Razoring
+  // https://www.chessprogramming.org/Razoring
+  // When static eval is well below alpha at the last node,
+  // jump directly into qsearch.
+  if (SearchConfig.USE_RAZORING
+      && nodeType != PvNode// fix 19.2.2026 - only razor on non-PV nodes to avoid missing critical moves in PV line
+      && depth == 1
+      && staticEval != VALUE_NONE
+      && staticEval <= alpha - SearchConfig.RAZOR_MARGIN) {
+    statistics.razorings++;
+    // fix 19.2.2026 - use AllNode for razor to avoid missing critical moves in PV line; razor is a
+    // heuristic that can afford to miss some moves, but we don't want it to miss critical moves in
+    // the PV line. Use AllNode since we're expecting to fail low (that's why we're razoring).
+    return qsearch(p, ply, alpha, beta, AllNode);
   }
 
   // NULL MOVE PRUNING
@@ -1178,7 +1178,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
           if (verifyDepth < 0) { verifyDepth = DEPTH_NONE; }
           const auto do_null = matethreat ? No_Null_Move : Do_Null_Move;
           // Verification search inherits nodeType (verifying same node type)
-          const Value v      = search(p, verifyDepth, ply, beta - 1, beta, nodeType, do_null);
+          const Value v = search(p, verifyDepth, ply, beta - 1, beta, nodeType, do_null);
           if (stopConditions()) { return VALUE_NONE; }
           if (v < beta) {
             statistics.nullMoveVerifications++;
@@ -1348,11 +1348,11 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       }
 
       // With this turned off, we still can use extension to
-      // at least avoid reductions for these moves.
+      // at least avoid reductions for these moves by checking the extension variable
+      // before applying reductions.
       if (SearchConfig.USE_EXT_ADD_DEPTH) {
         newDepth += extension;
       }
-
     }
 
     // ///////////////////////////////////////////////////////
@@ -1401,10 +1401,10 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // aka Move-Count-Based Pruning
       if (SearchConfig.USE_LMP) {
         const int lmpDepth = depth > 15 ? 15 : depth;
-        int lmpThreshold = SearchConfig.LMP_MOVES[lmpDepth];
+        int lmpThreshold   = SearchConfig.LMP_MOVES[lmpDepth];
         // When improving, allow searching more moves before pruning
         if (SearchConfig.USE_LMP_IMPROVING && improving) {
-          lmpThreshold += lmpThreshold / 2; // 50% more moves when improving
+          lmpThreshold += lmpThreshold / 2;// 50% more moves when improving
         }
         if (movesSearched >= lmpThreshold) {
           statistics.lmpCuts++;
@@ -1422,6 +1422,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     if (SearchConfig.USE_LMR
         && depth >= SearchConfig.LMR_MIN_DEPTH
         && movesSearched >= SearchConfig.LMR_MIN_MOVES
+        && extension == 0
         && nodeType != PvNode
         && !hasCheck
         && !matethreat) {
@@ -1445,12 +1446,12 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // Reduce less for moves with good history (frequently caused beta cutoffs)
       // histScore > 0 means good move -> negative reduction adjustment -> less reduction
       if (SearchConfig.USE_LMR_HISTORY) {
-        const int histScore = history.historyCount[us][from][to];
+        const int histScore     = history.historyCount[us][from][to];
         const int histReduction = -histScore / SearchConfig.LMR_HISTORY_DIVISOR;
         if (histReduction < 0) {
           // Positive history -> less reduction (histReduction is negative)
           statistics.lmrHistoryLessReduction++;
-          statistics.lmrHistoryDepthSaved -= histReduction; // Convert to positive for tracking
+          statistics.lmrHistoryDepthSaved -= histReduction;// Convert to positive for tracking
         }
         lmrDepth -= static_cast<Depth>(histReduction);
       }
@@ -1468,7 +1469,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 
       // Don't reduce captures and promotions (they change material balance)
       if (p.isCapturingMove(move) || move.type() == PROMOTION) {
-        lmrDepth = newDepth; // No reduction for captures/promotions
+        lmrDepth = newDepth;// No reduction for captures/promotions
       }
 
       // Clamp: don't go below DEPTH_NONE and don't exceed newDepth (no extension via LMR!)
@@ -1527,7 +1528,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       if (!SearchConfig.USE_PVS || movesSearched == 0) {
         // First move: PV node's child inherits PV, CutNode's child is AllNode, AllNode's child is CutNode
         const NodeType childType = (nodeType == PvNode) ? PvNode : (nodeType == CutNode ? AllNode : CutNode);
-        value = -search(p, newDepth, ply + 1, -beta, -alpha, childType, do_null);
+        value                    = -search(p, newDepth, ply + 1, -beta, -alpha, childType, do_null);
       }
       else {
         // Null window search after the initial PV search.
@@ -1535,7 +1536,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         // conditions have been met above.
         // Later moves with null window: child is CutNode (expect fail-high) or AllNode (if we're CutNode)
         const NodeType childType = (nodeType == CutNode) ? AllNode : CutNode;
-        value = -search(p, lmrDepth, ply + 1, -alpha - 1, -alpha, childType, do_null);
+        value                    = -search(p, lmrDepth, ply + 1, -alpha - 1, -alpha, childType, do_null);
         // If this move improved alpha without exceeding beta we do a proper full window
         // search to get an accurate score.
         // Without LMR we check for value > alpha && value < beta
@@ -1546,13 +1547,13 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
             statistics.lmrResearches++;
             // Re-search with full depth: if we're PV, child becomes PV; otherwise same alternation
             const NodeType researchType = (nodeType == PvNode) ? PvNode : childType;
-            value = -search(p, newDepth, ply + 1, -beta, -alpha, researchType, do_null);
+            value                       = -search(p, newDepth, ply + 1, -beta, -alpha, researchType, do_null);
           }
           else if (value < beta) {
             statistics.pvsResearches++;
             // PVS re-search: if we're PV, child becomes PV; otherwise same alternation
             const NodeType researchType = (nodeType == PvNode) ? PvNode : childType;
-            value = -search(p, newDepth, ply + 1, -beta, -alpha, researchType, do_null);
+            value                       = -search(p, newDepth, ply + 1, -beta, -alpha, researchType, do_null);
           }
         }
       }
@@ -2362,7 +2363,7 @@ milliseconds Search::setupTimeControl(const Position& p, const SearchLimits& lim
 
 void Search::addExtraTime(const double f) {
   if (searchLimits.timeControl && !searchLimits.moveTime.count()) {
-    const auto deltaMs = std::llround( static_cast<long double>(timeLimit.count()) * (static_cast<long double>(f) - 1.0L));
+    const auto deltaMs = std::llround(static_cast<long double>(timeLimit.count()) * (static_cast<long double>(f) - 1.0L));
     (void) extraTimeMs.fetch_add(deltaMs, std::memory_order_relaxed);
     LOG__DEBUG(Logger::get().SEARCH_LOG, "Time adjustment: {} -> total budget {} (base {} + extra {})",
                str(milliseconds(deltaMs)),

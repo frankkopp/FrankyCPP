@@ -1016,7 +1016,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Divisor for log formula: log(d)*log(m)/divisor",
     .valueType = Double,
     .domain = Search,
-    .defaultValue = "1.50",
+    .defaultValue = "1.25",
     .minValue = 50,
     .maxValue = 500,
     .exposure = {.uci = true, .yaml = true, .display = true},
@@ -1193,7 +1193,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Enable threat extension",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "false",
+    .defaultValue = "true",
     .exposure = {.uci = true, .yaml = true, .display = true},
     .getter = searchGetter(&SearchConfigData::USE_THREAT_EXT),
     .setter = searchSetter(&SearchConfigData::USE_THREAT_EXT, parseBool)
