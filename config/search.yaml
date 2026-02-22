@@ -180,11 +180,14 @@ USE_LMP_IMPROVING: true
 # Extensions
 # Enable search extensions framework
 USE_EXTENSIONS: true
-# Extend when in check (only for first N moves per node)
+# Extend when move gives check
 USE_CHECK_EXT: true
-# Only extend checks in first N moves per node (leverages move ordering)
-# set to 999 to extend all checks regardless of move index
-CHECK_EXT_EARLY_LIMIT: 3
+# Minimum depth to apply check extension (avoids extending at horizon)
+CHECK_EXT_MIN_DEPTH: 2
+# Only extend checks in first N moves per node (99 = no limit when SEE enabled)
+CHECK_EXT_EARLY_LIMIT: 99
+# Only extend checks with SEE >= 0 (non-losing checks)
+USE_CHECK_EXT_SEE: true
 # Extend on threats
 USE_THREAT_EXT: true
 # Add extension depth rather than replacing node depth

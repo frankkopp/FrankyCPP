@@ -1284,9 +1284,12 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // This limits search explosion while focusing extensions on important checks.
       // The QS search already handles all check evasions, but this extension
       // allows the normal search pruning techniques to be applied.
+      // Optional SEE filter: only extend checks that don't lose material.
       if (SearchConfig.USE_CHECK_EXT
+          && depth >= SearchConfig.CHECK_EXT_MIN_DEPTH
           && givesCheck
-          && movesSearched < SearchConfig.CHECK_EXT_EARLY_LIMIT) {
+          && movesSearched < SearchConfig.CHECK_EXT_EARLY_LIMIT
+          && (!SearchConfig.USE_CHECK_EXT_SEE || See::see(p, move) >= 0)) {
         statistics.checkExtension++;
         extension = DEPTH_ONE;
       }

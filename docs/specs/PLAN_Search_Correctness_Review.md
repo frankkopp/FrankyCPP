@@ -64,9 +64,9 @@ Features ordered by how a chess engine naturally evolves - core algorithm first.
 |                         | 17 | Late Move Pruning (LMP)        | ✅ Correct  | Threshold-based, improving OK      |
 |                         | 18 | Late Move Reduction (LMR)      | ✅ Enhanced | Broadened scope, reduction adjust  |
 | **Extensions**          |    |                                |            |                                    |
-|                         | 19 | Check Extension                | ⬜ Pending  | Basic extension                    |
-|                         | 20 | Singular Extension             | ⬜ Pending  | Complex implementation             |
-|                         | 21 | Threat Extension               | ⬜ Pending  | Currently disabled                 |
+|                         | 19 | Check Extension                | ✅ Enhanced | Added depth guard                  |
+|                         | 20 | Singular Extension             | ⚠️ Issue   | Missing TT bound type check        |
+|                         | 21 | Threat Extension               | ✅ Correct  | Enabled, old-fashioned but OK      |
 | **Search Enhancements** |    |                                |            |                                    |
 |                         | 22 | IID / IIR                      | ⬜ Pending  | Finding moves without TT           |
 |                         | 23 | Tablebase Probing              | ⬜ Pending  | Endgame knowledge                  |
@@ -2309,6 +2309,287 @@ Depth 12 (30 positions - same set):
 
 ---
 
+### Feature #19: Check Extension
+**Date:** 2026-02-22
+**Status:** ✅ Enhanced
+
+**Implementation Location:**
+- `src/engine/Search.cpp` lines 1282-1293
+- `src/config/SearchConfigData.h` lines 152-154
+
+**Theory Background:**
+- Check extension extends the search when a move delivers check
+- Rationale: Checking moves are often tactically critical and shouldn't be pruned
+- Without extension, forcing check sequences might be cut off prematurely
+- QSearch handles check evasions, but extension allows full search pruning to apply
+
+**Implementation:**
+```cpp
+if (SearchConfig.USE_CHECK_EXT
+    && depth >= SearchConfig.CHECK_EXT_MIN_DEPTH
+    && givesCheck
+    && movesSearched < SearchConfig.CHECK_EXT_EARLY_LIMIT) {
+  statistics.checkExtension++;
+  extension = DEPTH_ONE;
+}
+```
+
+**Checks:**
+
+#### ✅ Basic Guard - givesCheck (CORRECT)
+- Uses `givesCheck` which is computed via `p.givesCheck(move)` before the move is made
+- This is efficient (no make/unmake needed)
+
+#### ✅ Depth Guard (ADDED 2026-02-22)
+- `depth >= CHECK_EXT_MIN_DEPTH (2)` avoids extending at horizon
+- At depth 1, extending just delays QSearch by one ply with minimal benefit
+- Configurable for testing different thresholds
+- Essential if early-move limit is removed in the future
+
+#### ✅ Early Move Limit (CORRECT - Conservative)
+- `movesSearched < CHECK_EXT_EARLY_LIMIT (3)` limits extensions to first 3 moves
+- This prevents search explosion from late checking moves (discovered checks, etc.)
+- Only the best checking moves (according to move ordering) get extended
+- **Theory:** Modern engines often extend ALL checks or use SEE to filter
+- **FrankyCPP approach:** More conservative, limits to early moves
+- This is a reasonable trade-off between safety and thoroughness
+
+#### ✅ SEE Filter (ADDED 2026-02-22)
+- `USE_CHECK_EXT_SEE` option filters out checks that lose material
+- Uses `See::see(p, move) >= 0` to verify check is not a losing capture
+- When enabled, bad checks (e.g., Qxh7+ into defended pawn) are not extended
+- Expected impact: fewer extensions, smaller tree, same or better quality
+- Future: Can remove early-move limit once SEE is proven stable
+
+**Findings:**
+1. ✅ Correctly triggers on checking moves
+2. ✅ Depth guard prevents shallow extension overhead
+3. ✅ Early move limit prevents search explosion  
+4. ✅ SEE filter avoids extending losing checks
+5. ✅ Conservative approach is safe and functional
+
+**Changes Made (2026-02-22):**
+- Added `CHECK_EXT_MIN_DEPTH` config option (default: 2)
+- Added depth guard to check extension condition
+- Added `USE_CHECK_EXT_SEE` config option (default: true)
+- Added SEE filter to check extension condition
+- Changed `CHECK_EXT_EARLY_LIMIT` default from 3 to 99 (no limit)
+- Updated config: struct, registry, and YAML
+- Added tests to SearchTreeSizeTest
+
+**New Default Configuration:**
+- `USE_CHECK_EXT = true`
+- `CHECK_EXT_MIN_DEPTH = 2`
+- `CHECK_EXT_EARLY_LIMIT = 99` (effectively no limit)
+- `USE_CHECK_EXT_SEE = true`
+
+This combination extends ALL non-losing checks (SEE >= 0), protected by the depth guard.
+
+---
+
+### Feature #20: Singular Extension
+**Date:** 2026-02-22
+**Status:** ⚠️ Missing TT Bound Check
+
+**Implementation Location:**
+- `src/engine/Search.cpp` lines 1307-1351
+- `src/config/SearchConfigData.h` lines 160-163
+- `src/engine/PlyInfo.h` lines 52-56 (excludedMove, mgSingular)
+
+**Theory Background:**
+- Singular extension identifies moves that are significantly better than alternatives
+- When a TT move appears "singular" (no other move comes close), extend it
+- Verification: Do a reduced-depth search excluding the TT move
+- If verification fails to reach close to TT value, the TT move is singular
+
+**Implementation:**
+```cpp
+if (SearchConfig.USE_SINGULAR_EXT
+    && extension == 0                                  // no other extension applied
+    && move == ttMove                                  // this is the TT move
+    && depth >= SearchConfig.SINGULAR_MIN_DEPTH        // sufficient depth (8)
+    && ttValue != VALUE_NONE                           // valid TT value
+    && ttDepth >= depth - 3                            // TT entry was from similar/deeper search
+    && !hasCheck                                       // not in check
+    && std::abs(ttValue) < VALUE_CHECKMATE_THRESHOLD) {// not a mate score
+
+  const Value singularBeta = ttValue - Value{SearchConfig.SINGULAR_MARGIN}; // 64cp below
+  Depth singularDepth = (depth - SearchConfig.SINGULAR_REDUCTION) / 2;
+  
+  info.excludedMove = ttMove;
+  const Value singularValue = search(p, singularDepth, ply, singularBeta - 1, singularBeta, CutNode, No_Null_Move);
+  info.excludedMove = MOVE_NONE;
+  
+  if (singularValue < singularBeta) {
+    extension = DEPTH_ONE;
+  }
+}
+```
+
+**Checks:**
+
+#### ✅ No Other Extension Guard (CORRECT)
+- `extension == 0` ensures we don't double-extend
+- Check extension or threat extension take priority
+
+#### ✅ TT Move Only (CORRECT)
+- `move == ttMove` - only consider the best known move
+- This is the standard approach
+
+#### ✅ Minimum Depth (CORRECT)
+- `depth >= SINGULAR_MIN_DEPTH (8)` - avoid overhead at shallow depths
+- 8 is typical (Stockfish uses 7-8)
+
+#### ✅ Valid TT Value (CORRECT)
+- `ttValue != VALUE_NONE` - must have a stored value
+
+#### ✅ TT Depth Check (CORRECT)
+- `ttDepth >= depth - 3` - TT entry should be from similar or deeper search
+- Ensures the TT value is reliable
+
+#### ✅ Not In Check (CORRECT)
+- `!hasCheck` - avoid instability when in check
+- Check evasions have different dynamics
+
+#### ✅ Not Mate Score (CORRECT)
+- `std::abs(ttValue) < VALUE_CHECKMATE_THRESHOLD`
+- Mate scores shouldn't be used for singular margin comparison
+
+#### ❌ MISSING: TT Bound Type Check (BUG)
+**The implementation does NOT check the TT entry's bound type!**
+
+**Problem:**
+- ALPHA bound means "all moves were tried, none beat alpha"
+- The TT move with ALPHA bound might not actually be good - it just happened to be stored
+- Singular extension should only apply to BETA (lower bound) or EXACT entries
+- These indicate the TT move actually achieved at least the stored value
+
+**Stockfish code pattern:**
+```cpp
+// Stockfish requires the TT entry to be a lower bound (fail-high)
+if (ttBound & BOUND_LOWER)  // BOUND_LOWER = BETA in our terminology
+```
+
+**Current FrankyCPP issue:**
+- `ttType` from TT entry is never captured for singular extension
+- Only `ttMove`, `ttValue`, `ttDepth` are stored
+- This could cause incorrect extensions on ALPHA-bound entries
+
+#### ✅ Singular Beta Calculation (CORRECT)
+- `singularBeta = ttValue - SINGULAR_MARGIN (64)`
+- 64 centipawns is reasonable (Stockfish uses ~2 * depth)
+- Fixed margin is simpler but less adaptive
+
+#### ✅ Singular Depth (CORRECT)
+- `singularDepth = (depth - SINGULAR_REDUCTION) / 2`
+- With SINGULAR_REDUCTION = 4: at depth 8, singularDepth = 2
+- Shallow verification search is appropriate
+
+#### ✅ Excluded Move Mechanism (CORRECT)
+- Uses `info.excludedMove` to skip TT move in verification
+- Uses separate `mgSingular` MoveGenerator to avoid state corruption
+- Properly cleared after verification search
+
+#### ✅ Node Type for Verification (CORRECT)
+- Uses `CutNode` - we're looking for fail-high to disprove singularity
+- This is correct (trying to find any move that beats singularBeta)
+
+#### ✅ No Null Move in Verification (CORRECT)
+- `No_Null_Move` prevents recursion issues
+
+**Findings:**
+1. ✅ Guards for depth, TT validity, mate score are correct
+2. ✅ Excluded move mechanism is properly implemented
+3. ✅ Verification search parameters are reasonable
+4. ❌ **MISSING:** TT bound type check - should require BETA or EXACT bound
+
+**Proposed Fix:**
+```cpp
+// In TT lookup section (around line 930-935), add:
+ValueType ttBound = ALPHA;  // Add this variable
+
+if (const TT::Entry* ttEntryPtr = tt->probe(p.getZobristKey())) {
+  // ... existing code ...
+  ttBound = ttEntryPtr->type;  // Capture the bound type
+}
+
+// In singular extension condition (around line 1310), add:
+if (SearchConfig.USE_SINGULAR_EXT
+    && extension == 0
+    && move == ttMove
+    && depth >= SearchConfig.SINGULAR_MIN_DEPTH
+    && ttValue != VALUE_NONE
+    && (ttBound == BETA || ttBound == EXACT)  // ADD THIS CHECK
+    && ttDepth >= depth - 3
+    && !hasCheck
+    && std::abs(ttValue) < VALUE_CHECKMATE_THRESHOLD) {
+```
+
+---
+
+### Feature #21: Threat Extension
+**Date:** 2026-02-22
+**Status:** ✅ Correct (but disabled by default)
+
+**Implementation Location:**
+- `src/engine/Search.cpp` lines 1294-1303
+- `src/config/SearchConfigData.h` line 154
+
+**Theory Background:**
+- When null move search reveals a mate threat (opponent can mate us if we pass)
+- Extend to give us more time to find a defense
+- This is an old technique, mostly superseded by better null move handling
+
+**Implementation:**
+```cpp
+if (SearchConfig.USE_THREAT_EXT
+    && matethreat) {
+  statistics.threatExtension++;
+  extension = DEPTH_ONE;
+}
+```
+
+**Checks:**
+
+#### ✅ Mate Threat Detection (CORRECT)
+Mate threat is set in NMP section (lines 1162-1168):
+```cpp
+else if (nValue < -(VALUE_CHECKMATE - 6)) {// limit for mate in 3 or less
+  // the player did not move and got mated ==> mate threat
+  matethreat = true;
+}
+```
+- Detects when null move search returns mate in ≤3
+- This indicates opponent has a forced mate if we pass
+
+#### ✅ Simple Extension Logic (CORRECT)
+- If mate threat exists, extend by one ply
+- Gives more time to find defensive resources
+
+#### ✅ Config Flag (CORRECT)
+- `USE_THREAT_EXT = true` in config (enabled)
+- Can be disabled if it causes search explosion
+
+#### ⚠️ Observation: Overwrite Behavior
+- Threat extension overwrites check extension (`extension = DEPTH_ONE`)
+- If check AND mate threat, only one extension applies
+- This is intentional (max extension = 1) but could log both
+
+#### ⚠️ Observation: Modern Engines Don't Use This
+- Stockfish doesn't have threat extension
+- Better null move handling (verification) makes this less necessary
+- However, it's not incorrect - just old-fashioned
+
+**Findings:**
+1. ✅ Mate threat detection is correct (mate in ≤3 on null move)
+2. ✅ Extension logic is straightforward
+3. ✅ Config toggle allows disabling if problematic
+4. ⚠️ Somewhat outdated technique, but harmless
+
+**No changes needed.**
+
+---
+
 ## Known Bugs Already Fixed (v1.3)
 
 For reference - these were found and fixed before this review:
@@ -2357,6 +2638,12 @@ For reference - these were found and fixed before this review:
 | 2026-02-21 | 3       | Reviewed Feature #18: LMR ✅ (all correct)                      |
 | 2026-02-21 | 3       | Enhanced Feature #18: LMR moved outside FP block ✅             |
 | 2026-02-22 | 4       | Tested Feature #18: LMR all adjustments verified ✅             |
+| 2026-02-22 | 4       | Reviewed Feature #19: Check Extension ✅                        |
+| 2026-02-22 | 4       | Enhanced Feature #19: Added depth guard ✅                      |
+| 2026-02-22 | 4       | Enhanced Feature #19: Added SEE filter ✅                       |
+| 2026-02-22 | 4       | Updated Feature #19: New defaults (SEE=true, limit=99) ✅       |
+| 2026-02-22 | 4       | Reviewed Feature #20: Singular Extension ⚠️ (missing TT bound) |
+| 2026-02-22 | 4       | Reviewed Feature #21: Threat Extension ✅                       |
 
 ---
 
@@ -2366,24 +2653,27 @@ After completing the feature review and making changes, the following tests shou
 
 ### Priority 1: Verify Bug Fixes (Critical)
 
-| # | Feature   | Change Made                                                           | Test Method                   | Status |
-|---|-----------|-----------------------------------------------------------------------|-------------------------------|--------|
-| 1 | RFP (#14) | Added mate score guard (`std::abs(beta) < VALUE_CHECKMATE_THRESHOLD`) | SearchTreeSize, Strength test | ⬜      |
-| 2 | RFP (#14) | Fixed improving logic (`margin +=` when not improving)                | SearchTreeSize, Strength test | ⬜      |
-| 3 | FP (#15)  | Fixed improving logic (`margin +=` when not improving)                | SearchTreeSize, Strength test | ⬜      |
+| # | Feature         | Change Made                                                           | Test Method                   | Status |
+|---|-----------------|-----------------------------------------------------------------------|-------------------------------|--------|
+| 1 | RFP (#14)       | Added mate score guard (`std::abs(beta) < VALUE_CHECKMATE_THRESHOLD`) | SearchTreeSize, Strength test | ⬜      |
+| 2 | RFP (#14)       | Fixed improving logic (`margin +=` when not improving)                | SearchTreeSize, Strength test | ⬜      |
+| 3 | FP (#15)        | Fixed improving logic (`margin +=` when not improving)                | SearchTreeSize, Strength test | ⬜      |
+| 4 | Singular (#20)  | Add TT bound type check (require BETA or EXACT)                       | SearchTreeSize, Strength test | ⬜      |
 
 ### Priority 2: Verify Enhancements
 
-| # | Feature   | Change Made                                           | Test Method                   | Status |
-|---|-----------|-------------------------------------------------------|-------------------------------|--------|
-| 4 | LMR (#18) | Moved outside FP guard block                          | SearchTreeSize                | ✅      |
-| 5 | LMR (#18) | Added reduction adjustments for TT/killer/check moves | SearchTreeSize, Strength test | ✅      |
+| # | Feature        | Change Made                                           | Test Method                   | Status |
+|---|----------------|-------------------------------------------------------|-------------------------------|--------|
+| 5 | LMR (#18)      | Moved outside FP guard block                          | SearchTreeSize                | ✅      |
+| 6 | LMR (#18)      | Added reduction adjustments for TT/killer/check moves | SearchTreeSize, Strength test | ✅      |
+| 7 | CheckExt (#19) | Added depth guard (CHECK_EXT_MIN_DEPTH = 2)           | SearchTreeSize                | ⬜      |
+| 8 | CheckExt (#19) | Added SEE filter (USE_CHECK_EXT_SEE)                  | SearchTreeSize                | ⬜      |
 
 ### Priority 3: Confirm Existing Logic (Lower Priority)
 
 | # | Feature   | Question                                                        | Test Method       | Status |
 |---|-----------|-----------------------------------------------------------------|-------------------|--------|
-| 6 | NMP (#16) | Confirm improving direction (more reduction when not improving) | Strength test A/B | ⬜      |
+| 9 | NMP (#16) | Confirm improving direction (more reduction when not improving) | Strength test A/B | ⬜      |
 
 ### Test Procedures
 

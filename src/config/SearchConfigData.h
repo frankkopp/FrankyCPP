@@ -150,7 +150,9 @@ struct SearchConfigData {
   // extensions
   bool USE_EXTENSIONS       = true;
   bool USE_CHECK_EXT        = true;
-  int CHECK_EXT_EARLY_LIMIT = 3;// only extend checks in first N moves per node
+  int CHECK_EXT_MIN_DEPTH   = 2;  // minimum depth to apply check extension
+  int CHECK_EXT_EARLY_LIMIT = 99; // effectively no limit when SEE is enabled
+  bool USE_CHECK_EXT_SEE    = true;// only extend checks with SEE >= 0 (non-losing)
   bool USE_THREAT_EXT       = true;
   bool USE_EXT_ADD_DEPTH    = true;
 

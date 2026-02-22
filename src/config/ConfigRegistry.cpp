@@ -43,14 +43,14 @@ ConfigRegistry::ConfigRegistry() {
 #ifdef _MSC_VER
 // Windows MSVC builds
 #ifdef _DEBUG
-  static_assert(sizeof(SearchConfigData) == 552,
+  static_assert(sizeof(SearchConfigData) == 560,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 256,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
-  static_assert(sizeof(SearchConfigData) == 520,
+  static_assert(sizeof(SearchConfigData) == 528,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -61,7 +61,7 @@ ConfigRegistry::ConfigRegistry() {
 // Linux GCC/Clang builds (including WSL)
 #ifdef NDEBUG
   // Release build
-  static_assert(sizeof(SearchConfigData) == 520,
+  static_assert(sizeof(SearchConfigData) == 528,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -1174,17 +1174,43 @@ void ConfigRegistry::initializeSearchDefinitions() {
   });
 
   definitions_.push_back({
-    .name = "CHECK_EXT_EARLY_LIMIT",
-    .uciName = "Check Ext Early Limit",
-    .description = "Only extend checks in first N moves per node",
+    .name = "CHECK_EXT_MIN_DEPTH",
+    .uciName = "Check Ext Min Depth",
+    .description = "Minimum depth to apply check extension",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "3",
+    .defaultValue = "2",
+    .minValue = 1,
+    .maxValue = 10,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::CHECK_EXT_MIN_DEPTH),
+    .setter = searchSetter(&SearchConfigData::CHECK_EXT_MIN_DEPTH, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "CHECK_EXT_EARLY_LIMIT",
+    .uciName = "Check Ext Early Limit",
+    .description = "Only extend checks in first N moves per node (99 = no limit)",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = "99",
     .minValue = 0,
-    .maxValue = 20,
+    .maxValue = 99,
     .exposure = {.uci = true, .yaml = true, .display = true},
     .getter = searchGetter(&SearchConfigData::CHECK_EXT_EARLY_LIMIT),
     .setter = searchSetter(&SearchConfigData::CHECK_EXT_EARLY_LIMIT, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "USE_CHECK_EXT_SEE",
+    .uciName = "Check Ext SEE",
+    .description = "Only extend checks with SEE >= 0 (non-losing)",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = "true",
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter(&SearchConfigData::USE_CHECK_EXT_SEE),
+    .setter = searchSetter(&SearchConfigData::USE_CHECK_EXT_SEE, parseBool)
   });
 
   definitions_.push_back({
