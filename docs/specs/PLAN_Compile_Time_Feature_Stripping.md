@@ -1,9 +1,25 @@
-# Compile-Time Feature Stripping Plan
+# Compile-Time Feature Stripping Plan (X-Macro Approach)
 
-**Status:** Planning  
+**Status:** ⚠️ SUPERSEDED - See `PLAN_Constexpr_Config_Approach.md`  
 **Created:** 2026-02-22  
 **Last Updated:** 2026-02-23  
 **Author:** Frank Kopp
+
+---
+
+> ## ⚠️ This Plan Has Been Superseded
+> 
+> The X-macro approach described in this document has been replaced by a simpler
+> **Constexpr Config Approach**. See: `PLAN_Constexpr_Config_Approach.md`
+> 
+> **Why the change:**
+> - X-macros add significant complexity (meta-programming, cryptic errors)
+> - The constexpr approach achieves the same goals with simpler code
+> - No changes needed to Search.cpp (no `FEATURE_ENABLED()` wrappers)
+> - `defaultFrom()` pattern eliminates default value duplication
+> - `#ifndef FRANKYCPP_PRODUCTION` hides non-essential configs in registry
+> 
+> **This document is kept for reference** in case X-macros are reconsidered.
 
 ---
 
@@ -225,14 +241,14 @@ struct Options {
 
 ### Comparison: FrankyCPP X-Macro Approach vs Industry Patterns
 
-| Aspect | FrankyCPP X-Macro | `#ifdef` Guards | Flag Macros | constexpr |
-|--------|-------------------|-----------------|-------------|-----------|
-| Single source of truth | ✅ One file | ❌ Multiple | ✅ One call | ❌ Multiple |
-| Zero runtime overhead | ✅ Yes | ✅ Yes | ❌ No | ✅ Yes |
-| Registry auto-generation | ✅ Yes | ❌ Manual | ✅ Yes | ❌ Manual |
-| IDE autocomplete | ⚠️ Limited | ✅ Good | ✅ Good | ✅ Good |
-| Error messages | ⚠️ Cryptic | ✅ Clear | ✅ Clear | ✅ Clear |
-| Requires recompilation | ✅ Yes | ✅ Yes | ❌ No | ✅ Yes |
+| Aspect                   | FrankyCPP X-Macro | `#ifdef` Guards | Flag Macros | constexpr  |
+|--------------------------|-------------------|-----------------|-------------|------------|
+| Single source of truth   | ✅ One file        | ❌ Multiple      | ✅ One call  | ❌ Multiple |
+| Zero runtime overhead    | ✅ Yes             | ✅ Yes           | ❌ No        | ✅ Yes      |
+| Registry auto-generation | ✅ Yes             | ❌ Manual        | ✅ Yes       | ❌ Manual   |
+| IDE autocomplete         | ⚠️ Limited        | ✅ Good          | ✅ Good      | ✅ Good     |
+| Error messages           | ⚠️ Cryptic        | ✅ Clear         | ✅ Clear     | ✅ Clear    |
+| Requires recompilation   | ✅ Yes             | ✅ Yes           | ❌ No        | ✅ Yes      |
 
 ### Conclusion: X-Macros Are Viable
 
@@ -1810,16 +1826,16 @@ If NNUE evaluation is added in the future:
 
 ### Macro Cheat Sheet
 
-| Macro | Normal Build | Minimal Build | Use For |
-|-------|--------------|---------------|---------|
-| `FEATURE_ENABLED(x)` | `(x)` | `(true)` | Boolean feature guards |
-| `CONFIG_PARAM(name)` | `SearchConfig.name` | `config::defaults::name` | Numeric parameters |
-| `STAT_INC(x)` | `++(x)` | `((void)0)` | Optional stats |
-| `STAT_ADD(x,v)` | `(x)+=(v)` | `((void)0)` | Optional stats |
-| `ESSENTIAL_STAT_INC(x)` | `++(x)` | `++(x)` | Required stats (nodes, depth) |
-| `FROZEN_IN_MINIMAL` | `false` | `true` | ConfigDef.frozen field |
-| `EXPOSURE_MINIMAL(u,y,d)` | `{u,y,d}` | `{false,false,d}` | Non-essential config exposure |
-| `EXPOSURE_ESSENTIAL(u,y,d)` | `{u,y,d}` | `{u,y,d}` | Essential config exposure |
+| Macro                       | Normal Build        | Minimal Build            | Use For                       |
+|-----------------------------|---------------------|--------------------------|-------------------------------|
+| `FEATURE_ENABLED(x)`        | `(x)`               | `(true)`                 | Boolean feature guards        |
+| `CONFIG_PARAM(name)`        | `SearchConfig.name` | `config::defaults::name` | Numeric parameters            |
+| `STAT_INC(x)`               | `++(x)`             | `((void)0)`              | Optional stats                |
+| `STAT_ADD(x,v)`             | `(x)+=(v)`          | `((void)0)`              | Optional stats                |
+| `ESSENTIAL_STAT_INC(x)`     | `++(x)`             | `++(x)`                  | Required stats (nodes, depth) |
+| `FROZEN_IN_MINIMAL`         | `false`             | `true`                   | ConfigDef.frozen field        |
+| `EXPOSURE_MINIMAL(u,y,d)`   | `{u,y,d}`           | `{false,false,d}`        | Non-essential config exposure |
+| `EXPOSURE_ESSENTIAL(u,y,d)` | `{u,y,d}`           | `{u,y,d}`                | Essential config exposure     |
 
 ### X-Macro Parameter Order
 
@@ -1839,12 +1855,12 @@ X_STRING(name, default, description, uciName, uci, yaml, display, essential)
 
 ### File Location Reference
 
-| Purpose | File |
-|---------|------|
-| Search config definitions (edit here!) | `src/config/SearchConfigDefinitions.h` |
-| Eval config definitions (edit here!) | `src/config/EvalConfigDefinitions.h` |
-| Compile-time macros | `src/config/FeatureFlags.h` |
-| Generated constexpr defaults | `src/config/ConfigDefaults.h` |
-| Generated struct (don't edit directly) | `src/config/SearchConfigData.h` |
-| Generated registry (don't edit directly) | `src/config/ConfigRegistry.cpp` |
-| Main usage site | `src/engine/Search.cpp` |
+| Purpose                                  | File                                   |
+|------------------------------------------|----------------------------------------|
+| Search config definitions (edit here!)   | `src/config/SearchConfigDefinitions.h` |
+| Eval config definitions (edit here!)     | `src/config/EvalConfigDefinitions.h`   |
+| Compile-time macros                      | `src/config/FeatureFlags.h`            |
+| Generated constexpr defaults             | `src/config/ConfigDefaults.h`          |
+| Generated struct (don't edit directly)   | `src/config/SearchConfigData.h`        |
+| Generated registry (don't edit directly) | `src/config/ConfigRegistry.cpp`        |
+| Main usage site                          | `src/engine/Search.cpp`                |
