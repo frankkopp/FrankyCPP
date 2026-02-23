@@ -17,6 +17,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#include "common/Logging.h"
 #include "Benchmark.h"
 #include "BenchmarkPositions.h"
 #include "Search.h"
@@ -78,7 +79,7 @@ BenchResult Benchmark::run(const std::vector<std::string>& fens, const BenchConf
       position = Position(fen);
     }
     catch (const std::exception& e) {
-      std::cerr << "Skipping invalid FEN [" << positionNum << "]: " << fen << " (" << e.what() << ")\n";
+      LOG__ERROR(Logger::get().APP_LOG, "Skipping invalid FEN [{}]: {} ({})", positionNum, fen, e.what());
       continue;
     }
 
