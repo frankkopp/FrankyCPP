@@ -1019,7 +1019,7 @@ matches:
     engine2Version: "v1.3"
     openingBook: "books/8moves_GM_LB.pgn"
     timeControl: "300+0"
-    rounds: 104
+    rounds: 208
     concurrency: 8
     outputPgn: "results/matches/v1.4_vs_v1.3_blitz_208.pgn"
 
@@ -1120,7 +1120,7 @@ benchmarks:
     engineVersion: "v1.4"
     depth: 12
     hashSizeMB: 128
-#    notes: "CutNode Reduction"
+    notes: "After Search Feature Review"
 
   - name: "v1.4 External"
     enginePath: "Release/FrankyCPP_v1.4/FrankyCPP_v1.4.exe"
@@ -1128,9 +1128,7 @@ benchmarks:
     engineVersion: "v1.4"
     depth: 12
     hashSizeMB: 128
-#    notes: "CutNode Reduction"
-
-
+    notes: "After Search Feature Review"
 
 #  - name: "v1.1 External"
 #    enginePath: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"

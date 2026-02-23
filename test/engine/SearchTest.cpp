@@ -460,8 +460,8 @@ TEST_F(SearchTest, singleMoveComplexRoot) {
 
   SearchLimits sl{};
   sl.timeControl = true;
-  sl.whiteTime   = 1000s;
-  sl.blackTime   = 1000s;
+  sl.whiteTime   = 600s;
+  sl.blackTime   = 600s;
 
   s.startSearch(p, sl);
   s.waitWhileSearching();

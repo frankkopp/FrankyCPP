@@ -307,4 +307,27 @@ measurement tolerance (±15 ELO). Features are functional but ELO-neutral.
 - SearchTreeSizeTest shows 1M+ cut node reductions applied, −4.4% nodes vs LMR+History alone
 - LMR re-searches increased (111K vs 83K) due to more aggressive reductions
 ```
+
+```
+After Feature Review
+--------------------------------------------------------------------------------
+TEST SUITE SUMMARY (FrankyCPP v1.4 vs FrankyCPP v1.3)
+--------------------------------------------------------------------------------
+  Total positions:      2873
+  Improvement:          +21 positions (+0.7%)
+  Suites improved:      5
+  Suites regressed:     2
+  Status:               [!] MIXED (some suites regressed)
+================================================================================
+
+================================================================================
+MATCH COMPARISON: FrankyCPP v1.4 vs Baselines
+================================================================================
+--------------------------------------------------------------------------------
+Opponent                    Games     Score       W/D/L           ELO         vs FrankyCPP..
+--------------------------------------------------------------------------------
+FrankyCPP v1.3              208       62.3%       95/69/44        +87         [baseline]
+================================================================================
+```
+
 ---

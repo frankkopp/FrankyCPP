@@ -644,6 +644,36 @@
       "totalTimeMs": 21357,
       "nps": 2977653,
       "notes": "CutNode Reduction"
+    },
+    {
+      "arenaVersion": "v1.2",
+      "timestamp": "2026-02-23T00:33:02",
+      "engineName": "FrankyCPP",
+      "engineVersion": "v1.4",
+      "enginePath": "",
+      "depth": 12,
+      "hashSizeMB": 128,
+      "threads": 1,
+      "positions": 50,
+      "totalNodes": 35960968,
+      "totalTimeMs": 11588,
+      "nps": 3103293,
+      "notes": "After Search Feature Review"
+    },
+    {
+      "arenaVersion": "v1.2",
+      "timestamp": "2026-02-23T00:33:02",
+      "engineName": "External",
+      "engineVersion": "v1.4",
+      "enginePath": "Release/FrankyCPP_v1.4/FrankyCPP_v1.4.exe",
+      "depth": 12,
+      "hashSizeMB": 128,
+      "threads": 1,
+      "positions": 50,
+      "totalNodes": 35960968,
+      "totalTimeMs": 11301,
+      "nps": 3182104,
+      "notes": "After Search Feature Review"
     }
   ]
 }
