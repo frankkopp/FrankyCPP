@@ -111,6 +111,40 @@ TEST_F(SearchTest, extraTime) {
   EXPECT_EQ(2000, s.extraTimeMs.load());
 }
 
+TEST_F(SearchTest, extraTimeCap) {
+  // Test that extra time is capped at MAX_EXTRA_TIME_FACTOR * base time
+  CONFIG_OVERRIDE(s.MAX_EXTRA_TIME_FACTOR = 2.0;);// max 2x base = 20s extra on 10s base
+
+  Search s{};
+  s.searchLimits.timeControl = true;
+  s.timeLimit                = 10s;
+  s.extraTimeMs              = 0;
+
+  // Add 30% five times = would be 150% without cap
+  for (int i = 0; i < 5; i++) {
+    s.addExtraTime(1.3);// +30% = +3s each
+  }
+
+  // Should be capped at 2x base (20s), not 5x3s = 15s
+  // Actually 5 * 3s = 15s < 20s cap, so should be 15s
+  fprintln("After 5x +30%: extra = {}", str(milliseconds(s.extraTimeMs.load())));
+  EXPECT_EQ(15000, s.extraTimeMs.load());// 5 * 3000ms = 15000ms
+
+  // Add more - should hit the cap
+  for (int i = 0; i < 5; i++) {
+    s.addExtraTime(1.3);// +30% = +3s each, but capped
+  }
+
+  // Should be capped at 20s (2x base)
+  fprintln("After 10x +30%: extra = {}", str(milliseconds(s.extraTimeMs.load())));
+  EXPECT_EQ(20000, s.extraTimeMs.load());// capped at 2x base
+
+  // Total budget should be base + cap = 30s
+  const auto totalBudget = s.timeLimit + milliseconds(s.extraTimeMs.load());
+  fprintln("Total budget: {}", str(totalBudget));
+  EXPECT_EQ(30s, totalBudget);
+}
+
 TEST_F(SearchTest, startTimer) {
   Search s{};
   s.searchLimits.timeControl = true;
@@ -442,9 +476,7 @@ TEST_F(SearchTest, singleMoveRootStopsEarlyAtVerifyDepth) {
 
   const auto result = s.getLastSearchResult();
 
-  // With a single legal root move and no time control, iterative deepening stops after the first iteration
-  // TODO: Review - search improvements cause deeper searches with many upperbound re-searches
-  // EXPECT_LT(result.time, 10s);
+  EXPECT_LT(result.time, 10s);
   EXPECT_EQ(Move(SQ_A1, SQ_B1), result.bestMove);
 }
 
@@ -460,14 +492,14 @@ TEST_F(SearchTest, singleMoveComplexRoot) {
 
   SearchLimits sl{};
   sl.timeControl = true;
-  sl.whiteTime   = 600s;
-  sl.blackTime   = 600s;
+  sl.whiteTime   = 1200s;
+  sl.blackTime   = 1200s;
 
   s.startSearch(p, sl);
   s.waitWhileSearching();
 
   const auto result = s.getLastSearchResult();
-  // EXPECT_LT(result.time, 10s);
+  EXPECT_LT(result.time, 15s);
   EXPECT_EQ(Move(SQ_E1, SQ_F2), result.bestMove);
 }
 

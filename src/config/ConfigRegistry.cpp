@@ -43,14 +43,14 @@ ConfigRegistry::ConfigRegistry() {
 #ifdef _MSC_VER
 // Windows MSVC builds
 #ifdef _DEBUG
-  static_assert(sizeof(SearchConfigData) == 592,
+  static_assert(sizeof(SearchConfigData) == 600,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 256,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
-  static_assert(sizeof(SearchConfigData) == 560,
+  static_assert(sizeof(SearchConfigData) == 568,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -61,7 +61,7 @@ ConfigRegistry::ConfigRegistry() {
 // Linux GCC/Clang builds (including WSL)
 #ifdef NDEBUG
   // Release build
-  static_assert(sizeof(SearchConfigData) == 560,
+  static_assert(sizeof(SearchConfigData) == 568,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -69,7 +69,7 @@ ConfigRegistry::ConfigRegistry() {
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
   // Debug build
-  static_assert(sizeof(SearchConfigData) == 560,
+  static_assert(sizeof(SearchConfigData) == 568,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -1652,6 +1652,24 @@ void ConfigRegistry::initializeSearchDefinitions() {
     },
     .setter = [](SearchConfigData& s, EvalConfigData&, const std::string& v) {
       s.INSTABILITY_EXTEND_FACTOR = parseDouble(v);
+    }
+  });
+
+  definitions_.push_back({
+    .name = "MAX_EXTRA_TIME_FACTOR",
+    .uciName = "Max Extra Time Factor Pct",
+    .description = "Maximum extra time as multiple of base time (2.0 = max 3x total budget)",
+    .valueType = Double,
+    .domain = Search,
+    .defaultValue = "2.0",
+    .minValue = 50,
+    .maxValue = 500,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = [](const SearchConfigData& s, const EvalConfigData&) {
+      return configToString(s.MAX_EXTRA_TIME_FACTOR);
+    },
+    .setter = [](SearchConfigData& s, EvalConfigData&, const std::string& v) {
+      s.MAX_EXTRA_TIME_FACTOR = parseDouble(v);
     }
   });
 

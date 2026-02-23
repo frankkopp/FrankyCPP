@@ -268,3 +268,8 @@ INSTABILITY_CHANGE_THRESHOLD: 3
 INSTABILITY_STABLE_FACTOR: 0.9
 # Time factor when best move is unstable (> 1.0 extends time)
 INSTABILITY_EXTEND_FACTOR: 1.25
+
+# Extra time cap - prevents unbounded time extensions in fail-low cascades
+# Maximum extra time as multiple of base time (2.0 = max 3x total budget)
+# This prevents runaway time usage in hopeless positions with repeated fail-lows
+MAX_EXTRA_TIME_FACTOR: 2.0

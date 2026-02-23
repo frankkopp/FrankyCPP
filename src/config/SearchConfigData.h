@@ -206,6 +206,9 @@ struct SearchConfigData {
   double INSTABILITY_STABLE_FACTOR = 0.80;// multiply remaining time by this when stable (< 1.0)
   double INSTABILITY_EXTEND_FACTOR = 1.25;// multiply remaining time by this when unstable (> 1.0)
 
+  // extra time cap - prevents unbounded time extensions in fail-low cascades
+  double MAX_EXTRA_TIME_FACTOR = 2.0;// max extra time as multiple of base time (2.0 = max 3x total)
+
   std::string str() const;
 };
 

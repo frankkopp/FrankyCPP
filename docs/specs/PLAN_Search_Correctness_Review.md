@@ -1,7 +1,8 @@
 # Search Feature Correctness Review Plan
 
 **Created:** 2026-02-21  
-**Status:** In Progress  
+**Completed:** 2026-02-23  
+**Status:** ✅ Complete  
 **Purpose:** Systematic correctness review of all search features
 
 ---
@@ -71,7 +72,7 @@ Features ordered by how a chess engine naturally evolves - core algorithm first.
 |                         | 22 | IID / IIR                      | ✅ Enhanced  | IIR default (-36% nodes), IID obsolete |
 |                         | 23 | Tablebase Probing              | ✅ Optimized | Guard reorder, DEPTH=1 (SF default)    |
 | **Control**             |    |                                |             |                                        |
-|                         | 24 | Time Management                | ⬜ Pending   | Resource allocation                    |
+|                         | 24 | Time Management                | ✅ Fixed     | Added MAX_EXTRA_TIME_FACTOR cap        |
 
 ---
 
@@ -2637,9 +2638,9 @@ Added `THREAT_EXT_MATE_DEPTH` configuration to tune the mate detection threshold
 - `src/config/SearchConfigData.h` lines 80-82
 
 **Theory Background:**
-- **IID** (Internal Iterative Deepening): When no TT move is available at high depth, 
+- **IID** (Internal Iterative Deepening): When no TT move is available at high depth,
   perform a reduced-depth search to find a good first move
-- **IIR** (Internal Iterative Reduction): Modern alternative - simply reduce search depth 
+- **IIR** (Internal Iterative Reduction): Modern alternative - simply reduce search depth
   by 1-2 instead of doing a mini-search (simpler, same effect)
 - Purpose: Improve move ordering when TT miss occurs at deep nodes
 - Without a good first move, PVS loses efficiency (first move may not be best)
@@ -3102,7 +3103,7 @@ int TB_PROBE_DEPTH = 1;
 int TB_PROBE_DEPTH = 4;  // Only probe when saving 4+ plies
 ```
 
-**Expected impact:** 
+**Expected impact:**
 - Fewer probes → less overhead
 - TB cutoffs at depth 4+ still save significant work
 - Shallow probes (depth 1-3) rarely justify the overhead
@@ -3236,10 +3237,10 @@ This is complex to implement but could help in long forcing sequences.
 
 ---
 
-**Changes Made:** 
+**Changes Made:**
 1. Changed `TB_PROBE_DEPTH` default from 1 to 4 (SearchConfigData.h, search.yaml)
 
-**<span style="background-color: yellow;">TODO:</span>** 
+**<span style="background-color: yellow;">TODO:</span>**
 1. ✅ ~~Test with `TB_PROBE_DEPTH = 4` - measure NPS impact~~ Changed default
 2. Test with `USE_TB_PROBE_PV = false` - measure overhead reduction
 3. Create endgame-focused test positions to measure TB benefit accurately
@@ -3307,7 +3308,7 @@ if (USE_TB_PROBE_SEARCH && ... && popcount() <= LIMIT && castling == 0)
 // NEW ORDER (cheap checks first, popcount last):
 if (USE_TB_PROBE_SEARCH
     && castling == NO_CASTLING    // CHEAP: Most positions have castling
-    && depth >= TB_PROBE_DEPTH    // CHEAP: Fails at shallow depths  
+    && depth >= TB_PROBE_DEPTH    // CHEAP: Fails at shallow depths
     && syzygy_tb && isAvailable() // CHEAP: Pointer checks
     && (USE_TB_PROBE_PV || nodeType != PvNode)
     && popcount() <= TB_PROBE_LIMIT)  // EXPENSIVE: Last!
@@ -3460,6 +3461,155 @@ For reference - these were found and fixed before this review:
 | 2026-02-22 | 6       | Implemented TB cache pre-warming (prewarmCache method)         |
 | 2026-02-22 | 6       | Added 5 unit tests for prewarmCache in TablebaseTest.cpp       |
 | 2026-02-22 | 6       | Final: DEPTH=1 (SF default), cache prewarm, accept ~5% cost ✅  |
+| 2026-02-23 | 7       | Reviewed Feature #24: Time Management ✅ (comprehensive)        |
+| 2026-02-23 | 7       | Found bug: Unbounded time extensions in fail-low cascades      |
+| 2026-02-23 | 7       | Fixed: Added MAX_EXTRA_TIME_FACTOR cap (default 2.0 = 3x max)  |
+| 2026-02-23 | 7       | Added unit test: SearchTest.extraTimeCap                       |
+| 2026-02-23 | 7       | **Review Complete: All 24 features reviewed** ✅                |
+
+---
+
+### Feature #24: Time Management
+**Date:** 2026-02-23
+**Status:** ✅ Fixed (1 bug found and corrected)
+
+**Implementation Location:**
+- `src/engine/Search.cpp` lines 2316-2420 (setupTimeControl)
+- `src/engine/Search.cpp` lines 2416-2443 (addExtraTime)
+- `src/engine/Search.cpp` lines 2463-2505 (computeComplexityFactor)
+- `src/engine/Search.cpp` lines 2303-2315 (isTimeAlmostUp)
+- `src/engine/Search.cpp` lines 541-600 (volatility + bestmove instability)
+- `src/engine/Search.cpp` lines 742-755 (aspiration fail-low extra time)
+- `src/engine/SearchLimits.h` (SearchLimits struct)
+- `src/config/SearchConfigData.h` lines 183-210 (time management config)
+
+**Theory Background:**
+- Time management allocates search time per move based on game state
+- Key factors: remaining time, increment, game phase, position complexity
+- Dynamic adjustments: extend time when position is unstable, reduce when confident
+- Must avoid flagging while maximizing search depth
+
+**Components Reviewed:**
+
+#### ✅ 1. Base Time Allocation (setupTimeControl) - CORRECT
+- Moves-left estimation using phase/material buckets ✅
+- Safety margins (10-20% reduction) ✅
+- Repetition risk adjustment ✅
+- Complexity factor scaling ✅
+
+#### ✅ 2. Complexity Factor - CORRECT
+- Single legal move optimization (factor = 0.1) ✅
+- Move count scaling around pivot (30 moves) ✅
+- Capture ratio adjustment ✅
+- In-check bonus (+10%) ✅
+- Clamping [0.85, 1.30] ✅
+
+#### ✅ 3. Timer Thread - CORRECT
+- Efficient sleep + busy-wait hybrid ✅
+- Respects dynamic extraTimeMs ✅
+- Stop flag coordination ✅
+
+#### ✅ 4. isTimeAlmostUp Guard - CORRECT
+- Dynamic threshold: max(5ms, 2% of budget) ✅
+- Ponder mode handling ✅
+
+#### ✅ 5. Dynamic Time Adjustments - MOSTLY CORRECT
+- Aspiration fail-low: +30% ✅
+- Volatility detection: +15% for large eval swings ✅
+- Best-move instability tracking ✅
+
+#### ⚠️ BUG FOUND: Unbounded Time Extension Accumulation
+
+**Problem:** In losing positions with repeated fail-lows (aspiration window), 
+each fail-low added +30% of base time with **no cap**. This caused runaway
+time usage:
+
+```
+Base time: 5.4s
+After depth 14: 41.3s (7.6x base)
+After depth 24: 73.7s (13.6x base)  
+After depth 33: 106.1s (19.6x base) ← still growing!
+```
+
+Each aspiration window expansion triggered `addExtraTime(1.3)`, and with
+3 fail-lows per depth × 20 depths = 60 extensions = ~97s extra on 5.4s base.
+
+**Root Cause:**
+```cpp
+void Search::addExtraTime(const double f) {
+  // No cap! Unbounded accumulation
+  extraTimeMs.fetch_add(deltaMs, ...);
+}
+```
+
+**Fix Applied:**
+```cpp
+void Search::addExtraTime(const double f) {
+  const auto maxExtraMs = timeLimit.count() * SearchConfig.MAX_EXTRA_TIME_FACTOR;
+  
+  // Cap extra time
+  if (currentExtra >= maxExtraMs) return;  // Already at cap
+  
+  auto newExtra = std::min(currentExtra + deltaMs, maxExtraMs);
+  extraTimeMs.store(newExtra, ...);
+}
+```
+
+**New Configuration:**
+- `MAX_EXTRA_TIME_FACTOR = 2.0` (default)
+- Max total budget = base × (1 + factor) = base × 3
+
+| Base Time | Max Extra | Max Total |
+|-----------|-----------|-----------|
+| 5.4s      | 10.8s     | **16.2s** |
+| 10s       | 20s       | **30s**   |
+| 1min      | 2min      | **3min**  |
+
+**Changes Made:**
+1. Added `MAX_EXTRA_TIME_FACTOR` to SearchConfigData.h (default: 2.0)
+2. Modified `addExtraTime()` in Search.cpp to respect cap
+3. Added config registry entry in ConfigRegistry.cpp
+4. Updated search.yaml with documentation
+5. Added unit test `SearchTest.extraTimeCap`
+6. Added FRIEND_TEST declaration in Search.h
+
+**Findings Summary:**
+1. ✅ Base time allocation is well-designed
+2. ✅ Complexity factor adjusts appropriately
+3. ✅ Timer thread is efficient and correct
+4. ✅ isTimeAlmostUp provides good soft guard
+5. ✅ **FIXED:** Extra time now capped at MAX_EXTRA_TIME_FACTOR × base
+6. ✅ All edge cases (short time, single move, ponder) handled
+
+---
+
+## Review Complete
+
+**All 24 features have been reviewed.**
+
+| Category              | Features | Status           |
+|-----------------------|----------|------------------|
+| Core Algorithm        | 3        | ✅ All Correct    |
+| Infrastructure        | 4        | ✅ All Correct    |
+| Move Ordering         | 4        | ✅ All Correct    |
+| Simple Pruning        | 4        | ✅ 2 Fixed        |
+| Advanced Pruning      | 3        | ✅ 1 Enhanced     |
+| Extensions            | 3        | ✅ 2 Enhanced     |
+| Search Enhancements   | 2        | ✅ 2 Enhanced     |
+| Control               | 1        | ✅ 1 Fixed        |
+| **Total**             | **24**   | **✅ Complete**   |
+
+**Key Fixes Applied:**
+1. RFP (#14): Added mate score guard, fixed improving direction
+2. FP (#15): Fixed improving direction  
+3. LMR (#18): Moved outside pruning block, added reduction adjustments
+4. Check Extension (#19): Added depth guard + SEE filter
+5. Threat Extension (#21): Added configurable mate depth threshold
+6. IIR (#22): Replaced obsolete IID with IIR (-36% nodes)
+7. Tablebase (#23): Optimized guard ordering, added cache pre-warming
+8. **Time Management (#24): Added MAX_EXTRA_TIME_FACTOR cap**
+
+**Final Result:** +87 ELO vs v1.3 (208 games, 62.3% score)
 
 ---
 
@@ -3534,6 +3684,7 @@ To test a specific feature toggle (e.g., NMP improving direction):
 | 2026-02-22 | ThreatExt depth    | ✅ Pass  | Depth 4 optimal: fastest time, 6x more ext vs d3  |
 | 2026-02-22 | IIR vs IID d10     | ✅ Pass  | IIR All Nodes: -36% nodes (29.5M vs 46M)          |
 | 2026-02-22 | IID triggers d10   | ⚠️ Info | Only 2 triggers in 30 positions (PV-only useless) |
+| 2026-02-23 | Time Mgmt Cap      | ✅ Pass  | MAX_EXTRA_TIME_FACTOR=2.0 caps at 3x total        |
 
 ### Regression Checklist
 

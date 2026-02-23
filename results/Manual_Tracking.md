@@ -328,6 +328,14 @@ Opponent                    Games     Score       W/D/L           ELO         vs
 --------------------------------------------------------------------------------
 FrankyCPP v1.3              208       62.3%       95/69/44        +87         [baseline]
 ================================================================================
+
+Search Feature Correctness Review Summary (v1.4):
+- All 24 search features reviewed for correctness
+- Key fixes: RFP/FP improving logic, LMR scope expansion, IIR replacement for IID
+- Enhancements: Check extension SEE filter, Threat extension configurable depth
+- Time Management fix: Added MAX_EXTRA_TIME_FACTOR cap (2.0) to prevent unbounded extensions
+- Result: +87 ELO vs v1.3 (208 games, 62.3% score)
+- Review document: docs/specs/PLAN_Search_Correctness_Review.md
 ```
 
 ---

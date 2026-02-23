@@ -2416,12 +2416,31 @@ milliseconds Search::setupTimeControl(const Position& p, const SearchLimits& lim
 void Search::addExtraTime(const double f) {
   if (searchLimits.timeControl && !searchLimits.moveTime.count()) {
     const auto deltaMs = std::llround(static_cast<long double>(timeLimit.count()) * (static_cast<long double>(f) - 1.0L));
-    (void) extraTimeMs.fetch_add(deltaMs, std::memory_order_relaxed);
-    LOG__DEBUG(Logger::get().SEARCH_LOG, "Time adjustment: {} -> total budget {} (base {} + extra {})",
+    const auto currentExtra = extraTimeMs.load(std::memory_order_relaxed);
+    const auto maxExtraMs = std::llround(static_cast<long double>(timeLimit.count()) * SearchConfig.MAX_EXTRA_TIME_FACTOR);
+
+    // Cap extra time to MAX_EXTRA_TIME_FACTOR * base time
+    if (currentExtra >= maxExtraMs) {
+      LOG__DEBUG(Logger::get().SEARCH_LOG, "Time adjustment: {} ignored - already at max extra time {} (cap {})",
+                 str(milliseconds(deltaMs)),
+                 str(milliseconds(currentExtra)),
+                 str(milliseconds(maxExtraMs)));
+      return;// Already at cap
+    }
+
+    // Apply delta but don't exceed cap
+    auto newExtra = currentExtra + deltaMs;
+    if (newExtra > maxExtraMs) {
+      newExtra = maxExtraMs;
+    }
+    extraTimeMs.store(newExtra, std::memory_order_relaxed);
+
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Time adjustment: {} -> total budget {} (base {} + extra {}, cap {})",
                str(milliseconds(deltaMs)),
-               str(timeLimit + milliseconds(extraTimeMs.load(std::memory_order_relaxed))),
+               str(timeLimit + milliseconds(newExtra)),
                str(timeLimit),
-               str(milliseconds(extraTimeMs.load(std::memory_order_relaxed))));
+               str(milliseconds(newExtra)),
+               str(milliseconds(maxExtraMs)));
   }
 }
 

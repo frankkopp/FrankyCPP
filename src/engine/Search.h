@@ -479,6 +479,7 @@ private:
   /// @param f  Factor: 1.0 = no change, 0.9 = -10%, 1.1 = +10%
   void addExtraTime(double f);
   FRIEND_TEST(SearchTest, extraTime);
+  FRIEND_TEST(SearchTest, extraTimeCap);
 
   /// Checks if time is almost exhausted (soft guard for re-searches).
   /// @return True if remaining time is below safety margin
