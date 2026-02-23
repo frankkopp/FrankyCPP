@@ -424,7 +424,7 @@ namespace tablebase {
     // These trigger loading of the most frequently accessed TB files.
     // Each position is chosen to access a different TB file.
     // clang-format off
-    static constexpr std::array warmupFens = {
+    static constexpr std::array<const char*, 16> warmupFens = {
       // 3-piece endgames
       "8/8/8/4k3/8/8/8/4K2R w - - 0 1",    // KRvK  - most common
       "8/8/8/4k3/8/8/8/4K2Q w - - 0 1",    // KQvK
@@ -446,7 +446,7 @@ namespace tablebase {
       "8/8/4k3/8/8/8/3PPP2/4K3 w - - 0 1", // KPPPvK
       "8/8/4k3/3p4/8/8/3PP3/4K3 w - - 0 1", // KPPvKP
       "8/8/4k3/8/8/5N2/3P4/2B1K3 w - - 0 1", // KBNPvK
-      "8/8/4k3/8/8/4R3/3P4/4K3 w - - 0 1", // KRPvK
+      "8/8/5k2/8/8/4R3/3P4/4K3 w - - 0 1", // KRPvK
       "8/8/4k3/4r3/8/8/3P4/4K2R w - - 0 1", // KRPvKR - rook endgames
     };
     // clang-format on
@@ -467,8 +467,18 @@ namespace tablebase {
         continue;
       }
 
+      // Verify position is probeable (additional safety check)
+      if (!canProbe(pos)) {
+        continue;
+      }
+
       // Probe to force OS to load the TB file into page cache
-      (void) probeWDL(pos);
+      const TBResult result = probeWDL(pos);
+      if (result == TBResult::Failed) {
+        // TB file might be missing or corrupted - log but continue
+        LOG__WARN(Logger::get().TB_LOG, "Prewarm probe failed for {} pieces", pieces);
+        continue;
+      }
       probed++;
     }
 
