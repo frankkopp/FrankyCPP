@@ -18,16 +18,67 @@
 
 ### Phase Status Tracker
 
-| Phase                               | Status        | Notes                             |
-|-------------------------------------|---------------|-----------------------------------|
-| Phase 1: Infrastructure             | ⬜ Not Started | Create ConfigMode.h, CMake option |
-| Phase 2: SearchConfigData Migration | ⬜ Not Started | Add CONFIG_CONST to members       |
-| Phase 3: ConfigManager Conditional  | ⬜ Not Started | Return constexpr in production    |
-| Phase 4: ConfigRegistry Conditional | ⬜ Not Started | Hide non-essential in production  |
-| Phase 5: Statistics Macros          | ⬜ Not Started | STAT_INC etc.                     |
-| Phase 6: Verification               | ⬜ Not Started | Benchmark, test both builds       |
+| Phase                               | Status        | Notes                                 |
+|-------------------------------------|---------------|---------------------------------------|
+| Phase 1: Infrastructure             | ⬜ Not Started | ConfigMode.h, CMake option, presets   |
+| Phase 2: SearchConfigData Migration | ⬜ Not Started | CONFIG_CONST added to struct members  |
+| Phase 3: ConfigManager Conditional  | ⬜ Not Started | Conditional accessors                 |
+| Phase 4: ConfigRegistry Conditional | ⬜ Not Started | essentialSetter vs frozenSetter       |
+| Phase 5: Statistics Macros          | ⬜ Not Started | STAT_INC etc.                         |
+| Phase 6: Verification               | ⬜ Not Started | Benchmark, test both builds           |
 
 **Status Legend:** ⬜ Not Started | 🔄 In Progress | ✅ Complete | ❌ Blocked
+
+---
+
+## Requirements Summary
+
+### Goal
+Provide a compile-time mechanism to strip non-essential configuration options and statistics from production builds, yielding smaller binaries and faster execution while maintaining full functionality in development builds.
+
+### Core Requirements
+
+**1. Compile-Time Build Mode Flag**
+- A single CMake flag (`FRANKYCPP_PRODUCTION`) controls the build mode
+- Development builds (default): Full functionality, all configs mutable, all stats collected
+- Production builds: Only essential configs/stats remain, non-essential code completely eliminated by compiler
+
+**2. Essential vs Non-Essential Classification**
+
+| Category    | Essential                                                                        | Non-Essential                                                                       |
+|-------------|----------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
+| **Configs** | Must be mutable at runtime (TT size, book path, pondering, tablebase path, etc.) | Tuning/debugging parameters (LMR coefficients, pruning thresholds, feature toggles) |
+| **Stats**   | Required for UCI output (nodes, depth, seldepth, NPS, time, pv, score)           | Detailed debugging stats (beta cut distribution, TT hit rates, extension counts)    |
+
+**3. Production Build Behavior**
+
+- **Non-essential configs:**
+  - Code paths using them are eliminated by compiler (dead code elimination via `constexpr`)
+  - UCI: Non-essential options are **not registered** (invisible to GUIs)
+  - YAML: Non-essential settings are **ignored** with a single summary log message on startup (e.g., "Production build: ignoring N non-essential config options from YAML")
+  - `--show-config`: Non-essential configs shown as "frozen" or "n/a"
+
+- **Non-essential stats:**
+  - Increment/update operations compile to no-ops
+  - Output functions (`str()`, `operator<<`) omit non-essential fields entirely
+
+**4. Design Principles**
+
+- **Simplicity:** Adding a new config requires changes in at most 2 places (struct member + registry entry)
+- **Low redundancy:** Default values defined once in the struct, not duplicated
+- **Easy reclassification:** Moving a config between essential/non-essential should require only:
+  - Changing the macro prefix (`CONFIG_ESSENTIAL` ↔ `CONFIG_CONST`)
+  - Moving the registry entry between `#ifdef` blocks (or changing setter type)
+- **Easy maintenance:** Clear visual grouping of essential vs non-essential in struct
+
+### Essential Stats (for UCI `info` output)
+- `nodesVisited` — nodes searched
+- `currentSearchDepth` / `currentExtraSearchDepth` — depth/seldepth
+- Time tracking — for NPS calculation
+- `currentBestRootMove` / `currentBestRootMoveValue` — bestmove/score
+- `currentVariation` — principal variation (pv)
+
+*(This list can be adjusted as needed)*
 
 ---
 
@@ -562,8 +613,13 @@ For statistics, we still need macros because we want to **completely eliminate**
 - [ ] Add `#include "config/ConfigMode.h"` to SearchConfigData.h
 - [ ] Add `CONFIG_CONST` prefix to all non-essential members
 - [ ] Add `CONFIG_ESSENTIAL` prefix to essential members (TT_SIZE, paths, etc.)
+- [ ] Add `#include "config/ConfigMode.h"` to EvalConfigData.h
+- [ ] Add `CONFIG_CONST`/`CONFIG_ESSENTIAL` to EvalConfigData members
 - [ ] Verify development build compiles and works as before
-- [ ] Verify production build compiles (members become constexpr)
+- [ ] ~~Verify production build compiles~~ (Expected to fail until Phase 3)
+
+**Note:** Production build will NOT compile yet because ConfigManager still returns
+mutable references. This is expected - Phase 3 fixes the ConfigManager.
 
 **Example:**
 ```cpp
@@ -574,7 +630,7 @@ bool USE_LMR = true;
 CONFIG_CONST bool USE_LMR = true;
 ```
 
-**Acceptance:** Both builds compile, all tests pass in development
+**Acceptance:** Development build compiles, all tests pass
 
 ---
 
@@ -582,28 +638,42 @@ CONFIG_CONST bool USE_LMR = true;
 
 **Goal:** In production, return constexpr struct; in development, return mutable reference.
 
+- [ ] Add `#include "config/ConfigMode.h"` to ConfigManager.h
 - [ ] Add `#ifdef FRANKYCPP_PRODUCTION` block to ConfigManager
 - [ ] Production path: `static constexpr SearchConfigData search() { return {}; }`
-- [ ] Development path: Keep existing `SearchConfigData& search()` 
-- [ ] Handle essential configs (always mutable) - keep in separate member or same struct
+- [ ] Development path: Keep existing `const SearchConfigData& search()`
+- [ ] Make `applyOverrides()` conditional (dev only)
+- [ ] Make `CONFIG_OVERRIDE*` macros conditional (dev only)
+- [ ] Verify development build still works
+- [ ] ~~Verify production build works~~ (Expected to fail until Phase 4)
 
-**Acceptance:** Both builds work correctly
+**Note:** Production build will NOT compile yet because ConfigRegistry setters try
+to modify constexpr members. Phase 4 will make those setters conditional.
+
+**Acceptance:** Development build works correctly
 
 ---
 
 ### Phase 4: ConfigRegistry Conditional (Low Risk)
 
-**Goal:** Non-essential configs invisible in production UCI/YAML.
+**Goal:** Non-essential config setters are no-ops in production.
 
-- [ ] Add `defaultFrom()` helper to derive defaults from struct
-- [ ] Wrap non-essential config registrations in `#ifndef FRANKYCPP_PRODUCTION`
-- [ ] Essential configs always registered (Hash, SyzygyPath, etc.)
+- [ ] Add `#include "config/ConfigMode.h"` to ConfigRegistry.cpp
+- [ ] Create `essentialSetter` and `frozenSetter` helpers for Search configs
+- [ ] Create `essentialEvalSetter` and `frozenEvalSetter` helpers for Eval configs
+- [ ] In production: `frozenSetter` is a no-op lambda
+- [ ] In development: `frozenSetter` works same as `essentialSetter`
+- [ ] Update essential configs to use `essentialSetter`:
+    - Search: CONFIG_SOURCE, MOVE_OVERHEAD_MS, USE_BOOK, BOOK_PATH, BOOK_TYPE, USE_PONDER, TT_SIZE_MB, TB_PATH
+    - Eval: EVAL_CONFIG_SOURCE, USE_PAWN_TT, PAWN_TT_SIZE_MB
+- [ ] All other configs use `frozenSetter` (aliased as `searchSetter`/`evalSetter` for minimal code change)
+- [ ] Verify development build still works
+- [ ] Verify production build compiles
 
-**Result:**
-- Development: ~50 UCI options, full YAML support
-- Production: ~8 UCI options (essentials only), minimal YAML
+**Note:** Approach chosen was no-op setters rather than removing registry entries.
+This preserves display/documentation while preventing runtime modification of frozen configs.
 
-**Acceptance:** UCI `uci` command shows only essentials in production
+**Acceptance:** Both builds compile and work correctly
 
 ---
 
@@ -638,16 +708,16 @@ CONFIG_CONST bool USE_LMR = true;
 
 ## Summary: What Changes Where
 
-| File | Change | Risk |
-|------|--------|------|
-| `ConfigMode.h` | **NEW** - defines CONFIG_CONST, STAT_* macros | Low |
-| `CMakeLists.txt` | Add FRANKYCPP_PRODUCTION option | Low |
-| `CMakePresets.json` | Add production presets | Low |
-| `SearchConfigData.h` | Add CONFIG_CONST prefix to members | Low |
-| `EvalConfigData.h` | Add CONFIG_CONST prefix to members | Low |
-| `ConfigManager.h/cpp` | Conditional return type | Medium |
-| `ConfigRegistry.cpp` | `#ifndef` around non-essentials | Low |
-| `Search.cpp` | `statistics.x++` → `STAT_INC(statistics.x)` | Low |
+| File                  | Change                                        | Risk   |
+|-----------------------|-----------------------------------------------|--------|
+| `ConfigMode.h`        | **NEW** - defines CONFIG_CONST, STAT_* macros | Low    |
+| `CMakeLists.txt`      | Add FRANKYCPP_PRODUCTION option               | Low    |
+| `CMakePresets.json`   | Add production presets                        | Low    |
+| `SearchConfigData.h`  | Add CONFIG_CONST prefix to members            | Low    |
+| `EvalConfigData.h`    | Add CONFIG_CONST prefix to members            | Low    |
+| `ConfigManager.h/cpp` | Conditional return type                       | Medium |
+| `ConfigRegistry.cpp`  | `#ifndef` around non-essentials               | Low    |
+| `Search.cpp`          | `statistics.x++` → `STAT_INC(statistics.x)`   | Low    |
 
 **Total:** ~8 files changed, most changes are mechanical/low-risk
 
@@ -670,33 +740,33 @@ CONFIG_CONST bool USE_LMR = true;
 ## Disadvantages / Tradeoffs
 
 1. **Two places for new config** - Still need struct member + registry entry
-   - Mitigated by `defaultFrom()` pattern (default only in struct)
-   
+    - Mitigated by `defaultFrom()` pattern (default only in struct)
+
 2. **Manual essential marking** - Must remember `CONFIG_ESSENTIAL` vs `CONFIG_CONST`
-   - Mitigated by clear grouping in struct
-   
+    - Mitigated by clear grouping in struct
+
 3. **Registry still exists in production** - Some code bloat
-   - Mitigated by `#ifdef` around non-essential registrations
-   
+    - Mitigated by `#ifdef` around non-essential registrations
+
 4. **Stats still need macros** - Can't use constexpr for side effects
-   - This is unavoidable with any approach
+    - This is unavoidable with any approach
 
 ---
 
 ## Open Questions
 
 1. **Naming:** `FRANKYCPP_PRODUCTION` vs `FRANKYCPP_RELEASE` vs `FRANKYCPP_TOURNAMENT`?
-   - Recommendation: `FRANKYCPP_PRODUCTION` (clear intent)
+    - Recommendation: `FRANKYCPP_PRODUCTION` (clear intent)
 
 2. **Essential config struct:** Separate struct or same struct with different macro?
-   - Recommendation: Same struct, `CONFIG_ESSENTIAL` macro (simpler)
+    - Recommendation: Same struct, `CONFIG_ESSENTIAL` macro (simpler)
 
 3. **constexpr arrays:** Do `std::array` members work with `constexpr`?
-   - Yes, `std::array` is fully constexpr in C++20
+    - Yes, `std::array` is fully constexpr in C++20
 
 4. **String members:** Can `std::string` be constexpr?
-   - In C++20 yes, but only for compile-time operations
-   - For paths (runtime strings), use `CONFIG_ESSENTIAL`
+    - In C++20 yes, but only for compile-time operations
+    - For paths (runtime strings), use `CONFIG_ESSENTIAL`
 
 ---
 
@@ -715,14 +785,14 @@ CONFIG_CONST bool USE_LMR = true;
 
 ### Why This Over X-Macros:
 
-| Aspect | X-Macro | Constexpr (This) |
-|--------|---------|------------------|
-| Complexity | High | **Low** |
-| Risk | High | **Low** |
-| Search.cpp changes | Required | **None** |
-| IDE support | Poor | **Good** |
-| Gradual migration | Hard | **Easy** |
-| Rollback | Hard | **Easy** |
+| Aspect             | X-Macro  | Constexpr (This) |
+|--------------------|----------|------------------|
+| Complexity         | High     | **Low**          |
+| Risk               | High     | **Low**          |
+| Search.cpp changes | Required | **None**         |
+| IDE support        | Poor     | **Good**         |
+| Gradual migration  | Hard     | **Easy**         |
+| Rollback           | Hard     | **Easy**         |
 
 ### Key Insight
 
