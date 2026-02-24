@@ -83,6 +83,30 @@ Provide a compile-time mechanism to strip non-essential configuration options an
 
 ---
 
+## Review Findings: Shortcomings and Implementation Risks
+
+1. **`ConfigManager` production sketch is internally inconsistent**  
+   The current snippet returns full `SearchConfigData`/`EvalConfigData` by value as `constexpr` while also introducing separately mutable `EssentialConfig`. This creates two sources of truth and an unclear read path for essential options.
+
+2. **`CONFIG_OVERRIDE` behavior is contradictory in this document**  
+   One section says non-essential overrides in production "silently compile but have no effect", another says they should fail to compile. This must be decided explicitly before implementation.
+
+3. **Default-value extraction (`defaultFrom`) is fragile with `CONFIG_CONST`**  
+   The pointer-based helper assumes instance members. If a setting is moved between essential/non-essential, this helper can break or require type-specific handling.
+
+4. **Risk level is likely underestimated**  
+   Classification mistakes (essential vs non-essential), registry gating, and test/CLI behavior changes can cause regressions in UCI compatibility and tuning workflows. This is closer to medium risk.
+
+5. **No explicit migration guardrails for accidental freezing**  
+   The plan lacks a concrete validation checklist that prevents accidentally freezing options that are still required at runtime (e.g., GUI-controlled tournament settings).
+
+6. **Tooling/test impact is broader than currently represented**  
+   Production-only and development-only behavior split needs a clear CI matrix and explicit pass/fail expectations per target; otherwise breakages may go unnoticed.
+
+**Recommendation:** Resolve the `ConfigManager`/`EssentialConfig` model first, define one authoritative `CONFIG_OVERRIDE` rule, and add a short "must-stay-mutable" allowlist before coding.
+
+---
+
 ## Overview
 
 This document describes the **recommended approach** for compile-time feature stripping. Instead of complex X-macro metaprogramming, we use conditional `static constexpr` via simple macros.
@@ -315,7 +339,7 @@ struct SearchConfigData {
 
 ### ConfigManager Changes
 
-# TODO: these do not make sense - making the whole struct constexpr defeats thE purposE of having the ESSENTIAL configs 
+⚠️ **Important:** The sketch below is conceptual and needs refinement. Returning a full config struct by value in production conflicts with the separate mutable `EssentialConfig` idea and should be resolved before implementation.
 
 ```cpp
 // src/config/ConfigManager.h
