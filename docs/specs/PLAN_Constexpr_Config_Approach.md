@@ -98,7 +98,7 @@ Provide a compile-time mechanism to strip non-essential configuration options an
 3. **Default-value extraction (`defaultFrom`) is fragile with `CONFIG_CONST`**  
    The pointer-based helper assumes instance members. If a setting is moved between essential/non-essential, this helper can break or require type-specific handling.
    
-   ✅ **Resolution:** Use direct value access instead of pointer-to-member. Since defaults are compile-time constants, just use the value directly: `defaultFrom(SearchConfigData::USE_LMR)` or inline the default.
+   ✅ **Resolution:** Use `SearchConfigData{}.MEMBER_NAME` uniformly for all members — both essential (instance members) and non-essential (`static constexpr` in production). C++ allows accessing static members via an instance, so this single pattern works in all builds without needing to know which macro prefix a member has. No pointer-to-member helper needed, no dual access patterns. Example in registry: `std::to_string(SearchConfigData{}.USE_LMR)`.
 
 4. **Risk level is likely underestimated**  
    Classification mistakes (essential vs non-essential), registry gating, and test/CLI behavior changes can cause regressions in UCI compatibility and tuning workflows. This is closer to medium risk.
@@ -108,14 +108,49 @@ Provide a compile-time mechanism to strip non-essential configuration options an
 5. **No explicit migration guardrails for accidental freezing**  
    The plan lacks a concrete validation checklist that prevents accidentally freezing options that are still required at runtime (e.g., GUI-controlled tournament settings).
    
-   ✅ **Resolution:** Add `static_assert` guards in production builds to ensure essential configs remain non-static (mutable). Compile fails if essential config is accidentally marked `CONFIG_CONST`.
+   ✅ **Resolution:** No additional guardrails needed. If an essential config is accidentally marked `CONFIG_CONST`, the existing registry setter (e.g. `s.TT_SIZE_MB = parseInt(v)`) will fail to compile in production — you cannot assign to a `static constexpr` member. The setter is already the guardrail. Adding `static_assert` would duplicate this protection at the cost of an extra maintenance point per essential config.
 
 6. **Tooling/test impact is broader than currently represented**  
    Production-only and development-only behavior split needs a clear CI matrix and explicit pass/fail expectations per target; otherwise breakages may go unnoticed.
    
-   ⏳ **Resolution:** Deferred to future task. Focus on local build first. CI matrix to be added after local implementation is verified working.
+   ⏳ **Resolution:** Deferred — out of scope for the current phase plan. Phase 7 covers local test guards (`#ifndef FRANKYCPP_PRODUCTION` wrapping). CI automation is a post-Phase-7 follow-up task.
 
 **Recommendation:** ~~Resolve the `ConfigManager`/`EssentialConfig` model first, define one authoritative `CONFIG_OVERRIDE` rule, and add a short "must-stay-mutable" allowlist before coding.~~ ✅ All resolved above.
+
+---
+
+## Review Findings: Consistency, Completeness, and Robustness
+
+### Consistency
+- ✅ The core model is consistent: `CONFIG_CONST` toggles `static constexpr` in production and instance members in development.
+- ✅ The single source of truth is preserved by keeping essential configs in the same struct.
+- ✅ **ConfigRegistry strategy decided:** Phase 4 uses **no-op setters (`frozenSetter`)** — non-essential entries are kept in the registry with full display/doc support, but the setter is a no-op in production. Non-essential entries are NOT removed. This preserves `--show-config` output across both builds.
+
+### Completeness
+- ✅ Covers configs, stats, registry behavior, CLI tools, tests, and build flag.
+- ✅ Default extraction is standardized: `SearchConfigData{}.MEMBER_NAME` works uniformly for both instance members (essential) and `static constexpr` members (non-essential) — C++ allows accessing static members via an instance.
+- ⏳ **YAML ignore logging:** Exact log location and message format TBD during Phase 4 implementation. Suggested: `spdlog::info` in `ConfigManager::loadFromYaml()`, e.g. `"Production build: ignoring {} non-essential config options from YAML"`.
+
+### Gaps and Risks
+- ✅ Mixing instance and static members in the same struct is valid C++. The project has no serialization/reflection code paths that would be affected.
+- ✅ `CONFIG_OVERRIDE` removal is intentional and covered: macros are not defined in production, so any usage of `CONFIG_OVERRIDE` on non-essential configs fails to compile. Dev-only tools are either unaffected (only use essential configs) or wrapped in `#ifndef FRANKYCPP_PRODUCTION` (Phase 7).
+- ✅ Accidental `CONFIG_CONST std::string` for a path/runtime value is self-guarding: the registry setter (`s.BOOK_PATH = v`) will fail to compile in production because you cannot assign to a `static constexpr` member. No separate `static_assert` needed — the setter is the guardrail.
+- ✅ Non-essential registry entries are kept (not removed) — `frozenSetter` approach. `--show-config` output is consistent across builds; frozen configs can be annotated as such.
+
+### Implementation Challenges
+- ✅ The `is_instance_member` / `static_assert` guard pattern is **not needed**. If an essential config is accidentally marked `CONFIG_CONST`, the registry setter that assigns to it (e.g. `s.TT_SIZE_MB = parseInt(v)`) will fail to compile in production — the assignment to a `static constexpr` member is already a hard compile error. Adding `static_assert` would only duplicate that protection at the cost of an extra maintenance point per essential config.
+- ⚠️ `SearchConfigData{}` default extraction assumes the struct remains an aggregate (no user-provided constructors). This is stable as long as the struct stays a plain data struct — which is the intent. Note: do not add constructors to these config structs.
+- ✅ Default values require no duplication: `SearchConfigData{}.MEMBER_NAME` reads the default directly from the struct definition. Registry entries reference the struct default; changing the struct default automatically updates the registry.
+
+### Standard vs Exotic
+- ✅ The conditional `static constexpr` pattern is standard and used in large C++ codebases (MSVC STL, Abseil, Godot).
+- ✅ The mixed static/instance struct pattern is less common but fully valid C++. The access syntax `instance.staticMember` is well-defined and handled correctly by all major compilers.
+
+### Robustness After Implementation
+- ✅ Strongly prevents runtime mutation in production: non-essential config setters are no-ops, `CONFIG_OVERRIDE` macros are undefined.
+- ✅ Dead code elimination is reliable: `static constexpr` values are inlined by all major compilers (GCC, Clang, MSVC).
+- ⚠️ Robustness depends on consistent registry gating (Phase 4) and test guards (Phase 7) — missing guards are the primary remaining risk.
+- ⏳ CLI and logging behavior differences in production should be user-documented after Phase 6 verification.
 
 ---
 
@@ -346,43 +381,10 @@ struct SearchConfigData {
     // ... more configs following same pattern ...
 };
 
-//=============================================================================
-// ESSENTIAL CONFIG GUARDRAILS
-//=============================================================================
-// These static_asserts ensure essential configs are never accidentally frozen.
-// If someone mistakenly uses CONFIG_CONST instead of CONFIG_ESSENTIAL,
-// the build will fail with a clear error message.
-//
-// Only needed in production builds (in development, all members are instance members)
-//=============================================================================
-
-#ifdef FRANKYCPP_PRODUCTION
-
-// Helper to check if a member is static (would indicate accidental freezing)
-template<typename T, typename M>
-constexpr bool is_instance_member(M T::*) { return true; }
-
-// Search essential configs - must remain mutable
-static_assert(is_instance_member(&SearchConfigData::TT_SIZE_MB),
-              "TT_SIZE_MB must be CONFIG_ESSENTIAL (Hash size must be configurable)");
-static_assert(is_instance_member(&SearchConfigData::MOVE_OVERHEAD_MS),
-              "MOVE_OVERHEAD_MS must be CONFIG_ESSENTIAL (Time control requires this)");
-static_assert(is_instance_member(&SearchConfigData::USE_PONDER),
-              "USE_PONDER must be CONFIG_ESSENTIAL (UCI Ponder option)");
-static_assert(is_instance_member(&SearchConfigData::BOOK_PATH),
-              "BOOK_PATH must be CONFIG_ESSENTIAL (Opening book path must be configurable)");
-static_assert(is_instance_member(&SearchConfigData::BOOK_TYPE),
-              "BOOK_TYPE must be CONFIG_ESSENTIAL (Opening book type must be configurable)");
-static_assert(is_instance_member(&SearchConfigData::TB_PATH),
-              "TB_PATH must be CONFIG_ESSENTIAL (SyzygyPath must be configurable)");
-
-// Eval essential configs - must remain mutable
-static_assert(is_instance_member(&EvalConfigData::USE_PAWN_TT),
-              "USE_PAWN_TT must be CONFIG_ESSENTIAL");
-static_assert(is_instance_member(&EvalConfigData::PAWN_TT_SIZE_MB),
-              "PAWN_TT_SIZE_MB must be CONFIG_ESSENTIAL");
-
-#endif // FRANKYCPP_PRODUCTION
+// NOTE: No static_assert guardrails needed.
+// If an essential config is accidentally marked CONFIG_CONST, the registry setter
+// (e.g. `s.TT_SIZE_MB = parseInt(v)`) will fail to compile in production because
+// you cannot assign to a static constexpr member. The setter IS the guardrail.
 
 #endif // FRANKYCPP_SEARCHCONFIGDATA_H
 ```
@@ -465,7 +467,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
         .description = "Transposition table size (MB)",
         .valueType = Int,
         .domain = Search,
-        .defaultValue = std::to_string(SearchConfigData{}.TT_SIZE_MB),  // Instance member
+        .defaultValue = std::to_string(SearchConfigData{}.TT_SIZE_MB),  // Works for both instance and static members
         .minValue = 1,
         .maxValue = 65536,
         .exposure = {.uci = true, .yaml = true, .display = true},
@@ -500,7 +502,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
         .description = "Enable Late Move Reductions",
         .valueType = Bool,
         .domain = Search,
-        .defaultValue = std::to_string(SearchConfigData{}.USE_LMR),  // Instance member in dev
+        .defaultValue = std::to_string(SearchConfigData{}.USE_LMR),  // Works for both instance and static members
         .exposure = {.uci = true, .yaml = true, .display = true},
         .getter = [](const auto& s, const auto&) { return std::to_string(s.USE_LMR); },
         .setter = [](auto& s, auto&, const std::string& v) { s.USE_LMR = parseBool(v); }
@@ -876,7 +878,7 @@ jobs:
 | **Rollback difficulty**          | High                        | Low                       |
 | **C++ requirement**              | N/A                         | Static for constexpr      |
 
-*Default duplication eliminated using `defaultFrom(&SearchConfigData::MEMBER)` pattern
+*Default duplication eliminated using `SearchConfigData{}.MEMBER_NAME` — uniform access pattern that works for both instance members (essential) and static constexpr members (non-essential)
 
 ---
 
@@ -919,10 +921,8 @@ jobs:
 - [ ] Add `#include "config/ConfigMode.h"` to SearchConfigData.h
 - [ ] Add `CONFIG_CONST` prefix to all non-essential members
 - [ ] Add `CONFIG_ESSENTIAL` prefix to essential members (TT_SIZE, paths, etc.)
-- [ ] Add static_assert guardrails for essential configs (see SearchConfigData example)
 - [ ] Add `#include "config/ConfigMode.h"` to EvalConfigData.h
 - [ ] Add `CONFIG_CONST`/`CONFIG_ESSENTIAL` to EvalConfigData members
-- [ ] Add static_assert guardrails for essential eval configs
 - [ ] Verify development build compiles and works as before
 - [ ] ~~Verify production build compiles~~ (Expected to fail until Phase 3)
 
@@ -1084,7 +1084,7 @@ This preserves display/documentation while preventing runtime modification of fr
 7. **Clear struct** - Can read SearchConfigData.h and understand all configs
 8. **Compiler does the work** - We just mark things `static constexpr`, optimizer handles the rest
 9. **Single source of truth** - Defaults in struct, accessed directly
-10. **Compile-time safety** - static_assert guards prevent accidental freezing of essential configs
+10. **Compile-time safety** - accidental `CONFIG_CONST` on an essential config causes a compile error in the registry setter (cannot assign to `static constexpr`)
 11. **Fail-fast on mistakes** - CONFIG_OVERRIDE on non-essential configs fails to compile in production
 
 ---
@@ -1096,7 +1096,7 @@ This preserves display/documentation while preventing runtime modification of fr
 
 2. **Manual essential marking** - Must remember `CONFIG_ESSENTIAL` vs `CONFIG_CONST`
     - Mitigated by clear grouping in struct
-    - Mitigated by static_assert guardrails catching mistakes
+    - Mitigated by registry setter compile error catching mistakes (no extra `static_assert` needed)
 
 3. **Registry still exists in production** - Some code bloat
     - Mitigated by `#ifdef` around non-essential registrations
@@ -1150,7 +1150,7 @@ This preserves display/documentation while preventing runtime modification of fr
 ### Key Insight
 
 The X-macro approach solves a problem we don't actually have. We wanted:
-1. Single source of truth for defaults → **Solved by `defaultFrom()`**
+1. Single source of truth for defaults → **Solved by `SearchConfigData{}.MEMBER_NAME`**
 2. Zero runtime overhead → **Solved by `static constexpr`**
 3. Hide configs in production → **Solved by `#ifndef`**
 
