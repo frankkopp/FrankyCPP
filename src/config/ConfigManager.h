@@ -30,12 +30,6 @@
 class ConfigManager {
   ConfigManager();
 
-  // Non-copyable, non-movable singleton
-  ConfigManager(const ConfigManager&)            = delete;
-  ConfigManager& operator=(const ConfigManager&) = delete;
-  ConfigManager(ConfigManager&&)                 = delete;
-  ConfigManager& operator=(ConfigManager&&)      = delete;
-
   // Hard-coded fallback values (constructed defaults). Only used if YAML is missing or invalid.
   SearchConfigData fallbackSearch_{};
   EvalConfigData fallbackEval_{};
@@ -54,6 +48,13 @@ class ConfigManager {
 
 public:
   static ConfigManager& instance();
+
+  // Non-copyable, non-movable singleton
+  ConfigManager(const ConfigManager&)            = delete;
+  ConfigManager& operator=(const ConfigManager&) = delete;
+  ConfigManager(ConfigManager&&)                 = delete;
+  ConfigManager& operator=(ConfigManager&&)      = delete;
+
 
   // Accessors (const refs) to current configuration
   const SearchConfigData& search() const noexcept { return currentSearch_; }

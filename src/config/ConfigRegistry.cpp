@@ -40,6 +40,10 @@ ConfigRegistry::ConfigRegistry() {
   // fprintln("Size of SearchConfigData: {}", sizeof(SearchConfigData));
   // fprintln("Size of EvalConfigData: {}", sizeof(EvalConfigData));
 
+  // In production builds, CONFIG_CONST members become static constexpr and do not
+  // contribute to sizeof(). The assertions below are only valid in development builds
+  // where all members are non-static instance members.
+#ifndef FRANKYCPP_PRODUCTION
 #ifdef _MSC_VER
 // Windows MSVC builds
 #ifdef _DEBUG
@@ -77,6 +81,7 @@ ConfigRegistry::ConfigRegistry() {
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #endif
 #endif
+#endif // FRANKYCPP_PRODUCTION
 
   initializeSearchDefinitions();
   initializeEvalDefinitions();

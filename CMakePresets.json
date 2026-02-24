@@ -144,7 +144,7 @@
     },
     {
       "name": "win-release-production",
-      "displayName": "Win Release Production",
+      "displayName": "Win Release (PROD)",
       "inherits": "release",
       "cacheVariables": {
         "FRANKYCPP_PRODUCTION": "ON"
@@ -223,7 +223,7 @@
     },
     {
       "name": "win-release-production",
-      "displayName": "Win Release Production",
+      "displayName": "Win Release (PROD)",
       "configurePreset": "win-release-production",
       "jobs": 30
     },
@@ -232,7 +232,9 @@
       "displayName": "WSL Release Production",
       "configurePreset": "wsl-release-production",
       "jobs": 30
-    },
+    }
+  ],
+  "testPresets": [
     {
       "name": "debug",
       "displayName": "Win Debug Tests",
