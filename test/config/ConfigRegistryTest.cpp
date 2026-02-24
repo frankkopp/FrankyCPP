@@ -18,6 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "config/ConfigRegistry.h"
+#include "config/ConfigMode.h"
 #include "config/EvalConfigData.h"
 #include "config/SearchConfigData.h"
 
@@ -175,8 +176,11 @@ TEST_F(ConfigRegistryTest, GetterReturnsCorrectValue) {
   ASSERT_NE(nmpDef, nullptr);
   EXPECT_EQ(nmpDef->getter(search, eval), "true");
 
+#ifndef FRANKYCPP_PRODUCTION
+  // In production, USE_NMP is static constexpr — cannot be assigned to.
   search.USE_NMP = false;
   EXPECT_EQ(nmpDef->getter(search, eval), "false");
+#endif
 }
 
 TEST_F(ConfigRegistryTest, SetterModifiesValue) {
@@ -200,8 +204,11 @@ TEST_F(ConfigRegistryTest, EvalGetterReturnsCorrectValue) {
   ASSERT_NE(tempoDef, nullptr);
   EXPECT_EQ(tempoDef->getter(search, eval), "34");
 
+#ifndef FRANKYCPP_PRODUCTION
+  // In production, TEMPO is static constexpr — cannot be assigned to.
   eval.TEMPO = 50;
   EXPECT_EQ(tempoDef->getter(search, eval), "50");
+#endif
 }
 
 TEST_F(ConfigRegistryTest, EvalSetterModifiesValue) {
@@ -213,8 +220,11 @@ TEST_F(ConfigRegistryTest, EvalSetterModifiesValue) {
 
   EXPECT_EQ(eval.LAZY_THRESHOLD, 700);  // default
 
+#ifndef FRANKYCPP_PRODUCTION
+  // In production, LAZY_THRESHOLD is static constexpr — setter is a no-op.
   lazyThreshDef->setter(search, eval, "500");
   EXPECT_EQ(eval.LAZY_THRESHOLD, 500);
+#endif
 }
 
 TEST_F(ConfigRegistryTest, ArrayGetterReturnsCorrectFormat) {
@@ -235,12 +245,18 @@ TEST_F(ConfigRegistryTest, ArraySetterParsesCorrectly) {
   const ConfigDef* rfpMarginDef = registry.find("RFP_MARGIN");
   ASSERT_NE(rfpMarginDef, nullptr);
 
+#ifndef FRANKYCPP_PRODUCTION
+  // In production, RFP_MARGIN is static constexpr — setter is a no-op.
   rfpMarginDef->setter(search, eval, "10,20,30,40");
 
   EXPECT_EQ(search.RFP_MARGIN[0], 10);
   EXPECT_EQ(search.RFP_MARGIN[1], 20);
   EXPECT_EQ(search.RFP_MARGIN[2], 30);
   EXPECT_EQ(search.RFP_MARGIN[3], 40);
+#else
+  // In production, just verify the setter exists and doesn't crash.
+  rfpMarginDef->setter(search, eval, "10,20,30,40");  // no-op
+#endif
 }
 
 //=============================================================================

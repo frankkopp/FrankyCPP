@@ -19,10 +19,12 @@
 
 #include "engine/Search.h"
 #include "Test_Utils.h"
+#include "common/Logging.h"
 #include "init.h"
 #include "types/types.h"
 
 #include "config/ConfigManager.h"
+#include "config/ConfigMode.h"
 #include <gtest/gtest.h>
 #include <iomanip>
 #include <sstream>
@@ -111,6 +113,8 @@ TEST_F(SearchTest, extraTime) {
   EXPECT_EQ(2000, s.extraTimeMs.load());
 }
 
+// In production, MAX_EXTRA_TIME_FACTOR is CONFIG_CONST (frozen) — cannot override.
+#ifndef FRANKYCPP_PRODUCTION
 TEST_F(SearchTest, extraTimeCap) {
   // Test that extra time is capped at MAX_EXTRA_TIME_FACTOR * base time
   CONFIG_OVERRIDE(s.MAX_EXTRA_TIME_FACTOR = 2.0;);// max 2x base = 20s extra on 10s base
@@ -144,6 +148,7 @@ TEST_F(SearchTest, extraTimeCap) {
   fprintln("Total budget: {}", str(totalBudget));
   EXPECT_EQ(30s, totalBudget);
 }
+#endif // FRANKYCPP_PRODUCTION
 
 TEST_F(SearchTest, startTimer) {
   Search s{};
@@ -352,6 +357,8 @@ TEST_F(SearchTest, mate4Search) {
   EXPECT_TRUE(s.getLastSearchResult().mateFound);
 }
 
+// In production, USE_ALPHABETA is CONFIG_CONST — cannot override.
+#ifndef FRANKYCPP_PRODUCTION
 TEST_F(SearchTest, mate5Search) {
   CONFIG_OVERRIDE(s.USE_BOOK = false;);
   CONFIG_OVERRIDE(s.USE_ALPHABETA = true;);
@@ -367,7 +374,10 @@ TEST_F(SearchTest, mate5Search) {
   EXPECT_EQ(VALUE_CHECKMATE - 9, s.getLastSearchResult().bestMoveValue);
   EXPECT_TRUE(s.getLastSearchResult().mateFound);
 }
+#endif // FRANKYCPP_PRODUCTION
 
+// In production, USE_ALPHABETA/USE_PVS/USE_TT/USE_QUIESCENCE/USE_QS_SEE are CONFIG_CONST.
+#ifndef FRANKYCPP_PRODUCTION
 TEST_F(SearchTest, quiescenceTest) {
 
   Search search;
@@ -405,6 +415,7 @@ TEST_F(SearchTest, quiescenceTest) {
   ASSERT_GT(nodes2, nodes1);
   ASSERT_GT(extra2, extra1);
 }
+#endif // FRANKYCPP_PRODUCTION
 
 TEST_F(SearchTest, movesLeftBucketsOpeningVsQueenlessVsLowMaterial) {
   // Same remaining time setup for all scenarios
@@ -503,6 +514,8 @@ TEST_F(SearchTest, singleMoveComplexRoot) {
   EXPECT_EQ(Move(SQ_E1, SQ_F2), result.bestMove);
 }
 
+// In production, LMR_USE_LOG_FORMULA and LMR_LOG_BASE_DIV are CONFIG_CONST — cannot override.
+#ifndef FRANKYCPP_PRODUCTION
 // New test: verify and pretty-print the LMR reduction table
 TEST_F(SearchTest, lmrReductionTableTest) {
   // Access the private static table via FRIEND_TEST
@@ -587,7 +600,10 @@ TEST_F(SearchTest, lmrReductionTablePrint) {
   }
   LOG__INFO(Logger::get().TEST_LOG, "{}", oss.str());
 }
+#endif // FRANKYCPP_PRODUCTION
 
+// In production, USE_SINGULAR_EXT and related configs are CONFIG_CONST — cannot override.
+#ifndef FRANKYCPP_PRODUCTION
 TEST_F(SearchTest, singularExtension) {
   // Test that singular extensions work correctly
   // Use a complex middlegame position where singular extensions can trigger
@@ -645,7 +661,11 @@ TEST_F(SearchTest, singularExtensionDisabled) {
   EXPECT_EQ(stats.singularSearches, 0) << "Expected no singular searches when disabled";
   EXPECT_EQ(stats.singularExtension, 0) << "Expected no singular extensions when disabled";
 }
+#endif // FRANKYCPP_PRODUCTION
 
+// In production, CONFIG_CONST search/eval configs cannot be overridden at runtime.
+// These debug/diagnostic tests are development-only.
+#ifndef FRANKYCPP_PRODUCTION
 TEST_F(SearchTest, 10secondSearchNodesCount) {
   if (isBulkRun()) {
     GTEST_SKIP() << "Skipping debug test in bulk run to save time";
@@ -785,3 +805,5 @@ TEST_F(SearchTest, newGameResetsDeterministic) {
     }
   }
 }
+
+#endif // FRANKYCPP_PRODUCTION

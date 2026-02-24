@@ -43,6 +43,9 @@ int main(int argc, char* argv[]) {
 
   // Version comes from CMAKE template version.h.in
   std::string appName = "FrankyCPP";
+#ifdef FRANKYCPP_PRODUCTION
+  appName.append( " (stripped)" );
+#endif
   appName
     .append(" v")
     .append(std::to_string(FrankyCPP_VERSION_MAJOR))

@@ -42,22 +42,28 @@ namespace {
   TEST(SearchConfigDataTests, PartialYamlOverridesAndArrays) {
     YAML::Node n;
     n["MOVE_OVERHEAD_MS"] = 25;
-    n["USE_TT"]           = false;
     n["TT_SIZE_MB"]       = 128;
+
+#ifndef FRANKYCPP_PRODUCTION
+    n["USE_TT"]           = false;
     YAML::Node rfp;
     rfp.push_back(1);
     rfp.push_back(2);
     n["RFP_MARGIN"] = rfp;
+#endif
 
-    auto c = n.as<SearchConfigData>();
+    const auto c = n.as<SearchConfigData>();
     EXPECT_EQ(c.MOVE_OVERHEAD_MS, 25);
-    EXPECT_FALSE(c.USE_TT);
     EXPECT_EQ(c.TT_SIZE_MB, 128);
+
+#ifndef FRANKYCPP_PRODUCTION
+    EXPECT_FALSE(c.USE_TT);
     // array shorter than default -> first two overridden, rest unchanged
     EXPECT_EQ(c.RFP_MARGIN[0], 1);
     EXPECT_EQ(c.RFP_MARGIN[1], 2);
     EXPECT_EQ(c.RFP_MARGIN[2], 400);
     EXPECT_EQ(c.RFP_MARGIN[3], 800);
+#endif
   }
 
   // Sanity-checks that str() returns a human-readable string containing key fields.
@@ -79,6 +85,9 @@ namespace {
 
   // Ensures partial YAML overrides work and unknown keys do not cause failures (lenient parsing).
   TEST(EvalConfigDataTests, PartialYamlOverridesAndUnknownKeysIgnored) {
+#ifdef FRANKYCPP_PRODUCTION
+    GTEST_SKIP() << "Skipping malformed YAML test in production since CONFIG_CONST members cannot be overridden at runtime for verification.";
+#endif
     YAML::Node n;
     n["TEMPO"]       = 50;
     n["FOO_UNKNOWN"] = 123;

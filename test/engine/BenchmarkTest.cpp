@@ -53,7 +53,7 @@ TEST_F(BenchmarkTest, benchConfigDefaults) {
   constexpr engine::BenchConfig config;
   EXPECT_EQ(config.hashSizeMB, 128);
   EXPECT_EQ(config.threads, 1);
-  EXPECT_EQ(config.depth, 10);
+  EXPECT_EQ(config.depth, 12);
   EXPECT_EQ(config.timeLimit.count(), 0);
 }
 

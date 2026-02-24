@@ -18,6 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "config/ConfigManager.h"
+#include "config/ConfigMode.h"
 #include "tablebase/Tablebase.h"
 #include "Test_Utils.h"
 #include "chesscore/MoveGenerator.h"
@@ -1384,12 +1385,11 @@ TEST_F(SearchTablebaseTest, RootProbeReturnsTablebaseMove) {
 
   // Configure tablebase path with immediate mode (default)
   const std::string tbPath = findTablebasePath();
-  CONFIG_OVERRIDE(
-    s.TB_PATH           = tbPath;
-    s.USE_TB_PROBE_ROOT = true;
-    s.TB_ROOT_IMMEDIATE = true; // Return TB move immediately
-    s.USE_BOOK          = false;// Disable book to ensure TB is used
-  );
+  CONFIG_OVERRIDE(s.TB_PATH = tbPath; s.USE_BOOK = false;);
+#ifndef FRANKYCPP_PRODUCTION
+  // CONFIG_CONST in production — frozen at defaults (USE_TB_PROBE_ROOT=true, TB_ROOT_IMMEDIATE=false)
+  CONFIG_OVERRIDE(s.USE_TB_PROBE_ROOT = true; s.TB_ROOT_IMMEDIATE = true;);
+#endif
 
   // KRK position - definitely in 3-piece tablebases
   const Position pos("8/8/8/4k3/8/8/1R6/4K3 w - - 0 1");
@@ -1420,6 +1420,8 @@ TEST_F(SearchTablebaseTest, RootProbeReturnsTablebaseMove) {
 }
 
 // Test that TB probing is disabled when USE_TB_PROBE_ROOT=false
+// In production, USE_TB_PROBE_ROOT is CONFIG_CONST frozen at true — cannot disable at runtime.
+#ifndef FRANKYCPP_PRODUCTION
 TEST_F(SearchTablebaseTest, RootProbeDisabledWhenConfigured) {
   SKIP_IF_NO_TABLEBASES(0);
 
@@ -1448,6 +1450,7 @@ TEST_F(SearchTablebaseTest, RootProbeDisabledWhenConfigured) {
   EXPECT_FALSE(result.tbHit) << "TB should not be used when USE_TB_PROBE_ROOT=false";
   EXPECT_NE(MOVE_NONE, result.bestMove) << "Search should still find a move";
 }
+#endif // FRANKYCPP_PRODUCTION
 
 // Test that positions with too many pieces don't trigger TB
 TEST_F(SearchTablebaseTest, RootProbeSkippedForLargePositions) {
@@ -1455,10 +1458,10 @@ TEST_F(SearchTablebaseTest, RootProbeSkippedForLargePositions) {
 
   // Configure tablebase
   const std::string tbPath = findTablebasePath();
-  CONFIG_OVERRIDE(
-    s.TB_PATH           = tbPath;
-    s.USE_TB_PROBE_ROOT = true;
-    s.USE_BOOK          = false;);
+  CONFIG_OVERRIDE(s.TB_PATH = tbPath; s.USE_BOOK = false;);
+#ifndef FRANKYCPP_PRODUCTION
+  CONFIG_OVERRIDE(s.USE_TB_PROBE_ROOT = true;);// CONFIG_CONST in production — frozen at true
+#endif
 
   // Starting position - 32 pieces, way more than any TB
   const Position pos;
@@ -1485,10 +1488,10 @@ TEST_F(SearchTablebaseTest, RootProbeSkippedWithCastlingRights) {
 
   // Configure tablebase
   const std::string tbPath = findTablebasePath();
-  CONFIG_OVERRIDE(
-    s.TB_PATH           = tbPath;
-    s.USE_TB_PROBE_ROOT = true;
-    s.USE_BOOK          = false;);
+  CONFIG_OVERRIDE(s.TB_PATH = tbPath; s.USE_BOOK = false;);
+#ifndef FRANKYCPP_PRODUCTION
+  CONFIG_OVERRIDE(s.USE_TB_PROBE_ROOT = true;);// CONFIG_CONST in production — frozen at true
+#endif
 
   // 6-piece position but WITH castling rights (TBs don't cover castling)
   const Position pos("4k3/8/8/8/8/8/8/R3K2R w KQ - 0 1");
@@ -1515,11 +1518,11 @@ TEST_F(SearchTablebaseTest, RootProbeNonImmediateSearchesDespiteTBHit) {
 
   // Configure tablebase with non-immediate mode
   const std::string tbPath = findTablebasePath();
-  CONFIG_OVERRIDE(
-    s.TB_PATH           = tbPath;
-    s.USE_TB_PROBE_ROOT = true;
-    s.TB_ROOT_IMMEDIATE = false;// Don't return immediately - search for PV
-    s.USE_BOOK          = false;);
+  CONFIG_OVERRIDE(s.TB_PATH = tbPath; s.USE_BOOK = false;);
+#ifndef FRANKYCPP_PRODUCTION
+  // CONFIG_CONST in production — frozen at defaults (USE_TB_PROBE_ROOT=true, TB_ROOT_IMMEDIATE=false)
+  CONFIG_OVERRIDE(s.USE_TB_PROBE_ROOT = true; s.TB_ROOT_IMMEDIATE = false;);
+#endif
 
   // KRK position - definitely in 3-piece tablebases
   const Position pos("8/8/8/4k3/8/8/1R6/4K3 w - - 0 1");
@@ -1571,6 +1574,8 @@ TEST_F(SearchTablebaseTest, DTZBasedScoringPrefersShortWins) {
 //=============================================================================
 
 // Test USE_TB_PROBE_ROOT=false and USE_TB_PROBE_SEARCH=false disables all tablebase probing
+// In production, these configs are CONFIG_CONST frozen at true — cannot disable at runtime.
+#ifndef FRANKYCPP_PRODUCTION
 TEST_F(SearchTablebaseTest, DisableBothProbingDisablesAllTB) {
   SKIP_IF_NO_TABLEBASES(0);
 
@@ -1610,8 +1615,11 @@ TEST_F(SearchTablebaseTest, DisableBothProbingDisablesAllTB) {
   LOG__INFO(Logger::get().TEST_LOG, "TB probing disabled test: rootHits={} searchHits={} cutoffs={}",
             stats.tbRootHits, stats.tbSearchHits, stats.tbSearchCutoffs);
 }
+#endif // FRANKYCPP_PRODUCTION
 
 // Test TB_RULE50_THRESHOLD >= 100 effectively disables DTZ checks
+// In production, TB_RULE50_THRESHOLD is CONFIG_CONST — cannot be changed at runtime.
+#ifndef FRANKYCPP_PRODUCTION
 TEST_F(SearchTablebaseTest, Rule50ThresholdDisablesWhenHigh) {
   SKIP_IF_NO_TABLEBASES(0);
 
@@ -1651,20 +1659,28 @@ TEST_F(SearchTablebaseTest, Rule50ThresholdDisablesWhenHigh) {
   LOG__INFO(Logger::get().TEST_LOG, "Rule50 threshold=100 test: move={} value={}",
             result.bestMove.str(), result.bestMoveValue.str());
 }
+#endif // FRANKYCPP_PRODUCTION
 
 // Test that search TB probing produces cutoffs (statistics check)
 TEST_F(SearchTablebaseTest, SearchProbingProducesCutoffs) {
+#ifdef FRANKYCPP_PRODUCTION
+  GTEST_SKIP() << "Skipping malformed YAML test in production since CONFIG_CONST members cannot be overridden at runtime for verification.";
+#endif
+
   SKIP_IF_NO_TABLEBASES(0);
 
   const std::string tbPath = findTablebasePath();
+  CONFIG_OVERRIDE(s.TB_PATH = tbPath; s.USE_BOOK = false;);
+#ifndef FRANKYCPP_PRODUCTION // would not compile in production since these are CONFIG_CONST frozen at defaults (probing enabled)
+  // CONFIG_CONST in production — frozen at defaults
   CONFIG_OVERRIDE(
-    s.TB_PATH             = tbPath;
-    s.USE_TB_PROBE_ROOT   = true;// Disable root to test search probing
-    s.USE_TB_PROBE_SEARCH = true; // Enable search probing
-    s.TB_PROBE_DEPTH      = 1;    // Probe at depth >= 1
+    s.USE_TB_PROBE_ROOT   = true;
+    s.USE_TB_PROBE_SEARCH = true;
+    s.TB_PROBE_DEPTH      = 1;
     s.TB_PROBE_LIMIT      = 6;
     s.TB_RULE50_THRESHOLD = 80;
-    s.USE_BOOK            = false;);
+  );
+#endif
 
   // KRK position - simple 3-piece position
   const Position pos("8/8/8/4k3/8/8/1R6/4K3 w - - 0 1");
@@ -1691,6 +1707,8 @@ TEST_F(SearchTablebaseTest, SearchProbingProducesCutoffs) {
 }
 
 // Test TB_PROBE_DEPTH controls when probing happens
+// In production, TB_PROBE_DEPTH is CONFIG_CONST — cannot be changed at runtime.
+#ifndef FRANKYCPP_PRODUCTION
 TEST_F(SearchTablebaseTest, ProbeDepthControlsProbing) {
   SKIP_IF_NO_TABLEBASES(0);
 
@@ -1744,8 +1762,11 @@ TEST_F(SearchTablebaseTest, ProbeDepthControlsProbing) {
   EXPECT_GE(hitsDepth0, hitsDepth5)
     << "Lower TB_PROBE_DEPTH should result in >= TB hits";
 }
+#endif // FRANKYCPP_PRODUCTION
 
 // Test TB_PROBE_LIMIT controls piece count
+// In production, TB_PROBE_LIMIT is CONFIG_CONST — cannot be changed at runtime.
+#ifndef FRANKYCPP_PRODUCTION
 TEST_F(SearchTablebaseTest, ProbeLimitControlsPieceCount) {
   SKIP_IF_NO_TABLEBASES(0);
 
@@ -1784,6 +1805,7 @@ TEST_F(SearchTablebaseTest, ProbeLimitControlsPieceCount) {
   EXPECT_EQ(0ULL, stats.tbSearchHits)
     << "Should not probe positions exceeding TB_PROBE_LIMIT";
 }
+#endif // FRANKYCPP_PRODUCTION
 
 //=============================================================================
 // Tablebase Probing During Search (not at root)
@@ -1793,17 +1815,23 @@ TEST_F(SearchTablebaseTest, ProbeLimitControlsPieceCount) {
 // 7-piece position: After Rxd5, reaches 6-piece KRK position
 // White has decisive advantage - rook captures hanging pawn
 TEST_F(SearchTablebaseTest, SevenPieceTBProbeAfterCapture) {
+#ifdef FRANKYCPP_PRODUCTION
+  GTEST_SKIP() << "Skipping malformed YAML test in production since CONFIG_CONST members cannot be overridden at runtime for verification.";
+#endif
+
   SKIP_IF_NO_TABLEBASES(0);
 
   const std::string tbPath = findTablebasePath();
+  CONFIG_OVERRIDE(s.USE_BOOK = false; s.TB_PATH = tbPath;);
+#ifndef FRANKYCPP_PRODUCTION // would not compile in production since these are CONFIG_CONST frozen at defaults (probing enabled)
+  // CONFIG_CONST in production — frozen at defaults (probing enabled)
   CONFIG_OVERRIDE(
-    s.USE_BOOK            = false;
-    s.TB_PATH             = tbPath;
-    s.USE_TB_PROBE_ROOT   = true;// Enable root probing - but 7-piece won't trigger it
-    s.USE_TB_PROBE_SEARCH = true;// Enable search probing
-    s.TB_PROBE_DEPTH      = 1;   // Probe at depth >= 1 (realistic setting)
-    s.TB_PROBE_LIMIT      = 6;   // Probe up to 6-piece positions
+    s.USE_TB_PROBE_ROOT   = true;
+    s.USE_TB_PROBE_SEARCH = true;
+    s.TB_PROBE_DEPTH      = 1;
+    s.TB_PROBE_LIMIT      = 6;
   );
+#endif
 
   // 7 pieces: KR vs. KPP + extra pawn on d5 that can be captured
   // Position: White Ke1, Rb2; Black Ke5, Pd5, Pf7, Pg6
@@ -1839,16 +1867,23 @@ TEST_F(SearchTablebaseTest, SevenPieceTBProbeAfterCapture) {
 // 8-piece position: After exchanges, reaches 6-piece TB territory
 // Rook vs two pawns with possible captures leading to TB probe
 TEST_F(SearchTablebaseTest, EightPieceTBProbeAfterExchanges) {
+#ifdef FRANKYCPP_PRODUCTION
+  GTEST_SKIP() << "Skipping malformed YAML test in production since CONFIG_CONST members cannot be overridden at runtime for verification.";
+#endif
+
   SKIP_IF_NO_TABLEBASES(5);
 
   const std::string tbPath = findTablebasePath();
+  CONFIG_OVERRIDE(s.TB_PATH = tbPath; s.USE_BOOK = false;);
+#ifndef FRANKYCPP_PRODUCTION // would not compile in production since these are CONFIG_CONST frozen at defaults (probing enabled)
+  // CONFIG_CONST in production — frozen at defaults (probing enabled)
   CONFIG_OVERRIDE(
-    s.TB_PATH             = tbPath;
-    s.USE_TB_PROBE_ROOT   = true;// Enable root probing - but 8-piece won't trigger it
-    s.USE_TB_PROBE_SEARCH = true;// Enable search probing
-    s.TB_PROBE_DEPTH      = 1;   // Probe at depth >= 1 (realistic setting)
+    s.USE_TB_PROBE_ROOT   = true;
+    s.USE_TB_PROBE_SEARCH = true;
+    s.TB_PROBE_DEPTH      = 1;
     s.TB_PROBE_LIMIT      = 6;
-    s.USE_BOOK            = false;);
+  );
+#endif
 
   // 8 pieces: White Ke1, Ra1, Pa2, Pb2; Black Ke8, Rb8, Pa7, Ph7
   // Rook exchanges and pawn captures lead to TB positions
@@ -1881,16 +1916,23 @@ TEST_F(SearchTablebaseTest, EightPieceTBProbeAfterExchanges) {
 // 7-piece endgame: KQPKRP - Queen+Pawn vs Rook+Pawn
 // After captures, reaches 6-piece or smaller TB positions
 TEST_F(SearchTablebaseTest, QueenVsRookPawnTBProbe) {
+#ifdef FRANKYCPP_PRODUCTION
+  GTEST_SKIP() << "Skipping malformed YAML test in production since CONFIG_CONST members cannot be overridden at runtime for verification.";
+#endif
+
   SKIP_IF_NO_TABLEBASES(0);
 
   const std::string tbPath = findTablebasePath();
+  CONFIG_OVERRIDE(s.TB_PATH = tbPath; s.USE_BOOK = false;);
+#ifndef FRANKYCPP_PRODUCTION // would not compile in production since these are CONFIG_CONST frozen at defaults (probing enabled)
+  // CONFIG_CONST in production — frozen at defaults (probing enabled)
   CONFIG_OVERRIDE(
-    s.TB_PATH             = tbPath;
-    s.USE_TB_PROBE_ROOT   = true;// Enable root probing - but 7-piece won't trigger it
-    s.USE_TB_PROBE_SEARCH = true;// Enable search probing
-    s.TB_PROBE_DEPTH      = 1;   // Probe at depth >= 1 (realistic setting)
+    s.USE_TB_PROBE_ROOT   = true;
+    s.USE_TB_PROBE_SEARCH = true;
+    s.TB_PROBE_DEPTH      = 1;
     s.TB_PROBE_LIMIT      = 6;
-    s.USE_BOOK            = false;);
+  );
+#endif
 
   // 7 pieces: White Kh1, Qd4, Pg2; Black Kg8, Rf8, Pf2, Pg7
   // Queen can capture f2 pawn, reaching 6-piece position
@@ -1924,16 +1966,23 @@ TEST_F(SearchTablebaseTest, QueenVsRookPawnTBProbe) {
 // 7-piece tactical position: Forced sequence leads to TB position
 // White to play: After Bxf7+ Kxf7, Qxd8 reaching 5-piece KQKP
 TEST_F(SearchTablebaseTest, TacticalSequenceToTB) {
+#ifdef FRANKYCPP_PRODUCTION
+  GTEST_SKIP() << "Skipping malformed YAML test in production since CONFIG_CONST members cannot be overridden at runtime for verification.";
+#endif
+
   SKIP_IF_NO_TABLEBASES(0);
 
   const std::string tbPath = findTablebasePath();
+  CONFIG_OVERRIDE(s.TB_PATH = tbPath; s.USE_BOOK = false;);
+#ifndef FRANKYCPP_PRODUCTION // would not compile in production since these are CONFIG_CONST frozen at defaults (probing enabled)
+  // CONFIG_CONST in production — frozen at defaults (probing enabled)
   CONFIG_OVERRIDE(
-    s.TB_PATH             = tbPath;
-    s.USE_TB_PROBE_ROOT   = true;// Enable root probing - but 7-piece won't trigger it
-    s.USE_TB_PROBE_SEARCH = true;// Enable search probing
-    s.TB_PROBE_DEPTH      = 1;   // Probe at depth >= 1 (realistic setting)
+    s.USE_TB_PROBE_ROOT   = true;
+    s.USE_TB_PROBE_SEARCH = true;
+    s.TB_PROBE_DEPTH      = 1;
     s.TB_PROBE_LIMIT      = 6;
-    s.USE_BOOK            = false;);
+  );
+#endif
 
   // 7 pieces: White Ke1, Qe2, Bb5, Pg2; Black Kf8, Qd8, Pf7
   // Tactical line: Bxf7+ threats lead to exchanges
@@ -1967,16 +2016,23 @@ TEST_F(SearchTablebaseTest, TacticalSequenceToTB) {
 // 9-piece rook endgame: Multiple captures lead to TB
 // Common practical endgame type
 TEST_F(SearchTablebaseTest, NinePieceRookEndgameTBProbe) {
+#ifdef FRANKYCPP_PRODUCTION
+  GTEST_SKIP() << "Skipping malformed YAML test in production since CONFIG_CONST members cannot be overridden at runtime for verification.";
+#endif
+
   SKIP_IF_NO_TABLEBASES(6);
 
   const std::string tbPath = findTablebasePath();
+  CONFIG_OVERRIDE(s.TB_PATH = tbPath; s.USE_BOOK = false;);
+#ifndef FRANKYCPP_PRODUCTION // would not compile in production since these are CONFIG_CONST frozen at defaults (probing enabled)
+  // CONFIG_CONST in production — frozen at defaults (probing enabled)
   CONFIG_OVERRIDE(
-    s.TB_PATH             = tbPath;
-    s.USE_TB_PROBE_ROOT   = true;// Enable root probing - but 9-piece won't trigger it
-    s.USE_TB_PROBE_SEARCH = true;// Enable search probing
-    s.TB_PROBE_DEPTH      = 1;   // Probe at depth >= 1 (realistic setting)
+    s.USE_TB_PROBE_ROOT   = true;
+    s.USE_TB_PROBE_SEARCH = true;
+    s.TB_PROBE_DEPTH      = 1;
     s.TB_PROBE_LIMIT      = 6;
-    s.USE_BOOK            = false;);
+  );
+#endif
 
   // 9 pieces: White Kg1, Rb1, Pa2, Pc3; Black Kg7, Rd7, Pa6, Pc6, Ph6
   // Rook exchanges and pawn captures lead to simple TB positions
@@ -2010,16 +2066,23 @@ TEST_F(SearchTablebaseTest, NinePieceRookEndgameTBProbe) {
 // 7-piece position with immediate capture option
 // White Rxh7 immediately creates 6-piece KRK position (with pawns)
 TEST_F(SearchTablebaseTest, ImmediateCaptureToTB) {
+#ifdef FRANKYCPP_PRODUCTION
+  GTEST_SKIP() << "Skipping malformed YAML test in production since CONFIG_CONST members cannot be overridden at runtime for verification.";
+#endif
+
   SKIP_IF_NO_TABLEBASES(0);
 
   const std::string tbPath = findTablebasePath();
+  CONFIG_OVERRIDE(s.TB_PATH = tbPath; s.USE_BOOK = false;);
+#ifndef FRANKYCPP_PRODUCTION // would not compile in production since these are CONFIG_CONST frozen at defaults (probing enabled)
+  // CONFIG_CONST in production — frozen at defaults (probing enabled)
   CONFIG_OVERRIDE(
-    s.TB_PATH             = tbPath;
-    s.USE_TB_PROBE_ROOT   = true;// Enable root probing - but 7-piece won't trigger it
-    s.USE_TB_PROBE_SEARCH = true;// Enable search probing
-    s.TB_PROBE_DEPTH      = 1;   // Probe at depth >= 1 (realistic setting)
+    s.USE_TB_PROBE_ROOT   = true;
+    s.USE_TB_PROBE_SEARCH = true;
+    s.TB_PROBE_DEPTH      = 1;
     s.TB_PROBE_LIMIT      = 6;
-    s.USE_BOOK            = false;);
+  );
+#endif
 
   // 7 pieces: White Ke1, Rh1, Pg2; Black Ke8, Ph7, Pa7, Pb7
   // Rxh7 immediately reaches 6-piece KRKPPP

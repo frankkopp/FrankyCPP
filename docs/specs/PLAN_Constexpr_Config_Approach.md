@@ -18,15 +18,15 @@
 
 ### Phase Status Tracker
 
-| Phase                               | Status        | Notes                                                                                                                                                         |
-|-------------------------------------|---------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Phase 1: Infrastructure             | ✅ Complete    | ConfigMode.h, CMake option, presets                                                                                                                           |
-| Phase 2: SearchConfigData Migration | ✅ Complete    | CONFIG_CONST added to struct members                                                                                                                          |
-| Phase 3: ConfigManager Conditional  | ✅ Complete    | Conditional accessors                                                                                                                                         |
-| Phase 4: ConfigRegistry Conditional | ✅ Complete    | SEARCH/EVAL_CONFIG_SETTER macros; enginetest excluded from PROD                                                                                               |
-| Phase 5: Statistics Macros          | ✅ Complete    | STAT_INC/ESSENTIAL_STAT_INC applied to all stats in Search.cpp                                                                                                |
-| Phase 6: Verification               | ✅ Complete    | PROD: 3,201,934 NPS vs DEV: 3,125,677 NPS (+2.5%). Node counts identical (35,960,923) — search is deterministic. Earlier 45-node delta was UCI pipe artifact. |
-| Phase 7: CLI Tools & Unit Tests     | ⬜ Not Started | Production guards, test handling                                                                                                                              |
+| Phase                               | Status     | Notes                                                                                                                                                                                                                               |
+|-------------------------------------|------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Phase 1: Infrastructure             | ✅ Complete | ConfigMode.h, CMake option, presets                                                                                                                                                                                                 |
+| Phase 2: SearchConfigData Migration | ✅ Complete | CONFIG_CONST added to struct members                                                                                                                                                                                                |
+| Phase 3: ConfigManager Conditional  | ✅ Complete | Conditional accessors                                                                                                                                                                                                               |
+| Phase 4: ConfigRegistry Conditional | ✅ Complete | SEARCH/EVAL_CONFIG_SETTER macros; enginetest excluded from PROD                                                                                                                                                                     |
+| Phase 5: Statistics Macros          | ✅ Complete | STAT_INC/ESSENTIAL_STAT_INC applied to all stats in Search.cpp                                                                                                                                                                      |
+| Phase 6: Verification               | ✅ Complete | PROD: 3,201,934 NPS vs DEV: 3,125,677 NPS (+2.5%). Node counts identical (35,960,923) — search is deterministic. Earlier 45-node delta was UCI pipe artifact.                                                                       |
+| Phase 7: CLI Tools & Unit Tests     | ✅ Complete | Benchmark/TestSuite verified essential-only. EngineSpeedTests, ConfigRegistryTest, ConfigManagerTests, TablebaseTest guarded with #ifndef FRANKYCPP_PRODUCTION. Tests testing non-essential config mutation excluded in production. |
 
 **Status Legend:** ⬜ Not Started | 🔄 In Progress | ✅ Complete | ❌ Blocked
 
@@ -1023,20 +1023,20 @@ This preserves display/documentation while preventing runtime modification of fr
 
 #### CLI Tools
 
-- [ ] Verify `--bench` works (only uses essential TT_SIZE_MB)
-- [ ] Verify `--testsuite` works (only uses essential USE_BOOK)
+- [x] Verify `--bench` works (only uses essential TT_SIZE_MB) — ✅ Confirmed, no changes needed
+- [x] Verify `--testsuite` works (only uses essential USE_BOOK) — ✅ Confirmed, no changes needed
 
 #### Unit Tests - Wrap Development-Only Tests
 
-- [ ] `test/engine/EngineSpeedTests.cpp` - wrap CONFIG_OVERRIDE usage in `#ifndef FRANKYCPP_PRODUCTION`
-- [ ] `test/config/ConfigRegistryTest.cpp` - wrap entire file or individual tests
-- [ ] `test/config/ConfigManagerTest.cpp` - wrap tests that modify configs
+- [x] `test/engine/EngineSpeedTests.cpp` - wrap CONFIG_OVERRIDE_START/END block in `#ifndef FRANKYCPP_PRODUCTION`; production uses essential-only override
+- [x] `test/config/ConfigRegistryTest.cpp` - added `ConfigMode.h` include; wrapped individual tests that assign to non-essential struct members (GetterReturnsCorrectValue, EvalGetterReturnsCorrectValue, EvalSetterModifiesValue, ArraySetterParsesCorrectly)
+- [x] `test/config/ConfigManagerTests.cpp` - added `ConfigMode.h` include; wrapped tests using non-essential configs (LoadEvalYamlOverridesOnly excluded; ApplyRuntimeOverrides, InvalidYamlRollsBackAndReturnsFalse adapted; LoadSearchYamlOverridesOnly guarded)
+- [x] `test/tablebase/TablebaseTest.cpp` - added `ConfigMode.h` include; tests that disable CONFIG_CONST probing flags (RootProbeDisabledWhenConfigured, DisableBothProbingDisablesAllTB, Rule50ThresholdDisablesWhenHigh, ProbeDepthControlsProbing, ProbeLimitControlsPieceCount) wrapped in `#ifndef FRANKYCPP_PRODUCTION`; remaining tests split CONFIG_OVERRIDE calls to keep essential-only in production
 
 #### Unit Tests - Statistics Handling
 
-- [ ] Identify tests that check non-essential statistics counters
-- [ ] Wrap non-essential stat checks in `#ifndef FRANKYCPP_PRODUCTION`
-- [ ] Keep essential stat checks (nodes, depth, time) without guards
+- [x] Identified tests that check non-essential statistics counters — none found in test suite
+- [x] No stat-checking tests required changes
 
 #### CMake Test Configuration
 

@@ -20,8 +20,6 @@
 #ifndef FRANKYCPP_CONFIGMODE_H
 #define FRANKYCPP_CONFIGMODE_H
 
-#include <type_traits>
-
 //=============================================================================
 // ConfigMode.h - Conditional static constexpr for configuration values
 //=============================================================================
@@ -122,13 +120,15 @@
 // CONFIG SETTER macros for ConfigRegistry setter lambdas
 //
 // SEARCH_CONFIG_SETTER(member, parser) / EVAL_CONFIG_SETTER(member, parser)
-//   Expands to a complete setter lambda. Uses if constexpr + std::is_const_v
-//   to detect at compile time whether the member is mutable (CONFIG_ESSENTIAL)
-//   or frozen (CONFIG_CONST = static constexpr in production).
-//   - Essential members (plain instance members): assignment executes in all builds.
-//   - Non-essential members (static constexpr in production): branch compiled away,
-//     effectively a no-op. In development they are mutable so assignment executes.
-//   No #ifdef needed at the call site — one macro handles all cases.
+//   Expands to a complete setter lambda that works in both builds:
+//   - CONFIG_ESSENTIAL members (plain mutable instance members): assigned in all builds.
+//   - CONFIG_CONST members (static constexpr in production): assignment silently
+//     skipped via the assignIfMutable<> template helper below.
+//
+//   The key insight: `if constexpr` only suppresses instantiation inside templates.
+//   By routing the assignment through a templated helper, GCC/Clang no longer
+//   type-check the discarded branch, so assigning to a static constexpr member
+//   is never seen by the compiler.
 //
 // SEARCH_CONFIG_ARRAY_SETTER(member)
 //   Same idea but for std::array members that use parseArray(v, member) in-place.
@@ -138,25 +138,46 @@
 //   .setter = EVAL_CONFIG_SETTER(TEMPO, parseInt)
 //   .setter = SEARCH_CONFIG_ARRAY_SETTER(RFP_MARGIN)
 //=============================================================================
+
+#include <string>
+#include <type_traits>
+
+namespace config_detail {
+
+// Assigns `value` to `dest` only if T is non-const (i.e. CONFIG_ESSENTIAL).
+// When T is const (CONFIG_CONST = static constexpr in production), the discarded
+// branch is never instantiated because this is a template — GCC/Clang won't
+// type-check the assignment, avoiding the "read-only variable" error.
+template<typename T, typename U>
+void assignIfMutable(T& dest, U&& value) {
+  if constexpr (!std::is_const_v<T>) {
+    dest = std::forward<U>(value);
+  }
+}
+
+// Array variant: calls parseArray(v, dest) only if T is non-const.
+template<typename T>
+void assignArrayIfMutable(T& dest, const std::string& v) {
+  if constexpr (!std::is_const_v<T>) {
+    parseArray(v, dest);
+  }
+}
+
+} // namespace config_detail
+
 #define SEARCH_CONFIG_SETTER(member, parser) \
     [](SearchConfigData& s, EvalConfigData&, const std::string& v) { \
-        if constexpr (!std::is_const_v<std::remove_reference_t<decltype(s.member)>>) { \
-            s.member = parser(v); \
-        } \
+        config_detail::assignIfMutable(s.member, parser(v)); \
     }
 
 #define EVAL_CONFIG_SETTER(member, parser) \
     [](SearchConfigData&, EvalConfigData& e, const std::string& v) { \
-        if constexpr (!std::is_const_v<std::remove_reference_t<decltype(e.member)>>) { \
-            e.member = parser(v); \
-        } \
+        config_detail::assignIfMutable(e.member, parser(v)); \
     }
 
 #define SEARCH_CONFIG_ARRAY_SETTER(member) \
     [](SearchConfigData& s, EvalConfigData&, const std::string& v) { \
-        if constexpr (!std::is_const_v<std::remove_reference_t<decltype(s.member)>>) { \
-            parseArray(v, s.member); \
-        } \
+        config_detail::assignArrayIfMutable(s.member, v); \
     }
 
 #endif // FRANKYCPP_CONFIGMODE_H

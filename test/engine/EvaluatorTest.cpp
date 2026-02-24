@@ -26,6 +26,7 @@
 #include "types/types.h"
 
 #include "config/ConfigManager.h"
+#include "config/ConfigMode.h"
 #include <engine/Evaluator.h>
 #include <gtest/gtest.h>
 
@@ -42,6 +43,9 @@ auto& cm = ConfigManager::instance(); // Bind cm to ConfigManager singleton by r
 
 // centralize test eval config: set all USE_* flags
 // to the given onoff value
+// In production, all eval USE_* flags are CONFIG_CONST (static constexpr) — cannot be set at runtime.
+// The function and all tests that call it are excluded from production builds.
+#ifndef FRANKYCPP_PRODUCTION
 void set_eval_config(const bool onoff) {
   // Values taken from src/engine/EvalConfig.h
   cm.applyOverrides([&](auto&, EvalConfigData& e) {
@@ -66,6 +70,7 @@ void set_eval_config(const bool onoff) {
     e.USE_BISHOP_PAIR_BONUS    = onoff;
   });
 }
+#endif // FRANKYCPP_PRODUCTION
 
 class EvaluatorTest : public testing::Test {
 public:
@@ -93,6 +98,10 @@ TEST_F(EvaluatorTest, testFens) {
     fprintln("Value: {:<6} GPF: {:<20}  Fen: {}", std::to_string(v), p.getGamePhaseFactor(), f);
   }
 }
+
+// All tests below modify non-essential CONFIG_CONST eval flags at runtime.
+// In production builds, these are frozen static constexpr — excluded from production.
+#ifndef FRANKYCPP_PRODUCTION
 
 // New test: ensure evaluation with only MATERIAL equals material difference from side to move
 TEST_F(EvaluatorTest, EvaluateMaterialOnly) {
@@ -702,3 +711,5 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
     print_result(label, ns, isBaseline ? 0 : baseline_ns);
   }
 }
+
+#endif // FRANKYCPP_PRODUCTION

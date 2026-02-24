@@ -58,6 +58,8 @@
 #include <string>
 #include <vector>
 
+#include "types/types.h"
+
 namespace engine {
 
 /// Configuration for the benchmark run

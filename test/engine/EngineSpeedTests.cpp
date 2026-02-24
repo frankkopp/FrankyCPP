@@ -56,6 +56,9 @@ protected:
 // 08.02.2026 GROOT: Search depth was 12(43) with 87.289.648 nodes visited. NPS = 3.501.469 nps (after Triangular PVTable)
 // 08.02.2026 GROOT: Search depth was 12(43) with 87.289.648 nodes visited. NPS = 3.554.642 nps (after StaticMoveList)
 TEST_F(EngineSpeedTests, npsTest) {
+#ifndef FRANKYCPP_PRODUCTION
+  // In production, CONFIG_CONST members are frozen static constexpr — cannot be overridden.
+  // Only essential configs (TT_SIZE_MB, USE_BOOK) are set here.
   CONFIG_OVERRIDE_START()
   s.TT_SIZE_MB          = 64;
   s.USE_BOOK            = false;
@@ -79,6 +82,10 @@ TEST_F(EngineSpeedTests, npsTest) {
   s.USE_LMR             = true;
   s.USE_LMP             = true;
   CONFIG_OVERRIDE_END();
+#else
+  // Production: only essential configs can be set at runtime.
+  CONFIG_OVERRIDE(s.TT_SIZE_MB = 64; s.USE_BOOK = false;);
+#endif
   // EvalConfig::TEMPO                 = 34;
   // EvalConfig::USE_MATERIAL          = true;
   // EvalConfig::USE_POSITIONAL        = true;

@@ -48,7 +48,6 @@ add_executable(
         engine/VariationStackTest.cpp
         engine/BenchmarkTest.cpp
 
-        enginetest/SearchTreeSizeTest_Test.cpp
         enginetest/TestSuite_Test.cpp
         enginetest/EpdParser_Test.cpp
         enginetest/EdpTest_Test.cpp
@@ -82,6 +81,14 @@ add_executable(
         engine_arena/MatchRunner_Test.cpp
 
         cli/CliIntegrationTest.cpp)
+
+# SearchTreeSizeTest_Test is a dev/tuning test — excluded from production builds.
+# Mirrors the exclusion of SearchTreeSizeTest.cpp from FrankyCPPlib in src/CMakeLists.txt.
+if (NOT FRANKYCPP_PRODUCTION)
+    target_sources(${testExeName} PRIVATE
+        enginetest/SearchTreeSizeTest_Test.cpp
+    )
+endif()
 
 
 # Ensure unit tests explicitly request C++20
