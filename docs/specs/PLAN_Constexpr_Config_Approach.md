@@ -9,12 +9,12 @@
 
 ## Project Metadata
 
-| Field                | Value                                       |
-|----------------------|---------------------------------------------|
-| **Branch**           | `feature/compile-time-stripping` ✅ exists   |
-| **Risk Level**       | 🟢 Low - Incremental changes, easy rollback |
-| **Estimated Effort** | 2-3 sessions                                |
-| **Rollback**         | Remove macros, revert to plain members      |
+| Field                | Value                                         |
+|----------------------|-----------------------------------------------|
+| **Branch**           | `feature/compile-time-stripping` ✅ exists     |
+| **Risk Level**       | 🟡 Medium - Struct changes, phased rollout    |
+| **Estimated Effort** | 2-3 sessions                                  |
+| **Rollback**         | Remove macros, revert to plain members        |
 
 ### Phase Status Tracker
 
@@ -87,23 +87,35 @@ Provide a compile-time mechanism to strip non-essential configuration options an
 
 1. **`ConfigManager` production sketch is internally inconsistent**  
    The current snippet returns full `SearchConfigData`/`EvalConfigData` by value as `constexpr` while also introducing separately mutable `EssentialConfig`. This creates two sources of truth and an unclear read path for essential options.
+   
+   ✅ **Resolution:** Essential configs stay in `SearchConfigData`/`EvalConfigData` as instance members (marked `CONFIG_ESSENTIAL`). No separate `EssentialConfig` struct. Single source of truth.
 
 2. **`CONFIG_OVERRIDE` behavior is contradictory in this document**  
    One section says non-essential overrides in production "silently compile but have no effect", another says they should fail to compile. This must be decided explicitly before implementation.
+   
+   ✅ **Resolution:** Production builds **fail to compile** if code tries to override non-essential configs. This is the correct behavior - you cannot assign to `static constexpr` members. This catches mistakes at compile time.
 
 3. **Default-value extraction (`defaultFrom`) is fragile with `CONFIG_CONST`**  
    The pointer-based helper assumes instance members. If a setting is moved between essential/non-essential, this helper can break or require type-specific handling.
+   
+   ✅ **Resolution:** Use direct value access instead of pointer-to-member. Since defaults are compile-time constants, just use the value directly: `defaultFrom(SearchConfigData::USE_LMR)` or inline the default.
 
 4. **Risk level is likely underestimated**  
    Classification mistakes (essential vs non-essential), registry gating, and test/CLI behavior changes can cause regressions in UCI compatibility and tuning workflows. This is closer to medium risk.
+   
+   ✅ **Resolution:** Risk level updated to Medium. Phased rollout with verification at each step mitigates this.
 
 5. **No explicit migration guardrails for accidental freezing**  
    The plan lacks a concrete validation checklist that prevents accidentally freezing options that are still required at runtime (e.g., GUI-controlled tournament settings).
+   
+   ✅ **Resolution:** Add `static_assert` guards in production builds to ensure essential configs remain non-static (mutable). Compile fails if essential config is accidentally marked `CONFIG_CONST`.
 
 6. **Tooling/test impact is broader than currently represented**  
    Production-only and development-only behavior split needs a clear CI matrix and explicit pass/fail expectations per target; otherwise breakages may go unnoticed.
+   
+   ⏳ **Resolution:** Deferred to future task. Focus on local build first. CI matrix to be added after local implementation is verified working.
 
-**Recommendation:** Resolve the `ConfigManager`/`EssentialConfig` model first, define one authoritative `CONFIG_OVERRIDE` rule, and add a short "must-stay-mutable" allowlist before coding.
+**Recommendation:** ~~Resolve the `ConfigManager`/`EssentialConfig` model first, define one authoritative `CONFIG_OVERRIDE` rule, and add a short "must-stay-mutable" allowlist before coding.~~ ✅ All resolved above.
 
 ---
 
@@ -334,12 +346,48 @@ struct SearchConfigData {
     // ... more configs following same pattern ...
 };
 
+//=============================================================================
+// ESSENTIAL CONFIG GUARDRAILS
+//=============================================================================
+// These static_asserts ensure essential configs are never accidentally frozen.
+// If someone mistakenly uses CONFIG_CONST instead of CONFIG_ESSENTIAL,
+// the build will fail with a clear error message.
+//
+// Only needed in production builds (in development, all members are instance members)
+//=============================================================================
+
+#ifdef FRANKYCPP_PRODUCTION
+
+// Helper to check if a member is static (would indicate accidental freezing)
+template<typename T, typename M>
+constexpr bool is_instance_member(M T::*) { return true; }
+
+// Search essential configs - must remain mutable
+static_assert(is_instance_member(&SearchConfigData::TT_SIZE_MB),
+              "TT_SIZE_MB must be CONFIG_ESSENTIAL (Hash size must be configurable)");
+static_assert(is_instance_member(&SearchConfigData::MOVE_OVERHEAD_MS),
+              "MOVE_OVERHEAD_MS must be CONFIG_ESSENTIAL (Time control requires this)");
+static_assert(is_instance_member(&SearchConfigData::USE_PONDER),
+              "USE_PONDER must be CONFIG_ESSENTIAL (UCI Ponder option)");
+static_assert(is_instance_member(&SearchConfigData::BOOK_PATH),
+              "BOOK_PATH must be CONFIG_ESSENTIAL (Opening book path must be configurable)");
+static_assert(is_instance_member(&SearchConfigData::BOOK_TYPE),
+              "BOOK_TYPE must be CONFIG_ESSENTIAL (Opening book type must be configurable)");
+static_assert(is_instance_member(&SearchConfigData::TB_PATH),
+              "TB_PATH must be CONFIG_ESSENTIAL (SyzygyPath must be configurable)");
+
+// Eval essential configs - must remain mutable
+static_assert(is_instance_member(&EvalConfigData::USE_PAWN_TT),
+              "USE_PAWN_TT must be CONFIG_ESSENTIAL");
+static_assert(is_instance_member(&EvalConfigData::PAWN_TT_SIZE_MB),
+              "PAWN_TT_SIZE_MB must be CONFIG_ESSENTIAL");
+
+#endif // FRANKYCPP_PRODUCTION
+
 #endif // FRANKYCPP_SEARCHCONFIGDATA_H
 ```
 
 ### ConfigManager Changes
-
-⚠️ **Important:** The sketch below is conceptual and needs refinement. Returning a full config struct by value in production conflicts with the separate mutable `EssentialConfig` idea and should be resolved before implementation.
 
 ```cpp
 // src/config/ConfigManager.h
@@ -350,20 +398,19 @@ public:
 
 #ifdef FRANKYCPP_PRODUCTION
     //=========================================================================
-    // PRODUCTION: Return constexpr struct (all values are compile-time)
+    // PRODUCTION: Return const reference to struct with mixed members
     //=========================================================================
+    // - CONFIG_CONST members are static constexpr (accessed via instance syntax)
+    // - CONFIG_ESSENTIAL members are normal instance members (mutable)
+    //
+    // Returning const ref prevents accidental modification attempts.
+    // Essential configs are modified via dedicated setters or YAML loading.
     
-    // Returns a constexpr copy - optimizer will inline all accesses
-    static constexpr SearchConfigData search() { 
-        return SearchConfigData{}; 
-    }
+    const SearchConfigData& search() const { return searchConfig_; }
+    const EvalConfigData& eval() const { return evalConfig_; }
     
-    static constexpr EvalConfigData eval() { 
-        return EvalConfigData{}; 
-    }
-    
-    // No-op in production (essential configs handled separately)
-    void loadFromYaml(const std::string&) {}
+    // YAML loading only affects essential configs in production
+    void loadFromYaml(const std::string& path);
     
 #else
     //=========================================================================
@@ -378,33 +425,24 @@ public:
     
     void loadFromYaml(const std::string& path);
     
+#endif
+
+    // applyOverrides only available in development
+    // Production builds FAIL TO COMPILE if non-essential configs are modified
+#ifndef FRANKYCPP_PRODUCTION
+    template<typename F>
+    void applyOverrides(F&& func) {
+        func(searchConfig_, evalConfig_);
+    }
+#endif
+
 private:
     SearchConfigData searchConfig_;
     EvalConfigData evalConfig_;
-    
-#endif
-
-    //=========================================================================
-    // ESSENTIAL configs - Always mutable, even in production
-    //=========================================================================
-    struct EssentialConfig {
-        int ttSizeMB = 64;
-        int moveOverheadMs = 10;
-        bool usePonder = true;
-        std::string bookPath = "./books/book.txt";
-        std::string bookType = "SIMPLE";
-        std::string tbPath = "";
-        bool usePawnTT = true;
-        int pawnTTSizeMB = 4;
-    };
-    
-    EssentialConfig& essential() { return essentialConfig_; }
-    const EssentialConfig& essential() const { return essentialConfig_; }
-    
-private:
-    EssentialConfig essentialConfig_;
 };
 ```
+
+**Key Design Decision:** Essential configs remain in `SearchConfigData`/`EvalConfigData` as instance members (marked `CONFIG_ESSENTIAL`). No separate `EssentialConfig` struct. This keeps a single source of truth and maintains the existing access pattern: `ConfigManager::instance().search().TT_SIZE_MB`.
 
 ### ConfigRegistry Changes
 
@@ -414,10 +452,9 @@ The key insight: since `CONFIG_CONST` controls whether values are `constexpr`, w
 // src/config/ConfigRegistry.cpp
 
 void ConfigRegistry::initializeSearchDefinitions() {
-    // Helper to get default value from struct - single source of truth!
-    auto defaultFrom = [](auto memberPtr) {
-        return configToString(SearchConfigData{}.*memberPtr);
-    };
+    // For default values, just use the value directly from the struct.
+    // Works for both instance members (essential) and static constexpr (non-essential).
+    // No pointer-to-member complexity needed.
 
     //=========================================================================
     // ESSENTIAL configs - Always registered (both builds)
@@ -428,12 +465,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
         .description = "Transposition table size (MB)",
         .valueType = Int,
         .domain = Search,
-        .defaultValue = defaultFrom(&SearchConfigData::TT_SIZE_MB),
+        .defaultValue = std::to_string(SearchConfigData{}.TT_SIZE_MB),  // Instance member
         .minValue = 1,
         .maxValue = 65536,
         .exposure = {.uci = true, .yaml = true, .display = true},
-        .getter = essentialGetter(&EssentialConfig::ttSizeMB),
-        .setter = essentialSetter(&EssentialConfig::ttSizeMB, parseInt)
+        .getter = [](const auto& s, const auto&) { return std::to_string(s.TT_SIZE_MB); },
+        .setter = [](auto& s, auto&, const std::string& v) { s.TT_SIZE_MB = parseInt(v); }
     });
 
     definitions_.push_back({
@@ -463,10 +500,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
         .description = "Enable Late Move Reductions",
         .valueType = Bool,
         .domain = Search,
-        .defaultValue = defaultFrom(&SearchConfigData::USE_LMR),
+        .defaultValue = std::to_string(SearchConfigData{}.USE_LMR),  // Instance member in dev
         .exposure = {.uci = true, .yaml = true, .display = true},
-        .getter = searchGetter(&SearchConfigData::USE_LMR),
-        .setter = searchSetter(&SearchConfigData::USE_LMR, parseBool)
+        .getter = [](const auto& s, const auto&) { return std::to_string(s.USE_LMR); },
+        .setter = [](auto& s, auto&, const std::string& v) { s.USE_LMR = parseBool(v); }
     });
 
     definitions_.push_back({
@@ -475,12 +512,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
         .description = "Minimum depth for LMR",
         .valueType = Int,
         .domain = Search,
-        .defaultValue = defaultFrom(&SearchConfigData::LMR_MIN_DEPTH),
+        .defaultValue = std::to_string(SearchConfigData{}.LMR_MIN_DEPTH),
         .minValue = 1,
         .maxValue = 10,
         .exposure = {.uci = true, .yaml = true, .display = true},
-        .getter = searchGetter(&SearchConfigData::LMR_MIN_DEPTH),
-        .setter = searchSetter(&SearchConfigData::LMR_MIN_DEPTH, parseInt)
+        .getter = [](const auto& s, const auto&) { return std::to_string(s.LMR_MIN_DEPTH); },
+        .setter = [](auto& s, auto&, const std::string& v) { s.LMR_MIN_DEPTH = parseInt(v); }
     });
 
     // NMP
@@ -641,15 +678,17 @@ CONFIG_OVERRIDE(s.USE_BOOK = false;);  // Essential - always mutable
 
 ### CONFIG_OVERRIDE Macro Changes
 
-The `CONFIG_OVERRIDE` macros need to be conditional:
+In production builds, `applyOverrides()` is not available (see ConfigManager section above). This means:
+
+1. **Code using CONFIG_OVERRIDE on non-essential configs will fail to compile in production**
+2. This is **intentional** - it catches mistakes at compile time
+3. Only code that modifies essential configs (like `--bench` and `--testsuite`) will compile
 
 ```cpp
 // src/config/ConfigManager.h
 
-#ifdef FRANKYCPP_PRODUCTION
-
-// Production: CONFIG_OVERRIDE only works for essential configs
-// Non-essential assignments silently compile but have no effect (static constexpr)
+#ifndef FRANKYCPP_PRODUCTION
+// Development: Full CONFIG_OVERRIDE support
 #define CONFIG_OVERRIDE_START() \
     ConfigManager::instance().applyOverrides( \
         [&]([[maybe_unused]] SearchConfigData& s, [[maybe_unused]] EvalConfigData& e) {
@@ -657,22 +696,18 @@ The `CONFIG_OVERRIDE` macros need to be conditional:
 #define CONFIG_OVERRIDE(expr) \
     ConfigManager::instance().applyOverrides( \
         [&]([[maybe_unused]] SearchConfigData& s, [[maybe_unused]] EvalConfigData& e) { expr });
-
 #else
-
-// Development: Full CONFIG_OVERRIDE support (existing implementation)
-#define CONFIG_OVERRIDE_START() \
-    ConfigManager::instance().applyOverrides( \
-        [&]([[maybe_unused]] SearchConfigData& s, [[maybe_unused]] EvalConfigData& e) {
-#define CONFIG_OVERRIDE_END() });
-#define CONFIG_OVERRIDE(expr) \
-    ConfigManager::instance().applyOverrides( \
-        [&]([[maybe_unused]] SearchConfigData& s, [[maybe_unused]] EvalConfigData& e) { expr });
-
+// Production: CONFIG_OVERRIDE macros not defined
+// Code that uses them will fail to compile - this is intentional!
+// Only essential configs should be modified at runtime.
 #endif
 ```
 
-**Note:** In production, assigning to `static constexpr` members in a lambda will cause a **compile error**. This is actually desirable - it prevents accidentally using CONFIG_OVERRIDE on frozen configs. Code that tries to override non-essential configs in production simply won't compile.
+**Why compile error is the right choice:**
+- Catches accidental use of CONFIG_OVERRIDE on non-essential configs
+- No silent failures or unexpected behavior
+- Forces developers to wrap non-essential overrides in `#ifndef FRANKYCPP_PRODUCTION`
+- Clear error message points to the problem
 
 ---
 
@@ -793,10 +828,10 @@ TEST_F(SearchTest, CheckStatisticsCounters) {
 
 ### Verifying Both Modes Work
 
-**CI/CD should run tests in both modes:**
+**TODO (Future Task):** Set up CI/CD to run tests in both modes. For now, focus on local build verification.
 
 ```yaml
-# .github/workflows/test.yml
+# .github/workflows/test.yml (FUTURE - not implemented yet)
 jobs:
   test-development:
     runs-on: ubuntu-latest
@@ -821,7 +856,7 @@ jobs:
 2. **Config modification:** Wrap in `#ifndef FRANKYCPP_PRODUCTION`
 3. **Non-essential stats:** Either skip check in production or use `ESSENTIAL_STAT` for important counters
 4. **Development-only test files:** Exclude via CMake or `#ifndef` the entire file
-5. **CI/CD:** Run tests in both modes to ensure compatibility
+5. **CI/CD:** *(Future task)* Run tests in both modes to ensure compatibility
 
 ---
 
@@ -884,8 +919,10 @@ jobs:
 - [ ] Add `#include "config/ConfigMode.h"` to SearchConfigData.h
 - [ ] Add `CONFIG_CONST` prefix to all non-essential members
 - [ ] Add `CONFIG_ESSENTIAL` prefix to essential members (TT_SIZE, paths, etc.)
+- [ ] Add static_assert guardrails for essential configs (see SearchConfigData example)
 - [ ] Add `#include "config/ConfigMode.h"` to EvalConfigData.h
 - [ ] Add `CONFIG_CONST`/`CONFIG_ESSENTIAL` to EvalConfigData members
+- [ ] Add static_assert guardrails for essential eval configs
 - [ ] Verify development build compiles and works as before
 - [ ] ~~Verify production build compiles~~ (Expected to fail until Phase 3)
 
@@ -907,19 +944,22 @@ CONFIG_CONST bool USE_LMR = true;
 
 ### Phase 3: ConfigManager Conditional (Medium Risk)
 
-**Goal:** In production, return constexpr struct; in development, return mutable reference.
+**Goal:** In production, return const reference (essential configs still mutable via setters); in development, return mutable reference.
 
 - [ ] Add `#include "config/ConfigMode.h"` to ConfigManager.h
 - [ ] Add `#ifdef FRANKYCPP_PRODUCTION` block to ConfigManager
-- [ ] Production path: `static constexpr SearchConfigData search() { return {}; }`
-- [ ] Development path: Keep existing `const SearchConfigData& search()`
-- [ ] Make `applyOverrides()` conditional (dev only)
-- [ ] Make `CONFIG_OVERRIDE*` macros conditional (dev only)
+- [ ] Production path: `const SearchConfigData& search() const` (const ref, essential members still mutable internally)
+- [ ] Development path: Keep existing mutable `SearchConfigData& search()`
+- [ ] Make `applyOverrides()` conditional (dev only - not defined in production)
+- [ ] Make `CONFIG_OVERRIDE*` macros conditional (dev only - not defined in production)
 - [ ] Verify development build still works
 - [ ] ~~Verify production build works~~ (Expected to fail until Phase 4)
 
 **Note:** Production build will NOT compile yet because ConfigRegistry setters try
 to modify constexpr members. Phase 4 will make those setters conditional.
+
+**Key Design:** Essential configs stay in `SearchConfigData`/`EvalConfigData` as instance members.
+No separate `EssentialConfig` struct. Single source of truth.
 
 **Acceptance:** Development build works correctly
 
@@ -1001,13 +1041,15 @@ This preserves display/documentation while preventing runtime modification of fr
 #### CMake Test Configuration
 
 - [ ] Ensure test executable compiles in both modes
-- [ ] Add CI job for production build tests
 - [ ] Document which tests are development-only
+
+#### Future Task (Deferred)
+
+- [ ] Add CI job for production build tests (after local implementation verified)
 
 **Acceptance:** 
 - `--bench` and `--testsuite` work in production builds
-- All applicable tests pass in both build modes
-- CI runs tests in both modes
+- All applicable tests pass in both build modes (local verification)
 
 ---
 
@@ -1041,17 +1083,20 @@ This preserves display/documentation while preventing runtime modification of fr
 6. **Proven pattern** - Same approach used by STL, Boost, game engines
 7. **Clear struct** - Can read SearchConfigData.h and understand all configs
 8. **Compiler does the work** - We just mark things `static constexpr`, optimizer handles the rest
-9. **Single source of truth for defaults** - `defaultFrom()` reads from struct
+9. **Single source of truth** - Defaults in struct, accessed directly
+10. **Compile-time safety** - static_assert guards prevent accidental freezing of essential configs
+11. **Fail-fast on mistakes** - CONFIG_OVERRIDE on non-essential configs fails to compile in production
 
 ---
 
 ## Disadvantages / Tradeoffs
 
 1. **Two places for new config** - Still need struct member + registry entry
-    - Mitigated by `defaultFrom()` pattern (default only in struct)
+    - Mitigated by direct value access for defaults
 
 2. **Manual essential marking** - Must remember `CONFIG_ESSENTIAL` vs `CONFIG_CONST`
     - Mitigated by clear grouping in struct
+    - Mitigated by static_assert guardrails catching mistakes
 
 3. **Registry still exists in production** - Some code bloat
     - Mitigated by `#ifdef` around non-essential registrations
