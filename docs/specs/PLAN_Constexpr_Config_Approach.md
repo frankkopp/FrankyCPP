@@ -1,6 +1,6 @@
 # Constexpr Config Approach (Recommended Plan)
 
-**Status:** Recommended  
+**Status:** ✅ Complete  
 **Created:** 2026-02-23  
 **Last Updated:** 2026-02-24  
 **Author:** Frank Kopp
@@ -18,15 +18,15 @@
 
 ### Phase Status Tracker
 
-| Phase                               | Status     | Notes                                                                                                                                                                                                                               |
-|-------------------------------------|------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Phase 1: Infrastructure             | ✅ Complete | ConfigMode.h, CMake option, presets                                                                                                                                                                                                 |
-| Phase 2: SearchConfigData Migration | ✅ Complete | CONFIG_CONST added to struct members                                                                                                                                                                                                |
-| Phase 3: ConfigManager Conditional  | ✅ Complete | Conditional accessors                                                                                                                                                                                                               |
-| Phase 4: ConfigRegistry Conditional | ✅ Complete | SEARCH/EVAL_CONFIG_SETTER macros; enginetest excluded from PROD                                                                                                                                                                     |
-| Phase 5: Statistics Macros          | ✅ Complete | STAT_INC/ESSENTIAL_STAT_INC applied to all stats in Search.cpp                                                                                                                                                                      |
-| Phase 6: Verification               | ✅ Complete | PROD: 3,201,934 NPS vs DEV: 3,125,677 NPS (+2.5%). Node counts identical (35,960,923) — search is deterministic. Earlier 45-node delta was UCI pipe artifact.                                                                       |
-| Phase 7: CLI Tools & Unit Tests     | ✅ Complete | Benchmark/TestSuite verified essential-only. EngineSpeedTests, ConfigRegistryTest, ConfigManagerTests, TablebaseTest guarded with #ifndef FRANKYCPP_PRODUCTION. Tests testing non-essential config mutation excluded in production. |
+| Phase                               | Status     | Notes                                                                                                                                                                                                                                                                                                                                               |
+|-------------------------------------|------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Phase 1: Infrastructure             | ✅ Complete | ConfigMode.h, CMake option, presets                                                                                                                                                                                                                                                                                                                 |
+| Phase 2: SearchConfigData Migration | ✅ Complete | CONFIG_CONST added to struct members                                                                                                                                                                                                                                                                                                                |
+| Phase 3: ConfigManager Conditional  | ✅ Complete | Conditional accessors                                                                                                                                                                                                                                                                                                                               |
+| Phase 4: ConfigRegistry Conditional | ✅ Complete | SEARCH/EVAL_CONFIG_SETTER macros; enginetest excluded from PROD. GCC fix: setter macros use `config_detail::assignIfMutable<T>()` template helper — `if constexpr` only suppresses instantiation in templates, not plain lambdas, so GCC rejected assignment to `static constexpr` members in a non-template lambda. Template helper resolves this. |
+| Phase 5: Statistics Macros          | ✅ Complete | STAT_INC/ESSENTIAL_STAT_INC applied to all stats in Search.cpp                                                                                                                                                                                                                                                                                      |
+| Phase 6: Verification               | ✅ Complete | PROD: 3,201,934 NPS vs DEV: 3,125,677 NPS (+2.5%). Node counts identical (35,960,923) — search is deterministic. Earlier 45-node delta was UCI pipe artifact.                                                                                                                                                                                       |
+| Phase 7: CLI Tools & Unit Tests     | ✅ Complete | Benchmark/TestSuite verified essential-only. EngineSpeedTests, ConfigRegistryTest, ConfigManagerTests, TablebaseTest guarded with #ifndef FRANKYCPP_PRODUCTION. Tests testing non-essential config mutation excluded in production.                                                                                                                 |
 
 **Status Legend:** ⬜ Not Started | 🔄 In Progress | ✅ Complete | ❌ Blocked
 
@@ -908,9 +908,9 @@ jobs:
     target_compile_definitions(FrankyCPP_lib PRIVATE FRANKYCPP_PRODUCTION)
   endif()
   ```
-- [ ] Add CMake presets: `win-release-production`, `wsl-release-production`
+- [x] Add CMake presets: `win-release-production`, `wsl-release-production`
 
-**Acceptance:** Project compiles unchanged (macros expand to nothing)
+**Acceptance:** Project compiles unchanged (macros expand to nothing) ✅
 
 ---
 
@@ -918,13 +918,13 @@ jobs:
 
 **Goal:** Add macros to struct members - no behavior change in development.
 
-- [ ] Add `#include "config/ConfigMode.h"` to SearchConfigData.h
-- [ ] Add `CONFIG_CONST` prefix to all non-essential members
-- [ ] Add `CONFIG_ESSENTIAL` prefix to essential members (TT_SIZE, paths, etc.)
-- [ ] Add `#include "config/ConfigMode.h"` to EvalConfigData.h
-- [ ] Add `CONFIG_CONST`/`CONFIG_ESSENTIAL` to EvalConfigData members
-- [ ] Verify development build compiles and works as before
-- [ ] ~~Verify production build compiles~~ (Expected to fail until Phase 3)
+- [x] Add `#include "config/ConfigMode.h"` to SearchConfigData.h
+- [x] Add `CONFIG_CONST` prefix to all non-essential members
+- [x] Add `CONFIG_ESSENTIAL` prefix to essential members (TT_SIZE, paths, etc.)
+- [x] Add `#include "config/ConfigMode.h"` to EvalConfigData.h
+- [x] Add `CONFIG_CONST`/`CONFIG_ESSENTIAL` to EvalConfigData members
+- [x] Verify development build compiles and works as before
+- [x] ~~Verify production build compiles~~ (Expected to fail until Phase 3)
 
 **Note:** Production build will NOT compile yet because ConfigManager still returns
 mutable references. This is expected - Phase 3 fixes the ConfigManager.
@@ -938,7 +938,7 @@ bool USE_LMR = true;
 CONFIG_CONST bool USE_LMR = true;
 ```
 
-**Acceptance:** Development build compiles, all tests pass
+**Acceptance:** Development build compiles, all tests pass ✅
 
 ---
 
@@ -946,14 +946,14 @@ CONFIG_CONST bool USE_LMR = true;
 
 **Goal:** In production, return const reference (essential configs still mutable via setters); in development, return mutable reference.
 
-- [ ] Add `#include "config/ConfigMode.h"` to ConfigManager.h
-- [ ] Add `#ifdef FRANKYCPP_PRODUCTION` block to ConfigManager
-- [ ] Production path: `const SearchConfigData& search() const` (const ref, essential members still mutable internally)
-- [ ] Development path: Keep existing mutable `SearchConfigData& search()`
-- [ ] Make `applyOverrides()` conditional (dev only - not defined in production)
-- [ ] Make `CONFIG_OVERRIDE*` macros conditional (dev only - not defined in production)
-- [ ] Verify development build still works
-- [ ] ~~Verify production build works~~ (Expected to fail until Phase 4)
+- [x] Add `#include "config/ConfigMode.h"` to ConfigManager.h
+- [x] Add `#ifdef FRANKYCPP_PRODUCTION` block to ConfigManager
+- [x] Production path: `const SearchConfigData& search() const` (const ref, essential members still mutable internally)
+- [x] Development path: Keep existing mutable `SearchConfigData& search()`
+- [x] Make `applyOverrides()` conditional (dev only - not defined in production)
+- [x] Make `CONFIG_OVERRIDE*` macros conditional (dev only - not defined in production)
+- [x] Verify development build still works
+- [x] ~~Verify production build works~~ (Expected to fail until Phase 4)
 
 **Note:** Production build will NOT compile yet because ConfigRegistry setters try
 to modify constexpr members. Phase 4 will make those setters conditional.
@@ -961,7 +961,7 @@ to modify constexpr members. Phase 4 will make those setters conditional.
 **Key Design:** Essential configs stay in `SearchConfigData`/`EvalConfigData` as instance members.
 No separate `EssentialConfig` struct. Single source of truth.
 
-**Acceptance:** Development build works correctly
+**Acceptance:** Development build works correctly ✅
 
 ---
 
@@ -969,22 +969,17 @@ No separate `EssentialConfig` struct. Single source of truth.
 
 **Goal:** Non-essential config setters are no-ops in production.
 
-- [ ] Add `#include "config/ConfigMode.h"` to ConfigRegistry.cpp
-- [ ] Create `essentialSetter` and `frozenSetter` helpers for Search configs
-- [ ] Create `essentialEvalSetter` and `frozenEvalSetter` helpers for Eval configs
-- [ ] In production: `frozenSetter` is a no-op lambda
-- [ ] In development: `frozenSetter` works same as `essentialSetter`
-- [ ] Update essential configs to use `essentialSetter`:
-    - Search: CONFIG_SOURCE, MOVE_OVERHEAD_MS, USE_BOOK, BOOK_PATH, BOOK_TYPE, USE_PONDER, TT_SIZE_MB, TB_PATH
-    - Eval: EVAL_CONFIG_SOURCE, USE_PAWN_TT, PAWN_TT_SIZE_MB
-- [ ] All other configs use `frozenSetter` (aliased as `searchSetter`/`evalSetter` for minimal code change)
-- [ ] Verify development build still works
-- [ ] Verify production build compiles
+- [x] Add `#include "config/ConfigMode.h"` to ConfigRegistry.cpp
+- [x] Create `SEARCH_CONFIG_SETTER` / `EVAL_CONFIG_SETTER` / `SEARCH_CONFIG_ARRAY_SETTER` macros in `ConfigMode.h`
+- [x] Implement via `config_detail::assignIfMutable<T>()` template helper — `if constexpr` inside a template correctly discards the assignment for `const T` (GCC-safe); plain lambda `if constexpr` does not suppress type-checking in GCC
+- [x] `CONFIG_ESSENTIAL` members (mutable `T`): assignment executes in all builds
+- [x] `CONFIG_CONST` members (`const T` in production): assignment silently skipped in production, executes in development
+- [x] Verify development build still works
+- [x] Verify production build compiles — all profiles (MSVC, GCC, Clang) ✅
 
-**Note:** Approach chosen was no-op setters rather than removing registry entries.
-This preserves display/documentation while preventing runtime modification of frozen configs.
+**Note:** Final implementation uses `config_detail::assignIfMutable<T>()` template helper. This allows `CONFIG_ESSENTIAL` members to remain settable in production while `CONFIG_CONST` members are silently skipped — in a single set of macros with no call-site `#ifdef`.
 
-**Acceptance:** Both builds compile and work correctly
+**Acceptance:** Both builds compile and work correctly ✅
 
 ---
 
@@ -992,13 +987,13 @@ This preserves display/documentation while preventing runtime modification of fr
 
 **Goal:** Eliminate stat collection overhead in production.
 
-- [ ] Ensure `STAT_INC`, `STAT_ADD`, etc. are in ConfigMode.h
-- [ ] Migrate stats in Search.cpp: `statistics.xxx++` → `STAT_INC(statistics.xxx)`
-- [ ] Keep essential stats (nodesVisited, depth) as `ESSENTIAL_STAT_INC`
-- [ ] Verify stats still collected in development
-- [ ] Verify stats eliminated in production
+- [x] Ensure `STAT_INC`, `STAT_ADD`, etc. are in ConfigMode.h
+- [x] Migrate stats in Search.cpp: `statistics.xxx++` → `STAT_INC(statistics.xxx)`
+- [x] Keep essential stats (nodesVisited, depth) as `ESSENTIAL_STAT_INC`
+- [x] Verify stats still collected in development
+- [x] Verify stats eliminated in production
 
-**Acceptance:** Production build has zero stat collection code
+**Acceptance:** Production build has zero stat collection code ✅
 
 ---
 
@@ -1006,14 +1001,14 @@ This preserves display/documentation while preventing runtime modification of fr
 
 **Goal:** Confirm the approach works and measure improvement.
 
-- [ ] Check assembly output (Godbolt or local) - verify dead code elimination
-- [ ] Benchmark NPS: development vs production (expect 1-3% improvement)
-- [ ] Run full test suite in both builds
-- [ ] Verify identical search results (same bestmove for same position)
-- [ ] Test UCI protocol in both builds
-- [ ] Test YAML loading in both builds
+- [x] Check assembly output (Godbolt or local) - verify dead code elimination
+- [x] Benchmark NPS: development vs production — PROD: 3,201,934 NPS vs DEV: 3,125,677 NPS (+2.5%)
+- [x] Run full test suite in both builds — all tests pass
+- [x] Verify identical search results — node counts identical (35,960,923); earlier 45-node delta was UCI pipe artifact
+- [x] Test UCI protocol in both builds
+- [x] Test YAML loading in both builds
 
-**Acceptance:** All tests pass, measurable NPS improvement
+**Acceptance:** All tests pass, measurable NPS improvement ✅ (+2.5%)
 
 ---
 
@@ -1040,8 +1035,8 @@ This preserves display/documentation while preventing runtime modification of fr
 
 #### CMake Test Configuration
 
-- [ ] Ensure test executable compiles in both modes
-- [ ] Document which tests are development-only
+- [x] Test executable compiles in both modes — verified across MSVC, GCC, Clang
+- [x] Development-only tests documented via `#ifndef FRANKYCPP_PRODUCTION` guards in source
 
 #### Future Task (Deferred)
 
@@ -1108,18 +1103,19 @@ This preserves display/documentation while preventing runtime modification of fr
 
 ## Open Questions
 
+All questions resolved during implementation.
+
 1. **Naming:** `FRANKYCPP_PRODUCTION` vs `FRANKYCPP_RELEASE` vs `FRANKYCPP_TOURNAMENT`?
-    - Recommendation: `FRANKYCPP_PRODUCTION` (clear intent)
+    - ✅ **Resolved:** `FRANKYCPP_PRODUCTION` (clear intent)
 
 2. **Essential config struct:** Separate struct or same struct with different macro?
-    - Recommendation: Same struct, `CONFIG_ESSENTIAL` macro (simpler)
+    - ✅ **Resolved:** Same struct, `CONFIG_ESSENTIAL` macro (simpler, single source of truth)
 
 3. **constexpr arrays:** Do `std::array` members work with `constexpr`?
-    - Yes, `std::array` is fully constexpr in C++20
+    - ✅ **Resolved:** Yes, `std::array` is fully constexpr in C++20
 
 4. **String members:** Can `std::string` be constexpr?
-    - In C++20 yes, but only for compile-time operations
-    - For paths (runtime strings), use `CONFIG_ESSENTIAL`
+    - ✅ **Resolved:** For paths (runtime strings), use `CONFIG_ESSENTIAL`. Not needed as `CONFIG_CONST`.
 
 ---
 
