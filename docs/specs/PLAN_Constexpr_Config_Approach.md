@@ -2,7 +2,7 @@
 
 **Status:** Recommended  
 **Created:** 2026-02-23  
-**Last Updated:** 2026-02-23  
+**Last Updated:** 2026-02-24  
 **Author:** Frank Kopp
 
 ---
@@ -26,6 +26,7 @@
 | Phase 4: ConfigRegistry Conditional | ⬜ Not Started | essentialSetter vs frozenSetter       |
 | Phase 5: Statistics Macros          | ⬜ Not Started | STAT_INC etc.                         |
 | Phase 6: Verification               | ⬜ Not Started | Benchmark, test both builds           |
+| Phase 7: CLI Tools & Unit Tests     | ⬜ Not Started | Production guards, test handling      |
 
 **Status Legend:** ⬜ Not Started | 🔄 In Progress | ✅ Complete | ❌ Blocked
 
@@ -84,9 +85,9 @@ Provide a compile-time mechanism to strip non-essential configuration options an
 
 ## Overview
 
-This document describes the **recommended approach** for compile-time feature stripping. Instead of complex X-macro metaprogramming, we use the **STL pattern** of conditional `constexpr` via simple macros.
+This document describes the **recommended approach** for compile-time feature stripping. Instead of complex X-macro metaprogramming, we use conditional `static constexpr` via simple macros.
 
-**Key Insight:** The MSVC STL uses macros like `_CONSTEXPR20` to conditionally make code `constexpr` based on C++ version. We use the same pattern to make config values `constexpr` in production builds while keeping them mutable in development.
+**Key Insight:** C++ requires `constexpr` data members to be `static`. In production builds, non-essential config members become `static constexpr`, making them compile-time constants that enable dead code elimination. In development builds, they remain non-static instance members for runtime mutability.
 
 **Why This Approach Over X-Macros:**
 - **90% of the benefit with 20% of the complexity**
@@ -129,19 +130,22 @@ The same pattern is used throughout MSVC STL:
 #define FRANKYCPP_CONFIG_MODE_H
 
 //=============================================================================
-// ConfigMode.h - Conditional constexpr for configuration values
+// ConfigMode.h - Conditional static constexpr for configuration values
 //=============================================================================
 //
 // In PRODUCTION builds (-DFRANKYCPP_PRODUCTION):
-//   - Config values become constexpr (compile-time constants)
+//   - Config values become static constexpr (compile-time constants)
 //   - Compiler eliminates dead branches, inlines values
 //   - No runtime config changes possible
 //   - UCI/YAML config loading disabled for frozen options
 //
 // In DEVELOPMENT builds (default):
-//   - Config values are mutable (runtime changeable)
+//   - Config values are non-static mutable members (runtime changeable)
 //   - Full UCI/YAML support
 //   - All debugging/tuning features enabled
+//
+// NOTE: C++ requires constexpr data members to be static. This macro
+// expands to "static constexpr" in production, empty in development.
 //
 // Usage:
 //   struct SearchConfigData {
@@ -153,9 +157,8 @@ The same pattern is used throughout MSVC STL:
 
 #ifdef FRANKYCPP_PRODUCTION
 
-  // Production build: config values are compile-time constants
-  #define CONFIG_CONST constexpr
-  #define CONFIG_MUTABLE constexpr  // Even "mutable" ones are frozen
+  // Production build: config values are static compile-time constants
+  #define CONFIG_CONST static constexpr
   
   // Marker for code that should only exist in development
   #define DEV_ONLY(code)
@@ -166,9 +169,8 @@ The same pattern is used throughout MSVC STL:
 
 #else
 
-  // Development build: config values are mutable
+  // Development build: config values are non-static mutable members
   #define CONFIG_CONST
-  #define CONFIG_MUTABLE mutable
   
   // Development-only code
   #define DEV_ONLY(code) code
@@ -179,7 +181,8 @@ The same pattern is used throughout MSVC STL:
 
 #endif
 
-// Essential configs - ALWAYS mutable even in production (TT size, paths, etc.)
+// Essential configs - ALWAYS non-static mutable even in production
+// (TT size, paths, etc. that users must be able to change)
 #define CONFIG_ESSENTIAL
 
 #endif // FRANKYCPP_CONFIG_MODE_H
@@ -195,9 +198,25 @@ The same pattern is used throughout MSVC STL:
 #include <array>
 #include <string>
 
+//=============================================================================
+// SearchConfigData - Search configuration parameters
+//=============================================================================
+//
+// CONFIG_CONST members:
+//   - Development: Normal instance members (mutable at runtime)
+//   - Production: static constexpr (compile-time constants, shared across instances)
+//
+// CONFIG_ESSENTIAL members:
+//   - Always instance members (mutable at runtime in all builds)
+//
+// In production, accessing CONFIG_CONST members like `config.USE_LMR` works
+// because C++ allows accessing static members through an instance. The compiler
+// optimizes this to direct access of the static constant.
+//=============================================================================
+
 struct SearchConfigData {
     //=========================================================================
-    // ESSENTIAL - Always mutable (user must be able to change these)
+    // ESSENTIAL - Always mutable instance members
     //=========================================================================
     CONFIG_ESSENTIAL int TT_SIZE_MB = 64;
     CONFIG_ESSENTIAL int MOVE_OVERHEAD_MS = 10;
@@ -471,11 +490,12 @@ if (SearchConfig.USE_LMR
 }
 
 // In DEVELOPMENT:
-//   - SearchConfig.USE_LMR is a runtime bool
+//   - SearchConfig.USE_LMR is a runtime bool (instance member)
 //   - Branch is evaluated at runtime
 //
 // In PRODUCTION:
-//   - SearchConfig.USE_LMR is constexpr true
+//   - SearchConfig.USE_LMR is static constexpr true
+//   - C++ allows accessing static members via instance syntax
 //   - Compiler sees: if (true && depth >= 2 && movesSearched >= 2)
 //   - Dead branch elimination removes the check entirely
 ```
@@ -487,9 +507,9 @@ if (SearchConfig.USE_LMR
 ### Development Build
 
 ```cpp
-// SearchConfigData struct has normal members
+// SearchConfigData struct has normal instance members
 struct SearchConfigData {
-    bool USE_LMR = true;  // Runtime mutable
+    bool USE_LMR = true;  // Runtime mutable instance member
     int LMR_MIN_DEPTH = 2;
 };
 
@@ -505,18 +525,21 @@ if (config.USE_LMR && depth >= config.LMR_MIN_DEPTH) {
 ### Production Build
 
 ```cpp
-// SearchConfigData struct has constexpr members
+// SearchConfigData struct has static constexpr members
 struct SearchConfigData {
-    constexpr bool USE_LMR = true;  // Compile-time constant
-    constexpr int LMR_MIN_DEPTH = 2;
+    static constexpr bool USE_LMR = true;  // Compile-time constant
+    static constexpr int LMR_MIN_DEPTH = 2;
 };
 
-// ConfigManager returns constexpr copy
-constexpr SearchConfigData config = ConfigManager::search();
+// Access through instance still works (C++ allows static member access via instance)
+SearchConfigData config{};  // Instance only holds ESSENTIAL members
+if (config.USE_LMR && depth >= config.LMR_MIN_DEPTH) {
+    // Compiler sees: if (true && depth >= 2)
+}
 
-// Compiler sees constant expression
-if (true && depth >= 2) {  // Simplified by compiler
-    // No branch needed for USE_LMR check
+// Or equivalently:
+if (SearchConfigData::USE_LMR && depth >= SearchConfigData::LMR_MIN_DEPTH) {
+    // Same result - compiler inlines the constants
 }
 ```
 
@@ -528,6 +551,10 @@ jl .skip_lmr
 ; LMR code here
 .skip_lmr:
 ```
+
+### Why Static Works
+
+C++ allows accessing static members through an instance: `obj.staticMember` is equivalent to `ClassName::staticMember`. This means existing code like `SearchConfig.USE_LMR` works unchanged - in development it's an instance member access, in production it's a static constexpr access through the instance syntax.
 
 ---
 
@@ -555,20 +582,238 @@ For statistics, we still need macros because we want to **completely eliminate**
 
 ---
 
-## Comparison: X-Macro vs Constexpr Approach
+## CLI Tools Handling
 
-| Aspect                           | X-Macro Approach            | Constexpr Approach    |
-|----------------------------------|-----------------------------|-----------------------|
-| **Complexity**                   | High (meta-programming)     | Low (simple macros)   |
-| **Files to edit for new config** | 1 (definitions file)        | 2 (struct + registry) |
-| **Default value duplication**    | None (generated)            | Can be eliminated*    |
-| **IDE support**                  | Poor                        | Good                  |
-| **Error messages**               | Cryptic                     | Clear                 |
-| **Risk level**                   | High (complete rewrite)     | Low (incremental)     |
-| **Search.cpp changes**           | Yes (FEATURE_ENABLED macro) | No                    |
-| **Struct readability**           | Generated (hard to read)    | Normal C++            |
-| **Gradual migration**            | Difficult                   | Easy                  |
-| **Rollback difficulty**          | High                        | Low                   |
+Several CLI tools use `CONFIG_OVERRIDE` macros to modify search behavior. These need special consideration in production builds.
+
+### Tools That Use CONFIG_OVERRIDE
+
+| Tool          | Config Overrides   | Production Behavior               |
+|---------------|--------------------|-----------------------------------|
+| `--bench`     | `TT_SIZE_MB` only  | ✅ Works - TT_SIZE_MB is essential |
+| `--testsuite` | `USE_BOOK = false` | ✅ Works - USE_BOOK is essential   |
+
+**Note:** `SearchTreeSizeTest` (in `src/enginetest/`) uses many non-essential config overrides
+but is not a CLI tool - it's part of the unit test infrastructure and handled in the Unit Test section.
+
+### Solution: Tool-Specific Handling
+
+**1. `--bench` (Benchmark.cpp)** - No changes needed
+```cpp
+// Already only modifies essential config
+ConfigManager::instance().applyOverrides(
+  [&](SearchConfigData& s, EvalConfigData&) {
+    s.TT_SIZE_MB = config.hashSizeMB;  // Essential - always mutable
+  });
+```
+
+**2. `--testsuite` (TestSuite.cpp)** - No changes needed
+```cpp
+// Already only modifies essential config
+CONFIG_OVERRIDE(s.USE_BOOK = false;);  // Essential - always mutable
+```
+
+### CONFIG_OVERRIDE Macro Changes
+
+The `CONFIG_OVERRIDE` macros need to be conditional:
+
+```cpp
+// src/config/ConfigManager.h
+
+#ifdef FRANKYCPP_PRODUCTION
+
+// Production: CONFIG_OVERRIDE only works for essential configs
+// Non-essential assignments silently compile but have no effect (static constexpr)
+#define CONFIG_OVERRIDE_START() \
+    ConfigManager::instance().applyOverrides( \
+        [&]([[maybe_unused]] SearchConfigData& s, [[maybe_unused]] EvalConfigData& e) {
+#define CONFIG_OVERRIDE_END() });
+#define CONFIG_OVERRIDE(expr) \
+    ConfigManager::instance().applyOverrides( \
+        [&]([[maybe_unused]] SearchConfigData& s, [[maybe_unused]] EvalConfigData& e) { expr });
+
+#else
+
+// Development: Full CONFIG_OVERRIDE support (existing implementation)
+#define CONFIG_OVERRIDE_START() \
+    ConfigManager::instance().applyOverrides( \
+        [&]([[maybe_unused]] SearchConfigData& s, [[maybe_unused]] EvalConfigData& e) {
+#define CONFIG_OVERRIDE_END() });
+#define CONFIG_OVERRIDE(expr) \
+    ConfigManager::instance().applyOverrides( \
+        [&]([[maybe_unused]] SearchConfigData& s, [[maybe_unused]] EvalConfigData& e) { expr });
+
+#endif
+```
+
+**Note:** In production, assigning to `static constexpr` members in a lambda will cause a **compile error**. This is actually desirable - it prevents accidentally using CONFIG_OVERRIDE on frozen configs. Code that tries to override non-essential configs in production simply won't compile.
+
+---
+
+## Unit Test Handling
+
+Unit tests present a unique challenge: we want most tests to verify the engine works correctly in **both** development and production modes, but some tests are specifically about config modification which only makes sense in development.
+
+### Test Categories
+
+| Category               | Example Tests                                  | Production Behavior         |
+|------------------------|------------------------------------------------|-----------------------------|
+| **Core Functionality** | MoveGeneratorTest, PositionTest, EvaluatorTest | ✅ Must work in both modes   |
+| **Search Behavior**    | SearchTest (basic search), TTTest              | ✅ Should work in both modes |
+| **Config-Dependent**   | Tests that override USE_LMR, USE_NMP, etc.     | ❌ Development only          |
+| **Config System**      | ConfigRegistryTest, ConfigManagerTest          | ❌ Development only          |
+| **Statistics**         | Tests that check SearchStats counters          | ⚠️ May need adaptation      |
+
+### Recommended Approach: Conditional Test Compilation
+
+**1. Mark development-only tests with `#ifndef FRANKYCPP_PRODUCTION`**
+
+```cpp
+// test/engine/SearchTest.cpp
+
+// These tests work in both modes
+TEST_F(SearchTest, BasicSearchFindsGoodMove) {
+  // ... test without config overrides ...
+}
+
+// These tests require config modification - development only
+#ifndef FRANKYCPP_PRODUCTION
+
+TEST_F(SearchTest, LMR_DisabledIncreasesNodes) {
+  CONFIG_OVERRIDE(s.USE_LMR = false);
+  // ... test that depends on disabling LMR ...
+}
+
+TEST_F(SearchTest, NMP_VerifyReducesZugzwangErrors) {
+  CONFIG_OVERRIDE(s.USE_NMP_VERIFY = true);
+  // ... test that depends on enabling NMP verify ...
+}
+
+#endif // FRANKYCPP_PRODUCTION
+```
+
+**2. Create separate test targets in CMake**
+
+```cmake
+# test/CMakeLists.txt
+
+# Core tests - run in both development and production
+set(CORE_TEST_SOURCES
+    chesscore/MoveGeneratorTest.cpp
+    chesscore/PositionTest.cpp
+    chesscore/BitboardTest.cpp
+    engine/TTTest.cpp
+    engine/EvaluatorTest.cpp
+    # ... etc
+)
+
+# Development-only tests - require config modification
+set(DEV_ONLY_TEST_SOURCES
+    config/ConfigRegistryTest.cpp
+    config/ConfigManagerTest.cpp
+    enginetest/SearchTreeSizeTest.cpp
+    # ... etc
+)
+
+# Main test executable includes all tests
+add_executable(FrankyCPP_Test
+    ${CORE_TEST_SOURCES}
+    ${DEV_ONLY_TEST_SOURCES}
+)
+
+# Optional: Separate executable for production-compatible tests only
+if(FRANKYCPP_PRODUCTION)
+    add_executable(FrankyCPP_Test_Production
+        ${CORE_TEST_SOURCES}
+    )
+    target_compile_definitions(FrankyCPP_Test_Production PRIVATE FRANKYCPP_PRODUCTION)
+endif()
+```
+
+### Test Files Requiring Modification
+
+| Test File                | Issue                               | Solution                               |
+|--------------------------|-------------------------------------|----------------------------------------|
+| `SearchTreeSizeTest.cpp` | Overrides ~40 non-essential configs | Exclude from production                |
+| `EngineSpeedTests.cpp`   | Uses CONFIG_OVERRIDE_START          | Wrap in `#ifndef FRANKYCPP_PRODUCTION` |
+| `TablebaseTest.cpp`      | Overrides TB_PATH (essential)       | ✅ No changes needed                    |
+| `TestSuite_Test.cpp`     | Overrides USE_BOOK (essential)      | ✅ No changes needed                    |
+| `ConfigRegistryTest.cpp` | Tests config modification           | Exclude from production                |
+| `ConfigManagerTest.cpp`  | Tests config modification           | Exclude from production                |
+
+### Statistics Counter Tests
+
+Tests that verify statistics counters need special handling:
+
+```cpp
+// Before
+TEST_F(SearchTest, CheckStatisticsCounters) {
+  search.startSearch(position, limits);
+  search.waitWhileSearching();
+  EXPECT_GT(search.getSearchStats().nodes, 0);
+  EXPECT_GT(search.getSearchStats().betaCutoffs, 0);  // May be 0 in production!
+}
+
+// After - handle production mode
+TEST_F(SearchTest, CheckStatisticsCounters) {
+  search.startSearch(position, limits);
+  search.waitWhileSearching();
+  EXPECT_GT(search.getSearchStats().nodes, 0);  // Essential stat
+#ifndef FRANKYCPP_PRODUCTION
+  EXPECT_GT(search.getSearchStats().betaCutoffs, 0);  // Non-essential stat
+#endif
+}
+```
+
+### Verifying Both Modes Work
+
+**CI/CD should run tests in both modes:**
+
+```yaml
+# .github/workflows/test.yml
+jobs:
+  test-development:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build (Development)
+        run: cmake -B build -DFRANKYCPP_PRODUCTION=OFF
+      - name: Test
+        run: ctest --test-dir build
+
+  test-production:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build (Production)
+        run: cmake -B build -DFRANKYCPP_PRODUCTION=ON
+      - name: Test
+        run: ctest --test-dir build
+```
+
+### Summary: Test Handling Rules
+
+1. **Default:** Tests should work in both modes
+2. **Config modification:** Wrap in `#ifndef FRANKYCPP_PRODUCTION`
+3. **Non-essential stats:** Either skip check in production or use `ESSENTIAL_STAT` for important counters
+4. **Development-only test files:** Exclude via CMake or `#ifndef` the entire file
+5. **CI/CD:** Run tests in both modes to ensure compatibility
+
+---
+
+## Comparison: X-Macro vs Static Constexpr Approach
+
+| Aspect                           | X-Macro Approach            | Static Constexpr Approach |
+|----------------------------------|-----------------------------|---------------------------|
+| **Complexity**                   | High (meta-programming)     | Low (simple macros)       |
+| **Files to edit for new config** | 1 (definitions file)        | 2 (struct + registry)     |
+| **Default value duplication**    | None (generated)            | Can be eliminated*        |
+| **IDE support**                  | Poor                        | Good                      |
+| **Error messages**               | Cryptic                     | Clear                     |
+| **Risk level**                   | High (complete rewrite)     | Low (incremental)         |
+| **Search.cpp changes**           | Yes (FEATURE_ENABLED macro) | No                        |
+| **Struct readability**           | Generated (hard to read)    | Normal C++                |
+| **Gradual migration**            | Difficult                   | Easy                      |
+| **Rollback difficulty**          | High                        | Low                       |
+| **C++ requirement**              | N/A                         | Static for constexpr      |
 
 *Default duplication eliminated using `defaultFrom(&SearchConfigData::MEMBER)` pattern
 
@@ -583,7 +828,7 @@ For statistics, we still need macros because we want to **completely eliminate**
 - [ ] Create `src/config/ConfigMode.h`:
   ```cpp
   #ifdef FRANKYCPP_PRODUCTION
-    #define CONFIG_CONST constexpr
+    #define CONFIG_CONST static constexpr
     #define STAT_INC(counter) ((void)0)
     // ... etc
   #else
@@ -706,20 +951,57 @@ This preserves display/documentation while preventing runtime modification of fr
 
 ---
 
+### Phase 7: CLI Tools and Unit Tests (Low Risk)
+
+**Goal:** Ensure CLI tools work correctly and unit tests run in both modes.
+
+#### CLI Tools
+
+- [ ] Verify `--bench` works (only uses essential TT_SIZE_MB)
+- [ ] Verify `--testsuite` works (only uses essential USE_BOOK)
+
+#### Unit Tests - Wrap Development-Only Tests
+
+- [ ] `test/engine/EngineSpeedTests.cpp` - wrap CONFIG_OVERRIDE usage in `#ifndef FRANKYCPP_PRODUCTION`
+- [ ] `test/config/ConfigRegistryTest.cpp` - wrap entire file or individual tests
+- [ ] `test/config/ConfigManagerTest.cpp` - wrap tests that modify configs
+
+#### Unit Tests - Statistics Handling
+
+- [ ] Identify tests that check non-essential statistics counters
+- [ ] Wrap non-essential stat checks in `#ifndef FRANKYCPP_PRODUCTION`
+- [ ] Keep essential stat checks (nodes, depth, time) without guards
+
+#### CMake Test Configuration
+
+- [ ] Ensure test executable compiles in both modes
+- [ ] Add CI job for production build tests
+- [ ] Document which tests are development-only
+
+**Acceptance:** 
+- `--bench` and `--testsuite` work in production builds
+- All applicable tests pass in both build modes
+- CI runs tests in both modes
+
+---
+
 ## Summary: What Changes Where
 
-| File                  | Change                                        | Risk   |
-|-----------------------|-----------------------------------------------|--------|
-| `ConfigMode.h`        | **NEW** - defines CONFIG_CONST, STAT_* macros | Low    |
-| `CMakeLists.txt`      | Add FRANKYCPP_PRODUCTION option               | Low    |
-| `CMakePresets.json`   | Add production presets                        | Low    |
-| `SearchConfigData.h`  | Add CONFIG_CONST prefix to members            | Low    |
-| `EvalConfigData.h`    | Add CONFIG_CONST prefix to members            | Low    |
-| `ConfigManager.h/cpp` | Conditional return type                       | Medium |
-| `ConfigRegistry.cpp`  | `#ifndef` around non-essentials               | Low    |
-| `Search.cpp`          | `statistics.x++` → `STAT_INC(statistics.x)`   | Low    |
+| File                     | Change                                        | Risk   |
+|--------------------------|-----------------------------------------------|--------|
+| `ConfigMode.h`           | **NEW** - defines CONFIG_CONST, STAT_* macros | Low    |
+| `CMakeLists.txt`         | Add FRANKYCPP_PRODUCTION option               | Low    |
+| `CMakePresets.json`      | Add production presets                        | Low    |
+| `SearchConfigData.h`     | Add CONFIG_CONST prefix to members            | Low    |
+| `EvalConfigData.h`       | Add CONFIG_CONST prefix to members            | Low    |
+| `ConfigManager.h/cpp`    | Conditional return type                       | Medium |
+| `ConfigRegistry.cpp`     | `#ifndef` around non-essentials               | Low    |
+| `Search.cpp`             | `statistics.x++` → `STAT_INC(statistics.x)`   | Low    |
+| `EngineSpeedTests.cpp`   | `#ifndef FRANKYCPP_PRODUCTION` guards         | Low    |
+| `ConfigRegistryTest.cpp` | `#ifndef FRANKYCPP_PRODUCTION` guards         | Low    |
+| `ConfigManagerTest.cpp`  | `#ifndef FRANKYCPP_PRODUCTION` guards         | Low    |
 
-**Total:** ~8 files changed, most changes are mechanical/low-risk
+**Total:** ~11 files changed, most changes are mechanical/low-risk
 
 ---
 
@@ -732,7 +1014,7 @@ This preserves display/documentation while preventing runtime modification of fr
 5. **Search.cpp unchanged** - No `FEATURE_ENABLED()` wrapper needed
 6. **Proven pattern** - Same approach used by STL, Boost, game engines
 7. **Clear struct** - Can read SearchConfigData.h and understand all configs
-8. **Compiler does the work** - We just mark things `constexpr`, optimizer handles the rest
+8. **Compiler does the work** - We just mark things `static constexpr`, optimizer handles the rest
 9. **Single source of truth for defaults** - `defaultFrom()` reads from struct
 
 ---
@@ -785,20 +1067,20 @@ This preserves display/documentation while preventing runtime modification of fr
 
 ### Why This Over X-Macros:
 
-| Aspect             | X-Macro  | Constexpr (This) |
-|--------------------|----------|------------------|
-| Complexity         | High     | **Low**          |
-| Risk               | High     | **Low**          |
-| Search.cpp changes | Required | **None**         |
-| IDE support        | Poor     | **Good**         |
-| Gradual migration  | Hard     | **Easy**         |
-| Rollback           | Hard     | **Easy**         |
+| Aspect             | X-Macro  | Static Constexpr (This) |
+|--------------------|----------|-------------------------|
+| Complexity         | High     | **Low**                 |
+| Risk               | High     | **Low**                 |
+| Search.cpp changes | Required | **None**                |
+| IDE support        | Poor     | **Good**                |
+| Gradual migration  | Hard     | **Easy**                |
+| Rollback           | Hard     | **Easy**                |
 
 ### Key Insight
 
 The X-macro approach solves a problem we don't actually have. We wanted:
 1. Single source of truth for defaults → **Solved by `defaultFrom()`**
-2. Zero runtime overhead → **Solved by `constexpr`**
+2. Zero runtime overhead → **Solved by `static constexpr`**
 3. Hide configs in production → **Solved by `#ifndef`**
 
 We don't need meta-programming to achieve any of these goals.
@@ -807,7 +1089,7 @@ We don't need meta-programming to achieve any of these goals.
 
 **90% of the benefit with 20% of the complexity.**
 
-The constexpr approach:
+The static constexpr approach:
 - Uses proven STL patterns
 - Requires minimal code changes
 - Lets the compiler do the work
