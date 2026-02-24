@@ -28,11 +28,11 @@ set(FrankyCPPlib_SRCS
         engine/PawnTT.cpp engine/PawnTT.h
         engine/Benchmark.cpp engine/Benchmark.h
 
-        enginetest/SearchTreeSizeTest.cpp enginetest/SearchTreeSizeTest.h
         enginetest/TestSuite.cpp enginetest/TestSuite.h
         enginetest/EpdParser.cpp enginetest/EpdParser.h
         enginetest/EdpTest.h
         enginetest/TestTypes.h
+
         types/attacks.cpp
         types/bitboards.h
 
@@ -46,6 +46,15 @@ set(FrankyCPPlib_SRCS
 )
 
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})
+
+# SearchTreeSizeTest is a dev/tuning research tool — excluded from production builds.
+# It uses CONFIG_OVERRIDE extensively on non-essential (frozen) config members.
+# TestSuite/EpdParser stay in all builds as they are used by main.cpp (--testsuite CLI option).
+if (NOT FRANKYCPP_PRODUCTION)
+    target_sources(FrankyCPPlib PRIVATE
+        enginetest/SearchTreeSizeTest.cpp enginetest/SearchTreeSizeTest.h
+    )
+endif()
 
 # Request C++20 via features (propagates to dependents)
 target_compile_features(FrankyCPPlib PUBLIC cxx_std_20)

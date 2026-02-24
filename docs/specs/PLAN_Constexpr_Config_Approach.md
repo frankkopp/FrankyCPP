@@ -18,15 +18,15 @@
 
 ### Phase Status Tracker
 
-| Phase                               | Status        | Notes                                 |
-|-------------------------------------|---------------|---------------------------------------|
-| Phase 1: Infrastructure             | ✅ Complete    | ConfigMode.h, CMake option, presets   |
-| Phase 2: SearchConfigData Migration | ✅ Complete    | CONFIG_CONST added to struct members  |
-| Phase 3: ConfigManager Conditional  | ✅ Complete    | Conditional accessors                 |
-| Phase 4: ConfigRegistry Conditional | ⬜ Not Started | essentialSetter vs frozenSetter       |
-| Phase 5: Statistics Macros          | ⬜ Not Started | STAT_INC etc.                         |
-| Phase 6: Verification               | ⬜ Not Started | Benchmark, test both builds           |
-| Phase 7: CLI Tools & Unit Tests     | ⬜ Not Started | Production guards, test handling      |
+| Phase                               | Status        | Notes                                                           |
+|-------------------------------------|---------------|-----------------------------------------------------------------|
+| Phase 1: Infrastructure             | ✅ Complete    | ConfigMode.h, CMake option, presets                             |
+| Phase 2: SearchConfigData Migration | ✅ Complete    | CONFIG_CONST added to struct members                            |
+| Phase 3: ConfigManager Conditional  | ✅ Complete    | Conditional accessors                                           |
+| Phase 4: ConfigRegistry Conditional | ✅ Complete    | SEARCH/EVAL_CONFIG_SETTER macros; enginetest excluded from PROD |
+| Phase 5: Statistics Macros          | ⬜ Not Started | STAT_INC etc.                                                   |
+| Phase 6: Verification               | ⬜ Not Started | Benchmark, test both builds                                     |
+| Phase 7: CLI Tools & Unit Tests     | ⬜ Not Started | Production guards, test handling                                |
 
 **Status Legend:** ⬜ Not Started | 🔄 In Progress | ✅ Complete | ❌ Blocked
 

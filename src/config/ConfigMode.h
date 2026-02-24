@@ -20,6 +20,8 @@
 #ifndef FRANKYCPP_CONFIGMODE_H
 #define FRANKYCPP_CONFIGMODE_H
 
+#include <type_traits>
+
 //=============================================================================
 // ConfigMode.h - Conditional static constexpr for configuration values
 //=============================================================================
@@ -115,5 +117,46 @@
 #define ESSENTIAL_STAT_INC(counter)         (++(counter))
 #define ESSENTIAL_STAT_ADD(counter, val)    ((counter) += (val))
 #define ESSENTIAL_STAT_SET(counter, val)    ((counter) = (val))
+
+//=============================================================================
+// CONFIG SETTER macros for ConfigRegistry setter lambdas
+//
+// SEARCH_CONFIG_SETTER(member, parser) / EVAL_CONFIG_SETTER(member, parser)
+//   Expands to a complete setter lambda. Uses if constexpr + std::is_const_v
+//   to detect at compile time whether the member is mutable (CONFIG_ESSENTIAL)
+//   or frozen (CONFIG_CONST = static constexpr in production).
+//   - Essential members (plain instance members): assignment executes in all builds.
+//   - Non-essential members (static constexpr in production): branch compiled away,
+//     effectively a no-op. In development they are mutable so assignment executes.
+//   No #ifdef needed at the call site — one macro handles all cases.
+//
+// SEARCH_CONFIG_ARRAY_SETTER(member)
+//   Same idea but for std::array members that use parseArray(v, member) in-place.
+//
+// Usage:
+//   .setter = SEARCH_CONFIG_SETTER(USE_LMR, parseBool)
+//   .setter = EVAL_CONFIG_SETTER(TEMPO, parseInt)
+//   .setter = SEARCH_CONFIG_ARRAY_SETTER(RFP_MARGIN)
+//=============================================================================
+#define SEARCH_CONFIG_SETTER(member, parser) \
+    [](SearchConfigData& s, EvalConfigData&, const std::string& v) { \
+        if constexpr (!std::is_const_v<std::remove_reference_t<decltype(s.member)>>) { \
+            s.member = parser(v); \
+        } \
+    }
+
+#define EVAL_CONFIG_SETTER(member, parser) \
+    [](SearchConfigData&, EvalConfigData& e, const std::string& v) { \
+        if constexpr (!std::is_const_v<std::remove_reference_t<decltype(e.member)>>) { \
+            e.member = parser(v); \
+        } \
+    }
+
+#define SEARCH_CONFIG_ARRAY_SETTER(member) \
+    [](SearchConfigData& s, EvalConfigData&, const std::string& v) { \
+        if constexpr (!std::is_const_v<std::remove_reference_t<decltype(s.member)>>) { \
+            parseArray(v, s.member); \
+        } \
+    }
 
 #endif // FRANKYCPP_CONFIGMODE_H
