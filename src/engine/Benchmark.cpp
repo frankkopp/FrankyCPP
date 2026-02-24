@@ -84,7 +84,7 @@ BenchResult Benchmark::run(const std::vector<std::string>& fens, const BenchConf
     }
 
     // Print progress to stderr
-    std::cerr << "\rPosition " << positionNum << "/" << fens.size() << std::flush;
+    std::cout << "\rPosition " << positionNum << "/" << fens.size() << std::flush;
 
     // Clear TT before each position for fair, independent measurement
     // Done BEFORE timing so TT clearing doesn't affect NPS
@@ -115,7 +115,7 @@ BenchResult Benchmark::run(const std::vector<std::string>& fens, const BenchConf
                  static_cast<double>(result.totalTime.count());
   }
 
-  std::cerr << "\n";  // New line after progress indicator
+  std::cout << "\n";  // New line after progress indicator
 
   return result;
 }
@@ -124,7 +124,7 @@ void Benchmark::printResults(const BenchResult& result) {
   const double totalTimeSec = static_cast<double>(result.totalTime.count()) / 1000.0;
   const auto npsInt = static_cast<uint64_t>(result.nps);
 
-  std::cerr << std::format(deLocale,
+  std::cout << std::format(deLocale,
     "\n"
     "===================================\n"
     "FrankyCPP Benchmark Results    \n"
