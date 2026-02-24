@@ -315,6 +315,8 @@ struct SearchConfigData {
 
 ### ConfigManager Changes
 
+# TODO: these do not make sense - making the whole struct constexpr defeats thE purposE of having the ESSENTIAL configs 
+
 ```cpp
 // src/config/ConfigManager.h
 
