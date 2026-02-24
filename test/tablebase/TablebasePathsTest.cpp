@@ -173,7 +173,7 @@ TEST_F(TablebasePathsTest, getTablebaseStatus_autoDetect) {
 // Macro for skipping tests based on tablebase requirements.
 // Must be called directly in the test function (not in a helper).
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define SKIP_IF_NO_TABLEBASES                      \
+#define SKIP_IF_TABLEBASES_UNAVAIL                      \
   {                                                \
     const std::string path = findTablebasePath();  \
     if (path.empty()) {                            \
@@ -194,7 +194,7 @@ public:
 };
 
 TEST_F(TablebasePathsIntegrationTest, findTablebasePath_findsValidPath) {
-  SKIP_IF_NO_TABLEBASES
+  SKIP_IF_TABLEBASES_UNAVAIL
 
   const std::string path = findTablebasePath();
   EXPECT_FALSE(path.empty());
@@ -204,7 +204,7 @@ TEST_F(TablebasePathsIntegrationTest, findTablebasePath_findsValidPath) {
 }
 
 TEST_F(TablebasePathsIntegrationTest, countTablebaseFiles_countsCorrectly) {
-  SKIP_IF_NO_TABLEBASES;
+  SKIP_IF_TABLEBASES_UNAVAIL;
 
   const std::string path = findTablebasePath();
   const auto [wdl, dtz] = countTablebaseFiles(path);
@@ -215,7 +215,7 @@ TEST_F(TablebasePathsIntegrationTest, countTablebaseFiles_countsCorrectly) {
 }
 
 TEST_F(TablebasePathsIntegrationTest, getTablebaseStatus_showsDetails) {
-  SKIP_IF_NO_TABLEBASES;
+  SKIP_IF_TABLEBASES_UNAVAIL;
 
   const std::string status = getTablebaseStatus();
   EXPECT_NE(status.find("available"), std::string::npos);
