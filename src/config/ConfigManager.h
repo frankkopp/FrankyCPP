@@ -24,6 +24,8 @@
 #include <optional>
 #include <string>
 
+// ReSharper disable once CppUnusedIncludeDirective
+#include "config/ConfigMode.h"
 #include "config/EvalConfigData.h"
 #include "config/SearchConfigData.h"
 
@@ -81,12 +83,15 @@ public:
   ///   will replace current values, so if you want to combine YAML with overrides, call applyOverrides() after loading.
   /// - Thread-safety: ConfigManager has no internal locking. Call this during initialization or ensure
   ///   external synchronization so other threads do not read/modify config concurrently.
+  /// - In production builds (FRANKYCPP_PRODUCTION), CONFIG_CONST members are static constexpr.
+  ///   Attempting to assign to them inside the lambda will fail to compile — this is intentional.
+  ///   Only CONFIG_ESSENTIAL members (e.g. TT_SIZE_MB, BOOK_PATH) remain mutable in all builds.
   ///
   /// Example:
   ///   ConfigManager::instance().applyOverrides([](auto& s, auto& e) {
-  ///       s.MOVE_OVERHEAD_MS = 25;   // Search tweak
-  ///       s.USE_PVS = true;          // enable PVS
-  ///       e.TEMPO = 40;              // Eval tweak
+  ///       s.MOVE_OVERHEAD_MS = 25;   // OK in all builds - essential
+  ///       s.USE_PVS = true;          // compile error in production - non-essential
+  ///       e.TEMPO = 40;              // compile error in production - non-essential
   ///   });
   template<typename F>
   void applyOverrides(F&& fn) { fn(currentSearch_, currentEval_); }
@@ -113,27 +118,23 @@ public:
 // Helper
 #define SEARCH_CONFIG ConfigManager::instance().search()
 
-// Helper macro to simplify usage of applyOverrides in lambdas
-// Use s for SearchConfigData and e for EvalConfigData
+// Helper macro to simplify usage of applyOverrides in lambdas.
+// Use s for SearchConfigData and e for EvalConfigData.
+// In production builds (FRANKYCPP_PRODUCTION), assigning to a CONFIG_CONST member inside
+// the lambda will fail to compile (static constexpr cannot be assigned to).
+// Only CONFIG_ESSENTIAL members remain mutable in all builds.
 // Example: CONFIG_OVERRIDE(s.MOVE_OVERHEAD_MS = 25; s.USE_PVS = true;)
 #define CONFIG_OVERRIDE(expr) ConfigManager::instance().applyOverrides([&]([[maybe_unused]] SearchConfigData& s, [[maybe_unused]] EvalConfigData& e) { expr; })
 
-// For multi-line overrides
-// Use s for SearchConfigData and e for EvalConfigData
+// For multi-line overrides.
+// Use s for SearchConfigData and e for EvalConfigData.
 // Example:
 // CONFIG_OVERRIDE_START()
-//    s.MOVE_OVERHEAD_MS = 25;   // Search tweak
-//    s.USE_PVS = true;          // enable PVS
+//    s.MOVE_OVERHEAD_MS = 25;
+//    s.TT_SIZE_MB = 16;
 // CONFIG_OVERRIDE_END();
 #define CONFIG_OVERRIDE_START() ConfigManager::instance().applyOverrides([&]([[maybe_unused]] SearchConfigData& s, [[maybe_unused]] EvalConfigData& e) {
-
-// For multi-line overrides
-// Use s for SearchConfigData and e for EvalConfigData
-// Example:
-// CONFIG_OVERRIDE_START()
-//    s.MOVE_OVERHEAD_MS = 25;   // Search tweak
-//    s.USE_PVS = true;          // enable PVS
-// CONFIG_OVERRIDE_END();
 #define CONFIG_OVERRIDE_END() })
+
 
 #endif // FRANKYCPP_CONFIGMANAGER_H
