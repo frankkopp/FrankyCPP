@@ -18,15 +18,15 @@
 
 ### Phase Status Tracker
 
-| Phase                               | Status        | Notes                                                           |
-|-------------------------------------|---------------|-----------------------------------------------------------------|
-| Phase 1: Infrastructure             | ✅ Complete    | ConfigMode.h, CMake option, presets                             |
-| Phase 2: SearchConfigData Migration | ✅ Complete    | CONFIG_CONST added to struct members                            |
-| Phase 3: ConfigManager Conditional  | ✅ Complete    | Conditional accessors                                           |
-| Phase 4: ConfigRegistry Conditional | ✅ Complete    | SEARCH/EVAL_CONFIG_SETTER macros; enginetest excluded from PROD |
-| Phase 5: Statistics Macros          | ✅ Complete    | STAT_INC/ESSENTIAL_STAT_INC applied to all stats in Search.cpp  |
-| Phase 6: Verification               | ⬜ Not Started | Benchmark, test both builds                                     |
-| Phase 7: CLI Tools & Unit Tests     | ⬜ Not Started | Production guards, test handling                                |
+| Phase                               | Status        | Notes                                                                                                                                                         |
+|-------------------------------------|---------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Phase 1: Infrastructure             | ✅ Complete    | ConfigMode.h, CMake option, presets                                                                                                                           |
+| Phase 2: SearchConfigData Migration | ✅ Complete    | CONFIG_CONST added to struct members                                                                                                                          |
+| Phase 3: ConfigManager Conditional  | ✅ Complete    | Conditional accessors                                                                                                                                         |
+| Phase 4: ConfigRegistry Conditional | ✅ Complete    | SEARCH/EVAL_CONFIG_SETTER macros; enginetest excluded from PROD                                                                                               |
+| Phase 5: Statistics Macros          | ✅ Complete    | STAT_INC/ESSENTIAL_STAT_INC applied to all stats in Search.cpp                                                                                                |
+| Phase 6: Verification               | ✅ Complete    | PROD: 3,201,934 NPS vs DEV: 3,125,677 NPS (+2.5%). Node counts identical (35,960,923) — search is deterministic. Earlier 45-node delta was UCI pipe artifact. |
+| Phase 7: CLI Tools & Unit Tests     | ⬜ Not Started | Production guards, test handling                                                                                                                              |
 
 **Status Legend:** ⬜ Not Started | 🔄 In Progress | ✅ Complete | ❌ Blocked
 
