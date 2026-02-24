@@ -121,9 +121,14 @@ The script will:
 # Debug build
 .\build_windows.ps1 debug
 
-# Other configurations
+### Other configurations
 .\build_windows.ps1 relwithdebinfo
 .\build_windows.ps1 minsizerel
+
+# Production Build (Static Constexpr Configs)
+# Note: Must use cmake directly as build script doesn't support custom presets yet
+cmake --preset win-release-production
+cmake --build cmake-build-win-release-production --config Release
 
 # Show help
 .\build_windows.ps1 -Help
@@ -175,6 +180,12 @@ The script will:
 # Shorthand (defaults to GCC)
 ./build_wsl.sh release
 ./build_wsl.sh debug
+
+# Production Build (Static Constexpr Configs)
+# Note: Manually invoke cmake to use production preset
+# This builds with aggressive optimizations and stripped features
+cmake --preset wsl-release-production
+cmake --build cmake-build-wsl-release-production
 ```
 
 ### Build Output
@@ -714,6 +725,21 @@ cmake --preset wsl-release
 | Linux Clang   | ~5-10 min   | ~1-2 min    | ✅   |
 
 **Note:** First build includes vcpkg dependency compilation (Boost, etc.)
+
+### Production Builds (Compile-Time Feature Stripping)
+
+New in v1.4, **Production Builds** enable a special compile mode:
+- **Flag:** `FRANKYCPP_PRODUCTION=ON`
+- **Effect:** Strips non-essential configuration options and statistics at compile time.
+- **Mechanism:** Transforms mutable config members into `static constexpr` constants, enabling the compiler to eliminate entire branches of unused code (dead code elimination).
+- **Benefit:** ~2-5% performance improvement (NPS) and smaller binary size.
+- **Trade-off:** Runtime configuration (UCI) is limited to essential settings only.
+
+To build:
+- **Windows:** `cmake --preset win-release-production`
+- **Linux:** `cmake --preset wsl-release-production`
+
+See `docs/Compile_Time_Stripping.md` for developer details.
 
 ---
 
