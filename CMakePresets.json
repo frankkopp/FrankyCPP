@@ -141,6 +141,23 @@
       "cacheVariables": {
         "STRICT_WARNINGS": "ON"
       }
+    },
+    {
+      "name": "win-release-production",
+      "displayName": "Win Release Production",
+      "inherits": "release",
+      "cacheVariables": {
+        "FRANKYCPP_PRODUCTION": "ON"
+      }
+    },
+    {
+      "name": "wsl-release-production",
+      "displayName": "WSL Release Production",
+      "inherits": "wsl-release",
+      "binaryDir": "${sourceDir}/cmake-build-wsl-release-production",
+      "cacheVariables": {
+        "FRANKYCPP_PRODUCTION": "ON"
+      }
     }
   ],
   "buildPresets": [
@@ -148,19 +165,19 @@
       "name": "debug",
       "displayName": "Win Debug",
       "configurePreset": "debug",
-      "jobs": 16
+      "jobs": 30
     },
     {
       "name": "release",
       "displayName": "Win Release",
       "configurePreset": "release",
-      "jobs": 16
+      "jobs": 30
     },
     {
       "name": "relwithdebinfo",
       "displayName": "Win RelWithDebInfo",
       "configurePreset": "relwithdebinfo",
-      "jobs": 16
+      "jobs": 30
     },
     {
       "name": "wsl-debug",
@@ -196,16 +213,26 @@
       "name": "ci-windows",
       "displayName": "CI Windows",
       "configurePreset": "ci-windows",
-      "jobs": 16
+      "jobs": 30
     },
     {
       "name": "ci-linux",
       "displayName": "CI Linux",
       "configurePreset": "ci-linux",
-      "jobs": 16
-    }
-  ],
-  "testPresets": [
+      "jobs": 30
+    },
+    {
+      "name": "win-release-production",
+      "displayName": "Win Release Production",
+      "configurePreset": "win-release-production",
+      "jobs": 30
+    },
+    {
+      "name": "wsl-release-production",
+      "displayName": "WSL Release Production",
+      "configurePreset": "wsl-release-production",
+      "jobs": 30
+    },
     {
       "name": "debug",
       "displayName": "Win Debug Tests",

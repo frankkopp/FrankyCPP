@@ -20,7 +20,7 @@
 
 | Phase                               | Status        | Notes                                 |
 |-------------------------------------|---------------|---------------------------------------|
-| Phase 1: Infrastructure             | ⬜ Not Started | ConfigMode.h, CMake option, presets   |
+| Phase 1: Infrastructure             | ✅ Complete    | ConfigMode.h, CMake option, presets   |
 | Phase 2: SearchConfigData Migration | ⬜ Not Started | CONFIG_CONST added to struct members  |
 | Phase 3: ConfigManager Conditional  | ⬜ Not Started | Conditional accessors                 |
 | Phase 4: ConfigRegistry Conditional | ⬜ Not Started | essentialSetter vs frozenSetter       |
