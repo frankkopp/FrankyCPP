@@ -58,13 +58,15 @@
 #include <string>
 #include <vector>
 
+#include "types/types.h"
+
 namespace engine {
 
 /// Configuration for the benchmark run
 struct BenchConfig {
   int hashSizeMB = 128;       ///< Transposition table size in MB
   int threads    = 1;         ///< Number of threads (future SMP support)
-  int depth      = 10;        ///< Search depth limit (1-127)
+  int depth      = 12;        ///< Search depth limit (1-127)
   milliseconds timeLimit{0};  ///< Time limit per position (0 = use depth only)
 };
 

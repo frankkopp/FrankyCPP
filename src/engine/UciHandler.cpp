@@ -399,10 +399,9 @@ void UciHandler::perftCommand(std::istringstream& inStream) const {
     }
   }
   std::thread perftThread([&](const int s, const int e) {
-    pPerft->perft(s, e, true);
+    pPerft->perft(pPosition->strFen(),s, e, true);
     sendString("Perft finished.");
-  },
-                          startDepth, endDepth);
+  }, startDepth, endDepth);
   perftThread.detach();
 }
 

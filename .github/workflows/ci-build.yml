@@ -9,11 +9,18 @@ on:
     branches: [ master ]
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-windows:
-    name: Windows Release
+    name: Windows ${{ matrix.build_type == 'prod' && 'Production' || 'Dev' }} Release
     runs-on: windows-latest
-
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: [dev, prod]
 
     steps:
       - name: Checkout repository
@@ -63,6 +70,7 @@ jobs:
           $maxAttempts = 3
           $attempt = 0
           $success = $false
+          $prodFlag = if ("${{ matrix.build_type }}" -eq "prod") { "ON" } else { "OFF" }
           
           do {
             $attempt++
@@ -78,7 +86,8 @@ jobs:
               -DVCPKG_TARGET_TRIPLET=x64-windows-static-md `
               -DFRANKYCPP_BUILD_TESTS=ON `
               -DFRANKYCPP_BUILD_BENCHMARKS=OFF `
-              -DSTRICT_WARNINGS=OFF
+              -DSTRICT_WARNINGS=OFF `
+              -DFRANKYCPP_PRODUCTION=$prodFlag
             
             if ($LASTEXITCODE -eq 0) {
               $success = $true
@@ -182,25 +191,30 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: frankycpp-windows-Release
+          name: frankycpp-windows-${{ matrix.build_type }}-Release
           path: release-package/
           retention-days: 30
 
   build-linux:
-    name: Linux (${{ matrix.compiler }}) Release
+    name: Linux ${{ matrix.compiler }} ${{ matrix.build_type == 'prod' && 'Production' || 'Dev' }} Release
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
-        compiler: [gcc, clang]
         include:
           - compiler: gcc
             cc: gcc-13
             cxx: g++-13
+            build_type: dev
+          - compiler: gcc
+            cc: gcc-13
+            cxx: g++-13
+            build_type: prod
           - compiler: clang
             cc: clang-18
             cxx: clang++-18
+            build_type: dev
 
     steps:
       - name: Checkout repository
@@ -248,6 +262,12 @@ jobs:
           attempt=0
           success=false
           
+          if [ "${{ matrix.build_type }}" = "prod" ]; then
+            export PROD_FLAG="ON"
+          else
+            export PROD_FLAG="OFF"
+          fi
+          
           while [ $attempt -lt $max_attempts ]; do
             attempt=$((attempt + 1))
             echo "Configure attempt $attempt of $max_attempts"
@@ -259,7 +279,8 @@ jobs:
               -DVCPKG_TARGET_TRIPLET=x64-linux \
               -DFRANKYCPP_BUILD_TESTS=ON \
               -DFRANKYCPP_BUILD_BENCHMARKS=OFF \
-              -DSTRICT_WARNINGS=OFF; then
+              -DSTRICT_WARNINGS=OFF \
+              -DFRANKYCPP_PRODUCTION=$PROD_FLAG; then
               success=true
               break
             fi
@@ -351,7 +372,7 @@ jobs:
         if: matrix.compiler == 'gcc'
         uses: actions/upload-artifact@v4
         with:
-          name: frankycpp-linux-gcc-Release
+          name: frankycpp-linux-gcc-${{ matrix.build_type }}-Release
           path: release-package/
           retention-days: 30
 

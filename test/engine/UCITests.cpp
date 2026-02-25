@@ -132,7 +132,9 @@ TEST_F(UCITest, getoptionsTest) {
 }
 
 TEST_F(UCITest, clearHashTest) {
-  CONFIG_OVERRIDE(s.USE_TT = true;);
+  // check that hash is enabled before testing clear hash command
+  SearchConfigData searchConfig = ConfigManager::instance().search();
+  EXPECT_TRUE(searchConfig.USE_TT);
   ostringstream os;
   string command = "isready\nsetoption name Clear Hash";
   LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
@@ -145,7 +147,9 @@ TEST_F(UCITest, clearHashTest) {
 }
 
 TEST_F(UCITest, resizeHashTest) {
-  CONFIG_OVERRIDE(s.USE_TT = true;);
+  // check that hash is enabled before testing clear hash command
+  SearchConfigData searchConfig = ConfigManager::instance().search();
+  EXPECT_TRUE(searchConfig.USE_TT);
   ostringstream os;
   string command = "isready\nsetoption name Hash value 512";
   LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);

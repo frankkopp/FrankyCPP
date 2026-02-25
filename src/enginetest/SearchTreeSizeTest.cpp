@@ -464,6 +464,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
 
   return result;
 }
+
 void SearchTreeSizeTest::start() {
 
   fprintln("Start Search Tree Size Test for depth {}", depth);

@@ -20,6 +20,7 @@
 #include "Search.h"
 #include "Evaluator.h"
 #include "See.h"
+#include "common/Logging.h"
 
 #include <algorithm>
 #include <chrono>
@@ -312,7 +313,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
   // check if there are legal moves - if not, it's mate or stalemate
   if (rootMoves.empty()) {
     if (p.hasCheck()) {
-      statistics.checkmates++;
+      STAT_INC(statistics.checkmates);
       const std::string msg = searchLimits.ponder
                                 ? "Ponder called on a check mate position"
                                 : "Search called on a check mate position";
@@ -321,7 +322,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
       searchResult.bestMoveValue = -VALUE_CHECKMATE;
     }
     else {
-      statistics.stalemates++;
+      STAT_INC(statistics.stalemates);
       const std::string msg = searchLimits.ponder
                                 ? "Ponder called on a stale mate position"
                                 : "Search called on a stale mate position";
@@ -502,14 +503,14 @@ SearchResult Search::iterativeDeepening(Position& p) {
     nodesVisited++;
 
     // update depth statistics
-    statistics.currentIterationDepth = iterationDepth;
-    statistics.currentSearchDepth    = statistics.currentIterationDepth;
+    ESSENTIAL_STAT_SET(statistics.currentIterationDepth, iterationDepth);
+    ESSENTIAL_STAT_SET(statistics.currentSearchDepth, statistics.currentIterationDepth);
     if (statistics.currentExtraSearchDepth < statistics.currentIterationDepth) {
-      statistics.currentExtraSearchDepth = statistics.currentIterationDepth;
+      ESSENTIAL_STAT_SET(statistics.currentExtraSearchDepth, statistics.currentIterationDepth);
     }
 
     // reset perft counter for last depth to
-    statistics.perftNodeCount = 0;
+    ESSENTIAL_STAT_SET(statistics.perftNodeCount, 0);
 
     // Measure iteration duration
     const TimePoint iterationStartTime = currentTime();
@@ -616,8 +617,8 @@ SearchResult Search::iterativeDeepening(Position& p) {
     if (!stopConditions()) {
       // sort root moves for the next iteration
       std::ranges::stable_sort(rootMoves, moveValueGreaterComparator());
-      statistics.currentBestRootMove      = pv.first();
-      statistics.currentBestRootMoveValue = pv.first().value();
+      ESSENTIAL_STAT_SET(statistics.currentBestRootMove, pv.first());
+      ESSENTIAL_STAT_SET(statistics.currentBestRootMoveValue, pv.first().value());
       assert(pv.first() == rootMoves.at(0) && "Best root move should be equal to pv.first()");
       // update UCI GUI
       sendIterationEndInfoToUci();
@@ -754,7 +755,7 @@ Value Search::aspirationSearch(Position& p, const Depth depth, const Value bestV
       // Alternatively, we could do steps as well
       // alpha = VALUE_MIN;
       alpha = std::max(bestValue - aspirationSteps[i], VALUE_MIN);
-      statistics.aspirationResearches++;
+      STAT_INC(statistics.aspirationResearches);
     }
     else if (value >= beta) {
       // FAIL HIGH - increase upper bound
@@ -762,7 +763,7 @@ Value Search::aspirationSearch(Position& p, const Depth depth, const Value bestV
       // If time is almost up, don't expand; return current value
       if (isTimeAlmostUp()) { return value; }
       beta = std::min(bestValue + aspirationSteps[i], VALUE_MAX);
-      statistics.aspirationResearches++;
+      STAT_INC(statistics.aspirationResearches);
     }
     else { break; }
   }
@@ -800,8 +801,8 @@ Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Valu
     p.doMove(moveRef);
     nodesVisited++;
     statistics.currentVariation.push_back(moveRef);
-    statistics.currentRootMoveIndex = i;
-    statistics.currentRootMove      = moveRef;
+    ESSENTIAL_STAT_SET(statistics.currentRootMoveIndex, i);
+    ESSENTIAL_STAT_SET(statistics.currentRootMove, moveRef);
 
     if (checkDrawRepAnd50(p, 2)) {
       value = VALUE_DRAW;
@@ -822,7 +823,7 @@ Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Valu
         // If this move improved alpha without exceeding beta we do a proper full window
         // search to get an accurate score.
         if (value > alpha && value < beta && !stopConditions() && !isTimeAlmostUp()) {
-          statistics.rootPvsResearches++;
+          STAT_INC(statistics.rootPvsResearches);
           value = -search(p, depth - 1, ply, -beta, -alpha, PvNode, Do_Null_Move);
         }
       }
@@ -848,12 +849,12 @@ Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Valu
       bestNodeValue = value;
       // we have a new best move - update triangular PV table
       pv.update(moveRef, DEPTH_NONE);
-      statistics.bestMoveChange++;
+      STAT_INC(statistics.bestMoveChange);
       if (value > alpha) {
         // fail high in root only when using aspiration search
         if (value >= beta && SearchConfig.USE_ALPHABETA) {
-          statistics.betaCuts++;
-          statistics.betaCutsByIndex[std::min(static_cast<int>(statistics.currentRootMoveIndex), SearchStats::BETA_CUTS_INDEX_SIZE - 1)]++;
+          STAT_INC(statistics.betaCuts);
+          STAT_INC(statistics.betaCutsByIndex[std::min(static_cast<int>(statistics.currentRootMoveIndex), SearchStats::BETA_CUTS_INDEX_SIZE - 1)]);
           return value;
         }
         // value is < beta
@@ -887,9 +888,11 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 
   // Track PV vs non-PV node statistics (after qsearch drop-through to avoid double-counting
   // — qsearch() already tracks its own pvNodes/nonPvNodes at entry)
-  if (nodeType == PvNode) { statistics.pvNodes++; }
-  else { statistics.nonPvNodes++; }
-  statistics.searchNodes++;
+#ifndef FRANKYCPP_PRODUCTION
+  if (nodeType == PvNode) { ++statistics.pvNodes; }
+  else { ++statistics.nonPvNodes; }
+  ++statistics.searchNodes;
+#  endif
 
   // check if search should be stopped
   if (stopConditions() && depth > 1) { return VALUE_NONE; }
@@ -901,7 +904,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     alpha = std::max(alpha, -VALUE_CHECKMATE + static_cast<Value>(ply));
     beta  = std::min(beta, VALUE_CHECKMATE - static_cast<Value>(ply));
     if (alpha >= beta) {
-      statistics.mdp++;
+      STAT_INC(statistics.mdp);
       return alpha;
     }
   }
@@ -936,7 +939,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   if (SearchConfig.USE_TT) {
     if (const TT::Entry* ttEntryPtr = tt->probe(p.getZobristKey())) {
       // tt hit
-      statistics.ttHit++;
+      STAT_INC(statistics.ttHit);
       ttMove  = static_cast<Move>(ttEntryPtr->move);
       ttValue = valueFromTt(ttEntryPtr->value, ply);
       ttDepth = static_cast<Depth>(ttEntryPtr->depth);
@@ -949,18 +952,18 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
             && (ttEntryPtr->type == EXACT
                 || (ttEntryPtr->type == ALPHA && ttValue <= alpha)
                 || (ttEntryPtr->type == BETA && ttValue >= beta))) {
-          statistics.TtCuts++;
+          STAT_INC(statistics.TtCuts);
           return ttValue;
         }
-        statistics.TtNoCuts++;
+        STAT_INC(statistics.TtNoCuts);
       }
       // if we have a static eval stored, we can reuse it
       if (SearchConfig.USE_EVAL_TT && ttEntryPtr->eval != VALUE_NONE) {
-        statistics.evalFromTT++;
+        STAT_INC(statistics.evalFromTT);
         staticEval = ttEntryPtr->eval;
       }
     }
-    else { statistics.ttMiss++; }
+    else { STAT_INC(statistics.ttMiss); }
   }// use TT
 
   // Tablebase probing in search (after TT lookup to use cached TB results)
@@ -978,11 +981,11 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       && (SearchConfig.USE_TB_PROBE_PV || nodeType != PvNode)
       && p.getOccupiedBb().popcount() <= SearchConfig.TB_PROBE_LIMIT) {// EXPENSIVE: Last!
 
-    statistics.tbSearchProbes++;
+    STAT_INC(statistics.tbSearchProbes);
     const tablebase::TBResult wdl = syzygy_tb->probeWDL(p);
 
     if (wdl != tablebase::TBResult::Failed) {
-      statistics.tbSearchHits++;
+      STAT_INC(statistics.tbSearchHits);
 
       // Convert WDL to score with 50-move rule handling
       const Value tbScore = getTBScoreForSearch(wdl, p.getHalfMoveClock(), ply);
@@ -993,7 +996,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       if (wdl == tablebase::TBResult::Win || wdl == tablebase::TBResult::CursedWin) {
         // Position is winning - use as lower bound
         if (nodeType != PvNode && tbScore >= beta) {
-          statistics.tbSearchCutoffs++;
+          STAT_INC(statistics.tbSearchCutoffs);
           // Store in TT for future lookups
           if (SearchConfig.USE_TT) {
             storeTt(p, depth, ply, MOVE_NONE, tbScore, BETA, VALUE_NONE);
@@ -1006,7 +1009,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       else if (wdl == tablebase::TBResult::Loss || wdl == tablebase::TBResult::BlessedLoss) {
         // Position is losing - use as upper bound
         if (nodeType != PvNode && tbScore <= alpha) {
-          statistics.tbSearchCutoffs++;
+          STAT_INC(statistics.tbSearchCutoffs);
           // Store in TT for future lookups
           if (SearchConfig.USE_TT) {
             storeTt(p, depth, ply, MOVE_NONE, tbScore, ALPHA, VALUE_NONE);
@@ -1019,7 +1022,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       else if (wdl == tablebase::TBResult::Draw) {
         // Exact draw - can return immediately on non-PV nodes
         if (nodeType != PvNode) {
-          statistics.tbSearchCutoffs++;
+          STAT_INC(statistics.tbSearchCutoffs);
           if (SearchConfig.USE_TT) {
             storeTt(p, depth, ply, MOVE_NONE, VALUE_DRAW, EXACT, VALUE_NONE);
           }
@@ -1031,7 +1034,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       }
     }
     else {
-      statistics.tbSearchMisses++;
+      STAT_INC(statistics.tbSearchMisses);
     }
   }
 
@@ -1074,8 +1077,8 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 
   // Track improving statistics
   if (SearchConfig.USE_IMPROVING && !hasCheck) {
-    if (improving) { statistics.improvingTrue++; }
-    else { statistics.improvingFalse++; }
+    if (improving) { STAT_INC(statistics.improvingTrue); }
+    else { STAT_INC(statistics.improvingFalse); }
   }
 
   // Reverse Futility Pruning, (RFP, Static Null Move Pruning)
@@ -1096,7 +1099,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       margin += Value{SearchConfig.RFP_IMPROVING_MARGIN};
     }
     if (staticEval - margin >= beta) {
-      statistics.rfp_cuts++;
+      STAT_INC(statistics.rfp_cuts);
       return staticEval - margin;// fail-hard: beta / fail-soft: staticEval - evalMargin;
     }
   }
@@ -1110,7 +1113,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       && depth == 1
       && staticEval != VALUE_NONE
       && staticEval <= alpha - SearchConfig.RAZOR_MARGIN) {
-    statistics.razorings++;
+    STAT_INC(statistics.razorings);
     // fix 19.2.2026 - use AllNode for razor to avoid missing critical moves in PV line; razor is a
     // heuristic that can afford to miss some moves, but we don't want it to miss critical moves in
     // the PV line. Use AllNode since we're expecting to fail low (that's why we're razoring).
@@ -1193,18 +1196,18 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
           const Value v = search(p, verifyDepth, ply, beta - 1, beta, nodeType, do_null);
           if (stopConditions()) { return VALUE_NONE; }
           if (v < beta) {
-            statistics.nullMoveVerifications++;
+            STAT_INC(statistics.nullMoveVerifications);
             // fall through: no cutoff
           }
           else {
             if (SearchConfig.USE_TT) { storeTt(p, depth, ply, MOVE_NONE, nValue, BETA, staticEval); }
-            statistics.nullMoveCuts++;
+            STAT_INC(statistics.nullMoveCuts);
             return nValue;
           }
         }
         else {
           if (SearchConfig.USE_TT) { storeTt(p, depth, ply, MOVE_NONE, nValue, BETA, staticEval); }
-          statistics.nullMoveCuts++;
+          STAT_INC(statistics.nullMoveCuts);
           return nValue;
         }
       }
@@ -1225,7 +1228,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       && searchDepth >= SearchConfig.IIR_DEPTH
       && (SearchConfig.IIR_ALL_NODES || nodeType == PvNode)) {
     searchDepth = searchDepth - SearchConfig.IIR_REDUCTION;
-    statistics.iirReductions++;
+    STAT_INC(statistics.iirReductions);
   }
 
   // Internal Iterative Deepening (IID) - Legacy approach
@@ -1251,14 +1254,14 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 
         // IID search inherits nodeType (searching same node at reduced depth)
         search(p, newDepthIid, ply, alpha, beta, nodeType, doNull);
-        statistics.iidSearches++;
+        STAT_INC(statistics.iidSearches);
 
         // check if we should stop the search
         if (stopConditions()) { return VALUE_NONE; }
 
         // get the best move from the reduced search if available
         if (!pv.empty(ply)) {
-          statistics.iidMoves++;
+          STAT_INC(statistics.iidMoves);
           ttMove = pv.first(ply).stripped();
           // Clear pv after extracting the move - IID polluted it
           pv.clear(ply);
@@ -1279,10 +1282,10 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // TT or IID, we set it as PV move in the move-gen so it will
   // be searched first.
   if (SearchConfig.USE_TT_PV_MOVE_SORT && ttMove != MOVE_NONE) {
-    statistics.TtMoveUsed++;
+    STAT_INC(statistics.TtMoveUsed);
     myMg->setPV(ttMove);
   }
-  else { statistics.NoTtMove++; }
+  else { STAT_INC(statistics.NoTtMove); }
 
   // prepare move loop
   Value value;
@@ -1323,7 +1326,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
           && givesCheck
           && movesSearched < SearchConfig.CHECK_EXT_EARLY_LIMIT
           && (!SearchConfig.USE_CHECK_EXT_SEE || See::see(p, move) >= 0)) {
-        statistics.checkExtension++;
+        STAT_INC(statistics.checkExtension);
         extension = DEPTH_ONE;
       }
 
@@ -1334,7 +1337,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // too much.
       if (SearchConfig.USE_THREAT_EXT
           && matethreat) {
-        statistics.threatExtension++;
+        STAT_INC(statistics.threatExtension);
         extension = DEPTH_ONE;
       }
 
@@ -1356,7 +1359,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         // Track ALPHA-bound entries for statistics
         const bool isLowerBound = (ttBound == BETA || ttBound == EXACT);
         if (!isLowerBound) {
-          statistics.singularFilteredByBound++;
+          STAT_INC(statistics.singularFilteredByBound);
         }
 
         // Optional: Require BETA/EXACT bound (theory says yes, practice says too restrictive)
@@ -1371,7 +1374,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
           // Set the excluded move for this ply so the verification search skips the TT move
           info.excludedMove = ttMove;
 
-          statistics.singularSearches++;
+          STAT_INC(statistics.singularSearches);
 
           // Do a null-window search to see if any other move can reach singularBeta
           // Uses mgSingular automatically because excludedMove is set
@@ -1386,7 +1389,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 
           // If no other move reaches singularBeta, the TT move is singular - extend it
           if (singularValue < singularBeta) {
-            statistics.singularExtension++;
+            STAT_INC(statistics.singularExtension);
             extension = DEPTH_ONE;
           }
         }
@@ -1437,7 +1440,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         }
         if (staticEval + moveGain + futilityMargin <= alpha) {
           if (staticEval + moveGain > bestNodeValue) { bestNodeValue = staticEval + moveGain; }
-          statistics.fpPrunings++;
+          STAT_INC(statistics.fpPrunings);
           continue;
         }
       }
@@ -1452,7 +1455,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
           lmpThreshold += lmpThreshold / 2;// 50% more moves when improving
         }
         if (movesSearched >= lmpThreshold) {
-          statistics.lmpCuts++;
+          STAT_INC(statistics.lmpCuts);
           continue;
         }
       }
@@ -1485,7 +1488,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // Late moves on cut nodes are very unlikely to be the best move
       if (SearchConfig.USE_LMR_CUTNODE && nodeType == CutNode) {
         lmrDepth -= static_cast<Depth>(SearchConfig.LMR_CUTNODE_REDUCTION);
-        statistics.lmrCutNodeReductions++;
+        STAT_INC(statistics.lmrCutNodeReductions);
       }
 
       // Reduce less for moves with good history (frequently caused beta cutoffs)
@@ -1495,8 +1498,8 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         const int histReduction = -histScore / SearchConfig.LMR_HISTORY_DIVISOR;
         if (histReduction < 0) {
           // Positive history -> less reduction (histReduction is negative)
-          statistics.lmrHistoryLessReduction++;
-          statistics.lmrHistoryDepthSaved -= histReduction;// Convert to positive for tracking
+          STAT_INC(statistics.lmrHistoryLessReduction);
+          STAT_ADD(statistics.lmrHistoryDepthSaved, -histReduction);// Convert to positive for tracking
         }
         lmrDepth -= static_cast<Depth>(histReduction);
       }
@@ -1521,7 +1524,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       lmrDepth = std::clamp(lmrDepth, DEPTH_NONE, newDepth);
 
       if (lmrDepth < newDepth) {
-        statistics.lmrReductions++;
+        STAT_INC(statistics.lmrReductions);
       }
     }
 
@@ -1589,13 +1592,13 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         if (value > alpha && !stopConditions() && !isTimeAlmostUp()) {
           // did we actually have a LMR reduction?
           if (lmrDepth < newDepthFixed) {
-            statistics.lmrResearches++;
+            STAT_INC(statistics.lmrResearches);
             // Re-search with full depth: if we're PV, child becomes PV; otherwise same alternation
             const NodeType researchType = (nodeType == PvNode) ? PvNode : childType;
             value                       = -search(p, newDepth, ply + 1, -beta, -alpha, researchType, do_null);
           }
           else if (value < beta) {
-            statistics.pvsResearches++;
+            STAT_INC(statistics.pvsResearches);
             // PVS re-search: if we're PV, child becomes PV; otherwise same alternation
             const NodeType researchType = (nodeType == PvNode) ? PvNode : childType;
             value                       = -search(p, newDepth, ply + 1, -beta, -alpha, researchType, do_null);
@@ -1643,9 +1646,9 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         // earlier in another node of the ply.
         if (value >= beta && SearchConfig.USE_ALPHABETA) {
           // Count beta cuts
-          statistics.betaCuts++;
+          STAT_INC(statistics.betaCuts);
           // Track beta cuts by move index (0-based, clamped to array size)
-          statistics.betaCutsByIndex[std::min(movesSearched - 1, SearchStats::BETA_CUTS_INDEX_SIZE - 1)]++;
+          STAT_INC(statistics.betaCutsByIndex[std::min(movesSearched - 1, SearchStats::BETA_CUTS_INDEX_SIZE - 1)]);
           // store move which caused a beta cutoff in this ply
           if (SearchConfig.USE_KILLER_MOVES && !p.isCapturingMove(move)) { myMg->storeKiller(move); }
           // Counter for moves which caused a beta cutoff
@@ -1686,12 +1689,12 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   if (movesSearched == 0 && !stopConditions()) {
     if (hasCheck) {
       // mate
-      statistics.checkmates++;
+      STAT_INC(statistics.checkmates);
       bestNodeValue = -VALUE_CHECKMATE + static_cast<Value>(ply);
     }
     else {
       // stalemate
-      statistics.stalemates++;
+      STAT_INC(statistics.stalemates);
       bestNodeValue = VALUE_DRAW;
     }
     // this is in any case an exact value
@@ -1712,9 +1715,11 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
 
   // Track PV vs non-PV node statistics
   // In qsearch, CutNode/AllNode are treated the same as non-PV
+#ifndef FRANKYCPP_PRODUCTION
   if (nodeType == PvNode) { statistics.pvNodes++; }
   else { statistics.nonPvNodes++; }
   statistics.qsearchNodes++;
+#endif
 
   // Clear PV for this node (same reason as in search())
   pv.clear(ply);
@@ -1724,7 +1729,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
   // if we have deactivated qsearch or we have reached our maximum depth
   // we evaluate the position and return the value
   if (!SearchConfig.USE_QUIESCENCE || ply >= MAX_DEPTH || stopConditions()) {
-    statistics.perftNodeCount++;
+    ESSENTIAL_STAT_INC(statistics.perftNodeCount);
     return evaluate(p);
   }
 
@@ -1734,7 +1739,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
     alpha = std::max(alpha, -VALUE_CHECKMATE + static_cast<Value>(ply));
     beta  = std::min(beta, VALUE_CHECKMATE - static_cast<Value>(ply));
     if (alpha >= beta) {
-      statistics.mdp++;
+      STAT_INC(statistics.mdp);
       return alpha;
     }
   }
@@ -1760,7 +1765,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
       // if we have a static eval stored we can reuse it
       if (SearchConfig.USE_EVAL_TT
           && ttEntryPtr->eval != VALUE_NONE) {
-        statistics.evalFromTT++;
+        STAT_INC(statistics.evalFromTT);
         staticEval = ttEntryPtr->eval;
       }
     }
@@ -1786,7 +1791,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
     // current position. So if we are already >beta we don't need to look at it.
     if (SearchConfig.USE_QS_STANDPAT_CUT && staticEval > alpha) {
       if (staticEval >= beta) {
-        statistics.standpatCuts++;
+        STAT_INC(statistics.standpatCuts);
         // Storing this value might save us calls to eval on the same position.
         if (SearchConfig.USE_TT
             && SearchConfig.USE_QS_TT
@@ -1806,11 +1811,11 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
 
   // PV Move Sort
   if (SearchConfig.USE_TT_PV_MOVE_SORT && ttMove != MOVE_NONE) {
-    statistics.TtMoveUsed++;
+    STAT_INC(statistics.TtMoveUsed);
     myMg->setPV(ttMove);
   }
   else {
-    statistics.NoTtMove++;
+    STAT_INC(statistics.NoTtMove);
   }
 
   // prepare move loop
@@ -1844,7 +1849,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
       constexpr auto futilityMargin = Value{150};
       if (staticEval + moveGain + futilityMargin <= alpha) {
         if (staticEval + moveGain > bestNodeValue) { bestNodeValue = staticEval + moveGain; }
-        statistics.qfpPrunings++;
+        STAT_INC(statistics.qfpPrunings);
         continue;
       }
     }
@@ -1895,8 +1900,8 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
       bestNodeMove  = move;
       if (value > alpha) {
         if (value >= beta && SearchConfig.USE_ALPHABETA) {
-          statistics.betaCuts++;
-          statistics.betaCutsByIndex[std::min(movesSearched - 1, SearchStats::BETA_CUTS_INDEX_SIZE - 1)]++;
+          STAT_INC(statistics.betaCuts);
+          STAT_INC(statistics.betaCutsByIndex[std::min(movesSearched - 1, SearchStats::BETA_CUTS_INDEX_SIZE - 1)]);
           // Note: No killer/history updates in qsearch - we primarily search captures,
           // and history/killers are for quiet move ordering in main search.
           ttType = BETA;
@@ -1919,7 +1924,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
     // generated all moves. We can be sure this is a mate.
     if (hasCheck) {
       // mate
-      statistics.checkmates++;
+      STAT_INC(statistics.checkmates);
       bestNodeValue = -VALUE_CHECKMATE + static_cast<Value>(ply);
       ttType        = EXACT;
     }
@@ -1941,8 +1946,8 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
 }
 
 inline Value Search::evaluate(const Position& p) {
-  statistics.leafPositionsEvaluated++;
-  statistics.evaluations++;
+  STAT_INC(statistics.leafPositionsEvaluated);
+  STAT_INC(statistics.evaluations);
   return evaluator->evaluate(p);
 }
 
@@ -2112,7 +2117,7 @@ bool Search::probeTablebaseAtRoot(const Position& pos, SearchResult& result) {
   result.tbHit         = true;
 
   // Update statistics
-  statistics.tbRootHits++;
+  STAT_INC(statistics.tbRootHits);
 
   return true;
 }
@@ -2728,6 +2733,7 @@ std::string Search::formatDetailedStats(
   os << "Stalemates     : " << stats.stalemates << "\n";
   os << "Leaf Positions : " << stats.leafPositionsEvaluated << "\n";
   os << "Evaluations    : " << stats.evaluations << "\n";
+  os << "Perft Nodes    : " << stats.perftNodeCount << "\n";
 
   os << "\n------------------- Node Type Stats -------------------\n";
   const uint64_t totalNodes = stats.pvNodes + stats.nonPvNodes;
@@ -2770,6 +2776,12 @@ std::string Search::formatDetailedStats(
   os << "\n------------------- LMR/LMP Stats ---------------------\n";
   os << "LMR Reductions : " << stats.lmrReductions << "\n";
   os << "LMR Researches : " << stats.lmrResearches << "\n";
+  os << "LMR CutNode    : " << stats.lmrCutNodeReductions;
+  if (stats.lmrReductions > 0) {
+    const double pct = 100.0 * static_cast<double>(stats.lmrCutNodeReductions) / static_cast<double>(stats.lmrReductions);
+    os << " (" << std::fixed << std::setprecision(1) << pct << "% of LMR)";
+  }
+  os << "\n";
   os << "LMR Hist Less  : " << stats.lmrHistoryLessReduction;
   if (stats.lmrReductions > 0) {
     const double pct = 100.0 * static_cast<double>(stats.lmrHistoryLessReduction) / static_cast<double>(stats.lmrReductions);
@@ -2800,6 +2812,7 @@ std::string Search::formatDetailedStats(
   os << "Check Ext      : " << stats.checkExtension << "\n";
   os << "Threat Ext     : " << stats.threatExtension << "\n";
   os << "Singular Srch  : " << stats.singularSearches << "\n";
+  os << "Singular Filt  : " << stats.singularFilteredByBound << "\n";
   os << "Singular Ext   : " << stats.singularExtension << "\n";
 
   os << "\n------------------- TT Stats --------------------------\n";
@@ -2824,6 +2837,7 @@ std::string Search::formatDetailedStats(
 
   os << "\n------------------- Tablebase Stats -------------------\n";
   os << "TB Root Hits   : " << stats.tbRootHits << "\n";
+  os << "TB Search Prbs : " << stats.tbSearchProbes << "\n";
   os << "TB Search Hits : " << stats.tbSearchHits << "\n";
   os << "TB Search Miss : " << stats.tbSearchMisses << "\n";
   os << "TB Cutoffs     : " << stats.tbSearchCutoffs << "\n";

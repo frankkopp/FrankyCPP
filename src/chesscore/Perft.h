@@ -103,6 +103,14 @@ public:
   /// @param onDemand    If true, uses phased move generation
   void perft(int startDepth, int endDepth, bool onDemand);
 
+  /// Runs perft for a range of depths using the specified FEN position.
+  /// Useful for running multiple depths in sequence and comparing results.
+  /// @param fenString   FEN string describing the position to test
+  /// @param startDepth  Starting depth (inclusive)
+  /// @param endDepth    Ending depth (inclusive)
+  /// @param onDemand    If true, uses phased move generation
+  void perft(const std::string& fenString, int startDepth, int endDepth, bool onDemand);
+
   /// Runs perft with divide output, showing node count for each root move.
   /// Useful for debugging when perft count is wrong - compare per-move counts
   /// against a known-correct engine to find which move causes the discrepancy.

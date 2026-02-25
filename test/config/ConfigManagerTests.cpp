@@ -27,6 +27,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include "config/ConfigManager.h"
+#include "config/ConfigMode.h"
 
 
 namespace {
@@ -73,6 +74,8 @@ namespace {
     const bool ok = mgr.loadFromFiles(missingSearch, missingEval);
     EXPECT_TRUE(ok);
     EXPECT_EQ(mgr.search().TT_SIZE_MB, SearchConfigData{}.TT_SIZE_MB);
+    // TEMPO is CONFIG_CONST — accessible as static member in production, instance member in dev.
+    // EvalConfigData{}.TEMPO works in both modes (static member access through instance is valid C++).
     EXPECT_EQ(mgr.eval().TEMPO, EvalConfigData{}.TEMPO);
   }
 
@@ -83,8 +86,11 @@ namespace {
 
     YAML::Node s;
     s["MOVE_OVERHEAD_MS"] = 42;
-    s["USE_TT"]           = false;
-    const auto sPath      = writeYamlToFile(s, "search_override_");
+#ifndef FRANKYCPP_PRODUCTION
+    // USE_TT is CONFIG_CONST in production — YAML setter is a no-op, cannot verify mutation.
+    s["USE_TT"] = false;
+#endif
+    const auto sPath = writeYamlToFile(s, "search_override_");
 
     // eval path missing
     const auto ePath = testBaseDir() / "eval_not_present.yaml";
@@ -92,12 +98,17 @@ namespace {
 
     ASSERT_TRUE(mgr.loadFromFiles(sPath, ePath));
     EXPECT_EQ(mgr.search().MOVE_OVERHEAD_MS, 42);
+#ifndef FRANKYCPP_PRODUCTION
     EXPECT_FALSE(mgr.search().USE_TT);
-    // eval unchanged
+#endif
+    // eval unchanged — TEMPO is CONFIG_CONST, EvalConfigData{}.TEMPO works in both modes.
     EXPECT_EQ(mgr.eval().TEMPO, EvalConfigData{}.TEMPO);
   }
 
   // Verifies eval-only YAML overrides are applied; search remains defaults.
+  // In production, non-essential eval configs (TEMPO, USE_MATERIAL) are CONFIG_CONST
+  // so YAML setters are no-ops; this test is skipped in production.
+#ifndef FRANKYCPP_PRODUCTION
   TEST(ConfigManagerTests, LoadEvalYamlOverridesOnly) {
     auto& mgr = ConfigManager::instance();
     mgr.resetToDefaults();
@@ -117,31 +128,47 @@ namespace {
     // search unchanged
     EXPECT_EQ(mgr.search().TT_SIZE_MB, SearchConfigData{}.TT_SIZE_MB);
   }
+#endif // FRANKYCPP_PRODUCTION
 
   // Ensures runtime overrides via applyOverrides() take effect with highest precedence.
+  // In production, only essential configs (TT_SIZE_MB) can be overridden at runtime.
   TEST(ConfigManagerTests, ApplyRuntimeOverrides) {
     auto& mgr = ConfigManager::instance();
     mgr.resetToDefaults();
 
+#ifndef FRANKYCPP_PRODUCTION
     mgr.applyOverrides([](SearchConfigData& s, EvalConfigData& e) {
       s.TT_SIZE_MB = 256;
       e.TEMPO      = 60;
     });
-
     EXPECT_EQ(mgr.search().TT_SIZE_MB, 256);
     EXPECT_EQ(mgr.eval().TEMPO, 60);
+#else
+    // Production: only essential configs can be overridden.
+    mgr.applyOverrides([](SearchConfigData& s, EvalConfigData&) {
+      s.TT_SIZE_MB = 256;
+    });
+    EXPECT_EQ(mgr.search().TT_SIZE_MB, 256);
+#endif
   }
 
   // Malformed YAML should not change current values and should return false.
+  // In production, only essential config mutations (MOVE_OVERHEAD_MS) can be verified.
   TEST(ConfigManagerTests, InvalidYamlRollsBackAndReturnsFalse) {
     auto& mgr = ConfigManager::instance();
     mgr.resetToDefaults();
 
     // establish a non-default current state to detect rollbacks
+#ifndef FRANKYCPP_PRODUCTION
     mgr.applyOverrides([](SearchConfigData& s, EvalConfigData& e) {
       s.MOVE_OVERHEAD_MS = 77;
       e.TEMPO            = 66;
     });
+#else
+    mgr.applyOverrides([](SearchConfigData& s, EvalConfigData&) {
+      s.MOVE_OVERHEAD_MS = 77;
+    });
+#endif
 
     const auto badSearch = writeInvalidYamlToFile("search_bad_");
     const auto badEval   = writeInvalidYamlToFile("eval_bad_");
@@ -150,7 +177,9 @@ namespace {
     EXPECT_FALSE(ok);
     // values should remain as before
     EXPECT_EQ(mgr.search().MOVE_OVERHEAD_MS, 77);
+#ifndef FRANKYCPP_PRODUCTION
     EXPECT_EQ(mgr.eval().TEMPO, 66);
+#endif
   }
 
   // str() should contain section headers and representative keys.

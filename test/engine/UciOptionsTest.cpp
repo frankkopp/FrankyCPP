@@ -19,6 +19,7 @@
 
 #include <string>
 
+#include "common/stringutil.h"
 #include "config/ConfigManager.h"
 #include "engine/UciOptions.h"
 #include "init.h"
@@ -68,12 +69,16 @@ TEST_F(UciOptionsTest, initAndStr) {
 
 TEST_F(UciOptionsTest, getOption) {
   UciOptions* pUciOptions = UciOptions::getInstance();
-  const auto *const o                  = pUciOptions->getOption("Clear Hash");
+  const auto* const o     = pUciOptions->getOption("Clear Hash");
   EXPECT_EQ("Clear Hash", o->nameID);
 }
 
 TEST_F(UciOptionsTest, setOption) {
-   UciOptions* pUciOptions = UciOptions::getInstance();
+#ifdef FRANKYCPP_PRODUCTION
+  GTEST_SKIP() << "Skipping malformed YAML test in production since CONFIG_CONST members cannot be overridden at runtime for verification.";
+#endif
+
+  UciOptions* pUciOptions = UciOptions::getInstance();
   UciHandler uciHandler{};
 
   const auto o = pUciOptions->getOption("Hash");
@@ -90,6 +95,10 @@ TEST_F(UciOptionsTest, setOption) {
 }
 
 TEST_F(UciOptionsTest, resetToDefaults_restores_defaults_and_applies_handlers) {
+#ifdef FRANKYCPP_PRODUCTION
+  GTEST_SKIP() << "Skipping malformed YAML test in production since CONFIG_CONST members cannot be overridden at runtime for verification.";
+#endif
+
   UciOptions* pUciOptions = UciOptions::getInstance();
   UciHandler uciHandler{};
 
@@ -155,11 +164,13 @@ TEST_F(UciOptionsTest, resetButton_exists_and_resets) {
   const int altHash     = (defaultHash == 4096 ? defaultHash - 1 : defaultHash + 1);
   const char* altPonder = defaultPonder ? "false" : "true";
 
+#ifndef FRANKYCPP_PRODUCTION
   EXPECT_TRUE(pUciOptions->setOption(&uciHandler, "Hash", std::to_string(altHash)));
   EXPECT_EQ(SearchConfig.TT_SIZE_MB, altHash);
 
   EXPECT_TRUE(pUciOptions->setOption(&uciHandler, "Ponder", altPonder));
   EXPECT_EQ(SearchConfig.USE_PONDER, (std::string(altPonder) == "true"));
+#endif
 
   // Invoke the button (value is ignored by the handler)
   EXPECT_TRUE(pUciOptions->setOption(&uciHandler, "Reset to Defaults", ""));
@@ -200,6 +211,7 @@ TEST_F(UciOptionsTest, searchConfig_nonArray_options_present_and_settable) {
   EXPECT_TRUE(pUciOptions->setOption(&uciHandler, "Book Format", "SIMPLE"));
   EXPECT_EQ(SearchConfig.BOOK_TYPE, "SIMPLE");
 
+#ifndef FRANKYCPP_PRODUCTION
   // Moves Left Opening
   const int oldMlo = SearchConfig.MOVES_LEFT_OPENING;
   const int newMlo = oldMlo == 36 ? 35 : 36;
@@ -211,4 +223,5 @@ TEST_F(UciOptionsTest, searchConfig_nonArray_options_present_and_settable) {
   const int newLmd = oldLmd == 3 ? 4 : 3;
   EXPECT_TRUE(pUciOptions->setOption(&uciHandler, "LMR Min Depth", std::to_string(newLmd)));
   EXPECT_EQ(static_cast<int>(SearchConfig.LMR_MIN_DEPTH), newLmd);
+#endif
 }

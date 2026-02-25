@@ -69,7 +69,7 @@ TEST_F(PerftTest, stdPerft) {
 
   // clang-format off
 static const uint64_t results[10][8] = {
-  //N                 Nodes              Captures              EP             Checks              Mates           Castles      Promotions
+  //   N                 Nodes            Captures                  EP            Checks              Mates           Castles      Promotions
   { 0,                 1ULL,               0ULL,               0ULL,             0ULL,              0ULL,             0ULL,           0ULL },
   { 1,                20ULL,               0ULL,               0ULL,             0ULL,              0ULL,             0ULL,           0ULL },
   { 2,               400ULL,               0ULL,               0ULL,             0ULL,              0ULL,             0ULL,           0ULL },
@@ -397,6 +397,112 @@ TEST_F(PerftTest, pos5Perft) {
   cout << "==============================" << endl;
 }
 
+void variousPerftTests(const string& s, const int depth, const int result) {
+  println("Various PERFT Tests");
+  println("==============================");
+  println(s);
+  println("Expected Result: " + to_string(result));
+  MoveGenerator mg;
+  const Position position;
+  EXPECT_EQ(WHITE, position.getNextPlayer());
+  Perft p(s);
+  p.perft(depth, true);
+  println("Actual Result: " + to_string(p.getNodes()));
+  EXPECT_EQ(result, p.getNodes());
+  println("==============================\n");
+}
+
+TEST_F(PerftTest, StalematePositions) {
+  cout << "Stalemate PERFT Tests" << endl;
+  cout << "==============================" << endl;
+
+  // Test 1: Classic stalemate - black king on h8, white queen on f7, white king on g6
+  // This is an immediate stalemate for black (0 legal moves, not in check)
+  // Perft counts moves generated, not terminal positions, so 0 nodes is correct
+  {
+    cout << "Test 1: Classic immediate stalemate" << endl;
+    const std::string fen = "7k/5Q2/6K1/8/8/8/8/8 b - - 0 1";
+    Perft p;
+    p.setFullStats(true);
+    p.perft(fen, 1, 1, false);
+    EXPECT_EQ(0ULL, p.getNodes()) << "Stalemate position should have 0 legal moves";
+    EXPECT_EQ(0ULL, p.getStaleMateCounter()) << "Perft doesn't count immediate terminal positions";
+    cout << "  Nodes: " << p.getNodes() << ", Stalemates: " << p.getStaleMateCounter() << endl;
+  }
+
+  // Test 2: Stalemate with two rooks (from SearchTest)
+  {
+    cout << "Test 2: Stalemate with two rooks" << endl;
+    const std::string fen = "6R1/8/8/8/8/5K2/R7/7k b - - 0 1";
+    Perft p;
+    p.setFullStats(true);
+    p.perft(fen, 1, 1, false);
+    EXPECT_EQ(0ULL, p.getNodes()) << "Stalemate position should have 0 legal moves";
+    EXPECT_EQ(0ULL, p.getStaleMateCounter()) << "Perft doesn't count immediate terminal positions";
+    cout << "  Nodes: " << p.getNodes() << ", Stalemates: " << p.getStaleMateCounter() << endl;
+  }
+
+  // Test 3: Position that leads to stalemate at depth 2
+  {
+    cout << "Test 3: Stalemate after 1 move" << endl;
+    const std::string fen = "7k/5Q2/8/6K1/8/8/8/8 w - - 0 1";
+    Perft p;
+    p.setFullStats(true);
+    p.perft(fen, 1, 2, false);
+    // At depth 2, some queen moves will create stalemate positions
+    EXPECT_EQ(39ULL, p.getNodes()) << "Expected 39 nodes at depth 2";
+    EXPECT_EQ(9ULL, p.getStaleMateCounter()) << "Should find 9 stalemate leaf nodes";
+    cout << "  Nodes at depth 2: " << p.getNodes() << ", Stalemates: " << p.getStaleMateCounter() << endl;
+  }
+
+  // Test 4: King and pawn endgame - verify node counts are correct
+  {
+    cout << "Test 4: King and pawn endgame" << endl;
+    const std::string fen = "8/8/8/8/8/K7/P7/k7 w - - 0 1";
+    Perft p;
+    p.setFullStats(true);
+
+    p.perft(fen, 1, 1, false);
+    EXPECT_EQ(3ULL, p.getNodes()) << "Expected 3 nodes at depth 1";
+
+    p.perft(fen, 1, 2, false);
+    EXPECT_EQ(7ULL, p.getNodes()) << "Expected 7 nodes at depth 2";
+
+    p.perft(fen, 1, 3, false);
+    EXPECT_EQ(43ULL, p.getNodes()) << "Expected 43 nodes at depth 3";
+
+    p.perft(fen, 1, 4, false);
+    EXPECT_EQ(199ULL, p.getNodes()) << "Expected 199 nodes at depth 4";
+    cout << "  Nodes at depth 4: " << p.getNodes() << ", Stalemates: " << p.getStaleMateCounter() << endl;
+  }
+
+  // Test 5: Position with one legal move (NOT a stalemate!)
+  // Black king on h8, white rook on f7, white king on g6
+  // Black can play Kg8 (not a stalemate)
+  {
+    cout << "Test 5: Position with one legal move (not stalemate)" << endl;
+    const std::string fen = "7k/5R2/6K1/8/8/8/8/8 b - - 0 1";
+    Perft p;
+    p.setFullStats(true);
+    p.perft(fen, 1, 1, false);
+    EXPECT_EQ(1ULL, p.getNodes()) << "Black has 1 legal move (Kg8)";
+    EXPECT_EQ(0ULL, p.getStaleMateCounter()) << "This is not a stalemate";
+    cout << "  Nodes: " << p.getNodes() << ", Stalemates: " << p.getStaleMateCounter() << endl;
+  }
+
+  cout << "==============================" << endl;
+}
+
+TEST_F(PerftTest, DebugPerft) {
+  GTEST_SKIP();
+  // variousPerftTests("n1n5/PPPk4/8/8/8/8/4Kppp/5N1N b - -", 6, 71179139);
+  // variousPerftTests("n1n5/PPPk4/8/8/8/8/4Kp1p/5n1N w - -", 5, 960124);
+  // variousPerftTests("nQn5/P1Pk4/8/8/8/8/4Kp1p/5n1N b - -", 4, 76472);
+  // variousPerftTests("nQ6/P1Pkn3/8/8/8/8/4Kp1p/5n1N w - -", 3, 7745);
+  // variousPerftTests("nQN5/P2kn3/8/8/8/8/4Kp1p/5n1N b - -", 3, 340);
+}
+
+
 /**
  * Perft Test
  *
@@ -457,28 +563,4 @@ TEST_F(PerftTest, Various) {
   variousPerftTests("n1n5/PPPk4/8/8/8/8/4Kppp/5N1N b - - 0 1", 4, 182838);
   variousPerftTests("n1n5/PPPk4/8/8/8/8/4Kppp/5N1N b - - 0 1", 5, 3605103);
   variousPerftTests("n1n5/PPPk4/8/8/8/8/4Kppp/5N1N b - - 0 1", 6, 71179139);
-}
-
-void variousPerftTests(const string& s, const int depth, const int result) {
-  println("Various PERFT Tests");
-  println("==============================");
-  println(s);
-  println("Expected Result: " + to_string(result));
-  MoveGenerator mg;
-  const Position position;
-  EXPECT_EQ(WHITE, position.getNextPlayer());
-  Perft p(s);
-  p.perft(depth, true);
-  println("Actual Result: " + to_string(p.getNodes()));
-  EXPECT_EQ(result, p.getNodes());
-  println("==============================\n");
-}
-
-TEST_F(PerftTest, DebugPerft) {
-  GTEST_SKIP();
-  // variousPerftTests("n1n5/PPPk4/8/8/8/8/4Kppp/5N1N b - -", 6, 71179139);
-  // variousPerftTests("n1n5/PPPk4/8/8/8/8/4Kp1p/5n1N w - -", 5, 960124);
-  // variousPerftTests("nQn5/P1Pk4/8/8/8/8/4Kp1p/5n1N b - -", 4, 76472);
-  // variousPerftTests("nQ6/P1Pkn3/8/8/8/8/4Kp1p/5n1N w - -", 3, 7745);
-  // variousPerftTests("nQN5/P2kn3/8/8/8/8/4Kp1p/5n1N b - -", 3, 340);
 }

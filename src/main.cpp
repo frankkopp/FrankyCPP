@@ -43,6 +43,9 @@ int main(int argc, char* argv[]) {
 
   // Version comes from CMAKE template version.h.in
   std::string appName = "FrankyCPP";
+#ifdef FRANKYCPP_PRODUCTION
+  appName.append( " (stripped)" );
+#endif
   appName
     .append(" v")
     .append(std::to_string(FrankyCPP_VERSION_MAJOR))
@@ -83,7 +86,7 @@ int main(int argc, char* argv[]) {
       ("onDemand", po::value<bool>(&perftOnDemand)->default_value(false), "use on demand move generation for perft test")
       // Benchmark options
       ("bench", "run benchmark to measure NPS")
-      ("benchDepth", po::value<int>()->default_value(10), "search depth for benchmark (1-127)")
+      ("benchDepth", po::value<int>()->default_value(12), "search depth for benchmark (1-127)")
       ("benchHash", po::value<int>()->default_value(128), "hash size in MB for benchmark (1-65536)")
       // Testsuite options
       ("testsuite", po::value<std::string>(&testsuite_file), "run testsuite in given file")

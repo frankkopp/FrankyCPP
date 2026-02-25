@@ -1120,7 +1120,7 @@ benchmarks:
     engineVersion: "v1.4"
     depth: 12
     hashSizeMB: 128
-    notes: "After Search Feature Review"
+    notes: "Development build - Config NOT Stripped"
 
   - name: "v1.4 External"
     enginePath: "Release/FrankyCPP_v1.4/FrankyCPP_v1.4.exe"
@@ -1128,7 +1128,15 @@ benchmarks:
     engineVersion: "v1.4"
     depth: 12
     hashSizeMB: 128
-    notes: "After Search Feature Review"
+    notes: "Development build - Config NOT Stripped"
+
+  - name: "v1.4 External (PROD)"
+    enginePath: "cmake-build-win-release-prod/src/FrankyCPP_v1.4.exe"
+    commandLineArgs: "--nobook"
+    engineVersion: "v1.4"
+    depth: 12
+    hashSizeMB: 128
+    notes: "Production build - Config Stripped"
 
 #  - name: "v1.1 External"
 #    enginePath: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
