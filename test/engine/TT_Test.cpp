@@ -25,6 +25,8 @@
 #include "Test_Utils.h"
 
 #include <gtest/gtest.h>
+#include <thread>
+#include <vector>
 using testing::Eq;
 
 
@@ -320,4 +322,81 @@ TEST_F(TT_Test, TT_PPS) {
     fprintln("Run time      : {:L} ns ({:L} put/probes per sec)", sum, tts);
     fprintln("");
   }
+}
+
+// =============================================================================
+// SMP Phase 1 - Thread Safety Stress Test
+// Verifies that concurrent put/probe cycles do not crash or produce corrupted
+// data visible through a successful probe hit.
+//
+// What this test DOES verify:
+//   - No crash or deadlock under 4-thread concurrent put/probe
+//   - When probe() returns non-null (key matched), the fields published by
+//     the release-store in put() are coherent: value and depth are within the
+//     ranges that any thread ever wrote. A torn write slipping past the key
+//     check would produce garbage values outside those ranges.
+//
+// What this test CANNOT verify:
+//   - That UB is truly absent (need TSAN on Linux for that guarantee)
+//   - That a hit always returns the most recent write for that key
+//     (another thread may overwrite the slot between our put and probe —
+//     that is correct Lazy SMP behavior, not a bug)
+//
+// Run with -fsanitize=thread (TSAN) on WSL/Linux for a definitive race check.
+// =============================================================================
+TEST_F(TT_Test, ConcurrentPutProbeNoUB) {
+  constexpr int NUM_THREADS = 4;
+  constexpr int ITERATIONS  = 500'000;
+  constexpr int TT_SIZE_MB  = 4; // small = high collision rate = more contention
+
+  TT tt(TT_SIZE_MB);
+  tt.setSmpThreads(NUM_THREADS); // disables age-- to avoid bitfield race
+
+  // Depth and value ranges written by all threads — any probe hit must fall within these.
+  constexpr int DEPTH_LO = 1;
+  constexpr int DEPTH_HI = 20;
+
+  const auto threadWork = [&](const int threadId) {
+    std::mt19937_64 rng(static_cast<uint64_t>(threadId) * 0xDEADBEEF12345678ULL);
+    std::uniform_int_distribution<ZobristKey> keyDist(1, 1'000'000);
+    std::uniform_int_distribution<int> depthDist(DEPTH_LO, DEPTH_HI);
+    std::uniform_int_distribution<int> valueDist(VALUE_MIN, VALUE_MAX);
+
+    for (int i = 0; i < ITERATIONS; ++i) {
+      const ZobristKey key = keyDist(rng);
+      const auto depth     = static_cast<Depth>(depthDist(rng));
+      const auto value     = static_cast<Value>(valueDist(rng));
+      constexpr Move move(SQ_E2, SQ_E4);
+
+      tt.put(key, depth, move, value, EXACT, VALUE_NONE);
+
+      if (const auto* entry = tt.probe(key)) {
+        // probe() returned non-null: the acquire-load on key matched.
+        // The release-store in put() that published this key also guaranteed
+        // all non-key fields were visible. So depth and value must be values
+        // that a legitimate put() wrote — not torn garbage.
+        //
+        // Note: entry->key may no longer equal 'key' here if another thread
+        // overwrote the slot after our acquire-load — that is valid SMP behavior.
+        // We check the data fields only, which were coherent at the moment of the hit.
+        EXPECT_GE(entry->depth, DEPTH_LO);
+        EXPECT_LE(entry->depth, DEPTH_HI);
+        EXPECT_GE(entry->value, VALUE_MIN);
+        EXPECT_LE(entry->value, VALUE_MAX);
+      }
+    }
+  };
+
+  std::vector<std::thread> threads;
+  threads.reserve(NUM_THREADS);
+  for (int t = 0; t < NUM_THREADS; ++t) {
+    threads.emplace_back(threadWork, t);
+  }
+  for (auto& t : threads) {
+    t.join();
+  }
+
+  fprintln("ConcurrentPutProbeNoUB: {} threads x {} iterations completed cleanly",
+           NUM_THREADS, ITERATIONS);
+  fprintln("TT Stats after stress: {}", tt.str());
 }

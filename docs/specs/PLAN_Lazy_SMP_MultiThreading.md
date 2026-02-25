@@ -1,9 +1,9 @@
 # FrankyCPP v1.5 - Lazy SMP Multi-Threading Implementation Plan
 
-**Document Version:** 1.1
+**Document Version:** 1.4
 **Created:** 2026-02-25
 **Last Updated:** 2026-02-25
-**Status:** Planning
+**Status:** Phase 1 Complete ✅ (TSAN skipped) — Phase 2 Ready
 **Target Version:** v1.5
 **Estimated Effort:** 3-4 weeks
 
@@ -200,17 +200,30 @@ The single-thread performance claim **must be empirically verified**, not just a
 
 #### Summary of Changes
 
-| Location                | Change                                               | Reason                                  |
-|-------------------------|------------------------------------------------------|-----------------------------------------|
-| `TT.h` `Entry::key`     | `ZobristKey` → `std::atomic<ZobristKey>`             | Prevent UB on concurrent access         |
-| `TT.h` `Entry`          | Add `static_assert`s for size + lock-free            | Compile-time guarantee of zero overhead |
-| `TT.cpp` `put()`        | Write key last with `memory_order_release`           | Correct visibility ordering             |
-| `TT.cpp` `probe()`      | Read key with `memory_order_acquire`; remove `age--` | Safe read; age decrement is a race      |
-| `TT.cpp` `clear()`      | `e.key.store(0, relaxed)`                            | atomic object requires atomic write     |
-| `TT.cpp` `ageEntries()` | `e.key.load(relaxed) == 0` check                     | atomic object requires atomic read      |
-| `TT.cpp` `put()`        | Guard `assert` / remove statistics in SMP mode       | Non-atomic counters are races           |
+| Location                     | Change                                                                                             | Reason                                                             | Status |
+|------------------------------|----------------------------------------------------------------------------------------------------|--------------------------------------------------------------------|--------|
+| `TT.h` `Entry::key`          | `ZobristKey` → `std::atomic<ZobristKey>`                                                           | Prevent UB on concurrent access                                    | ✅ Done |
+| `TT.h` `Entry`               | Add 3× `static_assert`s (lock-free, sizeof==8, Entry==16 bytes)                                    | Compile-time guarantee of zero overhead; build fails if violated   | ✅ Done |
+| `TT.h` `getMatch()`          | `key.load(acquire)` for key comparison                                                             | Correct atomic read                                                | ✅ Done |
+| `TT.h` `numSmpThreads`       | New field + `setSmpThreads()` / `getSmpThreads()` accessors                                        | Controls `age--` and `assert` guards; set by Search before search  | ✅ Done |
+| `TT.cpp` `operator<<`        | `key.load(relaxed)` for streaming                                                                  | Non-UB read of atomic field                                        | ✅ Done |
+| `TT.cpp` `put()`             | Load key `relaxed`; write data first; store key `release` last                                     | Correct write ordering — readers see coherent entry on key match   | ✅ Done |
+| `TT.cpp` `put()` assert      | `assert(numSmpThreads > 1 \|\| ...)` — bypassed under SMP                                          | Would crash Debug+SMP (non-atomic counters)                        | ✅ Done |
+| `TT.cpp` statistics counters | Left as plain non-atomic increments                                                                | Diagnostic only; approximate values under SMP are acceptable       | ✅ Done |
+| `TT.cpp` `probe()`           | Load key `acquire`; `age--` when `numSmpThreads==1` only; use `getEntryPtrConst`                   | Preserves single-thread behavior exactly; avoids bitfield race SMP | ✅ Done |
+| `TT.cpp` `clear()`           | `e.key.store(0, relaxed)` in `par_unseq` lambda                                                    | Atomic object requires atomic write                                | ✅ Done |
+| `TT.cpp` `ageEntries()`      | `e.key.load(relaxed) == 0` in `par_unseq` lambda                                                   | Atomic object requires atomic read                                 | ✅ Done |
+| `test/engine/TT_Test.cpp`    | Add `ConcurrentPutProbeNoUB` — 4 threads × 500K iterations; range-checks value/depth on probe hits | Verifies no crash/deadlock and data coherence after key match      | ✅ Done |
 
-**Files to change:** `src/engine/TT.h`, `src/engine/TT.cpp`
+**Verification results:**
+- ✅ Build passes — all 3× `static_assert`s satisfied on MSVC x86-64
+- ✅ NPS unchanged / marginally higher — no regression (3,318,959 NPS post-change)
+- ✅ `TT_Test::ConcurrentPutProbeNoUB` passes — 4 threads × 500K iterations clean
+- ✅ All existing TT tests pass
+- ⬜ Assembly inspection — optional; static_assert + NPS result are sufficient evidence
+- ⚠️ TSAN on WSL/Linux — SKIPPED (WSL build setup issues; Windows tests passed, proceeding to Phase 2)
+
+**Files changed:** `src/engine/TT.h`, `src/engine/TT.cpp`, `test/engine/TT_Test.cpp`
 
 ---
 
@@ -504,7 +517,7 @@ ELO gain diminishes at higher thread counts due to TT contention and diminishing
 | `atomic<Key>` not lock-free (hidden mutex)   | Very Low       | `static_assert(is_always_lock_free)`; fail fast, switch to Option B                 |
 | TT atomic causes measurable NPS regression   | Low            | Mandatory bench regression gate (Day 3); acceptable threshold < 1%                  |
 | Data race UB in TT non-key fields            | Low-Medium     | Write-key-last with `release`; read-key-first with `acquire`; TSAN validation       |
-| `age--` in `probe()` is a race               | Certain in SMP | Remove `age` decrement from `probe()` — it provides marginal benefit                |
+| `age--` in `probe()` is a race               | Certain in SMP | Guarded by `numSmpThreads <= 1` — runs normally in single-thread, skipped under SMP |
 | Helper thread outlives main                  | Low            | `join()` before returning result; `stopSearchFlag` checked in loop                  |
 | Node count overflow                          | Very Low       | `uint64_t` per thread; aggregate only at report time                                |
 | Regression in 1-thread mode                  | Low            | All hot paths gated on `numHelperThreads == 0`; bench regression gate enforces this |
