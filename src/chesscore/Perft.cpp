@@ -44,6 +44,13 @@ void Perft::perft(const int startDepth, const int endDepth, const bool onDemand)
   }
 }
 
+void Perft::perft(const std::string& fenString, const int startDepth, const int endDepth, const bool onDemand) {
+  const std::string originalFen = fen;
+  fen = fenString;
+  perft(startDepth, endDepth, onDemand);
+  fen = originalFen;
+}
+
 void Perft::perft(const int maxDepth, const bool onDemand) {
   stopFlag = false;
   resetCounter();
