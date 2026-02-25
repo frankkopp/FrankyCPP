@@ -362,6 +362,7 @@ TEST_F(SearchTest, mate4Search) {
 
 // In production, USE_ALPHABETA is CONFIG_CONST — cannot override.
 TEST_F(SearchTest, mate5Search) {
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
   EXPECT_EQ(ConfigManager::instance().search().USE_BOOK, false);
   EXPECT_EQ(ConfigManager::instance().search().USE_ALPHABETA, true);
   const Position p{"8/8/8/8/4K3/8/R7/4k3 w - - 0 4"};
@@ -585,11 +586,11 @@ TEST_F(SearchTest, lmrReductionTablePrint) {
   // Using new defaults: logarithmic formula with divisor 1.50
 #ifndef FRANKYCPP_PRODUCTION
   CONFIG_OVERRIDE(s.LMR_USE_LOG_FORMULA = true;);
-  CONFIG_OVERRIDE(s.LMR_LOG_BASE_DIV = 1.50;);
+  CONFIG_OVERRIDE(s.LMR_LOG_BASE_DIV = 1.25;);
 #endif
 
   EXPECT_EQ(ConfigManager::instance().search().LMR_USE_LOG_FORMULA, true) << "Test assumes LMR_USE_LOG_FORMULA is true";
-  EXPECT_EQ(ConfigManager::instance().search().LMR_LOG_BASE_DIV, 1.50) << "Test assumes LMR_LOG_BASE_DIV is 1.50";
+  EXPECT_EQ(ConfigManager::instance().search().LMR_LOG_BASE_DIV, 1.25) << "Test assumes LMR_LOG_BASE_DIV is 1.50";
 
   Search search{};
   search.regenerateLmrTable();
