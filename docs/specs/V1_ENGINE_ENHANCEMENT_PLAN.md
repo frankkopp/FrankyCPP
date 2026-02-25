@@ -1,10 +1,10 @@
 # FrankyCPP v1.x Engine Enhancement Plan
 
-**Document Version:** 1.3  
-**Created:** 2026-02-01  
-**Last Updated:** 2026-02-24  
-**Status:** Phase 2 Complete, Phase 5 Complete, Phase 3 Upcoming  
-**Target:** FrankyCPP v1.0 → v1.x releases
+**Document Version:** 1.4
+**Created:** 2026-02-01
+**Last Updated:** 2026-02-25
+**Status:** Phases 1, 2, 5 Complete. Phase 6 Partial. Phase 3 Upcoming.
+**Target:** FrankyCPP v1.4+ releases
 
 ---
 
@@ -12,11 +12,13 @@
 
 This document outlines a comprehensive plan for enhancing FrankyCPP's playing strength through systematic improvements to search, evaluation, and supporting infrastructure. The plan is organized into logical phases, each building on previous work while maintaining the engine's stability and production quality.
 
-**Current State (v1.0):**
+**Current State (v1.4 Dev):**
 - Production-ready classical chess engine
 - Alpha-beta search with modern pruning (NMP, LMR, futility, razoring)
 - Classical evaluation (material, PST, pawn structure, mobility, king safety)
-- Single-threaded search
+- **Single-threaded search** (Multi-threading postponed to v1.5)
+- **Endgame Tablebase Support (Syzygy)** integrated in v1.2
+- **Search Optimizations** (LMR, History, PVS fixes) integrated in v1.3
 - 100+ configurable parameters via YAML
 - Comprehensive test suite (266+ tests)
 - Cross-platform support (Windows/Linux)
@@ -24,8 +26,6 @@ This document outlines a comprehensive plan for enhancing FrankyCPP's playing st
 **Target State (v1.x):**
 - Multi-threaded parallel search (Lazy SMP)
 - Neural network evaluation (NNUE) with classical fallback
-- Endgame tablebase support (Syzygy)
-- Enhanced search techniques (singular extensions, check extensions)
 - Automated parameter tuning infrastructure
 - Improved move ordering and time management
 - Significant ELO gain (+300-500 estimated)
@@ -115,41 +115,42 @@ Tablebase support and endgame-specific techniques.
 
 ---
 
-### Phase 3: Multi-Threading (v1.3) - **3-4 weeks** 📋 PLANNED
-**Focus:** Parallel search for multi-core CPUs
+### Phase 3: Multi-Threading (v1.5) - **3-4 weeks** 📋 PLANNED
+**Focus:** Parallel search for multi-core CPUs (Lazy SMP)
 
 | Task                    | Category    | Effort       | Complexity | ELO Gain | Priority | Status     |
 |-------------------------|-------------|--------------|------------|----------|----------|------------|
 | Thread-Safe TT          | Performance | 🟡 1 week    | 🔴 High    | N/A      | CRITICAL | 📋 Planned |
-| Lazy SMP Search         | Performance | 🔴 2-3 weeks | 🔴 High    | +50-100  | CRITICAL | 📋 Planned |
+| Search Class Refactor   | Architect.  | 🟡 1 week    | 🔴 High    | N/A      | CRITICAL | 📋 Planned |
+| Lazy SMP Logic          | Performance | 🔴 2-3 weeks | 🔴 High    | +50-100  | CRITICAL | 📋 Planned |
 | Thread Pool Integration | Performance | 🟢 2-3 days  | 🟡 Medium  | N/A      | HIGH     | 📋 Planned |
 | SMP Testing & Tuning    | Performance | 🟡 3-5 days  | 🟡 Medium  | +10-20   | HIGH     | 📋 Planned |
 
 **Expected Total ELO Gain:** +60-120 (on multi-core hardware)  
 **Risk:** High - requires careful synchronization and testing  
 **Notes:** 
-- ThreadPool already exists but search is single-threaded
-- Requires refactoring Search class for shared state
-- Must maintain deterministic behavior for testing
+- Retargeted to v1.5 to prioritize search stability in v1.3/v1.4
+- Requires significant refactoring of `Search` class to separate thread-local state
 
 ---
 
-### Phase 4: Enhanced Move Ordering (v1.4) - **1-2 weeks** 🔄 PARTIAL
+### Phase 4: Enhanced Move Ordering (v1.3 - v1.4) - **Ongoing** 🔄 PARTIAL
 **Focus:** Better move ordering for deeper effective search
 
-| Task                             | Category | Effort      | Complexity | ELO Gain | Priority | Status     |
-|----------------------------------|----------|-------------|------------|----------|----------|------------|
-| Capture History Heuristic        | Search   | 🟡 3-5 days | 🟡 Medium  | +10-20   | HIGH     | 📋 Planned |
-| Continuation History             | Search   | 🟡 3-5 days | 🟡 Medium  | +15-25   | HIGH     | 📋 Planned |
-| Static Exchange Eval Enhancement | Search   | 🟢 2-3 days | 🟡 Medium  | +5-10    | MEDIUM   | 📋 Planned |
-| Killer Move Slot Optimization    | Search   | 🟢 1-2 days | 🟢 Low     | +5-10    | LOW      | ✅ Complete |
+| Task                             | Category | Effort      | Complexity | ELO Gain | Priority | Status            |
+|----------------------------------|----------|-------------|------------|----------|----------|-------------------|
+| Capture History Heuristic        | Search   | 🟡 3-5 days | 🟡 Medium  | +10-20   | HIGH     | 📋 Planned        |
+| Continuation History             | Search   | 🟡 3-5 days | 🟡 Medium  | +15-25   | HIGH     | 📋 Planned        |
+| Static Exchange Eval Enhancement | Search   | 🟢 2-3 days | 🟡 Medium  | +5-10    | MEDIUM   | 📋 Planned        |
+| Killer Move Slot Optimization    | Search   | 🟢 1-2 days | 🟢 Low     | +5-10    | LOW      | ✅ Complete        |
+| History Heuristic Fixes          | Search   | 🟢 1-2 days | 🟢 Low     | +20-30   | HIGH     | ✅ Complete (v1.3) |
 
 **Expected Total ELO Gain:** +35-65  
 **Risk:** Low - proven techniques with minimal architectural impact
 
 ---
 
-### Phase 5: Endgame Tablebases (v1.5) - **2-3 weeks** ✅ COMPLETE
+### Phase 5: Endgame Tablebases (v1.2) - **Done** ✅ COMPLETE
 **Focus:** Perfect endgame play with Syzygy tablebases
 
 | Task                       | Category | Effort      | Complexity | ELO Gain | Priority | Status     |
@@ -158,27 +159,22 @@ Tablebase support and endgame-specific techniques.
 | Root Tablebase Probing     | Endgame  | 🟢 2-3 days | 🟡 Medium  | +20-30   | HIGH     | ✅ Complete |
 | Search Tablebase Probing   | Endgame  | 🟡 1 week   | 🟡 Medium  | +10-20   | MEDIUM   | ✅ Complete |
 | TB Configuration & Testing | Endgame  | 🟢 2-3 days | 🟢 Low     | N/A      | MEDIUM   | ✅ Complete |
-| TB Cache Optimization      | Endgame  | 🟢 2-3 days | 🟡 Medium  | +5-10    | LOW      | ✅ Complete |
 
 **Expected Total ELO Gain:** +35-60 (in TB-relevant endgames)  
-**Risk:** Low - well-defined API (Fathom)  
-**Notes:**
-- Syzygy tablebases are standard (Stockfish, Komodo, etc.)
-- Significant strength gain in 6-piece and 7-piece endgames
-- Requires configuration for TB path
+**Risk:** Low - well-defined API (Fathom)
 
 ---
 
-### Phase 6: Advanced Search Refinements (v1.6) - **2-3 weeks** 🔄 PARTIAL
+### Phase 6: Advanced Search Refinements (v1.3 - v1.4) - **Ongoing** 🔄 PARTIAL
 **Focus:** Modern search techniques for deeper tactical vision
 
-| Task                          | Category | Effort      | Complexity | ELO Gain | Priority | Status     |
-|-------------------------------|----------|-------------|------------|----------|----------|------------|
-| Multi-Cut Pruning             | Search   | 🟡 3-5 days | 🟡 Medium  | +10-20   | HIGH     | 📋 Planned |
-| Probcut Pruning               | Search   | 🟡 3-5 days | 🟡 Medium  | +10-15   | MEDIUM   | 📋 Planned |
-| Late Move Pruning             | Search   | 🟢 2-3 days | 🟡 Medium  | +10-15   | MEDIUM   | ✅ Complete |
-| Improved LMR Formula          | Search   | 🟡 1 week   | 🟡 Medium  | +15-25   | HIGH     | ✅ Complete |
-| SEE-Based Pruning Enhancement | Search   | 🟢 2-3 days | 🟡 Medium  | +5-10    | LOW      | 📋 Planned |
+| Task                 | Category | Effort      | Complexity | ELO Gain | Priority | Status            |
+|----------------------|----------|-------------|------------|----------|----------|-------------------|
+| Multi-Cut Pruning    | Search   | 🟡 3-5 days | 🟡 Medium  | +10-20   | HIGH     | 📋 Planned        |
+| Probcut Pruning      | Search   | 🟡 3-5 days | 🟡 Medium  | +10-15   | MEDIUM   | 📋 Planned        |
+| Late Move Pruning    | Search   | 🟢 2-3 days | 🟡 Medium  | +10-15   | MEDIUM   | ✅ Complete        |
+| Improved LMR Formula | Search   | 🟡 1 week   | 🟡 Medium  | +15-25   | HIGH     | ✅ Complete (v1.3) |
+| PV Node Fixes        | Search   | 🟢 2-3 days | 🔴 High    | +20-30   | CRITICAL | ✅ Complete (v1.3) |
 
 **Expected Total ELO Gain:** +50-85  
 **Risk:** Medium - requires careful tuning to avoid search instability
@@ -524,12 +520,13 @@ CHECK_EXT_EARLY_LIMIT: 3      # only extend checks in first N moves per node
 - Node count increased ~26% at fixed depth, but stronger in time-limited play
 
 **Arena Results (v1.2 vs v1.1 - Combined Singular + Check Extensions):**
-| Metric | Result |
-|--------|--------|
-| Games | 104 |
-| Score | 58.2% |
-| W/D/L | 38/45/21 |
-| ELO | +57 |
+
+| Metric     | Result                 |
+|------------|------------------------|
+| Games      | 104                    |
+| Score      | 58.2%                  |
+| W/D/L      | 38/45/21               |
+| ELO        | +57                    |
 | Test Suite | -1.2% (2873 positions) |
 
 **Expected Impact:** +10-20 ELO ✅ **Verified: ~+30 ELO**
