@@ -52,6 +52,10 @@
 /// Collects detailed statistics about search behavior for analysis and tuning.
 struct SearchStats {
 
+  // ==========================================================================
+  // ESSENTIAL STATISTICS (Always collected)
+  // ==========================================================================
+
   // === Current Search State ===
 
   /// Current iteration depth in iterative deepening.
@@ -78,6 +82,21 @@ struct SearchStats {
   /// Root move currently being searched.
   Move currentRootMove = MOVE_NONE;
 
+  // === Terminal Node Counts ===
+
+  /// Number of checkmate positions found.
+  uint64_t checkmates = 0;
+
+  /// Number of stalemate positions found.
+  uint64_t stalemates = 0;
+
+  /// Node count for perft (if running perft).
+  uint64_t perftNodeCount = 0;
+
+  // ==========================================================================
+  // NON-ESSENTIAL STATISTICS (Stripped in production builds)
+  // ==========================================================================
+
   // === Node Type Counts ===
 
   /// Number of PV nodes searched (full window).
@@ -92,22 +111,12 @@ struct SearchStats {
   /// Number of quiescence search nodes.
   uint64_t qsearchNodes = 0;
 
-  // === Terminal Node Counts ===
-
-  /// Number of checkmate positions found.
-  uint64_t checkmates = 0;
-
-  /// Number of stalemate positions found.
-  uint64_t stalemates = 0;
-
   /// Number of leaf positions evaluated (quiescence leaves).
   uint64_t leafPositionsEvaluated = 0;
 
   /// Total evaluation function calls.
   uint64_t evaluations = 0;
 
-  /// Node count for perft (if running perft).
-  uint64_t perftNodeCount = 0;
 
   // === Pruning Statistics ===
 
@@ -262,6 +271,9 @@ struct SearchStats {
     os.imbue(deLocale);
     // PV vs non-PV node statistics
     const uint64_t totalNodes = stats.pvNodes + stats.nonPvNodes;
+#ifdef FRANKYCPP_PRODUCTION
+    os << "(stripped) ";
+#endif
     os << "pvNodes: " << stats.pvNodes;
     if (totalNodes > 0) {
       const double pvPct = 100.0 * static_cast<double>(stats.pvNodes) / static_cast<double>(totalNodes);

@@ -20,6 +20,7 @@
 #include "Search.h"
 #include "Evaluator.h"
 #include "See.h"
+#include "common/Logging.h"
 
 #include <algorithm>
 #include <chrono>
@@ -312,7 +313,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
   // check if there are legal moves - if not, it's mate or stalemate
   if (rootMoves.empty()) {
     if (p.hasCheck()) {
-      ESSENTIAL_STAT_INC(statistics.checkmates);
+      STAT_INC(statistics.checkmates);
       const std::string msg = searchLimits.ponder
                                 ? "Ponder called on a check mate position"
                                 : "Search called on a check mate position";
@@ -321,7 +322,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
       searchResult.bestMoveValue = -VALUE_CHECKMATE;
     }
     else {
-      ESSENTIAL_STAT_INC(statistics.stalemates);
+      STAT_INC(statistics.stalemates);
       const std::string msg = searchLimits.ponder
                                 ? "Ponder called on a stale mate position"
                                 : "Search called on a stale mate position";
@@ -509,7 +510,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
     }
 
     // reset perft counter for last depth to
-    STAT_SET(statistics.perftNodeCount, 0);
+    ESSENTIAL_STAT_SET(statistics.perftNodeCount, 0);
 
     // Measure iteration duration
     const TimePoint iterationStartTime = currentTime();
@@ -887,9 +888,11 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 
   // Track PV vs non-PV node statistics (after qsearch drop-through to avoid double-counting
   // — qsearch() already tracks its own pvNodes/nonPvNodes at entry)
-  if (nodeType == PvNode) { STAT_INC(statistics.pvNodes); }
-  else { STAT_INC(statistics.nonPvNodes); }
-  STAT_INC(statistics.searchNodes);
+#ifndef FRANKYCPP_PRODUCTION
+  if (nodeType == PvNode) { ++statistics.pvNodes; }
+  else { ++statistics.nonPvNodes; }
+  ++statistics.searchNodes;
+#  endif
 
   // check if search should be stopped
   if (stopConditions() && depth > 1) { return VALUE_NONE; }
@@ -1686,12 +1689,12 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   if (movesSearched == 0 && !stopConditions()) {
     if (hasCheck) {
       // mate
-      ESSENTIAL_STAT_INC(statistics.checkmates);
+      STAT_INC(statistics.checkmates);
       bestNodeValue = -VALUE_CHECKMATE + static_cast<Value>(ply);
     }
     else {
       // stalemate
-      ESSENTIAL_STAT_INC(statistics.stalemates);
+      STAT_INC(statistics.stalemates);
       bestNodeValue = VALUE_DRAW;
     }
     // this is in any case an exact value
@@ -1712,9 +1715,11 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
 
   // Track PV vs non-PV node statistics
   // In qsearch, CutNode/AllNode are treated the same as non-PV
+#ifndef FRANKYCPP_PRODUCTION
   if (nodeType == PvNode) { statistics.pvNodes++; }
   else { statistics.nonPvNodes++; }
   statistics.qsearchNodes++;
+#endif
 
   // Clear PV for this node (same reason as in search())
   pv.clear(ply);
@@ -1724,7 +1729,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
   // if we have deactivated qsearch or we have reached our maximum depth
   // we evaluate the position and return the value
   if (!SearchConfig.USE_QUIESCENCE || ply >= MAX_DEPTH || stopConditions()) {
-    statistics.perftNodeCount++;
+    ESSENTIAL_STAT_INC(statistics.perftNodeCount);
     return evaluate(p);
   }
 
@@ -1734,7 +1739,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
     alpha = std::max(alpha, -VALUE_CHECKMATE + static_cast<Value>(ply));
     beta  = std::min(beta, VALUE_CHECKMATE - static_cast<Value>(ply));
     if (alpha >= beta) {
-      statistics.mdp++;
+      STAT_INC(statistics.mdp);
       return alpha;
     }
   }
@@ -1760,7 +1765,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
       // if we have a static eval stored we can reuse it
       if (SearchConfig.USE_EVAL_TT
           && ttEntryPtr->eval != VALUE_NONE) {
-        statistics.evalFromTT++;
+        STAT_INC(statistics.evalFromTT);
         staticEval = ttEntryPtr->eval;
       }
     }
@@ -1786,7 +1791,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
     // current position. So if we are already >beta we don't need to look at it.
     if (SearchConfig.USE_QS_STANDPAT_CUT && staticEval > alpha) {
       if (staticEval >= beta) {
-        statistics.standpatCuts++;
+        STAT_INC(statistics.standpatCuts);
         // Storing this value might save us calls to eval on the same position.
         if (SearchConfig.USE_TT
             && SearchConfig.USE_QS_TT
@@ -1919,7 +1924,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
     // generated all moves. We can be sure this is a mate.
     if (hasCheck) {
       // mate
-      ESSENTIAL_STAT_INC(statistics.checkmates);
+      STAT_INC(statistics.checkmates);
       bestNodeValue = -VALUE_CHECKMATE + static_cast<Value>(ply);
       ttType        = EXACT;
     }
@@ -2728,6 +2733,7 @@ std::string Search::formatDetailedStats(
   os << "Stalemates     : " << stats.stalemates << "\n";
   os << "Leaf Positions : " << stats.leafPositionsEvaluated << "\n";
   os << "Evaluations    : " << stats.evaluations << "\n";
+  os << "Perft Nodes    : " << stats.perftNodeCount << "\n";
 
   os << "\n------------------- Node Type Stats -------------------\n";
   const uint64_t totalNodes = stats.pvNodes + stats.nonPvNodes;
@@ -2770,6 +2776,12 @@ std::string Search::formatDetailedStats(
   os << "\n------------------- LMR/LMP Stats ---------------------\n";
   os << "LMR Reductions : " << stats.lmrReductions << "\n";
   os << "LMR Researches : " << stats.lmrResearches << "\n";
+  os << "LMR CutNode    : " << stats.lmrCutNodeReductions;
+  if (stats.lmrReductions > 0) {
+    const double pct = 100.0 * static_cast<double>(stats.lmrCutNodeReductions) / static_cast<double>(stats.lmrReductions);
+    os << " (" << std::fixed << std::setprecision(1) << pct << "% of LMR)";
+  }
+  os << "\n";
   os << "LMR Hist Less  : " << stats.lmrHistoryLessReduction;
   if (stats.lmrReductions > 0) {
     const double pct = 100.0 * static_cast<double>(stats.lmrHistoryLessReduction) / static_cast<double>(stats.lmrReductions);
@@ -2800,6 +2812,7 @@ std::string Search::formatDetailedStats(
   os << "Check Ext      : " << stats.checkExtension << "\n";
   os << "Threat Ext     : " << stats.threatExtension << "\n";
   os << "Singular Srch  : " << stats.singularSearches << "\n";
+  os << "Singular Filt  : " << stats.singularFilteredByBound << "\n";
   os << "Singular Ext   : " << stats.singularExtension << "\n";
 
   os << "\n------------------- TT Stats --------------------------\n";
@@ -2824,6 +2837,7 @@ std::string Search::formatDetailedStats(
 
   os << "\n------------------- Tablebase Stats -------------------\n";
   os << "TB Root Hits   : " << stats.tbRootHits << "\n";
+  os << "TB Search Prbs : " << stats.tbSearchProbes << "\n";
   os << "TB Search Hits : " << stats.tbSearchHits << "\n";
   os << "TB Search Miss : " << stats.tbSearchMisses << "\n";
   os << "TB Cutoffs     : " << stats.tbSearchCutoffs << "\n";

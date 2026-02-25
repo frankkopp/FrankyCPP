@@ -22,12 +22,13 @@
 #include "common/Logging.h"
 #include "init.h"
 #include "types/types.h"
-
 #include "config/ConfigManager.h"
 #include "config/ConfigMode.h"
-#include <gtest/gtest.h>
+
 #include <iomanip>
 #include <sstream>
+
+#include <gtest/gtest.h>
 
 using testing::Eq;
 
@@ -114,10 +115,13 @@ TEST_F(SearchTest, extraTime) {
 }
 
 // In production, MAX_EXTRA_TIME_FACTOR is CONFIG_CONST (frozen) — cannot override.
-#ifndef FRANKYCPP_PRODUCTION
 TEST_F(SearchTest, extraTimeCap) {
   // Test that extra time is capped at MAX_EXTRA_TIME_FACTOR * base time
-  CONFIG_OVERRIDE(s.MAX_EXTRA_TIME_FACTOR = 2.0;);// max 2x base = 20s extra on 10s base
+#ifndef FRANKYCPP_PRODUCTION
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  CONFIG_OVERRIDE(s.MAX_EXTRA_TIME_FACTOR = 2.0;);
+#endif
+  EXPECT_EQ(ConfigManager::instance().search().MAX_EXTRA_TIME_FACTOR, 2.0) << "Test assumes MAX_EXTRA_TIME_FACTOR is 2.0";
 
   Search s{};
   s.searchLimits.timeControl = true;
@@ -148,7 +152,6 @@ TEST_F(SearchTest, extraTimeCap) {
   fprintln("Total budget: {}", str(totalBudget));
   EXPECT_EQ(30s, totalBudget);
 }
-#endif // FRANKYCPP_PRODUCTION
 
 TEST_F(SearchTest, startTimer) {
   Search s{};
@@ -358,10 +361,9 @@ TEST_F(SearchTest, mate4Search) {
 }
 
 // In production, USE_ALPHABETA is CONFIG_CONST — cannot override.
-#ifndef FRANKYCPP_PRODUCTION
 TEST_F(SearchTest, mate5Search) {
-  CONFIG_OVERRIDE(s.USE_BOOK = false;);
-  CONFIG_OVERRIDE(s.USE_ALPHABETA = true;);
+  EXPECT_EQ(ConfigManager::instance().search().USE_BOOK, false);
+  EXPECT_EQ(ConfigManager::instance().search().USE_ALPHABETA, true);
   const Position p{"8/8/8/8/4K3/8/R7/4k3 w - - 0 4"};
   SearchLimits sl{};
   Search s{};
@@ -374,7 +376,6 @@ TEST_F(SearchTest, mate5Search) {
   EXPECT_EQ(VALUE_CHECKMATE - 9, s.getLastSearchResult().bestMoveValue);
   EXPECT_TRUE(s.getLastSearchResult().mateFound);
 }
-#endif // FRANKYCPP_PRODUCTION
 
 // In production, USE_ALPHABETA/USE_PVS/USE_TT/USE_QUIESCENCE/USE_QS_SEE are CONFIG_CONST.
 #ifndef FRANKYCPP_PRODUCTION
@@ -576,13 +577,19 @@ TEST_F(SearchTest, lmrReductionTableTest) {
   }
   LOG__INFO(Logger::get().TEST_LOG, "{}", oss.str());
 }
+#endif // FRANKYCPP_PRODUCTION
 
 TEST_F(SearchTest, lmrReductionTablePrint) {
 
   // Access the private static table via FRIEND_TEST
   // Using new defaults: logarithmic formula with divisor 1.50
+#ifndef FRANKYCPP_PRODUCTION
   CONFIG_OVERRIDE(s.LMR_USE_LOG_FORMULA = true;);
   CONFIG_OVERRIDE(s.LMR_LOG_BASE_DIV = 1.50;);
+#endif
+
+  EXPECT_EQ(ConfigManager::instance().search().LMR_USE_LOG_FORMULA, true) << "Test assumes LMR_USE_LOG_FORMULA is true";
+  EXPECT_EQ(ConfigManager::instance().search().LMR_LOG_BASE_DIV, 1.50) << "Test assumes LMR_LOG_BASE_DIV is 1.50";
 
   Search search{};
   search.regenerateLmrTable();
@@ -600,29 +607,30 @@ TEST_F(SearchTest, lmrReductionTablePrint) {
   }
   LOG__INFO(Logger::get().TEST_LOG, "{}", oss.str());
 }
-#endif // FRANKYCPP_PRODUCTION
 
-// In production, USE_SINGULAR_EXT and related configs are CONFIG_CONST — cannot override.
+// IN PRDO there is not stats for singular extensions, and the config is frozen,
+// so these tests are development-only.
 #ifndef FRANKYCPP_PRODUCTION
 TEST_F(SearchTest, singularExtension) {
-  // Test that singular extensions work correctly
-  // Use a complex middlegame position where singular extensions can trigger
-  Search search{};
-  search.isReady();
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
 
   // Enable singular extensions and set params suitable for testing
-  CONFIG_OVERRIDE(s.USE_BOOK = false;);
   CONFIG_OVERRIDE(s.USE_SINGULAR_EXT = true;);
   CONFIG_OVERRIDE(s.SINGULAR_MIN_DEPTH = 6;);// Lower for testing
   CONFIG_OVERRIDE(s.SINGULAR_MARGIN = 64;);
   CONFIG_OVERRIDE(s.SINGULAR_REDUCTION = 3;);
+
+  // Test that singular extensions work correctly
+  // Use a complex middlegame position where singular extensions can trigger
+  Search search{};
+  search.isReady();
 
   // Complex middlegame position with tactical possibilities
   // This position has multiple candidate moves and requires deep search
   const Position p{"r1bq1rk1/pp2ppbp/2np1np1/8/3NP3/2N1BP2/PPPQ2PP/R3KB1R w KQ - 0 9"};
 
   SearchLimits sl{};
-  sl.depth = 10;// Deep enough to trigger singular extension
+  sl.depth = 12;// Deep enough to trigger singular extension
 
   search.startSearch(p, sl);
   search.waitWhileSearching();
@@ -663,9 +671,6 @@ TEST_F(SearchTest, singularExtensionDisabled) {
 }
 #endif // FRANKYCPP_PRODUCTION
 
-// In production, CONFIG_CONST search/eval configs cannot be overridden at runtime.
-// These debug/diagnostic tests are development-only.
-#ifndef FRANKYCPP_PRODUCTION
 TEST_F(SearchTest, 10secondSearchNodesCount) {
   if (isBulkRun()) {
     GTEST_SKIP() << "Skipping debug test in bulk run to save time";
@@ -681,44 +686,9 @@ TEST_F(SearchTest, 10secondSearchNodesCount) {
   s.waitWhileSearching();
 
   const auto result = s.getLastSearchResult();
-  fprintln("Search completed in {} ms, nodes: {:L}", result.time.count(), result.nodes);
-}
+  fprintln("Search completed in {:L} ms, nodes: {:L}", result.time.count(), result.nodes);
 
-TEST_F(SearchTest, debug) {
-  if (isBulkRun()) {
-    GTEST_SKIP() << "Skipping debug test in bulk run to save time";
-  }
-  CONFIG_OVERRIDE(s.TT_SIZE_MB = 64;);
-  CONFIG_OVERRIDE(s.USE_BOOK = false;);
-  CONFIG_OVERRIDE(s.USE_ALPHABETA = false;);
-  CONFIG_OVERRIDE(s.USE_PVS = false;);
-  CONFIG_OVERRIDE(s.USE_ASP = false;);
-  CONFIG_OVERRIDE(s.USE_TT = false;);
-  CONFIG_OVERRIDE(s.USE_TT_VALUE = false;);
-  CONFIG_OVERRIDE(s.USE_EVAL_TT = false;);
-  CONFIG_OVERRIDE(s.USE_MDP = false;);
-  CONFIG_OVERRIDE(s.USE_HISTORY_COUNTER = false;);
-  CONFIG_OVERRIDE(s.USE_HISTORY_MOVES = false;);
-  CONFIG_OVERRIDE(s.USE_QUIESCENCE = true;);
-  CONFIG_OVERRIDE(s.USE_QS_STANDPAT_CUT = false;);
-  CONFIG_OVERRIDE(s.USE_QS_SEE = false;);
-  CONFIG_OVERRIDE(s.USE_QS_TT = false;);
-
-  ConfigManager::instance().applyOverrides([&](auto&, EvalConfigData& e) {
-    e.USE_MATERIAL   = true;
-    e.USE_POSITIONAL = true;
-    e.TEMPO          = 34;
-  });
-
-  const Position p{"2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - - 0 1"};
-  SearchLimits sl{};
-  Search s{};
-  //  sl.timeControl = true;
-  //  sl.moveTime    = 160s;
-  sl.depth = 6;
-  s.isReady();
-  s.startSearch(p, sl);
-  s.waitWhileSearching();
+  fprintln("{}", s.formatDetailedStats());
 }
 
 // Verifies that newGame() fully resets Search state so that
@@ -794,6 +764,8 @@ TEST_F(SearchTest, newGameResetsDeterministic) {
         << "Search depth differs on iteration " << i << " for: " << fen;
 
       // Statistics determinism checks
+      // In PRODUCTION some of these values will always be 0 or not tracked, so
+      // checking them isn't meaningful.
       EXPECT_EQ(refPvNodes, stats.pvNodes)
         << "PV node count differs on iteration " << i << " for: " << fen;
       EXPECT_EQ(refNonPv, stats.nonPvNodes)
@@ -804,6 +776,46 @@ TEST_F(SearchTest, newGameResetsDeterministic) {
         << "QSearch node count differs on iteration " << i << " for: " << fen;
     }
   }
+}
+
+// In production, CONFIG_CONST search/eval configs cannot be overridden at runtime.
+// These debug/diagnostic tests are development-only.
+#ifndef FRANKYCPP_PRODUCTION
+TEST_F(SearchTest, debug) {
+  if (isBulkRun()) {
+    GTEST_SKIP() << "Skipping debug test in bulk run to save time";
+  }
+  CONFIG_OVERRIDE(s.TT_SIZE_MB = 64;);
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  CONFIG_OVERRIDE(s.USE_ALPHABETA = false;);
+  CONFIG_OVERRIDE(s.USE_PVS = false;);
+  CONFIG_OVERRIDE(s.USE_ASP = false;);
+  CONFIG_OVERRIDE(s.USE_TT = false;);
+  CONFIG_OVERRIDE(s.USE_TT_VALUE = false;);
+  CONFIG_OVERRIDE(s.USE_EVAL_TT = false;);
+  CONFIG_OVERRIDE(s.USE_MDP = false;);
+  CONFIG_OVERRIDE(s.USE_HISTORY_COUNTER = false;);
+  CONFIG_OVERRIDE(s.USE_HISTORY_MOVES = false;);
+  CONFIG_OVERRIDE(s.USE_QUIESCENCE = true;);
+  CONFIG_OVERRIDE(s.USE_QS_STANDPAT_CUT = false;);
+  CONFIG_OVERRIDE(s.USE_QS_SEE = false;);
+  CONFIG_OVERRIDE(s.USE_QS_TT = false;);
+
+  ConfigManager::instance().applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_MATERIAL   = true;
+    e.USE_POSITIONAL = true;
+    e.TEMPO          = 34;
+  });
+
+  const Position p{"2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - - 0 1"};
+  SearchLimits sl{};
+  Search s{};
+  //  sl.timeControl = true;
+  //  sl.moveTime    = 160s;
+  sl.depth = 6;
+  s.isReady();
+  s.startSearch(p, sl);
+  s.waitWhileSearching();
 }
 
 #endif // FRANKYCPP_PRODUCTION
