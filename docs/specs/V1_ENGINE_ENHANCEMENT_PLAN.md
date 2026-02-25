@@ -118,19 +118,25 @@ Tablebase support and endgame-specific techniques.
 ### Phase 3: Multi-Threading (v1.5) - **3-4 weeks** 📋 PLANNED
 **Focus:** Parallel search for multi-core CPUs (Lazy SMP)
 
-| Task                    | Category    | Effort       | Complexity | ELO Gain | Priority | Status     |
-|-------------------------|-------------|--------------|------------|----------|----------|------------|
-| Thread-Safe TT          | Performance | 🟡 1 week    | 🔴 High    | N/A      | CRITICAL | 📋 Planned |
-| Search Class Refactor   | Architect.  | 🟡 1 week    | 🔴 High    | N/A      | CRITICAL | 📋 Planned |
-| Lazy SMP Logic          | Performance | 🔴 2-3 weeks | 🔴 High    | +50-100  | CRITICAL | 📋 Planned |
-| Thread Pool Integration | Performance | 🟢 2-3 days  | 🟡 Medium  | N/A      | HIGH     | 📋 Planned |
-| SMP Testing & Tuning    | Performance | 🟡 3-5 days  | 🟡 Medium  | +10-20   | HIGH     | 📋 Planned |
+| Task                                      | Category    | Effort      | Complexity | ELO Gain | Priority | Status     |
+|-------------------------------------------|-------------|-------------|------------|----------|----------|------------|
+| Step 1: Thread-Safe TT (atomic key)       | Performance | 🟢 2-3 days | 🟡 Medium  | N/A      | CRITICAL | 📋 Planned |
+| Step 2: `SearchThread` struct + refactor  | Architect.  | 🟡 3-5 days | 🟡 Medium  | N/A      | CRITICAL | 📋 Planned |
+| Step 3: Helper thread launch/join         | Performance | 🟡 3-5 days | 🟡 Medium  | +50-100  | CRITICAL | 📋 Planned |
+| Step 4: `Threads` UCI option + config     | Config      | 🟢 1-2 days | 🟢 Low     | N/A      | HIGH     | 📋 Planned |
+| Step 5: Node count aggregation            | UCI         | 🟢 1-2 days | 🟢 Low     | N/A      | MEDIUM   | 📋 Planned |
+| Step 6: Testing & strength validation     | Testing     | 🟡 5-7 days | 🟡 Medium  | +10-20   | HIGH     | 📋 Planned |
 
 **Expected Total ELO Gain:** +60-120 (on multi-core hardware)  
-**Risk:** High - requires careful synchronization and testing  
-**Notes:** 
-- Retargeted to v1.5 to prioritize search stability in v1.3/v1.4
-- Requires significant refactoring of `Search` class to separate thread-local state
+**Risk:** Medium — TT atomic key is zero-overhead on x86; overall approach is minimal and well-proven
+**Design Constraint:** `Threads=1` must have **zero overhead** vs pre-SMP (no atomics on hot path, no extra threads created)
+**Detailed Plan:** `docs/specs/PLAN_Lazy_SMP_MultiThreading.md`
+**Notes:**
+- Strategy: Lazy SMP — helpers independently run `iterativeDeepening()`, share only the TT
+- Retargeted to v1.5 to prioritize search quality improvements in v1.3/v1.4 first
+- TT thread-safety via `std::atomic<ZobristKey>` key field (relaxed memory order = plain `mov` on x86)
+- New `SearchThread` struct holds all per-thread state (PV table, ply stack, history, statistics)
+- Helper threads do NOT manage time, report UCI, or select the final best move (main thread only)
 
 ---
 
