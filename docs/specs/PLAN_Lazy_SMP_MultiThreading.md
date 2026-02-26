@@ -1,9 +1,9 @@
 # FrankyCPP v1.5 - Lazy SMP Multi-Threading Implementation Plan
 
-**Document Version:** 1.4
+**Document Version:** 1.5
 **Created:** 2026-02-25
-**Last Updated:** 2026-02-25
-**Status:** Phase 1 Complete ✅ (TSAN skipped) — Phase 2 Complete ✅
+**Last Updated:** 2026-02-26
+**Status:** Phase 1-3 ✅ — Phase 5-6 ✅ — Phase 4 TODO (PawnTT) — Phase 7 TODO (Testing)
 **Target Version:** v1.5
 **Estimated Effort:** 3-4 weeks
 
@@ -408,70 +408,261 @@ void Search::run() {
 
 **Key invariant:** `numHelperThreads == 0` means **no new threads are ever created**. The `helperThreads` vector stays empty. All code paths above are protected by `if (numHelperThreads > 0)` checks or naturally empty loops.
 
+#### Phase 3 Implementation Stages
+
+##### Stage 3.1: Add `helperThreads` vector and `helperRun()` stub ✅ COMPLETE
+- Add `std::vector<std::thread> helperThreads{}` to `Search.h`
+- Add `void helperRun(SearchThreadData& st)` declaration to `Search.h`
+- Add empty stub implementation in `Search.cpp`
+
+##### Stage 3.2: Implement thread launch in `startSearch()` ✅ COMPLETE
+- In `run()`, after `currentThreadData` is set, launch helper threads:
+  ```cpp
+  helperThreads.clear();
+  for (int i = 1; i <= numHelperThreads; ++i) {
+      helperThreads.emplace_back([this, i]() { helperRun(*searchThreadData[i]); });
+  }
+  ```
+- No-op when `numHelperThreads == 0` (empty loop)
+
+##### Stage 3.3: Implement helper search loop + thread-local data access ✅ COMPLETE
+**3.3a: Thread-local pointer infrastructure**
+- Add `static inline thread_local SearchThreadData* currentThreadData` to `Search.h`
+- Add `static SearchThreadData& thread()` accessor that returns `*currentThreadData`
+- In `run()`, set `currentThreadData = &mainThread()` before search starts
+
+**3.3b: Replace `mainThread()` with `thread()` in hot path**
+- In `search()`, `qsearch()`, `evaluate()`: replace `mainThread().` with `thread().`
+- Keep `mainThread()` for contexts outside search (e.g., `newGame()`, `str()`, ponder move extraction)
+- In `helperRun()`: set `currentThreadData = &st` for helper's data
+- Implement actual helper search loop:
+  ```cpp
+  void Search::helperRun(SearchThreadData& st) {
+      currentThreadData = &st;
+      Position localPos = position;
+      const MoveList localRootMoves = *st.plyStack[0].mg->generateLegalMoves(localPos, GenAll);
+      Depth depth = 1 + static_cast<Depth>(st.id % 2);
+      while (!stopSearchFlag.load(std::memory_order_relaxed)) {
+          st.pv.clearAll();
+          for (const Move& move : localRootMoves) {
+              if (stopSearchFlag.load(std::memory_order_relaxed)) break;
+              localPos.doMove(move);
+              st.nodesVisited++;
+              if (!checkDrawRepAnd50(localPos, 2)) {
+                  (void)search(localPos, depth - 1, Depth{1}, VALUE_MIN, VALUE_MAX, PvNode, Do_Null_Move);
+              }
+              localPos.undoMove();
+          }
+          ++depth;
+          if (depth > DEPTH_MAX - 10) depth = 1 + static_cast<Depth>(st.id % 2);
+      }
+  }
+  ```
+
+##### Stage 3.4: Implement thread join and cleanup in `run()` ✅ COMPLETE
+**Goal:** After main search completes, stop helpers and clean up.
+
+**Changes to `run()` — after `stopSearchFlag = true`:**
+```cpp
+// Join all helper threads
+for (auto& t : helperThreads) {
+    if (t.joinable()) { t.join(); }
+}
+helperThreads.clear();
+```
+
+**Implementation notes:**
+- The join loop is O(0) when `numHelperThreads == 0`
+- Each helper checks `stopSearchFlag` and exits its loop
+- `joinable()` check is defensive but not strictly necessary if we always launch/join correctly
+
+##### Stage 3.5: Implement node count aggregation ✅ COMPLETE
+**Goal:** Report total nodes from all threads in search result and UCI output.
+
+**`getTotalNodes()` helper (already exists):**
+```cpp
+[[nodiscard]] uint64_t Search::getTotalNodes() const {
+    uint64_t total = 0;
+    for (const auto& st : searchThreadData) {
+        total += st->nodesVisited;
+    }
+    return total;
+}
+```
+
+**Updated functions to use `getTotalNodes()`:**
+- `run()` — final `searchResult.nodes` and log output
+- `sendIterationEndInfoToUci()` — nodes and NPS
+- `sendSearchUpdateToUci()` — nodes and NPS  
+- `sendAspirationResearchInfo()` — nodes and NPS
+- Note: throttling check still uses `thread().nodesVisited` to avoid aggregation overhead
+
+##### Stage 3.6: Add `numHelperThreads` initialization ✅ COMPLETE
+**Goal:** Initialize `numHelperThreads` from config.
+
+**In `run()` thread initialization:**
+```cpp
+numHelperThreads = std::max(0, SearchConfig.THREADS - 1);
+```
+
+Config option added in Phase 5 (THREADS in SearchConfigData).
+
+// Ensure searchThreadData has at least main thread
+if (searchThreadData.empty()) {
+    searchThreadData.push_back(std::make_unique<SearchThreadData>(0));
+}
+
+// Pre-allocate helper thread data
+const size_t totalThreads = static_cast<size_t>(numHelperThreads) + 1;
+while (searchThreadData.size() < totalThreads) {
+    searchThreadData.push_back(std::make_unique<SearchThreadData>(
+        static_cast<int>(searchThreadData.size())));
+}
+```
+
+**In `startSearch()`, reset all thread data:**
+```cpp
+for (auto& st : searchThreadData) {
+    st->reset();
+}
+```
+
+#### Phase 3 Verification Checklist
+- ✅ Build passes (MSVC Release/Debug)
+- ✅ All existing unit tests pass
+- ✅ Single-thread (`numHelperThreads=0`) behavior unchanged
+- ✅ Manual test: `numHelperThreads=1` runs without deadlock (2026-02-26)
+  - Main thread: 13.2M nodes, Helper thread: 14.1M nodes
+  - Helper correctly started, searched, and joined
+  - Note: Node count only shows main thread (Stage 3.5 pending)
+- ✅ Stage 3.5: `getTotalNodes()` aggregation for UCI reporting
+- ✅ Stage 3.6: Wire `numHelperThreads` to config option (THREADS)
+
 ---
 
-### Phase 4: Configuration & UCI Integration (Day 11-12)
+### Phase 4: PawnTT Thread Safety (Day 11-12)
+**Goal:** Make PawnTT thread-safe using the same pattern as main TT.
+
+**Rationale:** PawnTT caches pawn structure evaluations. Unlike per-thread state (History, PlyInfo), pawn structures are position-dependent — all threads searching the same position benefit from shared cache. Per-thread PawnTT would waste memory (N copies of identical data).
+
+#### Implementation Steps
+
+##### Stage 4.1: Atomic key for PawnTT entries ⬜ TODO
+In `PawnTT.h`, change `Entry::key` to atomic:
+```cpp
+struct Entry {
+    std::atomic<ZobristKey> key{0};  // atomic for thread-safe probe
+    Value midvalue{VALUE_NONE};
+    Value endvalue{VALUE_NONE};
+};
+```
+
+Add static asserts (same as TT):
+```cpp
+static_assert(sizeof(std::atomic<ZobristKey>) == sizeof(ZobristKey),
+              "atomic<ZobristKey> has unexpected size - PawnTT entry layout broken");
+static_assert(std::atomic<ZobristKey>::is_always_lock_free,
+              "atomic<ZobristKey> is not lock-free - unacceptable overhead");
+```
+
+##### Stage 4.2: Update `probe()` for atomic read ⬜ TODO
+```cpp
+bool PawnTT::probe(const ZobristKey key, Score& score) const {
+    const Entry& e = data[index(key)];
+    const ZobristKey storedKey = e.key.load(std::memory_order_relaxed);
+    if (storedKey == key) {
+        score = Score{e.midvalue, e.endvalue};
+        // Note: values might be stale if another thread is writing, but this is
+        // acceptable under Lazy SMP (we'll just re-evaluate on next probe)
+        return true;
+    }
+    return false;
+}
+```
+
+##### Stage 4.3: Update `put()` for atomic write ⬜ TODO
+```cpp
+void PawnTT::put(const ZobristKey key, const Score score) {
+    Entry& e = data[index(key)];
+    // Write values first, then key (write-key-last pattern)
+    e.midvalue = score.midgame;
+    e.endvalue = score.endgame;
+    e.key.store(key, std::memory_order_release);  // release ensures values visible
+}
+```
+
+##### Stage 4.4: Disable/remove statistics in SMP mode ⬜ TODO
+The current statistics counters (`numberOfPuts`, `numberOfHits`, etc.) are not thread-safe.
+
+Options:
+1. **Remove statistics entirely** — simplest, minimal value in production
+2. **Make statistics thread-local** — aggregate at search end (like node counts)
+3. **Guard with `#ifdef`** — only compile stats in single-thread debug builds
+
+Recommendation: Option 1 (remove) or Option 3 (guard). Statistics are debug-only and not worth atomic overhead.
+
+##### Stage 4.5: Remove "update" warning ⬜ TODO
+The warning `"PawnTT should not have to update entries"` is no longer meaningful under SMP — concurrent threads legitimately write the same entry. Remove or change to debug-only trace.
+
+#### Phase 4 Verification Checklist
+- ⬜ `static_assert` for atomic key size passes
+- ⬜ `static_assert` for lock-free passes  
+- ⬜ Build passes (MSVC Release/Debug)
+- ⬜ All existing unit tests pass
+- ⬜ No PawnTT warnings in multi-thread search
+- ⬜ Bench regression < 1% with single thread
+
+---
+
+### Phase 5: Configuration & UCI Integration ✅ COMPLETE
 **Goal:** Expose thread count via UCI `Threads` option (standard UCI).
 
-#### Config Changes
+#### Implementation (completed)
 
-In `SearchConfigData.h`:
+**SearchConfigData.h:**
 ```cpp
 CONFIG_ESSENTIAL int THREADS = 1;  // Number of search threads (1 = single-threaded)
 ```
 
-In `ConfigRegistry.cpp`:
+**ConfigRegistry.cpp:**
 ```cpp
 {
   .name = "THREADS",
   .uciName = "Threads",
   .description = "Number of search threads (1 = single-threaded, no SMP overhead)",
-  .valueType = ConfigValueType::Int,
-  .domain = ConfigDomain::Search,
+  .valueType = Int,
+  .domain = Search,
   .defaultValue = "1",
+  .minValue = 1,
+  .maxValue = 256,
   .exposure = {.uci = true, .yaml = true, .display = true},
-  .getter = [](const auto& s, const auto&) { return configToString(s.THREADS); },
-  .setter = [](auto& s, auto&, const std::string& v) { s.THREADS = parseInt(v); }
-},
-```
-
-`THREADS` is `CONFIG_ESSENTIAL` (not `CONFIG_CONST`) so it can be changed at runtime via `setoption`.
-
-In `Search::isReady()` or `Search::newGame()`:
-```cpp
-numHelperThreads = std::max(0, SearchConfig.THREADS - 1);
-// Pre-allocate SearchThreadData objects
-while (searchThreadData.size() < static_cast<size_t>(SearchConfig.THREADS))
-    searchThreadData.push_back(std::make_unique<SearchThreadData>(searchThreadData.size()));
-```
-
-#### `setoption name Threads value N` Handling
-
-The `UciHandler` already maps `setoption` to the config system. No changes needed there — the config setter updates `SearchConfig.THREADS`, and `Search::isReady()` re-reads it.
-
----
-
-### Phase 5: Node Count Aggregation & UCI Info (Day 13-14)
-**Goal:** Report aggregate node count and NPS across all threads for UCI `info nodes nps`.
-
-The `nodesVisited` counter in `Search` is currently incremented inside `stopConditions()`. For SMP, each `SearchThreadData` owns its counter. The main thread's UCI reporting must sum all threads.
-
-```cpp
-uint64_t Search::getTotalNodes() const {
-    uint64_t total = 0;
-    for (const auto& st : searchThreadData)
-        total += st->nodesVisited;
-    return total;
+  .getter = searchGetter([](const auto& s){ return s.THREADS; }),
+  .setter = SEARCH_CONFIG_SETTER(THREADS, parseInt)
 }
 ```
 
-Replace direct `nodesVisited` usage in `sendSearchUpdateToUci()` and `sendIterationEndInfoToUci()` with `getTotalNodes()`.
+**Search.cpp `run()`:**
+```cpp
+numHelperThreads = std::max(0, SearchConfig.THREADS - 1);
+```
 
-The `stopConditions()` node-limit check should remain on the main thread's `mainThread().nodesVisited` — using total nodes would require an atomic sum which adds overhead.
+#### UCI Usage
+- `setoption name Threads value N` — sets thread count (takes effect on next search)
+- Default: 1 (single-threaded, zero SMP overhead)
 
 ---
 
-### Phase 6: Testing & Validation (Day 15-20)
+### Phase 6: Node Count Aggregation & UCI Info ✅ COMPLETE
+**Goal:** Report aggregate node count and NPS across all threads for UCI `info nodes nps`.
+
+**Implementation (completed in Stage 3.5):**
+- `getTotalNodes()` aggregates `nodesVisited` from all `SearchThreadData`
+- Used in `sendIterationEndInfoToUci()`, `sendSearchUpdateToUci()`, `sendAspirationResearchInfo()`, and final result
+- Throttling check still uses main thread nodes to avoid aggregation overhead on hot path
+
+---
+
+### Phase 7: Testing & Validation (Day 17-22)
 **Goal:** Confirm correctness, no regressions at 1 thread, and ELO gain at 2+ threads.
 
 #### Correctness Tests
@@ -517,6 +708,8 @@ ELO gain diminishes at higher thread counts due to TT contention and diminishing
 |----------------------------------|----------------------------------------------------------------------------------------------|
 | `src/engine/TT.h`                | `key` field → `std::atomic<ZobristKey>`                                                      |
 | `src/engine/TT.cpp`              | Update `put()`, `probe()`, `clear()` for atomic key                                          |
+| `src/engine/PawnTT.h`            | `key` field → `std::atomic<ZobristKey>`; remove/guard statistics                             |
+| `src/engine/PawnTT.cpp`          | Update `put()`, `probe()` for atomic key; remove "update" warning                            |
 | `src/engine/SearchThreadData.h`  | **NEW** — per-thread state struct                                                            |
 | `src/engine/Search.h`            | Add `searchThreadData`, `helperThreads`, `numHelperThreads`; remove thread-local fields      |
 | `src/engine/Search.cpp`          | Refactor to use `mainThread()` accessor; add `helperRun()`; update `startSearch()`, `run()`  |
@@ -611,6 +804,34 @@ The following invariants ensure NO overhead when `THREADS = 1`. The first two re
 - **No vector iteration overhead in `getTotalNodes()`:** `searchThreadData.size() == 1` → one loop body, no branch misprediction.
 - **No synchronization primitives on the search hot path:** No mutexes, no condition variables, no barriers added to `search()` / `qsearch()` / `evaluate()`.
 - **`SearchThreadData&` parameter is a reference:** the compiler inlines the reference to the concrete `SearchThreadData` object — zero pointer-indirection overhead when the function is inlined.
+
+---
+
+## Known Issues (To Be Addressed)
+
+### PawnTT Thread Safety — Addressed in Phase 4
+**Status:** Planned for Phase 4
+**Symptom:** `[Eval_Logger] [warning]: PawnTT should not have to update entries. Missing a read?`
+
+**Root Cause:** The `Evaluator` instance (and its internal `PawnTT pawnCache`) is shared between main and helper threads. When multiple threads evaluate the same pawn structure concurrently:
+1. Thread A reads PawnTT → miss → evaluates → stores result
+2. Thread B reads PawnTT → miss (before A's store) → evaluates → stores (triggers "update" warning)
+
+**Impact:** 
+- Warning spam in logs (cosmetic)
+- Minor redundant pawn evaluation work (performance)
+- Potential data race on PawnTT counters (correctness risk in debug builds)
+
+**Solution:** Make PawnTT thread-safe using the same pattern as main TT (Phase 1):
+- Use `std::atomic<ZobristKey>` for entry keys with relaxed memory ordering
+- Remove/disable statistics counters in SMP mode (or make them thread-local)
+- Same zero-overhead guarantee: `sizeof(std::atomic<Key>) == sizeof(Key)` on x86-64
+
+**Why NOT per-thread PawnTT:**
+- Pawn structures are position-dependent, not thread-dependent
+- Multiple threads searching the same position would cache identical entries separately
+- Wastes memory without benefit (N threads × PawnTT size instead of 1 × PawnTT size)
+- Shared TT is the proven Lazy SMP pattern — apply same logic to PawnTT
 
 ---
 

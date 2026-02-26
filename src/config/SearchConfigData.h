@@ -65,6 +65,9 @@ struct SearchConfigData {
   CONFIG_ESSENTIAL int TT_SIZE_MB = 64;
   CONFIG_CONST bool USE_QS_TT    = true;
 
+  // Multi-threading (Lazy SMP)
+  CONFIG_ESSENTIAL int THREADS = 1;// Number of search threads (1 = single-threaded, no SMP overhead)
+
   // Syzygy tablebase settings
   CONFIG_ESSENTIAL std::string TB_PATH;// Path to Syzygy tablebase files (empty = disabled)
   // Root probing (once per search, for best move selection)

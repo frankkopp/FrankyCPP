@@ -190,71 +190,20 @@ class Search {
 
   // Thread 0 is the main thread. Helper threads will be indices [1..N-1].
   std::vector<std::unique_ptr<SearchThreadData>> searchThreadData{};
+
+  // Helper thread handles - empty when numHelperThreads == 0 (single-threaded)
+  std::vector<std::thread> helperThreads{};
+
+  // Number of helper threads (0 = single-threaded, N = N helpers + 1 main)
+  // Set from SearchConfig.THREADS - 1 before search starts
+  int numHelperThreads = 0;
+
+  // Thread-local pointer to current thread's SearchThreadData.
+  // Set by run() for main thread, helperRun() for helpers.
+  // Enables search functions to access thread-local state without parameter passing.
+  static inline thread_local SearchThreadData* currentThreadData = nullptr;
+
   // ===========================================================================
-
-
-  /// =============================================================================
-  /// Commenting our any fields that will be moved to the SearchThreadData.h
-
-  // history heuristics
-  // History history{};
-
-  // UCI relevant statistics
-  // uint64_t nodesVisited{};
-
-  // Statistics
-  // SearchStats statistics{};
-
-  // ply related data
-  // Triangular PV table for efficient PV storage (64KB, zero heap allocations)
-  // PVTable pv;
-
-  // Per-ply search state - unified struct for all ply-specific data
-  // Each PlyInfo owns its MoveGenerators via unique_ptr (heap-allocated)
-  // std::array<PlyInfo, DEPTH_MAX + 1> plyStack{};
-
-  // LMR table - regenerated at search start based on config
-  // std::array<std::array<int, 64>, 32> LMR_REDUCTION{};
-
-  // // LMR reduction table pre-computed for depth 0..31 and moves searched 0..63
-  // // Linear formula: 1 + round(depth * movesSearched * 0.0035)
-  // static constexpr int lmr_reduction_linear(const int depth, const int movesSearched) noexcept {
-  //   // exact integer rounding of 35/10000
-  //   return 1 + (depth * movesSearched * 35 + 5000) / 10000;
-  // }
-  //
-  // // Logarithmic formula: log(depth) * log(moves) / divisor
-  // // This provides more gradual reductions that scale better at higher depths
-  // static int lmr_reduction_log(const int depth, const int movesSearched, const double divisor) noexcept {
-  //   if (depth <= 1 || movesSearched <= 1) return 1;
-  //   return static_cast<int>(std::lround(std::log(depth) * std::log(movesSearched) / divisor));
-  // }
-  //
-  //
-  // // Regenerates the LMR table based on current config settings
-  // void regenerateLmrTable() {
-  //   if (SearchConfig.LMR_USE_LOG_FORMULA) {
-  //     const double divisor = SearchConfig.LMR_LOG_BASE_DIV;
-  //     for (std::size_t d = 0; d < 32; ++d) {
-  //       for (std::size_t m = 0; m < 64; ++m) {
-  //         LMR_REDUCTION[d][m] = lmr_reduction_log(static_cast<int>(d), static_cast<int>(m), divisor);
-  //       }
-  //     }
-  //   }
-  //   else {
-  //     for (std::size_t d = 0; d < 32; ++d) {
-  //       for (std::size_t m = 0; m < 64; ++m) {
-  //         LMR_REDUCTION[d][m] = lmr_reduction_linear(static_cast<int>(d), static_cast<int>(m));
-  //       }
-  //     }
-  //   }
-  // }
-
-  // FRIEND_TEST(SearchTest, lmrReductionTableTest);
-  // FRIEND_TEST(SearchTest, lmrReductionTablePrint);
-  /// =============================================================================
-
-
 
 public:
   /// Node type classification for alpha-beta search.
@@ -343,6 +292,17 @@ public:
   /// @return Const reference to main SearchThreadData
   const SearchThreadData& mainThread() const { return *searchThreadData[0]; }
 
+  /// Returns the total node count aggregated across all search threads.
+  /// Used for UCI reporting (info nodes).
+  /// @return Sum of nodesVisited from all SearchThreadData instances
+  [[nodiscard]] uint64_t getTotalNodes() const;
+
+  /// Returns the current thread's SearchThreadData.
+  /// Uses thread-local storage set by run()/helperRun().
+  /// Must only be called from within a search context (after currentThreadData is set).
+  /// @return Reference to current thread's SearchThreadData
+  static SearchThreadData& thread() { return *currentThreadData; }
+
   /// Returns the result of the last completed search.
   /// @return Reference to SearchResult (undefined behavior if no search completed)
   /// @pre hasResult() returns true
@@ -400,6 +360,12 @@ private:
   /// Called after starting search thread. Configures search, calls iterativeDeepening,
   /// and sends result to UCI.
   void run();
+
+  /// Helper thread entry point for Lazy SMP.
+  /// Runs simplified iterative deepening loop until stopSearchFlag is set.
+  /// Does not report to UCI or manage time - only contributes to TT.
+  /// @param st  Thread-local search state for this helper thread
+  void helperRun(SearchThreadData& st);
 
   /// Performs iterative deepening search, incrementing depth until time expires.
   /// @param p  Position to search
