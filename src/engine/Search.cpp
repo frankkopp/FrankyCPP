@@ -34,7 +34,10 @@ Search::Search() : Search(nullptr) {}
 
 Search::Search(UciHandler* pUciHandler)
     : uciHandler(pUciHandler), SearchConfig(ConfigManager::instance().search()) {
+  // Initialize Transposition Table with 0 MB (will be resized in initialize() based on config)
   this->tt = std::make_unique<TT>(0);
+  // Initialize main search thread (thread ID 0)
+  searchThreadData.push_back(std::make_unique<SearchThreadData>(0));
 }
 
 Search::~Search() {
@@ -49,14 +52,14 @@ Search::~Search() {
 void Search::newGame() {
   if (isSearching()) stopSearch();
 
-  for (auto& plyInfo : plyStack) {
+  for (auto& plyInfo : mainThread().plyStack) {
     plyInfo.resetSearchState();
   }
   rootMoves.clear();
   tt->clear();
   if (evaluator) { evaluator->reset(); }
   bestMoveStability.reset();
-  history.reset();
+  mainThread().history.reset();
 
   tbRootMove  = MOVE_NONE;
   tbRootValue = VALUE_NONE;
@@ -179,17 +182,17 @@ void Search::run() {
   // initialize search
   stopSearchFlag = false;
   lastSearchResult.reset();// clear previous result
-  timeLimit         = milliseconds{};
-  extraTimeMs       = 0;
-  nodesVisited      = 0;
-  statistics        = SearchStats{};
-  lastUciUpdateTime = nowFast();
+  timeLimit                 = milliseconds{};
+  extraTimeMs               = 0;
+  lastUciUpdateTime         = nowFast();
+  mainThread().nodesVisited = 0;
+  mainThread().statistics   = SearchStats{};
   // Note: npsTime and npsNodes are initialized later, right before iterative deepening,
   // to avoid including initialization overhead in NPS calculations
   initialize();
 
   // Regenerate LMR table based on current config (linear vs logarithmic formula)
-  regenerateLmrTable();
+  mainThread().regenerateLmrTable(SearchConfig.LMR_USE_LOG_FORMULA, SearchConfig.LMR_LOG_BASE_DIV);
 
   // set up and report search limits
   setupSearchLimits(position, searchLimits);
@@ -206,12 +209,14 @@ void Search::run() {
 
   // Initialize ply-based data
   // Clear entire PV table once (uses memset internally, zero heap allocations)
-  pv.clearAll();
+  mainThread().pv.clearAll();
 
   // Initialize per-ply search state (MoveGenerators, history pointers, etc.)
   for (int i = DEPTH_NONE; i < DEPTH_MAX; i++) {
-    plyStack[i].resetSearchState();
-    if (SearchConfig.USE_HISTORY_COUNTER || SearchConfig.USE_HISTORY_MOVES) { plyStack[i].mg->setHistoryData(&history); }
+    mainThread().plyStack[i].resetSearchState();
+    if (SearchConfig.USE_HISTORY_COUNTER || SearchConfig.USE_HISTORY_MOVES) {
+      mainThread().plyStack[i].mg->setHistoryData(&mainThread().history);
+    }
   }
 
   // release the init phase lock to signal the calling go routine
@@ -259,16 +264,20 @@ void Search::run() {
 
   // update the search result with search time and pv
   searchResult.time  = currentTime() - startSearchTime;
-  searchResult.pv    = pv.extract();
-  searchResult.nodes = nodesVisited;
+  searchResult.pv    = mainThread().pv.extract();
+  searchResult.nodes = mainThread().nodesVisited;
 
   // print stats to log
   LOG__INFO(Logger::get().SEARCH_LOG, "Search finished after {}", str(searchResult.time));
-  LOG__INFO(Logger::get().SEARCH_LOG, "Search depth was {}({}) with {:L} nodes visited. NPS = {:L} nps", statistics.currentSearchDepth, statistics.currentExtraSearchDepth, nodesVisited, nps(nodesVisited, searchResult.time));
-  LOG__DEBUG(Logger::get().SEARCH_LOG, "Search stats: {}", statistics.str());
+  LOG__INFO(Logger::get().SEARCH_LOG, "Search depth was {}({}) with {:L} nodes visited. NPS = {:L} nps",
+    mainThread().statistics.currentSearchDepth, mainThread().statistics.currentExtraSearchDepth,
+    mainThread().nodesVisited, nps(mainThread().nodesVisited, searchResult.time));
+  LOG__DEBUG(Logger::get().SEARCH_LOG, "Search stats: {}", mainThread().statistics.str());
 
   // print result to log
-  if (searchLimits.mate && searchResult.mateFound) { LOG__INFO(Logger::get().SEARCH_LOG, "Mate in {} found: {}", searchLimits.mate, pv.first().str()); }
+  if (searchLimits.mate && searchResult.mateFound) {
+    LOG__INFO(Logger::get().SEARCH_LOG, "Mate in {} found: {}", searchLimits.mate, mainThread().pv.first().str());
+  }
   LOG__INFO(Logger::get().SEARCH_LOG, "Search result: {}", searchResult.str());
 
   // save the result until overwritten by the next search
@@ -308,12 +317,12 @@ SearchResult Search::iterativeDeepening(Position& p) {
   }
 
   // generate all legal root moves for the position
-  rootMoves = *plyStack[0].mg->generateLegalMoves(p, GenAll);
+  rootMoves = *mainThread().plyStack[0].mg->generateLegalMoves(p, GenAll);
 
   // check if there are legal moves - if not, it's mate or stalemate
   if (rootMoves.empty()) {
     if (p.hasCheck()) {
-      STAT_INC(statistics.checkmates);
+      STAT_INC(mainThread().statistics.checkmates);
       const std::string msg = searchLimits.ponder
                                 ? "Ponder called on a check mate position"
                                 : "Search called on a check mate position";
@@ -322,7 +331,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
       searchResult.bestMoveValue = -VALUE_CHECKMATE;
     }
     else {
-      STAT_INC(statistics.stalemates);
+      STAT_INC(mainThread().statistics.stalemates);
       const std::string msg = searchLimits.ponder
                                 ? "Ponder called on a stale mate position"
                                 : "Search called on a stale mate position";
@@ -431,7 +440,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
   // ### BEGIN Iterative Deepening
   // Initialize NPS tracking right before starting search to exclude initialization overhead
   npsTime  = nowFast();
-  npsNodes = nodesVisited;
+  npsNodes = mainThread().nodesVisited;
   milliseconds lastIterationMs{0};
   uint64_t lastIterationNodes = 0;
   uint64_t prevIterationNodes = 0;
@@ -457,8 +466,8 @@ SearchResult Search::iterativeDeepening(Position& p) {
       // Determine current NPS: prefer recent window (since last UCI update), fallback to average.
       const uint64_t nowTimeFast = nowFast();
       uint64_t currentNps        = 0;
-      if (nowTimeFast > npsTime) { currentNps = nps(nodesVisited - npsNodes, nowTimeFast - npsTime); }
-      if (currentNps == 0) { currentNps = nps(nodesVisited, sinceNs); }
+      if (nowTimeFast > npsTime) { currentNps = nps(mainThread().nodesVisited - npsNodes, nowTimeFast - npsTime); }
+      if (currentNps == 0) { currentNps = nps(mainThread().nodesVisited, sinceNs); }
       if (currentNps == 0) { currentNps = 1; }
 
       // Predict the node count of the next iteration using observed growth.
@@ -500,21 +509,21 @@ SearchResult Search::iterativeDeepening(Position& p) {
     // ===========================================
 
     // update search counter
-    nodesVisited++;
+    mainThread().nodesVisited++;
 
     // update depth statistics
-    ESSENTIAL_STAT_SET(statistics.currentIterationDepth, iterationDepth);
-    ESSENTIAL_STAT_SET(statistics.currentSearchDepth, statistics.currentIterationDepth);
-    if (statistics.currentExtraSearchDepth < statistics.currentIterationDepth) {
-      ESSENTIAL_STAT_SET(statistics.currentExtraSearchDepth, statistics.currentIterationDepth);
+    ESSENTIAL_STAT_SET(mainThread().statistics.currentIterationDepth, iterationDepth);
+    ESSENTIAL_STAT_SET(mainThread().statistics.currentSearchDepth, mainThread().statistics.currentIterationDepth);
+    if (mainThread().statistics.currentExtraSearchDepth < mainThread().statistics.currentIterationDepth) {
+      ESSENTIAL_STAT_SET(mainThread().statistics.currentExtraSearchDepth, mainThread().statistics.currentIterationDepth);
     }
 
     // reset perft counter for last depth to
-    ESSENTIAL_STAT_SET(statistics.perftNodeCount, 0);
+    ESSENTIAL_STAT_SET(mainThread().statistics.perftNodeCount, 0);
 
     // Measure iteration duration
     const TimePoint iterationStartTime = currentTime();
-    const uint64_t iterStartNodes      = nodesVisited;
+    const uint64_t iterStartNodes      = mainThread().nodesVisited;
 
     // ###########################################
     // Start actual alpha beta search
@@ -533,14 +542,14 @@ SearchResult Search::iterativeDeepening(Position& p) {
 
     // record node counts for growth prediction
     prevIterationNodes = lastIterationNodes;
-    lastIterationNodes = nodesVisited - iterStartNodes;
+    lastIterationNodes = mainThread().nodesVisited - iterStartNodes;
 
-    assert(!pv.empty() && pv.first() != MOVE_NONE && "pv must contain a valid first move");
-    assert((bestValue == pv.first().value() || stopSearchFlag) && "bestValue should be equal value of pv.first()");
+    assert(!mainThread().pv.empty() && mainThread().pv.first() != MOVE_NONE && "pv must contain a valid first move");
+    assert((bestValue == mainThread().pv.first().value() || stopSearchFlag) && "bestValue should be equal value of mainThread().pv.first()");
 
     // Conservative volatility detector: big evaluation swings between consecutive iterations
     if (searchLimits.timeControl && !addedVolatilityExtraTime && !isTimeAlmostUp()) {
-      const Value currBest = pv.first().value();
+      const Value currBest = mainThread().pv.first().value();
       // Only consider reasonably deep iterations to avoid noise from shallow depths
       constexpr int VOL_SWING_MIN_DEPTH = 6;
       constexpr auto VOL_SWING_THRESH   = Value{150};// ~1.5 pawns
@@ -561,7 +570,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
     // Best-move instability tracking for dynamic time management
     // Tracks whether the best move is stable (same across iterations) or unstable (changing).
     if (SearchConfig.USE_BESTMOVE_INSTABILITY && searchLimits.timeControl && !searchLimits.ponder && !isTimeAlmostUp()) {
-      const Move currentBestMove = pv.first().stripped();
+      const Move currentBestMove = mainThread().pv.first().stripped();
       const int minDepth         = SearchConfig.INSTABILITY_MIN_DEPTH;
 
       if (iterationDepth >= minDepth) {
@@ -603,8 +612,8 @@ SearchResult Search::iterativeDeepening(Position& p) {
 
     // if mate search check if we found a mate within the mate limit
     if (searchLimits.mate
-        && abs(pv.first().value()) >= VALUE_CHECKMATE_THRESHOLD
-        && searchLimits.mate * 2 - 1 == VALUE_CHECKMATE - pv.first().value()) {
+        && abs(mainThread().pv.first().value()) >= VALUE_CHECKMATE_THRESHOLD
+        && searchLimits.mate * 2 - 1 == VALUE_CHECKMATE - mainThread().pv.first().value()) {
       searchResult.mateFound = true;
       break;
     }
@@ -617,9 +626,9 @@ SearchResult Search::iterativeDeepening(Position& p) {
     if (!stopConditions()) {
       // sort root moves for the next iteration
       std::ranges::stable_sort(rootMoves, moveValueGreaterComparator());
-      ESSENTIAL_STAT_SET(statistics.currentBestRootMove, pv.first());
-      ESSENTIAL_STAT_SET(statistics.currentBestRootMoveValue, pv.first().value());
-      assert(pv.first() == rootMoves.at(0) && "Best root move should be equal to pv.first()");
+      ESSENTIAL_STAT_SET(mainThread().statistics.currentBestRootMove, mainThread().pv.first());
+      ESSENTIAL_STAT_SET(mainThread().statistics.currentBestRootMoveValue, mainThread().pv.first().value());
+      assert(mainThread().pv.first() == rootMoves.at(0) && "Best root move should be equal to mainThread().pv.first()");
       // update UCI GUI
       sendIterationEndInfoToUci();
     }
@@ -633,10 +642,10 @@ SearchResult Search::iterativeDeepening(Position& p) {
   // update searchResult
   // the best move is pv(0,0) - we need to make sure this entry exists at this time
   // the best value is pv(0,0).value()
-  searchResult.bestMove      = pv.first().stripped();
-  searchResult.bestMoveValue = pv.first().value();
-  searchResult.depth         = statistics.currentIterationDepth;
-  searchResult.extraDepth    = statistics.currentExtraSearchDepth;
+  searchResult.bestMove      = mainThread().pv.first().stripped();
+  searchResult.bestMoveValue = mainThread().pv.first().value();
+  searchResult.depth         = mainThread().statistics.currentIterationDepth;
+  searchResult.extraDepth    = mainThread().statistics.currentExtraSearchDepth;
   searchResult.bookMove      = false;
 
   // If we had a TB probe at root (non-immediate mode), decide which move to use.
@@ -646,7 +655,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
     searchResult.tbHit = true;
 
     // Check if search found a proven mate
-    const Value searchValue    = pv.first().value();
+    const Value searchValue    = mainThread().pv.first().value();
     const bool searchFoundMate = searchValue >= VALUE_CHECKMATE_THRESHOLD;
 
     // Calculate mate depth if search found mate (in plies/half-moves)
@@ -686,8 +695,8 @@ SearchResult Search::iterativeDeepening(Position& p) {
   }
 
   // see if we have a move we could ponder on
-  if (pv.hasLength(DEPTH_NONE, 2)) {
-    searchResult.ponderMove = pv(DEPTH_NONE, 1).stripped();
+  if (mainThread().pv.hasLength(DEPTH_NONE, 2)) {
+    searchResult.ponderMove = mainThread().pv(DEPTH_NONE, 1).stripped();
   }
   else {
     // we do not have a ponder-move in the pv-list,
@@ -695,7 +704,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
     if (SearchConfig.USE_TT) {
       p.doMove(searchResult.bestMove);
       if (const auto* ttEntryPtr = tt->probe(p.getZobristKey())) {
-        statistics.ttHit++;
+        mainThread().statistics.ttHit++;
         searchResult.ponderMove = static_cast<Move>(ttEntryPtr->move);
         LOG__DEBUG(Logger::get().SEARCH_LOG, "Using ponder move from hash table: {}", searchResult.ponderMove.str());
       }
@@ -710,7 +719,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
     p.doMove(searchResult.bestMove);
     p.doMove(searchResult.ponderMove);
     // check repetition and 50-moves rule or if there are legal moves when using ponder move
-    if (checkDrawRepAnd50(p, 2) || plyStack[0].mg->generateLegalMoves(p, GenAll)->empty()) {
+    if (checkDrawRepAnd50(p, 2) || mainThread().plyStack[0].mg->generateLegalMoves(p, GenAll)->empty()) {
       LOG__DEBUG(Logger::get().SEARCH_LOG, "ponder move omitted as game finished");
       searchResult.ponderMove = MOVE_NONE;
     }
@@ -755,7 +764,7 @@ Value Search::aspirationSearch(Position& p, const Depth depth, const Value bestV
       // Alternatively, we could do steps as well
       // alpha = VALUE_MIN;
       alpha = std::max(bestValue - aspirationSteps[i], VALUE_MIN);
-      STAT_INC(statistics.aspirationResearches);
+      STAT_INC(mainThread().statistics.aspirationResearches);
     }
     else if (value >= beta) {
       // FAIL HIGH - increase upper bound
@@ -763,7 +772,7 @@ Value Search::aspirationSearch(Position& p, const Depth depth, const Value bestV
       // If time is almost up, don't expand; return current value
       if (isTimeAlmostUp()) { return value; }
       beta = std::min(bestValue + aspirationSteps[i], VALUE_MAX);
-      STAT_INC(statistics.aspirationResearches);
+      STAT_INC(mainThread().statistics.aspirationResearches);
     }
     else { break; }
   }
@@ -799,10 +808,10 @@ Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Valu
     Move& moveRef = rootMoves.at(i);
 
     p.doMove(moveRef);
-    nodesVisited++;
-    statistics.currentVariation.push_back(moveRef);
-    ESSENTIAL_STAT_SET(statistics.currentRootMoveIndex, i);
-    ESSENTIAL_STAT_SET(statistics.currentRootMove, moveRef);
+    mainThread().nodesVisited++;
+    mainThread().statistics.currentVariation.push_back(moveRef);
+    ESSENTIAL_STAT_SET(mainThread().statistics.currentRootMoveIndex, i);
+    ESSENTIAL_STAT_SET(mainThread().statistics.currentRootMove, moveRef);
 
     if (checkDrawRepAnd50(p, 2)) {
       value = VALUE_DRAW;
@@ -823,14 +832,14 @@ Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Valu
         // If this move improved alpha without exceeding beta we do a proper full window
         // search to get an accurate score.
         if (value > alpha && value < beta && !stopConditions() && !isTimeAlmostUp()) {
-          STAT_INC(statistics.rootPvsResearches);
+          STAT_INC(mainThread().statistics.rootPvsResearches);
           value = -search(p, depth - 1, ply, -beta, -alpha, PvNode, Do_Null_Move);
         }
       }
       // ///////////////////////////////////////////////////////////////////
     }
 
-    statistics.currentVariation.pop_back();
+    mainThread().statistics.currentVariation.pop_back();
     p.undoMove();
 
     // set the value into the root move to later be able to sort
@@ -848,13 +857,13 @@ Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Valu
     if (value > bestNodeValue) {
       bestNodeValue = value;
       // we have a new best move - update triangular PV table
-      pv.update(moveRef, DEPTH_NONE);
-      STAT_INC(statistics.bestMoveChange);
+      mainThread().pv.update(moveRef, DEPTH_NONE);
+      STAT_INC(mainThread().statistics.bestMoveChange);
       if (value > alpha) {
         // fail high in root only when using aspiration search
         if (value >= beta && SearchConfig.USE_ALPHABETA) {
-          STAT_INC(statistics.betaCuts);
-          STAT_INC(statistics.betaCutsByIndex[std::min(static_cast<int>(statistics.currentRootMoveIndex), SearchStats::BETA_CUTS_INDEX_SIZE - 1)]);
+          STAT_INC(mainThread().statistics.betaCuts);
+          STAT_INC(mainThread().statistics.betaCutsByIndex[std::min(static_cast<int>(mainThread().statistics.currentRootMoveIndex), SearchStats::BETA_CUTS_INDEX_SIZE - 1)]);
           return value;
         }
         // value is < beta
@@ -871,13 +880,13 @@ Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Valu
 }
 
 Value Search::search(Position& p, const Depth depth, const Depth ply, Value alpha, Value beta, const NodeType nodeType, const Do_Null doNull) {
-  //  LOG__DEBUG(Logger::get().SEARCH_LOG, "Search {} {} {}", depth, ply, str(statistics.currentVariation));
+  //  LOG__DEBUG(Logger::get().SEARCH_LOG, "Search {} {} {}", depth, ply, str(mainThread().statistics.currentVariation));
 
   // Clear PV for this node to prevent stale data from previous iterations/branches
-  // from being propagated up via pv.update(). Stale PV data can contain moves from
+  // from being propagated up via mainThread().pv.update(). Stale PV data can contain moves from
   // different positions that are illegal in the current position.
   // Note: IID may write to pv but clears it after extracting the ttMove.
-  pv.clear(ply);
+  mainThread().pv.clear(ply);
 
   // Enter quiescence search when depth == 0 or max ply has been reached
   // pvNodes/nonPvNodes are tracked inside qsearch() — no need to count here.
@@ -889,10 +898,10 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // Track PV vs non-PV node statistics (after qsearch drop-through to avoid double-counting
   // — qsearch() already tracks its own pvNodes/nonPvNodes at entry)
 #ifndef FRANKYCPP_PRODUCTION
-  if (nodeType == PvNode) { ++statistics.pvNodes; }
-  else { ++statistics.nonPvNodes; }
-  ++statistics.searchNodes;
-#  endif
+  if (nodeType == PvNode) { ++mainThread().statistics.pvNodes; }
+  else { ++mainThread().statistics.nonPvNodes; }
+  ++mainThread().statistics.searchNodes;
+#endif
 
   // check if search should be stopped
   if (stopConditions() && depth > 1) { return VALUE_NONE; }
@@ -904,7 +913,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     alpha = std::max(alpha, -VALUE_CHECKMATE + static_cast<Value>(ply));
     beta  = std::min(beta, VALUE_CHECKMATE - static_cast<Value>(ply));
     if (alpha >= beta) {
-      STAT_INC(statistics.mdp);
+      STAT_INC(mainThread().statistics.mdp);
       return alpha;
     }
   }
@@ -939,7 +948,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   if (SearchConfig.USE_TT) {
     if (const TT::Entry* ttEntryPtr = tt->probe(p.getZobristKey())) {
       // tt hit
-      STAT_INC(statistics.ttHit);
+      STAT_INC(mainThread().statistics.ttHit);
       ttMove  = static_cast<Move>(ttEntryPtr->move);
       ttValue = valueFromTt(ttEntryPtr->value, ply);
       ttDepth = static_cast<Depth>(ttEntryPtr->depth);
@@ -952,18 +961,18 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
             && (ttEntryPtr->type == EXACT
                 || (ttEntryPtr->type == ALPHA && ttValue <= alpha)
                 || (ttEntryPtr->type == BETA && ttValue >= beta))) {
-          STAT_INC(statistics.TtCuts);
+          STAT_INC(mainThread().statistics.TtCuts);
           return ttValue;
         }
-        STAT_INC(statistics.TtNoCuts);
+        STAT_INC(mainThread().statistics.TtNoCuts);
       }
       // if we have a static eval stored, we can reuse it
       if (SearchConfig.USE_EVAL_TT && ttEntryPtr->eval != VALUE_NONE) {
-        STAT_INC(statistics.evalFromTT);
+        STAT_INC(mainThread().statistics.evalFromTT);
         staticEval = ttEntryPtr->eval;
       }
     }
-    else { STAT_INC(statistics.ttMiss); }
+    else { STAT_INC(mainThread().statistics.ttMiss); }
   }// use TT
 
   // Tablebase probing in search (after TT lookup to use cached TB results)
@@ -981,11 +990,11 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       && (SearchConfig.USE_TB_PROBE_PV || nodeType != PvNode)
       && p.getOccupiedBb().popcount() <= SearchConfig.TB_PROBE_LIMIT) {// EXPENSIVE: Last!
 
-    STAT_INC(statistics.tbSearchProbes);
+    STAT_INC(mainThread().statistics.tbSearchProbes);
     const tablebase::TBResult wdl = syzygy_tb->probeWDL(p);
 
     if (wdl != tablebase::TBResult::Failed) {
-      STAT_INC(statistics.tbSearchHits);
+      STAT_INC(mainThread().statistics.tbSearchHits);
 
       // Convert WDL to score with 50-move rule handling
       const Value tbScore = getTBScoreForSearch(wdl, p.getHalfMoveClock(), ply);
@@ -996,7 +1005,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       if (wdl == tablebase::TBResult::Win || wdl == tablebase::TBResult::CursedWin) {
         // Position is winning - use as lower bound
         if (nodeType != PvNode && tbScore >= beta) {
-          STAT_INC(statistics.tbSearchCutoffs);
+          STAT_INC(mainThread().statistics.tbSearchCutoffs);
           // Store in TT for future lookups
           if (SearchConfig.USE_TT) {
             storeTt(p, depth, ply, MOVE_NONE, tbScore, BETA, VALUE_NONE);
@@ -1009,7 +1018,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       else if (wdl == tablebase::TBResult::Loss || wdl == tablebase::TBResult::BlessedLoss) {
         // Position is losing - use as upper bound
         if (nodeType != PvNode && tbScore <= alpha) {
-          STAT_INC(statistics.tbSearchCutoffs);
+          STAT_INC(mainThread().statistics.tbSearchCutoffs);
           // Store in TT for future lookups
           if (SearchConfig.USE_TT) {
             storeTt(p, depth, ply, MOVE_NONE, tbScore, ALPHA, VALUE_NONE);
@@ -1022,7 +1031,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       else if (wdl == tablebase::TBResult::Draw) {
         // Exact draw - can return immediately on non-PV nodes
         if (nodeType != PvNode) {
-          STAT_INC(statistics.tbSearchCutoffs);
+          STAT_INC(mainThread().statistics.tbSearchCutoffs);
           if (SearchConfig.USE_TT) {
             storeTt(p, depth, ply, MOVE_NONE, VALUE_DRAW, EXACT, VALUE_NONE);
           }
@@ -1034,7 +1043,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       }
     }
     else {
-      STAT_INC(statistics.tbSearchMisses);
+      STAT_INC(mainThread().statistics.tbSearchMisses);
     }
   }
 
@@ -1052,7 +1061,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 
   // Store static eval in PlyInfo for "improving" flag computation at deeper plies.
   // When in check we have no meaningful eval, so store VALUE_NONE.
-  plyStack[ply].staticEval = hasCheck ? VALUE_NONE : staticEval;
+  mainThread().plyStack[ply].staticEval = hasCheck ? VALUE_NONE : staticEval;
 
   // Compute "improving" flag: is our static eval better than 2 plies ago?
   // This is used to modulate pruning aggressiveness - when not improving,
@@ -1065,11 +1074,11 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     if (!SearchConfig.USE_IMPROVING) return false;
     if (hasCheck || staticEval == VALUE_NONE) return false;
     if (ply < 2) return false;
-    const Value prevEval = plyStack[ply - 2].staticEval;
+    const Value prevEval = mainThread().plyStack[ply - 2].staticEval;
     if (prevEval != VALUE_NONE) return staticEval > prevEval;
     // 2 plies ago was in check — try 4 plies ago
     if (ply >= 4) {
-      const Value prevEval4 = plyStack[ply - 4].staticEval;
+      const Value prevEval4 = mainThread().plyStack[ply - 4].staticEval;
       if (prevEval4 != VALUE_NONE) return staticEval > prevEval4;
     }
     return true;// Conservative: assume improving when no reference data
@@ -1077,8 +1086,8 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 
   // Track improving statistics
   if (SearchConfig.USE_IMPROVING && !hasCheck) {
-    if (improving) { STAT_INC(statistics.improvingTrue); }
-    else { STAT_INC(statistics.improvingFalse); }
+    if (improving) { STAT_INC(mainThread().statistics.improvingTrue); }
+    else { STAT_INC(mainThread().statistics.improvingFalse); }
   }
 
   // Reverse Futility Pruning, (RFP, Static Null Move Pruning)
@@ -1099,7 +1108,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       margin += Value{SearchConfig.RFP_IMPROVING_MARGIN};
     }
     if (staticEval - margin >= beta) {
-      STAT_INC(statistics.rfp_cuts);
+      STAT_INC(mainThread().statistics.rfp_cuts);
       return staticEval - margin;// fail-hard: beta / fail-soft: staticEval - evalMargin;
     }
   }
@@ -1113,7 +1122,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       && depth == 1
       && staticEval != VALUE_NONE
       && staticEval <= alpha - SearchConfig.RAZOR_MARGIN) {
-    STAT_INC(statistics.razorings);
+    STAT_INC(mainThread().statistics.razorings);
     // fix 19.2.2026 - use AllNode for razor to avoid missing critical moves in PV line; razor is a
     // heuristic that can afford to miss some moves, but we don't want it to miss critical moves in
     // the PV line. Use AllNode since we're expecting to fail low (that's why we're razoring).
@@ -1163,7 +1172,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // do null move search
       // Null move child is a CUT node (we're trying to prove fail-high with null window)
       p.doNullMove();
-      nodesVisited++;
+      mainThread().nodesVisited++;
       Value nValue = -search(p, newDepth, ply + 1, -beta, -beta + 1, CutNode, No_Null_Move);
       p.undoNullMove();
 
@@ -1196,18 +1205,18 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
           const Value v = search(p, verifyDepth, ply, beta - 1, beta, nodeType, do_null);
           if (stopConditions()) { return VALUE_NONE; }
           if (v < beta) {
-            STAT_INC(statistics.nullMoveVerifications);
+            STAT_INC(mainThread().statistics.nullMoveVerifications);
             // fall through: no cutoff
           }
           else {
             if (SearchConfig.USE_TT) { storeTt(p, depth, ply, MOVE_NONE, nValue, BETA, staticEval); }
-            STAT_INC(statistics.nullMoveCuts);
+            STAT_INC(mainThread().statistics.nullMoveCuts);
             return nValue;
           }
         }
         else {
           if (SearchConfig.USE_TT) { storeTt(p, depth, ply, MOVE_NONE, nValue, BETA, staticEval); }
-          STAT_INC(statistics.nullMoveCuts);
+          STAT_INC(mainThread().statistics.nullMoveCuts);
           return nValue;
         }
       }
@@ -1228,7 +1237,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       && searchDepth >= SearchConfig.IIR_DEPTH
       && (SearchConfig.IIR_ALL_NODES || nodeType == PvNode)) {
     searchDepth = searchDepth - SearchConfig.IIR_REDUCTION;
-    STAT_INC(statistics.iirReductions);
+    STAT_INC(mainThread().statistics.iirReductions);
   }
 
   // Internal Iterative Deepening (IID) - Legacy approach
@@ -1254,17 +1263,17 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 
         // IID search inherits nodeType (searching same node at reduced depth)
         search(p, newDepthIid, ply, alpha, beta, nodeType, doNull);
-        STAT_INC(statistics.iidSearches);
+        STAT_INC(mainThread().statistics.iidSearches);
 
         // check if we should stop the search
         if (stopConditions()) { return VALUE_NONE; }
 
         // get the best move from the reduced search if available
-        if (!pv.empty(ply)) {
-          STAT_INC(statistics.iidMoves);
-          ttMove = pv.first(ply).stripped();
+        if (!mainThread().pv.empty(ply)) {
+          STAT_INC(mainThread().statistics.iidMoves);
+          ttMove = mainThread().pv.first(ply).stripped();
           // Clear pv after extracting the move - IID polluted it
-          pv.clear(ply);
+          mainThread().pv.clear(ply);
         }
       }
     }
@@ -1273,7 +1282,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // reset move generator for the actual search
   // Use mgSingular when in singular verification search (excludedMove is set)
   // to avoid corrupting the outer search's MoveGenerator state
-  auto& info       = plyStack[ply];
+  auto& info       = mainThread().plyStack[ply];
   auto* const myMg = info.excludedMove != MOVE_NONE ? info.mgSingular.get() : info.mg.get();
   myMg->resetOnDemand();
 
@@ -1282,10 +1291,10 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // TT or IID, we set it as PV move in the move-gen so it will
   // be searched first.
   if (SearchConfig.USE_TT_PV_MOVE_SORT && ttMove != MOVE_NONE) {
-    STAT_INC(statistics.TtMoveUsed);
+    STAT_INC(mainThread().statistics.TtMoveUsed);
     myMg->setPV(ttMove);
   }
-  else { STAT_INC(statistics.NoTtMove); }
+  else { STAT_INC(mainThread().statistics.NoTtMove); }
 
   // prepare move loop
   Value value;
@@ -1326,7 +1335,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
           && givesCheck
           && movesSearched < SearchConfig.CHECK_EXT_EARLY_LIMIT
           && (!SearchConfig.USE_CHECK_EXT_SEE || See::see(p, move) >= 0)) {
-        STAT_INC(statistics.checkExtension);
+        STAT_INC(mainThread().statistics.checkExtension);
         extension = DEPTH_ONE;
       }
 
@@ -1337,7 +1346,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // too much.
       if (SearchConfig.USE_THREAT_EXT
           && matethreat) {
-        STAT_INC(statistics.threatExtension);
+        STAT_INC(mainThread().statistics.threatExtension);
         extension = DEPTH_ONE;
       }
 
@@ -1359,7 +1368,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         // Track ALPHA-bound entries for statistics
         const bool isLowerBound = (ttBound == BETA || ttBound == EXACT);
         if (!isLowerBound) {
-          STAT_INC(statistics.singularFilteredByBound);
+          STAT_INC(mainThread().statistics.singularFilteredByBound);
         }
 
         // Optional: Require BETA/EXACT bound (theory says yes, practice says too restrictive)
@@ -1374,7 +1383,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
           // Set the excluded move for this ply so the verification search skips the TT move
           info.excludedMove = ttMove;
 
-          STAT_INC(statistics.singularSearches);
+          STAT_INC(mainThread().statistics.singularSearches);
 
           // Do a null-window search to see if any other move can reach singularBeta
           // Uses mgSingular automatically because excludedMove is set
@@ -1389,7 +1398,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 
           // If no other move reaches singularBeta, the TT move is singular - extend it
           if (singularValue < singularBeta) {
-            STAT_INC(statistics.singularExtension);
+            STAT_INC(mainThread().statistics.singularExtension);
             extension = DEPTH_ONE;
           }
         }
@@ -1440,7 +1449,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         }
         if (staticEval + moveGain + futilityMargin <= alpha) {
           if (staticEval + moveGain > bestNodeValue) { bestNodeValue = staticEval + moveGain; }
-          STAT_INC(statistics.fpPrunings);
+          STAT_INC(mainThread().statistics.fpPrunings);
           continue;
         }
       }
@@ -1455,7 +1464,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
           lmpThreshold += lmpThreshold / 2;// 50% more moves when improving
         }
         if (movesSearched >= lmpThreshold) {
-          STAT_INC(statistics.lmpCuts);
+          STAT_INC(mainThread().statistics.lmpCuts);
           continue;
         }
       }
@@ -1477,7 +1486,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 
       const int d = std::min(depth, Depth{31});
       const int m = std::min(movesSearched, 63);
-      lmrDepth -= static_cast<Depth>(LMR_REDUCTION[d][m]);
+      lmrDepth -= static_cast<Depth>(mainThread().LMR_REDUCTION[d][m]);
 
       // Reduce more when position is NOT improving (eval not better than 2 plies ago)
       if (SearchConfig.USE_LMR_IMPROVING && !improving) {
@@ -1488,18 +1497,18 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // Late moves on cut nodes are very unlikely to be the best move
       if (SearchConfig.USE_LMR_CUTNODE && nodeType == CutNode) {
         lmrDepth -= static_cast<Depth>(SearchConfig.LMR_CUTNODE_REDUCTION);
-        STAT_INC(statistics.lmrCutNodeReductions);
+        STAT_INC(mainThread().statistics.lmrCutNodeReductions);
       }
 
       // Reduce less for moves with good history (frequently caused beta cutoffs)
       // histScore > 0 means good move -> negative reduction adjustment -> less reduction
       if (SearchConfig.USE_LMR_HISTORY) {
-        const int histScore     = history.historyCount[us][from][to];
+        const int histScore     = mainThread().history.historyCount[us][from][to];
         const int histReduction = -histScore / SearchConfig.LMR_HISTORY_DIVISOR;
         if (histReduction < 0) {
           // Positive history -> less reduction (histReduction is negative)
-          STAT_INC(statistics.lmrHistoryLessReduction);
-          STAT_ADD(statistics.lmrHistoryDepthSaved, -histReduction);// Convert to positive for tracking
+          STAT_INC(mainThread().statistics.lmrHistoryLessReduction);
+          STAT_ADD(mainThread().statistics.lmrHistoryDepthSaved, -histReduction);// Convert to positive for tracking
         }
         lmrDepth -= static_cast<Depth>(histReduction);
       }
@@ -1524,7 +1533,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       lmrDepth = std::clamp(lmrDepth, DEPTH_NONE, newDepth);
 
       if (lmrDepth < newDepth) {
-        STAT_INC(statistics.lmrReductions);
+        STAT_INC(mainThread().statistics.lmrReductions);
       }
     }
 
@@ -1548,8 +1557,8 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     // EVAL_PREFETCH;
 
     // we only count legal moves
-    nodesVisited++;
-    statistics.currentVariation.push_back(move);
+    mainThread().nodesVisited++;
+    mainThread().statistics.currentVariation.push_back(move);
 
     sendSearchUpdateToUci();
 
@@ -1592,13 +1601,13 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         if (value > alpha && !stopConditions() && !isTimeAlmostUp()) {
           // did we actually have a LMR reduction?
           if (lmrDepth < newDepthFixed) {
-            STAT_INC(statistics.lmrResearches);
+            STAT_INC(mainThread().statistics.lmrResearches);
             // Re-search with full depth: if we're PV, child becomes PV; otherwise same alternation
             const NodeType researchType = (nodeType == PvNode) ? PvNode : childType;
             value                       = -search(p, newDepth, ply + 1, -beta, -alpha, researchType, do_null);
           }
           else if (value < beta) {
-            STAT_INC(statistics.pvsResearches);
+            STAT_INC(mainThread().statistics.pvsResearches);
             // PVS re-search: if we're PV, child becomes PV; otherwise same alternation
             const NodeType researchType = (nodeType == PvNode) ? PvNode : childType;
             value                       = -search(p, newDepth, ply + 1, -beta, -alpha, researchType, do_null);
@@ -1609,7 +1618,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     }
 
     movesSearched++;
-    statistics.currentVariation.pop_back();
+    mainThread().statistics.currentVariation.pop_back();
     p.undoMove();
     // UNDO MOVE
     // ///////////////////////////////////////////////////////
@@ -1646,18 +1655,18 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         // earlier in another node of the ply.
         if (value >= beta && SearchConfig.USE_ALPHABETA) {
           // Count beta cuts
-          STAT_INC(statistics.betaCuts);
+          STAT_INC(mainThread().statistics.betaCuts);
           // Track beta cuts by move index (0-based, clamped to array size)
-          STAT_INC(statistics.betaCutsByIndex[std::min(movesSearched - 1, SearchStats::BETA_CUTS_INDEX_SIZE - 1)]);
+          STAT_INC(mainThread().statistics.betaCutsByIndex[std::min(movesSearched - 1, SearchStats::BETA_CUTS_INDEX_SIZE - 1)]);
           // store move which caused a beta cutoff in this ply
           if (SearchConfig.USE_KILLER_MOVES && !p.isCapturingMove(move)) { myMg->storeKiller(move); }
           // Counter for moves which caused a beta cutoff
           // we use 1 << depth as an increment to favor deeper searches
-          if (SearchConfig.USE_HISTORY_COUNTER && !p.isCapturingMove(move)) { history.historyCount[us][from][to] += 1L << depth; }
+          if (SearchConfig.USE_HISTORY_COUNTER && !p.isCapturingMove(move)) { mainThread().history.historyCount[us][from][to] += 1L << depth; }
           // store a successful counter-move to the previous opponent move
           if (SearchConfig.USE_HISTORY_MOVES) {
             const Move lastMove = p.getLastMove();
-            if (lastMove != MOVE_NONE) { history.counterMoves[lastMove.from()][lastMove.to()] = move; }
+            if (lastMove != MOVE_NONE) { mainThread().history.counterMoves[lastMove.from()][lastMove.to()] = move; }
           }
           ttType = BETA;
           break;
@@ -1665,7 +1674,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         // We found a move between alpha and beta which means we
         // really have found the best move so far in the ply which
         // can be forced (opponent can't avoid it).
-        pv.update(move, ply);
+        mainThread().pv.update(move, ply);
 
         // We raise alpha so the successive searches in this ply
         // need to find even better moves or dismiss the moves.
@@ -1677,8 +1686,8 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     }
     // Decrease history only for quiet moves that failed to improve alpha
     if (SearchConfig.USE_HISTORY_COUNTER && !p.isCapturingMove(move)) {
-      history.historyCount[us][from][to] -= 1L << depth;
-      if (history.historyCount[us][from][to] < 0) { history.historyCount[us][from][to] = 0; }
+      mainThread().history.historyCount[us][from][to] -= 1L << depth;
+      if (mainThread().history.historyCount[us][from][to] < 0) { mainThread().history.historyCount[us][from][to] = 0; }
     }
   }
   // MOVE LOOP
@@ -1689,12 +1698,12 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   if (movesSearched == 0 && !stopConditions()) {
     if (hasCheck) {
       // mate
-      STAT_INC(statistics.checkmates);
+      STAT_INC(mainThread().statistics.checkmates);
       bestNodeValue = -VALUE_CHECKMATE + static_cast<Value>(ply);
     }
     else {
       // stalemate
-      STAT_INC(statistics.stalemates);
+      STAT_INC(mainThread().statistics.stalemates);
       bestNodeValue = VALUE_DRAW;
     }
     // this is in any case an exact value
@@ -1711,25 +1720,25 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 }
 
 Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, const NodeType nodeType) {
-  //  LOG__DEBUG(Logger::get().SEARCH_LOG, "QSearch {} {}", ply, str(statistics.currentVariation));
+  //  LOG__DEBUG(Logger::get().SEARCH_LOG, "QSearch {} {}", ply, str(mainThread().statistics.currentVariation));
 
   // Track PV vs non-PV node statistics
   // In qsearch, CutNode/AllNode are treated the same as non-PV
 #ifndef FRANKYCPP_PRODUCTION
-  if (nodeType == PvNode) { statistics.pvNodes++; }
-  else { statistics.nonPvNodes++; }
-  statistics.qsearchNodes++;
+  if (nodeType == PvNode) { mainThread().statistics.pvNodes++; }
+  else { mainThread().statistics.nonPvNodes++; }
+  mainThread().statistics.qsearchNodes++;
 #endif
 
   // Clear PV for this node (same reason as in search())
-  pv.clear(ply);
+  mainThread().pv.clear(ply);
 
-  if (statistics.currentExtraSearchDepth < ply) { statistics.currentExtraSearchDepth = ply; }
+  if (mainThread().statistics.currentExtraSearchDepth < ply) { mainThread().statistics.currentExtraSearchDepth = ply; }
 
   // if we have deactivated qsearch or we have reached our maximum depth
   // we evaluate the position and return the value
   if (!SearchConfig.USE_QUIESCENCE || ply >= MAX_DEPTH || stopConditions()) {
-    ESSENTIAL_STAT_INC(statistics.perftNodeCount);
+    ESSENTIAL_STAT_INC(mainThread().statistics.perftNodeCount);
     return evaluate(p);
   }
 
@@ -1739,7 +1748,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
     alpha = std::max(alpha, -VALUE_CHECKMATE + static_cast<Value>(ply));
     beta  = std::min(beta, VALUE_CHECKMATE - static_cast<Value>(ply));
     if (alpha >= beta) {
-      STAT_INC(statistics.mdp);
+      STAT_INC(mainThread().statistics.mdp);
       return alpha;
     }
   }
@@ -1750,7 +1759,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
   if (SearchConfig.USE_TT && SearchConfig.USE_QS_TT) {
     if (const TT::Entry* ttEntryPtr = tt->probe(p.getZobristKey())) {
       // tt hit
-      statistics.ttHit++;
+      mainThread().statistics.ttHit++;
       ttMove              = static_cast<Move>(ttEntryPtr->move);
       const Value ttValue = valueFromTt(ttEntryPtr->value, ply);
       if (SearchConfig.USE_TT_VALUE
@@ -1759,17 +1768,17 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
           && (ttEntryPtr->type == EXACT
               || (ttEntryPtr->type == ALPHA && ttValue <= alpha)
               || (ttEntryPtr->type == BETA && ttValue >= beta))) {
-        statistics.TtCuts++;
+        mainThread().statistics.TtCuts++;
         return ttValue;
       }
       // if we have a static eval stored we can reuse it
       if (SearchConfig.USE_EVAL_TT
           && ttEntryPtr->eval != VALUE_NONE) {
-        STAT_INC(statistics.evalFromTT);
+        STAT_INC(mainThread().statistics.evalFromTT);
         staticEval = ttEntryPtr->eval;
       }
     }
-    else { statistics.ttMiss++; }
+    else { mainThread().statistics.ttMiss++; }
   }// use TT
 
   // prepare node search
@@ -1791,7 +1800,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
     // current position. So if we are already >beta we don't need to look at it.
     if (SearchConfig.USE_QS_STANDPAT_CUT && staticEval > alpha) {
       if (staticEval >= beta) {
-        STAT_INC(statistics.standpatCuts);
+        STAT_INC(mainThread().statistics.standpatCuts);
         // Storing this value might save us calls to eval on the same position.
         if (SearchConfig.USE_TT
             && SearchConfig.USE_QS_TT
@@ -1806,16 +1815,16 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
   }
 
   // reset move generator for the move loop
-  auto* const myMg = plyStack[ply].mg.get();
+  auto* const myMg = mainThread().plyStack[ply].mg.get();
   myMg->resetOnDemand();
 
   // PV Move Sort
   if (SearchConfig.USE_TT_PV_MOVE_SORT && ttMove != MOVE_NONE) {
-    STAT_INC(statistics.TtMoveUsed);
+    STAT_INC(mainThread().statistics.TtMoveUsed);
     myMg->setPV(ttMove);
   }
   else {
-    STAT_INC(statistics.NoTtMove);
+    STAT_INC(mainThread().statistics.NoTtMove);
   }
 
   // prepare move loop
@@ -1849,7 +1858,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
       constexpr auto futilityMargin = Value{150};
       if (staticEval + moveGain + futilityMargin <= alpha) {
         if (staticEval + moveGain > bestNodeValue) { bestNodeValue = staticEval + moveGain; }
-        STAT_INC(statistics.qfpPrunings);
+        STAT_INC(mainThread().statistics.qfpPrunings);
         continue;
       }
     }
@@ -1872,8 +1881,8 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
     EVAL_PREFETCH;
 
     // we only count legal moves
-    nodesVisited++;
-    statistics.currentVariation.push_back(move);
+    mainThread().nodesVisited++;
+    mainThread().statistics.currentVariation.push_back(move);
     sendSearchUpdateToUci();
 
     // check repetition and 50 moves
@@ -1886,7 +1895,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
     }
 
     movesSearched++;
-    statistics.currentVariation.pop_back();
+    mainThread().statistics.currentVariation.pop_back();
     p.undoMove();
     // UNDO MOVE
     // ///////////////////////////////////////////////////////
@@ -1900,14 +1909,14 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
       bestNodeMove  = move;
       if (value > alpha) {
         if (value >= beta && SearchConfig.USE_ALPHABETA) {
-          STAT_INC(statistics.betaCuts);
-          STAT_INC(statistics.betaCutsByIndex[std::min(movesSearched - 1, SearchStats::BETA_CUTS_INDEX_SIZE - 1)]);
+          STAT_INC(mainThread().statistics.betaCuts);
+          STAT_INC(mainThread().statistics.betaCutsByIndex[std::min(movesSearched - 1, SearchStats::BETA_CUTS_INDEX_SIZE - 1)]);
           // Note: No killer/history updates in qsearch - we primarily search captures,
           // and history/killers are for quiet move ordering in main search.
           ttType = BETA;
           break;
         }
-        pv.update(move, ply);
+        mainThread().pv.update(move, ply);
         alpha  = value;
         ttType = EXACT;
       }
@@ -1924,7 +1933,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
     // generated all moves. We can be sure this is a mate.
     if (hasCheck) {
       // mate
-      STAT_INC(statistics.checkmates);
+      STAT_INC(mainThread().statistics.checkmates);
       bestNodeValue = -VALUE_CHECKMATE + static_cast<Value>(ply);
       ttType        = EXACT;
     }
@@ -1946,8 +1955,8 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
 }
 
 inline Value Search::evaluate(const Position& p) {
-  STAT_INC(statistics.leafPositionsEvaluated);
-  STAT_INC(statistics.evaluations);
+  STAT_INC(mainThread().statistics.leafPositionsEvaluated);
+  STAT_INC(mainThread().statistics.evaluations);
   return evaluator->evaluate(p);
 }
 
@@ -2117,7 +2126,7 @@ bool Search::probeTablebaseAtRoot(const Position& pos, SearchResult& result) {
   result.tbHit         = true;
 
   // Update statistics
-  STAT_INC(statistics.tbRootHits);
+  STAT_INC(mainThread().statistics.tbRootHits);
 
   return true;
 }
@@ -2258,7 +2267,7 @@ Value Search::getTBScoreForSearch(const tablebase::TBResult wdl, const int halfM
 
 bool Search::stopConditions() {// NOLINT(*-make-member-function-const)
   if (stopSearchFlag) return true;
-  if (searchLimits.nodes > 0 && nodesVisited >= searchLimits.nodes) { stopSearchFlag = true; }
+  if (searchLimits.nodes > 0 && mainThread().nodesVisited >= searchLimits.nodes) { stopSearchFlag = true; }
   return stopSearchFlag;
 }
 
@@ -2420,9 +2429,9 @@ milliseconds Search::setupTimeControl(const Position& p, const SearchLimits& lim
 
 void Search::addExtraTime(const double f) {
   if (searchLimits.timeControl && !searchLimits.moveTime.count()) {
-    const auto deltaMs = std::llround(static_cast<long double>(timeLimit.count()) * (static_cast<long double>(f) - 1.0L));
+    const auto deltaMs      = std::llround(static_cast<long double>(timeLimit.count()) * (static_cast<long double>(f) - 1.0L));
     const auto currentExtra = extraTimeMs.load(std::memory_order_relaxed);
-    const auto maxExtraMs = std::llround(static_cast<long double>(timeLimit.count()) * SearchConfig.MAX_EXTRA_TIME_FACTOR);
+    const auto maxExtraMs   = std::llround(static_cast<long double>(timeLimit.count()) * SearchConfig.MAX_EXTRA_TIME_FACTOR);
 
     // Cap extra time to MAX_EXTRA_TIME_FACTOR * base time
     if (currentExtra >= maxExtraMs) {
@@ -2558,22 +2567,22 @@ void Search::sendIterationEndInfoToUci() {
 
   if (uciHandler) {
     uciHandler->sendIterationEndInfo(
-      statistics.currentSearchDepth,
-      statistics.currentExtraSearchDepth,
-      statistics.currentBestRootMoveValue,
-      nodesVisited,
-      nps(nodesVisited, since),
+      mainThread().statistics.currentSearchDepth,
+      mainThread().statistics.currentExtraSearchDepth,
+      mainThread().statistics.currentBestRootMoveValue,
+      mainThread().nodesVisited,
+      nps(mainThread().nodesVisited, since),
       MILLISECONDS(since),
       pvLine);
     return;
   }
 
   LOG__INFO(Logger::get().SEARCH_LOG, "depth {} seldepth {} value {} nodes {:L} nps {:L} time {:L} pv {}",
-            statistics.currentSearchDepth,
-            statistics.currentExtraSearchDepth,
-            statistics.currentBestRootMoveValue.str(),
-            nodesVisited,
-            nps(nodesVisited, since),
+            mainThread().statistics.currentSearchDepth,
+            mainThread().statistics.currentExtraSearchDepth,
+            mainThread().statistics.currentBestRootMoveValue.str(),
+            mainThread().nodesVisited,
+            nps(mainThread().nodesVisited, since),
             MILLISECONDS(since).count(),
             pvLine.str());
 }
@@ -2581,8 +2590,8 @@ void Search::sendIterationEndInfoToUci() {
 void Search::sendSearchUpdateToUci() {
 
   // to minimize performance impact we only check time every 1M nodes
-  if (nodesVisited - lastUciUpdateNodes < 1'000'000) { return; }
-  lastUciUpdateNodes = nodesVisited;
+  if (mainThread().nodesVisited - lastUciUpdateNodes < 1'000'000) { return; }
+  lastUciUpdateNodes = mainThread().nodesVisited;
 
   // we only update every UCI_UPDATE_INTERVAL ns
   const uint64_t nowTime = nowFast();
@@ -2592,9 +2601,9 @@ void Search::sendSearchUpdateToUci() {
   // nps is calculated from the nodes and time since last update.
   // This might not be the same as the over all avg. nps which is shown
   // at the end of a search.
-  const uint64_t nodesPerSec = nps(nodesVisited - npsNodes, nowTime - npsTime);
+  const uint64_t nodesPerSec = nps(mainThread().nodesVisited - npsNodes, nowTime - npsTime);
   npsTime                    = nowTime;
-  npsNodes                   = nodesVisited;
+  npsNodes                   = mainThread().nodesVisited;
 
   const int hashfull = tt->hashFull();
 
@@ -2602,21 +2611,21 @@ void Search::sendSearchUpdateToUci() {
 
   if (uciHandler) {
     uciHandler->sendSearchUpdate(
-      statistics.currentSearchDepth,
-      statistics.currentExtraSearchDepth,
-      nodesVisited,
+      mainThread().statistics.currentSearchDepth,
+      mainThread().statistics.currentExtraSearchDepth,
+      mainThread().nodesVisited,
       nodesPerSec,
       MILLISECONDS(since),
       hashfull);
-    uciHandler->sendCurrentRootMove(statistics.currentRootMove, statistics.currentRootMoveIndex);
-    uciHandler->sendCurrentLine(statistics.currentVariation);
+    uciHandler->sendCurrentRootMove(mainThread().statistics.currentRootMove, mainThread().statistics.currentRootMoveIndex);
+    uciHandler->sendCurrentLine(mainThread().statistics.currentVariation);
     return;
   }
 
   LOG__INFO(Logger::get().SEARCH_LOG, "depth {} seldepth {} nodes {:L} nps {:L} time {:L} hashful {:L}",
-            statistics.currentSearchDepth,
-            statistics.currentExtraSearchDepth,
-            nodesVisited,
+            mainThread().statistics.currentSearchDepth,
+            mainThread().statistics.currentExtraSearchDepth,
+            mainThread().nodesVisited,
             nodesPerSec,
             MILLISECONDS(since).count(),
             hashfull);
@@ -2631,24 +2640,24 @@ void Search::sendAspirationResearchInfo(const std::string& boundString) {
 
   if (uciHandler) {
     uciHandler->sendAspirationResearchInfo(
-      statistics.currentSearchDepth,
-      statistics.currentExtraSearchDepth,
-      statistics.currentBestRootMoveValue,
+      mainThread().statistics.currentSearchDepth,
+      mainThread().statistics.currentExtraSearchDepth,
+      mainThread().statistics.currentBestRootMoveValue,
       boundString,
-      nodesVisited,
-      nps(nodesVisited, since),
+      mainThread().nodesVisited,
+      nps(mainThread().nodesVisited, since),
       MILLISECONDS(since),
       pvLine);
     return;
   }
 
   LOG__INFO(Logger::get().SEARCH_LOG, "depth {} seldepth {} value {} {} nodes {:L} nps {:L} time {:L} pv {}",
-            statistics.currentSearchDepth,
-            statistics.currentExtraSearchDepth,
-            statistics.currentBestRootMoveValue.str(),
+            mainThread().statistics.currentSearchDepth,
+            mainThread().statistics.currentExtraSearchDepth,
+            mainThread().statistics.currentBestRootMoveValue.str(),
             boundString,
-            nodesVisited,
-            nps(nodesVisited, since),
+            mainThread().nodesVisited,
+            nps(mainThread().nodesVisited, since),
             MILLISECONDS(since).count(),
             pvLine.str());
 }
@@ -2657,9 +2666,9 @@ MoveList Search::extractPvWithTT(Position& p) {
   MoveList result;
 
   // First, copy moves from the triangular PV table
-  const int pvLen = pv.length();
+  const int pvLen = mainThread().pv.length();
   for (int i = 0; i < pvLen; ++i) {
-    const Move move = pv(DEPTH_NONE, i);
+    const Move move = mainThread().pv(DEPTH_NONE, i);
     if (move == MOVE_NONE) break;
     result.push_back(move);
     p.doMove(move);
@@ -2862,5 +2871,5 @@ std::string Search::formatDetailedStats() const {
   if (!lastSearchResult.has_value()) {
     return "\n==================== No Search Result Available ====================\n";
   }
-  return formatDetailedStats(*lastSearchResult, statistics);
+  return formatDetailedStats(*lastSearchResult, mainThread().statistics);
 }

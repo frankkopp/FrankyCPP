@@ -84,7 +84,7 @@
 //   search.startSearch(position, limits);
 //   search.waitWhileSearching();
 //   SearchResult result = search.getLastSearchResult();
-//
+//ta
 //=============================================================================
 
 #include "PVTable.h"
@@ -92,8 +92,8 @@
 #include "SearchLimits.h"
 #include "SearchResult.h"
 #include "SearchStats.h"
+#include "SearchThreadData.h"
 #include "TT.h"
-#include "chesscore/History.h"
 #include "chesscore/Position.h"
 #include "engine/UciHandler.h"
 #include "openingbook/OpeningBook.h"
@@ -104,7 +104,6 @@
 #include "config/ConfigManager.h"
 
 #include <atomic>
-#include <cmath>
 #include <optional>
 #include <semaphore>
 #include <thread>
@@ -152,9 +151,6 @@ class Search {
   tablebase::TBResult tbRootWdl{tablebase::TBResult::Failed};// WDL result for filtering
   int tbRootDtz{0};                                          // DTZ value for scoring
 
-  // history heuristics
-  History history{};
-
   // result of previous search (empty until first search completes)
   std::optional<SearchResult> lastSearchResult{};
 
@@ -183,64 +179,82 @@ class Search {
   uint64_t npsTime{};
   uint64_t npsNodes{};
 
-  // UCI relevant statistics
-  uint64_t nodesVisited{};
-
-  // Statistics
-  SearchStats statistics{};
-
-  // ply related data
-  // Triangular PV table for efficient PV storage (64KB, zero heap allocations)
-  PVTable pv;
-
-  // Per-ply search state - unified struct for all ply-specific data
-  // Each PlyInfo owns its MoveGenerators via unique_ptr (heap-allocated)
-  std::array<PlyInfo, DEPTH_MAX + 1> plyStack{};
-
   // to mark the last move was a book move
   bool hadBookMove = false;
 
   // reference to the Search Config Data
   const SearchConfigData& SearchConfig;
 
-  // LMR reduction table pre-computed for depth 0..31 and moves searched 0..63
-  // Linear formula: 1 + round(depth * movesSearched * 0.0035)
-  static constexpr int lmr_reduction_linear(const int depth, const int movesSearched) noexcept {
-    // exact integer rounding of 35/10000
-    return 1 + (depth * movesSearched * 35 + 5000) / 10000;
-  }
+  // ===========================================================================
+  /// LazySMP per-thread search state (main thread + helpers)
 
-  // Logarithmic formula: log(depth) * log(moves) / divisor
-  // This provides more gradual reductions that scale better at higher depths
-  static int lmr_reduction_log(const int depth, const int movesSearched, const double divisor) noexcept {
-    if (depth <= 1 || movesSearched <= 1) return 1;
-    return static_cast<int>(std::lround(std::log(depth) * std::log(movesSearched) / divisor));
-  }
+  // Thread 0 is the main thread. Helper threads will be indices [1..N-1].
+  std::vector<std::unique_ptr<SearchThreadData>> searchThreadData{};
+  // ===========================================================================
+
+
+  /// =============================================================================
+  /// Commenting our any fields that will be moved to the SearchThreadData.h
+
+  // history heuristics
+  // History history{};
+
+  // UCI relevant statistics
+  // uint64_t nodesVisited{};
+
+  // Statistics
+  // SearchStats statistics{};
+
+  // ply related data
+  // Triangular PV table for efficient PV storage (64KB, zero heap allocations)
+  // PVTable pv;
+
+  // Per-ply search state - unified struct for all ply-specific data
+  // Each PlyInfo owns its MoveGenerators via unique_ptr (heap-allocated)
+  // std::array<PlyInfo, DEPTH_MAX + 1> plyStack{};
 
   // LMR table - regenerated at search start based on config
-  std::array<std::array<int, 64>, 32> LMR_REDUCTION{};
+  // std::array<std::array<int, 64>, 32> LMR_REDUCTION{};
 
-  // Regenerates the LMR table based on current config settings
-  void regenerateLmrTable() {
-    if (SearchConfig.LMR_USE_LOG_FORMULA) {
-      const double divisor = SearchConfig.LMR_LOG_BASE_DIV;
-      for (std::size_t d = 0; d < 32; ++d) {
-        for (std::size_t m = 0; m < 64; ++m) {
-          LMR_REDUCTION[d][m] = lmr_reduction_log(static_cast<int>(d), static_cast<int>(m), divisor);
-        }
-      }
-    }
-    else {
-      for (std::size_t d = 0; d < 32; ++d) {
-        for (std::size_t m = 0; m < 64; ++m) {
-          LMR_REDUCTION[d][m] = lmr_reduction_linear(static_cast<int>(d), static_cast<int>(m));
-        }
-      }
-    }
-  }
+  // // LMR reduction table pre-computed for depth 0..31 and moves searched 0..63
+  // // Linear formula: 1 + round(depth * movesSearched * 0.0035)
+  // static constexpr int lmr_reduction_linear(const int depth, const int movesSearched) noexcept {
+  //   // exact integer rounding of 35/10000
+  //   return 1 + (depth * movesSearched * 35 + 5000) / 10000;
+  // }
+  //
+  // // Logarithmic formula: log(depth) * log(moves) / divisor
+  // // This provides more gradual reductions that scale better at higher depths
+  // static int lmr_reduction_log(const int depth, const int movesSearched, const double divisor) noexcept {
+  //   if (depth <= 1 || movesSearched <= 1) return 1;
+  //   return static_cast<int>(std::lround(std::log(depth) * std::log(movesSearched) / divisor));
+  // }
+  //
+  //
+  // // Regenerates the LMR table based on current config settings
+  // void regenerateLmrTable() {
+  //   if (SearchConfig.LMR_USE_LOG_FORMULA) {
+  //     const double divisor = SearchConfig.LMR_LOG_BASE_DIV;
+  //     for (std::size_t d = 0; d < 32; ++d) {
+  //       for (std::size_t m = 0; m < 64; ++m) {
+  //         LMR_REDUCTION[d][m] = lmr_reduction_log(static_cast<int>(d), static_cast<int>(m), divisor);
+  //       }
+  //     }
+  //   }
+  //   else {
+  //     for (std::size_t d = 0; d < 32; ++d) {
+  //       for (std::size_t m = 0; m < 64; ++m) {
+  //         LMR_REDUCTION[d][m] = lmr_reduction_linear(static_cast<int>(d), static_cast<int>(m));
+  //       }
+  //     }
+  //   }
+  // }
 
-  FRIEND_TEST(SearchTest, lmrReductionTableTest);
-  FRIEND_TEST(SearchTest, lmrReductionTablePrint);
+  // FRIEND_TEST(SearchTest, lmrReductionTableTest);
+  // FRIEND_TEST(SearchTest, lmrReductionTablePrint);
+  /// =============================================================================
+
+
 
 public:
   /// Node type classification for alpha-beta search.
@@ -308,7 +322,7 @@ public:
 
   /// Returns the principal variation from the current/last search.
   /// @return The PV move list (extracted from triangular table)
-  [[nodiscard]] MoveList getPV() const { return pv.extract(); }
+  MoveList getPV() const { return mainThread().pv.extract(); }
 
   /// Clears the transposition table.
   void clearTT() const;
@@ -318,7 +332,16 @@ public:
 
   /// Returns the search statistics from the last search.
   /// @return Reference to SearchStats
-  const SearchStats& getSearchStats() const { return statistics; };
+  const SearchStats& getSearchStats() const { return mainThread().statistics; };
+
+  /// Returns the main search thread state.
+  /// Thread 0 is always the main thread; helper threads are indices [1..N-1].
+  /// @return Reference to main SearchThreadData
+  SearchThreadData& mainThread() { return *searchThreadData[0]; }
+
+  /// Const version of mainThread() for read-only access to main thread state.
+  /// @return Const reference to main SearchThreadData
+  const SearchThreadData& mainThread() const { return *searchThreadData[0]; }
 
   /// Returns the result of the last completed search.
   /// @return Reference to SearchResult (undefined behavior if no search completed)

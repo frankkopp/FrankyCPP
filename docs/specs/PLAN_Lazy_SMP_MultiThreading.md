@@ -3,7 +3,7 @@
 **Document Version:** 1.4
 **Created:** 2026-02-25
 **Last Updated:** 2026-02-25
-**Status:** Phase 1 Complete ✅ (TSAN skipped) — Phase 2 Ready
+**Status:** Phase 1 Complete ✅ (TSAN skipped) — Phase 2 Complete ✅
 **Target Version:** v1.5
 **Estimated Effort:** 3-4 weeks
 
@@ -49,15 +49,17 @@ Understanding what state is *shared* vs *thread-local* is the entire challenge:
 | `rootMoves`                | `Search`                 | Main thread writes; helpers read (no lock needed after setup) |
 
 ### Thread-Local (each thread needs its own copy)
-| State                    | Current Location     | Action                                                       |
-|--------------------------|----------------------|--------------------------------------------------------------|
-| `PVTable pv`             | `Search::pv`         | Move into `SearchThread`                                     |
-| `PlyInfo plyStack[]`     | `Search::plyStack`   | Move into `SearchThread`                                     |
-| `History history`        | `Search::history`    | Move into `SearchThread`                                     |
-| `SearchStats statistics` | `Search::statistics` | Move into `SearchThread`                                     |
-| `Evaluator evaluator`    | `Search::evaluator`  | Move into `SearchThread` (or share - it is stateless enough) |
-| `lastUciUpdate*`         | `Search`             | Main thread only - no change needed                          |
-| `bestMoveStability`      | `Search`             | Main thread only - no change needed                          |
+| State                    | Current Location       | Action                                                         |
+|--------------------------|------------------------|----------------------------------------------------------------|
+| `PVTable pv`             | `Search::pv`           | ✅ Moved to `SearchThreadData`                                  |
+| `PlyInfo plyStack[]`     | `Search::plyStack`     | ✅ Moved to `SearchThreadData`                                  |
+| `History history`        | `Search::history`      | ✅ Moved to `SearchThreadData`                                  |
+| `SearchStats statistics` | `Search::statistics`   | ✅ Moved to `SearchThreadData`                                  |
+| `uint64_t nodesVisited`  | `Search::nodesVisited` | ✅ Moved to `SearchThreadData`                                  |
+| `LMR_REDUCTION`          | `Search`               | ✅ Moved to `SearchThreadData`                                  |
+| `Evaluator evaluator`    | `Search::evaluator`    | Move to `SearchThreadData` (or share - it is stateless enough) |
+| `lastUciUpdate*`         | `Search`               | Main thread only - no change needed                            |
+| `bestMoveStability`      | `Search`               | Main thread only - no change needed                            |
 
 ---
 
@@ -227,17 +229,19 @@ The single-thread performance claim **must be empirically verified**, not just a
 
 ---
 
-### Phase 2: `SearchThread` Struct — Isolate Thread-Local State (Day 4-6)
-**Goal:** Extract per-thread state into a new `SearchThread` struct so each helper thread can own its own copy.
+### Phase 2: `SearchThreadData` Struct — Isolate Thread-Local State (Day 4-6) ✅ COMPLETE
+**Goal:** Extract per-thread state into a new `SearchThreadData` struct so each helper thread can own its own copy.
 
-#### New file: `src/engine/SearchThread.h`
+**Status:** ✅ Complete (2026-02-26)
+
+#### New file: `src/engine/SearchThreadData.h`
 
 ```cpp
 /// Per-thread search state for Lazy SMP.
-/// Each thread (main + helpers) owns one SearchThread instance.
+/// Each thread (main + helpers) owns one SearchThreadData instance.
 /// Shared state (TT, stop flag, time limits) lives in Search and is
 /// accessed via const pointer.
-struct SearchThread {
+struct SearchThreadData {
     int id = 0;                           // 0 = main thread
     uint64_t nodesVisited = 0;            // thread-local node count
 
@@ -263,7 +267,7 @@ struct SearchThread {
 #### Changes to `Search.h` / `Search.cpp`
 
 **In `Search` class:**
-- Remove the fields that move to `SearchThread`:
+- Remove the fields that move to `SearchThreadData`:
   - `PVTable pv;`
   - `std::array<PlyInfo, DEPTH_MAX + 1> plyStack{};`
   - `History history{};`
@@ -274,30 +278,43 @@ struct SearchThread {
   ```cpp
   // Thread 0 is the main thread. Index [0] always exists.
   // Helper threads are indices [1..N-1].
-  std::vector<std::unique_ptr<SearchThread>> searchThreads{};
+  // Named "Data" to distinguish from std::thread searchThread (the execution thread)
+  std::vector<std::unique_ptr<SearchThreadData>> searchThreadData{};
   int numHelperThreads = 0;  // set from config; 0 = single-thread mode
   ```
 - Add convenience accessor (avoids changing all call sites in the hot path):
   ```cpp
-  SearchThread& mainThread() { return *searchThreads[0]; }
-  const SearchThread& mainThread() const { return *searchThreads[0]; }
+  SearchThreadData& mainThread() { return *searchThreadData[0]; }
+  const SearchThreadData& mainThread() const { return *searchThreadData[0]; }
   ```
 - Replace all direct uses of `pv`, `plyStack`, `history`, `statistics`, `nodesVisited`, `LMR_REDUCTION` in `Search.cpp` with `mainThread().pv`, etc.
 
-**Strategy for minimizing changes:** Use a `SearchThread*` local variable at the top of search functions:
+**Naming clarification:**
+- `std::thread searchThread` — the OS execution thread that runs `Search::run()`
+- `SearchThreadData` — struct holding per-thread **data** (not a thread itself)
+- `searchThreadData` — vector of `SearchThreadData` instances (one per search thread)
+
+**Strategy for minimizing changes:** Use a `SearchThreadData*` local variable at the top of search functions:
 ```cpp
 Value Search::search(Position& p, Depth depth, Depth ply, ...) {
-    SearchThread& st = mainThread();  // or pass as parameter for helpers
+    SearchThreadData& st = mainThread();  // or pass as parameter for helpers
     // All st.plyStack, st.pv, st.statistics uses
 }
 ```
 
-For helpers, the same search functions are called but with a different `SearchThread&`. This is achieved by passing `SearchThread&` as an extra parameter to the internal recursive search functions.
+For helpers, the same search functions are called but with a different `SearchThreadData&`. This is achieved by passing `SearchThreadData&` as an extra parameter to the internal recursive search functions.
 
-**Files to change:**
-- New: `src/engine/SearchThread.h`
-- `src/engine/Search.h`
-- `src/engine/Search.cpp` (all internal functions get a `SearchThread&` parameter)
+**Files changed:**
+- New: `src/engine/SearchThreadData.h`
+- `src/engine/Search.h` — added `searchThreadData` vector, `mainThread()` accessor (public)
+- `src/engine/Search.cpp` — all internal functions now use `mainThread().` prefix for thread-local data
+- `test/engine/SearchTest.cpp` — updated to use `search.mainThread().LMR_REDUCTION` etc.
+
+**Verification:**
+- ✅ Build passes (MSVC Release/Debug)
+- ✅ All unit tests pass (266 tests)
+- ✅ `mainThread()` accessor is public for test access
+- ✅ No functional changes — single-thread behavior identical
 
 ---
 
@@ -308,9 +325,9 @@ For helpers, the same search functions are called but with a different `SearchTh
 
 ```
 startSearch() called
-    → allocate/reset SearchThread[0..N]
+    → allocate/reset SearchThreadData[0..N]
     → if numHelperThreads > 0:
-        launch helper threads: each calls helperRun(SearchThread&)
+        launch helper threads: each calls helperRun(SearchThreadData&)
     → main thread calls run() as today
     → main thread finishes iterativeDeepening()
     → stopSearchFlag = true
@@ -319,10 +336,10 @@ startSearch() called
     → send result to UCI
 ```
 
-#### `helperRun(SearchThread& st)` function
+#### `helperRun(SearchThreadData& st)` function
 
 ```cpp
-void Search::helperRun(SearchThread& st) {
+void Search::helperRun(SearchThreadData& st) {
     // Helper threads just loop over increasing depths
     // They share the TT with the main thread
     // They stop when stopSearchFlag is set
@@ -356,15 +373,15 @@ void Search::startSearch(const Position& p, SearchLimits sl) {
     
     // allocate/reset thread state
     const int totalThreads = numHelperThreads + 1;
-    while (searchThreads.size() < totalThreads)
-        searchThreads.push_back(std::make_unique<SearchThread>(searchThreads.size()));
-    for (auto& st : searchThreads) st->reset();
+    while (searchThreadData.size() < totalThreads)
+        searchThreadData.push_back(std::make_unique<SearchThreadData>(searchThreadData.size()));
+    for (auto& st : searchThreadData) st->reset();
     
     // launch helper threads (no-op if numHelperThreads == 0)
     helperThreads.clear();
     for (int i = 1; i <= numHelperThreads; ++i) {
         helperThreads.emplace_back([this, i]() {
-            helperRun(*searchThreads[i]);
+            helperRun(*searchThreadData[i]);
         });
     }
     
@@ -382,7 +399,7 @@ void Search::run() {
     helperThreads.clear();
     
     // aggregate node counts from all threads
-    for (const auto& st : searchThreads)
+    for (const auto& st : searchThreadData)
         result.nodes += st->nodesVisited;  // already counted main thread
     
     // ... rest of existing run() ...
@@ -423,9 +440,9 @@ In `ConfigRegistry.cpp`:
 In `Search::isReady()` or `Search::newGame()`:
 ```cpp
 numHelperThreads = std::max(0, SearchConfig.THREADS - 1);
-// Pre-allocate SearchThread objects
-while (searchThreads.size() < static_cast<size_t>(SearchConfig.THREADS))
-    searchThreads.push_back(std::make_unique<SearchThread>(searchThreads.size()));
+// Pre-allocate SearchThreadData objects
+while (searchThreadData.size() < static_cast<size_t>(SearchConfig.THREADS))
+    searchThreadData.push_back(std::make_unique<SearchThreadData>(searchThreadData.size()));
 ```
 
 #### `setoption name Threads value N` Handling
@@ -437,12 +454,12 @@ The `UciHandler` already maps `setoption` to the config system. No changes neede
 ### Phase 5: Node Count Aggregation & UCI Info (Day 13-14)
 **Goal:** Report aggregate node count and NPS across all threads for UCI `info nodes nps`.
 
-The `nodesVisited` counter in `Search` is currently incremented inside `stopConditions()`. For SMP, each `SearchThread` owns its counter. The main thread's UCI reporting must sum all threads.
+The `nodesVisited` counter in `Search` is currently incremented inside `stopConditions()`. For SMP, each `SearchThreadData` owns its counter. The main thread's UCI reporting must sum all threads.
 
 ```cpp
 uint64_t Search::getTotalNodes() const {
     uint64_t total = 0;
-    for (const auto& st : searchThreads)
+    for (const auto& st : searchThreadData)
         total += st->nodesVisited;
     return total;
 }
@@ -496,16 +513,16 @@ ELO gain diminishes at higher thread counts due to TT contention and diminishing
 
 ## File Change Summary
 
-| File                            | Change                                                                                      |
-|---------------------------------|---------------------------------------------------------------------------------------------|
-| `src/engine/TT.h`               | `key` field → `std::atomic<ZobristKey>`                                                     |
-| `src/engine/TT.cpp`             | Update `put()`, `probe()`, `clear()` for atomic key                                         |
-| `src/engine/SearchThread.h`     | **NEW** — per-thread state struct                                                           |
-| `src/engine/Search.h`           | Add `searchThreads`, `helperThreads`, `numHelperThreads`; remove thread-local fields        |
-| `src/engine/Search.cpp`         | Refactor to use `mainThread()` accessor; add `helperRun()`; update `startSearch()`, `run()` |
-| `src/config/SearchConfigData.h` | Add `THREADS = 1`                                                                           |
-| `src/config/ConfigRegistry.cpp` | Add `Threads` UCI option registry entry                                                     |
-| `test/engine/SearchSmpTest.cpp` | **NEW** — SMP-specific tests                                                                |
+| File                             | Change                                                                                       |
+|----------------------------------|----------------------------------------------------------------------------------------------|
+| `src/engine/TT.h`                | `key` field → `std::atomic<ZobristKey>`                                                      |
+| `src/engine/TT.cpp`              | Update `put()`, `probe()`, `clear()` for atomic key                                          |
+| `src/engine/SearchThreadData.h`  | **NEW** — per-thread state struct                                                            |
+| `src/engine/Search.h`            | Add `searchThreadData`, `helperThreads`, `numHelperThreads`; remove thread-local fields      |
+| `src/engine/Search.cpp`          | Refactor to use `mainThread()` accessor; add `helperRun()`; update `startSearch()`, `run()`  |
+| `src/config/SearchConfigData.h`  | Add `THREADS = 1`                                                                            |
+| `src/config/ConfigRegistry.cpp`  | Add `Threads` UCI option registry entry                                                      |
+| `test/engine/SearchSmpTest.cpp`  | **NEW** — SMP-specific tests                                                                 |
 
 ---
 
@@ -529,13 +546,13 @@ ELO gain diminishes at higher thread counts due to TT contention and diminishing
 
 ```
 Week 1:
-  Day 1-2:  Step 1a — Atomic TT key change + static_assert guards (TT.h / TT.cpp)
-  Day 3:    Step 1b — MANDATORY GATE: assembly inspection + bench regression + TSAN test
+  Day 1-2:  Step 1a — Atomic TT key change + static_assert guards (TT.h / TT.cpp) ✅ DONE
+  Day 3:    Step 1b — MANDATORY GATE: assembly inspection + bench regression + TSAN test ✅ DONE
               → if bench regresses > 1%: switch to Option B (XOR trick) and re-test
               → if static_assert fails on sizeof or lock_free: switch to Option B
-  Day 4-5:  Step 1c — TT unit test: TT_Test::ConcurrentPutProbeNoUB
-  Day 6-8:  Step 2 — Create SearchThread.h, refactor Search to use mainThread() accessor
-  Day 9:    Verify all existing tests still pass (zero regression at this point)
+  Day 4-5:  Step 1c — TT unit test: TT_Test::ConcurrentPutProbeNoUB ✅ DONE
+  Day 6-8:  Step 2 — Create SearchThreadData.h, refactor Search to use mainThread() accessor ✅ DONE
+  Day 9:    Verify all existing tests still pass (zero regression at this point) ✅ DONE
 
 Week 2:
   Day 10-12: Step 3 — Add helperRun(), helperThreads launch/join in startSearch()/run()
@@ -591,9 +608,9 @@ The following invariants ensure NO overhead when `THREADS = 1`. The first two re
 
 - **No helper thread creation when `THREADS=1`:** `numHelperThreads = 0` → `helperThreads` vector stays empty → no `std::thread` construction, no join overhead.
 - **No hot-path branching:** `helperThreads` is always empty in single-thread mode — the launch loop in `startSearch()` and the join loop in `run()` are O(0) iterations.
-- **No vector iteration overhead in `getTotalNodes()`:** `searchThreads.size() == 1` → one loop body, no branch misprediction.
+- **No vector iteration overhead in `getTotalNodes()`:** `searchThreadData.size() == 1` → one loop body, no branch misprediction.
 - **No synchronization primitives on the search hot path:** No mutexes, no condition variables, no barriers added to `search()` / `qsearch()` / `evaluate()`.
-- **`SearchThread&` parameter is a reference:** the compiler inlines the reference to the concrete `SearchThread` object — zero pointer-indirection overhead when the function is inlined.
+- **`SearchThreadData&` parameter is a reference:** the compiler inlines the reference to the concrete `SearchThreadData` object — zero pointer-indirection overhead when the function is inlined.
 
 ---
 

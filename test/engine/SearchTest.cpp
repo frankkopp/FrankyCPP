@@ -520,13 +520,10 @@ TEST_F(SearchTest, singleMoveComplexRoot) {
 #ifndef FRANKYCPP_PRODUCTION
 // New test: verify and pretty-print the LMR reduction table
 TEST_F(SearchTest, lmrReductionTableTest) {
-  // Access the private static table via FRIEND_TEST
-  CONFIG_OVERRIDE(s.LMR_USE_LOG_FORMULA = false;);
-
   Search search{};
-  search.regenerateLmrTable();
+  search.mainThread().regenerateLmrTable(false, 0.0 /* divisor isn't used for linear */);
 
-  const auto& T = search.LMR_REDUCTION;
+  const auto& T = search.mainThread().LMR_REDUCTION;
 
   // Dimensions
   ASSERT_EQ(32U, T.size()) << "Depth dimension must be 32 (0..31)";
@@ -593,9 +590,10 @@ TEST_F(SearchTest, lmrReductionTablePrint) {
   EXPECT_EQ(ConfigManager::instance().search().LMR_LOG_BASE_DIV, 1.25) << "Test assumes LMR_LOG_BASE_DIV is 1.50";
 
   Search search{};
-  search.regenerateLmrTable();
+  const auto& cfg = ConfigManager::instance().search();
+  search.mainThread().regenerateLmrTable(cfg.LMR_USE_LOG_FORMULA, cfg.LMR_LOG_BASE_DIV);
 
-  const auto& T = search.LMR_REDUCTION;
+  const auto& T = search.mainThread().LMR_REDUCTION;
 
   // Pretty print the entire table for manual inspection
   std::ostringstream oss;
