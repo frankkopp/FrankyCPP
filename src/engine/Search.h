@@ -87,6 +87,7 @@
 //ta
 //=============================================================================
 
+#include "PawnTT.h"
 #include "PVTable.h"
 #include "PlyInfo.h"
 #include "SearchLimits.h"
@@ -142,7 +143,7 @@ class Search {
 
   std::unique_ptr<OpeningBook> book;
   std::unique_ptr<TT> tt;
-  std::unique_ptr<Evaluator> evaluator;
+  std::unique_ptr<PawnTT> pawnTT;  // Shared pawn cache for all threads
   std::unique_ptr<tablebase::Tablebase> syzygy_tb;// Syzygy tablebase instance
 
   // TB root probe result (when TB_ROOT_IMMEDIATE=false, used to guide search)

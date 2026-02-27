@@ -46,6 +46,7 @@
 //
 //=============================================================================
 
+#include "Evaluator.h"
 #include "PVTable.h"
 #include "PlyInfo.h"
 #include "SearchStats.h"
@@ -57,13 +58,17 @@
 
 /// Per-thread search state for Lazy SMP.
 /// Each thread (main + helpers) owns one SearchThreadData instance.
-/// Shared state (TT, stop flag, time limits) lives in Search.
+/// Shared state (TT, PawnTT, stop flag, time limits) lives in Search.
 struct SearchThreadData {
   /// Thread ID: 0 = main thread, 1..N-1 = helper threads
   int id = 0;
 
   /// Thread-local node counter (aggregated across threads for UCI reporting)
   uint64_t nodesVisited = 0;
+
+  /// Per-thread evaluator with thread-local scratch variables.
+  /// Uses shared PawnTT (set via evaluator.setPawnTT() from Search).
+  Evaluator evaluator{};
 
   /// Triangular PV table for efficient PV storage (64KB, zero heap allocations)
   PVTable pv;

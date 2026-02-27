@@ -34,12 +34,20 @@
 //   - Size is always a power of two for efficient hash masking
 //   - Uses pawn-specific Zobrist key (only pawn positions contribute)
 //   - Single entry per hash slot (no buckets)
-//   - Not thread-safe (no synchronization)
+//   - Thread-safe key field (std::atomic<ZobristKey>) for Lazy SMP
+//     On x86 acquire/release compiles to plain mov - zero overhead vs non-atomic
+//     Verified by: static_assert(is_always_lock_free) + static_assert(sizeof == 8)
 //
 // Entry Structure (16 bytes):
-//   - key:      64-bit pawn Zobrist key
+//   - key:      64-bit pawn Zobrist key (std::atomic for SMP safety)
 //   - midvalue: 16-bit midgame pawn structure score
 //   - endvalue: 16-bit endgame pawn structure score
+//
+// Thread Safety (Lazy SMP):
+//   put()  : writes value fields first, then key with memory_order_release
+//   probe (caller checks entry->key): reads key with memory_order_acquire
+//   A torn read of value fields is benign: the key check will fail and the
+//   caller treats it as a miss - no incorrect data is ever used.
 //
 // Prefetching:
 //   EVAL_PREFETCH macro prefetches entry into CPU cache before evaluation.
@@ -48,7 +56,7 @@
 // Usage:
 //   PawnTT pawnCache(4);  // 4 MB cache
 //   Entry* entry = pawnCache.getEntryPtr(pawnKey);
-//   if (entry->key == pawnKey) {
+//   if (entry->getKey() == pawnKey) {
 //     // Cache hit - use entry->midvalue and entry->endvalue
 //   } else {
 //     // Cache miss - calculate pawn eval, then store
@@ -58,6 +66,7 @@
 //=============================================================================
 
 #include "types/types.h"
+#include <atomic>
 #include <format>
 #include <string>
 
@@ -71,13 +80,14 @@
 #endif
 
 #ifdef EVAL_ENABLE_PREFETCH
-#define EVAL_PREFETCH evaluator->prefetch(p.getPawnZobristKey())
+#define EVAL_PREFETCH thread().evaluator.prefetch(p.getPawnZobristKey())
 #else
 #define EVAL_PREFETCH void(0);
 #endif
 
 /// Pawn structure evaluation cache using heap memory with simple hash indexing.
-/// Size is always a power of two. Not thread-safe.
+/// Size is always a power of two.
+/// Thread-safe for Lazy SMP via atomic key field (acquire/release, zero overhead on x86).
 class PawnTT {
 
 public:
@@ -87,13 +97,19 @@ public:
 
   /// Entry struct storing cached pawn evaluation scores.
   struct Entry {
-    ZobristKey key = 0;      ///< Pawn-specific Zobrist key
-    Value midvalue = VALUE_NONE;  ///< Midgame pawn structure score
-    Value endvalue = VALUE_NONE;  ///< Endgame pawn structure score
+    std::atomic<ZobristKey> key{0};  ///< Pawn-specific Zobrist key (atomic for SMP safety)
+    Value midvalue{VALUE_NONE};      ///< Midgame pawn structure score
+    Value endvalue{VALUE_NONE};      ///< Endgame pawn structure score
+
+    /// Returns the key with acquire semantics for thread-safe read.
+    [[nodiscard]] ZobristKey getKey() const {
+      return key.load(std::memory_order_acquire);
+    }
 
     /// Returns string representation for debugging.
     [[nodiscard]] std::string str() const {
-      return std::format("id {} midvalue {} endvalue {}", key, midvalue, endvalue);
+      return std::format("id {} midvalue {} endvalue {}",
+                         key.load(std::memory_order_relaxed), midvalue, endvalue);
     }
 
     std::ostream& operator<<(std::ostream& os) const {
@@ -102,6 +118,13 @@ public:
     }
   };
 
+  // Compile-time guarantees that the atomic key has zero size/performance overhead.
+  // If either assert fires, switch to Option B (XOR key trick) - see PLAN_Lazy_SMP_MultiThreading.md
+  static_assert(std::atomic<ZobristKey>::is_always_lock_free,
+                "PawnTT: atomic key must be lock-free (no hidden mutex). Switch to XOR trick if this fires.");
+  static_assert(sizeof(std::atomic<ZobristKey>) == sizeof(ZobristKey),
+                "PawnTT: atomic key must not inflate Entry size. Switch to XOR trick if this fires.");
+
   // struct Entry has 16 Byte
   static constexpr uint64_t ENTRY_SIZE = sizeof(Entry);
   static_assert(CacheLineSize % ENTRY_SIZE == 0, "Cluster size incorrect");
@@ -109,6 +132,11 @@ public:
 private:
   // threads for clearing hash
   unsigned int noOfThreads = 1;
+
+  // Number of active SMP search threads. 1 = single-thread mode (default).
+  // When > 1: statistics may be approximate (no locking for diagnostic counters).
+  // Set by Search before each search via setSmpThreads().
+  int numSmpThreads = 1;
 
   // size and fill info
   uint64_t sizeInByte            = 0;
@@ -152,6 +180,15 @@ public:
 
   /// Clears the pawn cache by resetting all entries to zero.
   void clear();
+
+  /// Sets the number of SMP threads for this search.
+  /// When > 1, statistics counters may be approximate (acceptable for diagnostics).
+  /// Call before each search begins.
+  /// @param threads  Number of active search threads (1 = single-threaded)
+  void setSmpThreads(const int threads) { numSmpThreads = threads; }
+
+  /// Returns the current SMP thread count.
+  [[nodiscard]] int getSmpThreads() const { return numSmpThreads; }
 
   /// Stores a pawn evaluation score in the cache.
   /// As usually a query happens before storing, the entry pointer is typically

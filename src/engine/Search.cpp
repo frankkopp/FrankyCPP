@@ -57,7 +57,7 @@ void Search::newGame() {
   }
   rootMoves.clear();
   tt->clear();
-  if (evaluator) { evaluator->reset(); }
+  if (pawnTT) { pawnTT->clear(); }
   bestMoveStability.reset();
   mainThread().history.reset();
 
@@ -280,6 +280,11 @@ void Search::run() {
   numHelperThreads         = std::max(0, SearchConfig.THREADS - 1);
   const int totalThreads   = numHelperThreads + 1;
 
+  // Set SMP thread count for TT and PawnTT thread safety
+  // When > 1: TT skips age-- to avoid bitfield race, PawnTT suppresses update warnings
+  tt->setSmpThreads(totalThreads);
+  pawnTT->setSmpThreads(totalThreads);
+
   // Ensure we have enough SearchThreadData instances allocated
   while (searchThreadData.size() < static_cast<size_t>(totalThreads)) {
     searchThreadData.push_back(std::make_unique<SearchThreadData>(static_cast<int>(searchThreadData.size())));
@@ -292,6 +297,9 @@ void Search::run() {
     // Reset counters and statistics
     st.nodesVisited = 0;
     st.statistics   = SearchStats{};
+
+    // Set shared PawnTT on this thread's evaluator
+    st.evaluator.setPawnTT(pawnTT.get());
 
     // Regenerate LMR table based on current config
     st.regenerateLmrTable(SearchConfig.LMR_USE_LOG_FORMULA, SearchConfig.LMR_LOG_BASE_DIV);
@@ -2097,7 +2105,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
 inline Value Search::evaluate(const Position& p) {
   STAT_INC(thread().statistics.leafPositionsEvaluated);
   STAT_INC(thread().statistics.evaluations);
-  return evaluator->evaluate(p);
+  return thread().evaluator.evaluate(p);
 }
 
 bool Search::goodCapture(const Position& p, const Move move, const bool givesCheck) const {
@@ -2192,10 +2200,19 @@ void Search::initialize() {
     tt->resize(0);
   }
 
-  // init evaluator
-  if (!evaluator) {
-    // only initialize once
-    evaluator = std::make_unique<Evaluator>();
+  // init shared PawnTT (Evaluators are per-thread in SearchThreadData)
+  if (!pawnTT) {
+    pawnTT = std::make_unique<PawnTT>(0);  // Start with 0, resize below if enabled
+  }
+  const auto& EvalConfig = ConfigManager::instance().eval();
+  if (EvalConfig.USE_PAWN_TT && EvalConfig.PAWN_TT_SIZE_MB > 0) {
+    if (pawnTT->getMaxNumberOfEntries() == 0) {
+      pawnTT->resize(static_cast<uint64_t>(EvalConfig.PAWN_TT_SIZE_MB));
+    }
+  }
+  else {
+    LOG__INFO(Logger::get().SEARCH_LOG, "Pawn Cache disabled in configuration");
+    pawnTT->resize(0);
   }
 
   // init tablebase

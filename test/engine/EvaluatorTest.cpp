@@ -28,6 +28,7 @@
 #include "config/ConfigManager.h"
 #include "config/ConfigMode.h"
 #include <engine/Evaluator.h>
+#include <engine/PawnTT.h>
 #include <gtest/gtest.h>
 
 #include <chrono>
@@ -520,7 +521,20 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
   positions.reserve(allFens.size());
   for (const auto& f : allFens) positions.emplace_back(f.c_str());
 
+  // Create shared PawnTT and per-thread Evaluator
+  PawnTT pawnTT{static_cast<uint64_t>(cm.eval().PAWN_TT_SIZE_MB)};
   Evaluator evaluator{};
+  evaluator.setPawnTT(&pawnTT);
+
+  // Helper to update PawnTT when config changes
+  auto updatePawnTT = [&]() {
+    const auto& evalCfg = cm.eval();
+    if (evalCfg.USE_PAWN_TT && evalCfg.PAWN_TT_SIZE_MB > 0) {
+      pawnTT.resize(static_cast<uint64_t>(evalCfg.PAWN_TT_SIZE_MB));
+    } else {
+      pawnTT.resize(0);
+    }
+  };
 
   // Timing parameters: keep modest to avoid long test duration
   constexpr int repeats    = 5;    // take best-of 'repeats' to reduce noise
@@ -700,8 +714,8 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
   bool first           = true;
   for (const auto& [label, apply] : cases) {
     apply();
-    // Ensure Evaluator adapts to changed config (e.g., PAWN_TT size/toggle)
-    evaluator.onEvalConfigChanged();
+    // Ensure PawnTT adapts to changed config (e.g., PAWN_TT size/toggle)
+    updatePawnTT();
     const uint64_t ns     = best_of_n(iterations);
     const bool isBaseline = first;
     if (first) {
