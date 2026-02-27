@@ -71,6 +71,9 @@ struct SearchResult {
   /// Total nodes visited during the search.
   uint64_t nodes = 0;
 
+  /// Number of threads used for the search (1 = single-threaded).
+  int threads = 1;
+
   /// True if bestMove came from the opening book (not searched).
   bool bookMove = false;
 
@@ -98,12 +101,12 @@ struct SearchResult {
   explicit SearchResult(const Position& p) : fen(p.strFen()) {}
 
   /// Returns a string representation for debugging/logging.
-  /// @return  Debug string with best move, score, ponder, and depth
+  /// @return  Debug string with best move, score, ponder, depth, and threads
   std::string str() const {
     const std::string source = bookMove ? "book move" : (tbHit ? "TB hit" : bestMoveValue.str());
     return "Best Move: " + bestMove.str() + " (" + source
            + ") " + "Ponder Move: " + ponderMove.str() + " Depth: " + std::to_string(depth)
-           + "/" + std::to_string(extraDepth);
+           + "/" + std::to_string(extraDepth) + " Threads: " + std::to_string(threads);
   }
 };
 

@@ -674,7 +674,7 @@ TEST_F(SearchTest, 10secondSearchNodesCount) {
     GTEST_SKIP() << "Skipping debug test in bulk run to save time";
   }
 
-  CONFIG_OVERRIDE(s.THREADS = 4;);// Single-threaded for consistent node counts
+  CONFIG_OVERRIDE(s.THREADS = 8;);// Single-threaded for consistent node counts
 
   const Position p{"5k2/1rn2p2/3pb1p1/7p/p3PP2/PnNBK2P/3N2P1/1R6 w - - 0 1 "};
   SearchLimits sl{};

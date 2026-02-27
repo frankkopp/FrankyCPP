@@ -365,6 +365,7 @@ void Search::run() {
   else {
     searchResult.bestMove = bookMove;
     searchResult.bookMove = true;
+    searchResult.threads  = numHelperThreads + 1;
     hadBookMove           = true;
   }
 
@@ -401,15 +402,16 @@ void Search::run() {
   const uint64_t totalNodes = getTotalNodes();
 
   // update the search result with search time and pv
-  searchResult.time  = currentTime() - startSearchTime;
-  searchResult.pv    = thread().pv.extract();
-  searchResult.nodes = totalNodes;
+  searchResult.time    = currentTime() - startSearchTime;
+  searchResult.pv      = thread().pv.extract();
+  searchResult.nodes   = totalNodes;
+  searchResult.threads = numHelperThreads + 1;
 
   // print stats to log
   LOG__INFO(Logger::get().SEARCH_LOG, "Search finished after {}", str(searchResult.time));
-  LOG__INFO(Logger::get().SEARCH_LOG, "Search depth was {}({}) with {:L} nodes visited. NPS = {:L} nps",
+  LOG__INFO(Logger::get().SEARCH_LOG, "Search depth was {}({}) with {:L} nodes visited. NPS = {:L} nps with {} threads",
     thread().statistics.currentSearchDepth, thread().statistics.currentExtraSearchDepth,
-    totalNodes, nps(totalNodes, searchResult.time));
+    totalNodes, nps(totalNodes, searchResult.time), searchResult.threads);
   LOG__DEBUG(Logger::get().SEARCH_LOG, "Search stats: {}", thread().statistics.str());
 
   // print result to log
