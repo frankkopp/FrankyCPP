@@ -56,7 +56,7 @@ void Search::newGame() {
     plyInfo.resetSearchState();
   }
   rootMoves.clear();
-  tt->clear();
+  if (tt) { tt->clear(); }
   if (pawnTT) { pawnTT->clear(); }
   bestMoveStability.reset();
   mainThread().history.reset();
@@ -174,80 +174,6 @@ uint64_t Search::getTotalNodes() const {
   return total;
 }
 
-void Search::helperRun(SearchThreadData& st) {
-  // Helper thread entry point for Lazy SMP
-  // Runs simplified iterative deepening until stopSearchFlag is set
-  // Does NOT: report to UCI, manage time, update lastSearchResult, age TT entries
-  // DOES: search and write to shared TT, helping main thread via TT cutoffs
-
-  // Set thread-local pointer so search functions use this thread's data
-  currentThreadData = &st;
-
-  // Local copy of position - position is read-only after startSearch()
-  Position localPos = position;
-
-  // Generate root moves for this thread (local copy to avoid sharing issues)
-  const MoveList localRootMoves = *st.plyStack[0].mg->generateLegalMoves(localPos, GenAll);
-
-  // If no legal moves, nothing to search
-  if (localRootMoves.empty()) {
-    LOG__DEBUG(Logger::get().SEARCH_LOG, "Helper thread {} has no legal moves, exiting", st.id);
-    return;
-  }
-
-  LOG__DEBUG(Logger::get().SEARCH_LOG, "Helper thread {} starting search with {} root moves", st.id, localRootMoves.size());
-
-  // Simplified iterative deepening loop
-  // Helpers use slightly different starting depths to diversify search
-  Depth depth = 1 + static_cast<Depth>(st.id % 2);// Odd helpers start at depth 2
-
-  while (!stopSearchFlag.load(std::memory_order_relaxed)) {
-    // Clear PV at start of each iteration
-    st.pv.clearAll();
-
-    // Search each root move directly using search() function
-    // This avoids sharing rootMoves with main thread
-    for (const Move& move : localRootMoves) {
-      if (stopSearchFlag.load(std::memory_order_relaxed)) {
-        break;
-      }
-
-      // Skip illegal moves (shouldn't happen but be safe)
-      if (!localPos.isLegalMove(move)) {
-        continue;
-      }
-
-      localPos.doMove(move);
-      st.nodesVisited++;
-
-      // Check for draw by repetition or 50-move rule
-      if (!checkDrawRepAnd50(localPos, 2)) {
-        // Search this move - helpers use full window (no aspiration)
-        // Result is discarded - helpers only contribute via TT entries
-        constexpr Depth ply{1};
-        (void)search(localPos, depth - 1, ply, VALUE_MIN, VALUE_MAX, PvNode, Do_Null_Move);
-      }
-
-      localPos.undoMove();
-    }
-
-    // Check if we should stop
-    if (stopSearchFlag.load(std::memory_order_relaxed)) {
-      break;
-    }
-
-    // Increment depth for next iteration
-    ++depth;
-
-    // Cap at reasonable depth to avoid wasting cycles
-    if (depth > DEPTH_MAX - 10) {
-      depth = 1 + static_cast<Depth>(st.id % 2);// Restart from beginning
-    }
-  }
-
-  LOG__DEBUG(Logger::get().SEARCH_LOG, "Helper thread {} finished, searched {:L} nodes", st.id, st.nodesVisited);
-}
-
 ////////////////////////////////////////////////
 ///// PRIVATE
 
@@ -328,10 +254,12 @@ void Search::run() {
   // when not pondering and search is time controlled start timer
   if (searchLimits.timeControl && !searchLimits.ponder) { startTimer(); }
 
-  // age tt entries
+  // age tt entries (skip in SMP mode - age-- in probe() is disabled for thread safety)
   if (SearchConfig.USE_TT) {
     LOG__INFO(Logger::get().SEARCH_LOG, "Transposition Table: Using TT: {}", tt->str());
-    tt->ageEntries();
+    if (numHelperThreads == 0) {
+      tt->ageEntries();
+    }
   }
   else { LOG__INFO(Logger::get().SEARCH_LOG, "Transposition Table: Not using TT."); }
 
@@ -440,6 +368,80 @@ void Search::run() {
 
   // release the running semaphore after the search has ended
   isRunningSemaphore.release();
+}
+
+void Search::helperRun(SearchThreadData& st) {
+  // Helper thread entry point for Lazy SMP
+  // Runs simplified iterative deepening until stopSearchFlag is set
+  // Does NOT: report to UCI, manage time, update lastSearchResult, age TT entries
+  // DOES: search and write to shared TT, helping main thread via TT cutoffs
+
+  // Set thread-local pointer so search functions use this thread's data
+  currentThreadData = &st;
+
+  // Local copy of position - position is read-only after startSearch()
+  Position localPos = position;
+
+  // Generate root moves for this thread (local copy to avoid sharing issues)
+  const MoveList localRootMoves = *st.plyStack[0].mg->generateLegalMoves(localPos, GenAll);
+
+  // If no legal moves, nothing to search
+  if (localRootMoves.empty()) {
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Helper thread {} has no legal moves, exiting", st.id);
+    return;
+  }
+
+  LOG__DEBUG(Logger::get().SEARCH_LOG, "Helper thread {} starting search with {} root moves", st.id, localRootMoves.size());
+
+  // Simplified iterative deepening loop
+  // Helpers use slightly different starting depths to diversify search
+  Depth depth = 1 + static_cast<Depth>(st.id % 2);// Odd helpers start at depth 2
+
+  while (!stopSearchFlag.load(std::memory_order_relaxed)) {
+    // Clear PV at start of each iteration
+    st.pv.clearAll();
+
+    // Search each root move directly using search() function
+    // This avoids sharing rootMoves with main thread
+    for (const Move& move : localRootMoves) {
+      if (stopSearchFlag.load(std::memory_order_relaxed)) {
+        break;
+      }
+
+      // Skip illegal moves (shouldn't happen but be safe)
+      if (!localPos.isLegalMove(move)) {
+        continue;
+      }
+
+      localPos.doMove(move);
+      st.nodesVisited++;
+
+      // Check for draw by repetition or 50-move rule
+      if (!checkDrawRepAnd50(localPos, 2)) {
+        // Search this move - helpers use full window (no aspiration)
+        // Result is discarded - helpers only contribute via TT entries
+        constexpr Depth ply{1};
+        (void)search(localPos, depth - 1, ply, VALUE_MIN, VALUE_MAX, PvNode, Do_Null_Move);
+      }
+
+      localPos.undoMove();
+    }
+
+    // Check if we should stop
+    if (stopSearchFlag.load(std::memory_order_relaxed)) {
+      break;
+    }
+
+    // Increment depth for next iteration
+    ++depth;
+
+    // Cap at reasonable depth to avoid wasting cycles
+    if (depth > DEPTH_MAX - 10) {
+      depth = 1 + static_cast<Depth>(st.id % 2);// Restart from beginning
+    }
+  }
+
+  LOG__DEBUG(Logger::get().SEARCH_LOG, "Helper thread {} finished, searched {:L} nodes", st.id, st.nodesVisited);
 }
 
 SearchResult Search::iterativeDeepening(Position& p) {
