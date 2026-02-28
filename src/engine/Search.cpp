@@ -70,14 +70,22 @@ Search::~Search() {
 void Search::newGame() {
   if (isSearching()) stopSearch();
 
-  for (auto& plyInfo : mainThread().plyStack) {
-    plyInfo.resetSearchState();
+  // Reset all thread data (not just main thread) for clean state
+  // This ensures deterministic behavior when switching between thread counts
+  for (auto& threadData : searchThreadData) {
+    for (auto& plyInfo : threadData->plyStack) {
+      plyInfo.resetSearchState();
+    }
+    threadData->history.reset();
+    threadData->nodesVisited = 0;
+    threadData->statistics   = SearchStats{};
+    threadData->pv.clearAll();
   }
+
   rootMoves.clear();
   if (tt) { tt->clear(); }
   if (pawnTT) { pawnTT->clear(); }
   bestMoveStability.reset();
-  mainThread().history.reset();
 
   tbRootMove  = MOVE_NONE;
   tbRootValue = VALUE_NONE;
@@ -2474,6 +2482,8 @@ Value Search::getTBScoreForSearch(const tablebase::TBResult wdl, const int halfM
 
 bool Search::stopConditions() {// NOLINT(*-make-member-function-const)
   if (stopSearchFlag) return true;
+  // Node limit is checked against main thread only (hot path - can't aggregate all threads)
+  // Helper thread nodes are not counted toward the limit for performance reasons.
   if (searchLimits.nodes > 0 && thread().nodesVisited >= searchLimits.nodes) { stopSearchFlag = true; }
   return stopSearchFlag;
 }

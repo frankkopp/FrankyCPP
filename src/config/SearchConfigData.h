@@ -43,7 +43,7 @@ struct SearchConfigData {
   CONFIG_ESSENTIAL int MOVE_OVERHEAD_MS = 10;
 
   // Multi-threading (Lazy SMP)
-  CONFIG_ESSENTIAL int THREADS = 1;           // Number of search threads (1 = single-threaded, no SMP overhead)
+  CONFIG_ESSENTIAL int THREADS = 4;           // Number of search threads (1 = single-threaded, no SMP overhead)
   CONFIG_CONST int SMP_HELPER_START_DEPTH = 4;// Depth at which to launch helper threads (allows TT priming)
 
   // book

@@ -668,3 +668,75 @@ TEST_F(SearchSmpTest, DefaultHelperStartDepth) {
   // (This is a weak check since we can't directly access helper node counts after join)
   EXPECT_GT(result.nodes, 0) << "Must visit nodes";
 }
+
+// =============================================================================
+// Multi-Threaded Reset Tests
+// =============================================================================
+
+// Test: newGame() properly resets state for multi-threaded searches.
+// Verifies that:
+// - Search completes successfully after each newGame()
+// - No crashes or state corruption
+// - Best move is consistent (same move found most of the time)
+//
+// Note on determinism: While we'd expect fixed-depth search to be deterministic,
+// Lazy SMP introduces non-determinism because:
+// - Helper threads write TT entries concurrently with the main thread
+// - Thread scheduling affects WHEN entries are written
+// - This affects which branches get pruned via TT cutoffs
+// - Different pruning can lead to slightly different evaluations
+// - In close positions, this could even affect the best move choice
+//
+// This is a known trade-off of Lazy SMP: speed vs strict determinism.
+// The search is still correct - it finds a good move - just not guaranteed
+// to be identical across runs.
+TEST_F(SearchSmpTest, NewGameResetsMultiThreaded) {
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  CONFIG_OVERRIDE(s.THREADS = 4;);
+
+  const Position p{"r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3"};
+  Search search{};
+  search.isReady();
+
+  constexpr int numIterations = 5;
+  // ReSharper disable once CppTooWideScope
+  constexpr int searchDepth   = 10;
+
+  Move firstBestMove = MOVE_NONE;
+  int sameMoveCount  = 0;
+
+  for (int i = 0; i < numIterations; ++i) {
+    search.newGame();
+
+    SearchLimits sl{};
+    sl.depth = searchDepth;
+
+    search.startSearch(p, sl);
+    search.waitWhileSearching();
+
+    ASSERT_TRUE(search.hasResult()) << "Iteration " << i << " must produce a result";
+
+    const auto& result = search.getLastSearchResult();
+    fprintln("Multi-thread reset run {}: move={}, value={}, nodes={:L}, depth={}",
+             i, result.bestMove.str(), result.bestMoveValue.str(), result.nodes, result.depth);
+
+    EXPECT_NE(MOVE_NONE, result.bestMove) << "Must find a move on iteration " << i;
+    EXPECT_EQ(searchDepth, result.depth) << "Must reach target depth on iteration " << i;
+    EXPECT_GT(result.nodes, 0) << "Must visit nodes on iteration " << i;
+
+    // Track best move consistency
+    if (i == 0) {
+      firstBestMove = result.bestMove;
+    } else if (result.bestMove == firstBestMove) {
+      sameMoveCount++;
+    }
+  }
+
+  // Due to Lazy SMP non-determinism, we can't guarantee 100% same move,
+  // but for positions with a clearly best move, it should be consistent most of the time.
+  // We expect at least half the runs to find the same move as the first run.
+  fprintln("Same best move as first run: {}/{} times (move: {})",
+           sameMoveCount, numIterations - 1, firstBestMove.str());
+  EXPECT_GE(sameMoveCount, (numIterations - 1) / 2)
+    << "Best move should be consistent across most runs";
+}

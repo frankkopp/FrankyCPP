@@ -6,7 +6,7 @@
 CONFIG_SOURCE: "yaml-file"
 
 # Number of threads to use for search (1 = single-threaded)
-THREADS: 1
+THREADS: 4
 
 # Fixed overhead (milliseconds) deducted from available time per move to account for engine housekeeping
 MOVE_OVERHEAD_MS: 10
