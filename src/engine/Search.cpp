@@ -41,9 +41,27 @@ Search::Search(UciHandler* pUciHandler)
 }
 
 Search::~Search() {
-  // necessary to avoid an error message:
-  // terminate called without an active exception
-  if (searchThread.joinable()) { searchThread.join(); }
+  // Signal stop to all threads
+  stopSearchFlag = true;
+
+  // First, join the main search thread. This is important because:
+  // 1. The main search thread's run() method joins the helper threads
+  // 2. If we try to join helpers here while run() is also trying to join them,
+  //    we'd have a problem (double-join or race condition)
+  // By joining the main thread first, we ensure run() has completed its cleanup.
+  if (searchThread.joinable()) {
+    searchThread.join();
+  }
+
+  // After the main thread is joined, run() should have already joined all helpers.
+  // But as a safety net (e.g., if destruction happens during unusual circumstances),
+  // we also attempt to join any remaining helper threads.
+  for (auto& helper : helperThreads) {
+    if (helper.joinable()) {
+      helper.join();
+    }
+  }
+  helperThreads.clear();
 }
 
 ////////////////////////////////////////////////
@@ -90,8 +108,16 @@ void Search::startSearch(const Position& p, SearchLimits sl) {
   this->position = p;
   searchLimits   = sl;
 
-  // join() previous thread
+  // join() previous search thread - this ensures run() has completed and
+  // helper threads have been joined by run() before we start a new search
   if (searchThread.joinable()) { searchThread.join(); }
+
+  // Safety: ensure no helper threads are lingering from a previous search
+  // (should already be joined by run(), but defensive programming)
+  for (auto& helper : helperThreads) {
+    if (helper.joinable()) { helper.join(); }
+  }
+  helperThreads.clear();
 
   // start search in a separate thread
   LOG__DEBUG(Logger::get().SEARCH_LOG, "Starting search in separate thread.");
