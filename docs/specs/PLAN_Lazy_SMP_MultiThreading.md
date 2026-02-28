@@ -2,8 +2,8 @@
 
 **Document Version:** 1.5
 **Created:** 2026-02-25
-**Last Updated:** 2026-02-26
-**Status:** Phase 1-4 ✅ — Phase 5-6 ✅ — Phase 7 TODO (Testing)
+**Last Updated:** 2026-02-28
+**Status:** Phase 1-6 ✅ — Phase 7 ✅ (Testing Implemented)
 **Target Version:** v1.5
 **Estimated Effort:** 3-4 weeks
 
@@ -321,20 +321,29 @@ For helpers, the same search functions are called but with a different `SearchTh
 ### Phase 3: Helper Thread Launch & Control (Day 7-10)
 **Goal:** Launch N helper threads that each call a simplified `helperSearch()` loop.
 
-#### Helper Thread Lifecycle
+#### Helper Thread Lifecycle (Updated: Delayed Startup)
+
+Helper threads are launched **after the main thread has completed a configurable number of iterations** (`SMP_HELPER_START_DEPTH`, default 4). This allows TT priming before helpers start contributing, resulting in better TT hit rates for helpers.
 
 ```
 startSearch() called
     → allocate/reset SearchThreadData[0..N]
-    → if numHelperThreads > 0:
-        launch helper threads: each calls helperRun(SearchThreadData&)
-    → main thread calls run() as today
+    → main thread calls run() → iterativeDeepening()
+    → main thread searches depths 1..SMP_HELPER_START_DEPTH
+    → after completing SMP_HELPER_START_DEPTH:
+        if numHelperThreads > 0:
+            launch helper threads via launchHelperThreads()
+    → main thread continues deeper iterations
     → main thread finishes iterativeDeepening()
     → stopSearchFlag = true
     → join all helper threads
     → aggregate node counts
     → send result to UCI
 ```
+
+**Configuration:**
+- `SMP_HELPER_START_DEPTH` (default: 4) — depth at which helpers are launched
+- Exposed via YAML config, not UCI (internal tuning parameter)
 
 #### `helperRun(SearchThreadData& st)` function
 
@@ -676,8 +685,31 @@ numHelperThreads = std::max(0, SearchConfig.THREADS - 1);
 
 ---
 
-### Phase 7: Testing & Validation (Day 17-22)
+### Phase 7: Testing & Validation (Day 17-22) ✅ COMPLETE
 **Goal:** Confirm correctness, no regressions at 1 thread, and ELO gain at 2+ threads.
+
+**Status:** ✅ Complete (2026-02-28)
+
+#### New Test File: `test/engine/SearchSmpTest.cpp`
+
+All tests implemented in a dedicated SMP test file:
+
+| Test Name                           | Category        | Description                                            |
+|-------------------------------------|-----------------|--------------------------------------------------------|
+| `SingleThreadDeterministic`         | Regression      | Verifies THREADS=1 produces identical results each run |
+| `SingleThreadNoHelpers`             | Regression      | Confirms no helper threads created with THREADS=1      |
+| `TwoThreadsNoDeadlock`              | Correctness     | 2 threads complete 2s search without deadlock          |
+| `FourThreadsNoDeadlock`             | Correctness     | 4 threads complete 2s search without deadlock          |
+| `VaryingThreadCounts`               | Correctness     | Consecutive searches with 1→2→4→2→1 threads            |
+| `NodeCountAggregation`              | Aggregation     | Total nodes = sum of all thread node counts            |
+| `NpsUsesAggregatedNodes`            | Aggregation     | NPS calculated from aggregated nodes                   |
+| `Mate1With2Threads`                 | Mate Finding    | Mate-in-1 found correctly with 2 threads               |
+| `Mate3With4Threads`                 | Mate Finding    | Mate-in-3 found correctly with 4 threads               |
+| `TimeManagementWithMultipleThreads` | Time Management | Search stops within expected time window               |
+| `StopSearchWithMultipleThreads`     | Time Management | stopSearch() works correctly with 4 threads            |
+| `NpsScalesWithThreads`              | Scaling         | Verifies NPS improvement with more threads             |
+| `RapidStartStopCycles`              | Stress          | 10 rapid start/stop cycles with 4 threads              |
+| `ConsecutiveDifferentPositions`     | Stress          | 5 different positions searched consecutively           |
 
 #### Correctness Tests
 
@@ -687,11 +719,11 @@ numHelperThreads = std::max(0, SearchConfig.THREADS - 1);
 4. **Mate-finding test:** Engine finds mate-in-3 correctly with 4 threads.
 5. **Time management test:** Search stops within expected time window with N threads.
 
-#### New Unit Tests (`test/engine/SearchSmpTest.cpp`)
+#### New Unit Tests (`test/engine/SearchSmpTest.cpp`) ✅ IMPLEMENTED
 
 ```cpp
 // Test: 1 thread = same result as pre-SMP
-TEST_F(SearchSmpTest, SingleThreadUnchanged) { ... }
+TEST_F(SearchSmpTest, SingleThreadDeterministic) { ... }
 
 // Test: 2 threads completes without crash
 TEST_F(SearchSmpTest, TwoThreadsNoDeadlock) { ... }
@@ -699,8 +731,13 @@ TEST_F(SearchSmpTest, TwoThreadsNoDeadlock) { ... }
 // Test: node count reported = sum of all threads
 TEST_F(SearchSmpTest, NodeCountAggregation) { ... }
 
-// Test: TT is thread-safe (concurrent put+probe via stress test)
-TEST_F(TT_Test, ConcurrentPutProbeNoUB) { ... }
+// Plus 11 more tests covering:
+// - 4-thread correctness
+// - Varying thread counts
+// - Mate finding with SMP
+// - Time management
+// - NPS scaling
+// - Stress tests
 ```
 
 #### Strength Testing (Arena)
@@ -727,14 +764,14 @@ ELO gain diminishes at higher thread counts due to TT contention and diminishing
 | `src/engine/Evaluator.h`        | Remove owned PawnTT; add `setPawnTT()` for shared cache; per-thread scratch variables         |
 | `src/engine/Evaluator.cpp`      | Use `pawnCache->` pointer with null checks; simplified constructor                            |
 | `src/engine/SearchThreadData.h` | Add `Evaluator evaluator` member (per-thread); includes Evaluator.h                           |
-| `src/engine/Search.h`           | Add `unique_ptr<PawnTT> pawnTT`; remove `unique_ptr<Evaluator>`                               |
-| `src/engine/Search.cpp`         | Init shared PawnTT; set on each thread's evaluator; use `thread().evaluator.evaluate()`       |
-| `src/config/SearchConfigData.h` | Add `THREADS = 1`                                                                             |
-| `src/config/ConfigRegistry.cpp` | Add `Threads` UCI option registry entry                                                       |
-| `test/engine/TT_Test.cpp`       | Add `ConcurrentPutProbeNoUB` stress test                                                      |
-| `test/engine/PawnTT_Test.cpp`   | Add `ConcurrentPutProbeNoUB` stress test; update to use `getKey()`                            |
-| `test/engine/EvaluatorTest.cpp` | Create PawnTT externally; call `setPawnTT()` on Evaluator                                     |
-| `test/engine/SearchSmpTest.cpp` | **NEW** — SMP-specific tests (Phase 7)                                                        |
+| `src/engine/Search.h`           | Add `unique_ptr<PawnTT> pawnTT`; add `helpersLaunched` flag; add `launchHelperThreads()`      |
+| `src/engine/Search.cpp`         | Delayed helper launch from `iterativeDeepening()` after `SMP_HELPER_START_DEPTH` iterations   |
+| `src/config/SearchConfigData.h` | Add `THREADS = 1`, `SMP_HELPER_START_DEPTH = 4`                                               |
+| `src/config/ConfigRegistry.cpp` | Add `Threads` UCI option + `SMP_HELPER_START_DEPTH` config entry                              |
+| `test/engine/TT_Test.cpp`       | Add `ConcurrentPutProbeNoUB` stress test                                                |
+| `test/engine/PawnTT_Test.cpp`   | Add `ConcurrentPutProbeNoUB` stress test; update to use `getKey()`                      |
+| `test/engine/EvaluatorTest.cpp` | Create PawnTT externally; call `setPawnTT()` on Evaluator                               |
+| `test/engine/SearchSmpTest.cpp` | **NEW** — SMP-specific tests (Phase 7) ✅ IMPLEMENTED                                    |
 
 ---
 

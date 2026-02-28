@@ -199,6 +199,11 @@ class Search {
   // Set from SearchConfig.THREADS - 1 before search starts
   int numHelperThreads = 0;
 
+  // Flag to track if helper threads have been launched for current search.
+  // Helpers are launched after main thread completes SMP_HELPER_START_DEPTH iterations
+  // to allow TT priming before helpers start contributing.
+  bool helpersLaunched = false;
+
   // Thread-local pointer to current thread's SearchThreadData.
   // Set by run() for main thread, helperRun() for helpers.
   // Enables search functions to access thread-local state without parameter passing.
@@ -302,7 +307,11 @@ public:
   /// Uses thread-local storage set by run()/helperRun().
   /// Must only be called from within a search context (after currentThreadData is set).
   /// @return Reference to current thread's SearchThreadData
-  static SearchThreadData& thread() { return *currentThreadData; }
+  static SearchThreadData& thread() {
+    assert(currentThreadData != nullptr && "thread() called outside of search context");
+    // ReSharper disable once CppDFANullDereference
+    return *currentThreadData;
+  }
 
   /// Returns the result of the last completed search.
   /// @return Reference to SearchResult (undefined behavior if no search completed)
@@ -367,6 +376,12 @@ private:
   /// Does not report to UCI or manage time - only contributes to TT.
   /// @param st  Thread-local search state for this helper thread
   void helperRun(SearchThreadData& st);
+
+  /// Launches helper threads for Lazy SMP.
+  /// Called from iterativeDeepening() after main thread has completed a few iterations
+  /// to allow TT priming before helpers start contributing.
+  /// No-op if helpers already launched or numHelperThreads == 0.
+  void launchHelperThreads();
 
   /// Performs iterative deepening search, incrementing depth until time expires.
   /// @param p  Position to search
@@ -521,7 +536,7 @@ private:
   /// This ensures full PV lines are available even after TT cutoffs.
   /// @param p  Position to use for TT probing (will be modified and restored)
   /// @return   Extended PV as MoveList
-  MoveList extractPvWithTT(Position& p);
+  MoveList extractPvWithTT(Position& p) const;
 };
 
 #endif// FRANKYCPP_SEARCH_H

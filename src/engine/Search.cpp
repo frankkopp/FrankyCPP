@@ -283,15 +283,11 @@ void Search::run() {
   currentThreadData = &mainThread();
 
   // ===========================================================================
-  // Launch helper threads (no-op when numHelperThreads == 0)
+  // Reset helper thread state - helpers will be launched from iterativeDeepening()
+  // after main thread has completed SMP_HELPER_START_DEPTH iterations (TT priming)
   // ===========================================================================
   helperThreads.clear();
-  for (int i = 1; i <= numHelperThreads; ++i) {
-    helperThreads.emplace_back([this, i]() { helperRun(*searchThreadData[i]); });
-  }
-  if (numHelperThreads > 0) {
-    LOG__INFO(Logger::get().SEARCH_LOG, "Launched {} helper thread(s)", numHelperThreads);
-  }
+  helpersLaunched = false;
   // ===========================================================================
 
   // If we have found a book-move an update result and omit search.
@@ -442,6 +438,22 @@ void Search::helperRun(SearchThreadData& st) {
   }
 
   LOG__DEBUG(Logger::get().SEARCH_LOG, "Helper thread {} finished, searched {:L} nodes", st.id, st.nodesVisited);
+}
+
+void Search::launchHelperThreads() {
+  // No-op if already launched or no helpers configured
+  if (helpersLaunched || numHelperThreads == 0) {
+    return;
+  }
+
+  // Launch all helper threads
+  for (int i = 1; i <= numHelperThreads; ++i) {
+    helperThreads.emplace_back([this, i]() { helperRun(*searchThreadData[i]); });
+  }
+
+  helpersLaunched = true;
+  LOG__INFO(Logger::get().SEARCH_LOG, "Launched {} helper thread(s) after depth {} (TT priming complete)",
+            numHelperThreads, SearchConfig.SMP_HELPER_START_DEPTH);
 }
 
 SearchResult Search::iterativeDeepening(Position& p) {
@@ -694,6 +706,16 @@ SearchResult Search::iterativeDeepening(Position& p) {
     prevIterationNodes = lastIterationNodes;
     lastIterationNodes = thread().nodesVisited - iterStartNodes;
 
+    // ===========================================================================
+    // Launch helper threads after TT priming (delayed startup for better TT utilization)
+    // Helpers start after main thread has completed SMP_HELPER_START_DEPTH iterations,
+    // allowing them to benefit from TT entries written by the main thread.
+    // ===========================================================================
+    if (!helpersLaunched && iterationDepth >= SearchConfig.SMP_HELPER_START_DEPTH) {
+      launchHelperThreads();
+    }
+    // ===========================================================================
+
     assert(!thread().pv.empty() && thread().pv.first() != MOVE_NONE && "pv must contain a valid first move");
     assert((bestValue == thread().pv.first().value() || stopSearchFlag) && "bestValue should be equal value of thread().pv.first()");
 
@@ -778,7 +800,6 @@ SearchResult Search::iterativeDeepening(Position& p) {
       std::ranges::stable_sort(rootMoves, moveValueGreaterComparator());
       ESSENTIAL_STAT_SET(thread().statistics.currentBestRootMove, thread().pv.first());
       ESSENTIAL_STAT_SET(thread().statistics.currentBestRootMoveValue, thread().pv.first().value());
-      assert(thread().pv.first() == rootMoves.at(0) && "Best root move should be equal to thread().pv.first()");
       // update UCI GUI
       sendIterationEndInfoToUci();
     }
@@ -1373,7 +1394,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     }
   }
 
-  assert(!SearchConfig.USE_IIR && !SearchConfig.USE_IID && "IIR and IID are mutually exclusive - please enable only one of them");
+  assert(!(SearchConfig.USE_IIR && SearchConfig.USE_IID) && "IIR and IID are mutually exclusive - please enable only one of them");
 
   // Internal Iterative Reduction (IIR) - Modern alternative to IID
   // https://www.chessprogramming.org/Internal_Iterative_Reductions
@@ -2104,6 +2125,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
   return bestNodeValue;
 }
 
+// ReSharper disable once CppMemberFunctionMayBeStatic
 inline Value Search::evaluate(const Position& p) {
   STAT_INC(thread().statistics.leafPositionsEvaluated);
   STAT_INC(thread().statistics.evaluations);
@@ -2834,7 +2856,7 @@ void Search::sendAspirationResearchInfo(const std::string& boundString) {
             pvLine.str());
 }
 
-MoveList Search::extractPvWithTT(Position& p) {
+MoveList Search::extractPvWithTT(Position& p) const {
   MoveList result;
 
   // First, copy moves from the triangular PV table

@@ -43,6 +43,7 @@ public:
     Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
     Logger::get().TT_LOG->set_level(spdlog::level::debug);
     Logger::get().BOOK_LOG->set_level(spdlog::level::debug);
+    Logger::get().CONFIG_LOG->set_level(spdlog::level::debug);
   }
 
 protected:
@@ -674,7 +675,8 @@ TEST_F(SearchTest, 10secondSearchNodesCount) {
     GTEST_SKIP() << "Skipping debug test in bulk run to save time";
   }
 
-  CONFIG_OVERRIDE(s.THREADS = 30;);// Single-threaded for consistent node counts
+  // Used to experiment with multiple threads
+  CONFIG_OVERRIDE(s.THREADS = 1;);
 
   const Position p{"5k2/1rn2p2/3pb1p1/7p/p3PP2/PnNBK2P/3N2P1/1R6 w - - 0 1"};
   SearchLimits sl{};

@@ -40,6 +40,7 @@ add_executable(
         engine/UciOptionsTest.cpp
         engine/TT_Test.cpp
         engine/SearchTest.cpp
+        engine/SearchSmpTest.cpp
         engine/SeeTest.cpp
         engine/EvaluatorTest.cpp
         engine/PawnTT_Test.cpp

@@ -42,6 +42,10 @@ struct SearchConfigData {
   // time mgmt
   CONFIG_ESSENTIAL int MOVE_OVERHEAD_MS = 10;
 
+  // Multi-threading (Lazy SMP)
+  CONFIG_ESSENTIAL int THREADS = 1;           // Number of search threads (1 = single-threaded, no SMP overhead)
+  CONFIG_CONST int SMP_HELPER_START_DEPTH = 4;// Depth at which to launch helper threads (allows TT priming)
+
   // book
   CONFIG_ESSENTIAL bool USE_BOOK         = true;
   CONFIG_ESSENTIAL std::string BOOK_PATH = "./books/book.txt";
@@ -64,9 +68,6 @@ struct SearchConfigData {
   CONFIG_CONST bool USE_EVAL_TT  = true;
   CONFIG_ESSENTIAL int TT_SIZE_MB = 64;
   CONFIG_CONST bool USE_QS_TT    = true;
-
-  // Multi-threading (Lazy SMP)
-  CONFIG_ESSENTIAL int THREADS = 1;// Number of search threads (1 = single-threaded, no SMP overhead)
 
   // Syzygy tablebase settings
   CONFIG_ESSENTIAL std::string TB_PATH;// Path to Syzygy tablebase files (empty = disabled)

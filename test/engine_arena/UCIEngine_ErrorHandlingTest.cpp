@@ -97,7 +97,7 @@ TEST_F(UCIEngineErrorHandlingTest, Constructor_EmptyPath_ThrowsError) {
 
 TEST_F(UCIEngineErrorHandlingTest, SetPosition_InvalidFEN_ReturnsFalse) {
   // Try to find a valid engine for testing
-  std::string enginePath = getTestEnginePath();
+  const std::string enginePath = getTestEnginePath();
 
   if (enginePath.empty()) {
     GTEST_SKIP() << "Test engine not found. Skipping invalid FEN test.";
@@ -123,7 +123,7 @@ TEST_F(UCIEngineErrorHandlingTest, SetPosition_InvalidFEN_ReturnsFalse) {
 
 TEST_F(UCIEngineErrorHandlingTest, Search_VeryShortTimeout_ReturnsPartialOrEmpty) {
   // Find engine
-  std::string enginePath = getTestEnginePath();
+  const std::string enginePath = getTestEnginePath();
 
   if (enginePath.empty()) {
     GTEST_SKIP() << "Test engine not found. Skipping timeout test.";
@@ -154,7 +154,7 @@ TEST_F(UCIEngineErrorHandlingTest, Search_VeryShortTimeout_ReturnsPartialOrEmpty
 //=============================================================================
 
 TEST_F(UCIEngineErrorHandlingTest, MultipleRapidSearches_NoResourceLeaks) {
-  std::string enginePath = getTestEnginePath();
+  const std::string enginePath = getTestEnginePath();
 
   if (enginePath.empty()) {
     GTEST_SKIP() << "Test engine not found. Skipping stress test.";
@@ -184,7 +184,7 @@ TEST_F(UCIEngineErrorHandlingTest, MultipleRapidSearches_NoResourceLeaks) {
 //=============================================================================
 
 TEST_F(UCIEngineErrorHandlingTest, NewGame_MultipleCalls_NoCrash) {
-  std::string enginePath = getTestEnginePath();
+  const std::string enginePath = getTestEnginePath();
 
   if (enginePath.empty()) {
     GTEST_SKIP() << "Test engine not found.";
@@ -209,16 +209,16 @@ TEST_F(UCIEngineErrorHandlingTest, NewGame_MultipleCalls_NoCrash) {
 //=============================================================================
 
 TEST_F(UCIEngineErrorHandlingTest, GetEngineName_VeryLongName_NoBufferOverflow) {
-  std::string enginePath = getTestEnginePath();
+  const std::string enginePath = getTestEnginePath();
 
   if (enginePath.empty()) {
     GTEST_SKIP() << "Test engine not found.";
   }
 
-  UCIEngine engine(enginePath);
+  const UCIEngine engine(enginePath);
 
   // Get engine name - should handle any length safely (using std::string)
-  std::string name = engine.getEngineName();
+  const std::string name = engine.getEngineName();
 
   // Should have a non-empty name
   EXPECT_FALSE(name.empty());
@@ -233,7 +233,7 @@ TEST_F(UCIEngineErrorHandlingTest, GetEngineName_VeryLongName_NoBufferOverflow) 
 
 TEST_F(UCIEngineErrorHandlingTest, Constructor_RelativeAndAbsolutePaths_BothWork) {
   // Find engine with relative path
-  std::string relativePath = getTestEnginePath();
+  const std::string relativePath = getTestEnginePath();
 
   if (relativePath.empty()) {
     GTEST_SKIP() << "Test engine not found.";
@@ -241,14 +241,14 @@ TEST_F(UCIEngineErrorHandlingTest, Constructor_RelativeAndAbsolutePaths_BothWork
 
   // Test with relative path
   {
-    UCIEngine engine(relativePath);
+    const UCIEngine engine(relativePath);
     EXPECT_FALSE(engine.getEngineName().empty());
   }
 
   // Test with absolute path
   {
-    std::filesystem::path absPath = std::filesystem::absolute(relativePath);
-    UCIEngine engine(absPath.string());
+    const std::filesystem::path absPath = std::filesystem::absolute(relativePath);
+    const UCIEngine engine(absPath.string());
     EXPECT_FALSE(engine.getEngineName().empty());
   }
 }
@@ -258,7 +258,7 @@ TEST_F(UCIEngineErrorHandlingTest, Constructor_RelativeAndAbsolutePaths_BothWork
 //=============================================================================
 
 TEST_F(UCIEngineErrorHandlingTest, Search_ZeroTime_ReturnsQuickly) {
-  std::string enginePath = getTestEnginePath();
+  const std::string enginePath = getTestEnginePath();
 
   if (enginePath.empty()) {
     GTEST_SKIP() << "Test engine not found.";

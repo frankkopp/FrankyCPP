@@ -408,6 +408,20 @@ void ConfigRegistry::initializeSearchDefinitions() {
   });
 
   definitions_.push_back({
+    .name = "SMP_HELPER_START_DEPTH",
+    .uciName = "",  // Not exposed via UCI - internal tuning parameter
+    .description = "Depth at which to launch helper threads (allows main thread to prime TT first)",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.SMP_HELPER_START_DEPTH),
+    .minValue = 1,
+    .maxValue = 10,
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.SMP_HELPER_START_DEPTH; }),
+    .setter = SEARCH_CONFIG_SETTER(SMP_HELPER_START_DEPTH, parseInt)
+  });
+
+  definitions_.push_back({
     .name = "USE_QS_TT",
     .uciName = "Use Hash Quiescence",
     .description = "Use TT in quiescence search",
