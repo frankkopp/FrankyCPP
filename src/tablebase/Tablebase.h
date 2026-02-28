@@ -134,6 +134,7 @@ public:
   /// For positions near the 50-move limit, use probeRoot, which respects halfmove clock.
   /// @param pos  Position to probe
   /// @return WDL result or Failed if probe unsuccessful
+  /// @attention canProbe(pos) should be called first to check if probing is possible for the position
   [[nodiscard]] TBResult probeWDL(const Position& pos) const;
 
   /// Probe WDL and DTZ with best move (slower, suitable for root).
