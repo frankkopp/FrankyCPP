@@ -105,6 +105,7 @@
 #include "config/ConfigManager.h"
 
 #include <atomic>
+#include <mutex>
 #include <optional>
 #include <semaphore>
 #include <thread>
@@ -169,6 +170,10 @@ class Search {
   milliseconds timeLimit{};
   std::atomic<int64_t> extraTimeMs{0};
   std::thread timerThread{};
+  mutable std::mutex timerMutex{};// protects timerThread access from multiple threads
+
+  // Atomic flag to indicate search result is ready (avoids race on lastSearchResult)
+  std::atomic<bool> resultReady{false};
 
   // best-move instability tracking for dynamic time management
   BestMoveStability bestMoveStability{};
@@ -319,8 +324,9 @@ public:
   const SearchResult& getLastSearchResult() const { return *lastSearchResult; };
 
   /// Checks if a search result is available.
+  /// Thread-safe: uses atomic flag to avoid race with search thread.
   /// @return True if result is ready
-  [[nodiscard]] bool hasResult() const { return lastSearchResult.has_value(); }
+  [[nodiscard]] bool hasResult() const { return resultReady.load(std::memory_order_acquire); }
 
   /// Formats detailed search statistics as a string for debugging/logging.
   /// Static version that takes result and stats as parameters.

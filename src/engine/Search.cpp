@@ -223,6 +223,7 @@ void Search::run() {
 
   // initialize search
   stopSearchFlag = false;
+  resultReady.store(false, std::memory_order_relaxed);// clear result flag
   lastSearchResult.reset();// clear previous result
   timeLimit                 = milliseconds{};
   extraTimeMs               = 0;
@@ -388,13 +389,17 @@ void Search::run() {
 
   // save the result until overwritten by the next search
   lastSearchResult = searchResult;
+  resultReady.store(true, std::memory_order_release);// signal result is ready
 
   // At the end of a search we send the result in any case even if
   // searched has been stopped.
   sendResult(searchResult);
 
-  // clean up timer thread if necessary
-  if (timerThread.joinable()) timerThread.join();
+  // clean up timer thread if necessary (protected by mutex for thread safety)
+  {
+    std::lock_guard lock(timerMutex);
+    if (timerThread.joinable()) timerThread.join();
+  }
 
   // Reset thread-local pointer to prevent dangling reference if this thread
   // is reused by another Search instance
@@ -413,8 +418,8 @@ void Search::helperRun(SearchThreadData& st) {
   // Set thread-local pointer so search functions use this thread's data
   currentThreadData = &st;
 
-  // Local copy of position - position is read-only after startSearch()
-  Position localPos = position;
+  // Use thread-local position (copied before helper launch in launchHelperThreads)
+  Position& localPos = st.position;
 
   // Generate root moves for this thread (local copy to avoid sharing issues)
   const MoveList localRootMoves = *st.plyStack[0].mg->generateLegalMoves(localPos, GenAll);
@@ -486,6 +491,13 @@ void Search::launchHelperThreads() {
   // No-op if already launched or no helpers configured
   if (helpersLaunched || numHelperThreads == 0) {
     return;
+  }
+
+  // Copy current position to each helper thread's SearchThreadData
+  // This must happen BEFORE launching threads to avoid data race
+  // (main thread continues modifying `position` during search)
+  for (int i = 1; i <= numHelperThreads; ++i) {
+    searchThreadData[i]->position = position;
   }
 
   // Launch all helper threads
@@ -670,8 +682,9 @@ SearchResult Search::iterativeDeepening(Position& p) {
       // Determine current NPS: prefer recent window (since last UCI update), fallback to average.
       const uint64_t nowTimeFast = nowFast();
       uint64_t currentNps        = 0;
-      if (nowTimeFast > npsTime) { currentNps = nps(thread().nodesVisited - npsNodes, nowTimeFast - npsTime); }
-      if (currentNps == 0) { currentNps = nps(thread().nodesVisited, sinceNs); }
+      const uint64_t currentNodes = thread().nodesVisited;
+      if (nowTimeFast > npsTime) { currentNps = nps(currentNodes - npsNodes, nowTimeFast - npsTime); }
+      if (currentNps == 0) { currentNps = nps(currentNodes, sinceNs); }
       if (currentNps == 0) { currentNps = 1; }
 
       // Predict the node count of the next iteration using observed growth.
@@ -2684,7 +2697,12 @@ void Search::addExtraTime(const double f) {
 }
 
 void Search::startTimer() {
-  this->timerThread = std::thread([&] {
+  std::lock_guard<std::mutex> lock(timerMutex);
+  // Don't start another timer if one is already running
+  if (timerThread.joinable()) {
+    return;
+  }
+  timerThread = std::thread([this] {
     startSearchTime = currentTime();
     LOG__DEBUG(Logger::get().SEARCH_LOG, "Timer started with time limit of {} ms", str(timeLimit));
     // Busy-wait threshold for higher-precision tail (2-3ms)

@@ -51,6 +51,7 @@
 #include "PlyInfo.h"
 #include "SearchStats.h"
 #include "chesscore/History.h"
+#include "chesscore/Position.h"
 #include "types/types.h"
 
 #include <array>
@@ -63,8 +64,16 @@ struct SearchThreadData {
   /// Thread ID: 0 = main thread, 1..N-1 = helper threads
   int id = 0;
 
-  /// Thread-local node counter (aggregated across threads for UCI reporting)
-  uint64_t nodesVisited = 0;
+  /// Thread-local node counter (aggregated across threads for UCI reporting).
+  /// NOT atomic: each thread only writes to its own counter, reads by other
+  /// threads (getTotalNodes) are racy but acceptable for approximate statistics.
+  /// This avoids the ~20x overhead of atomic increment on the hot path.
+  uint64_t nodesVisited{0};
+
+  /// Thread-local copy of the position for this search thread.
+  /// Initialized from Search::position before helpers are launched.
+  /// Each thread works on its own copy to avoid data races.
+  Position position{};
 
   /// Per-thread evaluator with thread-local scratch variables.
   /// Uses shared PawnTT (set via evaluator.setPawnTT() from Search).
