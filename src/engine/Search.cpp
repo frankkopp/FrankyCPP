@@ -259,6 +259,11 @@ void Search::run() {
     st.nodesVisited = 0;
     st.statistics   = SearchStats{};
 
+    // Copy root position to thread-local storage for all threads.
+    // Each thread works on its own copy to avoid data races during search.
+    // The root position is fixed for the entire search, so we copy it once here.
+    st.position = position;
+
     // Set shared PawnTT on this thread's evaluator
     st.evaluator.setPawnTT(pawnTT.get());
 
@@ -418,7 +423,7 @@ void Search::helperRun(SearchThreadData& st) {
   // Set thread-local pointer so search functions use this thread's data
   currentThreadData = &st;
 
-  // Use thread-local position (copied before helper launch in launchHelperThreads)
+  // Use thread-local position (copied at start of run() for all threads)
   Position& localPos = st.position;
 
   // Generate root moves for this thread (local copy to avoid sharing issues)
@@ -493,13 +498,7 @@ void Search::launchHelperThreads() {
     return;
   }
 
-  // Copy current position to each helper thread's SearchThreadData
-  // This must happen BEFORE launching threads to avoid data race
-  // (main thread continues modifying `position` during search)
-  for (int i = 1; i <= numHelperThreads; ++i) {
-    searchThreadData[i]->position = position;
-  }
-
+  // Position was already copied to each thread's SearchThreadData in run()
   // Launch all helper threads
   for (int i = 1; i <= numHelperThreads; ++i) {
     helperThreads.emplace_back([this, i]() { helperRun(*searchThreadData[i]); });
