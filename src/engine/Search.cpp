@@ -2702,7 +2702,8 @@ void Search::startTimer() {
     return;
   }
   timerThread = std::thread([this] {
-    startSearchTime = currentTime();
+    // Note: startSearchTime is set in startSearch() before the search thread starts.
+    // Do NOT reset it here - that would race with early-exit paths (e.g., book moves).
     LOG__DEBUG(Logger::get().SEARCH_LOG, "Timer started with time limit of {} ms", str(timeLimit));
     // Busy-wait threshold for higher-precision tail (2-3ms)
     constexpr milliseconds busyWaitThreshold{3};
