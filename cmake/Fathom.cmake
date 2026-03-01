@@ -32,6 +32,10 @@ add_library(fathom STATIC
   ${fathom_SOURCE_DIR}/src/tbprobe.c
 )
 
+# IMPORTANT: Do NOT define TB_NO_THREADS
+# Fathom uses #ifndef TB_NO_THREADS to enable mutex protection.
+# By not defining it, we get thread-safe tablebase probing for Lazy SMP.
+
 # Public headers
 target_include_directories(fathom PUBLIC
   ${fathom_SOURCE_DIR}/src

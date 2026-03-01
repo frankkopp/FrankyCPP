@@ -396,6 +396,10 @@ void Search::run() {
   // clean up timer thread if necessary
   if (timerThread.joinable()) timerThread.join();
 
+  // Reset thread-local pointer to prevent dangling reference if this thread
+  // is reused by another Search instance
+  currentThreadData = nullptr;
+
   // release the running semaphore after the search has ended
   isRunningSemaphore.release();
 }
@@ -472,6 +476,10 @@ void Search::helperRun(SearchThreadData& st) {
   }
 
   LOG__DEBUG(Logger::get().SEARCH_LOG, "Helper thread {} finished, searched {:L} nodes", st.id, st.nodesVisited);
+
+  // Reset thread-local pointer to prevent dangling reference if this thread
+  // is reused by another Search instance or thread pool
+  currentThreadData = nullptr;
 }
 
 void Search::launchHelperThreads() {

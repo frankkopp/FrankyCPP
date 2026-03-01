@@ -56,6 +56,7 @@
 
 #include <array>
 #include <cstring>
+#include <stdexcept>
 
 /// Triangular PV Table - zero-overhead wrapper for PV storage
 /// All methods inline/constexpr - compiler optimizes to direct array access
@@ -99,9 +100,18 @@ public:
   }
 
   /// Update PV: prepend move and copy child PV from ply+1
-  constexpr void update(const Move move, const Depth ply) noexcept {
+  void update(const Move move, const Depth ply) {
     table_[ply][ply] = move;
-    int i            = ply + 1;
+    // Bounds check: if ply+1 >= MAX_PLY, there's no child PV to copy
+    // This prevents out-of-bounds access to table_[ply+1]
+    if (ply + 1 >= MAX_PLY) {
+      // DEBUG: Throw exception to verify this was the crash cause
+      // If we see this exception instead of a crash, the bug is confirmed
+      throw std::runtime_error("PVTable::update() would have accessed table_[" +
+                               std::to_string(ply + 1) + "] which is out of bounds (MAX_PLY=" +
+                               std::to_string(MAX_PLY) + ") - BUG CONFIRMED!");
+    }
+    int i = ply + 1;
     while (table_[ply + 1][i] != MOVE_NONE && i < MAX_PLY) {
       table_[ply][i] = table_[ply + 1][i];
       ++i;
