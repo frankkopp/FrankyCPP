@@ -70,6 +70,9 @@ add_executable(
         ../src/engine_arena/MatchRunner.cpp
         ../src/engine_arena/BenchmarkRunner.cpp
 
+        # CrashHandler for minidump generation on crashes
+        ../src/common/CrashHandler.cpp
+
         TimingTests.cpp
 
         config/ConfigYamlSmokeTest.cpp

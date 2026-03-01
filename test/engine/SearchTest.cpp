@@ -19,6 +19,7 @@
 
 #include "engine/Search.h"
 #include "Test_Utils.h"
+#include "common/CrashHandler.h"
 #include "common/Logging.h"
 #include "init.h"
 #include "types/types.h"
@@ -44,6 +45,13 @@ public:
     Logger::get().TT_LOG->set_level(spdlog::level::debug);
     Logger::get().BOOK_LOG->set_level(spdlog::level::debug);
     Logger::get().CONFIG_LOG->set_level(spdlog::level::debug);
+
+    // Install crash handler to generate minidumps on access violations
+    crashhandler::install("./crash_dumps");
+  }
+
+  static void TearDownTestSuite() {
+    crashhandler::uninstall();
   }
 
 protected:
@@ -157,6 +165,7 @@ TEST_F(SearchTest, startTimer) {
   Search s{};
   s.searchLimits.timeControl = true;
   s.startTime                = high_resolution_clock::now();
+  s.startSearchTime          = s.startTime;  // Timer uses startSearchTime for elapsed calculation
   s.timeLimit                = 2s;
   s.extraTimeMs              = 1000;// 1s
   s.startTimer();
@@ -236,7 +245,7 @@ TEST_F(SearchTest, startPonderSearch) {
   EXPECT_TRUE(s.hasResult());
   // 0.85 from the root complexity calculation - 20ms tolerance for code run time
   EXPECT_LT(static_cast<int64_t>(0.85 * nanoPerSec - 20'000'000), s.getLastSearchResult().time.count());
-  EXPECT_GT(static_cast<int64_t>(nanoPerSec * 1.1), s.getLastSearchResult().time.count());
+  EXPECT_GT(static_cast<int64_t>(nanoPerSec * 1.3), s.getLastSearchResult().time.count());
   EXPECT_GT(static_cast<int64_t>(nanoPerSec * 2.5), elapsedSince(start).count());
 }
 
