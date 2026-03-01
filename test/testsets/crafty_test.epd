@@ -31,7 +31,7 @@ r1bqr1k1/p3bpp1/2p2n1p/3p2B1/8/3B1Q2/PPP1NPPP/4RRK1 w - - bm Bf4; id "Crafty Tes
 3r2k1/p4bp1/1q5p/8/3Npp2/1PQ5/P4PPP/3R2K1 w - - bm Rd2; id "Crafty Test Pos.31"; c0 "DB/GK Philadelphia 1996, Game 5, move 28W (Rd2)";
 8/p4bpk/7p/3rq3/3N1P2/PPQR1P2/6KP/4q3 w - - bm fxe5; id "Crafty Test Pos.32"; c0 "DB/GK Philadelphia 1996, Game 5, move 35W (fxe5)";
 8/p6k/7p/4P1p1/1Pb5/P3RP2/3r1K1P/8 w - - bm Ke1; id "Crafty Test Pos.33"; c0 "DB/GK Philadelphia 1996, Game 5, move 42W (Ke1)";
-r1bqkb1r/pp3ppp/2n1pn2/2pp4/2PP4/1P2PN2/P2N1PPP/R1BQKB1R w Kqkq - bm Bb2; id "Crafty Test Pos.34"; c0 "GK/DB Philadelphia 1996, Game 6, move 7W (Bb2)";
+r1bqkb1r/pp3ppp/2n1pn2/2pp4/2PP4/1P2PN2/P2N1PPP/R1BQKB1R w KQkq - bm Bb2; id "Crafty Test Pos.34"; c0 "GK/DB Philadelphia 1996, Game 6, move 7W (Bb2)";
 r2q1rk1/pp1b1ppp/2nbp3/3p4/2PP1n2/1P3N2/PB1N1PPP/1BRQR1K1 w - - bm g3; id "Crafty Test Pos.35"; c0 "GK/DB Philadelphia 1996, Game 6, move 14W (g3)";
 2rr2k1/pp1qnppp/2n1p3/b2p4/2PP3P/PP2RNP1/1B3P2/1BRQ2K1 w - - bm b4; id "Crafty Test Pos.36"; c0 "GK/DB Philadelphia 1996, Game 6, move 21W (b4)";
 2r1r3/ppbqnpk1/4p1p1/1PPp1n1p/3P3P/P2Q1NP1/3BRP2/1BR3K1 w - - bm a4; id "Crafty Test Pos.37"; c0 "GK/DB Philadelphia 1996, Game 6, move 28W (a4)";
