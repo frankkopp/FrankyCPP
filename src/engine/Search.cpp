@@ -942,16 +942,25 @@ SearchResult Search::iterativeDeepening(Position& p) {
   // Double-check the ponder move to avoid a ponder search on mate or draw position.
   // If position after ponder move is a final position do not even send a ponder move.
   // This is necessary as arena sends a go ponder command although the position is final.
+  // Also validate that the ponder move is legal (PV/TT can have stale data).
   if (searchResult.ponderMove != MOVE_NONE) {
     p.doMove(searchResult.bestMove);
-    p.doMove(searchResult.ponderMove);
-    // check repetition and 50-moves rule or if there are legal moves when using ponder move
-    if (checkDrawRepAnd50(p, 2) || thread().plyStack[0].mg->generateLegalMoves(p, GenAll)->empty()) {
-      LOG__DEBUG(Logger::get().SEARCH_LOG, "ponder move omitted as game finished");
+    // Validate ponder move is legal in position after best move
+    if (!p.isLegalMove(searchResult.ponderMove)) {
+      LOG__DEBUG(Logger::get().SEARCH_LOG, "ponder move {} omitted as illegal", searchResult.ponderMove.str());
       searchResult.ponderMove = MOVE_NONE;
+      p.undoMove();
     }
-    p.undoMove();
-    p.undoMove();
+    else {
+      p.doMove(searchResult.ponderMove);
+      // check repetition and 50-moves rule or if there are legal moves when using ponder move
+      if (checkDrawRepAnd50(p, 2) || thread().plyStack[0].mg->generateLegalMoves(p, GenAll)->empty()) {
+        LOG__DEBUG(Logger::get().SEARCH_LOG, "ponder move omitted as game finished");
+        searchResult.ponderMove = MOVE_NONE;
+      }
+      p.undoMove();
+      p.undoMove();
+    }
   }
 
   return searchResult;
@@ -2924,12 +2933,21 @@ MoveList Search::extractPvWithTT(Position& p) const {
   MoveList result;
 
   // First, copy moves from the triangular PV table
+  // Validate each move - PV table can contain stale data from previous
+  // search branches or iterations that are illegal in the current position
   const int pvLen = thread().pv.length();
+  int validPvMoves = 0;
   for (int i = 0; i < pvLen; ++i) {
     const Move move = thread().pv(DEPTH_NONE, i);
     if (move == MOVE_NONE) break;
+
+    // Verify the move is legal in current position
+    // (PV table entries can be stale from different search branches)
+    if (!p.isLegalMove(move)) break;
+
     result.push_back(move);
     p.doMove(move);
+    ++validPvMoves;
   }
 
   // Now extend using TT lookups
@@ -2961,7 +2979,7 @@ MoveList Search::extractPvWithTT(Position& p) const {
   }
 
   // Undo all moves to restore position
-  const int totalMoves = pvLen + extended;
+  const int totalMoves = validPvMoves + extended;
   for (int i = 0; i < totalMoves; ++i) {
     p.undoMove();
   }

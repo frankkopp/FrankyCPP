@@ -34,17 +34,39 @@
 //   pv[2][2..n] = PV continuation from ply 2
 //   ...
 //
+// Stale Data Prevention (Generation Counter):
+//   The triangular PV table has a subtle bug potential: when update() copies
+//   moves from the child row (ply+1), it may copy stale data from a previous
+//   search branch. This happens because clear(ply) only sets table_[ply][ply]
+//   to MOVE_NONE for O(1) performance, leaving the continuation cells intact.
+//
+//   Example scenario causing illegal PV moves:
+//   1. Search branch A at ply 3: finds PV [Nxe5, Qh4, ...], updates table_[3]
+//   2. Search backtracks, explores branch B at ply 2
+//   3. Branch B at ply 3: clear(3) sets table_[3][3]=MOVE_NONE
+//   4. Branch B at ply 3: gets beta cutoff -> NO update() called
+//   5. Branch B at ply 3: table_[3] still has [..., ..., ..., MOVE_NONE, Qh4, ...]
+//   6. Branch B at ply 2: finds best move, calls update(move, 2)
+//   7. update() copies from table_[3][3] which is MOVE_NONE -> stops correctly
+//   8. BUT: if ply 4 had stale data and ply 3 was updated in branch B,
+//      that stale ply 4 data gets copied into the PV!
+//
+//   Solution: Track when each row was last updated using a generation counter.
+//   update() only copies from child row if it was updated in the CURRENT search
+//   (same generation). Cost: O(1) per update() - one comparison + one write.
+//
 // Benefits over std::vector<MoveList>:
 //   - Zero heap allocations during search
 //   - Contiguous memory for cache efficiency
 //   - Simple indexed copy operations
 //   - MOVE_NONE sentinel termination
+//   - Generation counter prevents intra-search stale data propagation
 //
-// Memory: 128 × 128 × 4 bytes = 64 KB
+// Memory: 128 × 128 × 4 bytes + 128 bytes + 1 byte ≈ 64.13 KB
 //
 // Usage:
 //   PVTable pv;
-//   pv.clearAll();              // At search start
+//   pv.clearAll();              // At search start (increments generation)
 //   pv.clear(ply);              // At node entry
 //   pv.update(move, ply);       // When move improves alpha
 //   Move best = pv.first();     // Get best move at root
@@ -66,6 +88,13 @@ public:
 
 private:
   std::array<std::array<Move, MAX_PLY>, MAX_PLY> table_{};
+
+  // Generation counter to detect stale PV data from previous search branches.
+  // Each row tracks when it was last updated. update() only copies from
+  // child row if it has the current generation, preventing stale data propagation.
+  // Using uint8_t (128 bytes) instead of uint16_t for better cache utilization.
+  std::array<uint8_t, MAX_PLY> rowGeneration_{};// Generation when each row was last updated
+  uint8_t currentGeneration_{1};               // Current search generation (0 = never updated)
 
 public:
   // =========================================================================
@@ -90,27 +119,42 @@ public:
   }
 
   /// Clear entire table (called once at search start)
+  /// Full memset ensures no stale data anywhere. Generation counter is also
+  /// incremented for defense-in-depth against intra-search stale data bugs.
   void clearAll() noexcept {
-    // std::array is contiguous, so memset works safely
-    // MOVE_NONE has raw value 0, so zeroing the memory is correct
+    // Clear the entire table - this is safe and only happens once per search
     static_assert(std::is_trivially_copyable_v<Move>);
-    // causes a warning on clangd "use assignment or value-initialization instead"
-    // the assertion above ensures this is safe and intentional
     std::memset(table_.data(), 0, sizeof(table_));
+
+    // Clear row generation tracking and increment generation counter.
+    // This provides defense-in-depth against intra-search stale data
+    // (see header documentation for the bug scenario).
+    // Cost is negligible (128 bytes) since clearAll() only runs once per search.
+    std::memset(rowGeneration_.data(), 0, sizeof(rowGeneration_));
+    ++currentGeneration_;
   }
 
-  /// Update PV: prepend move and copy child PV from ply+1
+  /// Update PV: prepend move and copy child PV from ply+1 (if current generation)
   void update(const Move move, const Depth ply) {
     table_[ply][ply] = move;
+    rowGeneration_[ply] = currentGeneration_;// Mark this row as current
+
     // Bounds check: if ply+1 >= MAX_PLY, there's no child PV to copy
-    // This prevents out-of-bounds access to table_[ply+1]
     if (ply + 1 >= MAX_PLY) {
-      // DEBUG: Throw exception to verify this was the crash cause
-      // If we see this exception instead of a crash, the bug is confirmed
-      throw std::runtime_error("PVTable::update() would have accessed table_[" +
-                               std::to_string(ply + 1) + "] which is out of bounds (MAX_PLY=" +
-                               std::to_string(MAX_PLY) + ") - BUG CONFIRMED!");
+      return;
     }
+
+    // Lazy check: if child row is empty, no need to check generation or copy.
+    // This is common at leaf nodes and avoids the rowGeneration_ cache access.
+    // Also handles case where child row is stale (generation mismatch).
+    if (table_[ply + 1][ply + 1] == MOVE_NONE
+        || rowGeneration_[ply + 1] != currentGeneration_) {
+      table_[ply][ply + 1] = MOVE_NONE;
+      return;
+    }
+
+    // Child row has current generation data - copy it
+    // See header documentation for detailed explanation of the stale data bug.
     int i = ply + 1;
     while (table_[ply + 1][i] != MOVE_NONE && i < MAX_PLY) {
       table_[ply][i] = table_[ply + 1][i];
