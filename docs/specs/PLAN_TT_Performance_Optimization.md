@@ -44,10 +44,10 @@ The transposition table experiences **memory latency that cannot be hidden**:
 
 | Priority | Optimization                      | Effort | Expected Impact | Rationale                                                                                                   |
 |----------|-----------------------------------|--------|-----------------|-------------------------------------------------------------------------------------------------------------|
-| **1**    | **TT Buckets (4-entry clusters)** | Medium | 🔴 **HIGH**     | Reduces LLC misses via better locality; enables smarter replacement; Stockfish uses 3-entry buckets for SMP |
-| **2**    | **Cache-line alignment (64B)**    | Low    | 🔴 **HIGH**     | Eliminates false sharing between threads; one cluster per cache line                                        |
-| **3**    | **Reduce TT access frequency**    | Medium | 🟡 Medium       | Skip TT probe in late move reductions; batch TT updates                                                     |
-| **4**    | **Attack caching per-position**   | Medium | 🟢 Low          | Slider tables already efficient (CPI 0.38); diminishing returns                                             |
+| **1**    | **TT Buckets + alignas(64)**      | Medium | 🔴 **HIGH**     | 4×16B entries = 64B cache line; eliminates false sharing; enables smarter replacement; Stockfish uses this  |
+| ~~2~~    | ~~Cache-line alignment alone~~    | N/A    | N/A             | ❌ Must combine with buckets; alone wastes 48B/entry (4x memory overhead)                                    |
+| **2**    | **Reduce TT access frequency**    | Medium | 🟡 Medium       | Skip TT probe in late move reductions; batch TT updates                                                     |
+| **3**    | **Attack caching per-position**   | Medium | 🟢 Low          | Slider tables already efficient (CPI 0.38); diminishing returns                                             |
 | ~~5~~    | ~~Earlier prefetch placement~~    | N/A    | N/A             | ❌ NOT POSSIBLE - requires zobrist key from after doMove()                                                   |
 | ~~6~~    | ~~PEXT slider tables~~            | N/A    | N/A             | ✅ **Already implemented** - no action needed                                                                |
 | ~~7~~    | ~~XOR key encoding~~              | N/A    | N/A             | ✅ Current atomics are efficient on x86                                                                      |
@@ -55,7 +55,10 @@ The transposition table experiences **memory latency that cannot be hidden**:
 
 ### Quick Wins (Implement First)
 
-1. **Add `alignas(64)` to TT entry/cluster** - Single line change, eliminates false sharing
+1. **Implement TT buckets with `alignas(64)`** - These two MUST go together:
+   - 4 entries × 16 bytes = 64 bytes = exactly 1 cache line
+   - `alignas(64)` ensures each bucket starts at cache line boundary
+   - **Note:** `alignas(64)` alone on current 16-byte entries would waste 48 bytes per entry (4x memory overhead)
 2. **Benchmark TT buckets with 8 threads** - Previous 20% slowdown was single-threaded; SMP may benefit
 
 ### Not Viable
@@ -311,24 +314,30 @@ TT_PREFETCH;              // Earliest possible - key now valid
 2. **Smaller TT entries** - Less data per access
 3. **TT buckets** - Better locality reduces total misses
 
-### Optimization 3: Entry Alignment (Alternative to Buckets)
+### Optimization 3: ~~Entry Alignment Without Buckets~~ (NOT RECOMMENDED)
 
-If buckets prove too slow, consider aligning individual entries:
+~~If buckets prove too slow, consider aligning individual entries:~~
 
 ```cpp
+// NOT RECOMMENDED - 4x memory waste
 struct alignas(64) Entry {
   std::atomic<ZobristKey> key{0};  // 8 bytes
   uint16_t move;                    // 2 bytes
   Value eval;                       // 2 bytes
   Value value;                      // 2 bytes
   // bitfields                      // 2 bytes
-  // Implicit padding: 48 bytes
+  // Implicit padding: 48 bytes     ← WASTED
 };  // Total: 64 bytes
 ```
 
-**Trade-off:** 4x memory usage (256MB TT becomes 64MB effective capacity)
+**Why this is NOT recommended:**
+- 4x memory usage (256MB TT becomes 64MB effective capacity)
+- Buckets provide the same cache-line isolation PLUS:
+  - Better replacement policy (4 slots per hash)
+  - Reduced LLC misses (better locality)
+  - Same memory efficiency as current implementation
 
-**Recommendation:** Try buckets first - better trade-off between memory and isolation.
+**Recommendation:** Always use buckets with alignment, never alignment alone.
 
 ### Optimization 4: Key XOR Encoding (Alternative to Atomic)
 
@@ -446,11 +455,11 @@ Bitboard Position::getAttacks(PieceType pt, Color c) const {
 
 Based on microarchitecture analysis, priorities have been adjusted:
 
-| Priority | Optimization                     | Effort     | Expected Impact | Rationale                                                   |
-|----------|----------------------------------|------------|-----------------|-------------------------------------------------------------|
-| 1        | TT Buckets (re-test with SMP)    | Medium     | **High**        | Primary bottleneck; 76% back-end bound                      |
-| 2        | Entry/Bucket alignment           | Low-Med    | **High**        | Eliminate false sharing causing cache invalidation          |
-| 3        | Attack caching per-position      | Medium     | Low-Med         | Redundant calls, but slider CPI is already good (0.35)      |
+| Priority | Optimization                             | Effort     | Expected Impact | Rationale                                                            |
+|----------|------------------------------------------|------------|-----------------|----------------------------------------------------------------------|
+| 1        | **TT Buckets + alignas(64)** (combined)  | Medium     | **High**        | Primary bottleneck; 76% back-end bound; must combine for efficiency  |
+| ~~2~~    | ~~Entry/Bucket alignment alone~~         | N/A        | N/A             | ❌ Wastes 48B/entry without buckets; MUST combine with buckets        |
+| 2        | Attack caching per-position              | Medium     | Low-Med         | Redundant calls, but slider CPI is already good (0.35)               |
 | ~~4~~    | ~~Verify TT prefetch timing~~    | N/A        | N/A             | ❌ NOT VIABLE: Prefetch requires key from after doMove()     |
 | ~~5~~    | ~~PEXT slider tables~~           | N/A        | N/A             | **ALREADY IMPLEMENTED** - using `_pext_u64`, CPI 0.35 ✅     |
 | 6        | XOR key encoding                 | Medium     | Low on x86      | Current atomic approach is efficient                        |
