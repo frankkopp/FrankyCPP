@@ -15,7 +15,8 @@
 # -----------------------------------------------------------------------------
 $VTUNE_PATH = "C:\Program Files (x86)\Intel\oneAPI\vtune\2025.9\bin64"
 $EXECUTABLE = "D:\_DEV\FrankyCPP\cmake-build-win-relwithdebinfo\src\FrankyCPP_v1.4.exe"
-$PARAMS = "--bench --threads 8 -l warn -s warn"
+$THREADS = 8
+$PARAMS = "--bench --threads $THREADS -l warn -s warn"
 $RESULTS_BASE = "D:\_DEV\FrankyCPP\results\vtune"
 
 # -----------------------------------------------------------------------------
@@ -63,6 +64,7 @@ Write-Host "VTune Performance Analysis for FrankyCPP" -ForegroundColor Cyan
 Write-Host "=============================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Executable: $EXECUTABLE" -ForegroundColor Yellow
+Write-Host "Threads:    $THREADS" -ForegroundColor Yellow
 Write-Host "Parameters: $PARAMS" -ForegroundColor Yellow
 Write-Host "Results:    $resultsDir" -ForegroundColor Yellow
 Write-Host "Admin:      $isAdmin" -ForegroundColor $(if ($isAdmin) { "Green" } else { "Red" })
@@ -94,7 +96,7 @@ $analyses = @(
     @{
         Name = "memory-access"
         Collection = "memory-access"
-        CollectKnobs = @("-data-limit", "2000")  # Increase from 1000MB default
+        CollectKnobs = @()
         ReportType = "hotspots"
         Description = "Memory bound and cache miss analysis"
         RequiresAdmin = $true
