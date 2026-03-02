@@ -289,10 +289,12 @@ int main(int argc, char* argv[]) {
       std::cout << "Version: " << appName << "\n";
       std::cout << "Depth:   " << benchDepth << "\n";
       std::cout << "Hash:    " << benchHash << " MB\n";
+      std::cout << "Threads: " << SEARCH_CONFIG.THREADS << "\n";
       std::cout << std::endl;
       engine::BenchConfig benchConfig;
       benchConfig.depth = benchDepth;
       benchConfig.hashSizeMB = benchHash;
+      benchConfig.threads = SEARCH_CONFIG.THREADS;
       const auto result = engine::Benchmark::run(benchConfig);
       engine::Benchmark::printResults(result);
       return 0;
