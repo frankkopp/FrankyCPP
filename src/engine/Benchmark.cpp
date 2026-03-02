@@ -48,10 +48,11 @@ BenchResult Benchmark::run(const std::vector<std::string>& fens, const BenchConf
   result.version = "FrankyCPP v" + std::to_string(FrankyCPP_VERSION_MAJOR) + "." +
                    std::to_string(FrankyCPP_VERSION_MINOR);
 
-  // Configure hash size via config override
+  // Configure hash size and threads via config override
   ConfigManager::instance().applyOverrides(
     [&](SearchConfigData& s, EvalConfigData&) {
       s.TT_SIZE_MB = config.hashSizeMB;
+      s.THREADS = config.threads;
     });
 
   // Create a search instance (without UCI handler - we don't want UCI output during bench)
