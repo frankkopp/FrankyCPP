@@ -536,7 +536,7 @@ private:
 
   /// Sends aspiration window research info to UCI.
   /// @param boundString  Bound type ("upperbound" or "lowerbound")
-  void sendAspirationResearchInfo(const std::string& boundString);
+  void sendAspirationResearchInfo(const std::string& boundString) const;
 
   /// Extracts PV from triangular table, extending it using TT lookups.
   /// This ensures full PV lines are available even after TT cutoffs.

@@ -72,7 +72,7 @@ void Search::newGame() {
 
   // Reset all thread data (not just main thread) for clean state
   // This ensures deterministic behavior when switching between thread counts
-  for (auto& threadData : searchThreadData) {
+  for (const auto& threadData : searchThreadData) {
     for (auto& plyInfo : threadData->plyStack) {
       plyInfo.resetSearchState();
     }
@@ -127,7 +127,9 @@ void Search::startSearch(const Position& p, SearchLimits sl) {
   }
   helperThreads.clear();
 
+  // ===========================================================================
   // start search in a separate thread
+  // ===========================================================================
   LOG__DEBUG(Logger::get().SEARCH_LOG, "Starting search in separate thread.");
   searchThread = std::thread(&Search::run, this);
 
@@ -227,7 +229,7 @@ void Search::run() {
   lastSearchResult.reset();// clear previous result
   timeLimit                 = milliseconds{};
   extraTimeMs               = 0;
-  lastUciUpdateTime         = nowFast();
+  lastUciUpdateTime         = now();
 
   // Note: npsTime and npsNodes are initialized later, right before iterative deepening,
   // to avoid including initialization overhead in NPS calculations
@@ -375,7 +377,7 @@ void Search::run() {
 
   // update the search result with search time and pv
   searchResult.time    = currentTime() - startSearchTime;
-  searchResult.pv      = thread().pv.extract();
+  searchResult.pv      = mainThread().pv.extract();
   searchResult.nodes   = totalNodes;
   searchResult.threads = numHelperThreads + 1;
 
@@ -654,7 +656,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
   // ###########################################
   // ### BEGIN Iterative Deepening
   // Initialize NPS tracking right before starting search to exclude initialization overhead
-  npsTime  = nowFast();
+  npsTime  = now();
   npsNodes = thread().nodesVisited;
   milliseconds lastIterationMs{0};
   uint64_t lastIterationNodes = 0;
@@ -679,7 +681,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
       constexpr milliseconds buffer{5};
 
       // Determine current NPS: prefer recent window (since last UCI update), fallback to average.
-      const uint64_t nowTimeFast = nowFast();
+      const uint64_t nowTimeFast = now();
       uint64_t currentNps        = 0;
       const uint64_t currentNodes = thread().nodesVisited;
       if (nowTimeFast > npsTime) { currentNps = nps(currentNodes - npsNodes, nowTimeFast - npsTime); }
@@ -2180,7 +2182,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
 }
 
 // ReSharper disable once CppMemberFunctionMayBeStatic
-inline Value Search::evaluate(const Position& p) {
+inline Value Search::evaluate(const Position& p) { // NOLINT(*-convert-member-functions-to-static)
   STAT_INC(thread().statistics.leafPositionsEvaluated);
   STAT_INC(thread().statistics.evaluations);
   return thread().evaluator.evaluate(p);
@@ -2802,7 +2804,7 @@ void Search::sendResult(const SearchResult& result) const {
 
 void Search::sendIterationEndInfoToUci() {
   const nanoseconds& since = elapsedSince(startSearchTime);
-  lastUciUpdateTime        = nowFast();
+  lastUciUpdateTime        = now();
 
   // Use a copy of the initial position to extract PV with TT extension
   Position p            = position;
@@ -2844,7 +2846,7 @@ void Search::sendSearchUpdateToUci() {
   lastUciUpdateNodes = thread().nodesVisited;
 
   // we only update every UCI_UPDATE_INTERVAL ns
-  const uint64_t nowTime = nowFast();
+  const uint64_t nowTime = now();
   if (nowTime - lastUciUpdateTime < UCI_UPDATE_INTERVAL) { return; }
   lastUciUpdateTime = nowTime;
 
@@ -2884,7 +2886,7 @@ void Search::sendSearchUpdateToUci() {
             hashfull);
 }
 
-void Search::sendAspirationResearchInfo(const std::string& boundString) {
+void Search::sendAspirationResearchInfo(const std::string& boundString) const {
   const nanoseconds& since = elapsedSince(startSearchTime);
 
   // Use a copy of the initial position to extract PV with TT extension

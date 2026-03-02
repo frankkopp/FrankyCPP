@@ -190,9 +190,10 @@ inline nanoseconds elapsedSince(const TimePoint tp) {
   return high_resolution_clock::now() - tp;
 }
 
-/// Returns current time as raw nanosecond count (fast path for Apple).
+/// Returns current time as raw nanosecond count.
+/// This is a convenience function as a shortcut for high_resolution_clock::now().time_since_epoch().count().
 /// @return  Nanoseconds since epoch
-inline unsigned long long int nowFast() {
+inline unsigned long long int now() {
   return high_resolution_clock::now().time_since_epoch().count();
 }
 
