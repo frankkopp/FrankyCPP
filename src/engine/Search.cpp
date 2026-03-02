@@ -2941,9 +2941,10 @@ MoveList Search::extractPvWithTT(Position& p) const {
     const Move move = thread().pv(DEPTH_NONE, i);
     if (move == MOVE_NONE) break;
 
-    // Verify the move is legal in current position
-    // (PV table entries can be stale from different search branches)
-    if (!p.isLegalMove(move)) break;
+    // Verify the move is fully legal in current position
+    // validateMove() generates all legal moves and checks if this move is among them
+    // This catches stale moves where the piece no longer exists on the from-square
+    if (!pvMoveGenerator.validateMove(p, move)) break;
 
     result.push_back(move);
     p.doMove(move);
@@ -2962,9 +2963,10 @@ MoveList Search::extractPvWithTT(Position& p) const {
     const auto ttMove = static_cast<Move>(entry->move);
     if (ttMove == MOVE_NONE) break;
 
-    // Verify the move is legal in current position
-    // (TT entries can be stale due to collisions)
-    if (!p.isLegalMove(ttMove)) break;
+    // Verify the move is fully legal in current position
+    // validateMove() generates all legal moves and checks if this move is among them
+    // This catches TT hash collisions where the stored move is invalid for this position
+    if (!pvMoveGenerator.validateMove(p, ttMove)) break;
 
     // Check for repetition - don't extend into a repeated position
     // Use 2 to check for threefold repetition (same as search uses)
