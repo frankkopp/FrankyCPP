@@ -1,4 +1,4 @@
-version: "v1.2"
+version: "v1.4"
 resultsDir: "./results"
 
 # Cutechess-cli path (Windows)
@@ -1012,7 +1012,7 @@ matches:
 #  # === Blitz matches between v1.3 and references (100 games each) ===
 
 # current dev vs. v1.4
-  - name: "v1.4_vs_v1.3_blitz_208_cutnodes"
+  - name: "v1.4_vs_v1.3_blitz_208_smp"
     engine1Path: "Release/FrankyCPP_v1.4/FrankyCPP_v1.4.exe"
     engine1Version: "v1.4"
     engine2Path: "Release/FrankyCPP_V1.3/FrankyCPP_v1.3.exe"
@@ -1020,7 +1020,7 @@ matches:
     openingBook: "books/8moves_GM_LB.pgn"
     timeControl: "300+0"
     rounds: 208
-    concurrency: 8
+    concurrency: 2
     outputPgn: "results/matches/v1.4_vs_v1.3_blitz_208.pgn"
 
 #    v0.5
@@ -1120,6 +1120,7 @@ benchmarks:
     engineVersion: "v1.4"
     depth: 12
     hashSizeMB: 128
+    threads: 1
 #    notes: "SMP 4-threads"
 
   - name: "v1.4 External"
@@ -1128,6 +1129,7 @@ benchmarks:
     engineVersion: "v1.4"
     depth: 12
     hashSizeMB: 128
+    threads: 1
 #    notes: "SMP 4-threads"
 
 #  - name: "v1.4 External (PROD)"
