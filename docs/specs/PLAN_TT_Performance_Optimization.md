@@ -591,7 +591,7 @@ powershell -ExecutionPolicy Bypass -File ".\scripts\run_vtune_analysis.ps1"
 **Configuration (at top of script):**
 ```powershell
 $VTUNE_PATH = "C:\Program Files (x86)\Intel\oneAPI\vtune\2025.9\bin64"
-$EXECUTABLE = "D:\_DEV\FrankyCPP\cmake-build-win-relwithdebinfo\src\FrankyCPP_v1.4.exe"
+$EXECUTABLE = "D:\_DEV\FrankyCPP\cmake-build-win-relwithdebinfo\src\FrankyCPP_v1.5.exe"
 $PARAMS = "--bench --threads 8 -l warn -s warn"
 $RESULTS_BASE = "D:\_DEV\FrankyCPP\results\vtune"
 ```

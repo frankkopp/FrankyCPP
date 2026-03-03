@@ -7,14 +7,11 @@ Modern C++20 UCI Chess Engine
 
 ## Version
 
-**v1.3.0** - Search Optimization Release 🔍
-- ✅ **+109 ELO** vs v1.1 baseline
-- ✅ Logarithmic LMR formula (configurable)
-- ✅ Fixed isPvNode propagation bugs (PV ratio: 20% → 0.02%)
-- ✅ Fixed history heuristic (quiet moves only, skip alpha-raising)
-- ✅ New search statistics: PV/NonPV node tracking
+**v1.5.0** - *(in development)*
 
 **Previous versions:**
+- v1.4 - SMP and Search Feature Reviews (+119 ELO vs. v1.3 baseline) 
+- v1.3 - Search Optimization Release (+109 ELO vs v1.1 baseline)
 - v1.2 - Tablebase support (Syzygy WDL/DTZ probing)
 - v1.1 - Arena Release (automated strength testing framework)
 - v1.0 - Production Release (cross-platform, CI/CD, 266+ tests)

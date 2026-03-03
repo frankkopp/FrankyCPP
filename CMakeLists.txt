@@ -6,7 +6,7 @@ message(STATUS "================================================================
 cmake_minimum_required(VERSION 3.16)
 
 # Project name and version
-project(FrankyCPP VERSION 1.4.0)
+project(FrankyCPP VERSION 1.5.0)
 message(STATUS "FrankyCPP v${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
 
 # Enforce C++20 globally so all targets (including FetchContent deps) see the right standard
@@ -75,7 +75,7 @@ if(ENABLE_TSAN)
         message(STATUS "NOTE: If running on WSL2, you may need to disable ASLR:")
         message(STATUS "  sudo sysctl -w kernel.randomize_va_space=0")
         message(STATUS "Or run the test with:")
-        message(STATUS "  setarch \$(uname -m) -R ./test/FrankyCPP_v1.4_Test")
+        message(STATUS "  setarch \$(uname -m) -R ./test/FrankyCPP_v1.5_Test")
         message(STATUS "")
     else()
         message(WARNING "ENABLE_TSAN is ON but compiler is not recognized for TSAN support")
