@@ -52,6 +52,7 @@
 #include "SearchStats.h"
 #include "chesscore/History.h"
 #include "chesscore/Position.h"
+#include "types/staticmovelist.h"
 #include "types/types.h"
 
 #include <array>
@@ -92,6 +93,11 @@ struct SearchThreadData {
   /// Search statistics for debugging and analysis
   SearchStats statistics{};
 
+  /// Thread-local root moves for this search.
+  /// Each thread generates and maintains its own root move list.
+  /// After each iteration, rootMoves[0] contains the best move with its score.
+  MoveList rootMoves{};
+
   /// LMR reduction table pre-computed for depth 0..31 and moves searched 0..63
   /// Regenerated at search start based on config settings
   std::array<std::array<int, 64>, 32> LMR_REDUCTION{};
@@ -119,6 +125,7 @@ struct SearchThreadData {
     }
     history.reset();
     statistics = SearchStats{};
+    rootMoves.clear();
   }
 
   /// Sets history data pointer for all MoveGenerators in plyStack

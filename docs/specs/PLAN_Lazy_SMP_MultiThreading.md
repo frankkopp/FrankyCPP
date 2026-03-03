@@ -1,9 +1,9 @@
 # FrankyCPP v1.5 - Lazy SMP Multi-Threading Implementation Plan
 
-**Document Version:** 1.5
+**Document Version:** 1.7
 **Created:** 2026-02-25
-**Last Updated:** 2026-02-28
-**Status:** Phase 1-6 ✅ — Phase 7 ✅ (Testing Implemented)
+**Last Updated:** 2026-03-03
+**Status:** Phase 1-6 ✅ IMPLEMENTED — Phase 7 ⏳ PENDING VALIDATION (ELO testing required)
 **Target Version:** v1.5
 **Estimated Effort:** 3-4 weeks
 
@@ -17,6 +17,10 @@ This document details the implementation plan for adding Lazy SMP (Symmetric Mul
 - When `Threads = 1` all new code paths are bypassed completely
 - No atomic overhead, no extra allocations, no branching on the hot path
 - The single-thread case must be byte-for-byte identical in behavior to pre-SMP
+
+**Implementation Note (2026-03-03):** The original `helperRun()` function with simplified search was replaced with full `iterativeDeepening()` reuse. Helpers now run the exact same search code as the main thread, with `isMainThread()` guards for UCI output, time management, and TB probing. This provides helpers with aspiration windows, proper move ordering, and all search optimizations.
+
+**⚠️ VALIDATION PENDING:** The refactored implementation needs Arena match testing to confirm ELO gains. The original `helperRun()` implementation resulted in ~85 ELO *loss* due to searching with full windows (no aspiration). The refactored version should recover this and provide expected SMP gains (+50-80 ELO with 4 threads).
 
 ---
 
@@ -39,14 +43,14 @@ No explicit move splitting, no task queues, no inter-thread communication (excep
 Understanding what state is *shared* vs *thread-local* is the entire challenge:
 
 ### Shared (one instance, all threads read/write)
-| State                      | Current Location         | Action                                                        |
-|----------------------------|--------------------------|---------------------------------------------------------------|
-| `TT` (transposition table) | `Search::tt`             | Make thread-safe (see Step 1)                                 |
-| `stopSearchFlag`           | `Search::stopSearchFlag` | Already `std::atomic_bool` ✅                                  |
-| `nodesVisited` (aggregate) | `Search::nodesVisited`   | Aggregate from all threads at report time                     |
-| `startTime`, `timeLimit`   | `Search`                 | Read-only after search starts ✅                               |
-| `searchLimits`             | `Search`                 | Read-only after search starts ✅                               |
-| `rootMoves`                | `Search`                 | Main thread writes; helpers read (no lock needed after setup) |
+| State                      | Current Location         | Action                                                             |
+|----------------------------|--------------------------|--------------------------------------------------------------------|
+| `TT` (transposition table) | `Search::tt`             | ✅ Thread-safe with atomic key                                      |
+| `PawnTT`                   | `Search::pawnTT`         | ✅ Thread-safe with atomic key, shared across threads               |
+| `stopSearchFlag`           | `Search::stopSearchFlag` | Already `std::atomic_bool` ✅                                       |
+| `nodesVisited` (aggregate) | `Search::nodesVisited`   | ✅ Aggregated from all threads at report time via `getTotalNodes()` |
+| `startTime`, `timeLimit`   | `Search`                 | Read-only after search starts ✅                                    |
+| `searchLimits`             | `Search`                 | Read-only after search starts ✅                                    |
 
 ### Thread-Local (each thread needs its own copy)
 | State                    | Current Location       | Action                                                         |
@@ -57,7 +61,9 @@ Understanding what state is *shared* vs *thread-local* is the entire challenge:
 | `SearchStats statistics` | `Search::statistics`   | ✅ Moved to `SearchThreadData`                                  |
 | `uint64_t nodesVisited`  | `Search::nodesVisited` | ✅ Moved to `SearchThreadData`                                  |
 | `LMR_REDUCTION`          | `Search`               | ✅ Moved to `SearchThreadData`                                  |
-| `Evaluator evaluator`    | `Search::evaluator`    | Move to `SearchThreadData` (or share - it is stateless enough) |
+| `Evaluator evaluator`    | `Search::evaluator`    | ✅ Moved to `SearchThreadData` (uses shared PawnTT)             |
+| `MoveList rootMoves`     | `Search::rootMoves`    | ✅ Moved to `SearchThreadData` (each thread has own root moves) |
+| `Position position`      | `Search::position`     | ✅ Copied to `SearchThreadData::position` for each thread       |
 | `lastUciUpdate*`         | `Search`               | Main thread only - no change needed                            |
 | `bestMoveStability`      | `Search`               | Main thread only - no change needed                            |
 
@@ -755,23 +761,44 @@ ELO gain diminishes at higher thread counts due to TT contention and diminishing
 
 ## File Change Summary
 
-| File                            | Change                                                                                        |
-|---------------------------------|-----------------------------------------------------------------------------------------------|
-| `src/engine/TT.h`               | `key` field → `std::atomic<ZobristKey>`                                                       |
-| `src/engine/TT.cpp`             | Update `put()`, `probe()`, `clear()` for atomic key                                           |
-| `src/engine/PawnTT.h`           | `key` field → `std::atomic<ZobristKey>`; add `getKey()`, `setSmpThreads()`                    |
-| `src/engine/PawnTT.cpp`         | Update `put()`, `clear()` for atomic key; guard "update" warning for SMP                      |
-| `src/engine/Evaluator.h`        | Remove owned PawnTT; add `setPawnTT()` for shared cache; per-thread scratch variables         |
-| `src/engine/Evaluator.cpp`      | Use `pawnCache->` pointer with null checks; simplified constructor                            |
-| `src/engine/SearchThreadData.h` | Add `Evaluator evaluator` member (per-thread); includes Evaluator.h                           |
-| `src/engine/Search.h`           | Add `unique_ptr<PawnTT> pawnTT`; add `helpersLaunched` flag; add `launchHelperThreads()`      |
-| `src/engine/Search.cpp`         | Delayed helper launch from `iterativeDeepening()` after `SMP_HELPER_START_DEPTH` iterations   |
-| `src/config/SearchConfigData.h` | Add `THREADS = 1`, `SMP_HELPER_START_DEPTH = 4`                                               |
-| `src/config/ConfigRegistry.cpp` | Add `Threads` UCI option + `SMP_HELPER_START_DEPTH` config entry                              |
-| `test/engine/TT_Test.cpp`       | Add `ConcurrentPutProbeNoUB` stress test                                                |
-| `test/engine/PawnTT_Test.cpp`   | Add `ConcurrentPutProbeNoUB` stress test; update to use `getKey()`                      |
-| `test/engine/EvaluatorTest.cpp` | Create PawnTT externally; call `setPawnTT()` on Evaluator                               |
-| `test/engine/SearchSmpTest.cpp` | **NEW** — SMP-specific tests (Phase 7) ✅ IMPLEMENTED                                    |
+| File                            | Change                                                                                  |
+|---------------------------------|-----------------------------------------------------------------------------------------|
+| `src/engine/TT.h`               | ✅ `key` field → `std::atomic<ZobristKey>`                                               |
+| `src/engine/TT.cpp`             | ✅ Update `put()`, `probe()`, `clear()` for atomic key                                   |
+| `src/engine/PawnTT.h`           | ✅ `key` field → `std::atomic<ZobristKey>`; add `getKey()`, `setSmpThreads()`            |
+| `src/engine/PawnTT.cpp`         | ✅ Update `put()`, `clear()` for atomic key; guard "update" warning for SMP              |
+| `src/engine/Evaluator.h`        | ✅ Remove owned PawnTT; add `setPawnTT()` for shared cache; per-thread scratch variables |
+| `src/engine/Evaluator.cpp`      | ✅ Use `pawnCache->` pointer with null checks; simplified constructor                    |
+| `src/engine/SearchThreadData.h` | ✅ Add `Evaluator evaluator`, `MoveList rootMoves` members (per-thread)                  |
+| `src/engine/Search.h`           | ✅ Add `isMainThread()` helper; remove `rootMoves`; remove `helperRun()` declaration     |
+| `src/engine/Search.cpp`         | ✅ Refactored: helpers use `iterativeDeepening()` with `isMainThread()` guards           |
+| `src/engine/Search.cpp`         | ✅ Added depth offset diversification for helpers (starting depth = 1 + id % 3)          |
+| `src/engine/Search.cpp`         | ✅ Deleted `helperRun()` (~75 lines of broken code removed)                              |
+| `src/config/SearchConfigData.h` | ✅ Add `THREADS = 4`, `SMP_HELPER_START_DEPTH = 4`                                       |
+| `src/config/ConfigRegistry.cpp` | ✅ Add `Threads` UCI option + `SMP_HELPER_START_DEPTH` config entry                      |
+| `test/engine/TT_Test.cpp`       | ✅ Add `ConcurrentPutProbeNoUB` stress test                                              |
+| `test/engine/PawnTT_Test.cpp`   | ✅ Add `ConcurrentPutProbeNoUB` stress test; update to use `getKey()`                    |
+| `test/engine/EvaluatorTest.cpp` | ✅ Create PawnTT externally; call `setPawnTT()` on Evaluator                             |
+| `test/engine/SearchSmpTest.cpp` | ✅ **NEW** — SMP-specific unit tests                                                     |
+| **Arena ELO Validation**        | ⏳ **PENDING** — Match testing to confirm ELO gains from SMP                             |
+
+### Refactoring Notes (2026-03-03)
+
+The original implementation used a separate `helperRun()` function with a simplified search loop that:
+- Searched with full window (VALUE_MIN to VALUE_MAX) — no aspiration windows
+- Did not use proper root search structure
+- Resulted in ~85 ELO loss vs baseline (v1.4 went from +87 ELO to +2 ELO vs v1.3)
+
+The refactored implementation:
+- Deleted `helperRun()` entirely
+- Helpers call `iterativeDeepening()` directly (same as main thread)
+- Added `isMainThread()` guards for: UCI output, time management, TB probing, extra time adjustments
+- Moved `rootMoves` to `SearchThreadData` so each thread has its own move list
+- Added starting depth offset (1 + id % 3) for search diversification
+
+**⏳ VALIDATION REQUIRED:** Re-run Arena match (v1.4 vs v1.3, 200+ games) to confirm:
+1. Recovery of ~85 ELO lost due to broken `helperRun()`
+2. Additional ELO gain from proper SMP (+50-80 ELO expected with 4 threads)
 
 ---
 

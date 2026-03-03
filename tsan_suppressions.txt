@@ -2,4 +2,5 @@
 race:TT::probe
 race:TT::ageEntries
 race:Search::getTotalNodes
-race:Search::helperRun
+race:Search::iterativeDeepening
+race:Search::launchHelperThreads

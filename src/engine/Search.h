@@ -163,10 +163,13 @@ class Search {
   // current position and search limits for the search
   Position position{};
   SearchLimits searchLimits{};
-  MoveList rootMoves{};
 
   // manage running search
   std::atomic_bool stopSearchFlag = false;
+
+  // Condition variable for efficient waiting when search finishes before stop/ponderhit
+  std::condition_variable stopConditionVar{};
+  std::mutex stopMutex{};
 
   // time management for the search
   TimePoint startTime{};    // when startSearch has been called
@@ -214,7 +217,7 @@ class Search {
   bool helpersLaunched = false;
 
   // Thread-local pointer to current thread's SearchThreadData.
-  // Set by run() for main thread, helperRun() for helpers.
+  // Set by run() for main thread, launchHelperThreads() lambda for helpers.
   // Enables search functions to access thread-local state without parameter passing.
   static inline thread_local SearchThreadData* currentThreadData = nullptr;
 
@@ -269,7 +272,7 @@ public:
   /// Starts an asynchronous search in a separate thread.
   /// @param p   Position to search
   /// @param sl  Search limits (time, depth, nodes, etc.)
-  void startSearch(const Position& p, SearchLimits sl);
+  void startSearch(const Position& p, const SearchLimits& sl);
 
   /// Stops a running search gracefully, returning the best move found so far.
   void stopSearch();
@@ -313,7 +316,7 @@ public:
   [[nodiscard]] uint64_t getTotalNodes() const;
 
   /// Returns the current thread's SearchThreadData.
-  /// Uses thread-local storage set by run()/helperRun().
+  /// Uses thread-local storage set by run() or launchHelperThreads().
   /// Must only be called from within a search context (after currentThreadData is set).
   /// @return Reference to current thread's SearchThreadData
   static SearchThreadData& thread() {
@@ -321,6 +324,11 @@ public:
     // ReSharper disable once CppDFANullDereference
     return *currentThreadData;
   }
+
+  /// Returns true if the current thread is the main thread (thread ID 0).
+  /// Used to guard main-thread-only logic (UCI output, time management, TB probing).
+  /// @return True if current thread is main thread
+  [[nodiscard]] static bool isMainThread() { return thread().id == 0; }
 
   /// Returns the result of the last completed search.
   /// @return Reference to SearchResult (undefined behavior if no search completed)
@@ -381,15 +389,10 @@ private:
   /// and sends result to UCI.
   void run();
 
-  /// Helper thread entry point for Lazy SMP.
-  /// Runs simplified iterative deepening loop until stopSearchFlag is set.
-  /// Does not report to UCI or manage time - only contributes to TT.
-  /// @param st  Thread-local search state for this helper thread
-  void helperRun(SearchThreadData& st);
-
   /// Launches helper threads for Lazy SMP.
   /// Called from iterativeDeepening() after main thread has completed a few iterations
   /// to allow TT priming before helpers start contributing.
+  /// Helpers run full iterativeDeepening() with guards for main-thread-only logic.
   /// No-op if helpers already launched or numHelperThreads == 0.
   void launchHelperThreads();
 
@@ -501,6 +504,10 @@ private:
   bool isTimeAlmostUp() const;
 
   /// Starts timer thread that monitors time limit and sets stop flag.
+  /// This does not set the startSearchTime - it only starts the timer thread that
+  /// will monitor the time and set the stop flag when time is up. The actual
+  /// startSearchTime is set in run() when the search thread starts, to ensure
+  /// accurate timing from the moment search begins (after ponderhit).
   void startTimer();
   FRIEND_TEST(SearchTest, startTimer);
 

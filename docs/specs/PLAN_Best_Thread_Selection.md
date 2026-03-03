@@ -1,11 +1,11 @@
 # FrankyCPP - Best Thread Selection for Lazy SMP
 
-**Document Version:** 1.0
+**Document Version:** 1.1
 **Created:** 2026-03-02
-**Last Updated:** 2026-03-02
-**Status:** Planning
+**Last Updated:** 2026-03-03
+**Status:** Phases 3-4 ✅ COMPLETE — Phases 1-2, 5-7 remaining (best thread selection logic)
 **Target Version:** v1.6+
-**Estimated Effort:** 2-3 days
+**Estimated Effort:** 1-2 days (reduced from 2-3 days, Phase 3-4 done)
 
 ---
 
@@ -13,15 +13,38 @@
 
 This document describes the implementation plan for **Best Thread Selection** in FrankyCPP's Lazy SMP framework. Currently, only the main thread's PV (Principal Variation) is used for the final result; helper threads contribute solely via shared TT entries. This enhancement allows selecting the best result from any thread, potentially improving playing strength when a helper thread finds a better move.
 
-**Current behavior:** 
+**Current behavior (after 2026-03-03 refactor):** 
 - Main thread runs full `iterativeDeepening()` and produces the final PV
-- Helper threads run a simplified search loop in `helperRun()` and only contribute via TT
-- Helper thread PVs are valid but unused
+- Helper threads run full `iterativeDeepening()` (same code, with `isMainThread()` guards)
+- Each thread has its own `rootMoves` with `rootMoves[0]` containing best move/score
+- Helper thread PVs are valid but unused (best thread selection not yet implemented)
 
-**Proposed behavior:**
-- All threads run full `iterativeDeepening()` (with UCI output guarded to main thread only)
-- After all threads stop, compare results and select the best thread
+**Proposed behavior (remaining work):**
+- Add tracking fields for completed depth/value (Phase 1-2)
+- After all threads stop, compare results and select the best thread (Phase 5-6)
 - Use the best thread's PV for the final result
+
+---
+
+## What's Already Implemented (2026-03-03)
+
+### Phase 3: ✅ COMPLETE - Helpers Use Full iterativeDeepening()
+
+The original `helperRun()` with simplified search was replaced. Helpers now:
+- Run the same `iterativeDeepening()` code as the main thread
+- Benefit from aspiration windows, proper move ordering, LMR, etc.
+- Have their own `thread().rootMoves` with best move at index 0
+- Use starting depth offset (1 + id % 3) for search diversification
+
+### Phase 4: ✅ COMPLETE - UCI Output Guarded to Main Thread
+
+All UCI output and time management guarded with `isMainThread()`:
+- `sendIterationEndInfoToUci()`
+- `sendAspirationResearchInfo()`
+- `sendString()` for draw/mate/stalemate messages
+- Time management (volatility, instability tracking, extra time)
+- TB probing at root
+- Helper thread launching
 
 ---
 
@@ -439,45 +462,50 @@ TEST(Search_Test, SMPBestThreadIntegration) {
 
 ## Summary of Changes
 
-| File | Changes | Status |
-|------|---------|--------|
-| `SearchThreadData.h` | Add `completedIterationDepth`, `lastIterationValue` fields | ⬜ TODO |
-| `Search.h` | Add `selectBestThread()`, `sendFinalUciInfo()` declarations | ⬜ TODO |
-| `Search.cpp` | Track depth/value in `iterativeDeepening()` | ⬜ TODO |
-| `Search.cpp` | Modify `helperRun()` to call `iterativeDeepening()` | ⬜ TODO |
-| `Search.cpp` | Guard UCI output to main thread only | ⬜ TODO |
-| `Search.cpp` | Implement `selectBestThread()` | ⬜ TODO |
-| `Search.cpp` | Implement `sendFinalUciInfo()` | ⬜ TODO |
-| `Search.cpp` | Call `selectBestThread()` + `sendFinalUciInfo()` in `run()` | ⬜ TODO |
-| `SearchConfigData.h` | Add config options (optional) | ⬜ TODO |
-| `ConfigRegistry.cpp` | Register config options (optional) | ⬜ TODO |
-| `test/engine/Search_Test.cpp` | Add unit/integration tests | ⬜ TODO |
+| File                          | Changes                                                     | Status             |
+|-------------------------------|-------------------------------------------------------------|--------------------|
+| `SearchThreadData.h`          | Add `completedIterationDepth`, `lastIterationValue` fields  | ⬜ TODO (Phase 1)   |
+| `SearchThreadData.h`          | Add `MoveList rootMoves` field                              | ✅ DONE             |
+| `Search.h`                    | Add `isMainThread()` helper                                 | ✅ DONE             |
+| `Search.h`                    | Add `selectBestThread()`, `sendFinalUciInfo()` declarations | ⬜ TODO (Phase 5-6) |
+| `Search.h`                    | Remove `rootMoves` member, `helperRun()` declaration        | ✅ DONE             |
+| `Search.cpp`                  | Track depth/value in `iterativeDeepening()`                 | ⬜ TODO (Phase 2)   |
+| `Search.cpp`                  | Helpers call `iterativeDeepening()` (deleted `helperRun()`) | ✅ DONE (Phase 3)   |
+| `Search.cpp`                  | Guard UCI output to main thread only                        | ✅ DONE (Phase 4)   |
+| `Search.cpp`                  | Guard time management to main thread only                   | ✅ DONE (Phase 4)   |
+| `Search.cpp`                  | Guard TB probing to main thread only                        | ✅ DONE (Phase 4)   |
+| `Search.cpp`                  | Add depth offset diversification (1 + id % 3)               | ✅ DONE             |
+| `Search.cpp`                  | Change `rootMoves` → `thread().rootMoves`                   | ✅ DONE             |
+| `Search.cpp`                  | Implement `selectBestThread()`                              | ⬜ TODO (Phase 5)   |
+| `Search.cpp`                  | Implement `sendFinalUciInfo()`                              | ⬜ TODO (Phase 6)   |
+| `Search.cpp`                  | Call `selectBestThread()` + `sendFinalUciInfo()` in `run()` | ⬜ TODO (Phase 6)   |
+| `SearchConfigData.h`          | Add config options (optional)                               | ⬜ TODO (Phase 7)   |
+| `ConfigRegistry.cpp`          | Register config options (optional)                          | ⬜ TODO (Phase 7)   |
+| `test/engine/Search_Test.cpp` | Add unit/integration tests                                  | ⬜ TODO (Phase 8)   |
 
 ---
 
 ## Risks and Considerations
 
 ### 1. Helper Thread Starting Depth
-Currently, helpers use a depth offset (`st.id % 2`) for diversity. With full `iterativeDeepening()`, we may want to configure different starting depths or aspiration windows per thread.
+~~Currently, helpers use a depth offset (`st.id % 2`) for diversity. With full `iterativeDeepening()`, we may want to configure different starting depths or aspiration windows per thread.~~
 
-**Mitigation:** Add a `depthOffset` field to `SearchThreadData` and apply it in `iterativeDeepening()`.
+**✅ RESOLVED:** Implemented depth offset (1 + id % 3) for helpers, spreading them across depths 2, 3, 1 (wrapping).
 
 ### 2. Root Moves Sharing
-Main thread generates `rootMoves` once. Helpers currently generate their own in `helperRun()`. With full `iterativeDeepening()`, we need to ensure each thread has its own root moves.
+~~Main thread generates `rootMoves` once. Helpers currently generate their own in `helperRun()`. With full `iterativeDeepening()`, we need to ensure each thread has its own root moves.~~
 
-**Current status:** `iterativeDeepening()` generates root moves via `thread().plyStack[0].mg->generateLegalMoves()` — this should work per-thread.
-
-**Verification needed:** Ensure `rootMoves` (the member variable) is only used by main thread, or make it thread-local.
+**✅ RESOLVED:** Moved `rootMoves` to `SearchThreadData`. Each thread generates and maintains its own root moves. Changed all references from `rootMoves` to `thread().rootMoves`.
 
 ### 3. TB Probing at Root
-Tablebase probing in `iterativeDeepening()` should only happen on main thread (one probe is enough).
+~~Tablebase probing in `iterativeDeepening()` should only happen on main thread (one probe is enough).~~
 
-**Mitigation:** Guard TB probe with `if (thread().id == 0)`.
+**✅ RESOLVED:** TB probe guarded with `if (isMainThread())`.
 
 ### 4. Time Management
-Helper threads should NOT make time management decisions (volatility extensions, stability adjustments).
+~~Helper threads should NOT make time management decisions (volatility extensions, stability adjustments).~~
 
-**Mitigation:** Guard time-related code with `if (thread().id == 0)`.
+**✅ RESOLVED:** All time-related code guarded with `if (isMainThread())`.
 
 ### 5. Statistics Aggregation
 After search, statistics should be aggregated from all threads for accurate reporting.
@@ -503,4 +531,4 @@ After search, statistics should be aggregated from all threads for accurate repo
 
 ---
 
-*Last updated: 2026-03-02*
+*Last updated: 2026-03-03*
