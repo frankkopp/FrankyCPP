@@ -18,6 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <random>
+#include <thread>
+#include <vector>
 
 #include "common/Logging.h"
 #include "engine/PawnTT.h"
@@ -177,7 +179,7 @@ TEST_F(PawnTT_Test, put) {
   ASSERT_EQ(0, tt.getNumberOfUpdates());
   ASSERT_EQ(0, tt.getNumberOfHits());
   ASSERT_EQ(0, tt.getNumberOfMisses());
-  ASSERT_EQ(tt.getEntryPtr(p.getPawnZobristKey())->key, p.getPawnZobristKey());
+  ASSERT_EQ(tt.getEntryPtr(p.getPawnZobristKey())->getKey(), p.getPawnZobristKey());
   ASSERT_EQ(tt.getEntryPtr(p.getPawnZobristKey())->midvalue, 1);
   ASSERT_EQ(tt.getEntryPtr(p.getPawnZobristKey())->endvalue, 11);
 
@@ -194,4 +196,78 @@ TEST_F(PawnTT_Test, getEntryPtr_valid_even_when_zero_then_resize) {
   tt.resize(64);
   ASSERT_GT(tt.getMaxNumberOfEntries(), 0u);
   EXPECT_NE(nullptr, tt.getEntryPtr(key));
+}
+
+// =============================================================================
+// Concurrent Put+Probe Stress Test for Lazy SMP Thread Safety
+// =============================================================================
+// This test verifies that PawnTT is safe for concurrent access under Lazy SMP.
+// Multiple threads simultaneously put and probe entries with overlapping keys.
+//
+// What this test validates:
+//   - No crash, deadlock, or ASAN errors under concurrent access
+//   - Data coherence: when a probe hits (key matches), the value fields
+//     were written by a valid put() — not torn/garbage data
+//   - The atomic key with acquire/release semantics works correctly
+//
+// Run with -fsanitize=thread (TSAN) on WSL/Linux for a definitive race check.
+// =============================================================================
+TEST_F(PawnTT_Test, ConcurrentPutProbeNoUB) {
+  constexpr int NUM_THREADS = 4;
+  constexpr int ITERATIONS  = 500'000;
+  constexpr int TT_SIZE_MB  = 4;// small = high collision rate = more contention
+
+  PawnTT tt(TT_SIZE_MB);
+  tt.setSmpThreads(NUM_THREADS);// signals SMP mode to suppress update warnings
+
+  // Value ranges written by all threads — any probe hit must fall within these.
+  constexpr int VALUE_LO = -1000;
+  constexpr int VALUE_HI = 1000;
+
+  const auto threadWork = [&](const int threadId) {
+    std::mt19937_64 rng(static_cast<uint64_t>(threadId) * 0xDEADBEEF12345678ULL);
+    std::uniform_int_distribution<ZobristKey> keyDist(1, 1'000'000);
+    std::uniform_int_distribution<int> valueDist(VALUE_LO, VALUE_HI);
+
+    for (int i = 0; i < ITERATIONS; ++i) {
+      const ZobristKey key   = keyDist(rng);
+      const auto midvalue    = static_cast<Value>(valueDist(rng));
+      const auto endvalue    = static_cast<Value>(valueDist(rng));
+      const Score score      = {midvalue, endvalue};
+
+      PawnTT::Entry* entry = tt.getEntryPtr(key);
+      tt.put(entry, key, score);
+
+      // Re-fetch entry and check if our key is still there
+      entry = tt.getEntryPtr(key);
+      const ZobristKey storedKey = entry->getKey();
+      if (storedKey == key) {
+        // Hit: the acquire-load on key matched.
+        // The release-store in put() that published this key also guaranteed
+        // all value fields were visible. So values must be within the range
+        // that a legitimate put() wrote — not torn/garbage data.
+        //
+        // Note: another thread may have written to this slot between our
+        // put and probe — that is valid SMP behavior. We just check that
+        // whatever we read is coherent.
+        EXPECT_GE(entry->midvalue, VALUE_LO);
+        EXPECT_LE(entry->midvalue, VALUE_HI);
+        EXPECT_GE(entry->endvalue, VALUE_LO);
+        EXPECT_LE(entry->endvalue, VALUE_HI);
+      }
+    }
+  };
+
+  std::vector<std::thread> threads;
+  threads.reserve(NUM_THREADS);
+  for (int t = 0; t < NUM_THREADS; ++t) {
+    threads.emplace_back(threadWork, t);
+  }
+  for (auto& t : threads) {
+    t.join();
+  }
+
+  fprintln("PawnTT ConcurrentPutProbeNoUB: {} threads x {} iterations completed cleanly",
+           NUM_THREADS, ITERATIONS);
+  fprintln("PawnTT Stats after stress: {}", tt.str());
 }

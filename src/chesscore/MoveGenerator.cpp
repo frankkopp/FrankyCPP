@@ -26,10 +26,11 @@
 #include "chesscore/Position.h"
 #include "types/types.h"
 
-static constexpr bool REMOVE_SORT_VALUE = true;
+namespace {
+  constexpr bool REMOVE_SORT_VALUE = true;
+}
 
-MoveGenerator::MoveGenerator() :
-  currentODStage(OD_NEW) {
+MoveGenerator::MoveGenerator() : currentODStage(OD_NEW) {
   // StaticMoveList has fixed capacity - no reserve() needed
 }
 
@@ -62,6 +63,7 @@ const MoveList* MoveGenerator::generatePseudoLegalMoves(const Position& p, const
   updateSortValues(p, &pseudoLegalMoves);
 
   // sort moves
+  // TODO: consider using non stable sort here
   std::ranges::stable_sort(pseudoLegalMoves, moveValueGreaterComparator());
 
   // remove internal sort value
@@ -89,7 +91,7 @@ Move MoveGenerator::getNextPseudoLegalMove(const Position& p, const GenMode genM
     onDemandMoves.clear();
     onDemandEvasionTargets = BbZero;
     currentODStage         = OD_NEW;
-    pvMovePush           = false;
+    pvMovePush             = false;
     takeIndex              = 0;
     currentODZobrist       = p.getZobristKey();
   }
@@ -157,7 +159,7 @@ Move MoveGenerator::getNextPseudoLegalMove(const Position& p, const GenMode genM
   }
 
   // no more moves to be generated
-  takeIndex    = 0;
+  takeIndex  = 0;
   pvMovePush = false;
   return MOVE_NONE;
 }
@@ -303,9 +305,9 @@ bool MoveGenerator::hasLegalEpCapture(const Position& position) {
     //
     // Remove both pawns from the occupied bitboard and check for slider attacks.
     Bitboard occ = position.getOccupiedBb();
-    occ ^= Bitboards::sqBb[fromSq];      // remove capturing pawn
-    occ ^= Bitboards::sqBb[capturedSq];  // remove captured pawn
-    occ |= Bitboards::sqBb[epSq];        // add pawn on EP target square
+    occ ^= Bitboards::sqBb[fromSq];    // remove capturing pawn
+    occ ^= Bitboards::sqBb[capturedSq];// remove captured pawn
+    occ |= Bitboards::sqBb[epSq];      // add pawn on EP target square
 
     // Check if any enemy rook/queen attacks king (horizontal or vertical)
     if (Attacks::attacks(ROOK, kingSq, occ) & enemyRQ) {
@@ -588,6 +590,7 @@ void MoveGenerator::fillOnDemandMoveList(const Position& position, const GenMode
     }
     // sort the list according to sort values encoded in the move
     if (!onDemandMoves.empty()) {
+      // TODO: consider using non stable sort here
       std::ranges::stable_sort(onDemandMoves, moveValueGreaterComparator());
     }
   }// while onDemandMoves.empty()
@@ -603,13 +606,16 @@ void MoveGenerator::updateSortValues(const Position& p, MoveList* const moveList
   const auto size = moveList->size();
   for (size_t i = 0; i < size; i++) {
     Move* move = &(*moveList)[i];
-    if (move->stripped() == pvMove) { // PV move
+    if (move->stripped() == pvMove) {// PV move
       move->setValue(VALUE_MAX);
-    } else if (move->stripped() == killerMoves[1]) { // Killer 2
+    }
+    else if (move->stripped() == killerMoves[1]) {// Killer 2
       move->setValue(static_cast<Value>(1000));
-    } else if (move->stripped() == killerMoves[0]) { // Killer 1
+    }
+    else if (move->stripped() == killerMoves[0]) {// Killer 1
       move->setValue(static_cast<Value>(1001));
-    } else if (historyDataPtr) {// historical search data
+    }
+    else if (historyDataPtr) {// historical search data
 
       // History Count
       // Moves that cause a beta cut in the search get an increasing value

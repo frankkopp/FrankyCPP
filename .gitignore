@@ -1,7 +1,7 @@
 cmake-build*
 cmake-vscode-build/*
 build/
-vtune/
+/vtune/
 .idea/
 .vscode/
 /.run/
@@ -16,3 +16,10 @@ vtune/
 /Testing/
 temp_*/
 /results/temp/*
+
+# VTune results - keep summaries and CSVs, ignore large result directories
+/results/vtune/**/hotspots/
+/results/vtune/**/microarchitecture/
+/results/vtune/**/memory-access/
+/results/vtune/**/threading/
+/results/vtune/**/hpc-performance/

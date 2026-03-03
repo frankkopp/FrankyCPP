@@ -40,6 +40,7 @@ add_executable(
         engine/UciOptionsTest.cpp
         engine/TT_Test.cpp
         engine/SearchTest.cpp
+        engine/SearchSmpTest.cpp
         engine/SeeTest.cpp
         engine/EvaluatorTest.cpp
         engine/PawnTT_Test.cpp
@@ -68,6 +69,9 @@ add_executable(
         ../src/engine_arena/ResultWriter.cpp
         ../src/engine_arena/MatchRunner.cpp
         ../src/engine_arena/BenchmarkRunner.cpp
+
+        # CrashHandler for minidump generation on crashes
+        ../src/common/CrashHandler.cpp
 
         TimingTests.cpp
 
@@ -137,4 +141,16 @@ set(mainExeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR}
 add_dependencies(${testExeName} ${mainExeName})
 
 # Register tests via CMake's GoogleTest module
-gtest_discover_tests(${testExeName})
+# Note: gtest_discover_tests runs the executable at build time to enumerate tests.
+# This fails with TSAN on WSL2 due to ASLR memory mapping issues.
+# When TSAN is enabled, we skip auto-discovery and run tests manually.
+if(ENABLE_TSAN)
+    message(STATUS "TSAN enabled: Skipping gtest_discover_tests (run tests manually)")
+    message(STATUS "  To run tests: setarch \$(uname -m) -R ./test/${testExeName}")
+    message(STATUS "  Or: sudo sysctl -w kernel.randomize_va_space=0 && ./test/${testExeName}")
+    # Add a simple CTest target that reminds user how to run
+    add_test(NAME TSAN_RUN_MANUALLY
+             COMMAND ${CMAKE_COMMAND} -E echo "Run TSAN tests manually: setarch \$(uname -m) -R ./test/${testExeName}")
+else()
+    gtest_discover_tests(${testExeName})
+endif()

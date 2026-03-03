@@ -719,6 +719,36 @@
       "totalTimeMs": 11075,
       "nps": 3247035,
       "notes": "Production build - Config Stripped"
+    },
+    {
+      "arenaVersion": "v1.2",
+      "timestamp": "2026-03-01T18:35:50",
+      "engineName": "FrankyCPP",
+      "engineVersion": "v1.4",
+      "enginePath": "",
+      "depth": 12,
+      "hashSizeMB": 128,
+      "threads": 1,
+      "positions": 50,
+      "totalNodes": 169091414,
+      "totalTimeMs": 23021,
+      "nps": 7345094,
+      "notes": "SMP 4-threads"
+    },
+    {
+      "arenaVersion": "v1.2",
+      "timestamp": "2026-03-01T18:35:50",
+      "engineName": "External",
+      "engineVersion": "v1.4",
+      "enginePath": "Release/FrankyCPP_v1.4/FrankyCPP_v1.4.exe",
+      "depth": 12,
+      "hashSizeMB": 128,
+      "threads": 1,
+      "positions": 50,
+      "totalNodes": 142088216,
+      "totalTimeMs": 18407,
+      "nps": 7719248,
+      "notes": "SMP 4-threads"
     }
   ]
 }

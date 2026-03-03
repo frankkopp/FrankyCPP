@@ -158,6 +158,66 @@
       "cacheVariables": {
         "FRANKYCPP_PRODUCTION": "ON"
       }
+    },
+    {
+      "name": "win-debug-asan",
+      "displayName": "Win Debug ASAN",
+      "inherits": "windows-base",
+      "binaryDir": "${sourceDir}/cmake-build-win-debug-asan",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ENABLE_SANITIZERS": "ON"
+      }
+    },
+    {
+      "name": "win-relwithdebinfo-asan",
+      "displayName": "Win RelWithDebInfo ASAN",
+      "inherits": "windows-base",
+      "binaryDir": "${sourceDir}/cmake-build-win-relwithdebinfo-asan",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "ENABLE_SANITIZERS": "ON"
+      }
+    },
+    {
+      "name": "wsl-debug-tsan",
+      "displayName": "WSL Debug TSAN",
+      "inherits": "wsl-base",
+      "binaryDir": "${sourceDir}/cmake-build-wsl-debug-tsan",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ENABLE_TSAN": "ON"
+      }
+    },
+    {
+      "name": "wsl-relwithdebinfo-tsan",
+      "displayName": "WSL RelWithDebInfo TSAN",
+      "inherits": "wsl-base",
+      "binaryDir": "${sourceDir}/cmake-build-wsl-relwithdebinfo-tsan",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "ENABLE_TSAN": "ON"
+      }
+    },
+    {
+      "name": "wsl-debug-asan",
+      "displayName": "WSL Debug ASAN",
+      "inherits": "wsl-base",
+      "binaryDir": "${sourceDir}/cmake-build-wsl-debug-asan",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ENABLE_SANITIZERS": "ON"
+      }
+    },
+    {
+      "name": "wsl-clang-debug-tsan",
+      "displayName": "WSL Clang Debug TSAN",
+      "inherits": "wsl-clang-base",
+      "binaryDir": "${sourceDir}/cmake-build-wsl-clang-debug-tsan",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ENABLE_TSAN": "ON"
+      }
     }
   ],
   "buildPresets": [
@@ -232,6 +292,42 @@
       "displayName": "WSL Release Production",
       "configurePreset": "wsl-release-production",
       "jobs": 30
+    },
+    {
+      "name": "win-debug-asan",
+      "displayName": "Win Debug ASAN",
+      "configurePreset": "win-debug-asan",
+      "jobs": 30
+    },
+    {
+      "name": "win-relwithdebinfo-asan",
+      "displayName": "Win RelWithDebInfo ASAN",
+      "configurePreset": "win-relwithdebinfo-asan",
+      "jobs": 30
+    },
+    {
+      "name": "wsl-debug-tsan",
+      "displayName": "WSL Debug TSAN",
+      "configurePreset": "wsl-debug-tsan",
+      "jobs": 30
+    },
+    {
+      "name": "wsl-relwithdebinfo-tsan",
+      "displayName": "WSL RelWithDebInfo TSAN",
+      "configurePreset": "wsl-relwithdebinfo-tsan",
+      "jobs": 30
+    },
+    {
+      "name": "wsl-debug-asan",
+      "displayName": "WSL Debug ASAN",
+      "configurePreset": "wsl-debug-asan",
+      "jobs": 30
+    },
+    {
+      "name": "wsl-clang-debug-tsan",
+      "displayName": "WSL Clang Debug TSAN",
+      "configurePreset": "wsl-clang-debug-tsan",
+      "jobs": 30
     }
   ],
   "testPresets": [
@@ -279,6 +375,38 @@
       "name": "wsl-clang-release",
       "displayName": "WSL Clang Release Tests",
       "configurePreset": "wsl-clang-release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "win-debug-asan",
+      "displayName": "Win Debug ASAN Tests",
+      "configurePreset": "win-debug-asan",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "wsl-debug-tsan",
+      "displayName": "WSL Debug TSAN Tests",
+      "configurePreset": "wsl-debug-tsan",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "wsl-debug-asan",
+      "displayName": "WSL Debug ASAN Tests",
+      "configurePreset": "wsl-debug-asan",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "wsl-clang-debug-tsan",
+      "displayName": "WSL Clang Debug TSAN Tests",
+      "configurePreset": "wsl-clang-debug-tsan",
       "output": {
         "outputOnFailure": true
       }

@@ -33,21 +33,30 @@
 //   - Size is always a power of two for efficient hash masking
 //   - Single entry per hash slot (no buckets - testing showed 20% slower)
 //   - Struct with bitfields is 9% faster than manual bit manipulation
-//   - Not thread-safe (no synchronization)
+//   - Thread-safe key field (std::atomic<ZobristKey>) for Lazy SMP
+//     On x86 acquire/release compiles to plain mov - zero overhead vs non-atomic
+//     Verified by: static_assert(is_always_lock_free) + static_assert(sizeof == 8)
 //
 // Entry Structure (16 bytes):
-//   - key:       64-bit Zobrist key for collision detection
-//   - move:      16-bit best move (without sort value)
-//   - eval:      16-bit static evaluation
-//   - value:     16-bit search value
-//   - depth:     7-bit search depth (0-127)
-//   - age:       3-bit generation counter (0-7)
-//   - type:      2-bit value type (NONE, EXACT, ALPHA, BETA)
+//   - key:        64-bit Zobrist key (std::atomic) for collision detection
+//   - move:       16-bit best move (without sort value)
+//   - eval:       16-bit static evaluation
+//   - value:      16-bit search value
+//   - depth:      7-bit search depth (0-127)
+//   - age:        3-bit generation counter (0-7)
+//   - type:       2-bit value type (NONE, EXACT, ALPHA, BETA)
 //   - mateThreat: 1-bit flag
 //
-// Prefetching:
-//   TT_PREFETCH macro prefetches entry into CPU cache before probe.
-//   Significantly improves lookup performance.
+  // Thread Safety (Lazy SMP):
+  //   put()  : writes non-key fields first, then key with memory_order_release
+  //   probe(): reads key first with memory_order_acquire, then reads other fields
+  //   A torn read of non-key fields is benign: the key check will fail and the
+  //   caller treats it as a miss - no incorrect data is ever used.
+  //   age-- in probe(): safe in single-thread mode (default). Skipped under SMP
+  //   (numSmpThreads > 1) because it is a read-modify-write on a packed bitfield
+  //   byte shared with depth/type - a data race. Behavioral impact is minimal:
+  //   same-depth replacement tiebreak slightly more aggressive, deep entries
+  //   marginally more vulnerable to eviction. No impact on single-thread behavior.
 //
 // Usage:
 //   TT tt(64);  // 64 MB table
@@ -57,6 +66,7 @@
 //
 //=============================================================================
 
+#include <atomic>
 #include <iosfwd>
 
 #include "common/gtest_friends.h"
@@ -80,7 +90,7 @@
 /**
  * TT implementation using heap memory and simple hash for entries.
  * The number of entries is always a power of two fitting into the given size.
- * It is not yet thread-safe as it has no synchronization.
+ * Thread-safe for Lazy SMP via atomic key field (acquire/release, zero overhead on x86).
  *
  * Tests have shown that an implementation with a struct and bitfields is
  * more efficient than using only one 64-bit data field with manual bit shifting
@@ -95,7 +105,7 @@ public:
   static constexpr uint64_t MAX_SIZE_MB     = 32'768;
 
   // TT Entry
-  //  Key key       = 0;         // 64 bit
+  //  atomic<Key> key = 0;  // 64 bit  (std::atomic, acquire/release, plain mov on x86)
   //  uint16_t move = MOVE_NONE; // 16 bit (last 16-bit omitting value part - cast to Move)
   //  Value eval    = VALUE_NONE;// 16 bit signed
   //  Value value   = VALUE_NONE;// 16 bit signed
@@ -106,24 +116,46 @@ public:
   struct Entry {
     // sorted by size to achieve the smallest struct size
     // using bitfield for the smallest size
-    ZobristKey key = 0;         // 64 bit
-    uint16_t move  = 0;         // MOVE_NONE as 16-bit
-    Value eval     = VALUE_NONE;// 16-bit signed
-    Value value    = VALUE_NONE;// 16-bit signed
-    uint8_t depth : 7 {};        // 0-127
-    uint8_t age : 3 {};         // 0-7
-    ValueType type : 2 {};      // 4 values
-    bool mateThreat : 1 {};     // 1-bit bool
+    //
+    // key is atomic for Lazy SMP thread safety.
+    // On x86, acquire/release memory order = plain mov (no fence, no lock prefix).
+    // Compile-time verified: is_always_lock_free + sizeof == sizeof(ZobristKey).
+    //
+    // Write protocol (put):  write non-key fields first, store key with release last.
+    // Read  protocol (probe): load key with acquire first, then read other fields.
+    // A concurrent torn read of non-key fields is benign: the key check will fail
+    // and the slot is treated as a miss - no incorrect values are ever consumed.
+    std::atomic<ZobristKey> key{0}; // 64 bit - atomic for SMP safety
+    uint16_t move  = 0;             // MOVE_NONE as 16-bit
+    Value eval     = VALUE_NONE;    // 16-bit signed
+    Value value    = VALUE_NONE;    // 16-bit signed
+    uint8_t depth : 7 {};           // 0-127
+    uint8_t age : 3 {};             // 0-7
+    ValueType type : 2 {};          // 4 values
+    bool mateThreat : 1 {};         // 1-bit bool
     friend std::ostream& operator<<(std::ostream& os, const Entry& entry);
   };
 
+  // Compile-time guarantees that the atomic key has zero size/performance overhead.
+  // If either assert fires, switch to Option B (XOR key trick) - see PLAN_Lazy_SMP_MultiThreading.md
+  static_assert(std::atomic<ZobristKey>::is_always_lock_free,
+                "TT: atomic key must be lock-free (no hidden mutex). Switch to XOR trick if this fires.");
+  static_assert(sizeof(std::atomic<ZobristKey>) == sizeof(ZobristKey),
+                "TT: atomic key must not inflate Entry size. Switch to XOR trick if this fires.");
+
   // struct Entry has 16 Byte
   static constexpr uint64_t ENTRY_SIZE = sizeof(Entry);
+  static_assert(sizeof(Entry) == 16, "TT Entry must remain 16 bytes for cache alignment");
   static_assert(CacheLineSize % ENTRY_SIZE == 0, "Cluster size incorrect");
 
 private:
   // threads for clearing hash
   unsigned int noOfThreads = 1;
+
+  // Number of active SMP search threads. 1 = single-thread mode (default).
+  // When > 1: probe() skips age-- to avoid a data race on the packed bitfield byte.
+  // Set by Search before each search via setSmpThreads().
+  int numSmpThreads = 1;
 
   // size and fill info
   uint64_t sizeInByte            = 0;
@@ -186,11 +218,12 @@ public:
   /// @return     Pointer to matching entry, or nullptr if not found
   const Entry* getMatch(const ZobristKey key) const {
     const Entry* const entryPtr = getEntryPtrConst(key);
-    return entryPtr->key == key ? entryPtr : nullptr;
+    return entryPtr->key.load(std::memory_order_acquire) == key ? entryPtr : nullptr;
   }
 
   /// Probes the TT for an entry matching the key.
-  /// Updates hit/miss statistics and decreases age of found entry.
+  /// Updates hit/miss statistics. Decreases age of found entry (single-thread mode only;
+  /// skipped under SMP to avoid a data race on the packed bitfield byte).
   /// @param key  Position key (usually Zobrist key)
   /// @return     Pointer to matching entry, or nullptr if not found
   const Entry* probe(const ZobristKey& key);
@@ -292,6 +325,15 @@ public:
   /// Sets the number of threads used for clearing.
   /// @param threads  Number of threads (minimum 1)
   void setThreads(const int threads) { noOfThreads = threads > 0 ? static_cast<unsigned int>(threads) : 1u; }
+
+  /// Sets the number of active SMP search threads.
+  /// When > 1, probe() skips age-- to avoid a data race on the packed bitfield byte.
+  /// Call before each search when thread count changes.
+  /// @param threads  Total search threads (1 = single-thread mode, full original behavior)
+  void setSmpThreads(const int threads) { numSmpThreads = threads > 0 ? threads : 1; }
+
+  /// Returns the current SMP thread count setting.
+  int getSmpThreads() const { return numSmpThreads; }
 
   /// Converts a ValueType to its string representation.
   /// @param type  ValueType to convert

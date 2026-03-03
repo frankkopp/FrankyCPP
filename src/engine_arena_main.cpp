@@ -174,6 +174,7 @@ int main(int argc, char* argv[]) {
         std::cout << "  Version: " << benchConfig.engineVersion << std::endl;
         std::cout << "  Depth: " << benchConfig.depth << std::endl;
         std::cout << "  Hash: " << benchConfig.hashSizeMB << " MB" << std::endl;
+        std::cout << "  Threads: " << benchConfig.threads << std::endl;
         if (!benchConfig.notes.empty()) {
           std::cout << "  Notes: " << benchConfig.notes << std::endl;
         }

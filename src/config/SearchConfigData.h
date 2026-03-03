@@ -42,6 +42,10 @@ struct SearchConfigData {
   // time mgmt
   CONFIG_ESSENTIAL int MOVE_OVERHEAD_MS = 10;
 
+  // Multi-threading (Lazy SMP)
+  CONFIG_ESSENTIAL int THREADS = 4;           // Number of search threads (1 = single-threaded, no SMP overhead)
+  CONFIG_CONST int SMP_HELPER_START_DEPTH = 4;// Depth at which to launch helper threads (allows TT priming)
+
   // book
   CONFIG_ESSENTIAL bool USE_BOOK         = true;
   CONFIG_ESSENTIAL std::string BOOK_PATH = "./books/book.txt";
@@ -202,6 +206,13 @@ struct SearchConfigData {
   CONFIG_CONST int REPETITION_RISK_PENALTY = 6;
   CONFIG_CONST int MOVES_LEFT_MIN_CLAMP    = 6;
   CONFIG_CONST int MOVES_LEFT_MAX_CLAMP    = 50;
+
+  // evaluation volatility time management
+  // Adds extra time when big evaluation swings happen between consecutive iterations
+  CONFIG_CONST bool USE_EVAL_VOLATILITY    = true; // enable eval volatility tracking
+  CONFIG_CONST int VOLATILITY_MIN_DEPTH    = 6;    // minimum depth to start tracking (avoid shallow noise)
+  CONFIG_CONST int VOLATILITY_THRESHOLD    = 150;  // eval swing threshold in centipawns (~1.5 pawns)
+  CONFIG_CONST double VOLATILITY_FACTOR    = 1.15; // multiply remaining time by this when volatile (> 1.0)
 
   // best-move instability time management
   CONFIG_CONST bool USE_BESTMOVE_INSTABILITY    = true;// enable best-move instability tracking

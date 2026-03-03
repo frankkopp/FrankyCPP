@@ -22,6 +22,11 @@
 #include "Zobrist.h"
 #include "common/stringutil.h"
 
+#ifndef NDEBUG
+#include "common/stacktrace.h"
+#endif
+
+#include <iostream>
 #include <string>
 
 ////////////////////////////////////////////////
@@ -49,6 +54,36 @@ Position::Position(const std::string& fen) {
 // //////////////////////////////////////////////
 
 void Position::doMove(const Move move) {
+  // Debug: print detailed info before assertions fail
+#ifndef NDEBUG
+  if (!move.isValid()) {
+    std::cerr << "\n=== doMove ASSERTION WILL FAIL (invalid move) ===\n";
+    std::cerr << "Move raw: 0x" << std::hex << move.raw() << std::dec << "\n";
+    std::cerr << "Move is NONE: " << (move.isNone() ? "YES" : "NO") << "\n";
+    std::cerr << "Position FEN: " << strFen() << "\n";
+    debug::printStackTrace();
+    std::cerr << "==================================\n" << std::flush;
+  }
+  if (getPiece(move.from()) == PIECE_NONE) {
+    std::cerr << "\n=== doMove ASSERTION WILL FAIL (no piece at from) ===\n";
+    std::cerr << "Move: " << move.str() << "\n";
+    std::cerr << "From square: " << move.from().str() << " has piece: NONE\n";
+    std::cerr << "Position FEN: " << strFen() << "\n";
+    debug::printStackTrace();
+    std::cerr << "==================================\n" << std::flush;
+  }
+  if (getPiece(move.from()) != PIECE_NONE && colorOf(getPiece(move.from())) != nextPlayer) {
+    std::cerr << "\n=== doMove ASSERTION WILL FAIL (wrong color) ===\n";
+    std::cerr << "Move: " << move.str() << "\n";
+    std::cerr << "From square: " << move.from().str() << "\n";
+    std::cerr << "Piece at from: " << static_cast<int>(getPiece(move.from())) << "\n";
+    std::cerr << "Piece color: " << (colorOf(getPiece(move.from())) == WHITE ? "WHITE" : "BLACK") << "\n";
+    std::cerr << "Next player: " << (nextPlayer == WHITE ? "WHITE" : "BLACK") << "\n";
+    std::cerr << "Position FEN: " << strFen() << "\n";
+    debug::printStackTrace();
+    std::cerr << "==================================\n" << std::flush;
+  }
+#endif
   assert(move.isValid());
   assert(move.from().isValid());
   assert(move.to().isValid());

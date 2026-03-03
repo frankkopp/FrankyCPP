@@ -1,0 +1,1263 @@
+Function,CPU Time,CPU Time:Effective Time,CPU Time:Spin Time,CPU Time:Overhead Time,Instructions Retired,Microarchitecture Usage(%),Microarchitecture Usage:Microarchitecture Usage(%),Microarchitecture Usage:CPI Rate,Module,Function (Full),Source File,Start Address
+"std::_Atomic_storage<unsigned __int64,8>::load",2.801811,2.801811,0.0,0.0,6723775000,7.6,7.6,2.231626,frankycpp_v1.4.exe,"std::_Atomic_storage<unsigned __int64,8>::load",atomic,0x1402471bd
+TT::clear::__l2::<lambda_1>::operator(),2.076860,2.076860,0.0,0.0,3489175000,8.2,8.2,2.817167,frankycpp_v1.4.exe,TT::clear::__l2::<lambda_1>::operator(),TT.cpp,0x140247e2c
+TT::ageEntries::__l2::<lambda_1>::operator(),1.611891,1.611891,0.0,0.0,2330110000,5.9,5.9,3.299486,frankycpp_v1.4.exe,TT::ageEntries::__l2::<lambda_1>::operator(),TT.cpp,0x140247f30
+Attacks::`anonymous namespace'::sliderLookup,1.459901,1.459901,0.0,0.0,19413590000,42.2,42.2,0.409750,frankycpp_v1.4.exe,"Attacks::`anonymous namespace'::sliderLookup(const PieceType, const class Square, const class Bitboard)",attacks.cpp,0x140166d80
+Attacks::attacks,0.921938,0.921938,0.0,0.0,13639230000,51.4,51.4,0.327404,frankycpp_v1.4.exe,"Attacks::attacks(enum PieceType,class Square,class Bitboard)",attacks.cpp,0x140166de0
+Search::qsearch,0.474968,0.474968,0.0,0.0,3770705000,29.6,29.6,0.664019,frankycpp_v1.4.exe,"Search::qsearch(class Position &,enum Depth,class Value,class Value,enum Search::NodeType)",Search.cpp,0x14020a630
+Search::search,0.471968,0.471968,0.0,0.0,6214625000,37.8,37.8,0.426506,frankycpp_v1.4.exe,"Search::search(class Position &,enum Depth,enum Depth,class Value,class Value,enum Search::NodeType,enum Search::Do_Null)",Search.cpp,0x140208cd0
+PawnTT::clear::__l2::<lambda_1>::operator(),0.461969,0.461969,0.0,0.0,661895000,4.4,4.4,3.570136,frankycpp_v1.4.exe,PawnTT::clear::__l2::<lambda_1>::operator(),PawnTT.cpp,0x1402444a7
+"std::_Atomic_address_as<__int64,std::_Atomic_padded<unsigned __int64> >",0.457969,0.457969,0.0,0.0,1791010000,17.4,17.4,1.215719,frankycpp_v1.4.exe,"std::_Atomic_address_as<__int64,std::_Atomic_padded<unsigned __int64> >",xatomic.h,0x140245090
+Search::thread,0.411972,0.411972,0.0,0.0,2141425000,17.9,17.9,1.009790,frankycpp_v1.4.exe,Search::thread,Search.h,0x14020abc3
+Search::thread,0.305979,0.305979,0.0,0.0,2084520000,21.9,21.9,0.757184,frankycpp_v1.4.exe,Search::thread,Search.h,0x140209fbf
+MoveGenerator::getNextPseudoLegalMove,0.297980,0.297980,0.0,0.0,4070205000,40.0,40.0,0.388521,frankycpp_v1.4.exe,"MoveGenerator::getNextPseudoLegalMove(class Position const &,enum GenMode,bool)",MoveGenerator.cpp,0x14023e320
+MoveGenerator::updateSortValues,0.283981,0.283981,0.0,0.0,3426280000,41.4,41.4,0.450175,frankycpp_v1.4.exe,"MoveGenerator::updateSortValues(class Position const &,class StaticMoveList<256> *)",MoveGenerator.cpp,0x140240160
+Position::givesCheck,0.245983,0.245983,0.0,0.0,3749740000,46.4,46.4,0.344249,frankycpp_v1.4.exe,Position::givesCheck(class Move),Position.cpp,0x140239960
+Evaluator::pieceEval,0.241984,0.241984,0.0,0.0,4136095000,57.4,57.4,0.299783,frankycpp_v1.4.exe,"Evaluator::pieceEval(class Position const &,struct Score &,class Color,enum PieceType)",Evaluator.cpp,0x140245990
+MoveGenerator::fillOnDemandMoveList,0.238984,0.238984,0.0,0.0,3405315000,41.8,41.8,0.405453,frankycpp_v1.4.exe,"MoveGenerator::fillOnDemandMoveList(class Position const &,enum GenMode,bool)",MoveGenerator.cpp,0x14023fd00
+"std::ranges::_Insertion_sort_common<Move *,moveValueGreaterComparator,std::identity>",0.237984,0.237984,0.0,0.0,2252240000,27.3,27.3,0.509309,frankycpp_v1.4.exe,"std::ranges::_Insertion_sort_common<Move *,moveValueGreaterComparator,std::identity>(class Move *, class Move *, struct moveValueGreaterComparator, struct std::identity)",algorithm,0x140219000
+Evaluator::kingEval,0.236984,0.236984,0.0,0.0,4510470000,50.4,50.4,0.320717,frankycpp_v1.4.exe,"Evaluator::kingEval(class Position const &,struct Score &,class Color)",Evaluator.cpp,0x1402461e0
+MoveGenerator::generateMoves,0.217985,0.217985,0.0,0.0,3171705000,42.2,42.2,0.385269,frankycpp_v1.4.exe,"MoveGenerator::generateMoves(class Position const &,class StaticMoveList<256> *,enum GenMode,bool,class Bitboard)",MoveGenerator.cpp,0x140240dc0
+Evaluator::rookEval,0.192987,0.192987,0.0,0.0,3033935000,47.4,47.4,0.387957,frankycpp_v1.4.exe,Evaluator::rookEval,Evaluator.cpp,0x140245b38
+"std::_Atomic_storage<unsigned __int64,8>::load",0.191987,0.191987,0.0,0.0,787685000,13.2,13.2,1.224335,frankycpp_v1.4.exe,"std::_Atomic_storage<unsigned __int64,8>::load",atomic,0x1402455ef
+"std::_Atomic_storage<unsigned __int64,8>::store",0.188987,0.188987,0.0,0.0,554075000,13.4,13.4,1.556757,frankycpp_v1.4.exe,"std::_Atomic_storage<unsigned __int64,8>::store",atomic,0x1402444a7
+Position::doMove,0.185987,0.185987,0.0,0.0,2105485000,36.8,36.8,0.455192,frankycpp_v1.4.exe,Position::doMove(class Move),Position.cpp,0x140238dd0
+Evaluator::evaluate,0.176988,0.176988,0.0,0.0,3704815000,65.5,65.5,0.260307,frankycpp_v1.4.exe,Evaluator::evaluate(class Position const &),Evaluator.cpp,0x140245250
+Position::isAttacked,0.164989,0.164989,0.0,0.0,1761060000,44.2,44.2,0.438776,frankycpp_v1.4.exe,"Position::isAttacked(class Square,class Color)",Position.cpp,0x140239630
+Position::removePiece,0.155989,0.155989,0.0,0.0,2231275000,41.6,41.6,0.441611,frankycpp_v1.4.exe,Position::removePiece(class Square),Position.cpp,0x14023ab70
+Position::putPiece,0.148990,0.148990,0.0,0.0,1976700000,45.7,45.7,0.422727,frankycpp_v1.4.exe,"Position::putPiece(enum Piece,class Square)",Position.cpp,0x14023aa60
+TT::put,0.140990,0.140990,0.0,0.0,1722125000,37.2,37.2,0.436522,frankycpp_v1.4.exe,"TT::put(unsigned __int64,enum Depth,class Move,class Value,enum ValueType,class Value)",TT.cpp,0x140247020
+std::_Checked_x86_x64_countr_zero<unsigned __int64>,0.135991,0.135991,0.0,0.0,2159395000,53.3,53.3,0.373093,frankycpp_v1.4.exe,std::_Checked_x86_x64_countr_zero<unsigned __int64>(unsigned __int64),__msvc_bit_utils.hpp,0x140241ac0
+Evaluator::queenEval,0.127991,0.127991,0.0,0.0,2282190000,54.1,54.1,0.272966,frankycpp_v1.4.exe,Evaluator::queenEval,Evaluator.cpp,0x140245a18
+MoveGenerator::generatePawnMoves,0.123992,0.123992,0.0,0.0,1566385000,45.1,45.1,0.397706,frankycpp_v1.4.exe,"MoveGenerator::generatePawnMoves(class Position const &,class StaticMoveList<256> *,enum GenMode,bool,class Bitboard)",MoveGenerator.cpp,0x140240390
+See::see,0.115992,0.115992,0.0,0.0,1964720000,59.1,59.1,0.280488,frankycpp_v1.4.exe,"See::see(class Position const &,class Move)",See.cpp,0x1402776b0
+Position::undoMove,0.088994,0.088994,0.0,0.0,964390000,46.6,46.6,0.397516,frankycpp_v1.4.exe,Position::undoMove(void),Position.cpp,0x1402392b0
+"std::_Atomic_address_as<__int64,std::_Atomic_padded<unsigned __int64> >",0.087994,0.087994,0.0,0.0,1081195000,40.8,40.8,0.484765,frankycpp_v1.4.exe,"std::_Atomic_address_as<__int64,std::_Atomic_padded<unsigned __int64> >",xatomic.h,0x1402451a0
+Evaluator::bishopEval,0.086994,0.086994,0.0,0.0,1850910000,74.4,74.4,0.233010,frankycpp_v1.4.exe,Evaluator::bishopEval,Evaluator.cpp,0x140245c88
+Position::wasLegalMove,0.080995,0.080995,0.0,0.0,1434605000,59.0,59.0,0.344468,frankycpp_v1.4.exe,Position::wasLegalMove(void),Position.cpp,0x140239b20
+Move::encode,0.078995,0.078995,0.0,0.0,745755000,36.0,36.0,0.574297,frankycpp_v1.4.exe,Move::encode,move.h,0x140240f15
+std::_Checked_popcount<unsigned __int64>,0.078995,0.078995,0.0,0.0,1557400000,70.2,70.2,0.253846,frankycpp_v1.4.exe,std::_Checked_popcount<unsigned __int64>(unsigned __int64),__msvc_bit_utils.hpp,0x14021e6d0
+"std::_Atomic_storage<unsigned __int64,8>::store",0.077995,0.077995,0.0,0.0,973375000,59.3,59.3,0.440000,frankycpp_v1.4.exe,"std::_Atomic_storage<unsigned __int64,8>::store",atomic,0x140247e2c
+Bitboard::shifted,0.066995,0.066995,0.0,0.0,1141095000,55.1,55.1,0.341207,frankycpp_v1.4.exe,Bitboard::shifted,bitboard.h,0x14024048d
+"std::_For_each_ivdep<TT::Entry *,`TT::ageEntries'::`2'::<lambda_1> >",0.066995,0.066995,0.0,0.0,254575000,37.3,37.3,0.729412,frankycpp_v1.4.exe,"std::_For_each_ivdep<TT::Entry *,`TT::ageEntries'::`2'::<lambda_1> >(struct TT::Entry *, struct TT::Entry *, class TT::ageEntries::__l2::<lambda_1>)",execution,0x140247f20
+Bitboard::operator^=,0.063996,0.063996,0.0,0.0,1015305000,40.7,40.7,0.395280,frankycpp_v1.4.exe,Bitboard::operator^=,bitboard.h,0x14023abc5
+std::popcount,0.060996,0.060996,0.0,0.0,607985000,51.4,51.4,0.413793,frankycpp_v1.4.exe,std::popcount,bit,0x140245b81
+"std::_For_each_ivdep<PawnTT::Entry *,`PawnTT::clear'::`2'::<lambda_1> >",0.058996,0.058996,0.0,0.0,56905000,8.3,8.3,4.894737,frankycpp_v1.4.exe,"std::_For_each_ivdep<PawnTT::Entry *,`PawnTT::clear'::`2'::<lambda_1> >(struct PawnTT::Entry *, struct PawnTT::Entry *, class PawnTT::clear::__l2::<lambda_1>)",execution,0x140244490
+See::attacksTo,0.057996,0.057996,0.0,0.0,988350000,57.4,57.4,0.260606,frankycpp_v1.4.exe,"See::attacksTo(class Position const &,class Square,class Color)",See.cpp,0x140277a20
+TT::probe,0.057996,0.057996,0.0,0.0,281530000,11.9,11.9,1.063830,frankycpp_v1.4.exe,TT::probe(unsigned __int64 const &),TT.cpp,0x1402471a0
+Position::getPieceBb,0.054996,0.054996,0.0,0.0,958400000,75.6,75.6,0.256250,frankycpp_v1.4.exe,Position::getPieceBb,Position.h,0x1402459a2
+"std::array<int,64>::operator[]",0.053996,0.053996,0.0,0.0,739765000,41.3,41.3,0.352227,frankycpp_v1.4.exe,"std::array<int,64>::operator[]",array,0x140240227
+Bitboard::operator bool,0.050997,0.050997,0.0,0.0,790680000,44.8,44.8,0.310606,frankycpp_v1.4.exe,Bitboard::operator bool,bitboard.h,0x140240eb4
+"std::_For_each_ivdep<TT::Entry *,`TT::clear'::`2'::<lambda_1> >",0.049997,0.049997,0.0,0.0,377370000,33.4,33.4,0.587302,frankycpp_v1.4.exe,"std::_For_each_ivdep<TT::Entry *,`TT::clear'::`2'::<lambda_1> >(struct TT::Entry *, struct TT::Entry *, class TT::clear::__l2::<lambda_1>)",execution,0x140247e10
+Evaluator::knightEval,0.048997,0.048997,0.0,0.0,898500000,80.5,80.5,0.196667,frankycpp_v1.4.exe,Evaluator::knightEval,Evaluator.cpp,0x140245d40
+Search::storeTt,0.044997,0.044997,0.0,0.0,431280000,37.3,37.3,0.555556,frankycpp_v1.4.exe,"Search::storeTt(class Position const &,enum Depth,enum Depth,class Move,class Value,enum ValueType,class Value)",Search.cpp,0x14020aff0
+"std::array<unsigned __int64,64>::operator[]",0.044997,0.044997,0.0,0.0,554075000,40.2,40.2,0.437838,frankycpp_v1.4.exe,"std::array<unsigned __int64,64>::operator[]",array,0x14023abb2
+makePiece,0.042997,0.042997,0.0,0.0,709815000,58.8,58.8,0.295359,frankycpp_v1.4.exe,makePiece,piece.h,0x140246269
+moveValueGreaterComparator::operator(),0.042997,0.042997,0.0,0.0,694840000,27.3,27.3,0.508621,frankycpp_v1.4.exe,moveValueGreaterComparator::operator(),move.h,0x140219020
+operator<,0.041997,0.041997,0.0,0.0,739765000,62.8,62.8,0.279352,frankycpp_v1.4.exe,operator<,rank.h,0x140246251
+std::_Unchecked_popcount<unsigned __int64>,0.041997,0.041997,0.0,0.0,709815000,54.1,54.1,0.345992,frankycpp_v1.4.exe,std::_Unchecked_popcount<unsigned __int64>(unsigned __int64),__msvc_bit_utils.hpp,0x14021e6c0
+"std::array<Bitboard,64>::operator[]",0.041997,0.041997,0.0,0.0,515140000,50.1,50.1,0.436047,frankycpp_v1.4.exe,"std::array<Bitboard,64>::operator[]",array,0x140166e70
+MoveGenerator::generateKingMoves,0.040997,0.040997,0.0,0.0,727785000,39.1,39.1,0.395062,frankycpp_v1.4.exe,"MoveGenerator::generateKingMoves(class Position const &,class StaticMoveList<256> *,enum GenMode,bool)",MoveGenerator.cpp,0x140241080
+See::revealedAttacks,0.040997,0.040997,0.0,0.0,631945000,47.2,47.2,0.345972,frankycpp_v1.4.exe,"See::revealedAttacks(class Position const &,class Square,class Bitboard,class Color)",See.cpp,0x140277b70
+Evaluator::pawnEval,0.039997,0.039997,0.0,0.0,763725000,54.6,54.6,0.325490,frankycpp_v1.4.exe,"Evaluator::pawnEval(class Position const &,struct Score &)",Evaluator.cpp,0x140245590
+Bitboard::shifted,0.036998,0.036998,0.0,0.0,311480000,24.7,24.7,0.394231,frankycpp_v1.4.exe,Bitboard::shifted(class Direction),bitboard.h,0x1402418a0
+_chkstk,0.034998,0.034998,0.0,0.0,371380000,35.2,35.2,0.395161,frankycpp_v1.4.exe,_chkstk,chkstk.asm,0x1405eed50
+std::_Countr_zero_tzcnt<unsigned __int64>,0.034998,0.034998,0.0,0.0,260565000,33.3,33.3,0.494253,frankycpp_v1.4.exe,std::_Countr_zero_tzcnt<unsigned __int64>(unsigned __int64),__msvc_bit_utils.hpp,0x140241ab0
+Search::sendSearchUpdateToUci,0.032998,0.032998,0.0,0.0,68885000,7.3,7.3,2.652174,frankycpp_v1.4.exe,Search::sendSearchUpdateToUci(void),Search.cpp,0x1402110b0
+Bitboard::operator|=,0.031998,0.031998,0.0,0.0,440265000,39.3,39.3,0.435374,frankycpp_v1.4.exe,Bitboard::operator|=,bitboard.h,0x14023aab2
+Position::movePiece,0.031998,0.031998,0.0,0.0,557070000,39.8,39.8,0.397849,frankycpp_v1.4.exe,"Position::movePiece(class Square,class Square)",Position.cpp,0x14023aa30
+StaticMoveList<256>::push_back,0.031998,0.031998,0.0,0.0,266555000,33.0,33.0,0.629213,frankycpp_v1.4.exe,StaticMoveList<256>::push_back,staticmovelist.h,0x140240ff6
+TT::prefetch,0.031998,0.031998,0.0,0.0,551080000,59.2,59.2,0.266304,frankycpp_v1.4.exe,TT::prefetch,TT.h,0x14020abb1
+Move::operator==,0.030998,0.030998,0.0,0.0,422295000,42.4,42.4,0.340426,frankycpp_v1.4.exe,Move::operator==,PVTable.h,0x140240296
+_security_check_cookie,0.030998,0.030998,0.0,0.0,386355000,28.7,28.7,0.488372,frankycpp_v1.4.exe,_security_check_cookie,amdsecgs.asm,0x1405ee000
+operator*,0.030998,0.030998,0.0,0.0,356405000,55.9,55.9,0.319328,frankycpp_v1.4.exe,operator*,value.h,0x1402454ad
+operator*,0.030998,0.030998,0.0,0.0,730780000,46.1,46.1,0.221311,frankycpp_v1.4.exe,operator*,value.h,0x1402454b5
+Position::attacksTo,0.029998,0.029998,0.0,0.0,311480000,64.2,64.2,0.288462,frankycpp_v1.4.exe,"Position::attacksTo(class Square,class Color)",Position.cpp,0x1402397c0
+Position::hasCheck,0.029998,0.029998,0.0,0.0,107820000,15.1,15.1,1.166667,frankycpp_v1.4.exe,Position::hasCheck(void),Position.cpp,0x140239910
+"std::array<Value,25>::operator[]",0.029998,0.029998,0.0,0.0,308485000,43.5,43.5,0.407767,frankycpp_v1.4.exe,"std::array<Value,25>::operator[]",array,0x140240f09
+std::countr_zero,0.029998,0.029998,0.0,0.0,362395000,55.2,55.2,0.380165,frankycpp_v1.4.exe,std::countr_zero,bit,0x140240e62
+std::ranges::_Insertion_sort_common,0.028998,0.028998,0.0,0.0,278535000,24.6,24.6,0.752688,frankycpp_v1.4.exe,std::ranges::_Insertion_sort_common,algorithm,0x14021af3a
+Search::stopConditions,0.027998,0.027998,0.0,0.0,266555000,33.5,33.5,0.438202,frankycpp_v1.4.exe,Search::stopConditions(void),Search.cpp,0x14020d1b0
+func@0x1800126c0,0.027998,0.027998,0.0,0.0,0,3.2,3.2,,vcruntime140.dll,func@0x1800126c0,[Unknown],0x1800126c0
+"std::_Hash<std::_Umap_traits<unsigned __int64,BookEntry,std::_Uhash_compare<unsigned __int64,std::hash<unsigned __int64>,std::equal_to<unsigned __int64> >,std::allocator<std::pair<unsigned __int64 const ,BookEntry> >,0> >::_Find_last",0.027998,0.027998,0.0,0.0,11980000,4.9,4.9,9.250000,frankycpp_v1.4.exe,"std::_Hash<std::_Umap_traits<unsigned __int64,BookEntry,std::_Uhash_compare<unsigned __int64,std::hash<unsigned __int64>,std::equal_to<unsigned __int64> >,std::allocator<std::pair<unsigned __int64 const ,BookEntry> >,0> >::_Find_last",xhash,0x140261b50
+Position::getPiece,0.026998,0.026998,0.0,0.0,512145000,64.4,64.4,0.181287,frankycpp_v1.4.exe,Position::getPiece,Position.h,0x140246262
+Move::encode,0.025998,0.025998,0.0,0.0,272545000,32.2,32.2,0.428571,frankycpp_v1.4.exe,Move::encode,move.h,0x140240fed
+See::getLeastValuablePiece,0.025998,0.025998,0.0,0.0,446255000,57.1,57.1,0.308725,frankycpp_v1.4.exe,"See::getLeastValuablePiece(class Position const &,class Bitboard,class Color)",See.cpp,0x1402779a0
+"std::_Atomic_storage<unsigned __int64,8>::load",0.024998,0.024998,0.0,0.0,329450000,53.1,53.1,0.400000,frankycpp_v1.4.exe,"std::_Atomic_storage<unsigned __int64,8>::load",atomic,0x140247f30
+MoveGenerator::resetOnDemand,0.023998,0.023998,0.0,0.0,152745000,29.6,29.6,0.784314,frankycpp_v1.4.exe,MoveGenerator::resetOnDemand,MoveGenerator.h,0x14020a991
+operator&,0.023998,0.023998,0.0,0.0,347420000,36.8,36.8,0.301724,frankycpp_v1.4.exe,operator&,bitboard.h,0x140209c5a
+operator<,0.022998,0.022998,0.0,0.0,275540000,46.6,46.6,0.434783,frankycpp_v1.4.exe,operator<,file.h,0x140246240
+operator<,0.022998,0.022998,0.0,0.0,374375000,42.7,42.7,0.312000,frankycpp_v1.4.exe,operator<,value.h,0x140277848
+Square::{ctor},0.021999,0.021999,0.0,0.0,557070000,,,0.311828,frankycpp_v1.4.exe,Square::{ctor},square.h,0x140239995
+std::popcount,0.021999,0.021999,0.0,0.0,515140000,64.8,64.8,0.261628,frankycpp_v1.4.exe,std::popcount,bit,0x140245ccb
+operator-,0.020999,0.020999,0.0,0.0,161730000,40.2,40.2,0.277778,frankycpp_v1.4.exe,operator-,depth.h,0x1402099b9
+"std::array<Move,64>::operator[]",0.020999,0.020999,0.0,0.0,371380000,35.5,35.5,0.427419,frankycpp_v1.4.exe,"std::array<Move,64>::operator[]",array,0x140240294
+typeOf,0.020999,0.020999,0.0,0.0,305490000,38.1,38.1,0.431373,frankycpp_v1.4.exe,typeOf,piece.h,0x14023ab94
+Position::checkRepetitions,0.019999,0.019999,0.0,0.0,26955000,6.6,6.6,2.444444,frankycpp_v1.4.exe,Position::checkRepetitions(int),Position.cpp,0x140239d20
+Search::goodCapture,0.018999,0.018999,0.0,0.0,275540000,42.1,42.1,0.336957,frankycpp_v1.4.exe,"Search::goodCapture(class Position const &,class Move,bool)",Search.cpp,0x14020aeb0
+Bitboard::operator bool,0.017999,0.017999,0.0,0.0,254575000,55.5,55.5,0.411765,frankycpp_v1.4.exe,Bitboard::operator bool,bitboard.h,0x140240e45
+Color::sign,0.017999,0.017999,0.0,0.0,251580000,49.5,49.5,0.357143,frankycpp_v1.4.exe,Color::sign,color.h,0x140240548
+Position::getPieceBb,0.017999,0.017999,0.0,0.0,170715000,43.5,43.5,0.473684,frankycpp_v1.4.exe,Position::getPieceBb,Position.h,0x140240e30
+StaticMoveList<256>::push_back,0.017999,0.017999,0.0,0.0,134775000,33.3,33.3,0.488889,frankycpp_v1.4.exe,StaticMoveList<256>::push_back,staticmovelist.h,0x140240f3a
+TT::prefetch,0.017999,0.017999,0.0,0.0,317470000,,,0.226415,frankycpp_v1.4.exe,TT::prefetch,TT.h,0x140209fa9
+func@0x140241690,0.017999,0.017999,0.0,0.0,2995000,2.0,2.0,15.000000,ntoskrnl.exe,func@0x140241690,[Unknown],0x140241690
+operator++,0.017999,0.017999,0.0,0.0,278535000,36.9,36.9,0.301075,frankycpp_v1.4.exe,operator++,piecetype.h,0x140241049
+"std::array<std::array<unsigned __int64,64>,16>::operator[]",0.017999,0.017999,0.0,0.0,359400000,30.7,30.7,0.333333,frankycpp_v1.4.exe,"std::array<std::array<unsigned __int64,64>,16>::operator[]",array,0x14023abab
+Bitboard::operator|=,0.016999,0.016999,0.0,0.0,302495000,41.4,41.4,0.227723,frankycpp_v1.4.exe,Bitboard::operator|=,bitboard.h,0x14023aaa6
+MoveGenerator::resetOnDemand,0.016999,0.016999,0.0,0.0,278535000,30.5,30.5,0.430108,frankycpp_v1.4.exe,MoveGenerator::resetOnDemand,MoveGenerator.h,0x1402098b1
+Position::getLastMove,0.016999,0.016999,0.0,0.0,368385000,43.1,43.1,0.260163,frankycpp_v1.4.exe,Position::getLastMove,Position.h,0x140240260
+Search::checkDrawRepAnd50,0.016999,0.016999,0.0,0.0,38935000,1.5,1.5,1.846154,frankycpp_v1.4.exe,"Search::checkDrawRepAnd50(class Position const &,int)",Search.cpp,0x14020d230
+func@0x1400e0a60,0.016999,0.016999,0.0,0.0,0,0.0,0.0,,nvlddmkm.sys,func@0x1400e0a60,[Unknown],0x1400e0a60
+operator+,0.016999,0.016999,0.0,0.0,101830000,,,0.382353,frankycpp_v1.4.exe,operator+,direction.h,0x140240489
+typeOf,0.016999,0.016999,0.0,0.0,260565000,43.1,43.1,0.321839,frankycpp_v1.4.exe,typeOf,piece.h,0x140240f1e
+StaticMoveList<256>::push_back,0.014999,0.014999,0.0,0.0,86855000,51.2,51.2,0.620690,frankycpp_v1.4.exe,StaticMoveList<256>::push_back,staticmovelist.h,0x140240736
+Value::{ctor},0.014999,0.014999,0.0,0.0,218635000,32.3,32.3,0.438356,frankycpp_v1.4.exe,Value::{ctor},value.h,0x140277c10
+operator&,0.014999,0.014999,0.0,0.0,185690000,36.8,36.8,0.225806,frankycpp_v1.4.exe,operator&,bitboard.h,0x140245bd7
+operator+,0.014999,0.014999,0.0,0.0,398335000,64.2,64.2,0.210526,frankycpp_v1.4.exe,operator+,value.h,0x1402454d9
+Position::checkInsufficientMaterial,0.013999,0.013999,0.0,0.0,209650000,32.2,32.2,0.185714,frankycpp_v1.4.exe,Position::checkInsufficientMaterial(void),Position.cpp,0x140239df0
+Value::operator int,0.013999,0.013999,0.0,0.0,176705000,41.6,41.6,0.474576,frankycpp_v1.4.exe,Value::operator int,value.h,0x14023ac49
+colorOf,0.013999,0.013999,0.0,0.0,170715000,,,0.350877,frankycpp_v1.4.exe,colorOf,piece.h,0x14023ab99
+std::atomic<bool>::operator bool,0.013999,0.013999,0.0,0.0,224625000,54.1,54.1,0.426667,frankycpp_v1.4.exe,std::atomic<bool>::operator bool,atomic,0x14020d1b4
+Move::operator==,0.012999,0.012999,0.0,0.0,233610000,48.3,48.3,0.397436,frankycpp_v1.4.exe,Move::operator==,PVTable.h,0x14020998c
+Move::stripped,0.012999,0.012999,0.0,0.0,158735000,42.3,42.3,0.660377,frankycpp_v1.4.exe,Move::stripped,move.h,0x1402401b0
+TT::resize,0.012999,0.012999,0.0,0.0,86855000,28.6,28.6,0.655172,frankycpp_v1.4.exe,TT::resize(unsigned __int64),TT.cpp,0x140246790
+func@0x1406b27ef,0.012999,0.012999,0.0,0.0,0,4.3,4.3,,ntoskrnl.exe,func@0x1406b27ef,[Unknown],0x1406b27ef
+operator&,0.012999,0.012999,0.0,0.0,188685000,,,0.253968,frankycpp_v1.4.exe,operator&,bitboard.h,0x140239a7a
+operator+,0.012999,0.012999,0.0,0.0,200665000,40.1,40.1,0.283582,frankycpp_v1.4.exe,operator+,value.h,0x14020ab03
+Bitboard::operator^=,0.011999,0.011999,0.0,0.0,146755000,27.8,27.8,0.387755,frankycpp_v1.4.exe,Bitboard::operator^=,bitboard.h,0x14023abb9
+func@0x1406b16d3,0.011999,0.011999,0.0,0.0,0,4.2,4.2,,ntoskrnl.exe,func@0x1406b16d3,[Unknown],0x1406b16d3
+operator+=,0.011999,0.011999,0.0,0.0,227620000,46.2,46.2,0.381579,frankycpp_v1.4.exe,operator+=,value.h,0x140245cfe
+"std::_Atomic_address_as<char,struct std::_Atomic_padded<bool> >",0.011999,0.011999,0.0,0.0,167720000,34.2,34.2,0.589286,frankycpp_v1.4.exe,"std::_Atomic_address_as<char,struct std::_Atomic_padded<bool> >(struct std::_Atomic_padded<bool> const &)",xatomic.h,0x14015c7e0
+std::ranges::_Stable_sort_fn::operator(),0.011999,0.011999,0.0,0.0,137770000,44.7,44.7,0.500000,frankycpp_v1.4.exe,std::ranges::_Stable_sort_fn::operator(),algorithm,0x140240027
+RtlFreeHeap,0.010999,0.010999,0.0,0.0,74875000,40.3,40.3,0.360000,ntdll.dll,RtlFreeHeap,[Unknown],0x180078bb0
+operator&,0.010999,0.010999,0.0,0.0,113810000,,,0.605263,frankycpp_v1.4.exe,operator&,bitboard.h,0x1402396cc
+operator&,0.010999,0.010999,0.0,0.0,299500000,88.7,88.7,0.190000,frankycpp_v1.4.exe,operator&,bitboard.h,0x140277b27
+operator&,0.010999,0.010999,0.0,0.0,185690000,,,0.274194,frankycpp_v1.4.exe,operator&,bitboard.h,0x140245b7a
+operator+=,0.010999,0.010999,0.0,0.0,239600000,42.3,42.3,0.225000,frankycpp_v1.4.exe,operator+=,value.h,0x140245c22
+operator|,0.010999,0.010999,0.0,0.0,98835000,54.2,54.2,0.666667,frankycpp_v1.4.exe,operator|,bitboard.h,0x140277b93
+std::atomic<bool>::operator bool,0.010999,0.010999,0.0,0.0,122795000,28.8,28.8,0.731707,frankycpp_v1.4.exe,std::atomic<bool>::operator bool,atomic,0x14020d21b
+Direction::pawnPush,0.009999,0.009999,0.0,0.0,167720000,56.6,56.6,0.375000,frankycpp_v1.4.exe,Direction::pawnPush,direction.h,0x1402406ba
+Value::operator int,0.009999,0.009999,0.0,0.0,101830000,52.1,52.1,0.470588,frankycpp_v1.4.exe,Value::operator int,value.h,0x14023ab46
+boost::archive::detail::basic_iarchive_impl::register_type,0.009999,0.009999,0.0,0.0,167720000,55.6,55.6,0.339286,frankycpp_v1.4.exe,boost::archive::detail::basic_iarchive_impl::register_type(class boost::archive::detail::basic_iserializer const &),basic_iarchive.cpp,0x140283750
+operator&,0.009999,0.009999,0.0,0.0,149750000,39.5,39.5,0.440000,frankycpp_v1.4.exe,operator&,bitboard.h,0x140239a91
+operator-,0.009999,0.009999,0.0,0.0,110815000,,,0.351351,frankycpp_v1.4.exe,operator-,value.h,0x14020ac6d
+operator~,0.009999,0.009999,0.0,0.0,137770000,33.4,33.4,0.326087,frankycpp_v1.4.exe,operator~,color.h,0x1402392dc
+"std::array<Value,25>::operator[]",0.009999,0.009999,0.0,0.0,68885000,47.1,47.1,0.304348,frankycpp_v1.4.exe,"std::array<Value,25>::operator[]",array,0x1402406fa
+"std::array<std::array<Move,64>,64>::operator[]",0.009999,0.009999,0.0,0.0,224625000,36.9,36.9,0.506667,frankycpp_v1.4.exe,"std::array<std::array<Move,64>,64>::operator[]",array,0x140240290
+"std::unique_ptr<PawnTT::Entry [0],std::default_delete<PawnTT::Entry [0]> >::operator[]",0.009999,0.009999,0.0,0.0,8985000,7.7,7.7,3.000000,frankycpp_v1.4.exe,"std::unique_ptr<PawnTT::Entry [0],std::default_delete<PawnTT::Entry [0]> >::operator[]",memory,0x14020abe6
+typeOf,0.009999,0.009999,0.0,0.0,35940000,,,1.416667,frankycpp_v1.4.exe,typeOf,piece.h,0x140240f03
+Bitboard::popLSB,0.008999,0.008999,0.0,0.0,218635000,49.6,49.6,0.383562,frankycpp_v1.4.exe,Bitboard::popLSB,bitboard.h,0x140240e62
+Bitboard::{ctor},0.008999,0.008999,0.0,0.0,122795000,43.1,43.1,0.439024,frankycpp_v1.4.exe,Bitboard::{ctor},bitboard.h,0x140277bd7
+Move::to,0.008999,0.008999,0.0,0.0,164725000,43.1,43.1,0.490909,frankycpp_v1.4.exe,Move::to,move.h,0x140209c65
+Position::getKingSquare,0.008999,0.008999,0.0,0.0,182695000,49.0,49.0,0.327869,frankycpp_v1.4.exe,Position::getKingSquare,Position.h,0x140246229
+Position::getLastMove,0.008999,0.008999,0.0,0.0,65890000,46.7,46.7,0.227273,frankycpp_v1.4.exe,Position::getLastMove,Position.h,0x14024026b
+Position::getPieceBb,0.008999,0.008999,0.0,0.0,143760000,61.0,61.0,0.500000,frankycpp_v1.4.exe,Position::getPieceBb,Position.h,0x140245bde
+Search::valueToTt,0.008999,0.008999,0.0,0.0,89850000,26.4,26.4,0.600000,frankycpp_v1.4.exe,"Search::valueToTt(class Value,enum Depth)",Search.cpp,0x14020b050
+func@0x1406ac770,0.008999,0.008999,0.0,0.0,11980000,8.9,8.9,3.000000,ntoskrnl.exe,func@0x1406ac770,[Unknown],0x1406ac770
+func@0x18001d400,0.008999,0.008999,0.0,0.0,194675000,57.5,57.5,0.307692,ntdll.dll,func@0x18001d400,[Unknown],0x18001d400
+operator&,0.008999,0.008999,0.0,0.0,191680000,,,0.312500,frankycpp_v1.4.exe,operator&,bitboard.h,0x14023967c
+operator*,0.008999,0.008999,0.0,0.0,80865000,,,0.703704,frankycpp_v1.4.exe,operator*,value.h,0x1402454fa
+std::popcount,0.008999,0.008999,0.0,0.0,149750000,53.9,53.9,0.300000,frankycpp_v1.4.exe,std::popcount,bit,0x140245a5e
+"std::unique_ptr<TT::Entry [0],std::default_delete<TT::Entry [0]> >::operator[]",0.008999,0.008999,0.0,0.0,95840000,44.8,44.8,0.343750,frankycpp_v1.4.exe,"std::unique_ptr<TT::Entry [0],std::default_delete<TT::Entry [0]> >::operator[]",memory,0x140247037
+typeOf,0.008999,0.008999,0.0,0.0,29950000,51.9,51.9,0.700000,frankycpp_v1.4.exe,typeOf,piece.h,0x14023aa6a
+Attacks::detail::Magic::index,0.007999,0.007999,0.0,0.0,83860000,40.9,40.9,0.500000,frankycpp_v1.4.exe,Attacks::detail::Magic::index,attacks.h,0x140166db5
+Bitboard::operator bool,0.007999,0.007999,0.0,0.0,113810000,47.1,47.1,0.315789,frankycpp_v1.4.exe,Bitboard::operator bool,bitboard.h,0x1402409d1
+Bitboard::popLSB,0.007999,0.007999,0.0,0.0,68885000,29.5,29.5,0.565217,frankycpp_v1.4.exe,Bitboard::popLSB,bitboard.h,0x140245b30
+Move::encode,0.007999,0.007999,0.0,0.0,53910000,,,0.500000,frankycpp_v1.4.exe,Move::encode,move.h,0x14024072d
+MoveGenerator::getEvasionTargets,0.007999,0.007999,0.0,0.0,128785000,34.7,34.7,0.651163,frankycpp_v1.4.exe,MoveGenerator::getEvasionTargets(class Position const &),MoveGenerator.cpp,0x140240300
+operator&,0.007999,0.007999,0.0,0.0,98835000,,,0.696970,frankycpp_v1.4.exe,operator&,bitboard.h,0x1402396eb
+operator&,0.007999,0.007999,0.0,0.0,53910000,,,0.666667,frankycpp_v1.4.exe,operator&,bitboard.h,0x140239707
+operator+=,0.007999,0.007999,0.0,0.0,35940000,67.2,67.2,0.750000,frankycpp_v1.4.exe,operator+=,value.h,0x140245c6a
+"std::array<Bitboard,64>::operator[]",0.007999,0.007999,0.0,0.0,107820000,25.1,25.1,0.388889,frankycpp_v1.4.exe,"std::array<Bitboard,64>::operator[]",array,0x14023964f
+"std::unique_ptr<TT::Entry [0],std::default_delete<TT::Entry [0]> >::operator[]",0.007999,0.007999,0.0,0.0,41930000,,,0.928571,frankycpp_v1.4.exe,"std::unique_ptr<TT::Entry [0],std::default_delete<TT::Entry [0]> >::operator[]",memory,0x1402471b5
+wcsnicmp,0.007999,0.007999,0.0,0.0,170715000,82.6,82.6,0.263158,ntoskrnl.exe,wcsnicmp,[Unknown],0x1404fe420
+Bitboard::operator bool,0.007000,0.007000,0.0,0.0,65890000,25.9,25.9,0.318182,frankycpp_v1.4.exe,Bitboard::operator bool,bitboard.h,0x1402411b0
+Bitboard::operator~,0.007000,0.007000,0.0,0.0,50915000,35.6,35.6,0.764706,frankycpp_v1.4.exe,Bitboard::operator~,bitboard.h,0x1402406a2
+Color::sign,0.007000,0.007000,0.0,0.0,23960000,73.8,73.8,0.125000,frankycpp_v1.4.exe,Color::sign,color.h,0x14024620e
+Move::from,0.007000,0.007000,0.0,0.0,50915000,,,0.705882,frankycpp_v1.4.exe,Move::from,move.h,0x14023944f
+Move::stripped,0.007000,0.007000,0.0,0.0,38935000,,,0.769231,frankycpp_v1.4.exe,Move::stripped,move.h,0x14023e452
+Move::type,0.007000,0.007000,0.0,0.0,98835000,,,0.424242,frankycpp_v1.4.exe,Move::type,move.h,0x140209c42
+Position::clearEnPassant,0.007000,0.007000,0.0,0.0,89850000,,,0.433333,frankycpp_v1.4.exe,Position::clearEnPassant,Position.cpp,0x14023916c
+Position::getPieceBb,0.007000,0.007000,0.0,0.0,47920000,27.8,27.8,0.687500,frankycpp_v1.4.exe,Position::getPieceBb,Position.h,0x1402403c1
+StaticMoveList<256>::empty,0.007000,0.007000,0.0,0.0,68885000,30.5,30.5,0.478261,frankycpp_v1.4.exe,StaticMoveList<256>::empty,staticmovelist.h,0x14023fd3d
+StaticMoveList<256>::push_back,0.007000,0.007000,0.0,0.0,44925000,22.8,22.8,0.733333,frankycpp_v1.4.exe,StaticMoveList<256>::push_back,staticmovelist.h,0x14024128a
+Value::isValid,0.007000,0.007000,0.0,0.0,17970000,17.0,17.0,1.833333,frankycpp_v1.4.exe,Value::isValid,value.h,0x14020a7dd
+Value::operator int,0.007000,0.007000,0.0,0.0,119800000,,,0.250000,frankycpp_v1.4.exe,Value::operator int,value.h,0x14023ab0e
+decompress_pairs,0.007000,0.007000,0.0,0.0,23960000,12.0,12.0,1.500000,frankycpp_v1.4.exe,"decompress_pairs(struct PairsData *, unsigned __int64)",tbprobe.c,0x14027e290
+operator&,0.007000,0.007000,0.0,0.0,38935000,64.9,64.9,0.307692,frankycpp_v1.4.exe,operator&,bitboard.h,0x140245be5
+operator+=,0.007000,0.007000,0.0,0.0,149750000,44.3,44.3,0.280000,frankycpp_v1.4.exe,operator+=,value.h,0x140245ae1
+operator-,0.007000,0.007000,0.0,0.0,149750000,,,0.140000,frankycpp_v1.4.exe,operator-,value.h,0x14027795d
+operator-,0.007000,0.007000,0.0,0.0,53910000,26.4,26.4,0.888889,frankycpp_v1.4.exe,operator-,value.h,0x14020a078
+operator|,0.007000,0.007000,0.0,0.0,158735000,30.4,30.4,0.339623,frankycpp_v1.4.exe,operator|,bitboard.h,0x140277ba6
+std::popcount,0.007000,0.007000,0.0,0.0,212645000,,,0.253521,frankycpp_v1.4.exe,std::popcount,bit,0x140245c5d
+"std::ranges::_Inplace_merge_buffer_left<Move *,moveValueGreaterComparator,std::identity>",0.007000,0.007000,0.0,0.0,44925000,15.7,15.7,0.866667,frankycpp_v1.4.exe,"std::ranges::_Inplace_merge_buffer_left<Move *,moveValueGreaterComparator,std::identity>(class Move *, class Move *, class Move *, class Move *, const __int64, struct moveValueGreaterComparator, struct std::identity)",algorithm,0x14021cf60
+typeOf,0.007000,0.007000,0.0,0.0,71880000,26.2,26.2,0.500000,frankycpp_v1.4.exe,typeOf,piece.h,0x1402391a1
+typeOf,0.007000,0.007000,0.0,0.0,74875000,34.3,34.3,0.440000,frankycpp_v1.4.exe,typeOf,piece.h,0x14023999f
+Bitboard::operator bool,0.006000,0.006000,0.0,0.0,104825000,45.8,45.8,0.428571,frankycpp_v1.4.exe,Bitboard::operator bool,bitboard.h,0x140240fa9
+Bitboard::operator|=,0.006000,0.006000,0.0,0.0,95840000,40.0,40.0,0.343750,frankycpp_v1.4.exe,Bitboard::operator|=,bitboard.h,0x14024575e
+ExpInterlockedPopEntrySList,0.006000,0.006000,0.0,0.0,11980000,27.6,27.6,0.750000,ntoskrnl.exe,ExpInterlockedPopEntrySList,[Unknown],0x1406b3210
+Move::operator==,0.006000,0.006000,0.0,0.0,53910000,,,0.500000,frankycpp_v1.4.exe,Move::operator==,PVTable.h,0x14020aada
+PawnTT::put,0.006000,0.006000,0.0,0.0,20965000,34.7,34.7,0.714286,frankycpp_v1.4.exe,"PawnTT::put(struct PawnTT::Entry *,unsigned __int64,struct Score)",PawnTT.cpp,0x140243730
+Search::thread,0.006000,0.006000,0.0,0.0,71880000,22.7,22.7,0.791667,frankycpp_v1.4.exe,Search::thread,Search.h,0x14020a988
+StaticMoveList<256>::empty,0.006000,0.006000,0.0,0.0,56905000,49.2,49.2,0.263158,frankycpp_v1.4.exe,StaticMoveList<256>::empty,staticmovelist.h,0x14023e403
+Value::isCheckMate,0.006000,0.006000,0.0,0.0,155740000,47.2,47.2,0.403846,frankycpp_v1.4.exe,Value::isCheckMate,value.h,0x14020b054
+Value::operator int,0.006000,0.006000,0.0,0.0,131780000,39.9,39.9,0.340909,frankycpp_v1.4.exe,Value::operator int,value.h,0x14023ab36
+calc_symLen,0.006000,0.006000,0.0,0.0,62895000,34.2,34.2,0.714286,frankycpp_v1.4.exe,"calc_symLen(struct PairsData *, unsigned int, char *)",tbprobe.c,0x14027d630
+operator&,0.006000,0.006000,0.0,0.0,233610000,87.4,87.4,0.128205,frankycpp_v1.4.exe,operator&,bitboard.h,0x140245cc4
+operator&,0.006000,0.006000,0.0,0.0,170715000,63.6,63.6,0.315789,frankycpp_v1.4.exe,operator&,bitboard.h,0x1402779ba
+operator&,0.006000,0.006000,0.0,0.0,152745000,66.5,66.5,0.392157,frankycpp_v1.4.exe,operator&,bitboard.h,0x140239ad8
+operator&,0.006000,0.006000,0.0,0.0,83860000,46.7,46.7,0.428571,frankycpp_v1.4.exe,operator&,bitboard.h,0x140240ea5
+operator*,0.006000,0.006000,0.0,0.0,86855000,,,0.275862,frankycpp_v1.4.exe,operator*,value.h,0x140245313
+operator+=,0.006000,0.006000,0.0,0.0,53910000,100.0,100.0,0.333333,frankycpp_v1.4.exe,operator+=,value.h,0x140245dc7
+operator-,0.006000,0.006000,0.0,0.0,53910000,26.2,26.2,0.388889,frankycpp_v1.4.exe,operator-,value.h,0x140240c21
+operator|,0.006000,0.006000,0.0,0.0,86855000,,,0.103448,frankycpp_v1.4.exe,operator|,bitboard.h,0x140277a98
+operator|,0.006000,0.006000,0.0,0.0,56905000,78.9,78.9,0.157895,frankycpp_v1.4.exe,operator|,bitboard.h,0x14024574a
+operator~,0.006000,0.006000,0.0,0.0,158735000,,,0.320755,frankycpp_v1.4.exe,operator~,color.h,0x14023921b
+"std::_Atomic_reinterpret_as<__int64,unsigned __int64>",0.006000,0.006000,0.0,0.0,53910000,27.0,27.0,0.611111,frankycpp_v1.4.exe,"std::_Atomic_reinterpret_as<__int64,unsigned __int64>(unsigned __int64 const & __ptr64)",atomic,0x140245080
+"std::array<HistoryState,512>::operator[]",0.006000,0.006000,0.0,0.0,116805000,,,0.256410,frankycpp_v1.4.exe,"std::array<HistoryState,512>::operator[]",array,0x1402392ea
+"std::array<Value,32>::operator[]",0.006000,0.006000,0.0,0.0,140765000,49.6,49.6,0.170213,frankycpp_v1.4.exe,"std::array<Value,32>::operator[]",array,0x140277818
+"std::array<int,64>::operator[]",0.006000,0.006000,0.0,0.0,161730000,57.2,57.2,0.129630,frankycpp_v1.4.exe,"std::array<int,64>::operator[]",array,0x140245aa7
+std::countr_zero,0.006000,0.006000,0.0,0.0,83860000,,,0.321429,frankycpp_v1.4.exe,std::countr_zero,bit,0x140245c80
+Bitboard::operator~,0.005000,0.005000,0.0,0.0,59900000,,,0.300000,frankycpp_v1.4.exe,Bitboard::operator~,bitboard.h,0x140245718
+Bitboard::{ctor},0.005000,0.005000,0.0,0.0,17970000,,,0.0,frankycpp_v1.4.exe,Bitboard::{ctor},bitboard.h,0x140277b1c
+Move::from,0.005000,0.005000,0.0,0.0,62895000,41.8,41.8,0.476190,frankycpp_v1.4.exe,Move::from,move.h,0x14020999c
+Move::operator==,0.005000,0.005000,0.0,0.0,65890000,,,0.181818,frankycpp_v1.4.exe,Move::operator==,PVTable.h,0x140209aa3
+Move::operator==,0.005000,0.005000,0.0,0.0,74875000,48.6,48.6,0.480000,frankycpp_v1.4.exe,Move::operator==,PVTable.h,0x1402401ba
+PawnTT::getHash,0.005000,0.005000,0.0,0.0,194675000,100.0,100.0,0.153846,frankycpp_v1.4.exe,PawnTT::getHash,PawnTT.h,0x1402455d1
+Position::doNullMove,0.005000,0.005000,0.0,0.0,32945000,,,0.636364,frankycpp_v1.4.exe,Position::doNullMove(void),Position.cpp,0x1402394f0
+Position::getPieceBb,0.005000,0.005000,0.0,0.0,68885000,,,0.217391,frankycpp_v1.4.exe,Position::getPieceBb,Position.h,0x140277aec
+Search::thread,0.005000,0.005000,0.0,0.0,29950000,,,0.700000,frankycpp_v1.4.exe,Search::thread,Search.h,0x140208d02
+Square::pawnPush,0.005000,0.005000,0.0,0.0,50915000,69.9,69.9,0.411765,frankycpp_v1.4.exe,Square::pawnPush,square.h,0x1402391c5
+StaticMoveList<128>::pop_back,0.005000,0.005000,0.0,0.0,131780000,35.9,35.9,0.386364,frankycpp_v1.4.exe,StaticMoveList<128>::pop_back,staticmovelist.h,0x14020ac73
+StaticMoveList<128>::pop_back,0.005000,0.005000,0.0,0.0,110815000,39.8,39.8,0.405405,frankycpp_v1.4.exe,StaticMoveList<128>::pop_back,staticmovelist.h,0x14020a1c8
+StaticMoveList<256>::empty,0.005000,0.005000,0.0,0.0,59900000,38.9,38.9,0.200000,frankycpp_v1.4.exe,StaticMoveList<256>::empty,staticmovelist.h,0x140240010
+func@0x140241ec0,0.005000,0.005000,0.0,0.0,5990000,,,1.000000,ntoskrnl.exe,func@0x140241ec0,[Unknown],0x140241ec0
+func@0x140277720,0.005000,0.005000,0.0,0.0,2995000,,,2.000000,ntoskrnl.exe,func@0x140277720,[Unknown],0x140277720
+func@0x1402786e0,0.005000,0.005000,0.0,0.0,2995000,0.0,0.0,7.000000,ntoskrnl.exe,func@0x1402786e0,[Unknown],0x1402786e0
+func@0x1402b6ac0,0.005000,0.005000,0.0,0.0,5990000,3.2,3.2,1.500000,ntoskrnl.exe,func@0x1402b6ac0,[Unknown],0x1402b6ac0
+func@0x140300b80,0.005000,0.005000,0.0,0.0,2995000,6.9,6.9,3.000000,ntoskrnl.exe,func@0x140300b80,[Unknown],0x140300b80
+func@0x1403606c0,0.005000,0.005000,0.0,0.0,14975000,7.7,7.7,2.400000,ntoskrnl.exe,func@0x1403606c0,[Unknown],0x1403606c0
+func@0x1404113d0,0.005000,0.005000,0.0,0.0,5990000,23.5,23.5,3.000000,ntoskrnl.exe,func@0x1404113d0,[Unknown],0x1404113d0
+func@0x1406b96ae,0.005000,0.005000,0.0,0.0,5990000,8.3,8.3,5.000000,ntoskrnl.exe,func@0x1406b96ae,[Unknown],0x1406b96ae
+moveValueGreaterComparator::operator(),0.005000,0.005000,0.0,0.0,56905000,27.9,27.9,0.789474,frankycpp_v1.4.exe,moveValueGreaterComparator::operator(),move.h,0x14021af50
+operator&,0.005000,0.005000,0.0,0.0,185690000,56.6,56.6,0.258065,frankycpp_v1.4.exe,operator&,bitboard.h,0x140277bc3
+operator&,0.005000,0.005000,0.0,0.0,104825000,61.6,61.6,0.171429,frankycpp_v1.4.exe,operator&,bitboard.h,0x140240555
+operator+,0.005000,0.005000,0.0,0.0,62895000,34.0,34.0,0.714286,frankycpp_v1.4.exe,operator+,value.h,0x140209d01
+operator+,0.005000,0.005000,0.0,0.0,77870000,,,0.269231,frankycpp_v1.4.exe,operator+,value.h,0x140209d05
+operator+=,0.005000,0.005000,0.0,0.0,185690000,76.3,76.3,0.161290,frankycpp_v1.4.exe,operator+=,value.h,0x140245d0a
+operator-,0.005000,0.005000,0.0,0.0,5990000,5.3,5.3,3.500000,frankycpp_v1.4.exe,operator-,value.h,0x14020ac44
+operator-,0.005000,0.005000,0.0,0.0,35940000,,,0.666667,frankycpp_v1.4.exe,operator-,value.h,0x140277825
+operator-,0.005000,0.005000,0.0,0.0,23960000,,,1.500000,frankycpp_v1.4.exe,operator-,value.h,0x14020a734
+operator~,0.005000,0.005000,0.0,0.0,92845000,28.1,28.1,0.290323,frankycpp_v1.4.exe,operator~,color.h,0x140209c56
+operator~,0.005000,0.005000,0.0,0.0,86855000,,,0.482759,frankycpp_v1.4.exe,operator~,color.h,0x140240ea0
+"std::array<Move,128>::operator[]",0.005000,0.005000,0.0,0.0,20965000,,,0.857143,frankycpp_v1.4.exe,"std::array<Move,128>::operator[]",array,0x140208d07
+std::countr_zero,0.005000,0.005000,0.0,0.0,17970000,,,0.333333,frankycpp_v1.4.exe,std::countr_zero,bit,0x1402410d4
+std::max,0.005000,0.005000,0.0,0.0,71880000,62.3,62.3,0.416667,frankycpp_v1.4.exe,std::max,utility,0x14027783f
+std::max,0.005000,0.005000,0.0,0.0,38935000,,,0.153846,frankycpp_v1.4.exe,std::max,utility,0x140277945
+"std::ranges::_Inplace_merge_buffer_right<Move *,moveValueGreaterComparator,std::identity>",0.005000,0.005000,0.0,0.0,5990000,18.6,18.6,1.500000,frankycpp_v1.4.exe,"std::ranges::_Inplace_merge_buffer_right<Move *,moveValueGreaterComparator,std::identity>(class Move *, class Move *, class Move *, class Move *, const __int64, struct moveValueGreaterComparator, struct std::identity)",algorithm,0x14021d030
+typeOf,0.005000,0.005000,0.0,0.0,74875000,,,0.120000,frankycpp_v1.4.exe,typeOf,piece.h,0x140209cb2
+Bitboard::operator bool,0.004000,0.004000,0.0,0.0,20965000,78.0,78.0,0.857143,frankycpp_v1.4.exe,Bitboard::operator bool,bitboard.h,0x140245ddb
+Bitboard::operator bool,0.004000,0.004000,0.0,0.0,86855000,66.7,66.7,0.413793,frankycpp_v1.4.exe,Bitboard::operator bool,bitboard.h,0x140245d1e
+Bitboard::shifted,0.004000,0.004000,0.0,0.0,23960000,28.8,28.8,0.750000,frankycpp_v1.4.exe,Bitboard::shifted,bitboard.h,0x140240827
+Color::iterator::operator++,0.004000,0.004000,0.0,0.0,14975000,,,1.000000,frankycpp_v1.4.exe,Color::iterator::operator++,color.h,0x1402458a4
+Direction::operator int,0.004000,0.004000,0.0,0.0,107820000,49.1,49.1,0.361111,frankycpp_v1.4.exe,Direction::operator int,direction.h,0x1402418a0
+Direction::pawnPush,0.004000,0.004000,0.0,0.0,95840000,42.5,42.5,0.250000,frankycpp_v1.4.exe,Direction::pawnPush,direction.h,0x140240990
+ExReleaseResourceLite,0.004000,0.004000,0.0,0.0,5990000,25.0,25.0,1.000000,ntoskrnl.exe,ExReleaseResourceLite,[Unknown],0x14027d860
+KeClockInterruptNotify,0.004000,0.004000,0.0,0.0,0,100.0,100.0,0.0,ntoskrnl.exe,KeClockInterruptNotify,[Unknown],0x1402e2e50
+Move::operator==,0.004000,0.004000,0.0,0.0,131780000,44.1,44.1,0.522727,frankycpp_v1.4.exe,Move::operator==,PVTable.h,0x1402401f8
+Move::setValue,0.004000,0.004000,0.0,0.0,44925000,34.9,34.9,0.466667,frankycpp_v1.4.exe,Move::setValue,move.h,0x1402402b4
+Move::setValue,0.004000,0.004000,0.0,0.0,8985000,55.3,55.3,2.000000,frankycpp_v1.4.exe,Move::setValue,move.h,0x1402401c2
+Move::to,0.004000,0.004000,0.0,0.0,68885000,52.6,52.6,0.347826,frankycpp_v1.4.exe,Move::to,move.h,0x14020aecd
+Move::{ctor},0.004000,0.004000,0.0,0.0,29950000,,,0.300000,frankycpp_v1.4.exe,Move::{ctor},move.h,0x1402412f6
+Position::getEndPosValue,0.004000,0.004000,0.0,0.0,152745000,,,0.176471,frankycpp_v1.4.exe,Position::getEndPosValue,Position.h,0x1402452ef
+Position::isCapturingMove,0.004000,0.004000,0.0,0.0,104825000,,,0.228571,frankycpp_v1.4.exe,Position::isCapturingMove,Position.h,0x140209c56
+Position::undoNullMove,0.004000,0.004000,0.0,0.0,17970000,24.1,24.1,0.500000,frankycpp_v1.4.exe,Position::undoNullMove(void),Position.cpp,0x1402395d0
+RtlCopyMemory,0.004000,0.004000,0.0,0.0,8985000,14.0,14.0,1.333333,ntoskrnl.exe,RtlCopyMemory,[Unknown],0x1406bf540
+Search::search::__l2::<lambda_1>::operator(),0.004000,0.004000,0.0,0.0,71880000,56.3,56.3,0.250000,frankycpp_v1.4.exe,Search::search::__l2::<lambda_1>::operator(),Search.cpp,0x14020929c
+Search::valueFromTt,0.004000,0.004000,0.0,0.0,11980000,16.2,16.2,0.750000,frankycpp_v1.4.exe,"Search::valueFromTt(class Value,enum Depth)",Search.cpp,0x14020b090
+StaticMoveList<256>::push_back,0.004000,0.004000,0.0,0.0,32945000,,,0.272727,frankycpp_v1.4.exe,StaticMoveList<256>::push_back,staticmovelist.h,0x1402412ef
+StaticMoveList<256>::push_back,0.004000,0.004000,0.0,0.0,44925000,,,0.133333,frankycpp_v1.4.exe,StaticMoveList<256>::push_back,staticmovelist.h,0x140240bfd
+boost::archive::detail::basic_serializer::operator<,0.004000,0.004000,0.0,0.0,35940000,47.1,47.1,0.166667,frankycpp_v1.4.exe,boost::archive::detail::basic_serializer::operator<,basic_serializer.hpp,0x1402837a3
+boost::serialization::extended_type_info::operator<,0.004000,0.004000,0.0,0.0,53910000,72.7,72.7,0.277778,frankycpp_v1.4.exe,boost::serialization::extended_type_info::operator<(class boost::serialization::extended_type_info const &),extended_type_info.cpp,0x14028e1a0
+colorOf,0.004000,0.004000,0.0,0.0,65890000,,,0.318182,frankycpp_v1.4.exe,colorOf,piece.h,0x14023aa72
+func@0x1402494a0,0.004000,0.004000,0.0,0.0,20965000,18.9,18.9,1.142857,ntoskrnl.exe,func@0x1402494a0,[Unknown],0x1402494a0
+func@0x140295620,0.004000,0.004000,0.0,0.0,5990000,3.1,3.1,6.500000,ntoskrnl.exe,func@0x140295620,[Unknown],0x140295620
+func@0x1402e31ed,0.004000,0.004000,0.0,0.0,5990000,14.0,14.0,1.500000,ntoskrnl.exe,func@0x1402e31ed,[Unknown],0x1402e31ed
+func@0x1403996f0,0.004000,0.004000,0.0,0.0,5990000,30.0,30.0,4.000000,nvlddmkm.sys,func@0x1403996f0,[Unknown],0x1403996f0
+moveValueGreaterComparator::operator(),0.004000,0.004000,0.0,0.0,14975000,27.2,27.2,1.200000,frankycpp_v1.4.exe,moveValueGreaterComparator::operator(),move.h,0x14021cfc0
+operator&,0.004000,0.004000,0.0,0.0,50915000,,,0.411765,frankycpp_v1.4.exe,operator&,bitboard.h,0x1402779c6
+operator&,0.004000,0.004000,0.0,0.0,65890000,60.9,60.9,0.227273,frankycpp_v1.4.exe,operator&,bitboard.h,0x1402398bd
+operator+,0.004000,0.004000,0.0,0.0,224625000,71.0,71.0,0.066667,frankycpp_v1.4.exe,operator+,value.h,0x140245345
+operator+=,0.004000,0.004000,0.0,0.0,8985000,,,2.000000,frankycpp_v1.4.exe,operator+=,value.h,0x1402462f9
+operator-,0.004000,0.004000,0.0,0.0,56905000,55.3,55.3,0.526316,frankycpp_v1.4.exe,operator-,value.h,0x140277813
+operator|,0.004000,0.004000,0.0,0.0,128785000,,,0.209302,frankycpp_v1.4.exe,operator|,bitboard.h,0x140277ab7
+operator|,0.004000,0.004000,0.0,0.0,17970000,,,0.333333,frankycpp_v1.4.exe,operator|,bitboard.h,0x140245a31
+operator|,0.004000,0.004000,0.0,0.0,65890000,,,0.454545,frankycpp_v1.4.exe,operator|,bitboard.h,0x140277b1c
+std::_Fnv1a_append_bytes,0.004000,0.004000,0.0,0.0,5990000,81.8,81.8,1.500000,frankycpp_v1.4.exe,std::_Fnv1a_append_bytes,type_traits,0x14025bee0
+"std::array<Bitboard,8>::operator[]",0.004000,0.004000,0.0,0.0,0,25.0,25.0,,frankycpp_v1.4.exe,"std::array<Bitboard,8>::operator[]",array,0x140240b0e
+"std::array<PlyInfo,128>::operator[]",0.004000,0.004000,0.0,0.0,44925000,33.3,33.3,0.666667,frankycpp_v1.4.exe,"std::array<PlyInfo,128>::operator[]",array,0x14020a994
+"std::array<int,64>::operator[]",0.004000,0.004000,0.0,0.0,29950000,,,0.500000,frankycpp_v1.4.exe,"std::array<int,64>::operator[]",array,0x140209e96
+"std::array<unsigned __int64,64>::operator[]",0.004000,0.004000,0.0,0.0,53910000,47.2,47.2,0.555556,frankycpp_v1.4.exe,"std::array<unsigned __int64,64>::operator[]",array,0x14023aaca
+std::countr_zero,0.004000,0.004000,0.0,0.0,26955000,59.7,59.7,0.888889,frankycpp_v1.4.exe,std::countr_zero,bit,0x140245b30
+typeOf,0.004000,0.004000,0.0,0.0,23960000,37.4,37.4,0.250000,frankycpp_v1.4.exe,typeOf,piece.h,0x1402406fe
+Attacks::detail::Magic::index,0.003000,0.003000,0.0,0.0,44925000,58.4,58.4,0.533333,frankycpp_v1.4.exe,Attacks::detail::Magic::index,attacks.h,0x140166d94
+Bitboard::operator bool,0.003000,0.003000,0.0,0.0,98835000,28.8,28.8,0.090909,frankycpp_v1.4.exe,Bitboard::operator bool,bitboard.h,0x14024569b
+Bitboard::operator bool,0.003000,0.003000,0.0,0.0,74875000,,,0.200000,frankycpp_v1.4.exe,Bitboard::operator bool,bitboard.h,0x140245c45
+Bitboard::operator&=,0.003000,0.003000,0.0,0.0,11980000,,,0.500000,frankycpp_v1.4.exe,Bitboard::operator&=,bitboard.h,0x1402406aa
+Bitboard::operator^=,0.003000,0.003000,0.0,0.0,53910000,,,0.166667,frankycpp_v1.4.exe,Bitboard::operator^=,bitboard.h,0x1402778ad
+Bitboard::operator|=,0.003000,0.003000,0.0,0.0,5990000,75.0,75.0,1.000000,frankycpp_v1.4.exe,Bitboard::operator|=,bitboard.h,0x140245787
+Bitboard::operator|=,0.003000,0.003000,0.0,0.0,23960000,,,0.375000,frankycpp_v1.4.exe,Bitboard::operator|=,bitboard.h,0x140245720
+Bitboard::operator|=,0.003000,0.003000,0.0,0.0,23960000,,,0.125000,frankycpp_v1.4.exe,Bitboard::operator|=,bitboard.h,0x14024574d
+CastlingRights::operator-=,0.003000,0.003000,0.0,0.0,62895000,41.0,41.0,0.380952,frankycpp_v1.4.exe,CastlingRights::operator-=,castlingrights.h,0x14023914f
+Direction::{ctor},0.003000,0.003000,0.0,0.0,8985000,,,1.000000,frankycpp_v1.4.exe,Direction::{ctor},direction.h,0x1402409bd
+Move::operator==,0.003000,0.003000,0.0,0.0,65890000,55.1,55.1,0.636364,frankycpp_v1.4.exe,Move::operator==,PVTable.h,0x1402401d9
+PVTable::clear,0.003000,0.003000,0.0,0.0,8985000,,,0.0,frankycpp_v1.4.exe,PVTable::clear,PVTable.h,0x140208cf8
+Position::getNextPlayer,0.003000,0.003000,0.0,0.0,53910000,,,0.333333,frankycpp_v1.4.exe,Position::getNextPlayer,Position.h,0x14024016e
+Position::getNextPlayer,0.003000,0.003000,0.0,0.0,35940000,,,0.416667,frankycpp_v1.4.exe,Position::getNextPlayer,Position.h,0x14024109e
+Position::getPiece,0.003000,0.003000,0.0,0.0,20965000,,,0.142857,frankycpp_v1.4.exe,Position::getPiece,Position.h,0x14023ab7a
+Position::getPieceBb,0.003000,0.003000,0.0,0.0,92845000,60.9,60.9,0.290323,frankycpp_v1.4.exe,Position::getPieceBb,Position.h,0x1402779ea
+Position::getPieceBb,0.003000,0.003000,0.0,0.0,8985000,,,0.666667,frankycpp_v1.4.exe,Position::getPieceBb,Position.h,0x140245670
+Rank::promotionFor,0.003000,0.003000,0.0,0.0,20965000,28.3,28.3,1.428571,frankycpp_v1.4.exe,Rank::promotionFor,rank.h,0x140240aef
+Square::{ctor},0.003000,0.003000,0.0,0.0,8985000,,,1.666667,frankycpp_v1.4.exe,Square::{ctor},square.h,0x140238e15
+StaticMoveList<256>::end,0.003000,0.003000,0.0,0.0,26955000,,,0.333333,frankycpp_v1.4.exe,StaticMoveList<256>::end,staticmovelist.h,0x140240027
+_std_type_info_compare,0.003000,0.003000,0.0,0.0,146755000,34.9,34.9,0.306122,vcruntime140.dll,_std_type_info_compare,[Unknown],0x180005030
+from_le_u16,0.003000,0.003000,0.0,0.0,2995000,50.0,50.0,1.000000,frankycpp_v1.4.exe,from_le_u16(unsigned short),tbprobe.c,0x140277d70
+func@0x1402157f0,0.003000,0.003000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x1402157f0,[Unknown],0x1402157f0
+func@0x1402450fb,0.003000,0.003000,0.0,0.0,5990000,0.0,0.0,1.000000,ntoskrnl.exe,func@0x1402450fb,[Unknown],0x1402450fb
+func@0x140278080,0.003000,0.003000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x140278080,[Unknown],0x140278080
+func@0x14031d3a0,0.003000,0.003000,0.0,0.0,2995000,5.7,5.7,3.000000,ntoskrnl.exe,func@0x14031d3a0,[Unknown],0x14031d3a0
+func@0x14032be30,0.003000,0.003000,0.0,0.0,23960000,42.9,42.9,0.500000,ntoskrnl.exe,func@0x14032be30,[Unknown],0x14032be30
+func@0x14043d710,0.003000,0.003000,0.0,0.0,2995000,15.8,15.8,3.000000,ntoskrnl.exe,func@0x14043d710,[Unknown],0x14043d710
+func@0x1404e9f58,0.003000,0.003000,0.0,0.0,8985000,,,0.0,ntoskrnl.exe,func@0x1404e9f58,[Unknown],0x1404e9f58
+func@0x14084a410,0.003000,0.003000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x14084a410,[Unknown],0x14084a410
+func@0x18001cd00,0.003000,0.003000,0.0,0.0,23960000,52.9,52.9,0.375000,ntdll.dll,func@0x18001cd00,[Unknown],0x18001cd00
+func@0x180075a90,0.003000,0.003000,0.0,0.0,0,0.0,0.0,,ntdll.dll,func@0x180075a90,[Unknown],0x180075a90
+operator&,0.003000,0.003000,0.0,0.0,155740000,,,0.230769,frankycpp_v1.4.exe,operator&,bitboard.h,0x140239abf
+operator+,0.003000,0.003000,0.0,0.0,53910000,60.3,60.3,0.444444,frankycpp_v1.4.exe,operator+,direction.h,0x140245782
+operator+,0.003000,0.003000,0.0,0.0,47920000,37.1,37.1,0.375000,frankycpp_v1.4.exe,operator+,depth.h,0x140209bfc
+operator+=,0.003000,0.003000,0.0,0.0,32945000,22.5,22.5,0.454545,frankycpp_v1.4.exe,operator+=,value.h,0x14024549c
+operator+=,0.003000,0.003000,0.0,0.0,191680000,,,0.078125,frankycpp_v1.4.exe,operator+=,value.h,0x140245608
+operator+=,0.003000,0.003000,0.0,0.0,86855000,100.0,100.0,0.137931,frankycpp_v1.4.exe,operator+=,value.h,0x140245c72
+operator-,0.003000,0.003000,0.0,0.0,20965000,13.2,13.2,1.428571,frankycpp_v1.4.exe,operator-,value.h,0x140240cd4
+operator-,0.003000,0.003000,0.0,0.0,5990000,,,2.000000,frankycpp_v1.4.exe,operator-,direction.h,0x1402406f3
+operator-,0.003000,0.003000,0.0,0.0,23960000,40.0,40.0,0.750000,frankycpp_v1.4.exe,operator-,value.h,0x140240f41
+operator-,0.003000,0.003000,0.0,0.0,11980000,22.5,22.5,1.000000,frankycpp_v1.4.exe,operator-,value.h,0x14020a1be
+operator>,0.003000,0.003000,0.0,0.0,14975000,12.5,12.5,0.600000,frankycpp_v1.4.exe,operator>,value.h,0x140209397
+operator|,0.003000,0.003000,0.0,0.0,11980000,,,1.000000,frankycpp_v1.4.exe,operator|,bitboard.h,0x140239860
+operator|,0.003000,0.003000,0.0,0.0,80865000,,,0.222222,frankycpp_v1.4.exe,operator|,bitboard.h,0x140277aca
+operator|,0.003000,0.003000,0.0,0.0,17970000,71.0,71.0,0.666667,frankycpp_v1.4.exe,operator|,bitboard.h,0x140245b54
+operator|,0.003000,0.003000,0.0,0.0,20965000,30.8,30.8,0.285714,frankycpp_v1.4.exe,operator|,bitboard.h,0x140277737
+operator|,0.003000,0.003000,0.0,0.0,32945000,80.0,80.0,0.272727,frankycpp_v1.4.exe,operator|,bitboard.h,0x14023982e
+operator~,0.003000,0.003000,0.0,0.0,29950000,61.6,61.6,0.500000,frankycpp_v1.4.exe,operator~,color.h,0x14023997f
+"std::array<Bitboard,64>::operator[]",0.003000,0.003000,0.0,0.0,26955000,41.3,41.3,0.444444,frankycpp_v1.4.exe,"std::array<Bitboard,64>::operator[]",array,0x1402456f9
+"std::array<std::array<int,64>,64>::operator[]",0.003000,0.003000,0.0,0.0,50915000,,,0.352941,frankycpp_v1.4.exe,"std::array<std::array<int,64>,64>::operator[]",array,0x140240235
+"std::basic_filebuf<char,struct std::char_traits<char> >::xsgetn",0.003000,0.003000,0.0,0.0,56905000,33.3,33.3,0.263158,frankycpp_v1.4.exe,"std::basic_filebuf<char,struct std::char_traits<char> >::xsgetn(char * __ptr64,__int64)",__msvc_filebuf.hpp,0x14011aaf0
+std::countr_zero,0.003000,0.003000,0.0,0.0,89850000,92.7,92.7,0.233333,frankycpp_v1.4.exe,std::countr_zero,bit,0x140245d38
+"std::unique_ptr<TT::Entry [0],std::default_delete<TT::Entry [0]> >::operator[]",0.003000,0.003000,0.0,0.0,35940000,,,0.166667,frankycpp_v1.4.exe,"std::unique_ptr<TT::Entry [0],std::default_delete<TT::Entry [0]> >::operator[]",memory,0x14020abb8
+typeOf,0.003000,0.003000,0.0,0.0,23960000,66.7,66.7,0.500000,frankycpp_v1.4.exe,typeOf,piece.h,0x1402406ef
+typeOf,0.003000,0.003000,0.0,0.0,254575000,,,0.117647,frankycpp_v1.4.exe,typeOf,piece.h,0x1402777a1
+Bitboard::operator bool,0.002000,0.002000,0.0,0.0,11980000,,,0.500000,frankycpp_v1.4.exe,Bitboard::operator bool,bitboard.h,0x140241344
+Bitboard::operator|=,0.002000,0.002000,0.0,0.0,0,50.0,50.0,,frankycpp_v1.4.exe,Bitboard::operator|=,bitboard.h,0x1402457af
+Bitboard::operator~,0.002000,0.002000,0.0,0.0,14975000,0.0,0.0,0.200000,frankycpp_v1.4.exe,Bitboard::operator~,bitboard.h,0x140240fa4
+Bitboard::popLSB,0.002000,0.002000,0.0,0.0,17970000,22.2,22.2,0.333333,frankycpp_v1.4.exe,Bitboard::popLSB,bitboard.h,0x140240fd4
+Bitboard::popLSB,0.002000,0.002000,0.0,0.0,20965000,9.1,9.1,0.285714,frankycpp_v1.4.exe,Bitboard::popLSB,bitboard.h,0x140241260
+Bitboard::popLSB,0.002000,0.002000,0.0,0.0,11980000,0.0,0.0,0.250000,frankycpp_v1.4.exe,Bitboard::popLSB,bitboard.h,0x140245d38
+Bitboard::{ctor},0.002000,0.002000,0.0,0.0,38935000,55.0,55.0,0.230769,frankycpp_v1.4.exe,Bitboard::{ctor},bitboard.h,0x1402398b2
+Direction::pawnPush,0.002000,0.002000,0.0,0.0,2995000,20.0,20.0,1.000000,frankycpp_v1.4.exe,Direction::pawnPush,direction.h,0x140240566
+Direction::pawnPush,0.002000,0.002000,0.0,0.0,11980000,34.8,34.8,0.250000,frankycpp_v1.4.exe,Direction::pawnPush,direction.h,0x140240a83
+Evaluator::valueFromScore,0.002000,0.002000,0.0,0.0,20965000,27.1,27.1,0.571429,frankycpp_v1.4.exe,Evaluator::valueFromScore,Evaluator.cpp,0x140245313
+ExAcquireFastMutex,0.002000,0.002000,0.0,0.0,2995000,50.0,50.0,1.000000,ntoskrnl.exe,ExAcquireFastMutex,[Unknown],0x1402e70c0
+ExpInterlockedPushEntrySList,0.002000,0.002000,0.0,0.0,8985000,0.0,0.0,0.333333,ntoskrnl.exe,ExpInterlockedPushEntrySList,[Unknown],0x1406b3250
+KeAcquireInStackQueuedSpinLock,0.002000,0.002000,0.0,0.0,5990000,12.5,12.5,1.500000,ntoskrnl.exe,KeAcquireInStackQueuedSpinLock,[Unknown],0x14020eb60
+KeLowerIrql,0.002000,0.002000,0.0,0.0,0,50.0,50.0,,ntoskrnl.exe,KeLowerIrql,[Unknown],0x1403f7790
+Move::encode,0.002000,0.002000,0.0,0.0,14975000,,,0.800000,frankycpp_v1.4.exe,Move::encode,move.h,0x14024130e
+Move::encode,0.002000,0.002000,0.0,0.0,29950000,41.8,41.8,0.300000,frankycpp_v1.4.exe,Move::encode,move.h,0x140240c18
+Move::encode,0.002000,0.002000,0.0,0.0,17970000,,,0.500000,frankycpp_v1.4.exe,Move::encode,move.h,0x140241291
+Move::setValue,0.002000,0.002000,0.0,0.0,47920000,,,0.250000,frankycpp_v1.4.exe,Move::setValue,move.h,0x140240200
+Move::to,0.002000,0.002000,0.0,0.0,23960000,,,0.125000,frankycpp_v1.4.exe,Move::to,move.h,0x14020a28f
+Move::to,0.002000,0.002000,0.0,0.0,11980000,100.0,100.0,0.0,frankycpp_v1.4.exe,Move::to,move.h,0x14020a3c3
+Move::type,0.002000,0.002000,0.0,0.0,35940000,24.7,24.7,0.250000,frankycpp_v1.4.exe,Move::type,move.h,0x140239992
+Move::type,0.002000,0.002000,0.0,0.0,44925000,56.6,56.6,0.400000,frankycpp_v1.4.exe,Move::type,move.h,0x1402776cd
+Move::type,0.002000,0.002000,0.0,0.0,20965000,,,0.0,frankycpp_v1.4.exe,Move::type,move.h,0x14020aae2
+Move::{ctor},0.002000,0.002000,0.0,0.0,2995000,66.7,66.7,1.000000,frankycpp_v1.4.exe,Move::{ctor},move.h,0x140240c04
+PawnTT::resize,0.002000,0.002000,0.0,0.0,26955000,22.2,22.2,0.888889,frankycpp_v1.4.exe,PawnTT::resize(unsigned __int64),PawnTT.cpp,0x140242cc0
+Position::getEnPassantSquare,0.002000,0.002000,0.0,0.0,2995000,,,2.000000,frankycpp_v1.4.exe,Position::getEnPassantSquare,Position.h,0x140277a34
+Position::getNextPlayer,0.002000,0.002000,0.0,0.0,14975000,59.3,59.3,0.200000,frankycpp_v1.4.exe,Position::getNextPlayer,Position.h,0x1402403b3
+Position::getOccupiedBb,0.002000,0.002000,0.0,0.0,5990000,,,0.0,frankycpp_v1.4.exe,Position::getOccupiedBb,Position.h,0x140245b6b
+Position::getPieceBb,0.002000,0.002000,0.0,0.0,20965000,32.7,32.7,0.285714,frankycpp_v1.4.exe,Position::getPieceBb,Position.h,0x140245bc7
+Search::evaluate,0.002000,0.002000,0.0,0.0,47920000,33.2,33.2,0.875000,frankycpp_v1.4.exe,Search::evaluate,Search.cpp,0x14020a8b8
+Search::evaluate,0.002000,0.002000,0.0,0.0,32945000,,,0.090909,frankycpp_v1.4.exe,Search::evaluate,Search.cpp,0x1402091f0
+Search::isTimeAlmostUp,0.002000,0.002000,0.0,0.0,5990000,27.3,27.3,1.000000,frankycpp_v1.4.exe,Search::isTimeAlmostUp(void),Search.cpp,0x14020e8f0
+Search::thread,0.002000,0.002000,0.0,0.0,5990000,,,0.500000,frankycpp_v1.4.exe,Search::thread,Search.h,0x14020ad21
+Search::thread,0.002000,0.002000,0.0,0.0,14975000,50.0,50.0,0.0,frankycpp_v1.4.exe,Search::thread,Search.h,0x140209e8a
+StaticMoveList<128>::push_back,0.002000,0.002000,0.0,0.0,5990000,5.9,5.9,1.500000,frankycpp_v1.4.exe,StaticMoveList<128>::push_back,staticmovelist.h,0x140209fd0
+StaticMoveList<256>::push_back,0.002000,0.002000,0.0,0.0,2995000,100.0,100.0,0.0,frankycpp_v1.4.exe,StaticMoveList<256>::push_back,staticmovelist.h,0x1402405bf
+TT::getHash,0.002000,0.002000,0.0,0.0,8985000,,,0.0,frankycpp_v1.4.exe,TT::getHash,TT.h,0x14024702a
+Value::operator int,0.002000,0.002000,0.0,0.0,65890000,63.2,63.2,0.454545,frankycpp_v1.4.exe,Value::operator int,value.h,0x14023ac36
+__builtin_array_init_helper<class Value>,0.002000,0.002000,0.0,0.0,20965000,34.1,34.1,0.571429,frankycpp_v1.4.exe,"__builtin_array_init_helper<class Value>(class Value *,unsigned __int64)",[Unknown],0x140277c10
+boost::serialization::typeid_system::extended_type_info_typeid_0::is_less_than,0.002000,0.002000,0.0,0.0,38935000,55.0,55.0,0.461538,frankycpp_v1.4.exe,boost::serialization::typeid_system::extended_type_info_typeid_0::is_less_than(class boost::serialization::extended_type_info const &),extended_type_info_typeid.cpp,0x14028d3b0
+func@0x1400135e0,0.002000,0.002000,0.0,0.0,0,0.0,0.0,0.0,ntfs.sys,func@0x1400135e0,[Unknown],0x1400135e0
+func@0x14002706b,0.002000,0.002000,0.0,0.0,5990000,3.8,3.8,2.500000,dxgmms2.sys,func@0x14002706b,[Unknown],0x14002706b
+func@0x140211da0,0.002000,0.002000,0.0,0.0,17970000,46.2,46.2,0.500000,ntoskrnl.exe,func@0x140211da0,[Unknown],0x140211da0
+func@0x140223cf0,0.002000,0.002000,0.0,0.0,2995000,14.3,14.3,4.000000,ntoskrnl.exe,func@0x140223cf0,[Unknown],0x140223cf0
+func@0x1402467e4,0.002000,0.002000,0.0,0.0,5990000,,,0.0,ntoskrnl.exe,func@0x1402467e4,[Unknown],0x1402467e4
+func@0x14024fafc,0.002000,0.002000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x14024fafc,[Unknown],0x14024fafc
+func@0x140252210,0.002000,0.002000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x140252210,[Unknown],0x140252210
+func@0x140258630,0.002000,0.002000,0.0,0.0,29950000,24.0,24.0,0.900000,ntoskrnl.exe,func@0x140258630,[Unknown],0x140258630
+func@0x1402613f0,0.002000,0.002000,0.0,0.0,0,66.7,66.7,,ntoskrnl.exe,func@0x1402613f0,[Unknown],0x1402613f0
+func@0x1402801b0,0.002000,0.002000,0.0,0.0,5990000,17.6,17.6,1.500000,ntoskrnl.exe,func@0x1402801b0,[Unknown],0x1402801b0
+func@0x1402e0260,0.002000,0.002000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402e0260,[Unknown],0x1402e0260
+func@0x1402e38c0,0.002000,0.002000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x1402e38c0,[Unknown],0x1402e38c0
+func@0x1402e3a5d,0.002000,0.002000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x1402e3a5d,[Unknown],0x1402e3a5d
+func@0x1402fece0,0.002000,0.002000,0.0,0.0,0,13.4,13.4,,ntoskrnl.exe,func@0x1402fece0,[Unknown],0x1402fece0
+func@0x140302951,0.002000,0.002000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x140302951,[Unknown],0x140302951
+func@0x140309c30,0.002000,0.002000,0.0,0.0,0,28.6,28.6,,ntoskrnl.exe,func@0x140309c30,[Unknown],0x140309c30
+func@0x14030f980,0.002000,0.002000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x14030f980,[Unknown],0x14030f980
+func@0x1403acaa0,0.002000,0.002000,0.0,0.0,2995000,0.0,0.0,1.000000,ntoskrnl.exe,func@0x1403acaa0,[Unknown],0x1403acaa0
+func@0x1403bd960,0.002000,0.002000,0.0,0.0,5990000,7.4,7.4,1.500000,ntoskrnl.exe,func@0x1403bd960,[Unknown],0x1403bd960
+func@0x1403e3700,0.002000,0.002000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x1403e3700,[Unknown],0x1403e3700
+func@0x1404e94d0,0.002000,0.002000,0.0,0.0,0,10.5,10.5,,ntoskrnl.exe,func@0x1404e94d0,[Unknown],0x1404e94d0
+func@0x1406b24c0,0.002000,0.002000,0.0,0.0,0,36.0,36.0,,ntoskrnl.exe,func@0x1406b24c0,[Unknown],0x1406b24c0
+func@0x140849cc0,0.002000,0.002000,0.0,0.0,2995000,0.0,0.0,2.000000,ntoskrnl.exe,func@0x140849cc0,[Unknown],0x140849cc0
+func@0x14084e040,0.002000,0.002000,0.0,0.0,0,,,0.0,ntoskrnl.exe,func@0x14084e040,[Unknown],0x14084e040
+func@0x1408bfed0,0.002000,0.002000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1408bfed0,[Unknown],0x1408bfed0
+func@0x140a8b960,0.002000,0.002000,0.0,0.0,0,0.0,0.0,0.0,nvlddmkm.sys,func@0x140a8b960,[Unknown],0x140a8b960
+func@0x140da2c40,0.002000,0.002000,0.0,0.0,0,0.0,0.0,0.0,nvlddmkm.sys,func@0x140da2c40,[Unknown],0x140da2c40
+func@0x140da8ef0,0.002000,0.002000,0.0,0.0,0,0.0,0.0,,nvlddmkm.sys,func@0x140da8ef0,[Unknown],0x140da8ef0
+func@0x140e1c190,0.002000,0.002000,0.0,0.0,0,0.0,0.0,,nvlddmkm.sys,func@0x140e1c190,[Unknown],0x140e1c190
+func@0x180011200,0.002000,0.002000,0.0,0.0,23960000,19.4,19.4,0.375000,vcruntime140.dll,func@0x180011200,[Unknown],0x180011200
+func@0x180045c64,0.002000,0.002000,0.0,0.0,0,0.0,0.0,0.0,kernelbase.dll,func@0x180045c64,[Unknown],0x180045c64
+func@0x180074643,0.002000,0.002000,0.0,0.0,0,4.0,4.0,,ntdll.dll,func@0x180074643,[Unknown],0x180074643
+func@0x180074d70,0.002000,0.002000,0.0,0.0,0,0.0,0.0,,ntdll.dll,func@0x180074d70,[Unknown],0x180074d70
+func@0x1800cfb90,0.002000,0.002000,0.0,0.0,23960000,9.7,9.7,0.875000,ntdll.dll,func@0x1800cfb90,[Unknown],0x1800cfb90
+memmove,0.002000,0.002000,0.0,0.0,26955000,0.0,0.0,0.777778,vcruntime140.dll,memmove,[Unknown],0x180012030
+operator&,0.002000,0.002000,0.0,0.0,0,,,,frankycpp_v1.4.exe,operator&,bitboard.h,0x140240ac5
+operator&,0.002000,0.002000,0.0,0.0,11980000,61.6,61.6,1.250000,frankycpp_v1.4.exe,operator&,bitboard.h,0x14020a284
+operator&,0.002000,0.002000,0.0,0.0,0,,,0.0,frankycpp_v1.4.exe,operator&,bitboard.h,0x140277bbb
+operator&,0.002000,0.002000,0.0,0.0,35940000,43.7,43.7,0.500000,frankycpp_v1.4.exe,operator&,bitboard.h,0x1402779d2
+operator&,0.002000,0.002000,0.0,0.0,17970000,46.8,46.8,0.833333,frankycpp_v1.4.exe,operator&,bitboard.h,0x1402456e9
+operator&,0.002000,0.002000,0.0,0.0,59900000,,,0.100000,frankycpp_v1.4.exe,operator&,bitboard.h,0x140277ae9
+operator&,0.002000,0.002000,0.0,0.0,17970000,51.3,51.3,0.333333,frankycpp_v1.4.exe,operator&,bitboard.h,0x1402779f2
+operator&,0.002000,0.002000,0.0,0.0,62895000,,,0.095238,frankycpp_v1.4.exe,operator&,bitboard.h,0x140245723
+operator&,0.002000,0.002000,0.0,0.0,8985000,,,0.0,frankycpp_v1.4.exe,operator&,bitboard.h,0x140239af1
+operator*,0.002000,0.002000,0.0,0.0,23960000,8.6,8.6,0.500000,frankycpp_v1.4.exe,operator*,value.h,0x140245318
+operator+,0.002000,0.002000,0.0,0.0,32945000,43.8,43.8,0.363636,frankycpp_v1.4.exe,operator+,castlingrights.h,0x140239134
+operator+=,0.002000,0.002000,0.0,0.0,56905000,41.2,41.2,0.368421,frankycpp_v1.4.exe,operator+=,value.h,0x140245dbb
+operator+=,0.002000,0.002000,0.0,0.0,71880000,,,0.125000,frankycpp_v1.4.exe,operator+=,value.h,0x1402462e6
+operator+=,0.002000,0.002000,0.0,0.0,26955000,75.0,75.0,0.111111,frankycpp_v1.4.exe,operator+=,value.h,0x140245af3
+operator+=,0.002000,0.002000,0.0,0.0,11980000,,,0.0,frankycpp_v1.4.exe,operator+=,value.h,0x1402452fd
+operator+=,0.002000,0.002000,0.0,0.0,47920000,,,0.312500,frankycpp_v1.4.exe,operator+=,value.h,0x140245c34
+operator-,0.002000,0.002000,0.0,0.0,0,22.2,22.2,,frankycpp_v1.4.exe,operator-,value.h,0x140208dc9
+operator-,0.002000,0.002000,0.0,0.0,8985000,14.3,14.3,0.333333,frankycpp_v1.4.exe,operator-,value.h,0x1402777f7
+operator==,0.002000,0.002000,0.0,0.0,11980000,40.0,40.0,0.250000,frankycpp_v1.4.exe,operator==,castlingrights.h,0x140208f6c
+operator>=,0.002000,0.002000,0.0,0.0,14975000,18.7,18.7,0.800000,frankycpp_v1.4.exe,operator>=,value.h,0x14020af2d
+operator|,0.002000,0.002000,0.0,0.0,26955000,64.3,64.3,0.666667,frankycpp_v1.4.exe,operator|,bitboard.h,0x14023984d
+operator|,0.002000,0.002000,0.0,0.0,17970000,13.3,13.3,0.166667,frankycpp_v1.4.exe,operator|,bitboard.h,0x14024123c
+operator|,0.002000,0.002000,0.0,0.0,20965000,31.0,31.0,0.571429,frankycpp_v1.4.exe,operator|,bitboard.h,0x140241370
+operator|,0.002000,0.002000,0.0,0.0,59900000,,,0.450000,frankycpp_v1.4.exe,operator|,bitboard.h,0x140239a1d
+operator~,0.002000,0.002000,0.0,0.0,2995000,16.0,16.0,2.000000,frankycpp_v1.4.exe,operator~,color.h,0x14023992f
+"std::_Hash<class std::_Umap_traits<unsigned __int64,class BookEntry,class std::_Uhash_compare<unsigned __int64,struct std::hash<unsigned __int64>,struct std::equal_to<unsigned __int64> >,class std::allocator<struct std::pair<unsigned __int64 const ,class BookEntry> >,0> >::emplace<struct std::pair<unsigned __int64 const ,class BookEntry> >",0.002000,0.002000,0.0,0.0,5990000,11.1,11.1,0.0,frankycpp_v1.4.exe,"std::_Hash<class std::_Umap_traits<unsigned __int64,class BookEntry,class std::_Uhash_compare<unsigned __int64,struct std::hash<unsigned __int64>,struct std::equal_to<unsigned __int64> >,class std::allocator<struct std::pair<unsigned __int64 const ,class BookEntry> >,0> >::emplace<struct std::pair<unsigned __int64 const ,class BookEntry> >(struct std::pair<unsigned __int64 const ,class BookEntry> &&)",xhash,0x140261b20
+"std::_List_node<std::pair<unsigned __int64 const ,BookEntry>,void *>::_Freenode",0.002000,0.002000,0.0,0.0,8985000,7.1,7.1,2.000000,frankycpp_v1.4.exe,"std::_List_node<std::pair<unsigned __int64 const ,BookEntry>,void *>::_Freenode",list,0x14021aa73
+std::_Static_partition_team<__int64>::_Get_next_key,0.002000,0.002000,0.0,0.0,0,2.5,2.5,,frankycpp_v1.4.exe,std::_Static_partition_team<__int64>::_Get_next_key,execution,0x1402449d0
+"std::array<Bitboard,64>::operator[]",0.002000,0.002000,0.0,0.0,26955000,,,0.111111,frankycpp_v1.4.exe,"std::array<Bitboard,64>::operator[]",array,0x140239a8e
+"std::array<Bitboard,64>::operator[]",0.002000,0.002000,0.0,0.0,29950000,38.7,38.7,0.200000,frankycpp_v1.4.exe,"std::array<Bitboard,64>::operator[]",array,0x140239a24
+"std::array<Bitboard,8>::operator[]",0.002000,0.002000,0.0,0.0,8985000,0.0,0.0,0.0,frankycpp_v1.4.exe,"std::array<Bitboard,8>::operator[]",array,0x140240c61
+"std::array<HistoryState,512>::operator[]",0.002000,0.002000,0.0,0.0,20965000,,,0.428571,frankycpp_v1.4.exe,"std::array<HistoryState,512>::operator[]",array,0x140238e48
+"std::array<Value,25>::operator[]",0.002000,0.002000,0.0,0.0,53910000,,,0.500000,frankycpp_v1.4.exe,"std::array<Value,25>::operator[]",array,0x140240fe2
+"std::array<int,64>::operator[]",0.002000,0.002000,0.0,0.0,56905000,53.4,53.4,0.368421,frankycpp_v1.4.exe,"std::array<int,64>::operator[]",array,0x14020a2ca
+"std::array<int,64>::operator[]",0.002000,0.002000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.4.exe,"std::array<int,64>::operator[]",array,0x14020a3f6
+"std::array<std::array<int,64>,64>::operator[]",0.002000,0.002000,0.0,0.0,5990000,30.0,30.0,1.000000,frankycpp_v1.4.exe,"std::array<std::array<int,64>,64>::operator[]",array,0x1402391af
+std::clamp,0.002000,0.002000,0.0,0.0,56905000,31.1,31.1,0.578947,frankycpp_v1.4.exe,std::clamp,algorithm,0x140209f4a
+std::countr_zero,0.002000,0.002000,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.4.exe,std::countr_zero,bit,0x140240fd4
+std::countr_zero,0.002000,0.002000,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,std::countr_zero,bit,0x1402456e0
+std::make_unique,0.002000,0.002000,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.4.exe,std::make_unique,memory,0x140243005
+std::min,0.002000,0.002000,0.0,0.0,0,,,0.0,frankycpp_v1.4.exe,std::min,utility,0x140208dcf
+std::min,0.002000,0.002000,0.0,0.0,14975000,,,0.200000,frankycpp_v1.4.exe,std::min,utility,0x140209df8
+std::min,0.002000,0.002000,0.0,0.0,29950000,28.9,28.9,0.500000,frankycpp_v1.4.exe,std::min,utility,0x140209e0b
+std::popcount,0.002000,0.002000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.4.exe,std::popcount,bit,0x140208fc5
+"std::ranges::_Stable_sort_fn::_Buffered_merge_sort_common<Move *,moveValueGreaterComparator,std::identity>",0.002000,0.002000,0.0,0.0,26955000,13.5,13.5,1.000000,frankycpp_v1.4.exe,"std::ranges::_Stable_sort_fn::_Buffered_merge_sort_common<Move *,moveValueGreaterComparator,std::identity>(class Move *, class Move *, const __int64, class Move *, struct moveValueGreaterComparator, struct std::identity)",algorithm,0x14021ae60
+"std::ranges::_Stable_sort_fn::_Stable_sort_common_buffered<Move *,moveValueGreaterComparator,std::identity>",0.002000,0.002000,0.0,0.0,8985000,14.9,14.9,1.333333,frankycpp_v1.4.exe,"std::ranges::_Stable_sort_fn::_Stable_sort_common_buffered<Move *,moveValueGreaterComparator,std::identity>(class Move *, class Move *, const __int64, class Move *, const __int64, struct moveValueGreaterComparator, struct std::identity)",algorithm,0x140219120
+"std::unique_ptr<tablebase::Tablebase,std::default_delete<tablebase::Tablebase> >::operator bool",0.002000,0.002000,0.0,0.0,0,,,0.0,frankycpp_v1.4.exe,"std::unique_ptr<tablebase::Tablebase,std::default_delete<tablebase::Tablebase> >::operator bool",memory,0x140208f84
+Bitboard::operator bool,0.001000,0.001000,0.0,0.0,0,,,0.0,frankycpp_v1.4.exe,Bitboard::operator bool,bitboard.h,0x140240bb6
+Bitboard::operator^=,0.001000,0.001000,0.0,0.0,14975000,51.3,51.3,0.200000,frankycpp_v1.4.exe,Bitboard::operator^=,bitboard.h,0x140239a32
+Bitboard::operator|=,0.001000,0.001000,0.0,0.0,68885000,76.8,76.8,0.260870,frankycpp_v1.4.exe,Bitboard::operator|=,bitboard.h,0x1402778b3
+Bitboard::operator|=,0.001000,0.001000,0.0,0.0,8985000,38.3,38.3,0.666667,frankycpp_v1.4.exe,Bitboard::operator|=,bitboard.h,0x14024572b
+Bitboard::popLSB,0.001000,0.001000,0.0,0.0,11980000,27.0,27.0,1.000000,frankycpp_v1.4.exe,Bitboard::popLSB,bitboard.h,0x140240ef5
+Bitboard::popLSB,0.001000,0.001000,0.0,0.0,2995000,14.3,14.3,1.000000,frankycpp_v1.4.exe,Bitboard::popLSB,bitboard.h,0x1402456e0
+Bitboard::popLSB,0.001000,0.001000,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.4.exe,Bitboard::popLSB,bitboard.h,0x140240595
+Direction::operator int,0.001000,0.001000,0.0,0.0,11980000,,,0.250000,frankycpp_v1.4.exe,Direction::operator int,direction.h,0x14024048d
+Direction::pawnPush,0.001000,0.001000,0.0,0.0,2995000,50.0,50.0,1.000000,frankycpp_v1.4.exe,Direction::pawnPush,direction.h,0x1402456a7
+Direction::{ctor},0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.4.exe,Direction::{ctor},direction.h,0x140240ab0
+EntropyProvideData,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,cng.sys,EntropyProvideData,[Unknown],0x18002cff0
+Evaluator::valueFromScore,0.001000,0.001000,0.0,0.0,8985000,,,0.333333,frankycpp_v1.4.exe,Evaluator::valueFromScore,Evaluator.cpp,0x1402454ad
+ExAcquireAutoExpandPushLockShared,0.001000,0.001000,0.0,0.0,0,33.3,33.3,,ntoskrnl.exe,ExAcquireAutoExpandPushLockShared,[Unknown],0x1402e83d0
+ExAcquireCacheAwarePushLockSharedEx,0.001000,0.001000,0.0,0.0,5990000,0.0,0.0,0.500000,ntoskrnl.exe,ExAcquireCacheAwarePushLockSharedEx,[Unknown],0x1402e8320
+ExAcquireFastResourceShared,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,ExAcquireFastResourceShared,[Unknown],0x1402e9a60
+ExAcquireResourceSharedLite,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,ExAcquireResourceSharedLite,[Unknown],0x1402ea6f0
+ExFreeToNPagedLookasideList,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,ExFreeToNPagedLookasideList,[Unknown],0x140358350
+ExReleaseFastMutex,0.001000,0.001000,0.0,0.0,5990000,0.0,0.0,0.500000,ntoskrnl.exe,ExReleaseFastMutex,[Unknown],0x1403002b0
+ExReleaseFastResource,0.001000,0.001000,0.0,0.0,8985000,50.0,50.0,0.0,ntoskrnl.exe,ExReleaseFastResource,[Unknown],0x14027f260
+ExReleasePushLockEx,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,ExReleasePushLockEx,[Unknown],0x140281940
+ExReleaseRundownProtectionCacheAwareEx,0.001000,0.001000,0.0,0.0,2995000,,,5.000000,ntoskrnl.exe,ExReleaseRundownProtectionCacheAwareEx,[Unknown],0x14027ca10
+FltGetStreamContext,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,fltmgr.sys,FltGetStreamContext,[Unknown],0x180007ca0
+GetLastError,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,kernel32.dll,GetLastError,[Unknown],0x180018640
+IoFreeIrp,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,IoFreeIrp,[Unknown],0x1402fc360
+IoGetAttachedDeviceReference,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,IoGetAttachedDeviceReference,[Unknown],0x1404169b0
+KeAcquireSpinLockRaiseToDpc,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,KeAcquireSpinLockRaiseToDpc,[Unknown],0x140277f30
+KeSetEvent,0.001000,0.001000,0.0,0.0,0,,,0.0,ntoskrnl.exe,KeSetEvent,[Unknown],0x1402959b0
+LdrShutdownThread,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntdll.dll,LdrShutdownThread,[Unknown],0x18008c770
+Move::encode,0.001000,0.001000,0.0,0.0,8985000,30.0,30.0,1.666667,frankycpp_v1.4.exe,Move::encode,move.h,0x140240ccb
+Move::encode,0.001000,0.001000,0.0,0.0,0,,,0.0,frankycpp_v1.4.exe,Move::encode,move.h,0x140240a22
+Move::operator==,0.001000,0.001000,0.0,0.0,2995000,10.3,10.3,2.000000,frankycpp_v1.4.exe,Move::operator==,PVTable.h,0x14023e4f3
+Move::operator==,0.001000,0.001000,0.0,0.0,11980000,,,1.000000,frankycpp_v1.4.exe,Move::operator==,PVTable.h,0x14023e42f
+Move::operator==,0.001000,0.001000,0.0,0.0,20965000,57.1,57.1,0.428571,frankycpp_v1.4.exe,Move::operator==,PVTable.h,0x140209ed9
+Move::operator==,0.001000,0.001000,0.0,0.0,11980000,89.0,89.0,0.250000,frankycpp_v1.4.exe,Move::operator==,PVTable.h,0x14020aacd
+Move::operator==,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,frankycpp_v1.4.exe,Move::operator==,PVTable.h,0x140209ee5
+Move::operator==,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.4.exe,Move::operator==,PVTable.h,0x140209ed4
+Move::promotionType,0.001000,0.001000,0.0,0.0,2995000,10.0,10.0,0.0,frankycpp_v1.4.exe,Move::promotionType,move.h,0x140239a0e
+Move::stripped,0.001000,0.001000,0.0,0.0,17970000,8.6,8.6,0.833333,frankycpp_v1.4.exe,Move::stripped,move.h,0x14023e42c
+Move::to,0.001000,0.001000,0.0,0.0,11980000,31.6,31.6,0.750000,frankycpp_v1.4.exe,Move::to,move.h,0x1402399ae
+Move::{ctor},0.001000,0.001000,0.0,0.0,11980000,0.0,0.0,0.250000,frankycpp_v1.4.exe,Move::{ctor},move.h,0x140241274
+MoveGenerator::generateCastling,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,frankycpp_v1.4.exe,"MoveGenerator::generateCastling(class Position const &,class StaticMoveList<256> *,enum GenMode)",MoveGenerator.cpp,0x140241370
+Position::clearEnPassant,0.001000,0.001000,0.0,0.0,8985000,0.0,0.0,0.0,frankycpp_v1.4.exe,Position::clearEnPassant,Position.cpp,0x140238faf
+Position::getEnPassantSquare,0.001000,0.001000,0.0,0.0,14975000,,,0.400000,frankycpp_v1.4.exe,Position::getEnPassantSquare,Position.h,0x1402407c2
+Position::getGamePhaseFactor,0.001000,0.001000,0.0,0.0,2995000,,,0.0,frankycpp_v1.4.exe,Position::getGamePhaseFactor,Position.h,0x140245293
+Position::getMaterialNonPawn,0.001000,0.001000,0.0,0.0,2995000,,,0.0,frankycpp_v1.4.exe,Position::getMaterialNonPawn,Position.h,0x1402094ba
+Position::getMidPosValue,0.001000,0.001000,0.0,0.0,2995000,53.4,53.4,1.000000,frankycpp_v1.4.exe,Position::getMidPosValue,Position.h,0x1402452da
+Position::getOccupiedBb,0.001000,0.001000,0.0,0.0,14975000,43.5,43.5,0.200000,frankycpp_v1.4.exe,Position::getOccupiedBb,Position.h,0x140245cb5
+Position::getPiece,0.001000,0.001000,0.0,0.0,14975000,100.0,100.0,0.200000,frankycpp_v1.4.exe,Position::getPiece,Position.h,0x140240348
+Position::getPieceBb,0.001000,0.001000,0.0,0.0,5990000,23.6,23.6,1.000000,frankycpp_v1.4.exe,Position::getPieceBb,Position.h,0x1402410be
+Position::isCapturingMove,0.001000,0.001000,0.0,0.0,17970000,42.2,42.2,0.333333,frankycpp_v1.4.exe,Position::isCapturingMove,Position.h,0x14020a280
+Position::isLegalMove,0.001000,0.001000,0.0,0.0,8985000,0.0,0.0,0.0,frankycpp_v1.4.exe,Position::isLegalMove(class Move),Position.cpp,0x140239c50
+RtlFlsGetValue,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntdll.dll,RtlFlsGetValue,[Unknown],0x1800dc3e0
+RtlQueryPerformanceCounter,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,0.0,ntdll.dll,RtlQueryPerformanceCounter,[Unknown],0x180084680
+RtlValidAcl,0.001000,0.001000,0.0,0.0,5990000,100.0,100.0,0.500000,ntoskrnl.exe,RtlValidAcl,[Unknown],0x14091b3c0
+Search::thread,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.4.exe,Search::thread,Search.h,0x1402119dc
+Search::thread,0.001000,0.001000,0.0,0.0,5990000,,,0.500000,frankycpp_v1.4.exe,Search::thread,Search.h,0x14020a316
+Search::thread,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.4.exe,Search::thread,Search.h,0x14020a454
+Square::file,0.001000,0.001000,0.0,0.0,8985000,21.1,21.1,1.000000,frankycpp_v1.4.exe,Square::file,square.h,0x140246236
+StaticMoveList<128>::push_back,0.001000,0.001000,0.0,0.0,0,3.7,3.7,,frankycpp_v1.4.exe,StaticMoveList<128>::push_back,staticmovelist.h,0x14020abf5
+StaticMoveList<256>::push_back,0.001000,0.001000,0.0,0.0,35940000,47.2,47.2,0.666667,frankycpp_v1.4.exe,StaticMoveList<256>::push_back,staticmovelist.h,0x140240cac
+TT::getHash,0.001000,0.001000,0.0,0.0,0,26.7,26.7,,frankycpp_v1.4.exe,TT::getHash,TT.h,0x1402471ab
+Value::isCheckMate,0.001000,0.001000,0.0,0.0,35940000,,,0.833333,frankycpp_v1.4.exe,Value::isCheckMate,value.h,0x14020b094
+Value::operator int,0.001000,0.001000,0.0,0.0,2995000,100.0,100.0,0.0,frankycpp_v1.4.exe,Value::operator int,value.h,0x14020a7dd
+Value::{ctor},0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.4.exe,Value::{ctor},value.h,0x14020adb5
+Value::{ctor},0.001000,0.001000,0.0,0.0,17970000,19.3,19.3,1.000000,frankycpp_v1.4.exe,Value::{ctor},value.h,0x140277835
+YAML::Exp::Break,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.4.exe,YAML::Exp::Break,exp.h,0x1402db883
+[Import thunk _std_type_info_compare],0.001000,0.001000,0.0,0.0,2995000,80.0,80.0,2.000000,frankycpp_v1.4.exe,[Import thunk _std_type_info_compare],[Unknown],0x1405efb48
+[Import thunk memcpy],0.001000,0.001000,0.0,0.0,23960000,37.2,37.2,0.375000,frankycpp_v1.4.exe,[Import thunk memcpy],[Unknown],0x1405efb6c
+[Import thunk memset],0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.4.exe,[Import thunk memset],[Unknown],0x1405efb7e
+[ntoskrnl.exe],0.001000,0.001000,0.0,0.0,35940000,16.9,16.9,0.333333,ntoskrnl.exe,[ntoskrnl.exe],[Unknown],0x0
+boost::archive::detail::basic_iarchive::load_object,0.001000,0.001000,0.0,0.0,32945000,87.5,87.5,0.272727,frankycpp_v1.4.exe,"boost::archive::detail::basic_iarchive::load_object(void *,class boost::archive::detail::basic_iserializer const &)",basic_iarchive.cpp,0x140282f10
+"boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class Move>::load_object_data",0.001000,0.001000,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.4.exe,"boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class Move>::load_object_data(class boost::archive::detail::basic_iarchive &,void *,unsigned int)",iserializer.hpp,0x14026e080
+boost::archive::version_type::{ctor},0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.4.exe,boost::archive::version_type::{ctor},basic_archive.hpp,0x1402648e0
+"boost::serialization::load<class boost::archive::binary_iarchive,class BookEntry>",0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.4.exe,"boost::serialization::load<class boost::archive::binary_iarchive,class BookEntry>(class boost::archive::binary_iarchive &,class boost::serialization::nvp<class BookEntry> &,unsigned int)",nvp.hpp,0x140265b20
+"boost::serialization::load<class boost::archive::binary_iarchive,class Move>",0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.4.exe,"boost::serialization::load<class boost::archive::binary_iarchive,class Move>(class boost::archive::binary_iarchive &,class boost::serialization::nvp<class Move> &,unsigned int)",nvp.hpp,0x14026db00
+"boost::serialization::load<class boost::archive::binary_iarchive,class boost::serialization::collection_size_type>",0.001000,0.001000,0.0,0.0,11980000,0.0,0.0,0.0,frankycpp_v1.4.exe,"boost::serialization::load<class boost::archive::binary_iarchive,class boost::serialization::collection_size_type>(class boost::archive::binary_iarchive &,class boost::serialization::nvp<class boost::serialization::collection_size_type> &,unsigned int)",nvp.hpp,0x140262840
+"boost::serialization::load<class boost::archive::binary_iarchive,class std::vector<unsigned __int64,class std::allocator<unsigned __int64> > >",0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,"boost::serialization::load<class boost::archive::binary_iarchive,class std::vector<unsigned __int64,class std::allocator<unsigned __int64> > >(class boost::archive::binary_iarchive &,class boost::serialization::nvp<class std::vector<unsigned __int64,class std::allocator<unsigned __int64> > > &,unsigned int)",nvp.hpp,0x140268860
+"boost::serialization::singleton<class boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class Move> >::get_instance",0.001000,0.001000,0.0,0.0,8985000,100.0,100.0,0.333333,frankycpp_v1.4.exe,"boost::serialization::singleton<class boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class Move> >::get_instance(void)",singleton.hpp,0x14026e380
+diag2index,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.4.exe,diag2index,tbchess.c,0x1402789cb
+engine::Benchmark::run,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.4.exe,"engine::Benchmark::run(class std::vector<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,class std::allocator<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > > > const &,struct engine::BenchConfig const &)",Benchmark.cpp,0x1401a3f40
+func@0x1400010e0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,intelppm.sys,func@0x1400010e0,[Unknown],0x1400010e0
+func@0x1400053a0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ucx01000.sys,func@0x1400053a0,[Unknown],0x1400053a0
+func@0x140005900,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,wpprecorder.sys,func@0x140005900,[Unknown],0x140005900
+func@0x14000669c,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,usbxhci.sys,func@0x14000669c,[Unknown],0x14000669c
+func@0x140007b70,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,usbxhci.sys,func@0x140007b70,[Unknown],0x140007b70
+func@0x14000bd0a,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,winhvr.sys,func@0x14000bd0a,[Unknown],0x14000bd0a
+func@0x14000f9a9,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,dxgmms2.sys,func@0x14000f9a9,[Unknown],0x14000f9a9
+func@0x14001ce6f,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,nvlddmkm.sys,func@0x14001ce6f,[Unknown],0x14001ce6f
+func@0x14001fcfc,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,netadaptercx.sys,func@0x14001fcfc,[Unknown],0x14001fcfc
+func@0x140027780,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,dxgmms2.sys,func@0x140027780,[Unknown],0x140027780
+func@0x140028980,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,dxgmms2.sys,func@0x140028980,[Unknown],0x140028980
+func@0x140029970,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,dxgmms2.sys,func@0x140029970,[Unknown],0x140029970
+func@0x14002ced0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,tcpip.sys,func@0x14002ced0,[Unknown],0x14002ced0
+func@0x1400e0af0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,nvlddmkm.sys,func@0x1400e0af0,[Unknown],0x1400e0af0
+func@0x1400f7ad0,0.001000,0.001000,0.0,0.0,2995000,100.0,100.0,1.000000,nvlddmkm.sys,func@0x1400f7ad0,[Unknown],0x1400f7ad0
+func@0x1400fa6c0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,nvlddmkm.sys,func@0x1400fa6c0,[Unknown],0x1400fa6c0
+func@0x140113ec0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntfs.sys,func@0x140113ec0,[Unknown],0x140113ec0
+func@0x140114c90,0.001000,0.001000,0.0,0.0,11980000,0.0,0.0,0.0,ntfs.sys,func@0x140114c90,[Unknown],0x140114c90
+func@0x1401189a0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,nvlddmkm.sys,func@0x1401189a0,[Unknown],0x1401189a0
+func@0x14011c680,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,nvlddmkm.sys,func@0x14011c680,[Unknown],0x14011c680
+func@0x1401278d0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntfs.sys,func@0x1401278d0,[Unknown],0x1401278d0
+func@0x140141030,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,nvlddmkm.sys,func@0x140141030,[Unknown],0x140141030
+func@0x14014c2c0,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,0.0,ntfs.sys,func@0x14014c2c0,[Unknown],0x14014c2c0
+func@0x140162fb0,0.001000,0.001000,0.0,0.0,5990000,100.0,100.0,0.0,nvlddmkm.sys,func@0x140162fb0,[Unknown],0x140162fb0
+func@0x140164f80,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,nvlddmkm.sys,func@0x140164f80,[Unknown],0x140164f80
+func@0x140173ee0,0.001000,0.001000,0.0,0.0,5990000,0.0,0.0,0.500000,ntfs.sys,func@0x140173ee0,[Unknown],0x140173ee0
+func@0x1401c81e0,0.001000,0.001000,0.0,0.0,0,,,0.0,ntfs.sys,func@0x1401c81e0,[Unknown],0x1401c81e0
+func@0x14020af10,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x14020af10,[Unknown],0x14020af10
+func@0x140212a50,0.001000,0.001000,0.0,0.0,35940000,71.4,71.4,0.166667,ntoskrnl.exe,func@0x140212a50,[Unknown],0x140212a50
+func@0x140216044,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x140216044,[Unknown],0x140216044
+func@0x140216a30,0.001000,0.001000,0.0,0.0,5990000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140216a30,[Unknown],0x140216a30
+func@0x140216fa0,0.001000,0.001000,0.0,0.0,20965000,21.8,21.8,0.714286,ntoskrnl.exe,func@0x140216fa0,[Unknown],0x140216fa0
+func@0x140221590,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x140221590,[Unknown],0x140221590
+func@0x140223520,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x140223520,[Unknown],0x140223520
+func@0x1402239d5,0.001000,0.001000,0.0,0.0,2995000,33.3,33.3,1.000000,ntoskrnl.exe,func@0x1402239d5,[Unknown],0x1402239d5
+func@0x14022bfd0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x14022bfd0,[Unknown],0x14022bfd0
+func@0x140232690,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x140232690,[Unknown],0x140232690
+func@0x140246000,0.001000,0.001000,0.0,0.0,5990000,0.0,0.0,1.000000,ntoskrnl.exe,func@0x140246000,[Unknown],0x140246000
+func@0x1402479a0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x1402479a0,[Unknown],0x1402479a0
+func@0x140247c60,0.001000,0.001000,0.0,0.0,0,,,,ntoskrnl.exe,func@0x140247c60,[Unknown],0x140247c60
+func@0x140248843,0.001000,0.001000,0.0,0.0,2995000,,,0.0,ntoskrnl.exe,func@0x140248843,[Unknown],0x140248843
+func@0x140249380,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x140249380,[Unknown],0x140249380
+func@0x140249ae0,0.001000,0.001000,0.0,0.0,0,100.0,100.0,0.0,ntoskrnl.exe,func@0x140249ae0,[Unknown],0x140249ae0
+func@0x14024f9b0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x14024f9b0,[Unknown],0x14024f9b0
+func@0x14025e630,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,nvlddmkm.sys,func@0x14025e630,[Unknown],0x14025e630
+func@0x14026db30,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,nvlddmkm.sys,func@0x14026db30,[Unknown],0x14026db30
+func@0x1402703f0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x1402703f0,[Unknown],0x1402703f0
+func@0x1402720f0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402720f0,[Unknown],0x1402720f0
+func@0x140274e1e,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x140274e1e,[Unknown],0x140274e1e
+func@0x140278500,0.001000,0.001000,0.0,0.0,0,,,0.0,ntoskrnl.exe,func@0x140278500,[Unknown],0x140278500
+func@0x14028151d,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x14028151d,[Unknown],0x14028151d
+func@0x140281a3e,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x140281a3e,[Unknown],0x140281a3e
+func@0x14028e8ff,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x14028e8ff,[Unknown],0x14028e8ff
+func@0x140291280,0.001000,0.001000,0.0,0.0,2995000,60.0,60.0,2.000000,ntoskrnl.exe,func@0x140291280,[Unknown],0x140291280
+func@0x140297300,0.001000,0.001000,0.0,0.0,0,100.0,100.0,,ntoskrnl.exe,func@0x140297300,[Unknown],0x140297300
+func@0x1402992d0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402992d0,[Unknown],0x1402992d0
+func@0x1402a8b00,0.001000,0.001000,0.0,0.0,23960000,85.7,85.7,0.125000,ntoskrnl.exe,func@0x1402a8b00,[Unknown],0x1402a8b00
+func@0x1402a8dc1,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402a8dc1,[Unknown],0x1402a8dc1
+func@0x1402abdb0,0.001000,0.001000,0.0,0.0,8985000,14.3,14.3,2.333333,ntoskrnl.exe,func@0x1402abdb0,[Unknown],0x1402abdb0
+func@0x1402b4da2,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402b4da2,[Unknown],0x1402b4da2
+func@0x1402b7070,0.001000,0.001000,0.0,0.0,2995000,7.4,7.4,2.000000,ntoskrnl.exe,func@0x1402b7070,[Unknown],0x1402b7070
+func@0x1402b7dc0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x1402b7dc0,[Unknown],0x1402b7dc0
+func@0x1402b80e8,0.001000,0.001000,0.0,0.0,0,,,0.0,ntoskrnl.exe,func@0x1402b80e8,[Unknown],0x1402b80e8
+func@0x1402ba110,0.001000,0.001000,0.0,0.0,0,,,,ntoskrnl.exe,func@0x1402ba110,[Unknown],0x1402ba110
+func@0x1402ba66c,0.001000,0.001000,0.0,0.0,0,5.9,5.9,,ntoskrnl.exe,func@0x1402ba66c,[Unknown],0x1402ba66c
+func@0x1402bbdf0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x1402bbdf0,[Unknown],0x1402bbdf0
+func@0x1402dd6d0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x1402dd6d0,[Unknown],0x1402dd6d0
+func@0x1402defb6,0.001000,0.001000,0.0,0.0,0,13.4,13.4,,ntoskrnl.exe,func@0x1402defb6,[Unknown],0x1402defb6
+func@0x1402e3910,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402e3910,[Unknown],0x1402e3910
+func@0x1402e74f4,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402e74f4,[Unknown],0x1402e74f4
+func@0x1402e9490,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x1402e9490,[Unknown],0x1402e9490
+func@0x1402eab70,0.001000,0.001000,0.0,0.0,8985000,0.0,0.0,0.333333,ntoskrnl.exe,func@0x1402eab70,[Unknown],0x1402eab70
+func@0x140300580,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x140300580,[Unknown],0x140300580
+func@0x140306960,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x140306960,[Unknown],0x140306960
+func@0x14030f1f0,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x14030f1f0,[Unknown],0x14030f1f0
+func@0x14030fab2,0.001000,0.001000,0.0,0.0,2995000,,,0.0,ntoskrnl.exe,func@0x14030fab2,[Unknown],0x14030fab2
+func@0x14030fc80,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,1.000000,ntoskrnl.exe,func@0x14030fc80,[Unknown],0x14030fc80
+func@0x140324070,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,1.000000,ntoskrnl.exe,func@0x140324070,[Unknown],0x140324070
+func@0x14032d2a0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x14032d2a0,[Unknown],0x14032d2a0
+func@0x14034c120,0.001000,0.001000,0.0,0.0,5990000,20.0,20.0,0.0,ntoskrnl.exe,func@0x14034c120,[Unknown],0x14034c120
+func@0x1403624d0,0.001000,0.001000,0.0,0.0,0,50.0,50.0,0.0,ntoskrnl.exe,func@0x1403624d0,[Unknown],0x1403624d0
+func@0x140362fc0,0.001000,0.001000,0.0,0.0,0,1.9,1.9,,ntoskrnl.exe,func@0x140362fc0,[Unknown],0x140362fc0
+func@0x140366840,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x140366840,[Unknown],0x140366840
+func@0x14036703a,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x14036703a,[Unknown],0x14036703a
+func@0x1403676d8,0.001000,0.001000,0.0,0.0,8985000,,,0.0,ntoskrnl.exe,func@0x1403676d8,[Unknown],0x1403676d8
+func@0x140396000,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,nvlddmkm.sys,func@0x140396000,[Unknown],0x140396000
+func@0x1403b045e,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1403b045e,[Unknown],0x1403b045e
+func@0x1403bfdf8,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1403bfdf8,[Unknown],0x1403bfdf8
+func@0x1403c0ac8,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1403c0ac8,[Unknown],0x1403c0ac8
+func@0x1403d50e0,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,3.000000,nvlddmkm.sys,func@0x1403d50e0,[Unknown],0x1403d50e0
+func@0x1403da950,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x1403da950,[Unknown],0x1403da950
+func@0x1403db170,0.001000,0.001000,0.0,0.0,2995000,,,0.0,ntoskrnl.exe,func@0x1403db170,[Unknown],0x1403db170
+func@0x140402e60,0.001000,0.001000,0.0,0.0,0,,,,ntoskrnl.exe,func@0x140402e60,[Unknown],0x140402e60
+func@0x140410610,0.001000,0.001000,0.0,0.0,0,,,0.0,ntoskrnl.exe,func@0x140410610,[Unknown],0x140410610
+func@0x1404112c0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1404112c0,[Unknown],0x1404112c0
+func@0x1404120a0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1404120a0,[Unknown],0x1404120a0
+func@0x1404233e2,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1404233e2,[Unknown],0x1404233e2
+func@0x140424238,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x140424238,[Unknown],0x140424238
+func@0x14042d0b8,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x14042d0b8,[Unknown],0x14042d0b8
+func@0x14042d283,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x14042d283,[Unknown],0x14042d283
+func@0x14042dbc0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x14042dbc0,[Unknown],0x14042dbc0
+func@0x14047cb77,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x14047cb77,[Unknown],0x14047cb77
+func@0x1404e9590,0.001000,0.001000,0.0,0.0,0,,,0.0,ntoskrnl.exe,func@0x1404e9590,[Unknown],0x1404e9590
+func@0x1404f3fa0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x1404f3fa0,[Unknown],0x1404f3fa0
+func@0x1405dcf60,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1405dcf60,[Unknown],0x1405dcf60
+func@0x1405e06b0,0.001000,0.001000,0.0,0.0,2995000,21.1,21.1,1.000000,ntoskrnl.exe,func@0x1405e06b0,[Unknown],0x1405e06b0
+func@0x1406a52a0,0.001000,0.001000,0.0,0.0,0,20.0,20.0,0.0,ntoskrnl.exe,func@0x1406a52a0,[Unknown],0x1406a52a0
+func@0x1406ac630,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,5.000000,ntoskrnl.exe,func@0x1406ac630,[Unknown],0x1406ac630
+func@0x1406b0bb0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x1406b0bb0,[Unknown],0x1406b0bb0
+func@0x1406b1b80,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x1406b1b80,[Unknown],0x1406b1b80
+func@0x1406b2300,0.001000,0.001000,0.0,0.0,2995000,33.3,33.3,1.000000,ntoskrnl.exe,func@0x1406b2300,[Unknown],0x1406b2300
+func@0x1406b23e0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x1406b23e0,[Unknown],0x1406b23e0
+func@0x14084a480,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x14084a480,[Unknown],0x14084a480
+func@0x140863dca,0.001000,0.001000,0.0,0.0,17970000,14.8,14.8,0.333333,ntoskrnl.exe,func@0x140863dca,[Unknown],0x140863dca
+func@0x140864ca0,0.001000,0.001000,0.0,0.0,17970000,100.0,100.0,0.333333,ntoskrnl.exe,func@0x140864ca0,[Unknown],0x140864ca0
+func@0x14089b490,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x14089b490,[Unknown],0x14089b490
+func@0x14089b6f0,0.001000,0.001000,0.0,0.0,5990000,20.0,20.0,2.000000,ntoskrnl.exe,func@0x14089b6f0,[Unknown],0x14089b6f0
+func@0x140b4f430,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,nvlddmkm.sys,func@0x140b4f430,[Unknown],0x140b4f430
+func@0x140b53a60,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,nvlddmkm.sys,func@0x140b53a60,[Unknown],0x140b53a60
+func@0x140b53bf0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,nvlddmkm.sys,func@0x140b53bf0,[Unknown],0x140b53bf0
+func@0x140d7da00,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,nvlddmkm.sys,func@0x140d7da00,[Unknown],0x140d7da00
+func@0x140d805f0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,nvlddmkm.sys,func@0x140d805f0,[Unknown],0x140d805f0
+func@0x140da4b6d,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,nvlddmkm.sys,func@0x140da4b6d,[Unknown],0x140da4b6d
+func@0x140da5a70,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,nvlddmkm.sys,func@0x140da5a70,[Unknown],0x140da5a70
+func@0x140daedc0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,nvlddmkm.sys,func@0x140daedc0,[Unknown],0x140daedc0
+func@0x140dc28e0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,nvlddmkm.sys,func@0x140dc28e0,[Unknown],0x140dc28e0
+func@0x140dc295f,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,nvlddmkm.sys,func@0x140dc295f,[Unknown],0x140dc295f
+func@0x140dd3800,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,nvlddmkm.sys,func@0x140dd3800,[Unknown],0x140dd3800
+func@0x140def930,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,nvlddmkm.sys,func@0x140def930,[Unknown],0x140def930
+func@0x140e1bc30,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,nvlddmkm.sys,func@0x140e1bc30,[Unknown],0x140e1bc30
+func@0x1800031ac,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,vcruntime140_1.dll,func@0x1800031ac,[Unknown],0x1800031ac
+func@0x180005df0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,fltmgr.sys,func@0x180005df0,[Unknown],0x180005df0
+func@0x1800083e0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,fltmgr.sys,func@0x1800083e0,[Unknown],0x1800083e0
+func@0x18000b520,0.001000,0.001000,0.0,0.0,20965000,9.1,9.1,0.285714,fltmgr.sys,func@0x18000b520,[Unknown],0x18000b520
+func@0x18000bdc0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntdll.dll,func@0x18000bdc0,[Unknown],0x18000bdc0
+func@0x18000e4e0,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,2.000000,fltmgr.sys,func@0x18000e4e0,[Unknown],0x18000e4e0
+func@0x18000ed79,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,fltmgr.sys,func@0x18000ed79,[Unknown],0x18000ed79
+func@0x180013230,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ucrtbase.dll,func@0x180013230,[Unknown],0x180013230
+func@0x1800141e0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntdll.dll,func@0x1800141e0,[Unknown],0x1800141e0
+func@0x18001ebf4,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,fltmgr.sys,func@0x18001ebf4,[Unknown],0x18001ebf4
+func@0x180021f80,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntdll.dll,func@0x180021f80,[Unknown],0x180021f80
+func@0x18002d8b0,0.001000,0.001000,0.0,0.0,2995000,100.0,100.0,0.0,cng.sys,func@0x18002d8b0,[Unknown],0x18002d8b0
+func@0x18003d480,0.001000,0.001000,0.0,0.0,8985000,0.0,0.0,1.000000,ntdll.dll,func@0x18003d480,[Unknown],0x18003d480
+func@0x1800590a0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,fltmgr.sys,func@0x1800590a0,[Unknown],0x1800590a0
+func@0x180074480,0.001000,0.001000,0.0,0.0,8985000,0.0,0.0,0.0,ntdll.dll,func@0x180074480,[Unknown],0x180074480
+func@0x1800752c0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntdll.dll,func@0x1800752c0,[Unknown],0x1800752c0
+func@0x180077040,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntdll.dll,func@0x180077040,[Unknown],0x180077040
+func@0x18007872b,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,fltmgr.sys,func@0x18007872b,[Unknown],0x18007872b
+func@0x180078db1,0.001000,0.001000,0.0,0.0,20965000,100.0,100.0,0.142857,ntdll.dll,func@0x180078db1,[Unknown],0x180078db1
+func@0x180079230,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ucrtbase.dll,func@0x180079230,[Unknown],0x180079230
+func@0x180094c9b,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntdll.dll,func@0x180094c9b,[Unknown],0x180094c9b
+func@0x1800b5520,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,crypt32.dll,func@0x1800b5520,[Unknown],0x1800b5520
+func@0x18011f484,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,kernelbase.dll,func@0x18011f484,[Unknown],0x18011f484
+func@0x18017146e,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntdll.dll,func@0x18017146e,[Unknown],0x18017146e
+func@0x1c000f8a0,0.001000,0.001000,0.0,0.0,5990000,0.0,0.0,0.0,filecrypt.sys,func@0x1c000f8a0,[Unknown],0x1c000f8a0
+leading_pawn,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.4.exe,leading_pawn,tbprobe.c,0x14027ca70
+log,0.001000,0.001000,0.0,0.0,2995000,34.8,34.8,1.000000,ucrtbase.dll,log,[Unknown],0x1800a84b0
+memset,0.001000,0.001000,0.0,0.0,5990000,66.7,66.7,0.0,vcruntime140.dll,memset,[Unknown],0x1800126e0
+moveValueGreaterComparator::operator(),0.001000,0.001000,0.0,0.0,5990000,,,0.0,frankycpp_v1.4.exe,moveValueGreaterComparator::operator(),move.h,0x14021d090
+operator&,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.4.exe,operator&,bitboard.h,0x140239875
+operator&,0.001000,0.001000,0.0,0.0,2995000,40.1,40.1,1.000000,frankycpp_v1.4.exe,operator&,bitboard.h,0x1402396a4
+operator&,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.4.exe,operator&,bitboard.h,0x14020a3ca
+operator&,0.001000,0.001000,0.0,0.0,17970000,0.0,0.0,0.333333,frankycpp_v1.4.exe,operator&,bitboard.h,0x140240c64
+operator&,0.001000,0.001000,0.0,0.0,8985000,37.2,37.2,2.000000,frankycpp_v1.4.exe,operator&,bitboard.h,0x140245741
+operator&,0.001000,0.001000,0.0,0.0,20965000,25.7,25.7,0.285714,frankycpp_v1.4.exe,operator&,bitboard.h,0x140245752
+operator&,0.001000,0.001000,0.0,0.0,5990000,,,0.0,frankycpp_v1.4.exe,operator&,bitboard.h,0x140277b2e
+operator&,0.001000,0.001000,0.0,0.0,5990000,62.0,62.0,2.000000,frankycpp_v1.4.exe,operator&,bitboard.h,0x140239723
+operator&,0.001000,0.001000,0.0,0.0,5990000,,,0.0,frankycpp_v1.4.exe,operator&,bitboard.h,0x140245d72
+operator&,0.001000,0.001000,0.0,0.0,5990000,,,0.0,frankycpp_v1.4.exe,operator&,bitboard.h,0x1402779ae
+operator*,0.001000,0.001000,0.0,0.0,0,34.8,34.8,,frankycpp_v1.4.exe,operator*,direction.h,0x140240bc8
+operator+,0.001000,0.001000,0.0,0.0,2995000,,,0.0,frankycpp_v1.4.exe,operator+,depth.h,0x14020ac35
+operator+,0.001000,0.001000,0.0,0.0,23960000,100.0,100.0,0.250000,frankycpp_v1.4.exe,operator+,direction.h,0x140239766
+operator+,0.001000,0.001000,0.0,0.0,0,100.0,100.0,,frankycpp_v1.4.exe,operator+,depth.h,0x14020a17f
+operator+,0.001000,0.001000,0.0,0.0,2995000,44.8,44.8,2.000000,frankycpp_v1.4.exe,operator+,value.h,0x14020ab1a
+operator+,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.4.exe,operator+,direction.h,0x140240a00
+operator+=,0.001000,0.001000,0.0,0.0,8985000,,,0.666667,frankycpp_v1.4.exe,operator+=,value.h,0x1402458c4
+operator+=,0.001000,0.001000,0.0,0.0,17970000,53.4,53.4,0.166667,frankycpp_v1.4.exe,operator+=,value.h,0x1402452e8
+operator+=,0.001000,0.001000,0.0,0.0,14975000,,,0.400000,frankycpp_v1.4.exe,operator+=,value.h,0x140245600
+operator-,0.001000,0.001000,0.0,0.0,2995000,,,0.0,frankycpp_v1.4.exe,operator-,value.h,0x14020935f
+operator-,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.4.exe,operator-,value.h,0x14020a063
+operator-,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,frankycpp_v1.4.exe,operator-,depth.h,0x1402097b0
+operator-,0.001000,0.001000,0.0,0.0,5990000,25.0,25.0,0.0,frankycpp_v1.4.exe,operator-,value.h,0x1402095ef
+operator-,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.4.exe,operator-,direction.h,0x140166b31
+operator-,0.001000,0.001000,0.0,0.0,0,,,0.0,frankycpp_v1.4.exe,operator-,direction.h,0x1402405ab
+operator-,0.001000,0.001000,0.0,0.0,2995000,28.6,28.6,0.0,frankycpp_v1.4.exe,operator-,value.h,0x140209426
+operator-,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.4.exe,operator-,value.h,0x1402412a5
+operator-,0.001000,0.001000,0.0,0.0,2995000,25.0,25.0,0.0,frankycpp_v1.4.exe,operator-,value.h,0x14020a035
+operator-=,0.001000,0.001000,0.0,0.0,14975000,50.0,50.0,0.200000,frankycpp_v1.4.exe,operator-=,depth.h,0x140209e4e
+operator-=,0.001000,0.001000,0.0,0.0,0,,,,frankycpp_v1.4.exe,operator-=,depth.h,0x140209e75
+operator|,0.001000,0.001000,0.0,0.0,32945000,,,0.090909,frankycpp_v1.4.exe,operator|,bitboard.h,0x140245c9e
+operator|,0.001000,0.001000,0.0,0.0,29950000,43.2,43.2,0.400000,frankycpp_v1.4.exe,operator|,bitboard.h,0x140240975
+operator|,0.001000,0.001000,0.0,0.0,26955000,100.0,100.0,0.222222,frankycpp_v1.4.exe,operator|,bitboard.h,0x140166e36
+operator|,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,2.000000,frankycpp_v1.4.exe,operator|,bitboard.h,0x140240a98
+operator~,0.001000,0.001000,0.0,0.0,11980000,50.9,50.9,0.250000,frankycpp_v1.4.exe,operator~,color.h,0x14020a280
+operator~,0.001000,0.001000,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.4.exe,operator~,color.h,0x1402395ed
+operator~,0.001000,0.001000,0.0,0.0,23960000,,,0.625000,frankycpp_v1.4.exe,operator~,color.h,0x14020aeda
+operator~,0.001000,0.001000,0.0,0.0,5990000,21.1,21.1,0.500000,frankycpp_v1.4.exe,operator~,color.h,0x140239b31
+operator~,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,operator~,color.h,0x14020a3bb
+spdlog::logger::flush_,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.4.exe,spdlog::logger::flush_(void),logger-inl.h,0x140156de0
+"std::_Atomic_storage<unsigned __int64,8>::store",0.001000,0.001000,0.0,0.0,0,,,0.0,frankycpp_v1.4.exe,"std::_Atomic_storage<unsigned __int64,8>::store",atomic,0x14024388c
+"std::_Func_impl_no_alloc<`ConfigRegistry::initializeEvalDefinitions'::`2'::<lambda_17>,void,SearchConfigData &,EvalConfigData &,std::basic_string<char,std::char_traits<char>,std::allocator<char> > const &>::_Delete_this",0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.4.exe,"std::_Func_impl_no_alloc<`ConfigRegistry::initializeEvalDefinitions'::`2'::<lambda_17>,void,SearchConfigData &,EvalConfigData &,std::basic_string<char,std::char_traits<char>,std::allocator<char> > const &>::_Delete_this(bool)",functional,0x1401e9550
+"std::_Hash<std::_Umap_traits<unsigned __int64,BookEntry,std::_Uhash_compare<unsigned __int64,std::hash<unsigned __int64>,std::equal_to<unsigned __int64> >,std::allocator<std::pair<unsigned __int64 const ,BookEntry> >,0> >::_Check_rehash_required_1",0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.4.exe,"std::_Hash<std::_Umap_traits<unsigned __int64,BookEntry,std::_Uhash_compare<unsigned __int64,std::hash<unsigned __int64>,std::equal_to<unsigned __int64> >,std::allocator<std::pair<unsigned __int64 const ,BookEntry> >,0> >::_Check_rehash_required_1",xhash,0x140261c55
+std::_Hash_representation<unsigned __int64>,0.001000,0.001000,0.0,0.0,11980000,60.0,60.0,0.500000,frankycpp_v1.4.exe,std::_Hash_representation<unsigned __int64>(unsigned __int64 const &),type_traits,0x14025ad60
+std::_Rng_abort,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,msvcp140.dll,std::_Rng_abort(char const * __ptr64),[Unknown],0x180012330
+std::_Static_partition_team<__int64>::_Get_next_key,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,frankycpp_v1.4.exe,std::_Static_partition_team<__int64>::_Get_next_key,execution,0x1402483e0
+"std::_Static_partitioned_for_each2<TT::Entry *,__int64,`TT::ageEntries'::`2'::<lambda_1> >::_Process_chunk",0.001000,0.001000,0.0,0.0,0,,,0.0,frankycpp_v1.4.exe,"std::_Static_partitioned_for_each2<TT::Entry *,__int64,`TT::ageEntries'::`2'::<lambda_1> >::_Process_chunk",execution,0x1402483e0
+"std::_Uninitialized_backout<std::_List_unchecked_iterator<std::_List_val<std::_List_simple_types<std::pair<unsigned __int64 const ,BookEntry> > > > *>::_Emplace_back",0.001000,0.001000,0.0,0.0,0,0.0,0.0,,frankycpp_v1.4.exe,"std::_Uninitialized_backout<std::_List_unchecked_iterator<std::_List_val<std::_List_simple_types<std::pair<unsigned __int64 const ,BookEntry> > > > *>::_Emplace_back",xmemory,0x1402589b0
+"std::array<Bitboard,64>::operator[]",0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,3.000000,frankycpp_v1.4.exe,"std::array<Bitboard,64>::operator[]",array,0x14023ab7e
+"std::array<Bitboard,64>::operator[]",0.001000,0.001000,0.0,0.0,20965000,25.0,25.0,0.0,frankycpp_v1.4.exe,"std::array<Bitboard,64>::operator[]",array,0x14024035a
+"std::array<Bitboard,64>::operator[]",0.001000,0.001000,0.0,0.0,8985000,,,0.0,frankycpp_v1.4.exe,"std::array<Bitboard,64>::operator[]",array,0x14024572e
+"std::array<Bitboard,8>::operator[]",0.001000,0.001000,0.0,0.0,14975000,47.1,47.1,0.400000,frankycpp_v1.4.exe,"std::array<Bitboard,8>::operator[]",array,0x140240aab
+"std::array<Move,128>::operator[]",0.001000,0.001000,0.0,0.0,0,,,0.0,frankycpp_v1.4.exe,"std::array<Move,128>::operator[]",array,0x14020a69c
+"std::array<Move,64>::operator[]",0.001000,0.001000,0.0,0.0,2995000,44.4,44.4,1.000000,frankycpp_v1.4.exe,"std::array<Move,64>::operator[]",array,0x14020a43f
+"std::array<PlyInfo,128>::operator[]",0.001000,0.001000,0.0,0.0,35940000,,,0.250000,frankycpp_v1.4.exe,"std::array<PlyInfo,128>::operator[]",array,0x1402098ba
+"std::array<Value,25>::operator[]",0.001000,0.001000,0.0,0.0,0,,,0.0,frankycpp_v1.4.exe,"std::array<Value,25>::operator[]",array,0x140240c0a
+"std::array<Value,25>::operator[]",0.001000,0.001000,0.0,0.0,5990000,,,0.0,frankycpp_v1.4.exe,"std::array<Value,25>::operator[]",array,0x140241161
+"std::array<Value,25>::operator[]",0.001000,0.001000,0.0,0.0,14975000,50.0,50.0,0.600000,frankycpp_v1.4.exe,"std::array<Value,25>::operator[]",array,0x140241280
+"std::array<int,64>::operator[]",0.001000,0.001000,0.0,0.0,14975000,,,0.400000,frankycpp_v1.4.exe,"std::array<int,64>::operator[]",array,0x140209df3
+"std::array<std::array<Move,64>,64>::operator[]",0.001000,0.001000,0.0,0.0,14975000,0.0,0.0,0.0,frankycpp_v1.4.exe,"std::array<std::array<Move,64>,64>::operator[]",array,0x14020a449
+"std::array<std::array<unsigned __int64,64>,16>::operator[]",0.001000,0.001000,0.0,0.0,17970000,48.7,48.7,0.500000,frankycpp_v1.4.exe,"std::array<std::array<unsigned __int64,64>,16>::operator[]",array,0x14023aac6
+"std::basic_streambuf<char,struct std::char_traits<char> >::sgetn",0.001000,0.001000,0.0,0.0,14975000,33.3,33.3,0.200000,msvcp140.dll,"std::basic_streambuf<char,struct std::char_traits<char> >::sgetn(char * __ptr64,__int64)",[Unknown],0x180009110
+std::countr_zero,0.001000,0.001000,0.0,0.0,26955000,,,0.444444,frankycpp_v1.4.exe,std::countr_zero,bit,0x1402406e8
+std::countr_zero,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,2.000000,frankycpp_v1.4.exe,std::countr_zero,bit,0x140241140
+std::countr_zero,0.001000,0.001000,0.0,0.0,5990000,100.0,100.0,0.500000,frankycpp_v1.4.exe,std::countr_zero,bit,0x1402779f8
+std::ios_base::_Tidy,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,msvcp140.dll,std::ios_base::_Tidy(void),[Unknown],0x180006b10
+std::max,0.001000,0.001000,0.0,0.0,5990000,,,0.0,frankycpp_v1.4.exe,std::max,utility,0x14020a72d
+std::popcount,0.001000,0.001000,0.0,0.0,14975000,42.9,42.9,0.400000,frankycpp_v1.4.exe,std::popcount,bit,0x1402457d8
+std::popcount,0.001000,0.001000,0.0,0.0,8985000,100.0,100.0,0.666667,frankycpp_v1.4.exe,std::popcount,bit,0x1402457f8
+std::popcount,0.001000,0.001000,0.0,0.0,20965000,,,0.142857,frankycpp_v1.4.exe,std::popcount,bit,0x140245803
+std::popcount,0.001000,0.001000,0.0,0.0,5990000,,,0.0,frankycpp_v1.4.exe,std::popcount,bit,0x140239e09
+std::popcount,0.001000,0.001000,0.0,0.0,71880000,,,0.208333,frankycpp_v1.4.exe,std::popcount,bit,0x140245d79
+std::ranges::_Move_unchecked,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,frankycpp_v1.4.exe,std::ranges::_Move_unchecked,algorithm,0x14021cfe4
+std::shared_ptr<YAML::detail::memory_holder>::{dtor},0.001000,0.001000,0.0,0.0,0,0.0,0.0,,frankycpp_v1.4.exe,std::shared_ptr<YAML::detail::memory_holder>::{dtor},memory,0x1401830b6
+"std::unique_ptr<TT,std::default_delete<TT> >::operator bool",0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.4.exe,"std::unique_ptr<TT,std::default_delete<TT> >::operator bool",memory,0x140200997
+"std::unique_ptr<TT::Entry [0],std::default_delete<TT::Entry [0]> >::operator[]",0.001000,0.001000,0.0,0.0,44925000,,,0.066667,frankycpp_v1.4.exe,"std::unique_ptr<TT::Entry [0],std::default_delete<TT::Entry [0]> >::operator[]",memory,0x140209fb4
+"std::vector<boost::archive::detail::basic_iarchive_impl::cobject_id,std::allocator<boost::archive::detail::basic_iarchive_impl::cobject_id> >::operator[]",0.001000,0.001000,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.4.exe,"std::vector<boost::archive::detail::basic_iarchive_impl::cobject_id,std::allocator<boost::archive::detail::basic_iarchive_impl::cobject_id> >::operator[]",vector,0x140282f80
+strlen,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,strlen,[Unknown],0x1406bfdd0
+tablebase::Tablebase::isAvailable,0.001000,0.001000,0.0,0.0,8985000,10.2,10.2,0.666667,frankycpp_v1.4.exe,tablebase::Tablebase::isAvailable,Tablebase.h,0x140208f91
+typeOf,0.001000,0.001000,0.0,0.0,11980000,100.0,100.0,0.250000,frankycpp_v1.4.exe,typeOf,piece.h,0x14024034b
+typeOf,0.001000,0.001000,0.0,0.0,0,50.0,50.0,,frankycpp_v1.4.exe,typeOf,piece.h,0x14024115d
+typeOf,0.001000,0.001000,0.0,0.0,8985000,,,0.333333,frankycpp_v1.4.exe,typeOf,piece.h,0x140277806
+typeOf,0.001000,0.001000,0.0,0.0,14975000,13.1,13.1,0.600000,frankycpp_v1.4.exe,typeOf,piece.h,0x14020ab0a
+vCleanupUMWindowlessSprite,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,win32kfull.sys,vCleanupUMWindowlessSprite,[Unknown],0x14006f990
+valueOf,0.001000,0.001000,0.0,0.0,5990000,,,1.000000,frankycpp_v1.4.exe,valueOf,value.h,0x140209cb2
+valueOf,0.001000,0.001000,0.0,0.0,5990000,,,0.0,frankycpp_v1.4.exe,valueOf,value.h,0x1402777ee
+Attacks::detail::fill,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,"Attacks::detail::fill(class Bitboard * const,class std::array<struct Attacks::detail::Magic,64> const &,class Direction const * const)",attacks.cpp,0x140166ca0
+Attacks::detail::sliding_attack,0.0,0.0,0.0,0.0,8985000,100.0,100.0,0.0,frankycpp_v1.4.exe,"Attacks::detail::sliding_attack(class Direction const * const,class Square,class Bitboard)",attacks.cpp,0x140166b00
+Bitboard::lsb,0.0,0.0,0.0,0.0,8985000,,,0.0,frankycpp_v1.4.exe,Bitboard::lsb,bitboard.h,0x14024033a
+Bitboard::operator bool,0.0,0.0,0.0,0.0,11980000,25.0,25.0,0.500000,frankycpp_v1.4.exe,Bitboard::operator bool,bitboard.h,0x140240d02
+Bitboard::operator bool,0.0,0.0,0.0,0.0,20965000,,,0.142857,frankycpp_v1.4.exe,Bitboard::operator bool,bitboard.h,0x140245afd
+Bitboard::operator bool,0.0,0.0,0.0,0.0,2995000,,,0.0,frankycpp_v1.4.exe,Bitboard::operator bool,bitboard.h,0x140240760
+Bitboard::operator^=,0.0,0.0,0.0,0.0,20965000,62.5,62.5,0.285714,frankycpp_v1.4.exe,Bitboard::operator^=,bitboard.h,0x14027787c
+Bitboard::operator|=,0.0,0.0,0.0,0.0,5990000,,,0.500000,frankycpp_v1.4.exe,Bitboard::operator|=,bitboard.h,0x140240356
+Bitboard::operator|=,0.0,0.0,0.0,0.0,8985000,10.5,10.5,0.333333,frankycpp_v1.4.exe,Bitboard::operator|=,bitboard.h,0x140239a3d
+Bitboard::popLSB,0.0,0.0,0.0,0.0,20965000,11.3,11.3,0.428571,frankycpp_v1.4.exe,Bitboard::popLSB,bitboard.h,0x140245c80
+Bitboard::popLSB,0.0,0.0,0.0,0.0,11980000,46.5,46.5,0.750000,frankycpp_v1.4.exe,Bitboard::popLSB,bitboard.h,0x1402410ca
+Bitboard::popLSB,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.4.exe,Bitboard::popLSB,bitboard.h,0x140241140
+Bitboard::popLSB,0.0,0.0,0.0,0.0,2995000,0.0,0.0,2.000000,frankycpp_v1.4.exe,Bitboard::popLSB,bitboard.h,0x140245a10
+Bitboard::popLSB,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.4.exe,Bitboard::popLSB,bitboard.h,0x140240ca2
+Bitboard::{ctor},0.0,0.0,0.0,0.0,0,50.0,50.0,0.0,frankycpp_v1.4.exe,Bitboard::{ctor},bitboard.h,0x140240adf
+Bitboard::{ctor},0.0,0.0,0.0,0.0,14975000,35.6,35.6,0.600000,frankycpp_v1.4.exe,Bitboard::{ctor},bitboard.h,0x140166e3c
+CastlingRights::isEmpty,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.4.exe,CastlingRights::isEmpty,castlingrights.h,0x140239087
+CastlingRights::isEmpty,0.0,0.0,0.0,0.0,2995000,,,2.000000,frankycpp_v1.4.exe,CastlingRights::isEmpty,castlingrights.h,0x140239123
+CastlingRights::operator-=,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,CastlingRights::operator-=,castlingrights.h,0x1402390b6
+Color::iterator::{ctor},0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.4.exe,Color::iterator::{ctor},color.h,0x140245648
+ColorOfPiece,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,ColorOfPiece,tbchess.c,0x14027e970
+Direction::pawnPush,0.0,0.0,0.0,0.0,0,33.3,33.3,0.0,frankycpp_v1.4.exe,Direction::pawnPush,direction.h,0x1402407e8
+Direction::pawnPush,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.4.exe,Direction::pawnPush,direction.h,0x1402409e8
+Direction::pawnPush,0.0,0.0,0.0,0.0,2995000,,,3.000000,frankycpp_v1.4.exe,Direction::pawnPush,direction.h,0x140240434
+ExAcquirePushLockSharedEx,0.0,0.0,0.0,0.0,2995000,0.0,0.0,2.000000,ntoskrnl.exe,ExAcquirePushLockSharedEx,[Unknown],0x1402e8cf0
+ExAcquireResourceExclusiveLite,0.0,0.0,0.0,0.0,2995000,25.0,25.0,1.000000,ntoskrnl.exe,ExAcquireResourceExclusiveLite,[Unknown],0x140299dd0
+ExAcquireRundownProtectionCacheAwareEx,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,ntoskrnl.exe,ExAcquireRundownProtectionCacheAwareEx,[Unknown],0x140406920
+ExAcquireSpinLockExclusiveAtDpcLevel,0.0,0.0,0.0,0.0,0,50.0,50.0,0.0,ntoskrnl.exe,ExAcquireSpinLockExclusiveAtDpcLevel,[Unknown],0x14031da90
+ExReleaseAutoExpandPushLockExclusive,0.0,0.0,0.0,0.0,2995000,,,0.0,ntoskrnl.exe,ExReleaseAutoExpandPushLockExclusive,[Unknown],0x1402827a0
+ExReleaseSpinLockSharedFromDpcLevel,0.0,0.0,0.0,0.0,0,50.0,50.0,0.0,ntoskrnl.exe,ExReleaseSpinLockSharedFromDpcLevel,[Unknown],0x14031e5a0
+FltObjectDereference,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,fltmgr.sys,FltObjectDereference,[Unknown],0x180005250
+FltReleaseContext,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,fltmgr.sys,FltReleaseContext,[Unknown],0x180003820
+FsRtlAcquireHeaderMutex,0.0,0.0,0.0,0.0,2995000,100.0,100.0,2.000000,ntoskrnl.exe,FsRtlAcquireHeaderMutex,[Unknown],0x1402e6b60
+FsRtlDissectName,0.0,0.0,0.0,0.0,8985000,100.0,100.0,0.333333,ntoskrnl.exe,FsRtlDissectName,[Unknown],0x140401860
+FsRtlFreeExtraCreateParameterList,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,ntoskrnl.exe,FsRtlFreeExtraCreateParameterList,[Unknown],0x1408a0ba0
+IoCreateFileEx,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,IoCreateFileEx,[Unknown],0x1409749d0
+IoGetRelatedDeviceObject,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,IoGetRelatedDeviceObject,[Unknown],0x1402ce2c0
+IoGetRequestorProcessId,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,IoGetRequestorProcessId,[Unknown],0x1404049f0
+KeAddProcessorAffinityEx,0.0,0.0,0.0,0.0,2995000,100.0,100.0,0.0,ntoskrnl.exe,KeAddProcessorAffinityEx,[Unknown],0x14027a540
+KeAndAffinityEx2,0.0,0.0,0.0,0.0,5990000,,,0.500000,ntoskrnl.exe,KeAndAffinityEx2,[Unknown],0x140312c00
+KeEnterCriticalRegion,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,ntoskrnl.exe,KeEnterCriticalRegion,[Unknown],0x140412d60
+KeEnterGuardedRegion,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,KeEnterGuardedRegion,[Unknown],0x140415be0
+KeEnumerateNextProcessor,0.0,0.0,0.0,0.0,2995000,,,1.000000,ntoskrnl.exe,KeEnumerateNextProcessor,[Unknown],0x140407170
+KeGetCurrentIrql,0.0,0.0,0.0,0.0,0,33.3,33.3,0.0,ntoskrnl.exe,KeGetCurrentIrql,[Unknown],0x1404169a0
+KeIsEmptyAffinityEx,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,KeIsEmptyAffinityEx,[Unknown],0x1403c1810
+KeReleaseInStackQueuedSpinLock,0.0,0.0,0.0,0.0,2995000,66.7,66.7,0.0,ntoskrnl.exe,KeReleaseInStackQueuedSpinLock,[Unknown],0x1402990e0
+KfRaiseIrql,0.0,0.0,0.0,0.0,8985000,100.0,100.0,0.333333,ntoskrnl.exe,KfRaiseIrql,[Unknown],0x1403fa130
+Move::encode,0.0,0.0,0.0,0.0,5990000,20.0,20.0,0.500000,frankycpp_v1.4.exe,Move::encode,move.h,0x1402405a2
+Move::encode,0.0,0.0,0.0,0.0,0,100.0,100.0,,frankycpp_v1.4.exe,Move::encode,move.h,0x140240a04
+Move::encode,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,Move::encode,move.h,0x140240b81
+Move::from,0.0,0.0,0.0,0.0,5990000,40.1,40.1,1.000000,frankycpp_v1.4.exe,Move::from,move.h,0x140238e0f
+Move::setValue,0.0,0.0,0.0,0.0,14975000,,,0.400000,frankycpp_v1.4.exe,Move::setValue,move.h,0x1402401e1
+Move::stripped,0.0,0.0,0.0,0.0,8985000,0.0,0.0,0.0,frankycpp_v1.4.exe,Move::stripped,move.h,0x14023e4e0
+Move::to,0.0,0.0,0.0,0.0,17970000,60.0,60.0,0.0,frankycpp_v1.4.exe,Move::to,move.h,0x140209f0a
+Move::to,0.0,0.0,0.0,0.0,0,22.5,22.5,,frankycpp_v1.4.exe,Move::to,move.h,0x140239419
+Move::to,0.0,0.0,0.0,0.0,20965000,,,0.142857,frankycpp_v1.4.exe,Move::to,move.h,0x14027774f
+Move::type,0.0,0.0,0.0,0.0,17970000,,,0.166667,frankycpp_v1.4.exe,Move::type,move.h,0x14020a2ac
+Move::type,0.0,0.0,0.0,0.0,0,20.0,20.0,,frankycpp_v1.4.exe,Move::type,move.h,0x14020aef7
+Move::type,0.0,0.0,0.0,0.0,2995000,,,0.0,frankycpp_v1.4.exe,Move::type,move.h,0x140209f23
+Move::value,0.0,0.0,0.0,0.0,11980000,9.1,9.1,0.250000,frankycpp_v1.4.exe,Move::value,move.h,0x1402402b8
+Move::{ctor},0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.4.exe,Move::{ctor},move.h,0x140240cb3
+Move::{ctor},0.0,0.0,0.0,0.0,2995000,20.0,20.0,0.0,frankycpp_v1.4.exe,Move::{ctor},move.h,0x1402409fd
+MoveGenerator::generateLegalMoves,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.4.exe,"MoveGenerator::generateLegalMoves(class Position const &,enum GenMode)",MoveGenerator.cpp,0x14023e270
+MoveGenerator::generatePseudoLegalMoves::__l17::<lambda_1>::operator(),0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,MoveGenerator::generatePseudoLegalMoves::__l17::<lambda_1>::operator(),MoveGenerator.cpp,0x14023e240
+MoveGenerator::storeKiller,0.0,0.0,0.0,0.0,17970000,,,0.0,frankycpp_v1.4.exe,MoveGenerator::storeKiller(class Move),MoveGenerator.cpp,0x14023e4f0
+MoveGenerator::validateMove,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,"MoveGenerator::validateMove(class Position const &,class Move)",MoveGenerator.cpp,0x14023e520
+NtQuerySystemInformationEx,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntdll.dll,NtQuerySystemInformationEx,[Unknown],0x1801647f0
+NtReadFile,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntdll.dll,NtReadFile,[Unknown],0x180161b00
+NtWaitForWorkViaWorkerFactory,0.0,0.0,0.0,0.0,0,21.1,21.1,,ntdll.dll,NtWaitForWorkViaWorkerFactory,[Unknown],0x1801656f0
+PVTable::update,0.0,0.0,0.0,0.0,0,11.1,11.1,,frankycpp_v1.4.exe,"PVTable::update(class Move,enum Depth)",PVTable.h,0x1401fdea0
+Position::clearEnPassant,0.0,0.0,0.0,0.0,2995000,0.0,0.0,2.000000,frankycpp_v1.4.exe,Position::clearEnPassant,Position.cpp,0x1402390d3
+Position::getCastlingRights,0.0,0.0,0.0,0.0,2995000,,,1.000000,frankycpp_v1.4.exe,Position::getCastlingRights,Position.h,0x140241381
+Position::getKingSquare,0.0,0.0,0.0,0.0,29950000,80.1,80.1,0.100000,frankycpp_v1.4.exe,Position::getKingSquare,Position.h,0x140245a91
+Position::getLastMove,0.0,0.0,0.0,0.0,2995000,,,0.0,frankycpp_v1.4.exe,Position::getLastMove,Position.h,0x14020a422
+Position::getNextPlayer,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.4.exe,Position::getNextPlayer,Position.h,0x140240de9
+Position::getNextPlayer,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.4.exe,Position::getNextPlayer,Position.h,0x140208df5
+Position::getNextPlayer,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,Position::getNextPlayer,Position.h,0x14027774c
+Position::getOccupiedBb,0.0,0.0,0.0,0.0,2995000,,,0.0,frankycpp_v1.4.exe,Position::getOccupiedBb,Position.h,0x140245a48
+Position::getOccupiedBb,0.0,0.0,0.0,0.0,29950000,,,0.300000,frankycpp_v1.4.exe,Position::getOccupiedBb,Position.h,0x140239a1d
+Position::getOccupiedBb,0.0,0.0,0.0,0.0,8985000,,,0.0,frankycpp_v1.4.exe,Position::getOccupiedBb,Position.h,0x140245d5f
+Position::getPiece,0.0,0.0,0.0,0.0,23960000,,,0.250000,frankycpp_v1.4.exe,Position::getPiece,Position.h,0x14027774a
+Position::getPiece,0.0,0.0,0.0,0.0,11980000,57.2,57.2,0.250000,frankycpp_v1.4.exe,Position::getPiece,Position.h,0x14027779d
+Position::getPiece,0.0,0.0,0.0,0.0,17970000,59.3,59.3,1.000000,frankycpp_v1.4.exe,Position::getPiece,Position.h,0x14020ab00
+Position::getPieceBb,0.0,0.0,0.0,0.0,0,23.4,23.4,,frankycpp_v1.4.exe,Position::getPieceBb,Position.h,0x140277b7d
+Position::getPieceBb,0.0,0.0,0.0,0.0,5990000,100.0,100.0,0.500000,frankycpp_v1.4.exe,Position::getPieceBb,Position.h,0x1402779a4
+Position::getPieceBb,0.0,0.0,0.0,0.0,17970000,94.9,94.9,0.333333,frankycpp_v1.4.exe,Position::getPieceBb,Position.h,0x140277aad
+Position::isCapturingMove,0.0,0.0,0.0,0.0,5990000,,,0.0,frankycpp_v1.4.exe,Position::isCapturingMove,Position.h,0x14020aec2
+Position::isCapturingMove,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,Position::isCapturingMove,Position.h,0x140209efb
+Position::strFen,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,Position::strFen(void),Position.cpp,0x14023a510
+RtlAllocateHeap,0.0,0.0,0.0,0.0,29950000,12.5,12.5,0.200000,ntdll.dll,RtlAllocateHeap,[Unknown],0x18001c1d0
+RtlAnsiCharToUnicodeChar,0.0,0.0,0.0,0.0,0,100.0,100.0,,ntdll.dll,RtlAnsiCharToUnicodeChar,[Unknown],0x1800cdd60
+RtlDeleteBoundaryDescriptor,0.0,0.0,0.0,0.0,0,50.0,50.0,0.0,ntdll.dll,RtlDeleteBoundaryDescriptor,[Unknown],0x1800322b0
+RtlDosPathNameToRelativeNtPathName_U_WithStatus,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntdll.dll,RtlDosPathNameToRelativeNtPathName_U_WithStatus,[Unknown],0x1800dc450
+RtlEnterCriticalSection,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,ntdll.dll,RtlEnterCriticalSection,[Unknown],0x18000d780
+RtlInitUnicodeStringEx,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,ntdll.dll,RtlInitUnicodeStringEx,[Unknown],0x1800a6930
+RtlUnicodeToMultiByteN,0.0,0.0,0.0,0.0,2995000,,,0.0,ntdll.dll,RtlUnicodeToMultiByteN,[Unknown],0x1800b6a20
+SbSelectProcedure,0.0,0.0,0.0,0.0,2995000,,,1.000000,ntdll.dll,SbSelectProcedure,[Unknown],0x1800696f0
+Search::rootSearch,0.0,0.0,0.0,0.0,0,17.4,17.4,,frankycpp_v1.4.exe,"Search::rootSearch(class Position &,enum Depth,class Value,class Value)",Search.cpp,0x1402088f0
+Search::thread,0.0,0.0,0.0,0.0,14975000,,,0.0,frankycpp_v1.4.exe,Search::thread,Search.h,0x1402098ac
+Search::thread,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,Search::thread,Search.h,0x14020ada0
+SearchThreadData::lmr_reduction_log,0.0,0.0,0.0,0.0,2995000,,,0.0,frankycpp_v1.4.exe,SearchThreadData::lmr_reduction_log,SearchThreadData.h,0x1401ff9c6
+Square::file,0.0,0.0,0.0,0.0,2995000,16.7,16.7,4.000000,frankycpp_v1.4.exe,Square::file,square.h,0x1402391e3
+Square::file,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,Square::file,square.h,0x140239036
+Square::operator int,0.0,0.0,0.0,0.0,2995000,,,0.0,frankycpp_v1.4.exe,Square::operator int,square.h,0x140239b92
+Square::pawnPush,0.0,0.0,0.0,0.0,0,50.0,50.0,0.0,frankycpp_v1.4.exe,Square::pawnPush,square.h,0x140239011
+Square::rank,0.0,0.0,0.0,0.0,8985000,52.7,52.7,0.666667,frankycpp_v1.4.exe,Square::rank,square.h,0x14024622c
+StaticMoveList<256>::empty,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,StaticMoveList<256>::empty,staticmovelist.h,0x14023e4a8
+StaticMoveList<256>::push_back,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.4.exe,StaticMoveList<256>::push_back,staticmovelist.h,0x140240a08
+StaticMoveList<256>::{ctor},0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.4.exe,StaticMoveList<256>::{ctor},staticmovelist.h,0x1402119bc
+Value::isValid,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,Value::isValid,value.h,0x140208eba
+Value::operator int,0.0,0.0,0.0,0.0,62895000,53.8,53.8,0.142857,frankycpp_v1.4.exe,Value::operator int,value.h,0x14023ac0e
+Value::operator int,0.0,0.0,0.0,0.0,0,37.5,37.5,0.0,frankycpp_v1.4.exe,Value::operator int,value.h,0x14020932b
+Value::operator int,0.0,0.0,0.0,0.0,26955000,,,0.111111,frankycpp_v1.4.exe,Value::operator int,value.h,0x14023ab25
+Value::operator int,0.0,0.0,0.0,0.0,14975000,,,0.0,frankycpp_v1.4.exe,Value::operator int,value.h,0x14023ac25
+Value::operator int,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,Value::operator int,value.h,0x140209abb
+Value::{ctor},0.0,0.0,0.0,0.0,2995000,50.0,50.0,1.000000,frankycpp_v1.4.exe,Value::{ctor},value.h,0x140209370
+Value::{ctor},0.0,0.0,0.0,0.0,26955000,100.0,100.0,0.111111,frankycpp_v1.4.exe,Value::{ctor},value.h,0x140277950
+Value::{ctor},0.0,0.0,0.0,0.0,8985000,0.0,0.0,0.333333,frankycpp_v1.4.exe,Value::{ctor},value.h,0x140209346
+YAML::RegEx::MatchUnchecked<class YAML::StreamCharSource>,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,YAML::RegEx::MatchUnchecked<class YAML::StreamCharSource>(class YAML::StreamCharSource const &),regeximpl.h,0x1402c72f0
+YAML::Stream::peek,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,YAML::Stream::peek,stream.cpp,0x1402d4156
+YAML::detail::node::mark_defined,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,YAML::detail::node::mark_defined(void),node.h,0x140168690
+[Outside any known module],0.0,0.0,0.0,0.0,0,5.9,5.9,,[Unknown],[Outside any known module],[Unknown],0x0
+__builtin_array_init_helper<class Move>,0.0,0.0,0.0,0.0,2995000,,,0.0,frankycpp_v1.4.exe,"__builtin_array_init_helper<class Move>(class Move *,unsigned __int64)",[Unknown],0x14019ba20
+bishop_attacks,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.4.exe,"bishop_attacks(unsigned int, unsigned __int64)",tbchess.c,0x140278960
+"boost::archive::basic_binary_iprimitive<class boost::archive::binary_iarchive,char,struct std::char_traits<char> >::load_binary",0.0,0.0,0.0,0.0,2995000,100.0,100.0,0.0,frankycpp_v1.4.exe,"boost::archive::basic_binary_iprimitive<class boost::archive::binary_iarchive,char,struct std::char_traits<char> >::load_binary(void *,unsigned __int64)",basic_binary_iprimitive.hpp,0x14025f1a0
+boost::archive::class_id_type::{ctor},0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,boost::archive::class_id_type::{ctor},basic_archive.hpp,0x140283775
+boost::archive::detail::basic_iarchive::get_library_version,0.0,0.0,0.0,0.0,8985000,20.0,20.0,0.0,frankycpp_v1.4.exe,boost::archive::detail::basic_iarchive::get_library_version(void),basic_iarchive.cpp,0x140282eb0
+boost::archive::detail::basic_iarchive::reset_object_address,0.0,0.0,0.0,0.0,0,33.3,33.3,0.0,frankycpp_v1.4.exe,"boost::archive::detail::basic_iarchive::reset_object_address(void const *,void const *)",basic_iarchive.cpp,0x140283900
+boost::archive::detail::basic_iarchive_impl::load_object,0.0,0.0,0.0,0.0,8985000,25.0,25.0,0.666667,frankycpp_v1.4.exe,boost::archive::detail::basic_iarchive_impl::load_object,basic_iarchive.cpp,0x140282f31
+boost::archive::detail::basic_iarchive_impl::load_preamble,0.0,0.0,0.0,0.0,26955000,100.0,100.0,0.222222,frankycpp_v1.4.exe,"boost::archive::detail::basic_iarchive_impl::load_preamble(class boost::archive::detail::basic_iarchive &,class boost::archive::detail::basic_iarchive_impl::cobject_id &)",basic_iarchive.cpp,0x140283590
+boost::archive::detail::basic_serializer::operator<,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.4.exe,boost::archive::detail::basic_serializer::operator<,basic_serializer.hpp,0x1402837f7
+boost::archive::detail::common_iarchive<boost::archive::binary_iarchive>::load_override,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.4.exe,boost::archive::detail::common_iarchive<boost::archive::binary_iarchive>::load_override,common_iarchive.hpp,0x140269d35
+boost::archive::detail::interface_iarchive<boost::archive::binary_iarchive>::operator&,0.0,0.0,0.0,0.0,2995000,,,0.0,frankycpp_v1.4.exe,boost::archive::detail::interface_iarchive<boost::archive::binary_iarchive>::operator&,interface_iarchive.hpp,0x14026e85c
+"boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class BookEntry>::load_object_data",0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.500000,frankycpp_v1.4.exe,"boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class BookEntry>::load_object_data(class boost::archive::detail::basic_iarchive &,void *,unsigned int)",iserializer.hpp,0x140266aa0
+"boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class std::vector<class Move,class std::allocator<class Move> > >::load_object_data",0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.4.exe,"boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class std::vector<class Move,class std::allocator<class Move> > >::load_object_data(class boost::archive::detail::basic_iarchive &,void *,unsigned int)",iserializer.hpp,0x140269cb0
+"boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class std::vector<unsigned __int64,class std::allocator<unsigned __int64> > >::load_object_data",0.0,0.0,0.0,0.0,2995000,100.0,100.0,1.000000,frankycpp_v1.4.exe,"boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class std::vector<unsigned __int64,class std::allocator<unsigned __int64> > >::load_object_data(class boost::archive::detail::basic_iarchive &,void *,unsigned int)",iserializer.hpp,0x14026a3f0
+"boost::archive::detail::iserializer<class boost::archive::binary_iarchive,struct std::pair<unsigned __int64 const ,class BookEntry> >::load_object_data",0.0,0.0,0.0,0.0,11980000,100.0,100.0,0.0,frankycpp_v1.4.exe,"boost::archive::detail::iserializer<class boost::archive::binary_iarchive,struct std::pair<unsigned __int64 const ,class BookEntry> >::load_object_data(class boost::archive::detail::basic_iarchive &,void *,unsigned int)",iserializer.hpp,0x1402647b0
+boost::archive::detail::load_non_pointer_type<boost::archive::binary_iarchive>::load_standard::invoke,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.4.exe,boost::archive::detail::load_non_pointer_type<boost::archive::binary_iarchive>::load_standard::invoke,iserializer.hpp,0x140262ea6
+boost::archive::detail::load_non_pointer_type<boost::archive::binary_iarchive>::load_standard::invoke,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,boost::archive::detail::load_non_pointer_type<boost::archive::binary_iarchive>::load_standard::invoke,iserializer.hpp,0x14026db26
+boost::archive::detail::load_non_pointer_type<boost::archive::binary_iarchive>::load_standard::invoke,0.0,0.0,0.0,0.0,2995000,50.0,50.0,0.0,frankycpp_v1.4.exe,boost::archive::detail::load_non_pointer_type<boost::archive::binary_iarchive>::load_standard::invoke,iserializer.hpp,0x140268886
+boost::archive::object_id_type::operator=,0.0,0.0,0.0,0.0,0,50.0,50.0,,frankycpp_v1.4.exe,boost::archive::object_id_type::operator=,basic_archive.hpp,0x140282ef0
+boost::archive::object_id_type::operator=,0.0,0.0,0.0,0.0,2995000,,,0.0,frankycpp_v1.4.exe,boost::archive::object_id_type::operator=,basic_archive.hpp,0x140283067
+boost::archive::object_id_type::{ctor},0.0,0.0,0.0,0.0,0,33.3,33.3,,frankycpp_v1.4.exe,boost::archive::object_id_type::{ctor},basic_archive.hpp,0x140282fa6
+boost::archive::version_type::{ctor},0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.4.exe,boost::archive::version_type::{ctor},basic_archive.hpp,0x14026e200
+boost::archive::version_type::{ctor},0.0,0.0,0.0,0.0,2995000,,,0.0,frankycpp_v1.4.exe,boost::archive::version_type::{ctor},basic_archive.hpp,0x140269eb0
+boost::archive::version_type::{ctor},0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.4.exe,boost::archive::version_type::{ctor},basic_archive.hpp,0x140266c20
+"boost::serialization::free_loader<boost::archive::binary_iarchive,Move>::invoke",0.0,0.0,0.0,0.0,0,100.0,100.0,,frankycpp_v1.4.exe,"boost::serialization::free_loader<boost::archive::binary_iarchive,Move>::invoke",split_free.hpp,0x14026e410
+"boost::serialization::free_loader<boost::archive::binary_iarchive,boost::serialization::nvp<BookEntry> >::invoke",0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,"boost::serialization::free_loader<boost::archive::binary_iarchive,boost::serialization::nvp<BookEntry> >::invoke",split_free.hpp,0x140264842
+boost::serialization::load,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,boost::serialization::load,vector.hpp,0x140269cfa
+"boost::serialization::load<class boost::archive::binary_iarchive,class boost::serialization::item_version_type>",0.0,0.0,0.0,0.0,14975000,50.0,50.0,0.0,frankycpp_v1.4.exe,"boost::serialization::load<class boost::archive::binary_iarchive,class boost::serialization::item_version_type>(class boost::archive::binary_iarchive &,class boost::serialization::nvp<class boost::serialization::item_version_type> &,unsigned int)",nvp.hpp,0x140262730
+"boost::serialization::load<class boost::archive::binary_iarchive,class std::vector<class Move,class std::allocator<class Move> > >",0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,"boost::serialization::load<class boost::archive::binary_iarchive,class std::vector<class Move,class std::allocator<class Move> > >(class boost::archive::binary_iarchive &,class boost::serialization::nvp<class std::vector<class Move,class std::allocator<class Move> > > &,unsigned int)",nvp.hpp,0x1402688b0
+"boost::serialization::load<class boost::archive::binary_iarchive,int>",0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.4.exe,"boost::serialization::load<class boost::archive::binary_iarchive,int>(class boost::archive::binary_iarchive &,class boost::serialization::nvp<int> &,unsigned int)",nvp.hpp,0x140268900
+"boost::serialization::load<class boost::archive::binary_iarchive,unsigned __int64,class std::allocator<unsigned __int64> >",0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,"boost::serialization::load<class boost::archive::binary_iarchive,unsigned __int64,class std::allocator<unsigned __int64> >(class boost::archive::binary_iarchive &,class std::vector<unsigned __int64,class std::allocator<unsigned __int64> > &,unsigned int,struct boost::mpl::bool_<1>)",vector.hpp,0x14026c410
+"boost::serialization::load<class boost::archive::binary_iarchive,unsigned __int64>",0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.4.exe,"boost::serialization::load<class boost::archive::binary_iarchive,unsigned __int64>(class boost::archive::binary_iarchive &,class boost::serialization::nvp<unsigned __int64> &,unsigned int)",nvp.hpp,0x140265b70
+"boost::serialization::load<class boost::archive::binary_iarchive,unsigned int>",0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.4.exe,"boost::serialization::load<class boost::archive::binary_iarchive,unsigned int>(class boost::archive::binary_iarchive &,class boost::serialization::nvp<unsigned int> &,unsigned int)",nvp.hpp,0x14026daf0
+boost::serialization::nvp<boost::serialization::item_version_type>::{ctor},0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.4.exe,boost::serialization::nvp<boost::serialization::item_version_type>::{ctor},nvp.hpp,0x140269d56
+"boost::serialization::nvp<std::vector<unsigned __int64,std::allocator<unsigned __int64> > >::{ctor}",0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,"boost::serialization::nvp<std::vector<unsigned __int64,std::allocator<unsigned __int64> > >::{ctor}",nvp.hpp,0x140266b68
+"boost::serialization::singleton<class boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class BookEntry> >::get_instance",0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.4.exe,"boost::serialization::singleton<class boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class BookEntry> >::get_instance(void)",singleton.hpp,0x140267090
+"boost::serialization::singleton<class boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class std::vector<class Move,class std::allocator<class Move> > > >::get_instance",0.0,0.0,0.0,0.0,5990000,100.0,100.0,0.0,frankycpp_v1.4.exe,"boost::serialization::singleton<class boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class std::vector<class Move,class std::allocator<class Move> > > >::get_instance(void)",singleton.hpp,0x14026a590
+"boost::serialization::singleton<class boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class std::vector<unsigned __int64,class std::allocator<unsigned __int64> > > >::get_instance",0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.4.exe,"boost::serialization::singleton<class boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class std::vector<unsigned __int64,class std::allocator<unsigned __int64> > > >::get_instance(void)",singleton.hpp,0x14026ab60
+"boost::serialization::smart_cast_reference<boost::archive::binary_iarchive &,boost::archive::detail::basic_iarchive>",0.0,0.0,0.0,0.0,8985000,0.0,0.0,0.333333,frankycpp_v1.4.exe,"boost::serialization::smart_cast_reference<boost::archive::binary_iarchive &,boost::archive::detail::basic_iarchive>(class boost::archive::detail::basic_iarchive & const)",smart_cast.hpp,0x140260130
+boost::serialization::state_saver<boost::archive::object_id_type>::{ctor},0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,boost::serialization::state_saver<boost::archive::object_id_type>::{ctor},state_saver.hpp,0x140282fa6
+"boost::serialization::stl::collection_load_impl<class boost::archive::binary_iarchive,class std::vector<class Move,class std::allocator<class Move> > >",0.0,0.0,0.0,0.0,2995000,20.0,20.0,0.0,frankycpp_v1.4.exe,"boost::serialization::stl::collection_load_impl<class boost::archive::binary_iarchive,class std::vector<class Move,class std::allocator<class Move> > >(class boost::archive::binary_iarchive &,class std::vector<class Move,class std::allocator<class Move> > &,class boost::serialization::collection_size_type,class boost::serialization::item_version_type)",collections_load_imp.hpp,0x14026c210
+do_move,0.0,0.0,0.0,0.0,2995000,,,0.0,frankycpp_v1.4.exe,"do_move(struct Pos *, const struct Pos *, unsigned short)",tbchess.c,0x14027a580
+encode,0.0,0.0,0.0,0.0,11980000,52.7,52.7,0.250000,frankycpp_v1.4.exe,encode,tbprobe.c,0x14027cb00
+fread_s,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ucrtbase.dll,fread_s,[Unknown],0x180038750
+free,0.0,0.0,0.0,0.0,0,33.3,33.3,0.0,ucrtbase.dll,free,[Unknown],0x180015de0
+free_base,0.0,0.0,0.0,0.0,14975000,0.0,0.0,0.0,ucrtbase.dll,free_base,[Unknown],0x18001e0e0
+func@0x140002794,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,prjflt.sys,func@0x140002794,[Unknown],0x140002794
+func@0x140002b5e,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,wpprecorder.sys,func@0x140002b5e,[Unknown],0x140002b5e
+func@0x140004328,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,bfs.sys,func@0x140004328,[Unknown],0x140004328
+func@0x1400055f0,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntfs.sys,func@0x1400055f0,[Unknown],0x1400055f0
+func@0x140007c60,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,ntfs.sys,func@0x140007c60,[Unknown],0x140007c60
+func@0x140013440,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,ntfs.sys,func@0x140013440,[Unknown],0x140013440
+func@0x140014fc6,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntfs.sys,func@0x140014fc6,[Unknown],0x140014fc6
+func@0x140017a20,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntfs.sys,func@0x140017a20,[Unknown],0x140017a20
+func@0x140025820,0.0,0.0,0.0,0.0,2995000,0.0,0.0,2.000000,usbxhci.sys,func@0x140025820,[Unknown],0x140025820
+func@0x140026fb0,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,dxgmms2.sys,func@0x140026fb0,[Unknown],0x140026fb0
+func@0x14002a240,0.0,0.0,0.0,0.0,2995000,100.0,100.0,0.0,dxgmms2.sys,func@0x14002a240,[Unknown],0x14002a240
+func@0x14002ea70,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,wdfilter.sys,func@0x14002ea70,[Unknown],0x14002ea70
+func@0x140037060,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,wdfilter.sys,func@0x140037060,[Unknown],0x140037060
+func@0x140039870,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,wdfilter.sys,func@0x140039870,[Unknown],0x140039870
+func@0x140048b20,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,cldflt.sys,func@0x140048b20,[Unknown],0x140048b20
+func@0x140054fc0,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntfs.sys,func@0x140054fc0,[Unknown],0x140054fc0
+func@0x140090550,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,win32kbase.sys,func@0x140090550,[Unknown],0x140090550
+func@0x140114980,0.0,0.0,0.0,0.0,5990000,,,0.500000,ntfs.sys,func@0x140114980,[Unknown],0x140114980
+func@0x140114cf7,0.0,0.0,0.0,0.0,26955000,,,0.333333,ntfs.sys,func@0x140114cf7,[Unknown],0x140114cf7
+func@0x140115460,0.0,0.0,0.0,0.0,0,25.0,25.0,,ntfs.sys,func@0x140115460,[Unknown],0x140115460
+func@0x14011582f,0.0,0.0,0.0,0.0,5990000,25.0,25.0,0.0,ntfs.sys,func@0x14011582f,[Unknown],0x14011582f
+func@0x14012c5a0,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntfs.sys,func@0x14012c5a0,[Unknown],0x14012c5a0
+func@0x14012c8f5,0.0,0.0,0.0,0.0,2995000,25.0,25.0,0.0,ntfs.sys,func@0x14012c8f5,[Unknown],0x14012c8f5
+func@0x140142730,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,nvlddmkm.sys,func@0x140142730,[Unknown],0x140142730
+func@0x140146320,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntfs.sys,func@0x140146320,[Unknown],0x140146320
+func@0x14014bff0,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,ntfs.sys,func@0x14014bff0,[Unknown],0x14014bff0
+func@0x140169340,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntfs.sys,func@0x140169340,[Unknown],0x140169340
+func@0x140170960,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntfs.sys,func@0x140170960,[Unknown],0x140170960
+func@0x14017252f,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntfs.sys,func@0x14017252f,[Unknown],0x14017252f
+func@0x140191b30,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,ntfs.sys,func@0x140191b30,[Unknown],0x140191b30
+func@0x1401ad430,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntfs.sys,func@0x1401ad430,[Unknown],0x1401ad430
+func@0x1401c7df0,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntfs.sys,func@0x1401c7df0,[Unknown],0x1401c7df0
+func@0x1401c9ef0,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntfs.sys,func@0x1401c9ef0,[Unknown],0x1401c9ef0
+func@0x14020b210,0.0,0.0,0.0,0.0,5990000,,,0.0,ntoskrnl.exe,func@0x14020b210,[Unknown],0x14020b210
+func@0x14020f700,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,ntoskrnl.exe,func@0x14020f700,[Unknown],0x14020f700
+func@0x140210920,0.0,0.0,0.0,0.0,8985000,33.3,33.3,0.0,ntoskrnl.exe,func@0x140210920,[Unknown],0x140210920
+func@0x140213c64,0.0,0.0,0.0,0.0,11980000,33.3,33.3,0.0,ntoskrnl.exe,func@0x140213c64,[Unknown],0x140213c64
+func@0x140214ed0,0.0,0.0,0.0,0.0,5990000,60.0,60.0,1.000000,ntoskrnl.exe,func@0x140214ed0,[Unknown],0x140214ed0
+func@0x140216c10,0.0,0.0,0.0,0.0,2995000,,,0.0,ntoskrnl.exe,func@0x140216c10,[Unknown],0x140216c10
+func@0x14021739e,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x14021739e,[Unknown],0x14021739e
+func@0x14021a540,0.0,0.0,0.0,0.0,5990000,50.0,50.0,0.0,ntoskrnl.exe,func@0x14021a540,[Unknown],0x14021a540
+func@0x140227100,0.0,0.0,0.0,0.0,0,50.0,50.0,0.0,ntoskrnl.exe,func@0x140227100,[Unknown],0x140227100
+func@0x1402333e0,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402333e0,[Unknown],0x1402333e0
+func@0x140233b80,0.0,0.0,0.0,0.0,2995000,0.0,0.0,2.000000,ntoskrnl.exe,func@0x140233b80,[Unknown],0x140233b80
+func@0x1402340bf,0.0,0.0,0.0,0.0,2995000,,,1.000000,ntoskrnl.exe,func@0x1402340bf,[Unknown],0x1402340bf
+func@0x140234690,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140234690,[Unknown],0x140234690
+func@0x140234a67,0.0,0.0,0.0,0.0,5990000,0.0,0.0,1.000000,ntoskrnl.exe,func@0x140234a67,[Unknown],0x140234a67
+func@0x14023e9e0,0.0,0.0,0.0,0.0,2995000,28.6,28.6,1.000000,ntoskrnl.exe,func@0x14023e9e0,[Unknown],0x14023e9e0
+func@0x140244270,0.0,0.0,0.0,0.0,0,14.8,14.8,,ntoskrnl.exe,func@0x140244270,[Unknown],0x140244270
+func@0x140246bc0,0.0,0.0,0.0,0.0,2995000,17.4,17.4,1.000000,ntoskrnl.exe,func@0x140246bc0,[Unknown],0x140246bc0
+func@0x140247370,0.0,0.0,0.0,0.0,2995000,6.7,6.7,2.000000,ntoskrnl.exe,func@0x140247370,[Unknown],0x140247370
+func@0x14024ec3c,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,ntoskrnl.exe,func@0x14024ec3c,[Unknown],0x14024ec3c
+func@0x14025a1b0,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntfs.sys,func@0x14025a1b0,[Unknown],0x14025a1b0
+func@0x14025a500,0.0,0.0,0.0,0.0,0,50.0,50.0,0.0,nvlddmkm.sys,func@0x14025a500,[Unknown],0x14025a500
+func@0x1402660c7,0.0,0.0,0.0,0.0,2995000,100.0,100.0,1.000000,ntfs.sys,func@0x1402660c7,[Unknown],0x1402660c7
+func@0x140277070,0.0,0.0,0.0,0.0,2995000,50.0,50.0,1.000000,ntoskrnl.exe,func@0x140277070,[Unknown],0x140277070
+func@0x1402775d0,0.0,0.0,0.0,0.0,2995000,100.0,100.0,1.000000,ntoskrnl.exe,func@0x1402775d0,[Unknown],0x1402775d0
+func@0x140279ba0,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,ntoskrnl.exe,func@0x140279ba0,[Unknown],0x140279ba0
+func@0x14027a888,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,ntoskrnl.exe,func@0x14027a888,[Unknown],0x14027a888
+func@0x14027b230,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,ntoskrnl.exe,func@0x14027b230,[Unknown],0x14027b230
+func@0x14027cfe0,0.0,0.0,0.0,0.0,8985000,,,0.0,ntoskrnl.exe,func@0x14027cfe0,[Unknown],0x14027cfe0
+func@0x140280252,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,ntoskrnl.exe,func@0x140280252,[Unknown],0x140280252
+func@0x140281b8b,0.0,0.0,0.0,0.0,5990000,,,0.500000,ntoskrnl.exe,func@0x140281b8b,[Unknown],0x140281b8b
+func@0x14028b170,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,nvlddmkm.sys,func@0x14028b170,[Unknown],0x14028b170
+func@0x140291f05,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140291f05,[Unknown],0x140291f05
+func@0x1402925a0,0.0,0.0,0.0,0.0,2995000,33.3,33.3,0.0,ntoskrnl.exe,func@0x1402925a0,[Unknown],0x1402925a0
+func@0x140299133,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,ntoskrnl.exe,func@0x140299133,[Unknown],0x140299133
+func@0x1402afa53,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402afa53,[Unknown],0x1402afa53
+func@0x1402b6d00,0.0,0.0,0.0,0.0,8985000,100.0,100.0,0.333333,ntoskrnl.exe,func@0x1402b6d00,[Unknown],0x1402b6d00
+func@0x1402b83c0,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,ntoskrnl.exe,func@0x1402b83c0,[Unknown],0x1402b83c0
+func@0x1402ce839,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402ce839,[Unknown],0x1402ce839
+func@0x1402e1ba0,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402e1ba0,[Unknown],0x1402e1ba0
+func@0x1402e5682,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.500000,ntoskrnl.exe,func@0x1402e5682,[Unknown],0x1402e5682
+func@0x1402e8ac0,0.0,0.0,0.0,0.0,8985000,,,1.333333,ntoskrnl.exe,func@0x1402e8ac0,[Unknown],0x1402e8ac0
+func@0x1402e8b71,0.0,0.0,0.0,0.0,14975000,28.6,28.6,0.400000,ntoskrnl.exe,func@0x1402e8b71,[Unknown],0x1402e8b71
+func@0x1402e9c23,0.0,0.0,0.0,0.0,8985000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402e9c23,[Unknown],0x1402e9c23
+func@0x140301c20,0.0,0.0,0.0,0.0,2995000,,,0.0,ntoskrnl.exe,func@0x140301c20,[Unknown],0x140301c20
+func@0x140301cdb,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,ntoskrnl.exe,func@0x140301cdb,[Unknown],0x140301cdb
+func@0x140302820,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140302820,[Unknown],0x140302820
+func@0x140303d00,0.0,0.0,0.0,0.0,0,20.0,20.0,0.0,ntoskrnl.exe,func@0x140303d00,[Unknown],0x140303d00
+func@0x14031da63,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x14031da63,[Unknown],0x14031da63
+func@0x14031f5f0,0.0,0.0,0.0,0.0,5990000,7.4,7.4,1.500000,ntoskrnl.exe,func@0x14031f5f0,[Unknown],0x14031f5f0
+func@0x140320240,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140320240,[Unknown],0x140320240
+func@0x140321b00,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140321b00,[Unknown],0x140321b00
+func@0x1403224d0,0.0,0.0,0.0,0.0,8985000,0.0,0.0,1.666667,ntoskrnl.exe,func@0x1403224d0,[Unknown],0x1403224d0
+func@0x1403248e3,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1403248e3,[Unknown],0x1403248e3
+func@0x140327b70,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140327b70,[Unknown],0x140327b70
+func@0x140327c10,0.0,0.0,0.0,0.0,2995000,,,0.0,ntoskrnl.exe,func@0x140327c10,[Unknown],0x140327c10
+func@0x14032ac60,0.0,0.0,0.0,0.0,5990000,20.0,20.0,0.0,ntoskrnl.exe,func@0x14032ac60,[Unknown],0x14032ac60
+func@0x14032d637,0.0,0.0,0.0,0.0,5990000,,,0.500000,ntoskrnl.exe,func@0x14032d637,[Unknown],0x14032d637
+func@0x14032eeaa,0.0,0.0,0.0,0.0,2995000,0.0,0.0,2.000000,ntoskrnl.exe,func@0x14032eeaa,[Unknown],0x14032eeaa
+func@0x14032fb30,0.0,0.0,0.0,0.0,2995000,,,2.000000,ntoskrnl.exe,func@0x14032fb30,[Unknown],0x14032fb30
+func@0x1403311d0,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1403311d0,[Unknown],0x1403311d0
+func@0x14033b380,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x14033b380,[Unknown],0x14033b380
+func@0x14033b898,0.0,0.0,0.0,0.0,0,33.3,33.3,0.0,ntoskrnl.exe,func@0x14033b898,[Unknown],0x14033b898
+func@0x14033f900,0.0,0.0,0.0,0.0,5990000,100.0,100.0,0.0,ntoskrnl.exe,func@0x14033f900,[Unknown],0x14033f900
+func@0x14034c411,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x14034c411,[Unknown],0x14034c411
+func@0x14034c690,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x14034c690,[Unknown],0x14034c690
+func@0x140350c70,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140350c70,[Unknown],0x140350c70
+func@0x14035b3c0,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,ntoskrnl.exe,func@0x14035b3c0,[Unknown],0x14035b3c0
+func@0x14035c4bc,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x14035c4bc,[Unknown],0x14035c4bc
+func@0x140362b20,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140362b20,[Unknown],0x140362b20
+func@0x140363a62,0.0,0.0,0.0,0.0,2995000,0.0,0.0,2.000000,ntoskrnl.exe,func@0x140363a62,[Unknown],0x140363a62
+func@0x140364160,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140364160,[Unknown],0x140364160
+func@0x140364c30,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,ntoskrnl.exe,func@0x140364c30,[Unknown],0x140364c30
+func@0x140365370,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140365370,[Unknown],0x140365370
+func@0x140367f54,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140367f54,[Unknown],0x140367f54
+func@0x1403aeca4,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1403aeca4,[Unknown],0x1403aeca4
+func@0x1403b028c,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1403b028c,[Unknown],0x1403b028c
+func@0x1403be84c,0.0,0.0,0.0,0.0,0,13.4,13.4,,ntoskrnl.exe,func@0x1403be84c,[Unknown],0x1403be84c
+func@0x1403e4a20,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1403e4a20,[Unknown],0x1403e4a20
+func@0x1403eb0d0,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1403eb0d0,[Unknown],0x1403eb0d0
+func@0x1403ed984,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1403ed984,[Unknown],0x1403ed984
+func@0x140403b74,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140403b74,[Unknown],0x140403b74
+func@0x1404071c1,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1404071c1,[Unknown],0x1404071c1
+func@0x140412550,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140412550,[Unknown],0x140412550
+func@0x14041406e,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,ntoskrnl.exe,func@0x14041406e,[Unknown],0x14041406e
+func@0x140416952,0.0,0.0,0.0,0.0,2995000,,,0.0,ntoskrnl.exe,func@0x140416952,[Unknown],0x140416952
+func@0x140426b70,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140426b70,[Unknown],0x140426b70
+func@0x140426c27,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140426c27,[Unknown],0x140426c27
+func@0x140436760,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140436760,[Unknown],0x140436760
+func@0x140439990,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140439990,[Unknown],0x140439990
+func@0x140442c20,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,ntoskrnl.exe,func@0x140442c20,[Unknown],0x140442c20
+func@0x14046430b,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x14046430b,[Unknown],0x14046430b
+func@0x1404e9290,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1404e9290,[Unknown],0x1404e9290
+func@0x1404f20e0,0.0,0.0,0.0,0.0,11980000,33.3,33.3,0.500000,ntoskrnl.exe,func@0x1404f20e0,[Unknown],0x1404f20e0
+func@0x1405e1e14,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,ntoskrnl.exe,func@0x1405e1e14,[Unknown],0x1405e1e14
+func@0x1406ab336,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1406ab336,[Unknown],0x1406ab336
+func@0x1406af560,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,nvlddmkm.sys,func@0x1406af560,[Unknown],0x1406af560
+func@0x1406b1570,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,nvlddmkm.sys,func@0x1406b1570,[Unknown],0x1406b1570
+func@0x1406bd983,0.0,0.0,0.0,0.0,0,8.5,8.5,,ntoskrnl.exe,func@0x1406bd983,[Unknown],0x1406bd983
+func@0x1406c0240,0.0,0.0,0.0,0.0,14975000,,,0.0,ntoskrnl.exe,func@0x1406c0240,[Unknown],0x1406c0240
+func@0x140849f13,0.0,0.0,0.0,0.0,8985000,,,0.333333,ntoskrnl.exe,func@0x140849f13,[Unknown],0x140849f13
+func@0x14084a853,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x14084a853,[Unknown],0x14084a853
+func@0x14084bf80,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.500000,ntoskrnl.exe,func@0x14084bf80,[Unknown],0x14084bf80
+func@0x140864e30,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140864e30,[Unknown],0x140864e30
+func@0x1408650b0,0.0,0.0,0.0,0.0,11980000,100.0,100.0,0.250000,ntoskrnl.exe,func@0x1408650b0,[Unknown],0x1408650b0
+func@0x1408bee32,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,ntoskrnl.exe,func@0x1408bee32,[Unknown],0x1408bee32
+func@0x1408e0e4d,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1408e0e4d,[Unknown],0x1408e0e4d
+func@0x140930bc3,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,ntoskrnl.exe,func@0x140930bc3,[Unknown],0x140930bc3
+func@0x140b51550,0.0,0.0,0.0,0.0,8985000,0.0,0.0,0.333333,nvlddmkm.sys,func@0x140b51550,[Unknown],0x140b51550
+func@0x140b53e10,0.0,0.0,0.0,0.0,2995000,100.0,100.0,0.0,nvlddmkm.sys,func@0x140b53e10,[Unknown],0x140b53e10
+func@0x140da8c2f,0.0,0.0,0.0,0.0,0,33.3,33.3,,nvlddmkm.sys,func@0x140da8c2f,[Unknown],0x140da8c2f
+func@0x140e1cd10,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,nvlddmkm.sys,func@0x140e1cd10,[Unknown],0x140e1cd10
+func@0x1800060f0,0.0,0.0,0.0,0.0,0,60.0,60.0,,fltmgr.sys,func@0x1800060f0,[Unknown],0x1800060f0
+func@0x180007fa0,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,fltmgr.sys,func@0x180007fa0,[Unknown],0x180007fa0
+func@0x180008044,0.0,0.0,0.0,0.0,5990000,66.7,66.7,0.500000,fltmgr.sys,func@0x180008044,[Unknown],0x180008044
+func@0x18000b2e2,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,fltmgr.sys,func@0x18000b2e2,[Unknown],0x18000b2e2
+func@0x18000d860,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,fltmgr.sys,func@0x18000d860,[Unknown],0x18000d860
+func@0x18000f1c0,0.0,0.0,0.0,0.0,2995000,,,0.0,fltmgr.sys,func@0x18000f1c0,[Unknown],0x18000f1c0
+func@0x18000ff00,0.0,0.0,0.0,0.0,0,50.0,50.0,0.0,fltmgr.sys,func@0x18000ff00,[Unknown],0x18000ff00
+func@0x180018010,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntdll.dll,func@0x180018010,[Unknown],0x180018010
+func@0x18001d8f0,0.0,0.0,0.0,0.0,2995000,50.0,50.0,1.000000,fltmgr.sys,func@0x18001d8f0,[Unknown],0x18001d8f0
+func@0x18001dba7,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntdll.dll,func@0x18001dba7,[Unknown],0x18001dba7
+func@0x18001e670,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,fltmgr.sys,func@0x18001e670,[Unknown],0x18001e670
+func@0x18003c090,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,ntdll.dll,func@0x18003c090,[Unknown],0x18003c090
+func@0x180040190,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntdll.dll,func@0x180040190,[Unknown],0x180040190
+func@0x180041f70,0.0,0.0,0.0,0.0,2995000,,,0.0,ntdll.dll,func@0x180041f70,[Unknown],0x180041f70
+func@0x180050970,0.0,0.0,0.0,0.0,5990000,100.0,100.0,0.500000,ntdll.dll,func@0x180050970,[Unknown],0x180050970
+func@0x180055e60,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,fltmgr.sys,func@0x180055e60,[Unknown],0x180055e60
+func@0x18005a360,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,fltmgr.sys,func@0x18005a360,[Unknown],0x18005a360
+func@0x18005ded0,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,fltmgr.sys,func@0x18005ded0,[Unknown],0x18005ded0
+func@0x180073b40,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,ntdll.dll,func@0x180073b40,[Unknown],0x180073b40
+func@0x180077530,0.0,0.0,0.0,0.0,0,50.0,50.0,,ntdll.dll,func@0x180077530,[Unknown],0x180077530
+func@0x1800c0e6c,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,crypt32.dll,func@0x1800c0e6c,[Unknown],0x1800c0e6c
+func@0x1800cde6b,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntdll.dll,func@0x1800cde6b,[Unknown],0x1800cde6b
+func@0x180165770,0.0,0.0,0.0,0.0,2995000,,,0.0,ntdll.dll,func@0x180165770,[Unknown],0x180165770
+func@0x180167fc0,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,ntdll.dll,func@0x180167fc0,[Unknown],0x180167fc0
+func@0x1c000e9a0,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,filecrypt.sys,func@0x1c000e9a0,[Unknown],0x1c000e9a0
+malloc_base,0.0,0.0,0.0,0.0,5990000,66.7,66.7,0.500000,ucrtbase.dll,malloc_base,[Unknown],0x180010100
+memcpy,0.0,0.0,0.0,0.0,11980000,,,1.000000,vcruntime140.dll,memcpy,[Unknown],0x180013010
+moveValueGreaterComparator::operator(),0.0,0.0,0.0,0.0,8985000,75.0,75.0,0.0,frankycpp_v1.4.exe,moveValueGreaterComparator::operator(),move.h,0x14021b279
+operator new,0.0,0.0,0.0,0.0,5990000,100.0,100.0,0.500000,frankycpp_v1.4.exe,operator new(unsigned __int64),new_scalar.cpp,0x1405ee020
+operator&,0.0,0.0,0.0,0.0,0,33.3,33.3,0.0,frankycpp_v1.4.exe,operator&,bitboard.h,0x1402408df
+operator&,0.0,0.0,0.0,0.0,11980000,,,1.000000,frankycpp_v1.4.exe,operator&,bitboard.h,0x140245795
+operator&,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.4.exe,operator&,bitboard.h,0x1402413e4
+operator&,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,operator&,bitboard.h,0x140240af2
+operator&,0.0,0.0,0.0,0.0,14975000,,,0.600000,frankycpp_v1.4.exe,operator&,bitboard.h,0x14020a370
+operator&,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.4.exe,operator&,bitboard.h,0x14023987f
+operator&,0.0,0.0,0.0,0.0,8985000,,,0.666667,frankycpp_v1.4.exe,operator&,bitboard.h,0x14024111b
+operator&,0.0,0.0,0.0,0.0,0,100.0,100.0,,frankycpp_v1.4.exe,operator&,bitboard.h,0x140240b2b
+operator&,0.0,0.0,0.0,0.0,26955000,42.1,42.1,0.444444,frankycpp_v1.4.exe,operator&,bitboard.h,0x1402779de
+operator&,0.0,0.0,0.0,0.0,0,33.3,33.3,0.0,frankycpp_v1.4.exe,operator&,bitboard.h,0x14024124a
+operator&,0.0,0.0,0.0,0.0,2995000,14.8,14.8,1.000000,frankycpp_v1.4.exe,operator&,bitboard.h,0x140245732
+operator&,0.0,0.0,0.0,0.0,2995000,50.0,50.0,1.000000,frankycpp_v1.4.exe,operator&,bitboard.h,0x14020aee5
+operator&,0.0,0.0,0.0,0.0,5990000,0.0,0.0,1.000000,frankycpp_v1.4.exe,operator&,bitboard.h,0x140209eff
+operator&,0.0,0.0,0.0,0.0,11980000,,,0.500000,frankycpp_v1.4.exe,operator&,bitboard.h,0x140245a57
+operator&,0.0,0.0,0.0,0.0,8985000,,,1.333333,frankycpp_v1.4.exe,operator&,bitboard.h,0x140245761
+operator&,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,operator&,bitboard.h,0x140166b60
+operator&,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,operator&,bitboard.h,0x140241413
+operator&,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,operator&,bitboard.h,0x1402398c4
+operator&,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.4.exe,operator&,bitboard.h,0x1402413bf
+operator+,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.4.exe,operator+,direction.h,0x140239773
+operator+,0.0,0.0,0.0,0.0,5990000,,,0.0,frankycpp_v1.4.exe,operator+,depth.h,0x140209564
+operator+,0.0,0.0,0.0,0.0,8985000,0.0,0.0,0.0,frankycpp_v1.4.exe,operator+,value.h,0x140209499
+operator+,0.0,0.0,0.0,0.0,2995000,,,0.0,frankycpp_v1.4.exe,operator+,direction.h,0x140240c2d
+operator+,0.0,0.0,0.0,0.0,8985000,,,0.333333,frankycpp_v1.4.exe,operator+,value.h,0x14020a726
+operator+,0.0,0.0,0.0,0.0,17970000,,,0.166667,frankycpp_v1.4.exe,operator+,direction.h,0x140239735
+operator+,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.4.exe,operator+,direction.h,0x140240cc7
+operator+,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.4.exe,operator+,depth.h,0x14020a039
+operator++,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.4.exe,operator++,depth.h,0x140209531
+operator+=,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,operator+=,depth.h,0x140209546
+operator+=,0.0,0.0,0.0,0.0,20965000,100.0,100.0,0.428571,frankycpp_v1.4.exe,operator+=,value.h,0x14024596c
+operator-,0.0,0.0,0.0,0.0,0,33.3,33.3,,frankycpp_v1.4.exe,operator-,value.h,0x140209573
+operator-,0.0,0.0,0.0,0.0,11980000,37.2,37.2,0.500000,frankycpp_v1.4.exe,operator-,value.h,0x140209486
+operator-,0.0,0.0,0.0,0.0,2995000,71.4,71.4,0.0,frankycpp_v1.4.exe,operator-,value.h,0x140241322
+operator-,0.0,0.0,0.0,0.0,5990000,50.0,50.0,0.0,frankycpp_v1.4.exe,operator-,value.h,0x1402095b2
+operator-,0.0,0.0,0.0,0.0,5990000,5.9,5.9,1.000000,frankycpp_v1.4.exe,operator-,depth.h,0x140209e20
+operator-,0.0,0.0,0.0,0.0,26955000,,,0.333333,frankycpp_v1.4.exe,operator-,value.h,0x140277940
+operator-,0.0,0.0,0.0,0.0,5990000,,,0.0,frankycpp_v1.4.exe,operator-,value.h,0x1402402bc
+operator==,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,operator==,castlingrights.h,0x1402413de
+operator==,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,operator==,castlingrights.h,0x14024140d
+operator>,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.4.exe,operator>,value.h,0x1402093bc
+operator^=,0.0,0.0,0.0,0.0,32945000,,,0.181818,frankycpp_v1.4.exe,operator^=,bitboards.h,0x140277862
+operator|,0.0,0.0,0.0,0.0,11980000,28.6,28.6,1.000000,frankycpp_v1.4.exe,operator|,bitboard.h,0x140240dfc
+operator|,0.0,0.0,0.0,0.0,0,13.4,13.4,,frankycpp_v1.4.exe,operator|,bitboard.h,0x14027779a
+operator|,0.0,0.0,0.0,0.0,0,14.3,14.3,,frankycpp_v1.4.exe,operator|,bitboard.h,0x140208fb7
+operator|,0.0,0.0,0.0,0.0,23960000,90.4,90.4,0.125000,frankycpp_v1.4.exe,operator|,bitboard.h,0x140277bd1
+operator|,0.0,0.0,0.0,0.0,47920000,80.1,80.1,0.187500,frankycpp_v1.4.exe,operator|,bitboard.h,0x1402398b2
+operator|,0.0,0.0,0.0,0.0,2995000,,,0.0,frankycpp_v1.4.exe,operator|,bitboard.h,0x140239648
+operator~,0.0,0.0,0.0,0.0,11980000,66.7,66.7,0.0,frankycpp_v1.4.exe,operator~,color.h,0x1402412c4
+operator~,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.4.exe,operator~,color.h,0x14023fdf4
+operator~,0.0,0.0,0.0,0.0,5990000,,,0.0,frankycpp_v1.4.exe,operator~,color.h,0x140239667
+operator~,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,operator~,color.h,0x14020a36c
+operator~,0.0,0.0,0.0,0.0,11980000,50.0,50.0,0.500000,frankycpp_v1.4.exe,operator~,color.h,0x14024031d
+operator~,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.4.exe,operator~,color.h,0x1402395ad
+operator~,0.0,0.0,0.0,0.0,0,100.0,100.0,,frankycpp_v1.4.exe,operator~,color.h,0x14024116d
+operator~,0.0,0.0,0.0,0.0,2995000,10.5,10.5,1.000000,frankycpp_v1.4.exe,operator~,color.h,0x140277b18
+operator~,0.0,0.0,0.0,0.0,5990000,100.0,100.0,0.0,frankycpp_v1.4.exe,operator~,color.h,0x140245679
+operator~,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.4.exe,operator~,color.h,0x1402398ae
+operator~,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,operator~,color.h,0x140209efb
+pieces_by_type,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,"pieces_by_type(const struct Pos *, Color, PieceType)",tbchess.c,0x140278110
+probe_table,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,"probe_table(const struct Pos *, int, int *, const int)",tbprobe.c,0x14027e530
+setup_pairs,0.0,0.0,0.0,0.0,11980000,,,0.750000,frankycpp_v1.4.exe,"setup_pairs(unsigned char * *, unsigned __int64, unsigned __int64 *, unsigned char *, int)",tbprobe.c,0x14027d6f0
+"std::_Atomic_storage<unsigned __int64,8>::load",0.0,0.0,0.0,0.0,11980000,,,0.250000,frankycpp_v1.4.exe,"std::_Atomic_storage<unsigned __int64,8>::load",atomic,0x140247043
+std::_Copy_memmove_tail<Move *>,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,"std::_Copy_memmove_tail<Move *>(const char *, class Move *, const unsigned __int64, const unsigned __int64)",xutility,0x14021dff0
+std::_Deallocate,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,std::_Deallocate,xmemory,0x14021659c
+std::_Deallocate,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,std::_Deallocate,xmemory,0x14021660c
+"std::_Hash<std::_Umap_traits<unsigned __int64,BookEntry,std::_Uhash_compare<unsigned __int64,std::hash<unsigned __int64>,std::equal_to<unsigned __int64> >,std::allocator<std::pair<unsigned __int64 const ,BookEntry> >,0> >::_Insert_new_node_before",0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,"std::_Hash<std::_Umap_traits<unsigned __int64,BookEntry,std::_Uhash_compare<unsigned __int64,std::hash<unsigned __int64>,std::equal_to<unsigned __int64> >,std::allocator<std::pair<unsigned __int64 const ,BookEntry> >,0> >::_Insert_new_node_before",xhash,0x140261cf6
+"std::_Hash<std::_Umap_traits<unsigned __int64,BookEntry,std::_Uhash_compare<unsigned __int64,std::hash<unsigned __int64>,std::equal_to<unsigned __int64> >,std::allocator<std::pair<unsigned __int64 const ,BookEntry> >,0> >::insert",0.0,0.0,0.0,0.0,2995000,50.0,50.0,0.0,frankycpp_v1.4.exe,"std::_Hash<std::_Umap_traits<unsigned __int64,BookEntry,std::_Uhash_compare<unsigned __int64,std::hash<unsigned __int64>,std::equal_to<unsigned __int64> >,std::allocator<std::pair<unsigned __int64 const ,BookEntry> >,0> >::insert",xhash,0x1402610c0
+std::_Static_partition_team<__int64>::_Get_next_key,0.0,0.0,0.0,0.0,5990000,6.2,6.2,2.000000,frankycpp_v1.4.exe,std::_Static_partition_team<__int64>::_Get_next_key,execution,0x140248320
+"std::_Tree<std::_Tset_traits<boost::archive::detail::basic_iarchive_impl::cobject_type,std::less<boost::archive::detail::basic_iarchive_impl::cobject_type>,std::allocator<boost::archive::detail::basic_iarchive_impl::cobject_type>,0> >::insert",0.0,0.0,0.0,0.0,8985000,100.0,100.0,0.666667,frankycpp_v1.4.exe,"std::_Tree<std::_Tset_traits<boost::archive::detail::basic_iarchive_impl::cobject_type,std::less<boost::archive::detail::basic_iarchive_impl::cobject_type>,std::allocator<boost::archive::detail::basic_iarchive_impl::cobject_type>,0> >::insert",xtree,0x140283788
+"std::array<Bitboard,64>::operator[]",0.0,0.0,0.0,0.0,14975000,,,0.800000,frankycpp_v1.4.exe,"std::array<Bitboard,64>::operator[]",array,0x14023aa90
+"std::array<Bitboard,64>::operator[]",0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,"std::array<Bitboard,64>::operator[]",array,0x140277b24
+"std::array<Bitboard,8>::operator[]",0.0,0.0,0.0,0.0,2995000,,,0.0,frankycpp_v1.4.exe,"std::array<Bitboard,8>::operator[]",array,0x140240473
+"std::array<Bitboard,8>::operator[]",0.0,0.0,0.0,0.0,38935000,,,0.153846,frankycpp_v1.4.exe,"std::array<Bitboard,8>::operator[]",array,0x1402409aa
+"std::array<Move,128>::operator[]",0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,"std::array<Move,128>::operator[]",array,0x1401fdf16
+"std::array<Value,25>::operator[]",0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,"std::array<Value,25>::operator[]",array,0x1402411a4
+"std::array<Value,25>::operator[]",0.0,0.0,0.0,0.0,2995000,,,0.0,frankycpp_v1.4.exe,"std::array<Value,25>::operator[]",array,0x140240cb6
+"std::array<Value,25>::operator[]",0.0,0.0,0.0,0.0,2995000,,,0.0,frankycpp_v1.4.exe,"std::array<Value,25>::operator[]",array,0x140241302
+"std::array<int,64>::operator[]",0.0,0.0,0.0,0.0,11980000,28.6,28.6,0.250000,frankycpp_v1.4.exe,"std::array<int,64>::operator[]",array,0x1402391b3
+"std::array<int,64>::operator[]",0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,"std::array<int,64>::operator[]",array,0x140166b45
+"std::array<std::array<int,64>,64>::operator[]",0.0,0.0,0.0,0.0,23960000,100.0,100.0,0.500000,frankycpp_v1.4.exe,"std::array<std::array<int,64>,64>::operator[]",array,0x14020a2be
+"std::basic_ostream<char,std::char_traits<char> >::_Sentry_base::{dtor}",0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,"std::basic_ostream<char,std::char_traits<char> >::_Sentry_base::{dtor}",__msvc_ostream.hpp,0x14019efb7
+"std::basic_streambuf<char,std::char_traits<char> >::gbump",0.0,0.0,0.0,0.0,17970000,50.0,50.0,0.166667,frankycpp_v1.4.exe,"std::basic_streambuf<char,std::char_traits<char> >::gbump",streambuf,0x14011ab7e
+std::countr_zero,0.0,0.0,0.0,0.0,2995000,57.1,57.1,1.000000,frankycpp_v1.4.exe,std::countr_zero,bit,0x140240bf0
+std::countr_zero,0.0,0.0,0.0,0.0,8985000,,,0.333333,frankycpp_v1.4.exe,std::countr_zero,bit,0x140240ef5
+std::countr_zero,0.0,0.0,0.0,0.0,38935000,39.5,39.5,0.692308,frankycpp_v1.4.exe,std::countr_zero,bit,0x140245a10
+std::countr_zero,0.0,0.0,0.0,0.0,14975000,60.0,60.0,0.0,frankycpp_v1.4.exe,std::countr_zero,bit,0x140241260
+std::countr_zero,0.0,0.0,0.0,0.0,2995000,,,0.0,frankycpp_v1.4.exe,std::countr_zero,bit,0x140240ca7
+std::hash<unsigned __int64>::_Do_hash,0.0,0.0,0.0,0.0,8985000,50.0,50.0,0.333333,frankycpp_v1.4.exe,std::hash<unsigned __int64>::_Do_hash,type_traits,0x140261b45
+std::ios_base::good,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,msvcp140.dll,std::ios_base::good(void),[Unknown],0x180008430
+std::locale::facet::_Incref,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,msvcp140.dll,std::locale::facet::_Incref(void),[Unknown],0x1800065f0
+std::make_unique,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.4.exe,std::make_unique,memory,0x140246ad0
+std::max,0.0,0.0,0.0,0.0,5990000,100.0,100.0,0.500000,frankycpp_v1.4.exe,std::max,utility,0x140208dc0
+std::min,0.0,0.0,0.0,0.0,11980000,,,0.250000,frankycpp_v1.4.exe,std::min,utility,0x14020a73a
+std::operator>><struct std::char_traits<char> >,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,"std::operator>><struct std::char_traits<char> >(class std::basic_istream<char,struct std::char_traits<char> > &,unsigned char &)",istream,0x14023c250
+std::popcount,0.0,0.0,0.0,0.0,0,13.4,13.4,,frankycpp_v1.4.exe,std::popcount,bit,0x14024032b
+std::popcount,0.0,0.0,0.0,0.0,5990000,0.0,0.0,1.000000,frankycpp_v1.4.exe,std::popcount,bit,0x1402457e3
+std::popcount,0.0,0.0,0.0,0.0,5990000,,,0.500000,frankycpp_v1.4.exe,std::popcount,bit,0x1402457ed
+std::popcount,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.4.exe,std::popcount,bit,0x1402457cb
+"std::ranges::_Buffered_inplace_merge_common<Move *,moveValueGreaterComparator,std::identity>",0.0,0.0,0.0,0.0,5990000,5.7,5.7,2.000000,frankycpp_v1.4.exe,"std::ranges::_Buffered_inplace_merge_common<Move *,moveValueGreaterComparator,std::identity>(class Move *, class Move *, class Move *, __int64, __int64, class Move *, const __int64, struct moveValueGreaterComparator, struct std::identity)",algorithm,0x14021b260
+"std::ranges::_Copy_memcpy_common<Move *,Move *>",0.0,0.0,0.0,0.0,2995000,66.7,66.7,0.0,frankycpp_v1.4.exe,"std::ranges::_Copy_memcpy_common<Move *,Move *>(class Move *, class Move *, class Move *, class Move *)",xmemory,0x14021dcc0
+"std::ranges::_Stable_sort_fn::operator()<StaticMoveList<256> &,moveValueGreaterComparator,std::identity>",0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,"std::ranges::_Stable_sort_fn::operator()<StaticMoveList<256> &,moveValueGreaterComparator,std::identity>(class StaticMoveList<256> & const, struct moveValueGreaterComparator, struct std::identity)",algorithm,0x140213f00
+"std::ranges::_Uninitialized_move_unchecked<Move *,Move *,Move *,Move *>",0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.4.exe,"std::ranges::_Uninitialized_move_unchecked<Move *,Move *,Move *,Move *>(class Move *, class Move *, class Move *, class Move *)",xmemory,0x14021d820
+std::shared_ptr<YAML::detail::memory_holder>::{ctor},0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,std::shared_ptr<YAML::detail::memory_holder>::{ctor},memory,0x14016894a
+std::shared_ptr<YAML::detail::memory_holder>::{dtor},0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,std::shared_ptr<YAML::detail::memory_holder>::{dtor},memory,0x140168972
+std::shared_ptr<YAML::detail::memory_holder>::{dtor},0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,std::shared_ptr<YAML::detail::memory_holder>::{dtor},memory,0x14018317d
+"std::uninitialized_fill<std::_List_unchecked_iterator<std::_List_val<std::_List_simple_types<std::pair<unsigned __int64 const ,BookEntry> > > > *,std::_List_unchecked_iterator<std::_List_val<std::_List_simple_types<std::pair<unsigned __int64 const ,BookEntry> > > > >",0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.4.exe,"std::uninitialized_fill<std::_List_unchecked_iterator<std::_List_val<std::_List_simple_types<std::pair<unsigned __int64 const ,BookEntry> > > > *,std::_List_unchecked_iterator<std::_List_val<std::_List_simple_types<std::pair<unsigned __int64 const ,BookEntry> > > > >(class std::_List_unchecked_iterator<std::_List_val<std::_List_simple_types<std::pair<unsigned __int64 const ,BookEntry> > > > *, class std::_List_unchecked_iterator<std::_List_val<std::_List_simple_types<std::pair<unsigned __int64 const ,BookEntry> > > > *, const class std::_List_unchecked_iterator<std::_List_val<std::_List_simple_types<std::pair<unsigned __int64 const ,BookEntry> > > > & const)",xmemory,0x1402589a0
+"std::unique_ptr<PawnTT::Entry [0],std::default_delete<PawnTT::Entry [0]> >::operator[]",0.0,0.0,0.0,0.0,2995000,,,1.000000,frankycpp_v1.4.exe,"std::unique_ptr<PawnTT::Entry [0],std::default_delete<PawnTT::Entry [0]> >::operator[]",memory,0x1402455dd
+"std::vector<Move,std::allocator<Move> >::reserve",0.0,0.0,0.0,0.0,2995000,50.0,50.0,0.0,frankycpp_v1.4.exe,"std::vector<Move,std::allocator<Move> >::reserve",vector,0x140269d8f
+"std::vector<class Move,class std::allocator<class Move> >::_Change_array",0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.4.exe,"std::vector<class Move,class std::allocator<class Move> >::_Change_array(class Move * const,unsigned __int64,unsigned __int64)",vector,0x140259af0
+"std::vector<class Move,class std::allocator<class Move> >::~vector<class Move,class std::allocator<class Move> >",0.0,0.0,0.0,0.0,0,100.0,100.0,,frankycpp_v1.4.exe,"std::vector<class Move,class std::allocator<class Move> >::~vector<class Move,class std::allocator<class Move> >(void)",vector,0x1402165f0
+"std::vector<unsigned __int64,class std::allocator<unsigned __int64> >::~vector<unsigned __int64,class std::allocator<unsigned __int64> >",0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.4.exe,"std::vector<unsigned __int64,class std::allocator<unsigned __int64> >::~vector<unsigned __int64,class std::allocator<unsigned __int64> >(void)",vector,0x140216580
+"std::vector<unsigned __int64,std::allocator<unsigned __int64> >::_Tidy",0.0,0.0,0.0,0.0,2995000,0.0,0.0,2.000000,frankycpp_v1.4.exe,"std::vector<unsigned __int64,std::allocator<unsigned __int64> >::_Tidy",vector,0x140216589
+"std::vector<unsigned __int64,std::allocator<unsigned __int64> >::resize",0.0,0.0,0.0,0.0,2995000,66.7,66.7,0.0,frankycpp_v1.4.exe,"std::vector<unsigned __int64,std::allocator<unsigned __int64> >::resize",vector,0x14026c47c
+typeOf,0.0,0.0,0.0,0.0,5990000,66.7,66.7,0.500000,frankycpp_v1.4.exe,typeOf,piece.h,0x1402411a0
+type_info::before,0.0,0.0,0.0,0.0,5990000,50.0,50.0,0.500000,frankycpp_v1.4.exe,type_info::before,vcruntime_typeinfo.h,0x14028d3c0
+valueOf,0.0,0.0,0.0,0.0,2995000,,,0.0,frankycpp_v1.4.exe,valueOf,value.h,0x140277793
+wcschr,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,wcschr,[Unknown],0x1404ffcc0

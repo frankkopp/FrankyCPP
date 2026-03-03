@@ -26,12 +26,7 @@
 
 Evaluator::Evaluator()
     : EvalConfig(ConfigManager::instance().eval()) {
-  if (ConfigManager::instance().eval().USE_PAWN_TT) {
-    pawnCache.resize(ConfigManager::instance().eval().PAWN_TT_SIZE_MB);
-  }
-  else {
-    LOG__INFO(Logger::get().EVAL_LOG, "Pawn Cache is disabled in configuration");
-  }
+  // PawnTT is now managed by Search and passed via setPawnTT()
 }
 
 Value Evaluator::evaluate(const Position& p) {
@@ -132,14 +127,14 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
   // check pawn hash first
   ZobristKey key{0};
   PawnTT::Entry* ep = nullptr;
-  if (EvalConfig.USE_PAWN_TT) {
+  if (EvalConfig.USE_PAWN_TT && pawnCache) {
     key = p.getPawnZobristKey();
-    ep  = pawnCache.getEntryPtr(key);
+    ep  = pawnCache->getEntryPtr(key);
     // The key must not be 0 as this would be a valid entry and the function
     // would always return.
     // A 0 key can happen on a position where no pawns are on the board
     // which is a valid position.
-    if (key != 0 && ep->key == key) {
+    if (key != 0 && ep->getKey() == key) {
       s.midgame += ep->midvalue;
       s.endgame += ep->endvalue;
       return;
@@ -216,8 +211,8 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
   }// color loop
 
   // Store back only when enabled; ep already points to the correct slot
-  if (EvalConfig.USE_PAWN_TT && key != 0) {
-    pawnCache.put(ep, key, tmpScore);
+  if (EvalConfig.USE_PAWN_TT && pawnCache && key != 0) {
+    pawnCache->put(ep, key, tmpScore);
   }
 
   s += tmpScore;

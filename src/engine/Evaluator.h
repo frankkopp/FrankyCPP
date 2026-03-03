@@ -40,8 +40,9 @@
 //   based on game phase (determined by remaining material).
 //
 // Pawn Cache:
-//   Pawn structure evaluation is cached in a dedicated hash table (PawnTT)
-//   since pawn structure changes infrequently.
+//   Pawn structure evaluation is cached in a shared PawnTT (passed via setPawnTT).
+//   The PawnTT is shared across all threads for memory efficiency.
+//   Each thread has its own Evaluator instance for thread-local scratch variables.
 //
 // Configuration:
 //   All evaluation parameters are configurable via EvalConfigData (YAML).
@@ -52,9 +53,16 @@
 //   pawnEval(position, s)    - Evaluates pawn structure into score
 //   valueFromScore(s, phase) - Interpolates midgame/endgame scores
 //   finalEval(position, v)   - Converts to side-to-move perspective
+//   setPawnTT(pawnTT)        - Sets the shared pawn cache (call before evaluation)
+//
+// Thread Safety:
+//   - Evaluator instances are per-thread (scratch variables are thread-local)
+//   - PawnTT is shared across threads (thread-safe via atomic key)
 //
 // Usage:
+//   PawnTT sharedPawnTT(4);  // Shared across threads
 //   Evaluator eval;
+//   eval.setPawnTT(&sharedPawnTT);
 //   Value score = eval.evaluate(position);  // Positive = good for side to move
 //
 //=============================================================================
@@ -68,8 +76,11 @@ struct SearchConfigData;
 
 class Evaluator {
 
-  PawnTT pawnCache{0};
+  /// Pointer to shared PawnTT (owned by Search, shared across all threads)
+  /// Set via setPawnTT() before evaluation. May be nullptr if pawn caching disabled.
+  PawnTT* pawnCache = nullptr;
 
+  /// Thread-local scratch variables for evaluation
   Score score{};
   Score tmpScore{};
 
@@ -78,6 +89,11 @@ class Evaluator {
 
 public:
   Evaluator();
+
+  /// Sets the shared pawn cache. Must be called before evaluate() if pawn caching is enabled.
+  /// The PawnTT is owned by Search and shared across all Evaluator instances.
+  /// @param pawnTT  Pointer to shared PawnTT (may be nullptr to disable caching)
+  void setPawnTT(PawnTT* pawnTT) { pawnCache = pawnTT; }
 
   /// Evaluates the position and returns a score from the side-to-move perspective.
   /// Combines material, positional, pawn structure, mobility, and king safety.
@@ -150,28 +166,20 @@ public:
 
 #ifdef EVAL_ENABLE_PREFETCH
   /// Prefetches pawn cache entry for the given key into CPU cache.
+  /// No-op if pawnCache is nullptr.
   void prefetch(const ZobristKey key) {
-    pawnCache.prefetch(key);
+    if (pawnCache) {
+      pawnCache->prefetch(key);
+    }
   }
 #endif
 
-  /// Resizes pawn TT when EvalConfig changes. Mainly for unit tests.
-  void onEvalConfigChanged() {
-    if (EvalConfig.USE_PAWN_TT && EvalConfig.PAWN_TT_SIZE_MB > 0) {
-      pawnCache.resize(static_cast<uint64_t>(EvalConfig.PAWN_TT_SIZE_MB));
-    }
-    else {
-      // Keep the TT in the "disabled" state (mask==0, dummy slot allocated)
-      pawnCache.resize(0);
-    }
-  }
-
   /// Resets the evaluator state for a new game.
-  /// Clears the pawn cache. More efficient than creating a new Evaluator instance.
-  /// Note: score and tmpScore don't need clearing - they are reset at the start
+  /// Note: PawnTT is managed by Search, not Evaluator.
+  /// score and tmpScore don't need clearing - they are reset at the start
   /// of evaluate() and pawnEval() respectively before each use.
   void reset() {
-    pawnCache.clear();
+    // Nothing to reset - scratch variables are reset per-call
   }
 };
 
