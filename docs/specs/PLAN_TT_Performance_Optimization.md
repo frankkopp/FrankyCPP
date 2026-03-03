@@ -2,8 +2,27 @@
 
 **Status:** Analysis Complete, Implementation Pending  
 **Created:** 2026-03-02  
-**Last Updated:** 2026-03-02  
+**Last Updated:** 2026-03-03  
 **Priority:** Medium-High (significant performance impact under SMP)
+
+---
+
+## Latest Update: Lazy SMP Refactor Impact (2026-03-03)
+
+### VTune Results After Lazy SMP Refactor (commit ac215e6)
+
+The Lazy SMP refactor (removing separate `helperRun()`, using shared `iterativeDeepening()` with depth diversification) **improved TT performance without any TT-specific changes:**
+
+| Metric               | Before (03-02) | After (03-03) | Change     |
+|----------------------|----------------|---------------|------------|
+| TT::probe CPU Time   | 42.30s         | 22.76s        | **-46%** ✅ |
+| TT::probe Mem Bound  | 74%            | 62.6%         | **-15%** ✅ |
+| TT::put CPU Time     | 13.01s         | 24.32s        | +87%       |
+| sliderLookup CPI     | 0.38           | 0.39          | ~0%        |
+
+**Key Insight:** Better thread coordination through depth diversification reduced memory contention significantly. TT::put time increased due to all threads now using full `iterativeDeepening()` (more TT writes), but total TT::probe time dropped substantially.
+
+**TT::probe CPU Time target (<30s) already met!** TT Buckets optimization would provide additional gains.
 
 ---
 
@@ -67,12 +86,14 @@ The transposition table experiences **memory latency that cannot be hidden**:
 
 ### Metrics to Track After Optimization
 
-| Metric                 | Baseline | Target |
-|------------------------|----------|--------|
-| TT::probe CPI          | 3.37     | < 2.0  |
-| TT::probe Memory Bound | 74%      | < 50%  |
-| TT::probe CPU Time     | 42s      | < 30s  |
-| LLC Misses (TT)        | 1.65M    | < 1.0M |
+| Metric                 | Baseline (03-02) | Current (03-03) | Target | Status |
+|------------------------|------------------|-----------------|--------|--------|
+| TT::probe CPI          | 3.37             | 9.10            | < 2.0  | 🔴     |
+| TT::probe Memory Bound | 74%              | 62.6%           | < 50%  | 🟡     |
+| TT::probe CPU Time     | 42.3s            | 22.76s          | < 30s  | ✅     |
+| LLC Misses (TT)        | 1.65M            | 1.10M           | < 1.0M | 🟡     |
+
+**Note:** TT::probe CPU Time target met via Lazy SMP refactor (depth diversification). TT Buckets would further improve CPI and memory bound.
 
 ### What NOT to Optimize
 
