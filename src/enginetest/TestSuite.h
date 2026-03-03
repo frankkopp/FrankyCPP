@@ -124,60 +124,64 @@
 #include <string_view>
 #include <vector>
 
-/// Runs EPD test suites against the chess engine.
-/// Uses EpdParser to load tests, executes searches, and reports results.
-class TestSuite {
+namespace enginetest {
+  using namespace chess;
 
-  std::vector<EpdTest> testCases_;
-  milliseconds searchTime_;
-  Depth searchDepth_;
-  std::string filePath_;
-  TestSuiteResult lastResult_{};
+  /// Runs EPD test suites against the chess engine.
+  /// Uses EpdParser to load tests, executes searches, and reports results.
+  class TestSuite {
 
-public:
-  /// Creates a TestSuite for the given test file.
-  /// Reads all tests from the file using EpdParser. Call runTestSuite() to execute.
-  /// @param time        Search time limit per test
-  /// @param searchDepth Maximum search depth per test
-  /// @param filePath    Path to EPD test file
-  TestSuite(milliseconds time, Depth searchDepth, std::string_view filePath);
+    std::vector<EpdTest> testCases_;
+    milliseconds searchTime_;
+    Depth searchDepth_;
+    std::string filePath_;
+    TestSuiteResult lastResult_{};
 
-  /// Runs all tests in the suite and prints results.
-  void runTestSuite();
+  public:
+    /// Creates a TestSuite for the given test file.
+    /// Reads all tests from the file using EpdParser. Call runTestSuite() to execute.
+    /// @param time        Search time limit per test
+    /// @param searchDepth Maximum search depth per test
+    /// @param filePath    Path to EPD test file
+    TestSuite(milliseconds time, Depth searchDepth, std::string_view filePath);
 
-  /// Returns the aggregated results from the last run.
-  /// @return Reference to TestSuiteResult
-  [[nodiscard]] const TestSuiteResult& getLastResult() const { return lastResult_; }
+    /// Runs all tests in the suite and prints results.
+    void runTestSuite();
 
-  /// Returns the vector of test cases with detailed per-test results.
-  /// @return Reference to test cases vector
-  [[nodiscard]] const std::vector<EpdTest>& getTestCases() const { return testCases_; }
+    /// Returns the aggregated results from the last run.
+    /// @return Reference to TestSuiteResult
+    [[nodiscard]] const TestSuiteResult& getLastResult() const { return lastResult_; }
 
-private:
-  /// Runs all tests in testCases list.
-  void runAllTests();
+    /// Returns the vector of test cases with detailed per-test results.
+    /// @return Reference to test cases vector
+    [[nodiscard]] const std::vector<EpdTest>& getTestCases() const { return testCases_; }
 
-  /// Dispatches a single test to the appropriate test function.
-  static void runSingleTest(Search& search, SearchLimits& limits, EpdTest& test);
+  private:
+    /// Runs all tests in testCases list.
+    void runAllTests();
 
-  /// Runs a direct mate test.
-  static void directMateTest(Search& search, SearchLimits& limits, const Position& position, EpdTest& test);
+    /// Dispatches a single test to the appropriate test function.
+    static void runSingleTest(engine::Search& search, engine::SearchLimits& limits, EpdTest& test);
 
-  /// Runs a best-move test.
-  static void bestMoveTest(Search& search, const SearchLimits& limits, const Position& position, EpdTest& test);
+    /// Runs a direct mate test.
+    static void directMateTest(engine::Search& search, engine::SearchLimits& limits, const Position& position, EpdTest& test);
 
-  /// Runs an avoid-move test.
-  static void avoidMoveTest(Search& search, const SearchLimits& limits, const Position& position, EpdTest& test);
+    /// Runs a best-move test.
+    static void bestMoveTest(engine::Search& search, const engine::SearchLimits& limits, const Position& position, EpdTest& test);
 
-  /// Aggregates results from all tests.
-  [[nodiscard]] TestSuiteResult sumUpTests() const;
+    /// Runs an avoid-move test.
+    static void avoidMoveTest(engine::Search& search, const engine::SearchLimits& limits, const Position& position, EpdTest& test);
 
-  /// Prints the report header.
-  void printReportHeader() const;
+    /// Aggregates results from all tests.
+    [[nodiscard]] TestSuiteResult sumUpTests() const;
 
-  /// Prints the final report with elapsed time.
-  void printReport(nanoseconds elapsed) const;
-};
+    /// Prints the report header.
+    void printReportHeader() const;
 
+    /// Prints the final report with elapsed time.
+    void printReport(nanoseconds elapsed) const;
+  };
+
+}// namespace enginetest
 
 #endif// FRANKYCPP_TESTSUITE_H

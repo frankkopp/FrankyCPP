@@ -21,9 +21,9 @@
 #include "Test_Utils.h"
 #include "common/CrashHandler.h"
 #include "common/Logging.h"
+#include "config/ConfigManager.h"
 #include "init.h"
 #include "types/types.h"
-#include "config/ConfigManager.h"
 
 #include <iomanip>
 #include <sstream>
@@ -31,6 +31,11 @@
 #include <gtest/gtest.h>
 
 using testing::Eq;
+
+using namespace engine;
+using namespace chess;
+using namespace config;
+using namespace common;
 
 
 class SearchTest : public testing::Test {
@@ -165,7 +170,7 @@ TEST_F(SearchTest, startTimer) {
   Search s{};
   s.searchLimits.timeControl = true;
   s.startTime                = high_resolution_clock::now();
-  s.startSearchTime          = s.startTime;  // Timer uses startSearchTime for elapsed calculation
+  s.startSearchTime          = s.startTime;// Timer uses startSearchTime for elapsed calculation
   s.timeLimit                = 2s;
   s.extraTimeMs              = 1000;// 1s
   s.startTimer();
@@ -251,7 +256,7 @@ TEST_F(SearchTest, startPonderSearch) {
 
 TEST_F(SearchTest, startNodesLimitedSearch) {
   CONFIG_OVERRIDE(s.USE_BOOK = false;);
-  CONFIG_OVERRIDE(s.THREADS = 1;);  // Single-threaded for predictable node limit behavior
+  CONFIG_OVERRIDE(s.THREADS = 1;);// Single-threaded for predictable node limit behavior
   const Position p{};
   SearchLimits sl{};
   Search s{};
@@ -433,7 +438,7 @@ TEST_F(SearchTest, quiescenceTest) {
   ASSERT_GT(nodes2, nodes1);
   ASSERT_GT(extra2, extra1);
 }
-#endif // FRANKYCPP_PRODUCTION
+#endif// FRANKYCPP_PRODUCTION
 
 TEST_F(SearchTest, movesLeftBucketsOpeningVsQueenlessVsLowMaterial) {
   // Same remaining time setup for all scenarios
@@ -591,7 +596,7 @@ TEST_F(SearchTest, lmrReductionTableTest) {
   }
   LOG__INFO(Logger::get().TEST_LOG, "{}", oss.str());
 }
-#endif // FRANKYCPP_PRODUCTION
+#endif// FRANKYCPP_PRODUCTION
 
 TEST_F(SearchTest, lmrReductionTablePrint) {
 
@@ -684,7 +689,7 @@ TEST_F(SearchTest, singularExtensionDisabled) {
   EXPECT_EQ(stats.singularSearches, 0) << "Expected no singular searches when disabled";
   EXPECT_EQ(stats.singularExtension, 0) << "Expected no singular extensions when disabled";
 }
-#endif // FRANKYCPP_PRODUCTION
+#endif// FRANKYCPP_PRODUCTION
 
 TEST_F(SearchTest, 10secondSearchNodesCount) {
   if (isBulkRun()) {
@@ -725,7 +730,7 @@ TEST_F(SearchTest, 10secondSearchNodesCount) {
 // is speed vs determinism. See SearchSmpTest for multi-threaded tests.
 TEST_F(SearchTest, newGameResetsDeterministic) {
   CONFIG_OVERRIDE(s.USE_BOOK = false;);
-  CONFIG_OVERRIDE(s.THREADS = 1;);  // Single-threaded REQUIRED for determinism
+  CONFIG_OVERRIDE(s.THREADS = 1;);// Single-threaded REQUIRED for determinism
 
   // Use multiple positions to increase coverage
   const std::vector<std::string> fens = {
@@ -735,7 +740,7 @@ TEST_F(SearchTest, newGameResetsDeterministic) {
   };
 
   // ReSharper disable once CppTooWideScope
-  constexpr int searchDepth   = 8;
+  constexpr int searchDepth = 8;
   // ReSharper disable once CppTooWideScope
   constexpr int numIterations = 3;
 
@@ -845,4 +850,4 @@ TEST_F(SearchTest, debug) {
   s.waitWhileSearching();
 }
 
-#endif // FRANKYCPP_PRODUCTION
+#endif// FRANKYCPP_PRODUCTION

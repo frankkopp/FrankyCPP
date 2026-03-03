@@ -27,6 +27,12 @@
 
 #include <iostream>
 
+using namespace engine;
+using namespace chess;
+using namespace config;
+using namespace common;
+using namespace enginetest;
+
 TestSuite::TestSuite(const milliseconds time, const Depth searchDepth, const std::string_view filePath)
     : searchTime_(time), searchDepth_(searchDepth), filePath_(filePath) {
 
@@ -88,7 +94,7 @@ void TestSuite::printReport(const nanoseconds elapsed) const {
     i++;
     // Format beta cuts percentages as "XX.X/XX.X/XX.X"
     const std::string betaCutsStr = std::format("{:.1f}/{:.1f}/{:.1f}",
-                                                 t.getBetaCutsPct(0), t.getBetaCutsPct(1), t.getBetaCutsPct(2));
+                                                t.getBetaCutsPct(0), t.getBetaCutsPct(1), t.getBetaCutsPct(2));
     if (t.getType() == TestType::DM) {
       fprintln(" {:<4d} | {:<10} | {:<8} | {:<8} | {} {:<15d} | {:<18} | {} | {}",
                i, resultTypeToString(t.getResult()), t.getActualMove().str(), t.getActualValue().str(),

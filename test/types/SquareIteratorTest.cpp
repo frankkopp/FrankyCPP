@@ -22,6 +22,7 @@
 
 #include <gtest/gtest.h>
 
+using namespace chess;
 class SquareIteratorTest : public ::testing::Test {
 public:
   static void SetUpTestSuite() {
@@ -41,7 +42,7 @@ TEST_F(SquareIteratorTest, ClassicNumericForLoopStillWorks) {
 }
 
 TEST_F(SquareIteratorTest, RangeAll) {
-  int count = 0;
+  int count      = 0;
   Square firstSq = SQ_NONE;
   Square lastSq  = SQ_NONE;
   for (const Square s : Square::all()) {
@@ -63,7 +64,7 @@ TEST_F(SquareIteratorTest, RangeBetweenInclusive) {
   }
   EXPECT_EQ(count, 1);
 
-  count = 0;
+  count          = 0;
   Square firstSq = SQ_NONE;
   Square lastSq  = SQ_NONE;
   for (const Square s : Square::between(SQ_B2, SQ_C3)) {
@@ -78,7 +79,7 @@ TEST_F(SquareIteratorTest, RangeBetweenInclusive) {
 }
 
 TEST_F(SquareIteratorTest, RangeTo) {
-  int count = 0;
+  int count    = 0;
   Square start = SQ_A1;
   for (Square s : start.to(SQ_A1)) {
     ++count;
@@ -86,8 +87,8 @@ TEST_F(SquareIteratorTest, RangeTo) {
   }
   EXPECT_EQ(count, 1);
 
-  count = 0;
-  start = SQ_A1;
+  count         = 0;
+  start         = SQ_A1;
   Square lastSq = SQ_NONE;
   for (const Square s : start.to(SQ_H8)) {
     ++count;
@@ -104,14 +105,13 @@ TEST_F(SquareIteratorTest, UseInAlgorithms) {
   for (Square s : Square::all()) {
     names += s.str();
   }
-  const std::string expected =
-      "a1b1c1d1e1f1g1h1"
-      "a2b2c2d2e2f2g2h2"
-      "a3b3c3d3e3f3g3h3"
-      "a4b4c4d4e4f4g4h4"
-      "a5b5c5d5e5f5g5h5"
-      "a6b6c6d6e6f6g6h6"
-      "a7b7c7d7e7f7g7h7"
-      "a8b8c8d8e8f8g8h8";
+  const std::string expected = "a1b1c1d1e1f1g1h1"
+                               "a2b2c2d2e2f2g2h2"
+                               "a3b3c3d3e3f3g3h3"
+                               "a4b4c4d4e4f4g4h4"
+                               "a5b5c5d5e5f5g5h5"
+                               "a6b6c6d6e6f6g6h6"
+                               "a7b7c7d7e7f7g7h7"
+                               "a8b8c8d8e8f8g8h8";
   EXPECT_EQ(names, expected);
 }

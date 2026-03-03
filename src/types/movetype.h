@@ -50,46 +50,50 @@
 //
 //=============================================================================
 
-// MoveShifts defines the bit shifts and masks for encoding and decoding moves.
-namespace MoveShifts {
-  constexpr unsigned int FROM_SHIFT      = 6u;
-  constexpr unsigned int PROM_TYPE_SHIFT = 12u;
-  constexpr unsigned int MOVE_TYPE_SHIFT = 14u;
-  constexpr unsigned int VALUE_SHIFT     = 16u;
+namespace chess {
 
-  constexpr unsigned int SQUARE_MASK    = 0b111111u;
-  constexpr unsigned int TO_MASK        = SQUARE_MASK;
-  constexpr unsigned int FROM_MASK      = SQUARE_MASK << FROM_SHIFT;
-  constexpr unsigned int PROM_TYPE_MASK = 0b11u << PROM_TYPE_SHIFT;
-  constexpr unsigned int MOVE_TYPE_MASK = 0b11u << MOVE_TYPE_SHIFT;
+  // MoveShifts defines the bit shifts and masks for encoding and decoding moves.
+  namespace MoveShifts {
+    constexpr unsigned int FROM_SHIFT      = 6u;
+    constexpr unsigned int PROM_TYPE_SHIFT = 12u;
+    constexpr unsigned int MOVE_TYPE_SHIFT = 14u;
+    constexpr unsigned int VALUE_SHIFT     = 16u;
 
-  constexpr unsigned int MOVE_MASK  = 0xFFFFu;               // first 16-bit
-  constexpr unsigned int VALUE_MASK = 0xFFFFu << VALUE_SHIFT;// second 16-bit
-}// namespace MoveShifts
+    constexpr unsigned int SQUARE_MASK    = 0b111111u;
+    constexpr unsigned int TO_MASK        = SQUARE_MASK;
+    constexpr unsigned int FROM_MASK      = SQUARE_MASK << FROM_SHIFT;
+    constexpr unsigned int PROM_TYPE_MASK = 0b11u << PROM_TYPE_SHIFT;
+    constexpr unsigned int MOVE_TYPE_MASK = 0b11u << MOVE_TYPE_SHIFT;
 
-enum MoveType : unsigned int {
-  NORMAL    = 0 << MoveShifts::MOVE_TYPE_SHIFT,
-  PROMOTION = 1 << MoveShifts::MOVE_TYPE_SHIFT,
-  ENPASSANT = 2 << MoveShifts::MOVE_TYPE_SHIFT,
-  CASTLING  = 3 << MoveShifts::MOVE_TYPE_SHIFT
-};
+    constexpr unsigned int MOVE_MASK  = 0xFFFFu;               // first 16-bit
+    constexpr unsigned int VALUE_MASK = 0xFFFFu << VALUE_SHIFT;// second 16-bit
+  }// namespace MoveShifts
 
-// checks if move type is a value of 0 - 3
-constexpr bool validMoveType(const MoveType mt) {
-  return mt <= CASTLING;
-}
+  enum MoveType : unsigned int {
+    NORMAL    = 0 << MoveShifts::MOVE_TYPE_SHIFT,
+    PROMOTION = 1 << MoveShifts::MOVE_TYPE_SHIFT,
+    ENPASSANT = 2 << MoveShifts::MOVE_TYPE_SHIFT,
+    CASTLING  = 3 << MoveShifts::MOVE_TYPE_SHIFT
+  };
 
-inline auto moveTypeLabel = std::string("npec");
+  // checks if move type is a value of 0 - 3
+  constexpr bool validMoveType(const MoveType mt) {
+    return mt <= CASTLING;
+  }
 
-// single char label for the piece type (one of " npec")
-constexpr char str(const MoveType mt) {
-  if (!validMoveType(mt)) return '-';
-  return moveTypeLabel[mt];
-}
+  inline auto moveTypeLabel = std::string("npec");
 
-inline std::ostream& operator<<(std::ostream& os, const MoveType mt) {
-  os << str(mt);
-  return os;
-}
+  // single char label for the piece type (one of " npec")
+  constexpr char str(const MoveType mt) {
+    if (!validMoveType(mt)) return '-';
+    return moveTypeLabel[mt];
+  }
+
+  inline std::ostream& operator<<(std::ostream& os, const MoveType mt) {
+    os << str(mt);
+    return os;
+  }
+
+}// namespace chess
 
 #endif// FRANKYCPP_MOVETYPE_H

@@ -73,120 +73,124 @@
 #include <string>
 #include <type_traits>
 
-class Bitboard {
-  std::uint64_t v_{}; // underlying 64-bit mask
+namespace chess {
 
-public:
-  // constructors
-  constexpr Bitboard() = default;
+  class Bitboard {
+    std::uint64_t v_{};// underlying 64-bit mask
 
-  // implicit to allow constexpr literal initializers like: constexpr Bitboard BbZero = 0;
-  constexpr Bitboard(const std::uint64_t v) : v_{v} {}
+  public:
+    // constructors
+    constexpr Bitboard() = default;
 
-  // access
-  constexpr std::uint64_t value() const { return v_; }
+    // implicit to allow constexpr literal initializers like: constexpr Bitboard BbZero = 0;
+    constexpr Bitboard(const std::uint64_t v) : v_{v} {}
 
-  // implicit conversion to underlying for interop with intrinsics/APIs
-  // ReSharper disable once CppNonExplicitConversionOperator
-  constexpr operator std::uint64_t() const { return v_; }
+    // access
+    constexpr std::uint64_t value() const { return v_; }
 
-  // truthiness (used in many fast-paths)
-  constexpr explicit operator bool() const { return v_ != 0ULL; }
+    // implicit conversion to underlying for interop with intrinsics/APIs
+    // ReSharper disable once CppNonExplicitConversionOperator
+    constexpr operator std::uint64_t() const { return v_; }
 
-  // clang-format off
-  // compounds arithmetic and shifts
-  constexpr Bitboard operator~() const { return Bitboard{~v_}; }
-  constexpr Bitboard& operator&=(const Bitboard b) { v_ &= b.v_; return *this; }
-  constexpr Bitboard& operator|=(const Bitboard b) { v_ |= b.v_; return *this; }
-  constexpr Bitboard& operator^=(const Bitboard b) { v_ ^= b.v_; return *this; }
-  constexpr Bitboard& operator+=(const Bitboard b) { v_ += b.v_; return *this; }
-  constexpr Bitboard& operator-=(const Bitboard b) { v_ -= b.v_; return *this; }
-  constexpr Bitboard& operator<<=(const int sh) { v_ <<= sh; return *this; }
-  constexpr Bitboard& operator>>=(const int sh) { v_ >>= sh; return *this; }
-  // arithmetic and shifts (friends to allow symmetric conversions)
-  friend constexpr Bitboard operator&(const Bitboard a, const Bitboard b) { return Bitboard{a.v_ & b.v_}; }
-  friend constexpr Bitboard operator|(const Bitboard a, const Bitboard b) { return Bitboard{a.v_ | b.v_}; }
-  friend constexpr Bitboard operator^(const Bitboard a, const Bitboard b) { return Bitboard{a.v_ ^ b.v_}; }
-  friend constexpr Bitboard operator+(const Bitboard a, const Bitboard b) { return Bitboard{a.v_ + b.v_}; }
-  friend constexpr Bitboard operator-(const Bitboard a, const Bitboard b) { return Bitboard{a.v_ - b.v_}; }
-  friend constexpr Bitboard operator<<(const Bitboard a, const int sh) { return Bitboard{a.v_ << sh}; }
-  friend constexpr Bitboard operator>>(const Bitboard a, const int sh) { return Bitboard{a.v_ >> sh}; }
-  // // clang-format on
+    // truthiness (used in many fast-paths)
+    constexpr explicit operator bool() const { return v_ != 0ULL; }
 
-  // population count
-  constexpr int popcount() const { return std::popcount(v_); }
+    // clang-format off
+    // compounds arithmetic and shifts
+    constexpr Bitboard operator~() const { return Bitboard{~v_}; }
+    constexpr Bitboard& operator&=(const Bitboard b) { v_ &= b.v_; return *this; }
+    constexpr Bitboard& operator|=(const Bitboard b) { v_ |= b.v_; return *this; }
+    constexpr Bitboard& operator^=(const Bitboard b) { v_ ^= b.v_; return *this; }
+    constexpr Bitboard& operator+=(const Bitboard b) { v_ += b.v_; return *this; }
+    constexpr Bitboard& operator-=(const Bitboard b) { v_ -= b.v_; return *this; }
+    constexpr Bitboard& operator<<=(const int sh) { v_ <<= sh; return *this; }
+    constexpr Bitboard& operator>>=(const int sh) { v_ >>= sh; return *this; }
+    // arithmetic and shifts (friends to allow symmetric conversions)
+    friend constexpr Bitboard operator&(const Bitboard a, const Bitboard b) { return Bitboard{a.v_ & b.v_}; }
+    friend constexpr Bitboard operator|(const Bitboard a, const Bitboard b) { return Bitboard{a.v_ | b.v_}; }
+    friend constexpr Bitboard operator^(const Bitboard a, const Bitboard b) { return Bitboard{a.v_ ^ b.v_}; }
+    friend constexpr Bitboard operator+(const Bitboard a, const Bitboard b) { return Bitboard{a.v_ + b.v_}; }
+    friend constexpr Bitboard operator-(const Bitboard a, const Bitboard b) { return Bitboard{a.v_ - b.v_}; }
+    friend constexpr Bitboard operator<<(const Bitboard a, const int sh) { return Bitboard{a.v_ << sh}; }
+    friend constexpr Bitboard operator>>(const Bitboard a, const int sh) { return Bitboard{a.v_ >> sh}; }
+    // // clang-format on
 
-  // index of least/most significant bit (Square), or SQ_NONE if empty
-  constexpr Square lsb() const {
-    if (v_ == 0ULL) return SQ_NONE;
-    return static_cast<Square>(std::countr_zero(v_));
-  }
+    // population count
+    constexpr int popcount() const { return std::popcount(v_); }
 
-  // index of most significant bit (Square), or SQ_NONE if empty
-  constexpr Square msb() const {
-    if (v_ == 0ULL) return SQ_NONE;
-    return static_cast<Square>(63 - std::countl_zero(v_));
-  }
-
-  // clears and returns least significant bit (Square), or SQ_NONE if empty
-  constexpr Square popLSB() {
-    if (v_ == 0ULL) return SQ_NONE;
-    const Square s = lsb();
-    v_ &= v_ - 1ULL;
-    return s;
-  }
-
-  // directional shift (with edge masking, same semantics as old shiftBb)
-  constexpr Bitboard shifted(const Direction d) const {
-    constexpr std::uint64_t FileABB = 0x0101010101010101ULL;
-    constexpr std::uint64_t FileHBB = FileABB << 7;
-    switch (static_cast<int>(d)) {
-      case static_cast<int>(NORTH): return Bitboard{v_ << 8};
-      case static_cast<int>(EAST): return Bitboard{(v_ << 1) & ~FileABB};
-      case static_cast<int>(SOUTH): return Bitboard{v_ >> 8};
-      case static_cast<int>(WEST): return Bitboard{(v_ >> 1) & ~FileHBB};
-      case static_cast<int>(NORTH_EAST): return Bitboard{(v_ << 9) & ~FileABB};
-      case static_cast<int>(SOUTH_EAST): return Bitboard{(v_ >> 7) & ~FileABB};
-      case static_cast<int>(SOUTH_WEST): return Bitboard{(v_ >> 9) & ~FileHBB};
-      case static_cast<int>(NORTH_WEST): return Bitboard{(v_ << 7) & ~FileHBB};
-      default:;
+    // index of least/most significant bit (Square), or SQ_NONE if empty
+    constexpr Square lsb() const {
+      if (v_ == 0ULL) return SQ_NONE;
+      return static_cast<Square>(std::countr_zero(v_));
     }
-    return *this;
-  }
 
-  // string helpers
-  std::string str() const {
-    std::ostringstream os;
-    os << std::bitset<64>(v_);
-    return os.str();
-  }
-  std::string strBoard() const {
-    std::ostringstream os;
-    os << "+---+---+---+---+---+---+---+---+\n";
-    for (Rank r = RANK_8;; --r) {
-      for (File f = FILE_A; f <= FILE_H; ++f) {
-        const int idx = (static_cast<int>(r) << 3) + static_cast<int>(f);
-        const std::uint64_t mask = 1ULL << idx;
-        os << (v_ & mask ? "| X " : "|   ");
+    // index of most significant bit (Square), or SQ_NONE if empty
+    constexpr Square msb() const {
+      if (v_ == 0ULL) return SQ_NONE;
+      return static_cast<Square>(63 - std::countl_zero(v_));
+    }
+
+    // clears and returns least significant bit (Square), or SQ_NONE if empty
+    constexpr Square popLSB() {
+      if (v_ == 0ULL) return SQ_NONE;
+      const Square s = lsb();
+      v_ &= v_ - 1ULL;
+      return s;
+    }
+
+    // directional shift (with edge masking, same semantics as old shiftBb)
+    constexpr Bitboard shifted(const Direction d) const {
+      constexpr std::uint64_t FileABB = 0x0101010101010101ULL;
+      constexpr std::uint64_t FileHBB = FileABB << 7;
+      switch (static_cast<int>(d)) {
+        case static_cast<int>(NORTH): return Bitboard{v_ << 8};
+        case static_cast<int>(EAST): return Bitboard{(v_ << 1) & ~FileABB};
+        case static_cast<int>(SOUTH): return Bitboard{v_ >> 8};
+        case static_cast<int>(WEST): return Bitboard{(v_ >> 1) & ~FileHBB};
+        case static_cast<int>(NORTH_EAST): return Bitboard{(v_ << 9) & ~FileABB};
+        case static_cast<int>(SOUTH_EAST): return Bitboard{(v_ >> 7) & ~FileABB};
+        case static_cast<int>(SOUTH_WEST): return Bitboard{(v_ >> 9) & ~FileHBB};
+        case static_cast<int>(NORTH_WEST): return Bitboard{(v_ << 7) & ~FileHBB};
+        default:;
       }
-      os << "|\n+---+---+---+---+---+---+---+---+\n";
-      if (r == 0) break;
+      return *this;
     }
-    return os.str();
-  }
-  std::string strGrouped() const {
-    std::ostringstream os;
-    for (unsigned i = 0; i < 64; ++i) {
-      if (i > 0 && i % 8 == 0) os << ".";
-      os << (v_ >> i & 1ULL ? "1" : "0");
-    }
-    os << " (" << v_ << ")";
-    return os.str();
-  }
-};
 
-// Compile-time sanity
-static_assert(sizeof(Bitboard) == sizeof(std::uint64_t), "Bitboard must be 8 bytes");
-static_assert(std::is_trivially_copyable_v<Bitboard>, "Bitboard should be trivially copyable");
+    // string helpers
+    std::string str() const {
+      std::ostringstream os;
+      os << std::bitset<64>(v_);
+      return os.str();
+    }
+    std::string strBoard() const {
+      std::ostringstream os;
+      os << "+---+---+---+---+---+---+---+---+\n";
+      for (Rank r = RANK_8;; --r) {
+        for (File f = FILE_A; f <= FILE_H; ++f) {
+          const int idx = (static_cast<int>(r) << 3) + static_cast<int>(f);
+          const std::uint64_t mask = 1ULL << idx;
+          os << (v_ & mask ? "| X " : "|   ");
+        }
+        os << "|\n+---+---+---+---+---+---+---+---+\n";
+        if (r == 0) break;
+      }
+      return os.str();
+    }
+    std::string strGrouped() const {
+      std::ostringstream os;
+      for (unsigned i = 0; i < 64; ++i) {
+        if (i > 0 && i % 8 == 0) os << ".";
+        os << (v_ >> i & 1ULL ? "1" : "0");
+      }
+      os << " (" << v_ << ")";
+      return os.str();
+    }
+  };
+
+  // Compile-time sanity
+  static_assert(sizeof(Bitboard) == sizeof(std::uint64_t), "Bitboard must be 8 bytes");
+  static_assert(std::is_trivially_copyable_v<Bitboard>, "Bitboard should be trivially copyable");
+
+}// namespace chess
 
 #endif// FRANKYCPP_BITBOARD_H

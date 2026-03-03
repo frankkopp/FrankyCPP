@@ -53,45 +53,45 @@
 
 namespace tablebase {
 
-/// Find the first valid tablebase path from all sources.
-/// Checks in order: environment variable, config, defaults.
-/// @return Valid path containing TB files, or empty string if none found
-[[nodiscard]] std::string findTablebasePath();
+  /// Find the first valid tablebase path from all sources.
+  /// Checks in order: environment variable, config, defaults.
+  /// @return Valid path containing TB files, or empty string if none found
+  [[nodiscard]] std::string findTablebasePath();
 
-/// Find tablebase path, with explicit override taking the highest priority.
-/// @param explicitPath  If non-empty, checked first before other sources
-/// @return Valid path containing TB files, or empty string if none found
-[[nodiscard]] std::string findTablebasePath(const std::string& explicitPath);
+  /// Find tablebase path, with explicit override taking the highest priority.
+  /// @param explicitPath  If non-empty, checked first before other sources
+  /// @return Valid path containing TB files, or empty string if none found
+  [[nodiscard]] std::string findTablebasePath(const std::string& explicitPath);
 
-/// Get platform-specific default tablebase directory.
-/// @return Default path (may not exist)
-[[nodiscard]] std::string getDefaultTablebasePath();
+  /// Get platform-specific default tablebase directory.
+  /// @return Default path (may not exist)
+  [[nodiscard]] std::string getDefaultTablebasePath();
 
-/// Check if a path contains valid Syzygy tablebase files.
-/// Looks for .rtbw (WDL) or .rtbz (DTZ) files.
-/// @param path  Directory path to check
-/// @return true if at least one valid TB file was found
-[[nodiscard]] bool validateTablebasePath(const std::string& path);
+  /// Check if a path contains valid Syzygy tablebase files.
+  /// Looks for .rtbw (WDL) or .rtbz (DTZ) files.
+  /// @param path  Directory path to check
+  /// @return true if at least one valid TB file was found
+  [[nodiscard]] bool validateTablebasePath(const std::string& path);
 
-/// Get the SYZYGY_PATH or TB_PATH environment variable value.
-/// Checks SYZYGY_PATH first (standard), then TB_PATH (legacy).
-/// @return Environment variable value, or empty string if neither is set
-[[nodiscard]] std::string getEnvironmentPath();
+  /// Get the SYZYGY_PATH or TB_PATH environment variable value.
+  /// Checks SYZYGY_PATH first (standard), then TB_PATH (legacy).
+  /// @return Environment variable value, or empty string if neither is set
+  [[nodiscard]] std::string getEnvironmentPath();
 
-/// Get the configured TB_PATH from ConfigManager.
-/// @return Configured path, or empty string if not set
-[[nodiscard]] std::string getConfiguredPath();
+  /// Get the configured TB_PATH from ConfigManager.
+  /// @return Configured path, or empty string if not set
+  [[nodiscard]] std::string getConfiguredPath();
 
-/// Count tablebase files in a directory.
-/// @param path  Directory path to scan
-/// @return Pair of (wdl_count, dtz_count)
-[[nodiscard]] std::pair<int, int> countTablebaseFiles(const std::string& path);
+  /// Count tablebase files in a directory.
+  /// @param path  Directory path to scan
+  /// @return Pair of (wdl_count, dtz_count)
+  [[nodiscard]] std::pair<int, int> countTablebaseFiles(const std::string& path);
 
-/// Get human-readable status string for tablebase availability.
-/// @param path  Path to check (or empty to use findTablebasePath)
-/// @return Status string like "6-piece tablebases available (150 WDL, 150 DTZ files)"
-[[nodiscard]] std::string getTablebaseStatus(const std::string& path = "");
+  /// Get human-readable status string for tablebase availability.
+  /// @param path  Path to check (or empty to use findTablebasePath)
+  /// @return Status string like "6-piece tablebases available (150 WDL, 150 DTZ files)"
+  [[nodiscard]] std::string getTablebaseStatus(const std::string& path = "");
 
-} // namespace tablebase
+}// namespace tablebase
 
-#endif // FRANKYCPP_TABLEBASEPATHS_H
+#endif// FRANKYCPP_TABLEBASEPATHS_H

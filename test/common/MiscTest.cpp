@@ -23,99 +23,101 @@
 #include <thread>
 #include <vector>
 
-//=============================================================================
-// getEnv Tests
-//=============================================================================
+namespace common {
+  //=============================================================================
+  // getEnv Tests
+  //=============================================================================
 
-TEST(MiscTest, getEnv_nullptrReturnsEmpty) {
-  EXPECT_EQ(getEnv(nullptr), "");
-}
+  TEST(MiscTest, getEnv_nullptrReturnsEmpty) {
+    EXPECT_EQ(getEnv(nullptr), "");
+  }
 
-TEST(MiscTest, getEnv_nonexistentVarReturnsEmpty) {
-  // Use a variable name that definitely doesn't exist
-  EXPECT_EQ(getEnv("FRANKYCPP_NONEXISTENT_VAR_12345"), "");
-}
+  TEST(MiscTest, getEnv_nonexistentVarReturnsEmpty) {
+    // Use a variable name that definitely doesn't exist
+    EXPECT_EQ(getEnv("FRANKYCPP_NONEXISTENT_VAR_12345"), "");
+  }
 
-TEST(MiscTest, getEnv_existingVarReturnsValue) {
-  // PATH should exist on all platforms
-  const std::string path = getEnv("PATH");
-  EXPECT_FALSE(path.empty()) << "PATH environment variable should exist";
-}
+  TEST(MiscTest, getEnv_existingVarReturnsValue) {
+    // PATH should exist on all platforms
+    const std::string path = getEnv("PATH");
+    EXPECT_FALSE(path.empty()) << "PATH environment variable should exist";
+  }
 
-TEST(MiscTest, getEnv_windowsSpecificVars) {
+  TEST(MiscTest, getEnv_windowsSpecificVars) {
 #ifdef _WIN32
-  // These should exist on Windows
-  EXPECT_FALSE(getEnv("SYSTEMROOT").empty());
-  EXPECT_FALSE(getEnv("USERPROFILE").empty());
+    // These should exist on Windows
+    EXPECT_FALSE(getEnv("SYSTEMROOT").empty());
+    EXPECT_FALSE(getEnv("USERPROFILE").empty());
 #else
-  GTEST_SKIP() << "Windows-specific test";
+    GTEST_SKIP() << "Windows-specific test";
 #endif
-}
+  }
 
-TEST(MiscTest, getEnv_posixSpecificVars) {
+  TEST(MiscTest, getEnv_posixSpecificVars) {
 #ifndef _WIN32
-  // These should exist on POSIX systems
-  EXPECT_FALSE(getEnv("HOME").empty());
-  EXPECT_FALSE(getEnv("USER").empty());
+    // These should exist on POSIX systems
+    EXPECT_FALSE(getEnv("HOME").empty());
+    EXPECT_FALSE(getEnv("USER").empty());
 #else
-  GTEST_SKIP() << "POSIX-specific test";
+    GTEST_SKIP() << "POSIX-specific test";
 #endif
-}
+  }
 
-//=============================================================================
-// getEnvOpt Tests
-//=============================================================================
+  //=============================================================================
+  // getEnvOpt Tests
+  //=============================================================================
 
-TEST(MiscTest, getEnvOpt_nullptrReturnsNullopt) {
-  EXPECT_FALSE(getEnvOpt(nullptr).has_value());
-}
+  TEST(MiscTest, getEnvOpt_nullptrReturnsNullopt) {
+    EXPECT_FALSE(getEnvOpt(nullptr).has_value());
+  }
 
-TEST(MiscTest, getEnvOpt_nonexistentVarReturnsNullopt) {
-  EXPECT_FALSE(getEnvOpt("FRANKYCPP_NONEXISTENT_VAR_12345").has_value());
-}
+  TEST(MiscTest, getEnvOpt_nonexistentVarReturnsNullopt) {
+    EXPECT_FALSE(getEnvOpt("FRANKYCPP_NONEXISTENT_VAR_12345").has_value());
+  }
 
-TEST(MiscTest, getEnvOpt_existingVarReturnsValue) {
-  const auto path = getEnvOpt("PATH");
-  ASSERT_TRUE(path.has_value()) << "PATH environment variable should exist";
-  EXPECT_FALSE(path->empty());
-}
+  TEST(MiscTest, getEnvOpt_existingVarReturnsValue) {
+    const auto path = getEnvOpt("PATH");
+    ASSERT_TRUE(path.has_value()) << "PATH environment variable should exist";
+    EXPECT_FALSE(path->empty());
+  }
 
-TEST(MiscTest, getEnvOpt_valueMatchesGetEnv) {
-  // Verify both functions return the same value
-  const auto optValue = getEnvOpt("PATH");
-  const auto strValue = getEnv("PATH");
+  TEST(MiscTest, getEnvOpt_valueMatchesGetEnv) {
+    // Verify both functions return the same value
+    const auto optValue = getEnvOpt("PATH");
+    const auto strValue = getEnv("PATH");
 
-  ASSERT_TRUE(optValue.has_value());
-  EXPECT_EQ(*optValue, strValue);
-}
+    ASSERT_TRUE(optValue.has_value());
+    EXPECT_EQ(*optValue, strValue);
+  }
 
-//=============================================================================
-// Thread Safety Tests
-//=============================================================================
+  //=============================================================================
+  // Thread Safety Tests
+  //=============================================================================
 
-TEST(MiscTest, getEnv_threadSafety) {
-  // Call getEnv concurrently from multiple threads
-  constexpr int numThreads = 10;
-  constexpr int iterations = 100;
+  TEST(MiscTest, getEnv_threadSafety) {
+    // Call getEnv concurrently from multiple threads
+    constexpr int numThreads = 10;
+    constexpr int iterations = 100;
 
-  std::vector<std::thread> threads;
-  std::atomic<int> successCount{0};
+    std::vector<std::thread> threads;
+    std::atomic<int> successCount{0};
 
-  for (int i = 0; i < numThreads; ++i) {
-    threads.emplace_back([&successCount]() {
-      for (int j = 0; j < iterations; ++j) {
-        const std::string path = getEnv("PATH");
-        if (!path.empty()) {
-          ++successCount;
+    for (int i = 0; i < numThreads; ++i) {
+      threads.emplace_back([&successCount]() {
+        for (int j = 0; j < iterations; ++j) {
+          const std::string path = getEnv("PATH");
+          if (!path.empty()) {
+            ++successCount;
+          }
         }
-      }
-    });
-  }
+      });
+    }
 
-  for (auto& t : threads) {
-    t.join();
-  }
+    for (auto& t : threads) {
+      t.join();
+    }
 
-  // All reads should have succeeded
-  EXPECT_EQ(successCount.load(), numThreads * iterations);
-}
+    // All reads should have succeeded
+    EXPECT_EQ(successCount.load(), numThreads * iterations);
+  }
+}// namespace common

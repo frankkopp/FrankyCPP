@@ -84,145 +84,145 @@
 //
 //=============================================================================
 
+#include "../common/gtest_friends.h"
 #include "ArenaConfig.h"
 #include "ArenaResults.h"
-#include "../common/gtest_friends.h"
 
 #include <string>
 #include <vector>
 
 namespace arena {
 
-/// State of a match in progress (for resumption)
-struct MatchState {
-  std::string matchName;          ///< Match identifier
-  int totalRounds = 0;            ///< Total rounds configured
-  int completedRounds = 0;        ///< Rounds completed so far
-  int engine1Wins = 0;            ///< Engine 1 wins
-  int engine2Wins = 0;            ///< Engine 2 wins
-  int draws = 0;                  ///< Draw count
-  std::string engine1Name;        ///< Engine 1 UCI name
-  std::string engine2Name;        ///< Engine 2 UCI name
-  std::string timestamp;          ///< Last update timestamp
-};
+  /// State of a match in progress (for resumption)
+  struct MatchState {
+    std::string matchName;  ///< Match identifier
+    int totalRounds     = 0;///< Total rounds configured
+    int completedRounds = 0;///< Rounds completed so far
+    int engine1Wins     = 0;///< Engine 1 wins
+    int engine2Wins     = 0;///< Engine 2 wins
+    int draws           = 0;///< Draw count
+    std::string engine1Name;///< Engine 1 UCI name
+    std::string engine2Name;///< Engine 2 UCI name
+    std::string timestamp;  ///< Last update timestamp
+  };
 
-/// Executes engine-vs-engine matches via cutechess-cli
-class MatchRunner {
-  // Allow test classes to access private methods
-  FRIEND_TEST(MatchRunnerParseTest, StandardScoreLine_ParsedCorrectly);
-  FRIEND_TEST(MatchRunnerParseTest, BreakdownLines_Skipped);
-  FRIEND_TEST(MatchRunnerParseTest, MultipleScoreLines_UsesLast);
-  FRIEND_TEST(MatchRunnerParseTest, NoScoreLine_ThrowsException);
-  FRIEND_TEST(MatchRunnerParseTest, EmptyOutput_ThrowsException);
-  FRIEND_TEST(MatchRunnerParseTest, AllDraws_ParsedCorrectly);
-  FRIEND_TEST(MatchRunnerParseTest, DecisiveResult_ParsedCorrectly);
-  FRIEND_TEST(MatchRunnerParseTest, SingleGame_ParsedCorrectly);
-  FRIEND_TEST(MatchRunnerParseTest, LargeNumbers_ParsedCorrectly);
-  FRIEND_TEST(MatchRunnerParseTest, EngineNamesWithSpaces_ParsedCorrectly);
-  FRIEND_TEST(MatchRunnerParseTest, MetadataPopulated_Correctly);
-  FRIEND_TEST(MatchRunnerParseTest, EloCalculation_Draw);
-  FRIEND_TEST(MatchRunnerParseTest, EloCalculation_Winning);
-  // State file tests for match resumption
-  FRIEND_TEST(MatchRunnerStateTest, GetStateFilePath_ReturnsCorrectPath);
-  FRIEND_TEST(MatchRunnerStateTest, SaveAndLoadMatchState_RoundTrip);
-  FRIEND_TEST(MatchRunnerStateTest, LoadMatchState_NonexistentFile);
-  FRIEND_TEST(MatchRunnerStateTest, DeleteMatchState_RemovesFile);
+  /// Executes engine-vs-engine matches via cutechess-cli
+  class MatchRunner {
+    // Allow test classes to access private methods
+    FRIEND_TEST(MatchRunnerParseTest, StandardScoreLine_ParsedCorrectly);
+    FRIEND_TEST(MatchRunnerParseTest, BreakdownLines_Skipped);
+    FRIEND_TEST(MatchRunnerParseTest, MultipleScoreLines_UsesLast);
+    FRIEND_TEST(MatchRunnerParseTest, NoScoreLine_ThrowsException);
+    FRIEND_TEST(MatchRunnerParseTest, EmptyOutput_ThrowsException);
+    FRIEND_TEST(MatchRunnerParseTest, AllDraws_ParsedCorrectly);
+    FRIEND_TEST(MatchRunnerParseTest, DecisiveResult_ParsedCorrectly);
+    FRIEND_TEST(MatchRunnerParseTest, SingleGame_ParsedCorrectly);
+    FRIEND_TEST(MatchRunnerParseTest, LargeNumbers_ParsedCorrectly);
+    FRIEND_TEST(MatchRunnerParseTest, EngineNamesWithSpaces_ParsedCorrectly);
+    FRIEND_TEST(MatchRunnerParseTest, MetadataPopulated_Correctly);
+    FRIEND_TEST(MatchRunnerParseTest, EloCalculation_Draw);
+    FRIEND_TEST(MatchRunnerParseTest, EloCalculation_Winning);
+    // State file tests for match resumption
+    FRIEND_TEST(MatchRunnerStateTest, GetStateFilePath_ReturnsCorrectPath);
+    FRIEND_TEST(MatchRunnerStateTest, SaveAndLoadMatchState_RoundTrip);
+    FRIEND_TEST(MatchRunnerStateTest, LoadMatchState_NonexistentFile);
+    FRIEND_TEST(MatchRunnerStateTest, DeleteMatchState_RemovesFile);
 
-public:
-  /// Creates a MatchRunner with the given configuration
-  /// @param config Arena configuration containing match definitions
-  explicit MatchRunner(const ArenaConfig& config);
+  public:
+    /// Creates a MatchRunner with the given configuration
+    /// @param config Arena configuration containing match definitions
+    explicit MatchRunner(const ArenaConfig& config);
 
-  /// Runs a single match and returns detailed results
-  /// @param matchConfig Match configuration
-  /// @return MatchResult with game outcomes and ELO calculation
-  /// @throws std::runtime_error if cutechess-cli not found or execution fails
-  MatchResult runMatch(const MatchConfig& matchConfig) const;
+    /// Runs a single match and returns detailed results
+    /// @param matchConfig Match configuration
+    /// @return MatchResult with game outcomes and ELO calculation
+    /// @throws std::runtime_error if cutechess-cli not found or execution fails
+    MatchResult runMatch(const MatchConfig& matchConfig) const;
 
-  /// Runs all configured matches sequentially
-  /// @return Vector of MatchResult, one per configured match
-  /// @throws std::runtime_error if any match fails
-  std::vector<MatchResult> runAllMatches() const;
+    /// Runs all configured matches sequentially
+    /// @return Vector of MatchResult, one per configured match
+    /// @throws std::runtime_error if any match fails
+    std::vector<MatchResult> runAllMatches() const;
 
-private:
-  const ArenaConfig& arenaConfig; ///< Reference to arena configuration
+  private:
+    const ArenaConfig& arenaConfig;///< Reference to arena configuration
 
-  /// Builds cutechess-cli command line from match configuration
-  /// @param matchConfig Match configuration
-  /// @param engine1Name UCI name of engine 1
-  /// @param engine2Name UCI name of engine 2
-  /// @param rounds Number of rounds to play (may differ from config if resuming)
-  /// @return Command line string for subprocess execution
-  std::string buildCutechessCommand(const MatchConfig& matchConfig,
-                                    const std::string& engine1Name,
-                                    const std::string& engine2Name,
-                                    int rounds) const;
+    /// Builds cutechess-cli command line from match configuration
+    /// @param matchConfig Match configuration
+    /// @param engine1Name UCI name of engine 1
+    /// @param engine2Name UCI name of engine 2
+    /// @param rounds Number of rounds to play (may differ from config if resuming)
+    /// @return Command line string for subprocess execution
+    std::string buildCutechessCommand(const MatchConfig& matchConfig,
+                                      const std::string& engine1Name,
+                                      const std::string& engine2Name,
+                                      int rounds) const;
 
-  /// Executes cutechess-cli command and captures output
-  /// @param command Full cutechess-cli command line
-  /// @param output [out] Captured stdout/stderr from cutechess
-  /// @return true if execution succeeded, false otherwise
-  static bool executeCutechess(const std::string& command, std::string& output);
+    /// Executes cutechess-cli command and captures output
+    /// @param command Full cutechess-cli command line
+    /// @param output [out] Captured stdout/stderr from cutechess
+    /// @return true if execution succeeded, false otherwise
+    static bool executeCutechess(const std::string& command, std::string& output);
 
-  /// Parses cutechess-cli output for match results
-  /// @param output cutechess-cli stdout/stderr text
-  /// @param matchConfig Original match configuration
-  /// @param engine1Name UCI name of engine 1
-  /// @param engine2Name UCI name of engine 2
-  /// @return Parsed MatchResult structure
-  /// @throws std::runtime_error if parsing fails
-  MatchResult parseOutput(const std::string& output,
-                          const MatchConfig& matchConfig,
-                          const std::string& engine1Name,
-                          const std::string& engine2Name) const;
+    /// Parses cutechess-cli output for match results
+    /// @param output cutechess-cli stdout/stderr text
+    /// @param matchConfig Original match configuration
+    /// @param engine1Name UCI name of engine 1
+    /// @param engine2Name UCI name of engine 2
+    /// @return Parsed MatchResult structure
+    /// @throws std::runtime_error if parsing fails
+    MatchResult parseOutput(const std::string& output,
+                            const MatchConfig& matchConfig,
+                            const std::string& engine1Name,
+                            const std::string& engine2Name) const;
 
-  /// Calculates ELO difference from match score
-  /// @param score Match score for engine1 (0.0 to 1.0)
-  /// @param games Total number of games played
-  /// @return ELO rating difference (positive = engine1 stronger)
-  static double calculateEloDifference(double score, int games);
+    /// Calculates ELO difference from match score
+    /// @param score Match score for engine1 (0.0 to 1.0)
+    /// @param games Total number of games played
+    /// @return ELO rating difference (positive = engine1 stronger)
+    static double calculateEloDifference(double score, int games);
 
-  /// Validates that all required files exist before match execution
-  /// @param matchConfig Match configuration to validate
-  /// @throws std::runtime_error if any required file is missing
-  static void validateMatchConfig(const MatchConfig& matchConfig);
+    /// Validates that all required files exist before match execution
+    /// @param matchConfig Match configuration to validate
+    /// @throws std::runtime_error if any required file is missing
+    static void validateMatchConfig(const MatchConfig& matchConfig);
 
-  /// Gets UCI engine name by starting the engine and reading "id name" response
-  /// @param enginePath Full path to engine executable
-  /// @return Engine name from UCI protocol (e.g., "FrankyCPP v1.1")
-  /// @throws std::runtime_error if engine fails to start or respond
-  static std::string getUciEngineName(const std::string& enginePath, const std::string& uciOptions = "");
+    /// Gets UCI engine name by starting the engine and reading "id name" response
+    /// @param enginePath Full path to engine executable
+    /// @return Engine name from UCI protocol (e.g., "FrankyCPP v1.1")
+    /// @throws std::runtime_error if engine fails to start or respond
+    static std::string getUciEngineName(const std::string& enginePath, const std::string& uciOptions = "");
 
-  /// Extracts engine name from path (fallback if UCI fails)
-  /// @param enginePath Full path to engine executable
-  /// @return Engine name derived from filename
-  static std::string extractEngineName(const std::string& enginePath);
+    /// Extracts engine name from path (fallback if UCI fails)
+    /// @param enginePath Full path to engine executable
+    /// @return Engine name derived from filename
+    static std::string extractEngineName(const std::string& enginePath);
 
-  /// Generates current timestamp in ISO 8601 format
-  /// @return Timestamp string (e.g., "2026-02-01T14:30:22Z")
-  static std::string getCurrentTimestamp();
+    /// Generates current timestamp in ISO 8601 format
+    /// @return Timestamp string (e.g., "2026-02-01T14:30:22Z")
+    static std::string getCurrentTimestamp();
 
-  /// Gets the state file path for a match
-  /// @param matchConfig Match configuration
-  /// @return Path to state file (e.g., results/matches/.state/matchname.state.json)
-  static std::string getStateFilePath(const MatchConfig& matchConfig);
+    /// Gets the state file path for a match
+    /// @param matchConfig Match configuration
+    /// @return Path to state file (e.g., results/matches/.state/matchname.state.json)
+    static std::string getStateFilePath(const MatchConfig& matchConfig);
 
-  /// Loads match state from file if it exists
-  /// @param stateFilePath Path to state file
-  /// @param state [out] Loaded state
-  /// @return true if state was loaded, false if no state file exists
-  static bool loadMatchState(const std::string& stateFilePath, MatchState& state);
+    /// Loads match state from file if it exists
+    /// @param stateFilePath Path to state file
+    /// @param state [out] Loaded state
+    /// @return true if state was loaded, false if no state file exists
+    static bool loadMatchState(const std::string& stateFilePath, MatchState& state);
 
-  /// Saves match state to file
-  /// @param stateFilePath Path to state file
-  /// @param state State to save
-  static void saveMatchState(const std::string& stateFilePath, const MatchState& state);
+    /// Saves match state to file
+    /// @param stateFilePath Path to state file
+    /// @param state State to save
+    static void saveMatchState(const std::string& stateFilePath, const MatchState& state);
 
-  /// Deletes match state file (called when match completes)
-  /// @param stateFilePath Path to state file
-  static void deleteMatchState(const std::string& stateFilePath);
-};
+    /// Deletes match state file (called when match completes)
+    /// @param stateFilePath Path to state file
+    static void deleteMatchState(const std::string& stateFilePath);
+  };
 
-} // namespace arena
+}// namespace arena
 
-#endif // FRANKYCPP_ENGINE_ARENA_MATCHRUNNER_H
+#endif// FRANKYCPP_ENGINE_ARENA_MATCHRUNNER_H

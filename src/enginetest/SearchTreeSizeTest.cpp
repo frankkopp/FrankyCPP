@@ -24,6 +24,11 @@
 
 #include "SearchTreeSizeTest.h"
 
+using namespace engine;
+using namespace chess;
+using namespace config;
+using namespace enginetest;
+
 
 SearchTreeSize::Result
 SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, const std::string& fen) {

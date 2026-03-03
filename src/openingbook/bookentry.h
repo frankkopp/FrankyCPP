@@ -47,44 +47,49 @@
 //=============================================================================
 
 /// An entry in the opening book representing a position and its available moves.
-class BookEntry {
-public:
-  ZobristKey key{};                      ///< Zobrist hash of the position
-  int counter{1};                        ///< Number of times this position appears in book source
-  std::vector<Move> moves{};             ///< Available moves from this position
-  std::vector<ZobristKey> nextPosition{};///< Zobrist keys after each corresponding move
+namespace book {
+  using namespace chess;
 
-  /// Default constructor (required for Boost serialization).
-  BookEntry() = default;
+  class BookEntry {
+  public:
+    ZobristKey key{};                      ///< Zobrist hash of the position
+    int counter{1};                        ///< Number of times this position appears in book source
+    std::vector<Move> moves{};             ///< Available moves from this position
+    std::vector<ZobristKey> nextPosition{};///< Zobrist keys after each corresponding move
 
-  /// Creates an entry for a position with the given Zobrist key.
-  /// @param zobrist  Zobrist hash of the position
-  explicit BookEntry(const ZobristKey zobrist) : key(zobrist) {}
+    /// Default constructor (required for Boost serialization).
+    BookEntry() = default;
 
-  /// Returns a string representation for debugging.
-  /// @return  Debug string with key, counter, and moves
-  [[nodiscard]] std::string str() const {
-    std::ostringstream os;
-    os << this->key << " (" << this->counter << ")"
-       << " [ ";
-    for (std::size_t i = 0; i < moves.size(); i++) {
-      os << this->moves[i].str() << " ";
+    /// Creates an entry for a position with the given Zobrist key.
+    /// @param zobrist  Zobrist hash of the position
+    explicit BookEntry(const ZobristKey zobrist) : key(zobrist) {}
+
+    /// Returns a string representation for debugging.
+    /// @return  Debug string with key, counter, and moves
+    [[nodiscard]] std::string str() const {
+      std::ostringstream os;
+      os << this->key << " (" << this->counter << ")"
+         << " [ ";
+      for (std::size_t i = 0; i < moves.size(); i++) {
+        os << this->moves[i].str() << " ";
+      }
+      os << "] ";
+      return os.str();
     }
-    os << "] ";
-    return os.str();
-  }
 
-  // BOOST Serialization
-  friend class boost::serialization::access;
+    // BOOST Serialization
+    friend class boost::serialization::access;
 
-  /// Serializes/deserializes the entry for Boost.Serialization.
-  template<class Archive>
-  void serialize(Archive& ar, [[maybe_unused]] const unsigned int version) {
-    ar& BOOST_SERIALIZATION_NVP(key);
-    ar& BOOST_SERIALIZATION_NVP(counter);
-    ar& BOOST_SERIALIZATION_NVP(moves);
-    ar& BOOST_SERIALIZATION_NVP(nextPosition);
-  }
-};
+    /// Serializes/deserializes the entry for Boost.Serialization.
+    template<class Archive>
+    void serialize(Archive& ar, [[maybe_unused]] const unsigned int version) {
+      ar& BOOST_SERIALIZATION_NVP(key);
+      ar& BOOST_SERIALIZATION_NVP(counter);
+      ar& BOOST_SERIALIZATION_NVP(moves);
+      ar& BOOST_SERIALIZATION_NVP(nextPosition);
+    }
+  };
+
+}// namespace book
 
 #endif// FRANKYCPP_BOOKENTRY_H

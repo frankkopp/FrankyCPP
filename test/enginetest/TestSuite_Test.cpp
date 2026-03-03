@@ -17,16 +17,22 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#include "Test_Utils.h"
 #include "common/Logging.h"
 #include "engine/UciOptions.h"
 #include "enginetest/TestSuite.h"
 #include "init.h"
 #include "types/types.h"
 #include "version.h"
-#include "Test_Utils.h"
 
 #include <gtest/gtest.h>
 using testing::Eq;
+
+using namespace engine;
+using namespace chess;
+using namespace config;
+using namespace common;
+using namespace enginetest;
 
 
 class TestSuite_Test : public testing::Test {

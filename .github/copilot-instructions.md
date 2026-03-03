@@ -452,6 +452,8 @@ $env:VAR = "value"
 
 **CRITICAL: Always ask user before committing! Never commit without explicit permission.**
 
+**CRITICAL: Do NOT use the terminal to determine status or diff or anything - YOU HAVE A BIG BUG and can't read the terminal's git output anyway. Just do the commit!!**
+
 **CRITICAL: Do NOT attempt to verify commits after running `git commit`!**
 - The terminal output often doesn't display properly
 - Trust that the commit worked if no error was shown

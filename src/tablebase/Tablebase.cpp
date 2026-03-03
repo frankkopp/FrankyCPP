@@ -35,6 +35,8 @@ extern "C" {
 // Static assertions to verify FrankyCPP square encoding matches Fathom's expectations
 // Fathom uses Little-Endian Rank-File mapping: A1=0, H1=7, A8=56, H8=63
 //=============================================================================
+using namespace chess;
+
 static_assert(static_cast<int>(SQ_A1) == 0, "Square A1 must be 0 for Fathom compatibility");
 static_assert(static_cast<int>(SQ_H1) == 7, "Square H1 must be 7 for Fathom compatibility");
 static_assert(static_cast<int>(SQ_A8) == 56, "Square A8 must be 56 for Fathom compatibility");
@@ -47,6 +49,8 @@ static_assert(static_cast<int>(SQ_A3) == 16, "Square A3 must be 16 for Fathom EP
 static_assert(static_cast<int>(SQ_H3) == 23, "Square H3 must be 23 for Fathom EP compatibility");
 static_assert(static_cast<int>(SQ_A6) == 40, "Square A6 must be 40 for Fathom EP compatibility");
 static_assert(static_cast<int>(SQ_H6) == 47, "Square H6 must be 47 for Fathom EP compatibility");
+
+using namespace common;
 
 namespace tablebase {
 
@@ -106,8 +110,8 @@ namespace tablebase {
 
       // Extract move components using Fathom macros
       // Fathom uses the same square mapping as FrankyCPP (A1=0, H1=7, A8=56, H8=63)
-      const auto from      = static_cast<Square>(TB_GET_FROM(fathomMove));
-      const auto to        = static_cast<Square>(TB_GET_TO(fathomMove));
+      const auto from = static_cast<Square>(TB_GET_FROM(fathomMove));
+      const auto to   = static_cast<Square>(TB_GET_TO(fathomMove));
 
       // Validate squares are within valid range (0-63)
       // Square.isValid() checks for 0..63 but we can be sure the from/to are >= 0

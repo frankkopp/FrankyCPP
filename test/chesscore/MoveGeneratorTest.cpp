@@ -22,13 +22,14 @@
 #include <set>
 #include <string>
 
+#include "Test_Utils.h"
 #include "chesscore/MoveGenerator.h"
 #include "chesscore/Position.h"
 #include "init.h"
 #include "types/types.h"
-#include "Test_Utils.h"
 
 using namespace std;
+using namespace chess;
 using testing::Eq;
 
 
@@ -800,7 +801,7 @@ TEST_F(MoveGenTest, PseudoMoveGenSpeedTest) {
 
   constexpr int rounds = 5;
 
-  const auto position         = Position("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+  const auto position   = Position("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
   const MoveList* moves = mg.generatePseudoLegalMoves(position, GenAll);
 
   for (int r = 1; r <= rounds; r++) {
@@ -1049,13 +1050,13 @@ TEST_F(MoveGenTest, hasLegalMove_vsGenerateLegalMoves) {
   MoveGenerator mg;
 
   const std::vector<std::string> testFens = {
-      "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",                         // starting
-      "rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 1 3",                    // checkmate
-      "7k/5Q2/6K1/8/8/8/8/8 b - - 0 1",                                                   // stalemate
-      "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3",                       // complex
-      "4k3/8/8/K2pP2r/8/8/8/8 w - d6 0 1",                                                // EP pinned
-      "4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1",                                                // EP legal
-      "8/8/8/8/k1PpK3/8/8/8 b - c3 0 1",                                                  // EP only move
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",     // starting
+    "rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 1 3",// checkmate
+    "7k/5Q2/6K1/8/8/8/8/8 b - - 0 1",                               // stalemate
+    "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3",   // complex
+    "4k3/8/8/K2pP2r/8/8/8/8 w - d6 0 1",                            // EP pinned
+    "4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1",                            // EP legal
+    "8/8/8/8/k1PpK3/8/8/8 b - c3 0 1",                              // EP only move
   };
 
   for (const auto& fen : testFens) {
@@ -1065,9 +1066,9 @@ TEST_F(MoveGenTest, hasLegalMove_vsGenerateLegalMoves) {
     const bool hasMoveFromList = !legalMoves->empty();
 
     EXPECT_EQ(hasMove, hasMoveFromList)
-        << "Mismatch for position: " << fen
-        << "\nhasLegalMove: " << hasMove
-        << "\ngenerateLegalMoves empty: " << legalMoves->empty()
-        << "\nlegal moves count: " << legalMoves->size();
+      << "Mismatch for position: " << fen
+      << "\nhasLegalMove: " << hasMove
+      << "\ngenerateLegalMoves empty: " << legalMoves->empty()
+      << "\nlegal moves count: " << legalMoves->size();
   }
 }

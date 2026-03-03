@@ -40,10 +40,10 @@
 //
 //=============================================================================
 
-#include <locale>
+#include <chrono>
 #include <cstdint>
 #include <iostream>
-#include <chrono>
+#include <locale>
 
 // standard chess starting position
 constexpr auto START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -77,4 +77,4 @@ struct deLocaleDecimals final : std::numpunct<char> {
 
 inline const std::locale deLocale(std::cout.getloc(), new deLocaleDecimals);
 
-#endif//FRANKYCPP_GLOBALS_H
+#endif// FRANKYCPP_GLOBALS_H

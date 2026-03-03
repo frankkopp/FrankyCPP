@@ -29,15 +29,16 @@
 //
 //=============================================================================
 
-#include "engine_arena/ResultWriter.h"
 #include "engine_arena/ArenaResults.h"
+#include "engine_arena/ResultWriter.h"
 
-#include <gtest/gtest.h>
-#include <nlohmann/json.hpp>
 #include <filesystem>
 #include <fstream>
+#include <gtest/gtest.h>
+#include <nlohmann/json.hpp>
 
 using namespace arena;
+using namespace chess;
 using json = nlohmann::json;
 
 class ResultWriterTest : public ::testing::Test {
@@ -66,19 +67,19 @@ protected:
   // Helper to create a basic TestSuiteResult
   TestSuiteResult createBasicResult() {
     TestSuiteResult result;
-    result.arenaVersion = "v1.1";
-    result.timestamp = "2026-02-06T12:00:00Z";
+    result.arenaVersion  = "v1.1";
+    result.timestamp     = "2026-02-06T12:00:00Z";
     result.testSuiteName = "TestSuite";
-    result.epdPath = "test/test.epd";
-    result.engineName = "TestEngine";
+    result.epdPath       = "test/test.epd";
+    result.engineName    = "TestEngine";
     result.engineVersion = "1.0";
-    result.enginePath = "path/to/engine.exe";
-    result.totalTests = 1;
-    result.passed = 1;
-    result.failed = 0;
-    result.skipped = 0;
-    result.totalNodes = 1000;
-    result.totalTimeMs = 100;
+    result.enginePath    = "path/to/engine.exe";
+    result.totalTests    = 1;
+    result.passed        = 1;
+    result.failed        = 0;
+    result.skipped       = 0;
+    result.totalNodes    = 1000;
+    result.totalTimeMs   = 100;
     return result;
   }
 };
@@ -106,7 +107,7 @@ TEST_F(ResultWriterTest, WindowsPath_BackslashesEscaped) {
 
   // Windows-style path with backslashes
   result.enginePath = R"(D:\Games\Chess\Engines\FrankyCPP\engine.exe)";
-  result.epdPath = R"(C:\Users\Frank\test\suite.epd)";
+  result.epdPath    = R"(C:\Users\Frank\test\suite.epd)";
 
   const std::string filePath = writer.writeTestSuiteResult(result);
 
@@ -126,13 +127,13 @@ TEST_F(ResultWriterTest, QuotesInTestDetails_Escaped) {
 
   // Test details with quotes (these don't affect filename)
   TestCaseDetail detail;
-  detail.testId = "Test \"quoted\" ID";
-  detail.fen = "8/8/8/8/8/8/8/8 w - - 0 1";
+  detail.testId   = "Test \"quoted\" ID";
+  detail.fen      = "8/8/8/8/8/8/8/8 w - - 0 1";
   detail.expected = "move \"best\"";
-  detail.actual = "move \"actual\"";
-  detail.passed = true;
-  detail.nodes = 1000;
-  detail.timeMs = 50;
+  detail.actual   = "move \"actual\"";
+  detail.passed   = true;
+  detail.nodes    = 1000;
+  detail.timeMs   = 50;
   result.details.push_back(detail);
 
   std::string filePath = writer.writeTestSuiteResult(result);
@@ -153,13 +154,13 @@ TEST_F(ResultWriterTest, FenWithSpecialChars_Escaped) {
 
   // Add a test detail with a FEN containing special characters
   TestCaseDetail detail;
-  detail.testId = "Test1";
-  detail.fen = "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4";
+  detail.testId   = "Test1";
+  detail.fen      = "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4";
   detail.expected = "Qxf7+";
-  detail.actual = "Qxf7+";
-  detail.passed = true;
-  detail.nodes = 1000;
-  detail.timeMs = 50;
+  detail.actual   = "Qxf7+";
+  detail.passed   = true;
+  detail.nodes    = 1000;
+  detail.timeMs   = 50;
   result.details.push_back(detail);
 
   std::string filePath = writer.writeTestSuiteResult(result);
@@ -178,13 +179,13 @@ TEST_F(ResultWriterTest, ControlCharacters_Escaped) {
 
   // Test details with control characters (tab, newline) - these don't affect filename
   TestCaseDetail detail;
-  detail.testId = "Test\twith\ttabs\nand\nnewlines";
-  detail.fen = "8/8/8/8/8/8/8/8 w - - 0 1";
+  detail.testId   = "Test\twith\ttabs\nand\nnewlines";
+  detail.fen      = "8/8/8/8/8/8/8/8 w - - 0 1";
   detail.expected = "a1a2\twith\ttab";
-  detail.actual = "a1a2\nwith\nnewline";
-  detail.passed = true;
-  detail.nodes = 100;
-  detail.timeMs = 10;
+  detail.actual   = "a1a2\nwith\nnewline";
+  detail.passed   = true;
+  detail.nodes    = 100;
+  detail.timeMs   = 10;
   result.details.push_back(detail);
 
   std::string filePath = writer.writeTestSuiteResult(result);
@@ -208,13 +209,13 @@ TEST_F(ResultWriterTest, MixedSpecialCharacters_AllEscaped) {
 
   // Test details with mixed special characters
   TestCaseDetail detail;
-  detail.testId = "Test\\with\"quotes\tand\ttabs";
-  detail.fen = "8/8/8/8/8/8/8/8 w - - 0 1";
+  detail.testId   = "Test\\with\"quotes\tand\ttabs";
+  detail.fen      = "8/8/8/8/8/8/8/8 w - - 0 1";
   detail.expected = "e2e4";
-  detail.actual = "e2e4";
-  detail.passed = true;
-  detail.nodes = 100;
-  detail.timeMs = 10;
+  detail.actual   = "e2e4";
+  detail.passed   = true;
+  detail.nodes    = 100;
+  detail.timeMs   = 10;
   result.details.push_back(detail);
 
   std::string filePath = writer.writeTestSuiteResult(result);
@@ -251,13 +252,13 @@ TEST_F(ResultWriterTest, UnicodeCharacters_HandledCorrectly) {
 
   // Unicode in test details (not in engine name/version which affect filename)
   TestCaseDetail detail;
-  detail.testId = "Тест_001";  // Russian "Test"
-  detail.fen = "8/8/8/8/8/8/8/8 w - - 0 1";
-  detail.expected = "Шах";  // Russian "Check"
-  detail.actual = "Шах";
-  detail.passed = true;
-  detail.nodes = 100;
-  detail.timeMs = 10;
+  detail.testId   = "Тест_001";// Russian "Test"
+  detail.fen      = "8/8/8/8/8/8/8/8 w - - 0 1";
+  detail.expected = "Шах";// Russian "Check"
+  detail.actual   = "Шах";
+  detail.passed   = true;
+  detail.nodes    = 100;
+  detail.timeMs   = 10;
   result.details.push_back(detail);
 
   std::string filePath = writer.writeTestSuiteResult(result);

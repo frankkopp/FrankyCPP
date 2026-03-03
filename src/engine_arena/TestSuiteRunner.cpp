@@ -34,6 +34,10 @@
 #include <regex>
 #include <sstream>
 
+using namespace common;
+using namespace chess;
+using namespace enginetest;
+
 namespace arena {
 
   namespace {

@@ -24,6 +24,9 @@
 #include <gtest/gtest.h>
 using testing::Eq;
 
+using namespace common;
+using namespace chess;
+
 class TypesTest : public testing::Test {
 public:
   static void SetUpTestSuite() {
@@ -186,7 +189,6 @@ TEST_F(TypesTest, pieces) {
   EXPECT_EQ('k', pieceToChar[BLACK_KING]);
   EXPECT_EQ('P', pieceToChar[WHITE_PAWN]);
   EXPECT_EQ(BLACK_KNIGHT, std::string(pieceToChar).find('n'));
-
 }
 
 TEST_F(TypesTest, directionOperators) {
@@ -301,10 +303,10 @@ TEST_F(TypesTest, nps) {
 }
 
 TEST_F(TypesTest, elapsed) {
-  using clock = high_resolution_clock;
+  using clock           = high_resolution_clock;
   const TimePoint start = clock::now();
-  TimePoint jetzt = clock::now();
-  for (int i = 0; i < 500; ++i){
+  TimePoint jetzt       = clock::now();
+  for (int i = 0; i < 500; ++i) {
     std::cout << std::format(deLocale, "{:3}. Since start: {:L} ns - last jetzt: {:L} ns\n", i, elapsedSince(start).count(), elapsedSince(jetzt).count());
     jetzt = clock::now();
   }

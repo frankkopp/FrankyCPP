@@ -62,7 +62,7 @@
 // Attacks namespace contains functionality for fast lookup of sliding piece attacks
 // using magic bitboards with PEXT (parallel bits extract) instruction if available.
 // It provides initialization and attack lookup functions.
-namespace Attacks {
+namespace chess::Attacks {
   namespace detail {
 
     // ------------------------------------------------------------
@@ -180,7 +180,7 @@ namespace Attacks {
   // Unified attack lookup for non-pawn pieces (QUEEN = ROOK | BISHOP)
   Bitboard attacks(PieceType pt, Square sq, Bitboard occupied);
 
-}// namespace Attacks
+}// namespace chess::Attacks
 
 
 #endif// FRANKYCPP_ATTACKS_H

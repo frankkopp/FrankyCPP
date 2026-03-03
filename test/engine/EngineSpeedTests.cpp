@@ -17,8 +17,8 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include "common/Logging.h"
 #include "chesscore/Position.h"
+#include "common/Logging.h"
 #include "engine/Search.h"
 #include "init.h"
 #include "types/types.h"
@@ -29,6 +29,9 @@ using testing::Eq;
 
 using namespace std::chrono;
 using namespace std;
+using namespace engine;
+using namespace chess;
+using namespace common;
 
 class EngineSpeedTests : public ::testing::Test {
 public:

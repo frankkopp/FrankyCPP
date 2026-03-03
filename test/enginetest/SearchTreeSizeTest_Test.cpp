@@ -17,8 +17,6 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include <ctime>
-
 #include "Test_Fens.h"
 #include "Test_Utils.h"
 #include "common/Logging.h"
@@ -30,6 +28,11 @@
 
 using testing::Eq;
 
+using namespace engine;
+using namespace chess;
+using namespace config;
+using namespace common;
+using namespace enginetest;
 
 class SearchTreeSizeTest_Test : public testing::Test {
 public:

@@ -58,33 +58,33 @@
 
 #ifdef FRANKYCPP_PRODUCTION
 
-  // Production: non-essential config values become compile-time constants.
-  #define CONFIG_CONST static constexpr
+// Production: non-essential config values become compile-time constants.
+#define CONFIG_CONST static constexpr
 
-  // Code that must be compiled only in development builds.
-  #define DEV_ONLY(code)
+// Code that must be compiled only in development builds.
+#define DEV_ONLY(code)
 
-  // Code that must be compiled only in production builds.
-  #define PROD_ONLY(code) code
+// Code that must be compiled only in production builds.
+#define PROD_ONLY(code) code
 
-  // Compile-time query: is config frozen?
-  #define IS_CONFIG_FROZEN true
+// Compile-time query: is config frozen?
+#define IS_CONFIG_FROZEN true
 
-#else // Development build
+#else// Development build
 
-  // Development: non-essential config values remain mutable instance members.
-  #define CONFIG_CONST
+// Development: non-essential config values remain mutable instance members.
+#define CONFIG_CONST
 
-  // Development-only code block.
-  #define DEV_ONLY(code) code
+// Development-only code block.
+#define DEV_ONLY(code) code
 
-  // Production-only code block (omitted in development).
-  #define PROD_ONLY(code)
+// Production-only code block (omitted in development).
+#define PROD_ONLY(code)
 
-  // Compile-time query: is config frozen?
-  #define IS_CONFIG_FROZEN false
+// Compile-time query: is config frozen?
+#define IS_CONFIG_FROZEN false
 
-#endif // FRANKYCPP_PRODUCTION
+#endif// FRANKYCPP_PRODUCTION
 
 // Essential configs — always non-static mutable instance members in all builds.
 // This macro is purely documentary; it expands to nothing.
@@ -102,19 +102,19 @@
 //=============================================================================
 
 #ifdef FRANKYCPP_PRODUCTION
-  #define STAT_INC(counter)         ((void)0)
-  #define STAT_ADD(counter, val)    ((void)0)
-  #define STAT_SET(counter, val)    ((void)0)
+#define STAT_INC(counter) ((void) 0)
+#define STAT_ADD(counter, val) ((void) 0)
+#define STAT_SET(counter, val) ((void) 0)
 #else
-  #define STAT_INC(counter)         (++(counter))
-  #define STAT_ADD(counter, val)    ((counter) += (val))
-  #define STAT_SET(counter, val)    ((counter) = (val))
+#define STAT_INC(counter) (++(counter))
+#define STAT_ADD(counter, val) ((counter) += (val))
+#define STAT_SET(counter, val) ((counter) = (val))
 #endif
 
 // Essential stats — always collected regardless of build mode.
-#define ESSENTIAL_STAT_INC(counter)         (++(counter))
-#define ESSENTIAL_STAT_ADD(counter, val)    ((counter) += (val))
-#define ESSENTIAL_STAT_SET(counter, val)    ((counter) = (val))
+#define ESSENTIAL_STAT_INC(counter) (++(counter))
+#define ESSENTIAL_STAT_ADD(counter, val) ((counter) += (val))
+#define ESSENTIAL_STAT_SET(counter, val) ((counter) = (val))
 
 //=============================================================================
 // CONFIG SETTER macros for ConfigRegistry setter lambdas
@@ -142,42 +142,42 @@
 #include <string>
 #include <type_traits>
 
-namespace config_detail {
+namespace config::config_detail {
 
-// Assigns `value` to `dest` only if T is non-const (i.e. CONFIG_ESSENTIAL).
-// When T is const (CONFIG_CONST = static constexpr in production), the discarded
-// branch is never instantiated because this is a template — GCC/Clang won't
-// type-check the assignment, avoiding the "read-only variable" error.
-template<typename T, typename U>
-void assignIfMutable(T& dest, U&& value) {
-  if constexpr (!std::is_const_v<T>) {
-    dest = std::forward<U>(value);
+  // Assigns `value` to `dest` only if T is non-const (i.e. CONFIG_ESSENTIAL).
+  // When T is const (CONFIG_CONST = static constexpr in production), the discarded
+  // branch is never instantiated because this is a template — GCC/Clang won't
+  // type-check the assignment, avoiding the "read-only variable" error.
+  template<typename T, typename U>
+  void assignIfMutable(T& dest, U&& value) {
+    if constexpr (!std::is_const_v<T>) {
+      dest = std::forward<U>(value);
+    }
   }
-}
 
-// Array variant: calls parseArray(v, dest) only if T is non-const.
-template<typename T>
-void assignArrayIfMutable(T& dest, const std::string& v) {
-  if constexpr (!std::is_const_v<T>) {
-    parseArray(v, dest);
+  // Array variant: calls parseArray(v, dest) only if T is non-const.
+  template<typename T>
+  void assignArrayIfMutable(T& dest, const std::string& v) {
+    if constexpr (!std::is_const_v<T>) {
+      parseArray(v, dest);
+    }
   }
-}
 
-} // namespace config_detail
+}// namespace config::config_detail
 
-#define SEARCH_CONFIG_SETTER(member, parser) \
-    [](SearchConfigData& s, EvalConfigData&, const std::string& v) { \
-        config_detail::assignIfMutable(s.member, parser(v)); \
-    }
+#define SEARCH_CONFIG_SETTER(member, parser)                       \
+  [](SearchConfigData& s, EvalConfigData&, const std::string& v) { \
+    config::config_detail::assignIfMutable(s.member, parser(v));   \
+  }
 
-#define EVAL_CONFIG_SETTER(member, parser) \
-    [](SearchConfigData&, EvalConfigData& e, const std::string& v) { \
-        config_detail::assignIfMutable(e.member, parser(v)); \
-    }
+#define EVAL_CONFIG_SETTER(member, parser)                         \
+  [](SearchConfigData&, EvalConfigData& e, const std::string& v) { \
+    config::config_detail::assignIfMutable(e.member, parser(v));   \
+  }
 
-#define SEARCH_CONFIG_ARRAY_SETTER(member) \
-    [](SearchConfigData& s, EvalConfigData&, const std::string& v) { \
-        config_detail::assignArrayIfMutable(s.member, v); \
-    }
+#define SEARCH_CONFIG_ARRAY_SETTER(member)                         \
+  [](SearchConfigData& s, EvalConfigData&, const std::string& v) { \
+    config::config_detail::assignArrayIfMutable(s.member, v);      \
+  }
 
-#endif // FRANKYCPP_CONFIGMODE_H
+#endif// FRANKYCPP_CONFIGMODE_H

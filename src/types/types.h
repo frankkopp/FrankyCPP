@@ -54,16 +54,17 @@
 #include "init.h"
 #include "macros.h"
 #include "move.h"
-#include "staticmovelist.h"
 #include "orientation.h"
 #include "piece.h"
 #include "piecetype.h"
 #include "rank.h"
 #include "score.h"
 #include "square.h"
+#include "staticmovelist.h"
 #include "timeunits.h"
 #include "value.h"
 #include "valuetype.h"
 #include "zobristkey.h"
 
-#endif//FRANKYCPP_TYPES_H
+
+#endif// FRANKYCPP_TYPES_H

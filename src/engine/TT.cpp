@@ -26,8 +26,12 @@
 #include "TT.h"
 #include "common/Logging.h"
 
-#include <execution>
 #include <algorithm>
+#include <execution>
+
+using namespace engine;
+using namespace chess;
+using namespace common;
 
 std::ostream& operator<<(std::ostream& os, const TT::Entry& entry) {
   os << "key: " << entry.key.load(std::memory_order_relaxed)
@@ -38,7 +42,7 @@ std::ostream& operator<<(std::ostream& os, const TT::Entry& entry) {
 }
 
 TT::TT(const uint64_t newSizeInMByte) : noOfThreads(std::thread::hardware_concurrency()) {
-  if (noOfThreads == 0) noOfThreads = 1; // ensure at least one thread
+  if (noOfThreads == 0) noOfThreads = 1;// ensure at least one thread
   resize(newSizeInMByte);
 }
 
@@ -71,10 +75,10 @@ void TT::resize(const uint64_t newSizeInMByte) {
       break;
     } catch (std::bad_alloc const&) {
       // we could not allocate enough memory, so we reduce TT size by a power of 2
-      const uint64_t oldSize   = sizeInByte;
+      const uint64_t oldSize = sizeInByte;
       if (maxNumberOfEntries <= 1) {
         LOG__CRITICAL(Logger::get().TT_LOG, "Unable to allocate minimal TT of 1 entry ({} bytes). Out of memory.", sizeof(Entry));
-        throw; // fatal OOM condition for TT invariant (>=1 entry)
+        throw;// fatal OOM condition for TT invariant (>=1 entry)
       }
       maxNumberOfEntries = maxNumberOfEntries >> 1ULL;
       if (maxNumberOfEntries < 1) maxNumberOfEntries = 1;
@@ -90,23 +94,22 @@ void TT::resize(const uint64_t newSizeInMByte) {
 }
 
 void TT::clear() {
- // Clear TT using a standard parallel algorithm (implementation-defined threading).
- LOG__TRACE(Logger::get().TT_LOG, "Clearing TT (std::execution::par_unseq)...");
- const auto startTime = high_resolution_clock::now();
+  // Clear TT using a standard parallel algorithm (implementation-defined threading).
+  LOG__TRACE(Logger::get().TT_LOG, "Clearing TT (std::execution::par_unseq)...");
+  const auto startTime = high_resolution_clock::now();
 
- std::for_each(
-   std::execution::par_unseq,
-   _data.get(),
-   _data.get() + maxNumberOfEntries,
-   [](Entry& e) {
-     e.key.store(0, std::memory_order_relaxed);
-     e.move  = 0; // MOVE_NONE as 16-bit
-     e.depth = DEPTH_NONE;
-     e.value = VALUE_NONE;
-     e.eval  = VALUE_NONE;
-     e.age   = 1;
-   }
- );
+  std::for_each(
+    std::execution::par_unseq,
+    _data.get(),
+    _data.get() + maxNumberOfEntries,
+    [](Entry& e) {
+      e.key.store(0, std::memory_order_relaxed);
+      e.move  = 0;// MOVE_NONE as 16-bit
+      e.depth = DEPTH_NONE;
+      e.value = VALUE_NONE;
+      e.eval  = VALUE_NONE;
+      e.age   = 1;
+    });
 
   // reset statistics
   numberOfPuts       = 0;
@@ -229,8 +232,7 @@ void TT::ageEntries() {
     [](Entry& e) {
       if (e.key.load(std::memory_order_relaxed) == 0) return;
       if (e.age < 7) e.age++;
-    }
-  );
+    });
 
   const auto finish = high_resolution_clock::now();
   const auto time   = std::chrono::duration_cast<milliseconds>(finish - timePoint).count();

@@ -32,15 +32,16 @@
 //
 //=============================================================================
 
+#include "TestEnginePath.h"
+#include "Test_Utils.h"
 #include "engine_arena/UCIEngine.h"
 #include "init.h"
-#include "Test_Utils.h"
-#include "TestEnginePath.h"
 
-#include <gtest/gtest.h>
 #include <filesystem>
+#include <gtest/gtest.h>
 
 using namespace arena;
+using namespace chess;
 
 class UCIEngineErrorHandlingTest : public ::testing::Test {
 public:
@@ -59,9 +60,7 @@ TEST_F(UCIEngineErrorHandlingTest, Constructor_MissingExecutable_ThrowsError) {
   const std::string nonExistentPath = "nonexistent_engine.exe";
 
   // Should throw runtime_error
-  EXPECT_THROW({
-    UCIEngine engine(nonExistentPath);
-  }, std::runtime_error);
+  EXPECT_THROW({ UCIEngine engine(nonExistentPath); }, std::runtime_error);
 }
 
 //=============================================================================
@@ -73,9 +72,7 @@ TEST_F(UCIEngineErrorHandlingTest, Constructor_DirectoryPath_ThrowsError) {
   const std::string directoryPath = ".";
 
   // Should throw runtime_error
-  EXPECT_THROW({
-    UCIEngine engine(directoryPath);
-  }, std::runtime_error);
+  EXPECT_THROW({ UCIEngine engine(directoryPath); }, std::runtime_error);
 }
 
 //=============================================================================
@@ -86,9 +83,7 @@ TEST_F(UCIEngineErrorHandlingTest, Constructor_EmptyPath_ThrowsError) {
   const std::string emptyPath = "";
 
   // Should throw runtime_error
-  EXPECT_THROW({
-    UCIEngine engine(emptyPath);
-  }, std::runtime_error);
+  EXPECT_THROW({ UCIEngine engine(emptyPath); }, std::runtime_error);
 }
 
 //=============================================================================
@@ -130,7 +125,7 @@ TEST_F(UCIEngineErrorHandlingTest, Search_VeryShortTimeout_ReturnsPartialOrEmpty
   }
 
   UCIEngine engine(enginePath);
-  engine.setSearchTimeout(milliseconds{5000}); // 5 second absolute timeout
+  engine.setSearchTimeout(milliseconds{5000});// 5 second absolute timeout
 
   // Set position
   const std::string startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";

@@ -55,11 +55,11 @@
 //
 //=============================================================================
 
+#include "chesscore/fwd.h"
 #include <types/types.h>
 
-class Position;
-
-namespace See {
+namespace engine::See {
+  using namespace chess;
 
   /// Evaluates the static exchange score for a capture move.
   /// The move should not have been made on the position yet.
@@ -99,7 +99,7 @@ namespace See {
   /// @return         Bitboard of newly revealed sliding attackers
   Bitboard revealedAttacks(const Position& p, Square square, Bitboard occupied, Color color);
 
-}
+}// namespace engine::See
 
 
-#endif//FRANKYCPP_SEE_H
+#endif// FRANKYCPP_SEE_H

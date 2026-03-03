@@ -30,6 +30,7 @@
 
 using namespace std::chrono;
 using namespace std;
+using namespace chess;
 using testing::Eq;
 
 class SpeedTests : public ::testing::Test {
@@ -52,7 +53,7 @@ protected:
 
 TEST_F(SpeedTests, TimingSetupPosition) {
 
-  constexpr int rounds     = 5;
+  constexpr int rounds = 5;
   // ReSharper disable once CppTooWideScope
   constexpr int iterations = 200'000;
 
@@ -72,7 +73,7 @@ TEST_F(SpeedTests, TimingSetupPosition) {
     os.flags(std::cout.flags());
     os.imbue(deLocale);
     os.precision(os.precision());
-    os << "Setup position took " << elapsed.count() << " ns for " << iterations << " iterations"  << std::endl;
+    os << "Setup position took " << elapsed.count() << " ns for " << iterations << " iterations" << std::endl;
     os << "Setup position ";
     os << elapsed.count() / iterations;
     os << " ns per setup position" << std::endl;
@@ -93,7 +94,7 @@ TEST_F(SpeedTests, TimingSetupPosition) {
 
 TEST_F(SpeedTests, TimingDoMoveUndoMove) {
 
-  constexpr int rounds     = 5;
+  constexpr int rounds = 5;
   // ReSharper disable once CppTooWideScope
   constexpr int iterations = 50'000'000;
 
@@ -104,11 +105,11 @@ TEST_F(SpeedTests, TimingDoMoveUndoMove) {
   // Rc1 normal non capturing
   // c1Q promotion
   Position position("r3k2r/1ppn3p/4q1n1/8/4Pp2/3R4/p1p2PPP/R5K1 b kq e3 0 1");
-  constexpr Move move1  = Move::enPassant(SQ_F4, SQ_E3);
-  constexpr Move move2  = Move::normal(SQ_F2, SQ_E3); // NORMAL
-  constexpr Move move3  = Move::castling(SQ_E8, SQ_G8);
-  constexpr Move move4  = Move::normal(SQ_D3, SQ_C3); // NORMAL
-  constexpr Move move5  = Move::promotion(SQ_C2, SQ_C1, QUEEN);
+  constexpr Move move1 = Move::enPassant(SQ_F4, SQ_E3);
+  constexpr Move move2 = Move::normal(SQ_F2, SQ_E3);// NORMAL
+  constexpr Move move3 = Move::castling(SQ_E8, SQ_G8);
+  constexpr Move move4 = Move::normal(SQ_D3, SQ_C3);// NORMAL
+  constexpr Move move5 = Move::promotion(SQ_C2, SQ_C1, QUEEN);
 
   for (int r = 1; r <= rounds; r++) {
     fprintln("Round {}", r);
@@ -141,7 +142,7 @@ TEST_F(SpeedTests, TimingDoMoveUndoMove) {
 
 TEST_F(SpeedTests, TimingExtendedDoMoveUndoMove) {
 
-  constexpr int rounds     = 5;
+  constexpr int rounds = 5;
 
   // position for each move type
   // fxe3 enpassant
@@ -151,9 +152,9 @@ TEST_F(SpeedTests, TimingExtendedDoMoveUndoMove) {
   // c1Q promotion
   Position position("r3k2r/1ppn3p/4q1n1/8/4Pp2/3R4/p1p2PPP/R5K1 b kq e3 0 1");
   constexpr Move move1 = Move::enPassant(SQ_F4, SQ_E3);
-  constexpr Move move2 = Move::normal(SQ_F2, SQ_E3); // NORMAL
+  constexpr Move move2 = Move::normal(SQ_F2, SQ_E3);// NORMAL
   constexpr Move move3 = Move::castling(SQ_E8, SQ_G8);
-  constexpr Move move4 = Move::normal(SQ_D3, SQ_C3); // NORMAL
+  constexpr Move move4 = Move::normal(SQ_D3, SQ_C3);// NORMAL
   constexpr Move move5 = Move::promotion(SQ_C2, SQ_C1, QUEEN);
 
   for (int r = 1; r <= rounds; r++) {
@@ -206,7 +207,7 @@ TEST_F(SpeedTests, TimingExtendedDoMoveUndoMove) {
 TEST_F(SpeedTests, onDemandPseudoMoveGen) {
   MoveGenerator mg;
 
-  constexpr int rounds     = 5;
+  constexpr int rounds = 5;
   // ReSharper disable once CppTooWideScope
   constexpr int iterations = 5'000'000;
 
@@ -216,7 +217,7 @@ TEST_F(SpeedTests, onDemandPseudoMoveGen) {
   const auto pv = mg.getMoveFromUci(position, "a2b1Q");
 
   uint64_t generated = 0;
-  Move move = MOVE_NONE;
+  Move move          = MOVE_NONE;
   for (int r = 1; r <= rounds; r++) {
     fprintln("Round {}", r);
     auto start = high_resolution_clock::now();
@@ -231,7 +232,7 @@ TEST_F(SpeedTests, onDemandPseudoMoveGen) {
       }
     }
     auto elapsed = duration_cast<nanoseconds>(high_resolution_clock::now() - start);
-    (void)move;
+    (void) move;
 
     std::ostringstream os;
     os.flags(std::cout.flags());
@@ -289,10 +290,10 @@ TEST_F(SpeedTests, stdPerftOD) {
   };
   // clang-format on
 
-  constexpr int warmup = 1;
+  constexpr int warmup      = 1;
   constexpr int warmupDepth = 6;
   constexpr int repetitions = 5;
-  constexpr int maxDepth   = 6;
+  constexpr int maxDepth    = 6;
   p.setFullStats(false);
 
   // warmup

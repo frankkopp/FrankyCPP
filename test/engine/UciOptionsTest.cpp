@@ -29,6 +29,11 @@
 
 using testing::Eq;
 
+using namespace engine;
+using namespace chess;
+using namespace config;
+using namespace common;
+
 class UciOptionsTest : public testing::Test {
 public:
   static void SetUpTestSuite() {

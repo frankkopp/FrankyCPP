@@ -22,6 +22,9 @@
 
 #include <gtest/gtest.h>
 
+using namespace enginetest;
+using namespace chess;
+
 class TestTypes_Test : public testing::Test {
 public:
   static void SetUpTestSuite() {
@@ -40,9 +43,9 @@ protected:
 TEST_F(TestTypes_Test, TestType_EnumValues) {
   // Verify enum class is scoped
   constexpr auto noop = TestType::NOOP;
-  constexpr auto dm = TestType::DM;
-  constexpr auto bm = TestType::BM;
-  constexpr auto am = TestType::AM;
+  constexpr auto dm   = TestType::DM;
+  constexpr auto bm   = TestType::BM;
+  constexpr auto am   = TestType::AM;
 
   EXPECT_NE(noop, dm);
   EXPECT_NE(dm, bm);
@@ -87,9 +90,9 @@ TEST_F(TestTypes_Test, testTypeToString_Constexpr) {
 TEST_F(TestTypes_Test, ResultType_EnumValues) {
   // Verify enum class is scoped
   constexpr auto notTested = ResultType::NOT_TESTED;
-  constexpr auto skipped = ResultType::SKIPPED;
-  constexpr auto failed = ResultType::FAILED;
-  constexpr auto success = ResultType::SUCCESS;
+  constexpr auto skipped   = ResultType::SKIPPED;
+  constexpr auto failed    = ResultType::FAILED;
+  constexpr auto success   = ResultType::SUCCESS;
 
   EXPECT_NE(notTested, skipped);
   EXPECT_NE(skipped, failed);
@@ -146,13 +149,13 @@ TEST_F(TestTypes_Test, TestSuiteResult_DefaultValues) {
 TEST_F(TestTypes_Test, TestSuiteResult_Aggregate) {
   TestSuiteResult result{};
 
-  result.counter = 100;
-  result.successCounter = 80;
-  result.failedCounter = 15;
-  result.skippedCounter = 3;
+  result.counter          = 100;
+  result.successCounter   = 80;
+  result.failedCounter    = 15;
+  result.skippedCounter   = 3;
   result.notTestedCounter = 2;
-  result.nodes = 1000000;
-  result.time = seconds(60);
+  result.nodes            = 1000000;
+  result.time             = seconds(60);
 
   // Verify assignment works
   EXPECT_EQ(result.counter, 100);
@@ -186,7 +189,7 @@ TEST_F(TestTypes_Test, TypeSafety_CannotMixEnums) {
   // TestType t = ResultType::SUCCESS;  // ERROR - type mismatch
 
   // But this works:
-  auto testType = TestType::BM;
+  auto testType   = TestType::BM;
   auto resultType = ResultType::SUCCESS;
 
   // They're distinct types

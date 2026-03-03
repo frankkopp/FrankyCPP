@@ -24,6 +24,10 @@
 #include "common/stringutil.h"
 #include "types/types.h"
 
+using namespace book;
+using namespace chess;
+using namespace common;
+
 // BOOST Serialization
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
@@ -287,7 +291,7 @@ void OpeningBook::readGamesSan(const std::vector<std::string_view>& lines) {
                   readOneGameSan(line);
                 });
 #else// no <execution> library (< C++17)
-  const auto noOfLines           = lines.size();
+  const auto noOfLines = lines.size();
   std::vector<std::thread> threads;
   threads.reserve(noOfThreads);
   for (unsigned int t = 0; t < noOfThreads; ++t) {

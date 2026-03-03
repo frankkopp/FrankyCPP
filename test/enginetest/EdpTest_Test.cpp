@@ -25,6 +25,9 @@
 
 #include <gtest/gtest.h>
 
+using namespace enginetest;
+using namespace chess;
+
 
 class EdpTest_Test : public testing::Test {
 public:
@@ -45,11 +48,11 @@ TEST_F(EdpTest_Test, Builder_BasicConstruction) {
   EpdTest::Builder builder;
 
   EpdTest test = builder
-    .setId("TestID")
-    .setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-    .setLine("original line")
-    .setType(TestType::BM)
-    .build();
+                   .setId("TestID")
+                   .setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+                   .setLine("original line")
+                   .setType(TestType::BM)
+                   .build();
 
   EXPECT_EQ(test.getId(), "TestID");
   EXPECT_EQ(test.getFen(), "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
@@ -64,12 +67,12 @@ TEST_F(EdpTest_Test, Builder_BestMoveTest) {
 
   EpdTest::Builder builder;
   EpdTest test = builder
-    .setId("BM Test")
-    .setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-    .setType(TestType::BM)
-    .setTargetMoves(moves)
-    .setExpectedMove(moves[0])
-    .build();
+                   .setId("BM Test")
+                   .setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+                   .setType(TestType::BM)
+                   .setTargetMoves(moves)
+                   .setExpectedMove(moves[0])
+                   .build();
 
   EXPECT_EQ(test.getType(), TestType::BM);
   EXPECT_EQ(test.getTargetMoves().size(), 2);
@@ -79,11 +82,11 @@ TEST_F(EdpTest_Test, Builder_BestMoveTest) {
 TEST_F(EdpTest_Test, Builder_DirectMateTest) {
   EpdTest::Builder builder;
   EpdTest test = builder
-    .setId("DM Test")
-    .setFen("8/8/8/8/8/8/6K1/6Qr b - - 0 1")
-    .setType(TestType::DM)
-    .setMateDepth(DEPTH_ONE)
-    .build();
+                   .setId("DM Test")
+                   .setFen("8/8/8/8/8/8/6K1/6Qr b - - 0 1")
+                   .setType(TestType::DM)
+                   .setMateDepth(DEPTH_ONE)
+                   .build();
 
   EXPECT_EQ(test.getType(), TestType::DM);
   EXPECT_EQ(test.getMateDepth(), DEPTH_ONE);
@@ -96,11 +99,11 @@ TEST_F(EdpTest_Test, Builder_AvoidMoveTest) {
 
   EpdTest::Builder builder;
   EpdTest test = builder
-    .setId("AM Test")
-    .setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-    .setType(TestType::AM)
-    .setTargetMoves(moves)
-    .build();
+                   .setId("AM Test")
+                   .setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+                   .setType(TestType::AM)
+                   .setTargetMoves(moves)
+                   .build();
 
   EXPECT_EQ(test.getType(), TestType::AM);
   EXPECT_EQ(test.getTargetMoves().size(), 2);
@@ -138,9 +141,9 @@ TEST_F(EdpTest_Test, DefaultValues) {
 TEST_F(EdpTest_Test, Mutators_SetResults) {
   EpdTest::Builder builder;
   EpdTest test = builder
-    .setId("Test")
-    .setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-    .build();
+                   .setId("Test")
+                   .setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+                   .build();
 
   // Initially NOT_TESTED
   EXPECT_EQ(test.getResult(), ResultType::NOT_TESTED);
@@ -186,10 +189,10 @@ TEST_F(EdpTest_Test, Mutators_AllResultTypes) {
 TEST_F(EdpTest_Test, Immutability_TestDefinition) {
   EpdTest::Builder builder;
   EpdTest test = builder
-    .setId("Immutable")
-    .setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-    .setType(TestType::BM)
-    .build();
+                   .setId("Immutable")
+                   .setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+                   .setType(TestType::BM)
+                   .build();
 
   // Test definition accessors are const
   const EpdTest& constTest = test;
@@ -197,11 +200,11 @@ TEST_F(EdpTest_Test, Immutability_TestDefinition) {
   EXPECT_EQ(constTest.getId(), "Immutable");
   EXPECT_EQ(constTest.getType(), TestType::BM);
   // These should all compile (const correctness) - void cast to silence nodiscard warnings
-  (void)constTest.getFen();
-  (void)constTest.getLine();
-  (void)constTest.getTargetMoves();
-  (void)constTest.getMateDepth();
-  (void)constTest.getExpectedMove();
+  (void) constTest.getFen();
+  (void) constTest.getLine();
+  (void) constTest.getTargetMoves();
+  (void) constTest.getMateDepth();
+  (void) constTest.getExpectedMove();
 }
 
 // ============================================================================
@@ -215,14 +218,14 @@ TEST_F(EdpTest_Test, Builder_MethodChaining) {
 
   EpdTest::Builder builder;
   EpdTest test = builder
-    .setId("Chain1")
-    .setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-    .setLine("line1")
-    .setType(TestType::BM)
-    .setTargetMoves(moves)
-    .setMateDepth(DEPTH_NONE)
-    .setExpectedMove(moves[0])
-    .build();
+                   .setId("Chain1")
+                   .setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+                   .setLine("line1")
+                   .setType(TestType::BM)
+                   .setTargetMoves(moves)
+                   .setMateDepth(DEPTH_NONE)
+                   .setExpectedMove(moves[0])
+                   .build();
 
   EXPECT_EQ(test.getId(), "Chain1");
   EXPECT_EQ(test.getType(), TestType::BM);

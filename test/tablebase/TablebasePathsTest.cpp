@@ -26,6 +26,9 @@
 #include <gtest/gtest.h>
 
 using namespace tablebase;
+using namespace chess;
+using namespace config;
+using namespace common;
 
 class TablebasePathsTest : public ::testing::Test {
 public:
@@ -173,12 +176,12 @@ TEST_F(TablebasePathsTest, getTablebaseStatus_autoDetect) {
 // Macro for skipping tests based on tablebase requirements.
 // Must be called directly in the test function (not in a helper).
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define SKIP_IF_TABLEBASES_UNAVAIL                      \
-  {                                                \
-    const std::string path = findTablebasePath();  \
-    if (path.empty()) {                            \
-      GTEST_SKIP() << "Tablebases not available";  \
-    }                                              \
+#define SKIP_IF_TABLEBASES_UNAVAIL                \
+  {                                               \
+    const std::string path = findTablebasePath(); \
+    if (path.empty()) {                           \
+      GTEST_SKIP() << "Tablebases not available"; \
+    }                                             \
   }
 
 
@@ -207,7 +210,7 @@ TEST_F(TablebasePathsIntegrationTest, countTablebaseFiles_countsCorrectly) {
   SKIP_IF_TABLEBASES_UNAVAIL;
 
   const std::string path = findTablebasePath();
-  const auto [wdl, dtz] = countTablebaseFiles(path);
+  const auto [wdl, dtz]  = countTablebaseFiles(path);
 
   EXPECT_GT(wdl, 0) << "Expected at least one WDL file";
   // DTZ files are optional

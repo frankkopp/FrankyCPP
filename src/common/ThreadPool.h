@@ -74,71 +74,75 @@
 
 /// Thread pool for asynchronous task execution with a fixed number of workers.
 /// Tasks are queued and executed in FIFO order by available worker threads.
-class ThreadPool {
-  using Task = std::function<void()>;
+namespace common {
 
-  std::vector<std::thread> mThreads{};
-  std::condition_variable mEventVar{};
-  mutable std::mutex mEventMutex{};
-  bool mStopping = false;
-  bool mStopped = false;
-  std::queue<Task> mTasks{};
+  class ThreadPool {
+    using Task = std::function<void()>;
 
-public:
-  /// Creates a thread pool with the given number of worker threads.
-  /// Threads are started immediately and wait for tasks to be enqueued.
-  /// @param numThreads Number of worker threads to create
-  explicit ThreadPool(std::size_t numThreads);
+    std::vector<std::thread> mThreads{};
+    std::condition_variable mEventVar{};
+    mutable std::mutex mEventMutex{};
+    bool mStopping = false;
+    bool mStopped  = false;
+    std::queue<Task> mTasks{};
 
-  /// Destructor - stops all threads gracefully (completes pending tasks)
-  ~ThreadPool() { stop(); }
+  public:
+    /// Creates a thread pool with the given number of worker threads.
+    /// Threads are started immediately and wait for tasks to be enqueued.
+    /// @param numThreads Number of worker threads to create
+    explicit ThreadPool(std::size_t numThreads);
 
-  // Non-copyable, non-movable (threads cannot be copied/moved)
-  ThreadPool(const ThreadPool&) = delete;
-  ThreadPool& operator=(const ThreadPool&) = delete;
-  ThreadPool(ThreadPool&&) = delete;
-  ThreadPool& operator=(ThreadPool&&) = delete;
+    /// Destructor - stops all threads gracefully (completes pending tasks)
+    ~ThreadPool() { stop(); }
 
-  /// Enqueues a task for execution by a worker thread.
-  /// @param task Callable to execute (typically a lambda)
-  /// @return Future for the task's return value
-  /// @throws std::runtime_error if called after stop()
-  /// @note Thread-safe: can be called from multiple threads concurrently
-  template<class T>
-  auto enqueue(T task) -> std::future<decltype(task())> {
-    auto wrapper = std::make_shared<std::packaged_task<decltype(task())()>>(std::move(task));
-    {
-      std::unique_lock lock{mEventMutex};
-      if (mStopping) {
-        throw std::runtime_error("Cannot enqueue on stopped ThreadPool");
+    // Non-copyable, non-movable (threads cannot be copied/moved)
+    ThreadPool(const ThreadPool&)            = delete;
+    ThreadPool& operator=(const ThreadPool&) = delete;
+    ThreadPool(ThreadPool&&)                 = delete;
+    ThreadPool& operator=(ThreadPool&&)      = delete;
+
+    /// Enqueues a task for execution by a worker thread.
+    /// @param task Callable to execute (typically a lambda)
+    /// @return Future for the task's return value
+    /// @throws std::runtime_error if called after stop()
+    /// @note Thread-safe: can be called from multiple threads concurrently
+    template<class T>
+    auto enqueue(T task) -> std::future<decltype(task())> {
+      auto wrapper = std::make_shared<std::packaged_task<decltype(task())()>>(std::move(task));
+      {
+        std::unique_lock lock{mEventMutex};
+        if (mStopping) {
+          throw std::runtime_error("Cannot enqueue on stopped ThreadPool");
+        }
+        mTasks.emplace([=] { (*wrapper)(); });
       }
-      mTasks.emplace([=] { (*wrapper)(); });
+      mEventVar.notify_one();
+      return wrapper->get_future();
     }
-    mEventVar.notify_one();
-    return wrapper->get_future();
-  }
 
-  /// Returns the number of pending (not yet started) tasks in the queue.
-  /// @return Number of tasks waiting to be executed
-  [[nodiscard]] std::size_t openTasks() const {
-    std::unique_lock lock{mEventMutex};
-    return mTasks.size();
-  }
+    /// Returns the number of pending (not yet started) tasks in the queue.
+    /// @return Number of tasks waiting to be executed
+    [[nodiscard]] std::size_t openTasks() const {
+      std::unique_lock lock{mEventMutex};
+      return mTasks.size();
+    }
 
-  /// Returns whether the pool has been stopped.
-  /// @return true if stop() has been called
-  [[nodiscard]] bool isStopped() const {
-    std::unique_lock lock{mEventMutex};
-    return mStopped;
-  }
+    /// Returns whether the pool has been stopped.
+    /// @return true if stop() has been called
+    [[nodiscard]] bool isStopped() const {
+      std::unique_lock lock{mEventMutex};
+      return mStopped;
+    }
 
-  /// Stops all threads gracefully, completing any pending tasks.
-  /// Safe to call multiple times - subsequent calls are no-ops.
-  /// @note Called automatically by destructor
-  void stop();
+    /// Stops all threads gracefully, completing any pending tasks.
+    /// Safe to call multiple times - subsequent calls are no-ops.
+    /// @note Called automatically by destructor
+    void stop();
 
-private:
-  void start(std::size_t numThreads);
-};
+  private:
+    void start(std::size_t numThreads);
+  };
 
-#endif // FRANKYCPP_THREADPOOL_H
+}// namespace common
+
+#endif// FRANKYCPP_THREADPOOL_H

@@ -19,16 +19,19 @@
 
 #include <random>
 
+#include "Test_Utils.h"
 #include "common/Logging.h"
 #include "engine/TT.h"
 #include "init.h"
-#include "Test_Utils.h"
 
 #include <gtest/gtest.h>
 #include <thread>
 #include <vector>
 using testing::Eq;
 
+using namespace engine;
+using namespace chess;
+using namespace common;
 
 class TT_Test : public ::testing::Test {
 public:
@@ -49,14 +52,14 @@ TEST_F(TT_Test, entrySize) {
   struct EntryTest {
     // sorted by size to achieve smallest struct size
     // using bitfield for smallest size
-    ZobristKey key       = 0;         // 64 bit
-    uint16_t move = 0;         // MOVE_NONE as 16-bit
-    Value eval    = VALUE_NONE;// 16 bit signed
-    Value value   = VALUE_NONE;// 16 bit signed
-    int8_t depth : 7;          // 0-127
-    uint8_t age : 3;           // 0-7
-    ValueType type : 2;        // 4 values
-    bool mateThreat : 1;       // 1-bit bool
+    ZobristKey key = 0;         // 64 bit
+    uint16_t move  = 0;         // MOVE_NONE as 16-bit
+    Value eval     = VALUE_NONE;// 16 bit signed
+    Value value    = VALUE_NONE;// 16 bit signed
+    int8_t depth : 7;           // 0-127
+    uint8_t age : 3;            // 0-7
+    ValueType type : 2;         // 4 values
+    bool mateThreat : 1;        // 1-bit bool
   };
   LOG__INFO(Logger::get().TEST_LOG, "Entry size = {} Byte", sizeof(EntryTest));
 }
@@ -295,11 +298,11 @@ TEST_F(TT_Test, TT_PPS) {
   constexpr int iterations = 100'000'000;
 
   for (int j = 0; j < rounds; ++j) {
-    uint64_t sum     = 0;
-    const ZobristKey key    = randomKey(rg1);
-    const auto depth = static_cast<Depth>(randomDepth(rg1));
-    const auto value = static_cast<Value>(randomValue(rg1));
-    const auto type  = static_cast<ValueType>(randomType(rg1));
+    uint64_t sum         = 0;
+    const ZobristKey key = randomKey(rg1);
+    const auto depth     = static_cast<Depth>(randomDepth(rg1));
+    const auto value     = static_cast<Value>(randomValue(rg1));
+    const auto type      = static_cast<ValueType>(randomType(rg1));
 
     auto start = high_resolution_clock::now();
     // puts
@@ -347,10 +350,10 @@ TEST_F(TT_Test, TT_PPS) {
 TEST_F(TT_Test, ConcurrentPutProbeNoUB) {
   constexpr int NUM_THREADS = 4;
   constexpr int ITERATIONS  = 500'000;
-  constexpr int TT_SIZE_MB  = 4; // small = high collision rate = more contention
+  constexpr int TT_SIZE_MB  = 4;// small = high collision rate = more contention
 
   TT tt(TT_SIZE_MB);
-  tt.setSmpThreads(NUM_THREADS); // disables age-- to avoid bitfield race
+  tt.setSmpThreads(NUM_THREADS);// disables age-- to avoid bitfield race
 
   // Depth and value ranges written by all threads — any probe hit must fall within these.
   constexpr int DEPTH_LO = 1;

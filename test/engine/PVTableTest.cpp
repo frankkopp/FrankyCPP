@@ -21,6 +21,9 @@
 
 #include <gtest/gtest.h>
 
+using namespace engine;
+using namespace chess;
+
 class PVTableTest : public ::testing::Test {
 protected:
   PVTable pv;
@@ -30,7 +33,7 @@ TEST_F(PVTableTest, clearAll) {
   // Fill some entries
   pv(DEPTH_NONE, 0) = Move::normal(SQ_E2, SQ_E4);
   pv(DEPTH_NONE, 1) = Move::normal(SQ_E7, SQ_E5);
-  pv(DEPTH_ONE, 1) = Move::normal(SQ_G1, SQ_F3);
+  pv(DEPTH_ONE, 1)  = Move::normal(SQ_G1, SQ_F3);
 
   pv.clearAll();
 
@@ -44,7 +47,7 @@ TEST_F(PVTableTest, clearAll) {
 TEST_F(PVTableTest, clearPly) {
   pv(DEPTH_NONE, 0) = Move::normal(SQ_E2, SQ_E4);
   pv(DEPTH_NONE, 1) = Move::normal(SQ_E7, SQ_E5);
-  pv(DEPTH_ONE, 1) = Move::normal(SQ_G1, SQ_F3);
+  pv(DEPTH_ONE, 1)  = Move::normal(SQ_G1, SQ_F3);
 
   pv.clear(DEPTH_NONE);
 
@@ -107,7 +110,7 @@ TEST_F(PVTableTest, first) {
   EXPECT_EQ(pv.first(Depth{5}), MOVE_NONE);
 
   pv(DEPTH_NONE, 0) = move1;
-  pv(Depth{5}, 5) = move2;
+  pv(Depth{5}, 5)   = move2;
 
   EXPECT_EQ(pv.first(), move1);
   EXPECT_EQ(pv.first(DEPTH_NONE), move1);
@@ -232,7 +235,7 @@ TEST_F(PVTableTest, sentinelTermination) {
 
   // Build a 2-move PV at ply 0 using proper update() API
   // First update at child ply, then parent copies it
-  pv.update(move2, DEPTH_ONE);// Child ply gets move2
+  pv.update(move2, DEPTH_ONE); // Child ply gets move2
   pv.update(move1, DEPTH_NONE);// Parent copies from child
 
   // Verify sentinel is placed correctly
@@ -252,7 +255,7 @@ TEST_F(PVTableTest, updateReplacesExistingPV) {
   pv.clearAll();
 
   // Initial PV: move1, move3 (built properly via update)
-  pv.update(move3, DEPTH_ONE);// Child first
+  pv.update(move3, DEPTH_ONE); // Child first
   pv.update(move1, DEPTH_NONE);// Parent copies from child
   EXPECT_EQ(pv.length(DEPTH_NONE), 2);
   EXPECT_EQ(pv(DEPTH_NONE, 0), move1);
@@ -289,7 +292,7 @@ TEST_F(PVTableTest, generationCounterPreventsStaleData) {
 
   // === Branch B: Different branch, beta cutoff at ply 3 ===
   // Simulate: search tries d4 d5, then at ply 3 gets beta cutoff (no update)
-  pv.clear(DEPTH_TWO);// Enter ply 2
+  pv.clear(DEPTH_TWO);  // Enter ply 2
   pv.clear(DEPTH_THREE);// Enter ply 3
   // Beta cutoff at ply 3 - NO pv.update() called!
 

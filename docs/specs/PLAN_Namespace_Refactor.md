@@ -2,7 +2,7 @@
 
 **Status:** Not Started  
 **Created:** 2026-03-03  
-**Last Updated:** 2026-03-03  
+**Last Updated:** 2026-03-03 (rev 2)  
 **Author:** Frank Kopp
 
 ---
@@ -18,16 +18,15 @@
 
 ### Phase Status Tracker
 
-| Phase                                       | Status         | Notes                                       |
-|---------------------------------------------|----------------|---------------------------------------------|
-| Phase 1: Engine & Config Layer              | ⬜ Not Started  | Low risk, pure class/struct wrapping        |
-| Phase 2: Common & Book Layers               | ⬜ Not Started  | Low risk, no enum constant fallout          |
-| Phase 3: Arena & EngineTest Layers          | ⬜ Not Started  | Low risk, isolated modules                  |
-| Phase 4: Chess Core Layer                   | ⬜ Not Started  | Medium risk, `using namespace` mitigation   |
-| Phase 5: Chess Types Layer (constants)      | ⬜ Not Started  | Largest scope, see migration strategy       |
-| Phase 6: `enum class` Strengthening         | ⬜ Not Started  | Optional; highest benefit, highest effort   |
+| Phase                                | Status         | Notes                                             |
+|--------------------------------------|----------------|---------------------------------------------------|
+| Phase 1: Engine & Config Layer       | ✅ Complete     | Low risk, pure class/struct wrapping              |
+| Phase 2: Common & Book Layers        | ✅ Complete     | Low risk, no enum constant fallout                |
+| Phase 3: Arena & EngineTest Layers   | ✅ Complete     | `arena::` + `enginetest::` both done              |
+| Phase 4: Chess Domain (Types + Core) | ✅ Complete     | All sub-steps done: types/, chesscore/, fwd.h, consumer using-decls |
+| Phase 5: `enum class` Strengthening  | ⏭️ Skipped     | Plain enums preferred for chess engine ergonomics |
 
-**Status Legend:** ⬜ Not Started | 🔄 In Progress | ✅ Complete | ❌ Blocked
+**Status Legend:** ⬜ Not Started | 🔄 In Progress | ✅ Complete | ⏭️ Skipped | ❌ Blocked
 
 ---
 
@@ -37,18 +36,18 @@
 
 FrankyCPP has a **partially namespaced** codebase. Several utility namespaces already exist and work well:
 
-| Existing Namespace | Location              | Content                               |
-|--------------------|-----------------------|---------------------------------------|
-| `Attacks`          | `types/attacks.h`     | Magic bitboard lookup + `detail` sub  |
-| `Attacks::detail`  | `types/attacks.h`     | Internal helpers (hidden)             |
-| `Bitboards`        | `types/bitboards.h`   | Precomputed bitboard tables           |
-| `Squares`          | `types/square.h`      | Distance tables, square name array    |
-| `Castling`         | `types/castlingrights.h` | Castling rights lookup table       |
-| `MoveShifts`       | `types/movetype.h`    | Bit layout constants for `Move`       |
-| `Values`           | `chesscore/Values.h`  | Piece values, piece-square tables     |
-| `Types`            | `types/init.h`        | Type system init wrapper              |
-| `init`             | `src/init.h`          | Top-level init wrapper                |
-| `tablebase`        | `tablebase/*.cpp/.h`  | Syzygy tablebase probing              |
+| Existing Namespace | Location                 | Content                              |
+|--------------------|--------------------------|--------------------------------------|
+| `Attacks`          | `types/attacks.h`        | Magic bitboard lookup + `detail` sub |
+| `Attacks::detail`  | `types/attacks.h`        | Internal helpers (hidden)            |
+| `Bitboards`        | `types/bitboards.h`      | Precomputed bitboard tables          |
+| `Squares`          | `types/square.h`         | Distance tables, square name array   |
+| `Castling`         | `types/castlingrights.h` | Castling rights lookup table         |
+| `MoveShifts`       | `types/movetype.h`       | Bit layout constants for `Move`      |
+| `Values`           | `chesscore/Values.h`     | Piece values, piece-square tables    |
+| `Types`            | `types/init.h`           | Type system init wrapper             |
+| `init`             | `src/init.h`             | Top-level init wrapper               |
+| `tablebase`        | `tablebase/*.cpp/.h`     | Syzygy tablebase probing             |
 
 Everything else lives in the **global namespace**: all core type classes (`Color`, `Square`, `Piece`, `Move`, `Value`, ...), all enum constants (`WHITE`, `BLACK`, `KING`, `NORTH`, `SQ_E4`, ...), all engine classes (`Search`, `Evaluator`, `TT`, `UciHandler`, ...), config, common utilities, and the opening book.
 
@@ -92,17 +91,17 @@ namespace frankycpp {
 
 Map each source folder directly to a namespace:
 
-| Source Folder      | Namespace          | Content                                  |
-|--------------------|--------------------|------------------------------------------|
-| `src/types/`       | `chess::` *        | Core types, constants, bitboard tables   |
-| `src/chesscore/`   | `chess::` *        | Position, MoveGenerator, History, Perft  |
-| `src/engine/`      | `engine::`         | Search, Evaluator, TT, UciHandler, etc.  |
-| `src/config/`      | `config::`         | ConfigManager, ConfigRegistry, data structs |
-| `src/common/`      | `common::`         | Logger, ThreadPool, CrashHandler         |
-| `src/openingbook/` | `book::`           | OpeningBook, BookEntry                   |
-| `src/tablebase/`   | `tablebase::` ✅   | Already correct — keep as-is            |
-| `src/enginetest/`  | `enginetest::`     | TestSuite, EpdParser                     |
-| `src/engine_arena/`| `arena::`          | ArenaRunner, MatchRunner, etc.           |
+| Source Folder       | Namespace       | Content                                     |
+|---------------------|-----------------|---------------------------------------------|
+| `src/types/`        | `chess::` *     | Core types, constants, bitboard tables      |
+| `src/chesscore/`    | `chess::` *     | Position, MoveGenerator, History, Perft     |
+| `src/engine/`       | `engine::`      | Search, Evaluator, TT, UciHandler, etc.     |
+| `src/config/`       | `config::`      | ConfigManager, ConfigRegistry, data structs |
+| `src/common/`       | `common::`      | Logger, ThreadPool, CrashHandler            |
+| `src/openingbook/`  | `book::`        | OpeningBook, BookEntry                      |
+| `src/tablebase/`    | `tablebase::` ✅ | Already correct — keep as-is                |
+| `src/enginetest/`   | `enginetest::`  | TestSuite, EpdParser                        |
+| `src/engine_arena/` | `arena::`       | ArenaRunner, MatchRunner, etc.              |
 
 \* `types/` and `chesscore/` are intentionally merged into one `chess::` namespace — they are a single cohesive chess domain. The directory split is an implementation detail, not a semantic boundary.
 
@@ -282,16 +281,16 @@ Tests follow the same pattern: add `using namespace chess;` in test `.cpp` files
 
 The existing sub-namespaces under `chess::` will be **lowercased** to match the new scheme:
 
-| Old Name     | New Name         | Action                        |
-|--------------|------------------|-------------------------------|
-| `Bitboards`  | `chess::bb`      | Rename + move inside `chess`  |
-| `Attacks`    | `chess::attacks` | Rename + move inside `chess`  |
-| `Squares`    | `chess::squares` | Rename + move inside `chess`  |
-| `Castling`   | `chess::castling`| Rename + move inside `chess`  |
-| `MoveShifts` | `chess::move_shifts` | Rename + move inside `chess` |
-| `Values`     | `chess::values`  | Rename + move inside `chess`  |
-| `Types`      | (absorbed)       | `Types::init()` → `chess::init()` or kept as `types::init()` |
-| `init`       | (kept as-is)     | Top-level `init::init()` is fine |
+| Old Name     | New Name             | Action                                                       |
+|--------------|----------------------|--------------------------------------------------------------|
+| `Bitboards`  | `chess::bb`          | Rename + move inside `chess`                                 |
+| `Attacks`    | `chess::attacks`     | Rename + move inside `chess`                                 |
+| `Squares`    | `chess::squares`     | Rename + move inside `chess`                                 |
+| `Castling`   | `chess::castling`    | Rename + move inside `chess`                                 |
+| `MoveShifts` | `chess::move_shifts` | Rename + move inside `chess`                                 |
+| `Values`     | `chess::values`      | Rename + move inside `chess`                                 |
+| `Types`      | (absorbed)           | `Types::init()` → `chess::init()` or kept as `types::init()` |
+| `init`       | (kept as-is)         | Top-level `init::init()` is fine                             |
 
 To avoid breaking all call sites during transition, add inline aliases in the old headers:
 
@@ -338,32 +337,88 @@ Steps:
 
 ---
 
-### Phase 3: Arena & EngineTest Layers
+### Phase 3: Arena & EngineTest Layers ✅
 
 **Scope:** `src/engine_arena/`, `src/enginetest/`  
 **Risk:** 🟢 Low — these are standalone executables / test infrastructure  
-**Files affected:** ~20 headers + `.cpp` files  
+**Status:** ✅ Complete (2026-03-03)
 
-Steps:
-1. Wrap `src/engine_arena/` in `namespace arena { }`.
-2. Wrap `src/enginetest/` in `namespace enginetest { }`.
-3. Add `using` declarations as needed in `.cpp` files.
-4. Verify: build arena and test executables.
+**Pre-existing state:** All 8 `src/engine_arena/` headers were already wrapped in `namespace arena { }`.
+
+**Completed:**
+1. ~~Wrap `src/engine_arena/` in `namespace arena { }`.~~ ✅ Already complete.
+2. ✅ Wrapped `src/enginetest/` in `namespace enginetest { }` — covers `TestTypes.h`, `EdpTest.h`, `EpdParser.h`, `TestSuite.h`, `SearchTreeSizeTest.h` (including `SearchTreeSize` sub-namespace).
+3. ✅ Added `using namespace enginetest;` in all `.cpp` implementation files.
+4. ✅ Updated cross-module consumers: `main.cpp`, `TestSuiteRunner.h/.cpp` (arena).
+5. ✅ Updated all 5 enginetest test files with `using namespace enginetest;`.
 
 ---
 
-### Phase 4: Chess Core Layer
+### Phase 4: Chess Domain (Types + Core) — Merged
 
-**Scope:** `src/chesscore/`  
-**Risk:** 🟡 Medium — `Position`, `MoveGenerator` are used everywhere  
-**Files affected:** ~10 headers + `.cpp` files, plus all engine `.cpp` files that include them  
+**Scope:** `src/types/` + `src/chesscore/` — both map to `chess::`  
+**Risk:** 🟡 Medium (mitigated by `using namespace chess;`)  
+**Files affected:** All type headers, all chesscore headers, every `.cpp` file in the project  
 
-Steps:
-1. Wrap `src/chesscore/` headers in `namespace chess { }`.
-2. Add `using namespace chess;` to all `chesscore/*.cpp` files.
-3. In `engine/*.cpp` files: the `using namespace chess;` (from Phase 5 prep) handles `Position`, `MoveGenerator` etc. — but Phase 4 can be done before Phase 5 by adding the `using` to engine `.cpp` files early.
-4. Update forward declarations: `class Position;` → `namespace chess { class Position; }` (or use the common `chess/fwd.h` pattern — see below).
-5. Introduce `src/chesscore/fwd.h` (or `src/chess_fwd.h`) with:
+**Rationale for merging:** `types/` and `chesscore/` share the target namespace `chess::`. Doing them separately creates an awkward intermediate state where `Position` is in `chess::` but `Square`, `Move`, etc. are still global — or vice versa. A single phase avoids that inconsistency.
+
+#### Macro Strategy — `ENABLE_*` Operator Invocations
+
+The `ENABLE_*_OPERATORS_ON` macros in `macros.h` produce free functions (e.g., `operator++`, `operator+`). For ADL to find these operators on types inside `namespace chess {}`, the macro invocations **must be placed inside the `namespace chess {}` block** in each type header. The macros themselves (`macros.h`) remain unchanged — they are preprocessor definitions and cannot be namespaced.
+
+Example — `color.h` after migration:
+```cpp
+namespace chess {
+  class Color { ... };
+
+  inline constexpr Color WHITE{0};
+  inline constexpr Color BLACK{1};
+  inline constexpr Color NOCOLOR{2};
+
+  constexpr Color operator~(const Color c) { return Color{(c.value() ^ 1U)}; }
+  ENABLE_INCR_OPERATORS_ON(Color)     // ← inside namespace chess for ADL
+  ENABLE_OSTREAM_OPERATOR_AS_INT_ON(Color)
+} // namespace chess
+
+// std::formatter specialization — outside namespace chess (lives in namespace std)
+ENABLE_FORMATTER_AS_CHAR_ON(chess::Color);
+```
+
+#### Macro Strategy — `ENABLE_FORMATTER_*` Specializations
+
+`ENABLE_FORMATTER_*_ON` macros produce `template<> struct std::formatter<T>` — these must live **outside** `namespace chess {}` (they are `namespace std` specializations). The type argument must be fully qualified.
+
+**Approach:** Move formatter macro invocations outside the namespace block and qualify the type with `chess::`:
+```cpp
+} // namespace chess
+ENABLE_FORMATTER_AS_STRING_VIEW_ON(chess::Square);
+ENABLE_FORMATTER_AS_INT_ON(chess::Value);
+```
+
+No new wrapper macros needed — explicit `chess::` prefix is simpler and more transparent.
+
+#### Steps
+
+1. **Types first** — Wrap each type header in `namespace chess { }`:
+   - `color.h`, `file.h`, `rank.h`, `square.h`, `direction.h`, `orientation.h`
+   - `bitboard.h`, `bitboards.h`
+   - `piece.h`, `piecetype.h`, `value.h`, `depth.h`, `score.h`
+   - `move.h`, `movetype.h`, `staticmovelist.h`
+   - `castlingrights.h`, `zobristkey.h`
+   - `globals.h` constants (`START_POSITION_FEN`, `MAX_DEPTH`, etc.)
+   - `attacks.h`, `attacks.cpp`
+2. **Move `ENABLE_*` operator macro invocations inside `namespace chess {}`** in each type header. Move `ENABLE_FORMATTER_*_ON` invocations *outside* the namespace block with `chess::` qualified type name.
+3. **Chesscore** — Wrap `src/chesscore/` headers in `namespace chess { }`:
+   - `Position.h/.cpp`, `MoveGenerator.h/.cpp`, `History.h/.cpp`
+   - `MoveUtils.h/.cpp`, `Perft.h/.cpp`, `Zobrist.h`, `Values.h`
+4. Rename sub-namespaces as per the rename table (`Bitboards` → `chess::bb`, etc.).
+5. Add compatibility aliases (`namespace Bitboards = chess::bb;`) and deprecate over a few sessions.
+6. Add `using namespace chess;` to all `.cpp` files that use chess constants directly.
+7. `types/types.h` (the aggregate include) adds `using namespace chess;` at the bottom — this propagates the `using` to all legacy code that does `#include "types/types.h"`.
+
+   > ⚠️ **Note:** Putting `using namespace` in a header is normally a bad practice. Here it is acceptable as a **transitional measure only** in the aggregate convenience header `types.h`, clearly commented. The goal is to remove it once all `.cpp` files have their own explicit `using` and the header usage is cleaned up.
+
+8. Introduce `src/chesscore/fwd.h` with forward declarations:
    ```cpp
    namespace chess {
        class Position;
@@ -372,96 +427,51 @@ Steps:
        // etc.
    }
    ```
-   Replace bare forward declarations in engine headers with this include.
-6. Verify: build, run all tests.
+   Replace bare forward declarations in engine headers (`UciHandler.h`, `See.h`, `Perft.h`, `MoveUtils.h`, `MoveGenerator.h`) with `#include "chesscore/fwd.h"`.
+9. Update `boost::serialization` specialization in `move.h` — fully qualify `chess::Move`.
+10. Verify: build, run all tests, run perft suite.
 
 ---
 
-### Phase 5: Chess Types Layer
+### Phase 5: `enum class` Strengthening — ⏭️ Skipped
 
-**Scope:** `src/types/`  
-**Risk:** 🟡 Medium (mitigated by `using namespace chess;`)  
-**Files affected:** All type headers + every `.cpp` file in the project  
-
-Steps:
-1. Wrap each type header in `namespace chess { }`:
-   - `color.h`, `file.h`, `rank.h`, `square.h`, `direction.h`
-   - `bitboard.h`, `bitboards.h`
-   - `piece.h`, `piecetype.h`, `value.h`, `depth.h`, `score.h`
-   - `move.h`, `movetype.h`, `staticmovelist.h`
-   - `castlingrights.h`, `zobristkey.h`
-   - `globals.h` constants (`START_POSITION_FEN`, `MAX_DEPTH`, etc.)
-2. Rename sub-namespaces as per the rename table above (`Bitboards` → `chess::bb`, etc.).
-3. Add compatibility aliases (`namespace Bitboards = chess::bb;`) in the old locations and deprecate over a few sessions.
-4. Add `using namespace chess;` to all `.cpp` files that use chess constants directly.
-5. `types/types.h` (the aggregate include) adds `using namespace chess;` at the bottom — this propagates the `using` to all legacy code that does `#include "types/types.h"`.
-
-   > ⚠️ **Note:** Putting `using namespace` in a header is normally a bad practice. Here it is acceptable as a **transitional measure only** in the aggregate convenience header `types.h`, clearly commented. The goal is to remove it once all `.cpp` files have their own explicit `using` and the header usage is cleaned up.
-
-6. Update `boost::serialization` specialization in `move.h` — it lives in `namespace boost::serialization`, which references `chess::Move`. No change needed if `Move` is fully qualified in the specialization.
-7. Verify: build, run all tests, run perft suite.
-
----
-
-### Phase 6: `enum class` Strengthening (Optional)
-
-**Scope:** `src/types/` — bare enums that are now inside `chess::`  
-**Risk:** 🔴 High — changes all usage sites; disables `operator int()` implicit conversion  
-**Files affected:** Nearly all `.cpp` files  
-
-Candidates for conversion to `enum class`:
-
-| Current            | Proposed                   | Difficulty | Notes                                |
-|--------------------|----------------------------|------------|--------------------------------------|
-| `enum PieceType`   | `enum class PieceType`     | High       | Used in arithmetic, array indexing   |
-| `enum MoveType`    | `enum class MoveType`      | Medium     | Pre-shifted values; used in `Move`   |
-| `enum Depth`       | `enum class Depth`         | Medium     | Has `ENABLE_FULL_OPERATORS_ON` macro |
-| `enum Piece`       | `enum class Piece`         | High       | Used with `operator int()` widely    |
-
-`Color`, `File`, `Rank`, `Square`, `Direction`, `Value`, `Bitboard`, `CastlingRights` are already **classes** — they don't need this treatment.
-
-`enum class` provides:
-- No implicit conversion to `int` — forces intent at call sites
-- Scoped constants: `PieceType::KING` instead of global `KING`
-- Enables removing `ENABLE_*_OPERATORS_ON` macros in favour of explicit overloads
-
-This phase can be done **incrementally per enum** and is fully independent of Phases 1–5.
+**Decision:** Skipped. Plain enums are idiomatic and practical in a chess engine — `PieceType`, `Piece`, `Depth`, and `MoveType` are used heavily in arithmetic, array indexing, and bit manipulation. Converting to `enum class` would require explicit casts at hundreds of call sites, adding boilerplate without meaningful safety gain. The existing class wrappers (`Color`, `Square`, `File`, `Rank`, etc.) already provide type safety where it matters most.
 
 ---
 
 ## Files That Do Not Change
 
-| File/Category                | Reason                                                    |
-|------------------------------|-----------------------------------------------------------|
-| `src/types/macros.h`         | Preprocessor macros cannot be namespaced                  |
-| `src/common/Logging.h` macros| `LOG__INFO` etc. are preprocessor macros                  |
-| `fathom/` (Fathom C library) | External C code — no namespace change                     |
-| `CMakeLists.txt`             | Build system — unaffected                                 |
-| `config/*.yaml`              | YAML config files — unaffected                            |
-| Header guards (`#ifndef`)    | Stay as `FRANKYCPP_*` — unrelated to runtime namespaces   |
+| File/Category                 | Reason                                                  |
+|-------------------------------|---------------------------------------------------------|
+| `src/types/macros.h`          | Preprocessor macros cannot be namespaced                |
+| `src/common/Logging.h` macros | `LOG__INFO` etc. are preprocessor macros                |
+| `fathom/` (Fathom C library)  | External C code — no namespace change                   |
+| `CMakeLists.txt`              | Build system — unaffected                               |
+| `config/*.yaml`               | YAML config files — unaffected                          |
+| Header guards (`#ifndef`)     | Stay as `FRANKYCPP_*` — unrelated to runtime namespaces |
 
 ---
 
 ## Testing Strategy
 
 - After each phase: run the full test suite (`FrankyCPP_v*_Test.exe`).
-- After Phase 5: run a perft suite to confirm `Position` / `MoveGenerator` behaviour is unchanged.
-- After Phase 5: run a short benchmark and compare NPS — namespaces are compile-time and should have zero runtime impact.
+- After Phase 4: run a perft suite to confirm `Position` / `MoveGenerator` behaviour is unchanged.
+- After Phase 4: run a short benchmark and compare NPS — namespaces are compile-time and should have zero runtime impact.
 - Compile with both MSVC (primary) and clang (if available) to catch ADL differences.
 
 ---
 
 ## Risk Register
 
-| Risk                                          | Likelihood | Impact | Mitigation                                              |
-|-----------------------------------------------|------------|--------|---------------------------------------------------------|
-| ADL breaks `operator<<` for chess types       | Medium     | Low    | Operators defined in `chess::` — ADL finds them         |
-| `boost::serialization` specialization breaks  | Low        | Medium | Fully qualify `chess::Move` in the specialization       |
-| `using namespace chess;` in `types.h` leaks  | Medium     | Low    | Document as transitional; remove in cleanup pass        |
-| Test files not updated — compile errors       | High       | Low    | Add `using namespace chess;` to test `.cpp` files       |
-| Macro expansion issues with namespaced types  | Low        | Low    | Macros use unqualified types; `using` declarations fix  |
-| `FRIEND_TEST` macros in chess classes         | Low        | Low    | `FRIEND_TEST` uses class names, not namespaces          |
-| Phase dependency: Phase 4 uses Phase 5 types | Medium     | Medium | Do Phase 5 prep (`using namespace chess;` in engine) before Phase 4 |
+| Risk                                                   | Likelihood | Impact | Mitigation                                                                     |
+|--------------------------------------------------------|------------|--------|--------------------------------------------------------------------------------|
+| ADL breaks `operator<<` for chess types                | Medium     | Low    | Operators defined in `chess::` — ADL finds them                                |
+| `ENABLE_*` operator macros outside `chess::` break ADL | High       | High   | Place all operator macro invocations **inside** `namespace chess {}` blocks    |
+| `ENABLE_FORMATTER_*` macros need qualified types       | High       | Medium | Move formatter macro invocations outside namespace block with `chess::` prefix |
+| `boost::serialization` specialization breaks           | Low        | Medium | Fully qualify `chess::Move` in the specialization                              |
+| `using namespace chess;` in `types.h` leaks            | Medium     | Low    | Document as transitional; remove in cleanup pass                               |
+| Test files not updated — compile errors                | High       | Low    | Add `using namespace chess;` to test `.cpp` files                              |
+| `FRIEND_TEST` macros in chess classes                  | Low        | Low    | `FRIEND_TEST` uses class names, not namespaces                                 |
 
 ---
 

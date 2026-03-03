@@ -33,15 +33,16 @@
 //
 //=============================================================================
 
+#include "TestEnginePath.h"
+#include "Test_Utils.h"
 #include "engine_arena/UCIEngine.h"
 #include "init.h"
-#include "Test_Utils.h"
-#include "TestEnginePath.h"
 
-#include <gtest/gtest.h>
 #include <filesystem>
+#include <gtest/gtest.h>
 
 using namespace arena;
+using namespace chess;
 
 
 class UCIEngineOptionsTest : public ::testing::Test {
@@ -69,7 +70,7 @@ protected:
 
 TEST_F(UCIEngineOptionsTest, SingleOption_SingleWordName) {
   UCIEngine engine(testEnginePath);
-  engine.setDebugMode(true); // See the UCI communication
+  engine.setDebugMode(true);// See the UCI communication
 
   // Test with single-word option name
   EXPECT_NO_THROW({
@@ -297,7 +298,7 @@ TEST_F(UCIEngineOptionsTest, InvalidFormat_EmptyNameOrValue) {
   // Invalid format with empty name or value
   EXPECT_NO_THROW({
     engine.setUciOptions("=256"); // Empty name
-    engine.setUciOptions("Hash="); // Empty value
+    engine.setUciOptions("Hash=");// Empty value
   });
 
   SUCCEED();
@@ -355,8 +356,7 @@ TEST_F(UCIEngineOptionsTest, LongOptionString) {
       "Hash=256; "
       "OwnBook=false; "
       "Ponder=false; "
-      "Move Overhead=100"
-    );
+      "Move Overhead=100");
   });
 
   // Verify all options in the long string were applied
@@ -501,8 +501,7 @@ TEST_F(UCIEngineOptionsTest, FrankyCPP_RealWorldConfig) {
       "OwnBook=false; "
       "Hash=512; "
       "Ponder=false; "
-      "Move Overhead=50"
-    );
+      "Move Overhead=50");
   });
 
   // These should send:

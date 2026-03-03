@@ -22,6 +22,8 @@
 #include <gtest/gtest.h>
 #include <yaml-cpp/yaml.h>
 
+using namespace config;
+
 namespace {
 
   // Smoke test: loads config/search.yaml and checks that file is present and parseable.

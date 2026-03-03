@@ -28,6 +28,9 @@
 #include "common/Logging.h"
 #include "types/globals.h"
 
+using namespace config;
+using namespace common;
+
 
 ConfigManager& ConfigManager::instance() {
   static ConfigManager inst;

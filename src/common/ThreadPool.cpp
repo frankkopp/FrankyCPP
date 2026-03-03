@@ -19,6 +19,8 @@
 
 #include "ThreadPool.h"
 
+using namespace common;
+
 ThreadPool::ThreadPool(const std::size_t numThreads) {
   start(numThreads);
 }
@@ -35,7 +37,7 @@ void ThreadPool::start(const std::size_t numThreads) {
     mThreads.emplace_back([=, this] {
       while (true) {
         Task task;
-        { // lock block
+        {// lock block
           std::unique_lock<std::mutex> lock{mEventMutex};
           mEventVar.wait(lock, [=, this] { return mStopping || !mTasks.empty(); });
           if (mStopping && mTasks.empty()) {
@@ -56,7 +58,7 @@ void ThreadPool::stop() {
   {
     std::unique_lock lock{mEventMutex};
     if (mStopped) {
-      return;  // Already stopped, nothing to do
+      return;// Already stopped, nothing to do
     }
     mStopping = true;
   }

@@ -26,6 +26,8 @@
 #include <gtest/gtest.h>
 using testing::Eq;
 
+using namespace common;
+
 class TimeUtilsTest : public ::testing::Test {
 public:
   static void SetUpTestSuite() {

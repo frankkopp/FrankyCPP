@@ -29,6 +29,7 @@
 #include "config/ConfigManager.h"
 #include "config/ConfigPaths.h"
 
+using namespace config;
 
 namespace {
 
@@ -97,7 +98,7 @@ namespace {
   }
 
   // Description: Checks that malformed YAML at default paths causes loadFromFiles to return false and roll back to the prior state.
-#ifndef FRANKYCPP_PRODUCTION // In production, only essential config mutations (MOVE_OVERHEAD_MS) can be verified, so this test is dev-only.
+#ifndef FRANKYCPP_PRODUCTION// In production, only essential config mutations (MOVE_OVERHEAD_MS) can be verified, so this test is dev-only.
   TEST(ConfigAutoInitTests, DefaultPathsMalformedRollsBackAndReturnsFalse) {
     // Prepare temp directory with malformed YAML files in ./config
     const auto tmp = makeTempDir("malformed");
@@ -133,7 +134,7 @@ namespace {
 #endif
 
   // Description: Ensures resetToDefaults restores values captured at initial auto-load, even after loads in other directories.
-#ifndef FRANKYCPP_PRODUCTION // In production, only essential config mutations (MOVE_OVERHEAD_MS) can be verified, so this test is dev-only.
+#ifndef FRANKYCPP_PRODUCTION// In production, only essential config mutations (MOVE_OVERHEAD_MS) can be verified, so this test is dev-only.
   TEST(ConfigAutoInitTests, ResetReturnsToInitiallyLoadedDefaults) {
     // Ensure we have repo YAML configs in current dir
     ASSERT_TRUE(std::filesystem::exists(ConfigPaths::SearchYaml()));
@@ -145,9 +146,9 @@ namespace {
     mgr.resetToDefaults();
 
     // Change some values
-    mgr.applyOverrides([](SearchConfigData& s, EvalConfigData& e){
-        s.TT_SIZE_MB = 999;
-        e.TEMPO = 1;
+    mgr.applyOverrides([](SearchConfigData& s, EvalConfigData& e) {
+      s.TT_SIZE_MB = 999;
+      e.TEMPO      = 1;
     });
 
     // Reset should restore the initially loaded YAML values (64 and 34 from repo configs)
@@ -159,9 +160,9 @@ namespace {
     {
       const auto tmp = makeTempDir("reset_defaults_preserved");
       ScopedCwd cwd(tmp);
-        ASSERT_TRUE(mgr.loadFromFiles());
-        // In the absence of YAML, fallback values apply (TT_SIZE_MB defaults to hard-coded 64, TEMPO to 34 in current repo)
-        // but crucially, defaults stored at startup should remain unchanged.
+      ASSERT_TRUE(mgr.loadFromFiles());
+      // In the absence of YAML, fallback values apply (TT_SIZE_MB defaults to hard-coded 64, TEMPO to 34 in current repo)
+      // but crucially, defaults stored at startup should remain unchanged.
     }
 
     // After coming back, reset should still restore to the initially loaded YAML values

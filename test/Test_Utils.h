@@ -22,8 +22,8 @@
 
 #include "common/misc.h"
 
-#include <iostream>
 #include <gtest/gtest.h>
+#include <iostream>
 
 /**
  * @brief Cross-platform safe environment variable exists check
@@ -31,7 +31,7 @@
  * @return true if the variable exists and is non-empty, false otherwise
  */
 inline bool getEnvVarExists(const char* varName) {
-  return !getEnv(varName).empty();
+  return !common::getEnv(varName).empty();
 }
 
 /**
@@ -59,4 +59,4 @@ inline bool isBulkRun() {
   return cond;
 }
 
-#endif // FRANKYCPP_TEST_UTILS_H
+#endif// FRANKYCPP_TEST_UTILS_H

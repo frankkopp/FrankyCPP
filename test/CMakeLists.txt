@@ -90,9 +90,9 @@ add_executable(
 # Mirrors the exclusion of SearchTreeSizeTest.cpp from FrankyCPPlib in src/CMakeLists.txt.
 if (NOT FRANKYCPP_PRODUCTION)
     target_sources(${testExeName} PRIVATE
-        enginetest/SearchTreeSizeTest_Test.cpp
+            enginetest/SearchTreeSizeTest_Test.cpp
     )
-endif()
+endif ()
 
 
 # Ensure unit tests explicitly request C++20
@@ -101,7 +101,7 @@ target_compile_features(${testExeName} PRIVATE cxx_std_20)
 # Enable Unity/Jumbo build opt-in
 if (ENABLE_UNITY_BUILD)
     set_target_properties(${testExeName} PROPERTIES UNITY_BUILD ON)
-endif()
+endif ()
 
 # Ensure access to generated headers (e.g., version.h) and local test headers
 target_include_directories(
@@ -114,7 +114,7 @@ target_include_directories(
 # STRICT_WARNINGS for CI: treat warnings as errors when enabled
 if (MSVC AND STRICT_WARNINGS)
     target_compile_options(${testExeName} PRIVATE /WX)
-endif()
+endif ()
 
 # Link against project lib and vcpkg-provided GoogleTest targets
 # Also link yaml-cpp for config YAML parsing in smoke test
@@ -144,13 +144,13 @@ add_dependencies(${testExeName} ${mainExeName})
 # Note: gtest_discover_tests runs the executable at build time to enumerate tests.
 # This fails with TSAN on WSL2 due to ASLR memory mapping issues.
 # When TSAN is enabled, we skip auto-discovery and run tests manually.
-if(ENABLE_TSAN)
+if (ENABLE_TSAN)
     message(STATUS "TSAN enabled: Skipping gtest_discover_tests (run tests manually)")
     message(STATUS "  To run tests: setarch \$(uname -m) -R ./test/${testExeName}")
     message(STATUS "  Or: sudo sysctl -w kernel.randomize_va_space=0 && ./test/${testExeName}")
     # Add a simple CTest target that reminds user how to run
     add_test(NAME TSAN_RUN_MANUALLY
-             COMMAND ${CMAKE_COMMAND} -E echo "Run TSAN tests manually: setarch \$(uname -m) -R ./test/${testExeName}")
-else()
+            COMMAND ${CMAKE_COMMAND} -E echo "Run TSAN tests manually: setarch \$(uname -m) -R ./test/${testExeName}")
+else ()
     gtest_discover_tests(${testExeName})
-endif()
+endif ()

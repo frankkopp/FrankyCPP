@@ -49,11 +49,13 @@
 
 #include <cstdint>
 
-enum ValueType : uint_fast8_t {
-  NONE  = 0,
-  EXACT = 1,
-  ALPHA = 2,
-  BETA  = 3,
-};
+namespace chess {
+  enum ValueType : uint_fast8_t {
+    NONE  = 0,
+    EXACT = 1,
+    ALPHA = 2,
+    BETA  = 3,
+  };
+}// namespace chess
 
-#endif//FRANKYCPP_VALUETYPE_H
+#endif// FRANKYCPP_VALUETYPE_H

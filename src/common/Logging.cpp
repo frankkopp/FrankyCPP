@@ -21,6 +21,8 @@
 #include <chrono>
 #include <iostream>
 
+using namespace common;
+
 // BOOST program options
 #include "boost/program_options.hpp"
 namespace po = boost::program_options;
@@ -56,9 +58,9 @@ static void configure_logger(const std::shared_ptr<spdlog::logger>& lg,
 
 // Convert user text (e.g. "info", "warn", "trace") into a spdlog level.
 // Uses spdlog::level::from_str to stay aligned with accepted aliases; falls back to 'warn' on unknown.
-spdlog::level::level_enum Logger::parseLevel(const std::string_view s) {
-  const auto lvl = spdlog::level::from_str(std::string{s});
-  if (lvl == spdlog::level::off && s != "off") {
+spdlog::level::level_enum Logger::parseLevel(const std::string_view level) {
+  const auto lvl = spdlog::level::from_str(std::string{level});
+  if (lvl == spdlog::level::off && level != "off") {
     return spdlog::level::warn;
   }
   return lvl;
@@ -66,25 +68,25 @@ spdlog::level::level_enum Logger::parseLevel(const std::string_view s) {
 
 // Set spdlog's global level. This affects default filtering for all loggers not having explicit levels.
 // Optionally, we also make warn+ flush immediately to bound data loss on crashes.
-void Logger::setGlobalLevel(const spdlog::level::level_enum lvl) {
-  fprintln("Setting global log level to {}", spdlog::level::to_string_view(lvl));
-  spdlog::set_level(lvl);
+void Logger::setGlobalLevel(const spdlog::level::level_enum level) {
+  fprintln("Setting global log level to {}", spdlog::level::to_string_view(level));
+  spdlog::set_level(level);
   spdlog::apply_all([](const std::shared_ptr<spdlog::logger>& lg) {
     if (lg) lg->flush_on(spdlog::level::warn);
   });
 }
 
 // Set a particular logger's level when you already have the pointer.
-void Logger::setLoggerLevel(const std::shared_ptr<spdlog::logger>& lg, const spdlog::level::level_enum lvl) {
-  fprintln("Setting logger level to {} for logger {}", spdlog::level::to_string_view(lvl), lg ? lg->name() : "<null>");
-  if (lg) lg->set_level(lvl);
+void Logger::setLoggerLevel(const std::shared_ptr<spdlog::logger>& logger, const spdlog::level::level_enum level) {
+  fprintln("Setting logger level to {} for logger {}", spdlog::level::to_string_view(level), logger ? logger->name() : "<null>");
+  if (logger) logger->set_level(level);
 }
 
 // Look up a logger by name (spdlog::get) and delegate to setLoggerLevel.
-void Logger::setLoggerLevelByName(const std::string_view name, const spdlog::level::level_enum lvl) {
+void Logger::setLoggerLevelByName(const std::string_view name, const spdlog::level::level_enum level) {
   if (name.empty()) return;
   if (const auto lg = spdlog::get(std::string{name})) {
-    setLoggerLevel(lg, lvl);
+    setLoggerLevel(lg, level);
   }
 }
 

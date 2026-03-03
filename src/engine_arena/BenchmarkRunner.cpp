@@ -29,208 +29,210 @@
 
 namespace arena {
 
-BenchmarkRunner::BenchmarkRunner(const BenchmarkConfig& config, const std::string& arenaVersion)
-    : config_(config), arenaVersion_(arenaVersion) {}
+  using namespace engine;
+  using namespace chess;
 
-BenchmarkResult BenchmarkRunner::run() const {
-  // Check if we should use internal or external engine
-  if (config_.enginePath.empty()) {
-    return runInternal();
+  BenchmarkRunner::BenchmarkRunner(const BenchmarkConfig& config, const std::string& arenaVersion)
+      : config_(config), arenaVersion_(arenaVersion) {}
+
+  BenchmarkResult BenchmarkRunner::run() const {
+    // Check if we should use internal or external engine
+    if (config_.enginePath.empty()) {
+      return runInternal();
+    }
+    return runExternal();
   }
-  return runExternal();
-}
 
-BenchmarkResult BenchmarkRunner::runInternal() const {
-  std::cerr << "Using internal engine\n";
+  BenchmarkResult BenchmarkRunner::runInternal() const {
+    std::cerr << "Using internal engine\n";
 
-  // Configure the benchmark
-  engine::BenchConfig benchConfig;
-  benchConfig.depth = config_.depth;
-  benchConfig.hashSizeMB = config_.hashSizeMB;
-  benchConfig.threads = config_.threads;
+    // Configure the benchmark
+    engine::BenchConfig benchConfig;
+    benchConfig.depth      = config_.depth;
+    benchConfig.hashSizeMB = config_.hashSizeMB;
+    benchConfig.threads    = config_.threads;
 
-  // Run the benchmark
-  const auto engineResult = engine::Benchmark::run(benchConfig);
+    // Run the benchmark
+    const auto engineResult = engine::Benchmark::run(benchConfig);
 
-  // Convert to arena result format
-  BenchmarkResult result;
-  result.arenaVersion = arenaVersion_;
-  result.timestamp = format_now("%Y-%m-%dT%H:%M:%S");
-  result.engineName = "FrankyCPP";
-  result.engineVersion = config_.engineVersion;
-  result.enginePath = "";  // Internal
-  result.depth = config_.depth;
-  result.hashSizeMB = config_.hashSizeMB;
-  result.threads = config_.threads;
-  result.positions = engineResult.positionsRun;
-  result.totalNodes = engineResult.totalNodes;
-  result.totalTimeMs = engineResult.totalTime.count();
-  result.nps = static_cast<uint64_t>(engineResult.nps);
-  result.notes = config_.notes;
+    // Convert to arena result format
+    BenchmarkResult result;
+    result.arenaVersion  = arenaVersion_;
+    result.timestamp     = format_now("%Y-%m-%dT%H:%M:%S");
+    result.engineName    = "FrankyCPP";
+    result.engineVersion = config_.engineVersion;
+    result.enginePath    = "";// Internal
+    result.depth         = config_.depth;
+    result.hashSizeMB    = config_.hashSizeMB;
+    result.threads       = config_.threads;
+    result.positions     = engineResult.positionsRun;
+    result.totalNodes    = engineResult.totalNodes;
+    result.totalTimeMs   = engineResult.totalTime.count();
+    result.nps           = static_cast<uint64_t>(engineResult.nps);
+    result.notes         = config_.notes;
 
-  return result;
-}
+    return result;
+  }
 
-BenchmarkResult BenchmarkRunner::runExternal() const {
-  std::cerr << "Using external engine: " << config_.enginePath << "\n";
+  BenchmarkResult BenchmarkRunner::runExternal() const {
+    std::cerr << "Using external engine: " << config_.enginePath << "\n";
 
-  BenchmarkResult result;
-  result.arenaVersion = arenaVersion_;
-  result.timestamp = format_now("%Y-%m-%dT%H:%M:%S");
-  result.engineVersion = config_.engineVersion;
-  result.enginePath = config_.enginePath;
-  result.depth = config_.depth;
-  result.hashSizeMB = config_.hashSizeMB;
-  result.threads = config_.threads;
-  result.notes = config_.notes;
+    BenchmarkResult result;
+    result.arenaVersion  = arenaVersion_;
+    result.timestamp     = format_now("%Y-%m-%dT%H:%M:%S");
+    result.engineVersion = config_.engineVersion;
+    result.enginePath    = config_.enginePath;
+    result.depth         = config_.depth;
+    result.hashSizeMB    = config_.hashSizeMB;
+    result.threads       = config_.threads;
+    result.notes         = config_.notes;
 
-  try {
-    // Start external engine with Hash and Threads options
-    const std::string uciOptions = "Hash=" + std::to_string(config_.hashSizeMB) +
-                                   "; Threads=" + std::to_string(config_.threads);
+    try {
+      // Start external engine with Hash and Threads options
+      const std::string uciOptions = "Hash=" + std::to_string(config_.hashSizeMB) + "; Threads=" + std::to_string(config_.threads);
 
-    UCIEngine engine(config_.enginePath, config_.commandLineArgs, false, uciOptions);
-    result.engineName = "External";  // Could extract from UCI "id name" response
+      UCIEngine engine(config_.enginePath, config_.commandLineArgs, false, uciOptions);
+      result.engineName = "External";// Could extract from UCI "id name" response
 
-    uint64_t totalNodes = 0;
-    int64_t totalSearchTimeMs = 0;  // Sum of actual search times only
-    int positionsRun = 0;
+      uint64_t totalNodes       = 0;
+      int64_t totalSearchTimeMs = 0;// Sum of actual search times only
+      int positionsRun          = 0;
 
-    // Run through all benchmark positions
-    for (std::size_t i = 0; i < benchmark::BENCH_POSITION_COUNT; ++i) {
-      const auto& fen = benchmark::BENCH_FENS[i];
+      // Run through all benchmark positions
+      for (std::size_t i = 0; i < benchmark::BENCH_POSITION_COUNT; ++i) {
+        const auto& fen = benchmark::BENCH_FENS[i];
 
-      // Progress indicator
-      std::cerr << "\rPosition " << (i + 1) << "/" << benchmark::BENCH_POSITION_COUNT << std::flush;
+        // Progress indicator
+        std::cerr << "\rPosition " << (i + 1) << "/" << benchmark::BENCH_POSITION_COUNT << std::flush;
 
-      // Clear engine state before each position for fair, independent measurement
-      // This is done BEFORE timing starts so TT clearing doesn't affect NPS
-      engine.newGame();
+        // Clear engine state before each position for fair, independent measurement
+        // This is done BEFORE timing starts so TT clearing doesn't affect NPS
+        engine.newGame();
 
-      // Set position (also before timing - this is UCI overhead, not search)
-      if (!engine.setPosition(std::string{fen})) {
-        std::cerr << "\nWarning: Failed to set position " << (i + 1) << ": " << fen << "\n";
-        continue;
+        // Set position (also before timing - this is UCI overhead, not search)
+        if (!engine.setPosition(std::string{fen})) {
+          std::cerr << "\nWarning: Failed to set position " << (i + 1) << ": " << fen << "\n";
+          continue;
+        }
+
+        // Measure only the search time, not UCI overhead or TT clearing
+        const auto searchStart = steady_clock::now();
+
+        // Search with depth limit (no time limit for benchmark consistency)
+        // Use a generous time limit that should never be hit
+        UCISearchResult searchResult = engine.search(milliseconds{300000}, static_cast<Depth>(config_.depth));
+
+        const auto searchEnd  = steady_clock::now();
+        const auto searchTime = std::chrono::duration_cast<milliseconds>(searchEnd - searchStart);
+
+        if (searchResult.bestMove.empty()) {
+          std::cerr << "\nWarning: No best move for position " << (i + 1) << "\n";
+          continue;
+        }
+
+        totalNodes += searchResult.nodes;
+        totalSearchTimeMs += searchTime.count();
+        positionsRun++;
       }
 
-      // Measure only the search time, not UCI overhead or TT clearing
-      const auto searchStart = steady_clock::now();
+      std::cerr << "\n";// New line after progress
 
-      // Search with depth limit (no time limit for benchmark consistency)
-      // Use a generous time limit that should never be hit
-      UCISearchResult searchResult = engine.search(milliseconds{300000}, static_cast<Depth>(config_.depth));
+      result.positions   = positionsRun;
+      result.totalNodes  = totalNodes;
+      result.totalTimeMs = totalSearchTimeMs;// Only search time, no UCI overhead
 
-      const auto searchEnd = steady_clock::now();
-      const auto searchTime = std::chrono::duration_cast<milliseconds>(searchEnd - searchStart);
-
-      if (searchResult.bestMove.empty()) {
-        std::cerr << "\nWarning: No best move for position " << (i + 1) << "\n";
-        continue;
+      // Calculate NPS
+      if (result.totalTimeMs > 0) {
+        result.nps = static_cast<uint64_t>(
+          static_cast<double>(result.totalNodes) * 1000.0 / static_cast<double>(result.totalTimeMs));
       }
 
-      totalNodes += searchResult.nodes;
-      totalSearchTimeMs += searchTime.count();
-      positionsRun++;
+    } catch (const std::exception& e) {
+      std::cerr << "Error running external benchmark: " << e.what() << "\n";
+      result.notes = "ERROR: " + std::string(e.what());
     }
 
-    std::cerr << "\n";  // New line after progress
+    return result;
+  }
 
-    result.positions = positionsRun;
-    result.totalNodes = totalNodes;
-    result.totalTimeMs = totalSearchTimeMs;  // Only search time, no UCI overhead
-
-    // Calculate NPS
-    if (result.totalTimeMs > 0) {
-      result.nps = static_cast<uint64_t>(
-        static_cast<double>(result.totalNodes) * 1000.0 / static_cast<double>(result.totalTimeMs));
+  void BenchmarkRunner::printResultsTable(const std::vector<BenchmarkResult>& results) {
+    if (results.empty()) {
+      std::cout << "No benchmark results to display.\n";
+      return;
     }
 
-  } catch (const std::exception& e) {
-    std::cerr << "Error running external benchmark: " << e.what() << "\n";
-    result.notes = "ERROR: " + std::string(e.what());
-  }
+    // Print header
+    std::cout << "\n";
+    std::cout << "=================================================================================================\n";
+    std::cout << "                               BENCHMARK RESULTS HISTORY                                         \n";
+    std::cout << "=================================================================================================\n";
+    std::cout << std::format("{:<20} {:>8} {:>6} {:>6} {:>15} {:>15} {:>10}\n",
+                             "Timestamp", "Version", "Depth", "Hash", "Nodes", "NPS", "Time [s]");
+    std::cout << "-------------------------------------------------------------------------------------------------\n";
 
-  return result;
-}
+    // Print each result
+    for (const auto& r : results) {
+      // Format timestamp to be more compact (remove T, show only date + time)
+      std::string ts = r.timestamp;
+      if (ts.length() >= 19) {
+        ts = ts.substr(0, 10) + " " + ts.substr(11, 8);// "YYYY-MM-DD HH:MM:SS"
+      }
 
-void BenchmarkRunner::printResultsTable(const std::vector<BenchmarkResult>& results) {
-  if (results.empty()) {
-    std::cout << "No benchmark results to display.\n";
-    return;
-  }
+      const double timeSec = static_cast<double>(r.totalTimeMs) / 1000.0;
 
-  // Print header
-  std::cout << "\n";
-  std::cout << "=================================================================================================\n";
-  std::cout << "                               BENCHMARK RESULTS HISTORY                                         \n";
-  std::cout << "=================================================================================================\n";
-  std::cout << std::format("{:<20} {:>8} {:>6} {:>6} {:>15} {:>15} {:>10}\n",
-                           "Timestamp", "Version", "Depth", "Hash", "Nodes", "NPS", "Time [s]");
-  std::cout << "-------------------------------------------------------------------------------------------------\n";
+      // Mark external engines
+      std::string version = r.engineVersion;
+      if (!r.enginePath.empty()) {
+        version += "*";// Asterisk indicates external engine
+      }
 
-  // Print each result
-  for (const auto& r : results) {
-    // Format timestamp to be more compact (remove T, show only date + time)
-    std::string ts = r.timestamp;
-    if (ts.length() >= 19) {
-      ts = ts.substr(0, 10) + " " + ts.substr(11, 8);  // "YYYY-MM-DD HH:MM:SS"
+      std::cout << std::format(deLocale, "{:<20} {:>8} {:>6} {:>4}MB {:>15L} {:>15L} {:>10.2f}\n",
+                               ts,
+                               version,
+                               r.depth,
+                               r.hashSizeMB,
+                               r.totalNodes,
+                               r.nps,
+                               timeSec);
     }
 
-    const double timeSec = static_cast<double>(r.totalTimeMs) / 1000.0;
+    std::cout << "-------------------------------------------------------------------------------------------------\n";
 
-    // Mark external engines
-    std::string version = r.engineVersion;
-    if (!r.enginePath.empty()) {
-      version += "*";  // Asterisk indicates external engine
+    // Check if any external engines
+    bool hasExternal = false;
+    for (const auto& r : results) {
+      if (!r.enginePath.empty()) {
+        hasExternal = true;
+        break;
+      }
+    }
+    if (hasExternal) {
+      std::cout << "  * = external engine\n";
     }
 
-    std::cout << std::format(deLocale, "{:<20} {:>8} {:>6} {:>4}MB {:>15L} {:>15L} {:>10.2f}\n",
-                             ts,
-                             version,
-                             r.depth,
-                             r.hashSizeMB,
-                             r.totalNodes,
-                             r.nps,
-                             timeSec);
-  }
-
-  std::cout << "-------------------------------------------------------------------------------------------------\n";
-
-  // Check if any external engines
-  bool hasExternal = false;
-  for (const auto& r : results) {
-    if (!r.enginePath.empty()) {
-      hasExternal = true;
-      break;
-    }
-  }
-  if (hasExternal) {
-    std::cout << "  * = external engine\n";
-  }
-
-  // Print notes if any exist
-  bool hasNotes = false;
-  for (const auto& r : results) {
-    if (!r.notes.empty()) {
-      hasNotes = true;
-      break;
-    }
-  }
-
-  if (hasNotes) {
-    std::cout << "\nNotes:\n";
+    // Print notes if any exist
+    bool hasNotes = false;
     for (const auto& r : results) {
       if (!r.notes.empty()) {
-        std::string ts = r.timestamp;
-        if (ts.length() >= 10) {
-          ts = ts.substr(0, 10);  // Just date
-        }
-        std::cout << "  [" << ts << " " << r.engineVersion << "] " << r.notes << "\n";
+        hasNotes = true;
+        break;
       }
     }
+
+    if (hasNotes) {
+      std::cout << "\nNotes:\n";
+      for (const auto& r : results) {
+        if (!r.notes.empty()) {
+          std::string ts = r.timestamp;
+          if (ts.length() >= 10) {
+            ts = ts.substr(0, 10);// Just date
+          }
+          std::cout << "  [" << ts << " " << r.engineVersion << "] " << r.notes << "\n";
+        }
+      }
+    }
+
+    std::cout << "=================================================================================================\n";
   }
 
-  std::cout << "=================================================================================================\n";
-}
-
-} // namespace arena
+}// namespace arena

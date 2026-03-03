@@ -62,42 +62,42 @@
 
 namespace engine {
 
-/// Configuration for the benchmark run
-struct BenchConfig {
-  int hashSizeMB = 128;       ///< Transposition table size in MB
-  int threads    = 1;         ///< Number of threads (future SMP support)
-  int depth      = 12;        ///< Search depth limit (1-127)
-  milliseconds timeLimit{0};  ///< Time limit per position (0 = use depth only)
-};
+  /// Configuration for the benchmark run
+  struct BenchConfig {
+    int hashSizeMB = 128;     ///< Transposition table size in MB
+    int threads    = 1;       ///< Number of threads (future SMP support)
+    int depth      = 12;      ///< Search depth limit (1-127)
+    milliseconds timeLimit{0};///< Time limit per position (0 = use depth only)
+  };
 
-/// Result of a benchmark run
-struct BenchResult {
-  uint64_t totalNodes   = 0;      ///< Total nodes searched across all positions
-  milliseconds totalTime{0};      ///< Total wall-clock time
-  double nps            = 0.0;    ///< Nodes per second
-  int positionsRun      = 0;      ///< Number of positions benchmarked
-  std::string version;            ///< Engine version string
-};
+  /// Result of a benchmark run
+  struct BenchResult {
+    uint64_t totalNodes = 0;  ///< Total nodes searched across all positions
+    milliseconds totalTime{0};///< Total wall-clock time
+    double nps       = 0.0;   ///< Nodes per second
+    int positionsRun = 0;     ///< Number of positions benchmarked
+    std::string version;      ///< Engine version string
+  };
 
-/// Benchmark runner for standardized NPS measurement
-class Benchmark {
-public:
-  /// Run the benchmark with default positions
-  /// @param config Benchmark configuration (depth, hash, threads)
-  /// @return Benchmark results including NPS
-  static BenchResult run(const BenchConfig& config = {});
+  /// Benchmark runner for standardized NPS measurement
+  class Benchmark {
+  public:
+    /// Run the benchmark with default positions
+    /// @param config Benchmark configuration (depth, hash, threads)
+    /// @return Benchmark results including NPS
+    static BenchResult run(const BenchConfig& config = {});
 
-  /// Run the benchmark with custom positions (for testing)
-  /// @param fens Vector of FEN strings to benchmark
-  /// @param config Benchmark configuration
-  /// @return Benchmark results
-  static BenchResult run(const std::vector<std::string>& fens, const BenchConfig& config = {});
+    /// Run the benchmark with custom positions (for testing)
+    /// @param fens Vector of FEN strings to benchmark
+    /// @param config Benchmark configuration
+    /// @return Benchmark results
+    static BenchResult run(const std::vector<std::string>& fens, const BenchConfig& config = {});
 
-  /// Print benchmark results to stderr (UCI-compatible format)
-  /// @param result The benchmark results to print
-  static void printResults(const BenchResult& result);
-};
+    /// Print benchmark results to stderr (UCI-compatible format)
+    /// @param result The benchmark results to print
+    static void printResults(const BenchResult& result);
+  };
 
-} // namespace engine
+}// namespace engine
 
-#endif // FRANKYCPP_BENCHMARK_H
+#endif// FRANKYCPP_BENCHMARK_H

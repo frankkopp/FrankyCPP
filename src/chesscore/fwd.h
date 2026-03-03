@@ -17,15 +17,34 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef FRANKYCPP_INIT_H
-#define FRANKYCPP_INIT_H
+#ifndef FRANKYCPP_CHESSCORE_FWD_H
+#define FRANKYCPP_CHESSCORE_FWD_H
 
-#include "types/init.h"
+//=============================================================================
+// fwd.h - Forward Declarations for chesscore types (namespace chess)
+//=============================================================================
+//
+// Centralised forward-declaration header for all chess-domain classes.
+// Include this instead of scattering forward declarations across headers.
+//
+// Usage:
+//   #include "chesscore/fwd.h"
+//   // Now Position, MoveGenerator, Perft, History are declared in chess::
+//   // and available unqualified via the using-declarations below.
+//
+//=============================================================================
 
-namespace init {
-  inline void init() {
-    chess::Types::init();
-  }
-}// namespace init
+namespace chess {
+  class Position;
+  class MoveGenerator;
+  class Perft;
+  struct History;
+}// namespace chess
 
-#endif// FRANKYCPP_INIT_H
+// Convenience using-declarations so consumers don't need chess:: prefix
+using chess::History;
+using chess::MoveGenerator;
+using chess::Perft;
+using chess::Position;
+
+#endif// FRANKYCPP_CHESSCORE_FWD_H

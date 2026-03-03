@@ -27,7 +27,8 @@
 #include <yaml-cpp/yaml.h>
 
 #include "config/ConfigManager.h"
-#include "config/ConfigMode.h"
+
+using namespace config;
 
 
 namespace {
@@ -128,7 +129,7 @@ namespace {
     // search unchanged
     EXPECT_EQ(mgr.search().TT_SIZE_MB, SearchConfigData{}.TT_SIZE_MB);
   }
-#endif // FRANKYCPP_PRODUCTION
+#endif// FRANKYCPP_PRODUCTION
 
   // Ensures runtime overrides via applyOverrides() take effect with highest precedence.
   // In production, only essential configs (TT_SIZE_MB) can be overridden at runtime.

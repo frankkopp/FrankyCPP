@@ -29,94 +29,88 @@
 #include "config/EvalConfigData.h"
 #include "config/SearchConfigData.h"
 
-class ConfigManager {
-  ConfigManager();
+namespace config {
 
-  // Hard-coded fallback values (constructed defaults). Only used if YAML is missing or invalid.
-  SearchConfigData fallbackSearch_{};
-  EvalConfigData fallbackEval_{};
+  class ConfigManager {
+    ConfigManager();
 
-  // Defaults captured from the initial autoload (YAML at startup, or fallback if not available)
-  SearchConfigData defaultSearch_{};
-  EvalConfigData defaultEval_{};
+    // Hard-coded fallback values (constructed defaults). Only used if YAML is missing or invalid.
+    SearchConfigData fallbackSearch_{};
+    EvalConfigData fallbackEval_{};
 
-  // Current active configuration
-  SearchConfigData currentSearch_{};
-  EvalConfigData currentEval_{};
+    // Defaults captured from the initial autoload (YAML at startup, or fallback if not available)
+    SearchConfigData defaultSearch_{};
+    EvalConfigData defaultEval_{};
 
-  // Auto-init flags
-  bool autoLoadAttempted_{false};
-  bool lastLoadOk_{false};
+    // Current active configuration
+    SearchConfigData currentSearch_{};
+    EvalConfigData currentEval_{};
 
-public:
-  static ConfigManager& instance();
+    // Auto-init flags
+    bool autoLoadAttempted_{false};
+    bool lastLoadOk_{false};
 
-  // Non-copyable, non-movable singleton
-  ConfigManager(const ConfigManager&)            = delete;
-  ConfigManager& operator=(const ConfigManager&) = delete;
-  ConfigManager(ConfigManager&&)                 = delete;
-  ConfigManager& operator=(ConfigManager&&)      = delete;
+  public:
+    static ConfigManager& instance();
+
+    // Non-copyable, non-movable singleton
+    ConfigManager(const ConfigManager&)            = delete;
+    ConfigManager& operator=(const ConfigManager&) = delete;
+    ConfigManager(ConfigManager&&)                 = delete;
+    ConfigManager& operator=(ConfigManager&&)      = delete;
 
 
-  // Accessors (const refs) to current configuration
-  const SearchConfigData& search() const noexcept { return currentSearch_; }
-  const EvalConfigData& eval() const noexcept { return currentEval_; }
+    // Accessors (const refs) to current configuration
+    const SearchConfigData& search() const noexcept { return currentSearch_; }
+    const EvalConfigData& eval() const noexcept { return currentEval_; }
 
-  // Reset current configs back to the initially loaded defaults (from YAML at startup, or fallback if YAML unavailable)
-  void resetToDefaults();
+    // Reset current configs back to the initially loaded defaults (from YAML at startup, or fallback if YAML unavailable)
+    void resetToDefaults();
 
-  // Load from YAML files (paths optional). If a path is not provided, use default ConfigPaths.
-  // Return true on success. Missing files are not considered fatal and fall back to hard-coded values.
-  // Malformed YAML returns false and preserves last good configuration.
-  bool loadFromFiles(const std::optional<std::filesystem::path>& searchPath = {},
-                     const std::optional<std::filesystem::path>& evalPath   = {});
+    // Load from YAML files (paths optional). If a path is not provided, use default ConfigPaths.
+    // Return true on success. Missing files are not considered fatal and fall back to hard-coded values.
+    // Malformed YAML returns false and preserves last good configuration.
+    bool loadFromFiles(const std::optional<std::filesystem::path>& searchPath = {},
+                       const std::optional<std::filesystem::path>& evalPath   = {});
 
-  /// Apply ad-hoc runtime overrides to the currently active configuration.
-  ///
-  /// Contract:
-  /// - Invokes the provided callable with two non-const references: (SearchConfigData&, EvalConfigData&).
-  /// - The callable may mutate both objects in-place; changes take effect immediately.
-  /// - Overrides persist until you call resetToDefaults() or loadFromFiles() again.
-  ///
-  /// Notes:
-  /// - Precedence: values changed here take the highest precedence at runtime. A subsequent loadFromFiles()
-  ///   will replace current values, so if you want to combine YAML with overrides, call applyOverrides() after loading.
-  /// - Thread-safety: ConfigManager has no internal locking. Call this during initialization or ensure
-  ///   external synchronization so other threads do not read/modify config concurrently.
-  /// - In production builds (FRANKYCPP_PRODUCTION), CONFIG_CONST members are static constexpr.
-  ///   Attempting to assign to them inside the lambda will fail to compile — this is intentional.
-  ///   Only CONFIG_ESSENTIAL members (e.g. TT_SIZE_MB, BOOK_PATH) remain mutable in all builds.
-  ///
-  /// Example:
-  ///   ConfigManager::instance().applyOverrides([](auto& s, auto& e) {
-  ///       s.MOVE_OVERHEAD_MS = 25;   // OK in all builds - essential
-  ///       s.USE_PVS = true;          // compile error in production - non-essential
-  ///       e.TEMPO = 40;              // compile error in production - non-essential
-  ///   });
-  template<typename F>
-  void applyOverrides(F&& fn) { fn(currentSearch_, currentEval_); }
+    /// Apply ad-hoc runtime overrides to the currently active configuration.
+    ///
+    /// Contract:
+    /// - Invokes the provided callable with two non-const references: (SearchConfigData&, EvalConfigData&).
+    /// - The callable may mutate both objects in-place; changes take effect immediately.
+    /// - Overrides persist until you call resetToDefaults() or loadFromFiles() again.
+    ///
+    /// Notes:
+    /// - Precedence: values changed here take the highest precedence at runtime. A subsequent loadFromFiles()
+    ///   will replace current values, so if you want to combine YAML with overrides, call applyOverrides() after loading.
+    /// - Thread-safety: ConfigManager has no internal locking. Call this during initialization or ensure
+    ///   external synchronization so other threads do not read/modify config concurrently.
+    /// - In production builds (FRANKYCPP_PRODUCTION), CONFIG_CONST members are static constexpr.
+    ///   Attempting to assign to them inside the lambda will fail to compile — this is intentional.
+    ///   Only CONFIG_ESSENTIAL members (e.g. TT_SIZE_MB, BOOK_PATH) remain mutable in all builds.
+    ///
+    /// Example:
+    ///   ConfigManager::instance().applyOverrides([](auto& s, auto& e) {
+    ///       s.MOVE_OVERHEAD_MS = 25;   // OK in all builds - essential
+    ///       s.USE_PVS = true;          // compile error in production - non-essential
+    ///       e.TEMPO = 40;              // compile error in production - non-essential
+    ///   });
+    template<typename F>
+    void applyOverrides(F&& fn) { fn(currentSearch_, currentEval_); }
 
-  // Diagnostics
-  bool wasAutoLoaded() const noexcept { return autoLoadAttempted_; }
-  bool lastLoadOk() const noexcept { return lastLoadOk_; }
+    // Diagnostics
+    bool wasAutoLoaded() const noexcept { return autoLoadAttempted_; }
+    bool lastLoadOk() const noexcept { return lastLoadOk_; }
 
-  // Human-readable dumps
-  std::string strCurrent() const;
-  std::string strDefaults() const;// dumps the initially loaded defaults
-};
+    // Human-readable dumps
+    std::string strCurrent() const;
+    std::string strDefaults() const;// dumps the initially loaded defaults
+  };
 
-//
-//
-// using cm   = ConfigManager;
-// using scfg = SearchConfigData;
-//
-// auto& cfg = cm::instance();
-//
-// cfg.applyOverrides([&](scfg& s, auto&) {
-//
+}// namespace config
 
 // Helper
-#define SEARCH_CONFIG ConfigManager::instance().search()
+#define SEARCH_CONFIG config::ConfigManager::instance().search()
 
 // Helper macro to simplify usage of applyOverrides in lambdas.
 // Use s for SearchConfigData and e for EvalConfigData.
@@ -124,7 +118,7 @@ public:
 // the lambda will fail to compile (static constexpr cannot be assigned to).
 // Only CONFIG_ESSENTIAL members remain mutable in all builds.
 // Example: CONFIG_OVERRIDE(s.MOVE_OVERHEAD_MS = 25; s.USE_PVS = true;)
-#define CONFIG_OVERRIDE(expr) ConfigManager::instance().applyOverrides([&]([[maybe_unused]] SearchConfigData& s, [[maybe_unused]] EvalConfigData& e) { expr; })
+#define CONFIG_OVERRIDE(expr) config::ConfigManager::instance().applyOverrides([&]([[maybe_unused]] config::SearchConfigData& s, [[maybe_unused]] config::EvalConfigData& e) { expr; })
 
 // For multi-line overrides.
 // Use s for SearchConfigData and e for EvalConfigData.
@@ -133,8 +127,9 @@ public:
 //    s.MOVE_OVERHEAD_MS = 25;
 //    s.TT_SIZE_MB = 16;
 // CONFIG_OVERRIDE_END();
-#define CONFIG_OVERRIDE_START() ConfigManager::instance().applyOverrides([&]([[maybe_unused]] SearchConfigData& s, [[maybe_unused]] EvalConfigData& e) {
-#define CONFIG_OVERRIDE_END() })
+#define CONFIG_OVERRIDE_START() config::ConfigManager::instance().applyOverrides([&]([[maybe_unused]] config::SearchConfigData& s, [[maybe_unused]] config::EvalConfigData& e) {
+#define CONFIG_OVERRIDE_END() \
+  })
 
 
-#endif // FRANKYCPP_CONFIGMANAGER_H
+#endif// FRANKYCPP_CONFIGMANAGER_H

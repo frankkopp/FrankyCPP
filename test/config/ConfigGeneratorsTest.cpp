@@ -24,6 +24,8 @@
 
 #include <gtest/gtest.h>
 
+using namespace config;
+
 class ConfigGeneratorsTest : public ::testing::Test {
 protected:
   SearchConfigData search;
@@ -42,13 +44,13 @@ protected:
 
 TEST_F(ConfigGeneratorsTest, GenerateConfigStringNotEmpty) {
   const std::string output = generateConfigString(search, eval);
-  fprintln("Generated Config String:\n{}", output); // Debug output
+  fprintln("Generated Config String:\n{}", output);// Debug output
   EXPECT_FALSE(output.empty());
 }
 
 TEST_F(ConfigGeneratorsTest, GenerateConfigStringContainsDomainHeaders) {
   const std::string output = generateConfigString(search, eval);
-  fprintln("Generated Config String:\n{}", output); // Debug output
+  fprintln("Generated Config String:\n{}", output);// Debug output
   // Should have domain headers
   EXPECT_NE(output.find("=== General ==="), std::string::npos);
   EXPECT_NE(output.find("=== Search ==="), std::string::npos);
@@ -82,13 +84,13 @@ TEST_F(ConfigGeneratorsTest, GenerateConfigStringContainsAllDisplayConfigs) {
   for (const auto* def : registry.displayOptions()) {
     const std::string searchFor = def->name + ":";
     EXPECT_NE(output.find(searchFor), std::string::npos)
-        << "Missing config in output: " << def->name;
+      << "Missing config in output: " << def->name;
   }
 }
 
 TEST_F(ConfigGeneratorsTest, GenerateConfigStringReflectsValues) {
   // Modify a value and verify it appears in output
-  search.TT_SIZE_MB = 256;
+  search.TT_SIZE_MB        = 256;
   const std::string output = generateConfigString(search, eval);
 
   EXPECT_NE(output.find("TT_SIZE_MB: 256"), std::string::npos);
@@ -119,9 +121,9 @@ TEST_F(ConfigGeneratorsTest, ShowAllIncludesNonDisplayConfigs) {
     if (!def.exposure.display) {
       const std::string searchFor = def.name + ":";
       EXPECT_EQ(normalOutput.find(searchFor), std::string::npos)
-          << "Non-display config should not appear in normal output: " << def.name;
+        << "Non-display config should not appear in normal output: " << def.name;
       EXPECT_NE(allOutput.find(searchFor), std::string::npos)
-          << "Non-display config should appear in showAll output: " << def.name;
+        << "Non-display config should appear in showAll output: " << def.name;
     }
   }
 }
@@ -159,7 +161,7 @@ TEST_F(ConfigGeneratorsTest, SearchConfigStrContainsKeyConfigs) {
   EXPECT_NE(output.find("TT_SIZE_MB:"), std::string::npos);
 }
 
-#ifndef FRANKYCPP_PRODUCTION // In production, only essential config mutations (MOVE_OVERHEAD_MS) can be verified, so this test is dev-only.
+#ifndef FRANKYCPP_PRODUCTION// In production, only essential config mutations (MOVE_OVERHEAD_MS) can be verified, so this test is dev-only.
 TEST_F(ConfigGeneratorsTest, SearchConfigStrReflectsModifiedValues) {
   search.TT_SIZE_MB = 512;
   search.USE_NMP    = false;
@@ -201,10 +203,10 @@ TEST_F(ConfigGeneratorsTest, EvalConfigStrContainsKeyConfigs) {
   EXPECT_NE(output.find("USE_PAWN_EVAL:"), std::string::npos);
 }
 
-#ifndef FRANKYCPP_PRODUCTION // In production, only essential config mutations (MOVE_OVERHEAD_MS) can be verified, so this test is dev-only.
+#ifndef FRANKYCPP_PRODUCTION// In production, only essential config mutations (MOVE_OVERHEAD_MS) can be verified, so this test is dev-only.
 TEST_F(ConfigGeneratorsTest, EvalConfigStrReflectsModifiedValues) {
-  eval.TEMPO           = 50;
-  eval.LAZY_THRESHOLD  = 500;
+  eval.TEMPO          = 50;
+  eval.LAZY_THRESHOLD = 500;
 
   const std::string output = eval.str();
 
@@ -230,11 +232,11 @@ TEST_F(ConfigGeneratorsTest, ArrayValuesFormattedCorrectly) {
 
 TEST_F(ConfigGeneratorsTest, ParseYamlConfigBasicScalars) {
   YAML::Node node;
-  node["TT_SIZE_MB"]  = 256;
-  node["BOOK_PATH"]   = "/custom/path/book.txt";
+  node["TT_SIZE_MB"] = 256;
+  node["BOOK_PATH"]  = "/custom/path/book.txt";
 
 #ifndef FRANKYCPP_PRODUCTION
-  node["USE_NMP"]     = false;
+  node["USE_NMP"] = false;
 #endif
 
   SearchConfigData s;
@@ -251,14 +253,14 @@ TEST_F(ConfigGeneratorsTest, ParseYamlConfigBasicScalars) {
 #endif
 }
 
-#ifndef FRANKYCPP_PRODUCTION // In production, only essential config mutations (MOVE_OVERHEAD_MS) can be verified, so this test is dev-only.
+#ifndef FRANKYCPP_PRODUCTION// In production, only essential config mutations (MOVE_OVERHEAD_MS) can be verified, so this test is dev-only.
 TEST_F(ConfigGeneratorsTest, ParseYamlConfigBoolValues) {
   YAML::Node node;
   node["USE_TT"]     = true;
   node["USE_PONDER"] = false;
 
   SearchConfigData s;
-  s.USE_TT     = false;  // Start with opposite values
+  s.USE_TT     = false;// Start with opposite values
   s.USE_PONDER = true;
 
   parseYamlConfig(node, s);
@@ -305,10 +307,10 @@ TEST_F(ConfigGeneratorsTest, ParseYamlConfigArrayAsSequence) {
 }
 
 TEST_F(ConfigGeneratorsTest, ParseYamlConfigMissingKeysPreserveDefaults) {
-  const YAML::Node node;  // Empty node
+  const YAML::Node node;// Empty node
 
   SearchConfigData s        = {};
-  const int originalTTSize = s.TT_SIZE_MB;
+  const int originalTTSize  = s.TT_SIZE_MB;
   const bool originalUseNMP = s.USE_NMP;
 
   const auto parsed = parseYamlConfig(node, s);
@@ -336,9 +338,9 @@ TEST_F(ConfigGeneratorsTest, ParseYamlConfigEvalConfig) {
 #endif
 
   YAML::Node node;
-  node["TEMPO"]            = 50;
-  node["LAZY_THRESHOLD"]   = 500;
-  node["USE_LAZY_EVAL"]    = false;
+  node["TEMPO"]          = 50;
+  node["LAZY_THRESHOLD"] = 500;
+  node["USE_LAZY_EVAL"]  = false;
 
   EvalConfigData e;
   const auto parsed = parseYamlConfig(node, e);
@@ -372,7 +374,7 @@ TEST_F(ConfigGeneratorsTest, ParseYamlConfigMixedSearchAndEval) {
 }
 
 TEST_F(ConfigGeneratorsTest, ParseYamlConfigInvalidNodeReturnsEmpty) {
-  YAML::Node node;  // Default node is null/undefined
+  YAML::Node node;// Default node is null/undefined
 
   SearchConfigData s;
   const auto parsed = parseYamlConfig(YAML::Node(), s);

@@ -26,6 +26,10 @@
 #include "PawnTT.h"
 #include "common/Logging.h"
 
+using namespace engine;
+using namespace chess;
+using namespace common;
+
 PawnTT::PawnTT(const uint64_t newSizeInMByte) {
   noOfThreads = std::max(1u, std::thread::hardware_concurrency());
   resize(newSizeInMByte);

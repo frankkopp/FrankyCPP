@@ -70,151 +70,169 @@
 #include "common/stringutil.h"
 
 // Forward declarations
-struct SearchConfigData;
-struct EvalConfigData;
-class UciHandler;
+namespace engine {
+  class UciHandler;
+}
 
-/// Configuration domain/category
-enum class ConfigDomain {
-  General,   // General engine settings (time overhead, book, etc.)
-  Search,    // Search algorithm parameters
-  Eval,      // Evaluation parameters
-  Tuning,    // Parameters exposed for automated tuning (future)
-  Debug      // Debug/development settings (not for production)
-};
+namespace config {
 
-/// Convert ConfigDomain to string for display
-[[nodiscard]] inline std::string domainToString(const ConfigDomain domain) {
-  switch (domain) {
-    case ConfigDomain::General: return "General";
-    case ConfigDomain::Search: return "Search";
-    case ConfigDomain::Eval: return "Eval";
-    case ConfigDomain::Tuning: return "Tuning";
-    case ConfigDomain::Debug: return "Debug";
+  struct SearchConfigData;
+  struct EvalConfigData;
+
+  /// Configuration domain/category
+  enum class ConfigDomain {
+    General,// General engine settings (time overhead, book, etc.)
+    Search, // Search algorithm parameters
+    Eval,   // Evaluation parameters
+    Tuning, // Parameters exposed for automated tuning (future)
+    Debug   // Debug/development settings (not for production)
+  };
+
+  /// Convert ConfigDomain to string for display
+  [[nodiscard]] inline std::string domainToString(const ConfigDomain domain) {
+    switch (domain) {
+      case ConfigDomain::General:
+        return "General";
+      case ConfigDomain::Search:
+        return "Search";
+      case ConfigDomain::Eval:
+        return "Eval";
+      case ConfigDomain::Tuning:
+        return "Tuning";
+      case ConfigDomain::Debug:
+        return "Debug";
+    }
+    return "Unknown";
   }
-  return "Unknown";
-}
 
-/// Value type for configuration settings
-enum class ConfigValueType {
-  Bool,      // Boolean (true/false)
-  Int,       // Integer with optional min/max bounds
-  Double,    // Floating point
-  String,    // Free-form string
-  Combo,     // Selection from predefined values
-  IntArray   // Array of integers (e.g., margin tables) - special handling
-};
+  /// Value type for configuration settings
+  enum class ConfigValueType {
+    Bool,   // Boolean (true/false)
+    Int,    // Integer with optional min/max bounds
+    Double, // Floating point
+    String, // Free-form string
+    Combo,  // Selection from predefined values
+    IntArray// Array of integers (e.g., margin tables) - special handling
+  };
 
-/// Convert ConfigValueType to string for display
-[[nodiscard]] inline std::string valueTypeToString(const ConfigValueType type) {
-  switch (type) {
-    case ConfigValueType::Bool: return "bool";
-    case ConfigValueType::Int: return "int";
-    case ConfigValueType::Double: return "double";
-    case ConfigValueType::String: return "string";
-    case ConfigValueType::Combo: return "combo";
-    case ConfigValueType::IntArray: return "int[]";
+  /// Convert ConfigValueType to string for display
+  [[nodiscard]] inline std::string valueTypeToString(const ConfigValueType type) {
+    switch (type) {
+      case ConfigValueType::Bool:
+        return "bool";
+      case ConfigValueType::Int:
+        return "int";
+      case ConfigValueType::Double:
+        return "double";
+      case ConfigValueType::String:
+        return "string";
+      case ConfigValueType::Combo:
+        return "combo";
+      case ConfigValueType::IntArray:
+        return "int[]";
+    }
+    return "unknown";
   }
-  return "unknown";
-}
 
-/// Exposure flags - where this config can be set from
-struct ConfigExposure {
-  bool uci     = false;   // Exposed as UCI option
-  bool yaml    = true;    // Loaded from YAML config file
-  bool display = true;    // Shown in str() output
-  bool tunable = false;   // Exposed to automated tuning (future)
-};
+  /// Exposure flags - where this config can be set from
+  struct ConfigExposure {
+    bool uci     = false;// Exposed as UCI option
+    bool yaml    = true; // Loaded from YAML config file
+    bool display = true; // Shown in str() output
+    bool tunable = false;// Exposed to automated tuning (future)
+  };
 
-/// Type-erased getter function: reads value from config structs, returns as string
-using ConfigGetter = std::function<std::string(const SearchConfigData&, const EvalConfigData&)>;
+  /// Type-erased getter function: reads value from config structs, returns as string
+  using ConfigGetter = std::function<std::string(const SearchConfigData&, const EvalConfigData&)>;
 
-/// Type-erased setter function: parses string value and writes to config structs
-using ConfigSetter = std::function<void(SearchConfigData&, EvalConfigData&, const std::string&)>;
+  /// Type-erased setter function: parses string value and writes to config structs
+  using ConfigSetter = std::function<void(SearchConfigData&, EvalConfigData&, const std::string&)>;
 
-/// Custom UCI handler function type
-using UciHandlerFunc = std::function<void(UciHandler*)>;
+  /// Custom UCI handler function type
+  using UciHandlerFunc = std::function<void(engine::UciHandler*)>;
 
-/// Configuration definition - single source of truth for one setting
-struct ConfigDef {
-  // Identity
-  std::string name;           // Internal name (e.g., "USE_NMP")
-  std::string uciName;        // UCI display name (e.g., "Use Null Move Pruning")
-  std::string description;    // Human-readable description
+  /// Configuration definition - single source of truth for one setting
+  struct ConfigDef {
+    // Identity
+    std::string name;       // Internal name (e.g., "USE_NMP")
+    std::string uciName;    // UCI display name (e.g., "Use Null Move Pruning")
+    std::string description;// Human-readable description
 
-  // Type information
-  ConfigValueType valueType = ConfigValueType::Bool;
-  ConfigDomain domain       = ConfigDomain::General;
+    // Type information
+    ConfigValueType valueType = ConfigValueType::Bool;
+    ConfigDomain domain       = ConfigDomain::General;
 
-  // Default value (as string for simplicity)
-  std::string defaultValue;
+    // Default value (as string for simplicity)
+    std::string defaultValue;
 
-  // Bounds (for Int/Double types)
-  std::optional<int> minValue;
-  std::optional<int> maxValue;
-  std::vector<std::string> comboVars;  // For Combo type
+    // Bounds (for Int/Double types)
+    std::optional<int> minValue;
+    std::optional<int> maxValue;
+    std::vector<std::string> comboVars;// For Combo type
 
-  // Exposure configuration
-  ConfigExposure exposure;
+    // Exposure configuration
+    ConfigExposure exposure;
 
-  // Type-safe member access via getter/setter lambdas
-  // These reference the actual struct members, providing compile-time validation
-  ConfigGetter getter;  // Returns current value as string
-  ConfigSetter setter;  // Parses string and sets value
+    // Type-safe member access via getter/setter lambdas
+    // These reference the actual struct members, providing compile-time validation
+    ConfigGetter getter;// Returns current value as string
+    ConfigSetter setter;// Parses string and sets value
 
-  // Optional custom UCI handler (for special cases like "Clear Hash")
-  std::optional<UciHandlerFunc> customUciHandler;
-};
+    // Optional custom UCI handler (for special cases like "Clear Hash")
+    std::optional<UciHandlerFunc> customUciHandler;
+  };
 
-//=============================================================================
-// Value conversion helpers
-//=============================================================================
+  //=============================================================================
+  // Value conversion helpers
+  //=============================================================================
 
-/// Convert bool to string
-[[nodiscard]] inline std::string configToString(const bool v) {
-  return v ? "true" : "false";
-}
-
-/// Convert int to string
-[[nodiscard]] inline std::string configToString(const int v) {
-  return std::to_string(v);
-}
-
-/// Convert double to string
-[[nodiscard]] inline std::string configToString(const double v) {
-  std::ostringstream oss;
-  oss << v;
-  return oss.str();
-}
-
-/// Convert string to string (identity)
-[[nodiscard]] inline std::string configToString(const std::string& v) {
-  return v;
-}
-
-/// Convert array to comma-separated string
-template<std::size_t N>
-[[nodiscard]] std::string arrayToString(const std::array<int, N>& arr) {
-  std::ostringstream oss;
-  for (std::size_t i = 0; i < N; ++i) {
-    if (i > 0) oss << ",";
-    oss << arr[i];
+  /// Convert bool to string
+  [[nodiscard]] inline std::string configToString(const bool v) {
+    return v ? "true" : "false";
   }
-  return oss.str();
-}
 
-/// Parse comma-separated string to array
-template<std::size_t N>
-void parseArray(const std::string& str, std::array<int, N>& arr) {
-  std::istringstream iss(str);
-  std::string token;
-  std::size_t i = 0;
-  while (std::getline(iss, token, ',') && i < N) {
-    const std::string trimmed = trimFast(token);
-    if (!trimmed.empty()) {
-      arr[i++] = std::stoi(trimmed);
+  /// Convert int to string
+  [[nodiscard]] inline std::string configToString(const int v) {
+    return std::to_string(v);
+  }
+
+  /// Convert double to string
+  [[nodiscard]] inline std::string configToString(const double v) {
+    std::ostringstream oss;
+    oss << v;
+    return oss.str();
+  }
+
+  /// Convert string to string (identity)
+  [[nodiscard]] inline std::string configToString(const std::string& v) {
+    return v;
+  }
+
+  /// Convert array to comma-separated string
+  template<std::size_t N>
+  [[nodiscard]] std::string arrayToString(const std::array<int, N>& arr) {
+    std::ostringstream oss;
+    for (std::size_t i = 0; i < N; ++i) {
+      if (i > 0) oss << ",";
+      oss << arr[i];
+    }
+    return oss.str();
+  }
+
+  /// Parse comma-separated string to array
+  template<std::size_t N>
+  void parseArray(const std::string& str, std::array<int, N>& arr) {
+    std::istringstream iss(str);
+    std::string token;
+    std::size_t i = 0;
+    while (std::getline(iss, token, ',') && i < N) {
+      const std::string trimmed = common::trimFast(token);
+      if (!trimmed.empty()) {
+        arr[i++] = std::stoi(trimmed);
+      }
     }
   }
-}
 
-#endif  // FRANKYCPP_CONFIGDEF_H
+}// namespace config
+
+#endif// FRANKYCPP_CONFIGDEF_H

@@ -54,60 +54,64 @@
 
 #include "macros.h"
 
-enum Piece : int_fast8_t {
- // clang-format off
-  PIECE_NONE,
-  WHITE_KING = 1, WHITE_PAWN, WHITE_KNIGHT, WHITE_BISHOP, WHITE_ROOK, WHITE_QUEEN,
-  BLACK_KING = 9, BLACK_PAWN, BLACK_KNIGHT, BLACK_BISHOP, BLACK_ROOK, BLACK_QUEEN,
-  PIECE_LENGTH = 16
-};// clang-format on
+namespace chess {
 
-// checks if piece type is a value of 0 - 6
-constexpr bool validPiece(const Piece p) { return p < 15 && p != 7 && p != 8; }
+  enum Piece : int_fast8_t {
+    // clang-format off
+    PIECE_NONE,
+    WHITE_KING = 1, WHITE_PAWN, WHITE_KNIGHT, WHITE_BISHOP, WHITE_ROOK, WHITE_QUEEN,
+    BLACK_KING = 9, BLACK_PAWN, BLACK_KNIGHT, BLACK_BISHOP, BLACK_ROOK, BLACK_QUEEN,
+    PIECE_LENGTH = 16
+  };// clang-format on
 
-// creates the piece given by color and piece type
-constexpr Piece makePiece(const Color c, const PieceType pt) { return static_cast<Piece>((c << 3) + pt); }
+  // checks if piece type is a value of 0 - 6
+  constexpr bool validPiece(const Piece p) { return p < 15 && p != 7 && p != 8; }
 
-// creates the piece based on the FEN char
-constexpr Piece makePiece(const unsigned char p) {
-  switch (p) {
- // clang-format off
-    case 'K': return WHITE_KING;
-    case 'P': return WHITE_PAWN;
-    case 'N': return WHITE_KNIGHT;
-    case 'B': return WHITE_BISHOP;
-    case 'R': return WHITE_ROOK;
-    case 'Q': return WHITE_QUEEN;
-    case 'k': return BLACK_KING;
-    case 'p': return BLACK_PAWN;
-    case 'n': return BLACK_KNIGHT;
-    case 'b': return BLACK_BISHOP;
-    case 'r': return BLACK_ROOK;
-    case 'q': return BLACK_QUEEN;
-    default: return PIECE_NONE;
-  }// clang-format on
-}
+  // creates the piece given by color and piece type
+  constexpr Piece makePiece(const Color c, const PieceType pt) { return static_cast<Piece>((c << 3) + pt); }
 
-// returns the color of the given piece
-constexpr Color colorOf(const Piece p) { return static_cast<Color>(p >> 3); }
+  // creates the piece based on the FEN char
+  constexpr Piece makePiece(const unsigned char p) {
+    switch (p) {
+        // clang-format off
+      case 'K': return WHITE_KING;
+      case 'P': return WHITE_PAWN;
+      case 'N': return WHITE_KNIGHT;
+      case 'B': return WHITE_BISHOP;
+      case 'R': return WHITE_ROOK;
+      case 'Q': return WHITE_QUEEN;
+      case 'k': return BLACK_KING;
+      case 'p': return BLACK_PAWN;
+      case 'n': return BLACK_KNIGHT;
+      case 'b': return BLACK_BISHOP;
+      case 'r': return BLACK_ROOK;
+      case 'q': return BLACK_QUEEN;
+      default: return PIECE_NONE;
+    }// clang-format on
+  }
 
-// returns the piece type of the given piece
-constexpr PieceType typeOf(const Piece p) { return static_cast<PieceType>(p & 0b00000111u); }
+  // returns the color of the given piece
+  constexpr Color colorOf(const Piece p) { return static_cast<Color>(p >> 3); }
 
-/** returns a char representing the piece. Upper case letters for white, lower case for black */
-constexpr auto pieceToChar = " KPNBRQ  kpnbrq   ";
+  // returns the piece type of the given piece
+  constexpr PieceType typeOf(const Piece p) { return static_cast<PieceType>(p & 0b00000111u); }
 
-// single char label for the piece as used in a FEN (one of " KPNBRQ  kpnbrq")
-constexpr char str(const Piece p) {
-  if (!validPiece(p)) return '-';
-  return std::string(pieceToChar)[p];
-}
+  /** returns a char representing the piece. Upper case letters for white, lower case for black */
+  constexpr auto pieceToChar = " KPNBRQ  kpnbrq   ";
 
-inline std::ostream& operator<<(std::ostream& os, const Piece p) {
-  os << str(p);
-  return os;
-}
+  // single char label for the piece as used in a FEN (one of " KPNBRQ  kpnbrq")
+  constexpr char str(const Piece p) {
+    if (!validPiece(p)) return '-';
+    return std::string(pieceToChar)[p];
+  }
 
-ENABLE_INCR_OPERATORS_ON(Piece)
+  inline std::ostream& operator<<(std::ostream& os, const Piece p) {
+    os << str(p);
+    return os;
+  }
 
-#endif//FRANKYCPP_PIECE_H
+  ENABLE_INCR_OPERATORS_ON(Piece)
+
+}// namespace chess
+
+#endif// FRANKYCPP_PIECE_H

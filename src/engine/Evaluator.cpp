@@ -24,6 +24,11 @@
 
 #include "config/ConfigManager.h"
 
+using namespace engine;
+using namespace chess;
+using namespace config;
+using namespace common;
+
 Evaluator::Evaluator()
     : EvalConfig(ConfigManager::instance().eval()) {
   // PawnTT is now managed by Search and passed via setPawnTT()

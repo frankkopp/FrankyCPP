@@ -26,14 +26,16 @@
 #include "config/ConfigMode.h"
 #include <yaml-cpp/yaml.h>
 
-// Configuration struct for Evaluation
-// All members have default values which are used as fallback
-// if no YAML config file is found or a value is missing in the file.
-//
-// CONFIG_ESSENTIAL members are always mutable instance members (runtime-changeable in all builds).
-// CONFIG_CONST members are mutable instance members in development and static constexpr in production.
-// In production, CONFIG_CONST members become compile-time constants enabling dead-code elimination.
-struct EvalConfigData {
+namespace config {
+
+  // Configuration struct for Evaluation
+  // All members have default values which are used as fallback
+  // if no YAML config file is found or a value is missing in the file.
+  //
+  // CONFIG_ESSENTIAL members are always mutable instance members (runtime-changeable in all builds).
+  // CONFIG_CONST members are mutable instance members in development and static constexpr in production.
+  // In production, CONFIG_CONST members become compile-time constants enabling dead-code elimination.
+  struct EvalConfigData {
     // Debug
     CONFIG_ESSENTIAL std::string EVAL_CONFIG_SOURCE = "fallback";
 
@@ -50,7 +52,7 @@ struct EvalConfigData {
     CONFIG_CONST int LAZY_THRESHOLD = 700;
 
     // pawn eval
-    CONFIG_CONST bool USE_PAWN_EVAL  = true;
+    CONFIG_CONST bool USE_PAWN_EVAL      = true;
     CONFIG_ESSENTIAL bool USE_PAWN_TT    = true;
     CONFIG_ESSENTIAL int PAWN_TT_SIZE_MB = 64;
 
@@ -121,27 +123,29 @@ struct EvalConfigData {
     CONFIG_CONST bool USE_GAMEPHASE_VALUE = true;
 
     std::string str() const;
-};
+  };
 
-// Forward declaration for parseYamlConfig
-std::set<std::string> parseYamlConfig(
+  // Forward declaration for parseYamlConfig
+  std::set<std::string> parseYamlConfig(
     const YAML::Node& node,
     EvalConfigData& eval,
     bool warnUnknown);
 
+}// namespace config
+
 template<>
-struct YAML::convert<EvalConfigData> {
-  static Node encode(const EvalConfigData&) {
+struct YAML::convert<config::EvalConfigData> {
+  static Node encode(const config::EvalConfigData&) {
     // YAML encoding not used - config files are manually maintained.
     // Use generateConfigString() for human-readable output.
     return {};
   }
 
-  static bool decode(const Node& n, EvalConfigData& c) {
+  static bool decode(const Node& n, config::EvalConfigData& c) {
     if (!n || !n.IsMap()) return false;
-    parseYamlConfig(n, c, /* warnUnknown= */ true);
+    config::parseYamlConfig(n, c, /* warnUnknown= */ true);
     return true;
   }
 };// namespace YAML
 
-#endif // FRANKYCPP_EVALCONFIGDATA_H
+#endif// FRANKYCPP_EVALCONFIGDATA_H

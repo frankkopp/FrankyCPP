@@ -50,49 +50,53 @@
 
 #include "types/value.h"
 
-struct Score {
-  Value midgame;
-  Value endgame;
-};
+namespace chess {
 
-constexpr Score operator+(const Score& lhs, const Score& rhs) {
-  return Score{lhs.midgame + rhs.midgame, lhs.endgame + rhs.endgame};
-}
+  struct Score {
+    Value midgame;
+    Value endgame;
+  };
 
-constexpr Score operator-(const Score& lhs, const Score& rhs) {
-  return Score{lhs.midgame - rhs.midgame, lhs.endgame - rhs.endgame};
-}
+  constexpr Score operator+(const Score& lhs, const Score& rhs) {
+    return Score{lhs.midgame + rhs.midgame, lhs.endgame + rhs.endgame};
+  }
 
-constexpr Score operator*(const Score& lhs, const int i) {
-  return Score{lhs.midgame * i, lhs.endgame * i};
-}
+  constexpr Score operator-(const Score& lhs, const Score& rhs) {
+    return Score{lhs.midgame - rhs.midgame, lhs.endgame - rhs.endgame};
+  }
 
-constexpr Score operator/(const Score& lhs, const int i) {
-  return Score{lhs.midgame / i, lhs.endgame / i};
-}
+  constexpr Score operator*(const Score& lhs, const int i) {
+    return Score{lhs.midgame * i, lhs.endgame * i};
+  }
 
-constexpr Score& operator+=(Score& lhs, const Score& rhs) {
-  lhs.midgame += rhs.midgame;
-  lhs.endgame += rhs.endgame;
-  return lhs;
-}
+  constexpr Score operator/(const Score& lhs, const int i) {
+    return Score{lhs.midgame / i, lhs.endgame / i};
+  }
 
-constexpr Score& operator-=(Score& lhs, const Score& rhs) {
-  lhs.midgame -= rhs.midgame;
-  lhs.endgame -= rhs.endgame;
-  return lhs;
-}
+  constexpr Score& operator+=(Score& lhs, const Score& rhs) {
+    lhs.midgame += rhs.midgame;
+    lhs.endgame += rhs.endgame;
+    return lhs;
+  }
 
-constexpr Score& operator*=(Score& lhs, const int i) {
-  lhs.midgame *= i;
-  lhs.endgame *= i;
-  return lhs;
-}
+  constexpr Score& operator-=(Score& lhs, const Score& rhs) {
+    lhs.midgame -= rhs.midgame;
+    lhs.endgame -= rhs.endgame;
+    return lhs;
+  }
 
-constexpr Score& operator/=(Score& lhs, const int i) {
-  lhs.midgame /= i;
-  lhs.endgame /= i;
-  return lhs;
-}
+  constexpr Score& operator*=(Score& lhs, const int i) {
+    lhs.midgame *= i;
+    lhs.endgame *= i;
+    return lhs;
+  }
 
-#endif//FRANKYCPP_SCORE_H
+  constexpr Score& operator/=(Score& lhs, const int i) {
+    lhs.midgame /= i;
+    lhs.endgame /= i;
+    return lhs;
+  }
+
+}// namespace chess
+
+#endif// FRANKYCPP_SCORE_H

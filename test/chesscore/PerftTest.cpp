@@ -18,15 +18,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "chesscore/Perft.h"
+#include "Test_Utils.h"
 #include "chesscore/MoveGenerator.h"
 #include "chesscore/Position.h"
 #include "init.h"
-#include "Test_Utils.h"
 #include <gtest/gtest.h>
 #include <ostream>
 #include <string>
 
 using namespace std;
+using namespace chess;
 using testing::Eq;
 
 

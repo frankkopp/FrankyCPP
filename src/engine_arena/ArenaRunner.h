@@ -66,109 +66,109 @@
 
 #include "ArenaConfig.h"
 #include "ArenaResults.h"
-#include "TestSuiteRunner.h"
 #include "MatchRunner.h"
 #include "ResultWriter.h"
+#include "TestSuiteRunner.h"
 
 #include <string>
 
 namespace arena {
 
-/// Main orchestrator for Engine Arena testing framework
-class ArenaRunner {
-public:
-  /// Creates an ArenaRunner with the given configuration
-  /// @param config Arena configuration
-  explicit ArenaRunner(const ArenaConfig& config);
+  /// Main orchestrator for Engine Arena testing framework
+  class ArenaRunner {
+  public:
+    /// Creates an ArenaRunner with the given configuration
+    /// @param config Arena configuration
+    explicit ArenaRunner(const ArenaConfig& config);
 
-  /// Runs all configured test suites and matches
-  void runAll() const;
+    /// Runs all configured test suites and matches
+    void runAll() const;
 
-  /// Runs only test suites (no matches)
-  void runTestSuitesOnly() const;
+    /// Runs only test suites (no matches)
+    void runTestSuitesOnly() const;
 
-  /// Runs only matches (no test suites)
-  void runMatchesOnly() const;
+    /// Runs only matches (no test suites)
+    void runMatchesOnly() const;
 
-  //=========================================================================
-  // NEW Reporting Methods (Phase 1-3)
-  //=========================================================================
+    //=========================================================================
+    // NEW Reporting Methods (Phase 1-3)
+    //=========================================================================
 
-  /// Loads ALL test suite results into ReportData structure
-  /// Groups by test suite, then by engine, keeping latest result per combo
-  /// @return ReportData with all results organized for reporting
-  ReportData loadAllResults() const;
+    /// Loads ALL test suite results into ReportData structure
+    /// Groups by test suite, then by engine, keeping latest result per combo
+    /// @return ReportData with all results organized for reporting
+    ReportData loadAllResults() const;
 
-  /// Generates baseline report showing all engines side by side
-  /// @param data ReportData with loaded results
-  /// @return Formatted report string
-  static std::string generateBaselineReport(const ReportData& data);
+    /// Generates baseline report showing all engines side by side
+    /// @param data ReportData with loaded results
+    /// @return Formatted report string
+    static std::string generateBaselineReport(const ReportData& data);
 
-  /// Generates comparison report for target engine against baselines
-  /// @param data ReportData with loaded results
-  /// @param targetEngine Engine to compare (e.g., "FrankyCPP-v1.2-dev")
-  /// @param baselineEngines Baselines to compare against (uses all if empty)
-  /// @return Formatted comparison report string
-  static std::string generateComparisonReport(
+    /// Generates comparison report for target engine against baselines
+    /// @param data ReportData with loaded results
+    /// @param targetEngine Engine to compare (e.g., "FrankyCPP-v1.2-dev")
+    /// @param baselineEngines Baselines to compare against (uses all if empty)
+    /// @return Formatted comparison report string
+    static std::string generateComparisonReport(
       const ReportData& data,
       const EngineId& targetEngine,
       const std::vector<EngineId>& baselineEngines = {});
 
-  /// Lists all available engines from stored results
-  /// @return Set of EngineIds found in results
-  std::set<EngineId> listAvailableEngines() const;
+    /// Lists all available engines from stored results
+    /// @return Set of EngineIds found in results
+    std::set<EngineId> listAvailableEngines() const;
 
-  /// Loads match results into ReportData structure
-  /// @param data ReportData to populate (modifies in place)
-  void loadMatchResults(ReportData& data) const;
+    /// Loads match results into ReportData structure
+    /// @param data ReportData to populate (modifies in place)
+    void loadMatchResults(ReportData& data) const;
 
-  /// Generates match baseline report showing all engine pairs
-  /// @param data ReportData with loaded match results
-  /// @return Formatted match report string
-  static std::string generateMatchBaselineReport(const ReportData& data);
+    /// Generates match baseline report showing all engine pairs
+    /// @param data ReportData with loaded match results
+    /// @return Formatted match report string
+    static std::string generateMatchBaselineReport(const ReportData& data);
 
-  /// Generates match comparison report for target engine vs baselines
-  /// @param data ReportData with loaded match results
-  /// @param targetEngine Engine to compare
-  /// @param baselineEngines Baselines to compare against
-  /// @return Formatted match comparison report strstatic ing
-  static std::string generateMatchComparisonReport(
+    /// Generates match comparison report for target engine vs baselines
+    /// @param data ReportData with loaded match results
+    /// @param targetEngine Engine to compare
+    /// @param baselineEngines Baselines to compare against
+    /// @return Formatted match comparison report strstatic ing
+    static std::string generateMatchComparisonReport(
       const ReportData& data,
       const EngineId& targetEngine,
       const std::vector<EngineId>& baselineEngines = {});
 
-private:
-  const ArenaConfig& arenaConfig;  ///< Reference to arena configuration
-  TestSuiteRunner testSuiteRunner; ///< Test suite execution engine
-  MatchRunner matchRunner;         ///< Match execution engine
-  ResultWriter resultWriter;       ///< Result persistence handler
+  private:
+    const ArenaConfig& arenaConfig; ///< Reference to arena configuration
+    TestSuiteRunner testSuiteRunner;///< Test suite execution engine
+    MatchRunner matchRunner;        ///< Match execution engine
+    ResultWriter resultWriter;      ///< Result persistence handler
 
-  //=========================================================================
-  // Formatting Utilities
-  //=========================================================================
+    //=========================================================================
+    // Formatting Utilities
+    //=========================================================================
 
-  /// Formats a number with thousands separator (e.g., 1234567 -> "1,234,567")
-  static std::string formatNumber(int64_t value);
+    /// Formats a number with thousands separator (e.g., 1234567 -> "1,234,567")
+    static std::string formatNumber(int64_t value);
 
-  /// Formats node count with suffix (e.g., 12400000 -> "12.4M")
-  static std::string formatNodes(double nodes);
+    /// Formats node count with suffix (e.g., 12400000 -> "12.4M")
+    static std::string formatNodes(double nodes);
 
-  /// Formats time in seconds (e.g., 1234 ms -> "1.2s")
-  static std::string formatTime(double timeMs);
+    /// Formats time in seconds (e.g., 1234 ms -> "1.2s")
+    static std::string formatTime(double timeMs);
 
-  /// Formats a delta value with sign and color hint (e.g., +5, -3)
-  static std::string formatDelta(int delta);
+    /// Formats a delta value with sign and color hint (e.g., +5, -3)
+    static std::string formatDelta(int delta);
 
-  /// Formats a delta percentage with sign (e.g., +2.5%, -1.0%)
-  static std::string formatDeltaPercent(double delta);
+    /// Formats a delta percentage with sign (e.g., +2.5%, -1.0%)
+    static std::string formatDeltaPercent(double delta);
 
-  /// Generates current timestamp in format YYYYMMDD_HHMMSS
-  static std::string getCurrentTimestamp();
+    /// Generates current timestamp in format YYYYMMDD_HHMMSS
+    static std::string getCurrentTimestamp();
 
-  /// Generates ISO 8601 timestamp
-  static std::string getIsoTimestamp();
-};
+    /// Generates ISO 8601 timestamp
+    static std::string getIsoTimestamp();
+  };
 
-} // namespace arena
+}// namespace arena
 
-#endif // FRANKYCPP_ENGINE_ARENA_ARENARUNNER_H
+#endif// FRANKYCPP_ENGINE_ARENA_ARENARUNNER_H

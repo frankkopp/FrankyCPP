@@ -28,6 +28,10 @@
 #include <regex>
 #include <sstream>
 
+using namespace common;
+using namespace chess;
+using namespace enginetest;
+
 std::vector<EpdTest> EpdParser::parseFile(std::string_view filePath) {
   std::vector<EpdTest> tests;
   // Convert string_view to string for ifstream (needs null-terminated path)
@@ -71,10 +75,10 @@ std::optional<EpdTest> EpdParser::parseOneLine(std::string_view line) {
   }
 
   // Extract parts
-  std::string fen    = matcher.str(1);
+  std::string fen     = matcher.str(1);
   std::string typeStr = matcher.str(2);
-  std::string result = matcher.str(3);
-  std::string id     = matcher.str(4).empty() ? "no ID" : matcher.str(4);
+  std::string result  = matcher.str(3);
+  std::string id      = matcher.str(4).empty() ? "no ID" : matcher.str(4);
 
   LOG__DEBUG(Logger::get().TSUITE_LOG, "Fen: {}    Type: {}    Result: {}    ID: {}",
              fen, typeStr, result, id);
@@ -99,9 +103,9 @@ std::optional<EpdTest> EpdParser::parseOneLine(std::string_view line) {
   // Build the test using Builder pattern
   EpdTest::Builder builder;
   builder.setId(std::move(id))
-         .setFen(std::move(fen))
-         .setLine(std::string(line))
-         .setType(testType.value());
+    .setFen(std::move(fen))
+    .setLine(std::string(line))
+    .setType(testType.value());
 
   // Parse test-specific data
   if (testType.value() == TestType::BM || testType.value() == TestType::AM) {
@@ -112,10 +116,10 @@ std::optional<EpdTest> EpdParser::parseOneLine(std::string_view line) {
                 result, pos.strFen());
       return std::nullopt;
     }
-    builder.setExpectedMove(moves[0]); // First move for display - BEFORE move!
+    builder.setExpectedMove(moves[0]);// First move for display - BEFORE move!
     builder.setTargetMoves(std::move(moves));
   }
-  else { // TestType::DM
+  else {// TestType::DM
     auto depth = parseMateDepth(result);
     if (!depth.has_value()) {
       LOG__WARN(Logger::get().TSUITE_LOG, "Direct mate depth from EPD is invalid: {}", result);

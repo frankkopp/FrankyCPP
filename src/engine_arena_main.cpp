@@ -40,17 +40,21 @@
 //
 //=============================================================================
 
+#include "config/ConfigManager.h"
+#include "engine/Benchmark.h"
 #include "engine_arena/ArenaRunner.h"
 #include "engine_arena/BenchmarkRunner.h"
 #include "engine_arena/ResultWriter.h"
-#include "engine/Benchmark.h"
-#include "config/ConfigManager.h"
 #include "init.h"
 
 #include <boost/program_options.hpp>
-#include <iostream>
 #include <exception>
 #include <filesystem>
+#include <iostream>
+
+using namespace engine;
+using namespace chess;
+using namespace config;
 
 int main(int argc, char* argv[]) {
   try {
@@ -61,26 +65,16 @@ int main(int argc, char* argv[]) {
 
     // Define command-line options
     po::options_description desc("FrankyCPP Arena - Engine Strength Testing\n\nOptions");
-    desc.add_options()
-      ("help,h", "Show this help message")
-      ("config,c", po::value<std::string>()->default_value("config/arena.yaml"),
-       "Configuration file path")
-      ("testsuites,t", "Run test suites only")
-      ("matches,m", "Run matches only")
+    desc.add_options()("help,h", "Show this help message")("config,c", po::value<std::string>()->default_value("config/arena.yaml"),
+                                                           "Configuration file path")("testsuites,t", "Run test suites only")("matches,m", "Run matches only")
       // Benchmark options
-      ("bench,b", "Run benchmarks (NPS measurement)")
-      ("bench-report", "Show benchmark results history")
+      ("bench,b", "Run benchmarks (NPS measurement)")("bench-report", "Show benchmark results history")
       // Reporting options
-      ("report,r", "Show baseline report (all engines, all test suites)")
-      ("baselines", "Alias for --report")
-      ("engines", "List all available engines from results")
-      ("cmp", po::value<std::string>(),
-       "Compare engine against baselines: --cmp FrankyCPP-v1.2-dev")
-      ("baseline", po::value<std::vector<std::string>>()->multitoken(),
-       "Specify baseline(s) for comparison (can repeat)")
+      ("report,r", "Show baseline report (all engines, all test suites)")("baselines", "Alias for --report")("engines", "List all available engines from results")("cmp", po::value<std::string>(),
+                                                                                                                                                                   "Compare engine against baselines: --cmp FrankyCPP-v1.2-dev")("baseline", po::value<std::vector<std::string>>()->multitoken(),
+                                                                                                                                                                                                                                 "Specify baseline(s) for comparison (can repeat)")
       // Filtering options
-      ("testsuites-only", "Show only test suite results (filter out matches)")
-      ("matches-only", "Show only match results (filter out test suites)");
+      ("testsuites-only", "Show only test suite results (filter out matches)")("matches-only", "Show only match results (filter out test suites)");
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -185,20 +179,19 @@ int main(int argc, char* argv[]) {
         auto result = runner.run();
 
         // Print results
-        engine::Benchmark::printResults({
-          result.totalNodes,
-          milliseconds{result.totalTimeMs},
-          static_cast<double>(result.nps),
-          result.positions,
-          result.engineName + " " + result.engineVersion
-        });
+        engine::Benchmark::printResults({result.totalNodes,
+                                         milliseconds{result.totalTimeMs},
+                                         static_cast<double>(result.nps),
+                                         result.positions,
+                                         result.engineName + " " + result.engineVersion});
 
         // Save results only if notes are provided (non-empty)
         // This allows ad-hoc runs without polluting the results file
         if (!result.notes.empty()) {
           const std::string path = writer.writeBenchmarkResult(result);
           std::cout << "\nResults saved to: " << path << std::endl;
-        } else {
+        }
+        else {
           std::cout << "\n[Ad-hoc run] Results not saved (no notes provided)" << std::endl;
         }
       }
@@ -222,19 +215,20 @@ int main(int argc, char* argv[]) {
       auto engines = arenaRunner.listAvailableEngines();
       if (engines.empty()) {
         std::cout << "  No results found. Run test suites first.\n";
-      } else {
+      }
+      else {
         for (const auto& engine : engines) {
           std::cout << "  " << engine.toString() << "\n";
         }
       }
       std::cout << "--------------------------------------------------------------------------------\n";
-
-    } else if (vm.contains("report") || vm.contains("baselines")) {
+    }
+    else if (vm.contains("report") || vm.contains("baselines")) {
       // Show baseline report
       auto data = arenaRunner.loadAllResults();
 
       bool testSuitesOnly = vm.contains("testsuites-only");
-      bool matchesOnly = vm.contains("matches-only");
+      bool matchesOnly    = vm.contains("matches-only");
 
       // Can't have both filters
       if (testSuitesOnly && matchesOnly) {
@@ -245,18 +239,20 @@ int main(int argc, char* argv[]) {
       if (matchesOnly) {
         // Show only match results
         std::cout << arena::ArenaRunner::generateMatchBaselineReport(data);
-      } else if (testSuitesOnly) {
+      }
+      else if (testSuitesOnly) {
         // Show only test suite results
         std::cout << arena::ArenaRunner::generateBaselineReport(data);
-      } else {
+      }
+      else {
         // Show both (default)
         std::cout << arena::ArenaRunner::generateBaselineReport(data);
         std::cout << arena::ArenaRunner::generateMatchBaselineReport(data);
       }
-
-    } else if (vm.contains("cmp")) {
+    }
+    else if (vm.contains("cmp")) {
       // Comparison report
-      auto targetStr = vm["cmp"].as<std::string>();
+      auto targetStr               = vm["cmp"].as<std::string>();
       arena::EngineId targetEngine = arena::EngineId::fromString(targetStr);
 
       std::vector<arena::EngineId> baselines;
@@ -270,7 +266,7 @@ int main(int argc, char* argv[]) {
       auto data = arenaRunner.loadAllResults();
 
       bool testSuitesOnly = vm.contains("testsuites-only");
-      bool matchesOnly = vm.contains("matches-only");
+      bool matchesOnly    = vm.contains("matches-only");
 
       // Can't have both filters
       if (testSuitesOnly && matchesOnly) {
@@ -281,22 +277,24 @@ int main(int argc, char* argv[]) {
       if (matchesOnly) {
         // Show only match comparison
         std::cout << arena::ArenaRunner::generateMatchComparisonReport(data, targetEngine, baselines);
-      } else if (testSuitesOnly) {
+      }
+      else if (testSuitesOnly) {
         // Show only test suite comparison
         std::cout << arena::ArenaRunner::generateComparisonReport(data, targetEngine, baselines);
-      } else {
+      }
+      else {
         // Show both (default)
         std::cout << arena::ArenaRunner::generateComparisonReport(data, targetEngine, baselines);
         std::cout << arena::ArenaRunner::generateMatchComparisonReport(data, targetEngine, baselines);
       }
-
-    } else if (vm.contains("testsuites")) {
+    }
+    else if (vm.contains("testsuites")) {
       arenaRunner.runTestSuitesOnly();
-
-    } else if (vm.contains("matches")) {
+    }
+    else if (vm.contains("matches")) {
       arenaRunner.runMatchesOnly();
-
-    } else {
+    }
+    else {
       arenaRunner.runAll();
     }
 

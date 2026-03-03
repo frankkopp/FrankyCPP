@@ -24,6 +24,8 @@
 #include "config/EvalConfigData.h"
 #include "config/SearchConfigData.h"
 
+using namespace config;
+
 
 namespace {
 
@@ -45,7 +47,7 @@ namespace {
     n["TT_SIZE_MB"]       = 128;
 
 #ifndef FRANKYCPP_PRODUCTION
-    n["USE_TT"]           = false;
+    n["USE_TT"] = false;
     YAML::Node rfp;
     rfp.push_back(1);
     rfp.push_back(2);

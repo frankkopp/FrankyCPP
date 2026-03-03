@@ -19,7 +19,9 @@
 
 #include "attacks.h"
 
-namespace Attacks {
+using namespace chess;
+
+namespace chess::Attacks {
   namespace detail {
 
     Bitboard RookTable[RookTableSize];
@@ -90,4 +92,4 @@ namespace Attacks {
     }
   }
 
-}// namespace Attacks
+}// namespace chess::Attacks

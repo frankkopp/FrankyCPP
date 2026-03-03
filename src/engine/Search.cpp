@@ -27,6 +27,11 @@
 #include <iomanip>
 #include <sstream>
 
+using namespace engine;
+using namespace chess;
+using namespace config;
+using namespace common;
+
 ////////////////////////////////////////////////
 ///// CONSTRUCTORS
 
@@ -760,8 +765,8 @@ SearchResult Search::iterativeDeepening(Position& p) {
         && !isTimeAlmostUp()) {
       const Value currBest = thread().pv.first().value();
       // Only consider reasonably deep iterations to avoid noise from shallow depths
-      const int volSwingMinDepth     = SearchConfig.VOLATILITY_MIN_DEPTH;
-      const auto volSwingThresh      = Value{SearchConfig.VOLATILITY_THRESHOLD};
+      const int volSwingMinDepth = SearchConfig.VOLATILITY_MIN_DEPTH;
+      const auto volSwingThresh  = Value{SearchConfig.VOLATILITY_THRESHOLD};
       if (iterationDepth >= volSwingMinDepth
           && currBest.isValid()
           && prevBestRootValue.isValid()) {
@@ -2270,7 +2275,7 @@ void Search::initialize() {
         });
       }
       else {
-        book = std::make_unique<OpeningBook>(SearchConfig.BOOK_PATH, OpeningBook::fromString(SearchConfig.BOOK_TYPE));
+        book = std::make_unique<book::OpeningBook>(SearchConfig.BOOK_PATH, book::OpeningBook::fromString(SearchConfig.BOOK_TYPE));
         book->initialize();
       }
     }

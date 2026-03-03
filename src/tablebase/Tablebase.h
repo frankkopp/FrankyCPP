@@ -63,117 +63,118 @@
 //
 //=============================================================================
 
-#include "types/types.h"
 #include "chesscore/Position.h"
+#include "types/types.h"
 #include <string>
 
 namespace tablebase {
+  using namespace chess;
 
-/// WDL (Win/Draw/Loss) result from tablebase probe.
-enum class TBResult : int8_t {
-  Loss        = -2,  ///< Position is lost with perfect play
-  BlessedLoss = -1,  ///< Would be lost but may draw due to 50-move rule
-  Draw        = 0,   ///< Position is drawn with perfect play
-  CursedWin   = 1,   ///< Would be won but may draw due to 50-move rule
-  Win         = 2,   ///< Position is won with perfect play
-  Failed      = 3    ///< Probe failed (position not in TB or not probeable)
-};
+  /// WDL (Win/Draw/Loss) result from tablebase probe.
+  enum class TBResult : int8_t {
+    Loss        = -2,///< Position is lost with perfect play
+    BlessedLoss = -1,///< Would be lost but may draw due to 50-move rule
+    Draw        = 0, ///< Position is drawn with perfect play
+    CursedWin   = 1, ///< Would be won but may draw due to 50-move rule
+    Win         = 2, ///< Position is won with perfect play
+    Failed      = 3  ///< Probe failed (position not in TB or not probeable)
+  };
 
-/// Full tablebase probe result with WDL, DTZ (distance to zeroing), and best move.
-struct TBProbeResult {
-  TBResult wdl{TBResult::Failed};  ///< Win/Draw/Loss result
-  int dtz{0};                      ///< Distance to zeroing move (capture or pawn move)
-  Move bestMove{MOVE_NONE};        ///< Best move from tablebase (MOVE_NONE if unavailable)
+  /// Full tablebase probe result with WDL, DTZ (distance to zeroing), and best move.
+  struct TBProbeResult {
+    TBResult wdl{TBResult::Failed};///< Win/Draw/Loss result
+    int dtz{0};                    ///< Distance to zeroing move (capture or pawn move)
+    Move bestMove{MOVE_NONE};      ///< Best move from tablebase (MOVE_NONE if unavailable)
 
-  /// Returns true if the probe succeeded.
-  [[nodiscard]] bool success() const { return wdl != TBResult::Failed; }
-  /// Returns true if the position is winning (Win or CursedWin).
-  [[nodiscard]] bool isWin() const { return wdl == TBResult::Win || wdl == TBResult::CursedWin; }
-  /// Returns true if the position is drawn.
-  [[nodiscard]] bool isDraw() const { return wdl == TBResult::Draw; }
-  /// Returns true if the position is losing (Loss or BlessedLoss).
-  [[nodiscard]] bool isLoss() const { return wdl == TBResult::Loss || wdl == TBResult::BlessedLoss; }
-};
+    /// Returns true if the probe succeeded.
+    [[nodiscard]] bool success() const { return wdl != TBResult::Failed; }
+    /// Returns true if the position is winning (Win or CursedWin).
+    [[nodiscard]] bool isWin() const { return wdl == TBResult::Win || wdl == TBResult::CursedWin; }
+    /// Returns true if the position is drawn.
+    [[nodiscard]] bool isDraw() const { return wdl == TBResult::Draw; }
+    /// Returns true if the position is losing (Loss or BlessedLoss).
+    [[nodiscard]] bool isLoss() const { return wdl == TBResult::Loss || wdl == TBResult::BlessedLoss; }
+  };
 
-/// Syzygy tablebase probing interface using the Fathom library.
-/// Thread safety:
-///   - probeWDL(): Thread-safe for concurrent probing from multiple search threads.
-///   - probeRoot(): NOT thread-safe. Call only once at root per search.
-class Tablebase {
-  bool initialized_{false};
-  int maxPieces_{0};        ///< Maximum pieces available in loaded tablebases (e.g., 6 or 7)
-  std::string tbPath_;      ///< Path(s) used to initialize tablebases
+  /// Syzygy tablebase probing interface using the Fathom library.
+  /// Thread safety:
+  ///   - probeWDL(): Thread-safe for concurrent probing from multiple search threads.
+  ///   - probeRoot(): NOT thread-safe. Call only once at root per search.
+  class Tablebase {
+    bool initialized_{false};
+    int maxPieces_{0};  ///< Maximum pieces available in loaded tablebases (e.g., 6 or 7)
+    std::string tbPath_;///< Path(s) used to initialize tablebases
 
-public:
-  Tablebase() = default;
-  ~Tablebase();
+  public:
+    Tablebase() = default;
+    ~Tablebase();
 
-  // Disallow copies (manages global Fathom state)
-  Tablebase(const Tablebase&) = delete;
-  Tablebase& operator=(const Tablebase&) = delete;
+    // Disallow copies (manages global Fathom state)
+    Tablebase(const Tablebase&)            = delete;
+    Tablebase& operator=(const Tablebase&) = delete;
 
-  /// Initialize tablebases from path(s).
-  /// @param path  Semicolon-separated list of directories (Windows: semicolon, Linux: colon)
-  /// @return true if at least one tablebase file was found
-  bool initialize(const std::string& path);
+    /// Initialize tablebases from path(s).
+    /// @param path  Semicolon-separated list of directories (Windows: semicolon, Linux: colon)
+    /// @return true if at least one tablebase file was found
+    bool initialize(const std::string& path);
 
-  /// Shut down and release tablebase resources.
-  void shutdown();
+    /// Shut down and release tablebase resources.
+    void shutdown();
 
-  /// Returns true if tablebases are available for probing.
-  [[nodiscard]] bool isAvailable() const { return initialized_ && maxPieces_ > 0; }
+    /// Returns true if tablebases are available for probing.
+    [[nodiscard]] bool isAvailable() const { return initialized_ && maxPieces_ > 0; }
 
-  /// Returns the maximum number of pieces supported by loaded tablebases.
-  [[nodiscard]] int maxPieces() const { return maxPieces_; }
+    /// Returns the maximum number of pieces supported by loaded tablebases.
+    [[nodiscard]] int maxPieces() const { return maxPieces_; }
 
-  /// Returns the path(s) used to initialize tablebases.
-  [[nodiscard]] const std::string& getPath() const { return tbPath_; }
+    /// Returns the path(s) used to initialize tablebases.
+    [[nodiscard]] const std::string& getPath() const { return tbPath_; }
 
-  /// Probe WDL only (faster, suitable for search nodes).
-  /// Returns the "pure" theoretical WDL result without 50-move rule considerations.
-  /// For positions near the 50-move limit, use probeRoot, which respects halfmove clock.
-  /// @param pos  Position to probe
-  /// @return WDL result or Failed if probe unsuccessful
-  /// @attention canProbe(pos) should be called first to check if probing is possible for the position
-  [[nodiscard]] TBResult probeWDL(const Position& pos) const;
+    /// Probe WDL only (faster, suitable for search nodes).
+    /// Returns the "pure" theoretical WDL result without 50-move rule considerations.
+    /// For positions near the 50-move limit, use probeRoot, which respects halfmove clock.
+    /// @param pos  Position to probe
+    /// @return WDL result or Failed if probe unsuccessful
+    /// @attention canProbe(pos) should be called first to check if probing is possible for the position
+    [[nodiscard]] TBResult probeWDL(const Position& pos) const;
 
-  /// Probe WDL and DTZ with best move (slower, suitable for root).
-  /// Unlike probeWDL, this function uses the position's halfmove clock for
-  /// accurate cursed win / blessed loss detection near the 50-move limit.
-  /// @param pos  Position to probe
-  /// @return Full probe result including DTZ and best move
-  [[nodiscard]] TBProbeResult probeRoot(const Position& pos) const;
+    /// Probe WDL and DTZ with best move (slower, suitable for root).
+    /// Unlike probeWDL, this function uses the position's halfmove clock for
+    /// accurate cursed win / blessed loss detection near the 50-move limit.
+    /// @param pos  Position to probe
+    /// @return Full probe result including DTZ and best move
+    [[nodiscard]] TBProbeResult probeRoot(const Position& pos) const;
 
-  /// Check if position can be probed (piece count within limit, no castling rights).
-  /// @param pos  Position to check
-  /// @return true if position is probeable
-  [[nodiscard]] bool canProbe(const Position& pos) const;
+    /// Check if position can be probed (piece count within limit, no castling rights).
+    /// @param pos  Position to check
+    /// @return true if position is probeable
+    [[nodiscard]] bool canProbe(const Position& pos) const;
 
-  /// Pre-warm OS file cache by probing representative endgame positions.
-  /// Call once at startup after tablebase initialization to reduce latency
-  /// on first in-game probes. Forces OS to load TB files into page cache.
-  /// @param maxPieces Maximum piece count to warm (3 to maxPieces_)
-  void prewarmCache(int maxPieces = 5) const;
+    /// Pre-warm OS file cache by probing representative endgame positions.
+    /// Call once at startup after tablebase initialization to reduce latency
+    /// on first in-game probes. Forces OS to load TB files into page cache.
+    /// @param maxPieces Maximum piece count to warm (3 to maxPieces_)
+    void prewarmCache(int maxPieces = 5) const;
 
-  /// Convert TBResult and DTZ to centipawn value for search scoring.
-  /// Uses DTZ to prefer shorter wins (smaller DTZ = higher score).
-  /// @param result  WDL result
-  /// @param dtz     Distance to zeroing move (from probeRoot)
-  /// @return Value in centipawns
-  [[nodiscard]] static Value tbResultToScore(TBResult result, int dtz);
+    /// Convert TBResult and DTZ to centipawn value for search scoring.
+    /// Uses DTZ to prefer shorter wins (smaller DTZ = higher score).
+    /// @param result  WDL result
+    /// @param dtz     Distance to zeroing move (from probeRoot)
+    /// @return Value in centipawns
+    [[nodiscard]] static Value tbResultToScore(TBResult result, int dtz);
 
-  /// Convert TBResult to centipawn value (legacy, no DTZ).
-  /// @param result  WDL result
-  /// @param ply     Current ply (for mate-distance-like scoring)
-  /// @return Value in centipawns
-  [[nodiscard]] static Value tbValueToScore(TBResult result, Depth ply);
+    /// Convert TBResult to centipawn value (legacy, no DTZ).
+    /// @param result  WDL result
+    /// @param ply     Current ply (for mate-distance-like scoring)
+    /// @return Value in centipawns
+    [[nodiscard]] static Value tbValueToScore(TBResult result, Depth ply);
 
-  /// Get human-readable string representation of result.
-  /// @param result  WDL result
-  /// @return String like "Win", "Draw", "Loss", etc.
-  [[nodiscard]] static std::string resultToString(TBResult result);
-};
+    /// Get human-readable string representation of result.
+    /// @param result  WDL result
+    /// @return String like "Win", "Draw", "Loss", etc.
+    [[nodiscard]] static std::string resultToString(TBResult result);
+  };
 
-} // namespace tablebase
+}// namespace tablebase
 
-#endif // FRANKYCPP_TABLEBASE_H
+#endif// FRANKYCPP_TABLEBASE_H

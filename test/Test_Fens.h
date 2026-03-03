@@ -41,26 +41,26 @@ namespace Test_Fens {
 
     // Eigenmann Rapid Set
     // 11
-    fen.emplace_back("r1bqk1r1/1p1p1n2/p1n2pN1/2p1b2Q/2P1Pp2/1PN5/PB4PP/R4RK1 w q -");     // - bm Rxf4; id "ERET 001 - Relief";
-    fen.emplace_back("r1n2N1k/2n2K1p/3pp3/5Pp1/b5R1/8/1PPP4/8 w - -");                     // bm Ng6; id "ERET 002 - Zugzwang";
-    fen.emplace_back("r1b1r1k1/1pqn1pbp/p2pp1p1/P7/1n1NPP1Q/2NBBR2/1PP3PP/R6K w - -");     // bm f5; id "ERET 003 - Open Line";
-    fen.emplace_back("5b2/p2k1p2/P3pP1p/n2pP1p1/1p1P2P1/1P1KBN2/7P/8 w - -");              // bm Nxg5; id "ERET 004 - Endgame";
-    fen.emplace_back("r3kbnr/1b3ppp/pqn5/1pp1P3/3p4/1BN2N2/PP2QPPP/R1BR2K1 w kq -");       // - bm Bxf7; id "ERET 005 - Bishop Sacrifice f7";
-    fen.emplace_back("r2r2k1/1p1n1pp1/4pnp1/8/PpBRqP2/1Q2B1P1/1P5P/R5K1 b - -");           // bm Nc5; id "ERET 006 - Knight Sacrifice";
-    fen.emplace_back("2rq1rk1/pb1n1ppN/4p3/1pb5/3P1Pn1/P1N5/1PQ1B1PP/R1B2RK1 b - -");      // bm Nde5; id "ERET 007 - Bishop Pair";
-    fen.emplace_back("r2qk2r/ppp1bppp/2n5/3p1b2/3P1Bn1/1QN1P3/PP3P1P/R3KBNR w KQkq -");    // bm Qxd5; id "ERET 008 - Center";
-    fen.emplace_back("rnb1kb1r/p4p2/1qp1pn2/1p2N2p/2p1P1p1/2N3B1/PPQ1BPPP/3RK2R w Kkq -"); // bm Ng6; id "ERET 009 - Knight Sacrifice";
-    fen.emplace_back("5rk1/pp1b4/4pqp1/2Ppb2p/1P2p3/4Q2P/P3BPP1/1R3R1K b - -");            // bm d4; id "ERET 010 - Passed Pawn";
-    fen.emplace_back("r1b2r1k/ppp2ppp/8/4p3/2BPQ3/P3P1K1/1B3PPP/n3q1NR w - -");            // bm dxe5, Nf3; id "ERET 011 - Attacking Castle";
-    fen.emplace_back("1nkr1b1r/5p2/1q2p2p/1ppbP1p1/2pP4/2N3B1/1P1QBPPP/R4RK1 w - -");      // bm Nxd5; id "ERET 012 - Relief";
-    fen.emplace_back("1nrq1rk1/p4pp1/bp2pn1p/3p4/2PP1B2/P1PB2N1/4QPPP/1R2R1K1 w - -");     // bm Qd2, Bc2; id "ERET 013 - Center";
-    fen.emplace_back("5k2/1rn2p2/3pb1p1/7p/p3PP2/PnNBK2P/3N2P1/1R6 w - -");                // bm Nf3; id "ERET 014 - Endgame";
-    fen.emplace_back("8/p2p4/r7/1k6/8/pK5Q/P7/b7 w - -");                                  // bm Qd3; id "ERET 015 - Endgame";
-    fen.emplace_back("1b1rr1k1/pp1q1pp1/8/NP1p1b1p/1B1Pp1n1/PQR1P1P1/4BP1P/5RK1 w - -");   // bm Nc6; id "ERET 016 - Pos. Sacrifice";
-    fen.emplace_back("1r3rk1/6p1/p1pb1qPp/3p4/4nPR1/2N4Q/PPP4P/2K1BR2 b - -");             // bm Rxb2; id "ERET 017 - King Attack";
-    fen.emplace_back("r1b1kb1r/1p1n1p2/p3pP1p/q7/3N3p/2N5/P1PQB1PP/1R3R1K b kq -");        // bm Qg5; id "ERET 018 - Development";
-    fen.emplace_back("3kB3/5K2/7p/3p4/3pn3/4NN2/8/1b4B1 w - -");                           // bm Nf5; id "ERET 019 - Endgame";
-    fen.emplace_back("1nrrb1k1/1qn1bppp/pp2p3/3pP3/N2P3P/1P1B1NP1/PBR1QPK1/2R5 w - -");    // bm Bxh7; id "ERET 020 - Bishop Sacrifice h7";
+    fen.emplace_back("r1bqk1r1/1p1p1n2/p1n2pN1/2p1b2Q/2P1Pp2/1PN5/PB4PP/R4RK1 w q -");    // - bm Rxf4; id "ERET 001 - Relief";
+    fen.emplace_back("r1n2N1k/2n2K1p/3pp3/5Pp1/b5R1/8/1PPP4/8 w - -");                    // bm Ng6; id "ERET 002 - Zugzwang";
+    fen.emplace_back("r1b1r1k1/1pqn1pbp/p2pp1p1/P7/1n1NPP1Q/2NBBR2/1PP3PP/R6K w - -");    // bm f5; id "ERET 003 - Open Line";
+    fen.emplace_back("5b2/p2k1p2/P3pP1p/n2pP1p1/1p1P2P1/1P1KBN2/7P/8 w - -");             // bm Nxg5; id "ERET 004 - Endgame";
+    fen.emplace_back("r3kbnr/1b3ppp/pqn5/1pp1P3/3p4/1BN2N2/PP2QPPP/R1BR2K1 w kq -");      // - bm Bxf7; id "ERET 005 - Bishop Sacrifice f7";
+    fen.emplace_back("r2r2k1/1p1n1pp1/4pnp1/8/PpBRqP2/1Q2B1P1/1P5P/R5K1 b - -");          // bm Nc5; id "ERET 006 - Knight Sacrifice";
+    fen.emplace_back("2rq1rk1/pb1n1ppN/4p3/1pb5/3P1Pn1/P1N5/1PQ1B1PP/R1B2RK1 b - -");     // bm Nde5; id "ERET 007 - Bishop Pair";
+    fen.emplace_back("r2qk2r/ppp1bppp/2n5/3p1b2/3P1Bn1/1QN1P3/PP3P1P/R3KBNR w KQkq -");   // bm Qxd5; id "ERET 008 - Center";
+    fen.emplace_back("rnb1kb1r/p4p2/1qp1pn2/1p2N2p/2p1P1p1/2N3B1/PPQ1BPPP/3RK2R w Kkq -");// bm Ng6; id "ERET 009 - Knight Sacrifice";
+    fen.emplace_back("5rk1/pp1b4/4pqp1/2Ppb2p/1P2p3/4Q2P/P3BPP1/1R3R1K b - -");           // bm d4; id "ERET 010 - Passed Pawn";
+    fen.emplace_back("r1b2r1k/ppp2ppp/8/4p3/2BPQ3/P3P1K1/1B3PPP/n3q1NR w - -");           // bm dxe5, Nf3; id "ERET 011 - Attacking Castle";
+    fen.emplace_back("1nkr1b1r/5p2/1q2p2p/1ppbP1p1/2pP4/2N3B1/1P1QBPPP/R4RK1 w - -");     // bm Nxd5; id "ERET 012 - Relief";
+    fen.emplace_back("1nrq1rk1/p4pp1/bp2pn1p/3p4/2PP1B2/P1PB2N1/4QPPP/1R2R1K1 w - -");    // bm Qd2, Bc2; id "ERET 013 - Center";
+    fen.emplace_back("5k2/1rn2p2/3pb1p1/7p/p3PP2/PnNBK2P/3N2P1/1R6 w - -");               // bm Nf3; id "ERET 014 - Endgame";
+    fen.emplace_back("8/p2p4/r7/1k6/8/pK5Q/P7/b7 w - -");                                 // bm Qd3; id "ERET 015 - Endgame";
+    fen.emplace_back("1b1rr1k1/pp1q1pp1/8/NP1p1b1p/1B1Pp1n1/PQR1P1P1/4BP1P/5RK1 w - -");  // bm Nc6; id "ERET 016 - Pos. Sacrifice";
+    fen.emplace_back("1r3rk1/6p1/p1pb1qPp/3p4/4nPR1/2N4Q/PPP4P/2K1BR2 b - -");            // bm Rxb2; id "ERET 017 - King Attack";
+    fen.emplace_back("r1b1kb1r/1p1n1p2/p3pP1p/q7/3N3p/2N5/P1PQB1PP/1R3R1K b kq -");       // bm Qg5; id "ERET 018 - Development";
+    fen.emplace_back("3kB3/5K2/7p/3p4/3pn3/4NN2/8/1b4B1 w - -");                          // bm Nf5; id "ERET 019 - Endgame";
+    fen.emplace_back("1nrrb1k1/1qn1bppp/pp2p3/3pP3/N2P3P/1P1B1NP1/PBR1QPK1/2R5 w - -");   // bm Bxh7; id "ERET 020 - Bishop Sacrifice h7";
 
     // 31
     fen.emplace_back("3rr1k1/1pq2b1p/2pp2p1/4bp2/pPPN4/4P1PP/P1QR1PB1/1R4K1 b - -");       // bm Rc8; id "ERET 021 - Prophylaxis";

@@ -19,16 +19,19 @@
 
 
 #include "openingbook/OpeningBook.h"
+#include "Test_Utils.h"
 #include "chesscore/MoveGenerator.h"
 #include "common/Logging.h"
 #include "common/stringutil.h"
 #include "init.h"
 #include "types/types.h"
-#include "Test_Utils.h"
 
 #include <gtest/gtest.h>
 using testing::Eq;
 
+using namespace common;
+using namespace chess;
+using namespace book;
 
 class OpeningBookTest : public ::testing::Test {
 public:

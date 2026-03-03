@@ -49,115 +49,114 @@
 
 namespace tablebase {
 
-/// Configuration for tablebase download operation
-struct DownloadConfig {
-  std::vector<int> pieceCounts;   ///< Piece counts to download (e.g., {3, 4, 5})
-  std::string targetPath;         ///< Directory to save files
-  bool verbose{false};            ///< Print detailed progress
-  bool verifyAfterDownload{true}; ///< Verify files exist after download
-};
+  /// Configuration for tablebase download operation
+  struct DownloadConfig {
+    std::vector<int> pieceCounts;  ///< Piece counts to download (e.g., {3, 4, 5})
+    std::string targetPath;        ///< Directory to save files
+    bool verbose{false};           ///< Print detailed progress
+    bool verifyAfterDownload{true};///< Verify files exist after download
+  };
 
-/// Progress information during download
-struct DownloadProgress {
-  std::string currentFile;        ///< Current file being downloaded
-  int filesCompleted{0};          ///< Number of files completed
-  int totalFiles{0};              ///< Total number of files to download
-  bool success{true};             ///< Whether current operation succeeded
-  std::string errorMessage;       ///< Error message if success is false
+  /// Progress information during download
+  struct DownloadProgress {
+    std::string currentFile; ///< Current file being downloaded
+    int filesCompleted{0};   ///< Number of files completed
+    int totalFiles{0};       ///< Total number of files to download
+    bool success{true};      ///< Whether current operation succeeded
+    std::string errorMessage;///< Error message if success is false
 
-  /// Returns completion percentage (0-100)
-  [[nodiscard]] int percentComplete() const {
-    return totalFiles > 0 ? filesCompleted * 100 / totalFiles : 0;
-  }
-};
+    /// Returns completion percentage (0-100)
+    [[nodiscard]] int percentComplete() const {
+      return totalFiles > 0 ? filesCompleted * 100 / totalFiles : 0;
+    }
+  };
 
-/// Callback function for progress updates
-using ProgressCallback = std::function<void(const DownloadProgress&)>;
+  /// Callback function for progress updates
+  using ProgressCallback = std::function<void(const DownloadProgress&)>;
 
-/// Result of a download operation
-struct DownloadResult {
-  bool success{false};            ///< Overall success
-  int filesDownloaded{0};         ///< Number of files successfully downloaded
-  int filesFailed{0};             ///< Number of files that failed
-  int filesSkipped{0};            ///< Number of files already present (skipped)
-  std::vector<std::string> errors;///< Error messages for failed files
-};
+  /// Result of a download operation
+  struct DownloadResult {
+    bool success{false};            ///< Overall success
+    int filesDownloaded{0};         ///< Number of files successfully downloaded
+    int filesFailed{0};             ///< Number of files that failed
+    int filesSkipped{0};            ///< Number of files already present (skipped)
+    std::vector<std::string> errors;///< Error messages for failed files
+  };
 
-/// Result of a verification operation
-struct VerifyResult {
-  bool success{false};            ///< Overall success (all files valid)
-  int filesVerified{0};           ///< Number of files with matching MD5
-  int filesFailed{0};             ///< Number of files with MD5 mismatch
-  int filesMissing{0};            ///< Number of files not found
-  int filesNoChecksum{0};         ///< Number of files with no reference MD5
-  std::vector<std::string> errors;///< Error messages for failed/missing files
-};
+  /// Result of a verification operation
+  struct VerifyResult {
+    bool success{false};            ///< Overall success (all files valid)
+    int filesVerified{0};           ///< Number of files with matching MD5
+    int filesFailed{0};             ///< Number of files with MD5 mismatch
+    int filesMissing{0};            ///< Number of files not found
+    int filesNoChecksum{0};         ///< Number of files with no reference MD5
+    std::vector<std::string> errors;///< Error messages for failed/missing files
+  };
 
-/// Syzygy tablebase download manager
-class TablebaseDownloader {
-public:
-  /// Download tablebases for specified piece counts
-  /// @param config   Download configuration
-  /// @param progress Optional progress callback
-  /// @return Result with success/failure counts
-  [[nodiscard]] static DownloadResult download(const DownloadConfig& config,
-                                        const ProgressCallback& progress = nullptr);
+  /// Syzygy tablebase download manager
+  class TablebaseDownloader {
+  public:
+    /// Download tablebases for specified piece counts
+    /// @param config   Download configuration
+    /// @param progress Optional progress callback
+    /// @return Result with success/failure counts
+    [[nodiscard]] static DownloadResult download(const DownloadConfig& config,
+                                                 const ProgressCallback& progress = nullptr);
 
-  /// Verify tablebases using MD5 checksums from server
-  /// @param path         Directory containing tablebase files
-  /// @param pieceCounts  Piece counts to verify (empty = verify all found files)
-  /// @param progress     Optional progress callback
-  /// @return Result with verification counts
-  [[nodiscard]] static VerifyResult verify(const std::string& path,
-                                           const std::vector<int>& pieceCounts = {},
-                                           const ProgressCallback& progress = nullptr);
+    /// Verify tablebases using MD5 checksums from server
+    /// @param path         Directory containing tablebase files
+    /// @param pieceCounts  Piece counts to verify (empty = verify all found files)
+    /// @param progress     Optional progress callback
+    /// @return Result with verification counts
+    [[nodiscard]] static VerifyResult verify(const std::string& path,
+                                             const std::vector<int>& pieceCounts = {},
+                                             const ProgressCallback& progress    = nullptr);
 
-  /// Get list of files needed for given piece counts
-  /// @param pieceCounts  Vector of piece counts (3-6)
-  /// @return List of filenames (without path)
-  [[nodiscard]] static std::vector<std::string> getRequiredFiles(const std::vector<int>& pieceCounts);
+    /// Get list of files needed for given piece counts
+    /// @param pieceCounts  Vector of piece counts (3-6)
+    /// @return List of filenames (without path)
+    [[nodiscard]] static std::vector<std::string> getRequiredFiles(const std::vector<int>& pieceCounts);
 
-  /// Get estimated download size in bytes for given piece counts
-  /// @param pieceCounts  Vector of piece counts (3-6)
-  /// @return Estimated total size in bytes
-  [[nodiscard]] static size_t estimateDownloadSize(const std::vector<int>& pieceCounts);
+    /// Get estimated download size in bytes for given piece counts
+    /// @param pieceCounts  Vector of piece counts (3-6)
+    /// @return Estimated total size in bytes
+    [[nodiscard]] static size_t estimateDownloadSize(const std::vector<int>& pieceCounts);
 
-  /// Get human-readable size string
-  /// @param bytes  Size in bytes
-  /// @return String like "1.5 GB" or "150 MB"
-  [[nodiscard]] static std::string formatSize(size_t bytes);
+    /// Get human-readable size string
+    /// @param bytes  Size in bytes
+    /// @return String like "1.5 GB" or "150 MB"
+    [[nodiscard]] static std::string formatSize(size_t bytes);
 
-  /// Check status of tablebases in a directory
-  /// @param path  Directory to check
-  /// @param pieceCounts  Piece counts to check for
-  /// @return Status message
-  [[nodiscard]] static std::string checkStatus(const std::string& path,
-                                               const std::vector<int>& pieceCounts);
+    /// Check status of tablebases in a directory
+    /// @param path  Directory to check
+    /// @param pieceCounts  Piece counts to check for
+    /// @return Status message
+    [[nodiscard]] static std::string checkStatus(const std::string& path,
+                                                 const std::vector<int>& pieceCounts);
 
-  /// Get manual download instructions (shown when automatic download fails)
-  [[nodiscard]] static std::string getManualDownloadInstructions();
+    /// Get manual download instructions (shown when automatic download fails)
+    [[nodiscard]] static std::string getManualDownloadInstructions();
 
-private:
-  /// Download a single file from URL
-  /// @param url       Full URL to download
-  /// @param destPath  Full path to save file
-  /// @param verbose   Print progress
-  /// @return true if download succeeded
-  [[nodiscard]] static bool downloadFile(const std::string& url,
-                                  const std::string& destPath,
-                                  bool verbose);
+  private:
+    /// Download a single file from URL
+    /// @param url       Full URL to download
+    /// @param destPath  Full path to save file
+    /// @param verbose   Print progress
+    /// @return true if download succeeded
+    [[nodiscard]] static bool downloadFile(const std::string& url,
+                                           const std::string& destPath,
+                                           bool verbose);
 
-  /// Compute MD5 checksum of a file
-  /// @param filePath  Path to file
-  /// @return MD5 hash as lowercase hex string, or empty string on error
-  [[nodiscard]] static std::string computeMD5(const std::string& filePath);
+    /// Compute MD5 checksum of a file
+    /// @param filePath  Path to file
+    /// @return MD5 hash as lowercase hex string, or empty string on error
+    [[nodiscard]] static std::string computeMD5(const std::string& filePath);
 
-  /// Fetch and parse MD5 checksums from server
-  /// @return Map of filename -> MD5 hash
-  [[nodiscard]] static std::unordered_map<std::string, std::string> fetchMD5Checksums();
+    /// Fetch and parse MD5 checksums from server
+    /// @return Map of filename -> MD5 hash
+    [[nodiscard]] static std::unordered_map<std::string, std::string> fetchMD5Checksums();
+  };
 
-};
+}// namespace tablebase
 
-} // namespace tablebase
-
-#endif // FRANKYCPP_TABLEBASEDOWNLOADER_H
+#endif// FRANKYCPP_TABLEBASEDOWNLOADER_H

@@ -25,6 +25,10 @@
 
 #include <algorithm>
 
+using namespace config;
+using namespace engine;
+using namespace common;
+
 ConfigRegistry& ConfigRegistry::instance() {
   static ConfigRegistry instance;
   return instance;
@@ -81,7 +85,7 @@ ConfigRegistry::ConfigRegistry() {
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #endif
 #endif
-#endif // FRANKYCPP_PRODUCTION
+#endif// FRANKYCPP_PRODUCTION
 
   initializeSearchDefinitions();
   initializeEvalDefinitions();

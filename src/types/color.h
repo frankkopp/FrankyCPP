@@ -50,74 +50,78 @@
 
 #include "macros.h"
 
-class Color {
-  unsigned v_{}; // 0..1 valid, 2 = NONE
+namespace chess {
 
-public:
-  // number of valid colors (without NOCOLOR)
-  static constexpr int LENGTH = 2;
+  class Color {
+    unsigned v_{};// 0..1 valid, 2 = NONE
 
-  // constructors
-  constexpr Color() : v_(2) {}
-  constexpr explicit Color(const unsigned v) : v_(v) {}
-  constexpr explicit Color(const int v) : v_(static_cast<unsigned>(v)) {}
-
-  // underlying value access
-  constexpr unsigned value() const { return v_; }
-
-  // implicit conversion for arithmetic/comparisons/array indexing
-  // ReSharper disable once CppNonExplicitConversionOperator
-  constexpr operator int() const { return static_cast<int>(v_); }
-
-  // member helpers
-  constexpr bool isValid() const { return static_cast<int>(*this) < 2; }
-  constexpr char toChar() const { return isValid() ? (static_cast<int>(*this) == 0 ? 'w' : 'b') : '-'; }
-  constexpr char str() const { return toChar(); }
-
-  // convenience
-  constexpr Color opposite() const { return Color{(value() ^ 1U)}; }
-  // sign() allows to avoid branches in some calculations
-  constexpr int   sign() const { return static_cast<int>(*this) == 0 ? 1 : -1; }
-
-  // iterator support over valid colors [WHITE, BLACK]
-  class iterator {
-    int cur_{}; // index of current color [0..LENGTH]
   public:
-    using value_type = Color;
-    using difference_type = int;
-    using reference = Color; // value-like
-    using pointer = void;
+    // number of valid colors (without NOCOLOR)
+    static constexpr int LENGTH = 2;
 
-    constexpr explicit iterator(const int c) : cur_(c) {}
-    constexpr Color operator*() const { return Color{cur_}; }
-    constexpr iterator& operator++() {
-      ++cur_;
-      return *this;
-    }
-    friend constexpr bool operator==(const iterator& a, const iterator& b) { return a.cur_ == b.cur_; }
-    friend constexpr bool operator!=(const iterator& a, const iterator& b) { return !(a == b); }
+    // constructors
+    constexpr Color() : v_(2) {}
+    constexpr explicit Color(const unsigned v) : v_(v) {}
+    constexpr explicit Color(const int v) : v_(static_cast<unsigned>(v)) {}
+
+    // underlying value access
+    constexpr unsigned value() const { return v_; }
+
+    // implicit conversion for arithmetic/comparisons/array indexing
+    // ReSharper disable once CppNonExplicitConversionOperator
+    constexpr operator int() const { return static_cast<int>(v_); }
+
+    // member helpers
+    constexpr bool isValid() const { return static_cast<int>(*this) < 2; }
+    constexpr char toChar() const { return isValid() ? (static_cast<int>(*this) == 0 ? 'w' : 'b') : '-'; }
+    constexpr char str() const { return toChar(); }
+
+    // convenience
+    constexpr Color opposite() const { return Color{(value() ^ 1U)}; }
+    // sign() allows to avoid branches in some calculations
+    constexpr int sign() const { return static_cast<int>(*this) == 0 ? 1 : -1; }
+
+    // iterator support over valid colors [WHITE, BLACK]
+    class iterator {
+      int cur_{};// index of current color [0..LENGTH]
+    public:
+      using value_type      = Color;
+      using difference_type = int;
+      using reference       = Color;// value-like
+      using pointer         = void;
+
+      constexpr explicit iterator(const int c) : cur_(c) {}
+      constexpr Color operator*() const { return Color{cur_}; }
+      constexpr iterator& operator++() {
+        ++cur_;
+        return *this;
+      }
+      friend constexpr bool operator==(const iterator& a, const iterator& b) { return a.cur_ == b.cur_; }
+      friend constexpr bool operator!=(const iterator& a, const iterator& b) { return !(a == b); }
+    };
+
+    class range {
+    public:
+      static constexpr iterator begin() { return iterator{0}; }
+      static constexpr iterator end() { return iterator{LENGTH}; }
+    };
+
+    // Returns an iterable over WHITE and BLACK (excludes NOCOLOR)
+    static constexpr range all() { return range{}; }
   };
 
-  class range {
-  public:
-    static constexpr iterator begin() { return iterator{0}; }
-    static constexpr iterator end() { return iterator{LENGTH}; }
-  };
+  // Backward-compatible constants and sizes
+  inline constexpr Color WHITE{0};
+  inline constexpr Color BLACK{1};
+  inline constexpr Color NOCOLOR{2};
+  inline constexpr unsigned COLOR_LENGTH = Color::LENGTH;
 
-  // Returns an iterable over WHITE and BLACK (excludes NOCOLOR)
-  static constexpr range all() { return range{}; }
-};
+  // returns the opposite color (kept for compatibility)
+  constexpr Color operator~(const Color c) { return Color{(c.value() ^ 1U)}; }
 
-// Backward-compatible constants and sizes
-inline constexpr Color WHITE{0};
-inline constexpr Color BLACK{1};
-inline constexpr Color NOCOLOR{2};
-inline constexpr unsigned COLOR_LENGTH = Color::LENGTH;
+  ENABLE_INCR_OPERATORS_ON(Color)
+  ENABLE_OSTREAM_OPERATOR_AS_INT_ON(Color)
 
-// returns the opposite color (kept for compatibility)
-constexpr Color operator~(const Color c) { return Color{(c.value() ^ 1U)}; }
+}// namespace chess
 
-ENABLE_INCR_OPERATORS_ON (Color)
-ENABLE_OSTREAM_OPERATOR_AS_INT_ON (Color)
-
-#endif//FRANKYCPP_COLOR_H
+#endif// FRANKYCPP_COLOR_H

@@ -25,6 +25,7 @@
 #include <gtest/gtest.h>
 #include <ranges>
 
+using namespace chess;
 class StaticMoveListTest : public ::testing::Test {
 protected:
   MoveList moveList;
@@ -149,7 +150,7 @@ TEST_F(StaticMoveListTest, atMethod) {
   Move x = MOVE_NONE;
   EXPECT_THROW(x = moveList.at(2), std::out_of_range);
   EXPECT_THROW(x = moveList.at(100), std::out_of_range);
-  (void)x;
+  (void) x;
 }
 
 TEST_F(StaticMoveListTest, frontAndBack) {
@@ -188,7 +189,7 @@ TEST_F(StaticMoveListTest, iterators) {
   // Range-based for loop
   int count = 0;
   for (const auto& m : moveList) {
-    (void)m;
+    (void) m;
     count++;
   }
   EXPECT_EQ(count, 3);
@@ -205,7 +206,7 @@ TEST_F(StaticMoveListTest, iterators) {
 
   // Const iteration
   const MoveList& constList = moveList;
-  auto cit = constList.begin();
+  auto cit                  = constList.begin();
   EXPECT_EQ(*cit, move1);
 }
 
@@ -331,7 +332,7 @@ TEST_F(StaticMoveListTest, dataPointer) {
   constexpr Move move1 = Move::normal(SQ_E2, SQ_E4);
   moveList.push_back(move1);
 
-  Move* ptr       = moveList.data();
+  Move* ptr        = moveList.data();
   const Move* cptr = static_cast<const MoveList&>(moveList).data();
 
   EXPECT_EQ(*ptr, move1);

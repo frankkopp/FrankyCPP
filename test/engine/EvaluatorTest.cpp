@@ -37,10 +37,14 @@
 #include <limits>
 #include <sstream>
 
+using namespace engine;
+using namespace chess;
+using namespace config;
+using namespace common;
+
 using testing::Eq;
 
-
-auto& cm = ConfigManager::instance(); // Bind cm to ConfigManager singleton by reference
+auto& cm = ConfigManager::instance();// Bind cm to ConfigManager singleton by reference
 
 // centralize test eval config: set all USE_* flags
 // to the given onoff value
@@ -71,7 +75,7 @@ void set_eval_config(const bool onoff) {
     e.USE_BISHOP_PAIR_BONUS    = onoff;
   });
 }
-#endif // FRANKYCPP_PRODUCTION
+#endif// FRANKYCPP_PRODUCTION
 
 class EvaluatorTest : public testing::Test {
 public:
@@ -531,7 +535,8 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
     const auto& evalCfg = cm.eval();
     if (evalCfg.USE_PAWN_TT && evalCfg.PAWN_TT_SIZE_MB > 0) {
       pawnTT.resize(static_cast<uint64_t>(evalCfg.PAWN_TT_SIZE_MB));
-    } else {
+    }
+    else {
       pawnTT.resize(0);
     }
   };
@@ -726,4 +731,4 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
   }
 }
 
-#endif // FRANKYCPP_PRODUCTION
+#endif// FRANKYCPP_PRODUCTION

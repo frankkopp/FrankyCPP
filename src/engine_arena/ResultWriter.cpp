@@ -63,10 +63,11 @@ namespace arena {
             break;
           default:
             if (ch < 0x20) {
-              char buffer[7]; // NOLINT(*-avoid-c-arrays)
+              char buffer[7];// NOLINT(*-avoid-c-arrays)
               std::snprintf(buffer, sizeof(buffer), "\\u%04x", ch);
               escaped += buffer;
-            } else {
+            }
+            else {
               escaped += static_cast<char>(ch);
             }
         }
@@ -74,7 +75,7 @@ namespace arena {
 
       return escaped;
     }
-  } // namespace
+  }// namespace
 
   ResultWriter::ResultWriter(const std::string& resultsDir)
       : resultsDir(resultsDir) {
@@ -90,7 +91,7 @@ namespace arena {
     // New file naming: {TestSuite}_{EngineName}-{EngineVersion}_{Timestamp}.json
     // e.g., WAC_FrankyCPP-v0.5_20260205_143000.json
     const std::string engineId = result.engineName + "-" + result.engineVersion;
-    std::string filename = generateFilename("testsuite", result.testSuiteName, engineId);
+    std::string filename       = generateFilename("testsuite", result.testSuiteName, engineId);
 
     std::ofstream file(filename);
     if (!file.is_open()) {
@@ -99,14 +100,14 @@ namespace arena {
 
     // Calculate derived metrics
     const double successRate = result.totalTests > 0
-        ? result.passed * 100.0 / result.totalTests
-        : 0.0;
-    const double avgTimeMs = result.totalTests > 0
-        ? static_cast<double>(result.totalTimeMs) / result.totalTests
-        : 0.0;
-    const double avgNodes = result.totalTests > 0
-        ? static_cast<double>(result.totalNodes) / result.totalTests
-        : 0.0;
+                                 ? result.passed * 100.0 / result.totalTests
+                                 : 0.0;
+    const double avgTimeMs   = result.totalTests > 0
+                                 ? static_cast<double>(result.totalTimeMs) / result.totalTests
+                                 : 0.0;
+    const double avgNodes    = result.totalTests > 0
+                                 ? static_cast<double>(result.totalNodes) / result.totalTests
+                                 : 0.0;
 
     // Write JSON with new structure per spec Section 2.3
     file << "{\n";
@@ -168,12 +169,12 @@ namespace arena {
     // e.g., FrankyCPP-v1.1_vs_FrankyGo-v1.0.3_60+0.6_20260205_143000.json
     const std::string engine1Id = result.engine1Name + "-" + result.engine1Version;
     const std::string engine2Id = result.engine2Name + "-" + result.engine2Version;
-    std::string sanitizedTC = result.timeControl;
+    std::string sanitizedTC     = result.timeControl;
     std::ranges::replace(sanitizedTC, '+', '_');
     std::ranges::replace(sanitizedTC, '/', '_');
 
     const std::string matchId = engine1Id + "_vs_" + engine2Id + "_" + sanitizedTC;
-    std::string filename = generateFilename("match", matchId, "");
+    std::string filename      = generateFilename("match", matchId, "");
 
     std::ofstream file(filename);
     if (!file.is_open()) {
@@ -273,7 +274,7 @@ namespace arena {
     const std::string filename = resultsDir + "/benchmarks/benchmarks.json";
 
     if (!std::filesystem::exists(filename)) {
-      return results;  // Empty vector if file doesn't exist
+      return results;// Empty vector if file doesn't exist
     }
 
     std::ifstream file(filename);
@@ -327,19 +328,19 @@ namespace arena {
       const size_t entryEnd = content.find('}', pos);
       if (entryEnd == std::string::npos) break;
 
-      r.arenaVersion = extractString(pos, "arenaVersion");
-      r.timestamp = extractString(pos, "timestamp");
-      r.engineName = extractString(pos, "engineName");
+      r.arenaVersion  = extractString(pos, "arenaVersion");
+      r.timestamp     = extractString(pos, "timestamp");
+      r.engineName    = extractString(pos, "engineName");
       r.engineVersion = extractString(pos, "engineVersion");
-      r.enginePath = extractString(pos, "enginePath");
-      r.depth = static_cast<int>(extractNumber(pos, "depth"));
-      r.hashSizeMB = static_cast<int>(extractNumber(pos, "hashSizeMB"));
-      r.threads = static_cast<int>(extractNumber(pos, "threads"));
-      r.positions = static_cast<int>(extractNumber(pos, "positions"));
-      r.totalNodes = static_cast<uint64_t>(extractNumber(pos, "totalNodes"));
-      r.totalTimeMs = extractNumber(pos, "totalTimeMs");
-      r.nps = static_cast<uint64_t>(extractNumber(pos, "nps"));
-      r.notes = extractString(pos, "notes");
+      r.enginePath    = extractString(pos, "enginePath");
+      r.depth         = static_cast<int>(extractNumber(pos, "depth"));
+      r.hashSizeMB    = static_cast<int>(extractNumber(pos, "hashSizeMB"));
+      r.threads       = static_cast<int>(extractNumber(pos, "threads"));
+      r.positions     = static_cast<int>(extractNumber(pos, "positions"));
+      r.totalNodes    = static_cast<uint64_t>(extractNumber(pos, "totalNodes"));
+      r.totalTimeMs   = extractNumber(pos, "totalTimeMs");
+      r.nps           = static_cast<uint64_t>(extractNumber(pos, "nps"));
+      r.notes         = extractString(pos, "notes");
 
       results.push_back(r);
       pos = entryEnd + 1;
@@ -358,14 +359,14 @@ namespace arena {
     // Build engine identifiers for filename
     const std::string engine1Id = v1Results[0].engineName + "-" + v1Results[0].engineVersion;
     const std::string engine2Id = v2Results[0].engineName + "-" + v2Results[0].engineVersion;
-    std::string filename = resultsDir + "/comparisons/" + engine1Id + "_vs_" + engine2Id + "_" + getTimestamp() + ".txt";
+    std::string filename        = resultsDir + "/comparisons/" + engine1Id + "_vs_" + engine2Id + "_" + getTimestamp() + ".txt";
     return filename;
   }
 
   std::string ResultWriter::generateFilename(const std::string& prefix,
                                              const std::string& name,
                                              const std::string& engineId) const {
-    std::string sanitizedName = name;
+    std::string sanitizedName     = name;
     std::string sanitizedEngineId = engineId;
     // Replace spaces with underscores
     std::ranges::replace(sanitizedName, ' ', '_');

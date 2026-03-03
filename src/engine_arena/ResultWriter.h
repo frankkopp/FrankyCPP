@@ -94,59 +94,59 @@
 
 namespace arena {
 
-/// Writes arena results to JSON files
-class ResultWriter {
-public:
-  /// Creates a ResultWriter for the specified output directory
-  /// @param resultsDir Root directory for results (e.g., "./results")
-  explicit ResultWriter(const std::string& resultsDir);
+  /// Writes arena results to JSON files
+  class ResultWriter {
+  public:
+    /// Creates a ResultWriter for the specified output directory
+    /// @param resultsDir Root directory for results (e.g., "./results")
+    explicit ResultWriter(const std::string& resultsDir);
 
-  /// Write test suite results to a JSON file
-  /// @param result Test suite result data
-  /// @return Path to the created file
-  std::string writeTestSuiteResult(const TestSuiteResult& result) const;
+    /// Write test suite results to a JSON file
+    /// @param result Test suite result data
+    /// @return Path to the created file
+    std::string writeTestSuiteResult(const TestSuiteResult& result) const;
 
-  /// Write match results to the JSON file
-  /// @param result Match result data
-  /// @return Path to the created file
-  std::string writeMatchResult(const MatchResult& result) const;
+    /// Write match results to the JSON file
+    /// @param result Match result data
+    /// @return Path to the created file
+    std::string writeMatchResult(const MatchResult& result) const;
 
-  /// Write benchmark result to the consolidated JSON file
-  /// Appends to existing results file (benchmarks.json)
-  /// @param result Benchmark result data
-  /// @return Path to the created/updated file
-  std::string writeBenchmarkResult(const BenchmarkResult& result) const;
+    /// Write benchmark result to the consolidated JSON file
+    /// Appends to existing results file (benchmarks.json)
+    /// @param result Benchmark result data
+    /// @return Path to the created/updated file
+    std::string writeBenchmarkResult(const BenchmarkResult& result) const;
 
-  /// Read all benchmark results from the consolidated JSON file
-  /// @return Vector of all stored benchmark results
-  std::vector<BenchmarkResult> readBenchmarkResults() const;
+    /// Read all benchmark results from the consolidated JSON file
+    /// @return Vector of all stored benchmark results
+    std::vector<BenchmarkResult> readBenchmarkResults() const;
 
-  /// Write a comparison report between two versions
-  /// @param v1Results Results from version 1
-  /// @param v2Results Results from version 2
-  /// @return Path to the created file
-  std::string writeComparison(const std::vector<TestSuiteResult>& v1Results,
-                               const std::vector<TestSuiteResult>& v2Results) const;
+    /// Write a comparison report between two versions
+    /// @param v1Results Results from version 1
+    /// @param v2Results Results from version 2
+    /// @return Path to the created file
+    std::string writeComparison(const std::vector<TestSuiteResult>& v1Results,
+                                const std::vector<TestSuiteResult>& v2Results) const;
 
-private:
-  std::string resultsDir;
+  private:
+    std::string resultsDir;
 
-  /// Generate filename with timestamp
-  /// @param prefix Prefix for filename (e.g., "testsuite", "match")
-  /// @param name Test suite or match name
-  /// @param engineId Engine identifier (e.g., "FrankyCPP-v0.5")
-  /// @return Filename in format: {name}_{engineId}_{timestamp}.json
-  std::string generateFilename(const std::string& prefix,
-                                const std::string& name,
-                                const std::string& engineId) const;
+    /// Generate filename with timestamp
+    /// @param prefix Prefix for filename (e.g., "testsuite", "match")
+    /// @param name Test suite or match name
+    /// @param engineId Engine identifier (e.g., "FrankyCPP-v0.5")
+    /// @return Filename in format: {name}_{engineId}_{timestamp}.json
+    std::string generateFilename(const std::string& prefix,
+                                 const std::string& name,
+                                 const std::string& engineId) const;
 
-  /// Get current timestamp in YYYYMMDD_HHMMSS format
-  static std::string getTimestamp() ;
+    /// Get current timestamp in YYYYMMDD_HHMMSS format
+    static std::string getTimestamp();
 
-  /// Ensure directory exists, create if needed
-  static void ensureDirectoryExists(const std::string& path);
-};
+    /// Ensure directory exists, create if needed
+    static void ensureDirectoryExists(const std::string& path);
+  };
 
-} // namespace arena
+}// namespace arena
 
-#endif // FRANKYCPP_ENGINE_ARENA_RESULTWRITER_H
+#endif// FRANKYCPP_ENGINE_ARENA_RESULTWRITER_H

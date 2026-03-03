@@ -22,6 +22,7 @@
 #include <array>
 #include <vector>
 
+using namespace chess;
 TEST(ColorTest, IterateAllProvidesExactlyWhiteThenBlack) {
   std::vector<Color> seen;
   for (const Color c : Color::all()) {
@@ -44,7 +45,7 @@ TEST(ColorTest, RangeBasedForCompilesAndWorks) {
   for (const Color c : Color::all()) {
     sum += static_cast<int>(c);
   }
-  EXPECT_EQ(sum, 1); // 0 + 1
+  EXPECT_EQ(sum, 1);// 0 + 1
 }
 
 TEST(ColorTest, OppositeAndBitNotAreEquivalent) {

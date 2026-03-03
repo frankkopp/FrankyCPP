@@ -22,24 +22,24 @@
 
 #include <string>
 
-namespace crashhandler {
+namespace common::crashhandler {
 
-/// Installs a crash handler that generates minidumps on unhandled exceptions.
-/// On Windows: Uses SetUnhandledExceptionFilter to catch access violations, etc.
-/// On Linux: Uses signal handlers for SIGSEGV, SIGABRT, etc.
-/// @param dumpPath Directory where minidumps will be written (default: current directory)
-void install(const std::string& dumpPath = ".");
+  /// Installs a crash handler that generates minidumps on unhandled exceptions.
+  /// On Windows: Uses SetUnhandledExceptionFilter to catch access violations, etc.
+  /// On Linux: Uses signal handlers for SIGSEGV, SIGABRT, etc.
+  /// @param dumpPath Directory where minidumps will be written (default: current directory)
+  void install(const std::string& dumpPath = ".");
 
-/// Uninstalls the crash handler, restoring default behavior.
-void uninstall();
+  /// Uninstalls the crash handler, restoring default behavior.
+  void uninstall();
 
-/// Returns true if the crash handler is currently installed.
-bool isInstalled();
+  /// Returns true if the crash handler is currently installed.
+  bool isInstalled();
 
-/// Manually trigger a minidump (for testing or diagnostic purposes).
-/// @param reason A description of why the dump was triggered
-void triggerDump(const std::string& reason = "manual");
+  /// Manually trigger a minidump (for testing or diagnostic purposes).
+  /// @param reason A description of why the dump was triggered
+  void triggerDump(const std::string& reason = "manual");
 
-}// namespace crashhandler
+}// namespace common::crashhandler
 
 #endif// FRANKYCPP_CRASHHANDLER_H

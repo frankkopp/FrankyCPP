@@ -46,16 +46,18 @@
 
 #include <cstdint>
 
-enum Orientation : uint_fast8_t {
-  NW,      // 0
-  N,       // 1
-  NE,      // 2
-  E,       // 3
-  SE,      // 4
-  S,       // 5
-  SW,      // 6
-  W,       // 7
-  OR_LENGTH// 8
-};
+namespace chess {
+  enum Orientation : uint_fast8_t {
+    NW,      // 0
+    N,       // 1
+    NE,      // 2
+    E,       // 3
+    SE,      // 4
+    S,       // 5
+    SW,      // 6
+    W,       // 7
+    OR_LENGTH// 8
+  };
+}// namespace chess
 
-#endif//FRANKYCPP_ORIENTATION_H
+#endif// FRANKYCPP_ORIENTATION_H
