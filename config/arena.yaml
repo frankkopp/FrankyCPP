@@ -115,7 +115,7 @@ testSuites:
     debugMode: false
     commandLineArgs: "--nobook"
     uciOptions: ""
-    parallelWorkers: 2
+    parallelWorkers: 4
 
   - name: "mate_test_v1.4"
     epdPath: "test/testsets/mate_test_suite.epd"
@@ -127,7 +127,7 @@ testSuites:
     debugMode: false
     commandLineArgs: "--nobook"
     uciOptions: ""
-    parallelWorkers: 2
+    parallelWorkers: 4
 
   - name: "WAC_v1.4"
     epdPath: "test/testsets/wac.epd"
@@ -139,7 +139,7 @@ testSuites:
     debugMode: false
     commandLineArgs: "--nobook"
     uciOptions: ""
-    parallelWorkers: 2
+    parallelWorkers: 4
 
   - name: "STS_v1.4"
     epdPath: "test/testsets/STS1-STS15_LAN.EPD"
@@ -151,7 +151,7 @@ testSuites:
     debugMode: false
     commandLineArgs: "--nobook"
     uciOptions: ""
-    parallelWorkers: 2
+    parallelWorkers: 4
 
   - name: "Crafty_v1.4"
     epdPath: "test/testsets/crafty_test.epd"
@@ -163,7 +163,7 @@ testSuites:
     debugMode: false
     commandLineArgs: "--nobook"
     uciOptions: ""
-    parallelWorkers: 2
+    parallelWorkers: 4
 
   - name: "ECM98_v1.4"
     epdPath: "test/testsets/ecm98.epd"
@@ -175,7 +175,7 @@ testSuites:
     debugMode: false
     commandLineArgs: "--nobook"
     uciOptions: ""
-    parallelWorkers: 2
+    parallelWorkers: 4
 
   - name: "Kaufman_v1.4"
     epdPath: "test/testsets/kaufman.epd"
@@ -187,7 +187,7 @@ testSuites:
     debugMode: false
     commandLineArgs: "--nobook"
     uciOptions: ""
-    parallelWorkers: 2
+    parallelWorkers: 4
 
   # ==========================================================================
   # FrankyCPP v1.3 test suites
@@ -1012,7 +1012,7 @@ matches:
 #  # === Blitz matches between v1.3 and references (100 games each) ===
 
 # current dev vs. v1.4
-  - name: "v1.4_vs_v1.3_blitz_208_smp"
+  - name: "v1.4_vs_v1.3_blitz_208_smp_v2"
     engine1Path: "Release/FrankyCPP_v1.4/FrankyCPP_v1.4.exe"
     engine1Version: "v1.4"
     engine2Path: "Release/FrankyCPP_V1.3/FrankyCPP_v1.3.exe"
@@ -1020,8 +1020,8 @@ matches:
     openingBook: "books/8moves_GM_LB.pgn"
     timeControl: "300+0"
     rounds: 208
-    concurrency: 2
-    outputPgn: "results/matches/v1.4_vs_v1.3_blitz_208.pgn"
+    concurrency: 4
+    outputPgn: "results/matches/v1.4_vs_v1.3_smpv2_blitz_208.pgn"
 
 #    v0.5
 #  - name: "v0.5_vs_v1.2_blitz_100"

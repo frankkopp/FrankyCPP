@@ -90,7 +90,7 @@ The transposition table experiences **memory latency that cannot be hidden**:
 |------------------------|------------------|-----------------|--------|--------|
 | TT::probe CPI          | 3.37             | 9.10            | < 2.0  | 🔴     |
 | TT::probe Memory Bound | 74%              | 62.6%           | < 50%  | 🟡     |
-| TT::probe CPU Time     | 42.3s            | 22.76s          | < 30s  | ✅     |
+| TT::probe CPU Time     | 42.3s            | 22.76s          | < 30s  | ✅      |
 | LLC Misses (TT)        | 1.65M            | 1.10M           | < 1.0M | 🟡     |
 
 **Note:** TT::probe CPU Time target met via Lazy SMP refactor (depth diversification). TT Buckets would further improve CPI and memory bound.
@@ -476,15 +476,15 @@ Bitboard Position::getAttacks(PieceType pt, Color c) const {
 
 Based on microarchitecture analysis, priorities have been adjusted:
 
-| Priority | Optimization                             | Effort     | Expected Impact | Rationale                                                            |
-|----------|------------------------------------------|------------|-----------------|----------------------------------------------------------------------|
-| 1        | **TT Buckets + alignas(64)** (combined)  | Medium     | **High**        | Primary bottleneck; 76% back-end bound; must combine for efficiency  |
-| ~~2~~    | ~~Entry/Bucket alignment alone~~         | N/A        | N/A             | ❌ Wastes 48B/entry without buckets; MUST combine with buckets        |
-| 2        | Attack caching per-position              | Medium     | Low-Med         | Redundant calls, but slider CPI is already good (0.35)               |
-| ~~4~~    | ~~Verify TT prefetch timing~~    | N/A        | N/A             | ❌ NOT VIABLE: Prefetch requires key from after doMove()     |
-| ~~5~~    | ~~PEXT slider tables~~           | N/A        | N/A             | **ALREADY IMPLEMENTED** - using `_pext_u64`, CPI 0.35 ✅     |
-| 6        | XOR key encoding                 | Medium     | Low on x86      | Current atomic approach is efficient                        |
-| 7        | Branchless move sorting          | Low        | Low-Med         | 27% bad speculation, secondary issue                        |
+| Priority | Optimization                            | Effort | Expected Impact | Rationale                                                           |
+|----------|-----------------------------------------|--------|-----------------|---------------------------------------------------------------------|
+| 1        | **TT Buckets + alignas(64)** (combined) | Medium | **High**        | Primary bottleneck; 76% back-end bound; must combine for efficiency |
+| ~~2~~    | ~~Entry/Bucket alignment alone~~        | N/A    | N/A             | ❌ Wastes 48B/entry without buckets; MUST combine with buckets       |
+| 2        | Attack caching per-position             | Medium | Low-Med         | Redundant calls, but slider CPI is already good (0.35)              |
+| ~~4~~    | ~~Verify TT prefetch timing~~           | N/A    | N/A             | ❌ NOT VIABLE: Prefetch requires key from after doMove()             |
+| ~~5~~    | ~~PEXT slider tables~~                  | N/A    | N/A             | **ALREADY IMPLEMENTED** - using `_pext_u64`, CPI 0.35 ✅             |
+| 6        | XOR key encoding                        | Medium | Low on x86      | Current atomic approach is efficient                                |
+| 7        | Branchless move sorting                 | Low    | Low-Med         | 27% bad speculation, secondary issue                                |
 
 **Key Change:** PEXT optimization deprioritized - microarchitecture analysis shows slider tables (CPI 0.35, 52.6% retiring) are NOT a bottleneck. TT memory access (CPI 3.67-7.10) is 10-20x worse.
 

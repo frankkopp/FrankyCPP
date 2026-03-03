@@ -338,4 +338,29 @@ Search Feature Correctness Review Summary (v1.4):
 - Review document: docs/specs/PLAN_Search_Correctness_Review.md
 ```
 
+```
+After SMP (second approach incl. iterative deepening fix)
+==================================================================
+Match Complete: v1.4_vs_v1.3_blitz_208_smp_v2
+  FrankyCPP v1.4: 103 wins, 71 draws, 34 losses
+  FrankyCPP v1.3: 34 wins, 71 draws, 103 losses
+  Score: 138.5 - 69.5
+  ELO Difference: +119.8
+  Duration: 11898.8s
+==================================================================
+
+===================================================================
+All Matches Complete
+===================================================================
+  v1.4_vs_v1.3_blitz_208_smp_v2: 138.5 - 69.5 (ELO: +119.8)
+===================================================================
+
+Saving match results...
+  Saved: ./results/matches/FrankyCPP_v1.4-v1.4_vs_FrankyCPP_v1.3-v1.3_300_0__20260303_165311.json
+
+===================================================================
+Matches Complete
+===================================================================
+```
+
 ---
