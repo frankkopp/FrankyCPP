@@ -63,6 +63,7 @@ const MoveList* MoveGenerator::generatePseudoLegalMoves(const Position& p, const
   updateSortValues(p, &pseudoLegalMoves);
 
   // sort moves
+  // TODO: consider using non stable sort here
   std::ranges::stable_sort(pseudoLegalMoves, moveValueGreaterComparator());
 
   // remove internal sort value
@@ -589,6 +590,7 @@ void MoveGenerator::fillOnDemandMoveList(const Position& position, const GenMode
     }
     // sort the list according to sort values encoded in the move
     if (!onDemandMoves.empty()) {
+      // TODO: consider using non stable sort here
       std::ranges::stable_sort(onDemandMoves, moveValueGreaterComparator());
     }
   }// while onDemandMoves.empty()
