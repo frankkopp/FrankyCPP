@@ -270,7 +270,7 @@ TEST_F(SearchTest, startNodesLimitedSearch) {
 
   // With single thread, total nodes should be close to limit (slight overshoot from batch checking)
   EXPECT_GE(totalNodes, sl.nodes) << "Should reach node limit";
-  EXPECT_LE(totalNodes, sl.nodes + 100'000) << "Should not overshoot limit significantly";
+  EXPECT_LE(totalNodes, sl.nodes * 1.1) << "Should not overshoot limit significantly";
 }
 
 TEST_F(SearchTest, depthLimitedSearch) {
