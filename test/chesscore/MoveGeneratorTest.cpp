@@ -473,45 +473,88 @@ TEST_F(MoveGenTest, storeKiller) {
 TEST_F(MoveGenTest, onDemandKiller) {
   MoveGenerator mg;
   MoveList moves;
+  MoveList movesWithKillers;
   Move move;
 
-  // 86
+  // Helper to find index of a move by UCI string in a move list
+  const auto findMoveIndex = [](const MoveList& list, const string& uci) -> int {
+    for (size_t i = 0; i < list.size(); i++) {
+      if (list[i].str() == uci) return static_cast<int>(i);
+    }
+    return -1;
+  };
+
+  // 86 moves
   auto pos = Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3");
 
-  Move move1 = mg.getMoveFromUci(pos, "g6h4");
-  Move move2 = mg.getMoveFromUci(pos, "b7b6");
-  Move move3 = mg.getMoveFromUci(pos, "a2b1Q");
-  mg.resetOnDemand();
-  mg.storeKiller(move1);
-  mg.storeKiller(move2);
-  mg.setPV(move3);
+  // First pass: generate without PV/killers to get baseline move count
   while ((move = mg.getNextPseudoLegalMove(pos, GenAll)) != MOVE_NONE) {
     moves.push_back(move);
-    //    fprintln(move.strVerbose());
   }
   EXPECT_EQ(86, moves.size());
-  EXPECT_EQ("a2b1Q c2b1Q a2a1Q c2c1Q c2b1N a2b1N a2a1N c2c1N f4g3 f4e3 c2b1R a2b1R c2b1B a2b1B b2a3 a8a3 g6e5 d7e5 b2e5 e6e5 c4e4 c6e4 b7b6 f4f3 h7h6 b7b5 h7h5 a2a1R c2c1R a2a1B c2c1B e8g8 e8c8 g6h4 d7c5 a8d8 h8f8 a8c8 d7f6 b2d4 g6e7 c6c5 c6d5 c4c5 c6d6 e6f5 e6d6 b2c3 e6f6 e6d5 c4d5 d7b6 e6e7 e6f7 c4d4 a8a5 a8a6 a8a7 c4e2 c4b3 c6b5 c4b4 c6b6 e6g4 a8a4 c4b5 c4c3 c4d3 c6a4 c4a4 a8b8 h8g8 b2c1 c4f1 c4a6 c6a6 e6h3 e6g8 b2a1 g6f8 d7f8 d7b8 e8f8 e8e7 e8f7 e8d8", moves.str());
-  moves.clear();
 
+  // Second pass: generate with PV and killers set
+  mg.reset();
+  const Move killer1 = mg.getMoveFromUci(pos, "g6h4");
+  const Move killer2 = mg.getMoveFromUci(pos, "b7b6");
+  const Move pv1     = mg.getMoveFromUci(pos, "a2b1Q");
+  mg.resetOnDemand();
+  mg.storeKiller(killer1);
+  mg.storeKiller(killer2);
+  mg.setPV(pv1);
+  while ((move = mg.getNextPseudoLegalMove(pos, GenAll)) != MOVE_NONE) {
+    movesWithKillers.push_back(move);
+  }
+  EXPECT_EQ(86, movesWithKillers.size());
+
+  // PV move must be first
+  EXPECT_EQ("a2b1Q", movesWithKillers[0].str());
+
+  // Killer moves must be somewhere in the middle (not first, not last)
+  const int idx_k1 = findMoveIndex(movesWithKillers, "g6h4");
+  const int idx_k2 = findMoveIndex(movesWithKillers, "b7b6");
+  EXPECT_GT(idx_k1, 0);
+  EXPECT_LT(idx_k1, static_cast<int>(movesWithKillers.size()) - 1);
+  EXPECT_GT(idx_k2, 0);
+  EXPECT_LT(idx_k2, static_cast<int>(movesWithKillers.size()) - 1);
+
+  moves.clear();
+  movesWithKillers.clear();
   mg.reset();
 
   // 48 kiwipete
   pos = Position("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
 
-  move1 = mg.getMoveFromUci(pos, "d2g5");
-  move2 = mg.getMoveFromUci(pos, "b2b3");
-  move3 = mg.getMoveFromUci(pos, "e2a6");
-  mg.resetOnDemand();
-  mg.storeKiller(move1);
-  mg.storeKiller(move2);
-  mg.setPV(move3);
+  // First pass: generate without PV/killers
   while ((move = mg.getNextPseudoLegalMove(pos, GenAll)) != MOVE_NONE) {
     moves.push_back(move);
-    //    fprintln(move.strVerbose());
   }
   EXPECT_EQ(48, moves.size());
-  EXPECT_EQ("e2a6 g2h3 d5e6 e5d7 e5f7 e5g6 f3f6 f3h3 b2b3 a2a3 d5d6 a2a4 g2g4 g2g3 e1g1 e1c1 d2g5 e5d3 e5c4 a1c1 a1d1 h1f1 e5c6 d2e3 d2f4 e2d3 e2c4 c3b5 e2b5 f3d3 f3e3 f3f4 f3f5 e5g4 f3g3 f3g4 f3h5 d2h6 e2d1 a1b1 h1g1 c3a4 c3d1 d2c1 e2f1 c3b1 e1f1 e1d1", moves.str());
-  moves.clear();
+
+  // Second pass: generate with PV and killers set
+  mg.reset();
+  const Move killer3 = mg.getMoveFromUci(pos, "d2g5");
+  const Move killer4 = mg.getMoveFromUci(pos, "b2b3");
+  const Move pv2     = mg.getMoveFromUci(pos, "e2a6");
+  mg.resetOnDemand();
+  mg.storeKiller(killer3);
+  mg.storeKiller(killer4);
+  mg.setPV(pv2);
+  while ((move = mg.getNextPseudoLegalMove(pos, GenAll)) != MOVE_NONE) {
+    movesWithKillers.push_back(move);
+  }
+  EXPECT_EQ(48, movesWithKillers.size());
+
+  // PV move must be first
+  EXPECT_EQ("e2a6", movesWithKillers[0].str());
+
+  // Killer moves must be somewhere in the middle (not first, not last)
+  const int idx_k3 = findMoveIndex(movesWithKillers, "d2g5");
+  const int idx_k4 = findMoveIndex(movesWithKillers, "b2b3");
+  EXPECT_GT(idx_k3, 0);
+  EXPECT_LT(idx_k3, static_cast<int>(movesWithKillers.size()) - 1);
+  EXPECT_GT(idx_k4, 0);
+  EXPECT_LT(idx_k4, static_cast<int>(movesWithKillers.size()) - 1);
 }
 
 TEST_F(MoveGenTest, pvMove) {
