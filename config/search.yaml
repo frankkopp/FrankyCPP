@@ -1,205 +1,303 @@
 # FrankyCPP Search Configuration (flat keys)
-# Mirrors defaults in src/engine/SearchConfig.h
+# Mirrors defaults in src/config/SearchConfigData.h
+#
+# All options are commented out by default to use the struct defaults.
+# Uncomment and modify only the options you want to override.
 # Note: The large LMR_REDUCTION table is intentionally omitted and will be moved to code later.
 
 # Debugging and profiling options
 CONFIG_SOURCE: "yaml-file"
 
+# Marker for smoke tests - ensures YAML file is present and parseable
+# DO NOT REMOVE - used by ConfigYamlSmokeTest
+_YAML_SMOKE_TEST_MARKER: true
+
+# Number of threads to use for search (1 = single-threaded)
+# THREADS: 4
+
+# Multi-threading (Lazy SMP)
+# Depth at which to launch helper threads (allows TT priming)
+# SMP_HELPER_START_DEPTH: 4
+
 # Fixed overhead (milliseconds) deducted from available time per move to account for engine housekeeping
-MOVE_OVERHEAD_MS: 10
+# MOVE_OVERHEAD_MS: 10
 
 # Enable/disable opening book usage
-USE_BOOK: true
+# USE_BOOK: true
 # Path to the opening book file (relative to working directory)
-BOOK_PATH: "./books/book.txt"
+# BOOK_PATH: "./books/book.txt"
 # Book format (SIMPLE/PGN/…) as string for readability; parsed in code
-BOOK_TYPE: "SIMPLE"  # OpeningBook::BookFormat::SIMPLE
+# BOOK_TYPE: "SIMPLE"  # OpeningBook::BookFormat::SIMPLE
 
 # Enable thinking during opponent time (pondering)
-USE_PONDER: true
+# USE_PONDER: true
 
 # Core search strategies
 # Enable alpha-beta pruning
-USE_ALPHABETA: true
+# USE_ALPHABETA: true
 # Use Principal Variation Search (null-window first)
-USE_PVS: true
+# USE_PVS: true
 # Use aspiration windows around the previous score to speed up convergence
-USE_ASP: true
+# USE_ASP: true
 
 # Enable quiescence search to resolve tactical instability at leaf nodes
-USE_QUIESCENCE: true
+# USE_QUIESCENCE: true
 
 # Transposition table (TT) controls
 # Enable TT usage
-USE_TT: true
+# USE_TT: true
 # Allow pruning using TT stored values when safe
-USE_TT_VALUE: true
+# USE_TT_VALUE: true
 # Store static evaluation in TT entries
-USE_EVAL_TT: true
+# USE_EVAL_TT: true
 # TT size in megabytes
-TT_SIZE_MB: 64
+# TT_SIZE_MB: 64
 # Use TT also inside quiescence search
-USE_QS_TT: true
+# USE_QS_TT: true
 
 # Syzygy Tablebase settings
 # Path to Syzygy tablebase files (semicolon-separated on Windows, colon on Linux)
 # Leave empty to disable tablebase probing
-TB_PATH: "D:/SYZYGY"
+# TB_PATH: ""
 
 # Root probing (once per search, for best move selection)
 # Probe tablebases at root for best move selection
-USE_TB_PROBE_ROOT: true
+# USE_TB_PROBE_ROOT: true
 # Return TB move immediately without searching (false = search for PV)
-TB_ROOT_IMMEDIATE: false
+# TB_ROOT_IMMEDIATE: false
 
 # Search probing (during tree search, for cutoffs)
 # Probe tablebases during search for cutoffs
-USE_TB_PROBE_SEARCH: true
+# USE_TB_PROBE_SEARCH: true
 # Probe tablebases on PV nodes (false = only non-PV nodes for cutoffs, saves overhead)
-USE_TB_PROBE_PV: true
-# Minimum remaining depth to probe WDL during search (0 = always probe)
-TB_PROBE_DEPTH: 1
+# USE_TB_PROBE_PV: true
+# Minimum remaining depth to probe WDL during search (Stockfish default: 1)
+# Higher values reduce file I/O but may miss TB cutoffs at shallow depths
+# TB_PROBE_DEPTH: 1
 # Maximum pieces for search TB probing (3-7, typically matches available TBs)
-TB_PROBE_LIMIT: 6
+# TB_PROBE_LIMIT: 6
 # HalfMoveClock threshold for DTZ accuracy check (>=100 disables this check)
 # When halfMoveClock >= this value, be conservative about claiming wins/losses
-TB_RULE50_THRESHOLD: 80
+# TB_RULE50_THRESHOLD: 80
+
+# Cache pre-warming (reduces latency on first TB probes)
+# Pre-warm OS file cache at startup by probing representative endgame positions
+# TB_CACHE_PREWARM: true
+# Maximum pieces to pre-warm (3-6, higher values increase startup time)
+# TB_CACHE_PREWARM_PIECES: 6
 
 # Move ordering features
 # Use TT best move as a first candidate (PV move)
-USE_TT_PV_MOVE_SORT: true
+# USE_TT_PV_MOVE_SORT: true
 # Enable killer move heuristic
-USE_KILLER_MOVES: true
+# USE_KILLER_MOVES: true
 # Enable history counters table
-USE_HISTORY_COUNTER: true
+# USE_HISTORY_COUNTER: true
 # Enable history move heuristic
-USE_HISTORY_MOVES: true
-# Enable Internal Iterative Deepening (IID)
-USE_IID: true
+# USE_HISTORY_MOVES: true
+
+# Internal Iterative Deepening (IID) - Legacy approach
+# Does a reduced-depth mini-search to find a good first move when no TT move
+# Note: Largely obsolete - PV-only restriction makes it rarely trigger
+# Note: USE_IID and USE_IIR are mutually exclusive - only enable one!
+# USE_IID: false
 # Depth at which IID triggers (in plies)
-IID_DEPTH: 6
+# IID_DEPTH: 6
 # Reduction (in plies) applied by IID before searching best moves
-IID_REDUCTION: 2
+# IID_REDUCTION: 2
+
+# Internal Iterative Reduction (IIR) - Modern alternative to IID
+# Simply reduces depth when no TT move available (Stockfish approach)
+# Much more effective than IID - 36% node reduction in testing
+# Note: USE_IID and USE_IIR are mutually exclusive - only enable one!
+# USE_IIR: true
+# Minimum depth to apply IIR reduction
+# IIR_DEPTH: 4
+# How much to reduce depth when IIR triggers
+# IIR_REDUCTION: 2
+# Apply IIR to all node types (true) or PV only (false)
+# IIR_ALL_NODES: true
 
 # Pruning features (selective search)
 # Mate distance pruning
-USE_MDP: true
+# USE_MDP: true
 # Stand pat cutoff in quiescence
-USE_QS_STANDPAT_CUT: true
+# USE_QS_STANDPAT_CUT: true
 # SEE-based capture filtering in quiescence
-USE_QS_SEE: true
+# USE_QS_SEE: true
 # Razoring heuristic to prune obviously bad nodes near leafs
-USE_RAZORING: true
+# USE_RAZORING: true
 # Margin (centipawns) for razoring decisions
-RAZOR_MARGIN: 531
+# RAZOR_MARGIN: 531
 # Reverse Futility Pruning toggle and margins per remaining depth (centipawns)
-USE_RFP: true
-RFP_MARGIN: [0, 200, 400, 800]
+# USE_RFP: true
+# RFP_MARGIN: [0, 200, 400, 800]
+# RFP + improving: increase margin when not improving (prune less aggressively)
+# Rationale: "not improving" means eval may be unreliable, search more carefully
+# USE_RFP_IMPROVING: true
+# RFP margin increase in centipawns when not improving (0-300)
+# RFP_IMPROVING_MARGIN: 40
 
 # Null Move Pruning (NMP)
 # Enable null-move pruning
-USE_NMP: true
+# USE_NMP: true
 # Minimum depth (plies) to attempt NMP
-NMP_DEPTH: 3
+# NMP_DEPTH: 3
 # Reduction (plies) applied after null-move
-NMP_REDUCTION: 2
+# NMP_REDUCTION: 2
 # Verify fail-highs with a re-search (safer NMP)
-USE_NMP_VERIFY: true
+# USE_NMP_VERIFY: true
 # Minimum depth (plies) for verification to kick in
-NMP_VERIFY_MIN_DEPTH: 6
+# NMP_VERIFY_MIN_DEPTH: 6
 # Extra margin (plies) used when computing verification depth
-NMP_VERIFY_MARGIN: 2
+# NMP_VERIFY_MARGIN: 2
 # Disable NMP near mate windows within this margin (centipawns)
-NMP_NEAR_MATE_MARGIN: 64
+# NMP_NEAR_MATE_MARGIN: 64
 # Guard against zugzwang-prone positions (e.g., low-material endgames)
-USE_NMP_ZUG_GUARD: true
+# USE_NMP_ZUG_GUARD: true
 # Minimum number of non-pawn pieces required to attempt NMP (0 disables guard)
-NMP_ZUG_NONPAWN_THRESHOLD: 0
+# NMP_ZUG_NONPAWN_THRESHOLD: 0
+# NMP + improving: extra reduction when position is not improving
+# USE_NMP_IMPROVING: true
+# Extra NMP reduction depth when not improving (0-3)
+# NMP_IMPROVING_REDUCTION: 1
 
 # Futility Pruning (normal and quiescence)
 # Enable futility pruning in main search
-USE_FP: true
+# USE_FP: true
 # Enable futility pruning in quiescence
-USE_QFP: true
+# USE_QFP: true
 # Futility margins (centipawns) indexed by remaining depth (0..6)
-FP_MARGIN: [0, 100, 200, 300, 500, 900, 1200]
+# FP_MARGIN: [0, 100, 200, 300, 500, 900, 1200]
+# FP + improving: increase margin when not improving (prune less aggressively)
+# Rationale: "not improving" means eval may be unreliable, search more carefully
+# USE_FP_IMPROVING: true
+# FP margin increase in centipawns when not improving (0-300)
+# FP_IMPROVING_MARGIN: 80
+
+# Improving flag: track if static eval is improving vs 2 plies ago
+# When not improving, pruning techniques can be more aggressive
+# USE_IMPROVING: true
 
 # Late Move Reduction / Pruning
 # Enable LMR
-USE_LMR: true
+# USE_LMR: true
 # Minimum depth (plies) to start reducing late moves
-LMR_MIN_DEPTH: 2
+# LMR_MIN_DEPTH: 2
 # Start reducing from this move index (i.e., after this many moves searched)
-LMR_MIN_MOVES: 2
+# LMR_MIN_MOVES: 2
 # Use logarithmic formula instead of linear (log(d)*log(m)/divisor)
-LMR_USE_LOG_FORMULA: true
+# LMR_USE_LOG_FORMULA: true
 # Divisor for logarithmic formula (lower = more aggressive reductions)
-LMR_LOG_BASE_DIV: 1.50
+# LMR_LOG_BASE_DIV: 1.25
 # LMR_REDUCTION: large table defined in code for efficiency
+# Use improving flag to add extra LMR reduction when position is not improving
+# USE_LMR_IMPROVING: true
+# Extra reduction depth when not improving (0 = disabled)
+# LMR_IMPROVING_REDUCTION: 1
+# Use history score to modulate LMR (less reduction for moves with good history)
+# USE_LMR_HISTORY: true
+# Divisor for history -> reduction conversion (higher = less effect)
+# History values are (1 << depth) per cutoff, so 8192 = 1 << 13 means
+# a single cutoff at depth 13 gives 1 ply less reduction
+# LMR_HISTORY_DIVISOR: 8192
+# Extra reduction on expected cut nodes (nodes expected to fail high)
+# Late moves on cut nodes are very unlikely to be the best move
+# USE_LMR_CUTNODE: true
+# Extra reduction depth on cut nodes (0-4)
+# LMR_CUTNODE_REDUCTION: 2
 
 # Late Move Pruning (LMP): prune moves after a threshold per depth bucket
-USE_LMP: true
+# USE_LMP: true
 # Thresholds (move counts) for depth buckets 0..15
-LMP_MOVES: [0, 7, 9, 11, 13, 15, 17, 19, 22, 24, 27, 29, 32, 35, 38, 41]
+# LMP_MOVES: [0, 7, 9, 11, 13, 15, 17, 19, 22, 24, 27, 29, 32, 35, 38, 41]
+# Use improving flag to allow more moves before LMP kicks in when position is improving
+# USE_LMP_IMPROVING: true
 
 # Extensions
 # Enable search extensions framework
-USE_EXTENSIONS: true
-# Extend when in check (only for first N moves per node)
-USE_CHECK_EXT: true
-# Only extend checks in first N moves per node (leverages move ordering)
-# set to 999 to extend all checks regardless of move index
-CHECK_EXT_EARLY_LIMIT: 3
+# USE_EXTENSIONS: true
+# Extend when move gives check
+# USE_CHECK_EXT: true
+# Minimum depth to apply check extension (avoids extending at horizon)
+# CHECK_EXT_MIN_DEPTH: 2
+# Only extend checks in first N moves per node (99 = no limit when SEE enabled)
+# CHECK_EXT_EARLY_LIMIT: 99
+# Only extend checks with SEE >= 0 (non-losing checks)
+# USE_CHECK_EXT_SEE: true
 # Extend on threats
-USE_THREAT_EXT: false
+# USE_THREAT_EXT: true
+# Mate-in-N threshold for threat detection (VALUE_CHECKMATE - 2*N)
+# THREAT_EXT_MATE_DEPTH: 4
 # Add extension depth rather than replacing node depth
-USE_EXT_ADD_DEPTH: true
+# USE_EXT_ADD_DEPTH: true
+
 # Singular Extensions
 # When a TT move is significantly better than all alternatives, extend its search
-USE_SINGULAR_EXT: true
+# USE_SINGULAR_EXT: true
+# Require BETA/EXACT TT bound for singular extension
+# Testing shows this filters 99.98% of candidates - disabled because verification search is sufficient
+# TODO: Consider removing this option entirely if strength testing confirms no value
+# USE_SINGULAR_TT_BOUND: false
 # Margin (centipawns) below TT value - if no other move reaches (ttValue - margin), move is singular
-SINGULAR_MARGIN: 64
+# SINGULAR_MARGIN: 64
 # Minimum depth (plies) to attempt singular extension verification
-SINGULAR_MIN_DEPTH: 8
+# SINGULAR_MIN_DEPTH: 8
 # Depth reduction (plies) for the verification search
-SINGULAR_REDUCTION: 4
+# SINGULAR_REDUCTION: 4
 
 # Improved moves-left model (time management) tunables
 # Estimated remaining moves in opening/midgame/endgame to budget time
-MOVES_LEFT_OPENING: 36
-MOVES_LEFT_MIDGAME: 28
-MOVES_LEFT_ENDGAME: 16
+# MOVES_LEFT_OPENING: 36
+# MOVES_LEFT_MIDGAME: 28
+# MOVES_LEFT_ENDGAME: 16
 # Low material endgames tend to have fewer remaining moves
-MOVES_LEFT_LOW_MAT: 10
+# MOVES_LEFT_LOW_MAT: 10
 # Queenless middlegame/endgames often last longer than low-mat but less than midgame
-MOVES_LEFT_QUEENLESS: 22
+# MOVES_LEFT_QUEENLESS: 22
 
 # Non-pawn piece (NPP) thresholds for phase detection
 # High piece count -> earlier phases
-NPP_HEAVY_THRESHOLD: 10
+# NPP_HEAVY_THRESHOLD: 10
 # Low piece count -> late endgame
-NPP_LIGHT_THRESHOLD: 4
+# NPP_LIGHT_THRESHOLD: 4
 
 # Repetition/50-move risk handling and clamps for time model
 # Half-move clock threshold where repetition risk is considered high
-REPETITION_HMC_HIGH: 80
+# REPETITION_HMC_HIGH: 80
 # Reduce estimated moves-left by this penalty if risk is high
-REPETITION_RISK_PENALTY: 6
+# REPETITION_RISK_PENALTY: 6
 # Clamp lower/upper bounds of moves-left estimates
-MOVES_LEFT_MIN_CLAMP: 6
-MOVES_LEFT_MAX_CLAMP: 50
+# MOVES_LEFT_MIN_CLAMP: 6
+# MOVES_LEFT_MAX_CLAMP: 50
+
+# Eval volatility time management
+# Add extra time when big evaluation swings happen between consecutive iterations
+# Enable eval volatility tracking
+# USE_EVAL_VOLATILITY: true
+# Minimum depth to start tracking (avoid noise from shallow iterations)
+# VOLATILITY_MIN_DEPTH: 6
+# Eval swing threshold in centipawns (~1.5 pawns) to trigger extra time
+# VOLATILITY_THRESHOLD: 150
+# Time factor when volatile (> 1.0 extends time)
+# VOLATILITY_FACTOR: 1.15
 
 # Best-move instability time management
 # Dynamically adjust search time based on how stable the best move is across iterations
 # Enable best-move instability tracking
-USE_BESTMOVE_INSTABILITY: true
+# USE_BESTMOVE_INSTABILITY: true
 # Minimum depth (iterations) to start tracking best-move stability
-INSTABILITY_MIN_DEPTH: 8
+# INSTABILITY_MIN_DEPTH: 5
 # Number of consecutive iterations with same best move to trigger time reduction
-INSTABILITY_STABLE_COUNT: 5
+# INSTABILITY_STABLE_COUNT: 3
 # Number of best-move changes to trigger time extension
-INSTABILITY_CHANGE_THRESHOLD: 3
+# INSTABILITY_CHANGE_THRESHOLD: 2
 # Time factor when best move is stable (< 1.0 reduces time)
-INSTABILITY_STABLE_FACTOR: 0.9
+# INSTABILITY_STABLE_FACTOR: 0.80
 # Time factor when best move is unstable (> 1.0 extends time)
-INSTABILITY_EXTEND_FACTOR: 1.25
+# INSTABILITY_EXTEND_FACTOR: 1.25
+
+# Extra time cap - prevents unbounded time extensions in fail-low cascades
+# Maximum extra time as multiple of base time (2.0 = max 3x total budget)
+# This prevents runaway time usage in hopeless positions with repeated fail-lows
+# MAX_EXTRA_TIME_FACTOR: 2.0

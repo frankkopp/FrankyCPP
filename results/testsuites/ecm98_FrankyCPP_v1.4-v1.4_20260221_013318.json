@@ -1,0 +1,6951 @@
+{
+  "arenaVersion": "v1.2",
+  "timestamp": "2026-02-21T00:33:18Z",
+
+  "testSuite": {
+    "name": "ecm98",
+    "epdPath": "test/testsets/ecm98.epd"
+  },
+
+  "engine": {
+    "name": "FrankyCPP v1.4",
+    "version": "v1.4",
+    "path": "Release/FrankyCPP_v1.4/FrankyCPP_v1.4.exe"
+  },
+
+  "summary": {
+    "totalTests": 769,
+    "passed": 557,
+    "failed": 212,
+    "skipped": 0,
+    "successRate": 72.43,
+    "totalNodes": 6737888235,
+    "totalTimeMs": 2705295,
+    "avgTimeMs": 3517.94,
+    "avgNodes": 8761883.27
+  },
+
+  "details": [
+    {
+      "testId": "ECM.001",
+      "fen": "2q1r1k1/1ppb4/r2p1Pp1/p4n1p/2P1n3/5NPP/PP3Q1K/2BRRB2 w - -",
+      "expected": "bm f6f7",
+      "actual": "f6f7",
+      "passed": true,
+      "nodes": 5486598,
+      "timeMs": 2118
+    },
+    {
+      "testId": "ECM.002",
+      "fen": "7r/1p2k3/2bpp3/p3np2/P1PR4/2N2PP1/1P4K1/3B4 b - -",
+      "expected": "bm c6f3",
+      "actual": "c6f3",
+      "passed": true,
+      "nodes": 9962013,
+      "timeMs": 3616
+    },
+    {
+      "testId": "ECM.003",
+      "fen": "4k3/p1P3p1/2q1np1p/3N4/8/1Q3PP1/6KP/8 w - -",
+      "expected": "bm b3b5",
+      "actual": "b3b5",
+      "passed": true,
+      "nodes": 6723066,
+      "timeMs": 2131
+    },
+    {
+      "testId": "ECM.004",
+      "fen": "2r1b1k1/R4pp1/4pb1p/1pBr4/1Pq2P2/3N4/2PQ2PP/5RK1 b - -",
+      "expected": "bm c8c5",
+      "actual": "c8c5",
+      "passed": true,
+      "nodes": 10183980,
+      "timeMs": 4024
+    },
+    {
+      "testId": "ECM.005",
+      "fen": "6k1/p1qb1p1p/1p3np1/2b2p2/2B5/2P3N1/PP2QPPP/4N1K1 b - -",
+      "expected": "bm c5f2",
+      "actual": "c5f2",
+      "passed": true,
+      "nodes": 10653972,
+      "timeMs": 4138
+    },
+    {
+      "testId": "ECM.006",
+      "fen": "3q4/pp3pkp/5npN/2bpr1B1/4r3/2P2Q2/PP3PPP/R4RK1 w - -",
+      "expected": "bm g5f6",
+      "actual": "f3g3",
+      "passed": false,
+      "nodes": 5368269,
+      "timeMs": 2041
+    },
+    {
+      "testId": "ECM.007",
+      "fen": "3rr1k1/pb3pp1/1p1q1b1p/1P2NQ2/3P4/P1NB4/3K1P1P/2R3R1 w - -",
+      "expected": "bm g1g7",
+      "actual": "g1g7",
+      "passed": true,
+      "nodes": 10000000,
+      "timeMs": 3695
+    },
+    {
+      "testId": "ECM.008",
+      "fen": "r1b1r1k1/p1p3pp/2p2n2/2bp4/5P2/3BBQPq/PPPK3P/R4N1R b - -",
+      "expected": "bm c8g4",
+      "actual": "c8g4",
+      "passed": true,
+      "nodes": 7041564,
+      "timeMs": 2620
+    },
+    {
+      "testId": "ECM.009",
+      "fen": "3r4/1b2k3/1pq1pp2/p3n1pr/2P5/5PPN/PP1N1QP1/R2R2K1 b - -",
+      "expected": "bm h5h3",
+      "actual": "h5h3",
+      "passed": true,
+      "nodes": 7630118,
+      "timeMs": 3414
+    },
+    {
+      "testId": "ECM.010",
+      "fen": "2r4k/pB4bp/6p1/6q1/1P1n4/2N5/P4PPP/2R1Q1K1 b - -",
+      "expected": "bm g5c1",
+      "actual": "g5c1",
+      "passed": true,
+      "nodes": 9649411,
+      "timeMs": 3985
+    },
+    {
+      "testId": "ECM.011",
+      "fen": "1r5r/3b1pk1/3p1np1/p1qPp3/p1N1PbP1/2P2PN1/1PB1Q1K1/R3R3 b - -",
+      "expected": "bm f6g4",
+      "actual": "h8h4",
+      "passed": false,
+      "nodes": 6784523,
+      "timeMs": 3289
+    },
+    {
+      "testId": "ECM.012",
+      "fen": "5rk1/7p/p1N5/3pNp2/2bPnqpQ/P7/1P3PPP/4R1K1 w - -",
+      "expected": "bm c6e7",
+      "actual": "c6e7",
+      "passed": true,
+      "nodes": 10672014,
+      "timeMs": 4472
+    },
+    {
+      "testId": "ECM.013",
+      "fen": "rnb2rk1/pp2np1p/2p2q1b/8/2BPPN2/2P2Q2/PP4PP/R1B2RK1 w - -",
+      "expected": "bm f4d5",
+      "actual": "f4d5",
+      "passed": true,
+      "nodes": 5423094,
+      "timeMs": 2468
+    },
+    {
+      "testId": "ECM.015",
+      "fen": "r3kb1r/pp2pppp/3q4/3Pn3/6b1/2N1BN2/PP3PPP/R2QKB1R w KQkq -",
+      "expected": "bm f3e5",
+      "actual": "f3e5",
+      "passed": true,
+      "nodes": 9000004,
+      "timeMs": 4156
+    },
+    {
+      "testId": "ECM.18",
+      "fen": "r3rbk1/1pq2ppp/2ppbnn1/p3p3/P1PPN3/BP1BPN1P/2Q2PP1/R2R2K1 w - -",
+      "expected": "bm e4d6",
+      "actual": "e4d6",
+      "passed": true,
+      "nodes": 8136577,
+      "timeMs": 4111
+    },
+    {
+      "testId": "ECM.020",
+      "fen": "1rr1nbk1/5ppp/3p4/1q1PpN2/np2P3/5Q1P/P1BB1PP1/2R1R1K1 w - -",
+      "expected": "bm c2a4",
+      "actual": "c2a4",
+      "passed": true,
+      "nodes": 9175025,
+      "timeMs": 4082
+    },
+    {
+      "testId": "ECM.021",
+      "fen": "r7/5kp1/2p1p2p/1p1n3P/2rP4/2P3R1/PK2RPP1/2B5 b - -",
+      "expected": "bm c4c3",
+      "actual": "c4c3",
+      "passed": true,
+      "nodes": 9514731,
+      "timeMs": 3847
+    },
+    {
+      "testId": "ECM.022",
+      "fen": "r1r3k1/p3qpp1/b1P4p/3p4/3Nn3/4P3/P1Q2PPP/1BR1K2R b K -",
+      "expected": "bm e7b4",
+      "actual": "e7b4",
+      "passed": true,
+      "nodes": 4066387,
+      "timeMs": 1727
+    },
+    {
+      "testId": "ECM.023",
+      "fen": "rn3rk1/4bppp/1q2p3/p2pP3/8/1PN2B1P/P4PP1/2RQ1RK1 w - -",
+      "expected": "bm f3d5",
+      "actual": "f3d5",
+      "passed": true,
+      "nodes": 3992451,
+      "timeMs": 1944
+    },
+    {
+      "testId": "ECM.024",
+      "fen": "6rk/1p1br2p/pqp5/3pNP2/3Pp3/P5PR/5PKR/Q7 w - -",
+      "expected": "bm h3h7",
+      "actual": "h3h7",
+      "passed": true,
+      "nodes": 16000003,
+      "timeMs": 4850
+    },
+    {
+      "testId": "ECM.025",
+      "fen": "2b3k1/5p1p/7b/p2B3p/3P4/P2Q1N1P/1q3PP1/6K1 w - -",
+      "expected": "bm d5f7",
+      "actual": "d5f7",
+      "passed": true,
+      "nodes": 9959166,
+      "timeMs": 3865
+    },
+    {
+      "testId": "ECM.026",
+      "fen": "r1b5/4k3/p7/3p1n2/3Bp3/2P2r1P/PPBK1P2/4R2R w - -",
+      "expected": "bm d4c5",
+      "actual": "d4c5",
+      "passed": true,
+      "nodes": 7903985,
+      "timeMs": 3175
+    },
+    {
+      "testId": "ECM.027",
+      "fen": "r4rk1/1b3Npp/p7/1p3Q2/3P4/1B2q3/P5PP/3n1R1K b - -",
+      "expected": "bm b7g2",
+      "actual": "b7g2",
+      "passed": true,
+      "nodes": 11000004,
+      "timeMs": 4331
+    },
+    {
+      "testId": "ECM.030",
+      "fen": "r2q1rk1/p3b1pp/2p5/1pn5/1n1Bp1b1/1P6/PQ1PPP2/2RNKBNR b K -",
+      "expected": "bm g4e2",
+      "actual": "g4e2",
+      "passed": true,
+      "nodes": 8351558,
+      "timeMs": 3682
+    },
+    {
+      "testId": "ECM.032",
+      "fen": "2bnr1k1/2q2ppp/p7/2p1b3/2N1B3/R7/1P2QPPP/2B3K1 w - -",
+      "expected": "bm c4e5",
+      "actual": "c4e5",
+      "passed": true,
+      "nodes": 7199924,
+      "timeMs": 3167
+    },
+    {
+      "testId": "ECM.033",
+      "fen": "r1b2r1k/3nN2p/p2Q1p2/8/4PP2/1R6/q1PK2PP/4R3 w - -",
+      "expected": "bm d6d5",
+      "actual": "d6d5",
+      "passed": true,
+      "nodes": 12000004,
+      "timeMs": 4743
+    },
+    {
+      "testId": "ECM.034",
+      "fen": "1nk1r1r1/pp2n1pp/4p3/q2pPp1N/b1pP1P2/B1P2R2/2P1B1PP/R2Q2K1 w - -",
+      "expected": "bm h5f6",
+      "actual": "h5f6",
+      "passed": true,
+      "nodes": 8000004,
+      "timeMs": 3661
+    },
+    {
+      "testId": "ECM.035",
+      "fen": "2r2bk1/4qp2/3n2p1/2R1p1Np/2p1N3/r6P/1Q3PP1/3R2K1 w - -",
+      "expected": "bm c5c8",
+      "actual": "d1d6",
+      "passed": false,
+      "nodes": 11000003,
+      "timeMs": 4480
+    },
+    {
+      "testId": "ECM.036",
+      "fen": "br1r2k1/1q4p1/p2ppb1p/2p2p2/2P1n3/Pn2P2P/QPR2PPB/2NRNBK1 b - -",
+      "expected": "bm b3c1",
+      "actual": "b3c1",
+      "passed": true,
+      "nodes": 5348438,
+      "timeMs": 2381
+    },
+    {
+      "testId": "ECM.037",
+      "fen": "2k4r/ppp1n1p1/2n2qb1/2N5/Q1P3p1/P2r3P/1P3PB1/R1B2RK1 w - -",
+      "expected": "bm a4b5",
+      "actual": "a4b5",
+      "passed": true,
+      "nodes": 9156860,
+      "timeMs": 3865
+    },
+    {
+      "testId": "ECM.038",
+      "fen": "8/6bk/1B1R4/6p1/2bNP3/4KP2/1r6/8 b - -",
+      "expected": "bm g7e5",
+      "actual": "g7e5",
+      "passed": true,
+      "nodes": 3722672,
+      "timeMs": 3242
+    },
+    {
+      "testId": "ECM.039",
+      "fen": "r1b1rnk1/1p3pb1/1qpp2p1/2n5/2PNP2p/1PN3PP/3R1PBK/BR1Q4 b - -",
+      "expected": "bm a8a1",
+      "actual": "a8a1",
+      "passed": true,
+      "nodes": 7220406,
+      "timeMs": 3221
+    },
+    {
+      "testId": "ECM.040",
+      "fen": "r1b2rk1/pp2b3/2pn1n1p/3pNppq/3P4/BP1N2P1/P3PPBP/R1Q2RK1 w - -",
+      "expected": "bm e5c6",
+      "actual": "e5c6",
+      "passed": true,
+      "nodes": 11000003,
+      "timeMs": 4767
+    },
+    {
+      "testId": "ECM.041",
+      "fen": "5rk1/1b3ppp/p3p3/1p1q2N1/4n3/6P1/PP2PPBP/2Q2RK1 b - -",
+      "expected": "bm e4g3",
+      "actual": "e4g3",
+      "passed": true,
+      "nodes": 4876498,
+      "timeMs": 1894
+    },
+    {
+      "testId": "ECM.042",
+      "fen": "2kr3r/pppq2p1/1bn1R3/6N1/1P6/1QN1B1p1/P4PP1/R5K1 b - -",
+      "expected": "bm g3f2",
+      "actual": "g3f2",
+      "passed": true,
+      "nodes": 10509850,
+      "timeMs": 4270
+    },
+    {
+      "testId": "ECM.044",
+      "fen": "r4rk1/pp4pp/2nqb3/3p4/8/2NB4/PP1Q1PPP/4RRK1 w - -",
+      "expected": "bm d3h7",
+      "actual": "d3h7",
+      "passed": true,
+      "nodes": 3380647,
+      "timeMs": 1481
+    },
+    {
+      "testId": "ECM.045",
+      "fen": "3rk1r1/3b1p1p/p2BpQ2/8/2q5/2P5/PP3PPP/3R2K1 b - -",
+      "expected": "bm g8g2",
+      "actual": "g8g2",
+      "passed": true,
+      "nodes": 8373406,
+      "timeMs": 3212
+    },
+    {
+      "testId": "ECM.046",
+      "fen": "3r1rk1/4pp1p/p1Q1b1p1/3N4/3b4/5B2/Pq3PPP/R4RK1 b - -",
+      "expected": "bm e6d5",
+      "actual": "e6d5",
+      "passed": true,
+      "nodes": 8765870,
+      "timeMs": 3616
+    },
+    {
+      "testId": "ECM.047",
+      "fen": "5bk1/1bqn1r1p/p3Q1p1/4p3/1PN1Pp2/P1N4P/5PP1/R1BR2K1 w - -",
+      "expected": "bm e6f7",
+      "actual": "e6f7",
+      "passed": true,
+      "nodes": 11010220,
+      "timeMs": 4279
+    },
+    {
+      "testId": "ECM.048",
+      "fen": "3rkb1r/1p3p2/p1n1p3/q5pp/2PpP3/1P4P1/P1Q1BPKP/R2N3R b k -",
+      "expected": "bm d4d3",
+      "actual": "f8g7",
+      "passed": false,
+      "nodes": 7316450,
+      "timeMs": 3402
+    },
+    {
+      "testId": "ECM.049",
+      "fen": "5rk1/1r1qbnnp/R2p2p1/1p1Pp3/1Pp1P1N1/2P1B1NP/5QP1/5R1K w - -",
+      "expected": "bm f2f7",
+      "actual": "f2f7",
+      "passed": true,
+      "nodes": 9405900,
+      "timeMs": 3895
+    },
+    {
+      "testId": "ECM.050",
+      "fen": "2kr1b1R/1b3pp1/p2pp3/1pq3P1/2nQPP2/P1N5/1PP1BB2/1K6 w - -",
+      "expected": "bm h8f8",
+      "actual": "h8f8",
+      "passed": true,
+      "nodes": 11346291,
+      "timeMs": 4433
+    },
+    {
+      "testId": "ECM.052",
+      "fen": "r3nb1Q/p1q2kr1/2p3p1/2ppnpP1/1P3N2/4P3/PB1P4/1R2KB1R w K -",
+      "expected": "bm h8f8",
+      "actual": "h8f8",
+      "passed": true,
+      "nodes": 10000003,
+      "timeMs": 4177
+    },
+    {
+      "testId": "ECM.053",
+      "fen": "r1bq1rk1/pp3pbp/2pp1np1/2n3B1/2PNP3/2N2P2/PP1QB1PP/R4RK1 b - -",
+      "expected": "bm f6e4",
+      "actual": "f6e4",
+      "passed": true,
+      "nodes": 8532679,
+      "timeMs": 3735
+    },
+    {
+      "testId": "ECM.055",
+      "fen": "5r2/1b2k2p/3bp3/5PP1/Bn1Q3P/1N6/1Pr5/1K3R2 b - -",
+      "expected": "bm c2b2",
+      "actual": "e6f5",
+      "passed": false,
+      "nodes": 4938680,
+      "timeMs": 1981
+    },
+    {
+      "testId": "ECM.056",
+      "fen": "r1b1r1k1/pp4bp/5np1/2qPB3/8/6NP/PPP1Q1B1/R4R1K w - -",
+      "expected": "bm f1f6",
+      "actual": "f1f6",
+      "passed": true,
+      "nodes": 9098665,
+      "timeMs": 3884
+    },
+    {
+      "testId": "ECM.057",
+      "fen": "r1b2r1k/1pq3bp/8/3Qp2n/1P1n1pp1/2NP2P1/3BPPBP/1R2NRK1 b - -",
+      "expected": "bm c7c3",
+      "actual": "c7c3",
+      "passed": true,
+      "nodes": 9817168,
+      "timeMs": 4267
+    },
+    {
+      "testId": "ECM.058",
+      "fen": "4qk2/pp3pp1/1nbr3p/2p5/5N2/2P1Q3/PPB2PPP/2K1R3 w - -",
+      "expected": "bm f4g6",
+      "actual": "f4g6",
+      "passed": true,
+      "nodes": 4807085,
+      "timeMs": 1803
+    },
+    {
+      "testId": "ECM.059",
+      "fen": "3q2k1/pb3p1p/4pbp1/2r5/PpN2N2/1P2P2P/5PP1/Q2R2K1 b - -",
+      "expected": "bm c5d5",
+      "actual": "c5d5",
+      "passed": true,
+      "nodes": 10146285,
+      "timeMs": 3994
+    },
+    {
+      "testId": "ECM.060",
+      "fen": "r4rk1/pp1b2pp/3bpq2/3p1p2/2PPn3/PP1B4/1BQN1PPP/R4RK1 b - -",
+      "expected": "bm f6h6",
+      "actual": "f6h6",
+      "passed": true,
+      "nodes": 4828896,
+      "timeMs": 2148
+    },
+    {
+      "testId": "ECM.061",
+      "fen": "r4rk1/1b3ppp/p2q1n2/1p2N3/3P4/1B6/P1Q2PPP/2R1R1K1 w - -",
+      "expected": "bm e5f7",
+      "actual": "e5f7",
+      "passed": true,
+      "nodes": 8745552,
+      "timeMs": 3579
+    },
+    {
+      "testId": "ECM.062",
+      "fen": "2rq1r2/pp3pnk/2n1b1pp/3pQ3/3P1N2/P1N5/1P3PPP/1BR2RK1 w - -",
+      "expected": "bm b1g6",
+      "actual": "b1g6",
+      "passed": true,
+      "nodes": 9226682,
+      "timeMs": 3852
+    },
+    {
+      "testId": "ECM.063",
+      "fen": "4nk2/r1r1bppp/pN2p3/2np4/8/BPN3PP/P3PPK1/2RR4 w - -",
+      "expected": "bm c3d5 b6d5",
+      "actual": "c3d5",
+      "passed": true,
+      "nodes": 7664079,
+      "timeMs": 2959
+    },
+    {
+      "testId": "ECM.064",
+      "fen": "r4r1k/2pqn1b1/p1bp2pp/1p2pn2/4N3/2PP1PPQ/PPB4P/R1B1RNK1 b - -",
+      "expected": "bm f5d4",
+      "actual": "f5d4",
+      "passed": true,
+      "nodes": 6317814,
+      "timeMs": 2775
+    },
+    {
+      "testId": "ECM.065",
+      "fen": "r1bQ1nk1/bp3ppp/p7/3B4/1P6/P3P1P1/2P4P/q1B2RK1 b - -",
+      "expected": "bm a7e3",
+      "actual": "a7e3",
+      "passed": true,
+      "nodes": 6955613,
+      "timeMs": 2665
+    },
+    {
+      "testId": "ECM.066",
+      "fen": "3r1rk1/1b2bppp/2q1pn2/pp4Q1/3B1P2/PBN5/1PP3PP/R2R3K b - -",
+      "expected": "bm d8d4",
+      "actual": "d8d4",
+      "passed": true,
+      "nodes": 4878143,
+      "timeMs": 2065
+    },
+    {
+      "testId": "ECM.067",
+      "fen": "2nq2k1/2r3pp/p1p1rp2/PpQ1N3/1P1PR3/8/5PPP/2R3K1 w - -",
+      "expected": "bm e5f7",
+      "actual": "e5f7",
+      "passed": true,
+      "nodes": 10276192,
+      "timeMs": 3958
+    },
+    {
+      "testId": "ECM.069",
+      "fen": "3r4/p2nrpkp/2B1p3/2P2pP1/3R3Q/q7/6PP/6RK w - -",
+      "expected": "bm g5g6",
+      "actual": "g5g6",
+      "passed": true,
+      "nodes": 11000003,
+      "timeMs": 4330
+    },
+    {
+      "testId": "ECM.072",
+      "fen": "2r2rk1/5pbp/p5p1/3P2q1/1QbN4/5P2/P4BPP/2RR2K1 b - -",
+      "expected": "bm c4f1",
+      "actual": "c4f1",
+      "passed": true,
+      "nodes": 8939036,
+      "timeMs": 3603
+    },
+    {
+      "testId": "ECM.073",
+      "fen": "r1bqnrk1/pp2ppb1/1np3pp/4P1N1/5P2/2NBB3/PPP3PP/R2Q1RK1 w - -",
+      "expected": "bm g5h7",
+      "actual": "g5h7",
+      "passed": true,
+      "nodes": 8845703,
+      "timeMs": 4085
+    },
+    {
+      "testId": "ECM.074",
+      "fen": "3nk3/3q1p2/1B3pr1/4p3/bP2P2p/r2B4/2Q2RPP/3R2K1 w - -",
+      "expected": "bm d3b5",
+      "actual": "d3b5",
+      "passed": true,
+      "nodes": 9064259,
+      "timeMs": 3596
+    },
+    {
+      "testId": "ECM.075",
+      "fen": "3rnr1k/pp3ppp/4b3/2p1qNP1/P2pPR2/1P1P2Q1/2P3BP/5RK1 w - -",
+      "expected": "bm f5h6",
+      "actual": "f5h6",
+      "passed": true,
+      "nodes": 6738614,
+      "timeMs": 2971
+    },
+    {
+      "testId": "ECM.077",
+      "fen": "5rk1/3r1p1p/3b2pQ/8/4q3/4B2P/3R1PP1/4R1K1 w - -",
+      "expected": "bm d2d6",
+      "actual": "d2d6",
+      "passed": true,
+      "nodes": 9512862,
+      "timeMs": 3550
+    },
+    {
+      "testId": "ECM.078",
+      "fen": "4rrk1/1bp2ppp/p1q2b1B/1pn2B2/4N1Q1/2P4P/PP3PP1/3RR1K1 w - -",
+      "expected": "bm e4c5",
+      "actual": "e4c5",
+      "passed": true,
+      "nodes": 7751917,
+      "timeMs": 3413
+    },
+    {
+      "testId": "ECM.079",
+      "fen": "2rnrbnk/3q1ppp/p1p5/3p1P2/1p1PPN2/4BQ1R/PP1N2PP/3R2K1 w - -",
+      "expected": "bm f4g6",
+      "actual": "f4g6",
+      "passed": true,
+      "nodes": 8414521,
+      "timeMs": 3535
+    },
+    {
+      "testId": "ECM.080",
+      "fen": "5r1k/pb2r1bp/1p2B1p1/n7/4qNQ1/4B3/P4PPP/2RR2K1 w - -",
+      "expected": "bm d1d4",
+      "actual": "d1d4",
+      "passed": true,
+      "nodes": 8488143,
+      "timeMs": 3791
+    },
+    {
+      "testId": "ECM.082",
+      "fen": "1r3rk1/5pp1/1n2qn1p/1p1pPNb1/2pP2QP/2P5/1PB3P1/R1B1R1K1 w - -",
+      "expected": "bm e5f6",
+      "actual": "e5f6",
+      "passed": true,
+      "nodes": 10118841,
+      "timeMs": 4282
+    },
+    {
+      "testId": "ECM.083",
+      "fen": "r2qr1k1/pp3pbp/3p1np1/2pP1bB1/2P1N3/3Q1PN1/PP4PP/R4RK1 b - -",
+      "expected": "bm f6e4",
+      "actual": "f6e4",
+      "passed": true,
+      "nodes": 4349465,
+      "timeMs": 1794
+    },
+    {
+      "testId": "ECM.084",
+      "fen": "4r1k1/1b4pp/p7/1prP3q/2P1B3/5P2/P3Q2P/3RR2K w - -",
+      "expected": "bm e4g6",
+      "actual": "c4b5",
+      "passed": false,
+      "nodes": 7578177,
+      "timeMs": 2995
+    },
+    {
+      "testId": "ECM.085",
+      "fen": "r1br2k1/ppb1qpp1/2P4p/2n1p3/4B3/P1N2N2/1P3PPP/2RQ1RK1 w - -",
+      "expected": "bm c3d5",
+      "actual": "c3d5",
+      "passed": true,
+      "nodes": 11000004,
+      "timeMs": 4849
+    },
+    {
+      "testId": "ECM.086",
+      "fen": "2r3k1/1nqbrp2/p5pp/1p1Pp1N1/8/1P5P/P1B2PP1/2RQR1K1 w - -",
+      "expected": "bm g5f7",
+      "actual": "g5f7",
+      "passed": true,
+      "nodes": 8995088,
+      "timeMs": 3714
+    },
+    {
+      "testId": "ECM.087",
+      "fen": "2r1rbk1/1b3ppp/pp6/2q1pNP1/Pn1RP3/2N5/1PP2QBP/5R1K w - -",
+      "expected": "bm f5h6",
+      "actual": "f5h6",
+      "passed": true,
+      "nodes": 6753853,
+      "timeMs": 3097
+    },
+    {
+      "testId": "ECM.088",
+      "fen": "r1b1rk2/3n1pbQ/2qp2p1/p2N2P1/2Bp3N/4P3/PP3PP1/2KR3R w - -",
+      "expected": "bm h4g6",
+      "actual": "h4g6",
+      "passed": true,
+      "nodes": 3626458,
+      "timeMs": 540
+    },
+    {
+      "testId": "ECM.089",
+      "fen": "r1r2qkb/4pp1p/pBbp3P/3Nn1P1/4Q3/1B6/PPP5/1K1R2R1 w - -",
+      "expected": "bm g5g6",
+      "actual": "g5g6",
+      "passed": true,
+      "nodes": 8353261,
+      "timeMs": 3377
+    },
+    {
+      "testId": "ECM.090",
+      "fen": "r4k2/q4npp/P2P4/2p1R3/2N5/6PP/Q5K1/8 w - -",
+      "expected": "bm e5e7",
+      "actual": "e5e7",
+      "passed": true,
+      "nodes": 8754670,
+      "timeMs": 3229
+    },
+    {
+      "testId": "ECM.092",
+      "fen": "5rk1/6pp/8/2Q4q/N2pP3/4b1Pb/4PP1K/1R3R2 b - -",
+      "expected": "bm h3f1",
+      "actual": "h3f1",
+      "passed": true,
+      "nodes": 7716188,
+      "timeMs": 3044
+    },
+    {
+      "testId": "ECM.093",
+      "fen": "2r4k/pp2Q1pp/5r2/P2P4/3Pb1P1/4Ppq1/1P1R3N/3R3K b - -",
+      "expected": "bm g3e1",
+      "actual": "g3e1",
+      "passed": true,
+      "nodes": 11249013,
+      "timeMs": 4902
+    },
+    {
+      "testId": "ECM.094",
+      "fen": "1r1rb1k1/2p3pp/p2q1p2/3PpP1Q/Pp1bP2N/1B5R/1P4PP/2B4K w - -",
+      "expected": "bm h5h7",
+      "actual": "h5h7",
+      "passed": true,
+      "nodes": 11072101,
+      "timeMs": 4360
+    },
+    {
+      "testId": "ECM.095",
+      "fen": "r1b4k/p2n1Bpp/1p1Q1n2/5p2/3P4/P3BqP1/1P3P1P/R4RK1 b - -",
+      "expected": "bm c8b7",
+      "actual": "c8b7",
+      "passed": true,
+      "nodes": 5967121,
+      "timeMs": 2320
+    },
+    {
+      "testId": "ECM.096",
+      "fen": "rn1r2k1/p4ppp/2p3b1/3PQ3/1B2Np1q/1B3P2/P1P3PP/4R1K1 w - -",
+      "expected": "bm e4f6 e5e8",
+      "actual": "e5e8",
+      "passed": true,
+      "nodes": 20710287,
+      "timeMs": 4481
+    },
+    {
+      "testId": "ECM.097",
+      "fen": "4r2k/5R1p/pp1Bq1pN/2p1P3/1n1b3Q/3P4/1P4KP/8 w - -",
+      "expected": "bm f7h7",
+      "actual": "f7h7",
+      "passed": true,
+      "nodes": 24834023,
+      "timeMs": 4354
+    },
+    {
+      "testId": "ECM.098",
+      "fen": "r2nk1r1/pb3q1p/4p3/3p2pQ/8/BP6/P4PPP/2R1R1K1 w q -",
+      "expected": "bm c1c7",
+      "actual": "c1c7",
+      "passed": true,
+      "nodes": 6254678,
+      "timeMs": 2403
+    },
+    {
+      "testId": "ECM.100",
+      "fen": "rr4k1/2p1ppb1/3pbnpp/q1pP4/4P3/1PNNBP1P/P1KR2P1/2Q4R b - -",
+      "expected": "bm a5c3",
+      "actual": "a5c3",
+      "passed": true,
+      "nodes": 9088222,
+      "timeMs": 3712
+    },
+    {
+      "testId": "ECM.101",
+      "fen": "1r3rk1/3Q2pp/p3p3/6B1/3np3/6R1/PqP1B2P/3K2R1 w - -",
+      "expected": "bm d7g7",
+      "actual": "d7g7",
+      "passed": true,
+      "nodes": 11045952,
+      "timeMs": 4264
+    },
+    {
+      "testId": "ECM.102",
+      "fen": "2r5/p4Q2/k1bBp3/4P3/p1nq4/5B2/2Pr2P1/1R1RK3 w - -",
+      "expected": "bm f7b7",
+      "actual": "f7b7",
+      "passed": true,
+      "nodes": 9570315,
+      "timeMs": 3901
+    },
+    {
+      "testId": "ECM.103",
+      "fen": "5rk1/p1pb2pp/2p5/3p3q/2P3n1/1Q4BN/PP1Np1KP/R3R3 b - -",
+      "expected": "bm h5h3",
+      "actual": "h5h3",
+      "passed": true,
+      "nodes": 6888174,
+      "timeMs": 2720
+    },
+    {
+      "testId": "ECM.104",
+      "fen": "2r1nk2/4qpbQ/4b3/1p2RpP1/4P3/p7/PBP5/1K5R w - -",
+      "expected": "bm h7g7",
+      "actual": "h7g7",
+      "passed": true,
+      "nodes": 11000004,
+      "timeMs": 4680
+    },
+    {
+      "testId": "ECM.105",
+      "fen": "2kr4/1bpr3p/4R3/1pQ5/8/6B1/3q2PP/2R4K w - -",
+      "expected": "bm c5c7",
+      "actual": "c5c7",
+      "passed": true,
+      "nodes": 9256693,
+      "timeMs": 4000
+    },
+    {
+      "testId": "ECM.106",
+      "fen": "r4rk1/1pbb2pp/p1p1p2q/2Pp4/1P1Pn3/P3B2P/2Q1BPP1/R4RNK b - -",
+      "expected": "bm h6e3",
+      "actual": "h6e3",
+      "passed": true,
+      "nodes": 11000004,
+      "timeMs": 4792
+    },
+    {
+      "testId": "ECM.107",
+      "fen": "r1k4r/ppp1b3/5Npp/4pb1Q/8/1B2B3/PqP2PPP/2RR2K1 w - -",
+      "expected": "bm h5f5",
+      "actual": "h5f5",
+      "passed": true,
+      "nodes": 9987779,
+      "timeMs": 4391
+    },
+    {
+      "testId": "ECM.108",
+      "fen": "6r1/p4rkp/3RQ1n1/1pp1p1B1/2p1P3/2P3R1/P4qPK/8 w - -",
+      "expected": "bm e6e5",
+      "actual": "e6e5",
+      "passed": true,
+      "nodes": 27019913,
+      "timeMs": 4577
+    },
+    {
+      "testId": "ECM.110",
+      "fen": "2kr1bnr/1ppq4/p3bp2/6pp/4p3/2N2NBP/PP3PP1/2RQ1RK1 w - -",
+      "expected": "bm c3a4",
+      "actual": "c3a4",
+      "passed": true,
+      "nodes": 10794684,
+      "timeMs": 4576
+    },
+    {
+      "testId": "ECM.111",
+      "fen": "r2q2rk/p3bp1p/4b1p1/3pP2R/1p1B4/3BQ3/PPP3PP/5R1K w - -",
+      "expected": "bm f1f7",
+      "actual": "f1f7",
+      "passed": true,
+      "nodes": 12000003,
+      "timeMs": 4700
+    },
+    {
+      "testId": "ECM.112",
+      "fen": "r1b1Q3/6pk/p6p/1pq1n3/4N3/8/PPP3PP/R6K b - -",
+      "expected": "bm c5c6",
+      "actual": "c5c2",
+      "passed": false,
+      "nodes": 5609787,
+      "timeMs": 2150
+    },
+    {
+      "testId": "ECM.113",
+      "fen": "q6r/pp3pkp/5np1/4Q3/4P3/6N1/P4PPP/5RK1 w - -",
+      "expected": "bm g3h5",
+      "actual": "g3h5",
+      "passed": true,
+      "nodes": 11169868,
+      "timeMs": 4222
+    },
+    {
+      "testId": "ECM.114",
+      "fen": "r1b1rk2/pp3ppQ/1np5/4q3/2B4N/4P3/PP3PP1/2R2K1R w - -",
+      "expected": "bm h7g8",
+      "actual": "h7g8",
+      "passed": true,
+      "nodes": 11000003,
+      "timeMs": 4475
+    },
+    {
+      "testId": "ECM.115",
+      "fen": "r1bn1rk1/pp3p1p/6p1/2bR2N1/2B2B2/q1P1P3/2Q2PPP/4K2R w K -",
+      "expected": "bm g5h7",
+      "actual": "e1g1",
+      "passed": false,
+      "nodes": 7397983,
+      "timeMs": 3226
+    },
+    {
+      "testId": "ECM.116",
+      "fen": "r3r1k1/p2N1pp1/1pn1p3/q1n5/2PQ4/P3B3/4PPKP/R5R1 w - -",
+      "expected": "bm d7f6",
+      "actual": "d7f6",
+      "passed": true,
+      "nodes": 10000003,
+      "timeMs": 4072
+    },
+    {
+      "testId": "ECM.117",
+      "fen": "4qbk1/1R5n/p2pr1p1/2pQpNPp/P1P1P3/2P2P2/3B4/5K2 w - -",
+      "expected": "bm b7a7",
+      "actual": "b7a7",
+      "passed": true,
+      "nodes": 6954411,
+      "timeMs": 2526
+    },
+    {
+      "testId": "ECM.118",
+      "fen": "3qr1k1/1p1bppbp/p2p2p1/2rPn3/P2N4/4BP2/1PPQ2PP/R2R1BK1 w - -",
+      "expected": "bm d4e6",
+      "actual": "d4e6",
+      "passed": true,
+      "nodes": 9000003,
+      "timeMs": 4037
+    },
+    {
+      "testId": "ECM.120",
+      "fen": "8/R5p1/6k1/pr2p1b1/4K3/7P/5P2/6R1 w - -",
+      "expected": "bm h3h4",
+      "actual": "h3h4",
+      "passed": true,
+      "nodes": 5004647,
+      "timeMs": 2124
+    },
+    {
+      "testId": "ECM.121",
+      "fen": "5rk1/1b1r1p2/p1q1pQp1/1p2P2p/8/1BP1NR2/PP1n2PP/5R1K w - -",
+      "expected": "bm b3e6",
+      "actual": "b3e6",
+      "passed": true,
+      "nodes": 11858756,
+      "timeMs": 4619
+    },
+    {
+      "testId": "ECM.122",
+      "fen": "6k1/p1p2r2/1p1p1P1Q/3P4/2P5/5qr1/PP4RP/6RK w - -",
+      "expected": "bm h6h3",
+      "actual": "h6h3",
+      "passed": true,
+      "nodes": 10332761,
+      "timeMs": 3815
+    },
+    {
+      "testId": "ECM.123",
+      "fen": "2b1rr1k/1p5p/1Ppp2q1/p3bN2/2P1n3/5R2/PBQ3BP/3R2K1 w - -",
+      "expected": "bm b2e5",
+      "actual": "f5e7",
+      "passed": false,
+      "nodes": 5770396,
+      "timeMs": 2402
+    },
+    {
+      "testId": "ECM.124",
+      "fen": "3b2rk/7p/p7/2pbqNrn/Pp1p1R2/1P1Q2P1/1BPN1R1P/6K1 w - -",
+      "expected": "bm f4d4",
+      "actual": "f4d4",
+      "passed": true,
+      "nodes": 8625757,
+      "timeMs": 3441
+    },
+    {
+      "testId": "ECM.125",
+      "fen": "1rbr2k1/1pq1bp1p/p1pNn1p1/2n1p3/2B1P2P/1NQ1BP2/PP4P1/1K1R3R w - -",
+      "expected": "bm d6f7",
+      "actual": "d6f7",
+      "passed": true,
+      "nodes": 6417973,
+      "timeMs": 2829
+    },
+    {
+      "testId": "ECM.126",
+      "fen": "r4rk1/1pp1b1pp/p1q5/3pPp2/3Pn3/P3N3/1P3PPP/R1BQR1K1 w - -",
+      "expected": "bm d1b3",
+      "actual": "d1b3",
+      "passed": true,
+      "nodes": 11000003,
+      "timeMs": 4921
+    },
+    {
+      "testId": "ECM.127",
+      "fen": "rbbq1rk1/p3nppp/1p2p3/8/1B1pN3/P2B4/1P3PPP/2RQ1RK1 w - -",
+      "expected": "bm e4f6",
+      "actual": "e4g5",
+      "passed": false,
+      "nodes": 10283424,
+      "timeMs": 4785
+    },
+    {
+      "testId": "ECM.128",
+      "fen": "rn2qbr1/2p4k/p2p1nb1/1p1Pp2p/2P4P/2NBBPN1/PP1Q4/2KR2R1 w - -",
+      "expected": "bm g3h5",
+      "actual": "c4b5",
+      "passed": false,
+      "nodes": 4610618,
+      "timeMs": 2062
+    },
+    {
+      "testId": "ECM.129",
+      "fen": "5r1k/1p2qp1p/p4R1Q/P1p5/2Prp3/7P/1P4P1/5R1K w - -",
+      "expected": "bm f6e6",
+      "actual": "f6e6",
+      "passed": true,
+      "nodes": 8428009,
+      "timeMs": 3165
+    },
+    {
+      "testId": "ECM.130",
+      "fen": "r1bq1rk1/pp2bp1p/2p2np1/3p2B1/3P4/2NQ2N1/PPP2PPP/4RRK1 w - -",
+      "expected": "bm e1e7",
+      "actual": "f2f4",
+      "passed": false,
+      "nodes": 10000004,
+      "timeMs": 4707
+    },
+    {
+      "testId": "ECM.131",
+      "fen": "2rq1rk1/pp2bppp/1npp1n2/3PpN1b/2P5/2N3PP/PP2PPB1/R1BQ1RK1 w - -",
+      "expected": "bm c4c5",
+      "actual": "d5c6",
+      "passed": false,
+      "nodes": 10000003,
+      "timeMs": 4742
+    },
+    {
+      "testId": "ECM.132",
+      "fen": "rnbq1rk1/pp2b1pp/5n2/2pPp3/2P1N3/3B1N2/PP4PP/R1BQK2R w KQ -",
+      "expected": "bm d5d6",
+      "actual": "d5d6",
+      "passed": true,
+      "nodes": 10134521,
+      "timeMs": 4640
+    },
+    {
+      "testId": "ECM.133",
+      "fen": "2n1rbk1/5pp1/7p/qP1pp3/4b1Q1/1B5P/1P1N1PP1/2B1R1K1 w - -",
+      "expected": "bm e1e4",
+      "actual": "e1e4",
+      "passed": true,
+      "nodes": 7892867,
+      "timeMs": 3291
+    },
+    {
+      "testId": "ECM.134",
+      "fen": "4k3/2R2p2/5p1p/8/rb6/1N6/5PPP/5K2 w - -",
+      "expected": "bm c7c4",
+      "actual": "c7c4",
+      "passed": true,
+      "nodes": 13000003,
+      "timeMs": 4947
+    },
+    {
+      "testId": "ECM.135",
+      "fen": "2k3r1/pp2rp2/1np5/2Np1p2/P2P3p/1R2P1Pq/2Q2P1P/1R4K1 w - -",
+      "expected": "bm c5b7",
+      "actual": "c5b7",
+      "passed": true,
+      "nodes": 12000003,
+      "timeMs": 4697
+    },
+    {
+      "testId": "ECM.136",
+      "fen": "2r1k3/p3nrR1/1p1p4/2p1p1p1/2P1B3/2PP1P2/P5K1/7R w - -",
+      "expected": "bm h1h8",
+      "actual": "h1h8",
+      "passed": true,
+      "nodes": 6880088,
+      "timeMs": 2649
+    },
+    {
+      "testId": "ECM.138",
+      "fen": "2rr1bk1/5p1p/pPN2np1/3Bp3/2Q1n3/1P2B1Pq/P3PP2/R2R2K1 b - -",
+      "expected": "bm d8d5",
+      "actual": "d8d5",
+      "passed": true,
+      "nodes": 6475522,
+      "timeMs": 2777
+    },
+    {
+      "testId": "ECM.139",
+      "fen": "3r2k1/1p4pp/p1q1p3/3p1B2/bP1B2P1/P4Q2/5PKP/2b2R2 w - -",
+      "expected": "bm f1c1",
+      "actual": "f1c1",
+      "passed": true,
+      "nodes": 6746112,
+      "timeMs": 2862
+    },
+    {
+      "testId": "ECM.140",
+      "fen": "rnb1r1k1/pp5p/2pp2p1/4b3/2P1P2q/1NN1BPp1/PP1QB1P1/3RR1K1 b - -",
+      "expected": "bm e5f4",
+      "actual": "e5f4",
+      "passed": true,
+      "nodes": 11000003,
+      "timeMs": 4762
+    },
+    {
+      "testId": "ECM.141",
+      "fen": "5n1r/1p2kp2/rB1Nb3/4p1Pp/4p2P/1PP5/8/1K1R1R2 w - -",
+      "expected": "bm f1f7",
+      "actual": "f1f7",
+      "passed": true,
+      "nodes": 3010621,
+      "timeMs": 410
+    },
+    {
+      "testId": "ECM.142",
+      "fen": "b3r3/q2B2k1/3Q2p1/1p5p/3pP3/5P2/1p4PP/5RK1 b - -",
+      "expected": "bm d4d3",
+      "actual": "e8b8",
+      "passed": false,
+      "nodes": 8188023,
+      "timeMs": 3250
+    },
+    {
+      "testId": "ECM.143",
+      "fen": "4r1k1/3R1ppp/p2p4/5PP1/2q2P2/2n2B2/P1P3QP/1r3R1K w - -",
+      "expected": "bm f1b1",
+      "actual": "f1b1",
+      "passed": true,
+      "nodes": 7625465,
+      "timeMs": 3043
+    },
+    {
+      "testId": "ECM.146",
+      "fen": "8/p3q1kp/1p2Pnp1/3pQ3/2pP4/1nP3N1/1B4PP/6K1 w - -",
+      "expected": "bm b2a3",
+      "actual": "b2a3",
+      "passed": true,
+      "nodes": 6686592,
+      "timeMs": 2487
+    },
+    {
+      "testId": "ECM.147",
+      "fen": "r2b1rk1/5qp1/2p2P2/2p3Pp/p6P/2Q5/PPP5/2KR2R1 w - -",
+      "expected": "bm g5g6",
+      "actual": "c3c5",
+      "passed": false,
+      "nodes": 8616633,
+      "timeMs": 3496
+    },
+    {
+      "testId": "ECM.149",
+      "fen": "1r2k2r/p5bp/4p1p1/q2pn3/1p2N1P1/6QP/PPP5/1KBR3R w k -",
+      "expected": "bm c1h6",
+      "actual": "c1h6",
+      "passed": true,
+      "nodes": 4296322,
+      "timeMs": 1764
+    },
+    {
+      "testId": "ECM.150",
+      "fen": "rn1q1rk1/pp3p1p/2p5/3p4/5Q1P/2NP3R/PPP3P1/4RK2 w - -",
+      "expected": "bm h3g3",
+      "actual": "h3g3",
+      "passed": true,
+      "nodes": 16946231,
+      "timeMs": 3867
+    },
+    {
+      "testId": "ECM.151",
+      "fen": "7r/kppQP1pp/p7/2qp1R2/4n3/1P2b2P/P1P3PK/R7 b - -",
+      "expected": "bm h8e8",
+      "actual": "h8e8",
+      "passed": true,
+      "nodes": 4178265,
+      "timeMs": 1788
+    },
+    {
+      "testId": "ECM.152",
+      "fen": "r1b1kb1Q/qp2pp2/p3n1p1/2nN2Pp/2B4P/7N/PPP5/2KRR3 w q -",
+      "expected": "bm d5c7",
+      "actual": "d5c7",
+      "passed": true,
+      "nodes": 9396082,
+      "timeMs": 1336
+    },
+    {
+      "testId": "ECM.154",
+      "fen": "2r1q1r1/6bk/p2pN1pp/1p1N4/4P3/3R3Q/PnP4P/1K4R1 w - -",
+      "expected": "bm d5f6",
+      "actual": "d5f6",
+      "passed": true,
+      "nodes": 7340271,
+      "timeMs": 2842
+    },
+    {
+      "testId": "ECM.155",
+      "fen": "4r3/Q2bppkp/3p2p1/3Nn3/4P3/6PP/1qr2PB1/R3R1K1 b - -",
+      "expected": "bm e8a8",
+      "actual": "e8a8",
+      "passed": true,
+      "nodes": 5884491,
+      "timeMs": 2571
+    },
+    {
+      "testId": "ECM.156",
+      "fen": "6k1/p1q2pp1/2n2b2/3B2Pp/2P2P2/5N1P/Pr1Q2K1/4R3 w - -",
+      "expected": "bm e1e8",
+      "actual": "e1e8",
+      "passed": true,
+      "nodes": 8189275,
+      "timeMs": 3289
+    },
+    {
+      "testId": "ECM.157",
+      "fen": "r1r3k1/p4n2/3p4/5NpR/8/2q2P2/P1PQ4/2K4R w - -",
+      "expected": "bm h5h8",
+      "actual": "h5h8",
+      "passed": true,
+      "nodes": 7826626,
+      "timeMs": 3158
+    },
+    {
+      "testId": "ECM.158",
+      "fen": "8/p5Q1/2ppq2p/3n1ppk/3B4/2P2P1P/P5P1/6K1 w - -",
+      "expected": "bm g2g4",
+      "actual": "g1h2",
+      "passed": false,
+      "nodes": 10000004,
+      "timeMs": 3918
+    },
+    {
+      "testId": "ECM.159",
+      "fen": "r1r3k1/1p1b1nq1/6p1/pN1p4/P2Np2R/1P2P3/1Q3PP1/1K5R w - -",
+      "expected": "bm b5d6",
+      "actual": "b5d6",
+      "passed": true,
+      "nodes": 9000003,
+      "timeMs": 3990
+    },
+    {
+      "testId": "ECM.161",
+      "fen": "r1bq3k/ppp2Qp1/2n1p2p/6N1/2BPN3/2P1n3/PP4PP/R5K1 w - -",
+      "expected": "bm e4f6",
+      "actual": "e4f6",
+      "passed": true,
+      "nodes": 4620810,
+      "timeMs": 2024
+    },
+    {
+      "testId": "ECM.162",
+      "fen": "3R4/1p2kp2/p1b1nN2/6p1/8/6BP/2r1qPPK/Q7 w - -",
+      "expected": "bm d8d7",
+      "actual": "d8d7",
+      "passed": true,
+      "nodes": 11425233,
+      "timeMs": 4615
+    },
+    {
+      "testId": "ECM.163",
+      "fen": "6k1/p5p1/1p1p1nN1/1B1P4/4PK2/8/2r3b1/7R w - -",
+      "expected": "bm h1h8",
+      "actual": "h1h8",
+      "passed": true,
+      "nodes": 1485160,
+      "timeMs": 358
+    },
+    {
+      "testId": "ECM.164",
+      "fen": "8/5P2/4K1kP/4R3/8/8/8/5r2 w - -",
+      "expected": "bm e5g5",
+      "actual": "e5g5",
+      "passed": true,
+      "nodes": 2202913,
+      "timeMs": 790
+    },
+    {
+      "testId": "ECM.165",
+      "fen": "3r1rk1/p1p1qp1p/2p1b1p1/8/P2PRP2/2P1NQ2/6PP/R5K1 w - -",
+      "expected": "bm f4f5",
+      "actual": "f4f5",
+      "passed": true,
+      "nodes": 6107696,
+      "timeMs": 2722
+    },
+    {
+      "testId": "ECM.166",
+      "fen": "6k1/pr3ppp/1p3qn1/5NQ1/2p5/8/P4PPP/4R1K1 w - -",
+      "expected": "bm e1e8",
+      "actual": "e1e8",
+      "passed": true,
+      "nodes": 1930524,
+      "timeMs": 305
+    },
+    {
+      "testId": "ECM.167",
+      "fen": "Q7/1pq2kpp/4bp2/3r4/2B5/P3P3/1r3PPP/2R1K2R b K -",
+      "expected": "bm d5d1",
+      "actual": "d5d1",
+      "passed": true,
+      "nodes": 7048855,
+      "timeMs": 2880
+    },
+    {
+      "testId": "ECM.168",
+      "fen": "4r1k1/p4ppp/4q2r/1Q6/4p3/4P1P1/P4P1P/2RR2K1 w - -",
+      "expected": "bm d1d6",
+      "actual": "d1d6",
+      "passed": true,
+      "nodes": 9934474,
+      "timeMs": 3866
+    },
+    {
+      "testId": "ECM.169",
+      "fen": "8/5p1k/4p1p1/3p2K1/3P1Q1P/P4P2/7q/8 b - -",
+      "expected": "bm f7f6",
+      "actual": "f7f6",
+      "passed": true,
+      "nodes": 10000003,
+      "timeMs": 4973
+    },
+    {
+      "testId": "ECM.170",
+      "fen": "r4r2/6k1/3p4/2pPp2p/4Pqp1/3P1P2/1R2Q1KP/5R2 b - -",
+      "expected": "bm a8a1",
+      "actual": "a8a1",
+      "passed": true,
+      "nodes": 9848713,
+      "timeMs": 3687
+    },
+    {
+      "testId": "ECM.171",
+      "fen": "4r1k1/1np1r1pp/1ppp1q2/6N1/1P3P2/4RQP1/7P/4R1K1 w - -",
+      "expected": "bm f3h5",
+      "actual": "f3h5",
+      "passed": true,
+      "nodes": 11470568,
+      "timeMs": 4403
+    },
+    {
+      "testId": "ECM.172",
+      "fen": "r4rk1/pp3p1p/3pq1p1/2nNp3/3R1P2/7Q/PP4PP/5RK1 w - -",
+      "expected": "bm f4f5",
+      "actual": "f4f5",
+      "passed": true,
+      "nodes": 12000003,
+      "timeMs": 4693
+    },
+    {
+      "testId": "ECM.173",
+      "fen": "3qn2k/1p3Bp1/rbn4p/2p5/p1P2p2/P2b2PP/1BQNRP2/1R4K1 w - -",
+      "expected": "bm c2d3",
+      "actual": "c2d3",
+      "passed": true,
+      "nodes": 12000003,
+      "timeMs": 4832
+    },
+    {
+      "testId": "ECM.174",
+      "fen": "3r1rk1/1pp4p/1q3bp1/p3p3/P2n1P2/2BB3P/1PP2QP1/R4RK1 b - -",
+      "expected": "bm f6h4",
+      "actual": "f6h4",
+      "passed": true,
+      "nodes": 8561691,
+      "timeMs": 3584
+    },
+    {
+      "testId": "ECM.175",
+      "fen": "4rrk1/2p2ppp/p2b4/1p1P4/3P2nq/2P4P/PPQ1RPP1/RNB3K1 b - -",
+      "expected": "bm h4f2",
+      "actual": "h4f2",
+      "passed": true,
+      "nodes": 4755241,
+      "timeMs": 678
+    },
+    {
+      "testId": "ECM.176",
+      "fen": "1q6/2rk1p2/p1n1b1rN/3p2p1/8/3Q4/PP1B1PPP/2R1R1K1 w - -",
+      "expected": "bm h6f7",
+      "actual": "h6f7",
+      "passed": true,
+      "nodes": 5325255,
+      "timeMs": 2092
+    },
+    {
+      "testId": "ECM.177",
+      "fen": "r3kb1r/2q2p2/3p4/ppp1n1B1/P6P/1B3pQ1/1PP3b1/2KRR3 w kq -",
+      "expected": "bm b3d5",
+      "actual": "b3d5",
+      "passed": true,
+      "nodes": 10000005,
+      "timeMs": 4163
+    },
+    {
+      "testId": "ECM.178",
+      "fen": "r1b2rk1/1p4pp/p1n3q1/4ppN1/7Q/2P1B3/P1P2PPP/R2R2K1 w - -",
+      "expected": "bm d1d6",
+      "actual": "d1d6",
+      "passed": true,
+      "nodes": 11000003,
+      "timeMs": 4734
+    },
+    {
+      "testId": "ECM.179",
+      "fen": "1rb2r2/1pR1N2p/p2R2pk/5p2/4pP2/1P1nP3/P4P1P/5BK1 w - -",
+      "expected": "bm d6f6",
+      "actual": "d6f6",
+      "passed": true,
+      "nodes": 8944657,
+      "timeMs": 3359
+    },
+    {
+      "testId": "ECM.181",
+      "fen": "3r2k1/p2q1r1p/1p1N2p1/1PpP4/3b1Bn1/1Q4Pb/1P2RP1P/R5KB b - -",
+      "expected": "bm d7d6",
+      "actual": "d7d6",
+      "passed": true,
+      "nodes": 6670241,
+      "timeMs": 2897
+    },
+    {
+      "testId": "ECM.182",
+      "fen": "4r1k1/1pbb3p/2pp2q1/p1n5/2P2R2/1PN1n1P1/PB2Q1B1/5RK1 w - -",
+      "expected": "bm e2e3",
+      "actual": "e2e3",
+      "passed": true,
+      "nodes": 10000004,
+      "timeMs": 4219
+    },
+    {
+      "testId": "ECM.183",
+      "fen": "3r2k1/p2r1p1p/1pR1p1qP/3P1pP1/3R4/1P2Q3/P4K2/8 w - -",
+      "expected": "bm d5e6",
+      "actual": "d5e6",
+      "passed": true,
+      "nodes": 11000003,
+      "timeMs": 4202
+    },
+    {
+      "testId": "ECM.184",
+      "fen": "3r3k/p1Q3bp/2p3p1/8/2P1BRn1/1P4Pb/P1N1q2P/6BK b - -",
+      "expected": "bm g4f2",
+      "actual": "g4f2",
+      "passed": true,
+      "nodes": 13000003,
+      "timeMs": 4627
+    },
+    {
+      "testId": "ECM.185",
+      "fen": "r4k2/p1pr1ppp/2q5/3PR2P/3Q4/8/6P1/5RK1 w - -",
+      "expected": "bm e5e7",
+      "actual": "e5e7",
+      "passed": true,
+      "nodes": 11657295,
+      "timeMs": 4440
+    },
+    {
+      "testId": "ECM.187",
+      "fen": "r1b4r/pp2ppk1/2np1np1/3N3p/2B1P3/q3BP2/P1PQ2PP/1R3RK1 w - -",
+      "expected": "bm d5e7",
+      "actual": "d5c7",
+      "passed": false,
+      "nodes": 7805297,
+      "timeMs": 3725
+    },
+    {
+      "testId": "ECM.188",
+      "fen": "r3k2r/pb1n1pbp/4p1p1/q1n1P3/Bp1N1N2/4B3/PP3PPP/R2Q1RK1 w kq -",
+      "expected": "bm d4e6",
+      "actual": "d4e6",
+      "passed": true,
+      "nodes": 8193255,
+      "timeMs": 3744
+    },
+    {
+      "testId": "ECM.189",
+      "fen": "5rk1/Q2nqppp/5n2/2p5/8/1B2PP1P/Pr1B1P2/R3K2R b KQ -",
+      "expected": "bm f6e4",
+      "actual": "f6e4",
+      "passed": true,
+      "nodes": 11000003,
+      "timeMs": 4608
+    },
+    {
+      "testId": "ECM.191",
+      "fen": "2k1r1r1/ppb2p2/6b1/2qP4/2P2P2/4pP1p/P3Q2P/2RBRN1K b - -",
+      "expected": "bm g6d3",
+      "actual": "c5d4",
+      "passed": false,
+      "nodes": 9000005,
+      "timeMs": 3880
+    },
+    {
+      "testId": "ECM.192",
+      "fen": "5r1k/pp1n1p1p/1b1qpP2/8/1PrN4/P1N1Q1P1/7P/3R1R1K w - -",
+      "expected": "bm e3h6",
+      "actual": "e3h6",
+      "passed": true,
+      "nodes": 9000004,
+      "timeMs": 3898
+    },
+    {
+      "testId": "ECM.194",
+      "fen": "1r3rk1/p4pbp/q1p2pp1/3p1b2/1n1P1P1B/PB3N2/1PPQR1PP/2KR4 b - -",
+      "expected": "bm f5c2",
+      "actual": "f5c2",
+      "passed": true,
+      "nodes": 10946078,
+      "timeMs": 4849
+    },
+    {
+      "testId": "ECM.195",
+      "fen": "1rbr2k1/4qp2/p1n2bpp/1pp1p1N1/4P3/2P1BQ1P/PPB2PP1/3RR1K1 w - -",
+      "expected": "bm e3c5",
+      "actual": "e3c5",
+      "passed": true,
+      "nodes": 7628733,
+      "timeMs": 3327
+    },
+    {
+      "testId": "ECM.196",
+      "fen": "2r2rk1/1p1q1ppp/1p3n2/3p1N2/4n3/1N3Q2/PPP2PPP/R2R2K1 w - -",
+      "expected": "bm d1d5",
+      "actual": "f5e3",
+      "passed": false,
+      "nodes": 10000003,
+      "timeMs": 4534
+    },
+    {
+      "testId": "ECM.197",
+      "fen": "rn3rk1/pp2ppbp/6p1/2R3N1/2B3b1/q3B3/P1P1Q1PP/5RK1 w - -",
+      "expected": "bm f1f7",
+      "actual": "f1f7",
+      "passed": true,
+      "nodes": 5157032,
+      "timeMs": 2261
+    },
+    {
+      "testId": "ECM.199",
+      "fen": "r1nqr2k/1p1b1Q1p/p5p1/P1pPb3/5B2/2N5/BP4PP/R4RK1 w - -",
+      "expected": "bm f7f8",
+      "actual": "f7f8",
+      "passed": true,
+      "nodes": 9872182,
+      "timeMs": 4137
+    },
+    {
+      "testId": "ECM.200",
+      "fen": "8/k3r1b1/Pp2rpp1/1qpQ4/4nB2/2P2NP1/7P/R4RK1 w - -",
+      "expected": "bm f4b8",
+      "actual": "f4b8",
+      "passed": true,
+      "nodes": 13000003,
+      "timeMs": 4848
+    },
+    {
+      "testId": "ECM.201",
+      "fen": "1k1r4/ppq2p2/8/2pPb1r1/2P1Q1B1/6P1/PP3PK1/R4R2 b - -",
+      "expected": "bm f7f5",
+      "actual": "f7f5",
+      "passed": true,
+      "nodes": 11416515,
+      "timeMs": 4566
+    },
+    {
+      "testId": "ECM.202",
+      "fen": "r1b2nk1/2qn1p1p/1ppR2p1/8/1PP1NP2/4r1PP/1Q2N1B1/3R2K1 w - -",
+      "expected": "bm b4b5",
+      "actual": "g1f2",
+      "passed": false,
+      "nodes": 10000003,
+      "timeMs": 4367
+    },
+    {
+      "testId": "ECM.203",
+      "fen": "8/5pk1/3q2p1/8/7P/5Q1K/6B1/6b1 b - -",
+      "expected": "bm d6h2",
+      "actual": "d6h2",
+      "passed": true,
+      "nodes": 3123457,
+      "timeMs": 2151
+    },
+    {
+      "testId": "ECM.204",
+      "fen": "6r1/ppp4k/3p2rp/3Pb3/PPP1Np1q/5P1b/3QRRBP/6K1 b - -",
+      "expected": "bm e5d4",
+      "actual": "e5d4",
+      "passed": true,
+      "nodes": 6024808,
+      "timeMs": 2354
+    },
+    {
+      "testId": "ECM.205",
+      "fen": "4br1k/pR4bp/2r1B1pN/4npB1/3p4/P7/5PPP/4R1K1 w - -",
+      "expected": "bm b7g7",
+      "actual": "e6d5",
+      "passed": false,
+      "nodes": 10497270,
+      "timeMs": 4336
+    },
+    {
+      "testId": "ECM.206",
+      "fen": "r1bq1rk1/pppn2bp/3p2p1/3N1p2/8/BP1BRQ1P/P1PP1PP1/4R1K1 w - -",
+      "expected": "bm d5c7",
+      "actual": "d3c4",
+      "passed": false,
+      "nodes": 9000003,
+      "timeMs": 4048
+    },
+    {
+      "testId": "ECM.207",
+      "fen": "r6r/1p2kp2/3p1b2/pPpPpQ1P/1nP1P2P/6R1/1P2K3/1B6 w - -",
+      "expected": "bm g3g6",
+      "actual": "g3g6",
+      "passed": true,
+      "nodes": 6881949,
+      "timeMs": 2565
+    },
+    {
+      "testId": "ECM.209",
+      "fen": "2r1r1k1/pp3pp1/3p3B/P2P1P2/2nb4/7R/1q3PQP/1B3R1K w - -",
+      "expected": "bm h3b3",
+      "actual": "h3b3",
+      "passed": true,
+      "nodes": 11000003,
+      "timeMs": 4541
+    },
+    {
+      "testId": "ECM.210",
+      "fen": "r2qr1n1/p4pk1/1p1p2p1/4p3/4PQ2/1PN2P2/1PP3P1/2KR3R w - -",
+      "expected": "bm h1h7",
+      "actual": "f4d2",
+      "passed": false,
+      "nodes": 12000004,
+      "timeMs": 4888
+    },
+    {
+      "testId": "ECM.211",
+      "fen": "r4rk1/ppp3b1/3p1qp1/3Pp3/2P1Bn2/4BP2/PP1Q4/2K3RR w - -",
+      "expected": "bm g1g6",
+      "actual": "e3f4",
+      "passed": false,
+      "nodes": 6947880,
+      "timeMs": 2645
+    },
+    {
+      "testId": "ECM.212",
+      "fen": "1k1r2r1/pp3p1p/B2q1n2/8/3Pb1p1/2Q5/PR3PPP/2B1R1K1 w - -",
+      "expected": "bm c1f4",
+      "actual": "a6c4",
+      "passed": false,
+      "nodes": 7387941,
+      "timeMs": 3065
+    },
+    {
+      "testId": "ECM.213",
+      "fen": "k3r3/pR5p/PppR1p1p/4nP2/1PP5/8/4B1rP/2K5 w - -",
+      "expected": "bm b7e7",
+      "actual": "b7e7",
+      "passed": true,
+      "nodes": 7291275,
+      "timeMs": 2645
+    },
+    {
+      "testId": "ECM.214",
+      "fen": "1q3rk1/r5b1/pNp1bn1p/2Pp1n2/1P2p3/1N2P2P/PBQKB3/3R3R b - -",
+      "expected": "bm f5e3",
+      "actual": "f5e3",
+      "passed": true,
+      "nodes": 7475029,
+      "timeMs": 3200
+    },
+    {
+      "testId": "ECM.216",
+      "fen": "3r2k1/p5pp/bpP1p3/3n1p2/2NQpP1q/P3P3/1B1R1R2/4KBr1 b - -",
+      "expected": "bm g1f1",
+      "actual": "g1f1",
+      "passed": true,
+      "nodes": 9460818,
+      "timeMs": 3624
+    },
+    {
+      "testId": "ECM.217",
+      "fen": "1rq1r2k/5Rbp/p2p1p1B/2p1p3/2P1P2Q/1P6/P5PP/3b3K w - -",
+      "expected": "bm h6g7",
+      "actual": "h6g7",
+      "passed": true,
+      "nodes": 14460756,
+      "timeMs": 3339
+    },
+    {
+      "testId": "ECM.218",
+      "fen": "5Q2/5p1p/3p2p1/4p1k1/4P1P1/3R1P1K/r6P/4q3 w - -",
+      "expected": "bm f3f4",
+      "actual": "f3f4",
+      "passed": true,
+      "nodes": 8079846,
+      "timeMs": 3271
+    },
+    {
+      "testId": "ECM.219",
+      "fen": "2b2r1k/ppq3pp/3b3r/n3NpN1/Q2PpP1B/2P1R3/PP5P/4R1K1 w - -",
+      "expected": "bm g5f7",
+      "actual": "g5f7",
+      "passed": true,
+      "nodes": 9666579,
+      "timeMs": 3985
+    },
+    {
+      "testId": "ECM.220",
+      "fen": "2r1r1k1/1R4bp/p5p1/2pqn3/8/2B5/1PQ1B1PP/5RK1 w - -",
+      "expected": "bm e2c4",
+      "actual": "e2c4",
+      "passed": true,
+      "nodes": 7812594,
+      "timeMs": 2968
+    },
+    {
+      "testId": "ECM.221",
+      "fen": "7k/pp1q2pp/3Nr1n1/3B2Q1/2pP4/B3P1Pb/P6P/6K1 w - -",
+      "expected": "bm g5d8",
+      "actual": "g5d8",
+      "passed": true,
+      "nodes": 7494467,
+      "timeMs": 2745
+    },
+    {
+      "testId": "ECM.222",
+      "fen": "r5k1/5p1p/bq1p2p1/r2Pp3/1p2N1P1/1P3P2/1KPQ3P/3R3R b - -",
+      "expected": "bm a5a2",
+      "actual": "a6b7",
+      "passed": false,
+      "nodes": 4363959,
+      "timeMs": 1759
+    },
+    {
+      "testId": "ECM.223",
+      "fen": "5Bk1/pr2pp1p/2b3pQ/2p1q3/8/2P4P/PP4P1/1B1Rb1K1 w - -",
+      "expected": "bm f8g7",
+      "actual": "f8g7",
+      "passed": true,
+      "nodes": 7732964,
+      "timeMs": 3037
+    },
+    {
+      "testId": "ECM.224",
+      "fen": "5nk1/2b1q1p1/2p5/3pP1pQ/1r1P2P1/3B1R2/5PP1/6K1 w - -",
+      "expected": "bm f3f8",
+      "actual": "f3f8",
+      "passed": true,
+      "nodes": 13027234,
+      "timeMs": 4795
+    },
+    {
+      "testId": "ECM.225",
+      "fen": "1k1r3r/1pp2p2/p2b4/4n1p1/N3q1P1/1B2B3/PP3RP1/4RQK1 b - -",
+      "expected": "bm h8h1",
+      "actual": "h8h1",
+      "passed": true,
+      "nodes": 19221726,
+      "timeMs": 4111
+    },
+    {
+      "testId": "ECM.226",
+      "fen": "rnb1kr2/p4pQ1/8/1ppPpP2/2p1P3/N6P/Pq4B1/3R1RK1 w q -",
+      "expected": "bm a3b5",
+      "actual": "a3b5",
+      "passed": true,
+      "nodes": 7830489,
+      "timeMs": 3179
+    },
+    {
+      "testId": "ECM.227",
+      "fen": "5r1k/2p3pp/3pQ3/3P1rN1/pp5q/5PR1/P4PKP/B7 w - -",
+      "expected": "bm a1g7",
+      "actual": "e6e7",
+      "passed": false,
+      "nodes": 5145553,
+      "timeMs": 1920
+    },
+    {
+      "testId": "ECM.228",
+      "fen": "8/pR3Bk1/3p2p1/5b1p/2P4P/6P1/P4bQK/4q3 b - -",
+      "expected": "bm f2g1",
+      "actual": "f2g1",
+      "passed": true,
+      "nodes": 12000005,
+      "timeMs": 4277
+    },
+    {
+      "testId": "ECM.229",
+      "fen": "r1b1Rnk1/6pp/p4q2/1pp2P2/3r4/2NB4/PP1Q2PP/4R1K1 w - -",
+      "expected": "bm c3d5",
+      "actual": "c3d5",
+      "passed": true,
+      "nodes": 11000003,
+      "timeMs": 4335
+    },
+    {
+      "testId": "ECM.230",
+      "fen": "1Q6/pb3pk1/1p3qp1/1N3p1p/2Pr3P/3BR1PK/r7/6R1 b - -",
+      "expected": "bm a2h2",
+      "actual": "a2h2",
+      "passed": true,
+      "nodes": 25654753,
+      "timeMs": 4770
+    },
+    {
+      "testId": "ECM.232",
+      "fen": "2kr3r/Qpp1n1p1/2b2pp1/4b3/8/6N1/PPP2P2/R1B2RK1 b - -",
+      "expected": "bm h8h1",
+      "actual": "h8h1",
+      "passed": true,
+      "nodes": 13744023,
+      "timeMs": 4024
+    },
+    {
+      "testId": "ECM.233",
+      "fen": "8/2p2Q1p/1rp5/p3q1kp/P7/2P2RP1/5PK1/8 w - -",
+      "expected": "bm f3f5",
+      "actual": "f3f5",
+      "passed": true,
+      "nodes": 8607759,
+      "timeMs": 2980
+    },
+    {
+      "testId": "ECM.234",
+      "fen": "1r2b3/1p2q1bk/p1p1p1p1/P1PpP2r/1P1KpPQP/4P2N/6R1/4B2R b - -",
+      "expected": "bm h5e5",
+      "actual": "h5e5",
+      "passed": true,
+      "nodes": 9911148,
+      "timeMs": 4307
+    },
+    {
+      "testId": "ECM.235",
+      "fen": "6k1/3b1p1p/6p1/2BPR3/8/4Q2P/1q3rPK/8 w - -",
+      "expected": "bm e5e8",
+      "actual": "e5e8",
+      "passed": true,
+      "nodes": 12000003,
+      "timeMs": 4677
+    },
+    {
+      "testId": "ECM.236",
+      "fen": "2R5/4ppkp/6p1/p2P4/4P2P/p3B1P1/qbR2PK1/8 w - -",
+      "expected": "bm c8g8",
+      "actual": "c8g8",
+      "passed": true,
+      "nodes": 9783804,
+      "timeMs": 3900
+    },
+    {
+      "testId": "ECM.237",
+      "fen": "3rr1k1/1b5p/p6p/1p3N2/6Pb/P1Q1p3/1PP4P/R5K1 b - -",
+      "expected": "bm d8d1",
+      "actual": "d8d1",
+      "passed": true,
+      "nodes": 9327080,
+      "timeMs": 3682
+    },
+    {
+      "testId": "ECM.238",
+      "fen": "6k1/p4pq1/2n1p1p1/1p1pP1N1/3P1QPP/8/P3K3/8 w - -",
+      "expected": "bm f4c1",
+      "actual": "g5f3",
+      "passed": false,
+      "nodes": 3619102,
+      "timeMs": 1355
+    },
+    {
+      "testId": "ECM.239",
+      "fen": "3r1rk1/1pq1nppp/p7/2pB3Q/P4P2/1P2P3/6PP/2RR2K1 w - -",
+      "expected": "bm d5f3 c1c5",
+      "actual": "d5e4",
+      "passed": false,
+      "nodes": 8261869,
+      "timeMs": 3600
+    },
+    {
+      "testId": "ECM.240",
+      "fen": "8/p1r2q1k/1p1p3p/1Pp1nP2/P1P5/3R2PP/1Q4BK/8 w - -",
+      "expected": "bm d3d6",
+      "actual": "d3d1",
+      "passed": false,
+      "nodes": 7570151,
+      "timeMs": 3043
+    },
+    {
+      "testId": "ECM.241",
+      "fen": "6k1/1pp2p2/p2p2q1/2PPb3/4r3/Pr4PK/2R5/2Q2NR1 b - -",
+      "expected": "bm e4h4",
+      "actual": "e4g4",
+      "passed": false,
+      "nodes": 11493211,
+      "timeMs": 4467
+    },
+    {
+      "testId": "ECM.242",
+      "fen": "3r4/1pQ4R/p1b2kp1/P6p/2q5/7P/2P3P1/6K1 b - -",
+      "expected": "bm d8d1",
+      "actual": "d8d1",
+      "passed": true,
+      "nodes": 21144935,
+      "timeMs": 4764
+    },
+    {
+      "testId": "ECM.243",
+      "fen": "6rr/1b3k1p/pbqppPn1/1p5Q/4PN2/P6R/1PP3BP/2B2R1K w - -",
+      "expected": "bm h5h7",
+      "actual": "h5h7",
+      "passed": true,
+      "nodes": 12000003,
+      "timeMs": 4828
+    },
+    {
+      "testId": "ECM.244",
+      "fen": "4rrk1/3b1ppp/pb6/1pqP4/P1p1PP2/1P2NK2/3QB2P/R2R4 b - -",
+      "expected": "bm e8e4",
+      "actual": "e8e4",
+      "passed": true,
+      "nodes": 7905831,
+      "timeMs": 3387
+    },
+    {
+      "testId": "ECM.245",
+      "fen": "2r1r1k1/1p4bp/p2p1qp1/1n1P4/2P1B2P/1N1Q4/PP2R3/1K5R b - -",
+      "expected": "bm c8c4",
+      "actual": "c8c4",
+      "passed": true,
+      "nodes": 7295274,
+      "timeMs": 2937
+    },
+    {
+      "testId": "ECM.246",
+      "fen": "6rr/ppqb1pkp/2pb1pn1/3p3Q/3P1P1N/3B1RN1/PPP3PP/5RK1 w - -",
+      "expected": "bm h5h6",
+      "actual": "h5h6",
+      "passed": true,
+      "nodes": 16665470,
+      "timeMs": 4844
+    },
+    {
+      "testId": "ECM.247",
+      "fen": "r2qr1k1/1pnb1pp1/p1n1p2p/8/P2P3P/B2B1NP1/6P1/R2Q1RK1 w - -",
+      "expected": "bm d3h7",
+      "actual": "d1b3",
+      "passed": false,
+      "nodes": 8000004,
+      "timeMs": 3893
+    },
+    {
+      "testId": "ECM.248",
+      "fen": "r2q1rk1/1b1nbpp1/p1p1p2p/1pPpN3/3P1N2/P2BP3/1PQ2PPP/R4RK1 w - -",
+      "expected": "bm d3h7",
+      "actual": "d3h7",
+      "passed": true,
+      "nodes": 11447389,
+      "timeMs": 3801
+    },
+    {
+      "testId": "ECM.249",
+      "fen": "2r2rk1/pb4pp/1p2p3/4Npq1/3P1n2/5P2/PP1R2PP/RB2Q1K1 b - -",
+      "expected": "bm c8c1",
+      "actual": "c8c1",
+      "passed": true,
+      "nodes": 10086554,
+      "timeMs": 4132
+    },
+    {
+      "testId": "ECM.250",
+      "fen": "2r1rbk1/5pp1/bq5p/1pnBPN2/6Q1/N7/5PPP/R2R2K1 w - -",
+      "expected": "bm d5f7",
+      "actual": "a1b1",
+      "passed": false,
+      "nodes": 7721518,
+      "timeMs": 3334
+    },
+    {
+      "testId": "ECM.251",
+      "fen": "1k1r1r2/2b2R2/Bppp2p1/2q4p/Q2pP3/P2P4/2P3PP/1R4K1 w - -",
+      "expected": "bm a6b7",
+      "actual": "a6b7",
+      "passed": true,
+      "nodes": 9987085,
+      "timeMs": 3854
+    },
+    {
+      "testId": "ECM.252",
+      "fen": "r5k1/pp2ppb1/4qn2/r3B1p1/3P4/3QNP1R/PP2K1P1/7R w - -",
+      "expected": "bm e5f6",
+      "actual": "e5f6",
+      "passed": true,
+      "nodes": 8779513,
+      "timeMs": 3725
+    },
+    {
+      "testId": "ECM.253",
+      "fen": "1R2br1k/5r1p/p2p1P2/6RQ/3p1P2/4p2B/q6P/5N1K w - -",
+      "expected": "bm b8e8",
+      "actual": "b8e8",
+      "passed": true,
+      "nodes": 11684760,
+      "timeMs": 4448
+    },
+    {
+      "testId": "ECM.254",
+      "fen": "kr1r4/7p/2bqp1p1/p7/1Pp1PP1P/K1B1nNPB/PP5R/RN2Q3 b - -",
+      "expected": "bm d6b4",
+      "actual": "d6b4",
+      "passed": true,
+      "nodes": 12105874,
+      "timeMs": 1953
+    },
+    {
+      "testId": "ECM.255",
+      "fen": "5r1r/1pkb4/5pB1/2P5/p3R2P/Pq6/1PQ2Pn1/K2R4 w - -",
+      "expected": "bm d1d7",
+      "actual": "d1d7",
+      "passed": true,
+      "nodes": 10494194,
+      "timeMs": 4154
+    },
+    {
+      "testId": "ECM.256",
+      "fen": "kn5r/p2r2p1/1pqBp1np/1Q1pPp2/R2P4/1N6/2P2PPP/R5K1 w - -",
+      "expected": "bm a4a7",
+      "actual": "a4a7",
+      "passed": true,
+      "nodes": 11296838,
+      "timeMs": 4230
+    },
+    {
+      "testId": "ECM.257",
+      "fen": "4Rnk1/2p2pp1/3r3p/p2P4/P5Q1/1B5P/5PK1/q7 w - -",
+      "expected": "bm e8f8",
+      "actual": "e8f8",
+      "passed": true,
+      "nodes": 10482291,
+      "timeMs": 3707
+    },
+    {
+      "testId": "ECM.258",
+      "fen": "4r3/2k1p2q/pp1nR1p1/2pP1pP1/2P2P2/1P6/P1K3B1/4Q3 w - -",
+      "expected": "bm e6d6",
+      "actual": "e6d6",
+      "passed": true,
+      "nodes": 5799504,
+      "timeMs": 2113
+    },
+    {
+      "testId": "ECM.260",
+      "fen": "r1b1rbk1/7p/2p1pBp1/p2pP1P1/5P2/1PqB4/P1P1Q3/1K4RR w - -",
+      "expected": "bm h1h7",
+      "actual": "h1h7",
+      "passed": true,
+      "nodes": 9123977,
+      "timeMs": 3571
+    },
+    {
+      "testId": "ECM.261",
+      "fen": "2rq4/5rbk/3p1n1p/p2Pp2P/1p2b3/4BNR1/PP1Q1P2/3BK1R1 w - -",
+      "expected": "bm e3h6",
+      "actual": "e3h6",
+      "passed": true,
+      "nodes": 10133438,
+      "timeMs": 4282
+    },
+    {
+      "testId": "ECM.262",
+      "fen": "r2q1rkb/pp2p3/2p2pp1/3pPb2/3P3R/2N3P1/PPPQBPK1/3R4 w - -",
+      "expected": "bm h4h8",
+      "actual": "g3g4",
+      "passed": false,
+      "nodes": 5540640,
+      "timeMs": 2375
+    },
+    {
+      "testId": "ECM.263",
+      "fen": "3r2k1/p4rPp/1b1q3Q/n1p1pP2/1p6/3B1NR1/P4P1P/6RK w - -",
+      "expected": "bm h6h7",
+      "actual": "h6h7",
+      "passed": true,
+      "nodes": 25377891,
+      "timeMs": 4228
+    },
+    {
+      "testId": "ECM.264",
+      "fen": "r1bqrnk1/p4p2/1p5p/3pB1p1/P2P2n1/1P1B2N1/2Q3PP/R4RK1 w - -",
+      "expected": "bm d3h7",
+      "actual": "d3h7",
+      "passed": true,
+      "nodes": 9826305,
+      "timeMs": 4158
+    },
+    {
+      "testId": "ECM.265",
+      "fen": "r2rn1k1/1bqn1ppp/p7/2bpP1P1/1p1N1Q2/1P3B2/PBP1NR1P/3R2K1 w - -",
+      "expected": "bm f4f7",
+      "actual": "f4f7",
+      "passed": true,
+      "nodes": 10000003,
+      "timeMs": 4411
+    },
+    {
+      "testId": "ECM.266",
+      "fen": "r2r2k1/1bqpbpp1/ppn1p2p/2p1P1N1/P1B2B2/2P5/1PPRQPPP/3R2K1 w - -",
+      "expected": "bm g5f7",
+      "actual": "g5f7",
+      "passed": true,
+      "nodes": 10000003,
+      "timeMs": 4348
+    },
+    {
+      "testId": "ECM.267",
+      "fen": "r1b1r1k1/1p1n1p2/p1nBp1p1/q2pP1Np/P7/R2B3Q/2P2PPP/5RK1 w - -",
+      "expected": "bm g5f7",
+      "actual": "h3g3",
+      "passed": false,
+      "nodes": 4823429,
+      "timeMs": 2239
+    },
+    {
+      "testId": "ECM.268",
+      "fen": "r1b1k2r/ppp3pp/1qp5/2b1Pp2/3Qn3/5N2/PPPBNPPP/2KR3R w kq -",
+      "expected": "bm d4d8",
+      "actual": "d4d8",
+      "passed": true,
+      "nodes": 6941734,
+      "timeMs": 2873
+    },
+    {
+      "testId": "ECM.269",
+      "fen": "1k6/1p4p1/P1p5/5Q2/2q2r2/P7/8/4R2K w - -",
+      "expected": "bm e1e8",
+      "actual": "e1e8",
+      "passed": true,
+      "nodes": 6000003,
+      "timeMs": 3982
+    },
+    {
+      "testId": "ECM.271",
+      "fen": "4n1q1/1k1b4/2p4R/2Pp4/1p1N1rpQ/3B4/PPP2P2/2K5 w - -",
+      "expected": "bm h4d8",
+      "actual": "h4d8",
+      "passed": true,
+      "nodes": 10752534,
+      "timeMs": 3930
+    },
+    {
+      "testId": "ECM.272",
+      "fen": "r2qk2r/1pp2ppp/p3pnn1/6N1/1B1P2P1/1Q2P2P/PP3PK1/R6R b kq -",
+      "expected": "bm g6h4",
+      "actual": "h7h6",
+      "passed": false,
+      "nodes": 10971621,
+      "timeMs": 4907
+    },
+    {
+      "testId": "ECM.273",
+      "fen": "2kr2r1/R2p3p/2n2p2/1R3P2/2P1p3/4BQ2/1Pq4P/4K3 w - -",
+      "expected": "bm a7a8",
+      "actual": "a7a8",
+      "passed": true,
+      "nodes": 9262595,
+      "timeMs": 3550
+    },
+    {
+      "testId": "ECM.275",
+      "fen": "r1br4/ppq2pk1/3bpN2/8/2P5/3n2B1/PP2QPPP/R4K1R w - -",
+      "expected": "bm e2g4",
+      "actual": "e2g4",
+      "passed": true,
+      "nodes": 8118884,
+      "timeMs": 3367
+    },
+    {
+      "testId": "ECM.276",
+      "fen": "6kb/B1p2p2/5r2/1r1p2pR/6q1/3P2P1/P1P2PP1/2KR3Q b - -",
+      "expected": "bm b5b1",
+      "actual": "b5b1",
+      "passed": true,
+      "nodes": 9027532,
+      "timeMs": 2991
+    },
+    {
+      "testId": "ECM.277",
+      "fen": "rn4k1/pp2p1b1/4b3/q2p2Q1/2B2P2/8/P1P1K1P1/R6R w - -",
+      "expected": "bm h1h8",
+      "actual": "g5g6",
+      "passed": false,
+      "nodes": 10253212,
+      "timeMs": 4085
+    },
+    {
+      "testId": "ECM.278",
+      "fen": "3k2r1/pp1b3Q/1b2pP1p/3pN2q/5B2/7B/PP2nP1K/2R5 b - -",
+      "expected": "bm g8g2",
+      "actual": "g8g2",
+      "passed": true,
+      "nodes": 8927071,
+      "timeMs": 3517
+    },
+    {
+      "testId": "ECM.279",
+      "fen": "2r2rk1/pp3qpp/8/3P1b2/3Q4/P1N1B3/5PKP/R2R4 b - -",
+      "expected": "bm c8c3",
+      "actual": "c8c3",
+      "passed": true,
+      "nodes": 6190905,
+      "timeMs": 2581
+    },
+    {
+      "testId": "ECM.280",
+      "fen": "r1b2rk1/1pqp1ppp/p1n1pn2/5N2/8/2PBB3/P1P2PPP/R2QR1K1 w - -",
+      "expected": "bm f5g7",
+      "actual": "f5h6",
+      "passed": false,
+      "nodes": 4617776,
+      "timeMs": 2198
+    },
+    {
+      "testId": "ECM.281",
+      "fen": "4k2r/1bqnbppp/p3p3/1p2P1N1/2r2BB1/8/PPP3PP/R2Q1R1K w k -",
+      "expected": "bm g5f7",
+      "actual": "g5f7",
+      "passed": true,
+      "nodes": 7727882,
+      "timeMs": 3413
+    },
+    {
+      "testId": "ECM.282",
+      "fen": "5r1k/1pqb3p/2n5/p1pB4/2Pp1r1P/1P5P/R2N2K1/3Q1R2 b - -",
+      "expected": "bm d7h3",
+      "actual": "d7h3",
+      "passed": true,
+      "nodes": 8285709,
+      "timeMs": 3443
+    },
+    {
+      "testId": "ECM.283",
+      "fen": "r4r2/pp2qk2/4pnp1/3pQ3/2p2P2/3B4/PPP2P2/2KR3R w - -",
+      "expected": "bm d3g6",
+      "actual": "d3g6",
+      "passed": true,
+      "nodes": 10573244,
+      "timeMs": 4267
+    },
+    {
+      "testId": "ECM.284",
+      "fen": "3bq3/p1n2rk1/1pp1p1p1/3pPnPp/1P1P1N1P/2PN3K/P2BQR2/8 w - -",
+      "expected": "bm f4g6",
+      "actual": "f4g6",
+      "passed": true,
+      "nodes": 8085079,
+      "timeMs": 3662
+    },
+    {
+      "testId": "ECM.285",
+      "fen": "b6r/2q2k2/4pPp1/1p1n2Bp/2pPB1PP/2P2Q2/8/4R1K1 w - -",
+      "expected": "bm e4g6",
+      "actual": "e4g6",
+      "passed": true,
+      "nodes": 9785258,
+      "timeMs": 4034
+    },
+    {
+      "testId": "ECM.286",
+      "fen": "r1b2r2/3pNpkp/3pn1p1/2pN3P/2PnP3/q3QP2/4BKP1/1R5R w - -",
+      "expected": "bm e3h6",
+      "actual": "e3h6",
+      "passed": true,
+      "nodes": 9995468,
+      "timeMs": 4198
+    },
+    {
+      "testId": "ECM.287",
+      "fen": "4k3/p4ppp/nb1P4/4p3/1P6/P4BP1/3q1r1P/2R2QKR w - -",
+      "expected": "bm f1b5",
+      "actual": "c1c8",
+      "passed": false,
+      "nodes": 9673571,
+      "timeMs": 3848
+    },
+    {
+      "testId": "ECM.288",
+      "fen": "r2q1rk1/pp2pp2/3pb3/3Qb2R/4P1p1/1BN1Bn2/PPP2P2/2K4R w - -",
+      "expected": "bm h5h8",
+      "actual": "h5h8",
+      "passed": true,
+      "nodes": 8777682,
+      "timeMs": 3861
+    },
+    {
+      "testId": "ECM.289",
+      "fen": "2r1r1k1/pp1nbpp1/4pn1p/q3NN1P/P1pP1B2/2P5/1PQ2PP1/R3R1K1 w - -",
+      "expected": "bm f5g7",
+      "actual": "f5g7",
+      "passed": true,
+      "nodes": 10480950,
+      "timeMs": 4855
+    },
+    {
+      "testId": "ECM.290",
+      "fen": "1rbk2nr/p1pp2b1/7p/2qP1pp1/2Bn4/2NKBP2/PP2N1PP/R2Q3R b - -",
+      "expected": "bm c5c4",
+      "actual": "c5c4",
+      "passed": true,
+      "nodes": 6078010,
+      "timeMs": 2640
+    },
+    {
+      "testId": "ECM.291",
+      "fen": "1r3rk1/6p1/p1pb1qPp/3p4/4nPR1/2N4Q/PPP4P/2K1BR2 b - -",
+      "expected": "bm b8b2",
+      "actual": "f6f5",
+      "passed": false,
+      "nodes": 11122550,
+      "timeMs": 4883
+    },
+    {
+      "testId": "ECM.294",
+      "fen": "r2qnr2/pp3kbQ/2npb1p1/2pN1pP1/4P3/8/PPP1BP2/R1B1K1NR w KQ -",
+      "expected": "bm h7g6",
+      "actual": "h7g6",
+      "passed": true,
+      "nodes": 11921389,
+      "timeMs": 4696
+    },
+    {
+      "testId": "ECM.295",
+      "fen": "r2k3r/2pb1ppp/p1p1q3/2Q5/5B2/2N5/PPP2PPP/3R2K1 w - -",
+      "expected": "bm f4c7",
+      "actual": "c5a5",
+      "passed": false,
+      "nodes": 8122851,
+      "timeMs": 3378
+    },
+    {
+      "testId": "ECM.296",
+      "fen": "2r2r2/2N2pkp/2Q5/1N2p1b1/1p6/3P1qPb/PPR2P1P/4R1K1 b - -",
+      "expected": "bm e5e4",
+      "actual": "e5e4",
+      "passed": true,
+      "nodes": 10387441,
+      "timeMs": 4424
+    },
+    {
+      "testId": "ECM.297",
+      "fen": "2r1qrk1/pp1b1ppp/4pn2/n1b5/8/2NQ1NP1/PP1BPPBP/R2R2K1 w - -",
+      "expected": "bm b2b4",
+      "actual": "d2g5",
+      "passed": false,
+      "nodes": 9000004,
+      "timeMs": 4482
+    },
+    {
+      "testId": "ECM.299",
+      "fen": "1r2k2r/2p2p1b/q1Pppb1N/p2p2P1/Q2P4/P3B3/1P5P/2KRR3 b k -",
+      "expected": "bm b8b4",
+      "actual": "b8b4",
+      "passed": true,
+      "nodes": 4546249,
+      "timeMs": 1901
+    },
+    {
+      "testId": "ECM.301",
+      "fen": "4b1r1/1p3ppk/3r3p/p1p1qP1B/3pPN2/3P3R/nPPQ3P/6RK w - -",
+      "expected": "bm f4e6",
+      "actual": "f4e6",
+      "passed": true,
+      "nodes": 10000003,
+      "timeMs": 4015
+    },
+    {
+      "testId": "ECM.302",
+      "fen": "4b2k/7p/3q3P/1p1pRpr1/1P1B4/2P2Q2/7K/8 w - -",
+      "expected": "bm f3g3",
+      "actual": "f3g3",
+      "passed": true,
+      "nodes": 5695098,
+      "timeMs": 2108
+    },
+    {
+      "testId": "ECM.303",
+      "fen": "2kr2r1/pbp4p/1p4p1/1NqpNp2/4nQ2/8/PPPR1PPP/2K1R3 w - -",
+      "expected": "bm e5c6",
+      "actual": "e5c6",
+      "passed": true,
+      "nodes": 5321224,
+      "timeMs": 2163
+    },
+    {
+      "testId": "ECM.304",
+      "fen": "1rr3k1/1p1bqpbp/1R1p2p1/pN1P4/P3P1n1/1Q6/3NB1PP/2B1R1K1 b - -",
+      "expected": "bm c8c3",
+      "actual": "c8c3",
+      "passed": true,
+      "nodes": 7112983,
+      "timeMs": 3304
+    },
+    {
+      "testId": "ECM.305",
+      "fen": "r1br4/1p3k2/p2q1p2/3N1Pp1/3Q4/8/PP4P1/4RR1K w - -",
+      "expected": "bm e1e6",
+      "actual": "e1e6",
+      "passed": true,
+      "nodes": 9196486,
+      "timeMs": 3678
+    },
+    {
+      "testId": "ECM.306",
+      "fen": "r3kbnr/p4ppp/2p1p3/8/Q1B3b1/2N1B3/PP3PqP/R3K2R w KQkq -",
+      "expected": "bm c4d5",
+      "actual": "c4d5",
+      "passed": true,
+      "nodes": 8301388,
+      "timeMs": 3557
+    },
+    {
+      "testId": "ECM.307",
+      "fen": "3r1rk1/2p1qp1p/pnP3p1/4n3/PP1NpR2/1BQ4P/6P1/5RK1 w - -",
+      "expected": "bm d4e6",
+      "actual": "d4e6",
+      "passed": true,
+      "nodes": 8424000,
+      "timeMs": 3506
+    },
+    {
+      "testId": "ECM.308",
+      "fen": "r1bq1k2/5pb1/p2p1n2/2pPrP2/2p4B/3B2R1/PP1Q2PP/R5K1 w - -",
+      "expected": "bm d2g5",
+      "actual": "d2g5",
+      "passed": true,
+      "nodes": 8276412,
+      "timeMs": 3450
+    },
+    {
+      "testId": "ECM.309",
+      "fen": "2bq1rk1/p4pbp/p2p2p1/3P4/2p1QP2/2Pr3P/PP1N2P1/R1B2RK1 b - -",
+      "expected": "bm g7d4",
+      "actual": "g7d4",
+      "passed": true,
+      "nodes": 8695628,
+      "timeMs": 3850
+    },
+    {
+      "testId": "ECM.311",
+      "fen": "r3rk2/p2q1b1p/1pnP1Qp1/5pN1/2p2P2/P1P5/7P/4RRK1 w - -",
+      "expected": "bm e1e7",
+      "actual": "e1e7",
+      "passed": true,
+      "nodes": 12000004,
+      "timeMs": 4561
+    },
+    {
+      "testId": "ECM.314",
+      "fen": "5r1k/1p1b1p1p/p2ppb2/5P1B/1q6/1Pr3R1/2PQ2PP/5R1K w - -",
+      "expected": "bm d2h6",
+      "actual": "d2h6",
+      "passed": true,
+      "nodes": 13056180,
+      "timeMs": 4927
+    },
+    {
+      "testId": "ECM.316",
+      "fen": "r1rbb3/1R3pkp/2pBp1p1/p3P3/q6P/6P1/P2Q1P2/1R3BK1 w - -",
+      "expected": "bm b1b4",
+      "actual": "b1b4",
+      "passed": true,
+      "nodes": 11000004,
+      "timeMs": 4551
+    },
+    {
+      "testId": "ECM.317",
+      "fen": "4r3/pp1b3k/2p2qpp/2Pp4/1P6/PBbP1N1P/2R3P1/3Q3K b - -",
+      "expected": "bm e8e1",
+      "actual": "e8e1",
+      "passed": true,
+      "nodes": 12878056,
+      "timeMs": 4957
+    },
+    {
+      "testId": "ECM.318",
+      "fen": "1rb2rk1/p1p2ppp/2q5/3R4/2P1N3/bP4B1/P1Q2P1P/1K5R w - -",
+      "expected": "bm g3c7",
+      "actual": "g3d6",
+      "passed": false,
+      "nodes": 11000003,
+      "timeMs": 4581
+    },
+    {
+      "testId": "ECM.319",
+      "fen": "8/5k1p/5PpB/3PR3/2r4P/1p3K2/2b5/8 b - -",
+      "expected": "bm c4e4",
+      "actual": "c4e4",
+      "passed": true,
+      "nodes": 8908089,
+      "timeMs": 4392
+    },
+    {
+      "testId": "ECM.320",
+      "fen": "4r2k/3b3p/p2p4/2pP1p2/q1B2Q1P/2PK1P2/Pr1R4/7R b - -",
+      "expected": "bm e8e4",
+      "actual": "e8e4",
+      "passed": true,
+      "nodes": 7394900,
+      "timeMs": 2672
+    },
+    {
+      "testId": "ECM.322",
+      "fen": "2R5/2R4p/5p1k/6n1/8/1P2QPPq/r7/6K1 w - -",
+      "expected": "bm c7h7",
+      "actual": "c7h7",
+      "passed": true,
+      "nodes": 6645518,
+      "timeMs": 2325
+    },
+    {
+      "testId": "ECM.323",
+      "fen": "r1b1r1kb/p1qn1pnp/2p1p1p1/4P1N1/2p1NPP1/4B3/PPPQ3P/3RK2R w K -",
+      "expected": "bm d2d7",
+      "actual": "d2d7",
+      "passed": true,
+      "nodes": 9714041,
+      "timeMs": 3882
+    },
+    {
+      "testId": "ECM.324",
+      "fen": "5k1r/ppqnnp2/3b2p1/2pB2Qp/3p3N/1P1P2P1/P1P2P2/2B1R1K1 w - -",
+      "expected": "bm e1e7",
+      "actual": "e1e7",
+      "passed": true,
+      "nodes": 8422953,
+      "timeMs": 3403
+    },
+    {
+      "testId": "ECM.325",
+      "fen": "5rk1/5p1p/8/3pNp2/RPrqn3/1Q5P/1P3PP1/4R1K1 w - -",
+      "expected": "bm e1e4",
+      "actual": "e1e4",
+      "passed": true,
+      "nodes": 4605355,
+      "timeMs": 1775
+    },
+    {
+      "testId": "ECM.326",
+      "fen": "2rr2k1/4qppp/bn6/p1bB4/4N3/6P1/PB2PP1P/2RQ1RK1 w - -",
+      "expected": "bm c1c5",
+      "actual": "c1c5",
+      "passed": true,
+      "nodes": 9000004,
+      "timeMs": 3776
+    },
+    {
+      "testId": "ECM.327",
+      "fen": "3r1rk1/pbqn1pp1/1pp2n1p/2b1p1B1/P1B1P2N/2N4P/1PP1QPP1/3R1RK1 w - -",
+      "expected": "bm d1d7",
+      "actual": "d1d7",
+      "passed": true,
+      "nodes": 8946031,
+      "timeMs": 3938
+    },
+    {
+      "testId": "ECM.328",
+      "fen": "5rk1/r2nqpp1/p3p3/1p2P3/4N1pP/8/PPP3Q1/1K1R3R w - -",
+      "expected": "bm d1d7",
+      "actual": "d1d7",
+      "passed": true,
+      "nodes": 10266498,
+      "timeMs": 4038
+    },
+    {
+      "testId": "ECM.329",
+      "fen": "1rr3k1/4ppb1/2q1bnp1/1p2B1Q1/6P1/2p2P2/2P1B2R/2K4R w - -",
+      "expected": "bm g5h6",
+      "actual": "g5h6",
+      "passed": true,
+      "nodes": 7112100,
+      "timeMs": 2995
+    },
+    {
+      "testId": "ECM.331",
+      "fen": "3rqb2/1pR3pk/p3n1pp/3p4/3B4/PP6/1P4PP/4RQK1 w - -",
+      "expected": "bm e1e6",
+      "actual": "e1e6",
+      "passed": true,
+      "nodes": 6069537,
+      "timeMs": 2416
+    },
+    {
+      "testId": "ECM.332",
+      "fen": "rkb2qr1/1p5p/pQ1bp3/3p2B1/5n2/3B1N2/PP3PPP/2R2RK1 w - -",
+      "expected": "bm c1c8",
+      "actual": "c1c6",
+      "passed": false,
+      "nodes": 7517746,
+      "timeMs": 3256
+    },
+    {
+      "testId": "ECM.333",
+      "fen": "2r2rk1/1bq2ppp/p7/1p1pNN2/1b1PnB2/3Q3P/PP3PP1/R3R1K1 w - -",
+      "expected": "bm e1e4",
+      "actual": "e1e4",
+      "passed": true,
+      "nodes": 7818852,
+      "timeMs": 3546
+    },
+    {
+      "testId": "ECM.334",
+      "fen": "r3r1k1/1p3pPp/p1p5/3bb2N/7q/1P1Q4/2PB2PP/4RRK1 w - -",
+      "expected": "bm e1e5",
+      "actual": "e1e5",
+      "passed": true,
+      "nodes": 11000004,
+      "timeMs": 4452
+    },
+    {
+      "testId": "ECM.335",
+      "fen": "8/5p2/4p1k1/4P1p1/2rBRbK1/5P2/r4P2/7R b - -",
+      "expected": "bm c4d4",
+      "actual": "f4e5",
+      "passed": false,
+      "nodes": 8000006,
+      "timeMs": 4107
+    },
+    {
+      "testId": "ECM.336",
+      "fen": "r1bqr1k1/pp3pp1/2p4p/3PN1n1/3P1b2/2NB4/PPQ2PPP/3R1RK1 b - -",
+      "expected": "bm e8e5",
+      "actual": "c6d5",
+      "passed": false,
+      "nodes": 9000003,
+      "timeMs": 4190
+    },
+    {
+      "testId": "ECM.337",
+      "fen": "r3r1k1/pbqn1ppp/1p3n2/1Pb5/2p5/5N1P/PBQ1BPP1/1N1R1RK1 b - -",
+      "expected": "bm e8e2",
+      "actual": "e8e2",
+      "passed": true,
+      "nodes": 4725727,
+      "timeMs": 2104
+    },
+    {
+      "testId": "ECM.339",
+      "fen": "r1b1r1k1/pp3p1p/1q2p1pQ/2b1P1B1/8/P2B3P/1P3PP1/2R1R1K1 w - -",
+      "expected": "bm c1c5",
+      "actual": "b2b4",
+      "passed": false,
+      "nodes": 6215531,
+      "timeMs": 2683
+    },
+    {
+      "testId": "ECM.340",
+      "fen": "1k2r2r/1bpQN2p/1p6/P3p2q/4np2/2P2N2/2P2PPP/R3R1K1 b - -",
+      "expected": "bm e8e7",
+      "actual": "e8e7",
+      "passed": true,
+      "nodes": 11520137,
+      "timeMs": 4789
+    },
+    {
+      "testId": "ECM.341",
+      "fen": "r1k2n1r/2pb4/1p1p1qpp/p2P1p2/3N1P1P/2Q3P1/PPP1R3/2K1RB2 w - -",
+      "expected": "bm e2e8",
+      "actual": "e2e8",
+      "passed": true,
+      "nodes": 5566690,
+      "timeMs": 2058
+    },
+    {
+      "testId": "ECM.342",
+      "fen": "r1b2r1R/1p2bpk1/4p1p1/4P1N1/p2p4/5Q2/qPP2PP1/1NKR4 w - -",
+      "expected": "bm f3f6",
+      "actual": "h8h7",
+      "passed": false,
+      "nodes": 7772239,
+      "timeMs": 3214
+    },
+    {
+      "testId": "ECM.343",
+      "fen": "rnb2rk1/3n1ppp/p3p3/1p2P1q1/3N4/1BN5/PPP3PP/R2Q1RK1 w - -",
+      "expected": "bm d4e6",
+      "actual": "d4e6",
+      "passed": true,
+      "nodes": 10512907,
+      "timeMs": 4858
+    },
+    {
+      "testId": "ECM.344",
+      "fen": "4q1r1/5kpp/2p1nb2/2PpQp2/r4P2/1N3P2/1BP1R2P/6RK w - -",
+      "expected": "bm g1g7",
+      "actual": "g1g7",
+      "passed": true,
+      "nodes": 8084726,
+      "timeMs": 3109
+    },
+    {
+      "testId": "ECM.346",
+      "fen": "1r3k1r/4Rn1p/pb1p1P2/1p1q2P1/5p2/7Q/PPP1B1RP/2K5 w - -",
+      "expected": "bm e7f7",
+      "actual": "e2h5",
+      "passed": false,
+      "nodes": 8359398,
+      "timeMs": 3714
+    },
+    {
+      "testId": "ECM.347",
+      "fen": "4rrk1/ppn3pp/2pb1n1q/3p4/1P1P4/P3BNP1/2P1BPKP/R2Q1R2 b - -",
+      "expected": "bm e8e3",
+      "actual": "e8e3",
+      "passed": true,
+      "nodes": 4808882,
+      "timeMs": 2151
+    },
+    {
+      "testId": "ECM.348",
+      "fen": "2b1r2k/2Q4p/4q3/1pp5/3b4/4NP2/1P3BP1/3R2K1 w - -",
+      "expected": "bm d1d4",
+      "actual": "d1d4",
+      "passed": true,
+      "nodes": 6642449,
+      "timeMs": 2741
+    },
+    {
+      "testId": "ECM.350",
+      "fen": "7r/3qbk1r/3p1n2/p1pPp1p1/Pp1nPpP1/1P1Q1P1B/1NP3K1/R3B2R b - -",
+      "expected": "bm f6g4",
+      "actual": "f6g4",
+      "passed": true,
+      "nodes": 10275716,
+      "timeMs": 4419
+    },
+    {
+      "testId": "ECM.351",
+      "fen": "r2qn1k1/1p1b3p/2pp1b2/6pQ/p1P1P3/P1N3PB/1P6/3R1R1K w - -",
+      "expected": "bm f1f6",
+      "actual": "f1f6",
+      "passed": true,
+      "nodes": 6649025,
+      "timeMs": 2817
+    },
+    {
+      "testId": "ECM.352",
+      "fen": "2rq3r/5p2/p3pkbQ/3p4/3N4/2P4R/P4PP1/4R1K1 w - -",
+      "expected": "bm h3f3",
+      "actual": "h3f3",
+      "passed": true,
+      "nodes": 9187730,
+      "timeMs": 3619
+    },
+    {
+      "testId": "ECM.353",
+      "fen": "r4k1r/pp2pp2/3p1b2/q2PnQpp/3N4/1BP3P1/PP3PP1/3RR1K1 w - -",
+      "expected": "bm e1e5",
+      "actual": "f2f4",
+      "passed": false,
+      "nodes": 8427332,
+      "timeMs": 3819
+    },
+    {
+      "testId": "ECM.354",
+      "fen": "5rk1/2p3pp/p1p4r/2P1p3/3pPnq1/1P3R1P/PN1Q3K/R5N1 b - -",
+      "expected": "bm g4f3",
+      "actual": "g4f3",
+      "passed": true,
+      "nodes": 10050668,
+      "timeMs": 4041
+    },
+    {
+      "testId": "ECM.355",
+      "fen": "r1b3rk/pp1n3p/2p2b1n/4pp1q/2P5/1P3NPP/PBQ1NPB1/3RR1K1 w - -",
+      "expected": "bm d1d7",
+      "actual": "d1d7",
+      "passed": true,
+      "nodes": 8799935,
+      "timeMs": 3937
+    },
+    {
+      "testId": "ECM.357",
+      "fen": "r3r1k1/4pp1p/b5pB/q1pP4/3b4/2N4P/PP4P1/R2RQ2K w - -",
+      "expected": "bm d1d4",
+      "actual": "h6e3",
+      "passed": false,
+      "nodes": 6278438,
+      "timeMs": 2857
+    },
+    {
+      "testId": "ECM.358",
+      "fen": "1r6/3b1pk1/pr1p1q1p/2pPb1p1/2B1P1P1/2N2PP1/1PQ3K1/RR6 b - -",
+      "expected": "bm b6b2",
+      "actual": "d7g4",
+      "passed": false,
+      "nodes": 7189023,
+      "timeMs": 2995
+    },
+    {
+      "testId": "ECM.359",
+      "fen": "2r2rk1/5ppp/1p2p3/p7/1n1R4/P1NnPN2/1P3PPP/1R4K1 b - -",
+      "expected": "bm d3b2",
+      "actual": "d3b2",
+      "passed": true,
+      "nodes": 4725154,
+      "timeMs": 1977
+    },
+    {
+      "testId": "ECM.360",
+      "fen": "2r3k1/p1r1ppb1/2bp1np1/q5N1/1p1BP2Q/3P4/PP2N1PP/2R2R1K w - -",
+      "expected": "bm d4f6",
+      "actual": "c1c4",
+      "passed": false,
+      "nodes": 5595402,
+      "timeMs": 2581
+    },
+    {
+      "testId": "ECM.361",
+      "fen": "r3r1k1/p4ppp/2pp1b2/8/q2n1P2/2BQ3P/PPP3P1/1K1R2NR b - -",
+      "expected": "bm e8e3",
+      "actual": "e8e3",
+      "passed": true,
+      "nodes": 4954640,
+      "timeMs": 2081
+    },
+    {
+      "testId": "ECM.362",
+      "fen": "rn1kr3/pppb4/3p1q2/3P1pNn/2P2P1p/1P2Q2P/P2NR1B1/4R1K1 w - -",
+      "expected": "bm e3e8",
+      "actual": "e3e8",
+      "passed": true,
+      "nodes": 11000004,
+      "timeMs": 4678
+    },
+    {
+      "testId": "ECM.363",
+      "fen": "r2q1rk1/ppp1b1pp/1nn1p3/4P3/2PP4/2N1B2P/PP1Q4/2KR1B1R b - -",
+      "expected": "bm f8f1",
+      "actual": "d8d7",
+      "passed": false,
+      "nodes": 4208136,
+      "timeMs": 2003
+    },
+    {
+      "testId": "ECM.364",
+      "fen": "r3k3/1pqb1p2/p3p3/4n2r/3N1Q2/2P5/PP4B1/4RRK1 w q -",
+      "expected": "bm e1e5",
+      "actual": "e1e5",
+      "passed": true,
+      "nodes": 7418405,
+      "timeMs": 3082
+    },
+    {
+      "testId": "ECM.365",
+      "fen": "1rb2bk1/q4r2/pB1p1nn1/3Pp3/N3PpP1/8/1PQ1BNP1/R1R3K1 b - -",
+      "expected": "bm b8b6",
+      "actual": "b8b6",
+      "passed": true,
+      "nodes": 4385455,
+      "timeMs": 1969
+    },
+    {
+      "testId": "ECM.367",
+      "fen": "r4rk1/5p2/p1b1pQpq/8/1B2P3/2NR4/PPP3PP/1K6 w - -",
+      "expected": "bm c3d5",
+      "actual": "b4f8",
+      "passed": false,
+      "nodes": 4909426,
+      "timeMs": 2029
+    },
+    {
+      "testId": "ECM.368",
+      "fen": "3nr1k1/p6p/2n1pRpB/3pP3/2pP2P1/q1P4P/6BK/5Q2 w - -",
+      "expected": "bm f6g6",
+      "actual": "f1b1",
+      "passed": false,
+      "nodes": 10721359,
+      "timeMs": 4286
+    },
+    {
+      "testId": "ECM.369",
+      "fen": "2rr2k1/5ppp/p1b1pn2/q1p5/P1B1PQ2/R1PN1P2/6PP/1R4K1 b - -",
+      "expected": "bm d8d3",
+      "actual": "f6d7",
+      "passed": false,
+      "nodes": 6983116,
+      "timeMs": 3234
+    },
+    {
+      "testId": "ECM.370",
+      "fen": "1r2r1k1/1pqb2pp/p2bp1n1/2p3BQ/3pN3/1P1P2P1/P1P3BP/4RRK1 w - -",
+      "expected": "bm g5d8",
+      "actual": "g5d8",
+      "passed": true,
+      "nodes": 7910784,
+      "timeMs": 3563
+    },
+    {
+      "testId": "ECM.371",
+      "fen": "1k2rb1r/pbp1q1pp/2pp4/2PnpP2/Q7/1P3NP1/PB5P/2KR1B1R w - -",
+      "expected": "bm d1d5",
+      "actual": "f1d3",
+      "passed": false,
+      "nodes": 9306785,
+      "timeMs": 4281
+    },
+    {
+      "testId": "ECM.372",
+      "fen": "7k/p1p1r2p/1p1pnr1q/5pp1/2PPPp2/2PB1P1P/P2Q1PRK/7R b - -",
+      "expected": "bm g5g4",
+      "actual": "g5g4",
+      "passed": true,
+      "nodes": 4734659,
+      "timeMs": 2062
+    },
+    {
+      "testId": "ECM.373",
+      "fen": "5qk1/p4p2/1p3Pp1/2p4Q/3rr3/7R/PP6/6RK b - -",
+      "expected": "bm e4h4",
+      "actual": "f8g7",
+      "passed": false,
+      "nodes": 9778883,
+      "timeMs": 3714
+    },
+    {
+      "testId": "ECM.374",
+      "fen": "5r1k/5Bb1/3p2Pp/p1pP4/1p2Q3/4P1P1/q7/3K3R w - -",
+      "expected": "bm h1h6",
+      "actual": "h1h6",
+      "passed": true,
+      "nodes": 917459,
+      "timeMs": 143
+    },
+    {
+      "testId": "ECM.375",
+      "fen": "2b4B/1pp2k2/1p6/3P3n/5p1P/1P4p1/P2r2P1/R5KR b - -",
+      "expected": "bm f4f3",
+      "actual": "c8f5",
+      "passed": false,
+      "nodes": 4965475,
+      "timeMs": 1941
+    },
+    {
+      "testId": "ECM.376",
+      "fen": "r3k2N/pppbq1pp/5n2/3Ppn2/2BP4/2P3bP/PP2Q1P1/RNB2K1R b - -",
+      "expected": "bm g3h2",
+      "actual": "g3h2",
+      "passed": true,
+      "nodes": 5485824,
+      "timeMs": 2360
+    },
+    {
+      "testId": "ECM.378",
+      "fen": "5n2/3bp1r1/1r1p3k/p1p2pNp/1nP2P1P/1PN1PB1K/P5R1/6R1 w - -",
+      "expected": "bm g5f7",
+      "actual": "g5f7",
+      "passed": true,
+      "nodes": 9946912,
+      "timeMs": 4130
+    },
+    {
+      "testId": "ECM.379",
+      "fen": "r3bb2/P1q3k1/Q2p3p/2pPp1pP/2B1P3/2B5/6P1/R5K1 w - -",
+      "expected": "bm c3e5",
+      "actual": "c4e2",
+      "passed": false,
+      "nodes": 6035881,
+      "timeMs": 2413
+    },
+    {
+      "testId": "ECM.380",
+      "fen": "r1b1qbk1/7p/4p1p1/1p2Bp2/p1B2Q2/P3P3/1P3PPP/3R2K1 w - -",
+      "expected": "bm e5c3",
+      "actual": "e5c3",
+      "passed": true,
+      "nodes": 9000003,
+      "timeMs": 3872
+    },
+    {
+      "testId": "ECM.382",
+      "fen": "3r1rk1/1pq1bppp/p7/n2RN3/P7/1P6/1B2QPPP/R5K1 w - -",
+      "expected": "bm e5d7",
+      "actual": "e5d7",
+      "passed": true,
+      "nodes": 10000004,
+      "timeMs": 4344
+    },
+    {
+      "testId": "ECM.383",
+      "fen": "q1r3k1/2r4p/2p3pP/2Qp1p2/PRn5/4P1P1/5PB1/1R4K1 w - -",
+      "expected": "bm b4c4",
+      "actual": "b4c4",
+      "passed": true,
+      "nodes": 8173795,
+      "timeMs": 3163
+    },
+    {
+      "testId": "ECM.384",
+      "fen": "r3bknr/1p4pp/p3Q3/q4pb1/P1Bn4/8/1PP2PPP/R1B1R1K1 w - -",
+      "expected": "bm e6d6",
+      "actual": "e6d6",
+      "passed": true,
+      "nodes": 9788449,
+      "timeMs": 3868
+    },
+    {
+      "testId": "ECM.385",
+      "fen": "r1b1nrk1/p2n3p/2pp4/8/2P2q1N/1PB4P/P4PB1/R2QR1K1 w - -",
+      "expected": "bm g2d5",
+      "actual": "g2d5",
+      "passed": true,
+      "nodes": 7281103,
+      "timeMs": 2923
+    },
+    {
+      "testId": "ECM.386",
+      "fen": "7k/5rp1/p1bQB2p/1p4nN/4P3/1Pq5/P5PP/3R3K b - -",
+      "expected": "bm c6e4",
+      "actual": "c6e4",
+      "passed": true,
+      "nodes": 9947250,
+      "timeMs": 4050
+    },
+    {
+      "testId": "ECM.387",
+      "fen": "r4r1k/1bq4p/p4bp1/3pn3/NP6/Q1PBB2P/6P1/3R1RK1 b - -",
+      "expected": "bm d5d4",
+      "actual": "e5d3",
+      "passed": false,
+      "nodes": 10000003,
+      "timeMs": 4525
+    },
+    {
+      "testId": "ECM.388",
+      "fen": "r2r2k1/1bq2pb1/6pp/2P1p3/1nBpN2N/6PP/2Q2P2/3RR1K1 w - -",
+      "expected": "bm e4f6",
+      "actual": "e4f6",
+      "passed": true,
+      "nodes": 9711392,
+      "timeMs": 4037
+    },
+    {
+      "testId": "ECM.389",
+      "fen": "r3rbk1/p1q2pp1/1n5p/2pp4/4N3/1PQ3P1/PB2PP1P/3R1RK1 w - -",
+      "expected": "bm e4f6",
+      "actual": "f2f4",
+      "passed": false,
+      "nodes": 9000004,
+      "timeMs": 4073
+    },
+    {
+      "testId": "ECM.391",
+      "fen": "r3r1k1/1pp2p1b/7p/2Q5/2PP2p1/2P1NpPq/P2R1P1P/6RK b - -",
+      "expected": "bm e8e3",
+      "actual": "e8e3",
+      "passed": true,
+      "nodes": 8464436,
+      "timeMs": 3300
+    },
+    {
+      "testId": "ECM.392",
+      "fen": "5bk1/5p1p/Q5p1/1B4n1/8/2q1p3/6PP/3R2K1 b - -",
+      "expected": "bm e3e2",
+      "actual": "e3e2",
+      "passed": true,
+      "nodes": 10000003,
+      "timeMs": 4622
+    },
+    {
+      "testId": "ECM.393",
+      "fen": "r5k1/1p3pp1/1p3q1p/1P1bQ3/P2P3n/8/3B1PPP/R3R1K1 b - -",
+      "expected": "bm h4f3",
+      "actual": "h4f3",
+      "passed": true,
+      "nodes": 12078791,
+      "timeMs": 4560
+    },
+    {
+      "testId": "ECM.394",
+      "fen": "2k2r1r/1pp1nqbp/p2p1p2/5P2/2PBN3/1P3Q2/1P4PP/R4RK1 w - -",
+      "expected": "bm a1a6",
+      "actual": "f3c3",
+      "passed": false,
+      "nodes": 9000004,
+      "timeMs": 4002
+    },
+    {
+      "testId": "ECM.395",
+      "fen": "r5kr/p3PR1p/1p1p2pq/4n3/8/3B4/P4QPP/4R1K1 w - -",
+      "expected": "bm d3c4",
+      "actual": "d3c4",
+      "passed": true,
+      "nodes": 5074763,
+      "timeMs": 1955
+    },
+    {
+      "testId": "ECM.398",
+      "fen": "2br1rk1/2qnQ2p/p4pp1/4p3/P1p1P1N1/2Pn1N1P/2B2PP1/1R1R1K2 w - -",
+      "expected": "bm d1d3",
+      "actual": "g4h6",
+      "passed": false,
+      "nodes": 9000003,
+      "timeMs": 3812
+    },
+    {
+      "testId": "ECM.399",
+      "fen": "2r2nk1/6pp/p1rPqp2/1pP1p3/1P6/2B3R1/1P2Q1PP/5RK1 w - -",
+      "expected": "bm f1f6",
+      "actual": "f1f6",
+      "passed": true,
+      "nodes": 8512925,
+      "timeMs": 3213
+    },
+    {
+      "testId": "ECM.400",
+      "fen": "3r2k1/pb3p1p/1q4p1/2b1P3/1Pp5/2P1p1P1/P3Q1BP/R1B4K b - -",
+      "expected": "bm b6c6",
+      "actual": "b6c6",
+      "passed": true,
+      "nodes": 13000005,
+      "timeMs": 4907
+    },
+    {
+      "testId": "ECM.401",
+      "fen": "r2rnbk1/pp3ppp/1q4n1/3p1N2/5P2/1PQB4/PBP3PP/4RR1K w - -",
+      "expected": "bm f5h6",
+      "actual": "c3d4",
+      "passed": false,
+      "nodes": 10034373,
+      "timeMs": 4678
+    },
+    {
+      "testId": "ECM.402",
+      "fen": "r3nrk1/p1pb1qpp/3p1p2/2pP1N2/2P1PR2/P1PB4/4Q1PP/5RK1 w - -",
+      "expected": "bm e4e5",
+      "actual": "f1b1",
+      "passed": false,
+      "nodes": 4920812,
+      "timeMs": 2196
+    },
+    {
+      "testId": "ECM.403",
+      "fen": "r1b2rk1/pp2qp2/2nRp1p1/6Pn/1Pp5/P1N1P3/1BQ2PP1/2K2B1R w - -",
+      "expected": "bm h1h5",
+      "actual": "h1h5",
+      "passed": true,
+      "nodes": 6414836,
+      "timeMs": 2727
+    },
+    {
+      "testId": "ECM.404",
+      "fen": "5rr1/pp1kq1bp/2bppn2/2p3B1/4N3/2NP2P1/PPP4P/R3QRK1 b - -",
+      "expected": "bm f6e4",
+      "actual": "f6e4",
+      "passed": true,
+      "nodes": 9889640,
+      "timeMs": 4053
+    },
+    {
+      "testId": "ECM.405",
+      "fen": "1r1q1k2/R4pp1/5p1r/1p1p1n1p/3Pb2N/1BP5/2P1Q1PP/4R1K1 w - -",
+      "expected": "bm e2e4",
+      "actual": "e2e4",
+      "passed": true,
+      "nodes": 8969920,
+      "timeMs": 3513
+    },
+    {
+      "testId": "ECM.406",
+      "fen": "R2b2k1/2rq1n1p/3p2p1/1p1Ppp1n/1P6/1B1PQN1P/1B3PP1/6K1 w - -",
+      "expected": "bm f3e5",
+      "actual": "b2e5",
+      "passed": false,
+      "nodes": 9281362,
+      "timeMs": 3728
+    },
+    {
+      "testId": "ECM.407",
+      "fen": "r1b3kr/bp3ppp/p1nNp3/4P3/P1Q2P2/BBP5/5qPP/R2R3K w - -",
+      "expected": "bm d6c8",
+      "actual": "d6c8",
+      "passed": true,
+      "nodes": 11000003,
+      "timeMs": 4661
+    },
+    {
+      "testId": "ECM.408",
+      "fen": "6k1/5rb1/6pp/1p2p3/2b5/4B1P1/r4PBP/1RR3K1 w - -",
+      "expected": "bm c1c4",
+      "actual": "c1c4",
+      "passed": true,
+      "nodes": 7794514,
+      "timeMs": 3022
+    },
+    {
+      "testId": "ECM.409",
+      "fen": "4r1k1/1p5p/5ppP/1qnP4/r4R2/P6P/1B1Q2K1/5R2 w - -",
+      "expected": "bm f4f6",
+      "actual": "f4f6",
+      "passed": true,
+      "nodes": 8109635,
+      "timeMs": 3209
+    },
+    {
+      "testId": "ECM.410",
+      "fen": "r2q1rnk/1p1bb1pp/p2p4/3NP1P1/P2Bp3/3Q3R/1PP1B2P/6RK w - -",
+      "expected": "bm e5e6",
+      "actual": "e5e6",
+      "passed": true,
+      "nodes": 6904367,
+      "timeMs": 2852
+    },
+    {
+      "testId": "ECM.412",
+      "fen": "6k1/pbq2pp1/4r2p/8/3prb2/1P1Q3P/PN2BPP1/3RRK2 b - -",
+      "expected": "bm f4d2",
+      "actual": "f4d6",
+      "passed": false,
+      "nodes": 11000003,
+      "timeMs": 4636
+    },
+    {
+      "testId": "ECM.413",
+      "fen": "6k1/2p3p1/2b4p/p4P2/2pR2PK/2P1r2P/1B6/8 b - -",
+      "expected": "bm c6g2",
+      "actual": "c6g2",
+      "passed": true,
+      "nodes": 11000004,
+      "timeMs": 4216
+    },
+    {
+      "testId": "ECM.414",
+      "fen": "r1b2rk1/pp2ppbp/2np1np1/q7/4P3/2N1BN2/PPPQBPPP/2KR3R b - -",
+      "expected": "bm f6e4",
+      "actual": "f6e4",
+      "passed": true,
+      "nodes": 5619087,
+      "timeMs": 2485
+    },
+    {
+      "testId": "ECM.415",
+      "fen": "3r1rk1/p1q4p/1p3bp1/3bnp2/3B4/1NPB3P/P1PQ2P1/1R2R2K b - -",
+      "expected": "bm e5f3",
+      "actual": "e5f3",
+      "passed": true,
+      "nodes": 10994715,
+      "timeMs": 4630
+    },
+    {
+      "testId": "ECM.416",
+      "fen": "r2q1rk1/p5pp/bn1p1p2/2pP4/1bP1NP2/3B1R2/PBQ3PP/R5K1 w - -",
+      "expected": "bm e4g5",
+      "actual": "f3g3",
+      "passed": false,
+      "nodes": 6112226,
+      "timeMs": 2813
+    },
+    {
+      "testId": "ECM.417",
+      "fen": "1r1q2k1/7p/2p3p1/1P1n1b1r/2BQ4/4B3/P6P/1R3RK1 w - -",
+      "expected": "bm b5c6",
+      "actual": "b5c6",
+      "passed": true,
+      "nodes": 4287161,
+      "timeMs": 1801
+    },
+    {
+      "testId": "ECM.418",
+      "fen": "r3kbnr/1ppb3p/p1q1pp2/3p4/3P4/2N2N2/PPP2PPP/R1BQ1RK1 w kq -",
+      "expected": "bm f3e5",
+      "actual": "c1f4",
+      "passed": false,
+      "nodes": 8105091,
+      "timeMs": 3816
+    },
+    {
+      "testId": "ECM.419",
+      "fen": "r1b1qbk1/pp3r1p/2pR1np1/5p2/2P1pP2/1PN1Q1PP/PB2P1B1/5RK1 w - -",
+      "expected": "bm d6f6",
+      "actual": "d6f6",
+      "passed": true,
+      "nodes": 10373397,
+      "timeMs": 4505
+    },
+    {
+      "testId": "ECM.421",
+      "fen": "2b2r2/rpp2pkp/3pq3/2pR2P1/2n1P1N1/2P2B2/1P3Q1P/1K5R b - -",
+      "expected": "bm e6d5",
+      "actual": "e6d5",
+      "passed": true,
+      "nodes": 10000003,
+      "timeMs": 4148
+    },
+    {
+      "testId": "ECM.422",
+      "fen": "6k1/rnqb3p/5ppQ/2pPp3/p1N1P3/2PB3P/5PP1/1R4K1 w - -",
+      "expected": "bm f2f4",
+      "actual": "h6h4",
+      "passed": false,
+      "nodes": 10000003,
+      "timeMs": 4088
+    },
+    {
+      "testId": "ECM.423",
+      "fen": "7r/pp4k1/3pn1p1/q1pB1b2/2P5/5NR1/1P3PP1/2Q3K1 w - -",
+      "expected": "bm b2b4",
+      "actual": "b2b4",
+      "passed": true,
+      "nodes": 10000003,
+      "timeMs": 3935
+    },
+    {
+      "testId": "ECM.424",
+      "fen": "5r2/4prkp/3q2p1/2pP1n2/N1Q2R2/1P4PP/P5K1/4R3 b - -",
+      "expected": "bm g6g5",
+      "actual": "f8c8",
+      "passed": false,
+      "nodes": 6423213,
+      "timeMs": 2485
+    },
+    {
+      "testId": "ECM.426",
+      "fen": "8/2R4p/2R3bk/8/5N1P/1p3PP1/2pqP1K1/8 w - -",
+      "expected": "bm g3g4",
+      "actual": "g3g4",
+      "passed": true,
+      "nodes": 4548754,
+      "timeMs": 2749
+    },
+    {
+      "testId": "ECM.427",
+      "fen": "6k1/p4p1p/3pqp2/2p1r3/2Pnr1N1/P6P/1P1Q1PP1/3R1RK1 b - -",
+      "expected": "bm e4g4",
+      "actual": "d4e2",
+      "passed": false,
+      "nodes": 12000004,
+      "timeMs": 4733
+    },
+    {
+      "testId": "ECM.428",
+      "fen": "1kqr3r/p1p4p/RpQP4/2P1p3/4B3/4Bp2/P4P1P/6K1 b - -",
+      "expected": "bm d8g8",
+      "actual": "d8g8",
+      "passed": true,
+      "nodes": 9297636,
+      "timeMs": 3511
+    },
+    {
+      "testId": "ECM.429",
+      "fen": "6k1/3Q1pp1/4p2p/p2pP3/1p1P2P1/nP1R1N2/q1r2PKP/8 w - -",
+      "expected": "bm d7e8",
+      "actual": "d7e8",
+      "passed": true,
+      "nodes": 21200542,
+      "timeMs": 3901
+    },
+    {
+      "testId": "ECM.430",
+      "fen": "6k1/5pp1/p5r1/3Np2q/4P2p/1r3P1Q/n4P1P/3R2RK w - -",
+      "expected": "bm g1g6",
+      "actual": "g1g6",
+      "passed": true,
+      "nodes": 11791271,
+      "timeMs": 4537
+    },
+    {
+      "testId": "ECM.431",
+      "fen": "nr2rb2/3q1kpp/3p4/pnpPpNBP/2N1P3/3Q4/PP3P2/2K3RR w - -",
+      "expected": "bm f5h6",
+      "actual": "f5h6",
+      "passed": true,
+      "nodes": 8872533,
+      "timeMs": 3596
+    },
+    {
+      "testId": "ECM.432",
+      "fen": "r3k1r1/1pp2ppp/pb1p1qn1/4p2b/2B1P3/N1PP1NPP/PP2QPK1/R4R2 b q -",
+      "expected": "bm g6h4",
+      "actual": "g6h4",
+      "passed": true,
+      "nodes": 10000003,
+      "timeMs": 4246
+    },
+    {
+      "testId": "ECM.433",
+      "fen": "1n2n1r1/r3qppk/p2p3p/3PpP1P/1P2P3/3B2RQ/3B1P1K/6R1 w - -",
+      "expected": "bm d2h6",
+      "actual": "d2h6",
+      "passed": true,
+      "nodes": 9000003,
+      "timeMs": 3819
+    },
+    {
+      "testId": "ECM.434",
+      "fen": "r2b4/pb2q1k1/np1p2r1/1N1Pp2Q/PPN1Pp2/8/2R2BPp/2R4K w - -",
+      "expected": "bm c4d6 b5d6",
+      "actual": "f2e1",
+      "passed": false,
+      "nodes": 7820001,
+      "timeMs": 3380
+    },
+    {
+      "testId": "ECM.435",
+      "fen": "r7/2qnb1kp/p2p1nP1/1p1Pp1p1/6N1/3BB2Q/PPP4P/5RK1 w - -",
+      "expected": "bm h3h7",
+      "actual": "h3h7",
+      "passed": true,
+      "nodes": 10000005,
+      "timeMs": 3883
+    },
+    {
+      "testId": "ECM.436",
+      "fen": "n1rqk3/1p2p3/1n1pP1p1/pP1P1p1r/3B3P/1BN3p1/3Q4/R3K2R w KQ -",
+      "expected": "bm d2g5",
+      "actual": "d2g5",
+      "passed": true,
+      "nodes": 10000003,
+      "timeMs": 3969
+    },
+    {
+      "testId": "ECM.437",
+      "fen": "rn2kr2/pp1b1pQp/3Pp3/qB1n4/3N4/P7/1PP2PPP/2KR3R w q -",
+      "expected": "bm d4e6",
+      "actual": "d4e6",
+      "passed": true,
+      "nodes": 5965084,
+      "timeMs": 2284
+    },
+    {
+      "testId": "ECM.438",
+      "fen": "3r1r2/1b4bk/p1n3pp/1p2p3/4P3/q1P1QNB1/B4RPP/5RK1 w - -",
+      "expected": "bm g3h4",
+      "actual": "a2d5",
+      "passed": false,
+      "nodes": 9096274,
+      "timeMs": 4081
+    },
+    {
+      "testId": "ECM.439",
+      "fen": "r1r3kb/1pqbpp2/p2p1npB/n7/3NP3/1BN2P2/PPPQ2P1/2KR3R w - -",
+      "expected": "bm h6f8",
+      "actual": "h6f8",
+      "passed": true,
+      "nodes": 5079691,
+      "timeMs": 2325
+    },
+    {
+      "testId": "ECM.441",
+      "fen": "r3k2r/pp2ppbp/1qp5/2n2b2/2P5/4BN2/PP1QBP1P/2KR3R b kq -",
+      "expected": "bm c5b3",
+      "actual": "c5b3",
+      "passed": true,
+      "nodes": 7005703,
+      "timeMs": 3026
+    },
+    {
+      "testId": "ECM.442",
+      "fen": "4qn1k/1b3rpp/pb2pB2/1pp1P2P/3p1NQ1/P2P2PB/1PP4K/5R2 w - -",
+      "expected": "bm f4g6",
+      "actual": "g4g7",
+      "passed": false,
+      "nodes": 4379811,
+      "timeMs": 1900
+    },
+    {
+      "testId": "ECM.443",
+      "fen": "2b5/2qrrpk1/5Rp1/2p4p/1pB1PR1P/1P1P2P1/5Q1K/8 w - -",
+      "expected": "bm f2b2",
+      "actual": "f4f3",
+      "passed": false,
+      "nodes": 7681514,
+      "timeMs": 3140
+    },
+    {
+      "testId": "ECM.444",
+      "fen": "2r3k1/n3qppp/1B1r1n2/N7/N4P2/1Q4PP/P5B1/R1b4K b - -",
+      "expected": "bm e7e1",
+      "actual": "e7e1",
+      "passed": true,
+      "nodes": 8577184,
+      "timeMs": 3680
+    },
+    {
+      "testId": "ECM.445",
+      "fen": "7r/2p1q1k1/1p3r1p/p1pPpPp1/2P1P1P1/PP6/3Q2KR/7R w - -",
+      "expected": "bm d2g5",
+      "actual": "h2h3",
+      "passed": false,
+      "nodes": 5330583,
+      "timeMs": 2159
+    },
+    {
+      "testId": "ECM.446",
+      "fen": "rnb2k2/ppbp2p1/2p2pB1/8/1PN5/2P5/P4PPP/R1B3K1 w - -",
+      "expected": "bm c1f4",
+      "actual": "c1f4",
+      "passed": true,
+      "nodes": 4548165,
+      "timeMs": 1982
+    },
+    {
+      "testId": "ECM.448",
+      "fen": "2k3r1/1ppr3p/p1pB2q1/6n1/N3Pp2/8/PPP1Q1PP/3R1RK1 b - -",
+      "expected": "bm f4f3",
+      "actual": "d7d6",
+      "passed": false,
+      "nodes": 6187023,
+      "timeMs": 2510
+    },
+    {
+      "testId": "ECM.449",
+      "fen": "r3q2r/2p1k1p1/p5p1/1p2Nb2/1P2nB2/P7/2PNQbPP/R2R3K b - -",
+      "expected": "bm h8h2",
+      "actual": "h8h2",
+      "passed": true,
+      "nodes": 12834118,
+      "timeMs": 4220
+    },
+    {
+      "testId": "ECM.450",
+      "fen": "6r1/6rk/3p3p/p2Rp3/R1PqPp1b/2N2Q2/6PP/7K b - -",
+      "expected": "bm g7g2",
+      "actual": "g7g2",
+      "passed": true,
+      "nodes": 9144917,
+      "timeMs": 3492
+    },
+    {
+      "testId": "ECM.451",
+      "fen": "4r1k1/1p2rq1p/2bQpp2/p1Pp4/3P4/P3RN2/5PPP/4R1K1 w - -",
+      "expected": "bm f3e5",
+      "actual": "d6f4",
+      "passed": false,
+      "nodes": 4603915,
+      "timeMs": 1883
+    },
+    {
+      "testId": "ECM.452",
+      "fen": "b2b1r1k/3R1ppp/4qP2/4p1PQ/4P3/5B2/4N1KP/8 w - -",
+      "expected": "bm g5g6",
+      "actual": "g5g6",
+      "passed": true,
+      "nodes": 7986930,
+      "timeMs": 3267
+    },
+    {
+      "testId": "ECM.453",
+      "fen": "1k4q1/1p2Rprp/p1p5/2Pp4/1P1Q3P/6P1/P5K1/8 w - -",
+      "expected": "bm d4e5",
+      "actual": "d4e5",
+      "passed": true,
+      "nodes": 8066769,
+      "timeMs": 2929
+    },
+    {
+      "testId": "ECM.454",
+      "fen": "r2r3k/ppq3pp/2p1n3/4NQ2/3P4/1B6/PP3PPP/6K1 w - -",
+      "expected": "bm e5g6",
+      "actual": "e5g6",
+      "passed": true,
+      "nodes": 10953293,
+      "timeMs": 4079
+    },
+    {
+      "testId": "ECM.455",
+      "fen": "r4r1k/p2bN2p/1p1p1p2/2q4P/3Q4/1P6/1PP3P1/1K2R2R w - -",
+      "expected": "bm e7g6",
+      "actual": "d4d2",
+      "passed": false,
+      "nodes": 11000003,
+      "timeMs": 4656
+    },
+    {
+      "testId": "ECM.456",
+      "fen": "2kr3r/p5b1/Pp2R1p1/2q2p1p/2p2Pn1/2P2BP1/1PQB2P1/5R1K b - -",
+      "expected": "bm h5h4",
+      "actual": "h5h4",
+      "passed": true,
+      "nodes": 11764966,
+      "timeMs": 4946
+    },
+    {
+      "testId": "ECM.457",
+      "fen": "r1b2k1r/1p2qp2/pN1p1n2/2pP2pp/P2bP1P1/2N5/1P2BPP1/R2Q1RK1 b - -",
+      "expected": "bm h5g4",
+      "actual": "h5g4",
+      "passed": true,
+      "nodes": 4110769,
+      "timeMs": 1842
+    },
+    {
+      "testId": "ECM.458",
+      "fen": "6nk/p4rrp/1p1p1p2/1q1Pp2R/4B1P1/1PP2Q1R/P6P/7K w - -",
+      "expected": "bm g4g5",
+      "actual": "g4g5",
+      "passed": true,
+      "nodes": 11000003,
+      "timeMs": 4314
+    },
+    {
+      "testId": "ECM.459",
+      "fen": "r1b1k2r/6pp/p1p1p3/3np1B1/1b2N3/8/q1PQB1PP/3RK2R w Kkq -",
+      "expected": "bm d2b4",
+      "actual": "d2b4",
+      "passed": true,
+      "nodes": 10000003,
+      "timeMs": 4431
+    },
+    {
+      "testId": "ECM.460",
+      "fen": "3qrbk1/1r3p2/p1bp1Pp1/1p2p1Pp/4P2R/1P2BB1Q/P1P4P/R6K w - -",
+      "expected": "bm f3h5",
+      "actual": "h1g1",
+      "passed": false,
+      "nodes": 5362622,
+      "timeMs": 2439
+    },
+    {
+      "testId": "ECM.461",
+      "fen": "2r3k1/4qpp1/2p1r3/pbQpN1Pp/3P1P1P/4P3/PP6/1KR3R1 w - -",
+      "expected": "bm c5b5",
+      "actual": "c5b5",
+      "passed": true,
+      "nodes": 9376848,
+      "timeMs": 3639
+    },
+    {
+      "testId": "ECM.463",
+      "fen": "4r1kb/p2r4/1np1p1p1/3nP1Bp/1p3P1R/1B2qP2/PPPN3Q/2K4R w - -",
+      "expected": "bm h4h5",
+      "actual": "h4h5",
+      "passed": true,
+      "nodes": 9646617,
+      "timeMs": 4105
+    },
+    {
+      "testId": "ECM.465",
+      "fen": "r1b3k1/3nqp1p/p1n1p1pP/3pP1N1/Pp3QN1/1Pr3P1/2PR1P2/4RBK1 w - -",
+      "expected": "bm d2d5",
+      "actual": "e1d1",
+      "passed": false,
+      "nodes": 6596428,
+      "timeMs": 3109
+    },
+    {
+      "testId": "ECM.466",
+      "fen": "2r1kr2/p1qbbp1Q/3pp3/5p2/1p1N1PB1/6P1/PPP4P/K2RR3 w - -",
+      "expected": "bm g4f5",
+      "actual": "g4f5",
+      "passed": true,
+      "nodes": 11099853,
+      "timeMs": 4580
+    },
+    {
+      "testId": "ECM.468",
+      "fen": "2rr2k1/5pn1/1b2q1pp/pP1pP3/2pP1PP1/2R1B2P/2Q3B1/3R3K w - -",
+      "expected": "bm f4f5",
+      "actual": "g2f3",
+      "passed": false,
+      "nodes": 4679761,
+      "timeMs": 2034
+    },
+    {
+      "testId": "ECM.469",
+      "fen": "2Q2bkr/5p2/1rb5/1pN1n1qB/1P1pPN2/6P1/5P2/R1R3K1 w - -",
+      "expected": "bm c5e6",
+      "actual": "c5e6",
+      "passed": true,
+      "nodes": 9744769,
+      "timeMs": 4183
+    },
+    {
+      "testId": "ECM.470",
+      "fen": "2r4r/1q1kb1p1/4p2p/3pP3/np6/3RBP2/NPP2Q1P/1K2R3 b - -",
+      "expected": "bm a4c3",
+      "actual": "a4c5",
+      "passed": false,
+      "nodes": 8152241,
+      "timeMs": 3490
+    },
+    {
+      "testId": "ECM.471",
+      "fen": "2r4r/3bk1b1/1q2pp2/3pPp1p/1p1N1P1P/1P1R1BP1/P2Q4/1K1R4 w - -",
+      "expected": "bm d4f5",
+      "actual": "d4f5",
+      "passed": true,
+      "nodes": 6858971,
+      "timeMs": 2845
+    },
+    {
+      "testId": "ECM.472",
+      "fen": "1rb3k1/2r2pbp/p2q1npn/P1pPp1N1/2B1P3/2P1B1NP/5QP1/3R1RK1 w - -",
+      "expected": "bm g5e6",
+      "actual": "g5e6",
+      "passed": true,
+      "nodes": 7219198,
+      "timeMs": 3225
+    },
+    {
+      "testId": "ECM.473",
+      "fen": "r7/pp4pk/2n3qp/5p2/3p4/P4QB1/1PP1RPPP/6K1 b - -",
+      "expected": "bm d4d3",
+      "actual": "d4d3",
+      "passed": true,
+      "nodes": 7027505,
+      "timeMs": 2824
+    },
+    {
+      "testId": "ECM.475",
+      "fen": "r4rk1/5ppp/p7/4PR2/P1qnp2Q/4B3/1P4PP/5RK1 w - -",
+      "expected": "bm f5h5",
+      "actual": "e3d4",
+      "passed": false,
+      "nodes": 7492729,
+      "timeMs": 3064
+    },
+    {
+      "testId": "ECM.476",
+      "fen": "4r3/pb3pk1/6p1/8/6P1/1PNrB2K/P4P1P/2R5 b - -",
+      "expected": "bm d3e3",
+      "actual": "d3e3",
+      "passed": true,
+      "nodes": 10855033,
+      "timeMs": 4100
+    },
+    {
+      "testId": "ECM.477",
+      "fen": "1r3kr1/p3q1b1/3p2Q1/2p2p2/2P2N2/4Pn2/PB6/K2R3R w - -",
+      "expected": "bm f4e6",
+      "actual": "f4e6",
+      "passed": true,
+      "nodes": 11019768,
+      "timeMs": 3942
+    },
+    {
+      "testId": "ECM.478",
+      "fen": "5r1k/6bp/3p1q2/3Q1nP1/8/6P1/PP3BKP/R2N4 b - -",
+      "expected": "bm f5e3",
+      "actual": "f5e3",
+      "passed": true,
+      "nodes": 9724728,
+      "timeMs": 3867
+    },
+    {
+      "testId": "ECM.479",
+      "fen": "1r1q1k1r/Q4ppp/2B2n2/8/Pbbp4/1P4P1/2PP1P1P/R1B1K2R b KQ -",
+      "expected": "bm d8e8",
+      "actual": "d8e8",
+      "passed": true,
+      "nodes": 5713648,
+      "timeMs": 2391
+    },
+    {
+      "testId": "ECM.480",
+      "fen": "5rk1/p1p1R1p1/1p5p/8/2pP1P2/3n2P1/PP2Q2P/5KNq b - -",
+      "expected": "bm d3f4",
+      "actual": "d3f4",
+      "passed": true,
+      "nodes": 10027051,
+      "timeMs": 3610
+    },
+    {
+      "testId": "ECM.481",
+      "fen": "r5k1/1N3ppp/4b3/1Nq5/Pn3pn1/5B2/1PPQ3P/R6K b - -",
+      "expected": "bm c5b5",
+      "actual": "c5b5",
+      "passed": true,
+      "nodes": 12000003,
+      "timeMs": 4965
+    },
+    {
+      "testId": "ECM.482",
+      "fen": "1r2k2r/1bq2pp1/pn2p2p/1p2P1b1/3N4/2N3Q1/PPP3PP/1K1R1BR1 w k -",
+      "expected": "bm f1b5",
+      "actual": "f1b5",
+      "passed": true,
+      "nodes": 5829463,
+      "timeMs": 2479
+    },
+    {
+      "testId": "ECM.483",
+      "fen": "r1bqn1r1/p2k1pp1/1p5p/n1pPpN2/2P1P3/P1PBB2P/4Q1P1/R4RK1 w - -",
+      "expected": "bm f5h6",
+      "actual": "e2f3",
+      "passed": false,
+      "nodes": 7576856,
+      "timeMs": 3321
+    },
+    {
+      "testId": "ECM.484",
+      "fen": "2r2r2/p4p1k/1p2pBpn/2p5/6N1/8/P4P2/R3R1K1 w - -",
+      "expected": "bm g1g2",
+      "actual": "g1g2",
+      "passed": true,
+      "nodes": 7870312,
+      "timeMs": 2964
+    },
+    {
+      "testId": "ECM.485",
+      "fen": "r4rk1/p1p2pp1/bp1p1q1p/n1nPpN2/2P1P2P/2PB4/P2BQPP1/R3K2R w KQ -",
+      "expected": "bm d2g5",
+      "actual": "g2g4",
+      "passed": false,
+      "nodes": 6102028,
+      "timeMs": 2730
+    },
+    {
+      "testId": "ECM.486",
+      "fen": "3rn1k1/pp3ppp/6b1/2p1Q3/2P1P3/P4P2/1B1qBP1P/1R5K w - -",
+      "expected": "bm b1d1",
+      "actual": "b1d1",
+      "passed": true,
+      "nodes": 13000003,
+      "timeMs": 4985
+    },
+    {
+      "testId": "ECM.487",
+      "fen": "4r1k1/5ppp/p1q3b1/1ppNr3/2P1P3/1P4QP/P4PP1/4RRK1 w - -",
+      "expected": "bm f2f4",
+      "actual": "f2f4",
+      "passed": true,
+      "nodes": 9820291,
+      "timeMs": 3918
+    },
+    {
+      "testId": "ECM.488",
+      "fen": "2kr2r1/2pqbp1p/p1n1b3/1P1pP3/4n3/1BP1BN2/1P4PP/RN1Q1RK1 b - -",
+      "expected": "bm e6h3",
+      "actual": "a6b5",
+      "passed": false,
+      "nodes": 6482013,
+      "timeMs": 2802
+    },
+    {
+      "testId": "ECM.490",
+      "fen": "6k1/5rp1/4Nb1p/2p5/4Q3/1r5P/q5P1/3R1R1K w - -",
+      "expected": "bm f1f6",
+      "actual": "f1f6",
+      "passed": true,
+      "nodes": 10000004,
+      "timeMs": 3950
+    },
+    {
+      "testId": "ECM.491",
+      "fen": "1r2r1k1/p4ppb/q1pbnn1p/4p3/N1P1P3/pPB2NP1/2Q1RPBP/R5K1 b - -",
+      "expected": "bm f6e4",
+      "actual": "f6e4",
+      "passed": true,
+      "nodes": 6419145,
+      "timeMs": 2927
+    },
+    {
+      "testId": "ECM.492",
+      "fen": "r4r2/1pnqb2k/3p1p1p/p1pPpPpP/2P1N1P1/4BP2/PP1Q4/R2R2K1 w - -",
+      "expected": "bm e3c5",
+      "actual": "a2a4",
+      "passed": false,
+      "nodes": 10669446,
+      "timeMs": 4520
+    },
+    {
+      "testId": "ECM.493",
+      "fen": "rnb3kr/ppp2ppp/1b6/3q4/3pN3/Q4N2/PPP2KPP/R1B1R3 w - -",
+      "expected": "bm e4f6",
+      "actual": "e4f6",
+      "passed": true,
+      "nodes": 6386366,
+      "timeMs": 889
+    },
+    {
+      "testId": "ECM.495",
+      "fen": "3Rq1k1/1pp1Ppbp/r1b3p1/p7/P1N5/1P4P1/1B2PP1P/2R3K1 w - -",
+      "expected": "bm c4d6",
+      "actual": "c4d6",
+      "passed": true,
+      "nodes": 11270393,
+      "timeMs": 4130
+    },
+    {
+      "testId": "ECM.496",
+      "fen": "r2q1rk1/pp1n2pp/2pb4/1P1p3n/P1PPpP2/4P2b/1BNNBP1P/R2QR1K1 b - -",
+      "expected": "bm h5f4",
+      "actual": "h5f4",
+      "passed": true,
+      "nodes": 7519845,
+      "timeMs": 3231
+    },
+    {
+      "testId": "ECM.498",
+      "fen": "r4rk1/1bq1bppp/8/p2pPR2/3B4/1NnP3Q/1P4PP/4R1K1 w - -",
+      "expected": "bm f5h5",
+      "actual": "e5e6",
+      "passed": false,
+      "nodes": 6097325,
+      "timeMs": 2624
+    },
+    {
+      "testId": "ECM.499",
+      "fen": "r4rk1/1nqb1pbn/6pB/pppPp2p/8/1PP2NNP/P1BQ2P1/R4RK1 w - -",
+      "expected": "bm g3h5",
+      "actual": "a1e1",
+      "passed": false,
+      "nodes": 11000003,
+      "timeMs": 4698
+    },
+    {
+      "testId": "ECM.500",
+      "fen": "r1b2rk1/pp4bp/2p3p1/4q2n/NQPN1p1P/1P5n/P3PPB1/2BRRK2 b - -",
+      "expected": "bm f4f3",
+      "actual": "g7f6",
+      "passed": false,
+      "nodes": 5581046,
+      "timeMs": 2528
+    },
+    {
+      "testId": "ECM.502",
+      "fen": "r2qkr2/1p3pQp/2p1b3/1B1pN3/1p6/8/1P1K1PPP/2B1R3 w q -",
+      "expected": "bm e5c6",
+      "actual": "e5c6",
+      "passed": true,
+      "nodes": 9898384,
+      "timeMs": 3750
+    },
+    {
+      "testId": "ECM.503",
+      "fen": "r3rk2/pb2bpp1/1n5p/q1pP1B2/1p3B2/5N2/PPQ2PPP/R2R2K1 w - -",
+      "expected": "bm f5c8",
+      "actual": "d5d6",
+      "passed": false,
+      "nodes": 10000003,
+      "timeMs": 4708
+    },
+    {
+      "testId": "ECM.506",
+      "fen": "r3k2r/1p1b1p2/p3p3/2b3p1/4N1n1/1B5P/PPP3P1/R1B2R1K b kq -",
+      "expected": "bm d7c6",
+      "actual": "d7c6",
+      "passed": true,
+      "nodes": 10866240,
+      "timeMs": 4472
+    },
+    {
+      "testId": "ECM.507",
+      "fen": "r3kb1r/npqbpp1p/p3n1p1/P3P3/6N1/3B1NB1/1PP3PP/R3QRK1 w kq -",
+      "expected": "bm f3g5",
+      "actual": "e1d2",
+      "passed": false,
+      "nodes": 9283637,
+      "timeMs": 4458
+    },
+    {
+      "testId": "ECM.508",
+      "fen": "7k/p6p/4bppb/1N6/P2p1p2/1PrP2P1/2r1P2P/1R1Q2K1 b - -",
+      "expected": "bm f4f3",
+      "actual": "f4f3",
+      "passed": true,
+      "nodes": 10000003,
+      "timeMs": 3975
+    },
+    {
+      "testId": "ECM.509",
+      "fen": "2kr4/pp1r1pp1/4n1p1/4R3/2Pp1qP1/3P2QP/5PB1/1R4K1 w - -",
+      "expected": "bm e5c5",
+      "actual": "e5c5",
+      "passed": true,
+      "nodes": 12000005,
+      "timeMs": 4386
+    },
+    {
+      "testId": "ECM.511",
+      "fen": "r2qkn1r/pb2bp2/1pp1p3/5p1p/2BPN3/5NQ1/PPP2PPP/1K1RR3 w kq -",
+      "expected": "bm d4d5",
+      "actual": "d4d5",
+      "passed": true,
+      "nodes": 9745860,
+      "timeMs": 4174
+    },
+    {
+      "testId": "ECM.512",
+      "fen": "2rr1nk1/pp2q1b1/4p1p1/5p2/1nB5/2B1N1QP/PP4P1/4RRK1 w - -",
+      "expected": "bm e3f5",
+      "actual": "e3f5",
+      "passed": true,
+      "nodes": 10000004,
+      "timeMs": 4191
+    },
+    {
+      "testId": "ECM.513",
+      "fen": "3r3k/p4npp/1p2qpb1/4P3/5P2/P3N3/1B2QP1P/6RK w - -",
+      "expected": "bm e5f6",
+      "actual": "e5f6",
+      "passed": true,
+      "nodes": 7263674,
+      "timeMs": 2982
+    },
+    {
+      "testId": "ECM.514",
+      "fen": "6rk/1b2bp1p/ppq1p3/2p1Pp2/P1Br1P2/1PNR2P1/2P1QK1P/6R1 b - -",
+      "expected": "bm d4f4",
+      "actual": "d4f4",
+      "passed": true,
+      "nodes": 4465142,
+      "timeMs": 1801
+    },
+    {
+      "testId": "ECM.515",
+      "fen": "r3r1k1/p1q2pp1/b1pb3p/n7/B3n3/2P1BN2/PP1N1PPP/R2QK2R b KQ -",
+      "expected": "bm e4c3",
+      "actual": "e4c3",
+      "passed": true,
+      "nodes": 10000003,
+      "timeMs": 4386
+    },
+    {
+      "testId": "ECM.516",
+      "fen": "4qrk1/pp1bbppp/4pn2/2r1Q1B1/7P/2N3R1/PPP2PP1/2KR1B2 w - -",
+      "expected": "bm g5f6",
+      "actual": "g5f6",
+      "passed": true,
+      "nodes": 10512559,
+      "timeMs": 4523
+    },
+    {
+      "testId": "ECM.517",
+      "fen": "r5n1/pppb1B2/2k1pb2/3p2B1/5P2/2N5/PPP3P1/2KR4 w - -",
+      "expected": "bm c3d5",
+      "actual": "g5f6",
+      "passed": false,
+      "nodes": 12000434,
+      "timeMs": 4758
+    },
+    {
+      "testId": "ECM.518",
+      "fen": "2b2q2/r2n2kp/1n1p1pp1/p1pP4/1pP1NPN1/1P1B4/P5PP/Q3R1K1 w - -",
+      "expected": "bm e4f6",
+      "actual": "e4f6",
+      "passed": true,
+      "nodes": 10101724,
+      "timeMs": 4313
+    },
+    {
+      "testId": "ECM.519",
+      "fen": "1k1r2r1/p1p3q1/2p2p2/3pn3/1P1b2bB/1QN5/P4PPP/1R2RBK1 b - -",
+      "expected": "bm e5f3",
+      "actual": "e5f3",
+      "passed": true,
+      "nodes": 10214682,
+      "timeMs": 4497
+    },
+    {
+      "testId": "ECM.520",
+      "fen": "r3k2r/1bq1bp1p/p2p1np1/1p2p3/3NP3/P1N2QB1/1PP2PPP/3RR1K1 w kq -",
+      "expected": "bm d4b5",
+      "actual": "d4b5",
+      "passed": true,
+      "nodes": 7688731,
+      "timeMs": 3329
+    },
+    {
+      "testId": "ECM.521",
+      "fen": "r2q4/5p1P/2p1bR2/ppk1p1P1/3pB2Q/8/PPP5/6K1 w - -",
+      "expected": "bm g5g6",
+      "actual": "g5g6",
+      "passed": true,
+      "nodes": 11000003,
+      "timeMs": 4167
+    },
+    {
+      "testId": "ECM.522",
+      "fen": "r3kb1r/pp1b1pp1/4p3/2q3Qp/5B2/2PB4/P4PPP/R3R1K1 w kq -",
+      "expected": "bm e1e6",
+      "actual": "e1e6",
+      "passed": true,
+      "nodes": 11000003,
+      "timeMs": 4549
+    },
+    {
+      "testId": "ECM.523",
+      "fen": "1rbr2k1/p4pp1/5b1p/2p1p3/3qPP2/1PNB2PP/PKP2Q2/5R1R b - -",
+      "expected": "bm c5c4",
+      "actual": "c5c4",
+      "passed": true,
+      "nodes": 7273001,
+      "timeMs": 2952
+    },
+    {
+      "testId": "ECM.524",
+      "fen": "r3r1k1/p6p/bp4p1/2bPN3/6n1/6P1/PB2RPB1/3R2K1 w - -",
+      "expected": "bm d5d6",
+      "actual": "d5d6",
+      "passed": true,
+      "nodes": 5980699,
+      "timeMs": 2362
+    },
+    {
+      "testId": "ECM.526",
+      "fen": "3r1k2/1q1r1pp1/3p2bp/p2N4/8/2P1RQ1P/P4PP1/4R1K1 w - -",
+      "expected": "bm d5f6",
+      "actual": "d5f6",
+      "passed": true,
+      "nodes": 10821628,
+      "timeMs": 4364
+    },
+    {
+      "testId": "ECM.527",
+      "fen": "3q3r/p2r1pkp/bp1N1np1/n2p4/5Q2/B1P5/P4PPP/R3R1K1 w - -",
+      "expected": "bm d6f5",
+      "actual": "d6f5",
+      "passed": true,
+      "nodes": 12081055,
+      "timeMs": 4550
+    },
+    {
+      "testId": "ECM.528",
+      "fen": "r4Nk1/1p2pp1p/p1np2p1/3N4/P3PPn1/8/1bPKBqPP/R2Q1R2 b - -",
+      "expected": "bm f2d4",
+      "actual": "f2d4",
+      "passed": true,
+      "nodes": 7450690,
+      "timeMs": 3024
+    },
+    {
+      "testId": "ECM.529",
+      "fen": "1kb3rr/1p2n2q/1Np2p2/1p6/1P1N1P1p/8/2P1RQPP/R6K w - -",
+      "expected": "bm d4b5",
+      "actual": "d4b5",
+      "passed": true,
+      "nodes": 10795919,
+      "timeMs": 2214
+    },
+    {
+      "testId": "ECM.530",
+      "fen": "r3r1k1/p3Rp1p/1qp1bQ2/8/1p1P4/3R4/PP3PPP/6K1 w - -",
+      "expected": "bm d3g3",
+      "actual": "d3g3",
+      "passed": true,
+      "nodes": 25893934,
+      "timeMs": 4309
+    },
+    {
+      "testId": "ECM.531",
+      "fen": "rn4k1/pp2rpb1/2pNb1pp/4p3/P3Pq2/2P2N1P/1PB1QPP1/R3R1K1 w - -",
+      "expected": "bm d6f5",
+      "actual": "d6f5",
+      "passed": true,
+      "nodes": 6554289,
+      "timeMs": 3172
+    },
+    {
+      "testId": "ECM.532",
+      "fen": "3r1rk1/pp3ppp/8/2p5/4PB1n/P1P2qPP/Q3RP1K/6R1 b - -",
+      "expected": "bm f3g2",
+      "actual": "f3g2",
+      "passed": true,
+      "nodes": 18574366,
+      "timeMs": 3178
+    },
+    {
+      "testId": "ECM.533",
+      "fen": "r4rn1/ppp1q3/2bp2kp/6P1/3QpP2/2N5/PPP1B3/2KR3R w - -",
+      "expected": "bm f4f5",
+      "actual": "f4f5",
+      "passed": true,
+      "nodes": 11000003,
+      "timeMs": 4387
+    },
+    {
+      "testId": "ECM.534",
+      "fen": "3qr2r/1p1bppk1/3p2p1/p1nP1PQp/3N3R/1P4PP/P1P3BK/4R3 w - -",
+      "expected": "bm d4e6",
+      "actual": "d4e6",
+      "passed": true,
+      "nodes": 7382293,
+      "timeMs": 3122
+    },
+    {
+      "testId": "ECM.535",
+      "fen": "2rq1rk1/1b1nbpp1/1p5p/p2pNB2/3p1N2/4P3/PPQ2PPP/2RR2K1 w - -",
+      "expected": "bm f5h7",
+      "actual": "f5h7",
+      "passed": true,
+      "nodes": 12587917,
+      "timeMs": 3944
+    },
+    {
+      "testId": "ECM.536",
+      "fen": "8/5pkp/2pp2p1/4P3/1P2P3/2QBq2P/2PnNnPK/8 b - -",
+      "expected": "bm d2f1",
+      "actual": "d2f1",
+      "passed": true,
+      "nodes": 1820458,
+      "timeMs": 264
+    },
+    {
+      "testId": "ECM.537",
+      "fen": "r3r2k/pb2q1p1/1p2Nn1p/2b5/2B5/2P2P2/PPQ3PP/4RR1K w - -",
+      "expected": "bm e6f4",
+      "actual": "e6f4",
+      "passed": true,
+      "nodes": 5307592,
+      "timeMs": 2354
+    },
+    {
+      "testId": "ECM.538",
+      "fen": "r1b2nk1/ppq2ppp/8/1BP1p1NQ/5p2/8/PP3PPP/3R2K1 w - -",
+      "expected": "bm d1d7",
+      "actual": "d1d7",
+      "passed": true,
+      "nodes": 10726890,
+      "timeMs": 4464
+    },
+    {
+      "testId": "ECM.540",
+      "fen": "5r1n/r2q1pkp/3p1npN/NppPp2P/1P2P3/2P1Q1P1/5P2/R3K2R w KQ -",
+      "expected": "bm h6f5",
+      "actual": "h6f5",
+      "passed": true,
+      "nodes": 5538221,
+      "timeMs": 2551
+    },
+    {
+      "testId": "ECM.541",
+      "fen": "6rk/p2b4/3p1Nqp/2pPpn2/P1P4p/5P1P/Q2B1NP1/6RK b - -",
+      "expected": "bm f5g3",
+      "actual": "f5g3",
+      "passed": true,
+      "nodes": 19771726,
+      "timeMs": 4501
+    },
+    {
+      "testId": "ECM.542",
+      "fen": "r4r1k/pppb2pp/8/3q4/2N5/P1P2nQ1/BP2R2P/R6K b - -",
+      "expected": "bm f3e1",
+      "actual": "f3e1",
+      "passed": true,
+      "nodes": 10000004,
+      "timeMs": 3861
+    },
+    {
+      "testId": "ECM.543",
+      "fen": "r5rk/1pp1n1pp/p1n1b1q1/3p1p2/7R/2QB1N2/PB3PPP/4R1K1 w - -",
+      "expected": "bm e1e6",
+      "actual": "e1e6",
+      "passed": true,
+      "nodes": 9239915,
+      "timeMs": 3841
+    },
+    {
+      "testId": "ECM.544",
+      "fen": "8/4Ppk1/6p1/1p6/1Pb1Q3/6pq/8/6K1 w - -",
+      "expected": "bm e4e5",
+      "actual": "e4d4",
+      "passed": false,
+      "nodes": 11834047,
+      "timeMs": 4610
+    },
+    {
+      "testId": "ECM.545",
+      "fen": "3R4/4Qpk1/4p1p1/7p/7K/5rP1/5P2/2q5 w - -",
+      "expected": "bm e7f8",
+      "actual": "e7f8",
+      "passed": true,
+      "nodes": 9179994,
+      "timeMs": 3939
+    },
+    {
+      "testId": "ECM.546",
+      "fen": "8/5pk1/p6p/2R5/3q2p1/6P1/2Q3PK/4r3 w - -",
+      "expected": "bm c5g5",
+      "actual": "c5g5",
+      "passed": true,
+      "nodes": 13000007,
+      "timeMs": 4337
+    },
+    {
+      "testId": "ECM.547",
+      "fen": "1Q4R1/8/P1b2p2/2p2k2/2P5/5p2/1r5P/4R1K1 b - -",
+      "expected": "bm f3f2",
+      "actual": "f3f2",
+      "passed": true,
+      "nodes": 11774392,
+      "timeMs": 4575
+    },
+    {
+      "testId": "ECM.548",
+      "fen": "5r1k/1q2R3/8/6Q1/8/8/6P1/7K b - -",
+      "expected": "bm f8f1",
+      "actual": "f8f1",
+      "passed": true,
+      "nodes": 7740681,
+      "timeMs": 3133
+    },
+    {
+      "testId": "ECM.549",
+      "fen": "8/4p3/8/3P3p/P2pK3/6P1/7b/3k4 w - -",
+      "expected": "bm d5d6",
+      "actual": "d5d6",
+      "passed": true,
+      "nodes": 3393708,
+      "timeMs": 3903
+    },
+    {
+      "testId": "ECM.550",
+      "fen": "3Q4/k3K3/q7/2N1P3/1P6/5r2/8/8 b - -",
+      "expected": "bm f3f7",
+      "actual": "f3f7",
+      "passed": true,
+      "nodes": 4088400,
+      "timeMs": 3512
+    },
+    {
+      "testId": "ECM.551",
+      "fen": "3k4/p1p5/8/2p1p3/4P3/PpPP2K1/1P6/8 b - -",
+      "expected": "bm c5c4",
+      "actual": "c5c4",
+      "passed": true,
+      "nodes": 9910270,
+      "timeMs": 3171
+    },
+    {
+      "testId": "ECM.552",
+      "fen": "6r1/5p1k/4p3/3pQp2/1p1P1P1q/1P3RR1/7r/5K2 w - -",
+      "expected": "bm g3g8",
+      "actual": "g3g8",
+      "passed": true,
+      "nodes": 9251659,
+      "timeMs": 3281
+    },
+    {
+      "testId": "ECM.553",
+      "fen": "r1b2rk1/ppp2ppp/2n3q1/b2N2N1/2BP4/4p2P/PPP3P1/R2Q1RK1 w - -",
+      "expected": "bm f1f7",
+      "actual": "f1f7",
+      "passed": true,
+      "nodes": 8652257,
+      "timeMs": 3686
+    },
+    {
+      "testId": "ECM.554",
+      "fen": "1r4k1/3qb2p/pr1pppn1/2p2N2/2P2PQ1/1P4P1/P2R2BP/R5K1 w - -",
+      "expected": "bm g2d5",
+      "actual": "f5e7",
+      "passed": false,
+      "nodes": 10000003,
+      "timeMs": 4220
+    },
+    {
+      "testId": "ECM.555",
+      "fen": "r6r/pR1nqkpp/2p1p3/3p4/6Q1/2b4P/P1PP1PP1/2B1R1K1 w - -",
+      "expected": "bm e1e6",
+      "actual": "e1e6",
+      "passed": true,
+      "nodes": 11075954,
+      "timeMs": 4336
+    },
+    {
+      "testId": "ECM.556",
+      "fen": "1k1r3r/ppq2pnp/1npbb1p1/3p4/3P1NP1/2NBP2P/PPQ2P1B/1KR4R w - -",
+      "expected": "bm c3b5",
+      "actual": "c3b5",
+      "passed": true,
+      "nodes": 9982191,
+      "timeMs": 4586
+    },
+    {
+      "testId": "ECM.558",
+      "fen": "r5r1/4q2k/p2p3p/5p2/4p3/P2QR3/1PP2PPP/4R1K1 w - -",
+      "expected": "bm e3e4",
+      "actual": "e3e4",
+      "passed": true,
+      "nodes": 11000003,
+      "timeMs": 4269
+    },
+    {
+      "testId": "ECM.563",
+      "fen": "r1bq1rk1/1pp2ppn/1pnp3p/3N4/2B1PN2/3P4/PPP3PP/R2Q1RK1 w - -",
+      "expected": "bm f4g6",
+      "actual": "f4g6",
+      "passed": true,
+      "nodes": 10000004,
+      "timeMs": 4614
+    },
+    {
+      "testId": "ECM.564",
+      "fen": "r1b2rk1/pp3p1p/2pq2pn/2nNN3/2B1QP2/8/P1PP2PP/R1B1K2R w KQ -",
+      "expected": "bm e5f7",
+      "actual": "e5f7",
+      "passed": true,
+      "nodes": 10193807,
+      "timeMs": 4481
+    },
+    {
+      "testId": "ECM.565",
+      "fen": "1r2r1k1/1bn2pbp/pp1q1np1/2pPN1B1/P1B5/2N4P/1P1Q1PP1/R3R1K1 w - -",
+      "expected": "bm e5f7",
+      "actual": "e5f7",
+      "passed": true,
+      "nodes": 7955350,
+      "timeMs": 3630
+    },
+    {
+      "testId": "ECM.566",
+      "fen": "1rb2bk1/2n2qp1/p2p3p/R1pP1p2/2B5/1PBQ1N1P/2P2PP1/6K1 w - -",
+      "expected": "bm f3e5 a5c5",
+      "actual": "a5c5",
+      "passed": true,
+      "nodes": 6744873,
+      "timeMs": 3030
+    },
+    {
+      "testId": "ECM.567",
+      "fen": "r1b3k1/2pq2pp/p4p2/1p1Nr3/2n2R2/1B6/PPQ2PPP/R5K1 w - -",
+      "expected": "bm f4c4",
+      "actual": "f4c4",
+      "passed": true,
+      "nodes": 4153792,
+      "timeMs": 1785
+    },
+    {
+      "testId": "ECM.568",
+      "fen": "2rq1rk1/3bbppp/p3pn2/1p1pN3/2nP1B2/P1NBP2Q/1P3PPP/2R2RK1 w - -",
+      "expected": "bm c3d5",
+      "actual": "c3d5",
+      "passed": true,
+      "nodes": 6865437,
+      "timeMs": 3036
+    },
+    {
+      "testId": "ECM.569",
+      "fen": "2r1r1k1/pp1b1ppp/1q6/3P4/7N/Pn1Q4/1P3PPP/1RB2RK1 b - -",
+      "expected": "bm b3c1",
+      "actual": "b6b5",
+      "passed": false,
+      "nodes": 11000003,
+      "timeMs": 4629
+    },
+    {
+      "testId": "ECM.570",
+      "fen": "1r4nk/3b2bp/3p4/3P3p/2pNPq2/P1N2p1P/1P3Q2/1R4KR b - -",
+      "expected": "bm b8b2",
+      "actual": "b8b2",
+      "passed": true,
+      "nodes": 12000003,
+      "timeMs": 4650
+    },
+    {
+      "testId": "ECM.571",
+      "fen": "2r5/p3kpp1/P2p4/1P2pP1p/1P2PqnP/6R1/r2N2P1/3RQ1K1 b - -",
+      "expected": "bm a2d2",
+      "actual": "a2d2",
+      "passed": true,
+      "nodes": 9691680,
+      "timeMs": 3744
+    },
+    {
+      "testId": "ECM.572",
+      "fen": "2br2k1/1p2qppp/r1n1p3/pQ1nN3/P2P4/2B3P1/1P3PBP/2RR2K1 w - -",
+      "expected": "bm b5a6",
+      "actual": "b5a6",
+      "passed": true,
+      "nodes": 7140590,
+      "timeMs": 3041
+    },
+    {
+      "testId": "ECM.573",
+      "fen": "5rk1/3q2bp/3pb2r/1p1n1p2/3p1P2/P2B1QN1/1P1B2PP/2R1R1K1 w - -",
+      "expected": "bm g3f5",
+      "actual": "g3f5",
+      "passed": true,
+      "nodes": 6611802,
+      "timeMs": 2808
+    },
+    {
+      "testId": "ECM.574",
+      "fen": "4r1k1/1ppQr1p1/1p1p1pP1/3P3p/7P/1P3q2/P1P5/1KRR4 w - -",
+      "expected": "bm d1e1",
+      "actual": "d1e1",
+      "passed": true,
+      "nodes": 12676007,
+      "timeMs": 4543
+    },
+    {
+      "testId": "ECM.575",
+      "fen": "2Rr2k1/7p/4pqp1/p4p2/1p1P1Q1P/8/PP3PP1/6K1 w - -",
+      "expected": "bm f4e5",
+      "actual": "f4e5",
+      "passed": true,
+      "nodes": 9310250,
+      "timeMs": 3291
+    },
+    {
+      "testId": "ECM.576",
+      "fen": "4r1kb/5p1p/6pB/3Np3/4n3/P3Q1PP/2q2P2/R5K1 w - -",
+      "expected": "bm a1c1",
+      "actual": "a1c1",
+      "passed": true,
+      "nodes": 11177886,
+      "timeMs": 4483
+    },
+    {
+      "testId": "ECM.577",
+      "fen": "5rk1/bp4p1/p2rp2p/8/8/2PN4/PP1R1PPP/3R2K1 b - -",
+      "expected": "bm e6e5",
+      "actual": "e6e5",
+      "passed": true,
+      "nodes": 7637937,
+      "timeMs": 2955
+    },
+    {
+      "testId": "ECM.578",
+      "fen": "2q1rk2/QR3ppp/1pPpb3/1P2p1b1/4P3/6P1/3N1PBP/6K1 w - -",
+      "expected": "bm g2h3",
+      "actual": "g2h3",
+      "passed": true,
+      "nodes": 9007954,
+      "timeMs": 3776
+    },
+    {
+      "testId": "ECM.579",
+      "fen": "n1bq3k/pp4bp/6p1/5pP1/3p1P2/1B1P4/PB3Q1P/4R1K1 w - -",
+      "expected": "bm b2d4",
+      "actual": "b2d4",
+      "passed": true,
+      "nodes": 8801851,
+      "timeMs": 3607
+    },
+    {
+      "testId": "ECM.580",
+      "fen": "r3r1k1/p2n4/3p1pp1/qnp3B1/1p2P1P1/1P3P2/PP2N2Q/1K1R1B2 w - -",
+      "expected": "bm e2f4",
+      "actual": "h2h6",
+      "passed": false,
+      "nodes": 7676476,
+      "timeMs": 3227
+    },
+    {
+      "testId": "ECM.581",
+      "fen": "6k1/pb3ppp/1p2p3/4P3/5P2/P1r5/1q4PP/1B2Q1RK b - -",
+      "expected": "bm c3c1",
+      "actual": "c3c1",
+      "passed": true,
+      "nodes": 9304592,
+      "timeMs": 3522
+    },
+    {
+      "testId": "ECM.582",
+      "fen": "2rq1kbR/4R1p1/3p3r/pp1P1Pp1/6P1/3B4/PPP1Q3/6K1 w - -",
+      "expected": "bm f5f6",
+      "actual": "f5f6",
+      "passed": true,
+      "nodes": 9803503,
+      "timeMs": 3852
+    },
+    {
+      "testId": "ECM.583",
+      "fen": "2r5/5kb1/4ppp1/pp1qB3/2rP4/1RP2R1Q/P4PP1/6K1 b - -",
+      "expected": "bm c8h8",
+      "actual": "c8h8",
+      "passed": true,
+      "nodes": 8666454,
+      "timeMs": 3585
+    },
+    {
+      "testId": "ECM.584",
+      "fen": "4k3/4Bp2/1p2nP1P/2p5/2K1b1B1/8/P7/8 w - -",
+      "expected": "bm g4f3",
+      "actual": "g4f3",
+      "passed": true,
+      "nodes": 4236787,
+      "timeMs": 1946
+    },
+    {
+      "testId": "ECM.585",
+      "fen": "3rr1k1/ppp1qp1p/3b2p1/4np1P/1P1N1Pn1/P1P4R/1B1NB3/R2Q1K2 b - -",
+      "expected": "bm e5f3",
+      "actual": "e5f3",
+      "passed": true,
+      "nodes": 9427133,
+      "timeMs": 4130
+    },
+    {
+      "testId": "ECM.586",
+      "fen": "1k1r3r/ppqb4/5Ppp/3p4/P2np3/3BR1Q1/2PB1PPP/R5K1 w - -",
+      "expected": "bm e3e4",
+      "actual": "e3e4",
+      "passed": true,
+      "nodes": 8339242,
+      "timeMs": 3526
+    },
+    {
+      "testId": "ECM.587",
+      "fen": "r2q1rk1/pb1nbpp1/1pp1pn1p/3pN3/2PPP3/2N1B1P1/PP3PBP/R2Q1RK1 w - -",
+      "expected": "bm e5c6",
+      "actual": "e5d7",
+      "passed": false,
+      "nodes": 6330645,
+      "timeMs": 3112
+    },
+    {
+      "testId": "ECM.588",
+      "fen": "8/2R2pbk/6pp/1p2pq2/1P2Qn2/3P3P/3B1PP1/r3N1K1 b - -",
+      "expected": "bm f4d3",
+      "actual": "f4d3",
+      "passed": true,
+      "nodes": 12307123,
+      "timeMs": 4766
+    },
+    {
+      "testId": "ECM.589",
+      "fen": "2r2rk1/pp2pp1p/2np2p1/q4P2/2PBP1b1/2N5/PP1Q2PP/R4RK1 w - -",
+      "expected": "bm h2h3",
+      "actual": "a1e1",
+      "passed": false,
+      "nodes": 7352811,
+      "timeMs": 3394
+    },
+    {
+      "testId": "ECM.590",
+      "fen": "r2b1rnk/1p4qp/p1p1b1p1/2PpNp2/PP1PnP1Q/3BB2R/4N1PP/R6K w - -",
+      "expected": "bm h4h7",
+      "actual": "h4h7",
+      "passed": true,
+      "nodes": 9758643,
+      "timeMs": 3968
+    },
+    {
+      "testId": "ECM.591",
+      "fen": "r1b2rk1/1p3pbp/2p3p1/p1q5/1P6/1Q4P1/1P2PPBP/R1B1R1K1 b - -",
+      "expected": "bm c8e6",
+      "actual": "c8e6",
+      "passed": true,
+      "nodes": 8486512,
+      "timeMs": 3741
+    },
+    {
+      "testId": "ECM.594",
+      "fen": "r1b1k2r/2q1bppp/p3p3/1p1nP1B1/3Q4/2N5/PPP1B1PP/2KR3R w kq -",
+      "expected": "bm g5e7",
+      "actual": "g5e7",
+      "passed": true,
+      "nodes": 9900627,
+      "timeMs": 4414
+    },
+    {
+      "testId": "ECM.595",
+      "fen": "1rb1r1k1/p1p1qppp/2pb4/8/2P3n1/4P1P1/PB2BP1P/R1QN1RK1 b - -",
+      "expected": "bm g4h2",
+      "actual": "c8f5",
+      "passed": false,
+      "nodes": 9000003,
+      "timeMs": 4150
+    },
+    {
+      "testId": "ECM.596",
+      "fen": "2rqk1nr/pp3ppp/2n1p3/2b5/3N4/2NQB1P1/PP2PPKP/R4R2 w k -",
+      "expected": "bm d4e6",
+      "actual": "d4e6",
+      "passed": true,
+      "nodes": 8970077,
+      "timeMs": 3759
+    },
+    {
+      "testId": "ECM.597",
+      "fen": "rnb2rk1/pp4pp/2pb1n2/3N1p1q/2P5/3N2P1/P1Q1PPBP/R1B2RK1 w - -",
+      "expected": "bm c1f4",
+      "actual": "d5f6",
+      "passed": false,
+      "nodes": 8000003,
+      "timeMs": 3684
+    },
+    {
+      "testId": "ECM.598",
+      "fen": "8/8/1p1k4/5ppp/PPK1p3/6P1/5PP1/8 b - -",
+      "expected": "bm f5f4",
+      "actual": "d6e6",
+      "passed": false,
+      "nodes": 9000004,
+      "timeMs": 3738
+    },
+    {
+      "testId": "ECM.599",
+      "fen": "8/5pp1/7p/5P1P/2p3P1/2k5/5P2/2K5 w - -",
+      "expected": "bm f5f6",
+      "actual": "f5f6",
+      "passed": true,
+      "nodes": 3635773,
+      "timeMs": 2064
+    },
+    {
+      "testId": "ECM.600",
+      "fen": "7k/8/1p1ppp1p/1Pp5/2P2P2/8/3P2PP/6K1 w - -",
+      "expected": "bm f4f5",
+      "actual": "f4f5",
+      "passed": true,
+      "nodes": 11115501,
+      "timeMs": 3724
+    },
+    {
+      "testId": "ECM.601",
+      "fen": "8/p5k1/2p2p2/4p1p1/1p2P3/1P4PP/1PP5/5K2 b - -",
+      "expected": "bm g5g4",
+      "actual": "g7g6",
+      "passed": false,
+      "nodes": 8809039,
+      "timeMs": 2914
+    },
+    {
+      "testId": "ECM.603",
+      "fen": "8/2k3p1/2p4p/5P2/2K3PP/8/8/8 w - -",
+      "expected": "bm g4g5",
+      "actual": "g4g5",
+      "passed": true,
+      "nodes": 4000005,
+      "timeMs": 4247
+    },
+    {
+      "testId": "ECM.604",
+      "fen": "8/1kp1b3/1p4K1/4P2p/P1P3p1/5pP1/P4P2/4B3 b - -",
+      "expected": "bm h5h4",
+      "actual": "h5h4",
+      "passed": true,
+      "nodes": 11000003,
+      "timeMs": 4050
+    },
+    {
+      "testId": "ECM.605",
+      "fen": "8/8/4b1p1/2Bp3p/5P1P/1pK1Pk2/8/8 b - -",
+      "expected": "bm g6g5",
+      "actual": "f3g3",
+      "passed": false,
+      "nodes": 8126590,
+      "timeMs": 4037
+    },
+    {
+      "testId": "ECM.606",
+      "fen": "8/8/3K1k2/5p1p/4p1p1/4P1P1/5PP1/8 b - -",
+      "expected": "bm f5f4",
+      "actual": "f5f4",
+      "passed": true,
+      "nodes": 6641298,
+      "timeMs": 4973
+    },
+    {
+      "testId": "ECM.607",
+      "fen": "r1b5/p2k1r1p/3P2pP/1ppR4/2P2p2/2P5/P1B4P/4R1K1 w - -",
+      "expected": "bm c2g6",
+      "actual": "c4b5",
+      "passed": false,
+      "nodes": 8956564,
+      "timeMs": 3528
+    },
+    {
+      "testId": "ECM.608",
+      "fen": "6r1/1p3k2/pPp4R/K1P1p1p1/1P2Pp1p/5P1P/6P1/8 w - -",
+      "expected": "bm h6c6",
+      "actual": "h6d6",
+      "passed": false,
+      "nodes": 11564537,
+      "timeMs": 4146
+    },
+    {
+      "testId": "ECM.609",
+      "fen": "1k2b3/4bpp1/p2pp1P1/1p3P2/2q1P3/4B3/PPPQN2r/1K1R4 w - -",
+      "expected": "bm f5f6",
+      "actual": "d1e1",
+      "passed": false,
+      "nodes": 6713164,
+      "timeMs": 2703
+    },
+    {
+      "testId": "ECM.610",
+      "fen": "2kr3r/ppp1qpp1/2p5/2b2b2/2P1pPP1/1P2P1p1/PBQPB3/RN2K1R1 b Q -",
+      "expected": "bm h8h1",
+      "actual": "e7h4",
+      "passed": false,
+      "nodes": 4032535,
+      "timeMs": 1736
+    },
+    {
+      "testId": "ECM.611",
+      "fen": "1r3qk1/pb3p1p/1pn2PpQ/2pN4/3r4/5B2/PPP4P/4RRK1 w - -",
+      "expected": "bm d5e7",
+      "actual": "d5e7",
+      "passed": true,
+      "nodes": 12325199,
+      "timeMs": 4649
+    },
+    {
+      "testId": "ECM.612",
+      "fen": "4r1k1/5p1p/3q2p1/1p1P4/1P6/2p4P/2Q1nPB1/4RK2 b - -",
+      "expected": "bm e2g3",
+      "actual": "e2g3",
+      "passed": true,
+      "nodes": 10498968,
+      "timeMs": 3633
+    },
+    {
+      "testId": "ECM.613",
+      "fen": "6k1/2q3p1/1n2Pp1p/pBp2P2/Pp2P3/1P1Q1KP1/8/8 w - -",
+      "expected": "bm e4e5",
+      "actual": "b5a6",
+      "passed": false,
+      "nodes": 12000004,
+      "timeMs": 4160
+    },
+    {
+      "testId": "ECM.614",
+      "fen": "5r2/pp1RRrk1/4Qq1p/1PP3p1/8/4B3/1b3P1P/6K1 w - -",
+      "expected": "bm e6f7",
+      "actual": "e6e4",
+      "passed": false,
+      "nodes": 11000004,
+      "timeMs": 3998
+    },
+    {
+      "testId": "ECM.615",
+      "fen": "6k1/1q2rpp1/p6p/P7/1PB1n3/5Q2/6PP/5R1K w - -",
+      "expected": "bm b4b5",
+      "actual": "f3f4",
+      "passed": false,
+      "nodes": 7829098,
+      "timeMs": 2947
+    },
+    {
+      "testId": "ECM.616",
+      "fen": "r5r1/8/bRP1pk1p/3pNp2/5P2/7P/PR4P1/6K1 w - -",
+      "expected": "bm b6a6",
+      "actual": "c6c7",
+      "passed": false,
+      "nodes": 7034705,
+      "timeMs": 2695
+    },
+    {
+      "testId": "ECM.617",
+      "fen": "3r2k1/p6p/b2r2p1/2qPQp2/2P2P2/8/6BP/R4R1K w - -",
+      "expected": "bm a1a6",
+      "actual": "f1c1",
+      "passed": false,
+      "nodes": 11000003,
+      "timeMs": 4307
+    },
+    {
+      "testId": "ECM.618",
+      "fen": "8/p3q1k1/6p1/1p3nP1/2pp1QBr/P2P4/1PP2K2/R7 b - -",
+      "expected": "bm e7e3",
+      "actual": "e7e3",
+      "passed": true,
+      "nodes": 9029348,
+      "timeMs": 3142
+    },
+    {
+      "testId": "ECM.619",
+      "fen": "7k/4b2p/5p1P/5PP1/1pNp1P2/1P1B4/2P2K2/r7 w - -",
+      "expected": "bm g5g6",
+      "actual": "g5g6",
+      "passed": true,
+      "nodes": 8237006,
+      "timeMs": 2828
+    },
+    {
+      "testId": "ECM.620",
+      "fen": "5r1k/1p1b2rP/p2p4/3P3B/P2P4/5pP1/1P2pP2/R3R1K1 b - -",
+      "expected": "bm g7g3",
+      "actual": "g7g3",
+      "passed": true,
+      "nodes": 9733439,
+      "timeMs": 3432
+    },
+    {
+      "testId": "ECM.621",
+      "fen": "6B1/2p2pp1/2p5/p3K3/1k6/nP4P1/5P1P/8 b - -",
+      "expected": "bm a3c4",
+      "actual": "b4b3",
+      "passed": false,
+      "nodes": 8099223,
+      "timeMs": 2775
+    },
+    {
+      "testId": "ECM.622",
+      "fen": "3q1k2/5p2/p5pN/1b2Q2P/8/8/5PPK/8 w - -",
+      "expected": "bm e5h8",
+      "actual": "e5h8",
+      "passed": true,
+      "nodes": 12130307,
+      "timeMs": 4513
+    },
+    {
+      "testId": "ECM.623",
+      "fen": "6k1/p3b1pp/4p3/4Pp2/Pp1r1P1P/1P4P1/2p2R2/5RK1 b - -",
+      "expected": "bm d4c4",
+      "actual": "d4d3",
+      "passed": false,
+      "nodes": 8767854,
+      "timeMs": 3158
+    },
+    {
+      "testId": "ECM.625",
+      "fen": "2r2rk1/p1N2p1p/2P1p1p1/1Pp3q1/3b4/5Q2/P1P3PP/4RR1K w - -",
+      "expected": "bm c7e6",
+      "actual": "c7e6",
+      "passed": true,
+      "nodes": 11000003,
+      "timeMs": 4125
+    },
+    {
+      "testId": "ECM.626",
+      "fen": "3r1r2/pp1P3k/4Rbp1/1BP2p1p/8/7P/P4KP1/3R4 w - -",
+      "expected": "bm b5a6",
+      "actual": "b5a6",
+      "passed": true,
+      "nodes": 12000005,
+      "timeMs": 4466
+    },
+    {
+      "testId": "ECM.628",
+      "fen": "rn1q2k1/pp3pb1/3p2pp/2pP2N1/3r1P2/7Q/PP4PP/R1B2RK1 w - -",
+      "expected": "bm g5f7",
+      "actual": "g5f7",
+      "passed": true,
+      "nodes": 10000003,
+      "timeMs": 4063
+    },
+    {
+      "testId": "ECM.629",
+      "fen": "8/6Bp/6p1/2k1p3/4PPP1/1pb4P/8/2K5 b - -",
+      "expected": "bm b3b2",
+      "actual": "c5d6",
+      "passed": false,
+      "nodes": 7731167,
+      "timeMs": 3153
+    },
+    {
+      "testId": "ECM.630",
+      "fen": "5bk1/r4ppp/1r1P1n2/2p2N2/b7/2B3P1/5PBP/R3R1K1 w - -",
+      "expected": "bm c3f6",
+      "actual": "c3f6",
+      "passed": true,
+      "nodes": 10000003,
+      "timeMs": 3898
+    },
+    {
+      "testId": "ECM.631",
+      "fen": "8/8/8/P2k1p2/2N5/1pb2P2/4P3/2K5 w - -",
+      "expected": "bm a5a6",
+      "actual": "a5a6",
+      "passed": true,
+      "nodes": 4761797,
+      "timeMs": 3735
+    },
+    {
+      "testId": "ECM.632",
+      "fen": "3qr1k1/p4ppp/1p1P4/2r1nN2/4P2n/P7/1B4P1/3QRRK1 w - -",
+      "expected": "bm d6d7",
+      "actual": "d6d7",
+      "passed": true,
+      "nodes": 10912364,
+      "timeMs": 4384
+    },
+    {
+      "testId": "ECM.633",
+      "fen": "6k1/5pbp/6p1/2p1r3/1pPr4/3n2NP/1PB2PP1/1R1R2K1 b - -",
+      "expected": "bm d3b2",
+      "actual": "d3b2",
+      "passed": true,
+      "nodes": 12000003,
+      "timeMs": 4530
+    },
+    {
+      "testId": "ECM.635",
+      "fen": "2r1rbk1/p1Bq1ppp/Ppn1b3/1Npp4/B7/3P2Q1/1PP2PPP/R4RK1 w - -",
+      "expected": "bm b5a7",
+      "actual": "c7f4",
+      "passed": false,
+      "nodes": 7463183,
+      "timeMs": 3418
+    },
+    {
+      "testId": "ECM.636",
+      "fen": "r4rk1/ppq3pp/2p1Pn2/4p1Q1/8/2N5/PP4PP/2KR1R2 w - -",
+      "expected": "bm f1f6",
+      "actual": "f1e1",
+      "passed": false,
+      "nodes": 8713802,
+      "timeMs": 3374
+    },
+    {
+      "testId": "ECM.637",
+      "fen": "r3qr1k/1b4pp/p2RQ3/Bp2p3/4p3/6P1/PPP2P1P/3R2K1 b - -",
+      "expected": "bm e8h5",
+      "actual": "e8h5",
+      "passed": true,
+      "nodes": 7014246,
+      "timeMs": 2846
+    },
+    {
+      "testId": "ECM.638",
+      "fen": "8/6kP/6p1/1p1pP3/pP6/P1n2K2/2N5/8 w - -",
+      "expected": "bm e5e6",
+      "actual": "e5e6",
+      "passed": true,
+      "nodes": 9110350,
+      "timeMs": 3319
+    },
+    {
+      "testId": "ECM.639",
+      "fen": "8/Pb6/8/8/7K/5k1p/6pB/8 b - -",
+      "expected": "bm g2g1Q",
+      "actual": "g2g1Q",
+      "passed": true,
+      "nodes": 924615,
+      "timeMs": 1325
+    },
+    {
+      "testId": "ECM.640",
+      "fen": "8/pR4pk/1b6/2p5/N1p5/8/PP1r2PP/6K1 b - -",
+      "expected": "bm d2b2",
+      "actual": "c4c3",
+      "passed": false,
+      "nodes": 12000003,
+      "timeMs": 4500
+    },
+    {
+      "testId": "ECM.641",
+      "fen": "6k1/p4pp1/Pp2r3/1QPq3p/8/6P1/2P2P1P/1R4K1 w - -",
+      "expected": "bm c5b6",
+      "actual": "c5b6",
+      "passed": true,
+      "nodes": 14000003,
+      "timeMs": 4879
+    },
+    {
+      "testId": "ECM.642",
+      "fen": "6k1/p4pbp/Bp2p1p1/n2P4/q3P3/B1rQP3/P5PP/5RK1 w - -",
+      "expected": "bm d5e6",
+      "actual": "d5e6",
+      "passed": true,
+      "nodes": 11130076,
+      "timeMs": 4319
+    },
+    {
+      "testId": "ECM.643",
+      "fen": "5r2/R4p2/5P1k/4PK2/1p6/8/8/8 w - -",
+      "expected": "bm a7f7",
+      "actual": "a7f7",
+      "passed": true,
+      "nodes": 2000003,
+      "timeMs": 4983
+    },
+    {
+      "testId": "ECM.644",
+      "fen": "4r2k/pppb2pp/2np2q1/3B4/2P2P2/1PB1R1P1/PQ5P/6K1 w - -",
+      "expected": "bm f4f5",
+      "actual": "f4f5",
+      "passed": true,
+      "nodes": 8635972,
+      "timeMs": 3198
+    },
+    {
+      "testId": "ECM.645",
+      "fen": "1r6/3r1Pk1/p2p1np1/5q2/1p3P2/1B5R/PPP4Q/1K1R4 w - -",
+      "expected": "bm h3h8",
+      "actual": "h3h8",
+      "passed": true,
+      "nodes": 4619871,
+      "timeMs": 1729
+    },
+    {
+      "testId": "ECM.646",
+      "fen": "8/2k5/2p5/2pb2K1/pp4P1/1P1R4/P7/8 b - -",
+      "expected": "bm d5b3",
+      "actual": "d5b3",
+      "passed": true,
+      "nodes": 7818338,
+      "timeMs": 3241
+    },
+    {
+      "testId": "ECM.647",
+      "fen": "2r5/1r5k/1P3p2/PR2pP1p/4P2p/2p1BP2/1p2n3/4R2K b - -",
+      "expected": "bm e2d4",
+      "actual": "c8a8",
+      "passed": false,
+      "nodes": 7931772,
+      "timeMs": 2848
+    },
+    {
+      "testId": "ECM.648",
+      "fen": "4r2k/p2qr1pp/1pp2p2/2p1nP1N/4R3/1P1P2RP/1PP2QP1/7K w - -",
+      "expected": "bm g3g7",
+      "actual": "g3g7",
+      "passed": true,
+      "nodes": 6100841,
+      "timeMs": 2377
+    },
+    {
+      "testId": "ECM.649",
+      "fen": "6k1/p4p2/5Ppp/3RP3/Pr4P1/2p2K2/7P/8 w - -",
+      "expected": "bm d5d8",
+      "actual": "d5d8",
+      "passed": true,
+      "nodes": 13587258,
+      "timeMs": 4699
+    },
+    {
+      "testId": "ECM.650",
+      "fen": "8/1R2P3/6k1/3B4/2P2P2/1p2r3/1Kb4p/8 w - -",
+      "expected": "bm d5e6",
+      "actual": "c4c5",
+      "passed": false,
+      "nodes": 4007516,
+      "timeMs": 1830
+    },
+    {
+      "testId": "ECM.651",
+      "fen": "2kr2r1/pp2bQ1p/2b1P3/2qN4/8/1B2p2P/PPP3P1/3R1R1K b - -",
+      "expected": "bm e3e2",
+      "actual": "e3e2",
+      "passed": true,
+      "nodes": 11000003,
+      "timeMs": 4231
+    },
+    {
+      "testId": "ECM.652",
+      "fen": "r1b2rk1/1p2qppp/p3p3/2n5/3N4/3B1R2/PPP1Q1PP/R5K1 w - -",
+      "expected": "bm d3h7",
+      "actual": "f3e3",
+      "passed": false,
+      "nodes": 11000003,
+      "timeMs": 4782
+    },
+    {
+      "testId": "ECM.654",
+      "fen": "r2qrbk1/5ppp/pn1p4/np2P1P1/3p4/5N2/PPB2PP1/R1BQR1K1 w - -",
+      "expected": "bm c2h7",
+      "actual": "c1f4",
+      "passed": false,
+      "nodes": 9701657,
+      "timeMs": 4297
+    },
+    {
+      "testId": "ECM.655",
+      "fen": "6rk/3nrpbp/p1bq1npB/1p2p1N1/4P1PQ/P2B3R/1PP1N2P/5R1K w - -",
+      "expected": "bm g5h7",
+      "actual": "g5h7",
+      "passed": true,
+      "nodes": 10368652,
+      "timeMs": 4287
+    },
+    {
+      "testId": "ECM.656",
+      "fen": "1rb2rk1/3nqppp/p1n1p3/1p1pP3/5P2/2NBQN2/PPP3PP/2KR3R w - -",
+      "expected": "bm d3h7",
+      "actual": "c1b1",
+      "passed": false,
+      "nodes": 6430503,
+      "timeMs": 3091
+    },
+    {
+      "testId": "ECM.657",
+      "fen": "2k5/ppp3pp/8/NQ2n2q/2Pp1n2/R4bP1/1P3P1P/4R1K1 b - -",
+      "expected": "bm h5h2",
+      "actual": "h5h2",
+      "passed": true,
+      "nodes": 5007677,
+      "timeMs": 707
+    },
+    {
+      "testId": "ECM.658",
+      "fen": "5rrk/1p3qpp/p3pn2/2PpBp2/3P1P1Q/P1P1R2R/2b1B1PP/6K1 w - -",
+      "expected": "bm h4h7",
+      "actual": "h4h7",
+      "passed": true,
+      "nodes": 12000003,
+      "timeMs": 4355
+    },
+    {
+      "testId": "ECM.659",
+      "fen": "r4rk1/1bq2ppp/p1p1p3/2b1P1B1/3p2Q1/3B4/PPP2PPP/R3R1K1 w - -",
+      "expected": "bm d3h7",
+      "actual": "g5h6",
+      "passed": false,
+      "nodes": 7260545,
+      "timeMs": 3174
+    },
+    {
+      "testId": "ECM.660",
+      "fen": "r4rk1/pb1q1ppp/2N1p3/2Rn4/3P4/3BPQ2/1P3PPP/2R3K1 w - -",
+      "expected": "bm d3h7",
+      "actual": "d3h7",
+      "passed": true,
+      "nodes": 10276613,
+      "timeMs": 4309
+    },
+    {
+      "testId": "ECM.661",
+      "fen": "r5rk/1p1q1p1p/5pn1/p2p1N1Q/3P2P1/PP2R3/5P1P/5RK1 w - -",
+      "expected": "bm h5h7",
+      "actual": "h5h7",
+      "passed": true,
+      "nodes": 14579239,
+      "timeMs": 3704
+    },
+    {
+      "testId": "ECM.662",
+      "fen": "2r2r2/p2qppkp/3p2p1/3P1P2/2n2R2/7R/P5PP/1B1Q2K1 w - -",
+      "expected": "bm h3h7",
+      "actual": "f4h4",
+      "passed": false,
+      "nodes": 8670848,
+      "timeMs": 3586
+    },
+    {
+      "testId": "ECM.663",
+      "fen": "1r1qr1k1/5p1p/1n2p1p1/pp1pP1P1/2pP1BB1/PnP3P1/1P3PK1/1R1Q3R w - -",
+      "expected": "bm h1h7",
+      "actual": "h1h6",
+      "passed": false,
+      "nodes": 5298410,
+      "timeMs": 2290
+    },
+    {
+      "testId": "ECM.664",
+      "fen": "4rrk1/2q1bppp/p2p4/1p1Pn3/3B1R2/P2B2Q1/1PP3PP/5R1K w - -",
+      "expected": "bm d3h7",
+      "actual": "d3h7",
+      "passed": true,
+      "nodes": 8801465,
+      "timeMs": 3417
+    },
+    {
+      "testId": "ECM.665",
+      "fen": "r1b2rk1/2q1bppp/p1n1p3/1p1np1P1/5P2/1NNBBQ2/PPP4P/R4RK1 w - -",
+      "expected": "bm d3h7",
+      "actual": "c3d5",
+      "passed": false,
+      "nodes": 6177053,
+      "timeMs": 2751
+    },
+    {
+      "testId": "ECM.666",
+      "fen": "5r1k/ppp2qnp/1n1p1N1Q/3Ppb2/2P4P/7B/PP6/2KR2R1 w - -",
+      "expected": "bm f6h7",
+      "actual": "f6h7",
+      "passed": true,
+      "nodes": 12944798,
+      "timeMs": 4851
+    },
+    {
+      "testId": "ECM.667",
+      "fen": "r4rk1/pp2q1p1/4b2p/2ppb3/6n1/2P3N1/PPQBBPPP/R4RK1 b - -",
+      "expected": "bm g4h2",
+      "actual": "g4h2",
+      "passed": true,
+      "nodes": 4918344,
+      "timeMs": 2071
+    },
+    {
+      "testId": "ECM.668",
+      "fen": "b3r1k1/2rN1ppp/2n1p3/p7/P3BP2/1R6/q1P2QPP/3R2K1 w - -",
+      "expected": "bm e4h7",
+      "actual": "e4h7",
+      "passed": true,
+      "nodes": 9966666,
+      "timeMs": 3934
+    },
+    {
+      "testId": "ECM.669",
+      "fen": "2r1qrk1/3n3p/b3pPp1/4P3/1pp1nBN1/pP4PQ/P1P2PK1/3RR3 w - -",
+      "expected": "bm h3h7",
+      "actual": "h3h7",
+      "passed": true,
+      "nodes": 10109000,
+      "timeMs": 4250
+    },
+    {
+      "testId": "ECM.670",
+      "fen": "r1b1rnk1/pp1nb1pp/2p1pp2/q3N3/2PP1P2/3BP1N1/PBQ3PP/R4RK1 w - -",
+      "expected": "bm d3h7",
+      "actual": "e5f3",
+      "passed": false,
+      "nodes": 3782478,
+      "timeMs": 1657
+    },
+    {
+      "testId": "ECM.671",
+      "fen": "4r1k1/2q2r1p/p3bQ2/1p4Bp/2np4/8/PPB2PP1/3RR1K1 w - -",
+      "expected": "bm c2h7",
+      "actual": "c2h7",
+      "passed": true,
+      "nodes": 7694109,
+      "timeMs": 3019
+    },
+    {
+      "testId": "ECM.672",
+      "fen": "5rk1/pbrn1ppp/1ppN1q2/2P1p3/3P4/1PRB4/P3QPPP/5RK1 w - -",
+      "expected": "bm d3h7",
+      "actual": "d4e5",
+      "passed": false,
+      "nodes": 9000003,
+      "timeMs": 3760
+    },
+    {
+      "testId": "ECM.673",
+      "fen": "2rqr1k1/1p1bbppp/p3p3/n7/3P2Q1/2PB1N2/P4PPP/R1B1R1K1 w - -",
+      "expected": "bm d3h7",
+      "actual": "g4h3",
+      "passed": false,
+      "nodes": 9545185,
+      "timeMs": 4310
+    },
+    {
+      "testId": "ECM.674",
+      "fen": "r1b2r1k/ppppq1pp/2n1n3/6N1/2B2P2/4B3/PPP3PP/R2Q1RK1 w - -",
+      "expected": "bm g5h7",
+      "actual": "c4e6",
+      "passed": false,
+      "nodes": 4793874,
+      "timeMs": 2193
+    },
+    {
+      "testId": "ECM.675",
+      "fen": "rn1q1rk1/pb1p1ppp/4p3/2pnP3/1bp5/2N2N2/PP3PPP/RBBQK2R w KQ -",
+      "expected": "bm b1h7",
+      "actual": "c1d2",
+      "passed": false,
+      "nodes": 7742977,
+      "timeMs": 3657
+    },
+    {
+      "testId": "ECM.676",
+      "fen": "r2r2k1/p1p2p1p/4pPp1/1Pqb4/8/7R/1PB2PPP/3QR1K1 w - -",
+      "expected": "bm h3h7",
+      "actual": "h3h7",
+      "passed": true,
+      "nodes": 10000003,
+      "timeMs": 4483
+    },
+    {
+      "testId": "ECM.678",
+      "fen": "rnq3rk/4bp1p/p1p3pQ/1p1pP3/1P1N1B2/2P3R1/1P3PPP/R5K1 w - -",
+      "expected": "bm e5e6",
+      "actual": "e5e6",
+      "passed": true,
+      "nodes": 5832747,
+      "timeMs": 2600
+    },
+    {
+      "testId": "ECM.679",
+      "fen": "rn3rk1/pp1bppbp/1qp3p1/4P1N1/PP1PB3/2P1B3/4Q1PP/R4RK1 w - -",
+      "expected": "bm g5h7",
+      "actual": "e4c2",
+      "passed": false,
+      "nodes": 4706638,
+      "timeMs": 2326
+    },
+    {
+      "testId": "ECM.680",
+      "fen": "3rr1k1/1pq1nppp/p1p2b2/4pB2/2QPP3/P1P1B3/1P4PP/3R1RK1 w - -",
+      "expected": "bm f5h7",
+      "actual": "f5g4",
+      "passed": false,
+      "nodes": 6128509,
+      "timeMs": 2902
+    },
+    {
+      "testId": "ECM.681",
+      "fen": "1r2nrkb/2n2p1p/p2p1Pp1/P1pPp1P1/1pP1P1q1/1P1BB1N1/3Q4/2KR3R w - -",
+      "expected": "bm d2h2",
+      "actual": "d2h2",
+      "passed": true,
+      "nodes": 7140452,
+      "timeMs": 3242
+    },
+    {
+      "testId": "ECM.682",
+      "fen": "2rrn1k1/2q2ppp/p2pp3/1p2P1P1/4B3/P5Q1/1PP3PP/R4R1K w - -",
+      "expected": "bm e4h7",
+      "actual": "e4h7",
+      "passed": true,
+      "nodes": 7299392,
+      "timeMs": 3108
+    },
+    {
+      "testId": "ECM.684",
+      "fen": "2rq1rk1/pp1bnpbp/4p1p1/3pP1N1/3P2Q1/2PB4/P4PPP/R1B1R1K1 w - -",
+      "expected": "bm g5h7",
+      "actual": "c1b2",
+      "passed": false,
+      "nodes": 10000003,
+      "timeMs": 4866
+    },
+    {
+      "testId": "ECM.685",
+      "fen": "2rq1bk1/1br2p1p/p2p2p1/1p1P4/4Q3/PP3N2/1BP5/1K1R3R w - -",
+      "expected": "bm h1h7",
+      "actual": "e4d4",
+      "passed": false,
+      "nodes": 9000004,
+      "timeMs": 4007
+    },
+    {
+      "testId": "ECM.687",
+      "fen": "r4rk1/pp1n1ppp/3qp3/3nN1P1/b2P4/P2B1Q2/3B1P1P/1R2R1K1 w - -",
+      "expected": "bm d3h7",
+      "actual": "b1b7",
+      "passed": false,
+      "nodes": 8416477,
+      "timeMs": 3893
+    },
+    {
+      "testId": "ECM.688",
+      "fen": "r2r2k1/ppqbbppp/4pn2/6N1/n1P4P/3B1N2/PP2QPP1/1KBR3R w - -",
+      "expected": "bm g5h7",
+      "actual": "f3e5",
+      "passed": false,
+      "nodes": 3811760,
+      "timeMs": 1858
+    },
+    {
+      "testId": "ECM.689",
+      "fen": "r5k1/6bp/2q1p1p1/p2pP3/3P4/1rP2QP1/3B1PK1/2R4R w - -",
+      "expected": "bm h1h7",
+      "actual": "h1h7",
+      "passed": true,
+      "nodes": 10000004,
+      "timeMs": 4185
+    },
+    {
+      "testId": "ECM.690",
+      "fen": "r6r/4ppk1/p2p1bp1/B2p4/3P2p1/QP2P3/P1R1qPPP/2R3K1 b - -",
+      "expected": "bm h8h2",
+      "actual": "e2d3",
+      "passed": false,
+      "nodes": 10125837,
+      "timeMs": 4299
+    },
+    {
+      "testId": "ECM.692",
+      "fen": "r3k2r/1b1n1p2/pq1p1bp1/1p4p1/P3P3/1NN5/1PP3PP/R2QRB1K b kq -",
+      "expected": "bm h8h2",
+      "actual": "f6e5",
+      "passed": false,
+      "nodes": 6420898,
+      "timeMs": 2802
+    },
+    {
+      "testId": "ECM.694",
+      "fen": "rn1q1rk1/pppbb1pp/4p3/3pP1p1/3P3P/2NB4/PPP2PP1/R2QK2R w KQ -",
+      "expected": "bm d3h7",
+      "actual": "h4g5",
+      "passed": false,
+      "nodes": 4386559,
+      "timeMs": 1977
+    },
+    {
+      "testId": "ECM.695",
+      "fen": "1r2nr1k/6pp/pp1p1p2/2pPnN2/q1P1PB2/5PR1/4K1P1/2Q4R w - -",
+      "expected": "bm f4e5",
+      "actual": "f4e5",
+      "passed": true,
+      "nodes": 7703736,
+      "timeMs": 3063
+    },
+    {
+      "testId": "ECM.696",
+      "fen": "3r1rk1/4qp1p/p1bb2p1/2p5/3P4/1P6/PBQN1PPP/2R2RK1 b - -",
+      "expected": "bm d6h2",
+      "actual": "c6g2",
+      "passed": false,
+      "nodes": 6847046,
+      "timeMs": 2881
+    },
+    {
+      "testId": "ECM.697",
+      "fen": "r2q1rk1/3n1ppp/8/1pbP2P1/p1N4P/PnBBPQ2/5P2/R3K2R w KQ -",
+      "expected": "bm d3h7",
+      "actual": "f3h5",
+      "passed": false,
+      "nodes": 10000003,
+      "timeMs": 4155
+    },
+    {
+      "testId": "ECM.698",
+      "fen": "2k3r1/ppq2p1p/n1Pb1p2/8/6r1/4BN1b/PPQ2PPP/R3RBK1 b - -",
+      "expected": "bm d6h2",
+      "actual": "h3g2",
+      "passed": false,
+      "nodes": 6639441,
+      "timeMs": 2813
+    },
+    {
+      "testId": "ECM.699",
+      "fen": "3qr1k1/1br2ppp/p2b4/8/PpNp4/3P4/1PP2PPP/R1BQ1RK1 b - -",
+      "expected": "bm d6h2",
+      "actual": "c7c8",
+      "passed": false,
+      "nodes": 11000003,
+      "timeMs": 4875
+    },
+    {
+      "testId": "ECM.700",
+      "fen": "3r2k1/p1R2p2/4pQp1/1q5p/5P1P/1PR5/2Pr2P1/6K1 b - -",
+      "expected": "bm d2g2",
+      "actual": "d2g2",
+      "passed": true,
+      "nodes": 12990072,
+      "timeMs": 2098
+    },
+    {
+      "testId": "ECM.703",
+      "fen": "3r2k1/pb5p/1p2qpp1/8/2p5/1P1nP3/P1N2PPP/1Q1R1R1K b - -",
+      "expected": "bm b7g2",
+      "actual": "b7g2",
+      "passed": true,
+      "nodes": 14000003,
+      "timeMs": 4030
+    },
+    {
+      "testId": "ECM.704",
+      "fen": "4rrk1/2qb2pp/p5P1/1p2p3/1b2P3/2N5/PPPQ4/1K1R2R1 w - -",
+      "expected": "bm g6h7",
+      "actual": "g6h7",
+      "passed": true,
+      "nodes": 9127507,
+      "timeMs": 3582
+    },
+    {
+      "testId": "ECM.705",
+      "fen": "3q1k2/pp3ppn/2p1n2p/4pN1N/P3P2P/5Q2/1PP2PP1/6K1 w - -",
+      "expected": "bm h5g7",
+      "actual": "h5g7",
+      "passed": true,
+      "nodes": 9093114,
+      "timeMs": 3475
+    },
+    {
+      "testId": "ECM.706",
+      "fen": "2r2r1k/3b1pb1/p3pp1p/q2p1P1B/8/2N2RR1/P1PQ2PP/7K w - -",
+      "expected": "bm g3g7",
+      "actual": "f5e6",
+      "passed": false,
+      "nodes": 8206782,
+      "timeMs": 3337
+    },
+    {
+      "testId": "ECM.707",
+      "fen": "5bk1/1p4p1/4N1R1/3p4/p1r2P1q/Pr1QP2P/1P6/1K4R1 w - -",
+      "expected": "bm g6g7",
+      "actual": "g6g7",
+      "passed": true,
+      "nodes": 13667334,
+      "timeMs": 2146
+    },
+    {
+      "testId": "ECM.708",
+      "fen": "2r1r1k1/5ppp/p3pn2/1pb1N3/2P5/1PQ3R1/PB2qPPP/3R2K1 w - -",
+      "expected": "bm g3g7",
+      "actual": "g3g7",
+      "passed": true,
+      "nodes": 10000004,
+      "timeMs": 4002
+    },
+    {
+      "testId": "ECM.709",
+      "fen": "7k/1bp1P1p1/3p2rp/1pb2p1q/5P2/1BP2N1P/1P4P1/R1B2R1K b - -",
+      "expected": "bm g6g2",
+      "actual": "g6g2",
+      "passed": true,
+      "nodes": 7790949,
+      "timeMs": 3053
+    },
+    {
+      "testId": "ECM.710",
+      "fen": "r1q1bk1r/1p3pp1/4pn1p/p3Q3/P1P2N2/1B4R1/1P3PPP/4R1K1 w - -",
+      "expected": "bm g3g7",
+      "actual": "g3g7",
+      "passed": true,
+      "nodes": 10000003,
+      "timeMs": 4009
+    },
+    {
+      "testId": "ECM.711",
+      "fen": "r4rk1/p2n2p1/1q1Qpn1p/1P6/P6B/2p5/2B1KP1P/R5R1 w - -",
+      "expected": "bm g1g7",
+      "actual": "g1g7",
+      "passed": true,
+      "nodes": 13000003,
+      "timeMs": 4876
+    },
+    {
+      "testId": "ECM.712",
+      "fen": "r2qr1k1/1p3ppp/2pb4/2Np4/1P1P2bn/3BP3/2QN1PPP/1RR3K1 b - -",
+      "expected": "bm h4g2",
+      "actual": "d8f6",
+      "passed": false,
+      "nodes": 6587838,
+      "timeMs": 2913
+    },
+    {
+      "testId": "ECM.713",
+      "fen": "r3r1k1/pp3pp1/3p4/2q4p/2P5/1PB2Q1P/n4PP1/3R1RK1 w - -",
+      "expected": "bm c3g7",
+      "actual": "c3b2",
+      "passed": false,
+      "nodes": 10086394,
+      "timeMs": 4234
+    },
+    {
+      "testId": "ECM.714",
+      "fen": "r5k1/pn1q1rpp/2pp4/5R1N/bP6/4BQ2/P4PPP/2R3K1 w - -",
+      "expected": "bm h5g7",
+      "actual": "f5f7",
+      "passed": false,
+      "nodes": 6017340,
+      "timeMs": 2490
+    },
+    {
+      "testId": "ECM.715",
+      "fen": "3r1rk1/5pp1/pq1n1n1p/2pPR3/2B2P2/1PBQ2RP/P5P1/6K1 w - -",
+      "expected": "bm g3g7",
+      "actual": "a2a4",
+      "passed": false,
+      "nodes": 9718750,
+      "timeMs": 3931
+    },
+    {
+      "testId": "ECM.716",
+      "fen": "rn3rk1/ppq2ppp/2pb1nb1/5N2/2BP4/8/PPP1N1P1/R1B1QR1K w - -",
+      "expected": "bm f5g7",
+      "actual": "f5d6",
+      "passed": false,
+      "nodes": 8000003,
+      "timeMs": 3648
+    },
+    {
+      "testId": "ECM.717",
+      "fen": "r1qb1r1k/2p3pp/p1n1bp2/1p1Np2Q/P3P3/1BP3R1/1P3PPP/R1B3K1 w - -",
+      "expected": "bm g3g7",
+      "actual": "g3g7",
+      "passed": true,
+      "nodes": 4948529,
+      "timeMs": 2096
+    },
+    {
+      "testId": "ECM.718",
+      "fen": "r4rk1/5ppp/p2pbb2/3B3Q/qp2p3/4B3/PPP2P1P/2KR2R1 w - -",
+      "expected": "bm g1g7",
+      "actual": "e3d4",
+      "passed": false,
+      "nodes": 8695870,
+      "timeMs": 3444
+    },
+    {
+      "testId": "ECM.719",
+      "fen": "4q1k1/1b3r1p/p4pp1/1p6/2P2n2/1P3N2/1B3PPP/R2Q3K b - -",
+      "expected": "bm f4g2",
+      "actual": "e8e6",
+      "passed": false,
+      "nodes": 10020989,
+      "timeMs": 4198
+    },
+    {
+      "testId": "ECM.720",
+      "fen": "r2r3k/5bp1/2p2N2/5P1p/3q3Q/3B2R1/n5PP/3R3K w - -",
+      "expected": "bm g3g7",
+      "actual": "g3g7",
+      "passed": true,
+      "nodes": 7291162,
+      "timeMs": 2939
+    },
+    {
+      "testId": "ECM.721",
+      "fen": "4rrk1/2pn2pb/p1p1qp2/1pb1pN2/P3P1PN/1P1P4/1BP2PK1/R2Q3R w - -",
+      "expected": "bm f5g7",
+      "actual": "d1e2",
+      "passed": false,
+      "nodes": 3512646,
+      "timeMs": 1640
+    },
+    {
+      "testId": "ECM.722",
+      "fen": "r3r1k1/p3bppp/q1b2n2/5Q2/1p1B4/1BNR4/PPP3PP/2K2R2 w - -",
+      "expected": "bm d3g3",
+      "actual": "d4f6",
+      "passed": false,
+      "nodes": 10799192,
+      "timeMs": 4402
+    },
+    {
+      "testId": "ECM.723",
+      "fen": "r4rk1/1p1q1ppp/p1b4B/8/2R3R1/P2P4/1b1N1QPP/6K1 w - -",
+      "expected": "bm h6g7",
+      "actual": "h6g7",
+      "passed": true,
+      "nodes": 12000003,
+      "timeMs": 4872
+    },
+    {
+      "testId": "ECM.724",
+      "fen": "rq3rk1/3b1ppp/p2bp3/3pB2Q/8/1B5P/PP3PP1/2RR2K1 w - -",
+      "expected": "bm e5g7",
+      "actual": "e5g7",
+      "passed": true,
+      "nodes": 10951809,
+      "timeMs": 4575
+    },
+    {
+      "testId": "ECM.725",
+      "fen": "4kbr1/pp1bpp1p/3p1p2/3N4/1PBQP3/q7/P1r2PPP/R4RK1 b - -",
+      "expected": "bm g8g2",
+      "actual": "a3f3",
+      "passed": false,
+      "nodes": 8730125,
+      "timeMs": 3449
+    },
+    {
+      "testId": "ECM.726",
+      "fen": "2r3k1/1p2R1p1/p3n2p/2pq4/7P/1P1P2P1/PB1Q3K/8 w - -",
+      "expected": "bm b2g7",
+      "actual": "d2e2",
+      "passed": false,
+      "nodes": 5297055,
+      "timeMs": 2019
+    },
+    {
+      "testId": "ECM.727",
+      "fen": "2rr2k1/4bppp/p1n1p3/3q4/1p1P2N1/2P3R1/P3QPPP/2B2RK1 w - -",
+      "expected": "bm g4h6",
+      "actual": "c1h6",
+      "passed": false,
+      "nodes": 5438277,
+      "timeMs": 2270
+    },
+    {
+      "testId": "ECM.728",
+      "fen": "rq1r1bk1/1b3pp1/3pn2p/1n2BN1P/1P2P3/3R1NP1/3Q1PB1/2R3K1 w - -",
+      "expected": "bm e5g7",
+      "actual": "d2e2",
+      "passed": false,
+      "nodes": 5747661,
+      "timeMs": 2541
+    },
+    {
+      "testId": "ECM.729",
+      "fen": "r1b5/ppqn2bk/3R2pp/2p2p2/2P1rN2/4BN2/PPQ2PPP/4R1K1 w - -",
+      "expected": "bm d6g6",
+      "actual": "d6g6",
+      "passed": true,
+      "nodes": 10000003,
+      "timeMs": 4315
+    },
+    {
+      "testId": "ECM.730",
+      "fen": "3q1r2/1p1b1pk1/pn5p/3pN1pQ/3P3P/2r3B1/P4PP1/3RR1K1 w - -",
+      "expected": "bm e5f7",
+      "actual": "d1b1",
+      "passed": false,
+      "nodes": 4455937,
+      "timeMs": 1790
+    },
+    {
+      "testId": "ECM.731",
+      "fen": "r1bqkbnr/pp2ppp1/2p4p/3n2N1/2BP4/5N2/PPP2PPP/R1BQK2R w KQkq -",
+      "expected": "bm g5f7",
+      "actual": "g5f7",
+      "passed": true,
+      "nodes": 3598466,
+      "timeMs": 1597
+    },
+    {
+      "testId": "ECM.732",
+      "fen": "r2qr1k1/1ppb1p1p/p1np2p1/7Q/3PP2b/1B2N2P/PP3PP1/R1B2RK1 w - -",
+      "expected": "bm b3f7",
+      "actual": "b3f7",
+      "passed": true,
+      "nodes": 7191966,
+      "timeMs": 3024
+    },
+    {
+      "testId": "ECM.733",
+      "fen": "2r3k1/pbq1np1p/1p1b1Bp1/8/6QP/2P2N2/B4PP1/4R1K1 w - -",
+      "expected": "bm a2f7",
+      "actual": "a2f7",
+      "passed": true,
+      "nodes": 9330850,
+      "timeMs": 3739
+    },
+    {
+      "testId": "ECM.734",
+      "fen": "r3r1k1/1bqn1ppp/1pp2p2/8/3P4/1B4N1/PP3PPP/R2QR1K1 w - -",
+      "expected": "bm b3f7",
+      "actual": "b3f7",
+      "passed": true,
+      "nodes": 9571209,
+      "timeMs": 4022
+    },
+    {
+      "testId": "ECM.736",
+      "fen": "r2r2k1/1b2qpp1/1p2n3/p1b1p2p/4P1n1/PP1B2PP/1B1NQP2/R3NRK1 b - -",
+      "expected": "bm g4f2",
+      "actual": "g4f2",
+      "passed": true,
+      "nodes": 10000003,
+      "timeMs": 4487
+    },
+    {
+      "testId": "ECM.737",
+      "fen": "r2qr1k1/1b2bp1p/p3p1p1/1p2N1Bn/3P4/P6Q/1P3PPP/RB2R1K1 w - -",
+      "expected": "bm e5f7",
+      "actual": "g5e3",
+      "passed": false,
+      "nodes": 6618014,
+      "timeMs": 3104
+    },
+    {
+      "testId": "ECM.738",
+      "fen": "r5k1/1pp3pp/1b1p1r2/pN1P1n2/P1P3nq/6N1/1P1B1PQP/4RRK1 b - -",
+      "expected": "bm g4f2",
+      "actual": "a8f8",
+      "passed": false,
+      "nodes": 7348257,
+      "timeMs": 3137
+    },
+    {
+      "testId": "ECM.739",
+      "fen": "2rqnk1r/pp2bpp1/2p1pn1p/2P1N2P/3P1BP1/3BQ3/PP6/2K2R1R w - -",
+      "expected": "bm e5f7",
+      "actual": "e5f7",
+      "passed": true,
+      "nodes": 7730525,
+      "timeMs": 3357
+    },
+    {
+      "testId": "ECM.740",
+      "fen": "2rq1rk1/1b2bppp/p1n5/1p1BN3/5B2/P7/1P3PPP/R2Q1RK1 w - -",
+      "expected": "bm e5d7",
+      "actual": "a3a4",
+      "passed": false,
+      "nodes": 7088913,
+      "timeMs": 3165
+    },
+    {
+      "testId": "ECM.741",
+      "fen": "3r1qrk/p1p5/bbp3pp/4p3/4Pp1N/2Pn3P/PPQN1PPB/R4RK1 b - -",
+      "expected": "bm d3f2",
+      "actual": "d3f2",
+      "passed": true,
+      "nodes": 6579355,
+      "timeMs": 2746
+    },
+    {
+      "testId": "ECM.742",
+      "fen": "r2qr1k1/pb2bp1p/1pn1p1pB/8/2BP4/P1P2N2/4QPPP/3R1RK1 w - -",
+      "expected": "bm d4d5",
+      "actual": "d4d5",
+      "passed": true,
+      "nodes": 7366122,
+      "timeMs": 3501
+    },
+    {
+      "testId": "ECM.741",
+      "fen": "3r1qrk/p1p5/bbp3pp/4p3/4Pp1N/2Pn3P/PPQN1PPB/R4RK1 b - -",
+      "expected": "bm d3f2",
+      "actual": "d3f2",
+      "passed": true,
+      "nodes": 6579355,
+      "timeMs": 2810
+    },
+    {
+      "testId": "ECM.744",
+      "fen": "r5k1/p4ppp/3qpb2/1P2N3/1nBP4/1P5P/4QPP1/4R1K1 w - -",
+      "expected": "bm e5f7",
+      "actual": "e5f7",
+      "passed": true,
+      "nodes": 8029573,
+      "timeMs": 3222
+    },
+    {
+      "testId": "ECM.745",
+      "fen": "r2qr1k1/1b1nbp1p/p3pp2/1p2N3/3P4/3B1N2/PP2QPPP/R2R2K1 w - -",
+      "expected": "bm e5f7",
+      "actual": "d3h7",
+      "passed": false,
+      "nodes": 7826810,
+      "timeMs": 3530
+    },
+    {
+      "testId": "ECM.746",
+      "fen": "r3k2r/p1qb1p2/1p2p2p/3pPpN1/P1nP3Q/8/2P2PPP/R1B1R1K1 w kq -",
+      "expected": "bm g5f7",
+      "actual": "g5f3",
+      "passed": false,
+      "nodes": 7410989,
+      "timeMs": 3234
+    },
+    {
+      "testId": "ECM.747",
+      "fen": "3qNk2/5p1p/1r3p2/2p5/Q1pb4/3b2P1/P4PBP/4R1K1 b - -",
+      "expected": "bm d4f2",
+      "actual": "d4f2",
+      "passed": true,
+      "nodes": 8332074,
+      "timeMs": 3350
+    },
+    {
+      "testId": "ECM.748",
+      "fen": "2r1r1k1/1pq1bp1p/p3pnp1/P2n2N1/7R/2P4P/1PB1QPP1/2B1R1K1 w - -",
+      "expected": "bm g5f7",
+      "actual": "g5f7",
+      "passed": true,
+      "nodes": 10000003,
+      "timeMs": 4623
+    },
+    {
+      "testId": "ECM.749",
+      "fen": "r1bq2k1/pp1n1ppp/3b1n2/PQ1B3r/3N1P2/2N5/1PP3PP/R1B2RK1 w - -",
+      "expected": "bm d5f7",
+      "actual": "d5f7",
+      "passed": true,
+      "nodes": 7217532,
+      "timeMs": 3298
+    },
+    {
+      "testId": "ECM.750",
+      "fen": "2r1r1k1/5ppp/pq3b2/2pB1P2/2p2B2/5Q1P/Pn3PP1/2R1R1K1 w - -",
+      "expected": "bm d5f7",
+      "actual": "f3h5",
+      "passed": false,
+      "nodes": 11000004,
+      "timeMs": 4851
+    },
+    {
+      "testId": "ECM.751",
+      "fen": "r4rk1/ppRn1p2/6pb/2P1pq1p/3N4/P1QPn1Pb/1B1NPP1P/4R1KB b - -",
+      "expected": "bm f5f2",
+      "actual": "f5f2",
+      "passed": true,
+      "nodes": 10623805,
+      "timeMs": 3769
+    },
+    {
+      "testId": "ECM.752",
+      "fen": "r3kr2/1b2qp2/pp2p2N/4p2Q/8/2n5/P3B1PP/3R1R1K w q -",
+      "expected": "bm h6f7",
+      "actual": "h6f7",
+      "passed": true,
+      "nodes": 8561596,
+      "timeMs": 3617
+    },
+    {
+      "testId": "ECM.753",
+      "fen": "b2r1rk1/pq2bpp1/1p2p2p/4N2n/2P2R2/1PB2N2/1P2QPPP/4R1K1 w - -",
+      "expected": "bm f4f7",
+      "actual": "f4f7",
+      "passed": true,
+      "nodes": 10000003,
+      "timeMs": 4767
+    },
+    {
+      "testId": "ECM.756",
+      "fen": "1r2q1k1/p3pp2/3p1bp1/2pP2N1/8/P5PB/2Q2PK1/1rBR4 w - -",
+      "expected": "bm g5f7",
+      "actual": "g5f7",
+      "passed": true,
+      "nodes": 7283516,
+      "timeMs": 3203
+    },
+    {
+      "testId": "ECM.757",
+      "fen": "2rqrbk1/pb1n1p1p/1p2pnp1/4N3/2BP1N2/1P2Q3/PB3PPP/3R1RK1 w - -",
+      "expected": "bm e5f7",
+      "actual": "e5f7",
+      "passed": true,
+      "nodes": 6735501,
+      "timeMs": 3194
+    },
+    {
+      "testId": "ECM.759",
+      "fen": "r1bqrbk1/5p1p/2pp2nB/pp5Q/4P3/PBNPR2P/1P4P1/R5K1 w - -",
+      "expected": "bm b3f7",
+      "actual": "b3f7",
+      "passed": true,
+      "nodes": 11000004,
+      "timeMs": 4644
+    },
+    {
+      "testId": "ECM.760",
+      "fen": "r1bqkb1r/1p3ppp/pn1P1n2/4p3/2B5/2N2N2/PP3PPP/R1BQ1RK1 w kq -",
+      "expected": "bm c4f7",
+      "actual": "c4f7",
+      "passed": true,
+      "nodes": 8027087,
+      "timeMs": 3512
+    },
+    {
+      "testId": "ECM.761",
+      "fen": "2rqr1k1/pp2nppp/3p2b1/6B1/2BNn1Q1/P7/1PP2PPP/2KRR3 w - -",
+      "expected": "bm c4f7",
+      "actual": "c4f7",
+      "passed": true,
+      "nodes": 11876330,
+      "timeMs": 4988
+    },
+    {
+      "testId": "ECM.762",
+      "fen": "r3r1k1/pbq1ppbp/1pp2np1/4N3/3P4/2P5/PPB1QPPP/R1B1R1K1 w - -",
+      "expected": "bm e5f7",
+      "actual": "c1f4",
+      "passed": false,
+      "nodes": 9000003,
+      "timeMs": 4348
+    },
+    {
+      "testId": "ECM.763",
+      "fen": "r1b2rk1/p6p/2p3Pb/3pp1q1/8/2PB4/PP3PP1/RN1Q1K1R b - -",
+      "expected": "bm f8f2",
+      "actual": "h7g6",
+      "passed": false,
+      "nodes": 10000003,
+      "timeMs": 4134
+    },
+    {
+      "testId": "ECM.764",
+      "fen": "r2rn3/1p3pk1/p1pNn1pp/q3P3/P7/1PN4P/2QR1PP1/3R2K1 w - -",
+      "expected": "bm d6f7",
+      "actual": "d6c4",
+      "passed": false,
+      "nodes": 11390742,
+      "timeMs": 4899
+    },
+    {
+      "testId": "ECM.765",
+      "fen": "r1bqr1k1/1p1nnpb1/p5pp/2P1p1B1/B3N3/5N2/P4PPP/2RQR1K1 w - -",
+      "expected": "bm e4d6",
+      "actual": "e4d6",
+      "passed": true,
+      "nodes": 9417273,
+      "timeMs": 4255
+    },
+    {
+      "testId": "ECM.766",
+      "fen": "r1b1r1k1/pp2qpbp/2p3p1/2P5/3NnB2/7P/PPQ1PPB1/2RR2K1 b - -",
+      "expected": "bm e4f2",
+      "actual": "c8h3",
+      "passed": false,
+      "nodes": 5632607,
+      "timeMs": 2361
+    },
+    {
+      "testId": "ECM.768",
+      "fen": "5rk1/r2qnppp/p1nN4/2Q5/3PB3/4P3/6PP/R4RK1 w - -",
+      "expected": "bm d6f7",
+      "actual": "f1c1",
+      "passed": false,
+      "nodes": 8155418,
+      "timeMs": 3533
+    },
+    {
+      "testId": "ECM.769",
+      "fen": "1bq2k2/1b1n1pp1/pp5p/2pBpN2/P3P2B/3Q1P2/1PP3PP/4K3 w - -",
+      "expected": "bm h4e7",
+      "actual": "h4e7",
+      "passed": true,
+      "nodes": 8531318,
+      "timeMs": 3337
+    },
+    {
+      "testId": "ECM.770",
+      "fen": "rnb2rk1/pp3pbp/2p3pB/2q5/4P3/1BN5/PPP3PP/R2Q1R1K w - -",
+      "expected": "bm f1f7",
+      "actual": "h6f4",
+      "passed": false,
+      "nodes": 9653833,
+      "timeMs": 3937
+    },
+    {
+      "testId": "ECM.771",
+      "fen": "3qr1k1/1br1bp1p/p3p1pB/1p1nN3/3PB3/7Q/PP3PPP/3RR1K1 w - -",
+      "expected": "bm e5f7",
+      "actual": "h6d2",
+      "passed": false,
+      "nodes": 4145186,
+      "timeMs": 1841
+    },
+    {
+      "testId": "ECM.772",
+      "fen": "1qr1b1k1/4bpp1/pn2p2p/1p1nN3/3P4/P2BBN1Q/1P3PPP/4R1K1 w - -",
+      "expected": "bm e3h6",
+      "actual": "e3h6",
+      "passed": true,
+      "nodes": 10249678,
+      "timeMs": 4470
+    },
+    {
+      "testId": "ECM.773",
+      "fen": "rr1q2k1/1p2bpp1/2p1p2p/P1Pn4/2NP4/3Q1RP1/5PKP/2B1R3 w - -",
+      "expected": "bm c1h6",
+      "actual": "g2g1",
+      "passed": false,
+      "nodes": 9796209,
+      "timeMs": 4395
+    },
+    {
+      "testId": "ECM.774",
+      "fen": "r2r2k1/pb1nbpp1/1qp1pn1p/1p2N3/3P1B2/P1N1P3/BPQ2PPP/2R2RK1 w - -",
+      "expected": "bm f4h6",
+      "actual": "c2b3",
+      "passed": false,
+      "nodes": 7372047,
+      "timeMs": 3441
+    },
+    {
+      "testId": "ECM.775",
+      "fen": "2r5/1p4bk/3p2rp/4pN2/1P2P1pR/2P2q2/QP6/1K5R w - -",
+      "expected": "bm h4h6",
+      "actual": "h4h6",
+      "passed": true,
+      "nodes": 17742824,
+      "timeMs": 4927
+    },
+    {
+      "testId": "ECM.776",
+      "fen": "r1b1r3/pp2Npbk/3pp2p/q5p1/2QNPP2/6P1/PPP3P1/2KR3R w - -",
+      "expected": "bm d4f5",
+      "actual": "e7f5",
+      "passed": false,
+      "nodes": 9324792,
+      "timeMs": 3880
+    },
+    {
+      "testId": "ECM.777",
+      "fen": "r1q3r1/1ppQ2pk/3bNp1p/p3pP2/P3P3/7R/1PP3PP/3R2K1 w - -",
+      "expected": "bm h3h6",
+      "actual": "d7b5",
+      "passed": false,
+      "nodes": 7887994,
+      "timeMs": 3169
+    },
+    {
+      "testId": "ECM.778",
+      "fen": "4r1k1/p1pq1pp1/2p5/3p1b2/Q7/2P1B2P/P1P1rPP1/2R2RK1 b - -",
+      "expected": "bm f5h3",
+      "actual": "f5h3",
+      "passed": true,
+      "nodes": 7070730,
+      "timeMs": 2783
+    },
+    {
+      "testId": "ECM.779",
+      "fen": "1rbqnr2/5p1k/p1np3p/1p1Np3/4P2P/1Q2B3/PPP1BP2/2KR3R w - -",
+      "expected": "bm e3h6",
+      "actual": "b3c3",
+      "passed": false,
+      "nodes": 7324110,
+      "timeMs": 3394
+    },
+    {
+      "testId": "ECM.780",
+      "fen": "r1br2k1/p1q2pp1/4p1np/2ppP2Q/2n5/2PB1N2/2P2PPP/R1B1R1K1 w - -",
+      "expected": "bm c1h6",
+      "actual": "d3g6",
+      "passed": false,
+      "nodes": 9000004,
+      "timeMs": 3733
+    },
+    {
+      "testId": "ECM.781",
+      "fen": "3r1r1k/p5p1/n1p2p1p/1qp2b2/N1R4R/1PB1P1P1/P2P3P/3Q2K1 w - -",
+      "expected": "bm h4h6",
+      "actual": "c4f4",
+      "passed": false,
+      "nodes": 8173537,
+      "timeMs": 3361
+    },
+    {
+      "testId": "ECM.782",
+      "fen": "r4rk1/2q1b1p1/p4p1p/n3pP2/1p2Q1N1/4B3/PPP3PP/4RR1K w - -",
+      "expected": "bm g4h6",
+      "actual": "g4h6",
+      "passed": true,
+      "nodes": 7089193,
+      "timeMs": 2953
+    },
+    {
+      "testId": "ECM.783",
+      "fen": "6rk/3b1n1p/1p1q3b/1PpNp3/2P1Pp2/2Q2NrP/5RP1/2R2B1K b - -",
+      "expected": "bm d7h3",
+      "actual": "d7e6",
+      "passed": false,
+      "nodes": 11000003,
+      "timeMs": 4713
+    },
+    {
+      "testId": "ECM.784",
+      "fen": "r2q1rk1/ppp2pp1/1b2b2p/3n3Q/2Bp4/3P1N2/PPP2PPP/R1B1R1K1 w - -",
+      "expected": "bm c1h6",
+      "actual": "c1h6",
+      "passed": true,
+      "nodes": 6822944,
+      "timeMs": 2951
+    },
+    {
+      "testId": "ECM.785",
+      "fen": "r3rbk1/1bp1qpp1/p6p/np2p2Q/4P2N/1BP4P/PP3PP1/R1B1R1K1 w - -",
+      "expected": "bm c1g5",
+      "actual": "c1g5",
+      "passed": true,
+      "nodes": 7244786,
+      "timeMs": 2936
+    },
+    {
+      "testId": "ECM.786",
+      "fen": "4q3/p2r1ppk/R6p/3n4/3B1Q2/4P2P/5PP1/6K1 w - -",
+      "expected": "bm a6h6",
+      "actual": "a6h6",
+      "passed": true,
+      "nodes": 13246276,
+      "timeMs": 4595
+    },
+    {
+      "testId": "ECM.787",
+      "fen": "7r/1p2qk2/pQ1p2p1/3Ppp2/P4b2/2P2PrP/1P2R1B1/4R2K b - -",
+      "expected": "bm h8h3",
+      "actual": "h8h3",
+      "passed": true,
+      "nodes": 11613482,
+      "timeMs": 4582
+    },
+    {
+      "testId": "ECM.788",
+      "fen": "5rk1/Qp5p/3pp1p1/4n3/2P1P2q/5r1P/P3NPP1/3R1RK1 b - -",
+      "expected": "bm f3h3",
+      "actual": "f3h3",
+      "passed": true,
+      "nodes": 5101308,
+      "timeMs": 1931
+    },
+    {
+      "testId": "ECM.789",
+      "fen": "2r1r1k1/pb1n1pp1/1p1qpn1p/4N1B1/2PP4/3B4/P2Q1PPP/3RR1K1 w - -",
+      "expected": "bm g5h6",
+      "actual": "g5h6",
+      "passed": true,
+      "nodes": 10000003,
+      "timeMs": 4679
+    },
+    {
+      "testId": "ECM.790",
+      "fen": "3q1rk1/p2bbpp1/1rn4p/1pp2P2/3pBBP1/3P3P/PPPQ3N/R4RK1 w - -",
+      "expected": "bm f4h6",
+      "actual": "f4h6",
+      "passed": true,
+      "nodes": 10000004,
+      "timeMs": 4634
+    },
+    {
+      "testId": "ECM.791",
+      "fen": "2br2k1/4qppp/p5r1/2pBp3/2P1Pn2/4Q2P/RP3PPK/1N4R1 b - -",
+      "expected": "bm c8h3",
+      "actual": "c8h3",
+      "passed": true,
+      "nodes": 10000005,
+      "timeMs": 4136
+    },
+    {
+      "testId": "ECM.792",
+      "fen": "r2qr3/2p1b1pk/p5pp/1p2p3/nP2P1P1/1BP2RP1/P3QPK1/R1B5 w - -",
+      "expected": "bm c1h6",
+      "actual": "g2g1",
+      "passed": false,
+      "nodes": 3694459,
+      "timeMs": 1640
+    },
+    {
+      "testId": "ECM.793",
+      "fen": "r5r1/pbn4k/1p1p1Ppp/2pPn3/4BQq1/1PN3P1/PB3PK1/3R1R2 w - -",
+      "expected": "bm f4h6",
+      "actual": "f4h6",
+      "passed": true,
+      "nodes": 4047568,
+      "timeMs": 1802
+    },
+    {
+      "testId": "ECM.794",
+      "fen": "r1b2rk1/pp2bpp1/4p2p/2q4Q/5nNB/2PB4/PP3PPP/2KR3R w - -",
+      "expected": "bm g4h6",
+      "actual": "g4h6",
+      "passed": true,
+      "nodes": 4998189,
+      "timeMs": 2188
+    },
+    {
+      "testId": "ECM.795",
+      "fen": "6k1/p4ppp/1pn1b1rr/8/PBpPp2q/2P1P1NP/5PP1/RR3QK1 b - -",
+      "expected": "bm e6h3",
+      "actual": "e6h3",
+      "passed": true,
+      "nodes": 9714873,
+      "timeMs": 4120
+    },
+    {
+      "testId": "ECM.796",
+      "fen": "r1b2rk1/1p3pp1/p5Pp/2bpPp1Q/3N4/1Pq1B1R1/2P4P/3R2K1 w - -",
+      "expected": "bm e3h6",
+      "actual": "e3h6",
+      "passed": true,
+      "nodes": 3969880,
+      "timeMs": 1791
+    },
+    {
+      "testId": "ECM.797",
+      "fen": "r2r2k1/pp1n1bp1/2p2p1p/b4N2/q2BR3/2QB2PP/1PP5/2KR4 w - -",
+      "expected": "bm f5h6",
+      "actual": "f5h6",
+      "passed": true,
+      "nodes": 8076914,
+      "timeMs": 3359
+    },
+    {
+      "testId": "ECM.798",
+      "fen": "3r2bk/1q4p1/p2P1N1p/2p1rP2/pb5R/7P/1P4P1/2Q2RK1 w - -",
+      "expected": "bm h4h6",
+      "actual": "h4h6",
+      "passed": true,
+      "nodes": 9338320,
+      "timeMs": 3718
+    },
+    {
+      "testId": "ECM.799",
+      "fen": "2b1rk2/r6p/1pP1p1p1/p2pNnR1/5Q2/P1B4q/1PP2P1P/1K4R1 w - -",
+      "expected": "bm g5f5 e5g6",
+      "actual": "c3d4",
+      "passed": false,
+      "nodes": 7549340,
+      "timeMs": 3163
+    },
+    {
+      "testId": "ECM.800",
+      "fen": "6R1/6Q1/3q2p1/5p1p/P3p1k1/1P1r2P1/5PK1/8 b - -",
+      "expected": "bm d3g3",
+      "actual": "d3g3",
+      "passed": true,
+      "nodes": 9281192,
+      "timeMs": 3657
+    },
+    {
+      "testId": "ECM.801",
+      "fen": "r6r/ppnqpk2/3pbpp1/5N2/1PP1P3/5RR1/P2QB1PP/6K1 w - -",
+      "expected": "bm f5h6",
+      "actual": "f5d4",
+      "passed": false,
+      "nodes": 10198615,
+      "timeMs": 4249
+    },
+    {
+      "testId": "ECM.802",
+      "fen": "3r3r/p4pk1/5Rp1/3q4/1p1P2RQ/5N2/P1P4P/2b4K w - -",
+      "expected": "bm f6g6",
+      "actual": "f6g6",
+      "passed": true,
+      "nodes": 11257550,
+      "timeMs": 4121
+    },
+    {
+      "testId": "ECM.803",
+      "fen": "2b2r1k/2p3pp/2Nb4/pP5q/2PP4/P4pP1/5P1P/R1BQ2K1 b - -",
+      "expected": "bm d6g3",
+      "actual": "c8d7",
+      "passed": false,
+      "nodes": 9532549,
+      "timeMs": 3895
+    },
+    {
+      "testId": "ECM.804",
+      "fen": "r1bq2k1/pp3r1p/2n1p1p1/3pP3/6Q1/2PB2P1/P4PK1/R1B4R w - -",
+      "expected": "bm d3g6",
+      "actual": "f2f4",
+      "passed": false,
+      "nodes": 4205006,
+      "timeMs": 1833
+    },
+    {
+      "testId": "ECM.805",
+      "fen": "3q1rk1/2r4p/n1p1n1pQ/p2pP3/Np1P2R1/5PN1/PP3KP1/2R5 w - -",
+      "expected": "bm g4g6",
+      "actual": "g3h5",
+      "passed": false,
+      "nodes": 10135738,
+      "timeMs": 4184
+    },
+    {
+      "testId": "ECM.806",
+      "fen": "2Nq1rk1/6pp/b1p2b2/p6Q/np1p4/6P1/PB3PBP/R3R1K1 w - -",
+      "expected": "bm g2e4",
+      "actual": "g2e4",
+      "passed": true,
+      "nodes": 9000003,
+      "timeMs": 3932
+    },
+    {
+      "testId": "ECM.807",
+      "fen": "r2r4/p4pk1/2p3p1/1p1nPR2/5p1Q/2N5/PPPq4/1K4R1 w - -",
+      "expected": "bm e5e6",
+      "actual": "e5e6",
+      "passed": true,
+      "nodes": 10194959,
+      "timeMs": 4062
+    },
+    {
+      "testId": "ECM.808",
+      "fen": "2kr3r/pbq3p1/1p2pp2/2b4n/2P1B3/1P1N2Pp/PB2QP1P/R4RK1 b - -",
+      "expected": "bm h5g3",
+      "actual": "h5g3",
+      "passed": true,
+      "nodes": 4398978,
+      "timeMs": 1895
+    },
+    {
+      "testId": "ECM.809",
+      "fen": "r5k1/1p2Rpb1/3p1np1/2nP2B1/1qP5/1pN1Q2P/P5P1/1B4K1 w - -",
+      "expected": "bm b1g6",
+      "actual": "b1g6",
+      "passed": true,
+      "nodes": 8788380,
+      "timeMs": 3648
+    },
+    {
+      "testId": "ECM.810",
+      "fen": "2rqr1k1/pb2bp1p/1pn1pnpB/4N3/3P4/P1N3R1/1P3PPP/RB1Q2K1 w - -",
+      "expected": "bm e5g6",
+      "actual": "e5g6",
+      "passed": true,
+      "nodes": 5572979,
+      "timeMs": 2652
+    },
+    {
+      "testId": "ECM.812",
+      "fen": "3rr3/3q1p1k/p2P2pp/1bp1b3/5N2/6QP/P1B3P1/3RR1K1 w - -",
+      "expected": "bm c2g6",
+      "actual": "c2g6",
+      "passed": true,
+      "nodes": 5864492,
+      "timeMs": 2449
+    },
+    {
+      "testId": "ECM.813",
+      "fen": "r2q1rk1/pp2ppb1/3pn1pQ/3R4/2P3B1/4BR2/PP4PP/6K1 w - -",
+      "expected": "bm h6g6",
+      "actual": "h6g6",
+      "passed": true,
+      "nodes": 12000003,
+      "timeMs": 4959
+    },
+    {
+      "testId": "ECM.814",
+      "fen": "1n1b1rk1/r4p1p/p1p2qpQ/P3Np2/2BP4/2P1R3/5PPP/R5K1 w - -",
+      "expected": "bm a1b1",
+      "actual": "a1b1",
+      "passed": true,
+      "nodes": 5649763,
+      "timeMs": 2407
+    },
+    {
+      "testId": "ECM.815",
+      "fen": "6rk/pb3p1p/3bpPq1/3P4/1p1B3r/1B4P1/PPRQ1R1P/6K1 b - -",
+      "expected": "bm d6g3",
+      "actual": "d6g3",
+      "passed": true,
+      "nodes": 7815842,
+      "timeMs": 3307
+    },
+    {
+      "testId": "ECM.816",
+      "fen": "3rr1k1/pb2bp1p/3qp1pB/1p2N3/3P2Q1/2P1R3/P4PPP/4R1K1 w - -",
+      "expected": "bm e5g6",
+      "actual": "h6f4",
+      "passed": false,
+      "nodes": 10000003,
+      "timeMs": 4685
+    },
+    {
+      "testId": "ECM.817",
+      "fen": "r2q1rk1/pb1nbp1p/1p2p1p1/4N1BQ/2PP4/P7/5PPP/RB2R1K1 w - -",
+      "expected": "bm e5g6",
+      "actual": "e5g6",
+      "passed": true,
+      "nodes": 11000003,
+      "timeMs": 4841
+    },
+    {
+      "testId": "ECM.818",
+      "fen": "1Q4R1/r2qbp2/3p1kp1/3Bp2p/8/3PP1P1/5PKP/8 w - -",
+      "expected": "bm e3e4 g8g6",
+      "actual": "e3e4",
+      "passed": true,
+      "nodes": 11498324,
+      "timeMs": 4665
+    },
+    {
+      "testId": "ECM.819",
+      "fen": "r3r1k1/b1p2pn1/p2q1Bp1/1p1bN1Qp/3P4/2P4P/PPB2PP1/R3R1K1 w - -",
+      "expected": "bm e5g6",
+      "actual": "e5g6",
+      "passed": true,
+      "nodes": 11409267,
+      "timeMs": 4940
+    },
+    {
+      "testId": "ECM.820",
+      "fen": "3r2k1/p1rn1p1p/1p2pp2/6q1/3PQNP1/5P2/P1P4R/R5K1 w - -",
+      "expected": "bm f4e6",
+      "actual": "f4e6",
+      "passed": true,
+      "nodes": 6664915,
+      "timeMs": 2752
+    },
+    {
+      "testId": "ECM.821",
+      "fen": "k2r3r/ppq2p1p/n1pb1Pp1/4p3/2Q5/1R2B1P1/PPP2PBP/R5K1 w - -",
+      "expected": "bm b3b7",
+      "actual": "b3b7",
+      "passed": true,
+      "nodes": 6513052,
+      "timeMs": 2656
+    },
+    {
+      "testId": "ECM.822",
+      "fen": "1rb2rk1/p1p1qppp/2p2n2/3P4/1b3P2/2NB4/PPPBQ1PP/2KR3R b - -",
+      "expected": "bm b4a3",
+      "actual": "e7e2",
+      "passed": false,
+      "nodes": 8000005,
+      "timeMs": 3668
+    },
+    {
+      "testId": "ECM.823",
+      "fen": "k7/pp1N4/4P3/5P2/8/5p2/1R6/B4Knq w - -",
+      "expected": "bm d7b6",
+      "actual": "d7b6",
+      "passed": true,
+      "nodes": 4923982,
+      "timeMs": 2794
+    },
+    {
+      "testId": "ECM.824",
+      "fen": "4rrk1/p5pp/1p4q1/3p2n1/2pP2P1/P1P1PP2/3B2K1/1R2QR2 b - -",
+      "expected": "bm f8f3 g5f3",
+      "actual": "f8f3",
+      "passed": true,
+      "nodes": 10677832,
+      "timeMs": 4217
+    },
+    {
+      "testId": "ECM.825",
+      "fen": "1q1r3k/3P1pp1/ppBR1n1p/4Q2P/P4P2/8/5PK1/8 w - -",
+      "expected": "bm d6f6",
+      "actual": "d6f6",
+      "passed": true,
+      "nodes": 9854654,
+      "timeMs": 3684
+    },
+    {
+      "testId": "ECM.826",
+      "fen": "1rbq2k1/b1p3pp/p1Pp4/3Ppr2/8/5N2/PPQ2PPP/R1B2RK1 b - -",
+      "expected": "bm f5f3",
+      "actual": "a7d4",
+      "passed": false,
+      "nodes": 5845576,
+      "timeMs": 2531
+    },
+    {
+      "testId": "ECM.828",
+      "fen": "r4rk1/2p1qpp1/p1p5/2Ppn2b/2PQ1N1p/4P3/PB3PPP/R4RK1 b - -",
+      "expected": "bm e5f3",
+      "actual": "e5f3",
+      "passed": true,
+      "nodes": 7365797,
+      "timeMs": 2976
+    },
+    {
+      "testId": "ECM.829",
+      "fen": "r1bq1rk1/1p2bppp/p3p3/n3P3/4N3/1P1P1N2/PB4PP/R3QR1K w - -",
+      "expected": "bm e4f6",
+      "actual": "b2c3",
+      "passed": false,
+      "nodes": 9000003,
+      "timeMs": 4343
+    },
+    {
+      "testId": "ECM.830",
+      "fen": "1n2r3/p1pq1kp1/1b1pNpp1/3P4/5RP1/3Q3P/1B3P2/6K1 w - -",
+      "expected": "bm b2f6",
+      "actual": "b2f6",
+      "passed": true,
+      "nodes": 8844690,
+      "timeMs": 3430
+    },
+    {
+      "testId": "ECM.831",
+      "fen": "r1bq1rk1/ppp3p1/7p/3P2n1/2PQ1p2/1N5P/PPP2PPK/R1B2R2 b - -",
+      "expected": "bm g5f3",
+      "actual": "g5h3",
+      "passed": false,
+      "nodes": 11211342,
+      "timeMs": 4941
+    },
+    {
+      "testId": "ECM.832",
+      "fen": "3r1b2/p4bkp/1p1P1p2/r3p1p1/2q1N3/2N2P2/1P1R2PP/2QR3K w - -",
+      "expected": "bm e4f6",
+      "actual": "h2h4",
+      "passed": false,
+      "nodes": 4062171,
+      "timeMs": 1884
+    },
+    {
+      "testId": "ECM.833",
+      "fen": "rqbn1rk1/1p3ppp/p3p3/8/4NP2/8/PPP1BQPP/1K1R3R w - -",
+      "expected": "bm e4f6",
+      "actual": "f2g3",
+      "passed": false,
+      "nodes": 8000003,
+      "timeMs": 3784
+    },
+    {
+      "testId": "ECM.834",
+      "fen": "r1b1kb1r/1p4pp/p2ppn2/8/2qNP3/2N1B3/PPP3PP/R2Q1RK1 w kq -",
+      "expected": "bm f1f6",
+      "actual": "d1d3",
+      "passed": false,
+      "nodes": 5045588,
+      "timeMs": 2358
+    },
+    {
+      "testId": "ECM.835",
+      "fen": "1rn5/p3Bk1p/1pq1bpp1/P3p3/1Q2P2P/2P3P1/5PB1/1R4K1 w - -",
+      "expected": "bm e7f6",
+      "actual": "e7f6",
+      "passed": true,
+      "nodes": 10330193,
+      "timeMs": 4445
+    },
+    {
+      "testId": "ECM.837",
+      "fen": "6nk/pn2qr1r/1pbp1p1p/2p1pPpN/P1P1P1PP/2PP3R/7Q/2BBK2R w K -",
+      "expected": "bm h5f6",
+      "actual": "h2c2",
+      "passed": false,
+      "nodes": 4266938,
+      "timeMs": 1900
+    },
+    {
+      "testId": "ECM.838",
+      "fen": "7r/4p1k1/p3Pppp/1p6/3N1R2/3PQ2P/qr4b1/5RK1 w - -",
+      "expected": "bm f4f6",
+      "actual": "f4f6",
+      "passed": true,
+      "nodes": 4847584,
+      "timeMs": 2037
+    },
+    {
+      "testId": "ECM.839",
+      "fen": "r3k2r/1bq1bp2/p3p1pp/1p2P3/3NpP2/4B1Q1/PPP3PP/1K1R3R w kq -",
+      "expected": "bm d4e6",
+      "actual": "d4e6",
+      "passed": true,
+      "nodes": 8572927,
+      "timeMs": 3799
+    },
+    {
+      "testId": "ECM.840",
+      "fen": "rnbqkb1r/pp1n1p2/4p1p1/1N1pP2p/1P4Q1/3B1N2/P1PB1PPP/R3K2R w KQkq -",
+      "expected": "bm g4e6",
+      "actual": "g4e6",
+      "passed": true,
+      "nodes": 6892581,
+      "timeMs": 3069
+    },
+    {
+      "testId": "ECM.841",
+      "fen": "r1b1kb1r/1p1n1ppp/p2ppn2/6BB/2qNP3/2N5/PPP2PPP/R2Q1RK1 w kq -",
+      "expected": "bm d4e6",
+      "actual": "h5f3",
+      "passed": false,
+      "nodes": 5439239,
+      "timeMs": 2741
+    },
+    {
+      "testId": "ECM.842",
+      "fen": "r1b1k1nr/3n1p1p/1qpBp1p1/pp2b3/4PN2/PBN2Q2/1PP2PPP/2KR3R w kq -",
+      "expected": "bm f4e6",
+      "actual": "f4e6",
+      "passed": true,
+      "nodes": 8346921,
+      "timeMs": 3924
+    },
+    {
+      "testId": "ECM.843",
+      "fen": "2r2rk1/1b3ppp/pq2p3/1pbn2N1/3B3P/1B4P1/P1P1QP2/2KRR3 w - -",
+      "expected": "bm e2h5",
+      "actual": "e2d3",
+      "passed": false,
+      "nodes": 7608553,
+      "timeMs": 3431
+    },
+    {
+      "testId": "ECM.844",
+      "fen": "r3k2r/pp1n1pb1/1qn1p1p1/2p3Pp/4R2P/2NP2QB/PPPB1P2/2K1R3 w kq -",
+      "expected": "bm e4e6",
+      "actual": "h3e6",
+      "passed": false,
+      "nodes": 9000003,
+      "timeMs": 4119
+    },
+    {
+      "testId": "ECM.845",
+      "fen": "r3k2r/1q3ppp/p3p3/2b1P3/p2N1Q2/P7/1PP3PP/3R1R1K w kq -",
+      "expected": "bm d4e6",
+      "actual": "d4e6",
+      "passed": true,
+      "nodes": 10919731,
+      "timeMs": 4681
+    },
+    {
+      "testId": "ECM.846",
+      "fen": "3qr1k1/rp3pbp/2p3p1/3p1b2/N1nP4/P2NP3/1PQ2PPP/1BRR2K1 b - -",
+      "expected": "bm e8e3",
+      "actual": "e8e3",
+      "passed": true,
+      "nodes": 10365995,
+      "timeMs": 4740
+    },
+    {
+      "testId": "ECM.847",
+      "fen": "rnbqkb1r/1p1n1pp1/p3p2p/3pP3/3p1NQP/2N5/P1PB1PP1/R3KB1R w KQkq -",
+      "expected": "bm f4e6",
+      "actual": "f4e6",
+      "passed": true,
+      "nodes": 6459730,
+      "timeMs": 2979
+    },
+    {
+      "testId": "ECM.848",
+      "fen": "3r1b1R/3bkpp1/1p1np3/1BqpPPP1/PQ1N4/8/1PP5/1K6 w - -",
+      "expected": "bm f5f6",
+      "actual": "f5f6",
+      "passed": true,
+      "nodes": 11000004,
+      "timeMs": 4419
+    },
+    {
+      "testId": "ECM.849",
+      "fen": "4r1k1/pp2n2p/1r1n1bp1/q2p1pB1/3P3N/P1NQ1P1P/1PP3R1/1K5R b - -",
+      "expected": "bm b6b2",
+      "actual": "f6g5",
+      "passed": false,
+      "nodes": 9000003,
+      "timeMs": 3918
+    },
+    {
+      "testId": "ECM.850",
+      "fen": "3r2k1/2p1bppp/4b3/p2pP3/qr1N1B1P/8/1PPQ2P1/1K1RR3 b - -",
+      "expected": "bm b4b2",
+      "actual": "b4b2",
+      "passed": true,
+      "nodes": 6536598,
+      "timeMs": 2822
+    },
+    {
+      "testId": "ECM.851",
+      "fen": "1k1r3r/ppR2ppp/1q2b3/1N6/4Q3/8/PP3PPP/4R1K1 w - -",
+      "expected": "bm c7b7",
+      "actual": "c7b7",
+      "passed": true,
+      "nodes": 10000005,
+      "timeMs": 4145
+    },
+    {
+      "testId": "ECM.852",
+      "fen": "1r3rk1/5pbp/p2Pp1p1/q1n3P1/2p2P1P/2N1Q2R/PP6/1BKR4 b - -",
+      "expected": "bm c5d3 b8b2",
+      "actual": "b8b2",
+      "passed": true,
+      "nodes": 11495691,
+      "timeMs": 4655
+    },
+    {
+      "testId": "ECM.853",
+      "fen": "rr4k1/5p1p/n2p1npQ/q1pP4/6P1/2N2P1N/PP1R3P/2K4R b - -",
+      "expected": "bm b8b2",
+      "actual": "b8b2",
+      "passed": true,
+      "nodes": 8205928,
+      "timeMs": 3305
+    },
+    {
+      "testId": "ECM.854",
+      "fen": "1k2bb1r/1p3p1p/p2qpP1p/3pN3/3P1Q2/2RB2P1/PP3P1P/6K1 w - -",
+      "expected": "bm f4c1",
+      "actual": "f4c1",
+      "passed": true,
+      "nodes": 9657110,
+      "timeMs": 3815
+    },
+    {
+      "testId": "ECM.855",
+      "fen": "1r4k1/1r3p2/p1p1b1pQ/q3P3/P7/bPN1R1P1/2P4P/1K1R1B2 b - -",
+      "expected": "bm e6b3",
+      "actual": "e6b3",
+      "passed": true,
+      "nodes": 10018367,
+      "timeMs": 4008
+    },
+    {
+      "testId": "ECM.856",
+      "fen": "5rk1/5rp1/p2qb3/R2Np2Q/3bP2B/7P/P5PK/1R6 b - -",
+      "expected": "bm f7f1",
+      "actual": "e6d5",
+      "passed": false,
+      "nodes": 9819318,
+      "timeMs": 4076
+    },
+    {
+      "testId": "ECM.857",
+      "fen": "6k1/5p2/R3p1p1/1pq1PpB1/4nP2/5Q1P/P2r2PK/8 w - -",
+      "expected": "bm a6a8",
+      "actual": "a6a8",
+      "passed": true,
+      "nodes": 4324608,
+      "timeMs": 1603
+    },
+    {
+      "testId": "ECM.859",
+      "fen": "1r6/5pk1/p1b2qpp/P1P1n3/1N6/Q5NP/5PP1/3R2K1 b - -",
+      "expected": "bm c6g2",
+      "actual": "c6g2",
+      "passed": true,
+      "nodes": 8544859,
+      "timeMs": 3311
+    },
+    {
+      "testId": "ECM.861",
+      "fen": "2R5/p3q1kp/6p1/3p4/b2P2p1/Pr4N1/5Q2/3K3R w - -",
+      "expected": "bm g3f5",
+      "actual": "h1h7",
+      "passed": false,
+      "nodes": 8802717,
+      "timeMs": 3392
+    },
+    {
+      "testId": "ECM.862",
+      "fen": "3r4/kb6/pp6/4R1pr/PPpq4/2N3Q1/2P3PP/3R3K b - -",
+      "expected": "bm d8f8",
+      "actual": "d8f8",
+      "passed": true,
+      "nodes": 10846929,
+      "timeMs": 4286
+    },
+    {
+      "testId": "ECM.863",
+      "fen": "4r1k1/5p1p/4q1p1/8/Q5n1/3B2P1/P4P1P/2R3K1 b - -",
+      "expected": "bm g4f2",
+      "actual": "g4f2",
+      "passed": true,
+      "nodes": 12130350,
+      "timeMs": 4674
+    },
+    {
+      "testId": "ECM.869",
+      "fen": "7k/1p4p1/2p4r/5p2/p1QP1q2/2P2PR1/r4P1P/4R2K b - -",
+      "expected": "bm h6h2",
+      "actual": "h6h2",
+      "passed": true,
+      "nodes": 12065888,
+      "timeMs": 4602
+    },
+    {
+      "testId": "ECM.870",
+      "fen": "1r3r2/6kp/3p1pp1/qnp1pP2/1p2P2N/3P4/PPPQ1P1P/1K1R2R1 w - -",
+      "expected": "bm f5g6",
+      "actual": "f5g6",
+      "passed": true,
+      "nodes": 9311417,
+      "timeMs": 3990
+    },
+    {
+      "testId": "ECM.871",
+      "fen": "5rk1/1rP3pp/p4n2/3Pp3/1P2Pq2/2Q4P/P5P1/R3R1K1 b - -",
+      "expected": "bm b7c7",
+      "actual": "f6g4",
+      "passed": false,
+      "nodes": 5982104,
+      "timeMs": 2490
+    },
+    {
+      "testId": "ECM.872",
+      "fen": "2rq1rk1/5ppp/2b1pb2/np6/6N1/2NBB3/PP3PPP/R2Q2K1 w - -",
+      "expected": "bm e3b6",
+      "actual": "g4f6",
+      "passed": false,
+      "nodes": 9159712,
+      "timeMs": 4169
+    },
+    {
+      "testId": "ECM.873",
+      "fen": "5r2/p2p2kp/3PnNp1/1qr1Pp2/2p5/P1R5/6PP/2Q1R1K1 w - -",
+      "expected": "bm c1h6",
+      "actual": "a3a4",
+      "passed": false,
+      "nodes": 8539021,
+      "timeMs": 3616
+    },
+    {
+      "testId": "ECM.874",
+      "fen": "2Qbq1k1/6p1/1p4Np/4p2P/3rP3/8/3p2PK/3R4 w - -",
+      "expected": "bm d1f1",
+      "actual": "d1f1",
+      "passed": true,
+      "nodes": 9951167,
+      "timeMs": 3630
+    },
+    {
+      "testId": "ECM.876",
+      "fen": "2K5/6p1/kp2P3/1p6/1P6/2P1P2p/8/1r6 w - -",
+      "expected": "bm e6e7",
+      "actual": "e6e7",
+      "passed": true,
+      "nodes": 9610357,
+      "timeMs": 3863
+    },
+    {
+      "testId": "ECM.877",
+      "fen": "2kr3r/1Rp1bpp1/p6q/Q3P3/2P5/3p1NP1/P3P2P/1R4K1 b - -",
+      "expected": "bm h6e3",
+      "actual": "h6c6",
+      "passed": false,
+      "nodes": 7037023,
+      "timeMs": 2560
+    },
+    {
+      "testId": "ECM.878",
+      "fen": "6k1/1R4pp/2p5/8/P1rNp3/6Pb/4PK2/8 w - -",
+      "expected": "bm a4a5",
+      "actual": "f2e3",
+      "passed": false,
+      "nodes": 9889873,
+      "timeMs": 3409
+    }
+  ]
+}

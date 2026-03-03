@@ -1,27 +1,83 @@
 # FrankyCPP Search Tree Reduction Review Plan
 
-**Document Version:** 1.1  
+**Document Version:** 1.4  
 **Created:** 2026-02-18  
-**Last Updated:** 2026-02-20  
-**Status:** 🟡 IN PROGRESS (Phase 1 Partially Complete)  
+**Last Updated:** 2026-02-21  
+**Status:** 🟡 IN PROGRESS (Phase 1 LMR Complete, Phase 2 Detailed, Phases 3–5 Not Started)  
 **Target:** FrankyCPP v1.4+  
 **Priority:** High (Performance / Strength Improvement)
 
 ---
 
-## Progress Summary (v1.3 Release)
+## Progress Summary (v1.4)
 
 ### Completed Changes
 
-| Change       | Description                | ELO vs v1.1 | Status           |
-|--------------|----------------------------|-------------|------------------|
-| **Baseline** | TB + extensions (v1.2)     | +30         | ✅ Starting point |
-| **1.4.4**    | Logarithmic LMR formula    | +64         | ✅ Complete       |
-| **1.4.4b**   | LMR divisor tuning (1.5)   | +82         | ✅ Complete       |
-| **Bug Fix**  | isPvNode propagation fixes | +109        | ✅ Complete       |
-| **Bug Fix**  | History heuristic fixes    | TBD         | ✅ Complete       |
+| Change       | Description                   | ELO vs v1.1 | Status               |
+|--------------|-------------------------------|-------------|----------------------|
+| **Baseline** | TB + extensions (v1.2)        | +30         | ✅ Starting point     |
+| **1.4.4**    | Logarithmic LMR formula       | +64         | ✅ Complete           |
+| **1.4.4b**   | LMR divisor tuning (1.5)      | +82         | ✅ Complete           |
+| **Bug Fix**  | isPvNode propagation fixes    | +109        | ✅ Complete           |
+| **Bug Fix**  | History heuristic fixes       | TBD         | ✅ Complete           |
+| **1.4.5**    | Improving flag (all 5 phases) | +68 vs v1.3 | ✅ Complete           |
+| **1.4.6**    | History-based LMR adjustment  | +61 vs v1.3 | ✅ Complete (neutral) |
+| **1.4.8**    | Cut node extra reduction      | +57 vs v1.3 | ✅ Complete (neutral) |
 
-**Total: +109 ELO** (v1.3 vs v1.1 baseline)
+**Total: +177 ELO** (v1.4 vs v1.1 baseline: +109 from v1.3 + +68 from improving flag)
+
+**Note:** LMR History (+61) and CutNode (+57) show slight regression from Improving Flag baseline (+68),
+but are within measurement tolerance (±15 ELO). Both features are functional and may provide
+benefits in specific positions. Combined effect is approximately ELO-neutral.
+
+### Improving Flag Implementation (v1.4)
+
+All 5 improving-flag phases from `PLAN_Improving_Flag.md` are complete:
+
+| Phase | Feature        | Config Flag            | SearchTreeSizeTest Impact | Status |
+|-------|----------------|------------------------|---------------------------|--------|
+| 1     | Infrastructure | `USE_IMPROVING`        | n/a (master switch)       | ✅      |
+| 2     | LMR+Improving  | `USE_LMR_IMPROVING`    | −12.4% nodes (cumulative) | ✅      |
+| 3     | NMP+Improving  | `USE_NMP_IMPROVING`    | −5.9% nodes (cumulative)  | ✅      |
+| 4a    | FP+Improving   | `USE_FP_IMPROVING`     | −29.4% nodes (cumulative) | ✅      |
+| 4b    | RFP+Improving  | `USE_RFP_IMPROVING`    | −30.8% nodes (cumulative) | ✅      |
+| 5     | LMP+Improving  | `USE_LMP_IMPROVING`    | −40.0% nodes (cumulative) | ✅      |
+
+**Combined result:** −40% cumulative node reduction at depth 12, zero NPS overhead.  
+**Match result:** +68 ELO vs v1.3 (208 games, 59.6% score, W80/D88/L40).  
+**Test suites:** +59 positions (+2.1%) across 2873 positions, 6 suites improved, 1 regressed.
+
+### History-Based LMR Implementation (v1.4)
+
+**Change 1.4.6** implemented history-based LMR adjustment:
+
+| Config Flag           | Default | Description                                           |
+|-----------------------|---------|-------------------------------------------------------|
+| `USE_LMR_HISTORY`     | true    | Enable history-based LMR modulation                   |
+| `LMR_HISTORY_DIVISOR` | 8192    | Divisor for history → reduction conversion            |
+
+**How it works:**
+- Moves with positive history (caused beta cutoffs) get **less** reduction
+- History values are `(1 << depth)` per cutoff, so divisor 8192 (= `1 << 13`) means a single cutoff at depth 13 gives 1 ply less reduction
+- Reduction is clamped to never exceed `newDepth` (prevents search explosion)
+
+**Statistics added:**
+- `lmrHistoryLessReduction` — count of moves that got less reduction
+- `lmrHistoryDepthSaved` — total plies of depth saved
+
+**Results:**
+- **SearchTreeSizeTest:** +5.5% nodes at depth 10 (expected — searches good moves deeper)
+- **Match result:** +61 ELO vs v1.3 (208 games, 58.7% score, W79/D86/L43)
+- **Test suites:** +32 positions (+1.1%) across 2873 positions
+
+**Comparison with Improving Flag baseline:**
+
+| Metric          | Improving Only | +History LMR | Delta    |
+|-----------------|----------------|--------------|----------|
+| ELO vs v1.3     | +68            | +61          | −7 ELO   |
+| Test positions  | +59 (+2.1%)    | +32 (+1.1%)  | −27 pos  |
+
+**Conclusion:** Results are within measurement tolerance (~±20 ELO for 208 games). Feature kept enabled as it shows no clear regression and may provide benefits in specific positions. Further tuning of `LMR_HISTORY_DIVISOR` could be explored.
 
 ### Bugs Discovered & Fixed
 
@@ -66,7 +122,7 @@ Stockfish reaches **2x the depth** while using **3.5x fewer nodes**. This massiv
 
 ## Phase 1: Late Move Reductions (LMR)
 
-**Status:** 🟡 Partially Complete  
+**Status:** 🟡 Partially Complete (improving done, history/PV/cutnode TODO)  
 **Priority:** Highest - LMR has the largest impact on tree size
 
 ### 1.1 Current Implementation Analysis
@@ -125,22 +181,26 @@ This grows **logarithmically** rather than linearly, providing:
 
 ### 1.3 Configuration Review
 
-**Current LMR Config Options (v1.3):**
+**Current LMR Config Options (v1.4):**
 
-| Parameter             | Current Default | Description               | Tunable? |
-|-----------------------|-----------------|---------------------------|----------|
-| `USE_LMR`             | true            | Enable LMR                | Yes      |
-| `LMR_MIN_DEPTH`       | 2               | Minimum depth for LMR     | Yes      |
-| `LMR_MIN_MOVES`       | 2               | Moves before LMR kicks in | Yes      |
-| `LMR_USE_LOG_FORMULA` | true            | Use logarithmic vs linear | Yes ✅    |
-| `LMR_LOG_BASE_DIV`    | 1.5             | Divisor for log formula   | Yes ✅    |
+| Parameter                 | Current Default | Description                        | Status      |
+|---------------------------|-----------------|------------------------------------|-------------|
+| `USE_LMR`                 | true            | Enable LMR                         | ✅           |
+| `LMR_MIN_DEPTH`           | 2               | Minimum depth for LMR              | ✅           |
+| `LMR_MIN_MOVES`           | 2               | Moves before LMR kicks in          | ✅           |
+| `LMR_USE_LOG_FORMULA`     | true            | Use logarithmic vs linear          | ✅           |
+| `LMR_LOG_BASE_DIV`        | 1.5             | Divisor for log formula            | ✅           |
+| `USE_LMR_IMPROVING`       | true            | Extra reduction when not improving | ✅           |
+| `LMR_IMPROVING_REDUCTION` | 1               | Extra depth reduction              | ✅           |
+| `USE_LMR_HISTORY`         | true            | Less reduction for good history    | ✅ (neutral) |
+| `LMR_HISTORY_DIVISOR`     | 8192            | History → reduction divisor        | ✅ (neutral) |
+| `USE_LMR_CUTNODE`         | true            | Extra reduction on cut nodes       | ✅ (neutral) |
+| `LMR_CUTNODE_REDUCTION`   | 2               | Extra cut node depth reduction     | ✅ (neutral) |
 
-**✅ Completed:** LMR formula is now configurable via `LMR_USE_LOG_FORMULA` and `LMR_LOG_BASE_DIV`
+**All LMR config options implemented and tested.**
 
-**Remaining Config Options to Consider:**
-- `LMR_IMPROVING_BONUS` - Less reduction when improving
-- `LMR_HISTORY_DIVISOR` - History-based adjustment divisor
-- `LMR_CUTNODE_EXTRA` - Extra reduction on cut nodes
+**Skipped:**
+- `USE_LMR_PV_REDUCE` - After isPvNode bug fix, PV nodes are only 0.02% of tree. Not worth implementing.
 
 ### 1.4 Action Items
 
@@ -169,54 +229,75 @@ lmrReduction[d][m] = std::lround(std::log(d) * std::log(m) / divisor);
 - Tuned `LMR_LOG_BASE_DIV` from 2.2 → 1.5
 - **Result:** Additional +18 ELO improvement
 
-**Change 1.4.5: Add "Improving" Flag** ⭐⭐ HIGH IMPACT - TODO
-- **Config Flag:** `USE_LMR_IMPROVING` (bool, default false initially)
-```cpp
-// staticEval is already tracked in PlyInfo! Just need to use it:
-// Track if static eval improved vs 2 plies ago
-bool improving = (ply >= 2 && plyInfo[ply].staticEval > plyInfo[ply-2].staticEval);
+**Change 1.4.5: Add "Improving" Flag** ✅ COMPLETE (−40% cumulative nodes)
+- **Config Flags:** `USE_IMPROVING` (master), `USE_LMR_IMPROVING`, `USE_NMP_IMPROVING`, `USE_FP_IMPROVING`, `USE_RFP_IMPROVING`, `USE_LMP_IMPROVING`
+- Applied improving flag across all 5 pruning/reduction techniques
+- See `PLAN_Improving_Flag.md` for full details and per-phase results
+- **Result:** −40% cumulative node reduction at depth 12, +68 ELO vs v1.3, +59 test suite positions (+2.1%)
 
-// Apply more reduction when NOT improving
-if (!improving) reduction += 1;
-```
-- **Effort:** LOW (PlyInfo already has staticEval!)
-- **Impact:** High - Stockfish considers this essential
-- **Risk:** Low
-- **SearchTreeSizeTest:** Add after "65 LMR" entry
-
-**Change 1.4.6: History-Based LMR Adjustment** ⭐⭐ HIGH IMPACT
-- **Config Flag:** `USE_LMR_HISTORY` (bool, default false initially)
+**Change 1.4.6: History-Based LMR Adjustment** ✅ COMPLETE (neutral ELO)
+- **Config Flags:** `USE_LMR_HISTORY` (bool, default true), `LMR_HISTORY_DIVISOR` (int, default 8192)
 ```cpp
 // Adjust reduction based on history score
-int historyReduction = -history.getQuietMoveScore(...) / HISTORY_LMR_DIVISOR;
-reduction += historyReduction;
+if (SearchConfig.USE_LMR_HISTORY) {
+  const int histScore = history.historyCount[us][from][to];
+  const int histReduction = -histScore / SearchConfig.LMR_HISTORY_DIVISOR;
+  if (histReduction < 0) {
+    statistics.lmrHistoryLessReduction++;
+    statistics.lmrHistoryDepthSaved -= histReduction;
+  }
+  lmrDepth -= static_cast<Depth>(histReduction);
+}
+lmrDepth = std::clamp(lmrDepth, DEPTH_NONE, newDepth);
 ```
-- **Effort:** Medium (need to integrate history into LMR)
-- **Impact:** High
-- **Risk:** Low
-- **SearchTreeSizeTest:** Add after LMR improving entry
+- **Effort:** Medium
+- **Impact:** Neutral (within measurement tolerance)
+- **Result:** +61 ELO vs v1.3 (vs +68 without), −7 ELO delta within noise margin
+- **SearchTreeSizeTest:** +5.5% nodes (expected — searches good moves deeper)
 
-**Change 1.4.7: PV Node Reduction Adjustment**
+**Change 1.4.7: PV Node Reduction Adjustment** ⏭️ SKIPPED
 - **Config Flag:** `USE_LMR_PV_REDUCE` (bool, default false initially)
 ```cpp
 // Apply smaller reduction on PV nodes (currently skipped entirely)
-if (isPV) reduction = reduction * 2 / 3;  // or similar
+if (nodeType == PvNode) reduction = reduction * 2 / 3;  // or similar
 ```
 - **Effort:** Low
-- **Impact:** Medium
+- **Impact:** ~~Medium~~ **Negligible** - PV nodes now only 0.02% of search tree
 - **Risk:** Low
-- **SearchTreeSizeTest:** Measure impact on PV node handling
+- **Decision:** After isPvNode bug fixes (20% → 0.02%), this optimization affects an extremely small fraction of nodes. Not worth implementation effort. Skip in favor of higher-impact changes.
 
-**Change 1.4.8: Cut Node Extra Reduction**
-- **Config Flag:** `USE_LMR_CUTNODE` (bool, default false initially)
+**Change 1.4.8: Cut Node Extra Reduction** ✅ COMPLETE (neutral ELO)
+- **Config Flags:** `USE_LMR_CUTNODE` (bool, default true), `LMR_CUTNODE_REDUCTION` (int, default 2)
 ```cpp
 // Reduce more on expected cut nodes
-if (cutNode) reduction += 2;
+// Cut nodes are expected to fail high; late moves on cut nodes are very unlikely to be best
+if (SearchConfig.USE_LMR_CUTNODE && nodeType == CutNode) {
+  lmrDepth -= static_cast<Depth>(SearchConfig.LMR_CUTNODE_REDUCTION);
+  statistics.lmrCutNodeReductions++;
+}
 ```
-- **Effort:** Low (need to track cutNode flag)
-- **Impact:** Medium
-- **Risk:** Low
-- **SearchTreeSizeTest:** Add after LMR history entry
+- **Implementation:** Refactored `isPvNode` + `cutNode` into unified `NodeType` enum:
+  ```cpp
+  enum NodeType : uint8_t { PvNode, CutNode, AllNode };
+  ```
+  - **PvNode:** Full window search, on principal variation
+  - **CutNode:** Expected to fail high (beta cutoff)
+  - **AllNode:** Expected to fail low (no move raises alpha)
+  - Child node type logic:
+    - PvNode's first child → PvNode; later children → CutNode
+    - CutNode's children → AllNode
+    - AllNode's children → CutNode
+- **Effort:** Low-Medium (refactored to cleaner enum)
+- **SearchTreeSizeTest Results:**
+  - 1,007,128 cut node reductions applied (avg 33,570/position)
+  - −4.4% nodes vs LMR+History alone
+  - +2.8% nodes vs baseline (improving flag)
+  - More LMR re-searches (111K vs 83K) — expected with aggressive reductions
+- **Match Results:** +57 ELO vs v1.3 (104 games, 58.2% score, W38/D45/L21)
+- **Test Suite:** +38 positions (+1.3%), 6 suites improved, 1 regressed
+- **Impact:** Neutral (−11 ELO vs Improving Flag baseline, within ±15 ELO tolerance)
+- **Decision:** Feature is functional and correctly implemented. Combined with LMR History,
+  provides approximately ELO-neutral results. Keep enabled as it may help in specific positions.
 
 ### 1.5 Validation Approach
 
@@ -259,22 +340,29 @@ struct History {
   
   // Counter move: [prev_from][prev_to] -> refutation move
   Move counterMoves[64][64]{};
+  
+  // Update methods:
+  void updateCounterMove(...);  // stores counter-move
+  void updateHistory(...);      // adds to history score with aging/clamping
+  void ageHistory();            // divides all values by 2
 };
 ```
-- Single history table indexed by from/to squares
+- Single history table indexed by from/to squares ✅
 - Counter-move tracking exists ✅
-- Aging: divided by 2 periodically
+- Aging: divided by 2 periodically ✅
+- Max history score: 8000 (clamped)
 
-### 2.2 Stockfish Comparison
+### 2.2 Gap Analysis vs Stockfish
 
-#### Stockfish History Tables (Multiple!)
-1. **Main history**: `history[color][from][to]` ✅ Have this
-2. **Capture history**: `captureHistory[piece][to][capturedType]` ❌ Missing
-3. **Continuation history**: `contHistory[piece1][to1][piece2][to2]` ❌ Missing
-4. **Counter-move history**: What reply worked after opponent's move ❌ Partial
-
-#### Stockfish Killer Moves
-- 2-3 killers per ply (FrankyCPP has 2) ✅
+| Feature                                          | FrankyCPP | Stockfish | Impact |
+|--------------------------------------------------|-----------|-----------|--------|
+| Main history `[color][from][to]`                 | ✅         | ✅         | —      |
+| Counter-move storage                             | ✅         | ✅         | —      |
+| **Capture history** `[piece][to][captured]`      | ❌         | ✅         | High   |
+| **Continuation history** (2-ply sequences)       | ❌         | ✅         | High   |
+| **Counter-move history** (scored, not just move) | ❌         | ✅         | Medium |
+| **Pawn history** `[pawn_structure_key][...]`     | ❌         | ✅         | Low    |
+| Killer moves (2 per ply)                         | ✅         | ✅         | —      |
 
 #### Stockfish Capture Ordering
 - MVV-LVA base ✅ Have this
@@ -290,24 +378,89 @@ struct History {
 #### Code Changes Required
 
 **Change 2.3.3: Add Capture History Table**
+- **Purpose:** Order captures by how often they caused cutoffs, not just MVV-LVA.
+- **Config Flags:** 
+  - `USE_CAPTURE_HISTORY` (bool, default false initially)
+  - `CAPTURE_HISTORY_BONUS` (int, default 32) — bonus per cutoff
 ```cpp
-// Track which captures are good/bad
-int16_t captureHistory[PIECE_TYPE_NB][SQUARE_NB][PIECE_TYPE_NB];
+// Track which captures are good/bad: [moving_piece][to_square][captured_piece_type]
+int16_t captureHistory[PIECE_TYPE_NB][SQUARE_NB][PIECE_TYPE_NB]{};
+
+void updateCaptureHistory(PieceType piece, Square to, PieceType captured, int bonus);
+int getCaptureHistoryScore(PieceType piece, Square to, PieceType captured) const;
 ```
-- **Effort:** Medium
-- **Impact:** Medium
+- **Integration points:**
+  1. `MoveGenerator.cpp` — add capture history score to capture ordering
+  2. `Search.cpp` — call `updateCaptureHistory()` on beta cutoff from capture
+- **Effort:** Medium (~2-3 hours)
+- **Impact:** Medium-High (better capture ordering = more cutoffs)
 
 **Change 2.3.4: Add Continuation History**
+- **Purpose:** Track 2-move sequences that work well (what I played after opponent's move).
+- **Config Flags:**
+  - `USE_CONTINUATION_HISTORY` (bool, default false initially)
+  - `CONT_HISTORY_BONUS` (int, default 32)
 ```cpp
-// Track 2-ply sequences that work well
-int16_t contHistory[PIECE_NB][SQUARE_NB][PIECE_NB][SQUARE_NB];
+// [previous_piece][previous_to][current_piece][current_to]
+// Memory: 6 * 64 * 6 * 64 * 2 bytes = ~295 KB
+int16_t contHistory[PIECE_NB][SQUARE_NB][PIECE_NB][SQUARE_NB]{};
 ```
-- **Effort:** High (significant memory, complex update logic)
-- **Impact:** High
+- **Complexity:** Requires tracking `previousMove` in search stack (PlyInfo).
+- **Effort:** High (~4-6 hours)
+- **Impact:** High (Stockfish considers this one of most important history tables)
 
-**Change 2.3.5: Improve Counter-Move Tracking**
-- Ensure counter-move gets significant bonus in ordering
-- Track counter-move history (not just the move)
+**Change 2.3.5: Add Counter-Move History**
+- **Purpose:** Track not just *which* move refutes, but *how good* it is.
+- **Current:** `counterMoves[from][to]` stores a single `Move`
+- **Proposed:** Add scoring like main history
+- **Config Flag:** `USE_COUNTERMOVE_HISTORY` (bool, default false initially)
+```cpp
+// Score for counter-moves, indexed same as counterMoves
+int16_t counterMoveHistory[64][64]{};
+```
+- **Effort:** Low-Medium (~1-2 hours)
+- **Impact:** Medium
+
+**Change 2.3.6: Tune History Aging & Bonuses** ⏭️ DEFERRED
+- **Config-only changes:**
+  - `HISTORY_AGING_DIVISOR` (int, default 2) — current aging factor
+  - `HISTORY_BONUS_MULTIPLIER` (int, default depth²) — bonus calculation
+  - `HISTORY_MAX_VALUE` (int, default 8000) — clamp threshold
+- **Decision:** Defer tuning until after new history features are established. Better to tune all parameters together.
+
+### 2.4 Implementation Order (Recommended)
+
+**Test between each feature** to isolate impact:
+
+| Batch | Change                         | Effort         | Impact   | Dependencies    | Status |
+|-------|--------------------------------|----------------|----------|-----------------|--------|
+| **1** | **2.3.3** Capture History      | Medium (2-3h)  | Med-High | None            | 🔴     |
+| **2** | **2.3.5** Counter-Move History | Low-Med (1-2h) | Medium   | None            | 🔴     |
+| **3** | **2.3.4** Continuation History | High (4-6h)    | High     | PlyInfo changes | 🔴     |
+
+**Rationale for separate testing:**
+1. **Capture History** and **Continuation History** both affect move ordering — combined testing would obscure which provides value
+2. **Counter-Move History** is low effort; if it regresses, want to know before adding more complexity
+3. **Continuation History** requires `PlyInfo` modifications — if it breaks something, don't want other changes muddying debugging
+
+**Alternative:** Combine **Capture History + Counter-Move History** (both ~3-4 hours total), then test together. They affect different move types (captures vs quiets), so interaction is minimal.
+
+### 2.5 Validation Approach
+
+1. **SearchTreeSizeTest:** Add entries for each new history feature
+2. **Metrics:** Track cutoff rates before/after (first-move cutoff % is key)
+3. **Match testing:** 200+ game matches vs baseline
+
+**Expected outcome:** Better move ordering → higher first-move cutoff rate → fewer nodes searched.
+
+**Estimated Timeline:**
+| Phase | Effort | Validation |
+|-------|--------|------------|
+| Capture History | 2-3 hours | SearchTreeSizeTest + 100-game match |
+| Counter-Move History | 1-2 hours | SearchTreeSizeTest + quick match |
+| Continuation History | 4-6 hours | Full validation (200+ games) |
+
+**Total: ~10-14 hours** including testing between each.
 
 ---
 
@@ -320,15 +473,15 @@ int16_t contHistory[PIECE_NB][SQUARE_NB][PIECE_NB][SQUARE_NB];
 
 **Existing Pruning in FrankyCPP:**
 
-| Technique                      | Implemented | Location             | Configurable |
-|--------------------------------|-------------|----------------------|--------------|
-| Razoring                       | ✅ Yes       | Search.cpp:1006-1014 | Yes          |
-| Reverse Futility Pruning (RFP) | ✅ Yes       | Search.cpp:1017-1031 | Yes          |
-| Null Move Pruning (NMP)        | ✅ Yes       | Search.cpp:1043-1119 | Yes          |
-| Futility Pruning               | ✅ Yes       | Search.cpp:1296-1306 | Yes          |
-| Late Move Pruning (LMP)        | ✅ Yes       | Search.cpp:1308-1313 | Yes          |
-| SEE Pruning                    | ✅ Partial   | Via bad captures     | Partial      |
-| Delta Pruning (QS)             | ✅ Yes       | Quiescence           | Yes          |
+| Technique                      | Implemented | Improving Modulation  | Configurable |
+|--------------------------------|-------------|-----------------------|--------------|
+| Razoring                       | ✅ Yes       | —                     | Yes          |
+| Reverse Futility Pruning (RFP) | ✅ Yes       | ✅ `USE_RFP_IMPROVING` | Yes          |
+| Null Move Pruning (NMP)        | ✅ Yes       | ✅ `USE_NMP_IMPROVING` | Yes          |
+| Futility Pruning               | ✅ Yes       | ✅ `USE_FP_IMPROVING`  | Yes          |
+| Late Move Pruning (LMP)        | ✅ Yes       | ✅ `USE_LMP_IMPROVING` | Yes          |
+| SEE Pruning                    | ✅ Partial   | —                     | Partial      |
+| Delta Pruning (QS)             | ✅ Yes       | —                     | Yes          |
 
 ### 3.2 Stockfish Comparison
 
@@ -465,13 +618,13 @@ if (!ttMove && depth >= IIR_DEPTH) {
 ```
 
 ### Quick Wins (Config-only, Test First)
-1. LMR factor tuning
-2. LMR min moves/depth tuning
+1. ✅ LMR factor tuning
+2. ✅ LMR min moves/depth tuning
 3. Pruning margin tuning
 
 ### Phase 1 Code Changes (Highest Impact)
-1. ⭐⭐⭐ Add "improving" flag tracking
-2. ⭐⭐⭐ Switch to logarithmic LMR formula
+1. ✅ ⭐⭐⭐ Add "improving" flag tracking (−40% nodes cumulative)
+2. ✅ ⭐⭐⭐ Switch to logarithmic LMR formula (+34 ELO)
 3. ⭐⭐ History-based LMR adjustments
 4. ⭐⭐ PV node LMR reduction
 
@@ -548,14 +701,18 @@ Only after Stage 1 & 2 pass:
 
 **⚠️ CRITICAL:** Every search tree reduction change MUST be gated by a config flag.
 
-| New Feature     | Required Config Flag  | SearchTreeSizeTest Entry |
-|-----------------|-----------------------|--------------------------|
-| LMR Improving   | `USE_LMR_IMPROVING`   | After "65 LMR"           |
-| LMR Log Formula | `LMR_USE_LOG_FORMULA` | Compare with linear      |
-| LMR History     | `USE_LMR_HISTORY`     | After LMR base           |
-| LMR Cut Node    | `USE_LMR_CUTNODE`     | After LMR base           |
-| Capture History | `USE_CAPTURE_HISTORY` | After History            |
-| SEE Pruning     | `USE_SEE_PRUNING`     | After SEE                |
+| New Feature     | Required Config Flag  | SearchTreeSizeTest Entry | Status |
+|-----------------|-----------------------|--------------------------|--------|
+| LMR Improving   | `USE_LMR_IMPROVING`   | After "65 LMR"           | ✅      |
+| LMR Log Formula | `LMR_USE_LOG_FORMULA` | Compare with linear      | ✅      |
+| NMP Improving   | `USE_NMP_IMPROVING`   | After NMP                | ✅      |
+| FP Improving    | `USE_FP_IMPROVING`    | After FP                 | ✅      |
+| RFP Improving   | `USE_RFP_IMPROVING`   | After RFP                | ✅      |
+| LMP Improving   | `USE_LMP_IMPROVING`   | After LMP                | ✅      |
+| LMR History     | `USE_LMR_HISTORY`     | After LMR base           | 🔴     |
+| LMR Cut Node    | `USE_LMR_CUTNODE`     | After LMR base           | 🔴     |
+| Capture History | `USE_CAPTURE_HISTORY` | After History            | 🔴     |
+| SEE Pruning     | `USE_SEE_PRUNING`     | After SEE                | 🔴     |
 
 This ensures:
 1. Easy A/B testing
@@ -596,23 +753,24 @@ Before/After comparison for each change:
 
 ## Appendix A: Current LMR Config Options
 
-From `SearchConfigData.h`:
+From `SearchConfigData.h` (v1.4):
 
 ```cpp
-// LMR/LMP
+// LMR
 bool USE_LMR      = true;
-int LMR_MIN_DEPTH = 3;
-int LMR_MIN_MOVES = 3;
-```
+int LMR_MIN_DEPTH = 2;
+int LMR_MIN_MOVES = 2;
+// LMR formula selection (logarithmic vs linear)
+bool LMR_USE_LOG_FORMULA  = true;  // Use logarithmic formula instead of linear
+double LMR_LOG_BASE_DIV   = 1.50;  // Divisor for log formula: log(d)*log(m)/divisor
+// LMR + improving: extra reduction when position is not improving
+bool USE_LMR_IMPROVING      = true; // Use improving flag to modulate LMR
+int LMR_IMPROVING_REDUCTION = 1;    // Extra reduction depth when not improving
 
-From `Search.h` (hardcoded):
-
-```cpp
-// LMR reduction table - HARDCODED formula
-static constexpr int lmr_reduction(const int depth, const int movesSearched) {
-  // 1 + round(depth * movesSearched * 0.0035)
-  return 1 + (depth * movesSearched * 35 + 5000) / 10000;
-}
+// LMP
+bool USE_LMP      = true;
+std::array<int, 16> LMP_MOVES{0, 7, 9, 11, 13, 15, 17, 19, 22, 24, 27, 29, 32, 35, 38, 41};
+bool USE_LMP_IMPROVING = true; // Use improving flag to modulate LMP threshold
 ```
 
 ## Appendix B: Stockfish LMR Reference
@@ -640,6 +798,9 @@ int reduction(int d, int m, bool improving, int history) {
 |---------|------------|---------------------------------------------------------------------------------------------------------------------|
 | 1.0     | 2026-02-18 | Initial plan document created                                                                                       |
 | 1.1     | 2026-02-20 | Updated with v1.3 progress: LMR log formula, divisor tuning, isPvNode fixes, history fixes. Total +109 ELO vs v1.1. |
+| 1.2     | 2026-02-20 | Improving flag all 5 phases complete. Match: +68 ELO vs v1.3, +59 test positions (+2.1%). −40% nodes.               |
+| 1.3     | 2026-02-21 | History-based LMR (1.4.6) complete. Cut node reduction (1.4.8) implemented.                                         |
+| 1.4     | 2026-02-21 | Skipped 1.4.7 (PV reduction) - negligible impact after bug fixes. Phase 2 detailed with implementation order.       |
 
 ---
 

@@ -24,40 +24,34 @@
 
 namespace {
 
-  // Smoke test: loads config/search.yaml and checks representative flat keys exist
-  // to ensure file presence and basic YAML parsing work.
+  // Smoke test: loads config/search.yaml and checks that file is present and parseable.
+  // Most config keys are commented out (using struct defaults), so we only check:
+  // - CONFIG_SOURCE (always present to indicate yaml was loaded)
+  // - _YAML_SMOKE_TEST_MARKER (dedicated marker for this test)
   TEST(ConfigYamlSmokeTest, LoadsSearchYamlAndHasExpectedFlatKeys) {
     const auto path = ConfigPaths::SearchYaml();
     ASSERT_TRUE(std::filesystem::exists(path)) << "Missing file: " << path.string();
     YAML::Node root = YAML::LoadFile(path.string());
     ASSERT_TRUE(root) << "YAML parse returned empty node for: " << path.string();
 
-    // Flat keys expected from SearchConfig.h
-    EXPECT_TRUE(root["MOVE_OVERHEAD_MS"]);
-    EXPECT_TRUE(root["USE_BOOK"]);
-    EXPECT_TRUE(root["BOOK_PATH"]);
-    EXPECT_TRUE(root["USE_ALPHABETA"]);
-    EXPECT_TRUE(root["USE_QUIESCENCE"]);
-    EXPECT_TRUE(root["TT_SIZE_MB"]);
-    EXPECT_TRUE(root["RFP_MARGIN"]) << "RFP_MARGIN array should be present";
-    EXPECT_TRUE(root["FP_MARGIN"]) << "FP_MARGIN array should be present";
+    // These keys must always be present (not commented out)
+    EXPECT_TRUE(root["CONFIG_SOURCE"]) << "CONFIG_SOURCE should be present";
+    EXPECT_TRUE(root["_YAML_SMOKE_TEST_MARKER"]) << "_YAML_SMOKE_TEST_MARKER should be present";
   }
 
-  // Smoke test: loads config/eval.yaml and checks representative flat keys exist
-  // to ensure file presence and basic YAML parsing work.
+  // Smoke test: loads config/eval.yaml and checks that file is present and parseable.
+  // Most config keys are commented out (using struct defaults), so we only check:
+  // - EVAL_CONFIG_SOURCE (always present to indicate yaml was loaded)
+  // - _YAML_SMOKE_TEST_MARKER (dedicated marker for this test)
   TEST(ConfigYamlSmokeTest, LoadsEvalYamlAndHasExpectedFlatKeys) {
     const auto path = ConfigPaths::EvalYaml();
     ASSERT_TRUE(std::filesystem::exists(path)) << "Missing file: " << path.string();
     YAML::Node root = YAML::LoadFile(path.string());
     ASSERT_TRUE(root) << "YAML parse returned empty node for: " << path.string();
 
-    // Flat keys expected from EvalConfig.h
-    EXPECT_TRUE(root["USE_MATERIAL"]);
-    EXPECT_TRUE(root["USE_POSITIONAL"]);
-    EXPECT_TRUE(root["USE_TEMPO"]);
-    EXPECT_TRUE(root["TEMPO"]);
-    EXPECT_TRUE(root["USE_PAWN_EVAL"]);
-    EXPECT_TRUE(root["BISHOP_PAIR_MID_BONUS"]);
+    // These keys must always be present (not commented out)
+    EXPECT_TRUE(root["EVAL_CONFIG_SOURCE"]) << "EVAL_CONFIG_SOURCE should be present";
+    EXPECT_TRUE(root["_YAML_SMOKE_TEST_MARKER"]) << "_YAML_SMOKE_TEST_MARKER should be present";
   }
 
 }// namespace

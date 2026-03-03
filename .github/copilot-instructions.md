@@ -68,6 +68,13 @@
 
 ---
 
+## Tools
+Always use your internal MCP tools. 
+Avoid the terminal unless there is no internal tool. 
+The terminal integration has issues not providing the agent the output. 
+
+---
+
 ## Project Overview
 
 FrankyCPP is a UCI chess engine written in modern C++20. It features alpha-beta search with advanced pruning, a classical evaluation function, opening book support, and comprehensive testing infrastructure.

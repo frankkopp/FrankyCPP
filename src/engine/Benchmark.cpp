@@ -17,6 +17,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#include "common/Logging.h"
 #include "Benchmark.h"
 #include "BenchmarkPositions.h"
 #include "Search.h"
@@ -47,10 +48,11 @@ BenchResult Benchmark::run(const std::vector<std::string>& fens, const BenchConf
   result.version = "FrankyCPP v" + std::to_string(FrankyCPP_VERSION_MAJOR) + "." +
                    std::to_string(FrankyCPP_VERSION_MINOR);
 
-  // Configure hash size via config override
+  // Configure hash size and threads via config override
   ConfigManager::instance().applyOverrides(
     [&](SearchConfigData& s, EvalConfigData&) {
       s.TT_SIZE_MB = config.hashSizeMB;
+      s.THREADS = config.threads;
     });
 
   // Create a search instance (without UCI handler - we don't want UCI output during bench)
@@ -78,12 +80,12 @@ BenchResult Benchmark::run(const std::vector<std::string>& fens, const BenchConf
       position = Position(fen);
     }
     catch (const std::exception& e) {
-      std::cerr << "Skipping invalid FEN [" << positionNum << "]: " << fen << " (" << e.what() << ")\n";
+      LOG__ERROR(Logger::get().APP_LOG, "Skipping invalid FEN [{}]: {} ({})", positionNum, fen, e.what());
       continue;
     }
 
     // Print progress to stderr
-    std::cerr << "\rPosition " << positionNum << "/" << fens.size() << std::flush;
+    std::cout << "\rPosition " << positionNum << "/" << fens.size() << std::flush;
 
     // Clear TT before each position for fair, independent measurement
     // Done BEFORE timing so TT clearing doesn't affect NPS
@@ -114,7 +116,7 @@ BenchResult Benchmark::run(const std::vector<std::string>& fens, const BenchConf
                  static_cast<double>(result.totalTime.count());
   }
 
-  std::cerr << "\n";  // New line after progress indicator
+  std::cout << "\n";  // New line after progress indicator
 
   return result;
 }
@@ -123,7 +125,7 @@ void Benchmark::printResults(const BenchResult& result) {
   const double totalTimeSec = static_cast<double>(result.totalTime.count()) / 1000.0;
   const auto npsInt = static_cast<uint64_t>(result.nps);
 
-  std::cerr << std::format(deLocale,
+  std::cout << std::format(deLocale,
     "\n"
     "===================================\n"
     "FrankyCPP Benchmark Results    \n"

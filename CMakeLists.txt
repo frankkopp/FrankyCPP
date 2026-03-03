@@ -6,7 +6,7 @@ message(STATUS "================================================================
 cmake_minimum_required(VERSION 3.16)
 
 # Project name and version
-project(FrankyCPP VERSION 1.3.0)
+project(FrankyCPP VERSION 1.4.0)
 message(STATUS "FrankyCPP v${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
 
 # Enforce C++20 globally so all targets (including FetchContent deps) see the right standard
@@ -20,6 +20,8 @@ set(BUILD_SHARED_LIBS OFF)
 option(STRICT_WARNINGS "Treat all warnings as errors" OFF)
 # Debug-only sanitizers (ASan/UBSan where supported)
 option(ENABLE_SANITIZERS "Enable Address/Undefined sanitizers in Debug builds" OFF)
+# ThreadSanitizer for detecting data races (Linux/Clang/GCC only, mutually exclusive with ASAN)
+option(ENABLE_TSAN "Enable ThreadSanitizer (Linux only, incompatible with ASAN)" OFF)
 
 # updates template file and replaces placeholder variables
 configure_file(src/version.h.in version.h)
@@ -32,18 +34,51 @@ option(FRANKYCPP_BUILD_TESTS "Build unit tests" ON)
 option(FRANKYCPP_BUILD_BENCHMARKS "Build benchmarks" ON)
 option(FRANKYCPP_USE_PCH "Enable precompiled headers" ON)
 option(ENABLE_UNITY_BUILD "Enable Unity/Jumbo builds" OFF)
+option(FRANKYCPP_PRODUCTION "Production build: freeze non-essential configs as static constexpr" OFF)
+
+if(ENABLE_SANITIZERS AND ENABLE_TSAN)
+    message(FATAL_ERROR "ENABLE_SANITIZERS (ASan) and ENABLE_TSAN cannot be used together. They are mutually exclusive.")
+endif()
 
 if(ENABLE_SANITIZERS)
     if(MSVC)
-        message(STATUS "Sanitizers enabled (MSVC): AddressSanitizer in Debug")
-        add_compile_options($<$<CONFIG:Debug>:/fsanitize=address>)
-        add_link_options($<$<CONFIG:Debug>:/fsanitize=address>)
+        message(STATUS "Sanitizers enabled (MSVC): AddressSanitizer")
+        # MSVC ASan works in all build types but is most useful in Debug/RelWithDebInfo
+        add_compile_options(/fsanitize=address)
+        # Disable STL container annotations to avoid mismatch with vcpkg pre-built libs
+        # (vcpkg libs are built without ASAN, so annotate_string/annotate_vector must match)
+        add_compile_definitions(_DISABLE_STRING_ANNOTATION _DISABLE_VECTOR_ANNOTATION)
+        # Disable incremental linking (incompatible with ASan)
+        add_link_options(/INCREMENTAL:NO)
+        # Note: /fsanitize=address is a compile-only flag on MSVC, not a linker flag
     elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
-        message(STATUS "Sanitizers enabled: AddressSanitizer/UndefinedBehaviorSanitizer in Debug")
-        add_compile_options($<$<CONFIG:Debug>:-fsanitize=address,undefined -fno-omit-frame-pointer>)
-        add_link_options($<$<CONFIG:Debug>:-fsanitize=address,undefined>)
+        message(STATUS "Sanitizers enabled: AddressSanitizer/UndefinedBehaviorSanitizer")
+        add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer -g)
+        add_link_options(-fsanitize=address,undefined)
     else()
         message(WARNING "ENABLE_SANITIZERS is ON but compiler is not recognized for sanitizer support")
+    endif()
+endif()
+
+if(ENABLE_TSAN)
+    if(MSVC)
+        message(FATAL_ERROR "ThreadSanitizer (TSAN) is not supported by MSVC. Use WSL/Linux with GCC or Clang.")
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+        message(STATUS "ThreadSanitizer (TSAN) enabled for data race detection")
+        # -Wno-tsan suppresses warnings about atomic_thread_fence not being fully supported
+        # (common in Boost.Asio - these are typically false positives)
+        add_compile_options(-fsanitize=thread -fno-omit-frame-pointer -g -Wno-tsan)
+        add_link_options(-fsanitize=thread)
+        # TSAN works better with -O1 or -O2 than -O0 (fewer false positives)
+        # We'll let the build type control optimization level
+        message(STATUS "")
+        message(STATUS "NOTE: If running on WSL2, you may need to disable ASLR:")
+        message(STATUS "  sudo sysctl -w kernel.randomize_va_space=0")
+        message(STATUS "Or run the test with:")
+        message(STATUS "  setarch \$(uname -m) -R ./test/FrankyCPP_v1.4_Test")
+        message(STATUS "")
+    else()
+        message(WARNING "ENABLE_TSAN is ON but compiler is not recognized for TSAN support")
     endif()
 endif()
 
@@ -327,6 +362,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     endif()
 
     # Base flags: C++20, warnings, CPU features
+    # Note: -Wno-missing-field-initializers and -Wno-class-memaccess suppresses noise
     set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wpedantic -march=native -mpopcnt -mbmi2")
 
     # Per-config optimization flags
@@ -421,7 +457,9 @@ message(STATUS "  Build Benchmarks: ${FRANKYCPP_BUILD_BENCHMARKS}")
 message(STATUS "  Use PCH:          ${FRANKYCPP_USE_PCH}")
 message(STATUS "  Unity Build:      ${ENABLE_UNITY_BUILD}")
 message(STATUS "  Strict Warnings:  ${STRICT_WARNINGS}")
-message(STATUS "  Sanitizers:       ${ENABLE_SANITIZERS}")
+message(STATUS "  ASan/UBSan:       ${ENABLE_SANITIZERS}")
+message(STATUS "  ThreadSanitizer:  ${ENABLE_TSAN}")
+message(STATUS "  Production Mode:  ${FRANKYCPP_PRODUCTION}")
 if(DEFINED ENABLE_STD_EXECUTION)
     message(STATUS "  std::execution:   ${ENABLE_STD_EXECUTION}")
 endif()

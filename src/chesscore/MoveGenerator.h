@@ -124,7 +124,7 @@ class MoveGenerator {
   Move pvMove          = MOVE_NONE;
   bool pvMovePush    = false;
   std::array<Move, 2> killerMoves  = {MOVE_NONE, MOVE_NONE};
-  History* historyData = nullptr;
+  History* historyDataPtr = nullptr;
 
 public:
   /// Creates a new MoveGenerator instance.
@@ -217,7 +217,7 @@ public:
     currentODStage         = OD_NEW;
     currentODZobrist       = 0;
     pvMove                 = MOVE_NONE;
-    pvMovePush           = false;
+    pvMovePush             = false;
     takeIndex              = 0;
   }
 

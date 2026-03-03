@@ -84,16 +84,17 @@
 //   search.startSearch(position, limits);
 //   search.waitWhileSearching();
 //   SearchResult result = search.getLastSearchResult();
-//
+//ta
 //=============================================================================
 
+#include "PawnTT.h"
 #include "PVTable.h"
 #include "PlyInfo.h"
 #include "SearchLimits.h"
 #include "SearchResult.h"
 #include "SearchStats.h"
+#include "SearchThreadData.h"
 #include "TT.h"
-#include "chesscore/History.h"
 #include "chesscore/Position.h"
 #include "engine/UciHandler.h"
 #include "openingbook/OpeningBook.h"
@@ -104,7 +105,7 @@
 #include "config/ConfigManager.h"
 
 #include <atomic>
-#include <cmath>
+#include <mutex>
 #include <optional>
 #include <semaphore>
 #include <thread>
@@ -143,8 +144,12 @@ class Search {
 
   std::unique_ptr<OpeningBook> book;
   std::unique_ptr<TT> tt;
-  std::unique_ptr<Evaluator> evaluator;
+  std::unique_ptr<PawnTT> pawnTT;  // Shared pawn cache for all threads
   std::unique_ptr<tablebase::Tablebase> syzygy_tb;// Syzygy tablebase instance
+
+  // MoveGenerator for PV extraction (reused to avoid allocation per call)
+  // Mutable because validateMove() modifies internal lists but not observable state
+  mutable MoveGenerator pvMoveGenerator{};
 
   // TB root probe result (when TB_ROOT_IMMEDIATE=false, used to guide search)
   Move tbRootMove{MOVE_NONE};                                // Best move from TB at root
@@ -152,19 +157,19 @@ class Search {
   tablebase::TBResult tbRootWdl{tablebase::TBResult::Failed};// WDL result for filtering
   int tbRootDtz{0};                                          // DTZ value for scoring
 
-  // history heuristics
-  History history{};
-
   // result of previous search (empty until first search completes)
   std::optional<SearchResult> lastSearchResult{};
 
   // current position and search limits for the search
   Position position{};
   SearchLimits searchLimits{};
-  MoveList rootMoves{};
 
   // manage running search
   std::atomic_bool stopSearchFlag = false;
+
+  // Condition variable for efficient waiting when search finishes before stop/ponderhit
+  std::condition_variable stopConditionVar{};
+  std::mutex stopMutex{};
 
   // time management for the search
   TimePoint startTime{};    // when startSearch has been called
@@ -172,6 +177,10 @@ class Search {
   milliseconds timeLimit{};
   std::atomic<int64_t> extraTimeMs{0};
   std::thread timerThread{};
+  mutable std::mutex timerMutex{};// protects timerThread access from multiple threads
+
+  // Atomic flag to indicate search result is ready (avoids race on lastSearchResult)
+  std::atomic<bool> resultReady{false};
 
   // best-move instability tracking for dynamic time management
   BestMoveStability bestMoveStability{};
@@ -183,69 +192,47 @@ class Search {
   uint64_t npsTime{};
   uint64_t npsNodes{};
 
-  // UCI relevant statistics
-  uint64_t nodesVisited{};
-
-  // Statistics
-  SearchStats statistics{};
-
-  // ply related data
-  // Triangular PV table for efficient PV storage (64KB, zero heap allocations)
-  PVTable pv;
-
-  // Per-ply search state - unified struct for all ply-specific data
-  // Each PlyInfo owns its MoveGenerators via unique_ptr (heap-allocated)
-  std::array<PlyInfo, DEPTH_MAX + 1> plyStack{};
-
   // to mark the last move was a book move
   bool hadBookMove = false;
 
   // reference to the Search Config Data
   const SearchConfigData& SearchConfig;
 
-  // LMR reduction table pre-computed for depth 0..31 and moves searched 0..63
-  // Linear formula: 1 + round(depth * movesSearched * 0.0035)
-  static constexpr int lmr_reduction_linear(const int depth, const int movesSearched) noexcept {
-    // exact integer rounding of 35/10000
-    return 1 + (depth * movesSearched * 35 + 5000) / 10000;
-  }
+  // ===========================================================================
+  /// LazySMP per-thread search state (main thread + helpers)
 
-  // Logarithmic formula: log(depth) * log(moves) / divisor
-  // This provides more gradual reductions that scale better at higher depths
-  static int lmr_reduction_log(const int depth, const int movesSearched, const double divisor) noexcept {
-    if (depth <= 1 || movesSearched <= 1) return 1;
-    return static_cast<int>(std::lround(std::log(depth) * std::log(movesSearched) / divisor));
-  }
+  // Thread 0 is the main thread. Helper threads will be indices [1..N-1].
+  std::vector<std::unique_ptr<SearchThreadData>> searchThreadData{};
 
-  // LMR table - regenerated at search start based on config
-  std::array<std::array<int, 64>, 32> LMR_REDUCTION{};
+  // Helper thread handles - empty when numHelperThreads == 0 (single-threaded)
+  std::vector<std::thread> helperThreads{};
 
-  // Regenerates the LMR table based on current config settings
-  void regenerateLmrTable() {
-    if (SearchConfig.LMR_USE_LOG_FORMULA) {
-      const double divisor = SearchConfig.LMR_LOG_BASE_DIV;
-      for (std::size_t d = 0; d < 32; ++d) {
-        for (std::size_t m = 0; m < 64; ++m) {
-          LMR_REDUCTION[d][m] = lmr_reduction_log(static_cast<int>(d), static_cast<int>(m), divisor);
-        }
-      }
-    }
-    else {
-      for (std::size_t d = 0; d < 32; ++d) {
-        for (std::size_t m = 0; m < 64; ++m) {
-          LMR_REDUCTION[d][m] = lmr_reduction_linear(static_cast<int>(d), static_cast<int>(m));
-        }
-      }
-    }
-  }
+  // Number of helper threads (0 = single-threaded, N = N helpers + 1 main)
+  // Set from SearchConfig.THREADS - 1 before search starts
+  int numHelperThreads = 0;
 
-  FRIEND_TEST(SearchTest, lmrReductionTableTest);
-  FRIEND_TEST(SearchTest, lmrReductionTablePrint);
+  // Flag to track if helper threads have been launched for current search.
+  // Helpers are launched after main thread completes SMP_HELPER_START_DEPTH iterations
+  // to allow TT priming before helpers start contributing.
+  bool helpersLaunched = false;
+
+  // Thread-local pointer to current thread's SearchThreadData.
+  // Set by run() for main thread, launchHelperThreads() lambda for helpers.
+  // Enables search functions to access thread-local state without parameter passing.
+  static inline thread_local SearchThreadData* currentThreadData = nullptr;
+
+  // ===========================================================================
 
 public:
-  /// Node type for PVS: PV nodes search full window, NonPV nodes try zero window first.
-  enum Node_Type : bool { NonPV = false,
-                          PV    = true };
+  /// Node type classification for alpha-beta search.
+  /// - PvNode: Principal Variation node, full window (alpha, beta), expected exact score
+  /// - CutNode: Expected to fail high (beta cutoff), null window search
+  /// - AllNode: Expected to fail low (no move raises alpha), null window search
+  enum NodeType : uint8_t {
+    PvNode,   // Principal Variation node (full window)
+    CutNode,  // Expected fail-high node (null window)
+    AllNode   // Expected fail-low node (null window)
+  };
 
   /// Controls whether null-move pruning is allowed at this ply.
   /// Disabled to avoid recursive null-move searches.
@@ -285,7 +272,7 @@ public:
   /// Starts an asynchronous search in a separate thread.
   /// @param p   Position to search
   /// @param sl  Search limits (time, depth, nodes, etc.)
-  void startSearch(const Position& p, SearchLimits sl);
+  void startSearch(const Position& p, const SearchLimits& sl);
 
   /// Stops a running search gracefully, returning the best move found so far.
   void stopSearch();
@@ -302,7 +289,7 @@ public:
 
   /// Returns the principal variation from the current/last search.
   /// @return The PV move list (extracted from triangular table)
-  [[nodiscard]] MoveList getPV() const { return pv.extract(); }
+  MoveList getPV() const { return mainThread().pv.extract(); }
 
   /// Clears the transposition table.
   void clearTT() const;
@@ -312,7 +299,36 @@ public:
 
   /// Returns the search statistics from the last search.
   /// @return Reference to SearchStats
-  const SearchStats& getSearchStats() const { return statistics; };
+  const SearchStats& getSearchStats() const { return mainThread().statistics; };
+
+  /// Returns the main search thread state.
+  /// Thread 0 is always the main thread; helper threads are indices [1..N-1].
+  /// @return Reference to main SearchThreadData
+  SearchThreadData& mainThread() { return *searchThreadData[0]; }
+
+  /// Const version of mainThread() for read-only access to main thread state.
+  /// @return Const reference to main SearchThreadData
+  const SearchThreadData& mainThread() const { return *searchThreadData[0]; }
+
+  /// Returns the total node count aggregated across all search threads.
+  /// Used for UCI reporting (info nodes).
+  /// @return Sum of nodesVisited from all SearchThreadData instances
+  [[nodiscard]] uint64_t getTotalNodes() const;
+
+  /// Returns the current thread's SearchThreadData.
+  /// Uses thread-local storage set by run() or launchHelperThreads().
+  /// Must only be called from within a search context (after currentThreadData is set).
+  /// @return Reference to current thread's SearchThreadData
+  static SearchThreadData& thread() {
+    assert(currentThreadData != nullptr && "thread() called outside of search context");
+    // ReSharper disable once CppDFANullDereference
+    return *currentThreadData;
+  }
+
+  /// Returns true if the current thread is the main thread (thread ID 0).
+  /// Used to guard main-thread-only logic (UCI output, time management, TB probing).
+  /// @return True if current thread is main thread
+  [[nodiscard]] static bool isMainThread() { return thread().id == 0; }
 
   /// Returns the result of the last completed search.
   /// @return Reference to SearchResult (undefined behavior if no search completed)
@@ -320,8 +336,9 @@ public:
   const SearchResult& getLastSearchResult() const { return *lastSearchResult; };
 
   /// Checks if a search result is available.
+  /// Thread-safe: uses atomic flag to avoid race with search thread.
   /// @return True if result is ready
-  [[nodiscard]] bool hasResult() const { return lastSearchResult.has_value(); }
+  [[nodiscard]] bool hasResult() const { return resultReady.load(std::memory_order_acquire); }
 
   /// Formats detailed search statistics as a string for debugging/logging.
   /// Static version that takes result and stats as parameters.
@@ -372,6 +389,13 @@ private:
   /// and sends result to UCI.
   void run();
 
+  /// Launches helper threads for Lazy SMP.
+  /// Called from iterativeDeepening() after main thread has completed a few iterations
+  /// to allow TT priming before helpers start contributing.
+  /// Helpers run full iterativeDeepening() with guards for main-thread-only logic.
+  /// No-op if helpers already launched or numHelperThreads == 0.
+  void launchHelperThreads();
+
   /// Performs iterative deepening search, incrementing depth until time expires.
   /// @param p  Position to search
   /// @return   Search result with best move and score
@@ -394,25 +418,25 @@ private:
 
   /// Recursive alpha-beta search for non-root plies (ply > 0).
   /// Handles all major pruning techniques.
-  /// @param p       Position to search
-  /// @param depth   Remaining depth
-  /// @param ply     Current ply from root
-  /// @param alpha   Alpha bound
-  /// @param beta    Beta bound
-  /// @param isPvNode    Whether this is a PV node
-  /// @param doNull  Whether null-move pruning is allowed
-  /// @return        Search value
-  Value search(Position& p, Depth depth, Depth ply, Value alpha, Value beta, Node_Type isPvNode, Do_Null doNull);
+  /// @param p        Position to search
+  /// @param depth    Remaining depth
+  /// @param ply      Current ply from root
+  /// @param alpha    Alpha bound
+  /// @param beta     Beta bound
+  /// @param nodeType Node type: PvNode (full window), CutNode (expect fail-high), AllNode (expect fail-low)
+  /// @param doNull   Whether null-move pruning is allowed
+  /// @return         Search value
+  Value search(Position& p, Depth depth, Depth ply, Value alpha, Value beta, NodeType nodeType, Do_Null doNull);
 
   /// Quiescence search to resolve tactical sequences at leaf nodes.
   /// Only searches captures, promotions, and checks.
-  /// @param p      Position to search
-  /// @param ply    Current ply from root
-  /// @param alpha  Alpha bound
-  /// @param beta   Beta bound
-  /// @param isPvNode   Whether this is a PV node
+  /// @param p        Position to search
+  /// @param ply      Current ply from root
+  /// @param alpha    Alpha bound
+  /// @param beta     Beta bound
+  /// @param nodeType Node type: PvNode or non-PV (AllNode/CutNode treated same in qsearch)
   /// @return       Quiescence value
-  Value qsearch(Position& p, Depth ply, Value alpha, Value beta, Node_Type isPvNode);
+  Value qsearch(Position& p, Depth ply, Value alpha, Value beta, NodeType nodeType);
 
   /// Evaluates a quiet position using the Evaluator.
   /// @param p  Position to evaluate
@@ -473,12 +497,17 @@ private:
   /// @param f  Factor: 1.0 = no change, 0.9 = -10%, 1.1 = +10%
   void addExtraTime(double f);
   FRIEND_TEST(SearchTest, extraTime);
+  FRIEND_TEST(SearchTest, extraTimeCap);
 
   /// Checks if time is almost exhausted (soft guard for re-searches).
   /// @return True if remaining time is below safety margin
   bool isTimeAlmostUp() const;
 
   /// Starts timer thread that monitors time limit and sets stop flag.
+  /// This does not set the startSearchTime - it only starts the timer thread that
+  /// will monitor the time and set the stop flag when time is up. The actual
+  /// startSearchTime is set in run() when the search thread starts, to ensure
+  /// accurate timing from the moment search begins (after ponderhit).
   void startTimer();
   FRIEND_TEST(SearchTest, startTimer);
 
@@ -518,13 +547,13 @@ private:
 
   /// Sends aspiration window research info to UCI.
   /// @param boundString  Bound type ("upperbound" or "lowerbound")
-  void sendAspirationResearchInfo(const std::string& boundString);
+  void sendAspirationResearchInfo(const std::string& boundString) const;
 
   /// Extracts PV from triangular table, extending it using TT lookups.
   /// This ensures full PV lines are available even after TT cutoffs.
   /// @param p  Position to use for TT probing (will be modified and restored)
   /// @return   Extended PV as MoveList
-  MoveList extractPvWithTT(Position& p);
+  MoveList extractPvWithTT(Position& p) const;
 };
 
 #endif// FRANKYCPP_SEARCH_H

@@ -30,7 +30,8 @@
 #include <algorithm>
 
 std::ostream& operator<<(std::ostream& os, const TT::Entry& entry) {
-  os << "key: " << entry.key << " depth: " << static_cast<int>(entry.depth)
+  os << "key: " << entry.key.load(std::memory_order_relaxed)
+     << " depth: " << static_cast<int>(entry.depth)
      << " move: " << entry.move << " value: " << entry.value
      << " type: " << TT::str(entry.type) << " age: " << static_cast<int>(entry.age);
   return os;
@@ -98,7 +99,7 @@ void TT::clear() {
    _data.get(),
    _data.get() + maxNumberOfEntries,
    [](Entry& e) {
-     e.key   = 0;
+     e.key.store(0, std::memory_order_relaxed);
      e.move  = 0; // MOVE_NONE as 16-bit
      e.depth = DEPTH_NONE;
      e.value = VALUE_NONE;
@@ -131,34 +132,41 @@ void TT::put(const ZobristKey key, const Depth depth, const Move move, const Val
 
   numberOfPuts++;
 
+  // Read the current key with relaxed order - we only need its value, not synchronization here.
+  // The release store below (when we write a new key) provides the ordering guarantee for readers.
+  const ZobristKey entryKey = entry->key.load(std::memory_order_relaxed);
+
   // New entry slot
-  if (entry->key == 0) {
+  if (entryKey == 0) {
     numberOfEntries++;
-    entry->key   = key;
+    // Write non-key fields first, then publish via release store on key.
+    // Any thread that loads key with acquire will see all prior writes.
     entry->move  = static_cast<uint16_t>(move);
     entry->depth = depth;
     entry->value = value;
     entry->type  = type;
     entry->age   = 1;
     entry->eval  = eval;
+    entry->key.store(key, std::memory_order_release);
     return;
   }
 
   // Different position colliding in the same slot
-  if (entry->key != key) {
+  if (entryKey != key) {
     numberOfCollisions++;
     // overwrite if
     // - the new entry's depth is higher
     // - the new entry's depth is same and the previous entry has not been used (is aged)
     if (depth > entry->depth || (depth == entry->depth && entry->age > 0)) {
       numberOfOverwrites++;
-      entry->key   = key;
+      // Write non-key fields first, then publish via release store on key.
       entry->move  = static_cast<uint16_t>(move);
       entry->depth = depth;
       entry->value = value;
       entry->type  = type;
       entry->age   = 1;
       entry->eval  = eval;
+      entry->key.store(key, std::memory_order_release);
     }
     return;
   }
@@ -180,21 +188,33 @@ void TT::put(const ZobristKey key, const Depth depth, const Move move, const Val
   if (eval != VALUE_NONE) {
     entry->eval = eval;
   }
+  // Note: no key re-store needed here - key is unchanged (same position update)
 
-  assert(numberOfPuts == (numberOfEntries + numberOfCollisions + numberOfUpdates));
+  // Statistics counters are non-atomic - under SMP they will be approximate but
+  // that is acceptable (diagnostics only, no effect on correctness).
+  // Assert is skipped under SMP since counters will not sum correctly.
+  assert(numSmpThreads > 1 || numberOfPuts == (numberOfEntries + numberOfCollisions + numberOfUpdates));
 }
 
 // ReSharper disable once CppMemberFunctionMayBeConst
 const TT::Entry* TT::probe(const ZobristKey& key) {
   numberOfProbes++;
-  Entry* ttEntryPtr = getEntryPtr(key);
-  if (ttEntryPtr->key == key) {
-    numberOfHits++;// entries with identical keys found
-    if (ttEntryPtr->age)
-      ttEntryPtr->age--;// mark the entry as used
+  const Entry* ttEntryPtr = getEntryPtrConst(key);
+  // Acquire load: if key matches, all non-key fields written before the release
+  // store in put() are guaranteed visible to this thread.
+  if (ttEntryPtr->key.load(std::memory_order_acquire) == key) {
+    numberOfHits++;
+    // age-- marks the entry as recently used, making it less likely to be evicted
+    // by a same-depth collision in put(). Safe in single-thread mode.
+    // Skipped under SMP (numSmpThreads > 1): age is a bitfield packed in the same
+    // byte as depth/type; a concurrent put() writing that byte is a data race.
+    if (numSmpThreads <= 1) {
+      if (const_cast<Entry*>(ttEntryPtr)->age > 0)
+        const_cast<Entry*>(ttEntryPtr)->age--;
+    }
     return ttEntryPtr;
   }
-  numberOfMisses++;// keys not found (not equal to TT misses)
+  numberOfMisses++;
   return nullptr;
 }
 
@@ -207,7 +227,7 @@ void TT::ageEntries() {
     _data.get(),
     _data.get() + maxNumberOfEntries,
     [](Entry& e) {
-      if (e.key == 0) return;
+      if (e.key.load(std::memory_order_relaxed) == 0) return;
       if (e.age < 7) e.age++;
     }
   );

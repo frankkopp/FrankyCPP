@@ -52,6 +52,10 @@
 /// Collects detailed statistics about search behavior for analysis and tuning.
 struct SearchStats {
 
+  // ==========================================================================
+  // ESSENTIAL STATISTICS (Always collected)
+  // ==========================================================================
+
   // === Current Search State ===
 
   /// Current iteration depth in iterative deepening.
@@ -78,14 +82,6 @@ struct SearchStats {
   /// Root move currently being searched.
   Move currentRootMove = MOVE_NONE;
 
-  // === Node Type Counts ===
-
-  /// Number of PV nodes searched (full window).
-  uint64_t pvNodes = 0;
-
-  /// Number of non-PV nodes searched (null window).
-  uint64_t nonPvNodes = 0;
-
   // === Terminal Node Counts ===
 
   /// Number of checkmate positions found.
@@ -94,14 +90,33 @@ struct SearchStats {
   /// Number of stalemate positions found.
   uint64_t stalemates = 0;
 
+  /// Node count for perft (if running perft).
+  uint64_t perftNodeCount = 0;
+
+  // ==========================================================================
+  // NON-ESSENTIAL STATISTICS (Stripped in production builds)
+  // ==========================================================================
+
+  // === Node Type Counts ===
+
+  /// Number of PV nodes searched (full window).
+  uint64_t pvNodes = 0;
+
+  /// Number of non-PV nodes searched (null window).
+  uint64_t nonPvNodes = 0;
+
+  /// Number of main search nodes (depth > 0, excludes qsearch).
+  uint64_t searchNodes = 0;
+
+  /// Number of quiescence search nodes.
+  uint64_t qsearchNodes = 0;
+
   /// Number of leaf positions evaluated (quiescence leaves).
   uint64_t leafPositionsEvaluated = 0;
 
   /// Total evaluation function calls.
   uint64_t evaluations = 0;
 
-  /// Node count for perft (if running perft).
-  uint64_t perftNodeCount = 0;
 
   // === Pruning Statistics ===
 
@@ -160,6 +175,9 @@ struct SearchStats {
   /// Moves found via IID.
   uint64_t iidMoves = 0;
 
+  /// Internal iterative reduction applied (IIR).
+  uint64_t iirReductions = 0;
+
   /// TT moves used for move ordering.
   uint64_t TtMoveUsed = 0;
 
@@ -183,8 +201,25 @@ struct SearchStats {
   /// LMR reductions applied.
   uint64_t lmrReductions = 0;
 
+  /// LMR history adjustments: count of moves where history reduced LMR (good moves).
+  uint64_t lmrHistoryLessReduction = 0;
+
+  /// LMR history: total depth reduction avoided due to positive history (cumulative).
+  int64_t lmrHistoryDepthSaved = 0;
+
+  /// LMR cut node reductions: count of moves where cut node status increased reduction.
+  uint64_t lmrCutNodeReductions = 0;
+
   /// Late move pruning cuts.
   uint64_t lmpCuts = 0;
+
+  // === Improving Flag Statistics ===
+
+  /// Nodes where position is improving (static eval > eval 2 plies ago).
+  uint64_t improvingTrue = 0;
+
+  /// Nodes where position is not improving.
+  uint64_t improvingFalse = 0;
 
   // === Extension Statistics ===
 
@@ -197,6 +232,9 @@ struct SearchStats {
   /// Singular extension searches performed (verification searches).
   uint64_t singularSearches = 0;
 
+  /// Singular extension candidates filtered by ttBound (not BETA/EXACT).
+  uint64_t singularFilteredByBound = 0;
+
   /// Singular extensions applied (TT move proven singular).
   uint64_t singularExtension = 0;
 
@@ -207,6 +245,9 @@ struct SearchStats {
 
   /// Successful tablebase probes at root position.
   uint64_t tbRootHits = 0;
+
+  /// Number of times probeWDL() was called during search (passed all guards).
+  uint64_t tbSearchProbes = 0;
 
   /// Successful tablebase WDL probes during search.
   uint64_t tbSearchHits = 0;
@@ -230,13 +271,18 @@ struct SearchStats {
     os.imbue(deLocale);
     // PV vs non-PV node statistics
     const uint64_t totalNodes = stats.pvNodes + stats.nonPvNodes;
+#ifdef FRANKYCPP_PRODUCTION
+    os << "(stripped) ";
+#endif
     os << "pvNodes: " << stats.pvNodes;
     if (totalNodes > 0) {
       const double pvPct = 100.0 * static_cast<double>(stats.pvNodes) / static_cast<double>(totalNodes);
       os << " (" << std::fixed << std::setprecision(2) << pvPct << "%)";
     }
-    os << " nonPvNodes: " << stats.nonPvNodes
-       << " checkmates: " << stats.checkmates
+     os << " nonPvNodes: " << stats.nonPvNodes
+        << " searchNodes: " << stats.searchNodes
+        << " qsearchNodes: " << stats.qsearchNodes
+        << " checkmates: " << stats.checkmates
        << " stalemates: " << stats.stalemates
        << " perft: " << stats.perftNodeCount
        << " leafPositionsEvaluated: " << stats.leafPositionsEvaluated
@@ -266,7 +312,12 @@ struct SearchStats {
        << " fp_prunings: " << stats.fpPrunings
        << " qfp_prunings: " << stats.qfpPrunings
        << " lmrReductions: " << stats.lmrReductions
+       << " lmrCutNode: " << stats.lmrCutNodeReductions
+       << " lmrHistLess: " << stats.lmrHistoryLessReduction
+       << " lmrHistDepthSaved: " << stats.lmrHistoryDepthSaved
        << " lmrResearches: " << stats.lmrResearches
+       << " improvingTrue: " << stats.improvingTrue
+       << " improvingFalse: " << stats.improvingFalse
        << " check ext: " << stats.checkExtension
        << " threat ext: " << stats.threatExtension
        << " singular searches: " << stats.singularSearches
@@ -279,11 +330,13 @@ struct SearchStats {
        << " TtMoveUsed: " << stats.TtMoveUsed
        << " NoTtMove: " << stats.NoTtMove
        << " tbRootHits: " << stats.tbRootHits
+       << " tbSearchProbes: " << stats.tbSearchProbes
        << " tbSearchHits: " << stats.tbSearchHits
        << " tbSearchMisses: " << stats.tbSearchMisses
        << " tbSearchCutoffs: " << stats.tbSearchCutoffs
        << " IID Searches: " << stats.iidSearches
-       << " IID Moves: " << stats.iidMoves;
+       << " IID Moves: " << stats.iidMoves
+       << " IIR Reductions: " << stats.iirReductions;
     return os;
   }
 };

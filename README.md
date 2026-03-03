@@ -33,7 +33,7 @@ Modern C++20 UCI Chess Engine
 ./build_wsl.sh release gcc
 ```
 
-See **[docs/BUILD_GUIDE.md](docs/BUILD_GUIDE.md)** for complete instructions.
+See **[docs/BUILD_GUIDE.md](docs/Build_Guide.md)** for complete instructions.
 
 ---
 
@@ -105,7 +105,7 @@ FrankyCPP --testsuite file.epd --tsTime 1000    # Run test suite
 
 ## Build
 
-**📖 For comprehensive build instructions, see [docs/BUILD_GUIDE.md](docs/BUILD_GUIDE.md)**
+**📖 For comprehensive build instructions, see [docs/BUILD_GUIDE.md](docs/Build_Guide.md)**
 
 ### Platform Support
 

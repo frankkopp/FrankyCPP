@@ -7,7 +7,7 @@ Quick reference to all project documentation.
 ## Getting Started
 
 
-### 🚀 [BUILD_GUIDE.md](BUILD_GUIDE.md)
+### 🚀 [Build_Guide.md](Build_Guide.md)
 **Comprehensive build instructions for all platforms**
 - Windows (MSVC 2022)
 - Linux/WSL with GCC 13
@@ -209,7 +209,7 @@ Quick reference to all project documentation.
 
 | Topic                      | Document                                  |
 |----------------------------|-------------------------------------------|
-| **First-time setup**       | BUILD_GUIDE.md                            |
+| **First-time setup**       | Build_Guide.md                            |
 | **Architecture overview**  | Architecture.md                           |
 | **Project status**         | FrankyCPP_Codebase_Review.md              |
 | **v1.x Enhancement plan**  | specs/V1_ENGINE_ENHANCEMENT_PLAN.md       |

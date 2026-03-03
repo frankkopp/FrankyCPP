@@ -28,6 +28,7 @@
 #include <enginetest/TestSuite.h>
 #include <tablebase/TablebaseDownloader.h>
 #include <tablebase/TablebasePaths.h>
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 
@@ -43,6 +44,9 @@ int main(int argc, char* argv[]) {
 
   // Version comes from CMAKE template version.h.in
   std::string appName = "FrankyCPP";
+#ifdef FRANKYCPP_PRODUCTION
+  appName.append( " (stripped)" );
+#endif
   appName
     .append(" v")
     .append(std::to_string(FrankyCPP_VERSION_MAJOR))
@@ -83,8 +87,10 @@ int main(int argc, char* argv[]) {
       ("onDemand", po::value<bool>(&perftOnDemand)->default_value(false), "use on demand move generation for perft test")
       // Benchmark options
       ("bench", "run benchmark to measure NPS")
-      ("benchDepth", po::value<int>()->default_value(10), "search depth for benchmark (1-127)")
+      ("benchDepth", po::value<int>()->default_value(12), "search depth for benchmark (1-127)")
       ("benchHash", po::value<int>()->default_value(128), "hash size in MB for benchmark (1-65536)")
+      // Search thread options
+      ("threads", po::value<int>()->default_value(0), "number of search threads (1-64, 0=use config default)")
       // Testsuite options
       ("testsuite", po::value<std::string>(&testsuite_file), "run testsuite in given file")
       ("tsDepth", po::value<int>(&testsuite_depth)->default_value(0), "max search depth per test in testsuite")
@@ -226,6 +232,14 @@ int main(int argc, char* argv[]) {
       }
     }
 
+    // Search threads configuration
+    const int threadsArg = programOptions["threads"].as<int>();
+    if (threadsArg > 0) {
+      const int clampedThreads = std::clamp(threadsArg, 1, 64);
+      CONFIG_OVERRIDE(s.THREADS = clampedThreads;);
+      LOG__INFO(Logger::get().APP_LOG, "Search threads set to {} via command line.", clampedThreads);
+    }
+
     // Testsuite run from cmd line
     if (programOptions.contains("testsuite")) {
       init::init();
@@ -275,10 +289,12 @@ int main(int argc, char* argv[]) {
       std::cout << "Version: " << appName << "\n";
       std::cout << "Depth:   " << benchDepth << "\n";
       std::cout << "Hash:    " << benchHash << " MB\n";
+      std::cout << "Threads: " << SEARCH_CONFIG.THREADS << "\n";
       std::cout << std::endl;
       engine::BenchConfig benchConfig;
       benchConfig.depth = benchDepth;
       benchConfig.hashSizeMB = benchHash;
+      benchConfig.threads = SEARCH_CONFIG.THREADS;
       const auto result = engine::Benchmark::run(benchConfig);
       engine::Benchmark::printResults(result);
       return 0;

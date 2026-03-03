@@ -26,7 +26,9 @@
 #include "types/types.h"
 
 #include "config/ConfigManager.h"
+#include "config/ConfigMode.h"
 #include <engine/Evaluator.h>
+#include <engine/PawnTT.h>
 #include <gtest/gtest.h>
 
 #include <chrono>
@@ -42,6 +44,9 @@ auto& cm = ConfigManager::instance(); // Bind cm to ConfigManager singleton by r
 
 // centralize test eval config: set all USE_* flags
 // to the given onoff value
+// In production, all eval USE_* flags are CONFIG_CONST (static constexpr) — cannot be set at runtime.
+// The function and all tests that call it are excluded from production builds.
+#ifndef FRANKYCPP_PRODUCTION
 void set_eval_config(const bool onoff) {
   // Values taken from src/engine/EvalConfig.h
   cm.applyOverrides([&](auto&, EvalConfigData& e) {
@@ -66,6 +71,7 @@ void set_eval_config(const bool onoff) {
     e.USE_BISHOP_PAIR_BONUS    = onoff;
   });
 }
+#endif // FRANKYCPP_PRODUCTION
 
 class EvaluatorTest : public testing::Test {
 public:
@@ -93,6 +99,10 @@ TEST_F(EvaluatorTest, testFens) {
     fprintln("Value: {:<6} GPF: {:<20}  Fen: {}", std::to_string(v), p.getGamePhaseFactor(), f);
   }
 }
+
+// All tests below modify non-essential CONFIG_CONST eval flags at runtime.
+// In production builds, these are frozen static constexpr — excluded from production.
+#ifndef FRANKYCPP_PRODUCTION
 
 // New test: ensure evaluation with only MATERIAL equals material difference from side to move
 TEST_F(EvaluatorTest, EvaluateMaterialOnly) {
@@ -511,7 +521,20 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
   positions.reserve(allFens.size());
   for (const auto& f : allFens) positions.emplace_back(f.c_str());
 
+  // Create shared PawnTT and per-thread Evaluator
+  PawnTT pawnTT{static_cast<uint64_t>(cm.eval().PAWN_TT_SIZE_MB)};
   Evaluator evaluator{};
+  evaluator.setPawnTT(&pawnTT);
+
+  // Helper to update PawnTT when config changes
+  auto updatePawnTT = [&]() {
+    const auto& evalCfg = cm.eval();
+    if (evalCfg.USE_PAWN_TT && evalCfg.PAWN_TT_SIZE_MB > 0) {
+      pawnTT.resize(static_cast<uint64_t>(evalCfg.PAWN_TT_SIZE_MB));
+    } else {
+      pawnTT.resize(0);
+    }
+  };
 
   // Timing parameters: keep modest to avoid long test duration
   constexpr int repeats    = 5;    // take best-of 'repeats' to reduce noise
@@ -691,8 +714,8 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
   bool first           = true;
   for (const auto& [label, apply] : cases) {
     apply();
-    // Ensure Evaluator adapts to changed config (e.g., PAWN_TT size/toggle)
-    evaluator.onEvalConfigChanged();
+    // Ensure PawnTT adapts to changed config (e.g., PAWN_TT size/toggle)
+    updatePawnTT();
     const uint64_t ns     = best_of_n(iterations);
     const bool isBaseline = first;
     if (first) {
@@ -702,3 +725,5 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
     print_result(label, ns, isBaseline ? 0 : baseline_ns);
   }
 }
+
+#endif // FRANKYCPP_PRODUCTION

@@ -134,6 +134,7 @@ public:
   /// For positions near the 50-move limit, use probeRoot, which respects halfmove clock.
   /// @param pos  Position to probe
   /// @return WDL result or Failed if probe unsuccessful
+  /// @attention canProbe(pos) should be called first to check if probing is possible for the position
   [[nodiscard]] TBResult probeWDL(const Position& pos) const;
 
   /// Probe WDL and DTZ with best move (slower, suitable for root).
@@ -147,6 +148,12 @@ public:
   /// @param pos  Position to check
   /// @return true if position is probeable
   [[nodiscard]] bool canProbe(const Position& pos) const;
+
+  /// Pre-warm OS file cache by probing representative endgame positions.
+  /// Call once at startup after tablebase initialization to reduce latency
+  /// on first in-game probes. Forces OS to load TB files into page cache.
+  /// @param maxPieces Maximum piece count to warm (3 to maxPieces_)
+  void prewarmCache(int maxPieces = 5) const;
 
   /// Convert TBResult and DTZ to centipawn value for search scoring.
   /// Uses DTZ to prefer shorter wins (smaller DTZ = higher score).

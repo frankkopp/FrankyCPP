@@ -97,6 +97,7 @@ namespace {
   }
 
   // Description: Checks that malformed YAML at default paths causes loadFromFiles to return false and roll back to the prior state.
+#ifndef FRANKYCPP_PRODUCTION // In production, only essential config mutations (MOVE_OVERHEAD_MS) can be verified, so this test is dev-only.
   TEST(ConfigAutoInitTests, DefaultPathsMalformedRollsBackAndReturnsFalse) {
     // Prepare temp directory with malformed YAML files in ./config
     const auto tmp = makeTempDir("malformed");
@@ -129,8 +130,10 @@ namespace {
     EXPECT_EQ(mgr.search().MOVE_OVERHEAD_MS, 77);
     EXPECT_EQ(mgr.eval().TEMPO, 66);
   }
+#endif
 
   // Description: Ensures resetToDefaults restores values captured at initial auto-load, even after loads in other directories.
+#ifndef FRANKYCPP_PRODUCTION // In production, only essential config mutations (MOVE_OVERHEAD_MS) can be verified, so this test is dev-only.
   TEST(ConfigAutoInitTests, ResetReturnsToInitiallyLoadedDefaults) {
     // Ensure we have repo YAML configs in current dir
     ASSERT_TRUE(std::filesystem::exists(ConfigPaths::SearchYaml()));
@@ -166,5 +169,6 @@ namespace {
     EXPECT_EQ(mgr.search().TT_SIZE_MB, 64);
     EXPECT_EQ(mgr.eval().TEMPO, 34);
   }
+#endif
 
 }// namespace

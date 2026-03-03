@@ -67,6 +67,17 @@ struct PlyInfo {
       : mg(std::make_unique<MoveGenerator>()),
         mgSingular(std::make_unique<MoveGenerator>()) {}
 
+  // Resets all search state fields to defaults (preserves MoveGenerator allocations)
+  void resetSearchState() {
+    mg->reset();
+    mgSingular->reset();
+    currentMove = MOVE_NONE;
+    excludedMove = MOVE_NONE;
+    staticEval = VALUE_NONE;
+    moveCount = 0;
+    inCheck = false;
+  }
+
   // Future: Continuation history pointers (Phase 4)
   // PieceToHistory* continuationHistory[6]{};
 };

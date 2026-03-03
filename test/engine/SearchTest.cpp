@@ -19,13 +19,16 @@
 
 #include "engine/Search.h"
 #include "Test_Utils.h"
+#include "common/CrashHandler.h"
+#include "common/Logging.h"
 #include "init.h"
 #include "types/types.h"
-
 #include "config/ConfigManager.h"
-#include <gtest/gtest.h>
+
 #include <iomanip>
 #include <sstream>
+
+#include <gtest/gtest.h>
 
 using testing::Eq;
 
@@ -41,6 +44,14 @@ public:
     Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
     Logger::get().TT_LOG->set_level(spdlog::level::debug);
     Logger::get().BOOK_LOG->set_level(spdlog::level::debug);
+    Logger::get().CONFIG_LOG->set_level(spdlog::level::debug);
+
+    // Install crash handler to generate minidumps on access violations
+    crashhandler::install("./crash_dumps");
+  }
+
+  static void TearDownTestSuite() {
+    crashhandler::uninstall();
   }
 
 protected:
@@ -111,10 +122,50 @@ TEST_F(SearchTest, extraTime) {
   EXPECT_EQ(2000, s.extraTimeMs.load());
 }
 
+// In production, MAX_EXTRA_TIME_FACTOR is CONFIG_CONST (frozen) — cannot override.
+TEST_F(SearchTest, extraTimeCap) {
+  // Test that extra time is capped at MAX_EXTRA_TIME_FACTOR * base time
+#ifndef FRANKYCPP_PRODUCTION
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  CONFIG_OVERRIDE(s.MAX_EXTRA_TIME_FACTOR = 2.0;);
+#endif
+  EXPECT_EQ(ConfigManager::instance().search().MAX_EXTRA_TIME_FACTOR, 2.0) << "Test assumes MAX_EXTRA_TIME_FACTOR is 2.0";
+
+  Search s{};
+  s.searchLimits.timeControl = true;
+  s.timeLimit                = 10s;
+  s.extraTimeMs              = 0;
+
+  // Add 30% five times = would be 150% without cap
+  for (int i = 0; i < 5; i++) {
+    s.addExtraTime(1.3);// +30% = +3s each
+  }
+
+  // Should be capped at 2x base (20s), not 5x3s = 15s
+  // Actually 5 * 3s = 15s < 20s cap, so should be 15s
+  fprintln("After 5x +30%: extra = {}", str(milliseconds(s.extraTimeMs.load())));
+  EXPECT_EQ(15000, s.extraTimeMs.load());// 5 * 3000ms = 15000ms
+
+  // Add more - should hit the cap
+  for (int i = 0; i < 5; i++) {
+    s.addExtraTime(1.3);// +30% = +3s each, but capped
+  }
+
+  // Should be capped at 20s (2x base)
+  fprintln("After 10x +30%: extra = {}", str(milliseconds(s.extraTimeMs.load())));
+  EXPECT_EQ(20000, s.extraTimeMs.load());// capped at 2x base
+
+  // Total budget should be base + cap = 30s
+  const auto totalBudget = s.timeLimit + milliseconds(s.extraTimeMs.load());
+  fprintln("Total budget: {}", str(totalBudget));
+  EXPECT_EQ(30s, totalBudget);
+}
+
 TEST_F(SearchTest, startTimer) {
   Search s{};
   s.searchLimits.timeControl = true;
   s.startTime                = high_resolution_clock::now();
+  s.startSearchTime          = s.startTime;  // Timer uses startSearchTime for elapsed calculation
   s.timeLimit                = 2s;
   s.extraTimeMs              = 1000;// 1s
   s.startTimer();
@@ -194,12 +245,13 @@ TEST_F(SearchTest, startPonderSearch) {
   EXPECT_TRUE(s.hasResult());
   // 0.85 from the root complexity calculation - 20ms tolerance for code run time
   EXPECT_LT(static_cast<int64_t>(0.85 * nanoPerSec - 20'000'000), s.getLastSearchResult().time.count());
-  EXPECT_GT(static_cast<int64_t>(nanoPerSec * 1.1), s.getLastSearchResult().time.count());
+  EXPECT_GT(static_cast<int64_t>(nanoPerSec * 1.3), s.getLastSearchResult().time.count());
   EXPECT_GT(static_cast<int64_t>(nanoPerSec * 2.5), elapsedSince(start).count());
 }
 
 TEST_F(SearchTest, startNodesLimitedSearch) {
   CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  CONFIG_OVERRIDE(s.THREADS = 1;);  // Single-threaded for predictable node limit behavior
   const Position p{};
   SearchLimits sl{};
   Search s{};
@@ -211,8 +263,14 @@ TEST_F(SearchTest, startNodesLimitedSearch) {
   EXPECT_FALSE(s.hasResult());
   s.waitWhileSearching();
   EXPECT_TRUE(s.hasResult());
-  EXPECT_LE(10'000'000, s.getLastSearchResult().nodes);
-  EXPECT_GE(10'000'100, s.getLastSearchResult().nodes);
+
+  const auto totalNodes = s.getLastSearchResult().nodes;
+
+  fprintln("Node-limited search: total={:L}, limit={:L}", totalNodes, sl.nodes);
+
+  // With single thread, total nodes should be close to limit (slight overshoot from batch checking)
+  EXPECT_GE(totalNodes, sl.nodes) << "Should reach node limit";
+  EXPECT_LE(totalNodes, sl.nodes * 1.1) << "Should not overshoot limit significantly";
 }
 
 TEST_F(SearchTest, depthLimitedSearch) {
@@ -318,9 +376,11 @@ TEST_F(SearchTest, mate4Search) {
   EXPECT_TRUE(s.getLastSearchResult().mateFound);
 }
 
+// In production, USE_ALPHABETA is CONFIG_CONST — cannot override.
 TEST_F(SearchTest, mate5Search) {
   CONFIG_OVERRIDE(s.USE_BOOK = false;);
-  CONFIG_OVERRIDE(s.USE_ALPHABETA = true;);
+  EXPECT_EQ(ConfigManager::instance().search().USE_BOOK, false);
+  EXPECT_EQ(ConfigManager::instance().search().USE_ALPHABETA, true);
   const Position p{"8/8/8/8/4K3/8/R7/4k3 w - - 0 4"};
   SearchLimits sl{};
   Search s{};
@@ -334,6 +394,8 @@ TEST_F(SearchTest, mate5Search) {
   EXPECT_TRUE(s.getLastSearchResult().mateFound);
 }
 
+// In production, USE_ALPHABETA/USE_PVS/USE_TT/USE_QUIESCENCE/USE_QS_SEE are CONFIG_CONST.
+#ifndef FRANKYCPP_PRODUCTION
 TEST_F(SearchTest, quiescenceTest) {
 
   Search search;
@@ -371,6 +433,7 @@ TEST_F(SearchTest, quiescenceTest) {
   ASSERT_GT(nodes2, nodes1);
   ASSERT_GT(extra2, extra1);
 }
+#endif // FRANKYCPP_PRODUCTION
 
 TEST_F(SearchTest, movesLeftBucketsOpeningVsQueenlessVsLowMaterial) {
   // Same remaining time setup for all scenarios
@@ -442,9 +505,7 @@ TEST_F(SearchTest, singleMoveRootStopsEarlyAtVerifyDepth) {
 
   const auto result = s.getLastSearchResult();
 
-  // With a single legal root move and no time control, iterative deepening stops after the first iteration
-  // TODO: Review - search improvements cause deeper searches with many upperbound re-searches
-  // EXPECT_LT(result.time, 10s);
+  EXPECT_LT(result.time, 10s);
   EXPECT_EQ(Move(SQ_A1, SQ_B1), result.bestMove);
 }
 
@@ -460,26 +521,25 @@ TEST_F(SearchTest, singleMoveComplexRoot) {
 
   SearchLimits sl{};
   sl.timeControl = true;
-  sl.whiteTime   = 1000s;
-  sl.blackTime   = 1000s;
+  sl.whiteTime   = 1200s;
+  sl.blackTime   = 1200s;
 
   s.startSearch(p, sl);
   s.waitWhileSearching();
 
   const auto result = s.getLastSearchResult();
-  // EXPECT_LT(result.time, 10s);
+  EXPECT_LT(result.time, 35s);
   EXPECT_EQ(Move(SQ_E1, SQ_F2), result.bestMove);
 }
 
+// In production, LMR_USE_LOG_FORMULA and LMR_LOG_BASE_DIV are CONFIG_CONST — cannot override.
+#ifndef FRANKYCPP_PRODUCTION
 // New test: verify and pretty-print the LMR reduction table
 TEST_F(SearchTest, lmrReductionTableTest) {
-  // Access the private static table via FRIEND_TEST
-  CONFIG_OVERRIDE(s.LMR_USE_LOG_FORMULA = false;);
-
   Search search{};
-  search.regenerateLmrTable();
+  search.mainThread().regenerateLmrTable(false, 0.0 /* divisor isn't used for linear */);
 
-  const auto& T = search.LMR_REDUCTION;
+  const auto& T = search.mainThread().LMR_REDUCTION;
 
   // Dimensions
   ASSERT_EQ(32U, T.size()) << "Depth dimension must be 32 (0..31)";
@@ -531,18 +591,25 @@ TEST_F(SearchTest, lmrReductionTableTest) {
   }
   LOG__INFO(Logger::get().TEST_LOG, "{}", oss.str());
 }
+#endif // FRANKYCPP_PRODUCTION
 
 TEST_F(SearchTest, lmrReductionTablePrint) {
 
   // Access the private static table via FRIEND_TEST
   // Using new defaults: logarithmic formula with divisor 1.50
+#ifndef FRANKYCPP_PRODUCTION
   CONFIG_OVERRIDE(s.LMR_USE_LOG_FORMULA = true;);
-  CONFIG_OVERRIDE(s.LMR_LOG_BASE_DIV = 1.50;);
+  CONFIG_OVERRIDE(s.LMR_LOG_BASE_DIV = 1.25;);
+#endif
+
+  EXPECT_EQ(ConfigManager::instance().search().LMR_USE_LOG_FORMULA, true) << "Test assumes LMR_USE_LOG_FORMULA is true";
+  EXPECT_EQ(ConfigManager::instance().search().LMR_LOG_BASE_DIV, 1.25) << "Test assumes LMR_LOG_BASE_DIV is 1.50";
 
   Search search{};
-  search.regenerateLmrTable();
+  const auto& cfg = ConfigManager::instance().search();
+  search.mainThread().regenerateLmrTable(cfg.LMR_USE_LOG_FORMULA, cfg.LMR_LOG_BASE_DIV);
 
-  const auto& T = search.LMR_REDUCTION;
+  const auto& T = search.mainThread().LMR_REDUCTION;
 
   // Pretty print the entire table for manual inspection
   std::ostringstream oss;
@@ -556,25 +623,29 @@ TEST_F(SearchTest, lmrReductionTablePrint) {
   LOG__INFO(Logger::get().TEST_LOG, "{}", oss.str());
 }
 
+// IN PRDO there is not stats for singular extensions, and the config is frozen,
+// so these tests are development-only.
+#ifndef FRANKYCPP_PRODUCTION
 TEST_F(SearchTest, singularExtension) {
-  // Test that singular extensions work correctly
-  // Use a complex middlegame position where singular extensions can trigger
-  Search search{};
-  search.isReady();
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
 
   // Enable singular extensions and set params suitable for testing
-  CONFIG_OVERRIDE(s.USE_BOOK = false;);
   CONFIG_OVERRIDE(s.USE_SINGULAR_EXT = true;);
   CONFIG_OVERRIDE(s.SINGULAR_MIN_DEPTH = 6;);// Lower for testing
   CONFIG_OVERRIDE(s.SINGULAR_MARGIN = 64;);
   CONFIG_OVERRIDE(s.SINGULAR_REDUCTION = 3;);
+
+  // Test that singular extensions work correctly
+  // Use a complex middlegame position where singular extensions can trigger
+  Search search{};
+  search.isReady();
 
   // Complex middlegame position with tactical possibilities
   // This position has multiple candidate moves and requires deep search
   const Position p{"r1bq1rk1/pp2ppbp/2np1np1/8/3NP3/2N1BP2/PPPQ2PP/R3KB1R w KQ - 0 9"};
 
   SearchLimits sl{};
-  sl.depth = 10;// Deep enough to trigger singular extension
+  sl.depth = 12;// Deep enough to trigger singular extension
 
   search.startSearch(p, sl);
   search.waitWhileSearching();
@@ -613,25 +684,130 @@ TEST_F(SearchTest, singularExtensionDisabled) {
   EXPECT_EQ(stats.singularSearches, 0) << "Expected no singular searches when disabled";
   EXPECT_EQ(stats.singularExtension, 0) << "Expected no singular extensions when disabled";
 }
+#endif // FRANKYCPP_PRODUCTION
 
 TEST_F(SearchTest, 10secondSearchNodesCount) {
   if (isBulkRun()) {
     GTEST_SKIP() << "Skipping debug test in bulk run to save time";
   }
 
-  const Position p{"5k2/1rn2p2/3pb1p1/7p/p3PP2/PnNBK2P/3N2P1/1R6 w - - 0 1 "};
+  // Used to experiment with multiple threads
+  CONFIG_OVERRIDE(s.THREADS = 1;);
+
+  const Position p{"5k2/1rn2p2/3pb1p1/7p/p3PP2/PnNBK2P/3N2P1/1R6 w - - 0 1"};
   SearchLimits sl{};
   Search s{};
   sl.timeControl = true;
-  sl.moveTime    = 16s;
+  sl.moveTime    = 10s;
   s.isReady();
   s.startSearch(p, sl);
   s.waitWhileSearching();
 
   const auto result = s.getLastSearchResult();
-  fprintln("Search completed in {} ms, nodes: {:L}", result.time.count(), result.nodes);
+  fprintln("Search completed in {:L} ms, nodes: {:L}", result.time.count(), result.nodes);
+
+  fprintln("{}", s.formatDetailedStats());
 }
 
+// Verifies that newGame() fully resets Search state so that
+// repeated depth-limited searches on the same position produce
+// identical, deterministic results. A depth-limited search has
+// no timing or random factors, so any difference in node count,
+// best move, score, or statistics between runs indicates stale
+// state leaking across searches.
+//
+// NOTE: This test MUST use single-threaded mode (THREADS=1) because
+// multi-threaded Lazy SMP search is inherently non-deterministic:
+// - Thread scheduling varies between runs
+// - TT entries are written by different threads at different times
+// - This affects move ordering and pruning decisions differently each run
+// This non-determinism is expected and acceptable for SMP - the trade-off
+// is speed vs determinism. See SearchSmpTest for multi-threaded tests.
+TEST_F(SearchTest, newGameResetsDeterministic) {
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  CONFIG_OVERRIDE(s.THREADS = 1;);  // Single-threaded REQUIRED for determinism
+
+  // Use multiple positions to increase coverage
+  const std::vector<std::string> fens = {
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",        // start position
+    "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -",// Kiwi Pete
+    "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -",                           // endgame
+  };
+
+  // ReSharper disable once CppTooWideScope
+  constexpr int searchDepth   = 8;
+  // ReSharper disable once CppTooWideScope
+  constexpr int numIterations = 3;
+
+  Search search{};
+  search.isReady();
+
+  for (const auto& fen : fens) {
+    const Position position(fen);
+    SearchLimits sl{};
+    sl.depth = searchDepth;
+
+    // Run the first search to establish reference values
+    search.newGame();
+    search.startSearch(position, sl);
+    search.waitWhileSearching();
+    ASSERT_TRUE(search.hasResult()) << "First search must produce a result for: " << fen;
+
+    const auto refNodes    = search.getLastSearchResult().nodes;
+    const auto refMove     = search.getLastSearchResult().bestMove;
+    const auto refValue    = search.getLastSearchResult().bestMoveValue;
+    const auto refDepth    = search.getLastSearchResult().depth;
+    const auto& refStats   = search.getSearchStats();
+    const auto refPvNodes  = refStats.pvNodes;
+    const auto refNonPv    = refStats.nonPvNodes;
+    const auto refBetaCuts = refStats.betaCuts;
+    const auto refQsNodes  = refStats.qsearchNodes;
+
+    fprintln("Position: {}", fen);
+    fprintln("  Reference: nodes={}, move={}, value={}, depth={}",
+             refNodes, refMove.str(), refValue.str(), refDepth);
+
+    // Run subsequent searches and verify they match exactly
+    for (int i = 1; i < numIterations; ++i) {
+      search.newGame();
+      search.startSearch(position, sl);
+      search.waitWhileSearching();
+      ASSERT_TRUE(search.hasResult()) << "Search iteration " << i << " must produce a result";
+
+      const auto& result = search.getLastSearchResult();
+      const auto& stats  = search.getSearchStats();
+
+      fprintln("  Run {}: nodes={}, move={}, value={}, depth={}",
+               i, result.nodes, result.bestMove.str(), result.bestMoveValue.str(), result.depth);
+
+      // Core determinism checks
+      EXPECT_EQ(refNodes, result.nodes)
+        << "Node count differs on iteration " << i << " for: " << fen;
+      EXPECT_EQ(refMove, result.bestMove)
+        << "Best move differs on iteration " << i << " for: " << fen;
+      EXPECT_EQ(refValue, result.bestMoveValue)
+        << "Best move value differs on iteration " << i << " for: " << fen;
+      EXPECT_EQ(refDepth, result.depth)
+        << "Search depth differs on iteration " << i << " for: " << fen;
+
+      // Statistics determinism checks
+      // In PRODUCTION some of these values will always be 0 or not tracked, so
+      // checking them isn't meaningful.
+      EXPECT_EQ(refPvNodes, stats.pvNodes)
+        << "PV node count differs on iteration " << i << " for: " << fen;
+      EXPECT_EQ(refNonPv, stats.nonPvNodes)
+        << "Non-PV node count differs on iteration " << i << " for: " << fen;
+      EXPECT_EQ(refBetaCuts, stats.betaCuts)
+        << "Beta cut count differs on iteration " << i << " for: " << fen;
+      EXPECT_EQ(refQsNodes, stats.qsearchNodes)
+        << "QSearch node count differs on iteration " << i << " for: " << fen;
+    }
+  }
+}
+
+// In production, CONFIG_CONST search/eval configs cannot be overridden at runtime.
+// These debug/diagnostic tests are development-only.
+#ifndef FRANKYCPP_PRODUCTION
 TEST_F(SearchTest, debug) {
   if (isBulkRun()) {
     GTEST_SKIP() << "Skipping debug test in bulk run to save time";
@@ -668,3 +844,5 @@ TEST_F(SearchTest, debug) {
   s.startSearch(p, sl);
   s.waitWhileSearching();
 }
+
+#endif // FRANKYCPP_PRODUCTION

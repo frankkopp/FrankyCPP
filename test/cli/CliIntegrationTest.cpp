@@ -45,89 +45,90 @@
 
 namespace {
 
-/// Execute a command and capture stdout
-/// @param cmd Command to execute
-/// @return Pair of (exit_code, stdout_output)
-std::pair<int, std::string> executeCommand(const std::string& cmd) {
-  std::string output;
-  std::array<char, 4096> buffer{};
+  /// Execute a command and capture stdout
+  /// @param cmd Command to execute
+  /// @return Pair of (exit_code, stdout_output)
+  std::pair<int, std::string> executeCommand(const std::string& cmd) {
+    std::string output;
+    std::array<char, 4096> buffer{};
 
-  // Append stderr redirect to capture all output
-  const std::string fullCmd = cmd + " 2>&1";
-  std::cout << "Executing command: " << fullCmd << std::endl;
-
-#ifdef _WIN32
-  FILE* pipe = _popen(fullCmd.c_str(), "r");
-#else
-  FILE* pipe = popen(fullCmd.c_str(), "r");
-#endif
-
-  if (!pipe) {
-    return {-1, "Failed to execute command"};
-  }
-
-  // ReSharper disable once CppRedundantCastExpression
-  while (fgets(buffer.data(), static_cast<int>(buffer.size()), pipe) != nullptr) {
-    output += buffer.data();
-  }
+    // Append stderr redirect to capture all output
+    const std::string fullCmd = cmd + " 2>&1";
+    std::cout << "Executing command: " << fullCmd << std::endl;
 
 #ifdef _WIN32
-  const int exitCode = _pclose(pipe);
+    FILE* pipe = _popen(fullCmd.c_str(), "r");
 #else
-  const int exitCode = pclose(pipe);
+    FILE* pipe = popen(fullCmd.c_str(), "r");
 #endif
 
-  return {exitCode, output};
-}
+    if (!pipe) {
+      return {-1, "Failed to execute command"};
+    }
 
-/// Execute a command with stdin input and capture stdout
-/// @param cmd Command to execute
-/// @param stdinInput Input to send to stdin
-/// @return Pair of (exit_code, stdout_output)
-std::pair<int, std::string> executeCommandWithInput(const std::string& cmd, const std::string& stdinInput) {
-  std::string output;
-  std::array<char, 4096> buffer{};
-
-  // Use echo to pipe input, or use a temp file approach on Windows
-  std::cout << "Executing command with input: " << cmd << std::endl;
-  std::cout << "Input:\n" << stdinInput << std::endl;
+    // ReSharper disable once CppRedundantCastExpression
+    while (fgets(buffer.data(), static_cast<int>(buffer.size()), pipe) != nullptr) {
+      output += buffer.data();
+    }
 
 #ifdef _WIN32
-  // On Windows, use cmd /c with echo and pipe
-  // Create a temporary file with the input
-  const std::string tempFile = std::filesystem::temp_directory_path().string() + "\\franky_uci_test_input.txt";
-  {
-    std::ofstream ofs(tempFile);
-    ofs << stdinInput;
-  }
-  const std::string fullCmd = "cmd /c \"type \"" + tempFile + "\" | " + cmd + "\" 2>&1";
-  FILE* pipe = _popen(fullCmd.c_str(), "r");
+    const int exitCode = _pclose(pipe);
 #else
-  // On Unix, use echo with pipe
-  const std::string fullCmd = "echo '" + stdinInput + "' | " + cmd + " 2>&1";
-  FILE* pipe = popen(fullCmd.c_str(), "r");
+    const int exitCode = pclose(pipe);
 #endif
 
-  if (!pipe) {
-    return {-1, "Failed to execute command"};
+    return {exitCode, output};
   }
 
-  while (fgets(buffer.data(), static_cast<int>(buffer.size()), pipe) != nullptr) {
-    output += buffer.data();
-  }
+  /// Execute a command with stdin input and capture stdout
+  /// @param cmd Command to execute
+  /// @param stdinInput Input to send to stdin
+  /// @return Pair of (exit_code, stdout_output)
+  std::pair<int, std::string> executeCommandWithInput(const std::string& cmd, const std::string& stdinInput) {
+    std::string output;
+    std::array<char, 4096> buffer{};
+
+    // Use echo to pipe input, or use a temp file approach on Windows
+    std::cout << "Executing command with input: " << cmd << std::endl;
+    std::cout << "Input:\n"
+              << stdinInput << std::endl;
 
 #ifdef _WIN32
-  const int exitCode = _pclose(pipe);
-  // Clean up temp file
-  std::filesystem::remove(tempFile);
+    // On Windows, use cmd /c with echo and pipe
+    // Create a temporary file with the input
+    const std::string tempFile = std::filesystem::temp_directory_path().string() + "\\franky_uci_test_input.txt";
+    {
+      std::ofstream ofs(tempFile);
+      ofs << stdinInput;
+    }
+    const std::string fullCmd = "cmd /c \"type \"" + tempFile + "\" | " + cmd + "\" 2>&1";
+    FILE* pipe                = _popen(fullCmd.c_str(), "r");
 #else
-  const int exitCode = pclose(pipe);
+    // On Unix, use echo with pipe
+    const std::string fullCmd = "echo '" + stdinInput + "' | " + cmd + " 2>&1";
+    FILE* pipe                = popen(fullCmd.c_str(), "r");
 #endif
 
-  return {exitCode, output};
-}
+    if (!pipe) {
+      return {-1, "Failed to execute command"};
+    }
 
-}  // namespace
+    while (fgets(buffer.data(), static_cast<int>(buffer.size()), pipe) != nullptr) {
+      output += buffer.data();
+    }
+
+#ifdef _WIN32
+    const int exitCode = _pclose(pipe);
+    // Clean up temp file
+    std::filesystem::remove(tempFile);
+#else
+    const int exitCode = pclose(pipe);
+#endif
+
+    return {exitCode, output};
+  }
+
+}// namespace
 
 class CliIntegrationTest : public testing::Test {
 protected:
@@ -167,11 +168,11 @@ TEST_F(CliIntegrationTest, HelpOption) {
   EXPECT_EQ(0, exitCode) << "Exit code should be 0 for --help";
 
   EXPECT_TRUE(output.find("Allowed options") != std::string::npos)
-      << "Help output should contain 'Allowed options'";
+    << "Help output should contain 'Allowed options'";
   EXPECT_TRUE(output.find("--help") != std::string::npos)
-      << "Help output should list --help option";
+    << "Help output should list --help option";
   EXPECT_TRUE(output.find("--show-config") != std::string::npos)
-      << "Help output should list --show-config option";
+    << "Help output should list --show-config option";
 }
 
 TEST_F(CliIntegrationTest, VersionOption) {
@@ -180,11 +181,18 @@ TEST_F(CliIntegrationTest, VersionOption) {
   EXPECT_EQ(0, exitCode) << "Exit code should be 0 for --version";
 
   // Check version string contains expected parts
-  const std::string expectedVersion = "FrankyCPP v" +
-      std::to_string(FrankyCPP_VERSION_MAJOR) + "." +
-      std::to_string(FrankyCPP_VERSION_MINOR);
+  std::string expectedVersion = "FrankyCPP";
+#ifdef FRANKYCPP_PRODUCTION
+  expectedVersion.append(" (stripped)");
+#endif
+  expectedVersion
+    .append(" v")
+    .append(std::to_string(FrankyCPP_VERSION_MAJOR))
+    .append(".")
+    .append(std::to_string(FrankyCPP_VERSION_MINOR));
+
   EXPECT_TRUE(output.find(expectedVersion) != std::string::npos)
-      << "Version output should contain '" << expectedVersion << "'\nActual: " << output;
+    << "Version output should contain '" << expectedVersion << "'\nActual: " << output;
 }
 
 //=============================================================================
@@ -198,23 +206,23 @@ TEST_F(CliIntegrationTest, ShowConfigTableFormat) {
 
   // Check for expected table structure
   EXPECT_TRUE(output.find("Name") != std::string::npos)
-      << "Table should have 'Name' column header";
+    << "Table should have 'Name' column header";
   EXPECT_TRUE(output.find("Type") != std::string::npos)
-      << "Table should have 'Type' column header";
+    << "Table should have 'Type' column header";
   EXPECT_TRUE(output.find("Default") != std::string::npos)
-      << "Table should have 'Default' column header";
+    << "Table should have 'Default' column header";
 
   // Check for domain sections
   EXPECT_TRUE(output.find("General") != std::string::npos)
-      << "Table should contain 'General' domain";
+    << "Table should contain 'General' domain";
   EXPECT_TRUE(output.find("Search") != std::string::npos)
-      << "Table should contain 'Search' domain";
+    << "Table should contain 'Search' domain";
 
   // Check for some known config entries
   EXPECT_TRUE(output.find("TT_SIZE_MB") != std::string::npos)
-      << "Table should contain TT_SIZE_MB setting";
+    << "Table should contain TT_SIZE_MB setting";
   EXPECT_TRUE(output.find("USE_BOOK") != std::string::npos)
-      << "Table should contain USE_BOOK setting";
+    << "Table should contain USE_BOOK setting";
 }
 
 TEST_F(CliIntegrationTest, ShowConfigYamlFormat) {
@@ -224,15 +232,13 @@ TEST_F(CliIntegrationTest, ShowConfigYamlFormat) {
 
   // Check for YAML template structure
   EXPECT_TRUE(output.find("# FrankyCPP Configuration Template") != std::string::npos)
-      << "YAML should have header comment";
-  EXPECT_TRUE(output.find("# General Settings") != std::string::npos ||
-              output.find("General") != std::string::npos)
-      << "YAML should have General section";
+    << "YAML should have header comment";
+  EXPECT_TRUE(output.find("# General Settings") != std::string::npos || output.find("General") != std::string::npos)
+    << "YAML should have General section";
 
   // Check for commented settings (YAML template has settings commented out)
-  EXPECT_TRUE(output.find("# TT_SIZE_MB") != std::string::npos ||
-              output.find("TT_SIZE_MB") != std::string::npos)
-      << "YAML should contain TT_SIZE_MB setting";
+  EXPECT_TRUE(output.find("# TT_SIZE_MB") != std::string::npos || output.find("TT_SIZE_MB") != std::string::npos)
+    << "YAML should contain TT_SIZE_MB setting";
 }
 
 TEST_F(CliIntegrationTest, ShowConfigJsonFormat) {
@@ -242,21 +248,21 @@ TEST_F(CliIntegrationTest, ShowConfigJsonFormat) {
 
   // Check for valid JSON structure
   EXPECT_TRUE(output.find("{") != std::string::npos)
-      << "JSON should start with '{'";
+    << "JSON should start with '{'";
   EXPECT_TRUE(output.find("\"configVersion\"") != std::string::npos)
-      << "JSON should have configVersion field";
+    << "JSON should have configVersion field";
   EXPECT_TRUE(output.find("\"settings\"") != std::string::npos)
-      << "JSON should have settings array";
+    << "JSON should have settings array";
 
   // Check for expected fields in settings
   EXPECT_TRUE(output.find("\"name\"") != std::string::npos)
-      << "JSON settings should have 'name' field";
+    << "JSON settings should have 'name' field";
   EXPECT_TRUE(output.find("\"type\"") != std::string::npos)
-      << "JSON settings should have 'type' field";
+    << "JSON settings should have 'type' field";
   EXPECT_TRUE(output.find("\"defaultValue\"") != std::string::npos)
-      << "JSON settings should have 'defaultValue' field";
+    << "JSON settings should have 'defaultValue' field";
   EXPECT_TRUE(output.find("\"domain\"") != std::string::npos)
-      << "JSON settings should have 'domain' field";
+    << "JSON settings should have 'domain' field";
 }
 
 TEST_F(CliIntegrationTest, ShowConfigDomainFilter) {
@@ -266,13 +272,11 @@ TEST_F(CliIntegrationTest, ShowConfigDomainFilter) {
 
   // Check Search domain is present
   EXPECT_TRUE(output.find("Search") != std::string::npos)
-      << "Output should contain Search domain";
+    << "Output should contain Search domain";
 
   // Search-specific settings should be present
-  EXPECT_TRUE(output.find("USE_TT") != std::string::npos ||
-              output.find("TT_SIZE_MB") != std::string::npos ||
-              output.find("USE_NMP") != std::string::npos)
-      << "Output should contain search settings";
+  EXPECT_TRUE(output.find("USE_TT") != std::string::npos || output.find("TT_SIZE_MB") != std::string::npos || output.find("USE_NMP") != std::string::npos)
+    << "Output should contain search settings";
 }
 
 //=============================================================================
@@ -286,15 +290,15 @@ TEST_F(CliIntegrationTest, UciOptionsOutput) {
 
   // Check for UCI protocol elements
   EXPECT_TRUE(output.find("id name FrankyCPP") != std::string::npos)
-      << "UCI output should have engine name";
+    << "UCI output should have engine name";
   EXPECT_TRUE(output.find("id author") != std::string::npos)
-      << "UCI output should have author";
+    << "UCI output should have author";
   EXPECT_TRUE(output.find("option name") != std::string::npos)
-      << "UCI output should list options";
+    << "UCI output should list options";
 
   // Check for some expected UCI options
   EXPECT_TRUE(output.find("Hash") != std::string::npos)
-      << "UCI output should have Hash option";
+    << "UCI output should have Hash option";
 }
 
 //=============================================================================
@@ -308,14 +312,12 @@ TEST_F(CliIntegrationTest, PerftBasic) {
   EXPECT_EQ(0, exitCode) << "Exit code should be 0 for --perft";
 
   // Check for perft output indicators
-  EXPECT_TRUE(output.find("PERFT") != std::string::npos ||
-              output.find("perft") != std::string::npos ||
-              output.find("Perft") != std::string::npos)
-      << "Output should indicate perft test";
+  EXPECT_TRUE(output.find("PERFT") != std::string::npos || output.find("perft") != std::string::npos || output.find("Perft") != std::string::npos)
+    << "Output should indicate perft test";
 
   // Perft(1) from startpos should be 20 moves
   EXPECT_TRUE(output.find("20") != std::string::npos)
-      << "Perft(1) should show 20 nodes";
+    << "Perft(1) should show 20 nodes";
 }
 
 TEST_F(CliIntegrationTest, PerftWithDepthOption) {
@@ -326,7 +328,7 @@ TEST_F(CliIntegrationTest, PerftWithDepthOption) {
 
   // Perft(2) from startpos should be 400 moves
   EXPECT_TRUE(output.find("400") != std::string::npos)
-      << "Perft(2) should show 400 nodes";
+    << "Perft(2) should show 400 nodes";
 }
 
 //=============================================================================
@@ -341,18 +343,12 @@ TEST_F(CliIntegrationTest, BenchBasic) {
   EXPECT_EQ(0, exitCode) << "Exit code should be 0 for --bench\nOutput: " << output;
 
   // Check for benchmark output indicators
-  EXPECT_TRUE(output.find("BENCHMARK") != std::string::npos ||
-              output.find("Benchmark") != std::string::npos ||
-              output.find("benchmark") != std::string::npos ||
-              output.find("NPS") != std::string::npos ||
-              output.find("nps") != std::string::npos)
-      << "Output should indicate benchmark results";
+  EXPECT_TRUE(output.find("BENCHMARK") != std::string::npos || output.find("Benchmark") != std::string::npos || output.find("benchmark") != std::string::npos || output.find("NPS") != std::string::npos || output.find("nps") != std::string::npos)
+    << "Output should indicate benchmark results";
 
   // Should show some node count or NPS value
-  EXPECT_TRUE(output.find("nodes") != std::string::npos ||
-              output.find("Nodes") != std::string::npos ||
-              output.find("NPS") != std::string::npos)
-      << "Benchmark should report nodes or NPS";
+  EXPECT_TRUE(output.find("nodes") != std::string::npos || output.find("Nodes") != std::string::npos || output.find("NPS") != std::string::npos)
+    << "Benchmark should report nodes or NPS";
 }
 
 //=============================================================================
@@ -366,12 +362,8 @@ TEST_F(CliIntegrationTest, InvalidOption) {
   EXPECT_NE(0, exitCode) << "Exit code should be non-zero for invalid option";
 
   // Should show some error message
-  EXPECT_TRUE(output.find("error") != std::string::npos ||
-              output.find("Error") != std::string::npos ||
-              output.find("unrecognised") != std::string::npos ||
-              output.find("unrecognized") != std::string::npos ||
-              output.find("unknown") != std::string::npos)
-      << "Should show error message for invalid option.\nActual output: " << output;
+  EXPECT_TRUE(output.find("error") != std::string::npos || output.find("Error") != std::string::npos || output.find("unrecognised") != std::string::npos || output.find("unrecognized") != std::string::npos || output.find("unknown") != std::string::npos)
+    << "Should show error message for invalid option.\nActual output: " << output;
 }
 
 //=============================================================================
@@ -383,7 +375,7 @@ TEST_F(CliIntegrationTest, HelpShortOption) {
 
   EXPECT_EQ(0, exitCode) << "Exit code should be 0 for -?";
   EXPECT_TRUE(output.find("Allowed options") != std::string::npos)
-      << "Help output should contain 'Allowed options'";
+    << "Help output should contain 'Allowed options'";
 }
 
 TEST_F(CliIntegrationTest, VersionShortOption) {
@@ -391,7 +383,7 @@ TEST_F(CliIntegrationTest, VersionShortOption) {
 
   EXPECT_EQ(0, exitCode) << "Exit code should be 0 for -v";
   EXPECT_TRUE(output.find("FrankyCPP") != std::string::npos)
-      << "Version output should contain 'FrankyCPP'";
+    << "Version output should contain 'FrankyCPP'";
 }
 
 TEST_F(CliIntegrationTest, UciOptionsShortOption) {
@@ -399,7 +391,7 @@ TEST_F(CliIntegrationTest, UciOptionsShortOption) {
 
   EXPECT_EQ(0, exitCode) << "Exit code should be 0 for -u";
   EXPECT_TRUE(output.find("option name") != std::string::npos)
-      << "UCI output should list options";
+    << "UCI output should list options";
 }
 
 //=============================================================================
@@ -410,7 +402,7 @@ TEST_F(CliIntegrationTest, UciSetAllOptionsToDefaults) {
   // Build UCI commands to set all options to their defaults
   // This simulates what Arena does when saving engine configuration
 
-  const auto& registry = ConfigRegistry::instance();
+  const auto& registry     = ConfigRegistry::instance();
   const auto uciOptionDefs = registry.uciOptions();
 
   // Build command string: uci + isready + all setoptions + quit
@@ -419,7 +411,7 @@ TEST_F(CliIntegrationTest, UciSetAllOptionsToDefaults) {
   int optionCount = 0;
   for (const auto* def : uciOptionDefs) {
     const std::string& optionName = def->uciName;
-    std::string value = def->defaultValue;
+    std::string value             = def->defaultValue;
 
     // Override SyzygyPath with a path containing backslash to test path handling
     if (optionName == "SyzygyPath") {
@@ -444,14 +436,12 @@ TEST_F(CliIntegrationTest, UciSetAllOptionsToDefaults) {
 
   // Verify basic UCI responses
   EXPECT_TRUE(output.find("uciok") != std::string::npos)
-      << "Engine should respond with 'uciok'";
+    << "Engine should respond with 'uciok'";
   EXPECT_TRUE(output.find("readyok") != std::string::npos)
-      << "Engine should respond with 'readyok'";
+    << "Engine should respond with 'readyok'";
 
   // Check for any error messages
-  const bool hasError = output.find("error") != std::string::npos ||
-                        output.find("Error") != std::string::npos ||
-                        output.find("ERROR") != std::string::npos;
+  const bool hasError = output.find("error") != std::string::npos || output.find("Error") != std::string::npos || output.find("ERROR") != std::string::npos;
   EXPECT_FALSE(hasError) << "Engine should not report any errors when setting options to defaults";
 
   // Exit code 0 indicates clean quit

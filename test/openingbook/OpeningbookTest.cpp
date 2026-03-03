@@ -46,7 +46,6 @@ protected:
 };
 
 TEST_F(OpeningBookTest, readFile) {
-
   // set up Opening Book
   OpeningBook book{"./books/superbook.pgn", OpeningBook::BookFormat::PGN};
   EXPECT_EQ(0, book.bookMap.size());
@@ -69,6 +68,9 @@ TEST_F(OpeningBookTest, pgnCleanUpTest) {
 }
 
 TEST_F(OpeningBookTest, initSimple) {
+#ifndef NDEBUG
+  GTEST_SKIP() << "Skipping in debug build due to duration";
+#endif
   OpeningBook book("./books/book.txt", OpeningBook::BookFormat::SIMPLE);
   //  book.setRecreateCache(true);
   book.setUseCache(false);
@@ -78,6 +80,9 @@ TEST_F(OpeningBookTest, initSimple) {
 }
 
 TEST_F(OpeningBookTest, initSan) {
+#ifndef NDEBUG
+  GTEST_SKIP() << "Skipping in debug build due to duration";
+#endif
   OpeningBook book("./books/book_test.san", OpeningBook::BookFormat::SAN);
   book.setUseCache(false);
   book.initialize();
@@ -91,6 +96,15 @@ TEST_F(OpeningBookTest, initPgn) {
   book.initialize();
   fprintln("Book:  {:L} entries", book.size());
   EXPECT_EQ(1'495, book.size());
+}
+
+TEST_F(OpeningBookTest, 8movesPgn) {
+  if (isBulkRun()) GTEST_SKIP();
+  OpeningBook book("./books/8moves_v3.pgn", OpeningBook::BookFormat::PGN);
+  book.setUseCache(false);
+  book.initialize();
+  fprintln("Book:  {:L} entries", book.size());
+  EXPECT_EQ(166'178, book.size());
 }
 
 TEST_F(OpeningBookTest, initPgnLarge) {
@@ -141,6 +155,9 @@ TEST_F(OpeningBookTest, getMove) {
 
 
 TEST_F(OpeningBookTest, serializationSimple) {
+#ifndef NDEBUG
+  GTEST_SKIP() << "Skipping in debug build due to duration";
+#endif
   const std::string filePathStr = "./books/book.txt";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::SIMPLE);
 

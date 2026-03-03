@@ -137,6 +137,8 @@ void Logger::init() const {
   configure_logger(UCIHAND_LOG, logLevel, defaultPattern, sharedFileSink, nonUciFlushLevel);
   configure_logger(BOOK_LOG, logLevel, defaultPattern, sharedFileSink, nonUciFlushLevel);
   configure_logger(CONFIG_LOG, logLevel, defaultPattern, sharedFileSink, nonUciFlushLevel);
+  configure_logger(TB_LOG, logLevel, defaultPattern, sharedFileSink, nonUciFlushLevel);
+  configure_logger(APP_LOG, logLevel, defaultPattern, sharedFileSink, nonUciFlushLevel);
 
   // UCI logger keeps its dedicated console sink and its own simple pattern
   add_unique_sink(*UCI_LOG, uciOutSink);

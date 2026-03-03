@@ -85,11 +85,9 @@ BenchmarkResult BenchmarkRunner::runExternal() const {
   result.notes = config_.notes;
 
   try {
-    // Start external engine
-    std::string uciOptions = "Hash=" + std::to_string(config_.hashSizeMB);
-    if (config_.threads > 1) {
-      uciOptions += "; Threads=" + std::to_string(config_.threads);
-    }
+    // Start external engine with Hash and Threads options
+    const std::string uciOptions = "Hash=" + std::to_string(config_.hashSizeMB) +
+                                   "; Threads=" + std::to_string(config_.threads);
 
     UCIEngine engine(config_.enginePath, config_.commandLineArgs, false, uciOptions);
     result.engineName = "External";  // Could extract from UCI "id name" response

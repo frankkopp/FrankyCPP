@@ -40,17 +40,21 @@ ConfigRegistry::ConfigRegistry() {
   // fprintln("Size of SearchConfigData: {}", sizeof(SearchConfigData));
   // fprintln("Size of EvalConfigData: {}", sizeof(EvalConfigData));
 
+  // In production builds, CONFIG_CONST members become static constexpr and do not
+  // contribute to sizeof(). The assertions below are only valid in development builds
+  // where all members are non-static instance members.
+#ifndef FRANKYCPP_PRODUCTION
 #ifdef _MSC_VER
 // Windows MSVC builds
 #ifdef _DEBUG
-  static_assert(sizeof(SearchConfigData) == 504,
+  static_assert(sizeof(SearchConfigData) == 624,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 256,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
-  static_assert(sizeof(SearchConfigData) == 472,
+  static_assert(sizeof(SearchConfigData) == 592,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -61,7 +65,7 @@ ConfigRegistry::ConfigRegistry() {
 // Linux GCC/Clang builds (including WSL)
 #ifdef NDEBUG
   // Release build
-  static_assert(sizeof(SearchConfigData) == 472,
+  static_assert(sizeof(SearchConfigData) == 592,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -69,7 +73,7 @@ ConfigRegistry::ConfigRegistry() {
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
   // Debug build
-  static_assert(sizeof(SearchConfigData) == 472,
+  static_assert(sizeof(SearchConfigData) == 592,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -77,6 +81,7 @@ ConfigRegistry::ConfigRegistry() {
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #endif
 #endif
+#endif // FRANKYCPP_PRODUCTION
 
   initializeSearchDefinitions();
   initializeEvalDefinitions();
@@ -181,18 +186,20 @@ void ConfigRegistry::initializeSearchDefinitions() {
   using enum ConfigValueType;
   using enum ConfigDomain;
 
-  // Helper lambdas for Search configs
-  auto searchGetter = [](auto member) {
-    return [member](const SearchConfigData& s, const EvalConfigData&) {
-      return configToString(s.*member);
+  // Default instance for referencing default values - avoids duplicating defaults in two places.
+  // The struct's member initializers are the single source of truth.
+  static const SearchConfigData defaultSearch{};
+
+  // searchGetter: accepts a getter lambda (const SearchConfigData&) -> value.
+  // Lambda-based (not pointer-to-member) so it works for both instance members
+  // and static constexpr members in production builds.
+  auto searchGetter = [](auto getterFn) {
+    return [getterFn](const SearchConfigData& s, const EvalConfigData&) {
+      return configToString(getterFn(s));
     };
   };
 
-  auto searchSetter = [](auto member, auto parser) {
-    return [member, parser](SearchConfigData& s, EvalConfigData&, const std::string& v) {
-      s.*member = parser(v);
-    };
-  };
+  // searchSetter is no longer used — replaced by SEARCH_CONFIG_SETTER macro at each call site.
 
   // clang-format off
 
@@ -207,8 +214,8 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .domain = Debug,
     .defaultValue = "fallback",
     .exposure = {.uci = false, .yaml = true, .display = false},
-    .getter = searchGetter(&SearchConfigData::CONFIG_SOURCE),
-    .setter = searchSetter(&SearchConfigData::CONFIG_SOURCE, parseString)
+    .getter = searchGetter([](const auto& s){ return s.CONFIG_SOURCE; }),
+    .setter = SEARCH_CONFIG_SETTER(CONFIG_SOURCE, parseString)
   });
 
   //===========================================================================
@@ -220,12 +227,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Safety margin for time management (ms)",
     .valueType = Int,
     .domain = General,
-    .defaultValue = "10",
+    .defaultValue = configToString(defaultSearch.MOVE_OVERHEAD_MS),
     .minValue = 0,
     .maxValue = 5000,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::MOVE_OVERHEAD_MS),
-    .setter = searchSetter(&SearchConfigData::MOVE_OVERHEAD_MS, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.MOVE_OVERHEAD_MS; }),
+    .setter = SEARCH_CONFIG_SETTER(MOVE_OVERHEAD_MS, parseInt)
   });
 
   definitions_.push_back({
@@ -234,10 +241,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Use internal opening book",
     .valueType = Bool,
     .domain = General,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_BOOK),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_BOOK),
-    .setter = searchSetter(&SearchConfigData::USE_BOOK, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_BOOK; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_BOOK, parseBool)
   });
 
   definitions_.push_back({
@@ -246,10 +253,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Path to opening book file",
     .valueType = String,
     .domain = General,
-    .defaultValue = "./books/book.txt",
+    .defaultValue = defaultSearch.BOOK_PATH,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::BOOK_PATH),
-    .setter = searchSetter(&SearchConfigData::BOOK_PATH, parseString)
+    .getter = searchGetter([](const auto& s){ return s.BOOK_PATH; }),
+    .setter = SEARCH_CONFIG_SETTER(BOOK_PATH, parseString)
   });
 
   definitions_.push_back({
@@ -258,10 +265,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Opening book format (SIMPLE, PGN, etc.)",
     .valueType = String,
     .domain = General,
-    .defaultValue = "SIMPLE",
+    .defaultValue = defaultSearch.BOOK_TYPE,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::BOOK_TYPE),
-    .setter = searchSetter(&SearchConfigData::BOOK_TYPE, parseString)
+    .getter = searchGetter([](const auto& s){ return s.BOOK_TYPE; }),
+    .setter = SEARCH_CONFIG_SETTER(BOOK_TYPE, parseString)
   });
 
   definitions_.push_back({
@@ -270,10 +277,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Enable pondering (thinking on opponent's time)",
     .valueType = Bool,
     .domain = General,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_PONDER),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_PONDER),
-    .setter = searchSetter(&SearchConfigData::USE_PONDER, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_PONDER; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_PONDER, parseBool)
   });
 
   //===========================================================================
@@ -285,10 +292,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Enable alpha-beta pruning",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_ALPHABETA),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_ALPHABETA),
-    .setter = searchSetter(&SearchConfigData::USE_ALPHABETA, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_ALPHABETA; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_ALPHABETA, parseBool)
   });
 
   definitions_.push_back({
@@ -297,10 +304,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Enable Principal Variation Search",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_PVS),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_PVS),
-    .setter = searchSetter(&SearchConfigData::USE_PVS, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_PVS; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_PVS, parseBool)
   });
 
   definitions_.push_back({
@@ -309,10 +316,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Enable aspiration windows",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_ASP),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_ASP),
-    .setter = searchSetter(&SearchConfigData::USE_ASP, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_ASP; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_ASP, parseBool)
   });
 
   definitions_.push_back({
@@ -321,10 +328,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Enable quiescence search",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_QUIESCENCE),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_QUIESCENCE),
-    .setter = searchSetter(&SearchConfigData::USE_QUIESCENCE, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_QUIESCENCE; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_QUIESCENCE, parseBool)
   });
 
   //===========================================================================
@@ -336,10 +343,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Enable transposition table",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_TT),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_TT),
-    .setter = searchSetter(&SearchConfigData::USE_TT, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_TT; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_TT, parseBool)
   });
 
   definitions_.push_back({
@@ -348,10 +355,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Use TT values for cutoffs",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_TT_VALUE),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_TT_VALUE),
-    .setter = searchSetter(&SearchConfigData::USE_TT_VALUE, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_TT_VALUE; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_TT_VALUE, parseBool)
   });
 
   definitions_.push_back({
@@ -360,10 +367,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Use TT for evaluation cache",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_EVAL_TT),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_EVAL_TT),
-    .setter = searchSetter(&SearchConfigData::USE_EVAL_TT, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_EVAL_TT; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_EVAL_TT, parseBool)
   });
 
   definitions_.push_back({
@@ -372,12 +379,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Transposition table size in MB",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "64",
+    .defaultValue = configToString(defaultSearch.TT_SIZE_MB),
     .minValue = 0,
     .maxValue = 4096,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::TT_SIZE_MB),
-    .setter = searchSetter(&SearchConfigData::TT_SIZE_MB, parseInt),
+    .getter = searchGetter([](const auto& s){ return s.TT_SIZE_MB; }),
+    .setter = SEARCH_CONFIG_SETTER(TT_SIZE_MB, parseInt),
     // Custom handler: resize TT after changing size
     .customUciHandler = [](const UciHandler* h) {
       if (h && h->getSearchPtr()) {
@@ -387,15 +394,43 @@ void ConfigRegistry::initializeSearchDefinitions() {
   });
 
   definitions_.push_back({
+    .name = "THREADS",
+    .uciName = "Threads",
+    .description = "Number of search threads (1 = single-threaded, no SMP overhead)",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.THREADS),
+    .minValue = 1,
+    .maxValue = 256,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.THREADS; }),
+    .setter = SEARCH_CONFIG_SETTER(THREADS, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "SMP_HELPER_START_DEPTH",
+    .uciName = "",  // Not exposed via UCI - internal tuning parameter
+    .description = "Depth at which to launch helper threads (allows main thread to prime TT first)",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.SMP_HELPER_START_DEPTH),
+    .minValue = 1,
+    .maxValue = 10,
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.SMP_HELPER_START_DEPTH; }),
+    .setter = SEARCH_CONFIG_SETTER(SMP_HELPER_START_DEPTH, parseInt)
+  });
+
+  definitions_.push_back({
     .name = "USE_QS_TT",
     .uciName = "Use Hash Quiescence",
     .description = "Use TT in quiescence search",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_QS_TT),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_QS_TT),
-    .setter = searchSetter(&SearchConfigData::USE_QS_TT, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_QS_TT; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_QS_TT, parseBool)
   });
 
   //===========================================================================
@@ -407,10 +442,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Path to Syzygy tablebase files (empty = disabled)",
     .valueType = String,
     .domain = General,
-    .defaultValue = "",
+    .defaultValue = defaultSearch.TB_PATH,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::TB_PATH),
-    .setter = searchSetter(&SearchConfigData::TB_PATH, parseString)
+    .getter = searchGetter([](const auto& s){ return s.TB_PATH; }),
+    .setter = SEARCH_CONFIG_SETTER(TB_PATH, parseString)
   });
 
   // Root probing settings (once per search, for best move selection)
@@ -420,10 +455,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Probe tablebases at root for best move selection",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_TB_PROBE_ROOT),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_TB_PROBE_ROOT),
-    .setter = searchSetter(&SearchConfigData::USE_TB_PROBE_ROOT, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_TB_PROBE_ROOT; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_TB_PROBE_ROOT, parseBool)
   });
 
   definitions_.push_back({
@@ -432,10 +467,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Return TB move immediately without searching (false = search for PV)",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "false",
+    .defaultValue = configToString(defaultSearch.TB_ROOT_IMMEDIATE),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::TB_ROOT_IMMEDIATE),
-    .setter = searchSetter(&SearchConfigData::TB_ROOT_IMMEDIATE, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.TB_ROOT_IMMEDIATE; }),
+    .setter = SEARCH_CONFIG_SETTER(TB_ROOT_IMMEDIATE, parseBool)
   });
 
   // Search probing settings (during tree search, for cutoffs)
@@ -445,10 +480,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Probe tablebases during search for cutoffs",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_TB_PROBE_SEARCH),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_TB_PROBE_SEARCH),
-    .setter = searchSetter(&SearchConfigData::USE_TB_PROBE_SEARCH, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_TB_PROBE_SEARCH; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_TB_PROBE_SEARCH, parseBool)
   });
 
   definitions_.push_back({
@@ -457,10 +492,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Probe tablebases on PV nodes (false = only non-PV nodes for cutoffs)",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_TB_PROBE_PV),
     .exposure = {.uci = false, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_TB_PROBE_PV),
-    .setter = searchSetter(&SearchConfigData::USE_TB_PROBE_PV, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_TB_PROBE_PV; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_TB_PROBE_PV, parseBool)
   });
 
   definitions_.push_back({
@@ -469,12 +504,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Minimum remaining depth to probe WDL during search (0 = always)",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "1",
+    .defaultValue = configToString(defaultSearch.TB_PROBE_DEPTH),
     .minValue = 0,
     .maxValue = 20,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::TB_PROBE_DEPTH),
-    .setter = searchSetter(&SearchConfigData::TB_PROBE_DEPTH, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.TB_PROBE_DEPTH; }),
+    .setter = SEARCH_CONFIG_SETTER(TB_PROBE_DEPTH, parseInt)
   });
 
   definitions_.push_back({
@@ -483,12 +518,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Maximum pieces for search TB probing (3-7)",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "6",
+    .defaultValue = configToString(defaultSearch.TB_PROBE_LIMIT),
     .minValue = 3,
     .maxValue = 7,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::TB_PROBE_LIMIT),
-    .setter = searchSetter(&SearchConfigData::TB_PROBE_LIMIT, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.TB_PROBE_LIMIT; }),
+    .setter = SEARCH_CONFIG_SETTER(TB_PROBE_LIMIT, parseInt)
   });
 
   definitions_.push_back({
@@ -497,12 +532,38 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "HalfMoveClock threshold for DTZ accuracy check (>=100 disables)",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "80",
+    .defaultValue = configToString(defaultSearch.TB_RULE50_THRESHOLD),
     .minValue = 0,
     .maxValue = 100,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::TB_RULE50_THRESHOLD),
-    .setter = searchSetter(&SearchConfigData::TB_RULE50_THRESHOLD, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.TB_RULE50_THRESHOLD; }),
+    .setter = SEARCH_CONFIG_SETTER(TB_RULE50_THRESHOLD, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "TB_CACHE_PREWARM",
+    .uciName = "",
+    .description = "Pre-warm OS file cache at startup for faster first probes",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.TB_CACHE_PREWARM),
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.TB_CACHE_PREWARM; }),
+    .setter = SEARCH_CONFIG_SETTER(TB_CACHE_PREWARM, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "TB_CACHE_PREWARM_PIECES",
+    .uciName = "",
+    .description = "Max pieces to pre-warm (3-6, higher = more startup time)",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.TB_CACHE_PREWARM_PIECES),
+    .minValue = 3,
+    .maxValue = 6,
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.TB_CACHE_PREWARM_PIECES; }),
+    .setter = SEARCH_CONFIG_SETTER(TB_CACHE_PREWARM_PIECES, parseInt)
   });
 
 
@@ -515,10 +576,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Prioritize TT/PV moves in move ordering",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_TT_PV_MOVE_SORT),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_TT_PV_MOVE_SORT),
-    .setter = searchSetter(&SearchConfigData::USE_TT_PV_MOVE_SORT, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_TT_PV_MOVE_SORT; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_TT_PV_MOVE_SORT, parseBool)
   });
 
   definitions_.push_back({
@@ -527,10 +588,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Enable killer move heuristic",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_KILLER_MOVES),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_KILLER_MOVES),
-    .setter = searchSetter(&SearchConfigData::USE_KILLER_MOVES, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_KILLER_MOVES; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_KILLER_MOVES, parseBool)
   });
 
   definitions_.push_back({
@@ -539,10 +600,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Enable counter-move history",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_HISTORY_COUNTER),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_HISTORY_COUNTER),
-    .setter = searchSetter(&SearchConfigData::USE_HISTORY_COUNTER, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_HISTORY_COUNTER; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_HISTORY_COUNTER, parseBool)
   });
 
   definitions_.push_back({
@@ -551,22 +612,22 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Enable history heuristic for move ordering",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_HISTORY_MOVES),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_HISTORY_MOVES),
-    .setter = searchSetter(&SearchConfigData::USE_HISTORY_MOVES, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_HISTORY_MOVES; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_HISTORY_MOVES, parseBool)
   });
 
   definitions_.push_back({
     .name = "USE_IID",
     .uciName = "Use Internal Iterative Deepening",
-    .description = "Enable Internal Iterative Deepening",
+    .description = "Enable Internal Iterative Deepening (legacy - IIR is more effective)",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_IID),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_IID),
-    .setter = searchSetter(&SearchConfigData::USE_IID, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_IID; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_IID, parseBool)
   });
 
   definitions_.push_back({
@@ -575,12 +636,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Minimum depth to trigger IID",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "6",
+    .defaultValue = configToString(defaultSearch.IID_DEPTH),
     .minValue = 1,
     .maxValue = 20,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::IID_DEPTH),
-    .setter = searchSetter(&SearchConfigData::IID_DEPTH, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.IID_DEPTH; }),
+    .setter = SEARCH_CONFIG_SETTER(IID_DEPTH, parseInt)
   });
 
   definitions_.push_back({
@@ -589,12 +650,65 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Depth reduction for IID search",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "2",
+    .defaultValue = configToString(defaultSearch.IID_REDUCTION),
     .minValue = 1,
     .maxValue = 10,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::IID_REDUCTION),
-    .setter = searchSetter(&SearchConfigData::IID_REDUCTION, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.IID_REDUCTION; }),
+    .setter = SEARCH_CONFIG_SETTER(IID_REDUCTION, parseInt)
+  });
+
+  // Internal Iterative Reduction (IIR) - modern alternative to IID
+  definitions_.push_back({
+    .name = "USE_IIR",
+    .uciName = "Use Internal Iterative Reduction",
+    .description = "Enable IIR - 36% node reduction vs IID in testing",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.USE_IIR),
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.USE_IIR; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_IIR, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "IIR_DEPTH",
+    .uciName = "IIR Min Depth",
+    .description = "Minimum depth to apply IIR reduction",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.IIR_DEPTH),
+    .minValue = 1,
+    .maxValue = 20,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.IIR_DEPTH; }),
+    .setter = SEARCH_CONFIG_SETTER(IIR_DEPTH, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "IIR_REDUCTION",
+    .uciName = "IIR Depth Reduction",
+    .description = "How much to reduce depth when IIR triggers",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.IIR_REDUCTION),
+    .minValue = 1,
+    .maxValue = 5,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.IIR_REDUCTION; }),
+    .setter = SEARCH_CONFIG_SETTER(IIR_REDUCTION, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "IIR_ALL_NODES",
+    .uciName = "IIR All Nodes",
+    .description = "Apply IIR to all node types (true) or PV only (false)",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.IIR_ALL_NODES),
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.IIR_ALL_NODES; }),
+    .setter = SEARCH_CONFIG_SETTER(IIR_ALL_NODES, parseBool)
   });
 
   //===========================================================================
@@ -606,10 +720,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Enable mate distance pruning",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_MDP),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_MDP),
-    .setter = searchSetter(&SearchConfigData::USE_MDP, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_MDP; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_MDP, parseBool)
   });
 
   definitions_.push_back({
@@ -618,10 +732,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Enable stand-pat cutoff in quiescence",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_QS_STANDPAT_CUT),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_QS_STANDPAT_CUT),
-    .setter = searchSetter(&SearchConfigData::USE_QS_STANDPAT_CUT, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_QS_STANDPAT_CUT; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_QS_STANDPAT_CUT, parseBool)
   });
 
   definitions_.push_back({
@@ -630,10 +744,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Enable SEE pruning in quiescence",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_QS_SEE),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_QS_SEE),
-    .setter = searchSetter(&SearchConfigData::USE_QS_SEE, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_QS_SEE; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_QS_SEE, parseBool)
   });
 
   //===========================================================================
@@ -645,10 +759,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Enable razoring pruning",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_RAZORING),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_RAZORING),
-    .setter = searchSetter(&SearchConfigData::USE_RAZORING, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_RAZORING; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_RAZORING, parseBool)
   });
 
   definitions_.push_back({
@@ -657,12 +771,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Razoring margin in centipawns",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "531",
+    .defaultValue = configToString(defaultSearch.RAZOR_MARGIN),
     .minValue = 0,
     .maxValue = 1000,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::RAZOR_MARGIN),
-    .setter = searchSetter(&SearchConfigData::RAZOR_MARGIN, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.RAZOR_MARGIN; }),
+    .setter = SEARCH_CONFIG_SETTER(RAZOR_MARGIN, parseInt)
   });
 
   //===========================================================================
@@ -674,10 +788,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Enable reverse futility pruning",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_RFP),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_RFP),
-    .setter = searchSetter(&SearchConfigData::USE_RFP, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_RFP; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_RFP, parseBool)
   });
 
   definitions_.push_back({
@@ -686,14 +800,38 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Reverse futility pruning margins by depth",
     .valueType = IntArray,
     .domain = Search,
-    .defaultValue = "0,200,400,800",
+    .defaultValue = arrayToString(defaultSearch.RFP_MARGIN),
     .exposure = {.uci = false, .yaml = true, .display = true},
     .getter = [](const SearchConfigData& s, const EvalConfigData&) {
       return arrayToString(s.RFP_MARGIN);
     },
-    .setter = [](SearchConfigData& s, EvalConfigData&, const std::string& v) {
-      parseArray(v, s.RFP_MARGIN);
-    }
+    .setter = SEARCH_CONFIG_ARRAY_SETTER(RFP_MARGIN)
+  });
+
+  definitions_.push_back({
+    .name = "USE_RFP_IMPROVING",
+    .uciName = "RFP Improving",
+    .description = "Use improving flag to reduce RFP margin when not improving",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.USE_RFP_IMPROVING),
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.USE_RFP_IMPROVING; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_RFP_IMPROVING, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "RFP_IMPROVING_MARGIN",
+    .uciName = "RFP Improving Margin",
+    .description = "RFP margin reduction in centipawns when position is not improving",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.RFP_IMPROVING_MARGIN),
+    .minValue = 0,
+    .maxValue = 300,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.RFP_IMPROVING_MARGIN; }),
+    .setter = SEARCH_CONFIG_SETTER(RFP_IMPROVING_MARGIN, parseInt)
   });
 
   //===========================================================================
@@ -705,10 +843,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Enable null move pruning",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_NMP),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_NMP),
-    .setter = searchSetter(&SearchConfigData::USE_NMP, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_NMP; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_NMP, parseBool)
   });
 
   definitions_.push_back({
@@ -717,12 +855,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Minimum depth for null move pruning",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "3",
+    .defaultValue = configToString(defaultSearch.NMP_DEPTH),
     .minValue = 1,
     .maxValue = 10,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::NMP_DEPTH),
-    .setter = searchSetter(&SearchConfigData::NMP_DEPTH, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.NMP_DEPTH; }),
+    .setter = SEARCH_CONFIG_SETTER(NMP_DEPTH, parseInt)
   });
 
   definitions_.push_back({
@@ -731,12 +869,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Depth reduction for null move search",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "2",
+    .defaultValue = configToString(defaultSearch.NMP_REDUCTION),
     .minValue = 1,
     .maxValue = 6,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::NMP_REDUCTION),
-    .setter = searchSetter(&SearchConfigData::NMP_REDUCTION, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.NMP_REDUCTION; }),
+    .setter = SEARCH_CONFIG_SETTER(NMP_REDUCTION, parseInt)
   });
 
   definitions_.push_back({
@@ -745,10 +883,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Enable null move verification search",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_NMP_VERIFY),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_NMP_VERIFY),
-    .setter = searchSetter(&SearchConfigData::USE_NMP_VERIFY, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_NMP_VERIFY; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_NMP_VERIFY, parseBool)
   });
 
   definitions_.push_back({
@@ -757,12 +895,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Minimum depth for null move verification",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "6",
+    .defaultValue = configToString(defaultSearch.NMP_VERIFY_MIN_DEPTH),
     .minValue = 1,
     .maxValue = 20,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::NMP_VERIFY_MIN_DEPTH),
-    .setter = searchSetter(&SearchConfigData::NMP_VERIFY_MIN_DEPTH, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.NMP_VERIFY_MIN_DEPTH; }),
+    .setter = SEARCH_CONFIG_SETTER(NMP_VERIFY_MIN_DEPTH, parseInt)
   });
 
   definitions_.push_back({
@@ -771,12 +909,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Depth margin for null move verification",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "2",
+    .defaultValue = configToString(defaultSearch.NMP_VERIFY_MARGIN),
     .minValue = 0,
     .maxValue = 10,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::NMP_VERIFY_MARGIN),
-    .setter = searchSetter(&SearchConfigData::NMP_VERIFY_MARGIN, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.NMP_VERIFY_MARGIN; }),
+    .setter = SEARCH_CONFIG_SETTER(NMP_VERIFY_MARGIN, parseInt)
   });
 
   definitions_.push_back({
@@ -785,12 +923,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Margin for near-mate null move check",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "64",
+    .defaultValue = configToString(defaultSearch.NMP_NEAR_MATE_MARGIN),
     .minValue = 0,
     .maxValue = 200,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::NMP_NEAR_MATE_MARGIN),
-    .setter = searchSetter(&SearchConfigData::NMP_NEAR_MATE_MARGIN, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.NMP_NEAR_MATE_MARGIN; }),
+    .setter = SEARCH_CONFIG_SETTER(NMP_NEAR_MATE_MARGIN, parseInt)
   });
 
   definitions_.push_back({
@@ -799,10 +937,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Enable zugzwang guard for null move",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_NMP_ZUG_GUARD),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_NMP_ZUG_GUARD),
-    .setter = searchSetter(&SearchConfigData::USE_NMP_ZUG_GUARD, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_NMP_ZUG_GUARD; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_NMP_ZUG_GUARD, parseBool)
   });
 
   definitions_.push_back({
@@ -811,12 +949,38 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Non-pawn piece threshold for zugzwang guard",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "0",
+    .defaultValue = configToString(defaultSearch.NMP_ZUG_NONPAWN_THRESHOLD),
     .minValue = 0,
     .maxValue = 10,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::NMP_ZUG_NONPAWN_THRESHOLD),
-    .setter = searchSetter(&SearchConfigData::NMP_ZUG_NONPAWN_THRESHOLD, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.NMP_ZUG_NONPAWN_THRESHOLD; }),
+    .setter = SEARCH_CONFIG_SETTER(NMP_ZUG_NONPAWN_THRESHOLD, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "USE_NMP_IMPROVING",
+    .uciName = "Null Move Improving",
+    .description = "Use improving flag to increase NMP reduction when not improving",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.USE_NMP_IMPROVING),
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.USE_NMP_IMPROVING; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_NMP_IMPROVING, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "NMP_IMPROVING_REDUCTION",
+    .uciName = "Null Move Improving Reduction",
+    .description = "Extra NMP reduction depth when position is not improving",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.NMP_IMPROVING_REDUCTION),
+    .minValue = 0,
+    .maxValue = 3,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.NMP_IMPROVING_REDUCTION; }),
+    .setter = SEARCH_CONFIG_SETTER(NMP_IMPROVING_REDUCTION, parseInt)
   });
 
   //===========================================================================
@@ -828,10 +992,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Enable futility pruning",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_FP),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_FP),
-    .setter = searchSetter(&SearchConfigData::USE_FP, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_FP; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_FP, parseBool)
   });
 
   definitions_.push_back({
@@ -840,10 +1004,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Enable futility pruning in quiescence",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_QFP),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_QFP),
-    .setter = searchSetter(&SearchConfigData::USE_QFP, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_QFP; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_QFP, parseBool)
   });
 
   definitions_.push_back({
@@ -852,14 +1016,53 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Futility pruning margins by depth",
     .valueType = IntArray,
     .domain = Search,
-    .defaultValue = "0,100,200,300,500,900,1200",
+    .defaultValue = arrayToString(defaultSearch.FP_MARGIN),
     .exposure = {.uci = false, .yaml = true, .display = true},
     .getter = [](const SearchConfigData& s, const EvalConfigData&) {
       return arrayToString(s.FP_MARGIN);
     },
-    .setter = [](SearchConfigData& s, EvalConfigData&, const std::string& v) {
-      parseArray(v, s.FP_MARGIN);
-    }
+    .setter = SEARCH_CONFIG_ARRAY_SETTER(FP_MARGIN)
+  });
+
+  definitions_.push_back({
+    .name = "USE_FP_IMPROVING",
+    .uciName = "Futility Pruning Improving",
+    .description = "Use improving flag to reduce FP margin when not improving",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.USE_FP_IMPROVING),
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.USE_FP_IMPROVING; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_FP_IMPROVING, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "FP_IMPROVING_MARGIN",
+    .uciName = "Futility Pruning Improving Margin",
+    .description = "FP margin reduction in centipawns when position is not improving",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.FP_IMPROVING_MARGIN),
+    .minValue = 0,
+    .maxValue = 300,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.FP_IMPROVING_MARGIN; }),
+    .setter = SEARCH_CONFIG_SETTER(FP_IMPROVING_MARGIN, parseInt)
+  });
+
+  //===========================================================================
+  // IMPROVING FLAG
+  //===========================================================================
+  definitions_.push_back({
+    .name = "USE_IMPROVING",
+    .uciName = "Use Improving Flag",
+    .description = "Track if eval is improving vs 2 plies ago for pruning modulation",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.USE_IMPROVING),
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.USE_IMPROVING; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_IMPROVING, parseBool)
   });
 
   //===========================================================================
@@ -871,10 +1074,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Enable Late Move Reductions",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_LMR),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_LMR),
-    .setter = searchSetter(&SearchConfigData::USE_LMR, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_LMR; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_LMR, parseBool)
   });
 
   definitions_.push_back({
@@ -883,12 +1086,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Minimum depth for LMR",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "2",
+    .defaultValue = configToString(defaultSearch.LMR_MIN_DEPTH),
     .minValue = 1,
     .maxValue = 10,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::LMR_MIN_DEPTH),
-    .setter = searchSetter(&SearchConfigData::LMR_MIN_DEPTH, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.LMR_MIN_DEPTH; }),
+    .setter = SEARCH_CONFIG_SETTER(LMR_MIN_DEPTH, parseInt)
   });
 
   definitions_.push_back({
@@ -897,12 +1100,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Minimum moves searched before LMR",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "2",
+    .defaultValue = configToString(defaultSearch.LMR_MIN_MOVES),
     .minValue = 1,
     .maxValue = 10,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::LMR_MIN_MOVES),
-    .setter = searchSetter(&SearchConfigData::LMR_MIN_MOVES, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.LMR_MIN_MOVES; }),
+    .setter = SEARCH_CONFIG_SETTER(LMR_MIN_MOVES, parseInt)
   });
 
   definitions_.push_back({
@@ -911,10 +1114,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Use logarithmic formula instead of linear for LMR",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.LMR_USE_LOG_FORMULA),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::LMR_USE_LOG_FORMULA),
-    .setter = searchSetter(&SearchConfigData::LMR_USE_LOG_FORMULA, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.LMR_USE_LOG_FORMULA; }),
+    .setter = SEARCH_CONFIG_SETTER(LMR_USE_LOG_FORMULA, parseBool)
   });
 
   definitions_.push_back({
@@ -923,16 +1126,92 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Divisor for log formula: log(d)*log(m)/divisor",
     .valueType = Double,
     .domain = Search,
-    .defaultValue = "1.50",
+    .defaultValue = configToString(defaultSearch.LMR_LOG_BASE_DIV),
     .minValue = 50,
     .maxValue = 500,
     .exposure = {.uci = true, .yaml = true, .display = true},
     .getter = [](const SearchConfigData& s, const EvalConfigData&) {
       return configToString(s.LMR_LOG_BASE_DIV);
     },
-    .setter = [](SearchConfigData& s, EvalConfigData&, const std::string& v) {
-      s.LMR_LOG_BASE_DIV = parseDouble(v);
-    }
+    .setter = SEARCH_CONFIG_SETTER(LMR_LOG_BASE_DIV, parseDouble)
+  });
+
+  definitions_.push_back({
+    .name = "USE_LMR_IMPROVING",
+    .uciName = "Use LMR Improving",
+    .description = "Use improving flag to modulate LMR (extra reduction when not improving)",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.USE_LMR_IMPROVING),
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.USE_LMR_IMPROVING; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_LMR_IMPROVING, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "LMR_IMPROVING_REDUCTION",
+    .uciName = "LMR Improving Reduction",
+    .description = "Extra LMR reduction depth when position is not improving",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.LMR_IMPROVING_REDUCTION),
+    .minValue = 0,
+    .maxValue = 4,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.LMR_IMPROVING_REDUCTION; }),
+    .setter = SEARCH_CONFIG_SETTER(LMR_IMPROVING_REDUCTION, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "USE_LMR_HISTORY",
+    .uciName = "Use LMR History",
+    .description = "Use history score to modulate LMR (less reduction for moves with good history)",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.USE_LMR_HISTORY),
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.USE_LMR_HISTORY; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_LMR_HISTORY, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "LMR_HISTORY_DIVISOR",
+    .uciName = "LMR History Divisor",
+    .description = "Divisor for history score to reduction conversion (higher = less effect)",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.LMR_HISTORY_DIVISOR),
+    .minValue = 1024,
+    .maxValue = 32768,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.LMR_HISTORY_DIVISOR; }),
+    .setter = SEARCH_CONFIG_SETTER(LMR_HISTORY_DIVISOR, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "USE_LMR_CUTNODE",
+    .uciName = "Use LMR Cut Node",
+    .description = "Extra reduction on expected cut nodes (nodes expected to fail high)",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.USE_LMR_CUTNODE),
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.USE_LMR_CUTNODE; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_LMR_CUTNODE, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "LMR_CUTNODE_REDUCTION",
+    .uciName = "LMR Cut Node Reduction",
+    .description = "Extra LMR reduction depth on cut nodes",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.LMR_CUTNODE_REDUCTION),
+    .minValue = 0,
+    .maxValue = 4,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.LMR_CUTNODE_REDUCTION; }),
+    .setter = SEARCH_CONFIG_SETTER(LMR_CUTNODE_REDUCTION, parseInt)
   });
 
   definitions_.push_back({
@@ -941,10 +1220,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Enable Late Move Pruning",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_LMP),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_LMP),
-    .setter = searchSetter(&SearchConfigData::USE_LMP, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_LMP; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_LMP, parseBool)
   });
 
   definitions_.push_back({
@@ -953,14 +1232,24 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Late move pruning move count thresholds by depth",
     .valueType = IntArray,
     .domain = Search,
-    .defaultValue = "0,7,9,11,13,15,17,19,22,24,27,29,32,35,38,41",
+    .defaultValue = arrayToString(defaultSearch.LMP_MOVES),
     .exposure = {.uci = false, .yaml = true, .display = true},
     .getter = [](const SearchConfigData& s, const EvalConfigData&) {
       return arrayToString(s.LMP_MOVES);
     },
-    .setter = [](SearchConfigData& s, EvalConfigData&, const std::string& v) {
-      parseArray(v, s.LMP_MOVES);
-    }
+    .setter = SEARCH_CONFIG_ARRAY_SETTER(LMP_MOVES)
+  });
+
+  definitions_.push_back({
+    .name = "USE_LMP_IMPROVING",
+    .uciName = "Use LMP Improving",
+    .description = "Use improving flag to modulate LMP threshold (more moves when improving)",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.USE_LMP_IMPROVING),
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.USE_LMP_IMPROVING; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_LMP_IMPROVING, parseBool)
   });
 
   //===========================================================================
@@ -972,10 +1261,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Enable search extensions",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_EXTENSIONS),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_EXTENSIONS),
-    .setter = searchSetter(&SearchConfigData::USE_EXTENSIONS, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_EXTENSIONS; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_EXTENSIONS, parseBool)
   });
 
   definitions_.push_back({
@@ -984,24 +1273,50 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Enable check extension",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_CHECK_EXT),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_CHECK_EXT),
-    .setter = searchSetter(&SearchConfigData::USE_CHECK_EXT, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_CHECK_EXT; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_CHECK_EXT, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "CHECK_EXT_MIN_DEPTH",
+    .uciName = "Check Ext Min Depth",
+    .description = "Minimum depth to apply check extension",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.CHECK_EXT_MIN_DEPTH),
+    .minValue = 1,
+    .maxValue = 10,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.CHECK_EXT_MIN_DEPTH; }),
+    .setter = SEARCH_CONFIG_SETTER(CHECK_EXT_MIN_DEPTH, parseInt)
   });
 
   definitions_.push_back({
     .name = "CHECK_EXT_EARLY_LIMIT",
     .uciName = "Check Ext Early Limit",
-    .description = "Only extend checks in first N moves per node",
+    .description = "Only extend checks in first N moves per node (99 = no limit)",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "3",
+    .defaultValue = configToString(defaultSearch.CHECK_EXT_EARLY_LIMIT),
     .minValue = 0,
-    .maxValue = 20,
+    .maxValue = 99,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::CHECK_EXT_EARLY_LIMIT),
-    .setter = searchSetter(&SearchConfigData::CHECK_EXT_EARLY_LIMIT, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.CHECK_EXT_EARLY_LIMIT; }),
+    .setter = SEARCH_CONFIG_SETTER(CHECK_EXT_EARLY_LIMIT, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "USE_CHECK_EXT_SEE",
+    .uciName = "Check Ext SEE",
+    .description = "Only extend checks with SEE >= 0 (non-losing)",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.USE_CHECK_EXT_SEE),
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.USE_CHECK_EXT_SEE; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_CHECK_EXT_SEE, parseBool)
   });
 
   definitions_.push_back({
@@ -1010,10 +1325,24 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Enable threat extension",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "false",
+    .defaultValue = configToString(defaultSearch.USE_THREAT_EXT),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_THREAT_EXT),
-    .setter = searchSetter(&SearchConfigData::USE_THREAT_EXT, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_THREAT_EXT; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_THREAT_EXT, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "THREAT_EXT_MATE_DEPTH",
+    .uciName = "",  // Not exposed via UCI
+    .description = "Mate depth threshold for threat extension (mate-in-N detection)",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.THREAT_EXT_MATE_DEPTH),
+    .minValue = 2,
+    .maxValue = 10,
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.THREAT_EXT_MATE_DEPTH; }),
+    .setter = SEARCH_CONFIG_SETTER(THREAT_EXT_MATE_DEPTH, parseInt)
   });
 
   definitions_.push_back({
@@ -1022,10 +1351,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Add depth for extensions",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_EXT_ADD_DEPTH),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_EXT_ADD_DEPTH),
-    .setter = searchSetter(&SearchConfigData::USE_EXT_ADD_DEPTH, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_EXT_ADD_DEPTH; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_EXT_ADD_DEPTH, parseBool)
   });
 
   //===========================================================================
@@ -1037,10 +1366,22 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Enable singular extension",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_SINGULAR_EXT),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_SINGULAR_EXT),
-    .setter = searchSetter(&SearchConfigData::USE_SINGULAR_EXT, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_SINGULAR_EXT; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_SINGULAR_EXT, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "USE_SINGULAR_TT_BOUND",
+    .uciName = "Singular TT Bound",
+    .description = "Require BETA/EXACT TT bound for singular (too restrictive in practice)",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.USE_SINGULAR_TT_BOUND),
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.USE_SINGULAR_TT_BOUND; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_SINGULAR_TT_BOUND, parseBool)
   });
 
   definitions_.push_back({
@@ -1049,12 +1390,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Centipawns below TT value to consider singular",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "64",
+    .defaultValue = configToString(defaultSearch.SINGULAR_MARGIN),
     .minValue = 0,
     .maxValue = 200,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::SINGULAR_MARGIN),
-    .setter = searchSetter(&SearchConfigData::SINGULAR_MARGIN, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.SINGULAR_MARGIN; }),
+    .setter = SEARCH_CONFIG_SETTER(SINGULAR_MARGIN, parseInt)
   });
 
   definitions_.push_back({
@@ -1063,12 +1404,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Minimum depth to attempt singular extension",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "8",
+    .defaultValue = configToString(defaultSearch.SINGULAR_MIN_DEPTH),
     .minValue = 1,
     .maxValue = 20,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::SINGULAR_MIN_DEPTH),
-    .setter = searchSetter(&SearchConfigData::SINGULAR_MIN_DEPTH, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.SINGULAR_MIN_DEPTH; }),
+    .setter = SEARCH_CONFIG_SETTER(SINGULAR_MIN_DEPTH, parseInt)
   });
 
   definitions_.push_back({
@@ -1077,12 +1418,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Depth reduction for verification search",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "4",
+    .defaultValue = configToString(defaultSearch.SINGULAR_REDUCTION),
     .minValue = 1,
     .maxValue = 10,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::SINGULAR_REDUCTION),
-    .setter = searchSetter(&SearchConfigData::SINGULAR_REDUCTION, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.SINGULAR_REDUCTION; }),
+    .setter = SEARCH_CONFIG_SETTER(SINGULAR_REDUCTION, parseInt)
   });
 
   //===========================================================================
@@ -1094,12 +1435,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Estimated moves left in opening phase",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "36",
+    .defaultValue = configToString(defaultSearch.MOVES_LEFT_OPENING),
     .minValue = 5,
     .maxValue = 60,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::MOVES_LEFT_OPENING),
-    .setter = searchSetter(&SearchConfigData::MOVES_LEFT_OPENING, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.MOVES_LEFT_OPENING; }),
+    .setter = SEARCH_CONFIG_SETTER(MOVES_LEFT_OPENING, parseInt)
   });
 
   definitions_.push_back({
@@ -1108,12 +1449,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Estimated moves left in midgame phase",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "28",
+    .defaultValue = configToString(defaultSearch.MOVES_LEFT_MIDGAME),
     .minValue = 5,
     .maxValue = 60,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::MOVES_LEFT_MIDGAME),
-    .setter = searchSetter(&SearchConfigData::MOVES_LEFT_MIDGAME, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.MOVES_LEFT_MIDGAME; }),
+    .setter = SEARCH_CONFIG_SETTER(MOVES_LEFT_MIDGAME, parseInt)
   });
 
   definitions_.push_back({
@@ -1122,12 +1463,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Estimated moves left in endgame phase",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "16",
+    .defaultValue = configToString(defaultSearch.MOVES_LEFT_ENDGAME),
     .minValue = 5,
     .maxValue = 60,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::MOVES_LEFT_ENDGAME),
-    .setter = searchSetter(&SearchConfigData::MOVES_LEFT_ENDGAME, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.MOVES_LEFT_ENDGAME; }),
+    .setter = SEARCH_CONFIG_SETTER(MOVES_LEFT_ENDGAME, parseInt)
   });
 
   definitions_.push_back({
@@ -1136,12 +1477,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Estimated moves left in low material endgame",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "10",
+    .defaultValue = configToString(defaultSearch.MOVES_LEFT_LOW_MAT),
     .minValue = 1,
     .maxValue = 30,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::MOVES_LEFT_LOW_MAT),
-    .setter = searchSetter(&SearchConfigData::MOVES_LEFT_LOW_MAT, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.MOVES_LEFT_LOW_MAT; }),
+    .setter = SEARCH_CONFIG_SETTER(MOVES_LEFT_LOW_MAT, parseInt)
   });
 
   definitions_.push_back({
@@ -1150,12 +1491,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Estimated moves left in queenless middlegame",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "22",
+    .defaultValue = configToString(defaultSearch.MOVES_LEFT_QUEENLESS),
     .minValue = 5,
     .maxValue = 60,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::MOVES_LEFT_QUEENLESS),
-    .setter = searchSetter(&SearchConfigData::MOVES_LEFT_QUEENLESS, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.MOVES_LEFT_QUEENLESS; }),
+    .setter = SEARCH_CONFIG_SETTER(MOVES_LEFT_QUEENLESS, parseInt)
   });
 
   //===========================================================================
@@ -1167,12 +1508,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Non-pawn pieces threshold for heavy position",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "10",
+    .defaultValue = configToString(defaultSearch.NPP_HEAVY_THRESHOLD),
     .minValue = 0,
     .maxValue = 20,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::NPP_HEAVY_THRESHOLD),
-    .setter = searchSetter(&SearchConfigData::NPP_HEAVY_THRESHOLD, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.NPP_HEAVY_THRESHOLD; }),
+    .setter = SEARCH_CONFIG_SETTER(NPP_HEAVY_THRESHOLD, parseInt)
   });
 
   definitions_.push_back({
@@ -1181,12 +1522,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Non-pawn pieces threshold for light position",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "4",
+    .defaultValue = configToString(defaultSearch.NPP_LIGHT_THRESHOLD),
     .minValue = 0,
     .maxValue = 20,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::NPP_LIGHT_THRESHOLD),
-    .setter = searchSetter(&SearchConfigData::NPP_LIGHT_THRESHOLD, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.NPP_LIGHT_THRESHOLD; }),
+    .setter = SEARCH_CONFIG_SETTER(NPP_LIGHT_THRESHOLD, parseInt)
   });
 
   //===========================================================================
@@ -1198,12 +1539,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Half-move clock threshold for repetition risk",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "80",
+    .defaultValue = configToString(defaultSearch.REPETITION_HMC_HIGH),
     .minValue = 0,
     .maxValue = 100,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::REPETITION_HMC_HIGH),
-    .setter = searchSetter(&SearchConfigData::REPETITION_HMC_HIGH, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.REPETITION_HMC_HIGH; }),
+    .setter = SEARCH_CONFIG_SETTER(REPETITION_HMC_HIGH, parseInt)
   });
 
   definitions_.push_back({
@@ -1212,12 +1553,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Moves-left penalty when repetition risk is high",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "6",
+    .defaultValue = configToString(defaultSearch.REPETITION_RISK_PENALTY),
     .minValue = 0,
     .maxValue = 20,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::REPETITION_RISK_PENALTY),
-    .setter = searchSetter(&SearchConfigData::REPETITION_RISK_PENALTY, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.REPETITION_RISK_PENALTY; }),
+    .setter = SEARCH_CONFIG_SETTER(REPETITION_RISK_PENALTY, parseInt)
   });
 
   definitions_.push_back({
@@ -1226,12 +1567,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Minimum clamped value for moves-left estimate",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "6",
+    .defaultValue = configToString(defaultSearch.MOVES_LEFT_MIN_CLAMP),
     .minValue = 1,
     .maxValue = 20,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::MOVES_LEFT_MIN_CLAMP),
-    .setter = searchSetter(&SearchConfigData::MOVES_LEFT_MIN_CLAMP, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.MOVES_LEFT_MIN_CLAMP; }),
+    .setter = SEARCH_CONFIG_SETTER(MOVES_LEFT_MIN_CLAMP, parseInt)
   });
 
   definitions_.push_back({
@@ -1240,12 +1581,71 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Maximum clamped value for moves-left estimate",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "50",
+    .defaultValue = configToString(defaultSearch.MOVES_LEFT_MAX_CLAMP),
     .minValue = 10,
     .maxValue = 100,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::MOVES_LEFT_MAX_CLAMP),
-    .setter = searchSetter(&SearchConfigData::MOVES_LEFT_MAX_CLAMP, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.MOVES_LEFT_MAX_CLAMP; }),
+    .setter = SEARCH_CONFIG_SETTER(MOVES_LEFT_MAX_CLAMP, parseInt)
+  });
+
+  //===========================================================================
+  // TIME MANAGEMENT - EVAL VOLATILITY
+  //===========================================================================
+  definitions_.push_back({
+    .name = "USE_EVAL_VOLATILITY",
+    .uciName = "Use Eval Volatility",
+    .description = "Enable eval volatility tracking for time management",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.USE_EVAL_VOLATILITY),
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.USE_EVAL_VOLATILITY; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_EVAL_VOLATILITY, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "VOLATILITY_MIN_DEPTH",
+    .uciName = "Volatility Min Depth",
+    .description = "Minimum depth to start eval volatility tracking",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.VOLATILITY_MIN_DEPTH),
+    .minValue = 1,
+    .maxValue = 20,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.VOLATILITY_MIN_DEPTH; }),
+    .setter = SEARCH_CONFIG_SETTER(VOLATILITY_MIN_DEPTH, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "VOLATILITY_THRESHOLD",
+    .uciName = "Volatility Threshold",
+    .description = "Eval swing threshold in centipawns to trigger extra time",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.VOLATILITY_THRESHOLD),
+    .minValue = 50,
+    .maxValue = 500,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.VOLATILITY_THRESHOLD; }),
+    .setter = SEARCH_CONFIG_SETTER(VOLATILITY_THRESHOLD, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "VOLATILITY_FACTOR",
+    .uciName = "Volatility Factor Pct",
+    .description = "Multiply remaining time by this when volatile (> 1.0)",
+    .valueType = Double,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.VOLATILITY_FACTOR),
+    .minValue = 100,
+    .maxValue = 200,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = [](const SearchConfigData& s, const EvalConfigData&) {
+      return configToString(s.VOLATILITY_FACTOR);
+    },
+    .setter = SEARCH_CONFIG_SETTER(VOLATILITY_FACTOR, parseDouble)
   });
 
   //===========================================================================
@@ -1257,10 +1657,10 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Enable best-move instability tracking for time management",
     .valueType = Bool,
     .domain = Search,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultSearch.USE_BESTMOVE_INSTABILITY),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::USE_BESTMOVE_INSTABILITY),
-    .setter = searchSetter(&SearchConfigData::USE_BESTMOVE_INSTABILITY, parseBool)
+    .getter = searchGetter([](const auto& s){ return s.USE_BESTMOVE_INSTABILITY; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_BESTMOVE_INSTABILITY, parseBool)
   });
 
   definitions_.push_back({
@@ -1269,12 +1669,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Minimum depth to start instability tracking",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "5",
+    .defaultValue = configToString(defaultSearch.INSTABILITY_MIN_DEPTH),
     .minValue = 1,
     .maxValue = 20,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::INSTABILITY_MIN_DEPTH),
-    .setter = searchSetter(&SearchConfigData::INSTABILITY_MIN_DEPTH, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.INSTABILITY_MIN_DEPTH; }),
+    .setter = SEARCH_CONFIG_SETTER(INSTABILITY_MIN_DEPTH, parseInt)
   });
 
   definitions_.push_back({
@@ -1283,12 +1683,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Consecutive stable iterations to trigger time reduction",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "3",
+    .defaultValue = configToString(defaultSearch.INSTABILITY_STABLE_COUNT),
     .minValue = 1,
     .maxValue = 10,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::INSTABILITY_STABLE_COUNT),
-    .setter = searchSetter(&SearchConfigData::INSTABILITY_STABLE_COUNT, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.INSTABILITY_STABLE_COUNT; }),
+    .setter = SEARCH_CONFIG_SETTER(INSTABILITY_STABLE_COUNT, parseInt)
   });
 
   definitions_.push_back({
@@ -1297,12 +1697,12 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Number of best-move changes to trigger time extension",
     .valueType = Int,
     .domain = Search,
-    .defaultValue = "2",
+    .defaultValue = configToString(defaultSearch.INSTABILITY_CHANGE_THRESHOLD),
     .minValue = 1,
     .maxValue = 10,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = searchGetter(&SearchConfigData::INSTABILITY_CHANGE_THRESHOLD),
-    .setter = searchSetter(&SearchConfigData::INSTABILITY_CHANGE_THRESHOLD, parseInt)
+    .getter = searchGetter([](const auto& s){ return s.INSTABILITY_CHANGE_THRESHOLD; }),
+    .setter = SEARCH_CONFIG_SETTER(INSTABILITY_CHANGE_THRESHOLD, parseInt)
   });
 
   definitions_.push_back({
@@ -1311,16 +1711,14 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Multiply remaining time by this when stable (< 1.0)",
     .valueType = Double,
     .domain = Search,
-    .defaultValue = "0.80",
+    .defaultValue = configToString(defaultSearch.INSTABILITY_STABLE_FACTOR),
     .minValue = 50,
     .maxValue = 100,
     .exposure = {.uci = true, .yaml = true, .display = true},
     .getter = [](const SearchConfigData& s, const EvalConfigData&) {
       return configToString(s.INSTABILITY_STABLE_FACTOR);
     },
-    .setter = [](SearchConfigData& s, EvalConfigData&, const std::string& v) {
-      s.INSTABILITY_STABLE_FACTOR = parseDouble(v);
-    }
+    .setter = SEARCH_CONFIG_SETTER(INSTABILITY_STABLE_FACTOR, parseDouble)
   });
 
   definitions_.push_back({
@@ -1329,16 +1727,30 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .description = "Multiply remaining time by this when unstable (> 1.0)",
     .valueType = Double,
     .domain = Search,
-    .defaultValue = "1.25",
+    .defaultValue = configToString(defaultSearch.INSTABILITY_EXTEND_FACTOR),
     .minValue = 100,
     .maxValue = 200,
     .exposure = {.uci = true, .yaml = true, .display = true},
     .getter = [](const SearchConfigData& s, const EvalConfigData&) {
       return configToString(s.INSTABILITY_EXTEND_FACTOR);
     },
-    .setter = [](SearchConfigData& s, EvalConfigData&, const std::string& v) {
-      s.INSTABILITY_EXTEND_FACTOR = parseDouble(v);
-    }
+    .setter = SEARCH_CONFIG_SETTER(INSTABILITY_EXTEND_FACTOR, parseDouble)
+  });
+
+  definitions_.push_back({
+    .name = "MAX_EXTRA_TIME_FACTOR",
+    .uciName = "Max Extra Time Factor Pct",
+    .description = "Maximum extra time as multiple of base time (2.0 = max 3x total budget)",
+    .valueType = Double,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.MAX_EXTRA_TIME_FACTOR),
+    .minValue = 50,
+    .maxValue = 500,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = [](const SearchConfigData& s, const EvalConfigData&) {
+      return configToString(s.MAX_EXTRA_TIME_FACTOR);
+    },
+    .setter = SEARCH_CONFIG_SETTER(MAX_EXTRA_TIME_FACTOR, parseDouble)
   });
 
   // clang-format on
@@ -1352,18 +1764,18 @@ void ConfigRegistry::initializeEvalDefinitions() {
   using enum ConfigValueType;
   using enum ConfigDomain;
 
-  // Helper lambdas for Eval configs
-  auto evalGetter = [](auto member) {
-    return [member](const SearchConfigData&, const EvalConfigData& e) {
-      return configToString(e.*member);
+  // Default instance for referencing default values - avoids duplicating defaults in two places.
+  // The struct's member initializers are the single source of truth.
+  static const EvalConfigData defaultEval{};
+
+  // evalGetter: same pattern as searchGetter but for EvalConfigData.
+  auto evalGetter = [](auto getterFn) {
+    return [getterFn](const SearchConfigData&, const EvalConfigData& e) {
+      return configToString(getterFn(e));
     };
   };
 
-  auto evalSetter = [](auto member, auto parser) {
-    return [member, parser](SearchConfigData&, EvalConfigData& e, const std::string& v) {
-      e.*member = parser(v);
-    };
-  };
+  // evalSetter is no longer used — replaced by EVAL_CONFIG_SETTER macro at each call site.
 
   // clang-format off
 
@@ -1378,8 +1790,8 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .domain = Debug,
     .defaultValue = "fallback",
     .exposure = {.uci = false, .yaml = true, .display = false},
-    .getter = evalGetter(&EvalConfigData::EVAL_CONFIG_SOURCE),
-    .setter = evalSetter(&EvalConfigData::EVAL_CONFIG_SOURCE, parseString)
+    .getter = evalGetter([](const auto& e){ return e.EVAL_CONFIG_SOURCE; }),
+    .setter = EVAL_CONFIG_SETTER(EVAL_CONFIG_SOURCE, parseString)
   });
 
   //===========================================================================
@@ -1391,10 +1803,10 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Enable material evaluation",
     .valueType = Bool,
     .domain = Eval,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultEval.USE_MATERIAL),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::USE_MATERIAL),
-    .setter = evalSetter(&EvalConfigData::USE_MATERIAL, parseBool)
+    .getter = evalGetter([](const auto& e){ return e.USE_MATERIAL; }),
+    .setter = EVAL_CONFIG_SETTER(USE_MATERIAL, parseBool)
   });
 
   definitions_.push_back({
@@ -1403,10 +1815,10 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Enable positional evaluation",
     .valueType = Bool,
     .domain = Eval,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultEval.USE_POSITIONAL),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::USE_POSITIONAL),
-    .setter = evalSetter(&EvalConfigData::USE_POSITIONAL, parseBool)
+    .getter = evalGetter([](const auto& e){ return e.USE_POSITIONAL; }),
+    .setter = EVAL_CONFIG_SETTER(USE_POSITIONAL, parseBool)
   });
 
   //===========================================================================
@@ -1418,10 +1830,10 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Enable tempo bonus",
     .valueType = Bool,
     .domain = Eval,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultEval.USE_TEMPO),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::USE_TEMPO),
-    .setter = evalSetter(&EvalConfigData::USE_TEMPO, parseBool)
+    .getter = evalGetter([](const auto& e){ return e.USE_TEMPO; }),
+    .setter = EVAL_CONFIG_SETTER(USE_TEMPO, parseBool)
   });
 
   definitions_.push_back({
@@ -1430,12 +1842,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Tempo bonus in centipawns",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "34",
+    .defaultValue = configToString(defaultEval.TEMPO),
     .minValue = 0,
     .maxValue = 100,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::TEMPO),
-    .setter = evalSetter(&EvalConfigData::TEMPO, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.TEMPO; }),
+    .setter = EVAL_CONFIG_SETTER(TEMPO, parseInt)
   });
 
   //===========================================================================
@@ -1447,10 +1859,10 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Enable lazy evaluation cutoff",
     .valueType = Bool,
     .domain = Eval,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultEval.USE_LAZY_EVAL),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::USE_LAZY_EVAL),
-    .setter = evalSetter(&EvalConfigData::USE_LAZY_EVAL, parseBool)
+    .getter = evalGetter([](const auto& e){ return e.USE_LAZY_EVAL; }),
+    .setter = EVAL_CONFIG_SETTER(USE_LAZY_EVAL, parseBool)
   });
 
   definitions_.push_back({
@@ -1459,12 +1871,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Lazy evaluation threshold in centipawns",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "700",
+    .defaultValue = configToString(defaultEval.LAZY_THRESHOLD),
     .minValue = 0,
     .maxValue = 2000,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::LAZY_THRESHOLD),
-    .setter = evalSetter(&EvalConfigData::LAZY_THRESHOLD, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.LAZY_THRESHOLD; }),
+    .setter = EVAL_CONFIG_SETTER(LAZY_THRESHOLD, parseInt)
   });
 
   //===========================================================================
@@ -1476,10 +1888,10 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Enable pawn structure evaluation",
     .valueType = Bool,
     .domain = Eval,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultEval.USE_PAWN_EVAL),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::USE_PAWN_EVAL),
-    .setter = evalSetter(&EvalConfigData::USE_PAWN_EVAL, parseBool)
+    .getter = evalGetter([](const auto& e){ return e.USE_PAWN_EVAL; }),
+    .setter = EVAL_CONFIG_SETTER(USE_PAWN_EVAL, parseBool)
   });
 
   definitions_.push_back({
@@ -1488,10 +1900,10 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Enable pawn hash table",
     .valueType = Bool,
     .domain = Eval,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultEval.USE_PAWN_TT),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::USE_PAWN_TT),
-    .setter = evalSetter(&EvalConfigData::USE_PAWN_TT, parseBool)
+    .getter = evalGetter([](const auto& e){ return e.USE_PAWN_TT; }),
+    .setter = EVAL_CONFIG_SETTER(USE_PAWN_TT, parseBool)
   });
 
   definitions_.push_back({
@@ -1500,12 +1912,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Pawn hash table size in MB",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "64",
+    .defaultValue = configToString(defaultEval.PAWN_TT_SIZE_MB),
     .minValue = 1,
     .maxValue = 1024,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::PAWN_TT_SIZE_MB),
-    .setter = evalSetter(&EvalConfigData::PAWN_TT_SIZE_MB, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.PAWN_TT_SIZE_MB; }),
+    .setter = EVAL_CONFIG_SETTER(PAWN_TT_SIZE_MB, parseInt)
   });
 
   //===========================================================================
@@ -1517,12 +1929,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Isolated pawn penalty in middlegame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "-10",
+    .defaultValue = configToString(defaultEval.ISOLATED_PAWN_MID_WEIGHT),
     .minValue = -100,
     .maxValue = 0,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::ISOLATED_PAWN_MID_WEIGHT),
-    .setter = evalSetter(&EvalConfigData::ISOLATED_PAWN_MID_WEIGHT, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.ISOLATED_PAWN_MID_WEIGHT; }),
+    .setter = EVAL_CONFIG_SETTER(ISOLATED_PAWN_MID_WEIGHT, parseInt)
   });
 
   definitions_.push_back({
@@ -1531,12 +1943,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Isolated pawn penalty in endgame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "-20",
+    .defaultValue = configToString(defaultEval.ISOLATED_PAWN_END_WEIGHT),
     .minValue = -100,
     .maxValue = 0,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::ISOLATED_PAWN_END_WEIGHT),
-    .setter = evalSetter(&EvalConfigData::ISOLATED_PAWN_END_WEIGHT, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.ISOLATED_PAWN_END_WEIGHT; }),
+    .setter = EVAL_CONFIG_SETTER(ISOLATED_PAWN_END_WEIGHT, parseInt)
   });
 
   definitions_.push_back({
@@ -1545,12 +1957,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Doubled pawn penalty in middlegame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "-10",
+    .defaultValue = configToString(defaultEval.DOUBLED_PAWN_MID_WEIGHT),
     .minValue = -100,
     .maxValue = 0,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::DOUBLED_PAWN_MID_WEIGHT),
-    .setter = evalSetter(&EvalConfigData::DOUBLED_PAWN_MID_WEIGHT, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.DOUBLED_PAWN_MID_WEIGHT; }),
+    .setter = EVAL_CONFIG_SETTER(DOUBLED_PAWN_MID_WEIGHT, parseInt)
   });
 
   definitions_.push_back({
@@ -1559,12 +1971,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Doubled pawn penalty in endgame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "-30",
+    .defaultValue = configToString(defaultEval.DOUBLED_PAWN_END_WEIGHT),
     .minValue = -100,
     .maxValue = 0,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::DOUBLED_PAWN_END_WEIGHT),
-    .setter = evalSetter(&EvalConfigData::DOUBLED_PAWN_END_WEIGHT, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.DOUBLED_PAWN_END_WEIGHT; }),
+    .setter = EVAL_CONFIG_SETTER(DOUBLED_PAWN_END_WEIGHT, parseInt)
   });
 
   definitions_.push_back({
@@ -1573,12 +1985,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Passed pawn bonus in middlegame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "20",
+    .defaultValue = configToString(defaultEval.PASSED_PAWN_MID_WEIGHT),
     .minValue = 0,
     .maxValue = 100,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::PASSED_PAWN_MID_WEIGHT),
-    .setter = evalSetter(&EvalConfigData::PASSED_PAWN_MID_WEIGHT, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.PASSED_PAWN_MID_WEIGHT; }),
+    .setter = EVAL_CONFIG_SETTER(PASSED_PAWN_MID_WEIGHT, parseInt)
   });
 
   definitions_.push_back({
@@ -1587,12 +1999,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Passed pawn bonus in endgame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "40",
+    .defaultValue = configToString(defaultEval.PASSED_PAWN_END_WEIGHT),
     .minValue = 0,
     .maxValue = 200,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::PASSED_PAWN_END_WEIGHT),
-    .setter = evalSetter(&EvalConfigData::PASSED_PAWN_END_WEIGHT, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.PASSED_PAWN_END_WEIGHT; }),
+    .setter = EVAL_CONFIG_SETTER(PASSED_PAWN_END_WEIGHT, parseInt)
   });
 
   definitions_.push_back({
@@ -1601,12 +2013,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Blocked pawn penalty in middlegame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "-2",
+    .defaultValue = configToString(defaultEval.BLOCKED_PAWN_MID_WEIGHT),
     .minValue = -50,
     .maxValue = 0,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::BLOCKED_PAWN_MID_WEIGHT),
-    .setter = evalSetter(&EvalConfigData::BLOCKED_PAWN_MID_WEIGHT, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.BLOCKED_PAWN_MID_WEIGHT; }),
+    .setter = EVAL_CONFIG_SETTER(BLOCKED_PAWN_MID_WEIGHT, parseInt)
   });
 
   definitions_.push_back({
@@ -1615,12 +2027,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Blocked pawn penalty in endgame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "-20",
+    .defaultValue = configToString(defaultEval.BLOCKED_PAWN_END_WEIGHT),
     .minValue = -50,
     .maxValue = 0,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::BLOCKED_PAWN_END_WEIGHT),
-    .setter = evalSetter(&EvalConfigData::BLOCKED_PAWN_END_WEIGHT, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.BLOCKED_PAWN_END_WEIGHT; }),
+    .setter = EVAL_CONFIG_SETTER(BLOCKED_PAWN_END_WEIGHT, parseInt)
   });
 
   definitions_.push_back({
@@ -1629,12 +2041,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Phalanx pawn bonus in middlegame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "4",
+    .defaultValue = configToString(defaultEval.PHALANX_PAWN_MID_WEIGHT),
     .minValue = 0,
     .maxValue = 50,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::PHALANX_PAWN_MID_WEIGHT),
-    .setter = evalSetter(&EvalConfigData::PHALANX_PAWN_MID_WEIGHT, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.PHALANX_PAWN_MID_WEIGHT; }),
+    .setter = EVAL_CONFIG_SETTER(PHALANX_PAWN_MID_WEIGHT, parseInt)
   });
 
   definitions_.push_back({
@@ -1643,12 +2055,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Phalanx pawn bonus in endgame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "4",
+    .defaultValue = configToString(defaultEval.PHALANX_PAWN_END_WEIGHT),
     .minValue = 0,
     .maxValue = 50,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::PHALANX_PAWN_END_WEIGHT),
-    .setter = evalSetter(&EvalConfigData::PHALANX_PAWN_END_WEIGHT, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.PHALANX_PAWN_END_WEIGHT; }),
+    .setter = EVAL_CONFIG_SETTER(PHALANX_PAWN_END_WEIGHT, parseInt)
   });
 
   definitions_.push_back({
@@ -1657,12 +2069,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Supported pawn bonus in middlegame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "10",
+    .defaultValue = configToString(defaultEval.SUPPORTED_PAWN_MID_WEIGHT),
     .minValue = 0,
     .maxValue = 50,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::SUPPORTED_PAWN_MID_WEIGHT),
-    .setter = evalSetter(&EvalConfigData::SUPPORTED_PAWN_MID_WEIGHT, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.SUPPORTED_PAWN_MID_WEIGHT; }),
+    .setter = EVAL_CONFIG_SETTER(SUPPORTED_PAWN_MID_WEIGHT, parseInt)
   });
 
   definitions_.push_back({
@@ -1671,12 +2083,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Supported pawn bonus in endgame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "15",
+    .defaultValue = configToString(defaultEval.SUPPORTED_PAWN_END_WEIGHT),
     .minValue = 0,
     .maxValue = 50,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::SUPPORTED_PAWN_END_WEIGHT),
-    .setter = evalSetter(&EvalConfigData::SUPPORTED_PAWN_END_WEIGHT, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.SUPPORTED_PAWN_END_WEIGHT; }),
+    .setter = EVAL_CONFIG_SETTER(SUPPORTED_PAWN_END_WEIGHT, parseInt)
   });
 
   //===========================================================================
@@ -1688,10 +2100,10 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Enable piece-specific evaluation",
     .valueType = Bool,
     .domain = Eval,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultEval.USE_PIECE_EVAL),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::USE_PIECE_EVAL),
-    .setter = evalSetter(&EvalConfigData::USE_PIECE_EVAL, parseBool)
+    .getter = evalGetter([](const auto& e){ return e.USE_PIECE_EVAL; }),
+    .setter = EVAL_CONFIG_SETTER(USE_PIECE_EVAL, parseBool)
   });
 
   //===========================================================================
@@ -1703,10 +2115,10 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Enable bishop pair bonus",
     .valueType = Bool,
     .domain = Eval,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultEval.USE_BISHOP_PAIR_BONUS),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::USE_BISHOP_PAIR_BONUS),
-    .setter = evalSetter(&EvalConfigData::USE_BISHOP_PAIR_BONUS, parseBool)
+    .getter = evalGetter([](const auto& e){ return e.USE_BISHOP_PAIR_BONUS; }),
+    .setter = EVAL_CONFIG_SETTER(USE_BISHOP_PAIR_BONUS, parseBool)
   });
 
   definitions_.push_back({
@@ -1715,12 +2127,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Bishop pair bonus in middlegame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "20",
+    .defaultValue = configToString(defaultEval.BISHOP_PAIR_MID_BONUS),
     .minValue = 0,
     .maxValue = 100,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::BISHOP_PAIR_MID_BONUS),
-    .setter = evalSetter(&EvalConfigData::BISHOP_PAIR_MID_BONUS, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.BISHOP_PAIR_MID_BONUS; }),
+    .setter = EVAL_CONFIG_SETTER(BISHOP_PAIR_MID_BONUS, parseInt)
   });
 
   definitions_.push_back({
@@ -1729,12 +2141,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Bishop pair bonus in endgame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "20",
+    .defaultValue = configToString(defaultEval.BISHOP_PAIR_END_BONUS),
     .minValue = 0,
     .maxValue = 100,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::BISHOP_PAIR_END_BONUS),
-    .setter = evalSetter(&EvalConfigData::BISHOP_PAIR_END_BONUS, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.BISHOP_PAIR_END_BONUS; }),
+    .setter = EVAL_CONFIG_SETTER(BISHOP_PAIR_END_BONUS, parseInt)
   });
 
   //===========================================================================
@@ -1746,10 +2158,10 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Enable knight mobility evaluation",
     .valueType = Bool,
     .domain = Eval,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultEval.USE_KNIGHT_MOBILITY),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::USE_KNIGHT_MOBILITY),
-    .setter = evalSetter(&EvalConfigData::USE_KNIGHT_MOBILITY, parseBool)
+    .getter = evalGetter([](const auto& e){ return e.USE_KNIGHT_MOBILITY; }),
+    .setter = EVAL_CONFIG_SETTER(USE_KNIGHT_MOBILITY, parseBool)
   });
 
   definitions_.push_back({
@@ -1758,12 +2170,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Knight mobility bonus per move in middlegame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "3",
+    .defaultValue = configToString(defaultEval.KNIGHT_MOBILITY_MID_PER_MOVE),
     .minValue = 0,
     .maxValue = 20,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::KNIGHT_MOBILITY_MID_PER_MOVE),
-    .setter = evalSetter(&EvalConfigData::KNIGHT_MOBILITY_MID_PER_MOVE, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.KNIGHT_MOBILITY_MID_PER_MOVE; }),
+    .setter = EVAL_CONFIG_SETTER(KNIGHT_MOBILITY_MID_PER_MOVE, parseInt)
   });
 
   definitions_.push_back({
@@ -1772,12 +2184,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Knight mobility bonus per move in endgame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "2",
+    .defaultValue = configToString(defaultEval.KNIGHT_MOBILITY_END_PER_MOVE),
     .minValue = 0,
     .maxValue = 20,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::KNIGHT_MOBILITY_END_PER_MOVE),
-    .setter = evalSetter(&EvalConfigData::KNIGHT_MOBILITY_END_PER_MOVE, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.KNIGHT_MOBILITY_END_PER_MOVE; }),
+    .setter = EVAL_CONFIG_SETTER(KNIGHT_MOBILITY_END_PER_MOVE, parseInt)
   });
 
   definitions_.push_back({
@@ -1786,12 +2198,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Knight penalty for <=1 moves in middlegame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "-6",
+    .defaultValue = configToString(defaultEval.KNIGHT_LOW_MOBILITY_LEQ1_MID),
     .minValue = -50,
     .maxValue = 0,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::KNIGHT_LOW_MOBILITY_LEQ1_MID),
-    .setter = evalSetter(&EvalConfigData::KNIGHT_LOW_MOBILITY_LEQ1_MID, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.KNIGHT_LOW_MOBILITY_LEQ1_MID; }),
+    .setter = EVAL_CONFIG_SETTER(KNIGHT_LOW_MOBILITY_LEQ1_MID, parseInt)
   });
 
   definitions_.push_back({
@@ -1800,12 +2212,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Knight penalty for <=1 moves in endgame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "-6",
+    .defaultValue = configToString(defaultEval.KNIGHT_LOW_MOBILITY_LEQ1_END),
     .minValue = -50,
     .maxValue = 0,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::KNIGHT_LOW_MOBILITY_LEQ1_END),
-    .setter = evalSetter(&EvalConfigData::KNIGHT_LOW_MOBILITY_LEQ1_END, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.KNIGHT_LOW_MOBILITY_LEQ1_END; }),
+    .setter = EVAL_CONFIG_SETTER(KNIGHT_LOW_MOBILITY_LEQ1_END, parseInt)
   });
 
   definitions_.push_back({
@@ -1814,12 +2226,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Knight penalty for <=2 moves in middlegame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "-3",
+    .defaultValue = configToString(defaultEval.KNIGHT_LOW_MOBILITY_LEQ2_MID),
     .minValue = -50,
     .maxValue = 0,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::KNIGHT_LOW_MOBILITY_LEQ2_MID),
-    .setter = evalSetter(&EvalConfigData::KNIGHT_LOW_MOBILITY_LEQ2_MID, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.KNIGHT_LOW_MOBILITY_LEQ2_MID; }),
+    .setter = EVAL_CONFIG_SETTER(KNIGHT_LOW_MOBILITY_LEQ2_MID, parseInt)
   });
 
   definitions_.push_back({
@@ -1828,12 +2240,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Knight penalty for <=2 moves in endgame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "-3",
+    .defaultValue = configToString(defaultEval.KNIGHT_LOW_MOBILITY_LEQ2_END),
     .minValue = -50,
     .maxValue = 0,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::KNIGHT_LOW_MOBILITY_LEQ2_END),
-    .setter = evalSetter(&EvalConfigData::KNIGHT_LOW_MOBILITY_LEQ2_END, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.KNIGHT_LOW_MOBILITY_LEQ2_END; }),
+    .setter = EVAL_CONFIG_SETTER(KNIGHT_LOW_MOBILITY_LEQ2_END, parseInt)
   });
 
   //===========================================================================
@@ -1845,10 +2257,10 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Enable bishop mobility evaluation",
     .valueType = Bool,
     .domain = Eval,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultEval.USE_BISHOP_MOBILITY),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::USE_BISHOP_MOBILITY),
-    .setter = evalSetter(&EvalConfigData::USE_BISHOP_MOBILITY, parseBool)
+    .getter = evalGetter([](const auto& e){ return e.USE_BISHOP_MOBILITY; }),
+    .setter = EVAL_CONFIG_SETTER(USE_BISHOP_MOBILITY, parseBool)
   });
 
   definitions_.push_back({
@@ -1857,12 +2269,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Bishop mobility bonus per move in middlegame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "2",
+    .defaultValue = configToString(defaultEval.BISHOP_MOBILITY_MID_PER_MOVE),
     .minValue = 0,
     .maxValue = 20,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::BISHOP_MOBILITY_MID_PER_MOVE),
-    .setter = evalSetter(&EvalConfigData::BISHOP_MOBILITY_MID_PER_MOVE, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.BISHOP_MOBILITY_MID_PER_MOVE; }),
+    .setter = EVAL_CONFIG_SETTER(BISHOP_MOBILITY_MID_PER_MOVE, parseInt)
   });
 
   definitions_.push_back({
@@ -1871,12 +2283,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Bishop mobility bonus per move in endgame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "3",
+    .defaultValue = configToString(defaultEval.BISHOP_MOBILITY_END_PER_MOVE),
     .minValue = 0,
     .maxValue = 20,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::BISHOP_MOBILITY_END_PER_MOVE),
-    .setter = evalSetter(&EvalConfigData::BISHOP_MOBILITY_END_PER_MOVE, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.BISHOP_MOBILITY_END_PER_MOVE; }),
+    .setter = EVAL_CONFIG_SETTER(BISHOP_MOBILITY_END_PER_MOVE, parseInt)
   });
 
   definitions_.push_back({
@@ -1885,12 +2297,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Bishop penalty for <=3 moves in middlegame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "-4",
+    .defaultValue = configToString(defaultEval.BISHOP_LOW_MOBILITY_LEQ3_MID),
     .minValue = -50,
     .maxValue = 0,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::BISHOP_LOW_MOBILITY_LEQ3_MID),
-    .setter = evalSetter(&EvalConfigData::BISHOP_LOW_MOBILITY_LEQ3_MID, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.BISHOP_LOW_MOBILITY_LEQ3_MID; }),
+    .setter = EVAL_CONFIG_SETTER(BISHOP_LOW_MOBILITY_LEQ3_MID, parseInt)
   });
 
   definitions_.push_back({
@@ -1899,12 +2311,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Bishop penalty for <=3 moves in endgame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "-2",
+    .defaultValue = configToString(defaultEval.BISHOP_LOW_MOBILITY_LEQ3_END),
     .minValue = -50,
     .maxValue = 0,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::BISHOP_LOW_MOBILITY_LEQ3_END),
-    .setter = evalSetter(&EvalConfigData::BISHOP_LOW_MOBILITY_LEQ3_END, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.BISHOP_LOW_MOBILITY_LEQ3_END; }),
+    .setter = EVAL_CONFIG_SETTER(BISHOP_LOW_MOBILITY_LEQ3_END, parseInt)
   });
 
   //===========================================================================
@@ -1916,10 +2328,10 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Enable rook mobility evaluation",
     .valueType = Bool,
     .domain = Eval,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultEval.USE_ROOK_MOBILITY),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::USE_ROOK_MOBILITY),
-    .setter = evalSetter(&EvalConfigData::USE_ROOK_MOBILITY, parseBool)
+    .getter = evalGetter([](const auto& e){ return e.USE_ROOK_MOBILITY; }),
+    .setter = EVAL_CONFIG_SETTER(USE_ROOK_MOBILITY, parseBool)
   });
 
   definitions_.push_back({
@@ -1928,12 +2340,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Rook mobility bonus per move in middlegame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "2",
+    .defaultValue = configToString(defaultEval.ROOK_MOBILITY_MID_PER_MOVE),
     .minValue = 0,
     .maxValue = 20,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::ROOK_MOBILITY_MID_PER_MOVE),
-    .setter = evalSetter(&EvalConfigData::ROOK_MOBILITY_MID_PER_MOVE, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.ROOK_MOBILITY_MID_PER_MOVE; }),
+    .setter = EVAL_CONFIG_SETTER(ROOK_MOBILITY_MID_PER_MOVE, parseInt)
   });
 
   definitions_.push_back({
@@ -1942,12 +2354,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Rook mobility bonus per move in endgame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "2",
+    .defaultValue = configToString(defaultEval.ROOK_MOBILITY_END_PER_MOVE),
     .minValue = 0,
     .maxValue = 20,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::ROOK_MOBILITY_END_PER_MOVE),
-    .setter = evalSetter(&EvalConfigData::ROOK_MOBILITY_END_PER_MOVE, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.ROOK_MOBILITY_END_PER_MOVE; }),
+    .setter = EVAL_CONFIG_SETTER(ROOK_MOBILITY_END_PER_MOVE, parseInt)
   });
 
   definitions_.push_back({
@@ -1956,12 +2368,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Rook penalty for <=3 moves in middlegame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "-3",
+    .defaultValue = configToString(defaultEval.ROOK_LOW_MOBILITY_LEQ3_MID),
     .minValue = -50,
     .maxValue = 0,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::ROOK_LOW_MOBILITY_LEQ3_MID),
-    .setter = evalSetter(&EvalConfigData::ROOK_LOW_MOBILITY_LEQ3_MID, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.ROOK_LOW_MOBILITY_LEQ3_MID; }),
+    .setter = EVAL_CONFIG_SETTER(ROOK_LOW_MOBILITY_LEQ3_MID, parseInt)
   });
 
   definitions_.push_back({
@@ -1970,12 +2382,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Rook penalty for <=3 moves in endgame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "-3",
+    .defaultValue = configToString(defaultEval.ROOK_LOW_MOBILITY_LEQ3_END),
     .minValue = -50,
     .maxValue = 0,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::ROOK_LOW_MOBILITY_LEQ3_END),
-    .setter = evalSetter(&EvalConfigData::ROOK_LOW_MOBILITY_LEQ3_END, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.ROOK_LOW_MOBILITY_LEQ3_END; }),
+    .setter = EVAL_CONFIG_SETTER(ROOK_LOW_MOBILITY_LEQ3_END, parseInt)
   });
 
   definitions_.push_back({
@@ -1984,10 +2396,10 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Enable rook on open file bonus",
     .valueType = Bool,
     .domain = Eval,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultEval.USE_ROOK_OPEN_FILE_BONUS),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::USE_ROOK_OPEN_FILE_BONUS),
-    .setter = evalSetter(&EvalConfigData::USE_ROOK_OPEN_FILE_BONUS, parseBool)
+    .getter = evalGetter([](const auto& e){ return e.USE_ROOK_OPEN_FILE_BONUS; }),
+    .setter = EVAL_CONFIG_SETTER(USE_ROOK_OPEN_FILE_BONUS, parseBool)
   });
 
   definitions_.push_back({
@@ -1996,12 +2408,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Rook on open file bonus in middlegame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "10",
+    .defaultValue = configToString(defaultEval.ROOK_OPEN_FILE_MID_BONUS),
     .minValue = 0,
     .maxValue = 50,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::ROOK_OPEN_FILE_MID_BONUS),
-    .setter = evalSetter(&EvalConfigData::ROOK_OPEN_FILE_MID_BONUS, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.ROOK_OPEN_FILE_MID_BONUS; }),
+    .setter = EVAL_CONFIG_SETTER(ROOK_OPEN_FILE_MID_BONUS, parseInt)
   });
 
   definitions_.push_back({
@@ -2010,12 +2422,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Rook on open file bonus in endgame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "8",
+    .defaultValue = configToString(defaultEval.ROOK_OPEN_FILE_END_BONUS),
     .minValue = 0,
     .maxValue = 50,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::ROOK_OPEN_FILE_END_BONUS),
-    .setter = evalSetter(&EvalConfigData::ROOK_OPEN_FILE_END_BONUS, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.ROOK_OPEN_FILE_END_BONUS; }),
+    .setter = EVAL_CONFIG_SETTER(ROOK_OPEN_FILE_END_BONUS, parseInt)
   });
 
   definitions_.push_back({
@@ -2024,12 +2436,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Rook on semi-open file bonus in middlegame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "5",
+    .defaultValue = configToString(defaultEval.ROOK_SEMIOPEN_FILE_MID_BONUS),
     .minValue = 0,
     .maxValue = 50,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::ROOK_SEMIOPEN_FILE_MID_BONUS),
-    .setter = evalSetter(&EvalConfigData::ROOK_SEMIOPEN_FILE_MID_BONUS, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.ROOK_SEMIOPEN_FILE_MID_BONUS; }),
+    .setter = EVAL_CONFIG_SETTER(ROOK_SEMIOPEN_FILE_MID_BONUS, parseInt)
   });
 
   definitions_.push_back({
@@ -2038,12 +2450,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Rook on semi-open file bonus in endgame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "4",
+    .defaultValue = configToString(defaultEval.ROOK_SEMIOPEN_FILE_END_BONUS),
     .minValue = 0,
     .maxValue = 50,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::ROOK_SEMIOPEN_FILE_END_BONUS),
-    .setter = evalSetter(&EvalConfigData::ROOK_SEMIOPEN_FILE_END_BONUS, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.ROOK_SEMIOPEN_FILE_END_BONUS; }),
+    .setter = EVAL_CONFIG_SETTER(ROOK_SEMIOPEN_FILE_END_BONUS, parseInt)
   });
 
   //===========================================================================
@@ -2055,10 +2467,10 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Enable queen mobility evaluation",
     .valueType = Bool,
     .domain = Eval,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultEval.USE_QUEEN_MOBILITY),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::USE_QUEEN_MOBILITY),
-    .setter = evalSetter(&EvalConfigData::USE_QUEEN_MOBILITY, parseBool)
+    .getter = evalGetter([](const auto& e){ return e.USE_QUEEN_MOBILITY; }),
+    .setter = EVAL_CONFIG_SETTER(USE_QUEEN_MOBILITY, parseBool)
   });
 
   definitions_.push_back({
@@ -2067,12 +2479,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Queen mobility bonus per move in middlegame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "1",
+    .defaultValue = configToString(defaultEval.QUEEN_MOBILITY_MID_PER_MOVE),
     .minValue = 0,
     .maxValue = 20,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::QUEEN_MOBILITY_MID_PER_MOVE),
-    .setter = evalSetter(&EvalConfigData::QUEEN_MOBILITY_MID_PER_MOVE, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.QUEEN_MOBILITY_MID_PER_MOVE; }),
+    .setter = EVAL_CONFIG_SETTER(QUEEN_MOBILITY_MID_PER_MOVE, parseInt)
   });
 
   definitions_.push_back({
@@ -2081,12 +2493,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Queen mobility bonus per move in endgame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "1",
+    .defaultValue = configToString(defaultEval.QUEEN_MOBILITY_END_PER_MOVE),
     .minValue = 0,
     .maxValue = 20,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::QUEEN_MOBILITY_END_PER_MOVE),
-    .setter = evalSetter(&EvalConfigData::QUEEN_MOBILITY_END_PER_MOVE, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.QUEEN_MOBILITY_END_PER_MOVE; }),
+    .setter = EVAL_CONFIG_SETTER(QUEEN_MOBILITY_END_PER_MOVE, parseInt)
   });
 
   definitions_.push_back({
@@ -2095,10 +2507,10 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Enable queen tropism (king proximity bonus)",
     .valueType = Bool,
     .domain = Eval,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultEval.USE_QUEEN_TROPISM),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::USE_QUEEN_TROPISM),
-    .setter = evalSetter(&EvalConfigData::USE_QUEEN_TROPISM, parseBool)
+    .getter = evalGetter([](const auto& e){ return e.USE_QUEEN_TROPISM; }),
+    .setter = EVAL_CONFIG_SETTER(USE_QUEEN_TROPISM, parseBool)
   });
 
   definitions_.push_back({
@@ -2107,12 +2519,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Queen tropism bonus per step closer in middlegame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "0",
+    .defaultValue = configToString(defaultEval.QUEEN_TROPISM_MID_PER_STEP),
     .minValue = 0,
     .maxValue = 20,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::QUEEN_TROPISM_MID_PER_STEP),
-    .setter = evalSetter(&EvalConfigData::QUEEN_TROPISM_MID_PER_STEP, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.QUEEN_TROPISM_MID_PER_STEP; }),
+    .setter = EVAL_CONFIG_SETTER(QUEEN_TROPISM_MID_PER_STEP, parseInt)
   });
 
   definitions_.push_back({
@@ -2121,12 +2533,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Queen tropism bonus per step closer in endgame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "1",
+    .defaultValue = configToString(defaultEval.QUEEN_TROPISM_END_PER_STEP),
     .minValue = 0,
     .maxValue = 20,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::QUEEN_TROPISM_END_PER_STEP),
-    .setter = evalSetter(&EvalConfigData::QUEEN_TROPISM_END_PER_STEP, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.QUEEN_TROPISM_END_PER_STEP; }),
+    .setter = EVAL_CONFIG_SETTER(QUEEN_TROPISM_END_PER_STEP, parseInt)
   });
 
   //===========================================================================
@@ -2138,10 +2550,10 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Enable king safety evaluation",
     .valueType = Bool,
     .domain = Eval,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultEval.USE_KING_EVAL),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::USE_KING_EVAL),
-    .setter = evalSetter(&EvalConfigData::USE_KING_EVAL, parseBool)
+    .getter = evalGetter([](const auto& e){ return e.USE_KING_EVAL; }),
+    .setter = EVAL_CONFIG_SETTER(USE_KING_EVAL, parseBool)
   });
 
   definitions_.push_back({
@@ -2150,10 +2562,10 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Enable king pawn shield bonus",
     .valueType = Bool,
     .domain = Eval,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultEval.USE_KING_SAFETY_SHIELD),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::USE_KING_SAFETY_SHIELD),
-    .setter = evalSetter(&EvalConfigData::USE_KING_SAFETY_SHIELD, parseBool)
+    .getter = evalGetter([](const auto& e){ return e.USE_KING_SAFETY_SHIELD; }),
+    .setter = EVAL_CONFIG_SETTER(USE_KING_SAFETY_SHIELD, parseBool)
   });
 
   definitions_.push_back({
@@ -2162,12 +2574,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "King pawn shield bonus per pawn in middlegame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "5",
+    .defaultValue = configToString(defaultEval.KING_SHIELD_MID_PER_PAWN),
     .minValue = 0,
     .maxValue = 30,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::KING_SHIELD_MID_PER_PAWN),
-    .setter = evalSetter(&EvalConfigData::KING_SHIELD_MID_PER_PAWN, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.KING_SHIELD_MID_PER_PAWN; }),
+    .setter = EVAL_CONFIG_SETTER(KING_SHIELD_MID_PER_PAWN, parseInt)
   });
 
   definitions_.push_back({
@@ -2176,12 +2588,12 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "King pawn shield bonus per pawn in endgame",
     .valueType = Int,
     .domain = Eval,
-    .defaultValue = "0",
+    .defaultValue = configToString(defaultEval.KING_SHIELD_END_PER_PAWN),
     .minValue = 0,
     .maxValue = 30,
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::KING_SHIELD_END_PER_PAWN),
-    .setter = evalSetter(&EvalConfigData::KING_SHIELD_END_PER_PAWN, parseInt)
+    .getter = evalGetter([](const auto& e){ return e.KING_SHIELD_END_PER_PAWN; }),
+    .setter = EVAL_CONFIG_SETTER(KING_SHIELD_END_PER_PAWN, parseInt)
   });
 
   //===========================================================================
@@ -2193,10 +2605,10 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .description = "Enable game phase-based evaluation blending",
     .valueType = Bool,
     .domain = Eval,
-    .defaultValue = "true",
+    .defaultValue = configToString(defaultEval.USE_GAMEPHASE_VALUE),
     .exposure = {.uci = true, .yaml = true, .display = true},
-    .getter = evalGetter(&EvalConfigData::USE_GAMEPHASE_VALUE),
-    .setter = evalSetter(&EvalConfigData::USE_GAMEPHASE_VALUE, parseBool)
+    .getter = evalGetter([](const auto& e){ return e.USE_GAMEPHASE_VALUE; }),
+    .setter = EVAL_CONFIG_SETTER(USE_GAMEPHASE_VALUE, parseBool)
   });
 
   // clang-format on

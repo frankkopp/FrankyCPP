@@ -23,97 +23,102 @@
 #include <set>
 #include <string>
 
+#include "config/ConfigMode.h"
 #include <yaml-cpp/yaml.h>
 
 // Configuration struct for Evaluation
 // All members have default values which are used as fallback
 // if no YAML config file is found or a value is missing in the file.
+//
+// CONFIG_ESSENTIAL members are always mutable instance members (runtime-changeable in all builds).
+// CONFIG_CONST members are mutable instance members in development and static constexpr in production.
+// In production, CONFIG_CONST members become compile-time constants enabling dead-code elimination.
 struct EvalConfigData {
     // Debug
-    std::string EVAL_CONFIG_SOURCE = "fallback";
+    CONFIG_ESSENTIAL std::string EVAL_CONFIG_SOURCE = "fallback";
 
     // master toggles
-    bool USE_MATERIAL   = true;
-    bool USE_POSITIONAL = true;
+    CONFIG_CONST bool USE_MATERIAL   = true;
+    CONFIG_CONST bool USE_POSITIONAL = true;
 
     // tempo
-    bool USE_TEMPO = true;
-    int TEMPO      = 34;
+    CONFIG_CONST bool USE_TEMPO = true;
+    CONFIG_CONST int TEMPO      = 34;
 
     // lazy eval
-    bool USE_LAZY_EVAL = true;
-    int LAZY_THRESHOLD = 700;
+    CONFIG_CONST bool USE_LAZY_EVAL = true;
+    CONFIG_CONST int LAZY_THRESHOLD = 700;
 
     // pawn eval
-    bool USE_PAWN_EVAL  = true;
-    bool USE_PAWN_TT    = true;
-    int PAWN_TT_SIZE_MB = 64;
+    CONFIG_CONST bool USE_PAWN_EVAL  = true;
+    CONFIG_ESSENTIAL bool USE_PAWN_TT    = true;
+    CONFIG_ESSENTIAL int PAWN_TT_SIZE_MB = 64;
 
     // pawn structure weights
-    int ISOLATED_PAWN_MID_WEIGHT  = -10;
-    int ISOLATED_PAWN_END_WEIGHT  = -20;
-    int DOUBLED_PAWN_MID_WEIGHT   = -10;
-    int DOUBLED_PAWN_END_WEIGHT   = -30;
-    int PASSED_PAWN_MID_WEIGHT    = 20;
-    int PASSED_PAWN_END_WEIGHT    = 40;
-    int BLOCKED_PAWN_MID_WEIGHT   = -2;
-    int BLOCKED_PAWN_END_WEIGHT   = -20;
-    int PHALANX_PAWN_MID_WEIGHT   = 4;
-    int PHALANX_PAWN_END_WEIGHT   = 4;
-    int SUPPORTED_PAWN_MID_WEIGHT = 10;
-    int SUPPORTED_PAWN_END_WEIGHT = 15;
+    CONFIG_CONST int ISOLATED_PAWN_MID_WEIGHT  = -10;
+    CONFIG_CONST int ISOLATED_PAWN_END_WEIGHT  = -20;
+    CONFIG_CONST int DOUBLED_PAWN_MID_WEIGHT   = -10;
+    CONFIG_CONST int DOUBLED_PAWN_END_WEIGHT   = -30;
+    CONFIG_CONST int PASSED_PAWN_MID_WEIGHT    = 20;
+    CONFIG_CONST int PASSED_PAWN_END_WEIGHT    = 40;
+    CONFIG_CONST int BLOCKED_PAWN_MID_WEIGHT   = -2;
+    CONFIG_CONST int BLOCKED_PAWN_END_WEIGHT   = -20;
+    CONFIG_CONST int PHALANX_PAWN_MID_WEIGHT   = 4;
+    CONFIG_CONST int PHALANX_PAWN_END_WEIGHT   = 4;
+    CONFIG_CONST int SUPPORTED_PAWN_MID_WEIGHT = 10;
+    CONFIG_CONST int SUPPORTED_PAWN_END_WEIGHT = 15;
 
     // piece eval
-    bool USE_PIECE_EVAL = true;
+    CONFIG_CONST bool USE_PIECE_EVAL = true;
 
     // bishop pair
-    bool USE_BISHOP_PAIR_BONUS = true;
-    int BISHOP_PAIR_MID_BONUS  = 20;
-    int BISHOP_PAIR_END_BONUS  = 20;
+    CONFIG_CONST bool USE_BISHOP_PAIR_BONUS = true;
+    CONFIG_CONST int BISHOP_PAIR_MID_BONUS  = 20;
+    CONFIG_CONST int BISHOP_PAIR_END_BONUS  = 20;
 
     // knight mobility
-    bool USE_KNIGHT_MOBILITY         = true;
-    int KNIGHT_MOBILITY_MID_PER_MOVE = 3;
-    int KNIGHT_MOBILITY_END_PER_MOVE = 2;
-    int KNIGHT_LOW_MOBILITY_LEQ1_MID = -6;
-    int KNIGHT_LOW_MOBILITY_LEQ1_END = -6;
-    int KNIGHT_LOW_MOBILITY_LEQ2_MID = -3;
-    int KNIGHT_LOW_MOBILITY_LEQ2_END = -3;
+    CONFIG_CONST bool USE_KNIGHT_MOBILITY         = true;
+    CONFIG_CONST int KNIGHT_MOBILITY_MID_PER_MOVE = 3;
+    CONFIG_CONST int KNIGHT_MOBILITY_END_PER_MOVE = 2;
+    CONFIG_CONST int KNIGHT_LOW_MOBILITY_LEQ1_MID = -6;
+    CONFIG_CONST int KNIGHT_LOW_MOBILITY_LEQ1_END = -6;
+    CONFIG_CONST int KNIGHT_LOW_MOBILITY_LEQ2_MID = -3;
+    CONFIG_CONST int KNIGHT_LOW_MOBILITY_LEQ2_END = -3;
 
     // bishop mobility
-    bool USE_BISHOP_MOBILITY         = true;
-    int BISHOP_MOBILITY_MID_PER_MOVE = 2;
-    int BISHOP_MOBILITY_END_PER_MOVE = 3;
-    int BISHOP_LOW_MOBILITY_LEQ3_MID = -4;
-    int BISHOP_LOW_MOBILITY_LEQ3_END = -2;
+    CONFIG_CONST bool USE_BISHOP_MOBILITY         = true;
+    CONFIG_CONST int BISHOP_MOBILITY_MID_PER_MOVE = 2;
+    CONFIG_CONST int BISHOP_MOBILITY_END_PER_MOVE = 3;
+    CONFIG_CONST int BISHOP_LOW_MOBILITY_LEQ3_MID = -4;
+    CONFIG_CONST int BISHOP_LOW_MOBILITY_LEQ3_END = -2;
 
     // rook mobility and files
-    bool USE_ROOK_MOBILITY           = true;
-    int ROOK_MOBILITY_MID_PER_MOVE   = 2;
-    int ROOK_MOBILITY_END_PER_MOVE   = 2;
-    int ROOK_LOW_MOBILITY_LEQ3_MID   = -3;
-    int ROOK_LOW_MOBILITY_LEQ3_END   = -3;
-    bool USE_ROOK_OPEN_FILE_BONUS    = true;
-    int ROOK_OPEN_FILE_MID_BONUS     = 10;
-    int ROOK_OPEN_FILE_END_BONUS     = 8;
-    int ROOK_SEMIOPEN_FILE_MID_BONUS = 5;
-    int ROOK_SEMIOPEN_FILE_END_BONUS = 4;
+    CONFIG_CONST bool USE_ROOK_MOBILITY           = true;
+    CONFIG_CONST int ROOK_MOBILITY_MID_PER_MOVE   = 2;
+    CONFIG_CONST int ROOK_MOBILITY_END_PER_MOVE   = 2;
+    CONFIG_CONST int ROOK_LOW_MOBILITY_LEQ3_MID   = -3;
+    CONFIG_CONST int ROOK_LOW_MOBILITY_LEQ3_END   = -3;
+    CONFIG_CONST bool USE_ROOK_OPEN_FILE_BONUS    = true;
+    CONFIG_CONST int ROOK_OPEN_FILE_MID_BONUS     = 10;
+    CONFIG_CONST int ROOK_OPEN_FILE_END_BONUS     = 8;
+    CONFIG_CONST int ROOK_SEMIOPEN_FILE_MID_BONUS = 5;
+    CONFIG_CONST int ROOK_SEMIOPEN_FILE_END_BONUS = 4;
 
     // queen
-    bool USE_QUEEN_MOBILITY         = true;
-    int QUEEN_MOBILITY_MID_PER_MOVE = 1;
-    int QUEEN_MOBILITY_END_PER_MOVE = 1;
-    bool USE_QUEEN_TROPISM          = true;
-    int QUEEN_TROPISM_MID_PER_STEP  = 0;
-    int QUEEN_TROPISM_END_PER_STEP  = 1;
+    CONFIG_CONST bool USE_QUEEN_MOBILITY         = true;
+    CONFIG_CONST int QUEEN_MOBILITY_MID_PER_MOVE = 1;
+    CONFIG_CONST int QUEEN_MOBILITY_END_PER_MOVE = 1;
+    CONFIG_CONST bool USE_QUEEN_TROPISM          = true;
+    CONFIG_CONST int QUEEN_TROPISM_MID_PER_STEP  = 0;
+    CONFIG_CONST int QUEEN_TROPISM_END_PER_STEP  = 1;
 
     // king
-    bool USE_KING_EVAL           = true;
-    bool USE_KING_SAFETY_SHIELD  = true;
-    int KING_SHIELD_MID_PER_PAWN = 5;
-    int KING_SHIELD_END_PER_PAWN = 0;
+    CONFIG_CONST bool USE_KING_EVAL           = true;
+    CONFIG_CONST bool USE_KING_SAFETY_SHIELD  = true;
+    CONFIG_CONST int KING_SHIELD_MID_PER_PAWN = 5;
+    CONFIG_CONST int KING_SHIELD_END_PER_PAWN = 0;
 
-    bool USE_GAMEPHASE_VALUE = true;
+    CONFIG_CONST bool USE_GAMEPHASE_VALUE = true;
 
     std::string str() const;
 };

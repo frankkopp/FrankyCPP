@@ -59,6 +59,7 @@ namespace SearchTreeSize {
     uint64_t time     = 0;    ///< Search time in ms
     uint64_t special1 = 0;    ///< Custom statistic 1
     uint64_t special2 = 0;    ///< Custom statistic 2
+    uint64_t special3 = 0;    ///< Custom statistic 3
     Move move         = MOVE_NONE;  ///< Best move found
     Value value       = VALUE_NONE; ///< Search score
     std::string pv;           ///< Principal variation
@@ -81,6 +82,7 @@ namespace SearchTreeSize {
     uint64_t sumTime{};     ///< Total time in ms
     uint64_t special1{};    ///< Total special stat 1
     uint64_t special2{};    ///< Total special stat 2
+    uint64_t special3{};    ///< Total special stat 3
   };
 }// namespace SearchTreeSize
 
@@ -95,6 +97,7 @@ class SearchTreeSizeTest {
   /// Pointer to custom statistic for tracking specific counters.
   const uint64_t* ptrToSpecial1 = nullptr;
   const uint64_t* ptrToSpecial2 = nullptr;
+  const uint64_t* ptrToSpecial3 = nullptr;
 
 public:
   /// Creates a tree size test with given parameters.

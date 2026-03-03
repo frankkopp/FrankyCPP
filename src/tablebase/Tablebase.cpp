@@ -22,7 +22,9 @@
 #include "common/Logging.h"
 
 #include <algorithm>// for std::replace
+#include <array>
 #include <filesystem>
+#include <string_view>
 
 // Fathom C library header
 extern "C" {
@@ -258,25 +260,15 @@ namespace tablebase {
     return pos.getOccupiedBb().popcount() <= maxPieces_;
   }
 
+  // ReSharper disable once CppMemberFunctionMayBeStatic
   TBResult Tablebase::probeWDL(const Position& pos) const {
-    if (!canProbe(pos)) {
-      LOG__DEBUG(Logger::get().TB_LOG, "probeWDL: canProbe returned false");
-      return TBResult::Failed;
-    }
+    assert(canProbe(pos) && "probeWDL should only be called if canProbe returns true");
 
     // Convert position to Fathom format
     uint64_t white{}, black{}, kings{}, queens{}, rooks{}, bishops{}, knights{}, pawns{};
     unsigned ep{};
     bool turn{};
     convertPositionToFathom(pos, white, black, kings, queens, rooks, bishops, knights, pawns, ep, turn);
-
-    // Log all bitboards for debugging
-    // LOG__DEBUG(Logger::get().TB_LOG, "probeWDL: position FEN = {}", pos.strFen());
-    // LOG__DEBUG(Logger::get().TB_LOG, "probeWDL: white=0x{:016x} black=0x{:016x}", white, black);
-    // LOG__DEBUG(Logger::get().TB_LOG, "probeWDL: kings=0x{:016x} queens=0x{:016x}", kings, queens);
-    // LOG__DEBUG(Logger::get().TB_LOG, "probeWDL: rooks=0x{:016x} bishops=0x{:016x}", rooks, bishops);
-    // LOG__DEBUG(Logger::get().TB_LOG, "probeWDL: knights=0x{:016x} pawns=0x{:016x}", knights, pawns);
-    // LOG__DEBUG(Logger::get().TB_LOG, "probeWDL: ep={} turn={}", ep, turn);
 
     // Probe WDL
     // IMPORTANT: Fathom's tb_probe_wdl REQUIRES rule50=0 and castling=0, otherwise it returns TB_RESULT_FAILED.
@@ -287,8 +279,6 @@ namespace tablebase {
       0,// rule50 - MUST be 0 for tb_probe_wdl (Fathom requirement)
       0,// castling - MUST be 0 (we already verify in canProbe)
       ep, turn);
-
-    // LOG__DEBUG(Logger::get().TB_LOG, "probeWDL: tb_probe_wdl returned 0x{:08x}", result);
 
     if (result == TB_RESULT_FAILED) {
       return TBResult::Failed;
@@ -420,6 +410,79 @@ namespace tablebase {
       default:
         return "Unknown";
     }
+  }
+
+  void Tablebase::prewarmCache(const int maxPieces) const {
+    if (!isAvailable()) {
+      return;
+    }
+
+    const int effectiveMax = std::min(maxPieces, maxPieces_);
+    LOG__INFO(Logger::get().TB_LOG, "Pre-warming tablebase cache (up to {} pieces)...", effectiveMax);
+
+    // Representative positions for common endgames.
+    // These trigger loading of the most frequently accessed TB files.
+    // Each position is chosen to access a different TB file.
+    // clang-format off
+    static constexpr std::array<const char*, 16> warmupFens = {
+      // 3-piece endgames
+      "8/8/8/4k3/8/8/8/4K2R w - - 0 1",    // KRvK  - most common
+      "8/8/8/4k3/8/8/8/4K2Q w - - 0 1",    // KQvK
+
+      // 4-piece endgames
+      "8/8/8/4k3/8/8/4P3/4K3 w - - 0 1",   // KPvK  - pawn endgames
+      "8/8/8/4k3/8/8/8/4KRR1 w - - 0 1",   // KRRvK
+      "8/8/8/4k3/8/2b5/8/4K2R w - - 0 1",  // KRvKB
+      "8/8/8/4k3/8/2n5/8/4K2R w - - 0 1",  // KRvKN
+
+      // 5-piece endgames
+      "8/8/8/4k3/8/8/3PP3/4K3 w - - 0 1",  // KPPvK
+      "8/8/8/3pk3/8/8/4P3/4K3 w - - 0 1",  // KPvKP - pawn vs pawn
+      "8/8/4k3/8/8/5B2/8/2B1K3 w - - 0 1", // KBBvK
+      "8/8/4k3/8/8/5N2/8/2B1K1N1 w - - 0 1", // KBNvK - famous difficult endgame
+      "8/8/8/4k3/8/2b5/4P3/4K3 w - - 0 1", // KPvKB
+
+      // 6-piece endgames (most common in games)
+      "8/8/4k3/8/8/8/3PPP2/4K3 w - - 0 1", // KPPPvK
+      "8/8/4k3/3p4/8/8/3PP3/4K3 w - - 0 1", // KPPvKP
+      "8/8/4k3/8/8/5N2/3P4/2B1K3 w - - 0 1", // KBNPvK
+      "8/8/5k2/8/8/4R3/3P4/4K3 w - - 0 1", // KRPvK
+      "8/8/4k3/4r3/8/8/3P4/4K2R w - - 0 1", // KRPvKR - rook endgames
+    };
+    // clang-format on
+
+    int probed = 0;
+
+    for (const auto& fen : warmupFens) {
+      const Position pos(fen);
+      const int pieces = pos.getOccupiedBb().popcount();
+
+      // Skip if position has more pieces than we want to warm
+      if (pieces > effectiveMax) {
+        continue;
+      }
+
+      // Skip if position has more pieces than available TBs
+      if (pieces > maxPieces_) {
+        continue;
+      }
+
+      // Verify position is probeable (additional safety check)
+      if (!canProbe(pos)) {
+        continue;
+      }
+
+      // Probe to force OS to load the TB file into page cache
+      const TBResult result = probeWDL(pos);
+      if (result == TBResult::Failed) {
+        // TB file might be missing or corrupted - log but continue
+        LOG__WARN(Logger::get().TB_LOG, "Prewarm probe failed for {} pieces", pieces);
+        continue;
+      }
+      probed++;
+    }
+
+    LOG__INFO(Logger::get().TB_LOG, "Tablebase cache pre-warmed ({} positions probed)", probed);
   }
 
 }// namespace tablebase

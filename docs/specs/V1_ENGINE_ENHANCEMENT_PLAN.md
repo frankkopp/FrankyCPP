@@ -1,10 +1,10 @@
 # FrankyCPP v1.x Engine Enhancement Plan
 
-**Document Version:** 1.2  
-**Created:** 2026-02-01  
-**Last Updated:** 2026-02-12  
-**Status:** Phase 2 In Progress  
-**Target:** FrankyCPP v1.0 → v1.x releases
+**Document Version:** 1.4
+**Created:** 2026-02-01
+**Last Updated:** 2026-02-25
+**Status:** Phases 1, 2, 5 Complete. Phase 6 Partial. Phase 3 Upcoming.
+**Target:** FrankyCPP v1.4+ releases
 
 ---
 
@@ -12,11 +12,13 @@
 
 This document outlines a comprehensive plan for enhancing FrankyCPP's playing strength through systematic improvements to search, evaluation, and supporting infrastructure. The plan is organized into logical phases, each building on previous work while maintaining the engine's stability and production quality.
 
-**Current State (v1.0):**
+**Current State (v1.4 Dev):**
 - Production-ready classical chess engine
 - Alpha-beta search with modern pruning (NMP, LMR, futility, razoring)
 - Classical evaluation (material, PST, pawn structure, mobility, king safety)
-- Single-threaded search
+- **Single-threaded search** (Multi-threading postponed to v1.5)
+- **Endgame Tablebase Support (Syzygy)** integrated in v1.2
+- **Search Optimizations** (LMR, History, PVS fixes) integrated in v1.3
 - 100+ configurable parameters via YAML
 - Comprehensive test suite (266+ tests)
 - Cross-platform support (Windows/Linux)
@@ -24,8 +26,6 @@ This document outlines a comprehensive plan for enhancing FrankyCPP's playing st
 **Target State (v1.x):**
 - Multi-threaded parallel search (Lazy SMP)
 - Neural network evaluation (NNUE) with classical fallback
-- Endgame tablebase support (Syzygy)
-- Enhanced search techniques (singular extensions, check extensions)
 - Automated parameter tuning infrastructure
 - Improved move ordering and time management
 - Significant ELO gain (+300-500 estimated)
@@ -74,23 +74,23 @@ Tablebase support and endgame-specific techniques.
 
 ---
 
-### Phase 2: Performance Fundamentals & Quick Wins (v1.2) - **2-3 weeks** 🔄 IN PROGRESS
+### Phase 2: Performance Fundamentals & Quick Wins (v1.2) - **2-3 weeks** ✅ COMPLETE
 **Focus:** Eliminate heap allocations, improve cache performance, add proven search enhancements
 
-| Task                            | Category       | Effort      | Complexity | ELO Gain | Priority | Status        |
-|---------------------------------|----------------|-------------|------------|----------|----------|---------------|
-| **Performance Fundamentals**    |                |             |            |          |          |               |
-| Triangular PV Table             | Performance    | 🟢 1-2 days | 🟡 Medium  | +5-10    | HIGH     | ✅ Complete    |
-| MoveList Static Array Refactor  | Performance    | 🟡 3-5 days | 🟡 Medium  | +5-15    | HIGH     | ✅ Complete    |
-| **Infrastructure**              |                |             |            |          |          |               |
-| UCI `bench` Command             | Infrastructure | 🟢 2-3 days | 🟢 Low     | N/A      | HIGH     | ✅ Complete    |
-| Arena Bench Integration         | Infrastructure | 🟢 2-3 days | 🟢 Low     | N/A      | MEDIUM   | ✅ Complete    |
-| **Search Quick Wins**           |                |             |            |          |          |               |
-| Singular Extensions             | Search         | 🟢 2-3 days | 🟡 Medium  | +20-30   | HIGH     | ✅ Complete    |
-| Check Extensions                | Search         | 🟢 2-3 days | 🟡 Medium  | +10-20   | HIGH     | ✅ Complete    |
-| Counter-Move History            | Search         | 🟡 3-5 days | 🟡 Medium  | +10-20   | LOW      | ❌ Not Planned |
-| Best-Move Instability Time Mgmt | Search         | 🟢 2-3 days | 🟡 Medium  | +5-15    | MEDIUM   | ✅ Complete    |
-| Selective Checks in Quiescence  | Search         | 🟡 3-5 days | 🟡 Medium  | +15-25   | MEDIUM   | 📋 Planned    |
+| Task                            | Category       | Effort      | Complexity | ELO Gain | Priority | Status     |
+|---------------------------------|----------------|-------------|------------|----------|----------|------------|
+| **Performance Fundamentals**    |                |             |            |          |          |            |
+| Triangular PV Table             | Performance    | 🟢 1-2 days | 🟡 Medium  | +5-10    | HIGH     | ✅ Complete |
+| MoveList Static Array Refactor  | Performance    | 🟡 3-5 days | 🟡 Medium  | +5-15    | HIGH     | ✅ Complete |
+| **Infrastructure**              |                |             |            |          |          |            |
+| UCI `bench` Command             | Infrastructure | 🟢 2-3 days | 🟢 Low     | N/A      | HIGH     | ✅ Complete |
+| Arena Bench Integration         | Infrastructure | 🟢 2-3 days | 🟢 Low     | N/A      | MEDIUM   | ✅ Complete |
+| **Search Quick Wins**           |                |             |            |          |          |            |
+| Singular Extensions             | Search         | 🟢 2-3 days | 🟡 Medium  | +20-30   | HIGH     | ✅ Complete |
+| Check Extensions                | Search         | 🟢 2-3 days | 🟡 Medium  | +10-20   | HIGH     | ✅ Complete |
+| Counter-Move History            | Search         | 🟡 3-5 days | 🟡 Medium  | +10-20   | LOW      | ✅ Complete |
+| Best-Move Instability Time Mgmt | Search         | 🟢 2-3 days | 🟡 Medium  | +5-15    | MEDIUM   | ✅ Complete |
+| Selective Checks in Quiescence  | Search         | 🟡 3-5 days | 🟡 Medium  | +15-25   | MEDIUM   | 📋 Planned |
 
 **Expected Total ELO Gain:** +70-135  
 **Risk:** Low - internal refactoring and proven techniques  
@@ -115,70 +115,72 @@ Tablebase support and endgame-specific techniques.
 
 ---
 
-### Phase 3: Multi-Threading (v1.3) - **3-4 weeks**
-**Focus:** Parallel search for multi-core CPUs
+### Phase 3: Multi-Threading (v1.5) - **3-4 weeks** 📋 PLANNED
+**Focus:** Parallel search for multi-core CPUs (Lazy SMP)
 
-| Task                    | Category    | Effort       | Complexity | ELO Gain | Priority |
-|-------------------------|-------------|--------------|------------|----------|----------|
-| Thread-Safe TT          | Performance | 🟡 1 week    | 🔴 High    | N/A      | CRITICAL |
-| Lazy SMP Search         | Performance | 🔴 2-3 weeks | 🔴 High    | +50-100  | CRITICAL |
-| Thread Pool Integration | Performance | 🟢 2-3 days  | 🟡 Medium  | N/A      | HIGH     |
-| SMP Testing & Tuning    | Performance | 🟡 3-5 days  | 🟡 Medium  | +10-20   | HIGH     |
+| Task                                      | Category    | Effort      | Complexity | ELO Gain | Priority | Status     |
+|-------------------------------------------|-------------|-------------|------------|----------|----------|------------|
+| Step 1: Thread-Safe TT (atomic key)       | Performance | 🟢 2-3 days | 🟡 Medium  | N/A      | CRITICAL | 📋 Planned |
+| Step 2: `SearchThread` struct + refactor  | Architect.  | 🟡 3-5 days | 🟡 Medium  | N/A      | CRITICAL | 📋 Planned |
+| Step 3: Helper thread launch/join         | Performance | 🟡 3-5 days | 🟡 Medium  | +50-100  | CRITICAL | 📋 Planned |
+| Step 4: `Threads` UCI option + config     | Config      | 🟢 1-2 days | 🟢 Low     | N/A      | HIGH     | 📋 Planned |
+| Step 5: Node count aggregation            | UCI         | 🟢 1-2 days | 🟢 Low     | N/A      | MEDIUM   | 📋 Planned |
+| Step 6: Testing & strength validation     | Testing     | 🟡 5-7 days | 🟡 Medium  | +10-20   | HIGH     | 📋 Planned |
 
 **Expected Total ELO Gain:** +60-120 (on multi-core hardware)  
-**Risk:** High - requires careful synchronization and testing  
-**Notes:** 
-- ThreadPool already exists but search is single-threaded
-- Requires refactoring Search class for shared state
-- Must maintain deterministic behavior for testing
+**Risk:** Medium — TT atomic key is zero-overhead on x86; overall approach is minimal and well-proven
+**Design Constraint:** `Threads=1` must have **zero overhead** vs pre-SMP (no atomics on hot path, no extra threads created)
+**Detailed Plan:** `docs/specs/PLAN_Lazy_SMP_MultiThreading.md`
+**Notes:**
+- Strategy: Lazy SMP — helpers independently run `iterativeDeepening()`, share only the TT
+- Retargeted to v1.5 to prioritize search quality improvements in v1.3/v1.4 first
+- TT thread-safety via `std::atomic<ZobristKey>` key field (relaxed memory order = plain `mov` on x86)
+- New `SearchThread` struct holds all per-thread state (PV table, ply stack, history, statistics)
+- Helper threads do NOT manage time, report UCI, or select the final best move (main thread only)
 
 ---
 
-### Phase 4: Enhanced Move Ordering (v1.4) - **1-2 weeks**
+### Phase 4: Enhanced Move Ordering (v1.3 - v1.4) - **Ongoing** 🔄 PARTIAL
 **Focus:** Better move ordering for deeper effective search
 
-| Task                             | Category | Effort      | Complexity | ELO Gain | Priority |
-|----------------------------------|----------|-------------|------------|----------|----------|
-| Capture History Heuristic        | Search   | 🟡 3-5 days | 🟡 Medium  | +10-20   | HIGH     |
-| Continuation History             | Search   | 🟡 3-5 days | 🟡 Medium  | +15-25   | HIGH     |
-| Static Exchange Eval Enhancement | Search   | 🟢 2-3 days | 🟡 Medium  | +5-10    | MEDIUM   |
-| Killer Move Slot Optimization    | Search   | 🟢 1-2 days | 🟢 Low     | +5-10    | LOW      |
+| Task                             | Category | Effort      | Complexity | ELO Gain | Priority | Status            |
+|----------------------------------|----------|-------------|------------|----------|----------|-------------------|
+| Capture History Heuristic        | Search   | 🟡 3-5 days | 🟡 Medium  | +10-20   | HIGH     | 📋 Planned        |
+| Continuation History             | Search   | 🟡 3-5 days | 🟡 Medium  | +15-25   | HIGH     | 📋 Planned        |
+| Static Exchange Eval Enhancement | Search   | 🟢 2-3 days | 🟡 Medium  | +5-10    | MEDIUM   | 📋 Planned        |
+| Killer Move Slot Optimization    | Search   | 🟢 1-2 days | 🟢 Low     | +5-10    | LOW      | ✅ Complete        |
+| History Heuristic Fixes          | Search   | 🟢 1-2 days | 🟢 Low     | +20-30   | HIGH     | ✅ Complete (v1.3) |
 
 **Expected Total ELO Gain:** +35-65  
 **Risk:** Low - proven techniques with minimal architectural impact
 
 ---
 
-### Phase 5: Endgame Tablebases (v1.5) - **2-3 weeks**
+### Phase 5: Endgame Tablebases (v1.2) - **Done** ✅ COMPLETE
 **Focus:** Perfect endgame play with Syzygy tablebases
 
-| Task                       | Category | Effort      | Complexity | ELO Gain | Priority |
-|----------------------------|----------|-------------|------------|----------|----------|
-| Fathom Library Integration | Endgame  | 🟢 2-3 days | 🟡 Medium  | N/A      | HIGH     |
-| Root Tablebase Probing     | Endgame  | 🟢 2-3 days | 🟡 Medium  | +20-30   | HIGH     |
-| Search Tablebase Probing   | Endgame  | 🟡 1 week   | 🟡 Medium  | +10-20   | MEDIUM   |
-| TB Configuration & Testing | Endgame  | 🟢 2-3 days | 🟢 Low     | N/A      | MEDIUM   |
-| TB Cache Optimization      | Endgame  | 🟢 2-3 days | 🟡 Medium  | +5-10    | LOW      |
+| Task                       | Category | Effort      | Complexity | ELO Gain | Priority | Status     |
+|----------------------------|----------|-------------|------------|----------|----------|------------|
+| Fathom Library Integration | Endgame  | 🟢 2-3 days | 🟡 Medium  | N/A      | HIGH     | ✅ Complete |
+| Root Tablebase Probing     | Endgame  | 🟢 2-3 days | 🟡 Medium  | +20-30   | HIGH     | ✅ Complete |
+| Search Tablebase Probing   | Endgame  | 🟡 1 week   | 🟡 Medium  | +10-20   | MEDIUM   | ✅ Complete |
+| TB Configuration & Testing | Endgame  | 🟢 2-3 days | 🟢 Low     | N/A      | MEDIUM   | ✅ Complete |
 
 **Expected Total ELO Gain:** +35-60 (in TB-relevant endgames)  
-**Risk:** Low - well-defined API (Fathom)  
-**Notes:**
-- Syzygy tablebases are standard (Stockfish, Komodo, etc.)
-- Significant strength gain in 6-piece and 7-piece endgames
-- Requires configuration for TB path
+**Risk:** Low - well-defined API (Fathom)
 
 ---
 
-### Phase 6: Advanced Search Refinements (v1.6) - **2-3 weeks**
+### Phase 6: Advanced Search Refinements (v1.3 - v1.4) - **Ongoing** 🔄 PARTIAL
 **Focus:** Modern search techniques for deeper tactical vision
 
-| Task                          | Category | Effort      | Complexity | ELO Gain | Priority |
-|-------------------------------|----------|-------------|------------|----------|----------|
-| Multi-Cut Pruning             | Search   | 🟡 3-5 days | 🟡 Medium  | +10-20   | HIGH     |
-| Probcut Pruning               | Search   | 🟡 3-5 days | 🟡 Medium  | +10-15   | MEDIUM   |
-| Late Move Pruning             | Search   | 🟢 2-3 days | 🟡 Medium  | +10-15   | MEDIUM   |
-| Improved LMR Formula          | Search   | 🟡 1 week   | 🟡 Medium  | +15-25   | HIGH     |
-| SEE-Based Pruning Enhancement | Search   | 🟢 2-3 days | 🟡 Medium  | +5-10    | LOW      |
+| Task                 | Category | Effort      | Complexity | ELO Gain | Priority | Status            |
+|----------------------|----------|-------------|------------|----------|----------|-------------------|
+| Multi-Cut Pruning    | Search   | 🟡 3-5 days | 🟡 Medium  | +10-20   | HIGH     | 📋 Planned        |
+| Probcut Pruning      | Search   | 🟡 3-5 days | 🟡 Medium  | +10-15   | MEDIUM   | 📋 Planned        |
+| Late Move Pruning    | Search   | 🟢 2-3 days | 🟡 Medium  | +10-15   | MEDIUM   | ✅ Complete        |
+| Improved LMR Formula | Search   | 🟡 1 week   | 🟡 Medium  | +15-25   | HIGH     | ✅ Complete (v1.3) |
+| PV Node Fixes        | Search   | 🟢 2-3 days | 🔴 High    | +20-30   | CRITICAL | ✅ Complete (v1.3) |
 
 **Expected Total ELO Gain:** +50-85  
 **Risk:** Medium - requires careful tuning to avoid search instability
@@ -524,12 +526,13 @@ CHECK_EXT_EARLY_LIMIT: 3      # only extend checks in first N moves per node
 - Node count increased ~26% at fixed depth, but stronger in time-limited play
 
 **Arena Results (v1.2 vs v1.1 - Combined Singular + Check Extensions):**
-| Metric | Result |
-|--------|--------|
-| Games | 104 |
-| Score | 58.2% |
-| W/D/L | 38/45/21 |
-| ELO | +57 |
+
+| Metric     | Result                 |
+|------------|------------------------|
+| Games      | 104                    |
+| Score      | 58.2%                  |
+| W/D/L      | 38/45/21               |
+| ELO        | +57                    |
 | Test Suite | -1.2% (2873 positions) |
 
 **Expected Impact:** +10-20 ELO ✅ **Verified: ~+30 ELO**
@@ -684,35 +687,51 @@ SMP_MIN_SPLIT_DEPTH: 4          # minimum depth to spawn helper threads
 
 ---
 
-### 4. Counter-Move History ❌ NOT PLANNED
-
-**Status:** Not Planned
+### 4. Enhanced Move Ordering (Phase 4) 🔄 PARTIAL
 
 **Description:**  
-Track which moves work well in response to opponent's last move. Improves move ordering by capturing "refutation move" patterns.
+Improve move ordering to push better moves higher in the list, increasing the effectiveness of alpha-beta pruning. Better ordering directly translates to higher nodes-per-second (NPS) effectively and deeper search.
 
-**Reason for Not Implementing:**  
-Current move ordering already achieves ~97% first-move beta cutoff rate (tracked via `betaCutsByIndex` stats). The diminishing returns from counter-move history (~1-5% fewer nodes in benchmarks) do not justify the 128MB+ memory cost for the 4D table `[prevFrom][prevTo][currFrom][currTo]`.
+**Components:**
 
-The existing implementation already includes:
-- Simple counter-move table (`USE_HISTORY_MOVES`): stores one best reply per opponent move
-- History heuristic (`USE_HISTORY_COUNTER`): tracks move success globally
-- Killer moves, TT moves, and good captures for ordering
-
-These provide excellent move ordering without the memory overhead of full counter-move history.
-
-**If Reconsidered in Future:**
+#### 4a. Capture History Heuristic 📋 PLANNED
+**Concept:**  
+Similar to history heuristic for quiet moves, but for captures. Tracks which captures (by piece type and target square) historically cause beta cutoffs.
+**Implementation:**
 ```cpp
-// Would add: CounterMoveHistory[opponentPiece][opponentTo][piece][to]
-class CounterMoveHistory {
-  int16_t table[PIECE_TYPE_NB][SQUARE_NB][PIECE_TYPE_NB][SQUARE_NB];
-  
-  void update(Move counterMove, Move previousMove, int bonus);
-  int get(Move counterMove, Move previousMove) const;
-};
+// In History class
+int captureHistory[PIECE_TYPE_NB][SQUARE_NB][PIECE_TYPE_NB]; // [piece][to][captured]
+// usage: history.updateCapture(move, depth);
+// sort: value = captureHistory[piece][to][captured];
 ```
+**Expected Impact:** +10-20 ELO
 
-**Expected Impact:** +10-20 ELO (not worth memory cost given current 97% cutoff rate)
+#### 4b. Continuation History (Counter-Move History 2.0) 📋 PLANNED
+**Concept:**  
+Generalization of Counter-Move History. Instead of just 1 move, tracks history scores for moves that follow a specific previous move type (1-ply, 2-ply, 4-ply history).
+**Implementation:**
+```cpp
+// History table indexed by previous move
+int continuationHistory[2][64][64][2][64][64]; // [side][prevFrom][prevTo][side][currFrom][currTo]
+// Often simplified to pointer-based access to avoid massive arrays
+```
+**Expected Impact:** +15-25 ELO
+
+#### 4c. Killer Move Slot Optimization ✅ COMPLETE
+**Concept:**  
+Refined killer move logic to ensure high-quality moves are tried early.
+**Status:** Implemented (2 slots, no replace if same).
+
+#### 4d. Counter-Move History ✅ COMPLETE
+**Description:**  
+Track which moves work well in response to opponent's last move. Improves move ordering by capturing "refutation move" patterns.
+**Implementation:**
+Current implementation in `src/chesscore/History.h`:
+```cpp
+std::array<std::array<Move, 64>, 64> counterMoves{}; // [prevFrom][prevTo]
+```
+Used in `Search.cpp` to sort counter-move just after killers.
+**Status:** **Implemented** (contrary to previous plan).
 
 ---
 
@@ -750,6 +769,111 @@ Use pre-computed endgame databases for perfect play in 6-piece (and optionally 7
 - Benchmark TB lookup overhead
 
 **Expected Impact:** +35-60 ELO (significant in TB-relevant endgames)
+
+---
+
+### 6. Advanced Search Refinements (Phase 6) 🔄 PARTIAL
+
+**Description:**  
+Implementing aggressive pruning techniques that reduce the size of the search tree without sacrificing strength. These are standard in top engines.
+
+#### 6a. Multi-Cut Pruning (MCP) 📋 PLANNED
+**Concept:**  
+If a shallow search finds C (default 3) moves that fail high, assume the current node is a cut-node and prune.
+**Logic:**
+```cpp
+if (ply < depth - R && !PvNode) {
+    int c = 0;
+    for (int i=0; i < C_LIMIT; i++) {
+        score = -search(newDepth - R, ...);
+        if (score >= beta) c++;
+    }
+    if (c >= C) return beta;
+}
+```
+**Risk:** Can prune valid lines if tactical.
+
+#### 6b. ProbCut (Probabilistic Cut) 📋 PLANNED
+**Concept:**  
+Use a shallow search with a wider window to determine if a deep search will likely fail high/low. Based on the linear relationship between shallow and deep search scores.
+**Formula:** `v_shallow >= beta + margin * sigma`
+**Status:** High priority for later phases.
+
+#### 6c. Late Move Pruning (LMP) ✅ COMPLETE
+**Concept:**  
+At depths where we likely won't find better moves (e.g., depth < 7), stop searching quiet moves after checking the first M moves.
+**Formula:** `M = 3 + depth * depth`
+**Benefit:** Significant node reduction in quiet positions.
+**Status:** Implemented with move count array and improving factor.
+
+#### 6d. Improved LMR Formula ✅ COMPLETE
+**Concept:**  
+Refine the reduction formula `R = log(depth) * log(move_count) * constant`.
+**Current:** Simple linear reduction.
+**Future:** Logarithmic, history-dependent (reduce less if history score is high).
+**Status:** Implemented with logarithmic formula capability, history-based reduction modulation, and improving factor adjustments.
+
+---
+
+### 7. Automated Tuning Infrastructure (Phase 7)
+
+**Description:**  
+Build tools to scientifically optimize the 100+ configurable parameters using game results.
+
+**Components:**
+
+1. **SPSA Tuner**
+   - Simultaneous perturbation gradient estimation
+   - Parallel game matches with perturbed parameters
+   - Iterative convergence to optimal values
+
+2. **Texel Tuner**
+   - Minimize error on labeled position dataset
+   - Faster than SPSA for evaluation parameters
+   - Requires large dataset (millions of positions)
+
+3. **Match Runner**
+   - Automate engine vs. engine matches
+   - Parse PGN results
+   - Track ELO changes over iterations
+
+**Implementation:**
+```python
+# spsa_tuner.py
+def tune_parameters(params, num_games=1000, iterations=100):
+    for iteration in range(iterations):
+        # Perturb parameters
+        params_plus = perturb(params, +delta)
+        params_minus = perturb(params, -delta)
+        
+        # Run matches
+        score_plus = run_match(params_plus, num_games // 2)
+        score_minus = run_match(params_minus, num_games // 2)
+        
+        # Update parameters
+        gradient = (score_plus - score_minus) / (2 * delta)
+        params += learning_rate * gradient
+```
+
+**Configuration:**
+```yaml
+# tuning/spsa_config.yaml
+parameters:
+  - name: NMP_REDUCTION
+    initial: 2
+    min: 1
+    max: 4
+    c: 0.1
+    a: 100
+  # ... more parameters
+```
+
+**Testing:**
+- Validate gradient estimation on known functions
+- Ensure tuning converges (not oscillating)
+- Compare tuned vs. default parameters
+
+**Expected Impact:** +30-60 ELO (from optimized parameters)
 
 ---
 
@@ -815,68 +939,6 @@ NNUE_FALLBACK_CLASSICAL: true
 - Self-play matches: NNUE vs. classical
 
 **Expected Impact:** +200-400 ELO (largest single improvement)
-
----
-
-### 7. Automated Tuning Infrastructure (Phase 7)
-
-**Description:**  
-Build tools to scientifically optimize the 100+ configurable parameters using game results.
-
-**Components:**
-
-1. **SPSA Tuner**
-   - Simultaneous perturbation gradient estimation
-   - Parallel game matches with perturbed parameters
-   - Iterative convergence to optimal values
-
-2. **Texel Tuner**
-   - Minimize error on labeled position dataset
-   - Faster than SPSA for evaluation parameters
-   - Requires large dataset (millions of positions)
-
-3. **Match Runner**
-   - Automate engine vs. engine matches
-   - Parse PGN results
-   - Track ELO changes over iterations
-
-**Implementation:**
-```python
-# spsa_tuner.py
-def tune_parameters(params, num_games=1000, iterations=100):
-    for iteration in range(iterations):
-        # Perturb parameters
-        params_plus = perturb(params, +delta)
-        params_minus = perturb(params, -delta)
-        
-        # Run matches
-        score_plus = run_match(params_plus, num_games // 2)
-        score_minus = run_match(params_minus, num_games // 2)
-        
-        # Update parameters
-        gradient = (score_plus - score_minus) / (2 * delta)
-        params += learning_rate * gradient
-```
-
-**Configuration:**
-```yaml
-# tuning/spsa_config.yaml
-parameters:
-  - name: NMP_REDUCTION
-    initial: 2
-    min: 1
-    max: 4
-    c: 0.1
-    a: 100
-  # ... more parameters
-```
-
-**Testing:**
-- Validate gradient estimation on known functions
-- Ensure tuning converges (not oscillating)
-- Compare tuned vs. default parameters
-
-**Expected Impact:** +30-60 ELO (from optimized parameters)
 
 ---
 

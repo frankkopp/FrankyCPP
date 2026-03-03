@@ -51,18 +51,29 @@
 
 #include <types/types.h>
 
+#include <array>
+#include <cstring>
+
 /// Stores move ordering heuristic data for the search.
 /// Updated during search and used by MoveGenerator for move sorting.
 struct History {
   /// History heuristic table: counts beta cutoffs per move.
   /// Indexed by [color][from_square][to_square].
   /// Higher values indicate moves that frequently cause cutoffs.
-  int historyCount[2][64][64]{};
+  std::array<std::array<std::array<int, 64>, 64>, 2> historyCount{};
 
   /// Counter move table: stores the move that refuted a previous move.
   /// Indexed by [prev_from_square][prev_to_square].
   /// Returns the move that caused a cutoff after the indexed move was played.
-  Move counterMoves[64][64]{};
+  std::array<std::array<Move, 64>, 64> counterMoves{};
+
+  /// Reset all history data to initial state.
+  /// More efficient than assigning a new instance as it operates in-place.
+  void reset() {
+    // Use memset for efficient bulk zeroing (~49KB total)
+    std::memset(historyCount.data(), 0, sizeof(historyCount));
+    std::memset(counterMoves.data(), 0, sizeof(counterMoves));
+  }
 };
 
 #endif//FRANKYCPP_HISTORY_H

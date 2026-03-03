@@ -116,7 +116,7 @@ void PawnTT::clear() {
   Entry* endPtr   = beginPtr + maxNumberOfEntries;
 
   std::for_each(std::execution::par, beginPtr, endPtr, [](Entry& e) {
-    e.key      = 0;
+    e.key.store(0, std::memory_order_relaxed);
     e.midvalue = VALUE_NONE;
     e.endvalue = VALUE_NONE;
   });
@@ -135,23 +135,36 @@ void PawnTT::put(Entry* entryPtr, const ZobristKey key, const Score score) {
 
   numberOfPuts++;
 
+  // Read the current key with relaxed order - we only need its value, not synchronization here.
+  // The release store below (when we write a new key) provides the ordering guarantee for readers.
+  const ZobristKey entryKey = entryPtr->key.load(std::memory_order_relaxed);
+
   // New entry
-  if (entryPtr->key == 0) {
+  if (entryKey == 0) {
     numberOfEntries++;
-  }// update - should not happen
-  else if (entryPtr->key == key) {
+  }// update - should not happen in single-thread mode
+  else if (entryKey == key) {
     numberOfUpdates++;
-    LOG__WARN(Logger::get().EVAL_LOG, "PawnTT should not have to update entries. Missing a read?");
+    // Under SMP, concurrent threads may legitimately write the same entry - not a bug.
+    // Only warn in single-thread mode where this indicates a missing read optimization.
+    if (numSmpThreads <= 1) {
+      LOG__WARN(Logger::get().EVAL_LOG, "PawnTT should not have to update entries. Missing a read?");
+    }
   }
   else {// collision replaces former entry
     numberOfCollisions++;
   }
 
-  entryPtr->key      = key;
+  // Write value fields first, then publish via release store on key.
+  // Any thread that loads key with acquire will see all prior writes.
   entryPtr->midvalue = score.midgame;
   entryPtr->endvalue = score.endgame;
+  entryPtr->key.store(key, std::memory_order_release);
 
-  assert(numberOfPuts == (numberOfEntries + numberOfCollisions + numberOfUpdates));
+  // Statistics counters are non-atomic - under SMP they will be approximate but
+  // that is acceptable (diagnostics only, no effect on correctness).
+  // Assert is skipped under SMP since counters will not sum correctly.
+  assert(numSmpThreads > 1 || numberOfPuts == (numberOfEntries + numberOfCollisions + numberOfUpdates));
 }
 
 std::string PawnTT::str() {
@@ -165,6 +178,6 @@ std::string PawnTT::str() {
 }
 
 std::ostream& operator<<(std::ostream& os, const PawnTT::Entry& entry) {
-  os << "key: " << entry.key << " midvalue: " << entry.midvalue << " endvalue: " << entry.endvalue;
+  os << "key: " << entry.key.load(std::memory_order_relaxed) << " midvalue: " << entry.midvalue << " endvalue: " << entry.endvalue;
   return os;
 }

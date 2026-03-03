@@ -170,6 +170,18 @@ TEST_F(TablebasePathsTest, getTablebaseStatus_autoDetect) {
 // Integration Tests (require actual tablebases)
 //=============================================================================
 
+// Macro for skipping tests based on tablebase requirements.
+// Must be called directly in the test function (not in a helper).
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define SKIP_IF_TABLEBASES_UNAVAIL                      \
+  {                                                \
+    const std::string path = findTablebasePath();  \
+    if (path.empty()) {                            \
+      GTEST_SKIP() << "Tablebases not available";  \
+    }                                              \
+  }
+
+
 class TablebasePathsIntegrationTest : public ::testing::Test {
 public:
   static void SetUpTestSuite() {
@@ -179,18 +191,10 @@ public:
     Logger::get().TEST_LOG->set_level(spdlog::level::debug);
     Logger::get().TB_LOG->set_level(spdlog::level::debug);
   }
-
-protected:
-  static void skipIfNoTablebases() {
-    const std::string path = findTablebasePath();
-    if (path.empty()) {
-      GTEST_SKIP() << "Tablebases not available";
-    }
-  }
 };
 
 TEST_F(TablebasePathsIntegrationTest, findTablebasePath_findsValidPath) {
-  skipIfNoTablebases();
+  SKIP_IF_TABLEBASES_UNAVAIL
 
   const std::string path = findTablebasePath();
   EXPECT_FALSE(path.empty());
@@ -200,7 +204,7 @@ TEST_F(TablebasePathsIntegrationTest, findTablebasePath_findsValidPath) {
 }
 
 TEST_F(TablebasePathsIntegrationTest, countTablebaseFiles_countsCorrectly) {
-  skipIfNoTablebases();
+  SKIP_IF_TABLEBASES_UNAVAIL;
 
   const std::string path = findTablebasePath();
   const auto [wdl, dtz] = countTablebaseFiles(path);
@@ -211,7 +215,7 @@ TEST_F(TablebasePathsIntegrationTest, countTablebaseFiles_countsCorrectly) {
 }
 
 TEST_F(TablebasePathsIntegrationTest, getTablebaseStatus_showsDetails) {
-  skipIfNoTablebases();
+  SKIP_IF_TABLEBASES_UNAVAIL;
 
   const std::string status = getTablebaseStatus();
   EXPECT_NE(status.find("available"), std::string::npos);

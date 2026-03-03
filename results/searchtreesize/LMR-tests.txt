@@ -1,29 +1,320 @@
-Test: 00 warmup     Nodes:        2.006.418  Nps:        2.040.577  Time:              628 Depth:  10/20  Special1:          0 (    0) Special2:          0 (    0)
-Test: 01 pre        Nodes:        2.005.922  Nps:        3.961.151  Time:              536 Depth:  10/20  Special1:          0 (    0) Special2:          0 (    0)
-Test: LMR d1m1      Nodes:        1.772.515  Nps:        3.965.372  Time:              472 Depth:  10/19  Special1:  1.567.422 (52.247) Special2:    107.566 (3.585)
-Test: LMR d1m2      Nodes:        1.852.749  Nps:        3.896.945  Time:              498 Depth:  10/20  Special1:  1.308.548 (43.618) Special2:     77.157 (2.571)
-Test: LMR d1m3      Nodes:        1.655.686  Nps:        3.947.492  Time:              443 Depth:  10/20  Special1:  1.070.787 (35.692) Special2:     56.658 (1.888)
-Test: LMR d1m4      Nodes:        1.722.634  Nps:        3.872.526  Time:              468 Depth:  10/20  Special1:    919.354 (30.645) Special2:     41.188 (1.372)
-Test: LMR d2m1      Nodes:        1.767.676  Nps:        3.877.118  Time:              475 Depth:  10/19  Special1:    859.626 (28.654) Special2:    106.952 (3.565)
-Test: LMR d2m2      Nodes:        1.575.688  Nps:        3.944.146  Time:              418 Depth:  10/20  Special1:    667.288 (22.242) Special2:     74.591 (2.486)
-Test: LMR d2m3      Nodes:        1.616.233  Nps:        3.939.345  Time:              424 Depth:  10/19  Special1:    593.624 (19.787) Special2:     56.186 (1.872)
-Test: LMR d2m4      Nodes:        1.767.929  Nps:        3.867.591  Time:              476 Depth:  10/20  Special1:    542.105 (18.070) Special2:     41.644 (1.388)
-Test: LMR d3m1      Nodes:        1.619.246  Nps:        3.914.149  Time:              423 Depth:  10/19  Special1:    267.123 (8.904) Special2:     10.909 (  363)
-Test: LMR d3m2      Nodes:        1.801.777  Nps:        3.973.328  Time:              478 Depth:  10/20  Special1:    299.945 (9.998) Special2:     11.682 (  389)
-Test: LMR d3m3      Nodes:        1.803.013  Nps:        3.925.602  Time:              476 Depth:  10/19  Special1:    267.992 (8.933) Special2:      9.934 (  331)
-Test: LMR d3m4      Nodes:        1.784.985  Nps:        3.848.351  Time:              480 Depth:  10/19  Special1:    238.708 (7.956) Special2:      7.453 (  248)
-Test: LMR d4m1      Nodes:        2.134.589  Nps:        3.878.188  Time:              572 Depth:  10/20  Special1:    111.700 (3.723) Special2:      9.031 (  301)
-Test: LMR d4m2      Nodes:        2.105.779  Nps:        3.885.367  Time:              559 Depth:  10/20  Special1:    103.121 (3.437) Special2:      7.708 (  256)
-Test: LMR d4m3      Nodes:        2.094.305  Nps:        3.960.764  Time:              563 Depth:  10/20  Special1:    102.764 (3.425) Special2:      7.493 (  249)
-Test: LMR d4m4      Nodes:        1.795.196  Nps:        3.877.087  Time:              479 Depth:  10/20  Special1:     77.770 (2.592) Special2:      5.311 (  177)
-Test: LMR log/1.0   Nodes:        1.581.936  Nps:        3.974.598  Time:              415 Depth:  10/19  Special1:     64.770 (2.159) Special2:      6.190 (  206)
-Test: LMR log/1.5   Nodes:        1.639.710  Nps:        3.935.374  Time:              435 Depth:  10/19  Special1:     61.459 (2.048) Special2:      3.349 (  111)
-Test: LMR log/2.0   Nodes:        1.941.241  Nps:        3.881.849  Time:              524 Depth:  10/19  Special1:     81.960 (2.732) Special2:      4.515 (  150)
+################## Results for depth 12 ##########################
 
-More tests at 12
-Test: 00 warmup     Nodes:       32.677.609  Nps:        3.131.933  Time:            9.958 Depth:  12/27  Special1:          0 (    0) Special2:          0 (    0)
-Test: 01 pre        Nodes:       34.749.649  Nps:        4.040.278  Time:           10.514 Depth:  12/27  Special1:          0 (    0) Special2:          0 (    0)
-Test: LMR d2m2      Nodes:       22.260.525  Nps:        3.998.210  Time:            6.505 Depth:  12/27  Special1: 14.221.971 (284.439) Special2:  1.050.890 (21.017)
-Test: LMR log/1.0   Nodes:       15.097.198  Nps:        3.905.837  Time:            4.480 Depth:  12/26  Special1:  9.587.480 (191.749) Special2:    667.784 (13.355)
-Test: LMR log/1.25  Nodes:       15.683.173  Nps:        3.901.469  Time:            4.585 Depth:  12/26  Special1:  9.871.002 (197.420) Special2:    604.377 (12.087)
-Test: LMR log/1.5   Nodes:       13.893.445  Nps:        3.972.948  Time:            3.998 Depth:  12/26  Special1:  9.076.987 (181.539) Special2:    549.456 (10.989)
+Test Name       |   Move |    Value |           Nodes |          Nps |         Time |   Depth |     Special1 |     Special2 |     Special3 | PV | Fen
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+Fen: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -
+00 warmup       |   g1f3 |    cp 80 |         938.803 |    1.985.450 |          472 |  12/28  |      126.752 |        7.712 |            0 | g1f3 d7d5 e2e3 g8f6 b1c3 b8d7 d2d4 e7e6 f1d3 f8d6 e1g1 e8g8 | rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -
+01 pre          |   g1f3 |    cp 80 |         938.803 |    2.595.867 |          361 |  12/28  |      126.752 |        7.712 |            0 | g1f3 d7d5 e2e3 g8f6 b1c3 b8d7 d2d4 e7e6 f1d3 f8d6 e1g1 e8g8 | rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -
+91c LMR+CutNode |   e2e4 |    cp 89 |       1.128.718 |    2.679.029 |          421 |  12/30  |      188.710 |       17.380 |      103.663 | e2e4 b8c6 b1c3 e7e5 g1f3 f8b4 c3d5 b4c5 b2b4 c5d4 c2c3 d4b6 | rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -
+91d LMR+CutNode |   e2e3 |    cp 75 |       1.660.874 |    2.673.496 |          621 |  12/33  |      307.348 |       26.688 |      168.311 | e2e3 d7d5 b1c3 g8f6 g1f3 c8g4 f1d3 e7e5 e1g1 b8c6 h2h3 e5e4 | rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -
+
+Fen: 8/1P6/6k1/8/8/8/p1K5/8 w - -
+00 warmup       |   c2b2 |  cp 8997 |           2.597 |       24.536 |          105 |  12/16  |          407 |            0 |            0 | c2b2 | 8/1P6/6k1/8/8/8/p1K5/8 w - -
+01 pre          |   c2b2 |  cp 8997 |           2.597 |      878.254 |            2 |  12/16  |          407 |            0 |            0 | c2b2 | 8/1P6/6k1/8/8/8/p1K5/8 w - -
+91c LMR+CutNode |   c2b2 |  cp 8997 |           2.550 |      699.550 |            3 |  12/16  |          616 |            0 |            0 | c2b2 | 8/1P6/6k1/8/8/8/p1K5/8 w - -
+91d LMR+CutNode |   c2b2 |  cp 8997 |           2.550 |      347.662 |            7 |  12/16  |          616 |            0 |            0 | c2b2 | 8/1P6/6k1/8/8/8/p1K5/8 w - -
+
+Fen: 1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -
+00 warmup       |   b4c6 |   mate 5 |         759.653 |    2.036.556 |          373 |  12/26  |       66.471 |        2.484 |            0 | b4c6 b7c6 f2a7 b8a7 e1a1 a7b6 h1b1 b6c5 a1a5 | 1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -
+01 pre          |   b4c6 |   mate 5 |         759.653 |    3.072.266 |          247 |  12/26  |       66.471 |        2.484 |            0 | b4c6 b7c6 f2a7 b8a7 e1a1 a7b6 h1b1 b6c5 a1a5 | 1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -
+91c LMR+CutNode |   b4c6 |   mate 5 |         416.937 |    2.464.819 |          169 |  12/26  |       61.648 |        2.677 |       22.327 | b4c6 b7c6 f2a7 b8a7 e1a1 a7b6 h1b1 b6c5 a1a5 | 1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -
+91d LMR+CutNode |   h1g1 |  cp -381 |       2.141.320 |    1.922.047 |        1.114 |  12/29  |      243.723 |       18.370 |      152.331 | h1g1 h8f8 g3f4 f7g6 f2d2 f8f4 d3d4 c8f8 g1g2 g6e4 g2e2 e4f3 e2f2 | 1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -
+
+Fen: rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -
+00 warmup       |   e1g1 |   cp 140 |       1.435.862 |    1.833.293 |          783 |  12/32  |      106.370 |        2.066 |            0 | e1g1 g4f3 e2f3 d5d7 d4c5 b8c6 c1e3 e8c8 b1a3 d7d1 a1d1 f8e7 | rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -
+01 pre          |   e1g1 |   cp 140 |       1.435.862 |    2.514.701 |          570 |  12/32  |      106.370 |        2.066 |            0 | e1g1 g4f3 e2f3 d5d7 d4c5 b8c6 c1e3 e8c8 b1a3 d7d1 a1d1 f8e7 | rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -
+91c LMR+CutNode |   e1g1 |   cp 142 |       1.265.564 |    2.519.813 |          502 |  12/34  |      145.938 |        4.857 |       87.349 | e1g1 g4f3 e2f3 d5d7 d4c5 b8c6 d1d7 e8d7 c1e3 f8e7 f1d1 d7c7 b1d2 a8d8 | rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -
+91d LMR+CutNode |   e1g1 |   cp 128 |       1.668.804 |    2.680.737 |          622 |  12/32  |      192.296 |        7.215 |      105.332 | e1g1 d5d7 c1g5 c5d4 c3d4 b8c6 g5f6 g4f3 e2f3 g7f6 d4d5 c6e5 d5e6 d7d1 e6f7 e8f7 f3d1 | rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -
+
+Fen: r3k2r/pp2qppp/2n1pn2/bN5b/3P4/P3BN1P/1P2BPP1/R2Q1RK1 w kq -
+00 warmup       |   b2b4 |   cp 119 |         978.145 |    1.643.243 |          595 |  12/32  |       89.188 |        1.520 |            0 | b2b4 a5b6 g2g4 h5g6 b5c3 h7h5 b4b5 b6a5 b5c6 a5c3 c6b7 e7b7 | r3k2r/pp2qppp/2n1pn2/bN5b/3P4/P3BN1P/1P2BPP1/R2Q1RK1 w kq -
+01 pre          |   b2b4 |   cp 119 |         978.145 |    1.972.194 |          495 |  12/32  |       89.188 |        1.520 |            0 | b2b4 a5b6 g2g4 h5g6 b5c3 h7h5 b4b5 b6a5 b5c6 a5c3 c6b7 e7b7 | r3k2r/pp2qppp/2n1pn2/bN5b/3P4/P3BN1P/1P2BPP1/R2Q1RK1 w kq -
+91c LMR+CutNode |   b2b4 |   cp 106 |       2.126.108 |    2.056.498 |        1.033 |  12/36  |      229.392 |        7.648 |      132.986 | b2b4 h5f3 e2f3 a5b6 d4d5 e6d5 f1e1 c6e5 e3f4 f6e4 f3e4 d5e4 e1e4 | r3k2r/pp2qppp/2n1pn2/bN5b/3P4/P3BN1P/1P2BPP1/R2Q1RK1 w kq -
+91d LMR+CutNode |   a1c1 |   cp 145 |       3.293.231 |    2.254.876 |        1.460 |  12/38  |      374.904 |       11.529 |      218.387 | a1c1 a7a6 g2g4 a6b5 e2b5 e8g8 b5c6 b7c6 g4h5 a8c8 f3e5 e7d6 | r3k2r/pp2qppp/2n1pn2/bN5b/3P4/P3BN1P/1P2BPP1/R2Q1RK1 w kq -
+
+Fen: 2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - -
+00 warmup       |   f1d1 |   cp 129 |       2.559.800 |    2.486.246 |        1.029 |  12/29  |      154.384 |        7.054 |            0 | f1d1 f6f5 e2e3 e7f6 e3g3 g8h8 g3d3 f5f4 d1e1 f4f3 g2g3 h8g8 h3h4 | 2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - -
+01 pre          |   f1d1 |   cp 129 |       2.559.800 |    2.777.894 |          921 |  12/29  |      154.384 |        7.054 |            0 | f1d1 f6f5 e2e3 e7f6 e3g3 g8h8 g3d3 f5f4 d1e1 f4f3 g2g3 h8g8 h3h4 | 2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - -
+91c LMR+CutNode |   e2g4 |   cp 144 |       1.050.986 |    2.982.221 |          352 |  12/30  |       91.089 |        6.425 |       63.068 | e2g4 g8h8 f1d1 d8d7 g4f3 d7d5 f3d3 h8g8 d1e1 h7h6 d3g3 d5g5 | 2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - -
+91d LMR+CutNode |   e2g4 |   cp 164 |         666.653 |    2.936.286 |          227 |  12/24  |       65.567 |        4.204 |       44.281 | e2g4 g8h8 f1d1 d8d5 b5c3 d5g5 g4h4 f6f5 h4f4 h8g8 d4d5 e6e5 | 2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - -
+
+Fen: 6rk/1p3p1p/2n2q2/1NQ2p2/3p4/PP5P/5PP1/2R3K1 w - -
+00 warmup       |   b5d6 |   cp 231 |       1.898.004 |    2.530.660 |          750 |  12/30  |      136.331 |        5.124 |            0 | b5d6 f6g6 c5d5 h7h5 d6b7 c6e7 d5d4 g8g7 g2g4 f5g4 d4d8 e7g8 h3g4 g6g4 g1h1 | 6rk/1p3p1p/2n2q2/1NQ2p2/3p4/PP5P/5PP1/2R3K1 w - -
+01 pre          |   b5d6 |   cp 231 |       1.898.004 |    3.185.923 |          595 |  12/30  |      136.331 |        5.124 |            0 | b5d6 f6g6 c5d5 h7h5 d6b7 c6e7 d5d4 g8g7 g2g4 f5g4 d4d8 e7g8 h3g4 g6g4 g1h1 | 6rk/1p3p1p/2n2q2/1NQ2p2/3p4/PP5P/5PP1/2R3K1 w - -
+91c LMR+CutNode |   b5d6 |   cp 203 |         536.453 |    3.226.392 |          166 |  12/25  |       63.964 |        2.268 |       35.965 | b5d6 d4d3 c1d1 f6g6 g2g3 f5f4 c5c3 g8g7 d1d3 f4g3 f2g3 c6e5 c3c8 g7g8 | 6rk/1p3p1p/2n2q2/1NQ2p2/3p4/PP5P/5PP1/2R3K1 w - -
+91d LMR+CutNode |   b5d6 |   cp 203 |         592.849 |    3.396.453 |          174 |  12/26  |       65.653 |        2.528 |       38.024 | b5d6 d4d3 c1d1 f6g6 g2g3 f5f4 c5c3 g8g7 d1d3 f4g3 f2g3 c6e5 c3c8 g7g8 | 6rk/1p3p1p/2n2q2/1NQ2p2/3p4/PP5P/5PP1/2R3K1 w - -
+
+Fen: 7k/2R2p1p/3N1q2/3Q4/3p4/PP3pPP/5n1K/4r3 w - -
+00 warmup       |   d6f7 |   cp 414 |         287.109 |    1.511.989 |          189 |  12/24  |       29.381 |          769 |            0 | d6f7 f6f7 d5d8 h8g7 c7f7 g7f7 d8d5 f7e8 d5c6 e8e7 c6f3 d4d3 f3h5 e7d6 h5h6 d6d5 h6h7 | 7k/2R2p1p/3N1q2/3Q4/3p4/PP3pPP/5n1K/4r3 w - -
+01 pre          |   d6f7 |   cp 414 |         287.109 |    3.646.587 |           78 |  12/24  |       29.381 |          769 |            0 | d6f7 f6f7 d5d8 h8g7 c7f7 g7f7 d8d5 f7e8 d5c6 e8e7 c6f3 d4d3 f3h5 e7d6 h5h6 d6d5 h6h7 | 7k/2R2p1p/3N1q2/3Q4/3p4/PP3pPP/5n1K/4r3 w - -
+91c LMR+CutNode |   d6f7 |   cp 328 |         229.331 |    2.860.373 |           80 |  12/23  |       34.846 |        1.637 |       16.851 | d6f7 f6f7 d5d8 h8g7 c7f7 g7f7 d8d7 f7g6 d7c6 g6g7 c6f3 d4d3 a3a4 e1e2 h3h4 | 7k/2R2p1p/3N1q2/3Q4/3p4/PP3pPP/5n1K/4r3 w - -
+91d LMR+CutNode |   d6f7 |   cp 326 |         219.580 |    3.006.446 |           73 |  12/25  |       33.868 |        1.613 |       16.226 | d6f7 f6f7 d5d8 h8g7 c7f7 g7f7 d8d7 e1e7 d7d5 f7g6 d5f3 d4d3 h2g1 e7e2 h3h4 | 7k/2R2p1p/3N1q2/3Q4/3p4/PP3pPP/5n1K/4r3 w - -
+
+Fen: 8/5k2/8/8/2N2N2/2B5/2K5/8 w - -
+00 warmup       |   c4e5 |  cp 8989 |         209.149 |      906.913 |          230 |  12/18  |       31.767 |            0 |            0 | c3a5 | 8/5k2/8/8/2N2N2/2B5/2K5/8 w - -
+01 pre          |   c4e5 |  cp 8989 |         209.149 |    1.608.597 |          130 |  12/18  |       31.767 |            0 |            0 | c3a5 | 8/5k2/8/8/2N2N2/2B5/2K5/8 w - -
+91c LMR+CutNode |   c4e5 |  cp 8989 |         193.759 |    1.612.237 |          120 |  12/18  |       39.875 |            0 |            0 | c3a5 | 8/5k2/8/8/2N2N2/2B5/2K5/8 w - -
+91d LMR+CutNode |   c4e5 |  cp 8989 |         193.759 |    1.880.791 |          103 |  12/18  |       39.875 |            0 |            0 | c3a5 | 8/5k2/8/8/2N2N2/2B5/2K5/8 w - -
+
+Fen: 8/8/6k1/8/8/8/P1K5/8 w - -
+00 warmup       |   a2a4 |  cp 8999 |             450 |        3.221 |          139 |  12/12  |            0 |            0 |            0 | a2a4 | 8/8/6k1/8/8/8/P1K5/8 w - -
+01 pre          |   a2a4 |  cp 8999 |             450 |      116.357 |            3 |  12/12  |            0 |            0 |            0 | a2a4 | 8/8/6k1/8/8/8/P1K5/8 w - -
+91c LMR+CutNode |   a2a4 |  cp 8999 |             450 |      155.768 |            2 |  12/12  |            0 |            0 |            0 | a2a4 | 8/8/6k1/8/8/8/P1K5/8 w - -
+91d LMR+CutNode |   a2a4 |  cp 8999 |             450 |       64.374 |            6 |  12/12  |            0 |            0 |            0 | a2a4 | 8/8/6k1/8/8/8/P1K5/8 w - -
+
+Fen: 8/5k2/8/8/8/8/1BK5/1B6 w - -
+00 warmup       |   c2b3 |  cp 8974 |          33.938 |      271.899 |          124 |  12/14  |        6.461 |            0 |            0 | b2e5 | 8/5k2/8/8/8/8/1BK5/1B6 w - -
+01 pre          |   c2b3 |  cp 8974 |          33.938 |    2.361.775 |           14 |  12/14  |        6.461 |            0 |            0 | b2e5 | 8/5k2/8/8/8/8/1BK5/1B6 w - -
+91c LMR+CutNode |   c2b3 |  cp 8974 |          32.446 |    1.582.106 |           20 |  12/14  |        6.647 |            0 |            0 | b2e5 | 8/5k2/8/8/8/8/1BK5/1B6 w - -
+91d LMR+CutNode |   c2b3 |  cp 8974 |          32.446 |    1.561.938 |           20 |  12/14  |        6.647 |            0 |            0 | b2e5 | 8/5k2/8/8/8/8/1BK5/1B6 w - -
+
+Fen: 5r1k/4Qpq1/4p3/1p1p2P1/2p2P2/1p2P3/1K1P4/B7 w - -
+00 warmup       |   b2b1 |  cp -118 |         161.930 |      829.904 |          195 |  12/32  |       15.066 |          699 |            0 | b2b1 f7f6 a1f6 f8f6 g5f6 g7g6 b1a1 g6g1 a1b2 g1g2 b2c3 d5d4 e3d4 g2f3 c3b4 b3b2 | 5r1k/4Qpq1/4p3/1p1p2P1/2p2P2/1p2P3/1K1P4/B7 w - -
+01 pre          |   b2b1 |  cp -118 |         161.930 |    3.555.291 |           45 |  12/32  |       15.066 |          699 |            0 | b2b1 f7f6 a1f6 f8f6 g5f6 g7g6 b1a1 g6g1 a1b2 g1g2 b2c3 d5d4 e3d4 g2f3 c3b4 b3b2 | 5r1k/4Qpq1/4p3/1p1p2P1/2p2P2/1p2P3/1K1P4/B7 w - -
+91c LMR+CutNode |   b2b1 |  cp -107 |         142.559 |    2.934.913 |           48 |  12/32  |       17.655 |        1.564 |       10.629 | b2b1 f7f6 a1f6 f8f6 g5f6 g7g6 b1a1 g6g1 a1b2 g1g2 b2c3 d5d4 e3d4 g2f3 c3b2 f3e4 | 5r1k/4Qpq1/4p3/1p1p2P1/2p2P2/1p2P3/1K1P4/B7 w - -
+91d LMR+CutNode |   b2b1 |  cp -107 |         142.546 |    2.854.528 |           49 |  12/32  |       17.630 |        1.570 |       10.606 | b2b1 f7f6 a1f6 f8f6 g5f6 g7g6 b1a1 g6g1 a1b2 g1g2 b2c3 d5d4 e3d4 g2f3 c3b2 f3e4 | 5r1k/4Qpq1/4p3/1p1p2P1/2p2P2/1p2P3/1K1P4/B7 w - -
+
+Fen: 3r1k2/4npp1/1ppr3p/p6P/P2PPPP1/1NR5/5K2/2R5 w - -
+00 warmup       |   f2f3 |    cp 81 |         519.673 |    1.671.288 |          310 |  12/24  |       64.261 |        1.196 |            0 | f2f3 f8g8 e4e5 d6d4 b3d4 d8d4 c3c6 e7c6 c1c6 d4a4 c6b6 a4b4 | 3r1k2/4npp1/1ppr3p/p6P/P2PPPP1/1NR5/5K2/2R5 w - -
+01 pre          |   f2f3 |    cp 81 |         519.673 |    2.850.805 |          182 |  12/24  |       64.261 |        1.196 |            0 | f2f3 f8g8 e4e5 d6d4 b3d4 d8d4 c3c6 e7c6 c1c6 d4a4 c6b6 a4b4 | 3r1k2/4npp1/1ppr3p/p6P/P2PPPP1/1NR5/5K2/2R5 w - -
+91c LMR+CutNode |   e4e5 |    cp 75 |         365.985 |    3.010.755 |          121 |  12/25  |       61.101 |        1.914 |       33.223 | e4e5 d6d5 f2e3 f8g8 e3f3 d5d4 b3d4 d8d4 c3c6 e7c6 c1c6 d4d3 f3e4 | 3r1k2/4npp1/1ppr3p/p6P/P2PPPP1/1NR5/5K2/2R5 w - -
+91d LMR+CutNode |   e4e5 |    cp 75 |         467.521 |    3.067.437 |          152 |  12/25  |       72.848 |        2.448 |       39.658 | e4e5 d6d5 f2e3 f8g8 e3f3 d5d4 b3d4 d8d4 c3c6 e7c6 c1c6 d4d3 f3e4 | 3r1k2/4npp1/1ppr3p/p6P/P2PPPP1/1NR5/5K2/2R5 w - -
+
+Fen: 2q1rr1k/3bbnnp/p2p1pp1/2pPp3/PpP1P1P1/1P2BNNP/2BQ1PRK/7R b - -
+00 warmup       |   h8g8 |  cp -106 |       1.341.763 |    2.177.105 |          616 |  12/36  |      134.965 |        3.509 |            0 | h8g8 h1d1 e7d8 d2e2 c8b7 h2g1 d8c7 f3d2 f7g5 g2h2 c7b6 d2f3 g5f3 e2f3 | 2q1rr1k/3bbnnp/p2p1pp1/2pPp3/PpP1P1P1/1P2BNNP/2BQ1PRK/7R b - -
+01 pre          |   h8g8 |  cp -106 |       1.341.763 |    2.443.343 |          549 |  12/36  |      134.965 |        3.509 |            0 | h8g8 h1d1 e7d8 d2e2 c8b7 h2g1 d8c7 f3d2 f7g5 g2h2 c7b6 d2f3 g5f3 e2f3 | 2q1rr1k/3bbnnp/p2p1pp1/2pPp3/PpP1P1P1/1P2BNNP/2BQ1PRK/7R b - -
+91c LMR+CutNode |   h7h5 |   cp -80 |       1.069.887 |    2.506.665 |          426 |  12/32  |      139.979 |        4.025 |       96.102 | h7h5 g4h5 g7h5 g3h5 g6h5 d2e2 d7h3 f3e5 h3g2 e2h5 f7h6 e5g6 h8g8 h2g2 | 2q1rr1k/3bbnnp/p2p1pp1/2pPp3/PpP1P1P1/1P2BNNP/2BQ1PRK/7R b - -
+91d LMR+CutNode |   h8g8 |  cp -115 |         930.988 |    2.735.553 |          340 |  12/34  |      119.123 |        6.631 |       86.063 | h8g8 h2g1 c8c7 h1h2 f7g5 f3g5 f6g5 e3g5 e7g5 d2g5 f8f3 g3e2 | 2q1rr1k/3bbnnp/p2p1pp1/2pPp3/PpP1P1P1/1P2BNNP/2BQ1PRK/7R b - -
+
+Fen: rnbqkb1r/p3pppp/1p6/2ppP3/3N4/2P5/PPP1QPPP/R1B1KB1R w KQkq -
+00 warmup       |   d4f3 |    cp 71 |         932.416 |    2.029.830 |          459 |  12/29  |      112.724 |        6.706 |            0 | d4f3 c8a6 e2d1 a6f1 h1f1 e7e6 d1e2 c5c4 c1f4 f8e7 e1c1 e8g8 | rnbqkb1r/p3pppp/1p6/2ppP3/3N4/2P5/PPP1QPPP/R1B1KB1R w KQkq -
+01 pre          |   d4f3 |    cp 71 |         932.416 |    2.658.080 |          350 |  12/29  |      112.724 |        6.706 |            0 | d4f3 c8a6 e2d1 a6f1 h1f1 e7e6 d1e2 c5c4 c1f4 f8e7 e1c1 e8g8 | rnbqkb1r/p3pppp/1p6/2ppP3/3N4/2P5/PPP1QPPP/R1B1KB1R w KQkq -
+91c LMR+CutNode |   d4f3 |    cp 80 |         424.788 |    2.589.960 |          164 |  12/30  |       66.990 |        5.262 |       39.070 | d4f3 c8a6 e2d1 a6f1 h1f1 e7e6 c1f4 b8c6 d1e2 c5c4 e1c1 f8c5 | rnbqkb1r/p3pppp/1p6/2ppP3/3N4/2P5/PPP1QPPP/R1B1KB1R w KQkq -
+91d LMR+CutNode |   d4f3 |    cp 69 |         711.320 |    2.530.531 |          281 |  12/32  |      101.752 |       10.499 |       62.371 | d4f3 c8a6 e2d1 a6f1 e1f1 b8c6 c1f4 a8c8 f1g1 e7e6 d1d3 f8e7 | rnbqkb1r/p3pppp/1p6/2ppP3/3N4/2P5/PPP1QPPP/R1B1KB1R w KQkq -
+
+Fen: 1r3rk1/1pnnq1bR/p1pp2B1/P2P1p2/1PP1pP2/2B3P1/5PK1/2Q4R w - -
+00 warmup       |   h7h8 |   mate 2 |           7.493 |       72.283 |          103 |  12/12  |        3.914 |            0 |            0 | h7h8 g7h8 h1h8 | 1r3rk1/1pnnq1bR/p1pp2B1/P2P1p2/1PP1pP2/2B3P1/5PK1/2Q4R w - -
+01 pre          |   h7h8 |   mate 2 |           7.493 |    2.770.260 |            2 |  12/12  |        3.914 |            0 |            0 | h7h8 g7h8 h1h8 | 1r3rk1/1pnnq1bR/p1pp2B1/P2P1p2/1PP1pP2/2B3P1/5PK1/2Q4R w - -
+91c LMR+CutNode |   h7h8 |   mate 2 |           7.493 |    2.779.508 |            2 |  12/12  |        3.914 |            0 |            0 | h7h8 g7h8 h1h8 | 1r3rk1/1pnnq1bR/p1pp2B1/P2P1p2/1PP1pP2/2B3P1/5PK1/2Q4R w - -
+91d LMR+CutNode |   h7h8 |   mate 2 |           7.493 |    2.279.794 |            3 |  12/12  |        3.914 |            0 |            0 | h7h8 g7h8 h1h8 | 1r3rk1/1pnnq1bR/p1pp2B1/P2P1p2/1PP1pP2/2B3P1/5PK1/2Q4R w - -
+
+Fen: 4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -
+00 warmup       |   c5e3 |   mate 2 |           9.194 |       80.447 |          114 |  12/15  |        3.590 |            0 |            0 | c5e3 g1f1 b7h1 | 4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -
+01 pre          |   c5e3 |   mate 2 |           9.194 |    1.799.639 |            5 |  12/15  |        3.590 |            0 |            0 | c5e3 g1f1 b7h1 | 4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -
+91c LMR+CutNode |   c5e3 |   mate 2 |           9.185 |    2.471.078 |            3 |  12/15  |        3.592 |            1 |           10 | c5e3 g1f1 b7h1 | 4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -
+91d LMR+CutNode |   c5e3 |   mate 2 |           9.185 |    2.485.724 |            3 |  12/15  |        3.592 |            1 |           10 | c5e3 g1f1 b7h1 | 4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -
+
+Fen: 4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -
+00 warmup       |   g3d6 |  cp 1547 |          11.495 |       93.775 |          122 |  12/22  |          914 |           86 |            0 | g3d6 | 4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -
+01 pre          |   g3d6 |  cp 1547 |          11.495 |    2.498.478 |            4 |  12/22  |          914 |           86 |            0 | g3d6 | 4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -
+91c LMR+CutNode |   g3d6 |  cp 1563 |          10.316 |    1.128.813 |            9 |  12/22  |        1.196 |          154 |          518 | g3d6 | 4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -
+91d LMR+CutNode |   g3d6 |  cp 1563 |          10.315 |    1.760.719 |            5 |  12/22  |        1.195 |          154 |          517 | g3d6 | 4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -
+
+Fen: 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -
+00 warmup       |   d6d1 |   mate 3 |         122.743 |      835.789 |          146 |  12/21  |       12.939 |          298 |            0 | d6d1 c1d1 d7g4 d1c1 d8d1 | 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -
+01 pre          |   d6d1 |   mate 3 |         122.743 |    2.506.596 |           48 |  12/21  |       12.939 |          298 |            0 | d6d1 c1d1 d7g4 d1c1 d8d1 | 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -
+91c LMR+CutNode |   d6d1 |   mate 3 |         285.914 |    3.051.318 |           93 |  12/21  |       29.827 |        1.568 |       15.968 | d6d1 c1d1 d7g4 d1c1 d8d1 | 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -
+91d LMR+CutNode |   d6d1 |   mate 3 |         391.108 |    3.010.959 |          129 |  12/21  |       36.446 |        2.204 |       20.931 | d6d1 c1d1 d7g4 d1c1 d8d1 | 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -
+
+Fen: 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -
+00 warmup       |   d6d1 |   mate 3 |         122.743 |      634.619 |          193 |  12/21  |       12.939 |          298 |            0 | d6d1 c1d1 d7g4 d1c1 d8d1 | 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -
+01 pre          |   d6d1 |   mate 3 |         122.743 |    2.509.455 |           48 |  12/21  |       12.939 |          298 |            0 | d6d1 c1d1 d7g4 d1c1 d8d1 | 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -
+91c LMR+CutNode |   d6d1 |   mate 3 |         285.914 |    2.787.914 |          102 |  12/21  |       29.827 |        1.568 |       15.968 | d6d1 c1d1 d7g4 d1c1 d8d1 | 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -
+91d LMR+CutNode |   d6d1 |   mate 3 |         391.108 |    2.959.453 |          132 |  12/21  |       36.446 |        2.204 |       20.931 | d6d1 c1d1 d7g4 d1c1 d8d1 | 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -
+
+Fen: 8/1p3p2/6p1/3pk3/8/8/1R2K3/8 w - - 0 1
+00 warmup       |   e2d3 |  cp 8990 |         262.552 |    1.084.750 |          242 |  12/19  |       31.409 |        4.899 |            0 | e2d3 d5d4 b2e2 e5d5 e2e4 d5d6 d3d4 | 8/1p3p2/6p1/3pk3/8/8/1R2K3/8 w - - 0 1
+01 pre          |   e2d3 |  cp 8990 |         262.552 |    2.183.346 |          120 |  12/19  |       31.409 |        4.899 |            0 | e2d3 d5d4 b2e2 e5d5 e2e4 d5d6 d3d4 | 8/1p3p2/6p1/3pk3/8/8/1R2K3/8 w - - 0 1
+91c LMR+CutNode |   e2d1 |  cp 8994 |         226.533 |    2.801.694 |           80 |  12/18  |       29.626 |        7.762 |       16.013 | e2d1 b7b5 b2b5 | 8/1p3p2/6p1/3pk3/8/8/1R2K3/8 w - - 0 1
+91d LMR+CutNode |   e2d3 |  cp 8990 |         290.433 |    2.365.804 |          122 |  12/18  |       35.497 |       10.228 |       20.265 | e2d3 d5d4 b2b4 b7b5 d3c2 e5e6 b4d4 | 8/1p3p2/6p1/3pk3/8/8/1R2K3/8 w - - 0 1
+
+Fen: 1r2k3/p6p/8/8/8/8/PP6/R3K3 w - - 0 1
+00 warmup       |   b2b3 |    cp 16 |         330.509 |    1.630.271 |          202 |  12/19  |       47.615 |        4.356 |            0 | b2b3 e8d7 e1d2 b8g8 d2d3 g8g2 a2a4 d7e6 a1h1 g2g3 d3d4 g3g4 d4d3 | 1r2k3/p6p/8/8/8/8/PP6/R3K3 w - - 0 1
+01 pre          |   b2b3 |    cp 16 |         330.509 |    3.894.200 |           84 |  12/19  |       47.615 |        4.356 |            0 | b2b3 e8d7 e1d2 b8g8 d2d3 g8g2 a2a4 d7e6 a1h1 g2g3 d3d4 g3g4 d4d3 | 1r2k3/p6p/8/8/8/8/PP6/R3K3 w - - 0 1
+91c LMR+CutNode |   b2b3 |    cp 19 |         310.073 |    3.964.859 |           78 |  12/20  |       60.180 |        7.425 |       31.411 | b2b3 e8d7 e1d2 b8g8 d2c3 g8g3 c3d4 g3g2 a2a4 d7d6 a1c1 h7h5 | 1r2k3/p6p/8/8/8/8/PP6/R3K3 w - - 0 1
+91d LMR+CutNode |   b2b3 |    cp 18 |         245.958 |    3.406.290 |           72 |  12/18  |       48.472 |        6.662 |       26.072 | b2b3 e8d7 e1d2 b8g8 d2d3 d7e6 a1h1 g8g2 a2a4 g2b2 d3e4 h7h5 | 1r2k3/p6p/8/8/8/8/PP6/R3K3 w - - 0 1
+
+Fen: 5rk1/6p1/8/8/3Q4/8/5pP1/7K w - - 0 1
+00 warmup       |   d4c4 |   cp 151 |          88.034 |      565.333 |          155 |  12/23  |       12.444 |          278 |            0 | d4c4 f8f7 c4f1 f7f6 f1c4 g8h8 c4c8 h8h7 c8c2 h7h6 c2c1 h6h7 c1c2 h7h6 c2c1 h6g6 c1b1 g6f7 b1b7 f7e6 | 5rk1/6p1/8/8/3Q4/8/5pP1/7K w - - 0 1
+01 pre          |   d4c4 |   cp 151 |          88.034 |    2.779.289 |           31 |  12/23  |       12.444 |          278 |            0 | d4c4 f8f7 c4f1 f7f6 f1c4 g8h8 c4c8 h8h7 c8c2 h7h6 c2c1 h6h7 c1c2 h7h6 c2c1 h6g6 c1b1 g6f7 b1b7 f7e6 | 5rk1/6p1/8/8/3Q4/8/5pP1/7K w - - 0 1
+91c LMR+CutNode |   d4c4 |   cp 135 |         104.378 |    2.651.065 |           39 |  12/22  |       16.013 |          786 |        9.826 | d4c4 f8f7 c4f1 g8f8 h1h2 g7g5 h2h3 g5g4 h3h2 g4g3 h2h3 f7e7 f1c4 e7e1 | 5rk1/6p1/8/8/3Q4/8/5pP1/7K w - - 0 1
+91d LMR+CutNode |   d4c4 |   cp 159 |         112.556 |    2.648.239 |           42 |  12/23  |       19.200 |        1.040 |       12.891 | d4c4 f8f7 c4f1 f7f4 h1h2 g7g5 g2g3 f4f6 h2g2 f6f7 g3g4 f7f4 | 5rk1/6p1/8/8/3Q4/8/5pP1/7K w - - 0 1
+
+Fen: 8/3r2k1/p1p4p/8/8/2P5/P7/1R4K1 w - - 0 1
+00 warmup       |   b1b6 |  cp -101 |         108.529 |      661.404 |          164 |  12/19  |       22.791 |          459 |            0 | b1b6 d7d1 g1f2 d1d2 f2e3 d2a2 b6c6 h6h5 c6b6 h5h4 c3c4 h4h3 b6b7 g7f6 c4c5 | 8/3r2k1/p1p4p/8/8/2P5/P7/1R4K1 w - - 0 1
+01 pre          |   b1b6 |  cp -101 |         108.529 |    3.154.931 |           34 |  12/19  |       22.791 |          459 |            0 | b1b6 d7d1 g1f2 d1d2 f2e3 d2a2 b6c6 h6h5 c6b6 h5h4 c3c4 h4h3 b6b7 g7f6 c4c5 | 8/3r2k1/p1p4p/8/8/2P5/P7/1R4K1 w - - 0 1
+91c LMR+CutNode |   b1b6 |  cp -101 |          84.330 |    2.802.266 |           30 |  12/22  |       22.714 |        1.124 |       11.013 | b1b6 d7d1 g1f2 d1d2 f2e3 d2a2 b6c6 h6h5 c3c4 h5h4 c6d6 h4h3 d6d7 g7f6 c4c5 | 8/3r2k1/p1p4p/8/8/2P5/P7/1R4K1 w - - 0 1
+91d LMR+CutNode |   b1b6 |  cp -101 |          89.748 |    2.843.068 |           31 |  12/22  |       24.320 |        1.222 |       12.061 | b1b6 d7d1 g1f2 d1d2 f2e3 d2a2 b6c6 h6h5 c3c4 h5h4 c6d6 h4h3 d6d7 g7f6 c4c5 | 8/3r2k1/p1p4p/8/8/2P5/P7/1R4K1 w - - 0 1
+
+Fen: 4k3/pp5p/8/8/8/8/6P1/4K2R w - - 0 1
+00 warmup       |   h1h3 |  cp 8990 |         329.999 |    1.341.700 |          245 |  12/20  |       29.128 |        6.810 |            0 | h1h3 a7a6 h3h6 b7b5 h6b6 h7h5 g2g3 b5b4 b6b4 | 4k3/pp5p/8/8/8/8/6P1/4K2R w - - 0 1
+01 pre          |   h1h3 |  cp 8990 |         329.999 |    2.539.248 |          129 |  12/20  |       29.128 |        6.810 |            0 | h1h3 a7a6 h3h6 b7b5 h6b6 h7h5 g2g3 b5b4 b6b4 | 4k3/pp5p/8/8/8/8/6P1/4K2R w - - 0 1
+91c LMR+CutNode |   e1d1 |  cp 8990 |         368.421 |    2.577.549 |          142 |  12/16  |       36.075 |       17.418 |       27.362 | e1d1 a7a5 d1c2 a5a4 h1h4 e8e7 h4a4 | 4k3/pp5p/8/8/8/8/6P1/4K2R w - - 0 1
+91d LMR+CutNode |   e1d1 |  cp 8995 |         132.775 |    2.356.473 |           56 |  12/16  |       12.529 |        6.404 |        9.270 | e1d1 | 4k3/pp5p/8/8/8/8/6P1/4K2R w - - 0 1
+
+Fen: 8/8/8/4k3/8/8/3Q4/4K3 w - - 0 1
+00 warmup       |   d2d7 |  cp 8987 |          77.280 |      599.775 |          128 |  12/18  |       25.127 |            0 |            0 | d2e2 | 8/8/8/4k3/8/8/3Q4/4K3 w - - 0 1
+01 pre          |   d2d7 |  cp 8987 |          77.280 |    4.838.285 |           15 |  12/18  |       25.127 |            0 |            0 | d2e2 | 8/8/8/4k3/8/8/3Q4/4K3 w - - 0 1
+91c LMR+CutNode |   d2d7 |  cp 8987 |          74.710 |    3.654.748 |           20 |  12/18  |       29.487 |            0 |            0 | d2e2 | 8/8/8/4k3/8/8/3Q4/4K3 w - - 0 1
+91d LMR+CutNode |   d2d7 |  cp 8987 |          74.710 |    4.164.088 |           17 |  12/18  |       29.487 |            0 |            0 | d2e2 | 8/8/8/4k3/8/8/3Q4/4K3 w - - 0 1
+
+Fen: 8/8/8/4k3/8/8/1R6/4K3 w - - 0 1
+00 warmup       |   b2d2 |  cp 8973 |          18.232 |      151.947 |          119 |  12/14  |        3.205 |            0 |            0 | e1f2 | 8/8/8/4k3/8/8/1R6/4K3 w - - 0 1
+01 pre          |   b2d2 |  cp 8973 |          18.232 |    3.035.125 |            6 |  12/14  |        3.205 |            0 |            0 | e1f2 | 8/8/8/4k3/8/8/1R6/4K3 w - - 0 1
+91c LMR+CutNode |   b2d2 |  cp 8973 |          18.086 |    2.298.094 |            7 |  12/14  |        3.193 |            0 |            0 | e1f2 | 8/8/8/4k3/8/8/1R6/4K3 w - - 0 1
+91d LMR+CutNode |   b2d2 |  cp 8973 |          18.086 |    2.311.989 |            7 |  12/14  |        3.193 |            0 |            0 | e1f2 | 8/8/8/4k3/8/8/1R6/4K3 w - - 0 1
+
+Fen: 8/4P3/8/4k3/8/8/8/4K3 w - - 0 1
+00 warmup       |  e7e8Q |  cp 8999 |          23.436 |      161.521 |          145 |  12/17  |        5.640 |            0 |            0 | e1f2 | 8/4P3/8/4k3/8/8/8/4K3 w - - 0 1
+01 pre          |  e7e8Q |  cp 8999 |          23.436 |    2.101.939 |           11 |  12/17  |        5.640 |            0 |            0 | e1f2 | 8/4P3/8/4k3/8/8/8/4K3 w - - 0 1
+91c LMR+CutNode |  e7e8Q |  cp 8999 |          22.359 |    1.954.304 |           11 |  12/17  |        7.211 |            0 |            0 | e1f2 | 8/4P3/8/4k3/8/8/8/4K3 w - - 0 1
+91d LMR+CutNode |  e7e8Q |  cp 8999 |          22.359 |    2.723.253 |            8 |  12/17  |        7.211 |            0 |            0 | e1f2 | 8/4P3/8/4k3/8/8/8/4K3 w - - 0 1
+
+Fen: 8/8/8/4k3/8/8/8/2B1KB2 w - - 0 1
+00 warmup       |   e1d2 |  cp 8968 |          36.975 |      281.452 |          131 |  12/14  |        7.064 |            0 |            0 | f1e2 | 8/8/8/4k3/8/8/8/2B1KB2 w - - 0 1
+01 pre          |   e1d2 |  cp 8968 |          36.975 |    2.003.858 |           18 |  12/14  |        7.064 |            0 |            0 | f1e2 | 8/8/8/4k3/8/8/8/2B1KB2 w - - 0 1
+91c LMR+CutNode |   e1d2 |  cp 8968 |          36.175 |    1.789.087 |           20 |  12/14  |        7.063 |            0 |            0 | f1e2 | 8/8/8/4k3/8/8/8/2B1KB2 w - - 0 1
+91d LMR+CutNode |   e1d2 |  cp 8968 |          36.175 |    1.833.325 |           19 |  12/14  |        7.063 |            0 |            0 | f1e2 | 8/8/8/4k3/8/8/8/2B1KB2 w - - 0 1
+
+Fen: 8/8/8/4k3/8/8/8/1NB1K3 w - - 0 1
+00 warmup       |   e1d2 |  cp 8942 |          27.771 |      201.693 |          137 |  12/16  |        4.311 |            0 |            0 | b1c3 | 8/8/8/4k3/8/8/8/1NB1K3 w - - 0 1
+01 pre          |   e1d2 |  cp 8942 |          27.771 |    2.800.229 |            9 |  12/16  |        4.311 |            0 |            0 | b1c3 | 8/8/8/4k3/8/8/8/1NB1K3 w - - 0 1
+91c LMR+CutNode |   e1d2 |  cp 8942 |          25.352 |    1.968.888 |           12 |  12/16  |        4.824 |            0 |            0 | b1c3 | 8/8/8/4k3/8/8/8/1NB1K3 w - - 0 1
+91d LMR+CutNode |   e1d2 |  cp 8942 |          25.352 |    1.730.039 |           14 |  12/16  |        4.824 |            0 |            0 | b1c3 | 8/8/8/4k3/8/8/8/1NB1K3 w - - 0 1
+
+Fen: r1b2rk1/2q1b1pp/p2ppn2/1p6/3QP3/1BN1B3/PPP3PP/R4RK1 w - -
+00 warmup       |   a2a4 |   cp 157 |       1.465.466 |    2.151.574 |          681 |  12/31  |       94.803 |        1.835 |            0 | a2a4 b5a4 a1a4 c8d7 a4a1 f6g4 e3f4 g4e5 f4e5 d6e5 d4e3 e7c5 | r1b2rk1/2q1b1pp/p2ppn2/1p6/3QP3/1BN1B3/PPP3PP/R4RK1 w - -
+01 pre          |   a2a4 |   cp 157 |       1.465.466 |    2.933.527 |          499 |  12/31  |       94.803 |        1.835 |            0 | a2a4 b5a4 a1a4 c8d7 a4a1 f6g4 e3f4 g4e5 f4e5 d6e5 d4e3 e7c5 | r1b2rk1/2q1b1pp/p2ppn2/1p6/3QP3/1BN1B3/PPP3PP/R4RK1 w - -
+91c LMR+CutNode |   a1d1 |   cp 181 |       4.279.259 |    2.905.870 |        1.472 |  12/35  |      265.902 |       10.276 |      186.176 | a1d1 c8d7 e3f4 c7a7 d4a7 a8a7 f4d6 e7d6 d1d6 b5b4 d6d7 f6d7 b3e6 g8h8 f1f8 d7f8 | r1b2rk1/2q1b1pp/p2ppn2/1p6/3QP3/1BN1B3/PPP3PP/R4RK1 w - -
+91d LMR+CutNode |   a2a4 |   cp 189 |       1.955.837 |    2.780.771 |          703 |  12/35  |      146.984 |        6.315 |       99.878 | a2a4 b5a4 d4a4 c8d7 a4a2 c7c8 e3d4 a6a5 a1e1 a8a6 b3c4 a6c6 | r1b2rk1/2q1b1pp/p2ppn2/1p6/3QP3/1BN1B3/PPP3PP/R4RK1 w - -
+
+Fen: 2r3k1/pppR1pp1/4p3/4P1P1/5P2/1P4K1/P1P5/8 w - -
+00 warmup       |   g3f3 |   cp 124 |         140.501 |      957.558 |          146 |  12/20  |       27.679 |          774 |            0 | g3f3 g7g6 a2a4 a7a6 c2c4 b7b6 f3e4 a6a5 d7d1 c7c5 d1d7 c8e8 | 2r3k1/pppR1pp1/4p3/4P1P1/5P2/1P4K1/P1P5/8 w - -
+01 pre          |   g3f3 |   cp 124 |         140.501 |    2.570.952 |           54 |  12/20  |       27.679 |          774 |            0 | g3f3 g7g6 a2a4 a7a6 c2c4 b7b6 f3e4 a6a5 d7d1 c7c5 d1d7 c8e8 | 2r3k1/pppR1pp1/4p3/4P1P1/5P2/1P4K1/P1P5/8 w - -
+91c LMR+CutNode |   g3f3 |   cp 123 |          64.854 |    2.419.672 |           26 |  12/18  |       18.279 |          687 |       10.170 | g3f3 a7a5 a2a4 b7b6 f3e4 g7g6 d7d1 c7c5 c2c4 c8f8 d1d7 f8c8 | 2r3k1/pppR1pp1/4p3/4P1P1/5P2/1P4K1/P1P5/8 w - -
+91d LMR+CutNode |   g3f3 |   cp 123 |          86.563 |    2.548.106 |           33 |  12/20  |       21.555 |          760 |       12.494 | g3f3 a7a5 a2a4 b7b6 f3e4 g7g6 d7d1 c7c5 c2c4 c8f8 d1d7 f8c8 | 2r3k1/pppR1pp1/4p3/4P1P1/5P2/1P4K1/P1P5/8 w - -
+
+Fen: 1nk1r1r1/pp2n1pp/4p3/q2pPp1N/b1pP1P2/B1P2R2/2P1B1PP/R2Q2K1 w - -
+00 warmup       |   h5f6 |    cp 30 |         567.611 |    1.604.930 |          353 |  12/30  |       52.924 |        1.415 |            0 | h5f6 g7f6 e5f6 b8c6 f6f7 g8g2 g1g2 e8f8 d1e1 f8f7 e2c4 f7g7 f3g3 g7g3 h2g3 d5c4 e1e6 c8d8 a3e7 c6e7 e6c4 | 1nk1r1r1/pp2n1pp/4p3/q2pPp1N/b1pP1P2/B1P2R2/2P1B1PP/R2Q2K1 w - -
+01 pre          |   h5f6 |    cp 30 |         567.611 |    2.456.321 |          231 |  12/30  |       52.924 |        1.415 |            0 | h5f6 g7f6 e5f6 b8c6 f6f7 g8g2 g1g2 e8f8 d1e1 f8f7 e2c4 f7g7 f3g3 g7g3 h2g3 d5c4 e1e6 c8d8 a3e7 c6e7 e6c4 | 1nk1r1r1/pp2n1pp/4p3/q2pPp1N/b1pP1P2/B1P2R2/2P1B1PP/R2Q2K1 w - -
+91c LMR+CutNode |   h5f6 |     cp 3 |       1.064.792 |    2.692.089 |          395 |  12/32  |       88.514 |        7.121 |       65.331 | h5f6 g7f6 e5f6 b8c6 a3e7 c6e7 f6f7 g8g2 g1g2 e8f8 f3e3 e7g6 d1f1 | 1nk1r1r1/pp2n1pp/4p3/q2pPp1N/b1pP1P2/B1P2R2/2P1B1PP/R2Q2K1 w - -
+91d LMR+CutNode |   h5f6 |     cp 0 |         537.853 |    2.670.800 |          201 |  12/32  |       63.301 |        3.275 |       42.856 | h5f6 g7f6 e5f6 b8c6 f6f7 g8g2 g1g2 e8f8 d1e1 c8c7 a3b4 a5a6 b4e7 c6e7 | 1nk1r1r1/pp2n1pp/4p3/q2pPp1N/b1pP1P2/B1P2R2/2P1B1PP/R2Q2K1 w - -
+
+Fen: 4b3/p3kp2/6p1/3pP2p/2pP1P2/4K1P1/P3N2P/8 w - -
+00 warmup       |   f4f5 |    cp 39 |         177.198 |    1.057.834 |          167 |  12/20  |       34.905 |        1.171 |            0 | f4f5 e7d7 a2a3 d7c6 e2f4 a7a6 f5g6 f7g6 h2h4 a6a5 a3a4 e8f7 | 4b3/p3kp2/6p1/3pP2p/2pP1P2/4K1P1/P3N2P/8 w - -
+01 pre          |   f4f5 |    cp 39 |         177.198 |    3.723.812 |           47 |  12/20  |       34.905 |        1.171 |            0 | f4f5 e7d7 a2a3 d7c6 e2f4 a7a6 f5g6 f7g6 h2h4 a6a5 a3a4 e8f7 | 4b3/p3kp2/6p1/3pP2p/2pP1P2/4K1P1/P3N2P/8 w - -
+91c LMR+CutNode |   f4f5 |    cp 74 |         116.862 |    2.932.444 |           39 |  12/19  |       27.294 |        1.385 |       13.599 | f4f5 e7d7 e2f4 d7c6 a2a4 a7a6 h2h4 a6a5 e3d2 g6f5 d2e3 f7f6 e5f6 | 4b3/p3kp2/6p1/3pP2p/2pP1P2/4K1P1/P3N2P/8 w - -
+91d LMR+CutNode |   f4f5 |    cp 48 |          99.063 |    3.530.625 |           28 |  12/19  |       26.346 |        1.345 |       12.582 | f4f5 e7d7 h2h4 d7c6 e2f4 a7a5 f5g6 f7g6 a2a4 e8f7 e5e6 f7g8 | 4b3/p3kp2/6p1/3pP2p/2pP1P2/4K1P1/P3N2P/8 w - -
+
+Fen: 2kr1bnr/pbpq4/2n1pp2/3p3p/3P1P1B/2N2N1Q/PPP3PP/2KR1B1R w - -
+00 warmup       |   f1d3 |   cp 292 |       2.482.353 |    2.345.725 |        1.058 |  12/34  |      167.255 |        6.167 |            0 | f1d3 f8b4 c3e2 b4e7 c1b1 f6f5 f3e5 d7e8 h1f1 g8f6 h4f6 e7f6 | 2kr1bnr/pbpq4/2n1pp2/3p3p/3P1P1B/2N2N1Q/PPP3PP/2KR1B1R w - -
+01 pre          |   f1d3 |   cp 292 |       2.482.353 |    2.638.855 |          940 |  12/34  |      167.255 |        6.167 |            0 | f1d3 f8b4 c3e2 b4e7 c1b1 f6f5 f3e5 d7e8 h1f1 g8f6 h4f6 e7f6 | 2kr1bnr/pbpq4/2n1pp2/3p3p/3P1P1B/2N2N1Q/PPP3PP/2KR1B1R w - -
+91c LMR+CutNode |   f4f5 |   cp 299 |       3.755.140 |    2.759.579 |        1.360 |  12/35  |      330.204 |       21.274 |      226.763 | f4f5 e6f5 f1d3 c8b8 c1b1 f5f4 h3d7 d8d7 h1e1 d7d8 a2a3 f8e7 | 2kr1bnr/pbpq4/2n1pp2/3p3p/3P1P1B/2N2N1Q/PPP3PP/2KR1B1R w - -
+91d LMR+CutNode |   f4f5 |   cp 315 |       1.808.840 |    2.735.899 |          661 |  12/34  |      172.942 |        9.331 |      109.119 | f4f5 e6f5 f1d3 c6e7 h1e1 c8b8 c1b1 f8g7 h4g3 h8h7 c3b5 d8c8 | 2kr1bnr/pbpq4/2n1pp2/3p3p/3P1P1B/2N2N1Q/PPP3PP/2KR1B1R w - -
+
+Fen: 3rr1k1/pp3pp1/1qn2np1/8/3p4/PP1R1P2/2P1NQPP/R1B3K1 b - -
+00 warmup       |   c6e5 |   cp 218 |       1.988.009 |    2.390.617 |          831 |  12/27  |      167.020 |        7.274 |            0 | c6e5 e2f4 g6g5 c1b2 g5f4 d3d4 d8c8 a1c1 e5g6 c1d1 b6c5 d4d2 | 3rr1k1/pp3pp1/1qn2np1/8/3p4/PP1R1P2/2P1NQPP/R1B3K1 b - -
+01 pre          |   c6e5 |   cp 218 |       1.988.009 |    2.967.218 |          669 |  12/27  |      167.020 |        7.274 |            0 | c6e5 e2f4 g6g5 c1b2 g5f4 d3d4 d8c8 a1c1 e5g6 c1d1 b6c5 d4d2 | 3rr1k1/pp3pp1/1qn2np1/8/3p4/PP1R1P2/2P1NQPP/R1B3K1 b - -
+91c LMR+CutNode |   b6c5 |    cp 45 |       5.623.287 |    2.925.820 |        1.921 |  12/32  |      573.370 |       24.647 |      331.931 | b6c5 e2g3 c6e5 d3d2 c5c3 a1a2 d4d3 g3e4 f6e4 f3e4 d3c2 a2c2 c3b3 f2a7 | 3rr1k1/pp3pp1/1qn2np1/8/3p4/PP1R1P2/2P1NQPP/R1B3K1 b - -
+91d LMR+CutNode |   b6c5 |    cp 33 |       2.349.835 |    2.578.099 |          911 |  12/30  |      262.169 |       11.716 |      162.234 | b6c5 a1a2 c5a5 c1f4 f6h5 f4d2 a5e5 e2g3 h5f6 f3f4 e5c5 f4f5 | 3rr1k1/pp3pp1/1qn2np1/8/3p4/PP1R1P2/2P1NQPP/R1B3K1 b - -
+
+Fen: 2r1nrk1/p2q1ppp/bp1p4/n1pPp3/P1P1P3/2PBB1N1/4QPPP/R4RK1 w - -
+00 warmup       |   f2f4 |   cp 101 |       1.608.428 |    2.191.827 |          733 |  12/32  |      111.242 |        3.089 |            0 | f2f4 f7f6 a1a2 e8c7 g3f5 c8d8 f4e5 f6e5 e3g5 d8e8 a2b2 a6b7 | 2r1nrk1/p2q1ppp/bp1p4/n1pPp3/P1P1P3/2PBB1N1/4QPPP/R4RK1 w - -
+01 pre          |   f2f4 |   cp 101 |       1.608.428 |    2.436.923 |          660 |  12/32  |      111.242 |        3.089 |            0 | f2f4 f7f6 a1a2 e8c7 g3f5 c8d8 f4e5 f6e5 e3g5 d8e8 a2b2 a6b7 | 2r1nrk1/p2q1ppp/bp1p4/n1pPp3/P1P1P3/2PBB1N1/4QPPP/R4RK1 w - -
+91c LMR+CutNode |   h2h3 |   cp 105 |       2.008.117 |    2.658.522 |          755 |  12/35  |      184.251 |        7.541 |      143.375 | h2h3 e8f6 a1a3 a6b7 f2f4 c8e8 f4e5 d6e5 e3g5 d7d6 g3f5 d6c7 | 2r1nrk1/p2q1ppp/bp1p4/n1pPp3/P1P1P3/2PBB1N1/4QPPP/R4RK1 w - -
+91d LMR+CutNode |   a1a2 |    cp 91 |         375.948 |    2.680.884 |          140 |  12/31  |       44.855 |        1.679 |       31.351 | a1a2 e8f6 e3g5 d7g4 e2g4 f6g4 g3f5 a6c4 f5e7 g8h8 e7c8 c4d3 f1d1 | 2r1nrk1/p2q1ppp/bp1p4/n1pPp3/P1P1P3/2PBB1N1/4QPPP/R4RK1 w - -
+
+Fen: r3r1k1/ppqb1ppp/8/4p1NQ/8/2P5/PP3PPP/R3R1K1 b - -
+00 warmup       |   d7f5 |     cp 9 |       1.610.502 |    2.507.136 |          642 |  12/25  |      142.115 |        5.394 |            0 | d7f5 h5f3 f5g6 f3e2 a8d8 g5f3 f7f6 a1d1 c7c5 h2h3 g6f5 a2a3 | r3r1k1/ppqb1ppp/8/4p1NQ/8/2P5/PP3PPP/R3R1K1 b - -
+01 pre          |   d7f5 |     cp 9 |       1.610.502 |    3.028.441 |          531 |  12/25  |      142.115 |        5.394 |            0 | d7f5 h5f3 f5g6 f3e2 a8d8 g5f3 f7f6 a1d1 c7c5 h2h3 g6f5 a2a3 | r3r1k1/ppqb1ppp/8/4p1NQ/8/2P5/PP3PPP/R3R1K1 b - -
+91c LMR+CutNode |   d7f5 |    cp 18 |         647.997 |    2.881.701 |          224 |  12/27  |       83.491 |        4.789 |       55.194 | d7f5 h5f3 f5g6 h2h4 a8d8 a1d1 d8d1 f3d1 h7h6 d1a4 e8d8 g5e4 | r3r1k1/ppqb1ppp/8/4p1NQ/8/2P5/PP3PPP/R3R1K1 b - -
+91d LMR+CutNode |   d7f5 |    cp 22 |         424.576 |    2.515.429 |          168 |  12/24  |       63.167 |        2.890 |       42.283 | d7f5 h5f3 f5g6 h2h4 e5e4 f3e3 f7f5 e3d4 e8d8 g5e6 d8d4 e6c7 | r3r1k1/ppqb1ppp/8/4p1NQ/8/2P5/PP3PPP/R3R1K1 b - -
+
+Fen: r2q1rk1/4bppp/p2p4/2pP4/3pP3/3Q4/PP1B1PPP/R3R1K1 w - -
+00 warmup       |   a1c1 |    cp 58 |         905.848 |    2.006.405 |          451 |  12/27  |      107.925 |        4.546 |            0 | a1c1 d8b6 c1c2 e7f6 d3f3 a8c8 e1d1 f8e8 h2h3 d4d3 f3d3 f6b2 | r2q1rk1/4bppp/p2p4/2pP4/3pP3/3Q4/PP1B1PPP/R3R1K1 w - -
+01 pre          |   a1c1 |    cp 58 |         905.848 |    2.878.468 |          314 |  12/27  |      107.925 |        4.546 |            0 | a1c1 d8b6 c1c2 e7f6 d3f3 a8c8 e1d1 f8e8 h2h3 d4d3 f3d3 f6b2 | r2q1rk1/4bppp/p2p4/2pP4/3pP3/3Q4/PP1B1PPP/R3R1K1 w - -
+91c LMR+CutNode |   a1c1 |    cp 63 |         963.779 |    2.964.953 |          325 |  12/27  |      140.935 |       10.836 |       89.527 | a1c1 d8b6 b2b3 a8c8 d3f3 e7f6 d2f4 c8d8 f3g4 f8e8 h2h3 h7h6 | r2q1rk1/4bppp/p2p4/2pP4/3pP3/3Q4/PP1B1PPP/R3R1K1 w - -
+91d LMR+CutNode |   a1c1 |    cp 68 |         570.435 |    3.006.123 |          189 |  12/24  |       91.965 |        7.096 |       57.642 | a1c1 d8b6 c1c2 a8c8 h2h3 e7f6 d2f4 h7h6 a2a3 f8e8 f2f3 a6a5 | r2q1rk1/4bppp/p2p4/2pP4/3pP3/3Q4/PP1B1PPP/R3R1K1 w - -
+
+Fen: rnb2r1k/pp2p2p/2pp2p1/q2P1p2/8/1Pb2NP1/PB2PPBP/R2Q1RK1 w - -
+00 warmup       |   d1c2 |    cp 59 |       3.540.691 |    2.573.104 |        1.376 |  12/35  |      316.920 |       13.969 |            0 | d1c2 c3b2 c2b2 h8g8 d5c6 b7c6 a1c1 e7e5 f3d4 a5b6 d4c6 b8c6 c1c6 b6b4 | rnb2r1k/pp2p2p/2pp2p1/q2P1p2/8/1Pb2NP1/PB2PPBP/R2Q1RK1 w - -
+01 pre          |   d1c2 |    cp 59 |       3.540.691 |    2.878.434 |        1.230 |  12/35  |      316.920 |       13.969 |            0 | d1c2 c3b2 c2b2 h8g8 d5c6 b7c6 a1c1 e7e5 f3d4 a5b6 d4c6 b8c6 c1c6 b6b4 | rnb2r1k/pp2p2p/2pp2p1/q2P1p2/8/1Pb2NP1/PB2PPBP/R2Q1RK1 w - -
+91c LMR+CutNode |   b2c3 |    cp 34 |       1.610.721 |    2.971.624 |          542 |  12/34  |      188.646 |       11.518 |      107.571 | b2c3 a5c3 d5c6 c3c6 d1d2 c6c7 f3d4 c8d7 a1c1 b8c6 d2c3 e7e5 d4c6 b7c6 g2c6 d7c6 c3c6 c7c6 c1c6 | rnb2r1k/pp2p2p/2pp2p1/q2P1p2/8/1Pb2NP1/PB2PPBP/R2Q1RK1 w - -
+91d LMR+CutNode |   d1d2 |   cp 232 |       3.866.154 |    2.891.087 |        1.337 |  12/34  |      368.075 |       25.092 |      226.790 | d1d2 | rnb2r1k/pp2p2p/2pp2p1/q2P1p2/8/1Pb2NP1/PB2PPBP/R2Q1RK1 w - -
+
+Fen: 2r3k1/1p2q1pp/2b1pr2/p1pp4/6Q1/1P1PP1R1/P1PN2PP/5RK1 w - -
+00 warmup       |   g4g7 |    cp 57 |         123.342 |      763.468 |          161 |  12/23  |       16.205 |          166 |            0 | g4g7 e7g7 f1f6 g7g3 h2g3 c8e8 a2a4 b7b6 e3e4 g8g7 e4e5 d5d4 | 2r3k1/1p2q1pp/2b1pr2/p1pp4/6Q1/1P1PP1R1/P1PN2PP/5RK1 w - -
+01 pre          |   g4g7 |    cp 57 |         123.342 |    3.080.808 |           40 |  12/23  |       16.205 |          166 |            0 | g4g7 e7g7 f1f6 g7g3 h2g3 c8e8 a2a4 b7b6 e3e4 g8g7 e4e5 d5d4 | 2r3k1/1p2q1pp/2b1pr2/p1pp4/6Q1/1P1PP1R1/P1PN2PP/5RK1 w - -
+91c LMR+CutNode |   g4g7 |    cp 53 |          92.446 |    2.810.857 |           32 |  12/22  |       17.839 |          214 |       10.234 | g4g7 e7g7 f1f6 g7g3 h2g3 c6d7 a2a4 b7b6 e3e4 c8f8 e4e5 d5d4 | 2r3k1/1p2q1pp/2b1pr2/p1pp4/6Q1/1P1PP1R1/P1PN2PP/5RK1 w - -
+91d LMR+CutNode |   g4g7 |    cp 56 |          97.992 |    2.539.435 |           38 |  12/23  |       18.838 |          275 |       10.832 | g4g7 e7g7 f1f6 g7g3 h2g3 c6d7 e3e4 b7b5 c2c4 b5c4 b3c4 d5d4 | 2r3k1/1p2q1pp/2b1pr2/p1pp4/6Q1/1P1PP1R1/P1PN2PP/5RK1 w - -
+
+Fen: r1bqkb1r/4npp1/p1p4p/1p1pP1B1/8/1B6/PPPN1PPP/R2Q1RK1 w kq -
+00 warmup       |   g5e3 |   cp 136 |       2.055.017 |    2.310.505 |          889 |  12/35  |      173.552 |        5.622 |            0 | g5e3 d8c7 c2c3 c7e5 f1e1 e5f5 b3c2 f5d7 h2h3 a6a5 d1f3 c8b7 | r1bqkb1r/4npp1/p1p4p/1p1pP1B1/8/1B6/PPPN1PPP/R2Q1RK1 w kq -
+01 pre          |   g5e3 |   cp 136 |       2.055.017 |    2.697.243 |          761 |  12/35  |      173.552 |        5.622 |            0 | g5e3 d8c7 c2c3 c7e5 f1e1 e5f5 b3c2 f5d7 h2h3 a6a5 d1f3 c8b7 | r1bqkb1r/4npp1/p1p4p/1p1pP1B1/8/1B6/PPPN1PPP/R2Q1RK1 w kq -
+91c LMR+CutNode |   d2e4 |   cp 183 |       1.193.705 |    2.608.607 |          457 |  12/31  |      109.917 |        5.207 |       65.742 | d2e4 c8e6 e4d6 e8d7 g5h4 f7f6 e5f6 d7d6 h4g3 d6d7 f6e7 d8e7 d1d4 a8e8 | r1bqkb1r/4npp1/p1p4p/1p1pP1B1/8/1B6/PPPN1PPP/R2Q1RK1 w kq -
+91d LMR+CutNode |   d2e4 |   cp 151 |       5.845.025 |    2.780.493 |        2.102 |  12/37  |      509.718 |       27.419 |      323.472 | d2e4 c8e6 e4d6 e8d7 d1h5 f7f6 e5f6 h6g5 h5h8 e7g6 f6g7 f8d6 h8h7 g6e5 | r1bqkb1r/4npp1/p1p4p/1p1pP1B1/8/1B6/PPPN1PPP/R2Q1RK1 w kq -
+
+Fen: r2q1rk1/1ppnbppp/p2p1nb1/3Pp3/2P1P1P1/2N2N1P/PPB1QP2/R1B2RK1 b - -
+00 warmup       |   h7h5 |   cp -67 |         373.795 |    1.564.672 |          238 |  12/31  |       47.630 |          939 |            0 | h7h5 g4h5 g6h5 c1e3 h5f3 e2f3 a8c8 a1e1 d7b6 c2b3 d8d7 a2a3 c8d8 | r2q1rk1/1ppnbppp/p2p1nb1/3Pp3/2P1P1P1/2N2N1P/PPB1QP2/R1B2RK1 b - -
+01 pre          |   h7h5 |   cp -67 |         373.795 |    2.653.224 |          140 |  12/31  |       47.630 |          939 |            0 | h7h5 g4h5 g6h5 c1e3 h5f3 e2f3 a8c8 a1e1 d7b6 c2b3 d8d7 a2a3 c8d8 | r2q1rk1/1ppnbppp/p2p1nb1/3Pp3/2P1P1P1/2N2N1P/PPB1QP2/R1B2RK1 b - -
+91c LMR+CutNode |   h7h6 |   cp -98 |         334.927 |    2.233.099 |          149 |  12/32  |       43.320 |        1.706 |       31.271 | h7h6 c1e3 a8c8 a1c1 c7c6 c2d3 c6d5 c4d5 d7c5 e3c5 c8c5 e2e3 | r2q1rk1/1ppnbppp/p2p1nb1/3Pp3/2P1P1P1/2N2N1P/PPB1QP2/R1B2RK1 b - -
+91d LMR+CutNode |   h7h6 |   cp -98 |         348.313 |    2.290.167 |          152 |  12/35  |       44.504 |        1.769 |       31.348 | h7h6 c1e3 a8c8 a1d1 f8e8 c2d3 c7c6 e2c2 c6d5 c4d5 d7c5 d1c1 c5d3 c2d3 | r2q1rk1/1ppnbppp/p2p1nb1/3Pp3/2P1P1P1/2N2N1P/PPB1QP2/R1B2RK1 b - -
+
+Fen: r1bq1rk1/pp2ppbp/2np2p1/2n5/P3PP2/N1P2N2/1PB3PP/R1B1QRK1 b - -
+00 warmup       |   f7f5 |   cp -40 |       2.272.291 |    2.185.761 |        1.039 |  12/36  |      184.624 |        4.007 |            0 | f7f5 e4e5 d6e5 f4e5 c5d3 c2d3 d8d3 c1f4 d3e4 e1g3 e4a4 a1d1 | r1bq1rk1/pp2ppbp/2np2p1/2n5/P3PP2/N1P2N2/1PB3PP/R1B1QRK1 b - -
+01 pre          |   f7f5 |   cp -40 |       2.272.291 |    2.578.563 |          881 |  12/36  |      184.624 |        4.007 |            0 | f7f5 e4e5 d6e5 f4e5 c5d3 c2d3 d8d3 c1f4 d3e4 e1g3 e4a4 a1d1 | r1bq1rk1/pp2ppbp/2np2p1/2n5/P3PP2/N1P2N2/1PB3PP/R1B1QRK1 b - -
+91c LMR+CutNode |   c8g4 |   cp -54 |       3.717.914 |    2.416.489 |        1.538 |  12/35  |      414.528 |       16.217 |      233.337 | c8g4 c1e3 g4f3 f1f3 d8d7 e1f2 b7b6 a3c4 d7e6 e3c5 e6c4 c5e3 | r1bq1rk1/pp2ppbp/2np2p1/2n5/P3PP2/N1P2N2/1PB3PP/R1B1QRK1 b - -
+91d LMR+CutNode |   c8e6 |   cp -38 |       3.568.442 |    2.545.539 |        1.401 |  12/33  |      362.920 |       14.964 |      210.720 | c8e6 c1e3 e6b3 e3c5 b3c2 a3c2 d6c5 e1e2 e7e5 f4e5 d8b6 c2e3 g7e5 f3e5 c6e5 | r1bq1rk1/pp2ppbp/2np2p1/2n5/P3PP2/N1P2N2/1PB3PP/R1B1QRK1 b - -
+
+Fen: 3rr3/2pq2pk/p2p1pnp/8/2QBPP2/1P6/P5PP/4RRK1 b - -
+00 warmup       |   e8e4 |    cp -6 |         440.047 |    1.481.795 |          296 |  12/23  |       49.537 |          935 |            0 | e8e4 e1e4 d6d5 c4a6 d5e4 d4e3 d7d3 a6d3 e4d3 f1d1 h7g8 f4f5 | 3rr3/2pq2pk/p2p1pnp/8/2QBPP2/1P6/P5PP/4RRK1 b - -
+01 pre          |   e8e4 |    cp -6 |         440.047 |    2.861.042 |          153 |  12/23  |       49.537 |          935 |            0 | e8e4 e1e4 d6d5 c4a6 d5e4 d4e3 d7d3 a6d3 e4d3 f1d1 h7g8 f4f5 | 3rr3/2pq2pk/p2p1pnp/8/2QBPP2/1P6/P5PP/4RRK1 b - -
+91c LMR+CutNode |   e8e4 |    cp -4 |         875.411 |    2.788.297 |          313 |  12/26  |      108.375 |        6.268 |       67.606 | e8e4 e1e4 d6d5 c4a6 d5e4 d4e3 d7d3 a6d3 e4d3 f1d1 g6e7 g2g3 e7f5 e3c5 | 3rr3/2pq2pk/p2p1pnp/8/2QBPP2/1P6/P5PP/4RRK1 b - -
+91d LMR+CutNode |   e8e4 |    cp -8 |         742.266 |    2.859.199 |          259 |  12/27  |       92.974 |        4.993 |       58.076 | e8e4 e1e4 d6d5 c4a6 d5e4 d4e3 d7d3 a6a7 h7g8 f4f5 g6e7 e3f4 e7f5 a7c7 | 3rr3/2pq2pk/p2p1pnp/8/2QBPP2/1P6/P5PP/4RRK1 b - -
+
+Fen: r4k2/pb2bp1r/1p1qp2p/3pNp2/3P1P2/2N3P1/PPP1Q2P/2KRR3 w - -
+00 warmup       |   c1b1 |   cp 123 |       1.426.196 |    2.050.261 |          695 |  12/28  |      135.315 |        6.555 |            0 | c1b1 f8g8 e1g1 a7a6 g3g4 f5g4 g1g4 g8h8 g4g2 a8g8 a2a3 g8g2 e2g2 | r4k2/pb2bp1r/1p1qp2p/3pNp2/3P1P2/2N3P1/PPP1Q2P/2KRR3 w - -
+01 pre          |   c1b1 |   cp 123 |       1.426.196 |    2.736.211 |          521 |  12/28  |      135.315 |        6.555 |            0 | c1b1 f8g8 e1g1 a7a6 g3g4 f5g4 g1g4 g8h8 g4g2 a8g8 a2a3 g8g2 e2g2 | r4k2/pb2bp1r/1p1qp2p/3pNp2/3P1P2/2N3P1/PPP1Q2P/2KRR3 w - -
+91c LMR+CutNode |   c1b1 |   cp 128 |       3.136.851 |    2.545.723 |        1.232 |  12/31  |      425.406 |       34.919 |      258.826 | c1b1 f8g8 e1g1 a7a6 g3g4 f5g4 g1g4 g8h8 d1f1 a8g8 g4g3 g8c8 | r4k2/pb2bp1r/1p1qp2p/3pNp2/3P1P2/2N3P1/PPP1Q2P/2KRR3 w - -
+91d LMR+CutNode |   c3b5 |   cp 123 |       5.019.158 |    2.694.810 |        1.862 |  12/30  |      736.862 |       63.723 |      457.467 | c3b5 d6d8 c1b1 f8g8 a2a3 a7a5 d1c1 h6h5 h2h4 a8c8 c2c4 b7c6 c4d5 d8d5 | r4k2/pb2bp1r/1p1qp2p/3pNp2/3P1P2/2N3P1/PPP1Q2P/2KRR3 w - -
+
+Fen: 3rn2k/ppb2rpp/2ppqp2/5N2/2P1P3/1P5Q/PB3PPP/3RR1K1 w - -
+00 warmup       |   f5h6 |   cp 289 |         344.081 |    1.623.332 |          211 |  12/26  |       30.251 |          648 |            0 | f5h6 f7e7 h3e6 e7e6 h6f7 h8g8 f7d8 c7d8 b2d4 d8a5 e1e3 c6c5 d4b2 | 3rn2k/ppb2rpp/2ppqp2/5N2/2P1P3/1P5Q/PB3PPP/3RR1K1 w - -
+01 pre          |   f5h6 |   cp 289 |         344.081 |    2.701.305 |          127 |  12/26  |       30.251 |          648 |            0 | f5h6 f7e7 h3e6 e7e6 h6f7 h8g8 f7d8 c7d8 b2d4 d8a5 e1e3 c6c5 d4b2 | 3rn2k/ppb2rpp/2ppqp2/5N2/2P1P3/1P5Q/PB3PPP/3RR1K1 w - -
+91c LMR+CutNode |   f5h6 |   cp 289 |         260.534 |    2.715.627 |           95 |  12/26  |       34.791 |        1.057 |       23.892 | f5h6 f7e7 h3e6 e7e6 h6f7 h8g8 f7d8 c7d8 b2d4 d8a5 e1e3 c6c5 d4b2 | 3rn2k/ppb2rpp/2ppqp2/5N2/2P1P3/1P5Q/PB3PPP/3RR1K1 w - -
+91d LMR+CutNode |   f5h6 |   cp 289 |         239.215 |    2.466.210 |           96 |  12/27  |       28.737 |        1.215 |       20.390 | f5h6 f7e7 h3e6 e7e6 h6f7 h8g8 f7d8 c7d8 b2d4 d8a5 e1e3 c6c5 d4b2 | 3rn2k/ppb2rpp/2ppqp2/5N2/2P1P3/1P5Q/PB3PPP/3RR1K1 w - -
+
+Fen: 2r2rk1/1bqnbpp1/1p1ppn1p/pP6/N1P1P3/P2B1N1P/1B2QPP1/R2R2K1 b - -
+00 warmup       |   b7e4 |    cp 52 |         252.838 |    1.166.724 |          216 |  12/28  |       28.855 |          324 |            0 | b7e4 d3e4 c7c4 e2c4 c8c4 a4b6 c4e4 b6d7 f6d7 b2c3 a5a4 a1c1 | 2r2rk1/1bqnbpp1/1p1ppn1p/pP6/N1P1P3/P2B1N1P/1B2QPP1/R2R2K1 b - -
+01 pre          |   b7e4 |    cp 52 |         252.838 |    2.153.741 |          117 |  12/28  |       28.855 |          324 |            0 | b7e4 d3e4 c7c4 e2c4 c8c4 a4b6 c4e4 b6d7 f6d7 b2c3 a5a4 a1c1 | 2r2rk1/1bqnbpp1/1p1ppn1p/pP6/N1P1P3/P2B1N1P/1B2QPP1/R2R2K1 b - -
+91c LMR+CutNode |   b7e4 |    cp 52 |         262.828 |    2.403.655 |          109 |  12/29  |       39.195 |          736 |       22.427 | b7e4 d3e4 c7c4 e2c4 c8c4 a4b6 c4e4 b6d7 f6d7 b2c3 a5a4 a1c1 | 2r2rk1/1bqnbpp1/1p1ppn1p/pP6/N1P1P3/P2B1N1P/1B2QPP1/R2R2K1 b - -
+91d LMR+CutNode |   b7e4 |    cp 52 |         259.821 |    2.350.495 |          110 |  12/29  |       39.406 |          806 |       22.691 | b7e4 d3e4 c7c4 e2c4 c8c4 a4b6 c4e4 b6d7 f6d7 b2c3 a5a4 a1c1 | 2r2rk1/1bqnbpp1/1p1ppn1p/pP6/N1P1P3/P2B1N1P/1B2QPP1/R2R2K1 b - -
+
+Fen: r1bqk2r/pp2bppp/2p5/3pP3/P2Q1P2/2N1B3/1PP3PP/R4RK1 b kq -
+00 warmup       |   c8f5 |   cp -80 |         606.411 |    1.744.105 |          347 |  12/31  |       63.117 |        1.485 |            0 | c8f5 a1c1 e8g8 h2h3 f8e8 g2g4 f5e6 b2b4 f7f6 f4f5 f6e5 d4e5 | r1bqk2r/pp2bppp/2p5/3pP3/P2Q1P2/2N1B3/1PP3PP/R4RK1 b kq -
+01 pre          |   c8f5 |   cp -80 |         606.411 |    2.486.536 |          243 |  12/31  |       63.117 |        1.485 |            0 | c8f5 a1c1 e8g8 h2h3 f8e8 g2g4 f5e6 b2b4 f7f6 f4f5 f6e5 d4e5 | r1bqk2r/pp2bppp/2p5/3pP3/P2Q1P2/2N1B3/1PP3PP/R4RK1 b kq -
+91c LMR+CutNode |   c8f5 |   cp -85 |         281.965 |    2.442.750 |          115 |  12/26  |       46.573 |        1.886 |       28.699 | c8f5 a1c1 e8g8 h2h3 d8c7 g2g4 f5d7 c1d1 a7a6 f4f5 a8d8 b2b3 | r1bqk2r/pp2bppp/2p5/3pP3/P2Q1P2/2N1B3/1PP3PP/R4RK1 b kq -
+91d LMR+CutNode |   c8f5 |   cp -58 |         672.906 |    2.656.598 |          253 |  12/26  |       97.483 |        4.921 |       61.273 | c8f5 d4d2 e8g8 a4a5 d8c7 a1a4 h7h6 d2e2 a7a6 g2g4 f5e4 c3e4 d5e4 a4e4 c7a5 | r1bqk2r/pp2bppp/2p5/3pP3/P2Q1P2/2N1B3/1PP3PP/R4RK1 b kq -
+
+Fen: r2qnrnk/p2b2b1/1p1p2pp/2pPpp2/1PP1P3/PRNBB3/3QNPPP/5RK1 w - -
+00 warmup       |   f2f4 |   cp 243 |       2.090.546 |    2.017.190 |        1.036 |  12/36  |      114.694 |        1.436 |            0 | f2f4 f5e4 d3e4 g8e7 b4c5 b6c5 b3b1 d8a5 f4e5 f8f1 b1f1 g7e5 d2b2 | r2qnrnk/p2b2b1/1p1p2pp/2pPpp2/1PP1P3/PRNBB3/3QNPPP/5RK1 w - -
+01 pre          |   f2f4 |   cp 243 |       2.090.546 |    2.652.503 |          788 |  12/36  |      114.694 |        1.436 |            0 | f2f4 f5e4 d3e4 g8e7 b4c5 b6c5 b3b1 d8a5 f4e5 f8f1 b1f1 g7e5 d2b2 | r2qnrnk/p2b2b1/1p1p2pp/2pPpp2/1PP1P3/PRNBB3/3QNPPP/5RK1 w - -
+91c LMR+CutNode |   b4c5 |   cp 239 |       1.496.311 |    2.353.301 |          635 |  12/34  |      133.445 |        3.005 |       73.931 | b4c5 d6c5 f2f4 f5e4 c3e4 g8e7 b3b1 d8c7 f4e5 f8f1 b1f1 g7e5 h2h3 | r2qnrnk/p2b2b1/1p1p2pp/2pPpp2/1PP1P3/PRNBB3/3QNPPP/5RK1 w - -
+91d LMR+CutNode |   f2f4 |   cp 233 |       1.832.754 |    2.560.702 |          715 |  12/43  |      136.890 |        2.687 |       79.376 | f2f4 c5b4 a3b4 e8f6 c4c5 f5e4 d3e4 d6c5 b4c5 d7g4 e2g3 f6e4 g3e4 | r2qnrnk/p2b2b1/1p1p2pp/2pPpp2/1PP1P3/PRNBB3/3QNPPP/5RK1 w - -
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+
+################## Totals/Avg results for each feature test ##################
+
+Date:                  : 2026-02-22 01:26:43
+SearchTime             : 0,000 s
+MaxDepth               : 12
+Number of feature tests: 4
+Number of fens         : 50
+Total tests            : 200
+
+Test: 00 warmup        Nodes:          762.148  Nps:        1.340.668  Time:              406 Depth:  12/24  Special1:  3.364.126 (67.282) Special2:    124.074 (2.481) Special3:          0 (    0)
+Test: 01 pre           Nodes:          762.148  Nps:        2.655.338  Time:              281 Depth:  12/24  Special1:  3.364.126 (67.282) Special2:    124.074 (2.481) Special3:          0 (    0)
+Test: 91c LMR+CutNode  Nodes:          852.869  Nps:        2.519.859  Time:              320 Depth:  12/24  Special1:  4.707.467 (94.149) Special2:    264.752 (5.295) Special3:  2.814.924 (56.298)
+Test: 91d LMR+CutNode  Nodes:          905.664  Nps:        2.529.476  Time:              345 Depth:  12/25  Special1:  5.244.930 (104.898) Special2:    315.685 (6.313) Special3:  3.137.412 (62.748)
+Process finished with exit code 0
