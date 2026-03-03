@@ -13,10 +13,10 @@
 # -----------------------------------------------------------------------------
 # Configuration - Modify these paths as needed
 # -----------------------------------------------------------------------------
-$VTUNE_PATH = "C:\Program Files (x86)\Intel\oneAPI\vtune\2025.9\bin64"
-$EXECUTABLE = "D:\_DEV\FrankyCPP\cmake-build-win-relwithdebinfo\src\FrankyCPP_v1.4.exe"
 $THREADS = 8
 $PARAMS = "--bench --threads $THREADS -l warn -s warn"
+$VTUNE_PATH = "C:\Program Files (x86)\Intel\oneAPI\vtune\2025.9\bin64"
+$EXECUTABLE = "D:\_DEV\FrankyCPP\cmake-build-win-relwithdebinfo\src\FrankyCPP_v1.4.exe"
 $RESULTS_BASE = "D:\_DEV\FrankyCPP\results\vtune"
 
 # -----------------------------------------------------------------------------
@@ -294,4 +294,12 @@ if (-not $isAdmin) {
     Write-Host "Re-run in an Administrator terminal for complete results." -ForegroundColor Yellow
     Write-Host ""
 }
+
+# Clean up temporary log config file created by VTune
+$logCfgPath = "D:\_DEV\FrankyCPP\config\log.cfg"
+if (Test-Path $logCfgPath) {
+    Remove-Item $logCfgPath -Force
+    Write-Host "Cleaned up temporary file: $logCfgPath" -ForegroundColor Gray
+}
+
 Write-Host "Done!" -ForegroundColor Green
