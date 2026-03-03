@@ -18,13 +18,13 @@
 
 ### Phase Status Tracker
 
-| Phase                                | Status         | Notes                                             |
-|--------------------------------------|----------------|---------------------------------------------------|
-| Phase 1: Engine & Config Layer       | ✅ Complete     | Low risk, pure class/struct wrapping              |
-| Phase 2: Common & Book Layers        | ✅ Complete     | Low risk, no enum constant fallout                |
-| Phase 3: Arena & EngineTest Layers   | ✅ Complete     | `arena::` + `enginetest::` both done              |
-| Phase 4: Chess Domain (Types + Core) | ✅ Complete     | All sub-steps done: types/, chesscore/, fwd.h, consumer using-decls |
-| Phase 5: `enum class` Strengthening  | ⏭️ Skipped     | Plain enums preferred for chess engine ergonomics |
+| Phase                                | Status     | Notes                                                               |
+|--------------------------------------|------------|---------------------------------------------------------------------|
+| Phase 1: Engine & Config Layer       | ✅ Complete | Low risk, pure class/struct wrapping                                |
+| Phase 2: Common & Book Layers        | ✅ Complete | Low risk, no enum constant fallout                                  |
+| Phase 3: Arena & EngineTest Layers   | ✅ Complete | `arena::` + `enginetest::` both done                                |
+| Phase 4: Chess Domain (Types + Core) | ✅ Complete | All sub-steps done: types/, chesscore/, fwd.h, consumer using-decls |
+| Phase 5: `enum class` Strengthening  | ⏭️ Skipped | Plain enums preferred for chess engine ergonomics                   |
 
 **Status Legend:** ⬜ Not Started | 🔄 In Progress | ✅ Complete | ⏭️ Skipped | ❌ Blocked
 
