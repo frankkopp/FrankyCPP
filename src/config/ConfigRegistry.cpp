@@ -47,14 +47,14 @@ ConfigRegistry::ConfigRegistry() {
 #ifdef _MSC_VER
 // Windows MSVC builds
 #ifdef _DEBUG
-  static_assert(sizeof(SearchConfigData) == 608,
+  static_assert(sizeof(SearchConfigData) == 624,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 256,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
-  static_assert(sizeof(SearchConfigData) == 576,
+  static_assert(sizeof(SearchConfigData) == 592,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -65,7 +65,7 @@ ConfigRegistry::ConfigRegistry() {
 // Linux GCC/Clang builds (including WSL)
 #ifdef NDEBUG
   // Release build
-  static_assert(sizeof(SearchConfigData) == 576,
+  static_assert(sizeof(SearchConfigData) == 592,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -73,7 +73,7 @@ ConfigRegistry::ConfigRegistry() {
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
   // Debug build
-  static_assert(sizeof(SearchConfigData) == 576,
+  static_assert(sizeof(SearchConfigData) == 592,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -1587,6 +1587,65 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .exposure = {.uci = true, .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.MOVES_LEFT_MAX_CLAMP; }),
     .setter = SEARCH_CONFIG_SETTER(MOVES_LEFT_MAX_CLAMP, parseInt)
+  });
+
+  //===========================================================================
+  // TIME MANAGEMENT - EVAL VOLATILITY
+  //===========================================================================
+  definitions_.push_back({
+    .name = "USE_EVAL_VOLATILITY",
+    .uciName = "Use Eval Volatility",
+    .description = "Enable eval volatility tracking for time management",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.USE_EVAL_VOLATILITY),
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.USE_EVAL_VOLATILITY; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_EVAL_VOLATILITY, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "VOLATILITY_MIN_DEPTH",
+    .uciName = "Volatility Min Depth",
+    .description = "Minimum depth to start eval volatility tracking",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.VOLATILITY_MIN_DEPTH),
+    .minValue = 1,
+    .maxValue = 20,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.VOLATILITY_MIN_DEPTH; }),
+    .setter = SEARCH_CONFIG_SETTER(VOLATILITY_MIN_DEPTH, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "VOLATILITY_THRESHOLD",
+    .uciName = "Volatility Threshold",
+    .description = "Eval swing threshold in centipawns to trigger extra time",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.VOLATILITY_THRESHOLD),
+    .minValue = 50,
+    .maxValue = 500,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.VOLATILITY_THRESHOLD; }),
+    .setter = SEARCH_CONFIG_SETTER(VOLATILITY_THRESHOLD, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "VOLATILITY_FACTOR",
+    .uciName = "Volatility Factor Pct",
+    .description = "Multiply remaining time by this when volatile (> 1.0)",
+    .valueType = Double,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.VOLATILITY_FACTOR),
+    .minValue = 100,
+    .maxValue = 200,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = [](const SearchConfigData& s, const EvalConfigData&) {
+      return configToString(s.VOLATILITY_FACTOR);
+    },
+    .setter = SEARCH_CONFIG_SETTER(VOLATILITY_FACTOR, parseDouble)
   });
 
   //===========================================================================

@@ -362,8 +362,8 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     endif()
 
     # Base flags: C++20, warnings, CPU features
-    # Note: -Wno-missing-field-initializers and -Wno-class-memaccess suppresses noise (TODO: re-enable later)
-    set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wpedantic -Wno-missing-field-initializers -Wno-class-memaccess -march=native -mpopcnt -mbmi2")
+    # Note: -Wno-missing-field-initializers and -Wno-class-memaccess suppresses noise
+    set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wpedantic -march=native -mpopcnt -mbmi2")
 
     # Per-config optimization flags
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
