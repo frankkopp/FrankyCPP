@@ -28,6 +28,8 @@
 
 namespace {
   constexpr bool REMOVE_SORT_VALUE = true;
+  // Change this alias to swap between stable_sort and sort for all move list sorting
+  constexpr auto& moveSort = std::ranges::sort;
 }
 
 MoveGenerator::MoveGenerator() : currentODStage(OD_NEW) {
@@ -63,8 +65,7 @@ const MoveList* MoveGenerator::generatePseudoLegalMoves(const Position& p, const
   updateSortValues(p, &pseudoLegalMoves);
 
   // sort moves
-  // TODO: consider using non stable sort here
-  std::ranges::stable_sort(pseudoLegalMoves, moveValueGreaterComparator());
+  moveSort(pseudoLegalMoves, moveValueGreaterComparator());
 
   // remove internal sort value
   if (REMOVE_SORT_VALUE) {
@@ -591,7 +592,7 @@ void MoveGenerator::fillOnDemandMoveList(const Position& position, const GenMode
     // sort the list according to sort values encoded in the move
     if (!onDemandMoves.empty()) {
       // TODO: consider using non stable sort here
-      std::ranges::stable_sort(onDemandMoves, moveValueGreaterComparator());
+      moveSort(onDemandMoves, moveValueGreaterComparator());
     }
   }// while onDemandMoves.empty()
 }
