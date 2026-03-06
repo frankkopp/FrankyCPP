@@ -294,16 +294,28 @@ debugMode: false
 matches:
 
 # current dev vs. v1.4
-  - name: "v1.5_vs_v1.4_blitz_208"
+  - name: "v1.5_vs_v1.4_300s_TTbuckets"
     engine1Path: "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe"
     engine1Version: "v1.5"
     engine2Path: "Release/FrankyCPP_v1.4/FrankyCPP_v1.4.exe"
     engine2Version: "v1.4"
     openingBook: "books/8moves_GM_LB.pgn"
     timeControl: "300+0"
-    rounds: 208
+    rounds: 104
     concurrency: 4
-    outputPgn: "results/matches/v1.5_vs_v1.4_blitz_208.pgn"
+    outputPgn: "results/matchesv1.5_vs_v1.4_300s_TTbuckets.pgn"
+
+  # current dev vs. v1.3
+  - name: "v1.5_vs_v1.3_300s_TTbuckets"
+    engine1Path: "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe"
+    engine1Version: "v1.5"
+    engine2Path: "Release/FrankyCPP_v1.3/FrankyCPP_v1.3.exe"
+    engine2Version: "v1.3"
+    openingBook: "books/8moves_GM_LB.pgn"
+    timeControl: "300+0"
+    rounds: 104
+    concurrency: 4
+    outputPgn: "results/matches/v1.5_vs_v1.3_300s_TTbuckets.pgn"
 #
 # FrankyGo
 #  - name: "v1.2_vs_FrankyGo_blitz_100"

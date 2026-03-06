@@ -363,4 +363,44 @@ Matches Complete
 ===================================================================
 ```
 
+```
+--------------------------------------------------------------------------------
+TEST SUITE SUMMARY (FrankyCPP v1.5 vs FrankyCPP v1.3)
+--------------------------------------------------------------------------------
+  Total positions:      2874
+  Improvement:          +68 positions (+2.4%)
+  Suites improved:      6
+  Suites regressed:     1
+  Status:               [!] MIXED (some suites regressed)
+================================================================================
+==================================================================
+Match Complete: v1.5_vs_v1.3_300s_TTbuckets
+  FrankyCPP v1.5: 69 wins, 24 draws, 11 losses
+  FrankyCPP v1.3: 11 wins, 24 draws, 69 losses
+  Score: 81.0 - 23.0
+  ELO Difference: +218.7
+  Duration: 15521.3s
+==================================================================
+```
+
+```
+--------------------------------------------------------------------------------
+TEST SUITE SUMMARY (FrankyCPP v1.5 vs FrankyCPP v1.4)
+--------------------------------------------------------------------------------
+  Total positions:      2874
+  Improvement:          +27 positions (+0.9%)
+  Suites improved:      4
+  Suites regressed:     3
+  Status:               [!] MIXED (some suites regressed)
+================================================================================
+==================================================================
+Match Complete: v1.5_vs_v1.4_300s_TTbuckets
+  FrankyCPP v1.5: 42 wins, 42 draws, 20 losses
+  FrankyCPP v1.4: 20 wins, 42 draws, 42 losses
+  Score: 63 - 41
+  ELO Difference: +74.6
+  Duration: 15533.0s
+==================================================================
+```
+
 ---

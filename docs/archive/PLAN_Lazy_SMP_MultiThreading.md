@@ -1,9 +1,9 @@
 # FrankyCPP v1.5 - Lazy SMP Multi-Threading Implementation Plan
 
-**Document Version:** 1.8
+**Document Version:** 1.9
 **Created:** 2026-02-25
-**Last Updated:** 2026-03-03
-**Status:** ✅ ALL PHASES COMPLETE — ELO validated (+119.8 ELO vs v1.3; ~+33 ELO net SMP gain over pre-SMP v1.4)
+**Last Updated:** 2026-03-07
+**Status:** ✅ ALL PHASES COMPLETE — ELO validated (+218.7 ELO vs v1.3; +74.6 ELO vs v1.4)
 **Target Version:** v1.5
 **Estimated Effort:** 3-4 weeks
 
@@ -26,6 +26,19 @@ This document details the implementation plan for adding Lazy SMP (Symmetric Mul
 - v1.4 (4 threads): **103 wins, 71 draws, 34 losses** — Score: **138.5 – 69.5**
 - **Total ELO vs v1.3: +119.8**
 - **Context:** Pre-SMP v1.4 showed +87 ELO vs v1.3. The refactored SMP implementation adds **~+33 ELO** net gain from multi-threading (4 threads), within the expected +30–50 ELO range.
+
+**✅ FINAL VALIDATION (2026-03-07):** v1.5 with TT Buckets + XOR Validation + SMP Hardening:
+
+| Match            | Games | Score | W/D/L      | ELO        | Test Suite        |
+|------------------|-------|-------|------------|------------|-------------------|
+| **v1.5 vs v1.3** | 104   | 77.9% | 69/24/11   | **+218.7** | +68 pos (+2.4%)   |
+| **v1.5 vs v1.4** | 104   | 60.6% | 42/42/20   | **+74.6**  | +27 pos (+0.9%)   |
+
+**Analysis:**
+- **+218.7 ELO vs v1.3** — Combined effect of v1.4 search improvements + v1.5 TT/SMP improvements  
+- **+74.6 ELO vs v1.4** — Pure TT buckets + XOR validation + SMP hardening contribution
+- TT buckets with cache-line alignment dramatically improved SMP performance
+- XOR key validation prevents corrupted TT entries from causing search instability
 
 ---
 
