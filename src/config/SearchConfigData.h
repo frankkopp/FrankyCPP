@@ -65,10 +65,10 @@ namespace config {
     CONFIG_CONST bool USE_QUIESCENCE = true;
 
     // TT
+    CONFIG_ESSENTIAL int TT_SIZE_MB = 256;
     CONFIG_CONST bool USE_TT        = true;
     CONFIG_CONST bool USE_TT_VALUE  = true;
     CONFIG_CONST bool USE_EVAL_TT   = true;
-    CONFIG_ESSENTIAL int TT_SIZE_MB = 64;
     CONFIG_CONST bool USE_QS_TT     = true;
 
     // Syzygy tablebase settings

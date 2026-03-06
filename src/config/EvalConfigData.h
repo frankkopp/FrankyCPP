@@ -54,7 +54,7 @@ namespace config {
     // pawn eval
     CONFIG_CONST bool USE_PAWN_EVAL      = true;
     CONFIG_ESSENTIAL bool USE_PAWN_TT    = true;
-    CONFIG_ESSENTIAL int PAWN_TT_SIZE_MB = 64;
+    CONFIG_ESSENTIAL int PAWN_TT_SIZE_MB = 16;
 
     // pawn structure weights
     CONFIG_CONST int ISOLATED_PAWN_MID_WEIGHT  = -10;
