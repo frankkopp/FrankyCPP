@@ -34,6 +34,7 @@
 
 // BOOST program options
 #include "boost/program_options.hpp"
+#include "common/CrashHandler.h"
 #include "common/Logging.h"
 namespace po = boost::program_options;
 
@@ -63,6 +64,7 @@ int main(int argc, char* argv[]) {
   std::string config_file, book_file, book_type, testsuite_file;
   std::string show_config_format, show_config_domain;
   std::string syzygy_command, syzygy_path, syzygy_pieces;
+  std::string crash_dump_path;
   int testsuite_time  = 0;
   int testsuite_depth = 0;
   int perftStart      = 0;
@@ -82,6 +84,9 @@ int main(int argc, char* argv[]) {
       ("config,c", po::value<std::string>(&config_file)->default_value("./config/FrankyCPP.cfg"), "configuration file name")
       ("ucioptions,u", "print UCI options as if 'uci' command was sent")
       ("version,v", "print version string")
+      // Crash handler options
+      ("crash-dumps", po::value<std::string>(&crash_dump_path)->default_value("./crash_dumps"),
+        "directory for crash dumps/minidumps (default: ./crash_dumps)")
       // Show config options
       ("show-config", "show all available configuration settings")
       ("format", po::value<std::string>(&show_config_format)->default_value("table"), "output format for --show-config: table, yaml, json")
@@ -149,6 +154,10 @@ int main(int argc, char* argv[]) {
     p.add("input-file", -1);
     store(po::command_line_parser(argc, argv).options(cmdline_options).positional(p).run(), programOptions);
     notify(programOptions);
+
+    // Install crash handler early to catch any crashes during initialization or runtime
+    // This generates minidumps (Windows) or stack traces (Linux) on unhandled exceptions
+    crashhandler::install(crash_dump_path);
 
     if (programOptions.contains("help")) {
       std::cout << visible << "\n";

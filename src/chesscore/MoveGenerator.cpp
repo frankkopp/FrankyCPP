@@ -193,6 +193,197 @@ namespace chess {
     return std::ranges::find_if(*lm, [&](const Move m) { return base == m.stripped(); }) != lm->end();
   }
 
+  bool MoveGenerator::isPseudoLegal(const Position& position, const Move move) {
+    // Fast pseudo-legal validation - catches corrupted TT moves before they corrupt position
+    // state in doMove(). Uses attack tables to verify piece can reach target square.
+    // See header documentation for full details on what is and isn't checked.
+
+    if (move == MOVE_NONE) return false;
+
+    const Square from = move.from();
+    const Square to   = move.to();
+
+    // Can't move to the same square
+    if (from == to) return false;
+
+    const Color us    = position.getNextPlayer();
+    const Piece piece = position.getPiece(from);
+
+    // Must have a piece of our color on the from square
+    if (piece == PIECE_NONE) return false;
+    if (colorOf(piece) != us) return false;
+
+    // Can't capture our own piece
+    const Piece captured = position.getPiece(to);
+    if (captured != PIECE_NONE && colorOf(captured) == us) return false;
+
+    const MoveType type       = move.type();
+    const PieceType pt        = typeOf(piece);
+    const Bitboard occupiedBb = position.getOccupiedBb();
+
+    switch (type) {
+      case NORMAL: {
+        // Validate piece can reach target square using attack tables
+        switch (pt) {
+          case PAWN: {
+            // Pawn moves are complex: captures diagonal, pushes straight
+            const Direction pushDir  = us == WHITE ? NORTH : SOUTH;
+            const Rank startRank     = us == WHITE ? RANK_2 : RANK_7;
+            const bool isCapture     = captured != PIECE_NONE;
+            const Bitboard pawnAttBb = Bitboards::pawnAttacks[us][from];
+
+            if (isCapture) {
+              // Capture must be diagonal (in pawn attack bitboard)
+              if (!(pawnAttBb & to)) return false;
+            }
+            else {
+              // Non-capture: must be straight push to empty square
+              const Square oneStep = from + pushDir;
+
+              // Target square must be empty (already checked captured == PIECE_NONE for non-capture)
+              if (to == oneStep) {
+                // Single push - verify intermediate square is empty
+                if (position.getPiece(oneStep) != PIECE_NONE) return false;
+              }
+              else if (to == oneStep + pushDir && from.rank() == startRank) {
+                // Double push from start rank - verify BOTH squares are empty
+                if (position.getPiece(oneStep) != PIECE_NONE) return false;
+                if (position.getPiece(to) != PIECE_NONE) return false;
+              }
+              else {
+                return false;// Not a valid pawn push pattern
+              }
+            }
+            break;
+          }
+          case KNIGHT:
+            // Knight must reach target via L-shape (use precomputed attack table)
+            // Knights jump, so no path checking needed
+            if (!(Bitboards::nonSliderAttacks[KNIGHT][from] & to)) return false;
+            break;
+          case BISHOP:
+            // Bishop must be able to reach target on diagonal WITH path clear
+            // Use actual occupancy to check path is not blocked
+            if (!(Attacks::attacks(BISHOP, from, occupiedBb) & to)) return false;
+            break;
+          case ROOK:
+            // Rook must be able to reach target on rank/file WITH path clear
+            if (!(Attacks::attacks(ROOK, from, occupiedBb) & to)) return false;
+            break;
+          case QUEEN:
+            // Queen must be able to reach target on diagonal or rank/file WITH path clear
+            if (!(Attacks::attacks(QUEEN, from, occupiedBb) & to)) return false;
+            break;
+          case KING:
+            // King must move exactly one square (use precomputed attack table)
+            if (!(Bitboards::nonSliderAttacks[KING][from] & to)) return false;
+            break;
+          default:
+            return false;// Unknown piece type
+        }
+        break;
+      }
+
+      case PROMOTION: {
+        // Only pawns can promote
+        if (pt != PAWN) return false;
+
+        // Must be moving to promotion rank
+        const Rank promoRank = us == WHITE ? RANK_8 : RANK_1;
+        if (to.rank() != promoRank) return false;
+
+        // Validate promotion piece type (KNIGHT, BISHOP, ROOK, QUEEN)
+        const PieceType promoPiece = move.promotionType();
+        if (promoPiece < KNIGHT || promoPiece > QUEEN) return false;
+
+        // Validate pawn can reach target (capture or push)
+        const bool isCapture     = captured != PIECE_NONE;
+        const Bitboard pawnAttBb = Bitboards::pawnAttacks[us][from];
+
+        if (isCapture) {
+          if (!(pawnAttBb & to)) return false;
+        }
+        else {
+          // Must be one step forward to promotion rank, and target must be empty
+          const Direction pushDir = us == WHITE ? NORTH : SOUTH;
+          if (to != from + pushDir) return false;
+          // Note: captured == PIECE_NONE already verified above for non-capture
+        }
+        break;
+      }
+
+      case ENPASSANT: {
+        // Only pawns can do en passant
+        if (pt != PAWN) return false;
+
+        // Target must be the en passant square
+        if (to != position.getEnPassantSquare()) return false;
+
+        // Pawn must be able to attack the en passant square
+        if (!(Bitboards::pawnAttacks[us][from] & to)) return false;
+
+        // Verify the captured pawn exists (prevents debug assertion in doMove)
+        // The captured pawn is on the same file as 'to', but on our rank (from.rank())
+        const Square capSq       = Square::of(to.file(), from.rank());
+        const Piece capturedPawn = position.getPiece(capSq);
+        if (capturedPawn == PIECE_NONE || typeOf(capturedPawn) != PAWN || colorOf(capturedPawn) == us) {
+          return false;
+        }
+        break;
+      }
+
+      case CASTLING: {
+        // Only kings can castle
+        if (pt != KING) return false;
+
+        // Validate castling squares and check requirements
+        const CastlingRights cr = position.getCastlingRights();
+
+        if (us == WHITE) {
+          if (from != SQ_E1) return false;
+          if (to == SQ_G1) {
+            // White kingside: need right and clear path
+            if (cr != WHITE_OO) return false;
+            if (Bitboards::intermediateBb[SQ_E1][SQ_H1] & occupiedBb) return false;
+          }
+          else if (to == SQ_C1) {
+            // White queenside: need right and clear path
+            if (cr != WHITE_OOO) return false;
+            if (Bitboards::intermediateBb[SQ_E1][SQ_A1] & occupiedBb) return false;
+          }
+          else {
+            return false;// Invalid castling target
+          }
+        }
+        else {
+          if (from != SQ_E8) return false;
+          if (to == SQ_G8) {
+            // Black kingside: need right and clear path
+            if (cr != BLACK_OO) return false;
+            if (Bitboards::intermediateBb[SQ_E8][SQ_H8] & occupiedBb) return false;
+          }
+          else if (to == SQ_C8) {
+            // Black queenside: need right and clear path
+            if (cr != BLACK_OOO) return false;
+            if (Bitboards::intermediateBb[SQ_E8][SQ_A8] & occupiedBb) return false;
+          }
+          else {
+            return false;// Invalid castling target
+          }
+        }
+        // Note: doesn't check if king is in check or crosses attacked square
+        // Those are handled by wasLegalMove() after doMove()
+        break;
+      }
+
+      default:
+        // Unknown move type
+        return false;
+    }
+
+    return true;
+  }
+
   bool MoveGenerator::hasLegalMove(const Position& position) {
     // To determine if we have at least one legal move, we only have to find
     // one legal move. We search for any KING, PAWN, KNIGHT, BISHOP, ROOK, QUEEN move

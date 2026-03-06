@@ -166,7 +166,7 @@ TEST_F(TT_Test, resize) {
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of max entries:     {:L}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries:         {:L}", tt.getNumberOfEntries());
-  EXPECT_EQ(1, tt.getMaxNumberOfEntries());
+  EXPECT_EQ(4, tt.getMaxNumberOfEntries());// 1 cluster × 4 entries
   EXPECT_EQ(0, tt.getNumberOfEntries());
   tt.resize(64);
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
@@ -202,11 +202,14 @@ TEST_F(TT_Test, put) {
 
   TT tt(10);
 
-  uint64_t collisionDistance = tt.maxNumberOfEntries;
+  // With bucket design, keys that differ by maxNumberOfClusters hash to the same cluster.
+  // With 4 entries per cluster, the first 4 unique keys in a cluster use empty slots,
+  // not counted as collisions.
+  const uint64_t clusterDistance = tt.getMaxNumberOfClusters();
 
   const ZobristKey key1 = randomKey(rg);
-  const ZobristKey key2 = key1 + 13;               // different bucket
-  const ZobristKey key3 = key1 + collisionDistance;// same bucket - collision
+  const ZobristKey key2 = key1 + 13;                  // different cluster
+  const ZobristKey key3 = key1 + clusterDistance;      // same cluster - uses empty slot (bucket has 4 slots)
 
   // new entry in empty bucket at pos 0
   tt.put(key1, static_cast<Depth>(6), Move(SQ_E2, SQ_E4), static_cast<Value>(101), EXACT, static_cast<Value>(1001));
@@ -215,30 +218,37 @@ TEST_F(TT_Test, put) {
   EXPECT_EQ(0, tt.getNumberOfUpdates());
   EXPECT_EQ(0, tt.getNumberOfCollisions());
   EXPECT_EQ(0, tt.getNumberOfOverwrites());
+  EXPECT_TRUE(tt.getMatch(key1).has_value());
   EXPECT_EQ(tt.getMatch(key1)->key, key1);
   EXPECT_EQ(tt.getMatch(key1)->value, static_cast<Value>(101));
   EXPECT_EQ(tt.getMatch(key1)->eval, static_cast<Value>(1001));
 
-  // new entry
+  // new entry in different cluster
   tt.put(key2, static_cast<Depth>(5), Move(SQ_E2, SQ_E4), static_cast<Value>(102), EXACT, static_cast<Value>(1002));
   EXPECT_EQ(2, tt.getNumberOfPuts());
   EXPECT_EQ(2, tt.getNumberOfEntries());
   EXPECT_EQ(0, tt.getNumberOfUpdates());
   EXPECT_EQ(0, tt.getNumberOfCollisions());
   EXPECT_EQ(0, tt.getNumberOfOverwrites());
+  EXPECT_TRUE(tt.getMatch(key2).has_value());
   EXPECT_EQ(tt.getMatch(key2)->key, key2);
   EXPECT_EQ(tt.getMatch(key2)->value, static_cast<Value>(102));
   EXPECT_EQ(tt.getMatch(key2)->eval, static_cast<Value>(1002));
   EXPECT_EQ(tt.getMatch(key2)->depth, static_cast<Value>(5));
 
 
-  // new entry (collision)
+  // same cluster as key1 - but bucket has empty slots, so no collision
   tt.put(key3, static_cast<Depth>(6), Move(SQ_E2, SQ_E4), static_cast<Value>(103), EXACT, static_cast<Value>(1003));
   EXPECT_EQ(3, tt.getNumberOfPuts());
-  EXPECT_EQ(2, tt.getNumberOfEntries());
+  EXPECT_EQ(3, tt.getNumberOfEntries());// now 3 entries (bucket has room)
   EXPECT_EQ(0, tt.getNumberOfUpdates());
-  EXPECT_EQ(1, tt.getNumberOfCollisions());
-  EXPECT_EQ(1, tt.getNumberOfOverwrites());
+  EXPECT_EQ(0, tt.getNumberOfCollisions());// no collision - used empty slot
+  EXPECT_EQ(0, tt.getNumberOfOverwrites());
+  // Both key1 and key3 are retrievable from the same cluster
+  EXPECT_TRUE(tt.getMatch(key1).has_value());
+  EXPECT_EQ(tt.getMatch(key1)->key, key1);
+  EXPECT_EQ(tt.getMatch(key1)->value, static_cast<Value>(101));
+  EXPECT_TRUE(tt.getMatch(key3).has_value());
   EXPECT_EQ(tt.getMatch(key3)->key, key3);
   EXPECT_EQ(tt.getMatch(key3)->value, static_cast<Value>(103));
   EXPECT_EQ(tt.getMatch(key3)->eval, static_cast<Value>(1003));
@@ -251,30 +261,37 @@ TEST_F(TT_Test, get) {
 
   TT tt(10);
 
-  const uint64_t collisionDistance = tt.maxNumberOfEntries;
+  const uint64_t clusterDistance = tt.getMaxNumberOfClusters();
 
   const ZobristKey key1 = randomKey(rg);
-  const ZobristKey key2 = key1 + 13;               // different bucket
-  const ZobristKey key3 = key1 + collisionDistance;// same bucket - collision
+  const ZobristKey key2 = key1 + 13;                  // different cluster
+  const ZobristKey key3 = key1 + clusterDistance;      // same cluster as key1
   const ZobristKey key4 = key1 + 17;
 
   // new entry in empty slot
   tt.put(key1, static_cast<Depth>(6), Move(SQ_E2, SQ_E4), static_cast<Value>(101), EXACT, static_cast<Value>(1001));
-  const TT::Entry* e1 = tt.getMatch(key1);
+  const auto e1 = tt.getMatch(key1);
+  ASSERT_TRUE(e1.has_value());
   EXPECT_EQ(101, e1->value);
 
   // new entry in empty slot
   tt.put(key2, static_cast<Depth>(5), Move(SQ_E2, SQ_E4), static_cast<Value>(102), EXACT, static_cast<Value>(1002));
-  const TT::Entry* e2 = tt.getMatch(key2);
+  const auto e2 = tt.getMatch(key2);
+  ASSERT_TRUE(e2.has_value());
   EXPECT_EQ(102, e2->value);
 
-  // new entry in occupied slot
+  // same cluster as key1 - both coexist in the bucket
   tt.put(key3, static_cast<Depth>(7), Move(SQ_E2, SQ_E4), static_cast<Value>(103), EXACT, static_cast<Value>(1003));
-  const TT::Entry* e3 = tt.getMatch(key3);
+  const auto e3 = tt.getMatch(key3);
+  ASSERT_TRUE(e3.has_value());
   EXPECT_EQ(103, e3->value);
+  // key1 is still retrievable (bucket coexistence)
+  const auto e1b = tt.getMatch(key1);
+  EXPECT_TRUE(e1b.has_value());
+  EXPECT_EQ(101, e1b->value);
 
-  const TT::Entry* e4 = tt.getMatch(key4);// not in TT
-  EXPECT_EQ(nullptr, e4);
+  const auto e4 = tt.getMatch(key4);// not in TT
+  EXPECT_FALSE(e4.has_value());
 }
 
 // 17.6.2020 (loaner laptop)
@@ -328,7 +345,135 @@ TEST_F(TT_Test, TT_PPS) {
 }
 
 // =============================================================================
-// SMP Phase 1 - Thread Safety Stress Test
+// Bucket Tests - verify 4-way associative behavior
+// =============================================================================
+
+// Verify that 4 different keys mapping to the same cluster can all coexist
+TEST_F(TT_Test, bucketCoexistence) {
+  TT tt(10);
+  const uint64_t cd = tt.getMaxNumberOfClusters();// cluster distance
+
+  // 4 keys that all hash to the same cluster
+  constexpr ZobristKey baseKey = 42;
+  constexpr ZobristKey key1 = baseKey;
+  const ZobristKey key2 = baseKey + cd;
+  const ZobristKey key3 = baseKey + 2 * cd;
+  const ZobristKey key4 = baseKey + 3 * cd;
+
+  tt.put(key1, static_cast<Depth>(5), Move(SQ_E2, SQ_E4), static_cast<Value>(101), EXACT, VALUE_NONE);
+  tt.put(key2, static_cast<Depth>(6), Move(SQ_D2, SQ_D4), static_cast<Value>(102), EXACT, VALUE_NONE);
+  tt.put(key3, static_cast<Depth>(7), Move(SQ_G1, SQ_F3), static_cast<Value>(103), EXACT, VALUE_NONE);
+  tt.put(key4, static_cast<Depth>(8), Move(SQ_B1, SQ_C3), static_cast<Value>(104), EXACT, VALUE_NONE);
+
+  EXPECT_EQ(4, tt.getNumberOfEntries());
+  EXPECT_EQ(0, tt.getNumberOfCollisions());
+
+  // All 4 are retrievable
+  const auto e1 = tt.getMatch(key1);
+  const auto e2 = tt.getMatch(key2);
+  const auto e3 = tt.getMatch(key3);
+  const auto e4 = tt.getMatch(key4);
+  ASSERT_TRUE(e1.has_value());
+  ASSERT_TRUE(e2.has_value());
+  ASSERT_TRUE(e3.has_value());
+  ASSERT_TRUE(e4.has_value());
+  EXPECT_EQ(101, e1->value);
+  EXPECT_EQ(102, e2->value);
+  EXPECT_EQ(103, e3->value);
+  EXPECT_EQ(104, e4->value);
+}
+
+// Verify replacement policy: 5th entry in a full cluster evicts the shallowest entry
+TEST_F(TT_Test, bucketReplacement) {
+  TT tt(10);
+  const uint64_t cd = tt.getMaxNumberOfClusters();
+
+  constexpr ZobristKey baseKey = 42;
+  constexpr ZobristKey key1 = baseKey;
+  const ZobristKey key2 = baseKey + cd;
+  const ZobristKey key3 = baseKey + 2 * cd;
+  const ZobristKey key4 = baseKey + 3 * cd;
+  const ZobristKey key5 = baseKey + 4 * cd;// 5th key - same cluster, will need replacement
+
+  // Fill all 4 slots with varying depths
+  tt.put(key1, static_cast<Depth>(10), Move(SQ_E2, SQ_E4), static_cast<Value>(101), EXACT, VALUE_NONE);
+  tt.put(key2, static_cast<Depth>(5), Move(SQ_D2, SQ_D4), static_cast<Value>(102), EXACT, VALUE_NONE); // shallowest
+  tt.put(key3, static_cast<Depth>(15), Move(SQ_G1, SQ_F3), static_cast<Value>(103), EXACT, VALUE_NONE);
+  tt.put(key4, static_cast<Depth>(8), Move(SQ_B1, SQ_C3), static_cast<Value>(104), EXACT, VALUE_NONE);
+
+  EXPECT_EQ(4, tt.getNumberOfEntries());
+  EXPECT_EQ(0, tt.getNumberOfCollisions());
+
+  // Age all entries so replacement tiebreak can work
+  tt.ageEntries();
+
+  // 5th entry with depth 12 should replace key2 (depth 5, the shallowest)
+  tt.put(key5, static_cast<Depth>(12), Move(SQ_C2, SQ_C4), static_cast<Value>(105), EXACT, VALUE_NONE);
+
+  EXPECT_EQ(1, tt.getNumberOfCollisions());
+  EXPECT_EQ(1, tt.getNumberOfOverwrites());
+
+  // key2 should be evicted (was shallowest at depth 5)
+  EXPECT_FALSE(tt.getMatch(key2).has_value());
+
+  // key5 should now be stored
+  const auto e5 = tt.getMatch(key5);
+  ASSERT_TRUE(e5.has_value());
+  EXPECT_EQ(105, e5->value);
+  EXPECT_EQ(12, e5->depth);
+
+  // Other entries should still be present
+  EXPECT_TRUE(tt.getMatch(key1).has_value());
+  EXPECT_TRUE(tt.getMatch(key3).has_value());
+  EXPECT_TRUE(tt.getMatch(key4).has_value());
+}
+
+// Verify that a shallow new entry DOES replace the weakest entry (always-replace policy)
+TEST_F(TT_Test, bucketAlwaysReplacesWeakest) {
+  TT tt(10);
+  const uint64_t cd = tt.getMaxNumberOfClusters();
+
+  constexpr ZobristKey baseKey = 42;
+  constexpr ZobristKey key1 = baseKey;
+  const ZobristKey key2 = baseKey + cd;
+  const ZobristKey key3 = baseKey + 2 * cd;
+  const ZobristKey key4 = baseKey + 3 * cd;
+  const ZobristKey key5 = baseKey + 4 * cd;
+
+  // Fill all 4 slots with same depth, age = 1 (recently used)
+  tt.put(key1, static_cast<Depth>(10), Move(SQ_E2, SQ_E4), static_cast<Value>(101), EXACT, VALUE_NONE);
+  tt.put(key2, static_cast<Depth>(10), Move(SQ_D2, SQ_D4), static_cast<Value>(102), EXACT, VALUE_NONE);
+  tt.put(key3, static_cast<Depth>(10), Move(SQ_G1, SQ_F3), static_cast<Value>(103), EXACT, VALUE_NONE);
+  tt.put(key4, static_cast<Depth>(10), Move(SQ_B1, SQ_C3), static_cast<Value>(104), EXACT, VALUE_NONE);
+
+  EXPECT_EQ(4, tt.getNumberOfEntries());
+  EXPECT_EQ(0, tt.getNumberOfCollisions());
+
+  // Insert a shallow entry (depth 3) into a full cluster with all depth 10.
+  // With the always-replace policy, it WILL replace one of the existing entries.
+  // All existing entries have equal scores, so the first one (key1) becomes the victim.
+  tt.put(key5, static_cast<Depth>(3), Move(SQ_C2, SQ_C4), static_cast<Value>(105), EXACT, VALUE_NONE);
+
+  EXPECT_EQ(1, tt.getNumberOfCollisions());
+  EXPECT_EQ(1, tt.getNumberOfOverwrites());// shallow entry replaced the weakest
+
+  // key5 should now be stored
+  const auto e5 = tt.getMatch(key5);
+  ASSERT_TRUE(e5.has_value());
+  EXPECT_EQ(105, e5->value);
+  EXPECT_EQ(3, e5->depth);
+
+  // One of the original entries was evicted (the one with lowest score)
+  // With equal depth/age/move, the first entry (key1) is the victim
+  int presentCount = 0;
+  if (tt.getMatch(key1).has_value()) presentCount++;
+  if (tt.getMatch(key2).has_value()) presentCount++;
+  if (tt.getMatch(key3).has_value()) presentCount++;
+  if (tt.getMatch(key4).has_value()) presentCount++;
+  EXPECT_EQ(3, presentCount);// 3 of the 4 original entries remain
+}
+
+// =============================================================================
 // Verifies that concurrent put/probe cycles do not crash or produce corrupted
 // data visible through a successful probe hit.
 //
@@ -373,8 +518,8 @@ TEST_F(TT_Test, ConcurrentPutProbeNoUB) {
 
       tt.put(key, depth, move, value, EXACT, VALUE_NONE);
 
-      if (const auto* entry = tt.probe(key)) {
-        // probe() returned non-null: the acquire-load on key matched.
+      if (const auto entry = tt.probe(key)) {
+        // probe() returned an entry: the acquire-load on key matched.
         // The release-store in put() that published this key also guaranteed
         // all non-key fields were visible. So depth and value must be values
         // that a legitimate put() wrote — not torn garbage.

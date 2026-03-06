@@ -352,12 +352,18 @@ namespace engine {
     /// @param result  Search result with best move, score, depth, FEN, etc.
     /// @param stats   Search statistics with pruning counts, TT hits, etc.
     /// @return        Formatted multi-line string with all statistics
-    [[nodiscard]] static std::string formatDetailedStats(const SearchResult& result, const SearchStats& stats);
+    [[nodiscard]] std::string formatDetailedStats(const SearchResult& result, const SearchStats& stats) const;
 
     /// Formats detailed search statistics as a string for debugging/logging.
     /// Uses this search instance's last result and statistics.
+    /// Aggregates stats from all search threads (main + helpers) for SMP.
     /// @return     Formatted multi-line string with all statistics
     [[nodiscard]] std::string formatDetailedStats() const;
+
+    /// Aggregates search statistics from all threads (main + helpers).
+    /// For SMP, each thread maintains its own SearchStats; this combines them.
+    /// @return  Combined statistics from all search threads
+    [[nodiscard]] SearchStats aggregateStats() const;
 
   private:
     ////////////////////////////////////////////////

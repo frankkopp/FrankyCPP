@@ -8,6 +8,7 @@ cmake_minimum_required(VERSION 3.16)
 set(FrankyCPPlib_SRCS
         common/ThreadPool.cpp
         common/Logging.cpp
+        common/CrashHandler.cpp
 
         chesscore/Position.cpp
         chesscore/MoveGenerator.cpp

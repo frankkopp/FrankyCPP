@@ -24,6 +24,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <iomanip>
 #include <sstream>
 
@@ -588,8 +589,10 @@ SearchResult Search::iterativeDeepening(Position& p) {
   Value prevBestRootValue       = VALUE_NONE;// best root eval from previous iteration
   bool addedVolatilityExtraTime = false;     // guard to add extra time due to eval swing at most once
 
-  // Reset best-move instability tracking for this search
-  bestMoveStability.reset();
+  // Reset best-move instability tracking for this search (main thread only - shared state)
+  if (isMainThread()) {
+    bestMoveStability.reset();
+  }
 
   // prepare max depth from search limits
   const int maxDepth = searchLimits.depth ? searchLimits.depth : DEPTH_MAX;
@@ -622,8 +625,11 @@ SearchResult Search::iterativeDeepening(Position& p) {
   // Iterative Deepening
   // ===========================================================================
   // Initialize NPS tracking right before starting search to exclude initialization overhead
-  npsTime  = now();
-  npsNodes = thread().nodesVisited;// expected to be 0, but use actual value for robustness
+  // (main thread only - these are shared state used for UCI reporting)
+  if (isMainThread()) {
+    npsTime  = now();
+    npsNodes = thread().nodesVisited;// expected to be 0, but use actual value for robustness
+  }
   milliseconds lastIterationMs{0};
   uint64_t lastIterationNodes = 0;
   uint64_t prevIterationNodes = 0;
@@ -931,10 +937,29 @@ SearchResult Search::iterativeDeepening(Position& p) {
       // so let's check the TT
       if (SearchConfig.USE_TT && !searchResult.bestMove.isNone()) {
         p.doMove(searchResult.bestMove);
-        if (const auto* ttEntryPtr = tt->probe(p.getZobristKey())) {
-          thread().statistics.ttHit++;
-          searchResult.ponderMove = static_cast<Move>(ttEntryPtr->move);
-          LOG__DEBUG(Logger::get().SEARCH_LOG, "Using ponder move from hash table: {}", searchResult.ponderMove.str());
+        STAT_INC(thread().statistics.ttProbes);
+        if (const auto ttEntry = tt->probe(p.getZobristKey())) {
+          // Track as sufficient depth (we just need any entry with a move)
+          STAT_INC(thread().statistics.ttHitSufficientDepth);
+          switch (ttEntry->type) {
+            case NONE: STAT_INC(thread().statistics.ttHitNone); break;
+            case EXACT: STAT_INC(thread().statistics.ttHitExact); break;
+            case ALPHA: STAT_INC(thread().statistics.ttHitAlpha); break;
+            case BETA: STAT_INC(thread().statistics.ttHitBeta); break;
+          }
+          const auto probedMove = static_cast<Move>(ttEntry->move);
+          // Validate TT move before use
+          if (probedMove != MOVE_NONE && MoveGenerator::isPseudoLegal(p, probedMove)) {
+            searchResult.ponderMove = probedMove;
+            STAT_INC(thread().statistics.TtMoveUsed);
+            LOG__DEBUG(Logger::get().SEARCH_LOG, "Using ponder move from hash table: {}", searchResult.ponderMove.str());
+          }
+          else {
+            STAT_INC(thread().statistics.NoTtMove);
+          }
+        }
+        else {
+          STAT_INC(thread().statistics.ttMisses);
         }
         p.undoMove();
       }
@@ -1190,33 +1215,55 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // Alpha or Beta entries will only be used if they improve
   // the current values.
   if (SearchConfig.USE_TT) {
-    if (const TT::Entry* ttEntryPtr = tt->probe(p.getZobristKey())) {
+    STAT_INC(thread().statistics.ttProbes);
+    if (const auto ttEntry = tt->probe(p.getZobristKey())) {
       // tt hit
-      STAT_INC(thread().statistics.ttHit);
-      ttMove  = static_cast<Move>(ttEntryPtr->move);
-      ttValue = valueFromTt(ttEntryPtr->value, ply);
-      ttDepth = static_cast<Depth>(ttEntryPtr->depth);
-      ttBound = ttEntryPtr->type;// Capture bound type for singular extension
+      const Move probedMove = static_cast<Move>(ttEntry->move);
+      // Validate TT move before use - corrupted/torn reads from lockless TT
+      // could produce garbage moves that would corrupt position state in doMove()
+      if (probedMove != MOVE_NONE && MoveGenerator::isPseudoLegal(p, probedMove)) {
+        ttMove = probedMove;
+      }
+      ttValue = valueFromTt(ttEntry->value, ply);
+      ttDepth = static_cast<Depth>(ttEntry->depth);
+      ttBound = ttEntry->type;// Capture bound type for singular extension
+
+      // Track hit quality by depth (sufficient depth for cutoff vs move-only)
+      if (ttDepth >= depth) { STAT_INC(thread().statistics.ttHitSufficientDepth); }
+      else { STAT_INC(thread().statistics.ttHitInsufficientDepth); }
+
+      // Track hit quality by bound type
+      switch (ttEntry->type) {
+        case NONE: STAT_INC(thread().statistics.ttHitNone); break;
+        case EXACT: STAT_INC(thread().statistics.ttHitExact); break;
+        case ALPHA: STAT_INC(thread().statistics.ttHitAlpha); break;
+        case BETA: STAT_INC(thread().statistics.ttHitBeta); break;
+      }
+
       // Never cutoff on PV nodes - this ensures we always build a complete PV line
       // Non-PV nodes can still use TT cutoffs as they don't contribute to the reported PV
       if (nodeType != PvNode && ttDepth >= depth) {
         if (SearchConfig.USE_TT_VALUE
             && ttValue.isValid()
-            && (ttEntryPtr->type == EXACT
-                || (ttEntryPtr->type == ALPHA && ttValue <= alpha)
-                || (ttEntryPtr->type == BETA && ttValue >= beta))) {
+            && (ttEntry->type == EXACT
+                || (ttEntry->type == ALPHA && ttValue <= alpha)
+                || (ttEntry->type == BETA && ttValue >= beta))) {
           STAT_INC(thread().statistics.TtCuts);
+          STAT_INC(thread().statistics.ttCutsSearch);  // main search cut
+          STAT_ADD(thread().statistics.ttCutDepthSum, depth);  // track depth for avg calculation
           return ttValue;
         }
         STAT_INC(thread().statistics.TtNoCuts);
       }
       // if we have a static eval stored, we can reuse it
-      if (SearchConfig.USE_EVAL_TT && ttEntryPtr->eval != VALUE_NONE) {
+      if (SearchConfig.USE_EVAL_TT && ttEntry->eval != VALUE_NONE) {
         STAT_INC(thread().statistics.evalFromTT);
-        staticEval = ttEntryPtr->eval;
+        staticEval = ttEntry->eval;
       }
     }
-    else { STAT_INC(thread().statistics.ttMiss); }
+    else {
+      STAT_INC(thread().statistics.ttMisses);
+    }
   }// use TT
 
   // Tablebase probing in search (after TT lookup to use cached TB results)
@@ -1420,8 +1467,6 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       Value nValue = -search(p, newDepth, ply + 1, -beta, -beta + 1, CutNode, No_Null_Move);
       p.undoNullMove();
 
-      // check if we should stop the search
-      if (stopConditions()) { return VALUE_NONE; }
 
       // flag for mate threats
       if (nValue > VALUE_CHECKMATE_THRESHOLD) {
@@ -1447,7 +1492,6 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
           const auto do_null = matethreat ? No_Null_Move : Do_Null_Move;
           // Verification search inherits nodeType (verifying same node type)
           const Value v = search(p, verifyDepth, ply, beta - 1, beta, nodeType, do_null);
-          if (stopConditions()) { return VALUE_NONE; }
           if (v < beta) {
             STAT_INC(thread().statistics.nullMoveVerifications);
             // fall through: no cutoff
@@ -1509,8 +1553,6 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         search(p, newDepthIid, ply, alpha, beta, nodeType, doNull);
         STAT_INC(thread().statistics.iidSearches);
 
-        // check if we should stop the search
-        if (stopConditions()) { return VALUE_NONE; }
 
         // get the best move from the reduced search if available
         if (!thread().pv.empty(ply)) {
@@ -1637,8 +1679,6 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
           // Clear the excluded move
           info.excludedMove = MOVE_NONE;
 
-          // check if we should stop the search
-          if (stopConditions()) { return VALUE_NONE; }
 
           // If no other move reaches singularBeta, the TT move is singular - extend it
           if (singularValue < singularBeta) {
@@ -1787,9 +1827,11 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     // DO MOVE
     p.doMove(move);
 
-    // checking for legality is quite expensive so we do it as late as possible
+    // checking for legality is quite expensive, so we do it as late as possible
     // after we tried to prune the move already
-    // if a move is illegal we just undo and continue with the next move
+    // if a move is illegal, we just undo and continue with the next move
+    // Note: wasLegalMove does not check if the move was actually valid on the
+    // position but only if a pseudoMove that was assumed valid was legal.
     if (!p.wasLegalMove()) {
       p.undoMove();
       continue;
@@ -1842,7 +1884,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         // search to get an accurate score.
         // Without LMR we check for value > alpha && value < beta
         // With LMR we re-search when value > alpha
-        if (value > alpha && !stopConditions() && !isTimeAlmostUp()) {
+        if (value > alpha && !isTimeAlmostUp()) {
           // did we actually have a LMR reduction?
           if (lmrDepth < newDepthFixed) {
             STAT_INC(thread().statistics.lmrResearches);
@@ -1867,11 +1909,6 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     // UNDO MOVE
     // ///////////////////////////////////////////////////////
 
-
-    // check if we should stop the search
-    // We want to guarantee at least one complete depth-1 root search.
-    // Do not abort mid-loop at depth==1 to keep results deterministic under time pressure.
-    if (stopConditions() && depth > 1) { return VALUE_NONE; }
 
     // Did we find a better move for this node (not ply)?
     // For the first move this is always the case.
@@ -1902,6 +1939,10 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
           STAT_INC(thread().statistics.betaCuts);
           // Track beta cuts by move index (0-based, clamped to array size)
           STAT_INC(thread().statistics.betaCutsByIndex[std::min(movesSearched - 1, SearchStats::BETA_CUTS_INDEX_SIZE - 1)]);
+          // Track if TT move caused the cutoff (first move and TT move was set)
+          if (movesSearched == 1 && ttMove != MOVE_NONE && move == ttMove) {
+            STAT_INC(thread().statistics.ttMoveBestMove);
+          }
           // store move which caused a beta cutoff in this ply
           if (SearchConfig.USE_KILLER_MOVES && !p.isCapturingMove(move)) { myMg->storeKiller(move); }
           // Counter for moves which caused a beta cutoff
@@ -2001,28 +2042,47 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
   Move ttMove      = MOVE_NONE;
   Value staticEval = VALUE_NONE;
   if (SearchConfig.USE_TT && SearchConfig.USE_QS_TT) {
-    if (const TT::Entry* ttEntryPtr = tt->probe(p.getZobristKey())) {
+    STAT_INC(thread().statistics.ttProbes);
+    if (const auto ttEntry = tt->probe(p.getZobristKey())) {
       // tt hit
-      thread().statistics.ttHit++;
-      ttMove              = static_cast<Move>(ttEntryPtr->move);
-      const Value ttValue = valueFromTt(ttEntryPtr->value, ply);
+      const auto probedMove = static_cast<Move>(ttEntry->move);
+      // Validate TT move before use - corrupted/torn reads from lockless TT
+      // could produce garbage moves that would corrupt position state in doMove()
+      if (probedMove != MOVE_NONE && MoveGenerator::isPseudoLegal(p, probedMove)) {
+        ttMove = probedMove;
+      }
+
+      // Track hit quality by bound type (qsearch has no depth requirement)
+      // In qsearch, any hit is "sufficient depth" since we're at leaf nodes
+      STAT_INC(thread().statistics.ttHitSufficientDepth);
+      switch (ttEntry->type) {
+        case NONE: STAT_INC(thread().statistics.ttHitNone); break;
+        case EXACT: STAT_INC(thread().statistics.ttHitExact); break;
+        case ALPHA: STAT_INC(thread().statistics.ttHitAlpha); break;
+        case BETA: STAT_INC(thread().statistics.ttHitBeta); break;
+      }
+
+      const Value ttValue = valueFromTt(ttEntry->value, ply);
       if (SearchConfig.USE_TT_VALUE
           && nodeType != PvNode
           && ttValue.isValid()
-          && (ttEntryPtr->type == EXACT
-              || (ttEntryPtr->type == ALPHA && ttValue <= alpha)
-              || (ttEntryPtr->type == BETA && ttValue >= beta))) {
-        thread().statistics.TtCuts++;
+          && (ttEntry->type == EXACT
+              || (ttEntry->type == ALPHA && ttValue <= alpha)
+              || (ttEntry->type == BETA && ttValue >= beta))) {
+        STAT_INC(thread().statistics.TtCuts);
+        STAT_INC(thread().statistics.ttCutsQsearch);  // qsearch cut (depth 0)
         return ttValue;
       }
       // if we have a static eval stored we can reuse it
       if (SearchConfig.USE_EVAL_TT
-          && ttEntryPtr->eval != VALUE_NONE) {
+          && ttEntry->eval != VALUE_NONE) {
         STAT_INC(thread().statistics.evalFromTT);
-        staticEval = ttEntryPtr->eval;
+        staticEval = ttEntry->eval;
       }
     }
-    else { thread().statistics.ttMiss++; }
+    else {
+      STAT_INC(thread().statistics.ttMisses);
+    }
   }// use TT
 
   // prepare node search
@@ -2144,8 +2204,6 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
     // UNDO MOVE
     // ///////////////////////////////////////////////////////
 
-    // check if we should stop the search
-    if (stopConditions()) { return VALUE_NONE; }
 
     // See the search function above for documentation
     if (value > bestNodeValue) {
@@ -2155,6 +2213,10 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
         if (value >= beta && SearchConfig.USE_ALPHABETA) {
           STAT_INC(thread().statistics.betaCuts);
           STAT_INC(thread().statistics.betaCutsByIndex[std::min(movesSearched - 1, SearchStats::BETA_CUTS_INDEX_SIZE - 1)]);
+          // Track if TT move caused the cutoff
+          if (movesSearched == 1 && ttMove != MOVE_NONE && move == ttMove) {
+            STAT_INC(thread().statistics.ttMoveBestMove);
+          }
           // Note: No killer/history updates in qsearch - we primarily search captures,
           // and history/killers are for quiet move ordering in main search.
           ttType = BETA;
@@ -2286,8 +2348,8 @@ void Search::initialize() {
 
   // init transposition table
   if (SearchConfig.USE_TT) {
-    // When constructed with size 0 MB, TT ensures at least 1 entry; treat that as uninitialized sentinel
-    if (tt->getMaxNumberOfEntries() == 1) {
+    // When constructed with size 0 MB, TT has 1 cluster (4 entries); treat that as uninitialized sentinel
+    if (tt->getMaxNumberOfClusters() == 1) {
       tt->resize(SearchConfig.TT_SIZE_MB);
     }
   }
@@ -2963,14 +3025,15 @@ MoveList Search::extractPvWithTT(Position& p) const {
 
   // Now extend using TT lookups
   // Limit to prevent infinite loops (e.g., from TT collisions)
+  // Note: Stats not tracked here as this is a const function (display only)
   constexpr int maxExtension = MAX_DEPTH;
   int extended               = 0;
 
   while (extended < maxExtension) {
-    const TT::Entry* entry = tt->probe(p.getZobristKey());
-    if (!entry) break;
+    const auto ttEntry = tt->probe(p.getZobristKey());
+    if (!ttEntry) break;
 
-    const auto ttMove = static_cast<Move>(entry->move);
+    const auto ttMove = static_cast<Move>(ttEntry->move);
     if (ttMove == MOVE_NONE) break;
 
     // Verify the move is fully legal in current position
@@ -3001,13 +3064,19 @@ MoveList Search::extractPvWithTT(Position& p) const {
 
 std::string Search::formatDetailedStats(
   const SearchResult& result,
-  const SearchStats& stats) {
+  const SearchStats& stats) const {
 
   std::ostringstream os;
   os.imbue(deLocale);
 
   const auto timeMs  = duration_cast<milliseconds>(result.time).count();
   const uint64_t nps = timeMs > 0 ? (result.nodes * 1000) / static_cast<uint64_t>(timeMs) : 0;
+
+  // Calculate Effective Branching Factor: EBF = nodes^(1/depth)
+  // This measures search efficiency - lower is better (perfect ordering = 1.0)
+  const double ebf = (result.depth > 0 && result.nodes > 0)
+                       ? std::pow(static_cast<double>(result.nodes), 1.0 / static_cast<double>(result.depth))
+                       : 0.0;
 
   os << "\n==================== Search Results ====================\n";
   if (!result.fen.empty()) {
@@ -3020,6 +3089,7 @@ std::string Search::formatDetailedStats(
   os << "Time           : " << timeMs << " ms\n";
   os << "Nodes          : " << result.nodes << "\n";
   os << "NPS            : " << nps << "\n";
+  os << "EBF            : " << std::fixed << std::setprecision(2) << ebf << "\n";
   os << "Book Move      : " << (result.bookMove ? "yes" : "no") << "\n";
   os << "TB Hit         : " << (result.tbHit ? "yes" : "no") << "\n";
   os << "Mate Found     : " << (result.mateFound ? "yes" : "no") << "\n";
@@ -3113,13 +3183,120 @@ std::string Search::formatDetailedStats(
   os << "Singular Ext   : " << stats.singularExtension << "\n";
 
   os << "\n------------------- TT Stats --------------------------\n";
-  os << "TT Hits        : " << stats.ttHit << "\n";
-  os << "TT Misses      : " << stats.ttMiss << "\n";
-  os << "TT Cuts        : " << stats.TtCuts << "\n";
-  os << "TT No Cuts     : " << stats.TtNoCuts << "\n";
-  os << "TT Move Used   : " << stats.TtMoveUsed << "\n";
-  os << "No TT Move     : " << stats.NoTtMove << "\n";
-  os << "Eval from TT   : " << stats.evalFromTT << "\n";
+  os << "TT Size (MB)   : " << tt->getSizeInByte() / (1024 * 1024) << "\n";
+  os << "TT Max Entries : " << tt->getMaxNumberOfEntries() << "\n";
+  os << "TT Entries     : " << tt->getNumberOfEntries() << "\n";
+  {
+    const double ttFillPct = tt->getMaxNumberOfEntries() > 0
+                               ? 100.0 * static_cast<double>(tt->getNumberOfEntries()) / static_cast<double>(tt->getMaxNumberOfEntries())
+                               : 0.0;
+    os << "TT Fill        : " << std::fixed << std::setprecision(2) << ttFillPct << "%\n";
+
+    // TT internal counters have data races in SMP - show them but mark as approximate
+    os << "TT Puts        : " << tt->getNumberOfPuts() << " (approx)\n";
+    os << "TT Updates     : " << tt->getNumberOfUpdates() << " (approx)\n";
+    os << "TT Collisions  : " << tt->getNumberOfCollisions() << " (approx)\n";
+    os << "TT Overwrites  : " << tt->getNumberOfOverwrites() << " (approx)\n";
+
+    // Use SearchStats for accurate probe/hit/miss tracking (per-thread, aggregated)
+    const uint64_t trackedHits = stats.ttHitSufficientDepth + stats.ttHitInsufficientDepth;
+    const uint64_t trackedProbes = stats.ttProbes;
+    const uint64_t trackedMisses = stats.ttMisses;
+
+    os << "--- Probe Stats (from SearchStats - accurate) ---\n";
+    os << "TT Probes      : " << trackedProbes << "\n";
+    if (trackedProbes > 0) {
+      os << "TT Hits        : " << trackedHits << " (" << std::fixed << std::setprecision(1)
+         << (100.0 * static_cast<double>(trackedHits) / static_cast<double>(trackedProbes)) << "%)\n";
+      os << "TT Misses      : " << trackedMisses << " (" << std::fixed << std::setprecision(1)
+         << (100.0 * static_cast<double>(trackedMisses) / static_cast<double>(trackedProbes)) << "%)\n";
+    } else {
+      os << "TT Hits        : " << trackedHits << "\n";
+      os << "TT Misses      : " << trackedMisses << "\n";
+    }
+
+    os << "--- Hit Quality (Depth) ---\n";
+    if (trackedHits > 0) {
+      os << "Sufficient Dep : " << stats.ttHitSufficientDepth << " (" << std::fixed << std::setprecision(1)
+         << (100.0 * static_cast<double>(stats.ttHitSufficientDepth) / static_cast<double>(trackedHits)) << "%)\n";
+      os << "Insuffic. Dep  : " << stats.ttHitInsufficientDepth << " (" << std::fixed << std::setprecision(1)
+         << (100.0 * static_cast<double>(stats.ttHitInsufficientDepth) / static_cast<double>(trackedHits)) << "%)\n";
+    } else {
+      os << "Sufficient Dep : 0\n";
+      os << "Insuffic. Dep  : 0\n";
+    }
+
+    // Hit quality by bound type
+    const uint64_t boundTracked = stats.ttHitNone + stats.ttHitExact + stats.ttHitAlpha + stats.ttHitBeta;
+    os << "--- Hit Quality (Bound) ---\n";
+    if (boundTracked > 0) {
+      os << "NONE Hits      : " << stats.ttHitNone << " (" << std::fixed << std::setprecision(1)
+         << (100.0 * static_cast<double>(stats.ttHitNone) / static_cast<double>(boundTracked)) << "%) [eval-only]\n";
+      os << "EXACT Hits     : " << stats.ttHitExact << " (" << std::fixed << std::setprecision(1)
+         << (100.0 * static_cast<double>(stats.ttHitExact) / static_cast<double>(boundTracked)) << "%)\n";
+      os << "ALPHA Hits     : " << stats.ttHitAlpha << " (" << std::fixed << std::setprecision(1)
+         << (100.0 * static_cast<double>(stats.ttHitAlpha) / static_cast<double>(boundTracked)) << "%)\n";
+      os << "BETA Hits      : " << stats.ttHitBeta << " (" << std::fixed << std::setprecision(1)
+         << (100.0 * static_cast<double>(stats.ttHitBeta) / static_cast<double>(boundTracked)) << "%)\n";
+    } else {
+      os << "NONE Hits      : 0\n";
+      os << "EXACT Hits     : 0\n";
+      os << "ALPHA Hits     : 0\n";
+      os << "BETA Hits      : 0\n";
+    }
+
+    // TT effectiveness metrics
+    os << "--- TT Effectiveness ---\n";
+    os << "TT Cuts        : " << stats.TtCuts << "\n";
+    if (stats.ttCutsSearch > 0 || stats.ttCutsQsearch > 0) {
+      os << "  Search Cuts  : " << stats.ttCutsSearch;
+      if (stats.ttCutsSearch > 0) {
+        const double avgCutDepth = static_cast<double>(stats.ttCutDepthSum) / static_cast<double>(stats.ttCutsSearch);
+        os << " (avg depth " << std::fixed << std::setprecision(1) << avgCutDepth << ")";
+      }
+      os << "\n";
+      os << "  Qsearch Cuts : " << stats.ttCutsQsearch << "\n";
+    }
+    os << "TT No Cuts     : " << stats.TtNoCuts << "\n";
+    os << "TT Move Used   : " << stats.TtMoveUsed;
+    if (stats.TtMoveUsed > 0) {
+      const double bestMoveRate = 100.0 * static_cast<double>(stats.ttMoveBestMove) / static_cast<double>(stats.TtMoveUsed);
+      os << " (" << stats.ttMoveBestMove << " = " << std::fixed << std::setprecision(1) << bestMoveRate << "% best move)";
+    }
+    os << "\n";
+    os << "No TT Move     : " << stats.NoTtMove << "\n";
+    os << "Eval from TT   : " << stats.evalFromTT << "\n";
+
+    // Value breakdown - note: these can overlap (a hit can provide cut AND move ordering)
+    if (trackedHits > 0) {
+      os << "--- Value Breakdown (% of hits, overlapping) ---\n";
+      os << "  Cutoffs      : " << stats.TtCuts << " (" << std::fixed << std::setprecision(1)
+         << (100.0 * static_cast<double>(stats.TtCuts) / static_cast<double>(trackedHits)) << "%)\n";
+      os << "  Eval Reused  : " << stats.evalFromTT << " (" << std::fixed << std::setprecision(1)
+         << (100.0 * static_cast<double>(stats.evalFromTT) / static_cast<double>(trackedHits)) << "%)\n";
+      os << "  Move Ordering: " << stats.TtMoveUsed << " (" << std::fixed << std::setprecision(1)
+         << (100.0 * static_cast<double>(stats.TtMoveUsed) / static_cast<double>(trackedHits)) << "%)\n";
+    }
+  }
+
+  os << "\n----------------- PawnTT Stats ------------------------\n";
+  {
+    const uint64_t pttQueries = pawnTT->getNumberOfHits() + pawnTT->getNumberOfMisses();
+    const uint64_t pttHitPct  = pttQueries ? (pawnTT->getNumberOfHits() * 100) / pttQueries : 0;
+    const uint64_t pttMissPct = pttQueries ? (pawnTT->getNumberOfMisses() * 100) / pttQueries : 0;
+    const double pttFillPct   = pawnTT->getMaxNumberOfEntries() > 0
+                                  ? 100.0 * static_cast<double>(pawnTT->getNumberOfEntries()) / static_cast<double>(pawnTT->getMaxNumberOfEntries())
+                                  : 0.0;
+    os << "PTT Size (MB)  : " << pawnTT->getSizeInByte() / (1024 * 1024) << "\n";
+    os << "PTT Max Entries: " << pawnTT->getMaxNumberOfEntries() << "\n";
+    os << "PTT Entries    : " << pawnTT->getNumberOfEntries() << "\n";
+    os << "PTT Fill       : " << std::fixed << std::setprecision(2) << pttFillPct << "%\n";
+    os << "PTT Puts       : " << pawnTT->getNumberOfPuts() << "\n";
+    os << "PTT Updates    : " << pawnTT->getNumberOfUpdates() << "\n";
+    os << "PTT Collisions : " << pawnTT->getNumberOfCollisions() << "\n";
+    os << "PTT Hits       : " << pawnTT->getNumberOfHits() << " (" << pttHitPct << "%)\n";
+    os << "PTT Misses     : " << pawnTT->getNumberOfMisses() << " (" << pttMissPct << "%)\n";
+  }
 
   os << "\n------------------- IID/IIR Stats ---------------------\n";
   if (ConfigManager::instance().search().USE_IID) {
@@ -3163,5 +3340,21 @@ std::string Search::formatDetailedStats() const {
   if (!lastSearchResult.has_value()) {
     return "\n==================== No Search Result Available ====================\n";
   }
-  return formatDetailedStats(*lastSearchResult, mainThread().statistics);
+  // Aggregate stats from all threads (main + helpers) for SMP
+  const SearchStats aggregated = aggregateStats();
+  return formatDetailedStats(*lastSearchResult, aggregated);
+}
+
+SearchStats Search::aggregateStats() const {
+  // Start with main thread's stats
+  SearchStats result = mainThread().statistics;
+
+  // Add stats from all helper threads
+  for (size_t i = 1; i < searchThreadData.size(); ++i) {
+    if (searchThreadData[i]) {
+      result += searchThreadData[i]->statistics;
+    }
+  }
+
+  return result;
 }

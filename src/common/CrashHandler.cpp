@@ -269,8 +269,7 @@ namespace common::crashhandler {
 
 #ifdef _WIN32
     g_previousFilter = SetUnhandledExceptionFilter(unhandledExceptionFilter);
-    std::cerr << "CrashHandler: Installed Windows exception handler. Dumps will be written to: "
-              << g_dumpPath << std::endl;
+    // Silent installation - only output on actual crash to avoid noise in UCI communication
 #else
     struct sigaction sa{};
     sa.sa_handler = signalHandler;
@@ -280,8 +279,7 @@ namespace common::crashhandler {
     sigaction(SIGSEGV, &sa, &g_previousSigsegv);
     sigaction(SIGABRT, &sa, &g_previousSigabrt);
     sigaction(SIGFPE, &sa, &g_previousSigfpe);
-    std::cerr << "CrashHandler: Installed signal handlers. Traces will be written to: "
-              << g_dumpPath << std::endl;
+    // Silent installation - only output on actual crash to avoid noise in UCI communication
 #endif
 
     g_installed = true;
@@ -302,7 +300,7 @@ namespace common::crashhandler {
 #endif
 
     g_installed = false;
-    std::cerr << "CrashHandler: Uninstalled." << std::endl;
+    // Silent uninstall - no output to avoid noise in UCI communication
   }
 
   bool isInstalled() {

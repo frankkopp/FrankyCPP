@@ -172,7 +172,7 @@ namespace engine {
 #ifdef EVAL_ENABLE_PREFETCH
     /// Prefetches pawn cache entry for the given key into CPU cache.
     /// No-op if pawnCache is nullptr.
-    void prefetch(const ZobristKey key) {
+    void prefetch(const ZobristKey key) const {
       if (pawnCache) {
         pawnCache->prefetch(key);
       }

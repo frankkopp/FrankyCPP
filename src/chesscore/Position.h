@@ -286,6 +286,8 @@ namespace chess {
     /// an attacked square during castling, or if there was castling while in check.
     /// If the position does not have a last move (history empty), this will only
     /// check if the king of the opponent is attacked (could be captured).
+    /// Note: wasLegalMove does not check if the move was actually valid on the
+    /// position but only if a pseudoMove that was assumed valid was legal.
     /// @return True if last move was legal
     bool wasLegalMove() const;
 

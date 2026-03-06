@@ -290,6 +290,43 @@ namespace chess {
     /// @return          True if the move is legal
     bool validateMove(const Position& position, Move move);
 
+    /// Fast pseudo-legal validation of a move using attack tables.
+    /// Use this to validate TT moves before passing them to doMove().
+    ///
+    /// This check catches corrupted or garbage moves from TT torn reads.
+    /// It validates structural correctness AND that the piece can actually
+    /// reach the target square (using attack tables with actual occupancy).
+    ///
+    /// Checks performed:
+    ///   - Move is not MOVE_NONE
+    ///   - From and to squares are different
+    ///   - There is a piece of our color on the from square
+    ///   - We are not capturing our own piece
+    ///   - Move type matches piece type (only pawns promote/en passant, only kings castle)
+    ///   - Piece can reach target square with path clear:
+    ///     - Knight: L-shape pattern (no path check needed - knights jump)
+    ///     - King: 1-square any direction
+    ///     - Bishop/Rook/Queen: uses Attacks::attacks() with actual occupancy
+    ///     - Pawn push: intermediate square empty for double push
+    ///     - Pawn capture: diagonal to enemy piece
+    ///   - En passant: target is EP square, captured pawn exists
+    ///   - Promotion: to correct rank, valid promo piece (KNIGHT..QUEEN)
+    ///   - Castling: has castling right, path between king and rook is clear
+    ///
+    /// NOT checked (these are legal move checks, not pseudo-legal):
+    ///   - Move leaves king in check (wasLegalMove() checks this after doMove())
+    ///   - Castling: king not in check, doesn't cross attacked square
+    ///
+    /// The key guarantee: after isPseudoLegal() returns true, doMove() can
+    /// safely execute without corrupting position state or causing crashes.
+    /// The move might still be illegal (e.g., leaves king in check), but
+    /// wasLegalMove() catches that and the move is undone.
+    ///
+    /// @param position  Position to validate against
+    /// @param move      Move to validate structurally
+    /// @return          True if move passes pseudo-legal validation
+    [[nodiscard]] static bool isPseudoLegal(const Position& position, Move move);
+
     /// Returns a string representation of a MoveGenerator instance.
     /// @return Debug string
     static std::string str();

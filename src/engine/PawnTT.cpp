@@ -20,7 +20,6 @@
 #include <algorithm>
 #include <bit>
 #include <cmath>
-#include <execution>
 #include <thread>
 
 #include "PawnTT.h"
@@ -36,6 +35,7 @@ PawnTT::PawnTT(const uint64_t newSizeInMByte) {
 }
 
 void PawnTT::resize(const uint64_t newSizeInMByte) {
+  LOG__INFO(Logger::get().EVAL_LOG, "Resizing PawnTT to {:L} MByte ({} threads)", newSizeInMByte, noOfThreads);
   if (newSizeInMByte > MAX_SIZE_MB) {
     LOG__ERROR(Logger::get().EVAL_LOG, "Requested size for PawnTT of {:L} MB reduced to max of {:L} MB", newSizeInMByte, MAX_SIZE_MB);
     sizeInByte = MAX_SIZE_MB * MB;
@@ -113,22 +113,19 @@ void PawnTT::clear() {
     return;
   }
 
-  LOG__TRACE(Logger::get().EVAL_LOG, "Clearing PawnTT (parallel algorithms)...");
+  // Clear PawnTT using memset - much faster than parallel for_each.
+  LOG__TRACE(Logger::get().EVAL_LOG, "Clearing PawnTT (memset)...");
   const auto startTime = high_resolution_clock::now();
 
-  Entry* beginPtr = _data.get();
-  Entry* endPtr   = beginPtr + maxNumberOfEntries;
-
-  std::for_each(std::execution::par, beginPtr, endPtr, [](Entry& e) {
-    e.key.store(0, std::memory_order_relaxed);
-    e.midvalue = VALUE_NONE;
-    e.endvalue = VALUE_NONE;
-  });
+  // Single memset over the entire contiguous array.
+  // memset(0) is safe: key==0 marks entries as empty. No code reads other fields
+  // from empty entries — put() writes all fields before publishing a non-zero key.
+  std::memset(_data.get(), 0, maxNumberOfEntries * sizeof(Entry));
 
   const auto finish = high_resolution_clock::now();
   const auto time   = std::chrono::duration_cast<milliseconds>(finish - startTime).count();
 
-  LOG__DEBUG(Logger::get().EVAL_LOG, "PawnTT cleared {:L} entries in {:L} ms", maxNumberOfEntries, time);
+  LOG__DEBUG(Logger::get().EVAL_LOG, "PawnTT cleared {:L} entries in {:L} ms (memset)", maxNumberOfEntries, time);
 }
 
 void PawnTT::put(Entry* entryPtr, const ZobristKey key, const Score score) {
@@ -169,6 +166,36 @@ void PawnTT::put(Entry* entryPtr, const ZobristKey key, const Score score) {
   // that is acceptable (diagnostics only, no effect on correctness).
   // Assert is skipped under SMP since counters will not sum correctly.
   assert(numSmpThreads > 1 || numberOfPuts == (numberOfEntries + numberOfCollisions + numberOfUpdates));
+}
+
+std::optional<PawnTT::Entry> PawnTT::probe(const ZobristKey key) const {
+  numberOfQueries++;
+
+  // Key 0 is reserved for empty entries - never matches.
+  // This handles positions with no pawns (valid but uncacheable).
+  if (key == 0) {
+    numberOfMisses++;
+    return std::nullopt;
+  }
+
+  const Entry* const entryPtr = &_data[getHash(key)];
+
+  // Load key with acquire semantics to synchronize with put()'s release store.
+  const ZobristKey storedKey = entryPtr->key.load(std::memory_order_acquire);
+
+  // IMMEDIATELY copy the entry after key load to minimize torn-read window.
+  // This copy-on-read pattern prevents races where another thread overwrites
+  // the entry between our key check and value reads.
+  const Entry copy = *entryPtr;// Copy via copy constructor
+
+  // Verify key match
+  if (storedKey == key) {
+    numberOfHits++;
+    return copy;
+  }
+
+  numberOfMisses++;
+  return std::nullopt;
 }
 
 std::string PawnTT::str() {

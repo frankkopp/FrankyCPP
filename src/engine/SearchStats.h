@@ -153,36 +153,35 @@ namespace engine {
     uint64_t qfpPrunings = 0;
 
     // === Transposition Table Statistics ===
+    // Note: TT internal counters have data races in SMP - SearchStats are accurate.
+    // These are tracked per-thread and aggregated.
 
-    /// TT probe hits (entry with matching key found).
-    uint64_t ttHit = 0;
+    uint64_t ttProbes = 0;  // total TT probes (hits + misses)
+    uint64_t ttMisses = 0;  // TT probe misses (no matching entry)
 
-    /// TT probe misses (no matching entry).
-    uint64_t ttMiss = 0;
+    uint64_t ttHitSufficientDepth = 0;   // hits where ttDepth >= searchDepth (can use value)
+    uint64_t ttHitInsufficientDepth = 0; // hits where ttDepth < searchDepth (move-only benefit)
 
-    /// TT hits that caused a cutoff (value usable).
-    uint64_t TtCuts = 0;
+    uint64_t ttHitNone = 0;   // hits with type=NONE (eval-only, no search value)
+    uint64_t ttHitExact = 0;  // hits with type=EXACT (precise value, best for cutoffs)
+    uint64_t ttHitAlpha = 0;  // hits with type=ALPHA (upper bound, fail-low)
+    uint64_t ttHitBeta = 0;   // hits with type=BETA (lower bound, fail-high)
 
-    /// TT hits that did not cause a cutoff.
-    uint64_t TtNoCuts = 0;
+    uint64_t TtCuts = 0;         // hits that caused immediate cutoff (returned TT value)
+    uint64_t ttCutsSearch = 0;   // TT cuts in main search (depth > 0)
+    uint64_t ttCutsQsearch = 0;  // TT cuts in qsearch (depth 0)
+    uint64_t TtNoCuts = 0;       // hits with sufficient depth but bounds didn't allow cut
+    uint64_t ttCutDepthSum = 0;  // sum of depths at main search TT cuts (for avg)
 
-    /// Evaluations retrieved from TT instead of recalculating.
-    uint64_t evalFromTT = 0;
+    uint64_t TtMoveUsed = 0;  // TT move used for move ordering (set as PV move)
+    uint64_t ttMoveBestMove = 0; // TT move caused beta cutoff (was best move)
+    uint64_t NoTtMove = 0;    // probes where no TT move available for move ordering
 
-    /// TT hits without a stored move.
-    uint64_t NoTtMove = 0;
+    uint64_t evalFromTT = 0;  // static eval reused from TT (saved evaluate() call)
 
-    /// Internal iterative deepening searches performed.
-    uint64_t iidSearches = 0;
-
-    /// Moves found via IID.
-    uint64_t iidMoves = 0;
-
-    /// Internal iterative reduction applied (IIR).
-    uint64_t iirReductions = 0;
-
-    /// TT moves used for move ordering.
-    uint64_t TtMoveUsed = 0;
+    uint64_t iidSearches = 0; // internal iterative deepening searches performed
+    uint64_t iidMoves = 0;    // moves found via IID
+    uint64_t iirReductions = 0; // internal iterative reductions applied
 
     // === Re-search Statistics ===
 
@@ -326,12 +325,22 @@ namespace engine {
          << " threat ext: " << stats.threatExtension
          << " singular searches: " << stats.singularSearches
          << " singular ext: " << stats.singularExtension
-         << " ttHit: " << stats.ttHit
-         << " ttMiss: " << stats.ttMiss
+         << " ttProbes: " << stats.ttProbes
+         << " ttMisses: " << stats.ttMisses
+         << " ttHitSuffDepth: " << stats.ttHitSufficientDepth
+         << " ttHitInsuffDepth: " << stats.ttHitInsufficientDepth
+         << " ttHitNone: " << stats.ttHitNone
+         << " ttHitExact: " << stats.ttHitExact
+         << " ttHitAlpha: " << stats.ttHitAlpha
+         << " ttHitBeta: " << stats.ttHitBeta
          << " TtCuts: " << stats.TtCuts
+         << " ttCutsSearch: " << stats.ttCutsSearch
+         << " ttCutsQsearch: " << stats.ttCutsQsearch
          << " TtNoCuts: " << stats.TtNoCuts
+         << " ttCutDepthSum: " << stats.ttCutDepthSum
          << " evalFromTT: " << stats.evalFromTT
          << " TtMoveUsed: " << stats.TtMoveUsed
+         << " ttMoveBestMove: " << stats.ttMoveBestMove
          << " NoTtMove: " << stats.NoTtMove
          << " tbRootHits: " << stats.tbRootHits
          << " tbSearchProbes: " << stats.tbSearchProbes
@@ -342,6 +351,100 @@ namespace engine {
          << " IID Moves: " << stats.iidMoves
          << " IIR Reductions: " << stats.iirReductions;
       return os;
+    }
+
+    /// Aggregates another SearchStats into this one (for SMP stats collection).
+    /// Used to combine per-thread statistics from all search threads.
+    SearchStats& operator+=(const SearchStats& other) {
+      // Current state - skip (these are snapshots, not cumulative)
+      // currentIterationDepth, currentSearchDepth, currentExtraSearchDepth
+      // currentBestRootMove, currentBestRootMoveValue, currentVariation
+      // currentRootMoveIndex, currentRootMove
+
+      // Terminal nodes
+      checkmates += other.checkmates;
+      stalemates += other.stalemates;
+      perftNodeCount += other.perftNodeCount;
+
+      // Non-essential stats (stripped in production)
+      pvNodes += other.pvNodes;
+      nonPvNodes += other.nonPvNodes;
+      searchNodes += other.searchNodes;
+      qsearchNodes += other.qsearchNodes;
+      leafPositionsEvaluated += other.leafPositionsEvaluated;
+      evaluations += other.evaluations;
+
+      // Beta cuts
+      betaCuts += other.betaCuts;
+      for (int i = 0; i < BETA_CUTS_INDEX_SIZE; ++i) {
+        betaCutsByIndex[i] += other.betaCutsByIndex[i];
+      }
+
+      // Pruning stats
+      mdp += other.mdp;
+      razorings += other.razorings;
+      rfp_cuts += other.rfp_cuts;
+      nullMoveCuts += other.nullMoveCuts;
+      standpatCuts += other.standpatCuts;
+      fpPrunings += other.fpPrunings;
+      qfpPrunings += other.qfpPrunings;
+
+      // TT stats
+      ttProbes += other.ttProbes;
+      ttMisses += other.ttMisses;
+      ttHitSufficientDepth += other.ttHitSufficientDepth;
+      ttHitInsufficientDepth += other.ttHitInsufficientDepth;
+      ttHitNone += other.ttHitNone;
+      ttHitExact += other.ttHitExact;
+      ttHitAlpha += other.ttHitAlpha;
+      ttHitBeta += other.ttHitBeta;
+      TtCuts += other.TtCuts;
+      ttCutsSearch += other.ttCutsSearch;
+      ttCutsQsearch += other.ttCutsQsearch;
+      TtNoCuts += other.TtNoCuts;
+      ttCutDepthSum += other.ttCutDepthSum;
+      evalFromTT += other.evalFromTT;
+      TtMoveUsed += other.TtMoveUsed;
+      ttMoveBestMove += other.ttMoveBestMove;
+      NoTtMove += other.NoTtMove;
+      iidSearches += other.iidSearches;
+      iidMoves += other.iidMoves;
+      iirReductions += other.iirReductions;
+
+      // Re-search stats
+      rootPvsResearches += other.rootPvsResearches;
+      pvsResearches += other.pvsResearches;
+      aspirationResearches += other.aspirationResearches;
+      bestMoveChange += other.bestMoveChange;
+
+      // LMR/LMP stats
+      lmrResearches += other.lmrResearches;
+      lmrReductions += other.lmrReductions;
+      lmrHistoryLessReduction += other.lmrHistoryLessReduction;
+      lmrHistoryDepthSaved += other.lmrHistoryDepthSaved;
+      lmrCutNodeReductions += other.lmrCutNodeReductions;
+      lmpCuts += other.lmpCuts;
+
+      // Improving stats
+      improvingTrue += other.improvingTrue;
+      improvingFalse += other.improvingFalse;
+
+      // Extension stats
+      checkExtension += other.checkExtension;
+      threatExtension += other.threatExtension;
+      singularSearches += other.singularSearches;
+      singularFilteredByBound += other.singularFilteredByBound;
+      singularExtension += other.singularExtension;
+      nullMoveVerifications += other.nullMoveVerifications;
+
+      // Tablebase stats
+      tbRootHits += other.tbRootHits;
+      tbSearchProbes += other.tbSearchProbes;
+      tbSearchHits += other.tbSearchHits;
+      tbSearchMisses += other.tbSearchMisses;
+      tbSearchCutoffs += other.tbSearchCutoffs;
+
+      return *this;
     }
   };
 

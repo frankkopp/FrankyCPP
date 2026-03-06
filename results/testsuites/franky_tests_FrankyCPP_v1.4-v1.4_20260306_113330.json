@@ -1,0 +1,147 @@
+{
+  "arenaVersion": "v1.5",
+  "timestamp": "2026-03-06T10:33:30Z",
+
+  "testSuite": {
+    "name": "franky_tests",
+    "epdPath": "test/testsets/franky_tests.epd"
+  },
+
+  "engine": {
+    "name": "FrankyCPP v1.4",
+    "version": "v1.4",
+    "path": "Release/FrankyCPP_v1.4/FrankyCPP_v1.4.exe"
+  },
+
+  "summary": {
+    "totalTests": 13,
+    "passed": 12,
+    "failed": 1,
+    "skipped": 0,
+    "successRate": 92.31,
+    "totalNodes": 338641606,
+    "totalTimeMs": 36337,
+    "avgTimeMs": 2795.15,
+    "avgNodes": 26049354.31
+  },
+
+  "details": [
+    {
+      "testId": "FRANKY-1 #1",
+      "fen": "8/8/8/8/8/3K4/R7/5k2 w - -",
+      "expected": "mate 4",
+      "actual": "d3e3",
+      "passed": true,
+      "nodes": 8462083,
+      "timeMs": 308
+    },
+    {
+      "testId": "FRANKY-1 #2",
+      "fen": "8/8/8/8/8/3K4/R7/5k2 w - -",
+      "expected": "bm d3e3",
+      "actual": "d3e3",
+      "passed": true,
+      "nodes": 10731837,
+      "timeMs": 466
+    },
+    {
+      "testId": "FRANKY-1 #3",
+      "fen": "8/8/8/8/4K3/8/R7/4k3 w - -",
+      "expected": "mate 5",
+      "actual": "e4d3",
+      "passed": true,
+      "nodes": 37400100,
+      "timeMs": 1482
+    },
+    {
+      "testId": "FRANKY-1 #4",
+      "fen": "8/P1k5/8/8/8/8/8/3K4 w - -",
+      "expected": "bm a7a8Q",
+      "actual": "a7a8Q",
+      "passed": true,
+      "nodes": 49581966,
+      "timeMs": 4093
+    },
+    {
+      "testId": "FRANKY-1 #5",
+      "fen": "5k2/8/8/8/P7/3p4/3K4/8 w - -",
+      "expected": "bm a4a5",
+      "actual": "a4a5",
+      "passed": true,
+      "nodes": 48066602,
+      "timeMs": 4263
+    },
+    {
+      "testId": "FRANKY-1 #6",
+      "fen": "7k/8/3p4/4N3/8/5p2/P7/1K2N3 w - -",
+      "expected": "bm e5f3 e1f3 e1d3",
+      "actual": "e5f3",
+      "passed": true,
+      "nodes": 32065328,
+      "timeMs": 4404
+    },
+    {
+      "testId": "FRANKY-1 #7",
+      "fen": "2b4k/8/8/8/8/3N3N/P4p2/1K6 w - -",
+      "expected": "bm h3f2 d3f2",
+      "actual": "h3f2",
+      "passed": true,
+      "nodes": 12735640,
+      "timeMs": 1597
+    },
+    {
+      "testId": "Franky-1 #8",
+      "fen": "8/3r1pk1/p1R2p2/1p5p/r2p4/PRP1K1P1/5P1P/8 w - -",
+      "expected": "bm c3d4",
+      "actual": "c3d4",
+      "passed": true,
+      "nodes": 30491626,
+      "timeMs": 4164
+    },
+    {
+      "testId": "FRANKY-1 #9",
+      "fen": "8/3r1pk1/p1R2p2/1p5p/r2Pp3/PRP3P1/4KP1P/8 b - d3",
+      "expected": "bm e4d3",
+      "actual": "e4d3",
+      "passed": true,
+      "nodes": 10851761,
+      "timeMs": 1648
+    },
+    {
+      "testId": "Franky-1 #10",
+      "fen": "r1bqk2r/pp3ppp/2pb4/3pp3/4n1n1/P4N2/1PPPBPPP/RNBQK2R w KQkq -",
+      "expected": "bm e1g1",
+      "actual": "h1f1",
+      "passed": false,
+      "nodes": 23105829,
+      "timeMs": 3875
+    },
+    {
+      "testId": "FRANKY-1 #11",
+      "fen": "8/2r1kpp1/1p6/pB1Pp1P1/Pbp1P3/2N2b1P/1PPK1P2/7R b - -",
+      "expected": "bm f3h1",
+      "actual": "f3h1",
+      "passed": true,
+      "nodes": 29594476,
+      "timeMs": 4417
+    },
+    {
+      "testId": "no ID",
+      "fen": "4r1b1/1p4B1/pN2pR2/RB2k3/1P2N2p/2p3b1/n2P1p1r/5K1n w - -",
+      "expected": "mate 3",
+      "actual": "f1e2",
+      "passed": true,
+      "nodes": 13134607,
+      "timeMs": 698
+    },
+    {
+      "testId": "WAC.294",
+      "fen": "3r3k/1r3p1p/p1pB1p2/8/p1qNP1Q1/P6P/1P4P1/3R3K w - -",
+      "expected": "bm d6f8 d4f5 g4f4",
+      "actual": "g4f4",
+      "passed": true,
+      "nodes": 32419751,
+      "timeMs": 4922
+    }
+  ]
+}

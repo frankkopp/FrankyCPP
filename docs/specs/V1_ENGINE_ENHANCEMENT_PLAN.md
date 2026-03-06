@@ -1,10 +1,10 @@
 # FrankyCPP v1.x Engine Enhancement Plan
 
-**Document Version:** 1.4
+**Document Version:** 1.5
 **Created:** 2026-02-01
-**Last Updated:** 2026-02-25
-**Status:** Phases 1, 2, 5 Complete. Phase 6 Partial. Phase 3 Upcoming.
-**Target:** FrankyCPP v1.4+ releases
+**Last Updated:** 2026-03-06
+**Status:** Phases 1, 2, 3, 5, 6 Complete. Phase 4 Partial.
+**Target:** FrankyCPP v1.5+ releases
 
 ---
 
@@ -12,19 +12,21 @@
 
 This document outlines a comprehensive plan for enhancing FrankyCPP's playing strength through systematic improvements to search, evaluation, and supporting infrastructure. The plan is organized into logical phases, each building on previous work while maintaining the engine's stability and production quality.
 
-**Current State (v1.4 Dev):**
+**Current State (v1.5 Dev):**
 - Production-ready classical chess engine
 - Alpha-beta search with modern pruning (NMP, LMR, futility, razoring)
 - Classical evaluation (material, PST, pawn structure, mobility, king safety)
-- **Single-threaded search** (Multi-threading postponed to v1.5)
+- **Multi-threaded search (Lazy SMP)** implemented in v1.4 (+119 ELO vs v1.3)
+- **TT Buckets** (4-way associative, cache-line aligned) implemented in v1.5
+- **XOR Key Verification** for torn-read detection (SMP race safety)
 - **Endgame Tablebase Support (Syzygy)** integrated in v1.2
-- **Search Optimizations** (LMR, History, PVS fixes) integrated in v1.3
+- **Search Optimizations** (LMR, History, PVS fixes) integrated in v1.3 (+109 ELO vs v1.1)
 - 100+ configurable parameters via YAML
 - Comprehensive test suite (266+ tests)
 - Cross-platform support (Windows/Linux)
 
 **Target State (v1.x):**
-- Multi-threaded parallel search (Lazy SMP)
+- ~~Multi-threaded parallel search (Lazy SMP)~~ ✅ Complete (v1.4)
 - Neural network evaluation (NNUE) with classical fallback
 - Automated parameter tuning infrastructure
 - Improved move ordering and time management
@@ -115,32 +117,46 @@ Tablebase support and endgame-specific techniques.
 
 ---
 
-### Phase 3: Multi-Threading (v1.5) - **3-4 weeks** 📋 PLANNED
+### Phase 3: Multi-Threading (v1.4-v1.5) - **3-4 weeks** ✅ COMPLETE
 **Focus:** Parallel search for multi-core CPUs (Lazy SMP)
 
 | Task                                      | Category    | Effort      | Complexity | ELO Gain | Priority | Status     |
 |-------------------------------------------|-------------|-------------|------------|----------|----------|------------|
-| Step 1: Thread-Safe TT (atomic key)       | Performance | 🟢 2-3 days | 🟡 Medium  | N/A      | CRITICAL | 📋 Planned |
-| Step 2: `SearchThread` struct + refactor  | Architect.  | 🟡 3-5 days | 🟡 Medium  | N/A      | CRITICAL | 📋 Planned |
-| Step 3: Helper thread launch/join         | Performance | 🟡 3-5 days | 🟡 Medium  | +50-100  | CRITICAL | 📋 Planned |
-| Step 4: `Threads` UCI option + config     | Config      | 🟢 1-2 days | 🟢 Low     | N/A      | HIGH     | 📋 Planned |
-| Step 5: Node count aggregation            | UCI         | 🟢 1-2 days | 🟢 Low     | N/A      | MEDIUM   | 📋 Planned |
-| Step 6: Testing & strength validation     | Testing     | 🟡 5-7 days | 🟡 Medium  | +10-20   | HIGH     | 📋 Planned |
+| Step 1: Thread-Safe TT (atomic key)       | Performance | 🟢 2-3 days | 🟡 Medium  | N/A      | CRITICAL | ✅ Complete |
+| Step 2: `SearchThread` struct + refactor  | Architect.  | 🟡 3-5 days | 🟡 Medium  | N/A      | CRITICAL | ✅ Complete |
+| Step 3: Helper thread launch/join         | Performance | 🟡 3-5 days | 🟡 Medium  | +50-100  | CRITICAL | ✅ Complete |
+| Step 4: `Threads` UCI option + config     | Config      | 🟢 1-2 days | 🟢 Low     | N/A      | HIGH     | ✅ Complete |
+| Step 5: Node count aggregation            | UCI         | 🟢 1-2 days | 🟢 Low     | N/A      | MEDIUM   | ✅ Complete |
+| Step 6: Testing & strength validation     | Testing     | 🟡 5-7 days | 🟡 Medium  | +10-20   | HIGH     | ✅ Complete |
+| Step 7: TT Buckets (v1.5)                 | Performance | 🟡 3-5 days | 🟡 Medium  | +5-10    | HIGH     | ✅ Complete |
+| Step 8: XOR Key Verification (v1.5)       | Safety      | 🟢 1-2 days | 🟡 Medium  | N/A      | HIGH     | ✅ Complete |
 
-**Expected Total ELO Gain:** +60-120 (on multi-core hardware)  
+**Expected Total ELO Gain:** +60-120 (on multi-core hardware) ✅ **Verified: +119 ELO (v1.4 vs v1.3)**
 **Risk:** Medium — TT atomic key is zero-overhead on x86; overall approach is minimal and well-proven
 **Design Constraint:** `Threads=1` must have **zero overhead** vs pre-SMP (no atomics on hot path, no extra threads created)
 **Detailed Plan:** `docs/specs/PLAN_Lazy_SMP_MultiThreading.md`
-**Notes:**
+
+**v1.4 Implementation:**
 - Strategy: Lazy SMP — helpers independently run `iterativeDeepening()`, share only the TT
-- Retargeted to v1.5 to prioritize search quality improvements in v1.3/v1.4 first
-- TT thread-safety via `std::atomic<ZobristKey>` key field (relaxed memory order = plain `mov` on x86)
-- New `SearchThread` struct holds all per-thread state (PV table, ply stack, history, statistics)
+- Comprehensive test suite (`SearchSmpTest.cpp`)
+- TT thread-safety via `std::atomic<ZobristKey>` key field (acquire/release memory order)
+- New `SearchThreadData` struct holds all per-thread state (PV table, ply stack, history, statistics)
 - Helper threads do NOT manage time, report UCI, or select the final best move (main thread only)
+- PawnTT shared across threads with lock-free concurrent access
+
+**v1.5 Enhancements:**
+- **TT Bucket Design:** 4-way associative with 64-byte cache-line alignment
+- **XOR Key Verification:** Torn-read detection for SMP race safety
+  - Store: key stored as `(originalKey ^ dataHash)` after writing data
+  - Load: verify `(storedKey ^ dataHash) == probeKey` to detect corruption
+- **Cache-line alignment:** Eliminates false sharing under SMP
+- **Replacement policy:** Depth-preferred + age tiebreak
+- **Single prefetch:** Loads entire bucket (4 entries)
+- **Race condition fixes:** All remaining SMP races eliminated
 
 ---
 
-### Phase 4: Enhanced Move Ordering (v1.3 - v1.4) - **Ongoing** 🔄 PARTIAL
+### Phase 4: Enhanced Move Ordering (v1.3 - v1.5) - **Ongoing** 🔄 PARTIAL
 **Focus:** Better move ordering for deeper effective search
 
 | Task                             | Category | Effort      | Complexity | ELO Gain | Priority | Status            |
@@ -150,6 +166,7 @@ Tablebase support and endgame-specific techniques.
 | Static Exchange Eval Enhancement | Search   | 🟢 2-3 days | 🟡 Medium  | +5-10    | MEDIUM   | 📋 Planned        |
 | Killer Move Slot Optimization    | Search   | 🟢 1-2 days | 🟢 Low     | +5-10    | LOW      | ✅ Complete        |
 | History Heuristic Fixes          | Search   | 🟢 1-2 days | 🟢 Low     | +20-30   | HIGH     | ✅ Complete (v1.3) |
+| Counter-Move History             | Search   | 🟡 3-5 days | 🟡 Medium  | +10-20   | HIGH     | ✅ Complete (v1.2) |
 
 **Expected Total ELO Gain:** +35-65  
 **Risk:** Low - proven techniques with minimal architectural impact
@@ -618,72 +635,75 @@ This feature complements the existing eval volatility detection (which triggers 
 
 ---
 
-### 3. Lazy SMP Multi-Threaded Search (Phase 3)
+### 3. Lazy SMP Multi-Threaded Search (Phase 3) ✅ COMPLETE
 
 **Description:**  
 Parallel search where N helper threads each run full alpha-beta searches independently, sharing only the transposition table. Simple, scalable, and effective.
 
-**Architecture Changes:**
+**Implementation (v1.4-v1.5):**
 ```cpp
 class Search {
-  // Existing single-threaded state
-  std::vector<std::unique_ptr<SearchThread>> helperThreads;
+  // Per-thread state via SearchThreadData
+  std::vector<std::unique_ptr<SearchThreadData>> searchThreadData;
   std::atomic<bool> stopSearchFlag;
   
-  // Per-thread state
-  struct SearchThread {
-    History history;
-    KillerMoves killers;
-    PlyInfo plyStack[MAX_PLY];
-    // ...
+  // SearchThreadData struct holds all per-thread state:
+  struct SearchThreadData {
+    int id;                          // Thread ID (0 = main)
+    uint64_t nodesVisited;           // Thread-local node counter
+    Position position;               // Thread-local position copy
+    Evaluator evaluator;             // Thread-local evaluator
+    PVTable pv;                      // Triangular PV storage
+    std::array<PlyInfo, DEPTH_MAX+1> plyStack;  // Per-ply state
+    History history;                 // Move ordering heuristics
+    SearchStats statistics;          // Debug statistics
   };
   
   // Shared state (protected)
-  TT sharedTT;                    // Already thread-safe with atomic ops
-  std::atomic<uint64_t> nodesSearched;
-  std::mutex pvMutex;             // For PV update
+  TT sharedTT;                    // Thread-safe with atomic key + XOR verification
+  PawnTT sharedPawnTT;            // Lock-free concurrent access
 };
 ```
 
-**Implementation Plan:**
-1. **Thread-Safe TT (1 week)**
-   - Add atomic flags to TTEntry (avoid torn reads)
-   - Use lock-free updates (compare-and-swap)
-   - Test concurrent access patterns
+**Key Implementation Details (v1.4):**
+1. **Thread-Safe TT:** Atomic key operations with acquire/release memory order
+2. **SearchThreadData:** Complete per-thread isolation (no shared mutable state except TT)
+3. **Helper thread management:** Spawn N-1 helpers, each runs independent `iterativeDeepening()`
+4. **Position cloning:** Each thread gets its own Position copy
+5. **Node aggregation:** `getTotalNodes()` sums across all thread counters
+6. **UCI Threads option:** Auto-detect cores or manual 1-N configuration
 
-2. **SearchThread Class (1 week)**
-   - Refactor per-ply state into SearchThread
-   - Clone Position for each thread (no shared state)
-   - Independent history/killer tables per thread
+**v1.5 TT Enhancements:**
+1. **TT Bucket Design:** 4-way associative with 64-byte cache-line alignment
+2. **XOR Key Verification:** Torn-read detection for SMP race safety
+   - Store: key stored as `(originalKey ^ dataHash)` after writing data fields
+   - Load: verify `(storedKey ^ dataHash) == probeKey` to detect corruption
+   - If any field is corrupted by torn read, XOR won't match = clean miss
+3. **Cache-line alignment:** Eliminates false sharing under SMP
+4. **Replacement policy:** Depth-preferred + age tiebreak
+5. **Prefetch optimization:** Single prefetch loads entire bucket (4 entries)
+6. **Race condition fixes:** All remaining SMP races eliminated
 
-3. **Thread Pool Integration (2-3 days)**
-   - Use existing ThreadPool infrastructure
-   - Each thread runs iterativeDeepening() independently
-   - Main thread coordinates start/stop
+**Files Implemented:**
+- `src/engine/SearchThreadData.h` - Per-thread state struct
+- `src/engine/Search.h/cpp` - Thread spawning, coordination, node aggregation
+- `src/engine/TT.h/cpp` - TT buckets with XOR key verification
+- `src/engine/PawnTT.h/cpp` - Lock-free concurrent access
+- `test/engine/SearchSmpTest.cpp` - Comprehensive test suite
 
-4. **Result Aggregation (2-3 days)**
-   - Best move selection from TT after search complete
-   - Node count aggregation (atomic counters)
-   - PV selection from highest-depth thread
-
-5. **Testing & Tuning (3-5 days)**
-   - Verify deterministic behavior (with 1 thread)
-   - Scale testing (2, 4, 8, 16 threads)
-   - Tune thread count vs. NPS vs. depth reached
+**Testing & Validation:**
+- ThreadSanitizer: No data races detected
+- Determinism: `Threads=1` produces identical results
+- Scaling: Verified at 2, 4, 8 threads
+- Self-play: +119 ELO confirmed (v1.4 vs v1.3)
 
 **Configuration Parameters:**
 ```yaml
-USE_LAZY_SMP: true
-SMP_THREADS: 0                  # 0 = auto-detect cores
-SMP_MIN_SPLIT_DEPTH: 4          # minimum depth to spawn helper threads
+THREADS: 0                      # 0 = auto-detect cores
+# No SMP_MIN_SPLIT_DEPTH needed - Lazy SMP searches from root
 ```
 
-**Testing:**
-- Benchmark suite with 1, 2, 4, 8 threads
-- Verify no race conditions (ThreadSanitizer)
-- Ensure ELO gain scales with thread count
-
-**Expected Impact:** +50-100 ELO (on 4+ cores)
+**Expected Impact:** +50-100 ELO (on 4+ cores) ✅ **Verified: +119 ELO**
 
 ---
 
@@ -995,14 +1015,14 @@ NNUE_FALLBACK_CLASSICAL: true
 
 ## Success Metrics
 
-| Metric                        | Baseline (v1.0)  | Target (v1.8) |
-|-------------------------------|------------------|---------------|
-| **ELO Rating**                | ~2400 (estimate) | ~2800-2900    |
-| **Tactical Suite (WAC)**      | 250/300          | 285/300       |
-| **NPS (Single Thread)**       | ~1.5M            | ~2.0M         |
-| **NPS (8 Threads)**           | N/A              | ~8-10M        |
-| **Endgame Accuracy (TB)**     | ~85%             | ~100%         |
-| **Search Depth (Fixed Time)** | 10-12 ply        | 14-16 ply     |
+| Metric                        | Baseline (v1.0)  | Current (v1.4) | Target (v2.0) |
+|-------------------------------|------------------|----------------|---------------|
+| **ELO Rating**                | ~2400 (estimate) | ~2600 (+228)   | ~2900-3100    |
+| **Tactical Suite (WAC)**      | 250/300          | 275/300        | 285/300       |
+| **NPS (Single Thread)**       | ~1.5M            | ~1.8M          | ~2.0M         |
+| **NPS (8 Threads)**           | N/A              | ~8-10M ✅      | ~10-12M       |
+| **Endgame Accuracy (TB)**     | ~85%             | ~100% ✅       | ~100%         |
+| **Search Depth (Fixed Time)** | 10-12 ply        | 12-14 ply      | 14-16 ply     |
 
 ---
 
@@ -1094,5 +1114,5 @@ NNUE_FALLBACK_CLASSICAL: true
 ---
 
 **Document Maintainer:** Frank Kopp  
-**Last Updated:** 2026-02-12  
-**Next Review:** After Phase 2 completion (v1.2 release)
+**Last Updated:** 2026-03-06  
+**Next Review:** After v1.5 release

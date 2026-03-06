@@ -1,8 +1,8 @@
 # TT and Memory Performance Optimization Plan
 
-**Status:** Analysis Complete, Implementation Pending  
+**Status:** TT Buckets + alignas(64) Implemented — Pending Build & Test  
 **Created:** 2026-03-02  
-**Last Updated:** 2026-03-03  
+**Last Updated:** 2026-03-04  
 **Priority:** Medium-High (significant performance impact under SMP)
 
 ---
@@ -61,23 +61,24 @@ The transposition table experiences **memory latency that cannot be hidden**:
 
 ### Prioritized Optimization Roadmap
 
-| Priority | Optimization                      | Effort | Expected Impact | Rationale                                                                                                   |
-|----------|-----------------------------------|--------|-----------------|-------------------------------------------------------------------------------------------------------------|
-| **1**    | **TT Buckets + alignas(64)**      | Medium | 🔴 **HIGH**     | 4×16B entries = 64B cache line; eliminates false sharing; enables smarter replacement; Stockfish uses this  |
-| ~~2~~    | ~~Cache-line alignment alone~~    | N/A    | N/A             | ❌ Must combine with buckets; alone wastes 48B/entry (4x memory overhead)                                    |
-| **2**    | **Reduce TT access frequency**    | Medium | 🟡 Medium       | Skip TT probe in late move reductions; batch TT updates                                                     |
-| **3**    | **Attack caching per-position**   | Medium | 🟢 Low          | Slider tables already efficient (CPI 0.38); diminishing returns                                             |
-| ~~5~~    | ~~Earlier prefetch placement~~    | N/A    | N/A             | ❌ NOT POSSIBLE - requires zobrist key from after doMove()                                                   |
-| ~~6~~    | ~~PEXT slider tables~~            | N/A    | N/A             | ✅ **Already implemented** - no action needed                                                                |
-| ~~7~~    | ~~XOR key encoding~~              | N/A    | N/A             | ✅ Current atomics are efficient on x86                                                                      |
-| ~~8~~    | ~~Thread synchronization~~        | N/A    | N/A             | ✅ Zero contention measured                                                                                  |
+| Priority | Optimization                    | Effort | Expected Impact | Rationale                                                                                                 |
+|----------|---------------------------------|--------|-----------------|-----------------------------------------------------------------------------------------------------------|
+| **1**    | **TT Buckets + alignas(64)**    | Medium | 🔴 **HIGH**     | ✅ **Implemented 2026-03-04** — 4×16B entries = 64B cache line; depth-preferred + age tiebreak replacement |
+| ~~2~~    | ~~Cache-line alignment alone~~  | N/A    | N/A             | ❌ Must combine with buckets; alone wastes 48B/entry (4x memory overhead)                                  |
+| **2**    | **Reduce TT access frequency**  | Medium | 🟡 Medium       | Skip TT probe in late move reductions; batch TT updates                                                   |
+| **3**    | **Attack caching per-position** | Medium | 🟢 Low          | Slider tables already efficient (CPI 0.38); diminishing returns                                           |
+| ~~5~~    | ~~Earlier prefetch placement~~  | N/A    | N/A             | ❌ NOT POSSIBLE - requires zobrist key from after doMove()                                                 |
+| ~~6~~    | ~~PEXT slider tables~~          | N/A    | N/A             | ✅ **Already implemented** - no action needed                                                              |
+| ~~7~~    | ~~XOR key encoding~~            | N/A    | N/A             | ✅ Current atomics are efficient on x86                                                                    |
+| ~~8~~    | ~~Thread synchronization~~      | N/A    | N/A             | ✅ Zero contention measured                                                                                |
 
 ### Quick Wins (Implement First)
 
-1. **Implement TT buckets with `alignas(64)`** - These two MUST go together:
-   - 4 entries × 16 bytes = 64 bytes = exactly 1 cache line
-   - `alignas(64)` ensures each bucket starts at cache line boundary
-   - **Note:** `alignas(64)` alone on current 16-byte entries would waste 48 bytes per entry (4x memory overhead)
+1. ✅ **TT buckets with `alignas(64)` implemented (2026-03-04):**
+   - 4 entries × 16 bytes = 64 bytes = exactly 1 cache line per `TTCluster`
+   - `alignas(64)` + `static_assert(alignof == 64)` guarantees cache-line aligned heap allocation
+   - Depth-preferred + age tiebreak replacement policy
+   - Single `_mm_prefetch` loads entire bucket (all 4 entries)
 2. **Benchmark TT buckets with 8 threads** - Previous 20% slowdown was single-threaded; SMP may benefit
 
 ### Not Viable
@@ -617,7 +618,8 @@ After each VTune run, use the following prompt to generate a comparable summary 
 **Prompt for AI Assistant:**
 
 ```
-Analyze the VTune results in [results/vtune/YYYY-MM-DD_HH-mm-ss/] and create a summary document.
+Analyze the latest VTune results and create a summary document.
+Compare to the previous runs. 
 
 Create a file: results/vtune/YYYY-MM-DD_HH-mm-ss/summary.md
 

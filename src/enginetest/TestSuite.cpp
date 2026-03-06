@@ -146,8 +146,10 @@ TestSuiteResult TestSuite::sumUpTests() const {
 
 void TestSuite::runAllTests() {
   int i = 0;
-  // Ensure evaluator configuration is at defaults for this suite run
-  ConfigManager::instance().resetToDefaults();
+  // // Ensure evaluator configuration is at defaults for this suite run
+  // FIXME: this should not be here otherwise we never could test different configurations.
+  // ConfigManager::instance().resetToDefaults();
+
   // loop over all test cases and execute the test
   for (auto& test : testCases_) {
     fprintln("Test {} of {}\nTest: {} -- Target Result {}",

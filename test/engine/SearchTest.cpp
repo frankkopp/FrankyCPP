@@ -650,7 +650,9 @@ TEST_F(SearchTest, singularExtension) {
   const Position p{"r1bq1rk1/pp2ppbp/2np1np1/8/3NP3/2N1BP2/PPPQ2PP/R3KB1R w KQ - 0 9"};
 
   SearchLimits sl{};
-  sl.depth = 12;// Deep enough to trigger singular extension
+  sl.depth = 16;// Deep enough to trigger singular extension
+  // sl.timeControl = true;
+  // sl.moveTime    = 30s;
 
   search.startSearch(p, sl);
   search.waitWhileSearching();
@@ -659,7 +661,7 @@ TEST_F(SearchTest, singularExtension) {
   fprintln("Singular searches: {}", stats.singularSearches);
   fprintln("Singular extensions: {}", stats.singularExtension);
 
-  // We expect some singular extension activity at depth 10
+  // We expect some singular extension activity at depth 12
   // The exact numbers depend on the position, but there should be some
   EXPECT_GT(stats.singularSearches, 0) << "Expected some singular extension searches";
 }
@@ -676,7 +678,7 @@ TEST_F(SearchTest, singularExtensionDisabled) {
   const Position p{"r1bq1rk1/pp2ppbp/2np1np1/8/3NP3/2N1BP2/PPPQ2PP/R3KB1R w KQ - 0 9"};
 
   SearchLimits sl{};
-  sl.depth = 10;
+  sl.depth = 16;
 
   search.startSearch(p, sl);
   search.waitWhileSearching();
@@ -697,7 +699,10 @@ TEST_F(SearchTest, 10secondSearchNodesCount) {
   }
 
   // Used to experiment with multiple threads
-  CONFIG_OVERRIDE(s.THREADS = 1;);
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  // CONFIG_OVERRIDE(s.THREADS = 1;);
+  CONFIG_OVERRIDE(s.TT_SIZE_MB = 512;);
+  CONFIG_OVERRIDE(e.PAWN_TT_SIZE_MB = 16;);
 
   const Position p{"5k2/1rn2p2/3pb1p1/7p/p3PP2/PnNBK2P/3N2P1/1R6 w - - 0 1"};
   SearchLimits sl{};

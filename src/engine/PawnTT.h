@@ -44,10 +44,13 @@
 //   - endvalue: 16-bit endgame pawn structure score
 //
 // Thread Safety (Lazy SMP):
-//   put()  : writes value fields first, then key with memory_order_release
-//   probe (caller checks entry->key): reads key with memory_order_acquire
-//   A torn read of value fields is benign: the key check will fail and the
-//   caller treats it as a miss - no incorrect data is ever used.
+//   probe(): Copy-on-read pattern - returns a COPY of the entry, not a pointer.
+//            This eliminates races where another thread overwrites the entry
+//            between key verification and value reads. The copy is made
+//            immediately after the key load (acquire), then verified.
+//   put()  : Writes value fields first, then key with memory_order_release.
+//            Any thread that loads key with acquire will see all prior writes.
+//   getEntryPtr(): For put() use only - provides slot pointer to avoid rehash.
 //
 // Prefetching:
 //   EVAL_PREFETCH macro prefetches entry into CPU cache before evaluation.
@@ -55,19 +58,21 @@
 //
 // Usage:
 //   PawnTT pawnCache(4);  // 4 MB cache
-//   Entry* entry = pawnCache.getEntryPtr(pawnKey);
-//   if (entry->getKey() == pawnKey) {
-//     // Cache hit - use entry->midvalue and entry->endvalue
+//   auto entry = pawnCache.probe(pawnKey);
+//   if (entry) {
+//     // Cache hit - use entry->midvalue and entry->endvalue (from copy)
 //   } else {
 //     // Cache miss - calculate pawn eval, then store
-//     pawnCache.put(entry, pawnKey, score);
+//     pawnCache.put(pawnCache.getEntryPtr(pawnKey), pawnKey, score);
 //   }
 //
 //=============================================================================
 
 #include "types/types.h"
 #include <atomic>
+#include <cstring>
 #include <format>
+#include <optional>
 #include <string>
 
 // pre-fetching of TT entries into CPU caches
@@ -103,6 +108,25 @@ namespace engine {
       std::atomic<ZobristKey> key{0};///< Pawn-specific Zobrist key (atomic for SMP safety)
       Value midvalue{VALUE_NONE};    ///< Midgame pawn structure score
       Value endvalue{VALUE_NONE};    ///< Endgame pawn structure score
+
+      /// Default constructor
+      Entry() = default;
+
+      /// Copy constructor - needed because atomic has deleted copy constructor.
+      /// Uses memcpy for value fields to ensure exact byte representation.
+      Entry(const Entry& other)
+          : key(other.key.load(std::memory_order_relaxed)) {
+        std::memcpy(&midvalue, &other.midvalue, sizeof(Value) * 2);
+      }
+
+      /// Copy assignment - needed because atomic has deleted copy assignment.
+      Entry& operator=(const Entry& other) {
+        if (this != &other) {
+          key.store(other.key.load(std::memory_order_relaxed), std::memory_order_relaxed);
+          std::memcpy(&midvalue, &other.midvalue, sizeof(Value) * 2);
+        }
+        return *this;
+      }
 
       /// Returns the key with acquire semantics for thread-safe read.
       [[nodiscard]] ZobristKey getKey() const {
@@ -201,10 +225,20 @@ namespace engine {
     /// @param score     Pawn structure score (midgame + endgame)
     void put(Entry* entryPtr, ZobristKey key, Score score);
 
+    /// Probes the PawnTT for an entry matching the key.
+    /// Returns a COPY of the entry for thread safety (copy-on-read pattern).
+    /// This prevents races where another thread overwrites the entry between
+    /// key check and value read.
+    /// Updates hit/miss statistics.
+    /// @param key  Pawn Zobrist key (must be non-zero; key==0 always returns nullopt)
+    /// @return     Copy of matching entry, or nullopt if not found or key==0
+    [[nodiscard]] std::optional<Entry> probe(ZobristKey key) const;
+
     /// Returns a pointer to the entry for the given pawn key.
-    /// The entry may or may not match the key - caller must verify.
+    /// WARNING: For put() only! Do NOT read values through this pointer.
+    /// Use probe() to safely read entry values (copy-on-read pattern).
     /// @param key  Pawn Zobrist key
-    /// @return     Pointer to the entry slot
+    /// @return     Pointer to the entry slot (for put() use only)
     Entry* getEntryPtr(const ZobristKey key) const {
       return &_data[getHash(key)];
     }
