@@ -121,6 +121,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
 
   // Best-move instability time management (disable for fixed-depth tests)
   s.USE_BESTMOVE_INSTABILITY = false;
+  s.USE_EVAL_VOLATILITY      = false;
   CONFIG_OVERRIDE_END();
 
   // ***********************************
