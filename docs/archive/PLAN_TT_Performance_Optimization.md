@@ -1,9 +1,9 @@
 # TT and Memory Performance Optimization Plan
 
-**Status:** ✅ TT Buckets + alignas(64) Implemented & Verified  
+**Status:** ✅ **COMPLETE** — All viable optimizations implemented or evaluated  
 **Created:** 2026-03-02  
 **Last Updated:** 2026-03-07  
-**Priority:** Medium-High (significant performance impact under SMP)
+**Priority:** ~~Medium-High~~ → Complete
 
 ---
 
@@ -170,11 +170,11 @@ The transposition table experiences **memory latency that cannot be hidden**:
 | ~~1~~    | ~~TT Buckets + alignas(64)~~    | Medium | 🔴 **HIGH**     | ✅ **COMPLETED 2026-03-06** — 50% LLC miss reduction, 53% CPI improvement, 15% probe time reduction |
 | ~~2~~    | ~~Cache-line alignment alone~~  | N/A    | N/A             | ❌ Must combine with buckets; alone wastes 48B/entry (4x memory overhead)                           |
 | ~~3~~    | ~~XOR key encoding~~            | Medium | 🟡 Medium       | ✅ **COMPLETED 2026-03-07** — XOR validation implemented; +74.6 ELO vs v1.4                         |
-| **2**    | **Reduce TT access frequency**  | Medium | 🟡 Medium       | Skip TT probe in late move reductions; batch TT updates                                            |
-| **3**    | **Attack caching per-position** | Medium | 🟢 Low          | Slider tables already efficient (CPI 0.38); diminishing returns                                    |
-| ~~5~~    | ~~Earlier prefetch placement~~  | N/A    | N/A             | ❌ NOT POSSIBLE - requires zobrist key from after doMove()                                          |
-| ~~6~~    | ~~PEXT slider tables~~          | N/A    | N/A             | ✅ **Already implemented** - no action needed                                                       |
-| ~~7~~    | ~~Thread synchronization~~      | N/A    | N/A             | ✅ Zero contention measured                                                                         |
+| ~~4~~    | ~~Reduce TT access frequency~~  | Medium | N/A             | ❌ **TESTED 2026-03-07** — LMR Skip TT causes +19-44% node explosion; TT cutoffs are valuable       |
+| ~~5~~    | ~~Attack caching per-position~~ | Medium | 🟢 Low          | ⏭️ **SKIPPED** — Slider tables already efficient (CPI 0.38); not worth implementation effort       |
+| ~~6~~    | ~~Earlier prefetch placement~~  | N/A    | N/A             | ❌ NOT POSSIBLE - requires zobrist key from after doMove()                                          |
+| ~~7~~    | ~~PEXT slider tables~~          | N/A    | N/A             | ✅ **Already implemented** - no action needed                                                       |
+| ~~8~~    | ~~Thread synchronization~~      | N/A    | N/A             | ✅ Zero contention measured                                                                         |
 
 ### Quick Wins (Completed)
 
@@ -201,10 +201,28 @@ The transposition table experiences **memory latency that cannot be hidden**:
    - Time increase likely due to more nodes searched (TT buckets improvement), not sort regression
    - Unstable sort removes stability overhead but still uses insertion sort for small subarrays
 
+### Failed Experiments
+
+1. ❌ **LMR Skip TT (tested 2026-03-07)** — Skip TT probes during LMR subtree searches
+   - **Hypothesis:** LMR subtrees are speculative (expect fail-low); TT probe cost may exceed benefit
+   - **Implementation:** Added `USE_LMR_SKIP_TT` config flag, `skipTtProbe` field in `SearchThreadData`
+   - **SearchTreeSizeTest Results:**
+   
+     | Depth | Baseline Nodes | LMR Skip TT Nodes | Node Increase | TT Probes Skipped |
+     |-------|----------------|-------------------|---------------|-------------------|
+     | 8     | 235,991        | 237,027           | +0.4%         | 275,441           |
+     | 10    | 868,949        | 1,039,514         | **+19.6%**    | 1,313,573         |
+     | 12    | 2,222,249      | 2,606,436         | **+17.3%**    | 3,677,833         |
+     | 14    | 5,860,820      | 7,970,431         | **+36.0%**    | 12,557,486        |
+     | 16    | 15,010,119     | 21,594,746        | **+43.9%**    | 36,262,354        |
+   
+   - **Conclusion:** TT probes in LMR subtrees provide valuable cutoffs; skipping them causes node explosion (+19-44% more nodes at depth 10-16). NPS unchanged (~7.3-7.7 Mnps), so no speed gain from reduced memory access.
+   - **Root Cause:** TT entries from previous iterations/positions provide good move ordering even in LMR subtrees; losing this information leads to more re-searches (LMR re-searches increased significantly).
+   - **Status:** Feature disabled by default (`USE_LMR_SKIP_TT = false`); code rolled back.
+
 ### Future Optimizations
 
-1. **Reduce TT access frequency** — Skip TT probe in some late move reduction cases
-2. **Attack caching** — Low priority, slider tables already efficient (CPI 0.38)
+*No remaining optimizations identified — all viable options completed or evaluated.*
 
 ### Not Viable
 
@@ -457,9 +475,9 @@ TT_PREFETCH;              // Earliest possible - key now valid
 - This is a **memory bandwidth** problem, not a timing problem
 
 **Remaining options:**
-1. **Reduce TT access frequency** - Skip probes in some cases
+1. ~~**Reduce TT access frequency**~~ - ❌ LMR Skip TT tested and failed (+19-44% node explosion)
 2. **Smaller TT entries** - Less data per access
-3. **TT buckets** - Better locality reduces total misses
+3. **TT buckets** - ✅ Implemented 2026-03-06, better locality reduces total misses
 
 ### Optimization 3: ~~Entry Alignment Without Buckets~~ (NOT RECOMMENDED)
 

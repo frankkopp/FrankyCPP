@@ -1,0 +1,70 @@
+ptrToSpecial1 = &search.getSearchStats().lmrReductions;
+ptrToSpecial2 = &search.getSearchStats().lmrResearches;
+ptrToSpecial3 = &search.getSearchStats().ttProbesSkippedLmr;
+CONFIG_OVERRIDE(s.THREADS = 4;);
+
+################## Totals/Avg results for each feature test ##################
+
+Date:                  : 2026-03-07 11:19:32
+SearchTime             : 0,000 s
+MaxDepth               : 8
+Number of feature tests: 3
+Number of fens         : 50
+Total tests            : 150
+
+Test: Warmup                Nodes:          238.728  Nps:        2.892.473  Time:               67 Depth:   8/20  Special1:      290.991 ( 5.819) Special2:        9.775 (   195) Special3:            0 (     0)
+Test: Baseline              Nodes:          235.991  Nps:        6.722.602  Time:               37 Depth:   8/20  Special1:      283.966 ( 5.679) Special2:        9.918 (   198) Special3:            0 (     0)
+Test: LMR Skip TT           Nodes:          237.027  Nps:        6.708.350  Time:               40 Depth:   8/20  Special1:      281.606 ( 5.632) Special2:        9.664 (   193) Special3:      275.441 ( 5.508)
+
+################## Totals/Avg results for each feature test ##################
+
+Date:                  : 2026-03-07 11:21:21
+SearchTime             : 0,000 s
+MaxDepth               : 10
+Number of feature tests: 3
+Number of fens         : 50
+Total tests            : 150
+
+Test: Warmup                Nodes:          808.524  Nps:        4.637.471  Time:              145 Depth:  10/23  Special1:    1.119.092 (22.381) Special2:       36.695 (   733) Special3:            0 (     0)
+Test: Baseline              Nodes:          868.949  Nps:        7.241.722  Time:              124 Depth:  10/24  Special1:    1.168.452 (23.369) Special2:       37.434 (   748) Special3:            0 (     0)
+Test: LMR Skip TT           Nodes:        1.039.514  Nps:        7.300.448  Time:              153 Depth:  10/23  Special1:    1.345.129 (26.902) Special2:       47.926 (   958) Special3:    1.313.573 (26.271)
+Process finished with exit code 0
+
+################## Totals/Avg results for each feature test ##################
+
+Date:                  : 2026-03-07 11:25:10
+SearchTime             : 0,000 s
+MaxDepth               : 12
+Number of feature tests: 3
+Number of fens         : 50
+Total tests            : 150
+
+Test: Warmup                Nodes:        2.395.785  Nps:        5.651.072  Time:              380 Depth:  12/26  Special1:    3.546.492 (70.929) Special2:      105.142 ( 2.102) Special3:            0 (     0)
+Test: Baseline              Nodes:        2.222.249  Nps:        7.388.639  Time:              329 Depth:  12/26  Special1:    3.461.354 (69.227) Special2:      106.573 ( 2.131) Special3:            0 (     0)
+Test: LMR Skip TT           Nodes:        2.606.436  Nps:        7.301.442  Time:              387 Depth:  12/26  Special1:    3.761.906 (75.238) Special2:      121.328 ( 2.426) Special3:    3.677.833 (73.556)
+
+################## Totals/Avg results for each feature test ##################
+
+Date:                  : 2026-03-07 11:28:36
+SearchTime             : 0,000 s
+MaxDepth               : 14
+Number of feature tests: 3
+Number of fens         : 50
+Total tests            : 150
+
+Test: Warmup                Nodes:        6.253.504  Nps:        6.393.773  Time:              958 Depth:  14/29  Special1:   10.557.936 (211.158) Special2:      344.032 ( 6.880) Special3:            0 (     0)
+Test: Baseline              Nodes:        5.860.820  Nps:        7.393.757  Time:              866 Depth:  14/29  Special1:   10.339.362 (206.787) Special2:      317.516 ( 6.350) Special3:            0 (     0)
+Test: LMR Skip TT           Nodes:        7.970.431  Nps:        7.531.133  Time:            1.183 Depth:  14/30  Special1:   12.874.400 (257.488) Special2:      455.602 ( 9.112) Special3:   12.557.486 (251.149)
+
+################## Totals/Avg results for each feature test ##################
+
+Date:                  : 2026-03-07 11:35:49
+SearchTime             : 0,000 s
+MaxDepth               : 16
+Number of feature tests: 3
+Number of fens         : 50
+Total tests            : 150
+
+Test: Warmup                Nodes:       12.810.334  Nps:        6.865.407  Time:            1.984 Depth:  16/32  Special1:   26.545.482 (530.909) Special2:      832.351 (16.647) Special3:            0 (     0)
+Test: Baseline              Nodes:       15.010.119  Nps:        7.731.642  Time:            2.201 Depth:  16/32  Special1:   26.645.292 (532.905) Special2:      779.147 (15.582) Special3:            0 (     0)
+Test: LMR Skip TT           Nodes:       21.594.746  Nps:        7.709.199  Time:            3.241 Depth:  16/33  Special1:   37.108.399 (742.167) Special2:    1.349.722 (26.994) Special3:   36.262.354 (725.247)
