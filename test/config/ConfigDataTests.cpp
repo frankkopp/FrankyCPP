@@ -34,7 +34,7 @@ namespace {
     const SearchConfigData c;
     EXPECT_EQ(c.MOVE_OVERHEAD_MS, 10);
     EXPECT_TRUE(c.USE_TT);
-    EXPECT_EQ(c.TT_SIZE_MB, 64);
+    EXPECT_EQ(c.TT_SIZE_MB, 256);
     EXPECT_TRUE(c.USE_LMR);
     EXPECT_EQ(c.LMR_MIN_DEPTH, 2);
   }

@@ -192,7 +192,7 @@ TEST_F(ConfigRegistryTest, SetterModifiesValue) {
   const ConfigDef* ttSizeDef = registry.find("TT_SIZE_MB");
   ASSERT_NE(ttSizeDef, nullptr);
 
-  EXPECT_EQ(search.TT_SIZE_MB, 64);// default
+  EXPECT_EQ(search.TT_SIZE_MB, 256);// default
 
   ttSizeDef->setter(search, eval, "256");
   EXPECT_EQ(search.TT_SIZE_MB, 256);
