@@ -1,9 +1,9 @@
 # FrankyCPP Move Ordering & Pruning Improvements Plan
 
-**Document Version:** 1.0  
+**Document Version:** 1.1  
 **Created:** 2026-03-07  
 **Last Updated:** 2026-03-07  
-**Status:** 🔴 NOT STARTED  
+**Status:** 🟡 IN PROGRESS (Feature 1 Failed)  
 **Target:** FrankyCPP v1.5  
 **Priority:** Medium (Incremental strength improvements)  
 **Predecessor:** `archive/PLAN_Search_Tree_Reduction_Review.md` (Phase 1 LMR complete)
@@ -16,23 +16,28 @@ This plan documents potential move ordering and pruning improvements for FrankyC
 
 **Current State:** FrankyCPP v1.5 has solid LMR, improving flag integration, and basic history heuristics. The next level of strength gains requires more sophisticated move ordering to increase cutoff rates.
 
+**⚠️ Feature 1 (Capture History) was implemented and tested but FAILED validation — see details below.**
+
 ---
 
 ## Hypotheses: Expected Improvements
 
 Each proposed feature is based on Stockfish's implementation and chess programming theory. Here's why each is expected to improve strength:
 
-### 1. Capture History Table
+### 1. Capture History Table — ❌ FAILED (Shelved)
 
 | Aspect                  | Description                                                                                           |
 |-------------------------|-------------------------------------------------------------------------------------------------------|
 | **Hypothesis**          | Ordering captures by historical success rate (not just MVV-LVA) will produce more cutoffs             |
 | **Mechanism**           | Track which piece×square×victim combinations caused beta cutoffs; boost those captures in ordering    |
-| **Expected Impact**     | Medium-High — Better capture ordering in tactical positions                                           |
+| **Expected Impact**     | ~~Medium-High~~ **NEGATIVE** — Disrupts MVV-LVA ordering, causes tactical blindness                   |
 | **Evidence**            | Stockfish uses capture history; exchanges that "work" in one position often work in similar positions |
 | **Validation Metric**   | Fewer nodes (better cutoff rate); measure first-move cutoff % increase; ELO gain in matches           |
+| **ACTUAL RESULT**       | **-19% nodes BUT -5.6% test suite accuracy, -4.1% vs v1.3** — Speed gain, strength loss               |
 
-**Why it should work:** MVV-LVA assumes QxP > BxP, but in practice a bishop capturing a specific pawn might be a recurring tactical theme. Capture history learns these patterns.
+**Why it FAILED:** MVV-LVA ordering is already highly effective for captures. Adding capture history bonus disrupted good tactical ordering, causing the engine to miss critical captures in tactical positions. The 19% node reduction was illusory — the engine searched faster but found worse moves.
+
+**Implementation Status:** Code was implemented and tested but REVERTED. This document retained for future reference.
 
 ### 2. Counter-Move History (Scored)
 
@@ -86,15 +91,17 @@ Each proposed feature is based on Stockfish's implementation and chess programmi
 
 ## Priority & Implementation Order
 
-| Priority | Feature                       | Effort | Expected Impact | Dependencies    |
-|----------|-------------------------------|--------|-----------------|-----------------|
-| 1        | Capture History               | 2-3h   | Medium-High     | None            |
-| 2        | Counter-Move History (Scored) | 1-2h   | Medium          | None            |
-| 3        | Continuation History          | 4-6h   | High            | PlyInfo changes |
-| 4        | SEE-Based Quiet Pruning       | 2-3h   | Medium          | None            |
-| 5        | History-Based Pruning         | 1-2h   | Medium          | None            |
+| Priority | Feature                       | Effort | Expected Impact | Dependencies    | Status |
+|----------|-------------------------------|--------|-----------------|-----------------|--------|
+| 1        | Capture History               | 2-3h   | ~~Medium-High~~ | None            | ❌ FAILED |
+| 2        | Counter-Move History (Scored) | 1-2h   | Medium          | None            | 🔴 Not Started |
+| 3        | Continuation History          | 4-6h   | High            | PlyInfo changes | 🔴 Not Started |
+| 4        | SEE-Based Quiet Pruning       | 2-3h   | Medium          | None            | 🔴 Not Started |
+| 5        | History-Based Pruning         | 1-2h   | Medium          | None            | 🔴 Not Started |
 
 **Recommended approach:** Implement and test each feature individually. Combining untested features makes it impossible to attribute gains/losses.
+
+**Lesson from Feature 1:** Node reduction does NOT equal strength gain. Always validate with test suites and matches, not just node counts.
 
 ---
 
@@ -451,6 +458,7 @@ After individual validation:
 | Version | Date       | Changes                                                      |
 |---------|------------|--------------------------------------------------------------|
 | 1.0     | 2026-03-07 | Initial document extracted from Search Tree Reduction Review |
+| 1.1     | 2026-03-07 | Feature 1 (Capture History) implemented and FAILED: -19% nodes but -5.6% test suite, -4.1% vs v1.3. Code REVERTED, document retained for reference. |
 
 ---
 
