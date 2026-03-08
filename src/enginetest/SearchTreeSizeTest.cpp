@@ -96,7 +96,6 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   s.USE_FP               = false;
   s.USE_QFP              = false;
   s.USE_FP_IMPROVING     = false;
-  s.USE_SEE_QUIET_PRUNING = false;
 
   // Late move reductions
   s.USE_LMR               = false;
@@ -371,14 +370,6 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMP"));
 
   // =====================================================================
-  // GROUP 9b: SEE-BASED QUIET MOVE PRUNING
-  // =====================================================================
-
-  // 9b.1 SEE Quiet Pruning: Prune quiet moves that land on attacked squares
-  // CONFIG_OVERRIDE(s.USE_SEE_QUIET_PRUNING = true;);
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "SEE Quiet Prune"));
-
-  // =====================================================================
   // GROUP 10: SEARCH EXTENSIONS (Extend promising lines)
   // =====================================================================
 
@@ -466,22 +457,18 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
 
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Tablebases"));
 
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "All Features"));
+
   // =====================================================================
   // WARMUP/BASELINE - Must be before first actual test
   // =====================================================================
   ptrToSpecial1 = &search.getSearchStats().betaCutsByIndex[0];
   ptrToSpecial2 = &search.getSearchStats().betaCutsByIndex[1];
-  ptrToSpecial3 = &search.getSearchStats().seeQuietPruned;
+  ptrToSpecial3 = &search.getSearchStats().pvNodes;
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "Warmup"));
   result.tests.push_back(measureTreeSize(search, position, searchLimits, "Baseline"));
 
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "All Features"));
-
-  // 9b.1 SEE Quiet Pruning: Prune quiet moves that land on attacked squares
-  CONFIG_OVERRIDE(s.USE_SEE_QUIET_PRUNING = true;);
-  CONFIG_OVERRIDE(s.SEE_QUIET_PRUNE_DEPTH = 4;);
-  CONFIG_OVERRIDE(s.SEE_QUIET_PRUNE_MARGIN = -80;);
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "SEE Quiet Prune"));
+  // ADD NEW FEATURE TESTS HERE (after baseline)
 
   return result;
 }
