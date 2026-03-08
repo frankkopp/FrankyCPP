@@ -45,13 +45,14 @@ YAML config format, and CLI interface remain fully compatible.
 
 ### Architectural
 
-| #  | Issue                                                                                                                                              | Impact                                      |
-|----|----------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------|
-| A1 | **ArenaRunner is a god object** (1441 lines) — orchestration + result loading + 5 report generators + formatting utils + engine config query       | Hard to navigate, hard to test              |
-| A2 | **Dual JSON approach** — manual `<<` writing in ResultWriter, nlohmann/json reading in ArenaRunner, hand-rolled parser in `readBenchmarkResults()` | Inconsistent, fragile, maintenance overhead |
-| A3 | **ReportData mixes data + queries** — 6 query methods with complex matching logic baked into a data struct                                         | Violates SRP                                |
-| A4 | **Engine name matching scattered in 3 places** with 3 subtly different algorithms                                                                  | Bug-prone, confusing                        |
-| A5 | **`TestSuiteRunConfig → TestSuiteConfig` expansion** called 2-3× per run; both types coexist as public API                                         | Unnecessary complexity                      |
+| #  | Issue                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Impact                                      |
+|----|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------|
+| A1 | **ArenaRunner is a god object** (1441 lines) — orchestration + result loading + 5 report generators + formatting utils + engine config query                                                                                                                                                                                                                                                                                                                                                        | Hard to navigate, hard to test              |
+| A2 | **Dual JSON approach** — manual `<<` writing in ResultWriter, nlohmann/json reading in ArenaRunner, hand-rolled parser in `readBenchmarkResults()`                                                                                                                                                                                                                                                                                                                                                  | Inconsistent, fragile, maintenance overhead |
+| A3 | **ReportData mixes data + queries** — 6 query methods with complex matching logic baked into a data struct                                                                                                                                                                                                                                                                                                                                                                                          | Violates SRP                                |
+| A4 | **Engine name matching scattered in 3 places** with 3 subtly different algorithms                                                                                                                                                                                                                                                                                                                                                                                                                   | Bug-prone, confusing                        |
+| A5 | **`TestSuiteRunConfig → TestSuiteConfig` expansion** called 2-3× per run; both types coexist as public API                                                                                                                                                                                                                                                                                                                                                                                          | Unnecessary complexity                      |
+| A6 | **Engine names inconsistent across result sources** — benchmarks store `"FrankyCPP"`, test suites store `"FrankyCPP v1.3"` (from UCI `id name`), matches store `"FrankyGo"` vs test suites `"FrankyGo v1.0.3 (4.6.2021)"`. All share a single `data.engines` set → duplicate rows (identical scores via flexible matching) and phantom `"External"` entries with N/A in reports. Current workaround: report collects engines from `suiteResults` keys only; benchmarks don't add to `data.engines`. | Confusing reports, fragile workarounds      |
 
 ### Code Quality
 
@@ -237,9 +238,21 @@ as input. Caller loads data first, then passes it to the report generator.
      - `loadBenchmarkResults(ReportData&)` (adds benchmarks)
      - `loadAllResults() → ReportData` (convenience: calls all three)
      - `readBenchmarkResults() → vector<BenchmarkResult>`
-2. Delete `ResultWriter.h/cpp` — its functionality is fully absorbed by `ResultStore`
-3. Update `ArenaRunner` to use `ResultStore` instead of `ResultWriter` and inline loading code
-4. Update `engine_arena_main.cpp` to use `ResultStore` where it currently uses `ResultWriter` directly
+2. **Fix A6 — Engine name inconsistency:** Each load method populates only its own
+   domain-specific data in `ReportData`. In particular:
+   - `loadTestSuiteResults()` populates `engines`, `testSuites`, `suiteResults`
+   - `loadMatchResults()` populates `matchResults` only — does NOT add match engine
+     IDs to `engines` (match engine names like `"FrankyGo"` differ from test suite
+     names like `"FrankyGo v1.0.3 (4.6.2021)"` and cause phantom duplicates)
+   - `loadBenchmarkResults()` populates `benchmarkResults` only — does NOT add
+     benchmark engine IDs to `engines` (benchmark names like `"FrankyCPP"` or
+     `"External"` differ from test suite names like `"FrankyCPP v1.3"`)
+   - Report generators that need cross-domain engine lists use flexible matching
+     queries (`getMatchesForEngine()`, `getBenchmarksForEngine()`) rather than
+     relying on a shared `engines` set
+3. Delete `ResultWriter.h/cpp` — its functionality is fully absorbed by `ResultStore`
+4. Update `ArenaRunner` to use `ResultStore` instead of `ResultWriter` and inline loading code
+5. Update `engine_arena_main.cpp` to use `ResultStore` where it currently uses `ResultWriter` directly
 
 **Files touched:** New: `ResultStore.h/cpp`. Deleted: `ResultWriter.h/cpp`. Modified: `ArenaRunner.h/cpp`, `engine_arena_main.cpp`, `CMakeLists.txt` (both src and test)
 
@@ -369,6 +382,9 @@ as input. Caller loads data first, then passes it to the report generator.
 5. Check **edge cases**:
    - Empty result directories, missing files, malformed JSON
    - Engine name matching: verify the single canonical implementation is used everywhere
+   - Engine name consistency: verify no load method pollutes `data.engines` with
+     non-test-suite engine IDs (A6 regression check — benchmark "FrankyCPP" vs
+     test suite "FrankyCPP v1.3", match "FrankyGo" vs "FrankyGo v1.0.3 (4.6.2021)")
    - Config with zero suites, zero matches, zero benchmarks
 6. Verify all `[[nodiscard]]`, header guards, copyright headers follow project conventions
 7. Present findings to user as a prioritized list — **do not make changes in this stage**
@@ -435,7 +451,7 @@ engine_arena_main.cpp       — CLI entry point (unchanged interface)
 | 3     | Deduplicate UCIEngine option parsing + move `queryEngineConfig` | Low      | C4, A1 (part) | 2 modified                   |
 | 4     | Deduplicate TestSuiteRunner eval logic                          | Low      | C3            | 1 modified                   |
 | 5     | Unify JSON with nlohmann/json                                   | Medium   | A2            | 2 modified                   |
-| 6     | Extract `ResultStore` (replaces `ResultWriter`)                 | Medium   | A1 (part)     | 3 modified, 2 new, 2 deleted |
+| 6     | Extract `ResultStore` (replaces `ResultWriter`)                 | Medium   | A1 (part), A6 | 3 modified, 2 new, 2 deleted |
 | 7     | Extract `ReportGenerator`                                       | Medium   | A1 (major)    | 3 modified, 2 new            |
 | 8     | Simplify `ArenaResults.h` (data-only)                           | Low      | A3, A4        | 3 modified                   |
 | 9     | Eager expansion in `ArenaConfig`                                | Low      | A5            | 4 modified                   |
