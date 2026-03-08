@@ -79,7 +79,7 @@ r1bq1rk1/pp2bppp/2n1p3/3n4/3P4/1BN2NP1/PP3P1P/R1BQR1K1 w - - bm a3; id "Crafty T
 5r2/p3b2k/1p6/4n2P/3P2p1/P1P2b2/3B1P2/R5K1 w - - bm Re1; id "Crafty Test Pos.79"; c0 "DEEP THOUGHT 0.02/ WALTER BROWNE  Software Toolworks 1988, move 35W (Re1)";
 r1bqkb1r/ppp1pppp/1nn5/4P3/2PP4/8/PP4PP/RNBQKBNR w KQkq - bm Be3; id "Crafty Test Pos.80"; c0 "MIKE VALVO/DEEP THOUGHT 0.02  Game 1, On the Net 1988-9, move 7W (Be3)";
 r3kb1r/pppn1ppp/2n1p3/2P1P3/3P1q2/2N2P2/PP2BB1P/R2QK2R w KQkq - bm Qc1; id "Crafty Test Pos.81"; c0 "MIKE VALVO/DEEP THOUGHT 0.02  Game 1, On the Net 1988-9, move 14W (Qc1)";
-2kr3r/pppn3p/2n1p3/2P1Ppb1/3P4/2N2B2/PP3B1P/3RK2R w K f6 - bm O-O; id "Crafty Test Pos.82"; c0 "MIKE VALVO/DEEP THOUGHT 0.02  Game 1, On the Net 1988-9, move 21W (O-O)";
+2kr3r/pppn3p/2n1p3/2P1Ppb1/3P4/2N2B2/PP3B1P/3RK2R w K f6 bm O-O; id "Crafty Test Pos.82"; c0 "MIKE VALVO/DEEP THOUGHT 0.02  Game 1, On the Net 1988-9, move 21W (O-O)";
 2kr2r1/1pnnb2p/p1p1p3/2P1Pp2/PP1P4/2N2B2/4RB1P/3R3K w - - bm Rb2; id "Crafty Test Pos.83"; c0 "MIKE VALVO/DEEP THOUGHT 0.02  Game 1, On the Net 1988-9, move 28W (Rb2)";
 Rnk3r1/1p4rp/4p3/1PPpPpb1/3P4/5B2/5B1P/R6K w - - bm b6; id "Crafty Test Pos.84"; c0 "MIKE VALVO/DEEP THOUGHT 0.02  Game 1, On the Net 1988-9, move 35W (b6)";
 Rnkb2r1/1p4r1/1P2p3/2PpP2p/B2P1p2/4B3/7P/1R5K w - - bm Bxf4; id "Crafty Test Pos.85"; c0 "MIKE VALVO/DEEP THOUGHT 0.02  Game 1, On the Net 1988-9, move 42W (Bxf4)";
