@@ -65,16 +65,25 @@ int main(int argc, char* argv[]) {
 
     // Define command-line options
     po::options_description desc("FrankyCPP Arena - Engine Strength Testing\n\nOptions");
-    desc.add_options()("help,h", "Show this help message")("config,c", po::value<std::string>()->default_value("config/arena.yaml"),
-                                                           "Configuration file path")("testsuites,t", "Run test suites only")("matches,m", "Run matches only")
-      // Benchmark options
-      ("bench,b", "Run benchmarks (NPS measurement)")("bench-report", "Show benchmark results history")
+    // clang-format off
+    desc.add_options()
+      ("help,h",        "Show this help message")
+      ("config,c",      po::value<std::string>()->default_value("config/arena.yaml"), "Configuration file path")
+      // Execution options
+      ("testsuites,t",  "Run test suites only")
+      ("matches,m",     "Run matches only")
+      ("bench,b",       "Run benchmarks (NPS measurement)")
+      ("bench-report",  "Show benchmark results history")
       // Reporting options
-      ("report,r", "Show baseline report (all engines, all test suites)")("baselines", "Alias for --report")("engines", "List all available engines from results")("cmp", po::value<std::string>(),
-                                                                                                                                                                   "Compare engine against baselines: --cmp FrankyCPP-v1.2-dev")("baseline", po::value<std::vector<std::string>>()->multitoken(),
-                                                                                                                                                                                                                                 "Specify baseline(s) for comparison (can repeat)")
+      ("report,r",      "Show baseline report (all engines, all test suites)")
+      ("baselines",     "Alias for --report")
+      ("engines",       "List all available engines from results")
+      ("cmp",           po::value<std::string>(), "Compare engine against baselines: --cmp FrankyCPP-v1.2-dev")
+      ("baseline",      po::value<std::vector<std::string>>()->multitoken(), "Specify baseline(s) for comparison (can repeat)")
       // Filtering options
-      ("testsuites-only", "Show only test suite results (filter out matches)")("matches-only", "Show only match results (filter out test suites)");
+      ("testsuites-only", "Show only test suite results (filter out matches)")
+      ("matches-only",    "Show only match results (filter out test suites)");
+    // clang-format on
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
