@@ -43,6 +43,9 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   const Position position(fen);
 
   CONFIG_OVERRIDE_START()
+  // Threading
+  s.THREADS = threads;
+
   // Book and pondering
   s.USE_BOOK   = false;
   s.USE_PONDER = false;
@@ -90,9 +93,10 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   s.USE_NMP_IMPROVING = false;
 
   // Futility pruning
-  s.USE_FP           = false;
-  s.USE_QFP          = false;
-  s.USE_FP_IMPROVING = false;
+  s.USE_FP               = false;
+  s.USE_QFP              = false;
+  s.USE_FP_IMPROVING     = false;
+  s.USE_SEE_QUIET_PRUNING = false;
 
   // Late move reductions
   s.USE_LMR               = false;
@@ -222,15 +226,6 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   // GROUP 5: NULL MOVE PRUNING (Very high impact pruning)
   // =====================================================================
 
-  // =====================================================================
-  // WARMUP/BASELINE - Must be before first actual test
-  // =====================================================================
-  ptrToSpecial1 = &search.getSearchStats().pvNodes;
-  ptrToSpecial2 = &search.getSearchStats().pvsResearches;
-  ptrToSpecial3 = &search.getSearchStats().iirReductions;
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Warmup"));
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Baseline"));
-
   CONFIG_OVERRIDE(s.USE_IMPROVING = true;);
 
   // 5.1 Null Move Pruning: Skip move and search with reduced depth
@@ -253,14 +248,11 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   CONFIG_OVERRIDE(s.NMP_IMPROVING_REDUCTION = 1;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "NMP+Improving"));
 
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "NMP"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "NMP"));
 
   // =====================================================================
   // GROUP 6: LATE MOVE REDUCTIONS (Major pruning technique)
   // =====================================================================
-
-  // TODO: Add LMR + improving, cut node, and history tests back in after core LMR tuning to isolate
-  //  effects
 
   // 6.1 LMR Core: Reduce depth for late moves
   CONFIG_OVERRIDE(s.USE_LMR = true;);
@@ -311,7 +303,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   // CONFIG_OVERRIDE(s.LMR_HISTORY_DIVISOR = 4096;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR+Hist 4096"));
 
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR"));
 
   // =====================================================================
   // GROUP 7: FORWARD PRUNING (Aggressive node reduction)
@@ -338,7 +330,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   CONFIG_OVERRIDE(s.RAZOR_MARGIN = 531;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Razoring"));
 
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Forward Pruning"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Forward Pruning"));
 
   // =====================================================================
   // GROUP 8: FUTILITY PRUNING (Prune hopeless moves)
@@ -357,7 +349,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   CONFIG_OVERRIDE(s.USE_QFP = true;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "QFP"));
 
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Futil Pruning"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Futil Pruning"));
 
   // =====================================================================
   // GROUP 9: LATE MOVE PRUNING (Prune late quiet moves)
@@ -376,7 +368,15 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   CONFIG_OVERRIDE(s.USE_LMP_IMPROVING = true;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMP+Improving"));
 
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMP"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMP"));
+
+  // =====================================================================
+  // GROUP 9b: SEE-BASED QUIET MOVE PRUNING
+  // =====================================================================
+
+  // 9b.1 SEE Quiet Pruning: Prune quiet moves that land on attacked squares
+  // CONFIG_OVERRIDE(s.USE_SEE_QUIET_PRUNING = true;);
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "SEE Quiet Prune"));
 
   // =====================================================================
   // GROUP 10: SEARCH EXTENSIONS (Extend promising lines)
@@ -428,7 +428,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   // Re-enable AddDepth for subsequent tests
   // CONFIG_OVERRIDE(s.USE_EXT_ADD_DEPTH = true;);
 
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Extensions"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Extensions"));
 
   // =====================================================================
   // GROUP 11: SYZYGY TABLEBASES (Endgame perfection)
@@ -464,9 +464,24 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   // CONFIG_OVERRIDE(s.TB_PROBE_DEPTH = 6;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "TB ProbeDepth 6"));
 
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Tablebases"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Tablebases"));
+
+  // =====================================================================
+  // WARMUP/BASELINE - Must be before first actual test
+  // =====================================================================
+  ptrToSpecial1 = &search.getSearchStats().betaCutsByIndex[0];
+  ptrToSpecial2 = &search.getSearchStats().betaCutsByIndex[1];
+  ptrToSpecial3 = &search.getSearchStats().seeQuietPruned;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Warmup"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Baseline"));
 
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "All Features"));
+
+  // 9b.1 SEE Quiet Pruning: Prune quiet moves that land on attacked squares
+  CONFIG_OVERRIDE(s.USE_SEE_QUIET_PRUNING = true;);
+  CONFIG_OVERRIDE(s.SEE_QUIET_PRUNE_DEPTH = 4;);
+  CONFIG_OVERRIDE(s.SEE_QUIET_PRUNE_MARGIN = -80;);
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "SEE Quiet Prune"));
 
   return result;
 }
@@ -529,6 +544,7 @@ void SearchTreeSizeTest::start() {
   fprintln("Date:                  : {}", format_now());
   fprintln("SearchTime             : {}", str(movetime));
   fprintln("MaxDepth               : {:d}", depth);
+  fprintln("Threads                : {:d}", threads);
   fprintln("Number of feature tests: {:d}", results[0].tests.size());
   fprintln("Number of fens         : {:d}", fens.size());
   fprintln("Total tests            : {:d}\n", results[0].tests.size() * fens.size());

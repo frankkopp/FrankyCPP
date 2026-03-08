@@ -54,9 +54,10 @@ protected:
 TEST_F(SearchTreeSizeTest_Test, size_test) {
   static constexpr milliseconds MOVE_TIME{0};
 
-  const int START_FEN = isBulkRun() ? 0 : 0;
-  const int END_FEN   = isBulkRun() ? 4 : 50;
-  const int DEPTH     = isBulkRun() ? 4 : 12;
+  constexpr int THREADS   = 4;
+  constexpr int START_FEN = 0;
+  const int END_FEN       = isBulkRun() ? 4 : 50;
+  const int DEPTH         = isBulkRun() ? 4 : 16;
 
   // Prepare test fens
   // get sub vector of fens to test
@@ -68,7 +69,7 @@ TEST_F(SearchTreeSizeTest_Test, size_test) {
   const std::vector testFens(iterStart, iterEnd);
 
   // execute tests
-  SearchTreeSizeTest stst(DEPTH, MOVE_TIME, testFens);
+  SearchTreeSizeTest stst(DEPTH, MOVE_TIME, THREADS, testFens);
   stst.start();
 }
 
