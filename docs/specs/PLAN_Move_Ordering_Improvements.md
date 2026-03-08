@@ -1,10 +1,10 @@
 # FrankyCPP Move Ordering & Pruning Improvements Plan
 
-**Document Version:** 1.1  
+**Document Version:** 1.2  
 **Created:** 2026-03-07  
-**Last Updated:** 2026-03-07  
-**Status:** 🟡 IN PROGRESS (Feature 1 Failed)  
-**Target:** FrankyCPP v1.5  
+**Last Updated:** 2026-03-08  
+**Status:** 🟡 IN PROGRESS (Features 1 & 4 Tested)  
+**Target:** FrankyCPP v1.5+  
 **Priority:** Medium (Incremental strength improvements)  
 **Predecessor:** `archive/PLAN_Search_Tree_Reduction_Review.md` (Phase 1 LMR complete)
 
@@ -17,6 +17,8 @@ This plan documents potential move ordering and pruning improvements for FrankyC
 **Current State:** FrankyCPP v1.5 has solid LMR, improving flag integration, and basic history heuristics. The next level of strength gains requires more sophisticated move ordering to increase cutoff rates.
 
 **⚠️ Feature 1 (Capture History) was implemented and tested but FAILED validation — see details below.**
+
+**⚠️ Feature 4 (SEE Quiet Pruning) was implemented and tested — ELO-NEUTRAL, not merged. Code available in branch.**
 
 ---
 
@@ -63,17 +65,25 @@ Each proposed feature is based on Stockfish's implementation and chess programmi
 
 **Why it should work:** Chess has recurring tactical and strategic patterns. If Nf3-g5 is often followed by Qd1-h5 (threatening mate), continuation history learns this. More sophisticated than from-to history alone.
 
-### 4. SEE-Based Quiet Move Pruning
+### 4. SEE-Based Quiet Move Pruning — 🟡 ELO-NEUTRAL (Shelved)
 
 | Aspect                  | Description                                                                         |
 |-------------------------|-------------------------------------------------------------------------------------|
 | **Hypothesis**          | Quiet moves that lose material (negative SEE) at low depths are unlikely to be best |
 | **Mechanism**           | At low depths, skip quiet moves where the moving piece can be captured for a loss   |
-| **Expected Impact**     | Medium — Reduces nodes in tactical positions                                        |
+| **Expected Impact**     | ~~Medium~~ **NEUTRAL** — Node reduction doesn't translate to strength gain          |
 | **Evidence**            | Stockfish prunes quiet moves with bad SEE scaled by depth                           |
 | **Validation Metric**   | Fewer nodes (direct pruning); NPS may drop slightly (SEE cost); net ELO gain        |
+| **ACTUAL RESULT**       | **-16% nodes (1T), +8% first-move cutoffs (4T), BUT -0.2% test suite, ELO neutral** |
 
-**Why it should work:** If a quiet move puts a piece on a square where it can be captured for free, that move is almost never best at shallow depths. Only search it at higher depths where tactics might justify the sacrifice.
+**Why it's NEUTRAL:** The feature works as intended — it prunes quiet moves that land on attacked squares, achieving 16-18% node reduction in single-threaded tests. However, in SMP (4 threads), the node reduction disappears (+0.6% nodes) while first-move cutoff rate improves (+8.3%). The ELO vs v1.4 is identical (+74.6), suggesting the pruning is orthogonal to playing strength.
+
+**Test Results:**
+- vs v1.4: +74.6 ELO (same as TTBuckets baseline), -0.2% test suite (slight regression)
+- vs v1.3: +169.2 ELO (vs +218.7 for TTBuckets), +1.3% test suite
+- Best parameters: `SEE_QUIET_PRUNE_DEPTH=4`, `SEE_QUIET_PRUNE_MARGIN=-80`
+
+**Implementation Status:** Code complete and tested, available in separate branch. NOT merged to dev-v1.5 since ELO gain is zero.
 
 ### 5. History-Based Pruning
 
@@ -91,12 +101,12 @@ Each proposed feature is based on Stockfish's implementation and chess programmi
 
 ## Priority & Implementation Order
 
-| Priority | Feature                       | Effort | Expected Impact | Dependencies    | Status |
-|----------|-------------------------------|--------|-----------------|-----------------|--------|
-| 1        | Capture History               | 2-3h   | ~~Medium-High~~ | None            | ❌ FAILED |
+| Priority | Feature                       | Effort | Expected Impact | Dependencies    | Status         |
+|----------|-------------------------------|--------|-----------------|-----------------|----------------|
+| 1        | Capture History               | 2-3h   | ~~Medium-High~~ | None            | ❌ FAILED       |
 | 2        | Counter-Move History (Scored) | 1-2h   | Medium          | None            | 🔴 Not Started |
 | 3        | Continuation History          | 4-6h   | High            | PlyInfo changes | 🔴 Not Started |
-| 4        | SEE-Based Quiet Pruning       | 2-3h   | Medium          | None            | 🔴 Not Started |
+| 4        | SEE-Based Quiet Pruning       | 2-3h   | ~~Medium~~      | None            | 🟡 NEUTRAL     |
 | 5        | History-Based Pruning         | 1-2h   | Medium          | None            | 🔴 Not Started |
 
 **Recommended approach:** Implement and test each feature individually. Combining untested features makes it impossible to attribute gains/losses.
@@ -301,7 +311,7 @@ Square previousTo{SQ_NONE};               // Destination of parent's move
 
 ---
 
-## Feature 4: SEE-Based Quiet Move Pruning
+## Feature 4: SEE-Based Quiet Move Pruning — 🟡 IMPLEMENTED, ELO-NEUTRAL
 
 ### Current State
 
@@ -312,40 +322,86 @@ FrankyCPP uses SEE for:
 
 **Gap:** SEE not used to prune quiet moves that put pieces on attacked squares.
 
-### Proposed Implementation
+### Implementation (Complete)
 
-#### Config Flags
+#### Config Flags (SearchConfigData.h)
 ```cpp
-// SearchConfigData.h
-CONFIG_CONST bool USE_SEE_QUIET_PRUNING = true;   // Enabled by default
-CONFIG_CONST int SEE_QUIET_PRUNE_DEPTH = 6;       // Max depth for pruning
-CONFIG_CONST int SEE_QUIET_PRUNE_MARGIN = -80;    // Threshold (negative = allow slight loss)
+CONFIG_CONST bool USE_SEE_QUIET_PRUNING  = true;
+CONFIG_CONST int SEE_QUIET_PRUNE_DEPTH   = 4;   // Optimal for SMP (tested 4 vs 6)
+CONFIG_CONST int SEE_QUIET_PRUNE_MARGIN  = -80; // Per-depth threshold (tested -40, -80, -120)
 ```
 
-#### Integration Point
-
-**Search.cpp** — in move loop, before searching quiet moves:
+#### Integration Point (Search.cpp)
+Located in forward pruning block (after FP, before LMP):
 ```cpp
-// Prune quiet moves that lose material at low depths
-if (SearchConfig.USE_SEE_QUIET_PRUNING 
-    && depth <= SearchConfig.SEE_QUIET_PRUNE_DEPTH
-    && !move.isCapture()
-    && !givesCheck
-    && !isPvNode
-    && movesSearched > 0) {  // Never prune first move
-  
+// SEE-based Quiet Move Pruning
+// Prune quiet moves when SEE indicates the piece lands on an attacked
+// square where it can be captured for a material loss.
+// The outer guard already ensures this is a quiet move (non-capture).
+if (SearchConfig.USE_SEE_QUIET_PRUNING && depth <= SearchConfig.SEE_QUIET_PRUNE_DEPTH) {
   const int seeThreshold = SearchConfig.SEE_QUIET_PRUNE_MARGIN * depth;
-  if (see(position, move) < seeThreshold) {
-    statistics.seeQuietPruned++;
-    continue;  // Skip this move
+  if (See::see(p, move) < Value{seeThreshold}) {
+    STAT_INC(thread().statistics.seeQuietPruned);
+    continue;
   }
 }
 ```
 
-#### Validation
-- Add statistics counter for tracking
-- Test carefully — overly aggressive pruning can miss tactical defenses
-- Start with conservative threshold (-80), tune based on results
+#### Statistics Counter (SearchStats.h)
+```cpp
+uint64_t seeQuietPruned = 0;  // SEE-based quiet move pruning cuts
+```
+
+### Test Results
+
+#### SearchTreeSizeTest (Fixed Depth 14, 4 Threads)
+
+| Depth | Margin | Nodes vs Baseline | Time  | SEE Pruned | Result              |
+|-------|--------|-------------------|-------|------------|---------------------|
+| 4     | -80    | **-16.3%**        | -15%  | 10.9M      | ✅ Best              |
+| 4     | -40    | +10.7%            | +12%  | 10.9M      | ❌ Too aggressive    |
+| 4     | -120   | -4.1%             | -2%   | 9.4M       | 🟡 Too conservative |
+| 6     | -80    | +0.6% (4T)        | +2.7% | 4.4M       | ❌ SMP regression    |
+
+**Key Finding:** `depth=4, margin=-80` optimal. Higher depth (6) causes SMP issues where helper threads do redundant work.
+
+#### Single-Thread vs Multi-Thread Comparison
+
+| Metric             | 1 Thread | 4 Threads |
+|--------------------|----------|-----------|
+| Node reduction     | -18.5% ✅ | +0.6% ❌   |
+| First-move cutoffs | -18.9%   | +8.3% ✅   |
+| Time               | -16.8% ✅ | +2.7%     |
+
+**Observation:** In SMP, pruning improves move ordering quality (more first-move cutoffs) but doesn't reduce total work — helper threads search the pruned subtrees.
+
+#### Match Results
+
+**vs v1.4 (TTBuckets baseline):**
+- ELO: +74.6 (identical to baseline)
+- Test Suite: -0.2% (slight regression, 3 suites improved, 2 regressed)
+- W/D/L: 40/46/18 (more draws than baseline 42/42/20)
+
+**vs v1.3:**
+- ELO: +169.2 (vs +218.7 for TTBuckets) — **-49 ELO regression**
+- Test Suite: +1.3% (vs +2.4% for TTBuckets)
+- W/D/L: 60/31/13
+
+### Analysis
+
+**Why the feature is ELO-neutral despite large node reduction:**
+
+1. **SMP neutralization**: In multi-threaded search, pruned subtrees are searched by helper threads anyway. The "saved" work shifts between threads rather than being eliminated.
+
+2. **Test suite regression**: The -0.2% test suite accuracy suggests occasional tactical blindness — some quiet moves that look bad by SEE are actually defensive resources.
+
+3. **Draw tendency**: More draws vs v1.4 (46 vs 42) indicates the pruning may cut some winning lines in equal positions.
+
+### Decision: NOT MERGED
+
+The feature provides meaningful node reduction in single-threaded mode but no strength gain in practice. Since FrankyCPP targets multi-threaded play, the feature is shelved.
+
+**Code availability:** Implementation complete in separate branch for future reference or re-evaluation.
 
 ---
 
@@ -434,14 +490,14 @@ After individual validation:
 
 ## Timeline Estimate
 
-| Feature              | Implementation | Testing | Total      |
-|----------------------|----------------|---------|------------|
-| Capture History      | 2-3h           | 2h      | 4-5h       |
-| Counter-Move History | 1-2h           | 1h      | 2-3h       |
-| Continuation History | 4-6h           | 3h      | 7-9h       |
-| SEE Quiet Pruning    | 2-3h           | 2h      | 4-5h       |
-| History Pruning      | 1-2h           | 1h      | 2-3h       |
-| **Total**            | **10-16h**     | **9h**  | **19-25h** |
+| Feature              | Implementation | Testing | Total      | Status            |
+|----------------------|----------------|---------|------------|-------------------|
+| Capture History      | 2-3h           | 2h      | 4-5h       | ❌ Done (Failed)   |
+| Counter-Move History | 1-2h           | 1h      | 2-3h       | 🔴 Not Started    |
+| Continuation History | 4-6h           | 3h      | 7-9h       | 🔴 Not Started    |
+| SEE Quiet Pruning    | 2-3h           | 2h      | 4-5h       | 🟡 Done (Neutral) |
+| History Pruning      | 1-2h           | 1h      | 2-3h       | 🔴 Not Started    |
+| **Remaining**        | **6-10h**      | **5h**  | **11-15h** |                   |
 
 ---
 
@@ -455,10 +511,11 @@ After individual validation:
 
 ## Change Log
 
-| Version | Date       | Changes                                                      |
-|---------|------------|--------------------------------------------------------------|
-| 1.0     | 2026-03-07 | Initial document extracted from Search Tree Reduction Review |
-| 1.1     | 2026-03-07 | Feature 1 (Capture History) implemented and FAILED: -19% nodes but -5.6% test suite, -4.1% vs v1.3. Code REVERTED, document retained for reference. |
+| Version | Date       | Changes                                                                                                                                                                                             |
+|---------|------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0     | 2026-03-07 | Initial document extracted from Search Tree Reduction Review                                                                                                                                        |
+| 1.1     | 2026-03-07 | Feature 1 (Capture History) implemented and FAILED: -19% nodes but -5.6% test suite, -4.1% vs v1.3. Code REVERTED, document retained for reference.                                                 |
+| 1.2     | 2026-03-08 | Feature 4 (SEE Quiet Pruning) implemented and tested: -16% nodes (1T) but ELO-neutral (+74.6 vs v1.4 = same as baseline). Best params: depth=4, margin=-80. Code in branch, NOT merged to dev-v1.5. |
 
 ---
 
