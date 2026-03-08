@@ -404,10 +404,11 @@ namespace arena {
     const auto benchmarks = resultWriter.readBenchmarkResults();
 
     for (const auto& benchmark : benchmarks) {
-      // Add engine to engines set
-      data.engines.insert(benchmark.getEngineId());
-
-      // Add to benchmark results
+      // NOTE: Do NOT add benchmark engines to data.engines.
+      // Benchmark engine names (e.g., "FrankyCPP") differ from test suite names
+      // (e.g., "FrankyCPP v1.3") causing duplicate display entries that match
+      // the same results via flexible matching. Benchmark engines are accessed
+      // separately via getBenchmarksForEngine() in the engine summary.
       data.benchmarkResults.push_back(benchmark);
     }
   }
@@ -439,8 +440,17 @@ namespace arena {
       return report.str();
     }
 
-    // List of engines sorted for consistent display
-    std::vector engines(data.engines.begin(), data.engines.end());
+    // Collect engines directly from test suite result keys (not from data.engines)
+    // This avoids duplicates caused by matches/benchmarks registering engine IDs
+    // with slightly different names (e.g., "FrankyCPP" vs "FrankyCPP v1.3") that
+    // resolve to the same results via flexible matching
+    std::set<EngineId> engineSet;
+    for (const auto& [suiteName, engineResults] : data.suiteResults) {
+      for (const auto& [engineId, result] : engineResults) {
+        engineSet.insert(engineId);
+      }
+    }
+    std::vector engines(engineSet.begin(), engineSet.end());
 
     // For each test suite, show all engines side by side
     for (const auto& suiteName : data.testSuites) {
