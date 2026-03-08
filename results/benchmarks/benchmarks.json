@@ -2,51 +2,6 @@
   "benchmarks": [
     {
       "arenaVersion": "v1.2",
-      "timestamp": "2026-02-08T17:10:15",
-      "engineName": "FrankyCPP",
-      "engineVersion": "v1.2",
-      "enginePath": "",
-      "depth": 10,
-      "hashSizeMB": 128,
-      "threads": 1,
-      "positions": 50,
-      "totalNodes": 223073620,
-      "totalTimeMs": 59001,
-      "nps": 3780844,
-      "notes": "Current development version"
-    },
-    {
-      "arenaVersion": "v1.2",
-      "timestamp": "2026-02-08T17:10:15",
-      "engineName": "External",
-      "engineVersion": "v1.2",
-      "enginePath": "Release/FrankyCPP_V1.2/FrankyCPP_v1.2.exe",
-      "depth": 10,
-      "hashSizeMB": 128,
-      "threads": 1,
-      "positions": 50,
-      "totalNodes": 223073620,
-      "totalTimeMs": 59042,
-      "nps": 3778219,
-      "notes": "Current development version"
-    },
-    {
-      "arenaVersion": "v1.2",
-      "timestamp": "2026-02-08T17:11:16",
-      "engineName": "External",
-      "engineVersion": "v1.1",
-      "enginePath": "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe",
-      "depth": 10,
-      "hashSizeMB": 128,
-      "threads": 1,
-      "positions": 50,
-      "totalNodes": 230385628,
-      "totalTimeMs": 63029,
-      "nps": 3655232,
-      "notes": "v1.1"
-    },
-    {
-      "arenaVersion": "v1.2",
       "timestamp": "2026-02-08T21:49:54",
       "engineName": "FrankyCPP",
       "engineVersion": "v1.2",
@@ -58,7 +13,7 @@
       "totalNodes": 258997751,
       "totalTimeMs": 68961,
       "nps": 3755713,
-      "notes": "Current development version"
+      "tag": "Current development version"
     },
     {
       "arenaVersion": "v1.2",
@@ -73,37 +28,22 @@
       "totalNodes": 258997751,
       "totalTimeMs": 68739,
       "nps": 3767842,
-      "notes": "Current development version"
+      "tag": "Current development version"
     },
     {
       "arenaVersion": "v1.2",
-      "timestamp": "2026-02-09T12:23:04",
-      "engineName": "FrankyCPP",
-      "engineVersion": "v1.2",
-      "enginePath": "",
-      "depth": 10,
-      "hashSizeMB": 128,
-      "threads": 1,
-      "positions": 50,
-      "totalNodes": 239952311,
-      "totalTimeMs": 64227,
-      "nps": 3736003,
-      "notes": "Current development version"
-    },
-    {
-      "arenaVersion": "v1.2",
-      "timestamp": "2026-02-09T12:23:04",
+      "timestamp": "2026-02-08T17:11:16",
       "engineName": "External",
-      "engineVersion": "v1.2",
-      "enginePath": "Release/FrankyCPP_V1.2/FrankyCPP_v1.2.exe",
+      "engineVersion": "v1.1",
+      "enginePath": "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe",
       "depth": 10,
       "hashSizeMB": 128,
       "threads": 1,
       "positions": 50,
-      "totalNodes": 239952311,
-      "totalTimeMs": 63289,
-      "nps": 3791374,
-      "notes": "Current development version"
+      "totalNodes": 230385628,
+      "totalTimeMs": 63029,
+      "nps": 3655232,
+      "tag": "v1.1"
     },
     {
       "arenaVersion": "v1.2",
@@ -118,7 +58,7 @@
       "totalNodes": 239952311,
       "totalTimeMs": 64046,
       "nps": 3746562,
-      "notes": "Current development version"
+      "tag": "Current development version"
     },
     {
       "arenaVersion": "v1.2",
@@ -133,7 +73,7 @@
       "totalNodes": 239952311,
       "totalTimeMs": 65258,
       "nps": 3676979,
-      "notes": "Current development version"
+      "tag": "Current development version"
     },
     {
       "arenaVersion": "v1.2",
@@ -148,7 +88,7 @@
       "totalNodes": 239952311,
       "totalTimeMs": 63334,
       "nps": 3788680,
-      "notes": "Current development version (after PlyInfo introduction)"
+      "tag": "Current development version (after PlyInfo introduction)"
     },
     {
       "arenaVersion": "v1.2",
@@ -163,7 +103,7 @@
       "totalNodes": 239952311,
       "totalTimeMs": 63451,
       "nps": 3781694,
-      "notes": "Current development version (after PlyInfo introduction)"
+      "tag": "Current development version (after PlyInfo introduction)"
     },
     {
       "arenaVersion": "v1.2",
@@ -178,7 +118,7 @@
       "totalNodes": 303914894,
       "totalTimeMs": 82785,
       "nps": 3671134,
-      "notes": "Current development version (after check extension refactor)"
+      "tag": "Current development version (after check extension refactor)"
     },
     {
       "arenaVersion": "v1.2",
@@ -193,7 +133,7 @@
       "totalNodes": 303914894,
       "totalTimeMs": 83465,
       "nps": 3641225,
-      "notes": "Current development version (after check extension refactor)"
+      "tag": "Current development version (after check extension refactor)"
     },
     {
       "arenaVersion": "v1.2",
@@ -208,7 +148,7 @@
       "totalNodes": 303914894,
       "totalTimeMs": 81470,
       "nps": 3730390,
-      "notes": "Current development version (after new beta cutoff stats)"
+      "tag": "Current development version (after new beta cutoff stats)"
     },
     {
       "arenaVersion": "v1.2",
@@ -223,7 +163,7 @@
       "totalNodes": 303914894,
       "totalTimeMs": 81423,
       "nps": 3732543,
-      "notes": "Current development version (after new beta cutoff stats)"
+      "tag": "Current development version (after new beta cutoff stats)"
     },
     {
       "arenaVersion": "v1.2",
@@ -238,7 +178,7 @@
       "totalNodes": 303914894,
       "totalTimeMs": 80517,
       "nps": 3774543,
-      "notes": "Current development version (after new best-move instability time mgmt)"
+      "tag": "Current development version (after new best-move instability time mgmt)"
     },
     {
       "arenaVersion": "v1.2",
@@ -253,37 +193,7 @@
       "totalNodes": 303914894,
       "totalTimeMs": 80511,
       "nps": 3774824,
-      "notes": "Current development version (after new best-move instability time mgmt)"
-    },
-    {
-      "arenaVersion": "v1.2",
-      "timestamp": "2026-02-13T14:54:40",
-      "engineName": "FrankyCPP",
-      "engineVersion": "v1.2",
-      "enginePath": "",
-      "depth": 10,
-      "hashSizeMB": 128,
-      "threads": 1,
-      "positions": 50,
-      "totalNodes": 303914894,
-      "totalTimeMs": 81060,
-      "nps": 3749258,
-      "notes": "Current development version"
-    },
-    {
-      "arenaVersion": "v1.2",
-      "timestamp": "2026-02-13T14:54:40",
-      "engineName": "External",
-      "engineVersion": "v1.2",
-      "enginePath": "Release/FrankyCPP_V1.2/FrankyCPP_v1.2.exe",
-      "depth": 10,
-      "hashSizeMB": 128,
-      "threads": 1,
-      "positions": 50,
-      "totalNodes": 303914894,
-      "totalTimeMs": 81196,
-      "nps": 3742978,
-      "notes": "Current development version"
+      "tag": "Current development version (after new best-move instability time mgmt)"
     },
     {
       "arenaVersion": "v1.2",
@@ -298,7 +208,7 @@
       "totalNodes": 303914894,
       "totalTimeMs": 81545,
       "nps": 3726959,
-      "notes": "Current development version"
+      "tag": "Current development version"
     },
     {
       "arenaVersion": "v1.2",
@@ -313,7 +223,7 @@
       "totalNodes": 303914894,
       "totalTimeMs": 81494,
       "nps": 3729291,
-      "notes": "Current development version"
+      "tag": "Current development version"
     },
     {
       "arenaVersion": "v1.2",
@@ -328,7 +238,7 @@
       "totalNodes": 303914894,
       "totalTimeMs": 81271,
       "nps": 3739524,
-      "notes": "Current development version (TB_PROBE_ROOT)"
+      "tag": "Current development version (TB_PROBE_ROOT)"
     },
     {
       "arenaVersion": "v1.2",
@@ -343,7 +253,7 @@
       "totalNodes": 303914894,
       "totalTimeMs": 81348,
       "nps": 3735984,
-      "notes": "Current development version (TB_PROBE_ROOT)"
+      "tag": "Current development version (TB_PROBE_ROOT)"
     },
     {
       "arenaVersion": "v1.2",
@@ -358,7 +268,7 @@
       "totalNodes": 303900529,
       "totalTimeMs": 84469,
       "nps": 3597775,
-      "notes": "Current development version (USE_TB) "
+      "tag": "Current development version (USE_TB)"
     },
     {
       "arenaVersion": "v1.2",
@@ -373,7 +283,7 @@
       "totalNodes": 303900529,
       "totalTimeMs": 82731,
       "nps": 3673357,
-      "notes": "Current development version (USE_TB)"
+      "tag": "Current development version (USE_TB)"
     },
     {
       "arenaVersion": "v1.2",
@@ -388,7 +298,7 @@
       "totalNodes": 303900529,
       "totalTimeMs": 81973,
       "nps": 3707324,
-      "notes": "Current development version (USE_TB_PROBE_ROOT, USE_TB_PROBE_SEARCH)"
+      "tag": "Current development version (USE_TB_PROBE_ROOT, USE_TB_PROBE_SEARCH)"
     },
     {
       "arenaVersion": "v1.2",
@@ -403,7 +313,7 @@
       "totalNodes": 303900529,
       "totalTimeMs": 82696,
       "nps": 3674912,
-      "notes": "Current development version (USE_TB_PROBE_ROOT, USE_TB_PROBE_SEARCH)"
+      "tag": "Current development version (USE_TB_PROBE_ROOT, USE_TB_PROBE_SEARCH)"
     },
     {
       "arenaVersion": "v1.2",
@@ -418,7 +328,7 @@
       "totalNodes": 303900529,
       "totalTimeMs": 80572,
       "nps": 3771788,
-      "notes": "Current development version"
+      "tag": "Current development version"
     },
     {
       "arenaVersion": "v1.2",
@@ -433,7 +343,7 @@
       "totalNodes": 303900529,
       "totalTimeMs": 80842,
       "nps": 3759191,
-      "notes": "Current development version"
+      "tag": "Current development version"
     },
     {
       "arenaVersion": "v1.2",
@@ -448,7 +358,7 @@
       "totalNodes": 304028868,
       "totalTimeMs": 80755,
       "nps": 3764830,
-      "notes": "Current development version (USE_TB_PROBE_ROOT, USE_TB_PROBE_SEARCH)"
+      "tag": "Current development version (USE_TB_PROBE_ROOT, USE_TB_PROBE_SEARCH)"
     },
     {
       "arenaVersion": "v1.2",
@@ -463,7 +373,7 @@
       "totalNodes": 304028868,
       "totalTimeMs": 81669,
       "nps": 3722696,
-      "notes": "Current development version (USE_TB_PROBE_ROOT, USE_TB_PROBE_SEARCH)"
+      "tag": "Current development version (USE_TB_PROBE_ROOT, USE_TB_PROBE_SEARCH)"
     },
     {
       "arenaVersion": "v1.2",
@@ -478,7 +388,7 @@
       "totalNodes": 166336964,
       "totalTimeMs": 44228,
       "nps": 3760897,
-      "notes": "Dev LMR improvement"
+      "tag": "Dev LMR improvement"
     },
     {
       "arenaVersion": "v1.2",
@@ -493,7 +403,7 @@
       "totalNodes": 166336964,
       "totalTimeMs": 43754,
       "nps": 3801640,
-      "notes": "Dev LMR improvement"
+      "tag": "Dev LMR improvement"
     },
     {
       "arenaVersion": "v1.2",
@@ -508,7 +418,7 @@
       "totalNodes": 21279023,
       "totalTimeMs": 7269,
       "nps": 2927365,
-      "notes": "isPvNode fixes in place"
+      "tag": "isPvNode fixes in place"
     },
     {
       "arenaVersion": "v1.2",
@@ -523,7 +433,7 @@
       "totalNodes": 21279023,
       "totalTimeMs": 6989,
       "nps": 3044644,
-      "notes": "isPvNode fixes in place"
+      "tag": "isPvNode fixes in place"
     },
     {
       "arenaVersion": "v1.2",
@@ -538,7 +448,7 @@
       "totalNodes": 87418817,
       "totalTimeMs": 29151,
       "nps": 2998827,
-      "notes": "isPvNode fixes in place (incr. depth to 12)"
+      "tag": "isPvNode fixes in place (incr. depth to 12)"
     },
     {
       "arenaVersion": "v1.2",
@@ -553,7 +463,7 @@
       "totalNodes": 87418817,
       "totalTimeMs": 29039,
       "nps": 3010393,
-      "notes": "isPvNode fixes in place (incr. depth to 12)"
+      "tag": "isPvNode fixes in place (incr. depth to 12)"
     },
     {
       "arenaVersion": "v1.2",
@@ -568,7 +478,7 @@
       "totalNodes": 67469527,
       "totalTimeMs": 22669,
       "nps": 2976290,
-      "notes": "Improvement Flag"
+      "tag": "Improvement Flag"
     },
     {
       "arenaVersion": "v1.2",
@@ -583,7 +493,7 @@
       "totalNodes": 67469527,
       "totalTimeMs": 22895,
       "nps": 2946910,
-      "notes": "Improvement Flag"
+      "tag": "Improvement Flag"
     },
     {
       "arenaVersion": "v1.2",
@@ -598,7 +508,7 @@
       "totalNodes": 61917632,
       "totalTimeMs": 21052,
       "nps": 2941175,
-      "notes": "History-based LMR REduction"
+      "tag": "History-based LMR REduction"
     },
     {
       "arenaVersion": "v1.2",
@@ -613,7 +523,7 @@
       "totalNodes": 61917632,
       "totalTimeMs": 20628,
       "nps": 3001630,
-      "notes": "History-based LMR REduction"
+      "tag": "History-based LMR REduction"
     },
     {
       "arenaVersion": "v1.2",
@@ -628,7 +538,7 @@
       "totalNodes": 63593737,
       "totalTimeMs": 21303,
       "nps": 2985201,
-      "notes": "CutNode Reduction"
+      "tag": "CutNode Reduction"
     },
     {
       "arenaVersion": "v1.2",
@@ -643,7 +553,7 @@
       "totalNodes": 63593737,
       "totalTimeMs": 21357,
       "nps": 2977653,
-      "notes": "CutNode Reduction"
+      "tag": "CutNode Reduction"
     },
     {
       "arenaVersion": "v1.2",
@@ -658,7 +568,7 @@
       "totalNodes": 35960968,
       "totalTimeMs": 11588,
       "nps": 3103293,
-      "notes": "After Search Feature Review"
+      "tag": "After Search Feature Review"
     },
     {
       "arenaVersion": "v1.2",
@@ -673,7 +583,7 @@
       "totalNodes": 35960968,
       "totalTimeMs": 11301,
       "nps": 3182104,
-      "notes": "After Search Feature Review"
+      "tag": "After Search Feature Review"
     },
     {
       "arenaVersion": "v1.2",
@@ -688,7 +598,7 @@
       "totalNodes": 35960923,
       "totalTimeMs": 11453,
       "nps": 3139869,
-      "notes": "Development build - Config NOT Stripped"
+      "tag": "Development build - Config NOT Stripped"
     },
     {
       "arenaVersion": "v1.2",
@@ -703,7 +613,7 @@
       "totalNodes": 35960923,
       "totalTimeMs": 11456,
       "nps": 3139047,
-      "notes": "Development build - Config NOT Stripped"
+      "tag": "Development build - Config NOT Stripped"
     },
     {
       "arenaVersion": "v1.2",
@@ -718,7 +628,7 @@
       "totalNodes": 35960923,
       "totalTimeMs": 11075,
       "nps": 3247035,
-      "notes": "Production build - Config Stripped"
+      "tag": "Production build - Config Stripped"
     },
     {
       "arenaVersion": "v1.2",
@@ -733,7 +643,7 @@
       "totalNodes": 169091414,
       "totalTimeMs": 23021,
       "nps": 7345094,
-      "notes": "SMP 4-threads"
+      "tag": "SMP 4-threads"
     },
     {
       "arenaVersion": "v1.2",
@@ -748,7 +658,37 @@
       "totalNodes": 142088216,
       "totalTimeMs": 18407,
       "nps": 7719248,
-      "notes": "SMP 4-threads"
+      "tag": "SMP 4-threads"
+    },
+    {
+      "arenaVersion": "v1.5",
+      "timestamp": "2026-03-08T12:48:08",
+      "engineName": "FrankyCPP",
+      "engineVersion": "v1.5",
+      "enginePath": "",
+      "depth": 12,
+      "hashSizeMB": 128,
+      "threads": 4,
+      "positions": 50,
+      "totalNodes": 126558444,
+      "totalTimeMs": 18194,
+      "nps": 6956053,
+      "tag": "baseAfterTtBuckets"
+    },
+    {
+      "arenaVersion": "v1.5",
+      "timestamp": "2026-03-08T12:48:08",
+      "engineName": "External",
+      "engineVersion": "v1.5",
+      "enginePath": "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe",
+      "depth": 12,
+      "hashSizeMB": 128,
+      "threads": 4,
+      "positions": 50,
+      "totalNodes": 109096961,
+      "totalTimeMs": 15126,
+      "nps": 7212545,
+      "tag": "baseAfterTtBuckets"
     }
   ]
 }

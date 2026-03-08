@@ -98,19 +98,22 @@ namespace arena {
   std::vector<TestSuiteResult> TestSuiteRunner::runAllTestSuites(
     const SuiteResultCallback& onSuiteComplete) const {
     std::vector<TestSuiteResult> results;
-    results.reserve(arenaConfig.testSuites.size());
+
+    // Expand testSuiteRuns into individual TestSuiteConfigs
+    const auto testSuites = arenaConfig.expandTestSuiteRuns();
+    results.reserve(testSuites.size());
 
     std::cout << "\n===================================================================" << std::endl;
     std::cout << "Running All Test Suites" << std::endl;
     std::cout << "===================================================================" << std::endl;
     std::cout << "Engine Version: " << arenaConfig.version << std::endl;
-    std::cout << "Number of Test Suites: " << arenaConfig.testSuites.size() << std::endl;
+    std::cout << "Number of Test Suites: " << testSuites.size() << std::endl;
     std::cout << "===================================================================" << std::endl;
 
     int suiteNumber = 0;
-    for (const auto& suiteConfig : arenaConfig.testSuites) {
+    for (const auto& suiteConfig : testSuites) {
       suiteNumber++;
-      std::cout << "\n[" << suiteNumber << "/" << arenaConfig.testSuites.size() << "] ";
+      std::cout << "\n[" << suiteNumber << "/" << testSuites.size() << "] ";
 
       try {
         TestSuiteResult result = runTestSuite(suiteConfig);
@@ -237,12 +240,18 @@ namespace arena {
     // Extract clean test suite name
     result.testSuiteName = extractTestSuiteName(suiteConfig.name, suiteConfig.epdPath);
 
+    // Propagate tag from config
+    result.tag = suiteConfig.tag;
+
     std::cout << "Engine: " << result.engineName;
     if (!result.engineVersion.empty()) {
       std::cout << " " << result.engineVersion;
     }
     std::cout << std::endl;
     std::cout << "Test Suite: " << result.testSuiteName << std::endl;
+    if (!result.tag.empty()) {
+      std::cout << "Tag: " << result.tag << std::endl;
+    }
 
 
     std::cout << "\n------------------------------------------------------------------" << std::endl;
@@ -567,7 +576,8 @@ namespace arena {
       result.engineVersion                         = parsedEngineVersion;
     }
 
-    result.totalTests  = totalPositions;
+    // Propagate tag from config
+    result.tag = suiteConfig.tag;    result.totalTests  = totalPositions;
     result.passed      = passedCount;
     result.failed      = failedCount;
     result.skipped     = 0;

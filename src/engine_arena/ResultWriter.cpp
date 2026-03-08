@@ -113,6 +113,7 @@ namespace arena {
     file << "{\n";
     file << "  \"arenaVersion\": \"" << escapeJsonString(result.arenaVersion) << "\",\n";
     file << "  \"timestamp\": \"" << escapeJsonString(result.timestamp) << "\",\n";
+    file << "  \"tag\": \"" << escapeJsonString(result.tag) << "\",\n";
     file << "\n";
     file << "  \"testSuite\": {\n";
     file << "    \"name\": \"" << escapeJsonString(result.testSuiteName) << "\",\n";
@@ -185,6 +186,7 @@ namespace arena {
     file << "{\n";
     file << "  \"arenaVersion\": \"" << escapeJsonString(result.arenaVersion) << "\",\n";
     file << "  \"timestamp\": \"" << escapeJsonString(result.timestamp) << "\",\n";
+    file << "  \"tag\": \"" << escapeJsonString(result.tag) << "\",\n";
     file << "\n";
     file << "  \"match\": {\n";
     file << "    \"name\": \"" << escapeJsonString(result.matchName) << "\",\n";
@@ -231,6 +233,25 @@ namespace arena {
     // Read existing results
     std::vector<BenchmarkResult> allResults = readBenchmarkResults();
 
+    // Check for duplicate tag (same tag, version, engineName on same date)
+    if (!result.tag.empty()) {
+      const std::string resultDate = result.timestamp.substr(0, 10);// YYYY-MM-DD
+      for (const auto& existing : allResults) {
+        if (existing.tag == result.tag &&
+            existing.engineVersion == result.engineVersion &&
+            existing.engineName == result.engineName &&
+            existing.timestamp.substr(0, 10) == resultDate) {
+          std::cerr << "WARNING: Duplicate benchmark run detected!\n"
+                    << "  Tag: \"" << result.tag << "\"\n"
+                    << "  Engine: " << result.engineName << " " << result.engineVersion << "\n"
+                    << "  Date: " << resultDate << "\n"
+                    << "  Consider using a different tag or cleaning up old results.\n"
+                    << std::endl;
+          break;
+        }
+      }
+    }
+
     // Add new result
     allResults.push_back(result);
 
@@ -258,7 +279,7 @@ namespace arena {
       file << "      \"totalNodes\": " << r.totalNodes << ",\n";
       file << "      \"totalTimeMs\": " << r.totalTimeMs << ",\n";
       file << "      \"nps\": " << r.nps << ",\n";
-      file << "      \"notes\": \"" << escapeJsonString(r.notes) << "\"\n";
+      file << "      \"tag\": \"" << escapeJsonString(r.tag) << "\"\n";
       file << "    }" << (i < allResults.size() - 1 ? ",\n" : "\n");
     }
 
@@ -340,7 +361,11 @@ namespace arena {
       r.totalNodes    = static_cast<uint64_t>(extractNumber(pos, "totalNodes"));
       r.totalTimeMs   = extractNumber(pos, "totalTimeMs");
       r.nps           = static_cast<uint64_t>(extractNumber(pos, "nps"));
-      r.notes         = extractString(pos, "notes");
+      // Support both "tag" (new) and "notes" (old) for backwards compatibility
+      r.tag           = extractString(pos, "tag");
+      if (r.tag.empty()) {
+        r.tag = extractString(pos, "notes");  // Fallback to old field name
+      }
 
       results.push_back(r);
       pos = entryEnd + 1;

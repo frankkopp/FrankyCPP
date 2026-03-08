@@ -173,6 +173,9 @@ namespace arena {
     std::string engineVersion;///< Engine version (e.g., "v0.5", "v1.1")
     std::string enginePath;   ///< Path to engine executable (empty if internal)
 
+    // Feature tracking
+    std::string tag;          ///< Feature tag (e.g., "QuietSee", "TTbuckets")
+
     // Results summary
     int totalTests;     ///< Total number of tests
     int passed;         ///< Number of passed tests
@@ -213,6 +216,9 @@ namespace arena {
 
     // Match identification
     std::string matchName;///< Match identifier (e.g., "Rapid 60+0.6")
+
+    // Feature tracking
+    std::string tag;      ///< Feature tag (e.g., "QuietSee", "TTbuckets")
 
     // Engine 1 identification
     std::string engine1Name;   ///< Engine 1 name (e.g., "FrankyCPP")
@@ -293,8 +299,8 @@ namespace arena {
     int64_t totalTimeMs = 0;///< Total time in milliseconds
     uint64_t nps        = 0;///< Nodes per second
 
-    // User notes (manually editable in JSON)
-    std::string notes;///< User-provided notes about this benchmark run
+    // Feature tracking
+    std::string tag;        ///< Feature tag (e.g., "QuietSee") - renamed from notes
 
     /// Returns EngineId from this result
     [[nodiscard]] EngineId getEngineId() const {
@@ -322,6 +328,10 @@ namespace arena {
     /// Results indexed by: testSuite -> engineId -> result
     /// Uses latest result if multiple exist for same suite/engine
     std::map<std::string, std::map<EngineId, TestSuiteResult>> suiteResults;
+
+    /// All historical test suite results (for --history mode)
+    /// Indexed by: engineId -> vector of all results for that engine
+    std::map<EngineId, std::vector<TestSuiteResult>> allSuiteResults;
 
     /// Match results indexed by match key: "Engine1-v1 vs Engine2-v2"
     std::map<std::string, MatchResult> matchResults;
@@ -358,39 +368,69 @@ namespace arena {
     /// First tries exact match, then tries to match by version and base name
     /// This handles cases where stored engine names include version (e.g., "FrankyCPP v1.1")
     /// but user provides just base name (e.g., "FrankyCPP" with version "v1.1")
+    /// Prioritizes engines with test suite results over benchmark-only engines
     [[nodiscard]] std::optional<EngineId> findEngine(const EngineId& search) const {
       // First try exact match
       if (engines.contains(search)) {
         return search;
       }
 
-      // Try flexible matching: find engine where version matches and name contains the search name
+      // Collect all matching engines
+      std::vector<EngineId> matches;
+
+      // Try flexible matching: find engines where version matches and name contains the search name
       for (const auto& engine : engines) {
         if (engine.version == search.version) {
           // Check if stored name starts with search name (e.g., "FrankyCPP v1.1" starts with "FrankyCPP")
           if (engine.name.find(search.name) == 0) {
-            return engine;
+            matches.push_back(engine);
+            continue;
           }
           // Also check if search name contains stored base name (for underscore variants)
           // e.g., "FrankyCPP_v1.1" should match "FrankyCPP v1.1"
           std::string searchNoUnderscore = search.name;
           std::ranges::replace(searchNoUnderscore, '_', ' ');
           if (engine.name.find(searchNoUnderscore) == 0 || searchNoUnderscore.find(engine.name) == 0) {
+            matches.push_back(engine);
+          }
+        }
+      }
+
+      if (matches.empty()) {
+        return std::nullopt;
+      }
+
+      // Prioritize engines that have test suite results
+      for (const auto& engine : matches) {
+        for (const auto& [suiteName, engineResults] : suiteResults) {
+          if (engineResults.contains(engine)) {
             return engine;
           }
         }
       }
 
-      return std::nullopt;
+      // Fall back to first match (e.g., benchmark-only engine)
+      return matches.front();
     }
 
     /// Returns result for given suite and engine, or nullptr if not found
+    /// Uses flexible matching to handle name variations (e.g., "FrankyCPP" vs "FrankyCPP v1.5")
     [[nodiscard]] const TestSuiteResult* getResult(const std::string& suite, const EngineId& engine) const {
       auto suiteIt = suiteResults.find(suite);
       if (suiteIt == suiteResults.end()) return nullptr;
+
+      // First try exact match
       auto engineIt = suiteIt->second.find(engine);
-      if (engineIt == suiteIt->second.end()) return nullptr;
-      return &engineIt->second;
+      if (engineIt != suiteIt->second.end()) return &engineIt->second;
+
+      // Fall back to flexible matching
+      for (const auto& [engineId, result] : suiteIt->second) {
+        if (enginesMatchFlexibly(engine, engineId)) {
+          return &result;
+        }
+      }
+
+      return nullptr;
     }
 
     /// Returns match result for given engine pair, or nullptr if not found
@@ -424,12 +464,24 @@ namespace arena {
     /// Returns all matches involving the given engine (using flexible matching)
     [[nodiscard]] std::vector<const MatchResult*> getMatchesForEngine(const EngineId& engine) const {
       std::vector<const MatchResult*> matches;
-      for (const auto& match : matchResults | std::views::values) {
+      for (const auto& [key, match] : matchResults) {
         if (enginesMatchFlexibly(engine, match.getEngine1Id()) || enginesMatchFlexibly(engine, match.getEngine2Id())) {
           matches.push_back(&match);
         }
       }
       return matches;
+    }
+
+    /// Returns all benchmarks for the given engine (using flexible matching)
+    /// Returns only the latest benchmark for each unique (tag, date) combination
+    [[nodiscard]] std::vector<const BenchmarkResult*> getBenchmarksForEngine(const EngineId& engine) const {
+      std::vector<const BenchmarkResult*> benchmarks;
+      for (const auto& benchmark : benchmarkResults) {
+        if (enginesMatchFlexibly(engine, benchmark.getEngineId())) {
+          benchmarks.push_back(&benchmark);
+        }
+      }
+      return benchmarks;
     }
 
   private:

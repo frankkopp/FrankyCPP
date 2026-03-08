@@ -23,7 +23,9 @@
 
 #include "ArenaRunner.h"
 #include "ConsoleColors.h"
+#include "UCIEngine.h"
 
+#include <algorithm>
 #include <chrono>
 #include <filesystem>
 #include <fstream>
@@ -55,19 +57,22 @@ namespace arena {
       : arenaConfig(config), testSuiteRunner(config), matchRunner(config), resultWriter(config.resultsDir) {
   }
 
-  void ArenaRunner::runAll() const {
+  void ArenaRunner::runAll(bool showConfig) const {
+    // Expand test suite runs for display
+    const auto testSuites = arenaConfig.expandTestSuiteRuns();
+
     std::cout << "\n===================================================================" << std::endl;
     std::cout << "Engine Arena - Full Run Mode" << std::endl;
     std::cout << "===================================================================" << std::endl;
     std::cout << "Version: " << arenaConfig.version << std::endl;
-    std::cout << "Test Suites: " << arenaConfig.testSuites.size() << std::endl;
+    std::cout << "Test Suites: " << testSuites.size() << std::endl;
     std::cout << "Matches: " << arenaConfig.matches.size() << std::endl;
     std::cout << "===================================================================" << std::endl;
 
     // Run test suites if configured
-    if (!arenaConfig.testSuites.empty()) {
+    if (!testSuites.empty()) {
       std::cout << "\n--- Running Test Suites ---" << std::endl;
-      runTestSuitesOnly();
+      runTestSuitesOnly(showConfig);
     }
 
     // Run matches if configured
@@ -81,12 +86,34 @@ namespace arena {
     std::cout << "===================================================================" << std::endl;
   }
 
-  void ArenaRunner::runTestSuitesOnly() const {
+  void ArenaRunner::runTestSuitesOnly(bool showConfig) const {
+    // Expand test suite runs for display
+    const auto testSuites = arenaConfig.expandTestSuiteRuns();
+
     std::cout << "\n===================================================================" << std::endl;
     std::cout << "Running Test Suites Only" << std::endl;
     std::cout << "===================================================================" << std::endl;
-    std::cout << "Number of suites: " << arenaConfig.testSuites.size() << std::endl;
+    std::cout << "Number of suites: " << testSuites.size() << std::endl;
     std::cout << "===================================================================" << std::endl;
+
+    // Show engine configuration if requested
+    if (showConfig && !testSuites.empty()) {
+      // Group engines to avoid querying the same engine multiple times
+      std::set<std::string> queriedEngines;
+
+      for (const auto& suite : testSuites) {
+        if (queriedEngines.find(suite.enginePath) == queriedEngines.end()) {
+          queriedEngines.insert(suite.enginePath);
+
+          std::cout << "\n";
+          const std::string configStr = queryEngineConfig(suite.enginePath, suite.commandLineArgs);
+          if (!configStr.empty()) {
+            std::cout << configStr;
+          }
+        }
+      }
+      std::cout << "===================================================================" << std::endl;
+    }
 
     // Pass callback that saves results immediately after each suite completes
     const auto results = testSuiteRunner.runAllTestSuites(
@@ -270,6 +297,9 @@ namespace arena {
         data.testSuites.insert(suiteName);
         data.engines.insert(engineId);
 
+        // Store in allSuiteResults for history mode
+        data.allSuiteResults[engineId].push_back(result);
+
         // Check if we already have a result for this suite/engine
         auto& suiteMap = data.suiteResults[suiteName];
         auto existing  = suiteMap.find(engineId);
@@ -286,6 +316,9 @@ namespace arena {
 
     // Also load match results
     loadMatchResults(data);
+
+    // Also load benchmark results
+    loadBenchmarkResults(data);
 
     return data;
   }
@@ -363,6 +396,19 @@ namespace arena {
         std::cerr << "  Warning: Failed to load " << entry.path().filename().string()
                   << ": " << e.what() << std::endl;
       }
+    }
+  }
+
+  void ArenaRunner::loadBenchmarkResults(ReportData& data) const {
+    // Use ResultWriter to read benchmark results
+    const auto benchmarks = resultWriter.readBenchmarkResults();
+
+    for (const auto& benchmark : benchmarks) {
+      // Add engine to engines set
+      data.engines.insert(benchmark.getEngineId());
+
+      // Add to benchmark results
+      data.benchmarkResults.push_back(benchmark);
     }
   }
 
@@ -1019,6 +1065,373 @@ namespace arena {
     report << "\n";
 
     report << "================================================================================\n";
+
+    return report.str();
+  }
+
+  std::string ArenaRunner::generateEngineSummary(const EngineId& engine, bool showHistory) const {
+    std::ostringstream report;
+
+    // Load all results
+    auto data = loadAllResults();
+    loadMatchResults(data);
+
+    // Find the actual engine using flexible matching
+    const auto foundEngine = data.findEngine(engine);
+    if (!foundEngine) {
+      report << "ERROR: Engine '" << engine.toString() << "' not found in results.\n\n";
+      report << "Available engines:\n";
+      for (const auto& e : data.engines) {
+        report << "  " << e.toString() << "\n";
+      }
+      return report.str();
+    }
+
+    const EngineId& actualEngine = *foundEngine;
+
+    // Get matches and benchmarks (same for both modes)
+    const auto matches    = data.getMatchesForEngine(actualEngine);
+    const auto benchmarks = data.getBenchmarksForEngine(actualEngine);
+
+    // Header
+    report << "===================================================================\n";
+    report << "Engine Summary: " << actualEngine.toDisplayString();
+    report << "\n";
+    report << "===================================================================\n";
+
+    if (showHistory) {
+      // ==================== HISTORY MODE ====================
+      // Show all historical runs grouped by tag
+
+      // Collect all results for this engine (using flexible matching)
+      std::vector<TestSuiteResult> allResults;
+      for (const auto& [engineId, results] : data.allSuiteResults) {
+        if (engineId == actualEngine ||
+            (engineId.version == actualEngine.version &&
+             (engineId.name.find(actualEngine.name) == 0 ||
+              actualEngine.name.find(engineId.name) == 0))) {
+          for (const auto& r : results) {
+            allResults.push_back(r);
+          }
+        }
+      }
+
+      if (allResults.empty()) {
+        report << "No test suite history found.\n";
+      }
+      else {
+        // Group by date+tag (runs done on same day with same tag are one batch)
+        struct RunGroup {
+          std::string tag;
+          std::string date;                                         // YYYY-MM-DD
+          std::string latestTimestamp;                              // For sorting
+          std::map<std::string, const TestSuiteResult*> suiteResults;// Latest result per suite
+        };
+
+        // Group results by date+tag, keeping only latest result per suite
+        std::map<std::string, RunGroup> groupsByDateTag;
+        for (const auto& r : allResults) {
+          const std::string date = r.timestamp.substr(0, 10);// YYYY-MM-DD
+          const std::string key  = date + "|" + r.tag;
+
+          auto& group = groupsByDateTag[key];
+          group.date  = date;
+          group.tag   = r.tag;
+
+          // Track latest timestamp for sorting
+          if (group.latestTimestamp.empty() || r.timestamp > group.latestTimestamp) {
+            group.latestTimestamp = r.timestamp;
+          }
+
+          // Keep only the latest result for each suite within this group
+          auto it = group.suiteResults.find(r.testSuiteName);
+          if (it == group.suiteResults.end() || r.timestamp > it->second->timestamp) {
+            group.suiteResults[r.testSuiteName] = &r;
+          }
+        }
+
+        // Convert to vector and sort by timestamp (most recent first)
+        std::vector<RunGroup> runs;
+        for (auto& [key, group] : groupsByDateTag) {
+          runs.push_back(std::move(group));
+        }
+        std::ranges::sort(runs, [](const RunGroup& a, const RunGroup& b) {
+          return a.latestTimestamp > b.latestTimestamp;
+        });
+
+        report << "Historical Test Suite Runs:\n";
+        report << "-------------------------------------------------------------------\n";
+
+        for (const auto& run : runs) {
+          // Calculate totals from the latest results per suite
+          int totalPassed = 0;
+          int totalTests  = 0;
+          for (const auto& result : run.suiteResults | std::views::values) {
+            totalPassed += result->passed;
+            totalTests += result->totalTests;
+          }
+
+          const double pct = totalTests > 0 ? (totalPassed * 100.0 / totalTests) : 0.0;
+
+          report << "  [" << run.date << "] "
+                 << std::right << std::setw(4) << totalPassed << "/"
+                 << std::left << std::setw(5) << totalTests
+                 << " (" << std::fixed << std::setprecision(1) << std::setw(5) << pct << "%)"
+                 << "  (" << run.suiteResults.size() << " suites)";
+
+          if (!run.tag.empty()) {
+            report << "  [" << run.tag << "]";
+          }
+          report << "\n";
+        }
+        report << "===================================================================\n";
+      }
+    }
+    else {
+      // ==================== LATEST MODE ====================
+      // Show only the latest results (default behavior)
+
+      struct SuiteData {
+        std::string name;
+        int passed        = 0;
+        int total         = 0;
+        uint64_t nodes    = 0;
+        int64_t timeMs    = 0;
+        std::string tag;
+        std::string timestamp;
+      };
+      std::vector<SuiteData> suiteResults;
+
+      int totalPassed     = 0;
+      int totalTests      = 0;
+      uint64_t totalNodes = 0;
+      int64_t totalTimeMs = 0;
+      std::string latestTag;
+      std::string latestTimestamp;
+
+      for (const auto& [suiteName, engineResults] : data.suiteResults) {
+        for (const auto& [engineId, result] : engineResults) {
+          if (engineId == actualEngine ||
+              (engineId.version == actualEngine.version &&
+               (engineId.name.find(actualEngine.name) == 0 ||
+                actualEngine.name.find(engineId.name) == 0))) {
+            SuiteData sd;
+            sd.name      = suiteName;
+            sd.passed    = result.passed;
+            sd.total     = result.totalTests;
+            sd.nodes     = result.totalNodes;
+            sd.timeMs    = result.totalTimeMs;
+            sd.tag       = result.tag;
+            sd.timestamp = result.timestamp;
+            suiteResults.push_back(sd);
+
+            totalPassed += result.passed;
+            totalTests += result.totalTests;
+            totalNodes += result.totalNodes;
+            totalTimeMs += result.totalTimeMs;
+
+            if (latestTimestamp.empty() || result.timestamp > latestTimestamp) {
+              latestTimestamp = result.timestamp;
+              latestTag       = result.tag;
+            }
+            break;
+          }
+        }
+      }
+
+      if (!suiteResults.empty()) {
+        std::string displayTimestamp = latestTimestamp;
+        if (displayTimestamp.length() >= 16) {
+          displayTimestamp = displayTimestamp.substr(0, 10) + " " + displayTimestamp.substr(11, 5);
+        }
+
+        report << "Test Suites (" << displayTimestamp << ")";
+        if (!latestTag.empty()) {
+          report << " [" << latestTag << "]";
+        }
+        report << ":\n";
+
+        std::ranges::sort(suiteResults, [](const SuiteData& a, const SuiteData& b) {
+          return a.name < b.name;
+        });
+
+        for (const auto& sd : suiteResults) {
+          const double pct = sd.total > 0 ? (sd.passed * 100.0 / sd.total) : 0.0;
+          report << "  " << std::left << std::setw(20) << (sd.name + ":")
+                 << std::right << std::setw(4) << sd.passed << "/"
+                 << std::left << std::setw(6) << sd.total
+                 << "(" << std::fixed << std::setprecision(2) << std::setw(6) << pct << "%)\n";
+        }
+
+        report << "-------------------------------------------------------------------\n";
+
+        const double totalPct = totalTests > 0 ? (totalPassed * 100.0 / totalTests) : 0.0;
+        report << "  " << std::left << std::setw(20) << "TOTAL:"
+               << std::right << std::setw(4) << totalPassed << "/"
+               << std::left << std::setw(6) << totalTests
+               << "(" << std::fixed << std::setprecision(2) << std::setw(6) << totalPct << "%)\n";
+
+        report << "  Total Nodes:      " << formatNumber(static_cast<int64_t>(totalNodes)) << "\n";
+
+        const int64_t totalSecs = totalTimeMs / 1000;
+        const int hours         = static_cast<int>(totalSecs / 3600);
+        const int mins          = static_cast<int>((totalSecs % 3600) / 60);
+        const int secs          = static_cast<int>(totalSecs % 60);
+        report << "  Total Time:       " << hours << "h " << mins << "m " << secs << "s\n";
+
+        report << "===================================================================\n";
+      }
+    }
+
+    // Matches section (same for both modes)
+    if (!matches.empty()) {
+      report << "\nMatches:\n";
+      for (const auto* match : matches) {
+        // Determine if this engine is engine1 or engine2 using version-aware matching
+        const EngineId engine1Id = match->getEngine1Id();
+        const EngineId engine2Id = match->getEngine2Id();
+
+        // Check version first, then name
+        bool isEngine1 = false;
+        if (engine1Id.version == actualEngine.version) {
+          // Version matches engine1, check name
+          if (engine1Id.name == actualEngine.name ||
+              engine1Id.name.find(actualEngine.name) == 0 ||
+              actualEngine.name.find(engine1Id.name) == 0) {
+            isEngine1 = true;
+          }
+        }
+
+        // Skip if this match doesn't actually involve our engine (shouldn't happen but be safe)
+        if (!isEngine1 && engine2Id.version != actualEngine.version) {
+          continue;
+        }
+
+        const std::string opponent = isEngine1
+                                       ? engine2Id.toDisplayString()
+                                       : engine1Id.toDisplayString();
+
+        const int wins   = isEngine1 ? match->engine1Wins : match->engine2Wins;
+        const int losses = isEngine1 ? match->engine2Wins : match->engine1Wins;
+        const double elo = isEngine1 ? match->eloDifference : -match->eloDifference;
+
+        report << "  vs " << std::left << std::setw(16) << opponent
+               << " (" << match->timeControl << ")";
+        if (!match->tag.empty()) {
+          report << " [" << match->tag << "]";
+        }
+        report << ":  " << wins << "-" << losses
+               << " (W:" << wins << " D:" << match->draws << " L:" << losses << ")";
+
+        report << "  ";
+        if (elo >= 0) {
+          report << "+" << std::fixed << std::setprecision(0) << elo;
+        }
+        else {
+          report << std::fixed << std::setprecision(0) << elo;
+        }
+        report << " ELO\n";
+      }
+      report << "===================================================================\n";
+    }
+
+    // Benchmarks section (same for both modes)
+    if (!benchmarks.empty()) {
+      report << "\nBenchmarks:\n";
+
+      std::vector<const BenchmarkResult*> sortedBenchmarks = benchmarks;
+      std::ranges::sort(sortedBenchmarks, [](const auto* a, const auto* b) {
+        return a->timestamp > b->timestamp;
+      });
+
+      for (const auto* bench : sortedBenchmarks) {
+        std::string displayTimestamp = bench->timestamp;
+        if (displayTimestamp.length() >= 10) {
+          displayTimestamp = displayTimestamp.substr(0, 10);
+        }
+
+        const std::string npsStr = formatNumber(static_cast<int64_t>(bench->nps));
+
+        report << "  [" << displayTimestamp << "] "
+               << std::right << std::setw(12) << npsStr << " NPS"
+               << "  (d" << bench->depth << ", " << bench->hashSizeMB << "MB, " << bench->threads << "T)";
+        if (!bench->tag.empty()) {
+          report << "  [" << bench->tag << "]";
+        }
+        report << "\n";
+      }
+      report << "===================================================================\n";
+    }
+
+    // Check if we have any data at all
+    if (report.str().find("Test Suites") == std::string::npos &&
+        report.str().find("Historical") == std::string::npos &&
+        matches.empty() && benchmarks.empty()) {
+      report << "No results found for engine: " << actualEngine.toDisplayString() << "\n";
+    }
+
+    return report.str();
+  }
+
+  std::string ArenaRunner::queryEngineConfig(const std::string& enginePath, const std::string& commandLineArgs) {
+    std::ostringstream report;
+
+    try {
+      // Start engine temporarily to query configuration
+      UCIEngine engine(enginePath, commandLineArgs, false, "");
+
+      // Check if this is a FrankyCPP engine (has getoptions support)
+      const std::string& engineName = engine.getEngineName();
+      const bool isFrankyCPP        = engineName.find("FrankyCPP") != std::string::npos;
+
+      if (!isFrankyCPP) {
+        report << "Note: Engine '" << engineName << "' is not FrankyCPP.\n";
+        report << "      UCI has no standard mechanism to query current option values.\n";
+        report << "      Only FrankyCPP supports the 'getoptions' command.\n";
+        return report.str();
+      }
+
+      // Query options using FrankyCPP's getoptions command
+      const auto options = engine.getOptions();
+
+      if (options.empty()) {
+        report << "Note: Could not retrieve configuration from engine.\n";
+        report << "      The 'getoptions' command may not be supported by this version.\n";
+        return report.str();
+      }
+
+      report << "=== Engine Configuration: " << engineName << " ===\n";
+
+      // Group options by category (Search, Eval, etc.)
+      std::map<std::string, std::vector<std::pair<std::string, std::string>>> grouped;
+      for (const auto& [name, value] : options) {
+        // Simple categorization based on common prefixes
+        std::string category = "General";
+        if (name.find("USE_") == 0 || name.find("MAX_") == 0 || name.find("MIN_") == 0) {
+          category = "Search";
+        }
+        else if (name.find("EVAL_") == 0 || name.find("PST_") == 0) {
+          category = "Evaluation";
+        }
+        else if (name.find("BOOK") == 0 || name.find("TB") == 0) {
+          category = "Books/Tables";
+        }
+        grouped[category].emplace_back(name, value);
+      }
+
+      // Print grouped options
+      for (const auto& [category, opts] : grouped) {
+        report << "\n[" << category << "]\n";
+        for (const auto& [name, value] : opts) {
+          report << "  " << std::left << std::setw(30) << name << " = " << value << "\n";
+        }
+      }
+
+      report << "\n";
+
+    } catch (const std::exception& e) {
+      report << "Error querying engine configuration: " << e.what() << "\n";
+    }
 
     return report.str();
   }

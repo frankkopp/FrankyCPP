@@ -27,6 +27,12 @@ FrankyCPP_Arena --report --testsuites-only
 # View only match results
 FrankyCPP_Arena --report --matches-only
 
+# Show summary for specific engine (NEW)
+FrankyCPP_Arena --summary FrankyCPP-v1.5
+
+# Show summary with historical progression by tag (NEW)
+FrankyCPP_Arena --summary FrankyCPP-v1.5 --history
+
 # Compare target vs baselines
 FrankyCPP_Arena --cmp FrankyCPP-v1.2-dev
 
@@ -122,6 +128,70 @@ FrankyGo v1.0.3 vs FrankyCPP v0.5        100     58.0%      35/46/19    +56
 - **Score** - Win percentage for first engine
 - **W/D/L** - Wins / Draws / Losses (first engine perspective)
 - **ELO Diff** - ELO rating difference (positive = first engine stronger)
+
+---
+
+## Engine Summary (`--summary`)
+
+### Purpose
+
+Shows all results for a specific engine in a single view. Useful for:
+- Quick overview of one engine's performance across all test suites
+- Seeing all match results involving that engine
+- Tracking which feature tag was used for the tests
+
+### Basic Engine Summary
+
+**Command:**
+```bash
+FrankyCPP_Arena --summary FrankyCPP-v1.5
+```
+
+**Example Output:**
+```
+===================================================================
+Engine Summary: FrankyCPP v1.5 [QuietSee]
+===================================================================
+Test Suites (2026-03-08 01:53):
+  crafty_test:         178/346 (51.45%)
+  ecm98:               535/769 (69.57%)
+  franky_tests:        12/13   (92.31%)
+  kaufman:             21/25   (84.00%)
+  mate_test_suite:     16/20   (80.00%)
+  sts1-sts15_lan:      772/1500 (51.47%)
+  wac:                 193/201 (96.02%)
+-------------------------------------------------------------------
+  TOTAL:               1727/2874 (60.09%)
+  Total Nodes:         89,838,967,086
+  Total Time:          3h 18m 45s
+===================================================================
+
+Matches:
+  vs FrankyCPP v1.4    (300+0) [TTbuckets]:  63-41 (W:42 D:42 L:20)  +75 ELO
+  vs FrankyCPP v1.3    (300+0) [QuietSee]:   81-23 (W:69 D:24 L:11)  +219 ELO
+===================================================================
+```
+
+### Flexible Engine Matching
+
+The `--summary` command accepts flexible engine name formats:
+- `FrankyCPP-v1.5`
+- `FrankyCPP_v1.5`
+- `FrankyCPP v1.5`
+
+All match the same engine.
+
+### Feature Tags
+
+The `[QuietSee]` shown in the header is the **tag** from the test configuration. Tags help track which feature development phase each result corresponds to.
+
+**Setting Tags:**
+```yaml
+testSuiteRuns:
+  - engine: "FrankyCPP v1.5"
+    tag: "QuietSee"      # This tag appears in results
+    # ...
+```
 
 ---
 

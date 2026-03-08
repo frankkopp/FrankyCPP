@@ -69,7 +69,7 @@ namespace arena {
     result.totalNodes    = engineResult.totalNodes;
     result.totalTimeMs   = engineResult.totalTime.count();
     result.nps           = static_cast<uint64_t>(engineResult.nps);
-    result.notes         = config_.notes;
+    result.tag           = config_.tag;
 
     return result;
   }
@@ -85,7 +85,7 @@ namespace arena {
     result.depth         = config_.depth;
     result.hashSizeMB    = config_.hashSizeMB;
     result.threads       = config_.threads;
-    result.notes         = config_.notes;
+    result.tag           = config_.tag;
 
     try {
       // Start external engine with Hash and Threads options
@@ -149,7 +149,7 @@ namespace arena {
 
     } catch (const std::exception& e) {
       std::cerr << "Error running external benchmark: " << e.what() << "\n";
-      result.notes = "ERROR: " + std::string(e.what());
+      result.tag = "ERROR: " + std::string(e.what());
     }
 
     return result;
@@ -210,24 +210,24 @@ namespace arena {
       std::cout << "  * = external engine\n";
     }
 
-    // Print notes if any exist
-    bool hasNotes = false;
+    // Print tags if any exist
+    bool hasTags = false;
     for (const auto& r : results) {
-      if (!r.notes.empty()) {
-        hasNotes = true;
+      if (!r.tag.empty()) {
+        hasTags = true;
         break;
       }
     }
 
-    if (hasNotes) {
-      std::cout << "\nNotes:\n";
+    if (hasTags) {
+      std::cout << "\nTags:\n";
       for (const auto& r : results) {
-        if (!r.notes.empty()) {
+        if (!r.tag.empty()) {
           std::string ts = r.timestamp;
           if (ts.length() >= 10) {
             ts = ts.substr(0, 10);// Just date
           }
-          std::cout << "  [" << ts << " " << r.engineVersion << "] " << r.notes << "\n";
+          std::cout << "  [" << ts << " " << r.engineVersion << "] " << r.tag << "\n";
         }
       }
     }

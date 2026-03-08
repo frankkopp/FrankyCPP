@@ -23,6 +23,7 @@
 
 #include "ArenaConfig.h"
 
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -30,6 +31,18 @@
 #include <yaml-cpp/yaml.h>
 
 namespace arena {
+
+  namespace {
+    /// Derives suite name from EPD file path
+    /// e.g., "test/testsets/wac.epd" -> "wac"
+    std::string deriveSuiteNameFromPath(const std::string& epdPath) {
+      const std::filesystem::path path(epdPath);
+      std::string stem = path.stem().string();
+      // Convert to lowercase for consistency
+      std::ranges::transform(stem, stem.begin(), ::tolower);
+      return stem;
+    }
+  }// namespace
 
   ArenaConfig ArenaConfig::loadFromYaml(const std::string& configPath) {
     // Check if file exists
@@ -68,58 +81,70 @@ namespace arena {
         config.debugMode = root["debugMode"].as<bool>();
       }
 
-      // Load test suites
-      if (root["testSuites"]) {
-        for (const auto& suiteNode : root["testSuites"]) {
-          TestSuiteConfig suite;
-          suite.name    = suiteNode["name"].as<std::string>();
-          suite.epdPath = suiteNode["epdPath"].as<std::string>();
+      // Load test suite runs (new unified format)
+      if (root["testSuiteRuns"]) {
+        for (const auto& runNode : root["testSuiteRuns"]) {
+          TestSuiteRunConfig run;
+
+          // Required fields
+          run.engine        = runNode["engine"].as<std::string>();
+          run.engineVersion = runNode["engineVersion"].as<std::string>();
+          run.enginePath    = runNode["enginePath"].as<std::string>();
+
+          // Optional: tag (feature tag for tracking)
+          if (runNode["tag"]) {
+            run.tag = runNode["tag"].as<std::string>();
+          }
 
           // Time per move in milliseconds
-          int timeMs        = suiteNode["timePerMove"].as<int>();
-          suite.timePerMove = milliseconds{timeMs};
+          const int timeMs = runNode["timePerMove"].as<int>();
+          run.timePerMove  = milliseconds{timeMs};
 
-          suite.maxDepth = static_cast<chess::Depth>(suiteNode["maxDepth"].as<int>());
+          run.maxDepth = static_cast<chess::Depth>(runNode["maxDepth"].as<int>());
 
-          // Optional: external engine path (empty = use internal engine)
-          if (suiteNode["enginePath"]) {
-            suite.enginePath = suiteNode["enginePath"].as<std::string>();
+          // Optional fields with defaults
+          if (runNode["isolatePositions"]) {
+            run.isolatePositions = runNode["isolatePositions"].as<bool>();
           }
-
-          // Optional: engine version (explicit, not parsed from UCI name)
-          if (suiteNode["engineVersion"]) {
-            suite.engineVersion = suiteNode["engineVersion"].as<std::string>();
+          if (runNode["debugMode"]) {
+            run.debugMode = runNode["debugMode"].as<bool>();
           }
-
-          // Optional: isolate positions flag (default: true for fair comparison)
-          if (suiteNode["isolatePositions"]) {
-            suite.isolatePositions = suiteNode["isolatePositions"].as<bool>();
+          if (runNode["commandLineArgs"]) {
+            run.commandLineArgs = runNode["commandLineArgs"].as<std::string>();
           }
-
-          // Optional: debug mode (print UCI communication)
-          if (suiteNode["debugMode"]) {
-            suite.debugMode = suiteNode["debugMode"].as<bool>();
+          if (runNode["uciOptions"]) {
+            run.uciOptions = runNode["uciOptions"].as<std::string>();
           }
-
-          // Optional: command-line arguments for engine startup
-          if (suiteNode["commandLineArgs"]) {
-            suite.commandLineArgs = suiteNode["commandLineArgs"].as<std::string>();
-          }
-
-          // Optional: UCI options (setoption commands sent after initialization)
-          if (suiteNode["uciOptions"]) {
-            suite.uciOptions = suiteNode["uciOptions"].as<std::string>();
-          }
-
-          // Optional: parallel workers (1 = sequential, N>1 = parallel execution)
-          if (suiteNode["parallelWorkers"]) {
-            suite.parallelWorkers = suiteNode["parallelWorkers"].as<int>();
-            if (suite.parallelWorkers < 1) {
-              suite.parallelWorkers = 1;// Minimum 1 worker
+          if (runNode["parallelWorkers"]) {
+            run.parallelWorkers = runNode["parallelWorkers"].as<int>();
+            if (run.parallelWorkers < 1) {
+              run.parallelWorkers = 1;
             }
           }
 
-          config.testSuites.push_back(suite);
+          // Parse suites list (can be strings or override objects)
+          if (runNode["suites"]) {
+            for (const auto& suiteNode : runNode["suites"]) {
+              if (suiteNode.IsScalar()) {
+                // Simple string path
+                run.suites.emplace_back(suiteNode.as<std::string>());
+              }
+              else if (suiteNode.IsMap()) {
+                // Override object with path and optional overrides
+                SuiteOverride override;
+                override.path = suiteNode["path"].as<std::string>();
+                if (suiteNode["timePerMove"]) {
+                  override.timePerMove = milliseconds{suiteNode["timePerMove"].as<int>()};
+                }
+                if (suiteNode["maxDepth"]) {
+                  override.maxDepth = static_cast<chess::Depth>(suiteNode["maxDepth"].as<int>());
+                }
+                run.suites.emplace_back(std::move(override));
+              }
+            }
+          }
+
+          config.testSuiteRuns.push_back(std::move(run));
         }
       }
 
@@ -130,6 +155,11 @@ namespace arena {
           match.name        = matchNode["name"].as<std::string>();
           match.engine1Path = matchNode["engine1Path"].as<std::string>();
           match.engine2Path = matchNode["engine2Path"].as<std::string>();
+
+          // Optional: tag (feature tag for tracking)
+          if (matchNode["tag"]) {
+            match.tag = matchNode["tag"].as<std::string>();
+          }
 
           // Engine versions (optional - if not specified, extract from path)
           if (matchNode["engine1Version"]) {
@@ -228,9 +258,9 @@ namespace arena {
             bench.commandLineArgs = benchNode["commandLineArgs"].as<std::string>();
           }
 
-          // Optional: notes
-          if (benchNode["notes"]) {
-            bench.notes = benchNode["notes"].as<std::string>();
+          // Optional: tag (feature tag, renamed from notes)
+          if (benchNode["tag"]) {
+            bench.tag = benchNode["tag"].as<std::string>();
           }
 
           config.benchmarks.push_back(bench);
@@ -275,51 +305,66 @@ namespace arena {
       return false;
     }
 
-    // Validate test suites
-    for (const auto& suite : testSuites) {
-      if (suite.name.empty() || suite.epdPath.empty()) {
-        std::cerr << "Validation error: test suite has empty name or path" << std::endl;
+    // Validate test suite runs
+    for (const auto& run : testSuiteRuns) {
+      if (run.engine.empty() || run.enginePath.empty()) {
+        std::cerr << "Validation error: test suite run has empty engine name or path" << std::endl;
         return false;
       }
-      if (suite.maxDepth <= 0) {
-        std::cerr << "Validation error: test suite '" << suite.name
-                  << "' has invalid maxDepth: " << suite.maxDepth << std::endl;
+      if (run.maxDepth <= 0) {
+        std::cerr << "Validation error: test suite run for '" << run.engine
+                  << "' has invalid maxDepth: " << run.maxDepth << std::endl;
         return false;
       }
       // Validate timePerMove > 0
-      if (suite.timePerMove.count() <= 0) {
-        std::cerr << "Validation error: test suite '" << suite.name
-                  << "' has invalid timePerMove: " << suite.timePerMove.count() << "ms (must be > 0)" << std::endl;
+      if (run.timePerMove.count() <= 0) {
+        std::cerr << "Validation error: test suite run for '" << run.engine
+                  << "' has invalid timePerMove: " << run.timePerMove.count() << "ms (must be > 0)" << std::endl;
         return false;
       }
       // Validate parallelWorkers > 0
-      if (suite.parallelWorkers <= 0) {
-        std::cerr << "Validation error: test suite '" << suite.name
-                  << "' has invalid parallelWorkers: " << suite.parallelWorkers << " (must be > 0)" << std::endl;
+      if (run.parallelWorkers <= 0) {
+        std::cerr << "Validation error: test suite run for '" << run.engine
+                  << "' has invalid parallelWorkers: " << run.parallelWorkers << " (must be > 0)" << std::endl;
         return false;
       }
-      // Check EPD file exists
-      if (!std::filesystem::exists(suite.epdPath)) {
-        std::cerr << "Validation error: EPD file not found for suite '" << suite.name
-                  << "': " << suite.epdPath << std::endl;
+      // Check engine executable exists
+      if (!std::filesystem::exists(run.enginePath)) {
+        std::cerr << "Validation error: engine not found for test suite run '" << run.engine
+                  << "': " << run.enginePath << std::endl;
         std::cerr << "  Current working directory: "
                   << std::filesystem::current_path() << std::endl;
         std::cerr << "  Tip: Make sure to run from project root or use absolute paths" << std::endl;
         return false;
       }
-      // Validate external engine path is provided and exists
-      if (suite.enginePath.empty()) {
-        std::cerr << "Validation error: enginePath is required for suite '" << suite.name << "'" << std::endl;
-        std::cerr << "  Arena test suites require an external UCI engine executable" << std::endl;
+      // Check suites list is not empty
+      if (run.suites.empty()) {
+        std::cerr << "Validation error: test suite run for '" << run.engine
+                  << "' has no suites defined" << std::endl;
         return false;
       }
-      if (!std::filesystem::exists(suite.enginePath)) {
-        std::cerr << "Validation error: External engine not found for suite '" << suite.name
-                  << "': " << suite.enginePath << std::endl;
-        std::cerr << "  Current working directory: "
-                  << std::filesystem::current_path() << std::endl;
-        std::cerr << "  Tip: Make sure to run from project root or use absolute paths" << std::endl;
-        return false;
+      // Check each suite EPD file exists
+      for (const auto& suite : run.suites) {
+        const std::string* epdPath = nullptr;
+        if (std::holds_alternative<std::string>(suite)) {
+          epdPath = &std::get<std::string>(suite);
+        }
+        else {
+          epdPath = &std::get<SuiteOverride>(suite).path;
+        }
+        if (!std::filesystem::exists(*epdPath)) {
+          std::cerr << "Validation error: EPD file not found for run '" << run.engine
+                    << "': " << *epdPath << std::endl;
+          std::cerr << "  Current working directory: "
+                    << std::filesystem::current_path() << std::endl;
+          std::cerr << "  Tip: Make sure to run from project root or use absolute paths" << std::endl;
+          return false;
+        }
+      }
+      // Warn if tag is empty
+      if (run.tag.empty()) {
+        std::cerr << "WARNING: Test suite run for '" << run.engine
+                  << "' has empty tag - results won't be grouped by feature" << std::endl;
       }
     }
 
@@ -366,6 +411,11 @@ namespace arena {
                   << "': " << match.openingBook << std::endl;
         return false;
       }
+      // Warn if tag is empty
+      if (match.tag.empty()) {
+        std::cerr << "WARNING: Match '" << match.name
+                  << "' has empty tag - results won't be grouped by feature" << std::endl;
+      }
     }
 
     // Validate benchmarks
@@ -398,6 +448,51 @@ namespace arena {
     }
 
     return true;
+  }
+
+  std::vector<TestSuiteConfig> ArenaConfig::expandTestSuiteRuns() const {
+    std::vector<TestSuiteConfig> expanded;
+
+    for (const auto& run : testSuiteRuns) {
+      for (const auto& suite : run.suites) {
+        TestSuiteConfig config;
+
+        // Get EPD path and optional overrides
+        const std::string* epdPath = nullptr;
+        std::optional<milliseconds> timeOverride;
+        std::optional<chess::Depth> depthOverride;
+
+        if (std::holds_alternative<std::string>(suite)) {
+          epdPath = &std::get<std::string>(suite);
+        }
+        else {
+          const auto& override = std::get<SuiteOverride>(suite);
+          epdPath              = &override.path;
+          timeOverride         = override.timePerMove;
+          depthOverride        = override.maxDepth;
+        }
+
+        // Derive suite name from EPD path
+        config.name = deriveSuiteNameFromPath(*epdPath);
+
+        // Copy shared settings from run
+        config.epdPath          = *epdPath;
+        config.timePerMove      = timeOverride.value_or(run.timePerMove);
+        config.maxDepth         = depthOverride.value_or(run.maxDepth);
+        config.enginePath       = run.enginePath;
+        config.engineVersion    = run.engineVersion;
+        config.isolatePositions = run.isolatePositions;
+        config.debugMode        = run.debugMode;
+        config.commandLineArgs  = run.commandLineArgs;
+        config.uciOptions       = run.uciOptions;
+        config.parallelWorkers  = run.parallelWorkers;
+        config.tag              = run.tag;
+
+        expanded.push_back(std::move(config));
+      }
+    }
+
+    return expanded;
   }
 
 }// namespace arena

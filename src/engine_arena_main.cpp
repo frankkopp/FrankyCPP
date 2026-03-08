@@ -80,6 +80,10 @@ int main(int argc, char* argv[]) {
       ("engines",       "List all available engines from results")
       ("cmp",           po::value<std::string>(), "Compare engine against baselines: --cmp FrankyCPP-v1.2-dev")
       ("baseline",      po::value<std::vector<std::string>>()->multitoken(), "Specify baseline(s) for comparison (can repeat)")
+      ("summary",       po::value<std::string>(), "Show summary for engine: --summary FrankyCPP-v1.5")
+      ("history",       "Show all historical runs grouped by tag (requires --summary)")
+      // Configuration options
+      ("show-config",   "Show engine configuration before tests (FrankyCPP engines)")
       // Filtering options
       ("testsuites-only", "Show only test suite results (filter out matches)")
       ("matches-only",    "Show only match results (filter out test suites)");
@@ -103,22 +107,29 @@ int main(int argc, char* argv[]) {
       std::cout << "  --engines                List available engines from results\n";
       std::cout << "  --cmp <engine>           Compare engine against baselines\n";
       std::cout << "  --baseline <engine>      Specify baseline(s) for --cmp\n";
+      std::cout << "  --summary <engine>       Show summary for specific engine\n";
+      std::cout << "  --history                Show historical runs by tag (with --summary)\n";
       std::cout << "  --testsuites-only        Show only test suite results\n";
       std::cout << "  --matches-only           Show only match results\n";
+std::cout << "\nConfiguration Options:\n";
+      std::cout << "  --show-config            Show engine config before tests (FrankyCPP engines)\n";
       std::cout << "\nExamples:\n";
       std::cout << "  FrankyCPP_Arena --bench\n";
+      std::cout << "  FrankyCPP_Arena --bench --show-config\n";
       std::cout << "  FrankyCPP_Arena --bench-report\n";
       std::cout << "  FrankyCPP_Arena --report\n";
       std::cout << "  FrankyCPP_Arena --report --testsuites-only\n";
       std::cout << "  FrankyCPP_Arena --cmp FrankyCPP-v1.2-dev\n";
-      std::cout << "  FrankyCPP_Arena --testsuites\n";
+      std::cout << "  FrankyCPP_Arena --summary FrankyCPP-v1.5\n";
+      std::cout << "  FrankyCPP_Arena --summary FrankyCPP-v1.5 --history\n";
+      std::cout << "  FrankyCPP_Arena --testsuites --show-config\n";
       std::cout << "\nBenchmark Configuration (in arena.yaml):\n";
       std::cout << "  benchmarks:\n";
       std::cout << "    - name: \"v1.2 Release\"\n";
       std::cout << "      engineVersion: \"v1.2\"\n";
       std::cout << "      depth: 10\n";
       std::cout << "      hashSizeMB: 128\n";
-      std::cout << "      notes: \"After StaticMoveList optimization\"\n";
+      std::cout << "      tag: \"After StaticMoveList optimization\"\n";
       return 0;
     }
 
@@ -132,7 +143,8 @@ int main(int argc, char* argv[]) {
     std::cout << "Configuration loaded successfully!" << std::endl;
     std::cout << "  Version: " << config.version << std::endl;
     std::cout << "  Results Directory: " << config.resultsDir << std::endl;
-    std::cout << "  Test Suites: " << config.testSuites.size() << std::endl;
+    std::cout << "  Test Suite Runs: " << config.testSuiteRuns.size() << std::endl;
+    std::cout << "  Test Suites (expanded): " << config.expandTestSuiteRuns().size() << std::endl;
     std::cout << "  Matches: " << config.matches.size() << std::endl;
     std::cout << "  Benchmarks: " << config.benchmarks.size() << std::endl;
 
@@ -166,9 +178,11 @@ int main(int argc, char* argv[]) {
       std::cout << "\n=== Running Benchmarks ===" << std::endl;
       std::cout << "Configured benchmarks: " << config.benchmarks.size() << std::endl;
 
-      // Print current engine configuration
-      std::cout << "\n--- Current Engine Configuration ---" << std::endl;
-      std::cout << ConfigManager::instance().strCurrent() << std::endl;
+      // Print current engine configuration if --show-config is specified
+      if (vm.contains("show-config")) {
+        std::cout << "\n--- Current Engine Configuration ---" << std::endl;
+        std::cout << ConfigManager::instance().strCurrent() << std::endl;
+      }
 
       arena::ResultWriter writer(config.resultsDir);
 
@@ -178,8 +192,8 @@ int main(int argc, char* argv[]) {
         std::cout << "  Depth: " << benchConfig.depth << std::endl;
         std::cout << "  Hash: " << benchConfig.hashSizeMB << " MB" << std::endl;
         std::cout << "  Threads: " << benchConfig.threads << std::endl;
-        if (!benchConfig.notes.empty()) {
-          std::cout << "  Notes: " << benchConfig.notes << std::endl;
+        if (!benchConfig.tag.empty()) {
+          std::cout << "  Tag: " << benchConfig.tag << std::endl;
         }
         std::cout << std::endl;
 
@@ -196,7 +210,7 @@ int main(int argc, char* argv[]) {
 
         // Save results only if notes are provided (non-empty)
         // This allows ad-hoc runs without polluting the results file
-        if (!result.notes.empty()) {
+        if (!result.tag.empty()) {
           const std::string path = writer.writeBenchmarkResult(result);
           std::cout << "\nResults saved to: " << path << std::endl;
         }
@@ -297,14 +311,36 @@ int main(int argc, char* argv[]) {
         std::cout << arena::ArenaRunner::generateMatchComparisonReport(data, targetEngine, baselines);
       }
     }
+    else if (vm.contains("summary")) {
+      // --history requires --summary
+      if (vm.contains("history") && !vm.contains("summary")) {
+        std::cerr << "ERROR: --history requires --summary\n";
+        std::cerr << "Usage: --summary FrankyCPP-v1.5 --history\n";
+        return 1;
+      }
+
+      const auto engineStr             = vm["summary"].as<std::string>();
+      const arena::EngineId targetEngine = arena::EngineId::fromString(engineStr);
+      const bool showHistory           = vm.contains("history");
+
+      std::cout << arenaRunner.generateEngineSummary(targetEngine, showHistory);
+    }
+    else if (vm.contains("history")) {
+      // --history without --summary
+      std::cerr << "ERROR: --history requires --summary\n";
+      std::cerr << "Usage: --summary FrankyCPP-v1.5 --history\n";
+      return 1;
+    }
     else if (vm.contains("testsuites")) {
-      arenaRunner.runTestSuitesOnly();
+      const bool showConfig = vm.contains("show-config");
+      arenaRunner.runTestSuitesOnly(showConfig);
     }
     else if (vm.contains("matches")) {
       arenaRunner.runMatchesOnly();
     }
     else {
-      arenaRunner.runAll();
+      const bool showConfig = vm.contains("show-config");
+      arenaRunner.runAll(showConfig);
     }
 
     std::cout << "\n=== Arena Complete ===" << std::endl;

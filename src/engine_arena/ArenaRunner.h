@@ -81,11 +81,13 @@ namespace arena {
     /// @param config Arena configuration
     explicit ArenaRunner(const ArenaConfig& config);
 
-    /// Runs all configured test suites and matches
-    void runAll() const;
+/// Runs all configured tests (test suites and matches)
+    /// @param showConfig If true, query and display engine configuration before running
+    void runAll(bool showConfig = false) const;
 
     /// Runs only test suites (no matches)
-    void runTestSuitesOnly() const;
+    /// @param showConfig If true, query and display engine configuration before running
+    void runTestSuitesOnly(bool showConfig = false) const;
 
     /// Runs only matches (no test suites)
     void runMatchesOnly() const;
@@ -122,6 +124,10 @@ namespace arena {
     /// @param data ReportData to populate (modifies in place)
     void loadMatchResults(ReportData& data) const;
 
+    /// Loads benchmark results into ReportData structure
+    /// @param data ReportData to populate (modifies in place)
+    void loadBenchmarkResults(ReportData& data) const;
+
     /// Generates match baseline report showing all engine pairs
     /// @param data ReportData with loaded match results
     /// @return Formatted match report string
@@ -136,6 +142,20 @@ namespace arena {
       const ReportData& data,
       const EngineId& targetEngine,
       const std::vector<EngineId>& baselineEngines = {});
+
+    /// Generates engine summary showing all results for a specific engine
+    /// @param engine Engine to show summary for (e.g., "FrankyCPP-v1.5")
+    /// @param showHistory If true, show historical runs grouped by tag
+    /// @return Formatted summary string
+    std::string generateEngineSummary(const EngineId& engine, bool showHistory = false) const;
+
+    /// Query and display engine configuration via UCI getoptions command
+    /// For FrankyCPP engines, uses the non-standard "getoptions" command to get current values.
+    /// For other engines, this will likely not work (UCI has no standard query mechanism).
+    /// @param enginePath Path to the engine executable
+    /// @param commandLineArgs Optional command-line arguments for the engine
+    /// @return Formatted configuration string, or empty if not supported
+    static std::string queryEngineConfig(const std::string& enginePath, const std::string& commandLineArgs = "");
 
   private:
     const ArenaConfig& arenaConfig; ///< Reference to arena configuration

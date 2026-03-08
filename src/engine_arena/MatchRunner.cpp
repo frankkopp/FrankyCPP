@@ -140,6 +140,7 @@ namespace arena {
       result.arenaVersion   = arenaConfig.version;
       result.timestamp      = getCurrentTimestamp();
       result.matchName      = matchConfig.name;
+      result.tag            = matchConfig.tag;
       result.timeControl    = matchConfig.timeControl;
       result.rounds         = matchConfig.rounds;
       result.engine1Name    = currentState.engine1Name;
@@ -227,6 +228,7 @@ namespace arena {
     result.arenaVersion   = arenaConfig.version;
     result.timestamp      = getCurrentTimestamp();
     result.matchName      = matchConfig.name;
+    result.tag            = matchConfig.tag;
     result.timeControl    = matchConfig.timeControl;
     result.rounds         = matchConfig.rounds;
     result.engine1Name    = engine1Name;
@@ -441,6 +443,7 @@ namespace arena {
 
     // Match identification
     result.matchName   = matchConfig.name;
+    result.tag         = matchConfig.tag;
     result.timeControl = matchConfig.timeControl;
     result.rounds      = matchConfig.rounds;
 

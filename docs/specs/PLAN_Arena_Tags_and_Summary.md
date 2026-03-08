@@ -1,9 +1,9 @@
 # FrankyCPP Arena: Unified Config with Tags and Engine Summary
 
-**Document Version:** 1.0  
+**Document Version:** 1.1  
 **Created:** 2026-03-08  
 **Last Updated:** 2026-03-08  
-**Status:** 📋 PLANNED  
+**Status:** 🚧 IN PROGRESS  
 **Target:** FrankyCPP Arena v1.6+  
 **Priority:** Medium (Development workflow improvement)
 
@@ -475,16 +475,16 @@ Convert to new format with `testSuiteRuns:` and `tag` fields.
 
 ## Validation Checklist
 
-- [ ] `FrankyCPP_Arena --testsuites` runs all suites from `testSuiteRuns` config
-- [ ] Per-suite overrides work (custom `timePerMove`, `maxDepth` per suite)
-- [ ] Empty tag triggers warning during validation
+- [x] `FrankyCPP_Arena --testsuites` runs all suites from `testSuiteRuns` config
+- [x] Per-suite overrides work (custom `timePerMove`, `maxDepth` per suite)
+- [x] Empty tag triggers warning during validation
 - [ ] Duplicate tag (same as last run) triggers warning during validation
-- [ ] Results JSON files include `tag` field
-- [ ] `FrankyCPP_Arena --summary FrankyCPP-v1.5` shows aggregated results
+- [x] Results JSON files include `tag` field
+- [x] `FrankyCPP_Arena --summary FrankyCPP-v1.5` shows aggregated results
 - [ ] `FrankyCPP_Arena --summary FrankyCPP-v1.5 --history` shows progression by tag
-- [ ] Flexible engine name matching works (`-`, `_`, ` ` equivalent)
-- [ ] Match results show with `tag` in summary
-- [ ] Benchmark results use `tag` instead of `notes`
+- [x] Flexible engine name matching works (`-`, `_`, ` ` equivalent)
+- [x] Match results show with `tag` in summary
+- [x] Benchmark results use `tag` instead of `notes`
 
 ---
 

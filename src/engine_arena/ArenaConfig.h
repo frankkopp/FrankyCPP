@@ -92,10 +92,35 @@
 
 #include "types/types.h"
 
+#include <optional>
 #include <string>
+#include <variant>
 #include <vector>
 
 namespace arena {
+
+  /// Per-suite override settings (optional) for TestSuiteRunConfig
+  struct SuiteOverride {
+    std::string path;                            ///< EPD file path (required)
+    std::optional<milliseconds> timePerMove;     ///< Override time limit
+    std::optional<chess::Depth> maxDepth;        ///< Override depth limit
+  };
+
+  /// Configuration for a grouped test suite run (new unified format)
+  struct TestSuiteRunConfig {
+    std::string engine;              ///< Display name: "FrankyCPP v1.5"
+    std::string engineVersion;       ///< Version for grouping: "v1.5"
+    std::string tag;                 ///< Feature tag: "QuietSee"
+    std::string enginePath;          ///< Path to executable
+    milliseconds timePerMove;        ///< Time limit per move
+    chess::Depth maxDepth;           ///< Maximum search depth
+    bool isolatePositions = true;    ///< Clear state between positions
+    bool debugMode        = false;   ///< Print UCI communication
+    std::string commandLineArgs;     ///< Command-line arguments
+    std::string uciOptions;          ///< UCI options
+    int parallelWorkers = 1;         ///< Parallel workers
+    std::vector<std::variant<std::string, SuiteOverride>> suites; ///< EPD paths or overrides
+  };
 
   /// Configuration for a single EPD test suite
   struct TestSuiteConfig {
@@ -110,11 +135,13 @@ namespace arena {
     std::string commandLineArgs;  ///< Command-line arguments to pass to engine (e.g., "--nobook -hash 128")
     std::string uciOptions;       ///< UCI options as semicolon-separated pairs (e.g., "Hash=256; Threads=4")
     int parallelWorkers = 1;      ///< Number of parallel workers (1 = sequential, N>1 = parallel)
+    std::string tag;              ///< Feature tag: "QuietSee" (propagated from TestSuiteRunConfig)
   };
 
   /// Configuration for a single engine match
   struct MatchConfig {
     std::string name;          ///< Match name (e.g., "v1.1 vs v1.0")
+    std::string tag;           ///< Feature tag: "QuietSee"
     std::string engine1Path;   ///< Path to first engine executable
     std::string engine1Version;///< Engine 1 version (e.g., "v1.1") - explicit, for results
     std::string engine1Options;///< UCI options for engine 1 (e.g., "OwnBook=false")
@@ -139,18 +166,18 @@ namespace arena {
     int hashSizeMB = 128;       ///< Hash table size in MB (default: 128)
     int threads    = 1;         ///< Number of threads (default: 1, reserved for future SMP)
     std::string commandLineArgs;///< Command-line arguments (e.g., "--nobook")
-    std::string notes;          ///< Optional notes for this benchmark configuration
+    std::string tag;            ///< Feature tag: "QuietSee" (renamed from notes)
   };
 
   /// Main arena configuration
   struct ArenaConfig {
-    std::string version;                    ///< Engine version being tested
-    std::string resultsDir;                 ///< Root directory for results
-    std::string cutechessPath;              ///< Path to cutechess-cli executable (global)
-    bool debugMode = false;                 ///< Enable cutechess-cli debug output (prints engine I/O)
-    std::vector<TestSuiteConfig> testSuites;///< Test suite configurations
-    std::vector<MatchConfig> matches;       ///< Match configurations
-    std::vector<BenchmarkConfig> benchmarks;///< Benchmark configurations
+    std::string version;                         ///< Arena version (e.g., "v1.5") - used for result tracking
+    std::string resultsDir;                      ///< Root directory for results
+    std::string cutechessPath;                   ///< Path to cutechess-cli executable (global)
+    bool debugMode = false;                      ///< Enable cutechess-cli debug output (prints engine I/O)
+    std::vector<TestSuiteRunConfig> testSuiteRuns; ///< Grouped test suite run configurations
+    std::vector<MatchConfig> matches;            ///< Match configurations
+    std::vector<BenchmarkConfig> benchmarks;     ///< Benchmark configurations
 
     /// Load configuration from YAML file
     /// @param configPath Path to arena.yaml configuration file
@@ -160,6 +187,10 @@ namespace arena {
     /// Validate configuration (check paths exist, values are sensible)
     /// @return True if valid, false otherwise
     bool validate() const;
+
+    /// Expand testSuiteRuns into flat list of TestSuiteConfig for runners
+    /// @return Vector of individual test suite configs with all settings propagated
+    [[nodiscard]] std::vector<TestSuiteConfig> expandTestSuiteRuns() const;
   };
 
 }// namespace arena
