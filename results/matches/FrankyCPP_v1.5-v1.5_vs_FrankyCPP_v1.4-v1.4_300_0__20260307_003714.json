@@ -29,6 +29,6 @@
     "eloDifference": 74.6
   },
 
-  "pgnPath": "results/matchesv1.5_vs_v1.4_300s_TTbuckets.pgn",
+  "pgnPath": "results/matches/v1.5_vs_v1.4_300s_TTbuckets.pgn",
   "durationMs": 15533011
 }
