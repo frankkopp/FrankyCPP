@@ -249,7 +249,7 @@ All string fields are JSON-escaped in the output.
     "draws": 42,
     "engine1Score": 63.0,
     "engine2Score": 41.0,
-    "eloDifference": 75.5
+    "eloDifference": 74.6
   },
 
   "pgnPath": "results/matches/v1.5_vs_v1.4_300s.pgn",

@@ -403,7 +403,7 @@ Match Complete: v1.5_vs_v1.4_300s_TTbuckets
 ==================================================================
 ```
 
-Re-run after Arena Improvments in v1.5
+Re-run after Arena Improvements in v1.5
 ```
 ===================================================================
 Test Suites (2026-03-08 14:22):

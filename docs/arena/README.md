@@ -400,7 +400,7 @@ Reporting:
   -r, --report, --baselines       Show baseline report (all engines, all test suites)
   --engines                       List all available engines from results
   --cmp <engine>                  Compare engine against baselines (e.g., --cmp FrankyCPP-v1.2-dev)
-  -b, --baseline <engine>         Specify baseline(s) for comparison (can repeat)
+  --baseline <engine>             Specify baseline(s) for comparison (can repeat)
   --summary <engine>              Show summary for specific engine (NEW)
   --history                       Show historical runs by tag (with --summary) (NEW)
   --testsuites-only               Show only test suite results (filter out matches)
