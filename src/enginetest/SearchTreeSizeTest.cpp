@@ -17,6 +17,10 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+// SearchTreeSizeTest uses CONFIG_OVERRIDE on non-essential config members which
+// become static constexpr in production builds — exclude entirely.
+#ifndef FRANKYCPP_PRODUCTION
+
 #include <unordered_map>
 
 // no longer use fmt chrono; use our time utilities
@@ -576,3 +580,5 @@ SearchTreeSize::SingleTest SearchTreeSizeTest::measureTreeSize(Search& search, c
 
   return test;
 }
+
+#endif // FRANKYCPP_PRODUCTION

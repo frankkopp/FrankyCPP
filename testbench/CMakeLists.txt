@@ -9,11 +9,14 @@ find_package(benchmark CONFIG REQUIRED)
 
 # Google Benchmark executable
 set(benchExeName FrankyCPP_v${FrankyCPP_VERSION_MAJOR}.${FrankyCPP_VERSION_MINOR}_Bench)
+
+# Auto-discover benchmark source files (CONFIGURE_DEPENDS
+# ensures CMake re-runs when files are added or removed)
+file(GLOB BENCH_SRCS CONFIGURE_DEPENDS *.cpp)
+
 add_executable(
         ${benchExeName}
-        RunBench.cpp
-        ChessCoreBench.cpp
-        TimingBench.cpp
+        ${BENCH_SRCS}
         )
 
 # Ensure benchmark explicitly requests C++20

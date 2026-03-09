@@ -17,6 +17,10 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+// SearchTreeSizeTest uses CONFIG_OVERRIDE on non-essential config members which
+// become static constexpr in production builds — exclude entirely.
+#ifndef FRANKYCPP_PRODUCTION
+
 #include "Test_Fens.h"
 #include "Test_Utils.h"
 #include "common/Logging.h"
@@ -125,3 +129,5 @@ Test: 66 LMP        Nodes:          189.591  Nps:        2.370.515  Time:       
 Test: 67 QFP        Nodes:          185.605  Nps:        2.338.179  Time:               63 Depth:   8/15  Special1:           46.032 Special2:          140.858
 Test: 70 CEXT       Nodes:          219.606  Nps:        2.361.098  Time:               76 Depth:   8/16  Special1:           53.384 Special2:          168.198
 */
+
+#endif // FRANKYCPP_PRODUCTION

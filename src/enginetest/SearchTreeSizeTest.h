@@ -20,6 +20,10 @@
 #ifndef FRANKYCPP_SEARCHTREESIZETEST_H
 #define FRANKYCPP_SEARCHTREESIZETEST_H
 
+// SearchTreeSizeTest uses CONFIG_OVERRIDE on non-essential config members which
+// become static constexpr in production builds — exclude entirely.
+#ifndef FRANKYCPP_PRODUCTION
+
 //=============================================================================
 // SearchTreeSizeTest.h - Search Feature Benchmarking
 //=============================================================================
@@ -125,5 +129,6 @@ namespace enginetest {
 
 } // namespace enginetest
 
+#endif // FRANKYCPP_PRODUCTION
 
 #endif // FRANKYCPP_SEARCHTREESIZETEST_H

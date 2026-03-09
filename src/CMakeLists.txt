@@ -4,58 +4,29 @@ message("====================================================================")
 
 cmake_minimum_required(VERSION 3.16)
 
-# define library files
+# Auto-discover library source files from each module (CONFIGURE_DEPENDS
+# ensures CMake re-runs when files are added or removed)
+file(GLOB SRCS_COMMON      CONFIGURE_DEPENDS common/*.cpp common/*.h)
+file(GLOB SRCS_CHESSCORE   CONFIGURE_DEPENDS chesscore/*.cpp chesscore/*.h)
+file(GLOB SRCS_OPENINGBOOK CONFIGURE_DEPENDS openingbook/*.cpp openingbook/*.h)
+file(GLOB SRCS_ENGINE      CONFIGURE_DEPENDS engine/*.cpp engine/*.h)
+file(GLOB SRCS_ENGINETEST  CONFIGURE_DEPENDS enginetest/*.cpp enginetest/*.h)
+file(GLOB SRCS_TYPES       CONFIGURE_DEPENDS types/*.cpp types/*.h)
+file(GLOB SRCS_CONFIGURATION CONFIGURE_DEPENDS config/*.cpp config/*.h)
+file(GLOB SRCS_TABLEBASE   CONFIGURE_DEPENDS tablebase/*.cpp tablebase/*.h)
+
 set(FrankyCPPlib_SRCS
-        common/ThreadPool.cpp
-        common/Logging.cpp
-        common/CrashHandler.cpp
-
-        chesscore/Position.cpp
-        chesscore/MoveGenerator.cpp
-        chesscore/Perft.cpp
-        chesscore/History.cpp
-        chesscore/MoveUtils.cpp
-
-        openingbook/OpeningBook.cpp openingbook/OpeningBook.h
-
-        engine/UciHandler.cpp engine/UciHandler.h
-        engine/UciOptions.cpp engine/UciOptions.h
-        engine/TT.cpp engine/TT.h
-        engine/Search.cpp engine/Search.h
-        engine/SearchResult.h engine/SearchLimits.h
-        engine/SearchStats.h
-        engine/See.cpp engine/See.h
-        engine/Evaluator.cpp engine/Evaluator.h
-        engine/PawnTT.cpp engine/PawnTT.h
-        engine/Benchmark.cpp engine/Benchmark.h
-
-        enginetest/TestSuite.cpp enginetest/TestSuite.h
-        enginetest/EpdParser.cpp enginetest/EpdParser.h
-        enginetest/EdpTest.h
-        enginetest/TestTypes.h
-
-        types/attacks.cpp
-        types/bitboards.h
-
-        config/ConfigManager.cpp
-        config/ConfigGenerators.cpp
-        config/ConfigRegistry.cpp
-
-        tablebase/Tablebase.cpp tablebase/Tablebase.h
-        tablebase/TablebasePaths.cpp tablebase/TablebasePaths.h
-        tablebase/TablebaseDownloader.cpp tablebase/TablebaseDownloader.h
+        ${SRCS_COMMON}
+        ${SRCS_CHESSCORE}
+        ${SRCS_OPENINGBOOK}
+        ${SRCS_ENGINE}
+        ${SRCS_ENGINETEST}
+        ${SRCS_TYPES}
+        ${SRCS_CONFIGURATION}
+        ${SRCS_TABLEBASE}
 )
 
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})
-
-# SearchTreeSizeTest is a dev/tuning research tool — excluded from production builds.
-# It uses CONFIG_OVERRIDE extensively on non-essential (frozen) config members.
-# TestSuite/EpdParser stay in all builds as they are used by main.cpp (--testsuite CLI option).
-if (NOT FRANKYCPP_PRODUCTION)
-    target_sources(FrankyCPPlib PRIVATE
-            enginetest/SearchTreeSizeTest.cpp enginetest/SearchTreeSizeTest.h
-    )
-endif ()
 
 # Request C++20 via features (propagates to dependents)
 target_compile_features(FrankyCPPlib PUBLIC cxx_std_20)
@@ -166,15 +137,11 @@ message(STATUS "Configuring Engine Arena executable...")
 set(arenaExeName ${exeName}_Arena)
 message(STATUS "Arena executable name: ${arenaExeName}")
 
+file(GLOB SRCS_ENGINE_ARENA CONFIGURE_DEPENDS engine_arena/*.cpp engine_arena/*.h)
+
 add_executable(${arenaExeName}
         engine_arena_main.cpp
-        engine_arena/ArenaConfig.cpp
-        engine_arena/ArenaRunner.cpp
-        engine_arena/ResultWriter.cpp
-        engine_arena/TestSuiteRunner.cpp
-        engine_arena/MatchRunner.cpp
-        engine_arena/UCIEngine.cpp
-        engine_arena/BenchmarkRunner.cpp
+        ${SRCS_ENGINE_ARENA}
 )
 
 target_compile_features(${arenaExeName} PRIVATE cxx_std_20)
