@@ -149,25 +149,27 @@ Shows all engines found in stored results.
 **Example Output:**
 ```
 ===================================================================
-Engine Summary: FrankyCPP v1.5 [QuietSee]
+Engine Summary: FrankyCPP v1.5
 ===================================================================
-Test Suites (2026-03-08 01:53):
-  crafty_test:         178/346 (51.45%)
-  ecm98:               535/769 (69.57%)
-  franky_tests:        12/13   (92.31%)
-  kaufman:             21/25   (84.00%)
-  mate_test_suite:     16/20   (80.00%)
-  sts1-sts15_lan:      772/1500 (51.47%)
-  wac:                 193/201 (96.02%)
+Test Suites (2026-03-08 14:22):
+  STS1-STS15_LAN:      780/1500 (52.00%)
+  crafty_test:         166/346  (47.98%)
+  ecm98:               543/769  (70.61%)
+  franky_tests:         13/13   (100.00%)
+  kaufman:              19/25   (76.00%)
+  mate_test_suite:      16/20   (80.00%)
+  wac:                 194/201  (96.52%)
 -------------------------------------------------------------------
-  TOTAL:               1727/2874 (60.09%)
-  Total Nodes:         89,838,967,086
-  Total Time:          3h 18m 45s
+  TOTAL:               1731/2874 (60.23%)
+  Total Nodes:         82,793,955,345
+  Total Time:          3h 16m 47s
 ===================================================================
 
 Matches:
-  vs FrankyCPP v1.4    (300+0) [TTbuckets]:  63-41 (W:42 D:42 L:20)  +75 ELO
-  vs FrankyCPP v1.3    (300+0) [QuietSee]:   81-23 (W:69 D:24 L:11)  +219 ELO
+  vs FrankyCPP v1.4    (300+0):  63-37 (W:44 D:38 L:18)  +92.5 ELO
+  vs FrankyCPP v1.3    (300+0):  75.5-24.5 (W:62 D:27 L:11)  +195.5 ELO
+  vs FrankyGo v1.0.3   (300+0):  80.5-19.5 (W:72 D:17 L:11)  +246.3 ELO
+  vs Stockfish 18 2200 (300+0):  82-18 (W:80 D:4 L:16)  +263.4 ELO
 ===================================================================
 
 Benchmarks:

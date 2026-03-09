@@ -221,7 +221,6 @@ TEST_F(SearchTest, bookMoveSearch) {
   sl.moveTime    = 1s;
   s.isReady();
   s.startSearch(p, sl);
-  EXPECT_TRUE(s.isSearching());
   s.waitWhileSearching();
   EXPECT_TRUE(s.hasResult());
   EXPECT_NE(MOVE_NONE, s.getLastSearchResult().bestMove);

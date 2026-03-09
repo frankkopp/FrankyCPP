@@ -1,8 +1,8 @@
 # FrankyCPP v1.x Engine Enhancement Plan
 
-**Document Version:** 1.5
+**Document Version:** 1.6
 **Created:** 2026-02-01
-**Last Updated:** 2026-03-06
+**Last Updated:** 2026-03-09
 **Status:** Phases 1, 2, 3, 5, 6 Complete. Phase 4 Partial.
 **Target:** FrankyCPP v1.5+ releases
 
@@ -12,15 +12,16 @@
 
 This document outlines a comprehensive plan for enhancing FrankyCPP's playing strength through systematic improvements to search, evaluation, and supporting infrastructure. The plan is organized into logical phases, each building on previous work while maintaining the engine's stability and production quality.
 
-**Current State (v1.5 Dev):**
+**Current State (v1.5):**
 - Production-ready classical chess engine
 - Alpha-beta search with modern pruning (NMP, LMR, futility, razoring)
 - Classical evaluation (material, PST, pawn structure, mobility, king safety)
 - **Multi-threaded search (Lazy SMP)** implemented in v1.4 (+119 ELO vs v1.3)
-- **TT Buckets** (4-way associative, cache-line aligned) implemented in v1.5
+- **TT Buckets** (4-way associative, cache-line aligned) implemented in v1.5 (+92.5 ELO vs v1.4)
 - **XOR Key Verification** for torn-read detection (SMP race safety)
 - **Endgame Tablebase Support (Syzygy)** integrated in v1.2
 - **Search Optimizations** (LMR, History, PVS fixes) integrated in v1.3 (+109 ELO vs v1.1)
+- **Cumulative: +320 ELO** vs v1.1 baseline (verified via Arena matches)
 - 100+ configurable parameters via YAML
 - Comprehensive test suite (266+ tests)
 - Cross-platform support (Windows/Linux)

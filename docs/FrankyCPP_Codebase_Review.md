@@ -2,7 +2,11 @@
 
 ## Executive Summary
 
-08ELOFrankyCPP is a production-ready C++ chess engine (v0.7 → v1.3) implementing the UCI protocol. It's a modern evolution from "FrankyGo" leveraging C++20 features. The engine features alpha-beta search with advanced pruning techniques, configurable evaluation function, opening book support, and comprehensive testing infrastructure.
+FrankyCPP is a production-ready C++ chess engine (v0.7 → v1.5) implementing the UCI protocol. It's a modern evolution from "FrankyGo" leveraging C++20 features. The engine features alpha-beta search with advanced pruning techniques, configurable evaluation function, opening book support, and comprehensive testing infrastructure.
+
+**v1.5 Development Cycle (Complete):** TT bucket design (4-way associative, cache-line aligned), XOR key verification for SMP race safety, Arena testing improvements. Total result: **+92.5 ELO** vs v1.4 baseline (**+320 ELO cumulative** vs v1.1).
+
+**v1.4 Development Cycle (Complete):** Lazy SMP multi-threading, search feature correctness review, improving flag, LMR history-based reductions, CutNode reductions. Total result: **+119 ELO** vs v1.3 baseline.
 
 **v1.3 Development Cycle (Complete):** This version focused on search optimization: logarithmic LMR formula, LMR tuning, and critical bug fixes in isPvNode propagation and history heuristic. Total result: **+109 ELO** vs v1.1 baseline.
 
@@ -484,21 +488,21 @@ Future improvements are tracked in the v1.x roadmap below.
 
 | #   | Item                            | Effort       | Status | Notes                                                         |
 |-----|---------------------------------|--------------|--------|---------------------------------------------------------------|
-| E1  | Lazy SMP multi-threaded search  | 🔴 2-4 weeks | ⬜ TODO | Thread-safe TT, shared state                                  |
-| E2  | Syzygy tablebase support        | 🟡 1-2 weeks | ⬜ TODO | Fathom library integration                                    |
-| E3  | Singular extensions             | 🟢 2-3 days  | ⬜ TODO | Localized search change                                       |
+| E1  | Lazy SMP multi-threaded search  | 🔴 2-4 weeks | ✅ DONE | v1.4: +119 ELO vs v1.3. SearchThreadData, helper threads      |
+| E2  | Syzygy tablebase support        | 🟡 1-2 weeks | ✅ DONE | v1.2: Fathom library, WDL/DTZ probing                         |
+| E3  | Singular extensions             | 🟢 2-3 days  | ✅ DONE | v1.2: +27 ELO contribution                                    |
 | E4  | Runtime PEXT fallback           | 🟡 3-5 days  | ⬜ TODO | CPUID + fallback path                                         |
-| E5  | Counter-move history            | 🟡 3-5 days  | ⬜ TODO | Piece-to-square history                                       |
+| E5  | Counter-move history            | 🟡 3-5 days  | ✅ DONE | v1.2: Piece-to-square history                                 |
 | E6  | NNUE evaluation                 | 🔴 4-8 weeks | ⬜ TODO | Major undertaking                                             |
 | E7  | Parameter tuning infrastructure | 🟡 1-2 weeks | ⬜ TODO | SPSA/Texel tuning                                             |
-| E8  | Best-move instability time mgmt | 🟢 2-3 days  | ⬜ TODO | Dynamic time allocation                                       |
+| E8  | Best-move instability time mgmt | 🟢 2-3 days  | ✅ DONE | v1.2: Dynamic time allocation                                 |
 | E9  | Selective checks in quiescence  | 🟡 3-5 days  | ⬜ TODO | Search checking moves after capture phase to find short mates |
-| E10 | Check extensions                | 🟢 2-3 days  | ⬜ TODO | Extend when few legal replies to check                        |
+| E10 | Check extensions                | 🟢 2-3 days  | ✅ DONE | v1.2: +30 ELO contribution                                    |
 
 ---
 
 *Review conducted: 2026-01-26*  
-*Last updated: 2026-02-09 (PlyStack refactoring - unified per-ply search state)*
+*Last updated: 2026-03-09 (v1.5 Arena results: +92.5 ELO vs v1.4, +320 cumulative vs v1.1)*
 
 ---
 

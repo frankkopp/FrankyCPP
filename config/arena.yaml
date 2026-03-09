@@ -115,125 +115,125 @@ testSuiteRuns:
       - "test/testsets/ecm98.epd"
       - "test/testsets/kaufman.epd"
 
-  # ==========================================================================
-  # FrankyCPP v1.4 test suites (baseline)
-  # ==========================================================================
-  - engine: "FrankyCPP v1.4"
-    engineVersion: "v1.4"
-    tag: "Release v1.4"
-    enginePath: "Release/FrankyCPP_v1.4/FrankyCPP_v1.4.exe"
-    timePerMove: 5000
-    maxDepth: 99
-    isolatePositions: true
-    debugMode: false
-    commandLineArgs: "--nobook"
-    uciOptions: ""
-    parallelWorkers: 4
-    suites:
-      - "test/testsets/franky_tests.epd"
-      - path: "test/testsets/mate_test_suite.epd"
-        timePerMove: 15000
-      - "test/testsets/wac.epd"
-      - "test/testsets/STS1-STS15_LAN.EPD"
-      - "test/testsets/crafty_test.epd"
-      - "test/testsets/ecm98.epd"
-      - "test/testsets/kaufman.epd"
-
-  # ==========================================================================
-  # FrankyCPP v1.3 test suites (baseline)
-  # ==========================================================================
-  - engine: "FrankyCPP v1.3"
-    engineVersion: "v1.3"
-    tag: "Release v1.3"
-    enginePath: "Release/FrankyCPP_v1.3/FrankyCPP_v1.3.exe"
-    timePerMove: 5000
-    maxDepth: 99
-    isolatePositions: true
-    debugMode: false
-    commandLineArgs: "--nobook"
-    uciOptions: ""
-    parallelWorkers: 8
-    suites:
-      - "test/testsets/franky_tests.epd"
-      - path: "test/testsets/mate_test_suite.epd"
-        timePerMove: 15000
-      - "test/testsets/wac.epd"
-      - "test/testsets/STS1-STS15_LAN.EPD"
-      - "test/testsets/crafty_test.epd"
-      - "test/testsets/ecm98.epd"
-      - "test/testsets/kaufman.epd"
-
-  # ==========================================================================
-  # FrankyCPP v1.1 test suites (baseline)
-  # ==========================================================================
-  - engine: "FrankyCPP v1.1"
-    engineVersion: "v1.1"
-    tag: "Release v1.1"
-    enginePath: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
-    timePerMove: 5000
-    maxDepth: 99
-    isolatePositions: true
-    debugMode: false
-    commandLineArgs: "--nobook"
-    uciOptions: ""
-    parallelWorkers: 8
-    suites:
-      - "test/testsets/franky_tests.epd"
-      - path: "test/testsets/mate_test_suite.epd"
-        timePerMove: 15000
-      - "test/testsets/wac.epd"
-      - "test/testsets/STS1-STS15_LAN.EPD"
-      - "test/testsets/crafty_test.epd"
-      - "test/testsets/ecm98.epd"
-      - "test/testsets/kaufman.epd"
-
-  # ==========================================================================
-  # FrankyGo test suites (external engine)
-  # ==========================================================================
-  - engine: "FrankyGo"
-    engineVersion: "v1.0.3"
-    tag: "Release FrankyGo"
-    enginePath: "D:/Games/FrankyChess/FrankyGo/FrankyGo.exe"
-    timePerMove: 5000
-    maxDepth: 99
-    isolatePositions: true
-    debugMode: false
-    commandLineArgs: ""
-    uciOptions: ""
-    parallelWorkers: 8
-    suites:
-      - "test/testsets/franky_tests.epd"
-      - path: "test/testsets/mate_test_suite.epd"
-        timePerMove: 15000
-      - "test/testsets/wac.epd"
-      - "test/testsets/STS1-STS15_LAN.EPD"
-      - "test/testsets/crafty_test.epd"
-      - "test/testsets/ecm98.epd"
-      - "test/testsets/kaufman.epd"
-
-  # ==========================================================================
-  # Stockfish test suites (external engine - reference baseline)
-  # ==========================================================================
-  - engine: "Stockfish"
-    engineVersion: "dev"
-    tag: "Release Stockfish 18"
-    enginePath: "D:/_DEV/Stockfish/src/stockfish.exe"
-    timePerMove: 5000
-    maxDepth: 99
-    isolatePositions: true
-    debugMode: false
-    commandLineArgs: ""
-    uciOptions: ""
-    parallelWorkers: 4
-    suites:
-      - "test/testsets/franky_tests.epd"
-      - path: "test/testsets/mate_test_suite.epd"
-        timePerMove: 15000
-      - "test/testsets/wac.epd"
-      - "test/testsets/STS1-STS15_LAN.EPD"
-      - "test/testsets/crafty_test.epd"
-      - "test/testsets/ecm98.epd"
-      - "test/testsets/kaufman.epd"
+#  # ==========================================================================
+#  # FrankyCPP v1.4 test suites (baseline)
+#  # ==========================================================================
+#  - engine: "FrankyCPP v1.4"
+#    engineVersion: "v1.4"
+#    tag: "Release v1.4"
+#    enginePath: "Release/FrankyCPP_v1.4/FrankyCPP_v1.4.exe"
+#    timePerMove: 5000
+#    maxDepth: 99
+#    isolatePositions: true
+#    debugMode: false
+#    commandLineArgs: "--nobook"
+#    uciOptions: ""
+#    parallelWorkers: 4
+#    suites:
+#      - "test/testsets/franky_tests.epd"
+#      - path: "test/testsets/mate_test_suite.epd"
+#        timePerMove: 15000
+#      - "test/testsets/wac.epd"
+#      - "test/testsets/STS1-STS15_LAN.EPD"
+#      - "test/testsets/crafty_test.epd"
+#      - "test/testsets/ecm98.epd"
+#      - "test/testsets/kaufman.epd"
+#
+#  # ==========================================================================
+#  # FrankyCPP v1.3 test suites (baseline)
+#  # ==========================================================================
+#  - engine: "FrankyCPP v1.3"
+#    engineVersion: "v1.3"
+#    tag: "Release v1.3"
+#    enginePath: "Release/FrankyCPP_v1.3/FrankyCPP_v1.3.exe"
+#    timePerMove: 5000
+#    maxDepth: 99
+#    isolatePositions: true
+#    debugMode: false
+#    commandLineArgs: "--nobook"
+#    uciOptions: ""
+#    parallelWorkers: 8
+#    suites:
+#      - "test/testsets/franky_tests.epd"
+#      - path: "test/testsets/mate_test_suite.epd"
+#        timePerMove: 15000
+#      - "test/testsets/wac.epd"
+#      - "test/testsets/STS1-STS15_LAN.EPD"
+#      - "test/testsets/crafty_test.epd"
+#      - "test/testsets/ecm98.epd"
+#      - "test/testsets/kaufman.epd"
+#
+#  # ==========================================================================
+#  # FrankyCPP v1.1 test suites (baseline)
+#  # ==========================================================================
+#  - engine: "FrankyCPP v1.1"
+#    engineVersion: "v1.1"
+#    tag: "Release v1.1"
+#    enginePath: "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
+#    timePerMove: 5000
+#    maxDepth: 99
+#    isolatePositions: true
+#    debugMode: false
+#    commandLineArgs: "--nobook"
+#    uciOptions: ""
+#    parallelWorkers: 8
+#    suites:
+#      - "test/testsets/franky_tests.epd"
+#      - path: "test/testsets/mate_test_suite.epd"
+#        timePerMove: 15000
+#      - "test/testsets/wac.epd"
+#      - "test/testsets/STS1-STS15_LAN.EPD"
+#      - "test/testsets/crafty_test.epd"
+#      - "test/testsets/ecm98.epd"
+#      - "test/testsets/kaufman.epd"
+#
+#  # ==========================================================================
+#  # FrankyGo test suites (external engine)
+#  # ==========================================================================
+#  - engine: "FrankyGo"
+#    engineVersion: "v1.0.3"
+#    tag: "Release FrankyGo"
+#    enginePath: "D:/Games/FrankyChess/FrankyGo/FrankyGo.exe"
+#    timePerMove: 5000
+#    maxDepth: 99
+#    isolatePositions: true
+#    debugMode: false
+#    commandLineArgs: ""
+#    uciOptions: ""
+#    parallelWorkers: 8
+#    suites:
+#      - "test/testsets/franky_tests.epd"
+#      - path: "test/testsets/mate_test_suite.epd"
+#        timePerMove: 15000
+#      - "test/testsets/wac.epd"
+#      - "test/testsets/STS1-STS15_LAN.EPD"
+#      - "test/testsets/crafty_test.epd"
+#      - "test/testsets/ecm98.epd"
+#      - "test/testsets/kaufman.epd"
+#
+#  # ==========================================================================
+#  # Stockfish test suites (external engine - reference baseline)
+#  # ==========================================================================
+#  - engine: "Stockfish"
+#    engineVersion: "dev"
+#    tag: "Release Stockfish 18"
+#    enginePath: "D:/_DEV/Stockfish/src/stockfish.exe"
+#    timePerMove: 5000
+#    maxDepth: 99
+#    isolatePositions: true
+#    debugMode: false
+#    commandLineArgs: ""
+#    uciOptions: ""
+#    parallelWorkers: 4
+#    suites:
+#      - "test/testsets/franky_tests.epd"
+#      - path: "test/testsets/mate_test_suite.epd"
+#        timePerMove: 15000
+#      - "test/testsets/wac.epd"
+#      - "test/testsets/STS1-STS15_LAN.EPD"
+#      - "test/testsets/crafty_test.epd"
+#      - "test/testsets/ecm98.epd"
+#      - "test/testsets/kaufman.epd"
 
 # ==========================================================================
 # Match configurations
@@ -262,33 +262,33 @@ matches:
     concurrency: 4
     outputPgn: "results/matches/v1.5_vs_v1.4_300s.pgn"
 
-  # current dev vs. v1.3
-  - name: "v1.5_vs_v1.3_300s"
-    tag: "baseAfterTtBuckets"  # Set to current feature name when testing
-    engine1Path: "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe"
-    engine1Version: "v1.5"
-    engine2Path: "Release/FrankyCPP_v1.3/FrankyCPP_v1.3.exe"
-    engine2Version: "v1.3"
-    openingBook: "books/8moves_GM_LB.pgn"
-    timeControl: "300+0"
-    rounds: 100
-    concurrency: 4
-    outputPgn: "results/matches/v1.5_vs_v1.3_300s.pgn"
-
-  # current dev vs. FrankyGo
-  - name: "v1.5_vs_FrankyGo_300s"
-    tag: "baseAfterTtBuckets"  # Set to current feature name when testing
-    engine1Path: "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe"
-    engine1Version: "v1.5"
-    engine1Options: "OwnBook=false"
-    engine2Path: "D:/Games/FrankyChess/FrankyGo/FrankyGo.exe"
-    engine2Version: "v1.0.3"
-    engine2Options: ""
-    openingBook: "books/8moves_GM_LB.pgn"
-    timeControl: "300+0"
-    rounds: 100
-    concurrency: 4
-    outputPgn: "results/matches/v1.5_vs_FrankyGo_300s.pgn"
+#  # current dev vs. v1.3
+#  - name: "v1.5_vs_v1.3_300s"
+#    tag: "baseAfterTtBuckets"  # Set to current feature name when testing
+#    engine1Path: "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe"
+#    engine1Version: "v1.5"
+#    engine2Path: "Release/FrankyCPP_v1.3/FrankyCPP_v1.3.exe"
+#    engine2Version: "v1.3"
+#    openingBook: "books/8moves_GM_LB.pgn"
+#    timeControl: "300+0"
+#    rounds: 100
+#    concurrency: 4
+#    outputPgn: "results/matches/v1.5_vs_v1.3_300s.pgn"
+#
+#  # current dev vs. FrankyGo
+#  - name: "v1.5_vs_FrankyGo_300s"
+#    tag: "baseAfterTtBuckets"  # Set to current feature name when testing
+#    engine1Path: "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe"
+#    engine1Version: "v1.5"
+#    engine1Options: "OwnBook=false"
+#    engine2Path: "D:/Games/FrankyChess/FrankyGo/FrankyGo.exe"
+#    engine2Version: "v1.0.3"
+#    engine2Options: ""
+#    openingBook: "books/8moves_GM_LB.pgn"
+#    timeControl: "300+0"
+#    rounds: 100
+#    concurrency: 4
+#    outputPgn: "results/matches/v1.5_vs_FrankyGo_300s.pgn"
 
   # current dev vs. Stockfish 18 (limited to 2200 ELO)
   - name: "v1.5_vs_Stockfish18_2200_300s"
@@ -335,7 +335,7 @@ benchmarks:
     depth: 12
     hashSizeMB: 128
     threads: 4
-    tag: "baseAfterTtBuckets"  # Set to current feature name when testing
+#    tag: "baseAfterTtBuckets"  # Set to current feature name when testing
 
   - name: "v1.5 External"
     enginePath: "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe"
@@ -344,7 +344,7 @@ benchmarks:
     depth: 12
     hashSizeMB: 128
     threads: 4
-    tag: "baseAfterTtBuckets"  # Set to current feature name when testing
+#    tag: "baseAfterTtBuckets"  # Set to current feature name when testing
 
 #  - name: "v1.4 External (PROD)"
 #    enginePath: "cmake-build-win-release-prod/src/FrankyCPP_v1.4.exe"

@@ -7,10 +7,10 @@ Modern C++20 UCI Chess Engine
 
 ## Version
 
-**v1.5.0** - *(in development)*
+**v1.5.0** - TT Buckets, SMP Hardening & Arena Improvements (+92.5 ELO vs. v1.4, +320 cumulative vs v1.1)
 
 **Previous versions:**
-- v1.4 - SMP and Search Feature Reviews (+119 ELO vs. v1.3 baseline) 
+- v1.4 - SMP and Search Feature Reviews (+119 ELO vs. v1.3 baseline)
 - v1.3 - Search Optimization Release (+109 ELO vs v1.1 baseline)
 - v1.2 - Tablebase support (Syzygy WDL/DTZ probing)
 - v1.1 - Arena Release (automated strength testing framework)

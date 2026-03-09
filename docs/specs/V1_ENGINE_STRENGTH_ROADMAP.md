@@ -1,8 +1,8 @@
 # FrankyCPP v1.x Engine Strength Roadmap
 
-**Document Version:** 2.3  
+**Document Version:** 2.4  
 **Created:** 2026-02-01  
-**Last Updated:** 2026-03-06  
+**Last Updated:** 2026-03-09  
 **Status:** Active Development  
 **Target:** FrankyCPP v1.5 → v2.0  
 **Focus:** Maximum Playing Strength Through Systematic Enhancement
@@ -30,15 +30,18 @@ This document provides a comprehensive, prioritized roadmap for enhancing Franky
 ### Current State (v1.5.0 - March 2026)
 
 **Recent Improvements (v1.5):**
+- ✅ **+92.5 ELO** vs v1.4 baseline (+320 ELO cumulative vs v1.1)
 - ✅ **TT Bucket Design** - 4-way associative with 64-byte cache-line alignment
 - ✅ **XOR Key Verification** - Torn-read detection for SMP race safety
 - ✅ **Strengthened SMP** - Eliminated remaining race conditions
+- ✅ **Arena Improvements** - Improved external UCI engine testing framework
 - ✅ Cache-line alignment eliminates false sharing under SMP
 - ✅ Depth-preferred + age tiebreak replacement policy
 - ✅ Single prefetch loads entire bucket (4 entries)
+- ✅ Beats Stockfish 18 at 2200 ELO setting: 82-18 (+263.4 ELO)
 
 **Previous Improvements (v1.4):**
-- ✅ **+119 ELO** vs v1.3 baseline (+228 ELO total vs v1.1)
+- ✅ **+119 ELO** vs v1.3 baseline (+228 ELO total vs v1.1, now superseded by v1.5 results)
 - ✅ **Lazy SMP Multi-Threading** implemented (SearchThreadData, helper threads)
 - ✅ Thread-safe TT with atomic key operations
 - ✅ Per-thread search state (PVTable, PlyStack, History, Statistics)
@@ -66,7 +69,7 @@ This document provides a comprehensive, prioritized roadmap for enhancing Franky
 - ✅ Engine Arena testing framework (v1.1)
 - ✅ Counter-Move History heuristic (v1.2)
 - ✅ Singular and Check Extensions (v1.2)
-- ✅ Estimated strength: ~2650+ ELO (strong master level)
+- ✅ Estimated strength: ~2750+ ELO (strong master level)
 
 **Remaining Limitations:**
 - ❌ Classical evaluation only (NNUE offers +200-400 ELO improvement)
@@ -77,7 +80,7 @@ This document provides a comprehensive, prioritized roadmap for enhancing Franky
 ### Target State (v2.0 - End Goal)
 
 **Target Playing Strength:** ~2900-3100 ELO (approaching IM/GM level)  
-**Expected Remaining Gain:** +300-500 ELO (from v1.5)
+**Expected Remaining Gain:** +200-400 ELO (from v1.5)
 
 **Key Enhancements:**
 1. ✅ Multi-threaded parallel search (Lazy SMP) - **+119 ELO** ✅ COMPLETE (v1.4)
@@ -179,8 +182,8 @@ This document provides a comprehensive, prioritized roadmap for enhancing Franky
 | **TOTAL**           | **-435 to -835 ELO** | **-285 to -560 ELO** | **~40% Closed** |
 
 **Progress Summary:**
-- **Closed:** +228 ELO verified (v1.1 → v1.4)
-- **Remaining:** -285 to -560 ELO (primarily NNUE)
+- **Closed:** +320 ELO verified (v1.1 → v1.5)
+- **Remaining:** -195 to -470 ELO (primarily NNUE)
 - **NNUE alone:** +200-400 ELO potential (largest remaining opportunity)
 
 ---
@@ -875,14 +878,14 @@ TB_PROBE_LIMIT: 6               # 6-piece TBs
 | 7         | v1.6            | 4      | 0         | 0           | 4       | +30-60          | TBD             | 📋 Planned          |
 | 8         | v1.7-v1.9       | 7      | 0         | 0           | 7       | +200-400        | TBD             | 📋 Planned          |
 | 9         | v2.0            | 4      | 0         | 0           | 4       | +15-35          | TBD             | 📋 Planned          |
-| **TOTAL** | **v1.1 → v2.0** | **49** | **27**    | **0**       | **22**  | **+495-960**    | **+228 actual** | 🔄 **55% Complete** |
+| **TOTAL** | **v1.1 → v2.0** | **49** | **27**    | **0**       | **22**  | **+495-960**    | **+320 actual** | 🔄 **55% Complete** |
 
 **Cumulative ELO Gains:**
 - v1.1 → v1.2: +57 ELO (Singular/Check Extensions, Counter-Move History)
 - v1.2 → v1.3: +52 ELO (LMR/History fixes)
 - v1.3 → v1.4: +119 ELO (SMP + search refinements)
-- v1.4 → v1.5: TT buckets, XOR key verification, race fixes (stability improvements)
-- **Total v1.1 → v1.5: +228 ELO + improved SMP stability**
+- v1.4 → v1.5: +92.5 ELO (TT buckets, XOR key verification, Arena improvements)
+- **Total v1.1 → v1.5: +320 ELO verified**
 
 ### Gantt Chart (Actual Progress + Estimated Timeline)
 
@@ -897,7 +900,7 @@ Month 2 (Feb-Mar 2026):
   └─ Phase 3: Multi-Threading (v1.4)     ✅ COMPLETE (+228 ELO cumulative)
 
 Month 3 (Mar 2026) - CURRENT:
-  ├─ Phase 3: TT Buckets/XOR Key (v1.5)  ✅ COMPLETE (SMP stability)
+  ├─ Phase 3: TT Buckets/XOR Key (v1.5)  ✅ COMPLETE (+92.5 ELO vs v1.4, +320 cumulative)
   └─ Phase 4: Move Ordering (v1.5)       🔄 IN PROGRESS
 
 Month 4 (Apr 2026):
@@ -1052,21 +1055,21 @@ cutechess-cli \
 
 ### ELO Gain Summary by Phase
 
-| Phase | Version     | Timeframe    | ELO Target | ELO Actual | Cumulative | Status      |
-|-------|-------------|--------------|------------|------------|------------|-------------|
-| 1     | v1.1        | Feb 2026     | N/A        | N/A        | 0          | ✅ Complete  |
-| 2     | v1.1 → v1.2 | Feb 2026     | +70-135    | **+57**    | +57        | ✅ Complete  |
-| 3     | v1.3 → v1.4 | Mar 2026     | +60-120    | **+119**   | +228       | ✅ Complete  |
-| 4     | v1.4 → v1.5 | Mar-Apr 2026 | +25-45     | TBD        | ~250-275   | 🔄 Progress |
-| 5     | v1.2        | Feb 2026     | +35-60     | (incl.)    | (included) | ✅ Complete  |
-| 6     | v1.3        | Feb-Mar 2026 | +50-85     | **+52**    | (included) | 🔄 Partial  |
-| 7     | v1.6        | Apr-May 2026 | +30-60     | TBD        | ~280-335   | 📋 Planned  |
-| 8     | v1.7-v1.9   | May-Sep 2026 | +200-400   | TBD        | ~480-735   | 📋 Planned  |
-| 9     | v2.0        | Oct 2026     | +15-35     | TBD        | ~495-770   | 📋 Planned  |
+| Phase | Version     | Timeframe    | ELO Target | ELO Actual  | Cumulative | Status      |
+|-------|-------------|--------------|------------|-------------|------------|-------------|
+| 1     | v1.1        | Feb 2026     | N/A        | N/A         | 0          | ✅ Complete  |
+| 2     | v1.1 → v1.2 | Feb 2026     | +70-135    | **+57**     | +57        | ✅ Complete  |
+| 3     | v1.3 → v1.4 | Mar 2026     | +60-120    | **+119**    | +228       | ✅ Complete  |
+| 4     | v1.4 → v1.5 | Mar 2026     | +25-45     | **+92.5**   | +320       | ✅ Complete  |
+| 5     | v1.2        | Feb 2026     | +35-60     | (incl.)     | (included) | ✅ Complete  |
+| 6     | v1.3        | Feb-Mar 2026 | +50-85     | **+52**     | (included) | 🔄 Partial  |
+| 7     | v1.6        | Apr-May 2026 | +30-60     | TBD         | ~350-380   | 📋 Planned  |
+| 8     | v1.7-v1.9   | May-Sep 2026 | +200-400   | TBD         | ~550-780   | 📋 Planned  |
+| 9     | v2.0        | Oct 2026     | +15-35     | TBD         | ~565-815   | 📋 Planned  |
 
 **Verified Results:**
 - v1.1 baseline: ~2400-2450 ELO (estimated)
-- v1.4 current: ~2600-2650 ELO (+228 ELO verified)
+- v1.5 current: ~2750+ ELO (+320 ELO verified)
 - v2.0 target: ~2900-3100 ELO
 
 ### Configuration File Changes
@@ -1122,16 +1125,17 @@ NNUE_FALLBACK_CLASSICAL: true
 **Document Status:** Active Development  
 **Maintainer:** Frank Kopp  
 **Created:** 2026-02-01  
-**Last Updated:** 2026-03-06  
-**Next Review:** After v1.5 release
+**Last Updated:** 2026-03-09  
+**Next Review:** After v1.6 release
 
 ---
 
 ## Change Log
 
-| Version | Date       | Changes                                                                              | Author     |
-|---------|------------|--------------------------------------------------------------------------------------|------------|
-| 2.3     | 2026-03-06 | Updated for v1.4/v1.5: SMP complete (+119 ELO), phases reorganized, progress tracked | Frank Kopp |
+| Version | Date       | Changes                                                                                          | Author     |
+|---------|------------|--------------------------------------------------------------------------------------------------|------------|
+| 2.4     | 2026-03-09 | v1.5 Arena results: +92.5 ELO vs v1.4, +320 cumulative. Updated ELO estimates and phase status   | Frank Kopp |
+| 2.3     | 2026-03-06 | Updated for v1.4/v1.5: SMP complete (+119 ELO), phases reorganized, progress tracked             | Frank Kopp |
 | 2.2     | 2026-02-20 | Phase 2 progress update                                                              | Frank Kopp |
 | 2.1     | 2026-02-08 | Phase 1 (v1.1) marked complete; Phase 2 in progress with Triangular PV Table done    | Frank Kopp |
 | 2.0     | 2026-02-01 | Complete rewrite with detailed phase planning, ELO estimates, implementation specs   | Frank Kopp |
