@@ -176,6 +176,6 @@ namespace chess {
     uint64_t miniMaxOD(int depth, Position& position, MoveGenerator* pMg);
   };
 
-}// namespace chess
+} // namespace chess
 
-#endif// FRANKYCPP_PERFT_H
+#endif // FRANKYCPP_PERFT_H

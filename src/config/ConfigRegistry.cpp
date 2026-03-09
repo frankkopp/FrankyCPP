@@ -85,7 +85,7 @@ ConfigRegistry::ConfigRegistry() {
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #endif
 #endif
-#endif// FRANKYCPP_PRODUCTION
+#endif // FRANKYCPP_PRODUCTION
 
   initializeSearchDefinitions();
   initializeEvalDefinitions();

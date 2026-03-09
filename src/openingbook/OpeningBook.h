@@ -243,6 +243,6 @@ namespace book {
     void constexpr setRecreateCache(const bool recreateCache) { _recreateCache = recreateCache; }
   };
 
-}// namespace book
+} // namespace book
 
-#endif// FRANKYCPP_OPENINGBOOK_H
+#endif // FRANKYCPP_OPENINGBOOK_H

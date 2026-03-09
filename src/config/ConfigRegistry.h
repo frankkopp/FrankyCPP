@@ -117,6 +117,6 @@ namespace config {
     std::vector<ConfigDef> definitions_;
   };
 
-}// namespace config
+} // namespace config
 
-#endif// FRANKYCPP_CONFIGREGISTRY_H
+#endif // FRANKYCPP_CONFIGREGISTRY_H

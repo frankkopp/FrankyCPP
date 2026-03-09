@@ -37,8 +37,10 @@
 
 #include <chrono>
 #include <filesystem>
+#include <iomanip>
 #include <iostream>
 #include <limits>
+#include <map>
 #include <sstream>
 #include <stdexcept>
 #include <vector>
@@ -168,8 +170,8 @@ namespace arena {
     // This is critical - on Windows, io_context.stop() alone doesn't cancel in-flight reads
     if (pipeOut_) {
       boost::system::error_code ec;
-      pipeOut_->cancel(); // Cancel pending async operations (no argument on Windows)
-      pipeOut_->close(ec);// Close the pipe
+      pipeOut_->cancel();  // Cancel pending async operations (no argument on Windows)
+      pipeOut_->close(ec); // Close the pipe
     }
 
     // Now stop the io_context
@@ -300,54 +302,8 @@ namespace arena {
       return;
     }
 
-    std::vector<std::string> pairs;
-
-    if (options.find(';') != std::string::npos) {
-      std::istringstream iss(options);
-      std::string pair;
-      while (std::getline(iss, pair, ';')) {
-        pair.erase(0, pair.find_first_not_of(" \t\r\n"));
-        pair.erase(pair.find_last_not_of(" \t\r\n") + 1);
-        if (!pair.empty()) {
-          pairs.push_back(pair);
-        }
-      }
-    }
-    else {
-      if (options.find('=') != std::string::npos) {
-        pairs.push_back(options);
-      }
-      else {
-        std::istringstream iss(options);
-        std::string pair;
-        while (iss >> pair) {
-          if (pair.find('=') != std::string::npos) {
-            pairs.push_back(pair);
-          }
-        }
-      }
-    }
-
-    for (const auto& pair : pairs) {
-      size_t eqPos = pair.find('=');
-      if (eqPos == std::string::npos) {
-        std::cerr << "WARNING: Invalid UCI option format (missing '='): " << pair << std::endl;
-        continue;
-      }
-
-      std::string name  = pair.substr(0, eqPos);
-      std::string value = pair.substr(eqPos + 1);
-
-      name.erase(0, name.find_first_not_of(" \t"));
-      name.erase(name.find_last_not_of(" \t") + 1);
-      value.erase(0, value.find_first_not_of(" \t"));
-      value.erase(value.find_last_not_of(" \t") + 1);
-
-      if (name.empty() || value.empty()) {
-        std::cerr << "WARNING: Invalid UCI option (empty name or value): " << pair << std::endl;
-        continue;
-      }
-
+    const auto pairs = parseOptionPairs(options);
+    for (const auto& [name, value] : pairs) {
       setOption(name, value);
     }
   }
@@ -442,7 +398,7 @@ namespace arena {
   }
 
   void UCIEngine::handleRead(const boost::system::error_code& ec, const std::size_t bytesTransferred) {
-    (void) bytesTransferred;// Unused - we read lines from the streambuf directly
+    (void) bytesTransferred; // Unused - we read lines from the streambuf directly
 
     if (stopping_.load()) {
       return;
@@ -569,10 +525,14 @@ namespace arena {
       if (debugMode_) {
         std::cout << "[UCIEngine] Sending UCI options before initialization..." << std::endl;
       }
-      // Use setUciOptions to parse and send each option
-      // But we need to avoid the waitUntilReady() call in setOption
-      // So we'll send the raw commands directly here
-      sendPendingOptions();
+      // Parse and send each option without waitUntilReady() between them
+      // (engine hasn't finished init yet — we send all options then wait once)
+      const auto pairs = parseOptionPairs(pendingUciOptions_);
+      for (const auto& [name, value] : pairs) {
+        std::ostringstream cmd;
+        cmd << "setoption name " << name << " value " << value;
+        sendCommand(cmd.str());
+      }
     }
 
     if (!waitUntilReady()) {
@@ -580,41 +540,46 @@ namespace arena {
     }
   }
 
-  void UCIEngine::sendPendingOptions() const {
-    // Parse and send each option without waiting for readyok after each one
-    // This is similar to setUciOptions but doesn't call waitUntilReady()
+  bool UCIEngine::waitUntilReady() {
+    sendCommand("isready");
+    return waitForResponse("readyok", initTimeout_);
+  }
 
-    const std::string& options = pendingUciOptions_;
-    std::vector<std::string> pairs;
+  std::vector<std::pair<std::string, std::string>> UCIEngine::parseOptionPairs(const std::string& options) {
+    std::vector<std::pair<std::string, std::string>> result;
 
+    if (options.empty()) {
+      return result;
+    }
+
+    // Split into raw tokens
+    std::vector<std::string> rawPairs;
     if (options.find(';') != std::string::npos) {
+      // Semicolon-separated: "Hash=256; Threads=4"
       std::istringstream iss(options);
       std::string pair;
       while (std::getline(iss, pair, ';')) {
         pair.erase(0, pair.find_first_not_of(" \t\r\n"));
         pair.erase(pair.find_last_not_of(" \t\r\n") + 1);
         if (!pair.empty()) {
-          pairs.push_back(pair);
+          rawPairs.push_back(pair);
         }
       }
     }
-    else {
-      if (options.find('=') != std::string::npos) {
-        pairs.push_back(options);
-      }
-      else {
-        std::istringstream iss(options);
-        std::string pair;
-        while (iss >> pair) {
-          if (pair.find('=') != std::string::npos) {
-            pairs.push_back(pair);
-          }
+    else if (options.find('=') != std::string::npos) {
+      // Single option or space-separated: "Hash=256" or "Hash=256 Threads=4"
+      std::istringstream iss(options);
+      std::string pair;
+      while (iss >> pair) {
+        if (pair.find('=') != std::string::npos) {
+          rawPairs.push_back(pair);
         }
       }
     }
 
-    for (const auto& pair : pairs) {
-      size_t eqPos = pair.find('=');
+    // Parse each "name=value" pair
+    for (const auto& pair : rawPairs) {
+      const size_t eqPos = pair.find('=');
       if (eqPos == std::string::npos) {
         std::cerr << "WARNING: Invalid UCI option format (missing '='): " << pair << std::endl;
         continue;
@@ -623,6 +588,7 @@ namespace arena {
       std::string name  = pair.substr(0, eqPos);
       std::string value = pair.substr(eqPos + 1);
 
+      // Trim whitespace
       name.erase(0, name.find_first_not_of(" \t"));
       name.erase(name.find_last_not_of(" \t") + 1);
       value.erase(0, value.find_first_not_of(" \t"));
@@ -633,23 +599,17 @@ namespace arena {
         continue;
       }
 
-      // Send the setoption command directly without waiting for readyok
-      std::ostringstream cmd;
-      cmd << "setoption name " << name << " value " << value;
-      sendCommand(cmd.str());
+      result.emplace_back(name, value);
     }
-  }
 
-  bool UCIEngine::waitUntilReady() {
-    sendCommand("isready");
-    return waitForResponse("readyok", initTimeout_);
+    return result;
   }
 
   void UCIEngine::parseInfoLine(const std::string& line, UCISearchResult& result) {
     std::istringstream iss(line);
     std::string token;
 
-    iss >> token;// Skip "info"
+    iss >> token; // Skip "info"
 
     while (iss >> token) {
       if (token == "depth") {
@@ -687,4 +647,67 @@ namespace arena {
     }
   }
 
-}// namespace arena
+  std::string UCIEngine::queryEngineConfig(const std::string& enginePath, const std::string& commandLineArgs) {
+    std::ostringstream report;
+
+    try {
+      // Start engine temporarily to query configuration
+      UCIEngine engine(enginePath, commandLineArgs, false, "");
+
+      // Check if this is a FrankyCPP engine (has getoptions support)
+      const std::string& engineName = engine.getEngineName();
+      const bool isFrankyCPP        = engineName.find("FrankyCPP") != std::string::npos;
+
+      if (!isFrankyCPP) {
+        report << "Note: Engine '" << engineName << "' is not FrankyCPP.\n";
+        report << "      UCI has no standard mechanism to query current option values.\n";
+        report << "      Only FrankyCPP supports the 'getoptions' command.\n";
+        return report.str();
+      }
+
+      // Query options using FrankyCPP's getoptions command
+      const auto options = engine.getOptions();
+
+      if (options.empty()) {
+        report << "Note: Could not retrieve configuration from engine.\n";
+        report << "      The 'getoptions' command may not be supported by this version.\n";
+        return report.str();
+      }
+
+      report << "=== Engine Configuration: " << engineName << " ===\n";
+
+      // Group options by category (Search, Eval, etc.)
+      std::map<std::string, std::vector<std::pair<std::string, std::string>>> grouped;
+      for (const auto& [name, value] : options) {
+        // Simple categorization based on common prefixes
+        std::string category = "General";
+        if (name.find("USE_") == 0 || name.find("MAX_") == 0 || name.find("MIN_") == 0) {
+          category = "Search";
+        }
+        else if (name.find("EVAL_") == 0 || name.find("PST_") == 0) {
+          category = "Evaluation";
+        }
+        else if (name.find("BOOK") == 0 || name.find("TB") == 0) {
+          category = "Books/Tables";
+        }
+        grouped[category].emplace_back(name, value);
+      }
+
+      // Print grouped options
+      for (const auto& [category, opts] : grouped) {
+        report << "\n[" << category << "]\n";
+        for (const auto& [name, value] : opts) {
+          report << "  " << std::left << std::setw(30) << name << " = " << value << "\n";
+        }
+      }
+
+      report << "\n";
+
+    } catch (const std::exception& e) {
+      report << "Error querying engine configuration: " << e.what() << "\n";
+    }
+
+    return report.str();
+  }
+
+} // namespace arena

@@ -92,6 +92,6 @@ namespace tablebase {
   /// @return Status string like "6-piece tablebases available (150 WDL, 150 DTZ files)"
   [[nodiscard]] std::string getTablebaseStatus(const std::string& path = "");
 
-}// namespace tablebase
+} // namespace tablebase
 
-#endif// FRANKYCPP_TABLEBASEPATHS_H
+#endif // FRANKYCPP_TABLEBASEPATHS_H

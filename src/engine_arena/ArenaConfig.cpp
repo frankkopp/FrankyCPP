@@ -42,7 +42,7 @@ namespace arena {
       std::ranges::transform(stem, stem.begin(), ::tolower);
       return stem;
     }
-  }// namespace
+  } // namespace
 
   ArenaConfig ArenaConfig::loadFromYaml(const std::string& configPath) {
     // Check if file exists
@@ -167,14 +167,14 @@ namespace arena {
           }
           else {
             // Try to extract version from path (e.g., "FrankyCPP_v1.1.exe" -> "v1.1")
-            match.engine1Version = "";// Will be extracted from engine name later
+            match.engine1Version = ""; // Will be extracted from engine name later
           }
 
           if (matchNode["engine2Version"]) {
             match.engine2Version = matchNode["engine2Version"].as<std::string>();
           }
           else {
-            match.engine2Version = "";// Will be extracted from engine name later
+            match.engine2Version = ""; // Will be extracted from engine name later
           }
 
           // Engine UCI options (optional - sent before isready during validation)
@@ -270,6 +270,9 @@ namespace arena {
     } catch (const YAML::Exception& e) {
       throw std::runtime_error("YAML parsing error: " + std::string(e.what()));
     }
+
+    // Expand testSuiteRuns into flat testSuites list (eager expansion)
+    config.expandTestSuiteRunsInternal();
 
     return config;
   }
@@ -450,8 +453,8 @@ namespace arena {
     return true;
   }
 
-  std::vector<TestSuiteConfig> ArenaConfig::expandTestSuiteRuns() const {
-    std::vector<TestSuiteConfig> expanded;
+  void ArenaConfig::expandTestSuiteRunsInternal() {
+    testSuites.clear();
 
     for (const auto& run : testSuiteRuns) {
       for (const auto& suite : run.suites) {
@@ -488,11 +491,9 @@ namespace arena {
         config.parallelWorkers  = run.parallelWorkers;
         config.tag              = run.tag;
 
-        expanded.push_back(std::move(config));
+        testSuites.push_back(std::move(config));
       }
     }
-
-    return expanded;
   }
 
-}// namespace arena
+} // namespace arena

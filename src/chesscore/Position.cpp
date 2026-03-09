@@ -121,22 +121,22 @@ namespace chess {
         // the corresponding castling right
         if (!castlingRights.isEmpty()) {
           if (const CastlingRights cr = Castling::castlingRights[fromSq] + Castling::castlingRights[toSq]) {
-            zobristKey ^= Zobrist::castlingRights[castlingRights];// out
+            zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
             castlingRights -= cr;
-            zobristKey ^= Zobrist::castlingRights[castlingRights];// in
+            zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
           }
         }
         clearEnPassant();
-        if (getPiece(toSq) != PIECE_NONE) {// capture
+        if (getPiece(toSq) != PIECE_NONE) { // capture
           removePiece(toSq);
-          halfMoveClock = 0;// reset half move clock because of capture
+          halfMoveClock = 0; // reset half move clock because of capture
         }
         else if (typeOf(getPiece(fromSq)) == PAWN) {
-          halfMoveClock = 0;                 // reset half move clock because of pawn move
-          if (fromSq.distanceTo(toSq) == 2) {// pawn double - set en passant
+          halfMoveClock = 0;                  // reset half move clock because of pawn move
+          if (fromSq.distanceTo(toSq) == 2) { // pawn double - set en passant
             // set new en passant target field - always one "behind" the toSquare
             enPassantSquare = toSq.pawnPush(~colorOf(getPiece(fromSq)));
-            zobristKey      = zobristKey ^ Zobrist::enPassantFile[enPassantSquare.file()];// in
+            zobristKey      = zobristKey ^ Zobrist::enPassantFile[enPassantSquare.file()]; // in
           }
         }
         else {
@@ -156,15 +156,15 @@ namespace chess {
         // the corresponding castling right
         if (!castlingRights.isEmpty()) {
           if (const CastlingRights cr = Castling::castlingRights[fromSq] + Castling::castlingRights[toSq]) {
-            zobristKey ^= Zobrist::castlingRights[castlingRights];// out
+            zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
             castlingRights -= cr;
-            zobristKey ^= Zobrist::castlingRights[castlingRights];// in
+            zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
           }
         }
         clearEnPassant();
         removePiece(fromSq);
         putPiece(makePiece(nextPlayer, move.promotionType()), toSq);
-        halfMoveClock = 0;// reset half move clock because of pawn move
+        halfMoveClock = 0; // reset half move clock because of pawn move
         break;
       }
 
@@ -176,7 +176,7 @@ namespace chess {
         clearEnPassant();
         removePiece(capSq);
         movePiece(fromSq, toSq);
-        halfMoveClock = 0;// reset half move clock because of pawn move
+        halfMoveClock = 0; // reset half move clock because of pawn move
         break;
       }
 
@@ -189,11 +189,11 @@ namespace chess {
             assert(getPiece(SQ_E1) == WHITE_KING);
             assert(getPiece(SQ_H1) == WHITE_ROOK);
             assert(!(getOccupiedBb() & Bitboards::intermediateBb[SQ_E1][SQ_H1]));
-            movePiece(fromSq, toSq);                              // King
-            movePiece(SQ_H1, SQ_F1);                              // Rook
-            zobristKey ^= Zobrist::castlingRights[castlingRights];// out
+            movePiece(fromSq, toSq);                               // King
+            movePiece(SQ_H1, SQ_F1);                               // Rook
+            zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
             castlingRights -= WHITE_CASTLING;
-            zobristKey ^= Zobrist::castlingRights[castlingRights];// in;
+            zobristKey ^= Zobrist::castlingRights[castlingRights]; // in;
             break;
           case SQ_C1:
             assert(castlingRights == WHITE_OOO);
@@ -201,11 +201,11 @@ namespace chess {
             assert(getPiece(SQ_E1) == WHITE_KING);
             assert(getPiece(SQ_A1) == WHITE_ROOK);
             assert(!(getOccupiedBb() & Bitboards::intermediateBb[SQ_E1][SQ_A1]));
-            movePiece(fromSq, toSq);                              // King
-            movePiece(SQ_A1, SQ_D1);                              // Rook
-            zobristKey ^= Zobrist::castlingRights[castlingRights];// out
+            movePiece(fromSq, toSq);                               // King
+            movePiece(SQ_A1, SQ_D1);                               // Rook
+            zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
             castlingRights -= WHITE_CASTLING;
-            zobristKey ^= Zobrist::castlingRights[castlingRights];// in
+            zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
             break;
           case SQ_G8:
             assert(castlingRights == BLACK_OO);
@@ -213,11 +213,11 @@ namespace chess {
             assert(getPiece(SQ_E8) == BLACK_KING);
             assert(getPiece(SQ_H8) == BLACK_ROOK);
             assert(!(getOccupiedBb() & Bitboards::intermediateBb[SQ_E8][SQ_H8]));
-            movePiece(fromSq, toSq);                              // King
-            movePiece(SQ_H8, SQ_F8);                              // Rook
-            zobristKey ^= Zobrist::castlingRights[castlingRights];// out
+            movePiece(fromSq, toSq);                               // King
+            movePiece(SQ_H8, SQ_F8);                               // Rook
+            zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
             castlingRights -= BLACK_CASTLING;
-            zobristKey ^= Zobrist::castlingRights[castlingRights];// in
+            zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
             break;
           case SQ_C8:
             assert(castlingRights == BLACK_OOO);
@@ -225,11 +225,11 @@ namespace chess {
             assert(getPiece(SQ_E8) == BLACK_KING);
             assert(getPiece(SQ_A8) == BLACK_ROOK);
             assert(!(getOccupiedBb() & Bitboards::intermediateBb[SQ_E8][SQ_A8]));
-            movePiece(fromSq, toSq);                              // King
-            movePiece(SQ_A8, SQ_D8);                              // Rook
-            zobristKey ^= Zobrist::castlingRights[castlingRights];// out
+            movePiece(fromSq, toSq);                               // King
+            movePiece(SQ_A8, SQ_D8);                               // Rook
+            zobristKey ^= Zobrist::castlingRights[castlingRights]; // out
             castlingRights -= BLACK_CASTLING;
-            zobristKey ^= Zobrist::castlingRights[castlingRights];// in
+            zobristKey ^= Zobrist::castlingRights[castlingRights]; // in
             break;
           default:
             throw std::invalid_argument("Invalid castle move!");
@@ -284,19 +284,19 @@ namespace chess {
       case CASTLING:
         // ignore Zobrist Key as it will be restored via history
         // castling rights are restored via history
-        movePiece(move.to(), move.from());// King
+        movePiece(move.to(), move.from()); // King
         switch (move.to()) {
           case SQ_G1:
-            movePiece(SQ_F1, SQ_H1);// Rook
+            movePiece(SQ_F1, SQ_H1); // Rook
             break;
           case SQ_C1:
-            movePiece(SQ_D1, SQ_A1);// Rook
+            movePiece(SQ_D1, SQ_A1); // Rook
             break;
           case SQ_G8:
-            movePiece(SQ_F8, SQ_H8);// Rook
+            movePiece(SQ_F8, SQ_H8); // Rook
             break;
           case SQ_C8:
-            movePiece(SQ_D8, SQ_A8);// Rook
+            movePiece(SQ_D8, SQ_A8); // Rook
             break;
           default:
             throw std::invalid_argument("Invalid castle move!");
@@ -369,7 +369,7 @@ namespace chess {
 
     // check en passant
     if (enPassantSquare != SQ_NONE) {
-      if (by) {// BLACK
+      if (by) { // BLACK
         // white is the target
         if (board[enPassantSquare + NORTH] == WHITE_PAWN &&
             // this is indeed the en passant attacked square
@@ -382,7 +382,7 @@ namespace chess {
           return board[(sq + EAST)] == BLACK_PAWN;
         }
       }
-      else {// WHITE
+      else { // WHITE
         // black is target
         if (board[enPassantSquare + SOUTH] == BLACK_PAWN &&
             // this is indeed the en passant attacked square
@@ -464,16 +464,16 @@ namespace chess {
         // also no revealed check possible in castling
         fromPt = ROOK;
         switch (toSq) {
-          case SQ_G1:// white king side castle
+          case SQ_G1: // white king side castle
             toSq = SQ_F1;
             break;
-          case SQ_C1:// white queen side castle
+          case SQ_C1: // white queen side castle
             toSq = SQ_D1;
             break;
-          case SQ_G8:// black king side castle
+          case SQ_G8: // black king side castle
             toSq = SQ_F8;
             break;
-          case SQ_C8:// black queen side castle
+          case SQ_C8: // black queen side castle
             toSq = SQ_D8;
             break;
           default:
@@ -618,7 +618,7 @@ namespace chess {
 
     while (i >= 0) {
       if (historyState[i].halfMoveClock >= lastHalfMoveClock) {
-        break;// crossed an irreversible boundary
+        break; // crossed an irreversible boundary
       }
       lastHalfMoveClock = historyState[i].halfMoveClock;
 
@@ -652,7 +652,7 @@ namespace chess {
 
     for (int i = historyCounter - 2; i >= 0; i -= 2) {
       const int hm = historyState[i].halfMoveClock;
-      if (hm >= lastHalfMove) break;// crossed an irreversible boundary
+      if (hm >= lastHalfMove) break; // crossed an irreversible boundary
       lastHalfMove = hm;
       if (zobristKey == historyState[i].zobristKey) {
         ++counter;
@@ -889,7 +889,7 @@ namespace chess {
 
   inline void Position::clearEnPassant() {
     if (enPassantSquare != SQ_NONE) {
-      zobristKey      = zobristKey ^ Zobrist::enPassantFile[enPassantSquare.file()];// out
+      zobristKey      = zobristKey ^ Zobrist::enPassantFile[enPassantSquare.file()]; // out
       enPassantSquare = SQ_NONE;
     }
   }
@@ -908,7 +908,7 @@ namespace chess {
 
     moveNumber = 1;
 
-    for (const Color color : Color::all()) {// foreach color
+    for (const Color color : Color::all()) { // foreach color
       occupiedBb[color] = BbZero;
       std::fill_n(&piecesBb[color][0], sizeof(piecesBb[color]), BbZero);
       kingSquare[color]      = SQ_NONE;
@@ -956,13 +956,13 @@ namespace chess {
     std::istringstream iss(fenParts[0]);
     iss >> std::noskipws;
     while (iss >> token) {
-      if (std::isdigit(token)) {// number
+      if (std::isdigit(token)) { // number
         file += token - '0';
         if (file > 8) {
           throw std::invalid_argument(std::format("FEN has too many squares ({}) in rank {}:  {}", file, rank + 1, fenParts[0]));
         }
       }
-      else if (token == '/') {// rank separator
+      else if (token == '/') { // rank separator
         if (file < 8) {
           throw std::invalid_argument(std::format("FEN has not enough squares ({}) in rank {}:  {}", file, rank + 1, fenParts[0]));
         }
@@ -976,9 +976,9 @@ namespace chess {
           throw std::invalid_argument(std::format("FEN has too many ranks ({}):  {}", 8 - rank, fenParts[0]));
         }
       }
-      else {// find piece type from piece symbol
+      else { // find piece type from piece symbol
         const Piece piece = makePiece(token);
-        if (piece == PIECE_NONE) {// redundant
+        if (piece == PIECE_NONE) { // redundant
           throw std::invalid_argument(std::format("FEN has invalid piece character '{}' in {}", token, fenParts[0]));
         }
         if (file > 7) {
@@ -1088,4 +1088,4 @@ namespace chess {
     if (moveNumber == 0) moveNumber = 1;
   }
 
-}// namespace chess
+} // namespace chess

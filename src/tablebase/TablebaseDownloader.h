@@ -51,19 +51,19 @@ namespace tablebase {
 
   /// Configuration for tablebase download operation
   struct DownloadConfig {
-    std::vector<int> pieceCounts;  ///< Piece counts to download (e.g., {3, 4, 5})
-    std::string targetPath;        ///< Directory to save files
-    bool verbose{false};           ///< Print detailed progress
-    bool verifyAfterDownload{true};///< Verify files exist after download
+    std::vector<int> pieceCounts;   ///< Piece counts to download (e.g., {3, 4, 5})
+    std::string targetPath;         ///< Directory to save files
+    bool verbose{false};            ///< Print detailed progress
+    bool verifyAfterDownload{true}; ///< Verify files exist after download
   };
 
   /// Progress information during download
   struct DownloadProgress {
-    std::string currentFile; ///< Current file being downloaded
-    int filesCompleted{0};   ///< Number of files completed
-    int totalFiles{0};       ///< Total number of files to download
-    bool success{true};      ///< Whether current operation succeeded
-    std::string errorMessage;///< Error message if success is false
+    std::string currentFile;  ///< Current file being downloaded
+    int filesCompleted{0};    ///< Number of files completed
+    int totalFiles{0};        ///< Total number of files to download
+    bool success{true};       ///< Whether current operation succeeded
+    std::string errorMessage; ///< Error message if success is false
 
     /// Returns completion percentage (0-100)
     [[nodiscard]] int percentComplete() const {
@@ -76,21 +76,21 @@ namespace tablebase {
 
   /// Result of a download operation
   struct DownloadResult {
-    bool success{false};            ///< Overall success
-    int filesDownloaded{0};         ///< Number of files successfully downloaded
-    int filesFailed{0};             ///< Number of files that failed
-    int filesSkipped{0};            ///< Number of files already present (skipped)
-    std::vector<std::string> errors;///< Error messages for failed files
+    bool success{false};             ///< Overall success
+    int filesDownloaded{0};          ///< Number of files successfully downloaded
+    int filesFailed{0};              ///< Number of files that failed
+    int filesSkipped{0};             ///< Number of files already present (skipped)
+    std::vector<std::string> errors; ///< Error messages for failed files
   };
 
   /// Result of a verification operation
   struct VerifyResult {
-    bool success{false};            ///< Overall success (all files valid)
-    int filesVerified{0};           ///< Number of files with matching MD5
-    int filesFailed{0};             ///< Number of files with MD5 mismatch
-    int filesMissing{0};            ///< Number of files not found
-    int filesNoChecksum{0};         ///< Number of files with no reference MD5
-    std::vector<std::string> errors;///< Error messages for failed/missing files
+    bool success{false};             ///< Overall success (all files valid)
+    int filesVerified{0};            ///< Number of files with matching MD5
+    int filesFailed{0};              ///< Number of files with MD5 mismatch
+    int filesMissing{0};             ///< Number of files not found
+    int filesNoChecksum{0};          ///< Number of files with no reference MD5
+    std::vector<std::string> errors; ///< Error messages for failed/missing files
   };
 
   /// Syzygy tablebase download manager
@@ -157,6 +157,6 @@ namespace tablebase {
     [[nodiscard]] static std::unordered_map<std::string, std::string> fetchMD5Checksums();
   };
 
-}// namespace tablebase
+} // namespace tablebase
 
-#endif// FRANKYCPP_TABLEBASEDOWNLOADER_H
+#endif // FRANKYCPP_TABLEBASEDOWNLOADER_H

@@ -199,15 +199,15 @@ TEST_F(TestSuite_Test, stress_test_for_sanitizers) {
 
   // List of testsuites to run - these are the ones used in Arena testing
   const std::vector<std::string> testSuites = {
-    "wac.epd",           // 201 positions - tactical puzzles
-    "crafty_test.epd",   // 345 positions - crafty test suite
-    "ecm98.epd",         // 769 positions - encyclopedia of chess middlegames
-    "kaufman.epd",       // 25 positions - Kaufman test
-    "silent-but-deadly.epd", // tactical positions
+    "wac.epd",                    // 201 positions - tactical puzzles
+    "crafty_test.epd",            // 345 positions - crafty test suite
+    "ecm98.epd",                  // 769 positions - encyclopedia of chess middlegames
+    "kaufman.epd",                // 25 positions - Kaufman test
+    "silent-but-deadly.epd",      // tactical positions
     "eigenmann-rapid-engine.epd", // positional tests
   };
 
-  int totalTests = 0;
+  int totalTests  = 0;
   int totalPassed = 0;
 
   for (const auto& suite : testSuites) {
@@ -263,8 +263,8 @@ TEST_F(TestSuite_Test, quick_stress_test) {
 
   // Just run WAC which is relatively small but exercises the search well
   const std::vector<std::string> testSuites = {
-    "wac.epd",           // 201 positions
-    "kaufman.epd",       // 25 positions
+    "wac.epd",     // 201 positions
+    "kaufman.epd", // 25 positions
   };
 
   auto s = ConfigManager::instance().search();

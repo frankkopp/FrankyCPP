@@ -52,14 +52,14 @@ TEST_F(TT_Test, entrySize) {
   struct EntryTest {
     // sorted by size to achieve smallest struct size
     // using bitfield for smallest size
-    ZobristKey key = 0;         // 64 bit
-    uint16_t move  = 0;         // MOVE_NONE as 16-bit
-    Value eval     = VALUE_NONE;// 16 bit signed
-    Value value    = VALUE_NONE;// 16 bit signed
-    int8_t depth : 7;           // 0-127
-    uint8_t age : 3;            // 0-7
-    ValueType type : 2;         // 4 values
-    bool mateThreat : 1;        // 1-bit bool
+    ZobristKey key = 0;          // 64 bit
+    uint16_t move  = 0;          // MOVE_NONE as 16-bit
+    Value eval     = VALUE_NONE; // 16 bit signed
+    Value value    = VALUE_NONE; // 16 bit signed
+    int8_t depth : 7;            // 0-127
+    uint8_t age : 3;             // 0-7
+    ValueType type : 2;          // 4 values
+    bool mateThreat : 1;         // 1-bit bool
   };
   LOG__INFO(Logger::get().TEST_LOG, "Entry size = {} Byte", sizeof(EntryTest));
 }
@@ -166,7 +166,7 @@ TEST_F(TT_Test, resize) {
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of max entries:     {:L}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries:         {:L}", tt.getNumberOfEntries());
-  EXPECT_EQ(4, tt.getMaxNumberOfEntries());// 1 cluster × 4 entries
+  EXPECT_EQ(4, tt.getMaxNumberOfEntries()); // 1 cluster × 4 entries
   EXPECT_EQ(0, tt.getNumberOfEntries());
   tt.resize(64);
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
@@ -208,8 +208,8 @@ TEST_F(TT_Test, put) {
   const uint64_t clusterDistance = tt.getMaxNumberOfClusters();
 
   const ZobristKey key1 = randomKey(rg);
-  const ZobristKey key2 = key1 + 13;                  // different cluster
-  const ZobristKey key3 = key1 + clusterDistance;      // same cluster - uses empty slot (bucket has 4 slots)
+  const ZobristKey key2 = key1 + 13;              // different cluster
+  const ZobristKey key3 = key1 + clusterDistance; // same cluster - uses empty slot (bucket has 4 slots)
 
   // new entry in empty bucket at pos 0
   tt.put(key1, static_cast<Depth>(6), Move(SQ_E2, SQ_E4), static_cast<Value>(101), EXACT, static_cast<Value>(1001));
@@ -240,9 +240,9 @@ TEST_F(TT_Test, put) {
   // same cluster as key1 - but bucket has empty slots, so no collision
   tt.put(key3, static_cast<Depth>(6), Move(SQ_E2, SQ_E4), static_cast<Value>(103), EXACT, static_cast<Value>(1003));
   EXPECT_EQ(3, tt.getNumberOfPuts());
-  EXPECT_EQ(3, tt.getNumberOfEntries());// now 3 entries (bucket has room)
+  EXPECT_EQ(3, tt.getNumberOfEntries()); // now 3 entries (bucket has room)
   EXPECT_EQ(0, tt.getNumberOfUpdates());
-  EXPECT_EQ(0, tt.getNumberOfCollisions());// no collision - used empty slot
+  EXPECT_EQ(0, tt.getNumberOfCollisions()); // no collision - used empty slot
   EXPECT_EQ(0, tt.getNumberOfOverwrites());
   // Both key1 and key3 are retrievable from the same cluster
   EXPECT_TRUE(tt.getMatch(key1).has_value());
@@ -264,8 +264,8 @@ TEST_F(TT_Test, get) {
   const uint64_t clusterDistance = tt.getMaxNumberOfClusters();
 
   const ZobristKey key1 = randomKey(rg);
-  const ZobristKey key2 = key1 + 13;                  // different cluster
-  const ZobristKey key3 = key1 + clusterDistance;      // same cluster as key1
+  const ZobristKey key2 = key1 + 13;              // different cluster
+  const ZobristKey key3 = key1 + clusterDistance; // same cluster as key1
   const ZobristKey key4 = key1 + 17;
 
   // new entry in empty slot
@@ -290,7 +290,7 @@ TEST_F(TT_Test, get) {
   EXPECT_TRUE(e1b.has_value());
   EXPECT_EQ(101, e1b->value);
 
-  const auto e4 = tt.getMatch(key4);// not in TT
+  const auto e4 = tt.getMatch(key4); // not in TT
   EXPECT_FALSE(e4.has_value());
 }
 
@@ -351,14 +351,14 @@ TEST_F(TT_Test, TT_PPS) {
 // Verify that 4 different keys mapping to the same cluster can all coexist
 TEST_F(TT_Test, bucketCoexistence) {
   TT tt(10);
-  const uint64_t cd = tt.getMaxNumberOfClusters();// cluster distance
+  const uint64_t cd = tt.getMaxNumberOfClusters(); // cluster distance
 
   // 4 keys that all hash to the same cluster
   constexpr ZobristKey baseKey = 42;
-  constexpr ZobristKey key1 = baseKey;
-  const ZobristKey key2 = baseKey + cd;
-  const ZobristKey key3 = baseKey + 2 * cd;
-  const ZobristKey key4 = baseKey + 3 * cd;
+  constexpr ZobristKey key1    = baseKey;
+  const ZobristKey key2        = baseKey + cd;
+  const ZobristKey key3        = baseKey + 2 * cd;
+  const ZobristKey key4        = baseKey + 3 * cd;
 
   tt.put(key1, static_cast<Depth>(5), Move(SQ_E2, SQ_E4), static_cast<Value>(101), EXACT, VALUE_NONE);
   tt.put(key2, static_cast<Depth>(6), Move(SQ_D2, SQ_D4), static_cast<Value>(102), EXACT, VALUE_NONE);
@@ -389,11 +389,11 @@ TEST_F(TT_Test, bucketReplacement) {
   const uint64_t cd = tt.getMaxNumberOfClusters();
 
   constexpr ZobristKey baseKey = 42;
-  constexpr ZobristKey key1 = baseKey;
-  const ZobristKey key2 = baseKey + cd;
-  const ZobristKey key3 = baseKey + 2 * cd;
-  const ZobristKey key4 = baseKey + 3 * cd;
-  const ZobristKey key5 = baseKey + 4 * cd;// 5th key - same cluster, will need replacement
+  constexpr ZobristKey key1    = baseKey;
+  const ZobristKey key2        = baseKey + cd;
+  const ZobristKey key3        = baseKey + 2 * cd;
+  const ZobristKey key4        = baseKey + 3 * cd;
+  const ZobristKey key5        = baseKey + 4 * cd; // 5th key - same cluster, will need replacement
 
   // Fill all 4 slots with varying depths
   tt.put(key1, static_cast<Depth>(10), Move(SQ_E2, SQ_E4), static_cast<Value>(101), EXACT, VALUE_NONE);
@@ -434,11 +434,11 @@ TEST_F(TT_Test, bucketAlwaysReplacesWeakest) {
   const uint64_t cd = tt.getMaxNumberOfClusters();
 
   constexpr ZobristKey baseKey = 42;
-  constexpr ZobristKey key1 = baseKey;
-  const ZobristKey key2 = baseKey + cd;
-  const ZobristKey key3 = baseKey + 2 * cd;
-  const ZobristKey key4 = baseKey + 3 * cd;
-  const ZobristKey key5 = baseKey + 4 * cd;
+  constexpr ZobristKey key1    = baseKey;
+  const ZobristKey key2        = baseKey + cd;
+  const ZobristKey key3        = baseKey + 2 * cd;
+  const ZobristKey key4        = baseKey + 3 * cd;
+  const ZobristKey key5        = baseKey + 4 * cd;
 
   // Fill all 4 slots with same depth, age = 1 (recently used)
   tt.put(key1, static_cast<Depth>(10), Move(SQ_E2, SQ_E4), static_cast<Value>(101), EXACT, VALUE_NONE);
@@ -455,7 +455,7 @@ TEST_F(TT_Test, bucketAlwaysReplacesWeakest) {
   tt.put(key5, static_cast<Depth>(3), Move(SQ_C2, SQ_C4), static_cast<Value>(105), EXACT, VALUE_NONE);
 
   EXPECT_EQ(1, tt.getNumberOfCollisions());
-  EXPECT_EQ(1, tt.getNumberOfOverwrites());// shallow entry replaced the weakest
+  EXPECT_EQ(1, tt.getNumberOfOverwrites()); // shallow entry replaced the weakest
 
   // key5 should now be stored
   const auto e5 = tt.getMatch(key5);
@@ -470,7 +470,7 @@ TEST_F(TT_Test, bucketAlwaysReplacesWeakest) {
   if (tt.getMatch(key2).has_value()) presentCount++;
   if (tt.getMatch(key3).has_value()) presentCount++;
   if (tt.getMatch(key4).has_value()) presentCount++;
-  EXPECT_EQ(3, presentCount);// 3 of the 4 original entries remain
+  EXPECT_EQ(3, presentCount); // 3 of the 4 original entries remain
 }
 
 // =============================================================================
@@ -495,10 +495,10 @@ TEST_F(TT_Test, bucketAlwaysReplacesWeakest) {
 TEST_F(TT_Test, ConcurrentPutProbeNoUB) {
   constexpr int NUM_THREADS = 4;
   constexpr int ITERATIONS  = 500'000;
-  constexpr int TT_SIZE_MB  = 4;// small = high collision rate = more contention
+  constexpr int TT_SIZE_MB  = 4; // small = high collision rate = more contention
 
   TT tt(TT_SIZE_MB);
-  tt.setSmpThreads(NUM_THREADS);// disables age-- to avoid bitfield race
+  tt.setSmpThreads(NUM_THREADS); // disables age-- to avoid bitfield race
 
   // Depth and value ranges written by all threads.
   constexpr int DEPTH_LO = 1;
@@ -509,7 +509,7 @@ TEST_F(TT_Test, ConcurrentPutProbeNoUB) {
   // contention a self-consistent-but-wrong entry can occasionally slip through.
   // We count these rather than hard-failing, and assert the rate is negligible.
   struct ThreadStats {
-    uint64_t hits          = 0;
+    uint64_t hits            = 0;
     uint64_t depthOutOfRange = 0;
     uint64_t valueOutOfRange = 0;
   };
@@ -565,11 +565,11 @@ TEST_F(TT_Test, ConcurrentPutProbeNoUB) {
   }
 
   // Aggregate stats
-  uint64_t totalHits       = 0;
-  uint64_t totalDepthOOR   = 0;
-  uint64_t totalValueOOR   = 0;
+  uint64_t totalHits     = 0;
+  uint64_t totalDepthOOR = 0;
+  uint64_t totalValueOOR = 0;
   for (const auto& s : stats) {
-    totalHits     += s.hits;
+    totalHits += s.hits;
     totalDepthOOR += s.depthOutOfRange;
     totalValueOOR += s.valueOutOfRange;
   }

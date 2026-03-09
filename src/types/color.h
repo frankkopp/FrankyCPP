@@ -53,7 +53,7 @@
 namespace chess {
 
   class Color {
-    unsigned v_{};// 0..1 valid, 2 = NONE
+    unsigned v_{}; // 0..1 valid, 2 = NONE
 
   public:
     // number of valid colors (without NOCOLOR)
@@ -83,11 +83,11 @@ namespace chess {
 
     // iterator support over valid colors [WHITE, BLACK]
     class iterator {
-      int cur_{};// index of current color [0..LENGTH]
+      int cur_{}; // index of current color [0..LENGTH]
     public:
       using value_type      = Color;
       using difference_type = int;
-      using reference       = Color;// value-like
+      using reference       = Color; // value-like
       using pointer         = void;
 
       constexpr explicit iterator(const int c) : cur_(c) {}
@@ -122,6 +122,6 @@ namespace chess {
   ENABLE_INCR_OPERATORS_ON(Color)
   ENABLE_OSTREAM_OPERATOR_AS_INT_ON(Color)
 
-}// namespace chess
+} // namespace chess
 
-#endif// FRANKYCPP_COLOR_H
+#endif // FRANKYCPP_COLOR_H

@@ -80,7 +80,7 @@ std::string UciOptions::str() const {
   for (const auto& o : optionVector) {
     str += o.str() + "\n";
   }
-  str = trimFast(str);// remove last newline
+  str = trimFast(str); // remove last newline
   return str;
 }
 
@@ -90,7 +90,7 @@ std::string UciOptions::strWithCurrentValues() const {
   for (const auto& o : optionVector) {
     str += o.strWithCurrentValue() + "\n";
   }
-  str = trimFast(str);// remove last newline
+  str = trimFast(str); // remove last newline
   return str;
 }
 
@@ -147,7 +147,7 @@ void UciOptions::resetToDefaults(UciHandler* uciHandler) {
   // which also invokes the option's handler to propagate the change.
   LOG__INFO(Logger::get().UCI_LOG, "Resetting all options to their default values");
   for (const auto& o : optionVector) {
-    if (o.type == BUTTON) continue;// buttons have no persistent value
+    if (o.type == BUTTON) continue; // buttons have no persistent value
     setOption(uciHandler, o.nameID, o.defaultValue);
     LOG__DEBUG(Logger::get().UCI_LOG, "  Option '{}' reset to default value '{}'", o.nameID, o.defaultValue);
   }

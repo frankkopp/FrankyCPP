@@ -52,4 +52,4 @@
 #define FRIEND_TEST_FWD_DECL(test_case_name, test_name) \
   class test_case_name##_##test_name##_Test
 
-#endif// FRANKYCPP_GTEST_FRIENDS_H
+#endif // FRANKYCPP_GTEST_FRIENDS_H

@@ -20,9 +20,8 @@ results/
 │   │   └── v1.1_vs_v1.0_blitz.state.json  # Auto-deleted on completion
 │   └── ...
 │
-└── comparisons/         # Version comparison reports
-    ├── FrankyCPP-v1.1_vs_FrankyCPP-v1.0_20260201_153000.txt
-    └── ...
+└── benchmarks/          # Benchmark results (consolidated JSON)
+    └── benchmarks.json
 ```
 
 ### State Files (`.state/` directory)

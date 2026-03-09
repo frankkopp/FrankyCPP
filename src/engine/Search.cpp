@@ -160,7 +160,7 @@ void Search::stopSearch() {
   waitWhileSearching();
 }
 
-bool Search::isSearching() const {// NOLINT(*-convert-member-functions-to-static)
+bool Search::isSearching() const { // NOLINT(*-convert-member-functions-to-static)
   // Try to get running semaphore.
   // If not available, the search is running
   if (isRunningSemaphore.try_acquire()) {
@@ -233,8 +233,8 @@ void Search::run() {
 
   // initialize search
   stopSearchFlag = false;
-  resultReady.store(false, std::memory_order_relaxed);// clear result flag
-  lastSearchResult.reset();                           // clear previous result
+  resultReady.store(false, std::memory_order_relaxed); // clear result flag
+  lastSearchResult.reset();                            // clear previous result
   timeLimit         = milliseconds{};
   extraTimeMs       = 0;
   lastUciUpdateTime = now();
@@ -415,7 +415,7 @@ void Search::run() {
 
   // save the result until overwritten by the next search
   lastSearchResult = searchResult;
-  resultReady.store(true, std::memory_order_release);// signal result is ready
+  resultReady.store(true, std::memory_order_release); // signal result is ready
 
   // At the end of a search we send the result in any case even if
   // searched has been stopped.
@@ -586,8 +586,8 @@ SearchResult Search::iterativeDeepening(Position& p) {
 
 
   // Volatility tracking within this search
-  Value prevBestRootValue       = VALUE_NONE;// best root eval from previous iteration
-  bool addedVolatilityExtraTime = false;     // guard to add extra time due to eval swing at most once
+  Value prevBestRootValue       = VALUE_NONE; // best root eval from previous iteration
+  bool addedVolatilityExtraTime = false;      // guard to add extra time due to eval swing at most once
 
   // Reset best-move instability tracking for this search (main thread only - shared state)
   if (isMainThread()) {
@@ -628,7 +628,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
   // (main thread only - these are shared state used for UCI reporting)
   if (isMainThread()) {
     npsTime  = now();
-    npsNodes = thread().nodesVisited;// expected to be 0, but use actual value for robustness
+    npsNodes = thread().nodesVisited; // expected to be 0, but use actual value for robustness
   }
   milliseconds lastIterationMs{0};
   uint64_t lastIterationNodes = 0;
@@ -672,7 +672,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
       // Predict the node count of the next iteration using observed growth.
       double growth = prevIterationNodes > 0
                         ? static_cast<double>(lastIterationNodes) / static_cast<double>(prevIterationNodes)
-                        : 1.7;// default growth when we only have one observation
+                        : 1.7; // default growth when we only have one observation
       if (growth < 1.2) growth = 1.2;
       if (growth > 3.0) growth = 3.0;
       const uint64_t predictedNodesNext = lastIterationNodes > 0
@@ -942,10 +942,18 @@ SearchResult Search::iterativeDeepening(Position& p) {
           // Track as sufficient depth (we just need any entry with a move)
           STAT_INC(thread().statistics.ttHitSufficientDepth);
           switch (ttEntry->type) {
-            case NONE: STAT_INC(thread().statistics.ttHitNone); break;
-            case EXACT: STAT_INC(thread().statistics.ttHitExact); break;
-            case ALPHA: STAT_INC(thread().statistics.ttHitAlpha); break;
-            case BETA: STAT_INC(thread().statistics.ttHitBeta); break;
+            case NONE:
+              STAT_INC(thread().statistics.ttHitNone);
+              break;
+            case EXACT:
+              STAT_INC(thread().statistics.ttHitExact);
+              break;
+            case ALPHA:
+              STAT_INC(thread().statistics.ttHitAlpha);
+              break;
+            case BETA:
+              STAT_INC(thread().statistics.ttHitBeta);
+              break;
           }
           const auto probedMove = static_cast<Move>(ttEntry->move);
           // Validate TT move before use
@@ -1190,7 +1198,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // prepare node search
   const Color us      = p.getNextPlayer();
   Value bestNodeValue = VALUE_NONE;
-  Move bestNodeMove   = MOVE_NONE;// used to store in the TT
+  Move bestNodeMove   = MOVE_NONE; // used to store in the TT
   Move ttMove         = MOVE_NONE;
   ValueType ttType    = ALPHA;
   Value staticEval    = VALUE_NONE;
@@ -1199,7 +1207,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // Variables for singular extension
   Value ttValue     = VALUE_NONE;
   Depth ttDepth     = DEPTH_NONE;
-  ValueType ttBound = ALPHA;// TT entry's bound type (for singular extension)
+  ValueType ttBound = ALPHA; // TT entry's bound type (for singular extension)
 
   // TT Lookup (before TB probe to avoid redundant TB probes for cached results)
   // Results of searches are stored in the TT to be used to
@@ -1226,7 +1234,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       }
       ttValue = valueFromTt(ttEntry->value, ply);
       ttDepth = static_cast<Depth>(ttEntry->depth);
-      ttBound = ttEntry->type;// Capture bound type for singular extension
+      ttBound = ttEntry->type; // Capture bound type for singular extension
 
       // Track hit quality by depth (sufficient depth for cutoff vs move-only)
       if (ttDepth >= depth) { STAT_INC(thread().statistics.ttHitSufficientDepth); }
@@ -1234,10 +1242,18 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 
       // Track hit quality by bound type
       switch (ttEntry->type) {
-        case NONE: STAT_INC(thread().statistics.ttHitNone); break;
-        case EXACT: STAT_INC(thread().statistics.ttHitExact); break;
-        case ALPHA: STAT_INC(thread().statistics.ttHitAlpha); break;
-        case BETA: STAT_INC(thread().statistics.ttHitBeta); break;
+        case NONE:
+          STAT_INC(thread().statistics.ttHitNone);
+          break;
+        case EXACT:
+          STAT_INC(thread().statistics.ttHitExact);
+          break;
+        case ALPHA:
+          STAT_INC(thread().statistics.ttHitAlpha);
+          break;
+        case BETA:
+          STAT_INC(thread().statistics.ttHitBeta);
+          break;
       }
 
       // Never cutoff on PV nodes - this ensures we always build a complete PV line
@@ -1249,8 +1265,8 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
                 || (ttEntry->type == ALPHA && ttValue <= alpha)
                 || (ttEntry->type == BETA && ttValue >= beta))) {
           STAT_INC(thread().statistics.TtCuts);
-          STAT_INC(thread().statistics.ttCutsSearch);  // main search cut
-          STAT_ADD(thread().statistics.ttCutDepthSum, depth);  // track depth for avg calculation
+          STAT_INC(thread().statistics.ttCutsSearch);         // main search cut
+          STAT_ADD(thread().statistics.ttCutDepthSum, depth); // track depth for avg calculation
           return ttValue;
         }
         STAT_INC(thread().statistics.TtNoCuts);
@@ -1264,7 +1280,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     else {
       STAT_INC(thread().statistics.ttMisses);
     }
-  }// use TT
+  } // use TT
 
   // Tablebase probing in search (after TT lookup to use cached TB results)
   // Probe WDL for positions within TB piece limit. This can provide
@@ -1274,12 +1290,12 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // If USE_TB_PROBE_PV is false, skip probing on PV nodes entirely (performance optimization).
   // Guard order optimized for fast rejection: cheap checks first, expensive popcount() last.
   if (SearchConfig.USE_TB_PROBE_SEARCH
-      && p.getCastlingRights() == NO_CASTLING// CHEAP: Most positions have castling rights
-      && depth >= SearchConfig.TB_PROBE_DEPTH// CHEAP: Fails at shallow depths
-      && syzygy_tb                           // CHEAP: Null pointer check
-      && syzygy_tb->isAvailable()            // CHEAP: Member access
+      && p.getCastlingRights() == NO_CASTLING // CHEAP: Most positions have castling rights
+      && depth >= SearchConfig.TB_PROBE_DEPTH // CHEAP: Fails at shallow depths
+      && syzygy_tb                            // CHEAP: Null pointer check
+      && syzygy_tb->isAvailable()             // CHEAP: Member access
       && (SearchConfig.USE_TB_PROBE_PV || nodeType != PvNode)
-      && p.getOccupiedBb().popcount() <= SearchConfig.TB_PROBE_LIMIT) {// EXPENSIVE: Last!
+      && p.getOccupiedBb().popcount() <= SearchConfig.TB_PROBE_LIMIT) { // EXPENSIVE: Last!
 
     STAT_INC(thread().statistics.tbSearchProbes);
     const tablebase::TBResult wdl = syzygy_tb->probeWDL(p);
@@ -1301,7 +1317,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
           if (SearchConfig.USE_TT) {
             storeTt(p, depth, ply, MOVE_NONE, tbScore, BETA, VALUE_NONE);
           }
-          return tbScore;// Fail high (beta cutoff)
+          return tbScore; // Fail high (beta cutoff)
         }
         // Tighten alpha if TB score is better
         alpha = std::max(alpha, tbScore);
@@ -1314,7 +1330,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
           if (SearchConfig.USE_TT) {
             storeTt(p, depth, ply, MOVE_NONE, tbScore, ALPHA, VALUE_NONE);
           }
-          return tbScore;// Fail low (alpha cutoff)
+          return tbScore; // Fail low (alpha cutoff)
         }
         // Tighten beta if TB score is worse
         beta = std::min(beta, tbScore);
@@ -1372,7 +1388,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       const Value prevEval4 = thread().plyStack[ply - 4].staticEval;
       if (prevEval4 != VALUE_NONE) return staticEval > prevEval4;
     }
-    return true;// Conservative: assume improving when no reference data
+    return true; // Conservative: assume improving when no reference data
   }();
 
   // Track improving statistics
@@ -1390,7 +1406,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       && depth <= 3
       && nodeType != PvNode
       && !hasCheck
-      && std::abs(beta) < VALUE_CHECKMATE_THRESHOLD) {// Don't prune when beta is a mate score
+      && std::abs(beta) < VALUE_CHECKMATE_THRESHOLD) { // Don't prune when beta is a mate score
     auto margin = Value{SearchConfig.RFP_MARGIN[depth]};
     // Increase margin when not improving → prune less aggressively (Stockfish-style)
     // Rationale: "not improving" means eval may be unreliable, so search more carefully
@@ -1400,7 +1416,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     }
     if (staticEval - margin >= beta) {
       STAT_INC(thread().statistics.rfp_cuts);
-      return staticEval - margin;// fail-hard: beta / fail-soft: staticEval - evalMargin;
+      return staticEval - margin; // fail-hard: beta / fail-soft: staticEval - evalMargin;
     }
   }
 
@@ -1409,7 +1425,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // When static eval is well below alpha at the last node,
   // jump directly into qsearch.
   if (SearchConfig.USE_RAZORING
-      && nodeType != PvNode// fix 19.2.2026 - only razor on non-PV nodes to avoid missing critical moves in PV line
+      && nodeType != PvNode // fix 19.2.2026 - only razor on non-PV nodes to avoid missing critical moves in PV line
       && depth == 1
       && staticEval != VALUE_NONE
       && staticEval <= alpha - SearchConfig.RAZOR_MARGIN) {
@@ -1475,7 +1491,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         // unproven mate
         nValue = VALUE_CHECKMATE_THRESHOLD;
       }
-      else if (nValue < -(VALUE_CHECKMATE - 2 * SearchConfig.THREAT_EXT_MATE_DEPTH)) {// configurable mate-in-N threshold
+      else if (nValue < -(VALUE_CHECKMATE - 2 * SearchConfig.THREAT_EXT_MATE_DEPTH)) { // configurable mate-in-N threshold
         // the player did not move and got mated ==> mate threat
         matethreat = true;
       }
@@ -1539,9 +1555,9 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // Note: Only runs if IIR is disabled (they are mutually exclusive)
   if (SearchConfig.USE_IID) {
     if (depth >= SearchConfig.IID_DEPTH
-        && !ttMove// no move from TT
+        && !ttMove // no move from TT
         && doNull
-        && nodeType == PvNode) {// avoid in null move search
+        && nodeType == PvNode) { // avoid in null move search
 
       // do the actual reduced search only if we have time left
       if (!isTimeAlmostUp()) {
@@ -1585,7 +1601,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // prepare move loop
   Value value;
   Move move;
-  int movesSearched = 0;// to detect mate situations
+  int movesSearched = 0; // to detect mate situations
 
   // ///////////////////////////////////////////////////////
   // MOVE LOOP
@@ -1598,13 +1614,13 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     const bool givesCheck = p.givesCheck(move);
 
     // prepare newDepth
-    const Depth newDepthFixed = searchDepth - DEPTH_ONE;// default depth reduction for the next ply
-                                                        // might have already been reduced by IIR,
-                                                        // but can be further reduced by LMR or
-                                                        // extended by extensions
-    Depth newDepth  = newDepthFixed;                    // default depth for the next ply - might be extended later
-    Depth lmrDepth  = newDepthFixed;                    // default depth for LMR reductions - might be reduced later
-    Depth extension = DEPTH_NONE;                       // default extension for the next ply - none, but might be set by extensions
+    const Depth newDepthFixed = searchDepth - DEPTH_ONE; // default depth reduction for the next ply
+                                                         // might have already been reduced by IIR,
+                                                         // but can be further reduced by LMR or
+                                                         // extended by extensions
+    Depth newDepth  = newDepthFixed;                     // default depth for the next ply - might be extended later
+    Depth lmrDepth  = newDepthFixed;                     // default depth for LMR reductions - might be reduced later
+    Depth extension = DEPTH_NONE;                        // default extension for the next ply - none, but might be set by extensions
 
     // Here we try some search extensions. This has to be done
     // very carefully as it usually is more effective to prune
@@ -1643,13 +1659,13 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       // We do a reduced-depth null-window search excluding the TT move to verify
       // that no other move can reach close to the TT value.
       if (SearchConfig.USE_SINGULAR_EXT
-          && extension == 0                                  // no other extension applied
-          && move == ttMove                                  // this is the TT move
-          && depth >= SearchConfig.SINGULAR_MIN_DEPTH        // sufficient depth
-          && ttValue != VALUE_NONE                           // valid TT value
-          && !hasCheck                                       // not in check (avoid instability)
-          && ttDepth >= depth - 3                            // TT entry was from similar or deeper search
-          && std::abs(ttValue) < VALUE_CHECKMATE_THRESHOLD) {// not a mate score
+          && extension == 0                                   // no other extension applied
+          && move == ttMove                                   // this is the TT move
+          && depth >= SearchConfig.SINGULAR_MIN_DEPTH         // sufficient depth
+          && ttValue != VALUE_NONE                            // valid TT value
+          && !hasCheck                                        // not in check (avoid instability)
+          && ttDepth >= depth - 3                             // TT entry was from similar or deeper search
+          && std::abs(ttValue) < VALUE_CHECKMATE_THRESHOLD) { // not a mate score
 
         // Track ALPHA-bound entries for statistics
         const bool isLowerBound = (ttBound == BETA || ttBound == EXACT);
@@ -1745,7 +1761,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         int lmpThreshold   = SearchConfig.LMP_MOVES[lmpDepth];
         // When improving, allow searching more moves before pruning
         if (SearchConfig.USE_LMP_IMPROVING && improving) {
-          lmpThreshold += lmpThreshold / 2;// 50% more moves when improving
+          lmpThreshold += lmpThreshold / 2; // 50% more moves when improving
         }
         if (movesSearched >= lmpThreshold) {
           STAT_INC(thread().statistics.lmpCuts);
@@ -1792,7 +1808,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
         if (histReduction < 0) {
           // Positive history -> less reduction (histReduction is negative)
           STAT_INC(thread().statistics.lmrHistoryLessReduction);
-          STAT_ADD(thread().statistics.lmrHistoryDepthSaved, -histReduction);// Convert to positive for tracking
+          STAT_ADD(thread().statistics.lmrHistoryDepthSaved, -histReduction); // Convert to positive for tracking
         }
         lmrDepth -= static_cast<Depth>(histReduction);
       }
@@ -1810,7 +1826,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 
       // Don't reduce captures and promotions (they change material balance)
       if (p.isCapturingMove(move) || move.type() == PROMOTION) {
-        lmrDepth = newDepth;// No reduction for captures/promotions
+        lmrDepth = newDepth; // No reduction for captures/promotions
       }
 
       // Clamp: don't go below DEPTH_NONE and don't exceed newDepth (no extension via LMR!)
@@ -2056,10 +2072,18 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
       // In qsearch, any hit is "sufficient depth" since we're at leaf nodes
       STAT_INC(thread().statistics.ttHitSufficientDepth);
       switch (ttEntry->type) {
-        case NONE: STAT_INC(thread().statistics.ttHitNone); break;
-        case EXACT: STAT_INC(thread().statistics.ttHitExact); break;
-        case ALPHA: STAT_INC(thread().statistics.ttHitAlpha); break;
-        case BETA: STAT_INC(thread().statistics.ttHitBeta); break;
+        case NONE:
+          STAT_INC(thread().statistics.ttHitNone);
+          break;
+        case EXACT:
+          STAT_INC(thread().statistics.ttHitExact);
+          break;
+        case ALPHA:
+          STAT_INC(thread().statistics.ttHitAlpha);
+          break;
+        case BETA:
+          STAT_INC(thread().statistics.ttHitBeta);
+          break;
       }
 
       const Value ttValue = valueFromTt(ttEntry->value, ply);
@@ -2070,7 +2094,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
               || (ttEntry->type == ALPHA && ttValue <= alpha)
               || (ttEntry->type == BETA && ttValue >= beta))) {
         STAT_INC(thread().statistics.TtCuts);
-        STAT_INC(thread().statistics.ttCutsQsearch);  // qsearch cut (depth 0)
+        STAT_INC(thread().statistics.ttCutsQsearch); // qsearch cut (depth 0)
         return ttValue;
       }
       // if we have a static eval stored we can reuse it
@@ -2083,11 +2107,11 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
     else {
       STAT_INC(thread().statistics.ttMisses);
     }
-  }// use TT
+  } // use TT
 
   // prepare node search
   Value bestNodeValue = VALUE_NONE;
-  Move bestNodeMove   = MOVE_NONE;// used to store in the TT
+  Move bestNodeMove   = MOVE_NONE; // used to store in the TT
   ValueType ttType    = ALPHA;
   const bool hasCheck = p.hasCheck();
 
@@ -2134,7 +2158,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
   // prepare move loop
   Value value;
   Move move;
-  int movesSearched = 0;// to detect mate situations
+  int movesSearched = 0; // to detect mate situations
 
   // when in check generate all moves
   const GenMode genMode = hasCheck ? GenAll : GenNonQuiet;
@@ -2155,7 +2179,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
         && move != myMg->getKillerMoves()[1]
         && move.type() != PROMOTION
         && !hasCheck
-        && !givesCheck// post move
+        && !givesCheck // post move
     ) {
       // to check in futility pruning what material delta we have
       const auto moveGain           = valueOf(p.getPiece(to));
@@ -2261,7 +2285,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
 }
 
 // ReSharper disable once CppMemberFunctionMayBeStatic
-inline Value Search::evaluate(const Position& p) {// NOLINT(*-convert-member-functions-to-static)
+inline Value Search::evaluate(const Position& p) { // NOLINT(*-convert-member-functions-to-static)
   STAT_INC(thread().statistics.leafPositionsEvaluated);
   STAT_INC(thread().statistics.evaluations);
   return thread().evaluator.evaluate(p);
@@ -2361,7 +2385,7 @@ void Search::initialize() {
 
   // init shared PawnTT (Evaluators are per-thread in SearchThreadData)
   if (!pawnTT) {
-    pawnTT = std::make_unique<PawnTT>(0);// Start with 0, resize below if enabled
+    pawnTT = std::make_unique<PawnTT>(0); // Start with 0, resize below if enabled
   }
   const auto& EvalConfig = ConfigManager::instance().eval();
   if (EvalConfig.USE_PAWN_TT && EvalConfig.PAWN_TT_SIZE_MB > 0) {
@@ -2403,7 +2427,7 @@ void Search::initTablebase() {
   }
   else {
     LOG__WARN(Logger::get().SEARCH_LOG, "Syzygy Tablebase: Failed to initialize from '{}'", SearchConfig.TB_PATH);
-    syzygy_tb.reset();// Release failed instance
+    syzygy_tb.reset(); // Release failed instance
   }
 }
 
@@ -2454,7 +2478,7 @@ void Search::filterRootMovesByTB(Position& pos) {
   // For a losing position, keep all moves (we're lost anyway).
 
   if (tbRootWdl == tablebase::TBResult::Failed) {
-    return;// No TB result, nothing to filter
+    return; // No TB result, nothing to filter
   }
 
   // Skip filtering when near the 50-move limit.
@@ -2485,7 +2509,7 @@ void Search::filterRootMovesByTB(Position& pos) {
     pos.undoMove();
 
     if (childWdl == tablebase::TBResult::Failed) {
-      return true;// Probe failed, keep the move
+      return true; // Probe failed, keep the move
     }
 
     // After our move, it's opponent's turn. WDL is from opponent's perspective.
@@ -2581,7 +2605,7 @@ Value Search::getTBScoreForSearch(const tablebase::TBResult wdl, const int halfM
   }
 }
 
-bool Search::stopConditions() {// NOLINT(*-make-member-function-const)
+bool Search::stopConditions() { // NOLINT(*-make-member-function-const)
   if (stopSearchFlag) return true;
   // Node limit is checked against main thread only (hot path - can't aggregate all threads)
   // Helper thread nodes are not counted toward the limit for performance reasons.
@@ -2640,7 +2664,7 @@ bool Search::isTimeAlmostUp() const {
   const auto remaining = std::chrono::duration_cast<milliseconds>(budget - elapsed);
   // Define a threshold: max(5ms, 2% of the original budget)
   constexpr milliseconds minBuffer{5};
-  const milliseconds relBuffer{budget.count() > 0 ? milliseconds{budget.count() / 50} : milliseconds{0}};// ~2%
+  const milliseconds relBuffer{budget.count() > 0 ? milliseconds{budget.count() / 50} : milliseconds{0}}; // ~2%
   const milliseconds threshold = relBuffer > minBuffer ? relBuffer : minBuffer;
   return remaining <= threshold;
 }
@@ -2666,7 +2690,7 @@ milliseconds Search::setupTimeControl(const Position& p, const SearchLimits& lim
   int movesLeft = limits.movesToGo;
   if (!movesLeft) {
     // Derive game phase and material features
-    const double phase = p.getGamePhaseFactor();// ~1.0 opening/mid, ~0.0 endgame
+    const double phase = p.getGamePhaseFactor(); // ~1.0 opening/mid, ~0.0 endgame
 
     // Count non-pawn pieces across both sides (KNIGHT/BISHOP/ROOK/QUEEN)
     auto countPieces = [&](const PieceType pt) -> int {
@@ -2678,12 +2702,12 @@ milliseconds Search::setupTimeControl(const Position& p, const SearchLimits& lim
     const int queensW = p.getPieceBb(WHITE, QUEEN).popcount();
     const int queensB = p.getPieceBb(BLACK, QUEEN).popcount();
     const int queens  = queensW + queensB;
-    const int npp     = knights + bishops + rooks + queens;// non-pawn piece count (kings excluded)
+    const int npp     = knights + bishops + rooks + queens; // non-pawn piece count (kings excluded)
 
     // Select a base bucket
     int base = 0;
     if (npp <= SearchConfig.NPP_LIGHT_THRESHOLD) {
-      base = SearchConfig.MOVES_LEFT_LOW_MAT;// very low material
+      base = SearchConfig.MOVES_LEFT_LOW_MAT; // very low material
     }
     else if (queens == 0) {
       // Queenless middlegames/endgames tend to resolve faster
@@ -2713,7 +2737,7 @@ milliseconds Search::setupTimeControl(const Position& p, const SearchLimits& lim
     LOG__DEBUG(Logger::get().SEARCH_LOG,
                "TimeCtl: Estimated movesLeft={} (phase {:.2f}, npp {}, queens {}), hmc {}",
                movesLeft, phase, npp, queens, p.getHalfMoveClock());
-  }// if (!movesLeft)
+  } // if (!movesLeft)
 
   // Estimate time left for current player
   milliseconds timeLeft;
@@ -2727,11 +2751,11 @@ milliseconds Search::setupTimeControl(const Position& p, const SearchLimits& lim
   milliseconds base;
   if (tl.count() < 100) {
     // limits for a very short available time reduced by another 20%
-    base = tl - tl / 5;// ~80% without floating-point (avoids narrowing)
+    base = tl - tl / 5; // ~80% without floating-point (avoids narrowing)
   }
   else {
     // reduced by 10%
-    base = tl - tl / 10;// ~90% without floating-point
+    base = tl - tl / 10; // ~90% without floating-point
   }
   // apply reserve
   base = base > reserve ? base - reserve : base;
@@ -2757,7 +2781,7 @@ void Search::addExtraTime(const double f) {
                  str(milliseconds(deltaMs)),
                  str(milliseconds(currentExtra)),
                  str(milliseconds(maxExtraMs)));
-      return;// Already at cap
+      return; // Already at cap
     }
 
     // Apply delta but don't exceed cap
@@ -2822,13 +2846,13 @@ void Search::startTimer() {
 
 double Search::computeComplexityFactorFromMoves(const Position& p, const MoveList& legalMoves) {
   // Defaults chosen conservatively to avoid large swings.
-  constexpr int pivotMoves = 30;  // neutral pivot
-  constexpr double slope   = 0.01;// +/-1% per move relative to pivot
-  constexpr double baseCap = 0.25;// baseline capture ratio
-  constexpr double capW    = 0.50;// weight for (ratio - baseCap)
-  constexpr double inChkB  = 0.10;// +10% when in check
-  constexpr double minF    = 0.85;// min factor
-  constexpr double maxF    = 1.30;// max factor
+  constexpr int pivotMoves = 30;   // neutral pivot
+  constexpr double slope   = 0.01; // +/-1% per move relative to pivot
+  constexpr double baseCap = 0.25; // baseline capture ratio
+  constexpr double capW    = 0.50; // weight for (ratio - baseCap)
+  constexpr double inChkB  = 0.10; // +10% when in check
+  constexpr double minF    = 0.85; // min factor
+  constexpr double maxF    = 1.30; // max factor
 
   const int total = static_cast<int>(legalMoves.size());
 
@@ -3067,7 +3091,7 @@ std::string Search::formatDetailedStats(
   const SearchStats& stats) const {
 
   std::ostringstream os;
-  os.imbue(deLocale);
+  os.imbue(projectLocale);
 
   const auto timeMs  = duration_cast<milliseconds>(result.time).count();
   const uint64_t nps = timeMs > 0 ? (result.nodes * 1000) / static_cast<uint64_t>(timeMs) : 0;
@@ -3199,7 +3223,7 @@ std::string Search::formatDetailedStats(
     os << "TT Overwrites  : " << tt->getNumberOfOverwrites() << " (approx)\n";
 
     // Use SearchStats for accurate probe/hit/miss tracking (per-thread, aggregated)
-    const uint64_t trackedHits = stats.ttHitSufficientDepth + stats.ttHitInsufficientDepth;
+    const uint64_t trackedHits   = stats.ttHitSufficientDepth + stats.ttHitInsufficientDepth;
     const uint64_t trackedProbes = stats.ttProbes;
     const uint64_t trackedMisses = stats.ttMisses;
 
@@ -3210,7 +3234,8 @@ std::string Search::formatDetailedStats(
          << (100.0 * static_cast<double>(trackedHits) / static_cast<double>(trackedProbes)) << "%)\n";
       os << "TT Misses      : " << trackedMisses << " (" << std::fixed << std::setprecision(1)
          << (100.0 * static_cast<double>(trackedMisses) / static_cast<double>(trackedProbes)) << "%)\n";
-    } else {
+    }
+    else {
       os << "TT Hits        : " << trackedHits << "\n";
       os << "TT Misses      : " << trackedMisses << "\n";
     }
@@ -3221,7 +3246,8 @@ std::string Search::formatDetailedStats(
          << (100.0 * static_cast<double>(stats.ttHitSufficientDepth) / static_cast<double>(trackedHits)) << "%)\n";
       os << "Insuffic. Dep  : " << stats.ttHitInsufficientDepth << " (" << std::fixed << std::setprecision(1)
          << (100.0 * static_cast<double>(stats.ttHitInsufficientDepth) / static_cast<double>(trackedHits)) << "%)\n";
-    } else {
+    }
+    else {
       os << "Sufficient Dep : 0\n";
       os << "Insuffic. Dep  : 0\n";
     }
@@ -3238,7 +3264,8 @@ std::string Search::formatDetailedStats(
          << (100.0 * static_cast<double>(stats.ttHitAlpha) / static_cast<double>(boundTracked)) << "%)\n";
       os << "BETA Hits      : " << stats.ttHitBeta << " (" << std::fixed << std::setprecision(1)
          << (100.0 * static_cast<double>(stats.ttHitBeta) / static_cast<double>(boundTracked)) << "%)\n";
-    } else {
+    }
+    else {
       os << "NONE Hits      : 0\n";
       os << "EXACT Hits     : 0\n";
       os << "ALPHA Hits     : 0\n";

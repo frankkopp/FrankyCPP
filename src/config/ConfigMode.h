@@ -70,7 +70,7 @@
 // Compile-time query: is config frozen?
 #define IS_CONFIG_FROZEN true
 
-#else// Development build
+#else // Development build
 
 // Development: non-essential config values remain mutable instance members.
 #define CONFIG_CONST
@@ -84,7 +84,7 @@
 // Compile-time query: is config frozen?
 #define IS_CONFIG_FROZEN false
 
-#endif// FRANKYCPP_PRODUCTION
+#endif // FRANKYCPP_PRODUCTION
 
 // Essential configs — always non-static mutable instance members in all builds.
 // This macro is purely documentary; it expands to nothing.
@@ -163,7 +163,7 @@ namespace config::config_detail {
     }
   }
 
-}// namespace config::config_detail
+} // namespace config::config_detail
 
 #define SEARCH_CONFIG_SETTER(member, parser)                       \
   [](SearchConfigData& s, EvalConfigData&, const std::string& v) { \
@@ -180,4 +180,4 @@ namespace config::config_detail {
     config::config_detail::assignArrayIfMutable(s.member, v);      \
   }
 
-#endif// FRANKYCPP_CONFIGMODE_H
+#endif // FRANKYCPP_CONFIGMODE_H

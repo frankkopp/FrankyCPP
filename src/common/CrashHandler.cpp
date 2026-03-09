@@ -251,7 +251,7 @@ namespace common::crashhandler {
     }
 #endif
 
-  }// anonymous namespace
+  } // anonymous namespace
 
   void install(const std::string& dumpPath) {
     if (g_installed) {
@@ -317,4 +317,4 @@ namespace common::crashhandler {
 #endif
   }
 
-}// namespace common::crashhandler
+} // namespace common::crashhandler

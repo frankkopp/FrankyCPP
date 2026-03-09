@@ -52,10 +52,10 @@ namespace book {
 
   class BookEntry {
   public:
-    ZobristKey key{};                      ///< Zobrist hash of the position
-    int counter{1};                        ///< Number of times this position appears in book source
-    std::vector<Move> moves{};             ///< Available moves from this position
-    std::vector<ZobristKey> nextPosition{};///< Zobrist keys after each corresponding move
+    ZobristKey key{};                       ///< Zobrist hash of the position
+    int counter{1};                         ///< Number of times this position appears in book source
+    std::vector<Move> moves{};              ///< Available moves from this position
+    std::vector<ZobristKey> nextPosition{}; ///< Zobrist keys after each corresponding move
 
     /// Default constructor (required for Boost serialization).
     BookEntry() = default;
@@ -90,6 +90,6 @@ namespace book {
     }
   };
 
-}// namespace book
+} // namespace book
 
-#endif// FRANKYCPP_BOOKENTRY_H
+#endif // FRANKYCPP_BOOKENTRY_H

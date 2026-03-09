@@ -66,11 +66,11 @@ namespace enginetest {
     // Test definition (immutable after construction)
     std::string id_{};
     std::string fen_{};
-    std::string line_{};// Original EPD line
+    std::string line_{}; // Original EPD line
     TestType type_{TestType::NOOP};
     MoveList targetMoves_{};
     Depth mateDepth_{DEPTH_NONE};
-    Move expected_{MOVE_NONE};// First expected move (for display)
+    Move expected_{MOVE_NONE}; // First expected move (for display)
 
     // Test results (mutable during execution)
     Move actualMove_{MOVE_NONE};
@@ -194,6 +194,6 @@ namespace enginetest {
     EpdTest test_;
   };
 
-}// namespace enginetest
+} // namespace enginetest
 
-#endif// FRANKYCPP_EDPTEST_H
+#endif // FRANKYCPP_EDPTEST_H

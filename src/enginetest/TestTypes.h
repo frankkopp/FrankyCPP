@@ -42,18 +42,18 @@ namespace enginetest {
 
   /// Test types supported by the test suite.
   enum class TestType : uint8_t {
-    NOOP,///< Invalid/uninitialized test
-    DM,  ///< Direct mate - expect mate in N
-    BM,  ///< Best move - engine move must be in target set
-    AM   ///< Avoid move - engine move must NOT be in target set
+    NOOP, ///< Invalid/uninitialized test
+    DM,   ///< Direct mate - expect mate in N
+    BM,   ///< Best move - engine move must be in target set
+    AM    ///< Avoid move - engine move must NOT be in target set
   };
 
   /// Result of a single test.
   enum class ResultType : uint8_t {
-    NOT_TESTED,///< Test has not been run yet
-    SKIPPED,   ///< Test was skipped
-    FAILED,    ///< Test failed (wrong move or no mate found)
-    SUCCESS    ///< Test passed
+    NOT_TESTED, ///< Test has not been run yet
+    SKIPPED,    ///< Test was skipped
+    FAILED,     ///< Test failed (wrong move or no mate found)
+    SUCCESS     ///< Test passed
   };
 
   /// Converts TestType to string representation.
@@ -93,15 +93,15 @@ namespace enginetest {
   /// Aggregated results from running a test suite.
   /// Simple POD struct for returning aggregate statistics.
   struct TestSuiteResult {
-    int counter          = 0; ///< Total tests run
-    int successCounter   = 0; ///< Tests that passed
-    int failedCounter    = 0; ///< Tests that failed
-    int skippedCounter   = 0; ///< Tests that were skipped
-    int notTestedCounter = 0; ///< Tests not run
-    uint64_t nodes       = 0; ///< Total nodes searched
-    nanoseconds time     = 0s;///< Total search time
+    int counter          = 0;  ///< Total tests run
+    int successCounter   = 0;  ///< Tests that passed
+    int failedCounter    = 0;  ///< Tests that failed
+    int skippedCounter   = 0;  ///< Tests that were skipped
+    int notTestedCounter = 0;  ///< Tests not run
+    uint64_t nodes       = 0;  ///< Total nodes searched
+    nanoseconds time     = 0s; ///< Total search time
   };
 
-}// namespace enginetest
+} // namespace enginetest
 
-#endif// FRANKYCPP_TESTTYPES_H
+#endif // FRANKYCPP_TESTTYPES_H

@@ -192,7 +192,7 @@ TEST_F(ConfigRegistryTest, SetterModifiesValue) {
   const ConfigDef* ttSizeDef = registry.find("TT_SIZE_MB");
   ASSERT_NE(ttSizeDef, nullptr);
 
-  EXPECT_EQ(search.TT_SIZE_MB, 256);// default
+  EXPECT_EQ(search.TT_SIZE_MB, 256); // default
 
   ttSizeDef->setter(search, eval, "256");
   EXPECT_EQ(search.TT_SIZE_MB, 256);
@@ -220,7 +220,7 @@ TEST_F(ConfigRegistryTest, EvalSetterModifiesValue) {
   const ConfigDef* lazyThreshDef = registry.find("LAZY_THRESHOLD");
   ASSERT_NE(lazyThreshDef, nullptr);
 
-  EXPECT_EQ(eval.LAZY_THRESHOLD, 700);// default
+  EXPECT_EQ(eval.LAZY_THRESHOLD, 700); // default
 
 #ifndef FRANKYCPP_PRODUCTION
   // In production, LAZY_THRESHOLD is static constexpr — setter is a no-op.
@@ -257,7 +257,7 @@ TEST_F(ConfigRegistryTest, ArraySetterParsesCorrectly) {
   EXPECT_EQ(search.RFP_MARGIN[3], 40);
 #else
   // In production, just verify the setter exists and doesn't crash.
-  rfpMarginDef->setter(search, eval, "10,20,30,40");// no-op
+  rfpMarginDef->setter(search, eval, "10,20,30,40"); // no-op
 #endif
 }
 

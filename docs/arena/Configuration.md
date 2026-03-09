@@ -62,7 +62,7 @@ version: "v1.5-dev"       # Development build
 results/
 ├── testsuites/    # JSON files for EPD test results
 ├── matches/       # JSON + PGN files for match results
-└── comparisons/   # Text reports for version comparisons
+└── benchmarks/    # Consolidated JSON for benchmark results
 ```
 
 **Path Format:**

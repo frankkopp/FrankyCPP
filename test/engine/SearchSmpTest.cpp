@@ -430,7 +430,7 @@ TEST_F(SearchSmpTest, StopSearchWithMultipleThreads) {
   search.isReady();
 
   SearchLimits sl{};
-  sl.infinite = true;// Would run forever without stop
+  sl.infinite = true; // Would run forever without stop
 
   const auto startTime = high_resolution_clock::now();
   search.startSearch(p, sl);
@@ -551,11 +551,11 @@ TEST_F(SearchSmpTest, ConsecutiveDifferentPositions) {
   CONFIG_OVERRIDE(s.THREADS = 4;);
 
   const std::vector<std::string> positions = {
-    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",        // start
-    "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3",// Italian setup
-    "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -",// Kiwi Pete
-    "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -",                           // endgame
-    "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq -",    // complex
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",         // start
+    "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3", // Italian setup
+    "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -", // Kiwi Pete
+    "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -",                            // endgame
+    "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq -",     // complex
   };
 
   Search search{};
@@ -589,7 +589,7 @@ TEST_F(SearchSmpTest, DelayedHelperStartup) {
 #ifdef FRANKYCPP_PRODUCTION
   GTEST_SKIP() << "Skipping delayed helper startup test in production build to save time";
 #else
-  CONFIG_OVERRIDE(s.SMP_HELPER_START_DEPTH = 5;);// Helpers start after depth 5
+  CONFIG_OVERRIDE(s.SMP_HELPER_START_DEPTH = 5;); // Helpers start after depth 5
 #endif
 
   CONFIG_OVERRIDE(s.USE_BOOK = false;);
@@ -600,7 +600,7 @@ TEST_F(SearchSmpTest, DelayedHelperStartup) {
   search.isReady();
 
   SearchLimits sl{};
-  sl.depth = 8;// Search to depth 8, helpers should start after depth 5
+  sl.depth = 8; // Search to depth 8, helpers should start after depth 5
 
   search.startSearch(p, sl);
   search.waitWhileSearching();
@@ -622,7 +622,7 @@ TEST_F(SearchSmpTest, ShortSearchNoHelpers) {
 #ifdef FRANKYCPP_PRODUCTION
   GTEST_SKIP() << "Skipping short search no helpers test in production build to save time";
 #else
-  CONFIG_OVERRIDE(s.SMP_HELPER_START_DEPTH = 6;);// Helpers start after depth 6
+  CONFIG_OVERRIDE(s.SMP_HELPER_START_DEPTH = 6;); // Helpers start after depth 6
 #endif
 
   CONFIG_OVERRIDE(s.USE_BOOK = false;);
@@ -633,7 +633,7 @@ TEST_F(SearchSmpTest, ShortSearchNoHelpers) {
   search.isReady();
 
   SearchLimits sl{};
-  sl.depth = 4;// Only search to depth 4, which is before helper start depth
+  sl.depth = 4; // Only search to depth 4, which is before helper start depth
 
   search.startSearch(p, sl);
   search.waitWhileSearching();

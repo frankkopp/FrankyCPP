@@ -50,12 +50,7 @@ namespace arena {
 
     // Check if stdout is a terminal (enables colors)
     inline bool isTerminal() {
-      static bool checked = false;
-      static bool isTTY   = false;
-      if (!checked) {
-        isTTY   = isatty(fileno(stdout)) != 0;
-        checked = true;
-      }
+      static const bool isTTY = isatty(fileno(stdout)) != 0;
       return isTTY;
     }
 
@@ -109,20 +104,20 @@ namespace arena {
       return std::string(YELLOW) + text + RESET;
     }
 
-  }// namespace Color
+  } // namespace Color
 
   /// Symbols for quick visual indicators
   /// Using ASCII characters for Windows console compatibility
   namespace Symbol {
-    inline const char* CHECK      = "[+]";// Improvement/pass
-    inline const char* CROSS      = "[X]";// Regression/fail
-    inline const char* EQUAL      = "[=]";// Equal/no change
-    inline const char* WARNING    = "[!]";// Warning
-    inline const char* ARROW_UP   = "^";  // Improvement
-    inline const char* ARROW_DOWN = "v";  // Regression
-    inline const char* DASH       = "N/A";// N/A or missing
-  }// namespace Symbol
+    inline const char* CHECK      = "[+]"; // Improvement/pass
+    inline const char* CROSS      = "[X]"; // Regression/fail
+    inline const char* EQUAL      = "[=]"; // Equal/no change
+    inline const char* WARNING    = "[!]"; // Warning
+    inline const char* ARROW_UP   = "^";   // Improvement
+    inline const char* ARROW_DOWN = "v";   // Regression
+    inline const char* DASH       = "N/A"; // N/A or missing
+  } // namespace Symbol
 
-}// namespace arena
+} // namespace arena
 
-#endif// FRANKYCPP_ENGINE_ARENA_CONSOLECOLORS_H
+#endif // FRANKYCPP_ENGINE_ARENA_CONSOLECOLORS_H

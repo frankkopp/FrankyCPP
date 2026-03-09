@@ -156,31 +156,31 @@ namespace engine {
     // Note: TT internal counters have data races in SMP - SearchStats are accurate.
     // These are tracked per-thread and aggregated.
 
-    uint64_t ttProbes = 0;  // total TT probes (hits + misses)
-    uint64_t ttMisses = 0;  // TT probe misses (no matching entry)
+    uint64_t ttProbes = 0; // total TT probes (hits + misses)
+    uint64_t ttMisses = 0; // TT probe misses (no matching entry)
 
-    uint64_t ttHitSufficientDepth = 0;   // hits where ttDepth >= searchDepth (can use value)
+    uint64_t ttHitSufficientDepth   = 0; // hits where ttDepth >= searchDepth (can use value)
     uint64_t ttHitInsufficientDepth = 0; // hits where ttDepth < searchDepth (move-only benefit)
 
-    uint64_t ttHitNone = 0;   // hits with type=NONE (eval-only, no search value)
-    uint64_t ttHitExact = 0;  // hits with type=EXACT (precise value, best for cutoffs)
-    uint64_t ttHitAlpha = 0;  // hits with type=ALPHA (upper bound, fail-low)
-    uint64_t ttHitBeta = 0;   // hits with type=BETA (lower bound, fail-high)
+    uint64_t ttHitNone  = 0; // hits with type=NONE (eval-only, no search value)
+    uint64_t ttHitExact = 0; // hits with type=EXACT (precise value, best for cutoffs)
+    uint64_t ttHitAlpha = 0; // hits with type=ALPHA (upper bound, fail-low)
+    uint64_t ttHitBeta  = 0; // hits with type=BETA (lower bound, fail-high)
 
-    uint64_t TtCuts = 0;         // hits that caused immediate cutoff (returned TT value)
-    uint64_t ttCutsSearch = 0;   // TT cuts in main search (depth > 0)
-    uint64_t ttCutsQsearch = 0;  // TT cuts in qsearch (depth 0)
-    uint64_t TtNoCuts = 0;       // hits with sufficient depth but bounds didn't allow cut
-    uint64_t ttCutDepthSum = 0;  // sum of depths at main search TT cuts (for avg)
+    uint64_t TtCuts        = 0; // hits that caused immediate cutoff (returned TT value)
+    uint64_t ttCutsSearch  = 0; // TT cuts in main search (depth > 0)
+    uint64_t ttCutsQsearch = 0; // TT cuts in qsearch (depth 0)
+    uint64_t TtNoCuts      = 0; // hits with sufficient depth but bounds didn't allow cut
+    uint64_t ttCutDepthSum = 0; // sum of depths at main search TT cuts (for avg)
 
-    uint64_t TtMoveUsed = 0;  // TT move used for move ordering (set as PV move)
+    uint64_t TtMoveUsed     = 0; // TT move used for move ordering (set as PV move)
     uint64_t ttMoveBestMove = 0; // TT move caused beta cutoff (was best move)
-    uint64_t NoTtMove = 0;    // probes where no TT move available for move ordering
+    uint64_t NoTtMove       = 0; // probes where no TT move available for move ordering
 
-    uint64_t evalFromTT = 0;  // static eval reused from TT (saved evaluate() call)
+    uint64_t evalFromTT = 0; // static eval reused from TT (saved evaluate() call)
 
-    uint64_t iidSearches = 0; // internal iterative deepening searches performed
-    uint64_t iidMoves = 0;    // moves found via IID
+    uint64_t iidSearches   = 0; // internal iterative deepening searches performed
+    uint64_t iidMoves      = 0; // moves found via IID
     uint64_t iirReductions = 0; // internal iterative reductions applied
 
     // === Re-search Statistics ===
@@ -270,7 +270,7 @@ namespace engine {
 
     /// Stream output operator for full statistics dump.
     friend std::ostream& operator<<(std::ostream& os, const SearchStats& stats) {
-      os.imbue(deLocale);
+      os.imbue(projectLocale);
       // PV vs non-PV node statistics
       const uint64_t totalNodes = stats.pvNodes + stats.nonPvNodes;
 #ifdef FRANKYCPP_PRODUCTION
@@ -449,6 +449,6 @@ namespace engine {
   };
 
 
-}// namespace engine
+} // namespace engine
 
-#endif// FRANKYCPP_SEARCHSTATS_H
+#endif // FRANKYCPP_SEARCHSTATS_H

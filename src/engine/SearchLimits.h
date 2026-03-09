@@ -131,6 +131,6 @@ namespace engine {
     }
   };
 
-}// namespace engine
+} // namespace engine
 
-#endif// FRANKYCPP_SEARCHLIMITS_H
+#endif // FRANKYCPP_SEARCHLIMITS_H

@@ -54,7 +54,7 @@ namespace chess::Attacks {
       }
     }
 
-  }// namespace detail
+  } // namespace detail
 
   // Public API ---------------------------------------------------------
 
@@ -74,7 +74,7 @@ namespace chess::Attacks {
       const auto& m = detail::BishopMagics[sq];
       return detail::BishopTable[m.offset + m.index(occ)];
     }
-  }// namespace
+  } // namespace
 
   Bitboard attacks(const PieceType pt, const Square sq, const Bitboard occupied) {
     switch (pt) {
@@ -92,4 +92,4 @@ namespace chess::Attacks {
     }
   }
 
-}// namespace chess::Attacks
+} // namespace chess::Attacks

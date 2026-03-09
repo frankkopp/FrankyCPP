@@ -56,4 +56,4 @@ namespace {
     EXPECT_TRUE(root["_YAML_SMOKE_TEST_MARKER"]) << "_YAML_SMOKE_TEST_MARKER should be present";
   }
 
-}// namespace
+} // namespace

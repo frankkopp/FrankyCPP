@@ -31,7 +31,7 @@
 //
 // 1. OUTPUT MACROS
 //    println(s)          - Print string with newline
-//    fprint(...)         - Formatted print (European locale)
+//    fprint(...)         - Formatted print (European projectLocale)
 //    fprintln(...)       - Formatted print with newline
 //    DEBUG(...)          - Debug output with file:line prefix
 //
@@ -67,9 +67,9 @@
 #define NEWLINE std::cout << std::endl
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #define println(s) std::cout << (s) << std::endl
-#define fprint(...) std::cout << std::format(deLocale, __VA_ARGS__)
+#define fprint(...) std::cout << std::format(projectLocale, __VA_ARGS__)
 #define fprintln(...) fprint(__VA_ARGS__) << std::endl
-#define DEBUG(...) std::cout << std::format(deLocale, "DEBUG {}:{} {}", __FILE__, __LINE__, __VA_ARGS__) << std::endl
+#define DEBUG(...) std::cout << std::format(projectLocale, "DEBUG {}:{} {}", __FILE__, __LINE__, __VA_ARGS__) << std::endl
 #define TICK(tp) fprintln("{:L} ns: function: {}() line: {}", elapsedSince(tp).count(), __FUNCTION__, __LINE__)
 
 // Convenience macros to define custom operators on strongly-typed enum types.
@@ -181,4 +181,4 @@
     return os;                                                   \
   }
 
-#endif// FRANKYCPP_MACROS_H
+#endif // FRANKYCPP_MACROS_H

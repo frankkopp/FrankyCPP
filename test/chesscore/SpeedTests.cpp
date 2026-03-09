@@ -71,7 +71,7 @@ TEST_F(SpeedTests, TimingSetupPosition) {
 
     std::ostringstream os;
     os.flags(std::cout.flags());
-    os.imbue(deLocale);
+    os.imbue(projectLocale);
     os.precision(os.precision());
     os << "Setup position took " << elapsed.count() << " ns for " << iterations << " iterations" << std::endl;
     os << "Setup position ";
@@ -106,9 +106,9 @@ TEST_F(SpeedTests, TimingDoMoveUndoMove) {
   // c1Q promotion
   Position position("r3k2r/1ppn3p/4q1n1/8/4Pp2/3R4/p1p2PPP/R5K1 b kq e3 0 1");
   constexpr Move move1 = Move::enPassant(SQ_F4, SQ_E3);
-  constexpr Move move2 = Move::normal(SQ_F2, SQ_E3);// NORMAL
+  constexpr Move move2 = Move::normal(SQ_F2, SQ_E3); // NORMAL
   constexpr Move move3 = Move::castling(SQ_E8, SQ_G8);
-  constexpr Move move4 = Move::normal(SQ_D3, SQ_C3);// NORMAL
+  constexpr Move move4 = Move::normal(SQ_D3, SQ_C3); // NORMAL
   constexpr Move move5 = Move::promotion(SQ_C2, SQ_C1, QUEEN);
 
   for (int r = 1; r <= rounds; r++) {
@@ -130,7 +130,7 @@ TEST_F(SpeedTests, TimingDoMoveUndoMove) {
 
     std::ostringstream os;
     os.flags(std::cout.flags());
-    os.imbue(deLocale);
+    os.imbue(projectLocale);
     os.precision(os.precision());
     os << "DoMove/UndoMove took " << elapsed.count() << " ns for " << iterations << " iterations with 5 do/undo pairs" << std::endl;
     os << "DoMove/UndoMove took " << elapsed.count() / (iterations * 5) << " ns per do/undo pair" << std::endl;
@@ -152,9 +152,9 @@ TEST_F(SpeedTests, TimingExtendedDoMoveUndoMove) {
   // c1Q promotion
   Position position("r3k2r/1ppn3p/4q1n1/8/4Pp2/3R4/p1p2PPP/R5K1 b kq e3 0 1");
   constexpr Move move1 = Move::enPassant(SQ_F4, SQ_E3);
-  constexpr Move move2 = Move::normal(SQ_F2, SQ_E3);// NORMAL
+  constexpr Move move2 = Move::normal(SQ_F2, SQ_E3); // NORMAL
   constexpr Move move3 = Move::castling(SQ_E8, SQ_G8);
-  constexpr Move move4 = Move::normal(SQ_D3, SQ_C3);// NORMAL
+  constexpr Move move4 = Move::normal(SQ_D3, SQ_C3); // NORMAL
   constexpr Move move5 = Move::promotion(SQ_C2, SQ_C1, QUEEN);
 
   for (int r = 1; r <= rounds; r++) {
@@ -182,7 +182,7 @@ TEST_F(SpeedTests, TimingExtendedDoMoveUndoMove) {
 
     std::ostringstream os;
     os.flags(std::cout.flags());
-    os.imbue(deLocale);
+    os.imbue(projectLocale);
     os.precision(os.precision());
     os << "DoMove/UndoMove took " << elapsed.count() << " ns for " << iterations << " iterations with 5 do/undo pairs" << std::endl;
     os << "DoMove/UndoMove took " << elapsed.count() / (iterations * 5) << " ns per do/undo pair" << std::endl;
@@ -236,7 +236,7 @@ TEST_F(SpeedTests, onDemandPseudoMoveGen) {
 
     std::ostringstream os;
     os.flags(std::cout.flags());
-    os.imbue(deLocale);
+    os.imbue(projectLocale);
     os.precision(os.precision());
     os << "Test took " << elapsed.count() << " ns for " << iterations << " iterations" << std::endl;
     os << "Test took " << elapsed.count() / iterations << " ns per test" << std::endl;

@@ -15,7 +15,10 @@ ArenaRunner (Orchestrator)
     ↓
     ├─→ TestSuiteRunner → UCIEngine (external UCI engine via subprocess)
     ├─→ MatchRunner → cutechess-cli subprocess
-    └─→ ResultWriter → JSON files
+    ├─→ BenchmarkRunner → Internal/external engine benchmarking
+    └─→ ResultStore → JSON files (read + write)
+
+ReportGenerator (static) ← ResultStore queries ← ReportData
 ```
 
 ### Design Principles
@@ -54,12 +57,12 @@ ArenaRunner (Orchestrator)
 - `runAll()` - Run all configured tests and matches
 - `runTestSuitesOnly()` - Run only EPD test suites
 - `runMatchesOnly()` - Run only engine matches
-- `compareVersions(v1, v2)` - Generate comparison report
+- `loadAllResults()` - Load all results for reporting
 
 **Dependencies:**
 - `TestSuiteRunner` - For running EPD tests
 - `MatchRunner` - For running engine matches
-- `ResultWriter` - For saving results
+- `ResultStore` - For saving and loading results
 
 **Extension Points:**
 - Add new comparison metrics
@@ -147,25 +150,50 @@ struct MatchState {
 
 ---
 
-### ResultWriter
+### ResultStore
 
-**Purpose:** Persist results to JSON files
+**Purpose:** Centralized result I/O — reads and writes all arena result data.
+Also provides static query methods for searching ReportData with flexible engine matching.
 
-**File:** `src/engine_arena/ResultWriter.h/cpp`
+**File:** `src/engine_arena/ResultStore.h/cpp`
 
-**Key Methods:**
+**Key Methods (I/O):**
 - `writeTestSuiteResult(result)` - Write test suite JSON
 - `writeMatchResult(result)` - Write match JSON
-- `generateFilename(prefix, name, version)` - Create timestamped filename
+- `writeBenchmarkResult(result)` - Write benchmark JSON
+- `loadAllResults()` - Load all results into ReportData
+- `loadTestSuiteResults()` - Load only test suites
+- `loadMatchResults(data)` - Add matches to existing ReportData
+- `loadBenchmarkResults(data)` - Add benchmarks to existing ReportData
 
-**Current Format:** Manually constructed JSON strings
+**Key Methods (Queries — static):**
+- `findEngine(data, search)` - Find engine by flexible matching
+- `getResult(data, suite, engine)` - Get test suite result
+- `getMatch(data, engine1, engine2)` - Get match result (order-independent)
+- `getMatchesForEngine(data, engine)` - Get all matches for an engine
+- `getBenchmarksForEngine(data, engine)` - Get all benchmarks for an engine
 
 **Extension Points:**
-- Add HTML report generation
-- Add CSV export for spreadsheet analysis
+- Add HTML/CSV report generation
 - Add database persistence (SQLite)
 - Add result compression for large test suites
-- Use JSON library for cleaner code (currently manual strings)
+
+---
+
+### ReportGenerator
+
+**Purpose:** All report formatting logic — static pure functions that take ReportData and return formatted strings.
+
+**File:** `src/engine_arena/ReportGenerator.h/cpp`
+
+**Key Methods (all static):**
+- `generateBaselineReport(data)` - All engines side by side
+- `generateComparisonReport(data, target, baselines)` - Target vs baselines
+- `generateMatchBaselineReport(data)` - All match results
+- `generateMatchComparisonReport(data, target, baselines)` - Match comparisons
+- `generateEngineSummary(data, engine, showHistory)` - Engine summary with optional history
+
+**Design:** All methods are static pure functions — no state held. Uses `ResultStore` static query methods for engine lookups.
 
 ---
 
@@ -253,34 +281,29 @@ benchmarks:
 
 **Example:** Add average node count comparison
 
-1. **Update comparison report generation** in `ArenaRunner.cpp`:
+1. **Add method** in `ReportGenerator`:
 ```cpp
-std::string ArenaRunner::generateComparisonReport(...) {
-  // ...existing code...
-  
-  // Add node efficiency comparison
-  if (!suites1.empty() && !suites2.empty()) {
-    report << "\nNODE EFFICIENCY COMPARISON:\n";
-    report << "-------------------------------------------------------------------\n";
-    
-    for (const auto& [name, suite1] : suites1) {
-      auto it2 = suites2.find(name);
-      if (it2 != suites2.end()) {
-        const auto& suite2 = it2->second;
-        
-        double avgNodes1 = suite1.totalNodes / static_cast<double>(suite1.totalTests);
-        double avgNodes2 = suite2.totalNodes / static_cast<double>(suite2.totalTests);
-        double nodeDelta = avgNodes1 - avgNodes2;
-        
-        report << name << ":\n";
-        report << "  " << version2 << ": " << avgNodes2 << " nodes/test\n";
-        report << "  " << version1 << ": " << avgNodes1 << " nodes/test\n";
-        report << "  Delta: " << (nodeDelta > 0 ? "+" : "") << nodeDelta << " nodes\n";
-      }
-    }
-  }
-  
+// In ReportGenerator.h
+static std::string generateNodeEfficiencyReport(const ReportData& data,
+                                                 const EngineId& target,
+                                                 const std::vector<EngineId>& baselines);
+```
+
+2. **Implement** in `ReportGenerator.cpp`:
+```cpp
+std::string ReportGenerator::generateNodeEfficiencyReport(...) {
+  std::ostringstream report;
+  // Use ResultStore::getResult(data, suite, engine) for lookups
+  // Format node efficiency comparison table
   return report.str();
+}
+```
+
+3. **Wire up** in `engine_arena_main.cpp`:
+```cpp
+if (vm.contains("node-report")) {
+  auto data = resultStore.loadAllResults();
+  std::cout << ReportGenerator::generateNodeEfficiencyReport(data, target, baselines);
 }
 ```
 
@@ -290,50 +313,42 @@ std::string ArenaRunner::generateComparisonReport(...) {
 
 **Example:** Create HTML version of comparison report
 
-1. **Add method** in `ResultWriter`:
+1. **Add method** in `ReportGenerator`:
 ```cpp
-class ResultWriter {
+class ReportGenerator {
 public:
   // ...existing methods...
   
-  std::string writeComparisonHtml(
-      const std::string& version1,
-      const std::string& version2,
-      const std::string& report);
+  static std::string generateComparisonHtml(
+      const ReportData& data,
+      const EngineId& target,
+      const std::vector<EngineId>& baselines);
 };
 ```
 
-2. **Implement** in `ResultWriter.cpp`:
+2. **Implement** in `ReportGenerator.cpp`:
 ```cpp
-std::string ResultWriter::writeComparisonHtml(...) {
+std::string ReportGenerator::generateComparisonHtml(...) {
   std::ostringstream html;
   
   html << "<!DOCTYPE html>\n";
-  html << "<html><head><title>Comparison: " << version1 << " vs " << version2 << "</title>\n";
+  html << "<html><head><title>Comparison</title>\n";
   html << "<style>body { font-family: monospace; }</style>\n";
   html << "</head><body>\n";
-  html << "<h1>Version Comparison: " << version1 << " vs " << version2 << "</h1>\n";
   
-  // Convert text report to HTML (add styling, tables, charts)
+  // Generate HTML tables using ResultStore::getResult() queries
   // ...
   
   html << "</body></html>\n";
-  
-  // Save to file
-  std::filesystem::path htmlPath = comparisonsDir / (filename + ".html");
-  std::ofstream file(htmlPath);
-  file << html.str();
-  file.close();
-  
-  return htmlPath.string();
+  return html.str();
 }
 ```
 
-3. **Call** from `ArenaRunner::compareVersions()`:
+3. **Save** from `engine_arena_main.cpp`:
 ```cpp
-// After generating text report
-std::string htmlPath = resultWriter.writeComparisonHtml(version1, version2, report);
-std::cout << "HTML report saved to: " << htmlPath << std::endl;
+auto data = resultStore.loadAllResults();
+const std::string html = ReportGenerator::generateComparisonHtml(data, target, baselines);
+// Write html to file...
 ```
 
 ---
@@ -554,7 +569,7 @@ throw std::runtime_error(
 ### Short-term (1-2 hours each)
 
 1. **Add CSV export**
-   - Extend `ResultWriter` with `writeCsv()` methods
+   - Extend `ResultStore` with `writeCsv()` methods
    - Useful for spreadsheet analysis
 
 2. **Add progress bar**

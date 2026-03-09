@@ -44,7 +44,8 @@
 #include "engine/Benchmark.h"
 #include "engine_arena/ArenaRunner.h"
 #include "engine_arena/BenchmarkRunner.h"
-#include "engine_arena/ResultWriter.h"
+#include "engine_arena/ReportGenerator.h"
+#include "engine_arena/ResultStore.h"
 #include "init.h"
 
 #include <boost/program_options.hpp>
@@ -111,7 +112,7 @@ int main(int argc, char* argv[]) {
       std::cout << "  --history                Show historical runs by tag (with --summary)\n";
       std::cout << "  --testsuites-only        Show only test suite results\n";
       std::cout << "  --matches-only           Show only match results\n";
-std::cout << "\nConfiguration Options:\n";
+      std::cout << "\nConfiguration Options:\n";
       std::cout << "  --show-config            Show engine config before tests (FrankyCPP engines)\n";
       std::cout << "\nExamples:\n";
       std::cout << "  FrankyCPP_Arena --bench\n";
@@ -144,14 +145,14 @@ std::cout << "\nConfiguration Options:\n";
     std::cout << "  Version: " << config.version << std::endl;
     std::cout << "  Results Directory: " << config.resultsDir << std::endl;
     std::cout << "  Test Suite Runs: " << config.testSuiteRuns.size() << std::endl;
-    std::cout << "  Test Suites (expanded): " << config.expandTestSuiteRuns().size() << std::endl;
+    std::cout << "  Test Suites: " << config.testSuites.size() << std::endl;
     std::cout << "  Matches: " << config.matches.size() << std::endl;
     std::cout << "  Benchmarks: " << config.benchmarks.size() << std::endl;
 
     // Handle bench-report before validation (doesn't need full config)
     if (vm.contains("bench-report")) {
-      arena::ResultWriter writer(config.resultsDir);
-      auto results = writer.readBenchmarkResults();
+      arena::ResultStore resultStore(config.resultsDir);
+      auto results = resultStore.readBenchmarkResults();
       arena::BenchmarkRunner::printResultsTable(results);
       return 0;
     }
@@ -184,7 +185,7 @@ std::cout << "\nConfiguration Options:\n";
         std::cout << ConfigManager::instance().strCurrent() << std::endl;
       }
 
-      arena::ResultWriter writer(config.resultsDir);
+      arena::ResultStore resultStore(config.resultsDir);
 
       for (const auto& benchConfig : config.benchmarks) {
         std::cout << "\n--- Benchmark: " << benchConfig.name << " ---" << std::endl;
@@ -208,20 +209,20 @@ std::cout << "\nConfiguration Options:\n";
                                          result.positions,
                                          result.engineName + " " + result.engineVersion});
 
-        // Save results only if notes are provided (non-empty)
+        // Save results only if tag is provided (non-empty)
         // This allows ad-hoc runs without polluting the results file
         if (!result.tag.empty()) {
-          const std::string path = writer.writeBenchmarkResult(result);
+          const std::string path = resultStore.writeBenchmarkResult(result);
           std::cout << "\nResults saved to: " << path << std::endl;
         }
         else {
-          std::cout << "\n[Ad-hoc run] Results not saved (no notes provided)" << std::endl;
+          std::cout << "\n[Ad-hoc run] Results not saved (no tag provided)" << std::endl;
         }
       }
 
       // Show history
       std::cout << "\n";
-      auto allResults = writer.readBenchmarkResults();
+      auto allResults = resultStore.readBenchmarkResults();
       arena::BenchmarkRunner::printResultsTable(allResults);
 
       return 0;
@@ -261,16 +262,16 @@ std::cout << "\nConfiguration Options:\n";
 
       if (matchesOnly) {
         // Show only match results
-        std::cout << arena::ArenaRunner::generateMatchBaselineReport(data);
+        std::cout << arena::ReportGenerator::generateMatchBaselineReport(data);
       }
       else if (testSuitesOnly) {
         // Show only test suite results
-        std::cout << arena::ArenaRunner::generateBaselineReport(data);
+        std::cout << arena::ReportGenerator::generateBaselineReport(data);
       }
       else {
         // Show both (default)
-        std::cout << arena::ArenaRunner::generateBaselineReport(data);
-        std::cout << arena::ArenaRunner::generateMatchBaselineReport(data);
+        std::cout << arena::ReportGenerator::generateBaselineReport(data);
+        std::cout << arena::ReportGenerator::generateMatchBaselineReport(data);
       }
     }
     else if (vm.contains("cmp")) {
@@ -299,16 +300,16 @@ std::cout << "\nConfiguration Options:\n";
 
       if (matchesOnly) {
         // Show only match comparison
-        std::cout << arena::ArenaRunner::generateMatchComparisonReport(data, targetEngine, baselines);
+        std::cout << arena::ReportGenerator::generateMatchComparisonReport(data, targetEngine, baselines);
       }
       else if (testSuitesOnly) {
         // Show only test suite comparison
-        std::cout << arena::ArenaRunner::generateComparisonReport(data, targetEngine, baselines);
+        std::cout << arena::ReportGenerator::generateComparisonReport(data, targetEngine, baselines);
       }
       else {
         // Show both (default)
-        std::cout << arena::ArenaRunner::generateComparisonReport(data, targetEngine, baselines);
-        std::cout << arena::ArenaRunner::generateMatchComparisonReport(data, targetEngine, baselines);
+        std::cout << arena::ReportGenerator::generateComparisonReport(data, targetEngine, baselines);
+        std::cout << arena::ReportGenerator::generateMatchComparisonReport(data, targetEngine, baselines);
       }
     }
     else if (vm.contains("summary")) {
@@ -319,11 +320,12 @@ std::cout << "\nConfiguration Options:\n";
         return 1;
       }
 
-      const auto engineStr             = vm["summary"].as<std::string>();
+      const auto engineStr               = vm["summary"].as<std::string>();
       const arena::EngineId targetEngine = arena::EngineId::fromString(engineStr);
-      const bool showHistory           = vm.contains("history");
+      const bool showHistory             = vm.contains("history");
 
-      std::cout << arenaRunner.generateEngineSummary(targetEngine, showHistory);
+      const auto data = arenaRunner.loadAllResults();
+      std::cout << arena::ReportGenerator::generateEngineSummary(data, targetEngine, showHistory);
     }
     else if (vm.contains("history")) {
       // --history without --summary

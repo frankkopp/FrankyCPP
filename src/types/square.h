@@ -77,7 +77,7 @@
 namespace chess {
 
   class Square {
-    std::uint8_t v_{};// 0..63 valid squares, 64 = NONE (fits in one byte)
+    std::uint8_t v_{}; // 0..63 valid squares, 64 = NONE (fits in one byte)
 
   public:
     // constructors
@@ -124,11 +124,11 @@ namespace chess {
     struct iterator {
       using value_type        = Square;
       using difference_type   = int;
-      using iterator_category = std::random_access_iterator_tag;// simple, contiguous numeric progression
+      using iterator_category = std::random_access_iterator_tag; // simple, contiguous numeric progression
       using pointer           = void;
       using reference         = Square;
 
-      int i{};// current index (0..64)
+      int i{}; // current index (0..64)
 
       // clang-format off
       constexpr value_type operator*() const { return Square{i}; }
@@ -154,8 +154,8 @@ namespace chess {
     };
 
     struct range {
-      int b{};// begin (inclusive)
-      int e{};// end (exclusive)
+      int b{}; // begin (inclusive)
+      int e{}; // end (exclusive)
       constexpr iterator begin() const { return iterator{b}; }
       constexpr iterator end() const { return iterator{e}; }
       constexpr int size() const { return e - b; }
@@ -195,7 +195,7 @@ namespace chess {
   // Precomputed square distances and names for fast access
   namespace Squares {
     constexpr std::array<std::array<int, SQ_LENGTH>, SQ_LENGTH> squareDistancePreCompute() {
-      std::array<std::array<int, SQ_LENGTH>, SQ_LENGTH> dist{};// zero-initialize (diagonal stays 0)
+      std::array<std::array<int, SQ_LENGTH>, SQ_LENGTH> dist{}; // zero-initialize (diagonal stays 0)
       // distance between squares (Chebyshev distance)
       for (Square sq1 = SQ_A1; sq1 <= SQ_H8; ++sq1) {
         for (Square sq2 = SQ_A1; sq2 <= SQ_H8; ++sq2) {
@@ -244,7 +244,7 @@ namespace chess {
       }
       return names;
     }();
-  }// namespace Squares
+  } // namespace Squares
 
   // Out-of-class inline definitions depending on the pre-computations above
 
@@ -278,8 +278,8 @@ namespace chess {
   static_assert(std::is_trivially_copyable_v<Square::iterator>, "Iterator should be trivially copyable");
   static_assert(std::is_trivially_copyable_v<Square::range>, "Range should be trivially copyable");
 
-}// namespace chess
+} // namespace chess
 
 ENABLE_FORMATTER_AS_STRING_VIEW_ON(chess::Square);
 
-#endif// FRANKYCPP_SQUARE_H
+#endif // FRANKYCPP_SQUARE_H

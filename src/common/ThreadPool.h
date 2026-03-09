@@ -143,6 +143,6 @@ namespace common {
     void start(std::size_t numThreads);
   };
 
-}// namespace common
+} // namespace common
 
-#endif// FRANKYCPP_THREADPOOL_H
+#endif // FRANKYCPP_THREADPOOL_H

@@ -39,7 +39,7 @@ namespace chess {
   class MoveGenerator;
   class Perft;
   struct History;
-}// namespace chess
+} // namespace chess
 
 // Convenience using-declarations so consumers don't need chess:: prefix
 using chess::History;
@@ -47,4 +47,4 @@ using chess::MoveGenerator;
 using chess::Perft;
 using chess::Position;
 
-#endif// FRANKYCPP_CHESSCORE_FWD_H
+#endif // FRANKYCPP_CHESSCORE_FWD_H

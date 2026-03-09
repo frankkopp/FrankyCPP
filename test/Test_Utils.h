@@ -59,4 +59,4 @@ inline bool isBulkRun() {
   return cond;
 }
 
-#endif// FRANKYCPP_TEST_UTILS_H
+#endif // FRANKYCPP_TEST_UTILS_H

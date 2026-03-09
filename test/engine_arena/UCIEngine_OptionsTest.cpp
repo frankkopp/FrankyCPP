@@ -70,7 +70,7 @@ protected:
 
 TEST_F(UCIEngineOptionsTest, SingleOption_SingleWordName) {
   UCIEngine engine(testEnginePath);
-  engine.setDebugMode(true);// See the UCI communication
+  engine.setDebugMode(true); // See the UCI communication
 
   // Test with single-word option name
   EXPECT_NO_THROW({
@@ -297,8 +297,8 @@ TEST_F(UCIEngineOptionsTest, InvalidFormat_EmptyNameOrValue) {
 
   // Invalid format with empty name or value
   EXPECT_NO_THROW({
-    engine.setUciOptions("=256"); // Empty name
-    engine.setUciOptions("Hash=");// Empty value
+    engine.setUciOptions("=256");  // Empty name
+    engine.setUciOptions("Hash="); // Empty value
   });
 
   SUCCEED();
@@ -386,7 +386,7 @@ TEST_F(UCIEngineOptionsTest, OptionsAfter_newGame) {
     const std::string startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     engine.setPosition(startFen);
 
-    UCISearchResult result = engine.search(milliseconds{100}, static_cast<Depth>(5));
+    const UCISearchResult result = engine.search(milliseconds{100}, static_cast<Depth>(5));
 
     // Should return a move (engine still works after options + newGame)
     EXPECT_FALSE(result.bestMove.empty());
@@ -541,13 +541,13 @@ TEST_F(UCIEngineOptionsTest, VerifyOptionsApplied_GetOptions) {
   // For standard UCI engines, this would require using the "uci" command and parsing defaults.
 
   // Verify OwnBook was set to false
-  ASSERT_TRUE(options.find("OwnBook") != options.end())
+  ASSERT_TRUE(options.contains("OwnBook"))
     << "OwnBook option not found in engine options";
   EXPECT_EQ(options["OwnBook"], "false")
     << "OwnBook should be set to false (FrankyCPP reports current value)";
 
   // Verify Hash was set to 256
-  ASSERT_TRUE(options.find("Hash") != options.end())
+  ASSERT_TRUE(options.contains("Hash"))
     << "Hash option not found in engine options";
   EXPECT_EQ(options["Hash"], "256")
     << "Hash should be set to 256 (FrankyCPP reports current value)";
@@ -591,14 +591,14 @@ TEST_F(UCIEngineOptionsTest, GetOptions_WithoutSettingAny) {
   UCIEngine engine(testEnginePath);
 
   // Get default options without setting anything
-  auto options = engine.getOptions();
+  const auto options = engine.getOptions();
 
   // Should have some options (FrankyCPP has many UCI options)
   EXPECT_GT(options.size(), 0u) << "Engine should report some UCI options";
 
   // FrankyCPP standard options should be present
-  EXPECT_TRUE(options.find("Hash") != options.end()) << "Hash option should exist";
-  EXPECT_TRUE(options.find("OwnBook") != options.end()) << "OwnBook option should exist";
+  EXPECT_TRUE(options.contains("Hash")) << "Hash option should exist";
+  EXPECT_TRUE(options.contains("OwnBook")) << "OwnBook option should exist";
 
   SUCCEED();
 }

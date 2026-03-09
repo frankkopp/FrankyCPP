@@ -251,10 +251,13 @@ results/
 │   ├── WAC_FrankyGo-v1.0.3_20260201_144530.json
 │   └── STS1-STS15_FrankyCPP-v0.5_20260201_145000.json
 │
-└── matches/             # Engine match results
-    ├── FrankyCPP-v1.1_vs_FrankyGo-v1.0.3_60+0.6_20260201_150033.json
-    ├── FrankyCPP-v1.1_vs_FrankyGo-v1.0.3_60+0.6_20260201_150033.pgn
-    └── FrankyCPP-v1.1_vs_FrankyCPP-v0.5_60+0.6_20260201_160000.json
+├── matches/             # Engine match results
+│   ├── FrankyCPP-v1.1_vs_FrankyGo-v1.0.3_60+0.6_20260201_150033.json
+│   ├── FrankyCPP-v1.1_vs_FrankyGo-v1.0.3_60+0.6_20260201_150033.pgn
+│   └── FrankyCPP-v1.1_vs_FrankyCPP-v0.5_60+0.6_20260201_160000.json
+│
+└── benchmarks/          # Benchmark results (consolidated JSON)
+    └── benchmarks.json
 ```
 
 **Test Suite File Naming:** `{TestSuite}_{EngineName-Version}_{Timestamp}.json`
@@ -469,4 +472,4 @@ Examples:
 
 ---
 
-*Last updated: 2026-03-08*
+*Last updated: 2026-03-09*

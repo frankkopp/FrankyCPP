@@ -36,7 +36,7 @@
 //   KB, MB, GB          - Size constants for memory calculations
 //
 // Utilities:
-//   deLocale            - European-style number formatting (1.000,00)
+//   locale            - European-style number formatting (1.000,00)
 //
 //=============================================================================
 
@@ -75,6 +75,6 @@ struct deLocaleDecimals final : std::numpunct<char> {
   std::string do_grouping() const override { return "\03"; }
 };
 
-inline const std::locale deLocale(std::cout.getloc(), new deLocaleDecimals);
+inline const std::locale projectLocale(std::cout.getloc(), new deLocaleDecimals);
 
-#endif// FRANKYCPP_GLOBALS_H
+#endif // FRANKYCPP_GLOBALS_H

@@ -37,9 +37,9 @@
 #include <string>
 
 #ifdef _WIN32
-#include <cstdlib>// For _dupenv_s
+#include <cstdlib> // For _dupenv_s
 #else
-#include <cstdlib>// For getenv
+#include <cstdlib> // For getenv
 #include <mutex>
 #endif
 
@@ -117,6 +117,6 @@ namespace common {
     return std::format("%3d%% [%.*s%*s]", val, lpad, pbar, rpad, "");
   }
 
-}// namespace common
+} // namespace common
 
-#endif// FRANKYCPP_MISC_H
+#endif // FRANKYCPP_MISC_H

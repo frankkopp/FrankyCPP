@@ -104,10 +104,10 @@ namespace config {
 
     // Human-readable dumps
     std::string strCurrent() const;
-    std::string strDefaults() const;// dumps the initially loaded defaults
+    std::string strDefaults() const; // dumps the initially loaded defaults
   };
 
-}// namespace config
+} // namespace config
 
 // Helper
 #define SEARCH_CONFIG config::ConfigManager::instance().search()
@@ -132,4 +132,4 @@ namespace config {
   })
 
 
-#endif// FRANKYCPP_CONFIGMANAGER_H
+#endif // FRANKYCPP_CONFIGMANAGER_H

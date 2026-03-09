@@ -1,8 +1,9 @@
 # FrankyCPP Arena Refactoring Plan
 
-**Document Version:** 1.1  
+**Document Version:** 1.3  
 **Created:** 2026-03-08  
-**Status:** ✅ APPROVED — Ready for Implementation  
+**Last Updated:** 2026-03-09  
+**Status:** ✅ COMPLETE — All 13 stages done  
 **Target:** FrankyCPP Arena (same version — no feature changes)  
 **Priority:** High (Code quality and maintainability)
 
@@ -162,7 +163,7 @@ as input. Caller loads data first, then passes it to the report generator.
 
 ---
 
-### Stage 3: Deduplicate `UCIEngine` Option Parsing
+### Stage 3: Deduplicate `UCIEngine` Option Parsing ✅
 
 **Scope:** Internal refactor of UCIEngine.cpp — no API change.
 
@@ -172,8 +173,10 @@ as input. Caller loads data first, then passes it to the report generator.
    static std::vector<std::pair<std::string, std::string>> parseOptionPairs(const std::string& options);
    ```
 2. `setUciOptions()` calls `parseOptionPairs()` then calls `setOption()` for each
-3. `sendPendingOptions()` calls `parseOptionPairs()` then sends raw commands
+3. `sendPendingOptions()` removed — inlined in `initializeUCI()` using `parseOptionPairs()`
 4. Move `queryEngineConfig()` from `ArenaRunner` to `UCIEngine` as a static method (per D2 decision)
+
+**Status:** ✅ Complete
 
 **Files touched:** `UCIEngine.h/cpp`, `ArenaRunner.h/cpp`
 
@@ -181,7 +184,7 @@ as input. Caller loads data first, then passes it to the report generator.
 
 ---
 
-### Stage 4: Deduplicate TestSuiteRunner Evaluation Logic
+### Stage 4: Deduplicate TestSuiteRunner Evaluation Logic ✅
 
 **Scope:** Internal refactor of TestSuiteRunner.cpp — no API change.
 
@@ -190,14 +193,16 @@ as input. Caller loads data first, then passes it to the report generator.
 2. Refactor `runTestSuiteSequential()` to call `runSinglePosition()` for each test (just like parallel does)
 3. Keep the sequential-specific console output (`[N/M] TestId: PASS/FAIL (move, nodes, time)`) by printing after `runSinglePosition()` returns
 
+**Status:** ✅ Complete
+
 **Files touched:** `TestSuiteRunner.cpp`
 
 **Verify:** Run `--testsuites` with `parallelWorkers: 1` — results must be identical. Compare JSON output files before/after.
 
 ---
 
-### Stage 5: Unify JSON Handling — Use nlohmann/json Everywhere
 
+### Stage 5: Unify JSON Handling — Use nlohmann/json Everywhere ✅
 **Scope:** Replace manual JSON writing and the hand-rolled reader with nlohmann/json.
 
 **What:**
@@ -210,6 +215,8 @@ as input. Caller loads data first, then passes it to the report generator.
 4. `MatchRunner.cpp`: Replace regex-based `loadMatchState()` and manual `saveMatchState()` with nlohmann/json
 5. Verify JSON output is byte-for-byte compatible (field order, formatting) or document any harmless whitespace differences
 
+**Status:** ✅ Complete — nlohmann/json::dump(2) produces alphabetically-sorted keys (differs from hand-written order), but structure and values are identical. All existing JSON files remain readable.
+
 **Files touched:** `ResultWriter.cpp`, `MatchRunner.cpp`  
 **Build change:** `ResultWriter.cpp` and `MatchRunner.cpp` now `#include <nlohmann/json.hpp>` (already a vcpkg dependency)
 
@@ -221,7 +228,7 @@ as input. Caller loads data first, then passes it to the report generator.
 
 ---
 
-### Stage 6: Extract `ResultStore` — Centralize Result I/O
+### Stage 6: Extract `ResultStore` — Centralize Result I/O ✅
 
 **Scope:** Move all result read/write logic into one class. ArenaRunner becomes orchestration-only for data loading.
 
@@ -254,13 +261,15 @@ as input. Caller loads data first, then passes it to the report generator.
 4. Update `ArenaRunner` to use `ResultStore` instead of `ResultWriter` and inline loading code
 5. Update `engine_arena_main.cpp` to use `ResultStore` where it currently uses `ResultWriter` directly
 
-**Files touched:** New: `ResultStore.h/cpp`. Deleted: `ResultWriter.h/cpp`. Modified: `ArenaRunner.h/cpp`, `engine_arena_main.cpp`, `CMakeLists.txt` (both src and test)
+**Status:** ✅ Complete — also fixed double-load in generateEngineSummary() and removed ~155 lines of loading code from ArenaRunner.cpp
+
+**Files touched:** New: `ResultStore.h/cpp`, `ResultStore_Test.cpp`. Deleted: `ResultWriter.h/cpp`, `ResultWriter_Test.cpp`. Modified: `ArenaRunner.h/cpp`, `engine_arena_main.cpp`
 
 **Verify:** All commands still work: `--testsuites`, `--matches`, `--bench`, `--bench-report`, `--report`, `--summary`.
 
 ---
 
-### Stage 7: Extract `ReportGenerator` — Separate Report Formatting
+### Stage 7: Extract `ReportGenerator` — Separate Report Formatting ✅
 
 **Scope:** Move all report generation out of ArenaRunner into a dedicated class.
 
@@ -272,38 +281,36 @@ as input. Caller loads data first, then passes it to the report generator.
    - `generateMatchComparisonReport(const ReportData&, const EngineId&, const vector<EngineId>&) → string`
    - `generateEngineSummary(const ReportData&, const EngineId&, bool showHistory) → string`
 2. Move from `ArenaRunner.cpp` — these are large methods (total ~800 lines)
-3. `ArenaRunner` report methods become thin wrappers:
-   ```cpp
-   // In ArenaRunner — calls ResultStore then ReportGenerator
-   std::string generateBaselineReport() const {
-     auto data = resultStore.loadAllResults();
-     return ReportGenerator::generateBaselineReport(data);
-   }
-   ```
-   Or callers in `engine_arena_main.cpp` can call `ResultStore` + `ReportGenerator` directly.
-4. `generateEngineSummary()` currently calls `loadAllResults()` + `loadMatchResults()` (double-load) — fix this by calling `loadAllResults()` once.
+3. `ArenaRunner` report methods removed entirely. Callers in `engine_arena_main.cpp`
+   call `ResultStore` (via `ArenaRunner::loadAllResults()`) then `ReportGenerator` directly.
+4. `generateEngineSummary()` no longer loads its own data — it takes `const ReportData&`
+   as input like all other report methods.
 
-**Files touched:** New: `ReportGenerator.h/cpp`. Modified: `ArenaRunner.h/cpp`, `engine_arena_main.cpp`, `CMakeLists.txt`
+**Status:** ✅ Complete — ArenaRunner.cpp reduced from 1087 to 138 lines. All ~930 lines of report formatting moved to ReportGenerator.cpp.
+
+**Files touched:** New: `ReportGenerator.h/cpp`. Modified: `ArenaRunner.h/cpp`, `engine_arena_main.cpp`
 
 **Verify:** All report commands produce identical output: `--report`, `--cmp`, `--summary`, `--summary --history`, `--report --testsuites-only`, `--report --matches-only`.
 
 ---
 
-### Stage 8: Simplify `ArenaResults.h` — Separate Data from Queries
+### Stage 8: Simplify `ArenaResults.h` — Separate Data from Queries ✅
 
 **Scope:** Move query methods from `ReportData` into `ResultStore`.
 
 **What:**
 1. `ReportData` becomes a pure data struct (no methods except `hasResults()` etc.)
-2. Move to `ResultStore`:
-   - `findEngine(const EngineId&)` 
-   - `getResult(suite, engine)` 
-   - `getMatch(engine1, engine2)`
-   - `getMatchesForEngine(engine)`
-   - `getBenchmarksForEngine(engine)`
-   - `enginesMatchFlexibly()` (the private helper)
-3. Update `ReportGenerator` to call `ResultStore` query methods (or take the already-extracted data)
+2. Move to `ResultStore` as static methods (operate on `const ReportData&`):
+   - `findEngine(const ReportData&, const EngineId&)` 
+   - `getResult(const ReportData&, suite, engine)` 
+   - `getMatch(const ReportData&, engine1, engine2)`
+   - `getMatchesForEngine(const ReportData&, engine)`
+   - `getBenchmarksForEngine(const ReportData&, engine)`
+   - `enginesMatchFlexibly()` (private static helper)
+3. Update `ReportGenerator` to call `ResultStore::findEngine(data, ...)` etc.
 4. `EngineId` stays in `ArenaResults.h` — it's a core value type
+
+**Status:** ✅ Complete — ReportData reduced from ~200 lines to ~55 lines (pure data bag). All query logic centralized in ResultStore with single canonical `enginesMatchFlexibly` implementation.
 
 **Files touched:** `ArenaResults.h`, `ResultStore.h/cpp`, `ReportGenerator.cpp`
 
@@ -311,16 +318,18 @@ as input. Caller loads data first, then passes it to the report generator.
 
 ---
 
-### Stage 9: Clean Up `ArenaConfig` — Eager Expansion
+### Stage 9: Clean Up `ArenaConfig` — Eager Expansion ✅
 
 **Scope:** Simplify the config expansion flow.
 
 **What:**
-1. Call `expandTestSuiteRuns()` once inside `loadFromYaml()` and store the result in `ArenaConfig::testSuites` (a `vector<TestSuiteConfig>`)
-2. Keep `testSuiteRuns` as the raw parsed YAML data (private or removed)
+1. Call `expandTestSuiteRunsInternal()` once inside `loadFromYaml()` and store the result in `ArenaConfig::testSuites`
+2. Keep `testSuiteRuns` for YAML validation; `expandTestSuiteRunsInternal()` is private
 3. Remove the public `expandTestSuiteRuns()` method
 4. Update all callers to use `config.testSuites` directly
 5. `TestSuiteRunConfig` and `SuiteOverride` remain for YAML parsing but are not part of the public API
+
+**Status:** ✅ Complete — 3 callers updated to use `config.testSuites` directly. No more redundant re-expansion on each call.
 
 **Files touched:** `ArenaConfig.h/cpp`, `ArenaRunner.cpp`, `TestSuiteRunner.cpp`, `engine_arena_main.cpp`
 
@@ -328,87 +337,80 @@ as input. Caller loads data first, then passes it to the report generator.
 
 ---
 
-### Stage 10: Clean Up Dead Code and Polish
+### Stage 10: Clean Up Dead Code and Polish ✅
 
 **Scope:** Remove dead code, fix minor issues.
 
 **What:**
-1. Remove `writeComparison()` placeholder from `ResultStore` (was in old `ResultWriter`)
-2. Remove any unused includes
-3. Ensure all new files have proper copyright headers and header guards
-4. Ensure `CMakeLists.txt` lists all new files correctly
-5. Verify all tests compile and pass
-6. Review and fix any `const`-correctness issues introduced during refactoring
+1. Remove `writeComparison()` placeholder from `ResultStore` (was in old `ResultWriter`) ✅
+2. Remove `comparisons/` directory creation from `ResultStore` constructor ✅
+3. Verified all includes are needed — no unused includes found ✅
+4. All new files have proper copyright headers and `FRANKYCPP_*` header guards ✅
+5. CMakeLists.txt uses GLOB — new files auto-discovered ✅
+6. Const-correctness verified across all modified files ✅
 
-**Files touched:** Various — cleanup pass.
+**Status:** ✅ Complete
 
-**Verify:** Full rebuild. Run all tests. Run each CLI mode once.
+**Files touched:** `ResultStore.h/cpp`
 
 ---
 
-### Stage 11: Update Documentation
+### Stage 11: Update Documentation ✅
 
 **Scope:** Bring documentation in sync with the refactored code.
 
 **What:**
-1. Update the header comment blocks in all new/modified `.h` files to match the project style (banner + overview)
-2. Update `PLAN_Arena_Tags_and_Summary.md` status to ✅ COMPLETE (the feature it tracks is done)
-3. Mark this plan `PLAN_Arena_Refactor.md` as ✅ COMPLETE
-4. Update the workspace section of `CLAUDE.md` if the Arena file list changed
-5. Update `.github/copilot-instructions.md` if the Architecture section mentions Arena files
+1. Update `docs/arena/Development.md`: replaced `ResultWriter` with `ResultStore` + `ReportGenerator`,
+   updated component hierarchy, fixed code examples ✅
+2. Update `docs/arena/Results.md`: removed `comparisons/`, added `benchmarks/` ✅
+3. Update `docs/arena/Configuration.md`: removed `comparisons/`, added `benchmarks/` ✅
+4. Update `docs/arena/README.md`: added `benchmarks/` to directory structure ✅
+5. Mark `PLAN_Arena_Tags_and_Summary.md` as ✅ COMPLETE ✅
+6. Mark this plan as ✅ COMPLETE ✅
+7. `CLAUDE.md` and `.github/copilot-instructions.md` — no Arena-specific references, no changes needed ✅
 
-**Files touched:** Various `.h` files, `CLAUDE.md`, `copilot-instructions.md`, this document.
+**Status:** ✅ Complete
+
+**Files touched:** `Development.md`, `Results.md`, `Configuration.md`, `README.md`, `PLAN_Arena_Tags_and_Summary.md`, this document.
 
 ---
 
-### Stage 12: Self-Critical Review of Full Arena Codebase
+### Stage 12: Self-Critical Review of Full Arena Codebase ✅
 
 **Scope:** Read every Arena source file end-to-end and produce a detailed review.
 
 **What:**
-1. Read all `engine_arena/*.h`, `engine_arena/*.cpp`, and `engine_arena_main.cpp` in full
-2. Review against the original issue list (A1–A5, C1–C6) — verify each issue is fully resolved
-3. Check for **new problems introduced by the refactoring**:
-   - Inconsistent error handling between old and new code paths
-   - Missing `const`-correctness in new/modified code
-   - Broken or stale comments that reference old structure
-   - Include hygiene (unused includes, missing includes that compile only by accident)
-   - Naming consistency across old and new files
-   - Any code duplication re-introduced during extraction
-4. Check **API consistency**:
-   - Are `ResultStore` and `ReportGenerator` APIs clean and orthogonal?
-   - Does `ArenaRunner` still have responsibilities that belong elsewhere?
-   - Are there unnecessary coupling points (e.g., `ReportGenerator` reaching into internals)?
-5. Check **edge cases**:
-   - Empty result directories, missing files, malformed JSON
-   - Engine name matching: verify the single canonical implementation is used everywhere
-   - Engine name consistency: verify no load method pollutes `data.engines` with
-     non-test-suite engine IDs (A6 regression check — benchmark "FrankyCPP" vs
-     test suite "FrankyCPP v1.3", match "FrankyGo" vs "FrankyGo v1.0.3 (4.6.2021)")
-   - Config with zero suites, zero matches, zero benchmarks
-6. Verify all `[[nodiscard]]`, header guards, copyright headers follow project conventions
-7. Present findings to user as a prioritized list — **do not make changes in this stage**
+1. Read all `engine_arena/*.h`, `engine_arena/*.cpp`, and `engine_arena_main.cpp` in full ✅
+2. Review against the original issue list (A1–A5, C1–C6) — verify each issue is fully resolved ✅
+3. Check for **new problems introduced by the refactoring** ✅
+4. Check **API consistency** ✅
+5. Check **edge cases** ✅
+6. Verify all `[[nodiscard]]`, header guards, copyright headers follow project conventions ✅
+7. Present findings to user as a prioritized list ✅
+
+**Status:** ✅ Complete — Review identified issues addressed in Stage 13.
 
 **Files touched:** None (read-only analysis).
 
-**Output:** Prioritized list of findings, categorized as: 🔴 Must Fix, 🟡 Should Fix, 🟢 Nice to Have.
 
 ---
 
-### Stage 13: Fix Issues from Review
+### Stage 13: Fix Issues from Review ✅
 
 **Scope:** Apply fixes identified in Stage 12.
 
 **What:**
-1. Address all 🔴 Must Fix items from Stage 12
-2. Address 🟡 Should Fix items (unless user defers specific ones)
-3. Apply 🟢 Nice to Have items at user's discretion
-4. Each fix should be a clear, minimal change — no scope creep
-5. User tests after all fixes are applied
+1. Address all 🔴 Must Fix items from Stage 12 ✅
+2. Address 🟡 Should Fix items ✅
+3. Apply 🟢 Nice to Have items ✅
+4. Each fix was a clear, minimal change — no scope creep ✅
+5. User tested after all fixes applied ✅
 
-**Files touched:** Depends on Stage 12 findings.
+**Status:** ✅ Complete
 
-**Verify:** Full rebuild. Run all tests. Run each CLI mode once. Confirm all Stage 12 findings are resolved.
+**Files touched:** Various Arena source files per Stage 12 findings.
+
+**Verify:** Full rebuild. All tests pass. All CLI modes verified.
 
 ---
 
@@ -452,14 +454,14 @@ engine_arena_main.cpp       — CLI entry point (unchanged interface)
 | 4     | Deduplicate TestSuiteRunner eval logic                          | Low      | C3            | 1 modified                   |
 | 5     | Unify JSON with nlohmann/json                                   | Medium   | A2            | 2 modified                   |
 | 6     | Extract `ResultStore` (replaces `ResultWriter`)                 | Medium   | A1 (part), A6 | 3 modified, 2 new, 2 deleted |
-| 7     | Extract `ReportGenerator`                                       | Medium   | A1 (major)    | 3 modified, 2 new            |
-| 8     | Simplify `ArenaResults.h` (data-only)                           | Low      | A3, A4        | 3 modified                   |
-| 9     | Eager expansion in `ArenaConfig`                                | Low      | A5            | 4 modified                   |
-| 10    | Dead code cleanup & polish                                      | Very Low | C5            | Various                      |
-| 11    | Update documentation                                            | None     | —             | Docs only                    |
-| 12    | Self-critical review of full Arena codebase                     | None     | All           | None (read-only)             |
-| 13    | Fix issues from review                                          | Low      | From Stage 12 | Depends on findings          |
+| 7     | Extract `ReportGenerator` ✅                                     | Medium   | A1 (major)    | 3 modified, 2 new            |
+| 8     | Simplify `ArenaResults.h` (data-only) ✅                         | Low      | A3, A4        | 4 modified                   |
+| 9     | Eager expansion in `ArenaConfig` ✅                              | Low      | A5            | 5 modified                   |
+| 10    | Dead code cleanup & polish ✅                                    | Very Low | C5            | 2 modified                   |
+| 11    | Update documentation ✅                                          | Low      | —             | 6 docs modified              |
+| 12    | Self-critical review of full Arena codebase ✅                   | None     | All           | None (read-only)             |
+| 13    | Fix issues from review ✅                                        | Low      | From Stage 12 | Depends on findings          |
 
 ---
 
-*Last updated: 2026-03-08*
+*Last updated: 2026-03-09*

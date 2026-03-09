@@ -59,27 +59,27 @@
 namespace chess {
 
   enum PieceType : uint_fast8_t {
-    PT_NONE, // 0
-    KING,    // 1 non sliding
-    PAWN,    // 2 non sliding
-    KNIGHT,  // 3 non sliding
-    BISHOP,  // 4 sliding
-    ROOK,    // 5 sliding
-    QUEEN,   // 6 sliding
-    PT_LENGTH// 7
+    PT_NONE,  // 0
+    KING,     // 1 non sliding
+    PAWN,     // 2 non sliding
+    KNIGHT,   // 3 non sliding
+    BISHOP,   // 4 sliding
+    ROOK,     // 5 sliding
+    QUEEN,    // 6 sliding
+    PT_LENGTH // 7
   };
 
   // checks if piece type is a value of 0 - 6
   constexpr bool validPieceType(const PieceType pt) { return pt < 7; }
 
   constexpr int phaseValue[] = {
-    0,// no type
-    0,// king
-    0,// pawn
-    1,// knight
-    1,// bishop
-    2,// rook
-    4 // queen
+    0, // no type
+    0, // king
+    0, // pawn
+    1, // knight
+    1, // bishop
+    2, // rook
+    4  // queen
   };
 
   inline auto pieceLabels = std::string(" KPNBRQ");
@@ -103,6 +103,6 @@ namespace chess {
 
   ENABLE_INCR_OPERATORS_ON(PieceType)
 
-}// namespace chess
+} // namespace chess
 
-#endif// FRANKYCPP_PIECETYPE_H
+#endif // FRANKYCPP_PIECETYPE_H

@@ -45,7 +45,7 @@ using namespace common;
 using namespace enginetest;
 
 // global variable for program options
-inline po::variables_map programOptions;// NOLINT(*-err58-cpp)
+inline po::variables_map programOptions; // NOLINT(*-err58-cpp)
 
 int main(int argc, char* argv[]) {
 
@@ -270,8 +270,8 @@ int main(int argc, char* argv[]) {
         std::cerr << "Could not read file: " << testsuite_file << "\n";
         return 1;
       }
-      std::cout << "Time per Test:      " << std::format(deLocale, "{:L}", testsuite_time) << "\n";
-      std::cout << "Max depth per Test: " << std::format(deLocale, "{:L}", testsuite_depth) << "\n";
+      std::cout << "Time per Test:      " << std::format(projectLocale, "{:L}", testsuite_time) << "\n";
+      std::cout << "Max depth per Test: " << std::format(projectLocale, "{:L}", testsuite_depth) << "\n";
       TestSuite testSuite{milliseconds{testsuite_time}, Depth{testsuite_depth}, testsuite_file};
       testSuite.runTestSuite();
       return 0;
@@ -284,8 +284,8 @@ int main(int argc, char* argv[]) {
       std::cout << "RUNNING PERFT TEST\n";
       std::cout << "########################################################\n";
       std::cout << "Version: " << appName << "\n";
-      std::cout << "Start depth: " << std::format(deLocale, "{:L}", perftStart) << "\n";
-      std::cout << "End depth  : " << std::format(deLocale, "{:L}", perftEnd) << "\n";
+      std::cout << "Start depth: " << std::format(projectLocale, "{:L}", perftStart) << "\n";
+      std::cout << "End depth  : " << std::format(projectLocale, "{:L}", perftEnd) << "\n";
       std::cout << "On Demand  : " << (perftOnDemand ? "true" : "false") << "\n";
       std::cout << std::endl;
       Perft perft{};

@@ -68,8 +68,8 @@ namespace chess {
   ENABLE_FULL_OPERATORS_ON(Depth)
   ENABLE_OSTREAM_OPERATOR_AS_INT_ON(Depth);
 
-}// namespace chess
+} // namespace chess
 
 ENABLE_FORMATTER_AS_INT_ON(chess::Depth);
 
-#endif// FRANKYCPP_DEPTH_H
+#endif // FRANKYCPP_DEPTH_H

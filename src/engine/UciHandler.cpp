@@ -149,7 +149,7 @@ void UciHandler::setOptionCommand(std::istringstream& inStream) {
 // TODO: check if we need to clear more state here!
 void UciHandler::uciNewGameCommand() const {
   LOG__INFO(Logger::get().UCIHAND_LOG, "New Game");
-  pSearch->newGame();// Clears TT, History, and recreates Evaluator (clears PawnTT)
+  pSearch->newGame(); // Clears TT, History, and recreates Evaluator (clears PawnTT)
 }
 
 void UciHandler::positionCommand(std::istringstream& inStream) {
@@ -160,11 +160,11 @@ void UciHandler::positionCommand(std::istringstream& inStream) {
 
   // setup position with startpos or fen
   std::string fen = START_POSITION_FEN;
-  if (token == "startpos") {// just keep default
+  if (token == "startpos") { // just keep default
     inStream >> token;
   }
   else if (token == "fen") {
-    fen.clear();// reset to empty
+    fen.clear(); // reset to empty
     while (inStream >> token && token != "moves") {
       fen += token + " ";
     }

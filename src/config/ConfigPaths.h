@@ -35,6 +35,6 @@ namespace config::ConfigPaths {
   inline std::filesystem::path EvalYaml() {
     return std::filesystem::path("config") / "eval.yaml";
   }
-}// namespace config::ConfigPaths
+} // namespace config::ConfigPaths
 
-#endif// FRANKYCPP_CONFIGPATHS_H
+#endif // FRANKYCPP_CONFIGPATHS_H

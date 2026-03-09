@@ -44,7 +44,7 @@ using namespace common;
 
 using testing::Eq;
 
-auto& cm = ConfigManager::instance();// Bind cm to ConfigManager singleton by reference
+auto& cm = ConfigManager::instance(); // Bind cm to ConfigManager singleton by reference
 
 // centralize test eval config: set all USE_* flags
 // to the given onoff value
@@ -75,7 +75,7 @@ void set_eval_config(const bool onoff) {
     e.USE_BISHOP_PAIR_BONUS    = onoff;
   });
 }
-#endif// FRANKYCPP_PRODUCTION
+#endif // FRANKYCPP_PRODUCTION
 
 class EvaluatorTest : public testing::Test {
 public:
@@ -238,7 +238,7 @@ TEST_F(EvaluatorTest, Rook_FileBonus_Open_gt_SemiOpen_gt_Closed) {
   cm.applyOverrides([&](auto&, EvalConfigData& e) {
     e.USE_PIECE_EVAL           = true;
     e.USE_ROOK_OPEN_FILE_BONUS = true;
-    e.USE_ROOK_MOBILITY        = false;// isolate file bonus
+    e.USE_ROOK_MOBILITY        = false; // isolate file bonus
     e.USE_GAMEPHASE_VALUE      = true;
   });
 
@@ -271,9 +271,9 @@ TEST_F(EvaluatorTest, Rook_FileBonus_Open_gt_SemiOpen_gt_Closed) {
 TEST_F(EvaluatorTest, Rook_PSQT_SeventhRank_BetterThan_BackRank) {
   set_eval_config(false);
   cm.applyOverrides([&](auto&, EvalConfigData& e) {
-    e.USE_POSITIONAL      = true; // use PSQT
-    e.USE_PIECE_EVAL      = false;// avoid mobility/file
-    e.USE_KING_EVAL       = false;// avoid shield
+    e.USE_POSITIONAL      = true;  // use PSQT
+    e.USE_PIECE_EVAL      = false; // avoid mobility/file
+    e.USE_KING_EVAL       = false; // avoid shield
     e.USE_PAWN_EVAL       = false;
     e.USE_GAMEPHASE_VALUE = true;
   });
@@ -302,7 +302,7 @@ TEST_F(EvaluatorTest, QueenMobility_CentralBeatsCorner) {
   cm.applyOverrides([&](auto&, EvalConfigData& e) {
     e.USE_PIECE_EVAL      = true;
     e.USE_QUEEN_MOBILITY  = true;
-    e.USE_QUEEN_TROPISM   = false;// isolate mobility
+    e.USE_QUEEN_TROPISM   = false; // isolate mobility
     e.USE_GAMEPHASE_VALUE = true;
   });
 
@@ -327,10 +327,10 @@ TEST_F(EvaluatorTest, QueenMobility_CentralBeatsCorner) {
 TEST_F(EvaluatorTest, King_PSQT_CenterBeatsCorner_Endgameish) {
   set_eval_config(false);
   cm.applyOverrides([&](auto&, EvalConfigData& e) {
-    e.USE_POSITIONAL      = true;// PSQT
+    e.USE_POSITIONAL      = true; // PSQT
     e.USE_PIECE_EVAL      = false;
     e.USE_PAWN_EVAL       = false;
-    e.USE_KING_EVAL       = false;// avoid dynamic shield
+    e.USE_KING_EVAL       = false; // avoid dynamic shield
     e.USE_GAMEPHASE_VALUE = true;
   });
 
@@ -358,9 +358,9 @@ TEST_F(EvaluatorTest, BishopPairBonus_TwoBishopsBeats_BishopKnight) {
   cm.applyOverrides([&](auto&, EvalConfigData& e) {
     e.USE_PIECE_EVAL        = true;
     e.USE_BISHOP_PAIR_BONUS = true;
-    e.USE_BISHOP_MOBILITY   = false;// isolate pair bonus
-    e.USE_MATERIAL          = false;// equalize material influence
-    e.USE_POSITIONAL        = false;// no PSQT influence
+    e.USE_BISHOP_MOBILITY   = false; // isolate pair bonus
+    e.USE_MATERIAL          = false; // equalize material influence
+    e.USE_POSITIONAL        = false; // no PSQT influence
     e.USE_PAWN_EVAL         = false;
     e.USE_KING_EVAL         = false;
     e.USE_GAMEPHASE_VALUE   = true;
@@ -392,8 +392,8 @@ TEST_F(EvaluatorTest, RookMobility_CentralBeatsEdge_FileBonusesOff) {
   cm.applyOverrides([&](auto&, EvalConfigData& e) {
     e.USE_PIECE_EVAL           = true;
     e.USE_ROOK_MOBILITY        = true;
-    e.USE_ROOK_OPEN_FILE_BONUS = false;// isolate mobility
-    e.USE_POSITIONAL           = false;// no PSQT influence
+    e.USE_ROOK_OPEN_FILE_BONUS = false; // isolate mobility
+    e.USE_POSITIONAL           = false; // no PSQT influence
     e.USE_MATERIAL             = false;
     e.USE_PAWN_EVAL            = false;
     e.USE_KING_EVAL            = false;
@@ -424,9 +424,9 @@ TEST_F(EvaluatorTest, QueenTropism_CloserBeatsFarther_EndgameOnly) {
   set_eval_config(false);
   cm.applyOverrides([&](auto&, EvalConfigData& e) {
     e.USE_PIECE_EVAL      = true;
-    e.USE_QUEEN_MOBILITY  = false;// isolate tropism
-    e.USE_QUEEN_TROPISM   = true; // endgame-only weight
-    e.USE_POSITIONAL      = false;// no PSQT influence
+    e.USE_QUEEN_MOBILITY  = false; // isolate tropism
+    e.USE_QUEEN_TROPISM   = true;  // endgame-only weight
+    e.USE_POSITIONAL      = false; // no PSQT influence
     e.USE_MATERIAL        = false;
     e.USE_PAWN_EVAL       = false;
     e.USE_KING_EVAL       = false;
@@ -469,7 +469,7 @@ TEST_F(EvaluatorTest, TimingEvaluateFens) {
   // Ensure evaluator configuration uses defaults from EvalConfig
   set_eval_config(true);
   cm.applyOverrides([&](auto&, EvalConfigData& e) {
-    e.USE_LAZY_EVAL       = false;// disable lazy eval for timing test to have all positions fully evaluated
+    e.USE_LAZY_EVAL       = false; // disable lazy eval for timing test to have all positions fully evaluated
     e.USE_KNIGHT_MOBILITY = false;
   });
 
@@ -498,7 +498,7 @@ TEST_F(EvaluatorTest, TimingEvaluateFens) {
 
     std::ostringstream os;
     os.flags(std::cout.flags());
-    os.imbue(deLocale);
+    os.imbue(projectLocale);
     os.precision(os.precision());
 
     const uint64_t totalEvals = static_cast<uint64_t>(iterations) * positions.size();
@@ -542,11 +542,11 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
   };
 
   // Timing parameters: keep modest to avoid long test duration
-  constexpr int repeats    = 5;    // take best-of 'repeats' to reduce noise
-  constexpr int iterations = 25000;// per repeat, per position set
+  constexpr int repeats    = 5;     // take best-of 'repeats' to reduce noise
+  constexpr int iterations = 25000; // per repeat, per position set
 
   auto measure_ns = [&](const int iters) -> uint64_t {
-    volatile int64_t acc = 0;// prevent optimizing away
+    volatile int64_t acc = 0; // prevent optimizing away
     const auto start     = high_resolution_clock::now();
     for (int i = 0; i < iters; ++i) {
       for (auto& p : positions) {
@@ -577,10 +577,10 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
 
     // Helper: turn all features ON, disable LAZY, then apply a mutator to EvalConfig
     auto disable = [&](auto fn) {
-      set_eval_config(true);// all features ON
+      set_eval_config(true); // all features ON
       cm.applyOverrides([&](auto&, EvalConfigData& e) {
-        e.USE_LAZY_EVAL = false;// ensure lazy eval is OFF for timing
-        fn(e);                  // apply specific disables
+        e.USE_LAZY_EVAL = false; // ensure lazy eval is OFF for timing
+        fn(e);                   // apply specific disables
       });
     };
 
@@ -662,18 +662,18 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
   const uint64_t totalEvals = static_cast<uint64_t>(iterations) * positions.size();
 
   // Precompute label width for a nice alignment
-  size_t maxLabel = 4;// length of "Case"
+  size_t maxLabel = 4; // length of "Case"
   for (const auto& [label, apply] : cases) maxLabel = std::max(maxLabel, label.size());
   const int labelW    = static_cast<int>(maxLabel);
-  constexpr int colW1 = 14;// ns/eval
-  constexpr int colW2 = 14;// evals/sec
-  constexpr int colW3 = 8; // delta %
+  constexpr int colW1 = 14; // ns/eval
+  constexpr int colW2 = 14; // evals/sec
+  constexpr int colW3 = 8;  // delta %
 
   // Print header
   {
     std::ostringstream hdr;
     hdr.flags(std::cout.flags());
-    hdr.imbue(deLocale);
+    hdr.imbue(projectLocale);
     hdr << std::left << std::setw(labelW) << "Case" << " | "
         << std::right << std::setw(colW1) << "ns/eval" << " | "
         << std::setw(colW2) << "evals/sec" << " | "
@@ -687,7 +687,7 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
   auto print_result = [&](const std::string& label, const uint64_t total_ns, const uint64_t baseline_ns) {
     std::ostringstream os;
     os.flags(std::cout.flags());
-    os.imbue(deLocale);
+    os.imbue(projectLocale);
 
     const uint64_t nsPerEval = total_ns / (totalEvals ? totalEvals : 1);
     const uint64_t eps       = (totalEvals * nanoPerSec) / (total_ns ? total_ns : 1);
@@ -731,4 +731,4 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
   }
 }
 
-#endif// FRANKYCPP_PRODUCTION
+#endif // FRANKYCPP_PRODUCTION

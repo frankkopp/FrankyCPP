@@ -44,13 +44,13 @@ protected:
 
 TEST_F(ConfigGeneratorsTest, GenerateConfigStringNotEmpty) {
   const std::string output = generateConfigString(search, eval);
-  fprintln("Generated Config String:\n{}", output);// Debug output
+  fprintln("Generated Config String:\n{}", output); // Debug output
   EXPECT_FALSE(output.empty());
 }
 
 TEST_F(ConfigGeneratorsTest, GenerateConfigStringContainsDomainHeaders) {
   const std::string output = generateConfigString(search, eval);
-  fprintln("Generated Config String:\n{}", output);// Debug output
+  fprintln("Generated Config String:\n{}", output); // Debug output
   // Should have domain headers
   EXPECT_NE(output.find("=== General ==="), std::string::npos);
   EXPECT_NE(output.find("=== Search ==="), std::string::npos);
@@ -161,7 +161,7 @@ TEST_F(ConfigGeneratorsTest, SearchConfigStrContainsKeyConfigs) {
   EXPECT_NE(output.find("TT_SIZE_MB:"), std::string::npos);
 }
 
-#ifndef FRANKYCPP_PRODUCTION// In production, only essential config mutations (MOVE_OVERHEAD_MS) can be verified, so this test is dev-only.
+#ifndef FRANKYCPP_PRODUCTION // In production, only essential config mutations (MOVE_OVERHEAD_MS) can be verified, so this test is dev-only.
 TEST_F(ConfigGeneratorsTest, SearchConfigStrReflectsModifiedValues) {
   search.TT_SIZE_MB = 512;
   search.USE_NMP    = false;
@@ -203,7 +203,7 @@ TEST_F(ConfigGeneratorsTest, EvalConfigStrContainsKeyConfigs) {
   EXPECT_NE(output.find("USE_PAWN_EVAL:"), std::string::npos);
 }
 
-#ifndef FRANKYCPP_PRODUCTION// In production, only essential config mutations (MOVE_OVERHEAD_MS) can be verified, so this test is dev-only.
+#ifndef FRANKYCPP_PRODUCTION // In production, only essential config mutations (MOVE_OVERHEAD_MS) can be verified, so this test is dev-only.
 TEST_F(ConfigGeneratorsTest, EvalConfigStrReflectsModifiedValues) {
   eval.TEMPO          = 50;
   eval.LAZY_THRESHOLD = 500;
@@ -253,14 +253,14 @@ TEST_F(ConfigGeneratorsTest, ParseYamlConfigBasicScalars) {
 #endif
 }
 
-#ifndef FRANKYCPP_PRODUCTION// In production, only essential config mutations (MOVE_OVERHEAD_MS) can be verified, so this test is dev-only.
+#ifndef FRANKYCPP_PRODUCTION // In production, only essential config mutations (MOVE_OVERHEAD_MS) can be verified, so this test is dev-only.
 TEST_F(ConfigGeneratorsTest, ParseYamlConfigBoolValues) {
   YAML::Node node;
   node["USE_TT"]     = true;
   node["USE_PONDER"] = false;
 
   SearchConfigData s;
-  s.USE_TT     = false;// Start with opposite values
+  s.USE_TT     = false; // Start with opposite values
   s.USE_PONDER = true;
 
   parseYamlConfig(node, s);
@@ -307,7 +307,7 @@ TEST_F(ConfigGeneratorsTest, ParseYamlConfigArrayAsSequence) {
 }
 
 TEST_F(ConfigGeneratorsTest, ParseYamlConfigMissingKeysPreserveDefaults) {
-  const YAML::Node node;// Empty node
+  const YAML::Node node; // Empty node
 
   SearchConfigData s        = {};
   const int originalTTSize  = s.TT_SIZE_MB;
@@ -374,7 +374,7 @@ TEST_F(ConfigGeneratorsTest, ParseYamlConfigMixedSearchAndEval) {
 }
 
 TEST_F(ConfigGeneratorsTest, ParseYamlConfigInvalidNodeReturnsEmpty) {
-  YAML::Node node;// Default node is null/undefined
+  YAML::Node node; // Default node is null/undefined
 
   SearchConfigData s;
   const auto parsed = parseYamlConfig(YAML::Node(), s);

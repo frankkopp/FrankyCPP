@@ -62,7 +62,7 @@ TEST_F(FifoTest, construct) {
   LOG__DEBUG(Logger::get().TEST_LOG, "Copied constructed new fifo2: {:L}", fifo2.size());
   EXPECT_EQ(1'000, fifo2.size());
 
-  Fifo<std::string> fifo3 = fifo2;// NOLINT(*-unnecessary-copy-initialization)
+  Fifo<std::string> fifo3 = fifo2; // NOLINT(*-unnecessary-copy-initialization)
   LOG__DEBUG(Logger::get().TEST_LOG, "Copied constructed new fifo2: {:L}", fifo3.size());
   EXPECT_EQ(1'000, fifo3.size());
 

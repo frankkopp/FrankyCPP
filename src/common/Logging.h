@@ -120,7 +120,7 @@
   do {                                                     \
     const auto& _lg = (logger);                            \
     if (_lg && _lg->should_log(spdlog::level::critical)) { \
-      auto _msg = std::format(deLocale, __VA_ARGS__);      \
+      auto _msg = std::format(projectLocale, __VA_ARGS__); \
       _lg->log(spdlog::level::critical, _msg);             \
     }                                                      \
   } while (0)
@@ -129,65 +129,65 @@
 #endif
 
 #if LOG__LEVEL > CRITICAL__LVL
-#define LOG__ERROR(logger, ...)                       \
-  do {                                                \
-    const auto& _lg = (logger);                       \
-    if (_lg && _lg->should_log(spdlog::level::err)) { \
-      auto _msg = std::format(deLocale, __VA_ARGS__); \
-      _lg->log(spdlog::level::err, _msg);             \
-    }                                                 \
+#define LOG__ERROR(logger, ...)                            \
+  do {                                                     \
+    const auto& _lg = (logger);                            \
+    if (_lg && _lg->should_log(spdlog::level::err)) {      \
+      auto _msg = std::format(projectLocale, __VA_ARGS__); \
+      _lg->log(spdlog::level::err, _msg);                  \
+    }                                                      \
   } while (0)
 #else
 #define LOG__ERROR(logger, ...) void(0)
 #endif
 
 #if LOG__LEVEL > ERROR__LVL
-#define LOG__WARN(logger, ...)                         \
-  do {                                                 \
-    const auto& _lg = (logger);                        \
-    if (_lg && _lg->should_log(spdlog::level::warn)) { \
-      auto _msg = std::format(deLocale, __VA_ARGS__);  \
-      _lg->log(spdlog::level::warn, _msg);             \
-    }                                                  \
+#define LOG__WARN(logger, ...)                             \
+  do {                                                     \
+    const auto& _lg = (logger);                            \
+    if (_lg && _lg->should_log(spdlog::level::warn)) {     \
+      auto _msg = std::format(projectLocale, __VA_ARGS__); \
+      _lg->log(spdlog::level::warn, _msg);                 \
+    }                                                      \
   } while (0)
 #else
 #define LOG__WARN(logger, ...) void(0)
 #endif
 
 #if LOG__LEVEL > WARN__LVL
-#define LOG__INFO(logger, ...)                         \
-  do {                                                 \
-    const auto& _lg = (logger);                        \
-    if (_lg && _lg->should_log(spdlog::level::info)) { \
-      auto _msg = std::format(deLocale, __VA_ARGS__);  \
-      _lg->log(spdlog::level::info, _msg);             \
-    }                                                  \
+#define LOG__INFO(logger, ...)                             \
+  do {                                                     \
+    const auto& _lg = (logger);                            \
+    if (_lg && _lg->should_log(spdlog::level::info)) {     \
+      auto _msg = std::format(projectLocale, __VA_ARGS__); \
+      _lg->log(spdlog::level::info, _msg);                 \
+    }                                                      \
   } while (0)
 #else
 #define LOG__INFO(logger, ...) void(0)
 #endif
 
 #if LOG__LEVEL > INFO__LVL
-#define LOG__DEBUG(logger, ...)                         \
-  do {                                                  \
-    const auto& _lg = (logger);                         \
-    if (_lg && _lg->should_log(spdlog::level::debug)) { \
-      auto _msg = std::format(deLocale, __VA_ARGS__);   \
-      _lg->log(spdlog::level::debug, _msg);             \
-    }                                                   \
+#define LOG__DEBUG(logger, ...)                            \
+  do {                                                     \
+    const auto& _lg = (logger);                            \
+    if (_lg && _lg->should_log(spdlog::level::debug)) {    \
+      auto _msg = std::format(projectLocale, __VA_ARGS__); \
+      _lg->log(spdlog::level::debug, _msg);                \
+    }                                                      \
   } while (0)
 #else
 #define LOG__DEBUG(logger, ...) void(0)
 #endif
 
 #if LOG__LEVEL > DEBUG__LVL
-#define LOG__TRACE(logger, ...)                         \
-  do {                                                  \
-    const auto& _lg = (logger);                         \
-    if (_lg && _lg->should_log(spdlog::level::trace)) { \
-      auto _msg = std::format(deLocale, __VA_ARGS__);   \
-      _lg->log(spdlog::level::trace, _msg);             \
-    }                                                   \
+#define LOG__TRACE(logger, ...)                            \
+  do {                                                     \
+    const auto& _lg = (logger);                            \
+    if (_lg && _lg->should_log(spdlog::level::trace)) {    \
+      auto _msg = std::format(projectLocale, __VA_ARGS__); \
+      _lg->log(spdlog::level::trace, _msg);                \
+    }                                                      \
   } while (0)
 #else
 #define LOG__TRACE(logger, ...) void(0)
@@ -282,6 +282,6 @@ namespace common {
     // clang-format on
   };
 
-}// namespace common
+} // namespace common
 
-#endif// FRANKYCPP_LOGGING_H
+#endif // FRANKYCPP_LOGGING_H

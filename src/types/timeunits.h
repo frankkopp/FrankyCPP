@@ -79,14 +79,14 @@ inline std::string format_now(const char* fmt = "%Y-%m-%d %H:%M:%S") {
 /// @param s  Duration in milliseconds
 /// @return   String like "5,021 s"
 inline std::string str(const milliseconds s) {
-  return std::format(deLocale, "{:.3Lf} s", static_cast<double>(s.count()) / 1e3);
+  return std::format(projectLocale, "{:.3Lf} s", static_cast<double>(s.count()) / 1e3);
 }
 
 /// Formats nanoseconds as seconds with 9 decimal places (DE locale).
 /// @param s  Duration in nanoseconds
 /// @return   String like "5,021456234 s"
 inline std::string str(const nanoseconds s) {
-  return std::format(deLocale, "{:.9Lf} s", static_cast<double>(s.count()) / 1e9);
+  return std::format(projectLocale, "{:.9Lf} s", static_cast<double>(s.count()) / 1e9);
 }
 
 /// Formats a duration as a human-readable string with full breakdown.
@@ -205,4 +205,4 @@ constexpr auto currentTime = high_resolution_clock::now;
 #define NANOSECONDS(t) std::chrono::duration_cast<std::chrono::nanoseconds>(t)
 #define MILLISECONDS(t) std::chrono::duration_cast<std::chrono::milliseconds>(t)
 
-#endif// FRANKYCPP_TIMEUNITS_H
+#endif // FRANKYCPP_TIMEUNITS_H

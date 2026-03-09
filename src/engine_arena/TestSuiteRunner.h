@@ -117,7 +117,7 @@ namespace arena {
       const SuiteResultCallback& onSuiteComplete = nullptr) const;
 
   private:
-    const ArenaConfig& arenaConfig;///< Reference to arena configuration
+    const ArenaConfig& arenaConfig; ///< Reference to arena configuration
 
     /// Runs test suite sequentially (original implementation)
     TestSuiteResult runTestSuiteSequential(const TestSuiteConfig& suiteConfig) const;
@@ -140,12 +140,8 @@ namespace arena {
       const enginetest::EpdTest& test,
       const TestSuiteConfig& config,
       int testNumber);
-
-    /// Generates ISO 8601 timestamp for current time
-    /// @return Timestamp string (e.g., "2026-02-01T14:30:22Z")
-    static std::string getCurrentTimestamp();
   };
 
-}// namespace arena
+} // namespace arena
 
-#endif// FRANKYCPP_ENGINE_ARENA_TESTSUITERUNNER_H
+#endif // FRANKYCPP_ENGINE_ARENA_TESTSUITERUNNER_H

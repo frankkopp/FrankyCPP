@@ -143,7 +143,7 @@ void PawnTT::put(Entry* entryPtr, const ZobristKey key, const Score score) {
   // New entry
   if (entryKey == 0) {
     numberOfEntries++;
-  }// update - should not happen in single-thread mode
+  } // update - should not happen in single-thread mode
   else if (entryKey == key) {
     numberOfUpdates++;
     // Under SMP, concurrent threads may legitimately write the same entry - not a bug.
@@ -152,7 +152,7 @@ void PawnTT::put(Entry* entryPtr, const ZobristKey key, const Score score) {
       LOG__WARN(Logger::get().EVAL_LOG, "PawnTT should not have to update entries. Missing a read?");
     }
   }
-  else {// collision replaces former entry
+  else { // collision replaces former entry
     numberOfCollisions++;
   }
 
@@ -186,7 +186,7 @@ std::optional<PawnTT::Entry> PawnTT::probe(const ZobristKey key) const {
   // IMMEDIATELY copy the entry after key load to minimize torn-read window.
   // This copy-on-read pattern prevents races where another thread overwrites
   // the entry between our key check and value reads.
-  const Entry copy = *entryPtr;// Copy via copy constructor
+  const Entry copy = *entryPtr; // Copy via copy constructor
 
   // Verify key match
   if (storedKey == key) {

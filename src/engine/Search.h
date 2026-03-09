@@ -124,11 +124,11 @@ namespace engine {
   /// Tracks best-move stability across iterations for time management.
   /// Used to detect when the search is confident (stable) or uncertain (unstable).
   struct BestMoveStability {
-    Move lastBestMove{MOVE_NONE};   // best move from previous iteration
-    int stabilityCount{0};          // consecutive iterations with same best move
-    int changeCount{0};             // number of times best move changed during search
-    bool appliedStableFactor{false};// guard: only apply stable time factor once
-    bool appliedExtendFactor{false};// guard: only apply extend time factor once
+    Move lastBestMove{MOVE_NONE};    // best move from previous iteration
+    int stabilityCount{0};           // consecutive iterations with same best move
+    int changeCount{0};              // number of times best move changed during search
+    bool appliedStableFactor{false}; // guard: only apply stable time factor once
+    bool appliedExtendFactor{false}; // guard: only apply extend time factor once
 
     void reset() {
       lastBestMove        = MOVE_NONE;
@@ -151,18 +151,18 @@ namespace engine {
 
     std::unique_ptr<book::OpeningBook> book;
     std::unique_ptr<TT> tt;
-    std::unique_ptr<PawnTT> pawnTT;                 // Shared pawn cache for all threads
-    std::unique_ptr<tablebase::Tablebase> syzygy_tb;// Syzygy tablebase instance
+    std::unique_ptr<PawnTT> pawnTT;                  // Shared pawn cache for all threads
+    std::unique_ptr<tablebase::Tablebase> syzygy_tb; // Syzygy tablebase instance
 
     // MoveGenerator for PV extraction (reused to avoid allocation per call)
     // Mutable because validateMove() modifies internal lists but not observable state
     mutable MoveGenerator pvMoveGenerator{};
 
     // TB root probe result (when TB_ROOT_IMMEDIATE=false, used to guide search)
-    Move tbRootMove{MOVE_NONE};                                // Best move from TB at root
-    Value tbRootValue{VALUE_NONE};                             // TB score at root (DTZ-adjusted)
-    tablebase::TBResult tbRootWdl{tablebase::TBResult::Failed};// WDL result for filtering
-    int tbRootDtz{0};                                          // DTZ value for scoring
+    Move tbRootMove{MOVE_NONE};                                 // Best move from TB at root
+    Value tbRootValue{VALUE_NONE};                              // TB score at root (DTZ-adjusted)
+    tablebase::TBResult tbRootWdl{tablebase::TBResult::Failed}; // WDL result for filtering
+    int tbRootDtz{0};                                           // DTZ value for scoring
 
     // result of previous search (empty until first search completes)
     std::optional<SearchResult> lastSearchResult{};
@@ -179,12 +179,12 @@ namespace engine {
     std::mutex stopMutex{};
 
     // time management for the search
-    TimePoint startTime{};    // when startSearch has been called
-    TimePoint startSearchTime;// actual start time of search - only different from startTime after ponderhit()
+    TimePoint startTime{};     // when startSearch has been called
+    TimePoint startSearchTime; // actual start time of search - only different from startTime after ponderhit()
     milliseconds timeLimit{};
     std::atomic<int64_t> extraTimeMs{0};
     std::thread timerThread{};
-    mutable std::mutex timerMutex{};// protects timerThread access from multiple threads
+    mutable std::mutex timerMutex{}; // protects timerThread access from multiple threads
 
     // Atomic flag to indicate search result is ready (avoids race on lastSearchResult)
     std::atomic<bool> resultReady{false};
@@ -236,9 +236,9 @@ namespace engine {
     /// - CutNode: Expected to fail high (beta cutoff), null window search
     /// - AllNode: Expected to fail low (no move raises alpha), null window search
     enum NodeType : uint8_t {
-      PvNode, // Principal Variation node (full window)
-      CutNode,// Expected fail-high node (null window)
-      AllNode // Expected fail-low node (null window)
+      PvNode,  // Principal Variation node (full window)
+      CutNode, // Expected fail-high node (null window)
+      AllNode  // Expected fail-low node (null window)
     };
 
     /// Controls whether null-move pruning is allowed at this ply.
@@ -569,6 +569,6 @@ namespace engine {
     MoveList extractPvWithTT(Position& p) const;
   };
 
-}// namespace engine
+} // namespace engine
 
-#endif// FRANKYCPP_SEARCH_H
+#endif // FRANKYCPP_SEARCH_H

@@ -265,7 +265,7 @@ TEST_F(MoveGenTest, legalMoves) {
 
   // 86 pseudo legal moves - 83 legal (incl. castling over attacked square)
   const string fen = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3";
-  position = Position(fen);
+  position         = Position(fen);
   moves.clear();
   moves = *mg.generateLegalMoves(position, GenAll);
   EXPECT_EQ(83, moves.size());
@@ -580,10 +580,10 @@ TEST_F(MoveGenTest, pvMove) {
   int counter = 0;
   // generate all moves
   while ((move = mg.getNextPseudoLegalMove(position, GenAll)) != MOVE_NONE) {
-    if (counter == 0) {// first move must be pv move
+    if (counter == 0) { // first move must be pv move
       EXPECT_EQ(pvMove, move);
     }
-    else {// no more pv move after first move
+    else { // no more pv move after first move
       EXPECT_NE(pvMove, move);
     }
     counter++;
@@ -597,10 +597,10 @@ TEST_F(MoveGenTest, pvMove) {
   counter = 0;
   // generate all moves
   while ((move = mg.getNextPseudoLegalMove(position, GenNonQuiet)) != MOVE_NONE) {
-    if (counter == 0) {// first move must be pv move
+    if (counter == 0) { // first move must be pv move
       EXPECT_EQ(pvMove, move);
     }
-    else {// no more pv move after first move
+    else { // no more pv move after first move
       EXPECT_NE(pvMove, move);
     }
     counter++;
@@ -614,10 +614,10 @@ TEST_F(MoveGenTest, pvMove) {
   counter = 0;
   // generate all moves
   while ((move = mg.getNextPseudoLegalMove(position, GenAll)) != MOVE_NONE) {
-    if (counter == 0) {// first move must be pv move
+    if (counter == 0) { // first move must be pv move
       EXPECT_EQ(pvMove, move);
     }
-    else {// no more pv move after first move
+    else { // no more pv move after first move
       EXPECT_NE(pvMove, move);
     }
     counter++;
@@ -631,10 +631,10 @@ TEST_F(MoveGenTest, pvMove) {
   counter = 0;
   // generate all moves
   while ((move = mg.getNextPseudoLegalMove(position, GenNonQuiet)) != MOVE_NONE) {
-    if (counter == 0) {// first move can't be non capturing pv move
+    if (counter == 0) { // first move can't be non capturing pv move
       EXPECT_NE(pvMove, move);
     }
-    else {// no more pv move after first move
+    else { // no more pv move after first move
       EXPECT_NE(pvMove, move);
     }
     counter++;
@@ -649,10 +649,10 @@ TEST_F(MoveGenTest, pvMove) {
   counter = 0;
   // generate all moves
   while ((move = mg.getNextPseudoLegalMove(position, GenQuiet)) != MOVE_NONE) {
-    if (counter == 0) {// first move must be pv move
+    if (counter == 0) { // first move must be pv move
       EXPECT_EQ(pvMove, move);
     }
-    else {// no more pv move after first move
+    else { // no more pv move after first move
       EXPECT_NE(pvMove, move);
     }
     counter++;
@@ -809,7 +809,7 @@ TEST_F(MoveGenTest, PseudoMoveGenSpeedTest) {
 
     std::ostringstream os;
     os.flags(std::cout.flags());
-    os.imbue(deLocale);
+    os.imbue(projectLocale);
     os.precision(os.precision());
     os << "Test took " << elapsed.count() << " ns for " << iterations << " iterations" << std::endl;
     os << "Test took " << elapsed.count() / iterations << " ns per test" << std::endl;
@@ -957,7 +957,7 @@ TEST_F(MoveGenTest, hasLegalEpCapture_onePawnPinnedOtherNot) {
   // White king on a5, black rook on h5, white pawns on c5 and e5, black pawn on d5
   // cxd6 is legal (c5 pawn not pinned), exd6 is illegal (e5 pawn pinned)
   const Position pos("4k3/8/8/K1PpP2r/8/8/8/8 w - d6 0 1");
-  EXPECT_TRUE(MoveGenerator::hasLegalEpCapture(pos));// cxd6 is legal
+  EXPECT_TRUE(MoveGenerator::hasLegalEpCapture(pos)); // cxd6 is legal
 }
 
 TEST_F(MoveGenTest, hasLegalEpCapture_kingNotOnSameRank) {
@@ -977,7 +977,7 @@ TEST_F(MoveGenTest, hasLegalEpCapture_diagonalAttackerNotPinning) {
 TEST_F(MoveGenTest, hasLegalEpCapture_rookNotAttackingKing) {
   // Rook on same rank but not attacking king (blocked by another piece)
   const Position pos("4k3/8/8/K1NpP2r/8/8/8/8 w - d6 0 1");
-  EXPECT_TRUE(MoveGenerator::hasLegalEpCapture(pos));// Knight blocks, EP is legal
+  EXPECT_TRUE(MoveGenerator::hasLegalEpCapture(pos)); // Knight blocks, EP is legal
 }
 
 TEST_F(MoveGenTest, hasLegalEpCapture_rookOnDifferentRank) {
@@ -1043,13 +1043,13 @@ TEST_F(MoveGenTest, hasLegalMove_vsGenerateLegalMoves) {
   MoveGenerator mg;
 
   const std::vector<std::string> testFens = {
-    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",     // starting
-    "rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 1 3",// checkmate
-    "7k/5Q2/6K1/8/8/8/8/8 b - - 0 1",                               // stalemate
-    "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3",   // complex
-    "4k3/8/8/K2pP2r/8/8/8/8 w - d6 0 1",                            // EP pinned
-    "4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1",                            // EP legal
-    "8/8/8/8/k1PpK3/8/8/8 b - c3 0 1",                              // EP only move
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",      // starting
+    "rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 1 3", // checkmate
+    "7k/5Q2/6K1/8/8/8/8/8 b - - 0 1",                                // stalemate
+    "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3",    // complex
+    "4k3/8/8/K2pP2r/8/8/8/8 w - d6 0 1",                             // EP pinned
+    "4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1",                             // EP legal
+    "8/8/8/8/k1PpK3/8/8/8 b - c3 0 1",                               // EP only move
   };
 
   for (const auto& fen : testFens) {
@@ -1071,7 +1071,7 @@ TEST_F(MoveGenTest, hasLegalMove_vsGenerateLegalMoves) {
 // =================================================================================================
 
 TEST_F(MoveGenTest, isPseudoLegal_basicChecks) {
-  const Position p;// start position
+  const Position p; // start position
 
   // MOVE_NONE should fail
   EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, MOVE_NONE));
@@ -1090,46 +1090,46 @@ TEST_F(MoveGenTest, isPseudoLegal_basicChecks) {
 }
 
 TEST_F(MoveGenTest, isPseudoLegal_pawnMoves) {
-  const Position p;// start position
+  const Position p; // start position
 
   // Valid pawn moves
-  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_E2, SQ_E4)));// double push
-  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_E2, SQ_E3)));// single push
-  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_A2, SQ_A3)));// edge pawn
-  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_H2, SQ_H4)));// edge pawn double
+  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_E2, SQ_E4))); // double push
+  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_E2, SQ_E3))); // single push
+  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_A2, SQ_A3))); // edge pawn
+  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_H2, SQ_H4))); // edge pawn double
 
   // Invalid pawn moves
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_E2, SQ_E5)));// triple push
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_E2, SQ_D3)));// diagonal without capture
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_E2, SQ_E1)));// backward
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_E2, SQ_E5))); // triple push
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_E2, SQ_D3))); // diagonal without capture
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_E2, SQ_E1))); // backward
 
   // Pawn capture
   const Position p2("rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1");
-  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p2, Move::normal(SQ_E4, SQ_D5)));// capture
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p2, Move::normal(SQ_E4, SQ_F5)));// no piece to capture
+  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p2, Move::normal(SQ_E4, SQ_D5)));  // capture
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p2, Move::normal(SQ_E4, SQ_F5))); // no piece to capture
 
   // Double push only from start rank
   const Position p3("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1");
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p3, Move::normal(SQ_E4, SQ_E6)));// not from start rank
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p3, Move::normal(SQ_E4, SQ_E6))); // not from start rank
 
   // Pawn push blocked by piece (position after 1.d4 Nf6 2.d5 Ne4)
   const Position p4("rnbqkb1r/pppppppp/8/3P4/4n3/8/PPP1PPPP/RNBQKBNR w KQkq - 1 3");
-  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p4, Move::normal(SQ_E2, SQ_E3)));// single push ok
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p4, Move::normal(SQ_E2, SQ_E4)));// blocked by knight on e4
+  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p4, Move::normal(SQ_E2, SQ_E3)));  // single push ok
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p4, Move::normal(SQ_E2, SQ_E4))); // blocked by knight on e4
 
   // Pawn single push blocked (position after 1.e4 e5 2.Nf3 Ne7 3.Ng1 Ng6 4.Nf3 Ne5)
   const Position p5("rnbqkb1r/pppp1ppp/8/4n3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 2 5");
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p5, Move::normal(SQ_E4, SQ_E5)));// blocked by knight on e5
-  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p5, Move::normal(SQ_D2, SQ_D4)));// other pawn ok
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p5, Move::normal(SQ_E4, SQ_E5))); // blocked by knight on e5
+  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p5, Move::normal(SQ_D2, SQ_D4)));  // other pawn ok
 
   // Pawn double push - target square blocked (contrived but valid for testing)
-  const Position p6("rnbqkbnr/pppp1ppp/8/4p3/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");// after 1...e5
-  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p6, Move::normal(SQ_E2, SQ_E3)));// single push ok
-  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p6, Move::normal(SQ_E2, SQ_E4)));// double push ok (e5 doesn't block)
+  const Position p6("rnbqkbnr/pppp1ppp/8/4p3/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"); // after 1...e5
+  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p6, Move::normal(SQ_E2, SQ_E3)));       // single push ok
+  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p6, Move::normal(SQ_E2, SQ_E4)));       // double push ok (e5 doesn't block)
 }
 
 TEST_F(MoveGenTest, isPseudoLegal_knightMoves) {
-  const Position p;// start position
+  const Position p; // start position
 
   // Valid knight moves (L-shape)
   EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_G1, SQ_F3)));
@@ -1138,9 +1138,9 @@ TEST_F(MoveGenTest, isPseudoLegal_knightMoves) {
   EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_B1, SQ_A3)));
 
   // Invalid knight moves (not L-shape)
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_G1, SQ_G3)));// straight
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_G1, SQ_E2)));// diagonal
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_G1, SQ_G2)));// one step
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_G1, SQ_G3))); // straight
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_G1, SQ_E2))); // diagonal
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_G1, SQ_G2))); // one step
 }
 
 TEST_F(MoveGenTest, isPseudoLegal_bishopMoves) {
@@ -1152,19 +1152,19 @@ TEST_F(MoveGenTest, isPseudoLegal_bishopMoves) {
   EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_F1, SQ_D3)));
   EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_F1, SQ_C4)));
   EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_F1, SQ_B5)));
-  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_F1, SQ_A6)));// long diagonal
+  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_F1, SQ_A6))); // long diagonal
 
   // Invalid bishop moves (not diagonal)
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_F1, SQ_F2)));// straight up
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_F1, SQ_E1)));// horizontal
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_F1, SQ_G3)));// knight-like
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_F1, SQ_F2))); // straight up
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_F1, SQ_E1))); // horizontal
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_F1, SQ_G3))); // knight-like
 
   // Invalid: bishop path blocked (position after 1.e3 e6 - pawn on e3 blocks c1 bishop)
-  const Position p2("rnbqkbnr/pppp1ppp/4p3/8/8/4P3/PPPP1PPP/RNBQKBNR w KQkq - 0 2");// pawns on e3/e6
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p2, Move::normal(SQ_C1, SQ_F4)));// blocked by e3 pawn (c1-d2-e3-f4)
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p2, Move::normal(SQ_C1, SQ_G5)));// blocked by e3 pawn
-  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p2, Move::normal(SQ_F1, SQ_E2)));// not blocked
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p2, Move::normal(SQ_C1, SQ_E3)));// e3 has our pawn - can't capture own piece
+  const Position p2("rnbqkbnr/pppp1ppp/4p3/8/8/4P3/PPPP1PPP/RNBQKBNR w KQkq - 0 2"); // pawns on e3/e6
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p2, Move::normal(SQ_C1, SQ_F4)));        // blocked by e3 pawn (c1-d2-e3-f4)
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p2, Move::normal(SQ_C1, SQ_G5)));        // blocked by e3 pawn
+  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p2, Move::normal(SQ_F1, SQ_E2)));         // not blocked
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p2, Move::normal(SQ_C1, SQ_E3)));        // e3 has our pawn - can't capture own piece
 }
 
 TEST_F(MoveGenTest, isPseudoLegal_rookMoves) {
@@ -1178,14 +1178,14 @@ TEST_F(MoveGenTest, isPseudoLegal_rookMoves) {
   EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_H1, SQ_F1)));
 
   // Invalid rook moves (diagonal)
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_A1, SQ_B2)));// diagonal
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_H1, SQ_G2)));// diagonal
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_A1, SQ_B2))); // diagonal
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_H1, SQ_G2))); // diagonal
 
   // Invalid: rook path blocked
-  const Position p2("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/RN2K2R w KQkq - 0 1");// knight on b1
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p2, Move::normal(SQ_A1, SQ_C1)));// blocked by knight
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p2, Move::normal(SQ_A1, SQ_D1)));// blocked by knight
-  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p2, Move::normal(SQ_H1, SQ_G1)));// not blocked
+  const Position p2("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/RN2K2R w KQkq - 0 1");   // knight on b1
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p2, Move::normal(SQ_A1, SQ_C1))); // blocked by knight
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p2, Move::normal(SQ_A1, SQ_D1))); // blocked by knight
+  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p2, Move::normal(SQ_H1, SQ_G1)));  // not blocked
 }
 
 TEST_F(MoveGenTest, isPseudoLegal_queenMoves) {
@@ -1193,22 +1193,22 @@ TEST_F(MoveGenTest, isPseudoLegal_queenMoves) {
   const Position p("rnbqkbnr/pppp1ppp/8/4p3/3QP3/8/PPP2PPP/RNB1KBNR w KQkq - 0 3");
 
   // Valid queen moves (diagonal and rank/file, path clear)
-  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_D4, SQ_D5)));// vertical
-  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_D4, SQ_D6)));// vertical
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_D4, SQ_H4)));// horizontal
-  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_D4, SQ_A4)));// horizontal
-  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_D4, SQ_E5)));// diagonal capture
-  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_D4, SQ_C5)));// diagonal
+  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_D4, SQ_D5)));  // vertical
+  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_D4, SQ_D6)));  // vertical
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_D4, SQ_H4))); // horizontal
+  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_D4, SQ_A4)));  // horizontal
+  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_D4, SQ_E5)));  // diagonal capture
+  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_D4, SQ_C5)));  // diagonal
 
   // Invalid queen moves (knight-like)
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_D4, SQ_E6)));// L-shape
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_D4, SQ_B3)));// L-shape
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_D4, SQ_E6))); // L-shape
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_D4, SQ_B3))); // L-shape
 
   // Invalid: queen path blocked (knight blocks diagonal)
-  const Position p2("rnbqkb1r/ppp2ppp/4pn2/8/3QP3/8/PPP2PPP/RNB1KBNR w KQkq - 2 3");// black knight on f6
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p2, Move::normal(SQ_D4, SQ_G7)));// blocked by f6 knight
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p2, Move::normal(SQ_D4, SQ_H8)));// blocked by f6 knight
-  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p2, Move::normal(SQ_D4, SQ_F6)));// capture knight is ok
+  const Position p2("rnbqkb1r/ppp2ppp/4pn2/8/3QP3/8/PPP2PPP/RNB1KBNR w KQkq - 2 3"); // black knight on f6
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p2, Move::normal(SQ_D4, SQ_G7)));        // blocked by f6 knight
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p2, Move::normal(SQ_D4, SQ_H8)));        // blocked by f6 knight
+  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p2, Move::normal(SQ_D4, SQ_F6)));         // capture knight is ok
 }
 
 TEST_F(MoveGenTest, isPseudoLegal_kingMoves) {
@@ -1222,9 +1222,9 @@ TEST_F(MoveGenTest, isPseudoLegal_kingMoves) {
   EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_E4, SQ_D3)));
 
   // Invalid king moves (more than one square)
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_E4, SQ_E6)));// two squares
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_E4, SQ_G4)));// two squares
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_E4, SQ_G6)));// knight-like
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_E4, SQ_E6))); // two squares
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_E4, SQ_G4))); // two squares
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::normal(SQ_E4, SQ_G6))); // knight-like
 }
 
 TEST_F(MoveGenTest, isPseudoLegal_promotions) {
@@ -1272,15 +1272,15 @@ TEST_F(MoveGenTest, isPseudoLegal_enPassant) {
 
   // Invalid: en passant when captured pawn doesn't exist (corrupted position/move)
   // EP square is set but no pawn to capture - this catches corrupted TT data
-  const Position p4("8/8/8/1P6/8/8/8/K6k w - a6 0 1");// EP square a6 but no pawn on a5
+  const Position p4("8/8/8/1P6/8/8/8/K6k w - a6 0 1"); // EP square a6 but no pawn on a5
   EXPECT_FALSE(MoveGenerator::isPseudoLegal(p4, Move::enPassant(SQ_B5, SQ_A6)));
 
   // Invalid: captured piece is not a pawn
-  const Position p5("8/8/8/nP6/8/8/8/K6k w - a6 0 1");// Knight on a5 instead of pawn
+  const Position p5("8/8/8/nP6/8/8/8/K6k w - a6 0 1"); // Knight on a5 instead of pawn
   EXPECT_FALSE(MoveGenerator::isPseudoLegal(p5, Move::enPassant(SQ_B5, SQ_A6)));
 
   // Invalid: captured pawn is our own pawn (corrupted)
-  const Position p6("8/8/8/PP6/8/8/8/K6k w - a6 0 1");// Our pawn on a5
+  const Position p6("8/8/8/PP6/8/8/8/K6k w - a6 0 1"); // Our pawn on a5
   EXPECT_FALSE(MoveGenerator::isPseudoLegal(p6, Move::enPassant(SQ_B5, SQ_A6)));
 }
 
@@ -1289,8 +1289,8 @@ TEST_F(MoveGenTest, isPseudoLegal_castling) {
   const Position p("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1");
 
   // Valid castling moves
-  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::castling(SQ_E1, SQ_G1)));// white kingside
-  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::castling(SQ_E1, SQ_C1)));// white queenside
+  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::castling(SQ_E1, SQ_G1))); // white kingside
+  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p, Move::castling(SQ_E1, SQ_C1))); // white queenside
 
   // Invalid: wrong from square
   EXPECT_FALSE(MoveGenerator::isPseudoLegal(p, Move::castling(SQ_D1, SQ_G1)));
@@ -1310,37 +1310,37 @@ TEST_F(MoveGenTest, isPseudoLegal_castling) {
   EXPECT_FALSE(MoveGenerator::isPseudoLegal(p3, Move::castling(SQ_E8, SQ_H8)));
 
   // Invalid: no castling rights
-  const Position p4("r3k2r/8/8/8/8/8/8/R3K2R w - - 0 1");// no rights
+  const Position p4("r3k2r/8/8/8/8/8/8/R3K2R w - - 0 1"); // no rights
   EXPECT_FALSE(MoveGenerator::isPseudoLegal(p4, Move::castling(SQ_E1, SQ_G1)));
   EXPECT_FALSE(MoveGenerator::isPseudoLegal(p4, Move::castling(SQ_E1, SQ_C1)));
 
   // Invalid: only one side has rights
-  const Position p5("r3k2r/8/8/8/8/8/8/R3K2R w K - 0 1");// only kingside
+  const Position p5("r3k2r/8/8/8/8/8/8/R3K2R w K - 0 1"); // only kingside
   EXPECT_TRUE(MoveGenerator::isPseudoLegal(p5, Move::castling(SQ_E1, SQ_G1)));
   EXPECT_FALSE(MoveGenerator::isPseudoLegal(p5, Move::castling(SQ_E1, SQ_C1)));
 
-  const Position p6("r3k2r/8/8/8/8/8/8/R3K2R w Q - 0 1");// only queenside
+  const Position p6("r3k2r/8/8/8/8/8/8/R3K2R w Q - 0 1"); // only queenside
   EXPECT_FALSE(MoveGenerator::isPseudoLegal(p6, Move::castling(SQ_E1, SQ_G1)));
   EXPECT_TRUE(MoveGenerator::isPseudoLegal(p6, Move::castling(SQ_E1, SQ_C1)));
 
   // Invalid: path blocked for kingside
-  const Position p7("r3k2r/8/8/8/8/8/8/R3K1NR w KQ - 0 1");// knight on g1
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p7, Move::castling(SQ_E1, SQ_G1)));// blocked
-  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p7, Move::castling(SQ_E1, SQ_C1)));// ok
+  const Position p7("r3k2r/8/8/8/8/8/8/R3K1NR w KQ - 0 1");                     // knight on g1
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p7, Move::castling(SQ_E1, SQ_G1))); // blocked
+  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p7, Move::castling(SQ_E1, SQ_C1)));  // ok
 
   // Invalid: path blocked for queenside
-  const Position p8("r3k2r/8/8/8/8/8/8/R1N1K2R w KQ - 0 1");// knight on c1
-  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p8, Move::castling(SQ_E1, SQ_G1)));// ok
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p8, Move::castling(SQ_E1, SQ_C1)));// blocked
+  const Position p8("r3k2r/8/8/8/8/8/8/R1N1K2R w KQ - 0 1");                    // knight on c1
+  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p8, Move::castling(SQ_E1, SQ_G1)));  // ok
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p8, Move::castling(SQ_E1, SQ_C1))); // blocked
 
   // Path blocked between king and rook (b1 for queenside)
-  const Position p9("r3k2r/8/8/8/8/8/8/RN2K2R w KQ - 0 1");// knight on b1
-  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p9, Move::castling(SQ_E1, SQ_G1)));// ok
-  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p9, Move::castling(SQ_E1, SQ_C1)));// blocked by b1
+  const Position p9("r3k2r/8/8/8/8/8/8/RN2K2R w KQ - 0 1");                     // knight on b1
+  EXPECT_TRUE(MoveGenerator::isPseudoLegal(p9, Move::castling(SQ_E1, SQ_G1)));  // ok
+  EXPECT_FALSE(MoveGenerator::isPseudoLegal(p9, Move::castling(SQ_E1, SQ_C1))); // blocked by b1
 }
 
 TEST_F(MoveGenTest, isPseudoLegal_corruptedMoves) {
-  const Position p;// start position
+  const Position p; // start position
 
   // Simulate corrupted TT move - piece exists but move type is wrong
   // Non-pawn with PROMOTION type
@@ -1370,7 +1370,7 @@ TEST_F(MoveGenTest, isPseudoLegal_rawCorruptedMoves) {
   //   Bits 14-15: MOVE_TYPE (2 bits, 0=NORMAL, 1=PROMOTION, 2=ENPASSANT, 3=CASTLING)
   //   Bits 16-31: VALUE (16 bits)
 
-  const Position startPos;// start position
+  const Position startPos; // start position
 
   // Move type raw values (before shifting to bit position 14-15)
   constexpr int MT_NORMAL    = 0;
@@ -1394,7 +1394,7 @@ TEST_F(MoveGenTest, isPseudoLegal_rawCorruptedMoves) {
   EXPECT_FALSE(MoveGenerator::isPseudoLegal(startPos, Move(sameSquare)));
 
   // Test 3: Move from empty square
-  constexpr Move::Raw emptyFrom = makeRaw(SQ_E4, SQ_E3, 0, MT_NORMAL);// no piece on e3
+  constexpr Move::Raw emptyFrom = makeRaw(SQ_E4, SQ_E3, 0, MT_NORMAL); // no piece on e3
   EXPECT_FALSE(MoveGenerator::isPseudoLegal(startPos, Move(emptyFrom)));
 
   // Test 4: Move opponent's piece (white to move but moving black pawn)
@@ -1402,34 +1402,34 @@ TEST_F(MoveGenTest, isPseudoLegal_rawCorruptedMoves) {
   EXPECT_FALSE(MoveGenerator::isPseudoLegal(startPos, Move(opponentPiece)));
 
   // Test 5: Capture own piece
-  constexpr Move::Raw captureOwn = makeRaw(SQ_D1, SQ_E2, 0, MT_NORMAL);// pawn captures queen
+  constexpr Move::Raw captureOwn = makeRaw(SQ_D1, SQ_E2, 0, MT_NORMAL); // pawn captures queen
   EXPECT_FALSE(MoveGenerator::isPseudoLegal(startPos, Move(captureOwn)));
 
   // Test 6: PROMOTION move type but piece is not a pawn
-  constexpr Move::Raw knightPromo = makeRaw(SQ_F3, SQ_G1, 3, MT_PROMOTION);// knight "promotes"
+  constexpr Move::Raw knightPromo = makeRaw(SQ_F3, SQ_G1, 3, MT_PROMOTION); // knight "promotes"
   EXPECT_FALSE(MoveGenerator::isPseudoLegal(startPos, Move(knightPromo)));
 
   // Test 7: ENPASSANT move type but piece is not a pawn
-  constexpr Move::Raw knightEp = makeRaw(SQ_F3, SQ_G1, 0, MT_ENPASSANT);// knight "en passant"
+  constexpr Move::Raw knightEp = makeRaw(SQ_F3, SQ_G1, 0, MT_ENPASSANT); // knight "en passant"
   EXPECT_FALSE(MoveGenerator::isPseudoLegal(startPos, Move(knightEp)));
 
   // Test 8: CASTLING move type but piece is not a king
-  constexpr Move::Raw rookCastle = makeRaw(SQ_C1, SQ_A1, 0, MT_CASTLING);// rook "castles"
+  constexpr Move::Raw rookCastle = makeRaw(SQ_C1, SQ_A1, 0, MT_CASTLING); // rook "castles"
   EXPECT_FALSE(MoveGenerator::isPseudoLegal(startPos, Move(rookCastle)));
 
   // Test 9: Valid looking promotion but wrong target rank
-  constexpr Move::Raw wrongPromoRank = makeRaw(SQ_A7, SQ_A6, 3, MT_PROMOTION);// a6-a7 promo (rank 7 not 8)
+  constexpr Move::Raw wrongPromoRank = makeRaw(SQ_A7, SQ_A6, 3, MT_PROMOTION); // a6-a7 promo (rank 7 not 8)
   const Position midPos("8/8/P7/8/8/8/8/K6k w - - 0 1");
   EXPECT_FALSE(MoveGenerator::isPseudoLegal(midPos, Move(wrongPromoRank)));
 
   // Test 10: En passant to wrong square (not the EP square)
   const Position epPos("8/8/8/pP6/8/8/8/K6k w - a6 0 1");
-  constexpr Move::Raw wrongEpSquare = makeRaw(SQ_B6, SQ_B5, 0, MT_ENPASSANT);// b5-b6 not a6
+  constexpr Move::Raw wrongEpSquare = makeRaw(SQ_B6, SQ_B5, 0, MT_ENPASSANT); // b5-b6 not a6
   EXPECT_FALSE(MoveGenerator::isPseudoLegal(epPos, Move(wrongEpSquare)));
 
   // Test 11: Castling with wrong target square
   const Position castlePos("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1");
-  constexpr Move::Raw wrongCastleTo = makeRaw(SQ_F1, SQ_E1, 0, MT_CASTLING);// e1-f1 not g1/c1
+  constexpr Move::Raw wrongCastleTo = makeRaw(SQ_F1, SQ_E1, 0, MT_CASTLING); // e1-f1 not g1/c1
   EXPECT_FALSE(MoveGenerator::isPseudoLegal(castlePos, Move(wrongCastleTo)));
 
   // Test 12: MOVE_NONE (all zeros)
@@ -1438,16 +1438,16 @@ TEST_F(MoveGenTest, isPseudoLegal_rawCorruptedMoves) {
   // Test 13: Garbage high bits in value field shouldn't affect validation
   // (isPseudoLegal should ignore value bits)
   constexpr Move::Raw withGarbageValue = makeRaw(SQ_E4, SQ_E2, 0, MT_NORMAL) | (0xFFFFu << 16);
-  EXPECT_TRUE(MoveGenerator::isPseudoLegal(startPos, Move(withGarbageValue)));// e2-e4 is valid
+  EXPECT_TRUE(MoveGenerator::isPseudoLegal(startPos, Move(withGarbageValue))); // e2-e4 is valid
 
   // Test 14: Slider move through blocker (raw move encoding is valid but path blocked)
-  constexpr Move::Raw blockedBishop = makeRaw(SQ_C4, SQ_F1, 0, MT_NORMAL);// f1-c4 blocked by e2
+  constexpr Move::Raw blockedBishop = makeRaw(SQ_C4, SQ_F1, 0, MT_NORMAL); // f1-c4 blocked by e2
   EXPECT_FALSE(MoveGenerator::isPseudoLegal(startPos, Move(blockedBishop)));
 
   // Test 15: Valid raw move should pass
-  constexpr Move::Raw validKnight = makeRaw(SQ_F3, SQ_G1, 0, MT_NORMAL);// Nf3
+  constexpr Move::Raw validKnight = makeRaw(SQ_F3, SQ_G1, 0, MT_NORMAL); // Nf3
   EXPECT_TRUE(MoveGenerator::isPseudoLegal(startPos, Move(validKnight)));
 
-  constexpr Move::Raw validPawnDouble = makeRaw(SQ_E4, SQ_E2, 0, MT_NORMAL);// e4
+  constexpr Move::Raw validPawnDouble = makeRaw(SQ_E4, SQ_E2, 0, MT_NORMAL); // e4
   EXPECT_TRUE(MoveGenerator::isPseudoLegal(startPos, Move(validPawnDouble)));
 }

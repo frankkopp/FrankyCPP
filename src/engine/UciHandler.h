@@ -117,7 +117,7 @@ namespace engine {
     FRIEND_TEST_NS(UCITest, goError);
   };
 
-}// namespace engine
+} // namespace engine
 
 
-#endif// FRANKYCPP_UCIHANDLER_H
+#endif // FRANKYCPP_UCIHANDLER_H

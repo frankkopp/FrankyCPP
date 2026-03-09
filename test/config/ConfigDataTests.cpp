@@ -108,4 +108,4 @@ namespace {
     EXPECT_NE(s.find("TEMPO:"), std::string::npos);
   }
 
-}// namespace
+} // namespace

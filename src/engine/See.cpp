@@ -52,8 +52,8 @@ Value See::see(const Position& p, const Move move) {
 
   // loop through all remaining attacks/captures
   do {
-    ply++;                   // next depth
-    nextPlayer = ~nextPlayer;// change side
+    ply++;                    // next depth
+    nextPlayer = ~nextPlayer; // change side
 
     // speculative store, if defended
     gain[ply] = (move.type() == PROMOTION
@@ -64,8 +64,8 @@ Value See::see(const Position& p, const Move move) {
     // pruning if defended - will not change final see score
     if (std::max(-gain[ply - 1], gain[ply]) < 0) break;
 
-    remainingAttacks ^= fromSquare;// reset bit in set to traverse
-    occupiedBitboard ^= fromSquare;// reset bit in temporary occupancy (for x-Rays)
+    remainingAttacks ^= fromSquare; // reset bit in set to traverse
+    occupiedBitboard ^= fromSquare; // reset bit in temporary occupancy (for x-Rays)
 
     // reevaluate attacks to reveal attacks after removing the moving piece
     remainingAttacks |= revealedAttacks(p, toSquare, occupiedBitboard, WHITE) | revealedAttacks(p, toSquare, occupiedBitboard, BLACK);

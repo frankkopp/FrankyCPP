@@ -120,4 +120,4 @@ namespace common {
     // All reads should have succeeded
     EXPECT_EQ(successCount.load(), numThreads * iterations);
   }
-}// namespace common
+} // namespace common

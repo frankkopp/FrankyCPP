@@ -32,7 +32,7 @@ class BenchmarkTest : public ::testing::Test {
 public:
   static void SetUpTestSuite() {
     NEWLINE;
-    init::init();// Initialize attack tables/magics
+    init::init(); // Initialize attack tables/magics
     NEWLINE;
   }
 };
@@ -74,7 +74,7 @@ TEST_F(BenchmarkTest, benchResultDefaults) {
 /// Test benchmark with single position at shallow depth
 TEST_F(BenchmarkTest, benchRunsSinglePosition) {
   engine::BenchConfig config;
-  config.depth = 1;// Very shallow for quick test
+  config.depth = 1; // Very shallow for quick test
 
   // Run with just one position for quick test
   const std::vector<std::string> fens = {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"};
@@ -90,8 +90,8 @@ TEST_F(BenchmarkTest, benchRunsSinglePosition) {
 /// Test that benchmark runs without crashing at shallow depth
 TEST_F(BenchmarkTest, benchRunsAtShallowDepth) {
   engine::BenchConfig config;
-  config.depth      = 3; // Shallow depth for quick test
-  config.hashSizeMB = 16;// Small hash for test
+  config.depth      = 3;  // Shallow depth for quick test
+  config.hashSizeMB = 16; // Small hash for test
 
   // Run with a few positions
   const std::vector<std::string> fens = {

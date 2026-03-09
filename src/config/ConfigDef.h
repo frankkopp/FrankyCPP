@@ -81,11 +81,11 @@ namespace config {
 
   /// Configuration domain/category
   enum class ConfigDomain {
-    General,// General engine settings (time overhead, book, etc.)
-    Search, // Search algorithm parameters
-    Eval,   // Evaluation parameters
-    Tuning, // Parameters exposed for automated tuning (future)
-    Debug   // Debug/development settings (not for production)
+    General, // General engine settings (time overhead, book, etc.)
+    Search,  // Search algorithm parameters
+    Eval,    // Evaluation parameters
+    Tuning,  // Parameters exposed for automated tuning (future)
+    Debug    // Debug/development settings (not for production)
   };
 
   /// Convert ConfigDomain to string for display
@@ -107,12 +107,12 @@ namespace config {
 
   /// Value type for configuration settings
   enum class ConfigValueType {
-    Bool,   // Boolean (true/false)
-    Int,    // Integer with optional min/max bounds
-    Double, // Floating point
-    String, // Free-form string
-    Combo,  // Selection from predefined values
-    IntArray// Array of integers (e.g., margin tables) - special handling
+    Bool,    // Boolean (true/false)
+    Int,     // Integer with optional min/max bounds
+    Double,  // Floating point
+    String,  // Free-form string
+    Combo,   // Selection from predefined values
+    IntArray // Array of integers (e.g., margin tables) - special handling
   };
 
   /// Convert ConfigValueType to string for display
@@ -136,10 +136,10 @@ namespace config {
 
   /// Exposure flags - where this config can be set from
   struct ConfigExposure {
-    bool uci     = false;// Exposed as UCI option
-    bool yaml    = true; // Loaded from YAML config file
-    bool display = true; // Shown in str() output
-    bool tunable = false;// Exposed to automated tuning (future)
+    bool uci     = false; // Exposed as UCI option
+    bool yaml    = true;  // Loaded from YAML config file
+    bool display = true;  // Shown in str() output
+    bool tunable = false; // Exposed to automated tuning (future)
   };
 
   /// Type-erased getter function: reads value from config structs, returns as string
@@ -154,9 +154,9 @@ namespace config {
   /// Configuration definition - single source of truth for one setting
   struct ConfigDef {
     // Identity
-    std::string name;       // Internal name (e.g., "USE_NMP")
-    std::string uciName;    // UCI display name (e.g., "Use Null Move Pruning")
-    std::string description;// Human-readable description
+    std::string name;        // Internal name (e.g., "USE_NMP")
+    std::string uciName;     // UCI display name (e.g., "Use Null Move Pruning")
+    std::string description; // Human-readable description
 
     // Type information
     ConfigValueType valueType = ConfigValueType::Bool;
@@ -168,15 +168,15 @@ namespace config {
     // Bounds (for Int/Double types)
     std::optional<int> minValue;
     std::optional<int> maxValue;
-    std::vector<std::string> comboVars;// For Combo type
+    std::vector<std::string> comboVars; // For Combo type
 
     // Exposure configuration
     ConfigExposure exposure;
 
     // Type-safe member access via getter/setter lambdas
     // These reference the actual struct members, providing compile-time validation
-    ConfigGetter getter;// Returns current value as string
-    ConfigSetter setter;// Parses string and sets value
+    ConfigGetter getter; // Returns current value as string
+    ConfigSetter setter; // Parses string and sets value
 
     // Optional custom UCI handler (for special cases like "Clear Hash")
     std::optional<UciHandlerFunc> customUciHandler;
@@ -233,6 +233,6 @@ namespace config {
     }
   }
 
-}// namespace config
+} // namespace config
 
-#endif// FRANKYCPP_CONFIGDEF_H
+#endif // FRANKYCPP_CONFIGDEF_H

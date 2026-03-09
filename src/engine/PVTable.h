@@ -87,7 +87,7 @@ namespace engine {
   /// All methods inline/constexpr - compiler optimizes to direct array access
   class PVTable {
   public:
-    static constexpr int MAX_PLY = DEPTH_MAX + 1;// 128
+    static constexpr int MAX_PLY = DEPTH_MAX + 1; // 128
 
   private:
     std::array<std::array<Move, MAX_PLY>, MAX_PLY> table_{};
@@ -96,8 +96,8 @@ namespace engine {
     // Each row tracks when it was last updated. update() only copies from
     // child row if it has the current generation, preventing stale data propagation.
     // Using uint8_t (128 bytes) instead of uint16_t for better cache utilization.
-    std::array<uint8_t, MAX_PLY> rowGeneration_{};// Generation when each row was last updated
-    uint8_t currentGeneration_{1};                // Current search generation (0 = never updated)
+    std::array<uint8_t, MAX_PLY> rowGeneration_{}; // Generation when each row was last updated
+    uint8_t currentGeneration_{1};                 // Current search generation (0 = never updated)
 
   public:
     // =========================================================================
@@ -140,7 +140,7 @@ namespace engine {
     /// Update PV: prepend move and copy child PV from ply+1 (if current generation)
     void update(const Move move, const Depth ply) {
       table_[ply][ply]    = move;
-      rowGeneration_[ply] = currentGeneration_;// Mark this row as current
+      rowGeneration_[ply] = currentGeneration_; // Mark this row as current
 
       // Bounds check: if ply+1 >= MAX_PLY, there's no child PV to copy
       if (ply + 1 >= MAX_PLY) {
@@ -225,6 +225,6 @@ namespace engine {
     }
   };
 
-}// namespace engine
+} // namespace engine
 
-#endif// FRANKYCPP_PVTABLE_H
+#endif // FRANKYCPP_PVTABLE_H

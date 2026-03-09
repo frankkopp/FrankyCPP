@@ -86,7 +86,7 @@ namespace chess {
 
   class Move {
   public:
-    using Raw = uint32_t;// fixed width for stable serialization and cache compatibility
+    using Raw = uint32_t; // fixed width for stable serialization and cache compatibility
 
   private:
     Raw raw_{0};
@@ -107,7 +107,7 @@ namespace chess {
     // ---------------------------------------------------------------------------
     // Construction
     // ---------------------------------------------------------------------------
-    constexpr Move() = default;// MOVE_NONE
+    constexpr Move() = default; // MOVE_NONE
     constexpr explicit Move(const Raw raw) : raw_{raw} {}
 
     // Canonical full constructor (internal anchor).
@@ -200,7 +200,7 @@ namespace chess {
 
     // Verbose representation
     std::string strVerbose() const {
-      if (isNone()) return "no move 0";// maintain similar behavior
+      if (isNone()) return "no move 0"; // maintain similar behavior
       std::string tp;
       std::string promPt;
       switch (type()) {
@@ -248,7 +248,7 @@ namespace chess {
     }
   };
 
-}// namespace chess
+} // namespace chess
 
 // Boost split-free serialization: persists Move as its 32-bit raw value for backward compatibility.
 namespace boost::serialization {
@@ -267,6 +267,6 @@ namespace boost::serialization {
   void serialize(Archive& ar, chess::Move& m, const unsigned int version) {
     serialization::split_free(ar, m, version);
   }
-}// namespace boost::serialization
+} // namespace boost::serialization
 
-#endif// FRANKYCPP_MOVE_H
+#endif // FRANKYCPP_MOVE_H

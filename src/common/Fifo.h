@@ -212,6 +212,6 @@ namespace common {
     }
   };
 
-}// namespace common
+} // namespace common
 
-#endif// FRANKYCPP_FIFO_H
+#endif // FRANKYCPP_FIFO_H

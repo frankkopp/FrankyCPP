@@ -108,6 +108,6 @@ namespace enginetest {
     [[nodiscard]] static std::optional<EpdTest> parseOneLine(std::string_view line);
   };
 
-}// namespace enginetest
+} // namespace enginetest
 
-#endif// FRANKYCPP_EPDPARSER_H
+#endif // FRANKYCPP_EPDPARSER_H

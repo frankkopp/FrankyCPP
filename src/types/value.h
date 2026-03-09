@@ -134,13 +134,13 @@ namespace chess {
 
   /** PieceType values */
   constexpr Value pieceTypeValue[] = {
-    static_cast<Value>(0),   // no type
-    static_cast<Value>(2000),// king
-    static_cast<Value>(100), // pawn
-    static_cast<Value>(320), // knight
-    static_cast<Value>(330), // bishop
-    static_cast<Value>(500), // rook
-    static_cast<Value>(900), // queen
+    static_cast<Value>(0),    // no type
+    static_cast<Value>(2000), // king
+    static_cast<Value>(100),  // pawn
+    static_cast<Value>(320),  // knight
+    static_cast<Value>(330),  // bishop
+    static_cast<Value>(500),  // rook
+    static_cast<Value>(900),  // queen
   };
 
   // returns the value of the given piece type
@@ -159,8 +159,8 @@ namespace chess {
   ENABLE_MIXED_COMPARISONS_ON(Value)
   ENABLE_OSTREAM_OPERATOR_AS_INT_ON(Value);
 
-}// namespace chess
+} // namespace chess
 
 ENABLE_FORMATTER_AS_INT_ON(chess::Value);
 
-#endif// FRANKYCPP_VALUE_H
+#endif // FRANKYCPP_VALUE_H

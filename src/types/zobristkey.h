@@ -49,6 +49,6 @@
 
 namespace chess {
   typedef uint64_t ZobristKey;
-}// namespace chess
+} // namespace chess
 
-#endif// FRANKYCPP_ZOBRISTKEY_H
+#endif // FRANKYCPP_ZOBRISTKEY_H

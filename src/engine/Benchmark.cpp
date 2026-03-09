@@ -60,13 +60,13 @@ namespace engine {
 
     // Create a search instance (without UCI handler - we don't want UCI output during bench)
     Search search;
-    search.newGame();// Clear TT and history
+    search.newGame(); // Clear TT and history
 
     // Set up search limits for depth-limited search
     SearchLimits limits;
     limits.depth = config.depth;
     if (config.timeLimit.count() > 0) {
-      limits.timeControl = false;// We use moveTime, not time control
+      limits.timeControl = false; // We use moveTime, not time control
     }
 
     // Track cumulative search time (excludes TT clearing and position setup)
@@ -117,7 +117,7 @@ namespace engine {
       result.nps = static_cast<double>(result.totalNodes) * 1000.0 / static_cast<double>(result.totalTime.count());
     }
 
-    std::cout << "\n";// New line after progress indicator
+    std::cout << "\n"; // New line after progress indicator
 
     return result;
   }
@@ -126,7 +126,7 @@ namespace engine {
     const double totalTimeSec = static_cast<double>(result.totalTime.count()) / 1000.0;
     const auto npsInt         = static_cast<uint64_t>(result.nps);
 
-    std::cout << std::format(deLocale,
+    std::cout << std::format(projectLocale,
                              "\n"
                              "===================================\n"
                              "FrankyCPP Benchmark Results    \n"
@@ -145,4 +145,4 @@ namespace engine {
                              npsInt);
   }
 
-}// namespace engine
+} // namespace engine

@@ -105,7 +105,7 @@ BENCHMARK_F(TimingBench, DISABLED_BM_IllegalCharacter2)(benchmark::State& state)
 BENCHMARK_F(TimingBench, BM_ColorIter_Range)(benchmark::State& state) {
   int sink = 0;
   for (const auto _ : state) {
-    (void) _;// silence unused variable warning
+    (void) _; // silence unused variable warning
     int sum = 0;
     for (const Color c : Color::all()) {
       sum += c.sign();
@@ -119,7 +119,7 @@ BENCHMARK_F(TimingBench, BM_ColorIter_Range)(benchmark::State& state) {
 BENCHMARK_F(TimingBench, BM_ColorIter_Classic)(benchmark::State& state) {
   int sink = 0;
   for (const auto _ : state) {
-    (void) _;// silence unused variable warning
+    (void) _; // silence unused variable warning
     int sum = 0;
     for (Color c = WHITE; c <= BLACK; ++c) {
       sum += c.sign();
@@ -133,7 +133,7 @@ BENCHMARK_F(TimingBench, BM_ColorIter_Classic)(benchmark::State& state) {
 BENCHMARK_F(TimingBench, BM_ColorIter_Int)(benchmark::State& state) {
   int sink = 0;
   for (const auto _ : state) {
-    (void) _;// silence unused variable warning
+    (void) _; // silence unused variable warning
     int sum = 0;
     for (int ci = 0; ci < static_cast<int>(COLOR_LENGTH); ++ci) {
       sum += Color{ci}.sign();

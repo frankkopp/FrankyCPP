@@ -100,14 +100,14 @@ namespace engine {
 
   public:
     static constexpr int CacheLineSize        = 64;
-    static constexpr uint64_t DEFAULT_TT_SIZE = 2;// MByte
+    static constexpr uint64_t DEFAULT_TT_SIZE = 2; // MByte
     static constexpr uint64_t MAX_SIZE_MB     = 4'096;
 
     /// Entry struct storing cached pawn evaluation scores.
     struct Entry {
-      std::atomic<ZobristKey> key{0};///< Pawn-specific Zobrist key (atomic for SMP safety)
-      Value midvalue{VALUE_NONE};    ///< Midgame pawn structure score
-      Value endvalue{VALUE_NONE};    ///< Endgame pawn structure score
+      std::atomic<ZobristKey> key{0}; ///< Pawn-specific Zobrist key (atomic for SMP safety)
+      Value midvalue{VALUE_NONE};     ///< Midgame pawn structure score
+      Value endvalue{VALUE_NONE};     ///< Endgame pawn structure score
 
       /// Default constructor
       Entry() = default;
@@ -172,8 +172,8 @@ namespace engine {
     std::size_t numberOfEntries    = 0;
 
     mutable uint64_t numberOfQueries = 0;
-    mutable uint64_t numberOfHits    = 0;// entries with identical key found
-    mutable uint64_t numberOfMisses  = 0;// no entry with key found
+    mutable uint64_t numberOfHits    = 0; // entries with identical key found
+    mutable uint64_t numberOfMisses  = 0; // no entry with key found
 
     mutable uint64_t numberOfPuts       = 0;
     mutable uint64_t numberOfCollisions = 0;
@@ -296,6 +296,6 @@ namespace engine {
     uint64_t getNumberOfCollisions() const { return numberOfCollisions; }
   };
 
-}// namespace engine
+} // namespace engine
 
-#endif// FRANKYCPP_PAWNTT_H
+#endif // FRANKYCPP_PAWNTT_H

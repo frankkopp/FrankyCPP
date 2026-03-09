@@ -87,7 +87,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   s.USE_IIR = false;
 
   // Pruning techniques
-  s.USE_IMPROVING     = false;// Track if position is improving vs 2 plies ago
+  s.USE_IMPROVING     = false; // Track if position is improving vs 2 plies ago
   s.USE_MDP           = false;
   s.USE_RAZORING      = false;
   s.USE_RFP           = false;
@@ -97,9 +97,9 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   s.USE_NMP_IMPROVING = false;
 
   // Futility pruning
-  s.USE_FP               = false;
-  s.USE_QFP              = false;
-  s.USE_FP_IMPROVING     = false;
+  s.USE_FP           = false;
+  s.USE_QFP          = false;
+  s.USE_FP_IMPROVING = false;
 
   // Late move reductions
   s.USE_LMR               = false;
@@ -379,13 +379,13 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
 
   // 10.1 Extensions Core: Enable extension framework + AddDepth (realistic mode)
   CONFIG_OVERRIDE(s.USE_EXTENSIONS = true;);
-  CONFIG_OVERRIDE(s.USE_EXT_ADD_DEPTH = true;);// Enable early for realistic testing
+  CONFIG_OVERRIDE(s.USE_EXT_ADD_DEPTH = true;); // Enable early for realistic testing
 
   // 10.2 Check Extension: Extend when move gives check
   CONFIG_OVERRIDE(s.USE_CHECK_EXT = true;);
   CONFIG_OVERRIDE(s.CHECK_EXT_MIN_DEPTH = 2;);
-  CONFIG_OVERRIDE(s.CHECK_EXT_EARLY_LIMIT = 3;);// Test with old limit first
-  CONFIG_OVERRIDE(s.USE_CHECK_EXT_SEE = false;);// Test without SEE first
+  CONFIG_OVERRIDE(s.CHECK_EXT_EARLY_LIMIT = 3;); // Test with old limit first
+  CONFIG_OVERRIDE(s.USE_CHECK_EXT_SEE = false;); // Test without SEE first
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Check"));
 
   // 10.2b Check Extension + SEE: Only extend non-losing checks
@@ -399,9 +399,9 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
 
   // 10.3 Singular Extension: Extend when one move is clearly best
   CONFIG_OVERRIDE(s.USE_SINGULAR_EXT = true;);
-  CONFIG_OVERRIDE(s.USE_SINGULAR_TT_BOUND = false;);// Don't require BETA/EXACT (too restrictive)
+  CONFIG_OVERRIDE(s.USE_SINGULAR_TT_BOUND = false;); // Don't require BETA/EXACT (too restrictive)
   CONFIG_OVERRIDE(s.SINGULAR_MARGIN = 64;);
-  CONFIG_OVERRIDE(s.SINGULAR_MIN_DEPTH = 8;);// Lowered from 8 to trigger more often
+  CONFIG_OVERRIDE(s.SINGULAR_MIN_DEPTH = 8;); // Lowered from 8 to trigger more often
   CONFIG_OVERRIDE(s.SINGULAR_REDUCTION = 4;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Sing NoTTBound"));
   // CONFIG_OVERRIDE(s.USE_SINGULAR_TT_BOUND = true;);  // Don't require BETA/EXACT (too restrictive)
@@ -411,7 +411,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   CONFIG_OVERRIDE(s.USE_THREAT_EXT = true;);
   // CONFIG_OVERRIDE(s.THREAT_EXT_MATE_DEPTH = 3;);  // Test with mate-in-4 threshold first
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Threat 3"));
-  CONFIG_OVERRIDE(s.THREAT_EXT_MATE_DEPTH = 4;);// Test with mate-in-4 threshold first
+  CONFIG_OVERRIDE(s.THREAT_EXT_MATE_DEPTH = 4;); // Test with mate-in-4 threshold first
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Threat 4"));
   // CONFIG_OVERRIDE(s.THREAT_EXT_MATE_DEPTH = 6;);  // Test with mate-in-6 threshold
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Threat 6"));
@@ -489,7 +489,7 @@ void SearchTreeSizeTest::start() {
   for (auto& fen : fens) {
     try {
       const Position testPosition(fen);
-      (void) testPosition;// avoid unused variable warning
+      (void) testPosition; // avoid unused variable warning
     } catch (std::invalid_argument& e) {
       std::cerr << std::format("Invalid fen skipped: {} ({})", e.what(), fen) << std::endl;
       continue;

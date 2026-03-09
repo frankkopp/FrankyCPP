@@ -95,15 +95,15 @@ namespace arena {
 
   /// State of a match in progress (for resumption)
   struct MatchState {
-    std::string matchName;  ///< Match identifier
-    int totalRounds     = 0;///< Total rounds configured
-    int completedRounds = 0;///< Rounds completed so far
-    int engine1Wins     = 0;///< Engine 1 wins
-    int engine2Wins     = 0;///< Engine 2 wins
-    int draws           = 0;///< Draw count
-    std::string engine1Name;///< Engine 1 UCI name
-    std::string engine2Name;///< Engine 2 UCI name
-    std::string timestamp;  ///< Last update timestamp
+    std::string matchName;   ///< Match identifier
+    int totalRounds     = 0; ///< Total rounds configured
+    int completedRounds = 0; ///< Rounds completed so far
+    int engine1Wins     = 0; ///< Engine 1 wins
+    int engine2Wins     = 0; ///< Engine 2 wins
+    int draws           = 0; ///< Draw count
+    std::string engine1Name; ///< Engine 1 UCI name
+    std::string engine2Name; ///< Engine 2 UCI name
+    std::string timestamp;   ///< Last update timestamp
   };
 
   /// Executes engine-vs-engine matches via cutechess-cli
@@ -145,7 +145,7 @@ namespace arena {
     std::vector<MatchResult> runAllMatches() const;
 
   private:
-    const ArenaConfig& arenaConfig;///< Reference to arena configuration
+    const ArenaConfig& arenaConfig; ///< Reference to arena configuration
 
     /// Builds cutechess-cli command line from match configuration
     /// @param matchConfig Match configuration
@@ -198,10 +198,6 @@ namespace arena {
     /// @return Engine name derived from filename
     static std::string extractEngineName(const std::string& enginePath);
 
-    /// Generates current timestamp in ISO 8601 format
-    /// @return Timestamp string (e.g., "2026-02-01T14:30:22Z")
-    static std::string getCurrentTimestamp();
-
     /// Gets the state file path for a match
     /// @param matchConfig Match configuration
     /// @return Path to state file (e.g., results/matches/.state/matchname.state.json)
@@ -223,6 +219,6 @@ namespace arena {
     static void deleteMatchState(const std::string& stateFilePath);
   };
 
-}// namespace arena
+} // namespace arena
 
-#endif// FRANKYCPP_ENGINE_ARENA_MATCHRUNNER_H
+#endif // FRANKYCPP_ENGINE_ARENA_MATCHRUNNER_H

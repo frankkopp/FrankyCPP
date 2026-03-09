@@ -119,6 +119,6 @@ namespace engine {
     return os;
   }
 
-}// namespace engine
+} // namespace engine
 
-#endif// FRANKYCPP_SEARCHRESULT_H
+#endif // FRANKYCPP_SEARCHRESULT_H

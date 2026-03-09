@@ -82,42 +82,41 @@
 #include <thread>
 
 namespace arena {
-  using namespace chess;
 
   /// Result of a UCI engine search
   struct UCISearchResult {
-    std::string bestMove;       ///< UCI long algebraic (e.g., "e2e4"), empty on error
-    uint64_t nodes = 0;         ///< Total nodes searched
-    Depth depth    = DEPTH_ZERO;///< Search depth reached
-    Value score    = VALUE_NONE;///< Centipawn score from engine's perspective
-    milliseconds time{0};       ///< Time spent searching
+    std::string bestMove;                   ///< UCI long algebraic (e.g., "e2e4"), empty on error
+    uint64_t nodes     = 0;                 ///< Total nodes searched
+    chess::Depth depth = chess::DEPTH_ZERO; ///< Search depth reached
+    chess::Value score = chess::VALUE_NONE; ///< Centipawn score from engine's perspective
+    milliseconds time{0};                   ///< Time spent searching
   };
 
   /// External UCI chess engine interface
   class UCIEngine {
     // Member fields
-    std::string enginePath_;///< Path to engine executable
-    std::string engineName_;///< Engine name from "id name"
+    std::string enginePath_; ///< Path to engine executable
+    std::string engineName_; ///< Engine name from "id name"
 
     // Boost.Asio for async I/O
-    boost::asio::io_context ioContext_;                      ///< Asio I/O context
-    std::unique_ptr<boost::process::v1::async_pipe> pipeOut_;///< Async pipe from engine stdout
-    std::unique_ptr<boost::process::v1::opstream> pipeIn_;   ///< Sync stream to engine stdin
-    std::unique_ptr<boost::process::v1::child> childProcess_;///< Engine subprocess
+    boost::asio::io_context ioContext_;                       ///< Asio I/O context
+    std::unique_ptr<boost::process::v1::async_pipe> pipeOut_; ///< Async pipe from engine stdout
+    std::unique_ptr<boost::process::v1::opstream> pipeIn_;    ///< Sync stream to engine stdin
+    std::unique_ptr<boost::process::v1::child> childProcess_; ///< Engine subprocess
 
     // Async reader state
-    boost::asio::streambuf readBuffer_;///< Buffer for async reads
-    std::thread ioThread_;             ///< Thread running io_context
-    std::queue<std::string> lineQueue_;///< Queue of lines read from engine
-    std::mutex queueMutex_;            ///< Protects lineQueue_
-    std::condition_variable queueCV_;  ///< Signals when line available
-    std::atomic<bool> stopping_{false};///< Signal to stop I/O
+    boost::asio::streambuf readBuffer_; ///< Buffer for async reads
+    std::thread ioThread_;              ///< Thread running io_context
+    std::queue<std::string> lineQueue_; ///< Queue of lines read from engine
+    std::mutex queueMutex_;             ///< Protects lineQueue_
+    std::condition_variable queueCV_;   ///< Signals when line available
+    std::atomic<bool> stopping_{false}; ///< Signal to stop I/O
 
     // Configuration
-    milliseconds initTimeout_{120000}; ///< Default 2 minute timeout for initialization (book loading, etc.)
-    milliseconds searchTimeout_{30000};///< Default 30 second timeout for search operations
-    bool debugMode_{false};            ///< Debug mode: print all UCI communication
-    std::string pendingUciOptions_;    ///< UCI options to send before first isready
+    milliseconds initTimeout_{120000};  ///< Default 2 minute timeout for initialization (book loading, etc.)
+    milliseconds searchTimeout_{30000}; ///< Default 30 second timeout for search operations
+    bool debugMode_{false};             ///< Debug mode: print all UCI communication
+    std::string pendingUciOptions_;     ///< UCI options to send before first isready
 
   public:
     // Constructors/Destructor
@@ -154,7 +153,7 @@ namespace arena {
     /// @param timeMs Time limit in milliseconds
     /// @param maxDepth Maximum search depth
     /// @return Search result with best move (empty on error)
-    UCISearchResult search(milliseconds timeMs, Depth maxDepth);
+    UCISearchResult search(milliseconds timeMs, chess::Depth maxDepth);
 
     /// Set timeout for initialization operations (uci, isready after start)
     /// @param timeout Maximum time to wait for engine to initialize (default: 120s for book loading)
@@ -185,8 +184,25 @@ namespace arena {
     /// @return Map of option names to values (current for FrankyCPP, defaults for others)
     std::map<std::string, std::string> getOptions();
 
+    /// Query and display engine configuration via UCI getoptions command.
+    /// For FrankyCPP engines, uses the non-standard "getoptions" command to get current values.
+    /// For other engines, this will likely not work (UCI has no standard query mechanism).
+    /// @param enginePath Path to the engine executable
+    /// @param commandLineArgs Optional command-line arguments for the engine
+    /// @return Formatted configuration string, or empty if not supported
+    static std::string queryEngineConfig(const std::string& enginePath, const std::string& commandLineArgs = "");
+
   private:
     // Private helper methods
+
+    /// Parse UCI option string into name/value pairs.
+    /// Supports formats: "Hash=256; Threads=4" (semicolon-separated)
+    ///                    "Hash=256 Threads=4" (space-separated)
+    ///                    "Hash=256" (single option)
+    /// @param options Raw option string
+    /// @return Vector of (name, value) pairs
+    static std::vector<std::pair<std::string, std::string>> parseOptionPairs(const std::string& options);
+
     /// Send command to engine
     void sendCommand(const std::string& command) const;
 
@@ -205,8 +221,6 @@ namespace arena {
     /// Initialize UCI protocol
     void initializeUCI();
 
-    /// Send pending UCI options (called during initialization, before isready)
-    void sendPendingOptions() const;
 
     /// Send "isready" and wait for "readyok"
     /// @return True if engine ready, false on timeout
@@ -227,6 +241,6 @@ namespace arena {
     [[nodiscard]] const std::string& getEngineName() const { return engineName_; }
   };
 
-}// namespace arena
+} // namespace arena
 
-#endif// FRANKYCPP_ENGINE_ARENA_UCIENGINE_H
+#endif // FRANKYCPP_ENGINE_ARENA_UCIENGINE_H

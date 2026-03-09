@@ -176,6 +176,6 @@ namespace engine {
     }
   };
 
-}// namespace engine
+} // namespace engine
 
-#endif// FRANKYCPP_SEARCHTHREADDATA_H
+#endif // FRANKYCPP_SEARCHTHREADDATA_H

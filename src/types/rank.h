@@ -55,7 +55,7 @@
 namespace chess {
 
   class Rank {
-    std::uint8_t v_{};// 0..7 = 1..8, 8 = NONE
+    std::uint8_t v_{}; // 0..7 = 1..8, 8 = NONE
 
   public:
     // constructors
@@ -119,8 +119,8 @@ namespace chess {
   ENABLE_MIXED_COMPARISONS_ON(Rank)
   ENABLE_OSTREAM_OPERATOR_AS_INT_ON(Rank);
 
-}// namespace chess
+} // namespace chess
 
 ENABLE_FORMATTER_AS_CHAR_ON(chess::Rank);
 
-#endif// FRANKYCPP_RANK_H
+#endif // FRANKYCPP_RANK_H

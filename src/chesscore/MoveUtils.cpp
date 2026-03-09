@@ -106,4 +106,4 @@ namespace chess {
     return false;
   }
 
-}// namespace chess
+} // namespace chess

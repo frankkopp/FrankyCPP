@@ -21,7 +21,7 @@
 #include "chesscore/MoveGenerator.h"
 #include "common/Logging.h"
 
-#include <algorithm>// for std::replace
+#include <algorithm> // for std::replace
 #include <array>
 #include <filesystem>
 #include <string_view>
@@ -58,7 +58,7 @@ namespace tablebase {
 
     // TB score constants - high values but below checkmate threshold
     // These values indicate a known win/loss from tablebase
-    constexpr auto TB_WIN_SCORE  = Value{9000};// Below VALUE_MAX (10000) to leave room for mate scores
+    constexpr auto TB_WIN_SCORE  = Value{9000}; // Below VALUE_MAX (10000) to leave room for mate scores
     constexpr auto TB_LOSS_SCORE = Value{-9000};
 
     /// Convert FrankyCPP Position to Fathom's required bitboard format
@@ -192,7 +192,7 @@ namespace tablebase {
       }
     }
 
-  }// anonymous namespace
+  } // anonymous namespace
 
   //=============================================================================
   // Tablebase Public Methods
@@ -280,8 +280,8 @@ namespace tablebase {
     // For 50-move aware results, use probeRoot, which calls tb_probe_root with the actual halfmove clock.
     const unsigned result = tb_probe_wdl(
       white, black, kings, queens, rooks, bishops, knights, pawns,
-      0,// rule50 - MUST be 0 for tb_probe_wdl (Fathom requirement)
-      0,// castling - MUST be 0 (we already verify in canProbe)
+      0, // rule50 - MUST be 0 for tb_probe_wdl (Fathom requirement)
+      0, // castling - MUST be 0 (we already verify in canProbe)
       ep, turn);
 
     if (result == TB_RESULT_FAILED) {
@@ -295,7 +295,7 @@ namespace tablebase {
     TBProbeResult result;
 
     if (!canProbe(pos)) {
-      return result;// Returns Failed by default
+      return result; // Returns Failed by default
     }
 
     // Convert position to Fathom format
@@ -311,13 +311,13 @@ namespace tablebase {
     const unsigned tbResult = tb_probe_root(
       white, black, kings, queens, rooks, bishops, knights, pawns,
       rule50,
-      0,// castling - must be 0 (we already check in canProbe)
+      0, // castling - must be 0 (we already check in canProbe)
       ep, turn,
-      nullptr// We don't need the full results array
+      nullptr // We don't need the full results array
     );
 
     if (tbResult == TB_RESULT_FAILED) {
-      return result;// Returns Failed by default
+      return result; // Returns Failed by default
     }
 
     // Extract WDL
@@ -489,4 +489,4 @@ namespace tablebase {
     LOG__INFO(Logger::get().TB_LOG, "Tablebase cache pre-warmed ({} positions probed)", probed);
   }
 
-}// namespace tablebase
+} // namespace tablebase

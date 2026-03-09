@@ -112,7 +112,7 @@ namespace common::debug {
               << std::flush;
   }
 
-}// namespace common::debug
+} // namespace common::debug
 
 #elif defined(__linux__) || defined(__APPLE__) || defined(__unix__)
 #include <cstdlib>
@@ -139,7 +139,7 @@ namespace common::debug {
     free(symbols);
   }
 
-}// namespace common::debug
+} // namespace common::debug
 
 #else
 
@@ -153,11 +153,11 @@ namespace common::debug {
               << std::flush;
   }
 
-}// namespace common::debug
+} // namespace common::debug
 
 #endif
 
 // Convenience macro for quick debugging
 #define PRINT_STACK_TRACE() common::debug::printStackTrace(64, 1)
 
-#endif// FRANKYCPP_STACKTRACE_H
+#endif // FRANKYCPP_STACKTRACE_H

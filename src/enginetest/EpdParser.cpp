@@ -116,10 +116,10 @@ std::optional<EpdTest> EpdParser::parseOneLine(std::string_view line) {
                 result, pos.strFen());
       return std::nullopt;
     }
-    builder.setExpectedMove(moves[0]);// First move for display - BEFORE move!
+    builder.setExpectedMove(moves[0]); // First move for display - BEFORE move!
     builder.setTargetMoves(std::move(moves));
   }
-  else {// TestType::DM
+  else { // TestType::DM
     auto depth = parseMateDepth(result);
     if (!depth.has_value()) {
       LOG__WARN(Logger::get().TSUITE_LOG, "Direct mate depth from EPD is invalid: {}", result);

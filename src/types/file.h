@@ -51,7 +51,7 @@
 namespace chess {
 
   class File {
-    std::uint8_t v_{};// 0..7 = A..H, 8 = NONE
+    std::uint8_t v_{}; // 0..7 = A..H, 8 = NONE
 
   public:
     // constructors
@@ -105,8 +105,8 @@ namespace chess {
   ENABLE_MIXED_COMPARISONS_ON(File)
   ENABLE_OSTREAM_OPERATOR_AS_INT_ON(File);
 
-}// namespace chess
+} // namespace chess
 
 ENABLE_FORMATTER_AS_CHAR_ON(chess::File);
 
-#endif// FRANKYCPP_FILE_H
+#endif // FRANKYCPP_FILE_H

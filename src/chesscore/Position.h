@@ -466,6 +466,6 @@ namespace chess {
     double getGamePhaseFactor() const { return static_cast<double>(gamePhase) / GAME_PHASE_MAX; }
   };
 
-}// namespace chess
+} // namespace chess
 
-#endif// FRANKYCPP_POSITION_H
+#endif // FRANKYCPP_POSITION_H

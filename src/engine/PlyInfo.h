@@ -51,19 +51,19 @@ namespace engine {
   /// Per-ply search state - groups all ply-specific data together
   struct PlyInfo {
     // MoveGenerators owned by this PlyInfo (heap-allocated due to large size)
-    std::unique_ptr<MoveGenerator> mg;        // Normal search MoveGenerator
-    std::unique_ptr<MoveGenerator> mgSingular;// Singular verification MoveGenerator
+    std::unique_ptr<MoveGenerator> mg;         // Normal search MoveGenerator
+    std::unique_ptr<MoveGenerator> mgSingular; // Singular verification MoveGenerator
 
     // Move tracking
-    Move currentMove{MOVE_NONE}; // Move being searched at this ply
-    Move excludedMove{MOVE_NONE};// Excluded move for singular extension
+    Move currentMove{MOVE_NONE};  // Move being searched at this ply
+    Move excludedMove{MOVE_NONE}; // Excluded move for singular extension
 
     // Evaluation
-    Value staticEval{VALUE_NONE};// Static evaluation at this ply
+    Value staticEval{VALUE_NONE}; // Static evaluation at this ply
 
     // Search state
-    int moveCount{0};   // Number of moves searched at this ply
-    bool inCheck{false};// Is side to move in check?
+    int moveCount{0};    // Number of moves searched at this ply
+    bool inCheck{false}; // Is side to move in check?
 
     // Default constructor - creates MoveGenerators
     PlyInfo()
@@ -85,6 +85,6 @@ namespace engine {
     // PieceToHistory* continuationHistory[6]{};
   };
 
-}// namespace engine
+} // namespace engine
 
-#endif// FRANKYCPP_PLYINFO_H
+#endif // FRANKYCPP_PLYINFO_H

@@ -78,6 +78,6 @@ namespace chess {
     }
   };
 
-}// namespace chess
+} // namespace chess
 
-#endif// FRANKYCPP_HISTORY_H
+#endif // FRANKYCPP_HISTORY_H

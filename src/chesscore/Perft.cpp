@@ -69,8 +69,8 @@ namespace chess {
     // Size is MAX_DEPTH + 1 to safely handle depth values from 0 to MAX_DEPTH (128)
     std::array<MoveGenerator, MAX_DEPTH + 1> mg;
     std::ostringstream os;
-    std::cout.imbue(deLocale);
-    os.imbue(deLocale);
+    std::cout.imbue(projectLocale);
+    os.imbue(projectLocale);
     os << std::setprecision(9);
 
     os << "Performing PERFT Test for Depth " << maxDepth << std::endl;
@@ -205,8 +205,8 @@ namespace chess {
     // Size is MAX_DEPTH + 1 to safely handle depth values from 0 to MAX_DEPTH (128)
     std::array<MoveGenerator, MAX_DEPTH + 1> mg;
     std::ostringstream os;
-    std::cout.imbue(deLocale);
-    os.imbue(deLocale);
+    std::cout.imbue(projectLocale);
+    os.imbue(projectLocale);
     os << std::setprecision(9);
 
     os << "Testing at depth " << maxDepth << std::endl;
@@ -291,4 +291,4 @@ namespace chess {
     promotionCounter = 0;
   }
 
-}// namespace chess
+} // namespace chess

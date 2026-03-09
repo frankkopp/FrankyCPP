@@ -180,7 +180,7 @@ TEST_F(PawnTT_Test, put) {
   ASSERT_EQ(1, tt.getNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfCollisions());
   ASSERT_EQ(0, tt.getNumberOfUpdates());
-  ASSERT_EQ(0, tt.getNumberOfHits());// probe() counts hits
+  ASSERT_EQ(0, tt.getNumberOfHits()); // probe() counts hits
   ASSERT_EQ(0, tt.getNumberOfMisses());
 
   // Use probe() for thread-safe copy-on-read pattern
@@ -220,10 +220,10 @@ TEST_F(PawnTT_Test, getEntryPtr_valid_even_when_zero_then_resize) {
 TEST_F(PawnTT_Test, ConcurrentPutProbeNoUB) {
   constexpr int NUM_THREADS = 4;
   constexpr int ITERATIONS  = 500'000;
-  constexpr int TT_SIZE_MB  = 4;// small = high collision rate = more contention
+  constexpr int TT_SIZE_MB  = 4; // small = high collision rate = more contention
 
   PawnTT tt(TT_SIZE_MB);
-  tt.setSmpThreads(NUM_THREADS);// signals SMP mode to suppress update warnings
+  tt.setSmpThreads(NUM_THREADS); // signals SMP mode to suppress update warnings
 
   // Value ranges written by all threads — any probe hit must fall within these.
   constexpr int VALUE_LO = -1000;

@@ -131,7 +131,7 @@ namespace config {
     EvalConfigData& eval,
     bool warnUnknown);
 
-}// namespace config
+} // namespace config
 
 template<>
 struct YAML::convert<config::EvalConfigData> {
@@ -146,6 +146,6 @@ struct YAML::convert<config::EvalConfigData> {
     config::parseYamlConfig(n, c, /* warnUnknown= */ true);
     return true;
   }
-};// namespace YAML
+}; // namespace YAML
 
-#endif// FRANKYCPP_EVALCONFIGDATA_H
+#endif // FRANKYCPP_EVALCONFIGDATA_H

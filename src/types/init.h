@@ -45,7 +45,7 @@ namespace chess {
     inline void init() {
       Attacks::init();
     }
-  }// namespace Types
-}// namespace chess
+  } // namespace Types
+} // namespace chess
 
-#endif// FRANKYCPP_TYPES_INIT_H
+#endif // FRANKYCPP_TYPES_INIT_H

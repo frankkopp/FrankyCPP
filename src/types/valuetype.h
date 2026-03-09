@@ -56,6 +56,6 @@ namespace chess {
     ALPHA = 2,
     BETA  = 3,
   };
-}// namespace chess
+} // namespace chess
 
-#endif// FRANKYCPP_VALUETYPE_H
+#endif // FRANKYCPP_VALUETYPE_H

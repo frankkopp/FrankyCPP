@@ -97,6 +97,6 @@ namespace chess {
     return lhs;
   }
 
-}// namespace chess
+} // namespace chess
 
-#endif// FRANKYCPP_SCORE_H
+#endif // FRANKYCPP_SCORE_H

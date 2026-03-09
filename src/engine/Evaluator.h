@@ -188,6 +188,6 @@ namespace engine {
     }
   };
 
-}// namespace engine
+} // namespace engine
 
-#endif// FRANKYCPP_EVALUATOR_H
+#endif // FRANKYCPP_EVALUATOR_H

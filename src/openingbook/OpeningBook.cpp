@@ -121,7 +121,7 @@ std::string OpeningBook::str(const int level) {
   const Position p{};
   const ZobristKey zobristKey = p.getZobristKey();
   const BookEntry* node       = &bookMap[zobristKey];
-  return std::format(deLocale, "Root ({:L})\n{}", bookMap[zobristKey].counter, getLevelStr(1, level, node));
+  return std::format(projectLocale, "Root ({:L})\n{}", bookMap[zobristKey].counter, getLevelStr(1, level, node));
 }
 
 std::string OpeningBook::getLevelStr(int level, const int maxLevel, const BookEntry* node) {
@@ -129,7 +129,7 @@ std::string OpeningBook::getLevelStr(int level, const int maxLevel, const BookEn
   const size_t size = node->moves.size();
   for (int i = 0; i < size; i++) {
     const BookEntry* newNode = &bookMap[(node->nextPosition)[i]];
-    out += std::format(deLocale, "{:{}}{} ({:L})\n", "", level, node->moves[i].str(), newNode->counter);
+    out += std::format(projectLocale, "{:{}}{} ({:L})\n", "", level, node->moves[i].str(), newNode->counter);
     if (level < maxLevel) {
       out += getLevelStr(level + 1, maxLevel, newNode);
     }
@@ -167,7 +167,7 @@ std::vector<std::string_view> OpeningBook::readFile(const std::string& filePath)
     file.read(data.get(), data_size);
     lines.reserve(data_size / 20);
     for (std::streamsize i = 0, dstart = 0; i < data_size; ++i) {
-      if (data[i] == '\n' || i == data_size - 1) {// End of line, got string
+      if (data[i] == '\n' || i == data_size - 1) { // End of line, got string
         lines.emplace_back(data.get() + dstart, i - dstart);
         dstart = i + 1;
       }
@@ -220,12 +220,12 @@ void OpeningBook::readGamesSimple(const std::vector<std::string_view>& lines) {
   const unsigned int noOfThreads = getNoOfThreads();
   LOG__DEBUG(Logger::get().BOOK_LOG, "Using {} threads", noOfThreads);
 
-#ifdef HAS_EXECUTION_LIB// use parallel lambda
+#ifdef HAS_EXECUTION_LIB // use parallel lambda
   std::for_each(std::execution::par_unseq, lines.begin(), lines.end(),
                 [&](auto&& line) {
                   readOneGameSimple(line);
                 });
-#else// no <execution> library (< C++17)
+#else // no <execution> library (< C++17)
   const auto noOfLines = lines.size();
   std::vector<std::thread> threads;
   threads.reserve(noOfThreads);
@@ -243,7 +243,7 @@ void OpeningBook::readGamesSimple(const std::vector<std::string_view>& lines) {
   for (std::thread& th : threads) th.join();
 #endif
 
-#else// no parallel execution
+#else // no parallel execution
   for (auto line : lines) {
     readOneGameSimple(line);
   }
@@ -285,12 +285,12 @@ void OpeningBook::readGamesSan(const std::vector<std::string_view>& lines) {
   const unsigned int noOfThreads = getNoOfThreads();
   LOG__DEBUG(Logger::get().BOOK_LOG, "Using {} threads", noOfThreads);
 
-#ifdef HAS_EXECUTION_LIB// use parallel lambda
+#ifdef HAS_EXECUTION_LIB // use parallel lambda
   std::for_each(std::execution::par_unseq, lines.begin(), lines.end(),
                 [&](auto&& line) {
                   readOneGameSan(line);
                 });
-#else// no <execution> library (< C++17)
+#else // no <execution> library (< C++17)
   const auto noOfLines = lines.size();
   std::vector<std::thread> threads;
   threads.reserve(noOfThreads);
@@ -308,7 +308,7 @@ void OpeningBook::readGamesSan(const std::vector<std::string_view>& lines) {
   for (std::thread& th : threads) th.join();
 #endif
 
-#else// no parallel execution
+#else // no parallel execution
   for (auto line : lines) {
     readOneGameSan(line);
   }
@@ -430,7 +430,7 @@ void OpeningBook::readOneGamePgn(const std::vector<std::string_view>* lines, con
 }
 
 void OpeningBook::cleanUpPgnMoveSection(std::string& str) {
-  const std::size_t length = str.length();// explicit as the later loop test for <0
+  const std::size_t length = str.length(); // explicit as the later loop test for <0
   if (length == 0) return;
 
   char lastChar = ' ';
@@ -533,7 +533,7 @@ void OpeningBook::addGameToBook(const Moves& game) {
   // initialize lastKey with start position (aka root position)
   ZobristKey lastKey = rootZobristKey;
   // increase counter for root entry for each game
-  {// lock scope
+  { // lock scope
 #ifdef PARALLEL_LINE_PROCESSING
     std::lock_guard<std::mutex> bookLock(bookMutex);
 #endif
@@ -590,12 +590,12 @@ void OpeningBook::writeToBook(const Move move, ZobristKey currentKey, const Zobr
   BookEntry* lastEntry = &bookMap[lastKey];
   lastEntry->moves.push_back(move);
   lastEntry->nextPosition.push_back(currentKey);
-}// lock released
+} // lock released
 
 /* Saves the bookMap data to a binary cache file for faster reading.
    Uses BOOST serialization to serialize the data to a binary file */
 void OpeningBook::saveToCache() {
-  {// save data to archive
+  { // save data to archive
     const auto start               = std::chrono::high_resolution_clock::now();
     const std::string serCacheFile = bookFilePath + cacheExt;
     LOG__DEBUG(Logger::get().BOOK_LOG, "Saving book to cache file {}", serCacheFile);
@@ -608,7 +608,7 @@ void OpeningBook::saveToCache() {
     const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
     (void) elapsed;
     LOG__DEBUG(Logger::get().BOOK_LOG, "Book saved to binary cache in ({:L} ms) ({})", elapsed.count(), serCacheFile);
-  }// archive and stream closed when destructors are called
+  } // archive and stream closed when destructors are called
   _recreateCache = false;
 }
 
@@ -646,7 +646,7 @@ bool OpeningBook::loadFromCache() {
   }
   bookMap = std::move(binMap);
   return true;
-}// archive and stream closed when destructors are called
+} // archive and stream closed when destructors are called
 
 /* checks if a cache file exists */
 bool OpeningBook::hasCache() const {

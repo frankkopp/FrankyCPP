@@ -94,8 +94,8 @@ TEST_F(SeeTest, revealedAttacks) {
   EXPECT_EQ(2286984186302464ULL, attacksTo);
 
   // take away bishop on f6
-  attacksTo ^= Bitboards::sqBb[SQ_F6];       // reset bit in set to traverse
-  occupiedBitboard ^= Bitboards::sqBb[SQ_F6];// reset bit in temporary occupancy (for x-Rays)
+  attacksTo ^= Bitboards::sqBb[SQ_F6];        // reset bit in set to traverse
+  occupiedBitboard ^= Bitboards::sqBb[SQ_F6]; // reset bit in temporary occupancy (for x-Rays)
 
   attacksTo |= See::revealedAttacks(position, square, occupiedBitboard, BLACK) | See::revealedAttacks(position, square, occupiedBitboard, WHITE);
 
@@ -105,8 +105,8 @@ TEST_F(SeeTest, revealedAttacks) {
   EXPECT_EQ(9225623836668989440ULL, attacksTo);
 
   // take away rook on e2
-  attacksTo ^= Bitboards::sqBb[SQ_E2];       // reset bit in set to traverse
-  occupiedBitboard ^= Bitboards::sqBb[SQ_E2];// reset bit in temporary occupancy (for x-Rays)
+  attacksTo ^= Bitboards::sqBb[SQ_E2];        // reset bit in set to traverse
+  occupiedBitboard ^= Bitboards::sqBb[SQ_E2]; // reset bit in temporary occupancy (for x-Rays)
 
   attacksTo |= See::revealedAttacks(position, square, occupiedBitboard, BLACK)
                | See::revealedAttacks(position, square, occupiedBitboard, WHITE);

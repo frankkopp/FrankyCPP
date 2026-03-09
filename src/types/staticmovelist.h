@@ -271,6 +271,6 @@ namespace chess {
   /// VariationStack for tracking current search variation - capacity 128 (MAX_PLY)
   using VariationStack = StaticMoveList<128>;
 
-}// namespace chess
+} // namespace chess
 
-#endif// FRANKYCPP_STATICMOVELIST_H
+#endif // FRANKYCPP_STATICMOVELIST_H

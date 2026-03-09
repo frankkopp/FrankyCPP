@@ -196,7 +196,7 @@ TEST_F(EpdParser_Test, parseFile_ValidFile) {
 
   const std::vector<EpdTest> tests = EpdParser::parseFile(filePath);
 
-  EXPECT_EQ(tests.size(), 13);// Known to have 13 valid tests
+  EXPECT_EQ(tests.size(), 13); // Known to have 13 valid tests
 }
 
 TEST_F(EpdParser_Test, parseFile_MixedValidInvalid) {

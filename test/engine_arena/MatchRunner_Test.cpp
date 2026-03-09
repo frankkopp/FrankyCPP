@@ -95,8 +95,8 @@ Score of engine1 vs engine2: 65 - 15 - 20  [0.750] 100
     EXPECT_EQ(result.engine1Wins, 65);
     EXPECT_EQ(result.engine2Wins, 15);
     EXPECT_EQ(result.draws, 20);
-    EXPECT_DOUBLE_EQ(result.engine1Score, 75.0);// 65 + 20*0.5
-    EXPECT_DOUBLE_EQ(result.engine2Score, 25.0);// 15 + 20*0.5
+    EXPECT_DOUBLE_EQ(result.engine1Score, 75.0); // 65 + 20*0.5
+    EXPECT_DOUBLE_EQ(result.engine2Score, 25.0); // 15 + 20*0.5
   }
 
   TEST_F(MatchRunnerParseTest, BreakdownLines_Skipped) {
@@ -368,4 +368,4 @@ Score of engine1 vs engine2: 65 - 15 - 20  [0.750] 100
     EXPECT_FALSE(std::filesystem::exists(testStatePath));
   }
 
-}// namespace arena
+} // namespace arena

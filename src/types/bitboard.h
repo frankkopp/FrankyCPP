@@ -76,7 +76,7 @@
 namespace chess {
 
   class Bitboard {
-    std::uint64_t v_{};// underlying 64-bit mask
+    std::uint64_t v_{}; // underlying 64-bit mask
 
   public:
     // constructors

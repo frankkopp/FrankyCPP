@@ -35,7 +35,7 @@ TEST(FileTest, FromCharAndStr) {
   EXPECT_EQ(File::fromChar('a'), FILE_A);
   EXPECT_EQ(File::fromChar('h'), FILE_H);
   EXPECT_EQ(File::fromChar('x'), FILE_NONE);
-  EXPECT_EQ(File::fromChar('A'), FILE_NONE);// uppercase not accepted
+  EXPECT_EQ(File::fromChar('A'), FILE_NONE); // uppercase not accepted
 
   EXPECT_EQ(FILE_A.str(), 'a');
   EXPECT_EQ(FILE_B.str(), 'b');

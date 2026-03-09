@@ -26,6 +26,6 @@ namespace init {
   inline void init() {
     chess::Types::init();
   }
-}// namespace init
+} // namespace init
 
-#endif// FRANKYCPP_INIT_H
+#endif // FRANKYCPP_INIT_H

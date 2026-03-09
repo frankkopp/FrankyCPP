@@ -34,7 +34,7 @@ namespace chess {
     constexpr bool REMOVE_SORT_VALUE = true;
     // Change this alias to swap between stable_sort and sort for all move list sorting
     constexpr auto& moveSort = std::ranges::sort;
-  }// namespace
+  } // namespace
 
   MoveGenerator::MoveGenerator() : currentODStage(OD_NEW) {
     // StaticMoveList has fixed capacity - no reserve() needed
@@ -58,7 +58,7 @@ namespace chess {
     // second generate all other moves
     if (genMode & GenQuiet) {
       generatePawnMoves(p, &pseudoLegalMoves, GenQuiet, evasion, onDemandEvasionTargets);
-      if (!evasion) {// no castling when in check
+      if (!evasion) { // no castling when in check
         generateCastling(p, &pseudoLegalMoves, GenQuiet);
       }
       generateMoves(p, &pseudoLegalMoves, GenQuiet, evasion, onDemandEvasionTargets);
@@ -251,7 +251,7 @@ namespace chess {
                 if (position.getPiece(to) != PIECE_NONE) return false;
               }
               else {
-                return false;// Not a valid pawn push pattern
+                return false; // Not a valid pawn push pattern
               }
             }
             break;
@@ -279,7 +279,7 @@ namespace chess {
             if (!(Bitboards::nonSliderAttacks[KING][from] & to)) return false;
             break;
           default:
-            return false;// Unknown piece type
+            return false; // Unknown piece type
         }
         break;
       }
@@ -352,7 +352,7 @@ namespace chess {
             if (Bitboards::intermediateBb[SQ_E1][SQ_A1] & occupiedBb) return false;
           }
           else {
-            return false;// Invalid castling target
+            return false; // Invalid castling target
           }
         }
         else {
@@ -368,7 +368,7 @@ namespace chess {
             if (Bitboards::intermediateBb[SQ_E8][SQ_A8] & occupiedBb) return false;
           }
           else {
-            return false;// Invalid castling target
+            return false; // Invalid castling target
           }
         }
         // Note: doesn't check if king is in check or crosses attacked square
@@ -479,7 +479,7 @@ namespace chess {
     Bitboard attackers      = Bitboards::pawnAttacks[~us][epSq] & ourPawns;
 
     if (!attackers) {
-      return false;// No pawn can capture EP
+      return false; // No pawn can capture EP
     }
 
     // The captured pawn is one square behind the EP square from our perspective
@@ -501,24 +501,24 @@ namespace chess {
       //
       // Remove both pawns from the occupied bitboard and check for slider attacks.
       Bitboard occ = position.getOccupiedBb();
-      occ ^= Bitboards::sqBb[fromSq];    // remove capturing pawn
-      occ ^= Bitboards::sqBb[capturedSq];// remove captured pawn
-      occ |= Bitboards::sqBb[epSq];      // add pawn on EP target square
+      occ ^= Bitboards::sqBb[fromSq];     // remove capturing pawn
+      occ ^= Bitboards::sqBb[capturedSq]; // remove captured pawn
+      occ |= Bitboards::sqBb[epSq];       // add pawn on EP target square
 
       // Check if any enemy rook/queen attacks king (horizontal or vertical)
       if (Attacks::attacks(ROOK, kingSq, occ) & enemyRQ) {
-        continue;// This EP capture is illegal (rook/queen pin)
+        continue; // This EP capture is illegal (rook/queen pin)
       }
 
       // Check if any enemy bishop/queen attacks king diagonally
       if (Attacks::attacks(BISHOP, kingSq, occ) & enemyBQ) {
-        continue;// This EP capture is illegal (diagonal pin)
+        continue; // This EP capture is illegal (diagonal pin)
       }
 
-      return true;// This EP capture is legal
+      return true; // This EP capture is legal
     }
 
-    return false;// All EP captures are illegal (pinned)
+    return false; // All EP captures are illegal (pinned)
   }
 
   Move MoveGenerator::getMoveFromUci(const Position& position, const std::string& uciMove) {
@@ -528,7 +528,7 @@ namespace chess {
     }
     // create all moves on position and compare
     Move move;
-    resetOnDemand();// in case this is called multiple times on the same position
+    resetOnDemand(); // in case this is called multiple times on the same position
     while ((move = getNextPseudoLegalMove(position, GenAll, position.hasCheck())) != MOVE_NONE) {
       // to lower case is necessary as UCI uses lower case characters for promotions
       // although "algebraic notation" defines upper case letters.
@@ -637,12 +637,12 @@ namespace chess {
         const Square kingToSquare = m.to();
         std::string castlingString;
         switch (kingToSquare) {
-          case SQ_G1:// white king side
-          case SQ_G8:// black king side
+          case SQ_G1: // white king side
+          case SQ_G8: // black king side
             castlingString = "O-O";
             break;
-          case SQ_C1:// white queen side
-          case SQ_C8:// black queen side
+          case SQ_C1: // white queen side
+          case SQ_C8: // black queen side
             castlingString = "O-O-O";
             break;
           default:
@@ -736,7 +736,7 @@ namespace chess {
             currentODStage = QUIET_SWITCH;
           }
           break;
-        case PAWN_CAPTURES:// capture
+        case PAWN_CAPTURES: // capture
           generatePawnMoves(position, &onDemandMoves, GenNonQuiet, evasion, onDemandEvasionTargets);
           updateSortValues(position, &onDemandMoves);
           currentODStage = OFFICER_CAPTURES;
@@ -759,7 +759,7 @@ namespace chess {
             currentODStage = OD_END;
           }
           break;
-        case PAWN_MOVES:// non capture
+        case PAWN_MOVES: // non capture
           generatePawnMoves(position, &onDemandMoves, GenQuiet, evasion, onDemandEvasionTargets);
           updateSortValues(position, &onDemandMoves);
           currentODStage = CASTLING_MOVES;
@@ -789,7 +789,7 @@ namespace chess {
         // TODO: consider using non stable sort here
         moveSort(onDemandMoves, moveValueGreaterComparator());
       }
-    }// while onDemandMoves.empty()
+    } // while onDemandMoves.empty()
   }
 
   void MoveGenerator::updateSortValues(const Position& p, MoveList* const moveList) const {
@@ -802,16 +802,16 @@ namespace chess {
     const auto size = moveList->size();
     for (size_t i = 0; i < size; i++) {
       Move* move = &(*moveList)[i];
-      if (move->stripped() == pvMove) {// PV move
+      if (move->stripped() == pvMove) { // PV move
         move->setValue(VALUE_MAX);
       }
-      else if (move->stripped() == killerMoves[1]) {// Killer 2
+      else if (move->stripped() == killerMoves[1]) { // Killer 2
         move->setValue(static_cast<Value>(1000));
       }
-      else if (move->stripped() == killerMoves[0]) {// Killer 1
+      else if (move->stripped() == killerMoves[0]) { // Killer 1
         move->setValue(static_cast<Value>(1001));
       }
-      else if (historyDataPtr) {// historical search data
+      else if (historyDataPtr) { // historical search data
 
         // History Count
         // Moves that cause a beta cut in the search get an increasing value
@@ -836,7 +836,7 @@ namespace chess {
         }
 
         // update move sort value
-        if (value > 0) {// only touch the value if it would be improved
+        if (value > 0) { // only touch the value if it would be improved
           move->setValue(move->value() + value);
         }
       }
@@ -932,7 +932,7 @@ namespace chess {
           tmpCaptures = Bitboards::sqBb[enPassantSquare].shifted(Direction::pawnPush(~nextPlayer) + dir) & myPawns;
           if (tmpCaptures) {
             const Square fromSquare = tmpCaptures.lsb();
-            const Square toSquare   = fromSquare + Direction::pawnPush(nextPlayer) - dir;// target square behind the captured pawn
+            const Square toSquare   = fromSquare + Direction::pawnPush(nextPlayer) - dir; // target square behind the captured pawn
             const Value value       = Values::posValue[piece][toSquare][gamePhase];
             pMoves->push_back(Move::enPassant(fromSquare, toSquare, value));
           }
@@ -1115,7 +1115,7 @@ namespace chess {
     if ((genMode & GenQuiet) && position.getCastlingRights()) {
 
       const CastlingRights cr = position.getCastlingRights();
-      if (nextPlayer == WHITE) {// white
+      if (nextPlayer == WHITE) { // white
         if (cr == WHITE_OO && !(Bitboards::intermediateBb[SQ_E1][SQ_H1] & occupiedBb)) {
           pMoves->push_back(Move::castling(SQ_E1, SQ_G1, VALUE_ZERO));
         }
@@ -1123,7 +1123,7 @@ namespace chess {
           pMoves->push_back(Move::castling(SQ_E1, SQ_C1, VALUE_ZERO));
         }
       }
-      else {// black
+      else { // black
         if (cr == BLACK_OO && !(Bitboards::intermediateBb[SQ_E8][SQ_H8] & occupiedBb)) {
           pMoves->push_back(Move::castling(SQ_E8, SQ_G8, VALUE_ZERO));
         }
@@ -1134,4 +1134,4 @@ namespace chess {
     }
   }
 
-}// namespace chess
+} // namespace chess

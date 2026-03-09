@@ -69,12 +69,12 @@ TEST_F(TablebaseDownloaderTest, getRequiredFiles_empty) {
 TEST_F(TablebaseDownloaderTest, estimateDownloadSize_3piece) {
   const size_t size = TablebaseDownloader::estimateDownloadSize({3});
   EXPECT_GT(size, 0u);
-  EXPECT_LT(size, 100 * 1024 * 1024);// Less than 100MB
+  EXPECT_LT(size, 100 * 1024 * 1024); // Less than 100MB
 }
 
 TEST_F(TablebaseDownloaderTest, estimateDownloadSize_345piece) {
   const size_t size = TablebaseDownloader::estimateDownloadSize({3, 4, 5});
-  EXPECT_GT(size, 1024 * 1024 * 1024);// More than 1GB (5-piece is ~1GB)
+  EXPECT_GT(size, 1024 * 1024 * 1024); // More than 1GB (5-piece is ~1GB)
 }
 
 TEST_F(TablebaseDownloaderTest, estimateDownloadSize_empty) {

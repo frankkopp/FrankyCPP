@@ -351,6 +351,6 @@ namespace chess::Values {
     return arr;
   }();
 
-}// namespace chess::Values
+} // namespace chess::Values
 
-#endif// FRANKYCPP_EVALUATION_H
+#endif // FRANKYCPP_EVALUATION_H

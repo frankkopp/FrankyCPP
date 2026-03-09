@@ -99,7 +99,7 @@ namespace engine::See {
   /// @return         Bitboard of newly revealed sliding attackers
   Bitboard revealedAttacks(const Position& p, Square square, Bitboard occupied, Color color);
 
-}// namespace engine::See
+} // namespace engine::See
 
 
-#endif// FRANKYCPP_SEE_H
+#endif // FRANKYCPP_SEE_H

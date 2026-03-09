@@ -58,7 +58,7 @@
 namespace chess {
 
   class Direction {
-    int_fast8_t v_{};// step in [-9, +9] domain for our use cases
+    int_fast8_t v_{}; // step in [-9, +9] domain for our use cases
 
   public:
     // constructors
@@ -95,6 +95,6 @@ namespace chess {
   // Compile-time sanity checks
   static_assert(sizeof(Direction) == sizeof(int_fast8_t), "Direction should be 1 byte");
 
-}// namespace chess
+} // namespace chess
 
-#endif// FRANKYCPP_DIRECTION_H
+#endif // FRANKYCPP_DIRECTION_H

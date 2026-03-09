@@ -52,7 +52,7 @@
 namespace engine {
   struct UciOption;
   class UciHandler;
-}// namespace engine
+} // namespace engine
 
 namespace config {
 
@@ -158,9 +158,9 @@ namespace config {
 
   /// Output format for configuration display
   enum class ConfigOutputFormat {
-    Table,// Human-readable table with columns
-    Yaml, // YAML template with comments
-    Json  // Machine-readable JSON
+    Table, // Human-readable table with columns
+    Yaml,  // YAML template with comments
+    Json   // Machine-readable JSON
   };
 
   /// Generate formatted table of all config settings.
@@ -202,6 +202,6 @@ namespace config {
   /// @return Optional ConfigDomain if name is valid, nullopt otherwise
   [[nodiscard]] std::optional<ConfigDomain> parseDomainName(const std::string& name);
 
-}// namespace config
+} // namespace config
 
-#endif// FRANKYCPP_CONFIGGENERATORS_H
+#endif // FRANKYCPP_CONFIGGENERATORS_H

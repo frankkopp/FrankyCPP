@@ -134,8 +134,8 @@ namespace engine {
   class TT {
   public:
     static constexpr int CacheLineSize        = 64;
-    static constexpr int CLUSTER_SIZE          = 4;// entries per cluster
-    static constexpr uint64_t DEFAULT_TT_SIZE = 2;// MByte
+    static constexpr int CLUSTER_SIZE         = 4; // entries per cluster
+    static constexpr uint64_t DEFAULT_TT_SIZE = 2; // MByte
     static constexpr uint64_t MAX_SIZE_MB     = 32'768;
 
     // TT Entry
@@ -159,14 +159,14 @@ namespace engine {
       //   Store: key is stored as (originalKey ^ dataHash) after writing data fields
       //   Load:  verify (storedKey ^ dataHash) == probeKey to detect torn reads
       // If any field is corrupted by a torn read, the XOR won't match = clean miss.
-      std::atomic<ZobristKey> key{0};// 64 bit - atomic for SMP safety
-      uint16_t move = 0;             // MOVE_NONE as 16-bit
-      Value eval    = VALUE_NONE;    // 16-bit signed
-      Value value   = VALUE_NONE;    // 16-bit signed
-      uint8_t depth : 7 {};          // 0-127
-      uint8_t age : 3 {};            // 0-7
-      ValueType type : 2 {};         // 4 values
-      bool mateThreat : 1 {};        // 1-bit bool
+      std::atomic<ZobristKey> key{0}; // 64 bit - atomic for SMP safety
+      uint16_t move = 0;              // MOVE_NONE as 16-bit
+      Value eval    = VALUE_NONE;     // 16-bit signed
+      Value value   = VALUE_NONE;     // 16-bit signed
+      uint8_t depth : 7 {};           // 0-127
+      uint8_t age : 3 {};             // 0-7
+      ValueType type : 2 {};          // 4 values
+      bool mateThreat : 1 {};         // 1-bit bool
 
       // Default constructor
       Entry() = default;
@@ -187,7 +187,7 @@ namespace engine {
         std::memcpy(&data, &move, sizeof(data));
         return data;
 #else
-        return 0;  // Compiler eliminates XOR: key ^ 0 == key
+        return 0; // Compiler eliminates XOR: key ^ 0 == key
 #endif
       }
 
@@ -256,10 +256,10 @@ namespace engine {
 #endif
 
     // size and fill info
-    uint64_t sizeInByte              = 0;
-    std::size_t maxNumberOfClusters  = 0;
-    std::size_t clusterMask          = 0;
-    std::size_t numberOfEntries      = 0;
+    uint64_t sizeInByte             = 0;
+    std::size_t maxNumberOfClusters = 0;
+    std::size_t clusterMask         = 0;
+    std::size_t numberOfEntries     = 0;
 
     // statistics
     mutable uint64_t numberOfPuts       = 0;
@@ -267,8 +267,8 @@ namespace engine {
     mutable uint64_t numberOfOverwrites = 0;
     mutable uint64_t numberOfUpdates    = 0;
     mutable uint64_t numberOfProbes     = 0;
-    mutable uint64_t numberOfHits       = 0;// entries with identical key found
-    mutable uint64_t numberOfMisses     = 0;// no entry with key found
+    mutable uint64_t numberOfHits       = 0; // entries with identical key found
+    mutable uint64_t numberOfMisses     = 0; // no entry with key found
 
     // this array holds the actual clusters for the transposition table
     std::unique_ptr<TTCluster[]> _data = std::make_unique<TTCluster[]>(maxNumberOfClusters); // NOLINT(*-avoid-c-arrays)
@@ -320,10 +320,10 @@ namespace engine {
       const TTCluster* const cluster = getClusterConst(key);
       for (int i = 0; i < CLUSTER_SIZE; ++i) {
         const ZobristKey storedKey = cluster->entries[i].key.load(std::memory_order_acquire);
-        Entry copy = cluster->entries[i];// Copy via copy constructor
+        Entry copy                 = cluster->entries[i]; // Copy via copy constructor
         // Verify: storedKey XOR'd with data hash must equal the probe key.
         if ((storedKey ^ copy.dataHash()) == key) {
-          copy.key.store(key, std::memory_order_relaxed);// Restore original key
+          copy.key.store(key, std::memory_order_relaxed); // Restore original key
           return copy;
         }
       }
@@ -473,6 +473,6 @@ namespace engine {
     FRIEND_TEST_NS(TT_Test, probe);
   };
 
-}// namespace engine
+} // namespace engine
 
-#endif// FRANKYCPP_TT_H
+#endif // FRANKYCPP_TT_H

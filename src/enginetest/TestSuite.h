@@ -182,6 +182,6 @@ namespace enginetest {
     void printReport(nanoseconds elapsed) const;
   };
 
-}// namespace enginetest
+} // namespace enginetest
 
-#endif// FRANKYCPP_TESTSUITE_H
+#endif // FRANKYCPP_TESTSUITE_H

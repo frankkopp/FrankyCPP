@@ -76,6 +76,6 @@ namespace chess {
   /// @return Normalized move string
   std::string normalizeMove(const std::string& move);
 
-}// namespace chess
+} // namespace chess
 
-#endif// FRANKYCPP_MOVEUTILS_H
+#endif // FRANKYCPP_MOVEUTILS_H

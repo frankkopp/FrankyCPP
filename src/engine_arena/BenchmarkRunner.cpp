@@ -19,6 +19,7 @@
 
 #include "BenchmarkRunner.h"
 #include "UCIEngine.h"
+#include "common/TimeUtils.h"
 #include "engine/Benchmark.h"
 #include "engine/BenchmarkPositions.h"
 #include "types/globals.h"
@@ -58,10 +59,10 @@ namespace arena {
     // Convert to arena result format
     BenchmarkResult result;
     result.arenaVersion  = arenaVersion_;
-    result.timestamp     = format_now("%Y-%m-%dT%H:%M:%S");
+    result.timestamp     = common::isoTimestamp();
     result.engineName    = "FrankyCPP";
     result.engineVersion = config_.engineVersion;
-    result.enginePath    = "";// Internal
+    result.enginePath    = ""; // Internal
     result.depth         = config_.depth;
     result.hashSizeMB    = config_.hashSizeMB;
     result.threads       = config_.threads;
@@ -79,7 +80,7 @@ namespace arena {
 
     BenchmarkResult result;
     result.arenaVersion  = arenaVersion_;
-    result.timestamp     = format_now("%Y-%m-%dT%H:%M:%S");
+    result.timestamp     = common::isoTimestamp();
     result.engineVersion = config_.engineVersion;
     result.enginePath    = config_.enginePath;
     result.depth         = config_.depth;
@@ -92,10 +93,10 @@ namespace arena {
       const std::string uciOptions = "Hash=" + std::to_string(config_.hashSizeMB) + "; Threads=" + std::to_string(config_.threads);
 
       UCIEngine engine(config_.enginePath, config_.commandLineArgs, false, uciOptions);
-      result.engineName = "External";// Could extract from UCI "id name" response
+      result.engineName = "External"; // Could extract from UCI "id name" response
 
       uint64_t totalNodes       = 0;
-      int64_t totalSearchTimeMs = 0;// Sum of actual search times only
+      int64_t totalSearchTimeMs = 0; // Sum of actual search times only
       int positionsRun          = 0;
 
       // Run through all benchmark positions
@@ -135,11 +136,11 @@ namespace arena {
         positionsRun++;
       }
 
-      std::cerr << "\n";// New line after progress
+      std::cerr << "\n"; // New line after progress
 
       result.positions   = positionsRun;
       result.totalNodes  = totalNodes;
-      result.totalTimeMs = totalSearchTimeMs;// Only search time, no UCI overhead
+      result.totalTimeMs = totalSearchTimeMs; // Only search time, no UCI overhead
 
       // Calculate NPS
       if (result.totalTimeMs > 0) {
@@ -175,7 +176,7 @@ namespace arena {
       // Format timestamp to be more compact (remove T, show only date + time)
       std::string ts = r.timestamp;
       if (ts.length() >= 19) {
-        ts = ts.substr(0, 10) + " " + ts.substr(11, 8);// "YYYY-MM-DD HH:MM:SS"
+        ts = ts.substr(0, 10) + " " + ts.substr(11, 8); // "YYYY-MM-DD HH:MM:SS"
       }
 
       const double timeSec = static_cast<double>(r.totalTimeMs) / 1000.0;
@@ -183,10 +184,10 @@ namespace arena {
       // Mark external engines
       std::string version = r.engineVersion;
       if (!r.enginePath.empty()) {
-        version += "*";// Asterisk indicates external engine
+        version += "*"; // Asterisk indicates external engine
       }
 
-      std::cout << std::format(deLocale, "{:<20} {:>8} {:>6} {:>4}MB {:>15L} {:>15L} {:>10.2f}\n",
+      std::cout << std::format(projectLocale, "{:<20} {:>8} {:>6} {:>4}MB {:>15L} {:>15L} {:>10.2f}\n",
                                ts,
                                version,
                                r.depth,
@@ -225,7 +226,7 @@ namespace arena {
         if (!r.tag.empty()) {
           std::string ts = r.timestamp;
           if (ts.length() >= 10) {
-            ts = ts.substr(0, 10);// Just date
+            ts = ts.substr(0, 10); // Just date
           }
           std::cout << "  [" << ts << " " << r.engineVersion << "] " << r.tag << "\n";
         }
@@ -235,4 +236,4 @@ namespace arena {
     std::cout << "=================================================================================================\n";
   }
 
-}// namespace arena
+} // namespace arena

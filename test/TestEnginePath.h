@@ -72,4 +72,4 @@ inline std::string getTestEnginePath() {
   return "";
 }
 
-#endif// FRANKYCPP_TEST_ENGINE_PATH_H
+#endif // FRANKYCPP_TEST_ENGINE_PATH_H

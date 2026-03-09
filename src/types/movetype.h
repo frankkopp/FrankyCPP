@@ -65,9 +65,9 @@ namespace chess {
     constexpr unsigned int PROM_TYPE_MASK = 0b11u << PROM_TYPE_SHIFT;
     constexpr unsigned int MOVE_TYPE_MASK = 0b11u << MOVE_TYPE_SHIFT;
 
-    constexpr unsigned int MOVE_MASK  = 0xFFFFu;               // first 16-bit
-    constexpr unsigned int VALUE_MASK = 0xFFFFu << VALUE_SHIFT;// second 16-bit
-  }// namespace MoveShifts
+    constexpr unsigned int MOVE_MASK  = 0xFFFFu;                // first 16-bit
+    constexpr unsigned int VALUE_MASK = 0xFFFFu << VALUE_SHIFT; // second 16-bit
+  } // namespace MoveShifts
 
   enum MoveType : unsigned int {
     NORMAL    = 0 << MoveShifts::MOVE_TYPE_SHIFT,
@@ -94,6 +94,6 @@ namespace chess {
     return os;
   }
 
-}// namespace chess
+} // namespace chess
 
-#endif// FRANKYCPP_MOVETYPE_H
+#endif // FRANKYCPP_MOVETYPE_H

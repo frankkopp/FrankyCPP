@@ -60,7 +60,7 @@ namespace tablebase {
       return count;
     }
 
-  }// anonymous namespace
+  } // anonymous namespace
 
   //=============================================================================
   // Path Resolution
@@ -322,4 +322,4 @@ namespace tablebase {
     return pieceEstimate + " tablebases available (" + std::to_string(wdlCount) + " WDL, " + std::to_string(dtzCount) + " DTZ files) in: " + tbPath;
   }
 
-}// namespace tablebase
+} // namespace tablebase

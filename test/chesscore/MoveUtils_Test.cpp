@@ -51,8 +51,8 @@ protected:
     tacticalPos = Position("1r1qk2r/2pn1ppp/p3p3/1pbpP3/1n1P4/1B3N2/PPP2PPP/RNBQR1K1 w k - 0 13");
   }
 
-  Position startPos;   // NOLINT(*-non-private-member-variables-in-classes)
-  Position tacticalPos;// NOLINT(*-non-private-member-variables-in-classes)
+  Position startPos;    // NOLINT(*-non-private-member-variables-in-classes)
+  Position tacticalPos; // NOLINT(*-non-private-member-variables-in-classes)
 };
 
 //=============================================================================
@@ -219,7 +219,7 @@ TEST_F(MoveUtilsTest, EmptyExpectedMoves) {
 
 TEST_F(MoveUtilsTest, InvalidSANNotation) {
   const std::string actualMove                 = "e2e4";
-  const std::vector<std::string> expectedMoves = {"Zz9"};// Invalid SAN
+  const std::vector<std::string> expectedMoves = {"Zz9"}; // Invalid SAN
 
   EXPECT_FALSE(matchesExpectedMove(actualMove, expectedMoves, startPos));
 }
@@ -257,7 +257,7 @@ TEST_F(MoveUtilsTest, RealWorldAvoidMove) {
   // AM (avoid move) test
   const Position pos("rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 1");
   const std::string actualMove              = "e4d5";
-  const std::vector<std::string> avoidMoves = {"Nf3", "d4"};// Avoid these
+  const std::vector<std::string> avoidMoves = {"Nf3", "d4"}; // Avoid these
 
   // Should NOT match avoid moves
   EXPECT_FALSE(matchesExpectedMove(actualMove, avoidMoves, pos));

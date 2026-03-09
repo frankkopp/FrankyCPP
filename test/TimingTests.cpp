@@ -42,7 +42,7 @@ namespace {
   int opaque(const int x) {
     return x + g_zero;
   }
-}// namespace
+} // namespace
 
 using namespace std::chrono;
 using namespace chess;
@@ -68,8 +68,8 @@ protected:
 
 void TimingTests::testTiming(std::ostringstream& os, const int rounds, const int iterations,
                              const int repetitions, const std::vector<std::function<void()>>& tests) {
-  std::cout.imbue(deLocale);
-  os.imbue(deLocale);
+  std::cout.imbue(projectLocale);
+  os.imbue(projectLocale);
   os << std::setprecision(9);
 
   os << std::endl;
@@ -527,21 +527,21 @@ TEST_F(TimingTests, PositionCopyVsUndo) {
 
   // Execute 15 moves to build up history
   constexpr std::array historyMoves = {
-    Move::normal(SQ_E2, SQ_E4),// 1. e4
-    Move::normal(SQ_E7, SQ_E5),// 1... e5
-    Move::normal(SQ_G1, SQ_F3),// 2. Nf3
-    Move::normal(SQ_B8, SQ_C6),// 2... Nc6
-    Move::normal(SQ_F1, SQ_C4),// 3. Bc4
-    Move::normal(SQ_G8, SQ_F6),// 3... Nf6
-    Move::normal(SQ_D2, SQ_D3),// 4. d3
-    Move::normal(SQ_F8, SQ_C5),// 4... Bc5
-    Move::normal(SQ_C2, SQ_C3),// 5. c3
-    Move::normal(SQ_D7, SQ_D6),// 5... d6
-    Move::normal(SQ_B1, SQ_D2),// 6. Nbd2
-    Move::normal(SQ_C8, SQ_E6),// 6... Be6
-    Move::normal(SQ_C4, SQ_B5),// 7. Bb5
-    Move::normal(SQ_E8, SQ_G8),// 7... O-O (kingside castling)
-    Move::normal(SQ_E1, SQ_G1) // 8. O-O (kingside castling)
+    Move::normal(SQ_E2, SQ_E4), // 1. e4
+    Move::normal(SQ_E7, SQ_E5), // 1... e5
+    Move::normal(SQ_G1, SQ_F3), // 2. Nf3
+    Move::normal(SQ_B8, SQ_C6), // 2... Nc6
+    Move::normal(SQ_F1, SQ_C4), // 3. Bc4
+    Move::normal(SQ_G8, SQ_F6), // 3... Nf6
+    Move::normal(SQ_D2, SQ_D3), // 4. d3
+    Move::normal(SQ_F8, SQ_C5), // 4... Bc5
+    Move::normal(SQ_C2, SQ_C3), // 5. c3
+    Move::normal(SQ_D7, SQ_D6), // 5... d6
+    Move::normal(SQ_B1, SQ_D2), // 6. Nbd2
+    Move::normal(SQ_C8, SQ_E6), // 6... Be6
+    Move::normal(SQ_C4, SQ_B5), // 7. Bb5
+    Move::normal(SQ_E8, SQ_G8), // 7... O-O (kingside castling)
+    Move::normal(SQ_E1, SQ_G1)  // 8. O-O (kingside castling)
   };
 
   for (const auto& move : historyMoves) {
@@ -550,11 +550,11 @@ TEST_F(TimingTests, PositionCopyVsUndo) {
 
   //// TEST MOVES: 5 moves to execute during the test
   constexpr std::array testMoves = {
-    Move::normal(SQ_H2, SQ_H3),// h3
-    Move::normal(SQ_A7, SQ_A6),// a6
-    Move::normal(SQ_B5, SQ_A4),// Ba4
-    Move::normal(SQ_B7, SQ_B5),// b5
-    Move::normal(SQ_A4, SQ_B3) // Bb3
+    Move::normal(SQ_H2, SQ_H3), // h3
+    Move::normal(SQ_A7, SQ_A6), // a6
+    Move::normal(SQ_B5, SQ_A4), // Ba4
+    Move::normal(SQ_B7, SQ_B5), // b5
+    Move::normal(SQ_A4, SQ_B3)  // Bb3
   };
 
   //// TEST 1: do/undo on same position
@@ -564,7 +564,7 @@ TEST_F(TimingTests, PositionCopyVsUndo) {
   const std::function f1 = [&] {
     for (const auto& move : testMoves) {
       position1.doMove(move);
-      sink1 += position1.getHalfMoveClock();// Use position to prevent optimization
+      sink1 += position1.getHalfMoveClock(); // Use position to prevent optimization
     }
     // Restore position by undoing all moves
     for (int i = 0; i < 5; ++i) {
@@ -576,10 +576,10 @@ TEST_F(TimingTests, PositionCopyVsUndo) {
   int sink2 = 0;
 
   const std::function f2 = [&] {
-    Position position2 = basePosition;// Copy the position
+    Position position2 = basePosition; // Copy the position
     for (const auto& move : testMoves) {
       position2.doMove(move);
-      sink2 += position2.getHalfMoveClock();// Use position to prevent optimization
+      sink2 += position2.getHalfMoveClock(); // Use position to prevent optimization
     }
     // No undo needed - we have the original basePosition
   };

@@ -67,4 +67,4 @@
 #include "zobristkey.h"
 
 
-#endif// FRANKYCPP_TYPES_H
+#endif // FRANKYCPP_TYPES_H

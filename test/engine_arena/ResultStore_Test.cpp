@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 //=============================================================================
-// ResultWriter_Test.cpp - Unit Tests for ResultWriter JSON Output
+// ResultStore_Test.cpp - Unit Tests for ResultStore JSON Output
 //=============================================================================
 //
 // Tests for JSON output validity, especially string escaping for:
@@ -30,7 +30,7 @@
 //=============================================================================
 
 #include "engine_arena/ArenaResults.h"
-#include "engine_arena/ResultWriter.h"
+#include "engine_arena/ResultStore.h"
 
 #include <filesystem>
 #include <fstream>
@@ -41,7 +41,7 @@ using namespace arena;
 using namespace chess;
 using json = nlohmann::json;
 
-class ResultWriterTest : public ::testing::Test {
+class ResultStoreTest : public ::testing::Test {
 protected:
   std::string testResultsDir;
 
@@ -88,11 +88,11 @@ protected:
 // JSON Validity Tests
 //=============================================================================
 
-TEST_F(ResultWriterTest, BasicResult_ProducesValidJson) {
-  const ResultWriter writer(testResultsDir);
+TEST_F(ResultStoreTest, BasicResult_ProducesValidJson) {
+  const ResultStore store(testResultsDir);
   const TestSuiteResult result = createBasicResult();
 
-  const std::string filePath = writer.writeTestSuiteResult(result);
+  const std::string filePath = store.writeTestSuiteResult(result);
 
   // Read and parse as JSON - should not throw
   std::string content = readFile(filePath);
@@ -101,15 +101,15 @@ TEST_F(ResultWriterTest, BasicResult_ProducesValidJson) {
   });
 }
 
-TEST_F(ResultWriterTest, WindowsPath_BackslashesEscaped) {
-  const ResultWriter writer(testResultsDir);
+TEST_F(ResultStoreTest, WindowsPath_BackslashesEscaped) {
+  const ResultStore store(testResultsDir);
   TestSuiteResult result = createBasicResult();
 
   // Windows-style path with backslashes
   result.enginePath = R"(D:\Games\Chess\Engines\FrankyCPP\engine.exe)";
   result.epdPath    = R"(C:\Users\Frank\test\suite.epd)";
 
-  const std::string filePath = writer.writeTestSuiteResult(result);
+  const std::string filePath = store.writeTestSuiteResult(result);
 
   // Should produce valid JSON
   std::string content = readFile(filePath);
@@ -121,8 +121,8 @@ TEST_F(ResultWriterTest, WindowsPath_BackslashesEscaped) {
   });
 }
 
-TEST_F(ResultWriterTest, QuotesInTestDetails_Escaped) {
-  ResultWriter writer(testResultsDir);
+TEST_F(ResultStoreTest, QuotesInTestDetails_Escaped) {
+  ResultStore store(testResultsDir);
   TestSuiteResult result = createBasicResult();
 
   // Test details with quotes (these don't affect filename)
@@ -136,7 +136,7 @@ TEST_F(ResultWriterTest, QuotesInTestDetails_Escaped) {
   detail.timeMs   = 50;
   result.details.push_back(detail);
 
-  std::string filePath = writer.writeTestSuiteResult(result);
+  std::string filePath = store.writeTestSuiteResult(result);
 
   // Should produce valid JSON
   std::string content = readFile(filePath);
@@ -148,8 +148,8 @@ TEST_F(ResultWriterTest, QuotesInTestDetails_Escaped) {
   });
 }
 
-TEST_F(ResultWriterTest, FenWithSpecialChars_Escaped) {
-  ResultWriter writer(testResultsDir);
+TEST_F(ResultStoreTest, FenWithSpecialChars_Escaped) {
+  ResultStore store(testResultsDir);
   TestSuiteResult result = createBasicResult();
 
   // Add a test detail with a FEN containing special characters
@@ -163,7 +163,7 @@ TEST_F(ResultWriterTest, FenWithSpecialChars_Escaped) {
   detail.timeMs   = 50;
   result.details.push_back(detail);
 
-  std::string filePath = writer.writeTestSuiteResult(result);
+  std::string filePath = store.writeTestSuiteResult(result);
 
   // Should produce valid JSON
   std::string content = readFile(filePath);
@@ -173,8 +173,8 @@ TEST_F(ResultWriterTest, FenWithSpecialChars_Escaped) {
   });
 }
 
-TEST_F(ResultWriterTest, ControlCharacters_Escaped) {
-  ResultWriter writer(testResultsDir);
+TEST_F(ResultStoreTest, ControlCharacters_Escaped) {
+  ResultStore store(testResultsDir);
   TestSuiteResult result = createBasicResult();
 
   // Test details with control characters (tab, newline) - these don't affect filename
@@ -188,7 +188,7 @@ TEST_F(ResultWriterTest, ControlCharacters_Escaped) {
   detail.timeMs   = 10;
   result.details.push_back(detail);
 
-  std::string filePath = writer.writeTestSuiteResult(result);
+  std::string filePath = store.writeTestSuiteResult(result);
 
   // Should produce valid JSON (control chars escaped as \t, \n)
   std::string content = readFile(filePath);
@@ -199,8 +199,8 @@ TEST_F(ResultWriterTest, ControlCharacters_Escaped) {
   });
 }
 
-TEST_F(ResultWriterTest, MixedSpecialCharacters_AllEscaped) {
-  ResultWriter writer(testResultsDir);
+TEST_F(ResultStoreTest, MixedSpecialCharacters_AllEscaped) {
+  ResultStore store(testResultsDir);
   TestSuiteResult result = createBasicResult();
 
   // Mix of backslashes, quotes, and control chars in paths and details
@@ -218,7 +218,7 @@ TEST_F(ResultWriterTest, MixedSpecialCharacters_AllEscaped) {
   detail.timeMs   = 10;
   result.details.push_back(detail);
 
-  std::string filePath = writer.writeTestSuiteResult(result);
+  std::string filePath = store.writeTestSuiteResult(result);
 
   // Should produce valid JSON
   std::string content = readFile(filePath);
@@ -229,14 +229,14 @@ TEST_F(ResultWriterTest, MixedSpecialCharacters_AllEscaped) {
   });
 }
 
-TEST_F(ResultWriterTest, EmptyStrings_HandledCorrectly) {
-  const ResultWriter writer(testResultsDir);
+TEST_F(ResultStoreTest, EmptyStrings_HandledCorrectly) {
+  const ResultStore store(testResultsDir);
   TestSuiteResult result = createBasicResult();
 
   // Empty version string
   result.engineVersion = "";
 
-  const std::string filePath = writer.writeTestSuiteResult(result);
+  const std::string filePath = store.writeTestSuiteResult(result);
 
   // Should produce valid JSON
   std::string content = readFile(filePath);
@@ -246,22 +246,22 @@ TEST_F(ResultWriterTest, EmptyStrings_HandledCorrectly) {
   });
 }
 
-TEST_F(ResultWriterTest, UnicodeCharacters_HandledCorrectly) {
-  ResultWriter writer(testResultsDir);
+TEST_F(ResultStoreTest, UnicodeCharacters_HandledCorrectly) {
+  ResultStore store(testResultsDir);
   TestSuiteResult result = createBasicResult();
 
   // Unicode in test details (not in engine name/version which affect filename)
   TestCaseDetail detail;
-  detail.testId   = "Тест_001";// Russian "Test"
+  detail.testId   = "Тест_001"; // Russian "Test"
   detail.fen      = "8/8/8/8/8/8/8/8 w - - 0 1";
-  detail.expected = "Шах";// Russian "Check"
+  detail.expected = "Шах"; // Russian "Check"
   detail.actual   = "Шах";
   detail.passed   = true;
   detail.nodes    = 100;
   detail.timeMs   = 10;
   result.details.push_back(detail);
 
-  std::string filePath = writer.writeTestSuiteResult(result);
+  std::string filePath = store.writeTestSuiteResult(result);
 
   // Should produce valid JSON
   std::string content = readFile(filePath);

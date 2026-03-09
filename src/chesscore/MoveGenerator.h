@@ -100,10 +100,10 @@ namespace chess {
   /// Generation modes for move generation.
   /// Can be combined as bit flags: GenAll = GenNonQuiet | GenQuiet.
   enum GenMode : uint8_t {
-    GenZero     = 0b00,///< No moves
-    GenNonQuiet = 0b01,///< Captures and promotions only
-    GenQuiet    = 0b10,///< Non-capturing moves only
-    GenAll      = 0b11 ///< All moves (captures + quiet)
+    GenZero     = 0b00, ///< No moves
+    GenNonQuiet = 0b01, ///< Captures and promotions only
+    GenQuiet    = 0b10, ///< Non-capturing moves only
+    GenAll      = 0b11  ///< All moves (captures + quiet)
   };
 
   class MoveGenerator {
@@ -406,6 +406,6 @@ namespace chess {
     FRIEND_TEST_NS(MoveGenTest, sortValueTest);
   };
 
-}// namespace chess
+} // namespace chess
 
-#endif// FRANKYCPP_MOVEGENERATOR_H
+#endif // FRANKYCPP_MOVEGENERATOR_H

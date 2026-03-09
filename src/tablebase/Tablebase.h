@@ -72,19 +72,19 @@ namespace tablebase {
 
   /// WDL (Win/Draw/Loss) result from tablebase probe.
   enum class TBResult : int8_t {
-    Loss        = -2,///< Position is lost with perfect play
-    BlessedLoss = -1,///< Would be lost but may draw due to 50-move rule
-    Draw        = 0, ///< Position is drawn with perfect play
-    CursedWin   = 1, ///< Would be won but may draw due to 50-move rule
-    Win         = 2, ///< Position is won with perfect play
-    Failed      = 3  ///< Probe failed (position not in TB or not probeable)
+    Loss        = -2, ///< Position is lost with perfect play
+    BlessedLoss = -1, ///< Would be lost but may draw due to 50-move rule
+    Draw        = 0,  ///< Position is drawn with perfect play
+    CursedWin   = 1,  ///< Would be won but may draw due to 50-move rule
+    Win         = 2,  ///< Position is won with perfect play
+    Failed      = 3   ///< Probe failed (position not in TB or not probeable)
   };
 
   /// Full tablebase probe result with WDL, DTZ (distance to zeroing), and best move.
   struct TBProbeResult {
-    TBResult wdl{TBResult::Failed};///< Win/Draw/Loss result
-    int dtz{0};                    ///< Distance to zeroing move (capture or pawn move)
-    Move bestMove{MOVE_NONE};      ///< Best move from tablebase (MOVE_NONE if unavailable)
+    TBResult wdl{TBResult::Failed}; ///< Win/Draw/Loss result
+    int dtz{0};                     ///< Distance to zeroing move (capture or pawn move)
+    Move bestMove{MOVE_NONE};       ///< Best move from tablebase (MOVE_NONE if unavailable)
 
     /// Returns true if the probe succeeded.
     [[nodiscard]] bool success() const { return wdl != TBResult::Failed; }
@@ -102,8 +102,8 @@ namespace tablebase {
   ///   - probeRoot(): NOT thread-safe. Call only once at root per search.
   class Tablebase {
     bool initialized_{false};
-    int maxPieces_{0};  ///< Maximum pieces available in loaded tablebases (e.g., 6 or 7)
-    std::string tbPath_;///< Path(s) used to initialize tablebases
+    int maxPieces_{0};   ///< Maximum pieces available in loaded tablebases (e.g., 6 or 7)
+    std::string tbPath_; ///< Path(s) used to initialize tablebases
 
   public:
     Tablebase() = default;
@@ -175,6 +175,6 @@ namespace tablebase {
     [[nodiscard]] static std::string resultToString(TBResult result);
   };
 
-}// namespace tablebase
+} // namespace tablebase
 
-#endif// FRANKYCPP_TABLEBASE_H
+#endif // FRANKYCPP_TABLEBASE_H

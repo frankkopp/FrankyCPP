@@ -65,11 +65,11 @@
 namespace chess {
 
   class CastlingRights {
-    uint_fast8_t v_{};// 4-bit bitmask used; kept as fast 8-bit storage
+    uint_fast8_t v_{}; // 4-bit bitmask used; kept as fast 8-bit storage
 
   public:
     // constructors
-    constexpr CastlingRights() = default;// defaults to NO_CASTLING (0)
+    constexpr CastlingRights() = default; // defaults to NO_CASTLING (0)
     constexpr explicit CastlingRights(const uint_fast8_t v) : v_{v} {}
 
     // underlying value access
@@ -99,10 +99,10 @@ namespace chess {
       if (isEmpty()) return "-";
       std::string cr_str;
       // Use "has" semantics as before
-      if (*this == CastlingRights{1u << 0u}) cr_str += "K";// WHITE_OO
-      if (*this == CastlingRights{1u << 1u}) cr_str += "Q";// WHITE_OOO
-      if (*this == CastlingRights{1u << 2u}) cr_str += "k";// BLACK_OO
-      if (*this == CastlingRights{1u << 3u}) cr_str += "q";// BLACK_OOO
+      if (*this == CastlingRights{1u << 0u}) cr_str += "K"; // WHITE_OO
+      if (*this == CastlingRights{1u << 1u}) cr_str += "Q"; // WHITE_OOO
+      if (*this == CastlingRights{1u << 2u}) cr_str += "k"; // BLACK_OO
+      if (*this == CastlingRights{1u << 3u}) cr_str += "q"; // BLACK_OOO
       return cr_str;
     }
 
@@ -131,14 +131,14 @@ namespace chess {
   // -----------------------------------------------------------------------------
   // Global inline constants for compatibility with existing code
   // Bit layout (from LSB): WHITE_OO, WHITE_OOO, BLACK_OO, BLACK_OOO
-  inline constexpr CastlingRights NO_CASTLING{0};         // 0000
-  inline constexpr CastlingRights WHITE_OO{1u << 0u};     // 0001
-  inline constexpr CastlingRights WHITE_OOO{1u << 1u};    // 0010
-  inline constexpr CastlingRights WHITE_CASTLING{0b0011u};// 0011
-  inline constexpr CastlingRights BLACK_OO{1u << 2u};     // 0100
-  inline constexpr CastlingRights BLACK_OOO{1u << 3u};    // 1000
-  inline constexpr CastlingRights BLACK_CASTLING{0b1100u};// 1100
-  inline constexpr CastlingRights ANY_CASTLING{0b1111u};  // 1111
+  inline constexpr CastlingRights NO_CASTLING{0};          // 0000
+  inline constexpr CastlingRights WHITE_OO{1u << 0u};      // 0001
+  inline constexpr CastlingRights WHITE_OOO{1u << 1u};     // 0010
+  inline constexpr CastlingRights WHITE_CASTLING{0b0011u}; // 0011
+  inline constexpr CastlingRights BLACK_OO{1u << 2u};      // 0100
+  inline constexpr CastlingRights BLACK_OOO{1u << 3u};     // 1000
+  inline constexpr CastlingRights BLACK_CASTLING{0b1100u}; // 1100
+  inline constexpr CastlingRights ANY_CASTLING{0b1111u};   // 1111
   inline constexpr int CR_LENGTH = 16;
 
   namespace Castling {
@@ -153,7 +153,7 @@ namespace chess {
       cr[SQ_H8] = BLACK_OO;
       return cr;
     }();
-  }// namespace Castling
+  } // namespace Castling
 
   // returns a string representing the castling rights as used in a FEN (e.g. KQkq)
   inline std::string str(const CastlingRights cr) { return cr.str(); }
@@ -165,6 +165,6 @@ namespace chess {
 
   ENABLE_INCR_OPERATORS_ON(CastlingRights)
 
-}// namespace chess
+} // namespace chess
 
-#endif// FRANKYCPP_CASTLINGRIGHTS_H
+#endif // FRANKYCPP_CASTLINGRIGHTS_H

@@ -125,7 +125,7 @@ TEST_F(UCIEngineErrorHandlingTest, Search_VeryShortTimeout_ReturnsPartialOrEmpty
   }
 
   UCIEngine engine(enginePath);
-  engine.setSearchTimeout(milliseconds{5000});// 5 second absolute timeout
+  engine.setSearchTimeout(milliseconds{5000}); // 5 second absolute timeout
 
   // Set position
   const std::string startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";

@@ -75,8 +75,8 @@ namespace {
     ASSERT_TRUE(mgr.loadFromFiles());
 
     // Validate a couple of representative values from repo YAMLs
-    EXPECT_EQ(mgr.search().TT_SIZE_MB, 256);// from config/search.yaml
-    EXPECT_EQ(mgr.eval().TEMPO, 34);       // from config/eval.yaml
+    EXPECT_EQ(mgr.search().TT_SIZE_MB, 256); // from config/search.yaml
+    EXPECT_EQ(mgr.eval().TEMPO, 34);         // from config/eval.yaml
   }
 
   // Description: Confirms that when default config files are missing, loadFromFiles succeeds and keeps hard-coded defaults.
@@ -98,7 +98,7 @@ namespace {
   }
 
   // Description: Checks that malformed YAML at default paths causes loadFromFiles to return false and roll back to the prior state.
-#ifndef FRANKYCPP_PRODUCTION// In production, only essential config mutations (MOVE_OVERHEAD_MS) can be verified, so this test is dev-only.
+#ifndef FRANKYCPP_PRODUCTION // In production, only essential config mutations (MOVE_OVERHEAD_MS) can be verified, so this test is dev-only.
   TEST(ConfigAutoInitTests, DefaultPathsMalformedRollsBackAndReturnsFalse) {
     // Prepare temp directory with malformed YAML files in ./config
     const auto tmp = makeTempDir("malformed");
@@ -110,11 +110,11 @@ namespace {
     // Write malformed YAML
     {
       std::ofstream ofs(cfgDir / "search.yaml");
-      ofs << "not: [valid";// malformed
+      ofs << "not: [valid"; // malformed
     }
     {
       std::ofstream ofs(cfgDir / "eval.yaml");
-      ofs << "invalid: true: :";// malformed
+      ofs << "invalid: true: :"; // malformed
     }
 
     auto& mgr = ConfigManager::instance();
@@ -134,7 +134,7 @@ namespace {
 #endif
 
   // Description: Ensures resetToDefaults restores values captured at initial auto-load, even after loads in other directories.
-#ifndef FRANKYCPP_PRODUCTION// In production, only essential config mutations (MOVE_OVERHEAD_MS) can be verified, so this test is dev-only.
+#ifndef FRANKYCPP_PRODUCTION // In production, only essential config mutations (MOVE_OVERHEAD_MS) can be verified, so this test is dev-only.
   TEST(ConfigAutoInitTests, ResetReturnsToInitiallyLoadedDefaults) {
     // Ensure we have repo YAML configs in current dir
     ASSERT_TRUE(std::filesystem::exists(ConfigPaths::SearchYaml()));
@@ -172,4 +172,4 @@ namespace {
   }
 #endif
 
-}// namespace
+} // namespace

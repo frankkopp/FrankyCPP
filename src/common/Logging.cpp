@@ -35,7 +35,7 @@ static void add_unique_sink(spdlog::logger& logger,
                             const std::shared_ptr<spdlog::sinks::sink>& sink) {
   auto& sinks = logger.sinks();
   for (const auto& s : sinks) {
-    if (s.get() == sink.get()) return;// already present
+    if (s.get() == sink.get()) return; // already present
   }
   sinks.push_back(sink);
 }
@@ -123,7 +123,7 @@ void Logger::init() const {
 
   // Global log level and pattern once.
   spdlog::set_level(logLevel);
-  spdlog::set_pattern(defaultPattern);// set the default pattern globally once
+  spdlog::set_pattern(defaultPattern); // set the default pattern globally once
 
   // Shared file sink follows the global default log level
   sharedFileSink->set_level(logLevel);
@@ -145,7 +145,7 @@ void Logger::init() const {
   // UCI logger keeps its dedicated console sink and its own simple pattern
   add_unique_sink(*UCI_LOG, uciOutSink);
   UCI_LOG->set_pattern("[%H:%M:%S:%f] %v");
-  UCI_LOG->set_level(spdlog::level::trace);// keep as-is (trace) for UCI
+  UCI_LOG->set_level(spdlog::level::trace); // keep as-is (trace) for UCI
   UCI_LOG->flush_on(spdlog::level::trace);
 
   // Logger for Unit Tests (stdout logger only, no file sink wiring)

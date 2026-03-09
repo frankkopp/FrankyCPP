@@ -112,8 +112,8 @@ TEST_F(StringUtilsTest, parseIntInvalidInput) {
 
 TEST_F(StringUtilsTest, parseIntPartialMatch) {
   // std::stoi parses until invalid character - this is expected behavior
-  EXPECT_EQ(12, parseInt("12.34"));// stops at decimal point
-  EXPECT_EQ(42, parseInt("42abc"));// stops at letter
+  EXPECT_EQ(12, parseInt("12.34")); // stops at decimal point
+  EXPECT_EQ(42, parseInt("42abc")); // stops at letter
 }
 
 //=============================================================================
@@ -186,9 +186,9 @@ TEST_F(StringUtilsTest, parseIntOrValidInput) {
 
 TEST_F(StringUtilsTest, parseIntOrInvalidInput) {
   // Returns default on invalid input (and logs warning)
-  EXPECT_EQ(0, parseIntOr("abc"));       // default default is 0
-  EXPECT_EQ(999, parseIntOr("abc", 999));// custom default
-  EXPECT_EQ(-1, parseIntOr("", -1));     // empty string
+  EXPECT_EQ(0, parseIntOr("abc"));        // default default is 0
+  EXPECT_EQ(999, parseIntOr("abc", 999)); // custom default
+  EXPECT_EQ(-1, parseIntOr("", -1));      // empty string
   EXPECT_EQ(42, parseIntOr("not_a_number", 42));
 }
 

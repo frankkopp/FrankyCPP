@@ -23,7 +23,7 @@
 #include <gtest/gtest.h>
 
 #include "common/Logging.h"
-#include "types/globals.h"// for deLocale used by Logging macros
+#include "types/globals.h" // for projectLocale used by Logging macros
 
 #include <memory>
 #include <string>
@@ -63,7 +63,7 @@ namespace {
     return logger;
   }
 
-}// namespace
+} // namespace
 
 TEST(LoggingMacros, IfElseWithoutBracesIsSafe) {
   std::shared_ptr<vector_sink_mt> sink;
@@ -91,7 +91,7 @@ TEST(LoggingMacros, NullLoggerIsNoop) {
   LOG__ERROR(null_logger, "error {}", 5);
   LOG__CRITICAL(null_logger, "critical {}", 6);
 
-  SUCCEED();// If we got here without crashing, the test passes.
+  SUCCEED(); // If we got here without crashing, the test passes.
 }
 
 TEST(LoggingMacros, ShouldLogGatingPreventsLowerLevels) {
@@ -122,7 +122,7 @@ TEST(LoggingMacros, CompileTimeGatingDiscardsArgsWhenTraceDisabled) {
 
   SUCCEED();
 }
-#endif// LOG__LEVEL <= DEBUG__LVL
+#endif // LOG__LEVEL <= DEBUG__LVL
 
 TEST(LoggerRuntime, LevelChangeByPtrAndName) {
   std::shared_ptr<vector_sink_mt> sink;

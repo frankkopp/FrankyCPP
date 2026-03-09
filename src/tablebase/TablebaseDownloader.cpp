@@ -43,10 +43,10 @@ namespace tablebase {
   namespace {
 
     // Estimated sizes per piece count (approximate, for progress estimation)
-    constexpr size_t SIZE_3_PIECE = 7ULL * 1024 * 1024;         // ~7 MB
-    constexpr size_t SIZE_4_PIECE = 75ULL * 1024 * 1024;        // ~75 MB
-    constexpr size_t SIZE_5_PIECE = 1ULL * 1024 * 1024 * 1024;  // ~1 GB
-    constexpr size_t SIZE_6_PIECE = 150ULL * 1024 * 1024 * 1024;// ~150 GB
+    constexpr size_t SIZE_3_PIECE = 7ULL * 1024 * 1024;          // ~7 MB
+    constexpr size_t SIZE_4_PIECE = 75ULL * 1024 * 1024;         // ~75 MB
+    constexpr size_t SIZE_5_PIECE = 1ULL * 1024 * 1024 * 1024;   // ~1 GB
+    constexpr size_t SIZE_6_PIECE = 150ULL * 1024 * 1024 * 1024; // ~150 GB
 
     /// URL for the master file list from Lichess
     constexpr auto FILE_LIST_URL = "https://tablebase.lichess.ovh/tables/standard/download.txt";
@@ -82,7 +82,7 @@ namespace tablebase {
       curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
       curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteStringCallback);
       curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-      curl_easy_setopt(curl, CURLOPT_TIMEOUT, 60L);// 60 second timeout
+      curl_easy_setopt(curl, CURLOPT_TIMEOUT, 60L); // 60 second timeout
       curl_easy_setopt(curl, CURLOPT_USERAGENT, "FrankyCPP/1.0");
 
       const CURLcode res = curl_easy_perform(curl);
@@ -160,7 +160,7 @@ namespace tablebase {
         if (line.empty()) continue;
 
         // Format: "<md5>  <filename>" - MD5 is 32 hex chars, then two spaces, then filename
-        if (line.size() < 35) continue;// 32 + 2 + at least 1 char for filename
+        if (line.size() < 35) continue; // 32 + 2 + at least 1 char for filename
 
         const std::string hash = line.substr(0, 32);
         // Skip the two spaces separator
@@ -188,7 +188,7 @@ namespace tablebase {
       return checksums;
     }
 
-  }// anonymous namespace
+  } // anonymous namespace
 
   //=============================================================================
   // Public Methods
@@ -370,7 +370,7 @@ namespace tablebase {
         fileResult.hasChecksum = hasChecksum;
 
         if (!hasChecksum) {
-          fileResult.success      = true;// No checksum = skip (not a failure)
+          fileResult.success      = true; // No checksum = skip (not a failure)
           fileResult.errorMessage = "No reference checksum";
           return fileResult;
         }
@@ -570,8 +570,8 @@ namespace tablebase {
       curl_easy_setopt(curl, CURLOPT_WRITEDATA, &outFile);
       curl_easy_setopt(curl, CURLOPT_USERAGENT, "FrankyCPP/1.0");
       // No timeout for large files - they can take a while
-      curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1024L);// 1KB/s minimum
-      curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 60L);   // for 60 seconds
+      curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1024L); // 1KB/s minimum
+      curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 60L);    // for 60 seconds
 
       const CURLcode res = curl_easy_perform(curl);
 
@@ -638,7 +638,7 @@ namespace tablebase {
       }
 
       // Read file in chunks for efficiency
-      constexpr size_t BUFFER_SIZE = 64 * 1024;// 64KB buffer
+      constexpr size_t BUFFER_SIZE = 64 * 1024; // 64KB buffer
       std::vector<char> buffer(BUFFER_SIZE);
 
       while (file.read(buffer.data(), static_cast<std::streamsize>(BUFFER_SIZE)) || file.gcount() > 0) {
@@ -747,4 +747,4 @@ FILE SIZES (approximate):
 )";
   }
 
-}// namespace tablebase
+} // namespace tablebase

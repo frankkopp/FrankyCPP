@@ -271,7 +271,7 @@ namespace common {
     }
   }
 
-}// namespace common
+} // namespace common
 
 // slower alternatives for trimming
 // Round  1 Test  1: 5.684.239.320 ns (   100%) (  5,68423932 sec) ( 56.842,3932 ns avg per test)
@@ -320,4 +320,4 @@ namespace common {
 //}
 
 
-#endif// FRANKYCPP_STRINGUTIL_H
+#endif // FRANKYCPP_STRINGUTIL_H

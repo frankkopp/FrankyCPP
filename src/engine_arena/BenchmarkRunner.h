@@ -75,6 +75,6 @@ namespace arena {
     std::string arenaVersion_;
   };
 
-}// namespace arena
+} // namespace arena
 
-#endif// FRANKYCPP_ENGINE_ARENA_BENCHMARKRUNNER_H
+#endif // FRANKYCPP_ENGINE_ARENA_BENCHMARKRUNNER_H

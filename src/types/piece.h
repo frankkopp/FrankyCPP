@@ -62,7 +62,7 @@ namespace chess {
     WHITE_KING = 1, WHITE_PAWN, WHITE_KNIGHT, WHITE_BISHOP, WHITE_ROOK, WHITE_QUEEN,
     BLACK_KING = 9, BLACK_PAWN, BLACK_KNIGHT, BLACK_BISHOP, BLACK_ROOK, BLACK_QUEEN,
     PIECE_LENGTH = 16
-  };// clang-format on
+  }; // clang-format on
 
   // checks if piece type is a value of 0 - 6
   constexpr bool validPiece(const Piece p) { return p < 15 && p != 7 && p != 8; }
@@ -87,7 +87,7 @@ namespace chess {
       case 'r': return BLACK_ROOK;
       case 'q': return BLACK_QUEEN;
       default: return PIECE_NONE;
-    }// clang-format on
+    } // clang-format on
   }
 
   // returns the color of the given piece
@@ -112,6 +112,6 @@ namespace chess {
 
   ENABLE_INCR_OPERATORS_ON(Piece)
 
-}// namespace chess
+} // namespace chess
 
-#endif// FRANKYCPP_PIECE_H
+#endif // FRANKYCPP_PIECE_H

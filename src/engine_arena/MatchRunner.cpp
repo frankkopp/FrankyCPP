@@ -23,26 +23,40 @@
 
 #include "MatchRunner.h"
 #include "UCIEngine.h"
+#include "common/TimeUtils.h"
 
 #include <array>
 #include <chrono>
-#include <cmath>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+
+// Suppress false positive Clangd warning about nlohmann/json template instantiation
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wc++20-extensions"
+#endif
+
+#include <nlohmann/json.hpp>
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
 #include <regex>
 #include <sstream>
 #include <stdexcept>
 
 #ifdef _WIN32
-#include <windows.h>
 #else
 #include <cstdio>
 #endif
 
 namespace arena {
 
+  using common::isoTimestamp;
   using std::chrono::duration_cast;
   using std::chrono::milliseconds;
   using std::chrono::system_clock;
@@ -59,7 +73,7 @@ namespace arena {
       // Auto-calculate: at least 2, at least concurrency, must be even
       batchSize = std::max(2, matchConfig.concurrency);
       if (batchSize % 2 != 0) {
-        batchSize++;// Round up to even
+        batchSize++; // Round up to even
       }
     }
 
@@ -138,7 +152,7 @@ namespace arena {
       // Build result from saved state
       MatchResult result;
       result.arenaVersion   = arenaConfig.version;
-      result.timestamp      = getCurrentTimestamp();
+      result.timestamp      = isoTimestamp();
       result.matchName      = matchConfig.name;
       result.tag            = matchConfig.tag;
       result.timeControl    = matchConfig.timeControl;
@@ -198,7 +212,7 @@ namespace arena {
       std::string output;
       if (!executeCutechess(command, output)) {
         // Save state before throwing so we can resume
-        currentState.timestamp = getCurrentTimestamp();
+        currentState.timestamp = isoTimestamp();
         saveMatchState(stateFilePath, currentState);
         throw std::runtime_error("cutechess-cli execution failed - state saved for resumption");
       }
@@ -211,7 +225,7 @@ namespace arena {
       currentState.engine1Wins += batchResult.engine1Wins;
       currentState.engine2Wins += batchResult.engine2Wins;
       currentState.draws += batchResult.draws;
-      currentState.timestamp = getCurrentTimestamp();
+      currentState.timestamp = isoTimestamp();
 
       // Save state after each batch (enables resume on interrupt)
       saveMatchState(stateFilePath, currentState);
@@ -226,7 +240,7 @@ namespace arena {
     // Build final result
     MatchResult result;
     result.arenaVersion   = arenaConfig.version;
-    result.timestamp      = getCurrentTimestamp();
+    result.timestamp      = isoTimestamp();
     result.matchName      = matchConfig.name;
     result.tag            = matchConfig.tag;
     result.timeControl    = matchConfig.timeControl;
@@ -291,7 +305,7 @@ namespace arena {
       } catch (const std::exception& e) {
         std::cerr << "\nERROR: Failed to run match '" << matchConfig.name << "': "
                   << e.what() << std::endl;
-        throw;// Re-throw to allow caller to handle
+        throw; // Re-throw to allow caller to handle
       }
     }
 
@@ -439,7 +453,7 @@ namespace arena {
 
     // Arena metadata
     result.arenaVersion = arenaConfig.version;
-    result.timestamp    = getCurrentTimestamp();
+    result.timestamp    = isoTimestamp();
 
     // Match identification
     result.matchName   = matchConfig.name;
@@ -487,7 +501,7 @@ namespace arena {
         lineStart = 0;
       }
       else {
-        lineStart++;// Move past the newline
+        lineStart++; // Move past the newline
       }
 
       // Check if the line starts with "..." (per-color breakdown or "White vs Black" line)
@@ -576,7 +590,7 @@ namespace arena {
     // This validates the engine works and gets the canonical name
     // Pass uciOptions to ensure engine initializes correctly (e.g., OwnBook=false to skip book loading)
     try {
-      UCIEngine engine(enginePath, "", false, uciOptions);
+      const UCIEngine engine(enginePath, "", false, uciOptions);
       std::string name = engine.getEngineName();
       if (name.empty()) {
         throw std::runtime_error("Engine returned empty name");
@@ -589,28 +603,13 @@ namespace arena {
 
   std::string MatchRunner::extractEngineName(const std::string& enginePath) {
     const std::filesystem::path path(enginePath);
-    std::string filename = path.stem().string();// Get filename without extension
+    std::string filename = path.stem().string(); // Get filename without extension
     // Normalize: replace underscores with spaces to match UCI naming convention
     // (UCI "id name" typically uses spaces, e.g., "FrankyCPP v1.1")
     std::ranges::replace(filename, '_', ' ');
     return filename;
   }
 
-  std::string MatchRunner::getCurrentTimestamp() {
-    const auto now = system_clock::now();
-    auto time_t    = system_clock::to_time_t(now);
-    std::tm tm{};
-
-#ifdef _WIN32
-    gmtime_s(&tm, &time_t);
-#else
-    gmtime_r(&time_t, &tm);
-#endif
-
-    std::ostringstream oss;
-    oss << std::put_time(&tm, "%Y-%m-%dT%H:%M:%SZ");
-    return oss.str();
-  }
 
   std::string MatchRunner::getStateFilePath(const MatchConfig& matchConfig) {
     // State files go in results/matches/.state/
@@ -630,34 +629,26 @@ namespace arena {
       return false;
     }
 
-    // Simple JSON parsing (no external library needed for this simple format)
-    std::string content((std::istreambuf_iterator<char>(file)),
-                        std::istreambuf_iterator<char>());
-    file.close();
+    try {
+      const nlohmann::json j = nlohmann::json::parse(file);
+      file.close();
 
-    // Parse fields using regex
-    const std::regex matchNameRegex("\"matchName\"\\s*:\\s*\"([^\"]+)\"");
-    const std::regex totalRoundsRegex("\"totalRounds\"\\s*:\\s*(\\d+)");
-    const std::regex completedRoundsRegex("\"completedRounds\"\\s*:\\s*(\\d+)");
-    const std::regex engine1WinsRegex("\"engine1Wins\"\\s*:\\s*(\\d+)");
-    const std::regex engine2WinsRegex("\"engine2Wins\"\\s*:\\s*(\\d+)");
-    const std::regex drawsRegex("\"draws\"\\s*:\\s*(\\d+)");
-    const std::regex engine1NameRegex("\"engine1Name\"\\s*:\\s*\"([^\"]+)\"");
-    const std::regex engine2NameRegex("\"engine2Name\"\\s*:\\s*\"([^\"]+)\"");
-    const std::regex timestampRegex("\"timestamp\"\\s*:\\s*\"([^\"]+)\"");
+      state.matchName       = j.value("matchName", "");
+      state.totalRounds     = j.value("totalRounds", 0);
+      state.completedRounds = j.value("completedRounds", 0);
+      state.engine1Wins     = j.value("engine1Wins", 0);
+      state.engine2Wins     = j.value("engine2Wins", 0);
+      state.draws           = j.value("draws", 0);
+      state.engine1Name     = j.value("engine1Name", "");
+      state.engine2Name     = j.value("engine2Name", "");
+      state.timestamp       = j.value("timestamp", "");
+    } catch (const std::exception& e) {
+      std::cerr << "Warning: Failed to parse match state file: " << e.what() << std::endl;
+      file.close();
+      return false;
+    }
 
-    std::smatch match;
-    if (std::regex_search(content, match, matchNameRegex)) state.matchName = match[1].str();
-    if (std::regex_search(content, match, totalRoundsRegex)) state.totalRounds = std::stoi(match[1].str());
-    if (std::regex_search(content, match, completedRoundsRegex)) state.completedRounds = std::stoi(match[1].str());
-    if (std::regex_search(content, match, engine1WinsRegex)) state.engine1Wins = std::stoi(match[1].str());
-    if (std::regex_search(content, match, engine2WinsRegex)) state.engine2Wins = std::stoi(match[1].str());
-    if (std::regex_search(content, match, drawsRegex)) state.draws = std::stoi(match[1].str());
-    if (std::regex_search(content, match, engine1NameRegex)) state.engine1Name = match[1].str();
-    if (std::regex_search(content, match, engine2NameRegex)) state.engine2Name = match[1].str();
-    if (std::regex_search(content, match, timestampRegex)) state.timestamp = match[1].str();
-
-    return state.completedRounds > 0;// Only valid if we have some progress
+    return state.completedRounds > 0; // Only valid if we have some progress
   }
 
   void MatchRunner::saveMatchState(const std::string& stateFilePath, const MatchState& state) {
@@ -673,19 +664,19 @@ namespace arena {
       return;
     }
 
-    // Write simple JSON format
-    file << "{\n";
-    file << "  \"matchName\": \"" << state.matchName << "\",\n";
-    file << "  \"totalRounds\": " << state.totalRounds << ",\n";
-    file << "  \"completedRounds\": " << state.completedRounds << ",\n";
-    file << "  \"engine1Wins\": " << state.engine1Wins << ",\n";
-    file << "  \"engine2Wins\": " << state.engine2Wins << ",\n";
-    file << "  \"draws\": " << state.draws << ",\n";
-    file << "  \"engine1Name\": \"" << state.engine1Name << "\",\n";
-    file << "  \"engine2Name\": \"" << state.engine2Name << "\",\n";
-    file << "  \"timestamp\": \"" << state.timestamp << "\"\n";
-    file << "}\n";
+    // Build and write JSON
+    const nlohmann::json j = {
+      {"matchName", state.matchName},
+      {"totalRounds", state.totalRounds},
+      {"completedRounds", state.completedRounds},
+      {"engine1Wins", state.engine1Wins},
+      {"engine2Wins", state.engine2Wins},
+      {"draws", state.draws},
+      {"engine1Name", state.engine1Name},
+      {"engine2Name", state.engine2Name},
+      {"timestamp", state.timestamp}};
 
+    file << j.dump(2) << "\n";
     file.close();
   }
 
@@ -695,4 +686,4 @@ namespace arena {
     }
   }
 
-}// namespace arena
+} // namespace arena

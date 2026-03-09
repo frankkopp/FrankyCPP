@@ -57,7 +57,7 @@ namespace {
   std::filesystem::path writeInvalidYamlToFile(const std::string& stem) {
     const auto p = uniquePath(stem);
     std::ofstream ofs(p);
-    ofs << "not: [valid";// intentionally malformed YAML
+    ofs << "not: [valid"; // intentionally malformed YAML
     return p;
   }
 
@@ -129,7 +129,7 @@ namespace {
     // search unchanged
     EXPECT_EQ(mgr.search().TT_SIZE_MB, SearchConfigData{}.TT_SIZE_MB);
   }
-#endif// FRANKYCPP_PRODUCTION
+#endif // FRANKYCPP_PRODUCTION
 
   // Ensures runtime overrides via applyOverrides() take effect with highest precedence.
   // In production, only essential configs (TT_SIZE_MB) can be overridden at runtime.
@@ -196,4 +196,4 @@ namespace {
     EXPECT_NE(def.find("TEMPO:"), std::string::npos);
   }
 
-}// namespace
+} // namespace

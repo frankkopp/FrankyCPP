@@ -84,22 +84,22 @@ namespace chess {
 
   constexpr Bitboard Rank1BB = 0xFF;
   constexpr Bitboard Rank2BB = Rank1BB << 8;
-  constexpr Bitboard Rank3BB = Rank1BB << 16;//(8 * 2)
-  constexpr Bitboard Rank4BB = Rank1BB << 24;//(8 * 3)
-  constexpr Bitboard Rank5BB = Rank1BB << 32;//(8 * 4)
-  constexpr Bitboard Rank6BB = Rank1BB << 40;//(8 * 5)
-  constexpr Bitboard Rank7BB = Rank1BB << 48;//(8 * 6)
-  constexpr Bitboard Rank8BB = Rank1BB << 56;//(8 * 7)
+  constexpr Bitboard Rank3BB = Rank1BB << 16; //(8 * 2)
+  constexpr Bitboard Rank4BB = Rank1BB << 24; //(8 * 3)
+  constexpr Bitboard Rank5BB = Rank1BB << 32; //(8 * 4)
+  constexpr Bitboard Rank6BB = Rank1BB << 40; //(8 * 5)
+  constexpr Bitboard Rank7BB = Rank1BB << 48; //(8 * 6)
+  constexpr Bitboard Rank8BB = Rank1BB << 56; //(8 * 7)
 
   constexpr Bitboard DiagUpA1 = 0b1000000001000000001000000001000000001000000001000000001000000001;
-  constexpr Bitboard DiagUpB1 = DiagUpA1 << 1 & ~FileABB;// shift EAST
+  constexpr Bitboard DiagUpB1 = DiagUpA1 << 1 & ~FileABB; // shift EAST
   constexpr Bitboard DiagUpC1 = DiagUpB1 << 1 & ~FileABB;
   constexpr Bitboard DiagUpD1 = DiagUpC1 << 1 & ~FileABB;
   constexpr Bitboard DiagUpE1 = DiagUpD1 << 1 & ~FileABB;
   constexpr Bitboard DiagUpF1 = DiagUpE1 << 1 & ~FileABB;
   constexpr Bitboard DiagUpG1 = DiagUpF1 << 1 & ~FileABB;
   constexpr Bitboard DiagUpH1 = DiagUpG1 << 1 & ~FileABB;
-  constexpr Bitboard DiagUpA2 = DiagUpA1 << 8;// shift NORTH
+  constexpr Bitboard DiagUpA2 = DiagUpA1 << 8; // shift NORTH
   constexpr Bitboard DiagUpA3 = DiagUpA2 << 8;
   constexpr Bitboard DiagUpA4 = DiagUpA3 << 8;
   constexpr Bitboard DiagUpA5 = DiagUpA4 << 8;
@@ -108,14 +108,14 @@ namespace chess {
   constexpr Bitboard DiagUpA8 = DiagUpA7 << 8;
 
   constexpr Bitboard DiagDownH1 = 0b0000000100000010000001000000100000010000001000000100000010000000;
-  constexpr Bitboard DiagDownH2 = DiagDownH1 << 8;// shift NORTH
+  constexpr Bitboard DiagDownH2 = DiagDownH1 << 8; // shift NORTH
   constexpr Bitboard DiagDownH3 = DiagDownH2 << 8;
   constexpr Bitboard DiagDownH4 = DiagDownH3 << 8;
   constexpr Bitboard DiagDownH5 = DiagDownH4 << 8;
   constexpr Bitboard DiagDownH6 = DiagDownH5 << 8;
   constexpr Bitboard DiagDownH7 = DiagDownH6 << 8;
   constexpr Bitboard DiagDownH8 = DiagDownH7 << 8;
-  constexpr Bitboard DiagDownG1 = DiagDownH1 >> 1 & ~FileHBB;// shift WEST
+  constexpr Bitboard DiagDownG1 = DiagDownH1 >> 1 & ~FileHBB; // shift WEST
   constexpr Bitboard DiagDownF1 = DiagDownG1 >> 1 & ~FileHBB;
   constexpr Bitboard DiagDownE1 = DiagDownF1 >> 1 & ~FileHBB;
   constexpr Bitboard DiagDownD1 = DiagDownE1 >> 1 & ~FileHBB;
@@ -401,8 +401,8 @@ namespace chess {
       for (Square s : Square::all()) {
         const Bitboard file     = sqToFileBb[s];
         const Bitboard rank     = sqToRankBb[s];
-        const Bitboard diagUp   = squareDiagUpBb[s];  // NE-SW diagonal
-        const Bitboard diagDown = squareDiagDownBb[s];// NW-SE diagonal
+        const Bitboard diagUp   = squareDiagUpBb[s];   // NE-SW diagonal
+        const Bitboard diagDown = squareDiagDownBb[s]; // NW-SE diagonal
         // Orthogonal rays
         a[N][s] = file & ranksNorthMask[s];
         a[S][s] = file & ranksSouthMask[s];
@@ -450,14 +450,14 @@ namespace chess {
 
         // white pawn
         Bitboard w = rays[N][s];
-        if (f < 7 && r < 7) w |= rays[N][s + 1U];// east neighbor
-        if (f > 0 && r < 7) w |= rays[N][s - 1U];// west neighbor
+        if (f < 7 && r < 7) w |= rays[N][s + 1U]; // east neighbor
+        if (f > 0 && r < 7) w |= rays[N][s - 1U]; // west neighbor
         a[WHITE][s] = w;
 
         // black pawn
         Bitboard b = rays[S][s];
-        if (f < 7 && r > 0) b |= rays[S][s + 1U];// east neighbor
-        if (f > 0 && r > 0) b |= rays[S][s - 1U];// west neighbor
+        if (f < 7 && r > 0) b |= rays[S][s + 1U]; // east neighbor
+        if (f > 0 && r > 0) b |= rays[S][s - 1U]; // west neighbor
         a[BLACK][s] = b;
       }
 
@@ -466,7 +466,7 @@ namespace chess {
     // holds precomputed bitboards for the squares in front of the given pawn on the same or neighboring files
     inline constexpr std::array<std::array<Bitboard, SQ_LENGTH>, COLOR_LENGTH> passedPawnMask = makePassedPawnMask();
 
-  }// namespace Bitboards
+  } // namespace Bitboards
 
   // Operators for Squares as Bitboards
   constexpr Bitboard operator&(const Square lhs, const Square rhs) { return Bitboards::sqBb[lhs] & Bitboards::sqBb[rhs]; }
@@ -479,6 +479,6 @@ namespace chess {
   constexpr Bitboard& operator|=(Bitboard& b, const Square s) { return b |= Bitboards::sqBb[s]; }
   constexpr Bitboard& operator^=(Bitboard& b, const Square s) { return b ^= Bitboards::sqBb[s]; }
 
-}// namespace chess
+} // namespace chess
 
-#endif// FRANKYCPP_BITBOARDS_H
+#endif // FRANKYCPP_BITBOARDS_H

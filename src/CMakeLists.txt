@@ -6,14 +6,14 @@ cmake_minimum_required(VERSION 3.16)
 
 # Auto-discover library source files from each module (CONFIGURE_DEPENDS
 # ensures CMake re-runs when files are added or removed)
-file(GLOB SRCS_COMMON      CONFIGURE_DEPENDS common/*.cpp common/*.h)
-file(GLOB SRCS_CHESSCORE   CONFIGURE_DEPENDS chesscore/*.cpp chesscore/*.h)
+file(GLOB SRCS_COMMON CONFIGURE_DEPENDS common/*.cpp common/*.h)
+file(GLOB SRCS_CHESSCORE CONFIGURE_DEPENDS chesscore/*.cpp chesscore/*.h)
 file(GLOB SRCS_OPENINGBOOK CONFIGURE_DEPENDS openingbook/*.cpp openingbook/*.h)
-file(GLOB SRCS_ENGINE      CONFIGURE_DEPENDS engine/*.cpp engine/*.h)
-file(GLOB SRCS_ENGINETEST  CONFIGURE_DEPENDS enginetest/*.cpp enginetest/*.h)
-file(GLOB SRCS_TYPES       CONFIGURE_DEPENDS types/*.cpp types/*.h)
+file(GLOB SRCS_ENGINE CONFIGURE_DEPENDS engine/*.cpp engine/*.h)
+file(GLOB SRCS_ENGINETEST CONFIGURE_DEPENDS enginetest/*.cpp enginetest/*.h)
+file(GLOB SRCS_TYPES CONFIGURE_DEPENDS types/*.cpp types/*.h)
 file(GLOB SRCS_CONFIGURATION CONFIGURE_DEPENDS config/*.cpp config/*.h)
-file(GLOB SRCS_TABLEBASE   CONFIGURE_DEPENDS tablebase/*.cpp tablebase/*.h)
+file(GLOB SRCS_TABLEBASE CONFIGURE_DEPENDS tablebase/*.cpp tablebase/*.h)
 
 set(FrankyCPPlib_SRCS
         ${SRCS_COMMON}

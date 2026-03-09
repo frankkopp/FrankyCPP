@@ -71,7 +71,7 @@ namespace {
       return path;
     }
 
-    return "";// Not found
+    return ""; // Not found
   }
 
   // Helper: Create a minimal test EPD file for testing
@@ -92,7 +92,7 @@ namespace {
     }
   }
 
-}// anonymous namespace
+} // anonymous namespace
 
 class TestSuiteRunnerIntegrationTest : public ::testing::Test {
 public:
@@ -147,11 +147,11 @@ TEST_F(TestSuiteRunnerIntegrationTest, FullSuite_StartingPosition) {
   suiteConfig.name             = "test_starting_position";
   suiteConfig.epdPath          = testEpdPath;
   suiteConfig.enginePath       = testEnginePath;
-  suiteConfig.timePerMove      = milliseconds{100};// Fast for testing
+  suiteConfig.timePerMove      = milliseconds{100}; // Fast for testing
   suiteConfig.maxDepth         = static_cast<Depth>(5);
   suiteConfig.isolatePositions = true;
-  suiteConfig.debugMode        = true;      // Enable debug output for tests
-  suiteConfig.commandLineArgs  = "--nobook";// Example: disable opening book via command-line
+  suiteConfig.debugMode        = true;       // Enable debug output for tests
+  suiteConfig.commandLineArgs  = "--nobook"; // Example: disable opening book via command-line
 
   // Run test suite
   TestSuiteRunner runner(config);
@@ -165,7 +165,7 @@ TEST_F(TestSuiteRunnerIntegrationTest, FullSuite_StartingPosition) {
   EXPECT_EQ(result.enginePath, testEnginePath);
 
   EXPECT_EQ(result.totalTests, 1);
-  EXPECT_GE(result.passed + result.failed, 0);// Should have evaluated
+  EXPECT_GE(result.passed + result.failed, 0); // Should have evaluated
   EXPECT_EQ(result.skipped, 0);
 
   // With --nobook flag, engine MUST search and return nodes > 0
@@ -175,7 +175,7 @@ TEST_F(TestSuiteRunnerIntegrationTest, FullSuite_StartingPosition) {
   // Check details
   ASSERT_EQ(result.details.size(), 1u);
   EXPECT_FALSE(result.details[0].testId.empty());
-  EXPECT_FALSE(result.details[0].actual.empty());// Must have returned a move
+  EXPECT_FALSE(result.details[0].actual.empty()); // Must have returned a move
   EXPECT_GT(result.details[0].nodes, 0u) << "Engine should have searched nodes";
   EXPECT_GT(result.details[0].timeMs, 0) << "Search should take measurable time";
 }
@@ -205,7 +205,7 @@ TEST_F(TestSuiteRunnerIntegrationTest, MultipleTestTypes) {
   suiteConfig.timePerMove      = milliseconds{100};
   suiteConfig.maxDepth         = static_cast<Depth>(5);
   suiteConfig.isolatePositions = true;
-  suiteConfig.commandLineArgs  = "--nobook";// Disable book
+  suiteConfig.commandLineArgs  = "--nobook"; // Disable book
 
   TestSuiteRunner runner(config);
   arena::TestSuiteResult result = runner.runTestSuite(suiteConfig);
@@ -295,7 +295,7 @@ TEST_F(TestSuiteRunnerIntegrationTest, PositionIsolation_Enabled) {
   suiteConfig.enginePath       = testEnginePath;
   suiteConfig.timePerMove      = milliseconds{100};
   suiteConfig.maxDepth         = static_cast<Depth>(5);
-  suiteConfig.isolatePositions = true;// Enabled
+  suiteConfig.isolatePositions = true; // Enabled
   suiteConfig.commandLineArgs  = "--nobook";
 
   TestSuiteRunner runner(config);
@@ -322,7 +322,7 @@ TEST_F(TestSuiteRunnerIntegrationTest, PositionIsolation_Disabled) {
   suiteConfig.enginePath       = testEnginePath;
   suiteConfig.timePerMove      = milliseconds{100};
   suiteConfig.maxDepth         = static_cast<Depth>(5);
-  suiteConfig.isolatePositions = false;// Disabled
+  suiteConfig.isolatePositions = false; // Disabled
   suiteConfig.commandLineArgs  = "--nobook";
 
   TestSuiteRunner runner(config);
@@ -493,7 +493,7 @@ TEST_F(TestSuiteRunnerIntegrationTest, StressTest_MultiplePositions) {
   suiteConfig.name             = "stress_suite";
   suiteConfig.epdPath          = testEpdPath;
   suiteConfig.enginePath       = testEnginePath;
-  suiteConfig.timePerMove      = milliseconds{50};// Fast
+  suiteConfig.timePerMove      = milliseconds{50}; // Fast
   suiteConfig.maxDepth         = static_cast<Depth>(3);
   suiteConfig.isolatePositions = true;
   suiteConfig.commandLineArgs  = "--nobook";

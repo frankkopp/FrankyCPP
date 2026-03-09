@@ -71,24 +71,24 @@ namespace engine {
 
   /// UCI option types as defined by the UCI protocol.
   enum UciOptionType {
-    CHECK, ///< Boolean option (true/false)
-    SPIN,  ///< Integer with min/max bounds
-    COMBO, ///< Selection from predefined values
-    BUTTON,///< Trigger action (no stored value)
-    STRING ///< Free-form text
+    CHECK,  ///< Boolean option (true/false)
+    SPIN,   ///< Integer with min/max bounds
+    COMBO,  ///< Selection from predefined values
+    BUTTON, ///< Trigger action (no stored value)
+    STRING  ///< Free-form text
   };
 
   /// Defines a single UCI option with type, default value, bounds, and handler.
   /// The handler function is called when the option value changes.
   struct UciOption {
-    const std::string nameID;                 ///< Option name (case-sensitive in UCI)
-    const UciOptionType type;                 ///< Option type
-    const std::string defaultValue;           ///< Default value as string
-    const std::string minValue;               ///< Minimum value (SPIN only)
-    const std::string maxValue;               ///< Maximum value (SPIN only)
-    const std::string varValue;               ///< Variable value (legacy, prefer comboVars)
-    std::string currentValue;                 ///< Current value as string
-    std::function<void(UciHandler*)> pHandler;///< Handler called on value change
+    const std::string nameID;                  ///< Option name (case-sensitive in UCI)
+    const UciOptionType type;                  ///< Option type
+    const std::string defaultValue;            ///< Default value as string
+    const std::string minValue;                ///< Minimum value (SPIN only)
+    const std::string maxValue;                ///< Maximum value (SPIN only)
+    const std::string varValue;                ///< Variable value (legacy, prefer comboVars)
+    std::string currentValue;                  ///< Current value as string
+    std::function<void(UciHandler*)> pHandler; ///< Handler called on value change
 
     /// Allowed values for COMBO options.
     std::vector<std::string> comboVars{};
@@ -234,6 +234,6 @@ namespace engine {
     return os;
   }
 
-}// namespace engine
+} // namespace engine
 
-#endif// FRANKYCPP_UCIOPTIONS_H
+#endif // FRANKYCPP_UCIOPTIONS_H

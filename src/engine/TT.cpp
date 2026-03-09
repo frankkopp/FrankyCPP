@@ -45,7 +45,7 @@ std::ostream& operator<<(std::ostream& os, const TT::Entry& entry) {
 }
 
 TT::TT(const uint64_t newSizeInMByte) : noOfThreads(std::thread::hardware_concurrency()) {
-  if (noOfThreads == 0) noOfThreads = 1;// ensure at least one thread
+  if (noOfThreads == 0) noOfThreads = 1; // ensure at least one thread
   resize(newSizeInMByte);
 }
 
@@ -82,7 +82,7 @@ void TT::resize(const uint64_t newSizeInMByte) {
       const uint64_t oldSize = sizeInByte;
       if (maxNumberOfClusters <= 1) {
         LOG__CRITICAL(Logger::get().TT_LOG, "Unable to allocate minimal TT of 1 cluster ({} bytes). Out of memory.", sizeof(TTCluster));
-        throw;// fatal OOM condition for TT invariant (>=1 cluster)
+        throw; // fatal OOM condition for TT invariant (>=1 cluster)
       }
       maxNumberOfClusters = maxNumberOfClusters >> 1ULL;
       if (maxNumberOfClusters < 1) maxNumberOfClusters = 1;
@@ -186,8 +186,8 @@ void TT::put(const ZobristKey key, const Depth depth, const Move move, const Val
     // Branchless: (move != 0) evaluates to 0 or 1.
     if (storedKey != 0) {
       const int score = static_cast<int>(entry.depth) * 16
-                      - static_cast<int>(entry.age) * 2
-                      + static_cast<int>(entry.move != 0);
+                        - static_cast<int>(entry.age) * 2
+                        + static_cast<int>(entry.move != 0);
       if (score < victimScore) {
         victimScore = score;
         victimEntry = &entry;
@@ -247,7 +247,7 @@ std::optional<TT::Entry> TT::probe(const ZobristKey& key) {
 
     // IMMEDIATELY copy the entry after key load to minimize torn-read window.
     // We copy before verification because dataHash() reads the data fields.
-    Entry copy = entry;// Copy via copy constructor
+    Entry copy = entry; // Copy via copy constructor
 
     // Verify: storedKey XOR'd with data hash must equal the probe key.
     // This detects torn reads: if any field was corrupted, the reconstructed
@@ -307,7 +307,7 @@ void TT::ageEntries() {
 std::string TT::str() const {
   const std::size_t maxEntries = maxNumberOfClusters * CLUSTER_SIZE;
   return std::format(
-    deLocale,
+    projectLocale,
     "TT: size {:L} MB max entries {:L} ({:L} clusters x {}) of size {:L} Bytes entries {:L} ({:L}%) puts {:L} "
     "updates {:L} collisions {:L} overwrites {:L} probes {:L} hits {:L} ({:L}%) misses {:L} ({:L}%)",
     sizeInByte / MB, maxEntries, maxNumberOfClusters, CLUSTER_SIZE, sizeof(Entry), numberOfEntries, hashFull() / 10,

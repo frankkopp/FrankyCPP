@@ -205,7 +205,7 @@ TEST_F(TypesTest, moves) {
   EXPECT_EQ(SQ_A1, move.from());
   EXPECT_EQ(SQ_H1, move.to());
   EXPECT_EQ(NORMAL, move.type());
-  EXPECT_EQ(KNIGHT, move.promotionType());// not useful if not type PROMOTION
+  EXPECT_EQ(KNIGHT, move.promotionType()); // not useful if not type PROMOTION
 
   move = Move::promotion(SQ_A7, SQ_A8, QUEEN);
   ASSERT_TRUE(move.isValid());
@@ -307,7 +307,7 @@ TEST_F(TypesTest, elapsed) {
   const TimePoint start = clock::now();
   TimePoint jetzt       = clock::now();
   for (int i = 0; i < 500; ++i) {
-    std::cout << std::format(deLocale, "{:3}. Since start: {:L} ns - last jetzt: {:L} ns\n", i, elapsedSince(start).count(), elapsedSince(jetzt).count());
+    std::cout << std::format(projectLocale, "{:3}. Since start: {:L} ns - last jetzt: {:L} ns\n", i, elapsedSince(start).count(), elapsedSince(jetzt).count());
     jetzt = clock::now();
   }
   std::cout << std::endl;

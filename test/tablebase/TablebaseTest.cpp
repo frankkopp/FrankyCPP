@@ -61,7 +61,7 @@ namespace {
     return checkTb.isAvailable() ? checkTb.maxPieces() : 0;
   }
 
-}// namespace
+} // namespace
 
 // Macro for skipping tests based on tablebase requirements.
 // Must be called directly in the test function (not in a helper).
@@ -173,7 +173,7 @@ TEST_F(TablebaseTest, probeResultCursedWin) {
   TBProbeResult result;
   result.wdl = TBResult::CursedWin;
   EXPECT_TRUE(result.success());
-  EXPECT_TRUE(result.isWin());// CursedWin counts as win
+  EXPECT_TRUE(result.isWin()); // CursedWin counts as win
   EXPECT_FALSE(result.isDraw());
   EXPECT_FALSE(result.isLoss());
 }
@@ -193,7 +193,7 @@ TEST_F(TablebaseTest, probeResultBlessedLoss) {
   EXPECT_TRUE(result.success());
   EXPECT_FALSE(result.isWin());
   EXPECT_FALSE(result.isDraw());
-  EXPECT_TRUE(result.isLoss());// BlessedLoss counts as loss
+  EXPECT_TRUE(result.isLoss()); // BlessedLoss counts as loss
 }
 
 TEST_F(TablebaseTest, probeResultLoss) {
@@ -211,12 +211,12 @@ TEST_F(TablebaseTest, probeResultLoss) {
 
 TEST_F(TablebaseTest, tbValueToScoreWin) {
   const Value score = Tablebase::tbValueToScore(TBResult::Win, DEPTH_NONE);
-  EXPECT_GT(static_cast<int>(score), 8000);// High positive value
+  EXPECT_GT(static_cast<int>(score), 8000); // High positive value
 }
 
 TEST_F(TablebaseTest, tbValueToScoreLoss) {
   const Value score = Tablebase::tbValueToScore(TBResult::Loss, DEPTH_NONE);
-  EXPECT_LT(static_cast<int>(score), -8000);// High negative value
+  EXPECT_LT(static_cast<int>(score), -8000); // High negative value
 }
 
 TEST_F(TablebaseTest, tbValueToScoreDraw) {
@@ -305,7 +305,7 @@ TEST_F(TablebaseIntegrationTest, KQK_WhiteWins) {
   SKIP_IF_NO_TABLEBASES(0);
 
   // Queen on d2 doesn't attack e5 (diagonals are c1-e3-f4-g5 and c3-d2-e1)
-  const Position pos("8/8/8/4k3/8/8/3Q4/4K3 w - - 0 1");// White has KQ vs K
+  const Position pos("8/8/8/4k3/8/8/3Q4/4K3 w - - 0 1"); // White has KQ vs K
 
   LOG__INFO(Logger::get().TEST_LOG, "KQK test: canProbe={}, pieceCount={}, maxPieces={}",
             tb.canProbe(pos), pos.getOccupiedBb().popcount(), tb.maxPieces());
@@ -327,7 +327,7 @@ TEST_F(TablebaseIntegrationTest, KQK_WhiteWins) {
 TEST_F(TablebaseIntegrationTest, KRK_WhiteWins) {
   SKIP_IF_NO_TABLEBASES(0);
 
-  const Position pos("8/8/8/4k3/8/8/1R6/4K3 w - - 0 1");// White has KR vs K
+  const Position pos("8/8/8/4k3/8/8/1R6/4K3 w - - 0 1"); // White has KR vs K
 
   if (tb.canProbe(pos)) {
     const TBResult result = tb.probeWDL(pos);
@@ -340,7 +340,7 @@ TEST_F(TablebaseIntegrationTest, KRK_WhiteWins) {
 TEST_F(TablebaseIntegrationTest, KPK_WinningPosition) {
   SKIP_IF_NO_TABLEBASES(0);
 
-  const Position pos("8/4P3/8/4k3/8/8/8/4K3 w - - 0 1");// Pawn about to promote
+  const Position pos("8/4P3/8/4k3/8/8/8/4K3 w - - 0 1"); // Pawn about to promote
 
   if (tb.canProbe(pos)) {
     const TBResult result = tb.probeWDL(pos);
@@ -353,7 +353,7 @@ TEST_F(TablebaseIntegrationTest, KPK_WinningPosition) {
 TEST_F(TablebaseIntegrationTest, PositionWithCastling) {
   SKIP_IF_NO_TABLEBASES(0);
 
-  const Position pos("4k3/8/8/8/8/8/8/R3K2R w KQ - 0 1");// Has castling rights
+  const Position pos("4k3/8/8/8/8/8/8/R3K2R w KQ - 0 1"); // Has castling rights
 
   // Should not be probeable due to castling rights
   EXPECT_FALSE(tb.canProbe(pos));
@@ -373,7 +373,7 @@ TEST_F(TablebaseIntegrationTest, ProbeRootBestMove) {
   SKIP_IF_NO_TABLEBASES(0);
 
   // Use KRK position which is known to work
-  const Position pos("8/8/8/4k3/8/8/1R6/4K3 w - - 0 1");// KRK
+  const Position pos("8/8/8/4k3/8/8/1R6/4K3 w - - 0 1"); // KRK
 
   if (tb.canProbe(pos)) {
     const TBProbeResult result = tb.probeRoot(pos);
@@ -395,7 +395,7 @@ TEST_F(TablebaseIntegrationTest, KBK_Draw) {
   SKIP_IF_NO_TABLEBASES(0);
 
   // Black king e5, bishop c1 (doesn't attack e5), white king e1
-  const Position pos("8/8/8/4k3/8/8/8/2B1K3 w - - 0 1");// White has KB vs K
+  const Position pos("8/8/8/4k3/8/8/8/2B1K3 w - - 0 1"); // White has KB vs K
 
   if (tb.canProbe(pos)) {
     const TBResult result = tb.probeWDL(pos);
@@ -411,7 +411,7 @@ TEST_F(TablebaseIntegrationTest, KBK_Draw) {
 TEST_F(TablebaseIntegrationTest, KNK_Draw) {
   SKIP_IF_NO_TABLEBASES(0);
 
-  const Position pos("8/8/8/4k3/8/8/1N6/4K3 w - - 0 1");// White has KN vs K
+  const Position pos("8/8/8/4k3/8/8/1N6/4K3 w - - 0 1"); // White has KN vs K
 
   if (tb.canProbe(pos)) {
     const TBResult result = tb.probeWDL(pos);
@@ -429,7 +429,7 @@ TEST_F(TablebaseIntegrationTest, KBBK_WhiteWins) {
 
   // Black king on e5, bishops on c1 and f1, white king on e1
   // Bishops don't attack e5 from c1 or f1
-  const Position pos("8/8/8/4k3/8/8/8/2B1KB2 w - - 0 1");// White has KBB vs K
+  const Position pos("8/8/8/4k3/8/8/8/2B1KB2 w - - 0 1"); // White has KBB vs K
 
   if (tb.canProbe(pos)) {
     const TBResult result = tb.probeWDL(pos);
@@ -446,7 +446,7 @@ TEST_F(TablebaseIntegrationTest, KBNK_WhiteWins) {
   SKIP_IF_NO_TABLEBASES(0);
 
   // Black king on e5, bishop on c1 (doesn't attack e5), knight on b1
-  const Position pos("8/8/8/4k3/8/8/8/1NB1K3 w - - 0 1");// White has KBN vs K
+  const Position pos("8/8/8/4k3/8/8/8/1NB1K3 w - - 0 1"); // White has KBN vs K
 
   if (tb.canProbe(pos)) {
     const TBResult result = tb.probeWDL(pos);
@@ -462,7 +462,7 @@ TEST_F(TablebaseIntegrationTest, KBNK_WhiteWins) {
 TEST_F(TablebaseIntegrationTest, KNNK_Draw) {
   SKIP_IF_NO_TABLEBASES(0);
 
-  const Position pos("8/8/8/4k3/8/8/1N6/N3K3 w - - 0 1");// White has KNN vs K
+  const Position pos("8/8/8/4k3/8/8/1N6/N3K3 w - - 0 1"); // White has KNN vs K
 
   if (tb.canProbe(pos)) {
     const TBResult result = tb.probeWDL(pos);
@@ -478,7 +478,7 @@ TEST_F(TablebaseIntegrationTest, KNNK_Draw) {
 TEST_F(TablebaseIntegrationTest, KRvKR_Draw) {
   SKIP_IF_NO_TABLEBASES(0);
 
-  const Position pos("8/8/8/4k3/8/8/1R6/r3K3 w - - 0 1");// KR vs KR
+  const Position pos("8/8/8/4k3/8/8/1R6/r3K3 w - - 0 1"); // KR vs KR
 
   if (tb.canProbe(pos)) {
     const TBResult result = tb.probeWDL(pos);
@@ -495,7 +495,7 @@ TEST_F(TablebaseIntegrationTest, KQvKR_WhiteWins) {
   SKIP_IF_NO_TABLEBASES(0);
 
   // Queen d2 doesn't attack e5 (diagonals are c1-e3-f4-g5 and a5-b4-c3-e1)
-  const Position pos("8/8/8/4k3/8/8/3Q4/r3K3 w - - 0 1");// KQ vs KR
+  const Position pos("8/8/8/4k3/8/8/3Q4/r3K3 w - - 0 1"); // KQ vs KR
 
   if (tb.canProbe(pos)) {
     const TBResult result = tb.probeWDL(pos);
@@ -511,7 +511,7 @@ TEST_F(TablebaseIntegrationTest, KQvKR_WhiteWins) {
 TEST_F(TablebaseIntegrationTest, KRK_BlackToMove_BlackLoses) {
   SKIP_IF_NO_TABLEBASES(0);
 
-  const Position pos("8/8/8/4k3/8/8/1R6/4K3 b - - 0 1");// Black to move, white has KR vs K
+  const Position pos("8/8/8/4k3/8/8/1R6/4K3 b - - 0 1"); // Black to move, white has KR vs K
 
   if (tb.canProbe(pos)) {
     const TBResult result = tb.probeWDL(pos);
@@ -528,7 +528,7 @@ TEST_F(TablebaseIntegrationTest, KPK_DrawnPosition) {
   SKIP_IF_NO_TABLEBASES(0);
 
   // Pawn on a-file with black king controlling promotion square
-  const Position pos("k7/P7/K7/8/8/8/8/8 w - - 0 1");// Drawn - stalemate pattern
+  const Position pos("k7/P7/K7/8/8/8/8/8 w - - 0 1"); // Drawn - stalemate pattern
 
   if (tb.canProbe(pos)) {
     const TBResult result = tb.probeWDL(pos);
@@ -623,10 +623,10 @@ TEST_F(TablebaseIntegrationTest, MultipleProbes) {
   SKIP_IF_NO_TABLEBASES(0);
 
   std::vector<std::pair<std::string, TBResult>> testPositions = {
-    {"8/8/8/4k3/8/8/1R6/4K3 w - - 0 1", TBResult::Win}, // KRK white wins
-    {"8/8/8/4k3/8/8/1R6/4K3 b - - 0 1", TBResult::Loss},// KRK black loses
-    {"8/8/8/4k3/8/8/8/2B1K3 w - - 0 1", TBResult::Draw},// KBK draw (bishop c1 doesn't attack e5)
-    {"8/8/8/4k3/8/8/1N6/4K3 w - - 0 1", TBResult::Draw},// KNK draw
+    {"8/8/8/4k3/8/8/1R6/4K3 w - - 0 1", TBResult::Win},  // KRK white wins
+    {"8/8/8/4k3/8/8/1R6/4K3 b - - 0 1", TBResult::Loss}, // KRK black loses
+    {"8/8/8/4k3/8/8/8/2B1K3 w - - 0 1", TBResult::Draw}, // KBK draw (bishop c1 doesn't attack e5)
+    {"8/8/8/4k3/8/8/1N6/4K3 w - - 0 1", TBResult::Draw}, // KNK draw
   };
 
   int probed  = 0;
@@ -661,7 +661,7 @@ TEST_F(TablebaseIntegrationTest, MultipleProbes) {
 TEST_F(TablebaseIntegrationTest, ProbeRootDTZ) {
   SKIP_IF_NO_TABLEBASES(0);
 
-  const Position pos("8/8/8/4k3/8/8/1R6/4K3 w - - 0 1");// KRK
+  const Position pos("8/8/8/4k3/8/8/1R6/4K3 w - - 0 1"); // KRK
 
   if (tb.canProbe(pos)) {
     const TBProbeResult result = tb.probeRoot(pos);
@@ -706,9 +706,9 @@ TEST_F(TablebaseIntegrationTest, DifferentPiecesSameSquares) {
 
   // Different pieces but all legal positions (piece doesn't attack black king)
   std::vector<std::pair<std::string, std::string>> configs = {
-    {"8/8/8/4k3/8/8/1R6/4K3 w - - 0 1", "KRK"},// Rook b2 doesn't attack e5
-    {"8/8/8/4k3/8/8/8/2B1K3 w - - 0 1", "KBK"},// Bishop c1 doesn't attack e5
-    {"8/8/8/4k3/8/8/1N6/4K3 w - - 0 1", "KNK"},// Knight b2 doesn't attack e5
+    {"8/8/8/4k3/8/8/1R6/4K3 w - - 0 1", "KRK"}, // Rook b2 doesn't attack e5
+    {"8/8/8/4k3/8/8/8/2B1K3 w - - 0 1", "KBK"}, // Bishop c1 doesn't attack e5
+    {"8/8/8/4k3/8/8/1N6/4K3 w - - 0 1", "KNK"}, // Knight b2 doesn't attack e5
   };
 
   for (const auto& [fen, name] : configs) {
@@ -805,7 +805,7 @@ TEST_F(TablebaseIntegrationTest, prewarmCacheBasic) {
   tb.prewarmCache(5);
 
   // Verify TB still works after pre-warming
-  const Position pos("8/8/8/4k3/8/8/1R6/4K3 w - - 0 1");// KRK
+  const Position pos("8/8/8/4k3/8/8/1R6/4K3 w - - 0 1"); // KRK
   if (tb.canProbe(pos)) {
     const TBResult result = tb.probeWDL(pos);
     EXPECT_NE(TBResult::Failed, result);
@@ -819,13 +819,13 @@ TEST_F(TablebaseIntegrationTest, prewarmCacheWithPieceLimits) {
 
   // Test with different piece limits
   // Should complete without errors for all valid limits
-  tb.prewarmCache(3);// Only 3-piece endgames
-  tb.prewarmCache(4);// 3-4 piece endgames
-  tb.prewarmCache(5);// 3-5 piece endgames
+  tb.prewarmCache(3); // Only 3-piece endgames
+  tb.prewarmCache(4); // 3-4 piece endgames
+  tb.prewarmCache(5); // 3-5 piece endgames
 
   // If 6-piece TBs available, test that too
   if (tb.maxPieces() >= 6) {
-    tb.prewarmCache(6);// 3-6 piece endgames
+    tb.prewarmCache(6); // 3-6 piece endgames
   }
 
   // Verify TB still works
@@ -845,7 +845,7 @@ TEST_F(TablebaseIntegrationTest, prewarmCacheExceedsAvailable) {
   EXPECT_TRUE(tb.isAvailable());
 
   // Verify probing still works
-  const Position pos("8/8/8/4k3/8/8/8/4K2Q w - - 0 1");// KQK
+  const Position pos("8/8/8/4k3/8/8/8/4K2Q w - - 0 1"); // KQK
   if (tb.canProbe(pos)) {
     const TBResult result = tb.probeWDL(pos);
     EXPECT_NE(TBResult::Failed, result);
@@ -880,7 +880,7 @@ TEST_F(TablebaseIntegrationTest, AllThreePieceEndgames) {
   std::vector<std::tuple<std::string, std::string, TBResult>> endgames = {
     // Winning endgames
     {"8/8/8/4k3/8/8/1R6/4K3 w - - 0 1", "KRvK", TBResult::Win},
-    {"8/4P3/8/4k3/8/8/8/4K3 w - - 0 1", "KPvK (pawn on e7)", TBResult::Win},// Pawn about to promote
+    {"8/4P3/8/4k3/8/8/8/4K3 w - - 0 1", "KPvK (pawn on e7)", TBResult::Win}, // Pawn about to promote
     // Drawing endgames (insufficient material)
     {"8/8/8/4k3/8/8/1N6/4K3 w - - 0 1", "KNvK", TBResult::Draw},
   };
@@ -918,7 +918,7 @@ TEST_F(TablebaseIntegrationTest, AllFourPieceEndgames) {
   std::vector<std::tuple<std::string, std::string, TBResult>> endgames = {
     // Winning endgames
     {"8/8/8/4k3/8/8/1R6/R3K3 w - - 0 1", "KRRvK", TBResult::Win},
-    {"8/8/8/4k3/8/8/8/1NB1K3 w - - 0 1", "KBNvK", TBResult::Win},// Bishop c1, Knight b1
+    {"8/8/8/4k3/8/8/8/1NB1K3 w - - 0 1", "KBNvK", TBResult::Win}, // Bishop c1, Knight b1
     // Drawing endgames
     {"8/8/8/4k3/8/8/1N6/N3K3 w - - 0 1", "KNNvK", TBResult::Draw},
     {"8/8/8/4k3/8/8/1R6/r3K3 w - - 0 1", "KRvKR", TBResult::Draw},
@@ -1005,10 +1005,10 @@ TEST_F(TablebaseIntegrationTest, AllCornersPositions) {
   // Test various corner and edge positions - must be LEGAL positions
   // (opponent king cannot be in check when it's our turn)
   std::vector<std::pair<std::string, std::string>> positions = {
-    {"k7/8/8/8/8/8/1R6/7K w - - 0 1", "KRvK black king a8, rook b2"},// Rook b2 doesn't attack a8
-    {"7k/8/8/8/8/8/6R1/K7 w - - 0 1", "KRvK black king h8, rook g2"},// Rook g2 doesn't attack h8
-    {"1k6/8/8/8/8/8/8/R6K w - - 0 1", "KRvK black king b8, rook a1"},// Rook a1 doesn't attack b8
-    {"6k1/8/8/8/8/8/8/K6R w - - 0 1", "KRvK black king g8, rook h1"},// Rook h1 doesn't attack g8
+    {"k7/8/8/8/8/8/1R6/7K w - - 0 1", "KRvK black king a8, rook b2"}, // Rook b2 doesn't attack a8
+    {"7k/8/8/8/8/8/6R1/K7 w - - 0 1", "KRvK black king h8, rook g2"}, // Rook g2 doesn't attack h8
+    {"1k6/8/8/8/8/8/8/R6K w - - 0 1", "KRvK black king b8, rook a1"}, // Rook a1 doesn't attack b8
+    {"6k1/8/8/8/8/8/8/K6R w - - 0 1", "KRvK black king g8, rook h1"}, // Rook h1 doesn't attack g8
   };
 
   int tested = 0;
@@ -1111,9 +1111,9 @@ TEST_F(TablebaseIntegrationTest, WDLAndRootConsistency) {
 
   // Use positions that are known to work
   const std::vector<std::string> positions = {
-    "8/8/8/4k3/8/8/1R6/4K3 w - - 0 1",// KRK
-    "8/8/8/4k3/8/8/1N6/4K3 w - - 0 1",// KNK
-    "8/8/8/4k3/4P3/8/8/4K3 w - - 0 1",// KPK
+    "8/8/8/4k3/8/8/1R6/4K3 w - - 0 1", // KRK
+    "8/8/8/4k3/8/8/1N6/4K3 w - - 0 1", // KNK
+    "8/8/8/4k3/4P3/8/8/4K3 w - - 0 1", // KPK
   };
 
   for (const auto& fen : positions) {
@@ -1138,9 +1138,9 @@ TEST_F(TablebaseIntegrationTest, ProbeRootMoveLegality) {
   SKIP_IF_NO_TABLEBASES(0);
 
   const std::vector<std::string> positions = {
-    "8/8/8/4k3/8/8/1R6/4K3 w - - 0 1",// KRK white to move
-    "8/8/8/4k3/8/8/1R6/4K3 b - - 0 1",// KRK black to move
-    "8/8/8/4k3/4P3/8/8/4K3 w - - 0 1",// KPK
+    "8/8/8/4k3/8/8/1R6/4K3 w - - 0 1", // KRK white to move
+    "8/8/8/4k3/8/8/1R6/4K3 b - - 0 1", // KRK black to move
+    "8/8/8/4k3/4P3/8/8/4K3 w - - 0 1", // KPK
   };
 
   for (const auto& fen : positions) {
@@ -1172,9 +1172,9 @@ TEST_F(TablebaseIntegrationTest, DTZSignConsistency) {
   SKIP_IF_NO_TABLEBASES(0);
 
   const std::vector<std::string> positions = {
-    "8/8/8/4k3/8/8/1R6/4K3 w - - 0 1",// KRK white wins
-    "8/8/8/4k3/8/8/1R6/4K3 b - - 0 1",// KRK black loses
-    "8/8/8/4k3/8/8/1N6/4K3 w - - 0 1",// KNK draw
+    "8/8/8/4k3/8/8/1R6/4K3 w - - 0 1", // KRK white wins
+    "8/8/8/4k3/8/8/1R6/4K3 b - - 0 1", // KRK black loses
+    "8/8/8/4k3/8/8/1N6/4K3 w - - 0 1", // KNK draw
   };
 
   for (const auto& fen : positions) {
@@ -1226,7 +1226,7 @@ TEST_F(TablebaseIntegrationTest, ColorFlipConsistency) {
 TEST_F(TablebaseIntegrationTest, RapidProbing) {
   SKIP_IF_NO_TABLEBASES(0);
 
-  const Position pos("8/8/8/4k3/8/8/1R6/4K3 w - - 0 1");// KRK
+  const Position pos("8/8/8/4k3/8/8/1R6/4K3 w - - 0 1"); // KRK
 
   if (!tb.canProbe(pos)) {
     GTEST_SKIP() << "Cannot probe test position";
@@ -1261,9 +1261,9 @@ TEST_F(TablebaseIntegrationTest, AlternatingPositions) {
 
   // Use positions that are known to work reliably
   std::vector<std::pair<std::string, TBResult>> positions = {
-    {"8/8/8/4k3/8/8/1R6/4K3 w - - 0 1", TBResult::Win}, // KRK white wins
-    {"8/8/8/4k3/8/8/1R6/4K3 b - - 0 1", TBResult::Loss},// KRK black loses
-    {"8/8/8/4k3/8/8/1N6/4K3 w - - 0 1", TBResult::Draw},// KNK draw
+    {"8/8/8/4k3/8/8/1R6/4K3 w - - 0 1", TBResult::Win},  // KRK white wins
+    {"8/8/8/4k3/8/8/1R6/4K3 b - - 0 1", TBResult::Loss}, // KRK black loses
+    {"8/8/8/4k3/8/8/1N6/4K3 w - - 0 1", TBResult::Draw}, // KNK draw
   };
 
   int tested = 0;
@@ -1331,10 +1331,10 @@ TEST_F(TablebaseIntegrationTest, ProbeRootBestMoveValidity) {
   SKIP_IF_NO_TABLEBASES(0);
 
   const std::vector<std::string> positions = {
-    "8/8/8/4k3/8/8/1R6/4K3 w - - 0 1", // KRK - rook b2 doesn't attack e5
-    "8/8/8/4k3/4P3/8/8/4K3 w - - 0 1", // KPK - pawn e4 doesn't attack e5
-    "8/8/8/4k3/8/8/8/2B1KB2 w - - 0 1",// KBBK - bishops c1,f1 don't attack e5
-    "8/8/8/4k3/8/8/8/1NB1K3 w - - 0 1",// KBNK - bishop c1, knight b1 don't attack e5
+    "8/8/8/4k3/8/8/1R6/4K3 w - - 0 1",  // KRK - rook b2 doesn't attack e5
+    "8/8/8/4k3/4P3/8/8/4K3 w - - 0 1",  // KPK - pawn e4 doesn't attack e5
+    "8/8/8/4k3/8/8/8/2B1KB2 w - - 0 1", // KBBK - bishops c1,f1 don't attack e5
+    "8/8/8/4k3/8/8/8/1NB1K3 w - - 0 1", // KBNK - bishop c1, knight b1 don't attack e5
   };
 
   for (const auto& fen : positions) {
@@ -1406,7 +1406,7 @@ TEST_F(SearchTablebaseTest, RootProbeReturnsTablebaseMove) {
   search.isReady();
 
   SearchLimits sl;
-  sl.depth = 1;// Minimal depth since TB should return immediately
+  sl.depth = 1; // Minimal depth since TB should return immediately
 
   search.startSearch(pos, sl);
   search.waitWhileSearching();
@@ -1437,7 +1437,7 @@ TEST_F(SearchTablebaseTest, RootProbeDisabledWhenConfigured) {
   const std::string tbPath = findTablebasePath();
   CONFIG_OVERRIDE(
     s.TB_PATH           = tbPath;
-    s.USE_TB_PROBE_ROOT = false;// Disable root probing
+    s.USE_TB_PROBE_ROOT = false; // Disable root probing
     s.USE_BOOK          = false;);
 
   // KRK position
@@ -1458,7 +1458,7 @@ TEST_F(SearchTablebaseTest, RootProbeDisabledWhenConfigured) {
   EXPECT_FALSE(result.tbHit) << "TB should not be used when USE_TB_PROBE_ROOT=false";
   EXPECT_NE(MOVE_NONE, result.bestMove) << "Search should still find a move";
 }
-#endif// FRANKYCPP_PRODUCTION
+#endif // FRANKYCPP_PRODUCTION
 
 // Test that positions with too many pieces don't trigger TB
 TEST_F(SearchTablebaseTest, RootProbeSkippedForLargePositions) {
@@ -1468,7 +1468,7 @@ TEST_F(SearchTablebaseTest, RootProbeSkippedForLargePositions) {
   const std::string tbPath = findTablebasePath();
   CONFIG_OVERRIDE(s.TB_PATH = tbPath; s.USE_BOOK = false;);
 #ifndef FRANKYCPP_PRODUCTION
-  CONFIG_OVERRIDE(s.USE_TB_PROBE_ROOT = true;);// CONFIG_CONST in production — frozen at true
+  CONFIG_OVERRIDE(s.USE_TB_PROBE_ROOT = true;); // CONFIG_CONST in production — frozen at true
 #endif
 
   // Starting position - 32 pieces, way more than any TB
@@ -1498,7 +1498,7 @@ TEST_F(SearchTablebaseTest, RootProbeSkippedWithCastlingRights) {
   const std::string tbPath = findTablebasePath();
   CONFIG_OVERRIDE(s.TB_PATH = tbPath; s.USE_BOOK = false;);
 #ifndef FRANKYCPP_PRODUCTION
-  CONFIG_OVERRIDE(s.USE_TB_PROBE_ROOT = true;);// CONFIG_CONST in production — frozen at true
+  CONFIG_OVERRIDE(s.USE_TB_PROBE_ROOT = true;); // CONFIG_CONST in production — frozen at true
 #endif
 
   // 6-piece position but WITH castling rights (TBs don't cover castling)
@@ -1539,7 +1539,7 @@ TEST_F(SearchTablebaseTest, RootProbeNonImmediateSearchesDespiteTBHit) {
   search.isReady();
 
   SearchLimits sl;
-  sl.depth = 6;// Search to reasonable depth
+  sl.depth = 6; // Search to reasonable depth
 
   search.startSearch(pos, sl);
   search.waitWhileSearching();
@@ -1590,9 +1590,9 @@ TEST_F(SearchTablebaseTest, DisableBothProbingDisablesAllTB) {
   const std::string tbPath = findTablebasePath();
   CONFIG_OVERRIDE(
     s.TB_PATH             = tbPath;
-    s.USE_TB_PROBE_ROOT   = false;// Disable root probing
-    s.USE_TB_PROBE_SEARCH = false;// Disable search probing
-    s.TB_PROBE_DEPTH      = 0;    // Would normally probe everywhere
+    s.USE_TB_PROBE_ROOT   = false; // Disable root probing
+    s.USE_TB_PROBE_SEARCH = false; // Disable search probing
+    s.TB_PROBE_DEPTH      = 0;     // Would normally probe everywhere
     s.TB_PROBE_LIMIT      = 6;
     s.USE_BOOK            = false;);
 
@@ -1623,7 +1623,7 @@ TEST_F(SearchTablebaseTest, DisableBothProbingDisablesAllTB) {
   LOG__INFO(Logger::get().TEST_LOG, "TB probing disabled test: rootHits={} searchHits={} cutoffs={}",
             stats.tbRootHits, stats.tbSearchHits, stats.tbSearchCutoffs);
 }
-#endif// FRANKYCPP_PRODUCTION
+#endif // FRANKYCPP_PRODUCTION
 
 // Test TB_RULE50_THRESHOLD >= 100 effectively disables DTZ checks
 // In production, TB_RULE50_THRESHOLD is CONFIG_CONST — cannot be changed at runtime.
@@ -1635,11 +1635,11 @@ TEST_F(SearchTablebaseTest, Rule50ThresholdDisablesWhenHigh) {
   const std::string tbPath = findTablebasePath();
   CONFIG_OVERRIDE(
     s.TB_PATH             = tbPath;
-    s.USE_TB_PROBE_ROOT   = false;// Disable root probing to test search probing behavior
-    s.USE_TB_PROBE_SEARCH = true; // Enable search probing
+    s.USE_TB_PROBE_ROOT   = false; // Disable root probing to test search probing behavior
+    s.USE_TB_PROBE_SEARCH = true;  // Enable search probing
     s.TB_PROBE_DEPTH      = 1;
     s.TB_PROBE_LIMIT      = 6;
-    s.TB_RULE50_THRESHOLD = 100;// Disable 50-move rule checks (threshold >= 100)
+    s.TB_RULE50_THRESHOLD = 100; // Disable 50-move rule checks (threshold >= 100)
     s.USE_BOOK            = false;);
 
   // KRK position with high halfmove clock (set via FEN)
@@ -1667,7 +1667,7 @@ TEST_F(SearchTablebaseTest, Rule50ThresholdDisablesWhenHigh) {
   LOG__INFO(Logger::get().TEST_LOG, "Rule50 threshold=100 test: move={} value={}",
             result.bestMove.str(), result.bestMoveValue.str());
 }
-#endif// FRANKYCPP_PRODUCTION
+#endif // FRANKYCPP_PRODUCTION
 
 // Test that search TB probing produces cutoffs (statistics check)
 TEST_F(SearchTablebaseTest, SearchProbingProducesCutoffs) {
@@ -1679,7 +1679,7 @@ TEST_F(SearchTablebaseTest, SearchProbingProducesCutoffs) {
 
   const std::string tbPath = findTablebasePath();
   CONFIG_OVERRIDE(s.TB_PATH = tbPath; s.USE_BOOK = false;);
-#ifndef FRANKYCPP_PRODUCTION// would not compile in production since these are CONFIG_CONST frozen at defaults (probing enabled)
+#ifndef FRANKYCPP_PRODUCTION // would not compile in production since these are CONFIG_CONST frozen at defaults (probing enabled)
   // CONFIG_CONST in production — frozen at defaults
   CONFIG_OVERRIDE(
     s.USE_TB_PROBE_ROOT   = true;
@@ -1696,7 +1696,7 @@ TEST_F(SearchTablebaseTest, SearchProbingProducesCutoffs) {
   search.isReady();
 
   SearchLimits sl;
-  sl.depth = 8;// Search deep enough to get TB hits
+  sl.depth = 8; // Search deep enough to get TB hits
 
   search.startSearch(pos, sl);
   search.waitWhileSearching();
@@ -1725,8 +1725,8 @@ TEST_F(SearchTablebaseTest, ProbeDepthControlsProbing) {
   CONFIG_OVERRIDE(
     s.TB_PATH             = tbPath;
     s.USE_TB_PROBE_ROOT   = false;
-    s.USE_TB_PROBE_SEARCH = true;// Enable search probing
-    s.TB_PROBE_DEPTH      = 0;   // Always probe
+    s.USE_TB_PROBE_SEARCH = true; // Enable search probing
+    s.TB_PROBE_DEPTH      = 0;    // Always probe
     s.TB_PROBE_LIMIT      = 6;
     s.USE_BOOK            = false;);
 
@@ -1747,8 +1747,8 @@ TEST_F(SearchTablebaseTest, ProbeDepthControlsProbing) {
   CONFIG_OVERRIDE(
     s.TB_PATH             = tbPath;
     s.USE_TB_PROBE_ROOT   = false;
-    s.USE_TB_PROBE_SEARCH = true;// Enable search probing
-    s.TB_PROBE_DEPTH      = 5;   // Only probe at depth >= 5
+    s.USE_TB_PROBE_SEARCH = true; // Enable search probing
+    s.TB_PROBE_DEPTH      = 5;    // Only probe at depth >= 5
     s.TB_PROBE_LIMIT      = 6;
     s.USE_BOOK            = false;);
 
@@ -1769,7 +1769,7 @@ TEST_F(SearchTablebaseTest, ProbeDepthControlsProbing) {
   EXPECT_GE(hitsDepth0, hitsDepth5)
     << "Lower TB_PROBE_DEPTH should result in >= TB hits";
 }
-#endif// FRANKYCPP_PRODUCTION
+#endif // FRANKYCPP_PRODUCTION
 
 // Test TB_PROBE_LIMIT controls piece count
 // In production, TB_PROBE_LIMIT is CONFIG_CONST — cannot be changed at runtime.
@@ -1783,14 +1783,14 @@ TEST_F(SearchTablebaseTest, ProbeLimitControlsPieceCount) {
   CONFIG_OVERRIDE(
     s.TB_PATH             = tbPath;
     s.USE_TB_PROBE_ROOT   = false;
-    s.USE_TB_PROBE_SEARCH = true;// Enable search probing
+    s.USE_TB_PROBE_SEARCH = true; // Enable search probing
     s.TB_PROBE_DEPTH      = 1;
-    s.TB_PROBE_LIMIT      = 3;// Very restrictive - only KvK (impossible) or 3-piece
+    s.TB_PROBE_LIMIT      = 3; // Very restrictive - only KvK (impossible) or 3-piece
     s.USE_BOOK            = false;);
 
   // Use 5-piece position so even after captures we still exceed limit of 3
   // KRKpp = 5 pieces, after one capture = 4 pieces (still > 3)
-  const Position pos("8/8/8/3p4/4p3/8/1R2K3/7k w - - 0 1");// KRKpp = 5 pieces
+  const Position pos("8/8/8/3p4/4p3/8/1R2K3/7k w - - 0 1"); // KRKpp = 5 pieces
 
   Search search;
   search.isReady();
@@ -1812,7 +1812,7 @@ TEST_F(SearchTablebaseTest, ProbeLimitControlsPieceCount) {
   EXPECT_EQ(0ULL, stats.tbSearchHits)
     << "Should not probe positions exceeding TB_PROBE_LIMIT";
 }
-#endif// FRANKYCPP_PRODUCTION
+#endif // FRANKYCPP_PRODUCTION
 
 //=============================================================================
 // Tablebase Probing During Search (not at root)
@@ -1830,7 +1830,7 @@ TEST_F(SearchTablebaseTest, SevenPieceTBProbeAfterCapture) {
 
   const std::string tbPath = findTablebasePath();
   CONFIG_OVERRIDE(s.USE_BOOK = false; s.TB_PATH = tbPath;);
-#ifndef FRANKYCPP_PRODUCTION// would not compile in production since these are CONFIG_CONST frozen at defaults (probing enabled)
+#ifndef FRANKYCPP_PRODUCTION // would not compile in production since these are CONFIG_CONST frozen at defaults (probing enabled)
   // CONFIG_CONST in production — frozen at defaults (probing enabled)
   CONFIG_OVERRIDE(
     s.USE_TB_PROBE_ROOT   = true;
@@ -1881,7 +1881,7 @@ TEST_F(SearchTablebaseTest, EightPieceTBProbeAfterExchanges) {
 
   const std::string tbPath = findTablebasePath();
   CONFIG_OVERRIDE(s.TB_PATH = tbPath; s.USE_BOOK = false;);
-#ifndef FRANKYCPP_PRODUCTION// would not compile in production since these are CONFIG_CONST frozen at defaults (probing enabled)
+#ifndef FRANKYCPP_PRODUCTION // would not compile in production since these are CONFIG_CONST frozen at defaults (probing enabled)
   // CONFIG_CONST in production — frozen at defaults (probing enabled)
   CONFIG_OVERRIDE(
     s.USE_TB_PROBE_ROOT   = true;
@@ -1929,7 +1929,7 @@ TEST_F(SearchTablebaseTest, QueenVsRookPawnTBProbe) {
 
   const std::string tbPath = findTablebasePath();
   CONFIG_OVERRIDE(s.TB_PATH = tbPath; s.USE_BOOK = false;);
-#ifndef FRANKYCPP_PRODUCTION// would not compile in production since these are CONFIG_CONST frozen at defaults (probing enabled)
+#ifndef FRANKYCPP_PRODUCTION // would not compile in production since these are CONFIG_CONST frozen at defaults (probing enabled)
   // CONFIG_CONST in production — frozen at defaults (probing enabled)
   CONFIG_OVERRIDE(
     s.USE_TB_PROBE_ROOT   = true;
@@ -1978,7 +1978,7 @@ TEST_F(SearchTablebaseTest, TacticalSequenceToTB) {
 
   const std::string tbPath = findTablebasePath();
   CONFIG_OVERRIDE(s.TB_PATH = tbPath; s.USE_BOOK = false;);
-#ifndef FRANKYCPP_PRODUCTION// would not compile in production since these are CONFIG_CONST frozen at defaults (probing enabled)
+#ifndef FRANKYCPP_PRODUCTION // would not compile in production since these are CONFIG_CONST frozen at defaults (probing enabled)
   // CONFIG_CONST in production — frozen at defaults (probing enabled)
   CONFIG_OVERRIDE(
     s.USE_TB_PROBE_ROOT   = true;
@@ -1997,7 +1997,7 @@ TEST_F(SearchTablebaseTest, TacticalSequenceToTB) {
   search.isReady();
 
   SearchLimits sl;
-  sl.depth = 12;// Need deeper search for tactical sequence
+  sl.depth = 12; // Need deeper search for tactical sequence
 
   search.startSearch(pos, sl);
   search.waitWhileSearching();
@@ -2027,7 +2027,7 @@ TEST_F(SearchTablebaseTest, NinePieceRookEndgameTBProbe) {
 
   const std::string tbPath = findTablebasePath();
   CONFIG_OVERRIDE(s.TB_PATH = tbPath; s.USE_BOOK = false;);
-#ifndef FRANKYCPP_PRODUCTION// would not compile in production since these are CONFIG_CONST frozen at defaults (probing enabled)
+#ifndef FRANKYCPP_PRODUCTION // would not compile in production since these are CONFIG_CONST frozen at defaults (probing enabled)
   // CONFIG_CONST in production — frozen at defaults (probing enabled)
   CONFIG_OVERRIDE(
     s.USE_TB_PROBE_ROOT   = true;
@@ -2076,7 +2076,7 @@ TEST_F(SearchTablebaseTest, ImmediateCaptureToTB) {
 
   const std::string tbPath = findTablebasePath();
   CONFIG_OVERRIDE(s.TB_PATH = tbPath; s.USE_BOOK = false;);
-#ifndef FRANKYCPP_PRODUCTION// would not compile in production since these are CONFIG_CONST frozen at defaults (probing enabled)
+#ifndef FRANKYCPP_PRODUCTION // would not compile in production since these are CONFIG_CONST frozen at defaults (probing enabled)
   // CONFIG_CONST in production — frozen at defaults (probing enabled)
   CONFIG_OVERRIDE(
     s.USE_TB_PROBE_ROOT   = true;

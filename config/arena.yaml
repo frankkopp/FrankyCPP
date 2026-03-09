@@ -96,7 +96,7 @@ testSuiteRuns:
   # ==========================================================================
   - engine: "FrankyCPP v1.5"
     engineVersion: "v1.5"
-    tag: "baseAfterTtBuckets"  # Set to current feature name when testing
+    tag: ""  # Set to current feature name when testing
     enginePath: "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe"
     timePerMove: 5000
     maxDepth: 99
@@ -335,7 +335,7 @@ benchmarks:
     depth: 12
     hashSizeMB: 128
     threads: 4
-#    tag: "baseAfterTtBuckets"  # Set to current feature name when testing
+    tag: ""  # Set to current feature name when testing
 
   - name: "v1.5 External"
     enginePath: "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe"
@@ -344,7 +344,7 @@ benchmarks:
     depth: 12
     hashSizeMB: 128
     threads: 4
-#    tag: "baseAfterTtBuckets"  # Set to current feature name when testing
+    tag: ""  # Set to current feature name when testing
 
 #  - name: "v1.4 External (PROD)"
 #    enginePath: "cmake-build-win-release-prod/src/FrankyCPP_v1.4.exe"

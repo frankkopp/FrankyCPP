@@ -120,7 +120,7 @@ namespace chess {
 
       /// Generates all Zobrist keys at compile time using a fixed seed.
       constexpr Tables() {
-        uint64_t state = 1070372ULL;// fixed seed for reproducibility
+        uint64_t state = 1070372ULL; // fixed seed for reproducibility
         // pieces
         for (int pc = 0; pc < PIECE_LENGTH; ++pc) {
           for (int sq = 0; sq < SQ_LENGTH; ++sq) {
@@ -154,8 +154,8 @@ namespace chess {
 
     /// Zobrist key XORed when Black is to move.
     inline constexpr ZobristKey nextPlayer = T.nextPlayer;
-  }// namespace Zobrist
+  } // namespace Zobrist
 
-}// namespace chess
+} // namespace chess
 
-#endif// FRANKYCPP_ZOBRIST_H
+#endif // FRANKYCPP_ZOBRIST_H

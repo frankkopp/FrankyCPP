@@ -155,7 +155,7 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
     Bitboard doubled   = BbZero;
     Bitboard passed    = BbZero;
     Bitboard blocked   = BbZero;
-    Bitboard phalanx   = BbZero;// both pawns are counted
+    Bitboard phalanx   = BbZero; // both pawns are counted
     Bitboard supported = BbZero;
 
     // LOOP through all pawns of this color
@@ -209,7 +209,7 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
     tmpScore.midgame += static_cast<Value>(midvalue * color.sign());
     tmpScore.endgame += static_cast<Value>(endvalue * color.sign());
     //    LOG__DEBUG(Logger::get().EVAL_LOG, "Raw pawn eval for {} results midvalue = {} and endvalue = {}", color ? "BLACK" : "WHITE", midvalue, endvalue);
-  }// color loop
+  } // color loop
 
   // Store back only when enabled; get entry pointer for put()
   if (EvalConfig.USE_PAWN_TT && pawnCache && key != 0) {
@@ -387,8 +387,8 @@ inline void Evaluator::queenEval(const Position& p, Score& s, const Color us, co
   // Simple tropism towards enemy king (Tier 0/phase-scaled)
   if (EvalConfig.USE_QUEEN_TROPISM) {
     const Square ksq    = p.getKingSquare(them);
-    const int dist      = sq.distanceTo(ksq);// 0..7
-    const int closeness = 8 - dist;          // 1..8 (or 8 if dist==0)
+    const int dist      = sq.distanceTo(ksq); // 0..7
+    const int closeness = 8 - dist;           // 1..8 (or 8 if dist==0)
     mid += closeness * EvalConfig.QUEEN_TROPISM_MID_PER_STEP;
     end += closeness * EvalConfig.QUEEN_TROPISM_END_PER_STEP;
   }

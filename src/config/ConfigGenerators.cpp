@@ -168,7 +168,7 @@ namespace config {
       LOG__WARN(Logger::get().SEARCH_LOG, "Unknown key in {} config: {}", context, key);
     }
 
-  }// namespace
+  } // namespace
 
   std::set<std::string> parseYamlConfig(
     const YAML::Node& node,
@@ -477,7 +477,7 @@ namespace config {
       ConfigDomain::Tuning,
       ConfigDomain::Debug};
 
-  }// namespace
+  } // namespace
 
   std::string generateConfigTable(
     const SearchConfigData& search,
@@ -674,7 +674,7 @@ namespace config {
       }
     }
 
-    return root.dump(2);// Pretty print with 2-space indent
+    return root.dump(2); // Pretty print with 2-space indent
   }
 
   std::optional<ConfigDomain> parseDomainName(const std::string& name) {
@@ -684,8 +684,8 @@ namespace config {
     if (lower == "eval") return ConfigDomain::Eval;
     if (lower == "tuning") return ConfigDomain::Tuning;
     if (lower == "debug") return ConfigDomain::Debug;
-    if (lower == "all") return std::nullopt;// nullopt = no filter = all domains
-    return std::nullopt;                    // Unknown domain treated as "all"
+    if (lower == "all") return std::nullopt; // nullopt = no filter = all domains
+    return std::nullopt;                     // Unknown domain treated as "all"
   }
 
-}// namespace config
+} // namespace config

@@ -128,7 +128,7 @@ namespace {
     return {exitCode, output};
   }
 
-}// namespace
+} // namespace
 
 class CliIntegrationTest : public testing::Test {
 protected:

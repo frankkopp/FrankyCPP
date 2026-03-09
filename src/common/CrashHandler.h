@@ -40,6 +40,6 @@ namespace common::crashhandler {
   /// @param reason A description of why the dump was triggered
   void triggerDump(const std::string& reason = "manual");
 
-}// namespace common::crashhandler
+} // namespace common::crashhandler
 
-#endif// FRANKYCPP_CRASHHANDLER_H
+#endif // FRANKYCPP_CRASHHANDLER_H
