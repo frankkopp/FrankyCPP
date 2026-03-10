@@ -51,14 +51,14 @@ ConfigRegistry::ConfigRegistry() {
 #ifdef _MSC_VER
 // Windows MSVC builds
 #ifdef _DEBUG
-  static_assert(sizeof(SearchConfigData) == 624,
+  static_assert(sizeof(SearchConfigData) == 632,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 256,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
-  static_assert(sizeof(SearchConfigData) == 592,
+  static_assert(sizeof(SearchConfigData) == 600,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -69,7 +69,7 @@ ConfigRegistry::ConfigRegistry() {
 // Linux GCC/Clang builds (including WSL)
 #ifdef NDEBUG
   // Release build
-  static_assert(sizeof(SearchConfigData) == 592,
+  static_assert(sizeof(SearchConfigData) == 600,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -77,7 +77,7 @@ ConfigRegistry::ConfigRegistry() {
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
   // Debug build
-  static_assert(sizeof(SearchConfigData) == 592,
+  static_assert(sizeof(SearchConfigData) == 600,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -423,6 +423,32 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .exposure = {.uci = false, .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.SMP_HELPER_START_DEPTH; }),
     .setter = SEARCH_CONFIG_SETTER(SMP_HELPER_START_DEPTH, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "USE_BEST_THREAD_SELECTION",
+    .uciName = "Best Thread Selection",
+    .description = "Select best result from any thread after SMP search (not just main thread)",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.USE_BEST_THREAD_SELECTION),
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.USE_BEST_THREAD_SELECTION; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_BEST_THREAD_SELECTION, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "BEST_THREAD_SCORE_MARGIN",
+    .uciName = "Best Thread Score Margin",
+    .description = "Score margin (centipawns) for best-thread depth vs score comparison",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.BEST_THREAD_SCORE_MARGIN),
+    .minValue = 0,
+    .maxValue = 500,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.BEST_THREAD_SCORE_MARGIN; }),
+    .setter = SEARCH_CONFIG_SETTER(BEST_THREAD_SCORE_MARGIN, parseInt)
   });
 
   definitions_.push_back({

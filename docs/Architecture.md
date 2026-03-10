@@ -277,9 +277,10 @@ The core search algorithm using alpha-beta with iterative deepening.
 
 **Threading Model (Lazy SMP):**
 - **Main search thread (T0):** Runs the full search with all features — iterative deepening, aspiration windows, time management, UCI `info` output, and best move reporting. Only T0 sends output to the UCI handler.
-- **Helper threads (T1..Tn):** Run simplified searches — same alpha-beta algorithm but without aspiration windows, without UCI output, and with root-move skip-size diversification (thread N skips every N-th root move) to explore different parts of the tree.
+- **Helper threads (T1..Tn):** Run the same full `iterativeDeepening()` code as T0 — aspiration windows, LMR, move ordering, etc. — but with `isMainThread()` guards suppressing UCI output and time management. Each helper starts at a different depth offset (1 + id % 3) for search diversification.
 - The only shared state is the **transposition table (TT)** — threads communicate implicitly by reading/writing TT entries.
 - A shared `std::atomic_bool` stop flag coordinates shutdown; when T0 decides to stop (time limit, depth limit, or `stop` command), all threads exit.
+- After all threads stop, **best-thread selection** compares depth and score across all threads to pick the best result (not necessarily T0's).
 - Node counts are aggregated from all threads for UCI `info nodes` output.
 - See `docs/Lazy_SMP_Explained.md` for a full description of the algorithm.
 
@@ -305,15 +306,14 @@ class Search {
   std::unique_ptr<OpeningBook> book;
   std::unique_ptr<Tablebase> tablebase;
 
-  // Per-thread state (index 0 = main thread)
-  std::vector<std::unique_ptr<Evaluator>> threadEvaluators;  // Each has own PawnTT
-  std::vector<History> threadHistory;
-  std::vector<std::array<PlyInfo, DEPTH_MAX + 1>> threadPlyStacks;
+  // Per-thread state (index 0 = main thread, 1..N-1 = helpers)
+  // Each SearchThreadData owns: Position, Evaluator, PVTable, History, PlyInfo stack, rootMoves,
+  //   completedIterationDepth, lastIterationValue (for best-thread selection)
+  std::vector<std::unique_ptr<SearchThreadData>> searchThreadData;
 
   std::thread searchThread;                    // Main search thread
   std::vector<std::thread> helperThreads;      // Lazy SMP helper threads
   std::atomic_bool stopSearchFlag;
-  std::atomic<uint64_t> totalNodes;            // Aggregated across all threads
   // ...
 };
 ```
@@ -499,7 +499,13 @@ TT store result  (shared TT — all threads contribute)
   stopFlag set → helper threads exit, nodes aggregated
          │
          ▼
-UciHandler::sendSearchUpdate() / sendResult()
+  selectBestThread() → compare depth+score across all threads
+         │
+         ├──► TB root override (if applicable)
+         ├──► Ponder move extraction (PV or TT fallback)
+         │
+         ▼
+UciHandler::sendFinalUciInfo() + sendResult()
 ```
 
 ---
@@ -512,7 +518,7 @@ FrankyCPP uses **Lazy SMP** for parallel search — multiple threads run indepen
 |-------------------------|-----------------------------------------------------------------------------------------------------------|
 | Main thread             | UCI command loop (`UciHandler::loop()`)                                                                   |
 | Search thread (T0)      | **Main search:** iterative deepening, aspiration windows, time management, UCI output, best move decision |
-| Helper threads (T1..Tn) | **Simplified search:** alpha-beta only, no aspiration, no UCI output, root-move diversification           |
+| Helper threads (T1..Tn) | **Full search:** same iterative deepening as T0, with depth offset diversification, no UCI output         |
 | Timer thread            | Monitors time limits, sets stop flag                                                                      |
 
 **Main Search Thread (T0) Responsibilities:**
@@ -520,21 +526,29 @@ FrankyCPP uses **Lazy SMP** for parallel search — multiple threads run indepen
 - Manages time control and decides when to stop
 - Sends all UCI `info` strings (depth, score, pv, nodes, nps, etc.)
 - Reports the final `bestmove` to the GUI
-- Coordinates helper thread lifecycle (spawn on search start, join on stop)
+- Coordinates helper thread lifecycle (spawn after TT priming, join on stop)
 
 **Helper Threads (T1..Tn) Responsibilities:**
-- Run the same alpha-beta search algorithm as T0
-- **No aspiration windows** — search with full (-∞, +∞) window initially
-- **No UCI output** — silent operation
-- **Root-move skip diversification** — thread N skips every N-th root move to explore different branches
-- Contribute to TT population — their search results help T0 find better moves faster
+- Run full `iterativeDeepening()` — same code as T0 (aspiration windows, LMR, etc.)
+- **No UCI output** — all `send*()` calls guarded by `isMainThread()`
+- **No time management** — only check `stopSearchFlag`, no time decisions
+- **Depth offset diversification** — start at depth (1 + id % 3) to spread search across different depths
+- Contribute to TT population — their search results help all threads find better moves
+- Track `completedIterationDepth` and `lastIterationValue` for best-thread selection
 - Exit immediately when stop flag is set
+
+**Best Thread Selection:**
+- After all helpers join, `selectBestThread()` compares all threads using a depth+score heuristic
+- Deeper thread wins unless its score is worse by more than `BEST_THREAD_SCORE_MARGIN` (default: 50cp)
+- If a helper thread is selected, a final UCI `info` line is sent before `bestmove` for GUI consistency
+- TB root override and ponder move extraction apply on top of the selected thread's result
+- Configurable via UCI options `Best Thread Selection` and `Best Thread Score Margin`
 
 **Lazy SMP Design:**
 - Each thread holds its own `Position` copy, `History` tables, and `PlyInfo` stack — **no locking on hot paths**
 - The `TT` (transposition table) is the **only shared data structure**; threads communicate implicitly through it
 - A single `std::atomic_bool` stop flag stops all threads simultaneously
-- The best move comes from T0's search (informed by TT entries from all threads)
+- The best move comes from the best thread's search (depth+score selection across all threads)
 
 **Synchronization:**
 - `std::binary_semaphore` for search init/running state handoff

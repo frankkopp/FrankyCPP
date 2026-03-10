@@ -101,6 +101,15 @@ namespace engine {
     /// After each iteration, rootMoves[0] contains the best move with its score.
     MoveList rootMoves{};
 
+    /// Highest fully completed iteration depth for this thread.
+    /// Used for best-thread selection at search end.
+    /// Reset to DEPTH_NONE before each search; updated after each successful iteration.
+    Depth completedIterationDepth = DEPTH_NONE;
+
+    /// Score from the last completed iteration.
+    /// Used alongside completedIterationDepth for best-thread selection.
+    Value lastIterationValue = VALUE_NONE;
+
     /// LMR reduction table pre-computed for depth 0..31 and moves searched 0..63
     /// Regenerated at search start based on config settings
     std::array<std::array<int, 64>, 32> LMR_REDUCTION{};
@@ -113,7 +122,7 @@ namespace engine {
     SearchThreadData() : SearchThreadData(0) {}
 
     /// Constructor with thread ID
-    explicit SearchThreadData(int threadId) : id(threadId) {}
+    explicit SearchThreadData(const int threadId) : id(threadId) {}
 
     // =========================================================================
     // Reset Methods
@@ -129,11 +138,13 @@ namespace engine {
       history.reset();
       statistics = SearchStats{};
       rootMoves.clear();
+      completedIterationDepth = DEPTH_NONE;
+      lastIterationValue = VALUE_NONE;
     }
 
     /// Sets history data pointer for all MoveGenerators in plyStack
     void setHistoryDataForMoveGenerators() {
-      for (auto& plyInfo : plyStack) {
+      for (const auto& plyInfo : plyStack) {
         plyInfo.mg->setHistoryData(&history);
       }
     }

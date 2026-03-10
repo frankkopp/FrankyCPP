@@ -4,7 +4,7 @@
 
 FrankyCPP is a production-ready C++ chess engine (v0.7 → v1.5) implementing the UCI protocol. It's a modern evolution from "FrankyGo" leveraging C++20 features. The engine features alpha-beta search with advanced pruning techniques, configurable evaluation function, opening book support, and comprehensive testing infrastructure.
 
-**v1.5 Development Cycle (Complete):** TT bucket design (4-way associative, cache-line aligned), XOR key verification for SMP race safety, Arena testing improvements. Total result: **+92.5 ELO** vs v1.4 baseline (**+320 ELO cumulative** vs v1.1).
+**v1.5 Development Cycle (Complete):** TT bucket design (4-way associative, cache-line aligned), XOR key verification for SMP race safety, Best Thread Selection for Lazy SMP (depth+score heuristic across all threads), Arena testing improvements. Total result: **+103.7 ELO** vs v1.4 baseline (**+331 ELO cumulative** vs v1.1).
 
 **v1.4 Development Cycle (Complete):** Lazy SMP multi-threading, search feature correctness review, improving flag, LMR history-based reductions, CutNode reductions. Total result: **+119 ELO** vs v1.3 baseline.
 
@@ -502,7 +502,7 @@ Future improvements are tracked in the v1.x roadmap below.
 ---
 
 *Review conducted: 2026-01-26*  
-*Last updated: 2026-03-09 (v1.5 Arena results: +92.5 ELO vs v1.4, +320 cumulative vs v1.1)*
+*Last updated: 2026-03-10 (v1.5 Arena results: +103.7 ELO vs v1.4, +331 cumulative vs v1.1; Best Thread Selection validated)*
 
 ---
 

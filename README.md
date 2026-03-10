@@ -7,7 +7,7 @@ Modern C++20 UCI Chess Engine
 
 ## Version
 
-**v1.5.0** - TT Buckets, SMP Hardening & Arena Improvements (+92.5 ELO vs. v1.4, +320 cumulative vs v1.1)
+**v1.5.0** - TT Buckets, Best Thread Selection, SMP Hardening & Arena Improvements (+103.7 ELO vs. v1.4, +331 cumulative vs v1.1)
 
 **Previous versions:**
 - v1.4 - SMP and Search Feature Reviews (+119 ELO vs. v1.3 baseline)

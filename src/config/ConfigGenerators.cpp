@@ -222,10 +222,11 @@ namespace config {
     }
 
     // Warn about unknown keys if requested
+    // Keys starting with '_' are internal/test markers (e.g., _YAML_SMOKE_TEST_MARKER) — skip them
     if (warnUnknown) {
       for (const auto& kv : node) {
         const auto key = kv.first.as<std::string>("");
-        if (!key.empty() && !parsedKeys.contains(key)) {
+        if (!key.empty() && !key.starts_with('_') && !parsedKeys.contains(key)) {
           logUnknownKey(key, "YAML");
         }
       }

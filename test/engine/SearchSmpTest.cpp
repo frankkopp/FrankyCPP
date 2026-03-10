@@ -753,3 +753,162 @@ TEST_F(SearchSmpTest, NewGameResetsMultiThreaded) {
   // EXPECT_GE(sameMoveCount, (numIterations - 1) / 2)
   //   << "Best move should be consistent across most runs";
 }
+// =============================================================================
+// Best Thread Selection Tests
+// =============================================================================
+
+// Test: Best-thread selection with multiple threads produces a valid result
+TEST_F(SearchSmpTest, BestThreadSelectionEnabled) {
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  CONFIG_OVERRIDE(s.THREADS = 4;);
+#ifdef FRANKYCPP_PRODUCTION
+  // In production, USE_BEST_THREAD_SELECTION is static constexpr true (default)
+  ASSERT_TRUE(SEARCH_CONFIG.USE_BEST_THREAD_SELECTION) << "Production default must be true";
+#else
+  CONFIG_OVERRIDE(s.USE_BEST_THREAD_SELECTION = true;);
+#endif
+
+  const Position p{"r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3"};
+  Search search{};
+  search.isReady();
+
+  SearchLimits sl{};
+  sl.timeControl = true;
+  sl.moveTime    = 2s;
+
+  search.startSearch(p, sl);
+  search.waitWhileSearching();
+
+  ASSERT_TRUE(search.hasResult()) << "Search must complete with best-thread selection";
+
+  const auto& result = search.getLastSearchResult();
+  fprintln("Best-thread selection: move={}, value={}, depth={}, nodes={:L}, threads={}",
+           result.bestMove.str(), result.bestMoveValue.str(), result.depth, result.nodes, result.threads);
+
+  EXPECT_NE(MOVE_NONE, result.bestMove) << "Must find a best move";
+  EXPECT_GT(result.depth, 0) << "Must have completed at least one iteration";
+  EXPECT_TRUE(result.bestMoveValue.isValid()) << "Best move value must be valid";
+  EXPECT_GT(result.nodes, 0) << "Must visit some nodes";
+  EXPECT_EQ(4, result.threads) << "Should report 4 threads";
+}
+
+// Test: With selection disabled, result should come from main thread
+TEST_F(SearchSmpTest, BestThreadSelectionDisabled) {
+#ifdef FRANKYCPP_PRODUCTION
+  GTEST_SKIP() << "Skipping: USE_BEST_THREAD_SELECTION is constexpr in production, cannot disable";
+#  else
+  CONFIG_OVERRIDE(s.USE_BEST_THREAD_SELECTION = false;);
+#endif
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  CONFIG_OVERRIDE(s.THREADS = 4;);
+
+  const Position p{"r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3"};
+  Search search{};
+  search.isReady();
+
+  SearchLimits sl{};
+  sl.timeControl = true;
+  sl.moveTime    = 2s;
+
+  search.startSearch(p, sl);
+  search.waitWhileSearching();
+
+  ASSERT_TRUE(search.hasResult()) << "Search must complete with best-thread selection disabled";
+
+  const auto& result = search.getLastSearchResult();
+  fprintln("Selection disabled: move={}, value={}, depth={}, nodes={:L}",
+           result.bestMove.str(), result.bestMoveValue.str(), result.depth, result.nodes);
+
+  EXPECT_NE(MOVE_NONE, result.bestMove) << "Must find a best move";
+  EXPECT_GT(result.depth, 0) << "Must have completed at least one iteration";
+
+  // With selection disabled, result depth should match main thread's completed iteration depth
+  const auto& mainTd = search.mainThread();
+  EXPECT_EQ(mainTd.completedIterationDepth, result.depth)
+    << "With selection disabled, result should use main thread's depth";
+}
+
+// Test: selectBestThread() logic with synthetic data
+TEST_F(SearchSmpTest, selectBestThread) {
+#ifdef FRANKYCPP_PRODUCTION
+  GTEST_SKIP() << "Skipping: USE_BEST_THREAD_SELECTION/BEST_THREAD_SCORE_MARGIN are constexpr in production";
+#else
+  CONFIG_OVERRIDE(s.USE_BEST_THREAD_SELECTION = true;);
+  CONFIG_OVERRIDE(s.BEST_THREAD_SCORE_MARGIN = 50;);
+#endif
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  CONFIG_OVERRIDE(s.THREADS = 4;);
+
+  // Run a minimal search to initialize internal state (searchThreadData, etc.)
+  const Position p{"rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"};
+  Search search{};
+  search.isReady();
+
+  SearchLimits sl{};
+  sl.depth = 6;
+  search.startSearch(p, sl);
+  search.waitWhileSearching();
+  ASSERT_TRUE(search.hasResult());
+
+  // Now test selectBestThread() with synthetic data
+  // Overwrite the completedIterationDepth and lastIterationValue on thread data
+
+  // Case 1: Helper reached deeper depth with similar score → helper wins
+  search.mainThread().completedIterationDepth = Depth{10};
+  search.mainThread().lastIterationValue = Value{30};
+  auto& helper1 = *search.searchThreadData[1];
+  helper1.completedIterationDepth = Depth{12};
+  helper1.lastIterationValue = Value{25}; // within margin of 50
+
+  const auto* best1 = search.selectBestThread();
+  fprintln("Case 1: deeper helper with similar score -> selected thread {}", best1->id);
+  EXPECT_EQ(1, best1->id) << "Deeper helper with score within margin should be selected";
+
+  // Case 2: Helper reached deeper depth but much worse score → main wins
+  helper1.completedIterationDepth = Depth{12};
+  helper1.lastIterationValue = Value{-30}; // 60cp worse, exceeds margin of 50
+
+  const auto* best2 = search.selectBestThread();
+  fprintln("Case 2: deeper helper with much worse score -> selected thread {}", best2->id);
+  EXPECT_EQ(0, best2->id) << "Deeper helper with score far below margin should not be selected";
+
+  // Case 3: Same depth, helper has higher score → helper wins
+  helper1.completedIterationDepth = Depth{10};
+  helper1.lastIterationValue = Value{50}; // better than main's 30
+
+  const auto* best3 = search.selectBestThread();
+  fprintln("Case 3: same depth, helper has higher score -> selected thread {}", best3->id);
+  EXPECT_EQ(1, best3->id) << "Same depth with higher score should be selected";
+
+  // Case 4: Same depth, helper has lower score → main wins
+  helper1.completedIterationDepth = Depth{10};
+  helper1.lastIterationValue = Value{20}; // worse than main's 30
+
+  const auto* best4 = search.selectBestThread();
+  fprintln("Case 4: same depth, helper has lower score -> selected thread {}", best4->id);
+  EXPECT_EQ(0, best4->id) << "Same depth with lower score should not be selected";
+
+  // Case 5: Helper shallower but much better score → helper wins
+  helper1.completedIterationDepth = Depth{8};
+  helper1.lastIterationValue = Value{100}; // 70cp better, exceeds margin of 50
+
+  const auto* best5 = search.selectBestThread();
+  fprintln("Case 5: shallower helper with much better score -> selected thread {}", best5->id);
+  EXPECT_EQ(1, best5->id) << "Shallower helper with score far above margin should be selected";
+
+  // Case 6: Helper shallower with slightly better score → main wins
+  helper1.completedIterationDepth = Depth{8};
+  helper1.lastIterationValue = Value{60}; // only 30cp better, within margin
+
+  const auto* best6 = search.selectBestThread();
+  fprintln("Case 6: shallower helper with slightly better score -> selected thread {}", best6->id);
+  EXPECT_EQ(0, best6->id) << "Shallower helper with score within margin should not be selected";
+
+  // Case 7: Helper never completed an iteration → main wins
+  helper1.completedIterationDepth = DEPTH_NONE;
+  helper1.lastIterationValue = VALUE_NONE;
+
+  const auto* best7 = search.selectBestThread();
+  fprintln("Case 7: helper never completed iteration -> selected thread {}", best7->id);
+  EXPECT_EQ(0, best7->id) << "Helper with no completed iteration should be skipped";
+}

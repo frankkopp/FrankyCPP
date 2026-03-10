@@ -394,22 +394,140 @@ void Search::run() {
   // Aggregate node count from all threads
   const uint64_t totalNodes = getTotalNodes();
 
-  // update the search result with search time and pv
+  // Select the best thread (after all helpers have stopped)
+  const SearchThreadData* bestThread = selectBestThread();
+
+  // Override search result with best thread's data, but only if a real iteration completed.
+  // Early exits (checkmate/stalemate/draw positions) return before any iteration runs,
+  // so completedIterationDepth remains DEPTH_NONE and the PV is empty.
+  // In that case, keep the searchResult as set by iterativeDeepening() (e.g., -VALUE_CHECKMATE).
+  if (bestThread->completedIterationDepth != DEPTH_NONE) {
+    searchResult.bestMove      = bestThread->pv.first().stripped();
+    searchResult.bestMoveValue = bestThread->pv.first().value();
+    searchResult.depth         = bestThread->completedIterationDepth;
+    searchResult.extraDepth    = bestThread->statistics.currentExtraSearchDepth;
+    searchResult.pv            = bestThread->pv.extract();
+  }
   searchResult.time    = currentTime() - startSearchTime;
-  searchResult.pv      = mainThread().pv.extract();
   searchResult.nodes   = totalNodes;
   searchResult.threads = numHelperThreads + 1;
+
+  // ===========================================================================
+  // TB root override — apply on top of best-thread selection
+  // TB move is DTZ-optimal (shortest path to zeroing move / conversion).
+  // Only override TB move if search found a provable shorter mate.
+  // ===========================================================================
+  if (tbRootWdl != tablebase::TBResult::Failed) {
+    searchResult.tbHit = true;
+
+    // Check if search (best thread) found a proven mate
+    const Value searchValue    = searchResult.bestMoveValue;
+    const bool searchFoundMate = searchValue >= VALUE_CHECKMATE_THRESHOLD;
+
+    // Calculate mate depth if search found mate (in plies/half-moves)
+    const int searchMateDepth = searchFoundMate
+                                  ? static_cast<int>(VALUE_CHECKMATE) - static_cast<int>(searchValue)
+                                  : INT_MAX;
+
+    // TB DTZ is distance to zeroing (capture/pawn move), NOT necessarily mate.
+    // A proven mate is always preferred over a TB "Win" because:
+    // 1. Mate is concrete and forced
+    // 2. TB DTZ=1 might be a capture leading to a longer mate sequence
+    if (searchFoundMate && searchMateDepth <= tbRootDtz) {
+      LOG__INFO(Logger::get().SEARCH_LOG,
+                "Search found mate in {} (TB DTZ={}), using search move {}",
+                searchMateDepth, tbRootDtz, searchResult.bestMove.str());
+    }
+    else {
+      // Use TB move — it's DTZ-optimal (shortest path to conversion)
+      const Move searchMove      = searchResult.bestMove;
+      searchResult.bestMove      = tbRootMove;
+      searchResult.bestMoveValue = tbRootValue;
+      if (searchMove == tbRootMove) {
+        LOG__INFO(Logger::get().SEARCH_LOG, "Search confirmed TB-optimal move {}", tbRootMove.str());
+      }
+      else {
+        LOG__INFO(Logger::get().SEARCH_LOG,
+                  "Using TB-optimal move {} (DTZ={}), search suggested {}",
+                  tbRootMove.str(), tbRootDtz, searchMove.str());
+      }
+    }
+  }
+
+  // ===========================================================================
+  // Ponder move extraction — use best thread's PV first, then TT fallback
+  // ===========================================================================
+  {
+    // Try to get ponder move from best thread's PV
+    if (bestThread->pv.hasLength(DEPTH_NONE, 2)) {
+      searchResult.ponderMove = bestThread->pv(DEPTH_NONE, 1).stripped();
+    }
+    else {
+      // No ponder move in PV — try the TT
+      if (SearchConfig.USE_TT && !searchResult.bestMove.isNone()) {
+        position.doMove(searchResult.bestMove);
+        STAT_INC(mainThread().statistics.ttProbes);
+        if (const auto ttEntry = tt->probe(position.getZobristKey())) {
+          STAT_INC(mainThread().statistics.ttHitSufficientDepth);
+          switch (ttEntry->type) {
+            case NONE:  STAT_INC(mainThread().statistics.ttHitNone);  break;
+            case EXACT: STAT_INC(mainThread().statistics.ttHitExact); break;
+            case ALPHA: STAT_INC(mainThread().statistics.ttHitAlpha); break;
+            case BETA:  STAT_INC(mainThread().statistics.ttHitBeta);  break;
+          }
+          const auto probedMove = static_cast<Move>(ttEntry->move);
+          if (probedMove != MOVE_NONE && MoveGenerator::isPseudoLegal(position, probedMove)) {
+            searchResult.ponderMove = probedMove;
+            STAT_INC(mainThread().statistics.TtMoveUsed);
+            LOG__DEBUG(Logger::get().SEARCH_LOG, "Using ponder move from hash table: {}", searchResult.ponderMove.str());
+          }
+          else {
+            STAT_INC(mainThread().statistics.NoTtMove);
+          }
+        }
+        else {
+          STAT_INC(mainThread().statistics.ttMisses);
+        }
+        position.undoMove();
+      }
+    }
+
+    // Validate ponder move — avoid pondering on mate/draw/illegal positions
+    if (searchResult.ponderMove != MOVE_NONE && !searchResult.bestMove.isNone()) {
+      position.doMove(searchResult.bestMove);
+      if (!position.isLegalMove(searchResult.ponderMove)) {
+        LOG__DEBUG(Logger::get().SEARCH_LOG, "ponder move {} omitted as illegal", searchResult.ponderMove.str());
+        searchResult.ponderMove = MOVE_NONE;
+        position.undoMove();
+      }
+      else {
+        position.doMove(searchResult.ponderMove);
+        if (checkDrawRepAnd50(position, 2) || mainThread().plyStack[0].mg->generateLegalMoves(position, GenAll)->empty()) {
+          LOG__DEBUG(Logger::get().SEARCH_LOG, "ponder move omitted as game finished");
+          searchResult.ponderMove = MOVE_NONE;
+        }
+        position.undoMove();
+        position.undoMove();
+      }
+    }
+  }
+
+  // Send final UCI info line if a non-main thread was selected
+  // This ensures the GUI shows depth/score/PV consistent with the final bestmove
+  if (bestThread->id != 0) {
+    sendFinalUciInfo(*bestThread);
+  }
 
   // print stats to log
   LOG__INFO(Logger::get().SEARCH_LOG, "Search finished after {}", str(searchResult.time));
   LOG__INFO(Logger::get().SEARCH_LOG, "Search depth was {}({}) with {:L} nodes visited. NPS = {:L} nps with {} threads",
-            thread().statistics.currentSearchDepth, thread().statistics.currentExtraSearchDepth,
+            bestThread->completedIterationDepth, bestThread->statistics.currentExtraSearchDepth,
             totalNodes, nps(totalNodes, searchResult.time), searchResult.threads);
   LOG__DEBUG(Logger::get().SEARCH_LOG, "Search stats: {}", thread().statistics.str());
 
   // print result to log
   if (searchLimits.mate && searchResult.mateFound) {
-    LOG__INFO(Logger::get().SEARCH_LOG, "Mate in {} found: {}", searchLimits.mate, thread().pv.first().str());
+    LOG__INFO(Logger::get().SEARCH_LOG, "Mate in {} found: {}", searchLimits.mate, bestThread->pv.first().str());
   }
   LOG__INFO(Logger::get().SEARCH_LOG, "Search result: {}", searchResult.str());
 
@@ -861,6 +979,9 @@ SearchResult Search::iterativeDeepening(Position& p) {
         ESSENTIAL_STAT_SET(thread().statistics.currentBestRootMoveValue, thread().pv.first().value());
         sendIterationEndInfoToUci();
       }
+      // Track completed iteration for best-thread selection (all threads)
+      thread().completedIterationDepth = iterationDepth;
+      thread().lastIterationValue = thread().pv.first().value();
     }
     else {
       break;
@@ -879,124 +1000,8 @@ SearchResult Search::iterativeDeepening(Position& p) {
   searchResult.extraDepth    = thread().statistics.currentExtraSearchDepth;
   searchResult.bookMove      = false;
 
-  // If we had a TB probe at root (non-immediate mode), decide which move to use.
-  // TB move is DTZ-optimal (shortest path to zeroing move / conversion).
-  // Only override TB move if search found a provable shorter mate.
-  if (tbRootWdl != tablebase::TBResult::Failed) {
-    searchResult.tbHit = true;
-
-    // Check if search found a proven mate
-    const Value searchValue    = thread().pv.first().value();
-    const bool searchFoundMate = searchValue >= VALUE_CHECKMATE_THRESHOLD;
-
-    // Calculate mate depth if search found mate (in plies/half-moves)
-    // VALUE_CHECKMATE - searchValue gives the mate distance
-    const int searchMateDepth = searchFoundMate
-                                  ? static_cast<int>(VALUE_CHECKMATE) - static_cast<int>(searchValue)
-                                  : INT_MAX;
-
-    // TB DTZ is distance to zeroing (capture/pawn move), NOT necessarily mate.
-    // A proven mate is always preferred over a TB "Win" because:
-    // 1. Mate is concrete and forced
-    // 2. TB DTZ=1 might be a capture leading to a longer mate sequence
-    // Use search result if it found a mate at least as short as TB's DTZ
-    if (searchFoundMate && searchMateDepth <= tbRootDtz) {
-      // Search found a proven mate - keep search's move and score
-      LOG__INFO(Logger::get().SEARCH_LOG,
-                "Search found mate in {} (TB DTZ={}), using search move {}",
-                searchMateDepth, tbRootDtz, searchResult.bestMove.str());
-      // Keep searchResult.bestMove and searchResult.bestMoveValue from search
-      // But still mark as TB-backed since we verified with TB
-    }
-    else {
-      // Use TB move - it's DTZ-optimal (shortest path to conversion)
-      // Search's move might delay the win or risk 50-move rule
-      const Move searchMove      = searchResult.bestMove;
-      searchResult.bestMove      = tbRootMove;
-      searchResult.bestMoveValue = tbRootValue;
-      if (searchMove == tbRootMove) {
-        LOG__INFO(Logger::get().SEARCH_LOG, "Search confirmed TB-optimal move {}", tbRootMove.str());
-      }
-      else {
-        LOG__INFO(Logger::get().SEARCH_LOG,
-                  "Using TB-optimal move {} (DTZ={}), search suggested {}",
-                  tbRootMove.str(), tbRootDtz, searchMove.str());
-      }
-    }
-  }
-
-  // Ponder move logic is main thread only - helper threads don't send UCI output
-  // and accessing mainThread().pv from helpers would be a data race
-  if (isMainThread()) {
-    // see if we have a move we could ponder on
-    if (thread().pv.hasLength(DEPTH_NONE, 2)) {
-      searchResult.ponderMove = thread().pv(DEPTH_NONE, 1).stripped();
-    }
-    else {
-      // we do not have a ponder-move in the pv-list,
-      // so let's check the TT
-      if (SearchConfig.USE_TT && !searchResult.bestMove.isNone()) {
-        p.doMove(searchResult.bestMove);
-        STAT_INC(thread().statistics.ttProbes);
-        if (const auto ttEntry = tt->probe(p.getZobristKey())) {
-          // Track as sufficient depth (we just need any entry with a move)
-          STAT_INC(thread().statistics.ttHitSufficientDepth);
-          switch (ttEntry->type) {
-            case NONE:
-              STAT_INC(thread().statistics.ttHitNone);
-              break;
-            case EXACT:
-              STAT_INC(thread().statistics.ttHitExact);
-              break;
-            case ALPHA:
-              STAT_INC(thread().statistics.ttHitAlpha);
-              break;
-            case BETA:
-              STAT_INC(thread().statistics.ttHitBeta);
-              break;
-          }
-          const auto probedMove = static_cast<Move>(ttEntry->move);
-          // Validate TT move before use
-          if (probedMove != MOVE_NONE && MoveGenerator::isPseudoLegal(p, probedMove)) {
-            searchResult.ponderMove = probedMove;
-            STAT_INC(thread().statistics.TtMoveUsed);
-            LOG__DEBUG(Logger::get().SEARCH_LOG, "Using ponder move from hash table: {}", searchResult.ponderMove.str());
-          }
-          else {
-            STAT_INC(thread().statistics.NoTtMove);
-          }
-        }
-        else {
-          STAT_INC(thread().statistics.ttMisses);
-        }
-        p.undoMove();
-      }
-    }
-
-    // Double-check the ponder move to avoid a ponder search on mate or draw position.
-    // If position after ponder move is a final position do not even send a ponder move.
-    // This is necessary as arena sends a go ponder command although the position is final.
-    // Also validate that the ponder move is legal (PV/TT can have stale data).
-    if (searchResult.ponderMove != MOVE_NONE && !searchResult.bestMove.isNone()) {
-      p.doMove(searchResult.bestMove);
-      // Validate ponder move is legal in position after best move
-      if (!p.isLegalMove(searchResult.ponderMove)) {
-        LOG__DEBUG(Logger::get().SEARCH_LOG, "ponder move {} omitted as illegal", searchResult.ponderMove.str());
-        searchResult.ponderMove = MOVE_NONE;
-        p.undoMove();
-      }
-      else {
-        p.doMove(searchResult.ponderMove);
-        // check repetition and 50-moves rule or if there are legal moves when using ponder move
-        if (checkDrawRepAnd50(p, 2) || thread().plyStack[0].mg->generateLegalMoves(p, GenAll)->empty()) {
-          LOG__DEBUG(Logger::get().SEARCH_LOG, "ponder move omitted as game finished");
-          searchResult.ponderMove = MOVE_NONE;
-        }
-        p.undoMove();
-        p.undoMove();
-      }
-    }
-  }
+  // Note: TB root override and ponder move logic are handled in run()
+  // after best-thread selection, so they apply to the selected best thread's result.
 
   return searchResult;
 }
@@ -2471,7 +2476,94 @@ bool Search::probeTablebaseAtRoot(const Position& pos, SearchResult& result) {
   return true;
 }
 
-void Search::filterRootMovesByTB(Position& pos) {
+const SearchThreadData* Search::selectBestThread() const {
+  const SearchThreadData* best = searchThreadData[0].get(); // main thread as baseline
+
+  // Single-threaded or feature disabled: always use main thread
+  if (numHelperThreads == 0 || !SearchConfig.USE_BEST_THREAD_SELECTION) {
+    return best;
+  }
+
+  const auto scoreMargin = Value{SearchConfig.BEST_THREAD_SCORE_MARGIN};
+
+  const int totalThreads = numHelperThreads + 1;
+  for (int t = 1; t < totalThreads; ++t) {
+    const auto& candidate = *searchThreadData[t];
+
+    // Skip threads that never completed an iteration
+    if (candidate.completedIterationDepth == DEPTH_NONE) {
+      continue;
+    }
+
+    const Depth bestDepth = best->completedIterationDepth;
+    const Depth candDepth = candidate.completedIterationDepth;
+    const Value bestValue = best->lastIterationValue;
+    const Value candValue = candidate.lastIterationValue;
+
+    bool candidateIsBetter = false;
+
+    if (candDepth > bestDepth) {
+      // Candidate searched deeper: accept unless score is much worse
+      candidateIsBetter = (candValue >= bestValue - scoreMargin);
+    }
+    else if (candDepth == bestDepth) {
+      // Same depth: prefer higher score
+      candidateIsBetter = (candValue > bestValue);
+    }
+    else {
+      // Candidate shallower: only accept if score is much better
+      candidateIsBetter = (candValue > bestValue + scoreMargin);
+    }
+
+    if (candidateIsBetter) {
+      best = searchThreadData[t].get();
+    }
+  }
+
+  if (best->id != 0) {
+    LOG__INFO(Logger::get().SEARCH_LOG,
+              "Best thread selection: helper {} (depth {} value {}) over main (depth {} value {})",
+              best->id, best->completedIterationDepth, best->lastIterationValue.str(),
+              searchThreadData[0]->completedIterationDepth, searchThreadData[0]->lastIterationValue.str());
+  }
+  else {
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Best thread selection: main thread retained (depth {} value {})",
+               best->completedIterationDepth, best->lastIterationValue.str());
+  }
+
+  return best;
+}
+
+void Search::sendFinalUciInfo(const SearchThreadData& bestThread) const {
+  const nanoseconds& since = elapsedSince(startSearchTime);
+  const uint64_t totalNodes = getTotalNodes();
+
+  // Use the best thread's PV directly (extractPvWithTT uses thread-local state)
+  const MoveList pvLine = bestThread.pv.extract();
+
+  if (uciHandler) {
+    uciHandler->sendIterationEndInfo(
+      bestThread.completedIterationDepth,
+      bestThread.statistics.currentExtraSearchDepth,
+      bestThread.lastIterationValue,
+      totalNodes,
+      nps(totalNodes, since),
+      MILLISECONDS(since),
+      pvLine);
+    return;
+  }
+
+  LOG__INFO(Logger::get().SEARCH_LOG, "depth {} seldepth {} value {} nodes {:L} nps {:L} time {:L} pv {}",
+            bestThread.completedIterationDepth,
+            bestThread.statistics.currentExtraSearchDepth,
+            bestThread.lastIterationValue.str(),
+            totalNodes,
+            nps(totalNodes, since),
+            MILLISECONDS(since).count(),
+            pvLine.str());
+}
+
+void Search::filterRootMovesByTB(Position& pos) const {
   // Filter root moves to only those that maintain the TB result.
   // For a winning position, keep only moves where opponent is losing.
   // For a drawn position, keep only moves where opponent is not winning.

@@ -88,9 +88,12 @@ Iterative deepening + PVS (Principal Variation Search) with:
 ### Threading Model
 
 - **Main thread**: UCI command loop
-- **Search thread**: alpha-beta algorithm
+- **Search thread (T0)**: Full iterative deepening, aspiration windows, time management, UCI output
+- **Helper threads (T1..Tn)**: Full `iterativeDeepening()` (same code as T0, guarded by `isMainThread()`)
 - **Timer thread**: time-limit enforcement
-- `std::atomic_bool stopSearchFlag`, `std::binary_semaphore` for init/running state. TT has no locking (single-threaded search).
+- `std::atomic_bool stopSearchFlag`, `std::binary_semaphore` for init/running state. TT is shared (lock-free).
+- **Best-thread selection**: After search, `selectBestThread()` picks best result by depth+score across all threads.
+- Configurable via `Threads`, `Best Thread Selection`, `Best Thread Score Margin` UCI options.
 
 ### Configuration System
 
@@ -122,6 +125,8 @@ CONFIG_OVERRIDE_START()
   s.USE_PVS = false;
 CONFIG_OVERRIDE_END();
 ```
+
+**YAML convention:** Keys starting with `_` (underscore) in `config/search.yaml` and `config/eval.yaml` are reserved for internal/test use (e.g., `_YAML_SMOKE_TEST_MARKER`). The YAML parser silently skips them — no "unknown key" warning is emitted.
 
 ---
 

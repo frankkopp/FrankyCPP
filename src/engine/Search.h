@@ -117,6 +117,7 @@ FRIEND_TEST_FWD_DECL(SearchTest, movesLeftRepetitionRiskIncreasesTime);
 FRIEND_TEST_FWD_DECL(SearchTest, extraTime);
 FRIEND_TEST_FWD_DECL(SearchTest, extraTimeCap);
 FRIEND_TEST_FWD_DECL(SearchTest, startTimer);
+FRIEND_TEST_FWD_DECL(SearchSmpTest, selectBestThread);
 
 namespace engine {
   using namespace chess;
@@ -388,7 +389,7 @@ namespace engine {
     /// Called when TB_ROOT_IMMEDIATE=false to ensure optimal play while searching.
     /// Removes moves that would worsen WDL (e.g., Win -> Draw or Draw -> Loss).
     /// @param pos  Current position (used to probe child positions)
-    void filterRootMovesByTB(Position& pos);
+    void filterRootMovesByTB(Position& pos) const;
 
     /// Converts TB WDL result to search score with 50-move rule handling.
     /// Uses TB_RULE50_THRESHOLD to decide if DTZ check is needed.
@@ -403,7 +404,7 @@ namespace engine {
     void run();
 
     /// Launches helper threads for Lazy SMP.
-    /// Called from iterativeDeepening() after main thread has completed a few iterations
+    /// Called from iterativeDeepening() after the main thread has completed a few iterations
     /// to allow TT priming before helpers start contributing.
     /// Helpers run full iterativeDeepening() with guards for main-thread-only logic.
     /// No-op if helpers already launched or numHelperThreads == 0.
@@ -456,6 +457,20 @@ namespace engine {
     /// @return   Evaluation score from side-to-move perspective
     Value evaluate(const Position& p);
 
+    /// Selects the best thread based on completed depth and score after search ends.
+    /// Uses depth + score heuristic: deeper thread wins unless its score is worse
+    /// by more than BEST_THREAD_SCORE_MARGIN centipawns.
+    /// Called after all helper threads have joined.
+    /// @return Pointer to the SearchThreadData with the best result
+    [[nodiscard]] const SearchThreadData* selectBestThread() const;
+    FRIEND_TEST_NS(SearchSmpTest, selectBestThread);
+
+    /// Sends a final UCI info line with the best thread's result before bestmove.
+    /// Ensures the GUI shows depth/score/PV consistent with the final bestmove.
+    /// Only called when a non-main thread is selected.
+    /// @param bestThread  The selected best thread's data
+    void sendFinalUciInfo(const SearchThreadData& bestThread) const;
+
     /// Determines if a capture is likely good enough to search in quiescence.
     /// @param p     Position
     /// @param move  Capture move to evaluate
@@ -486,7 +501,6 @@ namespace engine {
     /// @param ply    Current ply
     /// @return       Adjusted score
     static Value valueFromTt(Value value, Depth ply);
-
 
     /// Checks if search should stop (stop flag or node limit reached).
     /// @return True if search should terminate

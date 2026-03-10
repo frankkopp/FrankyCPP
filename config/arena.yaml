@@ -96,7 +96,7 @@ testSuiteRuns:
   # ==========================================================================
   - engine: "FrankyCPP v1.5"
     engineVersion: "v1.5"
-    tag: ""  # Set to current feature name when testing
+    tag: "bestThread"  # Set to current feature name when testing
     enginePath: "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe"
     timePerMove: 5000
     maxDepth: 99
@@ -249,9 +249,9 @@ debugMode: false
 
 matches:
 
-# current dev vs. v1.4
+## current dev vs. v1.4
   - name: "v1.5_vs_v1.4_300s"
-    tag: "baseAfterTtBuckets"  # Set to current feature name when testing
+    tag: "bestThread"  # Set to current feature name when testing
     engine1Path: "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe"
     engine1Version: "v1.5"
     engine2Path: "Release/FrankyCPP_v1.4/FrankyCPP_v1.4.exe"
@@ -261,6 +261,21 @@ matches:
     rounds: 100
     concurrency: 4
     outputPgn: "results/matches/v1.5_vs_v1.4_300s.pgn"
+
+  ## current dev vs. Stockfish 18 (limited to 2700 ELO)
+  - name: "v1.5_vs_Stockfish18_2700_300s"
+    tag: "bestThread"  # Set to current feature name when testing
+    engine1Path: "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe"
+    engine1Version: "v1.5"
+    engine1Options: "OwnBook=false"
+    engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
+    engine2Version: "18-2700"
+    engine2Options: "UCI_LimitStrength=true; UCI_Elo=2700"
+    openingBook: "books/8moves_GM_LB.pgn"
+    timeControl: "300+0"
+    rounds: 100
+    concurrency: 4
+    outputPgn: "results/matches/v1.5_vs_Stockfish18_2700_300s.pgn"
 
 #  # current dev vs. v1.3
 #  - name: "v1.5_vs_v1.3_300s"
@@ -289,22 +304,6 @@ matches:
 #    rounds: 100
 #    concurrency: 4
 #    outputPgn: "results/matches/v1.5_vs_FrankyGo_300s.pgn"
-
-  # current dev vs. Stockfish 18 (limited to 2200 ELO)
-  - name: "v1.5_vs_Stockfish18_2200_300s"
-    tag: "baseAfterTtBuckets"  # Set to current feature name when testing
-    engine1Path: "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe"
-    engine1Version: "v1.5"
-    engine1Options: "OwnBook=false"
-    engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
-    engine2Version: "18-2200"
-    engine2Options: "UCI_LimitStrength=true; UCI_Elo=2200"
-    openingBook: "books/8moves_GM_LB.pgn"
-    timeControl: "300+0"
-    rounds: 100
-    concurrency: 4
-    outputPgn: "results/matches/v1.5_vs_Stockfish18_2200_300s.pgn"
-
 
 # =============================================================================
 # Benchmark Configuration
@@ -335,7 +334,7 @@ benchmarks:
     depth: 12
     hashSizeMB: 128
     threads: 4
-    tag: ""  # Set to current feature name when testing
+    tag: "bestThread"  # Set to current feature name when testing
 
   - name: "v1.5 External"
     enginePath: "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe"
@@ -344,7 +343,7 @@ benchmarks:
     depth: 12
     hashSizeMB: 128
     threads: 4
-    tag: ""  # Set to current feature name when testing
+    tag: "bestThread"  # Set to current feature name when testing
 
 #  - name: "v1.4 External (PROD)"
 #    enginePath: "cmake-build-win-release-prod/src/FrankyCPP_v1.4.exe"

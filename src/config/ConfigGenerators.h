@@ -92,6 +92,10 @@ namespace config {
   /// Parse YAML node into config structs using registry metadata.
   /// Iterates registry entries with exposure.yaml=true and applies setters.
   ///
+  /// Keys starting with '_' (underscore) are reserved for internal/test use
+  /// (e.g., _YAML_SMOKE_TEST_MARKER) and are silently skipped when warning
+  /// about unknown keys.
+  ///
   /// @param node        YAML node to parse
   /// @param search      SearchConfigData to populate
   /// @param eval        EvalConfigData to populate

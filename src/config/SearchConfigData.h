@@ -45,8 +45,10 @@ namespace config {
     CONFIG_ESSENTIAL int MOVE_OVERHEAD_MS = 10;
 
     // Multi-threading (Lazy SMP)
-    CONFIG_ESSENTIAL int THREADS            = 4; // Number of search threads (1 = single-threaded, no SMP overhead)
-    CONFIG_CONST int SMP_HELPER_START_DEPTH = 4; // Depth at which to launch helper threads (allows TT priming)
+    CONFIG_ESSENTIAL int THREADS                = 4;    // Number of search threads (1 = single-threaded, no SMP overhead)
+    CONFIG_CONST int SMP_HELPER_START_DEPTH     = 4;    // Depth at which to launch helper threads (allows TT priming)
+    CONFIG_CONST bool USE_BEST_THREAD_SELECTION = true; // Select best result from any thread (not just main)
+    CONFIG_CONST int BEST_THREAD_SCORE_MARGIN   = 50;   // Score margin (cp) for depth vs score comparison
 
     // book
     CONFIG_ESSENTIAL bool USE_BOOK         = true;

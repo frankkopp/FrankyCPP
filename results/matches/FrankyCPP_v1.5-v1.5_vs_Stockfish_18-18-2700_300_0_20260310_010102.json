@@ -1,0 +1,30 @@
+{
+  "arenaVersion": "v1.5",
+  "durationMs": 14996767,
+  "engine1": {
+    "name": "FrankyCPP v1.5",
+    "path": "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe",
+    "version": "v1.5"
+  },
+  "engine2": {
+    "name": "Stockfish 18",
+    "path": "D:/_DEV/Stockfish/src/stockfish.exe",
+    "version": "18-2700"
+  },
+  "match": {
+    "name": "v1.5_vs_Stockfish18_2700_300s",
+    "rounds": 100,
+    "timeControl": "300+0"
+  },
+  "pgnPath": "results/matches/v1.5_vs_Stockfish18_2700_300s.pgn",
+  "results": {
+    "draws": 17,
+    "eloDifference": -17.386277512436106,
+    "engine1Score": 47.5,
+    "engine1Wins": 39,
+    "engine2Score": 52.5,
+    "engine2Wins": 44
+  },
+  "tag": "Stockfish 18 2700",
+  "timestamp": "2026-03-10T00:01:02Z"
+}
