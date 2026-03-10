@@ -408,6 +408,17 @@ void Search::run() {
     searchResult.extraDepth    = bestThread->statistics.currentExtraSearchDepth;
     searchResult.pv            = bestThread->pv.extract();
   }
+
+  // Derive mateFound from the final result after best-thread selection.
+  // This ensures consistency between mateFound and bestMoveValue regardless
+  // of which thread was selected.
+  if (searchLimits.mate) {
+    const Value finalValue = searchResult.bestMoveValue;
+    searchResult.mateFound = finalValue.isCheckMate()
+                             && searchLimits.mate * 2 - 1
+                                  == static_cast<int>(VALUE_CHECKMATE) - static_cast<int>(finalValue);
+  }
+
   searchResult.time    = currentTime() - startSearchTime;
   searchResult.nodes   = totalNodes;
   searchResult.threads = numHelperThreads + 1;
@@ -659,9 +670,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
         // - Root moves will be filtered to only those maintaining TB result
         // - TB move will be prioritized in root move ordering
         // - Search produces proper PV while guaranteeing optimal play
-        tbRootMove  = searchResult.bestMove;
-        tbRootValue = searchResult.bestMoveValue;
-        // tbRootWdl and tbRootDtz already set in probeTablebaseAtRoot
+        // tbRootMove, tbRootValue, tbRootWdl, tbRootDtz already set in probeTablebaseAtRoot
         LOG__INFO(Logger::get().SEARCH_LOG, "TB hit at root (non-immediate): move={} value={}, continuing search for PV",
                   tbRootMove.str(), tbRootValue.str());
 
@@ -960,7 +969,11 @@ SearchResult Search::iterativeDeepening(Position& p) {
     if (searchLimits.mate
         && abs(thread().pv.first().value()) >= VALUE_CHECKMATE_THRESHOLD
         && searchLimits.mate * 2 - 1 == VALUE_CHECKMATE - thread().pv.first().value()) {
-      searchResult.mateFound = true;
+      // Record completed iteration, so selectBestThread() sees this iteration's
+      // data instead of stale values from the previous depth.
+      thread().completedIterationDepth = iterationDepth;
+      thread().lastIterationValue      = thread().pv.first().value();
+      // mateFound is derived in run() after best-thread selection
       break;
     }
 
@@ -2454,8 +2467,10 @@ bool Search::probeTablebaseAtRoot(const Position& pos, SearchResult& result) {
   }
 
   // Store WDL and DTZ for later use (filtering, scoring)
-  tbRootWdl = tbResult.wdl;
-  tbRootDtz = tbResult.dtz;
+  tbRootWdl   = tbResult.wdl;
+  tbRootDtz   = tbResult.dtz;
+  tbRootMove  = tbResult.bestMove;
+  tbRootValue = tablebase::Tablebase::tbResultToScore(tbResult.wdl, tbResult.dtz);
 
   // Log the TB hit
   const std::string tbResultStr = tablebase::Tablebase::resultToString(tbResult.wdl);
@@ -2466,8 +2481,8 @@ bool Search::probeTablebaseAtRoot(const Position& pos, SearchResult& result) {
   sendString(std::format("TB hit: {} DTZ={} move={}", tbResultStr, tbResult.dtz, tbResult.bestMove.str()));
 
   // Populate the search result with DTZ-based scoring
-  result.bestMove      = tbResult.bestMove;
-  result.bestMoveValue = tablebase::Tablebase::tbResultToScore(tbResult.wdl, tbResult.dtz);
+  result.bestMove      = tbRootMove;
+  result.bestMoveValue = tbRootValue;
   result.tbHit         = true;
 
   // Update statistics
@@ -2502,7 +2517,12 @@ const SearchThreadData* Search::selectBestThread() const {
 
     bool candidateIsBetter = false;
 
-    if (candDepth > bestDepth) {
+    // Mate scores: depth is irrelevant — only mate distance matters.
+    // Higher value = shorter delivering mate or longer delay before being mated.
+    if (bestValue.isCheckMate() && candValue.isCheckMate()) {
+      candidateIsBetter = (candValue > bestValue);
+    }
+    else if (candDepth > bestDepth) {
       // Candidate searched deeper: accept unless score is much worse
       candidateIsBetter = (candValue >= bestValue - scoreMargin);
     }
