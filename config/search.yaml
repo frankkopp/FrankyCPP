@@ -63,7 +63,7 @@ _YAML_SMOKE_TEST_MARKER: true
 # Syzygy Tablebase settings
 # Path to Syzygy tablebase files (semicolon-separated on Windows, colon on Linux)
 # Leave empty to disable tablebase probing
-# TB_PATH: ""
+#TB_PATH: "D:/SYZYGY"
 
 # Root probing (once per search, for best move selection)
 # Probe tablebases at root for best move selection

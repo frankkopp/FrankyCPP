@@ -86,7 +86,7 @@ public:
     init::init();
     NEWLINE;
     Logger::get().TEST_LOG->set_level(spdlog::level::info);
-    Logger::get().TB_LOG->set_level(spdlog::level::info);
+    Logger::get().TB_LOG->set_level(spdlog::level::debug);
   }
 
 protected:
@@ -278,7 +278,7 @@ public:
     init::init();
     NEWLINE;
     Logger::get().TEST_LOG->set_level(spdlog::level::info);
-    Logger::get().TB_LOG->set_level(spdlog::level::info);
+    Logger::get().TB_LOG->set_level(spdlog::level::debug);
   }
 
 protected:
@@ -1376,7 +1376,7 @@ public:
     NEWLINE;
     Logger::get().TEST_LOG->set_level(spdlog::level::info);
     Logger::get().SEARCH_LOG->set_level(spdlog::level::info);
-    Logger::get().TB_LOG->set_level(spdlog::level::info);
+    Logger::get().TB_LOG->set_level(spdlog::level::debug);
   }
 
 protected:
