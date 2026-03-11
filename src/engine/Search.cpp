@@ -373,113 +373,11 @@ void Search::run() {
   searchResult.nodes   = totalNodes;
   searchResult.threads = numHelperThreads + 1;
 
-  // ===========================================================================
-  // TB root override — apply on top of best-thread selection
-  // TB move is DTZ-optimal (shortest path to zeroing move / conversion).
-  // Only override TB move if search found a provable shorter mate.
-  // ===========================================================================
-  if (tbRoot.wdl != tablebase::TBResult::Failed) {
-    searchResult.tbHit = true;
+  // Apply tablebase root override on top of best-thread selection
+  applyTBRootOverride(searchResult);
 
-    // Check if search (best thread) found a proven mate
-    const Value searchValue    = searchResult.bestMoveValue;
-    const bool searchFoundMate = searchValue >= VALUE_CHECKMATE_THRESHOLD;
-
-    // Calculate mate depth if search found mate (in plies/half-moves)
-    const int searchMateDepth = searchFoundMate
-                                  ? static_cast<int>(VALUE_CHECKMATE) - static_cast<int>(searchValue)
-                                  : INT_MAX;
-
-    // TB DTZ is distance to zeroing (capture/pawn move), NOT necessarily mate.
-    // A proven mate is always preferred over a TB "Win" because:
-    // 1. Mate is concrete and forced
-    // 2. TB DTZ=1 might be a capture leading to a longer mate sequence
-    if (searchFoundMate && searchMateDepth <= tbRoot.dtz) {
-      LOG__INFO(Logger::get().SEARCH_LOG,
-                "Search found mate in {} (TB DTZ={}), using search move {}",
-                searchMateDepth, tbRoot.dtz, searchResult.bestMove.str());
-    }
-    else {
-      // Use TB move — it's DTZ-optimal (shortest path to conversion)
-      const Move searchMove      = searchResult.bestMove;
-      searchResult.bestMove      = tbRoot.move;
-      searchResult.bestMoveValue = tbRoot.value;
-      if (searchMove == tbRoot.move) {
-        LOG__INFO(Logger::get().SEARCH_LOG, "Search confirmed TB-optimal move {}", tbRoot.move.str());
-      }
-      else {
-        LOG__INFO(Logger::get().SEARCH_LOG,
-                  "Using TB-optimal move {} (DTZ={}), search suggested {}",
-                  tbRoot.move.str(), tbRoot.dtz, searchMove.str());
-      }
-    }
-  }
-
-  // ===========================================================================
-  // Ponder move extraction — use best thread's PV first, then TT fallback
-  // ===========================================================================
-  {
-    // Try to get ponder move from best thread's PV
-    if (bestThread->pv.hasLength(DEPTH_NONE, 2)) {
-      searchResult.ponderMove = bestThread->pv(DEPTH_NONE, 1).stripped();
-    }
-    else {
-      // No ponder move in PV — try the TT
-      if (SearchConfig.USE_TT && !searchResult.bestMove.isNone()) {
-        position.doMove(searchResult.bestMove);
-        STAT_INC(mainThread().statistics.ttProbes);
-        if (const auto ttEntry = tt->probe(position.getZobristKey())) {
-          STAT_INC(mainThread().statistics.ttHitSufficientDepth);
-          switch (ttEntry->type) {
-            case NONE:
-              STAT_INC(mainThread().statistics.ttHitNone);
-              break;
-            case EXACT:
-              STAT_INC(mainThread().statistics.ttHitExact);
-              break;
-            case ALPHA:
-              STAT_INC(mainThread().statistics.ttHitAlpha);
-              break;
-            case BETA:
-              STAT_INC(mainThread().statistics.ttHitBeta);
-              break;
-          }
-          const auto probedMove = static_cast<Move>(ttEntry->move);
-          if (probedMove != MOVE_NONE && MoveGenerator::isPseudoLegal(position, probedMove)) {
-            searchResult.ponderMove = probedMove;
-            STAT_INC(mainThread().statistics.TtMoveUsed);
-            LOG__DEBUG(Logger::get().SEARCH_LOG, "Using ponder move from hash table: {}", searchResult.ponderMove.str());
-          }
-          else {
-            STAT_INC(mainThread().statistics.NoTtMove);
-          }
-        }
-        else {
-          STAT_INC(mainThread().statistics.ttMisses);
-        }
-        position.undoMove();
-      }
-    }
-
-    // Validate ponder move — avoid pondering on mate/draw/illegal positions
-    if (searchResult.ponderMove != MOVE_NONE && !searchResult.bestMove.isNone()) {
-      position.doMove(searchResult.bestMove);
-      if (!position.isLegalMove(searchResult.ponderMove)) {
-        LOG__DEBUG(Logger::get().SEARCH_LOG, "ponder move {} omitted as illegal", searchResult.ponderMove.str());
-        searchResult.ponderMove = MOVE_NONE;
-        position.undoMove();
-      }
-      else {
-        position.doMove(searchResult.ponderMove);
-        if (checkDrawRepAnd50(position, 2) || mainThread().plyStack[0].mg->generateLegalMoves(position, GenAll)->empty()) {
-          LOG__DEBUG(Logger::get().SEARCH_LOG, "ponder move omitted as game finished");
-          searchResult.ponderMove = MOVE_NONE;
-        }
-        position.undoMove();
-        position.undoMove();
-      }
-    }
-  }
+  // Extract and validate ponder move from PV or TT
+  extractPonderMove(searchResult, *bestThread);
 
   // Send final UCI info line if a non-main thread was selected
   // This ensures the GUI shows depth/score/PV consistent with the final bestmove
@@ -2550,6 +2448,111 @@ void Search::sendFinalUciInfo(const SearchThreadData& bestThread) const {
             nps(totalNodes, since),
             MILLISECONDS(since).count(),
             pvLine.str());
+}
+
+
+void Search::applyTBRootOverride(SearchResult& result) const {
+  if (tbRoot.wdl == tablebase::TBResult::Failed) {
+    return;
+  }
+
+  result.tbHit = true;
+
+  // Check if search (best thread) found a proven mate
+  const Value searchValue    = result.bestMoveValue;
+  const bool searchFoundMate = searchValue >= VALUE_CHECKMATE_THRESHOLD;
+
+  // Calculate mate depth if search found mate (in plies/half-moves)
+  const int searchMateDepth = searchFoundMate
+                                ? static_cast<int>(VALUE_CHECKMATE) - static_cast<int>(searchValue)
+                                : INT_MAX;
+
+  // TB DTZ is distance to zeroing (capture/pawn move), NOT necessarily mate.
+  // A proven mate is always preferred over a TB "Win" because:
+  // 1. Mate is concrete and forced
+  // 2. TB DTZ=1 might be a capture leading to a longer mate sequence
+  if (searchFoundMate && searchMateDepth <= tbRoot.dtz) {
+    LOG__INFO(Logger::get().SEARCH_LOG,
+              "Search found mate in {} (TB DTZ={}), using search move {}",
+              searchMateDepth, tbRoot.dtz, result.bestMove.str());
+    return;
+  }
+
+  // Use TB move — it's DTZ-optimal (shortest path to conversion)
+  const Move searchMove = result.bestMove;
+  result.bestMove       = tbRoot.move;
+  result.bestMoveValue  = tbRoot.value;
+  if (searchMove == tbRoot.move) {
+    LOG__INFO(Logger::get().SEARCH_LOG, "Search confirmed TB-optimal move {}", tbRoot.move.str());
+  }
+  else {
+    LOG__INFO(Logger::get().SEARCH_LOG,
+              "Using TB-optimal move {} (DTZ={}), search suggested {}",
+              tbRoot.move.str(), tbRoot.dtz, searchMove.str());
+  }
+}
+
+void Search::extractPonderMove(SearchResult& result, const SearchThreadData& bestThread) {
+  // Try to get ponder move from best thread's PV
+  if (bestThread.pv.hasLength(DEPTH_NONE, 2)) {
+    result.ponderMove = bestThread.pv(DEPTH_NONE, 1).stripped();
+  }
+  else {
+    // No ponder move in PV — try the TT
+    if (SearchConfig.USE_TT && !result.bestMove.isNone()) {
+      position.doMove(result.bestMove);
+      STAT_INC(mainThread().statistics.ttProbes);
+      if (const auto ttEntry = tt->probe(position.getZobristKey())) {
+        STAT_INC(mainThread().statistics.ttHitSufficientDepth);
+        switch (ttEntry->type) {
+          case NONE:
+            STAT_INC(mainThread().statistics.ttHitNone);
+            break;
+          case EXACT:
+            STAT_INC(mainThread().statistics.ttHitExact);
+            break;
+          case ALPHA:
+            STAT_INC(mainThread().statistics.ttHitAlpha);
+            break;
+          case BETA:
+            STAT_INC(mainThread().statistics.ttHitBeta);
+            break;
+        }
+        const auto probedMove = static_cast<Move>(ttEntry->move);
+        if (probedMove != MOVE_NONE && MoveGenerator::isPseudoLegal(position, probedMove)) {
+          result.ponderMove = probedMove;
+          STAT_INC(mainThread().statistics.TtMoveUsed);
+          LOG__DEBUG(Logger::get().SEARCH_LOG, "Using ponder move from hash table: {}", result.ponderMove.str());
+        }
+        else {
+          STAT_INC(mainThread().statistics.NoTtMove);
+        }
+      }
+      else {
+        STAT_INC(mainThread().statistics.ttMisses);
+      }
+      position.undoMove();
+    }
+  }
+
+  // Validate ponder move — avoid pondering on mate/draw/illegal positions
+  if (result.ponderMove != MOVE_NONE && !result.bestMove.isNone()) {
+    position.doMove(result.bestMove);
+    if (!position.isLegalMove(result.ponderMove)) {
+      LOG__DEBUG(Logger::get().SEARCH_LOG, "ponder move {} omitted as illegal", result.ponderMove.str());
+      result.ponderMove = MOVE_NONE;
+      position.undoMove();
+    }
+    else {
+      position.doMove(result.ponderMove);
+      if (checkDrawRepAnd50(position, 2) || mainThread().plyStack[0].mg->generateLegalMoves(position, GenAll)->empty()) {
+        LOG__DEBUG(Logger::get().SEARCH_LOG, "ponder move omitted as game finished");
+        result.ponderMove = MOVE_NONE;
+      }
+      position.undoMove();
+      position.undoMove();
+    }
+  }
 }
 
 void Search::filterRootMovesByTB(Position& pos) const {

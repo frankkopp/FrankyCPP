@@ -396,6 +396,19 @@ namespace engine {
     /// @return true if TB hit occurred and result was populated
     bool probeTablebaseAtRoot(const Position& pos, SearchResult& result);
 
+    /// Applies tablebase root override on top of best-thread selection.
+    /// If a TB hit occurred at root, uses the TB-optimal (DTZ) move unless
+    /// the search found a proven shorter mate.
+    /// @param result  Search result to update with TB move/value
+    void applyTBRootOverride(SearchResult& result) const;
+
+    /// Extracts and validates the ponder move after search completes.
+    /// Tries the best thread's PV first; falls back to TT probing.
+    /// Validates legality and filters out moves leading to drawn/mated positions.
+    /// @param result      Search result to update with ponder move
+    /// @param bestThread  Best thread selected after search (for PV access)
+    void extractPonderMove(SearchResult& result, const SearchThreadData& bestThread);
+
     /// Filters root moves to only those that maintain the TB result.
     /// Called when TB_ROOT_IMMEDIATE=false to ensure optimal play while searching.
     /// Removes moves that would worsen WDL (e.g., Win -> Draw or Draw -> Loss).
