@@ -403,38 +403,62 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
 
     steps:
-      - name: Download Windows artifacts
+      - name: Download Windows Standard artifacts
         uses: actions/download-artifact@v4
         with:
           name: frankycpp-windows-std-Release
-          path: windows-release
+          path: windows-std-release
 
-      - name: Download Linux GCC artifacts
+      - name: Download Windows Stripped artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: frankycpp-windows-stripped-Release
+          path: windows-stripped-release
+
+      - name: Download Linux GCC Standard artifacts
         uses: actions/download-artifact@v4
         with:
           name: frankycpp-linux-gcc-std-Release
-          path: linux-release
+          path: linux-std-release
+
+      - name: Download Linux GCC Stripped artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: frankycpp-linux-gcc-stripped-Release
+          path: linux-stripped-release
 
       - name: Create Release Archives
         run: |
-          echo "Creating Windows release archive..."
-          cd windows-release
+          echo "Creating Windows Standard release archive..."
+          cd windows-std-release
           zip -r ../FrankyCPP-${{ github.ref_name }}-Windows-MSVC.zip *
           cd ..
           
-          echo "Creating Linux release archive..."
-          cd linux-release
+          echo "Creating Windows Stripped release archive..."
+          cd windows-stripped-release
+          zip -r ../FrankyCPP-${{ github.ref_name }}-Windows-MSVC-stripped.zip *
+          cd ..
+          
+          echo "Creating Linux Standard release archive..."
+          cd linux-std-release
           tar czf ../FrankyCPP-${{ github.ref_name }}-Linux-GCC13.tar.gz *
           cd ..
           
+          echo "Creating Linux Stripped release archive..."
+          cd linux-stripped-release
+          tar czf ../FrankyCPP-${{ github.ref_name }}-Linux-GCC13-stripped.tar.gz *
+          cd ..
+          
           echo "Release archives created:"
-          ls -lh FrankyCPP-*.{zip,tar.gz}
+          ls -lh FrankyCPP-*
 
       - name: Upload to Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
             FrankyCPP-${{ github.ref_name }}-Windows-MSVC.zip
+            FrankyCPP-${{ github.ref_name }}-Windows-MSVC-stripped.zip
             FrankyCPP-${{ github.ref_name }}-Linux-GCC13.tar.gz
+            FrankyCPP-${{ github.ref_name }}-Linux-GCC13-stripped.tar.gz
           draft: false
           prerelease: false
