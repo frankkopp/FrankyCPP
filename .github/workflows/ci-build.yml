@@ -2,7 +2,7 @@ name: CI Build
 
 on:
   push:
-    branches: [ master, 'dev_*' ]
+    branches: [ master, 'dev_*', 'fix_*' ]
     tags:
       - 'v*'  # Trigger on version tags like v1.0.0, v1.1.0, etc.
   pull_request:
