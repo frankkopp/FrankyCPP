@@ -22,13 +22,15 @@
 #include <string>
 #include <thread>
 
+#include "common/Fifo.h"
+#include "common/Logging.h"
 #include "init.h"
 #include "types/types.h"
-#include "common/Logging.h"
-#include "common/Fifo.h"
 
 #include <gtest/gtest.h>
 using testing::Eq;
+
+using namespace common;
 
 class FifoTest : public ::testing::Test {
 public:
@@ -45,7 +47,6 @@ protected:
 
   std::random_device rd;
   std::uniform_int_distribution<unsigned long long> randomU64;
-
 };
 
 TEST_F(FifoTest, construct) {
@@ -80,8 +81,7 @@ TEST_F(FifoTest, construct) {
   fifo5 = std::move(fifo4);
   LOG__DEBUG(Logger::get().TEST_LOG, "Moved fifo4 to fifo5: {:L}", fifo5.size());
   EXPECT_EQ(1'000, fifo5.size());
-  //EXPECT_EQ(0, fifo4.size());
-
+  // EXPECT_EQ(0, fifo4.size());
 }
 
 TEST_F(FifoTest, pushPop) {
@@ -137,7 +137,7 @@ TEST_F(FifoTest, popEmpty) {
 
 TEST_F(FifoTest, popWait) {
   Fifo<std::string> fifo1;
-  auto t = std::thread([&]{
+  auto t = std::thread([&] {
     sleepForSec(2);
     fifo1.push("This it the first item in fifo");
   });
@@ -146,8 +146,8 @@ TEST_F(FifoTest, popWait) {
   EXPECT_EQ(0, fifo1.size());
   EXPECT_TRUE(fifo1.empty());
   LOG__DEBUG(Logger::get().TEST_LOG, "Waiting for item");
-  const auto item = fifo1.pop_wait();
-  const auto stop = high_resolution_clock::now();
+  const auto item    = fifo1.pop_wait();
+  const auto stop    = high_resolution_clock::now();
   const auto elapsed = std::chrono::duration_cast<milliseconds>(stop - start);
   LOG__DEBUG(Logger::get().TEST_LOG, "Got item '{}' after {:L} ms", *item, elapsed.count());
   EXPECT_GE(elapsed.count(), 2'000);
@@ -156,7 +156,7 @@ TEST_F(FifoTest, popWait) {
 
 TEST_F(FifoTest, popWaitCancel) {
   Fifo<std::string> fifo1;
-  auto t = std::thread([&]{
+  auto t = std::thread([&] {
     LOG__DEBUG(Logger::get().TEST_LOG, "Fifo closing in 2 sec");
     sleepForSec(2);
     LOG__DEBUG(Logger::get().TEST_LOG, "Closing Fifo");
@@ -168,7 +168,7 @@ TEST_F(FifoTest, popWaitCancel) {
   EXPECT_TRUE(fifo1.empty());
   LOG__DEBUG(Logger::get().TEST_LOG, "Waiting for item");
   auto ptrItem = fifo1.pop_wait();
-  auto stop = high_resolution_clock::now();
+  auto stop    = high_resolution_clock::now();
   auto elapsed = std::chrono::duration_cast<milliseconds>(stop - start);
   LOG__DEBUG(Logger::get().TEST_LOG, "Got item '{}' after {:L} ms", ptrItem ? *ptrItem : "NULL", elapsed.count());
   EXPECT_GE(elapsed.count(), 2'000);
@@ -178,7 +178,7 @@ TEST_F(FifoTest, popWaitCancel) {
   LOG__DEBUG(Logger::get().TEST_LOG, "Repeat with fifo.open()");
   fifo1.open();
 
-  t = std::thread([&]{
+  t = std::thread([&] {
     LOG__DEBUG(Logger::get().TEST_LOG, "Fifo closing in 2 sec");
     sleepForSec(2);
     LOG__DEBUG(Logger::get().TEST_LOG, "Closing Fifo");
@@ -190,7 +190,7 @@ TEST_F(FifoTest, popWaitCancel) {
   EXPECT_TRUE(fifo1.empty());
   LOG__DEBUG(Logger::get().TEST_LOG, "Waiting for item");
   ptrItem = fifo1.pop_wait();
-  stop = std::chrono::high_resolution_clock::now();
+  stop    = std::chrono::high_resolution_clock::now();
   elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
   LOG__DEBUG(Logger::get().TEST_LOG, "Got item '{}' after {:L} ms", ptrItem ? *ptrItem : "NULL", elapsed.count());
   EXPECT_GE(elapsed.count(), 2'000);
@@ -199,7 +199,7 @@ TEST_F(FifoTest, popWaitCancel) {
 
   LOG__DEBUG(Logger::get().TEST_LOG, "Repeat without fifo.open()");
 
-  t = std::thread([&]{
+  t = std::thread([&] {
     LOG__DEBUG(Logger::get().TEST_LOG, "Fifo closing in 2 sec");
     sleepForSec(2);
     LOG__DEBUG(Logger::get().TEST_LOG, "Closing Fifo");
@@ -211,7 +211,7 @@ TEST_F(FifoTest, popWaitCancel) {
   EXPECT_TRUE(fifo1.empty());
   LOG__DEBUG(Logger::get().TEST_LOG, "Waiting for item");
   ptrItem = fifo1.pop_wait();
-  stop = std::chrono::high_resolution_clock::now();
+  stop    = std::chrono::high_resolution_clock::now();
   elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
   LOG__DEBUG(Logger::get().TEST_LOG, "Got item '{}' after {:L} ms", ptrItem ? *ptrItem : "NULL", elapsed.count());
   EXPECT_LT(elapsed.count(), 1'000);

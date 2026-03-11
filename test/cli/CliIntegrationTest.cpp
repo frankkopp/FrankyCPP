@@ -128,7 +128,7 @@ namespace {
     return {exitCode, output};
   }
 
-}// namespace
+} // namespace
 
 class CliIntegrationTest : public testing::Test {
 protected:
@@ -402,7 +402,7 @@ TEST_F(CliIntegrationTest, UciSetAllOptionsToDefaults) {
   // Build UCI commands to set all options to their defaults
   // This simulates what Arena does when saving engine configuration
 
-  const auto& registry     = ConfigRegistry::instance();
+  const auto& registry     = config::ConfigRegistry::instance();
   const auto uciOptionDefs = registry.uciOptions();
 
   // Build command string: uci + isready + all setoptions + quit

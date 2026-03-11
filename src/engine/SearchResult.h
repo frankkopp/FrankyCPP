@@ -47,73 +47,78 @@
 #include "chesscore/Position.h"
 #include "types/types.h"
 
-/// Stores the result and metadata from a completed search.
-struct SearchResult {
-  /// FEN string of the position that was searched.
-  std::string fen{};
+namespace engine {
+  using namespace chess;
 
-  /// Best move found by the search.
-  Move bestMove = MOVE_NONE;
+  /// Stores the result and metadata from a completed search.
+  struct SearchResult {
+    /// FEN string of the position that was searched.
+    std::string fen{};
 
-  /// Evaluation score of the best move (from side-to-move perspective).
-  Value bestMoveValue = VALUE_NONE;
+    /// Best move found by the search.
+    Move bestMove = MOVE_NONE;
 
-  /// Expected opponent reply (for pondering).
-  /// Second move in the PV if available.
-  Move ponderMove = MOVE_NONE;
+    /// Evaluation score of the best move (from side-to-move perspective).
+    Value bestMoveValue = VALUE_NONE;
 
-  /// Search depth completed (full iterations).
-  int depth = 0;
+    /// Expected opponent reply (for pondering).
+    /// Second move in the PV if available.
+    Move ponderMove = MOVE_NONE;
 
-  /// Extra depth from extensions (selective depth beyond nominal depth).
-  int extraDepth = 0;
+    /// Search depth completed (full iterations).
+    int depth = 0;
 
-  /// Total nodes visited during the search.
-  uint64_t nodes = 0;
+    /// Extra depth from extensions (selective depth beyond nominal depth).
+    int extraDepth = 0;
 
-  /// Number of threads used for the search (1 = single-threaded).
-  int threads = 1;
+    /// Total nodes visited during the search.
+    uint64_t nodes = 0;
 
-  /// True if bestMove came from the opening book (not searched).
-  bool bookMove = false;
+    /// Number of threads used for the search (1 = single-threaded).
+    int threads = 1;
 
-  /// True if bestMove came from tablebase probe at root.
-  bool tbHit = false;
+    /// True if bestMove came from the opening book (not searched).
+    bool bookMove = false;
 
-  /// True if a forced mate was found.
-  bool mateFound = false;
+    /// True if bestMove came from tablebase probe at root.
+    bool tbHit = false;
 
-  /// Total time spent on the search.
-  nanoseconds time{};
+    /// True if a forced mate was found.
+    bool mateFound = false;
 
-  /// Principal variation (best line of play from both sides).
-  MoveList pv{};
+    /// Total time spent on the search.
+    nanoseconds time{};
 
-  // ==========================================================================
-  // Constructors
-  // ==========================================================================
+    /// Principal variation (best line of play from both sides).
+    MoveList pv{};
 
-  /// Default constructor deleted - SearchResult must be constructed with a Position.
-  SearchResult() = delete;
+    // ==========================================================================
+    // Constructors
+    // ==========================================================================
 
-  /// Constructs a SearchResult for the given position.
-  /// @param p  The position being searched (FEN is extracted and stored)
-  explicit SearchResult(const Position& p) : fen(p.strFen()) {}
+    /// Default constructor deleted - SearchResult must be constructed with a Position.
+    SearchResult() = delete;
 
-  /// Returns a string representation for debugging/logging.
-  /// @return  Debug string with best move, score, ponder, depth, and threads
-  std::string str() const {
-    const std::string source = bookMove ? "book move" : (tbHit ? "TB hit" : bestMoveValue.str());
-    return "Best Move: " + bestMove.str() + " (" + source
-           + ") " + "Ponder Move: " + ponderMove.str() + " Depth: " + std::to_string(depth)
-           + "/" + std::to_string(extraDepth) + " Threads: " + std::to_string(threads);
+    /// Constructs a SearchResult for the given position.
+    /// @param p  The position being searched (FEN is extracted and stored)
+    explicit SearchResult(const Position& p) : fen(p.strFen()) {}
+
+    /// Returns a string representation for debugging/logging.
+    /// @return  Debug string with best move, score, ponder, depth, and threads
+    std::string str() const {
+      const std::string source = bookMove ? "book move" : (tbHit ? "TB hit" : bestMoveValue.str());
+      return "Best Move: " + bestMove.str() + " (" + source
+             + ") " + "Ponder Move: " + ponderMove.str() + " Depth: " + std::to_string(depth)
+             + "/" + std::to_string(extraDepth) + " Threads: " + std::to_string(threads);
+    }
+  };
+
+  /// Stream output operator for SearchResult.
+  inline std::ostream& operator<<(std::ostream& os, const SearchResult& searchResult) {
+    os << searchResult.str();
+    return os;
   }
-};
 
-/// Stream output operator for SearchResult.
-inline std::ostream& operator<<(std::ostream& os, const SearchResult& searchResult) {
-  os << searchResult.str();
-  return os;
-}
+} // namespace engine
 
-#endif// FRANKYCPP_SEARCHRESULT_H
+#endif // FRANKYCPP_SEARCHRESULT_H

@@ -25,10 +25,9 @@
 #include "types/types.h"
 
 using testing::Eq;
-
+using namespace chess;
 class ValuesTest : public ::testing::Test {
 public:
-
   static void SetUpTestSuite() {
     NEWLINE;
     init::init();
@@ -36,10 +35,8 @@ public:
   }
 
 protected:
-
   void SetUp() override {}
   void TearDown() override {}
-
 };
 
 TEST_F(ValuesTest, basic) {
@@ -71,7 +68,7 @@ TEST_F(ValuesTest, basic) {
   EXPECT_EQ(5, Values::posEndValue[BLACK_QUEEN][SQ_D4]);
   EXPECT_EQ(-30, Values::posEndValue[BLACK_KING][SQ_G8]);
 
-  const Value value = Values::posMidValue[WHITE_PAWN][SQ_E2];
+  const Value value  = Values::posMidValue[WHITE_PAWN][SQ_E2];
   const Value value1 = Values::posValue[WHITE_PAWN][SQ_E2][GAME_PHASE_MAX];
   EXPECT_EQ(value, value1);
   const Value value2 = Values::posEndValue[WHITE_PAWN][SQ_E2];
@@ -79,5 +76,4 @@ TEST_F(ValuesTest, basic) {
   EXPECT_EQ(value2, value3);
   const Value value5 = Values::posValue[WHITE_PAWN][SQ_E2][12];
   EXPECT_EQ(-10, value5);
-
 }

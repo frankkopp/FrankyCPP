@@ -25,6 +25,11 @@
 #include "config/ConfigManager.h"
 #include "config/ConfigRegistry.h"
 
+using namespace engine;
+using namespace chess;
+using namespace config;
+using namespace common;
+
 void UciOptions::initOptions() {
   // Phase 4: UCI options are now auto-generated from ConfigRegistry
   // This replaces ~350 lines of manual option registration
@@ -50,7 +55,7 @@ UciOption* UciOptions::getOption(const std::string& name) {
 }
 
 bool UciOptions::setOption(UciHandler* uciHandler, const std::string& name, const std::string& value) {
-  if (auto *const o = getOption(name)) {
+  if (auto* const o = getOption(name)) {
     if (o->type == COMBO) {
       bool ok = false;
       for (const auto& v : o->comboVars) {
@@ -75,7 +80,7 @@ std::string UciOptions::str() const {
   for (const auto& o : optionVector) {
     str += o.str() + "\n";
   }
-  str = trimFast(str);// remove last newline
+  str = trimFast(str); // remove last newline
   return str;
 }
 
@@ -85,7 +90,7 @@ std::string UciOptions::strWithCurrentValues() const {
   for (const auto& o : optionVector) {
     str += o.strWithCurrentValue() + "\n";
   }
-  str = trimFast(str);// remove last newline
+  str = trimFast(str); // remove last newline
   return str;
 }
 
@@ -142,7 +147,7 @@ void UciOptions::resetToDefaults(UciHandler* uciHandler) {
   // which also invokes the option's handler to propagate the change.
   LOG__INFO(Logger::get().UCI_LOG, "Resetting all options to their default values");
   for (const auto& o : optionVector) {
-    if (o.type == BUTTON) continue;// buttons have no persistent value
+    if (o.type == BUTTON) continue; // buttons have no persistent value
     setOption(uciHandler, o.nameID, o.defaultValue);
     LOG__DEBUG(Logger::get().UCI_LOG, "  Option '{}' reset to default value '{}'", o.nameID, o.defaultValue);
   }
@@ -167,7 +172,7 @@ std::string UciOptions::strExtended() const {
         break;
       case SPIN:
         str += "spin default " + o.defaultValue + " current " + o.currentValue
-             + " min " + o.minValue + " max " + o.maxValue;
+               + " min " + o.minValue + " max " + o.maxValue;
         break;
       case COMBO:
         str += "combo default " + o.defaultValue + " current " + o.currentValue;

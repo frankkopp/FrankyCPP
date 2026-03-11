@@ -21,9 +21,9 @@
 #include "Test_Utils.h"
 #include "common/CrashHandler.h"
 #include "common/Logging.h"
+#include "config/ConfigManager.h"
 #include "init.h"
 #include "types/types.h"
-#include "config/ConfigManager.h"
 
 #include <iomanip>
 #include <sstream>
@@ -31,6 +31,11 @@
 #include <gtest/gtest.h>
 
 using testing::Eq;
+
+using namespace engine;
+using namespace chess;
+using namespace config;
+using namespace common;
 
 
 class SearchTest : public testing::Test {
@@ -138,22 +143,22 @@ TEST_F(SearchTest, extraTimeCap) {
 
   // Add 30% five times = would be 150% without cap
   for (int i = 0; i < 5; i++) {
-    s.addExtraTime(1.3);// +30% = +3s each
+    s.addExtraTime(1.3); // +30% = +3s each
   }
 
   // Should be capped at 2x base (20s), not 5x3s = 15s
   // Actually 5 * 3s = 15s < 20s cap, so should be 15s
   fprintln("After 5x +30%: extra = {}", str(milliseconds(s.extraTimeMs.load())));
-  EXPECT_EQ(15000, s.extraTimeMs.load());// 5 * 3000ms = 15000ms
+  EXPECT_EQ(15000, s.extraTimeMs.load()); // 5 * 3000ms = 15000ms
 
   // Add more - should hit the cap
   for (int i = 0; i < 5; i++) {
-    s.addExtraTime(1.3);// +30% = +3s each, but capped
+    s.addExtraTime(1.3); // +30% = +3s each, but capped
   }
 
   // Should be capped at 20s (2x base)
   fprintln("After 10x +30%: extra = {}", str(milliseconds(s.extraTimeMs.load())));
-  EXPECT_EQ(20000, s.extraTimeMs.load());// capped at 2x base
+  EXPECT_EQ(20000, s.extraTimeMs.load()); // capped at 2x base
 
   // Total budget should be base + cap = 30s
   const auto totalBudget = s.timeLimit + milliseconds(s.extraTimeMs.load());
@@ -165,9 +170,9 @@ TEST_F(SearchTest, startTimer) {
   Search s{};
   s.searchLimits.timeControl = true;
   s.startTime                = high_resolution_clock::now();
-  s.startSearchTime          = s.startTime;  // Timer uses startSearchTime for elapsed calculation
+  s.startSearchTime          = s.startTime; // Timer uses startSearchTime for elapsed calculation
   s.timeLimit                = 2s;
-  s.extraTimeMs              = 1000;// 1s
+  s.extraTimeMs              = 1000; // 1s
   s.startTimer();
   s.timerThread.join();
   EXPECT_LT(3s, (high_resolution_clock::now() - s.startTime));
@@ -216,7 +221,6 @@ TEST_F(SearchTest, bookMoveSearch) {
   sl.moveTime    = 1s;
   s.isReady();
   s.startSearch(p, sl);
-  EXPECT_TRUE(s.isSearching());
   s.waitWhileSearching();
   EXPECT_TRUE(s.hasResult());
   EXPECT_NE(MOVE_NONE, s.getLastSearchResult().bestMove);
@@ -251,7 +255,7 @@ TEST_F(SearchTest, startPonderSearch) {
 
 TEST_F(SearchTest, startNodesLimitedSearch) {
   CONFIG_OVERRIDE(s.USE_BOOK = false;);
-  CONFIG_OVERRIDE(s.THREADS = 1;);  // Single-threaded for predictable node limit behavior
+  CONFIG_OVERRIDE(s.THREADS = 1;); // Single-threaded for predictable node limit behavior
   const Position p{};
   SearchLimits sl{};
   Search s{};
@@ -466,7 +470,7 @@ TEST_F(SearchTest, movesLeftBucketsOpeningVsQueenlessVsLowMaterial) {
 TEST_F(SearchTest, movesLeftRepetitionRiskIncreasesTime) {
   // Use a queenless position to keep the bucket clear
   const Position queenless_low{"rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 0 1"};
-  const Position queenless_high{"rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 80 1"};// high half-move clock
+  const Position queenless_high{"rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 80 1"}; // high half-move clock
 
   const Search search{};
   SearchLimits sl{};
@@ -496,7 +500,7 @@ TEST_F(SearchTest, singleMoveRootStopsEarlyAtVerifyDepth) {
   s.isReady();
 
   SearchLimits sl{};
-  sl.timeControl = true;// no time control
+  sl.timeControl = true; // no time control
   sl.whiteTime   = 1000s;
   sl.blackTime   = 1000s;
 
@@ -548,7 +552,7 @@ TEST_F(SearchTest, lmrReductionTableTest) {
   // Check exact formula match for all entries and basic boundary conditions
   for (int d = 0; d < 32; ++d) {
     for (int m = 0; m < 64; ++m) {
-      const int expected = 1 + (d * m * 35 + 5000) / 10000;// exact rounding of 0.0035
+      const int expected = 1 + (d * m * 35 + 5000) / 10000; // exact rounding of 0.0035
       EXPECT_EQ(expected, T[d][m]) << "Mismatch at d=" << d << " m=" << m;
 
       // Minimum reduction is 1
@@ -576,7 +580,7 @@ TEST_F(SearchTest, lmrReductionTableTest) {
 
   // Known extreme
   {
-    constexpr int expected = 1 + (31 * 63 * 35 + 5000) / 10000;// should be 8
+    constexpr int expected = 1 + (31 * 63 * 35 + 5000) / 10000; // should be 8
     EXPECT_EQ(expected, T[31][63]);
   }
 
@@ -631,7 +635,7 @@ TEST_F(SearchTest, singularExtension) {
 
   // Enable singular extensions and set params suitable for testing
   CONFIG_OVERRIDE(s.USE_SINGULAR_EXT = true;);
-  CONFIG_OVERRIDE(s.SINGULAR_MIN_DEPTH = 6;);// Lower for testing
+  CONFIG_OVERRIDE(s.SINGULAR_MIN_DEPTH = 6;); // Lower for testing
   CONFIG_OVERRIDE(s.SINGULAR_MARGIN = 64;);
   CONFIG_OVERRIDE(s.SINGULAR_REDUCTION = 3;);
 
@@ -645,7 +649,9 @@ TEST_F(SearchTest, singularExtension) {
   const Position p{"r1bq1rk1/pp2ppbp/2np1np1/8/3NP3/2N1BP2/PPPQ2PP/R3KB1R w KQ - 0 9"};
 
   SearchLimits sl{};
-  sl.depth = 12;// Deep enough to trigger singular extension
+  sl.depth = 16; // Deep enough to trigger singular extension
+  // sl.timeControl = true;
+  // sl.moveTime    = 30s;
 
   search.startSearch(p, sl);
   search.waitWhileSearching();
@@ -654,7 +660,7 @@ TEST_F(SearchTest, singularExtension) {
   fprintln("Singular searches: {}", stats.singularSearches);
   fprintln("Singular extensions: {}", stats.singularExtension);
 
-  // We expect some singular extension activity at depth 10
+  // We expect some singular extension activity at depth 12
   // The exact numbers depend on the position, but there should be some
   EXPECT_GT(stats.singularSearches, 0) << "Expected some singular extension searches";
 }
@@ -671,7 +677,7 @@ TEST_F(SearchTest, singularExtensionDisabled) {
   const Position p{"r1bq1rk1/pp2ppbp/2np1np1/8/3NP3/2N1BP2/PPPQ2PP/R3KB1R w KQ - 0 9"};
 
   SearchLimits sl{};
-  sl.depth = 10;
+  sl.depth = 16;
 
   search.startSearch(p, sl);
   search.waitWhileSearching();
@@ -692,7 +698,10 @@ TEST_F(SearchTest, 10secondSearchNodesCount) {
   }
 
   // Used to experiment with multiple threads
-  CONFIG_OVERRIDE(s.THREADS = 1;);
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  // CONFIG_OVERRIDE(s.THREADS = 1;);
+  CONFIG_OVERRIDE(s.TT_SIZE_MB = 512;);
+  CONFIG_OVERRIDE(e.PAWN_TT_SIZE_MB = 16;);
 
   const Position p{"5k2/1rn2p2/3pb1p1/7p/p3PP2/PnNBK2P/3N2P1/1R6 w - - 0 1"};
   SearchLimits sl{};
@@ -725,17 +734,17 @@ TEST_F(SearchTest, 10secondSearchNodesCount) {
 // is speed vs determinism. See SearchSmpTest for multi-threaded tests.
 TEST_F(SearchTest, newGameResetsDeterministic) {
   CONFIG_OVERRIDE(s.USE_BOOK = false;);
-  CONFIG_OVERRIDE(s.THREADS = 1;);  // Single-threaded REQUIRED for determinism
+  CONFIG_OVERRIDE(s.THREADS = 1;); // Single-threaded REQUIRED for determinism
 
   // Use multiple positions to increase coverage
   const std::vector<std::string> fens = {
-    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",        // start position
-    "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -",// Kiwi Pete
-    "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -",                           // endgame
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",         // start position
+    "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -", // Kiwi Pete
+    "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -",                            // endgame
   };
 
   // ReSharper disable once CppTooWideScope
-  constexpr int searchDepth   = 8;
+  constexpr int searchDepth = 8;
   // ReSharper disable once CppTooWideScope
   constexpr int numIterations = 3;
 

@@ -18,18 +18,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "engine/Benchmark.h"
-#include "engine/BenchmarkPositions.h"
 #include "chesscore/Position.h"
+#include "engine/BenchmarkPositions.h"
 #include "init.h"
 
 #include <gtest/gtest.h>
+
+using namespace engine;
+using namespace chess;
 
 /// Test fixture for Benchmark tests
 class BenchmarkTest : public ::testing::Test {
 public:
   static void SetUpTestSuite() {
     NEWLINE;
-    init::init();  // Initialize attack tables/magics
+    init::init(); // Initialize attack tables/magics
     NEWLINE;
   }
 };
@@ -44,7 +47,8 @@ TEST_F(BenchmarkTest, benchmarkPositionsAreValid) {
     // Position constructor will throw if FEN is invalid
     EXPECT_NO_THROW({
       [[maybe_unused]] Position pos{std::string{fen}};
-    }) << "Position " << i << " has invalid FEN: " << fen;
+    }) << "Position "
+       << i << " has invalid FEN: " << fen;
   }
 }
 
@@ -70,11 +74,11 @@ TEST_F(BenchmarkTest, benchResultDefaults) {
 /// Test benchmark with single position at shallow depth
 TEST_F(BenchmarkTest, benchRunsSinglePosition) {
   engine::BenchConfig config;
-  config.depth = 1;  // Very shallow for quick test
+  config.depth = 1; // Very shallow for quick test
 
   // Run with just one position for quick test
   const std::vector<std::string> fens = {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"};
-  const auto result = engine::Benchmark::run(fens, config);
+  const auto result                   = engine::Benchmark::run(fens, config);
 
   EXPECT_GT(result.totalNodes, 0);
   EXPECT_GT(result.totalTime.count(), 0);
@@ -86,15 +90,14 @@ TEST_F(BenchmarkTest, benchRunsSinglePosition) {
 /// Test that benchmark runs without crashing at shallow depth
 TEST_F(BenchmarkTest, benchRunsAtShallowDepth) {
   engine::BenchConfig config;
-  config.depth = 3;  // Shallow depth for quick test
-  config.hashSizeMB = 16;  // Small hash for test
+  config.depth      = 3;  // Shallow depth for quick test
+  config.hashSizeMB = 16; // Small hash for test
 
   // Run with a few positions
   const std::vector<std::string> fens = {
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
     "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 10",
-    "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 11"
-  };
+    "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 11"};
 
   const auto result = engine::Benchmark::run(fens, config);
 
@@ -106,11 +109,11 @@ TEST_F(BenchmarkTest, benchRunsAtShallowDepth) {
 /// Test print function doesn't crash
 TEST_F(BenchmarkTest, printResultsDoesNotCrash) {
   engine::BenchResult result;
-  result.totalNodes = 12345678;
-  result.totalTime = milliseconds{5000};
-  result.nps = 2469135.6;
+  result.totalNodes   = 12345678;
+  result.totalTime    = milliseconds{5000};
+  result.nps          = 2469135.6;
   result.positionsRun = 50;
-  result.version = "FrankyCPP v1.2";
+  result.version      = "FrankyCPP v1.2";
 
   // Should not throw or crash
   EXPECT_NO_THROW(engine::Benchmark::printResults(result));

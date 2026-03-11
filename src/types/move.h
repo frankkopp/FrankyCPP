@@ -82,187 +82,191 @@
 #include <format>
 #include <string>
 
-class Move {
-public:
-  using Raw = uint32_t;// fixed width for stable serialization and cache compatibility
+namespace chess {
 
-private:
-  Raw raw_{0};
-  static_assert(sizeof(Raw) == 4, "Move::Raw must remain 32-bit");
+  class Move {
+  public:
+    using Raw = uint32_t; // fixed width for stable serialization and cache compatibility
 
-  // Internal helper to encode promotion type (expects promType already >= KNIGHT)
-  static constexpr Raw encode(const Square from, const Square to, const MoveType mt, const PieceType promType, const Value v) {
-    // clang-format off
+  private:
+    Raw raw_{0};
+    static_assert(sizeof(Raw) == 4, "Move::Raw must remain 32-bit");
+
+    // Internal helper to encode promotion type (expects promType already >= KNIGHT)
+    static constexpr Raw encode(const Square from, const Square to, const MoveType mt, const PieceType promType, const Value v) {
+      // clang-format off
     return static_cast<Raw>(to)
         | static_cast<Raw>(from) << MoveShifts::FROM_SHIFT
         | static_cast<Raw>(promType - KNIGHT) << MoveShifts::PROM_TYPE_SHIFT
         | static_cast<Raw>(mt)
         | static_cast<Raw>(v - VALUE_NONE) << MoveShifts::VALUE_SHIFT;
-    // clang-format on
-  }
-
-public:
-  // ---------------------------------------------------------------------------
-  // Construction
-  // ---------------------------------------------------------------------------
-  constexpr Move() = default;// MOVE_NONE
-  constexpr explicit Move(const Raw raw) : raw_{raw} {}
-
-  // Canonical full constructor (internal anchor).
-  constexpr Move(const Square from, const Square to,
-                 const MoveType mt, const PieceType promType,
-                 const Value v = VALUE_NONE)
-      : raw_{encode(from, to, mt, (promType < KNIGHT ? KNIGHT : promType), v)} {
-    assert(from.isValid() && to.isValid());
-  }
-
-  // Convenience reduced forms.
-  constexpr Move(const Square from, const Square to)
-      : Move(from, to, NORMAL, KNIGHT, VALUE_NONE) {}
-
-  constexpr Move(const Square from, const Square to,
-                 const MoveType mt, const Value v)
-      : Move(from, to, mt, KNIGHT, v) {}
-
-  // Named helpers (clearer at call sites).
-  static constexpr Move normal(const Square from, const Square to,
-                               const Value v = VALUE_NONE) {
-    return Move(from, to, NORMAL, KNIGHT, v);
-  }
-  static constexpr Move enPassant(const Square from, const Square to,
-                                  const Value v = VALUE_NONE) {
-    return Move(from, to, ENPASSANT, KNIGHT, v);
-  }
-  static constexpr Move castling(const Square from, const Square to,
-                                 const Value v = VALUE_NONE) {
-    return Move(from, to, CASTLING, KNIGHT, v);
-  }
-  static constexpr Move promotion(const Square from, const Square to,
-                                  const PieceType promo, const Value v = VALUE_NONE) {
-    return Move(from, to, PROMOTION, promo, v);
-  }
-
-  // Access to the underlying raw integer (for low-level / legacy uses).
-  constexpr Raw raw() const noexcept { return raw_; }
-
-// True if this is MOVE_NONE (no encoded move bits).
-  constexpr bool isNone() const noexcept { return (raw_ & MoveShifts::MOVE_MASK) == 0; }
-
-  // True if a non-default (scoring/sorting) value is attached.
-  constexpr bool hasValue() const noexcept { return !isNone() && value() != VALUE_NONE; }
-
-  // Encoded source square.
-  constexpr Square from() const noexcept {
-    return static_cast<Square>((raw_ & MoveShifts::FROM_MASK) >> MoveShifts::FROM_SHIFT);
-  }
-
-  // Encoded destination square.
-  constexpr Square to() const noexcept {
-    return static_cast<Square>(raw_ & MoveShifts::TO_MASK);
-  }
-
-  // Encoded move type (normal, promotion, en-passant, castling).
-  constexpr MoveType type() const noexcept {
-    return static_cast<MoveType>(raw_ & MoveShifts::MOVE_TYPE_MASK);
-  }
-
-  // Encoded promotion piece type (only meaningful for promotion moves).
-  constexpr PieceType promotionType() const noexcept {
-    return static_cast<PieceType>(((raw_ & MoveShifts::PROM_TYPE_MASK) >> MoveShifts::PROM_TYPE_SHIFT) + KNIGHT);
-  }
-
-  // Attached (sorting/evaluation) value or VALUE_NONE if none.
-  constexpr Value value() const noexcept {
-    return Value{static_cast<int>((raw_ & MoveShifts::VALUE_MASK) >> MoveShifts::VALUE_SHIFT)} + VALUE_NONE;
-  }
-
-  // Returns a Move with only the move bits (value cleared).
-  constexpr Move stripped() const noexcept { return Move{(raw_ & MoveShifts::MOVE_MASK)}; }
-
-  // Encodes a (sorting) value into this move (mutating). No-op for MOVE_NONE.
-  constexpr void setValue(const Value v) noexcept {
-    if (isNone()) return;
-    raw_ = raw_ & MoveShifts::MOVE_MASK | static_cast<Raw>(v - VALUE_NONE) << MoveShifts::VALUE_SHIFT;
-  }
-// Valid if not MOVE_NONE and all encoded subfields (promotion type, move type, value) are within allowed ranges
-  constexpr bool isValid() const noexcept {
-    return !isNone() && validPieceType(promotionType()) && validMoveType(type()) && (value() == VALUE_NONE || value().isValid());
-  }
-
-  // String (UCI style)
-  std::string str() const {
-    if (stripped().isNone()) return "no move";
-    if (type() == PROMOTION) return from().str() + to().str() + ::str(promotionType());
-    return from().str() + to().str();
-  }
-
-  // Verbose representation
-  std::string strVerbose() const {
-    if (isNone()) return "no move 0";// maintain similar behavior
-    std::string tp;
-    std::string promPt;
-    switch (type()) {
-      case NORMAL:
-        tp = "n";
-        break;
-      case PROMOTION:
-        promPt = ::str(promotionType());
-        tp     = "p";
-        break;
-      case ENPASSANT:
-        tp = "e";
-        break;
-      case CASTLING:
-        tp = "c";
-        break;
+      // clang-format on
     }
-    return std::format("Move: {:2}{:2}{:1}  type:{:<1}  prom:{:<1}  value:{:<6}  ({})",
-                       from().str(), to().str(), promPt, tp, promPt,
-                       std::to_string(value()), std::to_string(raw_));
-  }
 
-  // Comparison by raw integer (fast).
-  constexpr bool operator==(const Move&) const noexcept = default;
-  constexpr bool operator!=(const Move&) const noexcept = default;
-  constexpr auto operator<=>(const Move&) const noexcept = default;
+  public:
+    // ---------------------------------------------------------------------------
+    // Construction
+    // ---------------------------------------------------------------------------
+    constexpr Move() = default; // MOVE_NONE
+    constexpr explicit Move(const Raw raw) : raw_{raw} {}
 
-  // Allow implicit conversion to raw for legacy bitwise operations & masks.
-  // (If stricter encapsulation is desired later, make this explicit and adapt call sites.)
-  // ReSharper disable once CppNonExplicitConversionOperator
-  constexpr operator Raw() const noexcept { return raw_; }
+    // Canonical full constructor (internal anchor).
+    constexpr Move(const Square from, const Square to,
+                   const MoveType mt, const PieceType promType,
+                   const Value v = VALUE_NONE)
+        : raw_{encode(from, to, mt, (promType < KNIGHT ? KNIGHT : promType), v)} {
+      assert(from.isValid() && to.isValid());
+    }
 
-  // Removed Boost member serialize to allow primitive/bitwise treatment for backward-compatible raw storage.
-};
+    // Convenience reduced forms.
+    constexpr Move(const Square from, const Square to)
+        : Move(from, to, NORMAL, KNIGHT, VALUE_NONE) {}
 
-// Global constant for no-move (replaces enumerator MOVE_NONE from old enum). Kept name for compatibility.
-inline constexpr Move MOVE_NONE{};
+    constexpr Move(const Square from, const Square to,
+                   const MoveType mt, const Value v)
+        : Move(from, to, mt, KNIGHT, v) {}
 
-ENABLE_OSTREAM_OPERATOR_AS_STR_ON(Move)
+    // Named helpers (clearer at call sites).
+    static constexpr Move normal(const Square from, const Square to,
+                                 const Value v = VALUE_NONE) {
+      return Move(from, to, NORMAL, KNIGHT, v);
+    }
+    static constexpr Move enPassant(const Square from, const Square to,
+                                    const Value v = VALUE_NONE) {
+      return Move(from, to, ENPASSANT, KNIGHT, v);
+    }
+    static constexpr Move castling(const Square from, const Square to,
+                                   const Value v = VALUE_NONE) {
+      return Move(from, to, CASTLING, KNIGHT, v);
+    }
+    static constexpr Move promotion(const Square from, const Square to,
+                                    const PieceType promo, const Value v = VALUE_NONE) {
+      return Move(from, to, PROMOTION, promo, v);
+    }
 
-// Comparator updated to use raw() while remaining trivially inline.
-struct moveValueGreaterComparator {
-  constexpr bool operator()(const Move lhs, const Move rhs) const {
-    return (lhs.raw() & MoveShifts::VALUE_MASK) > (rhs.raw() & MoveShifts::VALUE_MASK);
-  }
-};
+    // Access to the underlying raw integer (for low-level / legacy uses).
+    constexpr Raw raw() const noexcept { return raw_; }
+
+    // True if this is MOVE_NONE (no encoded move bits).
+    constexpr bool isNone() const noexcept { return (raw_ & MoveShifts::MOVE_MASK) == 0; }
+
+    // True if a non-default (scoring/sorting) value is attached.
+    constexpr bool hasValue() const noexcept { return !isNone() && value() != VALUE_NONE; }
+
+    // Encoded source square.
+    constexpr Square from() const noexcept {
+      return static_cast<Square>((raw_ & MoveShifts::FROM_MASK) >> MoveShifts::FROM_SHIFT);
+    }
+
+    // Encoded destination square.
+    constexpr Square to() const noexcept {
+      return static_cast<Square>(raw_ & MoveShifts::TO_MASK);
+    }
+
+    // Encoded move type (normal, promotion, en-passant, castling).
+    constexpr MoveType type() const noexcept {
+      return static_cast<MoveType>(raw_ & MoveShifts::MOVE_TYPE_MASK);
+    }
+
+    // Encoded promotion piece type (only meaningful for promotion moves).
+    constexpr PieceType promotionType() const noexcept {
+      return static_cast<PieceType>(((raw_ & MoveShifts::PROM_TYPE_MASK) >> MoveShifts::PROM_TYPE_SHIFT) + KNIGHT);
+    }
+
+    // Attached (sorting/evaluation) value or VALUE_NONE if none.
+    constexpr Value value() const noexcept {
+      return Value{static_cast<int>((raw_ & MoveShifts::VALUE_MASK) >> MoveShifts::VALUE_SHIFT)} + VALUE_NONE;
+    }
+
+    // Returns a Move with only the move bits (value cleared).
+    constexpr Move stripped() const noexcept { return Move{(raw_ & MoveShifts::MOVE_MASK)}; }
+
+    // Encodes a (sorting) value into this move (mutating). No-op for MOVE_NONE.
+    constexpr void setValue(const Value v) noexcept {
+      if (isNone()) return;
+      raw_ = raw_ & MoveShifts::MOVE_MASK | static_cast<Raw>(v - VALUE_NONE) << MoveShifts::VALUE_SHIFT;
+    }
+    // Valid if not MOVE_NONE and all encoded subfields (promotion type, move type, value) are within allowed ranges
+    constexpr bool isValid() const noexcept {
+      return !isNone() && validPieceType(promotionType()) && validMoveType(type()) && (value() == VALUE_NONE || value().isValid());
+    }
+
+    // String (UCI style)
+    std::string str() const {
+      if (stripped().isNone()) return "no move";
+      if (type() == PROMOTION) return from().str() + to().str() + chess::str(promotionType());
+      return from().str() + to().str();
+    }
+
+    // Verbose representation
+    std::string strVerbose() const {
+      if (isNone()) return "no move 0"; // maintain similar behavior
+      std::string tp;
+      std::string promPt;
+      switch (type()) {
+        case NORMAL:
+          tp = "n";
+          break;
+        case PROMOTION:
+          promPt = chess::str(promotionType());
+          tp     = "p";
+          break;
+        case ENPASSANT:
+          tp = "e";
+          break;
+        case CASTLING:
+          tp = "c";
+          break;
+      }
+      return std::format("Move: {:2}{:2}{:1}  type:{:<1}  prom:{:<1}  value:{:<6}  ({})",
+                         from().str(), to().str(), promPt, tp, promPt,
+                         std::to_string(value()), std::to_string(raw_));
+    }
+
+    // Comparison by raw integer (fast).
+    constexpr bool operator==(const Move&) const noexcept  = default;
+    constexpr bool operator!=(const Move&) const noexcept  = default;
+    constexpr auto operator<=>(const Move&) const noexcept = default;
+
+    // Allow implicit conversion to raw for legacy bitwise operations & masks.
+    // (If stricter encapsulation is desired later, make this explicit and adapt call sites.)
+    // ReSharper disable once CppNonExplicitConversionOperator
+    constexpr operator Raw() const noexcept { return raw_; }
+
+    // Removed Boost member serialize to allow primitive/bitwise treatment for backward-compatible raw storage.
+  };
+
+  // Global constant for no-move (replaces enumerator MOVE_NONE from old enum). Kept name for compatibility.
+  inline constexpr Move MOVE_NONE{};
+
+  ENABLE_OSTREAM_OPERATOR_AS_STR_ON(Move)
+
+  // Comparator updated to use raw() while remaining trivially inline.
+  struct moveValueGreaterComparator {
+    constexpr bool operator()(const Move lhs, const Move rhs) const {
+      return (lhs.raw() & MoveShifts::VALUE_MASK) > (rhs.raw() & MoveShifts::VALUE_MASK);
+    }
+  };
+
+} // namespace chess
 
 // Boost split-free serialization: persists Move as its 32-bit raw value for backward compatibility.
 namespace boost::serialization {
   template<class Archive>
-  void save(Archive& ar, const Move& m, const unsigned int /*version*/) {
-    Move::Raw r = m.raw();
+  void save(Archive& ar, const chess::Move& m, const unsigned int /*version*/) {
+    chess::Move::Raw r = m.raw();
     ar& make_nvp("raw", r);
   }
   template<class Archive>
-  void load(Archive& ar, Move& m, const unsigned int /*version*/) {
-    Move::Raw r{};
+  void load(Archive& ar, chess::Move& m, const unsigned int /*version*/) {
+    chess::Move::Raw r{};
     ar& make_nvp("raw", r);
-    m = Move(r);
+    m = chess::Move(r);
   }
   template<class Archive>
-  void serialize(Archive& ar, Move& m, const unsigned int version) {
+  void serialize(Archive& ar, chess::Move& m, const unsigned int version) {
     serialization::split_free(ar, m, version);
   }
-}// namespace boost::serialization
+} // namespace boost::serialization
 
-#endif// FRANKYCPP_MOVE_H
+#endif // FRANKYCPP_MOVE_H

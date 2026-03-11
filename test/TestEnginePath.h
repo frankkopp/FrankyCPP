@@ -62,8 +62,7 @@ inline std::string getTestEnginePath() {
     "build/Release/src/" + exeName + ext,
     "out/build/Release/src/" + exeName + ext,
     // CMake default build directory
-    "src/" + exeName + ext
-  };
+    "src/" + exeName + ext};
 
   for (const auto& path : searchPaths) {
     if (std::filesystem::exists(path)) {

@@ -56,22 +56,26 @@
 #include <string>
 #include <vector>
 
-// Forward declarations
-class Position;
+namespace chess {
 
-/// Compare actual move against expected move(s) in different notations
-/// @param actualMove UCI long algebraic move (e.g., "e2e4")
-/// @param expectedMoves List of expected moves (may be UCI or SAN format)
-/// @param position Current board position (needed for SAN parsing)
-/// @return True if actualMove matches any expected move
-bool matchesExpectedMove(
+  // Forward declarations
+  class Position;
+
+  /// Compare actual move against expected move(s) in different notations
+  /// @param actualMove UCI long algebraic move (e.g., "e2e4")
+  /// @param expectedMoves List of expected moves (may be UCI or SAN format)
+  /// @param position Current board position (needed for SAN parsing)
+  /// @return True if actualMove matches any expected move
+  bool matchesExpectedMove(
     const std::string& actualMove,
     const std::vector<std::string>& expectedMoves,
     const Position& position);
 
-/// Normalize move string for comparison (lowercase, remove decoration)
-/// @param move Move string to normalize
-/// @return Normalized move string
-std::string normalizeMove(const std::string& move);
+  /// Normalize move string for comparison (lowercase, remove decoration)
+  /// @param move Move string to normalize
+  /// @return Normalized move string
+  std::string normalizeMove(const std::string& move);
+
+} // namespace chess
 
 #endif // FRANKYCPP_MOVEUTILS_H

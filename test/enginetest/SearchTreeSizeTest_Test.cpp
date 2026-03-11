@@ -17,7 +17,9 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include <ctime>
+// SearchTreeSizeTest uses CONFIG_OVERRIDE on non-essential config members which
+// become static constexpr in production builds — exclude entirely.
+#ifndef FRANKYCPP_PRODUCTION
 
 #include "Test_Fens.h"
 #include "Test_Utils.h"
@@ -30,6 +32,11 @@
 
 using testing::Eq;
 
+using namespace engine;
+using namespace chess;
+using namespace config;
+using namespace common;
+using namespace enginetest;
 
 class SearchTreeSizeTest_Test : public testing::Test {
 public:
@@ -51,9 +58,10 @@ protected:
 TEST_F(SearchTreeSizeTest_Test, size_test) {
   static constexpr milliseconds MOVE_TIME{0};
 
-  const int START_FEN = isBulkRun() ? 0 : 0;
-  const int END_FEN   = isBulkRun() ? 4 : 50;
-  const int DEPTH     = isBulkRun() ? 4 : 12;
+  constexpr int THREADS   = 4;
+  constexpr int START_FEN = 0;
+  const int END_FEN       = isBulkRun() ? 4 : 50;
+  const int DEPTH         = isBulkRun() ? 4 : 12;
 
   // Prepare test fens
   // get sub vector of fens to test
@@ -65,7 +73,7 @@ TEST_F(SearchTreeSizeTest_Test, size_test) {
   const std::vector testFens(iterStart, iterEnd);
 
   // execute tests
-  SearchTreeSizeTest stst(DEPTH, MOVE_TIME, testFens);
+  SearchTreeSizeTest stst(DEPTH, MOVE_TIME, THREADS, testFens);
   stst.start();
 }
 
@@ -121,3 +129,5 @@ Test: 66 LMP        Nodes:          189.591  Nps:        2.370.515  Time:       
 Test: 67 QFP        Nodes:          185.605  Nps:        2.338.179  Time:               63 Depth:   8/15  Special1:           46.032 Special2:          140.858
 Test: 70 CEXT       Nodes:          219.606  Nps:        2.361.098  Time:               76 Depth:   8/16  Special1:           53.384 Special2:          168.198
 */
+
+#endif // FRANKYCPP_PRODUCTION

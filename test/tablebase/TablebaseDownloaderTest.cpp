@@ -25,6 +25,8 @@
 #include <gtest/gtest.h>
 
 using namespace tablebase;
+using namespace chess;
+using namespace common;
 
 class TablebaseDownloaderTest : public testing::Test {
 public:
@@ -109,14 +111,14 @@ TEST_F(TablebaseDownloaderTest, formatSize_GB) {
 
 TEST_F(TablebaseDownloaderTest, downloadProgress_percentComplete) {
   DownloadProgress progress;
-  progress.totalFiles = 100;
+  progress.totalFiles     = 100;
   progress.filesCompleted = 50;
   EXPECT_EQ(progress.percentComplete(), 50);
 }
 
 TEST_F(TablebaseDownloaderTest, downloadProgress_percentComplete_zero) {
   DownloadProgress progress;
-  progress.totalFiles = 0;
+  progress.totalFiles     = 0;
   progress.filesCompleted = 0;
   EXPECT_EQ(progress.percentComplete(), 0);
 }

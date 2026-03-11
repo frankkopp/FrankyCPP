@@ -17,16 +17,19 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#include "engine/See.h"
+#include "chesscore/Position.h"
+#include "common/Logging.h"
 #include "init.h"
 #include "types/types.h"
-#include "common/Logging.h"
-#include "chesscore/Position.h"
-#include "common/misc.h"
-#include "engine/See.h"
 
 #include <chesscore/MoveGenerator.h>
 #include <gtest/gtest.h>
 using testing::Eq;
+
+using namespace engine;
+using namespace chess;
+using namespace common;
 
 class SeeTest : public ::testing::Test {
 public:
@@ -79,10 +82,10 @@ TEST_F(SeeTest, attacksTo) {
 
 TEST_F(SeeTest, revealedAttacks) {
   // 1k1r3q/1ppn3p/p4b2/4p3/8/P2N2P1/1PP1R1BP/2K1Q3 w - - ; Nxe5?;
-  Position position("1k1r3q/1ppn3p/p4b2/4p3/8/P2N2P1/1PP1R1BP/2K1Q3 w - -");
+  const Position position("1k1r3q/1ppn3p/p4b2/4p3/8/P2N2P1/1PP1R1BP/2K1Q3 w - -");
   Bitboard occupiedBitboard = position.getOccupiedBb();
 
-  const Square square = SQ_E5;
+  constexpr Square square = SQ_E5;
 
   Bitboard attacksTo = See::attacksTo(position, square, BLACK) | See::attacksTo(position, square, WHITE);
   fprintln("Direkt:");
@@ -91,8 +94,8 @@ TEST_F(SeeTest, revealedAttacks) {
   EXPECT_EQ(2286984186302464ULL, attacksTo);
 
   // take away bishop on f6
-  attacksTo ^= Bitboards::sqBb[SQ_F6];       // reset bit in set to traverse
-  occupiedBitboard ^= Bitboards::sqBb[SQ_F6];// reset bit in temporary occupancy (for x-Rays)
+  attacksTo ^= Bitboards::sqBb[SQ_F6];        // reset bit in set to traverse
+  occupiedBitboard ^= Bitboards::sqBb[SQ_F6]; // reset bit in temporary occupancy (for x-Rays)
 
   attacksTo |= See::revealedAttacks(position, square, occupiedBitboard, BLACK) | See::revealedAttacks(position, square, occupiedBitboard, WHITE);
 
@@ -115,7 +118,7 @@ TEST_F(SeeTest, revealedAttacks) {
 }
 
 TEST_F(SeeTest, leastValuablePiece) {
-  Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
+  const Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
   Bitboard attacksTo = See::attacksTo(position, SQ_E5, BLACK);
 
   fprintln("All attackers");
@@ -161,8 +164,8 @@ TEST_F(SeeTest, seeTest) {
 
   // 1k1r3q/1ppn3p/p4b2/4p3/8/P2N2P1/1PP1R1BP/2K1Q3 w - - ; Nxe5?
   Position position("1k1r3q/1ppn3p/p4b2/4p3/8/P2N2P1/1PP1R1BP/2K1Q3 w - -");
-  Move     move     = mg.getMoveFromUci(position, "d3e5");
-  Value    seeScore = See::see(position, move);
+  Move move      = mg.getMoveFromUci(position, "d3e5");
+  Value seeScore = See::see(position, move);
   LOG__DEBUG(Logger::get().TEST_LOG, "See score = {}", seeScore);
   EXPECT_EQ(-220, seeScore);
 
@@ -193,5 +196,4 @@ TEST_F(SeeTest, seeTest) {
   seeScore = See::see(position, move);
   LOG__DEBUG(Logger::get().TEST_LOG, "See score = {}", seeScore);
   EXPECT_EQ(500, seeScore);
-
 }

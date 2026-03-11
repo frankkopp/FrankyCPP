@@ -17,12 +17,16 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include "common/Logging.h"
 #include "types/types.h"
 
 #include "Evaluator.h"
 
 #include "config/ConfigManager.h"
+
+using namespace engine;
+using namespace chess;
+using namespace config;
+using namespace common;
 
 Evaluator::Evaluator()
     : EvalConfig(ConfigManager::instance().eval()) {
@@ -126,17 +130,14 @@ inline Value Evaluator::valueFromScore(const Score& score, const double gamePhas
 inline void Evaluator::pawnEval(const Position& p, Score& s) {
   // check pawn hash first
   ZobristKey key{0};
-  PawnTT::Entry* ep = nullptr;
   if (EvalConfig.USE_PAWN_TT && pawnCache) {
     key = p.getPawnZobristKey();
-    ep  = pawnCache->getEntryPtr(key);
-    // The key must not be 0 as this would be a valid entry and the function
-    // would always return.
-    // A 0 key can happen on a position where no pawns are on the board
-    // which is a valid position.
-    if (key != 0 && ep->getKey() == key) {
-      s.midgame += ep->midvalue;
-      s.endgame += ep->endvalue;
+    // Use probe() for thread-safe copy-on-read pattern.
+    // This prevents races where another thread overwrites the entry
+    // between key check and value reads.
+    if (const auto entry = pawnCache->probe(key)) {
+      s.midgame += entry->midvalue;
+      s.endgame += entry->endvalue;
       return;
     }
   }
@@ -154,7 +155,7 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
     Bitboard doubled   = BbZero;
     Bitboard passed    = BbZero;
     Bitboard blocked   = BbZero;
-    Bitboard phalanx   = BbZero;// both pawns are counted
+    Bitboard phalanx   = BbZero; // both pawns are counted
     Bitboard supported = BbZero;
 
     // LOOP through all pawns of this color
@@ -208,11 +209,11 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
     tmpScore.midgame += static_cast<Value>(midvalue * color.sign());
     tmpScore.endgame += static_cast<Value>(endvalue * color.sign());
     //    LOG__DEBUG(Logger::get().EVAL_LOG, "Raw pawn eval for {} results midvalue = {} and endvalue = {}", color ? "BLACK" : "WHITE", midvalue, endvalue);
-  }// color loop
+  } // color loop
 
-  // Store back only when enabled; ep already points to the correct slot
+  // Store back only when enabled; get entry pointer for put()
   if (EvalConfig.USE_PAWN_TT && pawnCache && key != 0) {
-    pawnCache->put(ep, key, tmpScore);
+    pawnCache->put(pawnCache->getEntryPtr(key), key, tmpScore);
   }
 
   s += tmpScore;
@@ -386,8 +387,8 @@ inline void Evaluator::queenEval(const Position& p, Score& s, const Color us, co
   // Simple tropism towards enemy king (Tier 0/phase-scaled)
   if (EvalConfig.USE_QUEEN_TROPISM) {
     const Square ksq    = p.getKingSquare(them);
-    const int dist      = sq.distanceTo(ksq);// 0..7
-    const int closeness = 8 - dist;          // 1..8 (or 8 if dist==0)
+    const int dist      = sq.distanceTo(ksq); // 0..7
+    const int closeness = 8 - dist;           // 1..8 (or 8 if dist==0)
     mid += closeness * EvalConfig.QUEEN_TROPISM_MID_PER_STEP;
     end += closeness * EvalConfig.QUEEN_TROPISM_END_PER_STEP;
   }

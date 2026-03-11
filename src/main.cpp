@@ -19,6 +19,7 @@
 
 #include "init.h"
 #include "version.h"
+#include <algorithm>
 #include <chesscore/Perft.h>
 #include <config/ConfigGenerators.h>
 #include <config/ConfigManager.h>
@@ -26,16 +27,22 @@
 #include <engine/UciHandler.h>
 #include <engine/UciOptions.h>
 #include <enginetest/TestSuite.h>
-#include <tablebase/TablebaseDownloader.h>
-#include <tablebase/TablebasePaths.h>
-#include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <tablebase/TablebaseDownloader.h>
+#include <tablebase/TablebasePaths.h>
 
 // BOOST program options
 #include "boost/program_options.hpp"
+#include "common/CrashHandler.h"
 #include "common/Logging.h"
 namespace po = boost::program_options;
+
+using namespace engine;
+using namespace chess;
+using namespace config;
+using namespace common;
+using namespace enginetest;
 
 // global variable for program options
 inline po::variables_map programOptions; // NOLINT(*-err58-cpp)
@@ -45,7 +52,7 @@ int main(int argc, char* argv[]) {
   // Version comes from CMAKE template version.h.in
   std::string appName = "FrankyCPP";
 #ifdef FRANKYCPP_PRODUCTION
-  appName.append( " (stripped)" );
+  appName.append(" (stripped)");
 #endif
   appName
     .append(" v")
@@ -57,11 +64,12 @@ int main(int argc, char* argv[]) {
   std::string config_file, book_file, book_type, testsuite_file;
   std::string show_config_format, show_config_domain;
   std::string syzygy_command, syzygy_path, syzygy_pieces;
-  int testsuite_time = 0;
+  std::string crash_dump_path;
+  int testsuite_time  = 0;
   int testsuite_depth = 0;
-  int perftStart = 0;
-  int perftEnd = 0;
-  bool perftOnDemand = false;
+  int perftStart      = 0;
+  int perftEnd        = 0;
+  bool perftOnDemand  = false;
 
   // Command line options
   try {
@@ -76,6 +84,9 @@ int main(int argc, char* argv[]) {
       ("config,c", po::value<std::string>(&config_file)->default_value("./config/FrankyCPP.cfg"), "configuration file name")
       ("ucioptions,u", "print UCI options as if 'uci' command was sent")
       ("version,v", "print version string")
+      // Crash handler options
+      ("crash-dumps", po::value<std::string>(&crash_dump_path)->default_value("./crash_dumps"),
+        "directory for crash dumps/minidumps (default: ./crash_dumps)")
       // Show config options
       ("show-config", "show all available configuration settings")
       ("format", po::value<std::string>(&show_config_format)->default_value("table"), "output format for --show-config: table, yaml, json")
@@ -144,6 +155,10 @@ int main(int argc, char* argv[]) {
     store(po::command_line_parser(argc, argv).options(cmdline_options).positional(p).run(), programOptions);
     notify(programOptions);
 
+    // Install crash handler early to catch any crashes during initialization or runtime
+    // This generates minidumps (Windows) or stack traces (Linux) on unhandled exceptions
+    crashhandler::install(crash_dump_path);
+
     if (programOptions.contains("help")) {
       std::cout << visible << "\n";
       return 0;
@@ -173,7 +188,7 @@ int main(int argc, char* argv[]) {
 
       // Get current config values
       const auto& searchConfig = ConfigManager::instance().search();
-      const auto& evalConfig = ConfigManager::instance().eval();
+      const auto& evalConfig   = ConfigManager::instance().eval();
 
       // Generate output based on format
       if (show_config_format == "yaml") {
@@ -214,7 +229,7 @@ int main(int argc, char* argv[]) {
         const auto& bookPath = programOptions["book"].as<std::string>();
         if (!std::filesystem::exists(bookPath)) {
           LOG__ERROR(Logger::get().BOOK_LOG, "Opening book '{}' not found. Using default {}",
-            bookPath, SEARCH_CONFIG.BOOK_PATH);
+                     bookPath, SEARCH_CONFIG.BOOK_PATH);
         }
         else {
           CONFIG_OVERRIDE(s.BOOK_PATH = bookPath;);
@@ -255,8 +270,8 @@ int main(int argc, char* argv[]) {
         std::cerr << "Could not read file: " << testsuite_file << "\n";
         return 1;
       }
-      std::cout << "Time per Test:      " << std::format(deLocale, "{:L}", testsuite_time) << "\n";
-      std::cout << "Max depth per Test: " << std::format(deLocale, "{:L}", testsuite_depth) << "\n";
+      std::cout << "Time per Test:      " << std::format(projectLocale, "{:L}", testsuite_time) << "\n";
+      std::cout << "Max depth per Test: " << std::format(projectLocale, "{:L}", testsuite_depth) << "\n";
       TestSuite testSuite{milliseconds{testsuite_time}, Depth{testsuite_depth}, testsuite_file};
       testSuite.runTestSuite();
       return 0;
@@ -269,8 +284,8 @@ int main(int argc, char* argv[]) {
       std::cout << "RUNNING PERFT TEST\n";
       std::cout << "########################################################\n";
       std::cout << "Version: " << appName << "\n";
-      std::cout << "Start depth: " << std::format(deLocale, "{:L}", perftStart) << "\n";
-      std::cout << "End depth  : " << std::format(deLocale, "{:L}", perftEnd) << "\n";
+      std::cout << "Start depth: " << std::format(projectLocale, "{:L}", perftStart) << "\n";
+      std::cout << "End depth  : " << std::format(projectLocale, "{:L}", perftEnd) << "\n";
       std::cout << "On Demand  : " << (perftOnDemand ? "true" : "false") << "\n";
       std::cout << std::endl;
       Perft perft{};
@@ -282,7 +297,7 @@ int main(int argc, char* argv[]) {
     if (programOptions.contains("bench")) {
       init::init();
       const int benchDepth = programOptions["benchDepth"].as<int>();
-      const int benchHash = programOptions["benchHash"].as<int>();
+      const int benchHash  = programOptions["benchHash"].as<int>();
       std::cout << std::endl;
       std::cout << "RUNNING BENCHMARK\n";
       std::cout << "########################################################\n";
@@ -292,10 +307,10 @@ int main(int argc, char* argv[]) {
       std::cout << "Threads: " << SEARCH_CONFIG.THREADS << "\n";
       std::cout << std::endl;
       engine::BenchConfig benchConfig;
-      benchConfig.depth = benchDepth;
+      benchConfig.depth      = benchDepth;
       benchConfig.hashSizeMB = benchHash;
-      benchConfig.threads = SEARCH_CONFIG.THREADS;
-      const auto result = engine::Benchmark::run(benchConfig);
+      benchConfig.threads    = SEARCH_CONFIG.THREADS;
+      const auto result      = engine::Benchmark::run(benchConfig);
       engine::Benchmark::printResults(result);
       return 0;
     }
@@ -400,7 +415,8 @@ CONFIGURATION:
           std::cout << "  - Set TB_PATH in config/search.yaml\n";
           std::cout << "  - Or set TB_PATH environment variable\n";
           std::cout << "  - Or use --path option\n";
-        } else {
+        }
+        else {
           std::cout << tablebase::getTablebaseStatus(tbPath) << "\n";
         }
         return 0;
@@ -426,7 +442,8 @@ CONFIGURATION:
         std::cout << "Path: " << tbPath << "\n";
         if (pieceCounts.empty()) {
           std::cout << "Piece counts: all (3-6)\n";
-        } else {
+        }
+        else {
           std::cout << "Piece counts: ";
           for (size_t i = 0; i < pieceCounts.size(); ++i) {
             if (i > 0) std::cout << ", ";
@@ -437,17 +454,18 @@ CONFIGURATION:
         std::cout << std::string(40, '-') << "\n\n";
 
         const auto verifyResult = tablebase::TablebaseDownloader::verify(tbPath, pieceCounts,
-          [](const tablebase::DownloadProgress& progress) {
-            std::cout << "\r[" << progress.percentComplete() << "%] "
-                      << progress.filesCompleted << "/" << progress.totalFiles
-                      << " - " << progress.currentFile;
-            if (!progress.success) {
-              std::cout << " (FAILED)";
-            } else {
-              std::cout << " (OK)    ";
-            }
-            std::cout << std::string(10, ' ') << std::flush;
-          });
+                                                                         [](const tablebase::DownloadProgress& progress) {
+                                                                           std::cout << "\r[" << progress.percentComplete() << "%] "
+                                                                                     << progress.filesCompleted << "/" << progress.totalFiles
+                                                                                     << " - " << progress.currentFile;
+                                                                           if (!progress.success) {
+                                                                             std::cout << " (FAILED)";
+                                                                           }
+                                                                           else {
+                                                                             std::cout << " (OK)    ";
+                                                                           }
+                                                                           std::cout << std::string(10, ' ') << std::flush;
+                                                                         });
 
         std::cout << "\n\n";
         std::cout << "Verification Summary:\n";
@@ -466,7 +484,8 @@ CONFIGURATION:
 
         if (verifyResult.success) {
           std::cout << "\nAll files verified successfully!\n";
-        } else {
+        }
+        else {
           std::cout << "\nVerification failed. Some files may be corrupted.\n";
           std::cout << "Consider re-downloading the failed files.\n";
         }
@@ -487,7 +506,7 @@ CONFIGURATION:
 
         // Default to 3-4-5 for download if not specified
         const std::string piecesStr = syzygy_pieces.empty() ? "3-4-5" : syzygy_pieces;
-        const auto pieceCounts = parsePieceCounts(piecesStr);
+        const auto pieceCounts      = parsePieceCounts(piecesStr);
         if (pieceCounts.empty()) {
           std::cerr << "Error: No valid piece counts specified. Use --pieces 3-4-5\n";
           return 1;
@@ -516,19 +535,19 @@ CONFIGURATION:
 
         tablebase::DownloadConfig downloadConfig;
         downloadConfig.pieceCounts = pieceCounts;
-        downloadConfig.targetPath = targetPath;
-        downloadConfig.verbose = true;
+        downloadConfig.targetPath  = targetPath;
+        downloadConfig.verbose     = true;
 
         const auto downloadResult = tablebase::TablebaseDownloader::download(downloadConfig,
-          [](const tablebase::DownloadProgress& progress) {
-            std::cout << "\r[" << progress.percentComplete() << "%] "
-                      << progress.filesCompleted << "/" << progress.totalFiles
-                      << " - " << progress.currentFile;
-            if (!progress.success && !progress.errorMessage.empty()) {
-              std::cout << " (FAILED)";
-            }
-            std::cout << std::string(20, ' ') << std::flush;
-          });
+                                                                             [](const tablebase::DownloadProgress& progress) {
+                                                                               std::cout << "\r[" << progress.percentComplete() << "%] "
+                                                                                         << progress.filesCompleted << "/" << progress.totalFiles
+                                                                                         << " - " << progress.currentFile;
+                                                                               if (!progress.success && !progress.errorMessage.empty()) {
+                                                                                 std::cout << " (FAILED)";
+                                                                               }
+                                                                               std::cout << std::string(20, ' ') << std::flush;
+                                                                             });
 
         std::cout << "\n\n";
         std::cout << "Download Summary:\n";

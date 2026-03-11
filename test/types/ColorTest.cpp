@@ -22,6 +22,7 @@
 #include <array>
 #include <vector>
 
+using namespace chess;
 TEST(ColorTest, IterateAllProvidesExactlyWhiteThenBlack) {
   std::vector<Color> seen;
   for (const Color c : Color::all()) {

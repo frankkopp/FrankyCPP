@@ -36,10 +36,11 @@
 //=============================================================================
 
 #include "engine_arena/UCIEngine.h"
-#include <iostream>
 #include <exception>
+#include <iostream>
 
 using namespace arena;
+using namespace chess;
 
 int main(int argc, char* argv[]) {
   if (argc < 2) {
@@ -66,7 +67,7 @@ int main(int argc, char* argv[]) {
     // Test 1: Starting position
     std::cout << "Test 1: Starting position" << std::endl;
     std::cout << "----------------------------------------" << std::endl;
-    engine.newGame();  // Clear state before first position
+    engine.newGame(); // Clear state before first position
 
     const std::string startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -92,7 +93,7 @@ int main(int argc, char* argv[]) {
     // Test 2: Tactical position (mate in 2)
     std::cout << "Test 2: Tactical position (Qa4+ leads to mate)" << std::endl;
     std::cout << "----------------------------------------" << std::endl;
-    engine.newGame();  // Clear state before new position (isolate from Test 1)
+    engine.newGame(); // Clear state before new position (isolate from Test 1)
 
     const std::string tacticalFen = "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4";
 

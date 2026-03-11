@@ -31,7 +31,7 @@
 //
 // 1. OUTPUT MACROS
 //    println(s)          - Print string with newline
-//    fprint(...)         - Formatted print (European locale)
+//    fprint(...)         - Formatted print (European projectLocale)
 //    fprintln(...)       - Formatted print with newline
 //    DEBUG(...)          - Debug output with file:line prefix
 //
@@ -67,9 +67,9 @@
 #define NEWLINE std::cout << std::endl
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #define println(s) std::cout << (s) << std::endl
-#define fprint(...) std::cout << std::format(deLocale, __VA_ARGS__)
+#define fprint(...) std::cout << std::format(projectLocale, __VA_ARGS__)
 #define fprintln(...) fprint(__VA_ARGS__) << std::endl
-#define DEBUG(...) std::cout << std::format(deLocale, "DEBUG {}:{} {}", __FILE__, __LINE__, __VA_ARGS__) << std::endl
+#define DEBUG(...) std::cout << std::format(projectLocale, "DEBUG {}:{} {}", __FILE__, __LINE__, __VA_ARGS__) << std::endl
 #define TICK(tp) fprintln("{:L} ns: function: {}() line: {}", elapsedSince(tp).count(), __FUNCTION__, __LINE__)
 
 // Convenience macros to define custom operators on strongly-typed enum types.
@@ -108,27 +108,27 @@
   constexpr T& operator/=(T& d, int i) { return d = static_cast<T>(static_cast<int>(d) / i); }
 
 // New: enable comparison operators for T vs T using implicit conversion to int
-#define ENABLE_COMPARISON_OPERATORS_ON(T)                                                      \
-  constexpr bool operator==(T a, T b) { return static_cast<int>(a) == static_cast<int>(b); }   \
-  constexpr bool operator!=(T a, T b) { return static_cast<int>(a) != static_cast<int>(b); }   \
-  constexpr bool operator<(T a, T b) { return static_cast<int>(a) < static_cast<int>(b); }     \
-  constexpr bool operator<=(T a, T b) { return static_cast<int>(a) <= static_cast<int>(b); }   \
-  constexpr bool operator>(T a, T b) { return static_cast<int>(a) > static_cast<int>(b); }     \
+#define ENABLE_COMPARISON_OPERATORS_ON(T)                                                    \
+  constexpr bool operator==(T a, T b) { return static_cast<int>(a) == static_cast<int>(b); } \
+  constexpr bool operator!=(T a, T b) { return static_cast<int>(a) != static_cast<int>(b); } \
+  constexpr bool operator<(T a, T b) { return static_cast<int>(a) < static_cast<int>(b); }   \
+  constexpr bool operator<=(T a, T b) { return static_cast<int>(a) <= static_cast<int>(b); } \
+  constexpr bool operator>(T a, T b) { return static_cast<int>(a) > static_cast<int>(b); }   \
   constexpr bool operator>=(T a, T b) { return static_cast<int>(a) >= static_cast<int>(b); }
 
 // New: enable mixed comparisons between T and int in both directions
-#define ENABLE_MIXED_COMPARISONS_ON(T)                                         \
-  constexpr bool operator==(T a, int b) { return static_cast<int>(a) == b; }   \
-  constexpr bool operator!=(T a, int b) { return static_cast<int>(a) != b; }   \
-  constexpr bool operator<(T a, int b) { return static_cast<int>(a) < b; }     \
-  constexpr bool operator<=(T a, int b) { return static_cast<int>(a) <= b; }   \
-  constexpr bool operator>(T a, int b) { return static_cast<int>(a) > b; }     \
-  constexpr bool operator>=(T a, int b) { return static_cast<int>(a) >= b; }   \
-  constexpr bool operator==(int a, T b) { return a == static_cast<int>(b); }   \
-  constexpr bool operator!=(int a, T b) { return a != static_cast<int>(b); }   \
-  constexpr bool operator<(int a, T b) { return a < static_cast<int>(b); }     \
-  constexpr bool operator<=(int a, T b) { return a <= static_cast<int>(b); }   \
-  constexpr bool operator>(int a, T b) { return a > static_cast<int>(b); }     \
+#define ENABLE_MIXED_COMPARISONS_ON(T)                                       \
+  constexpr bool operator==(T a, int b) { return static_cast<int>(a) == b; } \
+  constexpr bool operator!=(T a, int b) { return static_cast<int>(a) != b; } \
+  constexpr bool operator<(T a, int b) { return static_cast<int>(a) < b; }   \
+  constexpr bool operator<=(T a, int b) { return static_cast<int>(a) <= b; } \
+  constexpr bool operator>(T a, int b) { return static_cast<int>(a) > b; }   \
+  constexpr bool operator>=(T a, int b) { return static_cast<int>(a) >= b; } \
+  constexpr bool operator==(int a, T b) { return a == static_cast<int>(b); } \
+  constexpr bool operator!=(int a, T b) { return a != static_cast<int>(b); } \
+  constexpr bool operator<(int a, T b) { return a < static_cast<int>(b); }   \
+  constexpr bool operator<=(int a, T b) { return a <= static_cast<int>(b); } \
+  constexpr bool operator>(int a, T b) { return a > static_cast<int>(b); }   \
   constexpr bool operator>=(int a, T b) { return a >= static_cast<int>(b); }
 
 // New: enable compound assignment with int (+= and -=)
@@ -181,4 +181,4 @@
     return os;                                                   \
   }
 
-#endif// FRANKYCPP_MACROS_H
+#endif // FRANKYCPP_MACROS_H

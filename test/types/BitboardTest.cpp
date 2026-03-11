@@ -20,7 +20,7 @@
 #include <gtest/gtest.h>
 
 using testing::Eq;
-
+using namespace chess;
 class BitboardsTest : public ::testing::Test {
 public:
   static void SetUpTestSuite() {

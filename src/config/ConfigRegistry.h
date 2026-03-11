@@ -64,55 +64,59 @@
 #include <string>
 #include <vector>
 
-class ConfigRegistry {
-public:
-  /// Get the singleton instance
-  [[nodiscard]] static ConfigRegistry& instance();
+namespace config {
 
-  // Non-copyable, non-movable
-  ConfigRegistry(const ConfigRegistry&)            = delete;
-  ConfigRegistry& operator=(const ConfigRegistry&) = delete;
-  ConfigRegistry(ConfigRegistry&&)                 = delete;
-  ConfigRegistry& operator=(ConfigRegistry&&)      = delete;
+  class ConfigRegistry {
+  public:
+    /// Get the singleton instance
+    [[nodiscard]] static ConfigRegistry& instance();
 
-  /// Get all config definitions
-  [[nodiscard]] std::span<const ConfigDef> all() const;
+    // Non-copyable, non-movable
+    ConfigRegistry(const ConfigRegistry&)            = delete;
+    ConfigRegistry& operator=(const ConfigRegistry&) = delete;
+    ConfigRegistry(ConfigRegistry&&)                 = delete;
+    ConfigRegistry& operator=(ConfigRegistry&&)      = delete;
 
-  /// Get configs for a specific domain
-  [[nodiscard]] std::vector<const ConfigDef*> byDomain(ConfigDomain domain) const;
+    /// Get all config definitions
+    [[nodiscard]] std::span<const ConfigDef> all() const;
 
-  /// Get configs exposed via UCI
-  [[nodiscard]] std::vector<const ConfigDef*> uciOptions() const;
+    /// Get configs for a specific domain
+    [[nodiscard]] std::vector<const ConfigDef*> byDomain(ConfigDomain domain) const;
 
-  /// Get configs loaded from YAML
-  [[nodiscard]] std::vector<const ConfigDef*> yamlOptions() const;
+    /// Get configs exposed via UCI
+    [[nodiscard]] std::vector<const ConfigDef*> uciOptions() const;
 
-  /// Get configs that should be shown in str() output
-  [[nodiscard]] std::vector<const ConfigDef*> displayOptions() const;
+    /// Get configs loaded from YAML
+    [[nodiscard]] std::vector<const ConfigDef*> yamlOptions() const;
 
-  /// Find config by internal name (case-sensitive)
-  [[nodiscard]] const ConfigDef* find(const std::string& name) const;
+    /// Get configs that should be shown in str() output
+    [[nodiscard]] std::vector<const ConfigDef*> displayOptions() const;
 
-  /// Find config by UCI name (case-insensitive)
-  [[nodiscard]] const ConfigDef* findByUciName(const std::string& uciName) const;
+    /// Find config by internal name (case-sensitive)
+    [[nodiscard]] const ConfigDef* find(const std::string& name) const;
 
-  /// Get count of Search config entries (for validation)
-  [[nodiscard]] std::size_t searchConfigCount() const;
+    /// Find config by UCI name (case-insensitive)
+    [[nodiscard]] const ConfigDef* findByUciName(const std::string& uciName) const;
 
-  /// Get count of Eval config entries (for validation)
-  [[nodiscard]] std::size_t evalConfigCount() const;
+    /// Get count of Search config entries (for validation)
+    [[nodiscard]] std::size_t searchConfigCount() const;
 
-  /// Get total count of all config entries
-  [[nodiscard]] std::size_t totalCount() const { return definitions_.size(); }
+    /// Get count of Eval config entries (for validation)
+    [[nodiscard]] std::size_t evalConfigCount() const;
 
-private:
-  ConfigRegistry();
-  ~ConfigRegistry() = default;
+    /// Get total count of all config entries
+    [[nodiscard]] std::size_t totalCount() const { return definitions_.size(); }
 
-  void initializeSearchDefinitions();
-  void initializeEvalDefinitions();
+  private:
+    ConfigRegistry();
+    ~ConfigRegistry() = default;
 
-  std::vector<ConfigDef> definitions_;
-};
+    void initializeSearchDefinitions();
+    void initializeEvalDefinitions();
 
-#endif  // FRANKYCPP_CONFIGREGISTRY_H
+    std::vector<ConfigDef> definitions_;
+  };
+
+} // namespace config
+
+#endif // FRANKYCPP_CONFIGREGISTRY_H

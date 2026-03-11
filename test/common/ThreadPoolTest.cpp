@@ -19,13 +19,15 @@
 
 #include <random>
 
-#include "init.h"
-#include "types/types.h"
 #include "common/Logging.h"
 #include "common/ThreadPool.h"
+#include "init.h"
+#include "types/types.h"
 
 #include <gtest/gtest.h>
 using testing::Eq;
+
+using namespace common;
 
 class ThreadPoolTest : public ::testing::Test {
 public:
@@ -43,7 +45,6 @@ protected:
   struct Product {
     uint64_t producedNumber{};
     bool processed = false;
-
   };
 
   static Product process(Product p) {
@@ -51,19 +52,18 @@ protected:
     // simulate cpu intense calculation
     uint64_t f = 100000000;
     while (f > 1) f = static_cast<uint64_t>(f / 1.00000001);
-    std::this_thread::sleep_for(milliseconds (f));
+    std::this_thread::sleep_for(milliseconds(f));
     p.processed = true;
     fprintln(">>> Processed product...: {}", p.producedNumber);
     return p;
   }
 
   static Product produceProduct(const uint64_t i) {
-    std::this_thread::sleep_for(milliseconds (10));
+    std::this_thread::sleep_for(milliseconds(10));
     Product product{i, false};
     fprintln("<<< Producing product...: {} ", product.producedNumber);
     return product;
   }
-
 };
 
 TEST_F(ThreadPoolTest, basic) {
@@ -77,7 +77,7 @@ TEST_F(ThreadPoolTest, basic) {
 
   for (int i = 0; i < number; i++) {
     Product product = produceProduct(i);
-    auto future = std::make_shared<std::future<Product>>(threadPool.enqueue([=]{
+    auto future     = std::make_shared<std::future<Product>>(threadPool.enqueue([=] {
       return process(product);
     }));
     results.push_back(future);
@@ -85,7 +85,7 @@ TEST_F(ThreadPoolTest, basic) {
   }
 
   fprintln("Getting results");
-  const auto &iterEnd = results.end();
+  const auto& iterEnd = results.end();
   for (auto iter = results.begin(); iter < iterEnd; ++iter) {
     fprintln("Open tasks: {}", threadPool.openTasks());
     const auto [producedNumber, processed] = iter->get()->get();
@@ -98,8 +98,8 @@ TEST_F(ThreadPoolTest, doubleStopIsSafe) {
   ThreadPool pool{2};
   auto future = pool.enqueue([] { return 42; });
   EXPECT_EQ(future.get(), 42);
-  pool.stop();   // First stop
-  pool.stop();   // Second stop - should not crash
+  pool.stop(); // First stop
+  pool.stop(); // Second stop - should not crash
   EXPECT_TRUE(pool.isStopped());
 }
 
@@ -149,9 +149,9 @@ TEST_F(ThreadPoolTest, openTasksReflectsQueueSize) {
   auto f1 = pool.enqueue([] { return 1; });
   auto f2 = pool.enqueue([] { return 2; });
 
-  EXPECT_EQ(pool.openTasks(), 2);  // Two tasks waiting
+  EXPECT_EQ(pool.openTasks(), 2); // Two tasks waiting
 
-  blocker.set_value();  // Unblock
+  blocker.set_value(); // Unblock
   EXPECT_EQ(f1.get(), 1);
   EXPECT_EQ(f2.get(), 2);
 }
@@ -191,7 +191,7 @@ TEST_F(ThreadPoolTest, voidReturnTask) {
   ThreadPool pool{2};
   std::atomic<bool> executed{false};
   auto future = pool.enqueue([&] { executed = true; });
-  future.get();  // Wait for completion
+  future.get(); // Wait for completion
   EXPECT_TRUE(executed);
 }
 
@@ -210,8 +210,8 @@ TEST_F(ThreadPoolTest, shutdownCompletesPendingTasks) {
     const auto taskStartedFuture = taskStarted.get_future();
 
     pool.enqueue([&taskStarted, blockerFuture] {
-      taskStarted.set_value();  // Signal that we've started
-      blockerFuture.wait();     // Block until test releases us
+      taskStarted.set_value(); // Signal that we've started
+      blockerFuture.wait();    // Block until test releases us
     });
 
     // Wait for blocking task to actually start (not just be queued)
@@ -222,14 +222,14 @@ TEST_F(ThreadPoolTest, shutdownCompletesPendingTasks) {
       pool.enqueue([&completed] { ++completed; });
     }
 
-    EXPECT_EQ(pool.openTasks(), 5);  // 5 tasks pending
+    EXPECT_EQ(pool.openTasks(), 5); // 5 tasks pending
 
     // Release blocker from a separate thread AFTER destructor starts waiting
     // This simulates: destructor is called -> tasks are still pending ->
     // stop() must wait for all tasks to complete
     std::thread releaser([&blocker] {
-      std::this_thread::sleep_for(milliseconds(50));  // Let destructor start
-      blocker.set_value();  // Now unblock the worker
+      std::this_thread::sleep_for(milliseconds(50)); // Let destructor start
+      blocker.set_value();                           // Now unblock the worker
     });
     releaser.detach();
 
@@ -260,5 +260,5 @@ TEST_F(ThreadPoolTest, manyThreadsPool) {
 
   // sum of 0..99 = 4950
   EXPECT_EQ(sum.load(), 4950);
-  EXPECT_EQ(doubleSum, 9900);  // 2 * 4950
+  EXPECT_EQ(doubleSum, 9900); // 2 * 4950
 }

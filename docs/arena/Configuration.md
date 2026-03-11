@@ -17,13 +17,14 @@ Complete reference for `config/arena.yaml` configuration file.
 ## Configuration Structure
 
 ```yaml
-version: "v1.1"                    # Engine version identifier
+version: "v1.5"                    # Arena version identifier
 resultsDir: "./results"            # Results output directory
 cutechessPath: "..."               # Path to cutechess-cli executable
 debugMode: false                   # Enable UCI debug output (optional)
 
-testSuites: [...]                  # List of EPD test suites
+testSuiteRuns: [...]               # List of grouped test suite runs (NEW)
 matches: [...]                     # List of engine matches
+benchmarks: [...]                  # List of benchmark configurations
 ```
 
 ---
@@ -34,22 +35,17 @@ matches: [...]                     # List of engine matches
 
 **Type:** String
 
-**Purpose:** Identifier for the engine version being tested
+**Purpose:** Identifier for the Arena software version (used for result tracking)
 
-**Usage:** This version tag appears in all result files and is used for comparison matching
+**Usage:** This version tag appears in all result files in the `arenaVersion` field
 
 **Examples:**
 ```yaml
-version: "v1.1"           # Standard version
-version: "v1.1-dev"       # Development build
-version: "v1.1_ttfix"     # Version with specific fix
+version: "v1.5"           # Standard version
+version: "v1.5-dev"       # Development build
 ```
 
-**Best Practices:**
-- Use consistent naming scheme across versions
-- Include semantic version numbers
-- Add descriptive suffixes for experimental builds
-- Avoid spaces and special characters
+**Note:** This is the Arena version, not the engine version. Each engine's version is specified separately in the test suite run configuration.
 
 ---
 
@@ -66,7 +62,7 @@ version: "v1.1_ttfix"     # Version with specific fix
 results/
 ├── testsuites/    # JSON files for EPD test results
 ├── matches/       # JSON + PGN files for match results
-└── comparisons/   # Text reports for version comparisons
+└── benchmarks/    # Consolidated JSON for benchmark results
 ```
 
 **Path Format:**
@@ -132,72 +128,226 @@ debugMode: true     # Verbose UCI logging
 
 ## Test Suite Configuration
 
-### TestSuiteConfig Structure
+### TestSuiteRunConfig Structure (NEW - Unified Format)
+
+The new `testSuiteRuns` format eliminates duplication by defining shared settings for multiple EPD test suites. Each run configuration specifies engine settings once, with a list of suite EPD files to test.
 
 ```yaml
-testSuites:
-  - name: "WAC"                              # Suite identifier
-    epdPath: "test/testsets/wac.epd"        # Path to EPD file
-    timePerMove: 5000                        # Milliseconds per position
-    maxDepth: 30                             # Maximum search depth
-    enginePath: "path/to/engine.exe"        # External UCI engine (required)
-    isolatePositions: true                   # Clear state between positions (optional)
-    commandLineArgs: ""                      # Engine startup arguments (optional)
-    uciOptions: ""                           # UCI setoption commands (optional)
-    debugMode: false                         # Enable UCI debug output (optional)
-    parallelWorkers: 1                       # Parallel engine instances (optional)
+testSuiteRuns:
+  - engine: "FrankyCPP v1.5"             # Display name for the engine
+    engineVersion: "v1.5"                 # Version string for results grouping
+    tag: "QuietSee"                       # Feature tag for tracking (NEW)
+    enginePath: "Release/.../engine.exe"  # Path to external UCI engine
+    timePerMove: 5000                     # Default milliseconds per position
+    maxDepth: 99                          # Default maximum search depth
+    isolatePositions: true                # Clear state between positions
+    debugMode: false                      # Enable UCI debug output
+    commandLineArgs: "--nobook"           # Engine startup arguments
+    uciOptions: ""                        # UCI setoption commands
+    parallelWorkers: 2                    # Parallel engine instances
+    suites:                               # List of EPD files to test
+      - "test/testsets/wac.epd"                           # Simple path
+      - "test/testsets/franky_tests.epd"                  # Simple path
+      - path: "test/testsets/mate_test_suite.epd"         # Override object
+        timePerMove: 15000                                 # Custom time for this suite
 ```
 
-### Fields
+### Benefits of New Format
 
-#### `name` (Required)
+**Before (Old `testSuites` format):** 7 suites × 9 duplicated fields = 63 lines of configuration
 
-**Type:** String
+**After (New `testSuiteRuns` format):** 1 block with 7-item list = ~20 lines
 
-**Purpose:** Unique identifier for the test suite
-
-**Usage:** Appears in result files and comparison reports
-
-**Examples:**
-```yaml
-name: "WAC"              # Win At Chess tactical suite
-name: "STS"              # Strategic Test Suite
-name: "mate_test"        # Mate-in-N problems
-name: "franky_tests"     # Custom test suite
-```
-
-**Best Practices:**
-- Use short, descriptive names
-- Avoid spaces (use underscores instead)
-- Match the EPD file name for clarity
+**Advantages:**
+- Single place to update settings
+- `tag` captures what feature is being tested
+- Per-suite overrides for `timePerMove` and `maxDepth`
+- Suite names derived automatically from EPD filename
 
 ---
 
-#### `epdPath` (Required)
+### Fields
 
-**Type:** String (path)
+#### `engine` (Required)
 
-**Purpose:** Location of EPD (Extended Position Description) test file
+**Type:** String
 
-**Format:** Standard EPD format with test operations (bm, am, dm)
+**Purpose:** Display name for the engine
 
-**Path:** Relative to project root
+**Usage:** Appears in reports and console output
 
 **Examples:**
 ```yaml
-epdPath: "test/testsets/wac.epd"              # Relative path
-epdPath: "test/testsets/STS1-STS15_LAN.EPD"   # Multi-file suite
+engine: "FrankyCPP v1.5"
+engine: "FrankyCPP v1.5-dev"
+engine: "Stockfish 16"
 ```
 
-**EPD Format Example:**
-```
-r1bqkb1r/pppp1ppp/2n2n2/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R w KQkq - bm Bxc6; id "WAC.001";
+---
+
+#### `engineVersion` (Required)
+
+**Type:** String
+
+**Purpose:** Version identifier for grouping and comparison
+
+**Usage:** Used in result filenames and report grouping
+
+**Examples:**
+```yaml
+engineVersion: "v1.5"
+engineVersion: "v1.5-dev"
+engineVersion: "v1.4"
 ```
 
-**Supported Operations:**
-- `bm` - Best Move (move must match one of the expected moves)
-- `am` - Avoid Move (move must NOT match any listed move)
-- `dm` - Direct Mate (must find mate in N moves)
+---
+
+#### `tag` (Optional but Recommended)
+
+**Type:** String
+
+**Purpose:** Feature tag for tracking development progress
+
+**Usage:** Groups results by feature/development phase
+
+**Examples:**
+```yaml
+tag: "QuietSee"        # Testing Quiescent Search improvements
+tag: "TTbuckets"       # Testing TT bucket optimization
+tag: "baseline"        # Baseline measurement
+tag: ""                # No tag (triggers warning)
+```
+
+**Benefits:**
+- Track which feature each test run was measuring
+- Compare results across development phases
+- Historical progression analysis with `--summary --history`
+
+**Warning:** Empty tag triggers a validation warning:
+```
+WARNING: Test suite run for 'FrankyCPP v1.5' has empty tag - results won't be grouped by feature
+```
+
+---
+
+#### `enginePath` (Required)
+
+**Type:** String (path)
+
+**Purpose:** Path to external UCI chess engine executable
+
+**Usage:** All test suites run with external UCI engines for consistent testing
+
+**Examples:**
+```yaml
+enginePath: "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe"
+enginePath: "cmake-build-win-release/src/FrankyCPP_v1.5.exe"
+enginePath: "D:/Games/Engines/stockfish.exe"
+```
+
+---
+
+#### `suites` (Required)
+
+**Type:** List of strings or override objects
+
+**Purpose:** EPD files to test with this engine configuration
+
+**Formats:**
+
+1. **Simple string:** Just the path to the EPD file
+   ```yaml
+   suites:
+     - "test/testsets/wac.epd"
+     - "test/testsets/franky_tests.epd"
+   ```
+
+2. **Override object:** Path with per-suite settings
+   ```yaml
+   suites:
+     - path: "test/testsets/mate_test_suite.epd"
+       timePerMove: 15000    # Override default time
+     - path: "test/testsets/deep_tactics.epd"
+       maxDepth: 50          # Override default depth
+   ```
+
+**Suite Name Derivation:**
+- Suite name is automatically derived from the EPD filename
+- `test/testsets/wac.epd` → suite name: `wac`
+- `test/testsets/STS1-STS15_LAN.EPD` → suite name: `sts1-sts15_lan`
+
+---
+
+#### Other Fields
+
+The following fields work the same as before:
+
+- `timePerMove` - Default time limit per position (milliseconds)
+- `maxDepth` - Default maximum search depth
+- `isolatePositions` - Clear engine state between positions (default: `true`)
+- `debugMode` - Enable UCI communication logging (default: `false`)
+- `commandLineArgs` - Command-line arguments for engine startup
+- `uciOptions` - UCI setoption commands (semicolon-separated)
+- `parallelWorkers` - Number of parallel engine instances (default: `1`)
+
+See detailed documentation for each field below.
+
+---
+
+### Complete Test Suite Run Example
+
+```yaml
+testSuiteRuns:
+  # FrankyCPP v1.5 - current development
+  - engine: "FrankyCPP v1.5"
+    engineVersion: "v1.5"
+    tag: "QuietSee"
+    enginePath: "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe"
+    timePerMove: 5000
+    maxDepth: 99
+    isolatePositions: true
+    debugMode: false
+    commandLineArgs: "--nobook"
+    uciOptions: ""
+    parallelWorkers: 2
+    suites:
+      - "test/testsets/franky_tests.epd"
+      - path: "test/testsets/mate_test_suite.epd"
+        timePerMove: 15000    # Mate tests need more time
+      - "test/testsets/wac.epd"
+      - "test/testsets/STS1-STS15_LAN.EPD"
+      - "test/testsets/crafty_test.epd"
+      - "test/testsets/ecm98.epd"
+      - "test/testsets/kaufman.epd"
+
+  # FrankyCPP v1.4 - baseline for comparison
+  - engine: "FrankyCPP v1.4"
+    engineVersion: "v1.4"
+    tag: "baseline"
+    enginePath: "Release/FrankyCPP_v1.4/FrankyCPP_v1.4.exe"
+    timePerMove: 5000
+    maxDepth: 99
+    isolatePositions: true
+    debugMode: false
+    commandLineArgs: "--nobook"
+    uciOptions: ""
+    parallelWorkers: 2
+    suites:
+      - "test/testsets/franky_tests.epd"
+      - path: "test/testsets/mate_test_suite.epd"
+        timePerMove: 15000
+      - "test/testsets/wac.epd"
+      - "test/testsets/STS1-STS15_LAN.EPD"
+      - "test/testsets/crafty_test.epd"
+      - "test/testsets/ecm98.epd"
+      - "test/testsets/kaufman.epd"
+```
+
+---
+
+## Individual Field Reference
+
+The following fields are used in `testSuiteRuns` and work as documented below:
 
 ---
 

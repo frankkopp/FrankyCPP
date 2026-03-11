@@ -19,13 +19,37 @@
 
 // FrankyCPP
 // Minimal FRIEND_TEST macro for production headers without depending on GoogleTest.
-// This mirrors the expansion from gtest/gtest_prod.h but avoids including gtest.
+//
+// FRIEND_TEST(suite, test) — standard macro for classes at global scope.
+//
+// FRIEND_TEST_NS(suite, test) — for classes inside a namespace.
+//   GoogleTest test classes live at global scope, so the friend declaration
+//   must use :: qualification. Requires a matching FRIEND_TEST_FWD_DECL()
+//   BEFORE the namespace to forward-declare the test class.
+//
+// Example (namespaced class):
+//   FRIEND_TEST_FWD_DECL(MyTest, myMethod);
+//   namespace engine {
+//   class MyClass {
+//     FRIEND_TEST_NS(MyTest, myMethod);  // refers to ::MyTest_myMethod_Test
+//   };
+//   }
+//
 #ifndef FRANKYCPP_GTEST_FRIENDS_H
 #define FRANKYCPP_GTEST_FRIENDS_H
 
 #ifndef FRIEND_TEST
-  #define FRIEND_TEST(test_case_name, test_name) \
-    friend class test_case_name##_##test_name##_Test
+#define FRIEND_TEST(test_case_name, test_name) \
+  friend class test_case_name##_##test_name##_Test
 #endif
+
+// Namespace-safe variant: uses :: to refer to the global-scope test class.
+#define FRIEND_TEST_NS(test_case_name, test_name) \
+  friend class ::test_case_name##_##test_name##_Test
+
+// Forward-declare a GoogleTest test class at global scope.
+// Required before namespace blocks that contain FRIEND_TEST_NS for the same test.
+#define FRIEND_TEST_FWD_DECL(test_case_name, test_name) \
+  class test_case_name##_##test_name##_Test
 
 #endif // FRANKYCPP_GTEST_FRIENDS_H

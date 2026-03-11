@@ -4,57 +4,29 @@ message("====================================================================")
 
 cmake_minimum_required(VERSION 3.16)
 
-# define library files
+# Auto-discover library source files from each module (CONFIGURE_DEPENDS
+# ensures CMake re-runs when files are added or removed)
+file(GLOB SRCS_COMMON CONFIGURE_DEPENDS common/*.cpp common/*.h)
+file(GLOB SRCS_CHESSCORE CONFIGURE_DEPENDS chesscore/*.cpp chesscore/*.h)
+file(GLOB SRCS_OPENINGBOOK CONFIGURE_DEPENDS openingbook/*.cpp openingbook/*.h)
+file(GLOB SRCS_ENGINE CONFIGURE_DEPENDS engine/*.cpp engine/*.h)
+file(GLOB SRCS_ENGINETEST CONFIGURE_DEPENDS enginetest/*.cpp enginetest/*.h)
+file(GLOB SRCS_TYPES CONFIGURE_DEPENDS types/*.cpp types/*.h)
+file(GLOB SRCS_CONFIGURATION CONFIGURE_DEPENDS config/*.cpp config/*.h)
+file(GLOB SRCS_TABLEBASE CONFIGURE_DEPENDS tablebase/*.cpp tablebase/*.h)
+
 set(FrankyCPPlib_SRCS
-        common/ThreadPool.cpp
-        common/Logging.cpp
-
-        chesscore/Position.cpp
-        chesscore/MoveGenerator.cpp
-        chesscore/Perft.cpp
-        chesscore/History.cpp
-        chesscore/MoveUtils.cpp
-
-        openingbook/OpeningBook.cpp openingbook/OpeningBook.h
-
-        engine/UciHandler.cpp engine/UciHandler.h
-        engine/UciOptions.cpp engine/UciOptions.h
-        engine/TT.cpp engine/TT.h
-        engine/Search.cpp engine/Search.h
-        engine/SearchResult.h engine/SearchLimits.h
-        engine/SearchStats.h
-        engine/See.cpp engine/See.h
-        engine/Evaluator.cpp engine/Evaluator.h
-        engine/PawnTT.cpp engine/PawnTT.h
-        engine/Benchmark.cpp engine/Benchmark.h
-
-        enginetest/TestSuite.cpp enginetest/TestSuite.h
-        enginetest/EpdParser.cpp enginetest/EpdParser.h
-        enginetest/EdpTest.h
-        enginetest/TestTypes.h
-
-        types/attacks.cpp
-        types/bitboards.h
-
-        config/ConfigManager.cpp
-        config/ConfigGenerators.cpp
-        config/ConfigRegistry.cpp
-
-        tablebase/Tablebase.cpp tablebase/Tablebase.h
-        tablebase/TablebasePaths.cpp tablebase/TablebasePaths.h
-        tablebase/TablebaseDownloader.cpp tablebase/TablebaseDownloader.h
+        ${SRCS_COMMON}
+        ${SRCS_CHESSCORE}
+        ${SRCS_OPENINGBOOK}
+        ${SRCS_ENGINE}
+        ${SRCS_ENGINETEST}
+        ${SRCS_TYPES}
+        ${SRCS_CONFIGURATION}
+        ${SRCS_TABLEBASE}
 )
 
 add_library(FrankyCPPlib STATIC ${FrankyCPPlib_SRCS})
-
-# SearchTreeSizeTest is a dev/tuning research tool — excluded from production builds.
-# It uses CONFIG_OVERRIDE extensively on non-essential (frozen) config members.
-# TestSuite/EpdParser stay in all builds as they are used by main.cpp (--testsuite CLI option).
-if (NOT FRANKYCPP_PRODUCTION)
-    target_sources(FrankyCPPlib PRIVATE
-        enginetest/SearchTreeSizeTest.cpp enginetest/SearchTreeSizeTest.h
-    )
-endif()
 
 # Request C++20 via features (propagates to dependents)
 target_compile_features(FrankyCPPlib PUBLIC cxx_std_20)
@@ -63,16 +35,16 @@ target_compile_features(FrankyCPPlib PUBLIC cxx_std_20)
 if (FRANKYCPP_PRODUCTION)
     target_compile_definitions(FrankyCPPlib PUBLIC FRANKYCPP_PRODUCTION)
     message(STATUS "FRANKYCPP_PRODUCTION enabled: non-essential configs frozen as static constexpr")
-endif()
+endif ()
 if (ENABLE_STD_EXECUTION)
     target_compile_definitions(FrankyCPPlib PUBLIC HAS_EXECUTION_LIB)
-endif()
+endif ()
 if (ENABLE_BMI2_PEXT)
     target_compile_definitions(FrankyCPPlib PUBLIC HAS_PEXT)
     if (MSVC)
         target_compile_options(FrankyCPPlib PUBLIC /arch:AVX2)
-    endif()
-endif()
+    endif ()
+endif ()
 
 # spdlog as header-only with std::format; do not link any spdlog/fmt libs
 # Pull only the include dirs from the imported target
@@ -106,12 +78,12 @@ if (FRANKYCPP_USE_PCH)
             chesscore/Perft.h
             chesscore/History.h
     )
-endif()
+endif ()
 
 # Apply AVX2 if explicitly requested
 if (ENABLE_AVX2 AND MSVC)
     target_compile_options(FrankyCPPlib PUBLIC /arch:AVX2)
-endif()
+endif ()
 
 # Explicitly link Boost components via targets rather than ${Boost_LIBRARIES}
 # to avoid accidental dynamic linkage
@@ -142,7 +114,7 @@ target_compile_features(${exeName} PRIVATE cxx_std_20)
 if (ENABLE_UNITY_BUILD)
     set_target_properties(FrankyCPPlib PROPERTIES UNITY_BUILD ON)
     set_target_properties(${exeName} PROPERTIES UNITY_BUILD ON)
-endif()
+endif ()
 
 # link executable with library
 target_link_libraries(
@@ -165,48 +137,44 @@ message(STATUS "Configuring Engine Arena executable...")
 set(arenaExeName ${exeName}_Arena)
 message(STATUS "Arena executable name: ${arenaExeName}")
 
+file(GLOB SRCS_ENGINE_ARENA CONFIGURE_DEPENDS engine_arena/*.cpp engine_arena/*.h)
+
 add_executable(${arenaExeName}
-    engine_arena_main.cpp
-    engine_arena/ArenaConfig.cpp
-    engine_arena/ArenaRunner.cpp
-    engine_arena/ResultWriter.cpp
-    engine_arena/TestSuiteRunner.cpp
-    engine_arena/MatchRunner.cpp
-    engine_arena/UCIEngine.cpp
-    engine_arena/BenchmarkRunner.cpp
+        engine_arena_main.cpp
+        ${SRCS_ENGINE_ARENA}
 )
 
 target_compile_features(${arenaExeName} PRIVATE cxx_std_20)
 
 target_link_libraries(${arenaExeName}
-    PRIVATE
-    FrankyCPPlib
-    yaml-cpp::yaml-cpp
-    Boost::program_options
-    Boost::filesystem
-    nlohmann_json::nlohmann_json
+        PRIVATE
+        FrankyCPPlib
+        yaml-cpp::yaml-cpp
+        Boost::program_options
+        Boost::filesystem
+        nlohmann_json::nlohmann_json
 )
 
 target_include_directories(${arenaExeName}
-    PRIVATE
-    ${PROJECT_SOURCE_DIR}/src
-    ${PROJECT_BINARY_DIR}
+        PRIVATE
+        ${PROJECT_SOURCE_DIR}/src
+        ${PROJECT_BINARY_DIR}
 )
 
 # Copy config and books for arena executable as well
 add_custom_command(
-    TARGET ${arenaExeName} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/config $<TARGET_FILE_DIR:${arenaExeName}>/config
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/books $<TARGET_FILE_DIR:${arenaExeName}>/books
+        TARGET ${arenaExeName} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/config $<TARGET_FILE_DIR:${arenaExeName}>/config
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/books $<TARGET_FILE_DIR:${arenaExeName}>/books
 )
 
 if (ENABLE_UNITY_BUILD)
     set_target_properties(${arenaExeName} PROPERTIES UNITY_BUILD ON)
-endif()
+endif ()
 
 if (MSVC AND STRICT_WARNINGS)
     target_compile_options(${arenaExeName} PRIVATE /WX)
-endif()
+endif ()
 
 # ============================================================================
 # UCIEngine Manual Test executable (optional, for testing external engines)
@@ -216,31 +184,31 @@ set(uciTestExeName UCIEngine_ManualTest)
 message(STATUS "UCIEngine test executable name: ${uciTestExeName}")
 
 add_executable(${uciTestExeName}
-    ../test/engine_arena/UCIEngine_ManualTest.cpp
-    engine_arena/UCIEngine.cpp
+        ../test/engine_arena/UCIEngine_ManualTest.cpp
+        engine_arena/UCIEngine.cpp
 )
 
 target_compile_features(${uciTestExeName} PRIVATE cxx_std_20)
 
 target_link_libraries(${uciTestExeName}
-    PRIVATE
-    FrankyCPPlib
-    Boost::filesystem
+        PRIVATE
+        FrankyCPPlib
+        Boost::filesystem
 )
 
 target_include_directories(${uciTestExeName}
-    PRIVATE
-    ${PROJECT_SOURCE_DIR}/src
-    ${PROJECT_BINARY_DIR}
+        PRIVATE
+        ${PROJECT_SOURCE_DIR}/src
+        ${PROJECT_BINARY_DIR}
 )
 
 if (ENABLE_UNITY_BUILD)
     set_target_properties(${uciTestExeName} PROPERTIES UNITY_BUILD ON)
-endif()
+endif ()
 
 if (MSVC AND STRICT_WARNINGS)
     target_compile_options(${uciTestExeName} PRIVATE /WX)
-endif()
+endif ()
 
 # ============================================================================
 
@@ -248,7 +216,7 @@ endif()
 if (MSVC AND STRICT_WARNINGS)
     target_compile_options(FrankyCPPlib PRIVATE /WX)
     target_compile_options(${exeName} PRIVATE /WX)
-endif()
+endif ()
 
 # copy config files and opening books to the build directories
 add_custom_command(
@@ -363,7 +331,7 @@ install(CODE "
         message(STATUS \"===========================================\")
     endif()
     "
-    COMPONENT Runtime
+        COMPONENT Runtime
 )
 
 # Note: No GoogleTest includes are injected into production targets anymore.

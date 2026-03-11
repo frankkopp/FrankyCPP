@@ -29,6 +29,11 @@
 
 using testing::Eq;
 
+using namespace engine;
+using namespace chess;
+using namespace config;
+using namespace common;
+
 class UciOptionsTest : public testing::Test {
 public:
   static void SetUpTestSuite() {
@@ -58,9 +63,9 @@ TEST_F(UciOptionsTest, initAndStr) {
 
   o = pUciOptions->getOption("Hash");
   fprintln("Option: {}", o->str());
-  EXPECT_TRUE(o->str().rfind("option name Hash type spin default 64 min 0 max 4096", 0) == 0);
+  EXPECT_TRUE(o->str().rfind("option name Hash type spin default 256 min 0 max 4096", 0) == 0);
   fprintln("Option current value: {}", o->currentValue);
-  EXPECT_EQ("64", o->defaultValue);
+  EXPECT_EQ("256", o->defaultValue);
 
   pUciOptions->setOption(&uciHandler, "Hash", "0");
   fprintln("Option: {}", o->currentValue);

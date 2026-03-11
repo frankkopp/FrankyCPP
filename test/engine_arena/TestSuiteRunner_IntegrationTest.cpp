@@ -36,60 +36,61 @@
 //
 //=============================================================================
 
-#include "engine_arena/TestSuiteRunner.h"
+#include "Test_Utils.h"
 #include "engine_arena/ArenaConfig.h"
 #include "engine_arena/ArenaResults.h"
+#include "engine_arena/TestSuiteRunner.h"
 #include "init.h"
-#include "Test_Utils.h"
 
-#include <gtest/gtest.h>
 #include <filesystem>
 #include <fstream>
+#include <gtest/gtest.h>
 
 using namespace arena;
+using namespace chess;
 
 namespace {
 
-// Helper: Get path to the built engine executable for testing
-std::string getTestEnginePath() {
-  // Try cmake-build-win-release first (typical Windows CLion build)
-  std::string path = "cmake-build-win-release/src/FrankyCPP_v1.1.exe";
-  if (std::filesystem::exists(path)) {
-    return path;
+  // Helper: Get path to the built engine executable for testing
+  std::string getTestEnginePath() {
+    // Try cmake-build-win-release first (typical Windows CLion build)
+    std::string path = "cmake-build-win-release/src/FrankyCPP_v1.1.exe";
+    if (std::filesystem::exists(path)) {
+      return path;
+    }
+
+    // Try relative path from test executable location
+    path = "../src/FrankyCPP_v1.1.exe";
+    if (std::filesystem::exists(path)) {
+      return path;
+    }
+
+    // Try current directory
+    path = "FrankyCPP_v1.1.exe";
+    if (std::filesystem::exists(path)) {
+      return path;
+    }
+
+    return ""; // Not found
   }
 
-  // Try relative path from test executable location
-  path = "../src/FrankyCPP_v1.1.exe";
-  if (std::filesystem::exists(path)) {
-    return path;
+  // Helper: Create a minimal test EPD file for testing
+  std::string createTestEpdFile(const std::string& filename, const std::string& content) {
+    std::ofstream file(filename);
+    if (!file) {
+      throw std::runtime_error("Failed to create test EPD file: " + filename);
+    }
+    file << content;
+    file.close();
+    return filename;
   }
 
-  // Try current directory
-  path = "FrankyCPP_v1.1.exe";
-  if (std::filesystem::exists(path)) {
-    return path;
+  // Helper: Cleanup test files
+  void cleanupTestFile(const std::string& filename) {
+    if (std::filesystem::exists(filename)) {
+      std::filesystem::remove(filename);
+    }
   }
-
-  return ""; // Not found
-}
-
-// Helper: Create a minimal test EPD file for testing
-std::string createTestEpdFile(const std::string& filename, const std::string& content) {
-  std::ofstream file(filename);
-  if (!file) {
-    throw std::runtime_error("Failed to create test EPD file: " + filename);
-  }
-  file << content;
-  file.close();
-  return filename;
-}
-
-// Helper: Cleanup test files
-void cleanupTestFile(const std::string& filename) {
-  if (std::filesystem::exists(filename)) {
-    std::filesystem::remove(filename);
-  }
-}
 
 } // anonymous namespace
 
@@ -135,23 +136,22 @@ TEST_F(TestSuiteRunnerIntegrationTest, FullSuite_StartingPosition) {
   testFilesToCleanup.push_back(testEpdPath);
 
   createTestEpdFile(testEpdPath,
-    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 bm e4 d4 Nf3; id \"Starting Position\";\n"
-  );
+                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 bm e4 d4 Nf3; id \"Starting Position\";\n");
 
   // Create config
   ArenaConfig config;
-  config.version = "v1.1";
+  config.version    = "v1.1";
   config.resultsDir = "./results";
 
   TestSuiteConfig suiteConfig;
-  suiteConfig.name = "test_starting_position";
-  suiteConfig.epdPath = testEpdPath;
-  suiteConfig.enginePath = testEnginePath;
-  suiteConfig.timePerMove = milliseconds{100}; // Fast for testing
-  suiteConfig.maxDepth = static_cast<Depth>(5);
+  suiteConfig.name             = "test_starting_position";
+  suiteConfig.epdPath          = testEpdPath;
+  suiteConfig.enginePath       = testEnginePath;
+  suiteConfig.timePerMove      = milliseconds{100}; // Fast for testing
+  suiteConfig.maxDepth         = static_cast<Depth>(5);
   suiteConfig.isolatePositions = true;
-  suiteConfig.debugMode = true;  // Enable debug output for tests
-  suiteConfig.commandLineArgs = "--nobook"; // Example: disable opening book via command-line
+  suiteConfig.debugMode        = true;       // Enable debug output for tests
+  suiteConfig.commandLineArgs  = "--nobook"; // Example: disable opening book via command-line
 
   // Run test suite
   TestSuiteRunner runner(config);
@@ -190,23 +190,22 @@ TEST_F(TestSuiteRunnerIntegrationTest, MultipleTestTypes) {
 
   // Create EPD with BM, AM, and simple position
   createTestEpdFile(testEpdPath,
-    // BM test - starting position
-    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 bm e4 d4; id \"BM Test\";\n"
-    // AM test - avoid moving knight to a3
-    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 am Na3 Nh3; id \"AM Test\";\n"
-  );
+                    // BM test - starting position
+                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 bm e4 d4; id \"BM Test\";\n"
+                    // AM test - avoid moving knight to a3
+                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 am Na3 Nh3; id \"AM Test\";\n");
 
   ArenaConfig config;
   config.version = "v1.1";
 
   TestSuiteConfig suiteConfig;
-  suiteConfig.name = "test_multiple_types";
-  suiteConfig.epdPath = testEpdPath;
-  suiteConfig.enginePath = testEnginePath;
-  suiteConfig.timePerMove = milliseconds{100};
-  suiteConfig.maxDepth = static_cast<Depth>(5);
+  suiteConfig.name             = "test_multiple_types";
+  suiteConfig.epdPath          = testEpdPath;
+  suiteConfig.enginePath       = testEnginePath;
+  suiteConfig.timePerMove      = milliseconds{100};
+  suiteConfig.maxDepth         = static_cast<Depth>(5);
   suiteConfig.isolatePositions = true;
-  suiteConfig.commandLineArgs = "--nobook"; // Disable book
+  suiteConfig.commandLineArgs  = "--nobook"; // Disable book
 
   TestSuiteRunner runner(config);
   arena::TestSuiteResult result = runner.runTestSuite(suiteConfig);
@@ -229,32 +228,30 @@ TEST_F(TestSuiteRunnerIntegrationTest, MultipleSequentialSuites) {
   testFilesToCleanup.push_back(testEpd2);
 
   createTestEpdFile(testEpd1,
-    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 bm e4; id \"Suite1-Test1\";\n"
-  );
+                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 bm e4; id \"Suite1-Test1\";\n");
 
   createTestEpdFile(testEpd2,
-    "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1 bm e5; id \"Suite2-Test1\";\n"
-  );
+                    "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1 bm e5; id \"Suite2-Test1\";\n");
 
   ArenaConfig config;
   config.version = "v1.1";
 
   // First suite
   TestSuiteConfig suite1;
-  suite1.name = "suite1";
-  suite1.epdPath = testEpd1;
-  suite1.enginePath = testEnginePath;
-  suite1.timePerMove = milliseconds{100};
-  suite1.maxDepth = static_cast<Depth>(5);
+  suite1.name            = "suite1";
+  suite1.epdPath         = testEpd1;
+  suite1.enginePath      = testEnginePath;
+  suite1.timePerMove     = milliseconds{100};
+  suite1.maxDepth        = static_cast<Depth>(5);
   suite1.commandLineArgs = "--nobook";
 
   // Second suite
   TestSuiteConfig suite2;
-  suite2.name = "suite2";
-  suite2.epdPath = testEpd2;
-  suite2.enginePath = testEnginePath;
-  suite2.timePerMove = milliseconds{100};
-  suite2.maxDepth = static_cast<Depth>(5);
+  suite2.name            = "suite2";
+  suite2.epdPath         = testEpd2;
+  suite2.enginePath      = testEnginePath;
+  suite2.timePerMove     = milliseconds{100};
+  suite2.maxDepth        = static_cast<Depth>(5);
   suite2.commandLineArgs = "--nobook";
 
   TestSuiteRunner runner(config);
@@ -286,21 +283,20 @@ TEST_F(TestSuiteRunnerIntegrationTest, PositionIsolation_Enabled) {
   testFilesToCleanup.push_back(testEpdPath);
 
   createTestEpdFile(testEpdPath,
-    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 bm e4; id \"Pos1\";\n"
-    "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1 bm e5; id \"Pos2\";\n"
-  );
+                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 bm e4; id \"Pos1\";\n"
+                    "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1 bm e5; id \"Pos2\";\n");
 
   ArenaConfig config;
   config.version = "v1.1";
 
   TestSuiteConfig suiteConfig;
-  suiteConfig.name = "test_isolation";
-  suiteConfig.epdPath = testEpdPath;
-  suiteConfig.enginePath = testEnginePath;
-  suiteConfig.timePerMove = milliseconds{100};
-  suiteConfig.maxDepth = static_cast<Depth>(5);
+  suiteConfig.name             = "test_isolation";
+  suiteConfig.epdPath          = testEpdPath;
+  suiteConfig.enginePath       = testEnginePath;
+  suiteConfig.timePerMove      = milliseconds{100};
+  suiteConfig.maxDepth         = static_cast<Depth>(5);
   suiteConfig.isolatePositions = true; // Enabled
-  suiteConfig.commandLineArgs = "--nobook";
+  suiteConfig.commandLineArgs  = "--nobook";
 
   TestSuiteRunner runner(config);
   arena::TestSuiteResult result = runner.runTestSuite(suiteConfig);
@@ -314,21 +310,20 @@ TEST_F(TestSuiteRunnerIntegrationTest, PositionIsolation_Disabled) {
   testFilesToCleanup.push_back(testEpdPath);
 
   createTestEpdFile(testEpdPath,
-    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 bm e4; id \"Pos1\";\n"
-    "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1 bm e5; id \"Pos2\";\n"
-  );
+                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 bm e4; id \"Pos1\";\n"
+                    "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1 bm e5; id \"Pos2\";\n");
 
   ArenaConfig config;
   config.version = "v1.1";
 
   TestSuiteConfig suiteConfig;
-  suiteConfig.name = "test_no_isolation";
-  suiteConfig.epdPath = testEpdPath;
-  suiteConfig.enginePath = testEnginePath;
-  suiteConfig.timePerMove = milliseconds{100};
-  suiteConfig.maxDepth = static_cast<Depth>(5);
+  suiteConfig.name             = "test_no_isolation";
+  suiteConfig.epdPath          = testEpdPath;
+  suiteConfig.enginePath       = testEnginePath;
+  suiteConfig.timePerMove      = milliseconds{100};
+  suiteConfig.maxDepth         = static_cast<Depth>(5);
   suiteConfig.isolatePositions = false; // Disabled
-  suiteConfig.commandLineArgs = "--nobook";
+  suiteConfig.commandLineArgs  = "--nobook";
 
   TestSuiteRunner runner(config);
   arena::TestSuiteResult result = runner.runTestSuite(suiteConfig);
@@ -346,18 +341,17 @@ TEST_F(TestSuiteRunnerIntegrationTest, ResultMetadata_Complete) {
   testFilesToCleanup.push_back(testEpdPath);
 
   createTestEpdFile(testEpdPath,
-    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 bm e4; id \"Meta Test\";\n"
-  );
+                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 bm e4; id \"Meta Test\";\n");
 
   ArenaConfig config;
   config.version = "v1.1_test";
 
   TestSuiteConfig suiteConfig;
-  suiteConfig.name = "metadata_suite";
-  suiteConfig.epdPath = testEpdPath;
-  suiteConfig.enginePath = testEnginePath;
-  suiteConfig.timePerMove = milliseconds{100};
-  suiteConfig.maxDepth = static_cast<Depth>(5);
+  suiteConfig.name            = "metadata_suite";
+  suiteConfig.epdPath         = testEpdPath;
+  suiteConfig.enginePath      = testEnginePath;
+  suiteConfig.timePerMove     = milliseconds{100};
+  suiteConfig.maxDepth        = static_cast<Depth>(5);
   suiteConfig.commandLineArgs = "--nobook";
 
   TestSuiteRunner runner(config);
@@ -406,18 +400,16 @@ TEST_F(TestSuiteRunnerIntegrationTest, EmptyEpdFile_ThrowsError) {
   config.version = "v1.1";
 
   TestSuiteConfig suiteConfig;
-  suiteConfig.name = "empty_suite";
-  suiteConfig.epdPath = testEpdPath;
-  suiteConfig.enginePath = testEnginePath;
+  suiteConfig.name        = "empty_suite";
+  suiteConfig.epdPath     = testEpdPath;
+  suiteConfig.enginePath  = testEnginePath;
   suiteConfig.timePerMove = milliseconds{100};
-  suiteConfig.maxDepth = static_cast<Depth>(5);
+  suiteConfig.maxDepth    = static_cast<Depth>(5);
 
   TestSuiteRunner runner(config);
 
   // Should throw error about no valid tests
-  EXPECT_THROW({
-    runner.runTestSuite(suiteConfig);
-  }, std::runtime_error);
+  EXPECT_THROW({ runner.runTestSuite(suiteConfig); }, std::runtime_error);
 }
 
 //=============================================================================
@@ -429,18 +421,16 @@ TEST_F(TestSuiteRunnerIntegrationTest, MissingEpdFile_ThrowsError) {
   config.version = "v1.1";
 
   TestSuiteConfig suiteConfig;
-  suiteConfig.name = "missing_epd";
-  suiteConfig.epdPath = "nonexistent_file.epd";
-  suiteConfig.enginePath = testEnginePath;
+  suiteConfig.name        = "missing_epd";
+  suiteConfig.epdPath     = "nonexistent_file.epd";
+  suiteConfig.enginePath  = testEnginePath;
   suiteConfig.timePerMove = milliseconds{100};
-  suiteConfig.maxDepth = static_cast<Depth>(5);
+  suiteConfig.maxDepth    = static_cast<Depth>(5);
 
   TestSuiteRunner runner(config);
 
   // Should throw error about missing file
-  EXPECT_THROW({
-    runner.runTestSuite(suiteConfig);
-  }, std::runtime_error);
+  EXPECT_THROW({ runner.runTestSuite(suiteConfig); }, std::runtime_error);
 }
 
 //=============================================================================
@@ -452,23 +442,22 @@ TEST_F(TestSuiteRunnerIntegrationTest, InvalidFEN_ContinuesSuite) {
   testFilesToCleanup.push_back(testEpdPath);
 
   createTestEpdFile(testEpdPath,
-    // Valid position
-    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 bm e4; id \"Valid\";\n"
-    // Invalid FEN (missing parts)
-    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR bm e4; id \"Invalid\";\n"
-    // Another valid position
-    "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1 bm e5; id \"Valid2\";\n"
-  );
+                    // Valid position
+                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 bm e4; id \"Valid\";\n"
+                    // Invalid FEN (missing parts)
+                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR bm e4; id \"Invalid\";\n"
+                    // Another valid position
+                    "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1 bm e5; id \"Valid2\";\n");
 
   ArenaConfig config;
   config.version = "v1.1";
 
   TestSuiteConfig suiteConfig;
-  suiteConfig.name = "invalid_fen_suite";
-  suiteConfig.epdPath = testEpdPath;
-  suiteConfig.enginePath = testEnginePath;
+  suiteConfig.name        = "invalid_fen_suite";
+  suiteConfig.epdPath     = testEpdPath;
+  suiteConfig.enginePath  = testEnginePath;
   suiteConfig.timePerMove = milliseconds{100};
-  suiteConfig.maxDepth = static_cast<Depth>(5);
+  suiteConfig.maxDepth    = static_cast<Depth>(5);
 
   TestSuiteRunner runner(config);
   arena::TestSuiteResult result = runner.runTestSuite(suiteConfig);
@@ -501,13 +490,13 @@ TEST_F(TestSuiteRunnerIntegrationTest, StressTest_MultiplePositions) {
   config.version = "v1.1";
 
   TestSuiteConfig suiteConfig;
-  suiteConfig.name = "stress_suite";
-  suiteConfig.epdPath = testEpdPath;
-  suiteConfig.enginePath = testEnginePath;
-  suiteConfig.timePerMove = milliseconds{50}; // Fast
-  suiteConfig.maxDepth = static_cast<Depth>(3);
+  suiteConfig.name             = "stress_suite";
+  suiteConfig.epdPath          = testEpdPath;
+  suiteConfig.enginePath       = testEnginePath;
+  suiteConfig.timePerMove      = milliseconds{50}; // Fast
+  suiteConfig.maxDepth         = static_cast<Depth>(3);
   suiteConfig.isolatePositions = true;
-  suiteConfig.commandLineArgs = "--nobook";
+  suiteConfig.commandLineArgs  = "--nobook";
 
   TestSuiteRunner runner(config);
   arena::TestSuiteResult result = runner.runTestSuite(suiteConfig);
@@ -532,18 +521,17 @@ TEST_F(TestSuiteRunnerIntegrationTest, EngineNameExtraction) {
   testFilesToCleanup.push_back(testEpdPath);
 
   createTestEpdFile(testEpdPath,
-    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 bm e4; id \"Name Test\";\n"
-  );
+                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 bm e4; id \"Name Test\";\n");
 
   ArenaConfig config;
   config.version = "v1.1";
 
   TestSuiteConfig suiteConfig;
-  suiteConfig.name = "engine_name_test";
-  suiteConfig.epdPath = testEpdPath;
-  suiteConfig.enginePath = testEnginePath;
-  suiteConfig.timePerMove = milliseconds{100};
-  suiteConfig.maxDepth = static_cast<Depth>(5);
+  suiteConfig.name            = "engine_name_test";
+  suiteConfig.epdPath         = testEpdPath;
+  suiteConfig.enginePath      = testEnginePath;
+  suiteConfig.timePerMove     = milliseconds{100};
+  suiteConfig.maxDepth        = static_cast<Depth>(5);
   suiteConfig.commandLineArgs = "--nobook";
 
   TestSuiteRunner runner(config);

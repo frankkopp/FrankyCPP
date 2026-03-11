@@ -120,7 +120,7 @@
   do {                                                     \
     const auto& _lg = (logger);                            \
     if (_lg && _lg->should_log(spdlog::level::critical)) { \
-      auto _msg = std::format(deLocale, __VA_ARGS__);      \
+      auto _msg = std::format(projectLocale, __VA_ARGS__); \
       _lg->log(spdlog::level::critical, _msg);             \
     }                                                      \
   } while (0)
@@ -129,132 +129,134 @@
 #endif
 
 #if LOG__LEVEL > CRITICAL__LVL
-#define LOG__ERROR(logger, ...)                       \
-  do {                                                \
-    const auto& _lg = (logger);                       \
-    if (_lg && _lg->should_log(spdlog::level::err)) { \
-      auto _msg = std::format(deLocale, __VA_ARGS__); \
-      _lg->log(spdlog::level::err, _msg);             \
-    }                                                 \
+#define LOG__ERROR(logger, ...)                            \
+  do {                                                     \
+    const auto& _lg = (logger);                            \
+    if (_lg && _lg->should_log(spdlog::level::err)) {      \
+      auto _msg = std::format(projectLocale, __VA_ARGS__); \
+      _lg->log(spdlog::level::err, _msg);                  \
+    }                                                      \
   } while (0)
 #else
 #define LOG__ERROR(logger, ...) void(0)
 #endif
 
 #if LOG__LEVEL > ERROR__LVL
-#define LOG__WARN(logger, ...)                         \
-  do {                                                 \
-    const auto& _lg = (logger);                        \
-    if (_lg && _lg->should_log(spdlog::level::warn)) { \
-      auto _msg = std::format(deLocale, __VA_ARGS__);  \
-      _lg->log(spdlog::level::warn, _msg);             \
-    }                                                  \
+#define LOG__WARN(logger, ...)                             \
+  do {                                                     \
+    const auto& _lg = (logger);                            \
+    if (_lg && _lg->should_log(spdlog::level::warn)) {     \
+      auto _msg = std::format(projectLocale, __VA_ARGS__); \
+      _lg->log(spdlog::level::warn, _msg);                 \
+    }                                                      \
   } while (0)
 #else
 #define LOG__WARN(logger, ...) void(0)
 #endif
 
 #if LOG__LEVEL > WARN__LVL
-#define LOG__INFO(logger, ...)                         \
-  do {                                                 \
-    const auto& _lg = (logger);                        \
-    if (_lg && _lg->should_log(spdlog::level::info)) { \
-      auto _msg = std::format(deLocale, __VA_ARGS__);  \
-      _lg->log(spdlog::level::info, _msg);             \
-    }                                                  \
+#define LOG__INFO(logger, ...)                             \
+  do {                                                     \
+    const auto& _lg = (logger);                            \
+    if (_lg && _lg->should_log(spdlog::level::info)) {     \
+      auto _msg = std::format(projectLocale, __VA_ARGS__); \
+      _lg->log(spdlog::level::info, _msg);                 \
+    }                                                      \
   } while (0)
 #else
 #define LOG__INFO(logger, ...) void(0)
 #endif
 
 #if LOG__LEVEL > INFO__LVL
-#define LOG__DEBUG(logger, ...)                         \
-  do {                                                  \
-    const auto& _lg = (logger);                         \
-    if (_lg && _lg->should_log(spdlog::level::debug)) { \
-      auto _msg = std::format(deLocale, __VA_ARGS__);   \
-      _lg->log(spdlog::level::debug, _msg);             \
-    }                                                   \
+#define LOG__DEBUG(logger, ...)                            \
+  do {                                                     \
+    const auto& _lg = (logger);                            \
+    if (_lg && _lg->should_log(spdlog::level::debug)) {    \
+      auto _msg = std::format(projectLocale, __VA_ARGS__); \
+      _lg->log(spdlog::level::debug, _msg);                \
+    }                                                      \
   } while (0)
 #else
 #define LOG__DEBUG(logger, ...) void(0)
 #endif
 
 #if LOG__LEVEL > DEBUG__LVL
-#define LOG__TRACE(logger, ...)                         \
-  do {                                                  \
-    const auto& _lg = (logger);                         \
-    if (_lg && _lg->should_log(spdlog::level::trace)) { \
-      auto _msg = std::format(deLocale, __VA_ARGS__);   \
-      _lg->log(spdlog::level::trace, _msg);             \
-    }                                                   \
+#define LOG__TRACE(logger, ...)                            \
+  do {                                                     \
+    const auto& _lg = (logger);                            \
+    if (_lg && _lg->should_log(spdlog::level::trace)) {    \
+      auto _msg = std::format(projectLocale, __VA_ARGS__); \
+      _lg->log(spdlog::level::trace, _msg);                \
+    }                                                      \
   } while (0)
 #else
 #define LOG__TRACE(logger, ...) void(0)
 #endif
 
-/// Singleton class providing centralized logging for FrankyCPP.
-/// Access via Logger::get() to get the singleton instance, then use
-/// the appropriate logger (e.g., Logger::get().SEARCH_LOG) with LOG__* macros.
-class Logger {
-  Logger() { init(); };
-  ~Logger() = default;
+namespace common {
 
-  /// Initializes all loggers with default patterns and levels.
-  void init() const;
+  /// Singleton class providing centralized logging for FrankyCPP.
+  /// Access via Logger::get() to get the singleton instance, then use
+  /// the appropriate logger (e.g., Logger::get().SEARCH_LOG) with LOG__* macros.
+  class Logger {
+    Logger() { init(); };
+    ~Logger() = default;
 
-public:
-  // disallow copies and moves
-  Logger(Logger const&)             = delete;
-  Logger& operator=(const Logger&)  = delete;
-  Logger(Logger const&&)            = delete;
-  Logger& operator=(const Logger&&) = delete;
+    /// Initializes all loggers with default patterns and levels.
+    void init() const;
 
-  /// Returns the singleton Logger instance.
-  /// @return Reference to the Logger singleton
-  static Logger& get() {
-    static Logger instance;
-    return instance;
-  }
+  public:
+    // disallow copies and moves
+    Logger(Logger const&)             = delete;
+    Logger& operator=(const Logger&)  = delete;
+    Logger(Logger const&&)            = delete;
+    Logger& operator=(const Logger&&) = delete;
 
-  /// Parses a log level string to spdlog level enum.
-  /// Valid strings: "trace", "debug", "info", "warn", "error", "critical", "off".
-  /// Defaults to 'warn' on unknown input.
-  /// @param level  Log level name (case-insensitive)
-  /// @return       Corresponding spdlog level enum
-  static spdlog::level::level_enum parseLevel(std::string_view level);
+    /// Returns the singleton Logger instance.
+    /// @return Reference to the Logger singleton
+    static Logger& get() {
+      static Logger instance;
+      return instance;
+    }
 
-  /// Sets the global spdlog log level.
-  /// Does not override individual logger levels that were set explicitly.
-  /// @param level  Log level to set globally
-  static void setGlobalLevel(spdlog::level::level_enum level);
+    /// Parses a log level string to spdlog level enum.
+    /// Valid strings: "trace", "debug", "info", "warn", "error", "critical", "off".
+    /// Defaults to 'warn' on unknown input.
+    /// @param level  Log level name (case-insensitive)
+    /// @return       Corresponding spdlog level enum
+    static spdlog::level::level_enum parseLevel(std::string_view level);
 
-  /// Sets a specific logger's level.
-  /// @param logger  Shared pointer to the logger
-  /// @param level   Log level to set
-  static void setLoggerLevel(const std::shared_ptr<spdlog::logger>& logger, spdlog::level::level_enum level);
+    /// Sets the global spdlog log level.
+    /// Does not override individual logger levels that were set explicitly.
+    /// @param level  Log level to set globally
+    static void setGlobalLevel(spdlog::level::level_enum level);
 
-  /// Looks up a logger by name and sets its level.
-  /// @param name   Logger name (e.g., "Search_Logger")
-  /// @param level  Log level to set
-  static void setLoggerLevelByName(std::string_view name, spdlog::level::level_enum level);
+    /// Sets a specific logger's level.
+    /// @param logger  Shared pointer to the logger
+    /// @param level   Log level to set
+    static void setLoggerLevel(const std::shared_ptr<spdlog::logger>& logger, spdlog::level::level_enum level);
 
-  /// Default log pattern: timestamp, thread, logger name, level, message.
-  const std::string defaultPattern = "[%H:%M:%S:%f] [t:%-10!t] [%-17n] [%-8l]: %v";
+    /// Looks up a logger by name and sets its level.
+    /// @param name   Logger name (e.g., "Search_Logger")
+    /// @param level  Log level to set
+    static void setLoggerLevelByName(std::string_view name, spdlog::level::level_enum level);
 
-  /// Log file path for general logging.
-  const std::string logfile     = std::format("FrankyCPP_v{}.{}.log", FrankyCPP_VERSION_MAJOR, FrankyCPP_VERSION_MINOR);
+    /// Default log pattern: timestamp, thread, logger name, level, message.
+    const std::string defaultPattern = "[%H:%M:%S:%f] [t:%-10!t] [%-17n] [%-8l]: %v";
 
-  /// Log file path for UCI protocol logging.
-  const std::string logfile_uci = std::format("FrankyCPP_v{}.{}_uci.log", FrankyCPP_VERSION_MAJOR, FrankyCPP_VERSION_MINOR);
+    /// Log file path for general logging.
+    const std::string logfile = std::format("FrankyCPP_v{}.{}.log", FrankyCPP_VERSION_MAJOR, FrankyCPP_VERSION_MINOR);
 
-  /// Shared file sink for loggers that write to the main log file.
-  const std::shared_ptr<spdlog::sinks::basic_file_sink_mt> sharedFileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logfile);
+    /// Log file path for UCI protocol logging.
+    const std::string logfile_uci = std::format("FrankyCPP_v{}.{}_uci.log", FrankyCPP_VERSION_MAJOR, FrankyCPP_VERSION_MINOR);
 
-  /// Sink for UCI output to stdout with color support.
-  const std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> uciOutSink   = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+    /// Shared file sink for loggers that write to the main log file.
+    const std::shared_ptr<spdlog::sinks::basic_file_sink_mt> sharedFileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logfile);
 
-  // clang-format off
+    /// Sink for UCI output to stdout with color support.
+    const std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> uciOutSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+
+    // clang-format off
   /// Logger for unit tests.
   const std::shared_ptr<spdlog::logger> TEST_LOG    = spdlog::stdout_color_mt("Test_Logger");
   /// Logger for UCI handler operations.
@@ -277,7 +279,9 @@ public:
   const std::shared_ptr<spdlog::logger> TB_LOG      = spdlog::stdout_color_mt("Tablebase_Logger");
   /// Logger for general application errors and critical issues.
   const std::shared_ptr<spdlog::logger> APP_LOG     = spdlog::stdout_color_mt("App_Logger");
-  // clang-format on
-};
+    // clang-format on
+  };
 
-#endif// FRANKYCPP_LOGGING_H
+} // namespace common
+
+#endif // FRANKYCPP_LOGGING_H

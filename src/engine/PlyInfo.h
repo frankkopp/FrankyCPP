@@ -39,47 +39,52 @@
 //
 //=============================================================================
 
+#include "chesscore/MoveGenerator.h"
 #include "types/move.h"
 #include "types/value.h"
-#include "chesscore/MoveGenerator.h"
 
 #include <memory>
 
-/// Per-ply search state - groups all ply-specific data together
-struct PlyInfo {
-  // MoveGenerators owned by this PlyInfo (heap-allocated due to large size)
-  std::unique_ptr<MoveGenerator> mg;         // Normal search MoveGenerator
-  std::unique_ptr<MoveGenerator> mgSingular; // Singular verification MoveGenerator
+namespace engine {
+  using namespace chess;
 
-  // Move tracking
-  Move currentMove{MOVE_NONE};        // Move being searched at this ply
-  Move excludedMove{MOVE_NONE};       // Excluded move for singular extension
+  /// Per-ply search state - groups all ply-specific data together
+  struct PlyInfo {
+    // MoveGenerators owned by this PlyInfo (heap-allocated due to large size)
+    std::unique_ptr<MoveGenerator> mg;         // Normal search MoveGenerator
+    std::unique_ptr<MoveGenerator> mgSingular; // Singular verification MoveGenerator
 
-  // Evaluation
-  Value staticEval{VALUE_NONE};       // Static evaluation at this ply
+    // Move tracking
+    Move currentMove{MOVE_NONE};  // Move being searched at this ply
+    Move excludedMove{MOVE_NONE}; // Excluded move for singular extension
 
-  // Search state
-  int moveCount{0};                   // Number of moves searched at this ply
-  bool inCheck{false};                // Is side to move in check?
+    // Evaluation
+    Value staticEval{VALUE_NONE}; // Static evaluation at this ply
 
-  // Default constructor - creates MoveGenerators
-  PlyInfo()
-      : mg(std::make_unique<MoveGenerator>()),
-        mgSingular(std::make_unique<MoveGenerator>()) {}
+    // Search state
+    int moveCount{0};    // Number of moves searched at this ply
+    bool inCheck{false}; // Is side to move in check?
 
-  // Resets all search state fields to defaults (preserves MoveGenerator allocations)
-  void resetSearchState() {
-    mg->reset();
-    mgSingular->reset();
-    currentMove = MOVE_NONE;
-    excludedMove = MOVE_NONE;
-    staticEval = VALUE_NONE;
-    moveCount = 0;
-    inCheck = false;
-  }
+    // Default constructor - creates MoveGenerators
+    PlyInfo()
+        : mg(std::make_unique<MoveGenerator>()),
+          mgSingular(std::make_unique<MoveGenerator>()) {}
 
-  // Future: Continuation history pointers (Phase 4)
-  // PieceToHistory* continuationHistory[6]{};
-};
+    // Resets all search state fields to defaults (preserves MoveGenerator allocations)
+    void resetSearchState() {
+      mg->reset();
+      mgSingular->reset();
+      currentMove  = MOVE_NONE;
+      excludedMove = MOVE_NONE;
+      staticEval   = VALUE_NONE;
+      moveCount    = 0;
+      inCheck      = false;
+    }
+
+    // Future: Continuation history pointers (Phase 4)
+    // PieceToHistory* continuationHistory[6]{};
+  };
+
+} // namespace engine
 
 #endif // FRANKYCPP_PLYINFO_H

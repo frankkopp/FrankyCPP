@@ -44,10 +44,13 @@
 //   - endvalue: 16-bit endgame pawn structure score
 //
 // Thread Safety (Lazy SMP):
-//   put()  : writes value fields first, then key with memory_order_release
-//   probe (caller checks entry->key): reads key with memory_order_acquire
-//   A torn read of value fields is benign: the key check will fail and the
-//   caller treats it as a miss - no incorrect data is ever used.
+//   probe(): Copy-on-read pattern - returns a COPY of the entry, not a pointer.
+//            This eliminates races where another thread overwrites the entry
+//            between key verification and value reads. The copy is made
+//            immediately after the key load (acquire), then verified.
+//   put()  : Writes value fields first, then key with memory_order_release.
+//            Any thread that loads key with acquire will see all prior writes.
+//   getEntryPtr(): For put() use only - provides slot pointer to avoid rehash.
 //
 // Prefetching:
 //   EVAL_PREFETCH macro prefetches entry into CPU cache before evaluation.
@@ -55,19 +58,21 @@
 //
 // Usage:
 //   PawnTT pawnCache(4);  // 4 MB cache
-//   Entry* entry = pawnCache.getEntryPtr(pawnKey);
-//   if (entry->getKey() == pawnKey) {
-//     // Cache hit - use entry->midvalue and entry->endvalue
+//   auto entry = pawnCache.probe(pawnKey);
+//   if (entry) {
+//     // Cache hit - use entry->midvalue and entry->endvalue (from copy)
 //   } else {
 //     // Cache miss - calculate pawn eval, then store
-//     pawnCache.put(entry, pawnKey, score);
+//     pawnCache.put(pawnCache.getEntryPtr(pawnKey), pawnKey, score);
 //   }
 //
 //=============================================================================
 
 #include "types/types.h"
 #include <atomic>
+#include <cstring>
 #include <format>
+#include <optional>
 #include <string>
 
 // pre-fetching of TT entries into CPU caches
@@ -88,175 +93,209 @@
 /// Pawn structure evaluation cache using heap memory with simple hash indexing.
 /// Size is always a power of two.
 /// Thread-safe for Lazy SMP via atomic key field (acquire/release, zero overhead on x86).
-class PawnTT {
+namespace engine {
+  using namespace chess;
 
-public:
-  static constexpr int CacheLineSize        = 64;
-  static constexpr uint64_t DEFAULT_TT_SIZE = 2;// MByte
-  static constexpr uint64_t MAX_SIZE_MB     = 4'096;
+  class PawnTT {
 
-  /// Entry struct storing cached pawn evaluation scores.
-  struct Entry {
-    std::atomic<ZobristKey> key{0};  ///< Pawn-specific Zobrist key (atomic for SMP safety)
-    Value midvalue{VALUE_NONE};      ///< Midgame pawn structure score
-    Value endvalue{VALUE_NONE};      ///< Endgame pawn structure score
+  public:
+    static constexpr int CacheLineSize        = 64;
+    static constexpr uint64_t DEFAULT_TT_SIZE = 2; // MByte
+    static constexpr uint64_t MAX_SIZE_MB     = 4'096;
 
-    /// Returns the key with acquire semantics for thread-safe read.
-    [[nodiscard]] ZobristKey getKey() const {
-      return key.load(std::memory_order_acquire);
+    /// Entry struct storing cached pawn evaluation scores.
+    struct Entry {
+      std::atomic<ZobristKey> key{0}; ///< Pawn-specific Zobrist key (atomic for SMP safety)
+      Value midvalue{VALUE_NONE};     ///< Midgame pawn structure score
+      Value endvalue{VALUE_NONE};     ///< Endgame pawn structure score
+
+      /// Default constructor
+      Entry() = default;
+
+      /// Copy constructor - needed because atomic has deleted copy constructor.
+      /// Uses memcpy for value fields to ensure exact byte representation.
+      Entry(const Entry& other)
+          : key(other.key.load(std::memory_order_relaxed)) {
+        std::memcpy(&midvalue, &other.midvalue, sizeof(Value) * 2);
+      }
+
+      /// Copy assignment - needed because atomic has deleted copy assignment.
+      Entry& operator=(const Entry& other) {
+        if (this != &other) {
+          key.store(other.key.load(std::memory_order_relaxed), std::memory_order_relaxed);
+          std::memcpy(&midvalue, &other.midvalue, sizeof(Value) * 2);
+        }
+        return *this;
+      }
+
+      /// Returns the key with acquire semantics for thread-safe read.
+      [[nodiscard]] ZobristKey getKey() const {
+        return key.load(std::memory_order_acquire);
+      }
+
+      /// Returns string representation for debugging.
+      [[nodiscard]] std::string str() const {
+        return std::format("id {} midvalue {} endvalue {}",
+                           key.load(std::memory_order_relaxed), midvalue, endvalue);
+      }
+
+      std::ostream& operator<<(std::ostream& os) const {
+        os << this->str();
+        return os;
+      }
+    };
+
+    // Compile-time guarantees that the atomic key has zero size/performance overhead.
+    // If either assert fires, switch to Option B (XOR key trick) - see PLAN_Lazy_SMP_MultiThreading.md
+    static_assert(std::atomic<ZobristKey>::is_always_lock_free,
+                  "PawnTT: atomic key must be lock-free (no hidden mutex). Switch to XOR trick if this fires.");
+    static_assert(sizeof(std::atomic<ZobristKey>) == sizeof(ZobristKey),
+                  "PawnTT: atomic key must not inflate Entry size. Switch to XOR trick if this fires.");
+
+    // struct Entry has 16 Byte
+    static constexpr uint64_t ENTRY_SIZE = sizeof(Entry);
+    static_assert(CacheLineSize % ENTRY_SIZE == 0, "Cluster size incorrect");
+
+  private:
+    // threads for clearing hash
+    unsigned int noOfThreads = 1;
+
+    // Number of active SMP search threads. 1 = single-thread mode (default).
+    // When > 1: statistics may be approximate (no locking for diagnostic counters).
+    // Set by Search before each search via setSmpThreads().
+    int numSmpThreads = 1;
+
+    // size and fill info
+    uint64_t sizeInByte            = 0;
+    std::size_t maxNumberOfEntries = 0;
+    std::size_t hashKeyMask        = 0;
+    std::size_t numberOfEntries    = 0;
+
+    mutable uint64_t numberOfQueries = 0;
+    mutable uint64_t numberOfHits    = 0; // entries with identical key found
+    mutable uint64_t numberOfMisses  = 0; // no entry with key found
+
+    mutable uint64_t numberOfPuts       = 0;
+    mutable uint64_t numberOfCollisions = 0;
+    mutable uint64_t numberOfOverwrites = 0;
+    mutable uint64_t numberOfUpdates    = 0;
+
+    // this array hold the actual entries for the transposition table
+    std::unique_ptr<Entry[]> _data = std::make_unique<Entry[]>(maxNumberOfEntries);
+
+  public:
+    /// Creates a PawnTT with default size (2 MB).
+    PawnTT() : PawnTT(DEFAULT_TT_SIZE) {}
+
+    /// Creates a PawnTT with the specified size.
+    /// Size will be reduced to the next lowest power of 2.
+    /// @param newSizeInMByte  Size in megabytes (limited to 4,096 MB)
+    explicit PawnTT(uint64_t newSizeInMByte);
+
+    ~PawnTT() = default;
+
+    // disallow copies and moves
+    PawnTT(PawnTT const& tt)          = delete;
+    PawnTT& operator=(const PawnTT&)  = delete;
+    PawnTT(PawnTT const&& tt)         = delete;
+    PawnTT& operator=(const PawnTT&&) = delete;
+
+    /// Changes the size of the pawn cache and clears all entries.
+    /// @param newSizeInMByte  Size in megabytes, reduced to next lowest power of 2.
+    ///                        Limited to 4,096 MB.
+    void resize(uint64_t newSizeInMByte);
+
+    /// Clears the pawn cache by resetting all entries to zero.
+    void clear();
+
+    /// Sets the number of SMP threads for this search.
+    /// When > 1, statistics counters may be approximate (acceptable for diagnostics).
+    /// Call before each search begins.
+    /// @param threads  Number of active search threads (1 = single-threaded)
+    void setSmpThreads(const int threads) { numSmpThreads = threads; }
+
+    /// Returns the current SMP thread count.
+    [[nodiscard]] int getSmpThreads() const { return numSmpThreads; }
+
+    /// Stores a pawn evaluation score in the cache.
+    /// As usually a query happens before storing, the entry pointer is typically
+    /// already known from getEntryPtr(). This avoids a redundant hash lookup.
+    /// @param entryPtr  Pointer to the entry slot (from getEntryPtr)
+    /// @param key       Pawn Zobrist key
+    /// @param score     Pawn structure score (midgame + endgame)
+    void put(Entry* entryPtr, ZobristKey key, Score score);
+
+    /// Probes the PawnTT for an entry matching the key.
+    /// Returns a COPY of the entry for thread safety (copy-on-read pattern).
+    /// This prevents races where another thread overwrites the entry between
+    /// key check and value read.
+    /// Updates hit/miss statistics.
+    /// @param key  Pawn Zobrist key (must be non-zero; key==0 always returns nullopt)
+    /// @return     Copy of matching entry, or nullopt if not found or key==0
+    [[nodiscard]] std::optional<Entry> probe(ZobristKey key) const;
+
+    /// Returns a pointer to the entry for the given pawn key.
+    /// WARNING: For put() only! Do NOT read values through this pointer.
+    /// Use probe() to safely read entry values (copy-on-read pattern).
+    /// @param key  Pawn Zobrist key
+    /// @return     Pointer to the entry slot (for put() use only)
+    Entry* getEntryPtr(const ZobristKey key) const {
+      return &_data[getHash(key)];
     }
 
-    /// Returns string representation for debugging.
-    [[nodiscard]] std::string str() const {
-      return std::format("id {} midvalue {} endvalue {}",
-                         key.load(std::memory_order_relaxed), midvalue, endvalue);
+    /// Generates the index from the pawn key using bitmask.
+    /// @param key  Pawn Zobrist key
+    /// @return     Array index for the entry
+    std::size_t getHash(const ZobristKey key) const {
+      return key & hashKeyMask;
     }
 
-    std::ostream& operator<<(std::ostream& os) const {
-      os << this->str();
-      return os;
+    /// Returns a string representation for debugging.
+    /// @return  Debug string with size and statistics
+    std::string str();
+
+    /// Prefetches the cache entry for the given key into CPU cache.
+    /// Call as early as possible before getEntryPtr(), ideally with other
+    /// work in between to give the memory subsystem time to fetch the data.
+    /// @param key  Pawn Zobrist key to prefetch
+#ifdef EVAL_ENABLE_PREFETCH
+    void prefetch(const ZobristKey key) {
+#ifdef __GNUC__
+      _mm_prefetch((reinterpret_cast<const char*>(&_data[(key & hashKeyMask)])), _MM_HINT_T0);
+#elif _MSC_VER
+      _mm_prefetch((reinterpret_cast<const char*>(&_data[(key & hashKeyMask)])), _MM_HINT_T0);
+#endif
     }
+#endif
+
+  public:
+    // === Getters ===
+
+    /// Returns the size of the cache in bytes.
+    uint64_t getSizeInByte() const { return sizeInByte; }
+
+    /// Returns the maximum number of entries the cache can hold.
+    std::size_t getMaxNumberOfEntries() const { return maxNumberOfEntries; }
+
+    /// Returns the current number of entries stored.
+    std::size_t getNumberOfEntries() const { return numberOfEntries; }
+
+    /// Returns the number of cache hits.
+    uint64_t getNumberOfHits() const { return numberOfHits; }
+
+    /// Returns the number of cache misses.
+    uint64_t getNumberOfMisses() const { return numberOfMisses; }
+
+    /// Returns the number of entry updates (same key, new value).
+    uint64_t getNumberOfUpdates() const { return numberOfUpdates; }
+
+    /// Returns the total number of put() calls.
+    uint64_t getNumberOfPuts() const { return numberOfPuts; }
+
+    /// Returns the number of hash collisions (different key, same slot).
+    uint64_t getNumberOfCollisions() const { return numberOfCollisions; }
   };
 
-  // Compile-time guarantees that the atomic key has zero size/performance overhead.
-  // If either assert fires, switch to Option B (XOR key trick) - see PLAN_Lazy_SMP_MultiThreading.md
-  static_assert(std::atomic<ZobristKey>::is_always_lock_free,
-                "PawnTT: atomic key must be lock-free (no hidden mutex). Switch to XOR trick if this fires.");
-  static_assert(sizeof(std::atomic<ZobristKey>) == sizeof(ZobristKey),
-                "PawnTT: atomic key must not inflate Entry size. Switch to XOR trick if this fires.");
+} // namespace engine
 
-  // struct Entry has 16 Byte
-  static constexpr uint64_t ENTRY_SIZE = sizeof(Entry);
-  static_assert(CacheLineSize % ENTRY_SIZE == 0, "Cluster size incorrect");
-
-private:
-  // threads for clearing hash
-  unsigned int noOfThreads = 1;
-
-  // Number of active SMP search threads. 1 = single-thread mode (default).
-  // When > 1: statistics may be approximate (no locking for diagnostic counters).
-  // Set by Search before each search via setSmpThreads().
-  int numSmpThreads = 1;
-
-  // size and fill info
-  uint64_t sizeInByte            = 0;
-  std::size_t maxNumberOfEntries = 0;
-  std::size_t hashKeyMask        = 0;
-  std::size_t numberOfEntries    = 0;
-
-  mutable uint64_t numberOfQueries = 0;
-  mutable uint64_t numberOfHits    = 0;// entries with identical key found
-  mutable uint64_t numberOfMisses  = 0;// no entry with key found
-
-  mutable uint64_t numberOfPuts       = 0;
-  mutable uint64_t numberOfCollisions = 0;
-  mutable uint64_t numberOfOverwrites = 0;
-  mutable uint64_t numberOfUpdates    = 0;
-
-  // this array hold the actual entries for the transposition table
-  std::unique_ptr<Entry[]> _data = std::make_unique<Entry[]>(maxNumberOfEntries);
-
-public:
-  /// Creates a PawnTT with default size (2 MB).
-  PawnTT() : PawnTT(DEFAULT_TT_SIZE) {}
-
-  /// Creates a PawnTT with the specified size.
-  /// Size will be reduced to the next lowest power of 2.
-  /// @param newSizeInMByte  Size in megabytes (limited to 4,096 MB)
-  explicit PawnTT(uint64_t newSizeInMByte);
-
-  ~PawnTT() = default;
-
-  // disallow copies and moves
-  PawnTT(PawnTT const& tt)          = delete;
-  PawnTT& operator=(const PawnTT&)  = delete;
-  PawnTT(PawnTT const&& tt)         = delete;
-  PawnTT& operator=(const PawnTT&&) = delete;
-
-  /// Changes the size of the pawn cache and clears all entries.
-  /// @param newSizeInMByte  Size in megabytes, reduced to next lowest power of 2.
-  ///                        Limited to 4,096 MB.
-  void resize(uint64_t newSizeInMByte);
-
-  /// Clears the pawn cache by resetting all entries to zero.
-  void clear();
-
-  /// Sets the number of SMP threads for this search.
-  /// When > 1, statistics counters may be approximate (acceptable for diagnostics).
-  /// Call before each search begins.
-  /// @param threads  Number of active search threads (1 = single-threaded)
-  void setSmpThreads(const int threads) { numSmpThreads = threads; }
-
-  /// Returns the current SMP thread count.
-  [[nodiscard]] int getSmpThreads() const { return numSmpThreads; }
-
-  /// Stores a pawn evaluation score in the cache.
-  /// As usually a query happens before storing, the entry pointer is typically
-  /// already known from getEntryPtr(). This avoids a redundant hash lookup.
-  /// @param entryPtr  Pointer to the entry slot (from getEntryPtr)
-  /// @param key       Pawn Zobrist key
-  /// @param score     Pawn structure score (midgame + endgame)
-  void put(Entry* entryPtr, ZobristKey key, Score score);
-
-  /// Returns a pointer to the entry for the given pawn key.
-  /// The entry may or may not match the key - caller must verify.
-  /// @param key  Pawn Zobrist key
-  /// @return     Pointer to the entry slot
-  Entry* getEntryPtr(const ZobristKey key) const {
-    return &_data[getHash(key)];
-  }
-
-  /// Generates the index from the pawn key using bitmask.
-  /// @param key  Pawn Zobrist key
-  /// @return     Array index for the entry
-  std::size_t getHash(const ZobristKey key) const {
-    return key & hashKeyMask;
-  }
-
-  /// Returns a string representation for debugging.
-  /// @return  Debug string with size and statistics
-  std::string str();
-
-  /// Prefetches the cache entry for the given key into CPU cache.
-  /// Call as early as possible before getEntryPtr(), ideally with other
-  /// work in between to give the memory subsystem time to fetch the data.
-  /// @param key  Pawn Zobrist key to prefetch
-#ifdef EVAL_ENABLE_PREFETCH
-  void prefetch(const ZobristKey key) {
-#ifdef __GNUC__
-    _mm_prefetch((reinterpret_cast<const char*>(&_data[(key & hashKeyMask)])), _MM_HINT_T0);
-#elif _MSC_VER
-    _mm_prefetch((reinterpret_cast<const char*>(&_data[(key & hashKeyMask)])), _MM_HINT_T0);
-#endif
-  }
-#endif
-
-public:
-  // === Getters ===
-
-  /// Returns the size of the cache in bytes.
-  uint64_t getSizeInByte() const { return sizeInByte; }
-
-  /// Returns the maximum number of entries the cache can hold.
-  std::size_t getMaxNumberOfEntries() const { return maxNumberOfEntries; }
-
-  /// Returns the current number of entries stored.
-  std::size_t getNumberOfEntries() const { return numberOfEntries; }
-
-  /// Returns the number of cache hits.
-  uint64_t getNumberOfHits() const { return numberOfHits; }
-
-  /// Returns the number of cache misses.
-  uint64_t getNumberOfMisses() const { return numberOfMisses; }
-
-  /// Returns the number of entry updates (same key, new value).
-  uint64_t getNumberOfUpdates() const { return numberOfUpdates; }
-
-  /// Returns the total number of put() calls.
-  uint64_t getNumberOfPuts() const { return numberOfPuts; }
-
-  /// Returns the number of hash collisions (different key, same slot).
-  uint64_t getNumberOfCollisions() const { return numberOfCollisions; }
-};
-
-#endif// FRANKYCPP_PAWNTT_H
+#endif // FRANKYCPP_PAWNTT_H

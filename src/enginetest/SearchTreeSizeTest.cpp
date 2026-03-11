@@ -17,12 +17,21 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+// SearchTreeSizeTest uses CONFIG_OVERRIDE on non-essential config members which
+// become static constexpr in production builds — exclude entirely.
+#ifndef FRANKYCPP_PRODUCTION
+
 #include <unordered_map>
 
 // no longer use fmt chrono; use our time utilities
 #include "types/timeunits.h"
 
 #include "SearchTreeSizeTest.h"
+
+using namespace engine;
+using namespace chess;
+using namespace config;
+using namespace enginetest;
 
 
 SearchTreeSize::Result
@@ -38,6 +47,9 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   const Position position(fen);
 
   CONFIG_OVERRIDE_START()
+  // Threading
+  s.THREADS = threads;
+
   // Book and pondering
   s.USE_BOOK   = false;
   s.USE_PONDER = false;
@@ -75,7 +87,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   s.USE_IIR = false;
 
   // Pruning techniques
-  s.USE_IMPROVING     = false;// Track if position is improving vs 2 plies ago
+  s.USE_IMPROVING     = false; // Track if position is improving vs 2 plies ago
   s.USE_MDP           = false;
   s.USE_RAZORING      = false;
   s.USE_RFP           = false;
@@ -116,6 +128,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
 
   // Best-move instability time management (disable for fixed-depth tests)
   s.USE_BESTMOVE_INSTABILITY = false;
+  s.USE_EVAL_VOLATILITY      = false;
   CONFIG_OVERRIDE_END();
 
   // ***********************************
@@ -216,15 +229,6 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   // GROUP 5: NULL MOVE PRUNING (Very high impact pruning)
   // =====================================================================
 
-  // =====================================================================
-  // WARMUP/BASELINE - Must be before first actual test
-  // =====================================================================
-  ptrToSpecial1 = &search.getSearchStats().pvNodes;
-  ptrToSpecial2 = &search.getSearchStats().pvsResearches;
-  ptrToSpecial3 = &search.getSearchStats().iirReductions;
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Warmup"));
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Baseline"));
-
   CONFIG_OVERRIDE(s.USE_IMPROVING = true;);
 
   // 5.1 Null Move Pruning: Skip move and search with reduced depth
@@ -247,14 +251,11 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   CONFIG_OVERRIDE(s.NMP_IMPROVING_REDUCTION = 1;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "NMP+Improving"));
 
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "NMP"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "NMP"));
 
   // =====================================================================
   // GROUP 6: LATE MOVE REDUCTIONS (Major pruning technique)
   // =====================================================================
-
-  // TODO: Add LMR + improving, cut node, and history tests back in after core LMR tuning to isolate
-  //  effects
 
   // 6.1 LMR Core: Reduce depth for late moves
   CONFIG_OVERRIDE(s.USE_LMR = true;);
@@ -305,7 +306,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   // CONFIG_OVERRIDE(s.LMR_HISTORY_DIVISOR = 4096;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR+Hist 4096"));
 
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMR"));
 
   // =====================================================================
   // GROUP 7: FORWARD PRUNING (Aggressive node reduction)
@@ -332,7 +333,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   CONFIG_OVERRIDE(s.RAZOR_MARGIN = 531;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Razoring"));
 
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Forward Pruning"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Forward Pruning"));
 
   // =====================================================================
   // GROUP 8: FUTILITY PRUNING (Prune hopeless moves)
@@ -351,7 +352,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   CONFIG_OVERRIDE(s.USE_QFP = true;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "QFP"));
 
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Futil Pruning"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Futil Pruning"));
 
   // =====================================================================
   // GROUP 9: LATE MOVE PRUNING (Prune late quiet moves)
@@ -370,7 +371,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   CONFIG_OVERRIDE(s.USE_LMP_IMPROVING = true;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMP+Improving"));
 
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMP"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "LMP"));
 
   // =====================================================================
   // GROUP 10: SEARCH EXTENSIONS (Extend promising lines)
@@ -378,13 +379,13 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
 
   // 10.1 Extensions Core: Enable extension framework + AddDepth (realistic mode)
   CONFIG_OVERRIDE(s.USE_EXTENSIONS = true;);
-  CONFIG_OVERRIDE(s.USE_EXT_ADD_DEPTH = true;);// Enable early for realistic testing
+  CONFIG_OVERRIDE(s.USE_EXT_ADD_DEPTH = true;); // Enable early for realistic testing
 
   // 10.2 Check Extension: Extend when move gives check
   CONFIG_OVERRIDE(s.USE_CHECK_EXT = true;);
   CONFIG_OVERRIDE(s.CHECK_EXT_MIN_DEPTH = 2;);
-  CONFIG_OVERRIDE(s.CHECK_EXT_EARLY_LIMIT = 3;);// Test with old limit first
-  CONFIG_OVERRIDE(s.USE_CHECK_EXT_SEE = false;);// Test without SEE first
+  CONFIG_OVERRIDE(s.CHECK_EXT_EARLY_LIMIT = 3;); // Test with old limit first
+  CONFIG_OVERRIDE(s.USE_CHECK_EXT_SEE = false;); // Test without SEE first
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Check"));
 
   // 10.2b Check Extension + SEE: Only extend non-losing checks
@@ -398,9 +399,9 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
 
   // 10.3 Singular Extension: Extend when one move is clearly best
   CONFIG_OVERRIDE(s.USE_SINGULAR_EXT = true;);
-  CONFIG_OVERRIDE(s.USE_SINGULAR_TT_BOUND = false;);// Don't require BETA/EXACT (too restrictive)
+  CONFIG_OVERRIDE(s.USE_SINGULAR_TT_BOUND = false;); // Don't require BETA/EXACT (too restrictive)
   CONFIG_OVERRIDE(s.SINGULAR_MARGIN = 64;);
-  CONFIG_OVERRIDE(s.SINGULAR_MIN_DEPTH = 8;);// Lowered from 8 to trigger more often
+  CONFIG_OVERRIDE(s.SINGULAR_MIN_DEPTH = 8;); // Lowered from 8 to trigger more often
   CONFIG_OVERRIDE(s.SINGULAR_REDUCTION = 4;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Sing NoTTBound"));
   // CONFIG_OVERRIDE(s.USE_SINGULAR_TT_BOUND = true;);  // Don't require BETA/EXACT (too restrictive)
@@ -410,7 +411,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   CONFIG_OVERRIDE(s.USE_THREAT_EXT = true;);
   // CONFIG_OVERRIDE(s.THREAT_EXT_MATE_DEPTH = 3;);  // Test with mate-in-4 threshold first
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Threat 3"));
-  CONFIG_OVERRIDE(s.THREAT_EXT_MATE_DEPTH = 4;);// Test with mate-in-4 threshold first
+  CONFIG_OVERRIDE(s.THREAT_EXT_MATE_DEPTH = 4;); // Test with mate-in-4 threshold first
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Threat 4"));
   // CONFIG_OVERRIDE(s.THREAT_EXT_MATE_DEPTH = 6;);  // Test with mate-in-6 threshold
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Threat 6"));
@@ -422,7 +423,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   // Re-enable AddDepth for subsequent tests
   // CONFIG_OVERRIDE(s.USE_EXT_ADD_DEPTH = true;);
 
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Extensions"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Extensions"));
 
   // =====================================================================
   // GROUP 11: SYZYGY TABLEBASES (Endgame perfection)
@@ -458,9 +459,20 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   // CONFIG_OVERRIDE(s.TB_PROBE_DEPTH = 6;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "TB ProbeDepth 6"));
 
-  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Tablebases"));
+  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Tablebases"));
 
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "All Features"));
+
+  // =====================================================================
+  // WARMUP/BASELINE - Must be before first actual test
+  // =====================================================================
+  ptrToSpecial1 = &search.getSearchStats().betaCutsByIndex[0];
+  ptrToSpecial2 = &search.getSearchStats().betaCutsByIndex[1];
+  ptrToSpecial3 = &search.getSearchStats().pvNodes;
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Warmup"));
+  result.tests.push_back(measureTreeSize(search, position, searchLimits, "Baseline"));
+
+  // ADD NEW FEATURE TESTS HERE (after baseline)
 
   return result;
 }
@@ -477,7 +489,7 @@ void SearchTreeSizeTest::start() {
   for (auto& fen : fens) {
     try {
       const Position testPosition(fen);
-      (void) testPosition;// avoid unused variable warning
+      (void) testPosition; // avoid unused variable warning
     } catch (std::invalid_argument& e) {
       std::cerr << std::format("Invalid fen skipped: {} ({})", e.what(), fen) << std::endl;
       continue;
@@ -523,6 +535,7 @@ void SearchTreeSizeTest::start() {
   fprintln("Date:                  : {}", format_now());
   fprintln("SearchTime             : {}", str(movetime));
   fprintln("MaxDepth               : {:d}", depth);
+  fprintln("Threads                : {:d}", threads);
   fprintln("Number of feature tests: {:d}", results[0].tests.size());
   fprintln("Number of fens         : {:d}", fens.size());
   fprintln("Total tests            : {:d}\n", results[0].tests.size() * fens.size());
@@ -567,3 +580,5 @@ SearchTreeSize::SingleTest SearchTreeSizeTest::measureTreeSize(Search& search, c
 
   return test;
 }
+
+#endif // FRANKYCPP_PRODUCTION

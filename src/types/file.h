@@ -48,60 +48,65 @@
 #include "macros.h"
 #include <format>
 
-class File {
-  std::uint8_t v_{};// 0..7 = A..H, 8 = NONE
+namespace chess {
 
-public:
-  // constructors
-  constexpr File() : v_(8) {}
-  constexpr explicit File(const unsigned v) : v_(v) {}
-  constexpr explicit File(const int v) : v_(static_cast<unsigned>(v)) {}
+  class File {
+    std::uint8_t v_{}; // 0..7 = A..H, 8 = NONE
 
-  // underlying value access
-  constexpr auto value() const { return v_; }
+  public:
+    // constructors
+    constexpr File() : v_(8) {}
+    constexpr explicit File(const unsigned v) : v_(v) {}
+    constexpr explicit File(const int v) : v_(static_cast<unsigned>(v)) {}
 
-  /// implicit conversion for arithmetic/comparisons/array indexing
-  // ReSharper disable once CppNonExplicitConversionOperator
-  constexpr operator int() const { return v_; }
+    // underlying value access
+    constexpr auto value() const { return v_; }
 
-  /// Returns true if the file is valid (A-H).
-  constexpr bool isValid() const { return static_cast<int>(*this) < 8; }
+    /// implicit conversion for arithmetic/comparisons/array indexing
+    // ReSharper disable once CppNonExplicitConversionOperator
+    constexpr operator int() const { return v_; }
 
-  /// Returns the file as a character ('a'-'h'), or '-' if invalid.
-  constexpr char toChar() const { return isValid() ? static_cast<char>('a' + static_cast<char>(static_cast<int>(*this))) : '-'; }
+    /// Returns true if the file is valid (A-H).
+    constexpr bool isValid() const { return static_cast<int>(*this) < 8; }
 
-  /// Returns the file as a character string.
-  constexpr char str() const { return toChar(); }
+    /// Returns the file as a character ('a'-'h'), or '-' if invalid.
+    constexpr char toChar() const { return isValid() ? static_cast<char>('a' + static_cast<char>(static_cast<int>(*this))) : '-'; }
 
-  /// Returns the distance between this file and another.
-  constexpr int distance(const File other) const {
-    const int d = static_cast<int>(other) - static_cast<int>(*this);
-    return d < 0 ? -d : d;
-  }
+    /// Returns the file as a character string.
+    constexpr char str() const { return toChar(); }
 
-  /// Converts a file label ('a'-'h') to a File object, returns File{8} if invalid.
-  static constexpr File fromChar(const char fileLabel) {
-    const int idx = fileLabel - 'a';
-    return 0 <= idx && idx < 8 ? File{idx} : File{8};
-  }
-};
+    /// Returns the distance between this file and another.
+    constexpr int distance(const File other) const {
+      const int d = static_cast<int>(other) - static_cast<int>(*this);
+      return d < 0 ? -d : d;
+    }
 
-// File constants
-inline constexpr File FILE_A{0};
-inline constexpr File FILE_B{1};
-inline constexpr File FILE_C{2};
-inline constexpr File FILE_D{3};
-inline constexpr File FILE_E{4};
-inline constexpr File FILE_F{5};
-inline constexpr File FILE_G{6};
-inline constexpr File FILE_H{7};
-inline constexpr File FILE_NONE{8};
-inline constexpr unsigned FILE_LENGTH = 9;
+    /// Converts a file label ('a'-'h') to a File object, returns File{8} if invalid.
+    static constexpr File fromChar(const char fileLabel) {
+      const int idx = fileLabel - 'a';
+      return 0 <= idx && idx < 8 ? File{idx} : File{8};
+    }
+  };
 
-ENABLE_INCR_OPERATORS_ON(File)
-ENABLE_COMPARISON_OPERATORS_ON(File)
-ENABLE_MIXED_COMPARISONS_ON(File)
-ENABLE_FORMATTER_AS_CHAR_ON(File);
-ENABLE_OSTREAM_OPERATOR_AS_INT_ON(File);
+  // File constants
+  inline constexpr File FILE_A{0};
+  inline constexpr File FILE_B{1};
+  inline constexpr File FILE_C{2};
+  inline constexpr File FILE_D{3};
+  inline constexpr File FILE_E{4};
+  inline constexpr File FILE_F{5};
+  inline constexpr File FILE_G{6};
+  inline constexpr File FILE_H{7};
+  inline constexpr File FILE_NONE{8};
+  inline constexpr unsigned FILE_LENGTH = 9;
 
-#endif// FRANKYCPP_FILE_H
+  ENABLE_INCR_OPERATORS_ON(File)
+  ENABLE_COMPARISON_OPERATORS_ON(File)
+  ENABLE_MIXED_COMPARISONS_ON(File)
+  ENABLE_OSTREAM_OPERATOR_AS_INT_ON(File);
+
+} // namespace chess
+
+ENABLE_FORMATTER_AS_CHAR_ON(chess::File);
+
+#endif // FRANKYCPP_FILE_H

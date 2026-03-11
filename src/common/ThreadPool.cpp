@@ -19,6 +19,8 @@
 
 #include "ThreadPool.h"
 
+using namespace common;
+
 ThreadPool::ThreadPool(const std::size_t numThreads) {
   start(numThreads);
 }
@@ -56,7 +58,7 @@ void ThreadPool::stop() {
   {
     std::unique_lock lock{mEventMutex};
     if (mStopped) {
-      return;  // Already stopped, nothing to do
+      return; // Already stopped, nothing to do
     }
     mStopping = true;
   }

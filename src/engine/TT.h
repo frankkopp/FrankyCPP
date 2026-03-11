@@ -29,9 +29,12 @@
 // Depends on: types.h
 //
 // Design:
-//   - Heap-allocated array of Entry structs
-//   - Size is always a power of two for efficient hash masking
-//   - Single entry per hash slot (no buckets - testing showed 20% slower)
+//   - Heap-allocated array of TTCluster structs (4 entries per cluster)
+//   - Each cluster is alignas(64) = exactly one cache line (4 × 16B = 64B)
+//   - Number of clusters is always a power of two for efficient hash masking
+//   - Bucket design eliminates false sharing across CPU cores under SMP
+//   - 4-way associative: probe scans 4 entries per cluster for matches
+//   - Replacement policy: depth-preferred with age tiebreak
 //   - Struct with bitfields is 9% faster than manual bit manipulation
 //   - Thread-safe key field (std::atomic<ZobristKey>) for Lazy SMP
 //     On x86 acquire/release compiles to plain mov - zero overhead vs non-atomic
@@ -47,27 +50,44 @@
 //   - type:       2-bit value type (NONE, EXACT, ALPHA, BETA)
 //   - mateThreat: 1-bit flag
 //
-  // Thread Safety (Lazy SMP):
-  //   put()  : writes non-key fields first, then key with memory_order_release
-  //   probe(): reads key first with memory_order_acquire, then reads other fields
-  //   A torn read of non-key fields is benign: the key check will fail and the
-  //   caller treats it as a miss - no incorrect data is ever used.
-  //   age-- in probe(): safe in single-thread mode (default). Skipped under SMP
-  //   (numSmpThreads > 1) because it is a read-modify-write on a packed bitfield
-  //   byte shared with depth/type - a data race. Behavioral impact is minimal:
-  //   same-depth replacement tiebreak slightly more aggressive, deep entries
-  //   marginally more vulnerable to eviction. No impact on single-thread behavior.
+// Cluster Structure (64 bytes = 1 cache line):
+//   - entries[4]: 4 × Entry = 4 × 16B = 64B
+//   - alignas(64) ensures each cluster starts at a cache line boundary
+//   - Single _mm_prefetch pulls the entire cluster into L1/L2/L3
+//
+// Thread Safety (Lazy SMP):
+//   XOR Key Verification:
+//     - Key is stored as: storedKey = originalKey ^ dataHash
+//     - Probe verifies: (storedKey ^ dataHash) == probeKey
+//     - If a torn read corrupts ANY field (key or data), the XOR won't match
+//     - Corrupted entries are treated as misses - no bad data is ever returned
+//     - This eliminates the race window between key check and data copy
+//   TODO: Consider removing this in the future as it might actually harm strength
+//         as tests from Stockfish have shown.
+//
+//   put()  : writes non-key fields first, then key XOR'd with dataHash (release)
+//   probe(): loads key (acquire), copies entry, verifies XOR, returns if valid
+//            The copy may still contain torn data, but XOR verification ensures
+//            it's "self-consistent" - all fields from the same write operation.
+//   age-- in probe(): safe in single-thread mode (default). Skipped under SMP
+//   (numSmpThreads > 1) because it is a read-modify-write on a packed bitfield
+//   byte shared with depth/type - a data race. Behavioral impact is minimal:
+//   same-depth replacement tiebreak slightly more aggressive, deep entries
+//   marginally more vulnerable to eviction. No impact on single-thread behavior.
 //
 // Usage:
 //   TT tt(64);  // 64 MB table
 //   tt.put(key, depth, move, value, EXACT, eval);
-//   const TT::Entry* entry = tt.probe(key);
-//   if (entry && entry->depth >= depth) { ... }
+//   if (auto entry = tt.probe(key); entry && entry->depth >= depth) { ... }
 //
 //=============================================================================
 
+#include <array>
 #include <atomic>
+#include <cstring>
 #include <iosfwd>
+#include <mutex>
+#include <optional>
 
 #include "common/gtest_friends.h"
 #include "types/types.h"
@@ -88,273 +108,371 @@
 #endif
 
 /**
- * TT implementation using heap memory and simple hash for entries.
- * The number of entries is always a power of two fitting into the given size.
+ * TT implementation using heap memory and clustered hash buckets.
+ * Each cluster holds 4 entries aligned to a 64-byte cache line boundary.
+ * The number of clusters is always a power of two fitting into the given size.
  * Thread-safe for Lazy SMP via atomic key field (acquire/release, zero overhead on x86).
  *
  * Tests have shown that an implementation with a struct and bitfields is
  * more efficient than using only one 64-bit data field with manual bit shifting
  * and masking (~9% slower).
- * Also, using buckets has not shown significant strength improvements and is
- * much slower (~20% slower).
+ *
+ * The bucket design provides:
+ * - Cache-line alignment eliminates false sharing under SMP
+ * - 4-way associativity reduces collision evictions
+ * - Depth-preferred + age tiebreak replacement policy
+ * - Single prefetch loads the entire bucket (4 entries)
  */
-class TT {
-public:
-  static constexpr int CacheLineSize        = 64;
-  static constexpr uint64_t DEFAULT_TT_SIZE = 2;// MByte
-  static constexpr uint64_t MAX_SIZE_MB     = 32'768;
+// Forward-declare test classes at global scope so FRIEND_TEST inside namespace engine works
+FRIEND_TEST_FWD_DECL(TT_Test, put);
+FRIEND_TEST_FWD_DECL(TT_Test, get);
+FRIEND_TEST_FWD_DECL(TT_Test, probe);
 
-  // TT Entry
-  //  atomic<Key> key = 0;  // 64 bit  (std::atomic, acquire/release, plain mov on x86)
-  //  uint16_t move = MOVE_NONE; // 16 bit (last 16-bit omitting value part - cast to Move)
-  //  Value eval    = VALUE_NONE;// 16 bit signed
-  //  Value value   = VALUE_NONE;// 16 bit signed
-  //  Depth depth : 7;           // 0-127
-  //  uint8_t age : 3;           // 0-7
-  //  ValueType type : 2;        // 4 values
-  //  bool mateThreat : 1;       // 1-bit bool
-  struct Entry {
-    // sorted by size to achieve the smallest struct size
-    // using bitfield for the smallest size
-    //
-    // key is atomic for Lazy SMP thread safety.
-    // On x86, acquire/release memory order = plain mov (no fence, no lock prefix).
-    // Compile-time verified: is_always_lock_free + sizeof == sizeof(ZobristKey).
-    //
-    // Write protocol (put):  write non-key fields first, store key with release last.
-    // Read  protocol (probe): load key with acquire first, then read other fields.
-    // A concurrent torn read of non-key fields is benign: the key check will fail
-    // and the slot is treated as a miss - no incorrect values are ever consumed.
-    std::atomic<ZobristKey> key{0}; // 64 bit - atomic for SMP safety
-    uint16_t move  = 0;             // MOVE_NONE as 16-bit
-    Value eval     = VALUE_NONE;    // 16-bit signed
-    Value value    = VALUE_NONE;    // 16-bit signed
-    uint8_t depth : 7 {};           // 0-127
-    uint8_t age : 3 {};             // 0-7
-    ValueType type : 2 {};          // 4 values
-    bool mateThreat : 1 {};         // 1-bit bool
-    friend std::ostream& operator<<(std::ostream& os, const Entry& entry);
-  };
+namespace engine {
+  using namespace chess;
 
-  // Compile-time guarantees that the atomic key has zero size/performance overhead.
-  // If either assert fires, switch to Option B (XOR key trick) - see PLAN_Lazy_SMP_MultiThreading.md
-  static_assert(std::atomic<ZobristKey>::is_always_lock_free,
-                "TT: atomic key must be lock-free (no hidden mutex). Switch to XOR trick if this fires.");
-  static_assert(sizeof(std::atomic<ZobristKey>) == sizeof(ZobristKey),
-                "TT: atomic key must not inflate Entry size. Switch to XOR trick if this fires.");
+  class TT {
+  public:
+    static constexpr int CacheLineSize        = 64;
+    static constexpr int CLUSTER_SIZE         = 4; // entries per cluster
+    static constexpr uint64_t DEFAULT_TT_SIZE = 2; // MByte
+    static constexpr uint64_t MAX_SIZE_MB     = 32'768;
 
-  // struct Entry has 16 Byte
-  static constexpr uint64_t ENTRY_SIZE = sizeof(Entry);
-  static_assert(sizeof(Entry) == 16, "TT Entry must remain 16 bytes for cache alignment");
-  static_assert(CacheLineSize % ENTRY_SIZE == 0, "Cluster size incorrect");
+    // TT Entry
+    //  atomic<Key> key = 0;  // 64 bit  (std::atomic, acquire/release, plain mov on x86)
+    //  uint16_t move = MOVE_NONE; // 16 bit (last 16-bit omitting value part - cast to Move)
+    //  Value eval    = VALUE_NONE;// 16 bit signed
+    //  Value value   = VALUE_NONE;// 16 bit signed
+    //  Depth depth : 7;           // 0-127
+    //  uint8_t age : 3;           // 0-7
+    //  ValueType type : 2;        // 4 values
+    //  bool mateThreat : 1;       // 1-bit bool
+    struct Entry {
+      // sorted by size to achieve the smallest struct size
+      // using bitfield for the smallest size
+      //
+      // key is atomic for Lazy SMP thread safety.
+      // On x86, acquire/release memory order = plain mov (no fence, no lock prefix).
+      // Compile-time verified: is_always_lock_free + sizeof == sizeof(ZobristKey).
+      //
+      // XOR Key Verification Protocol:
+      //   Store: key is stored as (originalKey ^ dataHash) after writing data fields
+      //   Load:  verify (storedKey ^ dataHash) == probeKey to detect torn reads
+      // If any field is corrupted by a torn read, the XOR won't match = clean miss.
+      std::atomic<ZobristKey> key{0}; // 64 bit - atomic for SMP safety
+      uint16_t move = 0;              // MOVE_NONE as 16-bit
+      Value eval    = VALUE_NONE;     // 16-bit signed
+      Value value   = VALUE_NONE;     // 16-bit signed
+      uint8_t depth : 7 {};           // 0-127
+      uint8_t age : 3 {};             // 0-7
+      ValueType type : 2 {};          // 4 values
+      bool mateThreat : 1 {};         // 1-bit bool
 
-private:
-  // threads for clearing hash
-  unsigned int noOfThreads = 1;
+      // Default constructor
+      Entry() = default;
 
-  // Number of active SMP search threads. 1 = single-thread mode (default).
-  // When > 1: probe() skips age-- to avoid a data race on the packed bitfield byte.
-  // Set by Search before each search via setSmpThreads().
-  int numSmpThreads = 1;
+      // TT_USE_XOR_KEY: Toggle XOR key verification for torn-read detection.
+      // Set to 1 (default): Full XOR verification - detects torn reads, slight overhead
+      // Set to 0: Disabled - for performance comparison (dataHash returns 0, XOR is no-op)
+      // The compiler will optimize away the XOR when dataHash() returns constant 0.
+#define TT_USE_XOR_KEY 1
 
-  // size and fill info
-  uint64_t sizeInByte            = 0;
-  std::size_t maxNumberOfEntries = 0;
-  std::size_t hashKeyMask        = 0;
-  std::size_t numberOfEntries    = 0;
-
-  // statistics
-  mutable uint64_t numberOfPuts       = 0;
-  mutable uint64_t numberOfCollisions = 0;
-  mutable uint64_t numberOfOverwrites = 0;
-  mutable uint64_t numberOfUpdates    = 0;
-  mutable uint64_t numberOfProbes     = 0;
-  mutable uint64_t numberOfHits       = 0;// entries with identical key found
-  mutable uint64_t numberOfMisses     = 0;// no entry with key found
-
-  // this array holds the actual entries for the transposition table
-  std::unique_ptr<Entry[]> _data = std::make_unique<Entry[]>(maxNumberOfEntries);
-
-public:
-  /// Creates a TT with default size (2 MB).
-  TT() : TT(DEFAULT_TT_SIZE) {}
-
-  /// Creates a TT with the specified size.
-  /// Size will be reduced to the next lowest power of 2.
-  /// @param newSizeInMByte  Size in megabytes (limited to 32,768 MB)
-  explicit TT(uint64_t newSizeInMByte);
-
-  ~TT() = default;
-
-  // disallow copies and moves
-  TT(TT const& tt)          = delete;
-  TT& operator=(const TT&)  = delete;
-  TT(TT const&& tt)         = delete;
-  TT& operator=(const TT&&) = delete;
-
-  /// Changes the size of the transposition table and clears all entries.
-  /// If set to 0 MB, TT will ensure at least 1 entry, which can be used as an uninitialized sentinel.
-  /// @param newSizeInMByte  Size in megabytes, reduced to next lowest power of 2.
-  ///                        Limited to 32,768 MB.
-  void resize(uint64_t newSizeInMByte);
-
-  /// Clears the transposition table by resetting all entries to zero.
-  void clear();
-
-  /// Stores a position in the transposition table.
-  /// The move will be stripped of any sort value before storing, as value
-  /// is stored separately. This avoids surprising behavior where MOVE_NONE
-  /// might appear to have a value.
-  /// @param key    Position key (usually Zobrist key)
-  /// @param depth  Search depth (0 to DEPTH_MAX, usually 127)
-  /// @param move   Best move of the node (for BETA: best move until cutoff)
-  /// @param value  Search value between VALUE_MIN and VALUE_MAX
-  /// @param type   Value bound type: EXACT, ALPHA, or BETA
-  /// @param eval   Static evaluation of the position
-  void put(ZobristKey key, Depth depth, Move move, Value value, ValueType type, Value eval);
-
-  /// Retrieves an entry matching the given key without updating statistics.
-  /// @param key  Position key (usually Zobrist key)
-  /// @return     Pointer to matching entry, or nullptr if not found
-  const Entry* getMatch(const ZobristKey key) const {
-    const Entry* const entryPtr = getEntryPtrConst(key);
-    return entryPtr->key.load(std::memory_order_acquire) == key ? entryPtr : nullptr;
-  }
-
-  /// Probes the TT for an entry matching the key.
-  /// Updates hit/miss statistics. Decreases age of found entry (single-thread mode only;
-  /// skipped under SMP to avoid a data race on the packed bitfield byte).
-  /// @param key  Position key (usually Zobrist key)
-  /// @return     Pointer to matching entry, or nullptr if not found
-  const Entry* probe(const ZobristKey& key);
-
-  /// Ages all entries by incrementing their age counter.
-  /// Called at the start of each new search to help with replacement.
-  void ageEntries();
-
-  /// Returns how full the transposition table is in permill (0-1000).
-  /// Used for UCI "hashfull" info output.
-  /// @return  Fill level in permill
-  [[nodiscard]] int hashFull() const {
-    return static_cast<int>((1000 * numberOfEntries) / maxNumberOfEntries);
-  };
-
-  /// Prefetches the TT entry for the given key into the CPU cache.
-  ///
-  /// Call this as early as possible before probe(), ideally with other work
-  /// in between (e.g., move generation, evaluation setup) to give the memory
-  /// subsystem time to fetch the data. The prefetch is asynchronous and does
-  /// not block execution. Optimal timing is 100-300 cycles before the actual
-  /// memory access, depending on memory latency.
-  ///
-  /// Uses _MM_HINT_T0 which fetches into all cache levels (L1, L2, L3).
-  /// Significantly improves probe() performance by hiding memory latency,
-  /// especially for large TT sizes that don't fit in CPU cache.
-  ///
-  /// @param key  Position key to prefetch
-  void prefetch(const ZobristKey key) const {
-#ifdef TT_ENABLE_PREFETCH
-    _mm_prefetch(reinterpret_cast<const char*>(&_data[(key & hashKeyMask)]), _MM_HINT_T0);
+      // Computes a hash of all non-key data fields for XOR key verification.
+      // The 8 bytes after key (move, eval, value, bitfields) are contiguous.
+      // Used to detect torn reads: storedKey ^ dataHash == originalKey.
+      // If a torn read corrupts any field, the reconstructed key won't match.
+      [[nodiscard]] uint64_t dataHash() const {
+#if TT_USE_XOR_KEY
+        uint64_t data = 0;
+        std::memcpy(&data, &move, sizeof(data));
+        return data;
 #else
-    (void)key;
+        return 0; // Compiler eliminates XOR: key ^ 0 == key
 #endif
-  }
+      }
 
-  /// Returns a string representation of the TT instance for debugging.
-  /// @return  Debug string with size and statistics
-  std::string str() const;
+      // Copy constructor - needed because atomic has deleted copy constructor.
+      // Uses memcpy for non-key fields to preserve exact byte representation
+      // (including any padding/unused bits) for dataHash() XOR verification.
+      Entry(const Entry& other)
+          : key(other.key.load(std::memory_order_relaxed)) {
+        std::memcpy(&move, &other.move, sizeof(uint64_t));
+      }
 
-private:
-  /// Generates the index from the position key using bitmask.
-  /// @param key  Position key
-  /// @return     Array index for the entry
-  std::size_t getHash(const ZobristKey key) const {
-    return key & hashKeyMask;
-  }
+      // Copy assignment - needed because atomic has deleted copy assignment.
+      // Uses memcpy for non-key fields to preserve exact byte representation.
+      Entry& operator=(const Entry& other) {
+        if (this != &other) {
+          key.store(other.key.load(std::memory_order_relaxed), std::memory_order_relaxed);
+          std::memcpy(&move, &other.move, sizeof(uint64_t));
+        }
+        return *this;
+      }
 
-  /// Returns a mutable pointer to the entry for the given key.
-  /// @param key  Position key
-  /// @return     Pointer to the entry slot
-  Entry* getEntryPtr(const ZobristKey key) const {
-    return &_data[getHash(key)];
-  }
+      friend std::ostream& operator<<(std::ostream& os, const Entry& entry);
+    };
 
-  /// Returns a const pointer to the entry for the given key.
-  /// @param key  Position key
-  /// @return     Const pointer to the entry slot
-  const Entry* getEntryPtrConst(const ZobristKey key) const {
-    return &_data[getHash(key)];
-  }
+    // Compile-time guarantees that the atomic key has zero size/performance overhead.
+    // If either assert fires, switch to Option B (XOR key trick) - see PLAN_Lazy_SMP_MultiThreading.md
+    static_assert(std::atomic<ZobristKey>::is_always_lock_free,
+                  "TT: atomic key must be lock-free (no hidden mutex). Switch to XOR trick if this fires.");
+    static_assert(sizeof(std::atomic<ZobristKey>) == sizeof(ZobristKey),
+                  "TT: atomic key must not inflate Entry size. Switch to XOR trick if this fires.");
 
-public:
-  // === Getters ===
+    // struct Entry has 16 Byte
+    static constexpr uint64_t ENTRY_SIZE = sizeof(Entry);
+    static_assert(sizeof(Entry) == 16, "TT Entry must remain 16 bytes for cache alignment");
 
-  /// Returns the size of the TT in bytes.
-  uint64_t getSizeInByte() const { return sizeInByte; }
+    // TTCluster: 4 entries aligned to one cache line (64 bytes).
+    // alignas(64) guarantees that std::make_unique<TTCluster[]> uses aligned operator new
+    // (C++17 mandates aligned allocation when alignof(T) > __STDCPP_DEFAULT_NEW_ALIGNMENT__).
+    struct alignas(CacheLineSize) TTCluster {
+      std::array<Entry, CLUSTER_SIZE> entries;
+    };
 
-  /// Returns the maximum number of entries the TT can hold.
-  std::size_t getMaxNumberOfEntries() const { return maxNumberOfEntries; }
+    static_assert(sizeof(TTCluster) == CacheLineSize, "TTCluster must be exactly one cache line (64 bytes)");
+    static_assert(alignof(TTCluster) == CacheLineSize,
+                  "TTCluster must be cache-line aligned. Guarantees aligned heap allocation via C++17.");
+    static constexpr uint64_t CLUSTER_BYTE_SIZE = sizeof(TTCluster);
 
-  /// Returns the current number of entries stored.
-  std::size_t getNumberOfEntries() const { return numberOfEntries; }
+  private:
+    // threads for clearing hash
+    unsigned int noOfThreads = 1;
 
-  /// Returns the total number of put() calls.
-  uint64_t getNumberOfPuts() const { return numberOfPuts; }
+    // Number of active SMP search threads. 1 = single-thread mode (default).
+    // When > 1: probe() skips age-- to avoid a data race on the packed bitfield byte.
+    // Set by Search before each search via setSmpThreads().
+    int numSmpThreads = 1;
 
-  /// Returns the number of hash collisions (different position, same slot).
-  uint64_t getNumberOfCollisions() const { return numberOfCollisions; }
+    // TT_USE_MUTEX: Optional mutex for debugging TT race conditions.
+    // Set to 1 to enable synchronized access (significantly slower).
+    // Set to 0 for normal lockless operation with copy-on-read (like Stockfish).
+    // The copy-on-read approach in probe() ensures callers receive a consistent
+    // snapshot even without synchronization - torn reads may produce stale/mixed
+    // data but won't cause crashes since the copy is final once returned.
+#define TT_USE_MUTEX 0
+#if TT_USE_MUTEX
+    mutable std::mutex ttMutex{};
+#endif
 
-  /// Returns the number of overwrites (replaced existing entry).
-  uint64_t getNumberOfOverwrites() const { return numberOfOverwrites; }
+    // size and fill info
+    uint64_t sizeInByte             = 0;
+    std::size_t maxNumberOfClusters = 0;
+    std::size_t clusterMask         = 0;
+    std::size_t numberOfEntries     = 0;
 
-  /// Returns the number of updates (same position, updated entry).
-  uint64_t getNumberOfUpdates() const { return numberOfUpdates; }
+    // statistics
+    mutable uint64_t numberOfPuts       = 0;
+    mutable uint64_t numberOfCollisions = 0;
+    mutable uint64_t numberOfOverwrites = 0;
+    mutable uint64_t numberOfUpdates    = 0;
+    mutable uint64_t numberOfProbes     = 0;
+    mutable uint64_t numberOfHits       = 0; // entries with identical key found
+    mutable uint64_t numberOfMisses     = 0; // no entry with key found
 
-  /// Returns the total number of probe() calls.
-  uint64_t getNumberOfProbes() const { return numberOfProbes; }
+    // this array holds the actual clusters for the transposition table
+    std::unique_ptr<TTCluster[]> _data = std::make_unique<TTCluster[]>(maxNumberOfClusters); // NOLINT(*-avoid-c-arrays)
 
-  /// Returns the number of successful probes (entry with matching key found).
-  uint64_t getNumberOfHits() const { return numberOfHits; }
+  public:
+    /// Creates a TT with default size (2 MB).
+    TT() : TT(DEFAULT_TT_SIZE) {}
 
-  /// Returns the number of failed probes (no matching entry found).
-  uint64_t getNumberOfMisses() const { return numberOfMisses; }
+    /// Creates a TT with the specified size.
+    /// Size will be reduced to the next lowest power of 2.
+    /// @param newSizeInMByte  Size in megabytes (limited to 32,768 MB)
+    explicit TT(uint64_t newSizeInMByte);
 
-  /// Returns the number of threads used for clearing.
-  unsigned int getThreads() const { return noOfThreads; }
+    ~TT() = default;
 
-  /// Sets the number of threads used for clearing.
-  /// @param threads  Number of threads (minimum 1)
-  void setThreads(const int threads) { noOfThreads = threads > 0 ? static_cast<unsigned int>(threads) : 1u; }
+    // disallow copies and moves
+    TT(TT const& tt)          = delete;
+    TT& operator=(const TT&)  = delete;
+    TT(TT const&& tt)         = delete;
+    TT& operator=(const TT&&) = delete;
 
-  /// Sets the number of active SMP search threads.
-  /// When > 1, probe() skips age-- to avoid a data race on the packed bitfield byte.
-  /// Call before each search when thread count changes.
-  /// @param threads  Total search threads (1 = single-thread mode, full original behavior)
-  void setSmpThreads(const int threads) { numSmpThreads = threads > 0 ? threads : 1; }
+    /// Changes the size of the transposition table and clears all entries.
+    /// If set to 0 MB, TT will ensure at least 1 cluster (4 entries).
+    /// @param newSizeInMByte  Size in megabytes, reduced to next lowest power of 2.
+    ///                        Limited to 32,768 MB.
+    void resize(uint64_t newSizeInMByte);
 
-  /// Returns the current SMP thread count setting.
-  int getSmpThreads() const { return numSmpThreads; }
+    /// Clears the transposition table by resetting all entries to zero.
+    void clear();
 
-  /// Converts a ValueType to its string representation.
-  /// @param type  ValueType to convert
-  /// @return      "NONE", "EXACT", "ALPHA", or "BETA"
-  static std::string str(const ValueType type) {
-    switch (type) {
-      case NONE:
-        return "NONE";
-      case EXACT:
-        return "EXACT";
-      case ALPHA:
-        return "ALPHA";
-      case BETA:
-        return "BETA";
+    /// Stores a position in the transposition table.
+    /// The move will be stripped of any sort value before storing, as value
+    /// is stored separately. This avoids surprising behavior where MOVE_NONE
+    /// might appear to have a value.
+    /// @param key    Position key (usually Zobrist key)
+    /// @param depth  Search depth (0 to DEPTH_MAX, usually 127)
+    /// @param move   Best move of the node (for BETA: best move until cutoff)
+    /// @param value  Search value between VALUE_MIN and VALUE_MAX
+    /// @param type   Value bound type: EXACT, ALPHA, or BETA
+    /// @param eval   Static evaluation of the position
+    void put(ZobristKey key, Depth depth, Move move, Value value, ValueType type, Value eval);
+
+    /// Retrieves an entry matching the given key without updating statistics.
+    /// Scans all entries in the cluster for a match using XOR verification.
+    /// Returns a copy for thread safety.
+    /// @param key  Position key (usually Zobrist key)
+    /// @return     Copy of matching entry, or nullopt if not found
+    std::optional<Entry> getMatch(const ZobristKey key) const {
+      const TTCluster* const cluster = getClusterConst(key);
+      for (int i = 0; i < CLUSTER_SIZE; ++i) {
+        const ZobristKey storedKey = cluster->entries[i].key.load(std::memory_order_acquire);
+        Entry copy                 = cluster->entries[i]; // Copy via copy constructor
+        // Verify: storedKey XOR'd with data hash must equal the probe key.
+        if ((storedKey ^ copy.dataHash()) == key) {
+          copy.key.store(key, std::memory_order_relaxed); // Restore original key
+          return copy;
+        }
+      }
+      return std::nullopt;
     }
-    return "";
-  }
 
-  FRIEND_TEST(TT_Test, put);
-  FRIEND_TEST(TT_Test, get);
-  FRIEND_TEST(TT_Test, probe);
-};
+    /// Probes the TT for an entry matching the key.
+    /// Updates hit/miss statistics. Decreases age of found entry (single-thread mode only;
+    /// skipped under SMP to avoid a data race on the packed bitfield byte).
+    /// Returns a copy of the entry to ensure thread-safety (caller can safely read
+    /// the returned data even if another thread overwrites the original entry).
+    /// @param key  Position key (usually Zobrist key)
+    /// @return     Copy of matching entry, or nullopt if not found
+    std::optional<Entry> probe(const ZobristKey& key);
 
-#endif// FRANKYCPP_TT_H
+    /// Ages all entries by incrementing their age counter.
+    /// Called at the start of each new search to help with replacement.
+    void ageEntries();
+
+    /// Returns how full the transposition table is in permill (0-1000).
+    /// Used for UCI "hashfull" info output.
+    /// @return  Fill level in permill
+    [[nodiscard]] int hashFull() const {
+      const std::size_t maxEntries = maxNumberOfClusters * CLUSTER_SIZE;
+      return static_cast<int>((1000 * numberOfEntries) / maxEntries);
+    };
+
+    /// Prefetches the TT cluster for the given key into the CPU cache.
+    ///
+    /// Call this as early as possible before probe(), ideally with other work
+    /// in between (e.g., move generation, evaluation setup) to give the memory
+    /// subsystem time to fetch the data. The prefetch is asynchronous and does
+    /// not block execution. Optimal timing is 100-300 cycles before the actual
+    /// memory access, depending on memory latency.
+    ///
+    /// Uses _MM_HINT_T0 which fetches into all cache levels (L1, L2, L3).
+    /// With the bucket design, a single prefetch loads all 4 entries in the
+    /// cluster (64 bytes = 1 cache line), significantly improving probe()
+    /// performance by hiding memory latency.
+    ///
+    /// @param key  Position key to prefetch
+    void prefetch(const ZobristKey key) const {
+#ifdef TT_ENABLE_PREFETCH
+      _mm_prefetch(reinterpret_cast<const char*>(&_data[key & clusterMask]), _MM_HINT_T0);
+#else
+      (void) key;
+#endif
+    }
+
+    /// Returns a string representation of the TT instance for debugging.
+    /// @return  Debug string with size and statistics
+    std::string str() const;
+
+  private:
+    /// Returns the cluster index from the position key using bitmask.
+    /// @param key  Position key
+    /// @return     Array index for the cluster
+    std::size_t getClusterIndex(const ZobristKey key) const {
+      return key & clusterMask;
+    }
+
+    /// Returns a mutable pointer to the cluster for the given key.
+    /// @param key  Position key
+    /// @return     Pointer to the cluster
+    TTCluster* getCluster(const ZobristKey key) const {
+      return &_data[getClusterIndex(key)];
+    }
+
+    /// Returns a const pointer to the cluster for the given key.
+    /// @param key  Position key
+    /// @return     Const pointer to the cluster
+    const TTCluster* getClusterConst(const ZobristKey key) const {
+      return &_data[getClusterIndex(key)];
+    }
+
+  public:
+    // === Getters ===
+
+    /// Returns the size of the TT in bytes.
+    uint64_t getSizeInByte() const { return sizeInByte; }
+
+    /// Returns the maximum number of entries the TT can hold (clusters × CLUSTER_SIZE).
+    std::size_t getMaxNumberOfEntries() const { return maxNumberOfClusters * CLUSTER_SIZE; }
+
+    /// Returns the number of clusters in the TT.
+    std::size_t getMaxNumberOfClusters() const { return maxNumberOfClusters; }
+
+    /// Returns the current number of entries stored.
+    std::size_t getNumberOfEntries() const { return numberOfEntries; }
+
+    /// Returns the total number of put() calls.
+    uint64_t getNumberOfPuts() const { return numberOfPuts; }
+
+    /// Returns the number of hash collisions (different position, same slot).
+    uint64_t getNumberOfCollisions() const { return numberOfCollisions; }
+
+    /// Returns the number of overwrites (replaced existing entry).
+    uint64_t getNumberOfOverwrites() const { return numberOfOverwrites; }
+
+    /// Returns the number of updates (same position, updated entry).
+    uint64_t getNumberOfUpdates() const { return numberOfUpdates; }
+
+    /// Returns the total number of probe() calls.
+    uint64_t getNumberOfProbes() const { return numberOfProbes; }
+
+    /// Returns the number of successful probes (entry with matching key found).
+    uint64_t getNumberOfHits() const { return numberOfHits; }
+
+    /// Returns the number of failed probes (no matching entry found).
+    uint64_t getNumberOfMisses() const { return numberOfMisses; }
+
+    /// Returns the number of threads used for clearing.
+    unsigned int getThreads() const { return noOfThreads; }
+
+    /// Sets the number of threads used for clearing.
+    /// @param threads  Number of threads (minimum 1)
+    void setThreads(const int threads) { noOfThreads = threads > 0 ? static_cast<unsigned int>(threads) : 1U; }
+
+    /// Sets the number of active SMP search threads.
+    /// When > 1, probe() skips age-- to avoid a data race on the packed bitfield byte.
+    /// Call before each search when thread count changes.
+    /// @param threads  Total search threads (1 = single-thread mode, full original behavior)
+    void setSmpThreads(const int threads) { numSmpThreads = threads > 0 ? threads : 1; }
+
+    /// Returns the current SMP thread count setting.
+    int getSmpThreads() const { return numSmpThreads; }
+
+    /// Converts a ValueType to its string representation.
+    /// @param type  ValueType to convert
+    /// @return      "NONE", "EXACT", "ALPHA", or "BETA"
+    static std::string str(const ValueType type) {
+      switch (type) {
+        case NONE:
+          return "NONE";
+        case EXACT:
+          return "EXACT";
+        case ALPHA:
+          return "ALPHA";
+        case BETA:
+          return "BETA";
+      }
+      return "";
+    }
+
+    FRIEND_TEST_NS(TT_Test, put);
+    FRIEND_TEST_NS(TT_Test, get);
+    FRIEND_TEST_NS(TT_Test, probe);
+  };
+
+} // namespace engine
+
+#endif // FRANKYCPP_TT_H

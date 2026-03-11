@@ -24,13 +24,34 @@ This document describes the high-level architecture of FrankyCPP, a UCI chess en
 │ (board state) │     │ (alpha-beta)  │     │  (debugging)  │
 └───────────────┘     └───────┬───────┘     └───────────────┘
                               │
+            ┌─────────────────┴─────────────────┐
+            │         Lazy SMP Threads          │
+            │                                   │
+            │  T0 (main search thread)          │
+            │  ├─ iterative deepening           │
+            │  ├─ aspiration windows            │
+            │  ├─ time management               │
+            │  └─ UCI output & bestmove         │
+            │                                   │
+            │  T1..Tn (helper threads)          │
+            │  ├─ alpha-beta only               │
+            │  ├─ no aspiration/UCI output      │
+            │  └─ root-move diversification     │
+            └─────────────────┬─────────────────┘
+                              │
         ┌─────────────┬───────┴───────┬─────────────┐
         │             │               │             │
         ▼             ▼               ▼             ▼
 ┌───────────────┐ ┌───────────┐ ┌───────────┐ ┌───────────────┐
 │  Evaluator    │ │    TT     │ │ Tablebase │ │  OpeningBook  │
 │  (scoring)    │ │(hash tbl) │ │ (Syzygy)  │ │   (library)   │
-└───────────────┘ └───────────┘ └───────────┘ └───────────────┘
+│               │ │ [shared]  │ │           │ │               │
+│  ┌─────────┐  │ └───────────┘ └───────────┘ └───────────────┘
+│  │ PawnTT  │  │
+│  │ (pawn   │  │
+│  │  hash)  │  │
+│  └─────────┘  │
+└───────────────┘
 ```
 
 ---
@@ -246,6 +267,7 @@ The core search algorithm using alpha-beta with iterative deepening.
 - Quiescence search with SEE pruning
 - Time management with complexity-based allocation and best-move instability detection
 - Syzygy tablebase probing for endgame positions
+- **Lazy SMP multi-threaded parallel search**
 
 **Tablebase Integration:**
 - **Root probing:** Before search, probe tablebases to filter moves to only WDL-optimal moves
@@ -253,19 +275,22 @@ The core search algorithm using alpha-beta with iterative deepening.
 - **DTZ scoring:** Shorter wins score higher, longer losses score lower
 - Configurable via `SyzygyPath`, `SyzygyProbeDepth`, `USE_TB_PROBE_ROOT` options
 
-**Threading Model:**
-- Search runs in a dedicated thread (`searchThread`)
-- Can be stopped asynchronously via `stopSearchFlag`
-- Timer thread monitors time limits
-- Semaphores manage initialization and running state
+**Threading Model (Lazy SMP):**
+- **Main search thread (T0):** Runs the full search with all features — iterative deepening, aspiration windows, time management, UCI `info` output, and best move reporting. Only T0 sends output to the UCI handler.
+- **Helper threads (T1..Tn):** Run the same full `iterativeDeepening()` code as T0 — aspiration windows, LMR, move ordering, etc. — but with `isMainThread()` guards suppressing UCI output and time management. Each helper starts at a different depth offset (1 + id % 3) for search diversification.
+- The only shared state is the **transposition table (TT)** — threads communicate implicitly by reading/writing TT entries.
+- A shared `std::atomic_bool` stop flag coordinates shutdown; when T0 decides to stop (time limit, depth limit, or `stop` command), all threads exit.
+- After all threads stop, **best-thread selection** compares depth and score across all threads to pick the best result (not necessarily T0's).
+- Node counts are aggregated from all threads for UCI `info nodes` output.
+- See `docs/Lazy_SMP_Explained.md` for a full description of the algorithm.
 
 **Owned Components:**
-- `TT` - Transposition table
-- `Evaluator` - Position evaluation
+- `TT` - Transposition table (shared across all SMP threads)
+- `Evaluator` - Position evaluation (each thread has its own, with per-thread `PawnTT`)
 - `OpeningBook` - Opening library (optional)
 - `Tablebase` - Syzygy endgame tablebases (optional)
-- `History` - History heuristic data
-- `plyStack` - Per-ply search state array
+- `History` - History heuristic data (per-thread)
+- `plyStack` - Per-ply search state array (per-thread)
 
 **Per-Ply State (`PlyInfo`):**
 
@@ -277,16 +302,17 @@ Each ply level has its own `PlyInfo` struct containing:
 
 ```cpp
 class Search {
-  std::unique_ptr<TT> tt;
-  std::unique_ptr<Evaluator> evaluator;
+  std::unique_ptr<TT> tt;           // Shared across all SMP threads
   std::unique_ptr<OpeningBook> book;
   std::unique_ptr<Tablebase> tablebase;
-  History history;
-  
-  // Per-ply search state - each PlyInfo owns its MoveGenerators
-  std::array<PlyInfo, DEPTH_MAX + 1> plyStack;
-  
-  std::thread searchThread;
+
+  // Per-thread state (index 0 = main thread, 1..N-1 = helpers)
+  // Each SearchThreadData owns: Position, Evaluator, PVTable, History, PlyInfo stack, rootMoves,
+  //   completedIterationDepth, lastIterationValue (for best-thread selection)
+  std::vector<std::unique_ptr<SearchThreadData>> searchThreadData;
+
+  std::thread searchThread;                    // Main search thread
+  std::vector<std::thread> helperThreads;      // Lazy SMP helper threads
   std::atomic_bool stopSearchFlag;
   // ...
 };
@@ -434,19 +460,26 @@ Search::startSearch(Position, SearchLimits)
          ├──► Probe tablebases at root (filter moves to TB-optimal)
          │
          ▼
-Search::iterativeDeepening()
+  Spawn Lazy SMP helper threads (T1..Tn)
+  Each thread gets own Position copy, History, PlyStack
          │
-    ┌────┴────┐
-    │ depth=1 │
-    │ depth=2 │
-    │   ...   │
-    │ depth=N │
-    └────┬────┘
-         │
+  ┌──────┴──────────────────────────────────┐
+  │ T0 (main)      T1 (helper) ... Tn (helper) │
+  │                                           │
+  │  Search::iterativeDeepening()  (all threads, independent)
+  │         │
+  │    ┌────┴────┐
+  │    │ depth=1 │  (helpers may start at depth=2, diversified)
+  │    │ depth=2 │
+  │    │   ...   │
+  │    │ depth=N │
+  │    └────┬────┘
+  └──────────────────────────────────────────┘
+         │  (all threads share TT read/write)
          ▼
 Search::pvSearch(alpha, beta, depth)  ◄──┐
          │                               │
-         ├──► TT probe                   │
+         ├──► TT probe  (shared TT)      │
          ├──► Tablebase WDL probe        │
          ├──► Null-move pruning          │
          ├──► MoveGenerator (on-demand)  │
@@ -461,30 +494,70 @@ Search::pvSearch(alpha, beta, depth)  ◄──┐
          ├──► Quiescence search (at depth 0)
          │
          ▼
-TT store result
+TT store result  (shared TT — all threads contribute)
+         │
+  stopFlag set → helper threads exit, nodes aggregated
          │
          ▼
-UciHandler::sendSearchUpdate() / sendResult()
+  selectBestThread() → compare depth+score across all threads
+         │
+         ├──► TB root override (if applicable)
+         ├──► Ponder move extraction (PV or TT fallback)
+         │
+         ▼
+UciHandler::sendFinalUciInfo() + sendResult()
 ```
 
 ---
 
 ## Threading Model
 
-FrankyCPP currently uses **single-threaded search** with auxiliary threads for:
+FrankyCPP uses **Lazy SMP** for parallel search — multiple threads run independent alpha-beta searches sharing only the transposition table.
 
-| Thread        | Purpose                                 |
-|---------------|-----------------------------------------|
-| Main thread   | UCI command loop (`UciHandler::loop()`) |
-| Search thread | Executes search algorithm               |
-| Timer thread  | Monitors time limits, triggers stop     |
+| Thread                  | Purpose                                                                                                   |
+|-------------------------|-----------------------------------------------------------------------------------------------------------|
+| Main thread             | UCI command loop (`UciHandler::loop()`)                                                                   |
+| Search thread (T0)      | **Main search:** iterative deepening, aspiration windows, time management, UCI output, best move decision |
+| Helper threads (T1..Tn) | **Full search:** same iterative deepening as T0, with depth offset diversification, no UCI output         |
+| Timer thread            | Monitors time limits, sets stop flag                                                                      |
+
+**Main Search Thread (T0) Responsibilities:**
+- Runs full iterative deepening with aspiration windows
+- Manages time control and decides when to stop
+- Sends all UCI `info` strings (depth, score, pv, nodes, nps, etc.)
+- Reports the final `bestmove` to the GUI
+- Coordinates helper thread lifecycle (spawn after TT priming, join on stop)
+
+**Helper Threads (T1..Tn) Responsibilities:**
+- Run full `iterativeDeepening()` — same code as T0 (aspiration windows, LMR, etc.)
+- **No UCI output** — all `send*()` calls guarded by `isMainThread()`
+- **No time management** — only check `stopSearchFlag`, no time decisions
+- **Depth offset diversification** — start at depth (1 + id % 3) to spread search across different depths
+- Contribute to TT population — their search results help all threads find better moves
+- Track `completedIterationDepth` and `lastIterationValue` for best-thread selection
+- Exit immediately when stop flag is set
+
+**Best Thread Selection:**
+- After all helpers join, `selectBestThread()` compares all threads using a depth+score heuristic
+- Deeper thread wins unless its score is worse by more than `BEST_THREAD_SCORE_MARGIN` (default: 50cp)
+- If a helper thread is selected, a final UCI `info` line is sent before `bestmove` for GUI consistency
+- TB root override and ponder move extraction apply on top of the selected thread's result
+- Configurable via UCI options `Best Thread Selection` and `Best Thread Score Margin`
+
+**Lazy SMP Design:**
+- Each thread holds its own `Position` copy, `History` tables, and `PlyInfo` stack — **no locking on hot paths**
+- The `TT` (transposition table) is the **only shared data structure**; threads communicate implicitly through it
+- A single `std::atomic_bool` stop flag stops all threads simultaneously
+- The best move comes from the best thread's search (depth+score selection across all threads)
 
 **Synchronization:**
-- `std::binary_semaphore` for init/running state
-- `std::atomic_bool` for stop flag
-- No locking in TT (single-threaded search)
+- `std::binary_semaphore` for search init/running state handoff
+- `std::atomic_bool` for stop flag (all threads poll this)
+- `std::atomic<uint64_t>` for aggregated node count
+- TT uses lock-free access (memory fences / accepted benign races on entry writes)
 
-**Future:** Lazy SMP multi-threaded search is planned (see roadmap).
+**Thread count** is configurable via the UCI `Threads` option (default: 1, i.e. single-threaded).  
+See `docs/Lazy_SMP_Explained.md` for a detailed explanation of the algorithm and its performance characteristics.
 
 ---
 
@@ -519,9 +592,9 @@ ConfigManager::instance().eval().USE_MOBILITY
 
 | Target                 | Description                      |
 |------------------------|----------------------------------|
-| `FrankyCPP_v0.7`       | Main UCI engine executable       |
-| `FrankyCPP_v0.7_Test`  | GoogleTest unit tests            |
-| `FrankyCPP_v0.7_Bench` | Google Benchmark microbenchmarks |
+| `FrankyCPP_v1.5`       | Main UCI engine executable       |
+| `FrankyCPP_v1.5_Test`  | GoogleTest unit tests            |
+| `FrankyCPP_v1.5_Bench` | Google Benchmark microbenchmarks |
 
 ---
 
@@ -539,4 +612,4 @@ ConfigManager::instance().eval().USE_MOBILITY
 
 ---
 
-*Last updated: 2026-02-16*
+*Last updated: 2026-03-09*

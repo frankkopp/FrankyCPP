@@ -9,6 +9,7 @@ EVAL_CONFIG_SOURCE: "yaml-file"
 
 # Marker for smoke tests - ensures YAML file is present and parseable
 # DO NOT REMOVE - used by ConfigYamlSmokeTest
+# Keys starting with '_' are reserved for internal/test use and silently ignored by the parser.
 _YAML_SMOKE_TEST_MARKER: true
 
 # Enable base material evaluation (piece values)

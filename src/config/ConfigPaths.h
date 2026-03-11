@@ -22,19 +22,19 @@
 
 #include <filesystem>
 
-namespace ConfigPaths {
-    // Header-only helpers returning default YAML paths relative to the current working directory.
-    // These are copied next to the executable in build/test via post-build commands in CMake.
+namespace config::ConfigPaths {
+  // Header-only helpers returning default YAML paths relative to the current working directory.
+  // These are copied next to the executable in build/test via post-build commands in CMake.
 
-    // Default path to the search configuration YAML (e.g., ./config/search.yaml)
-    inline std::filesystem::path SearchYaml() {
-        return std::filesystem::path("config") / "search.yaml";
-    }
+  // Default path to the search configuration YAML (e.g., ./config/search.yaml)
+  inline std::filesystem::path SearchYaml() {
+    return std::filesystem::path("config") / "search.yaml";
+  }
 
-    // Default path to the evaluation configuration YAML (e.g., ./config/eval.yaml)
-    inline std::filesystem::path EvalYaml() {
-        return std::filesystem::path("config") / "eval.yaml";
-    }
-}
+  // Default path to the evaluation configuration YAML (e.g., ./config/eval.yaml)
+  inline std::filesystem::path EvalYaml() {
+    return std::filesystem::path("config") / "eval.yaml";
+  }
+} // namespace config::ConfigPaths
 
 #endif // FRANKYCPP_CONFIGPATHS_H

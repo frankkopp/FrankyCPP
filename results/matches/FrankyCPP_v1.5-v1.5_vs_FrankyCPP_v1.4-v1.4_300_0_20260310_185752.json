@@ -1,0 +1,30 @@
+{
+  "arenaVersion": "v1.5",
+  "durationMs": 14924773,
+  "engine1": {
+    "name": "FrankyCPP v1.5",
+    "path": "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe",
+    "version": "v1.5"
+  },
+  "engine2": {
+    "name": "FrankyCPP v1.4",
+    "path": "Release/FrankyCPP_v1.4/FrankyCPP_v1.4.exe",
+    "version": "v1.4"
+  },
+  "match": {
+    "name": "v1.5_vs_v1.4_300s",
+    "rounds": 100,
+    "timeControl": "300+0"
+  },
+  "pgnPath": "results/matches/v1.5_vs_v1.4_300s.pgn",
+  "results": {
+    "draws": 37,
+    "eloDifference": 103.7325446320695,
+    "engine1Score": 64.5,
+    "engine1Wins": 46,
+    "engine2Score": 35.5,
+    "engine2Wins": 17
+  },
+  "tag": "bestThread",
+  "timestamp": "2026-03-10T13:48:11Z"
+}

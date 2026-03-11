@@ -21,13 +21,17 @@
 #include <thread>
 #include <vector>
 
+#include "chesscore/Position.h"
 #include "common/Logging.h"
 #include "engine/PawnTT.h"
 #include "init.h"
-#include "chesscore/Position.h"
 
 #include <gtest/gtest.h>
 using testing::Eq;
+
+using namespace engine;
+using namespace chess;
+using namespace common;
 
 class PawnTT_Test : public ::testing::Test {
 public:
@@ -47,7 +51,7 @@ protected:
 
 TEST_F(PawnTT_Test, entrySize) {
   struct EntryTest {
-    ZobristKey key          = 0;
+    ZobristKey key   = 0;
     int16_t midvalue = 0;
     int16_t endvalue = 0;
   };
@@ -144,7 +148,6 @@ TEST_F(PawnTT_Test, resize) {
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
   ASSERT_EQ(33554432, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
-
 }
 
 TEST_F(PawnTT_Test, parallelClear) {
@@ -177,12 +180,14 @@ TEST_F(PawnTT_Test, put) {
   ASSERT_EQ(1, tt.getNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfCollisions());
   ASSERT_EQ(0, tt.getNumberOfUpdates());
-  ASSERT_EQ(0, tt.getNumberOfHits());
+  ASSERT_EQ(0, tt.getNumberOfHits()); // probe() counts hits
   ASSERT_EQ(0, tt.getNumberOfMisses());
-  ASSERT_EQ(tt.getEntryPtr(p.getPawnZobristKey())->getKey(), p.getPawnZobristKey());
-  ASSERT_EQ(tt.getEntryPtr(p.getPawnZobristKey())->midvalue, 1);
-  ASSERT_EQ(tt.getEntryPtr(p.getPawnZobristKey())->endvalue, 11);
 
+  // Use probe() for thread-safe copy-on-read pattern
+  const auto entry = tt.probe(p.getPawnZobristKey());
+  ASSERT_TRUE(entry.has_value());
+  ASSERT_EQ(entry->midvalue, 1);
+  ASSERT_EQ(entry->endvalue, 11);
 }
 
 TEST_F(PawnTT_Test, getEntryPtr_valid_even_when_zero_then_resize) {
@@ -215,10 +220,10 @@ TEST_F(PawnTT_Test, getEntryPtr_valid_even_when_zero_then_resize) {
 TEST_F(PawnTT_Test, ConcurrentPutProbeNoUB) {
   constexpr int NUM_THREADS = 4;
   constexpr int ITERATIONS  = 500'000;
-  constexpr int TT_SIZE_MB  = 4;// small = high collision rate = more contention
+  constexpr int TT_SIZE_MB  = 4; // small = high collision rate = more contention
 
   PawnTT tt(TT_SIZE_MB);
-  tt.setSmpThreads(NUM_THREADS);// signals SMP mode to suppress update warnings
+  tt.setSmpThreads(NUM_THREADS); // signals SMP mode to suppress update warnings
 
   // Value ranges written by all threads — any probe hit must fall within these.
   constexpr int VALUE_LO = -1000;
@@ -230,22 +235,22 @@ TEST_F(PawnTT_Test, ConcurrentPutProbeNoUB) {
     std::uniform_int_distribution<int> valueDist(VALUE_LO, VALUE_HI);
 
     for (int i = 0; i < ITERATIONS; ++i) {
-      const ZobristKey key   = keyDist(rng);
-      const auto midvalue    = static_cast<Value>(valueDist(rng));
-      const auto endvalue    = static_cast<Value>(valueDist(rng));
-      const Score score      = {midvalue, endvalue};
+      const ZobristKey key = keyDist(rng);
+      const auto midvalue  = static_cast<Value>(valueDist(rng));
+      const auto endvalue  = static_cast<Value>(valueDist(rng));
+      const Score score    = {midvalue, endvalue};
 
-      PawnTT::Entry* entry = tt.getEntryPtr(key);
-      tt.put(entry, key, score);
+      // Use getEntryPtr() only for put() - this is the correct pattern
+      tt.put(tt.getEntryPtr(key), key, score);
 
-      // Re-fetch entry and check if our key is still there
-      entry = tt.getEntryPtr(key);
-      const ZobristKey storedKey = entry->getKey();
-      if (storedKey == key) {
-        // Hit: the acquire-load on key matched.
-        // The release-store in put() that published this key also guaranteed
-        // all value fields were visible. So values must be within the range
-        // that a legitimate put() wrote — not torn/garbage data.
+      // Use probe() for thread-safe copy-on-read pattern.
+      // This returns a COPY of the entry, eliminating races where another
+      // thread overwrites the entry between key check and value reads.
+      if (const auto entry = tt.probe(key)) {
+        // Hit: probe() returned a consistent copy.
+        // The release-store in put() that published this key guaranteed
+        // all value fields were visible before the key was written.
+        // So values must be within the range that a legitimate put() wrote.
         //
         // Note: another thread may have written to this slot between our
         // put and probe — that is valid SMP behavior. We just check that

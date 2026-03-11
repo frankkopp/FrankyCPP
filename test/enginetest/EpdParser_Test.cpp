@@ -17,13 +17,17 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include "enginetest/EpdParser.h"
-#include "enginetest/EdpTest.h"
-#include "enginetest/TestTypes.h"
 #include "common/Logging.h"
+#include "enginetest/EdpTest.h"
+#include "enginetest/EpdParser.h"
+#include "enginetest/TestTypes.h"
 #include "init.h"
 
 #include <gtest/gtest.h>
+
+using namespace common;
+using namespace chess;
+using namespace enginetest;
 
 class EpdParser_Test : public testing::Test {
 public:
@@ -106,50 +110,50 @@ TEST_F(EpdParser_Test, parseOneLine_EmptyLine) {
 
 TEST_F(EpdParser_Test, parseOneLine_CommentOnly) {
   const std::string line = "# This is a comment";
-  const auto result = EpdParser::parseOneLine(line);
+  const auto result      = EpdParser::parseOneLine(line);
   EXPECT_FALSE(result.has_value());
 }
 
 TEST_F(EpdParser_Test, parseOneLine_WhitespaceOnly) {
   const std::string line = "   \t  \n  ";
-  const auto result = EpdParser::parseOneLine(line);
+  const auto result      = EpdParser::parseOneLine(line);
   EXPECT_FALSE(result.has_value());
 }
 
 TEST_F(EpdParser_Test, parseOneLine_InvalidFen) {
   const std::string line = "invalid_fen bm e4 ; id \"Bad FEN\" ;";
-  const auto result = EpdParser::parseOneLine(line);
+  const auto result      = EpdParser::parseOneLine(line);
   EXPECT_FALSE(result.has_value());
 }
 
 TEST_F(EpdParser_Test, parseOneLine_InvalidTestType) {
   const std::string line = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 xx e4 ; id \"Bad type\" ;";
-  const auto result = EpdParser::parseOneLine(line);
+  const auto result      = EpdParser::parseOneLine(line);
   EXPECT_FALSE(result.has_value());
 }
 
 TEST_F(EpdParser_Test, parseOneLine_InvalidMove) {
   // Qa8 is not legal from starting position
   const std::string line = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 bm Qa8 ; id \"Illegal\" ;";
-  const auto result = EpdParser::parseOneLine(line);
+  const auto result      = EpdParser::parseOneLine(line);
   EXPECT_FALSE(result.has_value());
 }
 
 TEST_F(EpdParser_Test, parseOneLine_InvalidMateDepth) {
   const std::string line = "8/8/8/8/8/8/6K1/6Qr b - - 0 1 dm abc ; id \"Bad depth\" ;";
-  const auto result = EpdParser::parseOneLine(line);
+  const auto result      = EpdParser::parseOneLine(line);
   EXPECT_FALSE(result.has_value());
 }
 
 TEST_F(EpdParser_Test, parseOneLine_ZeroMateDepth) {
   const std::string line = "8/8/8/8/8/8/6K1/6Qr b - - 0 1 dm 0 ; id \"Zero depth\" ;";
-  const auto result = EpdParser::parseOneLine(line);
+  const auto result      = EpdParser::parseOneLine(line);
   EXPECT_FALSE(result.has_value());
 }
 
 TEST_F(EpdParser_Test, parseOneLine_NegativeMateDepth) {
   const std::string line = "8/8/8/8/8/8/6K1/6Qr b - - 0 1 dm -1 ; id \"Negative\" ;";
-  const auto result = EpdParser::parseOneLine(line);
+  const auto result      = EpdParser::parseOneLine(line);
   EXPECT_FALSE(result.has_value());
 }
 
@@ -159,20 +163,20 @@ TEST_F(EpdParser_Test, parseOneLine_NegativeMateDepth) {
 
 TEST_F(EpdParser_Test, parseOneLine_TrailingComment) {
   const std::string line = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 bm e4 ; id \"Test\" ; # comment";
-  const auto result = EpdParser::parseOneLine(line);
+  const auto result      = EpdParser::parseOneLine(line);
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(result->getId(), "Test");
 }
 
 TEST_F(EpdParser_Test, parseOneLine_ExtraWhitespace) {
   const std::string line = "  rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1   bm   e4   ;   id \"Test\" ;  ";
-  const auto result = EpdParser::parseOneLine(line);
+  const auto result      = EpdParser::parseOneLine(line);
   ASSERT_TRUE(result.has_value());
 }
 
 TEST_F(EpdParser_Test, parseOneLine_MultipleSpacesBetweenMoves) {
   const std::string line = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 bm e4    d4   Nf3 ; id \"Test\" ;";
-  const auto result = EpdParser::parseOneLine(line);
+  const auto result      = EpdParser::parseOneLine(line);
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(result->getTargetMoves().size(), 3);
 }
@@ -192,7 +196,7 @@ TEST_F(EpdParser_Test, parseFile_ValidFile) {
 
   const std::vector<EpdTest> tests = EpdParser::parseFile(filePath);
 
-  EXPECT_EQ(tests.size(), 13);  // Known to have 13 valid tests
+  EXPECT_EQ(tests.size(), 13); // Known to have 13 valid tests
 }
 
 TEST_F(EpdParser_Test, parseFile_MixedValidInvalid) {

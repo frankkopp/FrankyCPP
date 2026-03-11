@@ -47,33 +47,33 @@
 
 namespace arena {
 
-/// Runs benchmarks and captures results for Arena persistence
-class BenchmarkRunner {
-public:
-  /// Creates a benchmark runner with the given configuration
-  /// @param config Benchmark configuration
-  /// @param arenaVersion Arena version string for result metadata
-  explicit BenchmarkRunner(const BenchmarkConfig& config, const std::string& arenaVersion);
+  /// Runs benchmarks and captures results for Arena persistence
+  class BenchmarkRunner {
+  public:
+    /// Creates a benchmark runner with the given configuration
+    /// @param config Benchmark configuration
+    /// @param arenaVersion Arena version string for result metadata
+    explicit BenchmarkRunner(const BenchmarkConfig& config, const std::string& arenaVersion);
 
-  /// Runs the benchmark and returns results
-  /// Uses internal engine if enginePath is empty, otherwise uses external UCI engine
-  /// @return Benchmark results including NPS, nodes, and timing
-  [[nodiscard]] BenchmarkResult run() const;
+    /// Runs the benchmark and returns results
+    /// Uses internal engine if enginePath is empty, otherwise uses external UCI engine
+    /// @return Benchmark results including NPS, nodes, and timing
+    [[nodiscard]] BenchmarkResult run() const;
 
-  /// Prints a formatted table of benchmark results
-  /// @param results Vector of benchmark results to display
-  static void printResultsTable(const std::vector<BenchmarkResult>& results);
+    /// Prints a formatted table of benchmark results
+    /// @param results Vector of benchmark results to display
+    static void printResultsTable(const std::vector<BenchmarkResult>& results);
 
-private:
-  /// Run benchmark using internal engine (engine::Benchmark)
-  [[nodiscard]] BenchmarkResult runInternal() const;
+  private:
+    /// Run benchmark using internal engine (engine::Benchmark)
+    [[nodiscard]] BenchmarkResult runInternal() const;
 
-  /// Run benchmark using external UCI engine
-  [[nodiscard]] BenchmarkResult runExternal() const;
+    /// Run benchmark using external UCI engine
+    [[nodiscard]] BenchmarkResult runExternal() const;
 
-  BenchmarkConfig config_;
-  std::string arenaVersion_;
-};
+    BenchmarkConfig config_;
+    std::string arenaVersion_;
+  };
 
 } // namespace arena
 

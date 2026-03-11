@@ -135,10 +135,55 @@ Status:      ✅ IMPROVEMENT over baseline
 ### List Available Engines
 
 ```powershell
-.\cmake-build-win-release\src\FrankyCPP_v1.1_Arena.exe --engines
+.\cmake-build-win-release\src\FrankyCPP_v1.5_Arena.exe --engines
 ```
 
 Shows all engines found in stored results.
+
+### Show Engine Summary
+
+```powershell
+.\cmake-build-win-release\src\FrankyCPP_v1.5_Arena.exe --summary FrankyCPP-v1.5
+```
+
+**Example Output:**
+```
+===================================================================
+Engine Summary: FrankyCPP v1.5
+===================================================================
+Test Suites (2026-03-08 14:22):
+  STS1-STS15_LAN:      780/1500 (52.00%)
+  crafty_test:         166/346  (47.98%)
+  ecm98:               543/769  (70.61%)
+  franky_tests:         13/13   (100.00%)
+  kaufman:              19/25   (76.00%)
+  mate_test_suite:      16/20   (80.00%)
+  wac:                 194/201  (96.52%)
+-------------------------------------------------------------------
+  TOTAL:               1731/2874 (60.23%)
+  Total Nodes:         82,793,955,345
+  Total Time:          3h 16m 47s
+===================================================================
+
+Matches:
+  vs FrankyCPP v1.4    (300+0):  63-37 (W:44 D:38 L:18)  +92.5 ELO
+  vs FrankyCPP v1.3    (300+0):  75.5-24.5 (W:62 D:27 L:11)  +195.5 ELO
+  vs FrankyGo v1.0.3   (300+0):  80.5-19.5 (W:72 D:17 L:11)  +246.3 ELO
+  vs Stockfish 18 2200 (300+0):  82-18 (W:80 D:4 L:16)  +263.4 ELO
+===================================================================
+
+Benchmarks:
+  [2026-03-08]    7,212,545 NPS  (d12, 128MB, 4T)  [baseAfterTtBuckets]
+  [2026-03-01]    7,719,248 NPS  (d12, 128MB, 1T)  [SMP 4-threads]
+===================================================================
+```
+
+**Engine name matching is flexible:** Accepts space, underscore, or hyphen as separators:
+- `FrankyCPP-v1.5`
+- `FrankyCPP_v1.5`
+- `FrankyCPP v1.5`
+
+All match the same engine.
 
 ---
 
@@ -206,10 +251,13 @@ results/
 │   ├── WAC_FrankyGo-v1.0.3_20260201_144530.json
 │   └── STS1-STS15_FrankyCPP-v0.5_20260201_145000.json
 │
-└── matches/             # Engine match results
-    ├── FrankyCPP-v1.1_vs_FrankyGo-v1.0.3_60+0.6_20260201_150033.json
-    ├── FrankyCPP-v1.1_vs_FrankyGo-v1.0.3_60+0.6_20260201_150033.pgn
-    └── FrankyCPP-v1.1_vs_FrankyCPP-v0.5_60+0.6_20260201_160000.json
+├── matches/             # Engine match results
+│   ├── FrankyCPP-v1.1_vs_FrankyGo-v1.0.3_60+0.6_20260201_150033.json
+│   ├── FrankyCPP-v1.1_vs_FrankyGo-v1.0.3_60+0.6_20260201_150033.pgn
+│   └── FrankyCPP-v1.1_vs_FrankyCPP-v0.5_60+0.6_20260201_160000.json
+│
+└── benchmarks/          # Benchmark results (consolidated JSON)
+    └── benchmarks.json
 ```
 
 **Test Suite File Naming:** `{TestSuite}_{EngineName-Version}_{Timestamp}.json`
@@ -228,23 +276,38 @@ results/
 
 Edit `config/arena.yaml` to customize:
 
-- **Test suites:** EPD file paths, time limits, depth limits, **engine paths** (required)
-- **Matches:** Engine paths, opening books, time controls, rounds
+- **Test suite runs:** Engine settings, EPD file lists, time limits, tags
+- **Matches:** Engine paths, opening books, time controls, rounds, tags
+- **Benchmarks:** Depth, hash size, threads, tags
 - **Paths:** Results directory, cutechess-cli location
-- **Engine options:** Command-line args, UCI options, position isolation
 
-**Minimal Test Suite Example:**
+**New Unified Test Suite Format:**
+
+The new `testSuiteRuns` format eliminates duplication by defining shared settings once:
+
 ```yaml
-testSuites:
-  - name: "franky_tests"
-    epdPath: "test/testsets/franky_tests.epd"
+testSuiteRuns:
+  - engine: "FrankyCPP v1.5"
+    engineVersion: "v1.5"
+    tag: "QuietSee"                           # Feature tag for tracking
+    enginePath: "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe"
     timePerMove: 5000
-    maxDepth: 30
-    enginePath: "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+    maxDepth: 99
     isolatePositions: true
-    commandLineArgs: ""
-    uciOptions: "OwnBook=false"
+    commandLineArgs: "--nobook"
+    parallelWorkers: 2
+    suites:
+      - "test/testsets/franky_tests.epd"
+      - path: "test/testsets/mate_test_suite.epd"
+        timePerMove: 15000                    # Per-suite override
+      - "test/testsets/wac.epd"
+      - "test/testsets/STS1-STS15_LAN.EPD"
 ```
+
+**Benefits:**
+- 7 suites × 9 duplicated fields → 1 block with 7-item list
+- `tag` field tracks which feature is being tested
+- Per-suite time/depth overrides supported
 
 See [Configuration.md](Configuration.md) for detailed reference.
 
@@ -330,30 +393,43 @@ Options:
 Execution:
   -t, --testsuites                Run test suites only
   -m, --matches                   Run matches only
+  -b, --bench                     Run benchmarks (NPS measurement)
+  --bench-report                  Show benchmark results history
 
 Reporting:
   -r, --report, --baselines       Show baseline report (all engines, all test suites)
   --engines                       List all available engines from results
   --cmp <engine>                  Compare engine against baselines (e.g., --cmp FrankyCPP-v1.2-dev)
-  -b, --baseline <engine>         Specify baseline(s) for comparison (can repeat)
+  --baseline <engine>             Specify baseline(s) for comparison (can repeat)
+  --summary <engine>              Show summary for specific engine (NEW)
+  --history                       Show historical runs by tag (with --summary) (NEW)
   --testsuites-only               Show only test suite results (filter out matches)
   --matches-only                  Show only match results (filter out test suites)
 
+Configuration:
+  --show-config                   Show engine configuration before tests (FrankyCPP only)
+
 Examples:
-  Run all tests:          FrankyCPP_v1.1_Arena.exe
-  Test suites only:       FrankyCPP_v1.1_Arena.exe --testsuites
-  Matches only:           FrankyCPP_v1.1_Arena.exe --matches
+  Run all tests:          FrankyCPP_v1.5_Arena.exe
+  Test suites only:       FrankyCPP_v1.5_Arena.exe --testsuites
+  With config display:    FrankyCPP_v1.5_Arena.exe --testsuites --show-config
+  Matches only:           FrankyCPP_v1.5_Arena.exe --matches
+  Benchmarks only:        FrankyCPP_v1.5_Arena.exe --bench
+  Bench with config:      FrankyCPP_v1.5_Arena.exe --bench --show-config
 
-  Baseline report:        FrankyCPP_v1.1_Arena.exe --report
-  Only test suites:       FrankyCPP_v1.1_Arena.exe --report --testsuites-only
-  Only matches:           FrankyCPP_v1.1_Arena.exe --report --matches-only
+  Baseline report:        FrankyCPP_v1.5_Arena.exe --report
+  Only test suites:       FrankyCPP_v1.5_Arena.exe --report --testsuites-only
+  Only matches:           FrankyCPP_v1.5_Arena.exe --report --matches-only
 
-  Compare vs baseline:    FrankyCPP_v1.1_Arena.exe --cmp FrankyCPP-v1.2-dev
-  Specify baseline:       FrankyCPP_v1.1_Arena.exe --cmp FrankyCPP-v1.2-dev --baseline FrankyCPP-v1.1
-  Compare matches only:   FrankyCPP_v1.1_Arena.exe --cmp FrankyCPP-v1.2-dev --matches-only
+  Engine summary:         FrankyCPP_v1.5_Arena.exe --summary FrankyCPP-v1.5
+  With history:           FrankyCPP_v1.5_Arena.exe --summary FrankyCPP-v1.5 --history
 
-  List engines:           FrankyCPP_v1.1_Arena.exe --engines
-  Custom config:          FrankyCPP_v1.1_Arena.exe --config my_arena.yaml
+  Compare vs baseline:    FrankyCPP_v1.5_Arena.exe --cmp FrankyCPP-v1.5-dev
+  Specify baseline:       FrankyCPP_v1.5_Arena.exe --cmp FrankyCPP-v1.5-dev --baseline FrankyCPP-v1.4
+  Compare matches only:   FrankyCPP_v1.5_Arena.exe --cmp FrankyCPP-v1.5-dev --matches-only
+
+  List engines:           FrankyCPP_v1.5_Arena.exe --engines
+  Custom config:          FrankyCPP_v1.5_Arena.exe --config my_arena.yaml
 ```
 
 ---
@@ -372,13 +448,19 @@ Examples:
 
 💡 **Run test suites after every significant change** to track tactical strength improvements
 
+💡 **Use tags to track features** - Set the `tag` field to the feature you're testing (e.g., "QuietSee", "TTbuckets")
+
+💡 **Use `--show-config` to verify engine settings** - Shows current UCI options for FrankyCPP engines before tests
+
+💡 **Use `--summary` for quick engine overview** - Shows all test suites and matches for one engine
+
 💡 **Use `--report` to see all engines side-by-side** for quick comparison
 
 💡 **Use `--cmp` for detailed comparison** against specific baselines with delta analysis
 
 💡 **Keep old results** for long-term historical comparison (results are small JSON files)
 
-💡 **Use descriptive engine versions** like `FrankyCPP-v1.1` for clear identification in reports
+💡 **Use descriptive engine versions** like `FrankyCPP-v1.5` for clear identification in reports
 
 💡 **Run matches overnight** - 100+ rounds can take hours depending on time control
 
@@ -386,6 +468,8 @@ Examples:
 
 💡 **Use filtering options** (`--testsuites-only`, `--matches-only`) to focus on specific result types
 
+💡 **Per-suite overrides** - Use override objects in `suites:` list for custom time/depth per EPD file
+
 ---
 
-*Last updated: 2026-02-07*
+*Last updated: 2026-03-09*

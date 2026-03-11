@@ -67,206 +67,210 @@
 #include <sstream>
 #include <stdexcept>
 
-/// Fixed-capacity move container - zero heap allocation, STL-compatible
-/// @tparam Capacity Maximum number of moves the container can hold
-template<size_t Capacity>
-class StaticMoveList {
-public:
-  static constexpr size_t MAX_SIZE = Capacity;
+namespace chess {
 
-private:
-  std::array<Move, Capacity> data_{};
-  size_t size_{0};
+  /// Fixed-capacity move container - zero heap allocation, STL-compatible
+  /// @tparam Capacity Maximum number of moves the container can hold
+  template<size_t Capacity>
+  class StaticMoveList {
+  public:
+    static constexpr size_t MAX_SIZE = Capacity;
 
-public:
-  // =========================================================================
-  // Constructors
-  // =========================================================================
+  private:
+    std::array<Move, Capacity> data_{};
+    size_t size_{0};
 
-  constexpr StaticMoveList() noexcept = default;
+  public:
+    // =========================================================================
+    // Constructors
+    // =========================================================================
 
-  // =========================================================================
-  // Stack Operations - hot path, must be fast
-  // =========================================================================
+    constexpr StaticMoveList() noexcept = default;
 
-  constexpr void push_back(const Move m) noexcept {
-    assert(size_ < Capacity && "StaticMoveList capacity exceeded");
-    data_[size_++] = m;
-  }
+    // =========================================================================
+    // Stack Operations - hot path, must be fast
+    // =========================================================================
 
-  constexpr void pop_back() noexcept {
-    assert(size_ > 0 && "pop_back on empty StaticMoveList");
-    --size_;
-  }
-
-  constexpr void clear() noexcept {
-    size_ = 0;
-  }
-
-  /// Resize the container to newSize elements (must be <= current size)
-  /// This is O(1) since the underlying array is fixed-size
-  constexpr void resize(const size_t newSize) noexcept {
-    assert(newSize <= size_ && "StaticMoveList::resize() can only shrink");
-    size_ = newSize;
-  }
-
-  // =========================================================================
-  // Size & Capacity
-  // =========================================================================
-
-  [[nodiscard]] constexpr size_t size() const noexcept {
-    return size_;
-  }
-
-  [[nodiscard]] constexpr bool empty() const noexcept {
-    return size_ == 0;
-  }
-
-  [[nodiscard]] static constexpr size_t capacity() noexcept {
-    return Capacity;
-  }
-
-  [[nodiscard]] static constexpr size_t max_size() noexcept {
-    return Capacity;
-  }
-
-  // =========================================================================
-  // Element Access - unchecked (fast)
-  // =========================================================================
-
-  [[nodiscard]] constexpr Move& operator[](const size_t i) noexcept {
-    assert(i < size_ && "StaticMoveList index out of bounds");
-    return data_[i];
-  }
-
-  [[nodiscard]] constexpr const Move& operator[](const size_t i) const noexcept {
-    assert(i < size_ && "StaticMoveList index out of bounds");
-    return data_[i];
-  }
-
-  [[nodiscard]] constexpr Move& back() noexcept {
-    assert(size_ > 0 && "back() on empty StaticMoveList");
-    return data_[size_ - 1];
-  }
-
-  [[nodiscard]] constexpr const Move& back() const noexcept {
-    assert(size_ > 0 && "back() on empty StaticMoveList");
-    return data_[size_ - 1];
-  }
-
-  [[nodiscard]] constexpr Move& front() noexcept {
-    assert(size_ > 0 && "front() on empty StaticMoveList");
-    return data_[0];
-  }
-
-  [[nodiscard]] constexpr const Move& front() const noexcept {
-    assert(size_ > 0 && "front() on empty StaticMoveList");
-    return data_[0];
-  }
-
-  // =========================================================================
-  // Element Access - bounds checked (throws std::out_of_range)
-  // =========================================================================
-
-  [[nodiscard]] constexpr Move& at(const size_t i) {
-    if (i >= size_) {
-      throw std::out_of_range("StaticMoveList::at() index out of range");
+    constexpr void push_back(const Move m) noexcept {
+      assert(size_ < Capacity && "StaticMoveList capacity exceeded");
+      data_[size_++] = m;
     }
-    return data_[i];
-  }
 
-  [[nodiscard]] constexpr const Move& at(const size_t i) const {
-    if (i >= size_) {
-      throw std::out_of_range("StaticMoveList::at() index out of range");
+    constexpr void pop_back() noexcept {
+      assert(size_ > 0 && "pop_back on empty StaticMoveList");
+      --size_;
     }
-    return data_[i];
-  }
 
-  // =========================================================================
-  // Data Access
-  // =========================================================================
-
-  [[nodiscard]] constexpr Move* data() noexcept {
-    return data_.data();
-  }
-
-  [[nodiscard]] constexpr const Move* data() const noexcept {
-    return data_.data();
-  }
-
-  // =========================================================================
-  // Iterator Support - for range-based for loops and STL algorithms
-  // =========================================================================
-
-  [[nodiscard]] constexpr Move* begin() noexcept {
-    return data_.data();
-  }
-
-  [[nodiscard]] constexpr Move* end() noexcept {
-    return data_.data() + size_;
-  }
-
-  [[nodiscard]] constexpr const Move* begin() const noexcept {
-    return data_.data();
-  }
-
-  [[nodiscard]] constexpr const Move* end() const noexcept {
-    return data_.data() + size_;
-  }
-
-  [[nodiscard]] constexpr const Move* cbegin() const noexcept {
-    return data_.data();
-  }
-
-  [[nodiscard]] constexpr const Move* cend() const noexcept {
-    return data_.data() + size_;
-  }
-
-  // =========================================================================
-  // String Output - not hot path, called for UCI output
-  // =========================================================================
-
-  /// Returns a UCI-compatible space-separated move string
-  [[nodiscard]] std::string str() const {
-    std::ostringstream os;
-    for (size_t i = 0; i < size_; ++i) {
-      if (i > 0) os << ' ';
-      os << data_[i].str();
+    constexpr void clear() noexcept {
+      size_ = 0;
     }
-    return os.str();
-  }
 
-  /// Returns a verbose string representation with size info
-  [[nodiscard]] std::string strVerbose() const {
-    std::ostringstream os;
-    os << "MoveList: size=" << size_ << " [";
-    for (size_t i = 0; i < size_; ++i) {
-      os << data_[i];
-      if (i + 1 < size_) os << ", ";
+    /// Resize the container to newSize elements (must be <= current size)
+    /// This is O(1) since the underlying array is fixed-size
+    constexpr void resize(const size_t newSize) noexcept {
+      assert(newSize <= size_ && "StaticMoveList::resize() can only shrink");
+      size_ = newSize;
     }
-    os << "]";
-    return os.str();
-  }
 
-  // =========================================================================
-  // Stream Output
-  // =========================================================================
+    // =========================================================================
+    // Size & Capacity
+    // =========================================================================
 
-  friend std::ostream& operator<<(std::ostream& os, const StaticMoveList& ml) {
-    os << ml.str();
-    return os;
-  }
-};
+    [[nodiscard]] constexpr size_t size() const noexcept {
+      return size_;
+    }
 
-//=============================================================================
-// Type Aliases
-//=============================================================================
+    [[nodiscard]] constexpr bool empty() const noexcept {
+      return size_ == 0;
+    }
 
-/// MoveList for move generation - capacity 256 covers all legal move scenarios
-/// (theoretical maximum is ~218 legal moves in any position)
-using MoveList = StaticMoveList<256>;
+    [[nodiscard]] static constexpr size_t capacity() noexcept {
+      return Capacity;
+    }
 
-/// VariationStack for tracking current search variation - capacity 128 (MAX_PLY)
-using VariationStack = StaticMoveList<128>;
+    [[nodiscard]] static constexpr size_t max_size() noexcept {
+      return Capacity;
+    }
 
-#endif// FRANKYCPP_STATICMOVELIST_H
+    // =========================================================================
+    // Element Access - unchecked (fast)
+    // =========================================================================
+
+    [[nodiscard]] constexpr Move& operator[](const size_t i) noexcept {
+      assert(i < size_ && "StaticMoveList index out of bounds");
+      return data_[i];
+    }
+
+    [[nodiscard]] constexpr const Move& operator[](const size_t i) const noexcept {
+      assert(i < size_ && "StaticMoveList index out of bounds");
+      return data_[i];
+    }
+
+    [[nodiscard]] constexpr Move& back() noexcept {
+      assert(size_ > 0 && "back() on empty StaticMoveList");
+      return data_[size_ - 1];
+    }
+
+    [[nodiscard]] constexpr const Move& back() const noexcept {
+      assert(size_ > 0 && "back() on empty StaticMoveList");
+      return data_[size_ - 1];
+    }
+
+    [[nodiscard]] constexpr Move& front() noexcept {
+      assert(size_ > 0 && "front() on empty StaticMoveList");
+      return data_[0];
+    }
+
+    [[nodiscard]] constexpr const Move& front() const noexcept {
+      assert(size_ > 0 && "front() on empty StaticMoveList");
+      return data_[0];
+    }
+
+    // =========================================================================
+    // Element Access - bounds checked (throws std::out_of_range)
+    // =========================================================================
+
+    [[nodiscard]] constexpr Move& at(const size_t i) {
+      if (i >= size_) {
+        throw std::out_of_range("StaticMoveList::at() index out of range");
+      }
+      return data_[i];
+    }
+
+    [[nodiscard]] constexpr const Move& at(const size_t i) const {
+      if (i >= size_) {
+        throw std::out_of_range("StaticMoveList::at() index out of range");
+      }
+      return data_[i];
+    }
+
+    // =========================================================================
+    // Data Access
+    // =========================================================================
+
+    [[nodiscard]] constexpr Move* data() noexcept {
+      return data_.data();
+    }
+
+    [[nodiscard]] constexpr const Move* data() const noexcept {
+      return data_.data();
+    }
+
+    // =========================================================================
+    // Iterator Support - for range-based for loops and STL algorithms
+    // =========================================================================
+
+    [[nodiscard]] constexpr Move* begin() noexcept {
+      return data_.data();
+    }
+
+    [[nodiscard]] constexpr Move* end() noexcept {
+      return data_.data() + size_;
+    }
+
+    [[nodiscard]] constexpr const Move* begin() const noexcept {
+      return data_.data();
+    }
+
+    [[nodiscard]] constexpr const Move* end() const noexcept {
+      return data_.data() + size_;
+    }
+
+    [[nodiscard]] constexpr const Move* cbegin() const noexcept {
+      return data_.data();
+    }
+
+    [[nodiscard]] constexpr const Move* cend() const noexcept {
+      return data_.data() + size_;
+    }
+
+    // =========================================================================
+    // String Output - not hot path, called for UCI output
+    // =========================================================================
+
+    /// Returns a UCI-compatible space-separated move string
+    [[nodiscard]] std::string str() const {
+      std::ostringstream os;
+      for (size_t i = 0; i < size_; ++i) {
+        if (i > 0) os << ' ';
+        os << data_[i].str();
+      }
+      return os.str();
+    }
+
+    /// Returns a verbose string representation with size info
+    [[nodiscard]] std::string strVerbose() const {
+      std::ostringstream os;
+      os << "MoveList: size=" << size_ << " [";
+      for (size_t i = 0; i < size_; ++i) {
+        os << data_[i];
+        if (i + 1 < size_) os << ", ";
+      }
+      os << "]";
+      return os.str();
+    }
+
+    // =========================================================================
+    // Stream Output
+    // =========================================================================
+
+    friend std::ostream& operator<<(std::ostream& os, const StaticMoveList& ml) {
+      os << ml.str();
+      return os;
+    }
+  };
+
+  //=============================================================================
+  // Type Aliases
+  //=============================================================================
+
+  /// MoveList for move generation - capacity 256 covers all legal move scenarios
+  /// (theoretical maximum is ~218 legal moves in any position)
+  using MoveList = StaticMoveList<256>;
+
+  /// VariationStack for tracking current search variation - capacity 128 (MAX_PLY)
+  using VariationStack = StaticMoveList<128>;
+
+} // namespace chess
+
+#endif // FRANKYCPP_STATICMOVELIST_H

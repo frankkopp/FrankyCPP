@@ -56,7 +56,7 @@
 #include "types/types.h"
 #include <array>
 
-namespace Values {
+namespace chess::Values {
 
   /// Note: Tables are defined upright for easier reading (a8 at top-left).
   /// They are transposed during compile-time initialization to match
@@ -210,63 +210,102 @@ namespace Values {
   // Compute per-piece per-square midgame value
   constexpr Value computePosMid(const Piece pc, const Square sq) {
     switch (pc) {
-      case WHITE_KING:   return static_cast<Value>(kingMidGame[63 - sq]);
-      case WHITE_PAWN:   return static_cast<Value>(pawnsMidGame[63 - sq]);
-      case WHITE_KNIGHT: return static_cast<Value>(knightMidGame[63 - sq]);
-      case WHITE_BISHOP: return static_cast<Value>(bishopMidGame[63 - sq]);
-      case WHITE_ROOK:   return static_cast<Value>(rookMidGame[63 - sq]);
-      case WHITE_QUEEN:  return static_cast<Value>(queenMidGame[63 - sq]);
-      case BLACK_KING:   return static_cast<Value>(kingMidGame[sq]);
-      case BLACK_PAWN:   return static_cast<Value>(pawnsMidGame[sq]);
-      case BLACK_KNIGHT: return static_cast<Value>(knightMidGame[sq]);
-      case BLACK_BISHOP: return static_cast<Value>(bishopMidGame[sq]);
-      case BLACK_ROOK:   return static_cast<Value>(rookMidGame[sq]);
-      case BLACK_QUEEN:  return static_cast<Value>(queenMidGame[sq]);
+      case WHITE_KING:
+        return static_cast<Value>(kingMidGame[63 - sq]);
+      case WHITE_PAWN:
+        return static_cast<Value>(pawnsMidGame[63 - sq]);
+      case WHITE_KNIGHT:
+        return static_cast<Value>(knightMidGame[63 - sq]);
+      case WHITE_BISHOP:
+        return static_cast<Value>(bishopMidGame[63 - sq]);
+      case WHITE_ROOK:
+        return static_cast<Value>(rookMidGame[63 - sq]);
+      case WHITE_QUEEN:
+        return static_cast<Value>(queenMidGame[63 - sq]);
+      case BLACK_KING:
+        return static_cast<Value>(kingMidGame[sq]);
+      case BLACK_PAWN:
+        return static_cast<Value>(pawnsMidGame[sq]);
+      case BLACK_KNIGHT:
+        return static_cast<Value>(knightMidGame[sq]);
+      case BLACK_BISHOP:
+        return static_cast<Value>(bishopMidGame[sq]);
+      case BLACK_ROOK:
+        return static_cast<Value>(rookMidGame[sq]);
+      case BLACK_QUEEN:
+        return static_cast<Value>(queenMidGame[sq]);
       case PIECE_NONE:
       case PIECE_LENGTH:
-      default: return VALUE_ZERO;
+      default:
+        return VALUE_ZERO;
     }
   }
 
   // Compute per-piece per-square endgame value
   constexpr Value computePosEnd(const Piece pc, const Square sq) {
     switch (pc) {
-      case WHITE_KING:   return static_cast<Value>(kingEndGame[63 - sq]);
-      case WHITE_PAWN:   return static_cast<Value>(pawnsEndGame[63 - sq]);
-      case WHITE_KNIGHT: return static_cast<Value>(knightEndGame[63 - sq]);
-      case WHITE_BISHOP: return static_cast<Value>(bishopEndGame[63 - sq]);
-      case WHITE_ROOK:   return static_cast<Value>(rookEndGame[63 - sq]);
-      case WHITE_QUEEN:  return static_cast<Value>(queenEndGame[63 - sq]);
-      case BLACK_KING:   return static_cast<Value>(kingEndGame[sq]);
-      case BLACK_PAWN:   return static_cast<Value>(pawnsEndGame[sq]);
-      case BLACK_KNIGHT: return static_cast<Value>(knightEndGame[sq]);
-      case BLACK_BISHOP: return static_cast<Value>(bishopEndGame[sq]);
-      case BLACK_ROOK:   return static_cast<Value>(rookEndGame[sq]);
-      case BLACK_QUEEN:  return static_cast<Value>(queenEndGame[sq]);
+      case WHITE_KING:
+        return static_cast<Value>(kingEndGame[63 - sq]);
+      case WHITE_PAWN:
+        return static_cast<Value>(pawnsEndGame[63 - sq]);
+      case WHITE_KNIGHT:
+        return static_cast<Value>(knightEndGame[63 - sq]);
+      case WHITE_BISHOP:
+        return static_cast<Value>(bishopEndGame[63 - sq]);
+      case WHITE_ROOK:
+        return static_cast<Value>(rookEndGame[63 - sq]);
+      case WHITE_QUEEN:
+        return static_cast<Value>(queenEndGame[63 - sq]);
+      case BLACK_KING:
+        return static_cast<Value>(kingEndGame[sq]);
+      case BLACK_PAWN:
+        return static_cast<Value>(pawnsEndGame[sq]);
+      case BLACK_KNIGHT:
+        return static_cast<Value>(knightEndGame[sq]);
+      case BLACK_BISHOP:
+        return static_cast<Value>(bishopEndGame[sq]);
+      case BLACK_ROOK:
+        return static_cast<Value>(rookEndGame[sq]);
+      case BLACK_QUEEN:
+        return static_cast<Value>(queenEndGame[sq]);
       case PIECE_NONE:
       case PIECE_LENGTH:
-      default: return VALUE_ZERO;
+      default:
+        return VALUE_ZERO;
     }
   }
 
   // Compute per-piece per-square blended value for a given game phase
   constexpr Value computePosBlend(const Piece pc, const Square sq, const int gp) {
     switch (pc) {
-      case WHITE_KING:   return static_cast<Value>(calcPosValueWhite(sq, gp, kingMidGame, kingEndGame));
-      case WHITE_PAWN:   return static_cast<Value>(calcPosValueWhite(sq, gp, pawnsMidGame, pawnsEndGame));
-      case WHITE_KNIGHT: return static_cast<Value>(calcPosValueWhite(sq, gp, knightMidGame, knightEndGame));
-      case WHITE_BISHOP: return static_cast<Value>(calcPosValueWhite(sq, gp, bishopMidGame, bishopEndGame));
-      case WHITE_ROOK:   return static_cast<Value>(calcPosValueWhite(sq, gp, rookMidGame, rookEndGame));
-      case WHITE_QUEEN:  return static_cast<Value>(calcPosValueWhite(sq, gp, queenMidGame, queenEndGame));
-      case BLACK_KING:   return static_cast<Value>(calcPosValueBlack(sq, gp, kingMidGame, kingEndGame));
-      case BLACK_PAWN:   return static_cast<Value>(calcPosValueBlack(sq, gp, pawnsMidGame, pawnsEndGame));
-      case BLACK_KNIGHT: return static_cast<Value>(calcPosValueBlack(sq, gp, knightMidGame, knightEndGame));
-      case BLACK_BISHOP: return static_cast<Value>(calcPosValueBlack(sq, gp, bishopMidGame, bishopEndGame));
-      case BLACK_ROOK:   return static_cast<Value>(calcPosValueBlack(sq, gp, rookMidGame, rookEndGame));
-      case BLACK_QUEEN:  return static_cast<Value>(calcPosValueBlack(sq, gp, queenMidGame, queenEndGame));
+      case WHITE_KING:
+        return static_cast<Value>(calcPosValueWhite(sq, gp, kingMidGame, kingEndGame));
+      case WHITE_PAWN:
+        return static_cast<Value>(calcPosValueWhite(sq, gp, pawnsMidGame, pawnsEndGame));
+      case WHITE_KNIGHT:
+        return static_cast<Value>(calcPosValueWhite(sq, gp, knightMidGame, knightEndGame));
+      case WHITE_BISHOP:
+        return static_cast<Value>(calcPosValueWhite(sq, gp, bishopMidGame, bishopEndGame));
+      case WHITE_ROOK:
+        return static_cast<Value>(calcPosValueWhite(sq, gp, rookMidGame, rookEndGame));
+      case WHITE_QUEEN:
+        return static_cast<Value>(calcPosValueWhite(sq, gp, queenMidGame, queenEndGame));
+      case BLACK_KING:
+        return static_cast<Value>(calcPosValueBlack(sq, gp, kingMidGame, kingEndGame));
+      case BLACK_PAWN:
+        return static_cast<Value>(calcPosValueBlack(sq, gp, pawnsMidGame, pawnsEndGame));
+      case BLACK_KNIGHT:
+        return static_cast<Value>(calcPosValueBlack(sq, gp, knightMidGame, knightEndGame));
+      case BLACK_BISHOP:
+        return static_cast<Value>(calcPosValueBlack(sq, gp, bishopMidGame, bishopEndGame));
+      case BLACK_ROOK:
+        return static_cast<Value>(calcPosValueBlack(sq, gp, rookMidGame, rookEndGame));
+      case BLACK_QUEEN:
+        return static_cast<Value>(calcPosValueBlack(sq, gp, queenMidGame, queenEndGame));
       case PIECE_NONE:
       case PIECE_LENGTH:
-      default: return VALUE_ZERO;
+      default:
+        return VALUE_ZERO;
     }
   }
 
@@ -312,6 +351,6 @@ namespace Values {
     return arr;
   }();
 
-} // namespace Values
+} // namespace chess::Values
 
-#endif //FRANKYCPP_EVALUATION_H
+#endif // FRANKYCPP_EVALUATION_H

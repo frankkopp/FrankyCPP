@@ -452,12 +452,6 @@ $env:VAR = "value"
 
 **CRITICAL: Always ask user before committing! Never commit without explicit permission.**
 
-**CRITICAL: Do NOT attempt to verify commits after running `git commit`!**
-- The terminal output often doesn't display properly
-- Trust that the commit worked if no error was shown
-- Don't run `git status`, `git log`, or `git show` to verify commits
-- Just proceed with the next task after committing
-
 **CRITICAL: Avoid commands that pause for user input!**
 
 #### ✅ Safe Git Commands (No User Input)

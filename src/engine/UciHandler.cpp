@@ -26,12 +26,17 @@
 #include "chesscore/Perft.h"
 #include "chesscore/Position.h"
 #include "common/Logging.h"
+#include "config/ConfigManager.h"
 #include "types/types.h"
 #include "version.h"
-#include "config/ConfigManager.h"
 
 #include <memory>
 #include <thread>
+
+using namespace engine;
+using namespace chess;
+using namespace config;
+using namespace common;
 
 UciHandler::UciHandler()
     : pPosition(std::make_unique<Position>()),
@@ -144,7 +149,7 @@ void UciHandler::setOptionCommand(std::istringstream& inStream) {
 // TODO: check if we need to clear more state here!
 void UciHandler::uciNewGameCommand() const {
   LOG__INFO(Logger::get().UCIHAND_LOG, "New Game");
-  pSearch->newGame();  // Clears TT, History, and recreates Evaluator (clears PawnTT)
+  pSearch->newGame(); // Clears TT, History, and recreates Evaluator (clears PawnTT)
 }
 
 void UciHandler::positionCommand(std::istringstream& inStream) {
@@ -155,11 +160,11 @@ void UciHandler::positionCommand(std::istringstream& inStream) {
 
   // setup position with startpos or fen
   std::string fen = START_POSITION_FEN;
-  if (token == "startpos") {// just keep default
+  if (token == "startpos") { // just keep default
     inStream >> token;
   }
   else if (token == "fen") {
-    fen.clear();// reset to empty
+    fen.clear(); // reset to empty
     while (inStream >> token && token != "moves") {
       fen += token + " ";
     }
@@ -236,14 +241,16 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
     inStream >> token;
     try {
       target = std::stoi(token);
-    } catch (...) { /* ignored */ }
+    } catch (...) { /* ignored */
+    }
   };
 
   auto readUint64tToken = [&](uint64_t& target) {
     inStream >> token;
     try {
       target = std::stoi(token);
-    } catch (...) { /* ignored */ }
+    } catch (...) { /* ignored */
+    }
   };
 
   auto readMillisToken = [&](milliseconds& target, const bool setTimeControl) {
@@ -253,7 +260,8 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
       if (setTimeControl) {
         searchLimits.timeControl = true;
       }
-    } catch (...) { /* ignored */ }
+    } catch (...) { /* ignored */
+    }
   };
 
   while (inStream >> token) {
@@ -399,9 +407,10 @@ void UciHandler::perftCommand(std::istringstream& inStream) const {
     }
   }
   std::thread perftThread([&](const int s, const int e) {
-    pPerft->perft(pPosition->strFen(),s, e, true);
+    pPerft->perft(pPosition->strFen(), s, e, true);
     sendString("Perft finished.");
-  }, startDepth, endDepth);
+  },
+                          startDepth, endDepth);
   perftThread.detach();
 }
 
@@ -419,8 +428,7 @@ void UciHandler::benchCommand(std::istringstream& inStream) const {
         uciError(std::format("bench depth must be between 1 and {}. Was '{}'", MAX_DEPTH, token));
         return;
       }
-    }
-    catch (...) {
+    } catch (...) {
       uciError(std::format("bench depth invalid: '{}'", token));
       return;
     }
@@ -433,8 +441,7 @@ void UciHandler::benchCommand(std::istringstream& inStream) const {
         uciError(std::format("bench hash must be between 1 and 65536 MB. Was '{}'", token));
         return;
       }
-    }
-    catch (...) {
+    } catch (...) {
       uciError(std::format("bench hash invalid: '{}'", token));
       return;
     }
@@ -447,8 +454,7 @@ void UciHandler::benchCommand(std::istringstream& inStream) const {
         uciError(std::format("bench threads must be between 1 and 256. Was '{}'", token));
         return;
       }
-    }
-    catch (...) {
+    } catch (...) {
       uciError(std::format("bench threads invalid: '{}'", token));
       return;
     }

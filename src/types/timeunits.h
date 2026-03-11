@@ -50,9 +50,9 @@
 //=============================================================================
 
 #include <chrono>
+#include <ctime>
 #include <iomanip>
 #include <sstream>
-#include <ctime>
 
 using namespace std::chrono_literals;
 using namespace std::chrono;
@@ -79,14 +79,14 @@ inline std::string format_now(const char* fmt = "%Y-%m-%d %H:%M:%S") {
 /// @param s  Duration in milliseconds
 /// @return   String like "5,021 s"
 inline std::string str(const milliseconds s) {
-  return std::format(deLocale, "{:.3Lf} s", static_cast<double>(s.count()) / 1e3);
+  return std::format(projectLocale, "{:.3Lf} s", static_cast<double>(s.count()) / 1e3);
 }
 
 /// Formats nanoseconds as seconds with 9 decimal places (DE locale).
 /// @param s  Duration in nanoseconds
 /// @return   String like "5,021456234 s"
 inline std::string str(const nanoseconds s) {
-  return std::format(deLocale, "{:.9Lf} s", static_cast<double>(s.count()) / 1e9);
+  return std::format(projectLocale, "{:.9Lf} s", static_cast<double>(s.count()) / 1e9);
 }
 
 /// Formats a duration as a human-readable string with full breakdown.
@@ -96,11 +96,11 @@ inline std::string str(const nanoseconds s) {
 /// @param timeunit Duration to format
 /// @return         String like "20d:13h:53m:19s:008.800.999ns" or "100ns"
 /// @throws std::overflow_error if duration exceeds int64 nanosecond range
-template <class Rep, class Period>
+template<class Rep, class Period>
 std::string format(duration<Rep, Period> timeunit) {
 
   // protect against overflow when converting to nanoseconds
-  using Unit         = duration<double, nanoseconds::period>;
+  using Unit           = duration<double, nanoseconds::period>;
   constexpr Unit min   = nanoseconds::min();
   constexpr Unit max   = nanoseconds::max();
   const Unit sTimeUnit = timeunit;
@@ -109,7 +109,7 @@ std::string format(duration<Rep, Period> timeunit) {
 
   nanoseconds ns = duration_cast<nanoseconds>(timeunit);
   std::ostringstream os;
-  bool foundNonZero  = false;
+  bool foundNonZero = false;
   os.fill('0');
   const auto y = duration_cast<duration<int, std::ratio<86400 * 365>>>(ns);
   if (y.count()) {
@@ -158,7 +158,7 @@ std::string format(duration<Rep, Period> timeunit) {
     os << us.count() << ".";
     ns -= us;
   }
-  os << std::setw(3) << ns.count() << "ns" ;
+  os << std::setw(3) << ns.count() << "ns";
   return os.str();
 }
 
@@ -176,7 +176,7 @@ inline uint64_t nps(const uint64_t nodes, const uint64_t ns) {
 /// @param nodes  Number of nodes processed
 /// @param timeunit  Elapsed time as chrono duration
 /// @return       Nodes per second (returns nodes if duration is 0)
-template <typename T>
+template<typename T>
 uint64_t nps(const uint64_t nodes, T timeunit) {
   const nanoseconds ns = duration_cast<nanoseconds>(timeunit);
   if (!ns.count()) return nodes;
@@ -205,4 +205,4 @@ constexpr auto currentTime = high_resolution_clock::now;
 #define NANOSECONDS(t) std::chrono::duration_cast<std::chrono::nanoseconds>(t)
 #define MILLISECONDS(t) std::chrono::duration_cast<std::chrono::milliseconds>(t)
 
-#endif//FRANKYCPP_TIMEUNITS_H
+#endif // FRANKYCPP_TIMEUNITS_H

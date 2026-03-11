@@ -20,9 +20,8 @@ results/
 │   │   └── v1.1_vs_v1.0_blitz.state.json  # Auto-deleted on completion
 │   └── ...
 │
-└── comparisons/         # Version comparison reports
-    ├── FrankyCPP-v1.1_vs_FrankyCPP-v1.0_20260201_153000.txt
-    └── ...
+└── benchmarks/          # Benchmark results (consolidated JSON)
+    └── benchmarks.json
 ```
 
 ### State Files (`.state/` directory)
@@ -103,8 +102,9 @@ All string fields are JSON-escaped in the output.
 
 ```json
 {
-  "arenaVersion": "v1.1",
-  "timestamp": "2026-02-01T14:30:22Z",
+  "arenaVersion": "v1.5",
+  "timestamp": "2026-03-08T14:30:22Z",
+  "tag": "QuietSee",
 
   "testSuite": {
     "name": "WAC",
@@ -113,8 +113,8 @@ All string fields are JSON-escaped in the output.
 
   "engine": {
     "name": "FrankyCPP",
-    "version": "v1.1",
-    "path": "cmake-build-win-release/src/FrankyCPP_v1.1.exe"
+    "version": "v1.5",
+    "path": "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe"
   },
 
   "summary": {
@@ -221,37 +221,38 @@ All string fields are JSON-escaped in the output.
 
 ```json
 {
-  "arenaVersion": "v1.1",
-  "timestamp": "2026-02-06T10:00:00Z",
+  "arenaVersion": "v1.5",
+  "timestamp": "2026-03-08T10:00:00Z",
+  "tag": "QuietSee",
 
   "match": {
-    "name": "v1.1_vs_FrankyGo_blitz_100",
-    "timeControl": "60+0.6",
-    "rounds": 100
+    "name": "v1.5_vs_v1.4_300s",
+    "timeControl": "300+0",
+    "rounds": 104
   },
 
   "engine1": {
     "name": "FrankyCPP",
-    "version": "v1.1",
-    "path": "Release/FrankyCPP_V1.1/FrankyCPP_v1.1.exe"
+    "version": "v1.5",
+    "path": "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe"
   },
 
   "engine2": {
-    "name": "FrankyGo",
-    "version": "v1.0.3",
-    "path": "D:/Games/FrankyChess/FrankyGo/FrankyGo.exe"
+    "name": "FrankyCPP",
+    "version": "v1.4",
+    "path": "Release/FrankyCPP_v1.4/FrankyCPP_v1.4.exe"
   },
 
   "results": {
-    "engine1Wins": 32,
-    "engine2Wins": 19,
-    "draws": 49,
-    "engine1Score": 56.5,
-    "engine2Score": 43.5,
-    "eloDifference": 45.2
+    "engine1Wins": 42,
+    "engine2Wins": 20,
+    "draws": 42,
+    "engine1Score": 63.0,
+    "engine2Score": 41.0,
+    "eloDifference": 74.6
   },
 
-  "pgnPath": "results/matches/v1.1_vs_FrankyGo_blitz_100.pgn",
+  "pgnPath": "results/matches/v1.5_vs_v1.4_300s.pgn",
   "durationMs": 3600000
 }
 ```
@@ -264,6 +265,7 @@ All string fields are JSON-escaped in the output.
 |-------|------|-------------|
 | `arenaVersion` | String | Arena version that ran this match |
 | `timestamp` | String | ISO 8601 timestamp (UTC) when match started |
+| `tag` | String | Feature tag for tracking (e.g., "QuietSee") |
 | `match` | Object | Match configuration details |
 | `engine1` | Object | First engine identification |
 | `engine2` | Object | Second engine identification |

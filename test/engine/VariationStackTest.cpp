@@ -21,6 +21,8 @@
 
 #include <gtest/gtest.h>
 
+using namespace chess;
+
 class VariationStackTest : public ::testing::Test {
 protected:
   VariationStack stack;

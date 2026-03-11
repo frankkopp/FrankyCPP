@@ -23,43 +23,45 @@
 #include <gtest/gtest.h>
 
 #include "common/Logging.h"
-#include "types/globals.h" // for deLocale used by Logging macros
+#include "types/globals.h" // for projectLocale used by Logging macros
 
 #include <memory>
-#include <vector>
 #include <string>
+#include <vector>
 
 #include <spdlog/logger.h>
 #include <spdlog/sinks/base_sink.h>
 #include <spdlog/spdlog.h>
 
+using namespace common;
+
 namespace {
 
-// Simple sink that captures message payloads for assertions.
-template <typename Mutex>
-class vector_sink final : public spdlog::sinks::base_sink<Mutex> {
-public:
-  std::vector<std::string> messages;
+  // Simple sink that captures message payloads for assertions.
+  template<typename Mutex>
+  class vector_sink final : public spdlog::sinks::base_sink<Mutex> {
+  public:
+    std::vector<std::string> messages;
 
-protected:
-  void sink_it_(const spdlog::details::log_msg &msg) override {
-    spdlog::memory_buf_t buf;
-    this->formatter_->format(msg, buf);
-    messages.emplace_back(buf.data(), buf.size());
+  protected:
+    void sink_it_(const spdlog::details::log_msg& msg) override {
+      spdlog::memory_buf_t buf;
+      this->formatter_->format(msg, buf);
+      messages.emplace_back(buf.data(), buf.size());
+    }
+    void flush_() override {}
+  };
+
+  using vector_sink_mt = vector_sink<spdlog::details::null_mutex>;
+
+  std::shared_ptr<spdlog::logger> make_test_logger(const std::string& name,
+                                                   std::shared_ptr<vector_sink_mt>& out_sink) {
+    out_sink    = std::make_shared<vector_sink_mt>();
+    auto logger = std::make_shared<spdlog::logger>(name, out_sink);
+    // Keep default pattern at logger level; payload we capture is message content only.
+    logger->set_level(spdlog::level::trace);
+    return logger;
   }
-  void flush_() override {}
-};
-
-using vector_sink_mt = vector_sink<spdlog::details::null_mutex>;
-
-std::shared_ptr<spdlog::logger> make_test_logger(const std::string &name,
-                                                 std::shared_ptr<vector_sink_mt> &out_sink) {
-  out_sink = std::make_shared<vector_sink_mt>();
-  auto logger = std::make_shared<spdlog::logger>(name, out_sink);
-  // Keep default pattern at logger level; payload we capture is message content only.
-  logger->set_level(spdlog::level::trace);
-  return logger;
-}
 
 } // namespace
 
@@ -125,7 +127,7 @@ TEST(LoggingMacros, CompileTimeGatingDiscardsArgsWhenTraceDisabled) {
 TEST(LoggerRuntime, LevelChangeByPtrAndName) {
   std::shared_ptr<vector_sink_mt> sink;
   const std::string name = "RuntimeLevelTest";
-  auto logger = make_test_logger(name, sink);
+  auto logger            = make_test_logger(name, sink);
 
   // Register so setLoggerLevelByName can find it.
   spdlog::register_logger(logger);

@@ -72,115 +72,122 @@
 #include "config/EvalConfigData.h"
 #include "types/types.h"
 
-struct SearchConfigData;
+namespace config {
+  struct SearchConfigData;
+}
 
-class Evaluator {
+namespace engine {
+  using namespace chess;
 
-  /// Pointer to shared PawnTT (owned by Search, shared across all threads)
-  /// Set via setPawnTT() before evaluation. May be nullptr if pawn caching disabled.
-  PawnTT* pawnCache = nullptr;
+  class Evaluator {
 
-  /// Thread-local scratch variables for evaluation
-  Score score{};
-  Score tmpScore{};
+    /// Pointer to shared PawnTT (owned by Search, shared across all threads)
+    /// Set via setPawnTT() before evaluation. May be nullptr if pawn caching disabled.
+    PawnTT* pawnCache = nullptr;
 
-  // reference to the Eval Config Data
-  const EvalConfigData& EvalConfig;
+    /// Thread-local scratch variables for evaluation
+    Score score{};
+    Score tmpScore{};
 
-public:
-  Evaluator();
+    // reference to the Eval Config Data
+    const config::EvalConfigData& EvalConfig;
 
-  /// Sets the shared pawn cache. Must be called before evaluate() if pawn caching is enabled.
-  /// The PawnTT is owned by Search and shared across all Evaluator instances.
-  /// @param pawnTT  Pointer to shared PawnTT (may be nullptr to disable caching)
-  void setPawnTT(PawnTT* pawnTT) { pawnCache = pawnTT; }
+  public:
+    Evaluator();
 
-  /// Evaluates the position and returns a score from the side-to-move perspective.
-  /// Combines material, positional, pawn structure, mobility, and king safety.
-  /// @param p  The position to evaluate
-  /// @return   Positive value = advantage for side to move
-  Value evaluate(const Position& p);
+    /// Sets the shared pawn cache. Must be called before evaluate() if pawn caching is enabled.
+    /// The PawnTT is owned by Search and shared across all Evaluator instances.
+    /// @param pawnTT  Pointer to shared PawnTT (may be nullptr to disable caching)
+    void setPawnTT(PawnTT* pawnTT) { pawnCache = pawnTT; }
 
-  /// Evaluates pawn structure (isolated, doubled, passed, connected pawns).
-  /// Results are cached in PawnTT for efficiency.
-  /// @param p  The position to evaluate
-  /// @param s  Score struct to update (midgame + endgame components)
-  void pawnEval(const Position& p, Score& s);
+    /// Evaluates the position and returns a score from the side-to-move perspective.
+    /// Combines material, positional, pawn structure, mobility, and king safety.
+    /// @param p  The position to evaluate
+    /// @return   Positive value = advantage for side to move
+    Value evaluate(const Position& p);
 
-  /// Interpolates midgame and endgame scores based on game phase.
-  /// @param score            Score with midgame and endgame components
-  /// @param gamePhaseFactor  0.0 (endgame) to 1.0 (midgame)
-  /// @return                 Interpolated value
-  static Value valueFromScore(const Score& score, double gamePhaseFactor);
+    /// Evaluates pawn structure (isolated, doubled, passed, connected pawns).
+    /// Results are cached in PawnTT for efficiency.
+    /// @param p  The position to evaluate
+    /// @param s  Score struct to update (midgame + endgame components)
+    void pawnEval(const Position& p, Score& s);
 
-  /// Converts value from white's perspective to side-to-move perspective.
-  /// @param p      The position (to determine side to move)
-  /// @param value  Value from white's perspective
-  /// @return       Value from side-to-move perspective
-  static Value finalEval(const Position& p, Value value);
+    /// Interpolates midgame and endgame scores based on game phase.
+    /// @param score            Score with midgame and endgame components
+    /// @param gamePhaseFactor  0.0 (endgame) to 1.0 (midgame)
+    /// @return                 Interpolated value
+    static Value valueFromScore(const Score& score, double gamePhaseFactor);
 
-  /// Evaluates all pieces of a given type for the specified color.
-  /// @param p          The position to evaluate
-  /// @param s          Score struct to update
-  /// @param us         Color of pieces to evaluate
-  /// @param pieceType  Type of piece to evaluate
-  void pieceEval(const Position& p, Score& s, Color us, PieceType pieceType);
+    /// Converts value from white's perspective to side-to-move perspective.
+    /// @param p      The position (to determine side to move)
+    /// @param value  Value from white's perspective
+    /// @return       Value from side-to-move perspective
+    static Value finalEval(const Position& p, Value value);
 
-  /// Evaluates knight placement (mobility, outposts, centralization).
-  /// @param p    The position to evaluate
-  /// @param s    Score struct to update
-  /// @param us   Color of the knight
-  /// @param them Opponent color
-  /// @param sq   Square of the knight
-  void knightEval(const Position& p, Score& s, Color us, Color them, Square sq) const;
+    /// Evaluates all pieces of a given type for the specified color.
+    /// @param p          The position to evaluate
+    /// @param s          Score struct to update
+    /// @param us         Color of pieces to evaluate
+    /// @param pieceType  Type of piece to evaluate
+    void pieceEval(const Position& p, Score& s, Color us, PieceType pieceType);
 
-  /// Evaluates bishop placement (mobility, diagonals, fianchetto).
-  /// @param p    The position to evaluate
-  /// @param s    Score struct to update
-  /// @param us   Color of the bishop
-  /// @param them Opponent color
-  /// @param sq   Square of the bishop
-  void bishopEval(const Position& p, Score& s, Color us, Color them, Square sq) const;
+    /// Evaluates knight placement (mobility, outposts, centralization).
+    /// @param p    The position to evaluate
+    /// @param s    Score struct to update
+    /// @param us   Color of the knight
+    /// @param them Opponent color
+    /// @param sq   Square of the knight
+    void knightEval(const Position& p, Score& s, Color us, Color them, Square sq) const;
 
-  /// Evaluates rook placement (open files, 7th rank, connectivity).
-  /// @param p    The position to evaluate
-  /// @param s    Score struct to update
-  /// @param us   Color of the rook
-  /// @param them Opponent color
-  /// @param sq   Square of the rook
-  void rookEval(const Position& p, Score& s, Color us, Color them, Square sq) const;
+    /// Evaluates bishop placement (mobility, diagonals, fianchetto).
+    /// @param p    The position to evaluate
+    /// @param s    Score struct to update
+    /// @param us   Color of the bishop
+    /// @param them Opponent color
+    /// @param sq   Square of the bishop
+    void bishopEval(const Position& p, Score& s, Color us, Color them, Square sq) const;
 
-  /// Evaluates queen placement (mobility, king proximity).
-  /// @param p    The position to evaluate
-  /// @param s    Score struct to update
-  /// @param us   Color of the queen
-  /// @param them Opponent color
-  /// @param sq   Square of the queen
-  void queenEval(const Position& p, Score& s, Color us, Color them, Square sq) const;
+    /// Evaluates rook placement (open files, 7th rank, connectivity).
+    /// @param p    The position to evaluate
+    /// @param s    Score struct to update
+    /// @param us   Color of the rook
+    /// @param them Opponent color
+    /// @param sq   Square of the rook
+    void rookEval(const Position& p, Score& s, Color us, Color them, Square sq) const;
 
-  /// Evaluates king safety (pawn shield, attacker proximity, castling).
-  /// @param p   The position to evaluate
-  /// @param s   Score struct to update
-  /// @param us  Color of the king
-  void kingEval(const Position& p, Score& s, Color us) const;
+    /// Evaluates queen placement (mobility, king proximity).
+    /// @param p    The position to evaluate
+    /// @param s    Score struct to update
+    /// @param us   Color of the queen
+    /// @param them Opponent color
+    /// @param sq   Square of the queen
+    void queenEval(const Position& p, Score& s, Color us, Color them, Square sq) const;
+
+    /// Evaluates king safety (pawn shield, attacker proximity, castling).
+    /// @param p   The position to evaluate
+    /// @param s   Score struct to update
+    /// @param us  Color of the king
+    void kingEval(const Position& p, Score& s, Color us) const;
 
 #ifdef EVAL_ENABLE_PREFETCH
-  /// Prefetches pawn cache entry for the given key into CPU cache.
-  /// No-op if pawnCache is nullptr.
-  void prefetch(const ZobristKey key) {
-    if (pawnCache) {
-      pawnCache->prefetch(key);
+    /// Prefetches pawn cache entry for the given key into CPU cache.
+    /// No-op if pawnCache is nullptr.
+    void prefetch(const ZobristKey key) const {
+      if (pawnCache) {
+        pawnCache->prefetch(key);
+      }
     }
-  }
 #endif
 
-  /// Resets the evaluator state for a new game.
-  /// Note: PawnTT is managed by Search, not Evaluator.
-  /// score and tmpScore don't need clearing - they are reset at the start
-  /// of evaluate() and pawnEval() respectively before each use.
-  void reset() {
-    // Nothing to reset - scratch variables are reset per-call
-  }
-};
+    /// Resets the evaluator state for a new game.
+    /// Note: PawnTT is managed by Search, not Evaluator.
+    /// score and tmpScore don't need clearing - they are reset at the start
+    /// of evaluate() and pawnEval() respectively before each use.
+    void reset() {
+      // Nothing to reset - scratch variables are reset per-call
+    }
+  };
 
-#endif// FRANKYCPP_EVALUATOR_H
+} // namespace engine
+
+#endif // FRANKYCPP_EVALUATOR_H

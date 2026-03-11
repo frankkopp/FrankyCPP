@@ -27,7 +27,8 @@
 #include <yaml-cpp/yaml.h>
 
 #include "config/ConfigManager.h"
-#include "config/ConfigMode.h"
+
+using namespace config;
 
 
 namespace {
@@ -56,7 +57,7 @@ namespace {
   std::filesystem::path writeInvalidYamlToFile(const std::string& stem) {
     const auto p = uniquePath(stem);
     std::ofstream ofs(p);
-    ofs << "not: [valid";// intentionally malformed YAML
+    ofs << "not: [valid"; // intentionally malformed YAML
     return p;
   }
 
@@ -195,4 +196,4 @@ namespace {
     EXPECT_NE(def.find("TEMPO:"), std::string::npos);
   }
 
-}// namespace
+} // namespace

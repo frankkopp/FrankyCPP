@@ -1,0 +1,35 @@
+{
+  "arenaVersion": "v1.5",
+  "timestamp": "2026-03-08T22:22:35Z",
+  "tag": "baseAfterTtBuckets",
+
+  "match": {
+    "name": "v1.5_vs_v1.4_300s",
+    "timeControl": "300+0",
+    "rounds": 100
+  },
+
+  "engine1": {
+    "name": "FrankyCPP v1.5",
+    "version": "v1.5",
+    "path": "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe"
+  },
+
+  "engine2": {
+    "name": "FrankyCPP v1.4",
+    "version": "v1.4",
+    "path": "Release/FrankyCPP_v1.4/FrankyCPP_v1.4.exe"
+  },
+
+  "results": {
+    "engine1Wins": 44,
+    "engine2Wins": 18,
+    "draws": 38,
+    "engine1Score": 63.0,
+    "engine2Score": 37.0,
+    "eloDifference": 92.5
+  },
+
+  "pgnPath": "results/matches/v1.5_vs_v1.4_300s.pgn",
+  "durationMs": 14884708
+}

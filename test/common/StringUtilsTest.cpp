@@ -25,6 +25,8 @@
 
 using testing::Eq;
 
+using namespace common;
+
 class StringUtilsTest : public testing::Test {
 public:
   static void SetUpTestSuite() {
@@ -103,15 +105,15 @@ TEST_F(StringUtilsTest, parseIntWithWhitespace) {
 }
 
 TEST_F(StringUtilsTest, parseIntInvalidInput) {
-  EXPECT_THROW((void)parseInt(""), std::invalid_argument);
-  EXPECT_THROW((void)parseInt("abc"), std::invalid_argument);
-  EXPECT_THROW((void)parseInt("99999999999999999999"), std::out_of_range);
+  EXPECT_THROW((void) parseInt(""), std::invalid_argument);
+  EXPECT_THROW((void) parseInt("abc"), std::invalid_argument);
+  EXPECT_THROW((void) parseInt("99999999999999999999"), std::out_of_range);
 }
 
 TEST_F(StringUtilsTest, parseIntPartialMatch) {
   // std::stoi parses until invalid character - this is expected behavior
-  EXPECT_EQ(12, parseInt("12.34"));  // stops at decimal point
-  EXPECT_EQ(42, parseInt("42abc"));  // stops at letter
+  EXPECT_EQ(12, parseInt("12.34")); // stops at decimal point
+  EXPECT_EQ(42, parseInt("42abc")); // stops at letter
 }
 
 //=============================================================================
@@ -127,8 +129,8 @@ TEST_F(StringUtilsTest, parseDoubleValidInput) {
 }
 
 TEST_F(StringUtilsTest, parseDoubleInvalidInput) {
-  EXPECT_THROW((void)parseDouble(""), std::invalid_argument);
-  EXPECT_THROW((void)parseDouble("abc"), std::invalid_argument);
+  EXPECT_THROW((void) parseDouble(""), std::invalid_argument);
+  EXPECT_THROW((void) parseDouble("abc"), std::invalid_argument);
 }
 
 //=============================================================================
@@ -184,9 +186,9 @@ TEST_F(StringUtilsTest, parseIntOrValidInput) {
 
 TEST_F(StringUtilsTest, parseIntOrInvalidInput) {
   // Returns default on invalid input (and logs warning)
-  EXPECT_EQ(0, parseIntOr("abc"));           // default default is 0
-  EXPECT_EQ(999, parseIntOr("abc", 999));    // custom default
-  EXPECT_EQ(-1, parseIntOr("", -1));         // empty string
+  EXPECT_EQ(0, parseIntOr("abc"));        // default default is 0
+  EXPECT_EQ(999, parseIntOr("abc", 999)); // custom default
+  EXPECT_EQ(-1, parseIntOr("", -1));      // empty string
   EXPECT_EQ(42, parseIntOr("not_a_number", 42));
 }
 
@@ -234,7 +236,7 @@ TEST_F(StringUtilsTest, tryParseIntInvalidInput) {
 TEST_F(StringUtilsTest, tryParseIntDistinguishZeroFromInvalid) {
   // This is the key use case for optional variant
   const auto validZero = tryParseInt("0");
-  const auto invalid = tryParseInt("invalid");
+  const auto invalid   = tryParseInt("invalid");
 
   EXPECT_TRUE(validZero.has_value());
   EXPECT_EQ(0, validZero.value());

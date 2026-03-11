@@ -20,15 +20,15 @@ cmake --build cmake-build-wsl-debug-tsan
 
 # Run tests with ASLR disabled (required on WSL2)
 # Option 1: Use setarch to disable ASLR for this process only
-setarch $(uname -m) -R ./cmake-build-wsl-debug-tsan/test/FrankyCPP_v1.4_Test --gtest_filter=-*SpeedTests.*:-*TimingTests.*
+setarch $(uname -m) -R ./cmake-build-wsl-debug-tsan/test/FrankyCPP_v1.5_Test --gtest_filter=-*SpeedTests.*:-*TimingTests.*
 
 # Option 2: Disable ASLR system-wide (revert with value 2)
 sudo sysctl -w kernel.randomize_va_space=0
-./cmake-build-wsl-debug-tsan/test/FrankyCPP_v1.4_Test --gtest_filter=-*SpeedTests.*:-*TimingTests.*
+./cmake-build-wsl-debug-tsan/test/FrankyCPP_v1.5_Test --gtest_filter=-*SpeedTests.*:-*TimingTests.*
 sudo sysctl -w kernel.randomize_va_space=2  # Re-enable after testing
 
 # Run specific tests (e.g., SMP tests only)
-setarch $(uname -m) -R ./cmake-build-wsl-debug-tsan/test/FrankyCPP_v1.4_Test --gtest_filter=*SMP*
+setarch $(uname -m) -R ./cmake-build-wsl-debug-tsan/test/FrankyCPP_v1.5_Test --gtest_filter=*SMP*
 ```
 
 ### For Memory Corruption (Use-After-Free, Buffer Overflow) - Use ASAN
@@ -40,16 +40,16 @@ cmake --preset win-debug-asan
 cmake --build cmake-build-win-debug-asan
 
 # Run tests - ASAN will print detailed reports on errors
-.\cmake-build-win-debug-asan\test\FrankyCPP_v1.4_Test.exe
+.\cmake-build-win-debug-asan\test\FrankyCPP_v1.5_Test.exe
 
-.\cmake-build-win-relwithdebinfo-asan\test\FrankyCPP_v1.4_Test.exe --gtest_filter=-*SpeedTests.*:-*TimingTests.*
+.\cmake-build-win-relwithdebinfo-asan\test\FrankyCPP_v1.5_Test.exe --gtest_filter=-*SpeedTests.*:-*TimingTests.*
 ```
 
 **WSL (GCC/Clang):**
 ```bash
 cmake --preset wsl-debug-asan
 cmake --build cmake-build-wsl-debug-asan
-./cmake-build-wsl-debug-asan/test/FrankyCPP_v1.4_Test
+./cmake-build-wsl-debug-asan/test/FrankyCPP_v1.5_Test
 ```
 
 ---
@@ -245,7 +245,7 @@ race:spdlog::*
 
 Then run:
 ```bash
-TSAN_OPTIONS="suppressions=tsan_suppressions.txt" ./cmake-build-wsl-debug-tsan/test/FrankyCPP_v1.4_Test
+TSAN_OPTIONS="suppressions=tsan_suppressions.txt" ./cmake-build-wsl-debug-tsan/test/FrankyCPP_v1.5_Test
 ```
 
 ---
@@ -262,7 +262,7 @@ TSAN_OPTIONS="suppressions=tsan_suppressions.txt" ./cmake-build-wsl-debug-tsan/t
    ```bash
    for i in {1..10}; do
      echo "Run $i"
-     ./cmake-build-wsl-debug-tsan/test/FrankyCPP_v1.4_Test --gtest_filter=SearchSmpTest.* 2>&1 | tee run_$i.log
+     ./cmake-build-wsl-debug-tsan/test/FrankyCPP_v1.5_Test --gtest_filter=SearchSmpTest.* 2>&1 | tee run_$i.log
    done
    ```
 

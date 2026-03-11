@@ -61,97 +61,101 @@
 #include <cassert>
 #include <cstdint>
 
-/// Performs one step of xorshift64* PRNG algorithm.
-/// Algorithm by Sebastiano Vigna (2014), based on Marsaglia's xorshift (2003).
-/// Produces high-quality pseudo-random 64-bit values.
-/// @param s  PRNG state (modified in place)
-/// @return   Next pseudo-random value
-constexpr uint64_t xorshift64star_step(uint64_t& s) {
-  s ^= s >> 12;
-  s ^= s << 25;
-  s ^= s >> 27;
-  return s * 2685821657736338717ULL;
-}
+namespace chess {
 
-/// Pseudo-Random Number Generator using xorshift64* algorithm.
-/// Algorithm by Sebastiano Vigna (2014). Used for magic number generation
-/// and Zobrist key initialization.
-class PRNG {
-  uint64_t s;
-
-  uint64_t rand64() {
-    return xorshift64star_step(s);
+  /// Performs one step of xorshift64* PRNG algorithm.
+  /// Algorithm by Sebastiano Vigna (2014), based on Marsaglia's xorshift (2003).
+  /// Produces high-quality pseudo-random 64-bit values.
+  /// @param s  PRNG state (modified in place)
+  /// @return   Next pseudo-random value
+  constexpr uint64_t xorshift64star_step(uint64_t& s) {
+    s ^= s >> 12;
+    s ^= s << 25;
+    s ^= s >> 27;
+    return s * 2685821657736338717ULL;
   }
 
-public:
-  /// Creates a PRNG with the given seed.
-  /// @param seed  Initial state (must be non-zero)
-  explicit PRNG(const uint64_t seed) : s(seed) { assert(seed); }
+  /// Pseudo-Random Number Generator using xorshift64* algorithm.
+  /// Algorithm by Sebastiano Vigna (2014). Used for magic number generation
+  /// and Zobrist key initialization.
+  class PRNG {
+    uint64_t s;
 
-  /// Generates a random value of type T.
-  /// @tparam T  Return type (typically uint64_t or Bitboard)
-  /// @return    Random value
-  template <typename T>
-  T rand() { return T(rand64()); }
-
-  /// Generates a sparse random value with ~1/8 of bits set on average.
-  /// Used for fast magic number initialization.
-  /// @tparam T  Return type
-  /// @return    Sparse random value
-  template <typename T>
-  T sparse_rand() { return T(rand64() & rand64() & rand64()); }
-};
-
-/// Zobrist hashing tables for position identification.
-namespace Zobrist {
-  /// Compile-time PRNG step (same algorithm as PRNG class).
-  constexpr uint64_t xorshift64star_next(uint64_t& s) {
-    return xorshift64star_step(s);
-  }
-
-  /// Compile-time generated Zobrist tables.
-  struct Tables {
-    std::array<std::array<ZobristKey, SQ_LENGTH>, PIECE_LENGTH> pieces{};
-    std::array<ZobristKey, CR_LENGTH> castlingRights{};
-    std::array<ZobristKey, FILE_LENGTH> enPassantFile{};
-    ZobristKey nextPlayer{};
-
-    /// Generates all Zobrist keys at compile time using a fixed seed.
-    constexpr Tables() {
-      uint64_t state = 1070372ULL; // fixed seed for reproducibility
-      // pieces
-      for (int pc = 0; pc < PIECE_LENGTH; ++pc) {
-        for (int sq = 0; sq < SQ_LENGTH; ++sq) {
-          pieces[pc][sq] = xorshift64star_next(state);
-        }
-      }
-      // castling rights [0..15]
-      for (int cr = 0; cr < CR_LENGTH; ++cr) {
-        castlingRights[cr] = xorshift64star_next(state);
-      }
-      // en passant files A..H only; FILE_NONE remains default 0
-      for (int f = FILE_A; f <= FILE_H; ++f) {
-        enPassantFile[static_cast<std::size_t>(f)] = xorshift64star_next(state);
-      }
-      // next player
-      nextPlayer = xorshift64star_next(state);
+    uint64_t rand64() {
+      return xorshift64star_step(s);
     }
+
+  public:
+    /// Creates a PRNG with the given seed.
+    /// @param seed  Initial state (must be non-zero)
+    explicit PRNG(const uint64_t seed) : s(seed) { assert(seed); }
+
+    /// Generates a random value of type T.
+    /// @tparam T  Return type (typically uint64_t or Bitboard)
+    /// @return    Random value
+    template<typename T>
+    T rand() { return T(rand64()); }
+
+    /// Generates a sparse random value with ~1/8 of bits set on average.
+    /// Used for fast magic number initialization.
+    /// @tparam T  Return type
+    /// @return    Sparse random value
+    template<typename T>
+    T sparse_rand() { return T(rand64() & rand64() & rand64()); }
   };
 
-  /// Compile-time instantiated tables.
-  inline constexpr Tables T{};
+  /// Zobrist hashing tables for position identification.
+  namespace Zobrist {
+    /// Compile-time PRNG step (same algorithm as PRNG class).
+    constexpr uint64_t xorshift64star_next(uint64_t& s) {
+      return xorshift64star_step(s);
+    }
 
-  /// Zobrist piece keys indexed by [piece][square].
-  inline constexpr auto& pieces = T.pieces;
+    /// Compile-time generated Zobrist tables.
+    struct Tables {
+      std::array<std::array<ZobristKey, SQ_LENGTH>, PIECE_LENGTH> pieces{};
+      std::array<ZobristKey, CR_LENGTH> castlingRights{};
+      std::array<ZobristKey, FILE_LENGTH> enPassantFile{};
+      ZobristKey nextPlayer{};
 
-  /// Zobrist castling rights keys indexed by [castlingRights].
-  inline constexpr auto& castlingRights = T.castlingRights;
+      /// Generates all Zobrist keys at compile time using a fixed seed.
+      constexpr Tables() {
+        uint64_t state = 1070372ULL; // fixed seed for reproducibility
+        // pieces
+        for (int pc = 0; pc < PIECE_LENGTH; ++pc) {
+          for (int sq = 0; sq < SQ_LENGTH; ++sq) {
+            pieces[pc][sq] = xorshift64star_next(state);
+          }
+        }
+        // castling rights [0..15]
+        for (int cr = 0; cr < CR_LENGTH; ++cr) {
+          castlingRights[cr] = xorshift64star_next(state);
+        }
+        // en passant files A..H only; FILE_NONE remains default 0
+        for (int f = FILE_A; f <= FILE_H; ++f) {
+          enPassantFile[static_cast<std::size_t>(f)] = xorshift64star_next(state);
+        }
+        // next player
+        nextPlayer = xorshift64star_next(state);
+      }
+    };
 
-  /// Zobrist en passant file keys indexed by [file].
-  inline constexpr auto& enPassantFile = T.enPassantFile;
+    /// Compile-time instantiated tables.
+    inline constexpr Tables T{};
 
-  /// Zobrist key XORed when Black is to move.
-  inline constexpr ZobristKey nextPlayer = T.nextPlayer;
-}// namespace Zobrist
+    /// Zobrist piece keys indexed by [piece][square].
+    inline constexpr auto& pieces = T.pieces;
+
+    /// Zobrist castling rights keys indexed by [castlingRights].
+    inline constexpr auto& castlingRights = T.castlingRights;
+
+    /// Zobrist en passant file keys indexed by [file].
+    inline constexpr auto& enPassantFile = T.enPassantFile;
+
+    /// Zobrist key XORed when Black is to move.
+    inline constexpr ZobristKey nextPlayer = T.nextPlayer;
+  } // namespace Zobrist
+
+} // namespace chess
 
 #endif // FRANKYCPP_ZOBRIST_H

@@ -22,6 +22,7 @@
 
 #include "types/types.h"
 
+using namespace chess;
 TEST(FileTest, ConstantsAndValidity) {
   EXPECT_TRUE(FILE_A.isValid());
   EXPECT_TRUE(FILE_H.isValid());

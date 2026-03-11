@@ -1,0 +1,35 @@
+{
+  "arenaVersion": "v1.5",
+  "timestamp": "2026-03-09T10:41:03Z",
+  "tag": "baseAfterTtBuckets",
+
+  "match": {
+    "name": "v1.5_vs_Stockfish18_2200_300s",
+    "timeControl": "300+0",
+    "rounds": 100
+  },
+
+  "engine1": {
+    "name": "FrankyCPP v1.5",
+    "version": "v1.5",
+    "path": "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe"
+  },
+
+  "engine2": {
+    "name": "Stockfish 18",
+    "version": "18-2200",
+    "path": "D:/_DEV/Stockfish/src/stockfish.exe"
+  },
+
+  "results": {
+    "engine1Wins": 80,
+    "engine2Wins": 16,
+    "draws": 4,
+    "engine1Score": 82.0,
+    "engine2Score": 18.0,
+    "eloDifference": 263.4
+  },
+
+  "pgnPath": "results/matches/v1.5_vs_Stockfish18_2200_300s.pgn",
+  "durationMs": 14622176
+}

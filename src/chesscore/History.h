@@ -54,26 +54,30 @@
 #include <array>
 #include <cstring>
 
-/// Stores move ordering heuristic data for the search.
-/// Updated during search and used by MoveGenerator for move sorting.
-struct History {
-  /// History heuristic table: counts beta cutoffs per move.
-  /// Indexed by [color][from_square][to_square].
-  /// Higher values indicate moves that frequently cause cutoffs.
-  std::array<std::array<std::array<int, 64>, 64>, 2> historyCount{};
+namespace chess {
 
-  /// Counter move table: stores the move that refuted a previous move.
-  /// Indexed by [prev_from_square][prev_to_square].
-  /// Returns the move that caused a cutoff after the indexed move was played.
-  std::array<std::array<Move, 64>, 64> counterMoves{};
+  /// Stores move ordering heuristic data for the search.
+  /// Updated during search and used by MoveGenerator for move sorting.
+  struct History {
+    /// History heuristic table: counts beta cutoffs per move.
+    /// Indexed by [color][from_square][to_square].
+    /// Higher values indicate moves that frequently cause cutoffs.
+    std::array<std::array<std::array<int, 64>, 64>, 2> historyCount{};
 
-  /// Reset all history data to initial state.
-  /// More efficient than assigning a new instance as it operates in-place.
-  void reset() {
-    // Use memset for efficient bulk zeroing (~49KB total)
-    std::memset(historyCount.data(), 0, sizeof(historyCount));
-    std::memset(counterMoves.data(), 0, sizeof(counterMoves));
-  }
-};
+    /// Counter move table: stores the move that refuted a previous move.
+    /// Indexed by [prev_from_square][prev_to_square].
+    /// Returns the move that caused a cutoff after the indexed move was played.
+    std::array<std::array<Move, 64>, 64> counterMoves{};
 
-#endif//FRANKYCPP_HISTORY_H
+    /// Reset all history data to initial state.
+    /// More efficient than assigning a new instance as it operates in-place.
+    void reset() {
+      // Use memset for efficient bulk zeroing (~49KB total)
+      std::memset(historyCount.data(), 0, sizeof(historyCount));
+      std::memset(counterMoves.data(), 0, sizeof(counterMoves));
+    }
+  };
+
+} // namespace chess
+
+#endif // FRANKYCPP_HISTORY_H

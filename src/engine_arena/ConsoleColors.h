@@ -45,83 +45,78 @@
 
 namespace arena {
 
-/// ANSI color codes for console output
-namespace Color {
+  /// ANSI color codes for console output
+  namespace Color {
 
-// Check if stdout is a terminal (enables colors)
-inline bool isTerminal() {
-  static bool checked = false;
-  static bool isTTY = false;
-  if (!checked) {
-    isTTY = isatty(fileno(stdout)) != 0;
-    checked = true;
-  }
-  return isTTY;
-}
+    // Check if stdout is a terminal (enables colors)
+    inline bool isTerminal() {
+      static const bool isTTY = isatty(fileno(stdout)) != 0;
+      return isTTY;
+    }
 
-// ANSI escape codes (empty if not terminal)
-inline const char* RESET   = "\033[0m";
-inline const char* BOLD    = "\033[1m";
-inline const char* DIM     = "\033[2m";
+    // ANSI escape codes (empty if not terminal)
+    inline const char* RESET = "\033[0m";
+    inline const char* BOLD  = "\033[1m";
+    inline const char* DIM   = "\033[2m";
 
-// Foreground colors
-inline const char* RED     = "\033[31m";
-inline const char* GREEN   = "\033[32m";
-inline const char* YELLOW  = "\033[33m";
-inline const char* BLUE    = "\033[34m";
-inline const char* MAGENTA = "\033[35m";
-inline const char* CYAN    = "\033[36m";
-inline const char* WHITE   = "\033[37m";
+    // Foreground colors
+    inline const char* RED     = "\033[31m";
+    inline const char* GREEN   = "\033[32m";
+    inline const char* YELLOW  = "\033[33m";
+    inline const char* BLUE    = "\033[34m";
+    inline const char* MAGENTA = "\033[35m";
+    inline const char* CYAN    = "\033[36m";
+    inline const char* WHITE   = "\033[37m";
 
-// Bright foreground colors
-inline const char* BRIGHT_RED     = "\033[91m";
-inline const char* BRIGHT_GREEN   = "\033[92m";
-inline const char* BRIGHT_YELLOW  = "\033[93m";
-inline const char* BRIGHT_BLUE    = "\033[94m";
-inline const char* BRIGHT_MAGENTA = "\033[95m";
-inline const char* BRIGHT_CYAN    = "\033[96m";
-inline const char* BRIGHT_WHITE   = "\033[97m";
+    // Bright foreground colors
+    inline const char* BRIGHT_RED     = "\033[91m";
+    inline const char* BRIGHT_GREEN   = "\033[92m";
+    inline const char* BRIGHT_YELLOW  = "\033[93m";
+    inline const char* BRIGHT_BLUE    = "\033[94m";
+    inline const char* BRIGHT_MAGENTA = "\033[95m";
+    inline const char* BRIGHT_CYAN    = "\033[96m";
+    inline const char* BRIGHT_WHITE   = "\033[97m";
 
-/// Returns color code if terminal, empty string otherwise
-inline std::string color(const char* code) {
-  return isTerminal() ? code : "";
-}
+    /// Returns color code if terminal, empty string otherwise
+    inline std::string color(const char* code) {
+      return isTerminal() ? code : "";
+    }
 
-/// Wraps text with color code and reset
-inline std::string colorize(const std::string& text, const char* colorCode) {
-  if (!isTerminal()) return text;
-  return std::string(colorCode) + text + RESET;
-}
+    /// Wraps text with color code and reset
+    inline std::string colorize(const std::string& text, const char* colorCode) {
+      if (!isTerminal()) return text;
+      return std::string(colorCode) + text + RESET;
+    }
 
-/// Returns green text for positive values, red for negative, yellow for zero
-inline std::string colorDelta(const std::string& text, int delta) {
-  if (!isTerminal()) return text;
-  if (delta > 0) return std::string(GREEN) + text + RESET;
-  if (delta < 0) return std::string(RED) + text + RESET;
-  return std::string(YELLOW) + text + RESET;
-}
+    /// Returns green text for positive values, red for negative, yellow for zero
+    inline std::string colorDelta(const std::string& text, int delta) {
+      if (!isTerminal()) return text;
+      if (delta > 0) return std::string(GREEN) + text + RESET;
+      if (delta < 0) return std::string(RED) + text + RESET;
+      return std::string(YELLOW) + text + RESET;
+    }
 
-/// Returns green text for positive values, red for negative, yellow for zero
-inline std::string colorDelta(const std::string& text, double delta, double threshold = 0.001) {
-  if (!isTerminal()) return text;
-  if (delta > threshold) return std::string(GREEN) + text + RESET;
-  if (delta < -threshold) return std::string(RED) + text + RESET;
-  return std::string(YELLOW) + text + RESET;
-}
+    /// Returns green text for positive values, red for negative, yellow for zero
+    inline std::string colorDelta(const std::string& text, double delta, double threshold = 0.001) {
+      if (!isTerminal()) return text;
+      if (delta > threshold) return std::string(GREEN) + text + RESET;
+      if (delta < -threshold) return std::string(RED) + text + RESET;
+      return std::string(YELLOW) + text + RESET;
+    }
 
-} // namespace Color
+  } // namespace Color
 
-/// Symbols for quick visual indicators
-/// Using ASCII characters for Windows console compatibility
-namespace Symbol {
-  inline const char* CHECK     = "[+]";   // Improvement/pass
-  inline const char* CROSS     = "[X]";   // Regression/fail
-  inline const char* EQUAL     = "[=]";   // Equal/no change
-  inline const char* WARNING   = "[!]";   // Warning
-  inline const char* ARROW_UP  = "^";     // Improvement
-  inline const char* ARROW_DOWN= "v";     // Regression
-  inline const char* DASH      = "N/A";   // N/A or missing
-}
+  /// Symbols for quick visual indicators
+  /// Using ASCII characters for Windows console compatibility
+  namespace Symbol {
+    inline const char* CHECK      = "[+]"; // Improvement/pass
+    inline const char* CROSS      = "[X]"; // Regression/fail
+    inline const char* EQUAL      = "[=]"; // Equal/no change
+    inline const char* WARNING    = "[!]"; // Warning
+    inline const char* ARROW_UP   = "^";   // Improvement
+    inline const char* ARROW_DOWN = "v";   // Regression
+    inline const char* DASH       = "N/A"; // N/A or missing
+  } // namespace Symbol
 
 } // namespace arena
 

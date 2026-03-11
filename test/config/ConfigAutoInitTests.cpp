@@ -29,6 +29,7 @@
 #include "config/ConfigManager.h"
 #include "config/ConfigPaths.h"
 
+using namespace config;
 
 namespace {
 
@@ -74,8 +75,8 @@ namespace {
     ASSERT_TRUE(mgr.loadFromFiles());
 
     // Validate a couple of representative values from repo YAMLs
-    EXPECT_EQ(mgr.search().TT_SIZE_MB, 64);// from config/search.yaml
-    EXPECT_EQ(mgr.eval().TEMPO, 34);       // from config/eval.yaml
+    EXPECT_EQ(mgr.search().TT_SIZE_MB, 256); // from config/search.yaml
+    EXPECT_EQ(mgr.eval().TEMPO, 34);         // from config/eval.yaml
   }
 
   // Description: Confirms that when default config files are missing, loadFromFiles succeeds and keeps hard-coded defaults.
@@ -109,11 +110,11 @@ namespace {
     // Write malformed YAML
     {
       std::ofstream ofs(cfgDir / "search.yaml");
-      ofs << "not: [valid";// malformed
+      ofs << "not: [valid"; // malformed
     }
     {
       std::ofstream ofs(cfgDir / "eval.yaml");
-      ofs << "invalid: true: :";// malformed
+      ofs << "invalid: true: :"; // malformed
     }
 
     auto& mgr = ConfigManager::instance();
@@ -145,30 +146,30 @@ namespace {
     mgr.resetToDefaults();
 
     // Change some values
-    mgr.applyOverrides([](SearchConfigData& s, EvalConfigData& e){
-        s.TT_SIZE_MB = 999;
-        e.TEMPO = 1;
+    mgr.applyOverrides([](SearchConfigData& s, EvalConfigData& e) {
+      s.TT_SIZE_MB = 999;
+      e.TEMPO      = 1;
     });
 
     // Reset should restore the initially loaded YAML values (64 and 34 from repo configs)
     mgr.resetToDefaults();
-    EXPECT_EQ(mgr.search().TT_SIZE_MB, 64);
+    EXPECT_EQ(mgr.search().TT_SIZE_MB, 256);
     EXPECT_EQ(mgr.eval().TEMPO, 34);
 
     // Now move to a dir with missing config and load defaults (fallback)
     {
       const auto tmp = makeTempDir("reset_defaults_preserved");
       ScopedCwd cwd(tmp);
-        ASSERT_TRUE(mgr.loadFromFiles());
-        // In the absence of YAML, fallback values apply (TT_SIZE_MB defaults to hard-coded 64, TEMPO to 34 in current repo)
-        // but crucially, defaults stored at startup should remain unchanged.
+      ASSERT_TRUE(mgr.loadFromFiles());
+      // In the absence of YAML, fallback values apply (TT_SIZE_MB defaults to hard-coded 64, TEMPO to 34 in current repo)
+      // but crucially, defaults stored at startup should remain unchanged.
     }
 
     // After coming back, reset should still restore to the initially loaded YAML values
     mgr.resetToDefaults();
-    EXPECT_EQ(mgr.search().TT_SIZE_MB, 64);
+    EXPECT_EQ(mgr.search().TT_SIZE_MB, 256);
     EXPECT_EQ(mgr.eval().TEMPO, 34);
   }
 #endif
 
-}// namespace
+} // namespace

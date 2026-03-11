@@ -18,22 +18,26 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <memory>
-#include <thread>
 #include <ranges>
+#include <thread>
 
-#include "init.h"
 #include "chesscore/Position.h"
 #include "common/Logging.h"
 #include "config/ConfigRegistry.h"
 #include "engine/Search.h"
 #include "engine/UciHandler.h"
 #include "engine/UciOptions.h"
+#include "init.h"
 
 #include <gtest/gtest.h>
 
 using testing::Eq;
 
 using namespace std;
+using namespace engine;
+using namespace chess;
+using namespace config;
+using namespace common;
 
 class UCITest : public testing::Test {
 public:
@@ -325,7 +329,7 @@ TEST_F(UCITest, testingBugs) {
 }
 
 //
-//TEST_F(UCITest, goMateDepth) {
+// TEST_F(UCITest, goMateDepth) {
 //  ostringstream os;
 //  Engine engine;
 //
@@ -346,7 +350,7 @@ TEST_F(UCITest, testingBugs) {
 //  EXPECT_EQ(4, engine.getSearchLimitsPtr()->getMaxDepth());
 //}
 //
-//TEST_F(UCITest, goMateTime) {
+// TEST_F(UCITest, goMateTime) {
 //  ostringstream os;
 //  Engine engine;
 //
@@ -368,7 +372,7 @@ TEST_F(UCITest, testingBugs) {
 //  EXPECT_EQ(15, engine.getSearchLimitsPtr()->getMoveTime());
 //}
 //
-//TEST_F(UCITest, goMateDepthTime) {
+// TEST_F(UCITest, goMateDepthTime) {
 //  ostringstream os;
 //  Engine engine;
 //
@@ -391,7 +395,7 @@ TEST_F(UCITest, testingBugs) {
 //
 //}
 //
-//TEST_F(UCITest, goTimed) {
+// TEST_F(UCITest, goTimed) {
 //  ostringstream os;
 //  Engine engine;
 //
@@ -413,7 +417,7 @@ TEST_F(UCITest, testingBugs) {
 //  EXPECT_EQ(500'002, engine.getSearchLimitsPtr()->getBlackTime());
 //}
 //
-//TEST_F(UCITest, goMovestogo) {
+// TEST_F(UCITest, goMovestogo) {
 //  ostringstream os;
 //  Engine engine;
 //
@@ -437,7 +441,7 @@ TEST_F(UCITest, testingBugs) {
 //  EXPECT_EQ(20, engine.getSearchLimitsPtr()->getMovesToGo());
 //}
 //
-//TEST_F(UCITest, goInc) {
+// TEST_F(UCITest, goInc) {
 //  ostringstream os;
 //  Engine engine;
 //
@@ -462,7 +466,7 @@ TEST_F(UCITest, testingBugs) {
 //  EXPECT_EQ(2002, engine.getSearchLimitsPtr()->getBlackInc());
 //}
 //
-//TEST_F(UCITest, goMovetime) {
+// TEST_F(UCITest, goMovetime) {
 //  ostringstream os;
 //  Engine engine;
 //
@@ -485,7 +489,7 @@ TEST_F(UCITest, testingBugs) {
 //  EXPECT_EQ(5000, engine.getSearchLimitsPtr()->getMoveTime());
 //}
 //
-//TEST_F(UCITest, goDepth) {
+// TEST_F(UCITest, goDepth) {
 //  ostringstream os;
 //  Engine engine;
 //  // depth only limited
@@ -509,7 +513,7 @@ TEST_F(UCITest, testingBugs) {
 //  engine.waitWhileSearching();
 //}
 //
-//TEST_F(UCITest, goNodes) {
+// TEST_F(UCITest, goNodes) {
 //  ostringstream os;
 //  Engine engine;
 //  // nodes only limited
@@ -531,7 +535,7 @@ TEST_F(UCITest, testingBugs) {
 //  EXPECT_EQ(1'000'000, engine.getSearchLimitsPtr()->getNodes());
 //}
 //
-//TEST_F(UCITest, goNodesDepth) {
+// TEST_F(UCITest, goNodesDepth) {
 //  ostringstream os;
 //  Engine engine;
 //  // nodes and depth limited
@@ -553,7 +557,7 @@ TEST_F(UCITest, testingBugs) {
 //  EXPECT_EQ(1'000'000, engine.getSearchLimitsPtr()->getNodes());
 //}
 //
-//TEST_F(UCITest, goMoves) {
+// TEST_F(UCITest, goMoves) {
 //  ostringstream os;
 //  Engine engine;
 //  // move time limited with a list of moves to search
@@ -577,7 +581,7 @@ TEST_F(UCITest, testingBugs) {
 //  EXPECT_EQ(createMove("e2e4"), engine.getSearchLimitsPtr()->getMoves().back());
 //}
 //
-//TEST_F(UCITest, moveTest) {
+// TEST_F(UCITest, moveTest) {
 //  ostringstream os;
 //  Engine engine;
 //
@@ -600,7 +604,7 @@ TEST_F(UCITest, testingBugs) {
 //
 //}
 //
-//TEST_F(UCITest, moveTestDepth) {
+// TEST_F(UCITest, moveTestDepth) {
 //  ostringstream os;
 //  Engine engine;
 //
@@ -621,7 +625,7 @@ TEST_F(UCITest, testingBugs) {
 //
 //}
 //
-//TEST_F(UCITest, ponderRunningStop) {
+// TEST_F(UCITest, ponderRunningStop) {
 //  ostringstream os;
 //  Engine engine;
 //
@@ -655,7 +659,7 @@ TEST_F(UCITest, testingBugs) {
 //  // go wtime 37776 btime 45570 movestogo 25 ponder
 //}
 //
-//TEST_F(UCITest, ponderFinishedStop) {
+// TEST_F(UCITest, ponderFinishedStop) {
 //  ostringstream os;
 //  Engine engine;
 //
@@ -687,7 +691,7 @@ TEST_F(UCITest, testingBugs) {
 //
 //}
 //
-//TEST_F(UCITest, ponderMiss) {
+// TEST_F(UCITest, ponderMiss) {
 //  ostringstream os;
 //  Engine engine;
 //
@@ -754,7 +758,7 @@ TEST_F(UCITest, testingBugs) {
 //}
 //
 //
-//TEST_F(UCITest, ponderFinishedMiss) {
+// TEST_F(UCITest, ponderFinishedMiss) {
 //  ostringstream os;
 //  Engine engine;
 //
@@ -820,7 +824,7 @@ TEST_F(UCITest, testingBugs) {
 //  LOG__DEBUG(Logger::get().TEST_LOG, "SEARCH ENDED");
 //}
 //
-//TEST_F(UCITest, ponderFinishedHit) {
+// TEST_F(UCITest, ponderFinishedHit) {
 //  ostringstream os;
 //  Engine engine;
 //
@@ -873,7 +877,7 @@ TEST_F(UCITest, testingBugs) {
 //}
 //
 //
-//TEST_F(UCITest, ponderHit) {
+// TEST_F(UCITest, ponderHit) {
 //  ostringstream os;
 //  Engine engine;
 //
@@ -936,7 +940,7 @@ TEST_F(UCITest, testingBugs) {
 TEST_F(UCITest, setAllOptionsToDefaults) {
   // Build a single command string with all setoption commands
   // This simulates what Arena does: sends all options in one session
-  const auto& registry = ConfigRegistry::instance();
+  const auto& registry     = ConfigRegistry::instance();
   const auto uciOptionDefs = registry.uciOptions();
 
   // Build command string: uci + isready + all setoptions
@@ -944,7 +948,7 @@ TEST_F(UCITest, setAllOptionsToDefaults) {
 
   int optionCount = 0;
   for (const auto* def : uciOptionDefs) {
-    const string& optionName = def->uciName;
+    const string& optionName   = def->uciName;
     const string& defaultValue = def->defaultValue;
 
     commands += "setoption name " + optionName + " value " + defaultValue + "\n";
@@ -970,7 +974,7 @@ TEST_F(UCITest, setAllOptionsToDefaults) {
   LOG__INFO(Logger::get().TEST_LOG, "=== Verifying options ===");
   int successCount = 0;
   for (const auto* def : uciOptionDefs) {
-    const string& optionName = def->uciName;
+    const string& optionName   = def->uciName;
     const string& defaultValue = def->defaultValue;
 
     const UciOption* opt = UciOptions::getInstance()->getOption(optionName);
@@ -978,11 +982,13 @@ TEST_F(UCITest, setAllOptionsToDefaults) {
       if (opt->currentValue == defaultValue) {
         successCount++;
         LOG__DEBUG(Logger::get().TEST_LOG, "  OK: {} = {}", optionName, opt->currentValue);
-      } else {
+      }
+      else {
         LOG__WARN(Logger::get().TEST_LOG, "  MISMATCH: {} expected={}, actual={}",
                   optionName, defaultValue, opt->currentValue);
       }
-    } else {
+    }
+    else {
       LOG__ERROR(Logger::get().TEST_LOG, "  ERROR: Option '{}' not found!", optionName);
     }
   }

@@ -68,11 +68,11 @@
 
 #include "types/types.h"
 
+#include <atomic>
 #include <boost/asio.hpp>
 #include <boost/process/v1/async_pipe.hpp>
 #include <boost/process/v1/child.hpp>
 #include <boost/process/v1/io.hpp>
-#include <atomic>
 #include <condition_variable>
 #include <map>
 #include <memory>
@@ -83,148 +83,163 @@
 
 namespace arena {
 
-/// Result of a UCI engine search
-struct UCISearchResult {
-  std::string bestMove;       ///< UCI long algebraic (e.g., "e2e4"), empty on error
-  uint64_t nodes = 0;         ///< Total nodes searched
-  Depth depth = DEPTH_ZERO;   ///< Search depth reached
-  Value score = VALUE_NONE;   ///< Centipawn score from engine's perspective
-  milliseconds time{0};       ///< Time spent searching
-};
+  /// Result of a UCI engine search
+  struct UCISearchResult {
+    std::string bestMove;                   ///< UCI long algebraic (e.g., "e2e4"), empty on error
+    uint64_t nodes     = 0;                 ///< Total nodes searched
+    chess::Depth depth = chess::DEPTH_ZERO; ///< Search depth reached
+    chess::Value score = chess::VALUE_NONE; ///< Centipawn score from engine's perspective
+    milliseconds time{0};                   ///< Time spent searching
+  };
 
-/// External UCI chess engine interface
-class UCIEngine {
-  // Member fields
-  std::string enginePath_;                                    ///< Path to engine executable
-  std::string engineName_;                                    ///< Engine name from "id name"
+  /// External UCI chess engine interface
+  class UCIEngine {
+    // Member fields
+    std::string enginePath_; ///< Path to engine executable
+    std::string engineName_; ///< Engine name from "id name"
 
-  // Boost.Asio for async I/O
-  boost::asio::io_context ioContext_;                         ///< Asio I/O context
-  std::unique_ptr<boost::process::v1::async_pipe> pipeOut_;   ///< Async pipe from engine stdout
-  std::unique_ptr<boost::process::v1::opstream> pipeIn_;      ///< Sync stream to engine stdin
-  std::unique_ptr<boost::process::v1::child> childProcess_;   ///< Engine subprocess
+    // Boost.Asio for async I/O
+    boost::asio::io_context ioContext_;                       ///< Asio I/O context
+    std::unique_ptr<boost::process::v1::async_pipe> pipeOut_; ///< Async pipe from engine stdout
+    std::unique_ptr<boost::process::v1::opstream> pipeIn_;    ///< Sync stream to engine stdin
+    std::unique_ptr<boost::process::v1::child> childProcess_; ///< Engine subprocess
 
-  // Async reader state
-  boost::asio::streambuf readBuffer_;                         ///< Buffer for async reads
-  std::thread ioThread_;                                      ///< Thread running io_context
-  std::queue<std::string> lineQueue_;                         ///< Queue of lines read from engine
-  std::mutex queueMutex_;                                     ///< Protects lineQueue_
-  std::condition_variable queueCV_;                           ///< Signals when line available
-  std::atomic<bool> stopping_{false};                         ///< Signal to stop I/O
+    // Async reader state
+    boost::asio::streambuf readBuffer_; ///< Buffer for async reads
+    std::thread ioThread_;              ///< Thread running io_context
+    std::queue<std::string> lineQueue_; ///< Queue of lines read from engine
+    std::mutex queueMutex_;             ///< Protects lineQueue_
+    std::condition_variable queueCV_;   ///< Signals when line available
+    std::atomic<bool> stopping_{false}; ///< Signal to stop I/O
 
-  // Configuration
-  milliseconds initTimeout_{120000};                          ///< Default 2 minute timeout for initialization (book loading, etc.)
-  milliseconds searchTimeout_{30000};                         ///< Default 30 second timeout for search operations
-  bool debugMode_{false};                                     ///< Debug mode: print all UCI communication
-  std::string pendingUciOptions_;                             ///< UCI options to send before first isready
+    // Configuration
+    milliseconds initTimeout_{120000};  ///< Default 2 minute timeout for initialization (book loading, etc.)
+    milliseconds searchTimeout_{30000}; ///< Default 30 second timeout for search operations
+    bool debugMode_{false};             ///< Debug mode: print all UCI communication
+    std::string pendingUciOptions_;     ///< UCI options to send before first isready
 
-public:
-  // Constructors/Destructor
-  /// Construct and initialize UCI engine
-  /// @param enginePath Path to UCI engine executable
-  /// @param commandLineArgs Command-line arguments to pass to engine (e.g., "--nobook -hash 128")
-  /// @param debugMode Enable debug output (prints all UCI communication)
-  /// @param uciOptions UCI options to send before initialization (e.g., "OwnBook=false; Hash=128")
-  /// @throws std::runtime_error if engine not found or initialization fails
-  explicit UCIEngine(const std::string& enginePath, const std::string& commandLineArgs = "",
-                     bool debugMode = false, const std::string& uciOptions = "");
+  public:
+    // Constructors/Destructor
+    /// Construct and initialize UCI engine
+    /// @param enginePath Path to UCI engine executable
+    /// @param commandLineArgs Command-line arguments to pass to engine (e.g., "--nobook -hash 128")
+    /// @param debugMode Enable debug output (prints all UCI communication)
+    /// @param uciOptions UCI options to send before initialization (e.g., "OwnBook=false; Hash=128")
+    /// @throws std::runtime_error if engine not found or initialization fails
+    explicit UCIEngine(const std::string& enginePath, const std::string& commandLineArgs = "",
+                       bool debugMode = false, const std::string& uciOptions = "");
 
-  /// Destructor - stops engine
-  ~UCIEngine();
+    /// Destructor - stops engine
+    ~UCIEngine();
 
-  // Non-copyable, non-movable (owns threads and I/O resources)
-  UCIEngine(const UCIEngine&) = delete;
-  UCIEngine& operator=(const UCIEngine&) = delete;
-  UCIEngine(UCIEngine&&) = delete;
-  UCIEngine& operator=(UCIEngine&&) = delete;
+    // Non-copyable, non-movable (owns threads and I/O resources)
+    UCIEngine(const UCIEngine&)            = delete;
+    UCIEngine& operator=(const UCIEngine&) = delete;
+    UCIEngine(UCIEngine&&)                 = delete;
+    UCIEngine& operator=(UCIEngine&&)      = delete;
 
-  // Core functionality
-  /// Send ucinewgame to clear engine state (TT, history, etc.)
-  /// Call this between positions in a test suite to ensure clean state.
-  /// This is essential for fair, comparable test results.
-  void newGame();
+    // Core functionality
+    /// Send ucinewgame to clear engine state (TT, history, etc.)
+    /// Call this between positions in a test suite to ensure clean state.
+    /// This is essential for fair, comparable test results.
+    void newGame();
 
-  /// Set position for next search
-  /// @param fen FEN string representing position
-  /// @return True if successful, false on error
-  bool setPosition(const std::string& fen);
+    /// Set position for next search
+    /// @param fen FEN string representing position
+    /// @return True if successful, false on error
+    bool setPosition(const std::string& fen);
 
-  /// Search current position
-  /// @param timeMs Time limit in milliseconds
-  /// @param maxDepth Maximum search depth
-  /// @return Search result with best move (empty on error)
-  UCISearchResult search(milliseconds timeMs, Depth maxDepth);
+    /// Search current position
+    /// @param timeMs Time limit in milliseconds
+    /// @param maxDepth Maximum search depth
+    /// @return Search result with best move (empty on error)
+    UCISearchResult search(milliseconds timeMs, chess::Depth maxDepth);
 
-  /// Set timeout for initialization operations (uci, isready after start)
-  /// @param timeout Maximum time to wait for engine to initialize (default: 120s for book loading)
-  void setInitTimeout(const milliseconds timeout) { initTimeout_ = timeout; }
+    /// Set timeout for initialization operations (uci, isready after start)
+    /// @param timeout Maximum time to wait for engine to initialize (default: 120s for book loading)
+    void setInitTimeout(const milliseconds timeout) { initTimeout_ = timeout; }
 
-  /// Set absolute timeout for search operations
-  /// @param timeout Maximum time to wait for engine response
-  void setSearchTimeout(const milliseconds timeout) { searchTimeout_ = timeout; }
+    /// Set absolute timeout for search operations
+    /// @param timeout Maximum time to wait for engine response
+    void setSearchTimeout(const milliseconds timeout) { searchTimeout_ = timeout; }
 
-  /// Enable/disable debug mode (prints all UCI communication)
-  /// @param debug True to enable debug output, false to disable
-  void setDebugMode(const bool debug) { debugMode_ = debug; }
+    /// Enable/disable debug mode (prints all UCI communication)
+    /// @param debug True to enable debug output, false to disable
+    void setDebugMode(const bool debug) { debugMode_ = debug; }
 
-  /// Send UCI option to engine
-  /// @param name Option name
-  /// @param value Option value
-  void setOption(const std::string& name, const std::string& value);
+    /// Send UCI option to engine
+    /// @param name Option name
+    /// @param value Option value
+    void setOption(const std::string& name, const std::string& value);
 
-  /// Set multiple UCI options from string
-  /// Format: "Hash=256; Threads=4" or "Hash=256 Threads=4"
-  /// @param options Semicolon or space-separated "name=value" pairs
-  void setUciOptions(const std::string& options);
+    /// Set multiple UCI options from string
+    /// Format: "Hash=256; Threads=4" or "Hash=256 Threads=4"
+    /// @param options Semicolon or space-separated "name=value" pairs
+    void setUciOptions(const std::string& options);
 
-  /// Get option values from engine by re-sending "uci" and parsing option lines.
-  /// - For FrankyCPP: Returns actual current values via non-standard "current" field
-  /// - For other engines: Returns initial defaults only ("default" field is a fallback
-  ///   that does NOT reflect values changed via setoption - UCI has no standard query mechanism)
-  /// @return Map of option names to values (current for FrankyCPP, defaults for others)
-  std::map<std::string, std::string> getOptions();
+    /// Get option values from engine by re-sending "uci" and parsing option lines.
+    /// - For FrankyCPP: Returns actual current values via non-standard "current" field
+    /// - For other engines: Returns initial defaults only ("default" field is a fallback
+    ///   that does NOT reflect values changed via setoption - UCI has no standard query mechanism)
+    /// @return Map of option names to values (current for FrankyCPP, defaults for others)
+    std::map<std::string, std::string> getOptions();
 
-private:
-  // Private helper methods
-  /// Send command to engine
-  void sendCommand(const std::string& command) const;
+    /// Query and display engine configuration via UCI getoptions command.
+    /// For FrankyCPP engines, uses the non-standard "getoptions" command to get current values.
+    /// For other engines, this will likely not work (UCI has no standard query mechanism).
+    /// @param enginePath Path to the engine executable
+    /// @param commandLineArgs Optional command-line arguments for the engine
+    /// @return Formatted configuration string, or empty if not supported
+    static std::string queryEngineConfig(const std::string& enginePath, const std::string& commandLineArgs = "");
 
-  /// Read line from engine (with timeout)
-  /// @param line Output buffer for line
-  /// @param timeoutMs Maximum time to wait
-  /// @return True if line read successfully, false on timeout/error
-  bool readLine(std::string& line, milliseconds timeoutMs);
+  private:
+    // Private helper methods
 
-  /// Wait for specific response from engine
-  /// @param expectedResponse Response to wait for
-  /// @param timeoutMs Maximum time to wait
-  /// @return True if response received, false on timeout
-  bool waitForResponse(const std::string& expectedResponse, milliseconds timeoutMs);
+    /// Parse UCI option string into name/value pairs.
+    /// Supports formats: "Hash=256; Threads=4" (semicolon-separated)
+    ///                    "Hash=256 Threads=4" (space-separated)
+    ///                    "Hash=256" (single option)
+    /// @param options Raw option string
+    /// @return Vector of (name, value) pairs
+    static std::vector<std::pair<std::string, std::string>> parseOptionPairs(const std::string& options);
 
-  /// Initialize UCI protocol
-  void initializeUCI();
+    /// Send command to engine
+    void sendCommand(const std::string& command) const;
 
-  /// Send pending UCI options (called during initialization, before isready)
-  void sendPendingOptions() const;
+    /// Read line from engine (with timeout)
+    /// @param line Output buffer for line
+    /// @param timeoutMs Maximum time to wait
+    /// @return True if line read successfully, false on timeout/error
+    bool readLine(std::string& line, milliseconds timeoutMs);
 
-  /// Send "isready" and wait for "readyok"
-  /// @return True if engine ready, false on timeout
-  bool waitUntilReady();
+    /// Wait for specific response from engine
+    /// @param expectedResponse Response to wait for
+    /// @param timeoutMs Maximum time to wait
+    /// @return True if response received, false on timeout
+    bool waitForResponse(const std::string& expectedResponse, milliseconds timeoutMs);
 
-  /// Parse info line for search statistics
-  static void parseInfoLine(const std::string& line, UCISearchResult& result);
+    /// Initialize UCI protocol
+    void initializeUCI();
 
-  /// Start async reading from pipe
-  void startAsyncRead();
 
-  /// Handle completion of async read
-  void handleRead(const boost::system::error_code& ec, std::size_t bytesTransferred);
+    /// Send "isready" and wait for "readyok"
+    /// @return True if engine ready, false on timeout
+    bool waitUntilReady();
 
-public:
-  // Getters
-  /// Get engine name from "id name" response
-  [[nodiscard]] const std::string& getEngineName() const { return engineName_; }
-};
+    /// Parse info line for search statistics
+    static void parseInfoLine(const std::string& line, UCISearchResult& result);
+
+    /// Start async reading from pipe
+    void startAsyncRead();
+
+    /// Handle completion of async read
+    void handleRead(const boost::system::error_code& ec, std::size_t bytesTransferred);
+
+  public:
+    // Getters
+    /// Get engine name from "id name" response
+    [[nodiscard]] const std::string& getEngineName() const { return engineName_; }
+  };
 
 } // namespace arena
 

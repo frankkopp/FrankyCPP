@@ -21,7 +21,7 @@
 #include "chesscore/MoveGenerator.h"
 #include "common/Logging.h"
 
-#include <algorithm>// for std::replace
+#include <algorithm> // for std::replace
 #include <array>
 #include <filesystem>
 #include <string_view>
@@ -35,6 +35,8 @@ extern "C" {
 // Static assertions to verify FrankyCPP square encoding matches Fathom's expectations
 // Fathom uses Little-Endian Rank-File mapping: A1=0, H1=7, A8=56, H8=63
 //=============================================================================
+using namespace chess;
+
 static_assert(static_cast<int>(SQ_A1) == 0, "Square A1 must be 0 for Fathom compatibility");
 static_assert(static_cast<int>(SQ_H1) == 7, "Square H1 must be 7 for Fathom compatibility");
 static_assert(static_cast<int>(SQ_A8) == 56, "Square A8 must be 56 for Fathom compatibility");
@@ -48,13 +50,15 @@ static_assert(static_cast<int>(SQ_H3) == 23, "Square H3 must be 23 for Fathom EP
 static_assert(static_cast<int>(SQ_A6) == 40, "Square A6 must be 40 for Fathom EP compatibility");
 static_assert(static_cast<int>(SQ_H6) == 47, "Square H6 must be 47 for Fathom EP compatibility");
 
+using namespace common;
+
 namespace tablebase {
 
   namespace {
 
     // TB score constants - high values but below checkmate threshold
     // These values indicate a known win/loss from tablebase
-    constexpr auto TB_WIN_SCORE  = Value{9000};// Below VALUE_MAX (10000) to leave room for mate scores
+    constexpr auto TB_WIN_SCORE  = Value{9000}; // Below VALUE_MAX (10000) to leave room for mate scores
     constexpr auto TB_LOSS_SCORE = Value{-9000};
 
     /// Convert FrankyCPP Position to Fathom's required bitboard format
@@ -106,8 +110,8 @@ namespace tablebase {
 
       // Extract move components using Fathom macros
       // Fathom uses the same square mapping as FrankyCPP (A1=0, H1=7, A8=56, H8=63)
-      const auto from      = static_cast<Square>(TB_GET_FROM(fathomMove));
-      const auto to        = static_cast<Square>(TB_GET_TO(fathomMove));
+      const auto from = static_cast<Square>(TB_GET_FROM(fathomMove));
+      const auto to   = static_cast<Square>(TB_GET_TO(fathomMove));
 
       // Validate squares are within valid range (0-63)
       // Square.isValid() checks for 0..63 but we can be sure the from/to are >= 0
@@ -188,7 +192,7 @@ namespace tablebase {
       }
     }
 
-  }// anonymous namespace
+  } // anonymous namespace
 
   //=============================================================================
   // Tablebase Public Methods
@@ -276,8 +280,8 @@ namespace tablebase {
     // For 50-move aware results, use probeRoot, which calls tb_probe_root with the actual halfmove clock.
     const unsigned result = tb_probe_wdl(
       white, black, kings, queens, rooks, bishops, knights, pawns,
-      0,// rule50 - MUST be 0 for tb_probe_wdl (Fathom requirement)
-      0,// castling - MUST be 0 (we already verify in canProbe)
+      0, // rule50 - MUST be 0 for tb_probe_wdl (Fathom requirement)
+      0, // castling - MUST be 0 (we already verify in canProbe)
       ep, turn);
 
     if (result == TB_RESULT_FAILED) {
@@ -291,7 +295,7 @@ namespace tablebase {
     TBProbeResult result;
 
     if (!canProbe(pos)) {
-      return result;// Returns Failed by default
+      return result; // Returns Failed by default
     }
 
     // Convert position to Fathom format
@@ -307,13 +311,13 @@ namespace tablebase {
     const unsigned tbResult = tb_probe_root(
       white, black, kings, queens, rooks, bishops, knights, pawns,
       rule50,
-      0,// castling - must be 0 (we already check in canProbe)
+      0, // castling - must be 0 (we already check in canProbe)
       ep, turn,
-      nullptr// We don't need the full results array
+      nullptr // We don't need the full results array
     );
 
     if (tbResult == TB_RESULT_FAILED) {
-      return result;// Returns Failed by default
+      return result; // Returns Failed by default
     }
 
     // Extract WDL
@@ -485,4 +489,4 @@ namespace tablebase {
     LOG__INFO(Logger::get().TB_LOG, "Tablebase cache pre-warmed ({} positions probed)", probed);
   }
 
-}// namespace tablebase
+} // namespace tablebase

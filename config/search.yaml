@@ -10,6 +10,7 @@ CONFIG_SOURCE: "yaml-file"
 
 # Marker for smoke tests - ensures YAML file is present and parseable
 # DO NOT REMOVE - used by ConfigYamlSmokeTest
+# Keys starting with '_' are reserved for internal/test use and silently ignored by the parser.
 _YAML_SMOKE_TEST_MARKER: true
 
 # Number of threads to use for search (1 = single-threaded)
@@ -18,6 +19,10 @@ _YAML_SMOKE_TEST_MARKER: true
 # Multi-threading (Lazy SMP)
 # Depth at which to launch helper threads (allows TT priming)
 # SMP_HELPER_START_DEPTH: 4
+# Select best result from any thread after SMP search (not just main thread)
+# USE_BEST_THREAD_SELECTION: true
+# Score margin (centipawns) for best-thread depth vs score comparison
+# BEST_THREAD_SCORE_MARGIN: 50
 
 # Fixed overhead (milliseconds) deducted from available time per move to account for engine housekeeping
 # MOVE_OVERHEAD_MS: 10
@@ -58,7 +63,7 @@ _YAML_SMOKE_TEST_MARKER: true
 # Syzygy Tablebase settings
 # Path to Syzygy tablebase files (semicolon-separated on Windows, colon on Linux)
 # Leave empty to disable tablebase probing
-# TB_PATH: ""
+#TB_PATH: "D:/SYZYGY"
 
 # Root probing (once per search, for best move selection)
 # Probe tablebases at root for best move selection

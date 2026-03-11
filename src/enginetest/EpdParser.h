@@ -65,44 +65,49 @@
 #include <string_view>
 #include <vector>
 
-/// Parses EPD test files into Test objects.
-/// Stateless utility class with static methods.
-class EpdParser {
-  /// Cleans up an EPD line by removing comments and trimming whitespace.
-  /// Leading comments (starting with '#') remove the entire line.
-  /// Trailing comments (after content, starting with '#') are removed up to ';'.
-  /// @param line Line to clean
-  /// @return Cleaned line (empty string if line is pure comment)
-  [[nodiscard]] static std::string cleanUpLine(std::string_view line);
+namespace enginetest {
+  using namespace chess;
 
-  /// Parses test type from operation string.
-  /// @param typeStr Operation string ("bm", "am", or "dm")
-  /// @return TestType if valid, std::nullopt otherwise
-  [[nodiscard]] static std::optional<TestType> parseTestType(std::string_view typeStr);
+  /// Parses EPD test files into Test objects.
+  /// Stateless utility class with static methods.
+  class EpdParser {
+    /// Cleans up an EPD line by removing comments and trimming whitespace.
+    /// Leading comments (starting with '#') remove the entire line.
+    /// Trailing comments (after content, starting with '#') are removed up to ';'.
+    /// @param line Line to clean
+    /// @return Cleaned line (empty string if line is pure comment)
+    [[nodiscard]] static std::string cleanUpLine(std::string_view line);
 
-  /// Parses SAN moves for BM/AM tests.
-  /// Validates moves against the position and strips annotations.
-  /// @param movesStr Space-separated SAN moves (may include annotations like !, ?)
-  /// @param pos Position to validate moves against
-  /// @return MoveList of valid moves (empty if none valid)
-  [[nodiscard]] static MoveList parseMoves(std::string_view movesStr, const Position& pos);
+    /// Parses test type from operation string.
+    /// @param typeStr Operation string ("bm", "am", or "dm")
+    /// @return TestType if valid, std::nullopt otherwise
+    [[nodiscard]] static std::optional<TestType> parseTestType(std::string_view typeStr);
 
-  /// Parses mate depth for DM tests.
-  /// @param depthStr String representation of mate depth (e.g., "1", "3")
-  /// @return Depth value if valid positive integer, std::nullopt otherwise
-  [[nodiscard]] static std::optional<Depth> parseMateDepth(std::string_view depthStr);
+    /// Parses SAN moves for BM/AM tests.
+    /// Validates moves against the position and strips annotations.
+    /// @param movesStr Space-separated SAN moves (may include annotations like !, ?)
+    /// @param pos Position to validate moves against
+    /// @return MoveList of valid moves (empty if none valid)
+    [[nodiscard]] static MoveList parseMoves(std::string_view movesStr, const Position& pos);
 
-public:
-  /// Parses an entire EPD file into a vector of EpdTest objects.
-  /// Invalid or unparseable lines are skipped with warnings logged.
-  /// @param filePath Path to EPD file
-  /// @return Vector of valid EpdTest objects (may be empty if file invalid or all lines skipped)
-  [[nodiscard]] static std::vector<EpdTest> parseFile(std::string_view filePath);
+    /// Parses mate depth for DM tests.
+    /// @param depthStr String representation of mate depth (e.g., "1", "3")
+    /// @return Depth value if valid positive integer, std::nullopt otherwise
+    [[nodiscard]] static std::optional<Depth> parseMateDepth(std::string_view depthStr);
 
-  /// Parses a single EPD line into an EpdTest object.
-  /// @param line EPD line to parse (may contain comments)
-  /// @return EpdTest object if valid, std::nullopt if invalid/empty/comment
-  [[nodiscard]] static std::optional<EpdTest> parseOneLine(std::string_view line);
-};
+  public:
+    /// Parses an entire EPD file into a vector of EpdTest objects.
+    /// Invalid or unparseable lines are skipped with warnings logged.
+    /// @param filePath Path to EPD file
+    /// @return Vector of valid EpdTest objects (may be empty if file invalid or all lines skipped)
+    [[nodiscard]] static std::vector<EpdTest> parseFile(std::string_view filePath);
+
+    /// Parses a single EPD line into an EpdTest object.
+    /// @param line EPD line to parse (may contain comments)
+    /// @return EpdTest object if valid, std::nullopt if invalid/empty/comment
+    [[nodiscard]] static std::optional<EpdTest> parseOneLine(std::string_view line);
+  };
+
+} // namespace enginetest
 
 #endif // FRANKYCPP_EPDPARSER_H

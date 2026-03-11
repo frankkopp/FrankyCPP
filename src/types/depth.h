@@ -48,23 +48,28 @@
 #include "macros.h"
 #include <format>
 
-enum Depth : int {
-  DEPTH_NONE  = 0,
-  DEPTH_ONE   = 1,
-  DEPTH_TWO   = 2,
-  DEPTH_THREE = 3,
-  DEPTH_FOUR  = 4,
+namespace chess {
 
-  DEPTH_ZERO            = DEPTH_NONE,
-  DEPTH_FRONTIER        = DEPTH_ONE,
-  DEPTH_PRE_FRONTIER    = DEPTH_TWO,
-  DEPTH_PREPRE_FRONTIER = DEPTH_THREE,
+  enum Depth : int {
+    DEPTH_NONE  = 0,
+    DEPTH_ONE   = 1,
+    DEPTH_TWO   = 2,
+    DEPTH_THREE = 3,
+    DEPTH_FOUR  = 4,
 
-  DEPTH_MAX = 127
-};
+    DEPTH_ZERO            = DEPTH_NONE,
+    DEPTH_FRONTIER        = DEPTH_ONE,
+    DEPTH_PRE_FRONTIER    = DEPTH_TWO,
+    DEPTH_PREPRE_FRONTIER = DEPTH_THREE,
 
-ENABLE_FULL_OPERATORS_ON (Depth)
-ENABLE_FORMATTER_AS_INT_ON (Depth);
-ENABLE_OSTREAM_OPERATOR_AS_INT_ON (Depth);
+    DEPTH_MAX = 127
+  };
 
-#endif//FRANKYCPP_DEPTH_H
+  ENABLE_FULL_OPERATORS_ON(Depth)
+  ENABLE_OSTREAM_OPERATOR_AS_INT_ON(Depth);
+
+} // namespace chess
+
+ENABLE_FORMATTER_AS_INT_ON(chess::Depth);
+
+#endif // FRANKYCPP_DEPTH_H

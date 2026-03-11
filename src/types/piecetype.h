@@ -56,49 +56,53 @@
 #include "macros.h"
 #include <string>
 
-enum PieceType : uint_fast8_t {
-  PT_NONE, // 0
-  KING,    // 1 non sliding
-  PAWN,    // 2 non sliding
-  KNIGHT,  // 3 non sliding
-  BISHOP,  // 4 sliding
-  ROOK,    // 5 sliding
-  QUEEN,   // 6 sliding
-  PT_LENGTH// 7
-};
+namespace chess {
 
-// checks if piece type is a value of 0 - 6
-constexpr bool validPieceType(const PieceType pt) { return pt < 7; }
+  enum PieceType : uint_fast8_t {
+    PT_NONE,  // 0
+    KING,     // 1 non sliding
+    PAWN,     // 2 non sliding
+    KNIGHT,   // 3 non sliding
+    BISHOP,   // 4 sliding
+    ROOK,     // 5 sliding
+    QUEEN,    // 6 sliding
+    PT_LENGTH // 7
+  };
 
-constexpr int phaseValue[] = {
-  0,// no type
-  0,// king
-  0,// pawn
-  1,// knight
-  1,// bishop
-  2,// rook
-  4 // queen
-};
+  // checks if piece type is a value of 0 - 6
+  constexpr bool validPieceType(const PieceType pt) { return pt < 7; }
 
-inline auto pieceLabels = std::string(" KPNBRQ");
+  constexpr int phaseValue[] = {
+    0, // no type
+    0, // king
+    0, // pawn
+    1, // knight
+    1, // bishop
+    2, // rook
+    4  // queen
+  };
 
-// returns the game phase value of the piece type to
-// compute the current game phase in relation to the
-// pieces currently on the board.
-constexpr int gamePhaseValue(const PieceType pt) { return phaseValue[pt]; }
+  inline auto pieceLabels = std::string(" KPNBRQ");
+
+  // returns the game phase value of the piece type to
+  // compute the current game phase in relation to the
+  // pieces currently on the board.
+  constexpr int gamePhaseValue(const PieceType pt) { return phaseValue[pt]; }
 
 
-// single char label for the piece type (one of " KPNBRQ")
-constexpr char str(const PieceType pt) {
-  if (!validPieceType(pt)) return '-';
-  return pieceLabels[pt];
-}
+  // single char label for the piece type (one of " KPNBRQ")
+  constexpr char str(const PieceType pt) {
+    if (!validPieceType(pt)) return '-';
+    return pieceLabels[pt];
+  }
 
-inline std::ostream& operator<<(std::ostream& os, const PieceType pt) {
-  os << str(pt);
-  return os;
-}
+  inline std::ostream& operator<<(std::ostream& os, const PieceType pt) {
+    os << str(pt);
+    return os;
+  }
 
-ENABLE_INCR_OPERATORS_ON(PieceType)
+  ENABLE_INCR_OPERATORS_ON(PieceType)
 
-#endif// FRANKYCPP_PIECETYPE_H
+} // namespace chess
+
+#endif // FRANKYCPP_PIECETYPE_H

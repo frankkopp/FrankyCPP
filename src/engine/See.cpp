@@ -20,6 +20,8 @@
 #include "See.h"
 #include "chesscore/Position.h"
 
+using namespace engine;
+using namespace chess;
 Value See::see(const Position& p, const Move move) {
 
   // enpassant moves are ignored in a sense that it will be winning
@@ -46,24 +48,24 @@ Value See::see(const Position& p, const Move move) {
 
   // initial value of the first capture
   const Value capturedValue = valueOf(p.getPiece(toSquare));
-  gain[ply]           = capturedValue;
+  gain[ply]                 = capturedValue;
 
   // loop through all remaining attacks/captures
   do {
-    ply++;                   // next depth
-    nextPlayer = ~nextPlayer;// change side
+    ply++;                    // next depth
+    nextPlayer = ~nextPlayer; // change side
 
     // speculative store, if defended
     gain[ply] = (move.type() == PROMOTION
                    ? valueOf(move.promotionType()) - valueOf(PAWN)
-                   : valueOf(movedPiece)) -
-                gain[ply - 1];
+                   : valueOf(movedPiece))
+                - gain[ply - 1];
 
     // pruning if defended - will not change final see score
     if (std::max(-gain[ply - 1], gain[ply]) < 0) break;
 
-    remainingAttacks ^= fromSquare;// reset bit in set to traverse
-    occupiedBitboard ^= fromSquare;// reset bit in temporary occupancy (for x-Rays)
+    remainingAttacks ^= fromSquare; // reset bit in set to traverse
+    occupiedBitboard ^= fromSquare; // reset bit in temporary occupancy (for x-Rays)
 
     // reevaluate attacks to reveal attacks after removing the moving piece
     remainingAttacks |= revealedAttacks(p, toSquare, occupiedBitboard, WHITE) | revealedAttacks(p, toSquare, occupiedBitboard, BLACK);
@@ -106,13 +108,11 @@ Square See::getLeastValuablePiece(const Position& p, const Bitboard bitboard, co
 
 Bitboard See::attacksTo(const Position& p, const Square square, const Color color) {
   // prepare en passant attacks
-  Bitboard epAttacks     = BbZero;
+  Bitboard epAttacks           = BbZero;
   const Square enPassantSquare = p.getEnPassantSquare();
   if (enPassantSquare != SQ_NONE && enPassantSquare == square) {
-    const Square pawnSquare   = enPassantSquare.pawnPush(~color);
-    if (Bitboards::neighbourFilesMask[pawnSquare] &
-        Bitboards::sqToRankBb[pawnSquare] &
-        p.getPieceBb(color, PAWN)) {
+    const Square pawnSquare = enPassantSquare.pawnPush(~color);
+    if (Bitboards::neighbourFilesMask[pawnSquare] & Bitboards::sqToRankBb[pawnSquare] & p.getPieceBb(color, PAWN)) {
       epAttacks |= Bitboards::sqBb[pawnSquare];
     }
   }

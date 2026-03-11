@@ -1,0 +1,35 @@
+{
+  "arenaVersion": "v1.5",
+  "timestamp": "2026-03-09T06:37:21Z",
+  "tag": "baseAfterTtBuckets",
+
+  "match": {
+    "name": "v1.5_vs_FrankyGo_300s",
+    "timeControl": "300+0",
+    "rounds": 100
+  },
+
+  "engine1": {
+    "name": "FrankyCPP v1.5",
+    "version": "v1.5",
+    "path": "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe"
+  },
+
+  "engine2": {
+    "name": "FrankyGo v1.0.3 (4.6.2021)",
+    "version": "v1.0.3",
+    "path": "D:/Games/FrankyChess/FrankyGo/FrankyGo.exe"
+  },
+
+  "results": {
+    "engine1Wins": 72,
+    "engine2Wins": 11,
+    "draws": 17,
+    "engine1Score": 80.5,
+    "engine2Score": 19.5,
+    "eloDifference": 246.3
+  },
+
+  "pgnPath": "results/matches/v1.5_vs_FrankyGo_300s.pgn",
+  "durationMs": 14753980
+}

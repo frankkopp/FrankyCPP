@@ -55,42 +55,46 @@
 
 #include <cstdint>
 
-class Direction {
-  int_fast8_t v_{}; // step in [-9, +9] domain for our use cases
+namespace chess {
 
-public:
-  // constructors
-  constexpr Direction() = default;
-  constexpr explicit Direction(const int v) : v_{static_cast<int_fast8_t>(v)} {}
+  class Direction {
+    int_fast8_t v_{}; // step in [-9, +9] domain for our use cases
 
-  // underlying value access
-  constexpr int_fast8_t value() const { return v_; }
+  public:
+    // constructors
+    constexpr Direction() = default;
+    constexpr explicit Direction(const int v) : v_{static_cast<int_fast8_t>(v)} {}
 
-  // implicit conversion for arithmetic/macros compatibility
-  // ReSharper disable once CppNonExplicitConversionOperator
-  constexpr operator int() const { return v_; }
+    // underlying value access
+    constexpr int_fast8_t value() const { return v_; }
 
-  // factory: pawn push direction for a color (branchless)
-  static constexpr Direction pawnPush(const Color c) { return Direction{c.sign() * 8}; }
-};
+    // implicit conversion for arithmetic/macros compatibility
+    // ReSharper disable once CppNonExplicitConversionOperator
+    constexpr operator int() const { return v_; }
 
-// Inline constexpr direction constants
-inline constexpr Direction NORTH{8};
-inline constexpr Direction EAST{1};
-inline constexpr Direction SOUTH{-8};
-inline constexpr Direction WEST{-1};
-inline constexpr Direction NORTH_EAST{9};
-inline constexpr Direction SOUTH_EAST{-7};
-inline constexpr Direction SOUTH_WEST{-9};
-inline constexpr Direction NORTH_WEST{7};
+    // factory: pawn push direction for a color (branchless)
+    static constexpr Direction pawnPush(const Color c) { return Direction{c.sign() * 8}; }
+  };
 
-// Additional operators to add/subtract a Direction to/from a Square
-// Could be invalid Square if int value of Direction + int value of Square are >63
-ENABLE_BASE2_OPERATORS_ON(Square, Direction)
-// Enable arithmetic and increment operators via existing macros
-ENABLE_FULL_OPERATORS_ON(Direction)
+  // Inline constexpr direction constants
+  inline constexpr Direction NORTH{8};
+  inline constexpr Direction EAST{1};
+  inline constexpr Direction SOUTH{-8};
+  inline constexpr Direction WEST{-1};
+  inline constexpr Direction NORTH_EAST{9};
+  inline constexpr Direction SOUTH_EAST{-7};
+  inline constexpr Direction SOUTH_WEST{-9};
+  inline constexpr Direction NORTH_WEST{7};
 
-// Compile-time sanity checks
-static_assert(sizeof(Direction) == sizeof(int_fast8_t), "Direction should be 1 byte");
+  // Additional operators to add/subtract a Direction to/from a Square
+  // Could be invalid Square if int value of Direction + int value of Square are >63
+  ENABLE_BASE2_OPERATORS_ON(Square, Direction)
+  // Enable arithmetic and increment operators via existing macros
+  ENABLE_FULL_OPERATORS_ON(Direction)
 
-#endif//FRANKYCPP_DIRECTION_H
+  // Compile-time sanity checks
+  static_assert(sizeof(Direction) == sizeof(int_fast8_t), "Direction should be 1 byte");
+
+} // namespace chess
+
+#endif // FRANKYCPP_DIRECTION_H

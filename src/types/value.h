@@ -63,99 +63,104 @@
 #include <format>
 #include <string>
 
-class Value {
-  int16_t v_{};
+namespace chess {
 
-public:
-  // constructors
-  constexpr Value() : v_{-15001}  {}
-  constexpr Value(const Value&) = default;
-  constexpr explicit Value(const int v) : v_{static_cast<int16_t>(v)} {}
+  class Value {
+    int16_t v_{};
 
-  // assignment
-  constexpr Value& operator=(const Value&) = default;
+  public:
+    // constructors
+    constexpr Value() : v_{-15001} {}
+    constexpr Value(const Value&) = default;
+    constexpr explicit Value(const int v) : v_{static_cast<int16_t>(v)} {}
 
-  // accessors (aligned with File/Rank/Square)
-  constexpr int16_t value() const { return v_; }
+    // assignment
+    constexpr Value& operator=(const Value&) = default;
 
-  // validation and classification (defined after VALUE_* constants)
-  constexpr bool isValid() const;
-  bool isCheckMate() const;
+    // accessors (aligned with File/Rank/Square)
+    constexpr int16_t value() const { return v_; }
 
-  // string representation (UCI-compatible: cp X or mate N) (defined after VALUE_* constants)
-  std::string str() const;
+    // validation and classification (defined after VALUE_* constants)
+    constexpr bool isValid() const;
+    bool isCheckMate() const;
 
-  // keep unary plus; unary minus is provided by macros
-  constexpr Value operator+() const { return *this; }
+    // string representation (UCI-compatible: cp X or mate N) (defined after VALUE_* constants)
+    std::string str() const;
 
-  // implicit conversion to int for backward compatibility (printing, comparisons, std::format helper)
-  // Note: kept implicit for now to minimize churn; can be made explicit in a later step-by-step refactor.
-  // ReSharper disable once CppNonExplicitConversionOperator
-  constexpr operator int() const { return v_; }
-};
+    // keep unary plus; unary minus is provided by macros
+    constexpr Value operator+() const { return *this; }
 
-static_assert(sizeof(Value) == sizeof(int16_t), "Value must stay 2 bytes");
+    // implicit conversion to int for backward compatibility (printing, comparisons, std::format helper)
+    // Note: kept implicit for now to minimize churn; can be made explicit in a later step-by-step refactor.
+    // ReSharper disable once CppNonExplicitConversionOperator
+    constexpr operator int() const { return v_; }
+  };
 
-// Special: multiplication with double (used for gamePhaseValue)
-constexpr Value operator*(const Value a, const double d) { return Value{static_cast<int>(static_cast<int>(a) * d)}; }
+  static_assert(sizeof(Value) == sizeof(int16_t), "Value must stay 2 bytes");
 
-// Named constants preserved as global inline constexpr for minimal disruption
-inline constexpr Value VALUE_ZERO{0};
-inline constexpr Value VALUE_DRAW = VALUE_ZERO;
-inline constexpr Value VALUE_ONE{1};
-inline constexpr Value VALUE_INF{15000};
-inline constexpr Value VALUE_NONE{-(static_cast<int>(VALUE_INF) + static_cast<int>(VALUE_ONE))};
-inline constexpr Value VALUE_MIN{-10000};
-inline constexpr Value VALUE_MAX{10000};
-inline constexpr Value VALUE_CHECKMATE           = VALUE_MAX;
-inline constexpr Value VALUE_CHECKMATE_THRESHOLD = static_cast<Value>(VALUE_CHECKMATE - static_cast<int>(MAX_DEPTH) - 1);
+  // Special: multiplication with double (used for gamePhaseValue)
+  constexpr Value operator*(const Value a, const double d) { return Value{static_cast<int>(static_cast<int>(a) * d)}; }
 
-// Provide out-of-class definitions now that VALUE_* constants are visible
-constexpr bool Value::isValid() const {
-  return (*this >= VALUE_MIN && *this <= VALUE_MAX) || *this == VALUE_NONE;
-}
+  // Named constants preserved as global inline constexpr for minimal disruption
+  inline constexpr Value VALUE_ZERO{0};
+  inline constexpr Value VALUE_DRAW = VALUE_ZERO;
+  inline constexpr Value VALUE_ONE{1};
+  inline constexpr Value VALUE_INF{15000};
+  inline constexpr Value VALUE_NONE{-(static_cast<int>(VALUE_INF) + static_cast<int>(VALUE_ONE))};
+  inline constexpr Value VALUE_MIN{-10000};
+  inline constexpr Value VALUE_MAX{10000};
+  inline constexpr Value VALUE_CHECKMATE           = VALUE_MAX;
+  inline constexpr Value VALUE_CHECKMATE_THRESHOLD = static_cast<Value>(VALUE_CHECKMATE - static_cast<int>(MAX_DEPTH) - 1);
 
-inline bool Value::isCheckMate() const {
-  const int absVal = static_cast<int>(v_) < 0 ? -static_cast<int>(v_) : static_cast<int>(v_);
-  return absVal > static_cast<int>(VALUE_CHECKMATE_THRESHOLD) && absVal <= static_cast<int>(VALUE_CHECKMATE);
-}
-
-inline std::string Value::str() const {
-  if (isCheckMate()) {
-    const bool neg   = static_cast<int>(v_) < 0;
-    const int absVal = neg ? -static_cast<int>(v_) : static_cast<int>(v_);
-    return std::string("mate ") + (neg ? "-" : "") + std::to_string((static_cast<int>(VALUE_CHECKMATE) - absVal + 1) / 2);
+  // Provide out-of-class definitions now that VALUE_* constants are visible
+  constexpr bool Value::isValid() const {
+    return (*this >= VALUE_MIN && *this <= VALUE_MAX) || *this == VALUE_NONE;
   }
-  if (*this == VALUE_NONE) return "N/A";
-  return std::string("cp ") + std::to_string(v_);
-}
 
-/** PieceType values */
-constexpr Value pieceTypeValue[] = {
-  static_cast<Value>(0),   // no type
-  static_cast<Value>(2000),// king
-  static_cast<Value>(100), // pawn
-  static_cast<Value>(320), // knight
-  static_cast<Value>(330), // bishop
-  static_cast<Value>(500), // rook
-  static_cast<Value>(900), // queen
-};
+  inline bool Value::isCheckMate() const {
+    const int absVal = static_cast<int>(v_) < 0 ? -static_cast<int>(v_) : static_cast<int>(v_);
+    return absVal > static_cast<int>(VALUE_CHECKMATE_THRESHOLD) && absVal <= static_cast<int>(VALUE_CHECKMATE);
+  }
 
-// returns the value of the given piece type
-constexpr Value valueOf(const PieceType pt) { return pieceTypeValue[pt]; }
+  inline std::string Value::str() const {
+    if (isCheckMate()) {
+      const bool neg   = static_cast<int>(v_) < 0;
+      const int absVal = neg ? -static_cast<int>(v_) : static_cast<int>(v_);
+      return std::string("mate ") + (neg ? "-" : "") + std::to_string((static_cast<int>(VALUE_CHECKMATE) - absVal + 1) / 2);
+    }
+    if (*this == VALUE_NONE) return "N/A";
+    return std::string("cp ") + std::to_string(v_);
+  }
 
-// returns the value of the given piece
-constexpr Value valueOf(const Piece p) {
-  const PieceType pieceType = typeOf(p);
-  return pieceTypeValue[pieceType];
-}
+  /** PieceType values */
+  constexpr Value pieceTypeValue[] = {
+    static_cast<Value>(0),    // no type
+    static_cast<Value>(2000), // king
+    static_cast<Value>(100),  // pawn
+    static_cast<Value>(320),  // knight
+    static_cast<Value>(330),  // bishop
+    static_cast<Value>(500),  // rook
+    static_cast<Value>(900),  // queen
+  };
 
-// Arithmetic and increments via shared macros (must be before constants using them)
-ENABLE_FULL_OPERATORS_ON(Value)
-ENABLE_INT_COMPOUND_ADDSUB_ON(Value)
-ENABLE_COMPARISON_OPERATORS_ON(Value)
-ENABLE_MIXED_COMPARISONS_ON(Value)
-ENABLE_OSTREAM_OPERATOR_AS_INT_ON(Value);
-ENABLE_FORMATTER_AS_INT_ON(Value);
+  // returns the value of the given piece type
+  constexpr Value valueOf(const PieceType pt) { return pieceTypeValue[pt]; }
 
-#endif// FRANKYCPP_VALUE_H
+  // returns the value of the given piece
+  constexpr Value valueOf(const Piece p) {
+    const PieceType pieceType = typeOf(p);
+    return pieceTypeValue[pieceType];
+  }
+
+  // Arithmetic and increments via shared macros (must be before constants using them)
+  ENABLE_FULL_OPERATORS_ON(Value)
+  ENABLE_INT_COMPOUND_ADDSUB_ON(Value)
+  ENABLE_COMPARISON_OPERATORS_ON(Value)
+  ENABLE_MIXED_COMPARISONS_ON(Value)
+  ENABLE_OSTREAM_OPERATOR_AS_INT_ON(Value);
+
+} // namespace chess
+
+ENABLE_FORMATTER_AS_INT_ON(chess::Value);
+
+#endif // FRANKYCPP_VALUE_H

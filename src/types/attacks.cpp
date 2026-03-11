@@ -19,7 +19,9 @@
 
 #include "attacks.h"
 
-namespace Attacks {
+using namespace chess;
+
+namespace chess::Attacks {
   namespace detail {
 
     Bitboard RookTable[RookTableSize];
@@ -52,7 +54,7 @@ namespace Attacks {
       }
     }
 
-  }// namespace detail
+  } // namespace detail
 
   // Public API ---------------------------------------------------------
 
@@ -72,7 +74,7 @@ namespace Attacks {
       const auto& m = detail::BishopMagics[sq];
       return detail::BishopTable[m.offset + m.index(occ)];
     }
-  }// namespace
+  } // namespace
 
   Bitboard attacks(const PieceType pt, const Square sq, const Bitboard occupied) {
     switch (pt) {
@@ -90,4 +92,4 @@ namespace Attacks {
     }
   }
 
-}// namespace Attacks
+} // namespace chess::Attacks

@@ -24,6 +24,8 @@
 
 #include <gtest/gtest.h>
 
+using namespace config;
+
 class ConfigRegistryTest : public ::testing::Test {
 protected:
   ConfigRegistry& registry = ConfigRegistry::instance();
@@ -190,7 +192,7 @@ TEST_F(ConfigRegistryTest, SetterModifiesValue) {
   const ConfigDef* ttSizeDef = registry.find("TT_SIZE_MB");
   ASSERT_NE(ttSizeDef, nullptr);
 
-  EXPECT_EQ(search.TT_SIZE_MB, 64);  // default
+  EXPECT_EQ(search.TT_SIZE_MB, 256); // default
 
   ttSizeDef->setter(search, eval, "256");
   EXPECT_EQ(search.TT_SIZE_MB, 256);
@@ -218,7 +220,7 @@ TEST_F(ConfigRegistryTest, EvalSetterModifiesValue) {
   const ConfigDef* lazyThreshDef = registry.find("LAZY_THRESHOLD");
   ASSERT_NE(lazyThreshDef, nullptr);
 
-  EXPECT_EQ(eval.LAZY_THRESHOLD, 700);  // default
+  EXPECT_EQ(eval.LAZY_THRESHOLD, 700); // default
 
 #ifndef FRANKYCPP_PRODUCTION
   // In production, LAZY_THRESHOLD is static constexpr — setter is a no-op.
@@ -255,7 +257,7 @@ TEST_F(ConfigRegistryTest, ArraySetterParsesCorrectly) {
   EXPECT_EQ(search.RFP_MARGIN[3], 40);
 #else
   // In production, just verify the setter exists and doesn't crash.
-  rfpMarginDef->setter(search, eval, "10,20,30,40");  // no-op
+  rfpMarginDef->setter(search, eval, "10,20,30,40"); // no-op
 #endif
 }
 
@@ -271,7 +273,7 @@ TEST_F(ConfigRegistryTest, IntConfigsHaveBounds) {
       if (def.minValue.has_value() || def.maxValue.has_value()) {
         // If one bound is set, both should typically be set
         EXPECT_TRUE(def.minValue.has_value() && def.maxValue.has_value())
-            << "Config " << def.name << " has partial bounds";
+          << "Config " << def.name << " has partial bounds";
       }
     }
   }
@@ -289,7 +291,7 @@ TEST_F(ConfigRegistryTest, AllConfigsHaveDefaultValues) {
     // Bool and Int types should definitely have non-empty defaults
     if (def.valueType == ConfigValueType::Bool || def.valueType == ConfigValueType::Int) {
       EXPECT_FALSE(def.defaultValue.empty())
-          << "Config " << def.name << " has empty default value";
+        << "Config " << def.name << " has empty default value";
     }
   }
 }
@@ -308,12 +310,12 @@ TEST_F(ConfigRegistryTest, AllConfigsHaveGettersAndSetters) {
 TEST_F(ConfigRegistryTest, VerifyKeySearchConfigs) {
   // Verify some key Search configs exist and have correct types
   const std::vector<std::pair<std::string, ConfigValueType>> keyConfigs = {
-      {"USE_NMP", ConfigValueType::Bool},
-      {"TT_SIZE_MB", ConfigValueType::Int},
-      {"USE_LMR", ConfigValueType::Bool},
-      {"USE_SINGULAR_EXT", ConfigValueType::Bool},
-      {"BOOK_PATH", ConfigValueType::String},
-      {"FP_MARGIN", ConfigValueType::IntArray},
+    {"USE_NMP", ConfigValueType::Bool},
+    {"TT_SIZE_MB", ConfigValueType::Int},
+    {"USE_LMR", ConfigValueType::Bool},
+    {"USE_SINGULAR_EXT", ConfigValueType::Bool},
+    {"BOOK_PATH", ConfigValueType::String},
+    {"FP_MARGIN", ConfigValueType::IntArray},
   };
 
   for (const auto& [name, expectedType] : keyConfigs) {
@@ -326,11 +328,11 @@ TEST_F(ConfigRegistryTest, VerifyKeySearchConfigs) {
 TEST_F(ConfigRegistryTest, VerifyKeyEvalConfigs) {
   // Verify some key Eval configs exist and have correct types
   const std::vector<std::pair<std::string, ConfigValueType>> keyConfigs = {
-      {"USE_MATERIAL", ConfigValueType::Bool},
-      {"TEMPO", ConfigValueType::Int},
-      {"LAZY_THRESHOLD", ConfigValueType::Int},
-      {"USE_BISHOP_PAIR_BONUS", ConfigValueType::Bool},
-      {"USE_KING_SAFETY_SHIELD", ConfigValueType::Bool},
+    {"USE_MATERIAL", ConfigValueType::Bool},
+    {"TEMPO", ConfigValueType::Int},
+    {"LAZY_THRESHOLD", ConfigValueType::Int},
+    {"USE_BISHOP_PAIR_BONUS", ConfigValueType::Bool},
+    {"USE_KING_SAFETY_SHIELD", ConfigValueType::Bool},
   };
 
   for (const auto& [name, expectedType] : keyConfigs) {

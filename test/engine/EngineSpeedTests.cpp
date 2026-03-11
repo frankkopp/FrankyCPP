@@ -17,8 +17,8 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include "common/Logging.h"
 #include "chesscore/Position.h"
+#include "common/Logging.h"
 #include "engine/Search.h"
 #include "init.h"
 #include "types/types.h"
@@ -29,6 +29,9 @@ using testing::Eq;
 
 using namespace std::chrono;
 using namespace std;
+using namespace engine;
+using namespace chess;
+using namespace common;
 
 class EngineSpeedTests : public ::testing::Test {
 public:
@@ -61,27 +64,9 @@ TEST_F(EngineSpeedTests, npsTest) {
   // In production, CONFIG_CONST members are frozen static constexpr — cannot be overridden.
   // Only essential configs (TT_SIZE_MB, USE_BOOK) are set here.
   CONFIG_OVERRIDE_START()
-  s.TT_SIZE_MB          = 64;
-  s.USE_BOOK            = false;
-  s.USE_ALPHABETA       = true;
-  s.USE_PVS             = true;
-  s.USE_TT              = true;
-  s.USE_TT_VALUE        = true;
-  s.USE_EVAL_TT         = true;
-  s.USE_MDP             = true;
-  s.USE_HISTORY_COUNTER = true;
-  s.USE_HISTORY_MOVES   = true;
-  s.USE_QUIESCENCE      = true;
-  s.USE_QS_STANDPAT_CUT = true;
-  s.USE_QS_SEE          = true;
-  s.USE_QS_TT           = true;
-  s.USE_RAZORING        = true;
-  s.USE_RFP             = true;
-  s.USE_NMP             = true;
-  s.USE_IID             = true;
-  s.USE_FP              = true;
-  s.USE_LMR             = true;
-  s.USE_LMP             = true;
+  s.THREADS    = 4;
+  s.TT_SIZE_MB = 256;
+  s.USE_BOOK   = false;
   CONFIG_OVERRIDE_END();
 #else
   // Production: only essential configs can be set at runtime.
@@ -113,4 +98,7 @@ TEST_F(EngineSpeedTests, npsTest) {
   s.waitWhileSearching();
   EXPECT_TRUE(s.hasResult());
   fprintln("NPS: {:L}", nps(s.getLastSearchResult().nodes, s.getLastSearchResult().time));
+
+  // Use the new formatDetailedStats method (FEN is stored in SearchResult)
+  fprintln("{}", s.formatDetailedStats());
 }
