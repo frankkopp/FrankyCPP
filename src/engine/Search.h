@@ -410,6 +410,11 @@ namespace engine {
     /// @return               Score suitable for alpha-beta search
     [[nodiscard]] Value getTBScoreForSearch(tablebase::TBResult wdl, int halfMoveClock, Depth ply) const;
 
+    /// Resets Search-owned state at the start of each search (before thread init).
+    /// Clears stop flag, result, time limits, and UCI update tracking.
+    /// Called from run() before initialize() and thread data setup.
+    void resetSearchState();
+
     /// Called after starting search thread. Configures search, calls iterativeDeepening,
     /// and sends result to UCI.
     void run();

@@ -210,6 +210,15 @@ uint64_t Search::getTotalNodes() const {
 ////////////////////////////////////////////////
 ///// PRIVATE
 
+void Search::resetSearchState() {
+  stopSearchFlag    = false;
+  timeLimit         = milliseconds{};
+  extraTimeMs       = 0;
+  lastUciUpdateTime = now();
+  resultReady.store(false, std::memory_order_relaxed); // clear result flag
+  lastSearchResult.reset();                            // clear previous result
+}
+
 void Search::run() {
   // check if there is already a search running
   // and if not, grab the isRunning semaphore
@@ -220,13 +229,8 @@ void Search::run() {
 
   LOG__INFO(Logger::get().SEARCH_LOG, "Searching {}", position.strFen());
 
-  // initialize search
-  stopSearchFlag = false;
-  resultReady.store(false, std::memory_order_relaxed); // clear result flag
-  lastSearchResult.reset();                            // clear previous result
-  timeLimit         = milliseconds{};
-  extraTimeMs       = 0;
-  lastUciUpdateTime = now();
+  // initialize search state (stop flag, result, time limits, UCI tracking)
+  resetSearchState();
 
   // Note: npsTime and npsNodes are initialized later, right before iterative deepening,
   // to avoid including initialization overhead in NPS calculations
@@ -444,10 +448,18 @@ void Search::run() {
         if (const auto ttEntry = tt->probe(position.getZobristKey())) {
           STAT_INC(mainThread().statistics.ttHitSufficientDepth);
           switch (ttEntry->type) {
-            case NONE:  STAT_INC(mainThread().statistics.ttHitNone);  break;
-            case EXACT: STAT_INC(mainThread().statistics.ttHitExact); break;
-            case ALPHA: STAT_INC(mainThread().statistics.ttHitAlpha); break;
-            case BETA:  STAT_INC(mainThread().statistics.ttHitBeta);  break;
+            case NONE:
+              STAT_INC(mainThread().statistics.ttHitNone);
+              break;
+            case EXACT:
+              STAT_INC(mainThread().statistics.ttHitExact);
+              break;
+            case ALPHA:
+              STAT_INC(mainThread().statistics.ttHitAlpha);
+              break;
+            case BETA:
+              STAT_INC(mainThread().statistics.ttHitBeta);
+              break;
           }
           const auto probedMove = static_cast<Move>(ttEntry->move);
           if (probedMove != MOVE_NONE && MoveGenerator::isPseudoLegal(position, probedMove)) {
@@ -954,7 +966,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
       }
       // Track completed iteration for best-thread selection (all threads)
       thread().completedIterationDepth = iterationDepth;
-      thread().lastIterationValue = thread().pv.first().value();
+      thread().lastIterationValue      = thread().pv.first().value();
     }
     else {
       break;
@@ -2522,7 +2534,7 @@ const SearchThreadData* Search::selectBestThread() const {
 }
 
 void Search::sendFinalUciInfo(const SearchThreadData& bestThread) const {
-  const nanoseconds& since = elapsedSince(startSearchTime);
+  const nanoseconds& since  = elapsedSince(startSearchTime);
   const uint64_t totalNodes = getTotalNodes();
 
   // Use the best thread's PV directly (extractPvWithTT uses thread-local state)
