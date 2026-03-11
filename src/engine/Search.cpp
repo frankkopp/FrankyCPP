@@ -2503,6 +2503,13 @@ const SearchThreadData* Search::selectBestThread() const {
     return best;
   }
 
+  // Hard-limited searches (depth/nodes): only the main thread enforces
+  // these limits, so helpers may not have reached the same depth or node
+  // count.  Picking an incomplete helper would violate the limit contract.
+  if (searchLimits.depth || searchLimits.nodes) {
+    return best;
+  }
+
   const auto scoreMargin = Value{SearchConfig.BEST_THREAD_SCORE_MARGIN};
 
   const int totalThreads = numHelperThreads + 1;
