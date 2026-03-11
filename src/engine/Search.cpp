@@ -80,16 +80,7 @@ void Search::newGame() {
   // Reset all thread data (not just main thread) for clean state
   // This ensures deterministic behavior when switching between thread counts
   for (const auto& threadData : searchThreadData) {
-    for (auto& plyInfo : threadData->plyStack) {
-      plyInfo.resetSearchState();
-    }
-    threadData->history.reset();
-    threadData->nodesVisited            = 0;
-    threadData->statistics              = SearchStats{};
-    threadData->completedIterationDepth = DEPTH_NONE;
-    threadData->lastIterationValue      = VALUE_NONE;
-    threadData->pv.clearAll();
-    threadData->rootMoves.clear();
+    threadData->reset();
   }
 
   if (tt) { tt->clear(); }
@@ -265,38 +256,10 @@ void Search::run() {
 
   // Reset and initialize all thread data
   for (int t = 0; t < totalThreads; ++t) {
-    auto& st = *searchThreadData[t];
-
-    // Reset counters, statistics, and best-thread selection state
-    st.nodesVisited            = 0;
-    st.statistics              = SearchStats{};
-    st.completedIterationDepth = DEPTH_NONE;
-    st.lastIterationValue      = VALUE_NONE;
-
-    // Copy root position to thread-local storage for all threads.
-    // Each thread works on its own copy to avoid data races during search.
-    // The root position is fixed for the entire search, so we copy it once here.
-    st.position = position;
-
-    // Clear thread-local root moves (will be populated during root search)
-    st.rootMoves.clear();
-
-    // Set shared PawnTT on this thread's evaluator
-    st.evaluator.setPawnTT(pawnTT.get());
-
-    // Regenerate LMR table based on current config
-    st.regenerateLmrTable(SearchConfig.LMR_USE_LOG_FORMULA, SearchConfig.LMR_LOG_BASE_DIV);
-
-    // Clear PV table
-    st.pv.clearAll();
-
-    // Initialize per-ply search state (MoveGenerators, history pointers, etc.)
-    for (int i = DEPTH_NONE; i < DEPTH_MAX; i++) {
-      st.plyStack[i].resetSearchState();
-      if (SearchConfig.USE_HISTORY_COUNTER || SearchConfig.USE_HISTORY_MOVES) {
-        st.plyStack[i].mg->setHistoryData(&st.history);
-      }
-    }
+    searchThreadData[t]->resetForNewSearch(
+      position, pawnTT.get(),
+      SearchConfig.LMR_USE_LOG_FORMULA, SearchConfig.LMR_LOG_BASE_DIV,
+      SearchConfig.USE_HISTORY_COUNTER || SearchConfig.USE_HISTORY_MOVES);
   }
 
   LOG__DEBUG(Logger::get().SEARCH_LOG, "Initialized {} search thread(s) ({} helper(s))", totalThreads, numHelperThreads);

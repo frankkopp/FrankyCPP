@@ -128,24 +128,59 @@ namespace engine {
     // Reset Methods
     // =========================================================================
 
-    /// Resets all search state between searches (preserves MoveGenerator allocations)
+    /// Resets all search state for a new game (full reset including history).
+    /// Preserves MoveGenerator heap allocations for reuse.
     void reset() {
       nodesVisited = 0;
+      statistics = SearchStats{};
+      completedIterationDepth = DEPTH_NONE;
+      lastIterationValue = VALUE_NONE;
+      rootMoves.clear();
       pv.clearAll();
       for (auto& plyInfo : plyStack) {
         plyInfo.resetSearchState();
       }
       history.reset();
-      statistics = SearchStats{};
-      rootMoves.clear();
-      completedIterationDepth = DEPTH_NONE;
-      lastIterationValue = VALUE_NONE;
     }
 
-    /// Sets history data pointer for all MoveGenerators in plyStack
-    void setHistoryDataForMoveGenerators() {
-      for (const auto& plyInfo : plyStack) {
-        plyInfo.mg->setHistoryData(&history);
+    /// Resets thread state for a new search. Does NOT clear history tables
+    /// (history is preserved across searches for better move ordering).
+    /// @param rootPosition  Position to copy for this thread's local search
+    /// @param pawnTT        Shared PawnTT to inject into evaluator
+    /// @param lmrUseLog     Whether LMR uses logarithmic formula
+    /// @param lmrLogDiv     LMR log divisor
+    /// @param useHistory    Whether history-based move ordering is enabled
+    void resetForNewSearch(const Position& rootPosition, PawnTT* pawnTT,
+                           const bool lmrUseLog, const double lmrLogDiv,
+                           const bool useHistory) {
+      // Reset counters, statistics, and best-thread selection state
+      nodesVisited            = 0;
+      statistics              = SearchStats{};
+      completedIterationDepth = DEPTH_NONE;
+      lastIterationValue      = VALUE_NONE;
+
+      // Copy root position to thread-local storage.
+      // Each thread works on its own copy to avoid data races during search.
+      position = rootPosition;
+
+      // Clear thread-local root moves (will be populated during root search)
+      rootMoves.clear();
+
+      // Set shared PawnTT on this thread's evaluator
+      evaluator.setPawnTT(pawnTT);
+
+      // Regenerate LMR table based on current config
+      regenerateLmrTable(lmrUseLog, lmrLogDiv);
+
+      // Clear PV table
+      pv.clearAll();
+
+      // Initialize per-ply search state (MoveGenerators, history pointers, etc.)
+      for (int i = DEPTH_NONE; i < DEPTH_MAX; i++) {
+        plyStack[i].resetSearchState();
+        if (useHistory) {
+          plyStack[i].mg->setHistoryData(&history);
+        }
       }
     }
 
