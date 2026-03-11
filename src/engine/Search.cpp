@@ -86,11 +86,7 @@ void Search::newGame() {
   if (tt) { tt->clear(); }
   if (pawnTT) { pawnTT->clear(); }
   bestMoveStability.reset();
-
-  tbRootMove  = MOVE_NONE;
-  tbRootValue = VALUE_NONE;
-  tbRootWdl   = tablebase::TBResult::Failed;
-  tbRootDtz   = 0;
+  tbRoot.reset();
   hadBookMove = false;
 }
 
@@ -395,7 +391,7 @@ void Search::run() {
   // TB move is DTZ-optimal (shortest path to zeroing move / conversion).
   // Only override TB move if search found a provable shorter mate.
   // ===========================================================================
-  if (tbRootWdl != tablebase::TBResult::Failed) {
+  if (tbRoot.wdl != tablebase::TBResult::Failed) {
     searchResult.tbHit = true;
 
     // Check if search (best thread) found a proven mate
@@ -411,23 +407,23 @@ void Search::run() {
     // A proven mate is always preferred over a TB "Win" because:
     // 1. Mate is concrete and forced
     // 2. TB DTZ=1 might be a capture leading to a longer mate sequence
-    if (searchFoundMate && searchMateDepth <= tbRootDtz) {
+    if (searchFoundMate && searchMateDepth <= tbRoot.dtz) {
       LOG__INFO(Logger::get().SEARCH_LOG,
                 "Search found mate in {} (TB DTZ={}), using search move {}",
-                searchMateDepth, tbRootDtz, searchResult.bestMove.str());
+                searchMateDepth, tbRoot.dtz, searchResult.bestMove.str());
     }
     else {
       // Use TB move — it's DTZ-optimal (shortest path to conversion)
       const Move searchMove      = searchResult.bestMove;
-      searchResult.bestMove      = tbRootMove;
-      searchResult.bestMoveValue = tbRootValue;
-      if (searchMove == tbRootMove) {
-        LOG__INFO(Logger::get().SEARCH_LOG, "Search confirmed TB-optimal move {}", tbRootMove.str());
+      searchResult.bestMove      = tbRoot.move;
+      searchResult.bestMoveValue = tbRoot.value;
+      if (searchMove == tbRoot.move) {
+        LOG__INFO(Logger::get().SEARCH_LOG, "Search confirmed TB-optimal move {}", tbRoot.move.str());
       }
       else {
         LOG__INFO(Logger::get().SEARCH_LOG,
                   "Using TB-optimal move {} (DTZ={}), search suggested {}",
-                  tbRootMove.str(), tbRootDtz, searchMove.str());
+                  tbRoot.move.str(), tbRoot.dtz, searchMove.str());
       }
     }
   }
@@ -615,10 +611,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
   // Reset TB root info from previous search (main thread only)
   // Helpers don't do TB probing - they benefit from main thread's TT entries
   if (isMainThread()) {
-    tbRootMove  = MOVE_NONE;
-    tbRootValue = VALUE_NONE;
-    tbRootWdl   = tablebase::TBResult::Failed;
-    tbRootDtz   = 0;
+    tbRoot.reset();
 
     // Probe tablebase at root position
     // If TB_ROOT_IMMEDIATE=true and we get a hit, return TB move without searching
@@ -637,9 +630,9 @@ SearchResult Search::iterativeDeepening(Position& p) {
         // - Root moves will be filtered to only those maintaining TB result
         // - TB move will be prioritized in root move ordering
         // - Search produces proper PV while guaranteeing optimal play
-        // tbRootMove, tbRootValue, tbRootWdl, tbRootDtz already set in probeTablebaseAtRoot
+        // tbRoot fields already set in probeTablebaseAtRoot
         LOG__INFO(Logger::get().SEARCH_LOG, "TB hit at root (non-immediate): move={} value={}, continuing search for PV",
-                  tbRootMove.str(), tbRootValue.str());
+                  tbRoot.move.str(), tbRoot.value.str());
 
         // Filter root moves to only those that maintain the TB result
         // This ensures we don't play a move that worsens our position
@@ -693,15 +686,15 @@ SearchResult Search::iterativeDeepening(Position& p) {
 
   // If we have a TB root move (from non-immediate probe), give it a high sort value
   // so it's searched first. This ensures the TB move is the PV if it's truly best.
-  // Both main thread and helpers benefit from this - tbRootMove is set by main thread
+  // Both main thread and helpers benefit from this - tbRoot.move is set by main thread
   // before helpers are launched, so they can safely read it.
-  if (tbRootMove != MOVE_NONE) {
+  if (tbRoot.move != MOVE_NONE) {
     for (Move& move : thread().rootMoves) {
-      if (move == tbRootMove) {
+      if (move == tbRoot.move) {
         // Give TB move a very high sort value to ensure it's searched first
-        move.setValue(tbRootValue);
+        move.setValue(tbRoot.value);
         LOG__DEBUG(Logger::get().SEARCH_LOG, "Thread {}: TB move {} prioritized with value {}",
-                   thread().id, move.str(), tbRootValue.str());
+                   thread().id, move.str(), tbRoot.value.str());
         break;
       }
     }
@@ -2434,10 +2427,10 @@ bool Search::probeTablebaseAtRoot(const Position& pos, SearchResult& result) {
   }
 
   // Store WDL and DTZ for later use (filtering, scoring)
-  tbRootWdl   = tbResult.wdl;
-  tbRootDtz   = tbResult.dtz;
-  tbRootMove  = tbResult.bestMove;
-  tbRootValue = tablebase::Tablebase::tbResultToScore(tbResult.wdl, tbResult.dtz);
+  tbRoot.wdl   = tbResult.wdl;
+  tbRoot.dtz   = tbResult.dtz;
+  tbRoot.move  = tbResult.bestMove;
+  tbRoot.value = tablebase::Tablebase::tbResultToScore(tbResult.wdl, tbResult.dtz);
 
   // Log the TB hit
   const std::string tbResultStr = tablebase::Tablebase::resultToString(tbResult.wdl);
@@ -2448,8 +2441,8 @@ bool Search::probeTablebaseAtRoot(const Position& pos, SearchResult& result) {
   sendString(std::format("TB hit: {} DTZ={} move={}", tbResultStr, tbResult.dtz, tbResult.bestMove.str()));
 
   // Populate the search result with DTZ-based scoring
-  result.bestMove      = tbRootMove;
-  result.bestMoveValue = tbRootValue;
+  result.bestMove      = tbRoot.move;
+  result.bestMoveValue = tbRoot.value;
   result.tbHit         = true;
 
   // Update statistics
@@ -2563,7 +2556,7 @@ void Search::filterRootMovesByTB(Position& pos) const {
   // For a drawn position, keep only moves where opponent is not winning.
   // For a losing position, keep all moves (we're lost anyway).
 
-  if (tbRootWdl == tablebase::TBResult::Failed) {
+  if (tbRoot.wdl == tablebase::TBResult::Failed) {
     return; // No TB result, nothing to filter
   }
 
@@ -2603,7 +2596,7 @@ void Search::filterRootMovesByTB(Position& pos) const {
     // If we're drawing, opponent should be drawing (WDL = Draw)
     // If we're losing, any move is acceptable
 
-    switch (tbRootWdl) {
+    switch (tbRoot.wdl) {
       case tablebase::TBResult::Win:
       case tablebase::TBResult::CursedWin:
         // We're winning - opponent must be losing
@@ -2643,9 +2636,9 @@ void Search::filterRootMovesByTB(Position& pos) const {
   }
 
   // Safety check: if all moves were filtered (shouldn't happen), restore TB move
-  if (thread().rootMoves.empty() && tbRootMove != MOVE_NONE) {
-    LOG__WARN(Logger::get().SEARCH_LOG, "TB filter removed all moves! Restoring TB move {}", tbRootMove.str());
-    thread().rootMoves.push_back(tbRootMove);
+  if (thread().rootMoves.empty() && tbRoot.move != MOVE_NONE) {
+    LOG__WARN(Logger::get().SEARCH_LOG, "TB filter removed all moves! Restoring TB move {}", tbRoot.move.str());
+    thread().rootMoves.push_back(tbRoot.move);
   }
 }
 

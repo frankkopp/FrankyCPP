@@ -159,11 +159,22 @@ namespace engine {
     // Mutable because validateMove() modifies internal lists but not observable state
     mutable MoveGenerator pvMoveGenerator{};
 
-    // TB root probe result (when TB_ROOT_IMMEDIATE=false, used to guide search)
-    Move tbRootMove{MOVE_NONE};                                 // Best move from TB at root
-    Value tbRootValue{VALUE_NONE};                              // TB score at root (DTZ-adjusted)
-    tablebase::TBResult tbRootWdl{tablebase::TBResult::Failed}; // WDL result for filtering
-    int tbRootDtz{0};                                           // DTZ value for scoring
+    /// TB root probe result (when TB_ROOT_IMMEDIATE=false, used to guide search).
+    /// Groups all tablebase root-probe states into a single struct with reset().
+    struct TBRootInfo {
+      Move move{MOVE_NONE};                                 ///< Best move from TB at root
+      Value value{VALUE_NONE};                              ///< TB score at root (DTZ-adjusted)
+      tablebase::TBResult wdl{tablebase::TBResult::Failed}; ///< WDL result for filtering
+      int dtz{0};                                           ///< DTZ value for scoring
+
+      /// Resets all TB root state to defaults (no TB hit)
+      void reset() {
+        move  = MOVE_NONE;
+        value = VALUE_NONE;
+        wdl   = tablebase::TBResult::Failed;
+        dtz   = 0;
+      }
+    } tbRoot;
 
     // result of previous search (empty until first search completes)
     std::optional<SearchResult> lastSearchResult{};
