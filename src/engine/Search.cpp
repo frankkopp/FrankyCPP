@@ -96,9 +96,6 @@ void Search::startSearch(const Position& p, const SearchLimits& sl) {
     LOG__WARN(Logger::get().SEARCH_LOG, "Search init failed as another initialization is ongoing.");
   }
 
-  // DEBUG to test the new config approach
-  LOG__INFO(Logger::get().SEARCH_LOG, "DEBUG: CONFIG_SOURCE: {}", SearchConfig.CONFIG_SOURCE);
-
   // start search time
   startTime       = currentTime();
   startSearchTime = startTime;
@@ -511,11 +508,8 @@ void Search::run() {
   // searched has been stopped.
   sendResult(searchResult);
 
-  // clean up timer thread if necessary (protected by mutex for thread safety)
-  {
-    std::lock_guard lock(timerMutex);
-    if (timerThread.joinable()) timerThread.join();
-  }
+  // clean up timer thread if necessary
+  joinTimerThread();
 
   // Reset thread-local pointer to prevent dangling reference if this thread
   // is reused by another Search instance
@@ -2929,6 +2923,11 @@ void Search::startTimer() {
       LOG__INFO(Logger::get().SEARCH_LOG, "Stop search by Timer after wall time: {} (time limit {} and extra time {})", str(currentTime() - startSearchTime), str(timeLimit), str(milliseconds(extraTimeMs.load())));
     }
   });
+}
+
+void Search::joinTimerThread() {
+  std::lock_guard lock(timerMutex);
+  if (timerThread.joinable()) { timerThread.join(); }
 }
 
 double Search::computeComplexityFactorFromMoves(const Position& p, const MoveList& legalMoves) {

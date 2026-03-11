@@ -558,6 +558,10 @@ namespace engine {
     void startTimer();
     FRIEND_TEST_NS(SearchTest, startTimer);
 
+    /// Joins the timer thread if it is still running (protected by timerMutex).
+    /// Called from run() post-search cleanup.
+    void joinTimerThread();
+
     /// Computes position complexity factor (quick version).
     /// @param p  Position to analyze
     /// @return   Factor: >1.0 = more complex, <1.0 = simpler
