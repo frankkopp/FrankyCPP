@@ -850,8 +850,11 @@ TEST_F(SearchSmpTest, selectBestThread) {
   search.waitWhileSearching();
   ASSERT_TRUE(search.hasResult());
 
-  // Now test selectBestThread() with synthetic data
-  // Overwrite the completedIterationDepth and lastIterationValue on thread data
+  // Now test selectBestThread() with synthetic data.
+  // Clear depth/node limits so the hard-limit guard in selectBestThread() doesn't
+  // short-circuit — we want to exercise the score/depth comparison logic.
+  search.searchLimits.depth = 0;
+  search.searchLimits.nodes = 0;
 
   // Case 1: Helper reached deeper depth with similar score → helper wins
   search.mainThread().completedIterationDepth = Depth{10};
