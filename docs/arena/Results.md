@@ -102,7 +102,7 @@ All string fields are JSON-escaped in the output.
 
 ```json
 {
-  "arenaVersion": "v1.5",
+  "arenaVersion": "v1.6",
   "timestamp": "2026-03-08T14:30:22Z",
   "tag": "QuietSee",
 
@@ -113,8 +113,8 @@ All string fields are JSON-escaped in the output.
 
   "engine": {
     "name": "FrankyCPP",
-    "version": "v1.5",
-    "path": "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe"
+    "version": "v1.6",
+    "path": "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe"
   },
 
   "summary": {
@@ -156,43 +156,43 @@ All string fields are JSON-escaped in the output.
 
 #### Top-Level Fields
 
-| Field | Type | Description |
-|-------|------|-------------|
+| Field          | Type   | Description                                                        |
+|----------------|--------|--------------------------------------------------------------------|
 | `arenaVersion` | String | Arena version identifier (typically the engine version under test) |
-| `timestamp` | String | ISO 8601 timestamp (UTC) |
-| `testSuite` | Object | Test suite metadata |
-| `engine` | Object | Engine identification |
-| `summary` | Object | Aggregate statistics |
-| `details` | Array | Per-test case results |
+| `timestamp`    | String | ISO 8601 timestamp (UTC)                                           |
+| `testSuite`    | Object | Test suite metadata                                                |
+| `engine`       | Object | Engine identification                                              |
+| `summary`      | Object | Aggregate statistics                                               |
+| `details`      | Array  | Per-test case results                                              |
 
 #### TestSuite Object
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `name` | String | Test suite name |
+| Field     | Type   | Description      |
+|-----------|--------|------------------|
+| `name`    | String | Test suite name  |
 | `epdPath` | String | Path to EPD file |
 
 #### Engine Object
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `name` | String | Engine name (e.g., "FrankyCPP") |
-| `version` | String | Engine version (e.g., "v1.1") |
-| `path` | String | Path to engine executable |
+| Field     | Type   | Description                     |
+|-----------|--------|---------------------------------|
+| `name`    | String | Engine name (e.g., "FrankyCPP") |
+| `version` | String | Engine version (e.g., "v1.1")   |
+| `path`    | String | Path to engine executable       |
 
 #### Summary Object
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `totalTests` | Integer | Total number of test positions |
-| `passed` | Integer | Number of tests passed |
-| `failed` | Integer | Number of tests failed |
-| `skipped` | Integer | Number of tests skipped (usually 0) |
-| `successRate` | Float | Pass percentage (0-100) |
-| `totalNodes` | Integer | Sum of nodes searched across all tests |
-| `totalTimeMs` | Integer | Sum of time spent in milliseconds |
-| `avgTimeMs` | Float | Average time per test in milliseconds |
-| `avgNodes` | Float | Average nodes per test |
+| Field         | Type    | Description                            |
+|---------------|---------|----------------------------------------|
+| `totalTests`  | Integer | Total number of test positions         |
+| `passed`      | Integer | Number of tests passed                 |
+| `failed`      | Integer | Number of tests failed                 |
+| `skipped`     | Integer | Number of tests skipped (usually 0)    |
+| `successRate` | Float   | Pass percentage (0-100)                |
+| `totalNodes`  | Integer | Sum of nodes searched across all tests |
+| `totalTimeMs` | Integer | Sum of time spent in milliseconds      |
+| `avgTimeMs`   | Float   | Average time per test in milliseconds  |
+| `avgNodes`    | Float   | Average nodes per test                 |
 
 **Derived Metrics:**
 - **Average nodes per test:** `totalNodes / totalTests`
@@ -201,15 +201,15 @@ All string fields are JSON-escaped in the output.
 
 #### Test Detail Object
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `testId` | String | Unique test identifier (e.g., "WAC.001") |
-| `fen` | String | Position FEN string |
-| `expected` | String | Expected move(s) in SAN or coordinate notation |
-| `actual` | String | Move chosen by engine |
-| `passed` | Boolean | Whether test passed |
-| `nodes` | Integer | Nodes searched for this position |
-| `timeMs` | Integer | Time spent in milliseconds |
+| Field      | Type    | Description                                    |
+|------------|---------|------------------------------------------------|
+| `testId`   | String  | Unique test identifier (e.g., "WAC.001")       |
+| `fen`      | String  | Position FEN string                            |
+| `expected` | String  | Expected move(s) in SAN or coordinate notation |
+| `actual`   | String  | Move chosen by engine                          |
+| `passed`   | Boolean | Whether test passed                            |
+| `nodes`    | Integer | Nodes searched for this position               |
+| `timeMs`   | Integer | Time spent in milliseconds                     |
 
 ---
 
@@ -221,27 +221,28 @@ All string fields are JSON-escaped in the output.
 
 ```json
 {
-  "arenaVersion": "v1.5",
+  "arenaVersion": "v1.6",
   "timestamp": "2026-03-08T10:00:00Z",
   "tag": "QuietSee",
 
   "match": {
-    "name": "v1.5_vs_v1.4_300s",
+    "name": "v1.6_vs_v1.5_300s",
     "timeControl": "300+0",
     "rounds": 104
   },
 
   "engine1": {
     "name": "FrankyCPP",
-    "version": "v1.5",
-    "path": "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe"
+    "version": "v1.6",
+    "path": "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe"
   },
 
   "engine2": {
     "name": "FrankyCPP",
-    "version": "v1.4",
-    "path": "Release/FrankyCPP_v1.4/FrankyCPP_v1.4.exe"
+    "version": "v1.5",
+    "path": "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe"
   },
+
 
   "results": {
     "engine1Wins": 42,
@@ -252,7 +253,7 @@ All string fields are JSON-escaped in the output.
     "eloDifference": 74.6
   },
 
-  "pgnPath": "results/matches/v1.5_vs_v1.4_300s.pgn",
+  "pgnPath": "results/matches/v1.6_vs_v1.5_300s.pgn",
   "durationMs": 3600000
 }
 ```
@@ -261,44 +262,44 @@ All string fields are JSON-escaped in the output.
 
 #### Top-Level Fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `arenaVersion` | String | Arena version that ran this match |
-| `timestamp` | String | ISO 8601 timestamp (UTC) when match started |
-| `tag` | String | Feature tag for tracking (e.g., "QuietSee") |
-| `match` | Object | Match configuration details |
-| `engine1` | Object | First engine identification |
-| `engine2` | Object | Second engine identification |
-| `results` | Object | Match outcome statistics |
-| `pgnPath` | String | Path to PGN file with games |
-| `durationMs` | Integer | Match duration in milliseconds |
+| Field          | Type    | Description                                 |
+|----------------|---------|---------------------------------------------|
+| `arenaVersion` | String  | Arena version that ran this match           |
+| `timestamp`    | String  | ISO 8601 timestamp (UTC) when match started |
+| `tag`          | String  | Feature tag for tracking (e.g., "QuietSee") |
+| `match`        | Object  | Match configuration details                 |
+| `engine1`      | Object  | First engine identification                 |
+| `engine2`      | Object  | Second engine identification                |
+| `results`      | Object  | Match outcome statistics                    |
+| `pgnPath`      | String  | Path to PGN file with games                 |
+| `durationMs`   | Integer | Match duration in milliseconds              |
 
 #### Match Object
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `name` | String | Match identifier |
-| `timeControl` | String | Time control (e.g., "60+0.6") |
-| `rounds` | Integer | Number of games played |
+| Field         | Type    | Description                   |
+|---------------|---------|-------------------------------|
+| `name`        | String  | Match identifier              |
+| `timeControl` | String  | Time control (e.g., "60+0.6") |
+| `rounds`      | Integer | Number of games played        |
 
 #### Engine Objects (engine1, engine2)
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `name` | String | Engine name (e.g., "FrankyCPP") |
-| `version` | String | Engine version (e.g., "v1.1") |
-| `path` | String | Path to engine executable |
+| Field     | Type   | Description                     |
+|-----------|--------|---------------------------------|
+| `name`    | String | Engine name (e.g., "FrankyCPP") |
+| `version` | String | Engine version (e.g., "v1.1")   |
+| `path`    | String | Path to engine executable       |
 
 #### Results Object
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `engine1Wins` | Integer | Wins by engine 1 |
-| `engine2Wins` | Integer | Wins by engine 2 |
-| `draws` | Integer | Number of drawn games |
-| `engine1Score` | Float | Total points (win=1, draw=0.5) |
-| `engine2Score` | Float | Total points for engine 2 |
-| `eloDifference` | Float | ELO rating difference (engine1 - engine2) |
+| Field           | Type    | Description                               |
+|-----------------|---------|-------------------------------------------|
+| `engine1Wins`   | Integer | Wins by engine 1                          |
+| `engine2Wins`   | Integer | Wins by engine 2                          |
+| `draws`         | Integer | Number of drawn games                     |
+| `engine1Score`  | Float   | Total points (win=1, draw=0.5)            |
+| `engine2Score`  | Float   | Total points for engine 2                 |
+| `eloDifference` | Float   | ELO rating difference (engine1 - engine2) |
 
 **Game Count:** `engine1Wins + engine2Wins + draws` = total games played
 
@@ -339,17 +340,17 @@ Match PGN files contain all games in standard PGN format.
 
 ### PGN Headers
 
-| Header | Description |
-|--------|-------------|
-| `Event` | Match name |
-| `Site` | Location (usually "?") |
-| `Date` | Game date |
-| `Round` | Game number in match |
-| `White` | White engine name |
-| `Black` | Black engine name |
-| `Result` | Game result (1-0, 0-1, 1/2-1/2) |
-| `TimeControl` | Time control used |
-| `Opening` | Opening name (if available) |
+| Header        | Description                     |
+|---------------|---------------------------------|
+| `Event`       | Match name                      |
+| `Site`        | Location (usually "?")          |
+| `Date`        | Game date                       |
+| `Round`       | Game number in match            |
+| `White`       | White engine name               |
+| `Black`       | Black engine name               |
+| `Result`      | Game result (1-0, 0-1, 1/2-1/2) |
+| `TimeControl` | Time control used               |
+| `Opening`     | Opening name (if available)     |
 
 ### Analyzing PGN Files
 
@@ -471,11 +472,11 @@ print(f"Regressions: {regressions}")
 
 **Create a spreadsheet:**
 
-| Version | WAC Pass Rate | STS Pass Rate | vs v1.0 ELO | Date |
-|---------|---------------|---------------|-------------|------|
-| v1.0 | 83.3% | 60.0% | 0 | 2026-01-15 |
-| v1.1 | 95.0% | 75.0% | +174 | 2026-02-01 |
-| v1.2 | 96.7% | 78.0% | +210 | 2026-02-15 |
+| Version | WAC Pass Rate | STS Pass Rate | vs v1.0 ELO | Date       |
+|---------|---------------|---------------|-------------|------------|
+| v1.0    | 83.3%         | 60.0%         | 0           | 2026-01-15 |
+| v1.1    | 95.0%         | 75.0%         | +174        | 2026-02-01 |
+| v1.2    | 96.7%         | 78.0%         | +210        | 2026-02-15 |
 
 **Graph trends:**
 - Pass rates over time

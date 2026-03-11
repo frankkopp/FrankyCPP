@@ -41,10 +41,10 @@ Build output directories: `cmake-build-win-release`, `cmake-build-win-debug`, `c
 
 ```powershell
 # Run all tests (excluding slow ones) — Windows
-.\cmake-build-win-release\test\FrankyCPP_v1.5_Test.exe -*SpeedTests.*:-*TimingTests.*
+.\cmake-build-win-release\test\FrankyCPP_v1.6_Test.exe -*SpeedTests.*:-*TimingTests.*
 
 # Run a specific test suite
-.\cmake-build-win-release\test\FrankyCPP_v1.5_Test.exe --gtest_filter=PositionTest.*
+.\cmake-build-win-release\test\FrankyCPP_v1.6_Test.exe --gtest_filter=PositionTest.*
 ```
 
 Tests auto-discovered by CMake; test files mirror source structure under `test/`.
@@ -66,16 +66,16 @@ main.cpp → UciHandler → Search → Evaluator
 
 ### Source Modules (`src/`)
 
-| Module | Purpose |
-|---|---|
-| `types/` | Core zero-cost value types: `Bitboard`, `Move` (32-bit), `Square`, `Piece`, `Value` |
-| `common/` | `Logging.h` (spdlog), `ThreadPool.h`, `stringutil.h` |
-| `chesscore/` | `Position` (board state, make/unmake, Zobrist), `MoveGenerator`, `Perft`, `Values` (PSTs) |
-| `config/` | `ConfigRegistry` (single source of truth), `ConfigManager` (singleton), `SearchConfigData`, `EvalConfigData` |
-| `engine/` | `Search`, `PlyInfo`, `Evaluator`, `TT`, `PawnTT`, `See`, `UciHandler`, `UciOptions`, `SearchLimits` |
-| `openingbook/` | Book loading, querying, platform-specific Boost serialization cache |
-| `tablebase/` | Fathom library interface (WDL/DTZ probing), path discovery, downloader |
-| `enginetest/` | EPD test suite runner, search-tree analysis |
+| Module         | Purpose                                                                                                      |
+|----------------|--------------------------------------------------------------------------------------------------------------|
+| `types/`       | Core zero-cost value types: `Bitboard`, `Move` (32-bit), `Square`, `Piece`, `Value`                          |
+| `common/`      | `Logging.h` (spdlog), `ThreadPool.h`, `stringutil.h`                                                         |
+| `chesscore/`   | `Position` (board state, make/unmake, Zobrist), `MoveGenerator`, `Perft`, `Values` (PSTs)                    |
+| `config/`      | `ConfigRegistry` (single source of truth), `ConfigManager` (singleton), `SearchConfigData`, `EvalConfigData` |
+| `engine/`      | `Search`, `PlyInfo`, `Evaluator`, `TT`, `PawnTT`, `See`, `UciHandler`, `UciOptions`, `SearchLimits`          |
+| `openingbook/` | Book loading, querying, platform-specific Boost serialization cache                                          |
+| `tablebase/`   | Fathom library interface (WDL/DTZ probing), path discovery, downloader                                       |
+| `enginetest/`  | EPD test suite runner, search-tree analysis                                                                  |
 
 ### Search Algorithm
 

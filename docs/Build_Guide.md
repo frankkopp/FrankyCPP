@@ -135,16 +135,16 @@ cmake --build cmake-build-win-release-production --config Release
 ```
 
 ### Build Output
-- Executables: `cmake-build-win-release\src\FrankyCPP_v1.5.exe`
-- Tests: `cmake-build-win-release\test\FrankyCPP_v1.5_Test.exe`
+- Executables: `cmake-build-win-release\src\FrankyCPP_v1.6.exe`
+- Tests: `cmake-build-win-release\test\FrankyCPP_v1.6_Test.exe`
 
 ### Running Tests
 ```powershell
 # Run all tests (excluding slow tests)
-.\cmake-build-win-release\test\FrankyCPP_v1.5_Test.exe --gtest_filter=-*SpeedTests.*:*TimingTests.*
+.\cmake-build-win-release\test\FrankyCPP_v1.6_Test.exe --gtest_filter=-*SpeedTests.*:*TimingTests.*
 
 # Run specific test
-.\cmake-build-win-release\test\FrankyCPP_v1.5_Test.exe --gtest_filter=PositionTest.*
+.\cmake-build-win-release\test\FrankyCPP_v1.6_Test.exe --gtest_filter=PositionTest.*
 ```
 
 ---
@@ -189,16 +189,16 @@ cmake --build cmake-build-wsl-release-production
 ```
 
 ### Build Output
-- Executables: `cmake-build-wsl-release/src/FrankyCPP_v1.5`
-- Tests: `cmake-build-wsl-release/test/FrankyCPP_v1.5_Test`
+- Executables: `cmake-build-wsl-release/src/FrankyCPP_v1.6`
+- Tests: `cmake-build-wsl-release/test/FrankyCPP_v1.6_Test`
 
 ### Running Tests
 ```bash
 # Run all tests (excluding slow tests)
-./cmake-build-wsl-release/test/FrankyCPP_v1.5_Test --gtest_filter=-*SpeedTests.*:*TimingTests.*
+./cmake-build-wsl-release/test/FrankyCPP_v1.6_Test --gtest_filter=-*SpeedTests.*:*TimingTests.*
 
 # Run specific test suite
-./cmake-build-wsl-release/test/FrankyCPP_v1.5_Test --gtest_filter=PositionTest.*
+./cmake-build-wsl-release/test/FrankyCPP_v1.6_Test --gtest_filter=PositionTest.*
 ```
 
 ---
@@ -249,8 +249,8 @@ We upgraded from Clang 15 to Clang 18 because:
 - ✅ More complete C++20 support
 
 ### Build Output
-- Executables: `cmake-build-wsl-clang-release/src/FrankyCPP_v1.5`
-- Tests: `cmake-build-wsl-clang-release/test/FrankyCPP_v1.5_Test`
+- Executables: `cmake-build-wsl-clang-release/src/FrankyCPP_v1.6`
+- Tests: `cmake-build-wsl-clang-release/test/FrankyCPP_v1.6_Test`
 
 ### Testing Workflow
 
@@ -777,8 +777,8 @@ See `docs/Compile_Time_Stripping.md` for developer details.
 .\build_windows.ps1 release           # Windows
 
 # Test
-./cmake-build-wsl-release/test/FrankyCPP_v1.5_Test
-.\cmake-build-win-release\test\FrankyCPP_v1.5_Test.exe
+./cmake-build-wsl-release/test/FrankyCPP_v1.6_Test
+.\cmake-build-win-release\test\FrankyCPP_v1.6_Test.exe
 ```
 
 **Ready to build!** 🚀

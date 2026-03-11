@@ -16,7 +16,7 @@
 $THREADS = 8
 $PARAMS = "--bench --threads $THREADS -l warn -s warn"
 $VTUNE_PATH = "C:\Program Files (x86)\Intel\oneAPI\vtune\2025.9\bin64"
-$EXECUTABLE = "D:\_DEV\FrankyCPP\cmake-build-win-relwithdebinfo\src\FrankyCPP_v1.5.exe"
+$EXECUTABLE = "D:\_DEV\FrankyCPP\cmake-build-win-relwithdebinfo\src\FrankyCPP_v1.6.exe"
 $RESULTS_BASE = "D:\_DEV\FrankyCPP\results\vtune"
 
 # -----------------------------------------------------------------------------

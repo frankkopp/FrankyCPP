@@ -28,10 +28,10 @@ FrankyCPP_Arena --report --testsuites-only
 FrankyCPP_Arena --report --matches-only
 
 # Show summary for specific engine (NEW)
-FrankyCPP_Arena --summary FrankyCPP-v1.5
+FrankyCPP_Arena --summary FrankyCPP-v1.6
 
 # Show summary with historical progression by tag (NEW)
-FrankyCPP_Arena --summary FrankyCPP-v1.5 --history
+FrankyCPP_Arena --summary FrankyCPP-v1.6 --history
 
 # Compare target vs baselines
 FrankyCPP_Arena --cmp FrankyCPP-v1.2-dev
@@ -144,13 +144,13 @@ Shows all results for a specific engine in a single view. Useful for:
 
 **Command:**
 ```bash
-FrankyCPP_Arena --summary FrankyCPP-v1.5
+FrankyCPP_Arena --summary FrankyCPP-v1.6
 ```
 
 **Example Output:**
 ```
 ===================================================================
-Engine Summary: FrankyCPP v1.5 [QuietSee]
+Engine Summary: FrankyCPP v1.6 [QuietSee]
 ===================================================================
 Test Suites (2026-03-08 01:53):
   crafty_test:         178/346 (51.45%)
@@ -175,9 +175,9 @@ Matches:
 ### Flexible Engine Matching
 
 The `--summary` command accepts flexible engine name formats:
-- `FrankyCPP-v1.5`
-- `FrankyCPP_v1.5`
-- `FrankyCPP v1.5`
+- `FrankyCPP-v1.6`
+- `FrankyCPP_v1.6`
+- `FrankyCPP v1.6`
 
 All match the same engine.
 
@@ -188,7 +188,7 @@ The `[QuietSee]` shown in the header is the **tag** from the test configuration.
 **Setting Tags:**
 ```yaml
 testSuiteRuns:
-  - engine: "FrankyCPP v1.5"
+  - engine: "FrankyCPP v1.6"
     tag: "QuietSee"      # This tag appears in results
     # ...
 ```

@@ -17,7 +17,7 @@ Complete reference for `config/arena.yaml` configuration file.
 ## Configuration Structure
 
 ```yaml
-version: "v1.5"                    # Arena version identifier
+version: "v1.6"                    # Arena version identifier
 resultsDir: "./results"            # Results output directory
 cutechessPath: "..."               # Path to cutechess-cli executable
 debugMode: false                   # Enable UCI debug output (optional)
@@ -41,8 +41,8 @@ benchmarks: [...]                  # List of benchmark configurations
 
 **Examples:**
 ```yaml
-version: "v1.5"           # Standard version
-version: "v1.5-dev"       # Development build
+version: "v1.6"           # Standard version
+version: "v1.6-dev"       # Development build
 ```
 
 **Note:** This is the Arena version, not the engine version. Each engine's version is specified separately in the test suite run configuration.
@@ -134,8 +134,8 @@ The new `testSuiteRuns` format eliminates duplication by defining shared setting
 
 ```yaml
 testSuiteRuns:
-  - engine: "FrankyCPP v1.5"             # Display name for the engine
-    engineVersion: "v1.5"                 # Version string for results grouping
+  - engine: "FrankyCPP v1.6"             # Display name for the engine
+    engineVersion: "v1.6"                 # Version string for results grouping
     tag: "QuietSee"                       # Feature tag for tracking (NEW)
     enginePath: "Release/.../engine.exe"  # Path to external UCI engine
     timePerMove: 5000                     # Default milliseconds per position
@@ -178,8 +178,8 @@ testSuiteRuns:
 
 **Examples:**
 ```yaml
-engine: "FrankyCPP v1.5"
-engine: "FrankyCPP v1.5-dev"
+engine: "FrankyCPP v1.6"
+engine: "FrankyCPP v1.6-dev"
 engine: "Stockfish 16"
 ```
 
@@ -195,8 +195,8 @@ engine: "Stockfish 16"
 
 **Examples:**
 ```yaml
-engineVersion: "v1.5"
-engineVersion: "v1.5-dev"
+engineVersion: "v1.6"
+engineVersion: "v1.6-dev"
 engineVersion: "v1.4"
 ```
 
@@ -225,7 +225,7 @@ tag: ""                # No tag (triggers warning)
 
 **Warning:** Empty tag triggers a validation warning:
 ```
-WARNING: Test suite run for 'FrankyCPP v1.5' has empty tag - results won't be grouped by feature
+WARNING: Test suite run for 'FrankyCPP v1.6' has empty tag - results won't be grouped by feature
 ```
 
 ---
@@ -240,8 +240,8 @@ WARNING: Test suite run for 'FrankyCPP v1.5' has empty tag - results won't be gr
 
 **Examples:**
 ```yaml
-enginePath: "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe"
-enginePath: "cmake-build-win-release/src/FrankyCPP_v1.5.exe"
+enginePath: "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe"
+enginePath: "cmake-build-win-release/src/FrankyCPP_v1.6.exe"
 enginePath: "D:/Games/Engines/stockfish.exe"
 ```
 
@@ -298,11 +298,11 @@ See detailed documentation for each field below.
 
 ```yaml
 testSuiteRuns:
-  # FrankyCPP v1.5 - current development
-  - engine: "FrankyCPP v1.5"
-    engineVersion: "v1.5"
+  # FrankyCPP v1.6 - current development
+  - engine: "FrankyCPP v1.6"
+    engineVersion: "v1.6"
     tag: "QuietSee"
-    enginePath: "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe"
+    enginePath: "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe"
     timePerMove: 5000
     maxDepth: 99
     isolatePositions: true

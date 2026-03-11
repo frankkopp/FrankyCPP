@@ -162,7 +162,7 @@ namespace arena {
     [[nodiscard]] static std::optional<EngineId> findEngine(const ReportData& data, const EngineId& search);
 
     /// Returns result for given suite and engine, or nullptr if not found.
-    /// Uses flexible matching to handle name variations (e.g., "FrankyCPP" vs "FrankyCPP v1.5").
+    /// Uses flexible matching to handle name variations (e.g., "FrankyCPP" vs "FrankyCPP v1.6").
     /// @param data   ReportData to search
     /// @param suite  Test suite name (e.g., "WAC")
     /// @param engine Engine identifier

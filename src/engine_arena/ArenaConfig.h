@@ -109,8 +109,8 @@ namespace arena {
 
   /// Configuration for a grouped test suite run (new unified format)
   struct TestSuiteRunConfig {
-    std::string engine;                                           ///< Display name: "FrankyCPP v1.5"
-    std::string engineVersion;                                    ///< Version for grouping: "v1.5"
+    std::string engine;                                           ///< Display name: "FrankyCPP v1.6"
+    std::string engineVersion;                                    ///< Version for grouping: "v1.6"
     std::string tag;                                              ///< Feature tag: "QuietSee"
     std::string enginePath;                                       ///< Path to executable
     milliseconds timePerMove;                                     ///< Time limit per move
@@ -172,7 +172,7 @@ namespace arena {
 
   /// Main arena configuration
   struct ArenaConfig {
-    std::string version;                           ///< Arena version (e.g., "v1.5") - used for result tracking
+    std::string version;                           ///< Arena version (e.g., "v1.6") - used for result tracking
     std::string resultsDir;                        ///< Root directory for results
     std::string cutechessPath;                     ///< Path to cutechess-cli executable (global)
     bool debugMode = false;                        ///< Enable cutechess-cli debug output (prints engine I/O)

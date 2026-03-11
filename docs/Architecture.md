@@ -592,9 +592,9 @@ ConfigManager::instance().eval().USE_MOBILITY
 
 | Target                 | Description                      |
 |------------------------|----------------------------------|
-| `FrankyCPP_v1.5`       | Main UCI engine executable       |
-| `FrankyCPP_v1.5_Test`  | GoogleTest unit tests            |
-| `FrankyCPP_v1.5_Bench` | Google Benchmark microbenchmarks |
+| `FrankyCPP_v1.6`       | Main UCI engine executable       |
+| `FrankyCPP_v1.6_Test`  | GoogleTest unit tests            |
+| `FrankyCPP_v1.6_Bench` | Google Benchmark microbenchmarks |
 
 ---
 

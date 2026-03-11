@@ -185,17 +185,17 @@ CMake Profiles:
 
 1. **Auto-Generated Run Configurations**
    - CLion creates these automatically:
-     - `FrankyCPP_v1.5` (main executable)
-     - `FrankyCPP_v1.5_Test` (test suite)
+     - `FrankyCPP_v1.6` (main executable)
+     - `FrankyCPP_v1.6_Test` (test suite)
      - `All CTest` (run all tests via CTest)
 
 2. **Select Run Configuration**
    - Use run configuration selector (top-right)
-   - Choose: `FrankyCPP_v1.5 | WSL-Debug`
+   - Choose: `FrankyCPP_v1.6 | WSL-Debug`
 
 3. **Run Application**
    - Click green play button (Run)
-   - Or: `Run` → `Run 'FrankyCPP_v1.5'` (Shift+F10)
+   - Or: `Run` → `Run 'FrankyCPP_v1.6'` (Shift+F10)
    - Terminal opens in WSL context
 
 #### Debug Configuration
@@ -206,7 +206,7 @@ CMake Profiles:
 
 2. **Start Debugging**
    - Click green bug button (Debug)
-   - Or: `Run` → `Debug 'FrankyCPP_v1.5'` (Shift+F9)
+   - Or: `Run` → `Debug 'FrankyCPP_v1.6'` (Shift+F9)
 
 3. **Debug Features Available**
    - ✅ Step over (F8)
@@ -223,7 +223,7 @@ CMake Profiles:
 ### Step 6: Run Tests
 
 #### Option 1: Run All Tests
-1. Select run config: `FrankyCPP_v1.5_Test | WSL-Debug`
+1. Select run config: `FrankyCPP_v1.6_Test | WSL-Debug`
 2. Click Run or Debug button
 3. Watch GTest output in console
 

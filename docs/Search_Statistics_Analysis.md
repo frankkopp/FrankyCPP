@@ -14,7 +14,7 @@ Run the `SearchTreeSizeTest` or any search test that outputs detailed statistics
 
 ```powershell
 # Run the specific test
-.\cmake-build-win-release\test\FrankyCPP_v1.5_Test.exe --gtest_filter=SearchTreeSizeTest.searchTreeSizeTest
+.\cmake-build-win-release\test\FrankyCPP_v1.6_Test.exe --gtest_filter=SearchTreeSizeTest.searchTreeSizeTest
 ```
 
 Or trigger a timed search from UCI and use the `detailedstats` command.
@@ -460,8 +460,8 @@ TB Cutoffs     : 0
 
 ## Summary Assessment (Reference Position)
 
-| Feature          | Status     | Grade | Notes                                 |
-|------------------|------------|-------|---------------------------------------|
+| Feature          | Status    | Grade | Notes                                 |
+|------------------|-----------|-------|---------------------------------------|
 | Move Ordering    | ✅ Working | A     | 86.87% first-move cutoffs             |
 | LMR              | ✅ Working | A     | 1.08% re-search rate                  |
 | LMP              | ✅ Working | A-    | High pruning count                    |

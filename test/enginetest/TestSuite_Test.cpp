@@ -161,11 +161,11 @@ TEST_F(TestSuite_Test, ecm98_test) {
 //
 // cmake --preset win-relwithdebinfo-asan
 // cmake --build cmake-build-win-relwithdebinfo-asan
-// .\cmake-build-win-relwithdebinfo-asan\test\FrankyCPP_v1.5_Test.exe --gtest_filter=*stress_test_for_sanitizers*
+// .\cmake-build-win-relwithdebinfo-asan\test\FrankyCPP_v1.6_Test.exe --gtest_filter=*stress_test_for_sanitizers*
 //
 // cmake --preset wsl-debug-tsan
 // cmake --build cmake-build-wsl-debug-tsan
-// setarch $(uname -m) -R ./cmake-build-wsl-debug-tsan/test/FrankyCPP_v1.5_Test --gtest_filter=*stress_test_for_sanitizers* 2>&1 | tee tsan_output.txt
+// setarch $(uname -m) -R ./cmake-build-wsl-debug-tsan/test/FrankyCPP_v1.6_Test --gtest_filter=*stress_test_for_sanitizers* 2>&1 | tee tsan_output.txt
 // =============================================================================
 TEST_F(TestSuite_Test, stress_test_for_sanitizers) {
   if (isBulkRun()) {
