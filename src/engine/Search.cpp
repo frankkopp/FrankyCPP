@@ -63,12 +63,7 @@ Search::~Search() {
   // After the main thread is joined, run() should have already joined all helpers.
   // But as a safety net (e.g., if destruction happens during unusual circumstances),
   // we also attempt to join any remaining helper threads.
-  for (auto& helper : helperThreads) {
-    if (helper.joinable()) {
-      helper.join();
-    }
-  }
-  helperThreads.clear();
+  joinHelperThreads();
 }
 
 ////////////////////////////////////////////////
@@ -118,10 +113,7 @@ void Search::startSearch(const Position& p, const SearchLimits& sl) {
 
   // Safety: ensure no helper threads are lingering from a previous search
   // (should already be joined by run(), but defensive programming)
-  for (auto& helper : helperThreads) {
-    if (helper.joinable()) { helper.join(); }
-  }
-  helperThreads.clear();
+  joinHelperThreads();
 
   // ===========================================================================
   // start search in a separate thread
@@ -349,13 +341,7 @@ void Search::run() {
   // ===========================================================================
   // Join all helper threads before extracting results
   // ===========================================================================
-  for (auto& t : helperThreads) {
-    if (t.joinable()) { t.join(); }
-  }
-  helperThreads.clear();
-  if (numHelperThreads > 0) {
-    LOG__DEBUG(Logger::get().SEARCH_LOG, "All {} helper thread(s) joined", numHelperThreads);
-  }
+  joinHelperThreads();
   // ===========================================================================
 
   // Aggregate node count from all threads
@@ -570,6 +556,16 @@ void Search::launchHelperThreads() {
   helpersLaunched = true;
   LOG__INFO(Logger::get().SEARCH_LOG, "Launched {} helper thread(s) after depth {} (TT priming complete)",
             numHelperThreads, SearchConfig.SMP_HELPER_START_DEPTH);
+}
+
+void Search::joinHelperThreads() {
+  if (helperThreads.empty()) return;
+  const int count = static_cast<int>(helperThreads.size());
+  for (auto& t : helperThreads) {
+    if (t.joinable()) { t.join(); }
+  }
+  helperThreads.clear();
+  LOG__DEBUG(Logger::get().SEARCH_LOG, "All {} helper thread(s) joined", count);
 }
 
 SearchResult Search::iterativeDeepening(Position& p) {
@@ -3140,7 +3136,6 @@ MoveList Search::extractPvWithTT(Position& p) const {
 
   // Now extend using TT lookups
   // Limit to prevent infinite loops (e.g., from TT collisions)
-  // Note: Stats not tracked here as this is a const function (display only)
   constexpr int maxExtension = MAX_DEPTH;
   int extended               = 0;
 

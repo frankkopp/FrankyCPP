@@ -426,6 +426,10 @@ namespace engine {
     /// No-op if helpers already launched or numHelperThreads == 0.
     void launchHelperThreads();
 
+    /// Joins all helper threads and clears the thread vector.
+    /// Called from destructor, startSearch() (defensive), and run() (post-search cleanup).
+    void joinHelperThreads();
+
     /// Performs iterative deepening search, incrementing depth until time expires.
     /// @param p  Position to search
     /// @return   Search result with best move and score
