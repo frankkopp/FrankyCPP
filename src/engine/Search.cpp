@@ -84,8 +84,10 @@ void Search::newGame() {
       plyInfo.resetSearchState();
     }
     threadData->history.reset();
-    threadData->nodesVisited = 0;
-    threadData->statistics   = SearchStats{};
+    threadData->nodesVisited            = 0;
+    threadData->statistics              = SearchStats{};
+    threadData->completedIterationDepth = DEPTH_NONE;
+    threadData->lastIterationValue      = VALUE_NONE;
     threadData->pv.clearAll();
     threadData->rootMoves.clear();
   }
@@ -265,9 +267,11 @@ void Search::run() {
   for (int t = 0; t < totalThreads; ++t) {
     auto& st = *searchThreadData[t];
 
-    // Reset counters and statistics
-    st.nodesVisited = 0;
-    st.statistics   = SearchStats{};
+    // Reset counters, statistics, and best-thread selection state
+    st.nodesVisited            = 0;
+    st.statistics              = SearchStats{};
+    st.completedIterationDepth = DEPTH_NONE;
+    st.lastIterationValue      = VALUE_NONE;
 
     // Copy root position to thread-local storage for all threads.
     // Each thread works on its own copy to avoid data races during search.
@@ -1244,7 +1248,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     STAT_INC(thread().statistics.ttProbes);
     if (const auto ttEntry = tt->probe(p.getZobristKey())) {
       // tt hit
-      const Move probedMove = static_cast<Move>(ttEntry->move);
+      const auto probedMove = static_cast<Move>(ttEntry->move);
       // Validate TT move before use - corrupted/torn reads from lockless TT
       // could produce garbage moves that would corrupt position state in doMove()
       if (probedMove != MOVE_NONE && MoveGenerator::isPseudoLegal(p, probedMove)) {
@@ -2519,7 +2523,7 @@ const SearchThreadData* Search::selectBestThread() const {
 
     // Mate scores: depth is irrelevant — only mate distance matters.
     // Higher value = shorter delivering mate or longer delay before being mated.
-    if (bestValue.isCheckMate() && candValue.isCheckMate()) {
+    if (bestValue.isCheckMate() && candValue.isCheckMate()) { // NOLINT(*-branch-clone)
       candidateIsBetter = (candValue > bestValue);
     }
     else if (candDepth > bestDepth) {
