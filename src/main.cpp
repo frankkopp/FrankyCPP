@@ -55,7 +55,9 @@ int main(int argc, char* argv[]) {
     .append(" v")
     .append(std::to_string(FrankyCPP_VERSION_MAJOR))
     .append(".")
-    .append(std::to_string(FrankyCPP_VERSION_MINOR));
+    .append(std::to_string(FrankyCPP_VERSION_MINOR))
+    .append(".")
+    .append(std::to_string(FrankyCPP_VERSION_PATCH));
 #ifdef FRANKYCPP_PRODUCTION
   appName.append(" (stripped)");
 #endif
@@ -173,7 +175,7 @@ int main(int argc, char* argv[]) {
       // Initialize to ensure all static data is ready
       init::init();
       // Print UCI options exactly like the "uci" command would
-      std::cout << "id name FrankyCPP v" << FrankyCPP_VERSION_MAJOR << "." << FrankyCPP_VERSION_MINOR
+      std::cout << "id name FrankyCPP v" << FrankyCPP_VERSION_MAJOR << "." << FrankyCPP_VERSION_MINOR << "." << FrankyCPP_VERSION_PATCH
 #ifdef FRANKYCPP_PRODUCTION
                 << " (stripped)"
 #endif
@@ -203,7 +205,7 @@ int main(int argc, char* argv[]) {
       }
       else {
         // Default: table format
-        std::cout << "FrankyCPP v" << FrankyCPP_VERSION_MAJOR << "." << FrankyCPP_VERSION_MINOR
+        std::cout << "FrankyCPP v" << FrankyCPP_VERSION_MAJOR << "." << FrankyCPP_VERSION_MINOR << "." << FrankyCPP_VERSION_PATCH
                   << " - Configuration Settings\n\n";
         std::cout << generateConfigTable(searchConfig, evalConfig, domainFilter);
       }

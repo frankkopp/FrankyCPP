@@ -49,7 +49,11 @@ namespace engine {
 
   BenchResult Benchmark::run(const std::vector<std::string>& fens, const BenchConfig& config) {
     BenchResult result;
-    result.version = "FrankyCPP v" + std::to_string(FrankyCPP_VERSION_MAJOR) + "." + std::to_string(FrankyCPP_VERSION_MINOR);
+    result.version = "FrankyCPP v" + std::to_string(FrankyCPP_VERSION_MAJOR)
+                     + "."
+                     + std::to_string(FrankyCPP_VERSION_MINOR)
+                     + "."
+                     + std::to_string(FrankyCPP_VERSION_PATCH);
 
     // Configure hash size and threads via config override
     ConfigManager::instance().applyOverrides(

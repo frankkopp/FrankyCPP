@@ -186,7 +186,9 @@ TEST_F(CliIntegrationTest, VersionOption) {
     .append(" v")
     .append(std::to_string(FrankyCPP_VERSION_MAJOR))
     .append(".")
-    .append(std::to_string(FrankyCPP_VERSION_MINOR));
+    .append(std::to_string(FrankyCPP_VERSION_MINOR))
+    .append(".")
+    .append(std::to_string(FrankyCPP_VERSION_PATCH));
 #ifdef FRANKYCPP_PRODUCTION
   expectedVersion.append(" (stripped)");
 #endif

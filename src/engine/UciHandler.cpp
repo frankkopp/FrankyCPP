@@ -109,7 +109,11 @@ bool UciHandler::handleCommand(const std::string& cmd) {
 }
 
 void UciHandler::uciCommand() const {
-  std::string idName = "id name FrankyCPP v" + std::to_string(FrankyCPP_VERSION_MAJOR) + "." + std::to_string(FrankyCPP_VERSION_MINOR);
+  std::string idName = "id name FrankyCPP v" + std::to_string(FrankyCPP_VERSION_MAJOR)
+                       + "."
+                       + std::to_string(FrankyCPP_VERSION_MINOR)
+                       + "."
+                       + std::to_string(FrankyCPP_VERSION_PATCH);
 #ifdef FRANKYCPP_PRODUCTION
   idName.append(" (stripped)");
 #endif
