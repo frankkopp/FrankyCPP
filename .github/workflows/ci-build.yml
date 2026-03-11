@@ -70,7 +70,12 @@ jobs:
           $maxAttempts = 3
           $attempt = 0
           $success = $false
-          $prodFlag = if ("${{ matrix.build_type }}" -eq "stripped") { "ON" } else { "OFF" }
+          if ("${{ matrix.build_type }}" -eq "stripped") {
+            $prodFlag = "ON"
+          } else {
+            $prodFlag = "OFF"
+          }
+          Write-Host "Build type: ${{ matrix.build_type }}, FRANKYCPP_PRODUCTION=$prodFlag"
           
           do {
             $attempt++
@@ -87,7 +92,7 @@ jobs:
               -DFRANKYCPP_BUILD_TESTS=ON `
               -DFRANKYCPP_BUILD_BENCHMARKS=OFF `
               -DSTRICT_WARNINGS=OFF `
-              -DFRANKYCPP_PRODUCTION=$prodFlag
+              "-DFRANKYCPP_PRODUCTION=$prodFlag"
             
             if ($LASTEXITCODE -eq 0) {
               $success = $true
