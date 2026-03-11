@@ -15,12 +15,12 @@ concurrency:
 
 jobs:
   build-windows:
-    name: Windows ${{ matrix.build_type == 'prod' && 'Production' || 'Dev' }} Release
+    name: Windows ${{ matrix.build_type == 'stripped' && 'Stripped' || 'Standard' }} Release
     runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
-        build_type: [dev, prod]
+        build_type: [std, stripped]
 
     steps:
       - name: Checkout repository
@@ -70,7 +70,7 @@ jobs:
           $maxAttempts = 3
           $attempt = 0
           $success = $false
-          $prodFlag = if ("${{ matrix.build_type }}" -eq "prod") { "ON" } else { "OFF" }
+          $prodFlag = if ("${{ matrix.build_type }}" -eq "stripped") { "ON" } else { "OFF" }
           
           do {
             $attempt++
@@ -196,7 +196,7 @@ jobs:
           retention-days: 30
 
   build-linux:
-    name: Linux ${{ matrix.compiler }} ${{ matrix.build_type == 'prod' && 'Production' || 'Dev' }} Release
+    name: Linux ${{ matrix.compiler }} ${{ matrix.build_type == 'stripped' && 'Stripped' || 'Standard' }} Release
     runs-on: ubuntu-latest
 
     strategy:
@@ -206,15 +206,15 @@ jobs:
           - compiler: gcc
             cc: gcc-13
             cxx: g++-13
-            build_type: dev
+            build_type: std
           - compiler: gcc
             cc: gcc-13
             cxx: g++-13
-            build_type: prod
+            build_type: stripped
           - compiler: clang
             cc: clang-18
             cxx: clang++-18
-            build_type: dev
+            build_type: std
 
     steps:
       - name: Checkout repository
@@ -262,7 +262,7 @@ jobs:
           attempt=0
           success=false
           
-          if [ "${{ matrix.build_type }}" = "prod" ]; then
+          if [ "${{ matrix.build_type }}" = "stripped" ]; then
             export PROD_FLAG="ON"
           else
             export PROD_FLAG="OFF"
@@ -406,13 +406,13 @@ jobs:
       - name: Download Windows artifacts
         uses: actions/download-artifact@v4
         with:
-          name: frankycpp-windows-Release
+          name: frankycpp-windows-std-Release
           path: windows-release
 
       - name: Download Linux GCC artifacts
         uses: actions/download-artifact@v4
         with:
-          name: frankycpp-linux-gcc-Release
+          name: frankycpp-linux-gcc-std-Release
           path: linux-release
 
       - name: Create Release Archives
