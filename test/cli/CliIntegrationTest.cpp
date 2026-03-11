@@ -182,14 +182,14 @@ TEST_F(CliIntegrationTest, VersionOption) {
 
   // Check version string contains expected parts
   std::string expectedVersion = "FrankyCPP";
-#ifdef FRANKYCPP_PRODUCTION
-  expectedVersion.append(" (stripped)");
-#endif
   expectedVersion
     .append(" v")
     .append(std::to_string(FrankyCPP_VERSION_MAJOR))
     .append(".")
     .append(std::to_string(FrankyCPP_VERSION_MINOR));
+#ifdef FRANKYCPP_PRODUCTION
+  expectedVersion.append(" (stripped)");
+#endif
 
   EXPECT_TRUE(output.find(expectedVersion) != std::string::npos)
     << "Version output should contain '" << expectedVersion << "'\nActual: " << output;

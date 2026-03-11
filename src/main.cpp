@@ -51,14 +51,14 @@ int main(int argc, char* argv[]) {
 
   // Version comes from CMAKE template version.h.in
   std::string appName = "FrankyCPP";
-#ifdef FRANKYCPP_PRODUCTION
-  appName.append(" (stripped)");
-#endif
   appName
     .append(" v")
     .append(std::to_string(FrankyCPP_VERSION_MAJOR))
     .append(".")
     .append(std::to_string(FrankyCPP_VERSION_MINOR));
+#ifdef FRANKYCPP_PRODUCTION
+  appName.append(" (stripped)");
+#endif
   std::cout << appName << std::endl;
 
   std::string config_file, book_file, book_type, testsuite_file;
@@ -173,7 +173,11 @@ int main(int argc, char* argv[]) {
       // Initialize to ensure all static data is ready
       init::init();
       // Print UCI options exactly like the "uci" command would
-      std::cout << "id name FrankyCPP v" << FrankyCPP_VERSION_MAJOR << "." << FrankyCPP_VERSION_MINOR << "\n";
+      std::cout << "id name FrankyCPP v" << FrankyCPP_VERSION_MAJOR << "." << FrankyCPP_VERSION_MINOR
+#ifdef FRANKYCPP_PRODUCTION
+                << " (stripped)"
+#endif
+                << "\n";
       std::cout << "id author Frank Kopp, Germany\n";
       std::cout << UciOptions::getInstance()->str() << "\n";
       return 0;

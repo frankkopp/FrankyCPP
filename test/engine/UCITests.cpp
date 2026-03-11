@@ -103,7 +103,12 @@ TEST_F(UCITest, getoptionsTest) {
   // First set some options to non-default values
   {
     ostringstream os;
+#ifdef FRANKYCPP_PRODUCTION
+    // In production, Use Quiescence is CONFIG_CONST and not exposed as UCI option
+    const string command = "setoption name Hash value 512";
+#else
     const string command = "setoption name Hash value 512\nsetoption name Use Quiescence value false";
+#endif
     LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
     istringstream is(command);
     UciHandler uciHandler(&is, &os);
@@ -131,8 +136,11 @@ TEST_F(UCITest, getoptionsTest) {
   // Verify specific values we set
   EXPECT_TRUE(result.find("Hash") != string::npos);
   EXPECT_TRUE(result.find("spin current 512") != string::npos);
+#ifndef FRANKYCPP_PRODUCTION
+  // Use Quiescence is CONFIG_CONST — not exposed as UCI option in production
   EXPECT_TRUE(result.find("Use Quiescence") != string::npos);
   EXPECT_TRUE(result.find("check current false") != string::npos);
+#endif
 }
 
 TEST_F(UCITest, clearHashTest) {

@@ -344,6 +344,71 @@ TEST_F(ConfigRegistryTest, VerifyKeyEvalConfigs) {
 }
 
 //=============================================================================
+// IS_MUTABLE Tests
+//=============================================================================
+
+TEST_F(ConfigRegistryTest, IsMutableEssentialMembers) {
+  // CONFIG_ESSENTIAL members are always mutable, regardless of build mode
+  const SearchConfigData defaultSearch{};
+  const EvalConfigData defaultEval{};
+
+  // Search: CONFIG_ESSENTIAL members
+  EXPECT_TRUE(IS_MUTABLE(defaultSearch, TT_SIZE_MB))       << "TT_SIZE_MB should always be mutable";
+  EXPECT_TRUE(IS_MUTABLE(defaultSearch, USE_PONDER))        << "USE_PONDER should always be mutable";
+  EXPECT_TRUE(IS_MUTABLE(defaultSearch, THREADS))           << "THREADS should always be mutable";
+  EXPECT_TRUE(IS_MUTABLE(defaultSearch, MOVE_OVERHEAD_MS))  << "MOVE_OVERHEAD_MS should always be mutable";
+  EXPECT_TRUE(IS_MUTABLE(defaultSearch, USE_BOOK))          << "USE_BOOK should always be mutable";
+  EXPECT_TRUE(IS_MUTABLE(defaultSearch, BOOK_PATH))         << "BOOK_PATH should always be mutable";
+  EXPECT_TRUE(IS_MUTABLE(defaultSearch, BOOK_TYPE))         << "BOOK_TYPE should always be mutable";
+  EXPECT_TRUE(IS_MUTABLE(defaultSearch, TB_PATH))           << "TB_PATH should always be mutable";
+
+  // Eval: CONFIG_ESSENTIAL members
+  EXPECT_TRUE(IS_MUTABLE(defaultEval, USE_PAWN_TT))        << "USE_PAWN_TT should always be mutable";
+  EXPECT_TRUE(IS_MUTABLE(defaultEval, PAWN_TT_SIZE_MB))    << "PAWN_TT_SIZE_MB should always be mutable";
+}
+
+TEST_F(ConfigRegistryTest, IsMutableConfigConstMembers) {
+  // CONFIG_CONST members: mutable in dev, frozen in production
+  const SearchConfigData defaultSearch{};
+  const EvalConfigData defaultEval{};
+
+#ifdef FRANKYCPP_PRODUCTION
+  // Production: CONFIG_CONST members are static constexpr → not mutable
+  EXPECT_FALSE(IS_MUTABLE(defaultSearch, USE_NMP))    << "USE_NMP should be frozen in production";
+  EXPECT_FALSE(IS_MUTABLE(defaultSearch, USE_LMR))    << "USE_LMR should be frozen in production";
+  EXPECT_FALSE(IS_MUTABLE(defaultEval, TEMPO))        << "TEMPO should be frozen in production";
+  EXPECT_FALSE(IS_MUTABLE(defaultEval, USE_MATERIAL)) << "USE_MATERIAL should be frozen in production";
+#else
+  // Development: CONFIG_CONST members are plain mutable
+  EXPECT_TRUE(IS_MUTABLE(defaultSearch, USE_NMP))    << "USE_NMP should be mutable in development";
+  EXPECT_TRUE(IS_MUTABLE(defaultSearch, USE_LMR))    << "USE_LMR should be mutable in development";
+  EXPECT_TRUE(IS_MUTABLE(defaultEval, TEMPO))        << "TEMPO should be mutable in development";
+  EXPECT_TRUE(IS_MUTABLE(defaultEval, USE_MATERIAL)) << "USE_MATERIAL should be mutable in development";
+#endif
+}
+
+TEST_F(ConfigRegistryTest, IsMutableMatchesUciExposure) {
+  // Verify that IS_MUTABLE results match the UCI exposure flags in the registry.
+  // In development builds, all entries with non-empty uciName should have .uci = true.
+  // In production builds, only CONFIG_ESSENTIAL entries should have .uci = true.
+  const auto uciOpts = registry.uciOptions();
+
+  for (const auto* def : uciOpts) {
+    // All entries returned by uciOptions() must have .uci = true
+    EXPECT_TRUE(def->exposure.uci) << "UCI option " << def->name << " has .uci = false";
+  }
+
+  // In production, CONFIG_CONST options should NOT appear in uciOptions()
+#ifdef FRANKYCPP_PRODUCTION
+  for (const auto* def : uciOpts) {
+    // Known CONFIG_CONST members should not be here
+    EXPECT_NE(def->name, "USE_NMP") << "Frozen option USE_NMP should not be a UCI option in production";
+    EXPECT_NE(def->name, "USE_LMR") << "Frozen option USE_LMR should not be a UCI option in production";
+  }
+#endif
+}
+
+//=============================================================================
 // Helper Function Tests
 //=============================================================================
 

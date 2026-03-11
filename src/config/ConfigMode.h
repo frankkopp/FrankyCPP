@@ -92,6 +92,17 @@
 // pondering flag) with CONFIG_ESSENTIAL so their intent is clear in the struct.
 #define CONFIG_ESSENTIAL
 
+// Compile-time check: is a struct member mutable (i.e. CONFIG_ESSENTIAL)?
+// Uses decltype to inspect the member's type via a default-constructed instance.
+// - In production, CONFIG_CONST members are static constexpr → type is const → returns false.
+// - In development, CONFIG_CONST members are plain mutable → type is non-const → returns true.
+// - CONFIG_ESSENTIAL members are always mutable → always returns true.
+// This allows ConfigRegistry to auto-derive UCI exposure from the struct declaration,
+// avoiding a second source of truth.
+// Usage: IS_MUTABLE(defaultSearch, USE_NMP)  → false in production, true in development
+// NOLINTNEXTLINE(bugprone-macro-parentheses) — member access requires unparenthesized args
+#define IS_MUTABLE(inst, member) (!std::is_const_v<decltype(inst.member)>)
+
 //=============================================================================
 // Statistics macros
 //

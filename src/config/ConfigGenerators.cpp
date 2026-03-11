@@ -211,9 +211,20 @@ namespace config {
             value = node[def->name].as<std::string>();
           }
 
-          // Apply the setter
+          // Apply the setter (assignIfMutable silently drops frozen values in production)
           def->setter(search, eval, value);
           parsedKeys.insert(def->name);
+
+          // In production, CONFIG_CONST members are static constexpr and cannot be changed.
+          // Warn if a YAML file overrides a frozen value that differs from the compiled default.
+          if constexpr (IS_CONFIG_FROZEN) {
+            const std::string actualValue = def->getter(search, eval);
+            if (actualValue != value) {
+              LOG__WARN(Logger::get().CONFIG_LOG,
+                        "Config '{}' is frozen in production build; YAML value '{}' ignored (using compiled default '{}')",
+                        def->name, value, actualValue);
+            }
+          }
         } catch (const std::exception& e) {
           LOG__WARN(Logger::get().SEARCH_LOG,
                     "Failed to parse config '{}': {}", def->name, e.what());
