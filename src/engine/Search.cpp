@@ -1364,10 +1364,15 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 
       // flag for mate threats
       if (nValue > VALUE_CHECKMATE_THRESHOLD) {
-        // although this player did not make a move the value still is
-        // a mate - very good! Just adjust the value to not return an
-        // unproven mate
-        nValue = VALUE_CHECKMATE_THRESHOLD;
+        // Clamp to beta rather than VALUE_CHECKMATE_THRESHOLD to avoid storing
+        // an artificial near-mate non-mate value (9871 cp = +98.71 pawns) in TT.
+        // VALUE_CHECKMATE_THRESHOLD is NOT recognized as checkmate by isCheckMate(),
+        // so valueToTt() stores it raw without ply adjustment, contaminating the TT.
+        // NMP only needs to prove fail-high (value >= beta), so beta is sufficient.
+        // The nearMateWindow guard already disables NMP when beta is near checkmate
+        // range (beta > VALUE_CHECKMATE_THRESHOLD - NMP_NEAR_MATE_MARGIN), so beta
+        // is always a normal score here.
+        nValue = beta;
       }
       else if (nValue < -(VALUE_CHECKMATE - 2 * SearchConfig.THREAT_EXT_MATE_DEPTH)) { // configurable mate-in-N threshold
         // the player did not move and got mated ==> mate threat
