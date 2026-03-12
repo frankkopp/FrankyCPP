@@ -32,7 +32,7 @@
 //   START_POSITION_FEN  - Standard chess starting position in FEN notation
 //   GAME_PHASE_MAX      - Maximum game phase value (24 = all pieces on board)
 //   MAX_DEPTH           - Maximum search depth (128 plies)
-//   MAX_MOVES           - Maximum moves in a position (512)
+//   MAX_MOVES           - Maximum game history length in half-moves (1024)
 //   KB, MB, GB          - Size constants for memory calculations
 //
 // Utilities:
@@ -56,8 +56,11 @@ constexpr int GAME_PHASE_MAX = 24;
 // max depth
 constexpr int MAX_DEPTH = 128;
 
-// max number of moves
-constexpr int MAX_MOVES = 512;
+// Maximum game history length in half-moves (plies).
+// Must accommodate game plies + search depth (doMove/doNullMove during search
+// push to the same history array). 1024 supports games up to ~896 plies
+// with search depth up to 128.
+constexpr int MAX_MOVES = 1024;
 
 // nanoseconds per second
 constexpr uint64_t nanoPerSec = 1'000'000'000;

@@ -150,7 +150,9 @@ namespace chess {
     // Extended Board State END ---------------------------------
     // **********************************************************
 
-    // history information for undo and repetition detection
+    // History for undo and repetition detection.
+    // Sized by MAX_MOVES which must accommodate game plies + search depth,
+    // since doMove/doNullMove during search push to this same array.
     constexpr static std::size_t MAX_HISTORY = MAX_MOVES;
     std::array<HistoryState, MAX_HISTORY> historyState{};
     int historyCounter = 0;

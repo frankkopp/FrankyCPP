@@ -314,6 +314,7 @@ namespace chess {
   }
 
   void Position::doNullMove() {
+    assert((historyCounter < MAX_MOVES - 1) && "Can't have more moves than MAX_MOVES");
     // Save state of board for undo
     // update existing history entry to not create and allocate a new one
     // Save state of board for undo
