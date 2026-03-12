@@ -297,7 +297,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_ALPHABETA),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_ALPHABETA), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_ALPHABETA; }),
     .setter = SEARCH_CONFIG_SETTER(USE_ALPHABETA, parseBool)
   });
@@ -309,7 +309,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_PVS),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_PVS), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_PVS; }),
     .setter = SEARCH_CONFIG_SETTER(USE_PVS, parseBool)
   });
@@ -321,7 +321,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_ASP),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_ASP), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_ASP; }),
     .setter = SEARCH_CONFIG_SETTER(USE_ASP, parseBool)
   });
@@ -333,7 +333,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_QUIESCENCE),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_QUIESCENCE), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_QUIESCENCE; }),
     .setter = SEARCH_CONFIG_SETTER(USE_QUIESCENCE, parseBool)
   });
@@ -348,7 +348,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_TT),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_TT), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_TT; }),
     .setter = SEARCH_CONFIG_SETTER(USE_TT, parseBool)
   });
@@ -360,7 +360,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_TT_VALUE),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_TT_VALUE), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_TT_VALUE; }),
     .setter = SEARCH_CONFIG_SETTER(USE_TT_VALUE, parseBool)
   });
@@ -372,7 +372,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_EVAL_TT),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_EVAL_TT), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_EVAL_TT; }),
     .setter = SEARCH_CONFIG_SETTER(USE_EVAL_TT, parseBool)
   });
@@ -432,7 +432,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_BEST_THREAD_SELECTION),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_BEST_THREAD_SELECTION), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_BEST_THREAD_SELECTION; }),
     .setter = SEARCH_CONFIG_SETTER(USE_BEST_THREAD_SELECTION, parseBool)
   });
@@ -446,7 +446,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.BEST_THREAD_SCORE_MARGIN),
     .minValue = 0,
     .maxValue = 500,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, BEST_THREAD_SCORE_MARGIN), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.BEST_THREAD_SCORE_MARGIN; }),
     .setter = SEARCH_CONFIG_SETTER(BEST_THREAD_SCORE_MARGIN, parseInt)
   });
@@ -458,7 +458,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_QS_TT),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_QS_TT), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_QS_TT; }),
     .setter = SEARCH_CONFIG_SETTER(USE_QS_TT, parseBool)
   });
@@ -486,7 +486,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_TB_PROBE_ROOT),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_TB_PROBE_ROOT), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_TB_PROBE_ROOT; }),
     .setter = SEARCH_CONFIG_SETTER(USE_TB_PROBE_ROOT, parseBool)
   });
@@ -498,7 +498,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.TB_ROOT_IMMEDIATE),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, TB_ROOT_IMMEDIATE), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.TB_ROOT_IMMEDIATE; }),
     .setter = SEARCH_CONFIG_SETTER(TB_ROOT_IMMEDIATE, parseBool)
   });
@@ -511,7 +511,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_TB_PROBE_SEARCH),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_TB_PROBE_SEARCH), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_TB_PROBE_SEARCH; }),
     .setter = SEARCH_CONFIG_SETTER(USE_TB_PROBE_SEARCH, parseBool)
   });
@@ -537,7 +537,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.TB_PROBE_DEPTH),
     .minValue = 0,
     .maxValue = 20,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, TB_PROBE_DEPTH), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.TB_PROBE_DEPTH; }),
     .setter = SEARCH_CONFIG_SETTER(TB_PROBE_DEPTH, parseInt)
   });
@@ -551,7 +551,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.TB_PROBE_LIMIT),
     .minValue = 3,
     .maxValue = 7,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, TB_PROBE_LIMIT), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.TB_PROBE_LIMIT; }),
     .setter = SEARCH_CONFIG_SETTER(TB_PROBE_LIMIT, parseInt)
   });
@@ -565,7 +565,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.TB_RULE50_THRESHOLD),
     .minValue = 0,
     .maxValue = 100,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, TB_RULE50_THRESHOLD), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.TB_RULE50_THRESHOLD; }),
     .setter = SEARCH_CONFIG_SETTER(TB_RULE50_THRESHOLD, parseInt)
   });
@@ -607,7 +607,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_TT_PV_MOVE_SORT),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_TT_PV_MOVE_SORT), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_TT_PV_MOVE_SORT; }),
     .setter = SEARCH_CONFIG_SETTER(USE_TT_PV_MOVE_SORT, parseBool)
   });
@@ -619,7 +619,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_KILLER_MOVES),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_KILLER_MOVES), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_KILLER_MOVES; }),
     .setter = SEARCH_CONFIG_SETTER(USE_KILLER_MOVES, parseBool)
   });
@@ -631,7 +631,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_HISTORY_COUNTER),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_HISTORY_COUNTER), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_HISTORY_COUNTER; }),
     .setter = SEARCH_CONFIG_SETTER(USE_HISTORY_COUNTER, parseBool)
   });
@@ -643,7 +643,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_HISTORY_MOVES),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_HISTORY_MOVES), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_HISTORY_MOVES; }),
     .setter = SEARCH_CONFIG_SETTER(USE_HISTORY_MOVES, parseBool)
   });
@@ -655,7 +655,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_IID),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_IID), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_IID; }),
     .setter = SEARCH_CONFIG_SETTER(USE_IID, parseBool)
   });
@@ -669,7 +669,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.IID_DEPTH),
     .minValue = 1,
     .maxValue = 20,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, IID_DEPTH), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.IID_DEPTH; }),
     .setter = SEARCH_CONFIG_SETTER(IID_DEPTH, parseInt)
   });
@@ -683,7 +683,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.IID_REDUCTION),
     .minValue = 1,
     .maxValue = 10,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, IID_REDUCTION), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.IID_REDUCTION; }),
     .setter = SEARCH_CONFIG_SETTER(IID_REDUCTION, parseInt)
   });
@@ -696,7 +696,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_IIR),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_IIR), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_IIR; }),
     .setter = SEARCH_CONFIG_SETTER(USE_IIR, parseBool)
   });
@@ -710,7 +710,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.IIR_DEPTH),
     .minValue = 1,
     .maxValue = 20,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, IIR_DEPTH), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.IIR_DEPTH; }),
     .setter = SEARCH_CONFIG_SETTER(IIR_DEPTH, parseInt)
   });
@@ -724,7 +724,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.IIR_REDUCTION),
     .minValue = 1,
     .maxValue = 5,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, IIR_REDUCTION), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.IIR_REDUCTION; }),
     .setter = SEARCH_CONFIG_SETTER(IIR_REDUCTION, parseInt)
   });
@@ -736,7 +736,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.IIR_ALL_NODES),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, IIR_ALL_NODES), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.IIR_ALL_NODES; }),
     .setter = SEARCH_CONFIG_SETTER(IIR_ALL_NODES, parseBool)
   });
@@ -751,7 +751,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_MDP),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_MDP), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_MDP; }),
     .setter = SEARCH_CONFIG_SETTER(USE_MDP, parseBool)
   });
@@ -763,7 +763,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_QS_STANDPAT_CUT),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_QS_STANDPAT_CUT), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_QS_STANDPAT_CUT; }),
     .setter = SEARCH_CONFIG_SETTER(USE_QS_STANDPAT_CUT, parseBool)
   });
@@ -775,7 +775,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_QS_SEE),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_QS_SEE), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_QS_SEE; }),
     .setter = SEARCH_CONFIG_SETTER(USE_QS_SEE, parseBool)
   });
@@ -790,7 +790,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_RAZORING),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_RAZORING), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_RAZORING; }),
     .setter = SEARCH_CONFIG_SETTER(USE_RAZORING, parseBool)
   });
@@ -804,7 +804,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.RAZOR_MARGIN),
     .minValue = 0,
     .maxValue = 1000,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, RAZOR_MARGIN), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.RAZOR_MARGIN; }),
     .setter = SEARCH_CONFIG_SETTER(RAZOR_MARGIN, parseInt)
   });
@@ -819,7 +819,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_RFP),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_RFP), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_RFP; }),
     .setter = SEARCH_CONFIG_SETTER(USE_RFP, parseBool)
   });
@@ -845,7 +845,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_RFP_IMPROVING),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_RFP_IMPROVING), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_RFP_IMPROVING; }),
     .setter = SEARCH_CONFIG_SETTER(USE_RFP_IMPROVING, parseBool)
   });
@@ -859,7 +859,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.RFP_IMPROVING_MARGIN),
     .minValue = 0,
     .maxValue = 300,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, RFP_IMPROVING_MARGIN), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.RFP_IMPROVING_MARGIN; }),
     .setter = SEARCH_CONFIG_SETTER(RFP_IMPROVING_MARGIN, parseInt)
   });
@@ -874,7 +874,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_NMP),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_NMP), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_NMP; }),
     .setter = SEARCH_CONFIG_SETTER(USE_NMP, parseBool)
   });
@@ -888,7 +888,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.NMP_DEPTH),
     .minValue = 1,
     .maxValue = 10,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, NMP_DEPTH), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.NMP_DEPTH; }),
     .setter = SEARCH_CONFIG_SETTER(NMP_DEPTH, parseInt)
   });
@@ -902,7 +902,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.NMP_REDUCTION),
     .minValue = 1,
     .maxValue = 6,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, NMP_REDUCTION), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.NMP_REDUCTION; }),
     .setter = SEARCH_CONFIG_SETTER(NMP_REDUCTION, parseInt)
   });
@@ -914,7 +914,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_NMP_VERIFY),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_NMP_VERIFY), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_NMP_VERIFY; }),
     .setter = SEARCH_CONFIG_SETTER(USE_NMP_VERIFY, parseBool)
   });
@@ -928,7 +928,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.NMP_VERIFY_MIN_DEPTH),
     .minValue = 1,
     .maxValue = 20,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, NMP_VERIFY_MIN_DEPTH), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.NMP_VERIFY_MIN_DEPTH; }),
     .setter = SEARCH_CONFIG_SETTER(NMP_VERIFY_MIN_DEPTH, parseInt)
   });
@@ -942,7 +942,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.NMP_VERIFY_MARGIN),
     .minValue = 0,
     .maxValue = 10,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, NMP_VERIFY_MARGIN), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.NMP_VERIFY_MARGIN; }),
     .setter = SEARCH_CONFIG_SETTER(NMP_VERIFY_MARGIN, parseInt)
   });
@@ -956,7 +956,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.NMP_NEAR_MATE_MARGIN),
     .minValue = 0,
     .maxValue = 200,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, NMP_NEAR_MATE_MARGIN), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.NMP_NEAR_MATE_MARGIN; }),
     .setter = SEARCH_CONFIG_SETTER(NMP_NEAR_MATE_MARGIN, parseInt)
   });
@@ -968,7 +968,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_NMP_ZUG_GUARD),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_NMP_ZUG_GUARD), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_NMP_ZUG_GUARD; }),
     .setter = SEARCH_CONFIG_SETTER(USE_NMP_ZUG_GUARD, parseBool)
   });
@@ -982,7 +982,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.NMP_ZUG_NONPAWN_THRESHOLD),
     .minValue = 0,
     .maxValue = 10,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, NMP_ZUG_NONPAWN_THRESHOLD), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.NMP_ZUG_NONPAWN_THRESHOLD; }),
     .setter = SEARCH_CONFIG_SETTER(NMP_ZUG_NONPAWN_THRESHOLD, parseInt)
   });
@@ -994,7 +994,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_NMP_IMPROVING),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_NMP_IMPROVING), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_NMP_IMPROVING; }),
     .setter = SEARCH_CONFIG_SETTER(USE_NMP_IMPROVING, parseBool)
   });
@@ -1008,7 +1008,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.NMP_IMPROVING_REDUCTION),
     .minValue = 0,
     .maxValue = 3,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, NMP_IMPROVING_REDUCTION), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.NMP_IMPROVING_REDUCTION; }),
     .setter = SEARCH_CONFIG_SETTER(NMP_IMPROVING_REDUCTION, parseInt)
   });
@@ -1023,7 +1023,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_FP),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_FP), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_FP; }),
     .setter = SEARCH_CONFIG_SETTER(USE_FP, parseBool)
   });
@@ -1035,7 +1035,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_QFP),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_QFP), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_QFP; }),
     .setter = SEARCH_CONFIG_SETTER(USE_QFP, parseBool)
   });
@@ -1061,7 +1061,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_FP_IMPROVING),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_FP_IMPROVING), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_FP_IMPROVING; }),
     .setter = SEARCH_CONFIG_SETTER(USE_FP_IMPROVING, parseBool)
   });
@@ -1075,7 +1075,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.FP_IMPROVING_MARGIN),
     .minValue = 0,
     .maxValue = 300,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, FP_IMPROVING_MARGIN), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.FP_IMPROVING_MARGIN; }),
     .setter = SEARCH_CONFIG_SETTER(FP_IMPROVING_MARGIN, parseInt)
   });
@@ -1090,7 +1090,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_IMPROVING),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_IMPROVING), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_IMPROVING; }),
     .setter = SEARCH_CONFIG_SETTER(USE_IMPROVING, parseBool)
   });
@@ -1105,7 +1105,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_LMR),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_LMR), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_LMR; }),
     .setter = SEARCH_CONFIG_SETTER(USE_LMR, parseBool)
   });
@@ -1119,7 +1119,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.LMR_MIN_DEPTH),
     .minValue = 1,
     .maxValue = 10,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, LMR_MIN_DEPTH), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.LMR_MIN_DEPTH; }),
     .setter = SEARCH_CONFIG_SETTER(LMR_MIN_DEPTH, parseInt)
   });
@@ -1133,7 +1133,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.LMR_MIN_MOVES),
     .minValue = 1,
     .maxValue = 10,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, LMR_MIN_MOVES), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.LMR_MIN_MOVES; }),
     .setter = SEARCH_CONFIG_SETTER(LMR_MIN_MOVES, parseInt)
   });
@@ -1145,7 +1145,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.LMR_USE_LOG_FORMULA),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, LMR_USE_LOG_FORMULA), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.LMR_USE_LOG_FORMULA; }),
     .setter = SEARCH_CONFIG_SETTER(LMR_USE_LOG_FORMULA, parseBool)
   });
@@ -1159,7 +1159,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.LMR_LOG_BASE_DIV),
     .minValue = 50,
     .maxValue = 500,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, LMR_LOG_BASE_DIV), .yaml = true, .display = true},
     .getter = [](const SearchConfigData& s, const EvalConfigData&) {
       return configToString(s.LMR_LOG_BASE_DIV);
     },
@@ -1173,7 +1173,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_LMR_IMPROVING),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_LMR_IMPROVING), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_LMR_IMPROVING; }),
     .setter = SEARCH_CONFIG_SETTER(USE_LMR_IMPROVING, parseBool)
   });
@@ -1187,7 +1187,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.LMR_IMPROVING_REDUCTION),
     .minValue = 0,
     .maxValue = 4,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, LMR_IMPROVING_REDUCTION), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.LMR_IMPROVING_REDUCTION; }),
     .setter = SEARCH_CONFIG_SETTER(LMR_IMPROVING_REDUCTION, parseInt)
   });
@@ -1199,7 +1199,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_LMR_HISTORY),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_LMR_HISTORY), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_LMR_HISTORY; }),
     .setter = SEARCH_CONFIG_SETTER(USE_LMR_HISTORY, parseBool)
   });
@@ -1213,7 +1213,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.LMR_HISTORY_DIVISOR),
     .minValue = 1024,
     .maxValue = 32768,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, LMR_HISTORY_DIVISOR), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.LMR_HISTORY_DIVISOR; }),
     .setter = SEARCH_CONFIG_SETTER(LMR_HISTORY_DIVISOR, parseInt)
   });
@@ -1225,7 +1225,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_LMR_CUTNODE),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_LMR_CUTNODE), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_LMR_CUTNODE; }),
     .setter = SEARCH_CONFIG_SETTER(USE_LMR_CUTNODE, parseBool)
   });
@@ -1239,7 +1239,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.LMR_CUTNODE_REDUCTION),
     .minValue = 0,
     .maxValue = 4,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, LMR_CUTNODE_REDUCTION), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.LMR_CUTNODE_REDUCTION; }),
     .setter = SEARCH_CONFIG_SETTER(LMR_CUTNODE_REDUCTION, parseInt)
   });
@@ -1251,7 +1251,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_LMP),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_LMP), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_LMP; }),
     .setter = SEARCH_CONFIG_SETTER(USE_LMP, parseBool)
   });
@@ -1277,7 +1277,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_LMP_IMPROVING),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_LMP_IMPROVING), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_LMP_IMPROVING; }),
     .setter = SEARCH_CONFIG_SETTER(USE_LMP_IMPROVING, parseBool)
   });
@@ -1292,7 +1292,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_EXTENSIONS),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_EXTENSIONS), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_EXTENSIONS; }),
     .setter = SEARCH_CONFIG_SETTER(USE_EXTENSIONS, parseBool)
   });
@@ -1304,7 +1304,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_CHECK_EXT),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_CHECK_EXT), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_CHECK_EXT; }),
     .setter = SEARCH_CONFIG_SETTER(USE_CHECK_EXT, parseBool)
   });
@@ -1318,7 +1318,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.CHECK_EXT_MIN_DEPTH),
     .minValue = 1,
     .maxValue = 10,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, CHECK_EXT_MIN_DEPTH), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.CHECK_EXT_MIN_DEPTH; }),
     .setter = SEARCH_CONFIG_SETTER(CHECK_EXT_MIN_DEPTH, parseInt)
   });
@@ -1332,7 +1332,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.CHECK_EXT_EARLY_LIMIT),
     .minValue = 0,
     .maxValue = 99,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, CHECK_EXT_EARLY_LIMIT), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.CHECK_EXT_EARLY_LIMIT; }),
     .setter = SEARCH_CONFIG_SETTER(CHECK_EXT_EARLY_LIMIT, parseInt)
   });
@@ -1344,7 +1344,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_CHECK_EXT_SEE),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_CHECK_EXT_SEE), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_CHECK_EXT_SEE; }),
     .setter = SEARCH_CONFIG_SETTER(USE_CHECK_EXT_SEE, parseBool)
   });
@@ -1356,7 +1356,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_THREAT_EXT),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_THREAT_EXT), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_THREAT_EXT; }),
     .setter = SEARCH_CONFIG_SETTER(USE_THREAT_EXT, parseBool)
   });
@@ -1382,7 +1382,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_EXT_ADD_DEPTH),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_EXT_ADD_DEPTH), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_EXT_ADD_DEPTH; }),
     .setter = SEARCH_CONFIG_SETTER(USE_EXT_ADD_DEPTH, parseBool)
   });
@@ -1397,7 +1397,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_SINGULAR_EXT),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_SINGULAR_EXT), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_SINGULAR_EXT; }),
     .setter = SEARCH_CONFIG_SETTER(USE_SINGULAR_EXT, parseBool)
   });
@@ -1409,7 +1409,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_SINGULAR_TT_BOUND),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_SINGULAR_TT_BOUND), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_SINGULAR_TT_BOUND; }),
     .setter = SEARCH_CONFIG_SETTER(USE_SINGULAR_TT_BOUND, parseBool)
   });
@@ -1423,7 +1423,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.SINGULAR_MARGIN),
     .minValue = 0,
     .maxValue = 200,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, SINGULAR_MARGIN), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.SINGULAR_MARGIN; }),
     .setter = SEARCH_CONFIG_SETTER(SINGULAR_MARGIN, parseInt)
   });
@@ -1437,7 +1437,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.SINGULAR_MIN_DEPTH),
     .minValue = 1,
     .maxValue = 20,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, SINGULAR_MIN_DEPTH), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.SINGULAR_MIN_DEPTH; }),
     .setter = SEARCH_CONFIG_SETTER(SINGULAR_MIN_DEPTH, parseInt)
   });
@@ -1451,7 +1451,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.SINGULAR_REDUCTION),
     .minValue = 1,
     .maxValue = 10,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, SINGULAR_REDUCTION), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.SINGULAR_REDUCTION; }),
     .setter = SEARCH_CONFIG_SETTER(SINGULAR_REDUCTION, parseInt)
   });
@@ -1468,7 +1468,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.MOVES_LEFT_OPENING),
     .minValue = 5,
     .maxValue = 60,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, MOVES_LEFT_OPENING), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.MOVES_LEFT_OPENING; }),
     .setter = SEARCH_CONFIG_SETTER(MOVES_LEFT_OPENING, parseInt)
   });
@@ -1482,7 +1482,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.MOVES_LEFT_MIDGAME),
     .minValue = 5,
     .maxValue = 60,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, MOVES_LEFT_MIDGAME), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.MOVES_LEFT_MIDGAME; }),
     .setter = SEARCH_CONFIG_SETTER(MOVES_LEFT_MIDGAME, parseInt)
   });
@@ -1496,7 +1496,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.MOVES_LEFT_ENDGAME),
     .minValue = 5,
     .maxValue = 60,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, MOVES_LEFT_ENDGAME), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.MOVES_LEFT_ENDGAME; }),
     .setter = SEARCH_CONFIG_SETTER(MOVES_LEFT_ENDGAME, parseInt)
   });
@@ -1510,7 +1510,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.MOVES_LEFT_LOW_MAT),
     .minValue = 1,
     .maxValue = 30,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, MOVES_LEFT_LOW_MAT), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.MOVES_LEFT_LOW_MAT; }),
     .setter = SEARCH_CONFIG_SETTER(MOVES_LEFT_LOW_MAT, parseInt)
   });
@@ -1524,7 +1524,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.MOVES_LEFT_QUEENLESS),
     .minValue = 5,
     .maxValue = 60,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, MOVES_LEFT_QUEENLESS), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.MOVES_LEFT_QUEENLESS; }),
     .setter = SEARCH_CONFIG_SETTER(MOVES_LEFT_QUEENLESS, parseInt)
   });
@@ -1541,7 +1541,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.NPP_HEAVY_THRESHOLD),
     .minValue = 0,
     .maxValue = 20,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, NPP_HEAVY_THRESHOLD), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.NPP_HEAVY_THRESHOLD; }),
     .setter = SEARCH_CONFIG_SETTER(NPP_HEAVY_THRESHOLD, parseInt)
   });
@@ -1555,7 +1555,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.NPP_LIGHT_THRESHOLD),
     .minValue = 0,
     .maxValue = 20,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, NPP_LIGHT_THRESHOLD), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.NPP_LIGHT_THRESHOLD; }),
     .setter = SEARCH_CONFIG_SETTER(NPP_LIGHT_THRESHOLD, parseInt)
   });
@@ -1572,7 +1572,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.REPETITION_HMC_HIGH),
     .minValue = 0,
     .maxValue = 100,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, REPETITION_HMC_HIGH), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.REPETITION_HMC_HIGH; }),
     .setter = SEARCH_CONFIG_SETTER(REPETITION_HMC_HIGH, parseInt)
   });
@@ -1586,7 +1586,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.REPETITION_RISK_PENALTY),
     .minValue = 0,
     .maxValue = 20,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, REPETITION_RISK_PENALTY), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.REPETITION_RISK_PENALTY; }),
     .setter = SEARCH_CONFIG_SETTER(REPETITION_RISK_PENALTY, parseInt)
   });
@@ -1600,7 +1600,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.MOVES_LEFT_MIN_CLAMP),
     .minValue = 1,
     .maxValue = 20,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, MOVES_LEFT_MIN_CLAMP), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.MOVES_LEFT_MIN_CLAMP; }),
     .setter = SEARCH_CONFIG_SETTER(MOVES_LEFT_MIN_CLAMP, parseInt)
   });
@@ -1614,7 +1614,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.MOVES_LEFT_MAX_CLAMP),
     .minValue = 10,
     .maxValue = 100,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, MOVES_LEFT_MAX_CLAMP), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.MOVES_LEFT_MAX_CLAMP; }),
     .setter = SEARCH_CONFIG_SETTER(MOVES_LEFT_MAX_CLAMP, parseInt)
   });
@@ -1629,7 +1629,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_EVAL_VOLATILITY),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_EVAL_VOLATILITY), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_EVAL_VOLATILITY; }),
     .setter = SEARCH_CONFIG_SETTER(USE_EVAL_VOLATILITY, parseBool)
   });
@@ -1643,7 +1643,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.VOLATILITY_MIN_DEPTH),
     .minValue = 1,
     .maxValue = 20,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, VOLATILITY_MIN_DEPTH), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.VOLATILITY_MIN_DEPTH; }),
     .setter = SEARCH_CONFIG_SETTER(VOLATILITY_MIN_DEPTH, parseInt)
   });
@@ -1657,7 +1657,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.VOLATILITY_THRESHOLD),
     .minValue = 50,
     .maxValue = 500,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, VOLATILITY_THRESHOLD), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.VOLATILITY_THRESHOLD; }),
     .setter = SEARCH_CONFIG_SETTER(VOLATILITY_THRESHOLD, parseInt)
   });
@@ -1671,7 +1671,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.VOLATILITY_FACTOR),
     .minValue = 100,
     .maxValue = 200,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, VOLATILITY_FACTOR), .yaml = true, .display = true},
     .getter = [](const SearchConfigData& s, const EvalConfigData&) {
       return configToString(s.VOLATILITY_FACTOR);
     },
@@ -1688,7 +1688,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .valueType = Bool,
     .domain = Search,
     .defaultValue = configToString(defaultSearch.USE_BESTMOVE_INSTABILITY),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_BESTMOVE_INSTABILITY), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_BESTMOVE_INSTABILITY; }),
     .setter = SEARCH_CONFIG_SETTER(USE_BESTMOVE_INSTABILITY, parseBool)
   });
@@ -1702,7 +1702,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.INSTABILITY_MIN_DEPTH),
     .minValue = 1,
     .maxValue = 20,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, INSTABILITY_MIN_DEPTH), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.INSTABILITY_MIN_DEPTH; }),
     .setter = SEARCH_CONFIG_SETTER(INSTABILITY_MIN_DEPTH, parseInt)
   });
@@ -1716,7 +1716,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.INSTABILITY_STABLE_COUNT),
     .minValue = 1,
     .maxValue = 10,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, INSTABILITY_STABLE_COUNT), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.INSTABILITY_STABLE_COUNT; }),
     .setter = SEARCH_CONFIG_SETTER(INSTABILITY_STABLE_COUNT, parseInt)
   });
@@ -1730,7 +1730,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.INSTABILITY_CHANGE_THRESHOLD),
     .minValue = 1,
     .maxValue = 10,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, INSTABILITY_CHANGE_THRESHOLD), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.INSTABILITY_CHANGE_THRESHOLD; }),
     .setter = SEARCH_CONFIG_SETTER(INSTABILITY_CHANGE_THRESHOLD, parseInt)
   });
@@ -1744,7 +1744,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.INSTABILITY_STABLE_FACTOR),
     .minValue = 50,
     .maxValue = 100,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, INSTABILITY_STABLE_FACTOR), .yaml = true, .display = true},
     .getter = [](const SearchConfigData& s, const EvalConfigData&) {
       return configToString(s.INSTABILITY_STABLE_FACTOR);
     },
@@ -1760,7 +1760,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.INSTABILITY_EXTEND_FACTOR),
     .minValue = 100,
     .maxValue = 200,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, INSTABILITY_EXTEND_FACTOR), .yaml = true, .display = true},
     .getter = [](const SearchConfigData& s, const EvalConfigData&) {
       return configToString(s.INSTABILITY_EXTEND_FACTOR);
     },
@@ -1776,7 +1776,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .defaultValue = configToString(defaultSearch.MAX_EXTRA_TIME_FACTOR),
     .minValue = 50,
     .maxValue = 500,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, MAX_EXTRA_TIME_FACTOR), .yaml = true, .display = true},
     .getter = [](const SearchConfigData& s, const EvalConfigData&) {
       return configToString(s.MAX_EXTRA_TIME_FACTOR);
     },
@@ -1834,7 +1834,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Bool,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.USE_MATERIAL),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_MATERIAL), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.USE_MATERIAL; }),
     .setter = EVAL_CONFIG_SETTER(USE_MATERIAL, parseBool)
   });
@@ -1846,7 +1846,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Bool,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.USE_POSITIONAL),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_POSITIONAL), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.USE_POSITIONAL; }),
     .setter = EVAL_CONFIG_SETTER(USE_POSITIONAL, parseBool)
   });
@@ -1861,7 +1861,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Bool,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.USE_TEMPO),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_TEMPO), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.USE_TEMPO; }),
     .setter = EVAL_CONFIG_SETTER(USE_TEMPO, parseBool)
   });
@@ -1875,7 +1875,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.TEMPO),
     .minValue = 0,
     .maxValue = 100,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, TEMPO), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.TEMPO; }),
     .setter = EVAL_CONFIG_SETTER(TEMPO, parseInt)
   });
@@ -1890,7 +1890,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Bool,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.USE_LAZY_EVAL),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_LAZY_EVAL), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.USE_LAZY_EVAL; }),
     .setter = EVAL_CONFIG_SETTER(USE_LAZY_EVAL, parseBool)
   });
@@ -1904,7 +1904,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.LAZY_THRESHOLD),
     .minValue = 0,
     .maxValue = 2000,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, LAZY_THRESHOLD), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.LAZY_THRESHOLD; }),
     .setter = EVAL_CONFIG_SETTER(LAZY_THRESHOLD, parseInt)
   });
@@ -1919,7 +1919,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Bool,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.USE_PAWN_EVAL),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_PAWN_EVAL), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.USE_PAWN_EVAL; }),
     .setter = EVAL_CONFIG_SETTER(USE_PAWN_EVAL, parseBool)
   });
@@ -1962,7 +1962,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.ISOLATED_PAWN_MID_WEIGHT),
     .minValue = -100,
     .maxValue = 0,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ISOLATED_PAWN_MID_WEIGHT), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.ISOLATED_PAWN_MID_WEIGHT; }),
     .setter = EVAL_CONFIG_SETTER(ISOLATED_PAWN_MID_WEIGHT, parseInt)
   });
@@ -1976,7 +1976,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.ISOLATED_PAWN_END_WEIGHT),
     .minValue = -100,
     .maxValue = 0,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ISOLATED_PAWN_END_WEIGHT), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.ISOLATED_PAWN_END_WEIGHT; }),
     .setter = EVAL_CONFIG_SETTER(ISOLATED_PAWN_END_WEIGHT, parseInt)
   });
@@ -1990,7 +1990,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.DOUBLED_PAWN_MID_WEIGHT),
     .minValue = -100,
     .maxValue = 0,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, DOUBLED_PAWN_MID_WEIGHT), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.DOUBLED_PAWN_MID_WEIGHT; }),
     .setter = EVAL_CONFIG_SETTER(DOUBLED_PAWN_MID_WEIGHT, parseInt)
   });
@@ -2004,7 +2004,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.DOUBLED_PAWN_END_WEIGHT),
     .minValue = -100,
     .maxValue = 0,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, DOUBLED_PAWN_END_WEIGHT), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.DOUBLED_PAWN_END_WEIGHT; }),
     .setter = EVAL_CONFIG_SETTER(DOUBLED_PAWN_END_WEIGHT, parseInt)
   });
@@ -2018,7 +2018,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.PASSED_PAWN_MID_WEIGHT),
     .minValue = 0,
     .maxValue = 100,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, PASSED_PAWN_MID_WEIGHT), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.PASSED_PAWN_MID_WEIGHT; }),
     .setter = EVAL_CONFIG_SETTER(PASSED_PAWN_MID_WEIGHT, parseInt)
   });
@@ -2032,7 +2032,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.PASSED_PAWN_END_WEIGHT),
     .minValue = 0,
     .maxValue = 200,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, PASSED_PAWN_END_WEIGHT), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.PASSED_PAWN_END_WEIGHT; }),
     .setter = EVAL_CONFIG_SETTER(PASSED_PAWN_END_WEIGHT, parseInt)
   });
@@ -2046,7 +2046,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.BLOCKED_PAWN_MID_WEIGHT),
     .minValue = -50,
     .maxValue = 0,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, BLOCKED_PAWN_MID_WEIGHT), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.BLOCKED_PAWN_MID_WEIGHT; }),
     .setter = EVAL_CONFIG_SETTER(BLOCKED_PAWN_MID_WEIGHT, parseInt)
   });
@@ -2060,7 +2060,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.BLOCKED_PAWN_END_WEIGHT),
     .minValue = -50,
     .maxValue = 0,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, BLOCKED_PAWN_END_WEIGHT), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.BLOCKED_PAWN_END_WEIGHT; }),
     .setter = EVAL_CONFIG_SETTER(BLOCKED_PAWN_END_WEIGHT, parseInt)
   });
@@ -2074,7 +2074,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.PHALANX_PAWN_MID_WEIGHT),
     .minValue = 0,
     .maxValue = 50,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, PHALANX_PAWN_MID_WEIGHT), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.PHALANX_PAWN_MID_WEIGHT; }),
     .setter = EVAL_CONFIG_SETTER(PHALANX_PAWN_MID_WEIGHT, parseInt)
   });
@@ -2088,7 +2088,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.PHALANX_PAWN_END_WEIGHT),
     .minValue = 0,
     .maxValue = 50,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, PHALANX_PAWN_END_WEIGHT), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.PHALANX_PAWN_END_WEIGHT; }),
     .setter = EVAL_CONFIG_SETTER(PHALANX_PAWN_END_WEIGHT, parseInt)
   });
@@ -2102,7 +2102,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.SUPPORTED_PAWN_MID_WEIGHT),
     .minValue = 0,
     .maxValue = 50,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, SUPPORTED_PAWN_MID_WEIGHT), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.SUPPORTED_PAWN_MID_WEIGHT; }),
     .setter = EVAL_CONFIG_SETTER(SUPPORTED_PAWN_MID_WEIGHT, parseInt)
   });
@@ -2116,7 +2116,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.SUPPORTED_PAWN_END_WEIGHT),
     .minValue = 0,
     .maxValue = 50,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, SUPPORTED_PAWN_END_WEIGHT), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.SUPPORTED_PAWN_END_WEIGHT; }),
     .setter = EVAL_CONFIG_SETTER(SUPPORTED_PAWN_END_WEIGHT, parseInt)
   });
@@ -2131,7 +2131,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Bool,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.USE_PIECE_EVAL),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_PIECE_EVAL), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.USE_PIECE_EVAL; }),
     .setter = EVAL_CONFIG_SETTER(USE_PIECE_EVAL, parseBool)
   });
@@ -2146,7 +2146,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Bool,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.USE_BISHOP_PAIR_BONUS),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_BISHOP_PAIR_BONUS), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.USE_BISHOP_PAIR_BONUS; }),
     .setter = EVAL_CONFIG_SETTER(USE_BISHOP_PAIR_BONUS, parseBool)
   });
@@ -2160,7 +2160,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.BISHOP_PAIR_MID_BONUS),
     .minValue = 0,
     .maxValue = 100,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, BISHOP_PAIR_MID_BONUS), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.BISHOP_PAIR_MID_BONUS; }),
     .setter = EVAL_CONFIG_SETTER(BISHOP_PAIR_MID_BONUS, parseInt)
   });
@@ -2174,7 +2174,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.BISHOP_PAIR_END_BONUS),
     .minValue = 0,
     .maxValue = 100,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, BISHOP_PAIR_END_BONUS), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.BISHOP_PAIR_END_BONUS; }),
     .setter = EVAL_CONFIG_SETTER(BISHOP_PAIR_END_BONUS, parseInt)
   });
@@ -2189,7 +2189,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Bool,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.USE_KNIGHT_MOBILITY),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_KNIGHT_MOBILITY), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.USE_KNIGHT_MOBILITY; }),
     .setter = EVAL_CONFIG_SETTER(USE_KNIGHT_MOBILITY, parseBool)
   });
@@ -2203,7 +2203,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.KNIGHT_MOBILITY_MID_PER_MOVE),
     .minValue = 0,
     .maxValue = 20,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_MOBILITY_MID_PER_MOVE), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.KNIGHT_MOBILITY_MID_PER_MOVE; }),
     .setter = EVAL_CONFIG_SETTER(KNIGHT_MOBILITY_MID_PER_MOVE, parseInt)
   });
@@ -2217,7 +2217,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.KNIGHT_MOBILITY_END_PER_MOVE),
     .minValue = 0,
     .maxValue = 20,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_MOBILITY_END_PER_MOVE), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.KNIGHT_MOBILITY_END_PER_MOVE; }),
     .setter = EVAL_CONFIG_SETTER(KNIGHT_MOBILITY_END_PER_MOVE, parseInt)
   });
@@ -2231,7 +2231,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.KNIGHT_LOW_MOBILITY_LEQ1_MID),
     .minValue = -50,
     .maxValue = 0,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_LOW_MOBILITY_LEQ1_MID), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.KNIGHT_LOW_MOBILITY_LEQ1_MID; }),
     .setter = EVAL_CONFIG_SETTER(KNIGHT_LOW_MOBILITY_LEQ1_MID, parseInt)
   });
@@ -2245,7 +2245,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.KNIGHT_LOW_MOBILITY_LEQ1_END),
     .minValue = -50,
     .maxValue = 0,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_LOW_MOBILITY_LEQ1_END), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.KNIGHT_LOW_MOBILITY_LEQ1_END; }),
     .setter = EVAL_CONFIG_SETTER(KNIGHT_LOW_MOBILITY_LEQ1_END, parseInt)
   });
@@ -2259,7 +2259,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.KNIGHT_LOW_MOBILITY_LEQ2_MID),
     .minValue = -50,
     .maxValue = 0,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_LOW_MOBILITY_LEQ2_MID), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.KNIGHT_LOW_MOBILITY_LEQ2_MID; }),
     .setter = EVAL_CONFIG_SETTER(KNIGHT_LOW_MOBILITY_LEQ2_MID, parseInt)
   });
@@ -2273,7 +2273,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.KNIGHT_LOW_MOBILITY_LEQ2_END),
     .minValue = -50,
     .maxValue = 0,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_LOW_MOBILITY_LEQ2_END), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.KNIGHT_LOW_MOBILITY_LEQ2_END; }),
     .setter = EVAL_CONFIG_SETTER(KNIGHT_LOW_MOBILITY_LEQ2_END, parseInt)
   });
@@ -2288,7 +2288,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Bool,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.USE_BISHOP_MOBILITY),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_BISHOP_MOBILITY), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.USE_BISHOP_MOBILITY; }),
     .setter = EVAL_CONFIG_SETTER(USE_BISHOP_MOBILITY, parseBool)
   });
@@ -2302,7 +2302,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.BISHOP_MOBILITY_MID_PER_MOVE),
     .minValue = 0,
     .maxValue = 20,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, BISHOP_MOBILITY_MID_PER_MOVE), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.BISHOP_MOBILITY_MID_PER_MOVE; }),
     .setter = EVAL_CONFIG_SETTER(BISHOP_MOBILITY_MID_PER_MOVE, parseInt)
   });
@@ -2316,7 +2316,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.BISHOP_MOBILITY_END_PER_MOVE),
     .minValue = 0,
     .maxValue = 20,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, BISHOP_MOBILITY_END_PER_MOVE), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.BISHOP_MOBILITY_END_PER_MOVE; }),
     .setter = EVAL_CONFIG_SETTER(BISHOP_MOBILITY_END_PER_MOVE, parseInt)
   });
@@ -2330,7 +2330,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.BISHOP_LOW_MOBILITY_LEQ3_MID),
     .minValue = -50,
     .maxValue = 0,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, BISHOP_LOW_MOBILITY_LEQ3_MID), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.BISHOP_LOW_MOBILITY_LEQ3_MID; }),
     .setter = EVAL_CONFIG_SETTER(BISHOP_LOW_MOBILITY_LEQ3_MID, parseInt)
   });
@@ -2344,7 +2344,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.BISHOP_LOW_MOBILITY_LEQ3_END),
     .minValue = -50,
     .maxValue = 0,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, BISHOP_LOW_MOBILITY_LEQ3_END), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.BISHOP_LOW_MOBILITY_LEQ3_END; }),
     .setter = EVAL_CONFIG_SETTER(BISHOP_LOW_MOBILITY_LEQ3_END, parseInt)
   });
@@ -2359,7 +2359,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Bool,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.USE_ROOK_MOBILITY),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_ROOK_MOBILITY), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.USE_ROOK_MOBILITY; }),
     .setter = EVAL_CONFIG_SETTER(USE_ROOK_MOBILITY, parseBool)
   });
@@ -2373,7 +2373,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.ROOK_MOBILITY_MID_PER_MOVE),
     .minValue = 0,
     .maxValue = 20,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_MOBILITY_MID_PER_MOVE), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.ROOK_MOBILITY_MID_PER_MOVE; }),
     .setter = EVAL_CONFIG_SETTER(ROOK_MOBILITY_MID_PER_MOVE, parseInt)
   });
@@ -2387,7 +2387,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.ROOK_MOBILITY_END_PER_MOVE),
     .minValue = 0,
     .maxValue = 20,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_MOBILITY_END_PER_MOVE), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.ROOK_MOBILITY_END_PER_MOVE; }),
     .setter = EVAL_CONFIG_SETTER(ROOK_MOBILITY_END_PER_MOVE, parseInt)
   });
@@ -2401,7 +2401,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.ROOK_LOW_MOBILITY_LEQ3_MID),
     .minValue = -50,
     .maxValue = 0,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_LOW_MOBILITY_LEQ3_MID), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.ROOK_LOW_MOBILITY_LEQ3_MID; }),
     .setter = EVAL_CONFIG_SETTER(ROOK_LOW_MOBILITY_LEQ3_MID, parseInt)
   });
@@ -2415,7 +2415,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.ROOK_LOW_MOBILITY_LEQ3_END),
     .minValue = -50,
     .maxValue = 0,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_LOW_MOBILITY_LEQ3_END), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.ROOK_LOW_MOBILITY_LEQ3_END; }),
     .setter = EVAL_CONFIG_SETTER(ROOK_LOW_MOBILITY_LEQ3_END, parseInt)
   });
@@ -2427,7 +2427,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Bool,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.USE_ROOK_OPEN_FILE_BONUS),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_ROOK_OPEN_FILE_BONUS), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.USE_ROOK_OPEN_FILE_BONUS; }),
     .setter = EVAL_CONFIG_SETTER(USE_ROOK_OPEN_FILE_BONUS, parseBool)
   });
@@ -2441,7 +2441,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.ROOK_OPEN_FILE_MID_BONUS),
     .minValue = 0,
     .maxValue = 50,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_OPEN_FILE_MID_BONUS), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.ROOK_OPEN_FILE_MID_BONUS; }),
     .setter = EVAL_CONFIG_SETTER(ROOK_OPEN_FILE_MID_BONUS, parseInt)
   });
@@ -2455,7 +2455,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.ROOK_OPEN_FILE_END_BONUS),
     .minValue = 0,
     .maxValue = 50,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_OPEN_FILE_END_BONUS), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.ROOK_OPEN_FILE_END_BONUS; }),
     .setter = EVAL_CONFIG_SETTER(ROOK_OPEN_FILE_END_BONUS, parseInt)
   });
@@ -2469,7 +2469,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.ROOK_SEMIOPEN_FILE_MID_BONUS),
     .minValue = 0,
     .maxValue = 50,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_SEMIOPEN_FILE_MID_BONUS), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.ROOK_SEMIOPEN_FILE_MID_BONUS; }),
     .setter = EVAL_CONFIG_SETTER(ROOK_SEMIOPEN_FILE_MID_BONUS, parseInt)
   });
@@ -2483,7 +2483,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.ROOK_SEMIOPEN_FILE_END_BONUS),
     .minValue = 0,
     .maxValue = 50,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_SEMIOPEN_FILE_END_BONUS), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.ROOK_SEMIOPEN_FILE_END_BONUS; }),
     .setter = EVAL_CONFIG_SETTER(ROOK_SEMIOPEN_FILE_END_BONUS, parseInt)
   });
@@ -2498,7 +2498,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Bool,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.USE_QUEEN_MOBILITY),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_QUEEN_MOBILITY), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.USE_QUEEN_MOBILITY; }),
     .setter = EVAL_CONFIG_SETTER(USE_QUEEN_MOBILITY, parseBool)
   });
@@ -2512,7 +2512,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.QUEEN_MOBILITY_MID_PER_MOVE),
     .minValue = 0,
     .maxValue = 20,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, QUEEN_MOBILITY_MID_PER_MOVE), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.QUEEN_MOBILITY_MID_PER_MOVE; }),
     .setter = EVAL_CONFIG_SETTER(QUEEN_MOBILITY_MID_PER_MOVE, parseInt)
   });
@@ -2526,7 +2526,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.QUEEN_MOBILITY_END_PER_MOVE),
     .minValue = 0,
     .maxValue = 20,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, QUEEN_MOBILITY_END_PER_MOVE), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.QUEEN_MOBILITY_END_PER_MOVE; }),
     .setter = EVAL_CONFIG_SETTER(QUEEN_MOBILITY_END_PER_MOVE, parseInt)
   });
@@ -2538,7 +2538,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Bool,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.USE_QUEEN_TROPISM),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_QUEEN_TROPISM), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.USE_QUEEN_TROPISM; }),
     .setter = EVAL_CONFIG_SETTER(USE_QUEEN_TROPISM, parseBool)
   });
@@ -2552,7 +2552,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.QUEEN_TROPISM_MID_PER_STEP),
     .minValue = 0,
     .maxValue = 20,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, QUEEN_TROPISM_MID_PER_STEP), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.QUEEN_TROPISM_MID_PER_STEP; }),
     .setter = EVAL_CONFIG_SETTER(QUEEN_TROPISM_MID_PER_STEP, parseInt)
   });
@@ -2566,7 +2566,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.QUEEN_TROPISM_END_PER_STEP),
     .minValue = 0,
     .maxValue = 20,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, QUEEN_TROPISM_END_PER_STEP), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.QUEEN_TROPISM_END_PER_STEP; }),
     .setter = EVAL_CONFIG_SETTER(QUEEN_TROPISM_END_PER_STEP, parseInt)
   });
@@ -2581,7 +2581,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Bool,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.USE_KING_EVAL),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_KING_EVAL), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.USE_KING_EVAL; }),
     .setter = EVAL_CONFIG_SETTER(USE_KING_EVAL, parseBool)
   });
@@ -2593,7 +2593,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Bool,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.USE_KING_SAFETY_SHIELD),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_KING_SAFETY_SHIELD), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.USE_KING_SAFETY_SHIELD; }),
     .setter = EVAL_CONFIG_SETTER(USE_KING_SAFETY_SHIELD, parseBool)
   });
@@ -2607,7 +2607,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.KING_SHIELD_MID_PER_PAWN),
     .minValue = 0,
     .maxValue = 30,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, KING_SHIELD_MID_PER_PAWN), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.KING_SHIELD_MID_PER_PAWN; }),
     .setter = EVAL_CONFIG_SETTER(KING_SHIELD_MID_PER_PAWN, parseInt)
   });
@@ -2621,7 +2621,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.KING_SHIELD_END_PER_PAWN),
     .minValue = 0,
     .maxValue = 30,
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, KING_SHIELD_END_PER_PAWN), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.KING_SHIELD_END_PER_PAWN; }),
     .setter = EVAL_CONFIG_SETTER(KING_SHIELD_END_PER_PAWN, parseInt)
   });
@@ -2636,7 +2636,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Bool,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.USE_GAMEPHASE_VALUE),
-    .exposure = {.uci = true, .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_GAMEPHASE_VALUE), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.USE_GAMEPHASE_VALUE; }),
     .setter = EVAL_CONFIG_SETTER(USE_GAMEPHASE_VALUE, parseBool)
   });

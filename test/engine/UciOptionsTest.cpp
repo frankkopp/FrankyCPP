@@ -192,9 +192,12 @@ TEST_F(UciOptionsTest, searchConfig_nonArray_options_present_and_settable) {
   UciOptions* pUciOptions = UciOptions::getInstance();
   UciHandler uciHandler{};
 
-  // Presence checks for newly added options
+  // Presence checks for CONFIG_ESSENTIAL options (always available)
   EXPECT_NE(pUciOptions->getOption("Book Path"), nullptr);
   EXPECT_NE(pUciOptions->getOption("Book Format"), nullptr);
+
+#ifndef FRANKYCPP_PRODUCTION
+  // Presence checks for CONFIG_CONST options (not exposed in production)
   EXPECT_NE(pUciOptions->getOption("Moves Left Opening"), nullptr);
   EXPECT_NE(pUciOptions->getOption("Moves Left Midgame"), nullptr);
   EXPECT_NE(pUciOptions->getOption("Moves Left Endgame"), nullptr);
@@ -208,22 +211,23 @@ TEST_F(UciOptionsTest, searchConfig_nonArray_options_present_and_settable) {
   EXPECT_NE(pUciOptions->getOption("Moves Left Max Clamp"), nullptr);
   EXPECT_NE(pUciOptions->getOption("LMR Min Depth"), nullptr);
   EXPECT_NE(pUciOptions->getOption("LMR Min Moves"), nullptr);
+#endif
 
   // Behavior checks: set a few and verify SearchConfig updates
-  // Book Format
+  // Book Format (CONFIG_ESSENTIAL — always available)
   EXPECT_TRUE(pUciOptions->setOption(&uciHandler, "Book Format", "SAN"));
   EXPECT_EQ(SearchConfig.BOOK_TYPE, "SAN");
   EXPECT_TRUE(pUciOptions->setOption(&uciHandler, "Book Format", "SIMPLE"));
   EXPECT_EQ(SearchConfig.BOOK_TYPE, "SIMPLE");
 
 #ifndef FRANKYCPP_PRODUCTION
-  // Moves Left Opening
+  // Moves Left Opening (CONFIG_CONST — not available in production)
   const int oldMlo = SearchConfig.MOVES_LEFT_OPENING;
   const int newMlo = oldMlo == 36 ? 35 : 36;
   EXPECT_TRUE(pUciOptions->setOption(&uciHandler, "Moves Left Opening", std::to_string(newMlo)));
   EXPECT_EQ(SearchConfig.MOVES_LEFT_OPENING, newMlo);
 
-  // LMR Min Depth
+  // LMR Min Depth (CONFIG_CONST — not available in production)
   const int oldLmd = static_cast<int>(SearchConfig.LMR_MIN_DEPTH);
   const int newLmd = oldLmd == 3 ? 4 : 3;
   EXPECT_TRUE(pUciOptions->setOption(&uciHandler, "LMR Min Depth", std::to_string(newLmd)));

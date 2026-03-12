@@ -2,7 +2,7 @@ name: CI Build
 
 on:
   push:
-    branches: [ master, 'dev_*' ]
+    branches: [ master, 'dev_*', 'fix_*' ]
     tags:
       - 'v*'  # Trigger on version tags like v1.0.0, v1.1.0, etc.
   pull_request:
@@ -70,7 +70,12 @@ jobs:
           $maxAttempts = 3
           $attempt = 0
           $success = $false
-          $prodFlag = if ("${{ matrix.build_type }}" -eq "stripped") { "ON" } else { "OFF" }
+          if ("${{ matrix.build_type }}" -eq "stripped") {
+            $prodFlag = "ON"
+          } else {
+            $prodFlag = "OFF"
+          }
+          Write-Host "Build type: ${{ matrix.build_type }}, FRANKYCPP_PRODUCTION=$prodFlag"
           
           do {
             $attempt++
@@ -87,7 +92,7 @@ jobs:
               -DFRANKYCPP_BUILD_TESTS=ON `
               -DFRANKYCPP_BUILD_BENCHMARKS=OFF `
               -DSTRICT_WARNINGS=OFF `
-              -DFRANKYCPP_PRODUCTION=$prodFlag
+              "-DFRANKYCPP_PRODUCTION=$prodFlag"
             
             if ($LASTEXITCODE -eq 0) {
               $success = $true
@@ -403,38 +408,62 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
 
     steps:
-      - name: Download Windows artifacts
+      - name: Download Windows Standard artifacts
         uses: actions/download-artifact@v4
         with:
           name: frankycpp-windows-std-Release
-          path: windows-release
+          path: windows-std-release
 
-      - name: Download Linux GCC artifacts
+      - name: Download Windows Stripped artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: frankycpp-windows-stripped-Release
+          path: windows-stripped-release
+
+      - name: Download Linux GCC Standard artifacts
         uses: actions/download-artifact@v4
         with:
           name: frankycpp-linux-gcc-std-Release
-          path: linux-release
+          path: linux-std-release
+
+      - name: Download Linux GCC Stripped artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: frankycpp-linux-gcc-stripped-Release
+          path: linux-stripped-release
 
       - name: Create Release Archives
         run: |
-          echo "Creating Windows release archive..."
-          cd windows-release
+          echo "Creating Windows Standard release archive..."
+          cd windows-std-release
           zip -r ../FrankyCPP-${{ github.ref_name }}-Windows-MSVC.zip *
           cd ..
           
-          echo "Creating Linux release archive..."
-          cd linux-release
+          echo "Creating Windows Stripped release archive..."
+          cd windows-stripped-release
+          zip -r ../FrankyCPP-${{ github.ref_name }}-Windows-MSVC-stripped.zip *
+          cd ..
+          
+          echo "Creating Linux Standard release archive..."
+          cd linux-std-release
           tar czf ../FrankyCPP-${{ github.ref_name }}-Linux-GCC13.tar.gz *
           cd ..
           
+          echo "Creating Linux Stripped release archive..."
+          cd linux-stripped-release
+          tar czf ../FrankyCPP-${{ github.ref_name }}-Linux-GCC13-stripped.tar.gz *
+          cd ..
+          
           echo "Release archives created:"
-          ls -lh FrankyCPP-*.{zip,tar.gz}
+          ls -lh FrankyCPP-*
 
       - name: Upload to Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
             FrankyCPP-${{ github.ref_name }}-Windows-MSVC.zip
+            FrankyCPP-${{ github.ref_name }}-Windows-MSVC-stripped.zip
             FrankyCPP-${{ github.ref_name }}-Linux-GCC13.tar.gz
+            FrankyCPP-${{ github.ref_name }}-Linux-GCC13-stripped.tar.gz
           draft: false
           prerelease: false
