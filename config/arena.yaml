@@ -286,20 +286,35 @@ matches:
     concurrency: 4
     outputPgn: "results/matches/v1.6_vs_v1.5_300s.pgn"
 
-  ## current dev vs. Stockfish 18 (limited to 2700 ELO)
-  - name: "v1.6_vs_Stockfish18_2700_300s"
-    tag: ""  # Set to current feature name when testing
-    engine1Path: "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe"
-    engine1Version: "v1.6"
-    engine1Options: "OwnBook=false"
-    engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
-    engine2Version: "18-2700"
-    engine2Options: "UCI_LimitStrength=true; UCI_Elo=2700"
-    openingBook: "books/8moves_GM_LB.pgn"
-    timeControl: "300+0"
-    rounds: 100
-    concurrency: 4
-    outputPgn: "results/matches/v1.6_vs_Stockfish18_2700_300s.pgn"
+#  ## current dev vs. Stockfish 18 (limited to 2700 ELO)
+#  - name: "v1.6_vs_Stockfish18_2700_300s"
+#    tag: ""  # Set to current feature name when testing
+#    engine1Path: "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe"
+#    engine1Version: "v1.6"
+#    engine1Options: "OwnBook=false"
+#    engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
+#    engine2Version: "18-2700"
+#    engine2Options: "UCI_LimitStrength=true; UCI_Elo=2700"
+#    openingBook: "books/8moves_GM_LB.pgn"
+#    timeControl: "300+0"
+#    rounds: 100
+#    concurrency: 4
+#    outputPgn: "results/matches/v1.6_vs_Stockfish18_2700_300s.pgn"
+#
+## Test Stripped vs Stockfish
+#  - name: "v1.5.1stripped_vs_Stockfish18_2700_300s"
+#    tag: ""  # Set to current feature name when testing
+#    engine1Path: "../../Games/FrankyChess/FrankyCPP-v1.5.1-stripped/FrankyCPP_v1.5.exe"
+#    engine1Version: "v1.5.1"
+#    engine1Options: "OwnBook=false"
+#    engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
+#    engine2Version: "18-2700"
+#    engine2Options: "UCI_LimitStrength=true; UCI_Elo=2700"
+#    openingBook: "books/8moves_GM_LB.pgn"
+#    timeControl: "300+0"
+#    rounds: 100
+#    concurrency: 4
+#    outputPgn: "results/matches/v1.5.1_vs_Stockfish18_2700_300s.pgn"
 
 #  # current dev vs. v1.4
 #  - name: "v1.6_vs_v1.4_300s"
