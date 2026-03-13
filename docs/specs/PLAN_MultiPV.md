@@ -187,15 +187,15 @@ No change needed if rootMoves properly sorted.
 
 ## Summary of Changes
 
-| File | Changes | Phase |
-|------|---------|-------|
-| `SearchConfigData.h` | Add `int MULTI_PV = 1;` | 1 |
-| `ConfigRegistry.cpp` | Register UCI option | 1 |
-| `UciHandler.cpp` | Parse `setoption name MultiPV` | 1 |
-| `SearchThreadData.h` | (Optional) Multiple PV storage | 2 |
-| `Search.cpp` | MultiPV loop in `iterativeDeepening()` | 3 |
-| `Search.cpp` | `sendMultiPvInfo()` with `multipv` field | 4 |
-| `Search_Test.cpp` | Unit tests | 7 |
+| File                 | Changes                                  | Phase |
+|----------------------|------------------------------------------|-------|
+| `SearchConfigData.h` | Add `int MULTI_PV = 1;`                  | 1     |
+| `ConfigRegistry.cpp` | Register UCI option                      | 1     |
+| `UciHandler.cpp`     | Parse `setoption name MultiPV`           | 1     |
+| `SearchThreadData.h` | (Optional) Multiple PV storage           | 2     |
+| `Search.cpp`         | MultiPV loop in `iterativeDeepening()`   | 3     |
+| `Search.cpp`         | `sendMultiPvInfo()` with `multipv` field | 4     |
+| `Search_Test.cpp`    | Unit tests                               | 7     |
 
 ---
 
