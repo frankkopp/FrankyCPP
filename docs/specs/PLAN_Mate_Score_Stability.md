@@ -1,9 +1,9 @@
 # FrankyCPP Mate Score Stability & Aspiration Window Fixes
 
-**Document Version:** 1.0  
+**Document Version:** 2.0  
 **Created:** 2026-03-13  
 **Last Updated:** 2026-03-13  
-**Status:** 🔴 NOT STARTED  
+**Status:** 🟡 IN PROGRESS  
 **Target:** FrankyCPP v1.6+  
 **Priority:** High (Search correctness — mate scores lost between iterations)
 
@@ -23,19 +23,19 @@ Stockfish finds M7 at depth 1 in these positions and holds it stably across all 
 
 ### Root Causes (in dependency order)
 
-| # | Root Cause | Effect |
-|---|-----------|--------|
-| 1 | NMP clamps mate values to `VALUE_CHECKMATE_THRESHOLD` (9871), which is NOT recognized as a checkmate → stored in TT without ply adjustment | TT contamination with artificial near-mate scores |
-| 2 | Aspiration loop has off-by-one: only 2 re-searches instead of 3 — the full-window search never executes | Fail-low values from narrow windows returned as final results |
-| 3 | Aspiration uses narrow windows around mate scores from previous iteration | Cascading fail-lows that "lose" confirmed mates |
-| 4 | `sendAspirationResearchInfo()` reports previous iteration's value, not current search value | Misleading UCI output during aspiration re-searches |
+| # | Root Cause                                                                                                                                 | Effect                                                        |
+|---|--------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------|
+| 1 | NMP clamps mate values to `VALUE_CHECKMATE_THRESHOLD` (9871), which is NOT recognized as a checkmate → stored in TT without ply adjustment | TT contamination with artificial near-mate scores             |
+| 2 | Aspiration loop has off-by-one: only 2 re-searches instead of 3 — the full-window search never executes                                    | Fail-low values from narrow windows returned as final results |
+| 3 | Aspiration uses narrow windows around mate scores from previous iteration                                                                  | Cascading fail-lows that "lose" confirmed mates               |
+| 4 | `sendAspirationResearchInfo()` reports previous iteration's value, not current search value                                                | Misleading UCI output during aspiration re-searches           |
 
 ### Test Positions (from the bug report)
 
-| FEN | Description | Expected | FrankyCPP Actual |
-|-----|-------------|----------|-----------------|
-| `4q3/k7/8/8/3K4/8/8/8 w - - 33 227` | KQ vs K, White to move (losing) | -M7 quickly | Finds -M7 at depth 28 after wild oscillation |
-| `4q3/k7/8/3K4/8/8/8/8 b - - 34 227` | KQ vs K, Black to move (winning) | +M7 quickly | Finds +M7 at depth 21 after oscillation through +98.71, +M44, +18.40 |
+| FEN                                    | Description                       | Expected       | FrankyCPP Actual                                                           |
+|----------------------------------------|-----------------------------------|----------------|----------------------------------------------------------------------------|
+| `4q3/k7/8/8/3K4/8/8/8 w - - 33 227`    | KQ vs K, White to move (losing)   | -M7 quickly    | Finds -M7 at depth 28 after wild oscillation                               |
+| `4q3/k7/8/3K4/8/8/8/8 b - - 34 227`    | KQ vs K, Black to move (winning)  | +M7 quickly    | Finds +M7 at depth 21 after oscillation through +98.71, +M44, +18.40       |
 | `8/8/3k1b2/8/5K2/8/8/4q3 b - - 55 193` | KQB vs K, Black to move (winning) | +M5-M7 quickly | **Finds +M7 at depth 4, DROPS to +18.40 at depth 5**, recovers at depth 10 |
 
 ---
@@ -44,7 +44,7 @@ Stockfish finds M7 at depth 1 in these positions and holds it stably across all 
 
 **Priority:** Critical  
 **Dependency:** None (root cause of TT contamination)  
-**Status:** 🔴 NOT STARTED  
+**Status:** ✅ DONE (commit 4559e2e)  
 **Risk:** Low — `beta` is always below the checkmate threshold when NMP fires (guarded by `nearMateWindow`)
 
 ### Problem
@@ -100,202 +100,174 @@ if (nValue > VALUE_CHECKMATE_THRESHOLD) {
 
 ---
 
-## Step 2 — Fix Aspiration Window Loop Off-by-One: Full-Window Search Must Execute
+## Step 2 — Aspiration Window Rewrite (Stockfish-Style)
+
+> **Replaces previous Steps 2, 3, and 4** — off-by-one fix, mate score skip, and UCI display fix are all addressed by the rewrite.
 
 **Priority:** Critical  
 **Dependency:** None (independent of Step 1, but both are needed)  
 **Status:** 🔴 NOT STARTED  
-**Risk:** Low — strictly more search, never less
+**Risk:** Low for normal play (first window usually succeeds); high-impact for mate stability
 
-### Problem
+### Problems Solved
 
-The aspiration loop in `Search.cpp:882-939` uses three steps `{50, 200, VALUE_MAX}` but only executes **two** search iterations:
+| # | Problem                                                                                                           | How the Rewrite Fixes It                                                                     |
+|---|-------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 1 | **Off-by-one**: Fixed-step loop `for(i=1; i<3)` only runs 2 searches; full-window search is dead code             | `while(true)` loop + exponential growth guarantees full-window search eventually executes    |
+| 2 | **Mate score narrow windows**: ±50 around a mate value (9987cp) → cascading fail-lows that "lose" confirmed mates | Mate bypass: if previous iteration found mate, skip aspiration entirely (full-window search) |
+| 3 | **Stale centering**: Window widens relative to `bestValue` (previous iteration), not the current search result    | Value-centered re-search: on fail, widen relative to `value` (actual current result)         |
+| 4 | **Stale UCI display**: `sendAspirationResearchInfo()` shows previous iteration's value during re-searches         | Update `currentBestRootMoveValue` before sending UCI info                                    |
 
-```cpp
-constexpr std::array aspirationSteps = {Value{50}, Value{200}, VALUE_MAX};
-constexpr auto steps = aspirationSteps.size();  // = 3
-
-Value alpha = std::max(bestValue - aspirationSteps[0], VALUE_MIN);  // initial window
-Value beta  = std::min(bestValue + aspirationSteps[0], VALUE_MAX);
-
-for (auto i = 1; i < steps; ++i) {      // i = 1, 2 — only TWO iterations
-    value = rootSearch(p, depth, alpha, beta);
-    // ... check fail-low/fail-high ...
-    if (value <= alpha) {
-        alpha = std::max(bestValue - aspirationSteps[i], VALUE_MIN);  // widen for NEXT iter
-    }
-    // ...
-}
-```
-
-The flow:
-1. **i=1**: Search with ±50 window. If fail → widen to ±200.
-2. **i=2**: Search with ±200 window. If fail → widen to ±VALUE_MAX. **But loop exits!**
-
-The widening at `i=2` to `VALUE_MAX` is **dead code** — no search ever runs with the fully-opened window. The comment at line 935 ("fully open search window of the last step") is inaccurate.
-
-After two fail-lows, `aspirationSearch()` returns the fail-low value from the ±200 window, which can be a completely wrong score (e.g., +1840 when the true value is M7).
-
-### Fix
-
-Add an additional entry to the steps array so the full-window search actually executes:
-
-```cpp
-constexpr std::array aspirationSteps = {Value{50}, Value{200}, VALUE_MAX, VALUE_MAX};
-```
-
-The redundant `VALUE_MAX` at the end ensures the loop runs one more iteration (`i=3`) with the fully-widened window from step 2. After this final search, the value is guaranteed to be within `[VALUE_MIN, VALUE_MAX]`.
-
-Update the comment at line 935 to accurately describe the behavior.
-
-### Alternative Approach
-
-Instead of adding a dummy step, restructure the loop to use a `do-while` or add an explicit post-loop search:
-
-```cpp
-// After the loop, if value is still outside the window, do one final full-window search
-if (value <= alpha || value >= beta) {
-    value = rootSearch(p, depth, VALUE_MIN, VALUE_MAX);
-}
-```
-
-The extra-step approach is preferred for simplicity and minimal code change.
-
-### Files
-
-- `src/engine/Search.cpp` — ~line 884 (aspirationSteps array), ~line 935 (comment)
-
-### Validation
-
-- Run test positions — depth 5 should no longer return +18.40 when M7 is forced
-- Verify that in normal positions, the extra step rarely fires (most searches resolve within ±200)
-- Run ELO regression test — expected neutral or slight improvement (the fix only affects pathological cases)
-
----
-
-## Step 3 — Skip Aspiration for Mate Scores: Use Full Window When Previous Iteration Found Mate
-
-**Priority:** High  
-**Dependency:** Step 2 should be done first (no point skipping if the loop itself is broken)  
-**Status:** 🔴 NOT STARTED  
-**Risk:** Very low — mate scores are rare; full-window search is always correct
-
-### Problem
-
-When the previous iteration returns a checkmate value (e.g., M7 = 9987 cp), the next iteration centers aspiration around it:
-- `alpha = 9987 - 50 = 9937`
-- `beta = min(9987 + 50, 10000) = 10000`
-
-Both bounds are in/near the checkmate range. Even small search variations at the next depth (different pruning decisions, NMP, etc.) can fail to confirm the mate, causing cascading fail-lows. The mate is "lost" and the engine reports a much lower score.
-
-This violates the principle that a forced mate should never disappear at deeper search.
-
-### Fix
-
-In the iterative deepening loop (`Search.cpp:717-718`), skip aspiration when the previous iteration found a mate:
-
-```cpp
-if (SearchConfig.USE_ASP && iterationDepth > 3 && !bestValue.isCheckMate()) {
-    bestValue = aspirationSearch(p, iterationDepth, bestValue);
-}
-else {
-    bestValue = rootSearch(p, iterationDepth, alpha, beta);
-}
-```
-
-When `bestValue.isCheckMate()` is true, the full-window `rootSearch()` is used. This guarantees:
-- The mate is either confirmed or a shorter mate is found
-- If the mate was bogus (from a shallow depth), the full-window search finds the correct value
-- No aspiration overhead for positions where the result is already a mate
-
-### Alternative: Widen Inside aspirationSearch()
-
-Instead of bypassing `aspirationSearch()`, widen the initial window inside it:
+### Current Code (broken)
 
 ```cpp
 Value Search::aspirationSearch(Position& p, const Depth depth, const Value bestValue) {
-    // Skip aspiration for mate scores — use full window to avoid losing confirmed mates
-    if (bestValue.isCheckMate()) {
-        return rootSearch(p, depth, VALUE_MIN, VALUE_MAX);
+  constexpr std::array aspirationSteps = {Value{50}, Value{200}, VALUE_MAX};
+  constexpr auto steps = aspirationSteps.size();  // = 3
+  Value value = VALUE_NONE;
+
+  Value alpha = std::max(bestValue - aspirationSteps[0], VALUE_MIN);  // ±50
+  Value beta  = std::min(bestValue + aspirationSteps[0], VALUE_MAX);
+
+  for (auto i = 1; i < steps; ++i) {  // i = 1, 2 — only TWO searches
+    value = rootSearch(p, depth, alpha, beta);
+    // ... stop/time checks ...
+    if (value <= alpha) {
+      // ... UCI output ...
+      alpha = std::max(bestValue - aspirationSteps[i], VALUE_MIN);  // bestValue-centered
     }
-    // ... existing aspiration logic ...
+    else if (value >= beta) {
+      // ... UCI output ...
+      beta = std::min(bestValue + aspirationSteps[i], VALUE_MAX);   // bestValue-centered
+    }
+    else { break; }
+  }
+  return value;
 }
 ```
 
-This is cleaner (single call site) but slightly less explicit. Both approaches are equivalent.
+**Failure trace** (two consecutive fail-lows):
+1. `i=1`: Search ±50. Fail-low → widen alpha to `bestValue - 200`.
+2. `i=2`: Search ±200. Fail-low → widen alpha to `bestValue - VALUE_MAX`. **Loop exits — no search with full window!**
 
-### Files
+### New Implementation
 
-- `src/engine/Search.cpp` — ~line 717-718 (iterative deepening) or ~line 882-889 (aspirationSearch entry)
-
-### Validation
-
-- Test position `8/8/3k1b2/8/5K2/8/8/4q3 b - - 55 193`: M7 found at depth 4 must be preserved (or improved) at depths 5+
-- Test position `4q3/k7/8/3K4/8/8/8/8 b - - 34 227`: No oscillation between mate and non-mate scores
-- Run existing `SearchTest::mate*` tests — must all pass
-- ELO regression: expected neutral (mate positions are rare in games)
-
----
-
-## Step 4 — Fix Aspiration UCI Display: Report Current Search Value During Re-searches
-
-**Priority:** Medium  
-**Dependency:** None (cosmetic fix, independent of Steps 1-3)  
-**Status:** 🔴 NOT STARTED  
-**Risk:** Very low — display-only change, no search behavior impact
-
-### Problem
-
-During aspiration re-searches, `sendAspirationResearchInfo()` (`Search.cpp:3097`) reports `thread().statistics.currentBestRootMoveValue`, which is set only at the **end of the previous iteration** (line 852). This means all fail-low/fail-high lines in the UCI output show the **stale** value from the previous depth:
+#### Algorithm (pseudocode)
 
 ```
- 6/8-  -9,32   ← Shows previous iteration's value (-932 cp), NOT the current fail-low value
- 6/8-  -9,32   ← Same stale value
- 6/8   -98,52  ← Final result — only now is the actual value shown
+aspirationSearch(p, depth, bestValue):
+  // Mate bypass — skip aspiration entirely for mate scores
+  if bestValue.isCheckMate():
+    return rootSearch(p, depth, VALUE_MIN, VALUE_MAX)
+
+  delta = ASP_INITIAL_DELTA                           // configurable, default 12
+  alpha = max(bestValue - delta, VALUE_MIN)
+  beta  = min(bestValue + delta, VALUE_MAX)
+
+  while (true):
+    value = rootSearch(p, depth, alpha, beta)
+
+    if stopConditions() && (value <= alpha || value >= beta):
+      return VALUE_NONE
+    if isTimeAlmostUp():
+      return value
+
+    if value <= alpha:                                 // FAIL LOW
+      update currentBestRootMoveValue to value         // fix stale UCI display
+      sendAspirationResearchInfo("upperbound")
+      addExtraTime(1.3)
+      if isTimeAlmostUp(): return value
+      alpha = max(value - delta, VALUE_MIN)            // value-centered, not bestValue
+      // don't touch beta
+      delta += delta / ASP_DELTA_GROWTH_DIVISOR        // configurable, default 3 (≈×1.33)
+      aspirationResearches++
+
+    else if value >= beta:                             // FAIL HIGH
+      update currentBestRootMoveValue to value
+      sendAspirationResearchInfo("lowerbound")
+      if isTimeAlmostUp(): return value
+      beta = min(value + delta, VALUE_MAX)             // value-centered
+      // don't touch alpha
+      delta += delta / ASP_DELTA_GROWTH_DIVISOR
+      aspirationResearches++
+
+    else:                                              // EXACT — within window
+      break
+
+  return value
 ```
 
-The UCI protocol expects `score` during `upperbound`/`lowerbound` to reflect the current search result (even though it's a bound). Stockfish reports the actual current value.
+#### Key Properties
 
-### Fix
+- **No off-by-one**: `while(true)` with exponential delta growth guarantees `alpha → VALUE_MIN` and `beta → VALUE_MAX` after ~8–10 fails. The full-window search always executes if needed.
+- **Value-centered**: On fail-low, alpha widens relative to `value` (the actual search result), not `bestValue` (stale from previous iteration). This adapts to where the true score actually is.
+- **Mate bypass**: When the previous iteration found a mate, skip aspiration entirely. A mate score is either confirmed or improved by full-window search — no risk of losing it to a narrow window fail-low.
+- **Fixed UCI display**: `currentBestRootMoveValue` is updated to the current `value` before `sendAspirationResearchInfo()`, so the GUI shows the actual search result during re-searches.
 
-Update `currentBestRootMoveValue` inside `aspirationSearch()` before calling `sendAspirationResearchInfo()`, so the UCI output reflects the current search state:
+#### Delta Growth (from initial value 12, divisor 3 → ≈×1.33)
+
+```
+12 → 16 → 21 → 28 → 37 → 50 → 66 → 88 → 117 → 156 → 208 → ...
+```
+
+After ~8–9 fails, delta exceeds the entire score range (VALUE_MAX = 10000) and both bounds saturate at VALUE_MIN/VALUE_MAX.
+
+#### Growth Divisor Comparison
+
+| Divisor | Effective multiplier | Fails to reach full window | Character                         |
+|---------|----------------------|----------------------------|-----------------------------------|
+| 3       | ×1.33                | ~10                        | Conservative (Stockfish's choice) |
+| 2       | ×1.50                | ~8                         | Moderate                          |
+| 1       | ×2.00                | ~6                         | Aggressive                        |
+
+All use integer arithmetic: `delta = Value{static_cast<int>(delta) + static_cast<int>(delta) / divisor}`.
+
+### New Config Parameters
+
+Two new parameters in `SearchConfigData.h`:
 
 ```cpp
-if (value <= alpha) {
-    // FAIL LOW
-    if (isMainThread()) {
-        // Update displayed value to reflect current search result
-        ESSENTIAL_STAT_SET(thread().statistics.currentBestRootMoveValue, thread().pv.first().value());
-        sendAspirationResearchInfo("upperbound");
-        addExtraTime(1.3);
-    }
-    // ...
-}
-else if (value >= beta) {
-    // FAIL HIGH
-    if (isMainThread()) {
-        ESSENTIAL_STAT_SET(thread().statistics.currentBestRootMoveValue, thread().pv.first().value());
-        sendAspirationResearchInfo("lowerbound");
-    }
-    // ...
-}
+CONFIG_CONST int ASP_INITIAL_DELTA       = 12;  // Initial aspiration half-window (cp)
+CONFIG_CONST int ASP_DELTA_GROWTH_DIVISOR = 3;  // Delta growth: delta += delta / divisor (≈×1.33)
 ```
 
-### Files
+Both exposed via UCI and YAML for SPRT tuning. Registry entries follow the standard pattern in `ConfigRegistry.cpp`.
 
-- `src/engine/Search.cpp` — ~line 904-930 (aspirationSearch fail-low/fail-high blocks)
+### Files to Change
+
+| File                            | Change                                                                                     |
+|---------------------------------|--------------------------------------------------------------------------------------------|
+| `src/config/SearchConfigData.h` | Add `ASP_INITIAL_DELTA` and `ASP_DELTA_GROWTH_DIVISOR` members (~line 64, after `USE_ASP`) |
+| `src/config/ConfigRegistry.cpp` | Add registry entries for both new params (after `USE_ASP` block)                           |
+| `config/search.yaml`            | Add commented-out entries for discoverability                                              |
+| `src/engine/Search.cpp`         | Rewrite `aspirationSearch()` (lines 882–939)                                               |
+| `src/engine/Search.h`           | Update `aspirationSearch()` doc comment (~line 451–456)                                    |
+
+### What Does NOT Change
+
+- **`iterativeDeepening()` call site** (line 717): stays as `if (USE_ASP && iterationDepth > 3)` — mate handling is internal to `aspirationSearch()`
+- **`rootSearch()`**: untouched
+- **Normal positions**: no behavioral change (first ±12 window almost always succeeds)
 
 ### Validation
 
-- Run any analysis position; verify that fail-low/fail-high lines show the actual current search value, not the previous iteration's value
-- No search behavior changes — purely cosmetic
+- **Test position 1** (`8/8/3k1b2/8/5K2/8/8/4q3 b - - 55 193`): M7 found at depth 4 must be preserved (or improved) at depths 5+. Previously dropped to +18.40.
+- **Test position 2** (`4q3/k7/8/3K4/8/8/8/8 b - - 34 227`): No oscillation between mate and non-mate scores.
+- **Test position 3** (`8/8/3k1b2/4q3/8/3K4/8/8 b - - 69 200`): No +89.98 / +89.99 artifacts.
+- **Aspiration UCI output**: Fail-low/fail-high lines show actual current search value, not previous iteration's stale value.
+- **Normal games**: Run existing `SearchTest::mate*` tests — must all pass. ELO regression test recommended (expected neutral or slight improvement).
+
+### Future Refinement (not in this change)
+
+- **Fail-low beta narrowing**: Stockfish adjusts `beta = (alpha + beta) / 2` on fail-low to narrow from both sides for faster resolution. Worth considering as a follow-up.
+- **Aspiration depth threshold**: Currently `iterationDepth > 3`. Could make configurable as `ASP_MIN_DEPTH` if needed for tuning.
 
 ---
 
-## Step 5 — Add Regression Tests for Mate Score Stability
+## Step 3 — Add Regression Tests for Mate Score Stability
 
 **Priority:** Medium  
-**Dependency:** Steps 1-3 should be done first  
+**Dependency:** Steps 1-2 should be done first  
 **Status:** 🔴 NOT STARTED  
 **Risk:** None — test-only change
 
@@ -353,7 +325,7 @@ TEST_F(SearchTest, mateStabilityKQvsK) {
 
 #### Test 3: Simple Mate — Existing Tests Still Pass
 
-Verify existing `mate1Search` through `mate5Search` tests still pass (no regressions from Steps 1-3).
+Verify existing `mate1Search` through `mate5Search` tests still pass (no regressions from Steps 1-2).
 
 ### Files
 
@@ -363,7 +335,7 @@ Verify existing `mate1Search` through `mate5Search` tests still pass (no regress
 
 ## Further Considerations (Not Planned Yet)
 
-These items were identified during analysis but do not require immediate action. Re-evaluate after Steps 1-5.
+These items were identified during analysis but do not require immediate action. Re-evaluate after Steps 1-3.
 
 ### `isCheckMate()` Boundary Condition
 
@@ -399,19 +371,16 @@ The fundamental gap vs Stockfish in these positions is evaluation quality. Stock
 ## Implementation Order & Dependencies
 
 ```
-Step 1: NMP Clamping Fix ──────────────┐
-                                        ├──→ Step 5: Regression Tests
-Step 2: Aspiration Loop Fix ───────────┤
-                                        │
-Step 3: Skip Aspiration for Mates ─────┘
-        (depends on Step 2)
-
-Step 4: Aspiration UCI Display ────────── (independent, can be done anytime)
+Step 1: NMP Clamping Fix ────────────── ✅ DONE (commit 4559e2e)
+                                         │
+Step 2: Aspiration Rewrite ─────────────┼──→ Step 3: Regression Tests
+   (merges old Steps 2+3+4)             │
+                                         │
 ```
 
-**Recommended implementation order:** 1 → 2 → 3 → 4 → 5
+**Recommended implementation order:** 1 → 2 → 3
 
-Steps 1 and 2 are independent and can be done in parallel. Step 3 depends on Step 2 (no point skipping aspiration if the loop itself is broken). Step 4 is cosmetic and independent. Step 5 validates everything.
+Step 1 is done. Step 2 is a full rewrite of `aspirationSearch()` that fixes the off-by-one, adds mate bypass, value-centered widening, and correct UCI display in a single change. Step 3 adds regression tests to validate everything.
 
 ---
 
