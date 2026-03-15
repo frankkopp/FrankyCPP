@@ -135,6 +135,12 @@ namespace config {
     CONFIG_CONST int KING_SHIELD_MID_PER_PAWN = 5;
     CONFIG_CONST int KING_SHIELD_END_PER_PAWN = 0;
 
+    // king-pawn proximity in endgame
+    // Bonus for king close to own passed pawns, bonus for king close to enemy passed pawns (defending).
+    CONFIG_CONST bool USE_KING_PAWN_PROXIMITY       = true;
+    CONFIG_CONST int KING_OWN_PASSED_PROXIMITY_END  = 5;  // bonus per step of closeness to own passers
+    CONFIG_CONST int KING_OPP_PASSED_PROXIMITY_END  = 3;  // bonus per step of closeness to enemy passers
+
     CONFIG_CONST bool USE_GAMEPHASE_VALUE = true;
 
     std::string str() const;

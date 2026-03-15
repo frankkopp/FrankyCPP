@@ -488,6 +488,39 @@ TEST_F(EvaluatorTest, King_PSQT_CenterBeatsCorner_Endgameish) {
   ASSERT_GT(vCentral, vCorner) << "PSQT should favor central king in endgame-like positions";
 }
 
+// Verify king near own passed pawn evaluates better than king far from it.
+TEST_F(EvaluatorTest, King_NearPassedPawnBeatsDistant) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_KING_EVAL           = true;
+    e.USE_KING_PAWN_PROXIMITY = true;
+    e.USE_KING_SAFETY_SHIELD  = false; // isolate proximity
+    e.USE_PAWN_EVAL           = false;
+    e.USE_POSITIONAL          = false; // no PSQT
+    e.USE_MATERIAL            = false;
+    e.USE_PIECE_EVAL          = false;
+    e.USE_GAMEPHASE_VALUE     = true;
+  });
+
+  Evaluator e{};
+
+  // White king near own passed pawn on e5 (king on e4, distance 1)
+  const Position nearPos{"6k1/8/8/4P3/4K3/8/8/8 w - - 0 1"};
+  // White king far from own passed pawn on e5 (king on a1, distance 4)
+  const Position farPos{"6k1/8/8/4P3/8/8/8/K7 w - - 0 1"};
+
+  const Value vNear = e.evaluate(nearPos);
+  const Value vFar  = e.evaluate(farPos);
+
+  fprintln("King near passed pawn eval: {}", vNear);
+  println(nearPos.strBoard());
+  fprintln("King far from passed pawn eval: {}", vFar);
+  println(farPos.strBoard());
+  fprintln("Near > Far: {} > {}", vNear, vFar);
+
+  ASSERT_GT(vNear, vFar) << "King near own passed pawn should evaluate higher than king far away";
+}
+
 TEST_F(EvaluatorTest, BishopPairBonus_TwoBishopsBeats_BishopKnight) {
   set_eval_config(false);
   cm.applyOverrides([&](auto&, EvalConfigData& e) {

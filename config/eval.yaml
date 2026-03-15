@@ -111,6 +111,10 @@ _YAML_SMOKE_TEST_MARKER: true
 # USE_KING_SAFETY_SHIELD: true
 # KING_SHIELD_MID_PER_PAWN: 5
 # KING_SHIELD_END_PER_PAWN: 0
+# King proximity to passed pawns (endgame bonus)
+# USE_KING_PAWN_PROXIMITY: true
+# KING_OWN_PASSED_PROXIMITY_END: 5
+# KING_OPP_PASSED_PROXIMITY_END: 3
 
 # Use gamephase value blending (e.g., tapered eval)
 # USE_GAMEPHASE_VALUE: true

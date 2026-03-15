@@ -54,14 +54,14 @@ ConfigRegistry::ConfigRegistry() {
   static_assert(sizeof(SearchConfigData) == 640,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 320,
+  static_assert(sizeof(EvalConfigData) == 328,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
   static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 312,
+  static_assert(sizeof(EvalConfigData) == 320,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #endif
@@ -72,7 +72,7 @@ ConfigRegistry::ConfigRegistry() {
   static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 312,
+  static_assert(sizeof(EvalConfigData) == 320,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
@@ -80,7 +80,7 @@ ConfigRegistry::ConfigRegistry() {
   static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 312,
+  static_assert(sizeof(EvalConfigData) == 320,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #endif
@@ -2732,6 +2732,46 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .exposure = {.uci = IS_MUTABLE(defaultEval, KING_SHIELD_END_PER_PAWN), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.KING_SHIELD_END_PER_PAWN; }),
     .setter = EVAL_CONFIG_SETTER(KING_SHIELD_END_PER_PAWN, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "USE_KING_PAWN_PROXIMITY",
+    .uciName = "King Pawn Proximity",
+    .description = "Endgame bonus for king proximity to passed pawns",
+    .valueType = Bool,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.USE_KING_PAWN_PROXIMITY),
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_KING_PAWN_PROXIMITY), .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.USE_KING_PAWN_PROXIMITY; }),
+    .setter = EVAL_CONFIG_SETTER(USE_KING_PAWN_PROXIMITY, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "KING_OWN_PASSED_PROXIMITY_END",
+    .uciName = "King Own Passer Prox",
+    .description = "Endgame bonus per step of closeness to own passed pawns",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.KING_OWN_PASSED_PROXIMITY_END),
+    .minValue = 0,
+    .maxValue = 20,
+    .exposure = {.uci = IS_MUTABLE(defaultEval, KING_OWN_PASSED_PROXIMITY_END), .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.KING_OWN_PASSED_PROXIMITY_END; }),
+    .setter = EVAL_CONFIG_SETTER(KING_OWN_PASSED_PROXIMITY_END, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "KING_OPP_PASSED_PROXIMITY_END",
+    .uciName = "King Opp Passer Prox",
+    .description = "Endgame bonus per step of closeness to enemy passed pawns (defending)",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.KING_OPP_PASSED_PROXIMITY_END),
+    .minValue = 0,
+    .maxValue = 20,
+    .exposure = {.uci = IS_MUTABLE(defaultEval, KING_OPP_PASSED_PROXIMITY_END), .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.KING_OPP_PASSED_PROXIMITY_END; }),
+    .setter = EVAL_CONFIG_SETTER(KING_OPP_PASSED_PROXIMITY_END, parseInt)
   });
 
   //===========================================================================

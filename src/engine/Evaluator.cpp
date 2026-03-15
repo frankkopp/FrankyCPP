@@ -456,6 +456,43 @@ inline void Evaluator::kingEval(const Position& p, Score& s, const Color us) con
     end += shieldCount * EvalConfig.KING_SHIELD_END_PER_PAWN;
   }
 
+  // King proximity to passed pawns (endgame only).
+  // Self-contained: detects passed pawns locally via cheap bitwise ops.
+  // Not cached in PawnTT because king position isn't part of the pawn key.
+  if (EvalConfig.USE_KING_PAWN_PROXIMITY) {
+    const Color them = ~us;
+    const Bitboard myPawns  = p.getPieceBb(us, PAWN);
+    const Bitboard oppPawns = p.getPieceBb(them, PAWN);
+
+    // Bonus for king close to own passed pawns (can escort to promotion)
+    {
+      Bitboard pawns = myPawns;
+      while (pawns) {
+        const Square psq        = pawns.popLSB();
+        const Bitboard fwd      = Bitboards::rays[us == WHITE ? N : S][psq];
+        const bool isPassed     = !(myPawns & fwd) && !(oppPawns & Bitboards::passedPawnMask[us][psq]);
+        if (isPassed) {
+          const int closeness   = 7 - ksq.distanceTo(psq); // 0..7
+          end += closeness * EvalConfig.KING_OWN_PASSED_PROXIMITY_END;
+        }
+      }
+    }
+
+    // Bonus for king close to enemy passed pawns (can block/capture them)
+    {
+      Bitboard pawns = oppPawns;
+      while (pawns) {
+        const Square psq        = pawns.popLSB();
+        const Bitboard fwd      = Bitboards::rays[them == WHITE ? N : S][psq];
+        const bool isPassed     = !(oppPawns & fwd) && !(myPawns & Bitboards::passedPawnMask[them][psq]);
+        if (isPassed) {
+          const int closeness   = 7 - ksq.distanceTo(psq); // 0..7
+          end += closeness * EvalConfig.KING_OPP_PASSED_PROXIMITY_END;
+        }
+      }
+    }
+  }
+
   s.midgame += static_cast<Value>(mid * us.sign());
   s.endgame += static_cast<Value>(end * us.sign());
 }
