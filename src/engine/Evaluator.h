@@ -89,6 +89,11 @@ namespace engine {
     Score score{};
     Score tmpScore{};
 
+    /// King safety attack accumulators (indexed by king color under attack).
+    /// Reset in evaluate(), incremented in piece evals, consumed in kingEval().
+    int kingAttackCount[2]{};   ///< Number of distinct pieces attacking king zone
+    int kingAttackWeight[2]{};  ///< Weighted sum (N=2, B=2, R=3, Q=4)
+
     // reference to the Eval Config Data
     const config::EvalConfigData& EvalConfig;
 
@@ -137,7 +142,7 @@ namespace engine {
     /// @param us   Color of the knight
     /// @param them Opponent color
     /// @param sq   Square of the knight
-    void knightEval(const Position& p, Score& s, Color us, Color them, Square sq) const;
+    void knightEval(const Position& p, Score& s, Color us, Color them, Square sq);
 
     /// Evaluates bishop placement (mobility, diagonals, fianchetto).
     /// @param p    The position to evaluate
@@ -145,7 +150,7 @@ namespace engine {
     /// @param us   Color of the bishop
     /// @param them Opponent color
     /// @param sq   Square of the bishop
-    void bishopEval(const Position& p, Score& s, Color us, Color them, Square sq) const;
+    void bishopEval(const Position& p, Score& s, Color us, Color them, Square sq);
 
     /// Evaluates rook placement (open files, 7th rank, connectivity).
     /// @param p    The position to evaluate
@@ -153,7 +158,7 @@ namespace engine {
     /// @param us   Color of the rook
     /// @param them Opponent color
     /// @param sq   Square of the rook
-    void rookEval(const Position& p, Score& s, Color us, Color them, Square sq) const;
+    void rookEval(const Position& p, Score& s, Color us, Color them, Square sq);
 
     /// Evaluates queen placement (mobility, king proximity).
     /// @param p    The position to evaluate
@@ -161,7 +166,7 @@ namespace engine {
     /// @param us   Color of the queen
     /// @param them Opponent color
     /// @param sq   Square of the queen
-    void queenEval(const Position& p, Score& s, Color us, Color them, Square sq) const;
+    void queenEval(const Position& p, Score& s, Color us, Color them, Square sq);
 
     /// Evaluates king safety (pawn shield, attacker proximity, castling).
     /// @param p   The position to evaluate

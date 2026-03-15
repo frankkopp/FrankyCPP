@@ -74,6 +74,8 @@ void set_eval_config(const bool onoff) {
     e.USE_QUEEN_TROPISM        = onoff;
     e.USE_KING_EVAL            = onoff;
     e.USE_KING_SAFETY_SHIELD   = onoff;
+    e.USE_KING_PAWN_PROXIMITY  = onoff;
+    e.USE_KING_SAFETY_ATTACK   = onoff;
     e.USE_GAMEPHASE_VALUE      = onoff;
     e.USE_BISHOP_PAIR_BONUS    = onoff;
   });
@@ -519,6 +521,38 @@ TEST_F(EvaluatorTest, King_NearPassedPawnBeatsDistant) {
   fprintln("Near > Far: {} > {}", vNear, vFar);
 
   ASSERT_GT(vNear, vFar) << "King near own passed pawn should evaluate higher than king far away";
+}
+
+// Verify that a position with pieces attacking the enemy king is evaluated higher
+// than one where the pieces don't attack the king zone.
+TEST_F(EvaluatorTest, KingSafety_AttackedKingWorseThanSafe) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_PIECE_EVAL         = true;
+    e.USE_KING_EVAL          = true;
+    e.USE_KING_SAFETY_ATTACK = true;
+    e.USE_KING_SAFETY_SHIELD = false;
+    e.USE_GAMEPHASE_VALUE    = true;
+  });
+
+  Evaluator e{};
+
+  // White B+Q both attacking Black king zone on g8 (Bd5→f7, Qh5→h7 = 2 attackers, triggers penalty)
+  const Position attacked{"6k1/5ppp/8/3B3Q/8/8/6PP/6K1 w - - 0 1"};
+  // Same material but pieces far from Black king zone (Ba2→f7 = only 1 attacker, below ≥2 threshold)
+  const Position safe{"6k1/5ppp/8/8/8/8/B5PP/4Q1K1 w - - 0 1"};
+
+  const Value vAttacked = e.evaluate(attacked);
+  const Value vSafe     = e.evaluate(safe);
+
+  fprintln("Attacking king zone eval: {}", vAttacked);
+  println(attacked.strBoard());
+  fprintln("Safe (no attack) eval:    {}", vSafe);
+  println(safe.strBoard());
+  fprintln("Attacked > Safe: {} > {}", vAttacked, vSafe);
+
+  ASSERT_GT(vAttacked, vSafe)
+      << "Position with pieces attacking enemy king zone should evaluate higher for the attacker";
 }
 
 TEST_F(EvaluatorTest, BishopPairBonus_TwoBishopsBeats_BishopKnight) {

@@ -23,6 +23,8 @@
 
 #include "config/ConfigManager.h"
 
+#include <algorithm>
+
 using namespace engine;
 using namespace chess;
 using namespace config;
@@ -48,6 +50,10 @@ Value Evaluator::evaluate(const Position& p) {
 
   score.midgame = VALUE_ZERO;
   score.endgame = VALUE_ZERO;
+  kingAttackCount[WHITE]  = 0;
+  kingAttackCount[BLACK]  = 0;
+  kingAttackWeight[WHITE] = 0;
+  kingAttackWeight[BLACK] = 0;
 
   const double gamePhaseFactor = p.getGamePhaseFactor();
 
@@ -298,10 +304,11 @@ inline void Evaluator::pieceEval(const Position& p, Score& s, const Color us, co
   }
 }
 
-inline void Evaluator::knightEval(const Position& p, Score& s, const Color us, Color /*unused*/, const Square sq) const {
+inline void Evaluator::knightEval(const Position& p, Score& s, const Color us, Color /*unused*/, const Square sq) {
+  const Bitboard attacks = Bitboards::nonSliderAttacks[KNIGHT][sq];
+
   if (EvalConfig.USE_KNIGHT_MOBILITY) {
     const Bitboard myOcc   = p.getOccupiedBb(us);
-    const Bitboard attacks = Attacks::attacks(KNIGHT, sq, BbZero);
     const int mobility     = (attacks & ~myOcc).popcount();
 
     int mid = mobility * EvalConfig.KNIGHT_MOBILITY_MID_PER_MOVE;
@@ -319,14 +326,25 @@ inline void Evaluator::knightEval(const Position& p, Score& s, const Color us, C
     s.midgame += static_cast<Value>(mid * us.sign());
     s.endgame += static_cast<Value>(end * us.sign());
   }
+
+  // King safety: count attacks on enemy king zone
+  if (EvalConfig.USE_KING_SAFETY_ATTACK) {
+    const Color them            = ~us;
+    const Bitboard enemyKingZone = Bitboards::nonSliderAttacks[KING][p.getKingSquare(them)];
+    if (attacks & enemyKingZone) {
+      ++kingAttackCount[them];
+      kingAttackWeight[them] += EvalConfig.KING_ATTACK_WEIGHT_KNIGHT;
+    }
+  }
 }
 
-inline void Evaluator::bishopEval(const Position& p, Score& s, const Color us, Color /*unused*/, const Square sq) const {
-  // Mobility for bishops (Tier 1)
+inline void Evaluator::bishopEval(const Position& p, Score& s, const Color us, Color /*unused*/, const Square sq) {
+  const Bitboard occupied = p.getOccupiedBb();
+  const Bitboard attacks  = Attacks::attacks(BISHOP, sq, occupied);
+
+  // Mobility
   if (EvalConfig.USE_BISHOP_MOBILITY) {
     const Bitboard myOcc    = p.getOccupiedBb(us);
-    const Bitboard occupied = p.getOccupiedBb();
-    const Bitboard attacks  = Attacks::attacks(BISHOP, sq, occupied);
     const int mobility      = (attacks & ~myOcc).popcount();
 
     int mid = mobility * EvalConfig.BISHOP_MOBILITY_MID_PER_MOVE;
@@ -340,17 +358,28 @@ inline void Evaluator::bishopEval(const Position& p, Score& s, const Color us, C
     s.midgame += static_cast<Value>(mid * us.sign());
     s.endgame += static_cast<Value>(end * us.sign());
   }
+
+  // King safety: count attacks on enemy king zone
+  if (EvalConfig.USE_KING_SAFETY_ATTACK) {
+    const Color them             = ~us;
+    const Bitboard enemyKingZone = Bitboards::nonSliderAttacks[KING][p.getKingSquare(them)];
+    if (attacks & enemyKingZone) {
+      ++kingAttackCount[them];
+      kingAttackWeight[them] += EvalConfig.KING_ATTACK_WEIGHT_BISHOP;
+    }
+  }
 }
 
-inline void Evaluator::rookEval(const Position& p, Score& s, const Color us, const Color them, const Square sq) const {
+inline void Evaluator::rookEval(const Position& p, Score& s, const Color us, const Color them, const Square sq) {
   int mid = 0;
   int end = 0;
+
+  const Bitboard occupied = p.getOccupiedBb();
+  const Bitboard attacks  = Attacks::attacks(ROOK, sq, occupied);
 
   // Mobility
   if (EvalConfig.USE_ROOK_MOBILITY) {
     const Bitboard myOcc    = p.getOccupiedBb(us);
-    const Bitboard occupied = p.getOccupiedBb();
-    const Bitboard attacks  = Attacks::attacks(ROOK, sq, occupied);
     const int mobility      = (attacks & ~myOcc).popcount();
 
     mid += mobility * EvalConfig.ROOK_MOBILITY_MID_PER_MOVE;
@@ -391,34 +420,53 @@ inline void Evaluator::rookEval(const Position& p, Score& s, const Color us, con
     }
   }
 
+  // King safety: count attacks on enemy king zone
+  if (EvalConfig.USE_KING_SAFETY_ATTACK) {
+    const Bitboard enemyKingZone = Bitboards::nonSliderAttacks[KING][p.getKingSquare(them)];
+    if (attacks & enemyKingZone) {
+      ++kingAttackCount[them];
+      kingAttackWeight[them] += EvalConfig.KING_ATTACK_WEIGHT_ROOK;
+    }
+  }
+
   if (mid || end) {
     s.midgame += static_cast<Value>(mid * us.sign());
     s.endgame += static_cast<Value>(end * us.sign());
   }
 }
 
-inline void Evaluator::queenEval(const Position& p, Score& s, const Color us, const Color them, const Square sq) const {
+inline void Evaluator::queenEval(const Position& p, Score& s, const Color us, const Color them, const Square sq) {
   int mid = 0;
   int end = 0;
 
-  // Mobility (Tier 1)
+  const Bitboard occupied = p.getOccupiedBb();
+  const Bitboard attacks  = Attacks::attacks(QUEEN, sq, occupied);
+
+  // Mobility
   if (EvalConfig.USE_QUEEN_MOBILITY) {
     const Bitboard myOcc    = p.getOccupiedBb(us);
-    const Bitboard occupied = p.getOccupiedBb();
-    const Bitboard attacks  = Attacks::attacks(QUEEN, sq, occupied);
     const int mobility      = (attacks & ~myOcc).popcount();
 
     mid += mobility * EvalConfig.QUEEN_MOBILITY_MID_PER_MOVE;
     end += mobility * EvalConfig.QUEEN_MOBILITY_END_PER_MOVE;
   }
 
-  // Simple tropism towards enemy king (Tier 0/phase-scaled)
+  // Simple tropism towards enemy king
   if (EvalConfig.USE_QUEEN_TROPISM) {
     const Square ksq    = p.getKingSquare(them);
     const int dist      = sq.distanceTo(ksq); // 0..7
     const int closeness = 8 - dist;           // 1..8 (or 8 if dist==0)
     mid += closeness * EvalConfig.QUEEN_TROPISM_MID_PER_STEP;
     end += closeness * EvalConfig.QUEEN_TROPISM_END_PER_STEP;
+  }
+
+  // King safety: count attacks on enemy king zone
+  if (EvalConfig.USE_KING_SAFETY_ATTACK) {
+    const Bitboard enemyKingZone = Bitboards::nonSliderAttacks[KING][p.getKingSquare(them)];
+    if (attacks & enemyKingZone) {
+      ++kingAttackCount[them];
+      kingAttackWeight[them] += EvalConfig.KING_ATTACK_WEIGHT_QUEEN;
+    }
   }
 
   if (mid || end) {
@@ -470,6 +518,7 @@ inline void Evaluator::kingEval(const Position& p, Score& s, const Color us) con
       while (pawns) {
         const Square psq        = pawns.popLSB();
         const Bitboard fwd      = Bitboards::rays[us == WHITE ? N : S][psq];
+        // ReSharper disable once CppTooWideScope
         const bool isPassed     = !(myPawns & fwd) && !(oppPawns & Bitboards::passedPawnMask[us][psq]);
         if (isPassed) {
           const int closeness   = 7 - ksq.distanceTo(psq); // 0..7
@@ -484,6 +533,7 @@ inline void Evaluator::kingEval(const Position& p, Score& s, const Color us) con
       while (pawns) {
         const Square psq        = pawns.popLSB();
         const Bitboard fwd      = Bitboards::rays[them == WHITE ? N : S][psq];
+        // ReSharper disable once CppTooWideScope
         const bool isPassed     = !(oppPawns & fwd) && !(myPawns & Bitboards::passedPawnMask[them][psq]);
         if (isPassed) {
           const int closeness   = 7 - ksq.distanceTo(psq); // 0..7
@@ -491,6 +541,14 @@ inline void Evaluator::kingEval(const Position& p, Score& s, const Color us) con
         }
       }
     }
+  }
+
+  // King safety: apply non-linear penalty based on accumulated attacker weight (midgame only).
+  // kingAttackWeight[us] was accumulated in piece evals for pieces attacking THIS king's zone.
+  if (EvalConfig.USE_KING_SAFETY_ATTACK && kingAttackCount[us] >= 2) {
+    const int idx     = std::min(kingAttackWeight[us], 15);
+    const int penalty = EvalConfig.KING_SAFETY_TABLE[idx];
+    mid -= penalty; // penalty reduces this king's safety (negative for us)
   }
 
   s.midgame += static_cast<Value>(mid * us.sign());

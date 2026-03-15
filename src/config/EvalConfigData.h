@@ -141,6 +141,17 @@ namespace config {
     CONFIG_CONST int KING_OWN_PASSED_PROXIMITY_END  = 5;  // bonus per step of closeness to own passers
     CONFIG_CONST int KING_OPP_PASSED_PROXIMITY_END  = 3;  // bonus per step of closeness to enemy passers
 
+    // king safety: attack evaluation (midgame only)
+    // Counts attacker pieces on the enemy king zone and applies a non-linear penalty.
+    CONFIG_CONST bool USE_KING_SAFETY_ATTACK       = true;
+    CONFIG_CONST int KING_ATTACK_WEIGHT_KNIGHT     = 2;
+    CONFIG_CONST int KING_ATTACK_WEIGHT_BISHOP     = 2;
+    CONFIG_CONST int KING_ATTACK_WEIGHT_ROOK       = 3;
+    CONFIG_CONST int KING_ATTACK_WEIGHT_QUEEN      = 4;
+    // Non-linear penalty table indexed by total attack weight (clamped to 0..15)
+    CONFIG_ESSENTIAL std::array<int, 16> KING_SAFETY_TABLE = {
+      0, 0, 5, 15, 30, 50, 75, 105, 140, 180, 220, 260, 300, 340, 380, 400};
+
     CONFIG_CONST bool USE_GAMEPHASE_VALUE = true;
 
     std::string str() const;

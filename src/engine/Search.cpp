@@ -891,7 +891,7 @@ Value Search::aspirationSearch(Position& p, const Depth depth, const Value bestV
   // Initialize aspiration window centered on previous iteration's value.
   // Uses exponential widening: delta grows by delta/divisor on each fail,
   // guaranteeing the window reaches [VALUE_MIN, VALUE_MAX] after ~8-10 fails.
-  auto delta = Value{SearchConfig.ASP_INITIAL_DELTA};
+  auto delta  = Value{SearchConfig.ASP_INITIAL_DELTA};
   Value alpha = std::max(bestValue - delta, VALUE_MIN);
   Value beta  = std::min(bestValue + delta, VALUE_MAX);
   Value value = VALUE_NONE;
@@ -957,7 +957,7 @@ Value Search::aspirationSearch(Position& p, const Depth depth, const Value bestV
         beta  = VALUE_MAX;
       }
       else {
-        beta = std::min(value + delta, VALUE_MAX);
+        beta  = std::min(value + delta, VALUE_MAX);
         delta = Value{static_cast<int>(delta) + static_cast<int>(delta) / SearchConfig.ASP_DELTA_GROWTH_DIVISOR};
       }
       STAT_INC(thread().statistics.aspirationResearches);
@@ -1548,7 +1548,8 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
           && depth >= SearchConfig.CHECK_EXT_MIN_DEPTH
           && givesCheck
           && movesSearched < SearchConfig.CHECK_EXT_EARLY_LIMIT
-          && (!SearchConfig.USE_CHECK_EXT_SEE || See::see(p, move) >= 0)) {
+          && (!SearchConfig.USE_CHECK_EXT_SEE || See::see(p, move) >= 0)
+      ) {
         STAT_INC(thread().statistics.checkExtension);
         extension = DEPTH_ONE;
       }
@@ -3147,14 +3148,14 @@ void Search::sendAspirationResearchInfo(const std::string& boundString) const {
     }
     // Always log for debugging, even when UCI output is suppressed
     LOG__DEBUG(Logger::get().SEARCH_LOG, "depth {} seldepth {} value {} {} nodes {:L} nps {:L} time {:L} pv {}",
-              thread().statistics.currentSearchDepth,
-              thread().statistics.currentExtraSearchDepth,
-              thread().statistics.currentBestRootMoveValue.str(),
-              boundString,
-              totalNodes,
-              nps(totalNodes, since),
-              MILLISECONDS(since).count(),
-              pvLine.str());
+               thread().statistics.currentSearchDepth,
+               thread().statistics.currentExtraSearchDepth,
+               thread().statistics.currentBestRootMoveValue.str(),
+               boundString,
+               totalNodes,
+               nps(totalNodes, since),
+               MILLISECONDS(since).count(),
+               pvLine.str());
     return;
   }
 

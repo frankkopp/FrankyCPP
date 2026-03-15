@@ -54,14 +54,14 @@ ConfigRegistry::ConfigRegistry() {
   static_assert(sizeof(SearchConfigData) == 640,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 328,
+  static_assert(sizeof(EvalConfigData) == 416,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
   static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 320,
+  static_assert(sizeof(EvalConfigData) == 408,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #endif
@@ -72,7 +72,7 @@ ConfigRegistry::ConfigRegistry() {
   static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 320,
+  static_assert(sizeof(EvalConfigData) == 408,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
@@ -80,7 +80,7 @@ ConfigRegistry::ConfigRegistry() {
   static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 320,
+  static_assert(sizeof(EvalConfigData) == 408,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #endif
@@ -2772,6 +2772,88 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .exposure = {.uci = IS_MUTABLE(defaultEval, KING_OPP_PASSED_PROXIMITY_END), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.KING_OPP_PASSED_PROXIMITY_END; }),
     .setter = EVAL_CONFIG_SETTER(KING_OPP_PASSED_PROXIMITY_END, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "USE_KING_SAFETY_ATTACK",
+    .uciName = "King Safety Attack",
+    .description = "Enable king zone attack evaluation",
+    .valueType = Bool,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.USE_KING_SAFETY_ATTACK),
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_KING_SAFETY_ATTACK), .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.USE_KING_SAFETY_ATTACK; }),
+    .setter = EVAL_CONFIG_SETTER(USE_KING_SAFETY_ATTACK, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "KING_ATTACK_WEIGHT_KNIGHT",
+    .uciName = "",
+    .description = "Attack weight for knight attacking king zone",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.KING_ATTACK_WEIGHT_KNIGHT),
+    .minValue = 0,
+    .maxValue = 10,
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.KING_ATTACK_WEIGHT_KNIGHT; }),
+    .setter = EVAL_CONFIG_SETTER(KING_ATTACK_WEIGHT_KNIGHT, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "KING_ATTACK_WEIGHT_BISHOP",
+    .uciName = "",
+    .description = "Attack weight for bishop attacking king zone",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.KING_ATTACK_WEIGHT_BISHOP),
+    .minValue = 0,
+    .maxValue = 10,
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.KING_ATTACK_WEIGHT_BISHOP; }),
+    .setter = EVAL_CONFIG_SETTER(KING_ATTACK_WEIGHT_BISHOP, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "KING_ATTACK_WEIGHT_ROOK",
+    .uciName = "",
+    .description = "Attack weight for rook attacking king zone",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.KING_ATTACK_WEIGHT_ROOK),
+    .minValue = 0,
+    .maxValue = 10,
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.KING_ATTACK_WEIGHT_ROOK; }),
+    .setter = EVAL_CONFIG_SETTER(KING_ATTACK_WEIGHT_ROOK, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "KING_ATTACK_WEIGHT_QUEEN",
+    .uciName = "",
+    .description = "Attack weight for queen attacking king zone",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.KING_ATTACK_WEIGHT_QUEEN),
+    .minValue = 0,
+    .maxValue = 10,
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.KING_ATTACK_WEIGHT_QUEEN; }),
+    .setter = EVAL_CONFIG_SETTER(KING_ATTACK_WEIGHT_QUEEN, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "KING_SAFETY_TABLE",
+    .uciName = "",
+    .description = "Non-linear king safety penalty by total attack weight (0..15)",
+    .valueType = IntArray,
+    .domain = Eval,
+    .defaultValue = arrayToString(defaultEval.KING_SAFETY_TABLE),
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = [](const SearchConfigData&, const EvalConfigData& e) {
+      return arrayToString(e.KING_SAFETY_TABLE);
+    },
+    .setter = EVAL_CONFIG_ARRAY_SETTER(KING_SAFETY_TABLE)
   });
 
   //===========================================================================

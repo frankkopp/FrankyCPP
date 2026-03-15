@@ -115,6 +115,13 @@ _YAML_SMOKE_TEST_MARKER: true
 # USE_KING_PAWN_PROXIMITY: true
 # KING_OWN_PASSED_PROXIMITY_END: 5
 # KING_OPP_PASSED_PROXIMITY_END: 3
+# King safety: attack evaluation (midgame penalty for pieces attacking the king zone)
+# USE_KING_SAFETY_ATTACK: true
+# KING_ATTACK_WEIGHT_KNIGHT: 2
+# KING_ATTACK_WEIGHT_BISHOP: 2
+# KING_ATTACK_WEIGHT_ROOK: 3
+# KING_ATTACK_WEIGHT_QUEEN: 4
+# KING_SAFETY_TABLE: 0,0,5,15,30,50,75,105,140,180,220,260,300,340,380,400
 
 # Use gamephase value blending (e.g., tapered eval)
 # USE_GAMEPHASE_VALUE: true
