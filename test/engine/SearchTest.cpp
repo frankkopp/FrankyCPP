@@ -398,6 +398,124 @@ TEST_F(SearchTest, mate5Search) {
   EXPECT_TRUE(s.getLastSearchResult().mateFound);
 }
 
+// ============================================================================
+// Mate Score Stability Tests
+// Regression tests for mate score stability issues fixed in v1.6:
+// - Step 1: NMP mate clamping (commit 4559e2e) — VALUE_CHECKMATE_THRESHOLD
+//   contamination eliminated
+// - Step 2: Aspiration rewrite — while(true) loop with exponential widening,
+//   value-centered re-search, mate bypass, fixed UCI display
+//
+// These positions previously exhibited:
+// - Bogus near-mate scores (+98.71 / -98.52 pawns)
+// - Confirmed mates getting "lost" between iterations
+// - Severe score oscillation (mate → near-mate → regular → mate)
+//
+// The tests verify that the final result is a checkmate score and that the
+// artificial VALUE_CHECKMATE_THRESHOLD (9871 cp) does not appear as a result.
+// They also serve as visual regression tests — run with verbose output to
+// inspect the search trace for score stability across iterations.
+// ============================================================================
+
+// KQB vs K — Black has overwhelming material advantage.
+// Previously: Found M7 at depth 4, DROPPED to +18.40 at depth 5, recovered at depth 10.
+// After fix: Must find checkmate and hold it stable.
+TEST_F(SearchTest, mateStability_KQBvsK) {
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  CONFIG_OVERRIDE(s.THREADS = 1;);
+  const Position p{"8/8/3k1b2/8/5K2/8/8/4q3 b - - 55 193"};
+  SearchLimits sl{};
+  Search s{};
+  sl.depth = 15;
+  s.isReady();
+  s.startSearch(p, sl);
+  s.waitWhileSearching();
+  const auto result = s.getLastSearchResult();
+
+  // Must find a checkmate, not a regular evaluation
+  EXPECT_TRUE(result.bestMoveValue.isCheckMate())
+      << "Expected checkmate score, got: " << result.bestMoveValue.str();
+
+  // Must NOT be the artificial VALUE_CHECKMATE_THRESHOLD (NMP clamping artifact)
+  EXPECT_NE(std::abs(static_cast<int>(result.bestMoveValue)),
+            static_cast<int>(VALUE_CHECKMATE_THRESHOLD))
+      << "Score must not be VALUE_CHECKMATE_THRESHOLD (9871 cp = +98.71 pawns artifact)";
+}
+
+// KQ vs K — Black has queen vs lone king.
+// Previously: Wild oscillation through +98.71, +M44, +18.40 before finding +M7 at depth 21.
+// After fix: Must find checkmate without VALUE_CHECKMATE_THRESHOLD artifacts.
+TEST_F(SearchTest, mateStability_KQvsK) {
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  CONFIG_OVERRIDE(s.THREADS = 1;);
+  const Position p{"4q3/k7/8/3K4/8/8/8/8 b - - 34 227"};
+  SearchLimits sl{};
+  Search s{};
+  sl.depth = 20;
+  s.isReady();
+  s.startSearch(p, sl);
+  s.waitWhileSearching();
+  const auto result = s.getLastSearchResult();
+
+  // Must find a checkmate
+  EXPECT_TRUE(result.bestMoveValue.isCheckMate())
+      << "Expected checkmate score, got: " << result.bestMoveValue.str();
+
+  // Must NOT be the artificial VALUE_CHECKMATE_THRESHOLD
+  EXPECT_NE(std::abs(static_cast<int>(result.bestMoveValue)),
+            static_cast<int>(VALUE_CHECKMATE_THRESHOLD))
+      << "Score must not be VALUE_CHECKMATE_THRESHOLD (9871 cp = +98.71 pawns artifact)";
+}
+
+// KQB vs K — Position from live game where +89.98 / +89.99 artifacts appeared.
+// After fix: Must find checkmate without artificial high non-mate scores.
+TEST_F(SearchTest, mateStability_KQBvsK_liveGame) {
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  CONFIG_OVERRIDE(s.THREADS = 1;);
+  const Position p{"8/8/3k1b2/4q3/8/3K4/8/8 b - - 69 200"};
+  SearchLimits sl{};
+  Search s{};
+  sl.depth = 15;
+  s.isReady();
+  s.startSearch(p, sl);
+  s.waitWhileSearching();
+  const auto result = s.getLastSearchResult();
+
+  // Must find a checkmate
+  EXPECT_TRUE(result.bestMoveValue.isCheckMate())
+      << "Expected checkmate score, got: " << result.bestMoveValue.str();
+
+  // Must NOT be the artificial VALUE_CHECKMATE_THRESHOLD
+  EXPECT_NE(std::abs(static_cast<int>(result.bestMoveValue)),
+            static_cast<int>(VALUE_CHECKMATE_THRESHOLD))
+      << "Score must not be VALUE_CHECKMATE_THRESHOLD (9871 cp = +98.71 pawns artifact)";
+}
+
+// KQp vs KR endgame — Position where fail-soft NMP returned inflated values (8998 cp
+// = +89.98 pawns). Every aspiration iteration showed +89.98 fail-high before resolving
+// to +21.87. After fail-hard NMP fix, no inflated scores should appear.
+// This is a visual regression test — run with verbose output to inspect the trace.
+TEST_F(SearchTest, nmpInflation_KQpVsKR) {
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  CONFIG_OVERRIDE(s.THREADS = 1;);
+  const Position p{"3bk3/8/8/4K3/8/4R3/p7/8 b - - 0 156"};
+  SearchLimits sl{};
+  Search s{};
+  sl.depth = 20;
+  s.isReady();
+  s.startSearch(p, sl);
+  s.waitWhileSearching();
+  const auto result = s.getLastSearchResult();
+
+  // Score must be positive (Black is winning with a passed pawn + bishop vs rook)
+  EXPECT_GT(static_cast<int>(result.bestMoveValue), 0)
+      << "Expected positive score for Black, got: " << result.bestMoveValue.str();
+
+  // Score must NOT be an inflated NMP artifact (8998 cp = +89.98 or similar)
+  EXPECT_LT(std::abs(static_cast<int>(result.bestMoveValue)), 5000)
+      << "Score is suspiciously high for a non-mate position: " << result.bestMoveValue.str();
+}
+
 // In production, USE_ALPHABETA/USE_PVS/USE_TT/USE_QUIESCENCE/USE_QS_SEE are CONFIG_CONST.
 #ifndef FRANKYCPP_PRODUCTION
 TEST_F(SearchTest, quiescenceTest) {
@@ -821,34 +939,35 @@ TEST_F(SearchTest, debug) {
   if (isBulkRun()) {
     GTEST_SKIP() << "Skipping debug test in bulk run to save time";
   }
-  CONFIG_OVERRIDE(s.TT_SIZE_MB = 64;);
-  CONFIG_OVERRIDE(s.USE_BOOK = false;);
-  CONFIG_OVERRIDE(s.USE_ALPHABETA = false;);
-  CONFIG_OVERRIDE(s.USE_PVS = false;);
-  CONFIG_OVERRIDE(s.USE_ASP = false;);
-  CONFIG_OVERRIDE(s.USE_TT = false;);
-  CONFIG_OVERRIDE(s.USE_TT_VALUE = false;);
-  CONFIG_OVERRIDE(s.USE_EVAL_TT = false;);
-  CONFIG_OVERRIDE(s.USE_MDP = false;);
-  CONFIG_OVERRIDE(s.USE_HISTORY_COUNTER = false;);
-  CONFIG_OVERRIDE(s.USE_HISTORY_MOVES = false;);
-  CONFIG_OVERRIDE(s.USE_QUIESCENCE = true;);
-  CONFIG_OVERRIDE(s.USE_QS_STANDPAT_CUT = false;);
-  CONFIG_OVERRIDE(s.USE_QS_SEE = false;);
-  CONFIG_OVERRIDE(s.USE_QS_TT = false;);
+  // CONFIG_OVERRIDE(s.TT_SIZE_MB = 64;);
+  // CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  // CONFIG_OVERRIDE(s.USE_ALPHABETA = false;);
+  // CONFIG_OVERRIDE(s.USE_PVS = false;);
+  // CONFIG_OVERRIDE(s.USE_ASP = false;);
+  // CONFIG_OVERRIDE(s.USE_TT = false;);
+  // CONFIG_OVERRIDE(s.USE_TT_VALUE = false;);
+  // CONFIG_OVERRIDE(s.USE_EVAL_TT = false;);
+  // CONFIG_OVERRIDE(s.USE_MDP = false;);
+  // CONFIG_OVERRIDE(s.USE_HISTORY_COUNTER = false;);
+  // CONFIG_OVERRIDE(s.USE_HISTORY_MOVES = false;);
+  // CONFIG_OVERRIDE(s.USE_QUIESCENCE = true;);
+  // CONFIG_OVERRIDE(s.USE_QS_STANDPAT_CUT = false;);
+  // CONFIG_OVERRIDE(s.USE_QS_SEE = false;);
+  // CONFIG_OVERRIDE(s.USE_QS_TT = false;);
+  //
+  // ConfigManager::instance().applyOverrides([&](auto&, EvalConfigData& e) {
+  //   e.USE_MATERIAL   = true;
+  //   e.USE_POSITIONAL = true;
+  //   e.TEMPO          = 34;
+  // });
 
-  ConfigManager::instance().applyOverrides([&](auto&, EvalConfigData& e) {
-    e.USE_MATERIAL   = true;
-    e.USE_POSITIONAL = true;
-    e.TEMPO          = 34;
-  });
-
-  const Position p{"2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - - 0 1"};
+  const Position p{"4k3/4b3/8/4R3/2K5/8/8/3q4 b - - 15 164"};
   SearchLimits sl{};
   Search s{};
-  //  sl.timeControl = true;
-  //  sl.moveTime    = 160s;
-  sl.depth = 6;
+  CONFIG_OVERRIDE(s.TB_PATH = "D:/SYZYGY/");
+  sl.timeControl = true;
+  sl.moveTime    = 10s;
+  // sl.depth = 6;
   s.isReady();
   s.startSearch(p, sl);
   s.waitWhileSearching();

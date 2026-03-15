@@ -44,6 +44,10 @@ _YAML_SMOKE_TEST_MARKER: true
 # USE_PVS: true
 # Use aspiration windows around the previous score to speed up convergence
 # USE_ASP: true
+# Initial aspiration half-window in centipawns
+# ASP_INITIAL_DELTA: 12
+# Delta growth divisor: delta += delta / divisor (3=x1.33, 2=x1.50, 1=x2.00)
+# ASP_DELTA_GROWTH_DIVISOR: 3
 
 # Enable quiescence search to resolve tactical instability at leaf nodes
 # USE_QUIESCENCE: true

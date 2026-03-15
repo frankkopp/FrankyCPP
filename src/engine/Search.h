@@ -448,7 +448,13 @@ namespace engine {
     /// @return   Search result with best move and score
     SearchResult iterativeDeepening(Position& p);
 
-    /// Searches with a narrow window around expected value, widening on fail-high/low.
+    /// Aspiration window search with exponential widening.
+    /// Searches with a narrow window around expected value, using exponential widening
+    /// on fail-high/low (delta grows by delta/ASP_DELTA_GROWTH_DIVISOR each fail).
+    /// Value-centered: re-search windows are centered on the actual search result,
+    /// not the stale bestValue from the previous iteration.
+    /// Mate bypass: if bestValue is a checkmate score, skips aspiration entirely
+    /// and performs a full-window search to avoid losing confirmed mates.
     /// @param p          Position to search
     /// @param depth      Current search depth
     /// @param bestValue  Expected value from previous iteration

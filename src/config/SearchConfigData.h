@@ -63,6 +63,10 @@ namespace config {
     CONFIG_CONST bool USE_PVS       = true;
     CONFIG_CONST bool USE_ASP       = true;
 
+    // aspiration window tuning
+    CONFIG_CONST int ASP_INITIAL_DELTA       = 12; // Initial aspiration half-window (centipawns)
+    CONFIG_CONST int ASP_DELTA_GROWTH_DIVISOR = 3; // Delta growth: delta += delta / divisor (3 ≈ ×1.33, 2 ≈ ×1.50, 1 ≈ ×2.00)
+
     // quiescence
     CONFIG_CONST bool USE_QUIESCENCE = true;
 

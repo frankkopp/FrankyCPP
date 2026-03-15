@@ -51,14 +51,14 @@ ConfigRegistry::ConfigRegistry() {
 #ifdef _MSC_VER
 // Windows MSVC builds
 #ifdef _DEBUG
-  static_assert(sizeof(SearchConfigData) == 632,
+  static_assert(sizeof(SearchConfigData) == 640,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 256,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
-  static_assert(sizeof(SearchConfigData) == 600,
+  static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -69,7 +69,7 @@ ConfigRegistry::ConfigRegistry() {
 // Linux GCC/Clang builds (including WSL)
 #ifdef NDEBUG
   // Release build
-  static_assert(sizeof(SearchConfigData) == 600,
+  static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -77,7 +77,7 @@ ConfigRegistry::ConfigRegistry() {
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
   // Debug build
-  static_assert(sizeof(SearchConfigData) == 600,
+  static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 248,
@@ -324,6 +324,34 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_ASP), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_ASP; }),
     .setter = SEARCH_CONFIG_SETTER(USE_ASP, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "ASP_INITIAL_DELTA",
+    .uciName = "Aspiration Initial Delta",
+    .description = "Initial aspiration half-window in centipawns",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.ASP_INITIAL_DELTA),
+    .minValue = 1,
+    .maxValue = 500,
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, ASP_INITIAL_DELTA), .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.ASP_INITIAL_DELTA; }),
+    .setter = SEARCH_CONFIG_SETTER(ASP_INITIAL_DELTA, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "ASP_DELTA_GROWTH_DIVISOR",
+    .uciName = "Aspiration Delta Growth Divisor",
+    .description = "Delta growth: delta += delta / divisor (3=x1.33, 2=x1.50, 1=x2.00)",
+    .valueType = Int,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.ASP_DELTA_GROWTH_DIVISOR),
+    .minValue = 1,
+    .maxValue = 10,
+    .exposure = {.uci = IS_MUTABLE(defaultSearch, ASP_DELTA_GROWTH_DIVISOR), .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.ASP_DELTA_GROWTH_DIVISOR; }),
+    .setter = SEARCH_CONFIG_SETTER(ASP_DELTA_GROWTH_DIVISOR, parseInt)
   });
 
   definitions_.push_back({

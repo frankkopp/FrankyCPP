@@ -40,63 +40,43 @@ Stockfish finds M7 at depth 1 in these positions and holds it stably across all 
 
 ---
 
-## Step 1 — Fix NMP Mate Clamping: Clamp to `beta` Instead of `VALUE_CHECKMATE_THRESHOLD`
+## Step 1 — Fix NMP: Fail-Hard Clamping to `beta`
 
 **Priority:** Critical  
 **Dependency:** None (root cause of TT contamination)  
-**Status:** ✅ DONE (commit 4559e2e)  
+**Status:** ✅ DONE (commit 4559e2e, refined in aspiration rewrite)  
 **Risk:** Low — `beta` is always below the checkmate threshold when NMP fires (guarded by `nearMateWindow`)
 
 ### Problem
 
-In `Search.cpp:1366-1370`, when Null Move Pruning discovers a mate score (the position is so good that even without making a move, the opponent gets mated), the value is clamped:
+NMP's fail-soft null-move search can return wildly inflated values that contaminate the TT:
 
-```cpp
-if (nValue > VALUE_CHECKMATE_THRESHOLD) {
-    nValue = VALUE_CHECKMATE_THRESHOLD;  // = 9871
-}
-```
+1. **Original bug (commit 4559e2e):** Values > `VALUE_CHECKMATE_THRESHOLD` (9871) were clamped to 9871 itself, which is NOT recognized as checkmate → stored raw in TT → appeared as "+98.71 pawns" in UCI output.
 
-`VALUE_CHECKMATE_THRESHOLD = VALUE_CHECKMATE - MAX_DEPTH - 1 = 10000 - 128 - 1 = 9871`
-
-The value 9871 sits right on the boundary:
-- `isCheckMate()` requires `absVal > 9871` — so 9871 is **NOT** a checkmate
-- `valueToTt()` only applies ply adjustment for checkmate values — so 9871 is stored **raw** in TT
-- `valueFromTt()` returns it **unchanged** regardless of probe ply
-
-This clamped value contaminates the TT and propagates through the search tree, appearing as the confusing "+98.71 pawns" score in UCI output (9871 cp ÷ 100 = 98.71 pawns).
-
-The value -98.52 (= -9852 cp) likely arises from the clamped 9871 interacting with other heuristics during multi-ply propagation (e.g., mate distance pruning adjustments at different plies).
+2. **Refinement:** Values between `beta` and `VALUE_CHECKMATE_THRESHOLD` (e.g., 8998 cp = +89.98 pawns) passed through unclamped. In endgame positions (KQB vs KR), fail-soft NMP regularly returned values like 8998 from deep in the search tree, causing persistent +89.98 artifacts in aspiration re-searches.
 
 ### Fix
 
-Replace the clamping target with `beta`:
+Fail-hard NMP: clamp ALL NMP values to `beta`. NMP only proves `value >= beta`, not the exact value. Both the `storeTt()` calls and `return` statements use `beta` instead of `nValue`:
 
 ```cpp
-if (nValue > VALUE_CHECKMATE_THRESHOLD) {
-    // Clamp to beta rather than VALUE_CHECKMATE_THRESHOLD to avoid storing
-    // an artificial near-mate non-mate value in TT. NMP only needs to prove
-    // fail-high (value >= beta), so beta is sufficient. The nearMateWindow
-    // guard already disables NMP when beta is near checkmate range, so beta
-    // is always a "normal" score here.
+// Fail-hard NMP: clamp to beta
+if (nValue > beta) {
     nValue = beta;
+}
+
+if (nValue >= beta) {
+    // ... verification search ...
+    storeTt(p, depth, ply, MOVE_NONE, beta, BETA, staticEval);
+    return beta;
 }
 ```
 
-**Why `beta` is safe:** The `nearMateWindow` check (line 1329-1331) disables NMP when `beta > VALUE_CHECKMATE_THRESHOLD - NMP_NEAR_MATE_MARGIN` (i.e., `beta > 9807`). So when NMP fires, `beta ≤ 9807`, which is well below the checkmate range. Clamping to `beta` stores a value that:
-- Is meaningful (represents the fail-high threshold)
-- Is well below `VALUE_CHECKMATE_THRESHOLD` (no TT contamination)
-- Preserves the NMP cutoff semantics (`nValue >= beta` is trivially true)
+This is standard practice in classical-eval engines. NNUE engines (Stockfish) can afford fail-soft NMP because their evaluation naturally stays bounded.
 
 ### Files
 
-- `src/engine/Search.cpp` — ~line 1366-1370
-
-### Validation
-
-- Run the three test positions; verify no +98.71 / -98.52 scores appear in output
-- Run existing `SearchTest::mate*` tests — must all pass
-- Run ELO regression test (optional but recommended)
+- `src/engine/Search.cpp` — NMP section (~line 1370-1420)
 
 ---
 

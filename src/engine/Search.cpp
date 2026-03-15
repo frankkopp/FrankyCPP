@@ -880,61 +880,93 @@ SearchResult Search::iterativeDeepening(Position& p) {
 }
 
 Value Search::aspirationSearch(Position& p, const Depth depth, const Value bestValue) {
-  // aspiration steps
-  constexpr std::array aspirationSteps = {Value{50}, Value{200}, VALUE_MAX};
+  // Mate bypass — skip aspiration entirely when previous iteration found a mate.
+  // Aspiration around mate scores (e.g., ±12 around 9987cp) almost always fails,
+  // wasting search effort and potentially losing confirmed mates through cascading
+  // fail-lows. A full-window search guarantees the mate is confirmed or improved.
+  if (bestValue.isCheckMate()) {
+    return rootSearch(p, depth, VALUE_MIN, VALUE_MAX);
+  }
 
-  constexpr auto steps = aspirationSteps.size();
-  Value value          = VALUE_NONE;
+  // Initialize aspiration window centered on previous iteration's value.
+  // Uses exponential widening: delta grows by delta/divisor on each fail,
+  // guaranteeing the window reaches [VALUE_MIN, VALUE_MAX] after ~8-10 fails.
+  auto delta = Value{SearchConfig.ASP_INITIAL_DELTA};
+  Value alpha = std::max(bestValue - delta, VALUE_MIN);
+  Value beta  = std::min(bestValue + delta, VALUE_MAX);
+  Value value = VALUE_NONE;
 
-  // new search window
-  Value alpha = std::max(bestValue - aspirationSteps[0], VALUE_MIN);
-  Value beta  = std::min(bestValue + aspirationSteps[0], VALUE_MAX);
+  // Extreme score threshold for immediate full-window fallback.
+  // TB win/loss scores (~9000 cp) would need ~20 incremental widenings from
+  // a normal eval window. Detecting them early and opening to full window
+  // saves ~19 redundant re-searches with negligible node cost difference.
+  // 4000 cp is safely above any realistic evaluation but well below TB scores.
+  static constexpr auto EXTREME_SCORE_THRESHOLD = Value{4000};
 
-  for (auto i = 1; i < steps; ++i) {
-    // search with the reduced window or last with the full window
+  while (true) {
     value = rootSearch(p, depth, alpha, beta);
-    // if search has been stopped and the value has missed the window, return
-    // the value and the values of the root moves are invalid
+
+    // If search has been stopped and the value missed the window, return
+    // VALUE_NONE — root move values are invalid
     if (stopConditions() && (value <= alpha || value >= beta)) { return VALUE_NONE; }
 
     // If time is almost up, avoid further aspiration expansions and return current value
     if (isTimeAlmostUp()) { return value; }
 
-    // check if the value was within the window or expand the window
+    // Check if the value was within the window or expand the window
     if (value <= alpha) {
-      // FAIL LOW - widen alpha (lower bound)
-      // UCI output and time management are main thread only
+      // FAIL LOW — widen alpha (lower bound), keep beta unchanged.
+      // Re-center on the actual search result (value-centered), not the stale
+      // bestValue from the previous iteration.
       if (isMainThread()) {
+        // Update displayed value to reflect current search result (not stale previous iteration)
+        ESSENTIAL_STAT_SET(thread().statistics.currentBestRootMoveValue, thread().pv.first().value());
         sendAspirationResearchInfo("upperbound");
-        // add some extra time because of fail low
-        // we might have found a strong opponent's move
+        // Add extra time because of fail low — we might have found a strong opponent's move
         addExtraTime(1.3);
       }
       // If time is almost up, don't expand; return current value
       if (isTimeAlmostUp()) { return value; }
-      // if we fail low tests, it is best to immediately open up the window full
-      // Alternatively, we could do steps as well
-      // alpha = VALUE_MIN;
-      alpha = std::max(bestValue - aspirationSteps[i], VALUE_MIN);
+
+      // Extreme score: TB loss or similar — skip incremental widening,
+      // open to full window immediately for the next search.
+      if (value <= -EXTREME_SCORE_THRESHOLD) {
+        alpha = VALUE_MIN;
+        beta  = VALUE_MAX;
+      }
+      else {
+        alpha = std::max(value - delta, VALUE_MIN);
+        delta = Value{static_cast<int>(delta) + static_cast<int>(delta) / SearchConfig.ASP_DELTA_GROWTH_DIVISOR};
+      }
       STAT_INC(thread().statistics.aspirationResearches);
     }
     else if (value >= beta) {
-      // FAIL HIGH - increase upper bound
-      // UCI output is main thread only
+      // FAIL HIGH — widen beta (upper bound), keep alpha unchanged.
+      // Re-center on the actual search result (value-centered).
       if (isMainThread()) {
+        ESSENTIAL_STAT_SET(thread().statistics.currentBestRootMoveValue, thread().pv.first().value());
         sendAspirationResearchInfo("lowerbound");
       }
       // If time is almost up, don't expand; return current value
       if (isTimeAlmostUp()) { return value; }
-      beta = std::min(bestValue + aspirationSteps[i], VALUE_MAX);
+
+      // Extreme score: TB win or similar — skip incremental widening,
+      // open to full window immediately for the next search.
+      if (value >= EXTREME_SCORE_THRESHOLD) {
+        alpha = VALUE_MIN;
+        beta  = VALUE_MAX;
+      }
+      else {
+        beta = std::min(value + delta, VALUE_MAX);
+        delta = Value{static_cast<int>(delta) + static_cast<int>(delta) / SearchConfig.ASP_DELTA_GROWTH_DIVISOR};
+      }
       STAT_INC(thread().statistics.aspirationResearches);
     }
-    else { break; }
+    else {
+      // Value is within the window — aspiration succeeded
+      break;
+    }
   }
-
-  // With a fully open search window of the last step, we can accept
-  // partial searches as well. Root move values are usable and can
-  // be sorted to find the best move.
   return value;
 }
 
@@ -1361,22 +1393,19 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       Value nValue = -search(p, newDepth, ply + 1, -beta, -beta + 1, CutNode, No_Null_Move);
       p.undoNullMove();
 
-
-      // flag for mate threats
-      if (nValue > VALUE_CHECKMATE_THRESHOLD) {
-        // Clamp to beta rather than VALUE_CHECKMATE_THRESHOLD to avoid storing
-        // an artificial near-mate non-mate value (9871 cp = +98.71 pawns) in TT.
-        // VALUE_CHECKMATE_THRESHOLD is NOT recognized as checkmate by isCheckMate(),
-        // so valueToTt() stores it raw without ply adjustment, contaminating the TT.
-        // NMP only needs to prove fail-high (value >= beta), so beta is sufficient.
-        // The nearMateWindow guard already disables NMP when beta is near checkmate
-        // range (beta > VALUE_CHECKMATE_THRESHOLD - NMP_NEAR_MATE_MARGIN), so beta
-        // is always a normal score here.
-        nValue = beta;
-      }
-      else if (nValue < -(VALUE_CHECKMATE - 2 * SearchConfig.THREAT_EXT_MATE_DEPTH)) { // configurable mate-in-N threshold
-        // the player did not move and got mated ==> mate threat
+      // Detect mate threats: if we get mated even without moving, there's a
+      // serious threat that warrants search extensions later.
+      if (nValue < -(VALUE_CHECKMATE - 2 * SearchConfig.THREAT_EXT_MATE_DEPTH)) { // configurable mate-in-N threshold
         matethreat = true;
+      }
+
+      // Fail-hard NMP: clamp to beta. NMP only proves value >= beta, not the
+      // exact value. Fail-soft can return wildly inflated values (e.g., 8998 cp
+      // in endgames) that contaminate the TT and cause bogus scores in aspiration
+      // re-searches. The nearMateWindow guard already disables NMP when beta is
+      // near checkmate range, so beta is always a normal score here.
+      if (nValue > beta) {
+        nValue = beta;
       }
 
       // if the value is higher than beta even after not making
@@ -1396,15 +1425,15 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
             // fall through: no cutoff
           }
           else {
-            if (SearchConfig.USE_TT) { storeTt(p, depth, ply, MOVE_NONE, nValue, BETA, staticEval); }
+            if (SearchConfig.USE_TT) { storeTt(p, depth, ply, MOVE_NONE, beta, BETA, staticEval); }
             STAT_INC(thread().statistics.nullMoveCuts);
-            return nValue;
+            return beta;
           }
         }
         else {
-          if (SearchConfig.USE_TT) { storeTt(p, depth, ply, MOVE_NONE, nValue, BETA, staticEval); }
+          if (SearchConfig.USE_TT) { storeTt(p, depth, ply, MOVE_NONE, beta, BETA, staticEval); }
           STAT_INC(thread().statistics.nullMoveCuts);
-          return nValue;
+          return beta;
         }
       }
     }
@@ -2339,11 +2368,11 @@ bool Search::probeTablebaseAtRoot(const Position& pos, SearchResult& result) {
 
   // Log the TB hit
   const std::string tbResultStr = tablebase::Tablebase::resultToString(tbResult.wdl);
-  LOG__INFO(Logger::get().SEARCH_LOG, "TB Root: {} DTZ={} move={}",
-            tbResultStr, tbResult.dtz, tbResult.bestMove.str());
+  LOG__INFO(Logger::get().SEARCH_LOG, "TB Root: {} DTZ={} move={} value={} ",
+            tbResultStr, tbResult.dtz, tbResult.bestMove.str(), tbRoot.value.str());
 
   // Send info string to UCI
-  sendString(std::format("TB hit: {} DTZ={} move={}", tbResultStr, tbResult.dtz, tbResult.bestMove.str()));
+  sendString(std::format("TB hit: {} DTZ={} move={} value={}", tbResultStr, tbResult.dtz, tbResult.bestMove.str(), tbRoot.value.str()));
 
   // Populate the search result with DTZ-based scoring
   result.bestMove      = tbRoot.move;
@@ -3088,6 +3117,15 @@ void Search::sendSearchUpdateToUci() {
 void Search::sendAspirationResearchInfo(const std::string& boundString) const {
   const nanoseconds& since = elapsedSince(startSearchTime);
 
+  // Time gate for UCI output — suppress aspiration bound info during the first
+  // 3 seconds of search. This avoids flooding the GUI with
+  // intermediate lowerbound/upperbound scores that resolve in milliseconds
+  // (e.g., TB win scores causing visible score swings in Arena/CuteChess).
+  // Aspiration re-searches at shallow depths are transient noise; only report
+  // them when the search is taking long enough that the user wants feedback.
+  // Note: LOG output is always emitted regardless (for debugging/analysis).
+  static constexpr auto ASP_UCI_INFO_DELAY = milliseconds{3000};
+
   // Use a copy of the initial position to extract PV with TT extension
   Position p            = position;
   const MoveList pvLine = extractPvWithTT(p);
@@ -3096,15 +3134,27 @@ void Search::sendAspirationResearchInfo(const std::string& boundString) const {
   const uint64_t totalNodes = getTotalNodes();
 
   if (uciHandler) {
-    uciHandler->sendAspirationResearchInfo(
-      thread().statistics.currentSearchDepth,
-      thread().statistics.currentExtraSearchDepth,
-      thread().statistics.currentBestRootMoveValue,
-      boundString,
-      totalNodes,
-      nps(totalNodes, since),
-      MILLISECONDS(since),
-      pvLine);
+    if (since >= ASP_UCI_INFO_DELAY) {
+      uciHandler->sendAspirationResearchInfo(
+        thread().statistics.currentSearchDepth,
+        thread().statistics.currentExtraSearchDepth,
+        thread().statistics.currentBestRootMoveValue,
+        boundString,
+        totalNodes,
+        nps(totalNodes, since),
+        MILLISECONDS(since),
+        pvLine);
+    }
+    // Always log for debugging, even when UCI output is suppressed
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "depth {} seldepth {} value {} {} nodes {:L} nps {:L} time {:L} pv {}",
+              thread().statistics.currentSearchDepth,
+              thread().statistics.currentExtraSearchDepth,
+              thread().statistics.currentBestRootMoveValue.str(),
+              boundString,
+              totalNodes,
+              nps(totalNodes, since),
+              MILLISECONDS(since).count(),
+              pvLine.str());
     return;
   }
 
