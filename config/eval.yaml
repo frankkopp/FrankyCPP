@@ -58,8 +58,8 @@ _YAML_SMOKE_TEST_MARKER: true
 
 # Bishop pair bonus (centipawns), midgame and endgame
 # USE_BISHOP_PAIR_BONUS: true
-# BISHOP_PAIR_MID_BONUS: 20
-# BISHOP_PAIR_END_BONUS: 20
+# BISHOP_PAIR_MID_BONUS: 30
+# BISHOP_PAIR_END_BONUS: 45
 
 # Knight mobility
 # USE_KNIGHT_MOBILITY: true

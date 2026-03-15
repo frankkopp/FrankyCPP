@@ -85,8 +85,8 @@ namespace config {
 
     // bishop pair
     CONFIG_CONST bool USE_BISHOP_PAIR_BONUS = true;
-    CONFIG_CONST int BISHOP_PAIR_MID_BONUS  = 20;
-    CONFIG_CONST int BISHOP_PAIR_END_BONUS  = 20;
+    CONFIG_CONST int BISHOP_PAIR_MID_BONUS  = 30;
+    CONFIG_CONST int BISHOP_PAIR_END_BONUS  = 45;
 
     // knight mobility
     CONFIG_CONST bool USE_KNIGHT_MOBILITY         = true;
