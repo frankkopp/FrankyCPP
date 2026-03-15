@@ -20,6 +20,7 @@
 #ifndef FRANKYCPP_EVALCONFIGDATA_H
 #define FRANKYCPP_EVALCONFIGDATA_H
 
+#include <array>
 #include <set>
 #include <string>
 
@@ -63,6 +64,15 @@ namespace config {
     CONFIG_CONST int DOUBLED_PAWN_END_WEIGHT   = -30;
     CONFIG_CONST int PASSED_PAWN_MID_WEIGHT    = 20;
     CONFIG_CONST int PASSED_PAWN_END_WEIGHT    = 40;
+
+    // Rank-based passed pawn bonus (indexed by relative rank 2..7, so array index 0..5).
+    // Relative rank: for White = actual rank, for Black = 9 - actual rank.
+    // When enabled, the rank bonus is added ON TOP of the flat PASSED_PAWN_*_WEIGHT.
+    CONFIG_CONST bool USE_PASSED_PAWN_RANK_BONUS = true;
+    // Mid/End bonus per relative rank: {rank2, rank3, rank4, rank5, rank6, rank7}
+    // Quadratic-ish scaling: low ranks add little, high ranks add substantially.
+    CONFIG_ESSENTIAL std::array<int, 6> PASSED_PAWN_RANK_MID_BONUS = {0, 0, 5, 15, 35, 70};
+    CONFIG_ESSENTIAL std::array<int, 6> PASSED_PAWN_RANK_END_BONUS = {0, 5, 15, 35, 70, 120};
     CONFIG_CONST int BLOCKED_PAWN_MID_WEIGHT   = -2;
     CONFIG_CONST int BLOCKED_PAWN_END_WEIGHT   = -20;
     CONFIG_CONST int PHALANX_PAWN_MID_WEIGHT   = 4;

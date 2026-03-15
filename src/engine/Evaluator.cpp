@@ -195,8 +195,27 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
     int endvalue = isolated.popcount() *  EvalConfig.ISOLATED_PAWN_END_WEIGHT;
     midvalue    += doubled.popcount() *   EvalConfig.DOUBLED_PAWN_MID_WEIGHT;
     endvalue    += doubled.popcount() *   EvalConfig.DOUBLED_PAWN_END_WEIGHT;
-    midvalue    += passed.popcount() *    EvalConfig.PASSED_PAWN_MID_WEIGHT;
-    endvalue    += passed.popcount() *    EvalConfig.PASSED_PAWN_END_WEIGHT;
+    // clang-format on
+
+    // Passed pawns: flat bonus + optional rank-based bonus
+    {
+      Bitboard passedCopy = passed;
+      while (passedCopy) {
+        const Square psq    = passedCopy.popLSB();
+        // relative rank: for White rank is 0-based (RANK_1=0), for Black mirror it
+        const int relRank   = color == WHITE ? static_cast<int>(psq.rank()) : 7 - static_cast<int>(psq.rank());
+        // flat bonus per passed pawn
+        midvalue += EvalConfig.PASSED_PAWN_MID_WEIGHT;
+        endvalue += EvalConfig.PASSED_PAWN_END_WEIGHT;
+        // rank-based bonus (relRank 2..7 maps to array index 0..5)
+        if (EvalConfig.USE_PASSED_PAWN_RANK_BONUS && relRank >= 2 && relRank <= 7) {
+          midvalue += EvalConfig.PASSED_PAWN_RANK_MID_BONUS[relRank - 2];
+          endvalue += EvalConfig.PASSED_PAWN_RANK_END_BONUS[relRank - 2];
+        }
+      }
+    }
+
+    // clang-format off
     midvalue    += blocked.popcount() *   EvalConfig.BLOCKED_PAWN_MID_WEIGHT;
     endvalue    += blocked.popcount() *   EvalConfig.BLOCKED_PAWN_END_WEIGHT;
     midvalue    += phalanx.popcount() *   EvalConfig.PHALANX_PAWN_MID_WEIGHT;

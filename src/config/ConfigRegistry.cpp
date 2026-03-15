@@ -54,14 +54,14 @@ ConfigRegistry::ConfigRegistry() {
   static_assert(sizeof(SearchConfigData) == 640,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 256,
+  static_assert(sizeof(EvalConfigData) == 304,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
   static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 248,
+  static_assert(sizeof(EvalConfigData) == 296,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #endif
@@ -72,7 +72,7 @@ ConfigRegistry::ConfigRegistry() {
   static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 248,
+  static_assert(sizeof(EvalConfigData) == 296,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
@@ -80,7 +80,7 @@ ConfigRegistry::ConfigRegistry() {
   static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 248,
+  static_assert(sizeof(EvalConfigData) == 296,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #endif
@@ -2063,6 +2063,46 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .exposure = {.uci = IS_MUTABLE(defaultEval, PASSED_PAWN_END_WEIGHT), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.PASSED_PAWN_END_WEIGHT; }),
     .setter = EVAL_CONFIG_SETTER(PASSED_PAWN_END_WEIGHT, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "USE_PASSED_PAWN_RANK_BONUS",
+    .uciName = "Passed Pawn Rank Bonus",
+    .description = "Add rank-based bonus on top of flat passed pawn weight",
+    .valueType = Bool,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.USE_PASSED_PAWN_RANK_BONUS),
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_PASSED_PAWN_RANK_BONUS), .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.USE_PASSED_PAWN_RANK_BONUS; }),
+    .setter = EVAL_CONFIG_SETTER(USE_PASSED_PAWN_RANK_BONUS, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "PASSED_PAWN_RANK_MID_BONUS",
+    .uciName = "",
+    .description = "Passed pawn midgame rank bonus by relative rank 2..7",
+    .valueType = IntArray,
+    .domain = Eval,
+    .defaultValue = arrayToString(defaultEval.PASSED_PAWN_RANK_MID_BONUS),
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = [](const SearchConfigData&, const EvalConfigData& e) {
+      return arrayToString(e.PASSED_PAWN_RANK_MID_BONUS);
+    },
+    .setter = EVAL_CONFIG_ARRAY_SETTER(PASSED_PAWN_RANK_MID_BONUS)
+  });
+
+  definitions_.push_back({
+    .name = "PASSED_PAWN_RANK_END_BONUS",
+    .uciName = "",
+    .description = "Passed pawn endgame rank bonus by relative rank 2..7",
+    .valueType = IntArray,
+    .domain = Eval,
+    .defaultValue = arrayToString(defaultEval.PASSED_PAWN_RANK_END_BONUS),
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = [](const SearchConfigData&, const EvalConfigData& e) {
+      return arrayToString(e.PASSED_PAWN_RANK_END_BONUS);
+    },
+    .setter = EVAL_CONFIG_ARRAY_SETTER(PASSED_PAWN_RANK_END_BONUS)
   });
 
   definitions_.push_back({

@@ -191,4 +191,9 @@ namespace config::config_detail {
     config::config_detail::assignArrayIfMutable(s.member, v);      \
   }
 
+#define EVAL_CONFIG_ARRAY_SETTER(member)                           \
+  [](SearchConfigData&, EvalConfigData& e, const std::string& v) { \
+    config::config_detail::assignArrayIfMutable(e.member, v);      \
+  }
+
 #endif // FRANKYCPP_CONFIGMODE_H

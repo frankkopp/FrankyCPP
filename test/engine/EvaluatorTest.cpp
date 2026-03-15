@@ -61,6 +61,8 @@ void set_eval_config(const bool onoff) {
     // pawn-specific toggles
     e.USE_PAWN_EVAL = onoff;
     e.USE_PAWN_TT   = onoff;
+    // passed pawn rank bonus
+    e.USE_PASSED_PAWN_RANK_BONUS = onoff;
     // piece-specific toggles
     e.USE_PIECE_EVAL           = onoff;
     e.USE_KNIGHT_MOBILITY      = onoff;
@@ -203,6 +205,72 @@ TEST_F(EvaluatorTest, Pawn_PassedBeatsBlocked) {
   fprintln("Passed > Blocked: {} > {}", vPassed, vBlocked);
 
   ASSERT_GT(vPassed, vBlocked) << "Passed pawn should evaluate higher than blocked pawn";
+}
+
+// Verify that an advanced passed pawn (rank 6) is worth more than a back-rank passed pawn (rank 2).
+TEST_F(EvaluatorTest, Pawn_AdvancedPassedBeatsBackRankPassed) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_PAWN_EVAL              = true;
+    e.USE_PASSED_PAWN_RANK_BONUS = true;
+    e.USE_GAMEPHASE_VALUE        = true;
+  });
+
+  Evaluator e{};
+
+  // Advanced passed pawn for White on e6 (relative rank 6), no opponent pawns
+  const Position advanced{"6k1/8/4P3/8/8/8/8/6K1 w - - 0 1"};
+  // Back-rank passed pawn for White on e2 (relative rank 2), no opponent pawns
+  const Position backrank{"6k1/8/8/8/8/8/4P3/6K1 w - - 0 1"};
+
+  const Value vAdvanced = e.evaluate(advanced);
+  const Value vBackrank = e.evaluate(backrank);
+
+  // Human visual check
+  fprintln("Advanced passed pawn (e6) eval: {}", vAdvanced);
+  println(advanced.strBoard());
+  fprintln("Back-rank passed pawn (e2) eval: {}", vBackrank);
+  println(backrank.strBoard());
+  fprintln("Advanced > Back-rank: {} > {}", vAdvanced, vBackrank);
+
+  ASSERT_GT(vAdvanced, vBackrank)
+      << "Advanced passed pawn should evaluate significantly higher than back-rank passed pawn";
+
+  // The difference should be substantial (rank bonus for rank 6 vs rank 2)
+  const int diff = static_cast<int>(vAdvanced) - static_cast<int>(vBackrank);
+  fprintln("Difference: {} cp", diff);
+  ASSERT_GE(diff, 20) << "Rank-based bonus should create at least 20cp difference between rank 6 and rank 2";
+}
+
+// Verify rank-based passed pawn works symmetrically for Black
+TEST_F(EvaluatorTest, Pawn_AdvancedPassedBlackSymmetry) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_PAWN_EVAL              = true;
+    e.USE_PASSED_PAWN_RANK_BONUS = true;
+    e.USE_GAMEPHASE_VALUE        = true;
+  });
+
+  Evaluator e{};
+
+  // White advanced passed pawn on e6, from White POV
+  const Position whiteAdvanced{"6k1/8/4P3/8/8/8/8/6K1 w - - 0 1"};
+  // Black advanced passed pawn on e3 (relative rank 6 for Black), from Black POV
+  const Position blackAdvanced{"6k1/8/8/8/8/4p3/8/6K1 b - - 0 1"};
+
+  const Value vWhite = e.evaluate(whiteAdvanced);
+  const Value vBlack = e.evaluate(blackAdvanced);
+
+  fprintln("White advanced passed (e6, White POV): {}", vWhite);
+  fprintln("Black advanced passed (e3, Black POV): {}", vBlack);
+
+  // Both should be positive (advantage for side to move with the advanced passer)
+  ASSERT_GT(vWhite, VALUE_ZERO) << "White advanced passer should be positive for White";
+  ASSERT_GT(vBlack, VALUE_ZERO) << "Black advanced passer should be positive for Black";
+
+  // Should be roughly symmetric (within tolerance for king PST differences)
+  const int diff = std::abs(static_cast<int>(vWhite) - static_cast<int>(vBlack));
+  ASSERT_LE(diff, 15) << "Passed pawn rank bonus should be roughly symmetric: White=" << vWhite << " Black=" << vBlack;
 }
 
 TEST_F(EvaluatorTest, BishopMobility_CentralBeatsCorner) {
