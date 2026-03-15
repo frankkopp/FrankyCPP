@@ -116,6 +116,11 @@ namespace config {
     CONFIG_CONST int ROOK_SEMIOPEN_FILE_MID_BONUS = 5;
     CONFIG_CONST int ROOK_SEMIOPEN_FILE_END_BONUS = 4;
 
+    // rook on 7th rank (relative to its color)
+    CONFIG_CONST bool USE_ROOK_7TH_RANK_BONUS = true;
+    CONFIG_CONST int ROOK_7TH_RANK_MID_BONUS  = 15;
+    CONFIG_CONST int ROOK_7TH_RANK_END_BONUS  = 25;
+
     // queen
     CONFIG_CONST bool USE_QUEEN_MOBILITY         = true;
     CONFIG_CONST int QUEEN_MOBILITY_MID_PER_MOVE = 1;

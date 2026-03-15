@@ -91,6 +91,10 @@ _YAML_SMOKE_TEST_MARKER: true
 # ROOK_OPEN_FILE_END_BONUS: 8
 # ROOK_SEMIOPEN_FILE_MID_BONUS: 5
 # ROOK_SEMIOPEN_FILE_END_BONUS: 4
+# Rook on 7th rank bonus (relative to its color; 2nd rank for Black)
+# USE_ROOK_7TH_RANK_BONUS: true
+# ROOK_7TH_RANK_MID_BONUS: 15
+# ROOK_7TH_RANK_END_BONUS: 25
 
 # Queen mobility and king tropism
 # USE_QUEEN_MOBILITY: true

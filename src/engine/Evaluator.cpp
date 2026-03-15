@@ -382,6 +382,15 @@ inline void Evaluator::rookEval(const Position& p, Score& s, const Color us, con
     }
   }
 
+  // Rook on 7th rank bonus (relative: rank 7 for White, rank 2 for Black)
+  if (EvalConfig.USE_ROOK_7TH_RANK_BONUS) {
+    const int relRank = us == WHITE ? static_cast<int>(sq.rank()) : 7 - static_cast<int>(sq.rank());
+    if (relRank == 6) { // RANK_7 = 6 (0-based)
+      mid += EvalConfig.ROOK_7TH_RANK_MID_BONUS;
+      end += EvalConfig.ROOK_7TH_RANK_END_BONUS;
+    }
+  }
+
   if (mid || end) {
     s.midgame += static_cast<Value>(mid * us.sign());
     s.endgame += static_cast<Value>(end * us.sign());

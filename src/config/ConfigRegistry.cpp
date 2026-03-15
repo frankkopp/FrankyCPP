@@ -54,14 +54,14 @@ ConfigRegistry::ConfigRegistry() {
   static_assert(sizeof(SearchConfigData) == 640,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 304,
+  static_assert(sizeof(EvalConfigData) == 320,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
   static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 296,
+  static_assert(sizeof(EvalConfigData) == 312,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #endif
@@ -72,7 +72,7 @@ ConfigRegistry::ConfigRegistry() {
   static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 296,
+  static_assert(sizeof(EvalConfigData) == 312,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
@@ -80,7 +80,7 @@ ConfigRegistry::ConfigRegistry() {
   static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 296,
+  static_assert(sizeof(EvalConfigData) == 312,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #endif
@@ -2554,6 +2554,46 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_SEMIOPEN_FILE_END_BONUS), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.ROOK_SEMIOPEN_FILE_END_BONUS; }),
     .setter = EVAL_CONFIG_SETTER(ROOK_SEMIOPEN_FILE_END_BONUS, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "USE_ROOK_7TH_RANK_BONUS",
+    .uciName = "Rook 7th Rank Bonus",
+    .description = "Bonus for rook on 7th rank (relative to its color)",
+    .valueType = Bool,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.USE_ROOK_7TH_RANK_BONUS),
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_ROOK_7TH_RANK_BONUS), .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.USE_ROOK_7TH_RANK_BONUS; }),
+    .setter = EVAL_CONFIG_SETTER(USE_ROOK_7TH_RANK_BONUS, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "ROOK_7TH_RANK_MID_BONUS",
+    .uciName = "Rook 7th Mid",
+    .description = "Rook on 7th rank midgame bonus",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.ROOK_7TH_RANK_MID_BONUS),
+    .minValue = 0,
+    .maxValue = 50,
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_7TH_RANK_MID_BONUS), .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.ROOK_7TH_RANK_MID_BONUS; }),
+    .setter = EVAL_CONFIG_SETTER(ROOK_7TH_RANK_MID_BONUS, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "ROOK_7TH_RANK_END_BONUS",
+    .uciName = "Rook 7th End",
+    .description = "Rook on 7th rank endgame bonus",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.ROOK_7TH_RANK_END_BONUS),
+    .minValue = 0,
+    .maxValue = 80,
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_7TH_RANK_END_BONUS), .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.ROOK_7TH_RANK_END_BONUS; }),
+    .setter = EVAL_CONFIG_SETTER(ROOK_7TH_RANK_END_BONUS, parseInt)
   });
 
   //===========================================================================

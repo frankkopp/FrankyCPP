@@ -69,6 +69,7 @@ void set_eval_config(const bool onoff) {
     e.USE_BISHOP_MOBILITY      = onoff;
     e.USE_ROOK_MOBILITY        = onoff;
     e.USE_ROOK_OPEN_FILE_BONUS = onoff;
+    e.USE_ROOK_7TH_RANK_BONUS  = onoff;
     e.USE_QUEEN_MOBILITY       = onoff;
     e.USE_QUEEN_TROPISM        = onoff;
     e.USE_KING_EVAL            = onoff;
@@ -363,6 +364,72 @@ TEST_F(EvaluatorTest, Rook_PSQT_SeventhRank_BetterThan_BackRank) {
   fprintln("7th rank > back rank: {} > {}", v7th, vBack);
 
   ASSERT_GT(v7th, vBack) << "PSQT should reward rook on the 7th rank more than back rank";
+}
+
+// Verify the dynamic rook-on-7th-rank bonus (not PSQT) rewards 7th rank over 5th rank.
+TEST_F(EvaluatorTest, Rook_SeventhRankBonusBeatsFifthRank) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_PIECE_EVAL          = true;
+    e.USE_ROOK_7TH_RANK_BONUS = true;
+    e.USE_ROOK_MOBILITY       = false; // isolate 7th rank bonus
+    e.USE_ROOK_OPEN_FILE_BONUS = false;
+    e.USE_POSITIONAL          = false; // no PSQT
+    e.USE_MATERIAL            = false;
+    e.USE_PAWN_EVAL           = false;
+    e.USE_KING_EVAL           = false;
+    e.USE_GAMEPHASE_VALUE     = true;
+  });
+
+  Evaluator e{};
+
+  // Rook on 7th rank (d7) with pawns to avoid insufficiency
+  const Position seventh{"6k1/3R4/8/8/8/8/p6P/6K1 w - - 0 1"};
+  // Rook on 5th rank (d5) — same setup
+  const Position fifth{"6k1/8/8/3R4/8/8/p6P/6K1 w - - 0 1"};
+
+  const Value v7th  = e.evaluate(seventh);
+  const Value v5th  = e.evaluate(fifth);
+
+  fprintln("Rook 7th-rank bonus eval: {}", v7th);
+  println(seventh.strBoard());
+  fprintln("Rook 5th-rank eval:       {}", v5th);
+  println(fifth.strBoard());
+  fprintln("7th > 5th: {} > {}", v7th, v5th);
+
+  ASSERT_GT(v7th, v5th) << "Rook on 7th rank should get a bonus over rook on 5th rank";
+}
+
+// Verify Black's rook on 2nd rank (= relative 7th) also gets the bonus.
+TEST_F(EvaluatorTest, Rook_SeventhRankBonus_BlackSymmetry) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_PIECE_EVAL          = true;
+    e.USE_ROOK_7TH_RANK_BONUS = true;
+    e.USE_ROOK_MOBILITY       = false;
+    e.USE_ROOK_OPEN_FILE_BONUS = false;
+    e.USE_POSITIONAL          = false;
+    e.USE_MATERIAL            = false;
+    e.USE_PAWN_EVAL           = false;
+    e.USE_KING_EVAL           = false;
+    e.USE_GAMEPHASE_VALUE     = true;
+  });
+
+  Evaluator e{};
+
+  // White rook on 7th (d7), from White POV
+  const Position white7th{"6k1/3R4/8/8/8/8/p6P/6K1 w - - 0 1"};
+  // Black rook on 2nd (d2 = relative 7th for Black), from Black POV
+  const Position black7th{"6k1/p6P/8/8/8/8/3r4/6K1 b - - 0 1"};
+
+  const Value vWhite = e.evaluate(white7th);
+  const Value vBlack = e.evaluate(black7th);
+
+  fprintln("White rook 7th eval (White POV): {}", vWhite);
+  fprintln("Black rook 2nd eval (Black POV): {}", vBlack);
+
+  ASSERT_GT(vWhite, VALUE_ZERO) << "White rook on 7th should be positive for White";
+  ASSERT_GT(vBlack, VALUE_ZERO) << "Black rook on 2nd (relative 7th) should be positive for Black";
 }
 
 TEST_F(EvaluatorTest, QueenMobility_CentralBeatsCorner) {
