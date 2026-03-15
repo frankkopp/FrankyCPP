@@ -387,6 +387,80 @@ TEST_F(EvaluatorTest, BishopPairBonus_TwoBishopsBeats_BishopKnight) {
   ASSERT_GT(vPair, vNoPair) << "Bishop pair bonus should favor two bishops over bishop+knight when material/PSQT are off";
 }
 
+// Verify that Black's bishop pair benefits Black (not White).
+// Regression test for sign bug where bishop pair bonus was not multiplied by us.sign().
+TEST_F(EvaluatorTest, BishopPairBonus_BlackPairCorrectSign) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_PIECE_EVAL        = true;
+    e.USE_BISHOP_PAIR_BONUS = true;
+    e.USE_BISHOP_MOBILITY   = false; // isolate pair bonus
+    e.USE_MATERIAL          = false;
+    e.USE_POSITIONAL        = false;
+    e.USE_PAWN_EVAL         = false;
+    e.USE_KING_EVAL         = false;
+    e.USE_GAMEPHASE_VALUE   = true;
+  });
+
+  Evaluator e{};
+
+  // Black has bishop pair; White has bishop+knight. Pawns to avoid insufficiency.
+  // Black bishops on c8, f8; White bishop c1, knight b1; kings h1/g8; pawns a2/a7.
+  const Position blackPair{"2b2bk1/p7/8/8/8/8/P7/1NB4K b - - 0 1"};
+  // Neither side has pair: Black bishop+knight; White bishop+knight.
+  const Position noPair{"1nb3k1/p7/8/8/8/8/P7/1NB4K b - - 0 1"};
+
+  const Value vBlackPair = e.evaluate(blackPair);
+  const Value vNoPair    = e.evaluate(noPair);
+
+  // Human visual check
+  fprintln("Black bishop pair eval (from Black POV): {}", vBlackPair);
+  println(blackPair.strBoard());
+  fprintln("No pair eval (from Black POV): {}", vNoPair);
+  println(noPair.strBoard());
+  fprintln("Black pair should be better for Black: {} > {}", vBlackPair, vNoPair);
+
+  ASSERT_GT(vBlackPair, vNoPair)
+      << "Black's bishop pair should benefit Black (positive from Black's perspective)";
+}
+
+// Verify symmetry: White pair bonus == Black pair bonus (same magnitude, opposite sign from white POV)
+TEST_F(EvaluatorTest, BishopPairBonus_Symmetry) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_PIECE_EVAL        = true;
+    e.USE_BISHOP_PAIR_BONUS = true;
+    e.USE_BISHOP_MOBILITY   = false;
+    e.USE_MATERIAL          = false;
+    e.USE_POSITIONAL        = false;
+    e.USE_PAWN_EVAL         = false;
+    e.USE_KING_EVAL         = false;
+    e.USE_GAMEPHASE_VALUE   = true;
+  });
+
+  Evaluator e{};
+
+  // White has bishop pair, Black has knight+bishop
+  const Position whitePair{"1n1b2k1/p7/8/8/8/8/P7/2B2B1K w - - 0 1"};
+  // Black has bishop pair, White has knight+bishop (mirror)
+  const Position blackPair{"2b2b1k/p7/8/8/8/8/P7/1N1B2K1 b - - 0 1"};
+
+  const Value vWhitePair = e.evaluate(whitePair);
+  const Value vBlackPair = e.evaluate(blackPair);
+
+  // Human visual check
+  fprintln("White pair eval (White POV): {}", vWhitePair);
+  fprintln("Black pair eval (Black POV): {}", vBlackPair);
+
+  // Both should be positive (pair holder has advantage) and similar magnitude
+  ASSERT_GT(vWhitePair, VALUE_ZERO) << "White pair should give White a positive eval";
+  ASSERT_GT(vBlackPair, VALUE_ZERO) << "Black pair should give Black a positive eval";
+
+  // Allow small tolerance for PSQT / king square differences
+  const int diff = std::abs(static_cast<int>(vWhitePair) - static_cast<int>(vBlackPair));
+  ASSERT_LE(diff, 5) << "Bishop pair bonus should be roughly symmetric: White=" << vWhitePair << " Black=" << vBlackPair;
+}
+
 TEST_F(EvaluatorTest, RookMobility_CentralBeatsEdge_FileBonusesOff) {
   set_eval_config(false);
   cm.applyOverrides([&](auto&, EvalConfigData& e) {

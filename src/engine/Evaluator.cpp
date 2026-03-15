@@ -249,8 +249,8 @@ inline void Evaluator::pieceEval(const Position& p, Score& s, const Color us, co
 
       // bonus for a pair
       if (EvalConfig.USE_BISHOP_PAIR_BONUS && pieceBb.popcount() > 1) {
-        s.midgame += EvalConfig.BISHOP_PAIR_MID_BONUS;
-        s.endgame += EvalConfig.BISHOP_PAIR_END_BONUS;
+        s.midgame += static_cast<Value>(static_cast<int>(EvalConfig.BISHOP_PAIR_MID_BONUS) * us.sign());
+        s.endgame += static_cast<Value>(static_cast<int>(EvalConfig.BISHOP_PAIR_END_BONUS) * us.sign());
       }
 
       // loop through all bishops of this color
