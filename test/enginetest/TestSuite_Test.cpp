@@ -154,6 +154,33 @@ TEST_F(TestSuite_Test, ecm98_test) {
   ts.runTestSuite();
 }
 
+TEST_F(TestSuite_Test, STS) {
+  if (isBulkRun()) {
+    GTEST_SKIP();
+  }
+  CONFIG_OVERRIDE(s.USE_BOOK = false);
+  constexpr milliseconds moveTime{5s};
+  constexpr Depth depth{0};
+  std::string filePath = FrankyCPP_PROJECT_ROOT;
+  filePath += +"/test/testsets/STS1-STS15_LAN.EPD";
+  TestSuite ts{moveTime, depth, filePath};
+  ts.runTestSuite();
+}
+
+TEST_F(TestSuite_Test, eigenmann_rapid_engine) {
+  if (isBulkRun()) {
+    GTEST_SKIP();
+  }
+  CONFIG_OVERRIDE(s.USE_BOOK = false);
+  constexpr milliseconds moveTime{15s};
+  constexpr Depth depth{0};
+  std::string filePath = FrankyCPP_PROJECT_ROOT;
+  filePath += +"/test/testsets/eigenmann-rapid-engine.epd";
+  TestSuite ts{moveTime, depth, filePath};
+  ts.runTestSuite();
+}
+
+
 // =============================================================================
 // Stress test for sanitizers (ASAN/TSAN)
 // Runs multiple testsuites sequentially to trigger potential memory corruption

@@ -114,6 +114,7 @@ testSuiteRuns:
       - "test/testsets/crafty_test.epd"
       - "test/testsets/ecm98.epd"
       - "test/testsets/kaufman.epd"
+      - "test/testsets/eigenmann-rapid-engine.epd" # new since v1.6
 
 #  # ==========================================================================
 #  # FrankyCPP v1.5 test suites (baseline)
