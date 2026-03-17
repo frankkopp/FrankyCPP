@@ -31,8 +31,11 @@
 // Evaluation Components:
 //   - Material balance (piece values)
 //   - Piece-square tables (positional bonuses, midgame + endgame)
-//   - Pawn structure (isolated, doubled, passed, connected)
+//   - Pawn structure (isolated, doubled, passed, connected, advancement)
 //   - Piece mobility (attack squares available)
+//   - Knight outposts (safe squares immune to pawn attacks)
+//   - Bad bishop detection (own pawns on bishop's color)
+//   - Rook placement (open files, 7th rank, behind passed pawns)
 //   - King safety (pawn shield, attacker proximity)
 //
 // Tapered Evaluation:

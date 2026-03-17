@@ -54,14 +54,14 @@ ConfigRegistry::ConfigRegistry() {
   static_assert(sizeof(SearchConfigData) == 640,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 416,
+  static_assert(sizeof(EvalConfigData) == 504,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
   static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 408,
+  static_assert(sizeof(EvalConfigData) == 496,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #endif
@@ -72,7 +72,7 @@ ConfigRegistry::ConfigRegistry() {
   static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 408,
+  static_assert(sizeof(EvalConfigData) == 496,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
@@ -80,7 +80,7 @@ ConfigRegistry::ConfigRegistry() {
   static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 408,
+  static_assert(sizeof(EvalConfigData) == 496,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #endif
@@ -2190,6 +2190,49 @@ void ConfigRegistry::initializeEvalDefinitions() {
   });
 
   //===========================================================================
+  // PAWN ADVANCEMENT BONUS
+  //===========================================================================
+  definitions_.push_back({
+    .name = "USE_PAWN_ADVANCE_BONUS",
+    .uciName = "Use Pawn Advance Bonus",
+    .description = "Enable bonus for advanced non-passed pawns",
+    .valueType = Bool,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.USE_PAWN_ADVANCE_BONUS),
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_PAWN_ADVANCE_BONUS), .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.USE_PAWN_ADVANCE_BONUS; }),
+    .setter = EVAL_CONFIG_SETTER(USE_PAWN_ADVANCE_BONUS, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "PAWN_ADVANCE_MID_BONUS",
+    .uciName = "",
+    .description = "Pawn advancement midgame bonus by rank (rank4..rank7)",
+    .valueType = IntArray,
+    .domain = Eval,
+    .defaultValue = arrayToString(defaultEval.PAWN_ADVANCE_MID_BONUS),
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = [](const SearchConfigData&, const EvalConfigData& e) {
+      return arrayToString(e.PAWN_ADVANCE_MID_BONUS);
+    },
+    .setter = EVAL_CONFIG_ARRAY_SETTER(PAWN_ADVANCE_MID_BONUS)
+  });
+
+  definitions_.push_back({
+    .name = "PAWN_ADVANCE_END_BONUS",
+    .uciName = "",
+    .description = "Pawn advancement endgame bonus by rank (rank4..rank7)",
+    .valueType = IntArray,
+    .domain = Eval,
+    .defaultValue = arrayToString(defaultEval.PAWN_ADVANCE_END_BONUS),
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = [](const SearchConfigData&, const EvalConfigData& e) {
+      return arrayToString(e.PAWN_ADVANCE_END_BONUS);
+    },
+    .setter = EVAL_CONFIG_ARRAY_SETTER(PAWN_ADVANCE_END_BONUS)
+  });
+
+  //===========================================================================
   // PIECE EVAL
   //===========================================================================
   definitions_.push_back({
@@ -2347,6 +2390,77 @@ void ConfigRegistry::initializeEvalDefinitions() {
   });
 
   //===========================================================================
+  // KNIGHT OUTPOST
+  //===========================================================================
+  definitions_.push_back({
+    .name = "USE_KNIGHT_OUTPOST",
+    .uciName = "Use Knight Outpost",
+    .description = "Enable knight outpost evaluation",
+    .valueType = Bool,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.USE_KNIGHT_OUTPOST),
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_KNIGHT_OUTPOST), .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.USE_KNIGHT_OUTPOST; }),
+    .setter = EVAL_CONFIG_SETTER(USE_KNIGHT_OUTPOST, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "KNIGHT_OUTPOST_SUPPORTED_MID",
+    .uciName = "Knight Outpost Supp Mid",
+    .description = "Knight outpost bonus (pawn-supported) in middlegame",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.KNIGHT_OUTPOST_SUPPORTED_MID),
+    .minValue = 0,
+    .maxValue = 60,
+    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_OUTPOST_SUPPORTED_MID), .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.KNIGHT_OUTPOST_SUPPORTED_MID; }),
+    .setter = EVAL_CONFIG_SETTER(KNIGHT_OUTPOST_SUPPORTED_MID, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "KNIGHT_OUTPOST_SUPPORTED_END",
+    .uciName = "Knight Outpost Supp End",
+    .description = "Knight outpost bonus (pawn-supported) in endgame",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.KNIGHT_OUTPOST_SUPPORTED_END),
+    .minValue = 0,
+    .maxValue = 60,
+    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_OUTPOST_SUPPORTED_END), .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.KNIGHT_OUTPOST_SUPPORTED_END; }),
+    .setter = EVAL_CONFIG_SETTER(KNIGHT_OUTPOST_SUPPORTED_END, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "KNIGHT_OUTPOST_UNSUPPORTED_MID",
+    .uciName = "Knight Outpost Unsupp Mid",
+    .description = "Knight outpost bonus (unsupported) in middlegame",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.KNIGHT_OUTPOST_UNSUPPORTED_MID),
+    .minValue = 0,
+    .maxValue = 40,
+    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_OUTPOST_UNSUPPORTED_MID), .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.KNIGHT_OUTPOST_UNSUPPORTED_MID; }),
+    .setter = EVAL_CONFIG_SETTER(KNIGHT_OUTPOST_UNSUPPORTED_MID, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "KNIGHT_OUTPOST_UNSUPPORTED_END",
+    .uciName = "Knight Outpost Unsupp End",
+    .description = "Knight outpost bonus (unsupported) in endgame",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.KNIGHT_OUTPOST_UNSUPPORTED_END),
+    .minValue = 0,
+    .maxValue = 40,
+    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_OUTPOST_UNSUPPORTED_END), .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.KNIGHT_OUTPOST_UNSUPPORTED_END; }),
+    .setter = EVAL_CONFIG_SETTER(KNIGHT_OUTPOST_UNSUPPORTED_END, parseInt)
+  });
+
+  //===========================================================================
   // BISHOP MOBILITY
   //===========================================================================
   definitions_.push_back({
@@ -2415,6 +2529,49 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .exposure = {.uci = IS_MUTABLE(defaultEval, BISHOP_LOW_MOBILITY_LEQ3_END), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.BISHOP_LOW_MOBILITY_LEQ3_END; }),
     .setter = EVAL_CONFIG_SETTER(BISHOP_LOW_MOBILITY_LEQ3_END, parseInt)
+  });
+
+  //===========================================================================
+  // BAD BISHOP
+  //===========================================================================
+  definitions_.push_back({
+    .name = "USE_BAD_BISHOP",
+    .uciName = "Use Bad Bishop",
+    .description = "Enable bad bishop penalty (pawns on bishop color)",
+    .valueType = Bool,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.USE_BAD_BISHOP),
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_BAD_BISHOP), .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.USE_BAD_BISHOP; }),
+    .setter = EVAL_CONFIG_SETTER(USE_BAD_BISHOP, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "BAD_BISHOP_PER_PAWN_MID",
+    .uciName = "Bad Bishop Per Pawn Mid",
+    .description = "Bad bishop penalty per own pawn on bishop color in middlegame",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.BAD_BISHOP_PER_PAWN_MID),
+    .minValue = -20,
+    .maxValue = 0,
+    .exposure = {.uci = IS_MUTABLE(defaultEval, BAD_BISHOP_PER_PAWN_MID), .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.BAD_BISHOP_PER_PAWN_MID; }),
+    .setter = EVAL_CONFIG_SETTER(BAD_BISHOP_PER_PAWN_MID, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "BAD_BISHOP_PER_PAWN_END",
+    .uciName = "Bad Bishop Per Pawn End",
+    .description = "Bad bishop penalty per own pawn on bishop color in endgame",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.BAD_BISHOP_PER_PAWN_END),
+    .minValue = -20,
+    .maxValue = 0,
+    .exposure = {.uci = IS_MUTABLE(defaultEval, BAD_BISHOP_PER_PAWN_END), .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.BAD_BISHOP_PER_PAWN_END; }),
+    .setter = EVAL_CONFIG_SETTER(BAD_BISHOP_PER_PAWN_END, parseInt)
   });
 
   //===========================================================================
@@ -2594,6 +2751,77 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_7TH_RANK_END_BONUS), .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.ROOK_7TH_RANK_END_BONUS; }),
     .setter = EVAL_CONFIG_SETTER(ROOK_7TH_RANK_END_BONUS, parseInt)
+  });
+
+  //===========================================================================
+  // ROOK BEHIND PASSED PAWN
+  //===========================================================================
+  definitions_.push_back({
+    .name = "USE_ROOK_BEHIND_PASSER",
+    .uciName = "Use Rook Behind Passer",
+    .description = "Enable rook behind passed pawn bonus",
+    .valueType = Bool,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.USE_ROOK_BEHIND_PASSER),
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_ROOK_BEHIND_PASSER), .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.USE_ROOK_BEHIND_PASSER; }),
+    .setter = EVAL_CONFIG_SETTER(USE_ROOK_BEHIND_PASSER, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "ROOK_BEHIND_PASSER_OWN_MID",
+    .uciName = "Rook Behind Own Passer Mid",
+    .description = "Rook behind own passed pawn midgame bonus",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.ROOK_BEHIND_PASSER_OWN_MID),
+    .minValue = 0,
+    .maxValue = 50,
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_BEHIND_PASSER_OWN_MID), .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.ROOK_BEHIND_PASSER_OWN_MID; }),
+    .setter = EVAL_CONFIG_SETTER(ROOK_BEHIND_PASSER_OWN_MID, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "ROOK_BEHIND_PASSER_OWN_END",
+    .uciName = "Rook Behind Own Passer End",
+    .description = "Rook behind own passed pawn endgame bonus",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.ROOK_BEHIND_PASSER_OWN_END),
+    .minValue = 0,
+    .maxValue = 50,
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_BEHIND_PASSER_OWN_END), .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.ROOK_BEHIND_PASSER_OWN_END; }),
+    .setter = EVAL_CONFIG_SETTER(ROOK_BEHIND_PASSER_OWN_END, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "ROOK_BEHIND_PASSER_OPP_MID",
+    .uciName = "Rook Behind Opp Passer Mid",
+    .description = "Rook behind enemy passed pawn midgame bonus",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.ROOK_BEHIND_PASSER_OPP_MID),
+    .minValue = 0,
+    .maxValue = 50,
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_BEHIND_PASSER_OPP_MID), .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.ROOK_BEHIND_PASSER_OPP_MID; }),
+    .setter = EVAL_CONFIG_SETTER(ROOK_BEHIND_PASSER_OPP_MID, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "ROOK_BEHIND_PASSER_OPP_END",
+    .uciName = "Rook Behind Opp Passer End",
+    .description = "Rook behind enemy passed pawn endgame bonus",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.ROOK_BEHIND_PASSER_OPP_END),
+    .minValue = 0,
+    .maxValue = 50,
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_BEHIND_PASSER_OPP_END), .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.ROOK_BEHIND_PASSER_OPP_END; }),
+    .setter = EVAL_CONFIG_SETTER(ROOK_BEHIND_PASSER_OPP_END, parseInt)
   });
 
   //===========================================================================

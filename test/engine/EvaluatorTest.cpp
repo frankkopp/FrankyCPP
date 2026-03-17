@@ -66,10 +66,13 @@ void set_eval_config(const bool onoff) {
     // piece-specific toggles
     e.USE_PIECE_EVAL           = onoff;
     e.USE_KNIGHT_MOBILITY      = onoff;
+    e.USE_KNIGHT_OUTPOST       = onoff;
     e.USE_BISHOP_MOBILITY      = onoff;
+    e.USE_BAD_BISHOP           = onoff;
     e.USE_ROOK_MOBILITY        = onoff;
     e.USE_ROOK_OPEN_FILE_BONUS = onoff;
     e.USE_ROOK_7TH_RANK_BONUS  = onoff;
+    e.USE_ROOK_BEHIND_PASSER   = onoff;
     e.USE_QUEEN_MOBILITY       = onoff;
     e.USE_QUEEN_TROPISM        = onoff;
     e.USE_KING_EVAL            = onoff;
@@ -78,6 +81,7 @@ void set_eval_config(const bool onoff) {
     e.USE_KING_SAFETY_ATTACK   = onoff;
     e.USE_GAMEPHASE_VALUE      = onoff;
     e.USE_BISHOP_PAIR_BONUS    = onoff;
+    e.USE_PAWN_ADVANCE_BONUS   = onoff;
   });
 }
 #endif // FRANKYCPP_PRODUCTION
@@ -663,6 +667,291 @@ TEST_F(EvaluatorTest, BishopPairBonus_Symmetry) {
   ASSERT_LE(diff, 5) << "Bishop pair bonus should be roughly symmetric: White=" << vWhitePair << " Black=" << vBlackPair;
 }
 
+// =========================================================================
+// KNIGHT OUTPOST TESTS
+// =========================================================================
+
+// Knight on an outpost square (d5, no enemy pawns on c/e files ahead)
+// supported by own pawn should evaluate better than unsupported.
+TEST_F(EvaluatorTest, KnightOutpost_SupportedBeatsUnsupported) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_PIECE_EVAL      = true;
+    e.USE_KNIGHT_OUTPOST  = true;
+    e.USE_GAMEPHASE_VALUE = true;
+  });
+
+  Evaluator e{};
+
+  // Knight on d5 supported by pawn on c4, no enemy pawns on c/e files forward
+  const Position supported{"6k1/p7/8/3N4/2P5/8/P7/6K1 w - - 0 1"};
+  // Knight on d5 but NO supporting pawn, still an outpost (no enemy pawns on c/e forward)
+  const Position unsupported{"6k1/p7/8/3N4/8/8/PP6/6K1 w - - 0 1"};
+
+  const Value vSupported   = e.evaluate(supported);
+  const Value vUnsupported = e.evaluate(unsupported);
+
+  fprintln("Knight outpost supported eval:   {}", vSupported);
+  println(supported.strBoard());
+  fprintln("Knight outpost unsupported eval: {}", vUnsupported);
+  println(unsupported.strBoard());
+  fprintln("Supported > Unsupported: {} > {}", vSupported, vUnsupported);
+
+  ASSERT_GT(vSupported, vUnsupported)
+      << "Supported knight outpost should evaluate higher than unsupported";
+}
+
+// Knight on d5 with enemy pawn on e6 (can attack d5) should NOT get an outpost bonus.
+TEST_F(EvaluatorTest, KnightOutpost_CanBeAttackedGetsNoBonus) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_PIECE_EVAL      = true;
+    e.USE_KNIGHT_OUTPOST  = true;
+    e.USE_GAMEPHASE_VALUE = true;
+  });
+
+  Evaluator e{};
+
+  // Knight on d5, no enemy pawns on c/e forward → outpost
+  const Position outpost{"6k1/p7/8/3N4/8/8/PP6/6K1 w - - 0 1"};
+  // Knight on d5, but enemy pawn on e6 can attack it → NOT an outpost
+  const Position notOutpost{"6k1/p7/4p3/3N4/8/8/PP6/6K1 w - - 0 1"};
+
+  const Value vOutpost    = e.evaluate(outpost);
+  const Value vNotOutpost = e.evaluate(notOutpost);
+
+  fprintln("Outpost (no enemy pawn) eval:     {}", vOutpost);
+  println(outpost.strBoard());
+  fprintln("Not outpost (e6 pawn) eval:       {}", vNotOutpost);
+  println(notOutpost.strBoard());
+  fprintln("Outpost > Not outpost: {} > {}", vOutpost, vNotOutpost);
+
+  ASSERT_GT(vOutpost, vNotOutpost)
+      << "Knight on outpost square (no enemy pawn threat) should evaluate higher than attackable knight";
+}
+
+// Verify Black knight outpost is correctly signed (benefits Black)
+TEST_F(EvaluatorTest, KnightOutpost_BlackSymmetry) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_PIECE_EVAL      = true;
+    e.USE_KNIGHT_OUTPOST  = true;
+    e.USE_GAMEPHASE_VALUE = true;
+  });
+
+  Evaluator e{};
+
+  // White knight outpost on d5 supported by c4 pawn
+  const Position whiteOutpost{"6k1/p7/8/3N4/2P5/8/P7/6K1 w - - 0 1"};
+  // Black knight outpost on d4 supported by c5 pawn (mirror)
+  const Position blackOutpost{"6k1/p7/8/2p5/3n4/8/P7/6K1 b - - 0 1"};
+
+  const Value vWhite = e.evaluate(whiteOutpost);
+  const Value vBlack = e.evaluate(blackOutpost);
+
+  fprintln("White outpost eval (White POV): {}", vWhite);
+  fprintln("Black outpost eval (Black POV): {}", vBlack);
+
+  ASSERT_GT(vWhite, VALUE_ZERO) << "White outpost should be positive for White";
+  ASSERT_GT(vBlack, VALUE_ZERO) << "Black outpost should be positive for Black";
+
+  const int diff = std::abs(static_cast<int>(vWhite) - static_cast<int>(vBlack));
+  ASSERT_LE(diff, 10) << "Outpost bonus should be roughly symmetric: White=" << vWhite << " Black=" << vBlack;
+}
+
+// =========================================================================
+// BAD BISHOP TESTS
+// =========================================================================
+
+// Bishop with many own pawns on its color should evaluate worse than with few.
+TEST_F(EvaluatorTest, BadBishop_ManyPawnsOnColorWorseThanFew) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_PIECE_EVAL      = true;
+    e.USE_BAD_BISHOP      = true;
+    e.USE_GAMEPHASE_VALUE = true;
+  });
+
+  Evaluator e{};
+
+  // White light-square bishop on f1, 4 white pawns on light squares (d3, e2, f3, g2)
+  // Black has one pawn to avoid draw.
+  const Position badBishop{"6k1/p7/8/8/8/3P1P2/4PBP1/6K1 w - - 0 1"};
+  // White light-square bishop on f1, only 1 white pawn on light square (e2)
+  // Other pawns on dark squares (d2, f2)
+  const Position goodBishop{"6k1/p7/8/8/8/8/3PPBP1/6K1 w - - 0 1"};
+
+  const Value vBad  = e.evaluate(badBishop);
+  const Value vGood = e.evaluate(goodBishop);
+
+  fprintln("Bad bishop (many pawns on color) eval:  {}", vBad);
+  println(badBishop.strBoard());
+  fprintln("Good bishop (few pawns on color) eval:  {}", vGood);
+  println(goodBishop.strBoard());
+  fprintln("Good > Bad: {} > {}", vGood, vBad);
+
+  ASSERT_GT(vGood, vBad)
+      << "Bishop with fewer own pawns on its color should evaluate higher";
+}
+
+// Verify that Black bad bishop penalty is correctly signed (hurts Black).
+TEST_F(EvaluatorTest, BadBishop_BlackCorrectSign) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_PIECE_EVAL      = true;
+    e.USE_BAD_BISHOP      = true;
+    e.USE_GAMEPHASE_VALUE = true;
+  });
+
+  Evaluator e{};
+
+  // Black has bad bishop (many pawns on bishop color), White has one pawn
+  const Position blackBad{"6k1/4pbp1/3p1p2/8/8/8/P7/6K1 b - - 0 1"};
+  // Black has good bishop (few pawns on bishop color)
+  const Position blackGood{"6k1/3ppbp1/8/8/8/8/P7/6K1 b - - 0 1"};
+
+  const Value vBad  = e.evaluate(blackBad);
+  const Value vGood = e.evaluate(blackGood);
+
+  fprintln("Black bad bishop eval (Black POV):  {}", vBad);
+  fprintln("Black good bishop eval (Black POV): {}", vGood);
+
+  ASSERT_GT(vGood, vBad)
+      << "Black's good bishop should evaluate higher (from Black POV) than bad bishop";
+}
+
+// =========================================================================
+// PAWN ADVANCEMENT BONUS TESTS
+// =========================================================================
+
+// Non-passed pawn on rank 5 should evaluate better than same pawn on rank 2.
+TEST_F(EvaluatorTest, PawnAdvancement_AdvancedNonPassedBeatsBackRank) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_PAWN_EVAL          = true;
+    e.USE_PAWN_ADVANCE_BONUS = true;
+    e.USE_GAMEPHASE_VALUE    = true;
+  });
+
+  Evaluator e{};
+
+  // White pawn on d5 (rank 5, non-passed because black pawn on d7 blocks)
+  const Position advanced{"3k4/3p4/8/3P4/8/8/8/3K4 w - - 0 1"};
+  // White pawn on d2 (rank 2, non-passed because black pawn on d7 blocks)
+  const Position backRank{"3k4/3p4/8/8/8/8/3P4/3K4 w - - 0 1"};
+
+  const Value vAdvanced = e.evaluate(advanced);
+  const Value vBackRank = e.evaluate(backRank);
+
+  fprintln("Advanced non-passed pawn (d5) eval: {}", vAdvanced);
+  println(advanced.strBoard());
+  fprintln("Back-rank non-passed pawn (d2) eval: {}", vBackRank);
+  println(backRank.strBoard());
+  fprintln("Advanced > BackRank: {} > {}", vAdvanced, vBackRank);
+
+  ASSERT_GT(vAdvanced, vBackRank)
+      << "Advanced non-passed pawn should get advancement bonus over back-rank pawn";
+}
+
+// Verify advancement bonus does NOT apply to passed pawns (they have their own bonus).
+TEST_F(EvaluatorTest, PawnAdvancement_PassedPawnDoesNotGetAdvanceBonus) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_PAWN_EVAL          = true;
+    e.USE_PAWN_ADVANCE_BONUS = true;
+    e.USE_GAMEPHASE_VALUE    = true;
+  });
+
+  Evaluator e{};
+
+  // White pawn on d5, no black pawns → passed. Should NOT get advance bonus.
+  const Position passedAdv{"6k1/8/8/3P4/8/8/8/6K1 w - - 0 1"};
+
+  // Disable advance bonus and re-evaluate to check there's no difference
+  cm.applyOverrides([&](auto&, EvalConfigData& e2) {
+    e2.USE_PAWN_ADVANCE_BONUS = false;
+  });
+
+  const Value vWithout = e.evaluate(passedAdv);
+
+  cm.applyOverrides([&](auto&, EvalConfigData& e2) {
+    e2.USE_PAWN_ADVANCE_BONUS = true;
+  });
+
+  const Value vWith = e.evaluate(passedAdv);
+
+  fprintln("Passed pawn d5 WITH advance bonus:    {}", vWith);
+  fprintln("Passed pawn d5 WITHOUT advance bonus: {}", vWithout);
+
+  // Should be equal because passed pawns are excluded from advancement bonus
+  ASSERT_EQ(vWith, vWithout)
+      << "Passed pawns should not get the advancement bonus (they have their own rank-based bonus)";
+}
+
+// =========================================================================
+// ROOK BEHIND PASSED PAWN TESTS
+// =========================================================================
+
+// Rook behind own passed pawn should evaluate better than rook in front of it.
+TEST_F(EvaluatorTest, RookBehindPasser_BehindBeatsBefore) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_PIECE_EVAL         = true;
+    e.USE_ROOK_BEHIND_PASSER = true;
+    e.USE_PAWN_EVAL          = true; // needed for passed pawn detection context
+    e.USE_GAMEPHASE_VALUE    = true;
+  });
+
+  Evaluator e{};
+
+  // White rook on d1 behind own passed pawn on d5 (no black pawns on c/d/e forward)
+  const Position behind{"6k1/8/8/3P4/8/8/8/3R2K1 w - - 0 1"};
+  // White rook on d7 IN FRONT of own passed pawn on d5
+  const Position inFront{"3R2k1/8/8/3P4/8/8/8/6K1 w - - 0 1"};
+
+  const Value vBehind  = e.evaluate(behind);
+  const Value vInFront = e.evaluate(inFront);
+
+  fprintln("Rook behind own passer (d1) eval:  {}", vBehind);
+  println(behind.strBoard());
+  fprintln("Rook in front of passer (d7) eval: {}", vInFront);
+  println(inFront.strBoard());
+  fprintln("Behind > InFront: {} > {}", vBehind, vInFront);
+
+  ASSERT_GT(vBehind, vInFront)
+      << "Rook behind own passed pawn should evaluate higher than rook in front";
+}
+
+// Rook behind enemy passed pawn (blocking it) should also get a bonus.
+TEST_F(EvaluatorTest, RookBehindPasser_BehindEnemyPasserBeatsElsewhere) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_PIECE_EVAL         = true;
+    e.USE_ROOK_BEHIND_PASSER = true;
+    e.USE_PAWN_EVAL          = true;
+    e.USE_GAMEPHASE_VALUE    = true;
+  });
+
+  Evaluator e{};
+
+  // Black passed pawn on d4, White rook on d7 (behind it = north of pawn advancing south)
+  const Position behindEnemy{"6k1/3R4/8/8/3p4/8/8/6K1 w - - 0 1"};
+  // Same pawn, but White rook on a7 (not on the passer's file)
+  const Position elsewhere{"6k1/R7/8/8/3p4/8/8/6K1 w - - 0 1"};
+
+  const Value vBehind    = e.evaluate(behindEnemy);
+  const Value vElsewhere = e.evaluate(elsewhere);
+
+  fprintln("Rook behind enemy passer (d7) eval: {}", vBehind);
+  println(behindEnemy.strBoard());
+  fprintln("Rook elsewhere (a7) eval:           {}", vElsewhere);
+  println(elsewhere.strBoard());
+  fprintln("Behind enemy passer > Elsewhere: {} > {}", vBehind, vElsewhere);
+
+  ASSERT_GT(vBehind, vElsewhere)
+      << "Rook behind enemy passed pawn should evaluate higher than rook off the file";
+}
+
 TEST_F(EvaluatorTest, RookMobility_CentralBeatsEdge_FileBonusesOff) {
   set_eval_config(false);
   cm.applyOverrides([&](auto&, EvalConfigData& e) {
@@ -791,6 +1080,8 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
   if (isBulkRun()) {
     GTEST_SKIP() << "Skipping timing test in bulk run to save time";
   }
+  Logger::setLoggerLevel(Logger::get().EVAL_LOG, spdlog::level::warn);
+
   using namespace std::chrono;
 
   // Prepare a stable set of positions once (avoid counting FEN parsing)
@@ -889,14 +1180,23 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
     cases.push_back({"Disable KNIGHT_MOBILITY (with PIECE_EVAL)", [&] {
                        disable([](EvalConfigData& e) { e.USE_KNIGHT_MOBILITY = false; });
                      }});
+    cases.push_back({"Disable KNIGHT_OUTPOST (with PIECE_EVAL)", [&] {
+                       disable([](EvalConfigData& e) { e.USE_KNIGHT_OUTPOST = false; });
+                     }});
     cases.push_back({"Disable BISHOP_MOBILITY (with PIECE_EVAL)", [&] {
                        disable([](EvalConfigData& e) { e.USE_BISHOP_MOBILITY = false; });
+                     }});
+    cases.push_back({"Disable BAD_BISHOP (with PIECE_EVAL)", [&] {
+                       disable([](EvalConfigData& e) { e.USE_BAD_BISHOP = false; });
                      }});
     cases.push_back({"Disable ROOK_MOBILITY (with PIECE_EVAL)", [&] {
                        disable([](EvalConfigData& e) { e.USE_ROOK_MOBILITY = false; });
                      }});
     cases.push_back({"Disable ROOK_OPEN_FILE_BONUS (with PIECE_EVAL)", [&] {
                        disable([](EvalConfigData& e) { e.USE_ROOK_OPEN_FILE_BONUS = false; });
+                     }});
+    cases.push_back({"Disable ROOK_BEHIND_PASSER (with PIECE_EVAL)", [&] {
+                       disable([](EvalConfigData& e) { e.USE_ROOK_BEHIND_PASSER = false; });
                      }});
     cases.push_back({"Disable QUEEN_MOBILITY (with PIECE_EVAL)", [&] {
                        disable([](EvalConfigData& e) { e.USE_QUEEN_MOBILITY = false; });
@@ -923,6 +1223,9 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
                      }});
     cases.push_back({"Disable PAWN_TT (with PAWN_EVAL)", [&] {
                        disable([](EvalConfigData& e) { e.USE_PAWN_TT = false; });
+                     }});
+    cases.push_back({"Disable PAWN_ADVANCE_BONUS (with PAWN_EVAL)", [&] {
+                       disable([](EvalConfigData& e) { e.USE_PAWN_ADVANCE_BONUS = false; });
                      }});
 
     // Final base case: everything OFF (including LAZY)

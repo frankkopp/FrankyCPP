@@ -80,6 +80,12 @@ namespace config {
     CONFIG_CONST int SUPPORTED_PAWN_MID_WEIGHT = 10;
     CONFIG_CONST int SUPPORTED_PAWN_END_WEIGHT = 15;
 
+    // pawn advancement bonus: bonus for non-passed pawns that have advanced to rank 4+
+    // Indexed by (relativeRank - 4): {rank4, rank5, rank6, rank7}
+    CONFIG_CONST bool USE_PAWN_ADVANCE_BONUS = true;
+    CONFIG_CONST std::array<int, 4> PAWN_ADVANCE_MID_BONUS = {2, 5, 12, 25};
+    CONFIG_CONST std::array<int, 4> PAWN_ADVANCE_END_BONUS = {3, 8, 18, 35};
+
     // piece eval
     CONFIG_CONST bool USE_PIECE_EVAL = true;
 
@@ -97,12 +103,25 @@ namespace config {
     CONFIG_CONST int KNIGHT_LOW_MOBILITY_LEQ2_MID = -3;
     CONFIG_CONST int KNIGHT_LOW_MOBILITY_LEQ2_END = -3;
 
+    // knight outpost: bonus for knight on a square that cannot be attacked by enemy pawns
+    // (ranks 4-6 relative, center files preferred)
+    CONFIG_CONST bool USE_KNIGHT_OUTPOST            = true;
+    CONFIG_CONST int KNIGHT_OUTPOST_SUPPORTED_MID   = 20; // on outpost square supported by own pawn
+    CONFIG_CONST int KNIGHT_OUTPOST_SUPPORTED_END   = 15;
+    CONFIG_CONST int KNIGHT_OUTPOST_UNSUPPORTED_MID = 10; // on outpost square but no pawn support
+    CONFIG_CONST int KNIGHT_OUTPOST_UNSUPPORTED_END = 8;
+
     // bishop mobility
     CONFIG_CONST bool USE_BISHOP_MOBILITY         = true;
     CONFIG_CONST int BISHOP_MOBILITY_MID_PER_MOVE = 2;
     CONFIG_CONST int BISHOP_MOBILITY_END_PER_MOVE = 3;
     CONFIG_CONST int BISHOP_LOW_MOBILITY_LEQ3_MID = -4;
     CONFIG_CONST int BISHOP_LOW_MOBILITY_LEQ3_END = -2;
+
+    // bad bishop: penalty when own pawns are on the same color squares as the bishop
+    CONFIG_CONST bool USE_BAD_BISHOP          = true;
+    CONFIG_CONST int BAD_BISHOP_PER_PAWN_MID  = -3; // penalty per own pawn on bishop's color
+    CONFIG_CONST int BAD_BISHOP_PER_PAWN_END  = -5;
 
     // rook mobility and files
     CONFIG_CONST bool USE_ROOK_MOBILITY           = true;
@@ -120,6 +139,13 @@ namespace config {
     CONFIG_CONST bool USE_ROOK_7TH_RANK_BONUS = true;
     CONFIG_CONST int ROOK_7TH_RANK_MID_BONUS  = 15;
     CONFIG_CONST int ROOK_7TH_RANK_END_BONUS  = 25;
+
+    // rook behind passed pawn: bonus for rook behind own or enemy passed pawns
+    CONFIG_CONST bool USE_ROOK_BEHIND_PASSER     = true;
+    CONFIG_CONST int ROOK_BEHIND_PASSER_OWN_MID  = 10; // behind own passed pawn
+    CONFIG_CONST int ROOK_BEHIND_PASSER_OWN_END  = 20;
+    CONFIG_CONST int ROOK_BEHIND_PASSER_OPP_MID  = 8;  // behind enemy passed pawn (blocking)
+    CONFIG_CONST int ROOK_BEHIND_PASSER_OPP_END  = 15;
 
     // queen
     CONFIG_CONST bool USE_QUEEN_MOBILITY         = true;

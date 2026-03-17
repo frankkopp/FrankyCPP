@@ -230,6 +230,21 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
     endvalue    += supported.popcount() * EvalConfig.SUPPORTED_PAWN_END_WEIGHT;
     // clang-format on
 
+    // Pawn advancement bonus: bonus for non-passed pawns that have advanced to rank 4+ (relative).
+    // Advanced pawns control space and restrict enemy pieces even when not passed.
+    if (EvalConfig.USE_PAWN_ADVANCE_BONUS) {
+      // Non-passed advanced pawns = all pawns minus passed pawns, on ranks 4-7
+      Bitboard advancedNonPassed = myPawns & ~passed;
+      while (advancedNonPassed) {
+        const Square asq    = advancedNonPassed.popLSB();
+        const int relRank   = color == WHITE ? static_cast<int>(asq.rank()) : 7 - static_cast<int>(asq.rank());
+        if (relRank >= 4 && relRank <= 7) {
+          midvalue += EvalConfig.PAWN_ADVANCE_MID_BONUS[relRank - 4];
+          endvalue += EvalConfig.PAWN_ADVANCE_END_BONUS[relRank - 4];
+        }
+      }
+    }
+
     // accumulate signed by color
     tmpScore.midgame += static_cast<Value>(midvalue * color.sign());
     tmpScore.endgame += static_cast<Value>(endvalue * color.sign());
@@ -327,6 +342,37 @@ inline void Evaluator::knightEval(const Position& p, Score& s, const Color us, C
     s.endgame += static_cast<Value>(end * us.sign());
   }
 
+  // Knight outpost: bonus for knight on a square (ranks 4-6 relative) that
+  // cannot be attacked by enemy pawns. Extra bonus if supported by own pawn.
+  if (EvalConfig.USE_KNIGHT_OUTPOST) {
+    const Color them     = ~us;
+    const int relRank    = us == WHITE ? static_cast<int>(sq.rank()) : 7 - static_cast<int>(sq.rank());
+    if (relRank >= 3 && relRank <= 5) { // ranks 4-6 (0-based: 3-5)
+      // Check if any enemy pawn can attack this square.
+      // Enemy pawn attacks this square if an enemy pawn is on an adjacent file
+      // and forward of this square (from enemy's perspective, i.e., behind from ours).
+      const Bitboard oppPawns = p.getPieceBb(them, PAWN);
+      // passedPawnMask gives us squares in front on same+adjacent files.
+      // For outpost detection we only need adjacent files (a pawn on the same file can't attack sq).
+      const Bitboard forwardAdjacentFiles = Bitboards::passedPawnMask[us][sq] & Bitboards::neighbourFilesMask[sq];
+      const bool canBeAttacked = (oppPawns & forwardAdjacentFiles) != 0;
+      if (!canBeAttacked) {
+        // Check if supported by own pawn (own pawn attacks this square)
+        const Bitboard myPawns = p.getPieceBb(us, PAWN);
+        // A pawn of our color supports sq if it's diagonally behind sq
+        const Bitboard pawnSupport = Bitboards::pawnAttacks[them][sq]; // squares where our pawn would be to attack sq
+        if (myPawns & pawnSupport) {
+          s.midgame += static_cast<Value>(EvalConfig.KNIGHT_OUTPOST_SUPPORTED_MID * us.sign());
+          s.endgame += static_cast<Value>(EvalConfig.KNIGHT_OUTPOST_SUPPORTED_END * us.sign());
+        }
+        else {
+          s.midgame += static_cast<Value>(EvalConfig.KNIGHT_OUTPOST_UNSUPPORTED_MID * us.sign());
+          s.endgame += static_cast<Value>(EvalConfig.KNIGHT_OUTPOST_UNSUPPORTED_END * us.sign());
+        }
+      }
+    }
+  }
+
   // King safety: count attacks on enemy king zone
   if (EvalConfig.USE_KING_SAFETY_ATTACK) {
     const Color them            = ~us;
@@ -357,6 +403,21 @@ inline void Evaluator::bishopEval(const Position& p, Score& s, const Color us, C
 
     s.midgame += static_cast<Value>(mid * us.sign());
     s.endgame += static_cast<Value>(end * us.sign());
+  }
+
+  // Bad bishop: penalty when many own pawns are on the same color squares as the bishop.
+  // A bishop blocked by its own pawns has reduced scope.
+  if (EvalConfig.USE_BAD_BISHOP) {
+    const Bitboard myPawns = p.getPieceBb(us, PAWN);
+    // Use pre-computed square color masks: colorBb[WHITE] = light squares, colorBb[BLACK] = dark squares
+    const Bitboard bishopColorMask = (sq.file() + sq.rank()) % 2 == 0
+                                       ? Bitboards::colorBb[WHITE]
+                                       : Bitboards::colorBb[BLACK];
+    const int pawnsOnBishopColor   = (myPawns & bishopColorMask).popcount();
+    if (pawnsOnBishopColor > 0) {
+      s.midgame += static_cast<Value>(pawnsOnBishopColor * EvalConfig.BAD_BISHOP_PER_PAWN_MID * us.sign());
+      s.endgame += static_cast<Value>(pawnsOnBishopColor * EvalConfig.BAD_BISHOP_PER_PAWN_END * us.sign());
+    }
   }
 
   // King safety: count attacks on enemy king zone
@@ -417,6 +478,50 @@ inline void Evaluator::rookEval(const Position& p, Score& s, const Color us, con
     if (relRank == 6) { // RANK_7 = 6 (0-based)
       mid += EvalConfig.ROOK_7TH_RANK_MID_BONUS;
       end += EvalConfig.ROOK_7TH_RANK_END_BONUS;
+    }
+  }
+
+  // Rook behind passed pawn: bonus for rook behind own or enemy passed pawns on the same file.
+  // "Behind" means on the opposite side of the pawn's push direction.
+  if (EvalConfig.USE_ROOK_BEHIND_PASSER) {
+    const Bitboard fileMask = Bitboards::sqToFileBb[sq];
+    const Bitboard myPawns  = p.getPieceBb(us, PAWN);
+    const Bitboard oppPawns = p.getPieceBb(them, PAWN);
+
+    // Check own passed pawns on same file
+    {
+      Bitboard filePawns = myPawns & fileMask;
+      while (filePawns) {
+        const Square psq    = filePawns.popLSB();
+        const Bitboard fwd  = Bitboards::rays[us == WHITE ? N : S][psq];
+        const bool isPassed = !(myPawns & fwd) && !(oppPawns & Bitboards::passedPawnMask[us][psq]);
+        if (isPassed) {
+          // Rook is behind if it's on the backward ray of the pawn
+          const Bitboard backward = Bitboards::rays[us == WHITE ? S : N][psq];
+          if (backward & Bitboards::sqBb[sq]) {
+            mid += EvalConfig.ROOK_BEHIND_PASSER_OWN_MID;
+            end += EvalConfig.ROOK_BEHIND_PASSER_OWN_END;
+          }
+        }
+      }
+    }
+
+    // Check enemy passed pawns on same file
+    {
+      Bitboard filePawns = oppPawns & fileMask;
+      while (filePawns) {
+        const Square psq    = filePawns.popLSB();
+        const Bitboard fwd  = Bitboards::rays[them == WHITE ? N : S][psq];
+        const bool isPassed = !(oppPawns & fwd) && !(myPawns & Bitboards::passedPawnMask[them][psq]);
+        if (isPassed) {
+          // Rook is behind if it's on the backward ray of the enemy pawn (our forward direction)
+          const Bitboard backward = Bitboards::rays[them == WHITE ? S : N][psq];
+          if (backward & Bitboards::sqBb[sq]) {
+            mid += EvalConfig.ROOK_BEHIND_PASSER_OPP_MID;
+            end += EvalConfig.ROOK_BEHIND_PASSER_OPP_END;
+          }
+        }
+      }
     }
   }
 
