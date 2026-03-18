@@ -1,0 +1,1008 @@
+{
+  "arenaVersion": "v1.6",
+  "details": [
+    {
+      "actual": "f8e6",
+      "expected": "bm f8g6",
+      "fen": "r1n2N1k/2n2K1p/3pp3/5Pp1/b5R1/8/1PPP4/8 w - -",
+      "nodes": 19987602,
+      "passed": false,
+      "testId": "ERET 002 - Zugzwang",
+      "timeMs": 3162
+    },
+    {
+      "actual": "d4e2",
+      "expected": "bm f4f5",
+      "fen": "r1b1r1k1/1pqn1pbp/p2pp1p1/P7/1n1NPP1Q/2NBBR2/1PP3PP/R6K w - -",
+      "nodes": 25419113,
+      "passed": false,
+      "testId": "ERET 003 - Open Line",
+      "timeMs": 4932
+    },
+    {
+      "actual": "d3c2",
+      "expected": "bm f3g5",
+      "fen": "5b2/p2k1p2/P3pP1p/n2pP1p1/1p1P2P1/1P1KBN2/7P/8 w - -",
+      "nodes": 32490797,
+      "passed": false,
+      "testId": "ERET 004 - Endgame",
+      "timeMs": 4679
+    },
+    {
+      "actual": "e4f3",
+      "expected": "bm d7c5",
+      "fen": "r2r2k1/1p1n1pp1/4pnp1/8/PpBRqP2/1Q2B1P1/1P5P/R5K1 b - -",
+      "nodes": 20148178,
+      "passed": false,
+      "testId": "ERET 006 - Knight Sacrifice",
+      "timeMs": 3487
+    },
+    {
+      "actual": "d7e5",
+      "expected": "bm d7e5",
+      "fen": "2rq1rk1/pb1n1ppN/4p3/1pb5/3P1Pn1/P1N5/1PQ1B1PP/R1B2RK1 b - -",
+      "nodes": 25552060,
+      "passed": true,
+      "testId": "ERET 007 - Bishop Pair",
+      "timeMs": 4640
+    },
+    {
+      "actual": "b3b7",
+      "expected": "bm b3d5",
+      "fen": "r2qk2r/ppp1bppp/2n5/3p1b2/3P1Bn1/1QN1P3/PP3P1P/R3KBNR w KQkq -",
+      "nodes": 24616840,
+      "passed": false,
+      "testId": "ERET 008 - Center",
+      "timeMs": 4757
+    },
+    {
+      "actual": "h2h3",
+      "expected": "bm e5g6",
+      "fen": "rnb1kb1r/p4p2/1qp1pn2/1p2N2p/2p1P1p1/2N3B1/PPQ1BPPP/3RK2R w Kkq -",
+      "nodes": 24744988,
+      "passed": false,
+      "testId": "ERET 009 - Knight Sacrifice",
+      "timeMs": 4885
+    },
+    {
+      "actual": "f6f5",
+      "expected": "bm d5d4",
+      "fen": "5rk1/pp1b4/4pqp1/2Ppb2p/1P2p3/4Q2P/P3BPP1/1R3R1K b - -",
+      "nodes": 23019946,
+      "passed": false,
+      "testId": "ERET 010 - Passed Pawn",
+      "timeMs": 4213
+    },
+    {
+      "actual": "h2h3",
+      "expected": "bm g1f3",
+      "fen": "r1b2r1k/ppp2ppp/8/4p3/2BPQ3/P3P1K1/1B3PPP/n3q1NR w - -",
+      "nodes": 26129074,
+      "passed": false,
+      "testId": "ERET 011 - Attacking Castle",
+      "timeMs": 4949
+    },
+    {
+      "actual": "d4c5",
+      "expected": "bm c3d5",
+      "fen": "1nkr1b1r/5p2/1q2p2p/1ppbP1p1/2pP4/2N3B1/1P1QBPPP/R4RK1 w - -",
+      "nodes": 23799396,
+      "passed": false,
+      "testId": "ERET 012 - Relief",
+      "timeMs": 4556
+    },
+    {
+      "actual": "c4d5",
+      "expected": "bm d3c2",
+      "fen": "1nrq1rk1/p4pp1/bp2pn1p/3p4/2PP1B2/P1PB2N1/4QPPP/1R2R1K1 w - -",
+      "nodes": 24368034,
+      "passed": false,
+      "testId": "ERET 013 - Center",
+      "timeMs": 4548
+    },
+    {
+      "actual": "c3a4",
+      "expected": "bm d2f3",
+      "fen": "5k2/1rn2p2/3pb1p1/7p/p3PP2/PnNBK2P/3N2P1/1R6 w - -",
+      "nodes": 18344020,
+      "passed": false,
+      "testId": "ERET 014 - Endgame",
+      "timeMs": 3122
+    },
+    {
+      "actual": "h3f1",
+      "expected": "bm h3d3",
+      "fen": "8/p2p4/r7/1k6/8/pK5Q/P7/b7 w - -",
+      "nodes": 33352187,
+      "passed": false,
+      "testId": "ERET 015 - Endgame",
+      "timeMs": 4449
+    },
+    {
+      "actual": "f1c1",
+      "expected": "bm a5c6",
+      "fen": "1b1rr1k1/pp1q1pp1/8/NP1p1b1p/1B1Pp1n1/PQR1P1P1/4BP1P/5RK1 w - -",
+      "nodes": 17452429,
+      "passed": false,
+      "testId": "ERET 016 - Pos. Sacrifice",
+      "timeMs": 3455
+    },
+    {
+      "actual": "d6e5",
+      "expected": "bm b8b2",
+      "fen": "1r3rk1/6p1/p1pb1qPp/3p4/4nPR1/2N4Q/PPP4P/2K1BR2 b - -",
+      "nodes": 20363324,
+      "passed": false,
+      "testId": "ERET 017 - King Attack",
+      "timeMs": 3760
+    },
+    {
+      "actual": "f8b4",
+      "expected": "bm a5g5",
+      "fen": "r1b1kb1r/1p1n1p2/p3pP1p/q7/3N3p/2N5/P1PQB1PP/1R3R1K b kq -",
+      "nodes": 24205887,
+      "passed": false,
+      "testId": "ERET 018 - Development",
+      "timeMs": 4636
+    },
+    {
+      "actual": "f3d4",
+      "expected": "bm e3f5",
+      "fen": "3kB3/5K2/7p/3p4/3pn3/4NN2/8/1b4B1 w - -",
+      "nodes": 18905682,
+      "passed": false,
+      "testId": "ERET 019 - Endgame",
+      "timeMs": 2945
+    },
+    {
+      "actual": "g2g1",
+      "expected": "bm d3h7",
+      "fen": "1nrrb1k1/1qn1bppp/pp2p3/3pP3/N2P3P/1P1B1NP1/PBR1QPK1/2R5 w - -",
+      "nodes": 20360607,
+      "passed": false,
+      "testId": "ERET 020 - Bishop Sacrifice h7",
+      "timeMs": 3970
+    },
+    {
+      "actual": "d6d5",
+      "expected": "bm d8c8",
+      "fen": "3rr1k1/1pq2b1p/2pp2p1/4bp2/pPPN4/4P1PP/P1QR1PB1/1R4K1 b - -",
+      "nodes": 14473558,
+      "passed": false,
+      "testId": "ERET 021 - Prophylaxis",
+      "timeMs": 2887
+    },
+    {
+      "actual": "b2b3",
+      "expected": "bm h2h4",
+      "fen": "r4rk1/p2nbpp1/2p2np1/q7/Np1PPB2/8/PPQ1N1PP/1K1R3R w - -",
+      "nodes": 15558909,
+      "passed": false,
+      "testId": "ERET 022 - Passed Pawn",
+      "timeMs": 3126
+    },
+    {
+      "actual": "e3f5",
+      "expected": "bm h4g6",
+      "fen": "r3r2k/1bq1nppp/p2b4/1pn1p2P/2p1P1QN/2P1N1P1/PPBB1P1R/2KR4 w - -",
+      "nodes": 20607372,
+      "passed": false,
+      "testId": "ERET 023 - Attacking Castle",
+      "timeMs": 4063
+    },
+    {
+      "actual": "f1e2",
+      "expected": "am b2b3",
+      "fen": "r2q1r1k/3bppbp/pp1p4/2pPn1Bp/P1P1P2P/2N2P2/1P1Q2P1/R3KB1R w KQ -",
+      "nodes": 16183120,
+      "passed": true,
+      "testId": "ERET 024 - Development",
+      "timeMs": 3183
+    },
+    {
+      "actual": "g5d2",
+      "expected": "bm g5d8",
+      "fen": "2kb4/p7/r1p3p1/p1P2pBp/R2P3P/2K3P1/5P2/8 w - -",
+      "nodes": 30394429,
+      "passed": false,
+      "testId": "ERET 025 - Endgame",
+      "timeMs": 4763
+    },
+    {
+      "actual": "f4e5",
+      "expected": "bm h4g6",
+      "fen": "rqn2rk1/pp2b2p/2n2pp1/1N2p3/5P1N/1PP1B3/4Q1PP/R4RK1 w - -",
+      "nodes": 23117124,
+      "passed": false,
+      "testId": "ERET 026 - Knight Sacrifice",
+      "timeMs": 4066
+    },
+    {
+      "actual": "d5e4",
+      "expected": "bm g2g4",
+      "fen": "8/3Pk1p1/1p2P1K1/1P1Bb3/7p/7P/6P1/8 w - -",
+      "nodes": 27959917,
+      "passed": false,
+      "testId": "ERET 027 - Zugzwang",
+      "timeMs": 3703
+    },
+    {
+      "actual": "a7b7",
+      "expected": "am a7b7",
+      "fen": "4rrk1/Rpp3pp/6q1/2PPn3/4p3/2N5/1P2QPPP/5RK1 w - -",
+      "nodes": 24467919,
+      "passed": false,
+      "testId": "ERET 028 - Poisoned Pawn",
+      "timeMs": 4328
+    },
+    {
+      "actual": "d3e3",
+      "expected": "bm c1c5",
+      "fen": "2q2rk1/2p2pb1/PpP1p1pp/2n5/5B1P/3Q2P1/4PPN1/2R3K1 w - -",
+      "nodes": 24798399,
+      "passed": false,
+      "testId": "ERET 029 - Exchange Sacrifice",
+      "timeMs": 4104
+    },
+    {
+      "actual": "c2d2",
+      "expected": "bm f3h4",
+      "fen": "rnbq1r1k/4p1bP/p3p3/1pn5/8/2Np1N2/PPQ2PP1/R1B1KB1R w KQ -",
+      "nodes": 20114917,
+      "passed": false,
+      "testId": "ERET 030 - Initiative",
+      "timeMs": 3868
+    },
+    {
+      "actual": "d3b5",
+      "expected": "bm b3b4",
+      "fen": "4b1k1/1p3p2/4pPp1/p2pP1P1/P2P4/1P1B4/8/2K5 w - -",
+      "nodes": 30887546,
+      "passed": false,
+      "testId": "ERET 031 - Endgame",
+      "timeMs": 4187
+    },
+    {
+      "actual": "a2a3",
+      "expected": "bm f1g3",
+      "fen": "8/7p/5P1k/1p5P/5p2/2p1p3/P1P1P1P1/1K3Nb1 w - -",
+      "nodes": 30341070,
+      "passed": false,
+      "testId": "ERET 032 - Zugzwang",
+      "timeMs": 4606
+    },
+    {
+      "actual": "e4g3",
+      "expected": "bm f3e5",
+      "fen": "r3kb1r/ppnq2pp/2n5/4pp2/1P1PN3/P4N2/4QPPP/R1B1K2R w KQkq -",
+      "nodes": 24795607,
+      "passed": false,
+      "testId": "ERET 033 - Initiative",
+      "timeMs": 4495
+    },
+    {
+      "actual": "c1c8",
+      "expected": "bm c1c8",
+      "fen": "b4r1k/6bp/3q1ppN/1p2p3/3nP1Q1/3BB2P/1P3PP1/2R3K1 w - -",
+      "nodes": 25050049,
+      "passed": true,
+      "testId": "ERET 034 - Bishop Pair",
+      "timeMs": 4563
+    },
+    {
+      "actual": "c4b5",
+      "expected": "bm a3b5",
+      "fen": "r3k2r/5ppp/3pbb2/qp1Np3/2BnP3/N7/PP1Q1PPP/R3K2R w KQkq -",
+      "nodes": 23273508,
+      "passed": false,
+      "testId": "ERET 035 - Exchange Sacrifice",
+      "timeMs": 4152
+    },
+    {
+      "actual": "f5f8",
+      "expected": "bm b6b7",
+      "fen": "r1k1n2n/8/pP6/5R2/8/1b1B4/4N3/1K5N w - -",
+      "nodes": 26582813,
+      "passed": false,
+      "testId": "ERET 036 - Endgame",
+      "timeMs": 4154
+    },
+    {
+      "actual": "c7e8",
+      "expected": "bm c7a8",
+      "fen": "1k6/bPN2pp1/Pp2p3/p1p5/2pn4/3P4/PPR5/1K6 w - -",
+      "nodes": 30997697,
+      "passed": false,
+      "testId": "ERET 037 - Zugzwang",
+      "timeMs": 4929
+    },
+    {
+      "actual": "g7e8",
+      "expected": "bm e4d5",
+      "fen": "8/6N1/3kNKp1/3p4/4P3/p7/P6b/8 w - -",
+      "nodes": 36849297,
+      "passed": false,
+      "testId": "ERET 038 - Endgame",
+      "timeMs": 4979
+    },
+    {
+      "actual": "g2d5",
+      "expected": "bm a2a3",
+      "fen": "r1b1k2r/pp3ppp/1qn1p3/2bn4/8/6P1/PPN1PPBP/RNBQ1RK1 w kq -",
+      "nodes": 24296366,
+      "passed": false,
+      "testId": "ERET 039 - Development",
+      "timeMs": 4667
+    },
+    {
+      "actual": "d5e4",
+      "expected": "bm f8c5",
+      "fen": "r3kb1r/3n1ppp/p3p3/1p1pP2P/P3PBP1/4P3/1q2B3/R2Q1K1R b kq -",
+      "nodes": 27414262,
+      "passed": false,
+      "testId": "ERET 040 - King Safety",
+      "timeMs": 4975
+    },
+    {
+      "actual": "h4g3",
+      "expected": "bm f3g5",
+      "fen": "3q1rk1/2nbppb1/pr1p1n1p/2pP1Pp1/2P1P2Q/2N2N2/1P2B1PP/R1B2RK1 w - -",
+      "nodes": 19247630,
+      "passed": false,
+      "testId": "ERET 041 - Knight Sacrifice",
+      "timeMs": 3719
+    },
+    {
+      "actual": "c7d7",
+      "expected": "bm c7b7",
+      "fen": "8/2k5/N3p1p1/2KpP1P1/b2P4/8/8/8 b - -",
+      "nodes": 33597353,
+      "passed": false,
+      "testId": "ERET 042 - Endgame",
+      "timeMs": 3940
+    },
+    {
+      "actual": "g4f5",
+      "expected": "bm d4f5",
+      "fen": "2r1rbk1/1pqb1p1p/p2p1np1/P4p2/3NP1P1/2NP1R1Q/1P5P/R5BK w - -",
+      "nodes": 24193034,
+      "passed": false,
+      "testId": "ERET 043 - Knight Sacrifice",
+      "timeMs": 4649
+    },
+    {
+      "actual": "g2g3",
+      "expected": "bm h2h4",
+      "fen": "rnb2rk1/pp2q2p/3p4/2pP2p1/2P1Pp2/2N5/PP1QBRPP/R5K1 w - -",
+      "nodes": 22577192,
+      "passed": false,
+      "testId": "ERET 044 - Open Line",
+      "timeMs": 4152
+    },
+    {
+      "actual": "c2d3",
+      "expected": "bm b3b4",
+      "fen": "5rk1/p1p1rpb1/q1Pp2p1/3Pp2p/4Pn2/1R4N1/P1BQ1PPP/R5K1 w - -",
+      "nodes": 25045387,
+      "passed": false,
+      "testId": "ERET 045 - Initiative",
+      "timeMs": 4459
+    },
+    {
+      "actual": "f4h5",
+      "expected": "bm f4d3",
+      "fen": "8/4nk2/1p3p2/1r1p2pp/1P1R1N1P/6P1/3KPP2/8 w - -",
+      "nodes": 28459623,
+      "passed": false,
+      "testId": "ERET 046 - Endgame",
+      "timeMs": 4707
+    },
+    {
+      "actual": "c5b7",
+      "expected": "bm c5b7",
+      "fen": "4kbr1/1b1nqp2/2p1p3/2N4p/1p1PP1pP/1PpQ2B1/4BPP1/r4RK1 w - -",
+      "nodes": 27745040,
+      "passed": true,
+      "testId": "ERET 047 - Relief",
+      "timeMs": 4965
+    },
+    {
+      "actual": "d2d4",
+      "expected": "bm c4d5",
+      "fen": "r1b2rk1/p2nqppp/1ppbpn2/3p4/2P5/1PN1PN2/PBQPBPPP/R4RK1 w - -",
+      "nodes": 14877775,
+      "passed": false,
+      "testId": "ERET 048 - Stong Squares",
+      "timeMs": 2976
+    },
+    {
+      "actual": "e4c3",
+      "expected": "bm f2f4",
+      "fen": "r1b1kq1r/1p1n2bp/p2p2p1/3PppB1/Q1P1N3/8/PP2BPPP/R4RK1 w kq -",
+      "nodes": 25638545,
+      "passed": false,
+      "testId": "ERET 049 - Development",
+      "timeMs": 4979
+    },
+    {
+      "actual": "h8g8",
+      "expected": "bm e5f3",
+      "fen": "r4r1k/p1p3bp/2pp2p1/4nb2/N1P4q/1P5P/PBNQ1PP1/R4RK1 b - -",
+      "nodes": 24495215,
+      "passed": false,
+      "testId": "ERET 050 - King Attack",
+      "timeMs": 4614
+    },
+    {
+      "actual": "f7e7",
+      "expected": "bm g7h6",
+      "fen": "6k1/pb1r1qbp/3p1p2/2p2p2/2P1rN2/1P1R3P/PB3QP1/3R2K1 b - -",
+      "nodes": 14060926,
+      "passed": false,
+      "testId": "ERET 051 - Defence",
+      "timeMs": 2587
+    },
+    {
+      "actual": "h2h3",
+      "expected": "bm b2b4",
+      "fen": "2r2r2/1p1qbkpp/p2ppn2/P1n1p3/4P3/2N1BB2/QPP2PPP/R4RK1 w - -",
+      "nodes": 23561515,
+      "passed": false,
+      "testId": "ERET 052 - Stong Squares",
+      "timeMs": 4612
+    },
+    {
+      "actual": "c8d7",
+      "expected": "bm c5c4",
+      "fen": "r1bq1rk1/p4ppp/3p2n1/1PpPp2n/4P2P/P1PB1PP1/2Q1N3/R1B1K2R b KQ -",
+      "nodes": 9815716,
+      "passed": false,
+      "testId": "ERET 053 - Pos. Sacrifice",
+      "timeMs": 1967
+    },
+    {
+      "actual": "e8d8",
+      "expected": "bm c4c3",
+      "fen": "2b1r3/5pkp/6p1/4P3/QppqPP2/5RPP/6BK/8 b - -",
+      "nodes": 28670108,
+      "passed": false,
+      "testId": "ERET 054 - Endgame",
+      "timeMs": 4821
+    },
+    {
+      "actual": "d2e3",
+      "expected": "bm f4h6",
+      "fen": "r2q1rk1/1p2bpp1/p1b2n1p/8/5B2/2NB4/PP1Q1PPP/3R1RK1 w - -",
+      "nodes": 24743275,
+      "passed": false,
+      "testId": "ERET 055 - Bishop Sacrifice h6",
+      "timeMs": 4842
+    },
+    {
+      "actual": "g5e4",
+      "expected": "bm f1e2",
+      "fen": "r2qr1k1/pp2bpp1/2pp3p/4nbN1/2P4P/4BP2/PPPQ2P1/1K1R1B1R w - -",
+      "nodes": 24633761,
+      "passed": false,
+      "testId": "ERET 056 - Zwischenzug",
+      "timeMs": 4735
+    },
+    {
+      "actual": "d5d6",
+      "expected": "bm d5d6",
+      "fen": "r2qr1k1/pp1bbp2/n5p1/2pPp2p/8/P2PP1PP/1P2N1BK/R1BQ1R2 w - -",
+      "nodes": 23918517,
+      "passed": true,
+      "testId": "ERET 057 - Exchange",
+      "timeMs": 4883
+    },
+    {
+      "actual": "a6a3",
+      "expected": "bm h2h4",
+      "fen": "8/8/R7/1b4k1/5p2/1B3r2/7P/7K w - -",
+      "nodes": 24938698,
+      "passed": false,
+      "testId": "ERET 058 - Endgame",
+      "timeMs": 3399
+    },
+    {
+      "actual": "h4g5",
+      "expected": "bm e3d3",
+      "fen": "rq6/5k2/p3pP1p/3p2p1/6PP/1PB1Q3/2P5/1K6 w - -",
+      "nodes": 30249389,
+      "passed": false,
+      "testId": "ERET 059 - Endgame",
+      "timeMs": 4930
+    },
+    {
+      "actual": "e4f3",
+      "expected": "bm a8d8",
+      "fen": "q2B2k1/pb4bp/4p1p1/2p1N3/2PnpP2/PP3B2/6PP/2RQ2K1 b - -",
+      "nodes": 28354198,
+      "passed": false,
+      "testId": "ERET 060 - King Attack",
+      "timeMs": 4863
+    },
+    {
+      "actual": "h4g5",
+      "expected": "bm f8f6",
+      "fen": "4rrk1/pp4pp/3p4/3P3b/2PpPp1q/1Q5P/PB4B1/R4RK1 b - -",
+      "nodes": 26214419,
+      "passed": false,
+      "testId": "ERET 061 - King Attack",
+      "timeMs": 4600
+    },
+    {
+      "actual": "h5h6",
+      "expected": "bm g5g6",
+      "fen": "rr1nb1k1/2q1b1pp/pn1p1p2/1p1PpNPP/4P3/1PP1BN2/2B2P2/R2QR1K1 w - -",
+      "nodes": 12213987,
+      "passed": false,
+      "testId": "ERET 062 - Stong Squares",
+      "timeMs": 2306
+    },
+    {
+      "actual": "e8f8",
+      "expected": "bm e8f8",
+      "fen": "r3k2r/4qn2/p1p1b2p/6pB/P1p5/2P5/5PPP/RQ2R1K1 b kq -",
+      "nodes": 26595270,
+      "passed": true,
+      "testId": "ERET 063 - Defence",
+      "timeMs": 4439
+    },
+    {
+      "actual": "f1h1",
+      "expected": "am f1f2",
+      "fen": "8/1pp5/p3k1pp/8/P1p2PPP/2P2K2/1P3R2/5r2 b - -",
+      "nodes": 24084956,
+      "passed": true,
+      "testId": "ERET 064 - Endgame",
+      "timeMs": 3845
+    },
+    {
+      "actual": "c7b6",
+      "expected": "bm c7b6",
+      "fen": "1r3rk1/2qbppbp/3p1np1/nP1P2B1/2p2P2/2N1P2P/1P1NB1P1/R2Q1RK1 b - -",
+      "nodes": 24932556,
+      "passed": true,
+      "testId": "ERET 065 - Zwischenzug",
+      "timeMs": 4922
+    },
+    {
+      "actual": "d5d4",
+      "expected": "bm f2e1",
+      "fen": "8/2pN1k2/p4p1p/Pn1R4/3b4/6Pp/1P3K1P/8 w - -",
+      "nodes": 29555469,
+      "passed": false,
+      "testId": "ERET 066 - Endgame",
+      "timeMs": 4574
+    },
+    {
+      "actual": "a1a6",
+      "expected": "bm f4f3",
+      "fen": "5r1k/1p4bp/3p1q2/1NpP1b2/1pP2p2/1Q5P/1P1KBP2/r2RN2R b - -",
+      "nodes": 10992284,
+      "passed": false,
+      "testId": "ERET 067 - Clearance",
+      "timeMs": 1962
+    },
+    {
+      "actual": "d2e4",
+      "expected": "bm a2a3",
+      "fen": "r3kb1r/pbq2ppp/1pn1p3/2p1P3/1nP5/1P3NP1/PB1N1PBP/R2Q1RK1 w kq -",
+      "nodes": 24904329,
+      "passed": false,
+      "testId": "ERET 068 - Open Line",
+      "timeMs": 4795
+    },
+    {
+      "actual": "f3e1",
+      "expected": "bm h4h5",
+      "fen": "5rk1/n2qbpp1/pp2p1p1/3pP1P1/PP1P3P/2rNPN2/R7/1Q3RK1 w - -",
+      "nodes": 25976898,
+      "passed": false,
+      "testId": "ERET 069 - King Attack",
+      "timeMs": 4958
+    },
+    {
+      "actual": "a2a3",
+      "expected": "bm a2a3",
+      "fen": "r5k1/1bqp1rpp/p1n1p3/1p4p1/1b2PP2/2NBB1P1/PPPQ4/2KR3R w - -",
+      "nodes": 24717924,
+      "passed": true,
+      "testId": "ERET 070 - Stong Squares",
+      "timeMs": 4741
+    },
+    {
+      "actual": "f2h3",
+      "expected": "bm f4f5",
+      "fen": "1r4k1/1nq3pp/pp1pp1r1/8/PPP2P2/6P1/5N1P/2RQR1K1 w - -",
+      "nodes": 19496478,
+      "passed": false,
+      "testId": "ERET 071 - Deflection",
+      "timeMs": 3635
+    },
+    {
+      "actual": "a8d5",
+      "expected": "bm a8d5",
+      "fen": "q5k1/p2p2bp/1p1p2r1/2p1np2/6p1/1PP2PP1/P2PQ1KP/4R1NR b - -",
+      "nodes": 12966362,
+      "passed": true,
+      "testId": "ERET 072 - Centralization",
+      "timeMs": 2273
+    },
+    {
+      "actual": "e1e2",
+      "expected": "bm d1e2",
+      "fen": "r4rk1/ppp2ppp/1nnb4/8/1P1P3q/PBN1B2P/4bPP1/R2QR1K1 w - -",
+      "nodes": 20573214,
+      "passed": false,
+      "testId": "ERET 073 - Mobility",
+      "timeMs": 3957
+    },
+    {
+      "actual": "c7b5",
+      "expected": "bm d3c4",
+      "fen": "1r3k2/2N2pp1/1pR2n1p/4p3/8/1P1K1P2/P5PP/8 w - -",
+      "nodes": 28645388,
+      "passed": false,
+      "testId": "ERET 074 - Endgame",
+      "timeMs": 4820
+    },
+    {
+      "actual": "g4h3",
+      "expected": "bm h5f5",
+      "fen": "6r1/6r1/2p1k1pp/p1pbP2q/Pp1p1PpP/1P1P2NR/1KPQ3R/8 b - -",
+      "nodes": 29941735,
+      "passed": false,
+      "testId": "ERET 075 - Fortress",
+      "timeMs": 4917
+    },
+    {
+      "actual": "f4f5",
+      "expected": "bm g5f6",
+      "fen": "r1b1kb1r/1p1npppp/p2p1n2/6B1/3NPP2/q1N5/P1PQ2PP/1R2KB1R w Kkq -",
+      "nodes": 13022916,
+      "passed": false,
+      "testId": "ERET 076 - Development",
+      "timeMs": 2452
+    },
+    {
+      "actual": "b2c3",
+      "expected": "bm g5f6",
+      "fen": "r3r1k1/1bq2ppp/p1p2n2/3ppPP1/4P3/1PbB4/PBP1Q2P/R4R1K w - -",
+      "nodes": 24421401,
+      "passed": false,
+      "testId": "ERET 077 - Attacking Castle",
+      "timeMs": 4350
+    },
+    {
+      "actual": "f1e1",
+      "expected": "bm f1f6",
+      "fen": "r4rk1/ppq3pp/2p1Pn2/4p1Q1/8/2N5/PP4PP/2KR1R2 w - -",
+      "nodes": 27950581,
+      "passed": false,
+      "testId": "ERET 078 - Passed Pawn",
+      "timeMs": 4912
+    },
+    {
+      "actual": "d4f6",
+      "expected": "bm e2e8",
+      "fen": "r1bqr1k1/3n1ppp/p2p1b2/3N1PP1/1p1B1P2/1P6/1PP1Q2P/2KR2R1 w - -",
+      "nodes": 28524699,
+      "passed": false,
+      "testId": "ERET 079 - Queen Sacrifice",
+      "timeMs": 4958
+    },
+    {
+      "actual": "b7b6",
+      "expected": "bm g5c1",
+      "fen": "5rk1/1ppbq1pp/3p3r/pP1PppbB/2P5/P1BP4/5PPP/3QRRK1 b - -",
+      "nodes": 20498594,
+      "passed": false,
+      "testId": "ERET 080 - Clearance",
+      "timeMs": 4051
+    },
+    {
+      "actual": "f5h4",
+      "expected": "bm h6g7",
+      "fen": "r3r1kb/p2bp2p/1q1p1npB/5NQ1/2p1P1P1/2N2P2/PPP5/2KR3R w - -",
+      "nodes": 14078429,
+      "passed": false,
+      "testId": "ERET 081 - King Attack",
+      "timeMs": 2611
+    },
+    {
+      "actual": "g2f2",
+      "expected": "bm g3g4",
+      "fen": "8/3P4/1p3b1p/p7/P7/1P3NPP/4p1K1/3k4 w - -",
+      "nodes": 32611667,
+      "passed": false,
+      "testId": "ERET 082 - Endgame",
+      "timeMs": 4713
+    },
+    {
+      "actual": "e2f3",
+      "expected": "bm c3b5",
+      "fen": "3q1rk1/7p/rp1n4/p1pPbp2/P1P2pb1/1QN4P/1B2B1P1/1R3RK1 w - -",
+      "nodes": 25329663,
+      "passed": false,
+      "testId": "ERET 083 - Exchange",
+      "timeMs": 4718
+    },
+    {
+      "actual": "e2c4",
+      "expected": "bm h6g7 h6g5",
+      "fen": "4r1k1/1r1np3/1pqp1ppB/p7/2b1P1PQ/2P2P2/P3B2R/3R2K1 w - -",
+      "nodes": 24232455,
+      "passed": false,
+      "testId": "ERET 084 - King Attack",
+      "timeMs": 4239
+    },
+    {
+      "actual": "c6d6",
+      "expected": "bm e5g4",
+      "fen": "r4rk1/q4bb1/p1R4p/3pN1p1/8/2N3P1/P4PP1/3QR1K1 w - -",
+      "nodes": 26947920,
+      "passed": false,
+      "testId": "ERET 085 - Exchange",
+      "timeMs": 4651
+    },
+    {
+      "actual": "f2e3",
+      "expected": "bm c4c5",
+      "fen": "r3k2r/pp2pp1p/8/q2Pb3/2P5/4p3/B1Q2PPP/2R2RK1 w kq -",
+      "nodes": 27094150,
+      "passed": false,
+      "testId": "ERET 086 - Exchange Sacrifice",
+      "timeMs": 4961
+    },
+    {
+      "actual": "b2b3",
+      "expected": "bm e4e5",
+      "fen": "r3r1k1/1bnq1pbn/p2p2p1/1p1P3p/2p1PP1B/P1N2B1P/1PQN2P1/3RR1K1 w - -",
+      "nodes": 24446530,
+      "passed": false,
+      "testId": "ERET 087 - Clearance",
+      "timeMs": 4766
+    },
+    {
+      "actual": "d3e5",
+      "expected": "bm g3g4",
+      "fen": "8/4k3/p2p2p1/P1pPn2p/1pP1P2P/1P1NK1P1/8/8 w - -",
+      "nodes": 26213686,
+      "passed": false,
+      "testId": "ERET 088 - Endgame",
+      "timeMs": 3721
+    },
+    {
+      "actual": "d5d1",
+      "expected": "bm e7e8N",
+      "fen": "8/2P1P3/b1B2p2/1pPRp3/2k3P1/P4pK1/nP3p1p/N7 w - -",
+      "nodes": 33209673,
+      "passed": false,
+      "testId": "ERET 089 - Underpromotion",
+      "timeMs": 4976
+    },
+    {
+      "actual": "e8d7",
+      "expected": "bm f3f4",
+      "fen": "4K1k1/8/1p5p/1Pp3b1/8/1P3P2/P1B2P2/8 w - -",
+      "nodes": 26095098,
+      "passed": false,
+      "testId": "ERET 090 - Endgame",
+      "timeMs": 3627
+    },
+    {
+      "actual": "a4a3",
+      "expected": "bm d6c6",
+      "fen": "8/6p1/3k4/3p1p1p/p2K1P1P/4P1P1/P7/8 b - -",
+      "nodes": 10533314,
+      "passed": false,
+      "testId": "ERET 091 - Endgame",
+      "timeMs": 1521
+    },
+    {
+      "actual": "g5g2",
+      "expected": "am g5g2",
+      "fen": "r1b2rk1/ppp3p1/4p2p/4Qpq1/3P4/2PB4/PPK2PPP/R6R b - -",
+      "nodes": 25829374,
+      "passed": false,
+      "testId": "ERET 092 - Poisoned Pawn",
+      "timeMs": 4696
+    },
+    {
+      "actual": "f7h6",
+      "expected": "bm f7d6",
+      "fen": "2b1r3/r2ppN2/8/1p1p1k2/pP1P4/2P3R1/PP3PP1/2K5 w - -",
+      "nodes": 28829514,
+      "passed": false,
+      "testId": "ERET 093 - Endgame",
+      "timeMs": 4981
+    },
+    {
+      "actual": "g5e3",
+      "expected": "bm d6f6",
+      "fen": "2k2Br1/p6b/Pq1r4/1p2p1b1/1Ppp2p1/Q1P3N1/5RPP/R3N1K1 b - -",
+      "nodes": 28773702,
+      "passed": false,
+      "testId": "ERET 094 - Queen Sacrifice",
+      "timeMs": 4955
+    },
+    {
+      "actual": "c1g5",
+      "expected": "bm f3g5",
+      "fen": "r2qk2r/ppp1b1pp/2n1p3/3pP1n1/3P2b1/2PB1NN1/PP4PP/R1BQK2R w KQkq -",
+      "nodes": 11813709,
+      "passed": false,
+      "testId": "ERET 095 - Queen Sacrifice",
+      "timeMs": 2210
+    },
+    {
+      "actual": "f3f8",
+      "expected": "bm e5f6",
+      "fen": "8/8/4p1Pk/1rp1K1p1/4P1P1/1nP2Q2/p2b1P2/8 w - -",
+      "nodes": 27168903,
+      "passed": false,
+      "testId": "ERET 096 - Endgame",
+      "timeMs": 4084
+    },
+    {
+      "actual": "f2d4",
+      "expected": "bm c4c5",
+      "fen": "2k5/p7/Pp1p1b2/1P1P1p2/2P2P1p/3K3P/5B2/8 w - -",
+      "nodes": 32459649,
+      "passed": false,
+      "testId": "ERET 097 - Endgame",
+      "timeMs": 4637
+    },
+    {
+      "actual": "e4e8",
+      "expected": "am f1e2",
+      "fen": "8/6pp/5k2/1p1r4/4R3/7P/5PP1/5K2 w - -",
+      "nodes": 26140885,
+      "passed": true,
+      "testId": "ERET 098 - Endgame",
+      "timeMs": 3996
+    },
+    {
+      "actual": "c4d5",
+      "expected": "bm e7e8",
+      "fen": "3q1r1k/4RPp1/p6p/2pn4/2P5/1P6/P3Q2P/6K1 w - -",
+      "nodes": 28635061,
+      "passed": false,
+      "testId": "ERET 099 - Endgame",
+      "timeMs": 4337
+    },
+    {
+      "actual": "d1c2",
+      "expected": "bm d4f5",
+      "fen": "rn2k2r/3pbppp/p3p3/8/Nq1Nn3/4B1P1/PP3P1P/R2Q1RK1 w k -",
+      "nodes": 24472816,
+      "passed": false,
+      "testId": "ERET 100 - Initiative",
+      "timeMs": 4897
+    },
+    {
+      "actual": "f2e4",
+      "expected": "bm d7e5",
+      "fen": "r1b1kb1N/pppnq1pB/8/3p4/3P4/8/PPPK1nPP/RNB1R3 b q -",
+      "nodes": 21335562,
+      "passed": false,
+      "testId": "ERET 101 - Development",
+      "timeMs": 3817
+    },
+    {
+      "actual": "a6b4",
+      "expected": "bm a6b4",
+      "fen": "N4rk1/pp1b1ppp/n3p1n1/3pP1Q1/1P1N4/8/1PP2PPP/q1B1KB1R b K -",
+      "nodes": 20780829,
+      "passed": true,
+      "testId": "ERET 102 - King Attack",
+      "timeMs": 3851
+    },
+    {
+      "actual": "a5a6",
+      "expected": "bm b7c8",
+      "fen": "4k1br/1K1p1n1r/2p2pN1/P2p1N2/2P3pP/5B2/P2P4/8 w - -",
+      "nodes": 15392658,
+      "passed": false,
+      "testId": "ERET 103 - Zugzwang",
+      "timeMs": 2546
+    },
+    {
+      "actual": "c8e6",
+      "expected": "bm c6e7",
+      "fen": "r1bqkb1r/ppp3pp/2np4/3N1p2/3pnB2/5N2/PPP1QPPP/2KR1B1R b kq -",
+      "nodes": 9478363,
+      "passed": false,
+      "testId": "ERET 104 - Development",
+      "timeMs": 1696
+    },
+    {
+      "actual": "e1f1",
+      "expected": "bm e4e5",
+      "fen": "r3kb1r/pbqp1pp1/1pn1pn1p/8/3PP3/2PB1N2/3N1PPP/R1BQR1K1 w kq -",
+      "nodes": 24723114,
+      "passed": false,
+      "testId": "ERET 105 - Stong Squares",
+      "timeMs": 4976
+    },
+    {
+      "actual": "g7f6",
+      "expected": "bm e7f6",
+      "fen": "r2r2k1/pq2bppp/1np1bN2/1p2B1P1/5Q2/P4P2/1PP4P/2KR1B1R b - -",
+      "nodes": 25232939,
+      "passed": false,
+      "testId": "ERET 106 - King Safety",
+      "timeMs": 4564
+    },
+    {
+      "actual": "d4c2",
+      "expected": "bm b8b5",
+      "fen": "1r1r2k1/2pq3p/4p3/2Q1Pp2/1PNn1R2/P5P1/5P1P/4R2K b - -",
+      "nodes": 22271388,
+      "passed": false,
+      "testId": "ERET 107 - Defence",
+      "timeMs": 3953
+    },
+    {
+      "actual": "g1f1",
+      "expected": "bm b3a4",
+      "fen": "8/5p1p/3P1k2/p1P2n2/3rp3/1B6/P4R2/6K1 w - -",
+      "nodes": 27741284,
+      "passed": false,
+      "testId": "ERET 108 - Endgame",
+      "timeMs": 4422
+    },
+    {
+      "actual": "f8g6",
+      "expected": "bm c4d4",
+      "fen": "2rbrnk1/1b3p2/p2pp3/1p4PQ/1PqBPP2/P1NR4/2P4P/5RK1 b - -",
+      "nodes": 24312609,
+      "passed": false,
+      "testId": "ERET 109 - Relief",
+      "timeMs": 4376
+    },
+    {
+      "actual": "g1f2",
+      "expected": "bm c4c5",
+      "fen": "4r1k1/1bq2r1p/p2p1np1/3Pppb1/P1P5/1N3P2/1R2B1PP/1Q1R2BK w - -",
+      "nodes": 25192810,
+      "passed": false,
+      "testId": "ERET 110 - Passed Pawn",
+      "timeMs": 4959
+    },
+    {
+      "actual": "f2f3",
+      "expected": "bm a2a3",
+      "fen": "8/8/8/8/4kp2/1R6/P2q1PPK/8 w - -",
+      "nodes": 33723822,
+      "passed": false,
+      "testId": "ERET 111 - Fortress",
+      "timeMs": 4291
+    }
+  ],
+  "engine": {
+    "name": "FrankyCPP v1.6.0",
+    "path": "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe",
+    "version": "v1.6"
+  },
+  "summary": {
+    "avgNodes": 23959430.97,
+    "avgTimeMs": 4146.39,
+    "failed": 97,
+    "passed": 12,
+    "skipped": 0,
+    "successRate": 11.01,
+    "totalNodes": 2611577976,
+    "totalTests": 109,
+    "totalTimeMs": 451957
+  },
+  "tag": "Phase 1 Eval Improvement",
+  "testSuite": {
+    "epdPath": "test/testsets/eigenmann-rapid-engine.epd",
+    "name": "eigenmann-rapid-engine"
+  },
+  "timestamp": "2026-03-17T23:10:39Z"
+}

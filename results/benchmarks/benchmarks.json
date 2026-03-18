@@ -719,6 +719,36 @@
       "timestamp": "2026-03-10T07:42:51Z",
       "totalNodes": 119466995,
       "totalTimeMs": 16722
+    },
+    {
+      "arenaVersion": "v1.6",
+      "depth": 12,
+      "engineName": "FrankyCPP",
+      "enginePath": "",
+      "engineVersion": "v1.6",
+      "hashSizeMB": 128,
+      "nps": 6614192,
+      "positions": 50,
+      "tag": "Phase 1 Eval Improvement",
+      "threads": 4,
+      "timestamp": "2026-03-18T07:46:44Z",
+      "totalNodes": 114194036,
+      "totalTimeMs": 17265
+    },
+    {
+      "arenaVersion": "v1.6",
+      "depth": 12,
+      "engineName": "External",
+      "enginePath": "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe",
+      "engineVersion": "v1.6",
+      "hashSizeMB": 128,
+      "nps": 6630662,
+      "positions": 50,
+      "tag": "Phase 1 Eval Improvement",
+      "threads": 4,
+      "timestamp": "2026-03-18T07:46:44Z",
+      "totalNodes": 106959220,
+      "totalTimeMs": 16131
     }
   ]
 }

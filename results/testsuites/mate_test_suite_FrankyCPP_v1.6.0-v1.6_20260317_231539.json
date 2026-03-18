@@ -1,0 +1,207 @@
+{
+  "arenaVersion": "v1.6",
+  "details": [
+    {
+      "actual": "f1e2",
+      "expected": "mate 3",
+      "fen": "4r1b1/1p4B1/pN2pR2/RB2k3/1P2N2p/2p3b1/n2P1p1r/5K1n w - -",
+      "nodes": 10427889,
+      "passed": true,
+      "testId": "no ID",
+      "timeMs": 515
+    },
+    {
+      "actual": "a6b7",
+      "expected": "mate 3",
+      "fen": "b7/p1BR2pK/B1p5/pNk3p1/Pp4Pp/1P3n2/4R2r/7n w - -",
+      "nodes": 9381463,
+      "passed": true,
+      "testId": "no ID",
+      "timeMs": 607
+    },
+    {
+      "actual": "b3b6",
+      "expected": "mate 3",
+      "fen": "6K1/n1P2N1p/6pr/b1pp3b/n2Bp1k1/1R2R1Pp/3p1P2/2qN1B2 w - -",
+      "nodes": 15769112,
+      "passed": true,
+      "testId": "no ID",
+      "timeMs": 709
+    },
+    {
+      "actual": "e7e8B",
+      "expected": "mate 3",
+      "fen": "8/2P1P1P1/3PkP2/8/4K3/8/8/8 w - -",
+      "nodes": 2306169,
+      "passed": true,
+      "testId": "no ID",
+      "timeMs": 111
+    },
+    {
+      "actual": "d1h5",
+      "expected": "mate 4",
+      "fen": "r4rk1/pppqbp1p/3pp1p1/8/4P3/1P1P3R/PBP2PPP/R2Q2K1 w - -",
+      "nodes": 142313884,
+      "passed": true,
+      "testId": "no ID",
+      "timeMs": 6314
+    },
+    {
+      "actual": "h5h7",
+      "expected": "mate 4",
+      "fen": "r4qrk/ppp1b1pp/3p1p2/4pPPQ/4P2P/3PB3/PPP5/1K4RR w - -",
+      "nodes": 119455802,
+      "passed": true,
+      "testId": "no ID",
+      "timeMs": 7709
+    },
+    {
+      "actual": "e8e3",
+      "expected": "mate 4",
+      "fen": "r3r3/p1p2p1k/3p2pp/2p5/2P2n2/2N2B2/PPR1PP1q/3RQK2 b - -",
+      "nodes": 89776224,
+      "passed": false,
+      "testId": "no ID",
+      "timeMs": 14998
+    },
+    {
+      "actual": "d4h4",
+      "expected": "mate 4",
+      "fen": "3r4/1p1r4/1Pp5/3p4/p2R4/K1NN4/1P6/kqBB3R w - -",
+      "nodes": 232051120,
+      "passed": true,
+      "testId": "no ID",
+      "timeMs": 11078
+    },
+    {
+      "actual": "d4g1",
+      "expected": "mate 4",
+      "fen": "n7/3p1p2/NpkNp1p1/1p2P3/3Q4/6B1/b7/4K3 w - -",
+      "nodes": 110192662,
+      "passed": true,
+      "testId": "no ID",
+      "timeMs": 5546
+    },
+    {
+      "actual": "d8c8",
+      "expected": "mate 4",
+      "fen": "1b1R2B1/p1n1p3/p3P2K/N1k5/2N2P2/5P2/2PP4/R7 w - -",
+      "nodes": 136491267,
+      "passed": true,
+      "testId": "no ID",
+      "timeMs": 7206
+    },
+    {
+      "actual": "f1a6",
+      "expected": "mate 4",
+      "fen": "K6Q/1p6/pPq4P/P2p2P1/4pP1N/7k/n5R1/1n2BB2 w - -",
+      "nodes": 217768250,
+      "passed": true,
+      "testId": "no ID",
+      "timeMs": 8866
+    },
+    {
+      "actual": "g4h6",
+      "expected": "mate 5",
+      "fen": "1r4k1/1b2K1pp/7b/2pp3P/6NB/2Q2pp1/4p3/5r2 w - -",
+      "nodes": 59058632,
+      "passed": true,
+      "testId": "no ID",
+      "timeMs": 4262
+    },
+    {
+      "actual": "d1g1",
+      "expected": "mate 5",
+      "fen": "r2r4/1p1R3p/5pk1/b1B1Pp2/p4P2/P7/1P5P/1K1R4 w - -",
+      "nodes": 283934113,
+      "passed": true,
+      "testId": "no ID",
+      "timeMs": 14858
+    },
+    {
+      "actual": "f2h1",
+      "expected": "mate 5",
+      "fen": "5rk1/pp4p1/8/3N3p/2P4P/1P4K1/P2r1n2/R3R3 b - -",
+      "nodes": 272272718,
+      "passed": true,
+      "testId": "no ID",
+      "timeMs": 14489
+    },
+    {
+      "actual": "h3h6",
+      "expected": "mate 5",
+      "fen": "6b1/4Kpk1/5r2/8/3B2P1/7R/8/8 w - -",
+      "nodes": 108035467,
+      "passed": true,
+      "testId": "no ID",
+      "timeMs": 5692
+    },
+    {
+      "actual": "c1b1",
+      "expected": "mate 5",
+      "fen": "8/8/8/p7/8/8/R6p/2K2Rbk w - -",
+      "nodes": 152517979,
+      "passed": false,
+      "testId": "no ID",
+      "timeMs": 14465
+    },
+    {
+      "actual": "h6f4",
+      "expected": "mate 5",
+      "fen": "b7/8/7B/7p/8/2p3r1/2P1P1pp/4K1kq w - -",
+      "nodes": 126363512,
+      "passed": false,
+      "testId": "no ID",
+      "timeMs": 14592
+    },
+    {
+      "actual": "f8e8",
+      "expected": "mate 5",
+      "fen": "5R2/6r1/3P4/1BBk4/8/3N4/8/K7 w - -",
+      "nodes": 290348698,
+      "passed": true,
+      "testId": "no ID",
+      "timeMs": 14546
+    },
+    {
+      "actual": "c3d4",
+      "expected": "mate 5",
+      "fen": "1r1r2k1/p4ppp/1qp5/4Pb2/3b1P2/1PP2N2/P2BQ1PP/2KR3R w - -",
+      "nodes": 89615158,
+      "passed": false,
+      "testId": "no ID",
+      "timeMs": 14929
+    },
+    {
+      "actual": "e3c5",
+      "expected": "mate 6",
+      "fen": "4k3/8/4K3/8/4N3/4B3/3P1P2/8 w - -",
+      "nodes": 328062857,
+      "passed": true,
+      "testId": "no ID",
+      "timeMs": 13910
+    }
+  ],
+  "engine": {
+    "name": "FrankyCPP v1.6.0",
+    "path": "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe",
+    "version": "v1.6"
+  },
+  "summary": {
+    "avgNodes": 139807148.8,
+    "avgTimeMs": 8770.1,
+    "failed": 4,
+    "passed": 16,
+    "skipped": 0,
+    "successRate": 80.0,
+    "totalNodes": 2796142976,
+    "totalTests": 20,
+    "totalTimeMs": 175402
+  },
+  "tag": "Phase 1 Eval Improvement",
+  "testSuite": {
+    "epdPath": "test/testsets/mate_test_suite.epd",
+    "name": "mate_test_suite"
+  },
+  "timestamp": "2026-03-17T22:15:39Z"
+}
