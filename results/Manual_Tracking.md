@@ -551,149 +551,6 @@ All Test Suites Complete
   Total Time:  12355963ms
 ===================================================================
 
-Details:
-================================================================================
-Generated: 2026-03-18 08:30:19
-================================================================================
-
-TEST SUITE: STS1-STS15_LAN (1500 positions)
---------------------------------------------------------------------------------
-Engine                      Solved      Rate      Avg Time    Avg Nodes
---------------------------------------------------------------------------------
-Stockfish 18 dev            1194/1500   79,6%     5,0s        5,8M
-Stockfish dev-20260204-fac..1185/1500   79,0%     4,8s        4,1M
-Ruffian 1.0.5 1.05          973/1500    64,9%     3,4s        29,4M
-FrankyCPP v1.6.0            858/1500    57,2%     4,2s        24,8M
-FrankyCPP v1.4              796/1500    53,1%     4,2s        29,8M
-FrankyCPP v1.5              777/1500    51,8%     4,3s        26,8M
-FrankyCPP v0.5              765/1500    51,0%     3,9s        12,4M
-FrankyCPP v0.4              764/1500    50,9%     4,4s        13,7M
-FrankyCPP v1.1              748/1500    49,9%     3,4s        9,6M
-FrankyCPP v1.2              734/1500    48,9%     3,4s        9,9M
-FrankyCPP v1.3              729/1500    48,6%     3,5s        8,0M
-FrankyGo v1.0.3 (4.6.2021)  679/1500    45,3%     4,1s        14,2M
-
-TEST SUITE: crafty_test (345 positions)
---------------------------------------------------------------------------------
-Engine                      Solved      Rate      Avg Time    Avg Nodes
---------------------------------------------------------------------------------
-Ruffian 1.0.5 1.05          188/345     54,5%     3,3s        28,7M
-Stockfish dev-20260204-fac..187/345     54,2%     4,5s        4,4M
-Stockfish 18 dev            187/347     53,9%     5,0s        6,4M
-FrankyCPP v1.4              182/346     52,6%     4,1s        29,9M
-FrankyCPP v0.4              181/345     52,5%     4,4s        14,5M
-FrankyCPP v1.6.0            181/347     52,2%     4,1s        24,7M
-FrankyCPP v1.1              179/347     51,6%     3,4s        10,4M
-FrankyCPP v1.5              178/347     51,3%     4,2s        25,1M
-FrankyCPP v1.2              175/345     50,7%     3,3s        10,1M
-FrankyCPP v0.5              172/345     49,9%     3,9s        13,0M
-FrankyCPP v1.3              169/346     48,8%     3,4s        9,6M
-FrankyGo v1.0.3 (4.6.2021)  163/347     47,0%     4,1s        14,8M
-
-TEST SUITE: ecm98 (769 positions)
---------------------------------------------------------------------------------
-Engine                      Solved      Rate      Avg Time    Avg Nodes
---------------------------------------------------------------------------------
-Stockfish 18 dev            675/769     87,8%     4,9s        8,2M
-Stockfish dev-20260204-fac..669/769     87,0%     4,4s        5,1M
-Ruffian 1.0.5 1.05          660/769     85,8%     3,1s        27,2M
-FrankyCPP v1.6.0            559/769     72,7%     4,2s        27,5M
-FrankyCPP v1.5              552/769     71,8%     4,3s        26,0M
-FrankyCPP v0.5              538/769     70,0%     3,9s        12,8M
-FrankyCPP v1.3              534/769     69,4%     3,6s        10,7M
-FrankyCPP v1.4              530/769     68,9%     4,2s        28,7M
-FrankyGo v1.0.3 (4.6.2021)  525/769     68,3%     4,2s        15,1M
-FrankyCPP v0.4              517/769     67,2%     4,4s        13,5M
-FrankyCPP v1.1              511/769     66,4%     3,5s        11,2M
-FrankyCPP v1.2              495/769     64,4%     3,5s        10,6M
-
-TEST SUITE: eigenmann-rapid-engine (109 positions)
---------------------------------------------------------------------------------
-Engine                      Solved      Rate      Avg Time    Avg Nodes
---------------------------------------------------------------------------------
-FrankyCPP v1.6.0            12/109      11,0%     4,1s        24,0M
-FrankyCPP v0.4              N/A         N/A       N/A         N/A
-FrankyCPP v0.5              N/A         N/A       N/A         N/A
-FrankyCPP v1.1              N/A         N/A       N/A         N/A
-FrankyCPP v1.2              N/A         N/A       N/A         N/A
-FrankyCPP v1.3              N/A         N/A       N/A         N/A
-FrankyCPP v1.4              N/A         N/A       N/A         N/A
-FrankyCPP v1.5              N/A         N/A       N/A         N/A
-FrankyGo v1.0.3 (4.6.2021)  N/A         N/A       N/A         N/A
-Ruffian 1.0.5 1.05          N/A         N/A       N/A         N/A
-Stockfish 18 dev            N/A         N/A       N/A         N/A
-Stockfish dev-20260204-fac..N/A         N/A       N/A         N/A
-
-TEST SUITE: franky_tests (13 positions)
---------------------------------------------------------------------------------
-Engine                      Solved      Rate      Avg Time    Avg Nodes
---------------------------------------------------------------------------------
-FrankyCPP v0.4              13/13       100,0%    3,1s        14,1M
-FrankyCPP v0.5              13/13       100,0%    2,7s        12,2M
-FrankyCPP v1.1              13/13       100,0%    2,4s        11,3M
-FrankyCPP v1.2              13/13       100,0%    2,4s        14,5M
-FrankyCPP v1.4              13/13       100,0%    2,5s        24,3M
-FrankyCPP v1.5              13/13       100,0%    3,2s        33,2M
-FrankyCPP v1.6.0            13/13       100,0%    3,2s        32,8M
-FrankyGo v1.0.3 (4.6.2021)  13/13       100,0%    3,4s        12,5M
-Ruffian 1.0.5 1.05          13/13       100,0%    2,2s        27,9M
-Stockfish 18 dev            13/13       100,0%    3,5s        9,3M
-Stockfish dev-20260204-fac..12/13       92,3%     2,2s        4,3M
-FrankyCPP v1.3              11/13       84,6%     2,4s        10,4M
-
-TEST SUITE: kaufman (25 positions)
---------------------------------------------------------------------------------
-Engine                      Solved      Rate      Avg Time    Avg Nodes
---------------------------------------------------------------------------------
-Ruffian 1.0.5 1.05          25/25       100,0%    3,1s        30,8M
-Stockfish dev-20260204-fac..23/25       92,0%     4,2s        6,5M
-FrankyCPP v1.4              22/25       88,0%     4,0s        31,8M
-Stockfish 18 dev            22/25       88,0%     5,0s        9,8M
-FrankyCPP v0.4              21/25       84,0%     4,5s        15,2M
-FrankyCPP v0.5              21/25       84,0%     3,8s        13,3M
-FrankyCPP v1.6.0            21/25       84,0%     4,0s        28,0M
-FrankyGo v1.0.3 (4.6.2021)  21/25       84,0%     4,2s        16,3M
-FrankyCPP v1.2              19/25       76,0%     3,4s        12,0M
-FrankyCPP v1.3              19/25       76,0%     3,7s        11,2M
-FrankyCPP v1.5              19/25       76,0%     4,1s        27,8M
-FrankyCPP v1.1              18/25       72,0%     3,3s        10,4M
-
-TEST SUITE: mate_test_suite (20 positions)
---------------------------------------------------------------------------------
-Engine                      Solved      Rate      Avg Time    Avg Nodes
---------------------------------------------------------------------------------
-FrankyGo v1.0.3 (4.6.2021)  18/20       90,0%     8,7s        57,2M
-FrankyCPP v1.3              17/20       85,0%     7,7s        53,5M
-FrankyCPP v1.5              17/20       85,0%     8,8s        135,0M
-Ruffian 1.0.5 1.05          17/20       85,0%     591ms       7,7M
-FrankyCPP v1.4              16/20       80,0%     8,7s        167,8M
-FrankyCPP v1.6.0            16/20       80,0%     8,8s        139,8M
-Stockfish 18 dev            16/20       80,0%     4,1s        7,2M
-FrankyCPP v0.5              15/20       75,0%     6,6s        33,6M
-Stockfish dev-20260204-fac..15/20       75,0%     2,0s        2,8M
-FrankyCPP v1.1              14/20       70,0%     8,9s        77,7M
-FrankyCPP v1.2              14/20       70,0%     5,9s        41,2M
-FrankyCPP v0.4              12/20       60,0%     8,0s        44,1M
-
-TEST SUITE: wac (201 positions)
---------------------------------------------------------------------------------
-Engine                      Solved      Rate      Avg Time    Avg Nodes
---------------------------------------------------------------------------------
-Ruffian 1.0.5 1.05          200/201     99,5%     2,5s        24,8M
-Stockfish 18 dev            199/201     99,0%     4,1s        7,9M
-Stockfish dev-20260204-fac..199/201     99,0%     3,6s        4,8M
-FrankyGo v1.0.3 (4.6.2021)  197/201     98,0%     3,7s        14,4M
-FrankyCPP v0.4              196/201     97,5%     3,8s        13,0M
-FrankyCPP v1.2              196/201     97,5%     3,0s        10,1M
-FrankyCPP v0.5              193/201     96,0%     3,5s        11,9M
-FrankyCPP v1.1              193/201     96,0%     3,1s        10,2M
-FrankyCPP v1.4              192/201     95,5%     3,7s        30,9M
-FrankyCPP v1.6.0            192/201     95,5%     3,7s        28,1M
-FrankyCPP v1.5              191/201     95,0%     3,9s        30,5M
-FrankyCPP v1.3              184/201     91,5%     3,2s        8,9M
-
-================================================================================
-
 Benchmarks:
   [2026-03-18]    6.614.192 NPS  (d12, 128MB, 4T)  [Phase 1 Eval Improvement]
 
@@ -718,6 +575,92 @@ All Matches Complete
 ===================================================================
   v1.6_vs_v1.5_300s: 61.5 - 38.5 (ELO: +81.4)
   v1.6_vs_Stockfish18_2700_300s: 58.0 - 42.0 (ELO: +56.1)
+===================================================================
+```
+
+```
+v1.6.0 Eval and Strength Improvement Phase 2
+
+===================================================================
+All Test Suites Complete
+===================================================================
+  franky_tests (FrankyCPP v1.6.0 v1.6): 13/13 passed (100%)
+  mate_test_suite (FrankyCPP v1.6.0 v1.6): 18/20 passed (90%)
+  wac (FrankyCPP v1.6.0 v1.6): 191/201 passed (95.0249%)
+  STS1-STS15_LAN (FrankyCPP v1.6.0 v1.6): 847/1500 passed (56.4667%)
+  crafty_test (FrankyCPP v1.6.0 v1.6): 170/347 passed (48.9914%)
+  ecm98 (FrankyCPP v1.6.0 v1.6): 568/769 passed (73.8622%)
+  kaufman (FrankyCPP v1.6.0 v1.6): 20/25 passed (80%)
+  eigenmann-rapid-engine (FrankyCPP v1.6.0 v1.6): 9/109 passed (8.25688%)
+-------------------------------------------------------------------
+  TOTAL: 1836/2984 passed (61.5282%)
+  Total Nodes: 78889604230
+  Total Time:  12263816ms
+===================================================================
+
+==================================================================
+Match Complete: v1.6_vs_v1.5_300s
+  FrankyCPP v1.6.0: 45 wins, 26 draws, 29 losses
+  FrankyCPP v1.5: 29 wins, 26 draws, 45 losses
+  Score: 58 - 42
+  ELO Difference: +56.1
+  Duration: 14952.7s
+==================================================================
+==================================================================
+Match Complete: v1.6_vs_Stockfish18_2700_300s
+  FrankyCPP v1.6.0: 40 wins, 15 draws, 45 losses
+  Stockfish 18: 45 wins, 15 draws, 40 losses
+  Score: 47.5 - 52.5
+  ELO Difference: -17.4
+  Duration: 15004.9s
+==================================================================
+```
+
+```
+v1.6.0 Eval and Strength Improvement Phase 2 v2
+
+Benchmarks:
+  [2026-03-18]    6.614.192 NPS  (d12, 128MB, 4T)  [Phase 1 Eval Improvement]
+  [2026-03-19]    6.795.488 NPS  (d12, 128MB, 4T)  [Phase 2 v2 Eval Improvement]
+  
+===================================================================
+All Test Suites Complete
+===================================================================
+  franky_tests (FrankyCPP v1.6.0 v1.6): 13/13 passed (100%)
+  mate_test_suite (FrankyCPP v1.6.0 v1.6): 17/20 passed (85%)
+  wac (FrankyCPP v1.6.0 v1.6): 193/201 passed (96.0199%)
+  STS1-STS15_LAN (FrankyCPP v1.6.0 v1.6): 883/1500 passed (58.8667%)
+  crafty_test (FrankyCPP v1.6.0 v1.6): 182/347 passed (52.4496%)
+  ecm98 (FrankyCPP v1.6.0 v1.6): 560/769 passed (72.8218%)
+  kaufman (FrankyCPP v1.6.0 v1.6): 18/25 passed (72%)
+  eigenmann-rapid-engine (FrankyCPP v1.6.0 v1.6): 12/109 passed (11.0092%)
+-------------------------------------------------------------------
+  TOTAL: 1878/2984 passed (62.9357%)
+  Total Nodes: 76392451181
+  Total Time:  12293653ms  
+  
+==================================================================
+Match Complete: v1.6_vs_v1.5_300s
+  FrankyCPP v1.6.0: 47 wins, 27 draws, 26 losses
+  FrankyCPP v1.5: 26 wins, 27 draws, 47 losses
+  Score: 60.5 - 39.5
+  ELO Difference: +74.1
+  Duration: 14943.6s
+==================================================================  
+==================================================================
+Match Complete: v1.6_vs_Stockfish18_2700_300s
+  FrankyCPP v1.6.0: 47 wins, 20 draws, 33 losses
+  Stockfish 18: 33 wins, 20 draws, 47 losses
+  Score: 57.0 - 43.0
+  ELO Difference: +49.0
+  Duration: 15000.8s
+==================================================================
+
+===================================================================
+All Matches Complete
+===================================================================
+  v1.6_vs_v1.5_300s: 60.5 - 39.5 (ELO: +74.1)
+  v1.6_vs_Stockfish18_2700_300s: 57.0 - 43.0 (ELO: +49.0)
 ===================================================================
 ```
 

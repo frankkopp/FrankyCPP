@@ -38,10 +38,12 @@
 //     On x86 acquire/release compiles to plain mov - zero overhead vs non-atomic
 //     Verified by: static_assert(is_always_lock_free) + static_assert(sizeof == 8)
 //
-// Entry Structure (16 bytes):
-//   - key:      64-bit pawn Zobrist key (std::atomic for SMP safety)
-//   - midvalue: 16-bit midgame pawn structure score
-//   - endvalue: 16-bit endgame pawn structure score
+  // Entry Structure (32 bytes):
+  //   - key:          64-bit pawn Zobrist key (std::atomic for SMP safety)
+  //   - midvalue:     16-bit midgame pawn structure score
+  //   - endvalue:     16-bit endgame pawn structure score
+  //   - passedWhite:  64-bit bitboard of white passed pawns
+  //   - passedBlack:  64-bit bitboard of black passed pawns
 //
 // Thread Safety (Lazy SMP):
 //   probe(): Copy-on-read pattern - returns a COPY of the entry, not a pointer.
@@ -103,30 +105,23 @@ namespace engine {
     static constexpr uint64_t DEFAULT_TT_SIZE = 2; // MByte
     static constexpr uint64_t MAX_SIZE_MB     = 4'096;
 
-    /// Entry struct storing cached pawn evaluation scores.
+    /// Entry struct storing cached pawn evaluation scores and passed-pawn bitboards.
     struct Entry {
       std::atomic<ZobristKey> key{0}; ///< Pawn-specific Zobrist key (atomic for SMP safety)
       Value midvalue{VALUE_NONE};     ///< Midgame pawn structure score
       Value endvalue{VALUE_NONE};     ///< Endgame pawn structure score
+      Bitboard passedWhite{BbZero};   ///< Bitboard of white passed pawns
+      Bitboard passedBlack{BbZero};   ///< Bitboard of black passed pawns
 
       /// Default constructor
       Entry() = default;
 
       /// Copy constructor - needed because atomic has deleted copy constructor.
-      /// Uses memcpy for value fields to ensure exact byte representation.
-      Entry(const Entry& other)
-          : key(other.key.load(std::memory_order_relaxed)) {
-        std::memcpy(&midvalue, &other.midvalue, sizeof(Value) * 2);
-      }
+      /// Uses memcpy for all payload fields to ensure exact byte representation.
+      Entry(const Entry& other);
 
       /// Copy assignment - needed because atomic has deleted copy assignment.
-      Entry& operator=(const Entry& other) {
-        if (this != &other) {
-          key.store(other.key.load(std::memory_order_relaxed), std::memory_order_relaxed);
-          std::memcpy(&midvalue, &other.midvalue, sizeof(Value) * 2);
-        }
-        return *this;
-      }
+      Entry& operator=(const Entry& other);
 
       /// Returns the key with acquire semantics for thread-safe read.
       [[nodiscard]] ZobristKey getKey() const {
@@ -135,8 +130,9 @@ namespace engine {
 
       /// Returns string representation for debugging.
       [[nodiscard]] std::string str() const {
-        return std::format("id {} midvalue {} endvalue {}",
-                           key.load(std::memory_order_relaxed), midvalue, endvalue);
+        return std::format("id {} midvalue {} endvalue {} passedW {:016x} passedB {:016x}",
+                           key.load(std::memory_order_relaxed), midvalue, endvalue,
+                           passedWhite.value(), passedBlack.value());
       }
 
       std::ostream& operator<<(std::ostream& os) const {
@@ -145,6 +141,10 @@ namespace engine {
       }
     };
 
+    /// Size of all non-atomic payload fields in Entry (midvalue through passedBlack).
+    /// Defined after Entry is complete so sizeof(Entry) is available.
+    static constexpr auto ENTRY_PAYLOAD_SIZE = sizeof(Entry) - sizeof(std::atomic<ZobristKey>);
+
     // Compile-time guarantees that the atomic key has zero size/performance overhead.
     // If either assert fires, switch to Option B (XOR key trick) - see PLAN_Lazy_SMP_MultiThreading.md
     static_assert(std::atomic<ZobristKey>::is_always_lock_free,
@@ -152,7 +152,7 @@ namespace engine {
     static_assert(sizeof(std::atomic<ZobristKey>) == sizeof(ZobristKey),
                   "PawnTT: atomic key must not inflate Entry size. Switch to XOR trick if this fires.");
 
-    // struct Entry has 16 Byte
+    // struct Entry has 32 Bytes
     static constexpr uint64_t ENTRY_SIZE = sizeof(Entry);
     static_assert(CacheLineSize % ENTRY_SIZE == 0, "Cluster size incorrect");
 
@@ -217,13 +217,15 @@ namespace engine {
     /// Returns the current SMP thread count.
     [[nodiscard]] int getSmpThreads() const { return numSmpThreads; }
 
-    /// Stores a pawn evaluation score in the cache.
+    /// Stores a pawn evaluation score and passed-pawn bitboards in the cache.
     /// As usually a query happens before storing, the entry pointer is typically
     /// already known from getEntryPtr(). This avoids a redundant hash lookup.
-    /// @param entryPtr  Pointer to the entry slot (from getEntryPtr)
-    /// @param key       Pawn Zobrist key
-    /// @param score     Pawn structure score (midgame + endgame)
-    void put(Entry* entryPtr, ZobristKey key, Score score);
+    /// @param entryPtr     Pointer to the entry slot (from getEntryPtr)
+    /// @param key          Pawn Zobrist key
+    /// @param score        Pawn structure score (midgame + endgame)
+    /// @param passedWhite  Bitboard of white passed pawns
+    /// @param passedBlack  Bitboard of black passed pawns
+    void put(Entry* entryPtr, ZobristKey key, Score score, Bitboard passedWhite, Bitboard passedBlack);
 
     /// Probes the PawnTT for an entry matching the key.
     /// Returns a COPY of the entry for thread safety (copy-on-read pattern).

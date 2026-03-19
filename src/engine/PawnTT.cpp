@@ -29,8 +29,23 @@ using namespace engine;
 using namespace chess;
 using namespace common;
 
+// --- Entry copy constructor/assignment (out-of-line, uses ENTRY_PAYLOAD_SIZE) ---
+
+PawnTT::Entry::Entry(const Entry& other)
+    : key(other.key.load(std::memory_order_relaxed)) {
+  std::memcpy(&midvalue, &other.midvalue, ENTRY_PAYLOAD_SIZE);
+}
+
+PawnTT::Entry& PawnTT::Entry::operator=(const Entry& other) {
+  if (this != &other) {
+    key.store(other.key.load(std::memory_order_relaxed), std::memory_order_relaxed);
+    std::memcpy(&midvalue, &other.midvalue, ENTRY_PAYLOAD_SIZE);
+  }
+  return *this;
+}
+
 PawnTT::PawnTT(const uint64_t newSizeInMByte) {
-  noOfThreads = std::max(1u, std::thread::hardware_concurrency());
+  noOfThreads = std::max(1U, std::thread::hardware_concurrency());
   resize(newSizeInMByte);
 }
 
@@ -67,7 +82,7 @@ void PawnTT::resize(const uint64_t newSizeInMByte) {
   _data.reset(nullptr);
 
   // try to allocate memory for TT - reduce on failure until success (down to dummy)
-  std::size_t tryEntries = maxNumberOfEntries ? maxNumberOfEntries : 1u;
+  std::size_t tryEntries = maxNumberOfEntries ? maxNumberOfEntries : 1U;
   while (true) {
     try {
       _data = std::make_unique<Entry[]>(tryEntries);
@@ -81,7 +96,7 @@ void PawnTT::resize(const uint64_t newSizeInMByte) {
         LOG__ERROR(Logger::get().EVAL_LOG,
                    "Not enough memory for requested PawnTT size {:L} MB reducing to {:L} MB",
                    oldSizeMb, sizeInByte / MB);
-        tryEntries = maxNumberOfEntries ? maxNumberOfEntries : 1u;
+        tryEntries = maxNumberOfEntries ? maxNumberOfEntries : 1U;
         continue;
       }
       // already at dummy size -> last resort
@@ -128,7 +143,8 @@ void PawnTT::clear() {
   LOG__DEBUG(Logger::get().EVAL_LOG, "PawnTT cleared {:L} entries in {:L} ms (memset)", maxNumberOfEntries, time);
 }
 
-void PawnTT::put(Entry* entryPtr, const ZobristKey key, const Score score) {
+void PawnTT::put(Entry* entryPtr, const ZobristKey key, const Score score,
+                 const Bitboard passedWhite, const Bitboard passedBlack) {
 
   // Replace any existing entries as this should be collisions.
   // Updates should not happen as we should have read this entry and
@@ -158,8 +174,10 @@ void PawnTT::put(Entry* entryPtr, const ZobristKey key, const Score score) {
 
   // Write value fields first, then publish via release store on key.
   // Any thread that loads key with acquire will see all prior writes.
-  entryPtr->midvalue = score.midgame;
-  entryPtr->endvalue = score.endgame;
+  entryPtr->midvalue     = score.midgame;
+  entryPtr->endvalue     = score.endgame;
+  entryPtr->passedWhite  = passedWhite;
+  entryPtr->passedBlack  = passedBlack;
   entryPtr->key.store(key, std::memory_order_release);
 
   // Statistics counters are non-atomic - under SMP they will be approximate but

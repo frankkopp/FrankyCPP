@@ -36,7 +36,7 @@
 //   - Knight outposts (safe squares immune to pawn attacks)
 //   - Bad bishop detection (own pawns on bishop's color)
 //   - Rook placement (open files, 7th rank, behind passed pawns)
-//   - King safety (pawn shield, attacker proximity)
+//   - King safety (pawn shield, attacker proximity, pawn storm, open files, safe checks)
 //
 // Tapered Evaluation:
 //   Scores are computed separately for midgame and endgame, then interpolated
@@ -94,8 +94,17 @@ namespace engine {
 
     /// King safety attack accumulators (indexed by king color under attack).
     /// Reset in evaluate(), incremented in piece evals, consumed in kingEval().
-    int kingAttackCount[2]{};   ///< Number of distinct pieces attacking king zone
-    int kingAttackWeight[2]{};  ///< Weighted sum (N=2, B=2, R=3, Q=4)
+    std::array<int,2> kingAttackCount{};   ///< Number of distinct pieces attacking king zone
+    std::array<int,2>  kingAttackWeight{};  ///< Weighted sum (N=2, B=2, R=3, Q=4)
+
+    /// Per-color attack map: union of all squares attacked by a side's pieces.
+    /// Reset in evaluate() (king + pawn attacks), accumulated in piece evals
+    /// (knight/bishop/rook/queen), consumed in kingEval() for safe check squares.
+    std::array<Bitboard, 2> attackedBy{};
+
+    /// Per-color passed pawn bitboard. Computed once in evaluate() and reused
+    /// by rookEval (rook-behind-passer) and kingEval (king proximity to passers).
+    std::array<Bitboard, 2> passedPawns{};
 
     // reference to the Eval Config Data
     const config::EvalConfigData& EvalConfig;

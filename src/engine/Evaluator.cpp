@@ -48,12 +48,16 @@ Value Evaluator::evaluate(const Position& p) {
   // All heuristics should return a value in centi pawns or
   // have a dedicated configurable weight to adjust and test
 
-  score.midgame = VALUE_ZERO;
-  score.endgame = VALUE_ZERO;
+  score.midgame           = VALUE_ZERO;
+  score.endgame           = VALUE_ZERO;
   kingAttackCount[WHITE]  = 0;
   kingAttackCount[BLACK]  = 0;
   kingAttackWeight[WHITE] = 0;
   kingAttackWeight[BLACK] = 0;
+  attackedBy[WHITE]       = BbZero;
+  attackedBy[BLACK]       = BbZero;
+  passedPawns[WHITE]      = BbZero;
+  passedPawns[BLACK]      = BbZero;
 
   const double gamePhaseFactor = p.getGamePhaseFactor();
 
@@ -80,9 +84,43 @@ Value Evaluator::evaluate(const Position& p) {
     }
   }
 
-  // evaluate pawns
+  // Pre-compute reusable data for piece and king evaluation.
+  // King and pawn attacks are computed here; piece attacks are accumulated
+  // in each piece eval function. passedPawns are computed in pawnEval()
+  // (and cached in PawnTT) for reuse by rookEval and kingEval.
+  {
+    // King attacks
+    attackedBy[WHITE] = Bitboards::nonSliderAttacks[KING][p.getKingSquare(WHITE)];
+    attackedBy[BLACK] = Bitboards::nonSliderAttacks[KING][p.getKingSquare(BLACK)];
+
+    // Pawn attacks
+    Bitboard wp = p.getPieceBb(WHITE, PAWN);
+    while (wp) { attackedBy[WHITE] |= Bitboards::pawnAttacks[WHITE][wp.popLSB()]; }
+    Bitboard bp = p.getPieceBb(BLACK, PAWN);
+    while (bp) { attackedBy[BLACK] |= Bitboards::pawnAttacks[BLACK][bp.popLSB()]; }
+  }
+
+  // evaluate pawns — also computes passedPawns[] for rookEval/kingEval
   if (EvalConfig.USE_PAWN_EVAL) {
     pawnEval(p, score);
+  }
+  else {
+    // Fallback: compute passedPawns[] when pawn eval is disabled,
+    // so rookEval (rook-behind-passer) and kingEval (king proximity) still work.
+    for (const Color c : Color::all()) {
+      const Bitboard myPawns  = p.getPieceBb(c, PAWN);
+      const Bitboard oppPawns = p.getPieceBb(~c, PAWN);
+      Bitboard passed         = BbZero;
+      Bitboard pawns          = myPawns;
+      while (pawns) {
+        const Square sq    = pawns.popLSB();
+        const Bitboard fwd = Bitboards::rays[c == WHITE ? N : S][sq];
+        if (!(myPawns & fwd) && !(oppPawns & Bitboards::passedPawnMask[c][sq])) {
+          passed |= Bitboards::sqBb[sq];
+        }
+      }
+      passedPawns[c] = passed;
+    }
   }
 
   // evaluate pieces
@@ -136,7 +174,9 @@ inline Value Evaluator::valueFromScore(const Score& score, const double gamePhas
 inline void Evaluator::pawnEval(const Position& p, Score& s) {
   // check pawn hash first
   ZobristKey key{0};
+  // ReSharper disable once CppDFAConstantConditions
   if (EvalConfig.USE_PAWN_TT && pawnCache) {
+    // ReSharper disable once CppDFAUnreachableCode
     key = p.getPawnZobristKey();
     // Use probe() for thread-safe copy-on-read pattern.
     // This prevents races where another thread overwrites the entry
@@ -144,6 +184,9 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
     if (const auto entry = pawnCache->probe(key)) {
       s.midgame += entry->midvalue;
       s.endgame += entry->endvalue;
+      // Restore cached passed-pawn bitboards so rookEval/kingEval can use them.
+      passedPawns[WHITE] = entry->passedWhite;
+      passedPawns[BLACK] = entry->passedBlack;
       return;
     }
   }
@@ -196,6 +239,9 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
       supported |= myPawns & neighbours & Bitboards::sqToRankBb[sq + Direction::pawnPush(color)];
     }
 
+    // Store passed pawns for this color — used by rookEval and kingEval.
+    passedPawns[color] = passed;
+
     // clang-format off
     int midvalue = isolated.popcount() *  EvalConfig.ISOLATED_PAWN_MID_WEIGHT;
     int endvalue = isolated.popcount() *  EvalConfig.ISOLATED_PAWN_END_WEIGHT;
@@ -207,9 +253,9 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
     {
       Bitboard passedCopy = passed;
       while (passedCopy) {
-        const Square psq    = passedCopy.popLSB();
+        const Square psq = passedCopy.popLSB();
         // relative rank: for White rank is 0-based (RANK_1=0), for Black mirror it
-        const int relRank   = color == WHITE ? static_cast<int>(psq.rank()) : 7 - static_cast<int>(psq.rank());
+        const int relRank = color == WHITE ? static_cast<int>(psq.rank()) : 7 - static_cast<int>(psq.rank());
         // flat bonus per passed pawn
         midvalue += EvalConfig.PASSED_PAWN_MID_WEIGHT;
         endvalue += EvalConfig.PASSED_PAWN_END_WEIGHT;
@@ -236,8 +282,8 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
       // Non-passed advanced pawns = all pawns minus passed pawns, on ranks 4-7
       Bitboard advancedNonPassed = myPawns & ~passed;
       while (advancedNonPassed) {
-        const Square asq    = advancedNonPassed.popLSB();
-        const int relRank   = color == WHITE ? static_cast<int>(asq.rank()) : 7 - static_cast<int>(asq.rank());
+        const Square asq  = advancedNonPassed.popLSB();
+        const int relRank = color == WHITE ? static_cast<int>(asq.rank()) : 7 - static_cast<int>(asq.rank());
         if (relRank >= 4 && relRank <= 7) {
           midvalue += EvalConfig.PAWN_ADVANCE_MID_BONUS[relRank - 4];
           endvalue += EvalConfig.PAWN_ADVANCE_END_BONUS[relRank - 4];
@@ -252,8 +298,11 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
   } // color loop
 
   // Store back only when enabled; get entry pointer for put()
+  // ReSharper disable once CppDFAConstantConditions
+  // ReSharper disable once CppDFAUnreachableCode
   if (EvalConfig.USE_PAWN_TT && pawnCache && key != 0) {
-    pawnCache->put(pawnCache->getEntryPtr(key), key, tmpScore);
+    // ReSharper disable once CppDFAUnreachableCode
+    pawnCache->put(pawnCache->getEntryPtr(key), key, tmpScore, passedPawns[WHITE], passedPawns[BLACK]);
   }
 
   s += tmpScore;
@@ -321,10 +370,11 @@ inline void Evaluator::pieceEval(const Position& p, Score& s, const Color us, co
 
 inline void Evaluator::knightEval(const Position& p, Score& s, const Color us, Color /*unused*/, const Square sq) {
   const Bitboard attacks = Bitboards::nonSliderAttacks[KNIGHT][sq];
+  attackedBy[us] |= attacks;
 
   if (EvalConfig.USE_KNIGHT_MOBILITY) {
-    const Bitboard myOcc   = p.getOccupiedBb(us);
-    const int mobility     = (attacks & ~myOcc).popcount();
+    const Bitboard myOcc = p.getOccupiedBb(us);
+    const int mobility   = (attacks & ~myOcc).popcount();
 
     int mid = mobility * EvalConfig.KNIGHT_MOBILITY_MID_PER_MOVE;
     int end = mobility * EvalConfig.KNIGHT_MOBILITY_END_PER_MOVE;
@@ -345,8 +395,8 @@ inline void Evaluator::knightEval(const Position& p, Score& s, const Color us, C
   // Knight outpost: bonus for knight on a square (ranks 4-6 relative) that
   // cannot be attacked by enemy pawns. Extra bonus if supported by own pawn.
   if (EvalConfig.USE_KNIGHT_OUTPOST) {
-    const Color them     = ~us;
-    const int relRank    = us == WHITE ? static_cast<int>(sq.rank()) : 7 - static_cast<int>(sq.rank());
+    const Color them  = ~us;
+    const int relRank = us == WHITE ? static_cast<int>(sq.rank()) : 7 - static_cast<int>(sq.rank());
     if (relRank >= 3 && relRank <= 5) { // ranks 4-6 (0-based: 3-5)
       // Check if any enemy pawn can attack this square.
       // Enemy pawn attacks this square if an enemy pawn is on an adjacent file
@@ -355,7 +405,7 @@ inline void Evaluator::knightEval(const Position& p, Score& s, const Color us, C
       // passedPawnMask gives us squares in front on same+adjacent files.
       // For outpost detection we only need adjacent files (a pawn on the same file can't attack sq).
       const Bitboard forwardAdjacentFiles = Bitboards::passedPawnMask[us][sq] & Bitboards::neighbourFilesMask[sq];
-      const bool canBeAttacked = (oppPawns & forwardAdjacentFiles) != 0;
+      const bool canBeAttacked            = (oppPawns & forwardAdjacentFiles) != 0;
       if (!canBeAttacked) {
         // Check if supported by own pawn (own pawn attacks this square)
         const Bitboard myPawns = p.getPieceBb(us, PAWN);
@@ -375,7 +425,7 @@ inline void Evaluator::knightEval(const Position& p, Score& s, const Color us, C
 
   // King safety: count attacks on enemy king zone
   if (EvalConfig.USE_KING_SAFETY_ATTACK) {
-    const Color them            = ~us;
+    const Color them             = ~us;
     const Bitboard enemyKingZone = Bitboards::nonSliderAttacks[KING][p.getKingSquare(them)];
     if (attacks & enemyKingZone) {
       ++kingAttackCount[them];
@@ -387,11 +437,12 @@ inline void Evaluator::knightEval(const Position& p, Score& s, const Color us, C
 inline void Evaluator::bishopEval(const Position& p, Score& s, const Color us, Color /*unused*/, const Square sq) {
   const Bitboard occupied = p.getOccupiedBb();
   const Bitboard attacks  = Attacks::attacks(BISHOP, sq, occupied);
+  attackedBy[us] |= attacks;
 
   // Mobility
   if (EvalConfig.USE_BISHOP_MOBILITY) {
-    const Bitboard myOcc    = p.getOccupiedBb(us);
-    const int mobility      = (attacks & ~myOcc).popcount();
+    const Bitboard myOcc = p.getOccupiedBb(us);
+    const int mobility   = (attacks & ~myOcc).popcount();
 
     int mid = mobility * EvalConfig.BISHOP_MOBILITY_MID_PER_MOVE;
     int end = mobility * EvalConfig.BISHOP_MOBILITY_END_PER_MOVE;
@@ -437,11 +488,12 @@ inline void Evaluator::rookEval(const Position& p, Score& s, const Color us, con
 
   const Bitboard occupied = p.getOccupiedBb();
   const Bitboard attacks  = Attacks::attacks(ROOK, sq, occupied);
+  attackedBy[us] |= attacks;
 
   // Mobility
   if (EvalConfig.USE_ROOK_MOBILITY) {
-    const Bitboard myOcc    = p.getOccupiedBb(us);
-    const int mobility      = (attacks & ~myOcc).popcount();
+    const Bitboard myOcc = p.getOccupiedBb(us);
+    const int mobility   = (attacks & ~myOcc).popcount();
 
     mid += mobility * EvalConfig.ROOK_MOBILITY_MID_PER_MOVE;
     end += mobility * EvalConfig.ROOK_MOBILITY_END_PER_MOVE;
@@ -483,43 +535,32 @@ inline void Evaluator::rookEval(const Position& p, Score& s, const Color us, con
 
   // Rook behind passed pawn: bonus for rook behind own or enemy passed pawns on the same file.
   // "Behind" means on the opposite side of the pawn's push direction.
+  // Uses pre-computed passedPawns[] from evaluate().
   if (EvalConfig.USE_ROOK_BEHIND_PASSER) {
     const Bitboard fileMask = Bitboards::sqToFileBb[sq];
-    const Bitboard myPawns  = p.getPieceBb(us, PAWN);
-    const Bitboard oppPawns = p.getPieceBb(them, PAWN);
 
     // Check own passed pawns on same file
     {
-      Bitboard filePawns = myPawns & fileMask;
-      while (filePawns) {
-        const Square psq    = filePawns.popLSB();
-        const Bitboard fwd  = Bitboards::rays[us == WHITE ? N : S][psq];
-        const bool isPassed = !(myPawns & fwd) && !(oppPawns & Bitboards::passedPawnMask[us][psq]);
-        if (isPassed) {
-          // Rook is behind if it's on the backward ray of the pawn
-          const Bitboard backward = Bitboards::rays[us == WHITE ? S : N][psq];
-          if (backward & Bitboards::sqBb[sq]) {
-            mid += EvalConfig.ROOK_BEHIND_PASSER_OWN_MID;
-            end += EvalConfig.ROOK_BEHIND_PASSER_OWN_END;
-          }
+      Bitboard ownPassedOnFile = passedPawns[us] & fileMask;
+      while (ownPassedOnFile) {
+        const Square psq        = ownPassedOnFile.popLSB();
+        const Bitboard backward = Bitboards::rays[us == WHITE ? S : N][psq];
+        if (backward & Bitboards::sqBb[sq]) {
+          mid += EvalConfig.ROOK_BEHIND_PASSER_OWN_MID;
+          end += EvalConfig.ROOK_BEHIND_PASSER_OWN_END;
         }
       }
     }
 
     // Check enemy passed pawns on same file
     {
-      Bitboard filePawns = oppPawns & fileMask;
-      while (filePawns) {
-        const Square psq    = filePawns.popLSB();
-        const Bitboard fwd  = Bitboards::rays[them == WHITE ? N : S][psq];
-        const bool isPassed = !(oppPawns & fwd) && !(myPawns & Bitboards::passedPawnMask[them][psq]);
-        if (isPassed) {
-          // Rook is behind if it's on the backward ray of the enemy pawn (our forward direction)
-          const Bitboard backward = Bitboards::rays[them == WHITE ? S : N][psq];
-          if (backward & Bitboards::sqBb[sq]) {
-            mid += EvalConfig.ROOK_BEHIND_PASSER_OPP_MID;
-            end += EvalConfig.ROOK_BEHIND_PASSER_OPP_END;
-          }
+      Bitboard oppPassedOnFile = passedPawns[them] & fileMask;
+      while (oppPassedOnFile) {
+        const Square psq        = oppPassedOnFile.popLSB();
+        const Bitboard backward = Bitboards::rays[them == WHITE ? S : N][psq];
+        if (backward & Bitboards::sqBb[sq]) {
+          mid += EvalConfig.ROOK_BEHIND_PASSER_OPP_MID;
+          end += EvalConfig.ROOK_BEHIND_PASSER_OPP_END;
         }
       }
     }
@@ -546,11 +587,12 @@ inline void Evaluator::queenEval(const Position& p, Score& s, const Color us, co
 
   const Bitboard occupied = p.getOccupiedBb();
   const Bitboard attacks  = Attacks::attacks(QUEEN, sq, occupied);
+  attackedBy[us] |= attacks;
 
   // Mobility
   if (EvalConfig.USE_QUEEN_MOBILITY) {
-    const Bitboard myOcc    = p.getOccupiedBb(us);
-    const int mobility      = (attacks & ~myOcc).popcount();
+    const Bitboard myOcc = p.getOccupiedBb(us);
+    const int mobility   = (attacks & ~myOcc).popcount();
 
     mid += mobility * EvalConfig.QUEEN_MOBILITY_MID_PER_MOVE;
     end += mobility * EvalConfig.QUEEN_MOBILITY_END_PER_MOVE;
@@ -584,7 +626,10 @@ inline void Evaluator::kingEval(const Position& p, Score& s, const Color us) con
   int mid = 0;
   int end = 0;
 
-  const Square ksq = p.getKingSquare(us);
+  const Color them        = ~us;
+  const Square ksq        = p.getKingSquare(us);
+  const Bitboard myPawns  = p.getPieceBb(us, PAWN);
+  const Bitboard oppPawns = p.getPieceBb(them, PAWN);
 
   // Pawn shield in front of king (midgame focus)
   if (EvalConfig.USE_KING_SAFETY_SHIELD) {
@@ -609,41 +654,67 @@ inline void Evaluator::kingEval(const Position& p, Score& s, const Color us) con
     end += shieldCount * EvalConfig.KING_SHIELD_END_PER_PAWN;
   }
 
+  // Pawn storm: penalty when opponent's pawns advance toward our king (midgame focus).
+  // Checks opponent pawns on king's file and adjacent files; ranks 4+ (relative to us) are threats.
+  if (EvalConfig.USE_PAWN_STORM) {
+    const Bitboard kingFileMask = Bitboards::sqToFileBb[ksq] | Bitboards::neighbourFilesMask[ksq];
+    Bitboard stormPawns         = oppPawns & kingFileMask;
+    while (stormPawns) {
+      const Square psq = stormPawns.popLSB();
+      // Relative rank from our perspective: how close is this pawn to our back rank
+      const int relRank = us == WHITE ? static_cast<int>(psq.rank()) : 7 - static_cast<int>(psq.rank());
+      // relRank uses "our" perspective: rank 4+ means the pawn is deep in our territory
+      // For White: enemy pawns on rank 4 (our rank 4) = rel 3 from Black's view, but from White's
+      // perspective it's "enemy approaching". We reverse: the threat rank from our side is (7 - relRank).
+      const int threatRank = 7 - relRank; // how advanced toward us (7 = on our back rank)
+      if (threatRank >= 4 && threatRank <= 7) {
+        mid -= EvalConfig.PAWN_STORM_MID_PENALTY[threatRank - 4];
+      }
+    }
+  }
+
+  // Open file near king: penalty for open/semi-open files on king's file and adjacent files (midgame).
+  // An open file near the king allows enemy rooks/queens to penetrate.
+  if (EvalConfig.USE_KING_OPEN_FILE) {
+    const int kf = ksq.file();
+    for (int df = -1; df <= 1; ++df) {
+      const int f = kf + df;
+      if (f < FILE_A || f > FILE_H) continue;
+      const Bitboard fileMask  = FileABB << f;
+      const bool ownPawnOnFile = (myPawns & fileMask) != 0;
+      const bool oppPawnOnFile = (oppPawns & fileMask) != 0;
+      if (!ownPawnOnFile) {
+        if (!oppPawnOnFile) {
+          mid += EvalConfig.KING_OPEN_FILE_MID_PENALTY; // fully open
+        }
+        else {
+          mid += EvalConfig.KING_SEMIOPEN_FILE_MID_PENALTY; // semi-open
+        }
+      }
+    }
+  }
+
   // King proximity to passed pawns (endgame only).
-  // Self-contained: detects passed pawns locally via cheap bitwise ops.
+  // Uses pre-computed passedPawns[] from evaluate().
   // Not cached in PawnTT because king position isn't part of the pawn key.
   if (EvalConfig.USE_KING_PAWN_PROXIMITY) {
-    const Color them = ~us;
-    const Bitboard myPawns  = p.getPieceBb(us, PAWN);
-    const Bitboard oppPawns = p.getPieceBb(them, PAWN);
-
     // Bonus for king close to own passed pawns (can escort to promotion)
     {
-      Bitboard pawns = myPawns;
-      while (pawns) {
-        const Square psq        = pawns.popLSB();
-        const Bitboard fwd      = Bitboards::rays[us == WHITE ? N : S][psq];
-        // ReSharper disable once CppTooWideScope
-        const bool isPassed     = !(myPawns & fwd) && !(oppPawns & Bitboards::passedPawnMask[us][psq]);
-        if (isPassed) {
-          const int closeness   = 7 - ksq.distanceTo(psq); // 0..7
-          end += closeness * EvalConfig.KING_OWN_PASSED_PROXIMITY_END;
-        }
+      Bitboard passed = passedPawns[us];
+      while (passed) {
+        const Square psq    = passed.popLSB();
+        const int closeness = 7 - ksq.distanceTo(psq); // 0..7
+        end += closeness * EvalConfig.KING_OWN_PASSED_PROXIMITY_END;
       }
     }
 
     // Bonus for king close to enemy passed pawns (can block/capture them)
     {
-      Bitboard pawns = oppPawns;
-      while (pawns) {
-        const Square psq        = pawns.popLSB();
-        const Bitboard fwd      = Bitboards::rays[them == WHITE ? N : S][psq];
-        // ReSharper disable once CppTooWideScope
-        const bool isPassed     = !(oppPawns & fwd) && !(myPawns & Bitboards::passedPawnMask[them][psq]);
-        if (isPassed) {
-          const int closeness   = 7 - ksq.distanceTo(psq); // 0..7
-          end += closeness * EvalConfig.KING_OPP_PASSED_PROXIMITY_END;
-        }
+      Bitboard passed = passedPawns[them];
+      while (passed) {
+        const Square psq    = passed.popLSB();
+        const int closeness = 7 - ksq.distanceTo(psq); // 0..7
+        end += closeness * EvalConfig.KING_OPP_PASSED_PROXIMITY_END;
       }
     }
   }
@@ -654,6 +725,43 @@ inline void Evaluator::kingEval(const Position& p, Score& s, const Color us) con
     const int idx     = std::min(kingAttackWeight[us], 15);
     const int penalty = EvalConfig.KING_SAFETY_TABLE[idx];
     mid -= penalty; // penalty reduces this king's safety (negative for us)
+  }
+
+  // Safe check squares: penalty for squares from which the enemy can give check
+  // without the checking piece being captured. Only counts squares that are
+  // (1) reachable by actual enemy pieces (attackedBy[them]), (2) not defended
+  // by us, and (3) only for piece types the enemy actually has on the board.
+  if (EvalConfig.USE_SAFE_CHECK) {
+    const Bitboard occupied    = p.getOccupiedBb();
+    const Bitboard ourAttacks  = attackedBy[us];
+    const Bitboard enemyReach  = attackedBy[them];
+    // Safe = enemy can reach it, we don't defend it
+    const Bitboard safeMask    = enemyReach & ~ourAttacks;
+
+    // Knight safe checks (only if enemy has knights)
+    if (p.getPieceBb(them, KNIGHT)) {
+      const Bitboard checkSquares = Bitboards::nonSliderAttacks[KNIGHT][ksq];
+      const int safeChecks        = (checkSquares & safeMask).popcount();
+      mid += safeChecks * EvalConfig.SAFE_CHECK_KNIGHT_MID;
+    }
+    // Bishop safe checks (only if enemy has bishops)
+    if (p.getPieceBb(them, BISHOP)) {
+      const Bitboard checkSquares = Attacks::attacks(BISHOP, ksq, occupied);
+      const int safeChecks        = (checkSquares & safeMask).popcount();
+      mid += safeChecks * EvalConfig.SAFE_CHECK_BISHOP_MID;
+    }
+    // Rook safe checks (only if enemy has rooks)
+    if (p.getPieceBb(them, ROOK)) {
+      const Bitboard checkSquares = Attacks::attacks(ROOK, ksq, occupied);
+      const int safeChecks        = (checkSquares & safeMask).popcount();
+      mid += safeChecks * EvalConfig.SAFE_CHECK_ROOK_MID;
+    }
+    // Queen safe checks (only if enemy has queens)
+    if (p.getPieceBb(them, QUEEN)) {
+      const Bitboard checkSquares = Attacks::attacks(QUEEN, ksq, occupied);
+      const int safeChecks        = (checkSquares & safeMask).popcount();
+      mid += safeChecks * EvalConfig.SAFE_CHECK_QUEEN_MID;
+    }
   }
 
   s.midgame += static_cast<Value>(mid * us.sign());

@@ -54,14 +54,14 @@ ConfigRegistry::ConfigRegistry() {
   static_assert(sizeof(SearchConfigData) == 640,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 504,
+  static_assert(sizeof(EvalConfigData) == 552,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
   static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 496,
+  static_assert(sizeof(EvalConfigData) == 544,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #endif
@@ -72,7 +72,7 @@ ConfigRegistry::ConfigRegistry() {
   static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 496,
+  static_assert(sizeof(EvalConfigData) == 544,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
@@ -80,7 +80,7 @@ ConfigRegistry::ConfigRegistry() {
   static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 496,
+  static_assert(sizeof(EvalConfigData) == 544,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #endif
@@ -3082,6 +3082,149 @@ void ConfigRegistry::initializeEvalDefinitions() {
       return arrayToString(e.KING_SAFETY_TABLE);
     },
     .setter = EVAL_CONFIG_ARRAY_SETTER(KING_SAFETY_TABLE)
+  });
+
+  //===========================================================================
+  // PAWN STORM
+  //===========================================================================
+  definitions_.push_back({
+    .name = "USE_PAWN_STORM",
+    .uciName = "Use Pawn Storm",
+    .description = "Enable pawn storm detection (penalty for opponent pawns advancing toward king)",
+    .valueType = Bool,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.USE_PAWN_STORM),
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_PAWN_STORM), .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.USE_PAWN_STORM; }),
+    .setter = EVAL_CONFIG_SETTER(USE_PAWN_STORM, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "PAWN_STORM_MID_PENALTY",
+    .uciName = "",
+    .description = "Pawn storm midgame penalty by rank advancement (rank4..rank7)",
+    .valueType = IntArray,
+    .domain = Eval,
+    .defaultValue = arrayToString(defaultEval.PAWN_STORM_MID_PENALTY),
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = [](const SearchConfigData&, const EvalConfigData& e) {
+      return arrayToString(e.PAWN_STORM_MID_PENALTY);
+    },
+    .setter = EVAL_CONFIG_ARRAY_SETTER(PAWN_STORM_MID_PENALTY)
+  });
+
+  //===========================================================================
+  // KING OPEN FILE
+  //===========================================================================
+  definitions_.push_back({
+    .name = "USE_KING_OPEN_FILE",
+    .uciName = "Use King Open File",
+    .description = "Enable penalty for open/semi-open files near king",
+    .valueType = Bool,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.USE_KING_OPEN_FILE),
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_KING_OPEN_FILE), .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.USE_KING_OPEN_FILE; }),
+    .setter = EVAL_CONFIG_SETTER(USE_KING_OPEN_FILE, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "KING_OPEN_FILE_MID_PENALTY",
+    .uciName = "",
+    .description = "Midgame penalty for fully open file near king",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.KING_OPEN_FILE_MID_PENALTY),
+    .minValue = -100,
+    .maxValue = 0,
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.KING_OPEN_FILE_MID_PENALTY; }),
+    .setter = EVAL_CONFIG_SETTER(KING_OPEN_FILE_MID_PENALTY, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "KING_SEMIOPEN_FILE_MID_PENALTY",
+    .uciName = "",
+    .description = "Midgame penalty for semi-open file near king (no own pawn, enemy pawn present)",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.KING_SEMIOPEN_FILE_MID_PENALTY),
+    .minValue = -100,
+    .maxValue = 0,
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.KING_SEMIOPEN_FILE_MID_PENALTY; }),
+    .setter = EVAL_CONFIG_SETTER(KING_SEMIOPEN_FILE_MID_PENALTY, parseInt)
+  });
+
+  //===========================================================================
+  // SAFE CHECK SQUARES
+  //===========================================================================
+  definitions_.push_back({
+    .name = "USE_SAFE_CHECK",
+    .uciName = "Use Safe Check",
+    .description = "Enable penalty for safe check squares around king",
+    .valueType = Bool,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.USE_SAFE_CHECK),
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_SAFE_CHECK), .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.USE_SAFE_CHECK; }),
+    .setter = EVAL_CONFIG_SETTER(USE_SAFE_CHECK, parseBool)
+  });
+
+  definitions_.push_back({
+    .name = "SAFE_CHECK_KNIGHT_MID",
+    .uciName = "",
+    .description = "Midgame penalty per safe knight check square",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.SAFE_CHECK_KNIGHT_MID),
+    .minValue = -50,
+    .maxValue = 0,
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.SAFE_CHECK_KNIGHT_MID; }),
+    .setter = EVAL_CONFIG_SETTER(SAFE_CHECK_KNIGHT_MID, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "SAFE_CHECK_BISHOP_MID",
+    .uciName = "",
+    .description = "Midgame penalty per safe bishop check square",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.SAFE_CHECK_BISHOP_MID),
+    .minValue = -50,
+    .maxValue = 0,
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.SAFE_CHECK_BISHOP_MID; }),
+    .setter = EVAL_CONFIG_SETTER(SAFE_CHECK_BISHOP_MID, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "SAFE_CHECK_ROOK_MID",
+    .uciName = "",
+    .description = "Midgame penalty per safe rook check square",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.SAFE_CHECK_ROOK_MID),
+    .minValue = -50,
+    .maxValue = 0,
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.SAFE_CHECK_ROOK_MID; }),
+    .setter = EVAL_CONFIG_SETTER(SAFE_CHECK_ROOK_MID, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "SAFE_CHECK_QUEEN_MID",
+    .uciName = "",
+    .description = "Midgame penalty per safe queen check square",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.SAFE_CHECK_QUEEN_MID),
+    .minValue = -50,
+    .maxValue = 0,
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.SAFE_CHECK_QUEEN_MID; }),
+    .setter = EVAL_CONFIG_SETTER(SAFE_CHECK_QUEEN_MID, parseInt)
   });
 
   //===========================================================================

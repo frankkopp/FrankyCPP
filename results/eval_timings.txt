@@ -1,3 +1,4 @@
+Phase 1:
 Case                                           |        ns/eval |      evals/sec |    delta
 -------------------------------------------------------------------------------------------
 Baseline (all features ON; LAZY OFF)           |            123 |      8.128.585 |     base
@@ -22,3 +23,61 @@ Disable PAWN_EVAL only                         |            118 |      8.444.978
 Disable PAWN_TT (with PAWN_EVAL)               |            183 |      5.437.739 |   +49.5%
 Disable PAWN_ADVANCE_BONUS (with PAWN_EVAL)    |            121 |      8.249.840 |    -1.5%
 All features OFF                               |              2 |    333.607.619 |   -97.6%
+
+Phase 2:
+Case                                           |        ns/eval |      evals/sec |    delta
+-------------------------------------------------------------------------------------------
+Baseline (all features ON; LAZY OFF)           |            143 |      6.951.381 |     base
+Disable MATERIAL only                          |            143 |      6.954.401 |    -0.0%
+Disable POSITIONAL only                        |            140 |      7.117.286 |    -2.3%
+Disable TEMPO only                             |            140 |      7.136.636 |    -2.6%
+Disable PIECE_EVAL only                        |             42 |     23.504.713 |   -70.4%
+Disable BISHOP_PAIR_BONUS (with PIECE_EVAL)    |            140 |      7.111.690 |    -2.3%
+Disable KNIGHT_MOBILITY (with PIECE_EVAL)      |            138 |      7.234.398 |    -3.9%
+Disable KNIGHT_OUTPOST (with PIECE_EVAL)       |            134 |      7.412.631 |    -6.2%
+Disable BISHOP_MOBILITY (with PIECE_EVAL)      |            131 |      7.576.566 |    -8.3%
+Disable BAD_BISHOP (with PIECE_EVAL)           |            144 |      6.926.029 |    +0.4%
+Disable ROOK_MOBILITY (with PIECE_EVAL)        |            127 |      7.847.860 |   -11.4%
+Disable ROOK_OPEN_FILE_BONUS (with PIECE_EVAL) |            122 |      8.140.810 |   -14.6%
+Disable ROOK_BEHIND_PASSER (with PIECE_EVAL)   |            136 |      7.342.052 |    -5.3%
+Disable QUEEN_MOBILITY (with PIECE_EVAL)       |            140 |      7.095.946 |    -2.0%
+Disable QUEEN_TROPISM (with PIECE_EVAL)        |            138 |      7.227.947 |    -3.8%
+Disable KING_EVAL only                         |             72 |     13.738.518 |   -49.4%
+Disable KING_SAFETY_SHIELD (with KING_EVAL)    |            116 |      8.618.454 |   -19.3%
+Disable PAWN_STORM (with KING_EVAL)            |            133 |      7.512.297 |    -7.5%
+Disable KING_OPEN_FILE (with KING_EVAL)        |            134 |      7.441.065 |    -6.6%
+Disable SAFE_CHECK (with KING_EVAL)            |            141 |      7.062.342 |    -1.6%
+Disable GAMEPHASE_VALUE only                   |            142 |      7.010.404 |    -0.8%
+Disable PAWN_EVAL only                         |            150 |      6.664.327 |    +4.3%
+Disable PAWN_TT (with PAWN_EVAL)               |            217 |      4.603.467 |   +51.0%
+Disable PAWN_ADVANCE_BONUS (with PAWN_EVAL)    |            150 |      6.642.862 |    +4.6%
+All features OFF                               |             14 |     69.205.000 |   -90.0%
+
+Phase 2 Optimized:
+Case                                           |        ns/eval |      evals/sec |    delta
+-------------------------------------------------------------------------------------------
+Baseline (all features ON; LAZY OFF)           |            121 |      8.203.641 |     base
+Disable MATERIAL only                          |            122 |      8.138.706 |    +0.8%
+Disable POSITIONAL only                        |            121 |      8.219.672 |    -0.2%
+Disable TEMPO only                             |            120 |      8.316.153 |    -1.4%
+Disable PIECE_EVAL only                        |             36 |     27.395.018 |   -70.1%
+Disable BISHOP_PAIR_BONUS (with PIECE_EVAL)    |            119 |      8.402.885 |    -2.4%
+Disable KNIGHT_MOBILITY (with PIECE_EVAL)      |            116 |      8.587.111 |    -4.5%
+Disable KNIGHT_OUTPOST (with PIECE_EVAL)       |            113 |      8.782.074 |    -6.6%
+Disable BISHOP_MOBILITY (with PIECE_EVAL)      |            112 |      8.878.250 |    -7.6%
+Disable BAD_BISHOP (with PIECE_EVAL)           |            117 |      8.477.916 |    -3.2%
+Disable ROOK_MOBILITY (with PIECE_EVAL)        |            106 |      9.382.734 |   -12.6%
+Disable ROOK_OPEN_FILE_BONUS (with PIECE_EVAL) |            104 |      9.543.362 |   -14.0%
+Disable ROOK_BEHIND_PASSER (with PIECE_EVAL)   |            115 |      8.650.889 |    -5.2%
+Disable QUEEN_MOBILITY (with PIECE_EVAL)       |            117 |      8.499.982 |    -3.5%
+Disable QUEEN_TROPISM (with PIECE_EVAL)        |            118 |      8.432.123 |    -2.7%
+Disable KING_EVAL only                         |             60 |     16.610.780 |   -50.6%
+Disable KING_SAFETY_SHIELD (with KING_EVAL)    |             91 |     10.963.445 |   -25.2%
+Disable PAWN_STORM (with KING_EVAL)            |            106 |      9.385.285 |   -12.6%
+Disable KING_OPEN_FILE (with KING_EVAL)        |            108 |      9.247.097 |   -11.3%
+Disable SAFE_CHECK (with KING_EVAL)            |            113 |      8.804.717 |    -6.8%
+Disable GAMEPHASE_VALUE only                   |            118 |      8.471.049 |    -3.2%
+Disable PAWN_EVAL only                         |            137 |      7.249.740 |   +13.2%
+Disable PAWN_TT (with PAWN_EVAL)               |            185 |      5.400.285 |   +51.9%
+Disable PAWN_ADVANCE_BONUS (with PAWN_EVAL)    |            127 |      7.814.417 |    +5.0%
+All features OFF                               |             15 |     63.607.641 |   -87.1%

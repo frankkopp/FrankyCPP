@@ -1,0 +1,30 @@
+{
+  "arenaVersion": "v1.6",
+  "durationMs": 14952722,
+  "engine1": {
+    "name": "FrankyCPP v1.6.0",
+    "path": "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe",
+    "version": "v1.6"
+  },
+  "engine2": {
+    "name": "FrankyCPP v1.5",
+    "path": "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe",
+    "version": "v1.5"
+  },
+  "match": {
+    "name": "v1.6_vs_v1.5_300s",
+    "rounds": 100,
+    "timeControl": "300+0"
+  },
+  "pgnPath": "results/matches/v1.6_vs_v1.5_300s.pgn",
+  "results": {
+    "draws": 26,
+    "eloDifference": 56.0714812660147,
+    "engine1Score": 58.0,
+    "engine1Wins": 45,
+    "engine2Score": 42.0,
+    "engine2Wins": 29
+  },
+  "tag": "Phase 2 Eval Improvement",
+  "timestamp": "2026-03-19T03:43:20Z"
+}

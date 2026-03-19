@@ -79,6 +79,9 @@ void set_eval_config(const bool onoff) {
     e.USE_KING_SAFETY_SHIELD   = onoff;
     e.USE_KING_PAWN_PROXIMITY  = onoff;
     e.USE_KING_SAFETY_ATTACK   = onoff;
+    e.USE_PAWN_STORM           = onoff;
+    e.USE_KING_OPEN_FILE       = onoff;
+    e.USE_SAFE_CHECK           = onoff;
     e.USE_GAMEPHASE_VALUE      = onoff;
     e.USE_BISHOP_PAIR_BONUS    = onoff;
     e.USE_PAWN_ADVANCE_BONUS   = onoff;
@@ -1018,6 +1021,196 @@ TEST_F(EvaluatorTest, QueenTropism_CloserBeatsFarther_EndgameOnly) {
   ASSERT_GT(vCloser, vFarther) << "Queen tropism should reward being closer to enemy king (endgame-only), with mobility/PSQT/material off";
 }
 
+// =========================================================================
+// PAWN STORM TESTS (Phase 2)
+// =========================================================================
+
+// Opponent pawns advancing toward our king should penalize our position.
+TEST_F(EvaluatorTest, PawnStorm_AdvancingPawnsPenalizeKing) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_KING_EVAL       = true;
+    e.USE_PAWN_STORM      = true;
+    e.USE_GAMEPHASE_VALUE = false; // midgame-only feature; disable phase blending to avoid zeroing
+  });
+
+  Evaluator e{};
+
+  // White king on g1 with pawns f2/g2/h2; black pawns on g4/h4 (storm approaching king)
+  const Position storm{"6k1/8/8/8/6pp/8/5PPP/6K1 w - - 0 1"};
+  // White king on g1 with pawns f2/g2/h2; black pawns on g7/h7 (far away, no storm)
+  const Position noStorm{"6k1/6pp/8/8/8/8/5PPP/6K1 w - - 0 1"};
+
+  const Value vStorm   = e.evaluate(storm);
+  const Value vNoStorm = e.evaluate(noStorm);
+
+  fprintln("Storm (black pawns advancing) eval: {}", vStorm);
+  println(storm.strBoard());
+  fprintln("No storm eval:                      {}", vNoStorm);
+  println(noStorm.strBoard());
+  fprintln("NoStorm > Storm: {} > {}", vNoStorm, vStorm);
+
+  ASSERT_GT(vNoStorm, vStorm)
+      << "Position with pawn storm toward king should evaluate worse for defender";
+}
+
+// Verify pawn storm works symmetrically for Black.
+TEST_F(EvaluatorTest, PawnStorm_BlackKingUnderStorm) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_KING_EVAL       = true;
+    e.USE_PAWN_STORM      = true;
+    e.USE_GAMEPHASE_VALUE = false; // midgame-only feature; disable phase blending
+  });
+
+  Evaluator e{};
+
+  // Black king on g8 with pawns f7/g7/h7; white pawns on g5/h5 (storm approaching black king)
+  const Position stormBlack{"6k1/5ppp/8/6PP/8/8/8/6K1 b - - 0 1"};
+  // Black king on g8 with pawns f7/g7/h7; white pawns on g2/h2 (far away, no storm)
+  const Position noStormBlack{"6k1/5ppp/8/8/8/8/6PP/6K1 b - - 0 1"};
+
+  const Value vStorm   = e.evaluate(stormBlack);
+  const Value vNoStorm = e.evaluate(noStormBlack);
+
+  fprintln("Black under storm eval (Black POV): {}", vStorm);
+  fprintln("Black no storm eval (Black POV):    {}", vNoStorm);
+
+  ASSERT_GT(vNoStorm, vStorm)
+      << "Black position with pawn storm should evaluate worse for Black";
+}
+
+// =========================================================================
+// KING OPEN FILE TESTS (Phase 2)
+// =========================================================================
+
+// King with open files nearby should evaluate worse than king with intact pawn cover.
+TEST_F(EvaluatorTest, KingOpenFile_OpenFilesPenalizeKing) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_KING_EVAL       = true;
+    e.USE_KING_OPEN_FILE  = true;
+    e.USE_GAMEPHASE_VALUE = false; // midgame-only feature; disable phase blending
+  });
+
+  Evaluator e{};
+
+  // White king on g1 with NO pawns on f/g/h files (3 open files near king)
+  const Position openFiles{"6k1/pppppppp/8/8/8/8/PPPPP3/6K1 w - - 0 1"};
+  // White king on g1 with pawns on f2, g2, h2 (all files covered)
+  const Position closedFiles{"6k1/pppppppp/8/8/8/8/PPPPPPP1/6K1 w - - 0 1"};
+
+  const Value vOpen   = e.evaluate(openFiles);
+  const Value vClosed = e.evaluate(closedFiles);
+
+  fprintln("Open files near king eval:   {}", vOpen);
+  println(openFiles.strBoard());
+  fprintln("Closed files near king eval: {}", vClosed);
+  println(closedFiles.strBoard());
+  fprintln("Closed > Open: {} > {}", vClosed, vOpen);
+
+  ASSERT_GT(vClosed, vOpen)
+      << "King with open files nearby should evaluate worse than king with pawn cover";
+}
+
+// Semi-open file (no own pawn, enemy pawn present) should be penalized less than fully open.
+TEST_F(EvaluatorTest, KingOpenFile_SemiOpenLessThanFullyOpen) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_KING_EVAL       = true;
+    e.USE_KING_OPEN_FILE  = true;
+    e.USE_GAMEPHASE_VALUE = false; // midgame-only feature; disable phase blending
+  });
+
+  Evaluator e{};
+
+  // White king on g1; f-file fully open (no pawns at all), g/h have white pawns.
+  // Black king on a8 with a/b files covered — not affected by f-file change.
+  const Position fullyOpen{"k7/pp6/8/8/8/8/PPPPP1PP/6K1 w - - 0 1"};
+  // Same but black pawn on f7 → f-file is semi-open for White king (no own pawn, enemy pawn present)
+  const Position semiOpen{"k7/pp3p2/8/8/8/8/PPPPP1PP/6K1 w - - 0 1"};
+
+  const Value vFullyOpen = e.evaluate(fullyOpen);
+  const Value vSemiOpen  = e.evaluate(semiOpen);
+
+  fprintln("Fully open f-file near king eval: {}", vFullyOpen);
+  fprintln("Semi-open f-file near king eval:  {}", vSemiOpen);
+  fprintln("SemiOpen > FullyOpen: {} > {}", vSemiOpen, vFullyOpen);
+
+  // Fully open should be worse (more negative penalty) than semi-open
+  ASSERT_GT(vSemiOpen, vFullyOpen)
+      << "Fully open file near king should be penalized more than semi-open";
+}
+
+// =========================================================================
+// SAFE CHECK SQUARES TESTS (Phase 2)
+// =========================================================================
+
+// Exposed king (many safe check squares) should evaluate worse than sheltered king.
+// Requires USE_PIECE_EVAL to populate attackedBy[] (individual piece features remain off,
+// only the attackedBy accumulation runs — no score noise from mobility/outpost/etc.).
+TEST_F(EvaluatorTest, SafeCheck_ExposedKingWorseThanSheltered) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_PIECE_EVAL      = true;  // needed to populate attackedBy[]
+    e.USE_KING_EVAL       = true;
+    e.USE_SAFE_CHECK      = true;
+    e.USE_GAMEPHASE_VALUE = false; // midgame-only feature; disable phase blending
+  });
+
+  Evaluator e{};
+
+  // White king on f3 (exposed, walked out into the open) — black has full piece set
+  const Position exposed{"rnbqkbnr/pppppppp/8/8/4P3/5K2/PPPP1PPP/RNBQ1BNR w kq - 0 1"};
+  // White king on e1 (sheltered behind pawns and pieces) — same black setup
+  const Position sheltered{"rnbqkbnr/pppppppp/8/8/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 0 1"};
+
+  const Value vExposed   = e.evaluate(exposed);
+  const Value vSheltered = e.evaluate(sheltered);
+
+  fprintln("Exposed king (f3) eval:   {}", vExposed);
+  println(exposed.strBoard());
+  fprintln("Sheltered king (e1) eval: {}", vSheltered);
+  println(sheltered.strBoard());
+  fprintln("Sheltered > Exposed: {} > {}", vSheltered, vExposed);
+
+  ASSERT_GT(vSheltered, vExposed)
+      << "Sheltered king with pawns should have fewer safe check squares and evaluate better";
+}
+
+// Toggle test: enabling safe check should change the evaluation.
+// Requires USE_PIECE_EVAL to populate attackedBy[] for the safeMask filter.
+// Uses an asymmetric position (white king exposed, black castled) so penalties don't cancel.
+TEST_F(EvaluatorTest, SafeCheck_ToggleChangesEval) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_PIECE_EVAL      = true;  // needed to populate attackedBy[]
+    e.USE_KING_EVAL       = true;
+    e.USE_SAFE_CHECK      = false; // off first
+    e.USE_GAMEPHASE_VALUE = false; // raw (mid+end)/2 to avoid phase blending masking the difference
+  });
+
+  Evaluator e{};
+
+  // White king exposed on f3, black castled kingside — asymmetric king safety
+  const Position pos{"r1bq1rk1/pppppppp/2n2n2/2b5/4P3/3P1K2/PPP2PPP/RNBQ1BNR w - - 0 1"};
+
+  const Value vWithout = e.evaluate(pos);
+
+  cm.applyOverrides([&](auto&, EvalConfigData& e2) {
+    e2.USE_SAFE_CHECK = true; // now on
+  });
+
+  const Value vWith = e.evaluate(pos);
+
+  fprintln("Without safe check: {}", vWithout);
+  fprintln("With safe check:    {}", vWith);
+
+  // Values should differ (asymmetric king exposure means unequal penalties)
+  ASSERT_NE(vWith, vWithout)
+      << "Enabling safe check should change the evaluation";
+}
+
 // New timing test modeled after SpeedTests::TimingExtendedDoMoveUndoMove
 TEST_F(EvaluatorTest, TimingEvaluateFens) {
   if (isBulkRun()) {
@@ -1211,6 +1404,15 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
                      }});
     cases.push_back({"Disable KING_SAFETY_SHIELD (with KING_EVAL)", [&] {
                        disable([](EvalConfigData& e) { e.USE_KING_SAFETY_SHIELD = false; });
+                     }});
+    cases.push_back({"Disable PAWN_STORM (with KING_EVAL)", [&] {
+                       disable([](EvalConfigData& e) { e.USE_PAWN_STORM = false; });
+                     }});
+    cases.push_back({"Disable KING_OPEN_FILE (with KING_EVAL)", [&] {
+                       disable([](EvalConfigData& e) { e.USE_KING_OPEN_FILE = false; });
+                     }});
+    cases.push_back({"Disable SAFE_CHECK (with KING_EVAL)", [&] {
+                       disable([](EvalConfigData& e) { e.USE_SAFE_CHECK = false; });
                      }});
 
     cases.push_back({"Disable GAMEPHASE_VALUE only", [&] {

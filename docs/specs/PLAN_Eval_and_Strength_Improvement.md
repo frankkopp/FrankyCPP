@@ -1,9 +1,9 @@
 # FrankyCPP Evaluation & Strength Improvement Plan
 
-**Document Version:** 1.1  
+**Document Version:** 1.2  
 **Created:** 2026-03-17  
-**Last Updated:** 2026-03-18  
-**Status:** 🟡 IN PROGRESS (Phase 1 ✅ Complete & Validated)  
+**Last Updated:** 2026-03-19  
+**Status:** 🟡 IN PROGRESS (Phase 1 ✅ Complete & Validated, Phase 2 ✅ Complete & Validated)  
 **Target:** FrankyCPP v1.6 → v2.0  
 **Priority:** High (Primary path to strength gains)  
 **Predecessor:** `V1_ENGINE_STRENGTH_ROADMAP.md`, `PLAN_Move_Ordering_Improvements.md`
@@ -238,7 +238,7 @@ For each rook on sq:
 
 **Timeline:** 1–2 weeks  
 **Expected Gain:** +2–4% STS, +15–25 Elo  
-**Status:** 📋 Not Started
+**Status:** ✅ Complete & Validated
 
 ### Feature 2.1: Pawn Storm Detection
 
@@ -257,6 +257,8 @@ For opponent's pawns near our king (files within ±1 of king file):
 **Config parameters to add:**
 - `USE_PAWN_STORM` (bool)
 - `PAWN_STORM_MID_PENALTY` (array[4], default {5, 15, 30, 50})
+
+**Status:** ✅ Complete
 
 ---
 
@@ -279,24 +281,60 @@ For files within ±1 of king file:
 - `KING_OPEN_FILE_MID_PENALTY` (int, default -20)
 - `KING_SEMIOPEN_FILE_MID_PENALTY` (int, default -10)
 
+**Status:** ✅ Complete
+
 ---
 
 ### Feature 2.3: Safe Check Squares
 
 **Targets:** STS AT (41%), King Activity (55%)
 
-Count squares from which the enemy could give check without being captured. More safe check squares = more dangerous king position.
+Count squares from which the enemy could give check without being captured.
+Only counts squares that are (1) reachable by actual enemy pieces (attackedBy[them]),
+(2) not defended by us, and (3) only for piece types the enemy actually has on the board.
 
 **Implementation:**
 ```
-For each check square of each piece type (N, B, R, Q):
-  if square is not attacked by us:
-    safeChecks++
-penalty = safeChecks * SAFE_CHECK_PENALTY_{MID}
+For each piece type (N, B, R, Q) that the enemy has:
+  checkSquares = attack squares of that piece type from our king square
+  safeMask = attackedBy[them] & ~attackedBy[us]
+  safeChecks = popcount(checkSquares & safeMask)
+  penalty += safeChecks * SAFE_CHECK_PENALTY_{MID}
 ```
+
+**Note:** Initial implementation (v1) counted all undefended check squares regardless of
+enemy piece existence and reachability — this caused -73 ELO regression vs SF18. The fix (v2)
+filters by `attackedBy[them]` and piece existence, recovering full strength.
 
 **Difficulty:** Medium (need attack maps)  
 **Risk:** Medium (can slow eval if not careful with bitboard ops)
+
+**Status:** ✅ Complete (v2 — fixed with attackedBy filter)
+
+### Phase 2 Additional: PawnTT Passed Pawn Caching
+
+Extended PawnTT::Entry with passedWhite/passedBlack bitboards (16→32 bytes per entry).
+Passed pawns are now computed once in pawnEval() and cached through PawnTT, eliminating
+redundant computation in evaluate(). On PawnTT cache hit, passedPawns[] are restored
+directly from the cached entry. Also added pre-computed attackedBy[] arrays (king+pawn
+attacks in evaluate(), piece attacks accumulated in pieceEval()) used by safe check
+evaluation and available for future threat evaluation (Phase 3).
+
+**Performance impact:** +2.7% NPS, rook-behind-passer cost reduced from 9.1% → 5.2%.
+
+**Status:** ✅ Complete
+
+### Phase 2 Validation Results
+
+Test suites (v1.6.0 Phase 2 v2):
+- STS: 883/1500 (58.9%), WAC: 193/201 (96.0%), ecm98: 560/769 (72.8%)
+- Overall: 1878/2984 (62.9%) — up from Phase 1 62.1% (+0.9%)
+
+Match results (100 games, 300s):
+- vs v1.5: +74.1 ELO (47W/27D/26L) — ELO-neutral vs Phase 1 (+81.4), within ±15 noise
+- vs SF18 @2700: +49.0 ELO (47W/20D/33L) — ELO-neutral vs Phase 1 (+56.1), within ±15 noise
+
+Benchmark: 6,795K NPS (+2.7% vs Phase 1), 76.4B nodes (-3.4% — better pruning from richer eval)
 
 ---
 
@@ -421,13 +459,13 @@ Use labeled game data (win/loss/draw) to optimize all evaluation parameters simu
 
 ### Benchmarks to Track
 
-| Metric              | Current  | Phase 1 Target | Phase 1 Actual | Phase 2 Target | Final Target |
-|---------------------|----------|----------------|----------------|----------------|--------------|
-| STS Overall         | 58%      | 61%            | 57.2%          | 63%            | 65%+         |
-| WAC                 | ~96%     | ≥96%           | 95.5% ✅        | ≥96%           | ≥97%         |
-| Elo vs v1.5         | baseline | +15            | **+81.4** ✅    | +30            | +60+         |
-| Elo vs SF18 2700    | +6.9     | —              | **+56.1** ✅    | —              | —            |
-| NPS (d12,128MB,4T)  | 7.00M    | —              | 6.61M (−5.5%)  | —              | —            |
+| Metric              | Current  | Phase 1 Target | Phase 1 Actual | Phase 2 Target | Phase 2 Actual  | Final Target |
+|---------------------|----------|----------------|----------------|----------------|-----------------|--------------|
+| STS Overall         | 58%      | 61%            | 57.2%          | 63%            | 58.9%           | 65%+         |
+| WAC                 | ~96%     | ≥96%           | 95.5% ✅        | ≥96%           | 96.0% ✅         | ≥97%         |
+| Elo vs v1.5         | baseline | +15            | **+81.4** ✅    | +30            | **+74.1** ✅     | +60+         |
+| Elo vs SF18 2700    | +6.9     | —              | **+56.1** ✅    | —              | **+49.0** ✅     | —            |
+| NPS (d12,128MB,4T)  | 7.00M    | —              | 6.61M (−5.5%)  | —              | 6.80M (+2.7%)   | —            |
 
 ---
 
@@ -439,11 +477,12 @@ Use labeled game data (win/loss/draw) to optimize all evaluation parameters simu
 | 1.2 | Pawn Advancement Bonus    | 1     | ✅ Complete     | (combined) | (combined) | Non-passed pawns rank 4+, rank-indexed array   |
 | 1.3 | Bad Bishop Detection      | 1     | ✅ Complete     | (combined) | (combined) | Penalty per own pawn on bishop's color         |
 | 1.4 | Rook Behind Passer        | 1     | ✅ Complete     | (combined) | (combined) | Own + enemy passers, separate bonuses          |
-| 2.1 | Pawn Storm Detection      | 2     | 📋 Not Started | —          | —          |                                                |
-| 2.2 | Open File Near King       | 2     | 📋 Not Started | —          | —          |                                                |
-| 2.3 | Safe Check Squares        | 2     | 📋 Not Started | —          | —          |                                                |
+| 2.1 | Pawn Storm Detection      | 2     | ✅ Complete     | +0.9% STS  | ~neutral   | Penalty for opponent pawns approaching king    |
+| 2.2 | Open File Near King       | 2     | ✅ Complete     | (combined) | (combined) | Open/semi-open file penalty near king          |
+| 2.3 | Safe Check Squares        | 2     | ✅ Complete     | (combined) | (combined) | Filtered by attackedBy[them] + piece existence |
+| 2.4 | PawnTT Passed Pawn Cache  | 2     | ✅ Complete     | +2.7% NPS  | (perf)     | passedPawns cached in PawnTT, 16→32 byte entry |
 | 3.1 | Space Evaluation          | 3     | 📋 Not Started | —          | —          |                                                |
-| 3.2 | Threat Evaluation         | 3     | 📋 Not Started | —          | —          |                                                |
+| 3.2 | Threat Evaluation         | 3     | 📋 Not Started | —          | —          | attackedBy[] infrastructure now in place       |
 | 3.3 | Minor Piece Coordination  | 3     | 📋 Not Started | —          | —          |                                                |
 | 4.1 | Continuation History      | 4     | 📋 Not Started | —          | —          |                                                |
 | 4.2 | Probcut                   | 4     | 📋 Not Started | —          | —          |                                                |
@@ -475,4 +514,4 @@ Use labeled game data (win/loss/draw) to optimize all evaluation parameters simu
 
 ---
 
-*Last updated: 2026-03-18*
+*Last updated: 2026-03-19*

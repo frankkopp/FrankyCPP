@@ -64,7 +64,7 @@ TEST_F(PawnTT_Test, basic) {
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", pawnTt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", pawnTt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", pawnTt.getNumberOfEntries());
-  ASSERT_EQ(131072, pawnTt.getMaxNumberOfEntries());
+  ASSERT_EQ(65536, pawnTt.getMaxNumberOfEntries());
   ASSERT_EQ(0, pawnTt.getNumberOfEntries());
 }
 
@@ -83,7 +83,7 @@ TEST_F(PawnTT_Test, basic10) {
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
-  ASSERT_EQ(524288, tt.getMaxNumberOfEntries());
+  ASSERT_EQ(262144, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
 }
 
@@ -93,7 +93,7 @@ TEST_F(PawnTT_Test, basic64) {
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
-  ASSERT_EQ(4194304, tt.getMaxNumberOfEntries());
+  ASSERT_EQ(2097152, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
 }
 
@@ -103,7 +103,7 @@ TEST_F(PawnTT_Test, basic100) {
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
-  ASSERT_EQ(4194304, tt.getMaxNumberOfEntries());
+  ASSERT_EQ(2097152, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
 }
 
@@ -113,7 +113,7 @@ TEST_F(PawnTT_Test, basic1000) {
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
-  ASSERT_EQ(33554432, tt.getMaxNumberOfEntries());
+  ASSERT_EQ(16777216, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
 }
 
@@ -123,7 +123,7 @@ TEST_F(PawnTT_Test, basic10000) {
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
-  ASSERT_EQ(268435456, tt.getMaxNumberOfEntries());
+  ASSERT_EQ(134217728, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
 }
 
@@ -140,13 +140,13 @@ TEST_F(PawnTT_Test, resize) {
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
-  ASSERT_EQ(4194304, tt.getMaxNumberOfEntries());
+  ASSERT_EQ(2097152, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
   tt.resize(1000);
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
-  ASSERT_EQ(33554432, tt.getMaxNumberOfEntries());
+  ASSERT_EQ(16777216, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
 }
 
@@ -157,7 +157,7 @@ TEST_F(PawnTT_Test, parallelClear) {
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getMaxNumberOfEntries());
   LOG__INFO(Logger::get().TEST_LOG, "Number of bytes allocated: {:L}", tt.getSizeInByte());
   LOG__INFO(Logger::get().TEST_LOG, "Number of entries: {:L}", tt.getNumberOfEntries());
-  ASSERT_EQ(268'435'456, tt.getMaxNumberOfEntries());
+  ASSERT_EQ(134'217'728, tt.getMaxNumberOfEntries());
   ASSERT_EQ(0, tt.getNumberOfEntries());
   tt.clear();
 }
@@ -173,7 +173,7 @@ TEST_F(PawnTT_Test, put) {
   Position p{};
   Score score = {Value{1}, Value{11}};
 
-  tt.put(tt.getEntryPtr(p.getPawnZobristKey()), p.getPawnZobristKey(), score);
+  tt.put(tt.getEntryPtr(p.getPawnZobristKey()), p.getPawnZobristKey(), score, BbZero, BbZero);
 
   // new entry in empty bucket at pos 0
   ASSERT_EQ(1, tt.getNumberOfPuts());
@@ -188,6 +188,8 @@ TEST_F(PawnTT_Test, put) {
   ASSERT_TRUE(entry.has_value());
   ASSERT_EQ(entry->midvalue, 1);
   ASSERT_EQ(entry->endvalue, 11);
+  ASSERT_EQ(entry->passedWhite, BbZero);
+  ASSERT_EQ(entry->passedBlack, BbZero);
 }
 
 TEST_F(PawnTT_Test, getEntryPtr_valid_even_when_zero_then_resize) {
@@ -241,7 +243,7 @@ TEST_F(PawnTT_Test, ConcurrentPutProbeNoUB) {
       const Score score    = {midvalue, endvalue};
 
       // Use getEntryPtr() only for put() - this is the correct pattern
-      tt.put(tt.getEntryPtr(key), key, score);
+      tt.put(tt.getEntryPtr(key), key, score, BbZero, BbZero);
 
       // Use probe() for thread-safe copy-on-read pattern.
       // This returns a COPY of the entry, eliminating races where another

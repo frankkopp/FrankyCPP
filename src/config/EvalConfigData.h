@@ -71,8 +71,8 @@ namespace config {
     CONFIG_CONST bool USE_PASSED_PAWN_RANK_BONUS = true;
     // Mid/End bonus per relative rank: {rank2, rank3, rank4, rank5, rank6, rank7}
     // Quadratic-ish scaling: low ranks add little, high ranks add substantially.
-    CONFIG_ESSENTIAL std::array<int, 6> PASSED_PAWN_RANK_MID_BONUS = {0, 0, 5, 15, 35, 70};
-    CONFIG_ESSENTIAL std::array<int, 6> PASSED_PAWN_RANK_END_BONUS = {0, 5, 15, 35, 70, 120};
+    CONFIG_CONST std::array<int, 6> PASSED_PAWN_RANK_MID_BONUS = {0, 0, 5, 15, 35, 70};
+    CONFIG_CONST std::array<int, 6> PASSED_PAWN_RANK_END_BONUS = {0, 5, 15, 35, 70, 120};
     CONFIG_CONST int BLOCKED_PAWN_MID_WEIGHT   = -2;
     CONFIG_CONST int BLOCKED_PAWN_END_WEIGHT   = -20;
     CONFIG_CONST int PHALANX_PAWN_MID_WEIGHT   = 4;
@@ -175,8 +175,26 @@ namespace config {
     CONFIG_CONST int KING_ATTACK_WEIGHT_ROOK       = 3;
     CONFIG_CONST int KING_ATTACK_WEIGHT_QUEEN      = 4;
     // Non-linear penalty table indexed by total attack weight (clamped to 0..15)
-    CONFIG_ESSENTIAL std::array<int, 16> KING_SAFETY_TABLE = {
+    CONFIG_CONST std::array<int, 16> KING_SAFETY_TABLE = {
       0, 0, 5, 15, 30, 50, 75, 105, 140, 180, 220, 260, 300, 340, 380, 400};
+
+    // pawn storm: penalty when opponent pawns advance toward our king (midgame only)
+    // Indexed by (relativeRank - 4): {rank4, rank5, rank6, rank7}
+    CONFIG_CONST bool USE_PAWN_STORM = true;
+    CONFIG_CONST std::array<int, 4> PAWN_STORM_MID_PENALTY = {5, 15, 30, 50};
+
+    // open file near king: penalty for open/semi-open files adjacent to king (midgame only)
+    CONFIG_CONST bool USE_KING_OPEN_FILE            = true;
+    CONFIG_CONST int KING_OPEN_FILE_MID_PENALTY     = -20;
+    CONFIG_CONST int KING_SEMIOPEN_FILE_MID_PENALTY = -10;
+
+    // safe check squares: penalty for squares from which enemy can give check without being captured
+    // Per-piece-type penalties (midgame only, negative values = penalty for the defending side)
+    CONFIG_CONST bool USE_SAFE_CHECK          = true;
+    CONFIG_CONST int SAFE_CHECK_KNIGHT_MID    = -10;
+    CONFIG_CONST int SAFE_CHECK_BISHOP_MID    = -8;
+    CONFIG_CONST int SAFE_CHECK_ROOK_MID      = -12;
+    CONFIG_CONST int SAFE_CHECK_QUEEN_MID     = -15;
 
     CONFIG_CONST bool USE_GAMEPHASE_VALUE = true;
 
