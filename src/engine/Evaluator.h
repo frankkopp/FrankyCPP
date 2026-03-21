@@ -37,6 +37,7 @@
 //   - Bad bishop detection (own pawns on bishop's color)
 //   - Rook placement (open files, 7th rank, behind passed pawns)
 //   - King safety (pawn shield, attacker proximity, pawn storm, open files, safe checks)
+//   - Threat evaluation (pawn attacks on pieces, minor attacks on majors, hanging pieces)
 //
 // Tapered Evaluation:
 //   Scores are computed separately for midgame and endgame, then interpolated
@@ -101,6 +102,13 @@ namespace engine {
     /// Reset in evaluate() (king + pawn attacks), accumulated in piece evals
     /// (knight/bishop/rook/queen), consumed in kingEval() for safe check squares.
     std::array<Bitboard, 2> attackedBy{};
+
+    /// Per-piece-type, per-color attack bitboards.
+    /// Indexed as attackedByPT[PieceType][Color].
+    /// Reset in evaluate(), populated alongside attackedBy[] in the pre-compute block
+    /// (pawn/king attacks) and in each piece eval function (knight/bishop/rook/queen).
+    /// Used by threatEval() to identify attacks by specific piece types.
+    std::array<std::array<Bitboard, 2>, PT_LENGTH> attackedByPT{};
 
     /// Per-color passed pawn bitboard. Computed once in evaluate() and reused
     /// by rookEval (rook-behind-passer) and kingEval (king proximity to passers).
@@ -185,6 +193,16 @@ namespace engine {
     /// @param s   Score struct to update
     /// @param us  Color of the king
     void kingEval(const Position& p, Score& s, Color us) const;
+
+    /// Evaluates threats: pieces attacked by lesser-value pieces, hanging pieces.
+    /// Must be called AFTER all pieceEval() calls complete (needs full attackedBy[]
+    /// and attackedByPT[][] data).
+    /// Three tiers: (1) pawn attacks on pieces, (2) minor attacks on majors,
+    /// (3) hanging pieces (attacked by us, not defended by them).
+    /// @param p   The position to evaluate
+    /// @param s   Score struct to update
+    /// @param us  Color whose threats to evaluate (bonus for us)
+    void threatEval(const Position& p, Score& s, Color us) const;
 
 #ifdef EVAL_ENABLE_PREFETCH
     /// Prefetches pawn cache entry for the given key into CPU cache.

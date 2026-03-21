@@ -123,5 +123,24 @@ _YAML_SMOKE_TEST_MARKER: true
 # KING_ATTACK_WEIGHT_QUEEN: 4
 # KING_SAFETY_TABLE: 0,0,5,15,30,50,75,105,140,180,220,260,300,340,380,400
 
+# Threat evaluation: bonus for pieces attacked by lesser-value pieces and hanging pieces
+# Three tiers: (1) pawn attacks on pieces, (2) minor attacks on majors, (3) hanging pieces
+# USE_THREAT_EVAL: true
+# Tier 1: pawn attacks on pieces (per victim type)
+# THREAT_BY_PAWN_MINOR_MID: 5
+# THREAT_BY_PAWN_MINOR_END: 5
+# THREAT_BY_PAWN_ROOK_MID: 10
+# THREAT_BY_PAWN_ROOK_END: 12
+# THREAT_BY_PAWN_QUEEN_MID: 15
+# THREAT_BY_PAWN_QUEEN_END: 20
+# Tier 2: minor piece attacks on major pieces
+# THREAT_BY_MINOR_ROOK_MID: 5
+# THREAT_BY_MINOR_ROOK_END: 6
+# THREAT_BY_MINOR_QUEEN_MID: 8
+# THREAT_BY_MINOR_QUEEN_END: 10
+# Tier 3: hanging pieces (attacked by us, not defended by them)
+# THREAT_HANGING_MID: 6
+# THREAT_HANGING_END: 10
+
 # Use gamephase value blending (e.g., tapered eval)
 # USE_GAMEPHASE_VALUE: true

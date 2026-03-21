@@ -54,14 +54,14 @@ ConfigRegistry::ConfigRegistry() {
   static_assert(sizeof(SearchConfigData) == 640,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 552,
+  static_assert(sizeof(EvalConfigData) == 608,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
   static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 544,
+  static_assert(sizeof(EvalConfigData) == 600,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #endif
@@ -72,7 +72,7 @@ ConfigRegistry::ConfigRegistry() {
   static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 544,
+  static_assert(sizeof(EvalConfigData) == 600,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
@@ -80,7 +80,7 @@ ConfigRegistry::ConfigRegistry() {
   static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 544,
+  static_assert(sizeof(EvalConfigData) == 600,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #endif
@@ -3225,6 +3225,153 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .exposure = {.uci = false, .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.SAFE_CHECK_QUEEN_MID; }),
     .setter = EVAL_CONFIG_SETTER(SAFE_CHECK_QUEEN_MID, parseInt)
+  });
+
+  //===========================================================================
+  // THREAT EVALUATION
+  //===========================================================================
+  definitions_.push_back({
+    .name = "USE_THREAT_EVAL",
+    .uciName = "Use Threat Eval",
+    .description = "Enable threat evaluation (pawn/minor attacks on pieces, hanging pieces)",
+    .valueType = Bool,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.USE_THREAT_EVAL),
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_THREAT_EVAL), .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.USE_THREAT_EVAL; }),
+    .setter = EVAL_CONFIG_SETTER(USE_THREAT_EVAL, parseBool)
+  });
+  definitions_.push_back({
+    .name = "THREAT_BY_PAWN_MINOR_MID",
+    .uciName = "",
+    .description = "Threat bonus (mid): pawn attacks minor piece",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.THREAT_BY_PAWN_MINOR_MID),
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.THREAT_BY_PAWN_MINOR_MID; }),
+    .setter = EVAL_CONFIG_SETTER(THREAT_BY_PAWN_MINOR_MID, parseInt)
+  });
+  definitions_.push_back({
+    .name = "THREAT_BY_PAWN_MINOR_END",
+    .uciName = "",
+    .description = "Threat bonus (end): pawn attacks minor piece",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.THREAT_BY_PAWN_MINOR_END),
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.THREAT_BY_PAWN_MINOR_END; }),
+    .setter = EVAL_CONFIG_SETTER(THREAT_BY_PAWN_MINOR_END, parseInt)
+  });
+  definitions_.push_back({
+    .name = "THREAT_BY_PAWN_ROOK_MID",
+    .uciName = "",
+    .description = "Threat bonus (mid): pawn attacks rook",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.THREAT_BY_PAWN_ROOK_MID),
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.THREAT_BY_PAWN_ROOK_MID; }),
+    .setter = EVAL_CONFIG_SETTER(THREAT_BY_PAWN_ROOK_MID, parseInt)
+  });
+  definitions_.push_back({
+    .name = "THREAT_BY_PAWN_ROOK_END",
+    .uciName = "",
+    .description = "Threat bonus (end): pawn attacks rook",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.THREAT_BY_PAWN_ROOK_END),
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.THREAT_BY_PAWN_ROOK_END; }),
+    .setter = EVAL_CONFIG_SETTER(THREAT_BY_PAWN_ROOK_END, parseInt)
+  });
+  definitions_.push_back({
+    .name = "THREAT_BY_PAWN_QUEEN_MID",
+    .uciName = "",
+    .description = "Threat bonus (mid): pawn attacks queen",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.THREAT_BY_PAWN_QUEEN_MID),
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.THREAT_BY_PAWN_QUEEN_MID; }),
+    .setter = EVAL_CONFIG_SETTER(THREAT_BY_PAWN_QUEEN_MID, parseInt)
+  });
+  definitions_.push_back({
+    .name = "THREAT_BY_PAWN_QUEEN_END",
+    .uciName = "",
+    .description = "Threat bonus (end): pawn attacks queen",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.THREAT_BY_PAWN_QUEEN_END),
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.THREAT_BY_PAWN_QUEEN_END; }),
+    .setter = EVAL_CONFIG_SETTER(THREAT_BY_PAWN_QUEEN_END, parseInt)
+  });
+  definitions_.push_back({
+    .name = "THREAT_BY_MINOR_ROOK_MID",
+    .uciName = "",
+    .description = "Threat bonus (mid): minor piece attacks rook",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.THREAT_BY_MINOR_ROOK_MID),
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.THREAT_BY_MINOR_ROOK_MID; }),
+    .setter = EVAL_CONFIG_SETTER(THREAT_BY_MINOR_ROOK_MID, parseInt)
+  });
+  definitions_.push_back({
+    .name = "THREAT_BY_MINOR_ROOK_END",
+    .uciName = "",
+    .description = "Threat bonus (end): minor piece attacks rook",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.THREAT_BY_MINOR_ROOK_END),
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.THREAT_BY_MINOR_ROOK_END; }),
+    .setter = EVAL_CONFIG_SETTER(THREAT_BY_MINOR_ROOK_END, parseInt)
+  });
+  definitions_.push_back({
+    .name = "THREAT_BY_MINOR_QUEEN_MID",
+    .uciName = "",
+    .description = "Threat bonus (mid): minor piece attacks queen",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.THREAT_BY_MINOR_QUEEN_MID),
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.THREAT_BY_MINOR_QUEEN_MID; }),
+    .setter = EVAL_CONFIG_SETTER(THREAT_BY_MINOR_QUEEN_MID, parseInt)
+  });
+  definitions_.push_back({
+    .name = "THREAT_BY_MINOR_QUEEN_END",
+    .uciName = "",
+    .description = "Threat bonus (end): minor piece attacks queen",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.THREAT_BY_MINOR_QUEEN_END),
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.THREAT_BY_MINOR_QUEEN_END; }),
+    .setter = EVAL_CONFIG_SETTER(THREAT_BY_MINOR_QUEEN_END, parseInt)
+  });
+  definitions_.push_back({
+    .name = "THREAT_HANGING_MID",
+    .uciName = "",
+    .description = "Threat bonus (mid): per hanging enemy piece",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.THREAT_HANGING_MID),
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.THREAT_HANGING_MID; }),
+    .setter = EVAL_CONFIG_SETTER(THREAT_HANGING_MID, parseInt)
+  });
+  definitions_.push_back({
+    .name = "THREAT_HANGING_END",
+    .uciName = "",
+    .description = "Threat bonus (end): per hanging enemy piece",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.THREAT_HANGING_END),
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.THREAT_HANGING_END; }),
+    .setter = EVAL_CONFIG_SETTER(THREAT_HANGING_END, parseInt)
   });
 
   //===========================================================================

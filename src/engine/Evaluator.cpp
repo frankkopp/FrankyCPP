@@ -18,9 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "types/types.h"
-
 #include "Evaluator.h"
-
 #include "config/ConfigManager.h"
 
 #include <algorithm>
@@ -32,7 +30,7 @@ using namespace common;
 
 Evaluator::Evaluator()
     : EvalConfig(ConfigManager::instance().eval()) {
-  // PawnTT is now managed by Search and passed via setPawnTT()
+  // PawnTT is managed by Search and passed via setPawnTT()
 }
 
 Value Evaluator::evaluate(const Position& p) {
@@ -58,6 +56,9 @@ Value Evaluator::evaluate(const Position& p) {
   attackedBy[BLACK]       = BbZero;
   passedPawns[WHITE]      = BbZero;
   passedPawns[BLACK]      = BbZero;
+
+  // Reset per-piece-type attack maps (112 bytes — single memset is faster than element-wise loop)
+  std::memset(&attackedByPT, 0, sizeof(attackedByPT));
 
   const double gamePhaseFactor = p.getGamePhaseFactor();
 
@@ -92,12 +93,16 @@ Value Evaluator::evaluate(const Position& p) {
     // King attacks
     attackedBy[WHITE] = Bitboards::nonSliderAttacks[KING][p.getKingSquare(WHITE)];
     attackedBy[BLACK] = Bitboards::nonSliderAttacks[KING][p.getKingSquare(BLACK)];
+    attackedByPT[KING][WHITE] = attackedBy[WHITE];
+    attackedByPT[KING][BLACK] = attackedBy[BLACK];
 
     // Pawn attacks
     Bitboard wp = p.getPieceBb(WHITE, PAWN);
-    while (wp) { attackedBy[WHITE] |= Bitboards::pawnAttacks[WHITE][wp.popLSB()]; }
+    while (wp) { attackedByPT[PAWN][WHITE] |= Bitboards::pawnAttacks[WHITE][wp.popLSB()]; }
+    attackedBy[WHITE] |= attackedByPT[PAWN][WHITE];
     Bitboard bp = p.getPieceBb(BLACK, PAWN);
-    while (bp) { attackedBy[BLACK] |= Bitboards::pawnAttacks[BLACK][bp.popLSB()]; }
+    while (bp) { attackedByPT[PAWN][BLACK] |= Bitboards::pawnAttacks[BLACK][bp.popLSB()]; }
+    attackedBy[BLACK] |= attackedByPT[PAWN][BLACK];
   }
 
   // evaluate pawns — also computes passedPawns[] for rookEval/kingEval
@@ -133,6 +138,12 @@ Value Evaluator::evaluate(const Position& p) {
     pieceEval(p, score, BLACK, ROOK);
     pieceEval(p, score, WHITE, QUEEN);
     pieceEval(p, score, BLACK, QUEEN);
+  }
+
+  // evaluate threats (requires fully populated attackedBy[] and attackedByPT[][])
+  if (EvalConfig.USE_THREAT_EVAL) {
+    threatEval(p, score, WHITE);
+    threatEval(p, score, BLACK);
   }
 
   // evaluate kings
@@ -371,6 +382,7 @@ inline void Evaluator::pieceEval(const Position& p, Score& s, const Color us, co
 inline void Evaluator::knightEval(const Position& p, Score& s, const Color us, Color /*unused*/, const Square sq) {
   const Bitboard attacks = Bitboards::nonSliderAttacks[KNIGHT][sq];
   attackedBy[us] |= attacks;
+  attackedByPT[KNIGHT][us] |= attacks;
 
   if (EvalConfig.USE_KNIGHT_MOBILITY) {
     const Bitboard myOcc = p.getOccupiedBb(us);
@@ -438,6 +450,7 @@ inline void Evaluator::bishopEval(const Position& p, Score& s, const Color us, C
   const Bitboard occupied = p.getOccupiedBb();
   const Bitboard attacks  = Attacks::attacks(BISHOP, sq, occupied);
   attackedBy[us] |= attacks;
+  attackedByPT[BISHOP][us] |= attacks;
 
   // Mobility
   if (EvalConfig.USE_BISHOP_MOBILITY) {
@@ -489,6 +502,7 @@ inline void Evaluator::rookEval(const Position& p, Score& s, const Color us, con
   const Bitboard occupied = p.getOccupiedBb();
   const Bitboard attacks  = Attacks::attacks(ROOK, sq, occupied);
   attackedBy[us] |= attacks;
+  attackedByPT[ROOK][us] |= attacks;
 
   // Mobility
   if (EvalConfig.USE_ROOK_MOBILITY) {
@@ -588,6 +602,7 @@ inline void Evaluator::queenEval(const Position& p, Score& s, const Color us, co
   const Bitboard occupied = p.getOccupiedBb();
   const Bitboard attacks  = Attacks::attacks(QUEEN, sq, occupied);
   attackedBy[us] |= attacks;
+  attackedByPT[QUEEN][us] |= attacks;
 
   // Mobility
   if (EvalConfig.USE_QUEEN_MOBILITY) {
@@ -766,4 +781,58 @@ inline void Evaluator::kingEval(const Position& p, Score& s, const Color us) con
 
   s.midgame += static_cast<Value>(mid * us.sign());
   s.endgame += static_cast<Value>(end * us.sign());
+}
+
+inline void Evaluator::threatEval(const Position& p, Score& s, const Color us) const {
+  int mid = 0;
+  int end = 0;
+
+  const Color them = ~us;
+
+  // Our attack maps by piece type (populated in pre-compute block and piece evals)
+  const Bitboard ourPawnAttacks  = attackedByPT[PAWN][us];
+  const Bitboard ourMinorAttacks = attackedByPT[KNIGHT][us] | attackedByPT[BISHOP][us];
+
+  // Enemy pieces by type (exclude king — can't be "threatened" in eval sense)
+  const Bitboard enemyMinors = p.getPieceBb(them, KNIGHT) | p.getPieceBb(them, BISHOP);
+  const Bitboard enemyRooks  = p.getPieceBb(them, ROOK);
+  const Bitboard enemyQueens = p.getPieceBb(them, QUEEN);
+
+  // Tier 1: pawn attacks on pieces
+  // A pawn attacking any piece is always a meaningful threat regardless of defense.
+  {
+    const int pawnThreatsMinor = (enemyMinors & ourPawnAttacks).popcount();
+    const int pawnThreatsRook  = (enemyRooks & ourPawnAttacks).popcount();
+    const int pawnThreatsQueen = (enemyQueens & ourPawnAttacks).popcount();
+    mid += pawnThreatsMinor * EvalConfig.THREAT_BY_PAWN_MINOR_MID;
+    end += pawnThreatsMinor * EvalConfig.THREAT_BY_PAWN_MINOR_END;
+    mid += pawnThreatsRook * EvalConfig.THREAT_BY_PAWN_ROOK_MID;
+    end += pawnThreatsRook * EvalConfig.THREAT_BY_PAWN_ROOK_END;
+    mid += pawnThreatsQueen * EvalConfig.THREAT_BY_PAWN_QUEEN_MID;
+    end += pawnThreatsQueen * EvalConfig.THREAT_BY_PAWN_QUEEN_END;
+  }
+
+  // Tier 2: minor piece attacks on major pieces (rook/queen)
+  {
+    const int minorThreatsRook  = (enemyRooks & ourMinorAttacks).popcount();
+    const int minorThreatsQueen = (enemyQueens & ourMinorAttacks).popcount();
+    mid += minorThreatsRook * EvalConfig.THREAT_BY_MINOR_ROOK_MID;
+    end += minorThreatsRook * EvalConfig.THREAT_BY_MINOR_ROOK_END;
+    mid += minorThreatsQueen * EvalConfig.THREAT_BY_MINOR_QUEEN_MID;
+    end += minorThreatsQueen * EvalConfig.THREAT_BY_MINOR_QUEEN_END;
+  }
+
+  // Tier 3: hanging pieces (attacked by us, not defended by them)
+  {
+    const Bitboard enemyPieces = p.getOccupiedBb(them) & ~p.getPieceBb(them, KING);
+    const Bitboard hanging     = enemyPieces & attackedBy[us] & ~attackedBy[them];
+    const int hangingCount     = hanging.popcount();
+    mid += hangingCount * EvalConfig.THREAT_HANGING_MID;
+    end += hangingCount * EvalConfig.THREAT_HANGING_END;
+  }
+
+  if (mid || end) {
+    s.midgame += static_cast<Value>(mid * us.sign());
+    s.endgame += static_cast<Value>(end * us.sign());
+  }
 }

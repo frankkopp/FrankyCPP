@@ -1,9 +1,9 @@
 # FrankyCPP Evaluation & Strength Improvement Plan
 
-**Document Version:** 1.2  
+**Document Version:** 1.3  
 **Created:** 2026-03-17  
-**Last Updated:** 2026-03-19  
-**Status:** 🟡 IN PROGRESS (Phase 1 ✅ Complete & Validated, Phase 2 ✅ Complete & Validated)  
+**Last Updated:** 2026-03-21  
+**Status:** 🟡 IN PROGRESS (Phase 1 ✅ Complete & Validated, Phase 2 ✅ Complete & Validated, Phase 3 🔄 In Progress)  
 **Target:** FrankyCPP v1.6 → v2.0  
 **Priority:** High (Primary path to strength gains)  
 **Predecessor:** `V1_ENGINE_STRENGTH_ROADMAP.md`, `PLAN_Move_Ordering_Improvements.md`
@@ -342,49 +342,251 @@ Benchmark: 6,795K NPS (+2.7% vs Phase 1), 76.4B nodes (-3.4% — better pruning 
 
 **Timeline:** 2–3 weeks  
 **Expected Gain:** +2–4% STS, +15–25 Elo  
-**Status:** 📋 Not Started
+**Status:** 🔄 In Progress — Feature 3.2 (Threat Evaluation) first
+
+**Implementation order:** Feature 3.2 (Threats) first — highest expected impact, targets the two
+weakest STS categories (AT 41%, AKPC 52%). Benchmark + STS validation after 3.2, then decide
+whether to proceed with 3.1 (Space) and 3.3 (Coordination) or move to Phase 4.
+
+### Prerequisite 3.0: Per-Piece-Type Attack Map (`attackedByPT`)
+
+**Status:** ✅ Complete
+
+The existing `attackedBy[Color]` array stores the *union* of all attacks per side but does not
+distinguish which piece type generates which attacks. Threat evaluation (3.2) and space evaluation
+(3.1) both require knowing *which* piece type attacks a given square — e.g., "is this square
+attacked by an enemy pawn?" or "is this piece attacked by a lesser-value attacker?"
+
+**Implementation:**
+
+Add to `Evaluator.h`:
+```cpp
+/// Per-piece-type, per-color attack bitboards.
+/// Indexed as attackedByPT[PieceType][Color].
+/// Reset in evaluate(), populated alongside attackedBy[] in the pre-compute block
+/// (pawn/king attacks) and in each piece eval function (knight/bishop/rook/queen).
+std::array<std::array<Bitboard, 2>, PT_LENGTH> attackedByPT{};
+```
+
+Changes in `Evaluator.cpp`:
+- `evaluate()`: zero out `attackedByPT` alongside `attackedBy[]`, populate `attackedByPT[PAWN][WHITE/BLACK]`
+  and `attackedByPT[KING][WHITE/BLACK]` in the pre-compute block.
+- `knightEval()`: add `attackedByPT[KNIGHT][us] |= attacks;` (one line, next to existing `attackedBy[us] |= attacks`)
+- `bishopEval()`: add `attackedByPT[BISHOP][us] |= attacks;`
+- `rookEval()`: add `attackedByPT[ROOK][us] |= attacks;`
+- `queenEval()`: add `attackedByPT[QUEEN][us] |= attacks;`
+
+**Cost:** ~96 bytes additional scratch state per Evaluator instance, one extra OR operation per piece.
+Expected NPS impact: negligible (< 0.5%).
+
+**Difficulty:** Easy  
+**Risk:** Low
+
+---
+
+### Feature 3.2: Threat Evaluation ← IMPLEMENT FIRST
+
+**Targets:** STS AT (41%), AKPC (52%)  
+**Status:** ✅ Complete  
+**Depends on:** Prerequisite 3.0 (attackedByPT)
+
+Detect hanging (undefended) pieces and pieces attacked by lesser-value pieces. Uses a three-tier
+model inspired by Stockfish-classical's threat evaluation — all pure bitboard AND/OR operations,
+no per-square loops needed for tiers 1–2.
+
+**Design rationale — three tiers, no SEE:**
+
+- **Tier 1: Pawn attacks on pieces** — A pawn attacking any piece is always a threat regardless
+  of defense. Use per-victim-type bonuses (minor: small, rook: medium, queen: large).
+  `enemyPieces & attackedByPT[PAWN][us]` — one AND + popcount per piece type.
+
+- **Tier 2: Minor attacks on major pieces** — Knights/bishops attacking rooks or queens.
+  `(enemyRooks | enemyQueens) & (attackedByPT[KNIGHT][us] | attackedByPT[BISHOP][us])`.
+  Also cheap and clearly valuable.
+
+- **Tier 3: Hanging pieces** — Enemy pieces attacked by us and defended by none of theirs.
+  `enemyPieces & attackedBy[us] & ~attackedBy[them]`.
+  Simple definition of "hanging" — the over-counting concern (e.g., a queen "defended" by a pawn
+  still being effectively capturable) actually helps because it *should* penalize poorly defended
+  pieces. SEE was considered but rejected: ~50× more expensive per square, would be called for
+  every enemy piece, blowing the performance budget.
+
+**Implementation:**
+
+New method in `Evaluator.h` / `Evaluator.cpp`:
+```cpp
+/// Evaluates threats: pieces attacked by lesser-value pieces, hanging pieces.
+/// Must be called AFTER all pieceEval() calls complete (needs full attackedBy[]
+/// and attackedByPT[][] data).
+/// @param p   The position to evaluate
+/// @param s   Score struct to update
+/// @param us  Color whose threats to evaluate (bonus for us)
+void threatEval(const Position& p, Score& s, Color us);
+```
+
+Call site in `evaluate()` — insert between `pieceEval` block and `kingEval` block:
+```cpp
+// evaluate threats (requires fully populated attackedBy[] and attackedByPT[][])
+if (EvalConfig.USE_THREAT_EVAL) {
+  threatEval(p, score, WHITE);
+  threatEval(p, score, BLACK);
+}
+```
+
+Pseudocode for `threatEval()`:
+```
+them = ~us
+enemyPieces = occupiedBb(them) & ~getPieceBb(them, KING)  // exclude king
+ourPawnAttacks = attackedByPT[PAWN][us]
+ourMinorAttacks = attackedByPT[KNIGHT][us] | attackedByPT[BISHOP][us]
+
+// Tier 1: pawn attacks on pieces
+pawnThreats_minor = popcount(getPieceBb(them, KNIGHT|BISHOP) & ourPawnAttacks)
+pawnThreats_rook  = popcount(getPieceBb(them, ROOK) & ourPawnAttacks)
+pawnThreats_queen = popcount(getPieceBb(them, QUEEN) & ourPawnAttacks)
+mid += pawnThreats_minor * THREAT_BY_PAWN_MINOR_MID
+end += pawnThreats_minor * THREAT_BY_PAWN_MINOR_END
+mid += pawnThreats_rook  * THREAT_BY_PAWN_ROOK_MID
+end += pawnThreats_rook  * THREAT_BY_PAWN_ROOK_END
+mid += pawnThreats_queen * THREAT_BY_PAWN_QUEEN_MID
+end += pawnThreats_queen * THREAT_BY_PAWN_QUEEN_END
+
+// Tier 2: minor attacks on major pieces
+minorThreats_rook  = popcount(getPieceBb(them, ROOK)  & ourMinorAttacks)
+minorThreats_queen = popcount(getPieceBb(them, QUEEN) & ourMinorAttacks)
+mid += minorThreats_rook  * THREAT_BY_MINOR_ROOK_MID
+end += minorThreats_rook  * THREAT_BY_MINOR_ROOK_END
+mid += minorThreats_queen * THREAT_BY_MINOR_QUEEN_MID
+end += minorThreats_queen * THREAT_BY_MINOR_QUEEN_END
+
+// Tier 3: hanging pieces (attacked by us, not defended by them)
+hanging = enemyPieces & attackedBy[us] & ~attackedBy[them]
+mid += popcount(hanging) * THREAT_HANGING_MID
+end += popcount(hanging) * THREAT_HANGING_END
+
+s.midgame += mid * us.sign()
+s.endgame += end * us.sign()
+```
+
+**Config parameters to add (`EvalConfigData.h` + `ConfigRegistry.cpp`):**
+```
+USE_THREAT_EVAL                  (bool, default true)
+THREAT_BY_PAWN_MINOR_MID         (int, default 5)
+THREAT_BY_PAWN_MINOR_END         (int, default 5)
+THREAT_BY_PAWN_ROOK_MID          (int, default 10)
+THREAT_BY_PAWN_ROOK_END          (int, default 12)
+THREAT_BY_PAWN_QUEEN_MID         (int, default 15)
+THREAT_BY_PAWN_QUEEN_END         (int, default 20)
+THREAT_BY_MINOR_ROOK_MID         (int, default 5)
+THREAT_BY_MINOR_ROOK_END         (int, default 6)
+THREAT_BY_MINOR_QUEEN_MID        (int, default 8)
+THREAT_BY_MINOR_QUEEN_END        (int, default 10)
+THREAT_HANGING_MID               (int, default 6)
+THREAT_HANGING_END               (int, default 10)
+```
+Default weights are deliberately conservative — Texel tuning (Phase 5) will optimize them.
+
+**Unit tests to add (`EvaluatorTest.cpp`):**
+
+1. **ThreatByPawn_PawnAttacksRook** — Position with white pawn attacking black rook should
+   evaluate better for white than same position without the pawn attack.
+2. **ThreatByMinor_BishopAttacksQueen** — Position with bishop attacking undefended queen.
+3. **ThreatHanging_UndefendedPiece** — Position with hanging black knight should give white
+   a better eval than a position where the knight is defended.
+4. **ThreatEval_ToggleChangesEval** — Same position evaluates differently with USE_THREAT_EVAL
+   on vs off (like existing SafeCheck toggle test).
+5. **ThreatEval_SymmetricPosition** — Symmetric position should have ~0 threat impact.
+6. **Timing case** — Add `"Disable THREAT_EVAL (with PIECE_EVAL)"` case to
+   `Timing_EvalConfig_FeatureImpact`.
+
+Update `set_eval_config()` to include `e.USE_THREAT_EVAL = onoff;`.
+
+**Files to modify:**
+- `src/engine/Evaluator.h` — add `attackedByPT` member + `threatEval()` declaration
+- `src/engine/Evaluator.cpp` — implement `threatEval()`, wire into `evaluate()`, populate `attackedByPT`
+- `src/config/EvalConfigData.h` — add 13 config members
+- `src/config/ConfigRegistry.cpp` — add 13 registry entries
+- `config/eval.yaml` — add default values
+- `test/engine/EvaluatorTest.cpp` — add tests + update `set_eval_config()`
+
+**Difficulty:** Medium  
+**Risk:** Medium (eval speed sensitive — must stay within ~3% NPS budget)
+
+**Validation plan:** After implementation, run benchmark + STS + WAC. Decide on gauntlet match
+based on those results. If STS AT/AKPC categories improve ≥3 points, proceed to match testing.
+
+### Feature 3.2 Validation Results
+
+**Status:** ✅ Implemented & Validated
+
+Benchmark: 6,676K NPS (−1.8% vs Phase 2 v2) ✅ within ≤3% budget.
+VTune profile: threatEval = 5.6% of eval time (2.42s total, 1.05s self).
+
+Test suites (Phase 2 v2 → Phase 3.2):
+- STS: 883 → 886 (+3, +0.2%)
+- WAC: 193 → 190 (−3) ⚠️ tactical regression
+- ecm98: 560 → 563 (+3)
+- kaufman: 18 → 21 (+3)
+- Overall: 1878 → 1883 (+5, +0.2%)
+
+Match results (100 games, 300s):
+- vs v1.5: +81.4 ELO (48W/27D/25L) — ELO-stable vs Phase 1 (+81.4), +7.3 vs Phase 2 v2 (+74.1)
+- vs SF18 @2700: +41.9 ELO (44W/24D/32L) — down from Phase 2 v2's +49.0 (−7.1)
+
+**Assessment:** Marginal negative vs strong opposition. STS +3 points is below the +30-60 target
+for AT/AKPC categories. kaufman +3 is a bright spot. WAC −3 and SF18 −7.1 ELO suggest threat
+bonuses bias the engine toward positional evaluation at the expense of tactical sharpness against
+strong opponents. Tier 3 (hanging) weights reduced from 12/15 to 6/10 to mitigate tactical
+regression. Further tuning deferred to Phase 5 (Texel). Feature is retained: the attackedByPT
+infrastructure is valuable for future features and the NPS cost is modest (−1.8%).
+
+---
 
 ### Feature 3.1: Space Evaluation
 
-**Targets:** STS Center Control (55%), AKPC (52%)
+**Targets:** STS Center Control (55%), AKPC (52%)  
+**Status:** 📋 Not Started — implement after 3.2 validation  
+**Depends on:** Prerequisite 3.0 (attackedByPT — for pawn attack exclusion)
 
-Space = number of safe squares in the first 4 ranks behind own pawn chain. More space = more maneuvering room for pieces.
+Space = number of safe squares in the first 4 ranks behind own pawn chain. More space = more
+maneuvering room for pieces. Consider making this midgame-weighted (space matters less in endgame).
 
 **Implementation:**
 ```
 spaceMask = own pawns shifted forward, combined
-controlledSquares = squares behind own pawn chain on ranks 1-4
-  that are NOT attacked by enemy pawns
+controlledSquares = squares behind own pawn chain on ranks 2-4 (relative)
+  that are NOT attacked by enemy pawns (attackedByPT[PAWN][them])
 spaceScore = popcount(controlledSquares) * SPACE_BONUS_{MID,END}
 ```
 
----
+**Config parameters to add:**
+- `USE_SPACE_EVAL` (bool)
+- `SPACE_BONUS_MID` (int, default ~3)
+- `SPACE_BONUS_END` (int, default ~1)
 
-### Feature 3.2: Threat Evaluation
-
-**Targets:** STS AT (41%), AKPC (52%)
-
-Detect hanging (undefended) pieces and pieces attacked by lesser-value pieces.
-
-**Implementation:**
-```
-For each enemy piece:
-  if attacked by our lesser piece and not defended:
-    bonus += THREAT_HANGING[pieceType]
-  if attacked by our pawn:
-    bonus += THREAT_BY_PAWN[pieceType]
-```
-
-**Difficulty:** Medium-Hard (requires attack map computation)  
-**Risk:** Medium (eval speed sensitive)
+**Difficulty:** Easy-Medium  
+**Risk:** Low
 
 ---
 
 ### Feature 3.3: Minor Piece Coordination
 
-**Targets:** General strength
+**Targets:** General strength  
+**Status:** 📋 Not Started — implement after 3.2 validation, shelve if Elo-neutral
 
-Bonus for connected rooks (on same rank/file with no pieces between), and piece connectivity.
+Bonus for connected rooks (on same rank/file with no pieces between using `intermediateBb[][]`),
+and minor piece connectivity (knight/bishop defended by another minor piece).
+
+**Config parameters to add:**
+- `USE_CONNECTED_ROOKS` (bool)
+- `CONNECTED_ROOKS_MID_BONUS` (int, default ~8)
+- `CONNECTED_ROOKS_END_BONUS` (int, default ~5)
+- `USE_MINOR_CONNECTIVITY` (bool)
+- `MINOR_CONNECTIVITY_MID_BONUS` (int, default ~4)
+- `MINOR_CONNECTIVITY_END_BONUS` (int, default ~3)
+
+**Difficulty:** Easy-Medium  
+**Risk:** Low (but may be Elo-neutral)
 
 ---
 
@@ -459,35 +661,36 @@ Use labeled game data (win/loss/draw) to optimize all evaluation parameters simu
 
 ### Benchmarks to Track
 
-| Metric              | Current  | Phase 1 Target | Phase 1 Actual | Phase 2 Target | Phase 2 Actual  | Final Target |
-|---------------------|----------|----------------|----------------|----------------|-----------------|--------------|
-| STS Overall         | 58%      | 61%            | 57.2%          | 63%            | 58.9%           | 65%+         |
-| WAC                 | ~96%     | ≥96%           | 95.5% ✅        | ≥96%           | 96.0% ✅         | ≥97%         |
-| Elo vs v1.5         | baseline | +15            | **+81.4** ✅    | +30            | **+74.1** ✅     | +60+         |
-| Elo vs SF18 2700    | +6.9     | —              | **+56.1** ✅    | —              | **+49.0** ✅     | —            |
-| NPS (d12,128MB,4T)  | 7.00M    | —              | 6.61M (−5.5%)  | —              | 6.80M (+2.7%)   | —            |
+| Metric             | Current  | Phase 1 Target | Phase 1 Actual | Phase 2 Target | Phase 2 Actual | Phase 3 Target | Phase 3 Actual       | Final Target |
+|--------------------|----------|----------------|----------------|----------------|----------------|----------------|----------------------|--------------|
+| STS Overall        | 58%      | 61%            | 57.2%          | 63%            | 58.9%          | 61%            | 59.1% (+0.2%)        | 65%+         |
+| WAC                | ~96%     | ≥96%           | 95.5% ✅        | ≥96%           | 96.0% ✅        | ≥96%           | 94.5% ⚠️             | ≥97%         |
+| Elo vs v1.5        | baseline | +15            | **+81.4** ✅    | +30            | **+74.1** ✅    | +85            | **+81.4** (~neutral) | +60+         |
+| Elo vs SF18 2700   | +6.9     | —              | **+56.1** ✅    | —              | **+49.0** ✅    | —              | **+41.9** (−7.1) ⚠️  | —            |
+| NPS (d12,128MB,4T) | 7.00M    | —              | 6.61M (−5.5%)  | —              | 6.80M (+2.7%)  | ≤3% regression | **6.68M (−1.8%)** ✅  | —            |
 
 ---
 
 ## Implementation Tracking
 
-| #   | Feature                   | Phase | Status         | STS Impact | Elo Impact | Notes                                          |
-|-----|---------------------------|-------|----------------|------------|------------|------------------------------------------------|
-| 1.1 | Knight Outpost Bonus      | 1     | ✅ Complete     | +5.4% STS  | +81.4 Elo  | Ranks 4-6 relative, pawn-supported/unsupported |
-| 1.2 | Pawn Advancement Bonus    | 1     | ✅ Complete     | (combined) | (combined) | Non-passed pawns rank 4+, rank-indexed array   |
-| 1.3 | Bad Bishop Detection      | 1     | ✅ Complete     | (combined) | (combined) | Penalty per own pawn on bishop's color         |
-| 1.4 | Rook Behind Passer        | 1     | ✅ Complete     | (combined) | (combined) | Own + enemy passers, separate bonuses          |
-| 2.1 | Pawn Storm Detection      | 2     | ✅ Complete     | +0.9% STS  | ~neutral   | Penalty for opponent pawns approaching king    |
-| 2.2 | Open File Near King       | 2     | ✅ Complete     | (combined) | (combined) | Open/semi-open file penalty near king          |
-| 2.3 | Safe Check Squares        | 2     | ✅ Complete     | (combined) | (combined) | Filtered by attackedBy[them] + piece existence |
-| 2.4 | PawnTT Passed Pawn Cache  | 2     | ✅ Complete     | +2.7% NPS  | (perf)     | passedPawns cached in PawnTT, 16→32 byte entry |
-| 3.1 | Space Evaluation          | 3     | 📋 Not Started | —          | —          |                                                |
-| 3.2 | Threat Evaluation         | 3     | 📋 Not Started | —          | —          | attackedBy[] infrastructure now in place       |
-| 3.3 | Minor Piece Coordination  | 3     | 📋 Not Started | —          | —          |                                                |
-| 4.1 | Continuation History      | 4     | 📋 Not Started | —          | —          |                                                |
-| 4.2 | Probcut                   | 4     | 📋 Not Started | —          | —          |                                                |
-| 4.3 | SEE Pruning (main search) | 4     | 📋 Not Started | —          | —          | Tested before as Elo-neutral                   |
-| 5.1 | Texel Tuning              | 5     | 📋 Not Started | —          | —          | After features complete                        |
+| #   | Feature                   | Phase | Status         | STS Impact | Elo Impact | Notes                                            |
+|-----|---------------------------|-------|----------------|------------|------------|--------------------------------------------------|
+| 1.1 | Knight Outpost Bonus      | 1     | ✅ Complete     | +5.4% STS  | +81.4 Elo  | Ranks 4-6 relative, pawn-supported/unsupported   |
+| 1.2 | Pawn Advancement Bonus    | 1     | ✅ Complete     | (combined) | (combined) | Non-passed pawns rank 4+, rank-indexed array     |
+| 1.3 | Bad Bishop Detection      | 1     | ✅ Complete     | (combined) | (combined) | Penalty per own pawn on bishop's color           |
+| 1.4 | Rook Behind Passer        | 1     | ✅ Complete     | (combined) | (combined) | Own + enemy passers, separate bonuses            |
+| 2.1 | Pawn Storm Detection      | 2     | ✅ Complete     | +0.9% STS  | ~neutral   | Penalty for opponent pawns approaching king      |
+| 2.2 | Open File Near King       | 2     | ✅ Complete     | (combined) | (combined) | Open/semi-open file penalty near king            |
+| 2.3 | Safe Check Squares        | 2     | ✅ Complete     | (combined) | (combined) | Filtered by attackedBy[them] + piece existence   |
+| 2.4 | PawnTT Passed Pawn Cache  | 2     | ✅ Complete     | +2.7% NPS  | (perf)     | passedPawns cached in PawnTT, 16→32 byte entry   |
+| 3.0 | attackedByPT Array        | 3     | ✅ Complete     | —          | −1.8% NPS  | Per-piece-type attacks; memset reset             |
+| 3.2 | Threat Evaluation         | 3     | ✅ Complete     | +0.2% STS  | −7.1 SF18  | 3-tier; hanging reduced 12/15→6/10; needs tuning |
+| 3.1 | Space Evaluation          | 3     | 📋 Not Started | —          | —          | After 3.2 validation; midgame-weighted           |
+| 3.3 | Minor Piece Coordination  | 3     | 📋 Not Started | —          | —          | After 3.2 validation; shelve if Elo-neutral      |
+| 4.1 | Continuation History      | 4     | 📋 Not Started | —          | —          |                                                  |
+| 4.2 | Probcut                   | 4     | 📋 Not Started | —          | —          |                                                  |
+| 4.3 | SEE Pruning (main search) | 4     | 📋 Not Started | —          | —          | Tested before as Elo-neutral                     |
+| 5.1 | Texel Tuning              | 5     | 📋 Not Started | —          | —          | After features complete                          |
 
 ---
 
@@ -514,4 +717,5 @@ Use labeled game data (win/loss/draw) to optimize all evaluation parameters simu
 
 ---
 
-*Last updated: 2026-03-19*
+
+*Last updated: 2026-03-21*

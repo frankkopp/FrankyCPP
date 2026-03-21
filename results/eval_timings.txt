@@ -24,7 +24,7 @@ Disable PAWN_TT (with PAWN_EVAL)               |            183 |      5.437.739
 Disable PAWN_ADVANCE_BONUS (with PAWN_EVAL)    |            121 |      8.249.840 |    -1.5%
 All features OFF                               |              2 |    333.607.619 |   -97.6%
 
-Phase 2:
+Phase 2 before optimizations:
 Case                                           |        ns/eval |      evals/sec |    delta
 -------------------------------------------------------------------------------------------
 Baseline (all features ON; LAZY OFF)           |            143 |      6.951.381 |     base
@@ -81,3 +81,63 @@ Disable PAWN_EVAL only                         |            137 |      7.249.740
 Disable PAWN_TT (with PAWN_EVAL)               |            185 |      5.400.285 |   +51.9%
 Disable PAWN_ADVANCE_BONUS (with PAWN_EVAL)    |            127 |      7.814.417 |    +5.0%
 All features OFF                               |             15 |     63.607.641 |   -87.1%
+
+Phase 3.2
+Case                                           |        ns/eval |      evals/sec |    delta
+-------------------------------------------------------------------------------------------
+Baseline (all features ON; LAZY OFF)           |            147 |      6.780.201 |     base
+Disable MATERIAL only                          |            149 |      6.693.838 |    +1.3%
+Disable POSITIONAL only                        |            147 |      6.789.023 |    -0.1%
+Disable TEMPO only                             |            146 |      6.841.526 |    -0.9%
+Disable PIECE_EVAL only                        |             46 |     21.375.760 |   -68.3%
+Disable BISHOP_PAIR_BONUS (with PIECE_EVAL)    |            146 |      6.842.390 |    -0.9%
+Disable KNIGHT_MOBILITY (with PIECE_EVAL)      |            142 |      7.022.483 |    -3.5%
+Disable KNIGHT_OUTPOST (with PIECE_EVAL)       |            141 |      7.073.978 |    -4.2%
+Disable BISHOP_MOBILITY (with PIECE_EVAL)      |            139 |      7.172.647 |    -5.5%
+Disable BAD_BISHOP (with PIECE_EVAL)           |            143 |      6.947.462 |    -2.4%
+Disable ROOK_MOBILITY (with PIECE_EVAL)        |            138 |      7.236.258 |    -6.3%
+Disable ROOK_OPEN_FILE_BONUS (with PIECE_EVAL) |            137 |      7.271.822 |    -6.8%
+Disable ROOK_BEHIND_PASSER (with PIECE_EVAL)   |            144 |      6.915.201 |    -2.0%
+Disable QUEEN_MOBILITY (with PIECE_EVAL)       |            146 |      6.841.928 |    -0.9%
+Disable QUEEN_TROPISM (with PIECE_EVAL)        |            145 |      6.850.467 |    -1.0%
+Disable THREAT_EVAL only                       |            132 |      7.530.294 |   -10.0%
+Disable KING_EVAL only                         |             76 |     13.135.386 |   -48.4%
+Disable KING_SAFETY_SHIELD (with KING_EVAL)    |            127 |      7.831.127 |   -13.4%
+Disable PAWN_STORM (with KING_EVAL)            |            133 |      7.513.579 |    -9.8%
+Disable KING_OPEN_FILE (with KING_EVAL)        |            135 |      7.406.628 |    -8.5%
+Disable SAFE_CHECK (with KING_EVAL)            |            132 |      7.536.319 |   -10.0%
+Disable GAMEPHASE_VALUE only                   |            146 |      6.803.338 |    -0.3%
+Disable PAWN_EVAL only                         |            164 |      6.081.851 |   +11.5%
+Disable PAWN_TT (with PAWN_EVAL)               |            205 |      4.855.764 |   +39.6%
+Disable PAWN_ADVANCE_BONUS (with PAWN_EVAL)    |            146 |      6.814.563 |    -0.5%
+All features OFF                               |             16 |     59.071.528 |   -88.5%
+
+Phase 3.2 after memset optimization:
+Case                                           |        ns/eval |      evals/sec |    delta
+-------------------------------------------------------------------------------------------
+Baseline (all features ON; LAZY OFF)           |            144 |      6.931.660 |     base
+Disable MATERIAL only                          |            142 |      6.994.177 |    -0.9%
+Disable POSITIONAL only                        |            144 |      6.926.752 |    +0.1%
+Disable TEMPO only                             |            143 |      6.962.260 |    -0.4%
+Disable PIECE_EVAL only                        |             45 |     22.073.444 |   -68.6%
+Disable BISHOP_PAIR_BONUS (with PIECE_EVAL)    |            143 |      6.972.396 |    -0.6%
+Disable KNIGHT_MOBILITY (with PIECE_EVAL)      |            139 |      7.169.449 |    -3.3%
+Disable KNIGHT_OUTPOST (with PIECE_EVAL)       |            135 |      7.370.843 |    -6.0%
+Disable BISHOP_MOBILITY (with PIECE_EVAL)      |            135 |      7.387.905 |    -6.2%
+Disable BAD_BISHOP (with PIECE_EVAL)           |            141 |      7.085.808 |    -2.2%
+Disable ROOK_MOBILITY (with PIECE_EVAL)        |            130 |      7.644.545 |    -9.3%
+Disable ROOK_OPEN_FILE_BONUS (with PIECE_EVAL) |            127 |      7.843.669 |   -11.6%
+Disable ROOK_BEHIND_PASSER (with PIECE_EVAL)   |            139 |      7.150.412 |    -3.1%
+Disable QUEEN_MOBILITY (with PIECE_EVAL)       |            142 |      7.016.184 |    -1.2%
+Disable QUEEN_TROPISM (with PIECE_EVAL)        |            142 |      7.008.102 |    -1.1%
+Disable THREAT_EVAL only                       |            131 |      7.601.454 |    -8.8%
+Disable KING_EVAL only                         |             74 |     13.398.822 |   -48.3%
+Disable KING_SAFETY_SHIELD (with KING_EVAL)    |            117 |      8.502.817 |   -18.5%
+Disable PAWN_STORM (with KING_EVAL)            |            134 |      7.422.291 |    -6.6%
+Disable KING_OPEN_FILE (with KING_EVAL)        |            135 |      7.358.663 |    -5.8%
+Disable SAFE_CHECK (with KING_EVAL)            |            128 |      7.770.732 |   -10.8%
+Disable GAMEPHASE_VALUE only                   |            140 |      7.099.819 |    -2.4%
+Disable PAWN_EVAL only                         |            159 |      6.257.726 |   +10.8%
+Disable PAWN_TT (with PAWN_EVAL)               |            202 |      4.933.010 |   +40.5%
+Disable PAWN_ADVANCE_BONUS (with PAWN_EVAL)    |            141 |      7.055.672 |    -1.8%
+All features OFF                               |             15 |     64.962.953 |   -89.3%

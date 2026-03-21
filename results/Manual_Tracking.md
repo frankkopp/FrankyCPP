@@ -664,4 +664,55 @@ All Matches Complete
 ===================================================================
 ```
 
+```
+Phase 3.2
+
+Benchmarks:
+  [2026-03-19]    6.676.526 NPS  (d12, 128MB, 4T)  [Phase 3.2 Eval Improvement]
+  [2026-03-19]    6.795.488 NPS  (d12, 128MB, 4T)  [Phase 2 v2 Eval Improvement]
+  [2026-03-18]    6.614.192 NPS  (d12, 128MB, 4T)  [Phase 1 Eval Improvement]
+
+===================================================================
+All Test Suites Complete
+===================================================================
+  franky_tests (FrankyCPP v1.6.0 v1.6): 13/13 passed (100%)
+  mate_test_suite (FrankyCPP v1.6.0 v1.6): 16/20 passed (80%)
+  wac (FrankyCPP v1.6.0 v1.6): 190/201 passed (94.5274%)
+  STS1-STS15_LAN (FrankyCPP v1.6.0 v1.6): 886/1500 passed (59.0667%)
+  crafty_test (FrankyCPP v1.6.0 v1.6): 181/347 passed (52.1614%)
+  ecm98 (FrankyCPP v1.6.0 v1.6): 563/769 passed (73.212%)
+  kaufman (FrankyCPP v1.6.0 v1.6): 21/25 passed (84%)
+  eigenmann-rapid-engine (FrankyCPP v1.6.0 v1.6): 13/109 passed (11.9266%)
+-------------------------------------------------------------------
+  TOTAL: 1883/2984 passed (63.1032%)
+  Total Nodes: 82982177604
+  Total Time:  12304385ms
+===================================================================
+
+==================================================================
+Match Complete: v1.6_vs_v1.5_300s
+  FrankyCPP v1.6.0: 48 wins, 27 draws, 25 losses
+  FrankyCPP v1.5: 25 wins, 27 draws, 48 losses
+  Score: 61.5 - 38.5
+  ELO Difference: +81.4
+  Duration: 14960.2s
+==================================================================
+==================================================================
+Match Complete: v1.6_vs_Stockfish18_2700_300s
+  FrankyCPP v1.6.0: 44 wins, 24 draws, 32 losses
+  Stockfish 18: 32 wins, 24 draws, 44 losses
+  Score: 56.0 - 44.0
+  ELO Difference: +41.9
+  Duration: 14996.7s
+==================================================================
+
+===================================================================
+All Matches Complete
+===================================================================
+  v1.6_vs_v1.5_300s: 61.5 - 38.5 (ELO: +81.4)
+  v1.6_vs_Stockfish18_2700_300s: 56.0 - 44.0 (ELO: +41.9)
+===================================================================
+
+```
+
 ---

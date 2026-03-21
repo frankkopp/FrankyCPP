@@ -196,6 +196,25 @@ namespace config {
     CONFIG_CONST int SAFE_CHECK_ROOK_MID      = -12;
     CONFIG_CONST int SAFE_CHECK_QUEEN_MID     = -15;
 
+    // threat evaluation: bonus for pieces attacked by lesser-value pieces and hanging pieces
+    // Three tiers: (1) pawn attacks on pieces, (2) minor attacks on majors, (3) hanging pieces
+    CONFIG_CONST bool USE_THREAT_EVAL          = true;
+    // Tier 1: pawn attacks on pieces (per victim piece type)
+    CONFIG_CONST int THREAT_BY_PAWN_MINOR_MID  = 5;   // pawn attacks knight or bishop
+    CONFIG_CONST int THREAT_BY_PAWN_MINOR_END  = 5;
+    CONFIG_CONST int THREAT_BY_PAWN_ROOK_MID   = 10;  // pawn attacks rook
+    CONFIG_CONST int THREAT_BY_PAWN_ROOK_END   = 12;
+    CONFIG_CONST int THREAT_BY_PAWN_QUEEN_MID  = 15;  // pawn attacks queen
+    CONFIG_CONST int THREAT_BY_PAWN_QUEEN_END  = 20;
+    // Tier 2: minor piece (knight/bishop) attacks on major pieces (rook/queen)
+    CONFIG_CONST int THREAT_BY_MINOR_ROOK_MID  = 5;   // minor attacks rook
+    CONFIG_CONST int THREAT_BY_MINOR_ROOK_END  = 6;
+    CONFIG_CONST int THREAT_BY_MINOR_QUEEN_MID = 8;   // minor attacks queen
+    CONFIG_CONST int THREAT_BY_MINOR_QUEEN_END = 10;
+    // Tier 3: hanging pieces (attacked by us, not defended by them)
+    CONFIG_CONST int THREAT_HANGING_MID        = 6;
+    CONFIG_CONST int THREAT_HANGING_END        = 10;
+
     CONFIG_CONST bool USE_GAMEPHASE_VALUE = true;
 
     std::string str() const;

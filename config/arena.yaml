@@ -96,7 +96,7 @@ testSuiteRuns:
   # ==========================================================================
   - engine: "FrankyCPP v1.6"
     engineVersion: "v1.6"
-    tag: "Phase 2 v2 Eval Improvement"  # Set to current feature name when testing
+    tag: "Phase 3.2 Eval Improvement" # Set to current feature name when testing
     enginePath: "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe"
     timePerMove: 5000
     maxDepth: 99
@@ -276,7 +276,7 @@ matches:
 
   ## current dev vs. v1.5
   - name: "v1.6_vs_v1.5_300s"
-    tag: "Phase 2 v2 Eval Improvement"  # Set to current feature name when testing
+    tag: "Phase 3.2 Eval Improvement" # Set to current feature name when testing
     engine1Path: "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe"
     engine1Version: "v1.6"
     engine2Path: "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe"
@@ -289,7 +289,7 @@ matches:
 
   ## current dev vs. Stockfish 18 (limited to 2700 ELO)
   - name: "v1.6_vs_Stockfish18_2700_300s"
-    tag: "Phase 2 v2 Eval Improvement"  # Set to current feature name when testing
+    tag: "Phase 3.2 Eval Improvement" # Set to current feature name when testing
     engine1Path: "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe"
     engine1Version: "v1.6"
     engine1Options: "OwnBook=false"
@@ -387,7 +387,7 @@ benchmarks:
     depth: 12
     hashSizeMB: 128
     threads: 4
-    tag: "Phase 2 v2 Eval Improvement"  # Set to current feature name when testing
+    tag: "Phase 3.2 Eval Improvement"  # Set to current feature name when testing
 
   - name: "v1.6 External"
     enginePath: "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe"
@@ -396,7 +396,7 @@ benchmarks:
     depth: 12
     hashSizeMB: 128
     threads: 4
-    tag: "Phase 2 v2 Eval Improvement"  # Set to current feature name when testing
+    tag: "Phase 3.2 Eval Improvement"  # Set to current feature name when testing
 
 #  - name: "v1.4 External (PROD)"
 #    enginePath: "cmake-build-win-release-prod/src/FrankyCPP_v1.4.exe"

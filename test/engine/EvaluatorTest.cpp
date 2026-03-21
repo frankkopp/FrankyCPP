@@ -85,6 +85,7 @@ void set_eval_config(const bool onoff) {
     e.USE_GAMEPHASE_VALUE      = onoff;
     e.USE_BISHOP_PAIR_BONUS    = onoff;
     e.USE_PAWN_ADVANCE_BONUS   = onoff;
+    e.USE_THREAT_EVAL          = onoff;
   });
 }
 #endif // FRANKYCPP_PRODUCTION
@@ -1211,6 +1212,156 @@ TEST_F(EvaluatorTest, SafeCheck_ToggleChangesEval) {
       << "Enabling safe check should change the evaluation";
 }
 
+// =========================================================================
+// THREAT EVALUATION TESTS (Phase 3)
+// =========================================================================
+
+// Tier 1: pawn attacks on pieces — white pawn attacking black rook should help white.
+TEST_F(EvaluatorTest, ThreatByPawn_PawnAttacksRook) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_MATERIAL        = true;
+    e.USE_PIECE_EVAL      = true;  // needed to populate attackedByPT for non-pawn pieces
+    e.USE_THREAT_EVAL     = true;
+    e.USE_GAMEPHASE_VALUE = false;
+  });
+
+  Evaluator e{};
+
+  // White pawn on e5 attacks black rook on d6 (rook under pawn attack)
+  const Position threatened{"6k1/8/3r4/4P3/8/8/8/6K1 w - - 0 1"};
+  // Same material but rook safe on d7 (not attacked by pawn)
+  const Position safe{"6k1/3r4/8/4P3/8/8/8/6K1 w - - 0 1"};
+
+  const Value vThreatened = e.evaluate(threatened);
+  const Value vSafe       = e.evaluate(safe);
+
+  fprintln("Pawn threatens rook eval (White POV): {}", vThreatened);
+  fprintln("Rook safe eval (White POV):           {}", vSafe);
+
+  // White should be better when the pawn attacks the rook
+  ASSERT_GT(vThreatened, vSafe)
+      << "Position with pawn attacking rook should evaluate better for white";
+}
+
+// Tier 2: minor attacks on major — knight attacking queen (non-reciprocal attack pattern).
+TEST_F(EvaluatorTest, ThreatByMinor_KnightAttacksQueen) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_MATERIAL        = true;
+    e.USE_PIECE_EVAL      = true;
+    e.USE_THREAT_EVAL     = true;
+    e.USE_GAMEPHASE_VALUE = false;
+  });
+
+  Evaluator e{};
+
+  // White knight on e5 attacks black queen on f7 (knight attacks are non-reciprocal —
+  // queen on f7 does NOT attack e5, so no counter-threat making the knight hanging)
+  const Position threatened{"6k1/5q2/8/4N3/8/8/8/6K1 w - - 0 1"};
+  // Same material, queen on h7 (not attacked by knight from e5)
+  const Position safe{"6k1/7q/8/4N3/8/8/8/6K1 w - - 0 1"};
+
+  const Value vThreatened = e.evaluate(threatened);
+  const Value vSafe       = e.evaluate(safe);
+
+  fprintln("Knight threatens queen eval (White POV): {}", vThreatened);
+  fprintln("Queen safe eval (White POV):             {}", vSafe);
+
+  ASSERT_GT(vThreatened, vSafe)
+      << "Position with knight attacking queen should evaluate better for white";
+}
+
+// Tier 3: hanging piece — black knight attacked by white bishop, not defended by black.
+// Pawns are added so the position is not flagged as insufficient material (KBvKN is drawn).
+TEST_F(EvaluatorTest, ThreatHanging_UndefendedPiece) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_MATERIAL        = true;
+    e.USE_PIECE_EVAL      = true;
+    e.USE_THREAT_EVAL     = true;
+    e.USE_GAMEPHASE_VALUE = false;
+  });
+
+  Evaluator e{};
+
+  // Black knight on d5 attacked by white bishop on b3 — no black piece defends d5.
+  // Each side has a pawn to avoid insufficient material detection.
+  const Position hanging{"6k1/p7/8/3n4/8/1B6/P7/6K1 w - - 0 1"};
+  // Same material but black knight on g6 (not attacked by bishop on b3)
+  const Position safe{"6k1/p7/6n1/8/8/1B6/P7/6K1 w - - 0 1"};
+
+  const Value vHanging = e.evaluate(hanging);
+  const Value vSafe    = e.evaluate(safe);
+
+  fprintln("Hanging knight eval (White POV): {}", vHanging);
+  fprintln("Safe knight eval (White POV):    {}", vSafe);
+
+  ASSERT_GT(vHanging, vSafe)
+      << "Position with hanging enemy knight should evaluate better for white";
+}
+
+// Toggle test: enabling/disabling USE_THREAT_EVAL should change evaluation.
+TEST_F(EvaluatorTest, ThreatEval_ToggleChangesEval) {
+  set_eval_config(true);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_THREAT_EVAL = false; // start with threats OFF
+  });
+
+  Evaluator e{};
+
+  // Position with threats: white pawn attacks black knight, white bishop attacks black rook
+  const Position pos{"6k1/8/3r4/2n1P3/8/1B6/8/6K1 w - - 0 1"};
+
+  const Value vWithout = e.evaluate(pos);
+
+  cm.applyOverrides([&](auto&, EvalConfigData& e2) {
+    e2.USE_THREAT_EVAL = true; // now on
+  });
+
+  const Value vWith = e.evaluate(pos);
+
+  fprintln("Without threat eval: {}", vWithout);
+  fprintln("With threat eval:    {}", vWith);
+
+  // Values should differ (asymmetric threats)
+  ASSERT_NE(vWith, vWithout)
+      << "Enabling threat eval should change the evaluation";
+}
+
+// Symmetric position should have approximately equal threat impact.
+TEST_F(EvaluatorTest, ThreatEval_SymmetricPosition) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_MATERIAL        = true;
+    e.USE_POSITIONAL      = true;
+    e.USE_PIECE_EVAL      = true;
+    e.USE_THREAT_EVAL     = true;
+    e.USE_GAMEPHASE_VALUE = true;
+  });
+
+  Evaluator e{};
+
+  // Fully symmetric position — threats should cancel out
+  const Position symmetric{"r1bqkbnr/pppppppp/2n5/8/8/2N5/PPPPPPPP/R1BQKBNR w KQkq - 0 1"};
+
+  const Value vWithThreats = e.evaluate(symmetric);
+
+  cm.applyOverrides([&](auto&, EvalConfigData& e2) {
+    e2.USE_THREAT_EVAL = false;
+  });
+
+  const Value vWithoutThreats = e.evaluate(symmetric);
+
+  fprintln("Symmetric with threats:    {}", vWithThreats);
+  fprintln("Symmetric without threats: {}", vWithoutThreats);
+
+  // Difference should be small (≤ 5 cp) since threats are symmetric
+  const int diff = std::abs(static_cast<int>(vWithThreats) - static_cast<int>(vWithoutThreats));
+  ASSERT_LE(diff, 5)
+      << "Symmetric position should have minimal threat eval difference, got " << diff;
+}
+
 // New timing test modeled after SpeedTests::TimingExtendedDoMoveUndoMove
 TEST_F(EvaluatorTest, TimingEvaluateFens) {
   if (isBulkRun()) {
@@ -1323,7 +1474,7 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
       const uint64_t ns = measure_ns(iters);
       best              = std::min(best, ns);
     }
-    return best == std::numeric_limits<uint64_t>::max() ? 0ull : best;
+    return best == std::numeric_limits<uint64_t>::max() ? 0ULL : best;
   };
 
   // Define dependency-aware cases. Baseline first.
@@ -1396,6 +1547,11 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
                      }});
     cases.push_back({"Disable QUEEN_TROPISM (with PIECE_EVAL)", [&] {
                        disable([](EvalConfigData& e) { e.USE_QUEEN_TROPISM = false; });
+                     }});
+
+    // Threat eval
+    cases.push_back({"Disable THREAT_EVAL only", [&] {
+                       disable([](EvalConfigData& e) { e.USE_THREAT_EVAL = false; });
                      }});
 
     // King eval
