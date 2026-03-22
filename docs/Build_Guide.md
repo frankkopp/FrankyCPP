@@ -558,6 +558,88 @@ After creating a package:
    quit
    ```
 
+### Tagging a Release and Creating a GitHub Release
+
+After the release ZIP is tested and committed, create a Git tag and push it to trigger the
+automated GitHub Release workflow.
+
+#### Step 1: Merge to Master
+
+```powershell
+# Ensure dev branch is up to date and all tests pass
+git checkout master
+git merge dev_v1.6
+git push origin master
+```
+
+#### Step 2: Create an Annotated Tag
+
+Use an **annotated tag** with a short summary. Tag names follow the pattern `v<major>.<minor>.<patch>`
+(the patch segment is optional for `.0` releases, matching existing convention):
+
+```powershell
+# Create annotated tag
+git tag -a v1.6.0 -m "v1.6.0 - Evaluation Enrichment & Search Hardening (+81 ELO vs v1.5)"
+
+# Push the tag to GitHub
+git push origin v1.6.0
+```
+
+> **Naming convention:** Existing tags use both `v1.5.0` and `v1.4` styles.
+> Prefer the full `v<major>.<minor>.<patch>` format for new releases.
+
+#### Step 3: Automated CI Release (Triggered by Tag Push)
+
+Pushing a `v*` tag automatically triggers the **release job** in `.github/workflows/ci-build.yml`:
+
+1. CI builds all matrix configurations (Windows MSVC + Linux GCC, Standard + Stripped)
+2. The `release` job downloads all build artifacts
+3. Creates platform-specific archives:
+   - `FrankyCPP-v1.6.0-Windows-MSVC.zip`
+   - `FrankyCPP-v1.6.0-Windows-MSVC-stripped.zip`
+   - `FrankyCPP-v1.6.0-Linux-GCC13.tar.gz`
+   - `FrankyCPP-v1.6.0-Linux-GCC13-stripped.tar.gz`
+4. Uploads all archives to a **GitHub Release** associated with the tag
+
+> The release is created automatically by the `softprops/action-gh-release` action.
+> No manual GitHub Release creation is needed.
+
+#### Step 4: Edit the GitHub Release (Optional)
+
+After CI completes, navigate to the GitHub Releases page to add release notes:
+
+1. Go to **Releases** → click the newly created `v1.6.0` release
+2. Click **Edit release**
+3. Add the PR message or changelog as the release description
+4. Optionally attach the local `Release/FrankyCPP_v1.6.zip` (the CMake-packaged ZIP with
+   opening books and config files — CI artifacts contain only executables)
+5. Click **Update release**
+
+#### Step 5: Verify
+
+```powershell
+# Verify tag exists locally and remotely
+git --no-pager tag -l "v1.6*"
+git --no-pager ls-remote --tags origin "refs/tags/v1.6*"
+```
+
+Check the GitHub Actions tab to confirm the CI release job succeeded.
+
+#### Quick Reference: Full Release Checklist
+
+```
+1. All tests pass on dev branch
+2. Build release package:     cmake --install cmake-build-win-release --config Release
+3. Test the release ZIP
+4. Commit the ZIP:            git add Release/FrankyCPP_v1.6.zip
+5. Merge to master:           git checkout master && git merge dev_v1.6
+6. Push master:               git push origin master
+7. Tag:                       git tag -a v1.6.0 -m "v1.6.0 - <summary>"
+8. Push tag:                  git push origin v1.6.0
+9. Wait for CI release job to complete (~15–30 min)
+10. Edit GitHub Release: add release notes, attach local ZIP if desired
+```
+
 ### Advanced: Customizing the Package
 
 The packaging logic is defined in:
