@@ -9,17 +9,17 @@
 
 ## Phase Summary
 
-| Phase | Name                               | Status         | Started    | Completed  |
-|-------|------------------------------------|----------------|------------|------------|
-| 0     | Release v1.6, branch v1.7          | ✅ Complete     | —          | 2026-03-22 |
-| 1     | Module structure + PGN library     | 🚧 In Progress | 2026-03-22 |            |
-| 2     | Tuning build targets (scaffolding) | ⬚ Not Started  |            |            |
-| 3     | Data collection                    | ⬚ Not Started  |            |            |
-| 4     | Position extractor                 | ⬚ Not Started  |            |            |
-| 5     | Mark tunable parameters            | ⬚ Not Started  |            |            |
-| 6     | Optimizer implementation           | ⬚ Not Started  |            |            |
-| 7     | Integration testing                | ⬚ Not Started  |            |            |
-| 8     | Gauntlet validation + release      | ⬚ Not Started  |            |            |
+| Phase | Name                               | Status        | Started    | Completed  |
+|-------|------------------------------------|---------------|------------|------------|
+| 0     | Release v1.6, branch v1.7          | ✅ Complete    | —          | 2026-03-22 |
+| 1     | Module structure + PGN library     | ✅ Complete    | 2026-03-22 | 2026-03-22 |
+| 2     | Tuning build targets (scaffolding) | ⬚ Not Started |            |            |
+| 3     | Data collection                    | ⬚ Not Started |            |            |
+| 4     | Position extractor                 | ⬚ Not Started |            |            |
+| 5     | Mark tunable parameters            | ⬚ Not Started |            |            |
+| 6     | Optimizer implementation           | ⬚ Not Started |            |            |
+| 7     | Integration testing                | ⬚ Not Started |            |            |
+| 8     | Gauntlet validation + release      | ⬚ Not Started |            |            |
 
 ---
 
@@ -41,7 +41,7 @@
 
 ---
 
-## Phase 1: Module Structure and PGN Library 🚧
+## Phase 1: Module Structure and PGN Library ✅
 
 | Step | Task                                                                                            | Status        |
 |------|-------------------------------------------------------------------------------------------------|---------------|
@@ -49,8 +49,8 @@
 | 1.2  | Extract PGN parser from `OpeningBook` into `src/common/pgn/PgnParser.h/.cpp`                    | ✅ Complete    |
 | 1.3  | Create `PgnGame.h`, `PgnTypes.h` with structured output + Result extraction                     | ✅ Complete    |
 | 1.4  | Write comprehensive PGN parser unit tests (`test/common/pgn/PgnParserTest.cpp`)                 | ✅ Complete    |
-| 1.5  | Refactor `OpeningBook::readGamesPgn()` to use new `common::pgn::PgnParser`                      | ⬚ Not Started |
-| 1.6  | Verify all existing `OpeningBookTest` tests pass unchanged                                      | ⬚ Not Started |
+| 1.5  | Refactor `OpeningBook::readGamesPgn()` to use new `common::pgn::PgnParser`                      | ✅ Complete    |
+| 1.6  | Verify all existing `OpeningBookTest` tests pass unchanged                                      | ✅ Complete    |
 | 1.7  | Update `src/CMakeLists.txt` — `common/pgn/` auto-discovered by FrankyCPPlib glob                | ✅ Complete    |
 
 **Gate:** All `OpeningBookTest` tests pass. PGN parser tests pass with all files in `books/`.

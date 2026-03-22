@@ -22,6 +22,7 @@
 
 #include "bookentry.h"
 #include "chesscore/Position.h"
+#include "common/pgn/PgnParser.h"
 #include "types/types.h"
 #include "version.h"
 
@@ -189,11 +190,9 @@ namespace book {
     void readGamesSan(const std::vector<std::string_view>& lines);
     void readOneGameSan(const std::string_view& lineView);
 
-    // processes lines with one or more games in PGN format. PGN uses multiple line per game
-    // for metadata and moves. Games will be extracted and the interpreted in parallel to retrieve
-    // moves
-    void readGamesPgn(const std::vector<std::string_view>* lines);
-    void readOneGamePgn(const std::vector<std::string_view>* lines, size_t gameStart, size_t gameEnd);
+    // processes lines with one or more games in PGN format using the shared PgnParser.
+    // Parses games from lines, then adds each game's moves to the book map.
+    void readGamesPgn(const std::vector<std::string_view>& lines);
 
     // adding moves from one game to book map
     void addGameToBook(const Moves& game);
@@ -201,9 +200,11 @@ namespace book {
     // writing to the book map with synchronization
     void writeToBook(Move move, ZobristKey currentKey, ZobristKey lastKey);
 
-    // fast removal of unwanted parts of a PGN move section (not using slow std::regex)
+    // Delegates to PgnParser::cleanUpMoveSection — kept for backward compatibility
   public:
-    static void cleanUpPgnMoveSection(std::string& str);
+    static void cleanUpPgnMoveSection(std::string& str) {
+      common::pgn::PgnParser::cleanUpMoveSection(str);
+    }
 
     // std::thread::hardware_concurrency() is not reliable - on some platforms
     // it returns 0 - in this case we chose a default of 4

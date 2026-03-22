@@ -28,6 +28,8 @@ using namespace book;
 using namespace chess;
 using namespace common;
 
+namespace pgn = common::pgn;
+
 // BOOST Serialization
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
@@ -54,8 +56,7 @@ using namespace common;
 // /// PUBLIC
 
 OpeningBook::OpeningBook(std::string bookPath, const BookFormat bFormat)
-    : bookFormat(bFormat), bookFilePath(std::move(bookPath)) {
-  numberOfThreads = getNoOfThreads();
+    : bookFormat(bFormat), bookFilePath(std::move(bookPath)), numberOfThreads(getNoOfThreads()) {
 }
 
 Move OpeningBook::getRandomMove(const ZobristKey zobrist) const {
@@ -163,7 +164,7 @@ std::vector<std::string_view> OpeningBook::readFile(const std::string& filePath)
     file.seekg(0, std::ios::end);
     const std::streamsize data_size = file.tellg();
     file.seekg(0, std::ios::beg);
-    data = std::make_unique<char[]>(data_size);
+    data = std::make_unique<char[]>(data_size); // NOLINT(*-avoid-c-arrays)
     file.read(data.get(), data_size);
     lines.reserve(data_size / 20);
     for (std::streamsize i = 0, dstart = 0; i < data_size; ++i) {
@@ -203,7 +204,7 @@ void OpeningBook::readGames(const std::vector<std::string_view>& lines) {
       break;
     }
     case BookFormat::PGN:
-      readGamesPgn(&lines);
+      readGamesPgn(lines);
       break;
   }
 
@@ -345,181 +346,35 @@ void OpeningBook::readOneGameSan(const std::string_view& lineView) {
   addGameToBook(game);
 }
 
-void OpeningBook::readGamesPgn(const std::vector<std::string_view>* lines) {
-  std::vector<std::future<bool>> futures;
+void OpeningBook::readGamesPgn(const std::vector<std::string_view>& lines) {
+  // Use the shared PGN parser to parse games from lines
+  pgn::PgnParser parser;
 
+  // Collect all games first (parser is sequential)
+  const auto games = parser.parseFromLines(lines);
+
+  // Add each game's moves to the book (can be parallelized if needed)
 #ifdef PARALLEL_LINE_PROCESSING
-  constexpr auto asyncPolicy = std::launch::async;
-#else
-  const std::launch asyncPolicy = std::launch::deferred;
-#endif
+  // Process games in parallel using async
+  std::vector<std::future<void>> futures;
+  futures.reserve(games.size());
 
-  // Get all lines belonging to one game and process this game asynchronously.
-  // Iterate though all lines and look for pattern indicating for the next game
-  // When a game start pattern is found ('^[')  we can assume the lines before
-  // up to the line number marked in gameStart are part of one game.
-  // This game (marked by line numbers for start and end will then be
-  // sent to be processed asynchronously
-  size_t gameStart = 0;
-  size_t gameEnd;
-  bool lastEmpty    = true;
-  const auto length = lines->size();
-  for (int lineNumber = 0; lineNumber < length; lineNumber++) {
-    const auto trimmedLineView = trimFast((*lines)[lineNumber]);
-    // skip emtpy lines
-    if (trimmedLineView.empty()) {
-      lastEmpty = true;
-      continue;
-    }
-    // a new game (except in the first line) always starts with a newline and a tag-section ([tag-pair])
-    if ((lastEmpty && trimmedLineView[0] == '[') || lineNumber == length - 1) {
-      gameEnd = lineNumber;
-      // process the previous found game asynchronously
-      futures.push_back(std::async(asyncPolicy, [=, this] {
-        readOneGamePgn(lines, gameStart, gameEnd);
-        return true;
-      }));
-      gameStart = gameEnd;
-    }
-    lastEmpty = false;
+  for (const auto& game : games) {
+    futures.push_back(std::async(std::launch::async, [this, &game] {
+      addGameToBook(game.moves);
+    }));
   }
 
-  // Last game is not defined by the start pattern of the next game as the
-  // there is none. We simply use the last line as end marker in this case.
-  gameEnd = length;
-  // process the previous found game asynchronously
-  futures.push_back(std::async(asyncPolicy, [=, this] {
-    readOneGamePgn(lines, gameStart, gameEnd);
-    return true;
-  }));
-
-  // wait for completion of the asynchronous operations
-  // future.get() is blocking if the async call has not returned
+  // Wait for all games to be added
   for (auto& future : futures) {
     future.get();
   }
-}
-
-void OpeningBook::readOneGamePgn(const std::vector<std::string_view>* lines, const size_t gameStart, const size_t gameEnd) {
-
-  std::string moveLine;
-
-  // join all lines but skip empty line and %-comment lines and tag lines starting with [
-  for (auto i = gameStart; i < gameEnd; i++) {
-    const auto lineView = trimFast((*lines)[i]);
-    if (lineView.empty() || lineView[0] == '[' || lineView[0] == '%') continue;
-    moveLine.append(" ").append(removeTrailingComments(lineView, ";"));
+#else
+  // Sequential processing
+  for (const auto& game : games) {
+    addGameToBook(game.moves);
   }
-
-  // after cleanup skip games with no moves
-  if (moveLine.empty()) return;
-
-  // cleanup unwanted parts of move section
-  cleanUpPgnMoveSection(moveLine);
-
-  // after cleanup skip games with no moves
-  if (moveLine.empty()) return;
-
-  // find and check move from the clean line of moves
-  // get each move string from the clean line
-  std::vector<std::string> movesStrings{};
-  splitFast(moveLine, movesStrings, " ");
-
-  // add game to book
-  addGameToBook(movesStrings);
-}
-
-void OpeningBook::cleanUpPgnMoveSection(std::string& str) {
-  const std::size_t length = str.length(); // explicit as the later loop test for <0
-  if (length == 0) return;
-
-  char lastChar = ' ';
-  for (int a = 0; a < length;) {
-    // skip non-ascii characters
-    if (static_cast<int>(str[a]) < 0 || static_cast<int>(str[a]) > 255) {
-      str[a++] = ' ';
-    }
-    // skip invalid characters
-    else if (!(isalnum(str[a]) || str[a] == '$' || str[a] == '*' || str[a] == '(' || str[a] == '{' || str[a] == '<' || str[a] == '/' || str[a] == '-' || str[a] == '=')) {
-      str[a++] = ' ';
-    }
-    // nag annotation \$\d{1,3}
-    else if (str[a] == '$') {
-      str[a++] = ' ';
-      while (a < length && isdigit(str[a])) {
-        str[a++] = ' ';
-      }
-    }
-    // remove curly bracket comments '\{[^{}]*\}'
-    else if (str[a] == '{') {
-      while (a < length && str[a] != '}') {
-        str[a++] = ' ';
-      }
-      str[a++] = ' ';
-    }
-    // remove tag bracket comments '\{[^<>}*\}'
-    else if (str[a] == '<') {
-      while (a < length && str[a] != '>') {
-        str[a++] = ' ';
-      }
-      str[a++] = ' ';
-    }
-    // remove bracket comments '\([^()]*\)'  - maybe recursive
-    else if (str[a] == '(') {
-      int open = 1;
-      str[a++] = ' ';
-      while (a < length && open > 0) {
-        if (str[a] == ')')
-          open--;
-        else if (str[a] == '(')
-          open++;
-        str[a++] = ' ';
-      }
-    }
-    // remove move numbering
-    else if (isdigit(str[a]) && lastChar == ' ') {
-      str[a++] = ' ';
-      while (a < length && (isdigit(str[a]) || str[a] == '.')) {
-        str[a++] = ' ';
-      }
-    }
-    // valid - move forward
-    else {
-      a++;
-    }
-    lastChar = str[a - 1];
-  }
-
-  // remove result (1-0 0-1 1/2-1/2 *)
-  std::size_t a = length - 1;
-  do {
-    if (str[a] == ' ') {
-      continue;
-    }
-    if (str[a] == '*') {
-      str[a] = ' ';
-      break;
-    }
-    if (a >= 6 && str.substr(a - 6, 7) == " /2-1/2") {
-      a -= 6;
-      break;
-    }
-    if (a >= 2 && (str.substr(a - 2, 3) == " -0" || str.substr(a - 2, 3) == " -1")) {
-      a -= 2;
-      break;
-    }
-  } while (a-- > 0);
-
-  str.resize(a);
-
-  // Use the std::unique algorithm to remove consecutive spaces
-  const auto newEnd = std::ranges::unique(str,
-                                          [](const char aa, const char bb) { return aa == ' ' && bb == ' '; })
-                        .begin();
-  // Erase the extra spaces from the string
-  str.resize(std::distance(str.begin(), newEnd));
-  // remove trailing and leading whitespace
-  str = trimFast(str);
+#endif
 }
 
 void OpeningBook::addGameToBook(const Moves& game) {
