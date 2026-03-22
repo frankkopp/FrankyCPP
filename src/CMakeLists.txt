@@ -211,6 +211,90 @@ if (MSVC AND STRICT_WARNINGS)
 endif ()
 
 # ============================================================================
+# Tuning executables (Position Extractor + Texel Tuner)
+# Excluded from production builds — development/tuning tools only.
+# ============================================================================
+if (NOT FRANKYCPP_PRODUCTION)
+    # --- Position Extractor ---
+    message(STATUS "Configuring Position Extractor executable...")
+    set(extractorExeName ${exeName}_Extractor)
+    message(STATUS "Extractor executable name: ${extractorExeName}")
+
+    file(GLOB SRCS_EXTRACTOR CONFIGURE_DEPENDS tuning/extractor/*.cpp tuning/extractor/*.h)
+    add_executable(${extractorExeName} ${SRCS_EXTRACTOR})
+
+    target_compile_features(${extractorExeName} PRIVATE cxx_std_20)
+
+    target_link_libraries(${extractorExeName}
+            PRIVATE
+            FrankyCPPlib
+            Boost::program_options
+    )
+
+    target_include_directories(${extractorExeName}
+            PRIVATE
+            ${PROJECT_SOURCE_DIR}/src
+            ${PROJECT_BINARY_DIR}
+    )
+
+    # Copy config and books for extractor (needed for PGN parsing / position setup)
+    add_custom_command(
+            TARGET ${extractorExeName} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/config $<TARGET_FILE_DIR:${extractorExeName}>/config
+            COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/books $<TARGET_FILE_DIR:${extractorExeName}>/books
+    )
+
+    if (ENABLE_UNITY_BUILD)
+        set_target_properties(${extractorExeName} PROPERTIES UNITY_BUILD ON)
+    endif ()
+
+    if (MSVC AND STRICT_WARNINGS)
+        target_compile_options(${extractorExeName} PRIVATE /WX)
+    endif ()
+
+    # --- Texel Tuner ---
+    message(STATUS "Configuring Texel Tuner executable...")
+    set(tunerExeName ${exeName}_Tuner)
+    message(STATUS "Tuner executable name: ${tunerExeName}")
+
+    file(GLOB SRCS_TUNER CONFIGURE_DEPENDS tuning/optimizer/*.cpp tuning/optimizer/*.h)
+    add_executable(${tunerExeName} ${SRCS_TUNER})
+
+    target_compile_features(${tunerExeName} PRIVATE cxx_std_20)
+
+    target_link_libraries(${tunerExeName}
+            PRIVATE
+            FrankyCPPlib
+            Boost::program_options
+            yaml-cpp::yaml-cpp
+    )
+
+    target_include_directories(${tunerExeName}
+            PRIVATE
+            ${PROJECT_SOURCE_DIR}/src
+            ${PROJECT_BINARY_DIR}
+    )
+
+    # Copy config for tuner (needed for ConfigManager / eval config loading)
+    add_custom_command(
+            TARGET ${tunerExeName} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/config $<TARGET_FILE_DIR:${tunerExeName}>/config
+    )
+
+    if (ENABLE_UNITY_BUILD)
+        set_target_properties(${tunerExeName} PROPERTIES UNITY_BUILD ON)
+    endif ()
+
+    if (MSVC AND STRICT_WARNINGS)
+        target_compile_options(${tunerExeName} PRIVATE /WX)
+    endif ()
+
+    message(STATUS "Tuning executables configured (Extractor + Tuner)")
+else ()
+    message(STATUS "Tuning executables SKIPPED (FRANKYCPP_PRODUCTION is ON)")
+endif ()
+
+# ============================================================================
 
 # STRICT_WARNINGS for CI: treat warnings as errors when enabled
 if (MSVC AND STRICT_WARNINGS)

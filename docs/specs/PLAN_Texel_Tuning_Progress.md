@@ -2,7 +2,7 @@
 
 **Plan Document:** `docs/specs/PLAN_Texel_Tuning.md`  
 **Created:** 2026-03-22  
-**Last Updated:** 2026-03-22  
+**Last Updated:** 2026-03-22    
 **Target Version:** v1.7  
 
 ---
@@ -13,7 +13,7 @@
 |-------|------------------------------------|---------------|------------|------------|
 | 0     | Release v1.6, branch v1.7          | ✅ Complete    | —          | 2026-03-22 |
 | 1     | Module structure + PGN library     | ✅ Complete    | 2026-03-22 | 2026-03-22 |
-| 2     | Tuning build targets (scaffolding) | ⬚ Not Started |            |            |
+| 2     | Tuning build targets (scaffolding) | ✅ Complete    | 2026-03-22 | 2026-03-22 |
 | 3     | Data collection                    | ⬚ Not Started |            |            |
 | 4     | Position extractor                 | ⬚ Not Started |            |            |
 | 5     | Mark tunable parameters            | ⬚ Not Started |            |            |
@@ -64,18 +64,27 @@
 
 ---
 
-## Phase 2: Tuning Build Targets ⬚
+## Phase 2: Tuning Build Targets ✅
 
-| Step | Task                                                                    | Status        |
-|------|-------------------------------------------------------------------------|---------------|
-| 2.1  | Create `ExtractorMain.cpp` with stub `main()` + CLI argument parsing    | ⬚ Not Started |
-| 2.2  | Create `TunerMain.cpp` with stub `main()` + CLI argument parsing        | ⬚ Not Started |
-| 2.3  | Add `FrankyCPP_v1.7_Extractor` and `FrankyCPP_v1.7_Tuner` CMake targets | ⬚ Not Started |
-| 2.4  | Guard tuning targets with `if(NOT FRANKYCPP_PRODUCTION)`                | ⬚ Not Started |
-| 2.5  | Verify both executables build, link, and print `--help`                 | ⬚ Not Started |
-| 2.6  | Create `src/tuning/README.md` with module documentation                 | ⬚ Not Started |
+| Step | Task                                                                    | Status     |
+|------|-------------------------------------------------------------------------|------------|
+| 2.1  | Create `ExtractorMain.cpp` with stub `main()` + CLI argument parsing    | ✅ Complete |
+| 2.2  | Create `TunerMain.cpp` with stub `main()` + CLI argument parsing        | ✅ Complete |
+| 2.3  | Add `FrankyCPP_v1.7_Extractor` and `FrankyCPP_v1.7_Tuner` CMake targets | ✅ Complete |
+| 2.4  | Guard tuning targets with `if(NOT FRANKYCPP_PRODUCTION)`                | ✅ Complete |
+| 2.5  | Verify both executables build, link, and print `--help`                 | ✅ Complete |
+| 2.6  | Create `src/tuning/README.md` with module documentation                 | ✅ Complete |
 
-**Gate:** Both executables compile and run `--help`. Engine executable unaffected.
+**Gate:** ✅ Both executables compile and run `--help`. Engine executable unaffected.
+
+**Notes:**
+- 2.1: `ExtractorMain.cpp` with Boost.program_options CLI: `--input`, `--output`, `--min-move`, `--min-pieces`, `--skip-captures`, `--skip-promotions`, `--qsearch-filter`, `--qsearch-threshold`, `--verbose`, `--help`. Positional args supported. Prints config summary then stub message.
+- 2.2: `TunerMain.cpp` with Boost.program_options CLI: `--dataset`, `--output`, `--threads`, `--test-split`, `--resume`, `--max-passes`, `--verbose`, `--help`. Positional args supported. Prints config summary then stub message.
+- 2.3: Both targets added to `src/CMakeLists.txt` following the `engine_arena` pattern. Link against `FrankyCPPlib` + `Boost::program_options`. Tuner also links `yaml-cpp::yaml-cpp`.
+- 2.4: Both targets wrapped in `if(NOT FRANKYCPP_PRODUCTION)` — excluded from production builds.
+- 2.5: Pending user build verification in CLion.
+- 2.6: `src/tuning/README.md` created with module overview, architecture, usage examples, dataset format, and implementation status table.
+- Removed `.gitkeep.md` placeholders from `extractor/` and `optimizer/` directories.
 
 ---
 

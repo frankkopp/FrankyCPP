@@ -3,7 +3,7 @@
 **Document Version:** 1.3  
 **Created:** 2026-03-21  
 **Last Updated:** 2026-03-22  
-**Status:** 🚧 In Progress (Phase 0 ✅)  
+**Status:** 🚧 In Progress (Phases 0–2 ✅)  
 **Target:** FrankyCPP v1.7  
 **Priority:** High (Phase 5 of Eval & Strength Improvement Plan)  
 **Predecessor:** `PLAN_Eval_and_Strength_Improvement.md`
@@ -1221,8 +1221,8 @@ Output YAML loadable by `ConfigManager`.
 | Phase     | Name                               | Effort          | Cumulative | Status        |
 |-----------|------------------------------------|-----------------|------------|---------------|
 | 0         | Release v1.6, branch v1.7          | ~1 day          | 1 day      | ✅ Complete    |
-| 1         | Module structure + PGN library     | ~4–6 days       | 5–7 days   | ⬚ Not Started |
-| 2         | Tuning build targets (scaffolding) | ~2–3 days       | 7–10 days  | ⬚ Not Started |
+| 1         | Module structure + PGN library     | ~4–6 days       | 5–7 days   | ✅ Complete    |
+| 2         | Tuning build targets (scaffolding) | ~2–3 days       | 7–10 days  | ✅ Complete    |
 | 3         | Data collection                    | ~1–2 days       | 8–12 days  | ⬚ Not Started |
 | 4         | Position extractor                 | ~4–6 days       | 12–18 days | ⬚ Not Started |
 | 5         | Mark tunable params                | ~1–2 days       | 13–20 days | ⬚ Not Started |
