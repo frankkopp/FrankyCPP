@@ -1,0 +1,19 @@
+Zurichess Quiet-Labeled Tuning Dataset v7
+==========================================
+
+Source:  https://bitbucket.org/zurichess/tuner/downloads/quiet-labeled.v7.epd.gz
+Mirror:  https://github.com/FitzOReilly/fatalii (references same dataset)
+
+Description:
+  ~7.2 million quiet, labeled positions extracted from CCRL engine games.
+  Each line is EPD format with a c9 tag containing the game result.
+  Used for Texel tuning of evaluation parameters.
+
+Format:
+  <FEN> c9 "<result>";
+  Result values: "1-0", "1/2-1/2", "0-1"
+
+Download and decompress:
+  1. Download quiet-labeled.v7.epd.gz from the URL above
+  2. Decompress to this directory: quiet-labeled.epd
+  3. Both .gz and .epd files are git-ignored (too large for version control)
