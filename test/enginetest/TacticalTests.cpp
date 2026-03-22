@@ -78,6 +78,7 @@ static constexpr int ERET_TT_SIZE_MB = 256;         // transposition table size
 // After modifying, rebuild and run the suite to measure impact on solve rate.
 // =============================================================================
 static void applyExperimentalConfig() {
+#ifndef FRANKYCPP_PRODUCTION
   // --- Search tuning knobs ---
   CONFIG_OVERRIDE_START()
   s.USE_BOOK   = false; // no book moves for tactical tests
@@ -281,6 +282,9 @@ static void applyExperimentalConfig() {
   e.USE_GAMEPHASE_VALUE = true;
 
   CONFIG_OVERRIDE_END();
+#else
+  LOG__WARN( Logger::get().TEST_LOG, "Running ERET tests with PRODUCTION config - no experimental overrides applied" );
+#endif
 }
 
 // =============================================================================
