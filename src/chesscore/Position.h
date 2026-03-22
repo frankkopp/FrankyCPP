@@ -300,6 +300,21 @@ namespace chess {
     /// @return      True if move is legal
     bool isLegalMove(Move move) const;
 
+    /// Reinitializes this Position from a FEN string in-place.
+    /// Avoids creating a temporary Position object, which is important for
+    /// stack usage in MSVC Debug builds (Position is ~33KB due to historyState[1024]).
+    /// @param fen  FEN string describing the new position
+    /// @throws std::invalid_argument if FEN is invalid
+    void setFromFen(const std::string& fen) { setupBoard(fen); }
+
+    /// Reinitializes this Position from a FEN string in-place.
+    /// Avoids creating a temporary Position object, which is important for
+    /// stack usage in MSVC Debug builds (Position is ~33KB due to historyState[1024]).
+    /// @param fen  FEN string describing the new position
+    /// @throws std::invalid_argument if FEN is invalid
+    /// @overload
+    void setFromFen(const char* fen) { setupBoard(std::string{fen}); }
+
     /// Checks for draw by repetition.
     /// To detect a 3-fold repetition, the given position must occur at least
     /// 2 times before: checkRepetitions(2) checks for 3-fold repetitions.

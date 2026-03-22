@@ -684,65 +684,55 @@ TEST_F(PositionTest, insufficientMaterial) {
   Position position;
 
   // 	both sides have a bare king
-  position = Position("8/3k4/8/8/8/8/4K3/8 w - -");
-
-
+  position.setFromFen("8/3k4/8/8/8/8/4K3/8 w - -");
   EXPECT_TRUE(position.checkInsufficientMaterial());
 
   // 	one side has a king and a minor piece against a bare king
   // 	both sides have a king and a minor piece each
-  position = Position("8/3k4/8/8/8/2B5/4K3/8 w - -");
-
+  position.setFromFen("8/3k4/8/8/8/2B5/4K3/8 w - -");
   EXPECT_TRUE(position.checkInsufficientMaterial());
-  position = Position("8/8/4K3/8/8/2b5/4k3/8 b - -");
 
+  position.setFromFen("8/8/4K3/8/8/2b5/4k3/8 b - -");
   EXPECT_TRUE(position.checkInsufficientMaterial());
 
   // 	both sides have a king and a bishop, the bishops being the same color
-  position = Position("8/8/3BK3/8/8/2b5/4k3/8 b - -");
-
+  position.setFromFen("8/8/3BK3/8/8/2b5/4k3/8 b - -");
   EXPECT_TRUE(position.checkInsufficientMaterial());
-  position = Position("8/8/2B1K3/8/8/8/2b1k3/8 b - -");
 
+  position.setFromFen("8/8/2B1K3/8/8/8/2b1k3/8 b - -");
   EXPECT_TRUE(position.checkInsufficientMaterial());
-  position = Position("8/8/4K3/2B5/8/8/2b1k3/8 b - -");
 
+  position.setFromFen("8/8/4K3/2B5/8/8/2b1k3/8 b - -");
   EXPECT_TRUE(position.checkInsufficientMaterial());
 
   // one side has two bishops a mate can be forced
-  position = Position("8/8/2B1K3/2B5/8/8/2n1k3/8 b - -");
-
+  position.setFromFen("8/8/2B1K3/2B5/8/8/2n1k3/8 b - -");
   EXPECT_FALSE(position.checkInsufficientMaterial());
 
   // 	two knights against the bare king
-  position = Position("8/8/2NNK3/8/8/8/4k3/8 w - -");
-
+  position.setFromFen("8/8/2NNK3/8/8/8/4k3/8 w - -");
   EXPECT_TRUE(position.checkInsufficientMaterial());
-  position = Position("8/8/2nnk3/8/8/8/4K3/8 w - -");
 
+  position.setFromFen("8/8/2nnk3/8/8/8/4K3/8 w - -");
   EXPECT_TRUE(position.checkInsufficientMaterial());
 
   // 	the weaker side has a minor piece against two knights
-  position = Position("8/8/2n1kn2/8/8/8/4K3/4B3 w - -");
-
+  position.setFromFen("8/8/2n1kn2/8/8/8/4K3/4B3 w - -");
   EXPECT_TRUE(position.checkInsufficientMaterial());
 
   // 	two bishops draw against a bishop
-  position = Position("8/8/3bk1b1/8/8/8/4K3/4B3 w - -");
-
+  position.setFromFen("8/8/3bk1b1/8/8/8/4K3/4B3 w - -");
   EXPECT_TRUE(position.checkInsufficientMaterial());
 
   // 	two minor pieces against one draw, except when the stronger side has a bishop pair
-  position = Position("8/8/3bk1b1/8/8/8/4K3/4N3 w - -");
-
+  position.setFromFen("8/8/3bk1b1/8/8/8/4K3/4N3 w - -");
   EXPECT_FALSE(position.checkInsufficientMaterial());
-  position = Position("8/8/3bk1n1/8/8/8/4K3/4N3 w - -");
 
+  position.setFromFen("8/8/3bk1n1/8/8/8/4K3/4N3 w - -");
   EXPECT_TRUE(position.checkInsufficientMaterial());
 
   // bugs
-  position = Position("8/8/8/6k1/8/4K3/8/r7 b - -");
-
+  position.setFromFen("8/8/8/6k1/8/4K3/8/r7 b - -");
   EXPECT_FALSE(position.checkInsufficientMaterial());
 }
 
@@ -830,149 +820,153 @@ TEST_F(PositionTest, isAttacked) {
 }
 
 TEST_F(PositionTest, giveCheck) {
+  // Uses setFromFen() instead of p = Position("fen") to avoid creating ~33KB
+  // temporaries on the stack. With 32 test cases, MSVC Debug would allocate
+  // 32 × 33KB ≈ 1MB of stack for temporaries, exceeding the default stack size.
+
   // DIRECT CHECKS
   Position p;
   Move move;
 
   // Pawns
-  p    = Position("4r3/1pn3k1/4p1b1/p1Pp1P1r/3P2NR/1P3B2/3K2P1/4R3 w - -");
+  p.setFromFen("4r3/1pn3k1/4p1b1/p1Pp1P1r/3P2NR/1P3B2/3K2P1/4R3 w - -");
   move = Move::normal(SQ_F5, SQ_F6);
   EXPECT_TRUE(p.givesCheck(move));
 
-  p    = Position("5k2/4pp2/1N2n1p1/r3P2p/P5PP/2rR1K2/P7/3R4 b - -");
+  p.setFromFen("5k2/4pp2/1N2n1p1/r3P2p/P5PP/2rR1K2/P7/3R4 b - -");
   move = Move::normal(SQ_H5, SQ_G4);
   EXPECT_TRUE(p.givesCheck(move));
 
   // promotion
-  p    = Position("1k3r2/1p1bP3/2p2p1Q/Ppb5/4Rp1P/2q2N1P/5PB1/6K1 w - -");
+  p.setFromFen("1k3r2/1p1bP3/2p2p1Q/Ppb5/4Rp1P/2q2N1P/5PB1/6K1 w - -");
   move = Move::promotion(SQ_E7, SQ_F8, QUEEN);
   EXPECT_TRUE(p.givesCheck(move));
 
-  p    = Position("1r3r2/1p1bP2k/2p2n2/p1Pp4/P2N1PpP/1R2p3/1P2P1BP/3R2K1 w - -");
+  p.setFromFen("1r3r2/1p1bP2k/2p2n2/p1Pp4/P2N1PpP/1R2p3/1P2P1BP/3R2K1 w - -");
   move = Move::promotion(SQ_E7, SQ_F8, KNIGHT);
   EXPECT_TRUE(p.givesCheck(move));
 
   // Knights
-  p    = Position("5k2/4pp2/1N2n1p1/r3P2p/P5PP/2rR1K2/P7/3R4 w - -");
+  p.setFromFen("5k2/4pp2/1N2n1p1/r3P2p/P5PP/2rR1K2/P7/3R4 w - -");
   move = Move::normal(SQ_B6, SQ_D7);
   EXPECT_TRUE(p.givesCheck(move));
 
-  p    = Position("5k2/4pp2/1N2n1p1/r3P2p/P5PP/2rR1K2/P7/3R4 b - -");
+  p.setFromFen("5k2/4pp2/1N2n1p1/r3P2p/P5PP/2rR1K2/P7/3R4 b - -");
   move = Move::normal(SQ_E6, SQ_D4);
   EXPECT_TRUE(p.givesCheck(move));
 
   // Rooks
-  p    = Position("5k2/4pp2/1N2n1pp/r3P3/P5PP/2rR4/P3K3/3R4 w - -");
+  p.setFromFen("5k2/4pp2/1N2n1pp/r3P3/P5PP/2rR4/P3K3/3R4 w - -");
   move = Move::normal(SQ_D3, SQ_D8);
   EXPECT_TRUE(p.givesCheck(move));
 
-  p    = Position("5k2/4pp2/1N2n1pp/r3P3/P5PP/2rR4/P3K3/3R4 b - -");
+  p.setFromFen("5k2/4pp2/1N2n1pp/r3P3/P5PP/2rR4/P3K3/3R4 b - -");
   move = Move::normal(SQ_C3, SQ_C2);
   EXPECT_TRUE(p.givesCheck(move));
 
   // blocked opponent piece - no check
-  p    = Position("5k2/4pp2/1N2n1pp/r3P3/P5PP/2rR4/P2RK3/8 b - -");
+  p.setFromFen("5k2/4pp2/1N2n1pp/r3P3/P5PP/2rR4/P2RK3/8 b - -");
   move = Move::normal(SQ_C3, SQ_C2);
   EXPECT_FALSE(p.givesCheck(move));
 
   // blocked own piece - no check
-  p    = Position("5k2/4pp2/1N2n1pp/r3P3/P5PP/2rR4/P2nK3/3R4 b - -");
+  p.setFromFen("5k2/4pp2/1N2n1pp/r3P3/P5PP/2rR4/P2nK3/3R4 b - -");
   move = Move::normal(SQ_C3, SQ_C2);
   EXPECT_FALSE(p.givesCheck(move));
 
   // Bishop
-  p    = Position("6k1/3q2b1/p1rrnpp1/P3p3/2B1P3/1p1R3Q/1P4PP/1B1R3K w - -");
+  p.setFromFen("6k1/3q2b1/p1rrnpp1/P3p3/2B1P3/1p1R3Q/1P4PP/1B1R3K w - -");
   move = Move::normal(SQ_C4, SQ_E6);
   EXPECT_TRUE(p.givesCheck(move));
 
   // Queen
-  p    = Position("5k2/4pp2/1N2n1pp/r3P3/P5PP/2qR4/P3K3/3R4 b - -");
+  p.setFromFen("5k2/4pp2/1N2n1pp/r3P3/P5PP/2qR4/P3K3/3R4 b - -");
   move = Move::normal(SQ_C3, SQ_C2);
   EXPECT_TRUE(p.givesCheck(move));
 
-  p    = Position("6k1/3q2b1/p1rrnpp1/P3p3/2B1P3/1p1R3Q/1P4PP/1B1R3K w - -");
+  p.setFromFen("6k1/3q2b1/p1rrnpp1/P3p3/2B1P3/1p1R3Q/1P4PP/1B1R3K w - -");
   move = Move::normal(SQ_H3, SQ_E6);
   EXPECT_TRUE(p.givesCheck(move));
 
-  p    = Position("6k1/p3q2p/1n1Q2pB/8/5P2/6P1/PP5P/3R2K1 b - -");
+  p.setFromFen("6k1/p3q2p/1n1Q2pB/8/5P2/6P1/PP5P/3R2K1 b - -");
   move = Move::normal(SQ_E7, SQ_E3);
   EXPECT_TRUE(p.givesCheck(move));
 
   // no check
-  p    = Position("6k1/p3q2p/1n1Q2pB/8/5P2/6P1/PP5P/3R2K1 b - -");
+  p.setFromFen("6k1/p3q2p/1n1Q2pB/8/5P2/6P1/PP5P/3R2K1 b - -");
   move = Move::normal(SQ_E7, SQ_E4);
   EXPECT_FALSE(p.givesCheck(move));
 
   // CASTLING checks
-  p    = Position("r4k1r/8/8/8/8/8/8/R3K2R w KQ -");
+  p.setFromFen("r4k1r/8/8/8/8/8/8/R3K2R w KQ -");
   move = Move::castling(SQ_E1, SQ_G1);
   EXPECT_TRUE(p.givesCheck(move));
 
-  p    = Position("r2k3r/8/8/8/8/8/8/R3K2R w KQ -");
+  p.setFromFen("r2k3r/8/8/8/8/8/8/R3K2R w KQ -");
   move = Move::castling(SQ_E1, SQ_C1);
   EXPECT_TRUE(p.givesCheck(move));
 
-  p    = Position("r3k2r/8/8/8/8/8/8/R4K1R b kq -");
+  p.setFromFen("r3k2r/8/8/8/8/8/8/R4K1R b kq -");
   move = Move::castling(SQ_E8, SQ_G8);
   EXPECT_TRUE(p.givesCheck(move));
 
-  p    = Position("r3k2r/8/8/8/8/8/8/R2K3R b kq -");
+  p.setFromFen("r3k2r/8/8/8/8/8/8/R2K3R b kq -");
   move = Move::castling(SQ_E8, SQ_C8);
   EXPECT_TRUE(p.givesCheck(move));
 
-  p    = Position("r6r/8/8/8/8/8/8/2k1K2R w K -");
+  p.setFromFen("r6r/8/8/8/8/8/8/2k1K2R w K -");
   move = Move::castling(SQ_E1, SQ_G1);
   EXPECT_TRUE(p.givesCheck(move));
 
   // en passant checks
-  p    = Position("8/3r1pk1/p1R2p2/1p5p/r2Pp3/PRP3P1/4KP1P/8 b - d3");
+  p.setFromFen("8/3r1pk1/p1R2p2/1p5p/r2Pp3/PRP3P1/4KP1P/8 b - d3");
   move = Move::enPassant(SQ_E4, SQ_D3);
   EXPECT_TRUE(p.givesCheck(move));
 
   // REVEALED CHECKS
-  p    = Position("6k1/8/3P1bp1/2BNp3/8/1Q3P1q/7r/1K2R3 w - -");
+  p.setFromFen("6k1/8/3P1bp1/2BNp3/8/1Q3P1q/7r/1K2R3 w - -");
   move = Move::normal(SQ_D5, SQ_E7);
   EXPECT_TRUE(p.givesCheck(move));
 
-  p    = Position("6k1/8/3P1bp1/2BNp3/8/1Q3P1q/7r/1K2R3 w - -");
+  p.setFromFen("6k1/8/3P1bp1/2BNp3/8/1Q3P1q/7r/1K2R3 w - -");
   move = Move::normal(SQ_D5, SQ_C7);
   EXPECT_TRUE(p.givesCheck(move));
 
-  p    = Position("1Q1N2k1/8/3P1bp1/2B1p3/8/5P1q/7r/1K2R3 w - -");
+  p.setFromFen("1Q1N2k1/8/3P1bp1/2B1p3/8/5P1q/7r/1K2R3 w - -");
   move = Move::normal(SQ_D8, SQ_E6);
   EXPECT_TRUE(p.givesCheck(move));
 
-  p    = Position("1R1N2k1/8/3P1bp1/2B1p3/8/5P1q/7r/1K2R3 w - -");
+  p.setFromFen("1R1N2k1/8/3P1bp1/2B1p3/8/5P1q/7r/1K2R3 w - -");
   move = Move::normal(SQ_D8, SQ_E6);
   EXPECT_TRUE(p.givesCheck(move));
 
   // revealed by en passant capture
-  p    = Position("8/b2r1pk1/p1R2p2/1p5p/r2Pp3/PRP3P1/5K1P/8 b - d3");
+  p.setFromFen("8/b2r1pk1/p1R2p2/1p5p/r2Pp3/PRP3P1/5K1P/8 b - d3");
   move = Move::enPassant(SQ_E4, SQ_D3);
   EXPECT_TRUE(p.givesCheck(move));
 
   // Misc
-  p    = Position("2r1r3/pb1n1kpn/1p1qp3/6p1/2PP4/8/P2Q1PPP/3R1RK1 w - -");
+  p.setFromFen("2r1r3/pb1n1kpn/1p1qp3/6p1/2PP4/8/P2Q1PPP/3R1RK1 w - -");
   move = Move::normal(SQ_F2, SQ_F4);
   EXPECT_FALSE(p.givesCheck(move));
 
-  p    = Position("2r1r1k1/pb3pp1/1p1qpn2/4n1p1/2PP4/6KP/P2Q1PP1/3RR3 b - -");
+  p.setFromFen("2r1r1k1/pb3pp1/1p1qpn2/4n1p1/2PP4/6KP/P2Q1PP1/3RR3 b - -");
   move = Move::normal(SQ_E5, SQ_D3);
   EXPECT_TRUE(p.givesCheck(move));
 
-  p    = Position("R6R/3Q4/1Q4Q1/4Q3/2Q4Q/Q1NNQQ2/1p6/qk3KB1 b - -");
+  p.setFromFen("R6R/3Q4/1Q4Q1/4Q3/2Q4Q/Q1NNQQ2/1p6/qk3KB1 b - -");
   move = Move::normal(SQ_B1, SQ_C2);
   EXPECT_TRUE(p.givesCheck(move));
 
-  p    = Position("8/8/8/8/8/5K2/R7/7k w - -");
+  p.setFromFen("8/8/8/8/8/5K2/R7/7k w - -");
   move = Move::normal(SQ_A2, SQ_H2);
   EXPECT_TRUE(p.givesCheck(move));
 
-  p    = Position("r1bqkb1r/ppp1pppp/2n2n2/1B1P4/8/8/PPPP1PPP/RNBQK1NR w KQkq -");
+  p.setFromFen("r1bqkb1r/ppp1pppp/2n2n2/1B1P4/8/8/PPPP1PPP/RNBQK1NR w KQkq -");
   move = Move::normal(SQ_D5, SQ_C6);
   EXPECT_FALSE(p.givesCheck(move));
 
-  p    = Position("rnbq1bnr/pppkpppp/8/3p4/3P4/3Q4/PPP1PPPP/RNB1KBNR w KQ -");
+  p.setFromFen("rnbq1bnr/pppkpppp/8/3p4/3P4/3Q4/PPP1PPPP/RNB1KBNR w KQ -");
   move = Move::normal(SQ_D3, SQ_H7);
   EXPECT_FALSE(p.givesCheck(move));
 }
