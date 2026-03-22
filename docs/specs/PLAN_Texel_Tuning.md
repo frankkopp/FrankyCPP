@@ -1091,12 +1091,12 @@ gate criteria before proceeding. Each phase should be merged/committed independe
 
 **Goal:** Have a dataset ready for development and testing (small + full).
 
-| Step | Task                                                                         | Days |
-|------|------------------------------------------------------------------------------|------|
-| 3.1  | Download Zurichess quiet-labeled dataset (or similar)                        | 0.5  |
-| 3.2  | Create a small dev subset (~50K–100K positions) for fast iteration           | 0.5  |
-| 3.3  | Start FrankyCPP self-play generation in background (cutechess-cli script)    | 0.5  |
-| 3.4  | Document dataset sources and locations in `test/testsets/tuning/`             | 0.5  |
+| Step | Task                                                                      | Days |
+|------|---------------------------------------------------------------------------|------|
+| 3.1  | Download Zurichess quiet-labeled dataset (or similar)                     | 0.5  |
+| 3.2  | Create a small dev subset (~50K–100K positions) for fast iteration        | 0.5  |
+| 3.3  | Start FrankyCPP self-play generation in background (cutechess-cli script) | 0.5  |
+| 3.4  | Document dataset sources and locations in `test/testsets/tuning/`         | 0.5  |
 
 **Gate:** Dev dataset and full downloaded dataset available in `test/testsets/tuning/`.
 

@@ -29,3 +29,4 @@ temp_*/
 # Tuning datasets - large files, keep only the URL/source txt files
 /test/testsets/tuning/*.epd
 /test/testsets/tuning/*.epd.gz
+/test/testsets/tuning/*.pgn

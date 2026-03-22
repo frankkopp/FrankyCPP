@@ -358,6 +358,39 @@ matches:
 #    concurrency: 4
 #    outputPgn: "results/matches/v1.7_vs_FrankyGo_300s.pgn"
 
+  # ==========================================================================
+  # Self-play for Texel tuning data generation
+  # ==========================================================================
+  # Generates PGN games for position extraction and eval parameter tuning.
+  # Settings optimized for eval-driven play (depth 8-11 per move):
+  #   - tc=10+0.3: 0.3s/move increment gives depth 8-11 (eval sweet spot)
+  #     10s base buffer ensures no move is played with near-zero time
+  #   - Threads=1: No SMP — one thread per engine, maximizes concurrency
+  #   - OwnBook=false: Use cutechess opening book for diversity
+  #   - 8moves_v3.pgn: Diverse openings for broad position coverage
+  #   - concurrency=12: 24 engine processes on 24 physical cores
+  #
+  # Expected throughput: ~10 games/min → ~14,000 games/day
+  # Expected duration for 50,000 games: ~3 days
+  # Extractable positions: ~35 per game → ~1.5M self-play positions
+  #
+  # Run with: FrankyCPP_Arena --matches
+  # Stop anytime — PGN output is written incrementally.
+  # ==========================================================================
+  - name: "v1.7_selfplay_tuning"
+    tag: "TexelTuning"
+    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
+    engine1Version: "v1.7"
+    engine1Options: "OwnBook=false; Threads=1"
+    engine2Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
+    engine2Version: "v1.7"
+    engine2Options: "OwnBook=false; Threads=1"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "10+0.3"
+    rounds: 50000
+    concurrency: 12
+    outputPgn: "test/testsets/tuning/selfplay_v1.7_50k.pgn"
+
 # =============================================================================
 # Benchmark Configuration
 # =============================================================================
