@@ -174,7 +174,7 @@ Several chess engine developers publish ready-to-use labeled datasets:
 
 | Source                              | Description                                                | Volume          | URL / Notes                                                   |
 |-------------------------------------|------------------------------------------------------------|-----------------|---------------------------------------------------------------|
-| **Zurichess quiet-labeled dataset** | Quiet positions extracted from CCRL games, labeled w/d/l   | ~7.2M positions | zurichess on GitHub, `quiet-labeled.epd.gz`                   |
+| **Zurichess quiet-labeled dataset** | Quiet positions extracted from CCRL games, labeled w/d/l   | ~1.4M positions | `bitbucket.org/zurichess/tuner`, `quiet-labeled.v7.epd.gz`    |
 | **Ethereal tuning data**            | Andy Grant's dataset used for Ethereal tuner               | ~8.5M positions | Available on request via TalkChess; sometimes mirrored        |
 | **Lichess elite database**          | Games from 2400+ rated players, monthly dumps              | Millions/month  | `database.lichess.org` — requires extraction + filtering      |
 | **CCRL PGN archives**               | Engine games at various time controls, rated ~2000–3500    | Thousands/games | `computerchess.org.uk/ccrl` — requires extraction + filtering |
@@ -220,11 +220,11 @@ Use Stockfish 18 at a **reduced depth or fast TC** to generate high-quality game
 
 #### Option 4: Mixed Dataset (Recommended Final Approach)
 
-| Component                      | Volume | Purpose                                    |
-|--------------------------------|--------|--------------------------------------------|
-| Downloaded dataset (Zurichess) | 3M     | Broad coverage, immediate availability     |
-| FrankyCPP self-play            | 2M     | Engine-specific patterns                   |
-| **Total**                      | **5M** | Balanced, diverse                          |
+| Component                      | Volume   | Purpose                                    |
+|--------------------------------|----------|--------------------------------------------|
+| Downloaded dataset (Zurichess) | ~1.4M    | Broad coverage, immediate availability     |
+| FrankyCPP self-play            | 2–4M     | Engine-specific patterns                   |
+| **Total**                      | **3–5M** | Balanced, diverse                          |
 
 Start with the downloaded dataset for pipeline development, then generate self-play data in
 the background for the final tuning run.
@@ -1100,7 +1100,7 @@ gate criteria before proceeding. Each phase should be merged/committed independe
 
 **Gate:** Dev dataset and full downloaded dataset available in `test/testsets/tuning/`.
 
-**Deliverable:** `test/testsets/tuning/dev_50k.txt`, `test/testsets/tuning/zurichess_7M.txt`
+**Deliverable:** `test/testsets/tuning/dev_50k.epd`, `test/testsets/tuning/quiet-labeled.epd` (~1.4M positions)
 
 **Effort:** ~1–2 days (self-play runs in background, not blocking)
 

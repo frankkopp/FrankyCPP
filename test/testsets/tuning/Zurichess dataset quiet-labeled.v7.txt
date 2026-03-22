@@ -5,7 +5,7 @@ Source:  https://bitbucket.org/zurichess/tuner/downloads/quiet-labeled.v7.epd.gz
 Mirror:  https://github.com/FitzOReilly/fatalii (references same dataset)
 
 Description:
-  ~7.2 million quiet, labeled positions extracted from CCRL engine games.
+  ~1.4 million quiet, labeled positions extracted from CCRL engine games.
   Each line is EPD format with a c9 tag containing the game result.
   Used for Texel tuning of evaluation parameters.
 
