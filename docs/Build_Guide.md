@@ -141,7 +141,7 @@ cmake --build cmake-build-win-release-production --config Release
 ### Running Tests
 ```powershell
 # Run all tests (excluding slow tests)
-.\cmake-build-win-release\test\FrankyCPP_v1.6_Test.exe --gtest_filter=-*SpeedTests.*:*TimingTests.*
+.\cmake-build-win-release\test\FrankyCPP_v1.6_Test.exe --gtest_filter=-*SpeedTests.*:-*TimingTests.*
 
 # Run specific test
 .\cmake-build-win-release\test\FrankyCPP_v1.6_Test.exe --gtest_filter=PositionTest.*
