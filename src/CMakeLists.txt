@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.16)
 
 # Auto-discover library source files from each module (CONFIGURE_DEPENDS
 # ensures CMake re-runs when files are added or removed)
-file(GLOB SRCS_COMMON CONFIGURE_DEPENDS common/*.cpp common/*.h)
+file(GLOB SRCS_COMMON CONFIGURE_DEPENDS common/*.cpp common/*.h common/pgn/*.cpp common/pgn/*.h)
 file(GLOB SRCS_CHESSCORE CONFIGURE_DEPENDS chesscore/*.cpp chesscore/*.h)
 file(GLOB SRCS_OPENINGBOOK CONFIGURE_DEPENDS openingbook/*.cpp openingbook/*.h)
 file(GLOB SRCS_ENGINE CONFIGURE_DEPENDS engine/*.cpp engine/*.h)
