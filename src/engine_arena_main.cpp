@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
       ("engines",       "List all available engines from results")
       ("cmp",           po::value<std::string>(), "Compare engine against baselines: --cmp FrankyCPP-v1.2-dev")
       ("baseline",      po::value<std::vector<std::string>>()->multitoken(), "Specify baseline(s) for comparison (can repeat)")
-      ("summary",       po::value<std::string>(), "Show summary for engine: --summary FrankyCPP-v1.6")
+      ("summary",       po::value<std::string>(), "Show summary for engine: --summary FrankyCPP-v1.7")
       ("history",       "Show all historical runs grouped by tag (requires --summary)")
       // Configuration options
       ("show-config",   "Show engine configuration before tests (FrankyCPP engines)")
@@ -121,8 +121,8 @@ int main(int argc, char* argv[]) {
       std::cout << "  FrankyCPP_Arena --report\n";
       std::cout << "  FrankyCPP_Arena --report --testsuites-only\n";
       std::cout << "  FrankyCPP_Arena --cmp FrankyCPP-v1.2-dev\n";
-      std::cout << "  FrankyCPP_Arena --summary FrankyCPP-v1.6\n";
-      std::cout << "  FrankyCPP_Arena --summary FrankyCPP-v1.6 --history\n";
+      std::cout << "  FrankyCPP_Arena --summary FrankyCPP-v1.7\n";
+      std::cout << "  FrankyCPP_Arena --summary FrankyCPP-v1.7 --history\n";
       std::cout << "  FrankyCPP_Arena --testsuites --show-config\n";
       std::cout << "\nBenchmark Configuration (in arena.yaml):\n";
       std::cout << "  benchmarks:\n";
@@ -316,7 +316,7 @@ int main(int argc, char* argv[]) {
       // --history requires --summary
       if (vm.contains("history") && !vm.contains("summary")) {
         std::cerr << "ERROR: --history requires --summary\n";
-        std::cerr << "Usage: --summary FrankyCPP-v1.6 --history\n";
+        std::cerr << "Usage: --summary FrankyCPP-v1.7 --history\n";
         return 1;
       }
 
@@ -330,7 +330,7 @@ int main(int argc, char* argv[]) {
     else if (vm.contains("history")) {
       // --history without --summary
       std::cerr << "ERROR: --history requires --summary\n";
-      std::cerr << "Usage: --summary FrankyCPP-v1.6 --history\n";
+      std::cerr << "Usage: --summary FrankyCPP-v1.7 --history\n";
       return 1;
     }
     else if (vm.contains("testsuites")) {

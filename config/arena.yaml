@@ -1,5 +1,5 @@
 # Arena version - used for tracking in result files (not engine version)
-version: "v1.6"
+version: "v1.7"
 resultsDir: "./results"
 
 # Cutechess-cli path (Windows)
@@ -26,8 +26,8 @@ cutechessPath: "D:/Games/CuteChess/cutechess-cli.exe"
 # eliminating duplication when running the same engine against multiple suites.
 #
 # Required Fields:
-#   engine:          Display name for the engine (e.g., "FrankyCPP v1.6")
-#   engineVersion:   Version string for results grouping (e.g., "v1.6")
+#   engine:          Display name for the engine (e.g., "FrankyCPP v1.7")
+#   engineVersion:   Version string for results grouping (e.g., "v1.7")
 #   enginePath:      Path to the engine executable
 #   timePerMove:     Default time limit per move in milliseconds
 #   maxDepth:        Default maximum search depth
@@ -48,10 +48,10 @@ cutechessPath: "D:/Games/CuteChess/cutechess-cli.exe"
 #
 # Example:
 #   testSuiteRuns:
-#     - engine: "FrankyCPP v1.6"
-#       engineVersion: "v1.6"
+#     - engine: "FrankyCPP v1.7"
+#       engineVersion: "v1.7"
 #       tag: "QuietSee"
-#       enginePath: "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe"
+#       enginePath: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
 #       timePerMove: 5000
 #       maxDepth: 99
 #       commandLineArgs: "--nobook"
@@ -92,12 +92,12 @@ cutechessPath: "D:/Games/CuteChess/cutechess-cli.exe"
 testSuiteRuns:
 
   # ==========================================================================
-  # FrankyCPP v1.6 test suites
+  # FrankyCPP v1.7 test suites
   # ==========================================================================
-  - engine: "FrankyCPP v1.6"
-    engineVersion: "v1.6"
-    tag: "Phase 3.2 Eval Improvement" # Set to current feature name when testing
-    enginePath: "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe"
+  - engine: "FrankyCPP v1.7"
+    engineVersion: "v1.7"
+    tag: "" # Set to current feature name when testing
+    enginePath: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
     timePerMove: 5000
     maxDepth: 99
     isolatePositions: true
@@ -274,24 +274,24 @@ debugMode: false
 
 matches:
 
-  ## current dev vs. v1.5
-  - name: "v1.6_vs_v1.5_300s"
-    tag: "Phase 3.2 Eval Improvement" # Set to current feature name when testing
-    engine1Path: "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe"
-    engine1Version: "v1.6"
-    engine2Path: "Release/FrankyCPP_v1.5/FrankyCPP_v1.5.exe"
-    engine2Version: "v1.5"
+  ## current dev vs. v1.6
+  - name: "v1.7_vs_v1.6_300s"
+    tag: "" # Set to current feature name when testing
+    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
+    engine1Version: "v1.7"
+    engine2Path: "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe"
+    engine2Version: "v1.6"
     openingBook: "books/8moves_GM_LB.pgn"
     timeControl: "300+0"
     rounds: 100
     concurrency: 4
-    outputPgn: "results/matches/v1.6_vs_v1.5_300s.pgn"
+    outputPgn: "results/matches/v1.7_vs_v1.6_300s.pgn"
 
   ## current dev vs. Stockfish 18 (limited to 2700 ELO)
-  - name: "v1.6_vs_Stockfish18_2700_300s"
-    tag: "Phase 3.2 Eval Improvement" # Set to current feature name when testing
-    engine1Path: "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe"
-    engine1Version: "v1.6"
+  - name: "v1.7_vs_Stockfish18_2700_300s"
+    tag: "" # Set to current feature name when testing
+    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
+    engine1Version: "v1.7"
     engine1Options: "OwnBook=false"
     engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
     engine2Version: "18-2700"
@@ -300,7 +300,7 @@ matches:
     timeControl: "300+0"
     rounds: 100
     concurrency: 4
-    outputPgn: "results/matches/v1.6_vs_Stockfish18_2700_300s.pgn"
+    outputPgn: "results/matches/v1.7_vs_Stockfish18_2700_300s.pgn"
 #
 ## Test Stripped vs Stockfish
 #  - name: "v1.5.1stripped_vs_Stockfish18_2700_300s"
@@ -318,36 +318,36 @@ matches:
 #    outputPgn: "results/matches/v1.5.1_vs_Stockfish18_2700_300s.pgn"
 
 #  # current dev vs. v1.4
-#  - name: "v1.6_vs_v1.4_300s"
+#  - name: "v1.7_vs_v1.4_300s"
 #    tag: ""
-#    engine1Path: "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe"
-#    engine1Version: "v1.6"
+#    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
+#    engine1Version: "v1.7"
 #    engine2Path: "Release/FrankyCPP_v1.4/FrankyCPP_v1.4.exe"
 #    engine2Version: "v1.4"
 #    openingBook: "books/8moves_GM_LB.pgn"
 #    timeControl: "300+0"
 #    rounds: 100
 #    concurrency: 4
-#    outputPgn: "results/matches/v1.6_vs_v1.4_300s.pgn"
+#    outputPgn: "results/matches/v1.7_vs_v1.4_300s.pgn"
 
 #  # current dev vs. v1.3
-#  - name: "v1.6_vs_v1.3_300s"
+#  - name: "v1.7_vs_v1.3_300s"
 #    tag: ""
-#    engine1Path: "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe"
-#    engine1Version: "v1.6"
+#    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
+#    engine1Version: "v1.7"
 #    engine2Path: "Release/FrankyCPP_v1.3/FrankyCPP_v1.3.exe"
 #    engine2Version: "v1.3"
 #    openingBook: "books/8moves_GM_LB.pgn"
 #    timeControl: "300+0"
 #    rounds: 100
 #    concurrency: 4
-#    outputPgn: "results/matches/v1.6_vs_v1.3_300s.pgn"
+#    outputPgn: "results/matches/v1.7_vs_v1.3_300s.pgn"
 #
 #  # current dev vs. FrankyGo
-#  - name: "v1.6_vs_FrankyGo_300s"
+#  - name: "v1.7_vs_FrankyGo_300s"
 #    tag: ""
-#    engine1Path: "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe"
-#    engine1Version: "v1.6"
+#    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
+#    engine1Version: "v1.7"
 #    engine1Options: "OwnBook=false"
 #    engine2Path: "D:/Games/FrankyChess/FrankyGo/FrankyGo.exe"
 #    engine2Version: "v1.0.3"
@@ -356,7 +356,7 @@ matches:
 #    timeControl: "300+0"
 #    rounds: 100
 #    concurrency: 4
-#    outputPgn: "results/matches/v1.6_vs_FrankyGo_300s.pgn"
+#    outputPgn: "results/matches/v1.7_vs_FrankyGo_300s.pgn"
 
 # =============================================================================
 # Benchmark Configuration
@@ -382,21 +382,21 @@ matches:
 # =============================================================================
 
 benchmarks:
-  - name: "v1.6 Internal"
-    engineVersion: "v1.6"
+  - name: "v1.7 Internal"
+    engineVersion: "v1.7"
     depth: 12
     hashSizeMB: 128
     threads: 4
-    tag: "Phase 3all Eval Improvement"  # Set to current feature name when testing
+    tag: ""  # Set to current feature name when testing
 
-  - name: "v1.6 External"
-    enginePath: "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe"
+  - name: "v1.7 External"
+    enginePath: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
     commandLineArgs: "--nobook"
-    engineVersion: "v1.6"
+    engineVersion: "v1.7"
     depth: 12
     hashSizeMB: 128
     threads: 4
-    tag: "Phase 3all Eval Improvement"  # Set to current feature name when testing
+    tag: ""  # Set to current feature name when testing
 
 #  - name: "v1.4 External (PROD)"
 #    enginePath: "cmake-build-win-release-prod/src/FrankyCPP_v1.4.exe"

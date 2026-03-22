@@ -1,9 +1,9 @@
 # FrankyCPP Texel Tuning Plan
 
-**Document Version:** 1.2  
+**Document Version:** 1.3  
 **Created:** 2026-03-21  
 **Last Updated:** 2026-03-22  
-**Status:** 📋 Planning  
+**Status:** 🚧 In Progress (Phase 0 ✅)  
 **Target:** FrankyCPP v1.7  
 **Priority:** High (Phase 5 of Eval & Strength Improvement Plan)  
 **Predecessor:** `PLAN_Eval_and_Strength_Improvement.md`
@@ -119,11 +119,12 @@ The tuner must convert back to White-relative before applying the sigmoid:
 ```cpp
 Value rawEval = evaluator.evaluate(position);
 // evaluate() returns side-to-move perspective; convert to White's perspective:
-Value whiteRelativeEval = (position.getNextPlayer() == BLACK) ? rawEval : -rawEval;
+Value whiteRelativeEval = (position.getNextPlayer() == WHITE) ? rawEval : -rawEval;
 ```
 
 Alternatively, call the internal scoring path up to `valueFromScore()` and skip `finalEval()`.
-The first approach (negate for Black-to-move) is simpler and doesn't require exposing internals.
+The first approach (negate when Black-to-move to undo the side-to-move conversion) is simpler
+and doesn't require exposing internals.
 
 Getting this wrong causes the tuner to produce garbage — it's the most common Texel implementation
 bug.
@@ -450,16 +451,16 @@ implementation cost (a few hours) for a significant runtime improvement.
 
 ### Speed Estimate
 
-| Metric                           | Value                                     |
-|----------------------------------|-------------------------------------------|
-| Positions in dataset             | 5,000,000                                 |
-| Parameters                       | ~85                                       |
-| Eval speed                       | ~7M positions/sec (single thread)         |
-| Evals per pass (naive)           | 85 params × 2 directions × 5M = 850M     |
-| Evals per pass (incremental)     | ~850M × 0.5 average = ~425M              |
-| Time per pass (4 threads)        | ~15–30 seconds                            |
-| Passes to converge               | 5–20                                      |
-| **Total tuning time**            | **~2–10 minutes (4 threads)**             |
+| Metric                       | Value                                |
+|------------------------------|--------------------------------------|
+| Positions in dataset         | 5,000,000                            |
+| Parameters                   | ~85                                  |
+| Eval speed                   | ~7M positions/sec (single thread)    |
+| Evals per pass (naive)       | 85 params × 2 directions × 5M = 850M |
+| Evals per pass (incremental) | ~850M × 0.5 average = ~425M          |
+| Time per pass (4 threads)    | ~15–30 seconds                       |
+| Passes to converge           | 5–20                                 |
+| **Total tuning time**        | **~2–10 minutes (4 threads)**        |
 
 The MSE computation over N positions is embarrassingly parallel — split positions across threads.
 FrankyCPP already has a `ThreadPool` (in `common/`) that can be reused.
@@ -531,14 +532,14 @@ PASSED_PAWN_RANK_MID_BONUS_0, ..., PASSED_PAWN_RANK_MID_BONUS_5     → 6 params
 
 Certain array parameters must maintain ordering to produce sensible evaluation:
 
-| Array                            | Constraint     | Rationale                            |
-|----------------------------------|----------------|--------------------------------------|
-| `KING_SAFETY_TABLE[16]`         | Non-decreasing | More attackers → more danger         |
-| `PASSED_PAWN_RANK_MID_BONUS[6]` | Non-decreasing | Higher rank → closer to promotion    |
-| `PASSED_PAWN_RANK_END_BONUS[6]` | Non-decreasing | Higher rank → closer to promotion    |
-| `PAWN_ADVANCE_MID_BONUS[4]`     | Non-decreasing | Further advanced → more valuable     |
-| `PAWN_ADVANCE_END_BONUS[4]`     | Non-decreasing | Further advanced → more valuable     |
-| `PAWN_STORM_MID_PENALTY[4]`     | Non-decreasing | Closer storm pawns → more dangerous  |
+| Array                           | Constraint     | Rationale                           |
+|---------------------------------|----------------|-------------------------------------|
+| `KING_SAFETY_TABLE[16]`         | Non-decreasing | More attackers → more danger        |
+| `PASSED_PAWN_RANK_MID_BONUS[6]` | Non-decreasing | Higher rank → closer to promotion   |
+| `PASSED_PAWN_RANK_END_BONUS[6]` | Non-decreasing | Higher rank → closer to promotion   |
+| `PAWN_ADVANCE_MID_BONUS[4]`     | Non-decreasing | Further advanced → more valuable    |
+| `PAWN_ADVANCE_END_BONUS[4]`     | Non-decreasing | Further advanced → more valuable    |
+| `PAWN_STORM_MID_PENALTY[4]`     | Non-decreasing | Closer storm pawns → more dangerous |
 
 **Enforcement during coordinate descent:** After modifying an array element, clamp to maintain
 ordering relative to neighbors:
@@ -582,14 +583,14 @@ improvement but match results plateau, PSTs become the natural next step.
 
 ### Exclude from Tuning
 
-| Parameter type                    | Reason                                                        |
-|-----------------------------------|---------------------------------------------------------------|
-| `constexpr pieceTypeValue[]`      | Centipawn anchors; affect SEE, move ordering, futility too    |
-| `bool USE_*` toggles              | Binary on/off, not continuous weights                         |
-| `CONFIG_ESSENTIAL` params         | Infrastructure (TT size, book paths, thread count)            |
-| `USE_PAWN_TT`, `PAWN_TT_SIZE_MB` | Performance config, not eval                                  |
-| `USE_GAMEPHASE_VALUE`             | Structural switch                                             |
-| Search parameters                 | Require match-based tuning (SPSA), not position-based         |
+| Parameter type                   | Reason                                                     |
+|----------------------------------|------------------------------------------------------------|
+| `constexpr pieceTypeValue[]`     | Centipawn anchors; affect SEE, move ordering, futility too |
+| `bool USE_*` toggles             | Binary on/off, not continuous weights                      |
+| `CONFIG_ESSENTIAL` params        | Infrastructure (TT size, book paths, thread count)         |
+| `USE_PAWN_TT`, `PAWN_TT_SIZE_MB` | Performance config, not eval                               |
+| `USE_GAMEPHASE_VALUE`            | Structural switch                                          |
+| Search parameters                | Require match-based tuning (SPSA), not position-based      |
 
 ---
 
@@ -1028,18 +1029,18 @@ SPACE_BONUS_MID                  |        3 |     0 |    -3 |  -100%  ← candid
 The project is organized into **8 sequential phases**, each with a clear deliverable and
 gate criteria before proceeding. Each phase should be merged/committed independently.
 
-### Phase 0: Release v1.6 and Branch v1.7 *(prerequisite)*
+### Phase 0: Release v1.6 and Branch v1.7 *(prerequisite)* ✅
 
 **Goal:** Establish the baseline.
 
-| Step | Task                                                      | Days |
-|------|-----------------------------------------------------------|------|
-| 0.1  | Complete any remaining v1.6 work                          | —    |
-| 0.2  | Tag v1.6 release, keep binary as reference opponent       | 0.5  |
-| 0.3  | Create v1.7 branch, bump version number                   | 0.5  |
-| 0.4  | Create `PLAN_Texel_Tuning_Progress.md` progress document  | 0.5  |
+| Step | Task                                                     | Days | Status |
+|------|----------------------------------------------------------|------|--------|
+| 0.1  | Complete any remaining v1.6 work                         | —    | ✅      |
+| 0.2  | Tag v1.6 release, keep binary as reference opponent      | 0.5  | ✅      |
+| 0.3  | Create v1.7 branch, bump version number                  | 0.5  | ✅      |
+| 0.4  | Create `PLAN_Texel_Tuning_Progress.md` progress document | 0.5  | ✅      |
 
-**Gate:** v1.6 released, v1.7 branch exists with bumped version.
+**Gate:** ✅ v1.6 released, v1.7 branch exists with bumped version (1.7.0).
 
 ---
 
@@ -1047,15 +1048,15 @@ gate criteria before proceeding. Each phase should be merged/committed independe
 
 **Goal:** Build shared infrastructure. OpeningBook works with new PGN library.
 
-| Step | Task                                                                         | Days |
-|------|------------------------------------------------------------------------------|------|
-| 1.1  | Create directory structure: `src/common/pgn/`, `src/tuning/extractor/`, `src/tuning/optimizer/` | 0.5  |
-| 1.2  | Extract PGN parser from `OpeningBook` into `src/common/pgn/PgnParser.h/.cpp` | 2–3  |
-| 1.3  | Create `PgnGame.h`, `PgnTypes.h` with structured output + Result extraction  | (incl.) |
-| 1.4  | Write comprehensive PGN parser unit tests (`test/common/PgnParserTest.cpp`)  | 1–2  |
-| 1.5  | Refactor `OpeningBook::readGamesPgn()` to use new `common::pgn::PgnParser`  | 1    |
-| 1.6  | Verify all existing `OpeningBookTest` tests pass unchanged                   | (incl.) |
-| 1.7  | Update `src/CMakeLists.txt` — `common/pgn/` auto-discovered by FrankyCPPlib glob | 0.5  |
+| Step | Task                                                                                            | Days    |
+|------|-------------------------------------------------------------------------------------------------|---------|
+| 1.1  | Create directory structure: `src/common/pgn/`, `src/tuning/extractor/`, `src/tuning/optimizer/` | 0.5     |
+| 1.2  | Extract PGN parser from `OpeningBook` into `src/common/pgn/PgnParser.h/.cpp`                    | 2–3     |
+| 1.3  | Create `PgnGame.h`, `PgnTypes.h` with structured output + Result extraction                     | (incl.) |
+| 1.4  | Write comprehensive PGN parser unit tests (`test/common/PgnParserTest.cpp`)                     | 1–2     |
+| 1.5  | Refactor `OpeningBook::readGamesPgn()` to use new `common::pgn::PgnParser`                      | 1       |
+| 1.6  | Verify all existing `OpeningBookTest` tests pass unchanged                                      | (incl.) |
+| 1.7  | Update `src/CMakeLists.txt` — `common/pgn/` auto-discovered by FrankyCPPlib glob                | 0.5     |
 
 **Gate:** All `OpeningBookTest` tests pass. PGN parser tests pass with all files in `books/`.
 
@@ -1069,14 +1070,14 @@ gate criteria before proceeding. Each phase should be merged/committed independe
 
 **Goal:** Extractor and Tuner executables exist (minimal stubs), build system configured.
 
-| Step | Task                                                                         | Days |
-|------|------------------------------------------------------------------------------|------|
-| 2.1  | Create `ExtractorMain.cpp` with stub `main()` + CLI argument parsing         | 0.5  |
-| 2.2  | Create `TunerMain.cpp` with stub `main()` + CLI argument parsing             | 0.5  |
-| 2.3  | Add `FrankyCPP_v1.7_Extractor` and `FrankyCPP_v1.7_Tuner` targets to CMake  | 0.5  |
-| 2.4  | Guard tuning targets with `if(NOT FRANKYCPP_PRODUCTION)`                     | (incl.) |
-| 2.5  | Verify both executables build, link, and print `--help`                      | 0.5  |
-| 2.6  | Create `src/tuning/README.md` with module documentation                      | 0.5  |
+| Step | Task                                                                       | Days    |
+|------|----------------------------------------------------------------------------|---------|
+| 2.1  | Create `ExtractorMain.cpp` with stub `main()` + CLI argument parsing       | 0.5     |
+| 2.2  | Create `TunerMain.cpp` with stub `main()` + CLI argument parsing           | 0.5     |
+| 2.3  | Add `FrankyCPP_v1.7_Extractor` and `FrankyCPP_v1.7_Tuner` targets to CMake | 0.5     |
+| 2.4  | Guard tuning targets with `if(NOT FRANKYCPP_PRODUCTION)`                   | (incl.) |
+| 2.5  | Verify both executables build, link, and print `--help`                    | 0.5     |
+| 2.6  | Create `src/tuning/README.md` with module documentation                    | 0.5     |
 
 **Gate:** Both executables compile and run `--help`. Engine executable unaffected.
 
@@ -1109,14 +1110,14 @@ gate criteria before proceeding. Each phase should be merged/committed independe
 
 **Goal:** Working extractor that produces labeled datasets from PGN files.
 
-| Step | Task                                                                         | Days |
-|------|------------------------------------------------------------------------------|------|
+| Step | Task                                                                        | Days |
+|------|-----------------------------------------------------------------------------|------|
 | 4.1  | Implement `PositionExtractor` class: PGN → FEN+result with filters 1–4      | 2–3  |
-| 4.2  | Wire up `ExtractorMain.cpp` with full CLI (input PGN, output file, options)  | 0.5  |
-| 4.3  | Write extractor unit tests (filter behavior, edge cases, output format)      | 1    |
-| 4.4  | *(Optional)* Add qsearch filter (Filter 5) — requires engine access          | 1–2  |
-| 4.5  | Extract positions from `books/superbook.pgn` as validation                   | 0.5  |
-| 4.6  | Compare extracted dataset quality with downloaded dataset (spot checks)       | 0.5  |
+| 4.2  | Wire up `ExtractorMain.cpp` with full CLI (input PGN, output file, options) | 0.5  |
+| 4.3  | Write extractor unit tests (filter behavior, edge cases, output format)     | 1    |
+| 4.4  | *(Optional)* Add qsearch filter (Filter 5) — requires engine access         | 1–2  |
+| 4.5  | Extract positions from `books/superbook.pgn` as validation                  | 0.5  |
+| 4.6  | Compare extracted dataset quality with downloaded dataset (spot checks)     | 0.5  |
 
 **Gate:** Extractor produces valid FEN+result files. Unit tests pass. Output matches expected format.
 
@@ -1134,7 +1135,7 @@ gate criteria before proceeding. Each phase should be merged/committed independe
 |------|------------------------------------------------------------------------------|------|
 | 5.1  | Mark `tunable = true` on all ~85 eval weight entries in `ConfigRegistry.cpp` | 0.5  |
 | 5.2  | Add unit test: verify expected number of tunable params discovered           | 0.5  |
-| 5.3  | Record baseline MSE, STS, WAC scores with current v1.6 params               | 0.5  |
+| 5.3  | Record baseline MSE, STS, WAC scores with current v1.6 params                | 0.5  |
 
 **Gate:** Tunable flag set, test passes, baselines documented.
 
@@ -1197,15 +1198,15 @@ Output YAML loadable by `ConfigManager`.
 
 **Goal:** Confirm ELO improvement via matches. Update config and documentation.
 
-| Step | Task                                                                         | Days |
-|------|------------------------------------------------------------------------------|------|
-| 8.1  | Gauntlet matches: 500+ games vs v1.6 via cutechess-cli                      | 1–2  |
-| 8.2  | Gauntlet matches: vs Stockfish classical @2700                               | 1    |
-| 8.3  | If regression: debug, adjust dataset/params, repeat from Phase 7             | 1–2  |
-| 8.4  | Update `config/eval.yaml` with final tuned parameters                        | 0.5  |
-| 8.5  | Update `docs/Texel_Tuning.md` documentation                                 | 0.5  |
-| 8.6  | Update `PLAN_Texel_Tuning_Progress.md` with final status                     | 0.5  |
-| 8.7  | Release v1.7                                                                 | 0.5  |
+| Step | Task                                                             | Days |
+|------|------------------------------------------------------------------|------|
+| 8.1  | Gauntlet matches: 500+ games vs v1.6 via cutechess-cli           | 1–2  |
+| 8.2  | Gauntlet matches: vs Stockfish classical @2700                   | 1    |
+| 8.3  | If regression: debug, adjust dataset/params, repeat from Phase 7 | 1–2  |
+| 8.4  | Update `config/eval.yaml` with final tuned parameters            | 0.5  |
+| 8.5  | Update `docs/Texel_Tuning.md` documentation                      | 0.5  |
+| 8.6  | Update `PLAN_Texel_Tuning_Progress.md` with final status         | 0.5  |
+| 8.7  | Release v1.7                                                     | 0.5  |
 
 **Gate:** Measurable ELO improvement over v1.6. No STS/WAC regressions.
 
@@ -1217,18 +1218,18 @@ Output YAML loadable by `ConfigManager`.
 
 ### Phase Summary
 
-| Phase | Name                          | Effort     | Cumulative |
-|-------|-------------------------------|------------|------------|
-| 0     | Release v1.6, branch v1.7     | ~1 day     | 1 day      |
-| 1     | Module structure + PGN library | ~4–6 days  | 5–7 days   |
-| 2     | Tuning build targets (scaffolding)   | ~2–3 days  | 7–10 days  |
-| 3     | Data collection               | ~1–2 days  | 8–12 days  |
-| 4     | Position extractor            | ~4–6 days  | 12–18 days |
-| 5     | Mark tunable params           | ~1–2 days  | 13–20 days |
-| 6     | Optimizer implementation      | ~10–14 days | 23–34 days |
-| 7     | Integration testing           | ~4–6 days  | 27–40 days |
-| 8     | Gauntlet + release            | ~3–5 days  | 30–45 days |
-| **Total** |                           | **~30–45 days** |        |
+| Phase     | Name                               | Effort          | Cumulative | Status        |
+|-----------|------------------------------------|-----------------|------------|---------------|
+| 0         | Release v1.6, branch v1.7          | ~1 day          | 1 day      | ✅ Complete    |
+| 1         | Module structure + PGN library     | ~4–6 days       | 5–7 days   | ⬚ Not Started |
+| 2         | Tuning build targets (scaffolding) | ~2–3 days       | 7–10 days  | ⬚ Not Started |
+| 3         | Data collection                    | ~1–2 days       | 8–12 days  | ⬚ Not Started |
+| 4         | Position extractor                 | ~4–6 days       | 12–18 days | ⬚ Not Started |
+| 5         | Mark tunable params                | ~1–2 days       | 13–20 days | ⬚ Not Started |
+| 6         | Optimizer implementation           | ~10–14 days     | 23–34 days | ⬚ Not Started |
+| 7         | Integration testing                | ~4–6 days       | 27–40 days | ⬚ Not Started |
+| 8         | Gauntlet + release                 | ~3–5 days       | 30–45 days | ⬚ Not Started |
+| **Total** |                                    | **~30–45 days** |            |               |
 
 ### Documentation Requirements
 
@@ -1270,7 +1271,7 @@ Throughout all phases:
 | **Lazy eval masking parameters**                 | High     | High       | Always disable lazy eval during tuning — non-negotiable                                  |
 | **Disabled features not re-enabled**             | High     | Medium     | Tuning mode explicitly enables all eval features (space, coordination, etc.)             |
 | **Pawn TT caching stale values**                 | Medium   | High       | Disable pawn TT during tuning                                                            |
-| **Eval perspective bug** (STM vs White)          | High     | Medium     | Unit test: verify eval sign matches expected direction for known positions                |
+| **Eval perspective bug** (STM vs White)          | High     | Medium     | Unit test: verify eval sign matches expected direction for known positions               |
 | **Memory usage** (5M positions × ~400 bytes)     | Medium   | Medium     | ~2 GB; use batch processing or compact representation if memory-constrained              |
 | **Array param monotonicity violated**            | Medium   | Medium     | Enforce constraints after each parameter update                                          |
 | **Thread safety** (shared mutable Evaluator)     | High     | Medium     | One Evaluator instance per worker thread — non-negotiable                                |
@@ -1285,10 +1286,10 @@ Throughout all phases:
 
 ### Summary
 
-| Scope                                | Effort     | Expected Gain         |
-|--------------------------------------|------------|-----------------------|
-| **Eval weights (~85 params)**        | **~30–45 days**      | **+20–50 ELO**        |
-| PSTs (optional follow-up, Phase D)   | ~2 weeks additional  | +10–30 ELO additional |
+| Scope                              | Effort              | Expected Gain         |
+|------------------------------------|---------------------|-----------------------|
+| **Eval weights (~85 params)**      | **~30–45 days**     | **+20–50 ELO**        |
+| PSTs (optional follow-up, Phase D) | ~2 weeks additional | +10–30 ELO additional |
 
 ### Optional Phase D: PST Tuning (separate follow-up)
 

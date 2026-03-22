@@ -88,7 +88,7 @@ namespace arena {
 
     /// Generates engine summary showing all results for a specific engine
     /// @param data ReportData with loaded results (test suites + matches + benchmarks)
-    /// @param engine Engine to show summary for (e.g., "FrankyCPP-v1.6")
+    /// @param engine Engine to show summary for (e.g., "FrankyCPP-v1.7")
     /// @param showHistory If true, show historical runs grouped by tag
     /// @return Formatted summary string
     static std::string generateEngineSummary(

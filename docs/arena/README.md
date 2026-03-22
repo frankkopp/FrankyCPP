@@ -135,7 +135,7 @@ Status:      ✅ IMPROVEMENT over baseline
 ### List Available Engines
 
 ```powershell
-.\cmake-build-win-release\src\FrankyCPP_v1.6_Arena.exe --engines
+.\cmake-build-win-release\src\FrankyCPP_v1.7_Arena.exe --engines
 ```
 
 Shows all engines found in stored results.
@@ -143,13 +143,13 @@ Shows all engines found in stored results.
 ### Show Engine Summary
 
 ```powershell
-.\cmake-build-win-release\src\FrankyCPP_v1.6_Arena.exe --summary FrankyCPP-v1.6
+.\cmake-build-win-release\src\FrankyCPP_v1.7_Arena.exe --summary FrankyCPP-v1.7
 ```
 
 **Example Output:**
 ```
 ===================================================================
-Engine Summary: FrankyCPP v1.6
+Engine Summary: FrankyCPP v1.7
 ===================================================================
 Test Suites (2026-03-08 14:22):
   STS1-STS15_LAN:      780/1500 (52.00%)
@@ -179,9 +179,9 @@ Benchmarks:
 ```
 
 **Engine name matching is flexible:** Accepts space, underscore, or hyphen as separators:
-- `FrankyCPP-v1.6`
-- `FrankyCPP_v1.6`
-- `FrankyCPP v1.6`
+- `FrankyCPP-v1.7`
+- `FrankyCPP_v1.7`
+- `FrankyCPP v1.7`
 
 All match the same engine.
 
@@ -287,10 +287,10 @@ The new `testSuiteRuns` format eliminates duplication by defining shared setting
 
 ```yaml
 testSuiteRuns:
-  - engine: "FrankyCPP v1.6"
-    engineVersion: "v1.6"
+  - engine: "FrankyCPP v1.7"
+    engineVersion: "v1.7"
     tag: "QuietSee"                           # Feature tag for tracking
-    enginePath: "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe"
+    enginePath: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
     timePerMove: 5000
     maxDepth: 99
     isolatePositions: true
@@ -410,23 +410,23 @@ Configuration:
   --show-config                   Show engine configuration before tests (FrankyCPP only)
 
 Examples:
-  Run all tests:          FrankyCPP_v1.6_Arena.exe
-  Test suites only:       FrankyCPP_v1.6_Arena.exe --testsuites
-  With config display:    FrankyCPP_v1.6_Arena.exe --testsuites --show-config
-  Matches only:           FrankyCPP_v1.6_Arena.exe --matches
-  Benchmarks only:        FrankyCPP_v1.6_Arena.exe --bench
-  Bench with config:      FrankyCPP_v1.6_Arena.exe --bench --show-config
+  Run all tests:          FrankyCPP_v1.7_Arena.exe
+  Test suites only:       FrankyCPP_v1.7_Arena.exe --testsuites
+  With config display:    FrankyCPP_v1.7_Arena.exe --testsuites --show-config
+  Matches only:           FrankyCPP_v1.7_Arena.exe --matches
+  Benchmarks only:        FrankyCPP_v1.7_Arena.exe --bench
+  Bench with config:      FrankyCPP_v1.7_Arena.exe --bench --show-config
 
-  Baseline report:        FrankyCPP_v1.6_Arena.exe --report
-  Only test suites:       FrankyCPP_v1.6_Arena.exe --report --testsuites-only
-  Only matches:           FrankyCPP_v1.6_Arena.exe --report --matches-only
+  Baseline report:        FrankyCPP_v1.7_Arena.exe --report
+  Only test suites:       FrankyCPP_v1.7_Arena.exe --report --testsuites-only
+  Only matches:           FrankyCPP_v1.7_Arena.exe --report --matches-only
 
-  Engine summary:         FrankyCPP_v1.6_Arena.exe --summary FrankyCPP-v1.6
-  With history:           FrankyCPP_v1.6_Arena.exe --summary FrankyCPP-v1.6 --history
+  Engine summary:         FrankyCPP_v1.7_Arena.exe --summary FrankyCPP-v1.7
+  With history:           FrankyCPP_v1.7_Arena.exe --summary FrankyCPP-v1.7 --history
 
-  Compare vs baseline:    FrankyCPP_v1.6_Arena.exe --cmp FrankyCPP-v1.6-dev
-  Specify baseline:       FrankyCPP_v1.6_Arena.exe --cmp FrankyCPP-v1.6-dev --baseline FrankyCPP-v1.5
-  Compare matches only:   FrankyCPP_v1.6_Arena.exe --cmp FrankyCPP-v1.6-dev --matches-only
+  Compare vs baseline:    FrankyCPP_v1.7_Arena.exe --cmp FrankyCPP-v1.7-dev
+  Specify baseline:       FrankyCPP_v1.7_Arena.exe --cmp FrankyCPP-v1.7-dev --baseline FrankyCPP-v1.6
+  Compare matches only:   FrankyCPP_v1.7_Arena.exe --cmp FrankyCPP-v1.7-dev --matches-only
 
   List engines:           FrankyCPP_v1.6_Arena.exe --engines
   Custom config:          FrankyCPP_v1.6_Arena.exe --config my_arena.yaml
