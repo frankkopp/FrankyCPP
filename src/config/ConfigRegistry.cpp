@@ -54,14 +54,14 @@ ConfigRegistry::ConfigRegistry() {
   static_assert(sizeof(SearchConfigData) == 640,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 608,
+  static_assert(sizeof(EvalConfigData) == 640,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
   static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 600,
+  static_assert(sizeof(EvalConfigData) == 632,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #endif
@@ -72,7 +72,7 @@ ConfigRegistry::ConfigRegistry() {
   static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 600,
+  static_assert(sizeof(EvalConfigData) == 632,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
@@ -3372,6 +3372,113 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .exposure = {.uci = false, .yaml = true, .display = true},
     .getter = evalGetter([](const auto& e){ return e.THREAT_HANGING_END; }),
     .setter = EVAL_CONFIG_SETTER(THREAT_HANGING_END, parseInt)
+  });
+
+  //===========================================================================
+  // SPACE EVALUATION
+  //===========================================================================
+  definitions_.push_back({
+    .name = "USE_SPACE_EVAL",
+    .uciName = "Use Space Eval",
+    .description = "Enable space evaluation (safe squares behind pawn chain)",
+    .valueType = Bool,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.USE_SPACE_EVAL),
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_SPACE_EVAL), .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.USE_SPACE_EVAL; }),
+    .setter = EVAL_CONFIG_SETTER(USE_SPACE_EVAL, parseBool)
+  });
+  definitions_.push_back({
+    .name = "SPACE_BONUS_MID",
+    .uciName = "",
+    .description = "Space bonus per safe square (midgame)",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.SPACE_BONUS_MID),
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.SPACE_BONUS_MID; }),
+    .setter = EVAL_CONFIG_SETTER(SPACE_BONUS_MID, parseInt)
+  });
+  definitions_.push_back({
+    .name = "SPACE_BONUS_END",
+    .uciName = "",
+    .description = "Space bonus per safe square (endgame)",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.SPACE_BONUS_END),
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.SPACE_BONUS_END; }),
+    .setter = EVAL_CONFIG_SETTER(SPACE_BONUS_END, parseInt)
+  });
+
+  //===========================================================================
+  // PIECE COORDINATION
+  //===========================================================================
+  definitions_.push_back({
+    .name = "USE_CONNECTED_ROOKS",
+    .uciName = "Use Connected Rooks",
+    .description = "Bonus for connected rooks (same rank/file, no pieces between)",
+    .valueType = Bool,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.USE_CONNECTED_ROOKS),
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_CONNECTED_ROOKS), .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.USE_CONNECTED_ROOKS; }),
+    .setter = EVAL_CONFIG_SETTER(USE_CONNECTED_ROOKS, parseBool)
+  });
+  definitions_.push_back({
+    .name = "CONNECTED_ROOKS_MID_BONUS",
+    .uciName = "",
+    .description = "Connected rooks bonus (midgame)",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.CONNECTED_ROOKS_MID_BONUS),
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.CONNECTED_ROOKS_MID_BONUS; }),
+    .setter = EVAL_CONFIG_SETTER(CONNECTED_ROOKS_MID_BONUS, parseInt)
+  });
+  definitions_.push_back({
+    .name = "CONNECTED_ROOKS_END_BONUS",
+    .uciName = "",
+    .description = "Connected rooks bonus (endgame)",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.CONNECTED_ROOKS_END_BONUS),
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.CONNECTED_ROOKS_END_BONUS; }),
+    .setter = EVAL_CONFIG_SETTER(CONNECTED_ROOKS_END_BONUS, parseInt)
+  });
+  definitions_.push_back({
+    .name = "USE_MINOR_CONNECTIVITY",
+    .uciName = "Use Minor Connectivity",
+    .description = "Bonus for minor pieces defended by another minor piece",
+    .valueType = Bool,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.USE_MINOR_CONNECTIVITY),
+    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_MINOR_CONNECTIVITY), .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.USE_MINOR_CONNECTIVITY; }),
+    .setter = EVAL_CONFIG_SETTER(USE_MINOR_CONNECTIVITY, parseBool)
+  });
+  definitions_.push_back({
+    .name = "MINOR_CONNECTIVITY_MID_BONUS",
+    .uciName = "",
+    .description = "Minor connectivity bonus per connection (midgame)",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.MINOR_CONNECTIVITY_MID_BONUS),
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.MINOR_CONNECTIVITY_MID_BONUS; }),
+    .setter = EVAL_CONFIG_SETTER(MINOR_CONNECTIVITY_MID_BONUS, parseInt)
+  });
+  definitions_.push_back({
+    .name = "MINOR_CONNECTIVITY_END_BONUS",
+    .uciName = "",
+    .description = "Minor connectivity bonus per connection (endgame)",
+    .valueType = Int,
+    .domain = Eval,
+    .defaultValue = configToString(defaultEval.MINOR_CONNECTIVITY_END_BONUS),
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = evalGetter([](const auto& e){ return e.MINOR_CONNECTIVITY_END_BONUS; }),
+    .setter = EVAL_CONFIG_SETTER(MINOR_CONNECTIVITY_END_BONUS, parseInt)
   });
 
   //===========================================================================

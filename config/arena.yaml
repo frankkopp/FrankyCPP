@@ -387,7 +387,7 @@ benchmarks:
     depth: 12
     hashSizeMB: 128
     threads: 4
-    tag: "Phase 3.2 Eval Improvement"  # Set to current feature name when testing
+    tag: "Phase 3all Eval Improvement"  # Set to current feature name when testing
 
   - name: "v1.6 External"
     enginePath: "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe"
@@ -396,7 +396,7 @@ benchmarks:
     depth: 12
     hashSizeMB: 128
     threads: 4
-    tag: "Phase 3.2 Eval Improvement"  # Set to current feature name when testing
+    tag: "Phase 3all Eval Improvement"  # Set to current feature name when testing
 
 #  - name: "v1.4 External (PROD)"
 #    enginePath: "cmake-build-win-release-prod/src/FrankyCPP_v1.4.exe"

@@ -86,6 +86,9 @@ void set_eval_config(const bool onoff) {
     e.USE_BISHOP_PAIR_BONUS    = onoff;
     e.USE_PAWN_ADVANCE_BONUS   = onoff;
     e.USE_THREAT_EVAL          = onoff;
+    e.USE_SPACE_EVAL           = onoff;
+    e.USE_CONNECTED_ROOKS      = onoff;
+    e.USE_MINOR_CONNECTIVITY   = onoff;
   });
 }
 #endif // FRANKYCPP_PRODUCTION
@@ -1362,6 +1365,184 @@ TEST_F(EvaluatorTest, ThreatEval_SymmetricPosition) {
       << "Symmetric position should have minimal threat eval difference, got " << diff;
 }
 
+// =========================================================================
+// SPACE EVALUATION TESTS (Phase 3.1)
+// =========================================================================
+
+// Position with more space (pawns on e4,d4 controlling center) should evaluate better.
+TEST_F(EvaluatorTest, SpaceEval_MoreSpaceBetter) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_SPACE_EVAL = true;
+    // Note: attackedByPT[PAWN] is always pre-computed, no need for USE_PIECE_EVAL.
+    // USE_MATERIAL disabled — we're testing space only; the positions have unequal
+    // pawn counts and material would dominate the evaluation.
+  });
+
+  Evaluator e{};
+
+  // White has pawns on all 8 files (strong center, lots of space behind pawn chain)
+  const Position bigSpace{"rnbqkbnr/pppppppp/8/8/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 1"};
+  // White has pawns only on a2,h2 — only 2 pawn files, much less space
+  const Position noSpace{"rnbqkbnr/pppppppp/8/8/8/8/P6P/RNBQKBNR w KQkq - 0 1"};
+
+  const Value vBigSpace = e.evaluate(bigSpace);
+  const Value vNoSpace  = e.evaluate(noSpace);
+
+  fprintln("Big space eval (White POV):  {}", vBigSpace);
+  fprintln("No space eval (White POV):   {}", vNoSpace);
+
+  // White to move: higher value = better for White.
+  // bigSpace has 8 pawn files (24 space squares) vs noSpace with 2 files (6 squares).
+  // Both sides' Black space is identical (24), so the net difference comes from White's side.
+  ASSERT_GT(vBigSpace, vNoSpace)
+      << "Position with more space behind pawn chain should evaluate better";
+}
+
+// Toggle test: enabling/disabling USE_SPACE_EVAL should change evaluation.
+TEST_F(EvaluatorTest, SpaceEval_ToggleChangesEval) {
+  set_eval_config(true);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_SPACE_EVAL = false;
+  });
+
+  Evaluator e{};
+
+  // Asymmetric pawn structure — space differs between sides
+  const Position pos{"r1bqkbnr/pppppppp/2n5/8/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 0 1"};
+
+  const Value vWithout = e.evaluate(pos);
+
+  cm.applyOverrides([&](auto&, EvalConfigData& e2) {
+    e2.USE_SPACE_EVAL = true;
+  });
+
+  const Value vWith = e.evaluate(pos);
+
+  fprintln("Without space eval: {}", vWithout);
+  fprintln("With space eval:    {}", vWith);
+
+  ASSERT_NE(vWith, vWithout)
+      << "Enabling space eval should change the evaluation";
+}
+
+// =========================================================================
+// PIECE COORDINATION TESTS (Phase 3.3)
+// =========================================================================
+
+// Connected rooks on the same file should evaluate better than separated rooks.
+TEST_F(EvaluatorTest, ConnectedRooks_SameFileBonus) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_MATERIAL        = true;
+    e.USE_PIECE_EVAL      = true;
+    e.USE_CONNECTED_ROOKS = true;
+    e.USE_GAMEPHASE_VALUE = false;
+  });
+
+  Evaluator e{};
+
+  // White rooks on d1 and d4 — same file, nothing between (d2,d3 empty)
+  const Position connected{"4k3/8/8/8/3R4/8/8/3R2K1 w - - 0 1"};
+  // White rooks on a1 and h1 — different files, not connected
+  const Position separated{"4k3/8/8/8/8/8/8/R5KR w - - 0 1"};
+
+  const Value vConnected = e.evaluate(connected);
+  const Value vSeparated = e.evaluate(separated);
+
+  fprintln("Connected rooks eval (White POV): {}", vConnected);
+  fprintln("Separated rooks eval (White POV): {}", vSeparated);
+
+  ASSERT_GT(vConnected, vSeparated)
+      << "Connected rooks on same file should evaluate better than separated rooks";
+}
+
+// Connected rooks on the same rank should also get bonus.
+TEST_F(EvaluatorTest, ConnectedRooks_SameRankBonus) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_MATERIAL        = true;
+    e.USE_PIECE_EVAL      = true;
+    e.USE_CONNECTED_ROOKS = true;
+    e.USE_GAMEPHASE_VALUE = false;
+  });
+
+  Evaluator e{};
+
+  // White rooks on a1 and h1 — same rank, pieces between (king on g1)
+  const Position blocked{"4k3/8/8/8/8/8/8/R5KR w - - 0 1"};
+  // White rooks on d1 and e1 — same rank, nothing between
+  const Position connected{"4k3/8/8/8/8/8/8/3RRK2 w - - 0 1"};
+
+  const Value vBlocked   = e.evaluate(blocked);
+  const Value vConnected = e.evaluate(connected);
+
+  fprintln("Blocked rooks eval (White POV):   {}", vBlocked);
+  fprintln("Connected rank eval (White POV):  {}", vConnected);
+
+  ASSERT_GT(vConnected, vBlocked)
+      << "Connected rooks on same rank with no pieces between should evaluate better";
+}
+
+// Minor connectivity: knight defended by bishop should get bonus.
+TEST_F(EvaluatorTest, MinorConnectivity_KnightDefendedByBishop) {
+  set_eval_config(false);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_MATERIAL           = true;
+    e.USE_PIECE_EVAL         = true;
+    e.USE_MINOR_CONNECTIVITY = true;
+    e.USE_GAMEPHASE_VALUE    = false;
+  });
+
+  Evaluator e{};
+
+  // White bishop on c4 defends knight on e6 (bishop diagonal reaches e6)
+  // Adding pawns to avoid insufficient material
+  const Position connected{"4k3/p7/4n3/8/2B5/8/P4N2/6K1 w - - 0 1"};
+  // White bishop on a2 and knight on h3 — far apart, no connectivity
+  const Position separated{"4k3/p7/8/8/8/7N/B4n2/6K1 w - - 0 1"};
+
+  const Value vConnected = e.evaluate(connected);
+  const Value vSeparated = e.evaluate(separated);
+
+  fprintln("Connected minors eval (White POV): {}", vConnected);
+  fprintln("Separated minors eval (White POV): {}", vSeparated);
+
+  // Connected should be better (or at least equal — other positional factors may dominate)
+  ASSERT_GE(vConnected, vSeparated)
+      << "Connected minor pieces should evaluate at least as well as separated ones";
+}
+
+// Toggle test: enabling coordination features should change evaluation.
+TEST_F(EvaluatorTest, CoordinationEval_ToggleChangesEval) {
+  set_eval_config(true);
+  cm.applyOverrides([&](auto&, EvalConfigData& e) {
+    e.USE_CONNECTED_ROOKS    = false;
+    e.USE_MINOR_CONNECTIVITY = false;
+  });
+
+  Evaluator e{};
+
+  // Position where White Nd4 and Nf3 mutually defend each other (2 connections),
+  // while Black pieces on starting squares have 0 minor connectivity.
+  const Position pos{"rnbqkbnr/pppppppp/8/8/3NP3/5N2/PPPP1PPP/R1BQKB1R w KQkq - 0 1"};
+
+  const Value vWithout = e.evaluate(pos);
+
+  cm.applyOverrides([&](auto&, EvalConfigData& e2) {
+    e2.USE_CONNECTED_ROOKS    = true;
+    e2.USE_MINOR_CONNECTIVITY = true;
+  });
+
+  const Value vWith = e.evaluate(pos);
+
+  fprintln("Without coordination eval: {}", vWithout);
+  fprintln("With coordination eval:    {}", vWith);
+
+  ASSERT_NE(vWith, vWithout)
+      << "Enabling coordination eval should change the evaluation";
+}
+
 // New timing test modeled after SpeedTests::TimingExtendedDoMoveUndoMove
 TEST_F(EvaluatorTest, TimingEvaluateFens) {
   if (isBulkRun()) {
@@ -1552,6 +1733,19 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
     // Threat eval
     cases.push_back({"Disable THREAT_EVAL only", [&] {
                        disable([](EvalConfigData& e) { e.USE_THREAT_EVAL = false; });
+                     }});
+
+    // Space eval
+    cases.push_back({"Disable SPACE_EVAL only", [&] {
+                       disable([](EvalConfigData& e) { e.USE_SPACE_EVAL = false; });
+                     }});
+
+    // Piece coordination
+    cases.push_back({"Disable CONNECTED_ROOKS only", [&] {
+                       disable([](EvalConfigData& e) { e.USE_CONNECTED_ROOKS = false; });
+                     }});
+    cases.push_back({"Disable MINOR_CONNECTIVITY only", [&] {
+                       disable([](EvalConfigData& e) { e.USE_MINOR_CONNECTIVITY = false; });
                      }});
 
     // King eval

@@ -142,5 +142,23 @@ _YAML_SMOKE_TEST_MARKER: true
 # THREAT_HANGING_MID: 6
 # THREAT_HANGING_END: 10
 
+# Space evaluation: safe squares behind own pawn chain (midgame-weighted)
+# DISABLED: Phase 3all results (+3.5 v1.5 ELO, -0.0 SF18, -9.7% NPS) = net-negative.
+# USE_SPACE_EVAL: false
+# SPACE_BONUS_MID: 3
+# SPACE_BONUS_END: 1
+
+# Connected rooks: bonus when two rooks are on the same rank/file with no pieces between
+# DISABLED: Phase 3all regression — see USE_SPACE_EVAL.
+# USE_CONNECTED_ROOKS: false
+# CONNECTED_ROOKS_MID_BONUS: 8
+# CONNECTED_ROOKS_END_BONUS: 5
+
+# Minor piece connectivity: bonus when knight/bishop is defended by another minor piece
+# DISABLED: Phase 3all regression — see USE_SPACE_EVAL.
+# USE_MINOR_CONNECTIVITY: false
+# MINOR_CONNECTIVITY_MID_BONUS: 4
+# MINOR_CONNECTIVITY_END_BONUS: 3
+
 # Use gamephase value blending (e.g., tapered eval)
 # USE_GAMEPHASE_VALUE: true

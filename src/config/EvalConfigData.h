@@ -215,6 +215,27 @@ namespace config {
     CONFIG_CONST int THREAT_HANGING_MID        = 6;
     CONFIG_CONST int THREAT_HANGING_END        = 10;
 
+    // space evaluation: bonus for safe squares behind own pawn chain (midgame-weighted)
+    // Space = squares on ranks 2-4 (relative) behind own pawns, not attacked by enemy pawns.
+    // DISABLED: Phase 3all results (+3.5 v1.5 ELO, −0.0 SF18 ELO, −9.7% NPS) confirmed
+    // net-negative playing strength. Code retained for potential Texel tuning optimization.
+    CONFIG_CONST bool USE_SPACE_EVAL  = false;
+    CONFIG_CONST int SPACE_BONUS_MID  = 3;
+    CONFIG_CONST int SPACE_BONUS_END  = 1;
+
+    // connected rooks: bonus when two rooks are on the same rank or file with no pieces between
+    // DISABLED: See USE_SPACE_EVAL — Phase 3all regression. Combined space + coordination
+    // features cost −5.4% NPS and −26 test suite positions vs Phase 3.2.
+    CONFIG_CONST bool USE_CONNECTED_ROOKS      = false;
+    CONFIG_CONST int CONNECTED_ROOKS_MID_BONUS = 8;
+    CONFIG_CONST int CONNECTED_ROOKS_END_BONUS = 5;
+
+    // minor piece connectivity: bonus when a knight/bishop is defended by another minor piece
+    // DISABLED: See USE_SPACE_EVAL — Phase 3all regression.
+    CONFIG_CONST bool USE_MINOR_CONNECTIVITY      = false;
+    CONFIG_CONST int MINOR_CONNECTIVITY_MID_BONUS = 4;
+    CONFIG_CONST int MINOR_CONNECTIVITY_END_BONUS = 3;
+
     CONFIG_CONST bool USE_GAMEPHASE_VALUE = true;
 
     std::string str() const;

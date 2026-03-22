@@ -146,6 +146,18 @@ Value Evaluator::evaluate(const Position& p) {
     threatEval(p, score, BLACK);
   }
 
+  // evaluate space (safe squares behind own pawn chain, not attacked by enemy pawns)
+  if (EvalConfig.USE_SPACE_EVAL) {
+    spaceEval(p, score, WHITE);
+    spaceEval(p, score, BLACK);
+  }
+
+  // evaluate piece coordination (connected rooks, minor connectivity)
+  if (EvalConfig.USE_CONNECTED_ROOKS || EvalConfig.USE_MINOR_CONNECTIVITY) {
+    coordinationEval(p, score, WHITE);
+    coordinationEval(p, score, BLACK);
+  }
+
   // evaluate kings
   if (EvalConfig.USE_KING_EVAL) {
     kingEval(p, score, WHITE);
@@ -829,6 +841,84 @@ inline void Evaluator::threatEval(const Position& p, Score& s, const Color us) c
     const int hangingCount     = hanging.popcount();
     mid += hangingCount * EvalConfig.THREAT_HANGING_MID;
     end += hangingCount * EvalConfig.THREAT_HANGING_END;
+  }
+
+  if (mid || end) {
+    s.midgame += static_cast<Value>(mid * us.sign());
+    s.endgame += static_cast<Value>(end * us.sign());
+  }
+}
+
+inline void Evaluator::spaceEval(const Position& p, Score& s, const Color us) const {
+  // Space = safe squares on ranks 2-4 (relative) behind own pawn chain,
+  // not attacked by enemy pawns. Midgame-weighted (space matters less in endgame).
+  const Color them = ~us;
+
+  // Ranks 2-4 relative to us: White = ranks 2,3,4; Black = ranks 7,6,5
+  const Bitboard spaceMask = us == WHITE
+    ? (Rank2BB | Rank3BB | Rank4BB)
+    : (Rank7BB | Rank6BB | Rank5BB);
+
+  // Build a mask of files occupied by own pawns
+  const Bitboard myPawns = p.getPieceBb(us, PAWN);
+  Bitboard pawnFiles     = BbZero;
+  Bitboard tmp           = myPawns;
+  while (tmp) {
+    pawnFiles |= Bitboards::sqToFileBb[tmp.popLSB()];
+  }
+
+  // Space candidates: on space ranks, on own pawn files, not attacked by enemy pawns
+  const Bitboard enemyPawnAttacks = attackedByPT[PAWN][them];
+  const Bitboard spaceSquares     = spaceMask & pawnFiles & ~enemyPawnAttacks;
+  // ReSharper disable once CppTooWideScope
+  const int spaceCount            = spaceSquares.popcount();
+  if (spaceCount) {
+    s.midgame += static_cast<Value>(spaceCount * EvalConfig.SPACE_BONUS_MID * us.sign());
+    s.endgame += static_cast<Value>(spaceCount * EvalConfig.SPACE_BONUS_END * us.sign());
+  }
+}
+
+inline void Evaluator::coordinationEval(const Position& p, Score& s, const Color us) const {
+  int mid = 0;
+  int end = 0;
+
+  // Connected rooks: bonus when two rooks are on the same rank or file
+  // with no pieces between them.
+  if (EvalConfig.USE_CONNECTED_ROOKS) {
+    const Bitboard rooks = p.getPieceBb(us, ROOK);
+    if (rooks.popcount() >= 2) {
+      Bitboard remaining = rooks;
+      while (remaining) {
+        const Square r1 = remaining.popLSB();
+        Bitboard others = remaining; // rooks after r1
+        while (others) {
+          const Square r2 = others.popLSB();
+          if (r1.file() == r2.file() || r1.rank() == r2.rank()) {
+            const Bitboard between = Bitboards::intermediateBb[r1][r2];
+            if (!(p.getOccupiedBb() & between)) {
+              mid += EvalConfig.CONNECTED_ROOKS_MID_BONUS;
+              end += EvalConfig.CONNECTED_ROOKS_END_BONUS;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Minor piece connectivity: bonus when a knight/bishop is defended by another minor piece.
+  if (EvalConfig.USE_MINOR_CONNECTIVITY) {
+    const Bitboard knights    = p.getPieceBb(us, KNIGHT);
+    const Bitboard bishops    = p.getPieceBb(us, BISHOP);
+    const Bitboard knightAtks = attackedByPT[KNIGHT][us];
+    const Bitboard bishopAtks = attackedByPT[BISHOP][us];
+
+    // Count minor pieces defended by another minor piece
+    const int connections = (knights & bishopAtks).popcount()
+                          + (bishops & knightAtks).popcount()
+                          + (knights & knightAtks).popcount()
+                          + (bishops & bishopAtks).popcount();
+    mid += connections * EvalConfig.MINOR_CONNECTIVITY_MID_BONUS;
+    end += connections * EvalConfig.MINOR_CONNECTIVITY_END_BONUS;
   }
 
   if (mid || end) {

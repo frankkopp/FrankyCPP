@@ -1,9 +1,9 @@
 # FrankyCPP Evaluation & Strength Improvement Plan
 
-**Document Version:** 1.3  
+**Document Version:** 1.5  
 **Created:** 2026-03-17  
-**Last Updated:** 2026-03-21  
-**Status:** 🟡 IN PROGRESS (Phase 1 ✅ Complete & Validated, Phase 2 ✅ Complete & Validated, Phase 3 🔄 In Progress)  
+**Last Updated:** 2026-03-22  
+**Status:** ✅ COMPLETE (Phase 1 ✅, Phase 2 ✅, Phase 3 ✅ — 3.2 active, 3.1/3.3 disabled, Phase 4 deferred, Phase 5 → separate project)  
 **Target:** FrankyCPP v1.6 → v2.0  
 **Priority:** High (Primary path to strength gains)  
 **Predecessor:** `V1_ENGINE_STRENGTH_ROADMAP.md`, `PLAN_Move_Ordering_Improvements.md`
@@ -28,8 +28,8 @@ Analysis of STS (Strategic Test Suite) results reveals that **evaluation quality
 4. [Phase 1: Quick Eval Wins](#phase-1-quick-eval-wins)
 5. [Phase 2: King Safety Overhaul](#phase-2-king-safety-overhaul)
 6. [Phase 3: Strategic Evaluation](#phase-3-strategic-evaluation)
-7. [Phase 4: Search Polish](#phase-4-search-polish)
-8. [Phase 5: Automated Tuning](#phase-5-automated-tuning)
+7. [Phase 4: Search Polish (Deferred)](#phase-4-search-polish-deferred)
+8. [Phase 5: Automated Tuning (Separate Project)](#phase-5-automated-tuning-separate-project)
 9. [Testing & Validation Strategy](#testing--validation-strategy)
 10. [Implementation Tracking](#implementation-tracking)
 
@@ -545,7 +545,7 @@ infrastructure is valuable for future features and the NPS cost is modest (−1.
 ### Feature 3.1: Space Evaluation
 
 **Targets:** STS Center Control (55%), AKPC (52%)  
-**Status:** 📋 Not Started — implement after 3.2 validation  
+**Status:** ✅ Complete  
 **Depends on:** Prerequisite 3.0 (attackedByPT — for pawn attack exclusion)
 
 Space = number of safe squares in the first 4 ranks behind own pawn chain. More space = more
@@ -572,7 +572,7 @@ spaceScore = popcount(controlledSquares) * SPACE_BONUS_{MID,END}
 ### Feature 3.3: Minor Piece Coordination
 
 **Targets:** General strength  
-**Status:** 📋 Not Started — implement after 3.2 validation, shelve if Elo-neutral
+**Status:** ✅ Complete
 
 Bonus for connected rooks (on same rank/file with no pieces between using `intermediateBb[][]`),
 and minor piece connectivity (knight/bishop defended by another minor piece).
@@ -590,12 +590,19 @@ and minor piece connectivity (knight/bishop defended by another minor piece).
 
 ---
 
-## Phase 4: Search Polish
+## Phase 4: Search Polish (Deferred)
 
-**Timeline:** 2 weeks  
-**Expected Gain:** +10–20 Elo  
-**Status:** 📋 Not Started  
+**Timeline:** Deferred indefinitely  
+**Expected Gain:** +10–20 Elo (speculative)  
+**Status:** ⏸️ Deferred  
 **Predecessor:** `PLAN_Move_Ordering_Improvements.md`
+
+> **Decision (2026-03-22):** Phase 4 is deferred. Phases 2–3 demonstrated that adding features with
+> hand-tuned parameters yields diminishing returns — only Phase 1 delivered measurable match strength.
+> Search polish features (continuation history, probcut, SEE pruning) carry the same risk of being
+> ELO-neutral after implementation effort. Priority shifts to Texel tuning of existing parameters
+> (see `PLAN_Texel_Tuning.md`), which can optimize what we already have at zero NPS cost.
+> These features may be revisited after tuning establishes a stronger baseline.
 
 ### Feature 4.1: Continuation History
 
@@ -617,11 +624,17 @@ Prune moves with negative SEE at low depths in the main search (not just quiesce
 
 ---
 
-## Phase 5: Automated Tuning
+## Phase 5: Automated Tuning (Separate Project)
 
-**Timeline:** Ongoing (after features are implemented)  
-**Expected Gain:** +20–40 Elo  
-**Status:** 📋 Not Started
+**Timeline:** Separate project  
+**Expected Gain:** +20–50 Elo  
+**Status:** 📋 Moved to `PLAN_Texel_Tuning.md`
+
+> **Decision (2026-03-22):** Texel tuning is the most promising next step for strength gains.
+> It optimizes all ~85 existing eval parameters simultaneously against labeled game data, adding
+> zero NPS cost. Moved to a dedicated spec document with full implementation plan.
+> See **`docs/specs/PLAN_Texel_Tuning.md`** for algorithm details, data pipeline, parameter
+> selection, integration plan, and effort estimates (~3 weeks for Tier 1+2).
 
 ### Texel's Tuning Method
 
@@ -661,36 +674,100 @@ Use labeled game data (win/loss/draw) to optimize all evaluation parameters simu
 
 ### Benchmarks to Track
 
-| Metric             | Current  | Phase 1 Target | Phase 1 Actual | Phase 2 Target | Phase 2 Actual | Phase 3 Target | Phase 3 Actual       | Final Target |
-|--------------------|----------|----------------|----------------|----------------|----------------|----------------|----------------------|--------------|
-| STS Overall        | 58%      | 61%            | 57.2%          | 63%            | 58.9%          | 61%            | 59.1% (+0.2%)        | 65%+         |
-| WAC                | ~96%     | ≥96%           | 95.5% ✅        | ≥96%           | 96.0% ✅        | ≥96%           | 94.5% ⚠️             | ≥97%         |
-| Elo vs v1.5        | baseline | +15            | **+81.4** ✅    | +30            | **+74.1** ✅    | +85            | **+81.4** (~neutral) | +60+         |
-| Elo vs SF18 2700   | +6.9     | —              | **+56.1** ✅    | —              | **+49.0** ✅    | —              | **+41.9** (−7.1) ⚠️  | —            |
-| NPS (d12,128MB,4T) | 7.00M    | —              | 6.61M (−5.5%)  | —              | 6.80M (+2.7%)  | ≤3% regression | **6.68M (−1.8%)** ✅  | —            |
+| Metric             | Current  | Phase 1 Target | Phase 1 Actual | Phase 2 Target | Phase 2 Actual | Phase 3 Target | Phase 3.2 Actual     | Phase 3all Actual   | Final Target |
+|--------------------|----------|----------------|----------------|----------------|----------------|----------------|----------------------|---------------------|--------------|
+| STS Overall        | 58%      | 61%            | 57.2%          | 63%            | 58.9%          | 61%            | 59.1% (+0.2%)        | 57.1% (−2.0%) ❌     | 65%+         |
+| WAC                | ~96%     | ≥96%           | 95.5% ✅        | ≥96%           | 96.0% ✅        | ≥96%           | 94.5% ⚠️             | 95.5% ✅             | ≥97%         |
+| Elo vs v1.5        | baseline | +15            | **+81.4** ✅    | +30            | **+74.1** ✅    | +85            | **+81.4** (~neutral) | **+3.5** ❌          | +60+         |
+| Elo vs SF18 2700   | +6.9     | —              | **+56.1** ✅    | —              | **+49.0** ✅    | —              | **+41.9** (−7.1) ⚠️  | **−0.0** ❌          | —            |
+| NPS (d12,128MB,4T) | 7.00M    | —              | 6.61M (−5.5%)  | —              | 6.80M (+2.7%)  | ≤3% regression | **6.68M (−1.8%)** ✅  | **6.32M (−7.0%)** ❌ | —            |
+
+---
+
+## Phase Results Summary
+
+All results collected during development. **v1.5 Baseline** is the last measurement before Phase 1 started.
+Phase 2 (first attempt) was abandoned in favor of Phase 2 v2 and is omitted.
+
+### Key Metrics
+
+| Metric                  | v1.5 Baseline | Phase 1    | Phase 2 v2 | Phase 3.2    | Phase 3all    |
+|-------------------------|---------------|------------|------------|--------------|---------------|
+| **Date**                | 2026-03-10    | 2026-03-18 | 2026-03-19 | 2026-03-19   | 2026-03-21    |
+| **NPS** (d12,128MB,4T)  | 7,001,492     | 6,614,192  | 6,795,488  | 6,676,526    | 6,319,187     |
+| **NPS Δ vs Baseline**   | —             | −5.5%      | −2.9%      | −4.6%        | **−9.7%**     |
+| **NPS Δ vs Previous**   | —             | −5.5%      | +2.7%      | −1.8%        | **−5.4%**     |
+| **Test Suite Total**    | 1747/2875†    | 1852/2984  | 1878/2984  | 1883/2984    | **1857/2984** |
+| **Test Suite %**        | 60.8%†        | 62.1%      | 62.9%      | **63.1%**    | 62.2%         |
+| **Δ Total vs Baseline** | —             | +105†      | +131†      | +136†        | +110†         |
+| **Δ Total vs Previous** | —             | —          | +26        | **+5**       | **−26**       |
+| **STS1-STS15**          | 870/1500‡     | 858/1500   | 883/1500   | **886/1500** | 856/1500      |
+| **STS %**               | 58.0%‡        | 57.2%      | 58.9%      | **59.1%**    | 57.1%         |
+| **ELO vs v1.5**         | —             | +81.4      | +74.1      | +81.4        | **+3.5** ❌    |
+| **ELO vs SF18 2700**    | +6.9          | +56.1      | +49.0      | +41.9        | **−0.0** ❌    |
+
+> † v1.5 used 7 suites (2875 positions, no eigenmann). Phase 1+ added eigenmann (2984 positions).  
+>   Cross-phase deltas are approximate due to this suite change.  
+> ‡ Standalone STS run (5s/move, 2026-03-17) — not from the same batch as the 7-suite run.
+
+### Per-Suite Breakdown
+
+| Suite        | Max      | v1.5 Baseline† | Phase 1          | Phase 2 v2       | Phase 3.2        | Phase 3all       | Δ 3all vs 3.2 |
+|--------------|----------|----------------|------------------|------------------|------------------|------------------|---------------|
+| STS1-STS15   | 1500     | —              | 858 (57.2%)      | 883 (58.9%)      | **886 (59.1%)**  | 856 (57.1%)      | **−30**       |
+| crafty_test  | 347      | —              | 181 (52.2%)      | 182 (52.4%)      | 181 (52.2%)      | **186 (53.6%)**  | +5            |
+| ecm98        | 769      | —              | 559 (72.7%)      | 560 (72.8%)      | **563 (73.2%)**  | 561 (73.0%)      | −2            |
+| wac          | 201      | —              | 192 (95.5%)      | **193 (96.0%)**  | 190 (94.5%)      | 192 (95.5%)      | +2            |
+| kaufman      | 25       | —              | 21 (84.0%)       | 18 (72.0%)       | **21 (84.0%)**   | **21 (84.0%)**   | 0             |
+| mate_test    | 20       | —              | 16 (80.0%)       | 17 (85.0%)       | 16 (80.0%)       | 17 (85.0%)       | +1            |
+| franky_tests | 13       | —              | 13 (100%)        | 13 (100%)        | 13 (100%)        | 13 (100%)        | 0             |
+| eigenmann    | 109      | —              | 12 (11.0%)       | 12 (11.0%)       | **13 (11.9%)**   | 11 (10.1%)       | −2            |
+| **TOTAL**    | **2984** | **1747/2875†** | **1852 (62.1%)** | **1878 (62.9%)** | **1883 (63.1%)** | **1857 (62.2%)** | **−26**       |
+
+> † v1.5 individual suite scores not available for this run; total was 1747/2875 (7 suites, no eigenmann).
+
+### Match Results
+
+| Match            | v1.5 Baseline    | Phase 1           | Phase 2 v2        | Phase 3.2         | Phase 3all             |
+|------------------|------------------|-------------------|-------------------|-------------------|------------------------|
+| **vs v1.5**      | —                | 48W/27D/25L +81.4 | 47W/27D/26L +74.1 | 48W/27D/25L +81.4 | 37W/27D/36L **+3.5** ❌ |
+| **vs SF18 2700** | 49W/4D/47L +6.9  | 50W/16D/34L +56.1 | 47W/20D/33L +49.0 | 44W/24D/32L +41.9 | 44W/12D/44L **−0.0** ❌ |
+
+### Analysis
+
+- **Phase 3.2** (threat eval only) was the **high-water mark**: 1883 total (63.1%), STS 886 (59.1%), NPS cost only −1.8%.
+- **Phase 3all** (adding space + coordination) is a **confirmed regression**:
+  - **+3.5 ELO vs v1.5** (down from +81.4) — nearly all playing strength erased
+  - **−0.0 ELO vs SF18 2700** (down from +41.9) — completely neutral against external opponent
+  - **−26 positions** vs Phase 3.2 (1883 → 1857), **−30 STS positions** (886 → 856)
+  - **−5.4% additional NPS** cost (6.68M → 6.32M)
+  - The NPS loss from space + coordination features far outweighed any eval accuracy gain
+- **Decision (2026-03-22):** Features 3.1 (space eval) and 3.3 (coordination) **disabled by default**.
+  Code retained behind `USE_*` flags for potential future Texel tuning (see `PLAN_Texel_Tuning.md`).
+  Phase 3.2 (threat eval) kept active — the STS improvement and moderate SF18 impact are acceptable.
 
 ---
 
 ## Implementation Tracking
 
-| #   | Feature                   | Phase | Status         | STS Impact | Elo Impact | Notes                                            |
-|-----|---------------------------|-------|----------------|------------|------------|--------------------------------------------------|
-| 1.1 | Knight Outpost Bonus      | 1     | ✅ Complete     | +5.4% STS  | +81.4 Elo  | Ranks 4-6 relative, pawn-supported/unsupported   |
-| 1.2 | Pawn Advancement Bonus    | 1     | ✅ Complete     | (combined) | (combined) | Non-passed pawns rank 4+, rank-indexed array     |
-| 1.3 | Bad Bishop Detection      | 1     | ✅ Complete     | (combined) | (combined) | Penalty per own pawn on bishop's color           |
-| 1.4 | Rook Behind Passer        | 1     | ✅ Complete     | (combined) | (combined) | Own + enemy passers, separate bonuses            |
-| 2.1 | Pawn Storm Detection      | 2     | ✅ Complete     | +0.9% STS  | ~neutral   | Penalty for opponent pawns approaching king      |
-| 2.2 | Open File Near King       | 2     | ✅ Complete     | (combined) | (combined) | Open/semi-open file penalty near king            |
-| 2.3 | Safe Check Squares        | 2     | ✅ Complete     | (combined) | (combined) | Filtered by attackedBy[them] + piece existence   |
-| 2.4 | PawnTT Passed Pawn Cache  | 2     | ✅ Complete     | +2.7% NPS  | (perf)     | passedPawns cached in PawnTT, 16→32 byte entry   |
-| 3.0 | attackedByPT Array        | 3     | ✅ Complete     | —          | −1.8% NPS  | Per-piece-type attacks; memset reset             |
-| 3.2 | Threat Evaluation         | 3     | ✅ Complete     | +0.2% STS  | −7.1 SF18  | 3-tier; hanging reduced 12/15→6/10; needs tuning |
-| 3.1 | Space Evaluation          | 3     | 📋 Not Started | —          | —          | After 3.2 validation; midgame-weighted           |
-| 3.3 | Minor Piece Coordination  | 3     | 📋 Not Started | —          | —          | After 3.2 validation; shelve if Elo-neutral      |
-| 4.1 | Continuation History      | 4     | 📋 Not Started | —          | —          |                                                  |
-| 4.2 | Probcut                   | 4     | 📋 Not Started | —          | —          |                                                  |
-| 4.3 | SEE Pruning (main search) | 4     | 📋 Not Started | —          | —          | Tested before as Elo-neutral                     |
-| 5.1 | Texel Tuning              | 5     | 📋 Not Started | —          | —          | After features complete                          |
+| #   | Feature                   | Phase | Status              | STS Impact | Elo Impact | Notes                                              |
+|-----|---------------------------|-------|---------------------|------------|------------|----------------------------------------------------|
+| 1.1 | Knight Outpost Bonus      | 1     | ✅ Complete          | +5.4% STS  | +81.4 Elo  | Ranks 4-6 relative, pawn-supported/unsupported     |
+| 1.2 | Pawn Advancement Bonus    | 1     | ✅ Complete          | (combined) | (combined) | Non-passed pawns rank 4+, rank-indexed array       |
+| 1.3 | Bad Bishop Detection      | 1     | ✅ Complete          | (combined) | (combined) | Penalty per own pawn on bishop's color             |
+| 1.4 | Rook Behind Passer        | 1     | ✅ Complete          | (combined) | (combined) | Own + enemy passers, separate bonuses              |
+| 2.1 | Pawn Storm Detection      | 2     | ✅ Complete          | +0.9% STS  | ~neutral   | Penalty for opponent pawns approaching king        |
+| 2.2 | Open File Near King       | 2     | ✅ Complete          | (combined) | (combined) | Open/semi-open file penalty near king              |
+| 2.3 | Safe Check Squares        | 2     | ✅ Complete          | (combined) | (combined) | Filtered by attackedBy[them] + piece existence     |
+| 2.4 | PawnTT Passed Pawn Cache  | 2     | ✅ Complete          | +2.7% NPS  | (perf)     | passedPawns cached in PawnTT, 16→32 byte entry     |
+| 3.0 | attackedByPT Array        | 3     | ✅ Complete          | —          | −1.8% NPS  | Per-piece-type attacks; memset reset               |
+| 3.2 | Threat Evaluation         | 3     | ✅ Complete          | +0.2% STS  | −7.1 SF18  | 3-tier; hanging reduced 12/15→6/10; needs tuning   |
+| 3.1 | Space Evaluation          | 3     | ❌ Disabled          | −2.0% STS  | +3.5/−0.0  | Disabled: −9.7% NPS, +3.5 v1.5 ELO (was +81.4)     |
+| 3.3 | Minor Piece Coordination  | 3     | ❌ Disabled          | (combined) | (combined) | Disabled: see 3.1; code retained for Texel tuning  |
+| 4.1 | Continuation History      | 4     | ⏸️ Deferred         | —          | —          | Phase 4 deferred — see phase section for rationale |
+| 4.2 | Probcut                   | 4     | ⏸️ Deferred         | —          | —          | Phase 4 deferred                                   |
+| 4.3 | SEE Pruning (main search) | 4     | ⏸️ Deferred         | —          | —          | Phase 4 deferred; previously tested as Elo-neutral |
+| 5.1 | Texel Tuning              | 5     | 📋 Separate project | —          | —          | See `PLAN_Texel_Tuning.md`                         |
 
 ---
 
@@ -718,4 +795,4 @@ Use labeled game data (win/loss/draw) to optimize all evaluation parameters simu
 ---
 
 
-*Last updated: 2026-03-21*
+*Last updated: 2026-03-22*
