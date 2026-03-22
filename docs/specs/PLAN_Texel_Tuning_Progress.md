@@ -95,9 +95,9 @@
 | 3.1  | Download Zurichess quiet-labeled dataset (or similar)                | ⬚ Not Started |
 | 3.2  | Create a small dev subset (~50K–100K positions) for fast iteration   | ⬚ Not Started |
 | 3.3  | Start FrankyCPP self-play generation in background (cutechess-cli)   | ⬚ Not Started |
-| 3.4  | Document dataset sources and locations in `results/tuning/README.md` | ⬚ Not Started |
+| 3.4  | Document dataset sources and locations in `test/testsets/tuning/`     | ⬚ Not Started |
 
-**Gate:** Dev dataset and full downloaded dataset available in `results/tuning/`.
+**Gate:** Dev dataset and full downloaded dataset available in `test/testsets/tuning/`.
 
 ---
 

@@ -993,7 +993,7 @@ This enables:
 Tuning results are saved in a structured output directory:
 
 ```
-results/tuning/
+test/testsets/tuning/
 ├── 2026-03-25_selfplay_5M/
 │   ├── tuned_params.yaml            // final tuned parameters (loadable by ConfigManager)
 │   ├── tuning_log.txt               // detailed run log
@@ -1096,11 +1096,11 @@ gate criteria before proceeding. Each phase should be merged/committed independe
 | 3.1  | Download Zurichess quiet-labeled dataset (or similar)                        | 0.5  |
 | 3.2  | Create a small dev subset (~50K–100K positions) for fast iteration           | 0.5  |
 | 3.3  | Start FrankyCPP self-play generation in background (cutechess-cli script)    | 0.5  |
-| 3.4  | Document dataset sources and locations in `results/tuning/README.md`         | 0.5  |
+| 3.4  | Document dataset sources and locations in `test/testsets/tuning/`             | 0.5  |
 
-**Gate:** Dev dataset and full downloaded dataset available in `results/tuning/`.
+**Gate:** Dev dataset and full downloaded dataset available in `test/testsets/tuning/`.
 
-**Deliverable:** `results/tuning/dev_50k.txt`, `results/tuning/zurichess_7M.txt`
+**Deliverable:** `test/testsets/tuning/dev_50k.txt`, `test/testsets/tuning/zurichess_7M.txt`
 
 **Effort:** ~1–2 days (self-play runs in background, not blocking)
 
