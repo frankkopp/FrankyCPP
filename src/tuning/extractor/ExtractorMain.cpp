@@ -34,10 +34,12 @@
 //
 //=============================================================================
 
+#include "PositionExtractor.h"
 #include "init.h"
 #include "version.h"
 
 #include <boost/program_options.hpp>
+#include <chrono>
 #include <exception>
 #include <iostream>
 #include <string>
@@ -77,6 +79,12 @@ int main(int argc, char* argv[]) {
                               "Enable qsearch stability filter (default: off)")
       ("qsearch-threshold",   po::value<int>()->default_value(150),
                               "Threshold in centipawns for qsearch filter (default: 150)")
+      ("score-filter",        po::bool_switch()->default_value(false),
+                              "Skip positions where search score contradicts game result (default: off)")
+      ("score-threshold",     po::value<int>()->default_value(200),
+                              "Threshold in centipawns for score contradiction filter (default: 200)")
+      ("skip-termination",    po::bool_switch()->default_value(true),
+                              "Skip games with [Termination] header (default: on)")
       ("verbose,v",           po::bool_switch()->default_value(false),
                               "Enable verbose output");
     // clang-format on
@@ -107,6 +115,7 @@ int main(int argc, char* argv[]) {
       std::cout << "  3. Skip positions after captures/promotions (--skip-captures/--skip-promotions)\n";
       std::cout << "  4. Skip trivial endgames (--min-pieces)\n";
       std::cout << "  5. Qsearch stability filter (--qsearch-filter, optional)\n";
+      std::cout << "  6. Score contradiction filter (--score-filter, optional)\n";
       return 0;
     }
 
@@ -125,8 +134,11 @@ int main(int argc, char* argv[]) {
     const int minPieces    = vm["min-pieces"].as<int>();
     const bool skipCapt    = vm["skip-captures"].as<bool>();
     const bool skipPromo   = vm["skip-promotions"].as<bool>();
+    const bool skipTerm    = vm["skip-termination"].as<bool>();
     const bool qsFilter    = vm["qsearch-filter"].as<bool>();
     const int qsThreshold  = vm["qsearch-threshold"].as<int>();
+    const bool scFilter    = vm["score-filter"].as<bool>();
+    const int scThreshold  = vm["score-threshold"].as<int>();
     const bool verbose     = vm["verbose"].as<bool>();
 
     std::cout << "Configuration:\n";
@@ -136,18 +148,40 @@ int main(int argc, char* argv[]) {
     std::cout << "  Min pieces:        " << minPieces << "\n";
     std::cout << "  Skip captures:     " << (skipCapt ? "yes" : "no") << "\n";
     std::cout << "  Skip promotions:   " << (skipPromo ? "yes" : "no") << "\n";
+    std::cout << "  Skip termination:  " << (skipTerm ? "yes" : "no") << "\n";
     std::cout << "  Qsearch filter:    " << (qsFilter ? "yes" : "no") << "\n";
     if (qsFilter) {
       std::cout << "  Qsearch threshold: " << qsThreshold << " cp\n";
+    }
+    std::cout << "  Score filter:      " << (scFilter ? "yes" : "no") << "\n";
+    if (scFilter) {
+      std::cout << "  Score threshold:   " << scThreshold << " cp\n";
     }
     std::cout << "  Verbose:           " << (verbose ? "yes" : "no") << "\n";
     std::cout << "\n";
 
     // =========================================================================
-    // TODO: Phase 4 — Implement PositionExtractor and wire it up here
+    // Build extraction config and run
     // =========================================================================
-    std::cout << "Position extraction not yet implemented (Phase 4).\n";
-    std::cout << "See docs/specs/PLAN_Texel_Tuning.md for details.\n";
+    tuning::ExtractionConfig config;
+    config.minHalfMove      = minMove;
+    config.minPieces        = minPieces;
+    config.skipCaptures     = skipCapt;
+    config.skipPromotions   = skipPromo;
+    config.skipTermination  = skipTerm;
+    config.qsearchFilter    = qsFilter;
+    config.qsearchThreshold = qsThreshold;
+    config.scoreFilter      = scFilter;
+    config.scoreThreshold   = scThreshold;
+
+    tuning::PositionExtractor extractor;
+
+    const auto startTime = steady_clock::now();
+    extractor.extract(inputPath, outputPath, config);
+    const auto endTime = steady_clock::now();
+
+    const auto elapsedMs = std::chrono::duration_cast<milliseconds>(endTime - startTime).count();
+    extractor.getStats().printSummary(inputPath, outputPath, elapsedMs);
 
     return 0;
 

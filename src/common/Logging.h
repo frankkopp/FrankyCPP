@@ -279,6 +279,8 @@ namespace common {
   const std::shared_ptr<spdlog::logger> TB_LOG      = spdlog::stdout_color_mt("Tablebase_Logger");
   /// Logger for general application errors and critical issues.
   const std::shared_ptr<spdlog::logger> APP_LOG     = spdlog::stdout_color_mt("App_Logger");
+  /// Logger for tuning tools (extractor, optimizer).
+  const std::shared_ptr<spdlog::logger> TUNING_LOG  = spdlog::stdout_color_mt("Tuning_Logger");
     // clang-format on
   };
 

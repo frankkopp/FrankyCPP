@@ -241,6 +241,23 @@ std::optional<PgnGame> PgnParser::parseOneGame(
     game.result = parseResultString(resultIt->second);
   }
 
+  // Extract {}-comments from raw move text before cleanup strips them.
+  // Each {}-block corresponds to the move immediately preceding it.
+  // This provides engine scores, book markers, etc. for downstream consumers.
+  if (!moveLine.empty()) {
+    std::vector<std::string> comments;
+    size_t searchPos = 0;
+    while (searchPos < moveLine.size()) {
+      const auto open = moveLine.find('{', searchPos);
+      if (open == std::string::npos) break;
+      const auto close = moveLine.find('}', open + 1);
+      if (close == std::string::npos) break;
+      comments.emplace_back(moveLine.substr(open + 1, close - open - 1));
+      searchPos = close + 1;
+    }
+    game.moveComments = std::move(comments);
+  }
+
   // Clean up move section and extract individual move strings
   if (!moveLine.empty()) {
     cleanUpMoveSection(moveLine);

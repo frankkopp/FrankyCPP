@@ -23,6 +23,7 @@ file(GLOB TEST_TABLEBASE CONFIGURE_DEPENDS tablebase/*.cpp)
 file(GLOB TEST_OPENINGBOOK CONFIGURE_DEPENDS openingbook/*.cpp)
 file(GLOB TEST_ENGINE_ARENA CONFIGURE_DEPENDS engine_arena/*.cpp)
 file(GLOB TEST_CLI CONFIGURE_DEPENDS cli/*.cpp)
+file(GLOB TEST_TUNING CONFIGURE_DEPENDS tuning/*.cpp)
 
 # Exclude manual test (standalone executable, not a GTest)
 list(FILTER TEST_ENGINE_ARENA EXCLUDE REGEX "UCIEngine_ManualTest\\.cpp$")
@@ -31,6 +32,11 @@ list(FILTER TEST_ENGINE_ARENA EXCLUDE REGEX "UCIEngine_ManualTest\\.cpp$")
 file(GLOB SRCS_ENGINE_ARENA_FOR_TESTS CONFIGURE_DEPENDS ../src/engine_arena/*.cpp)
 # ArenaRunner is only needed by the arena executable, not tests
 list(FILTER SRCS_ENGINE_ARENA_FOR_TESTS EXCLUDE REGEX "ArenaRunner\\.cpp$")
+
+# Tuning source files needed by tests (compiled directly from src/)
+file(GLOB SRCS_TUNING_EXTRACTOR_FOR_TESTS CONFIGURE_DEPENDS ../src/tuning/extractor/*.cpp)
+# ExtractorMain has its own main() — exclude from test builds
+list(FILTER SRCS_TUNING_EXTRACTOR_FOR_TESTS EXCLUDE REGEX "ExtractorMain\\.cpp$")
 
 add_executable(
         ${testExeName}
@@ -45,9 +51,13 @@ add_executable(
         ${TEST_ENGINE_ARENA}
         ${TEST_CONFIGURATION}
         ${TEST_CLI}
+        ${TEST_TUNING}
 
         # Engine arena source files needed by tests
         ${SRCS_ENGINE_ARENA_FOR_TESTS}
+
+        # Tuning extractor source files needed by tests
+        ${SRCS_TUNING_EXTRACTOR_FOR_TESTS}
 
         # CrashHandler for minidump generation on crashes
         ../src/common/CrashHandler.cpp

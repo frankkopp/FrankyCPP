@@ -2,24 +2,24 @@
 
 **Plan Document:** `docs/specs/PLAN_Texel_Tuning.md`  
 **Created:** 2026-03-22  
-**Last Updated:** 2026-03-22    
+**Last Updated:** 2026-03-23  
 **Target Version:** v1.7  
 
 ---
 
 ## Phase Summary
 
-| Phase | Name                               | Status        | Started    | Completed  |
-|-------|------------------------------------|---------------|------------|------------|
-| 0     | Release v1.6, branch v1.7          | ✅ Complete    | —          | 2026-03-22 |
-| 1     | Module structure + PGN library     | ✅ Complete    | 2026-03-22 | 2026-03-22 |
-| 2     | Tuning build targets (scaffolding) | ✅ Complete    | 2026-03-22 | 2026-03-22 |
-| 3     | Data collection                    | ⬚ Not Started |            |            |
-| 4     | Position extractor                 | ⬚ Not Started |            |            |
-| 5     | Mark tunable parameters            | ⬚ Not Started |            |            |
-| 6     | Optimizer implementation           | ⬚ Not Started |            |            |
-| 7     | Integration testing                | ⬚ Not Started |            |            |
-| 8     | Gauntlet validation + release      | ⬚ Not Started |            |            |
+| Phase | Name                               | Status         | Started    | Completed  |
+|-------|------------------------------------|----------------|------------|------------|
+| 0     | Release v1.6, branch v1.7          | ✅ Complete     | —          | 2026-03-22 |
+| 1     | Module structure + PGN library     | ✅ Complete     | 2026-03-22 | 2026-03-22 |
+| 2     | Tuning build targets (scaffolding) | ✅ Complete     | 2026-03-22 | 2026-03-22 |
+| 3     | Data collection                    | 🚧 In Progress | 2026-03-22 |            |
+| 4     | Position extractor                 | ✅ Complete     | 2026-03-23 | 2026-03-23 |
+| 5     | Mark tunable parameters            | ⬚ Not Started  |            |            |
+| 6     | Optimizer implementation           | ⬚ Not Started  |            |            |
+| 7     | Integration testing                | ⬚ Not Started  |            |            |
+| 8     | Gauntlet validation + release      | ⬚ Not Started  |            |            |
 
 ---
 
@@ -88,31 +88,54 @@
 
 ---
 
-## Phase 3: Data Collection ⬚
+## Phase 3: Data Collection 🚧
 
-| Step | Task                                                               | Status        |
-|------|--------------------------------------------------------------------|---------------|
-| 3.1  | Download Zurichess quiet-labeled dataset (or similar)              | ⬚ Not Started |
-| 3.2  | Create a small dev subset (~50K–100K positions) for fast iteration | ⬚ Not Started |
-| 3.3  | Start FrankyCPP self-play generation in background (cutechess-cli) | ⬚ Not Started |
-| 3.4  | Document dataset sources and locations in `test/testsets/tuning/`  | ⬚ Not Started |
+| Step | Task                                                               | Status         |
+|------|--------------------------------------------------------------------|----------------|
+| 3.1  | Download Zurichess quiet-labeled dataset (or similar)              | ⬚ Not Started  |
+| 3.2  | Create a small dev subset (~50K–100K positions) for fast iteration | ✅ Complete     |
+| 3.3  | Start FrankyCPP self-play generation in background (cutechess-cli) | ✅ Complete     |
+| 3.4  | Document dataset sources and locations in `test/testsets/tuning/`  | ⬚ Not Started  |
 
 **Gate:** Dev dataset and full downloaded dataset available in `test/testsets/tuning/`.
 
+**Notes:**
+- 3.2: Dev dataset extracted from v1.6 vs v1.5 matches: ~49K positions (`v1.6_vs_v1.5_score.txt`)
+- 3.3: Self-play complete: 17,037 games → 1.54M positions with qsearch+score filter (`selfplay_v1.7_50k_score.txt`)
+
 ---
 
-## Phase 4: Position Extractor ⬚
+## Phase 4: Position Extractor ✅
 
-| Step | Task                                                                    | Status        |
-|------|-------------------------------------------------------------------------|---------------|
-| 4.1  | Implement `PositionExtractor` class: PGN → FEN+result with filters 1–4  | ⬚ Not Started |
-| 4.2  | Wire up `ExtractorMain.cpp` with full CLI                               | ⬚ Not Started |
-| 4.3  | Write extractor unit tests (filter behavior, edge cases, output format) | ⬚ Not Started |
-| 4.4  | *(Optional)* Add qsearch filter (Filter 5)                              | ⬚ Not Started |
-| 4.5  | Extract positions from `books/superbook.pgn` as validation              | ⬚ Not Started |
-| 4.6  | Compare extracted dataset quality with downloaded dataset (spot checks) | ⬚ Not Started |
+| Step | Task                                                                      | Status     |
+|------|---------------------------------------------------------------------------|------------|
+| 4.1  | Implement `PositionExtractor` class: PGN → FEN+result with filters 0–4    | ✅ Complete |
+| 4.2  | Implement `ExtractionStats` struct with `printSummary()` formatted report | ✅ Complete |
+| 4.3  | Wire up `ExtractorMain.cpp` with full CLI                                 | ✅ Complete |
+| 4.4  | Implement standalone qsearch filter (Filter 5)                            | ✅ Complete |
+| 4.5  | Write extractor unit tests (filter behavior, stats, output format)        | ✅ Complete |
+| 4.6  | Add `TUNING_LOG` logger to `Logging.h`                                    | ✅ Complete |
+| 4.7  | Update `test/CMakeLists.txt` for tuning test sources                      | ✅ Complete |
+| 4.8  | Build, run tests, validate end-to-end with v1.6 match PGNs                | ✅ Complete |
+| 4.9  | Compare extraction with/without qsearch filter (performance benchmark)    | ✅ Complete |
 
-**Gate:** Extractor produces valid FEN+result files. Unit tests pass.
+**Gate:** ✅ Extractor produces valid FEN+result files. Unit tests pass. Stats summary printed.
+
+**Notes:**
+- 4.1: `PositionExtractor` with streaming PGN parsing, 5 position filters + game-level filters
+- 4.2: Full formatted report with percentages, rates, elapsed time
+- 4.3: Added `--skip-termination` CLI flag; wired config → extractor → stats summary
+- 4.4: Standalone qsearch (capture-only alpha-beta, no TT/SMP, max depth 6)
+- 4.5: 16 test cases covering all filters, output format, stats consistency, integration
+- 4.6: `TUNING_LOG` added to Logger singleton
+- 4.7: `TEST_TUNING` glob + `SRCS_TUNING_EXTRACTOR_FOR_TESTS` (excludes ExtractorMain.cpp)
+- 4.8: Validated on v1.6 vs v1.5 (500 games → 48,794 pos) and v1.6 vs SF18 (500 games → 44,497 pos)
+- 4.9: Qsearch overhead: 3.3× (not 10-50× estimated). Filters 2.9-4.8% additional positions. SF games have higher tactical filtering (4.75% vs 2.89%) as expected.
+- **Filter 6 added:** Score contradiction filter (`--score-filter`) — skips positions where PGN search score (from cutechess-cli comments) strongly contradicts game result. Reduces label noise from blunders. `parseSearchScore()` parses `{+1.32/11 6.9s}` format. 9 new unit tests.
+- **Large-scale validation:** Tested on selfplay_v1.7_50k.pgn (17,037 games, 2.6M positions):
+  - Score filter only: 1,597,558 extracted (61.33%), 909 games/s, 18.5s
+  - Score + qsearch: 1,541,080 extracted (59.07%), 338 games/s, 49.8s (2.7× slower)
+  - Qsearch caught 58,972 additional positions (2.26%); score filter caught ~3,000 (0.1%)
 
 ---
 
@@ -194,4 +217,4 @@
 
 ---
 
-*Last updated: 2026-03-22*
+*Last updated: 2026-03-23*

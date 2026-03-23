@@ -52,6 +52,13 @@ namespace common::pgn {
     /// Example: {"e4", "d5", "c4", "e5", "Nf3", "Nc6"}
     std::vector<std::string> moves;
 
+    /// Raw comment text for each move, extracted from {}-blocks before cleanup.
+    /// Parallel to moves[]: moveComments[i] is the comment for moves[i].
+    /// Empty string if no comment was found for that move.
+    /// Example: {"book", "book", "+1.32/11 6.9s", "-1.28/12 6.8s"}
+    /// Populated by PgnParser; empty if PGN has no inline comments.
+    std::vector<std::string> moveComments;
+
     /// Game result parsed from the [Result] header tag.
     GameResult result = GameResult::UNKNOWN;
 
