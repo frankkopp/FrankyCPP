@@ -18,6 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "engine/Search.h"
+#include "Test_Fens.h"
 #include "Test_Utils.h"
 #include "common/CrashHandler.h"
 #include "common/Logging.h"
@@ -434,12 +435,12 @@ TEST_F(SearchTest, mateStability_KQBvsK) {
 
   // Must find a checkmate, not a regular evaluation
   EXPECT_TRUE(result.bestMoveValue.isCheckMate())
-      << "Expected checkmate score, got: " << result.bestMoveValue.str();
+    << "Expected checkmate score, got: " << result.bestMoveValue.str();
 
   // Must NOT be the artificial VALUE_CHECKMATE_THRESHOLD (NMP clamping artifact)
   EXPECT_NE(std::abs(static_cast<int>(result.bestMoveValue)),
             static_cast<int>(VALUE_CHECKMATE_THRESHOLD))
-      << "Score must not be VALUE_CHECKMATE_THRESHOLD (9871 cp = +98.71 pawns artifact)";
+    << "Score must not be VALUE_CHECKMATE_THRESHOLD (9871 cp = +98.71 pawns artifact)";
 }
 
 // KQ vs K — Black has queen vs lone king.
@@ -459,12 +460,12 @@ TEST_F(SearchTest, mateStability_KQvsK) {
 
   // Must find a checkmate
   EXPECT_TRUE(result.bestMoveValue.isCheckMate())
-      << "Expected checkmate score, got: " << result.bestMoveValue.str();
+    << "Expected checkmate score, got: " << result.bestMoveValue.str();
 
   // Must NOT be the artificial VALUE_CHECKMATE_THRESHOLD
   EXPECT_NE(std::abs(static_cast<int>(result.bestMoveValue)),
             static_cast<int>(VALUE_CHECKMATE_THRESHOLD))
-      << "Score must not be VALUE_CHECKMATE_THRESHOLD (9871 cp = +98.71 pawns artifact)";
+    << "Score must not be VALUE_CHECKMATE_THRESHOLD (9871 cp = +98.71 pawns artifact)";
 }
 
 // KQB vs K — Position from live game where +89.98 / +89.99 artifacts appeared.
@@ -483,12 +484,12 @@ TEST_F(SearchTest, mateStability_KQBvsK_liveGame) {
 
   // Must find a checkmate
   EXPECT_TRUE(result.bestMoveValue.isCheckMate())
-      << "Expected checkmate score, got: " << result.bestMoveValue.str();
+    << "Expected checkmate score, got: " << result.bestMoveValue.str();
 
   // Must NOT be the artificial VALUE_CHECKMATE_THRESHOLD
   EXPECT_NE(std::abs(static_cast<int>(result.bestMoveValue)),
             static_cast<int>(VALUE_CHECKMATE_THRESHOLD))
-      << "Score must not be VALUE_CHECKMATE_THRESHOLD (9871 cp = +98.71 pawns artifact)";
+    << "Score must not be VALUE_CHECKMATE_THRESHOLD (9871 cp = +98.71 pawns artifact)";
 }
 
 // KQp vs KR endgame — Position where fail-soft NMP returned inflated values (8998 cp
@@ -509,11 +510,11 @@ TEST_F(SearchTest, nmpInflation_KQpVsKR) {
 
   // Score must be positive (Black is winning with a passed pawn + bishop vs rook)
   EXPECT_GT(static_cast<int>(result.bestMoveValue), 0)
-      << "Expected positive score for Black, got: " << result.bestMoveValue.str();
+    << "Expected positive score for Black, got: " << result.bestMoveValue.str();
 
   // Score must NOT be an inflated NMP artifact (8998 cp = +89.98 or similar)
   EXPECT_LT(std::abs(static_cast<int>(result.bestMoveValue)), 5000)
-      << "Score is suspiciously high for a non-mate position: " << result.bestMoveValue.str();
+    << "Score is suspiciously high for a non-mate position: " << result.bestMoveValue.str();
 }
 
 // In production, USE_ALPHABETA/USE_PVS/USE_TT/USE_QUIESCENCE/USE_QS_SEE are CONFIG_CONST.
@@ -932,6 +933,80 @@ TEST_F(SearchTest, newGameResetsDeterministic) {
   }
 }
 
+// =============================================================================
+// Movetime Compliance Test
+// Verifies that search time never significantly exceeds the allocated movetime.
+// This test was created to diagnose time management issues observed during
+// self-play data generation for Texel tuning (100% time losses at fast TCs).
+// =============================================================================
+TEST_F(SearchTest, moveTimeCompliance) {
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  CONFIG_OVERRIDE(s.THREADS = 1;);
+
+  constexpr int NUM_POSITIONS = 100;
+  constexpr auto MOVETIME     = 500ms;
+  // Allow some tolerance for thread scheduling, timer granularity, etc.
+  // But flag anything more than 50ms over budget as a failure.
+  constexpr auto TOLERANCE = 50ms;
+  constexpr auto MAX_TIME  = MOVETIME + TOLERANCE;
+
+  const auto fens           = Test_Fens::getFENs();
+  const int positionsToTest = std::min(NUM_POSITIONS, static_cast<int>(fens.size()));
+
+  Search search{};
+  search.isReady();
+
+  int violations      = 0;
+  int maxDepthReached = 0;
+  milliseconds maxTime{0};
+  std::string worstFen;
+
+  for (int i = 0; i < positionsToTest; ++i) {
+    const Position pos{fens[i]};
+    SearchLimits sl{};
+    sl.timeControl = true;
+    sl.moveTime    = MOVETIME;
+
+    search.startSearch(pos, sl);
+    search.waitWhileSearching();
+
+    const auto& result    = search.getLastSearchResult();
+    const auto searchTime = MILLISECONDS(result.time);
+
+    if (result.depth > maxDepthReached) {
+      maxDepthReached = result.depth;
+    }
+
+    if (searchTime > maxTime) {
+      maxTime  = searchTime;
+      worstFen = fens[i];
+    }
+
+    if (searchTime > MAX_TIME) {
+      violations++;
+      fprintln("VIOLATION [{}/{}]: {} - time={} depth={} move={}",
+               i + 1, positionsToTest, fens[i],
+               str(searchTime), result.depth, result.bestMove.str());
+    }
+  }
+
+  fprintln("\nMovetime Compliance Summary:");
+  fprintln("  Positions tested: {}", positionsToTest);
+  fprintln("  Movetime budget:  {}", str(MOVETIME));
+  fprintln("  Tolerance:        {}", str(TOLERANCE));
+  fprintln("  Max time used:    {}", str(maxTime));
+  fprintln("  Max depth:        {}", maxDepthReached);
+  fprintln("  Violations:       {}/{}", violations, positionsToTest);
+  if (!worstFen.empty()) {
+    fprintln("  Worst position:   {}", worstFen);
+  }
+
+  EXPECT_EQ(violations, 0)
+    << violations << " out of " << positionsToTest
+    << " positions exceeded movetime budget of " << str(MAX_TIME)
+    << ". Worst: " << str(maxTime) << " on: " << worstFen;
+}
+
 // In production, CONFIG_CONST search/eval configs cannot be overridden at runtime.
 // These debug/diagnostic tests are development-only.
 #ifndef FRANKYCPP_PRODUCTION
@@ -966,7 +1041,7 @@ TEST_F(SearchTest, debug) {
   Search s{};
   CONFIG_OVERRIDE(s.TB_PATH = "D:/SYZYGY/");
   sl.timeControl = true;
-  sl.moveTime    = 10s;
+  sl.moveTime    = 500ms;
   // sl.depth = 6;
   s.isReady();
   s.startSearch(p, sl);

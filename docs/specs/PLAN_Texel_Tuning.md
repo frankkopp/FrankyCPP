@@ -192,15 +192,17 @@ Self-play data is ideal because eval biases match the engine's own play patterns
 
 ```powershell
 # Example cutechess-cli self-play command
-cutechess-cli.exe `
-  -engine cmd=FrankyCPP.exe name="FrankyCPP" `
-  -engine cmd=FrankyCPP.exe name="FrankyCPP" `
-  -each proto=uci tc=1+0.01 `
-  -rounds 15000 `
-  -openings file=books/8moves_v3.pgn format=pgn order=random `
-  -pgnout selfplay_output.pgn `
-  -concurrency 4 `
-  -recover
+& "D:/Games/CuteChess/cutechess-cli.exe" `
+  -engine cmd="D:/_DEV/FrankyCPP/Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe" name="FrankyCPP-v1.7-W" option.OwnBook=false option.Threads=1 timemargin=200 `
+  -engine cmd="D:/_DEV/FrankyCPP/Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe" name="FrankyCPP-v1.7-B" option.OwnBook=false option.Threads=1 timemargin=200 `
+  -each proto=uci st=0.5 `
+  -rounds 50000 `
+  -openings file="D:/_DEV/FrankyCPP/books/8moves_v3.pgn" format=pgn order=random `
+  -pgnout "D:/_DEV/FrankyCPP/test/testsets/tuning/selfplay_v1.7_50k.pgn" `
+  -concurrency 12 `
+  -recover `
+  -wait 100
+
 ```
 
 **Infrastructure note:** Running this on the dev machine ties up CPU for days. Consider:
@@ -307,28 +309,52 @@ FrankyCPP_v1.7_Extractor <input.pgn> <output.txt> [--min-move 16] [--qsearch-fil
 ```
 For each game in PGN:
     result = parse game Result header (1-0 / 0-1 / 1/2-1/2)
-    if result is unknown (*): skip game
+    if result is unknown (*):
+        stats.gamesSkippedUnknownResult++
+        skip game
+
+    // Filter 0: Skip games decided by time loss (not eval-relevant)
+    // cutechess-cli marks these in the Termination header or comment:
+    //   [Termination "time forfeit"] or {White/Black loses on time}
+    // These results don't reflect positional quality — the losing side
+    // may have been winning on the board. Including them teaches the
+    // tuner wrong labels. At st=0.5 with concurrency 12, expect ~0.1%
+    // time losses (~50 out of 50k games) even with timemargin=200.
+    if game has time-loss termination:
+        stats.gamesSkippedTimeLoss++
+        skip game
+
+    stats.gamesProcessed++
+    if result == "1-0": stats.gamesWhiteWins++
+    if result == "0-1": stats.gamesBlackWins++
+    if result == "1/2-1/2": stats.gamesDraws++
+
     position = starting position (or from [FEN] header if present)
     moveNumber = 0
 
     For each move in the game:
         position.doMove(move)
         moveNumber++
+        stats.totalPositionsSeen++
 
         // Filter 1: Skip early moves (opening theory)
         if moveNumber < 16 (8 full moves):
+            stats.filteredEarlyMove++
             continue
 
         // Filter 2: Skip positions in check
         if position.isInCheck():
+            stats.filteredInCheck++
             continue
 
         // Filter 3: Skip positions right after captures/promotions (not quiet)
         if move.isCapture() or move.isPromotion():
+            stats.filteredCapture++
             continue
 
         // Filter 4: Skip trivial endgames
         if position.pieceCount() < 6:
+            stats.filteredTrivialEndgame++
             continue
 
         // Filter 5 (recommended): Quiescence resolution
@@ -336,33 +362,93 @@ For each game in PGN:
         // the position is tactically unstable — skip it.
         // This is the most impactful filter.
         // NOTE: qsearch access requires friend declaration or a thin adapter in engine/.
+        if qsearch enabled and |qsearch_score - static_eval| > threshold:
+            stats.filteredQsearch++
+            continue
+
+        // Filter 6 (optional): Skip positions where search score contradicts game result
+        // If result is a win (1.0) but engine score was strongly negative (< -200cp),
+        // or result is a loss (0.0) but engine score was strongly positive (> +200cp),
+        // the result was likely decided by a later blunder — label is noisy.
+        // This is easy to implement during extraction (parse the PGN comment) and directly
+        // reduces label noise without any algorithmic changes to the tuner.
+        if |searchScore| > 200cp and sign(searchScore) contradicts result:
+            stats.filteredScoreContradiction++
+            continue
 
         // Output
+        stats.positionsExtracted++
         write(position.toFen(), resultLabel)
 ```
 
-### Quiescence Filtering — Why It Matters
+### Extraction Statistics
 
-Without quiescence filtering, the dataset contains positions where pieces are hanging or exchanges
-are in progress. The static eval for these positions is misleading (it doesn't account for the
-imminent captures). Training on these positions teaches the tuner wrong lessons — it's like trying
-to learn positional judgment from positions where tactics dominate.
+The extractor must print a comprehensive summary after processing. This helps judge dataset
+quality, identify bottlenecks, and decide whether filters need tuning.
 
-**Options (from simple to thorough):**
+```cpp
+struct ExtractionStats {
+    // Game-level
+    int gamesTotal              = 0;  // total games in PGN file
+    int gamesProcessed          = 0;  // games that passed game-level filters
+    int gamesSkippedUnknownResult = 0;  // result is "*" (incomplete)
+    int gamesSkippedTimeLoss    = 0;  // decided by time forfeit
+    int gamesWhiteWins          = 0;  // processed games won by White
+    int gamesBlackWins          = 0;  // processed games won by Black
+    int gamesDraws              = 0;  // processed games drawn
 
-1. **Skip post-capture positions** (Filter 3 above) — simple, catches most cases
-2. **Static eval vs qsearch check** — run qsearch, skip if scores diverge significantly
-3. **Use qsearch score as the eval** — most accurate but requires running qsearch for every
-   position during tuning, which is much slower
+    // Position-level
+    int totalPositionsSeen      = 0;  // all positions across all processed games
+    int filteredEarlyMove       = 0;  // Filter 1: opening theory
+    int filteredInCheck         = 0;  // Filter 2: in check
+    int filteredCapture         = 0;  // Filter 3: post-capture/promotion
+    int filteredTrivialEndgame  = 0;  // Filter 4: < 6 pieces
+    int filteredQsearch         = 0;  // Filter 5: qsearch instability
+    int filteredScoreContradiction = 0; // Filter 6: search score vs result mismatch
+    int positionsExtracted      = 0;  // final output count
 
-**Accessing qsearch from the extractor:** The qsearch implementation lives in `engine/Search`.
-Rather than adding a dependency from the extractor to the full Search class, create a thin
-adapter or use a `friend` declaration to expose only the standalone qsearch functionality
-needed. Alternatively, implement a minimal capture-only search in the extractor itself
-(~50 lines of code, uses `MoveGenerator` + `Evaluator` + SEE, no TT needed).
+    void printSummary() const;        // formatted report to stdout and log
+};
+```
 
-**Recommendation:** Start with option 1 (simple capture filter). If results are noisy, add option 2
-in a second iteration.
+**Example output:**
+
+```
+=== Extraction Summary ===
+Input:     selfplay_v1.7_50k.pgn
+Output:    selfplay_5M.txt
+
+Games:
+  Total in PGN:         50,000
+  Skipped (unknown):         0  ( 0.00%)
+  Skipped (time loss):      47  ( 0.09%)
+  Processed:            49,953  (99.91%)
+    White wins:         16,412  (32.86%)
+    Black wins:         16,089  (32.21%)
+    Draws:              17,452  (34.94%)
+
+Positions:
+  Total seen:        3,748,500  (avg 75.0 per game)
+  Filter 1 (early move):          799,248  (21.32%)
+  Filter 2 (in check):            112,455  ( 3.00%)
+  Filter 3 (capture/promotion):   561,375  (14.97%)
+  Filter 4 (trivial endgame):      18,742  ( 0.50%)
+  Filter 5 (qsearch unstable):         —  (disabled)
+  Filter 6 (score contradiction):  37,485  ( 1.00%)
+  -------------------------------------------
+  Total filtered:              1,529,305  (40.80%)
+  Extracted:                   2,219,195  (59.20%)
+
+Extraction rate: 44.4 positions per game
+Elapsed time: 42.3 s (1,181 games/s, 52,466 positions/s)
+```
+
+This report is printed to stdout at the end of extraction and also written to the log file.
+The percentage columns make it easy to spot if a filter is too aggressive (removing too much)
+or too lenient (not removing enough). For example:
+- If Filter 3 removes >30%, the games may have excessive tactical play (short TC artifact)
+- If Filter 6 removes >5%, there may be many blunders (consider longer TC for self-play)
+- If Filter 0 removes >1%, increase `timemargin` in cutechess-cli
 
 ---
 
@@ -805,9 +891,14 @@ FrankyCPP_v1.7_Extractor <input.pgn> <output.txt> [options]
 Options:
   --min-move <N>        Skip first N half-moves (default: 16)
   --min-pieces <N>      Skip positions with fewer than N pieces (default: 6)
+  --score-threshold <N> Skip positions where |search score| > N cp contradicts result (default: 200)
   --qsearch-filter      Enable qsearch stability filter
   --qsearch-threshold   Threshold in cp for qsearch filter (default: 150)
   --help                Show usage
+
+Output:
+  Always prints an extraction statistics summary to stdout and log at completion.
+  See "Extraction Statistics" section for the detailed report format.
 ```
 
 #### FrankyCPP_v1.7_Tuner
@@ -1108,20 +1199,22 @@ gate criteria before proceeding. Each phase should be merged/committed independe
 
 ### Phase 4: Position Extractor *(complete tool)*
 
-**Goal:** Working extractor that produces labeled datasets from PGN files.
+**Goal:** Working extractor that produces labeled datasets from PGN files with detailed statistics.
 
 | Step | Task                                                                        | Days |
 |------|-----------------------------------------------------------------------------|------|
 | 4.1  | Implement `PositionExtractor` class: PGN → FEN+result with filters 1–4      | 2–3  |
-| 4.2  | Wire up `ExtractorMain.cpp` with full CLI (input PGN, output file, options) | 0.5  |
-| 4.3  | Write extractor unit tests (filter behavior, edge cases, output format)     | 1    |
-| 4.4  | *(Optional)* Add qsearch filter (Filter 5) — requires engine access         | 1–2  |
-| 4.5  | Extract positions from `books/superbook.pgn` as validation                  | 0.5  |
-| 4.6  | Compare extracted dataset quality with downloaded dataset (spot checks)     | 0.5  |
+| 4.2  | Implement `ExtractionStats` struct with `printSummary()` formatted report   | 0.5  |
+| 4.3  | Wire up `ExtractorMain.cpp` with full CLI (input PGN, output file, options) | 0.5  |
+| 4.4  | Write extractor unit tests (filter behavior, stats counters, output format) | 1    |
+| 4.5  | *(Optional)* Add qsearch filter (Filter 5) — requires engine access         | 1–2  |
+| 4.6  | Extract positions from `books/superbook.pgn` as validation                  | 0.5  |
+| 4.7  | Compare extracted dataset quality with downloaded dataset (spot checks)     | 0.5  |
 
-**Gate:** Extractor produces valid FEN+result files. Unit tests pass. Output matches expected format.
+**Gate:** Extractor produces valid FEN+result files. Statistics summary printed at completion.
+Unit tests pass. Output matches expected format.
 
-**Deliverable:** Working `FrankyCPP_v1.7_Extractor` executable.
+**Deliverable:** Working `FrankyCPP_v1.7_Extractor` executable with `ExtractionStats` reporting.
 
 **Effort:** ~4–6 days
 
@@ -1218,18 +1311,18 @@ Output YAML loadable by `ConfigManager`.
 
 ### Phase Summary
 
-| Phase     | Name                               | Effort          | Cumulative | Status        |
-|-----------|------------------------------------|-----------------|------------|---------------|
-| 0         | Release v1.6, branch v1.7          | ~1 day          | 1 day      | ✅ Complete    |
-| 1         | Module structure + PGN library     | ~4–6 days       | 5–7 days   | ✅ Complete    |
-| 2         | Tuning build targets (scaffolding) | ~2–3 days       | 7–10 days  | ✅ Complete    |
-| 3         | Data collection                    | ~1–2 days       | 8–12 days  | ⬚ Not Started |
-| 4         | Position extractor                 | ~4–6 days       | 12–18 days | ⬚ Not Started |
-| 5         | Mark tunable params                | ~1–2 days       | 13–20 days | ⬚ Not Started |
-| 6         | Optimizer implementation           | ~10–14 days     | 23–34 days | ⬚ Not Started |
-| 7         | Integration testing                | ~4–6 days       | 27–40 days | ⬚ Not Started |
-| 8         | Gauntlet + release                 | ~3–5 days       | 30–45 days | ⬚ Not Started |
-| **Total** |                                    | **~30–45 days** |            |               |
+| Phase     | Name                               | Effort          | Expected Gain         |
+|-----------|------------------------------------|-----------------|-----------------------|
+| 0         | Release v1.6, branch v1.7          | ~1 day          | +20–50 ELO            |
+| 1         | Module structure + PGN library     | ~4–6 days       | +10–30 ELO            |
+| 2         | Tuning build targets (scaffolding) | ~2–3 days       |                       |
+| 3         | Data collection                    | ~1–2 days       |                       |
+| 4         | Position extractor                 | ~4–6 days       |                       |
+| 5         | Mark tunable params                | ~1–2 days       |                       |
+| 6         | Optimizer implementation           | ~10–14 days     |                       |
+| 7         | Integration testing                | ~4–6 days       |                       |
+| 8         | Gauntlet + release                 | ~3–5 days       |                       |
+| **Total** |                                    | **~30–45 days** |                       |
 
 ### Documentation Requirements
 
