@@ -92,6 +92,9 @@ namespace config {
     /// Get configs that should be shown in str() output
     [[nodiscard]] std::vector<const ConfigDef*> displayOptions() const;
 
+    /// Get configs exposed to automated tuning (Texel tuner)
+    [[nodiscard]] std::vector<const ConfigDef*> tunableOptions() const;
+
     /// Find config by internal name (case-sensitive)
     [[nodiscard]] const ConfigDef* find(const std::string& name) const;
 

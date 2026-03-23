@@ -135,6 +135,16 @@ std::vector<const ConfigDef*> ConfigRegistry::displayOptions() const {
   return result;
 }
 
+std::vector<const ConfigDef*> ConfigRegistry::tunableOptions() const {
+  std::vector<const ConfigDef*> result;
+  for (const auto& definition : definitions_) {
+    if (definition.exposure.tunable) {
+      result.push_back(&definition);
+    }
+  }
+  return result;
+}
+
 const ConfigDef* ConfigRegistry::find(const std::string& name) const {
   for (const auto& definition : definitions_) {
     if (definition.name == name) {
@@ -1903,7 +1913,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.TEMPO),
     .minValue = 0,
     .maxValue = 100,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, TEMPO), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, TEMPO), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.TEMPO; }),
     .setter = EVAL_CONFIG_SETTER(TEMPO, parseInt)
   });
@@ -1932,7 +1942,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.LAZY_THRESHOLD),
     .minValue = 0,
     .maxValue = 2000,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, LAZY_THRESHOLD), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, LAZY_THRESHOLD), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.LAZY_THRESHOLD; }),
     .setter = EVAL_CONFIG_SETTER(LAZY_THRESHOLD, parseInt)
   });
@@ -1990,7 +2000,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.ISOLATED_PAWN_MID_WEIGHT),
     .minValue = -100,
     .maxValue = 0,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, ISOLATED_PAWN_MID_WEIGHT), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ISOLATED_PAWN_MID_WEIGHT), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.ISOLATED_PAWN_MID_WEIGHT; }),
     .setter = EVAL_CONFIG_SETTER(ISOLATED_PAWN_MID_WEIGHT, parseInt)
   });
@@ -2004,7 +2014,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.ISOLATED_PAWN_END_WEIGHT),
     .minValue = -100,
     .maxValue = 0,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, ISOLATED_PAWN_END_WEIGHT), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ISOLATED_PAWN_END_WEIGHT), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.ISOLATED_PAWN_END_WEIGHT; }),
     .setter = EVAL_CONFIG_SETTER(ISOLATED_PAWN_END_WEIGHT, parseInt)
   });
@@ -2018,7 +2028,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.DOUBLED_PAWN_MID_WEIGHT),
     .minValue = -100,
     .maxValue = 0,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, DOUBLED_PAWN_MID_WEIGHT), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, DOUBLED_PAWN_MID_WEIGHT), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.DOUBLED_PAWN_MID_WEIGHT; }),
     .setter = EVAL_CONFIG_SETTER(DOUBLED_PAWN_MID_WEIGHT, parseInt)
   });
@@ -2032,7 +2042,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.DOUBLED_PAWN_END_WEIGHT),
     .minValue = -100,
     .maxValue = 0,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, DOUBLED_PAWN_END_WEIGHT), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, DOUBLED_PAWN_END_WEIGHT), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.DOUBLED_PAWN_END_WEIGHT; }),
     .setter = EVAL_CONFIG_SETTER(DOUBLED_PAWN_END_WEIGHT, parseInt)
   });
@@ -2046,7 +2056,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.PASSED_PAWN_MID_WEIGHT),
     .minValue = 0,
     .maxValue = 100,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, PASSED_PAWN_MID_WEIGHT), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, PASSED_PAWN_MID_WEIGHT), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.PASSED_PAWN_MID_WEIGHT; }),
     .setter = EVAL_CONFIG_SETTER(PASSED_PAWN_MID_WEIGHT, parseInt)
   });
@@ -2060,7 +2070,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.PASSED_PAWN_END_WEIGHT),
     .minValue = 0,
     .maxValue = 200,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, PASSED_PAWN_END_WEIGHT), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, PASSED_PAWN_END_WEIGHT), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.PASSED_PAWN_END_WEIGHT; }),
     .setter = EVAL_CONFIG_SETTER(PASSED_PAWN_END_WEIGHT, parseInt)
   });
@@ -2084,7 +2094,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = IntArray,
     .domain = Eval,
     .defaultValue = arrayToString(defaultEval.PASSED_PAWN_RANK_MID_BONUS),
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = [](const SearchConfigData&, const EvalConfigData& e) {
       return arrayToString(e.PASSED_PAWN_RANK_MID_BONUS);
     },
@@ -2098,7 +2108,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = IntArray,
     .domain = Eval,
     .defaultValue = arrayToString(defaultEval.PASSED_PAWN_RANK_END_BONUS),
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = [](const SearchConfigData&, const EvalConfigData& e) {
       return arrayToString(e.PASSED_PAWN_RANK_END_BONUS);
     },
@@ -2114,7 +2124,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.BLOCKED_PAWN_MID_WEIGHT),
     .minValue = -50,
     .maxValue = 0,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, BLOCKED_PAWN_MID_WEIGHT), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, BLOCKED_PAWN_MID_WEIGHT), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.BLOCKED_PAWN_MID_WEIGHT; }),
     .setter = EVAL_CONFIG_SETTER(BLOCKED_PAWN_MID_WEIGHT, parseInt)
   });
@@ -2128,7 +2138,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.BLOCKED_PAWN_END_WEIGHT),
     .minValue = -50,
     .maxValue = 0,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, BLOCKED_PAWN_END_WEIGHT), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, BLOCKED_PAWN_END_WEIGHT), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.BLOCKED_PAWN_END_WEIGHT; }),
     .setter = EVAL_CONFIG_SETTER(BLOCKED_PAWN_END_WEIGHT, parseInt)
   });
@@ -2142,7 +2152,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.PHALANX_PAWN_MID_WEIGHT),
     .minValue = 0,
     .maxValue = 50,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, PHALANX_PAWN_MID_WEIGHT), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, PHALANX_PAWN_MID_WEIGHT), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.PHALANX_PAWN_MID_WEIGHT; }),
     .setter = EVAL_CONFIG_SETTER(PHALANX_PAWN_MID_WEIGHT, parseInt)
   });
@@ -2156,7 +2166,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.PHALANX_PAWN_END_WEIGHT),
     .minValue = 0,
     .maxValue = 50,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, PHALANX_PAWN_END_WEIGHT), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, PHALANX_PAWN_END_WEIGHT), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.PHALANX_PAWN_END_WEIGHT; }),
     .setter = EVAL_CONFIG_SETTER(PHALANX_PAWN_END_WEIGHT, parseInt)
   });
@@ -2170,7 +2180,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.SUPPORTED_PAWN_MID_WEIGHT),
     .minValue = 0,
     .maxValue = 50,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, SUPPORTED_PAWN_MID_WEIGHT), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, SUPPORTED_PAWN_MID_WEIGHT), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.SUPPORTED_PAWN_MID_WEIGHT; }),
     .setter = EVAL_CONFIG_SETTER(SUPPORTED_PAWN_MID_WEIGHT, parseInt)
   });
@@ -2184,7 +2194,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.SUPPORTED_PAWN_END_WEIGHT),
     .minValue = 0,
     .maxValue = 50,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, SUPPORTED_PAWN_END_WEIGHT), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, SUPPORTED_PAWN_END_WEIGHT), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.SUPPORTED_PAWN_END_WEIGHT; }),
     .setter = EVAL_CONFIG_SETTER(SUPPORTED_PAWN_END_WEIGHT, parseInt)
   });
@@ -2211,7 +2221,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = IntArray,
     .domain = Eval,
     .defaultValue = arrayToString(defaultEval.PAWN_ADVANCE_MID_BONUS),
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = [](const SearchConfigData&, const EvalConfigData& e) {
       return arrayToString(e.PAWN_ADVANCE_MID_BONUS);
     },
@@ -2225,7 +2235,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = IntArray,
     .domain = Eval,
     .defaultValue = arrayToString(defaultEval.PAWN_ADVANCE_END_BONUS),
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = [](const SearchConfigData&, const EvalConfigData& e) {
       return arrayToString(e.PAWN_ADVANCE_END_BONUS);
     },
@@ -2271,7 +2281,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.BISHOP_PAIR_MID_BONUS),
     .minValue = 0,
     .maxValue = 100,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, BISHOP_PAIR_MID_BONUS), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, BISHOP_PAIR_MID_BONUS), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.BISHOP_PAIR_MID_BONUS; }),
     .setter = EVAL_CONFIG_SETTER(BISHOP_PAIR_MID_BONUS, parseInt)
   });
@@ -2285,7 +2295,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.BISHOP_PAIR_END_BONUS),
     .minValue = 0,
     .maxValue = 100,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, BISHOP_PAIR_END_BONUS), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, BISHOP_PAIR_END_BONUS), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.BISHOP_PAIR_END_BONUS; }),
     .setter = EVAL_CONFIG_SETTER(BISHOP_PAIR_END_BONUS, parseInt)
   });
@@ -2314,7 +2324,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.KNIGHT_MOBILITY_MID_PER_MOVE),
     .minValue = 0,
     .maxValue = 20,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_MOBILITY_MID_PER_MOVE), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_MOBILITY_MID_PER_MOVE), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.KNIGHT_MOBILITY_MID_PER_MOVE; }),
     .setter = EVAL_CONFIG_SETTER(KNIGHT_MOBILITY_MID_PER_MOVE, parseInt)
   });
@@ -2328,7 +2338,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.KNIGHT_MOBILITY_END_PER_MOVE),
     .minValue = 0,
     .maxValue = 20,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_MOBILITY_END_PER_MOVE), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_MOBILITY_END_PER_MOVE), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.KNIGHT_MOBILITY_END_PER_MOVE; }),
     .setter = EVAL_CONFIG_SETTER(KNIGHT_MOBILITY_END_PER_MOVE, parseInt)
   });
@@ -2342,7 +2352,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.KNIGHT_LOW_MOBILITY_LEQ1_MID),
     .minValue = -50,
     .maxValue = 0,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_LOW_MOBILITY_LEQ1_MID), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_LOW_MOBILITY_LEQ1_MID), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.KNIGHT_LOW_MOBILITY_LEQ1_MID; }),
     .setter = EVAL_CONFIG_SETTER(KNIGHT_LOW_MOBILITY_LEQ1_MID, parseInt)
   });
@@ -2356,7 +2366,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.KNIGHT_LOW_MOBILITY_LEQ1_END),
     .minValue = -50,
     .maxValue = 0,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_LOW_MOBILITY_LEQ1_END), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_LOW_MOBILITY_LEQ1_END), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.KNIGHT_LOW_MOBILITY_LEQ1_END; }),
     .setter = EVAL_CONFIG_SETTER(KNIGHT_LOW_MOBILITY_LEQ1_END, parseInt)
   });
@@ -2370,7 +2380,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.KNIGHT_LOW_MOBILITY_LEQ2_MID),
     .minValue = -50,
     .maxValue = 0,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_LOW_MOBILITY_LEQ2_MID), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_LOW_MOBILITY_LEQ2_MID), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.KNIGHT_LOW_MOBILITY_LEQ2_MID; }),
     .setter = EVAL_CONFIG_SETTER(KNIGHT_LOW_MOBILITY_LEQ2_MID, parseInt)
   });
@@ -2384,7 +2394,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.KNIGHT_LOW_MOBILITY_LEQ2_END),
     .minValue = -50,
     .maxValue = 0,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_LOW_MOBILITY_LEQ2_END), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_LOW_MOBILITY_LEQ2_END), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.KNIGHT_LOW_MOBILITY_LEQ2_END; }),
     .setter = EVAL_CONFIG_SETTER(KNIGHT_LOW_MOBILITY_LEQ2_END, parseInt)
   });
@@ -2413,7 +2423,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.KNIGHT_OUTPOST_SUPPORTED_MID),
     .minValue = 0,
     .maxValue = 60,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_OUTPOST_SUPPORTED_MID), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_OUTPOST_SUPPORTED_MID), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.KNIGHT_OUTPOST_SUPPORTED_MID; }),
     .setter = EVAL_CONFIG_SETTER(KNIGHT_OUTPOST_SUPPORTED_MID, parseInt)
   });
@@ -2427,7 +2437,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.KNIGHT_OUTPOST_SUPPORTED_END),
     .minValue = 0,
     .maxValue = 60,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_OUTPOST_SUPPORTED_END), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_OUTPOST_SUPPORTED_END), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.KNIGHT_OUTPOST_SUPPORTED_END; }),
     .setter = EVAL_CONFIG_SETTER(KNIGHT_OUTPOST_SUPPORTED_END, parseInt)
   });
@@ -2441,7 +2451,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.KNIGHT_OUTPOST_UNSUPPORTED_MID),
     .minValue = 0,
     .maxValue = 40,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_OUTPOST_UNSUPPORTED_MID), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_OUTPOST_UNSUPPORTED_MID), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.KNIGHT_OUTPOST_UNSUPPORTED_MID; }),
     .setter = EVAL_CONFIG_SETTER(KNIGHT_OUTPOST_UNSUPPORTED_MID, parseInt)
   });
@@ -2455,7 +2465,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.KNIGHT_OUTPOST_UNSUPPORTED_END),
     .minValue = 0,
     .maxValue = 40,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_OUTPOST_UNSUPPORTED_END), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_OUTPOST_UNSUPPORTED_END), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.KNIGHT_OUTPOST_UNSUPPORTED_END; }),
     .setter = EVAL_CONFIG_SETTER(KNIGHT_OUTPOST_UNSUPPORTED_END, parseInt)
   });
@@ -2484,7 +2494,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.BISHOP_MOBILITY_MID_PER_MOVE),
     .minValue = 0,
     .maxValue = 20,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, BISHOP_MOBILITY_MID_PER_MOVE), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, BISHOP_MOBILITY_MID_PER_MOVE), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.BISHOP_MOBILITY_MID_PER_MOVE; }),
     .setter = EVAL_CONFIG_SETTER(BISHOP_MOBILITY_MID_PER_MOVE, parseInt)
   });
@@ -2498,7 +2508,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.BISHOP_MOBILITY_END_PER_MOVE),
     .minValue = 0,
     .maxValue = 20,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, BISHOP_MOBILITY_END_PER_MOVE), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, BISHOP_MOBILITY_END_PER_MOVE), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.BISHOP_MOBILITY_END_PER_MOVE; }),
     .setter = EVAL_CONFIG_SETTER(BISHOP_MOBILITY_END_PER_MOVE, parseInt)
   });
@@ -2512,7 +2522,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.BISHOP_LOW_MOBILITY_LEQ3_MID),
     .minValue = -50,
     .maxValue = 0,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, BISHOP_LOW_MOBILITY_LEQ3_MID), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, BISHOP_LOW_MOBILITY_LEQ3_MID), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.BISHOP_LOW_MOBILITY_LEQ3_MID; }),
     .setter = EVAL_CONFIG_SETTER(BISHOP_LOW_MOBILITY_LEQ3_MID, parseInt)
   });
@@ -2526,7 +2536,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.BISHOP_LOW_MOBILITY_LEQ3_END),
     .minValue = -50,
     .maxValue = 0,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, BISHOP_LOW_MOBILITY_LEQ3_END), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, BISHOP_LOW_MOBILITY_LEQ3_END), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.BISHOP_LOW_MOBILITY_LEQ3_END; }),
     .setter = EVAL_CONFIG_SETTER(BISHOP_LOW_MOBILITY_LEQ3_END, parseInt)
   });
@@ -2555,7 +2565,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.BAD_BISHOP_PER_PAWN_MID),
     .minValue = -20,
     .maxValue = 0,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, BAD_BISHOP_PER_PAWN_MID), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, BAD_BISHOP_PER_PAWN_MID), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.BAD_BISHOP_PER_PAWN_MID; }),
     .setter = EVAL_CONFIG_SETTER(BAD_BISHOP_PER_PAWN_MID, parseInt)
   });
@@ -2569,7 +2579,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.BAD_BISHOP_PER_PAWN_END),
     .minValue = -20,
     .maxValue = 0,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, BAD_BISHOP_PER_PAWN_END), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, BAD_BISHOP_PER_PAWN_END), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.BAD_BISHOP_PER_PAWN_END; }),
     .setter = EVAL_CONFIG_SETTER(BAD_BISHOP_PER_PAWN_END, parseInt)
   });
@@ -2598,7 +2608,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.ROOK_MOBILITY_MID_PER_MOVE),
     .minValue = 0,
     .maxValue = 20,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_MOBILITY_MID_PER_MOVE), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_MOBILITY_MID_PER_MOVE), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.ROOK_MOBILITY_MID_PER_MOVE; }),
     .setter = EVAL_CONFIG_SETTER(ROOK_MOBILITY_MID_PER_MOVE, parseInt)
   });
@@ -2612,7 +2622,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.ROOK_MOBILITY_END_PER_MOVE),
     .minValue = 0,
     .maxValue = 20,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_MOBILITY_END_PER_MOVE), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_MOBILITY_END_PER_MOVE), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.ROOK_MOBILITY_END_PER_MOVE; }),
     .setter = EVAL_CONFIG_SETTER(ROOK_MOBILITY_END_PER_MOVE, parseInt)
   });
@@ -2626,7 +2636,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.ROOK_LOW_MOBILITY_LEQ3_MID),
     .minValue = -50,
     .maxValue = 0,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_LOW_MOBILITY_LEQ3_MID), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_LOW_MOBILITY_LEQ3_MID), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.ROOK_LOW_MOBILITY_LEQ3_MID; }),
     .setter = EVAL_CONFIG_SETTER(ROOK_LOW_MOBILITY_LEQ3_MID, parseInt)
   });
@@ -2640,7 +2650,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.ROOK_LOW_MOBILITY_LEQ3_END),
     .minValue = -50,
     .maxValue = 0,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_LOW_MOBILITY_LEQ3_END), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_LOW_MOBILITY_LEQ3_END), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.ROOK_LOW_MOBILITY_LEQ3_END; }),
     .setter = EVAL_CONFIG_SETTER(ROOK_LOW_MOBILITY_LEQ3_END, parseInt)
   });
@@ -2666,7 +2676,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.ROOK_OPEN_FILE_MID_BONUS),
     .minValue = 0,
     .maxValue = 50,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_OPEN_FILE_MID_BONUS), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_OPEN_FILE_MID_BONUS), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.ROOK_OPEN_FILE_MID_BONUS; }),
     .setter = EVAL_CONFIG_SETTER(ROOK_OPEN_FILE_MID_BONUS, parseInt)
   });
@@ -2680,7 +2690,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.ROOK_OPEN_FILE_END_BONUS),
     .minValue = 0,
     .maxValue = 50,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_OPEN_FILE_END_BONUS), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_OPEN_FILE_END_BONUS), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.ROOK_OPEN_FILE_END_BONUS; }),
     .setter = EVAL_CONFIG_SETTER(ROOK_OPEN_FILE_END_BONUS, parseInt)
   });
@@ -2694,7 +2704,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.ROOK_SEMIOPEN_FILE_MID_BONUS),
     .minValue = 0,
     .maxValue = 50,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_SEMIOPEN_FILE_MID_BONUS), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_SEMIOPEN_FILE_MID_BONUS), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.ROOK_SEMIOPEN_FILE_MID_BONUS; }),
     .setter = EVAL_CONFIG_SETTER(ROOK_SEMIOPEN_FILE_MID_BONUS, parseInt)
   });
@@ -2708,7 +2718,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.ROOK_SEMIOPEN_FILE_END_BONUS),
     .minValue = 0,
     .maxValue = 50,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_SEMIOPEN_FILE_END_BONUS), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_SEMIOPEN_FILE_END_BONUS), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.ROOK_SEMIOPEN_FILE_END_BONUS; }),
     .setter = EVAL_CONFIG_SETTER(ROOK_SEMIOPEN_FILE_END_BONUS, parseInt)
   });
@@ -2734,7 +2744,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.ROOK_7TH_RANK_MID_BONUS),
     .minValue = 0,
     .maxValue = 50,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_7TH_RANK_MID_BONUS), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_7TH_RANK_MID_BONUS), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.ROOK_7TH_RANK_MID_BONUS; }),
     .setter = EVAL_CONFIG_SETTER(ROOK_7TH_RANK_MID_BONUS, parseInt)
   });
@@ -2748,7 +2758,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.ROOK_7TH_RANK_END_BONUS),
     .minValue = 0,
     .maxValue = 80,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_7TH_RANK_END_BONUS), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_7TH_RANK_END_BONUS), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.ROOK_7TH_RANK_END_BONUS; }),
     .setter = EVAL_CONFIG_SETTER(ROOK_7TH_RANK_END_BONUS, parseInt)
   });
@@ -2777,7 +2787,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.ROOK_BEHIND_PASSER_OWN_MID),
     .minValue = 0,
     .maxValue = 50,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_BEHIND_PASSER_OWN_MID), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_BEHIND_PASSER_OWN_MID), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.ROOK_BEHIND_PASSER_OWN_MID; }),
     .setter = EVAL_CONFIG_SETTER(ROOK_BEHIND_PASSER_OWN_MID, parseInt)
   });
@@ -2791,7 +2801,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.ROOK_BEHIND_PASSER_OWN_END),
     .minValue = 0,
     .maxValue = 50,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_BEHIND_PASSER_OWN_END), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_BEHIND_PASSER_OWN_END), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.ROOK_BEHIND_PASSER_OWN_END; }),
     .setter = EVAL_CONFIG_SETTER(ROOK_BEHIND_PASSER_OWN_END, parseInt)
   });
@@ -2805,7 +2815,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.ROOK_BEHIND_PASSER_OPP_MID),
     .minValue = 0,
     .maxValue = 50,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_BEHIND_PASSER_OPP_MID), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_BEHIND_PASSER_OPP_MID), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.ROOK_BEHIND_PASSER_OPP_MID; }),
     .setter = EVAL_CONFIG_SETTER(ROOK_BEHIND_PASSER_OPP_MID, parseInt)
   });
@@ -2819,7 +2829,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.ROOK_BEHIND_PASSER_OPP_END),
     .minValue = 0,
     .maxValue = 50,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_BEHIND_PASSER_OPP_END), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_BEHIND_PASSER_OPP_END), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.ROOK_BEHIND_PASSER_OPP_END; }),
     .setter = EVAL_CONFIG_SETTER(ROOK_BEHIND_PASSER_OPP_END, parseInt)
   });
@@ -2848,7 +2858,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.QUEEN_MOBILITY_MID_PER_MOVE),
     .minValue = 0,
     .maxValue = 20,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, QUEEN_MOBILITY_MID_PER_MOVE), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, QUEEN_MOBILITY_MID_PER_MOVE), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.QUEEN_MOBILITY_MID_PER_MOVE; }),
     .setter = EVAL_CONFIG_SETTER(QUEEN_MOBILITY_MID_PER_MOVE, parseInt)
   });
@@ -2862,7 +2872,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.QUEEN_MOBILITY_END_PER_MOVE),
     .minValue = 0,
     .maxValue = 20,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, QUEEN_MOBILITY_END_PER_MOVE), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, QUEEN_MOBILITY_END_PER_MOVE), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.QUEEN_MOBILITY_END_PER_MOVE; }),
     .setter = EVAL_CONFIG_SETTER(QUEEN_MOBILITY_END_PER_MOVE, parseInt)
   });
@@ -2888,7 +2898,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.QUEEN_TROPISM_MID_PER_STEP),
     .minValue = 0,
     .maxValue = 20,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, QUEEN_TROPISM_MID_PER_STEP), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, QUEEN_TROPISM_MID_PER_STEP), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.QUEEN_TROPISM_MID_PER_STEP; }),
     .setter = EVAL_CONFIG_SETTER(QUEEN_TROPISM_MID_PER_STEP, parseInt)
   });
@@ -2902,7 +2912,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.QUEEN_TROPISM_END_PER_STEP),
     .minValue = 0,
     .maxValue = 20,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, QUEEN_TROPISM_END_PER_STEP), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, QUEEN_TROPISM_END_PER_STEP), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.QUEEN_TROPISM_END_PER_STEP; }),
     .setter = EVAL_CONFIG_SETTER(QUEEN_TROPISM_END_PER_STEP, parseInt)
   });
@@ -2943,7 +2953,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.KING_SHIELD_MID_PER_PAWN),
     .minValue = 0,
     .maxValue = 30,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, KING_SHIELD_MID_PER_PAWN), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, KING_SHIELD_MID_PER_PAWN), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.KING_SHIELD_MID_PER_PAWN; }),
     .setter = EVAL_CONFIG_SETTER(KING_SHIELD_MID_PER_PAWN, parseInt)
   });
@@ -2957,7 +2967,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.KING_SHIELD_END_PER_PAWN),
     .minValue = 0,
     .maxValue = 30,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, KING_SHIELD_END_PER_PAWN), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, KING_SHIELD_END_PER_PAWN), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.KING_SHIELD_END_PER_PAWN; }),
     .setter = EVAL_CONFIG_SETTER(KING_SHIELD_END_PER_PAWN, parseInt)
   });
@@ -2983,7 +2993,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.KING_OWN_PASSED_PROXIMITY_END),
     .minValue = 0,
     .maxValue = 20,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, KING_OWN_PASSED_PROXIMITY_END), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, KING_OWN_PASSED_PROXIMITY_END), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.KING_OWN_PASSED_PROXIMITY_END; }),
     .setter = EVAL_CONFIG_SETTER(KING_OWN_PASSED_PROXIMITY_END, parseInt)
   });
@@ -2997,7 +3007,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.KING_OPP_PASSED_PROXIMITY_END),
     .minValue = 0,
     .maxValue = 20,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, KING_OPP_PASSED_PROXIMITY_END), .yaml = true, .display = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, KING_OPP_PASSED_PROXIMITY_END), .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.KING_OPP_PASSED_PROXIMITY_END; }),
     .setter = EVAL_CONFIG_SETTER(KING_OPP_PASSED_PROXIMITY_END, parseInt)
   });
@@ -3023,7 +3033,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.KING_ATTACK_WEIGHT_KNIGHT),
     .minValue = 0,
     .maxValue = 10,
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.KING_ATTACK_WEIGHT_KNIGHT; }),
     .setter = EVAL_CONFIG_SETTER(KING_ATTACK_WEIGHT_KNIGHT, parseInt)
   });
@@ -3037,7 +3047,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.KING_ATTACK_WEIGHT_BISHOP),
     .minValue = 0,
     .maxValue = 10,
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.KING_ATTACK_WEIGHT_BISHOP; }),
     .setter = EVAL_CONFIG_SETTER(KING_ATTACK_WEIGHT_BISHOP, parseInt)
   });
@@ -3051,7 +3061,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.KING_ATTACK_WEIGHT_ROOK),
     .minValue = 0,
     .maxValue = 10,
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.KING_ATTACK_WEIGHT_ROOK; }),
     .setter = EVAL_CONFIG_SETTER(KING_ATTACK_WEIGHT_ROOK, parseInt)
   });
@@ -3065,7 +3075,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.KING_ATTACK_WEIGHT_QUEEN),
     .minValue = 0,
     .maxValue = 10,
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.KING_ATTACK_WEIGHT_QUEEN; }),
     .setter = EVAL_CONFIG_SETTER(KING_ATTACK_WEIGHT_QUEEN, parseInt)
   });
@@ -3077,7 +3087,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = IntArray,
     .domain = Eval,
     .defaultValue = arrayToString(defaultEval.KING_SAFETY_TABLE),
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = [](const SearchConfigData&, const EvalConfigData& e) {
       return arrayToString(e.KING_SAFETY_TABLE);
     },
@@ -3106,7 +3116,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = IntArray,
     .domain = Eval,
     .defaultValue = arrayToString(defaultEval.PAWN_STORM_MID_PENALTY),
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = [](const SearchConfigData&, const EvalConfigData& e) {
       return arrayToString(e.PAWN_STORM_MID_PENALTY);
     },
@@ -3137,7 +3147,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.KING_OPEN_FILE_MID_PENALTY),
     .minValue = -100,
     .maxValue = 0,
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.KING_OPEN_FILE_MID_PENALTY; }),
     .setter = EVAL_CONFIG_SETTER(KING_OPEN_FILE_MID_PENALTY, parseInt)
   });
@@ -3151,7 +3161,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.KING_SEMIOPEN_FILE_MID_PENALTY),
     .minValue = -100,
     .maxValue = 0,
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.KING_SEMIOPEN_FILE_MID_PENALTY; }),
     .setter = EVAL_CONFIG_SETTER(KING_SEMIOPEN_FILE_MID_PENALTY, parseInt)
   });
@@ -3180,7 +3190,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.SAFE_CHECK_KNIGHT_MID),
     .minValue = -50,
     .maxValue = 0,
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.SAFE_CHECK_KNIGHT_MID; }),
     .setter = EVAL_CONFIG_SETTER(SAFE_CHECK_KNIGHT_MID, parseInt)
   });
@@ -3194,7 +3204,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.SAFE_CHECK_BISHOP_MID),
     .minValue = -50,
     .maxValue = 0,
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.SAFE_CHECK_BISHOP_MID; }),
     .setter = EVAL_CONFIG_SETTER(SAFE_CHECK_BISHOP_MID, parseInt)
   });
@@ -3208,7 +3218,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.SAFE_CHECK_ROOK_MID),
     .minValue = -50,
     .maxValue = 0,
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.SAFE_CHECK_ROOK_MID; }),
     .setter = EVAL_CONFIG_SETTER(SAFE_CHECK_ROOK_MID, parseInt)
   });
@@ -3222,7 +3232,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.SAFE_CHECK_QUEEN_MID),
     .minValue = -50,
     .maxValue = 0,
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.SAFE_CHECK_QUEEN_MID; }),
     .setter = EVAL_CONFIG_SETTER(SAFE_CHECK_QUEEN_MID, parseInt)
   });
@@ -3248,7 +3258,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Int,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.THREAT_BY_PAWN_MINOR_MID),
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.THREAT_BY_PAWN_MINOR_MID; }),
     .setter = EVAL_CONFIG_SETTER(THREAT_BY_PAWN_MINOR_MID, parseInt)
   });
@@ -3259,7 +3269,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Int,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.THREAT_BY_PAWN_MINOR_END),
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.THREAT_BY_PAWN_MINOR_END; }),
     .setter = EVAL_CONFIG_SETTER(THREAT_BY_PAWN_MINOR_END, parseInt)
   });
@@ -3270,7 +3280,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Int,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.THREAT_BY_PAWN_ROOK_MID),
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.THREAT_BY_PAWN_ROOK_MID; }),
     .setter = EVAL_CONFIG_SETTER(THREAT_BY_PAWN_ROOK_MID, parseInt)
   });
@@ -3281,7 +3291,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Int,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.THREAT_BY_PAWN_ROOK_END),
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.THREAT_BY_PAWN_ROOK_END; }),
     .setter = EVAL_CONFIG_SETTER(THREAT_BY_PAWN_ROOK_END, parseInt)
   });
@@ -3292,7 +3302,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Int,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.THREAT_BY_PAWN_QUEEN_MID),
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.THREAT_BY_PAWN_QUEEN_MID; }),
     .setter = EVAL_CONFIG_SETTER(THREAT_BY_PAWN_QUEEN_MID, parseInt)
   });
@@ -3303,7 +3313,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Int,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.THREAT_BY_PAWN_QUEEN_END),
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.THREAT_BY_PAWN_QUEEN_END; }),
     .setter = EVAL_CONFIG_SETTER(THREAT_BY_PAWN_QUEEN_END, parseInt)
   });
@@ -3314,7 +3324,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Int,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.THREAT_BY_MINOR_ROOK_MID),
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.THREAT_BY_MINOR_ROOK_MID; }),
     .setter = EVAL_CONFIG_SETTER(THREAT_BY_MINOR_ROOK_MID, parseInt)
   });
@@ -3325,7 +3335,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Int,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.THREAT_BY_MINOR_ROOK_END),
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.THREAT_BY_MINOR_ROOK_END; }),
     .setter = EVAL_CONFIG_SETTER(THREAT_BY_MINOR_ROOK_END, parseInt)
   });
@@ -3336,7 +3346,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Int,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.THREAT_BY_MINOR_QUEEN_MID),
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.THREAT_BY_MINOR_QUEEN_MID; }),
     .setter = EVAL_CONFIG_SETTER(THREAT_BY_MINOR_QUEEN_MID, parseInt)
   });
@@ -3347,7 +3357,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Int,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.THREAT_BY_MINOR_QUEEN_END),
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.THREAT_BY_MINOR_QUEEN_END; }),
     .setter = EVAL_CONFIG_SETTER(THREAT_BY_MINOR_QUEEN_END, parseInt)
   });
@@ -3358,7 +3368,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Int,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.THREAT_HANGING_MID),
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.THREAT_HANGING_MID; }),
     .setter = EVAL_CONFIG_SETTER(THREAT_HANGING_MID, parseInt)
   });
@@ -3369,7 +3379,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Int,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.THREAT_HANGING_END),
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.THREAT_HANGING_END; }),
     .setter = EVAL_CONFIG_SETTER(THREAT_HANGING_END, parseInt)
   });
@@ -3395,7 +3405,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Int,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.SPACE_BONUS_MID),
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.SPACE_BONUS_MID; }),
     .setter = EVAL_CONFIG_SETTER(SPACE_BONUS_MID, parseInt)
   });
@@ -3406,7 +3416,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Int,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.SPACE_BONUS_END),
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.SPACE_BONUS_END; }),
     .setter = EVAL_CONFIG_SETTER(SPACE_BONUS_END, parseInt)
   });
@@ -3432,7 +3442,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Int,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.CONNECTED_ROOKS_MID_BONUS),
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.CONNECTED_ROOKS_MID_BONUS; }),
     .setter = EVAL_CONFIG_SETTER(CONNECTED_ROOKS_MID_BONUS, parseInt)
   });
@@ -3443,7 +3453,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Int,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.CONNECTED_ROOKS_END_BONUS),
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.CONNECTED_ROOKS_END_BONUS; }),
     .setter = EVAL_CONFIG_SETTER(CONNECTED_ROOKS_END_BONUS, parseInt)
   });
@@ -3465,7 +3475,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Int,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.MINOR_CONNECTIVITY_MID_BONUS),
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.MINOR_CONNECTIVITY_MID_BONUS; }),
     .setter = EVAL_CONFIG_SETTER(MINOR_CONNECTIVITY_MID_BONUS, parseInt)
   });
@@ -3476,7 +3486,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Int,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.MINOR_CONNECTIVITY_END_BONUS),
-    .exposure = {.uci = false, .yaml = true, .display = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
     .getter = evalGetter([](const auto& e){ return e.MINOR_CONNECTIVITY_END_BONUS; }),
     .setter = EVAL_CONFIG_SETTER(MINOR_CONNECTIVITY_END_BONUS, parseInt)
   });

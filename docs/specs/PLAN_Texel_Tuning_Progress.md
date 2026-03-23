@@ -16,7 +16,7 @@
 | 2     | Tuning build targets (scaffolding) | ✅ Complete     | 2026-03-22 | 2026-03-22 |
 | 3     | Data collection                    | 🚧 In Progress | 2026-03-22 |            |
 | 4     | Position extractor                 | ✅ Complete     | 2026-03-23 | 2026-03-23 |
-| 5     | Mark tunable parameters            | ⬚ Not Started  |            |            |
+| 5     | Mark tunable parameters            | 🚧 In Progress | 2026-03-23 |            |
 | 6     | Optimizer implementation           | ⬚ Not Started  |            |            |
 | 7     | Integration testing                | ⬚ Not Started  |            |            |
 | 8     | Gauntlet validation + release      | ⬚ Not Started  |            |            |
@@ -139,15 +139,22 @@
 
 ---
 
-## Phase 5: Mark Tunable Parameters ⬚
+## Phase 5: Mark Tunable Parameters 🚧
 
 | Step | Task                                                                   | Status        |
 |------|------------------------------------------------------------------------|---------------|
-| 5.1  | Mark `tunable = true` on all ~85 eval weight entries in ConfigRegistry | ⬚ Not Started |
-| 5.2  | Add unit test: verify expected number of tunable params discovered     | ⬚ Not Started |
-| 5.3  | Record baseline MSE, STS, WAC scores with current v1.6 params          | ⬚ Not Started |
+| 5.1  | Mark `tunable = true` on all ~85 eval weight entries in ConfigRegistry | ✅ Complete    |
+| 5.2  | Add `tunableOptions()` query method to ConfigRegistry                  | ✅ Complete    |
+| 5.3  | Add unit test: verify expected number of tunable params discovered     | ✅ Complete    |
+| 5.4  | Record baseline MSE, STS, WAC scores with current v1.6 params         | ⬚ Not Started |
 
 **Gate:** Tunable flag set, test passes, baselines documented.
+
+**Notes:**
+- 5.1: 88 eval weight entries marked `tunable = true` (82 scalar Int + 6 IntArray). Excluded: all `bool USE_*` toggles, `EVAL_CONFIG_SOURCE` (String), `PAWN_TT_SIZE_MB` (infrastructure), `USE_GAMEPHASE_VALUE` (structural).
+- 5.2: Added `tunableOptions()` to `ConfigRegistry.h/.cpp` — returns `vector<const ConfigDef*>` filtered by `exposure.tunable`. Follows existing `uciOptions()`/`yamlOptions()` pattern.
+- 5.3: 7 test cases in `ConfigRegistryTest.cpp`: count pinned at 88, all Eval domain, all Int/IntArray, no Bool toggles, no infrastructure params, spot-check key params.
+- 5.4: MSE baseline requires Phase 6 tuner infrastructure (deferred). STS/WAC baselines to be recorded manually.
 
 ---
 

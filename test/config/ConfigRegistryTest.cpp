@@ -409,6 +409,96 @@ TEST_F(ConfigRegistryTest, IsMutableMatchesUciExposure) {
 }
 
 //=============================================================================
+// Tunable Parameter Tests (Phase 5 — Texel Tuning)
+//=============================================================================
+
+TEST_F(ConfigRegistryTest, TunableOptionsNonEmpty) {
+  const auto tunableOpts = registry.tunableOptions();
+  EXPECT_FALSE(tunableOpts.empty());
+
+  for (const auto* def : tunableOpts) {
+    EXPECT_TRUE(def->exposure.tunable);
+  }
+}
+
+TEST_F(ConfigRegistryTest, TunableParameterCount) {
+  // Phase 5: exactly 88 eval weight entries are marked tunable
+  // 82 scalar int + 6 IntArray
+  // This pins the count — if new eval weights are added, update this number.
+  const auto tunableOpts = registry.tunableOptions();
+  EXPECT_EQ(tunableOpts.size(), 88)
+    << "Expected 88 tunable parameters (82 scalar Int + 6 IntArray). "
+       "If you added a new eval weight, mark it tunable and update this count.";
+}
+
+TEST_F(ConfigRegistryTest, TunableParamsAreAllEvalDomain) {
+  // All tunable parameters must belong to the Eval domain
+  const auto tunableOpts = registry.tunableOptions();
+  for (const auto* def : tunableOpts) {
+    EXPECT_EQ(def->domain, ConfigDomain::Eval)
+      << "Tunable param " << def->name << " is not in Eval domain";
+  }
+}
+
+TEST_F(ConfigRegistryTest, TunableParamsAreIntOrIntArray) {
+  // Tunable params must be continuous numeric types (Int or IntArray), not Bool/String
+  const auto tunableOpts = registry.tunableOptions();
+  for (const auto* def : tunableOpts) {
+    const bool isNumeric = def->valueType == ConfigValueType::Int
+                        || def->valueType == ConfigValueType::IntArray;
+    EXPECT_TRUE(isNumeric)
+      << "Tunable param " << def->name << " has type " << valueTypeToString(def->valueType)
+      << " — only Int and IntArray should be tunable";
+  }
+}
+
+TEST_F(ConfigRegistryTest, TunableParamsExcludeToggles) {
+  // Bool USE_* toggles must NOT be marked tunable
+  const auto tunableOpts = registry.tunableOptions();
+  for (const auto* def : tunableOpts) {
+    EXPECT_NE(def->valueType, ConfigValueType::Bool)
+      << "Bool toggle " << def->name << " should not be tunable";
+    // Extra safety: no param starting with USE_ should be tunable
+    EXPECT_FALSE(def->name.substr(0, 4) == "USE_")
+      << "Toggle " << def->name << " should not be tunable";
+  }
+}
+
+TEST_F(ConfigRegistryTest, TunableParamsExcludeInfrastructure) {
+  // Infrastructure params must NOT be tunable
+  const auto tunableOpts = registry.tunableOptions();
+  const std::vector<std::string> excluded = {
+    "EVAL_CONFIG_SOURCE", "PAWN_TT_SIZE_MB", "USE_PAWN_TT", "USE_GAMEPHASE_VALUE"
+  };
+  for (const auto* def : tunableOpts) {
+    for (const auto& name : excluded) {
+      EXPECT_NE(def->name, name)
+        << "Infrastructure param " << name << " should not be tunable";
+    }
+  }
+}
+
+TEST_F(ConfigRegistryTest, VerifyKeyTunableParams) {
+  // Spot-check that specific key params are tunable
+  const std::vector<std::string> mustBeTunable = {
+    "TEMPO", "LAZY_THRESHOLD",
+    "ISOLATED_PAWN_MID_WEIGHT", "PASSED_PAWN_END_WEIGHT",
+    "BISHOP_PAIR_MID_BONUS", "KNIGHT_OUTPOST_SUPPORTED_MID",
+    "ROOK_OPEN_FILE_MID_BONUS", "QUEEN_MOBILITY_MID_PER_MOVE",
+    "KING_ATTACK_WEIGHT_QUEEN", "KING_SAFETY_TABLE",
+    "PAWN_STORM_MID_PENALTY", "SAFE_CHECK_QUEEN_MID",
+    "THREAT_HANGING_MID", "SPACE_BONUS_MID",
+    "CONNECTED_ROOKS_MID_BONUS", "MINOR_CONNECTIVITY_END_BONUS",
+  };
+
+  for (const auto& name : mustBeTunable) {
+    const ConfigDef* def = registry.find(name);
+    ASSERT_NE(def, nullptr) << "Config " << name << " not found in registry";
+    EXPECT_TRUE(def->exposure.tunable) << name << " should be marked tunable";
+  }
+}
+
+//=============================================================================
 // Helper Function Tests
 //=============================================================================
 
