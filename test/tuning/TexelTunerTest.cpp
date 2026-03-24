@@ -19,13 +19,16 @@
 
 #include "tuning/optimizer/TexelTuner.h"
 
-#include "tuning/optimizer/TuningDataset.h"
-#include "tuning/optimizer/TuningParameter.h"
+#include "Test_Utils.h"
 #include "config/ConfigManager.h"
 #include "init.h"
+#include "tuning/optimizer/TuningDataset.h"
+#include "tuning/optimizer/TuningParameter.h"
 #include "types/macros.h"
 
+#include <chrono>
 #include <gtest/gtest.h>
+#include <iomanip>
 #include <iostream>
 #include <string>
 
@@ -604,4 +607,465 @@ TEST_F(TexelTunerTest, createEvaluators_ClampsThreadCount) {
   // Valid thread count
   tuner.createEvaluators(2);
   EXPECT_EQ(tuner.numThreads(), 2);
+}
+
+// =========================================================================
+// Activation flags tests (Sprint 6.5)
+// =========================================================================
+
+TEST_F(TexelTunerTest, activationFlags_StartPosition_AllActive) {
+  // Start position has all piece types → almost all groups active
+  TexelTuner::setupEvalOverrides();
+  TexelTuner tuner;
+  tuner.createEvaluator();
+
+  TuningDataset dataset;
+  dataset.getEntries().emplace_back(
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 0.5F);
+
+  tuner.computeActivationFlags(dataset);
+
+  const auto& flags = dataset[0].activeParamGroups;
+  // All groups should be active for start position (has all piece types, 2 rooks, 2 bishops, etc.)
+  for (int g = 0; g <= 12; ++g) {
+    EXPECT_TRUE(flags.test(g)) << "Group " << g << " should be active for start position";
+  }
+}
+
+TEST_F(TexelTunerTest, activationFlags_KingsOnly_MinimalGroups) {
+  // Position with just kings — most groups should be inactive
+  TexelTuner::setupEvalOverrides();
+  TexelTuner tuner;
+  tuner.createEvaluator();
+
+  TuningDataset dataset;
+  dataset.getEntries().emplace_back(
+    "4k3/8/8/8/8/8/8/4K3 w - - 0 1", 0.5F);
+
+  tuner.computeActivationFlags(dataset);
+
+  const auto& flags = dataset[0].activeParamGroups;
+  // Active: group 0 (tempo), group 9 (king safety)
+  EXPECT_TRUE(flags.test(0))  << "Group 0 (tempo) should be active";
+  EXPECT_TRUE(flags.test(9))  << "Group 9 (king safety) should be active";
+
+  // Inactive: pawn, knight, bishop, rook, queen, bishop pair, coordination, space, threats
+  EXPECT_FALSE(flags.test(1))  << "Group 1 (pawn structure) should be inactive — no pawns";
+  EXPECT_FALSE(flags.test(2))  << "Group 2 (passed pawns) should be inactive — no pawns";
+  EXPECT_FALSE(flags.test(3))  << "Group 3 (pawn advance) should be inactive — no pawns";
+  EXPECT_FALSE(flags.test(4))  << "Group 4 (bishop pair) should be inactive — no bishops";
+  EXPECT_FALSE(flags.test(5))  << "Group 5 (knight) should be inactive — no knights";
+  EXPECT_FALSE(flags.test(6))  << "Group 6 (bishop) should be inactive — no bishops";
+  EXPECT_FALSE(flags.test(7))  << "Group 7 (rook) should be inactive — no rooks";
+  EXPECT_FALSE(flags.test(8))  << "Group 8 (queen) should be inactive — no queens";
+  EXPECT_FALSE(flags.test(10)) << "Group 10 (threats) should be inactive — no non-pawn pieces";
+  EXPECT_FALSE(flags.test(11)) << "Group 11 (space) should be inactive — no pawns";
+  EXPECT_FALSE(flags.test(12)) << "Group 12 (coordination) should be inactive — no rook/minor pairs";
+}
+
+TEST_F(TexelTunerTest, activationFlags_KnightsAndPawns_SpecificGroups) {
+  // Position with just knights, pawns, and kings
+  TexelTuner::setupEvalOverrides();
+  TexelTuner tuner;
+  tuner.createEvaluator();
+
+  TuningDataset dataset;
+  dataset.getEntries().emplace_back(
+    "4k3/pppppppp/8/8/8/8/PPPPPPPP/1N2K1N1 w - - 0 1", 0.5F);
+
+  tuner.computeActivationFlags(dataset);
+
+  const auto& flags = dataset[0].activeParamGroups;
+  // Active: tempo(0), pawn groups(1,2,3), knight(5), king safety(9), threats(10), space(11)
+  EXPECT_TRUE(flags.test(0));
+  EXPECT_TRUE(flags.test(1));  // pawn structure
+  EXPECT_TRUE(flags.test(5));  // knight
+  EXPECT_TRUE(flags.test(9));  // king safety
+  EXPECT_TRUE(flags.test(10)); // threats (has knights)
+  EXPECT_TRUE(flags.test(11)); // space
+
+  // Inactive: bishop pair(4), bishop(6), rook(7), queen(8)
+  EXPECT_FALSE(flags.test(4)); // bishop pair
+  EXPECT_FALSE(flags.test(6)); // bishop
+  EXPECT_FALSE(flags.test(7)); // rook
+  EXPECT_FALSE(flags.test(8)); // queen
+}
+
+TEST_F(TexelTunerTest, activationFlags_BishopPair) {
+  // Position where White has 2 bishops → group 4 active
+  TexelTuner::setupEvalOverrides();
+  TexelTuner tuner;
+  tuner.createEvaluator();
+
+  TuningDataset dataset;
+  // White has 2 bishops
+  dataset.getEntries().emplace_back(
+    "4k3/8/8/8/8/8/8/2B1KB2 w - - 0 1", 0.5F);
+  // White has 1 bishop
+  dataset.getEntries().emplace_back(
+    "4k3/8/8/8/8/8/8/4KB2 w - - 0 1", 0.5F);
+
+  tuner.computeActivationFlags(dataset);
+
+  EXPECT_TRUE(dataset[0].activeParamGroups.test(4))  << "2 bishops → bishop pair active";
+  EXPECT_FALSE(dataset[1].activeParamGroups.test(4)) << "1 bishop → bishop pair inactive";
+  // Both should have bishop group active
+  EXPECT_TRUE(dataset[0].activeParamGroups.test(6));
+  EXPECT_TRUE(dataset[1].activeParamGroups.test(6));
+}
+
+TEST_F(TexelTunerTest, activationFlags_Coordination) {
+  // Test coordination group (12): needs 2+ rooks or 2+ minors
+  TexelTuner::setupEvalOverrides();
+  TexelTuner tuner;
+  tuner.createEvaluator();
+
+  TuningDataset dataset;
+  // White has 2 rooks → coordination active
+  dataset.getEntries().emplace_back(
+    "4k3/8/8/8/8/8/8/R3K2R w KQ - 0 1", 0.5F);
+  // White has knight + bishop (2 minors) → coordination active
+  dataset.getEntries().emplace_back(
+    "4k3/8/8/8/8/8/8/1NB1K3 w - - 0 1", 0.5F);
+  // Only 1 rook, 0 minors → coordination inactive
+  dataset.getEntries().emplace_back(
+    "4k3/8/8/8/8/8/8/R3K3 w Q - 0 1", 0.5F);
+
+  tuner.computeActivationFlags(dataset);
+
+  EXPECT_TRUE(dataset[0].activeParamGroups.test(12)) << "2 rooks → coordination active";
+  EXPECT_TRUE(dataset[1].activeParamGroups.test(12)) << "knight + bishop → coordination active";
+  EXPECT_FALSE(dataset[2].activeParamGroups.test(12)) << "1 rook only → coordination inactive";
+}
+
+// =========================================================================
+// Incremental MSE tests (Sprint 6.5)
+// =========================================================================
+
+TEST_F(TexelTunerTest, computeAndCacheErrors_PopulatesCache) {
+  TexelTuner::setupEvalOverrides();
+  TexelTuner tuner;
+  tuner.createEvaluator();
+
+  TuningDataset dataset;
+  dataset.getEntries().emplace_back(
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 0.5F);
+  dataset.getEntries().emplace_back(
+    "rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQq - 0 1", 1.0F);
+
+  const double mse = tuner.computeAndCacheErrors(dataset, 1.0);
+  EXPECT_GT(mse, 0.0);
+
+  // Each entry should have a nonzero cached error (we don't expect exact 0.5 match)
+  for (std::size_t i = 0; i < dataset.size(); ++i) {
+    EXPECT_GE(dataset[i].cachedSquaredError, 0.0) << "Entry " << i << " cached error should be >= 0";
+  }
+
+  // Verify MSE matches computeMSE
+  const double mseFull = tuner.computeMSE(dataset, 1.0);
+  EXPECT_NEAR(mse, mseFull, 1e-10);
+}
+
+TEST_F(TexelTunerTest, incrementalMSE_MatchesFullMSE_NoChange) {
+  // When no parameter has changed, incremental MSE should match the cached value exactly
+  TexelTuner::setupEvalOverrides();
+  TexelTuner tuner;
+  tuner.createEvaluator();
+
+  TuningDataset dataset;
+  dataset.getEntries().emplace_back(
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 0.5F);
+  dataset.getEntries().emplace_back(
+    "rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQq - 0 1", 1.0F);
+  dataset.getEntries().emplace_back(
+    "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1", 0.5F);
+
+  tuner.computeActivationFlags(dataset);
+  const double cachedMSE = tuner.computeAndCacheErrors(dataset, 1.0);
+
+  // No param changed → incremental MSE for any group should match cached MSE
+  for (int g = 0; g < 13; ++g) {
+    const double incMSE = tuner.computeMSEIncremental(dataset, 1.0, g);
+    EXPECT_NEAR(incMSE, cachedMSE, 1e-10) << "Group " << g << " incremental MSE should match cached";
+  }
+}
+
+TEST_F(TexelTunerTest, incrementalMSE_MatchesFullMSE_AfterParamChange) {
+  // After changing a parameter, incremental MSE should match full MSE
+  TexelTuner::setupEvalOverrides();
+  TexelTuner tuner;
+  tuner.createEvaluators(4);
+
+  const std::string devPath =
+    std::string(FrankyCPP_PROJECT_ROOT) + "/test/testsets/tuning/v1.6_vs_v1.5_score.txt";
+
+  TuningDataset dataset;
+  try {
+    dataset.loadFromFile(devPath, 1000);
+  } catch (...) {
+    GTEST_SKIP() << "Dev dataset not available at " << devPath;
+  }
+
+  tuner.computeActivationFlags(dataset);
+  tuner.computeAndCacheErrors(dataset, 1.0);
+
+  // Build params and modify one
+  const auto& searchConfig = ConfigManager::instance().search();
+  const auto& evalConfig   = ConfigManager::instance().eval();
+  auto params = TuningParameter::buildFromRegistry(searchConfig, evalConfig);
+  ASSERT_FALSE(params.empty());
+
+  // Get mutable config
+  SearchConfigData* pSearch = nullptr;
+  EvalConfigData* pEval     = nullptr;
+  ConfigManager::instance().applyOverrides([&](auto& s, auto& e) {
+    pSearch = &s;
+    pEval   = &e;
+  });
+
+  // Modify a parameter and compare incremental vs full MSE
+  auto& param = params[0];
+  const int origValue = param.currentValue;
+  param.currentValue = origValue + 5;
+  param.applyToConfig(*pSearch, *pEval);
+
+  const double incMSE  = tuner.computeMSEIncremental(dataset, 1.0, param.paramGroup);
+  const double fullMSE = tuner.computeMSEParallel(dataset, 1.0);
+
+  std::cout << "  Incremental MSE: " << incMSE << "\n";
+  std::cout << "  Full MSE:        " << fullMSE << "\n";
+  std::cout << "  Diff:            " << std::abs(incMSE - fullMSE) << "\n";
+
+  EXPECT_NEAR(incMSE, fullMSE, 1e-10);
+
+  // Restore
+  param.currentValue = origValue;
+  param.applyToConfig(*pSearch, *pEval);
+}
+
+TEST_F(TexelTunerTest, updateCacheForGroup_KeepsCacheConsistent) {
+  // After updateCacheForGroup, the cached MSE should match a fresh full eval
+  TexelTuner::setupEvalOverrides();
+  TexelTuner tuner;
+  tuner.createEvaluator();
+
+  TuningDataset dataset;
+  dataset.getEntries().emplace_back(
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 0.5F);
+  dataset.getEntries().emplace_back(
+    "rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQq - 0 1", 1.0F);
+  dataset.getEntries().emplace_back(
+    "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1", 0.5F);
+
+  tuner.computeActivationFlags(dataset);
+  tuner.computeAndCacheErrors(dataset, 1.0);
+
+  // Build params
+  const auto& searchConfig = ConfigManager::instance().search();
+  const auto& evalConfig   = ConfigManager::instance().eval();
+  auto params = TuningParameter::buildFromRegistry(searchConfig, evalConfig);
+  ASSERT_FALSE(params.empty());
+
+  SearchConfigData* pSearch = nullptr;
+  EvalConfigData* pEval     = nullptr;
+  ConfigManager::instance().applyOverrides([&](auto& s, auto& e) {
+    pSearch = &s;
+    pEval   = &e;
+  });
+
+  // Modify param and update cache
+  auto& param = params[0];
+  param.currentValue += 3;
+  param.applyToConfig(*pSearch, *pEval);
+  tuner.updateCacheForGroup(dataset, 1.0, param.paramGroup);
+
+  // Now the cached MSE should match a fresh full eval
+  const double freshMSE = tuner.computeMSE(dataset, 1.0);
+  const double cachedMSE = tuner.computeAndCacheErrors(dataset, 1.0);
+
+  EXPECT_NEAR(freshMSE, cachedMSE, 1e-10);
+}
+
+TEST_F(TexelTunerTest, incrementalMSE_InactiveGroup_NoChange) {
+  // For a group that's inactive for all entries, incremental MSE should
+  // be identical to cached MSE regardless of parameter changes
+  TexelTuner::setupEvalOverrides();
+  TexelTuner tuner;
+  tuner.createEvaluator();
+
+  // Kings-only position — most groups inactive
+  TuningDataset dataset;
+  dataset.getEntries().emplace_back("4k3/8/8/8/8/8/8/4K3 w - - 0 1", 0.5F);
+  dataset.getEntries().emplace_back("4k3/8/8/8/8/8/8/4K3 b - - 0 1", 0.5F);
+
+  tuner.computeActivationFlags(dataset);
+  const double cachedMSE = tuner.computeAndCacheErrors(dataset, 1.0);
+
+  // Knight group (5) is inactive — incremental MSE must equal cached even if we "change" something
+  const double incMSE = tuner.computeMSEIncremental(dataset, 1.0, 5);
+  EXPECT_DOUBLE_EQ(incMSE, cachedMSE);
+}
+
+TEST_F(TexelTunerTest, coordinateDescent_WithIncremental_ReducesMSE_DevDataset) {
+  // Full integration test: coordinate descent with incremental MSE
+  // should produce the same kind of improvement as the Sprint 6.4 test
+  const std::string devPath =
+    std::string(FrankyCPP_PROJECT_ROOT) + "/test/testsets/tuning/v1.6_vs_v1.5_score.txt";
+
+  TuningDataset fullDataset;
+  try {
+    fullDataset.loadFromFile(devPath, 5000);
+  } catch (...) {
+    GTEST_SKIP() << "Dev dataset not available at " << devPath;
+  }
+
+  TexelTuner::setupEvalOverrides();
+  TexelTuner tuner;
+  tuner.createEvaluators(4);
+
+  auto [trainSet, testSet] = fullDataset.split(0.8F);
+
+  const auto& searchConfig = ConfigManager::instance().search();
+  const auto& evalConfig   = ConfigManager::instance().eval();
+  auto params = TuningParameter::buildFromRegistry(searchConfig, evalConfig);
+
+  const double K = tuner.tuneK(trainSet);
+  std::cout << "  Tuned K:    " << K << "\n";
+
+  // Baseline MSE
+  const double baselineMSE = tuner.computeMSEParallel(trainSet, K);
+  std::cout << "  Baseline train MSE: " << baselineMSE << "\n";
+
+  // Run 1 pass (uses incremental MSE internally now)
+  tuner.tuneParameters(trainSet, &testSet, params, 1);
+
+  // Final MSE
+  const double finalMSE = tuner.computeMSEParallel(trainSet, K);
+  std::cout << "  Final train MSE:    " << finalMSE << "\n";
+  std::cout << "  Improvement:        " << (baselineMSE - finalMSE) << "\n";
+
+  EXPECT_LE(finalMSE, baselineMSE + 1e-12);
+
+  int changed = 0;
+  for (const auto& p : params) {
+    if (p.currentValue != p.originalValue) ++changed;
+  }
+  std::cout << "  Parameters changed: " << changed << "/" << params.size() << "\n";
+}
+
+// =========================================================================
+// Incremental MSE speedup measurement (Sprint 6.5)
+// =========================================================================
+
+TEST_F(TexelTunerTest, SpeedTests_incrementalMSE_Speedup_QuietLabeled) {
+  if (isBulkRun()) {
+    GTEST_SKIP() << "Skipping incremental MSE speed test in bulk runs";
+  }
+  // Measures the speedup of incremental MSE vs full MSE on the quiet-labeled
+  // dataset (1.4M positions). This is a timing test — disabled by default.
+  const std::string qlPath =
+    std::string(FrankyCPP_PROJECT_ROOT) + "/test/testsets/tuning/quiet-labeled.epd";
+
+  TuningDataset dataset;
+  try {
+    dataset.loadFromFile(qlPath, 100000); // 100K positions — enough to see speedup
+  } catch (...) {
+    GTEST_SKIP() << "quiet-labeled.epd not available at " << qlPath;
+  }
+
+  TexelTuner::setupEvalOverrides();
+  TexelTuner tuner;
+  tuner.createEvaluators(4);
+
+  // Build params
+  const auto& searchConfig = ConfigManager::instance().search();
+  const auto& evalConfig   = ConfigManager::instance().eval();
+  auto params = TuningParameter::buildFromRegistry(searchConfig, evalConfig);
+  ASSERT_FALSE(params.empty());
+
+  // Get mutable config
+  SearchConfigData* pSearch = nullptr;
+  EvalConfigData* pEval     = nullptr;
+  ConfigManager::instance().applyOverrides([&](auto& s, auto& e) {
+    pSearch = &s;
+    pEval   = &e;
+  });
+
+  // Compute activation flags and cache
+  tuner.computeActivationFlags(dataset);
+
+  // Count active entries per group
+  std::cout << "\n  Activation flag statistics (" << dataset.size() << " entries):\n";
+  for (int g = 0; g <= 12; ++g) {
+    int count = 0;
+    for (auto & i : dataset) {
+      if (i.activeParamGroups.test(g)) ++count;
+    }
+    std::cout << "    Group " << std::setw(2) << g << ": " << std::setw(6) << count
+              << "/" << dataset.size() << " ("
+              << std::fixed << std::setprecision(1)
+              << (100.0 * count / static_cast<double>(dataset.size())) << "%)\n";
+  }
+
+  tuner.computeAndCacheErrors(dataset, 1.0);
+
+  // Pick a param from a group that's NOT always active (e.g., knight group 5)
+  TuningParameter* knightParam = nullptr;
+  for (auto& p : params) {
+    if (p.paramGroup == 5) { knightParam = &p; break; }
+  }
+  ASSERT_NE(knightParam, nullptr) << "No knight param found";
+
+  if (!knightParam) {
+    GTEST_SKIP() << "No knight param found in registry";
+  }
+
+  // Measure full MSE speed
+  constexpr int trials = 5;
+
+  const auto startFull = steady_clock::now();
+  for (int i = 0; i < trials; ++i) {
+    knightParam->currentValue = knightParam->originalValue + i + 1;
+    knightParam->applyToConfig(*pSearch, *pEval);
+    (void)tuner.computeMSEParallel(dataset, 1.0);
+  }
+  const auto elapsedFull = steady_clock::now() - startFull;
+  const double fullMs = std::chrono::duration<double, std::milli>(elapsedFull).count() / trials;
+
+  // Restore
+  knightParam->currentValue = knightParam->originalValue;
+  knightParam->applyToConfig(*pSearch, *pEval);
+  tuner.computeAndCacheErrors(dataset, 1.0); // reset cache
+
+  // Measure incremental MSE speed
+  auto startInc = steady_clock::now();
+  for (int i = 0; i < trials; ++i) {
+    knightParam->currentValue = knightParam->originalValue + i + 1;
+    knightParam->applyToConfig(*pSearch, *pEval);
+    (void)tuner.computeMSEIncremental(dataset, 1.0, knightParam->paramGroup);
+  }
+  auto elapsedInc = steady_clock::now() - startInc;
+  const double incMs = std::chrono::duration<double, std::milli>(elapsedInc).count() / trials;
+
+  // Restore
+  knightParam->currentValue = knightParam->originalValue;
+  knightParam->applyToConfig(*pSearch, *pEval);
+
+  const double speedup = fullMs / incMs;
+
+  std::cout << "\n  Speedup measurement (group 5 = knight, " << dataset.size() << " entries):\n";
+  std::cout << "    Full MSE:        " << std::fixed << std::setprecision(1) << fullMs << " ms/eval\n";
+  std::cout << "    Incremental MSE: " << std::fixed << std::setprecision(1) << incMs << " ms/eval\n";
+  std::cout << "    Speedup:         " << std::fixed << std::setprecision(2) << speedup << "x\n";
+
+  // Verify correctness while we're here
+  knightParam->currentValue = knightParam->originalValue + 3;
+  knightParam->applyToConfig(*pSearch, *pEval);
+  const double mseInc  = tuner.computeMSEIncremental(dataset, 1.0, knightParam->paramGroup);
+  const double mseFull = tuner.computeMSEParallel(dataset, 1.0);
+  EXPECT_NEAR(mseInc, mseFull, 1e-9);
+  std::cout << "    Correctness:     diff = " << std::scientific << std::abs(mseInc - mseFull) << "\n";
+
+  // We expect at least some speedup for a non-universal group
+  EXPECT_GT(speedup, 1.0) << "Incremental MSE should be faster than full for a non-universal group";
 }

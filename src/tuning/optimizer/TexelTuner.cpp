@@ -297,10 +297,334 @@ namespace tuning {
     }
 
     // Sort for deterministic FP aggregation (smallest to largest reduces rounding error)
-    std::sort(partials.begin(), partials.end());
+    std::ranges::sort(partials);
     const double totalError = std::accumulate(partials.begin(), partials.end(), 0.0);
 
     return totalError / static_cast<double>(n);
+  }
+
+  // =========================================================================
+  // Activation flags (board-state analysis)
+  // =========================================================================
+
+  // For each position, analyze the board to determine which eval parameter
+  // groups could have nonzero influence. This lets the incremental MSE
+  // optimization skip re-evaluation of entries unaffected by a parameter change.
+  //
+  // The analysis is conservative: a group is marked active if the board state
+  // contains the piece types or structures that the group's eval terms examine.
+  // False positives (marking active when influence is actually zero) are safe —
+  // they just reduce the speedup. False negatives would cause incorrect MSE.
+  //
+  // Group assignment (matches TuningParameter::assignParamGroup):
+  //   0  = Tempo / misc         — always active
+  //   1  = Pawn structure       — active if any pawns
+  //   2  = Passed pawns         — active if any pawns (passers detected internally)
+  //   3  = Pawn advance         — active if any pawns
+  //   4  = Bishop pair          — active if either side has 2+ bishops
+  //   5  = Knight               — active if any knights
+  //   6  = Bishop               — active if any bishops
+  //   7  = Rook                 — active if any rooks
+  //   8  = Queen                — active if any queens
+  //   9  = King safety          — always active (kings always present)
+  //   10 = Threats              — active if either side has non-pawn pieces
+  //   11 = Space                — active if any pawns (space = controlled squares behind pawns)
+  //   12 = Coordination         — active if either side has 2+ rooks or 2+ minors
+  void TexelTuner::computeActivationFlags(TuningDataset& dataset) const {
+    if (dataset.empty()) return;
+
+    const auto n = dataset.size();
+
+    // Lambda to compute flags for a range of entries
+    const auto computeRange = [&dataset](const std::size_t start, const std::size_t end) {
+      Position position;
+      for (auto i = start; i < end; ++i) {
+        auto& entry = dataset[i];
+        position.setFromFen(entry.fen);
+        auto& flags = entry.activeParamGroups;
+        flags.reset();
+
+        // Piece bitboards
+        const Bitboard whitePawns   = position.getPieceBb(WHITE, PAWN);
+        const Bitboard blackPawns   = position.getPieceBb(BLACK, PAWN);
+        const Bitboard whiteKnights = position.getPieceBb(WHITE, KNIGHT);
+        const Bitboard blackKnights = position.getPieceBb(BLACK, KNIGHT);
+        const Bitboard whiteBishops = position.getPieceBb(WHITE, BISHOP);
+        const Bitboard blackBishops = position.getPieceBb(BLACK, BISHOP);
+        const Bitboard whiteRooks   = position.getPieceBb(WHITE, ROOK);
+        const Bitboard blackRooks   = position.getPieceBb(BLACK, ROOK);
+        const Bitboard whiteQueens  = position.getPieceBb(WHITE, QUEEN);
+        const Bitboard blackQueens  = position.getPieceBb(BLACK, QUEEN);
+
+        const bool hasPawns   = (whitePawns | blackPawns) != Bitboard{0};
+        const bool hasKnights = (whiteKnights | blackKnights) != Bitboard{0};
+        const bool hasBishops = (whiteBishops | blackBishops) != Bitboard{0};
+        const bool hasRooks   = (whiteRooks | blackRooks) != Bitboard{0};
+        const bool hasQueens  = (whiteQueens | blackQueens) != Bitboard{0};
+
+        // Group 0: Tempo / misc — always active
+        flags.set(0);
+
+        // Groups 1-3: Pawn structure, passed pawns, pawn advance — active if any pawns
+        if (hasPawns) {
+          flags.set(1);
+          flags.set(2);
+          flags.set(3);
+        }
+
+        // Group 4: Bishop pair — active if either side has 2+ bishops
+        if (whiteBishops.popcount() >= 2 || blackBishops.popcount() >= 2) {
+          flags.set(4);
+        }
+
+        // Group 5: Knight — active if any knights
+        if (hasKnights) flags.set(5);
+
+        // Group 6: Bishop — active if any bishops
+        if (hasBishops) flags.set(6);
+
+        // Group 7: Rook — active if any rooks
+        if (hasRooks) flags.set(7);
+
+        // Group 8: Queen — active if any queens
+        if (hasQueens) flags.set(8);
+
+        // Group 9: King safety — always active
+        flags.set(9);
+
+        // Group 10: Threats — active if either side has non-pawn pieces
+        if (hasKnights || hasBishops || hasRooks || hasQueens) {
+          flags.set(10);
+        }
+
+        // Group 11: Space — active if any pawns (space = squares behind pawn chain)
+        if (hasPawns) flags.set(11);
+
+        // Group 12: Coordination — connected rooks (2+ rooks) or minor connectivity (2+ minors)
+        const bool connectedRooks = whiteRooks.popcount() >= 2 || blackRooks.popcount() >= 2;
+        const bool minorConnect   = (whiteKnights.popcount() + whiteBishops.popcount() >= 2) ||
+                                    (blackKnights.popcount() + blackBishops.popcount() >= 2);
+        if (connectedRooks || minorConnect) {
+          flags.set(12);
+        }
+      }
+    };
+
+    // Parallel dispatch if thread pool available
+    if (numThreads_ > 1 && threadPool_) {
+      const auto chunkSize = (n + numThreads_ - 1) / numThreads_;
+      std::vector<std::future<void>> futures;
+      futures.reserve(numThreads_);
+
+      for (int t = 0; t < numThreads_; ++t) {
+        const auto start = static_cast<std::size_t>(t) * chunkSize;
+        if (start >= n) break;
+        const auto end = std::min(start + chunkSize, n);
+        futures.push_back(threadPool_->enqueue([&computeRange, start, end] { computeRange(start, end); }));
+      }
+      for (auto& f : futures) { f.get(); }
+    }
+    else {
+      computeRange(0, n);
+    }
+
+    LOG__INFO(common::Logger::get().TUNING_LOG,
+              "Activation flags computed for {} entries", n);
+  }
+
+  // =========================================================================
+  // Full eval pass with caching
+  // =========================================================================
+
+  // Evaluates all entries, stores per-entry squared errors in cachedSquaredError,
+  // and computes totalSquaredError_ for use by computeMSEIncremental().
+  // This is the "baseline" pass before coordinate descent with incremental MSE.
+  double TexelTuner::computeAndCacheErrors(TuningDataset& dataset, const double K) const {
+    if (threadEvaluators_.empty()) {
+      throw std::logic_error("TexelTuner::computeAndCacheErrors: evaluator not created");
+    }
+    if (dataset.empty()) {
+      totalSquaredError_ = 0.0;
+      return 0.0;
+    }
+
+    const auto n = dataset.size();
+
+    // Lambda to evaluate a range and return partial SSE
+    const auto evalRange = [this, &dataset, K](const int threadIdx, const std::size_t start, const std::size_t end) -> double {
+      auto& evaluator = *threadEvaluators_[threadIdx];
+      Position position;
+      double partialSSE = 0.0;
+
+      for (auto i = start; i < end; ++i) {
+        auto& entry = dataset[i];
+        position.setFromFen(entry.fen);
+        const Value rawEval = evaluator.evaluate(position);
+        const double whiteRelEval =
+          static_cast<double>(static_cast<int>(rawEval)) * position.getNextPlayer().sign();
+        const double predicted = sigmoid(K, whiteRelEval);
+        const double error     = entry.result - predicted;
+        const double se        = error * error;
+        entry.cachedSquaredError = se;
+        partialSSE += se;
+      }
+      return partialSSE;
+    };
+
+    // Parallel dispatch
+    if (numThreads_ > 1 && threadPool_) {
+      const auto chunkSize = (n + numThreads_ - 1) / numThreads_;
+      std::vector<std::future<double>> futures;
+      futures.reserve(numThreads_);
+
+      for (int t = 0; t < numThreads_; ++t) {
+        const auto start = static_cast<std::size_t>(t) * chunkSize;
+        if (start >= n) break;
+        const auto end = std::min(start + chunkSize, n);
+        futures.push_back(threadPool_->enqueue([&evalRange, t, start, end] { return evalRange(t, start, end); }));
+      }
+
+      std::vector<double> partials;
+      partials.reserve(futures.size());
+      for (auto& f : futures) { partials.push_back(f.get()); }
+      std::ranges::sort(partials);
+      totalSquaredError_ = std::accumulate(partials.begin(), partials.end(), 0.0);
+    }
+    else {
+      totalSquaredError_ = evalRange(0, 0, n);
+    }
+
+    return totalSquaredError_ / static_cast<double>(n);
+  }
+
+  // =========================================================================
+  // Incremental MSE computation
+  // =========================================================================
+
+  // Only re-evaluates entries where the given paramGroup is active.
+  // For inactive entries, their cachedSquaredError contributes unchanged.
+  // The result is: (totalSquaredError_ + deltaSSE) / N
+  // where deltaSSE = sum of (freshSE - cachedSE) for active entries.
+  //
+  // This does NOT modify the cache. Call updateCacheForGroup() to commit.
+  double TexelTuner::computeMSEIncremental(const TuningDataset& dataset, const double K, const int paramGroup) const {
+    if (threadEvaluators_.empty()) {
+      throw std::logic_error("TexelTuner::computeMSEIncremental: evaluator not created");
+    }
+    if (dataset.empty()) {
+      return 0.0;
+    }
+
+    const auto n = dataset.size();
+
+    // Lambda to compute deltaSSE for a range
+    const auto deltaRange = [this, &dataset, K, paramGroup](const int threadIdx, const std::size_t start, const std::size_t end) -> double {
+      auto& evaluator = *threadEvaluators_[threadIdx];
+      Position position;
+      double partialDelta = 0.0;
+
+      for (auto i = start; i < end; ++i) {
+        const auto& entry = dataset[i];
+        if (!entry.activeParamGroups.test(paramGroup)) continue;
+
+        position.setFromFen(entry.fen);
+        const Value rawEval = evaluator.evaluate(position);
+        const double whiteRelEval =
+          static_cast<double>(static_cast<int>(rawEval)) * position.getNextPlayer().sign();
+        const double predicted = sigmoid(K, whiteRelEval);
+        const double error     = entry.result - predicted;
+        const double freshSE   = error * error;
+        partialDelta += freshSE - entry.cachedSquaredError;
+      }
+      return partialDelta;
+    };
+
+    double deltaSSE = 0.0;
+
+    if (numThreads_ > 1 && threadPool_) {
+      const auto chunkSize = (n + numThreads_ - 1) / numThreads_;
+      std::vector<std::future<double>> futures;
+      futures.reserve(numThreads_);
+
+      for (int t = 0; t < numThreads_; ++t) {
+        const auto start = static_cast<std::size_t>(t) * chunkSize;
+        if (start >= n) break;
+        const auto end = std::min(start + chunkSize, n);
+        futures.push_back(threadPool_->enqueue([&deltaRange, t, start, end] { return deltaRange(t, start, end); }));
+      }
+
+      std::vector<double> partials;
+      partials.reserve(futures.size());
+      for (auto& f : futures) { partials.push_back(f.get()); }
+      std::ranges::sort(partials);
+      deltaSSE = std::accumulate(partials.begin(), partials.end(), 0.0);
+    }
+    else {
+      deltaSSE = deltaRange(0, 0, n);
+    }
+
+    return (totalSquaredError_ + deltaSSE) / static_cast<double>(n);
+  }
+
+  // =========================================================================
+  // Cache update for a parameter group
+  // =========================================================================
+
+  // Re-evaluates entries where paramGroup is active and updates their
+  // cachedSquaredError. Also adjusts totalSquaredError_ to reflect the changes.
+  // Call after deciding to keep a parameter change.
+  void TexelTuner::updateCacheForGroup(TuningDataset& dataset, const double K, const int paramGroup) const {
+    if (threadEvaluators_.empty()) {
+      throw std::logic_error("TexelTuner::updateCacheForGroup: evaluator not created");
+    }
+    if (dataset.empty()) return;
+
+    const auto n = dataset.size();
+
+    // Lambda to update cache for a range and return the deltaSSE
+    const auto updateRange = [this, &dataset, K, paramGroup](const int threadIdx, const std::size_t start, const std::size_t end) -> double {
+      auto& evaluator = *threadEvaluators_[threadIdx];
+      Position position;
+      double partialDelta = 0.0;
+
+      for (auto i = start; i < end; ++i) {
+        auto& entry = dataset[i];
+        if (!entry.activeParamGroups.test(paramGroup)) continue;
+
+        position.setFromFen(entry.fen);
+        const Value rawEval = evaluator.evaluate(position);
+        const double whiteRelEval =
+          static_cast<double>(static_cast<int>(rawEval)) * position.getNextPlayer().sign();
+        const double predicted = sigmoid(K, whiteRelEval);
+        const double error     = entry.result - predicted;
+        const double freshSE   = error * error;
+        partialDelta += freshSE - entry.cachedSquaredError;
+        entry.cachedSquaredError = freshSE;
+      }
+      return partialDelta;
+    };
+
+    if (numThreads_ > 1 && threadPool_) {
+      const auto chunkSize = (n + numThreads_ - 1) / numThreads_;
+      std::vector<std::future<double>> futures;
+      futures.reserve(numThreads_);
+
+      for (int t = 0; t < numThreads_; ++t) {
+        const auto start = static_cast<std::size_t>(t) * chunkSize;
+        if (start >= n) break;
+        const auto end = std::min(start + chunkSize, n);
+        futures.push_back(threadPool_->enqueue([&updateRange, t, start, end] { return updateRange(t, start, end); }));
+      }
+
+      std::vector<double> partials;
+      partials.reserve(futures.size());
+      for (auto& f : futures) { partials.push_back(f.get()); }
+      std::ranges::sort(partials);
+      totalSquaredError_ += std::accumulate(partials.begin(), partials.end(), 0.0);
+    }
+    else {
+      totalSquaredError_ += updateRange(0, 0, n);
+    }
   }
 
   // =========================================================================
@@ -313,6 +637,14 @@ namespace tuning {
   // decrementing by -delta. Keep whichever direction produces a lower MSE.
   // If neither direction improves, revert. One full sweep over all parameters
   // is one "pass". Repeat until no parameter improves or maxPasses is reached.
+  //
+  // Incremental MSE optimization (Sprint 6.5):
+  //   Before the loop, activation flags are computed per entry based on board
+  //   state. A full eval pass caches per-entry squared errors. During parameter
+  //   trials, computeMSEIncremental() only re-evaluates entries where the
+  //   parameter's group is active, using cached errors for the rest. After
+  //   committing a change, updateCacheForGroup() refreshes the cache.
+  //   This avoids redundant evaluation of positions unaffected by a change.
   //
   // Key properties:
   //   - Parameter changes are applied to the live EvalConfigData via
@@ -344,8 +676,8 @@ namespace tuning {
     const auto& tuningLog = common::Logger::get().TUNING_LOG;
     const bool useParallel = numThreads_ > 1 && threadPool_ != nullptr;
 
-    // Helper: compute MSE using the best available method
-    const auto mse = [&](const TuningDataset& ds) {
+    // Helper: compute full MSE (for test set, which doesn't use incremental)
+    const auto fullMSE = [&](const TuningDataset& ds) {
       return useParallel ? computeMSEParallel(ds, K_) : computeMSE(ds, K_);
     };
 
@@ -360,13 +692,31 @@ namespace tuning {
     auto& search = *pSearch;
     auto& eval   = *pEval;
 
-    // Baseline MSE
-    const double baselineMSE = mse(trainSet);
+    // Compute activation flags and initial error cache (mutable cast needed for cache population)
+    auto& mutableTrainSet = const_cast<TuningDataset&>(trainSet);
+    computeActivationFlags(mutableTrainSet);
+
+    // Count active entries per group for logging
+    std::array<int, NUM_PARAM_GROUPS> activeCount{};
+    for (const auto & i : trainSet) {
+      for (int g = 0; g < NUM_PARAM_GROUPS; ++g) {
+        if (i.activeParamGroups.test(g)) ++activeCount[g];
+      }
+    }
+    for (int g = 0; g < 13; ++g) {
+      LOG__DEBUG(common::Logger::get().TUNING_LOG,
+                "  Group {:2d}: {:6d}/{} entries active ({:.1f}%)",
+                g, activeCount[g], trainSet.size(),
+                100.0 * activeCount[g] / static_cast<double>(trainSet.size()));
+    }
+
+    // Full eval pass to populate cache
+    const double baselineMSE = computeAndCacheErrors(mutableTrainSet, K_);
     LOG__INFO(tuningLog, "Coordinate descent: {} params, {} positions, K = {:.6f}",
               params.size(), trainSet.size(), K_);
     LOG__INFO(tuningLog, "Baseline train MSE: {:.10f}", baselineMSE);
     if (testSet && !testSet->empty()) {
-      const double testMSE = mse(*testSet);
+      const double testMSE = fullMSE(*testSet);
       LOG__INFO(tuningLog, "Baseline test MSE:  {:.10f}", testMSE);
     }
 
@@ -383,34 +733,38 @@ namespace tuning {
       std::string biggestMoverName;
       double biggestMoverDelta = 0.0;
 
-      double currentMSE = mse(trainSet);
+      double currentMSE = totalSquaredError_ / static_cast<double>(trainSet.size());
 
       for (auto& param : params) {
         const int originalValue = param.currentValue;
+        const int group = param.paramGroup;
 
         // --- Try +delta ---
         const int plusValue = std::clamp(originalValue + param.delta, param.minValue, param.maxValue);
+        double msePlus = currentMSE;
         if (plusValue != originalValue) {
           param.currentValue = plusValue;
           param.applyToConfig(search, eval);
+          msePlus = computeMSEIncremental(trainSet, K_, group);
         }
-        const double msePlus = (plusValue != originalValue) ? mse(trainSet) : currentMSE;
 
         // --- Try -delta (from original, not from +delta) ---
         const int minusValue = std::clamp(originalValue - param.delta, param.minValue, param.maxValue);
+        double mseMinus = currentMSE;
         if (minusValue != originalValue) {
           param.currentValue = minusValue;
           param.applyToConfig(search, eval);
+          mseMinus = computeMSEIncremental(trainSet, K_, group);
         }
-        const double mseMinus = (minusValue != originalValue) ? mse(trainSet) : currentMSE;
 
         // --- Decide: keep best direction, or revert ---
         if (msePlus < currentMSE && msePlus <= mseMinus && plusValue != originalValue) {
-          // Keep +delta
+          // Keep +delta — re-apply and update cache
           param.currentValue = plusValue;
           param.applyToConfig(search, eval);
+          updateCacheForGroup(mutableTrainSet, K_, group);
           const double delta = currentMSE - msePlus;
-          currentMSE = msePlus;
+          currentMSE = totalSquaredError_ / static_cast<double>(trainSet.size());
           improved = true;
           ++paramsChanged;
           if (delta > biggestMoverDelta) {
@@ -419,9 +773,10 @@ namespace tuning {
           }
         }
         else if (mseMinus < currentMSE && minusValue != originalValue) {
-          // Keep -delta (already applied)
+          // Keep -delta (already applied) — update cache
+          updateCacheForGroup(mutableTrainSet, K_, group);
           const double delta = currentMSE - mseMinus;
-          currentMSE = mseMinus;
+          currentMSE = totalSquaredError_ / static_cast<double>(trainSet.size());
           improved = true;
           ++paramsChanged;
           if (delta > biggestMoverDelta) {
@@ -441,7 +796,7 @@ namespace tuning {
       const auto passSeconds = std::chrono::duration<double>(passElapsed).count();
 
       if (testSet && !testSet->empty()) {
-        const double testMSE = mse(*testSet);
+        const double testMSE = fullMSE(*testSet);
         LOG__INFO(tuningLog,
                   "Pass {:3d}: train MSE = {:.10f}, test MSE = {:.10f}, changed = {:3d}/{}, "
                   "biggest = {} (Δ{:.2e}), {:.1f}s",
@@ -459,7 +814,7 @@ namespace tuning {
 
     const auto totalElapsed = steady_clock::now() - totalStart;
     const auto totalSeconds = std::chrono::duration<double>(totalElapsed).count();
-    const double finalMSE = mse(trainSet);
+    const double finalMSE = totalSquaredError_ / static_cast<double>(trainSet.size());
 
     LOG__INFO(tuningLog, "Coordinate descent complete: {} passes, final train MSE = {:.10f}, "
               "improvement = {:.2e}, total time = {:.1f}s",

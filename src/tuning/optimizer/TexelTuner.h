@@ -32,8 +32,11 @@
 //   - sigmoid(K, eval): maps eval → expected outcome [0, 1]
 //   - computeMSE(dataset, K): single-threaded MSE over a dataset
 //   - computeMSEParallel(dataset, K): multi-threaded MSE (one Evaluator per thread)
+//   - computeActivationFlags(dataset): board-state analysis → param group bitset
+//   - computeAndCacheErrors(dataset, K): full eval pass populating per-entry cache
+//   - computeMSEIncremental(dataset, K, group): re-eval only affected entries
 //   - tuneK(dataset): ternary search for optimal scaling constant
-//   - tuneParameters(): coordinate descent optimization loop
+//   - tuneParameters(): coordinate descent with incremental MSE optimization
 //   - setupEvalOverrides(): disables lazy eval / pawn TT for tuning
 //
 // Eval Perspective (Critical):
@@ -91,6 +94,11 @@ namespace tuning {
     /// Scaling constant K (tuned via tuneK(), default 1.0).
     double K_ = 1.0;
 
+    /// Running total of squared errors across all entries (for incremental MSE).
+    /// Set by computeAndCacheErrors(), updated by updateCacheForGroup().
+    /// Mutable because incremental MSE logically "reads" the dataset but updates bookkeeping.
+    mutable double totalSquaredError_ = 0.0;
+
   public:
     TexelTuner();
     ~TexelTuner();
@@ -145,6 +153,43 @@ namespace tuning {
     /// @param K        Scaling constant
     /// @return MSE value (matches single-threaded result within FP tolerance)
     [[nodiscard]] double computeMSEParallel(const TuningDataset& dataset, double K) const;
+
+    // =========================================================================
+    // Incremental MSE optimization (activation flags)
+    // =========================================================================
+
+    /// Analyzes board state for each entry to determine which parameter groups
+    /// affect its evaluation. Sets the activeParamGroups bitset per entry.
+    /// Must be called once before using computeMSEIncremental().
+    /// Uses thread pool if available for parallel processing.
+    /// @param dataset  Dataset to analyze (entries modified in place)
+    void computeActivationFlags(TuningDataset& dataset) const;
+
+    /// Full evaluation pass: evaluates all entries, caches per-entry squared errors,
+    /// and stores totalSquaredError_ for use by computeMSEIncremental().
+    /// Must be called before the first computeMSEIncremental() call.
+    /// Uses thread pool if available.
+    /// @param dataset  Dataset to evaluate (cachedSquaredError fields updated)
+    /// @param K        Scaling constant
+    /// @return MSE value
+    double computeAndCacheErrors(TuningDataset& dataset, double K) const;
+
+    /// Incremental MSE: only re-evaluates entries where paramGroup is active.
+    /// For inactive entries, uses cachedSquaredError from the last full/update pass.
+    /// Does NOT update the cache — call updateCacheForGroup() to commit changes.
+    /// @param dataset     Dataset with cached errors from computeAndCacheErrors()
+    /// @param K           Scaling constant
+    /// @param paramGroup  Group index to re-evaluate
+    /// @return New MSE value reflecting the parameter change
+    [[nodiscard]] double computeMSEIncremental(const TuningDataset& dataset, double K, int paramGroup) const;
+
+    /// Updates cached squared errors for entries where paramGroup is active.
+    /// Re-evaluates those entries with current config and adjusts totalSquaredError_.
+    /// Call after deciding to keep a parameter change.
+    /// @param dataset     Dataset to update (cachedSquaredError fields modified)
+    /// @param K           Scaling constant
+    /// @param paramGroup  Group index whose active entries to refresh
+    void updateCacheForGroup(TuningDataset& dataset, double K, int paramGroup) const;
 
     /// Tunes the scaling constant K via ternary search on [kLow, kHigh].
     /// Uses parallel MSE if evaluators were created with createEvaluators().

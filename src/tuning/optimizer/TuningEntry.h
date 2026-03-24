@@ -37,11 +37,16 @@
 // The result is always from White's perspective:
 //   1.0 = White win, 0.5 = Draw, 0.0 = Black win
 //
-// The activeParamGroups bitset is populated lazily during the first full
-// MSE computation pass (Sprint 6.5). Until then, all bits are set (meaning
-// all parameter groups are assumed active for every position).
+// The activeParamGroups bitset is populated by
+// TexelTuner::computeActivationFlags() based on board state analysis.
+// Until computed, all bits are set (all groups assumed active).
 //
-// Memory: ~80 bytes per entry (FEN string dominates). 5M entries ≈ 400 MB.
+// The cachedSquaredError field is used by incremental MSE optimization:
+// a full eval pass populates it, and subsequent per-parameter trials
+// only re-evaluate entries whose param group is active, using cached
+// errors for inactive entries to avoid redundant evaluation.
+//
+// Memory: ~88 bytes per entry (FEN string dominates). 5M entries ≈ 440 MB.
 //
 //=============================================================================
 
@@ -61,6 +66,7 @@ namespace tuning {
     std::string fen;                                   ///< FEN string (Position reconstructed on demand)
     float result = 0.0F;                               ///< Game result from White's perspective (1.0/0.5/0.0)
     std::bitset<NUM_PARAM_GROUPS> activeParamGroups;   ///< Which param groups affect this position's eval
+    double cachedSquaredError = 0.0;                   ///< Cached (result - sigmoid(K, eval))² for incremental MSE
 
     /// Default constructor — creates an empty entry with all param groups active.
     TuningEntry() {
