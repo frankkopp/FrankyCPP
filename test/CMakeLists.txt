@@ -38,6 +38,10 @@ file(GLOB SRCS_TUNING_EXTRACTOR_FOR_TESTS CONFIGURE_DEPENDS ../src/tuning/extrac
 # ExtractorMain has its own main() — exclude from test builds
 list(FILTER SRCS_TUNING_EXTRACTOR_FOR_TESTS EXCLUDE REGEX "ExtractorMain\\.cpp$")
 
+file(GLOB SRCS_TUNING_OPTIMIZER_FOR_TESTS CONFIGURE_DEPENDS ../src/tuning/optimizer/*.cpp)
+# TunerMain has its own main() — exclude from test builds
+list(FILTER SRCS_TUNING_OPTIMIZER_FOR_TESTS EXCLUDE REGEX "TunerMain\\.cpp$")
+
 add_executable(
         ${testExeName}
 
@@ -58,6 +62,9 @@ add_executable(
 
         # Tuning extractor source files needed by tests
         ${SRCS_TUNING_EXTRACTOR_FOR_TESTS}
+
+        # Tuning optimizer source files needed by tests
+        ${SRCS_TUNING_OPTIMIZER_FOR_TESTS}
 
         # CrashHandler for minidump generation on crashes
         ../src/common/CrashHandler.cpp

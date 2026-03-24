@@ -897,25 +897,29 @@ namespace chess {
 
   void Position::initializeBoard() {
 
-    std::fill_n(&board[0], sizeof(board), PIECE_NONE);
+    std::ranges::fill(board, PIECE_NONE);
 
     castlingRights  = NO_CASTLING;
     enPassantSquare = SQ_NONE;
     halfMoveClock   = 0;
-
-    historyState.fill(HistoryState());
-
+    moveNumber = 1;
+    zobristKey = 0;
+    pawnKey    = 0;
     nextPlayer = WHITE;
 
-    moveNumber = 1;
+    // No need to zero the historyState array (~40KB).
+    // All reads are guarded by historyCounter and all writes precede reads
+    // (doMove/doNullMove write before undoMove/repetition detection reads).
+    historyCounter = 0;
 
-    for (const Color color : Color::all()) { // foreach color
+    for (const Color color : Color::all()) {
       occupiedBb[color] = BbZero;
-      std::fill_n(&piecesBb[color][0], sizeof(piecesBb[color]), BbZero);
+      std::ranges::fill(piecesBb[color], BbZero);
       kingSquare[color]      = SQ_NONE;
       material[color]        = 0;
       materialNonPawn[color] = 0;
       psqMidValue[color]     = 0;
+      psqEndValue[color]     = 0;
     }
 
     hasCheckFlag = FLAG_TBD;

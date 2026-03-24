@@ -2,7 +2,7 @@
 
 **Plan Document:** `docs/specs/PLAN_Texel_Tuning.md`  
 **Created:** 2026-03-22  
-**Last Updated:** 2026-03-23  
+**Last Updated:** 2026-03-24  
 **Target Version:** v1.7  
 
 ---
@@ -17,7 +17,7 @@
 | 3     | Data collection                    | 🚧 In Progress | 2026-03-22 |            |
 | 4     | Position extractor                 | ✅ Complete     | 2026-03-23 | 2026-03-23 |
 | 5     | Mark tunable parameters            | 🚧 In Progress | 2026-03-23 |            |
-| 6     | Optimizer implementation           | ⬚ Not Started  |            |            |
+| 6     | Optimizer implementation           | 🚧 In Progress | 2026-03-24 |            |
 | 7     | Integration testing                | ⬚ Not Started  |            |            |
 | 8     | Gauntlet validation + release      | ⬚ Not Started  |            |            |
 
@@ -146,7 +146,7 @@
 | 5.1  | Mark `tunable = true` on all ~85 eval weight entries in ConfigRegistry | ✅ Complete    |
 | 5.2  | Add `tunableOptions()` query method to ConfigRegistry                  | ✅ Complete    |
 | 5.3  | Add unit test: verify expected number of tunable params discovered     | ✅ Complete    |
-| 5.4  | Record baseline MSE, STS, WAC scores with current v1.6 params         | ⬚ Not Started |
+| 5.4  | Record baseline MSE, STS, WAC scores with current v1.6 params          | ⬚ Not Started |
 
 **Gate:** Tunable flag set, test passes, baselines documented.
 
@@ -158,23 +158,26 @@
 
 ---
 
-## Phase 6: Optimizer Implementation ⬚
+## Phase 6: Optimizer Implementation 🚧
 
-| Step | Task                                                                     | Status        |
-|------|--------------------------------------------------------------------------|---------------|
-| 6.1  | Implement `TuningDataset` loader (FEN+result parsing, train/test split)  | ⬚ Not Started |
-| 6.2  | Implement `TuningParameter` mapping (registry → flat param vector)       | ⬚ Not Started |
-| 6.3  | Implement `TexelTuner` core: sigmoid, MSE computation, K-tuning          | ⬚ Not Started |
-| 6.4  | Implement coordinate descent loop with parallel MSE                      | ⬚ Not Started |
-| 6.5  | Implement incremental MSE optimization (activation flags)                | ⬚ Not Started |
-| 6.6  | Implement monotonicity constraint enforcement for array parameters       | ⬚ Not Started |
-| 6.7  | Implement `TuningState` checkpoint save/load (YAML)                      | ⬚ Not Started |
-| 6.8  | Wire up `TunerMain.cpp` with full CLI                                    | ⬚ Not Started |
-| 6.9  | Implement output: tuned params YAML, comparison report                   | ⬚ Not Started |
-| 6.10 | Write comprehensive unit tests for each component                        | ⬚ Not Started |
-| 6.11 | **Decision point:** Evaluate initial results; decide on PST tuning scope | ⬚ Not Started |
+| Step | Task                                                                     | Status         |
+|------|--------------------------------------------------------------------------|----------------|
+| 6.1  | Implement `TuningDataset` loader (FEN+result parsing, train/test split)  | ✅ Complete     |
+| 6.2  | Implement `TuningParameter` mapping (registry → flat param vector)       | ⬚ Not Started  |
+| 6.3  | Implement `TexelTuner` core: sigmoid, MSE computation, K-tuning          | ⬚ Not Started  |
+| 6.4  | Implement coordinate descent loop with parallel MSE                      | ⬚ Not Started  |
+| 6.5  | Implement incremental MSE optimization (activation flags)                | ⬚ Not Started  |
+| 6.6  | Implement monotonicity constraint enforcement for array parameters       | ⬚ Not Started  |
+| 6.7  | Implement `TuningState` checkpoint save/load (YAML)                      | ⬚ Not Started  |
+| 6.8  | Wire up `TunerMain.cpp` with full CLI                                    | ⬚ Not Started  |
+| 6.9  | Implement output: tuned params YAML, comparison report                   | ⬚ Not Started  |
+| 6.10 | Write comprehensive unit tests for each component                        | ⬚ Not Started  |
+| 6.11 | **Decision point:** Evaluate initial results; decide on PST tuning scope | ⬚ Not Started  |
 
 **Gate:** Tuner runs end-to-end on dev dataset. Checkpoint save/resume works.
+
+**Notes:**
+- 6.1: `TuningDataset` with dual-format loader (FrankyCPP `[result]` + EPD `c9`), auto-detection per line, deterministic train/test split, load stats, FEN validation via reusable Position. `TuningEntry` with `activeParamGroups` bitset for incremental MSE (Phase 6.5). 25 unit tests covering both formats, Zurichess 1.4M EPD, edge cases, split ordering.
 
 ---
 
@@ -224,4 +227,4 @@
 
 ---
 
-*Last updated: 2026-03-23*
+*Last updated: 2026-03-24*
