@@ -163,7 +163,7 @@
 | Step | Task                                                                     | Status         |
 |------|--------------------------------------------------------------------------|----------------|
 | 6.1  | Implement `TuningDataset` loader (FEN+result parsing, train/test split)  | ✅ Complete     |
-| 6.2  | Implement `TuningParameter` mapping (registry → flat param vector)       | ⬚ Not Started  |
+| 6.2  | Implement `TuningParameter` mapping (registry → flat param vector)       | ✅ Complete     |
 | 6.3  | Implement `TexelTuner` core: sigmoid, MSE computation, K-tuning          | ⬚ Not Started  |
 | 6.4  | Implement coordinate descent loop with parallel MSE                      | ⬚ Not Started  |
 | 6.5  | Implement incremental MSE optimization (activation flags)                | ⬚ Not Started  |
@@ -177,7 +177,106 @@
 **Gate:** Tuner runs end-to-end on dev dataset. Checkpoint save/resume works.
 
 **Notes:**
-- 6.1: `TuningDataset` with dual-format loader (FrankyCPP `[result]` + EPD `c9`), auto-detection per line, deterministic train/test split, load stats, FEN validation via reusable Position. `TuningEntry` with `activeParamGroups` bitset for incremental MSE (Phase 6.5). 25 unit tests covering both formats, Zurichess 1.4M EPD, edge cases, split ordering.
+- 6.1: `TuningDataset` with dual-format loader (FrankyCPP `[result]` + EPD `c9`), auto-detection per line, deterministic train/test split, load stats, FEN validation via reusable Position. `TuningEntry` with `activeParamGroups` bitset for incremental MSE (Phase 6.5). 25 unit tests covering both formats, Zurichess 1.4M EPD, edge cases, split ordering. **Committed:** `bcae348`.
+- 6.2: ✅ **Built, tested (20/20 pass), committed.** `TuningParameter` struct + `MonotonicityConstraint` enum + `buildFromRegistry()` static factory. Scalar Int → 1 param, IntArray → 1 param per element. Uses ConfigDef getter/setter lambdas. `applyToConfig()` / `readFromConfig()` round-trip. 13 param groups, monotonicity on 6 arrays, `countTunableValues()`. 20 unit tests all green.
+
+### Session Pickup Instructions
+- Next step: Phase 6.3 — `TexelTuner` core (sigmoid, MSE computation, K-tuning)
+
+### Sprint Plan (Phase 6 Detailed Breakdown)
+
+Phase 6 builds the core Texel tuner: dataset loading, parameter mapping, sigmoid/MSE math,
+coordinate descent optimization, checkpointing, and output. Each sprint is one self-contained
+step (~0.5–2 days) with a clear deliverable and test gate.
+
+#### Sprint 6.1 — TuningDataset loader
+- Create `TuningDataset.h/.cpp` and `TuningEntry.h`.
+- `TuningEntry`: holds FEN string + float result (+ placeholder `activeParamGroups` bitset for Sprint 6.5).
+- `TuningDataset::loadFromFile()`: parse `<FEN> [<result>]` format, one per line; support both `[1.0]` and EPD c9 tag.
+- `TuningDataset::split(float trainFraction)`: deterministic split into train/test pair (no shuffle — file order, as per plan).
+- `size()`, `operator[]`, iteration support.
+- **Tests** (`test/tuning/TuningDatasetTest.cpp`): parse valid lines, reject malformed, verify split ratios, round-trip FEN integrity, test with the dev dataset file `v1.6_vs_v1.5_score.txt`.
+- **Gate:** Loads dev dataset (~49K positions) in < 2s. All tests pass.
+
+#### Sprint 6.2 — TuningParameter mapping
+- Create `TuningParameter.h/.cpp`.
+- `TuningParameter` struct: `name`, `valuePtr` (into live `EvalConfigData`), `originalValue`, `currentValue`, `minValue`/`maxValue`, `delta`, `paramGroup`, `arrayIndex`, `MonotonicityConstraint`.
+- Factory function `buildTuningParameters(EvalConfigData& config)`: queries `ConfigRegistry::instance().tunableOptions()`, builds flat vector. For `IntArray` entries, expand each element into a separate `TuningParameter` with appropriate `arrayIndex`. Assign `paramGroup` IDs (~15 groups by eval category).
+- **Tests** (`test/tuning/TuningParameterTest.cpp`): verify count matches 88 tunable entries (expanded arrays → total individual params), check `valuePtr` points to correct field, verify array expansion for `KING_SAFETY_TABLE` (16 elements) and `PASSED_PAWN_RANK_MID_BONUS` (6 elements), verify monotonicity constraints assigned to known arrays.
+- **Gate:** Parameter vector built from registry. Modifying `*valuePtr` changes `EvalConfigData`. All tests pass.
+
+#### Sprint 6.3 — TexelTuner core: sigmoid, MSE, K-tuning
+- Create `TexelTuner.h/.cpp` with initial core methods.
+- `sigmoid(K, eval)`: `1.0 / (1.0 + pow(10.0, -K * eval / 400.0))`.
+- `computeMSE(dataset)`: iterate all positions, call `Evaluator::evaluate()`, convert to White-relative (negate when Black-to-move), apply sigmoid, accumulate squared error. **Single-threaded first** — parallel in Sprint 6.4.
+- Eval setup: disable `USE_LAZY_EVAL`, `USE_PAWN_TT`; enable `USE_SPACE_EVAL`, `USE_CONNECTED_ROOKS`, `USE_MINOR_CONNECTIVITY` via `CONFIG_OVERRIDE_START`.
+- `tuneK()`: ternary search on [0.5, 2.0] for 50 iterations per plan. Returns optimal K.
+- One `Evaluator` instance (single-threaded).
+- **Tests** (`test/tuning/TexelTunerTest.cpp`): sigmoid unit tests (eval=0 → 0.5, large positive → ~1.0, symmetric), MSE on a tiny hand-crafted dataset (3–5 positions with known results), K-tuning produces value in [0.5, 2.0], MSE with all-zero eval > MSE with real params (sanity).
+- **Gate:** `computeMSE()` runs on dev dataset. `tuneK()` converges. All tests pass.
+
+#### Sprint 6.4 — Parallel MSE + coordinate descent loop
+- Add multi-threaded `computeMSE()`: partition positions across N threads, each with its own `Evaluator` instance (per `threadEvaluators` vector). Aggregate partial sums with sorted reduction for deterministic FP.
+- Use existing `common::ThreadPool` for work dispatch.
+- Implement `tuneParameters()`: outer `while(improved)` loop, inner loop over all `TuningParameter`s. For each: try +delta, compute MSE; try -delta, compute MSE; keep best or revert. Log pass progress (params changed, MSE).
+- Print per-pass summary: pass number, train MSE, test MSE (if available), count of changed params, biggest movers.
+- **Tests:** verify coordinate descent improves MSE on dev dataset (at least 1 pass reduces train MSE), verify multi-thread MSE matches single-thread MSE (within FP tolerance), verify convergence (terminates within `maxPasses`).
+- **Gate:** Full coordinate descent runs end-to-end on dev dataset with 4 threads. MSE decreases. Takes < 60s on dev dataset.
+
+#### Sprint 6.5 — Incremental MSE (activation flags)
+- Add `std::bitset<NUM_PARAM_GROUPS> activeParamGroups` to `TuningEntry`.
+- Implement `TuningDataset::computeActivationFlags(Evaluator&)`: for each position, evaluate once and record which param groups contributed. Use a lightweight instrumentation approach — check which `EvalConfigData` fields are relevant based on board state (e.g., has knights → knight group active, has rooks on open files → rook-file group active).
+- Add `computeMSEIncremental(dataset, paramGroup)`: only re-evaluates positions where `activeParamGroups[paramGroup]` is set.
+- Update `tuneParameters()` to call incremental MSE when testing P ± delta.
+- **Tests:** verify activation flags set correctly for known positions (e.g., position with no knights → knight group not active), verify incremental MSE matches full MSE for the same parameter change, measure speedup (expect ~2× over full MSE).
+- **Gate:** Incremental MSE produces identical results to full MSE. Measurable speedup. All tests pass.
+
+#### Sprint 6.6 — Monotonicity constraints for arrays
+- Implement `enforceMonotonicity(TuningParameter& param, std::vector<TuningParameter>& allParams)`: after modifying an array element, clamp value relative to neighbors (`array[i] >= array[i-1]` for non-decreasing).
+- Integrate into the coordinate descent loop — call after each array element change.
+- Apply to: `KING_SAFETY_TABLE`, `PASSED_PAWN_RANK_MID/END_BONUS`, `PAWN_ADVANCE_MID/END_BONUS`, `PAWN_STORM_MID_PENALTY`.
+- **Tests:** attempt to violate monotonicity by setting middle element below predecessor → verify clamped, verify tuner converges with constraints active (no infinite loops from conflicting clamps).
+- **Gate:** Array parameters maintain ordering after tuning. Tests pass.
+
+#### Sprint 6.7 — TuningState checkpoint save/load
+- Create `TuningState.h/.cpp`.
+- `TuningState` struct: `completedPasses`, `bestMSE`, `K`, `paramValues` (vector of name→value), `datasetPath`, `timestamp`.
+- `saveToYaml(path)`: serialize to YAML using yaml-cpp.
+- `loadFromYaml(path)`: deserialize and restore parameter values into `EvalConfigData` via `ConfigRegistry` setters.
+- Integrate into `tuneParameters()`: save checkpoint after each completed pass.
+- Add `--resume` support: load checkpoint, set K, restore param values, continue from `completedPasses + 1`.
+- **Tests:** save → load round-trip (all fields preserved), resume produces same result as uninterrupted run (determinism), corrupt/missing file handling.
+- **Gate:** Checkpoint YAML is human-readable and round-trips correctly. Resume works. Tests pass.
+
+#### Sprint 6.8 — Wire up TunerMain.cpp
+- Replace the "not yet implemented" stub in `TunerMain.cpp` with the full pipeline: load dataset → split → apply eval overrides → tune K → tune parameters → save output.
+- Map all CLI args to `TexelTuner` configuration: `--threads`, `--test-split`, `--max-passes`, `--resume`, `--verbose`.
+- Add `TUNING_LOG` logger initialization for structured logging.
+- Print final summary: baseline MSE, final MSE, improvement %, number of passes, elapsed time.
+- **Gate:** `FrankyCPP_v1.7_Tuner --dataset dev_50k.txt --threads 4` runs end-to-end and produces output files.
+
+#### Sprint 6.9 — Output: tuned YAML + comparison report
+- Generate `tuned_params.yaml`: only tuned eval parameters, in `ConfigManager`-loadable format (matching `config/eval.yaml` structure).
+- Generate `param_comparison.txt`: side-by-side table — parameter name, original value, tuned value, delta, change %. Flag sign-flipped params. Flag zeroed-out params (candidates for removal).
+- Print comparison summary to stdout and `TUNING_LOG`.
+- **Tests:** verify YAML output is loadable by `ConfigManager`, verify comparison report contains all tuned params, verify delta/percentage calculations.
+- **Gate:** Output YAML can be copied to `config/eval.yaml` and engine starts normally. Comparison report is human-readable.
+
+#### Sprint 6.10 — Comprehensive unit tests
+- Review test coverage across all Sprint 6.1–6.9 components. Add missing edge cases:
+  - `TuningDataset`: empty file, single position, huge result values, duplicate FENs
+  - `TuningParameter`: min/max clamping, delta=0 edge, all-array-expanded count verification
+  - `TexelTuner`: eval perspective correctness (known position with known who-is-better), MSE=0 edge case (perfect predictions), convergence with only 1 parameter
+  - `TuningState`: empty state, partial checkpoint, version mismatch handling
+  - Integration test: small end-to-end run (100 positions, 3 params, 2 passes) → verify MSE decreases and output files valid.
+- **Gate:** All tests pass. No untested public methods in optimizer module.
+
+#### Sprint 6.11 — Decision point: evaluate results
+- Run tuner on full dev dataset (~49K positions) with all 88 tunable params. Record train/test MSE and wall time.
+- Inspect tuned values: sanity checks (signs, magnitudes, no wild outliers).
+- Compare MSE improvement with baseline from Phase 5.4.
+- **Decision:** Is PST tuning needed? If eval-weight-only MSE improvement is satisfactory and test MSE tracks train MSE (no overfitting), proceed to Phase 7. If MSE plateaus, consider PST follow-up (Phase D in plan).
+- *This is an analysis/decision step, not a code step.*
 
 ---
 
