@@ -20,6 +20,7 @@
 #include "tuning/optimizer/TexelTuner.h"
 
 #include "tuning/optimizer/TuningDataset.h"
+#include "tuning/optimizer/TuningParameter.h"
 #include "config/ConfigManager.h"
 #include "init.h"
 #include "types/macros.h"
@@ -336,4 +337,271 @@ TEST_F(TexelTunerTest, tuneK_DevDataset) {
   EXPECT_GT(mse, 0.0);
   EXPECT_LT(mse, 1.0);
   std::cout << "  Dev dataset MSE at optimal K: " << mse << "\n";
+}
+
+// =========================================================================
+// Parallel MSE tests (Sprint 6.4)
+// =========================================================================
+
+TEST_F(TexelTunerTest, parallelMSE_MatchesSingleThread) {
+  // Parallel MSE must match single-threaded MSE within tight FP tolerance
+  TexelTuner::setupEvalOverrides();
+
+  TexelTuner singleThreadTuner;
+  singleThreadTuner.createEvaluator();
+
+  TexelTuner parallelTuner;
+  parallelTuner.createEvaluators(4);
+
+  // Use hand-crafted dataset
+  TuningDataset dataset;
+  auto& entries = dataset.getEntries();
+  entries.emplace_back("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 0.5F);
+  entries.emplace_back("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1", 0.5F);
+  entries.emplace_back("rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQq - 0 1", 1.0F);
+  entries.emplace_back("rnbqkbn1/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQq - 0 1", 1.0F);
+  entries.emplace_back("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 0 1", 0.0F);
+  entries.emplace_back("r1bqkbnr/pppppppp/2n5/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 1 2", 0.5F);
+  entries.emplace_back("rnbqkb1r/pppppppp/5n2/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 1 2", 0.5F);
+  entries.emplace_back("rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2", 0.5F);
+
+  const double mseSingle   = singleThreadTuner.computeMSE(dataset, 1.0);
+  const double mseParallel = parallelTuner.computeMSEParallel(dataset, 1.0);
+
+  std::cout << "  Single-threaded MSE: " << mseSingle << "\n";
+  std::cout << "  Parallel MSE (4t):   " << mseParallel << "\n";
+
+  // Tolerance: FP rounding from different summation order
+  EXPECT_NEAR(mseSingle, mseParallel, 1e-10);
+}
+
+TEST_F(TexelTunerTest, parallelMSE_DeterministicAcrossRuns) {
+  // Two consecutive calls must produce bit-identical results (sorted reduction)
+  TexelTuner::setupEvalOverrides();
+  TexelTuner tuner;
+  tuner.createEvaluators(4);
+
+  TuningDataset dataset;
+  auto& entries = dataset.getEntries();
+  entries.emplace_back("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 0.5F);
+  entries.emplace_back("rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQq - 0 1", 1.0F);
+  entries.emplace_back("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 0 1", 0.0F);
+  entries.emplace_back("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1", 0.5F);
+  entries.emplace_back("r1bqkbnr/pppppppp/2n5/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 1 2", 0.5F);
+
+  const double mse1 = tuner.computeMSEParallel(dataset, 1.0);
+  const double mse2 = tuner.computeMSEParallel(dataset, 1.0);
+
+  EXPECT_DOUBLE_EQ(mse1, mse2);
+  std::cout << "  Run 1 MSE: " << mse1 << "\n";
+  std::cout << "  Run 2 MSE: " << mse2 << "\n";
+}
+
+TEST_F(TexelTunerTest, parallelMSE_SingleThread_MatchesSingleThread) {
+  // computeMSEParallel with 1 thread should delegate to computeMSE
+  TexelTuner::setupEvalOverrides();
+  TexelTuner tuner;
+  tuner.createEvaluator(); // single-threaded mode
+
+  TuningDataset dataset;
+  auto& entries = dataset.getEntries();
+  entries.emplace_back("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 0.5F);
+  entries.emplace_back("rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQq - 0 1", 1.0F);
+
+  const double mseSingle   = tuner.computeMSE(dataset, 1.0);
+  const double mseParallel = tuner.computeMSEParallel(dataset, 1.0);
+
+  EXPECT_DOUBLE_EQ(mseSingle, mseParallel);
+}
+
+TEST_F(TexelTunerTest, parallelMSE_EmptyDataset_ReturnsZero) {
+  TexelTuner::setupEvalOverrides();
+  TexelTuner tuner;
+  tuner.createEvaluators(4);
+
+  const TuningDataset empty;
+  EXPECT_DOUBLE_EQ(tuner.computeMSEParallel(empty, 1.0), 0.0);
+}
+
+TEST_F(TexelTunerTest, parallelMSE_ThrowsWithoutEvaluator) {
+  const TexelTuner tuner;
+  TuningDataset dataset;
+  dataset.getEntries().emplace_back(
+    "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1", 0.5F);
+
+  EXPECT_THROW((void)tuner.computeMSEParallel(dataset, 1.0), std::logic_error);
+}
+
+TEST_F(TexelTunerTest, parallelMSE_DevDataset) {
+  const std::string devPath =
+    std::string(FrankyCPP_PROJECT_ROOT) + "/test/testsets/tuning/v1.6_vs_v1.5_score.txt";
+
+  TuningDataset dataset;
+  try {
+    dataset.loadFromFile(devPath, 2000); // 2000 entries for meaningful parallel test
+  } catch (...) {
+    GTEST_SKIP() << "Dev dataset not available at " << devPath;
+  }
+
+  TexelTuner::setupEvalOverrides();
+
+  TexelTuner singleThreadTuner;
+  singleThreadTuner.createEvaluator();
+
+  TexelTuner parallelTuner;
+  parallelTuner.createEvaluators(4);
+
+  const double mseSingle   = singleThreadTuner.computeMSE(dataset, 1.0);
+  const double mseParallel = parallelTuner.computeMSEParallel(dataset, 1.0);
+
+  // Within tight FP tolerance
+  EXPECT_NEAR(mseSingle, mseParallel, 1e-10);
+  std::cout << "  Dev dataset (2000): single MSE = " << mseSingle
+            << ", parallel MSE = " << mseParallel
+            << ", diff = " << std::abs(mseSingle - mseParallel) << "\n";
+}
+
+// =========================================================================
+// Coordinate descent tests (Sprint 6.4)
+// =========================================================================
+
+TEST_F(TexelTunerTest, coordinateDescent_ThrowsWithoutEvaluator) {
+  TexelTuner tuner;
+  TuningDataset trainSet;
+  trainSet.getEntries().emplace_back(
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 0.5F);
+  std::vector<TuningParameter> params;
+
+  EXPECT_THROW(tuner.tuneParameters(trainSet, nullptr, params), std::logic_error);
+}
+
+TEST_F(TexelTunerTest, coordinateDescent_EmptyTrainSet_NoOp) {
+  TexelTuner::setupEvalOverrides();
+  TexelTuner tuner;
+  tuner.createEvaluator();
+
+  const TuningDataset empty;
+  std::vector<TuningParameter> params;
+  // Should return without throwing
+  EXPECT_NO_THROW(tuner.tuneParameters(empty, nullptr, params));
+}
+
+TEST_F(TexelTunerTest, coordinateDescent_EmptyParams_NoOp) {
+  TexelTuner::setupEvalOverrides();
+  TexelTuner tuner;
+  tuner.createEvaluator();
+
+  TuningDataset trainSet;
+  trainSet.getEntries().emplace_back(
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 0.5F);
+
+  std::vector<TuningParameter> params;
+  EXPECT_NO_THROW(tuner.tuneParameters(trainSet, nullptr, params));
+}
+
+TEST_F(TexelTunerTest, coordinateDescent_TerminatesOnNoImprovement) {
+  // With a tiny dataset and few params, coordinate descent should converge quickly
+  TexelTuner::setupEvalOverrides();
+  TexelTuner tuner;
+  tuner.createEvaluator();
+
+  TuningDataset trainSet;
+  auto& entries = trainSet.getEntries();
+  entries.emplace_back("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 0.5F);
+  entries.emplace_back("rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQq - 0 1", 1.0F);
+  entries.emplace_back("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 0 1", 0.0F);
+
+  // Build full param vector, but limit to just 3 params for speed
+  const auto& searchConfig = ConfigManager::instance().search();
+  const auto& evalConfig   = ConfigManager::instance().eval();
+  auto allParams = TuningParameter::buildFromRegistry(searchConfig, evalConfig);
+
+  // Take only the first 3 params (enough to test convergence logic)
+  std::vector params(
+    allParams.begin(),
+    allParams.begin() + std::min(static_cast<std::size_t>(3), allParams.size()));
+
+  // Tune K first
+  (void)tuner.tuneK(trainSet);
+
+  // Run with high maxPasses — should terminate well before 50
+  tuner.tuneParameters(trainSet, nullptr, params, 50);
+
+  // If we got here without hanging, the termination logic works.
+  // Params may or may not have changed (tiny dataset = noisy), but no crash.
+  SUCCEED();
+}
+
+TEST_F(TexelTunerTest, coordinateDescent_ReducesMSE_DevDataset) {
+  const std::string devPath =
+    std::string(FrankyCPP_PROJECT_ROOT) + "/test/testsets/tuning/v1.6_vs_v1.5_score.txt";
+
+  TuningDataset fullDataset;
+  try {
+    fullDataset.loadFromFile(devPath, 5000); // 5000 positions for meaningful test
+  } catch (...) {
+    GTEST_SKIP() << "Dev dataset not available at " << devPath;
+  }
+
+  TexelTuner::setupEvalOverrides();
+  TexelTuner tuner;
+  tuner.createEvaluators(4);
+
+  // Split into train/test
+  auto [trainSet, testSet] = fullDataset.split(0.8F);
+
+  // Build parameters
+  const auto& searchConfig = ConfigManager::instance().search();
+  const auto& evalConfig   = ConfigManager::instance().eval();
+  auto params = TuningParameter::buildFromRegistry(searchConfig, evalConfig);
+
+  std::cout << "  Parameters: " << params.size() << "\n";
+  std::cout << "  Train set:  " << trainSet.size() << " positions\n";
+  std::cout << "  Test set:   " << testSet.size() << " positions\n";
+
+  // Tune K
+  const double K = tuner.tuneK(trainSet);
+  std::cout << "  Tuned K:    " << K << "\n";
+
+  // Baseline MSE before tuning
+  const double baselineMSE = tuner.computeMSEParallel(trainSet, K);
+  std::cout << "  Baseline train MSE: " << baselineMSE << "\n";
+
+  // Run 1 pass of coordinate descent
+  tuner.tuneParameters(trainSet, &testSet, params, 1);
+
+  // Final MSE after 1 pass
+  const double finalMSE = tuner.computeMSEParallel(trainSet, K);
+  std::cout << "  Final train MSE:    " << finalMSE << "\n";
+  std::cout << "  Improvement:        " << (baselineMSE - finalMSE) << "\n";
+
+  // MSE should not increase after optimization
+  EXPECT_LE(finalMSE, baselineMSE + 1e-12);
+
+  // Count how many params changed
+  int changed = 0;
+  for (const auto& p : params) {
+    if (p.currentValue != p.originalValue) {
+      ++changed;
+    }
+  }
+  std::cout << "  Parameters changed: " << changed << "/" << params.size() << "\n";
+}
+
+TEST_F(TexelTunerTest, createEvaluators_ClampsThreadCount) {
+  TexelTuner::setupEvalOverrides();
+  TexelTuner tuner;
+
+  // 0 threads should be clamped to 1
+  tuner.createEvaluators(0);
+  EXPECT_GE(tuner.numThreads(), 1);
+  EXPECT_TRUE(tuner.hasEvaluator());
+
+  // Negative threads should be clamped to 1
+  tuner.createEvaluators(-5);
+  EXPECT_GE(tuner.numThreads(), 1);
+
+  // Valid thread count
+  tuner.createEvaluators(2);
+  EXPECT_EQ(tuner.numThreads(), 2);
 }

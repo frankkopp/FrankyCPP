@@ -165,7 +165,7 @@
 | 6.1  | Implement `TuningDataset` loader (FEN+result parsing, train/test split)  | ✅ Complete     |
 | 6.2  | Implement `TuningParameter` mapping (registry → flat param vector)       | ✅ Complete     |
 | 6.3  | Implement `TexelTuner` core: sigmoid, MSE computation, K-tuning          | ✅ Complete     |
-| 6.4  | Implement coordinate descent loop with parallel MSE                      | ⬚ Not Started  |
+| 6.4  | Implement coordinate descent loop with parallel MSE                      | ✅ Complete     |
 | 6.5  | Implement incremental MSE optimization (activation flags)                | ⬚ Not Started  |
 | 6.6  | Implement monotonicity constraint enforcement for array parameters       | ⬚ Not Started  |
 | 6.7  | Implement `TuningState` checkpoint save/load (YAML)                      | ⬚ Not Started  |
@@ -180,9 +180,10 @@
 - 6.1: `TuningDataset` with dual-format loader (FrankyCPP `[result]` + EPD `c9`), auto-detection per line, deterministic train/test split, load stats, FEN validation via reusable Position. `TuningEntry` with `activeParamGroups` bitset for incremental MSE (Phase 6.5). 25 unit tests covering both formats, Zurichess 1.4M EPD, edge cases, split ordering. **Committed:** `bcae348`.
 - 6.2: ✅ **Built, tested (20/20 pass), committed.** `TuningParameter` struct + `MonotonicityConstraint` enum + `buildFromRegistry()` static factory. Scalar Int → 1 param, IntArray → 1 param per element. Uses ConfigDef getter/setter lambdas. `applyToConfig()` / `readFromConfig()` round-trip. 13 param groups, monotonicity on 6 arrays, `countTunableValues()`. 20 unit tests all green.
 - 6.3: ✅ **Built, tested (18/18 pass), committed.** `TexelTuner` class with `sigmoid()`, `computeMSE()` (single-threaded), `tuneK()` (ternary search). `setupEvalOverrides()` disables lazy eval/pawn TT, enables space/coordination terms. Uses `setFromFen()` for efficient position reuse. Eval perspective handled correctly (negate when Black to move). Dev dataset K≈0.52, MSE≈0.071. 18 unit tests (6 sigmoid, 7 MSE, 3 K-tuning, 2 dev dataset integration).
+- 6.4: ✅ **Built, tested (30/30 pass), committed.** Parallel MSE via `common::ThreadPool` — one `Evaluator` per thread, sorted partial-sum reduction for deterministic FP. `createEvaluators(N)` creates N evaluators + pool. `computeMSEParallel()` matches single-threaded within 1 ULP (2.2e-16 diff on 2K positions). Coordinate descent `tuneParameters()` — tries ±delta per param, keeps best direction, logs per-pass summary (train/test MSE, params changed, biggest mover, time). Mutable config access via `applyOverrides()`. Dev dataset (5K pos, 122 params, 4 threads): 95/122 params improved, MSE 0.1200→0.1178 (−0.0022) in 1 pass, 1.05s. `tuneK()` auto-selects parallel MSE when multi-threaded. 12 new tests (6 parallel MSE, 5 coordinate descent, 1 thread clamping).
 
 ### Session Pickup Instructions
-- Next step: Phase 6.4 — Parallel MSE + coordinate descent loop
+- Next step: Phase 6.5 — Incremental MSE with activation flags
 
 ### Sprint Plan (Phase 6 Detailed Breakdown)
 
@@ -327,4 +328,4 @@ step (~0.5–2 days) with a clear deliverable and test gate.
 
 ---
 
-*Last updated: 2026-03-24*
+*Last updated: 2026-03-25*

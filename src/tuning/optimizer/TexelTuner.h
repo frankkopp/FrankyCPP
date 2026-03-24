@@ -28,10 +28,12 @@
 // regression that optimizes eval parameters by minimizing the mean squared
 // error between sigmoid-mapped static evaluations and game outcomes.
 //
-// Sprint 6.3 Scope (core math):
+// Core Capabilities:
 //   - sigmoid(K, eval): maps eval → expected outcome [0, 1]
 //   - computeMSE(dataset, K): single-threaded MSE over a dataset
+//   - computeMSEParallel(dataset, K): multi-threaded MSE (one Evaluator per thread)
 //   - tuneK(dataset): ternary search for optimal scaling constant
+//   - tuneParameters(): coordinate descent optimization loop
 //   - setupEvalOverrides(): disables lazy eval / pawn TT for tuning
 //
 // Eval Perspective (Critical):
@@ -40,21 +42,31 @@
 //     whiteRelativeEval = (nextPlayer == WHITE) ? rawEval : -rawEval
 //
 // Thread Safety:
-//   The TexelTuner is NOT thread-safe. Sprint 6.4 will add parallel MSE.
-//   For now, all computation is single-threaded.
+//   - computeMSEParallel() dispatches chunks to a ThreadPool. Each worker
+//     thread uses its own Evaluator instance and stack-local Position.
+//     The dataset and EvalConfigData are read-only during MSE computation.
+//   - Parameter mutation (applyToConfig) happens on the main thread only,
+//     strictly between MSE computations — no data races.
+//   - Partial sums are sorted before aggregation for deterministic FP results.
 //
 // Usage:
 //   TexelTuner tuner;
 //   tuner.setupEvalOverrides();
-//   tuner.createEvaluator();
-//   double mse = tuner.computeMSE(dataset, 1.0);
-//   double K   = tuner.tuneK(dataset);
+//   tuner.createEvaluators(4);             // 4 worker threads
+//   double K = tuner.tuneK(dataset);       // uses parallel MSE automatically
+//   tuner.tuneParameters(train, &test, params);  // coordinate descent
 //
 //=============================================================================
 
 #include "tuning/optimizer/TuningDataset.h"
+#include "tuning/optimizer/TuningParameter.h"
 
 #include <memory>
+#include <vector>
+
+namespace common {
+  class ThreadPool;
+}
 
 namespace engine {
   class Evaluator;
@@ -64,9 +76,17 @@ namespace tuning {
 
   class TexelTuner {
 
-    /// Single evaluator instance for MSE computation (single-threaded).
-    /// Created by createEvaluator(). No PawnTT attached.
-    std::unique_ptr<engine::Evaluator> evaluator_;
+    /// Evaluator instances — one per worker thread for parallel MSE.
+    /// threadEvaluators_[0] is also used for single-threaded computeMSE().
+    /// Created by createEvaluators(). No PawnTT attached.
+    std::vector<std::unique_ptr<engine::Evaluator>> threadEvaluators_;
+
+    /// Thread pool for parallel MSE computation (reused across all calls).
+    /// Created by createEvaluators(). nullptr if single-threaded.
+    std::unique_ptr<common::ThreadPool> threadPool_;
+
+    /// Number of worker threads for parallel MSE.
+    int numThreads_ = 0;
 
     /// Scaling constant K (tuned via tuneK(), default 1.0).
     double K_ = 1.0;
@@ -75,7 +95,7 @@ namespace tuning {
     TexelTuner();
     ~TexelTuner();
 
-    // Non-copyable, non-movable (owns evaluator)
+    // Non-copyable, non-movable (owns evaluators and thread pool)
     TexelTuner(const TexelTuner&)            = delete;
     TexelTuner& operator=(const TexelTuner&) = delete;
     TexelTuner(TexelTuner&&)                 = delete;
@@ -88,9 +108,14 @@ namespace tuning {
     ///   (so the tuner can optimize or zero out their weights)
     static void setupEvalOverrides();
 
-    /// Creates the evaluator instance. Must be called after setupEvalOverrides()
-    /// so the evaluator picks up the overridden config.
+    /// Creates a single evaluator instance (single-threaded mode).
+    /// Must be called after setupEvalOverrides().
     void createEvaluator();
+
+    /// Creates N evaluator instances and a thread pool for parallel MSE.
+    /// Must be called after setupEvalOverrides(). Replaces any existing evaluators.
+    /// @param numThreads  Number of worker threads (clamped to [1, hardware_concurrency])
+    void createEvaluators(int numThreads);
 
     // =========================================================================
     // Core math (public for unit testing)
@@ -111,8 +136,18 @@ namespace tuning {
     /// @return MSE value
     [[nodiscard]] double computeMSE(const TuningDataset& dataset, double K) const;
 
+    /// Computes mean squared error over a dataset using multiple threads.
+    /// Partitions the dataset into chunks, one per worker thread. Each thread
+    /// uses its own Evaluator and stack-local Position.
+    /// Partial sums are sorted before aggregation for deterministic FP results.
+    /// Falls back to single-threaded computeMSE() if numThreads_ <= 1.
+    /// @param dataset  The dataset to evaluate (read-only during computation)
+    /// @param K        Scaling constant
+    /// @return MSE value (matches single-threaded result within FP tolerance)
+    [[nodiscard]] double computeMSEParallel(const TuningDataset& dataset, double K) const;
+
     /// Tunes the scaling constant K via ternary search on [kLow, kHigh].
-    /// Uses the provided dataset to minimize MSE.
+    /// Uses parallel MSE if evaluators were created with createEvaluators().
     /// @param dataset     The dataset to evaluate
     /// @param kLow        Lower bound for K search (default 0.5)
     /// @param kHigh       Upper bound for K search (default 2.0)
@@ -123,14 +158,36 @@ namespace tuning {
                                int iterations = 50);
 
     // =========================================================================
+    // Coordinate descent optimizer
+    // =========================================================================
+
+    /// Optimizes parameters via coordinate descent to minimize MSE.
+    ///
+    /// For each parameter, tries ±delta and keeps the direction that reduces
+    /// MSE. Repeats over all parameters until no improvement or maxPasses reached.
+    /// Logs per-pass summary (train MSE, test MSE, params changed, biggest mover).
+    ///
+    /// @param trainSet     Training dataset (MSE minimized on this)
+    /// @param testSet      Optional test dataset for overfitting detection (nullptr to skip)
+    /// @param params       Mutable parameter vector (values modified in place)
+    /// @param maxPasses    Maximum number of full passes over all parameters (default 100)
+    void tuneParameters(const TuningDataset& trainSet,
+                        const TuningDataset* testSet,
+                        std::vector<TuningParameter>& params,
+                        int maxPasses = 100);
+
+    // =========================================================================
     // Accessors
     // =========================================================================
 
     /// Returns the current scaling constant K.
     [[nodiscard]] double getK() const { return K_; }
 
-    /// Returns whether the evaluator has been created.
-    [[nodiscard]] bool hasEvaluator() const { return evaluator_ != nullptr; }
+    /// Returns whether at least one evaluator has been created.
+    [[nodiscard]] bool hasEvaluator() const { return !threadEvaluators_.empty(); }
+
+    /// Returns the number of worker threads configured for parallel MSE.
+    [[nodiscard]] int numThreads() const { return numThreads_; }
   };
 
 } // namespace tuning
