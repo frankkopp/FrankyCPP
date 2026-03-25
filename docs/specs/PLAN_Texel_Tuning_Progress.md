@@ -173,7 +173,7 @@
 | 6.6  | Implement monotonicity constraint enforcement for array parameters       | ✅ Complete     |
 | 6.7  | Implement `TuningState` checkpoint save/load (YAML)                      | ✅ Complete     |
 | 6.8  | Wire up `TunerMain.cpp` with full CLI                                    | ✅ Complete     |
-| 6.9  | Implement output: tuned params YAML, comparison report                   | ⬚ Not Started  |
+| 6.9  | Implement output: tuned params YAML, comparison report                   | ✅ Complete     |
 | 6.10 | Write comprehensive unit tests for each component                        | ⬚ Not Started  |
 | 6.11 | **Decision point:** Evaluate initial results; decide on PST tuning scope | ⬚ Not Started  |
 
@@ -192,8 +192,10 @@
 
 - 6.8: ✅ **Built, committed.** `TunerMain.cpp` wired up with full end-to-end pipeline. Replaces the Phase 6 TODO stub with: dataset loading → train/test split → eval overrides → evaluator pool creation → parameter vector from registry → checkpoint resume (`--resume`) with `setK()` → K tuning (ternary search) → coordinate descent with checkpointing → final summary with top-20 movers table. All CLI args mapped: `--dataset`, `--output`, `--threads`, `--test-split`, `--max-passes`, `--resume`, `--verbose`. TUNING_LOG level set to debug when verbose. Added `setK()` setter to `TexelTuner` for clean checkpoint resume. Checkpoint path auto-derived from output path stem.
 
+- 6.9: ✅ **Built, tested, committed.** `TuningOutput` class with `writeParamsYaml()` and `writeComparisonReport()`. YAML output uses flat-key format matching `config/eval.yaml` — array elements coalesced back into comma-separated values (e.g., `KING_SAFETY_TABLE: 0,5,15,...`). Comparison report has statistics (changed, unchanged, sign-flipped, zeroed-out), full parameter table with delta and change%, flags for SIGN-FLIP and ->ZERO. Console summary via `printComparisonSummary()`. Integrated into `TunerMain.cpp`: generates `<output>.yaml`, `<output>_comparison.txt`, and prints summary. 18 new tests: YAML header, scalar params, array coalescing, empty params, file creation, bad path, report header/statistics/all-params/delta/flags, registry round-trip YAML+report, edge cases (all unchanged, percentage calculation, from-zero).
+
 ### Session Pickup Instructions
-- Next step: Phase 6.9 — Output: tuned params YAML + comparison report
+- Next step: Phase 6.10 — Comprehensive unit tests
 
 ### Sprint Plan (Phase 6 Detailed Breakdown)
 
