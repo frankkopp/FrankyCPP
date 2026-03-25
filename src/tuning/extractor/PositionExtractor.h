@@ -73,6 +73,7 @@ namespace tuning {
     int qsearchMaxDepth   = 6;     ///< Filter 5: max depth for standalone qsearch
     bool scoreFilter      = false; ///< Filter 6: skip positions where search score contradicts result
     int scoreThreshold    = 200;   ///< Filter 6: threshold in centipawns for contradiction
+    bool verbose          = false; ///< Print progress updates during extraction
   };
 
   /// Statistics collected during position extraction.

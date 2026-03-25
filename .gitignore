@@ -26,7 +26,13 @@ temp_*/
 /results/vtune/**/threading/
 /results/vtune/**/hpc-performance/
 
-# Tuning datasets - large files, keep only the URL/source txt files
+# Tuning datasets - large files, keep only the URL/source txt files and .7z archives
 /test/testsets/tuning/*.epd
 /test/testsets/tuning/*.epd.gz
 /test/testsets/tuning/*.pgn
+/test/testsets/tuning/selfplay_v1.7_50k_score.txt
+/test/testsets/tuning/v1.6_vs_v1.5.txt
+/test/testsets/tuning/v1.6_vs_v1.5_qs.txt
+/test/testsets/tuning/v1.6_vs_v1.5_score.txt
+/test/testsets/tuning/v1.6_vs_SF18.txt
+/test/testsets/tuning/v1.6_vs_SF18_qs.txt

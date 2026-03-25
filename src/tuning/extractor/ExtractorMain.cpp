@@ -173,12 +173,15 @@ int main(int argc, char* argv[]) {
     config.qsearchThreshold = qsThreshold;
     config.scoreFilter      = scFilter;
     config.scoreThreshold   = scThreshold;
+    config.verbose          = verbose;
 
     tuning::PositionExtractor extractor;
 
+    std::cout << "Extracting positions...\n" << std::flush;
     const auto startTime = steady_clock::now();
     extractor.extract(inputPath, outputPath, config);
     const auto endTime = steady_clock::now();
+    std::cout << "Extraction complete.\n\n";
 
     const auto elapsedMs = std::chrono::duration_cast<milliseconds>(endTime - startTime).count();
     extractor.getStats().printSummary(inputPath, outputPath, elapsedMs);

@@ -1,9 +1,9 @@
 # FrankyCPP Texel Tuning Plan
 
-**Document Version:** 1.3  
+**Document Version:** 1.4  
 **Created:** 2026-03-21  
-**Last Updated:** 2026-03-23  
-**Status:** 🚧 In Progress (Phases 0–2 ✅, Phase 3–5 🚧)  
+**Last Updated:** 2026-03-25  
+**Status:** 🚧 In Progress (Phases 0–4 ✅, Phase 5–6 🚧)  
 **Target:** FrankyCPP v1.7  
 **Priority:** High (Phase 5 of Eval & Strength Improvement Plan)  
 **Predecessor:** `PLAN_Eval_and_Strength_Improvement.md`

@@ -2,7 +2,7 @@
 
 **Plan Document:** `docs/specs/PLAN_Texel_Tuning.md`  
 **Created:** 2026-03-22  
-**Last Updated:** 2026-03-24  
+**Last Updated:** 2026-03-25  
 **Target Version:** v1.7  
 
 ---
@@ -14,7 +14,7 @@
 | 0     | Release v1.6, branch v1.7          | ✅ Complete     | —          | 2026-03-22 |
 | 1     | Module structure + PGN library     | ✅ Complete     | 2026-03-22 | 2026-03-22 |
 | 2     | Tuning build targets (scaffolding) | ✅ Complete     | 2026-03-22 | 2026-03-22 |
-| 3     | Data collection                    | 🚧 In Progress | 2026-03-22 |            |
+| 3     | Data collection                    | ✅ Complete     | 2026-03-22 | 2026-03-25 |
 | 4     | Position extractor                 | ✅ Complete     | 2026-03-23 | 2026-03-23 |
 | 5     | Mark tunable parameters            | 🚧 In Progress | 2026-03-23 |            |
 | 6     | Optimizer implementation           | 🚧 In Progress | 2026-03-24 |            |
@@ -88,20 +88,22 @@
 
 ---
 
-## Phase 3: Data Collection 🚧
+## Phase 3: Data Collection ✅
 
-| Step | Task                                                               | Status         |
-|------|--------------------------------------------------------------------|----------------|
-| 3.1  | Download Zurichess quiet-labeled dataset (or similar)              | ⬚ Not Started  |
-| 3.2  | Create a small dev subset (~50K–100K positions) for fast iteration | ✅ Complete     |
-| 3.3  | Start FrankyCPP self-play generation in background (cutechess-cli) | ✅ Complete     |
-| 3.4  | Document dataset sources and locations in `test/testsets/tuning/`  | ⬚ Not Started  |
+| Step | Task                                                               | Status     |
+|------|--------------------------------------------------------------------|------------|
+| 3.1  | Download Zurichess quiet-labeled dataset (or similar)              | ✅ Complete |
+| 3.2  | Create a small dev subset (~50K–100K positions) for fast iteration | ✅ Complete |
+| 3.3  | Start FrankyCPP self-play generation in background (cutechess-cli) | ✅ Complete |
+| 3.4  | Document dataset sources and locations in `test/testsets/tuning/`  | ✅ Complete |
 
-**Gate:** Dev dataset and full downloaded dataset available in `test/testsets/tuning/`.
+**Gate:** ✅ Dev dataset and full datasets available in `test/testsets/tuning/`. Combined ~6.0M positions.
 
 **Notes:**
+- 3.1: Zurichess quiet-labeled.v7 downloaded (1,428,000 positions). Archived as `quiet-labeled.epd.7z`.
 - 3.2: Dev dataset extracted from v1.6 vs v1.5 matches: ~49K positions (`v1.6_vs_v1.5_score.txt`)
-- 3.3: Self-play complete: 17,037 games → 1.54M positions with qsearch+score filter (`selfplay_v1.7_50k_score.txt`)
+- 3.3: Self-play complete: 50,142 games (cutechess-cli, st=0.5, concurrency 12, 8moves_v3.pgn openings). Extracted with score+qsearch filters → 4,568,763 positions (`selfplay_v1.7_50k_score.txt`). PGN archived as `selfplay_v1.7_50k.7z`. Match stats in `50k-matches-info.txt`.
+- 3.4: `extraction-commands.txt` created with exact regeneration commands, filter settings, and extraction summary. Large files git-ignored; only `.7z` archives and info files committed.
 
 ---
 
@@ -136,6 +138,7 @@
   - Score filter only: 1,597,558 extracted (61.33%), 909 games/s, 18.5s
   - Score + qsearch: 1,541,080 extracted (59.07%), 338 games/s, 49.8s (2.7× slower)
   - Qsearch caught 58,972 additional positions (2.26%); score filter caught ~3,000 (0.1%)
+- **Verbose progress:** Added `--verbose` progress reporting (every 5000 games: count, positions, elapsed, rate). Previously the flag was parsed but unused.
 
 ---
 
@@ -329,4 +332,4 @@ step (~0.5–2 days) with a clear deliverable and test gate.
 
 ---
 
-*Last updated: 2026-03-24*
+*Last updated: 2026-03-25*
