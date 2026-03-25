@@ -31,6 +31,7 @@
 #include <format>
 #include <future>
 #include <numeric>
+#include <optional>
 #include <stdexcept>
 #include <thread>
 
@@ -628,6 +629,66 @@ namespace tuning {
   }
 
   // =========================================================================
+  // Monotonicity enforcement
+  // =========================================================================
+
+  // For array parameters with monotonicity constraints, clamp the value
+  // at arrayIndex relative to its neighbors in the same array.
+  //
+  // The params vector is ordered by buildFromRegistry(): array elements are
+  // contiguous and in index order (e.g., KING_SAFETY_TABLE[0], [1], ..., [15]).
+  // We find the neighbors by scanning the vector for matching configName
+  // and adjacent arrayIndex values.
+  //
+  // Only the modified element is clamped — neighbors are not changed.
+  // This ensures the coordinate descent loop converges (no cascading clamps).
+
+  void TexelTuner::enforceMonotonicity(TuningParameter& param,
+                                       const std::vector<TuningParameter>& params) {
+    // No-op for scalars or unconstrained params
+    if (param.arrayIndex < 0 || param.monotonicity == MonotonicityConstraint::NONE) {
+      return;
+    }
+
+    // Find neighbor values in the same array.
+    // Since array elements are contiguous in the vector, we can search by
+    // configName + arrayIndex.  Use optional to distinguish "no neighbor" from "value 0".
+    std::optional<int> prevValue;
+    std::optional<int> nextValue;
+
+    for (const auto& other : params) {
+      if (other.configName != param.configName || other.arrayIndex < 0) continue;
+      if (other.arrayIndex == param.arrayIndex - 1) {
+        prevValue = other.currentValue;
+      }
+      else if (other.arrayIndex == param.arrayIndex + 1) {
+        nextValue = other.currentValue;
+      }
+    }
+
+    if (param.monotonicity == MonotonicityConstraint::NON_DECREASING) {
+      // array[i] >= array[i-1] (floor from predecessor)
+      if (prevValue.has_value() && param.currentValue < prevValue.value()) {
+        param.currentValue = prevValue.value();
+      }
+      // array[i] <= array[i+1] (ceiling from successor)
+      if (nextValue.has_value() && param.currentValue > nextValue.value()) {
+        param.currentValue = nextValue.value();
+      }
+    }
+    else if (param.monotonicity == MonotonicityConstraint::NON_INCREASING) {
+      // array[i] <= array[i-1] (ceiling from predecessor)
+      if (prevValue.has_value() && param.currentValue > prevValue.value()) {
+        param.currentValue = prevValue.value();
+      }
+      // array[i] >= array[i+1] (floor from successor)
+      if (nextValue.has_value() && param.currentValue < nextValue.value()) {
+        param.currentValue = nextValue.value();
+      }
+    }
+  }
+
+  // =========================================================================
   // Coordinate descent optimizer
   // =========================================================================
 
@@ -744,6 +805,7 @@ namespace tuning {
         double msePlus = currentMSE;
         if (plusValue != originalValue) {
           param.currentValue = plusValue;
+          enforceMonotonicity(param, params);
           param.applyToConfig(search, eval);
           msePlus = computeMSEIncremental(trainSet, K_, group);
         }
@@ -753,14 +815,16 @@ namespace tuning {
         double mseMinus = currentMSE;
         if (minusValue != originalValue) {
           param.currentValue = minusValue;
+          enforceMonotonicity(param, params);
           param.applyToConfig(search, eval);
           mseMinus = computeMSEIncremental(trainSet, K_, group);
         }
 
         // --- Decide: keep best direction, or revert ---
         if (msePlus < currentMSE && msePlus <= mseMinus && plusValue != originalValue) {
-          // Keep +delta — re-apply and update cache
+          // Keep +delta — re-apply (may have been overwritten by -delta trial) and update cache
           param.currentValue = plusValue;
+          enforceMonotonicity(param, params);
           param.applyToConfig(search, eval);
           updateCacheForGroup(mutableTrainSet, K_, group);
           const double delta = currentMSE - msePlus;

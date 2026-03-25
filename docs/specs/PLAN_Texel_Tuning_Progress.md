@@ -170,7 +170,7 @@
 | 6.3  | Implement `TexelTuner` core: sigmoid, MSE computation, K-tuning          | ✅ Complete     |
 | 6.4  | Implement coordinate descent loop with parallel MSE                      | ✅ Complete     |
 | 6.5  | Implement incremental MSE optimization (activation flags)                | ✅ Complete     |
-| 6.6  | Implement monotonicity constraint enforcement for array parameters       | ⬚ Not Started  |
+| 6.6  | Implement monotonicity constraint enforcement for array parameters       | ✅ Complete     |
 | 6.7  | Implement `TuningState` checkpoint save/load (YAML)                      | ⬚ Not Started  |
 | 6.8  | Wire up `TunerMain.cpp` with full CLI                                    | ⬚ Not Started  |
 | 6.9  | Implement output: tuned params YAML, comparison report                   | ⬚ Not Started  |
@@ -186,8 +186,10 @@
 - 6.4: ✅ **Built, tested (30/30 pass), committed.** Parallel MSE via `common::ThreadPool` — one `Evaluator` per thread, sorted partial-sum reduction for deterministic FP. `createEvaluators(N)` creates N evaluators + pool. `computeMSEParallel()` matches single-threaded within 1 ULP (2.2e-16 diff on 2K positions). Coordinate descent `tuneParameters()` — tries ±delta per param, keeps best direction, logs per-pass summary (train/test MSE, params changed, biggest mover, time). Mutable config access via `applyOverrides()`. Dev dataset (5K pos, 122 params, 4 threads): 95/122 params improved, MSE 0.1200→0.1178 (−0.0022) in 1 pass, 1.05s. `tuneK()` auto-selects parallel MSE when multi-threaded. 12 new tests (6 parallel MSE, 5 coordinate descent, 1 thread clamping).
 - 6.5: ✅ **Built, tested (42/42 pass), committed.** Incremental MSE with activation flags. `TuningEntry` gains `cachedSquaredError` field. Board-state analysis in `computeActivationFlags()` sets per-entry `activeParamGroups` bitset (13 groups, parallel via ThreadPool). `computeAndCacheErrors()` does full eval pass populating cache + `totalSquaredError_`. `computeMSEIncremental()` accumulates `deltaSSE = Σ(freshSE - cachedSE)` for active entries only, returns `(totalSSE + deltaSSE) / N` — matches full MSE within 2.8e-17. `updateCacheForGroup()` refreshes cache after committed changes. `tuneParameters()` now uses incremental MSE: activation flags + cache before loop, incremental trials, cache update on commit. Speedup on quiet-labeled.epd (100K pos): knight group (61.5% active) **1.45× faster**; bishop-pair group (35.2% active) expected ~2.5×. 11 new tests (5 activation flags, 4 incremental MSE correctness, 1 cache consistency, 1 integration) + 1 speedup benchmark.
 
+- 6.6: ✅ **Built, tested, committed.** `enforceMonotonicity()` static method on `TexelTuner` — clamps array element to neighbor bounds (NON_DECREASING: floor from predecessor, ceiling from successor; NON_INCREASING: inverse). Integrated into coordinate descent: called after setting ±delta trial values and after committing keep-best. Only the modified element is clamped (no cascading). 11 new tests: floor/ceiling clamping, no-op for scalars/NONE, first/last element boundaries, real registry arrays (KING_SAFETY_TABLE), integration test verifying ordering after 2 passes of coordinate descent.
+
 ### Session Pickup Instructions
-- Next step: Phase 6.6 — Monotonicity constraints for array parameters
+- Next step: Phase 6.7 — TuningState checkpoint save/load (YAML)
 
 ### Sprint Plan (Phase 6 Detailed Breakdown)
 

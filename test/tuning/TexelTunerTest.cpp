@@ -31,6 +31,7 @@
 #include <iomanip>
 #include <iostream>
 #include <string>
+#include <unordered_map>
 
 using namespace tuning;
 using namespace config;
@@ -1038,13 +1039,13 @@ TEST_F(TexelTunerTest, SpeedTests_incrementalMSE_Speedup_QuietLabeled) {
   tuner.computeAndCacheErrors(dataset, 1.0); // reset cache
 
   // Measure incremental MSE speed
-  auto startInc = steady_clock::now();
+  const auto startInc = steady_clock::now();
   for (int i = 0; i < trials; ++i) {
     knightParam->currentValue = knightParam->originalValue + i + 1;
     knightParam->applyToConfig(*pSearch, *pEval);
     (void)tuner.computeMSEIncremental(dataset, 1.0, knightParam->paramGroup);
   }
-  auto elapsedInc = steady_clock::now() - startInc;
+  const auto elapsedInc = steady_clock::now() - startInc;
   const double incMs = std::chrono::duration<double, std::milli>(elapsedInc).count() / trials;
 
   // Restore
@@ -1068,4 +1069,268 @@ TEST_F(TexelTunerTest, SpeedTests_incrementalMSE_Speedup_QuietLabeled) {
 
   // We expect at least some speedup for a non-universal group
   EXPECT_GT(speedup, 1.0) << "Incremental MSE should be faster than full for a non-universal group";
+}
+
+// =========================================================================
+// Monotonicity constraint tests (Sprint 6.6)
+// =========================================================================
+
+TEST_F(TexelTunerTest, enforceMonotonicity_NonDecreasing_ClampsToFloor) {
+  // Setting array[1] below array[0] should clamp to array[0]'s value
+  std::vector<TuningParameter> params(3);
+  for (int i = 0; i < 3; ++i) {
+    params[i].name = "TEST_ARRAY[" + std::to_string(i) + "]";
+    params[i].configName = "TEST_ARRAY";
+    params[i].arrayIndex = i;
+    params[i].arraySize = 3;
+    params[i].monotonicity = MonotonicityConstraint::NON_DECREASING;
+  }
+  params[0].currentValue = 10;
+  params[1].currentValue = 5; // violates: 5 < 10
+  params[2].currentValue = 20;
+
+  TexelTuner::enforceMonotonicity(params[1], params);
+
+  EXPECT_EQ(params[1].currentValue, 10) << "Should be clamped up to predecessor's value";
+  EXPECT_EQ(params[0].currentValue, 10) << "Predecessor should not change";
+  EXPECT_EQ(params[2].currentValue, 20) << "Successor should not change";
+}
+
+TEST_F(TexelTunerTest, enforceMonotonicity_NonDecreasing_ClampsToCeiling) {
+  // Setting array[1] above array[2] should clamp to array[2]'s value
+  std::vector<TuningParameter> params(3);
+  for (int i = 0; i < 3; ++i) {
+    params[i].name = "TEST_ARRAY[" + std::to_string(i) + "]";
+    params[i].configName = "TEST_ARRAY";
+    params[i].arrayIndex = i;
+    params[i].arraySize = 3;
+    params[i].monotonicity = MonotonicityConstraint::NON_DECREASING;
+  }
+  params[0].currentValue = 10;
+  params[1].currentValue = 25; // violates: 25 > 20 (successor)
+  params[2].currentValue = 20;
+
+  TexelTuner::enforceMonotonicity(params[1], params);
+
+  EXPECT_EQ(params[1].currentValue, 20) << "Should be clamped down to successor's value";
+}
+
+TEST_F(TexelTunerTest, enforceMonotonicity_NonDecreasing_ValidValue_NoChange) {
+  // A valid value (between predecessor and successor) should not be modified
+  std::vector<TuningParameter> params(3);
+  for (int i = 0; i < 3; ++i) {
+    params[i].name = "TEST_ARRAY[" + std::to_string(i) + "]";
+    params[i].configName = "TEST_ARRAY";
+    params[i].arrayIndex = i;
+    params[i].arraySize = 3;
+    params[i].monotonicity = MonotonicityConstraint::NON_DECREASING;
+  }
+  params[0].currentValue = 10;
+  params[1].currentValue = 15; // valid: 10 <= 15 <= 20
+  params[2].currentValue = 20;
+
+  TexelTuner::enforceMonotonicity(params[1], params);
+
+  EXPECT_EQ(params[1].currentValue, 15) << "Valid value should not change";
+}
+
+TEST_F(TexelTunerTest, enforceMonotonicity_NonIncreasing_ClampsToFloor) {
+  // Non-increasing: array[i] <= array[i-1], array[i] >= array[i+1]
+  // Setting array[1] above array[0] should clamp down
+  std::vector<TuningParameter> params(3);
+  for (int i = 0; i < 3; ++i) {
+    params[i].name = "TEST_ARRAY[" + std::to_string(i) + "]";
+    params[i].configName = "TEST_ARRAY";
+    params[i].arrayIndex = i;
+    params[i].arraySize = 3;
+    params[i].monotonicity = MonotonicityConstraint::NON_INCREASING;
+  }
+  params[0].currentValue = 20;
+  params[1].currentValue = 25; // violates: 25 > 20 (predecessor)
+  params[2].currentValue = 5;
+
+  TexelTuner::enforceMonotonicity(params[1], params);
+
+  EXPECT_EQ(params[1].currentValue, 20) << "Should be clamped down to predecessor's value";
+}
+
+TEST_F(TexelTunerTest, enforceMonotonicity_NonIncreasing_ClampsUpToSuccessor) {
+  // Non-increasing: setting array[1] below array[2] should clamp up
+  std::vector<TuningParameter> params(3);
+  for (int i = 0; i < 3; ++i) {
+    params[i].name = "TEST_ARRAY[" + std::to_string(i) + "]";
+    params[i].configName = "TEST_ARRAY";
+    params[i].arrayIndex = i;
+    params[i].arraySize = 3;
+    params[i].monotonicity = MonotonicityConstraint::NON_INCREASING;
+  }
+  params[0].currentValue = 20;
+  params[1].currentValue = 3; // violates: 3 < 5 (successor)
+  params[2].currentValue = 5;
+
+  TexelTuner::enforceMonotonicity(params[1], params);
+
+  EXPECT_EQ(params[1].currentValue, 5) << "Should be clamped up to successor's value";
+}
+
+TEST_F(TexelTunerTest, enforceMonotonicity_Scalar_NoOp) {
+  // Scalar parameters (arrayIndex < 0) should not be modified
+  std::vector<TuningParameter> params(1);
+  params[0].name = "SOME_SCALAR";
+  params[0].configName = "SOME_SCALAR";
+  params[0].arrayIndex = -1;
+  params[0].currentValue = 42;
+  params[0].monotonicity = MonotonicityConstraint::NON_DECREASING; // even if set, should be no-op
+
+  TexelTuner::enforceMonotonicity(params[0], params);
+
+  EXPECT_EQ(params[0].currentValue, 42) << "Scalar should not be modified";
+}
+
+TEST_F(TexelTunerTest, enforceMonotonicity_NoConstraint_NoOp) {
+  // Array element with NONE constraint should not be modified
+  std::vector<TuningParameter> params(3);
+  for (int i = 0; i < 3; ++i) {
+    params[i].name = "TEST_ARRAY[" + std::to_string(i) + "]";
+    params[i].configName = "TEST_ARRAY";
+    params[i].arrayIndex = i;
+    params[i].arraySize = 3;
+    params[i].monotonicity = MonotonicityConstraint::NONE;
+  }
+  params[0].currentValue = 10;
+  params[1].currentValue = 5; // would violate NON_DECREASING, but constraint is NONE
+  params[2].currentValue = 20;
+
+  TexelTuner::enforceMonotonicity(params[1], params);
+
+  EXPECT_EQ(params[1].currentValue, 5) << "No constraint → no modification";
+}
+
+TEST_F(TexelTunerTest, enforceMonotonicity_FirstElement_NoPredecessor) {
+  // First array element has no predecessor — only successor bound applies
+  std::vector<TuningParameter> params(3);
+  for (int i = 0; i < 3; ++i) {
+    params[i].name = "TEST_ARRAY[" + std::to_string(i) + "]";
+    params[i].configName = "TEST_ARRAY";
+    params[i].arrayIndex = i;
+    params[i].arraySize = 3;
+    params[i].monotonicity = MonotonicityConstraint::NON_DECREASING;
+  }
+  params[0].currentValue = 50; // exceeds successor
+  params[1].currentValue = 20;
+  params[2].currentValue = 30;
+
+  TexelTuner::enforceMonotonicity(params[0], params);
+
+  EXPECT_EQ(params[0].currentValue, 20) << "First element clamped to successor's value";
+}
+
+TEST_F(TexelTunerTest, enforceMonotonicity_LastElement_NoSuccessor) {
+  // Last array element has no successor — only predecessor bound applies
+  std::vector<TuningParameter> params(3);
+  for (int i = 0; i < 3; ++i) {
+    params[i].name = "TEST_ARRAY[" + std::to_string(i) + "]";
+    params[i].configName = "TEST_ARRAY";
+    params[i].arrayIndex = i;
+    params[i].arraySize = 3;
+    params[i].monotonicity = MonotonicityConstraint::NON_DECREASING;
+  }
+  params[0].currentValue = 10;
+  params[1].currentValue = 20;
+  params[2].currentValue = 5; // violates: 5 < 20 (predecessor)
+
+  TexelTuner::enforceMonotonicity(params[2], params);
+
+  EXPECT_EQ(params[2].currentValue, 20) << "Last element clamped to predecessor's value";
+}
+
+TEST_F(TexelTunerTest, enforceMonotonicity_RealArrayParams_FromRegistry) {
+  // Verify that array params from the real registry have monotonicity set,
+  // and that enforceMonotonicity works on them
+  const auto& searchConfig = ConfigManager::instance().search();
+  const auto& evalConfig   = ConfigManager::instance().eval();
+  auto params = TuningParameter::buildFromRegistry(searchConfig, evalConfig);
+
+  // Find KING_SAFETY_TABLE elements
+  std::vector<TuningParameter*> kst;
+  for (auto& p : params) {
+    if (p.configName == "KING_SAFETY_TABLE") {
+      kst.push_back(&p);
+    }
+  }
+  ASSERT_GE(kst.size(), 3u) << "Expected at least 3 KING_SAFETY_TABLE elements";
+
+  // All should be NON_DECREASING
+  for (const auto* p : kst) {
+    EXPECT_EQ(p->monotonicity, MonotonicityConstraint::NON_DECREASING)
+      << "KING_SAFETY_TABLE[" << p->arrayIndex << "] should be non-decreasing";
+  }
+
+  // Verify the original values are already monotonic
+  for (std::size_t i = 1; i < kst.size(); ++i) {
+    EXPECT_GE(kst[i]->currentValue, kst[i - 1]->currentValue)
+      << "KING_SAFETY_TABLE[" << kst[i]->arrayIndex << "] = " << kst[i]->currentValue
+      << " should be >= [" << kst[i - 1]->arrayIndex << "] = " << kst[i - 1]->currentValue;
+  }
+
+  // Set middle element below its predecessor and enforce
+  const int origValue = kst[1]->currentValue;
+  kst[1]->currentValue = kst[0]->currentValue - 10;
+
+  TexelTuner::enforceMonotonicity(*kst[1], params);
+
+  EXPECT_GE(kst[1]->currentValue, kst[0]->currentValue)
+    << "After enforcement, [1] should be >= [0]";
+
+  // Restore
+  kst[1]->currentValue = origValue;
+}
+
+TEST_F(TexelTunerTest, coordinateDescent_WithMonotonicity_MaintainsOrdering) {
+  // After coordinate descent, all array params with monotonicity constraints
+  // should still be in valid order
+  const std::string devPath =
+    std::string(FrankyCPP_PROJECT_ROOT) + "/test/testsets/tuning/v1.6_vs_v1.5_score.txt";
+
+  TuningDataset dataset;
+  try {
+    dataset.loadFromFile(devPath, 2000);
+  } catch (...) {
+    GTEST_SKIP() << "Dev dataset not available at " << devPath;
+  }
+
+  TexelTuner::setupEvalOverrides();
+  TexelTuner tuner;
+  tuner.createEvaluators(4);
+
+  const auto& searchConfig = ConfigManager::instance().search();
+  const auto& evalConfig   = ConfigManager::instance().eval();
+  auto params = TuningParameter::buildFromRegistry(searchConfig, evalConfig);
+
+  const double K = tuner.tuneK(dataset);
+  tuner.tuneParameters(dataset, nullptr, params, 2); // 2 passes
+
+  // Check all NON_DECREASING arrays maintain ordering
+  // Group elements by configName
+  std::unordered_map<std::string, std::vector<const TuningParameter*>> arrays;
+  for (const auto& p : params) {
+    if (p.arrayIndex >= 0 && p.monotonicity == MonotonicityConstraint::NON_DECREASING) {
+      arrays[p.configName].push_back(&p);
+    }
+  }
+
+  for (const auto& [arrayName, elements] : arrays) {
+    // Sort by arrayIndex (should already be sorted, but be defensive)
+    auto sorted = elements;
+    std::sort(sorted.begin(), sorted.end(),
+              [](const auto* a, const auto* b) { return a->arrayIndex < b->arrayIndex; });
+
+    for (std::size_t i = 1; i < sorted.size(); ++i) {
+      EXPECT_GE(sorted[i]->currentValue, sorted[i - 1]->currentValue)
+        << arrayName << "[" << sorted[i]->arrayIndex << "] = " << sorted[i]->currentValue
+        << " should be >= [" << sorted[i - 1]->arrayIndex << "] = " << sorted[i - 1]->currentValue;
+    }
+  }
+
+  std::cout << "  Verified monotonicity on " << arrays.size() << " array parameter groups\n";
 }

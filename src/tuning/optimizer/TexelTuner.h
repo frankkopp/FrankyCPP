@@ -211,6 +211,7 @@ namespace tuning {
     /// For each parameter, tries ±delta and keeps the direction that reduces
     /// MSE. Repeats over all parameters until no improvement or maxPasses reached.
     /// Logs per-pass summary (train MSE, test MSE, params changed, biggest mover).
+    /// Array parameters with monotonicity constraints are clamped after each change.
     ///
     /// @param trainSet     Training dataset (MSE minimized on this)
     /// @param testSet      Optional test dataset for overfitting detection (nullptr to skip)
@@ -220,6 +221,21 @@ namespace tuning {
                         const TuningDataset* testSet,
                         std::vector<TuningParameter>& params,
                         int maxPasses = 100);
+
+    /// Enforces monotonicity constraints on an array parameter after modification.
+    ///
+    /// For NON_DECREASING arrays: clamps value so array[i] >= array[i-1].
+    /// For NON_INCREASING arrays: clamps value so array[i] <= array[i-1].
+    /// Only modifies the single element at param's arrayIndex; neighboring
+    /// elements are used as bounds but not themselves modified.
+    ///
+    /// If the param is not an array element or has no monotonicity constraint,
+    /// this is a no-op.
+    ///
+    /// @param param   The array element parameter that was just modified
+    /// @param params  The full parameter vector (to look up neighbors in the same array)
+    static void enforceMonotonicity(TuningParameter& param,
+                                    const std::vector<TuningParameter>& params);
 
     // =========================================================================
     // Accessors
