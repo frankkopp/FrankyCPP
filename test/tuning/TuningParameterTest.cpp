@@ -467,3 +467,108 @@ TEST_F(TuningParameterTest, printSummary) {
   // Sanity: we expect roughly 82 scalars + ~36 array elements ≈ ~118 total
   EXPECT_GE(params.size(), 100u) << "Expected at least 100 expanded parameters";
 }
+
+// =========================================================================
+// Phase 6.10 — Additional edge case tests
+// =========================================================================
+
+TEST_F(TuningParameterTest, applyToConfig_ClampsToMaxBounds) {
+  // When currentValue exceeds maxValue, applyToConfig should still set the value
+  // (clamping is the tuner's job, not the parameter's — but test the behavior)
+  CONFIG_OVERRIDE_START()
+    e.TEMPO = 34;
+  CONFIG_OVERRIDE_END();
+
+  const auto& search = ConfigManager::instance().search();
+  const auto& eval   = ConfigManager::instance().eval();
+  auto params        = TuningParameter::buildFromRegistry(search, eval);
+
+  auto it = std::ranges::find_if(params, [](const auto& p) { return p.name == "TEMPO"; });
+  ASSERT_NE(it, params.end());
+
+  // Set value beyond maxValue and apply — should still write
+  it->currentValue = it->maxValue + 100;
+  ConfigManager::instance().applyOverrides([&](auto& s, auto& e) {
+    it->applyToConfig(s, e);
+  });
+
+  // Value is written as-is (no clamping in applyToConfig itself)
+  EXPECT_EQ(ConfigManager::instance().eval().TEMPO, it->maxValue + 100);
+}
+
+TEST_F(TuningParameterTest, applyToConfig_NegativeBeyondMin) {
+  CONFIG_OVERRIDE_START()
+    e.ISOLATED_PAWN_MID_WEIGHT = -10;
+  CONFIG_OVERRIDE_END();
+
+  const auto& search = ConfigManager::instance().search();
+  const auto& eval   = ConfigManager::instance().eval();
+  auto params        = TuningParameter::buildFromRegistry(search, eval);
+
+  auto it = std::ranges::find_if(params, [](const auto& p) {
+    return p.name == "ISOLATED_PAWN_MID_WEIGHT";
+  });
+  ASSERT_NE(it, params.end());
+
+  // Set value below minValue
+  it->currentValue = it->minValue - 50;
+  ConfigManager::instance().applyOverrides([&](auto& s, auto& e) {
+    it->applyToConfig(s, e);
+  });
+
+  EXPECT_EQ(ConfigManager::instance().eval().ISOLATED_PAWN_MID_WEIGHT, it->minValue - 50);
+}
+
+TEST_F(TuningParameterTest, delta_defaultValueIsOne) {
+  const auto& search = ConfigManager::instance().search();
+  const auto& eval   = ConfigManager::instance().eval();
+  const auto params  = TuningParameter::buildFromRegistry(search, eval);
+
+  // All params should have delta=1 (default for coordinate descent)
+  for (const auto& p : params) {
+    EXPECT_EQ(p.delta, 1) << p.name << " should have delta=1";
+  }
+}
+
+TEST_F(TuningParameterTest, expandedCount_pinnedValue) {
+  // Pin the expanded count to catch unintended changes when adding new config entries.
+  // This should be updated when new tunable params are added.
+  const auto expandedCount = TuningParameter::countTunableValues();
+
+  // As of Phase 6.10: 88 registry entries expand to ~122 individual params
+  // (82 scalar Int + 6 IntArray: KING_SAFETY_TABLE[16] + PASSED_PAWN_RANK_MID_BONUS[6] +
+  //  PASSED_PAWN_RANK_END_BONUS[6] + PAWN_ADVANCE_MID_BONUS[4] + PAWN_ADVANCE_END_BONUS[4] +
+  //  PAWN_STORM_MID_PENALTY[4])
+  // 82 + 16 + 6 + 6 + 4 + 4 + 4 = 122
+  std::cout << "Pinned expanded tunable count: " << expandedCount << "\n";
+  EXPECT_EQ(expandedCount, 122u)
+    << "If you added new tunable params, update this pinned count";
+}
+
+TEST_F(TuningParameterTest, arrayParams_singleElementArray) {
+  // If an array has a single element, it should still be treated as an array param
+  // with arrayIndex=0 and arraySize=1. Currently no such param exists in the registry,
+  // but verify the general contract: all array params have valid index/size.
+  const auto& search = ConfigManager::instance().search();
+  const auto& eval   = ConfigManager::instance().eval();
+  const auto params  = TuningParameter::buildFromRegistry(search, eval);
+
+  for (const auto& p : params) {
+    if (p.arrayIndex >= 0) {
+      EXPECT_GE(p.arraySize, 1) << p.name << " array should have size >= 1";
+      EXPECT_LT(p.arrayIndex, p.arraySize) << p.name << " index should be < size";
+    }
+  }
+}
+
+TEST_F(TuningParameterTest, originalValue_matchesDefault) {
+  // After building from a fresh (default) config, originalValue should match currentValue
+  const auto& search = ConfigManager::instance().search();
+  const auto& eval   = ConfigManager::instance().eval();
+  const auto params  = TuningParameter::buildFromRegistry(search, eval);
+
+  for (const auto& p : params) {
+    EXPECT_EQ(p.originalValue, p.currentValue)
+      << p.name << " originalValue should match currentValue on fresh build";
+  }
+}

@@ -3,7 +3,7 @@
 **Document Version:** 1.4  
 **Created:** 2026-03-21  
 **Last Updated:** 2026-03-25  
-**Status:** 🚧 In Progress (Phases 0–4 ✅, Phase 5–6 🚧)  
+**Status:** 🚧 In Progress (Phases 0–4 ✅, Phase 5 🟡 5.4 deferred, Phase 6 code complete 🟡 6.11 pending)  
 **Target:** FrankyCPP v1.7  
 **Priority:** High (Phase 5 of Eval & Strength Improvement Plan)  
 **Predecessor:** `PLAN_Eval_and_Strength_Improvement.md`

@@ -392,3 +392,135 @@ TEST_F(TuningStateTest, coordinateDescent_SavesCheckpoint) {
             << ", MSE " << loaded.bestTrainMSE
             << ", " << loaded.paramValues.size() << " params\n";
 }
+
+// =========================================================================
+// Phase 6.10 — Additional edge case tests
+// =========================================================================
+
+TEST_F(TuningStateTest, captureFromParams_EmptyVector) {
+  const std::vector<TuningParameter> empty;
+
+  TuningState state;
+  state.captureFromParams(empty);
+
+  EXPECT_TRUE(state.paramValues.empty());
+  EXPECT_FALSE(state.timestamp.empty()) << "Timestamp should be set even for empty params";
+}
+
+TEST_F(TuningStateTest, restoreToParams_EmptyState_NoChanges) {
+  const TuningState state; // empty paramValues
+
+  std::vector<TuningParameter> params(2);
+  params[0].name = "PARAM_A";
+  params[0].currentValue = 42;
+  params[1].name = "PARAM_B";
+  params[1].currentValue = 99;
+
+  const int restored = state.restoreToParams(params);
+
+  EXPECT_EQ(restored, 0);
+  EXPECT_EQ(params[0].currentValue, 42) << "Should be unchanged";
+  EXPECT_EQ(params[1].currentValue, 99) << "Should be unchanged";
+}
+
+TEST_F(TuningStateTest, saveAndLoad_PreservesParameterOrder) {
+  const auto path = tempFile("checkpoint_order.yaml");
+
+  TuningState original;
+  original.completedPasses = 1;
+  original.K = 1.0;
+  // Insert params in a specific order
+  original.paramValues = {
+    {"ZEBRA_PARAM", 100},
+    {"ALPHA_PARAM", 200},
+    {"MIDDLE_PARAM", 300},
+  };
+
+  original.saveToYaml(path);
+  const auto loaded = TuningState::loadFromYaml(path);
+
+  ASSERT_EQ(loaded.paramValues.size(), 3u);
+  // Order must be preserved
+  EXPECT_EQ(loaded.paramValues[0].first, "ZEBRA_PARAM");
+  EXPECT_EQ(loaded.paramValues[1].first, "ALPHA_PARAM");
+  EXPECT_EQ(loaded.paramValues[2].first, "MIDDLE_PARAM");
+  EXPECT_EQ(loaded.paramValues[0].second, 100);
+  EXPECT_EQ(loaded.paramValues[1].second, 200);
+  EXPECT_EQ(loaded.paramValues[2].second, 300);
+}
+
+TEST_F(TuningStateTest, loadFromYaml_PartialCheckpoint_MissingK) {
+  // A checkpoint file that has the correct format marker but is missing
+  // optional fields should still load (fields default to 0/empty)
+  const auto path = tempFile("checkpoint_partial.yaml");
+
+  std::ofstream file(path);
+  file << "format: FrankyCPP_TuningCheckpoint_v1\n";
+  file << "completed_passes: 3\n";
+  file << "best_train_mse: 0.08\n";
+  // K, best_test_mse, dataset_path, timestamp, parameters all missing
+  file.close();
+
+  const auto loaded = TuningState::loadFromYaml(path);
+  EXPECT_EQ(loaded.completedPasses, 3);
+  EXPECT_NEAR(loaded.bestTrainMSE, 0.08, 1e-10);
+  // Missing fields should have defaults (K defaults to 1.0 per loadFromYaml)
+  EXPECT_DOUBLE_EQ(loaded.K, 1.0); // default when missing
+  EXPECT_TRUE(loaded.paramValues.empty());
+}
+
+TEST_F(TuningStateTest, captureAndRestore_LargeParamVector) {
+  // Simulate a realistic number of params (122)
+  std::vector<TuningParameter> params;
+  params.reserve(122);
+  for (int i = 0; i < 122; ++i) {
+    TuningParameter p;
+    p.name = "PARAM_" + std::to_string(i);
+    p.currentValue = i * 7 - 50; // varied values including negatives
+    params.push_back(p);
+  }
+
+  TuningState state;
+  state.captureFromParams(params);
+  EXPECT_EQ(state.paramValues.size(), 122u);
+
+  // Zero out all values
+  for (auto& p : params) {
+    p.currentValue = 0;
+  }
+
+  const int restored = state.restoreToParams(params);
+  EXPECT_EQ(restored, 122);
+
+  // Verify all values restored correctly
+  for (int i = 0; i < 122; ++i) {
+    EXPECT_EQ(params[i].currentValue, i * 7 - 50)
+      << "Param " << i << " not restored correctly";
+  }
+}
+
+TEST_F(TuningStateTest, saveAndLoad_RoundTrip_LargeValues) {
+  // Test with extreme values to ensure YAML serialization handles them
+  const auto path = tempFile("checkpoint_extreme.yaml");
+
+  TuningState original;
+  original.completedPasses = 999;
+  original.K = 0.001;
+  original.bestTrainMSE = 1e-15;
+  original.bestTestMSE = 0.999999999;
+  original.paramValues = {
+    {"MAX_POSITIVE", std::numeric_limits<int>::max()},
+    {"MIN_NEGATIVE", std::numeric_limits<int>::min()},
+    {"ZERO", 0},
+  };
+
+  original.saveToYaml(path);
+  const auto loaded = TuningState::loadFromYaml(path);
+
+  EXPECT_EQ(loaded.completedPasses, 999);
+  EXPECT_NEAR(loaded.K, 0.001, 1e-10);
+  ASSERT_EQ(loaded.paramValues.size(), 3u);
+  EXPECT_EQ(loaded.paramValues[0].second, std::numeric_limits<int>::max());
+  EXPECT_EQ(loaded.paramValues[1].second, std::numeric_limits<int>::min());
+  EXPECT_EQ(loaded.paramValues[2].second, 0);
+}

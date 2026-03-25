@@ -552,3 +552,105 @@ TEST_F(TuningDatasetTest, loadClearsPreviousData) {
   ASSERT_EQ(dataset.size(), 1);
   EXPECT_FLOAT_EQ(dataset[0].result, 0.0F);
 }
+
+// =============================================================================
+// Phase 6.10 — Additional edge case tests
+// =============================================================================
+
+TEST_F(TuningDatasetTest, loadDuplicateFens_AllAccepted) {
+  // Duplicate FENs should be accepted — the tuner doesn't deduplicate.
+  // This tests that the loader does not filter or reject duplicates.
+  const std::string data =
+    "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1 [1.0]\n"
+    "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1 [0.5]\n"
+    "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1 [0.0]\n";
+
+  const auto path = createTempFile(data, "test_duplicates.txt");
+  TuningDataset dataset;
+  dataset.loadFromFile(path);
+
+  EXPECT_EQ(dataset.size(), 3) << "Duplicate FENs should all be accepted";
+  // Each can have a different result (same position, different game outcome)
+  EXPECT_FLOAT_EQ(dataset[0].result, 1.0F);
+  EXPECT_FLOAT_EQ(dataset[1].result, 0.5F);
+  EXPECT_FLOAT_EQ(dataset[2].result, 0.0F);
+}
+
+TEST_F(TuningDatasetTest, loadMaxEntries_Limits) {
+  // loadFromFile with maxEntries should stop after the limit
+  std::string data;
+  for (int i = 0; i < 20; ++i) {
+    data += "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1 [0.5]\n";
+  }
+
+  const auto path = createTempFile(data, "test_maxentries.txt");
+  TuningDataset dataset;
+  dataset.loadFromFile(path, 5);
+
+  EXPECT_EQ(dataset.size(), 5) << "Should stop at maxEntries=5";
+}
+
+TEST_F(TuningDatasetTest, loadMaxEntries_ZeroMeansUnlimited) {
+  std::string data;
+  for (int i = 0; i < 10; ++i) {
+    data += "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1 [0.5]\n";
+  }
+
+  const auto path = createTempFile(data, "test_maxentries_zero.txt");
+  TuningDataset dataset;
+  dataset.loadFromFile(path, 0); // 0 = unlimited
+
+  EXPECT_EQ(dataset.size(), 10) << "maxEntries=0 should load all";
+}
+
+TEST_F(TuningDatasetTest, loadRejectsOutOfRangeResults) {
+  // Results outside [0.0, 1.0] should be rejected
+  const std::string data =
+    "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1 [-0.5]\n"
+    "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1 [1.5]\n"
+    "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1 [0.5]\n";
+
+  const auto path = createTempFile(data, "test_oor_results.txt");
+  TuningDataset dataset;
+  dataset.loadFromFile(path);
+
+  EXPECT_EQ(dataset.size(), 1) << "Only the valid [0.5] should be accepted";
+  EXPECT_FLOAT_EQ(dataset[0].result, 0.5F);
+}
+
+TEST_F(TuningDatasetTest, loadOnlyComments_EmptyDataset) {
+  const std::string data =
+    "# comment 1\n"
+    "// comment 2\n"
+    "# comment 3\n";
+
+  const auto path = createTempFile(data, "test_only_comments.txt");
+  TuningDataset dataset;
+  dataset.loadFromFile(path);
+
+  EXPECT_TRUE(dataset.empty());
+  EXPECT_EQ(dataset.getLoadStats().skippedComment, 3);
+}
+
+TEST_F(TuningDatasetTest, splitSingleEntry) {
+  // Splitting a single entry: should go to train with fraction >= 0.5
+  const std::string data =
+    "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1 [0.5]\n";
+
+  const auto path = createTempFile(data, "test_split_single.txt");
+  TuningDataset dataset;
+  dataset.loadFromFile(path);
+  ASSERT_EQ(dataset.size(), 1);
+
+  const auto [train, test] = dataset.split(0.8F);
+  // floor(1 * 0.8) = 0, so 0 train and 1 test? Or 1 train and 0 test?
+  // This tests the actual behavior — the point is no crash.
+  EXPECT_EQ(train.size() + test.size(), 1);
+}
+
+TEST_F(TuningDatasetTest, reserveDoesNotAffectSize) {
+  TuningDataset dataset;
+  dataset.reserve(1000);
+  EXPECT_EQ(dataset.size(), 0);
+  EXPECT_TRUE(dataset.empty());
+}

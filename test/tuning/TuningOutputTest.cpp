@@ -361,3 +361,91 @@ TEST_F(TuningOutputTest, ChangePercentage_FromZero) {
   // Original is 0, so percentage is "new" not a numeric value
   EXPECT_TRUE(report.find("new") != std::string::npos);
 }
+
+// =========================================================================
+// Phase 6.10 — Additional edge case tests
+// =========================================================================
+
+TEST_F(TuningOutputTest, GenerateParamsYaml_SingleElementArray) {
+  // An array with exactly 1 element should still be coalesced (just a single value)
+  std::vector<TuningParameter> params;
+
+  TuningParameter pa;
+  pa.name          = "SINGLE_ARRAY[0]";
+  pa.configName    = "SINGLE_ARRAY";
+  pa.originalValue = 10;
+  pa.currentValue  = 15;
+  pa.arrayIndex    = 0;
+  pa.arraySize     = 1;
+  params.push_back(pa);
+
+  const auto yaml = TuningOutput::generateParamsYaml(params);
+
+  // Should coalesce to "SINGLE_ARRAY: 15" (single element)
+  EXPECT_TRUE(yaml.find("SINGLE_ARRAY: 15") != std::string::npos)
+    << "Single-element array should be coalesced. YAML:\n" << yaml;
+  EXPECT_TRUE(yaml.find("SINGLE_ARRAY[0]") == std::string::npos)
+    << "Array element notation should not appear";
+}
+
+TEST_F(TuningOutputTest, GenerateComparisonReport_AllParamsChanged) {
+  auto params = makeTestParams();
+  // Ensure every param is changed
+  for (auto& p : params) {
+    if (p.currentValue == p.originalValue) {
+      p.currentValue = p.originalValue + 1;
+    }
+  }
+
+  const auto report = TuningOutput::generateComparisonReport(params);
+  EXPECT_TRUE(report.find("Unchanged:         0") != std::string::npos)
+    << "All params changed → 0 unchanged. Report:\n" << report.substr(0, 500);
+}
+
+TEST_F(TuningOutputTest, GenerateComparisonReport_LargeNegativeDelta) {
+  std::vector<TuningParameter> params;
+  TuningParameter p;
+  p.name          = "BIG_CHANGE";
+  p.configName    = "BIG_CHANGE";
+  p.originalValue = 500;
+  p.currentValue  = -500;
+  p.arrayIndex    = -1;
+  p.arraySize     = 0;
+  params.push_back(p);
+
+  const auto report = TuningOutput::generateComparisonReport(params);
+  EXPECT_TRUE(report.find("BIG_CHANGE") != std::string::npos);
+  EXPECT_TRUE(report.find("-1000") != std::string::npos) << "Delta should be -1000";
+  EXPECT_TRUE(report.find("SIGN-FLIP") != std::string::npos) << "Should flag sign flip";
+}
+
+TEST_F(TuningOutputTest, GenerateParamsYaml_MixedScalarsAndArrays) {
+  // Verify ordering: scalars first, then arrays (or interleaved correctly)
+  std::vector<TuningParameter> params;
+
+  // Scalar
+  TuningParameter s1;
+  s1.name = "A_SCALAR"; s1.configName = "A_SCALAR";
+  s1.currentValue = 10; s1.arrayIndex = -1; s1.arraySize = 0;
+  params.push_back(s1);
+
+  // Array (2 elements)
+  for (int i = 0; i < 2; ++i) {
+    TuningParameter a;
+    a.name = "B_ARRAY[" + std::to_string(i) + "]"; a.configName = "B_ARRAY";
+    a.currentValue = (i + 1) * 5; a.arrayIndex = i; a.arraySize = 2;
+    params.push_back(a);
+  }
+
+  // Another scalar
+  TuningParameter s2;
+  s2.name = "C_SCALAR"; s2.configName = "C_SCALAR";
+  s2.currentValue = 20; s2.arrayIndex = -1; s2.arraySize = 0;
+  params.push_back(s2);
+
+  const auto yaml = TuningOutput::generateParamsYaml(params);
+
+  EXPECT_TRUE(yaml.find("A_SCALAR: 10") != std::string::npos);
+  EXPECT_TRUE(yaml.find("B_ARRAY: 5,10") != std::string::npos);
+  EXPECT_TRUE(yaml.find("C_SCALAR: 20") != std::string::npos);
+}

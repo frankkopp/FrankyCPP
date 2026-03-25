@@ -9,17 +9,17 @@
 
 ## Phase Summary
 
-| Phase | Name                               | Status         | Started    | Completed  |
-|-------|------------------------------------|----------------|------------|------------|
-| 0     | Release v1.6, branch v1.7          | ✅ Complete     | —          | 2026-03-22 |
-| 1     | Module structure + PGN library     | ✅ Complete     | 2026-03-22 | 2026-03-22 |
-| 2     | Tuning build targets (scaffolding) | ✅ Complete     | 2026-03-22 | 2026-03-22 |
-| 3     | Data collection                    | ✅ Complete     | 2026-03-22 | 2026-03-25 |
-| 4     | Position extractor                 | ✅ Complete     | 2026-03-23 | 2026-03-23 |
-| 5     | Mark tunable parameters            | 🚧 In Progress | 2026-03-23 |            |
-| 6     | Optimizer implementation           | 🚧 In Progress | 2026-03-24 |            |
-| 7     | Integration testing                | ⬚ Not Started  |            |            |
-| 8     | Gauntlet validation + release      | ⬚ Not Started  |            |            |
+| Phase | Name                               | Status           | Started    | Completed  |
+|-------|------------------------------------|------------------|------------|------------|
+| 0     | Release v1.6, branch v1.7          | ✅ Complete       | —          | 2026-03-22 |
+| 1     | Module structure + PGN library     | ✅ Complete       | 2026-03-22 | 2026-03-22 |
+| 2     | Tuning build targets (scaffolding) | ✅ Complete       | 2026-03-22 | 2026-03-22 |
+| 3     | Data collection                    | ✅ Complete       | 2026-03-22 | 2026-03-25 |
+| 4     | Position extractor                 | ✅ Complete       | 2026-03-23 | 2026-03-23 |
+| 5     | Mark tunable parameters            | 🟡 5.4 deferred  | 2026-03-23 | 2026-03-23 |
+| 6     | Optimizer implementation           | 🟡 Code complete | 2026-03-24 | 2026-03-25 |
+| 7     | Integration testing                | ⬚ Not Started    |            |            |
+| 8     | Gauntlet validation + release      | ⬚ Not Started    |            |            |
 
 ---
 
@@ -142,7 +142,7 @@
 
 ---
 
-## Phase 5: Mark Tunable Parameters 🚧
+## Phase 5: Mark Tunable Parameters 🟡 (5.4 deferred)
 
 | Step | Task                                                                   | Status        |
 |------|------------------------------------------------------------------------|---------------|
@@ -161,7 +161,7 @@
 
 ---
 
-## Phase 6: Optimizer Implementation 🚧
+## Phase 6: Optimizer Implementation 🟡 (code complete, 6.11 decision pending)
 
 | Step | Task                                                                     | Status         |
 |------|--------------------------------------------------------------------------|----------------|
@@ -174,10 +174,10 @@
 | 6.7  | Implement `TuningState` checkpoint save/load (YAML)                      | ✅ Complete     |
 | 6.8  | Wire up `TunerMain.cpp` with full CLI                                    | ✅ Complete     |
 | 6.9  | Implement output: tuned params YAML, comparison report                   | ✅ Complete     |
-| 6.10 | Write comprehensive unit tests for each component                        | ⬚ Not Started  |
+| 6.10 | Write comprehensive unit tests for each component                        | ✅ Complete     |
 | 6.11 | **Decision point:** Evaluate initial results; decide on PST tuning scope | ⬚ Not Started  |
 
-**Gate:** Tuner runs end-to-end on dev dataset. Checkpoint save/resume works.
+**Gate:** ✅ Tuner runs end-to-end on dev dataset. Checkpoint save/resume works. All 196 tuning tests pass. Only 6.11 (decision point) remains.
 
 **Notes:**
 - 6.1: `TuningDataset` with dual-format loader (FrankyCPP `[result]` + EPD `c9`), auto-detection per line, deterministic train/test split, load stats, FEN validation via reusable Position. `TuningEntry` with `activeParamGroups` bitset for incremental MSE (Phase 6.5). 25 unit tests covering both formats, Zurichess 1.4M EPD, edge cases, split ordering. **Committed:** `bcae348`.
@@ -194,8 +194,16 @@
 
 - 6.9: ✅ **Built, tested, committed.** `TuningOutput` class with `writeParamsYaml()` and `writeComparisonReport()`. YAML output uses flat-key format matching `config/eval.yaml` — array elements coalesced back into comma-separated values (e.g., `KING_SAFETY_TABLE: 0,5,15,...`). Comparison report has statistics (changed, unchanged, sign-flipped, zeroed-out), full parameter table with delta and change%, flags for SIGN-FLIP and ->ZERO. Console summary via `printComparisonSummary()`. Integrated into `TunerMain.cpp`: generates `<output>.yaml`, `<output>_comparison.txt`, and prints summary. 18 new tests: YAML header, scalar params, array coalescing, empty params, file creation, bad path, report header/statistics/all-params/delta/flags, registry round-trip YAML+report, edge cases (all unchanged, percentage calculation, from-zero).
 
+- 6.10: ✅ **Built, tested (196/196 pass), finalized.** 37 new edge-case tests added across all Phase 6 components. Coverage review completed per Sprint 6.10 plan:
+  - `TuningDatasetTest` (+7): duplicate FENs accepted, maxEntries limit, maxEntries=0 unlimited, out-of-range results rejected, only-comments file, single-entry split, reserve no-op.
+  - `TuningParameterTest` (+8): applyToConfig beyond max bounds, negative beyond min, delta default=1, expanded count pinned at 122, single-element array contract, array index/size validation, originalValue matches currentValue on fresh build.
+  - `TexelTunerTest` (+10): setupEvalOverrides verification (lazy eval/pawn TT disabled, space/coordination enabled), setK/getK round-trip, near-zero MSE for perfect prediction, all-draws dataset, all-white-wins dataset, eval perspective with known material advantage, single-parameter convergence, tuneK parallel vs single-thread consistency, hasEvaluator state tracking, **end-to-end integration test** (10+ positions → tuneK → 2-pass coordinate descent → checkpoint → YAML output → comparison report → verify all files valid).
+  - `TuningStateTest` (+6): captureFromParams empty vector, restoreToParams empty state, parameter order preserved through save/load, partial checkpoint with missing K field, large param vector (122) round-trip, extreme values (INT_MAX/INT_MIN).
+  - `TuningOutputTest` (+6): single-element array coalescing, all-params-changed report, large negative delta with sign-flip flag, mixed scalars and arrays in YAML.
+
 ### Session Pickup Instructions
-- Next step: Phase 6.10 — Comprehensive unit tests
+- Next step: Phase 6.11 — Decision point (evaluate initial tuning results, not a code step)
+- All Phase 6 code is complete (6.1–6.10). Build and run tests to validate.
 
 ### Sprint Plan (Phase 6 Detailed Breakdown)
 

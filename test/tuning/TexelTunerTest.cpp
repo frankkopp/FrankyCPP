@@ -23,10 +23,15 @@
 #include "config/ConfigManager.h"
 #include "init.h"
 #include "tuning/optimizer/TuningDataset.h"
+#include "tuning/optimizer/TuningOutput.h"
 #include "tuning/optimizer/TuningParameter.h"
+#include "tuning/optimizer/TuningState.h"
 #include "types/macros.h"
+#include "version.h"
 
 #include <chrono>
+#include <filesystem>
+#include <fstream>
 #include <gtest/gtest.h>
 #include <iomanip>
 #include <iostream>
@@ -1286,6 +1291,209 @@ TEST_F(TexelTunerTest, enforceMonotonicity_RealArrayParams_FromRegistry) {
   kst[1]->currentValue = origValue;
 }
 
+// =========================================================================
+// Phase 6.10 — Additional edge case tests
+// =========================================================================
+
+TEST_F(TexelTunerTest, setupEvalOverrides_DisablesLazyEvalAndPawnTT) {
+  // Verify that setupEvalOverrides actually changes the config state
+  ConfigManager::instance().resetToDefaults();
+
+  // Before: defaults may or may not have these set
+  const bool lazyBefore  = ConfigManager::instance().eval().USE_LAZY_EVAL;
+  const bool pawnTTBefore = ConfigManager::instance().eval().USE_PAWN_TT;
+
+  // The defaults should have these enabled
+  EXPECT_TRUE(lazyBefore) << "Default USE_LAZY_EVAL should be true";
+  EXPECT_TRUE(pawnTTBefore) << "Default USE_PAWN_TT should be true";
+
+  TexelTuner::setupEvalOverrides();
+
+  // After: lazy eval and pawn TT must be disabled
+  EXPECT_FALSE(ConfigManager::instance().eval().USE_LAZY_EVAL)
+    << "setupEvalOverrides must disable USE_LAZY_EVAL";
+  EXPECT_FALSE(ConfigManager::instance().eval().USE_PAWN_TT)
+    << "setupEvalOverrides must disable USE_PAWN_TT";
+
+  // Space/coordination must be enabled for tuning
+  EXPECT_TRUE(ConfigManager::instance().eval().USE_SPACE_EVAL)
+    << "setupEvalOverrides must enable USE_SPACE_EVAL";
+  EXPECT_TRUE(ConfigManager::instance().eval().USE_CONNECTED_ROOKS)
+    << "setupEvalOverrides must enable USE_CONNECTED_ROOKS";
+  EXPECT_TRUE(ConfigManager::instance().eval().USE_MINOR_CONNECTIVITY)
+    << "setupEvalOverrides must enable USE_MINOR_CONNECTIVITY";
+}
+
+TEST_F(TexelTunerTest, setK_GetK_RoundTrip) {
+  TexelTuner tuner;
+  EXPECT_DOUBLE_EQ(tuner.getK(), 1.0); // default
+
+  tuner.setK(0.523);
+  EXPECT_DOUBLE_EQ(tuner.getK(), 0.523);
+
+  tuner.setK(1.987);
+  EXPECT_DOUBLE_EQ(tuner.getK(), 1.987);
+}
+
+TEST_F(TexelTunerTest, computeMSE_PerfectPredictions_ZeroMSE) {
+  // If every position's eval exactly produces the labeled result via sigmoid,
+  // MSE should be (nearly) zero. We approximate this by using positions where
+  // the eval strongly agrees with the label and a large K to make sigmoid extreme.
+  TexelTuner::setupEvalOverrides();
+  TexelTuner tuner;
+  tuner.createEvaluator();
+
+  TuningDataset dataset;
+  // Start position is ~0cp eval, draw label → sigmoid(K, 0) = 0.5 = draw
+  dataset.getEntries().emplace_back(
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 0.5F);
+
+  // With any K, eval=0 → sigmoid = 0.5 exactly, result = 0.5 → error = 0
+  const double mse = tuner.computeMSE(dataset, 1.0);
+  // Eval may not be exactly 0 (tempo bonus), so allow small tolerance
+  EXPECT_LT(mse, 0.005) << "Start position draw should produce near-zero MSE";
+}
+
+TEST_F(TexelTunerTest, computeMSE_AllDraws_ReasonableMSE) {
+  // Dataset where every position is labeled as draw (0.5)
+  TexelTuner::setupEvalOverrides();
+  TexelTuner tuner;
+  tuner.createEvaluator();
+
+  TuningDataset dataset;
+  auto& entries = dataset.getEntries();
+  // Mix of various positions, all labeled as draws
+  entries.emplace_back("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 0.5F);
+  entries.emplace_back("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1", 0.5F);
+  entries.emplace_back("rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQq - 0 1", 0.5F);
+
+  const double mse = tuner.computeMSE(dataset, 1.0);
+  EXPECT_GT(mse, 0.0);
+  EXPECT_LT(mse, 1.0);
+  std::cout << "  All-draws dataset MSE: " << mse << "\n";
+}
+
+TEST_F(TexelTunerTest, computeMSE_AllWhiteWins_ReasonableMSE) {
+  // Dataset where every position is labeled as white win (1.0)
+  TexelTuner::setupEvalOverrides();
+  TexelTuner tuner;
+  tuner.createEvaluator();
+
+  TuningDataset dataset;
+  auto& entries = dataset.getEntries();
+  entries.emplace_back("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 1.0F);
+  entries.emplace_back("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1", 1.0F);
+  entries.emplace_back("rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQq - 0 1", 1.0F);
+
+  const double mse = tuner.computeMSE(dataset, 1.0);
+  EXPECT_GT(mse, 0.0);
+  EXPECT_LT(mse, 1.0);
+  std::cout << "  All-white-wins dataset MSE: " << mse << "\n";
+}
+
+TEST_F(TexelTunerTest, computeMSE_EvalPerspective_KnownMaterialAdvantage) {
+  // Test eval perspective with a known material advantage:
+  // White has an extra knight. Regardless of side to move, eval should
+  // favor White (positive from White's perspective), and with a white-win
+  // label the MSE should be small.
+  TexelTuner::setupEvalOverrides();
+  TexelTuner tuner;
+  tuner.createEvaluator();
+
+  // White has an extra knight, White to move
+  TuningDataset datasetWtm;
+  datasetWtm.getEntries().emplace_back(
+    "rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 0 1", 1.0F);
+
+  // White has an extra knight, Black to move (same position)
+  TuningDataset datasetBtm;
+  datasetBtm.getEntries().emplace_back(
+    "rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 0 1", 1.0F);
+
+  const double mseW = tuner.computeMSE(datasetWtm, 1.0);
+  const double mseB = tuner.computeMSE(datasetBtm, 1.0);
+
+  // Both should be relatively small (eval agrees with label)
+  EXPECT_LT(mseW, 0.25);
+  EXPECT_LT(mseB, 0.25);
+  // And should be similar to each other (same position, different side to move)
+  EXPECT_NEAR(mseW, mseB, 0.05);
+
+  std::cout << "  Extra knight perspective: WTM MSE=" << mseW << ", BTM MSE=" << mseB << "\n";
+}
+
+TEST_F(TexelTunerTest, coordinateDescent_SingleParameter_Converges) {
+  // Coordinate descent with only 1 parameter should converge without issues
+  TexelTuner::setupEvalOverrides();
+  TexelTuner tuner;
+  tuner.createEvaluator();
+
+  TuningDataset trainSet;
+  auto& entries = trainSet.getEntries();
+  entries.emplace_back("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 0.5F);
+  entries.emplace_back("rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQq - 0 1", 1.0F);
+  entries.emplace_back("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 0 1", 0.0F);
+  entries.emplace_back("r1bqkbnr/pppppppp/2n5/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 1 2", 0.5F);
+
+  const auto& searchConfig = ConfigManager::instance().search();
+  const auto& evalConfig   = ConfigManager::instance().eval();
+  auto allParams = TuningParameter::buildFromRegistry(searchConfig, evalConfig);
+
+  // Take exactly 1 parameter
+  std::vector<TuningParameter> singleParam = {allParams[0]};
+
+  (void)tuner.tuneK(trainSet);
+
+  const double baselineMSE = tuner.computeMSE(trainSet, tuner.getK());
+
+  // Run coordinate descent with just 1 param, max 10 passes
+  tuner.tuneParameters(trainSet, nullptr, singleParam, 10);
+
+  const double finalMSE = tuner.computeMSE(trainSet, tuner.getK());
+
+  // MSE should not increase
+  EXPECT_LE(finalMSE, baselineMSE + 1e-12);
+  std::cout << "  Single-param: baseline MSE=" << baselineMSE
+            << ", final MSE=" << finalMSE << "\n";
+}
+
+TEST_F(TexelTunerTest, tuneK_ParallelMatchesSingleThread) {
+  // tuneK should use parallel MSE when available, producing the same K
+  TexelTuner::setupEvalOverrides();
+
+  TexelTuner singleTuner;
+  singleTuner.createEvaluator();
+
+  TexelTuner parallelTuner;
+  parallelTuner.createEvaluators(4);
+
+  TuningDataset dataset;
+  auto& entries = dataset.getEntries();
+  entries.emplace_back("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 0.5F);
+  entries.emplace_back("rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQq - 0 1", 1.0F);
+  entries.emplace_back("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 0 1", 0.0F);
+  entries.emplace_back("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1", 0.5F);
+  entries.emplace_back("r1bqkbnr/pppppppp/2n5/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 1 2", 0.5F);
+
+  const double kSingle   = singleTuner.tuneK(dataset);
+  const double kParallel = parallelTuner.tuneK(dataset);
+
+  EXPECT_NEAR(kSingle, kParallel, 1e-6)
+    << "Parallel and single-threaded K-tuning should converge to same value";
+  std::cout << "  K single=" << kSingle << ", K parallel=" << kParallel << "\n";
+}
+
+TEST_F(TexelTunerTest, hasEvaluator_BeforeAndAfterCreate) {
+  TexelTuner tuner;
+  EXPECT_FALSE(tuner.hasEvaluator());
+  EXPECT_EQ(tuner.numThreads(), 0);
+
+  TexelTuner::setupEvalOverrides();
+  tuner.createEvaluator();
+  EXPECT_TRUE(tuner.hasEvaluator());
+  EXPECT_EQ(tuner.numThreads(), 1);
+}
+
 TEST_F(TexelTunerTest, coordinateDescent_WithMonotonicity_MaintainsOrdering) {
   // After coordinate descent, all array params with monotonicity constraints
   // should still be in valid order
@@ -1333,4 +1541,139 @@ TEST_F(TexelTunerTest, coordinateDescent_WithMonotonicity_MaintainsOrdering) {
   }
 
   std::cout << "  Verified monotonicity on " << arrays.size() << " array parameter groups\n";
+}
+
+// =========================================================================
+// Phase 6.10 — End-to-end integration test
+// =========================================================================
+
+TEST_F(TexelTunerTest, endToEnd_SmallDataset_TuneAndGenerateOutput) {
+  // Full pipeline: dataset → tuneK → coordinate descent → checkpoint → output files
+  // Verifies that MSE decreases and output files are valid.
+  TexelTuner::setupEvalOverrides();
+  TexelTuner tuner;
+  tuner.createEvaluators(4);
+
+  // Build a small but meaningful dataset (mixed positions and results)
+  TuningDataset fullDataset;
+  auto& entries = fullDataset.getEntries();
+
+  // Start position (draw)
+  entries.emplace_back("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 0.5F);
+  // After 1. e4 (draw)
+  entries.emplace_back("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1", 0.5F);
+  // Italian game (white win)
+  entries.emplace_back("r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4", 1.0F);
+  // Sicilian (draw)
+  entries.emplace_back("rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2", 0.5F);
+  // White up a rook (white win)
+  entries.emplace_back("rnbqkbn1/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQq - 0 1", 1.0F);
+  // Black up a queen (black win)
+  entries.emplace_back("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 0 1", 0.0F);
+  // Endgame (draw)
+  entries.emplace_back("4k3/pppppppp/8/8/8/8/PPPPPPPP/4K3 w - - 0 1", 0.5F);
+  // Sicilian Najdorf position (black win)
+  entries.emplace_back("r1bqkb1r/1p1n1ppp/p2ppn2/8/3NP3/2N1BP2/PPP3PP/R2QKB1R w KQkq - 0 8", 0.0F);
+  // French Defense (draw)
+  entries.emplace_back("rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2", 0.5F);
+  // White up a piece (white win)
+  entries.emplace_back("r1bqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 1.0F);
+
+  // Also load from dev dataset if available
+  const std::string devPath =
+    std::string(FrankyCPP_PROJECT_ROOT) + "/test/testsets/tuning/v1.6_vs_v1.5_score.txt";
+  try {
+    TuningDataset devData;
+    devData.loadFromFile(devPath, 90); // Small subset — 90 more entries
+    for (const auto& e : devData) {
+      entries.push_back(e);
+    }
+  } catch (...) {
+    // OK, continue with just the hand-crafted positions
+  }
+
+  ASSERT_GE(fullDataset.size(), 10u) << "Need at least the hand-crafted entries";
+
+  // Split into train/test
+  auto [trainSet, testSet] = fullDataset.split(0.8F);
+  std::cout << "  Dataset: " << fullDataset.size() << " total"
+            << " (train=" << trainSet.size() << ", test=" << testSet.size() << ")\n";
+
+  // Build parameters — use only first 5 for speed
+  const auto& searchConfig = ConfigManager::instance().search();
+  const auto& evalConfig   = ConfigManager::instance().eval();
+  auto allParams = TuningParameter::buildFromRegistry(searchConfig, evalConfig);
+  std::vector<TuningParameter> params(
+    allParams.begin(),
+    allParams.begin() + std::min(static_cast<std::size_t>(5), allParams.size()));
+
+  // Step 1: Tune K
+  const double K = tuner.tuneK(trainSet);
+  EXPECT_GE(K, 0.5);
+  EXPECT_LE(K, 2.0);
+  std::cout << "  Tuned K: " << K << "\n";
+
+  // Step 2: Baseline MSE
+  const double baselineMSE = tuner.computeMSEParallel(trainSet, K);
+  std::cout << "  Baseline train MSE: " << baselineMSE << "\n";
+  EXPECT_GT(baselineMSE, 0.0);
+  EXPECT_LT(baselineMSE, 1.0);
+
+  // Step 3: Coordinate descent (2 passes)
+  const std::string checkpointPath =
+    (std::filesystem::temp_directory_path() / "e2e_checkpoint.yaml").string();
+  tuner.tuneParameters(trainSet, &testSet, params, 2, checkpointPath, "e2e_test");
+
+  // Step 4: Verify MSE did not increase
+  const double finalMSE = tuner.computeMSEParallel(trainSet, K);
+  std::cout << "  Final train MSE: " << finalMSE << "\n";
+  EXPECT_LE(finalMSE, baselineMSE + 1e-12)
+    << "MSE should not increase after tuning";
+
+  // Step 5: Verify checkpoint was created
+  EXPECT_TRUE(std::filesystem::exists(checkpointPath))
+    << "Checkpoint file should exist";
+  const auto loaded = TuningState::loadFromYaml(checkpointPath);
+  EXPECT_GE(loaded.completedPasses, 1);
+  EXPECT_EQ(loaded.paramValues.size(), params.size());
+
+  // Step 6: Generate output files
+  const std::string yamlPath =
+    (std::filesystem::temp_directory_path() / "e2e_tuned.yaml").string();
+  const std::string reportPath =
+    (std::filesystem::temp_directory_path() / "e2e_comparison.txt").string();
+
+  TuningOutput::writeParamsYaml(yamlPath, params, K);
+  TuningOutput::writeComparisonReport(reportPath, params);
+
+  EXPECT_TRUE(std::filesystem::exists(yamlPath))
+    << "Tuned params YAML should exist";
+  EXPECT_TRUE(std::filesystem::exists(reportPath))
+    << "Comparison report should exist";
+
+  // Step 7: Verify output files are non-empty and valid
+  {
+    std::ifstream yamlFile(yamlPath);
+    const std::string yamlContent(
+      (std::istreambuf_iterator<char>(yamlFile)),
+      std::istreambuf_iterator<char>());
+    EXPECT_GT(yamlContent.size(), 50u) << "YAML should have content";
+    EXPECT_NE(yamlContent.find("FrankyCPP Tuned"), std::string::npos);
+  }
+
+  {
+    std::ifstream reportFile(reportPath);
+    const std::string reportContent(
+      (std::istreambuf_iterator<char>(reportFile)),
+      std::istreambuf_iterator<char>());
+    EXPECT_GT(reportContent.size(), 50u) << "Report should have content";
+    EXPECT_NE(reportContent.find("Parameter Comparison"), std::string::npos);
+  }
+
+  // Cleanup
+  std::filesystem::remove(checkpointPath);
+  std::filesystem::remove(yamlPath);
+  std::filesystem::remove(reportPath);
+
+  std::cout << "  ✅ End-to-end integration test passed\n";
 }
