@@ -1,0 +1,44 @@
+Score of FrankyCPP-v1.7-W vs FrankyCPP-v1.7-B: 15237 - 15300 - 19463  [0.499] 50000
+...      FrankyCPP-v1.7-W playing White: 8072 - 7127 - 9801  [0.519] 25000
+...      FrankyCPP-v1.7-W playing Black: 7165 - 8173 - 9662  [0.480] 25000
+...      White vs Black: 16245 - 14292 - 19463  [0.520] 50000
+Elo difference: -0.4 +/- 2.4, LOS: 35.9 %, DrawRatio: 38.9 %
+SPRT: llr 0 (0.0%), lbound -inf, ubound inf
+
+Player: FrankyCPP-v1.7-W
+   "Draw by 3-fold repetition": 14274
+   "Draw by fifty moves rule": 1438
+   "Draw by insufficient mating material": 3573
+   "Draw by stalemate": 173
+   "Draw by timeout": 5
+   "Loss: Black loses on time": 66
+   "Loss: Black mates": 7038
+   "Loss: Black's connection stalls": 3
+   "Loss: White loses on time": 83
+   "Loss: White mates": 8104
+   "Loss: White's connection stalls": 6
+   "Win: Black loses on time": 67
+   "Win: Black mates": 7091
+   "Win: Black's connection stalls": 6
+   "Win: White loses on time": 65
+   "Win: White mates": 7999
+   "Win: White's connection stalls": 9
+Player: FrankyCPP-v1.7-B
+   "Draw by 3-fold repetition": 14274
+   "Draw by fifty moves rule": 1438
+   "Draw by insufficient mating material": 3573
+   "Draw by stalemate": 173
+   "Draw by timeout": 5
+   "Loss: Black loses on time": 67
+   "Loss: Black mates": 7091
+   "Loss: Black's connection stalls": 6
+   "Loss: White loses on time": 65
+   "Loss: White mates": 7999
+   "Loss: White's connection stalls": 9
+   "Win: Black loses on time": 66
+   "Win: Black mates": 7038
+   "Win: Black's connection stalls": 3
+   "Win: White loses on time": 83
+   "Win: White mates": 8104
+   "Win: White's connection stalls": 6
+Finished match
