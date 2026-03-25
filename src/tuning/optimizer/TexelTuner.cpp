@@ -18,6 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "tuning/optimizer/TexelTuner.h"
+#include "tuning/optimizer/TuningState.h"
 
 #include "chesscore/Position.h"
 #include "common/Logging.h"
@@ -721,7 +722,10 @@ namespace tuning {
   void TexelTuner::tuneParameters(const TuningDataset& trainSet,
                                   const TuningDataset* testSet,
                                   std::vector<TuningParameter>& params,
-                                  const int maxPasses) {
+                                  const int maxPasses,
+                                  const std::string& checkpointPath,
+                                  const std::string& datasetPath,
+                                  const int startPass) {
     if (threadEvaluators_.empty()) {
       throw std::logic_error("TexelTuner::tuneParameters: evaluator not created — call createEvaluators() first");
     }
@@ -783,7 +787,7 @@ namespace tuning {
 
     const auto totalStart = steady_clock::now();
     bool improved = true;
-    int pass = 0;
+    int pass = startPass;
 
     while (improved && pass < maxPasses) {
       improved = false;
@@ -859,12 +863,13 @@ namespace tuning {
       const auto passElapsed = steady_clock::now() - passStart;
       const auto passSeconds = std::chrono::duration<double>(passElapsed).count();
 
+      double testMSEForCheckpoint = 0.0;
       if (testSet && !testSet->empty()) {
-        const double testMSE = fullMSE(*testSet);
+        testMSEForCheckpoint = fullMSE(*testSet);
         LOG__INFO(tuningLog,
                   "Pass {:3d}: train MSE = {:.10f}, test MSE = {:.10f}, changed = {:3d}/{}, "
                   "biggest = {} (Δ{:.2e}), {:.1f}s",
-                  pass, currentMSE, testMSE, paramsChanged, params.size(),
+                  pass, currentMSE, testMSEForCheckpoint, paramsChanged, params.size(),
                   biggestMoverName.empty() ? "-" : biggestMoverName, biggestMoverDelta, passSeconds);
       }
       else {
@@ -873,6 +878,23 @@ namespace tuning {
                   "biggest = {} (Δ{:.2e}), {:.1f}s",
                   pass, currentMSE, paramsChanged, params.size(),
                   biggestMoverName.empty() ? "-" : biggestMoverName, biggestMoverDelta, passSeconds);
+      }
+
+      // Save checkpoint after each pass (if path provided)
+      if (!checkpointPath.empty()) {
+        TuningState checkpoint;
+        checkpoint.completedPasses = pass;
+        checkpoint.bestTrainMSE    = currentMSE;
+        checkpoint.bestTestMSE     = testMSEForCheckpoint;
+        checkpoint.K               = K_;
+        checkpoint.datasetPath     = datasetPath;
+        checkpoint.captureFromParams(params);
+        try {
+          checkpoint.saveToYaml(checkpointPath);
+        }
+        catch (const std::exception& e) {
+          LOG__WARN(tuningLog, "Failed to save checkpoint: {}", e.what());
+        }
       }
     }
 

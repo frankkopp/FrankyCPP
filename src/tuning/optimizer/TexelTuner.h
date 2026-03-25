@@ -212,15 +212,22 @@ namespace tuning {
     /// MSE. Repeats over all parameters until no improvement or maxPasses reached.
     /// Logs per-pass summary (train MSE, test MSE, params changed, biggest mover).
     /// Array parameters with monotonicity constraints are clamped after each change.
+    /// If checkpointPath is non-empty, saves a checkpoint YAML after each pass.
     ///
-    /// @param trainSet     Training dataset (MSE minimized on this)
-    /// @param testSet      Optional test dataset for overfitting detection (nullptr to skip)
-    /// @param params       Mutable parameter vector (values modified in place)
-    /// @param maxPasses    Maximum number of full passes over all parameters (default 100)
+    /// @param trainSet        Training dataset (MSE minimized on this)
+    /// @param testSet         Optional test dataset for overfitting detection (nullptr to skip)
+    /// @param params          Mutable parameter vector (values modified in place)
+    /// @param maxPasses       Maximum number of full passes over all parameters (default 100)
+    /// @param checkpointPath  Path for checkpoint file (empty = no checkpointing)
+    /// @param datasetPath     Dataset path stored in checkpoint metadata (empty = omitted)
+    /// @param startPass       Starting pass number for resume (default 0 = fresh start)
     void tuneParameters(const TuningDataset& trainSet,
                         const TuningDataset* testSet,
                         std::vector<TuningParameter>& params,
-                        int maxPasses = 100);
+                        int maxPasses = 100,
+                        const std::string& checkpointPath = "",
+                        const std::string& datasetPath = "",
+                        int startPass = 0);
 
     /// Enforces monotonicity constraints on an array parameter after modification.
     ///

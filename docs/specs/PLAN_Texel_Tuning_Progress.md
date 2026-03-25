@@ -171,7 +171,7 @@
 | 6.4  | Implement coordinate descent loop with parallel MSE                      | ✅ Complete     |
 | 6.5  | Implement incremental MSE optimization (activation flags)                | ✅ Complete     |
 | 6.6  | Implement monotonicity constraint enforcement for array parameters       | ✅ Complete     |
-| 6.7  | Implement `TuningState` checkpoint save/load (YAML)                      | ⬚ Not Started  |
+| 6.7  | Implement `TuningState` checkpoint save/load (YAML)                      | ✅ Complete     |
 | 6.8  | Wire up `TunerMain.cpp` with full CLI                                    | ⬚ Not Started  |
 | 6.9  | Implement output: tuned params YAML, comparison report                   | ⬚ Not Started  |
 | 6.10 | Write comprehensive unit tests for each component                        | ⬚ Not Started  |
@@ -188,8 +188,10 @@
 
 - 6.6: ✅ **Built, tested, committed.** `enforceMonotonicity()` static method on `TexelTuner` — clamps array element to neighbor bounds (NON_DECREASING: floor from predecessor, ceiling from successor; NON_INCREASING: inverse). Integrated into coordinate descent: called after setting ±delta trial values and after committing keep-best. Only the modified element is clamped (no cascading). 11 new tests: floor/ceiling clamping, no-op for scalars/NONE, first/last element boundaries, real registry arrays (KING_SAFETY_TABLE), integration test verifying ordering after 2 passes of coordinate descent.
 
+- 6.7: ✅ **Built, tested, committed.** `TuningState` struct with YAML checkpoint persistence. `captureFromParams()` / `restoreToParams()` for snapshotting/restoring param vectors (name-based matching with warnings for mismatches). `saveToYaml()` / `loadFromYaml()` using yaml-cpp `Emitter`/`LoadFile` with format version marker (`FrankyCPP_TuningCheckpoint_v1`). Stores: completedPasses, K, bestTrainMSE, bestTestMSE, datasetPath, timestamp, all param name→value pairs. Integrated into `tuneParameters()`: optional `checkpointPath` + `datasetPath` + `startPass` params — saves after each pass, supports resume from arbitrary pass. 15 new tests: capture/restore, missing/extra params, YAML round-trip, negative values, empty params, error handling (missing file, invalid YAML, wrong format, bad path), human-readable check, real registry round-trip, coordinate descent integration.
+
 ### Session Pickup Instructions
-- Next step: Phase 6.7 — TuningState checkpoint save/load (YAML)
+- Next step: Phase 6.8 — Wire up TunerMain.cpp with full CLI
 
 ### Sprint Plan (Phase 6 Detailed Breakdown)
 
