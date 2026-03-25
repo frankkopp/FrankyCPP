@@ -172,7 +172,7 @@
 | 6.5  | Implement incremental MSE optimization (activation flags)                | ✅ Complete     |
 | 6.6  | Implement monotonicity constraint enforcement for array parameters       | ✅ Complete     |
 | 6.7  | Implement `TuningState` checkpoint save/load (YAML)                      | ✅ Complete     |
-| 6.8  | Wire up `TunerMain.cpp` with full CLI                                    | ⬚ Not Started  |
+| 6.8  | Wire up `TunerMain.cpp` with full CLI                                    | ✅ Complete     |
 | 6.9  | Implement output: tuned params YAML, comparison report                   | ⬚ Not Started  |
 | 6.10 | Write comprehensive unit tests for each component                        | ⬚ Not Started  |
 | 6.11 | **Decision point:** Evaluate initial results; decide on PST tuning scope | ⬚ Not Started  |
@@ -190,8 +190,10 @@
 
 - 6.7: ✅ **Built, tested, committed.** `TuningState` struct with YAML checkpoint persistence. `captureFromParams()` / `restoreToParams()` for snapshotting/restoring param vectors (name-based matching with warnings for mismatches). `saveToYaml()` / `loadFromYaml()` using yaml-cpp `Emitter`/`LoadFile` with format version marker (`FrankyCPP_TuningCheckpoint_v1`). Stores: completedPasses, K, bestTrainMSE, bestTestMSE, datasetPath, timestamp, all param name→value pairs. Integrated into `tuneParameters()`: optional `checkpointPath` + `datasetPath` + `startPass` params — saves after each pass, supports resume from arbitrary pass. 15 new tests: capture/restore, missing/extra params, YAML round-trip, negative values, empty params, error handling (missing file, invalid YAML, wrong format, bad path), human-readable check, real registry round-trip, coordinate descent integration.
 
+- 6.8: ✅ **Built, committed.** `TunerMain.cpp` wired up with full end-to-end pipeline. Replaces the Phase 6 TODO stub with: dataset loading → train/test split → eval overrides → evaluator pool creation → parameter vector from registry → checkpoint resume (`--resume`) with `setK()` → K tuning (ternary search) → coordinate descent with checkpointing → final summary with top-20 movers table. All CLI args mapped: `--dataset`, `--output`, `--threads`, `--test-split`, `--max-passes`, `--resume`, `--verbose`. TUNING_LOG level set to debug when verbose. Added `setK()` setter to `TexelTuner` for clean checkpoint resume. Checkpoint path auto-derived from output path stem.
+
 ### Session Pickup Instructions
-- Next step: Phase 6.8 — Wire up TunerMain.cpp with full CLI
+- Next step: Phase 6.9 — Output: tuned params YAML + comparison report
 
 ### Sprint Plan (Phase 6 Detailed Breakdown)
 

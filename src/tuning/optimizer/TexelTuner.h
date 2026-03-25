@@ -251,6 +251,9 @@ namespace tuning {
     /// Returns the current scaling constant K.
     [[nodiscard]] double getK() const { return K_; }
 
+    /// Sets the scaling constant K directly (e.g., when resuming from checkpoint).
+    void setK(const double k) { K_ = k; }
+
     /// Returns whether at least one evaluator has been created.
     [[nodiscard]] bool hasEvaluator() const { return !threadEvaluators_.empty(); }
 

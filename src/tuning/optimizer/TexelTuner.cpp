@@ -31,6 +31,7 @@
 #include <chrono>
 #include <format>
 #include <future>
+#include <iostream>
 #include <numeric>
 #include <optional>
 #include <stdexcept>
@@ -221,6 +222,14 @@ namespace tuning {
         kHigh = kRight;
       } else {
         kLow = kLeft;
+      }
+
+      // Progress every 10 iterations
+      if ((i + 1) % 10 == 0 || i == iterations - 1) {
+        const double currentK = (kLow + kHigh) / 2.0;
+        const double bestMSE  = std::min(mseLeft, mseRight);
+        std::cout << std::format("  K iteration {:2d}/{}: K = {:.6f} [{:.6f}, {:.6f}], MSE = {:.10f}\n",
+                                 i + 1, iterations, currentK, kLow, kHigh, bestMSE) << std::flush;
       }
     }
 
@@ -759,7 +768,9 @@ namespace tuning {
 
     // Compute activation flags and initial error cache (mutable cast needed for cache population)
     auto& mutableTrainSet = const_cast<TuningDataset&>(trainSet);
+    std::cout << "Computing activation flags for " << trainSet.size() << " positions...\n" << std::flush;
     computeActivationFlags(mutableTrainSet);
+    std::cout << "  Activation flags computed.\n" << std::flush;
 
     // Count active entries per group for logging
     std::array<int, NUM_PARAM_GROUPS> activeCount{};
@@ -776,7 +787,9 @@ namespace tuning {
     }
 
     // Full eval pass to populate cache
+    std::cout << "Computing initial error cache...\n" << std::flush;
     const double baselineMSE = computeAndCacheErrors(mutableTrainSet, K_);
+    std::cout << "  Baseline train MSE: " << std::format("{:.10f}", baselineMSE) << "\n" << std::flush;
     LOG__INFO(tuningLog, "Coordinate descent: {} params, {} positions, K = {:.6f}",
               params.size(), trainSet.size(), K_);
     LOG__INFO(tuningLog, "Baseline train MSE: {:.10f}", baselineMSE);
@@ -800,7 +813,16 @@ namespace tuning {
 
       double currentMSE = totalSquaredError_ / static_cast<double>(trainSet.size());
 
+      const auto totalParams = static_cast<int>(params.size());
+      int paramIdx = 0;
+
       for (auto& param : params) {
+        // Within-pass progress every 20 params
+        if (paramIdx % 20 == 0) {
+          std::cout << std::format("  Pass {:3d}: param {:3d}/{} ...\r", pass, paramIdx, totalParams) << std::flush;
+        }
+        ++paramIdx;
+
         const int originalValue = param.currentValue;
         const int group = param.paramGroup;
 
@@ -859,25 +881,30 @@ namespace tuning {
         }
       }
 
-      // Per-pass summary
+      // Per-pass summary — clear the in-line progress first
+      std::cout << std::string(60, ' ') << "\r" << std::flush;
       const auto passElapsed = steady_clock::now() - passStart;
       const auto passSeconds = std::chrono::duration<double>(passElapsed).count();
 
       double testMSEForCheckpoint = 0.0;
       if (testSet && !testSet->empty()) {
         testMSEForCheckpoint = fullMSE(*testSet);
-        LOG__INFO(tuningLog,
-                  "Pass {:3d}: train MSE = {:.10f}, test MSE = {:.10f}, changed = {:3d}/{}, "
-                  "biggest = {} (Δ{:.2e}), {:.1f}s",
-                  pass, currentMSE, testMSEForCheckpoint, paramsChanged, params.size(),
-                  biggestMoverName.empty() ? "-" : biggestMoverName, biggestMoverDelta, passSeconds);
+        const auto summary = std::format(
+          "Pass {:3d}: train MSE = {:.10f}, test MSE = {:.10f}, changed = {:3d}/{}, "
+          "biggest = {} (d{:.2e}), {:.1f}s",
+          pass, currentMSE, testMSEForCheckpoint, paramsChanged, params.size(),
+          biggestMoverName.empty() ? "-" : biggestMoverName, biggestMoverDelta, passSeconds);
+        LOG__INFO(tuningLog, "{}", summary);
+        std::cout << summary << "\n" << std::flush;
       }
       else {
-        LOG__INFO(tuningLog,
-                  "Pass {:3d}: train MSE = {:.10f}, changed = {:3d}/{}, "
-                  "biggest = {} (Δ{:.2e}), {:.1f}s",
-                  pass, currentMSE, paramsChanged, params.size(),
-                  biggestMoverName.empty() ? "-" : biggestMoverName, biggestMoverDelta, passSeconds);
+        const auto summary = std::format(
+          "Pass {:3d}: train MSE = {:.10f}, changed = {:3d}/{}, "
+          "biggest = {} (d{:.2e}), {:.1f}s",
+          pass, currentMSE, paramsChanged, params.size(),
+          biggestMoverName.empty() ? "-" : biggestMoverName, biggestMoverDelta, passSeconds);
+        LOG__INFO(tuningLog, "{}", summary);
+        std::cout << summary << "\n" << std::flush;
       }
 
       // Save checkpoint after each pass (if path provided)

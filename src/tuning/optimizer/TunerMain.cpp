@@ -26,23 +26,45 @@
 // weights via coordinate descent to minimize mean squared error between
 // predicted and actual game outcomes.
 //
-// This tool is part of the tuning infrastructure and is completely separate
-// from the main FrankyCPP engine executable.
+// Pipeline:
+//   1. Load dataset (FEN+result format or EPD c9 format)
+//   2. Split into train/test sets (configurable split ratio)
+//   3. Apply eval overrides (disable lazy eval, pawn TT)
+//   4. Create evaluator pool (one per worker thread)
+//   5. Build tunable parameter vector from ConfigRegistry
+//   6. Resume from checkpoint if --resume is specified
+//   7. Tune scaling constant K via ternary search (unless resuming)
+//   8. Run coordinate descent optimization (with checkpointing)
+//   9. Print final summary with top parameter changes
 //
 // Usage:
 //   FrankyCPP_Tuner --dataset <file> [options]
+//   FrankyCPP_Tuner --dataset <file> --resume checkpoint.yaml
 //
 // See docs/specs/PLAN_Texel_Tuning.md for details.
 //
 //=============================================================================
 
+#include "tuning/optimizer/TexelTuner.h"
+#include "tuning/optimizer/TuningDataset.h"
+#include "tuning/optimizer/TuningParameter.h"
+#include "tuning/optimizer/TuningState.h"
+
+#include "common/Logging.h"
+#include "config/ConfigManager.h"
 #include "init.h"
 #include "version.h"
 
+#include <algorithm>
 #include <boost/program_options.hpp>
+#include <chrono>
+#include <cstdlib>
 #include <exception>
+#include <filesystem>
+#include <format>
 #include <iostream>
 #include <string>
+#include <vector>
 
 namespace po = boost::program_options;
 
@@ -143,10 +165,193 @@ int main(int argc, char* argv[]) {
     std::cout << "\n";
 
     // =========================================================================
-    // TODO: Phase 6 — Implement TexelTuner and wire it up here
+    // Initialize logging
     // =========================================================================
-    std::cout << "Texel tuning not yet implemented (Phase 6).\n";
-    std::cout << "See docs/specs/PLAN_Texel_Tuning.md for details.\n";
+    const auto& tuningLog = common::Logger::get().TUNING_LOG;
+    if (verbose) {
+      common::Logger::setLoggerLevel(tuningLog, spdlog::level::debug);
+    }
+    else {
+      common::Logger::setLoggerLevel(tuningLog, spdlog::level::info);
+    }
+
+    const auto totalStart = steady_clock::now();
+
+    // =========================================================================
+    // Step 1: Load dataset
+    // =========================================================================
+    std::cout << "Loading dataset: " << datasetPath << "\n" << std::flush;
+    tuning::TuningDataset fullDataset;
+    fullDataset.loadFromFile(datasetPath);
+    if (fullDataset.empty()) {
+      std::cerr << "Error: Dataset is empty or could not be loaded.\n";
+      return 1;
+    }
+    const auto& stats = fullDataset.getLoadStats();
+    std::cout << "  Loaded " << fullDataset.size() << " positions"
+              << " (parsed: " << stats.parsedOk
+              << ", skipped: " << (stats.skippedEmpty + stats.skippedComment + stats.skippedMalformed) << ")\n\n";
+
+    // =========================================================================
+    // Step 2: Split into train/test sets
+    // =========================================================================
+    const auto trainFraction = static_cast<float>(1.0 - testSplit);
+    auto [trainSet, testSet] = fullDataset.split(trainFraction);
+    std::cout << "Train/test split:\n";
+    std::cout << "  Train set: " << trainSet.size() << " positions ("
+              << std::format("{:.0f}", trainFraction * 100.0F) << "%)\n";
+    std::cout << "  Test set:  " << testSet.size() << " positions ("
+              << std::format("{:.0f}", testSplit * 100.0) << "%)\n\n";
+
+    // =========================================================================
+    // Step 3: Apply eval overrides for tuning
+    // =========================================================================
+    std::cout << "Applying eval overrides for tuning...\n";
+    tuning::TexelTuner::setupEvalOverrides();
+    std::cout << "  Lazy eval:   disabled\n";
+    std::cout << "  Pawn TT:     disabled\n";
+    std::cout << "  Space eval:  enabled\n\n";
+
+    // =========================================================================
+    // Step 4: Create evaluators (thread pool)
+    // =========================================================================
+    std::cout << "Creating " << threads << " evaluator(s)...\n\n";
+    tuning::TexelTuner tuner;
+    tuner.createEvaluators(threads);
+
+    // =========================================================================
+    // Step 5: Build tunable parameter vector from registry
+    // =========================================================================
+    const auto& searchCfg = config::ConfigManager::instance().search();
+    const auto& evalCfg   = config::ConfigManager::instance().eval();
+    auto params = tuning::TuningParameter::buildFromRegistry(searchCfg, evalCfg);
+    std::cout << "Tunable parameters: " << params.size() << "\n\n";
+
+    // =========================================================================
+    // Step 6: Handle --resume (restore checkpoint state)
+    // =========================================================================
+    int startPass = 0;
+    if (hasResume) {
+      std::cout << "Resuming from checkpoint: " << resumePath << "\n";
+      const auto checkpoint = tuning::TuningState::loadFromYaml(resumePath);
+      const int restored = checkpoint.restoreToParams(params);
+      std::cout << "  Restored " << restored << "/" << params.size() << " parameter values\n";
+      std::cout << "  Completed passes: " << checkpoint.completedPasses << "\n";
+      std::cout << "  Previous train MSE: " << std::format("{:.10f}", checkpoint.bestTrainMSE) << "\n";
+      if (checkpoint.bestTestMSE > 0.0) {
+        std::cout << "  Previous test MSE:  " << std::format("{:.10f}", checkpoint.bestTestMSE) << "\n";
+      }
+
+      // Apply restored values to the live config
+      config::ConfigManager::instance().applyOverrides([&](auto& s, auto& e) {
+        for (const auto& p : params) {
+          p.applyToConfig(s, e);
+        }
+      });
+
+      // Use K from checkpoint (skip K tuning)
+      const double checkpointK = checkpoint.K;
+      std::cout << "  Using K from checkpoint: " << std::format("{:.6f}", checkpointK) << "\n\n";
+      tuner.setK(checkpointK);
+
+      startPass = checkpoint.completedPasses;
+    }
+    else {
+      // =========================================================================
+      // Step 7: Tune scaling constant K (ternary search)
+      // =========================================================================
+      std::cout << "Tuning scaling constant K...\n" << std::flush;
+      const auto kStart = steady_clock::now();
+      const double K = tuner.tuneK(trainSet);
+      const auto kElapsed = std::chrono::duration<double>(steady_clock::now() - kStart).count();
+      std::cout << "  Optimal K: " << std::format("{:.6f}", K) << " (found in " << std::format("{:.1f}", kElapsed) << "s)\n\n";
+    }
+
+    // =========================================================================
+    // Step 8: Derive checkpoint path from output path
+    // =========================================================================
+    const std::filesystem::path outPath(outputPath);
+    const std::string checkpointPath = (outPath.parent_path() / (outPath.stem().string() + "_checkpoint.yaml")).string();
+    std::cout << "Checkpoint file: " << checkpointPath << "\n\n";
+
+    // =========================================================================
+    // Step 9: Run coordinate descent optimization
+    // =========================================================================
+    std::cout << "Starting coordinate descent optimization...\n";
+    std::cout << "  Max passes: " << maxPasses << "\n";
+    std::cout << "  Start pass: " << startPass << "\n";
+    std::cout << std::string(70, '-') << "\n" << std::flush;
+
+    const auto cdStart = steady_clock::now();
+
+    tuner.tuneParameters(
+      trainSet,
+      testSet.empty() ? nullptr : &testSet,
+      params,
+      maxPasses,
+      checkpointPath,
+      datasetPath,
+      startPass
+    );
+
+    const auto cdElapsed = std::chrono::duration<double>(steady_clock::now() - cdStart).count();
+
+    // =========================================================================
+    // Step 10: Final summary
+    // =========================================================================
+    const auto totalElapsed = std::chrono::duration<double>(steady_clock::now() - totalStart).count();
+
+    std::cout << "\n" << std::string(70, '=') << "\n";
+    std::cout << "TUNING COMPLETE\n";
+    std::cout << std::string(70, '=') << "\n";
+    std::cout << "  K:                 " << std::format("{:.6f}", tuner.getK()) << "\n";
+    std::cout << "  Parameters tuned:  " << params.size() << "\n";
+
+    // Count how many params changed from original
+    int changedCount = 0;
+    for (const auto& p : params) {
+      if (p.currentValue != p.originalValue) {
+        ++changedCount;
+      }
+    }
+    std::cout << "  Parameters changed:" << changedCount << "/" << params.size() << "\n";
+    std::cout << "  Optimization time: " << std::format("{:.1f}", cdElapsed) << "s\n";
+    std::cout << "  Total time:        " << std::format("{:.1f}", totalElapsed) << "s\n";
+    std::cout << "  Checkpoint:        " << checkpointPath << "\n";
+    std::cout << "\n";
+
+    // Print top movers (params with largest absolute change)
+    std::vector<std::pair<std::string, int>> movers;
+    movers.reserve(params.size());
+    for (const auto& p : params) {
+      const int delta = p.currentValue - p.originalValue;
+      if (delta != 0) {
+        movers.emplace_back(p.name, delta);
+      }
+    }
+    std::ranges::sort(movers,
+              [](const auto& a, const auto& b) { return std::abs(a.second) > std::abs(b.second); });
+
+    if (!movers.empty()) {
+      const int showCount = std::min(static_cast<int>(movers.size()), 20);
+      std::cout << "Top " << showCount << " parameter changes:\n";
+      std::cout << std::format("  {:<45s} {:>8s} {:>8s} {:>8s}\n", "Parameter", "Original", "Tuned", "Delta");
+      std::cout << "  " << std::string(69, '-') << "\n";
+      for (int i = 0; i < showCount; ++i) {
+        // Find the param to get original value
+        for (const auto& p : params) {
+          if (p.name == movers[i].first) {
+            std::cout << std::format("  {:<45s} {:>8d} {:>8d} {:>+8d}\n",
+                                     p.name, p.originalValue, p.currentValue, movers[i].second);
+            break;
+          }
+        }
+      }
+      std::cout << "\n";
+    }
+
+    std::cout << "Output files will be generated by a subsequent step (Sprint 6.9).\n";
+    std::cout << "Checkpoint saved at: " << checkpointPath << "\n";
 
     return 0;
 

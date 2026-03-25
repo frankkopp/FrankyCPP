@@ -79,6 +79,11 @@ namespace tuning {
 
       loadStats.totalLines++;
 
+      // Progress reporting every 250K lines
+      if (loadStats.totalLines % 250'000 == 0) {
+        std::cout << "  Loading... " << loadStats.totalLines << " lines\r" << std::flush;
+      }
+
       // Try FrankyCPP format first (most common in our pipeline): <FEN> [<result>]
       TuningEntry entry;
       if (parseFrankyCppFormat(line, entry, validator)) {
@@ -105,6 +110,11 @@ namespace tuning {
 
     const auto endTime   = steady_clock::now();
     const auto elapsedMs = std::chrono::duration_cast<milliseconds>(endTime - startTime).count();
+
+    // Clear the in-line progress indicator
+    if (loadStats.totalLines >= 250'000) {
+      std::cout << std::string(50, ' ') << "\r" << std::flush;
+    }
 
     // Shrink to fit after loading
     entries.shrink_to_fit();
