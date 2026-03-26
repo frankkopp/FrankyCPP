@@ -16,7 +16,6 @@ build/
 /Testing/
 temp_*/
 /results/temp/*
-/results/misc/
 /crash_dumps/
 
 # VTune results - keep summaries and CSVs, ignore large result directories

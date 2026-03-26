@@ -1117,7 +1117,7 @@ SPACE_BONUS_MID                  |        3 |     0 |    -3 |  -100%  ← candid
 
 ## Project Phases and Implementation Order
 
-The project is organized into **8 sequential phases**, each with a clear deliverable and
+The project is organized into **9 sequential phases**, each with a clear deliverable and
 gate criteria before proceeding. Each phase should be merged/committed independently.
 
 ### Phase 0: Release v1.6 and Branch v1.7 *(prerequisite)* ✅
@@ -1305,109 +1305,63 @@ Output YAML loadable by `ConfigManager`.
 
 **Deliverable:** v1.7 release with Texel-tuned eval parameters.
 
-**Effort:** ~3–5 days
+**Effort:** ~3--5 days
+
+---
+
+### Phase 9: Eval Feature Cleanup
+
+**Goal:** Fully remove eval features that tuning proved harmful or useless. Dead code removal,
+not just disabling via config toggles. Reduces eval complexity and NPS overhead.
+
+| Step | Task                                                                            | Days |
+|------|---------------------------------------------------------------------------------|------|
+| 9.1  | Identify removal candidates from tuning results (zeroed-out, sign-flipped)      | 0.5  |
+| 9.2  | Remove confirmed harmful features from Evaluator (code + config + registry)     | 1--2 |
+| 9.3  | Remove zeroed-out weight parameters and their eval code paths                   | 1--2 |
+| 9.4  | Remove associated `USE_*` toggle booleans (no longer needed if feature is gone) | 0.5  |
+| 9.5  | Update/remove related unit tests                                                | 0.5  |
+| 9.6  | Re-run tuner on best dataset to verify no MSE regression from removal           | 0.5  |
+| 9.7  | Gauntlet: 500+ games vs pre-cleanup v1.7 to confirm no strength loss            | 1    |
+| 9.8  | Measure NPS improvement from reduced eval complexity                            | 0.5  |
+
+**Gate:** All tests pass. NPS equal or improved. No MSE regression. No ELO regression in gauntlet.
+
+**Deliverable:** Cleaner eval with dead features removed. Fewer parameters. Potential NPS gain.
+
+**Effort:** ~4--6 days
+
+**Rationale:** Features that the tuner consistently zeroes out or sign-flips across multiple
+datasets are objectively harmful or useless. Keeping them as disabled config toggles adds code
+complexity and maintenance burden. Full removal:
+- Simplifies `Evaluator.cpp` (fewer branches, less code to maintain)
+- Reduces `EvalConfigData` / `ConfigRegistry` surface area
+- May improve NPS by removing dead branches the compiler can't fully optimize away
+- Makes future tuning runs faster (fewer parameters to iterate)
+
+**Scope of removal per feature:**
+1. Delete eval code in `Evaluator.cpp` (the computation itself)
+2. Delete weight fields in `EvalConfigData.h`
+3. Delete registry entries in `ConfigRegistry.cpp`
+4. Delete from `config/eval.yaml`
+5. Delete `USE_*` toggle if the entire feature is removed
+6. Update or delete affected unit tests
+7. Update tunable param count in `ConfigRegistryTest.cpp`
 
 ---
 
 ### Phase Summary
 
-| Phase     | Name                               | Effort          | Expected Gain         |
-|-----------|------------------------------------|-----------------|-----------------------|
-| 0         | Release v1.6, branch v1.7          | ~1 day          | +20–50 ELO            |
-| 1         | Module structure + PGN library     | ~4–6 days       | +10–30 ELO            |
-| 2         | Tuning build targets (scaffolding) | ~2–3 days       |                       |
-| 3         | Data collection                    | ~1–2 days       |                       |
-| 4         | Position extractor                 | ~4–6 days       |                       |
-| 5         | Mark tunable params                | ~1–2 days       |                       |
-| 6         | Optimizer implementation           | ~10–14 days     |                       |
-| 7         | Integration testing                | ~4–6 days       |                       |
-| 8         | Gauntlet + release                 | ~3–5 days       |                       |
-| **Total** |                                    | **~30–45 days** |                       |
-
-### Documentation Requirements
-
-Throughout all phases:
-
-1. **`docs/specs/PLAN_Texel_Tuning_Progress.md`** — Created at Phase 0. Updated at each phase
-   completion with:
-   - ✅ Completed phases/tasks with dates
-   - Current status and next steps
-   - Issues encountered and decisions made
-   - Brief notes (1–2 lines per task) so another session can continue
-
-2. **`docs/Texel_Tuning.md`** — Feature documentation. Created during Phase 6, finalized at
-   Phase 8. Covers:
-   - How to use the extractor and tuner executables
-   - Dataset format and sources
-   - Configuration for tuning runs
-   - Interpreting results
-
-3. **`src/tuning/README.md`** — Module-level documentation. Created at Phase 2.
-
-4. **Unit tests** — Every component gets tests. Test files mirror source structure:
-   - `test/common/PgnParserTest.cpp`
-   - `test/tuning/PositionExtractorTest.cpp`
-   - `test/tuning/TuningDatasetTest.cpp`
-   - `test/tuning/TuningParameterTest.cpp`
-   - `test/tuning/TexelTunerTest.cpp`
-
----
-
-## Risks and Pitfalls
-
-| Risk                                             | Severity | Likelihood | Mitigation                                                                               |
-|--------------------------------------------------|----------|------------|------------------------------------------------------------------------------------------|
-| **Overfitting** to dataset                       | High     | Medium     | Large dataset (5M+), train/test split, validate with matches                             |
-| **Dataset bias** (non-representative games)      | Medium   | Medium     | Mix self-play with downloaded data; avoid single-source datasets                         |
-| **Local minima** in optimization                 | Medium   | Low        | Multiple restarts from perturbed initial values; verify with different datasets          |
-| **Quiet position filtering quality**             | High     | Medium     | Start with capture filter; add qsearch filter if results are noisy                       |
-| **Lazy eval masking parameters**                 | High     | High       | Always disable lazy eval during tuning — non-negotiable                                  |
-| **Disabled features not re-enabled**             | High     | Medium     | Tuning mode explicitly enables all eval features (space, coordination, etc.)             |
-| **Pawn TT caching stale values**                 | Medium   | High       | Disable pawn TT during tuning                                                            |
-| **Eval perspective bug** (STM vs White)          | High     | Medium     | Unit test: verify eval sign matches expected direction for known positions               |
-| **Memory usage** (5M positions × ~400 bytes)     | Medium   | Medium     | ~2 GB; use batch processing or compact representation if memory-constrained              |
-| **Array param monotonicity violated**            | Medium   | Medium     | Enforce constraints after each parameter update                                          |
-| **Thread safety** (shared mutable Evaluator)     | High     | Medium     | One Evaluator instance per worker thread — non-negotiable                                |
-| **PST refactoring performance regression**       | Medium   | Medium     | Defer PST tuning until eval weight tuning is validated; benchmark carefully              |
-| **Tuned params don't transfer to different TCs** | Low      | Low        | Validate at multiple time controls; eval params are less TC-sensitive than search params |
-| **Dataset too slow to generate via self-play**   | Medium   | High       | Start with downloaded dataset; generate self-play data in background                     |
-| **PGN library refactor breaks OpeningBook**      | Medium   | Low        | Existing OpeningBook tests are the validation gate for Phase 1                           |
-
----
-
-## Estimated Effort
-
-### Summary
-
-| Scope                              | Effort              | Expected Gain         |
-|------------------------------------|---------------------|-----------------------|
-| **Eval weights (~85 params)**      | **~30–45 days**     | **+20–50 ELO**        |
-| PSTs (optional follow-up, Phase D) | ~2 weeks additional | +10–30 ELO additional |
-
-### Optional Phase D: PST Tuning (separate follow-up)
-
-If decided during Phase 6.11:
-
-| Task         | Description                                                            |           Days |
-|--------------|------------------------------------------------------------------------|---------------:|
-| D.1          | Refactor Values.h from constexpr to runtime-mutable                    |            2–3 |
-| D.2          | Add PST params to tuner with symmetry constraints                      |            1–2 |
-| D.3          | Switch to Adam optimizer (coordinate descent too slow for ~850 params) |            2–3 |
-| D.4          | Tuning run + validation                                                |            2–3 |
-| **Subtotal** |                                                                        | **~7–11 days** |
-
----
-
-## References
-
-- [Texel's Tuning Method — Chessprogramming Wiki](https://www.chessprogramming.org/Texel%27s_Tuning_Method)
-- [Peter Österlund's Original Post (TalkChess)](http://talkchess.com/forum3/viewtopic.php?f=7&t=50823)
-- [Ethereal Tuner (src/tuner.c)](https://github.com/AndyGrant/Ethereal) — Gold standard reference implementation
-- [Weiss Engine (tuner)](https://github.com/TerjeKir/weiss) — Clean, embedded C tuner
-- [Zurichess Tuning Data](https://bitbucket.org/zurichess/tuner/src/master/) — Pre-made quiet-labeled dataset
-- [Optimization Algorithms — Adam](https://arxiv.org/abs/1412.6980) — For PST tuning with many params
-- [SPSA Tuning (for search params)](https://www.chessprogramming.org/SPSA) — Complementary approach for search-side tuning
-
----
-
-*Last updated: 2026-03-22*
+| Phase     | Name                               | Effort           | Expected Gain      |
+|-----------|------------------------------------|------------------|--------------------|
+| 0         | Release v1.6, branch v1.7          | ~1 day           | +20--50 ELO        |
+| 1         | Module structure + PGN library     | ~4--6 days       | +10--30 ELO        |
+| 2         | Tuning build targets (scaffolding) | ~2--3 days       |                    |
+| 3         | Data collection                    | ~1--2 days       |                    |
+| 4         | Position extractor                 | ~4--6 days       |                    |
+| 5         | Mark tunable params                | ~1--2 days       |                    |
+| 6         | Optimizer implementation           | ~10--14 days     |                    |
+| 7         | Integration testing                | ~4--6 days       |                    |
+| 8         | Gauntlet + release                 | ~3--5 days       |                    |
+| 9         | Eval feature cleanup               | ~4--6 days       | +NPS, cleaner code |
+| **Total** |                                    | **~34--51 days** |                    |

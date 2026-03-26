@@ -1,0 +1,109 @@
+Test 59 of 201
+Test: r1q3rk/1ppbb1p1/4Np1p/p3pP2/P3P3/2N4R/1PP1Q1PP/3R2K1 w - - bm Qd2; id "WAC.073"; -- Target Result e2d2
+=================================================================
+==60188==ERROR: AddressSanitizer: global-buffer-overflow on address 0x7ff7c40548a0 at pc 0x7ff7c3452e1f bp 0x0097785f49c0 sp 0x0097785f49c8
+READ of size 8 at 0x7ff7c40548a0 thread T295
+    #0 0x7ff7c3452e1e in chess::Bitboard::shifted(class chess::Direction) const D:\_DEV\FrankyCPP\src\types\bitboard.h:152
+    #1 0x7ff7c38d26b0 in chess::MoveGenerator::generatePawnMoves(class chess::Position const &, class chess::StaticMoveList<256> *, enum chess::GenMode, bool, class chess::Bitboard) D:\_DEV\FrankyCPP\src\chesscore\MoveGenerator.cpp:741
+    #2 0x7ff7c38cfe18 in chess::MoveGenerator::fillOnDemandMoveList(class chess::Position const &, enum chess::GenMode, bool) D:\_DEV\FrankyCPP\src\chesscore\MoveGenerator.cpp:549
+    #3 0x7ff7c38cc754 in chess::MoveGenerator::getNextPseudoLegalMove(class chess::Position const &, enum chess::GenMode, bool) D:\_DEV\FrankyCPP\src\chesscore\MoveGenerator.cpp:118
+    #4 0x7ff7c39ee739 in engine::Search::search(class chess::Position &, enum chess::Depth, enum chess::Depth, class chess::Value, class chess::Value, enum engine::Search::NodeType, enum engine::Search::Do_Null) D:\_DEV\FrankyCPP\src\engine\Search.cpp:1555
+    #5 0x7ff7c39f03bf in engine::Search::search(class chess::Position &, enum chess::Depth, enum chess::Depth, class chess::Value, class chess::Value, enum engine::Search::NodeType, enum engine::Search::Do_Null) D:\_DEV\FrankyCPP\src\engine\Search.cpp:1837
+    #6 0x7ff7c39f01cc in engine::Search::search(class chess::Position &, enum chess::Depth, enum chess::Depth, class chess::Value, class chess::Value, enum engine::Search::NodeType, enum engine::Search::Do_Null) D:\_DEV\FrankyCPP\src\engine\Search.cpp:1862
+    #7 0x7ff7c39f01cc in engine::Search::search(class chess::Position &, enum chess::Depth, enum chess::Depth, class chess::Value, class chess::Value, enum engine::Search::NodeType, enum engine::Search::Do_Null) D:\_DEV\FrankyCPP\src\engine\Search.cpp:1862
+    #8 0x7ff7c39f01cc in engine::Search::search(class chess::Position &, enum chess::Depth, enum chess::Depth, class chess::Value, class chess::Value, enum engine::Search::NodeType, enum engine::Search::Do_Null) D:\_DEV\FrankyCPP\src\engine\Search.cpp:1862
+    #9 0x7ff7c39f01cc in engine::Search::search(class chess::Position &, enum chess::Depth, enum chess::Depth, class chess::Value, class chess::Value, enum engine::Search::NodeType, enum engine::Search::Do_Null) D:\_DEV\FrankyCPP\src\engine\Search.cpp:1862
+    #10 0x7ff7c39f01cc in engine::Search::search(class chess::Position &, enum chess::Depth, enum chess::Depth, class chess::Value, class chess::Value, enum engine::Search::NodeType, enum engine::Search::Do_Null) D:\_DEV\FrankyCPP\src\engine\Search.cpp:1862
+    #11 0x7ff7c39f01cc in engine::Search::search(class chess::Position &, enum chess::Depth, enum chess::Depth, class chess::Value, class chess::Value, enum engine::Search::NodeType, enum engine::Search::Do_Null) D:\_DEV\FrankyCPP\src\engine\Search.cpp:1862
+    #12 0x7ff7c39f03bf in engine::Search::search(class chess::Position &, enum chess::Depth, enum chess::Depth, class chess::Value, class chess::Value, enum engine::Search::NodeType, enum engine::Search::Do_Null) D:\_DEV\FrankyCPP\src\engine\Search.cpp:1837
+    #13 0x7ff7c39f01cc in engine::Search::search(class chess::Position &, enum chess::Depth, enum chess::Depth, class chess::Value, class chess::Value, enum engine::Search::NodeType, enum engine::Search::Do_Null) D:\_DEV\FrankyCPP\src\engine\Search.cpp:1862
+    #14 0x7ff7c39eb8a4 in engine::Search::rootSearch(class chess::Position &, enum chess::Depth, class chess::Value, class chess::Value) D:\_DEV\FrankyCPP\src\engine\Search.cpp:1075
+    #15 0x7ff7c39ea8de in engine::Search::aspirationSearch(class chess::Position &, enum chess::Depth, class chess::Value) D:\_DEV\FrankyCPP\src\engine\Search.cpp:989
+    #16 0x7ff7c39e7510 in engine::Search::iterativeDeepening(class chess::Position &) D:\_DEV\FrankyCPP\src\engine\Search.cpp:730
+    #17 0x7ff7c39e4b82 in `engine::Search::launchHelperThreads'::`7'::<lambda_1>::operator() D:\_DEV\FrankyCPP\src\engine\Search.cpp:455
+    #18 0x7ff7c3a1a75d in std::invoke C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\type_traits:1670
+    #19 0x7ff7c3a1a75d in std::thread::_Invoke<std::tuple<`engine::Search::launchHelperThreads'::`7'::<lambda_1> >,0> C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\thread:60
+    #20 0x7ff821e237af  (C:\WINDOWS\System32\ucrtbase.dll+0x1800037af)
+    #21 0x7ffef52bd19c in asan_thread_start D:\a\_work\1\s\src\vctools\asan\llvm\compiler-rt\lib\asan\asan_win.cpp:170
+    #22 0x7ff823f4e8d6  (C:\WINDOWS\System32\KERNEL32.DLL+0x18002e8d6)
+    #23 0x7ff8255cc48b  (C:\WINDOWS\SYSTEM32\ntdll.dll+0x18008c48b)
+
+0x7ff7c40548a0 is located 32 bytes after global variable 'chess::Bitboards::sqBb' defined in 'bitboards.h:153:53' (0x7ff7c4054680) of size 512
+SUMMARY: AddressSanitizer: global-buffer-overflow D:\_DEV\FrankyCPP\src\types\bitboard.h:152 in chess::Bitboard::shifted(class chess::Direction) const
+Shadow bytes around the buggy address:
+  0x7ff7c4054600: 00 00 00 00 01 f9 f9 f9 00 00 00 00 00 00 00 00
+  0x7ff7c4054680: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x7ff7c4054700: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x7ff7c4054780: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x7ff7c4054800: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x7ff7c4054880: f9 f9 f9 f9[f9]f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9
+  0x7ff7c4054900: 00 00 00 00 00 00 00 00 01 f9 f9 f9 00 00 00 00
+  0x7ff7c4054980: 00 00 00 00 01 f9 f9 f9 00 00 00 00 00 00 00 00
+  0x7ff7c4054a00: 00 00 00 00 00 00 00 00 f9 f9 f9 f9 00 00 00 00
+  0x7ff7c4054a80: 00 00 00 00 00 00 00 00 01 f9 f9 f9 00 00 00 00
+  0x7ff7c4054b00: 00 00 00 00 01 f9 f9 f9 00 00 00 00 00 00 00 00
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+Thread T295 created by T292 here:
+    #0 0x7ffef52bd597 in CreateThread D:\a\_work\1\s\src\vctools\asan\llvm\compiler-rt\lib\asan\asan_win.cpp:228
+    #1 0x7ff821e99967  (C:\WINDOWS\System32\ucrtbase.dll+0x180079967)
+    #2 0x7ff7c3a14826 in std::thread::{ctor} C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\thread:93
+    #3 0x7ff7c3a14826 in std::construct_at C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility:463
+    #4 0x7ff7c3a14826 in std::_Default_allocator_traits<std::allocator<std::thread> >::construct<std::thread,`engine::Search::launchHelperThreads'::`7'::<lambda_1> > C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xmemory:730
+    #5 0x7ff7c3a0d996 in std::vector<std::thread,std::allocator<std::thread> >::_Emplace_reallocate<`engine::Search::launchHelperThreads'::`7'::<lambda_1> > C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\vector:900
+    #6 0x7ff7c39e447c in std::vector<std::thread,std::allocator<std::thread> >::_Emplace_one_at_back C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\vector:848
+    #7 0x7ff7c39e447c in std::vector<std::thread,std::allocator<std::thread> >::emplace_back C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\vector:924
+    #8 0x7ff7c39e447c in engine::Search::launchHelperThreads(void) D:\_DEV\FrankyCPP\src\engine\Search.cpp:447
+    #9 0x7ff7c39e7720 in engine::Search::iterativeDeepening(class chess::Position &) D:\_DEV\FrankyCPP\src\engine\Search.cpp:754
+    #10 0x7ff7c39e24c9 in engine::Search::run(void) D:\_DEV\FrankyCPP\src\engine\Search.cpp:351
+    #11 0x7ff7c3a0d6c9 in std::invoke C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\type_traits:1686
+    #12 0x7ff7c3a0d6c9 in std::thread::_Invoke<class std::tuple<void (__cdecl engine::Search::*)(void), class engine::Search *>, 0, 1>(void *) C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\thread:60
+    #13 0x7ff821e237af  (C:\WINDOWS\System32\ucrtbase.dll+0x1800037af)
+    #14 0x7ffef52bd19c in asan_thread_start D:\a\_work\1\s\src\vctools\asan\llvm\compiler-rt\lib\asan\asan_win.cpp:170
+    #15 0x7ff823f4e8d6  (C:\WINDOWS\System32\KERNEL32.DLL+0x18002e8d6)
+    #16 0x7ff8255cc48b  (C:\WINDOWS\SYSTEM32\ntdll.dll+0x18008c48b)
+
+Thread T292 created by T0 here:
+    #0 0x7ffef52bd597 in CreateThread D:\a\_work\1\s\src\vctools\asan\llvm\compiler-rt\lib\asan\asan_win.cpp:228
+    #1 0x7ff821e99967  (C:\WINDOWS\System32\ucrtbase.dll+0x180079967)
+    #2 0x7ff7c3a06a51 in std::thread::_Start<void (__cdecl engine::Search::*)(void), class engine::Search *>(void (__cdecl engine::Search::*&&)(void), class engine::Search *&&) C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\thread:78
+    #3 0x7ff7c39de6b2 in std::thread::{ctor} C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\thread:93
+    #4 0x7ff7c39de6b2 in engine::Search::startSearch(class chess::Position const &, struct engine::SearchLimits const &) D:\_DEV\FrankyCPP\src\engine\Search.cpp:140
+    #5 0x7ff7c3a2ce96 in enginetest::TestSuite::bestMoveTest(class engine::Search &, struct engine::SearchLimits const &, class chess::Position const &, class enginetest::EpdTest &) D:\_DEV\FrankyCPP\src\enginetest\TestSuite.cpp:230
+    #6 0x7ff7c3a2c532 in enginetest::TestSuite::runSingleTest(class engine::Search &, struct engine::SearchLimits &, class enginetest::EpdTest &) D:\_DEV\FrankyCPP\src\enginetest\TestSuite.cpp:199
+    #7 0x7ff7c3a2be5b in enginetest::TestSuite::runAllTests(void) D:\_DEV\FrankyCPP\src\enginetest\TestSuite.cpp:159
+    #8 0x7ff7c3a2907f in enginetest::TestSuite::runTestSuite(void) D:\_DEV\FrankyCPP\src\enginetest\TestSuite.cpp:61
+    #9 0x7ff7c36761a1 in TestSuite_Test_stress_test_for_sanitizers_Test::TestBody(void) D:\_DEV\FrankyCPP\test\enginetest\TestSuite_Test.cpp:213
+    #10 0x7ff7c3aac4ba in testing::internal::HandleSehExceptionsInMethodIfSupported<class testing::Test, void>(class testing::Test *, void (__cdecl testing::Test::*)(void), char const *) D:\_DEV\FrankyCPP\cmake-build-win-release-production\vcpkg_installed\vcpkg\blds\gtest\src\v1.14.0-bcf93537a8.clean\googletest\src\gtest.cc:2605
+    #11 0x7ff7c3aac335 in testing::internal::HandleExceptionsInMethodIfSupported<class testing::Test, void>(class testing::Test *, void (__cdecl testing::Test::*)(void), char const *) D:\_DEV\FrankyCPP\cmake-build-win-release-production\vcpkg_installed\vcpkg\blds\gtest\src\v1.14.0-bcf93537a8.clean\googletest\src\gtest.cc:2648
+    #12 0x7ff7c3aee0ff in testing::TestInfo::Run(void) D:\_DEV\FrankyCPP\cmake-build-win-release-production\vcpkg_installed\vcpkg\blds\gtest\src\v1.14.0-bcf93537a8.clean\googletest\src\gtest.cc:2836
+    #13 0x7ff7c3aee4d5 in testing::TestSuite::Run(void) D:\_DEV\FrankyCPP\cmake-build-win-release-production\vcpkg_installed\vcpkg\blds\gtest\src\v1.14.0-bcf93537a8.clean\googletest\src\gtest.cc:3015
+    #14 0x7ff7c3aeee92 in testing::internal::UnitTestImpl::RunAllTests(void) D:\_DEV\FrankyCPP\cmake-build-win-release-production\vcpkg_installed\vcpkg\blds\gtest\src\v1.14.0-bcf93537a8.clean\googletest\src\gtest.cc:5920
+    #15 0x7ff7c3aac51a in testing::internal::HandleSehExceptionsInMethodIfSupported<class testing::internal::UnitTestImpl, bool>(class testing::internal::UnitTestImpl *, bool (__cdecl testing::internal::UnitTestImpl::*)(void), char const *) D:\_DEV\FrankyCPP\cmake-build-win-release-production\vcpkg_installed\vcpkg\blds\gtest\src\v1.14.0-bcf93537a8.clean\googletest\src\gtest.cc:2605
+    #16 0x7ff7c3aac485 in testing::internal::HandleExceptionsInMethodIfSupported<class testing::internal::UnitTestImpl, bool>(class testing::internal::UnitTestImpl *, bool (__cdecl testing::internal::UnitTestImpl::*)(void), char const *) D:\_DEV\FrankyCPP\cmake-build-win-release-production\vcpkg_installed\vcpkg\blds\gtest\src\v1.14.0-bcf93537a8.clean\googletest\src\gtest.cc:2648
+    #17 0x7ff7c3aee7a4 in testing::UnitTest::Run(void) D:\_DEV\FrankyCPP\cmake-build-win-release-production\vcpkg_installed\vcpkg\blds\gtest\src\v1.14.0-bcf93537a8.clean\googletest\src\gtest.cc:5484
+    #18 0x7ff7c3e71818 in RUN_ALL_TESTS D:\_DEV\FrankyCPP\cmake-build-win-release-production\vcpkg_installed\vcpkg\blds\gtest\src\v1.14.0-bcf93537a8.clean\googletest\include\gtest\gtest.h:2317
+    #19 0x7ff7c3e71818 in main D:\_DEV\FrankyCPP\cmake-build-win-release-production\vcpkg_installed\vcpkg\blds\gtest\src\v1.14.0-bcf93537a8.clean\googletest\src\gtest_main.cc:64
+    #20 0x7ff7c3e6ebfb in invoke_main D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl:78
+    #21 0x7ff7c3e6ebfb in __scrt_common_main_seh D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl:288
+    #22 0x7ff823f4e8d6  (C:\WINDOWS\System32\KERNEL32.DLL+0x18002e8d6)
+    #23 0x7ff8255cc48b  (C:\WINDOWS\SYSTEM32\ntdll.dll+0x18008c48b)
+
+==60188==ABORTING

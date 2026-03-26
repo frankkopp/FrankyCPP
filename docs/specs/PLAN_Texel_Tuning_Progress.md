@@ -2,24 +2,26 @@
 
 **Plan Document:** `docs/specs/PLAN_Texel_Tuning.md`  
 **Created:** 2026-03-22  
-**Last Updated:** 2026-03-25  
+**Last Updated:** 2026-03-26  
 **Target Version:** v1.7  
 
 ---
 
 ## Phase Summary
 
-| Phase | Name                               | Status           | Started    | Completed  |
-|-------|------------------------------------|------------------|------------|------------|
-| 0     | Release v1.6, branch v1.7          | ✅ Complete       | —          | 2026-03-22 |
-| 1     | Module structure + PGN library     | ✅ Complete       | 2026-03-22 | 2026-03-22 |
-| 2     | Tuning build targets (scaffolding) | ✅ Complete       | 2026-03-22 | 2026-03-22 |
-| 3     | Data collection                    | ✅ Complete       | 2026-03-22 | 2026-03-25 |
-| 4     | Position extractor                 | ✅ Complete       | 2026-03-23 | 2026-03-23 |
-| 5     | Mark tunable parameters            | 🟡 5.4 deferred  | 2026-03-23 | 2026-03-23 |
-| 6     | Optimizer implementation           | 🟡 Code complete | 2026-03-24 | 2026-03-25 |
-| 7     | Integration testing                | ⬚ Not Started    |            |            |
-| 8     | Gauntlet validation + release      | ⬚ Not Started    |            |            |
+| Phase | Name                                      | Status           | Started    | Completed  |
+|-------|-------------------------------------------|------------------|------------|------------|
+| 0     | Release v1.6, branch v1.7                 | ✅ Complete       | —          | 2026-03-22 |
+| 1     | Module structure + PGN library            | ✅ Complete       | 2026-03-22 | 2026-03-22 |
+| 2     | Tuning build targets (scaffolding)        | ✅ Complete       | 2026-03-22 | 2026-03-22 |
+| 3     | Data collection                           | ✅ Complete       | 2026-03-22 | 2026-03-25 |
+| 4     | Position extractor                        | ✅ Complete       | 2026-03-23 | 2026-03-23 |
+| 5     | Mark tunable parameters                   | ✅ Complete       | 2026-03-23 | 2026-03-26 |
+| 6     | Optimizer implementation                  | ✅ Complete       | 2026-03-24 | 2026-03-26 |
+| 7     | Full production tuning + gauntlet         | 🔲 Next          |            |            |
+| 8     | Deactivate removal candidates + re-tune   | ⬚ Not Started    |            |            |
+| 9     | Full code cleanup of dead features        | ⬚ Not Started    |            |            |
+| 10    | Final validation + release                | ⬚ Not Started    |            |            |
 
 ---
 
@@ -142,14 +144,14 @@
 
 ---
 
-## Phase 5: Mark Tunable Parameters 🟡 (5.4 deferred)
+## Phase 5: Mark Tunable Parameters ✅
 
 | Step | Task                                                                   | Status        |
 |------|------------------------------------------------------------------------|---------------|
 | 5.1  | Mark `tunable = true` on all ~85 eval weight entries in ConfigRegistry | ✅ Complete    |
 | 5.2  | Add `tunableOptions()` query method to ConfigRegistry                  | ✅ Complete    |
 | 5.3  | Add unit test: verify expected number of tunable params discovered     | ✅ Complete    |
-| 5.4  | Record baseline MSE, STS, WAC scores with current v1.6 params          | ⬚ Not Started |
+| 5.4  | Record baseline MSE, STS, WAC scores with current v1.6 params          | ✅ Complete    |
 
 **Gate:** Tunable flag set, test passes, baselines documented.
 
@@ -157,11 +159,11 @@
 - 5.1: 88 eval weight entries marked `tunable = true` (82 scalar Int + 6 IntArray). Excluded: all `bool USE_*` toggles, `EVAL_CONFIG_SOURCE` (String), `PAWN_TT_SIZE_MB` (infrastructure), `USE_GAMEPHASE_VALUE` (structural).
 - 5.2: Added `tunableOptions()` to `ConfigRegistry.h/.cpp` — returns `vector<const ConfigDef*>` filtered by `exposure.tunable`. Follows existing `uciOptions()`/`yamlOptions()` pattern.
 - 5.3: 7 test cases in `ConfigRegistryTest.cpp`: count pinned at 88, all Eval domain, all Int/IntArray, no Bool toggles, no infrastructure params, spot-check key params.
-- 5.4: MSE baseline requires Phase 6 tuner infrastructure (deferred). STS/WAC baselines to be recorded manually.
+- 5.4: Baseline MSE recorded from tuning runs (hand-tuned v1.6 params): Dev 49K = 0.1371, Zurichess 1.43M = 0.0725, Selfplay 4.57M = 0.0918. STS/WAC baselines deferred to Phase 7.
 
 ---
 
-## Phase 6: Optimizer Implementation 🟡 (code complete, 6.11 decision pending)
+## Phase 6: Optimizer Implementation ✅
 
 | Step | Task                                                                     | Status         |
 |------|--------------------------------------------------------------------------|----------------|
@@ -175,16 +177,16 @@
 | 6.8  | Wire up `TunerMain.cpp` with full CLI                                    | ✅ Complete     |
 | 6.9  | Implement output: tuned params YAML, comparison report                   | ✅ Complete     |
 | 6.10 | Write comprehensive unit tests for each component                        | ✅ Complete     |
-| 6.11 | **Decision point:** Evaluate initial results; decide on PST tuning scope | ⬚ Not Started  |
+| 6.11 | **Decision point:** Evaluate initial results; decide on PST tuning scope | ✅ Complete     |
 
-**Gate:** ✅ Tuner runs end-to-end on dev dataset. Checkpoint save/resume works. All 196 tuning tests pass. Only 6.11 (decision point) remains.
+**Gate:** ✅ All complete. Tuner runs end-to-end. 196 tests pass. Decision: proceed to Phase 7.
 
 **Notes:**
 - 6.1: `TuningDataset` with dual-format loader (FrankyCPP `[result]` + EPD `c9`), auto-detection per line, deterministic train/test split, load stats, FEN validation via reusable Position. `TuningEntry` with `activeParamGroups` bitset for incremental MSE (Phase 6.5). 25 unit tests covering both formats, Zurichess 1.4M EPD, edge cases, split ordering. **Committed:** `bcae348`.
 - 6.2: ✅ **Built, tested (20/20 pass), committed.** `TuningParameter` struct + `MonotonicityConstraint` enum + `buildFromRegistry()` static factory. Scalar Int → 1 param, IntArray → 1 param per element. Uses ConfigDef getter/setter lambdas. `applyToConfig()` / `readFromConfig()` round-trip. 13 param groups, monotonicity on 6 arrays, `countTunableValues()`. 20 unit tests all green.
 - 6.3: ✅ **Built, tested (18/18 pass), committed.** `TexelTuner` class with `sigmoid()`, `computeMSE()` (single-threaded), `tuneK()` (ternary search). `setupEvalOverrides()` disables lazy eval/pawn TT, enables space/coordination terms. Uses `setFromFen()` for efficient position reuse. Eval perspective handled correctly (negate when Black to move). Dev dataset K≈0.52, MSE≈0.071. 18 unit tests (6 sigmoid, 7 MSE, 3 K-tuning, 2 dev dataset integration).
 - 6.4: ✅ **Built, tested (30/30 pass), committed.** Parallel MSE via `common::ThreadPool` — one `Evaluator` per thread, sorted partial-sum reduction for deterministic FP. `createEvaluators(N)` creates N evaluators + pool. `computeMSEParallel()` matches single-threaded within 1 ULP (2.2e-16 diff on 2K positions). Coordinate descent `tuneParameters()` — tries ±delta per param, keeps best direction, logs per-pass summary (train/test MSE, params changed, biggest mover, time). Mutable config access via `applyOverrides()`. Dev dataset (5K pos, 122 params, 4 threads): 95/122 params improved, MSE 0.1200→0.1178 (−0.0022) in 1 pass, 1.05s. `tuneK()` auto-selects parallel MSE when multi-threaded. 12 new tests (6 parallel MSE, 5 coordinate descent, 1 thread clamping).
-- 6.5: ✅ **Built, tested (42/42 pass), committed.** Incremental MSE with activation flags. `TuningEntry` gains `cachedSquaredError` field. Board-state analysis in `computeActivationFlags()` sets per-entry `activeParamGroups` bitset (13 groups, parallel via ThreadPool). `computeAndCacheErrors()` does full eval pass populating cache + `totalSquaredError_`. `computeMSEIncremental()` accumulates `deltaSSE = Σ(freshSE - cachedSE)` for active entries only, returns `(totalSSE + deltaSSE) / N` — matches full MSE within 2.8e-17. `updateCacheForGroup()` refreshes cache after committed changes. `tuneParameters()` now uses incremental MSE: activation flags + cache before loop, incremental trials, cache update on commit. Speedup on quiet-labeled.epd (100K pos): knight group (61.5% active) **1.45× faster**; bishop-pair group (35.2% active) expected ~2.5×. 11 new tests (5 activation flags, 4 incremental MSE correctness, 1 cache consistency, 1 integration) + 1 speedup benchmark.
+- 6.5: ✅ **Built, tested (42/42 pass), committed.** Incremental MSE with activation flags. `TuningEntry` gains `cachedSquaredError` field. Board-state analysis in `computeActivationFlags()` sets per-entry `activeParamGroups` bitset (13 groups, parallel via ThreadPool). `computeAndCacheErrors()` does full eval pass populating cache + `totalSquaredError_`. `computeMSEIncremental()` accumulates `deltaSSE = Σ(freshSE - cachedSE)` for active entries only, returns `(totalSSE + deltaSSE) / N` — matches full MSE within 2.8e-17. `updateCacheForGroup()` refreshes cache after committed changes. Speedup on quiet-labeled.epd (100K pos): knight group (61.5% active) **1.45× faster**; bishop-pair group (35.2% active) expected ~2.5×. 11 new tests (5 activation flags, 4 incremental MSE correctness, 1 cache consistency, 1 integration) + 1 speedup benchmark.
 
 - 6.6: ✅ **Built, tested, committed.** `enforceMonotonicity()` static method on `TexelTuner` — clamps array element to neighbor bounds (NON_DECREASING: floor from predecessor, ceiling from successor; NON_INCREASING: inverse). Integrated into coordinate descent: called after setting ±delta trial values and after committing keep-best. Only the modified element is clamped (no cascading). 11 new tests: floor/ceiling clamping, no-op for scalars/NONE, first/last element boundaries, real registry arrays (KING_SAFETY_TABLE), integration test verifying ordering after 2 passes of coordinate descent.
 
@@ -202,8 +204,19 @@
   - `TuningOutputTest` (+6): single-element array coalescing, all-params-changed report, large negative delta with sign-flip flag, mixed scalars and arrays in YAML.
 
 ### Session Pickup Instructions
-- Next step: Phase 6.11 — Decision point (evaluate initial tuning results, not a code step)
-- All Phase 6 code is complete (6.1–6.10). Build and run tests to validate.
+- Next step: Phase 7 — Integration testing (apply tuned params, run STS/WAC, gauntlet)
+- All Phase 6 code is complete and tested (6.1–6.11, 196 tests pass).
+- Recommended primary candidate: `results/tuning_selfplay_4.yaml` (selfplay 4.6M)
+- Before applying: zero out sign-flipped params (SPACE_BONUS, CONNECTED_ROOKS_MID, PAWN_ADVANCE_END[0], PAWN_STORM[0])
+
+- 6.11: ✅ **Decision: Proceed to Phase 7.** Three datasets tuned, results analyzed.
+  - **Dev (49K):** K=0.653, MSE 0.1371→0.1309 (−4.5%), 108 changed, 4 sign-flips. Train-test gap 14.4% (overfitting — too small).
+  - **Zurichess (1.43M):** K=1.197, MSE 0.0725→0.0677 (−6.5%), 103 changed, 10 sign-flips. Train-test gap 0.14% (excellent).
+  - **Selfplay (4.57M):** K=1.009, MSE 0.0918→0.0878 (−4.4%), 99 changed, 6 sign-flips. Test < train (no overfitting).
+  - **Cross-dataset consistency:** Strong agreement on TEMPO↓, BISHOP_PAIR↑, KNIGHT_OUTPOST↑, QUEEN_MOBILITY_END↑↑, ROOK_OPEN_FILE↑, THREAT↑.
+  - **Confirmed removals:** SPACE_BONUS (sign-flip all 3), BAD_BISHOP_PER_PAWN (zero all 3), KNIGHT_LOW_MOBILITY_LEQ2 (zero all 3), BISHOP_LOW_MOBILITY_LEQ3_MID (zero all 3), ROOK_LOW_MOBILITY_LEQ3 (zero all 3).
+  - **No PST tuning needed** — 4.4–6.5% MSE improvement from weights alone is excellent headroom. PST tuning deferred to future version.
+  - Output files: `results/tuning_dev_49k*`, `results/tuning_zurichess_1*`, `results/tuning_selfplay_4*`
 
 ### Sprint Plan (Phase 6 Detailed Breakdown)
 
@@ -222,10 +235,9 @@ step (~0.5–2 days) with a clear deliverable and test gate.
 
 #### Sprint 6.2 — TuningParameter mapping
 - Create `TuningParameter.h/.cpp`.
-- `TuningParameter` struct: `name`, `valuePtr` (into live `EvalConfigData`), `originalValue`, `currentValue`, `minValue`/`maxValue`, `delta`, `paramGroup`, `arrayIndex`, `MonotonicityConstraint`.
-- Factory function `buildTuningParameters(EvalConfigData& config)`: queries `ConfigRegistry::instance().tunableOptions()`, builds flat vector. For `IntArray` entries, expand each element into a separate `TuningParameter` with appropriate `arrayIndex`. Assign `paramGroup` IDs (~15 groups by eval category).
-- **Tests** (`test/tuning/TuningParameterTest.cpp`): verify count matches 88 tunable entries (expanded arrays → total individual params), check `valuePtr` points to correct field, verify array expansion for `KING_SAFETY_TABLE` (16 elements) and `PASSED_PAWN_RANK_MID_BONUS` (6 elements), verify monotonicity constraints assigned to known arrays.
-- **Gate:** Parameter vector built from registry. Modifying `*valuePtr` changes `EvalConfigData`. All tests pass.
+- `TuningParameter` struct + `MonotonicityConstraint` enum + `buildFromRegistry()` static factory. Scalar Int → 1 param, IntArray → 1 param per element. Uses ConfigDef getter/setter lambdas. `applyToConfig()` / `readFromConfig()` round-trip. 13 param groups, monotonicity on 6 arrays, `countTunableValues()`.
+- **Tests** (`test/tuning/TuningParameterTest.cpp`): verify count matches 88 tunable entries (expanded arrays → total individual params), check round-trip, verify array expansion, verify monotonicity constraints.
+- **Gate:** Parameter vector built from registry. Modifying values changes `EvalConfigData`. All tests pass.
 
 #### Sprint 6.3 — TexelTuner core: sigmoid, MSE, K-tuning
 - Create `TexelTuner.h/.cpp` with initial core methods.
@@ -294,51 +306,229 @@ step (~0.5–2 days) with a clear deliverable and test gate.
 - **Gate:** All tests pass. No untested public methods in optimizer module.
 
 #### Sprint 6.11 — Decision point: evaluate results
-- Run tuner on full dev dataset (~49K positions) with all 88 tunable params. Record train/test MSE and wall time.
-- Inspect tuned values: sanity checks (signs, magnitudes, no wild outliers).
-- Compare MSE improvement with baseline from Phase 5.4.
-- **Decision:** Is PST tuning needed? If eval-weight-only MSE improvement is satisfactory and test MSE tracks train MSE (no overfitting), proceed to Phase 7. If MSE plateaus, consider PST follow-up (Phase D in plan).
-- *This is an analysis/decision step, not a code step.*
+
+*This is an analysis/decision step, not a code step.* The user runs the tuner, inspects results,
+and decides whether to proceed to Phase 7 or add PST tuning (Phase D).
+
+**Prerequisites:**
+- Phase 6 code complete and all 196 tests passing (✅)
+- Build the tuner: `.\build_windows.ps1 release`
+- Datasets available:
+  - Dev dataset: `test/testsets/tuning/v1.6_vs_v1.5_score.txt` (~49K positions)
+  - Zurichess: `test/testsets/tuning/quiet-labeled.epd` (~1.43M positions)
+  - Self-play: `test/testsets/tuning/selfplay_v1.7_50k_score.txt` (~4.57M positions)
+
+**Step 6.11.1 — Run tuner on dev dataset (quick sanity, ~1 min)**
+```powershell
+.\cmake-build-win-release\src\FrankyCPP_v1.7_Tuner.exe `
+  --dataset test\testsets\tuning\v1.6_vs_v1.5_score.txt `
+  --output results\tuning_dev_49k `
+  --threads 8 --max-passes 5 --verbose
+```
+Record: K value, baseline MSE, final train/test MSE, passes to converge, wall time.
+
+**Step 6.11.2 — Run tuner on Zurichess dataset (medium, ~10–15 min)**
+```powershell
+.\cmake-build-win-release\src\FrankyCPP_v1.7_Tuner.exe `
+  --dataset test\testsets\tuning\quiet-labeled.epd `
+  --output results\tuning_zurichess_1.4M `
+  --threads 8 --max-passes 10 --verbose
+```
+Record: K value, baseline MSE, final train/test MSE, passes to converge, wall time.
+
+**Step 6.11.3 — Run tuner on self-play dataset (full, ~30–60 min)**
+```powershell
+.\cmake-build-win-release\src\FrankyCPP_v1.7_Tuner.exe `
+  --dataset test\testsets\tuning\selfplay_v1.7_50k_score.txt `
+  --output results\tuning_selfplay_4.6M `
+  --threads 8 --max-passes 10 --verbose
+```
+Record: K value, baseline MSE, final train/test MSE, passes to converge, wall time.
+
+**Step 6.11.4 — Inspect tuned parameters**
+Review each `*_comparison.txt` file for:
+- [ ] **Sign flips:** Any parameter that changed sign (SIGN-FLIP flag). Red flag if many.
+- [ ] **Zeroed-out params:** Any parameter driven to 0 (->ZERO flag). Candidates for feature removal.
+- [ ] **Wild outliers:** Any parameter that changed by >300% or >50 units from original.
+- [ ] **Pawn structure sanity:** isolated/doubled penalties remain negative, passed pawn bonuses positive.
+- [ ] **King safety table:** values increase monotonically, reasonable magnitudes.
+- [ ] **Array monotonicity:** all constrained arrays maintain ordering.
+- [ ] **Train vs test MSE gap:** test MSE within ~1% of train MSE → no overfitting.
+  If gap > 5% → overfitting concern, may need larger dataset or fewer params.
+
+**Step 6.11.5 — Cross-dataset consistency check**
+Compare the three `*_comparison.txt` outputs:
+- [ ] Do parameters move in the same direction across datasets?
+- [ ] Are the magnitudes consistent (within ~20%)?
+- [ ] Do the same params get zeroed-out in multiple runs?
+Inconsistency across datasets suggests dataset bias or overfitting.
+
+**Step 6.11.6 — Record baseline measurements (deferred from Phase 5.4)**
+- Record MSE with current hand-tuned params (from Step 6.11.1/2/3 baseline MSE values).
+- MSE improvement percentage for each dataset.
+- Fill in the Phase 5.4 baseline in this document.
+
+**Step 6.11.7 — Decision**
+
+| Observation                                                   | Action                                                 |
+|---------------------------------------------------------------|--------------------------------------------------------|
+| MSE improves 3%+, test tracks train, no sign flips            | ✅ Proceed to Phase 7 (integration testing)             |
+| MSE improves but many sign flips / wild outliers              | ⚠️ Investigate: dataset quality or eval bugs           |
+| MSE improves <1%, quick convergence (1–2 passes)              | ⚠️ Consider PST tuning (Phase D) for more headroom     |
+| Test MSE diverges from train MSE (>5% gap)                    | ⚠️ Overfitting: need more data or fewer params         |
+| MSE doesn't improve or gets worse                             | 🛑 Debug: check eval perspective, lazy eval, overrides |
+| Space/coordination weights driven to zero across all datasets | 🗑️ Remove those eval features with confidence         |
+| Space/coordination weights find nonzero optima                | ✅ Keep features enabled in production config           |
+
+**Gate:** Decision documented in Decisions Log. Either proceed to Phase 7 or plan Phase D.
+
+**Deliverable:** Tuning results in `results/`, comparison reports reviewed, decision recorded.
 
 ---
 
-## Phase 7: Integration Testing ⬚
+## Phase 7: Full Production Tuning + Gauntlet ⬚
 
-| Step | Task                                                                   | Status        |
-|------|------------------------------------------------------------------------|---------------|
-| 7.1  | First real tuning run on full dataset (~5M positions)                  | ⬚ Not Started |
-| 7.2  | Inspect tuned parameters: sanity checks, sign checks, magnitude review | ⬚ Not Started |
-| 7.3  | Load tuned params into engine, run STS + WAC regression tests          | ⬚ Not Started |
-| 7.4  | Debug any issues (eval perspective, lazy eval, pawn TT, etc.)          | ⬚ Not Started |
-| 7.5  | Mix in self-play data (if generated by now), retune                    | ⬚ Not Started |
-| 7.6  | Iterate: adjust filters, try subset tuning, compare datasets           | ⬚ Not Started |
-| 7.7  | Collect additional self-play data if needed                            | ⬚ Not Started |
+**Goal:** Run a full production tuning pass to convergence on the selfplay 4.6M dataset,
+then apply results and validate with gauntlet matches. The 10-pass Sprint 6.11 runs were
+evaluation/decision runs — the tuner was still improving (65/122 params changing in pass 10).
 
-**Gate:** Tuned params pass all sanity checks. STS improvement visible.
+| Step | Task                                                                               | Status        |
+|------|------------------------------------------------------------------------------------|---------------|
+| 7.1  | Full tuning run: selfplay 4.6M, resume from pass 10 checkpoint, run to convergence | ⬚ Not Started |
+| 7.2  | Inspect final converged params: comparison report, sign flips, zeroed-out          | ⬚ Not Started |
+| 7.3  | Prepare production `eval.yaml` from converged results, zeroing sign-flipped params | ⬚ Not Started |
+| 7.4  | Load tuned params into engine, smoke test (`uci` / `isready` / quick game)         | ⬚ Not Started |
+| 7.5  | Run STS + WAC regression tests — compare vs v1.6 baseline                          | ⬚ Not Started |
+| 7.6  | Debug any issues (eval sanity, lazy eval interaction, pawn TT, etc.)               | ⬚ Not Started |
+| 7.7  | Gauntlet A: 500+ games tuned v1.7 vs v1.6 (cutechess-cli, tc=10+0.1)               | ⬚ Not Started |
+| 7.8  | Record ELO difference, draw rate, crash count                                      | ⬚ Not Started |
+| 7.9  | If regression: investigate, adjust params, re-run gauntlet                         | ⬚ Not Started |
+
+**Step 7.1 — Full tuning run:**
+```powershell
+.\cmake-build-win-release\src\FrankyCPP_v1.7_Tuner.exe `
+  --dataset test\testsets\tuning\selfplay_v1.7_50k_score.txt `
+  --output results\tuning\tuning_selfplay_4 `
+  --threads 12 --max-passes 50 --resume --verbose
+```
+- Resumes from pass 10 checkpoint (`results/tuning/tuning_selfplay_4_checkpoint.yaml`)
+- Convergence criteria: <5 params changing per pass, or biggest-mover delta < 1e-6
+- Expected wall time: ~10-12 hours for 40 additional passes (based on ~15 min/pass observed)
+- Checkpoint saved after every pass — safe to interrupt and resume
+
+**Step 7.3 — Sign-flipped params to zero before applying:**
+- `SPACE_BONUS_MID: 0`, `SPACE_BONUS_END: 0`
+- `CONNECTED_ROOKS_MID_BONUS: 0`
+- `MINOR_CONNECTIVITY_END_BONUS: 0` (if still sign-flipped after convergence)
+- `PAWN_STORM_MID_PENALTY[0]: 0` (if still negative)
+- `PAWN_ADVANCE_END_BONUS[0]: 0` (if still negative)
+- *Review the converged comparison report — some sign-flips may resolve with more passes*
+
+**Gate:** Tuner converged. ELO improvement over v1.6 confirmed. STS/WAC no regression.
 
 ---
 
-## Phase 8: Gauntlet Validation and Release ⬚
+## Phase 8: Deactivate Removal Candidates + Re-tune ⬚
 
-| Step | Task                                                             | Status        |
-|------|------------------------------------------------------------------|---------------|
-| 8.1  | Gauntlet matches: 500+ games vs v1.6 via cutechess-cli           | ⬚ Not Started |
-| 8.2  | Gauntlet matches: vs Stockfish classical @2700                   | ⬚ Not Started |
-| 8.3  | If regression: debug, adjust dataset/params, repeat from Phase 7 | ⬚ Not Started |
-| 8.4  | Update `config/eval.yaml` with final tuned parameters            | ⬚ Not Started |
-| 8.5  | Update `docs/Texel_Tuning.md` documentation                      | ⬚ Not Started |
-| 8.6  | Update this progress document with final status                  | ⬚ Not Started |
-| 8.7  | Release v1.7                                                     | ⬚ Not Started |
+**Goal:** Deactivate features confirmed harmful/useless by 6.11 cross-dataset analysis, then
+re-tune the remaining parameters. This validates that removing features doesn't hurt and that
+the remaining params are stable. Three lightweight changes per feature — no code deletion yet.
 
-**Gate:** Measurable ELO improvement over v1.6. No STS/WAC regressions.
+| Step | Task                                                                               | Status        |
+|------|------------------------------------------------------------------------------------|---------------|
+| 8.1  | Deactivate removal candidates (3 changes per feature — see below)                  | ⬚ Not Started |
+| 8.2  | Rebuild, verify all tests pass                                                     | ⬚ Not Started |
+| 8.3  | Re-tune on selfplay 4.6M dataset (10 passes) — confirm remaining params stable     | ⬚ Not Started |
+| 8.4  | Compare re-tuned params vs Phase 7 params: expect <5 params shift by ±5 cp         | ⬚ Not Started |
+| 8.5  | Apply re-tuned params to `config/eval.yaml`                                        | ⬚ Not Started |
+| 8.6  | Gauntlet B: 500+ games re-tuned v1.7 vs Phase 7 tuned v1.7 (expect ~equal, ±5 ELO) | ⬚ Not Started |
+| 8.7  | Gauntlet C: 500+ games re-tuned v1.7 vs v1.6 (confirm improvement maintained)      | ⬚ Not Started |
+
+**Deactivation procedure (3 changes per feature, no code deletion):**
+1. **`EvalConfigData.h`** — set `USE_*` default to `false` (or set weight default to 0 for params without a toggle)
+2. **`ConfigRegistry.cpp`** — remove `.tunable = true` from weight entries
+3. **`TexelTuner.cpp:setupEvalOverrides()`** — set feature to `false` (or remove the `= true` line)
+
+**Features to deactivate:**
+
+| Feature                      | Toggle change                | Weight entries to un-tune                                      |
+|------------------------------|------------------------------|----------------------------------------------------------------|
+| Space eval                   | `USE_SPACE_EVAL = false`     | `SPACE_BONUS_MID`, `SPACE_BONUS_END`                           |
+| Bad bishop per pawn          | *(no toggle — zero weights)* | `BAD_BISHOP_PER_PAWN_MID`, `BAD_BISHOP_PER_PAWN_END`           |
+| Knight low mobility LEQ2     | *(no toggle — zero weights)* | `KNIGHT_LOW_MOBILITY_LEQ2_MID`, `KNIGHT_LOW_MOBILITY_LEQ2_END` |
+| Bishop low mobility LEQ3 MID | *(no toggle — zero weight)*  | `BISHOP_LOW_MOBILITY_LEQ3_MID`                                 |
+| Rook low mobility LEQ3       | *(no toggle — zero weights)* | `ROOK_LOW_MOBILITY_LEQ3_MID`, `ROOK_LOW_MOBILITY_LEQ3_END`     |
+| Rook mobility MID            | *(no toggle — zero weight)*  | `ROOK_MOBILITY_MID_PER_MOVE`                                   |
+| Safe check bishop MID        | *(no toggle — zero weight)*  | `SAFE_CHECK_BISHOP_MID`                                        |
+
+**Expected re-tune results:** MSE very close to Phase 7 run. <5 params shift by ±1 step.
+Zeroed features contributed nothing — removing them changes nothing in eval output.
+Sign-flipped features (SPACE at −3) are tiny — minor compensation shifts in correlated params.
+
+**Gate:** Re-tuned params stable vs Phase 7. No ELO regression in Gauntlet B/C.
+
+---
+
+## Phase 9: Full Code Cleanup of Dead Features ⬚
+
+**Goal:** Fully remove eval features confirmed dead in Phase 8. Actual code deletion —
+reduces eval complexity, config clutter, and may improve NPS. No behavioral change expected
+since features were already deactivated in Phase 8.
+
+| Step | Task                                                                               | Status        |
+|------|------------------------------------------------------------------------------------|---------------|
+| 9.1  | Remove Space eval: `evaluateSpace()`, `USE_SPACE_EVAL`, `SPACE_BONUS_*` weights    | ⬚ Not Started |
+| 9.2  | Remove BAD_BISHOP_PER_PAWN eval code path + weights                                | ⬚ Not Started |
+| 9.3  | Remove KNIGHT_LOW_MOBILITY_LEQ2 code + weights                                     | ⬚ Not Started |
+| 9.4  | Remove BISHOP_LOW_MOBILITY_LEQ3_MID weight (keep END)                              | ⬚ Not Started |
+| 9.5  | Remove ROOK_LOW_MOBILITY_LEQ3 code + weights (both MID and END)                    | ⬚ Not Started |
+| 9.6  | Remove ROOK_MOBILITY_MID_PER_MOVE weight                                           | ⬚ Not Started |
+| 9.7  | Remove SAFE_CHECK_BISHOP_MID weight                                                | ⬚ Not Started |
+| 9.8  | Review connected rooks: remove MID, decide on END based on Phase 8 re-tune         | ⬚ Not Started |
+| 9.9  | Update/remove related unit tests, update tunable param count in ConfigRegistryTest | ⬚ Not Started |
+| 9.10 | Verify all tests pass, measure NPS improvement                                     | ⬚ Not Started |
+
+**Scope of removal per feature:**
+1. Delete eval code in `Evaluator.cpp` (the computation itself)
+2. Delete weight fields in `EvalConfigData.h`
+3. Delete registry entries in `ConfigRegistry.cpp`
+4. Delete from `config/eval.yaml`
+5. Delete `USE_*` toggle if the entire feature is removed
+6. Update or delete affected unit tests
+7. Update tunable param count in `ConfigRegistryTest.cpp`
+
+**Gate:** All tests pass. NPS equal or improved. No behavioral change vs Phase 8 build
+(since features were already deactivated).
+
+---
+
+## Phase 10: Final Validation + Release ⬚
+
+**Goal:** Final gauntlet after code cleanup, documentation, release v1.7.
+
+| Step | Task                                                                    | Status        |
+|------|-------------------------------------------------------------------------|---------------|
+| 10.1 | Gauntlet D: 500+ games cleaned v1.7 vs Phase 8 v1.7 (expect identical)  | ⬚ Not Started |
+| 10.2 | Gauntlet E: 500+ games final v1.7 vs v1.6 (confirm overall improvement) | ⬚ Not Started |
+| 10.3 | Update `config/eval.yaml` with final parameters                         | ⬚ Not Started |
+| 10.4 | Update documentation (README, Texel Tuning docs)                        | ⬚ Not Started |
+| 10.5 | Update this progress document with final status                         | ⬚ Not Started |
+| 10.6 | Tag and release v1.7                                                    | ⬚ Not Started |
+
+**Gate:** Measurable ELO improvement over v1.6. All tests pass. Clean codebase.
 
 ---
 
 ## Decisions Log
 
-| Date       | Decision                                                  | Rationale                          |
-|------------|-----------------------------------------------------------|------------------------------------|
-| 2026-03-22 | Start Texel tuning as v1.7 (clean separation from v1.6)   | Clean A/B comparison for ELO gain  |
+| Date       | Decision                                                   | Rationale                                                                                                       |
+|------------|------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
+| 2026-03-22 | Start Texel tuning as v1.7 (clean separation from v1.6)    | Clean A/B comparison for ELO gain                                                                               |
+| 2026-03-26 | Proceed to Phase 7 (no PST tuning needed)                  | 4.4–6.5% MSE improvement from weights; consistent cross-dataset signals; no overfitting on large datasets       |
+| 2026-03-26 | Use selfplay 4.6M as primary tuned param candidate         | Largest dataset, most relevant to actual play, no overfitting, most conservative changes                        |
+| 2026-03-26 | Confirm removal of SPACE_BONUS, BAD_BISHOP, low-mobility   | Sign-flipped or zeroed in all 3 datasets independently                                                          |
+| 2026-03-26 | Tune→gauntlet→deactivate→re-tune→gauntlet→cleanup approach | Confirms removals with ELO data before deleting code; validates remaining params stable                         |
+| 2026-03-26 | PST tuning deferred to future version (v1.8+)              | PSTs are constexpr; making them tunable requires infra work + ~768 extra params; current improvement sufficient |
 
 ## Issues Log
 
@@ -348,4 +538,4 @@ step (~0.5–2 days) with a clear deliverable and test gate.
 
 ---
 
-*Last updated: 2026-03-25*
+*Last updated: 2026-03-26*

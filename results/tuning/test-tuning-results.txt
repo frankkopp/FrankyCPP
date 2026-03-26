@@ -1,0 +1,153 @@
+PS D:\_DEV\FrankyCPP> .\cmake-build-win-release\src\FrankyCPP_v1.7_Tuner.exe `
+>>   --dataset test\testsets\tuning\selfplay_v1.7_50k_score.txt `
+>>   --output results\tuning_selfplay_4.6M `
+>>   --threads 12 --max-passes 10 --verbose
+FrankyCPP Texel Tuner v1.7.0
+============================
+
+Configuration:
+  Dataset:           test\testsets\tuning\selfplay_v1.7_50k_score.txt
+  Output:            results\tuning_selfplay_4.6M
+  Threads:           12
+  Test split:        0.2
+  Max passes:        10
+  Verbose:           yes
+
+Logger initialized (warn / warn)
+Setting logger level to debug for logger Tuning_Logger
+Loading dataset: test\testsets\tuning\selfplay_v1.7_50k_score.txt
+[23:13:43:423008] [t:20568     ] [Tuning_Logger    ] [info    ]: Dataset loaded from: test\testsets\tuning\selfplay_v1.7_50k_score.txt
+[23:13:43:423722] [t:20568     ] [Tuning_Logger    ] [info    ]:   Entries:        4568763
+[23:13:43:423759] [t:20568     ] [Tuning_Logger    ] [info    ]:   Parsed OK:      4568763
+[23:13:43:423787] [t:20568     ] [Tuning_Logger    ] [info    ]:   Skipped:              0 (empty: 0, comment: 0, malformed: 0)
+[23:13:43:423810] [t:20568     ] [Tuning_Logger    ] [info    ]:   Elapsed:           7050 ms
+Dataset loaded: 4568763 positions from test\testsets\tuning\selfplay_v1.7_50k_score.txt (7050 ms)
+  Loaded 4568763 positions (parsed: 4568763, skipped: 0)
+
+Train/test split:
+  Train set: 3655011 positions (80%)
+  Test set:  913752 positions (20%)
+
+Applying eval overrides for tuning...
+  Lazy eval:   disabled
+  Pawn TT:     disabled
+  Space eval:  enabled
+
+Creating 12 evaluator(s)...
+
+[23:13:43:658950] [t:20568     ] [Tuning_Logger    ] [info    ]: Created 12 evaluator(s) with thread pool for parallel MSE
+Tunable parameters: 122
+
+Tuning scaling constant K...
+  K iteration 10/50: K = 1.008510 [0.995504, 1.021516], MSE = 0.0917759927
+  K iteration 20/50: K = 1.009211 [1.008985, 1.009436], MSE = 0.0917759820
+  K iteration 30/50: K = 1.009253 [1.009249, 1.009257], MSE = 0.0917759820
+  K iteration 40/50: K = 1.009253 [1.009253, 1.009253], MSE = 0.0917759820
+  K iteration 50/50: K = 1.009253 [1.009253, 1.009253], MSE = 0.0917759820
+  Optimal K: 1.009253 (found in 316.4s)
+
+Checkpoint file: results\tuning_selfplay_4_checkpoint.yaml
+
+Starting coordinate descent optimization...
+  Max passes: 10
+  Start pass: 0
+----------------------------------------------------------------------
+Computing activation flags for 3655011 positions...
+[23:19:03:370867] [t:20568     ] [Tuning_Logger    ] [info    ]: Activation flags computed for 3655011 entries
+  Activation flags computed.
+[23:19:03:405951] [t:20568     ] [Tuning_Logger    ] [debug   ]:   Group  0: 3655011/3655011 entries active (100.0%)
+[23:19:03:406053] [t:20568     ] [Tuning_Logger    ] [debug   ]:   Group  1: 3652248/3655011 entries active (99.9%)
+[23:19:03:406093] [t:20568     ] [Tuning_Logger    ] [debug   ]:   Group  2: 3652248/3655011 entries active (99.9%)
+[23:19:03:406109] [t:20568     ] [Tuning_Logger    ] [debug   ]:   Group  3: 3652248/3655011 entries active (99.9%)
+[23:19:03:406124] [t:20568     ] [Tuning_Logger    ] [debug   ]:   Group  4: 985634/3655011 entries active (27.0%)
+[23:19:03:406138] [t:20568     ] [Tuning_Logger    ] [debug   ]:   Group  5: 2215265/3655011 entries active (60.6%)
+[23:19:03:406152] [t:20568     ] [Tuning_Logger    ] [debug   ]:   Group  6: 2653484/3655011 entries active (72.6%)
+[23:19:03:406167] [t:20568     ] [Tuning_Logger    ] [debug   ]:   Group  7: 3053553/3655011 entries active (83.5%)
+[23:19:03:406180] [t:20568     ] [Tuning_Logger    ] [debug   ]:   Group  8: 1721545/3655011 entries active (47.1%)
+[23:19:03:406194] [t:20568     ] [Tuning_Logger    ] [debug   ]:   Group  9: 3655011/3655011 entries active (100.0%)
+[23:19:03:406208] [t:20568     ] [Tuning_Logger    ] [debug   ]:   Group 10: 3616985/3655011 entries active (99.0%)
+[23:19:03:406222] [t:20568     ] [Tuning_Logger    ] [debug   ]:   Group 11: 3652248/3655011 entries active (99.9%)
+[23:19:03:406236] [t:20568     ] [Tuning_Logger    ] [debug   ]:   Group 12: 2098142/3655011 entries active (57.4%)
+Computing initial error cache...
+  Baseline train MSE: 0.0917759820
+[23:19:06:562746] [t:20568     ] [Tuning_Logger    ] [info    ]: Coordinate descent: 122 params, 3655011 positions, K = 1.009253
+[23:19:06:562796] [t:20568     ] [Tuning_Logger    ] [info    ]: Baseline train MSE: 0.0917759820
+[23:19:07:347644] [t:20568     ] [Tuning_Logger    ] [info    ]: Baseline test MSE:  0.0900023426
+[23:34:44:271192] [t:20568     ] [Tuning_Logger    ] [info    ]: Pass   1: train MSE = 0.0904760418, test MSE = 0.0886556955, changed = 102/122, biggest = ROOK_MOBILITY_END_PER_MOVE (d1.16e-04), 936.1s
+Pass   1: train MSE = 0.0904760418, test MSE = 0.0886556955, changed = 102/122, biggest = ROOK_MOBILITY_END_PER_MOVE (d1.16e-04), 936.1s
+[23:34:44:272183] [t:20568     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning_selfplay_4_checkpoint.yaml (122 params, pass 1, train MSE 0.0904760418)
+[23:50:03:027320] [t:20568     ] [Tuning_Logger    ] [info    ]: Pass   2: train MSE = 0.0897108726, test MSE = 0.0878489399, changed =  97/122, biggest = ROOK_MOBILITY_END_PER_MOVE (d7.63e-05), 918.0s
+Pass   2: train MSE = 0.0897108726, test MSE = 0.0878489399, changed =  97/122, biggest = ROOK_MOBILITY_END_PER_MOVE (d7.63e-05), 918.0s
+[23:50:03:028517] [t:20568     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning_selfplay_4_checkpoint.yaml (122 params, pass 2, train MSE 0.0897108726)
+[00:06:06:036124] [t:20568     ] [Tuning_Logger    ] [info    ]: Pass   3: train MSE = 0.0892237620, test MSE = 0.0873637898, changed =  95/122, biggest = SPACE_BONUS_MID (d5.51e-05), 962.2s
+Pass   3: train MSE = 0.0892237620, test MSE = 0.0873637898, changed =  95/122, biggest = SPACE_BONUS_MID (d5.51e-05), 962.2s
+[00:06:06:037112] [t:20568     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning_selfplay_4_checkpoint.yaml (122 params, pass 3, train MSE 0.0892237620)
+[00:20:53:774542] [t:20568     ] [Tuning_Logger    ] [info    ]: Pass   4: train MSE = 0.0888225362, test MSE = 0.0870162617, changed =  89/122, biggest = SPACE_BONUS_MID (d4.16e-05), 887.0s
+Pass   4: train MSE = 0.0888225362, test MSE = 0.0870162617, changed =  89/122, biggest = SPACE_BONUS_MID (d4.16e-05), 887.0s
+[00:20:53:775775] [t:20568     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning_selfplay_4_checkpoint.yaml (122 params, pass 4, train MSE 0.0888225362)
+[00:35:24:040113] [t:20568     ] [Tuning_Logger    ] [info    ]: Pass   5: train MSE = 0.0885095849, test MSE = 0.0867311011, changed =  84/122, biggest = QUEEN_MOBILITY_END_PER_MOVE (d3.92e-05), 869.5s
+Pass   5: train MSE = 0.0885095849, test MSE = 0.0867311011, changed =  84/122, biggest = QUEEN_MOBILITY_END_PER_MOVE (d3.92e-05), 869.5s
+[00:35:24:041610] [t:20568     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning_selfplay_4_checkpoint.yaml (122 params, pass 5, train MSE 0.0885095849)
+[00:49:47:095541] [t:20568     ] [Tuning_Logger    ] [info    ]: Pass   6: train MSE = 0.0882899298, test MSE = 0.0865360682, changed =  82/122, biggest = TEMPO (d2.86e-05), 862.3s
+Pass   6: train MSE = 0.0882899298, test MSE = 0.0865360682, changed =  82/122, biggest = TEMPO (d2.86e-05), 862.3s
+[00:49:47:096429] [t:20568     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning_selfplay_4_checkpoint.yaml (122 params, pass 6, train MSE 0.0882899298)
+[01:03:53:361941] [t:20568     ] [Tuning_Logger    ] [info    ]: Pass   7: train MSE = 0.0881205244, test MSE = 0.0863936353, changed =  76/122, biggest = TEMPO (d2.65e-05), 845.5s
+Pass   7: train MSE = 0.0881205244, test MSE = 0.0863936353, changed =  76/122, biggest = TEMPO (d2.65e-05), 845.5s
+[01:03:53:363346] [t:20568     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning_selfplay_4_checkpoint.yaml (122 params, pass 7, train MSE 0.0881205244)
+[01:17:35:100882] [t:20568     ] [Tuning_Logger    ] [info    ]: Pass   8: train MSE = 0.0879706354, test MSE = 0.0862625940, changed =  69/122, biggest = TEMPO (d2.50e-05), 821.0s
+Pass   8: train MSE = 0.0879706354, test MSE = 0.0862625940, changed =  69/122, biggest = TEMPO (d2.50e-05), 821.0s
+[01:17:35:101689] [t:20568     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning_selfplay_4_checkpoint.yaml (122 params, pass 8, train MSE 0.0879706354)
+[01:31:28:270981] [t:20568     ] [Tuning_Logger    ] [info    ]: Pass   9: train MSE = 0.0878505715, test MSE = 0.0861632325, changed =  74/122, biggest = TEMPO (d2.37e-05), 832.4s
+Pass   9: train MSE = 0.0878505715, test MSE = 0.0861632325, changed =  74/122, biggest = TEMPO (d2.37e-05), 832.4s
+[01:31:28:271832] [t:20568     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning_selfplay_4_checkpoint.yaml (122 params, pass 9, train MSE 0.0878505715)
+[01:44:56:275265] [t:20568     ] [Tuning_Logger    ] [info    ]: Pass  10: train MSE = 0.0877556994, test MSE = 0.0860786458, changed =  65/122, biggest = TEMPO (d2.21e-05), 807.2s
+Pass  10: train MSE = 0.0877556994, test MSE = 0.0860786458, changed =  65/122, biggest = TEMPO (d2.21e-05), 807.2s
+[01:44:56:276100] [t:20568     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning_selfplay_4_checkpoint.yaml (122 params, pass 10, train MSE 0.0877556994)
+[01:44:56:276247] [t:20568     ] [Tuning_Logger    ] [info    ]: Coordinate descent complete: 10 passes, final train MSE = 0.0877556994, improvement = 4.02e-03, total time = 8748.8s
+
+======================================================================
+TUNING COMPLETE
+======================================================================
+  K:                 1.009253
+  Parameters tuned:  122
+  Optimization time: 8756.0s
+  Total time:        9079.8s
+
+Writing tuned parameters: results\tuning_selfplay_4.yaml
+[01:44:56:278656] [t:20568     ] [Tuning_Logger    ] [info    ]: Tuned parameters written to: results\tuning_selfplay_4.yaml
+Writing comparison report: results\tuning_selfplay_4_comparison.txt
+[01:44:56:279254] [t:20568     ] [Tuning_Logger    ] [info    ]: Comparison report written to: results\tuning_selfplay_4_comparison.txt
+
+Parameter Summary:
+  Changed:       99/122
+  Sign-flipped:  6 (WARNING ÔÇö review these!)
+  Zeroed out:    13 (candidates for removal)
+
+  Top 20 parameter changes:
+  Parameter                                     Original    Tuned    Delta
+  ---------------------------------------------------------------------
+  TEMPO                                               34       24      -10
+  PAWN_STORM_MID_PENALTY[2]                           30       20      -10
+  ISOLATED_PAWN_END_WEIGHT                           -20      -10      +10
+  DOUBLED_PAWN_MID_WEIGHT                            -10        0      +10
+  DOUBLED_PAWN_END_WEIGHT                            -30      -20      +10
+  PASSED_PAWN_MID_WEIGHT                              20       10      -10
+  PAWN_STORM_MID_PENALTY[0]                            5       -5      -10
+  PASSED_PAWN_RANK_MID_BONUS[0]                        0      -10      -10
+  PASSED_PAWN_RANK_MID_BONUS[1]                        0      -10      -10
+  KING_SAFETY_TABLE[11]                              260      270      +10
+  PASSED_PAWN_RANK_MID_BONUS[3]                       15       25      +10
+  PASSED_PAWN_RANK_MID_BONUS[4]                       35       45      +10
+  PAWN_ADVANCE_END_BONUS[0]                            3       -7      -10
+  KING_SAFETY_TABLE[9]                               180      170      -10
+  KING_SAFETY_TABLE[4]                                30       20      -10
+  PASSED_PAWN_RANK_END_BONUS[3]                       35       45      +10
+  PASSED_PAWN_RANK_END_BONUS[4]                       70       80      +10
+  CONNECTED_ROOKS_END_BONUS                            5       15      +10
+  BLOCKED_PAWN_END_WEIGHT                            -20      -10      +10
+  CONNECTED_ROOKS_MID_BONUS                            8       -2      -10
+
+Output files:
+  Tuned params:      results\tuning_selfplay_4.yaml
+  Comparison report: results\tuning_selfplay_4_comparison.txt
+  Checkpoint:        results\tuning_selfplay_4_checkpoint.yaml

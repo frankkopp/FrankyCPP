@@ -1,0 +1,134 @@
+FrankyCPP Texel Tuning — Parameter Comparison Report
+Generated: 2026-03-25 23:12:41
+================================================================================
+
+Total parameters:  122
+Changed:           103 (84.4%)
+Unchanged:         19
+Sign-flipped:      10 (WARNING)
+Zeroed out:        18 (candidates for removal)
+
+Parameter                                     Original    Tuned    Delta  Change%  Flags
+----------------------------------------------------------------------------------------
+TEMPO                                               34       24      -10   -29.4%  
+LAZY_THRESHOLD                                     700      700       +0    +0.0%   (unchanged)
+ISOLATED_PAWN_MID_WEIGHT                           -10       -9       +1   +10.0%  
+ISOLATED_PAWN_END_WEIGHT                           -20      -10      +10   +50.0%  
+DOUBLED_PAWN_MID_WEIGHT                            -10       -8       +2   +20.0%  
+DOUBLED_PAWN_END_WEIGHT                            -30      -20      +10   +33.3%  
+PASSED_PAWN_MID_WEIGHT                              20       10      -10   -50.0%  
+PASSED_PAWN_END_WEIGHT                              40       42       +2    +5.0%  
+PASSED_PAWN_RANK_MID_BONUS[0]                        0      -10      -10      new  
+PASSED_PAWN_RANK_MID_BONUS[1]                        0      -10      -10      new  
+PASSED_PAWN_RANK_MID_BONUS[2]                        5       -4       -9  -180.0%   SIGN-FLIP
+PASSED_PAWN_RANK_MID_BONUS[3]                       15       24       +9   +60.0%  
+PASSED_PAWN_RANK_MID_BONUS[4]                       35       44       +9   +25.7%  
+PASSED_PAWN_RANK_MID_BONUS[5]                       70       70       +0    +0.0%   (unchanged)
+PASSED_PAWN_RANK_END_BONUS[0]                        0      -10      -10      new  
+PASSED_PAWN_RANK_END_BONUS[1]                        5       -1       -6  -120.0%   SIGN-FLIP
+PASSED_PAWN_RANK_END_BONUS[2]                       15       19       +4   +26.7%  
+PASSED_PAWN_RANK_END_BONUS[3]                       35       45      +10   +28.6%  
+PASSED_PAWN_RANK_END_BONUS[4]                       70       80      +10   +14.3%  
+PASSED_PAWN_RANK_END_BONUS[5]                      120      120       +0    +0.0%   (unchanged)
+BLOCKED_PAWN_MID_WEIGHT                             -2       -5       -3  -150.0%  
+BLOCKED_PAWN_END_WEIGHT                            -20      -10      +10   +50.0%  
+PHALANX_PAWN_MID_WEIGHT                              4        5       +1   +25.0%  
+PHALANX_PAWN_END_WEIGHT                              4        0       -4  -100.0%   ->ZERO
+SUPPORTED_PAWN_MID_WEIGHT                           10       19       +9   +90.0%  
+SUPPORTED_PAWN_END_WEIGHT                           15        5      -10   -66.7%  
+PAWN_ADVANCE_MID_BONUS[0]                            2       -1       -3  -150.0%   SIGN-FLIP
+PAWN_ADVANCE_MID_BONUS[1]                            5       12       +7  +140.0%  
+PAWN_ADVANCE_MID_BONUS[2]                           12       12       +0    +0.0%   (unchanged)
+PAWN_ADVANCE_MID_BONUS[3]                           25       25       +0    +0.0%   (unchanged)
+PAWN_ADVANCE_END_BONUS[0]                            3       -7      -10  -333.3%   SIGN-FLIP
+PAWN_ADVANCE_END_BONUS[1]                            8       -2      -10  -125.0%   SIGN-FLIP
+PAWN_ADVANCE_END_BONUS[2]                           18       18       +0    +0.0%   (unchanged)
+PAWN_ADVANCE_END_BONUS[3]                           35       35       +0    +0.0%   (unchanged)
+BISHOP_PAIR_MID_BONUS                               30       40      +10   +33.3%  
+BISHOP_PAIR_END_BONUS                               45       55      +10   +22.2%  
+KNIGHT_MOBILITY_MID_PER_MOVE                         3        3       +0    +0.0%   (unchanged)
+KNIGHT_MOBILITY_END_PER_MOVE                         2        0       -2  -100.0%   ->ZERO
+KNIGHT_LOW_MOBILITY_LEQ1_MID                        -6        0       +6  +100.0%   ->ZERO
+KNIGHT_LOW_MOBILITY_LEQ1_END                        -6        0       +6  +100.0%   ->ZERO
+KNIGHT_LOW_MOBILITY_LEQ2_MID                        -3        0       +3  +100.0%   ->ZERO
+KNIGHT_LOW_MOBILITY_LEQ2_END                        -3        0       +3  +100.0%   ->ZERO
+KNIGHT_OUTPOST_SUPPORTED_MID                        20       30      +10   +50.0%  
+KNIGHT_OUTPOST_SUPPORTED_END                        15       23       +8   +53.3%  
+KNIGHT_OUTPOST_UNSUPPORTED_MID                      10       18       +8   +80.0%  
+KNIGHT_OUTPOST_UNSUPPORTED_END                       8        0       -8  -100.0%   ->ZERO
+BISHOP_MOBILITY_MID_PER_MOVE                         2        4       +2  +100.0%  
+BISHOP_MOBILITY_END_PER_MOVE                         3        2       -1   -33.3%  
+BISHOP_LOW_MOBILITY_LEQ3_MID                        -4        0       +4  +100.0%   ->ZERO
+BISHOP_LOW_MOBILITY_LEQ3_END                        -2        0       +2  +100.0%   ->ZERO
+BAD_BISHOP_PER_PAWN_MID                             -3        0       +3  +100.0%   ->ZERO
+BAD_BISHOP_PER_PAWN_END                             -5        0       +5  +100.0%   ->ZERO
+ROOK_MOBILITY_MID_PER_MOVE                           2        0       -2  -100.0%   ->ZERO
+ROOK_MOBILITY_END_PER_MOVE                           2        6       +4  +200.0%  
+ROOK_LOW_MOBILITY_LEQ3_MID                          -3        0       +3  +100.0%   ->ZERO
+ROOK_LOW_MOBILITY_LEQ3_END                          -3        0       +3  +100.0%   ->ZERO
+ROOK_OPEN_FILE_MID_BONUS                            10       20      +10  +100.0%  
+ROOK_OPEN_FILE_END_BONUS                             8        7       -1   -12.5%  
+ROOK_SEMIOPEN_FILE_MID_BONUS                         5       15      +10  +200.0%  
+ROOK_SEMIOPEN_FILE_END_BONUS                         4        9       +5  +125.0%  
+ROOK_7TH_RANK_MID_BONUS                             15        5      -10   -66.7%  
+ROOK_7TH_RANK_END_BONUS                             25       15      -10   -40.0%  
+ROOK_BEHIND_PASSER_OWN_MID                          10        0      -10  -100.0%   ->ZERO
+ROOK_BEHIND_PASSER_OWN_END                          20       16       -4   -20.0%  
+ROOK_BEHIND_PASSER_OPP_MID                           8       11       +3   +37.5%  
+ROOK_BEHIND_PASSER_OPP_END                          15       16       +1    +6.7%  
+QUEEN_MOBILITY_MID_PER_MOVE                          1        1       +0    +0.0%   (unchanged)
+QUEEN_MOBILITY_END_PER_MOVE                          1       11      +10 +1000.0%  
+QUEEN_TROPISM_MID_PER_STEP                           0        0       +0            (unchanged)
+QUEEN_TROPISM_END_PER_STEP                           1       11      +10 +1000.0%  
+KING_SHIELD_MID_PER_PAWN                             5        6       +1   +20.0%  
+KING_SHIELD_END_PER_PAWN                             0        0       +0            (unchanged)
+KING_OWN_PASSED_PROXIMITY_END                        5        5       +0    +0.0%   (unchanged)
+KING_OPP_PASSED_PROXIMITY_END                        3        8       +5  +166.7%  
+KING_ATTACK_WEIGHT_KNIGHT                            2        2       +0    +0.0%   (unchanged)
+KING_ATTACK_WEIGHT_BISHOP                            2        1       -1   -50.0%  
+KING_ATTACK_WEIGHT_ROOK                              3        3       +0    +0.0%   (unchanged)
+KING_ATTACK_WEIGHT_QUEEN                             4        3       -1   -25.0%  
+KING_SAFETY_TABLE[0]                                 0        0       +0            (unchanged)
+KING_SAFETY_TABLE[1]                                 0        0       +0            (unchanged)
+KING_SAFETY_TABLE[2]                                 5        0       -5  -100.0%   ->ZERO
+KING_SAFETY_TABLE[3]                                15       11       -4   -26.7%  
+KING_SAFETY_TABLE[4]                                30       25       -5   -16.7%  
+KING_SAFETY_TABLE[5]                                50       42       -8   -16.0%  
+KING_SAFETY_TABLE[6]                                75       74       -1    -1.3%  
+KING_SAFETY_TABLE[7]                               105      106       +1    +1.0%  
+KING_SAFETY_TABLE[8]                               140      149       +9    +6.4%  
+KING_SAFETY_TABLE[9]                               180      190      +10    +5.6%  
+KING_SAFETY_TABLE[10]                              220      212       -8    -3.6%  
+KING_SAFETY_TABLE[11]                              260      253       -7    -2.7%  
+KING_SAFETY_TABLE[12]                              300      301       +1    +0.3%  
+KING_SAFETY_TABLE[13]                              340      349       +9    +2.6%  
+KING_SAFETY_TABLE[14]                              380      380       +0    +0.0%   (unchanged)
+KING_SAFETY_TABLE[15]                              400      400       +0    +0.0%   (unchanged)
+PAWN_STORM_MID_PENALTY[0]                            5       -5      -10  -200.0%   SIGN-FLIP
+PAWN_STORM_MID_PENALTY[1]                           15       16       +1    +6.7%  
+PAWN_STORM_MID_PENALTY[2]                           30       20      -10   -33.3%  
+PAWN_STORM_MID_PENALTY[3]                           50       50       +0    +0.0%   (unchanged)
+KING_OPEN_FILE_MID_PENALTY                         -20      -19       +1    +5.0%  
+KING_SEMIOPEN_FILE_MID_PENALTY                     -10       -5       +5   +50.0%  
+SAFE_CHECK_KNIGHT_MID                              -10      -20      -10  -100.0%  
+SAFE_CHECK_BISHOP_MID                               -8        0       +8  +100.0%   ->ZERO
+SAFE_CHECK_ROOK_MID                                -12       -8       +4   +33.3%  
+SAFE_CHECK_QUEEN_MID                               -15      -14       +1    +6.7%  
+THREAT_BY_PAWN_MINOR_MID                             5       15      +10  +200.0%  
+THREAT_BY_PAWN_MINOR_END                             5        9       +4   +80.0%  
+THREAT_BY_PAWN_ROOK_MID                             10        7       -3   -30.0%  
+THREAT_BY_PAWN_ROOK_END                             12        2      -10   -83.3%  
+THREAT_BY_PAWN_QUEEN_MID                            15       19       +4   +26.7%  
+THREAT_BY_PAWN_QUEEN_END                            20       12       -8   -40.0%  
+THREAT_BY_MINOR_ROOK_MID                             5       15      +10  +200.0%  
+THREAT_BY_MINOR_ROOK_END                             6        0       -6  -100.0%   ->ZERO
+THREAT_BY_MINOR_QUEEN_MID                            8       14       +6   +75.0%  
+THREAT_BY_MINOR_QUEEN_END                           10        1       -9   -90.0%  
+THREAT_HANGING_MID                                   6        1       -5   -83.3%  
+THREAT_HANGING_END                                  10       14       +4   +40.0%  
+SPACE_BONUS_MID                                      3       -7      -10  -333.3%   SIGN-FLIP
+SPACE_BONUS_END                                      1       -5       -6  -600.0%   SIGN-FLIP
+CONNECTED_ROOKS_MID_BONUS                            8       -2      -10  -125.0%   SIGN-FLIP
+CONNECTED_ROOKS_END_BONUS                            5       -2       -7  -140.0%   SIGN-FLIP
+MINOR_CONNECTIVITY_MID_BONUS                         4        2       -2   -50.0%  
+MINOR_CONNECTIVITY_END_BONUS                         3        7       +4  +133.3%  
