@@ -34,13 +34,22 @@ file(GLOB SRCS_ENGINE_ARENA_FOR_TESTS CONFIGURE_DEPENDS ../src/engine_arena/*.cp
 list(FILTER SRCS_ENGINE_ARENA_FOR_TESTS EXCLUDE REGEX "ArenaRunner\\.cpp$")
 
 # Tuning source files needed by tests (compiled directly from src/)
-file(GLOB SRCS_TUNING_EXTRACTOR_FOR_TESTS CONFIGURE_DEPENDS ../src/tuning/extractor/*.cpp)
-# ExtractorMain has its own main() — exclude from test builds
-list(FILTER SRCS_TUNING_EXTRACTOR_FOR_TESTS EXCLUDE REGEX "ExtractorMain\\.cpp$")
+# Excluded from production builds — tuning code assigns to CONFIG_CONST members
+# which become static constexpr in production and cannot be modified.
+if (NOT FRANKYCPP_PRODUCTION)
+    file(GLOB SRCS_TUNING_EXTRACTOR_FOR_TESTS CONFIGURE_DEPENDS ../src/tuning/extractor/*.cpp)
+    # ExtractorMain has its own main() — exclude from test builds
+    list(FILTER SRCS_TUNING_EXTRACTOR_FOR_TESTS EXCLUDE REGEX "ExtractorMain\\.cpp$")
 
-file(GLOB SRCS_TUNING_OPTIMIZER_FOR_TESTS CONFIGURE_DEPENDS ../src/tuning/optimizer/*.cpp)
-# TunerMain has its own main() — exclude from test builds
-list(FILTER SRCS_TUNING_OPTIMIZER_FOR_TESTS EXCLUDE REGEX "TunerMain\\.cpp$")
+    file(GLOB SRCS_TUNING_OPTIMIZER_FOR_TESTS CONFIGURE_DEPENDS ../src/tuning/optimizer/*.cpp)
+    # TunerMain has its own main() — exclude from test builds
+    list(FILTER SRCS_TUNING_OPTIMIZER_FOR_TESTS EXCLUDE REGEX "TunerMain\\.cpp$")
+else ()
+    set(SRCS_TUNING_EXTRACTOR_FOR_TESTS "")
+    set(SRCS_TUNING_OPTIMIZER_FOR_TESTS "")
+    set(TEST_TUNING "")
+    message(STATUS "Tuning tests SKIPPED (FRANKYCPP_PRODUCTION is ON)")
+endif ()
 
 add_executable(
         ${testExeName}

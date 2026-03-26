@@ -145,7 +145,8 @@ TEST_F(TuningOutputTest, GenerateParamsYaml_ArrayCoalesced) {
 }
 
 TEST_F(TuningOutputTest, GenerateParamsYaml_EmptyParams) {
-  constexpr std::vector<TuningParameter> empty;
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
+  const std::vector<TuningParameter> empty;
   const auto yaml = TuningOutput::generateParamsYaml(empty);
 
   // Should still have header but no param lines
