@@ -69,6 +69,7 @@
 
 #include "version.h"
 
+#include "common/ExePath.h"
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include <spdlog/spdlog.h>
@@ -244,11 +245,13 @@ namespace common {
     /// Default log pattern: timestamp, thread, logger name, level, message.
     const std::string defaultPattern = "[%H:%M:%S:%f] [t:%-10!t] [%-17n] [%-8l]: %v";
 
-    /// Log file path for general logging.
-    const std::string logfile = std::format("FrankyCPP_v{}.{}.log", FrankyCPP_VERSION_MAJOR, FrankyCPP_VERSION_MINOR);
+    /// Log file path for general logging (resolved next to the executable).
+    const std::string logfile = common::resolvePathRelativeToExe(
+      std::format("FrankyCPP_v{}.{}.log", FrankyCPP_VERSION_MAJOR, FrankyCPP_VERSION_MINOR)).string();
 
-    /// Log file path for UCI protocol logging.
-    const std::string logfile_uci = std::format("FrankyCPP_v{}.{}_uci.log", FrankyCPP_VERSION_MAJOR, FrankyCPP_VERSION_MINOR);
+    /// Log file path for UCI protocol logging (resolved next to the executable).
+    const std::string logfile_uci = common::resolvePathRelativeToExe(
+      std::format("FrankyCPP_v{}.{}_uci.log", FrankyCPP_VERSION_MAJOR, FrankyCPP_VERSION_MINOR)).string();
 
     /// Shared file sink for loggers that write to the main log file.
     const std::shared_ptr<spdlog::sinks::basic_file_sink_mt> sharedFileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logfile);

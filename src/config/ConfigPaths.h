@@ -20,20 +20,24 @@
 #ifndef FRANKYCPP_CONFIGPATHS_H
 #define FRANKYCPP_CONFIGPATHS_H
 
+#include "common/ExePath.h"
+
 #include <filesystem>
 
 namespace config::ConfigPaths {
-  // Header-only helpers returning default YAML paths relative to the current working directory.
-  // These are copied next to the executable in build/test via post-build commands in CMake.
+  // Helpers returning default YAML paths resolved relative to the executable's
+  // directory.  This ensures the engine loads config/eval.yaml next to the .exe
+  // regardless of the current working directory (important when launched via
+  // cutechess-cli, GUIs, or from a different shell directory).
 
-  // Default path to the search configuration YAML (e.g., ./config/search.yaml)
+  // Default path to the search configuration YAML (e.g., <exeDir>/config/search.yaml)
   inline std::filesystem::path SearchYaml() {
-    return std::filesystem::path("config") / "search.yaml";
+    return common::resolvePathRelativeToExe(std::filesystem::path("config") / "search.yaml");
   }
 
-  // Default path to the evaluation configuration YAML (e.g., ./config/eval.yaml)
+  // Default path to the evaluation configuration YAML (e.g., <exeDir>/config/eval.yaml)
   inline std::filesystem::path EvalYaml() {
-    return std::filesystem::path("config") / "eval.yaml";
+    return common::resolvePathRelativeToExe(std::filesystem::path("config") / "eval.yaml");
   }
 } // namespace config::ConfigPaths
 

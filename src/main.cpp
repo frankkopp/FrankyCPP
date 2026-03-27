@@ -36,6 +36,8 @@
 #include "boost/program_options.hpp"
 #include "common/CrashHandler.h"
 #include "common/Logging.h"
+#include "common/misc.h"
+#include "config/ConfigPaths.h"
 namespace po = boost::program_options;
 
 using namespace engine;
@@ -131,6 +133,7 @@ int main(int argc, char* argv[]) {
     config.add_options()
       ("log_lvl,l", po::value<std::string>()->default_value("warn"), "set general log level <critical|error|warn|info|debug|trace>")
       ("search_log_lvl,s", po::value<std::string>()->default_value("warn"), "set search log level <critical|error|warn|info|debug|trace>")
+      ("uci_log_lvl,U", po::value<std::string>()->default_value("trace"), "set UCI protocol file log level <critical|error|warn|info|debug|trace|off>")
       ("nobook", "do not use opening book")
       ("book,b", po::value<std::string>(&book_file), "opening book to use")
       ("booktype,t", po::value<std::string>(&book_type), "type of opening book <simple|san|pgn>");
@@ -212,10 +215,11 @@ int main(int argc, char* argv[]) {
       return 0;
     }
 
-    // read the config file
-    std::ifstream ifs(config_file.c_str());
+    // read the config file (resolve relative path against exe directory)
+    const auto resolvedConfigFile = common::resolvePathRelativeToExe(config_file);
+    std::ifstream ifs(resolvedConfigFile);
     if (!ifs) {
-      std::cerr << "could not open the config file: " << config_file << "\n";
+      std::cerr << "could not open the config file: " << resolvedConfigFile << "\n";
     }
     else {
       store(parse_config_file(ifs, config_file_options), programOptions);
@@ -597,6 +601,14 @@ CONFIGURATION:
 
   // Init all pre calculated data structures
   init::init();
+
+  // Log resolved paths so it's clear which config/books are being used
+  // (paths are resolved relative to the executable, not the CWD)
+  LOG__INFO(Logger::get().APP_LOG, "Executable dir: {}", common::getExecutableDir().string());
+  LOG__INFO(Logger::get().APP_LOG, "Config search:  {}", ConfigPaths::SearchYaml().string());
+  LOG__INFO(Logger::get().APP_LOG, "Config eval:    {}", ConfigPaths::EvalYaml().string());
+  LOG__INFO(Logger::get().APP_LOG, "Books path:     {}",
+            common::resolvePathRelativeToExe(SEARCH_CONFIG.BOOK_PATH).string());
 
   // Create engine and start UCI loop
   UciHandler uci{};

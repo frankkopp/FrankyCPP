@@ -35,6 +35,11 @@
 #include <format>
 #include <optional>
 #include <string>
+#include <filesystem>
+
+// Exe-relative path utilities (declaration-only header, no <windows.h> pollution).
+// Re-exported here so existing #include "common/misc.h" callers keep working.
+#include "common/ExePath.h"
 
 #ifdef _WIN32
 #include <cstdlib> // For _dupenv_s
@@ -44,6 +49,7 @@
 #endif
 
 namespace common {
+
 
   /// Safe, thread-safe, cross-platform environment variable access.
   /// On Windows, uses _dupenv_s (thread-safe).

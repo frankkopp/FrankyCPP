@@ -33,20 +33,6 @@ using namespace config;
 
 namespace {
 
-  // RAII helper to change current working directory for the scope
-  struct ScopedCwd {
-    std::filesystem::path prev;
-    explicit ScopedCwd(const std::filesystem::path& p) : prev(std::filesystem::current_path()) {
-      std::error_code ec;
-      std::filesystem::create_directories(p, ec);
-      std::filesystem::current_path(p, ec);
-    }
-    ~ScopedCwd() {
-      std::error_code ec;
-      std::filesystem::current_path(prev, ec);
-    }
-  };
-
   std::filesystem::path makeTempDir(const std::string& name) {
     const auto ts = steady_clock::now().time_since_epoch().count();
     auto base     = std::filesystem::temp_directory_path() / ("frankycpp_auto_init_" + name + "_" + std::to_string(ts));
@@ -81,15 +67,17 @@ namespace {
 
   // Description: Confirms that when default config files are missing, loadFromFiles succeeds and keeps hard-coded defaults.
   TEST(ConfigAutoInitTests, DefaultPathsMissingUsesDefaultsAndSucceeds) {
-    // Switch to a fresh temp directory with no config folder
+    // Use explicit paths to non-existent files (config paths now resolve relative
+    // to the exe directory, so CWD manipulation no longer affects default paths).
     const auto tmp = makeTempDir("missing");
-    ScopedCwd cwd(tmp);
+    const auto nonExistentSearch = tmp / "config" / "search.yaml";
+    const auto nonExistentEval   = tmp / "config" / "eval.yaml";
 
     auto& mgr = ConfigManager::instance();
     mgr.resetToDefaults();
 
-    // Call loadFromFiles() with default paths (which do not exist here)
-    const bool ok = mgr.loadFromFiles();
+    // Call loadFromFiles() with explicit paths that do not exist
+    const bool ok = mgr.loadFromFiles(nonExistentSearch, nonExistentEval);
     EXPECT_TRUE(ok);
 
     // Expect defaults remain
@@ -100,20 +88,22 @@ namespace {
   // Description: Checks that malformed YAML at default paths causes loadFromFiles to return false and roll back to the prior state.
 #ifndef FRANKYCPP_PRODUCTION // In production, only essential config mutations (MOVE_OVERHEAD_MS) can be verified, so this test is dev-only.
   TEST(ConfigAutoInitTests, DefaultPathsMalformedRollsBackAndReturnsFalse) {
-    // Prepare temp directory with malformed YAML files in ./config
-    const auto tmp = makeTempDir("malformed");
-    ScopedCwd cwd(tmp);
+    // Prepare temp directory with malformed YAML files
+    const auto tmp    = makeTempDir("malformed");
     const auto cfgDir = tmp / "config";
     std::error_code ec;
     std::filesystem::create_directories(cfgDir, ec);
 
+    const auto malformedSearch = cfgDir / "search.yaml";
+    const auto malformedEval   = cfgDir / "eval.yaml";
+
     // Write malformed YAML
     {
-      std::ofstream ofs(cfgDir / "search.yaml");
+      std::ofstream ofs(malformedSearch);
       ofs << "not: [valid"; // malformed
     }
     {
-      std::ofstream ofs(cfgDir / "eval.yaml");
+      std::ofstream ofs(malformedEval);
       ofs << "invalid: true: :"; // malformed
     }
 
@@ -126,7 +116,8 @@ namespace {
       e.TEMPO            = 66;
     });
 
-    const bool ok = mgr.loadFromFiles();
+    // Use explicit paths to the malformed files (not relying on CWD)
+    const bool ok = mgr.loadFromFiles(malformedSearch, malformedEval);
     EXPECT_FALSE(ok);
     EXPECT_EQ(mgr.search().MOVE_OVERHEAD_MS, 77);
     EXPECT_EQ(mgr.eval().TEMPO, 66);
@@ -156,11 +147,12 @@ namespace {
     EXPECT_EQ(mgr.search().TT_SIZE_MB, 256);
     EXPECT_EQ(mgr.eval().TEMPO, 34);
 
-    // Now move to a dir with missing config and load defaults (fallback)
+    // Now load from non-existent paths to get fallback values
     {
       const auto tmp = makeTempDir("reset_defaults_preserved");
-      ScopedCwd cwd(tmp);
-      ASSERT_TRUE(mgr.loadFromFiles());
+      const auto nonExistentSearch = tmp / "config" / "search.yaml";
+      const auto nonExistentEval   = tmp / "config" / "eval.yaml";
+      ASSERT_TRUE(mgr.loadFromFiles(nonExistentSearch, nonExistentEval));
       // In the absence of YAML, fallback values apply (TT_SIZE_MB defaults to hard-coded 64, TEMPO to 34 in current repo)
       // but crucially, defaults stored at startup should remain unchanged.
     }

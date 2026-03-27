@@ -343,8 +343,14 @@ namespace arena {
     }
 
     // Engine 1 - use UCI name for identification
+    // Set dir= to the engine's parent directory so it resolves config/eval.yaml
+    // relative to its own location, not the arena's CWD.
     cmd << " -engine cmd=\"" << matchConfig.engine1Path << "\"";
     cmd << " name=\"" << engine1Name << "\"";
+    const auto engine1Dir = std::filesystem::path(matchConfig.engine1Path).parent_path();
+    if (!engine1Dir.empty()) {
+      cmd << " dir=\"" << engine1Dir.string() << "\"";
+    }
     // Add UCI options for engine 1 (format: option.Name=Value)
     if (!matchConfig.engine1Options.empty()) {
       // Parse semicolon-separated options and convert to cutechess format
@@ -362,8 +368,14 @@ namespace arena {
     }
 
     // Engine 2 - use UCI name for identification
+    // Set dir= to the engine's parent directory so it resolves config/eval.yaml
+    // relative to its own location, not the arena's CWD.
     cmd << " -engine cmd=\"" << matchConfig.engine2Path << "\"";
     cmd << " name=\"" << engine2Name << "\"";
+    const auto engine2Dir = std::filesystem::path(matchConfig.engine2Path).parent_path();
+    if (!engine2Dir.empty()) {
+      cmd << " dir=\"" << engine2Dir.string() << "\"";
+    }
     // Add UCI options for engine 2 (format: option.Name=Value)
     if (!matchConfig.engine2Options.empty()) {
       // Parse semicolon-separated options and convert to cutechess format

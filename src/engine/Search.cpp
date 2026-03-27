@@ -21,6 +21,7 @@
 #include "Evaluator.h"
 #include "See.h"
 #include "common/Logging.h"
+#include "common/misc.h"
 
 #include <algorithm>
 #include <chrono>
@@ -2266,15 +2267,17 @@ void Search::initialize() {
   if (SearchConfig.USE_BOOK) {
     if (!book) {
       // only initialize once
-      if (!std::filesystem::exists(SearchConfig.BOOK_PATH)) {
-        const std::string message = std::format("Opening Book '{}' not found. Disabling book usage.", SearchConfig.BOOK_PATH);
+      // Resolve book path relative to executable directory (not CWD)
+      const auto bookPath = resolvePathRelativeToExe(SearchConfig.BOOK_PATH);
+      if (!std::filesystem::exists(bookPath)) {
+        const std::string message = std::format("Opening Book '{}' not found. Disabling book usage.", bookPath.string());
         LOG__ERROR(Logger::get().BOOK_LOG, "{}", message);
         ConfigManager::instance().applyOverrides([&](SearchConfigData& s, auto&) {
           s.USE_BOOK = false;
         });
       }
       else {
-        book = std::make_unique<book::OpeningBook>(SearchConfig.BOOK_PATH, book::OpeningBook::fromString(SearchConfig.BOOK_TYPE));
+        book = std::make_unique<book::OpeningBook>(bookPath.string(), book::OpeningBook::fromString(SearchConfig.BOOK_TYPE));
         book->initialize();
       }
     }
