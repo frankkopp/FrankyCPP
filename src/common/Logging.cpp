@@ -109,6 +109,7 @@ void Logger::init() const {
   // Get level strings from programOptions; default to "warn" if missing.
   std::string logLvL       = "warn";
   std::string searchLogLvL = "warn";
+  std::string uciLogLvL    = "trace";
   if (!programOptions.empty()) {
     if (programOptions.contains("log_lvl")) {
       logLvL = programOptions["log_lvl"].as<std::string>();
@@ -116,10 +117,14 @@ void Logger::init() const {
     if (programOptions.contains("search_log_lvl")) {
       searchLogLvL = programOptions["search_log_lvl"].as<std::string>();
     }
+    if (programOptions.contains("uci_log_lvl")) {
+      uciLogLvL = programOptions["uci_log_lvl"].as<std::string>();
+    }
   }
 
   const auto logLevel       = get_level("log_lvl", logLvL);
   const auto searchLogLevel = get_level("search_log_lvl", searchLogLvL);
+  const auto uciLogLevel    = get_level("uci_log_lvl", uciLogLvL);
 
   // Global log level and pattern once.
   spdlog::set_level(logLevel);
@@ -146,8 +151,8 @@ void Logger::init() const {
   // UCI logger keeps its dedicated console sink and its own simple pattern
   add_unique_sink(*UCI_LOG, uciOutSink);
   UCI_LOG->set_pattern("[%H:%M:%S:%f] %v");
-  UCI_LOG->set_level(spdlog::level::trace); // keep as-is (trace) for UCI
-  UCI_LOG->flush_on(spdlog::level::trace);
+  UCI_LOG->set_level(uciLogLevel);
+  UCI_LOG->flush_on(uciLogLevel);
 
   // Logger for Unit Tests (stdout logger only, no file sink wiring)
   TEST_LOG->set_level(logLevel);
@@ -156,5 +161,5 @@ void Logger::init() const {
   // Proactive periodic flushing to bound data loss on crashes without flushing on every message.
   spdlog::flush_every(milliseconds(200));
 
-  std::cout << "Logger initialized (" << logLvL << " / " << searchLogLvL << ")" << std::endl;
+  std::cout << "Logger initialized (general: " << logLvL << " / search: " << searchLogLvL << " / uci: " << uciLogLvL << ")" << std::endl;
 }

@@ -135,17 +135,17 @@ void PositionExtractor::extract(const std::string& inputPgn,
   }
 
   // Progress reporting state
-  const auto progressStart = std::chrono::steady_clock::now();
+  const auto progressStart = steady_clock::now();
   constexpr int progressInterval = 5000; // report every N games
 
   // Parse PGN file using streaming callback
   PgnParser parser;
-  parser.parseFile(inputPgn, [this, &config, &outStream, &progressStart, progressInterval](PgnGame&& game) {
+  parser.parseFile(inputPgn, [this, &config, &outStream, &progressStart](PgnGame&& game) {
     stats.gamesTotal++;
 
     // Progress reporting (verbose mode)
     if (config.verbose && stats.gamesTotal % progressInterval == 0) {
-      const auto now = std::chrono::steady_clock::now();
+      const auto now = steady_clock::now();
       const double elapsed = std::chrono::duration<double>(now - progressStart).count();
       const double gamesPerSec = elapsed > 0 ? stats.gamesTotal / elapsed : 0;
       std::cout << std::format("  Progress: {:>7} games processed, {:>9} positions extracted, "
@@ -420,7 +420,7 @@ std::optional<int> PositionExtractor::parseSearchScore(const std::string& commen
     }
 
     // Parse whole and fractional parts separately
-    const int wholePawns = (dotPos > 0) ? std::stoi(scoreStr.substr(0, dotPos)) : 0;
+    const int wholePawns = dotPos > 0 ? std::stoi(scoreStr.substr(0, dotPos)) : 0;
     const std::string fracStr = scoreStr.substr(dotPos + 1);
 
     // Convert fractional part to centipawns (handle 1 or 2 digits)

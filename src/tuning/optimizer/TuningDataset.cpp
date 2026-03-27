@@ -51,7 +51,7 @@ namespace tuning {
     // Estimate entry count for reserve (average ~60 chars per line)
     const auto fileSize       = std::filesystem::file_size(path);
     const auto estimatedLines = fileSize / 60;
-    const auto reserveCount   = (maxEntries > 0) ? std::min(estimatedLines, maxEntries) : estimatedLines;
+    const auto reserveCount   = maxEntries > 0 ? std::min(estimatedLines, maxEntries) : estimatedLines;
     entries.reserve(reserveCount);
 
     const auto startTime = steady_clock::now();

@@ -303,7 +303,9 @@ namespace tuning {
     std::size_t count = 0;
     // We need a temporary config to read array sizes via getter.
     // Use default-constructed configs for counting purposes.
+    // ReSharper disable once CppTooWideScope
     const config::SearchConfigData defaultSearch;
+    // ReSharper disable once CppTooWideScope
     const config::EvalConfigData defaultEval;
 
     for (const auto* def : tunableDefs) {

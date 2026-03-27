@@ -426,7 +426,7 @@ void UciHandler::benchCommand(std::istringstream& inStream) const {
   LOG__INFO(Logger::get().UCIHAND_LOG, "Start Benchmark");
 
   // Parse optional arguments: bench [depth] [hash] [threads]
-  engine::BenchConfig config;
+  BenchConfig config;
   std::string token;
 
   if (inStream >> token) {
@@ -470,7 +470,7 @@ void UciHandler::benchCommand(std::istringstream& inStream) const {
 
   // Run the benchmark
   const auto result = engine::Benchmark::run(config);
-  engine::Benchmark::printResults(result);
+  Benchmark::printResults(result);
 
   LOG__INFO(Logger::get().UCIHAND_LOG, "Benchmark finished - NPS: {}", static_cast<uint64_t>(result.nps));
 }

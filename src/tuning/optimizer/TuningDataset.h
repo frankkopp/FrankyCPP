@@ -33,6 +33,17 @@
 //   2. EPD format with c9 tag: <FEN-without-counters> c9 "<PGN-result>";
 //      Example: rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - c9 "1-0";
 //
+// Format Rationale:
+//   The FrankyCPP format is the primary format produced by PositionExtractor
+//   and preferred over standard EPD c9 for several reasons:
+//   - Preserves the full 6-field FEN including half-move clock (relevant for
+//     50-move rule awareness), whereas EPD has only 4 fields.
+//   - Uses numeric results (1.0/0.5/0.0) that map directly to the Texel MSE
+//     loss function without requiring PGN result string conversion.
+//   - More compact syntax (no c9 "..."; boilerplate).
+//   - De facto standard across chess engine tuning tools (Ethereal, Weiss, etc.).
+//   The EPD c9 parser exists purely for importing third-party datasets.
+//
 // Provides deterministic train/test splitting (by file order, no shuffling)
 // and iteration support for the optimizer.
 //
@@ -123,6 +134,9 @@ namespace tuning {
 
   private:
     /// Parses a single line in FrankyCPP format: <FEN> [<result>]
+    /// This is the primary/preferred format produced by PositionExtractor.
+    /// It preserves the full 6-field FEN (including half-move clock) and uses
+    /// numeric results (1.0/0.5/0.0) that map directly to the MSE loss function.
     /// @param line      The input line
     /// @param entry     Output entry (populated on success)
     /// @param validator Reusable Position for FEN validation (avoids repeated 33KB stack alloc)
@@ -131,6 +145,9 @@ namespace tuning {
                                                    chess::Position& validator);
 
     /// Parses a single line in EPD c9 format: <FEN-fields> c9 "<PGN-result>";
+    /// This is a compatibility parser for importing third-party datasets (e.g., Zurichess).
+    /// EPD provides only 4 FEN fields, so default counters "0 1" are appended. The half-move
+    /// clock is lost, which means 50-move rule information is unavailable for these entries.
     /// @param line      The input line
     /// @param entry     Output entry (populated on success)
     /// @param validator Reusable Position for FEN validation (avoids repeated 33KB stack alloc)

@@ -38,8 +38,11 @@
 //      diverges from the static eval by more than a threshold
 //
 // Output Format:
-//   One line per position: <FEN> [<result>]
+//   One line per position in FrankyCPP format: <FEN> [<result>]
 //   Result is from White's perspective: 1.0 (win), 0.5 (draw), 0.0 (loss)
+//   This format preserves the full 6-field FEN (including half-move clock) and
+//   uses numeric labels that feed directly into the Texel MSE loss function.
+//   See TuningDataset.h for format rationale and supported import formats.
 //
 // Usage:
 //   ExtractionConfig config;
