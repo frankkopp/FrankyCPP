@@ -1,0 +1,375 @@
+PS D:\_DEV\FrankyCPP> .\Release\FrankyCPP_v1.7\FrankyCPP_v1.7_Arena.exe -t
+Current working directory: "D:\\_DEV\\FrankyCPP"
+Loading configuration from: config/arena.yaml
+Configuration loaded successfully!
+  Version: v1.7
+  Results Directory: ./results
+  Test Suite Runs: 1
+  Test Suites: 8
+  Matches: 2
+  Benchmarks: 2
+WARNING: Test suite run for 'FrankyCPP v1.7' has empty tag - results won't be grouped by feature
+WARNING: Match 'v1.7_vs_v1.6_300s' has empty tag - results won't be grouped by feature
+WARNING: Match 'v1.7_vs_Stockfish18_2700_300s' has empty tag - results won't be grouped by feature
+Configuration validated successfully!
+
+===================================================================
+Running Test Suites Only
+===================================================================
+Number of suites: 8
+===================================================================
+
+===================================================================
+Running All Test Suites
+===================================================================
+Engine Version: v1.7
+Number of Test Suites: 8
+===================================================================
+
+[1/8]
+==================================================================
+Running Test Suite: franky_tests (parallel: 4 workers)
+==================================================================
+EPD Path:          test/testsets/franky_tests.epd
+Time per Move:     5000ms
+Max Depth:         99
+Engine:            Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe
+Position Isolation: enabled
+
+Parsing EPD file...
+Logger initialized (warn / warn)
+[10:03:20:059250] [t:132492    ] [TSuite_Logger    ] [warning ]: Invalid fen FEN contains illegal characters: 9/2r1kpp1/1p6/pB1Pp1P1/Pbp1P3/2N2b1P/1PPK1P2/7R could not create position from: 9/2r1kpp1/1p6/pB1Pp1P1/Pbp1P3/2N2b1P/1PPK1P2/7R b - - bm Bxh1; id "FRANKY-1 #98";
+[10:03:20:059965] [t:132492    ] [TSuite_Logger    ] [warning ]: Invalid fen FEN has too many squares (9) in rank 7:  8/3r1kpp1/1p6/pB1Pp1P1/Pbp1P3/2N2b1P/1PPK1P2/7R could not create position from: 8/3r1kpp1/1p6/pB1Pp1P1/Pbp1P3/2N2b1P/1PPK1P2/7R b - - bm Bxh1; id "FRANKY-1 #98";
+[10:03:20:060044] [t:132492    ] [TSuite_Logger    ] [warning ]: No EPD match found in 8/8/8/8/8/3K4/R7/5k2 w - - noop 4; id "FRANKY-1 #99";
+Loaded 13 test positions
+
+Creating 4 UCI engine instances...
+UCI engine initialized: FrankyCPP v1.7.0
+UCI engine initialized: FrankyCPP v1.7.0
+UCI engine initialized: FrankyCPP v1.7.0
+UCI engine initialized: FrankyCPP v1.7.0
+Engine: FrankyCPP v1.7.0
+
+Starting ThreadPool with 4 workers...
+  Progress: 13/13 (100%) [13 passed, 0 failed]
+Shutting down UCI engines...
+
+
+------------------------------------------------------------------
+Test Suite Complete: franky_tests (parallel)
+  Engine:       FrankyCPP v1.7.0 v1.7
+  Total Tests:  13
+  Passed:       13 (100%)
+  Failed:       0
+  Skipped:      0
+  Total Nodes:  393864334
+  Engine Time:  40892ms (sum of all positions)
+  Wall Time:    12977ms (actual elapsed)
+  Speedup:      3.15111x
+==================================================================
+  -> Saved: ./results/testsuites/franky_tests_FrankyCPP_v1.7.0-v1.7_20260327_100333.json
+
+[2/8]
+==================================================================
+Running Test Suite: mate_test_suite (parallel: 4 workers)
+==================================================================
+EPD Path:          test/testsets/mate_test_suite.epd
+Time per Move:     15000ms
+Max Depth:         99
+Engine:            Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe
+Position Isolation: enabled
+
+Parsing EPD file...
+Loaded 20 test positions
+
+Creating 4 UCI engine instances...
+UCI engine initialized: FrankyCPP v1.7.0
+UCI engine initialized: FrankyCPP v1.7.0
+UCI engine initialized: FrankyCPP v1.7.0
+UCI engine initialized: FrankyCPP v1.7.0
+Engine: FrankyCPP v1.7.0
+
+Starting ThreadPool with 4 workers...
+  Progress: 20/20 (100%) [18 passed, 2 failed]
+Shutting down UCI engines...
+
+
+------------------------------------------------------------------
+Test Suite Complete: mate_test_suite (parallel)
+  Engine:       FrankyCPP v1.7.0 v1.7
+  Total Tests:  20
+  Passed:       18 (90%)
+  Failed:       2
+  Skipped:      0
+  Total Nodes:  2628153581
+  Engine Time:  160855ms (sum of all positions)
+  Wall Time:    46938ms (actual elapsed)
+  Speedup:      3.42697x
+==================================================================
+  -> Saved: ./results/testsuites/mate_test_suite_FrankyCPP_v1.7.0-v1.7_20260327_100419.json
+
+[3/8]
+==================================================================
+Running Test Suite: wac (parallel: 4 workers)
+==================================================================
+EPD Path:          test/testsets/wac.epd
+Time per Move:     5000ms
+Max Depth:         99
+Engine:            Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe
+Position Isolation: enabled
+
+Parsing EPD file...
+Loaded 201 test positions
+
+Creating 4 UCI engine instances...
+UCI engine initialized: FrankyCPP v1.7.0
+UCI engine initialized: FrankyCPP v1.7.0
+UCI engine initialized: FrankyCPP v1.7.0
+UCI engine initialized: FrankyCPP v1.7.0
+Engine: FrankyCPP v1.7.0
+
+Starting ThreadPool with 4 workers...
+  Progress: 201/201 (100%) [189 passed, 12 failed]
+Shutting down UCI engines...
+
+
+------------------------------------------------------------------
+Test Suite Complete: wac (parallel)
+  Engine:       FrankyCPP v1.7.0 v1.7
+  Total Tests:  201
+  Passed:       189 (94.0299%)
+  Failed:       12
+  Skipped:      0
+  Total Nodes:  5769985496
+  Engine Time:  731189ms (sum of all positions)
+  Wall Time:    198531ms (actual elapsed)
+  Speedup:      3.683x
+==================================================================
+  -> Saved: ./results/testsuites/wac_FrankyCPP_v1.7.0-v1.7_20260327_100738.json
+
+[4/8]
+==================================================================
+Running Test Suite: sts1-sts15_lan (parallel: 4 workers)
+==================================================================
+EPD Path:          test/testsets/STS1-STS15_LAN.EPD
+Time per Move:     5000ms
+Max Depth:         99
+Engine:            Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe
+Position Isolation: enabled
+
+Parsing EPD file...
+Loaded 1500 test positions
+
+Creating 4 UCI engine instances...
+UCI engine initialized: FrankyCPP v1.7.0
+UCI engine initialized: FrankyCPP v1.7.0
+UCI engine initialized: FrankyCPP v1.7.0
+UCI engine initialized: FrankyCPP v1.7.0
+Engine: FrankyCPP v1.7.0
+
+Starting ThreadPool with 4 workers...
+  Progress: 1500/1500 (100%) [942 passed, 558 failed]
+Shutting down UCI engines...
+
+
+------------------------------------------------------------------
+Test Suite Complete: STS1-STS15_LAN (parallel)
+  Engine:       FrankyCPP v1.7.0 v1.7
+  Total Tests:  1500
+  Passed:       942 (62.8%)
+  Failed:       558
+  Skipped:      0
+  Total Nodes:  36029832366
+  Engine Time:  6126662ms (sum of all positions)
+  Wall Time:    1664147ms (actual elapsed)
+  Speedup:      3.68156x
+==================================================================
+  -> Saved: ./results/testsuites/STS1-STS15_LAN_FrankyCPP_v1.7.0-v1.7_20260327_103522.json
+
+[5/8]
+==================================================================
+Running Test Suite: crafty_test (parallel: 4 workers)
+==================================================================
+EPD Path:          test/testsets/crafty_test.epd
+Time per Move:     5000ms
+Max Depth:         99
+Engine:            Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe
+Position Isolation: enabled
+
+Parsing EPD file...
+Loaded 347 test positions
+
+Creating 4 UCI engine instances...
+UCI engine initialized: FrankyCPP v1.7.0
+UCI engine initialized: FrankyCPP v1.7.0
+UCI engine initialized: FrankyCPP v1.7.0
+UCI engine initialized: FrankyCPP v1.7.0
+Engine: FrankyCPP v1.7.0
+
+Starting ThreadPool with 4 workers...
+  Progress: 347/347 (100%) [175 passed, 172 failed]
+Shutting down UCI engines...
+
+
+------------------------------------------------------------------
+Test Suite Complete: crafty_test (parallel)
+  Engine:       FrankyCPP v1.7.0 v1.7
+  Total Tests:  347
+  Passed:       175 (50.4323%)
+  Failed:       172
+  Skipped:      0
+  Total Nodes:  8258429073
+  Engine Time:  1408510ms (sum of all positions)
+  Wall Time:    379479ms (actual elapsed)
+  Speedup:      3.71169x
+==================================================================
+  -> Saved: ./results/testsuites/crafty_test_FrankyCPP_v1.7.0-v1.7_20260327_104142.json
+
+[6/8]
+==================================================================
+Running Test Suite: ecm98 (parallel: 4 workers)
+==================================================================
+EPD Path:          test/testsets/ecm98.epd
+Time per Move:     5000ms
+Max Depth:         99
+Engine:            Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe
+Position Isolation: enabled
+
+Parsing EPD file...
+Loaded 769 test positions
+
+Creating 4 UCI engine instances...
+UCI engine initialized: FrankyCPP v1.7.0
+UCI engine initialized: FrankyCPP v1.7.0
+UCI engine initialized: FrankyCPP v1.7.0
+UCI engine initialized: FrankyCPP v1.7.0
+Engine: FrankyCPP v1.7.0
+
+Starting ThreadPool with 4 workers...
+  Progress: 500/769 (65%) [396 passed, 104 failed]ERROR: Timeout waiting for engine response
+ERROR: Engine search failed or timed out
+ERROR: Timeout waiting for engine response
+ERROR: Engine search failed or timed out
+ERROR: Timeout waiting for engine response
+ERROR: Engine search failed or timed out
+  Progress: 769/769 (100%) [571 passed, 198 failed]
+Shutting down UCI engines...
+
+
+------------------------------------------------------------------
+Test Suite Complete: ecm98 (parallel)
+  Engine:       FrankyCPP v1.7.0 v1.7
+  Total Tests:  769
+  Passed:       571 (74.2523%)
+  Failed:       198
+  Skipped:      0
+  Total Nodes:  21158933262
+  Engine Time:  3212189ms (sum of all positions)
+  Wall Time:    894189ms (actual elapsed)
+  Speedup:      3.59229x
+==================================================================
+  -> Saved: ./results/testsuites/ecm98_FrankyCPP_v1.7.0-v1.7_20260327_105636.json
+
+[7/8]
+==================================================================
+Running Test Suite: kaufman (parallel: 4 workers)
+==================================================================
+EPD Path:          test/testsets/kaufman.epd
+Time per Move:     5000ms
+Max Depth:         99
+Engine:            Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe
+Position Isolation: enabled
+
+Parsing EPD file...
+Loaded 25 test positions
+
+Creating 4 UCI engine instances...
+UCI engine initialized: FrankyCPP v1.7.0
+UCI engine initialized: FrankyCPP v1.7.0
+UCI engine initialized: FrankyCPP v1.7.0
+UCI engine initialized: FrankyCPP v1.7.0
+Engine: FrankyCPP v1.7.0
+
+Starting ThreadPool with 4 workers...
+  Progress: 25/25 (100%) [19 passed, 6 failed]
+Shutting down UCI engines...
+
+
+------------------------------------------------------------------
+Test Suite Complete: kaufman (parallel)
+  Engine:       FrankyCPP v1.7.0 v1.7
+  Total Tests:  25
+  Passed:       19 (76%)
+  Failed:       6
+  Skipped:      0
+  Total Nodes:  710139866
+  Engine Time:  108807ms (sum of all positions)
+  Wall Time:    31751ms (actual elapsed)
+  Speedup:      3.42688x
+==================================================================
+  -> Saved: ./results/testsuites/kaufman_FrankyCPP_v1.7.0-v1.7_20260327_105708.json
+
+[8/8]
+==================================================================
+Running Test Suite: eigenmann-rapid-engine (parallel: 4 workers)
+==================================================================
+EPD Path:          test/testsets/eigenmann-rapid-engine.epd
+Time per Move:     5000ms
+Max Depth:         99
+Engine:            Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe
+Position Isolation: enabled
+
+Parsing EPD file...
+[10:57:08:271915] [t:132492    ] [TSuite_Logger    ] [warning ]: Invalid fen FEN half move clock is not a number: - could not create position from: r1bqk1r1/1p1p1n2/p1n2pN1/2p1b2Q/2P1Pp2/1PN5/PB4PP/R4RK1 w q - - bm Rxf4; id "ERET 001 - Relief";
+[10:57:08:272392] [t:132492    ] [TSuite_Logger    ] [warning ]: Invalid fen FEN half move clock is not a number: - could not create position from: r3kbnr/1b3ppp/pqn5/1pp1P3/3p4/1BN2N2/PP2QPPP/R1BR2K1 w kq - - bm Bxf7; id "ERET 005 - Bishop Sacrifice f7";
+Loaded 109 test positions
+
+Creating 4 UCI engine instances...
+UCI engine initialized: FrankyCPP v1.7.0
+UCI engine initialized: FrankyCPP v1.7.0
+UCI engine initialized: FrankyCPP v1.7.0
+UCI engine initialized: FrankyCPP v1.7.0
+Engine: FrankyCPP v1.7.0
+
+Starting ThreadPool with 4 workers...
+  Progress: 109/109 (100%) [12 passed, 97 failed]
+Shutting down UCI engines...
+
+
+------------------------------------------------------------------
+Test Suite Complete: eigenmann-rapid-engine (parallel)
+  Engine:       FrankyCPP v1.7.0 v1.7
+  Total Tests:  109
+  Passed:       12 (11.0092%)
+  Failed:       97
+  Skipped:      0
+  Total Nodes:  2561592472
+  Engine Time:  452730ms (sum of all positions)
+  Wall Time:    126411ms (actual elapsed)
+  Speedup:      3.58141x
+==================================================================
+  -> Saved: ./results/testsuites/eigenmann-rapid-engine_FrankyCPP_v1.7.0-v1.7_20260327_105914.json
+
+===================================================================
+All Test Suites Complete
+===================================================================
+  franky_tests (FrankyCPP v1.7.0 v1.7): 13/13 passed (100%)
+  mate_test_suite (FrankyCPP v1.7.0 v1.7): 18/20 passed (90%)
+  wac (FrankyCPP v1.7.0 v1.7): 189/201 passed (94.0299%)
+  STS1-STS15_LAN (FrankyCPP v1.7.0 v1.7): 942/1500 passed (62.8%)
+  crafty_test (FrankyCPP v1.7.0 v1.7): 175/347 passed (50.4323%)
+  ecm98 (FrankyCPP v1.7.0 v1.7): 571/769 passed (74.2523%)
+  kaufman (FrankyCPP v1.7.0 v1.7): 19/25 passed (76%)
+  eigenmann-rapid-engine (FrankyCPP v1.7.0 v1.7): 12/109 passed (11.0092%)
+-------------------------------------------------------------------
+  TOTAL: 1939/2984 passed (64.9799%)
+  Total Nodes: 77510930450
+  Total Time:  12241834ms
+===================================================================
+
+===================================================================
+Test Suites Complete - 8 results saved
+===================================================================
+
+=== Arena Complete ===
+All operations finished successfully!

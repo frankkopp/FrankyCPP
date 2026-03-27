@@ -1,0 +1,11 @@
+{
+  "completedRounds": 180,
+  "draws": 58,
+  "engine1Name": "FrankyCPP v1.7.0",
+  "engine1Wins": 79,
+  "engine2Name": "FrankyCPP v1.6.0",
+  "engine2Wins": 43,
+  "matchName": "v1.7_vs_v1.6_300s",
+  "timestamp": "2026-03-27T21:40:13Z",
+  "totalRounds": 200
+}

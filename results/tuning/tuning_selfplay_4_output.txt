@@ -1,0 +1,275 @@
+
+PS D:\_DEV\FrankyCPP> .\cmake-build-win-release\src\FrankyCPP_v1.7_Tuner.exe `
+>>   --dataset test\testsets\tuning\selfplay_v1.7_50k_score.txt `
+>>   --output results\tuning\tuning_selfplay_4 `
+>>   --threads 16 --max-passes 50 --verbose
+FrankyCPP Texel Tuner v1.7.0
+============================
+
+Configuration:
+  Dataset:           test\testsets\tuning\selfplay_v1.7_50k_score.txt
+  Output:            results\tuning\tuning_selfplay_4
+  Threads:           16
+  Test split:        0.2
+  Max passes:        50
+  Verbose:           yes
+
+Logger initialized (warn / warn)
+Setting logger level to debug for logger Tuning_Logger
+Loading dataset: test\testsets\tuning\selfplay_v1.7_50k_score.txt
+[15:02:06:664809] [t:69412     ] [Tuning_Logger    ] [info    ]: Dataset loaded from: test\testsets\tuning\selfplay_v1.7_50k_score.txt
+[15:02:06:665531] [t:69412     ] [Tuning_Logger    ] [info    ]:   Entries:        4568763
+[15:02:06:665593] [t:69412     ] [Tuning_Logger    ] [info    ]:   Parsed OK:      4568763
+[15:02:06:665620] [t:69412     ] [Tuning_Logger    ] [info    ]:   Skipped:              0 (empty: 0, comment: 0, malformed: 0)
+[15:02:06:665651] [t:69412     ] [Tuning_Logger    ] [info    ]:   Elapsed:           7192 ms
+Dataset loaded: 4568763 positions from test\testsets\tuning\selfplay_v1.7_50k_score.txt (7192 ms)
+  Loaded 4568763 positions (parsed: 4568763, skipped: 0)
+
+Train/test split:
+  Train set: 3655011 positions (80%)
+  Test set:  913752 positions (20%)
+
+Applying eval overrides for tuning...
+  Lazy eval:   disabled
+  Pawn TT:     disabled
+  Space eval:  enabled
+
+Creating 16 evaluator(s)...
+
+[15:02:06:907595] [t:69412     ] [Tuning_Logger    ] [info    ]: Created 16 evaluator(s) with thread pool for parallel MSE
+Tunable parameters: 122
+
+Tuning scaling constant K...
+  K iteration 10/50: K = 1.008510 [0.995504, 1.021516], MSE = 0.0917759927
+  K iteration 20/50: K = 1.009211 [1.008985, 1.009436], MSE = 0.0917759820
+  K iteration 30/50: K = 1.009253 [1.009249, 1.009257], MSE = 0.0917759820
+  K iteration 40/50: K = 1.009253 [1.009253, 1.009253], MSE = 0.0917759820
+  K iteration 50/50: K = 1.009253 [1.009253, 1.009253], MSE = 0.0917759820
+  Optimal K: 1.009253 (found in 387.2s)
+
+Checkpoint file: results\tuning\tuning_selfplay_4_checkpoint.yaml
+
+Starting coordinate descent optimization...
+  Max passes: 50
+  Start pass: 0
+----------------------------------------------------------------------
+Computing activation flags for 3655011 positions...
+[15:08:38:177483] [t:69412     ] [Tuning_Logger    ] [info    ]: Activation flags computed for 3655011 entries
+  Activation flags computed.
+[15:08:38:214301] [t:69412     ] [Tuning_Logger    ] [debug   ]:   Group  0: 3655011/3655011 entries active (100.0%)
+[15:08:38:214361] [t:69412     ] [Tuning_Logger    ] [debug   ]:   Group  1: 3652248/3655011 entries active (99.9%)
+[15:08:38:214396] [t:69412     ] [Tuning_Logger    ] [debug   ]:   Group  2: 3652248/3655011 entries active (99.9%)
+[15:08:38:214423] [t:69412     ] [Tuning_Logger    ] [debug   ]:   Group  3: 3652248/3655011 entries active (99.9%)
+[15:08:38:214441] [t:69412     ] [Tuning_Logger    ] [debug   ]:   Group  4: 985634/3655011 entries active (27.0%)
+[15:08:38:214457] [t:69412     ] [Tuning_Logger    ] [debug   ]:   Group  5: 2215265/3655011 entries active (60.6%)
+[15:08:38:214475] [t:69412     ] [Tuning_Logger    ] [debug   ]:   Group  6: 2653484/3655011 entries active (72.6%)
+[15:08:38:214500] [t:69412     ] [Tuning_Logger    ] [debug   ]:   Group  7: 3053553/3655011 entries active (83.5%)
+[15:08:38:214545] [t:69412     ] [Tuning_Logger    ] [debug   ]:   Group  8: 1721545/3655011 entries active (47.1%)
+[15:08:38:214564] [t:69412     ] [Tuning_Logger    ] [debug   ]:   Group  9: 3655011/3655011 entries active (100.0%)
+[15:08:38:214580] [t:69412     ] [Tuning_Logger    ] [debug   ]:   Group 10: 3616985/3655011 entries active (99.0%)
+[15:08:38:214595] [t:69412     ] [Tuning_Logger    ] [debug   ]:   Group 11: 3652248/3655011 entries active (99.9%)
+[15:08:38:214610] [t:69412     ] [Tuning_Logger    ] [debug   ]:   Group 12: 2098142/3655011 entries active (57.4%)
+Computing initial error cache...
+  Baseline train MSE: 0.0917759820
+[15:08:42:089611] [t:69412     ] [Tuning_Logger    ] [info    ]: Coordinate descent: 122 params, 3655011 positions, K = 1.009253
+[15:08:42:089663] [t:69412     ] [Tuning_Logger    ] [info    ]: Baseline train MSE: 0.0917759820
+[15:08:43:048157] [t:69412     ] [Tuning_Logger    ] [info    ]: Baseline test MSE:  0.0900023426
+[15:31:41:402769] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass   1: train MSE = 0.0904760418, test MSE = 0.0886556955, changed = 102/122, biggest = ROOK_MOBILITY_END_PER_MOVE (d1.16e-04), 1377.3s
+Pass   1: train MSE = 0.0904760418, test MSE = 0.0886556955, changed = 102/122, biggest = ROOK_MOBILITY_END_PER_MOVE (d1.16e-04), 1377.3s
+[15:31:41:403732] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 1, train MSE 0.0904760418)
+[15:51:45:635690] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass   2: train MSE = 0.0897108726, test MSE = 0.0878489399, changed =  97/122, biggest = ROOK_MOBILITY_END_PER_MOVE (d7.63e-05), 1203.2s
+Pass   2: train MSE = 0.0897108726, test MSE = 0.0878489399, changed =  97/122, biggest = ROOK_MOBILITY_END_PER_MOVE (d7.63e-05), 1203.2s
+[15:51:45:636604] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 2, train MSE 0.0897108726)
+[16:14:54:495760] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass   3: train MSE = 0.0892237620, test MSE = 0.0873637898, changed =  95/122, biggest = SPACE_BONUS_MID (d5.51e-05), 1387.7s
+Pass   3: train MSE = 0.0892237620, test MSE = 0.0873637898, changed =  95/122, biggest = SPACE_BONUS_MID (d5.51e-05), 1387.7s
+[16:14:54:497144] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 3, train MSE 0.0892237620)
+[16:38:00:456346] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass   4: train MSE = 0.0888225362, test MSE = 0.0870162617, changed =  89/122, biggest = SPACE_BONUS_MID (d4.16e-05), 1384.9s
+Pass   4: train MSE = 0.0888225362, test MSE = 0.0870162617, changed =  89/122, biggest = SPACE_BONUS_MID (d4.16e-05), 1384.9s
+[16:38:00:457794] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 4, train MSE 0.0888225362)
+[16:59:44:767560] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass   5: train MSE = 0.0885095849, test MSE = 0.0867311011, changed =  84/122, biggest = QUEEN_MOBILITY_END_PER_MOVE (d3.92e-05), 1303.5s
+Pass   5: train MSE = 0.0885095849, test MSE = 0.0867311011, changed =  84/122, biggest = QUEEN_MOBILITY_END_PER_MOVE (d3.92e-05), 1303.5s
+[16:59:44:768821] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 5, train MSE 0.0885095849)
+[17:21:07:216558] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass   6: train MSE = 0.0882899298, test MSE = 0.0865360682, changed =  82/122, biggest = TEMPO (d2.86e-05), 1281.3s
+Pass   6: train MSE = 0.0882899298, test MSE = 0.0865360682, changed =  82/122, biggest = TEMPO (d2.86e-05), 1281.3s
+[17:21:07:217893] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 6, train MSE 0.0882899298)
+[17:39:20:908078] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass   7: train MSE = 0.0881205244, test MSE = 0.0863936353, changed =  76/122, biggest = TEMPO (d2.65e-05), 1092.8s
+Pass   7: train MSE = 0.0881205244, test MSE = 0.0863936353, changed =  76/122, biggest = TEMPO (d2.65e-05), 1092.8s
+[17:39:20:909115] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 7, train MSE 0.0881205244)
+[17:56:03:579665] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass   8: train MSE = 0.0879706354, test MSE = 0.0862625940, changed =  69/122, biggest = TEMPO (d2.50e-05), 1001.5s
+Pass   8: train MSE = 0.0879706354, test MSE = 0.0862625940, changed =  69/122, biggest = TEMPO (d2.50e-05), 1001.5s
+[17:56:03:581065] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 8, train MSE 0.0879706354)
+[18:18:19:402881] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass   9: train MSE = 0.0878505715, test MSE = 0.0861632325, changed =  74/122, biggest = TEMPO (d2.37e-05), 1334.9s
+Pass   9: train MSE = 0.0878505715, test MSE = 0.0861632325, changed =  74/122, biggest = TEMPO (d2.37e-05), 1334.9s
+[18:18:19:403757] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 9, train MSE 0.0878505715)
+[18:35:03:190050] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  10: train MSE = 0.0877556994, test MSE = 0.0860786458, changed =  65/122, biggest = TEMPO (d2.21e-05), 1002.9s
+Pass  10: train MSE = 0.0877556994, test MSE = 0.0860786458, changed =  65/122, biggest = TEMPO (d2.21e-05), 1002.9s
+[18:35:03:191211] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 10, train MSE 0.0877556994)
+[18:53:12:438536] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  11: train MSE = 0.0876652004, test MSE = 0.0859858403, changed =  67/122, biggest = TEMPO (d2.09e-05), 1088.1s
+Pass  11: train MSE = 0.0876652004, test MSE = 0.0859858403, changed =  67/122, biggest = TEMPO (d2.09e-05), 1088.1s
+[18:53:12:439881] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 11, train MSE 0.0876652004)
+[19:14:06:693725] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  12: train MSE = 0.0875952842, test MSE = 0.0859244786, changed =  60/122, biggest = TEMPO (d1.96e-05), 1253.1s
+Pass  12: train MSE = 0.0875952842, test MSE = 0.0859244786, changed =  60/122, biggest = TEMPO (d1.96e-05), 1253.1s
+[19:14:06:695087] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 12, train MSE 0.0875952842)
+[19:36:20:349859] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  13: train MSE = 0.0875312339, test MSE = 0.0858666237, changed =  57/122, biggest = TEMPO (d1.86e-05), 1332.5s
+Pass  13: train MSE = 0.0875312339, test MSE = 0.0858666237, changed =  57/122, biggest = TEMPO (d1.86e-05), 1332.5s
+[19:36:20:351058] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 13, train MSE 0.0875312339)
+[19:57:59:038316] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  14: train MSE = 0.0874743977, test MSE = 0.0858187473, changed =  64/122, biggest = TEMPO (d1.74e-05), 1297.5s
+Pass  14: train MSE = 0.0874743977, test MSE = 0.0858187473, changed =  64/122, biggest = TEMPO (d1.74e-05), 1297.5s
+[19:57:59:039578] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 14, train MSE 0.0874743977)
+[20:18:54:228006] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  15: train MSE = 0.0874211916, test MSE = 0.0857718321, changed =  61/122, biggest = TEMPO (d1.66e-05), 1254.0s
+Pass  15: train MSE = 0.0874211916, test MSE = 0.0857718321, changed =  61/122, biggest = TEMPO (d1.66e-05), 1254.0s
+[20:18:54:229338] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 15, train MSE 0.0874211916)
+[20:39:36:038879] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  16: train MSE = 0.0873800352, test MSE = 0.0857326040, changed =  53/122, biggest = TEMPO (d1.57e-05), 1240.7s
+Pass  16: train MSE = 0.0873800352, test MSE = 0.0857326040, changed =  53/122, biggest = TEMPO (d1.57e-05), 1240.7s
+[20:39:36:040190] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 16, train MSE 0.0873800352)
+[20:59:22:827092] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  17: train MSE = 0.0873420214, test MSE = 0.0856873419, changed =  51/122, biggest = TEMPO (d1.45e-05), 1185.6s
+Pass  17: train MSE = 0.0873420214, test MSE = 0.0856873419, changed =  51/122, biggest = TEMPO (d1.45e-05), 1185.6s
+[20:59:22:828222] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 17, train MSE 0.0873420214)
+[21:19:13:978941] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  18: train MSE = 0.0873049980, test MSE = 0.0856610367, changed =  43/122, biggest = TEMPO (d1.36e-05), 1190.0s
+Pass  18: train MSE = 0.0873049980, test MSE = 0.0856610367, changed =  43/122, biggest = TEMPO (d1.36e-05), 1190.0s
+[21:19:13:980408] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 18, train MSE 0.0873049980)
+[21:39:27:932828] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  19: train MSE = 0.0872730634, test MSE = 0.0856296191, changed =  47/122, biggest = TEMPO (d1.18e-05), 1212.8s
+Pass  19: train MSE = 0.0872730634, test MSE = 0.0856296191, changed =  47/122, biggest = TEMPO (d1.18e-05), 1212.8s
+[21:39:27:934090] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 19, train MSE 0.0872730634)
+[21:59:42:831843] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  20: train MSE = 0.0872448468, test MSE = 0.0856006197, changed =  53/122, biggest = TEMPO (d1.09e-05), 1213.7s
+Pass  20: train MSE = 0.0872448468, test MSE = 0.0856006197, changed =  53/122, biggest = TEMPO (d1.09e-05), 1213.7s
+[21:59:42:833082] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 20, train MSE 0.0872448468)
+[22:19:02:918953] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  21: train MSE = 0.0872172224, test MSE = 0.0855839943, changed =  43/122, biggest = TEMPO (d9.90e-06), 1158.9s
+Pass  21: train MSE = 0.0872172224, test MSE = 0.0855839943, changed =  43/122, biggest = TEMPO (d9.90e-06), 1158.9s
+[22:19:02:920159] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 21, train MSE 0.0872172224)
+[22:37:22:290968] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  22: train MSE = 0.0871947542, test MSE = 0.0855630682, changed =  34/122, biggest = TEMPO (d9.11e-06), 1098.4s
+Pass  22: train MSE = 0.0871947542, test MSE = 0.0855630682, changed =  34/122, biggest = TEMPO (d9.11e-06), 1098.4s
+[22:37:22:292197] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 22, train MSE 0.0871947542)
+[22:52:17:682327] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  23: train MSE = 0.0871741675, test MSE = 0.0855380886, changed =  42/122, biggest = TEMPO (d7.92e-06), 894.5s
+Pass  23: train MSE = 0.0871741675, test MSE = 0.0855380886, changed =  42/122, biggest = TEMPO (d7.92e-06), 894.5s
+[22:52:17:683571] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 23, train MSE 0.0871741675)
+[23:08:03:086357] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  24: train MSE = 0.0871534585, test MSE = 0.0855234878, changed =  42/122, biggest = TEMPO (d6.93e-06), 944.5s
+Pass  24: train MSE = 0.0871534585, test MSE = 0.0855234878, changed =  42/122, biggest = TEMPO (d6.93e-06), 944.5s
+[23:08:03:087677] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 24, train MSE 0.0871534585)
+[23:22:32:840532] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  25: train MSE = 0.0871368061, test MSE = 0.0855128843, changed =  40/122, biggest = TEMPO (d5.30e-06), 868.8s
+Pass  25: train MSE = 0.0871368061, test MSE = 0.0855128843, changed =  40/122, biggest = TEMPO (d5.30e-06), 868.8s
+[23:22:32:841296] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 25, train MSE 0.0871368061)
+[23:37:17:361438] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  26: train MSE = 0.0871219938, test MSE = 0.0854867712, changed =  39/122, biggest = TEMPO (d4.60e-06), 883.6s
+Pass  26: train MSE = 0.0871219938, test MSE = 0.0854867712, changed =  39/122, biggest = TEMPO (d4.60e-06), 883.6s
+[23:37:17:362326] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 26, train MSE 0.0871219938)
+[23:51:58:283939] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  27: train MSE = 0.0871070849, test MSE = 0.0854827087, changed =  39/122, biggest = TEMPO (d3.37e-06), 880.0s
+Pass  27: train MSE = 0.0871070849, test MSE = 0.0854827087, changed =  39/122, biggest = TEMPO (d3.37e-06), 880.0s
+[23:51:58:285144] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 27, train MSE 0.0871070849)
+[00:06:30:116118] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  28: train MSE = 0.0870963128, test MSE = 0.0854763227, changed =  36/122, biggest = TEMPO (d2.28e-06), 870.9s
+Pass  28: train MSE = 0.0870963128, test MSE = 0.0854763227, changed =  36/122, biggest = TEMPO (d2.28e-06), 870.9s
+[00:06:30:116935] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 28, train MSE 0.0870963128)
+[00:21:04:627596] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  29: train MSE = 0.0870864612, test MSE = 0.0854560874, changed =  36/122, biggest = KING_OPP_PASSED_PROXIMITY_END (d1.48e-06), 873.6s
+Pass  29: train MSE = 0.0870864612, test MSE = 0.0854560874, changed =  36/122, biggest = KING_OPP_PASSED_PROXIMITY_END (d1.48e-06), 873.6s
+[00:21:04:628824] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 29, train MSE 0.0870864612)
+[00:35:49:802630] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  30: train MSE = 0.0870774440, test MSE = 0.0854551632, changed =  38/122, biggest = PASSED_PAWN_RANK_END_BONUS[3] (d1.50e-06), 884.2s
+Pass  30: train MSE = 0.0870774440, test MSE = 0.0854551632, changed =  38/122, biggest = PASSED_PAWN_RANK_END_BONUS[3] (d1.50e-06), 884.2s
+[00:35:49:803609] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 30, train MSE 0.0870774440)
+[00:50:18:694205] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  31: train MSE = 0.0870707186, test MSE = 0.0854563041, changed =  33/122, biggest = PASSED_PAWN_RANK_END_BONUS[3] (d1.34e-06), 867.9s
+Pass  31: train MSE = 0.0870707186, test MSE = 0.0854563041, changed =  33/122, biggest = PASSED_PAWN_RANK_END_BONUS[3] (d1.34e-06), 867.9s
+[00:50:18:695393] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 31, train MSE 0.0870707186)
+[01:04:36:338503] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  32: train MSE = 0.0870652915, test MSE = 0.0854490661, changed =  30/122, biggest = PASSED_PAWN_RANK_END_BONUS[3] (d1.17e-06), 856.7s
+Pass  32: train MSE = 0.0870652915, test MSE = 0.0854490661, changed =  30/122, biggest = PASSED_PAWN_RANK_END_BONUS[3] (d1.17e-06), 856.7s
+[01:04:36:339373] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 32, train MSE 0.0870652915)
+[01:19:06:592750] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  33: train MSE = 0.0870601093, test MSE = 0.0854457662, changed =  34/122, biggest = PASSED_PAWN_RANK_END_BONUS[3] (d1.10e-06), 869.3s
+Pass  33: train MSE = 0.0870601093, test MSE = 0.0854457662, changed =  34/122, biggest = PASSED_PAWN_RANK_END_BONUS[3] (d1.10e-06), 869.3s
+[01:19:06:593880] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 33, train MSE 0.0870601093)
+[01:33:12:984845] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  34: train MSE = 0.0870550055, test MSE = 0.0854300573, changed =  28/122, biggest = PASSED_PAWN_RANK_END_BONUS[3] (d1.01e-06), 845.5s
+Pass  34: train MSE = 0.0870550055, test MSE = 0.0854300573, changed =  28/122, biggest = PASSED_PAWN_RANK_END_BONUS[3] (d1.01e-06), 845.5s
+[01:33:12:986172] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 34, train MSE 0.0870550055)
+[01:47:39:737930] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  35: train MSE = 0.0870482447, test MSE = 0.0854320422, changed =  31/122, biggest = PASSED_PAWN_END_WEIGHT (d1.53e-06), 865.8s
+Pass  35: train MSE = 0.0870482447, test MSE = 0.0854320422, changed =  31/122, biggest = PASSED_PAWN_END_WEIGHT (d1.53e-06), 865.8s
+[01:47:39:738939] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 35, train MSE 0.0870482447)
+[02:02:12:227445] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  36: train MSE = 0.0870438433, test MSE = 0.0854340469, changed =  34/122, biggest = PASSED_PAWN_RANK_END_BONUS[3] (d9.23e-07), 871.6s
+Pass  36: train MSE = 0.0870438433, test MSE = 0.0854340469, changed =  34/122, biggest = PASSED_PAWN_RANK_END_BONUS[3] (d9.23e-07), 871.6s
+[02:02:12:228186] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 36, train MSE 0.0870438433)
+[02:16:03:162385] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  37: train MSE = 0.0870409735, test MSE = 0.0854331887, changed =  23/122, biggest = PASSED_PAWN_RANK_MID_BONUS[3] (d7.93e-07), 830.0s
+Pass  37: train MSE = 0.0870409735, test MSE = 0.0854331887, changed =  23/122, biggest = PASSED_PAWN_RANK_MID_BONUS[3] (d7.93e-07), 830.0s
+[02:16:03:163245] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 37, train MSE 0.0870409735)
+[02:30:45:314195] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  38: train MSE = 0.0870348576, test MSE = 0.0854313178, changed =  38/122, biggest = ROOK_OPEN_FILE_END_BONUS (d1.41e-06), 881.2s
+Pass  38: train MSE = 0.0870348576, test MSE = 0.0854313178, changed =  38/122, biggest = ROOK_OPEN_FILE_END_BONUS (d1.41e-06), 881.2s
+[02:30:45:315079] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 38, train MSE 0.0870348576)
+[02:45:42:916109] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  39: train MSE = 0.0870272587, test MSE = 0.0854177826, changed =  44/122, biggest = BISHOP_MOBILITY_END_PER_MOVE (d2.24e-06), 896.7s
+Pass  39: train MSE = 0.0870272587, test MSE = 0.0854177826, changed =  44/122, biggest = BISHOP_MOBILITY_END_PER_MOVE (d2.24e-06), 896.7s
+[02:45:42:917412] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 39, train MSE 0.0870272587)
+[02:59:43:752213] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  40: train MSE = 0.0870243149, test MSE = 0.0854167247, changed =  27/122, biggest = PASSED_PAWN_RANK_MID_BONUS[3] (d5.79e-07), 839.9s
+Pass  40: train MSE = 0.0870243149, test MSE = 0.0854167247, changed =  27/122, biggest = PASSED_PAWN_RANK_MID_BONUS[3] (d5.79e-07), 839.9s
+[02:59:43:752962] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 40, train MSE 0.0870243149)
+[03:13:43:597488] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  41: train MSE = 0.0870212385, test MSE = 0.0854074197, changed =  25/122, biggest = KING_OPP_PASSED_PROXIMITY_END (d6.01e-07), 838.9s
+Pass  41: train MSE = 0.0870212385, test MSE = 0.0854074197, changed =  25/122, biggest = KING_OPP_PASSED_PROXIMITY_END (d6.01e-07), 838.9s
+[03:13:43:598335] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 41, train MSE 0.0870212385)
+[03:27:54:533915] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  42: train MSE = 0.0870167863, test MSE = 0.0854079299, changed =  29/122, biggest = PASSED_PAWN_END_WEIGHT (d9.35e-07), 850.0s
+Pass  42: train MSE = 0.0870167863, test MSE = 0.0854079299, changed =  29/122, biggest = PASSED_PAWN_END_WEIGHT (d9.35e-07), 850.0s
+[03:27:54:534779] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 42, train MSE 0.0870167863)
+[03:42:09:013722] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  43: train MSE = 0.0870148550, test MSE = 0.0854064149, changed =  29/122, biggest = PASSED_PAWN_RANK_MID_BONUS[3] (d3.41e-07), 853.6s
+Pass  43: train MSE = 0.0870148550, test MSE = 0.0854064149, changed =  29/122, biggest = PASSED_PAWN_RANK_MID_BONUS[3] (d3.41e-07), 853.6s
+[03:42:09:014892] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 43, train MSE 0.0870148550)
+[03:56:04:472945] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  44: train MSE = 0.0870127504, test MSE = 0.0854093456, changed =  23/122, biggest = PASSED_PAWN_RANK_MID_BONUS[3] (d4.32e-07), 834.5s
+Pass  44: train MSE = 0.0870127504, test MSE = 0.0854093456, changed =  23/122, biggest = PASSED_PAWN_RANK_MID_BONUS[3] (d4.32e-07), 834.5s
+[03:56:04:473796] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 44, train MSE 0.0870127504)
+[04:09:45:391150] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  45: train MSE = 0.0870106704, test MSE = 0.0854001255, changed =  20/122, biggest = SPACE_BONUS_END (d6.71e-07), 820.0s
+Pass  45: train MSE = 0.0870106704, test MSE = 0.0854001255, changed =  20/122, biggest = SPACE_BONUS_END (d6.71e-07), 820.0s
+[04:09:45:391918] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 45, train MSE 0.0870106704)
+[04:23:52:977501] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  46: train MSE = 0.0870069577, test MSE = 0.0854003459, changed =  27/122, biggest = PASSED_PAWN_END_WEIGHT (d7.21e-07), 846.7s
+Pass  46: train MSE = 0.0870069577, test MSE = 0.0854003459, changed =  27/122, biggest = PASSED_PAWN_END_WEIGHT (d7.21e-07), 846.7s
+[04:23:52:978578] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 46, train MSE 0.0870069577)
+[04:38:31:652378] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  47: train MSE = 0.0870047715, test MSE = 0.0854000856, changed =  36/122, biggest = THREAT_BY_MINOR_ROOK_MID (d2.55e-07), 877.7s
+Pass  47: train MSE = 0.0870047715, test MSE = 0.0854000856, changed =  36/122, biggest = THREAT_BY_MINOR_ROOK_MID (d2.55e-07), 877.7s
+[04:38:31:656986] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 47, train MSE 0.0870047715)
+[04:52:26:185143] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  48: train MSE = 0.0870026982, test MSE = 0.0853986035, changed =  22/122, biggest = PASSED_PAWN_RANK_MID_BONUS[3] (d3.13e-07), 833.6s
+Pass  48: train MSE = 0.0870026982, test MSE = 0.0853986035, changed =  22/122, biggest = PASSED_PAWN_RANK_MID_BONUS[3] (d3.13e-07), 833.6s
+[04:52:26:186370] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 48, train MSE 0.0870026982)
+[05:05:57:330019] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  49: train MSE = 0.0870018485, test MSE = 0.0854015743, changed =  16/122, biggest = THREAT_BY_MINOR_ROOK_MID (d2.42e-07), 810.2s
+Pass  49: train MSE = 0.0870018485, test MSE = 0.0854015743, changed =  16/122, biggest = THREAT_BY_MINOR_ROOK_MID (d2.42e-07), 810.2s
+[05:05:57:331189] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 49, train MSE 0.0870018485)
+[05:19:47:694965] [t:69412     ] [Tuning_Logger    ] [info    ]: Pass  50: train MSE = 0.0870002812, test MSE = 0.0854002137, changed =  23/122, biggest = PASSED_PAWN_RANK_END_BONUS[0] (d2.98e-07), 829.4s
+Pass  50: train MSE = 0.0870002812, test MSE = 0.0854002137, changed =  23/122, biggest = PASSED_PAWN_RANK_END_BONUS[0] (d2.98e-07), 829.4s
+[05:19:47:696141] [t:69412     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_selfplay_4_checkpoint.yaml (122 params, pass 50, train MSE 0.0870002812)
+[05:19:47:696236] [t:69412     ] [Tuning_Logger    ] [info    ]: Coordinate descent complete: 50 passes, final train MSE = 0.0870002812, improvement = 4.78e-03, total time = 51063.7s
+
+======================================================================
+TUNING COMPLETE
+======================================================================
+  K:                 1.009253
+  Parameters tuned:  122
+  Optimization time: 51072.7s
+  Total time:        51467.4s
+
+Writing tuned parameters: results\tuning\tuning_selfplay_4.yaml
+[05:19:47:697908] [t:69412     ] [Tuning_Logger    ] [info    ]: Tuned parameters written to: results\tuning\tuning_selfplay_4.yaml
+Writing comparison report: results\tuning\tuning_selfplay_4_comparison.txt
+[05:19:47:698412] [t:69412     ] [Tuning_Logger    ] [info    ]: Comparison report written to: results\tuning\tuning_selfplay_4_comparison.txt
+
+Parameter Summary:
+  Changed:       99/122
+  Sign-flipped:  6 (WARNING - review these!)
+  Zeroed out:    14 (candidates for removal)
+
+  Top 20 parameter changes:
+  Parameter                                     Original    Tuned    Delta
+  ---------------------------------------------------------------------
+  PASSED_PAWN_RANK_MID_BONUS[0]                        0      -50      -50
+  PASSED_PAWN_RANK_MID_BONUS[3]                       15       65      +50
+  THREAT_BY_MINOR_ROOK_MID                             5       55      +50
+  PASSED_PAWN_RANK_END_BONUS[3]                       35       84      +49
+  KING_SAFETY_TABLE[12]                              300      348      +48
+  KING_SAFETY_TABLE[11]                              260      307      +47
+  KING_SAFETY_TABLE[9]                               180      135      -45
+  CONNECTED_ROOKS_END_BONUS                            5       46      +41
+  KING_SAFETY_TABLE[13]                              340      380      +40
+  THREAT_BY_PAWN_MINOR_MID                             5       44      +39
+  THREAT_BY_PAWN_ROOK_MID                             10       48      +38
+  PASSED_PAWN_RANK_END_BONUS[1]                        5       41      +36
+  PASSED_PAWN_RANK_END_BONUS[2]                       15       51      +36
+  PASSED_PAWN_RANK_MID_BONUS[4]                       35       70      +35
+  THREAT_HANGING_END                                  10       43      +33
+  PASSED_PAWN_RANK_MID_BONUS[1]                        0      -33      -33
+  PASSED_PAWN_RANK_END_BONUS[4]                       70      101      +31
+  TEMPO                                               34        4      -30
+  PASSED_PAWN_END_WEIGHT                              40       69      +29
+  KNIGHT_OUTPOST_UNSUPPORTED_MID                      10       39      +29
+
+Output files:
+  Tuned params:      results\tuning\tuning_selfplay_4.yaml
+  Comparison report: results\tuning\tuning_selfplay_4_comparison.txt
+  Checkpoint:        results\tuning\tuning_selfplay_4_checkpoint.yaml
+PS D:\_DEV\FrankyCPP>

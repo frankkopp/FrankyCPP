@@ -1,0 +1,3150 @@
+{
+  "arenaVersion": "v1.7",
+  "details": [
+    {
+      "actual": "e1g1",
+      "expected": "bm h2h3",
+      "fen": "rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -",
+      "nodes": 25805659,
+      "passed": false,
+      "testId": "Crafty Test Pos.1",
+      "timeMs": 4760
+    },
+    {
+      "actual": "b2b4",
+      "expected": "bm f3e5",
+      "fen": "r3k2r/pp2qppp/2n1pn2/bN5b/3P4/P3BN1P/1P2BPP1/R2Q1RK1 w kq -",
+      "nodes": 9152644,
+      "passed": false,
+      "testId": "Crafty Test Pos.2",
+      "timeMs": 1703
+    },
+    {
+      "actual": "f1d1",
+      "expected": "bm f1d1",
+      "fen": "2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - -",
+      "nodes": 27900166,
+      "passed": true,
+      "testId": "Crafty Test Pos.3",
+      "timeMs": 4930
+    },
+    {
+      "actual": "b5d6",
+      "expected": "bm b5d6",
+      "fen": "6rk/1p3p1p/2n2q2/1NQ2p2/3p4/PP5P/5PP1/2R3K1 w - -",
+      "nodes": 28620846,
+      "passed": true,
+      "testId": "Crafty Test Pos.4",
+      "timeMs": 4646
+    },
+    {
+      "actual": "d6f7",
+      "expected": "bm d6f7",
+      "fen": "7k/2R2p1p/3N1q2/3Q4/3p4/PP3pPP/5n1K/4r3 w - -",
+      "nodes": 33738074,
+      "passed": true,
+      "testId": "Crafty Test Pos.5",
+      "timeMs": 4958
+    },
+    {
+      "actual": "f3e5",
+      "expected": "bm f3e5",
+      "fen": "r1bqkb1r/pp3ppp/2n1pn2/2p5/2pP4/5NP1/PP2PPBP/RNBQ1RK1 w kq -",
+      "nodes": 12180075,
+      "passed": true,
+      "testId": "Crafty Test Pos.6",
+      "timeMs": 2369
+    },
+    {
+      "actual": "c1f4",
+      "expected": "bm e5c6",
+      "fen": "1r1q1rk1/p2b1ppp/3bpn2/4N3/3p4/5QP1/PP2PPBP/R1B2RK1 w - -",
+      "nodes": 26459571,
+      "passed": false,
+      "testId": "Crafty Test Pos.7",
+      "timeMs": 4907
+    },
+    {
+      "actual": "g2e4",
+      "expected": "bm a4d7",
+      "fen": "1q3rk1/p4p1p/1r3p2/4p3/Qb1p4/6P1/P3PPBP/1R3RK1 w - -",
+      "nodes": 23893150,
+      "passed": false,
+      "testId": "Crafty Test Pos.8",
+      "timeMs": 4353
+    },
+    {
+      "actual": "f1b1",
+      "expected": "bm e4h7",
+      "fen": "1r6/2q2pkp/5p2/4p3/3pB3/2bQ2P1/P3PP1P/5RK1 w - -",
+      "nodes": 29379191,
+      "passed": false,
+      "testId": "Crafty Test Pos.9",
+      "timeMs": 4962
+    },
+    {
+      "actual": "g4c8",
+      "expected": "bm g4c8",
+      "fen": "5k1q/5p2/5p2/4p3/3pB1QP/6P1/4PP2/b5K1 w - -",
+      "nodes": 21123943,
+      "passed": true,
+      "testId": "Crafty Test Pos.10",
+      "timeMs": 3289
+    },
+    {
+      "actual": "f3d5",
+      "expected": "bm f3d5",
+      "fen": "2q5/4kp2/5p2/4p3/2Bp3P/2b2QP1/4PP2/6K1 w - -",
+      "nodes": 26245876,
+      "passed": true,
+      "testId": "Crafty Test Pos.11",
+      "timeMs": 3773
+    },
+    {
+      "actual": "c4f7",
+      "expected": "bm c4f7",
+      "fen": "8/4kp2/3q4/4pp2/2Bp3P/2b3P1/Q3PP2/6K1 w - -",
+      "nodes": 13750321,
+      "passed": true,
+      "testId": "Crafty Test Pos.12",
+      "timeMs": 2190
+    },
+    {
+      "actual": "b8e8",
+      "expected": "bm b8c7",
+      "fen": "1Q6/4k3/5q2/1B3p2/3pp2P/6P1/3bPP2/6K1 w - -",
+      "nodes": 22828586,
+      "passed": false,
+      "testId": "Crafty Test Pos.13",
+      "timeMs": 3335
+    },
+    {
+      "actual": "f1g2",
+      "expected": "bm c7c8",
+      "fen": "4k3/2Q5/5q2/5p2/2Bp1P1P/6P1/3b4/5K2 w - -",
+      "nodes": 29436492,
+      "passed": false,
+      "testId": "Crafty Test Pos.14",
+      "timeMs": 4391
+    },
+    {
+      "actual": "e7e5",
+      "expected": "bm e7d8",
+      "fen": "1k6/4Q3/2q5/5B2/3p1P1P/4b1P1/8/5K2 w - -",
+      "nodes": 29916553,
+      "passed": false,
+      "testId": "Crafty Test Pos.15",
+      "timeMs": 4292
+    },
+    {
+      "actual": "e1g1",
+      "expected": "bm e1g1",
+      "fen": "rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -",
+      "nodes": 15653744,
+      "passed": true,
+      "testId": "Crafty Test Pos.16",
+      "timeMs": 2970
+    },
+    {
+      "actual": "b2c3",
+      "expected": "bm b2c3",
+      "fen": "r3k2r/pp3ppp/2nqpn2/4N3/3P4/P1b1B3/1P2QPPP/R4RK1 w kq -",
+      "nodes": 20520855,
+      "passed": true,
+      "testId": "Crafty Test Pos.17",
+      "timeMs": 3942
+    },
+    {
+      "actual": "f4b8",
+      "expected": "bm f4b8",
+      "fen": "4k2r/p4ppp/1p2pn2/8/2rP1B2/P1P5/5PPP/RR4K1 w k -",
+      "nodes": 25521358,
+      "passed": true,
+      "testId": "Crafty Test Pos.18",
+      "timeMs": 4517
+    },
+    {
+      "actual": "f2f3",
+      "expected": "bm f1e2",
+      "fen": "r5k1/5ppp/p1RBpn2/1p6/r2P4/P1P5/5PPP/1R3K2 w - -",
+      "nodes": 28490531,
+      "passed": false,
+      "testId": "Crafty Test Pos.19",
+      "timeMs": 4962
+    },
+    {
+      "actual": "c3d4",
+      "expected": "bm c3d4",
+      "fen": "8/3r1pk1/p1R2p2/1p5p/r2p4/PRP1K1P1/5P1P/8 w - -",
+      "nodes": 9736827,
+      "passed": true,
+      "testId": "Crafty Test Pos.20",
+      "timeMs": 1614
+    },
+    {
+      "actual": "e1g1",
+      "expected": "bm e3e4",
+      "fen": "r1bqk2r/pp1n1ppp/2pbpn2/3p4/2PP4/3BPN2/PP1N1PPP/R1BQK2R w KQkq -",
+      "nodes": 23199520,
+      "passed": false,
+      "testId": "Crafty Test Pos.21",
+      "timeMs": 4397
+    },
+    {
+      "actual": "d4c3",
+      "expected": "bm d4c3",
+      "fen": "r1bq1rk1/pp1n1pp1/2p4p/2b5/2PQ4/5N2/PPB2PPP/R1B1R1K1 w - -",
+      "nodes": 25106168,
+      "passed": true,
+      "testId": "Crafty Test Pos.22",
+      "timeMs": 4789
+    },
+    {
+      "actual": "h2h3",
+      "expected": "bm h2h3",
+      "fen": "r1q1r1k1/1p3pp1/2p1bn1p/p3N3/2P2P2/P1Q1R3/1PB3PP/4R1K1 w - -",
+      "nodes": 11500914,
+      "passed": true,
+      "testId": "Crafty Test Pos.23",
+      "timeMs": 2212
+    },
+    {
+      "actual": "c4g4",
+      "expected": "bm c4g4",
+      "fen": "r5k1/3q1pp1/2p4p/p2nQP2/2R5/P6P/1PB3P1/6K1 w - -",
+      "nodes": 19060311,
+      "passed": true,
+      "testId": "Crafty Test Pos.24",
+      "timeMs": 3191
+    },
+    {
+      "actual": "c6d5",
+      "expected": "bm e4c4",
+      "fen": "1q1r4/6pk/2B2p1p/p2n1P2/2p1R3/P6P/1P3QP1/7K w - -",
+      "nodes": 27401428,
+      "passed": false,
+      "testId": "Crafty Test Pos.25",
+      "timeMs": 4499
+    },
+    {
+      "actual": "a5a3",
+      "expected": "bm a5e5",
+      "fen": "3r4/5qpk/5p1p/R3nP2/8/5BQP/6P1/7K w - -",
+      "nodes": 26280095,
+      "passed": false,
+      "testId": "Crafty Test Pos.26",
+      "timeMs": 4429
+    },
+    {
+      "actual": "g6f7",
+      "expected": "bm g6h5",
+      "fen": "r6k/2Q3p1/6Bp/5P2/3q4/7P/6PK/8 w - -",
+      "nodes": 23163856,
+      "passed": false,
+      "testId": "Crafty Test Pos.27",
+      "timeMs": 3575
+    },
+    {
+      "actual": "f1d3",
+      "expected": "bm f1d3",
+      "fen": "r1bqk2r/p1pp1ppp/2p2n2/8/1b2P3/2N5/PPP2PPP/R1BQKB1R w KQkq -",
+      "nodes": 25817673,
+      "passed": true,
+      "testId": "Crafty Test Pos.28",
+      "timeMs": 4711
+    },
+    {
+      "actual": "g5f4",
+      "expected": "bm g5f4",
+      "fen": "r1bqr1k1/p3bpp1/2p2n1p/3p2B1/8/3B1Q2/PPP1NPPP/4RRK1 w - -",
+      "nodes": 24114553,
+      "passed": true,
+      "testId": "Crafty Test Pos.29",
+      "timeMs": 4682
+    },
+    {
+      "actual": "f4d2",
+      "expected": "bm f4d2",
+      "fen": "4r1k1/p2b1pp1/1q3n1p/3p4/3N1Q2/3B4/PP3PPP/5RK1 w - -",
+      "nodes": 26606907,
+      "passed": true,
+      "testId": "Crafty Test Pos.30",
+      "timeMs": 4900
+    },
+    {
+      "actual": "d1d2",
+      "expected": "bm d1d2",
+      "fen": "3r2k1/p4bp1/1q5p/8/3Npp2/1PQ5/P4PPP/3R2K1 w - -",
+      "nodes": 24857328,
+      "passed": true,
+      "testId": "Crafty Test Pos.31",
+      "timeMs": 4366
+    },
+    {
+      "actual": "f4e5",
+      "expected": "bm f4e5",
+      "fen": "8/p4bpk/7p/3rq3/3N1P2/PPQR1P2/6KP/4q3 w - -",
+      "nodes": 29675763,
+      "passed": true,
+      "testId": "Crafty Test Pos.32",
+      "timeMs": 4534
+    },
+    {
+      "actual": "f2e1",
+      "expected": "bm f2e1",
+      "fen": "8/p6k/7p/4P1p1/1Pb5/P3RP2/3r1K1P/8 w - -",
+      "nodes": 13982060,
+      "passed": true,
+      "testId": "Crafty Test Pos.33",
+      "timeMs": 2109
+    },
+    {
+      "actual": "c4d5",
+      "expected": "bm c1b2",
+      "fen": "r1bqkb1r/pp3ppp/2n1pn2/2pp4/2PP4/1P2PN2/P2N1PPP/R1BQKB1R w KQkq -",
+      "nodes": 20172850,
+      "passed": false,
+      "testId": "Crafty Test Pos.34",
+      "timeMs": 3890
+    },
+    {
+      "actual": "g2g3",
+      "expected": "bm g2g3",
+      "fen": "r2q1rk1/pp1b1ppp/2nbp3/3p4/2PP1n2/1P3N2/PB1N1PPP/1BRQR1K1 w - -",
+      "nodes": 19798223,
+      "passed": true,
+      "testId": "Crafty Test Pos.35",
+      "timeMs": 3948
+    },
+    {
+      "actual": "b3b4",
+      "expected": "bm b3b4",
+      "fen": "2rr2k1/pp1qnppp/2n1p3/b2p4/2PP3P/PP2RNP1/1B3P2/1BRQ2K1 w - -",
+      "nodes": 22206413,
+      "passed": true,
+      "testId": "Crafty Test Pos.36",
+      "timeMs": 4177
+    },
+    {
+      "actual": "b1c2",
+      "expected": "bm a3a4",
+      "fen": "2r1r3/ppbqnpk1/4p1p1/1PPp1n1p/3P3P/P2Q1NP1/3BRP2/1BR3K1 w - -",
+      "nodes": 24977490,
+      "passed": false,
+      "testId": "Crafty Test Pos.37",
+      "timeMs": 4792
+    },
+    {
+      "actual": "c3d2",
+      "expected": "bm f3d4",
+      "fen": "rb6/1p2rpk1/pP2p1p1/P1PpPn1p/q6P/2BQ1NP1/4RP2/2R3K1 w - -",
+      "nodes": 19026388,
+      "passed": false,
+      "testId": "Crafty Test Pos.38",
+      "timeMs": 3301
+    },
+    {
+      "actual": "c5e7",
+      "expected": "bm e2b2",
+      "fen": "rbr5/3q1p2/pPp1pBpk/P1QpP2p/7P/6P1/4RP2/2R3K1 w - -",
+      "nodes": 28571308,
+      "passed": false,
+      "testId": "Crafty Test Pos.39",
+      "timeMs": 4638
+    },
+    {
+      "actual": "e2f3",
+      "expected": "bm e2f3",
+      "fen": "r2qkb1r/pppnpppp/8/3p4/4nP2/1P2Pb2/PBPPB1PP/RN1QK2R w KQkq -",
+      "nodes": 24096334,
+      "passed": true,
+      "testId": "Crafty Test Pos.40",
+      "timeMs": 4809
+    },
+    {
+      "actual": "d1e2",
+      "expected": "bm c3b5",
+      "fen": "2kr1b1r/ppp3pp/8/2n2p2/4pP1q/1PN1P3/PBPP3P/R2Q1R1K w - -",
+      "nodes": 26537327,
+      "passed": false,
+      "testId": "Crafty Test Pos.41",
+      "timeMs": 4960
+    },
+    {
+      "actual": "a1f1",
+      "expected": "bm g7c7",
+      "fen": "2k4r/1pp3Rp/p7/2n2r2/5P2/1P2Pp2/P1PP3P/R6K w - -",
+      "nodes": 23827930,
+      "passed": false,
+      "testId": "Crafty Test Pos.42",
+      "timeMs": 4067
+    },
+    {
+      "actual": "c2c3",
+      "expected": "bm c2c3",
+      "fen": "8/1pk4p/p7/4r3/5r2/1P1P1p2/P1PR1K1P/8 w - -",
+      "nodes": 29657593,
+      "passed": true,
+      "testId": "Crafty Test Pos.43",
+      "timeMs": 4956
+    },
+    {
+      "actual": "h2h3",
+      "expected": "bm h2h3",
+      "fen": "rn2kb1r/pp2pppp/2p2n2/q7/2BP2b1/2N2N2/PPP2PPP/R1BQK2R w KQkq -",
+      "nodes": 20516928,
+      "passed": true,
+      "testId": "Crafty Test Pos.44",
+      "timeMs": 4074
+    },
+    {
+      "actual": "g5e6",
+      "expected": "bm c3a4",
+      "fen": "2kr1b1r/ppqn1Bpp/2p2nb1/6N1/3p2P1/2N4P/PPPBQP2/2KR3R w - -",
+      "nodes": 28697969,
+      "passed": false,
+      "testId": "Crafty Test Pos.45",
+      "timeMs": 4948
+    },
+    {
+      "actual": "e6d4",
+      "expected": "bm e6f8",
+      "fen": "2k1rb1r/p2n2pp/2pqN3/1pN1n1P1/3p2Q1/7P/PPPB1P2/2KRR3 w - -",
+      "nodes": 26552857,
+      "passed": false,
+      "testId": "Crafty Test Pos.46",
+      "timeMs": 4630
+    },
+    {
+      "actual": "h2h3",
+      "expected": "bm h2h3",
+      "fen": "rn2kb1r/pp2pppp/2p2n2/q7/2BP2b1/2N2N2/PPP2PPP/R1BQK2R w KQkq -",
+      "nodes": 20835904,
+      "passed": true,
+      "testId": "Crafty Test Pos.47",
+      "timeMs": 4142
+    },
+    {
+      "actual": "c1b1",
+      "expected": "bm c3e4",
+      "fen": "r3k2r/ppqn1ppp/2pbp3/3n2P1/2BP4/2N2Q1P/PPPB1P2/2KR3R w kq -",
+      "nodes": 25602598,
+      "passed": false,
+      "testId": "Crafty Test Pos.48",
+      "timeMs": 4923
+    },
+    {
+      "actual": "c4d3",
+      "expected": "bm c4e2",
+      "fen": "r4rk1/5ppp/1np1p3/p2n2P1/2BP2p1/6PP/PP1B4/2KR3R w - -",
+      "nodes": 21234505,
+      "passed": false,
+      "testId": "Crafty Test Pos.49",
+      "timeMs": 3633
+    },
+    {
+      "actual": "f3d5",
+      "expected": "bm f3d5",
+      "fen": "2r3k1/5ppp/4p3/1rnn2P1/p7/1P3BPP/P2B4/1KR4R w - -",
+      "nodes": 22818541,
+      "passed": true,
+      "testId": "Crafty Test Pos.50",
+      "timeMs": 3595
+    },
+    {
+      "actual": "b3b4",
+      "expected": "bm c2c3",
+      "fen": "5k2/5ppp/8/3p2P1/8/pP4PP/P1K5/8 w - -",
+      "nodes": 32650853,
+      "passed": false,
+      "testId": "Crafty Test Pos.51",
+      "timeMs": 4583
+    },
+    {
+      "actual": "c3d4",
+      "expected": "bm c3d4",
+      "fen": "r1b1kb1r/pp2pppp/2n2n2/3q4/3p4/2P2N2/PP2BPPP/RNBQK2R w KQkq -",
+      "nodes": 21274752,
+      "passed": true,
+      "testId": "Crafty Test Pos.52",
+      "timeMs": 4173
+    },
+    {
+      "actual": "e5c6",
+      "expected": "bm c4b3",
+      "fen": "2rq1rk1/pb2bppp/1pn1pn2/4N3/P1BP4/2N1B3/1P3PPP/R2Q1RK1 w - -",
+      "nodes": 14076211,
+      "passed": false,
+      "testId": "Crafty Test Pos.53",
+      "timeMs": 2798
+    },
+    {
+      "actual": "e3d2",
+      "expected": "bm e3d2",
+      "fen": "q4rk1/pb2bppp/1p2p3/3nN3/P2P4/1B1QBP2/1P4PP/2R3K1 w - -",
+      "nodes": 26321017,
+      "passed": true,
+      "testId": "Crafty Test Pos.54",
+      "timeMs": 4911
+    },
+    {
+      "actual": "c1e1",
+      "expected": "bm c1f1",
+      "fen": "2q3k1/1br1b1pp/pp2pp2/3n1P2/P1BP2N1/1P1Q2P1/3B3P/2R3K1 w - -",
+      "nodes": 28775647,
+      "passed": false,
+      "testId": "Crafty Test Pos.55",
+      "timeMs": 4967
+    },
+    {
+      "actual": "f5b5",
+      "expected": "bm f5b5",
+      "fen": "q6k/2r1b1pp/5p2/1p3R2/3P4/1P1Q2P1/3B3P/6K1 w - -",
+      "nodes": 17331048,
+      "passed": true,
+      "testId": "Crafty Test Pos.56",
+      "timeMs": 2891
+    },
+    {
+      "actual": "d1b3",
+      "expected": "bm c1e3",
+      "fen": "rn1qkb1r/ppp2ppp/4pn2/8/2PP2b1/5N2/PP2BPPP/RNBQK2R w KQkq -",
+      "nodes": 20323646,
+      "passed": false,
+      "testId": "Crafty Test Pos.57",
+      "timeMs": 4055
+    },
+    {
+      "actual": "g4g5",
+      "expected": "bm h4g6",
+      "fen": "r2q1rk1/pp1nbppp/2p1pnb1/8/2PP2PN/P3B2P/1P1NBP2/R2Q1RK1 w - -",
+      "nodes": 19118194,
+      "passed": false,
+      "testId": "Crafty Test Pos.58",
+      "timeMs": 3575
+    },
+    {
+      "actual": "a3b4",
+      "expected": "bm a3b4",
+      "fen": "r2q1rk1/ppbn1pp1/4p1p1/2P3P1/1p1P1P2/P3B2P/4B3/R2Q1RK1 w - -",
+      "nodes": 26365845,
+      "passed": true,
+      "testId": "Crafty Test Pos.59",
+      "timeMs": 4920
+    },
+    {
+      "actual": "f1f7",
+      "expected": "bm f1f7",
+      "fen": "1rr3k1/1Qbnqpp1/6p1/2p1P1P1/1PBP4/4B2P/8/R4RK1 w - -",
+      "nodes": 15235179,
+      "passed": true,
+      "testId": "Crafty Test Pos.60",
+      "timeMs": 2526
+    },
+    {
+      "actual": "c1e3",
+      "expected": "bm f3g5",
+      "fen": "r1bqkb1r/ppp1p1pp/1nnpp3/8/2PP4/5N2/PP3PPP/RNBQKB1R w KQkq -",
+      "nodes": 9961316,
+      "passed": false,
+      "testId": "Crafty Test Pos.61",
+      "timeMs": 1991
+    },
+    {
+      "actual": "h2h3",
+      "expected": "bm d2f3",
+      "fen": "r1b2k1r/pp2p3/1n1qp1p1/2pp1n2/2P5/1P1B4/P2N1PPP/R1BQ1RK1 w - -",
+      "nodes": 26231502,
+      "passed": false,
+      "testId": "Crafty Test Pos.62",
+      "timeMs": 4989
+    },
+    {
+      "actual": "e5h5",
+      "expected": "bm e5h5",
+      "fen": "r4k2/pp1bp2r/1q2p1p1/2p1R3/2Pp2Pn/1P1B2B1/P4P1P/R2Q2K1 w - -",
+      "nodes": 29284974,
+      "passed": true,
+      "testId": "Crafty Test Pos.63",
+      "timeMs": 4971
+    },
+    {
+      "actual": "h7g6",
+      "expected": "bm h7g6",
+      "fen": "2r2k2/pp2p2B/6q1/2p1p2p/2Pp3B/1P3P1b/P6P/4R1K1 w - -",
+      "nodes": 28293406,
+      "passed": true,
+      "testId": "Crafty Test Pos.64",
+      "timeMs": 4742
+    },
+    {
+      "actual": "g1f2",
+      "expected": "bm f4e3",
+      "fen": "5k2/1p2p3/1r6/p1p4B/P1P2B2/1P1p1P1b/7P/4R1K1 w - -",
+      "nodes": 30831519,
+      "passed": false,
+      "testId": "Crafty Test Pos.65",
+      "timeMs": 4924
+    },
+    {
+      "actual": "e8b5",
+      "expected": "bm e8b5",
+      "fen": "4Br2/1p4k1/8/p5B1/P1P5/7b/3p3P/3R2K1 w - -",
+      "nodes": 27219428,
+      "passed": true,
+      "testId": "Crafty Test Pos.66",
+      "timeMs": 4218
+    },
+    {
+      "actual": "d2a5",
+      "expected": "bm d2a5",
+      "fen": "8/8/6k1/p7/P2r4/5B1b/3B3P/3R2K1 w - -",
+      "nodes": 31906258,
+      "passed": true,
+      "testId": "Crafty Test Pos.67",
+      "timeMs": 4952
+    },
+    {
+      "actual": "g1f1",
+      "expected": "bm c6c4",
+      "fen": "8/8/2R5/3B4/5kbP/2B5/4r3/6K1 w - -",
+      "nodes": 15464534,
+      "passed": false,
+      "testId": "Crafty Test Pos.68",
+      "timeMs": 2465
+    },
+    {
+      "actual": "e2e3",
+      "expected": "bm d4c2",
+      "fen": "rnb1kb1r/pp3ppp/2p2n2/3q4/3Np3/6P1/PP1PPPBP/RNBQK2R w KQkq -",
+      "nodes": 25643500,
+      "passed": false,
+      "testId": "Crafty Test Pos.69",
+      "timeMs": 4919
+    },
+    {
+      "actual": "d2e3",
+      "expected": "bm d2e3",
+      "fen": "rn3rk1/p4ppp/2p2n2/1p3b1q/4p2P/2N1b1P1/PPQPPPB1/R1B1K2R w KQ -",
+      "nodes": 11361383,
+      "passed": true,
+      "testId": "Crafty Test Pos.70",
+      "timeMs": 2276
+    },
+    {
+      "actual": "a1d1",
+      "expected": "bm e1c1",
+      "fen": "3r2k1/p2n1ppp/2p1r1b1/3n3q/PpN1p2P/1P2P1P1/1BQ1PPB1/R3K2R w KQ -",
+      "nodes": 20306494,
+      "passed": false,
+      "testId": "Crafty Test Pos.71",
+      "timeMs": 3893
+    },
+    {
+      "actual": "h1f1",
+      "expected": "bm h1g1",
+      "fen": "6k1/p1r2pp1/2p1rn2/3n1q2/PpNBp1pP/1P2PP2/1KQ1P3/3R3R w - -",
+      "nodes": 14144953,
+      "passed": false,
+      "testId": "Crafty Test Pos.72",
+      "timeMs": 2667
+    },
+    {
+      "actual": "d7d1",
+      "expected": "bm d7d1",
+      "fen": "6k1/p2Q1pB1/8/2p1Nq2/Pp2p1rP/1P6/1K2P3/3n4 w - -",
+      "nodes": 29950025,
+      "passed": true,
+      "testId": "Crafty Test Pos.73",
+      "timeMs": 4821
+    },
+    {
+      "actual": "h5g6",
+      "expected": "bm h5g6",
+      "fen": "7k/p7/6p1/2pq3P/Pp2p3/1P2r3/1K2P2Q/8 w - -",
+      "nodes": 33689725,
+      "passed": true,
+      "testId": "Crafty Test Pos.74",
+      "timeMs": 4959
+    },
+    {
+      "actual": "c4b3",
+      "expected": "bm c4b3",
+      "fen": "r1bqkb1r/pp1ppppp/1nn5/4P3/2Bp4/2P2N2/PP3PPP/RNBQK2R w KQkq -",
+      "nodes": 24577953,
+      "passed": true,
+      "testId": "Crafty Test Pos.75",
+      "timeMs": 4684
+    },
+    {
+      "actual": "d1d3",
+      "expected": "bm a2a3",
+      "fen": "r1bq1rk1/pp2bppp/2n1p3/3n4/3P4/1BN2NP1/PP3P1P/R1BQR1K1 w - -",
+      "nodes": 10403502,
+      "passed": false,
+      "testId": "Crafty Test Pos.76",
+      "timeMs": 2056
+    },
+    {
+      "actual": "f3e5",
+      "expected": "bm c2a4",
+      "fen": "2rqr1k1/pb2bp1p/1p2p1p1/n7/3P4/P1PQ1NP1/2BB1P1P/R3R1K1 w - -",
+      "nodes": 26579333,
+      "passed": false,
+      "testId": "Crafty Test Pos.77",
+      "timeMs": 4967
+    },
+    {
+      "actual": "g4h5",
+      "expected": "bm g4h5",
+      "fen": "4r1k1/pb2b3/1p6/3qpppp/2nP2P1/P1P2N1P/5PK1/R1BQR3 w - -",
+      "nodes": 28647303,
+      "passed": true,
+      "testId": "Crafty Test Pos.78",
+      "timeMs": 4959
+    },
+    {
+      "actual": "a1e1",
+      "expected": "bm a1e1",
+      "fen": "5r2/p3b2k/1p6/4n2P/3P2p1/P1P2b2/3B1P2/R5K1 w - -",
+      "nodes": 10418101,
+      "passed": true,
+      "testId": "Crafty Test Pos.79",
+      "timeMs": 1737
+    },
+    {
+      "actual": "c1e3",
+      "expected": "bm c1e3",
+      "fen": "r1bqkb1r/ppp1pppp/1nn5/4P3/2PP4/8/PP4PP/RNBQKBNR w KQkq -",
+      "nodes": 24080778,
+      "passed": true,
+      "testId": "Crafty Test Pos.80",
+      "timeMs": 4729
+    },
+    {
+      "actual": "d1c1",
+      "expected": "bm d1c1",
+      "fen": "r3kb1r/pppn1ppp/2n1p3/2P1P3/3P1q2/2N2P2/PP2BB1P/R2QK2R w KQkq -",
+      "nodes": 21948832,
+      "passed": true,
+      "testId": "Crafty Test Pos.81",
+      "timeMs": 4076
+    },
+    {
+      "actual": "f3c6",
+      "expected": "bm e1g1",
+      "fen": "2kr3r/pppn3p/2n1p3/2P1Ppb1/3P4/2N2B2/PP3B1P/3RK2R w K f6",
+      "nodes": 27412484,
+      "passed": false,
+      "testId": "Crafty Test Pos.82",
+      "timeMs": 4903
+    },
+    {
+      "actual": "d1b1",
+      "expected": "bm e2b2",
+      "fen": "2kr2r1/1pnnb2p/p1p1p3/2P1Pp2/PP1P4/2N2B2/4RB1P/3R3K w - -",
+      "nodes": 28759403,
+      "passed": false,
+      "testId": "Crafty Test Pos.83",
+      "timeMs": 4918
+    },
+    {
+      "actual": "a8a7",
+      "expected": "bm b5b6",
+      "fen": "Rnk3r1/1p4rp/4p3/1PPpPpb1/3P4/5B2/5B1P/R6K w - -",
+      "nodes": 28186042,
+      "passed": false,
+      "testId": "Crafty Test Pos.84",
+      "timeMs": 4915
+    },
+    {
+      "actual": "e3f4",
+      "expected": "bm e3f4",
+      "fen": "Rnkb2r1/1p4r1/1P2p3/2PpP2p/B2P1p2/4B3/7P/1R5K w - -",
+      "nodes": 27263139,
+      "passed": true,
+      "testId": "Crafty Test Pos.85",
+      "timeMs": 4542
+    },
+    {
+      "actual": "d5c6",
+      "expected": "bm d5c6",
+      "fen": "rnbqk2r/pp2nppp/2pb4/3P4/3P1p2/2N2N2/PPP3PP/R1BQKB1R w KQkq -",
+      "nodes": 26010848,
+      "passed": true,
+      "testId": "Crafty Test Pos.86",
+      "timeMs": 4898
+    },
+    {
+      "actual": "b3a2",
+      "expected": "bm b3a2",
+      "fen": "r1b2rk1/p3nppp/3b4/q1nP4/5p2/PBN2N2/1PP3PP/R1BQK2R w KQ -",
+      "nodes": 20957102,
+      "passed": true,
+      "testId": "Crafty Test Pos.87",
+      "timeMs": 3955
+    },
+    {
+      "actual": "d4b5",
+      "expected": "bm e1d2",
+      "fen": "r3r1k1/p4ppp/b7/2bn4/2PN1p2/P7/B3N1PP/R1B1K2R w KQ -",
+      "nodes": 25047846,
+      "passed": false,
+      "testId": "Crafty Test Pos.88",
+      "timeMs": 4646
+    },
+    {
+      "actual": "g1g2",
+      "expected": "bm g1g2",
+      "fen": "3r2k1/p4ppp/b7/2b5/2PN4/P4r2/BB1KN1nP/6R1 w - -",
+      "nodes": 28903287,
+      "passed": true,
+      "testId": "Crafty Test Pos.89",
+      "timeMs": 4892
+    },
+    {
+      "actual": "c1d2",
+      "expected": "bm c1d2",
+      "fen": "1r4k1/p4p1p/6p1/2b5/P1PN1R2/8/BB1rN2P/2K5 w - -",
+      "nodes": 14248414,
+      "passed": true,
+      "testId": "Crafty Test Pos.90",
+      "timeMs": 2311
+    },
+    {
+      "actual": "f1f4",
+      "expected": "bm h2h4",
+      "fen": "8/p5kp/6p1/2bP1p2/P7/1r6/2NK3P/5R2 w - -",
+      "nodes": 30164083,
+      "passed": false,
+      "testId": "Crafty Test Pos.91",
+      "timeMs": 4805
+    },
+    {
+      "actual": "f1d3",
+      "expected": "bm f1e2",
+      "fen": "r1bq1rk1/ppp1bppp/2n1pn2/3p4/3P1B2/4PN1P/PPPN1PP1/R2QKB1R w KQ -",
+      "nodes": 23926657,
+      "passed": false,
+      "testId": "Crafty Test Pos.92",
+      "timeMs": 4872
+    },
+    {
+      "actual": "d4c5",
+      "expected": "bm a2a3",
+      "fen": "r1bq1rk1/pp5p/3bpnp1/2ppNp2/2PP4/4PN1P/PP2BPP1/R2Q1RK1 w - -",
+      "nodes": 20569019,
+      "passed": false,
+      "testId": "Crafty Test Pos.93",
+      "timeMs": 4188
+    },
+    {
+      "actual": "e5c4",
+      "expected": "bm e2b5",
+      "fen": "3r1r1k/2q4p/1p1bpnp1/p1pbNp2/Q2P4/P3PN1P/1PR1BPP1/3R2K1 w - -",
+      "nodes": 11259580,
+      "passed": false,
+      "testId": "Crafty Test Pos.94",
+      "timeMs": 2166
+    },
+    {
+      "actual": "e1c1",
+      "expected": "bm e1f1",
+      "fen": "3r3k/2qN2r1/1p2p1p1/pBpbNp1p/Q2Pn2b/P3P2P/1PR2PP1/4R1K1 w - -",
+      "nodes": 24472269,
+      "passed": false,
+      "testId": "Crafty Test Pos.95",
+      "timeMs": 4567
+    },
+    {
+      "actual": "a4b3",
+      "expected": "bm d2e2",
+      "fen": "3r3k/2qNb1r1/1p2p3/pBpnNp2/Q2PbPp1/P3P3/1P1R2P1/2R2K2 w - -",
+      "nodes": 23330267,
+      "passed": false,
+      "testId": "Crafty Test Pos.96",
+      "timeMs": 4231
+    },
+    {
+      "actual": "g1f2",
+      "expected": "bm b5f1",
+      "fen": "3r4/3N2kr/1p6/pBpn1p2/Q2PR1p1/P7/1P4P1/2q3K1 w - -",
+      "nodes": 54868314,
+      "passed": false,
+      "testId": "Crafty Test Pos.97",
+      "timeMs": 4500
+    },
+    {
+      "actual": "g5f6",
+      "expected": "bm e1g1",
+      "fen": "rn1qkb1r/pp3ppp/2p1pnb1/3p2B1/3P4/2NBPN2/PPP2PPP/R2QK2R w KQkq -",
+      "nodes": 24013026,
+      "passed": false,
+      "testId": "Crafty Test Pos.98",
+      "timeMs": 4821
+    },
+    {
+      "actual": "c3e4",
+      "expected": "bm c3e4",
+      "fen": "r3k2r/pp1n1pp1/2pqpnp1/8/3Pp3/2NQ1N2/PPP2PPP/R3R1K1 w kq -",
+      "nodes": 25874887,
+      "passed": true,
+      "testId": "Crafty Test Pos.99",
+      "timeMs": 4826
+    },
+    {
+      "actual": "f3e5",
+      "expected": "bm f3e5",
+      "fen": "1k1r3r/pp3pp1/1np1p1p1/4q3/1P1P4/5N2/P1P1RPPP/4R1K1 w - -",
+      "nodes": 26543463,
+      "passed": true,
+      "testId": "Crafty Test Pos.100",
+      "timeMs": 4475
+    },
+    {
+      "actual": "a2a4",
+      "expected": "bm f2f4",
+      "fen": "3r1r2/1pk2pp1/1pp1p1p1/8/1P1P3P/2P3P1/P1R2P2/4R1K1 w - -",
+      "nodes": 27061870,
+      "passed": false,
+      "testId": "Crafty Test Pos.101",
+      "timeMs": 4632
+    },
+    {
+      "actual": "e2h2",
+      "expected": "bm e2h2",
+      "fen": "r7/1p4p1/2p1ppp1/1p1k4/1P1P1P1P/r1PK2P1/PR2R3/8 w - -",
+      "nodes": 18243572,
+      "passed": true,
+      "testId": "Crafty Test Pos.102",
+      "timeMs": 3006
+    },
+    {
+      "actual": "d2b2",
+      "expected": "bm e2e4",
+      "fen": "r7/4r1p1/1ppkppp1/1p6/1P1P1P1P/2PK2P1/P2RR3/8 w - -",
+      "nodes": 22932519,
+      "passed": false,
+      "testId": "Crafty Test Pos.103",
+      "timeMs": 3889
+    },
+    {
+      "actual": "e1g1",
+      "expected": "bm e1g1",
+      "fen": "r2qkb1r/pp1n1ppp/2p1bn2/3pp1B1/8/2NP1NP1/PPP1PPBP/R2QK2R w KQkq -",
+      "nodes": 17253085,
+      "passed": true,
+      "testId": "Crafty Test Pos.104",
+      "timeMs": 3465
+    },
+    {
+      "actual": "d3d4",
+      "expected": "bm d3d4",
+      "fen": "2kr3r/pp1n1p2/2pbbq1p/4p1p1/4P3/2PP2P1/P2NNPBP/R2Q1RK1 w - -",
+      "nodes": 25392644,
+      "passed": true,
+      "testId": "Crafty Test Pos.105",
+      "timeMs": 4947
+    },
+    {
+      "actual": "f2f3",
+      "expected": "bm d2b3",
+      "fen": "1k1r3r/ppb2p2/1np1b2p/4p1pq/1Q1PP3/2P3P1/1R1NNPBP/R5K1 w - -",
+      "nodes": 24787250,
+      "passed": false,
+      "testId": "Crafty Test Pos.106",
+      "timeMs": 4667
+    },
+    {
+      "actual": "b4a5",
+      "expected": "bm b4a5",
+      "fen": "1k1rr3/ppb2p2/1np4p/2N3p1/1Q1PP3/2N2qP1/1R3P1P/R5K1 w - -",
+      "nodes": 29026405,
+      "passed": true,
+      "testId": "Crafty Test Pos.107",
+      "timeMs": 4743
+    },
+    {
+      "actual": "a5b5",
+      "expected": "bm a5c5",
+      "fen": "k7/1pRN1p2/p3r2p/Q2N2p1/3PPP2/8/5P1P/R5K1 w - -",
+      "nodes": 9402967,
+      "passed": false,
+      "testId": "Crafty Test Pos.108",
+      "timeMs": 397
+    },
+    {
+      "actual": "g1h3",
+      "expected": "bm a2a3",
+      "fen": "r2qkb1r/pb1p1ppp/1pn1pn2/2p5/3PP3/2PBB3/PP1N1PPP/R2QK1NR w KQkq -",
+      "nodes": 11179436,
+      "passed": false,
+      "testId": "Crafty Test Pos.109",
+      "timeMs": 2146
+    },
+    {
+      "actual": "h2h3",
+      "expected": "bm h2h3",
+      "fen": "2r2rk1/pb1q1pbp/1pnppnp1/8/1P1PP3/P2BBQ2/3NNPPP/2R2RK1 w - -",
+      "nodes": 12701092,
+      "passed": true,
+      "testId": "Crafty Test Pos.110",
+      "timeMs": 2557
+    },
+    {
+      "actual": "b5d3",
+      "expected": "bm b5d3",
+      "fen": "3q1rk1/pb2npb1/1p1np1pp/1B1p4/1P1PP3/P3BPQP/3NN1P1/2R3K1 w - -",
+      "nodes": 24094855,
+      "passed": true,
+      "testId": "Crafty Test Pos.111",
+      "timeMs": 4602
+    },
+    {
+      "actual": "d6e5",
+      "expected": "bm d6e5",
+      "fen": "b1nqr1k1/5pb1/p2Bp1pp/1pR5/1PpPP3/P4PQP/3NN1P1/6K1 w - -",
+      "nodes": 17243210,
+      "passed": true,
+      "testId": "Crafty Test Pos.112",
+      "timeMs": 2972
+    },
+    {
+      "actual": "a4b5",
+      "expected": "bm a4b5",
+      "fen": "b7/3q1pk1/p2nr1pp/1pR5/PPp1PQ1P/5P2/3NN1P1/6K1 w - -",
+      "nodes": 20950341,
+      "passed": true,
+      "testId": "Crafty Test Pos.113",
+      "timeMs": 3766
+    },
+    {
+      "actual": "c3d5",
+      "expected": "bm c3d5",
+      "fen": "8/3q1pk1/6pp/1pRb4/1r5P/2N5/5QP1/6K1 w - -",
+      "nodes": 13290669,
+      "passed": true,
+      "testId": "Crafty Test Pos.114",
+      "timeMs": 2148
+    },
+    {
+      "actual": "c1f4",
+      "expected": "bm g2g3",
+      "fen": "r2qkb1r/pp1npppp/2p2n2/5b2/2QP4/2N2N2/PP2PPPP/R1B1KB1R w KQkq -",
+      "nodes": 15057574,
+      "passed": false,
+      "testId": "Crafty Test Pos.115",
+      "timeMs": 2960
+    },
+    {
+      "actual": "c2d3",
+      "expected": "bm c2a4",
+      "fen": "r3kb1r/pp2pppp/2p1b3/5q2/3Pn3/2P2NP1/PBQ1PPBP/R3K2R w KQkq -",
+      "nodes": 24014998,
+      "passed": false,
+      "testId": "Crafty Test Pos.116",
+      "timeMs": 4975
+    },
+    {
+      "actual": "d4d5",
+      "expected": "bm d4d5",
+      "fen": "2kr1b1r/1p2pb1p/pQp2p2/5qp1/2PPn3/5NP1/PB2PPBP/2R1R1K1 w - -",
+      "nodes": 26401895,
+      "passed": true,
+      "testId": "Crafty Test Pos.117",
+      "timeMs": 4955
+    },
+    {
+      "actual": "b1b7",
+      "expected": "bm b1b7",
+      "fen": "3k1b1r/1r5p/p1Q1bp2/2p2qp1/2P5/2n3P1/P2NPP1P/1R2R1K1 w - -",
+      "nodes": 23943032,
+      "passed": true,
+      "testId": "Crafty Test Pos.118",
+      "timeMs": 3944
+    },
+    {
+      "actual": "e2e3",
+      "expected": "bm e2e3",
+      "fen": "4kr2/4q2p/p7/2p3p1/2PbN3/3Q2P1/P3PP1P/4R1K1 w - -",
+      "nodes": 28495441,
+      "passed": true,
+      "testId": "Crafty Test Pos.119",
+      "timeMs": 4654
+    },
+    {
+      "actual": "b2b3",
+      "expected": "bm b2b3",
+      "fen": "rnbqk1nr/pp3ppp/3b4/3p4/2pP4/2P1BN2/PP3PPP/RN1QKB1R w KQkq -",
+      "nodes": 25055553,
+      "passed": true,
+      "testId": "Crafty Test Pos.120",
+      "timeMs": 4973
+    },
+    {
+      "actual": "e1g1",
+      "expected": "bm b5c3",
+      "fen": "rb3rk1/pp1qnppp/2n5/1N1p1b2/R1PP4/1P1BBN2/5PPP/3QK2R w K -",
+      "nodes": 25263806,
+      "passed": false,
+      "testId": "Crafty Test Pos.121",
+      "timeMs": 4964
+    },
+    {
+      "actual": "e3d2",
+      "expected": "bm h2h3",
+      "fen": "3rr1k1/1p1qnppp/p1n5/b1Pp4/R2P3N/1PNQB3/5PPP/4R1K1 w - -",
+      "nodes": 26387668,
+      "passed": false,
+      "testId": "Crafty Test Pos.122",
+      "timeMs": 4969
+    },
+    {
+      "actual": "e1a1",
+      "expected": "bm b3b4",
+      "fen": "4r1k1/1p4p1/p1n1rp2/2Pp1q1p/3P4/1PQ1B2P/4RPP1/4R1K1 w - -",
+      "nodes": 28396806,
+      "passed": false,
+      "testId": "Crafty Test Pos.123",
+      "timeMs": 4899
+    },
+    {
+      "actual": "c1d2",
+      "expected": "bm c1d2",
+      "fen": "6k1/1p2r3/p3rp2/1nPp1q1p/1P1P2pP/4B3/4RPP1/2Q1R1K1 w - -",
+      "nodes": 20907228,
+      "passed": true,
+      "testId": "Crafty Test Pos.124",
+      "timeMs": 3661
+    },
+    {
+      "actual": "b3c2",
+      "expected": "bm c6b7",
+      "fen": "8/1p2rk2/2P5/pP1p1p1p/2nPr1pP/1Q2BqP1/4RP1K/4R3 w - -",
+      "nodes": 28284642,
+      "passed": false,
+      "testId": "Crafty Test Pos.125",
+      "timeMs": 4781
+    },
+    {
+      "actual": "f2c2",
+      "expected": "bm f2g2",
+      "fen": "8/4rk2/1P6/p2p3p/2nP1P1P/4r3/5R2/3R2K1 w - -",
+      "nodes": 26594791,
+      "passed": false,
+      "testId": "Crafty Test Pos.126",
+      "timeMs": 4235
+    },
+    {
+      "actual": "c1f4",
+      "expected": "bm c1f4",
+      "fen": "r2qkbnr/pp2pppp/2p5/3Pn3/2p1P1b1/2N2N2/PP3PPP/R1BQKB1R w KQkq -",
+      "nodes": 26590232,
+      "passed": true,
+      "testId": "Crafty Test Pos.127",
+      "timeMs": 4910
+    },
+    {
+      "actual": "b5c7",
+      "expected": "bm d4c5",
+      "fen": "r3kbnr/pp2pppp/5q2/1N1P4/2BQ4/4Bb2/PP3P1P/R3K2R w KQkq -",
+      "nodes": 25345916,
+      "passed": false,
+      "testId": "Crafty Test Pos.128",
+      "timeMs": 4558
+    },
+    {
+      "actual": "e1e2",
+      "expected": "bm e1e2",
+      "fen": "r3k1nr/p4ppp/2p1p3/3P4/1b6/5Q2/PP3P1P/R3K2R w KQkq -",
+      "nodes": 8059048,
+      "passed": true,
+      "testId": "Crafty Test Pos.129",
+      "timeMs": 1413
+    },
+    {
+      "actual": "b2b4",
+      "expected": "bm c1c6",
+      "fen": "r4k1r/1R3pp1/3bpn1p/p2p4/Q7/8/PP2KP1P/2R5 w - -",
+      "nodes": 24368015,
+      "passed": false,
+      "testId": "Crafty Test Pos.130",
+      "timeMs": 4301
+    },
+    {
+      "actual": "b8d6",
+      "expected": "bm b8d6",
+      "fen": "1Q5r/5ppk/3np2p/P2p4/8/8/P3KP2/8 w - -",
+      "nodes": 32186763,
+      "passed": true,
+      "testId": "Crafty Test Pos.131",
+      "timeMs": 4931
+    },
+    {
+      "actual": "c1f4",
+      "expected": "bm c1f4",
+      "fen": "rnbqk1nr/pp2bppp/3pp3/8/2B1P3/2N2N2/PP3PPP/R1BQK2R w KQkq -",
+      "nodes": 24737821,
+      "passed": true,
+      "testId": "Crafty Test Pos.132",
+      "timeMs": 4844
+    },
+    {
+      "actual": "f4d2",
+      "expected": "bm f4d2",
+      "fen": "r1b2rk1/pp2bppp/2n1p3/8/4BB2/5N2/PP1q1PPP/2R2RK1 w - -",
+      "nodes": 22627332,
+      "passed": true,
+      "testId": "Crafty Test Pos.133",
+      "timeMs": 4421
+    },
+    {
+      "actual": "f4e3",
+      "expected": "bm f4e3",
+      "fen": "2rrb1k1/pp3p2/2n1pb1p/6p1/P3BB2/1P3N1P/5PP1/3RR1K1 w - -",
+      "nodes": 14890092,
+      "passed": true,
+      "testId": "Crafty Test Pos.134",
+      "timeMs": 2676
+    },
+    {
+      "actual": "b3b4",
+      "expected": "bm b3b4",
+      "fen": "2rb2k1/p7/1pb1p2p/n5p1/P4p2/1P1B1N1P/1B3PP1/3R2K1 w - -",
+      "nodes": 27935984,
+      "passed": true,
+      "testId": "Crafty Test Pos.135",
+      "timeMs": 4715
+    },
+    {
+      "actual": "b7f3",
+      "expected": "bm b7f3",
+      "fen": "8/pB3k2/1p1rp2p/2b3p1/P4p2/2B4P/5PP1/2R3K1 w - -",
+      "nodes": 28624671,
+      "passed": true,
+      "testId": "Crafty Test Pos.136",
+      "timeMs": 4554
+    },
+    {
+      "actual": "h5g4",
+      "expected": "bm h5g4",
+      "fen": "8/p3k1B1/1p1bp2p/6pB/P3Rp2/7P/5PPK/2r5 w - -",
+      "nodes": 30520225,
+      "passed": true,
+      "testId": "Crafty Test Pos.137",
+      "timeMs": 4971
+    },
+    {
+      "actual": "e4d4",
+      "expected": "bm e4d4",
+      "fen": "8/p7/1p1k3p/6p1/P2bR1P1/1B3p1P/5P1K/5r2 w - -",
+      "nodes": 30581248,
+      "passed": true,
+      "testId": "Crafty Test Pos.138",
+      "timeMs": 4758
+    },
+    {
+      "actual": "e3e6",
+      "expected": "bm e3e6",
+      "fen": "8/5B2/p6p/1p4p1/P2k2P1/4RK1P/5P2/1r6 w - -",
+      "nodes": 23025954,
+      "passed": true,
+      "testId": "Crafty Test Pos.139",
+      "timeMs": 3462
+    },
+    {
+      "actual": "a6a5",
+      "expected": "bm a6a5",
+      "fen": "1r6/8/R7/6p1/2B3P1/p3K2P/1k3P2/8 w - -",
+      "nodes": 27766587,
+      "passed": true,
+      "testId": "Crafty Test Pos.140",
+      "timeMs": 3903
+    },
+    {
+      "actual": "c4d5",
+      "expected": "bm c4d5",
+      "fen": "8/8/8/R5p1/2B3P1/p6r/2K2P2/k7 w - -",
+      "nodes": 75954488,
+      "passed": true,
+      "testId": "Crafty Test Pos.141",
+      "timeMs": 4722
+    },
+    {
+      "actual": "f3d2",
+      "expected": "bm f3d2",
+      "fen": "rnbqk2r/ppp1n1pp/3p4/5p2/2PPp3/2N2N2/PP2PPPP/R2QKB1R w KQkq -",
+      "nodes": 23520808,
+      "passed": true,
+      "testId": "Crafty Test Pos.142",
+      "timeMs": 4669
+    },
+    {
+      "actual": "e1g1",
+      "expected": "bm e1g1",
+      "fen": "r3k2r/pp2nbpp/1q1p1n2/2pP1p2/2P5/1NN1PP2/PP2B2P/R2QK2R w KQkq -",
+      "nodes": 10275573,
+      "passed": true,
+      "testId": "Crafty Test Pos.143",
+      "timeMs": 1987
+    },
+    {
+      "actual": "f4d3",
+      "expected": "bm f4d3",
+      "fen": "5k1r/1p2n1pp/rq1p2b1/p1pP1p2/Q1P2N2/2NnPP2/PP5P/R4RK1 w - -",
+      "nodes": 25828256,
+      "passed": true,
+      "testId": "Crafty Test Pos.144",
+      "timeMs": 4948
+    },
+    {
+      "actual": "c2c3",
+      "expected": "bm c7e6",
+      "fen": "5qkr/rpNbn2p/3p2p1/p1pP1p2/2P2N2/4PP2/PPQ4P/R5RK w - -",
+      "nodes": 15976771,
+      "passed": false,
+      "testId": "Crafty Test Pos.145",
+      "timeMs": 2887
+    },
+    {
+      "actual": "e6g5",
+      "expected": "bm e3e4",
+      "fen": "r6r/4nk1p/3pNqp1/p1pP1p2/8/3QPP2/PP4RP/6RK w - -",
+      "nodes": 27050553,
+      "passed": false,
+      "testId": "Crafty Test Pos.146",
+      "timeMs": 4894
+    },
+    {
+      "actual": "c7e8",
+      "expected": "bm c7e8",
+      "fen": "6kr/1rN1n2p/3p1qp1/p1pP1p2/4P3/P4P2/1P1Q2RP/4R2K w - -",
+      "nodes": 20296823,
+      "passed": true,
+      "testId": "Crafty Test Pos.147",
+      "timeMs": 3575
+    },
+    {
+      "actual": "g2e2",
+      "expected": "bm g2g6",
+      "fen": "6kr/8/6p1/p2n4/2N5/P3pP2/1P4RP/7K w - -",
+      "nodes": 32169074,
+      "passed": false,
+      "testId": "Crafty Test Pos.148",
+      "timeMs": 4822
+    },
+    {
+      "actual": "c4b6",
+      "expected": "bm c4b2",
+      "fen": "2r5/7k/8/8/2N2n1P/Pp3P2/4p3/4R2K w - -",
+      "nodes": 12317003,
+      "passed": false,
+      "testId": "Crafty Test Pos.149",
+      "timeMs": 1742
+    },
+    {
+      "actual": "b1d2",
+      "expected": "bm b1c3",
+      "fen": "rn1qkb1r/ppp2ppp/4pn2/7b/2BP4/4PN1P/PP3PP1/RNBQK2R w KQkq -",
+      "nodes": 22371325,
+      "passed": false,
+      "testId": "Crafty Test Pos.150",
+      "timeMs": 4360
+    },
+    {
+      "actual": "g4g5",
+      "expected": "bm h1g1",
+      "fen": "r3kb1r/pppnqpp1/3np3/7p/3P2P1/1B2PN1P/PP1B1P2/R2QK2R w KQkq -",
+      "nodes": 26795419,
+      "passed": false,
+      "testId": "Crafty Test Pos.151",
+      "timeMs": 4993
+    },
+    {
+      "actual": "f3d2",
+      "expected": "bm f3d2",
+      "fen": "2kr4/2pnbpp1/1p1qp3/p7/3P2P1/1B2PN1r/PPQ2P2/2KR2R1 w - -",
+      "nodes": 11215939,
+      "passed": true,
+      "testId": "Crafty Test Pos.152",
+      "timeMs": 2082
+    },
+    {
+      "actual": "e4d2",
+      "expected": "bm e4d2",
+      "fen": "1n6/1kq1bp2/1pp1p3/p5p1/B2PN1P1/4P2r/PPQ2P2/1KR5 w - -",
+      "nodes": 22407674,
+      "passed": true,
+      "testId": "Crafty Test Pos.153",
+      "timeMs": 3910
+    },
+    {
+      "actual": "g3h3",
+      "expected": "bm c1h1",
+      "fen": "6r1/1k1qb3/1pp1pp2/p2n2p1/3PN1P1/PB2P1Q1/1P3P2/1KR5 w - -",
+      "nodes": 19897310,
+      "passed": false,
+      "testId": "Crafty Test Pos.154",
+      "timeMs": 3685
+    },
+    {
+      "actual": "h1h7",
+      "expected": "bm h1h7",
+      "fen": "8/1k4r1/1pp1qbQ1/p2n1pp1/3P4/PB2P3/1P1N1P2/1K5R w - -",
+      "nodes": 28303211,
+      "passed": true,
+      "testId": "Crafty Test Pos.155",
+      "timeMs": 4777
+    },
+    {
+      "actual": "h8h7",
+      "expected": "bm e5c6",
+      "fen": "7Q/1k2b3/1pp1q3/p2nNp2/3P2p1/PB2P3/1P1K1P2/8 w - -",
+      "nodes": 24896788,
+      "passed": false,
+      "testId": "Crafty Test Pos.156",
+      "timeMs": 4015
+    },
+    {
+      "actual": "b3d1",
+      "expected": "bm g4f5",
+      "fen": "8/1kn5/1p6/p7/5PQ1/PB6/1P3q2/2K5 w - -",
+      "nodes": 27380511,
+      "passed": false,
+      "testId": "Crafty Test Pos.157",
+      "timeMs": 4075
+    },
+    {
+      "actual": "d3c3",
+      "expected": "bm d3c3",
+      "fen": "8/8/1p6/3k4/p4P2/P2K4/1P6/8 w - -",
+      "nodes": 40351269,
+      "passed": true,
+      "testId": "Crafty Test Pos.158",
+      "timeMs": 4989
+    },
+    {
+      "actual": "f1b5",
+      "expected": "bm b1d2",
+      "fen": "rnbqk2r/ppp1p1b1/3p1n1p/5pp1/3P4/2P1P1B1/PP3PPP/RN1QKBNR w KQkq -",
+      "nodes": 24167587,
+      "passed": false,
+      "testId": "Crafty Test Pos.159",
+      "timeMs": 4896
+    },
+    {
+      "actual": "g1e2",
+      "expected": "bm c3d4",
+      "fen": "r1bq1rk1/ppp3b1/2n4p/3p2pn/3pPp2/1QPB1P2/PP1N1BPP/R3K1NR w KQ -",
+      "nodes": 24056004,
+      "passed": false,
+      "testId": "Crafty Test Pos.160",
+      "timeMs": 4536
+    },
+    {
+      "actual": "f2f1",
+      "expected": "bm f2f1",
+      "fen": "r4rk1/ppp5/1q5p/n4bpn/4Np2/2NB1P2/PPQ2KPP/R6R w - -",
+      "nodes": 24863834,
+      "passed": true,
+      "testId": "Crafty Test Pos.161",
+      "timeMs": 4464
+    },
+    {
+      "actual": "d1c1",
+      "expected": "bm d1a4",
+      "fen": "6k1/ppp5/1q5p/n2nr1p1/4Np2/5P2/PP2B1PP/3Q1K1R w - -",
+      "nodes": 25182245,
+      "passed": false,
+      "testId": "Crafty Test Pos.162",
+      "timeMs": 4490
+    },
+    {
+      "actual": "f2e2",
+      "expected": "bm f2e2",
+      "fen": "8/ppQ1n1k1/2nN3p/6p1/5p2/5P2/P3rKPP/7q w - -",
+      "nodes": 3211237,
+      "passed": true,
+      "testId": "Crafty Test Pos.163",
+      "timeMs": 495
+    },
+    {
+      "actual": "g1f3",
+      "expected": "bm f2f4",
+      "fen": "rnbq1rk1/1pp1ppbp/p2p1np1/8/2PPP3/2N1B3/PP2BPPP/R2QK1NR w KQ -",
+      "nodes": 23775681,
+      "passed": false,
+      "testId": "Crafty Test Pos.164",
+      "timeMs": 4867
+    },
+    {
+      "actual": "e1h4",
+      "expected": "bm c3d1",
+      "fen": "rnbq1rk1/2n2pbp/p3p1p1/1p1pP3/3P1P2/2N1BN2/PP2B1PP/2R1QRK1 w - -",
+      "nodes": 23528886,
+      "passed": false,
+      "testId": "Crafty Test Pos.165",
+      "timeMs": 4773
+    },
+    {
+      "actual": "a2a3",
+      "expected": "bm f1c1",
+      "fen": "n1bq1rk1/r2n1pbp/2RQp1p1/p2pP3/1p1P1P2/5N2/PP1BBNPP/5RK1 w - -",
+      "nodes": 24746147,
+      "passed": false,
+      "testId": "Crafty Test Pos.166",
+      "timeMs": 4914
+    },
+    {
+      "actual": "h2h3",
+      "expected": "bm c2c8",
+      "fen": "n1r2bk1/rb3p1p/1n2p1p1/p2pP3/1p1P1P2/3BBN2/PPR2NPP/2R3K1 w - -",
+      "nodes": 26417581,
+      "passed": false,
+      "testId": "Crafty Test Pos.167",
+      "timeMs": 4957
+    },
+    {
+      "actual": "a3b4",
+      "expected": "bm a3b4",
+      "fen": "6k1/1bn2p1p/1n2pPp1/p2pN3/1p1P1P2/P2B4/1P4PP/2B3K1 w - -",
+      "nodes": 30061128,
+      "passed": true,
+      "testId": "Crafty Test Pos.168",
+      "timeMs": 4874
+    },
+    {
+      "actual": "f4f5",
+      "expected": "bm f4f5",
+      "fen": "7k/1bn4p/5PpN/3pp3/1B1P1P2/3B4/1n4PP/6K1 w - -",
+      "nodes": 30615446,
+      "passed": true,
+      "testId": "Crafty Test Pos.169",
+      "timeMs": 4255
+    },
+    {
+      "actual": "e4e5",
+      "expected": "bm e4e5",
+      "fen": "rnbqkb1r/pp2p3/2pp1n1p/5pp1/3PPB2/2P5/PP1N1PPP/R2QKBNR w KQkq -",
+      "nodes": 25800330,
+      "passed": true,
+      "testId": "Crafty Test Pos.170",
+      "timeMs": 4827
+    },
+    {
+      "actual": "f1c4",
+      "expected": "bm e5d6",
+      "fen": "rn1q1br1/ppk1p3/2ppb2p/4P1n1/3P1Q2/2P1NN2/PP3PPP/R3KB1R w KQ -",
+      "nodes": 15293719,
+      "passed": false,
+      "testId": "Crafty Test Pos.171",
+      "timeMs": 2881
+    },
+    {
+      "actual": "f4e3",
+      "expected": "bm f4f3",
+      "fen": "rk3br1/pp2q3/2npn2p/1N1p4/5Q1P/2P5/PP2BPP1/R3K2R w KQ -",
+      "nodes": 26294001,
+      "passed": false,
+      "testId": "Crafty Test Pos.172",
+      "timeMs": 4795
+    },
+    {
+      "actual": "f3d4",
+      "expected": "bm f3d4",
+      "fen": "r1bqk1nr/pp1nppbp/3p2p1/8/2PpP3/2N2N2/PP2BPPP/R1BQK2R w KQkq -",
+      "nodes": 15830083,
+      "passed": true,
+      "testId": "Crafty Test Pos.173",
+      "timeMs": 3201
+    },
+    {
+      "actual": "d4c2",
+      "expected": "bm d4f3",
+      "fen": "r2qr1k1/1p1bppbp/p1np1np1/8/2PNPP2/2N1B2P/PP1QB1P1/R4RK1 w - -",
+      "nodes": 12088466,
+      "passed": false,
+      "testId": "Crafty Test Pos.174",
+      "timeMs": 2436
+    },
+    {
+      "actual": "b4b5",
+      "expected": "bm b4b5",
+      "fen": "1r2r1k1/1q1bppbp/ppnp2p1/4P2n/1PP2P2/P1NBBN1P/5QP1/2R2RK1 w - -",
+      "nodes": 26471667,
+      "passed": true,
+      "testId": "Crafty Test Pos.175",
+      "timeMs": 4950
+    },
+    {
+      "actual": "f2h4",
+      "expected": "bm f2h4",
+      "fen": "1r1nr1kb/3qpp2/1p1p2p1/1P2P1N1/5Pb1/P1NBB3/5Q2/2RR2K1 w - -",
+      "nodes": 11068190,
+      "passed": true,
+      "testId": "Crafty Test Pos.176",
+      "timeMs": 2110
+    },
+    {
+      "actual": "d2b3",
+      "expected": "bm g1f3",
+      "fen": "rnbqk2r/pp2p1bp/2p2ppn/3pP3/3P1P2/2P5/PP1N2PP/R1BQKBNR w KQkq -",
+      "nodes": 14885406,
+      "passed": false,
+      "testId": "Crafty Test Pos.177",
+      "timeMs": 2952
+    },
+    {
+      "actual": "a2a4",
+      "expected": "bm a2a4",
+      "fen": "r1b2rk1/1p2p1bp/1qn3pn/p2pP3/3P4/1N3N2/PP2B1PP/R1BQ1R1K w - -",
+      "nodes": 25615544,
+      "passed": true,
+      "testId": "Crafty Test Pos.178",
+      "timeMs": 4981
+    },
+    {
+      "actual": "f3g5",
+      "expected": "bm d2c1",
+      "fen": "r4rk1/1p2p1bp/2n3pn/p3P3/P2Pp3/q4N2/3BB1PP/1R1Q1R1K w - -",
+      "nodes": 26393549,
+      "passed": false,
+      "testId": "Crafty Test Pos.179",
+      "timeMs": 4909
+    },
+    {
+      "actual": "b3e3",
+      "expected": "bm c4d5",
+      "fen": "5r2/rp2p1kp/2n3p1/p3P3/P1BP4/1R3P2/7P/3R3K w - -",
+      "nodes": 26088821,
+      "passed": false,
+      "testId": "Crafty Test Pos.180",
+      "timeMs": 4382
+    },
+    {
+      "actual": "d4d5",
+      "expected": "bm g2f2",
+      "fen": "8/3rp1kp/1rp3p1/p1R1P3/P2P4/5P2/6KP/3R4 w - -",
+      "nodes": 24998099,
+      "passed": false,
+      "testId": "Crafty Test Pos.181",
+      "timeMs": 3641
+    },
+    {
+      "actual": "e3e2",
+      "expected": "bm e3f4",
+      "fen": "6k1/4R2p/4p1p1/p2pP3/3P4/r3KP2/7P/8 w - -",
+      "nodes": 32137568,
+      "passed": false,
+      "testId": "Crafty Test Pos.182",
+      "timeMs": 4690
+    },
+    {
+      "actual": "a6a7",
+      "expected": "bm a6f6",
+      "fen": "8/5k2/R5pp/3pP3/p2r1PKP/8/8/8 w - -",
+      "nodes": 26574962,
+      "passed": false,
+      "testId": "Crafty Test Pos.183",
+      "timeMs": 3897
+    },
+    {
+      "actual": "f5e5",
+      "expected": "bm d7d5",
+      "fen": "5k2/3R4/4P2p/3p1K1p/p1r2P2/8/8/8 w - -",
+      "nodes": 23147561,
+      "passed": false,
+      "testId": "Crafty Test Pos.184",
+      "timeMs": 3193
+    },
+    {
+      "actual": "h5h3",
+      "expected": "bm h5h3",
+      "fen": "6k1/8/4P3/4KP1R/2r5/p6p/8/8 w - -",
+      "nodes": 30404162,
+      "passed": true,
+      "testId": "Crafty Test Pos.185",
+      "timeMs": 4193
+    },
+    {
+      "actual": "e1g1",
+      "expected": "bm e1g1",
+      "fen": "rnbqk2r/ppp3bp/3p1np1/4pp2/2P5/2NP1NP1/PP2PPBP/R1BQK2R w KQkq -",
+      "nodes": 24971876,
+      "passed": true,
+      "testId": "Crafty Test Pos.186",
+      "timeMs": 4932
+    },
+    {
+      "actual": "g5e3",
+      "expected": "bm b4b5",
+      "fen": "r2q1rk1/1pp3bp/2npbnp1/4ppB1/1PP5/2NP1NP1/3QPPBP/1R3RK1 w - -",
+      "nodes": 11198312,
+      "passed": false,
+      "testId": "Crafty Test Pos.187",
+      "timeMs": 2266
+    },
+    {
+      "actual": "f2f4",
+      "expected": "bm b5c6",
+      "fen": "5rk1/1pq1n1bp/2ppbnp1/1P2ppB1/N1P5/3P2P1/2NQPPBP/1R4K1 w - -",
+      "nodes": 19490027,
+      "passed": false,
+      "testId": "Crafty Test Pos.188",
+      "timeMs": 3691
+    },
+    {
+      "actual": "g3f4",
+      "expected": "bm g3f4",
+      "fen": "6k1/r2nn1b1/2ppb1pp/5p2/2P2p2/2NP2P1/2NBP1BP/1R4K1 w - -",
+      "nodes": 19028747,
+      "passed": true,
+      "testId": "Crafty Test Pos.189",
+      "timeMs": 3321
+    },
+    {
+      "actual": "e2e4",
+      "expected": "bm d1b2",
+      "fen": "6k1/4n3/1n2bbpp/5p2/1N1p1P2/3P4/4PKBP/2BN4 w - -",
+      "nodes": 23367075,
+      "passed": false,
+      "testId": "Crafty Test Pos.190",
+      "timeMs": 4018
+    },
+    {
+      "actual": "f1f2",
+      "expected": "bm d2e3",
+      "fen": "8/5bk1/5bpp/5p2/N2p1P2/3Pn3/3BP1BP/5K2 w - -",
+      "nodes": 27788338,
+      "passed": false,
+      "testId": "Crafty Test Pos.191",
+      "timeMs": 4415
+    },
+    {
+      "actual": "f4g5",
+      "expected": "bm f4g5",
+      "fen": "8/6k1/7p/2bB1pp1/5P2/4p3/4P1KP/8 w - -",
+      "nodes": 25821667,
+      "passed": true,
+      "testId": "Crafty Test Pos.192",
+      "timeMs": 3236
+    },
+    {
+      "actual": "d2d4",
+      "expected": "bm d2d4",
+      "fen": "r1bq1rk1/pp1pppbp/2n2np1/1Bp5/4P3/2P2N2/PP1P1PPP/RNBQR1K1 w - -",
+      "nodes": 15273164,
+      "passed": true,
+      "testId": "Crafty Test Pos.193",
+      "timeMs": 2974
+    },
+    {
+      "actual": "c1a3",
+      "expected": "bm c1a3",
+      "fen": "r2q1rk1/p3ppbp/2p3p1/3pPb2/3P4/2P2N1P/P4PP1/R1BQR1K1 w - -",
+      "nodes": 15899390,
+      "passed": true,
+      "testId": "Crafty Test Pos.194",
+      "timeMs": 3168
+    },
+    {
+      "actual": "c3c4",
+      "expected": "bm f3f4",
+      "fen": "1r4k1/prq1ppbp/2p3p1/2BpP3/b2P3N/2P1QP1P/P5P1/R1R3K1 w - -",
+      "nodes": 26502432,
+      "passed": false,
+      "testId": "Crafty Test Pos.195",
+      "timeMs": 4944
+    },
+    {
+      "actual": "h6h7",
+      "expected": "bm h6h7",
+      "fen": "1r6/pr2pk1p/2p2b1Q/1bBp1p2/3P4/2P2NqP/P5P1/R3R1K1 w - -",
+      "nodes": 27504982,
+      "passed": true,
+      "testId": "Crafty Test Pos.196",
+      "timeMs": 4621
+    },
+    {
+      "actual": "f5e5",
+      "expected": "bm f5e5",
+      "fen": "1r1k4/pr2p3/2R5/1b1pqQ2/3P4/2P4P/P5P1/R5K1 w - -",
+      "nodes": 20464193,
+      "passed": true,
+      "testId": "Crafty Test Pos.197",
+      "timeMs": 3358
+    },
+    {
+      "actual": "f7e7",
+      "expected": "bm f7e7",
+      "fen": "8/p1k1pQ2/1rb5/3p4/3P2P1/2P4P/P6K/8 w - -",
+      "nodes": 32306775,
+      "passed": true,
+      "testId": "Crafty Test Pos.198",
+      "timeMs": 4964
+    },
+    {
+      "actual": "b4a3",
+      "expected": "bm b4a3",
+      "fen": "2k5/p2b4/8/8/1QPP2P1/6KP/P3r3/8 w - -",
+      "nodes": 32686965,
+      "passed": true,
+      "testId": "Crafty Test Pos.199",
+      "timeMs": 4738
+    },
+    {
+      "actual": "e2e3",
+      "expected": "bm e2e3",
+      "fen": "rnbqk2r/ppp2pp1/4pb1p/3p4/2PP4/2N2N2/PP2PPPP/R2QKB1R w KQkq -",
+      "nodes": 16268353,
+      "passed": true,
+      "testId": "Crafty Test Pos.200",
+      "timeMs": 3069
+    },
+    {
+      "actual": "d2c3",
+      "expected": "bm d2c3",
+      "fen": "r1bq1rk1/1pp2pp1/p4b1p/3Ppn2/2B1N3/4PN2/PP1Q1PPP/R4RK1 w - -",
+      "nodes": 25649068,
+      "passed": true,
+      "testId": "Crafty Test Pos.201",
+      "timeMs": 4879
+    },
+    {
+      "actual": "f1c1",
+      "expected": "bm g1h1",
+      "fen": "2r1r1k1/1p3pp1/pQ1n2qp/3P4/4p1b1/1B2P3/PP1N1PPP/1R3RK1 w - -",
+      "nodes": 21950650,
+      "passed": false,
+      "testId": "Crafty Test Pos.202",
+      "timeMs": 4003
+    },
+    {
+      "actual": "e1e2",
+      "expected": "bm e1e2",
+      "fen": "2r3k1/1p3pp1/pQ1n2qp/3P4/4pPr1/1B2P3/PP4PP/1R2R1K1 w - -",
+      "nodes": 27969099,
+      "passed": true,
+      "testId": "Crafty Test Pos.203",
+      "timeMs": 4981
+    },
+    {
+      "actual": "e4g2",
+      "expected": "bm e4d3",
+      "fen": "6k1/1p4p1/p2n2r1/3P1p1p/3QBPq1/4P1P1/PP5P/1R4K1 w - -",
+      "nodes": 28440655,
+      "passed": false,
+      "testId": "Crafty Test Pos.204",
+      "timeMs": 4548
+    },
+    {
+      "actual": "e7e5",
+      "expected": "bm e7b7",
+      "fen": "8/1p2Q1pk/6rq/p2P1p2/5P1p/3BP1nP/PP3K2/1R6 w - -",
+      "nodes": 28703292,
+      "passed": false,
+      "testId": "Crafty Test Pos.205",
+      "timeMs": 4779
+    },
+    {
+      "actual": "d5d6",
+      "expected": "bm d5d6",
+      "fen": "8/6pk/5r2/2QP1p2/5P1p/1P1BP1nP/P5q1/1R2K3 w - -",
+      "nodes": 30038063,
+      "passed": true,
+      "testId": "Crafty Test Pos.206",
+      "timeMs": 4960
+    },
+    {
+      "actual": "c1c4",
+      "expected": "bm c5f2",
+      "fen": "8/3P2pk/8/2Q2p2/4qP1p/1P1r3P/PK6/2R5 w - -",
+      "nodes": 32092054,
+      "passed": false,
+      "testId": "Crafty Test Pos.207",
+      "timeMs": 4930
+    },
+    {
+      "actual": "b3b4",
+      "expected": "bm c3c4",
+      "fen": "3Q4/2R3pk/8/q4p2/5P1p/1PK5/3Q4/7r w - -",
+      "nodes": 31093888,
+      "passed": false,
+      "testId": "Crafty Test Pos.208",
+      "timeMs": 4577
+    },
+    {
+      "actual": "b1c3",
+      "expected": "bm f3e5",
+      "fen": "r1b1kbnr/p2pqppp/1pn5/2pQ4/2B5/4PN2/PPP2PPP/RNB1K2R w KQkq -",
+      "nodes": 21645797,
+      "passed": false,
+      "testId": "Crafty Test Pos.209",
+      "timeMs": 4108
+    },
+    {
+      "actual": "c1g5",
+      "expected": "bm c1g5",
+      "fen": "rkb3nr/p2p2p1/1p4n1/2p1q2p/2B1P2P/2N2Q2/PPP2PP1/R1B1K2R w KQ -",
+      "nodes": 25748212,
+      "passed": true,
+      "testId": "Crafty Test Pos.210",
+      "timeMs": 4941
+    },
+    {
+      "actual": "d1d2",
+      "expected": "bm e1d2",
+      "fen": "rkb2r2/3p2p1/pp2n3/2p1q1BB/3nP2P/2N1Q1P1/PPP2P2/3RK2R w K -",
+      "nodes": 28394901,
+      "passed": false,
+      "testId": "Crafty Test Pos.211",
+      "timeMs": 4988
+    },
+    {
+      "actual": "a2a3",
+      "expected": "bm d2c1",
+      "fen": "r4r2/kb3qpR/p2p4/1pp3P1/3nPPB1/2N1Q1P1/PPPK4/7R w - -",
+      "nodes": 24938800,
+      "passed": false,
+      "testId": "Crafty Test Pos.212",
+      "timeMs": 4623
+    },
+    {
+      "actual": "c2b1",
+      "expected": "bm c2b1",
+      "fen": "4rr2/k5pR/p2p4/2p3P1/5PB1/1nPQ2P1/P1K3q1/7R w - -",
+      "nodes": 14864039,
+      "passed": true,
+      "testId": "Crafty Test Pos.213",
+      "timeMs": 2362
+    },
+    {
+      "actual": "g4d7",
+      "expected": "bm g4d7",
+      "fen": "5r2/6R1/p2R4/n1p3P1/k4PB1/2P3P1/2K5/4r3 w - -",
+      "nodes": 29293761,
+      "passed": true,
+      "testId": "Crafty Test Pos.214",
+      "timeMs": 4747
+    },
+    {
+      "actual": "g2g3",
+      "expected": "bm d4d5",
+      "fen": "rnbq1rk1/ppp1bppp/3p1n2/4p3/2PP4/P1N1P3/1P2NPPP/R1BQKB1R w KQ -",
+      "nodes": 14037493,
+      "passed": false,
+      "testId": "Crafty Test Pos.215",
+      "timeMs": 2792
+    },
+    {
+      "actual": "e3e4",
+      "expected": "bm e3e4",
+      "fen": "2rqbrk1/pp1nbppp/3p1n2/3Pp3/8/P1N1PPN1/1P2B1PP/R1BQ1R1K w - -",
+      "nodes": 19965299,
+      "passed": true,
+      "testId": "Crafty Test Pos.216",
+      "timeMs": 3914
+    },
+    {
+      "actual": "d1d2",
+      "expected": "bm d1d2",
+      "fen": "2rqbr1k/1p1nbpp1/p2p1n1p/P2PpN2/1P2P3/2N1BP2/4B1PP/2RQ1R1K w - -",
+      "nodes": 24165647,
+      "passed": true,
+      "testId": "Crafty Test Pos.217",
+      "timeMs": 4650
+    },
+    {
+      "actual": "g2g3",
+      "expected": "bm f5d6",
+      "fen": "q3bbrk/1pB2pp1/p2p3p/P2PpN1n/1P2P3/5P2/3QB1PP/2R4K w - -",
+      "nodes": 26358688,
+      "passed": false,
+      "testId": "Crafty Test Pos.218",
+      "timeMs": 4532
+    },
+    {
+      "actual": "e2b5",
+      "expected": "bm e2b5",
+      "fen": "q1r4k/1pB2bp1/1Q3p1p/Pp1Pp2n/4P3/5PP1/4B2P/2R4K w - -",
+      "nodes": 29225964,
+      "passed": true,
+      "testId": "Crafty Test Pos.219",
+      "timeMs": 4955
+    },
+    {
+      "actual": "c2c4",
+      "expected": "bm b5d7",
+      "fen": "rn1qkb1r/pp1b1ppp/5n2/1Bpp4/3P4/5N2/PPPN1PPP/R1BQK2R w KQkq -",
+      "nodes": 14255164,
+      "passed": false,
+      "testId": "Crafty Test Pos.220",
+      "timeMs": 2688
+    },
+    {
+      "actual": "g5h4",
+      "expected": "bm g5h4",
+      "fen": "r2q1rk1/pp3pp1/5n1p/2b3B1/3p4/3Q1N2/PPP2PPP/R4RK1 w - -",
+      "nodes": 25095010,
+      "passed": true,
+      "testId": "Crafty Test Pos.221",
+      "timeMs": 4671
+    },
+    {
+      "actual": "d1d3",
+      "expected": "bm d1d3",
+      "fen": "3rr1k1/pp3p2/7p/2b2p2/3p4/5N2/PPP2PPP/2RR1K2 w - -",
+      "nodes": 25200514,
+      "passed": true,
+      "testId": "Crafty Test Pos.222",
+      "timeMs": 4358
+    },
+    {
+      "actual": "e5d3",
+      "expected": "bm e5d3",
+      "fen": "3r4/2r2pk1/1p5p/pRb1Np2/3p4/P7/1PP2PPP/2R2K2 w - -",
+      "nodes": 24281372,
+      "passed": true,
+      "testId": "Crafty Test Pos.223",
+      "timeMs": 4323
+    },
+    {
+      "actual": "c3d4",
+      "expected": "bm c3d4",
+      "fen": "2r5/5p2/1p3k1p/1RbR1p2/p2pr3/P1PN2P1/1P3P1P/5K2 w - -",
+      "nodes": 27978837,
+      "passed": true,
+      "testId": "Crafty Test Pos.224",
+      "timeMs": 4554
+    },
+    {
+      "actual": "d3f4",
+      "expected": "bm f1e2",
+      "fen": "8/5p2/1p5p/r2k1p2/PR1b4/1P1N2P1/5P1P/5K2 w - -",
+      "nodes": 13714262,
+      "passed": false,
+      "testId": "Crafty Test Pos.225",
+      "timeMs": 2172
+    },
+    {
+      "actual": "b2c4",
+      "expected": "bm b2c4",
+      "fen": "8/8/5p1p/1P1k1p1P/1b3P2/1P4P1/1N2K3/8 w - -",
+      "nodes": 36823988,
+      "passed": true,
+      "testId": "Crafty Test Pos.226",
+      "timeMs": 4704
+    },
+    {
+      "actual": "f3e5",
+      "expected": "bm d2d3",
+      "fen": "r1bq1rk1/ppp2ppp/2p2n2/4p3/1b2P3/2N2N2/PPPP1PPP/R1BQ1RK1 w - -",
+      "nodes": 20623186,
+      "passed": false,
+      "testId": "Crafty Test Pos.227",
+      "timeMs": 3987
+    },
+    {
+      "actual": "d1e2",
+      "expected": "bm d1e2",
+      "fen": "r4rk1/ppp1qppp/2p1b3/2b1p3/4P1P1/3P1N1P/PPP3PK/R1BQ1R2 w - -",
+      "nodes": 24423815,
+      "passed": true,
+      "testId": "Crafty Test Pos.228",
+      "timeMs": 4696
+    },
+    {
+      "actual": "e3d2",
+      "expected": "bm h3h4",
+      "fen": "r4rk1/p1p3p1/1p2bp1p/q1p1p3/P3P1P1/1P1PQNKP/2P2RP1/R7 w - -",
+      "nodes": 23186541,
+      "passed": false,
+      "testId": "Crafty Test Pos.229",
+      "timeMs": 4103
+    },
+    {
+      "actual": "e2b2",
+      "expected": "bm e2b2",
+      "fen": "5rk1/p1p3p1/1p6/2p1p1p1/P3P3/1Pq1rNK1/4QRP1/3R4 w - -",
+      "nodes": 28733994,
+      "passed": true,
+      "testId": "Crafty Test Pos.230",
+      "timeMs": 4510
+    },
+    {
+      "actual": "e5g5",
+      "expected": "bm f3g5",
+      "fen": "2r3k1/p1pR2p1/1p6/4R3/r1p1P1K1/5N2/6P1/8 w - -",
+      "nodes": 25626072,
+      "passed": false,
+      "testId": "Crafty Test Pos.231",
+      "timeMs": 4031
+    },
+    {
+      "actual": "c7h7",
+      "expected": "bm g5h7",
+      "fen": "3r3k/p1R4r/1p6/4P1N1/2p3K1/6P1/8/8 w - -",
+      "nodes": 32886144,
+      "passed": false,
+      "testId": "Crafty Test Pos.232",
+      "timeMs": 4741
+    },
+    {
+      "actual": "f1c4",
+      "expected": "bm f1e2",
+      "fen": "rnbqkb1r/1p2pp1p/p2p1np1/8/P2NP3/2N5/1PP2PPP/R1BQKB1R w KQkq -",
+      "nodes": 10179493,
+      "passed": false,
+      "testId": "Crafty Test Pos.233",
+      "timeMs": 1984
+    },
+    {
+      "actual": "f4f5",
+      "expected": "bm f4f5",
+      "fen": "2rqr1k1/1p2ppbp/p1npbnp1/8/P3PP2/RNN1B3/1PP1B1PP/3Q1R1K w - -",
+      "nodes": 11624303,
+      "passed": true,
+      "testId": "Crafty Test Pos.234",
+      "timeMs": 2347
+    },
+    {
+      "actual": "b3b4",
+      "expected": "bm b3b4",
+      "fen": "2r1r3/1p1qppk1/p2p1bp1/P2Pn3/8/1RP1B3/1P2B1PP/3Q1R1K w - -",
+      "nodes": 27285968,
+      "passed": true,
+      "testId": "Crafty Test Pos.235",
+      "timeMs": 4937
+    },
+    {
+      "actual": "c3c4",
+      "expected": "bm f1f7",
+      "fen": "8/1prqppk1/p5p1/P2Pp3/7b/1QP5/1P2B1PP/5RK1 w - -",
+      "nodes": 24288919,
+      "passed": false,
+      "testId": "Crafty Test Pos.236",
+      "timeMs": 4325
+    },
+    {
+      "actual": "h2h4",
+      "expected": "bm b4e4",
+      "fen": "8/2q1p1k1/pb4p1/4p3/1Q6/2P2B2/1P4PP/7K w - -",
+      "nodes": 30367743,
+      "passed": false,
+      "testId": "Crafty Test Pos.237",
+      "timeMs": 4975
+    },
+    {
+      "actual": "h7f5",
+      "expected": "bm h7f5",
+      "fen": "7k/4p2B/1b6/p3p1p1/8/2P5/1P3qPP/1Q5K w - -",
+      "nodes": 16425710,
+      "passed": true,
+      "testId": "Crafty Test Pos.238",
+      "timeMs": 2702
+    },
+    {
+      "actual": "f5e4",
+      "expected": "bm f5e4",
+      "fen": "7k/4p3/8/p1b1pBp1/2P5/1P6/5qPP/1Q5K w - -",
+      "nodes": 15369139,
+      "passed": true,
+      "testId": "Crafty Test Pos.239",
+      "timeMs": 2400
+    },
+    {
+      "actual": "c1e3",
+      "expected": "bm e1g1",
+      "fen": "r1b1kbnr/1pqp1ppp/p1n1p3/8/3NP3/2N5/PPP1BPPP/R1BQK2R w KQkq -",
+      "nodes": 12203279,
+      "passed": false,
+      "testId": "Crafty Test Pos.240",
+      "timeMs": 2259
+    },
+    {
+      "actual": "d1d3",
+      "expected": "bm a6d3",
+      "fen": "1r3rk1/2qp1ppp/B1p1pn2/8/1b2P3/4B3/PPP2PPP/R2Q1RK1 w - -",
+      "nodes": 25795679,
+      "passed": false,
+      "testId": "Crafty Test Pos.241",
+      "timeMs": 4890
+    },
+    {
+      "actual": "f3e4",
+      "expected": "bm f3e4",
+      "fen": "1r3rk1/5ppp/2p5/3nq3/5p2/1P1B1Q2/P1P3PP/R4RK1 w - -",
+      "nodes": 24217042,
+      "passed": true,
+      "testId": "Crafty Test Pos.242",
+      "timeMs": 4308
+    },
+    {
+      "actual": "f4c4",
+      "expected": "bm f4d4",
+      "fen": "5rk1/5p1p/6q1/3Q2p1/P4R2/1P6/2r3PP/4R1K1 w - -",
+      "nodes": 11854925,
+      "passed": false,
+      "testId": "Crafty Test Pos.243",
+      "timeMs": 1958
+    },
+    {
+      "actual": "b4a5",
+      "expected": "bm d2c2",
+      "fen": "8/7p/2q2pk1/p4rp1/1P1Q4/8/2rR2PP/1R4K1 w - -",
+      "nodes": 30258224,
+      "passed": false,
+      "testId": "Crafty Test Pos.244",
+      "timeMs": 4643
+    },
+    {
+      "actual": "a1b1",
+      "expected": "bm a6a7",
+      "fen": "8/7p/P4p1k/6p1/1P6/8/1q3rPP/R5QK w - -",
+      "nodes": 32373622,
+      "passed": false,
+      "testId": "Crafty Test Pos.245",
+      "timeMs": 4962
+    },
+    {
+      "actual": "e6f7",
+      "expected": "bm e6f7",
+      "fen": "8/7k/4Qp1p/6p1/1q6/8/7P/5R1K w - -",
+      "nodes": 41111541,
+      "passed": true,
+      "testId": "Crafty Test Pos.246",
+      "timeMs": 4307
+    },
+    {
+      "actual": "a2a3",
+      "expected": "bm e1g1",
+      "fen": "r1b1kbnr/1pqp1ppp/p1n1p3/8/3NP3/2N5/PPP1BPPP/R1BQK2R w KQkq -",
+      "nodes": 20415891,
+      "passed": false,
+      "testId": "Crafty Test Pos.247",
+      "timeMs": 4093
+    },
+    {
+      "actual": "e4e5",
+      "expected": "bm a1d1",
+      "fen": "r1b1k1nr/2B2pbp/p1p1p3/3p4/4P3/2N5/PPP1BPP1/R4R1K w kq -",
+      "nodes": 24478526,
+      "passed": false,
+      "testId": "Crafty Test Pos.248",
+      "timeMs": 4584
+    },
+    {
+      "actual": "g3d6",
+      "expected": "bm e4d5",
+      "fen": "2b2rk1/1r3pbp/p1p1p1n1/3p4/N3P3/2P3B1/PP2BPP1/3R1R1K w - -",
+      "nodes": 25012599,
+      "passed": false,
+      "testId": "Crafty Test Pos.249",
+      "timeMs": 4685
+    },
+    {
+      "actual": "h1g1",
+      "expected": "bm h1g1",
+      "fen": "2b3k1/5rbp/pBr1p1n1/3p1p2/N7/2P5/PP2BPP1/3RR2K w - -",
+      "nodes": 15265259,
+      "passed": true,
+      "testId": "Crafty Test Pos.250",
+      "timeMs": 2852
+    },
+    {
+      "actual": "b6d7",
+      "expected": "bm b6d7",
+      "fen": "1r3b2/1b2rk1p/pN2p1n1/B4p1B/2p5/1P6/P4PP1/3RRK2 w - -",
+      "nodes": 28644034,
+      "passed": true,
+      "testId": "Crafty Test Pos.251",
+      "timeMs": 4976
+    },
+    {
+      "actual": "a4a5",
+      "expected": "bm a4a5",
+      "fen": "1r6/4k2p/2b1p1n1/p4p1B/R7/1P6/5PP1/4RK2 w - -",
+      "nodes": 26683279,
+      "passed": true,
+      "testId": "Crafty Test Pos.252",
+      "timeMs": 4083
+    },
+    {
+      "actual": "e1c1",
+      "expected": "bm e1e5",
+      "fen": "8/4k3/4p2R/1b3pnB/8/1r4P1/5PK1/4R3 w - -",
+      "nodes": 25898247,
+      "passed": false,
+      "testId": "Crafty Test Pos.253",
+      "timeMs": 4244
+    },
+    {
+      "actual": "h6h7",
+      "expected": "bm c1a1",
+      "fen": "8/4k3/4p2R/3b1p2/4n3/6P1/1r2BP2/2R1K3 w - -",
+      "nodes": 29426465,
+      "passed": false,
+      "testId": "Crafty Test Pos.254",
+      "timeMs": 4794
+    },
+    {
+      "actual": "d3b1",
+      "expected": "bm d3b1",
+      "fen": "8/4k3/2n1p2R/8/8/1b1B2P1/5P2/1r3K2 w - -",
+      "nodes": 17748185,
+      "passed": true,
+      "testId": "Crafty Test Pos.255",
+      "timeMs": 2789
+    },
+    {
+      "actual": "g4g5",
+      "expected": "bm g4g5",
+      "fen": "8/5n2/2b2k2/4p3/5PPR/4K3/8/1B6 w - -",
+      "nodes": 34343584,
+      "passed": true,
+      "testId": "Crafty Test Pos.256",
+      "timeMs": 4949
+    },
+    {
+      "actual": "b2b3",
+      "expected": "bm f3h4",
+      "fen": "r1bqk2r/pp1n1ppp/2pb1n2/3pp3/8/3P1NP1/PPPNPPBP/R1BQ1RK1 w kq -",
+      "nodes": 22151705,
+      "passed": false,
+      "testId": "Crafty Test Pos.257",
+      "timeMs": 4504
+    },
+    {
+      "actual": "h4f5",
+      "expected": "bm d1e2",
+      "fen": "r2r2k1/pp3ppp/1qpbbn2/2n1p3/4P2N/5PP1/PPP3BP/R1BQRN1K w - -",
+      "nodes": 7525739,
+      "passed": false,
+      "testId": "Crafty Test Pos.258",
+      "timeMs": 1573
+    },
+    {
+      "actual": "g5e3",
+      "expected": "bm g5e3",
+      "fen": "r2r2k1/pp3pp1/2p1bn1p/q3p1B1/4P1PN/2b2P2/P1N1Q1BP/R3R2K w - -",
+      "nodes": 26230207,
+      "passed": true,
+      "testId": "Crafty Test Pos.259",
+      "timeMs": 4989
+    },
+    {
+      "actual": "h2h4",
+      "expected": "bm e1g1",
+      "fen": "4r1k1/p4pp1/1ppr1n2/4pPB1/q7/4NP2/P3Q1BP/4R2K w - -",
+      "nodes": 11732808,
+      "passed": false,
+      "testId": "Crafty Test Pos.260",
+      "timeMs": 2127
+    },
+    {
+      "actual": "g2f1",
+      "expected": "bm e3g4",
+      "fen": "4rk2/p4pp1/1pp5/4pP2/3r1q2/4NP2/P5BP/4Q1RK w - -",
+      "nodes": 29859855,
+      "passed": false,
+      "testId": "Crafty Test Pos.261",
+      "timeMs": 4962
+    },
+    {
+      "actual": "e3c2",
+      "expected": "bm e3d5",
+      "fen": "4r3/p1k2pp1/1p4q1/2p5/3r1p2/4N3/P4QBP/6RK w - -",
+      "nodes": 24923159,
+      "passed": false,
+      "testId": "Crafty Test Pos.262",
+      "timeMs": 4109
+    },
+    {
+      "actual": "f7g8",
+      "expected": "bm f7f8",
+      "fen": "8/p1kq1Q2/1p6/2p5/1r3p2/4r3/P5BP/6RK w - -",
+      "nodes": 24498063,
+      "passed": false,
+      "testId": "Crafty Test Pos.263",
+      "timeMs": 4004
+    },
+    {
+      "actual": "c7f7",
+      "expected": "bm c7f7",
+      "fen": "8/p1Q5/1p6/2p3k1/3q4/4r3/r5BP/5R1K w - -",
+      "nodes": 23315304,
+      "passed": true,
+      "testId": "Crafty Test Pos.264",
+      "timeMs": 3651
+    },
+    {
+      "actual": "d1e2",
+      "expected": "bm g1f3",
+      "fen": "rnbqk2r/ppp2ppp/5n2/8/1bBP4/2N5/PP3PPP/R1BQK1NR w KQkq -",
+      "nodes": 24898852,
+      "passed": false,
+      "testId": "Crafty Test Pos.265",
+      "timeMs": 4713
+    },
+    {
+      "actual": "f2f4",
+      "expected": "bm f2f4",
+      "fen": "r2q1rk1/pppn1ppp/6b1/4P3/1bB3P1/2N1B2P/PP3P2/R2Q1RK1 w - -",
+      "nodes": 25114534,
+      "passed": true,
+      "testId": "Crafty Test Pos.266",
+      "timeMs": 4766
+    },
+    {
+      "actual": "f3f2",
+      "expected": "bm c3e4",
+      "fen": "r4r2/pp3pkp/1np5/4q3/1b4P1/1BN1BQ1P/PP6/5RK1 w - -",
+      "nodes": 12743914,
+      "passed": false,
+      "testId": "Crafty Test Pos.267",
+      "timeMs": 2321
+    },
+    {
+      "actual": "a2a3",
+      "expected": "bm h6f5",
+      "fen": "5r1k/Bp5p/5p1N/3pq3/1br3P1/7P/PP3Q2/5RK1 w - -",
+      "nodes": 28913746,
+      "passed": false,
+      "testId": "Crafty Test Pos.268",
+      "timeMs": 4758
+    },
+    {
+      "actual": "a7b8",
+      "expected": "bm a7b8",
+      "fen": "7k/Bp2r2p/7N/3pp3/6P1/P6P/1P4K1/4b3 w - -",
+      "nodes": 28647790,
+      "passed": true,
+      "testId": "Crafty Test Pos.269",
+      "timeMs": 4528
+    },
+    {
+      "actual": "e5c4",
+      "expected": "bm f1e2",
+      "fen": "8/1p4kp/8/4N1P1/3pp3/bP5P/8/5K2 w - -",
+      "nodes": 17245221,
+      "passed": false,
+      "testId": "Crafty Test Pos.270",
+      "timeMs": 2473
+    },
+    {
+      "actual": "f1e2",
+      "expected": "bm d1d2",
+      "fen": "r1bqkb1r/pp3ppp/2nppn2/6B1/3NP3/2N5/PPP2PPP/R2QKB1R w KQkq -",
+      "nodes": 24319074,
+      "passed": false,
+      "testId": "Crafty Test Pos.271",
+      "timeMs": 4690
+    },
+    {
+      "actual": "b2b4",
+      "expected": "bm f4d2",
+      "fen": "r2qk2r/1p3pp1/p1b1pn1p/b2p4/4PB2/P1N2P2/1PP3PP/2KRQB1R w kq -",
+      "nodes": 23509697,
+      "passed": false,
+      "testId": "Crafty Test Pos.272",
+      "timeMs": 4255
+    },
+    {
+      "actual": "d2d4",
+      "expected": "bm d2d4",
+      "fen": "r2qr1k1/5pp1/2b2n1p/pp6/2Bp3Q/P4P2/NPPR2PP/2K4R w - -",
+      "nodes": 25548384,
+      "passed": true,
+      "testId": "Crafty Test Pos.273",
+      "timeMs": 4435
+    },
+    {
+      "actual": "b2c1",
+      "expected": "bm b2c1",
+      "fen": "1r4k1/5pp1/2bR1n1p/p7/8/4rP2/NKP3PP/5B1R w - -",
+      "nodes": 25580617,
+      "passed": true,
+      "testId": "Crafty Test Pos.274",
+      "timeMs": 4411
+    },
+    {
+      "actual": "c6b6",
+      "expected": "bm c6b6",
+      "fen": "r5k1/5pp1/2R2n1p/8/p7/5PP1/2P1K2P/7B w - -",
+      "nodes": 9719945,
+      "passed": true,
+      "testId": "Crafty Test Pos.275",
+      "timeMs": 1509
+    },
+    {
+      "actual": "g2h3",
+      "expected": "bm g2h3",
+      "fen": "6k1/5pp1/7p/8/8/2K2PP1/2P3BP/6r1 w - -",
+      "nodes": 32245141,
+      "passed": true,
+      "testId": "Crafty Test Pos.276",
+      "timeMs": 4776
+    },
+    {
+      "actual": "d3e3",
+      "expected": "bm d3e3",
+      "fen": "6k1/5p2/8/8/4B2p/3K1P2/2P2r2/8 w - -",
+      "nodes": 36772912,
+      "passed": true,
+      "testId": "Crafty Test Pos.277",
+      "timeMs": 4888
+    },
+    {
+      "actual": "g2d5",
+      "expected": "bm f2f3",
+      "fen": "6k1/6r1/8/5p2/5P2/8/2P2KBp/8 w - -",
+      "nodes": 36967139,
+      "passed": false,
+      "testId": "Crafty Test Pos.278",
+      "timeMs": 4573
+    },
+    {
+      "actual": "c1f4",
+      "expected": "bm g2g3",
+      "fen": "r2qkb1r/pp1npppp/2p2n2/5b2/2QP4/2N2N2/PP2PPPP/R1B1KB1R w KQkq -",
+      "nodes": 22650874,
+      "passed": false,
+      "testId": "Crafty Test Pos.279",
+      "timeMs": 4567
+    },
+    {
+      "actual": "f2f3",
+      "expected": "bm c3e4",
+      "fen": "3r1rk1/pp2bppp/1qp1pn2/5b2/3Pn3/2N1P1P1/PP2QPBP/R1BRN1K1 w - -",
+      "nodes": 24373139,
+      "passed": false,
+      "testId": "Crafty Test Pos.280",
+      "timeMs": 4742
+    },
+    {
+      "actual": "d3c3",
+      "expected": "bm c1f4",
+      "fen": "2nr1rk1/pp2bppp/1qp1p1b1/8/P2PP3/1P1R1PP1/2N1Q1BP/R1B3K1 w - -",
+      "nodes": 11653338,
+      "passed": false,
+      "testId": "Crafty Test Pos.281",
+      "timeMs": 2305
+    },
+    {
+      "actual": "d3e3",
+      "expected": "bm d3e3",
+      "fen": "5rk1/pp2nppp/1q4b1/4p3/PP2P3/3QbPP1/2N3BP/3R2K1 w - -",
+      "nodes": 9645161,
+      "passed": true,
+      "testId": "Crafty Test Pos.282",
+      "timeMs": 1647
+    },
+    {
+      "actual": "c3d4",
+      "expected": "bm c3b3",
+      "fen": "8/p3nkpp/1p3p2/4p3/PP1qP3/2Q1NPP1/7P/6K1 w - -",
+      "nodes": 29558858,
+      "passed": false,
+      "testId": "Crafty Test Pos.283",
+      "timeMs": 4895
+    },
+    {
+      "actual": "h3g3",
+      "expected": "bm f3g4",
+      "fen": "5k2/p3n1p1/1p2qp2/4p3/PP2P1p1/5P1K/3Q2NP/8 w - -",
+      "nodes": 31709685,
+      "passed": false,
+      "testId": "Crafty Test Pos.284",
+      "timeMs": 4946
+    },
+    {
+      "actual": "e3f5",
+      "expected": "bm e3c4",
+      "fen": "5k2/p3n1p1/1p3p2/8/PP1p2P1/4N3/6KP/8 w - -",
+      "nodes": 24973115,
+      "passed": false,
+      "testId": "Crafty Test Pos.285",
+      "timeMs": 3627
+    },
+    {
+      "actual": "d6f5",
+      "expected": "bm d6f5",
+      "fen": "8/p3k1p1/1p1N1p2/1P6/P7/3K1n2/8/8 w - -",
+      "nodes": 34377158,
+      "passed": true,
+      "testId": "Crafty Test Pos.286",
+      "timeMs": 4925
+    },
+    {
+      "actual": "e2e3",
+      "expected": "bm e2e3",
+      "fen": "rn1qk2r/pbp1bppp/1p2pn2/3p2B1/2PP4/P1N2N2/1P2PPPP/R2QKB1R w KQkq -",
+      "nodes": 24807475,
+      "passed": true,
+      "testId": "Crafty Test Pos.287",
+      "timeMs": 4797
+    },
+    {
+      "actual": "d4c5",
+      "expected": "bm d4c5",
+      "fen": "r2q1rk1/1b2bppp/pp3n2/2pp4/3PnB2/P1NBPN2/1PQ2PPP/2R2RK1 w - -",
+      "nodes": 11742867,
+      "passed": true,
+      "testId": "Crafty Test Pos.288",
+      "timeMs": 2359
+    },
+    {
+      "actual": "b2b3",
+      "expected": "bm b2b3",
+      "fen": "2r1qrk1/1b2bppp/p4n2/1p1p4/1PnN1B2/P1NBP3/1Q3PPP/2RR2K1 w - -",
+      "nodes": 24473698,
+      "passed": true,
+      "testId": "Crafty Test Pos.289",
+      "timeMs": 4659
+    },
+    {
+      "actual": "d1e1",
+      "expected": "bm c3e2",
+      "fen": "3rqrk1/1b3pp1/p4b1p/1p3B2/1PnP1N2/PQN5/5PPP/2RR2K1 w - -",
+      "nodes": 23624974,
+      "passed": false,
+      "testId": "Crafty Test Pos.290",
+      "timeMs": 4519
+    },
+    {
+      "actual": "d4e2",
+      "expected": "bm d4e2",
+      "fen": "3r2k1/5pp1/p2r3p/1p6/1PnN1q2/P1Q5/5PPP/3RR1K1 w - -",
+      "nodes": 28122028,
+      "passed": true,
+      "testId": "Crafty Test Pos.291",
+      "timeMs": 4598
+    },
+    {
+      "actual": "h2h3",
+      "expected": "bm h2h3",
+      "fen": "6k1/6p1/4p2p/1p6/1qn5/6N1/5PPP/2Q3K1 w - -",
+      "nodes": 30591152,
+      "passed": true,
+      "testId": "Crafty Test Pos.292",
+      "timeMs": 4954
+    },
+    {
+      "actual": "b7e7",
+      "expected": "bm b7e7",
+      "fen": "8/1Q4pk/4p2p/1p1q4/2n5/7P/5PP1/5NK1 w - -",
+      "nodes": 17698402,
+      "passed": true,
+      "testId": "Crafty Test Pos.293",
+      "timeMs": 2671
+    },
+    {
+      "actual": "d3b1",
+      "expected": "bm d3b1",
+      "fen": "8/6p1/4p1kp/1p3n2/3q4/3QN2P/5PP1/6K1 w - -",
+      "nodes": 26393002,
+      "passed": true,
+      "testId": "Crafty Test Pos.294",
+      "timeMs": 4125
+    },
+    {
+      "actual": "e2e3",
+      "expected": "bm h2h3",
+      "fen": "rnbqk2r/1p2ppbp/p1p2np1/2Pp4/3P1B2/2N2N2/PP2PPPP/R2QKB1R w KQkq -",
+      "nodes": 21806117,
+      "passed": false,
+      "testId": "Crafty Test Pos.295",
+      "timeMs": 4456
+    },
+    {
+      "actual": "f4g5",
+      "expected": "bm f4e3",
+      "fen": "r1bqnrk1/1p4bp/p1p3p1/2nPp3/5B2/2NB1N1P/PP3PP1/2RQK2R w K -",
+      "nodes": 14864773,
+      "passed": false,
+      "testId": "Crafty Test Pos.296",
+      "timeMs": 2700
+    },
+    {
+      "actual": "g2f3",
+      "expected": "bm g2f3",
+      "fen": "r2q1rk1/1p4bp/p1p3p1/8/6Q1/4Bb1P/PP3PP1/2R2RK1 w - -",
+      "nodes": 27889327,
+      "passed": true,
+      "testId": "Crafty Test Pos.297",
+      "timeMs": 4981
+    },
+    {
+      "actual": "d3d8",
+      "expected": "bm d3d8",
+      "fen": "6k1/1p3rbp/p1p3p1/8/2Q5/3RBP1P/1q3P2/6K1 w - -",
+      "nodes": 27796374,
+      "passed": true,
+      "testId": "Crafty Test Pos.298",
+      "timeMs": 3969
+    },
+    {
+      "actual": "h4h5",
+      "expected": "bm h4h5",
+      "fen": "3R1bk1/1p3r1p/p1p1Q1pB/8/5P1P/q7/5PK1/8 w - -",
+      "nodes": 29016531,
+      "passed": true,
+      "testId": "Crafty Test Pos.299",
+      "timeMs": 4466
+    },
+    {
+      "actual": "e2e4",
+      "expected": "bm c1g5",
+      "fen": "r1bqk2r/pp2ppbp/2np1np1/2p5/8/2NP1NP1/PPP1PPBP/R1BQ1RK1 w kq -",
+      "nodes": 24392200,
+      "passed": false,
+      "testId": "Crafty Test Pos.300",
+      "timeMs": 4971
+    },
+    {
+      "actual": "g5e4",
+      "expected": "bm g5e4",
+      "fen": "1r1q1r2/3bppkp/2np2p1/ppp3N1/4n3/P2P2P1/1PPQPPBP/R4RK1 w - -",
+      "nodes": 24551641,
+      "passed": true,
+      "testId": "Crafty Test Pos.301",
+      "timeMs": 4952
+    },
+    {
+      "actual": "a6a1",
+      "expected": "bm c1a1",
+      "fen": "5r2/2q1ppk1/Rrnp2pp/2p5/1p2N1b1/3PP1P1/1PP2PBP/2R1Q1K1 w - -",
+      "nodes": 20263390,
+      "passed": false,
+      "testId": "Crafty Test Pos.302",
+      "timeMs": 3799
+    },
+    {
+      "actual": "e4d2",
+      "expected": "bm e4d2",
+      "fen": "2r3k1/1b2pp2/1qn3pp/2pp4/1p2N3/1P1PP1P1/R1P2PBP/Q5K1 w - -",
+      "nodes": 25896620,
+      "passed": true,
+      "testId": "Crafty Test Pos.303",
+      "timeMs": 4895
+    },
+    {
+      "actual": "a2a8",
+      "expected": "bm a2a8",
+      "fen": "r2q2k1/1b3p2/2n3p1/2ppp2p/1p6/1P1PPNPP/R1P2PB1/Q5K1 w - -",
+      "nodes": 29122856,
+      "passed": true,
+      "testId": "Crafty Test Pos.304",
+      "timeMs": 4901
+    },
+    {
+      "actual": "g5f6",
+      "expected": "bm g5f6",
+      "fen": "b7/3n1k2/5pp1/2ppp1P1/1p4N1/1P1PP3/2P2PB1/6K1 w - -",
+      "nodes": 28345075,
+      "passed": true,
+      "testId": "Crafty Test Pos.305",
+      "timeMs": 4329
+    },
+    {
+      "actual": "g3g4",
+      "expected": "bm f4g5",
+      "fen": "b7/8/5k2/2pp2p1/1p3P2/1P1P2KB/2P5/8 w - -",
+      "nodes": 28622204,
+      "passed": false,
+      "testId": "Crafty Test Pos.306",
+      "timeMs": 3928
+    },
+    {
+      "actual": "b2b4",
+      "expected": "bm d3d4",
+      "fen": "r1bqk2r/pp2bppp/2np1n2/2p1p3/Q3P3/2PP1N2/PP1N1PPP/R1B1KB1R w KQkq -",
+      "nodes": 16387604,
+      "passed": false,
+      "testId": "Crafty Test Pos.307",
+      "timeMs": 3317
+    },
+    {
+      "actual": "c2c3",
+      "expected": "bm c2b3",
+      "fen": "2rq1rk1/1p1bbppp/p2p1n2/3Pp3/4P3/5N2/PPQN1PPP/R1B2RK1 w - -",
+      "nodes": 20328983,
+      "passed": false,
+      "testId": "Crafty Test Pos.308",
+      "timeMs": 4028
+    },
+    {
+      "actual": "d2b3",
+      "expected": "bm g2g4",
+      "fen": "2rq2k1/1p4pp/3p1b2/pbnPpr2/8/Q1R2N1P/PP1N1PP1/R1B3K1 w - -",
+      "nodes": 28516659,
+      "passed": false,
+      "testId": "Crafty Test Pos.309",
+      "timeMs": 4872
+    },
+    {
+      "actual": "g2f3",
+      "expected": "bm d2f3",
+      "fen": "2q3k1/1p4pp/3p1b2/pb1Pp3/8/1P1nQr1P/P2N1PK1/R1B5 w - -",
+      "nodes": 30425761,
+      "passed": false,
+      "testId": "Crafty Test Pos.310",
+      "timeMs": 4966
+    },
+    {
+      "actual": "h2h1",
+      "expected": "bm h2h1",
+      "fen": "6k1/1p1b2pp/3p4/p2Pbq2/P7/1P3p1P/5P1K/4R1N1 w - -",
+      "nodes": 37946900,
+      "passed": true,
+      "testId": "Crafty Test Pos.311",
+      "timeMs": 4153
+    },
+    {
+      "actual": "c1e3",
+      "expected": "bm e1g1",
+      "fen": "r1b1kb1r/pp3ppp/2n1pn2/2pq4/3P4/2P2N2/PP2BPPP/RNBQK2R w KQkq -",
+      "nodes": 24954405,
+      "passed": false,
+      "testId": "Crafty Test Pos.312",
+      "timeMs": 4879
+    },
+    {
+      "actual": "d1b3",
+      "expected": "bm d1b3",
+      "fen": "r1bq1rk1/1p2bppp/p1n1p3/3n4/3P4/2N2NB1/PP2BPPP/R2Q1RK1 w - -",
+      "nodes": 24590598,
+      "passed": true,
+      "testId": "Crafty Test Pos.313",
+      "timeMs": 4744
+    },
+    {
+      "actual": "a2b3",
+      "expected": "bm d4d5",
+      "fen": "2rqr1k1/1b2bppp/p1n1pn2/1p6/1P1P1B2/P1N2N2/Q3BPPP/2RR2K1 w - -",
+      "nodes": 24266740,
+      "passed": false,
+      "testId": "Crafty Test Pos.314",
+      "timeMs": 4852
+    },
+    {
+      "actual": "d7c7",
+      "expected": "bm f3d2",
+      "fen": "b3r1k1/3R1ppp/p1n5/1p6/1P6/4BN2/4rPPP/2R3K1 w - -",
+      "nodes": 25790656,
+      "passed": false,
+      "testId": "Crafty Test Pos.315",
+      "timeMs": 4470
+    },
+    {
+      "actual": "d7a7",
+      "expected": "bm d7a7",
+      "fen": "4r1k1/3R1pp1/p3b2p/1p6/1n6/4P3/3N1KPP/1R6 w - -",
+      "nodes": 27941289,
+      "passed": true,
+      "testId": "Crafty Test Pos.316",
+      "timeMs": 4804
+    },
+    {
+      "actual": "d8b8",
+      "expected": "bm d8b8",
+      "fen": "3R4/1b3ppk/p6p/1pn5/8/4P1P1/3NK2P/8 w - -",
+      "nodes": 15685687,
+      "passed": true,
+      "testId": "Crafty Test Pos.317",
+      "timeMs": 2420
+    },
+    {
+      "actual": "d2e4",
+      "expected": "bm d2e4",
+      "fen": "8/6pk/3R3p/1p3p2/4n3/4K1Pb/3N3P/8 w - -",
+      "nodes": 28732521,
+      "passed": true,
+      "testId": "Crafty Test Pos.318",
+      "timeMs": 3882
+    },
+    {
+      "actual": "b6b5",
+      "expected": "bm b6e6",
+      "fen": "8/6k1/1R5p/6p1/4p3/4KbP1/7P/8 w - -",
+      "nodes": 31664813,
+      "passed": false,
+      "testId": "Crafty Test Pos.319",
+      "timeMs": 3872
+    },
+    {
+      "actual": "c3d5",
+      "expected": "bm c1g5",
+      "fen": "r1bqkb1r/pp3ppp/2np1n2/1N2p3/4P3/2N5/PPP2PPP/R1BQKB1R w KQkq -",
+      "nodes": 22757704,
+      "passed": false,
+      "testId": "Crafty Test Pos.320",
+      "timeMs": 4352
+    },
+    {
+      "actual": "h5h7",
+      "expected": "bm g1h1",
+      "fen": "r2qkbr1/5p1p/p1npb3/1p1Np2Q/4Pp2/N2B4/PPP2PPP/R4RK1 w q -",
+      "nodes": 26477023,
+      "passed": false,
+      "testId": "Crafty Test Pos.321",
+      "timeMs": 4705
+    },
+    {
+      "actual": "c4b5",
+      "expected": "bm c4b5",
+      "fen": "2r1kb2/5p1p/p1npb2q/1p1Np3/2P1P3/N2B1pP1/PP3P1P/R5RK w - -",
+      "nodes": 11779885,
+      "passed": true,
+      "testId": "Crafty Test Pos.322",
+      "timeMs": 2027
+    },
+    {
+      "actual": "f5e4",
+      "expected": "bm f5e4",
+      "fen": "4kb2/5p1p/n2p4/3rpB2/8/5NP1/PP3q1P/R5RK w - -",
+      "nodes": 27792778,
+      "passed": true,
+      "testId": "Crafty Test Pos.323",
+      "timeMs": 4708
+    },
+    {
+      "actual": "b2b4",
+      "expected": "bm e1f1",
+      "fen": "3k1b2/7p/2Bp3q/2n1pp2/8/P4NP1/1P5P/4R2K w - -",
+      "nodes": 9429236,
+      "passed": false,
+      "testId": "Crafty Test Pos.324",
+      "timeMs": 1593
+    },
+    {
+      "actual": "g1f3",
+      "expected": "bm g1f3",
+      "fen": "r1bqk2r/pp1nbppp/2p1pn2/3p4/2PP4/2N1P3/PPQB1PPP/R3KBNR w KQkq -",
+      "nodes": 24576501,
+      "passed": true,
+      "testId": "Crafty Test Pos.325",
+      "timeMs": 4949
+    },
+    {
+      "actual": "a2a3",
+      "expected": "bm a1c1",
+      "fen": "r2q1rk1/pb1n1pp1/1p2pn1p/2b5/8/2N1PN2/PPQBBPPP/R2R2K1 w - -",
+      "nodes": 23988304,
+      "passed": false,
+      "testId": "Crafty Test Pos.326",
+      "timeMs": 4933
+    },
+    {
+      "actual": "h4h3",
+      "expected": "bm f2f3",
+      "fen": "rqr3k1/1b3pp1/p3pn1p/1p2b3/7Q/P1N1P3/1P1BBPPP/2RR2K1 w - -",
+      "nodes": 10662671,
+      "passed": false,
+      "testId": "Crafty Test Pos.327",
+      "timeMs": 2092
+    },
+    {
+      "actual": "d4e5",
+      "expected": "bm e2d3",
+      "fen": "r1r5/5kp1/p3p2p/1p1b1p2/3BnP2/P3P3/1P2B1PP/2RR2K1 w - -",
+      "nodes": 28164616,
+      "passed": false,
+      "testId": "Crafty Test Pos.328",
+      "timeMs": 4849
+    },
+    {
+      "actual": "d3c2",
+      "expected": "bm d3b1",
+      "fen": "8/4nkp1/p3p2p/1b2Bp2/5P2/1P1BP3/6PP/6K1 w - -",
+      "nodes": 31571987,
+      "passed": false,
+      "testId": "Crafty Test Pos.329",
+      "timeMs": 4941
+    },
+    {
+      "actual": "g2g3",
+      "expected": "bm g2g3",
+      "fen": "8/2B2k2/2n1p1p1/5p1p/4PP2/1b5P/5KP1/1B6 w - -",
+      "nodes": 30985894,
+      "passed": true,
+      "testId": "Crafty Test Pos.330",
+      "timeMs": 4913
+    },
+    {
+      "actual": "f1e2",
+      "expected": "bm f1e2",
+      "fen": "r1bqk2r/ppp2p1p/2np1np1/4p3/1bP5/2NPPN2/PP1B1PPP/R2QKB1R w KQkq -",
+      "nodes": 24360035,
+      "passed": true,
+      "testId": "Crafty Test Pos.331",
+      "timeMs": 4757
+    },
+    {
+      "actual": "c4d5",
+      "expected": "bm c4d5",
+      "fen": "r2q1rk1/ppp2p2/2np1npp/3b4/2P5/P1B1PB2/1P3PPP/R2Q1RK1 w - -",
+      "nodes": 24216127,
+      "passed": true,
+      "testId": "Crafty Test Pos.332",
+      "timeMs": 4751
+    },
+    {
+      "actual": "d1d4",
+      "expected": "bm f3f4",
+      "fen": "2r2rk1/p3qp2/2pp1npp/4n3/4P3/P1B2P2/1P2B1PP/R2Q1RK1 w - -",
+      "nodes": 8978579,
+      "passed": false,
+      "testId": "Crafty Test Pos.333",
+      "timeMs": 1664
+    },
+    {
+      "actual": "g1f3",
+      "expected": "bm c1g5",
+      "fen": "rnbq1rk1/p1pp1ppp/1p2pn2/8/2PP4/P1Q5/1P2PPPP/R1B1KBNR w KQ -",
+      "nodes": 16664471,
+      "passed": false,
+      "testId": "Crafty Test Pos.334",
+      "timeMs": 3384
+    },
+    {
+      "actual": "c3d4",
+      "expected": "bm c3d4",
+      "fen": "2rq1rk1/p2n1pp1/bp1ppn1p/8/2Pp3B/P1QBPP2/1P2N1PP/3RK2R w K -",
+      "nodes": 25761656,
+      "passed": true,
+      "testId": "Crafty Test Pos.335",
+      "timeMs": 4669
+    },
+    {
+      "actual": "d1d8",
+      "expected": "bm b3c4",
+      "fen": "2rr4/p4pk1/bp2p2p/8/2p1P3/PP2P3/4N1PP/3RK2R w K -",
+      "nodes": 29826491,
+      "passed": false,
+      "testId": "Crafty Test Pos.336",
+      "timeMs": 4934
+    },
+    {
+      "actual": "b3b4",
+      "expected": "bm b3c3",
+      "fen": "8/5pk1/p3p2p/1p6/4r3/PR2P3/4K1PP/8 w - -",
+      "nodes": 10466098,
+      "passed": false,
+      "testId": "Crafty Test Pos.337",
+      "timeMs": 1652
+    },
+    {
+      "actual": "d3d4",
+      "expected": "bm d3d6",
+      "fen": "8/8/p3p3/1p3p1p/r1k5/P2RPKPP/8/8 w - -",
+      "nodes": 31452124,
+      "passed": false,
+      "testId": "Crafty Test Pos.338",
+      "timeMs": 4710
+    },
+    {
+      "actual": "b5f5",
+      "expected": "bm b5f5",
+      "fen": "8/8/8/pR3p1p/7P/1p1KP1P1/1k6/r7 w - -",
+      "nodes": 36099032,
+      "passed": true,
+      "testId": "Crafty Test Pos.339",
+      "timeMs": 4914
+    },
+    {
+      "actual": "b1c3",
+      "expected": "bm e1g1",
+      "fen": "r1bqkb1r/pp3ppp/2n2n2/2pp4/3P4/5NP1/PP2PPBP/RNBQK2R w KQkq -",
+      "nodes": 23064597,
+      "passed": false,
+      "testId": "Crafty Test Pos.340",
+      "timeMs": 4460
+    },
+    {
+      "actual": "d1d5",
+      "expected": "bm d1d5",
+      "fen": "r4rk1/pp3ppp/1qn2b2/3b4/8/1N4P1/PP2PPBP/R2Q1RK1 w - -",
+      "nodes": 24609664,
+      "passed": true,
+      "testId": "Crafty Test Pos.341",
+      "timeMs": 4590
+    },
+    {
+      "actual": "f5b5",
+      "expected": "bm f5e4",
+      "fen": "2rr2k1/ppq1npp1/7p/5Q1P/8/bN2P1P1/P4PB1/1R1R2K1 w - -",
+      "nodes": 27006629,
+      "passed": false,
+      "testId": "Crafty Test Pos.342",
+      "timeMs": 4949
+    },
+    {
+      "actual": "a2a3",
+      "expected": "bm d4f5",
+      "fen": "6k1/2r1npp1/pb1r3p/1p5P/3NB3/3RP1P1/P4P2/3R2K1 w - -",
+      "nodes": 28163831,
+      "passed": false,
+      "testId": "Crafty Test Pos.343",
+      "timeMs": 4956
+    },
+    {
+      "actual": "d7d6",
+      "expected": "bm d7c7",
+      "fen": "5k2/2rR1pp1/1b5p/p2B3P/1p6/4P1P1/P4PK1/8 w - -",
+      "nodes": 28212035,
+      "passed": false,
+      "testId": "Crafty Test Pos.344",
+      "timeMs": 4495
+    },
+    {
+      "actual": "g4h5",
+      "expected": "bm g4h5",
+      "fen": "3b1k2/8/6p1/p6p/1p2PPP1/1B3K2/P7/8 w - -",
+      "nodes": 15329805,
+      "passed": true,
+      "testId": "Crafty Test Pos.345",
+      "timeMs": 2200
+    },
+    {
+      "actual": "e4d5",
+      "expected": "bm e4d5",
+      "fen": "8/8/2B2P2/p1b1P1kp/1p2K3/8/P7/8 w - -",
+      "nodes": 16296555,
+      "passed": true,
+      "testId": "Crafty Test Pos.346",
+      "timeMs": 2332
+    },
+    {
+      "actual": "e6e7",
+      "expected": "bm e6e7",
+      "fen": "4B3/5K2/4PP2/p5k1/1p1b4/7p/P7/8 w - -",
+      "nodes": 22998595,
+      "passed": true,
+      "testId": "Crafty Test Pos.347",
+      "timeMs": 2926
+    }
+  ],
+  "engine": {
+    "name": "FrankyCPP v1.7.0",
+    "path": "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe",
+    "version": "v1.7"
+  },
+  "summary": {
+    "avgNodes": 23799507.41,
+    "avgTimeMs": 4059.11,
+    "failed": 172,
+    "passed": 175,
+    "skipped": 0,
+    "successRate": 50.43,
+    "totalNodes": 8258429073,
+    "totalTests": 347,
+    "totalTimeMs": 1408510
+  },
+  "tag": "",
+  "testSuite": {
+    "epdPath": "test/testsets/crafty_test.epd",
+    "name": "crafty_test"
+  },
+  "timestamp": "2026-03-27T09:41:42Z"
+}
