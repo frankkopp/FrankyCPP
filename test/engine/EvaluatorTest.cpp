@@ -46,13 +46,18 @@ using testing::Eq;
 
 auto& cm = ConfigManager::instance(); // Bind cm to ConfigManager singleton by reference
 
-// centralize test eval config: set all USE_* flags
-// to the given onoff value
+// centralize test eval config: reset to hard-coded defaults first (ignoring YAML),
+// then set all USE_* flags to the given onoff value.
+// This ensures tests always run against the .h default numeric weights,
+// making them independent of any YAML tuning changes.
 // In production, all eval USE_* flags are CONFIG_CONST (static constexpr) — cannot be set at runtime.
 // The function and all tests that call it are excluded from production builds.
 #ifndef FRANKYCPP_PRODUCTION
 void set_eval_config(const bool onoff) {
-  // Values taken from src/engine/EvalConfig.h
+  // Reset all config to hard-coded struct defaults (EvalConfigData{} / SearchConfigData{})
+  // so numeric weights are independent of YAML.
+  cm.resetToHardcodedDefaults();
+  // Now set USE_* flags
   cm.applyOverrides([&](auto&, EvalConfigData& e) {
     e.USE_MATERIAL   = onoff;
     e.USE_POSITIONAL = onoff;

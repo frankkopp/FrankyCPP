@@ -58,6 +58,13 @@ void ConfigManager::resetToDefaults() {
   LOG__INFO(Logger::get().CONFIG_LOG, "Config reset to defaults (initial YAML)");
 }
 
+void ConfigManager::resetToHardcodedDefaults() {
+  // Restore to the hard-coded struct defaults, ignoring any YAML loaded at startup.
+  currentSearch_ = fallbackSearch_;
+  currentEval_   = fallbackEval_;
+  LOG__INFO(Logger::get().CONFIG_LOG, "Config reset to hard-coded defaults (ignoring YAML)");
+}
+
 static bool file_exists(const std::filesystem::path& p) {
   std::error_code ec;
   return std::filesystem::exists(p, ec) && !ec;

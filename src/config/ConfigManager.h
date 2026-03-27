@@ -67,6 +67,11 @@ namespace config {
     // Reset current configs back to the initially loaded defaults (from YAML at startup, or fallback if YAML unavailable)
     void resetToDefaults();
 
+    // Reset current configs to the hard-coded struct defaults (EvalConfigData{} / SearchConfigData{}),
+    // ignoring any YAML that was loaded at startup. Useful in tests that need a clean baseline
+    // independent of YAML config files.
+    void resetToHardcodedDefaults();
+
     // Load from YAML files (paths optional). If a path is not provided, use default ConfigPaths.
     // Return true on success. Missing files are not considered fatal and fall back to hard-coded values.
     // Malformed YAML returns false and preserves last good configuration.

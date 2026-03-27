@@ -322,6 +322,7 @@ TEST_F(TexelTunerTest, computeMSE_DevDataset) {
 }
 
 TEST_F(TexelTunerTest, tuneK_DevDataset) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string devPath =
     std::string(FrankyCPP_PROJECT_ROOT) + "/test/testsets/tuning/v1.6_vs_v1.5_score.txt";
 
@@ -1515,7 +1516,7 @@ TEST_F(TexelTunerTest, coordinateDescent_WithMonotonicity_MaintainsOrdering) {
   const auto& evalConfig   = ConfigManager::instance().eval();
   auto params = TuningParameter::buildFromRegistry(searchConfig, evalConfig);
 
-  const double K = tuner.tuneK(dataset);
+  (void)tuner.tuneK(dataset);
   tuner.tuneParameters(dataset, nullptr, params, 2); // 2 passes
 
   // Check all NON_DECREASING arrays maintain ordering
@@ -1530,8 +1531,7 @@ TEST_F(TexelTunerTest, coordinateDescent_WithMonotonicity_MaintainsOrdering) {
   for (const auto& [arrayName, elements] : arrays) {
     // Sort by arrayIndex (should already be sorted, but be defensive)
     auto sorted = elements;
-    std::sort(sorted.begin(), sorted.end(),
-              [](const auto* a, const auto* b) { return a->arrayIndex < b->arrayIndex; });
+    std::ranges::sort(sorted, [](const auto* a, const auto* b) { return a->arrayIndex < b->arrayIndex; });
 
     for (std::size_t i = 1; i < sorted.size(); ++i) {
       EXPECT_GE(sorted[i]->currentValue, sorted[i - 1]->currentValue)

@@ -60,9 +60,10 @@ namespace {
     mgr.resetToDefaults();
     ASSERT_TRUE(mgr.loadFromFiles());
 
-    // Validate a couple of representative values from repo YAMLs
-    EXPECT_EQ(mgr.search().TT_SIZE_MB, 256); // from config/search.yaml
-    EXPECT_EQ(mgr.eval().TEMPO, 34);         // from config/eval.yaml
+    // Validate that YAML files were actually loaded by checking the CONFIG_SOURCE markers
+    // (set explicitly in both YAML files, not subject to tuning changes)
+    EXPECT_EQ(mgr.search().CONFIG_SOURCE, "yaml-file");
+    EXPECT_EQ(mgr.eval().EVAL_CONFIG_SOURCE, "yaml-file");
   }
 
   // Description: Confirms that when default config files are missing, loadFromFiles succeeds and keeps hard-coded defaults.
@@ -136,16 +137,25 @@ namespace {
     // Start clean from initial defaults (captured at auto-load time)
     mgr.resetToDefaults();
 
-    // Change some values
-    mgr.applyOverrides([](SearchConfigData& s, EvalConfigData& e) {
-      s.TT_SIZE_MB = 999;
-      e.TEMPO      = 1;
+    // Capture the initially loaded default values (from YAML at startup)
+    const auto defaultTempo    = mgr.eval().TEMPO;
+    const auto defaultConfigSrc = mgr.search().CONFIG_SOURCE;
+
+    // Change some values to something definitely different from defaults
+    const int nonDefaultTempo = (defaultTempo == 1) ? 2 : 1;
+    mgr.applyOverrides([nonDefaultTempo](SearchConfigData& s, EvalConfigData& e) {
+      s.CONFIG_SOURCE = "overridden";
+      e.TEMPO         = nonDefaultTempo;
     });
 
-    // Reset should restore the initially loaded YAML values (64 and 34 from repo configs)
+    // Verify overrides took effect
+    EXPECT_NE(mgr.eval().TEMPO, defaultTempo);
+    EXPECT_EQ(mgr.search().CONFIG_SOURCE, "overridden");
+
+    // Reset should restore the initially loaded YAML values
     mgr.resetToDefaults();
-    EXPECT_EQ(mgr.search().TT_SIZE_MB, 256);
-    EXPECT_EQ(mgr.eval().TEMPO, 34);
+    EXPECT_EQ(mgr.eval().TEMPO, defaultTempo);
+    EXPECT_EQ(mgr.search().CONFIG_SOURCE, defaultConfigSrc);
 
     // Now load from non-existent paths to get fallback values
     {
@@ -153,14 +163,14 @@ namespace {
       const auto nonExistentSearch = tmp / "config" / "search.yaml";
       const auto nonExistentEval   = tmp / "config" / "eval.yaml";
       ASSERT_TRUE(mgr.loadFromFiles(nonExistentSearch, nonExistentEval));
-      // In the absence of YAML, fallback values apply (TT_SIZE_MB defaults to hard-coded 64, TEMPO to 34 in current repo)
-      // but crucially, defaults stored at startup should remain unchanged.
+      // In the absence of YAML, fallback values apply — but crucially,
+      // defaults stored at startup should remain unchanged.
     }
 
     // After coming back, reset should still restore to the initially loaded YAML values
     mgr.resetToDefaults();
-    EXPECT_EQ(mgr.search().TT_SIZE_MB, 256);
-    EXPECT_EQ(mgr.eval().TEMPO, 34);
+    EXPECT_EQ(mgr.eval().TEMPO, defaultTempo);
+    EXPECT_EQ(mgr.search().CONFIG_SOURCE, defaultConfigSrc);
   }
 #endif
 
