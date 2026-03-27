@@ -409,8 +409,13 @@ evaluation/decision runs — the tuner was still improving (65/122 params changi
 .\cmake-build-win-release\src\FrankyCPP_v1.7_Tuner.exe `
   --dataset test\testsets\tuning\selfplay_v1.7_50k_score.txt `
   --output results\tuning\tuning_selfplay_4 `
-  --threads 12 --max-passes 50 --resume --verbose
+  --threads 12 --max-passes 50 --verbose
 ```
+
+```
+--resume results\tuning\tuning_selfplay_4_checkpoint.yaml --verbose
+```
+
 - Resumes from pass 10 checkpoint (`results/tuning/tuning_selfplay_4_checkpoint.yaml`)
 - Convergence criteria: <5 params changing per pass, or biggest-mover delta < 1e-6
 - Expected wall time: ~10-12 hours for 40 additional passes (based on ~15 min/pass observed)

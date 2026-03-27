@@ -765,4 +765,24 @@ All Matches Complete
 
 ```
 
+```
+v1.7 after texel tuning improvements
+===================================================================
+All Test Suites Complete
+===================================================================
+  franky_tests (FrankyCPP v1.7.0 v1.7): 13/13 passed (100%)
+  mate_test_suite (FrankyCPP v1.7.0 v1.7): 18/20 passed (90%)
+  wac (FrankyCPP v1.7.0 v1.7): 189/201 passed (94.0299%)
+  STS1-STS15_LAN (FrankyCPP v1.7.0 v1.7): 942/1500 passed (62.8%)
+  crafty_test (FrankyCPP v1.7.0 v1.7): 175/347 passed (50.4323%)
+  ecm98 (FrankyCPP v1.7.0 v1.7): 571/769 passed (74.2523%)
+  kaufman (FrankyCPP v1.7.0 v1.7): 19/25 passed (76%)
+  eigenmann-rapid-engine (FrankyCPP v1.7.0 v1.7): 12/109 passed (11.0092%)
+-------------------------------------------------------------------
+  TOTAL: 1939/2984 passed (64.9799%)
+  Total Nodes: 77510930450
+  Total Time:  12241834ms
+===================================================================
+```
+
 ---
