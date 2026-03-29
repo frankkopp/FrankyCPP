@@ -2,7 +2,7 @@
 
 **Plan Document:** `docs/specs/PLAN_Texel_Tuning.md`  
 **Created:** 2026-03-22  
-**Last Updated:** 2026-03-28  
+**Last Updated:** 2026-03-29  
 **Target Version:** v1.7  
 
 ---
@@ -19,7 +19,7 @@
 | 5     | Mark tunable parameters                   | ✅ Complete       | 2026-03-23 | 2026-03-26 |
 | 6     | Optimizer implementation                  | ✅ Complete       | 2026-03-24 | 2026-03-26 |
 | 7     | Full production tuning + gauntlet         | ✅ Complete       | 2026-03-26 | 2026-03-28 |
-| 8     | Deactivate removal candidates + re-tune   | 🔲 Next          |            |            |
+| 8     | Deactivate removal candidates + re-tune   | 🔄 In Progress   | 2026-03-29 |            |
 | 9     | Full code cleanup of dead features        | ⬚ Not Started    |            |            |
 | 10    | Final validation + release                | ⬚ Not Started    |            |            |
 
@@ -465,44 +465,336 @@ evaluation/decision runs — the tuner was still improving (65/122 params changi
 
 ---
 
-## Phase 8: Deactivate Removal Candidates + Re-tune ⬚
+## Phase 8: Deactivate Removal Candidates + Re-tune 🔄
 
-**Goal:** Deactivate features confirmed harmful/useless by 6.11 cross-dataset analysis, then
-re-tune the remaining parameters. This validates that removing features doesn't hurt and that
-the remaining params are stable. Three lightweight changes per feature — no code deletion yet.
+**Goal:** Deactivate features confirmed harmful/useless by Phase 6.11 cross-dataset analysis,
+then re-tune the remaining parameters. This validates that removing features doesn't hurt and
+that the remaining params are stable. Lightweight config changes per feature — no code deletion
+yet (that's Phase 9).
+
+**Pre-Phase 8 completed:** EvalConfigData.h defaults synced with all Texel-tuned values from
+Phase 7 (eval.yaml → compiled-in defaults). eval.yaml now has all values commented out.
+Tests updated for new default values. This simplifies Sprint 8.1 — the removal candidate
+defaults are already at 0, so only the ConfigRegistry tunable flags and TexelTuner override
+need changing.
+
+**ROOK_MOBILITY_MID_PER_MOVE removed from deactivation list:** The 50-pass production tuning
+converged to `2` (kept the original value), so it is NOT a dead feature. Original plan had
+7 features / 11 entries; revised to **6 features / 10 entries**.
 
 | Step | Task                                                                               | Status        |
 |------|------------------------------------------------------------------------------------|---------------|
-| 8.1  | Deactivate removal candidates (3 changes per feature — see below)                  | ⬚ Not Started |
-| 8.2  | Rebuild, verify all tests pass                                                     | ⬚ Not Started |
-| 8.3  | Re-tune on selfplay 4.6M dataset (10 passes) — confirm remaining params stable     | ⬚ Not Started |
-| 8.4  | Compare re-tuned params vs Phase 7 params: expect <5 params shift by ±5 cp         | ⬚ Not Started |
-| 8.5  | Apply re-tuned params to `config/eval.yaml`                                        | ⬚ Not Started |
-| 8.6  | Gauntlet B: 500+ games re-tuned v1.7 vs Phase 7 tuned v1.7 (expect ~equal, ±5 ELO) | ⬚ Not Started |
-| 8.7  | Gauntlet C: 500+ games re-tuned v1.7 vs v1.6 (confirm improvement maintained)      | ⬚ Not Started |
+| 8.1a | Sync EvalConfigData.h defaults with Texel-tuned values (all weights incl. zeros)   | ✅ Complete    |
+| 8.1b | Deactivate removal candidates in ConfigRegistry + TexelTuner (see Sprint 8.1)      | ⬚ Not Started |
+| 8.2  | Update test expectations (tunable count 88→78, expanded 122→112)                   | ⬚ Not Started |
+| 8.3  | Rebuild, verify all tests pass                                                     | ⬚ Not Started |
+| 8.4  | Re-tune on selfplay 4.6M dataset (10 passes) — confirm remaining params stable     | ⬚ Not Started |
+| 8.5  | Inspect re-tuned comparison: expect <5 params shift by ±5 cp vs Phase 7            | ⬚ Not Started |
+| 8.6  | Apply re-tuned params to EvalConfigData.h defaults (if shifts are significant)     | ⬚ Not Started |
+| 8.7  | Gauntlet B: 200+ games re-tuned v1.7 vs Phase 7 tuned v1.7 (expect ~equal, ±5 ELO) | ⬚ Not Started |
+| 8.8  | Gauntlet C: 200+ games re-tuned v1.7 vs v1.6 (confirm improvement maintained)      | ⬚ Not Started |
+| 8.9  | Decision: review results, confirm Phase 9 removal list, record in Decisions Log    | ⬚ Not Started |
 
-**Deactivation procedure (3 changes per feature, no code deletion):**
-1. **`EvalConfigData.h`** — set `USE_*` default to `false` (or set weight default to 0 for params without a toggle)
-2. **`ConfigRegistry.cpp`** — remove `.tunable = true` from weight entries
-3. **`TexelTuner.cpp:setupEvalOverrides()`** — set feature to `false` (or remove the `= true` line)
+---
+
+### Sprint Plan (Phase 8 Detailed Breakdown)
+
+Phase 8 is a lightweight deactivation + validation cycle. No new algorithms or infrastructure —
+only config changes, a re-tune run, and gauntlet matches. The goal is to prove that removing
+dead features has zero ELO impact before deleting code in Phase 9.
+
+**Scope change vs original plan:** EvalConfigData.h defaults were already synced with all
+Texel-tuned values (Step 8.1a). ROOK_MOBILITY_MID_PER_MOVE was removed from the deactivation
+list because the 50-pass production tuning converged to 2 (not zero). Revised: **6 features,
+10 weight entries** (was 7 features, 11 entries).
+
+#### Sprint 8.1a — Sync EvalConfigData.h defaults ✅
+
+**Status: Complete.** All EvalConfigData.h defaults were updated to match the Texel-tuned
+values from Phase 7. The eval.yaml file now has all values commented out (they match the
+compiled-in defaults). Tests updated for the new default values.
+
+This covers the original Sprint 8.1 "Step 1" (set removal candidate weight defaults to 0)
+as a side effect — all removal candidates already had zero values in eval.yaml.
+
+---
+
+#### Sprint 8.1b — Deactivate removal candidates in ConfigRegistry + TexelTuner
+
+**Scope:** 6 features, 10 weight entries, across 2 files. No eval code changes.
+(Reduced from 7 features / 11 entries — ROOK_MOBILITY_MID_PER_MOVE removed; see below.)
+
+**Removed from deactivation list:**
+- `ROOK_MOBILITY_MID_PER_MOVE`: The 50-pass production tuning converged to `2` (the original
+  hand-tuned value). This parameter is NOT dead — the tuner confirmed it. Remove from Phase 9 too.
+
+**Remaining deactivation procedure (2 changes per feature, no code deletion):**
+1. **`ConfigRegistry.cpp`** — set `.tunable = false` on the weight entries
+2. **`TexelTuner.cpp:setupEvalOverrides()`** — set `USE_SPACE_EVAL = false` (only for Space)
 
 **Features to deactivate:**
 
-| Feature                      | Toggle change                | Weight entries to un-tune                                      |
-|------------------------------|------------------------------|----------------------------------------------------------------|
-| Space eval                   | `USE_SPACE_EVAL = false`     | `SPACE_BONUS_MID`, `SPACE_BONUS_END`                           |
-| Bad bishop per pawn          | *(no toggle — zero weights)* | `BAD_BISHOP_PER_PAWN_MID`, `BAD_BISHOP_PER_PAWN_END`           |
-| Knight low mobility LEQ2     | *(no toggle — zero weights)* | `KNIGHT_LOW_MOBILITY_LEQ2_MID`, `KNIGHT_LOW_MOBILITY_LEQ2_END` |
-| Bishop low mobility LEQ3 MID | *(no toggle — zero weight)*  | `BISHOP_LOW_MOBILITY_LEQ3_MID`                                 |
-| Rook low mobility LEQ3       | *(no toggle — zero weights)* | `ROOK_LOW_MOBILITY_LEQ3_MID`, `ROOK_LOW_MOBILITY_LEQ3_END`     |
-| Rook mobility MID            | *(no toggle — zero weight)*  | `ROOK_MOBILITY_MID_PER_MOVE`                                   |
-| Safe check bishop MID        | *(no toggle — zero weight)*  | `SAFE_CHECK_BISHOP_MID`                                        |
+| # | Feature                      | Toggle change in setupEvalOverrides             | Weight entries to un-tune (`.tunable = false`)                 |
+|---|------------------------------|-------------------------------------------------|----------------------------------------------------------------|
+| 1 | Space eval                   | `e.USE_SPACE_EVAL = false` (was true)           | `SPACE_BONUS_MID`, `SPACE_BONUS_END`                           |
+| 2 | Bad bishop per pawn          | *(no toggle — already `USE_BAD_BISHOP = true`)* | `BAD_BISHOP_PER_PAWN_MID`, `BAD_BISHOP_PER_PAWN_END`           |
+| 3 | Knight low mobility LEQ2     | *(no toggle)*                                   | `KNIGHT_LOW_MOBILITY_LEQ2_MID`, `KNIGHT_LOW_MOBILITY_LEQ2_END` |
+| 4 | Bishop low mobility LEQ3 MID | *(no toggle)*                                   | `BISHOP_LOW_MOBILITY_LEQ3_MID`                                 |
+| 5 | Rook low mobility LEQ3       | *(no toggle)*                                   | `ROOK_LOW_MOBILITY_LEQ3_MID`, `ROOK_LOW_MOBILITY_LEQ3_END`     |
+| 6 | Safe check bishop MID        | *(no toggle)*                                   | `SAFE_CHECK_BISHOP_MID`                                        |
 
-**Expected re-tune results:** MSE very close to Phase 7 run. <5 params shift by ±1 step.
-Zeroed features contributed nothing — removing them changes nothing in eval output.
-Sign-flipped features (SPACE at −3) are tiny — minor compensation shifts in correlated params.
+**File-by-file change summary:**
 
-**Gate:** Re-tuned params stable vs Phase 7. No ELO regression in Gauntlet B/C.
+**File 1: `src/config/ConfigRegistry.cpp`** (10 changes)
+Remove `.tunable = true` (set to `false`) on these 10 entries:
+- `SPACE_BONUS_MID`, `SPACE_BONUS_END`
+- `BAD_BISHOP_PER_PAWN_MID`, `BAD_BISHOP_PER_PAWN_END`
+- `KNIGHT_LOW_MOBILITY_LEQ2_MID`, `KNIGHT_LOW_MOBILITY_LEQ2_END`
+- `BISHOP_LOW_MOBILITY_LEQ3_MID`
+- `ROOK_LOW_MOBILITY_LEQ3_MID`, `ROOK_LOW_MOBILITY_LEQ3_END`
+- `SAFE_CHECK_BISHOP_MID`
+
+**File 2: `src/tuning/optimizer/TexelTuner.cpp`** (1 change)
+In `setupEvalOverrides()`:
+- Change `e.USE_SPACE_EVAL = true;` → `e.USE_SPACE_EVAL = false;`
+  (or simply remove the line — the header default is already `false`)
+
+**Impact on param counts:**
+- Registry tunable: 88 → **78** (−10 scalar Int entries)
+- Expanded tunable values: 122 → **112** (−10, all scalars — no array entries removed)
+- Param groups: 13 groups unchanged (groups 6, 7, 9 lose members but keep others; group 11 loses all)
+
+**Gate:** Changes are pure config. No eval code, no new behavior. Build must succeed.
+
+---
+
+#### Sprint 8.2 — Update test expectations
+
+**Scope:** Update pinned counts and spot-check lists in test files.
+
+**File 1: `test/config/ConfigRegistryTest.cpp`**
+- `TunableParameterCount` test: `88` → `78`
+  (message: "Expected 78 tunable parameters (72 scalar Int + 6 IntArray)")
+- `VerifyKeyTunableParams` test: remove `SPACE_BONUS_MID` from `mustBeTunable` list
+
+**File 2: `test/tuning/TuningParameterTest.cpp`**
+- Expanded count test: `122` → `112`
+  (update comment: "78 registry entries expand to ~112 individual params")
+  (math: 72 + 16 + 6 + 6 + 4 + 4 + 4 = 112)
+
+**File 3: `test/tuning/TexelTunerTest.cpp`**
+- `SetupEvalOverridesVerification` test: update to expect `USE_SPACE_EVAL == false`
+  (line ~1320: `EXPECT_TRUE` → `EXPECT_FALSE`, update message)
+- Any tests that reference the tunable count `88` or expanded count `122`
+
+**Gate:** All count-pinned tests updated. No test logic changes needed beyond counts.
+
+---
+
+#### Sprint 8.3 — Rebuild and verify all tests pass
+
+**Action:** User builds in CLion. Run full test suite:
+```powershell
+.\cmake-build-win-release\test\FrankyCPP_v1.6_Test.exe --gtest_filter=-*SpeedTests.*:-*TimingTests.*
+```
+
+**Expected:** All tests pass. If any fail, debug before proceeding.
+
+**Gate:** Green test suite.
+
+---
+
+#### Sprint 8.4 — Re-tune on selfplay 4.6M dataset
+
+**Purpose:** With 10 params frozen at zero and removed from the tuner, re-optimize the
+remaining 112 params. This confirms that the dead features were truly dead — the remaining
+params should barely shift because the zeroed features contributed negligible eval signal.
+
+Since EvalConfigData.h defaults are already the Texel-tuned values (from 8.1a), the engine
+starts with optimal params even without eval.yaml overrides. The re-tune starts from these
+optimal defaults.
+
+**Command:**
+```powershell
+.\cmake-build-win-release\src\FrankyCPP_v1.7_Tuner.exe `
+  --dataset test\testsets\tuning\selfplay_v1.7_50k_score.txt `
+  --output results\tuning\tuning_phase8_retune `
+  --threads 12 --max-passes 10 --verbose
+```
+
+**Note:** Do NOT `--resume` from the Phase 7 checkpoint — start fresh so K is re-tuned and
+all 112 params are optimized from the current compiled-in defaults (which ARE the Phase 7
+tuned values).
+
+**Expected results:**
+- K ≈ 1.009 (same as Phase 7 — dataset unchanged)
+- Baseline MSE ≈ 0.0878 (Phase 7 final MSE — zeroed features were already at 0)
+- Final MSE ≈ 0.0876–0.0878 (negligible improvement — params already near-optimal)
+- Train-test gap < 1% (no overfitting on 4.6M positions)
+- Convergence in 3–5 passes (not 10) — most params already optimal
+- <5 params shift by more than ±2 cp
+
+**Wall time estimate:** ~2–3 hours (10 passes × ~15 min/pass on 12 threads)
+
+**Output files:**
+- `results/tuning/tuning_phase8_retune.yaml`
+- `results/tuning/tuning_phase8_retune_comparison.txt`
+- `results/tuning/tuning_phase8_retune_checkpoint.yaml`
+
+**Gate:** Tuner runs to completion. Output files generated.
+
+---
+
+#### Sprint 8.5 — Inspect re-tuned comparison
+
+**Action:** Review `tuning_phase8_retune_comparison.txt` and compare against Phase 7:
+
+**Checklist:**
+- [ ] Count params that shifted by >5 cp: expect ≤5
+- [ ] No new sign flips (any sign flip = correlated feature was compensating for a dead one)
+- [ ] No new zeroed-out params (if more params go to zero → consider adding to Phase 9 list)
+- [ ] MSE delta vs Phase 7 baseline: expect < 0.001 (< 0.1% improvement)
+- [ ] Biggest mover: note name and magnitude (expect < 10 cp)
+- [ ] Cross-reference shifted params with param group neighbors of removed features:
+  - Group 6 (bishop): `BISHOP_LOW_MOBILITY_LEQ3_END` may shift slightly
+  - Group 7 (rook): `ROOK_MOBILITY_MID_PER_MOVE`, `ROOK_MOBILITY_END_PER_MOVE` may shift slightly
+  - Group 9 (king safety): `SAFE_CHECK_KNIGHT_MID`, `SAFE_CHECK_ROOK_MID` may absorb ~1 cp
+  - Group 11 (space): entire group removed — no compensation expected
+- [ ] Sanity: key params still reasonable (TEMPO, BISHOP_PAIR, KNIGHT_OUTPOST, KING_SAFETY_TABLE)
+
+**If unexpected shifts (>10 cp in >5 params):**
+- Check whether a removed feature was masking a weakness in a related feature
+- Consider restoring the feature (remove from deactivation list) and re-tuning
+- Document findings in Decisions Log
+
+**Gate:** Comparison reviewed, no red flags.
+
+---
+
+#### Sprint 8.6 — Apply re-tuned params to EvalConfigData.h
+
+**Action:** If Sprint 8.5 shows significant shifts, apply re-tuned params:
+- Update default values in `src/config/EvalConfigData.h` for shifted params
+- Keep `config/eval.yaml` values commented out (matching defaults)
+- Zero any new sign-flipped params (unlikely — see Sprint 8.5 checklist)
+- Verify engine starts: `.\Release\FrankyCPP_v1.7\FrankyCPP_v1.7.exe` → `uci` → `isready`
+
+**If Sprint 8.5 shows near-zero shifts (<2 cp across all params):**
+- Skip re-applying — keep current defaults as-is
+- Document: "Re-tune confirmed Phase 7 params are stable; no changes applied"
+
+**Gate:** EvalConfigData.h defaults updated (or confirmed unchanged). Engine smoke test passes.
+
+---
+
+#### Sprint 8.7 — Gauntlet B: re-tuned v1.7 vs Phase 7 v1.7
+
+**Purpose:** Confirm deactivation + re-tune has zero ELO impact vs Phase 7 build.
+
+**Prerequisites:**
+- Phase 7 binary saved: `Release/FrankyCPP_v1.7_phase7/FrankyCPP_v1.7.exe`
+  (if not already saved, copy before rebuilding with Phase 8 changes)
+- Phase 8 binary built with re-tuned params
+
+**Command:**
+```powershell
+& "D:/Games/CuteChess/cutechess-cli.exe" `
+  -engine cmd="Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe" name="v1.7-phase8" `
+    option.OwnBook=false option.Threads=1 timemargin=200 `
+  -engine cmd="Release/FrankyCPP_v1.7_phase7/FrankyCPP_v1.7.exe" name="v1.7-phase7" `
+    option.OwnBook=false option.Threads=1 timemargin=200 `
+  -each proto=uci tc=10+0.1 `
+  -rounds 200 `
+  -openings file="books/8moves_v3.pgn" format=pgn order=random `
+  -pgnout "results/matches/v1.7_phase8_vs_phase7_300s.pgn" `
+  -concurrency 6 `
+  -recover -wait 100
+```
+
+**Expected:** Score within ±5 ELO of 50%. Draw rate ~30-35%.
+
+**If regression >10 ELO:** Debug — check if a deactivated feature had a hidden positive
+contribution. Restore it and re-tune.
+
+**Gate:** ELO difference < ±10 (within statistical noise for 200 games).
+
+---
+
+#### Sprint 8.8 — Gauntlet C: re-tuned v1.7 vs v1.6
+
+**Purpose:** Confirm the Phase 7 improvement (+72 ELO) is maintained after deactivation.
+
+**Command:**
+```powershell
+& "D:/Games/CuteChess/cutechess-cli.exe" `
+  -engine cmd="Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe" name="v1.7-phase8" `
+    option.OwnBook=false option.Threads=1 timemargin=200 `
+  -engine cmd="Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe" name="v1.6" `
+    option.OwnBook=false option.Threads=1 timemargin=200 `
+  -each proto=uci tc=10+0.1 `
+  -rounds 200 `
+  -openings file="books/8moves_v3.pgn" format=pgn order=random `
+  -pgnout "results/matches/v1.7_phase8_vs_v1.6_300s.pgn" `
+  -concurrency 6 `
+  -recover -wait 100
+```
+
+**Expected:** +60 to +80 ELO over v1.6 (Phase 7 was +72). A minor NPS improvement is
+possible from the Space eval being fully disabled (was already off in production, but
+`USE_SPACE_EVAL = false` in setupEvalOverrides removes it from tuner evals too).
+
+**Gate:** ELO improvement over v1.6 maintained (within noise of Phase 7 result).
+
+---
+
+#### Sprint 8.9 — Decision and Decisions Log
+
+**Action:** Review all Phase 8 results and make final decisions:
+
+| Result                                               | Decision                                                   |
+|------------------------------------------------------|------------------------------------------------------------|
+| Re-tune stable (<5 params shift), Gauntlet B ≈ 0 ELO | ✅ Proceed to Phase 9 — remove dead code for all 6 features |
+| 1-2 features show unexpected compensation shifts     | ⚠️ Restore those features, remove only the stable ones     |
+| Gauntlet C shows >10 ELO regression vs Phase 7       | 🛑 Revert Phase 8 changes, investigate                     |
+| New zeroed-out params discovered in re-tune          | 📋 Add to Phase 9 removal list                             |
+
+**Record in Decisions Log:**
+- Final list of features confirmed dead (proceeding to Phase 9 code removal)
+- Any features restored from deactivation
+- Final ELO: Phase 8 vs v1.6, Phase 8 vs Phase 7
+- Any NPS changes observed
+
+**Gate:** Decisions documented. Phase 9 feature list finalized.
+
+---
+
+### Phase 8 Pre-flight Checklist
+
+Before starting Sprint 8.1b, verify:
+- [x] Phase 7 binary saved to `Release/FrankyCPP_v1.7_phase7/` for Gauntlet B reference
+- [x] `config/eval.yaml` already has all removal candidate weights at `0` (confirmed ✅)
+- [x] `config/eval.yaml` already has `USE_SPACE_EVAL: false` (confirmed ✅)
+- [x] EvalConfigData.h defaults synced with all Texel-tuned values (✅ done in 8.1a)
+- [x] eval.yaml values all commented out (match compiled-in defaults) (✅)
+- [x] All Phase 7 result files archived in `results/tuning/`
+- [x] Tests updated for new default values (✅)
+- [ ] Current test suite passes cleanly on v1.7 build
+
+### Estimated Effort
+
+| Sprint    | Est. Time                               | Notes                                             |
+|-----------|-----------------------------------------|---------------------------------------------------|
+| 8.1a      | ✅ Complete                              | Defaults synced with Texel-tuned values           |
+| 8.1b      | 20 min                                  | 2 files, ~12 line edits (ConfigRegistry + Tuner)  |
+| 8.2       | 15 min                                  | Update 3 test files with new counts               |
+| 8.3       | 10 min (+ build)                        | User builds, runs tests                           |
+| 8.4       | 2–3 hours                               | Tuner wall time; unattended after launch          |
+| 8.5       | 20 min                                  | Review comparison report                          |
+| 8.6       | 15 min                                  | Update defaults or confirm no change needed       |
+| 8.7       | 4–8 hours                               | Gauntlet wall time; unattended after launch       |
+| 8.8       | 4–8 hours                               | Gauntlet wall time; can run concurrently with 8.7 |
+| 8.9       | 15 min                                  | Decision recording                                |
+| **Total** | **~1 day active + overnight gauntlets** |                                                   |
 
 ---
 
@@ -519,11 +811,10 @@ since features were already deactivated in Phase 8.
 | 9.3  | Remove KNIGHT_LOW_MOBILITY_LEQ2 code + weights                                     | ⬚ Not Started |
 | 9.4  | Remove BISHOP_LOW_MOBILITY_LEQ3_MID weight (keep END)                              | ⬚ Not Started |
 | 9.5  | Remove ROOK_LOW_MOBILITY_LEQ3 code + weights (both MID and END)                    | ⬚ Not Started |
-| 9.6  | Remove ROOK_MOBILITY_MID_PER_MOVE weight                                           | ⬚ Not Started |
-| 9.7  | Remove SAFE_CHECK_BISHOP_MID weight                                                | ⬚ Not Started |
-| 9.8  | Review connected rooks: remove MID, decide on END based on Phase 8 re-tune         | ⬚ Not Started |
-| 9.9  | Update/remove related unit tests, update tunable param count in ConfigRegistryTest | ⬚ Not Started |
-| 9.10 | Verify all tests pass, measure NPS improvement                                     | ⬚ Not Started |
+| 9.6  | Remove SAFE_CHECK_BISHOP_MID weight                                                | ⬚ Not Started |
+| 9.7  | Review connected rooks: remove MID, decide on END based on Phase 8 re-tune         | ⬚ Not Started |
+| 9.8  | Update/remove related unit tests, update tunable param count in ConfigRegistryTest | ⬚ Not Started |
+| 9.9  | Verify all tests pass, measure NPS improvement                                     | ⬚ Not Started |
 
 **Scope of removal per feature:**
 1. Delete eval code in `Evaluator.cpp` (the computation itself)
@@ -555,7 +846,6 @@ since features were already deactivated in Phase 8.
 **Gate:** Measurable ELO improvement over v1.6. All tests pass. Clean codebase.
 
 ---
-
 ## Decisions Log
 
 | Date       | Decision                                                   | Rationale                                                                                                       |
@@ -568,6 +858,8 @@ since features were already deactivated in Phase 8.
 | 2026-03-26 | PST tuning deferred to future version (v1.8+)              | PSTs are constexpr; making them tunable requires infra work + ~768 extra params; current improvement sufficient |
 | 2026-03-27 | Phase 7 gauntlet confirms +72 ELO over v1.6                | 200 games, 60.25% score, +56 test suite positions (+1.88%). Proceed to Phase 8 after SF match completes.        |
 | 2026-03-28 | Phase 7 complete — SF @2700 confirms +69 ELO               | v1.7 vs SF: 101W/37D/62L (+68.6 ELO). v1.6 baseline was +41.9 → +27 ELO gain vs SF. Ready for Phase 8.          |
+| 2026-03-29 | Synced EvalConfigData.h defaults with Texel-tuned values   | All 88+ weight defaults now match Phase 7 tuned values. eval.yaml commented out. Tests updated.                 |
+| 2026-03-29 | Removed ROOK_MOBILITY_MID_PER_MOVE from deactivation list  | 50-pass tuning converged to 2 (original value) — NOT dead. Phase 8: 6 features/10 entries (was 7/11).           |
 
 ## Issues Log
 
@@ -577,4 +869,4 @@ since features were already deactivated in Phase 8.
 
 ---
 
-*Last updated: 2026-03-28*
+*Last updated: 2026-03-29*
