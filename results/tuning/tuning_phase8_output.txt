@@ -1,0 +1,154 @@
+PS D:\_DEV\FrankyCPP> .\cmake-build-win-release\src\FrankyCPP_v1.7_Tuner.exe `
+>>   --dataset test\testsets\tuning\selfplay_v1.7_50k_score.txt `
+>>   --output results\tuning\tuning_phase8_retune `
+>>   --threads 20 --max-passes 10 --verbose
+FrankyCPP Texel Tuner v1.7.0
+============================
+
+Configuration:
+  Dataset:           test\testsets\tuning\selfplay_v1.7_50k_score.txt
+  Output:            results\tuning\tuning_phase8_retune
+  Threads:           20
+  Test split:        0.2
+  Max passes:        10
+  Verbose:           yes
+
+Logger initialized (general: warn / search: warn / uci: trace)
+Setting logger level to debug for logger Tuning_Logger
+Loading dataset: test\testsets\tuning\selfplay_v1.7_50k_score.txt
+[16:38:33:691177] [t:35432     ] [Tuning_Logger    ] [info    ]: Dataset loaded from: test\testsets\tuning\selfplay_v1.7_50k_score.txt
+[16:38:33:691356] [t:35432     ] [Tuning_Logger    ] [info    ]:   Entries:        4568763
+[16:38:33:691391] [t:35432     ] [Tuning_Logger    ] [info    ]:   Parsed OK:      4568763
+[16:38:33:691407] [t:35432     ] [Tuning_Logger    ] [info    ]:   Skipped:              0 (empty: 0, comment: 0, malformed: 0)
+[16:38:33:691425] [t:35432     ] [Tuning_Logger    ] [info    ]:   Elapsed:           6997 ms
+Dataset loaded: 4568763 positions from test\testsets\tuning\selfplay_v1.7_50k_score.txt (6997 ms)
+  Loaded 4568763 positions (parsed: 4568763, skipped: 0)
+
+Train/test split:
+  Train set: 3655011 positions (80%)
+  Test set:  913752 positions (20%)
+
+Applying eval overrides for tuning...
+  Lazy eval:           disabled
+  Pawn TT:             disabled
+  Space eval:          disabled
+  Connected rooks:     enabled
+  Minor connectivity:  enabled
+
+Creating 20 evaluator(s)...
+
+[16:38:33:920454] [t:35432     ] [Tuning_Logger    ] [info    ]: Created 20 evaluator(s) with thread pool for parallel MSE
+Tunable parameters: 112
+
+Tuning scaling constant K...
+  K iteration 10/50: K = 1.070899 [1.057893, 1.083905], MSE = 0.0870831435
+  K iteration 20/50: K = 1.065640 [1.065415, 1.065866], MSE = 0.0870826599
+  K iteration 30/50: K = 1.065633 [1.065629, 1.065637], MSE = 0.0870826599
+  K iteration 40/50: K = 1.065634 [1.065633, 1.065634], MSE = 0.0870826599
+  K iteration 50/50: K = 1.065634 [1.065634, 1.065634], MSE = 0.0870826599
+  Optimal K: 1.065634 (found in 560.0s)
+
+Checkpoint file: results\tuning\tuning_phase8_retune_checkpoint.yaml
+
+Starting coordinate descent optimization...
+  Max passes: 10
+  Start pass: 0
+----------------------------------------------------------------------
+Computing activation flags for 3655011 positions...
+[16:47:59:494878] [t:35432     ] [Tuning_Logger    ] [info    ]: Activation flags computed for 3655011 entries
+  Activation flags computed.
+[16:47:59:529585] [t:35432     ] [Tuning_Logger    ] [debug   ]:   Group  0: 3655011/3655011 entries active (100.0%)
+[16:47:59:529641] [t:35432     ] [Tuning_Logger    ] [debug   ]:   Group  1: 3652248/3655011 entries active (99.9%)
+[16:47:59:529691] [t:35432     ] [Tuning_Logger    ] [debug   ]:   Group  2: 3652248/3655011 entries active (99.9%)
+[16:47:59:529710] [t:35432     ] [Tuning_Logger    ] [debug   ]:   Group  3: 3652248/3655011 entries active (99.9%)
+[16:47:59:529724] [t:35432     ] [Tuning_Logger    ] [debug   ]:   Group  4: 985634/3655011 entries active (27.0%)
+[16:47:59:529739] [t:35432     ] [Tuning_Logger    ] [debug   ]:   Group  5: 2215265/3655011 entries active (60.6%)
+[16:47:59:529755] [t:35432     ] [Tuning_Logger    ] [debug   ]:   Group  6: 2653484/3655011 entries active (72.6%)
+[16:47:59:529770] [t:35432     ] [Tuning_Logger    ] [debug   ]:   Group  7: 3053553/3655011 entries active (83.5%)
+[16:47:59:529785] [t:35432     ] [Tuning_Logger    ] [debug   ]:   Group  8: 1721545/3655011 entries active (47.1%)
+[16:47:59:529801] [t:35432     ] [Tuning_Logger    ] [debug   ]:   Group  9: 3655011/3655011 entries active (100.0%)
+[16:47:59:529816] [t:35432     ] [Tuning_Logger    ] [debug   ]:   Group 10: 3616985/3655011 entries active (99.0%)
+[16:47:59:529831] [t:35432     ] [Tuning_Logger    ] [debug   ]:   Group 11: 3652248/3655011 entries active (99.9%)
+[16:47:59:529847] [t:35432     ] [Tuning_Logger    ] [debug   ]:   Group 12: 2098142/3655011 entries active (57.4%)
+Computing initial error cache...
+  Baseline train MSE: 0.0870826599
+[16:48:05:176009] [t:35432     ] [Tuning_Logger    ] [info    ]: Coordinate descent: 112 params, 3655011 positions, K = 1.065634
+[16:48:05:176051] [t:35432     ] [Tuning_Logger    ] [info    ]: Baseline train MSE: 0.0870826599
+[16:48:06:597050] [t:35432     ] [Tuning_Logger    ] [info    ]: Baseline test MSE:  0.0855333258
+[17:11:34:892342] [t:35432     ] [Tuning_Logger    ] [info    ]: Pass   1: train MSE = 0.0870171577, test MSE = 0.0854647277, changed =  68/112, biggest = PAWN_ADVANCE_END_BONUS[0] (d9.75e-06), 1406.9s
+Pass   1: train MSE = 0.0870171577, test MSE = 0.0854647277, changed =  68/112, biggest = PAWN_ADVANCE_END_BONUS[0] (d9.75e-06), 1406.9s
+[17:11:34:893299] [t:35432     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_phase8_retune_checkpoint.yaml (112 params, pass 1, train MSE 0.0870171577)
+[17:33:34:106248] [t:35432     ] [Tuning_Logger    ] [info    ]: Pass   2: train MSE = 0.0869820669, test MSE = 0.0854317133, changed =  52/112, biggest = PAWN_ADVANCE_END_BONUS[0] (d8.80e-06), 1317.9s
+Pass   2: train MSE = 0.0869820669, test MSE = 0.0854317133, changed =  52/112, biggest = PAWN_ADVANCE_END_BONUS[0] (d8.80e-06), 1317.9s
+[17:33:34:107099] [t:35432     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_phase8_retune_checkpoint.yaml (112 params, pass 2, train MSE 0.0869820669)
+[17:55:40:735558] [t:35432     ] [Tuning_Logger    ] [info    ]: Pass   3: train MSE = 0.0869590094, test MSE = 0.0854026925, changed =  45/112, biggest = PAWN_ADVANCE_END_BONUS[0] (d7.66e-06), 1325.2s
+Pass   3: train MSE = 0.0869590094, test MSE = 0.0854026925, changed =  45/112, biggest = PAWN_ADVANCE_END_BONUS[0] (d7.66e-06), 1325.2s
+[17:55:40:736654] [t:35432     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_phase8_retune_checkpoint.yaml (112 params, pass 3, train MSE 0.0869590094)
+[18:16:38:278430] [t:35432     ] [Tuning_Logger    ] [info    ]: Pass   4: train MSE = 0.0869408254, test MSE = 0.0853777271, changed =  33/112, biggest = PAWN_ADVANCE_END_BONUS[0] (d6.58e-06), 1256.1s
+Pass   4: train MSE = 0.0869408254, test MSE = 0.0853777271, changed =  33/112, biggest = PAWN_ADVANCE_END_BONUS[0] (d6.58e-06), 1256.1s
+[18:16:38:279580] [t:35432     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_phase8_retune_checkpoint.yaml (112 params, pass 4, train MSE 0.0869408254)
+[18:37:41:606140] [t:35432     ] [Tuning_Logger    ] [info    ]: Pass   5: train MSE = 0.0869265454, test MSE = 0.0853595360, changed =  29/112, biggest = PAWN_ADVANCE_END_BONUS[0] (d5.52e-06), 1261.8s
+Pass   5: train MSE = 0.0869265454, test MSE = 0.0853595360, changed =  29/112, biggest = PAWN_ADVANCE_END_BONUS[0] (d5.52e-06), 1261.8s
+[18:37:41:606980] [t:35432     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_phase8_retune_checkpoint.yaml (112 params, pass 5, train MSE 0.0869265454)
+[18:59:18:494770] [t:35432     ] [Tuning_Logger    ] [info    ]: Pass   6: train MSE = 0.0869154343, test MSE = 0.0853450652, changed =  35/112, biggest = PAWN_ADVANCE_END_BONUS[0] (d4.08e-06), 1295.5s
+Pass   6: train MSE = 0.0869154343, test MSE = 0.0853450652, changed =  35/112, biggest = PAWN_ADVANCE_END_BONUS[0] (d4.08e-06), 1295.5s
+[18:59:18:495918] [t:35432     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_phase8_retune_checkpoint.yaml (112 params, pass 6, train MSE 0.0869154343)
+[19:21:11:351877] [t:35432     ] [Tuning_Logger    ] [info    ]: Pass   7: train MSE = 0.0869077420, test MSE = 0.0853362008, changed =  31/112, biggest = PAWN_ADVANCE_END_BONUS[0] (d3.34e-06), 1311.1s
+Pass   7: train MSE = 0.0869077420, test MSE = 0.0853362008, changed =  31/112, biggest = PAWN_ADVANCE_END_BONUS[0] (d3.34e-06), 1311.1s
+[19:21:11:352646] [t:35432     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_phase8_retune_checkpoint.yaml (112 params, pass 7, train MSE 0.0869077420)
+[19:43:10:980187] [t:35432     ] [Tuning_Logger    ] [info    ]: Pass   8: train MSE = 0.0869006140, test MSE = 0.0853303960, changed =  28/112, biggest = PAWN_ADVANCE_END_BONUS[0] (d2.81e-06), 1318.0s
+Pass   8: train MSE = 0.0869006140, test MSE = 0.0853303960, changed =  28/112, biggest = PAWN_ADVANCE_END_BONUS[0] (d2.81e-06), 1318.0s
+[19:43:10:980971] [t:35432     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_phase8_retune_checkpoint.yaml (112 params, pass 8, train MSE 0.0869006140)
+[20:05:09:929696] [t:35432     ] [Tuning_Logger    ] [info    ]: Pass   9: train MSE = 0.0868956534, test MSE = 0.0853201348, changed =  29/112, biggest = PAWN_ADVANCE_END_BONUS[0] (d2.26e-06), 1317.3s
+Pass   9: train MSE = 0.0868956534, test MSE = 0.0853201348, changed =  29/112, biggest = PAWN_ADVANCE_END_BONUS[0] (d2.26e-06), 1317.3s
+[20:05:09:930525] [t:35432     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_phase8_retune_checkpoint.yaml (112 params, pass 9, train MSE 0.0868956534)
+[20:27:41:271428] [t:35432     ] [Tuning_Logger    ] [info    ]: Pass  10: train MSE = 0.0868925110, test MSE = 0.0853123652, changed =  34/112, biggest = PAWN_ADVANCE_END_BONUS[0] (d1.25e-06), 1349.7s
+Pass  10: train MSE = 0.0868925110, test MSE = 0.0853123652, changed =  34/112, biggest = PAWN_ADVANCE_END_BONUS[0] (d1.25e-06), 1349.7s
+[20:27:41:272214] [t:35432     ] [Tuning_Logger    ] [info    ]: Checkpoint saved: results\tuning\tuning_phase8_retune_checkpoint.yaml (112 params, pass 10, train MSE 0.0868925110)
+[20:27:41:272259] [t:35432     ] [Tuning_Logger    ] [info    ]: Coordinate descent complete: 10 passes, final train MSE = 0.0868925110, improvement = 1.90e-04, total time = 13174.1s
+
+======================================================================
+TUNING COMPLETE
+======================================================================
+  K:                 1.065634
+  Parameters tuned:  112
+  Optimization time: 13186.8s
+  Total time:        13754.1s
+
+Writing tuned parameters: results\tuning\tuning_phase8_retune.yaml
+[20:27:41:272985] [t:35432     ] [Tuning_Logger    ] [info    ]: Tuned parameters written to: results\tuning\tuning_phase8_retune.yaml
+Writing comparison report: results\tuning\tuning_phase8_retune_comparison.txt
+[20:27:41:273546] [t:35432     ] [Tuning_Logger    ] [info    ]: Comparison report written to: results\tuning\tuning_phase8_retune_comparison.txt
+
+Parameter Summary:
+  Changed:       69/112
+  Zeroed out:    1 (candidates for removal)
+
+  Top 20 parameter changes:
+  Parameter                                     Original    Tuned    Delta
+  ---------------------------------------------------------------------
+  PAWN_STORM_MID_PENALTY[0]                            0      -10      -10
+  KING_SAFETY_TABLE[12]                              348      358      +10
+  PAWN_ADVANCE_END_BONUS[0]                            0      -10      -10
+  THREAT_BY_MINOR_ROOK_END                             0      -10      -10
+  CONNECTED_ROOKS_MID_BONUS                            0      -10      -10
+  PASSED_PAWN_END_WEIGHT                              69       60       -9
+  KING_SAFETY_TABLE[11]                              307      316       +9
+  PASSED_PAWN_RANK_END_BONUS[0]                       18       26       +8
+  THREAT_BY_MINOR_ROOK_MID                            55       63       +8
+  PASSED_PAWN_RANK_END_BONUS[1]                       41       48       +7
+  THREAT_BY_PAWN_QUEEN_END                            10        3       -7
+  CONNECTED_ROOKS_END_BONUS                           46       39       -7
+  PASSED_PAWN_RANK_END_BONUS[2]                       51       57       +6
+  PASSED_PAWN_RANK_MID_BONUS[3]                       65       70       +5
+  PASSED_PAWN_RANK_MID_BONUS[0]                      -50      -55       -5
+  PAWN_ADVANCE_MID_BONUS[0]                           11        6       -5
+  PAWN_STORM_MID_PENALTY[2]                           15       10       -5
+  PAWN_STORM_MID_PENALTY[1]                           15       10       -5
+  ROOK_BEHIND_PASSER_OPP_MID                          13       18       +5
+  PASSED_PAWN_RANK_MID_BONUS[2]                       12        8       -4
+
+Output files:
+  Tuned params:      results\tuning\tuning_phase8_retune.yaml
+  Comparison report: results\tuning\tuning_phase8_retune_comparison.txt
+  Checkpoint:        results\tuning\tuning_phase8_retune_checkpoint.yaml

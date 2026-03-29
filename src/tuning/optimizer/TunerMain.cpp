@@ -206,9 +206,12 @@ int main(int argc, char* argv[]) {
     // =========================================================================
     std::cout << "Applying eval overrides for tuning...\n";
     tuning::TexelTuner::setupEvalOverrides();
-    std::cout << "  Lazy eval:   disabled\n";
-    std::cout << "  Pawn TT:     disabled\n";
-    std::cout << "  Space eval:  enabled\n\n";
+    const auto& evalOverrides = config::ConfigManager::instance().eval();
+    std::cout << "  Lazy eval:           " << (evalOverrides.USE_LAZY_EVAL ? "enabled" : "disabled") << "\n";
+    std::cout << "  Pawn TT:             " << (evalOverrides.USE_PAWN_TT ? "enabled" : "disabled") << "\n";
+    std::cout << "  Space eval:          " << (evalOverrides.USE_SPACE_EVAL ? "enabled" : "disabled") << "\n";
+    std::cout << "  Connected rooks:     " << (evalOverrides.USE_CONNECTED_ROOKS ? "enabled" : "disabled") << "\n";
+    std::cout << "  Minor connectivity:  " << (evalOverrides.USE_MINOR_CONNECTIVITY ? "enabled" : "disabled") << "\n\n";
 
     // =========================================================================
     // Step 4: Create evaluators (thread pool)
