@@ -171,7 +171,7 @@ TEST_F(ConfigRegistryTest, DisplayOptionsNonEmpty) {
 
 TEST_F(ConfigRegistryTest, GetterReturnsCorrectValue) {
   SearchConfigData search;
-  EvalConfigData eval;
+  const EvalConfigData eval;
 
   // Test a known Search config
   const ConfigDef* nmpDef = registry.find("USE_NMP");
@@ -199,12 +199,12 @@ TEST_F(ConfigRegistryTest, SetterModifiesValue) {
 }
 
 TEST_F(ConfigRegistryTest, EvalGetterReturnsCorrectValue) {
-  SearchConfigData search;
+  const SearchConfigData search;
   EvalConfigData eval;
 
   const ConfigDef* tempoDef = registry.find("TEMPO");
   ASSERT_NE(tempoDef, nullptr);
-  EXPECT_EQ(tempoDef->getter(search, eval), "34");
+  EXPECT_EQ(tempoDef->getter(search, eval), std::format("{}",eval.TEMPO));
 
 #ifndef FRANKYCPP_PRODUCTION
   // In production, TEMPO is static constexpr — cannot be assigned to.
@@ -220,7 +220,7 @@ TEST_F(ConfigRegistryTest, EvalSetterModifiesValue) {
   const ConfigDef* lazyThreshDef = registry.find("LAZY_THRESHOLD");
   ASSERT_NE(lazyThreshDef, nullptr);
 
-  EXPECT_EQ(eval.LAZY_THRESHOLD, 700); // default
+  EXPECT_EQ(eval.LAZY_THRESHOLD, 706); // default (Texel tuned)
 
 #ifndef FRANKYCPP_PRODUCTION
   // In production, LAZY_THRESHOLD is static constexpr — setter is a no-op.
@@ -230,8 +230,8 @@ TEST_F(ConfigRegistryTest, EvalSetterModifiesValue) {
 }
 
 TEST_F(ConfigRegistryTest, ArrayGetterReturnsCorrectFormat) {
-  SearchConfigData search;
-  EvalConfigData eval;
+  const SearchConfigData search;
+  const EvalConfigData eval;
 
   const ConfigDef* fpMarginDef = registry.find("FP_MARGIN");
   ASSERT_NE(fpMarginDef, nullptr);
@@ -480,6 +480,7 @@ TEST_F(ConfigRegistryTest, TunableParamsExcludeInfrastructure) {
 
 TEST_F(ConfigRegistryTest, VerifyKeyTunableParams) {
   // Spot-check that specific key params are tunable
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::vector<std::string> mustBeTunable = {
     "TEMPO", "LAZY_THRESHOLD",
     "ISOLATED_PAWN_MID_WEIGHT", "PASSED_PAWN_END_WEIGHT",

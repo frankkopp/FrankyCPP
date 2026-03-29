@@ -46,11 +46,11 @@ namespace config {
 
     // tempo
     CONFIG_CONST bool USE_TEMPO = true;
-    CONFIG_CONST int TEMPO      = 34;
+    CONFIG_CONST int TEMPO      = 4; // was: 34 — Texel tuned
 
     // lazy eval
     CONFIG_CONST bool USE_LAZY_EVAL = true;
-    CONFIG_CONST int LAZY_THRESHOLD = 700;
+    CONFIG_CONST int LAZY_THRESHOLD = 706; // was: 700 — Texel tuned
 
     // pawn eval
     CONFIG_CONST bool USE_PAWN_EVAL      = true;
@@ -58,114 +58,113 @@ namespace config {
     CONFIG_ESSENTIAL int PAWN_TT_SIZE_MB = 16;
 
     // pawn structure weights
-    CONFIG_CONST int ISOLATED_PAWN_MID_WEIGHT  = -10;
-    CONFIG_CONST int ISOLATED_PAWN_END_WEIGHT  = -20;
-    CONFIG_CONST int DOUBLED_PAWN_MID_WEIGHT   = -10;
-    CONFIG_CONST int DOUBLED_PAWN_END_WEIGHT   = -30;
-    CONFIG_CONST int PASSED_PAWN_MID_WEIGHT    = 20;
-    CONFIG_CONST int PASSED_PAWN_END_WEIGHT    = 40;
+    CONFIG_CONST int ISOLATED_PAWN_MID_WEIGHT  = -7;  // was: -10
+    CONFIG_CONST int ISOLATED_PAWN_END_WEIGHT  = -7;  // was: -20
+    CONFIG_CONST int DOUBLED_PAWN_MID_WEIGHT   = -1;  // was: -10
+    CONFIG_CONST int DOUBLED_PAWN_END_WEIGHT   = -19; // was: -30
+    CONFIG_CONST int PASSED_PAWN_MID_WEIGHT    = 0;   // was: 20 — zeroed by tuner
+    CONFIG_CONST int PASSED_PAWN_END_WEIGHT    = 69;  // was: 40
 
     // Rank-based passed pawn bonus (indexed by relative rank 2..7, so array index 0..5).
     // Relative rank: for White = actual rank, for Black = 9 - actual rank.
     // When enabled, the rank bonus is added ON TOP of the flat PASSED_PAWN_*_WEIGHT.
     CONFIG_CONST bool USE_PASSED_PAWN_RANK_BONUS = true;
     // Mid/End bonus per relative rank: {rank2, rank3, rank4, rank5, rank6, rank7}
-    // Quadratic-ish scaling: low ranks add little, high ranks add substantially.
-    CONFIG_CONST std::array<int, 6> PASSED_PAWN_RANK_MID_BONUS = {0, 0, 5, 15, 35, 70};
-    CONFIG_CONST std::array<int, 6> PASSED_PAWN_RANK_END_BONUS = {0, 5, 15, 35, 70, 120};
-    CONFIG_CONST int BLOCKED_PAWN_MID_WEIGHT   = -2;
-    CONFIG_CONST int BLOCKED_PAWN_END_WEIGHT   = -20;
-    CONFIG_CONST int PHALANX_PAWN_MID_WEIGHT   = 4;
-    CONFIG_CONST int PHALANX_PAWN_END_WEIGHT   = 4;
-    CONFIG_CONST int SUPPORTED_PAWN_MID_WEIGHT = 10;
-    CONFIG_CONST int SUPPORTED_PAWN_END_WEIGHT = 15;
+    CONFIG_CONST std::array<int, 6> PASSED_PAWN_RANK_MID_BONUS = {-50, -33, 12, 65, 70, 70};  // was: {0,0,5,15,35,70}
+    CONFIG_CONST std::array<int, 6> PASSED_PAWN_RANK_END_BONUS = {18, 41, 51, 84, 101, 120};  // was: {0,5,15,35,70,120}
+    CONFIG_CONST int BLOCKED_PAWN_MID_WEIGHT   = 0;   // was: -2 — zeroed by tuner
+    CONFIG_CONST int BLOCKED_PAWN_END_WEIGHT   = -10; // was: -20
+    CONFIG_CONST int PHALANX_PAWN_MID_WEIGHT   = 5;   // was: 4
+    CONFIG_CONST int PHALANX_PAWN_END_WEIGHT   = 9;   // was: 4
+    CONFIG_CONST int SUPPORTED_PAWN_MID_WEIGHT = 21;  // was: 10
+    CONFIG_CONST int SUPPORTED_PAWN_END_WEIGHT = 0;   // was: 15 — zeroed by tuner
 
     // pawn advancement bonus: bonus for non-passed pawns that have advanced to rank 4+
     // Indexed by (relativeRank - 4): {rank4, rank5, rank6, rank7}
     CONFIG_CONST bool USE_PAWN_ADVANCE_BONUS = true;
-    CONFIG_CONST std::array<int, 4> PAWN_ADVANCE_MID_BONUS = {2, 5, 12, 25};
-    CONFIG_CONST std::array<int, 4> PAWN_ADVANCE_END_BONUS = {3, 8, 18, 35};
+    CONFIG_CONST std::array<int, 4> PAWN_ADVANCE_MID_BONUS = {11, 12, 12, 25}; // was: {2,5,12,25}
+    CONFIG_CONST std::array<int, 4> PAWN_ADVANCE_END_BONUS = {0, 4, 18, 35};   // was: {3,8,18,35} — [0] zeroed: sign-flip
 
     // piece eval
     CONFIG_CONST bool USE_PIECE_EVAL = true;
 
     // bishop pair
     CONFIG_CONST bool USE_BISHOP_PAIR_BONUS = true;
-    CONFIG_CONST int BISHOP_PAIR_MID_BONUS  = 30;
-    CONFIG_CONST int BISHOP_PAIR_END_BONUS  = 45;
+    CONFIG_CONST int BISHOP_PAIR_MID_BONUS  = 52; // was: 30
+    CONFIG_CONST int BISHOP_PAIR_END_BONUS  = 66; // was: 45
 
     // knight mobility
     CONFIG_CONST bool USE_KNIGHT_MOBILITY         = true;
     CONFIG_CONST int KNIGHT_MOBILITY_MID_PER_MOVE = 3;
-    CONFIG_CONST int KNIGHT_MOBILITY_END_PER_MOVE = 2;
-    CONFIG_CONST int KNIGHT_LOW_MOBILITY_LEQ1_MID = -6;
-    CONFIG_CONST int KNIGHT_LOW_MOBILITY_LEQ1_END = -6;
-    CONFIG_CONST int KNIGHT_LOW_MOBILITY_LEQ2_MID = -3;
-    CONFIG_CONST int KNIGHT_LOW_MOBILITY_LEQ2_END = -3;
+    CONFIG_CONST int KNIGHT_MOBILITY_END_PER_MOVE = 4;   // was: 2
+    CONFIG_CONST int KNIGHT_LOW_MOBILITY_LEQ1_MID = 0;   // was: -6 — zeroed by tuner
+    CONFIG_CONST int KNIGHT_LOW_MOBILITY_LEQ1_END = -10; // was: -6
+    CONFIG_CONST int KNIGHT_LOW_MOBILITY_LEQ2_MID = 0;   // was: -3 — zeroed by tuner
+    CONFIG_CONST int KNIGHT_LOW_MOBILITY_LEQ2_END = 0;   // was: -3 — zeroed by tuner
 
     // knight outpost: bonus for knight on a square that cannot be attacked by enemy pawns
     // (ranks 4-6 relative, center files preferred)
     CONFIG_CONST bool USE_KNIGHT_OUTPOST            = true;
-    CONFIG_CONST int KNIGHT_OUTPOST_SUPPORTED_MID   = 20; // on outpost square supported by own pawn
-    CONFIG_CONST int KNIGHT_OUTPOST_SUPPORTED_END   = 15;
-    CONFIG_CONST int KNIGHT_OUTPOST_UNSUPPORTED_MID = 10; // on outpost square but no pawn support
-    CONFIG_CONST int KNIGHT_OUTPOST_UNSUPPORTED_END = 8;
+    CONFIG_CONST int KNIGHT_OUTPOST_SUPPORTED_MID   = 39; // was: 20
+    CONFIG_CONST int KNIGHT_OUTPOST_SUPPORTED_END   = 21; // was: 15
+    CONFIG_CONST int KNIGHT_OUTPOST_UNSUPPORTED_MID = 39; // was: 10
+    CONFIG_CONST int KNIGHT_OUTPOST_UNSUPPORTED_END = 5;  // was: 8
 
     // bishop mobility
     CONFIG_CONST bool USE_BISHOP_MOBILITY         = true;
     CONFIG_CONST int BISHOP_MOBILITY_MID_PER_MOVE = 2;
-    CONFIG_CONST int BISHOP_MOBILITY_END_PER_MOVE = 3;
-    CONFIG_CONST int BISHOP_LOW_MOBILITY_LEQ3_MID = -4;
-    CONFIG_CONST int BISHOP_LOW_MOBILITY_LEQ3_END = -2;
+    CONFIG_CONST int BISHOP_MOBILITY_END_PER_MOVE = 6;   // was: 3
+    CONFIG_CONST int BISHOP_LOW_MOBILITY_LEQ3_MID = 0;   // was: -4 — zeroed by tuner
+    CONFIG_CONST int BISHOP_LOW_MOBILITY_LEQ3_END = -24; // was: -2
 
     // bad bishop: penalty when own pawns are on the same color squares as the bishop
     CONFIG_CONST bool USE_BAD_BISHOP          = true;
-    CONFIG_CONST int BAD_BISHOP_PER_PAWN_MID  = -3; // penalty per own pawn on bishop's color
-    CONFIG_CONST int BAD_BISHOP_PER_PAWN_END  = -5;
+    CONFIG_CONST int BAD_BISHOP_PER_PAWN_MID  = 0; // was: -3 — zeroed by tuner (removal candidate)
+    CONFIG_CONST int BAD_BISHOP_PER_PAWN_END  = 0; // was: -5 — zeroed by tuner (removal candidate)
 
     // rook mobility and files
     CONFIG_CONST bool USE_ROOK_MOBILITY           = true;
     CONFIG_CONST int ROOK_MOBILITY_MID_PER_MOVE   = 2;
-    CONFIG_CONST int ROOK_MOBILITY_END_PER_MOVE   = 2;
-    CONFIG_CONST int ROOK_LOW_MOBILITY_LEQ3_MID   = -3;
-    CONFIG_CONST int ROOK_LOW_MOBILITY_LEQ3_END   = -3;
+    CONFIG_CONST int ROOK_MOBILITY_END_PER_MOVE   = 9;  // was: 2
+    CONFIG_CONST int ROOK_LOW_MOBILITY_LEQ3_MID   = 0;  // was: -3 — zeroed by tuner
+    CONFIG_CONST int ROOK_LOW_MOBILITY_LEQ3_END   = 0;  // was: -3 — zeroed by tuner
     CONFIG_CONST bool USE_ROOK_OPEN_FILE_BONUS    = true;
-    CONFIG_CONST int ROOK_OPEN_FILE_MID_BONUS     = 10;
-    CONFIG_CONST int ROOK_OPEN_FILE_END_BONUS     = 8;
-    CONFIG_CONST int ROOK_SEMIOPEN_FILE_MID_BONUS = 5;
-    CONFIG_CONST int ROOK_SEMIOPEN_FILE_END_BONUS = 4;
+    CONFIG_CONST int ROOK_OPEN_FILE_MID_BONUS     = 24; // was: 10
+    CONFIG_CONST int ROOK_OPEN_FILE_END_BONUS     = 9;  // was: 8
+    CONFIG_CONST int ROOK_SEMIOPEN_FILE_MID_BONUS = 11; // was: 5
+    CONFIG_CONST int ROOK_SEMIOPEN_FILE_END_BONUS = 14; // was: 4
 
     // rook on 7th rank (relative to its color)
     CONFIG_CONST bool USE_ROOK_7TH_RANK_BONUS = true;
-    CONFIG_CONST int ROOK_7TH_RANK_MID_BONUS  = 15;
-    CONFIG_CONST int ROOK_7TH_RANK_END_BONUS  = 25;
+    CONFIG_CONST int ROOK_7TH_RANK_MID_BONUS  = 41; // was: 15
+    CONFIG_CONST int ROOK_7TH_RANK_END_BONUS  = 9;  // was: 25
 
     // rook behind passed pawn: bonus for rook behind own or enemy passed pawns
     CONFIG_CONST bool USE_ROOK_BEHIND_PASSER     = true;
-    CONFIG_CONST int ROOK_BEHIND_PASSER_OWN_MID  = 10; // behind own passed pawn
-    CONFIG_CONST int ROOK_BEHIND_PASSER_OWN_END  = 20;
-    CONFIG_CONST int ROOK_BEHIND_PASSER_OPP_MID  = 8;  // behind enemy passed pawn (blocking)
-    CONFIG_CONST int ROOK_BEHIND_PASSER_OPP_END  = 15;
+    CONFIG_CONST int ROOK_BEHIND_PASSER_OWN_MID  = 1;  // was: 10
+    CONFIG_CONST int ROOK_BEHIND_PASSER_OWN_END  = 24; // was: 20
+    CONFIG_CONST int ROOK_BEHIND_PASSER_OPP_MID  = 13; // was: 8
+    CONFIG_CONST int ROOK_BEHIND_PASSER_OPP_END  = 19; // was: 15
 
     // queen
     CONFIG_CONST bool USE_QUEEN_MOBILITY         = true;
     CONFIG_CONST int QUEEN_MOBILITY_MID_PER_MOVE = 1;
-    CONFIG_CONST int QUEEN_MOBILITY_END_PER_MOVE = 1;
+    CONFIG_CONST int QUEEN_MOBILITY_END_PER_MOVE = 11; // was: 1
     CONFIG_CONST bool USE_QUEEN_TROPISM          = true;
-    CONFIG_CONST int QUEEN_TROPISM_MID_PER_STEP  = 0;
-    CONFIG_CONST int QUEEN_TROPISM_END_PER_STEP  = 1;
+    CONFIG_CONST int QUEEN_TROPISM_MID_PER_STEP  = 2;  // was: 0
+    CONFIG_CONST int QUEEN_TROPISM_END_PER_STEP  = 20; // was: 1
 
     // king
     CONFIG_CONST bool USE_KING_EVAL           = true;
     CONFIG_CONST bool USE_KING_SAFETY_SHIELD  = true;
-    CONFIG_CONST int KING_SHIELD_MID_PER_PAWN = 5;
+    CONFIG_CONST int KING_SHIELD_MID_PER_PAWN = 0; // was: 5 — zeroed by tuner
     CONFIG_CONST int KING_SHIELD_END_PER_PAWN = 0;
 
     // king-pawn proximity in endgame
     // Bonus for king close to own passed pawns, bonus for king close to enemy passed pawns (defending).
     CONFIG_CONST bool USE_KING_PAWN_PROXIMITY       = true;
-    CONFIG_CONST int KING_OWN_PASSED_PROXIMITY_END  = 5;  // bonus per step of closeness to own passers
-    CONFIG_CONST int KING_OPP_PASSED_PROXIMITY_END  = 3;  // bonus per step of closeness to enemy passers
+    CONFIG_CONST int KING_OWN_PASSED_PROXIMITY_END  = 5;
+    CONFIG_CONST int KING_OPP_PASSED_PROXIMITY_END  = 20; // was: 3
 
     // king safety: attack evaluation (midgame only)
     // Counts attacker pieces on the enemy king zone and applies a non-linear penalty.
@@ -173,68 +172,68 @@ namespace config {
     CONFIG_CONST int KING_ATTACK_WEIGHT_KNIGHT     = 2;
     CONFIG_CONST int KING_ATTACK_WEIGHT_BISHOP     = 2;
     CONFIG_CONST int KING_ATTACK_WEIGHT_ROOK       = 3;
-    CONFIG_CONST int KING_ATTACK_WEIGHT_QUEEN      = 4;
+    CONFIG_CONST int KING_ATTACK_WEIGHT_QUEEN      = 3; // was: 4
     // Non-linear penalty table indexed by total attack weight (clamped to 0..15)
+    // Texel tuned: sharper curve — low danger decreased, high danger increased
     CONFIG_CONST std::array<int, 16> KING_SAFETY_TABLE = {
-      0, 0, 5, 15, 30, 50, 75, 105, 140, 180, 220, 260, 300, 340, 380, 400};
+      0, 0, 5, 15, 19, 47, 51, 116, 135, 135, 227, 307, 348, 380, 380, 400};
+    // was: {0,0,5,15,30,50,75,105,140,180,220,260,300,340,380,400}
 
     // pawn storm: penalty when opponent pawns advance toward our king (midgame only)
     // Indexed by (relativeRank - 4): {rank4, rank5, rank6, rank7}
     CONFIG_CONST bool USE_PAWN_STORM = true;
-    CONFIG_CONST std::array<int, 4> PAWN_STORM_MID_PENALTY = {5, 15, 30, 50};
+    CONFIG_CONST std::array<int, 4> PAWN_STORM_MID_PENALTY = {0, 15, 15, 50}; // was: {5,15,30,50} — [0] zeroed: sign-flip
 
     // open file near king: penalty for open/semi-open files adjacent to king (midgame only)
     CONFIG_CONST bool USE_KING_OPEN_FILE            = true;
-    CONFIG_CONST int KING_OPEN_FILE_MID_PENALTY     = -20;
-    CONFIG_CONST int KING_SEMIOPEN_FILE_MID_PENALTY = -10;
+    CONFIG_CONST int KING_OPEN_FILE_MID_PENALTY     = -24; // was: -20
+    CONFIG_CONST int KING_SEMIOPEN_FILE_MID_PENALTY = 0;   // was: -10 — zeroed by tuner
 
     // safe check squares: penalty for squares from which enemy can give check without being captured
     // Per-piece-type penalties (midgame only, negative values = penalty for the defending side)
     CONFIG_CONST bool USE_SAFE_CHECK          = true;
-    CONFIG_CONST int SAFE_CHECK_KNIGHT_MID    = -10;
-    CONFIG_CONST int SAFE_CHECK_BISHOP_MID    = -8;
-    CONFIG_CONST int SAFE_CHECK_ROOK_MID      = -12;
-    CONFIG_CONST int SAFE_CHECK_QUEEN_MID     = -15;
+    CONFIG_CONST int SAFE_CHECK_KNIGHT_MID    = -15; // was: -10
+    CONFIG_CONST int SAFE_CHECK_BISHOP_MID    = 0;   // was: -8 — zeroed by tuner (removal candidate)
+    CONFIG_CONST int SAFE_CHECK_ROOK_MID      = -17; // was: -12
+    CONFIG_CONST int SAFE_CHECK_QUEEN_MID     = -11; // was: -15
 
     // threat evaluation: bonus for pieces attacked by lesser-value pieces and hanging pieces
     // Three tiers: (1) pawn attacks on pieces, (2) minor attacks on majors, (3) hanging pieces
     CONFIG_CONST bool USE_THREAT_EVAL          = true;
     // Tier 1: pawn attacks on pieces (per victim piece type)
-    CONFIG_CONST int THREAT_BY_PAWN_MINOR_MID  = 5;   // pawn attacks knight or bishop
-    CONFIG_CONST int THREAT_BY_PAWN_MINOR_END  = 5;
-    CONFIG_CONST int THREAT_BY_PAWN_ROOK_MID   = 10;  // pawn attacks rook
-    CONFIG_CONST int THREAT_BY_PAWN_ROOK_END   = 12;
-    CONFIG_CONST int THREAT_BY_PAWN_QUEEN_MID  = 15;  // pawn attacks queen
-    CONFIG_CONST int THREAT_BY_PAWN_QUEEN_END  = 20;
+    CONFIG_CONST int THREAT_BY_PAWN_MINOR_MID  = 44;  // was: 5
+    CONFIG_CONST int THREAT_BY_PAWN_MINOR_END  = 12;  // was: 5
+    CONFIG_CONST int THREAT_BY_PAWN_ROOK_MID   = 48;  // was: 10
+    CONFIG_CONST int THREAT_BY_PAWN_ROOK_END   = 18;  // was: 12
+    CONFIG_CONST int THREAT_BY_PAWN_QUEEN_MID  = 30;  // was: 15
+    CONFIG_CONST int THREAT_BY_PAWN_QUEEN_END  = 10;  // was: 20
     // Tier 2: minor piece (knight/bishop) attacks on major pieces (rook/queen)
-    CONFIG_CONST int THREAT_BY_MINOR_ROOK_MID  = 5;   // minor attacks rook
-    CONFIG_CONST int THREAT_BY_MINOR_ROOK_END  = 6;
-    CONFIG_CONST int THREAT_BY_MINOR_QUEEN_MID = 8;   // minor attacks queen
-    CONFIG_CONST int THREAT_BY_MINOR_QUEEN_END = 10;
+    CONFIG_CONST int THREAT_BY_MINOR_ROOK_MID  = 55;  // was: 5
+    CONFIG_CONST int THREAT_BY_MINOR_ROOK_END  = 0;   // was: 6 — zeroed: sign-flip
+    CONFIG_CONST int THREAT_BY_MINOR_QUEEN_MID = 28;  // was: 8
+    CONFIG_CONST int THREAT_BY_MINOR_QUEEN_END = 20;  // was: 10
     // Tier 3: hanging pieces (attacked by us, not defended by them)
-    CONFIG_CONST int THREAT_HANGING_MID        = 6;
-    CONFIG_CONST int THREAT_HANGING_END        = 10;
+    CONFIG_CONST int THREAT_HANGING_MID        = 7;   // was: 6
+    CONFIG_CONST int THREAT_HANGING_END        = 43;  // was: 10
 
     // space evaluation: bonus for safe squares behind own pawn chain (midgame-weighted)
     // Space = squares on ranks 2-4 (relative) behind own pawns, not attacked by enemy pawns.
-    // DISABLED: Phase 3all results (+3.5 v1.5 ELO, −0.0 SF18 ELO, −9.7% NPS) confirmed
-    // net-negative playing strength. Code retained for potential Texel tuning optimization.
+    // DISABLED: Confirmed dead by Texel tuner — sign-flipped in all 3 datasets.
     CONFIG_CONST bool USE_SPACE_EVAL  = false;
-    CONFIG_CONST int SPACE_BONUS_MID  = 3;
-    CONFIG_CONST int SPACE_BONUS_END  = 1;
+    CONFIG_CONST int SPACE_BONUS_MID  = 0; // was: 3 — zeroed: sign-flip (removal candidate)
+    CONFIG_CONST int SPACE_BONUS_END  = 0; // was: 1 — zeroed: sign-flip (removal candidate)
 
     // connected rooks: bonus when two rooks are on the same rank or file with no pieces between
-    // DISABLED: See USE_SPACE_EVAL — Phase 3all regression. Combined space + coordination
-    // features cost −5.4% NPS and −26 test suite positions vs Phase 3.2.
-    CONFIG_CONST bool USE_CONNECTED_ROOKS      = false;
-    CONFIG_CONST int CONNECTED_ROOKS_MID_BONUS = 8;
-    CONFIG_CONST int CONNECTED_ROOKS_END_BONUS = 5;
+    // ENABLED: Texel tuner found strong endgame bonus (+46); MID sign-flipped and zeroed.
+    CONFIG_CONST bool USE_CONNECTED_ROOKS      = true;  // was: false — enabled by Texel tuning
+    CONFIG_CONST int CONNECTED_ROOKS_MID_BONUS = 0;     // was: 8 — zeroed: sign-flip
+    CONFIG_CONST int CONNECTED_ROOKS_END_BONUS = 46;    // was: 5
 
     // minor piece connectivity: bonus when a knight/bishop is defended by another minor piece
-    // DISABLED: See USE_SPACE_EVAL — Phase 3all regression.
-    CONFIG_CONST bool USE_MINOR_CONNECTIVITY      = false;
-    CONFIG_CONST int MINOR_CONNECTIVITY_MID_BONUS = 4;
-    CONFIG_CONST int MINOR_CONNECTIVITY_END_BONUS = 3;
+    // ENABLED: Texel tuner found positive values for both phases.
+    CONFIG_CONST bool USE_MINOR_CONNECTIVITY      = true; // was: false — enabled by Texel tuning
+    CONFIG_CONST int MINOR_CONNECTIVITY_MID_BONUS = 1;    // was: 4
+    CONFIG_CONST int MINOR_CONNECTIVITY_END_BONUS = 5;    // was: 3
 
     CONFIG_CONST bool USE_GAMEPHASE_VALUE = true;
 

@@ -327,6 +327,11 @@ TEST_F(EvaluatorTest, Rook_FileBonus_Open_gt_SemiOpen_gt_Closed) {
     e.USE_ROOK_OPEN_FILE_BONUS = true;
     e.USE_ROOK_MOBILITY        = false; // isolate file bonus
     e.USE_GAMEPHASE_VALUE      = true;
+    // Explicit weights: ensure open > semi-open in both phases (test-independent of tuned defaults)
+    e.ROOK_OPEN_FILE_MID_BONUS     = 20;
+    e.ROOK_OPEN_FILE_END_BONUS     = 15;
+    e.ROOK_SEMIOPEN_FILE_MID_BONUS = 10;
+    e.ROOK_SEMIOPEN_FILE_END_BONUS = 8;
   });
 
   Evaluator e{};
@@ -782,6 +787,9 @@ TEST_F(EvaluatorTest, BadBishop_ManyPawnsOnColorWorseThanFew) {
     e.USE_PIECE_EVAL      = true;
     e.USE_BAD_BISHOP      = true;
     e.USE_GAMEPHASE_VALUE = true;
+    // Explicit weights: defaults are 0 (tuner zeroed this feature); set nonzero to test logic
+    e.BAD_BISHOP_PER_PAWN_MID = -3;
+    e.BAD_BISHOP_PER_PAWN_END = -5;
   });
 
   Evaluator e{};
@@ -813,6 +821,9 @@ TEST_F(EvaluatorTest, BadBishop_BlackCorrectSign) {
     e.USE_PIECE_EVAL      = true;
     e.USE_BAD_BISHOP      = true;
     e.USE_GAMEPHASE_VALUE = true;
+    // Explicit weights: defaults are 0 (tuner zeroed this feature); set nonzero to test logic
+    e.BAD_BISHOP_PER_PAWN_MID = -3;
+    e.BAD_BISHOP_PER_PAWN_END = -5;
   });
 
   Evaluator e{};
@@ -843,6 +854,9 @@ TEST_F(EvaluatorTest, PawnAdvancement_AdvancedNonPassedBeatsBackRank) {
     e.USE_PAWN_EVAL          = true;
     e.USE_PAWN_ADVANCE_BONUS = true;
     e.USE_GAMEPHASE_VALUE    = true;
+    // Explicit weights: ensure rank-5 bonus is clearly nonzero in both phases
+    e.PAWN_ADVANCE_MID_BONUS = {5, 10, 20, 35};
+    e.PAWN_ADVANCE_END_BONUS = {5, 10, 20, 35};
   });
 
   Evaluator e{};
@@ -1041,6 +1055,8 @@ TEST_F(EvaluatorTest, PawnStorm_AdvancingPawnsPenalizeKing) {
     e.USE_KING_EVAL       = true;
     e.USE_PAWN_STORM      = true;
     e.USE_GAMEPHASE_VALUE = false; // midgame-only feature; disable phase blending to avoid zeroing
+    // Explicit weights: default [0]=0 (tuner zeroed rank-4 storm); set nonzero to test logic
+    e.PAWN_STORM_MID_PENALTY = {5, 15, 30, 50};
   });
 
   Evaluator e{};
@@ -1070,6 +1086,8 @@ TEST_F(EvaluatorTest, PawnStorm_BlackKingUnderStorm) {
     e.USE_KING_EVAL       = true;
     e.USE_PAWN_STORM      = true;
     e.USE_GAMEPHASE_VALUE = false; // midgame-only feature; disable phase blending
+    // Explicit weights: default [0]=0 (tuner zeroed rank-4 storm); set nonzero to test logic
+    e.PAWN_STORM_MID_PENALTY = {5, 15, 30, 50};
   });
 
   Evaluator e{};
@@ -1100,6 +1118,9 @@ TEST_F(EvaluatorTest, KingOpenFile_OpenFilesPenalizeKing) {
     e.USE_KING_EVAL       = true;
     e.USE_KING_OPEN_FILE  = true;
     e.USE_GAMEPHASE_VALUE = false; // midgame-only feature; disable phase blending
+    // Explicit weights: default semiopen penalty is 0 (tuner zeroed it); set nonzero to test logic
+    e.KING_OPEN_FILE_MID_PENALTY     = -20;
+    e.KING_SEMIOPEN_FILE_MID_PENALTY = -10;
   });
 
   Evaluator e{};
@@ -1379,6 +1400,9 @@ TEST_F(EvaluatorTest, SpaceEval_MoreSpaceBetter) {
   set_eval_config(false);
   cm.applyOverrides([&](auto&, EvalConfigData& e) {
     e.USE_SPACE_EVAL = true;
+    // Explicit weights: defaults are 0 (tuner zeroed this feature); set nonzero to test logic
+    e.SPACE_BONUS_MID = 3;
+    e.SPACE_BONUS_END = 1;
     // Note: attackedByPT[PAWN] is always pre-computed, no need for USE_PIECE_EVAL.
     // USE_MATERIAL disabled — we're testing space only; the positions have unequal
     // pawn counts and material would dominate the evaluation.
@@ -1409,6 +1433,9 @@ TEST_F(EvaluatorTest, SpaceEval_ToggleChangesEval) {
   set_eval_config(true);
   cm.applyOverrides([&](auto&, EvalConfigData& e) {
     e.USE_SPACE_EVAL = false;
+    // Explicit weights: defaults are 0 (tuner zeroed this feature); set nonzero so toggle has effect
+    e.SPACE_BONUS_MID = 3;
+    e.SPACE_BONUS_END = 1;
   });
 
   Evaluator e{};
