@@ -470,10 +470,10 @@ TEST_F(TuningStateTest, loadFromYaml_PartialCheckpoint_MissingK) {
 }
 
 TEST_F(TuningStateTest, captureAndRestore_LargeParamVector) {
-  // Simulate a realistic number of params (122)
+  // Simulate a realistic number of params (112)
   std::vector<TuningParameter> params;
-  params.reserve(122);
-  for (int i = 0; i < 122; ++i) {
+  params.reserve(112);
+  for (int i = 0; i < 112; ++i) {
     TuningParameter p;
     p.name = "PARAM_" + std::to_string(i);
     p.currentValue = i * 7 - 50; // varied values including negatives
@@ -482,7 +482,7 @@ TEST_F(TuningStateTest, captureAndRestore_LargeParamVector) {
 
   TuningState state;
   state.captureFromParams(params);
-  EXPECT_EQ(state.paramValues.size(), 122u);
+  EXPECT_EQ(state.paramValues.size(), 112U);
 
   // Zero out all values
   for (auto& p : params) {
@@ -490,10 +490,10 @@ TEST_F(TuningStateTest, captureAndRestore_LargeParamVector) {
   }
 
   const int restored = state.restoreToParams(params);
-  EXPECT_EQ(restored, 122);
+  EXPECT_EQ(restored, 112);
 
   // Verify all values restored correctly
-  for (int i = 0; i < 122; ++i) {
+  for (int i = 0; i < 112; ++i) {
     EXPECT_EQ(params[i].currentValue, i * 7 - 50)
       << "Param " << i << " not restored correctly";
   }

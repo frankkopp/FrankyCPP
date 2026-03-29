@@ -59,10 +59,8 @@ namespace tuning {
       e.USE_LAZY_EVAL = false;
       // Disable pawn TT — avoids stale cache entries after param changes
       e.USE_PAWN_TT = false;
-      // Enable optional eval terms so the tuner can optimize (or zero out) their weights
-      e.USE_SPACE_EVAL        = true;
-      e.USE_CONNECTED_ROOKS   = true;
-      e.USE_MINOR_CONNECTIVITY = true;
+      // Optional eval terms (USE_CONNECTED_ROOKS, USE_MINOR_CONNECTIVITY) already
+      // default to true. USE_SPACE_EVAL defaults to false (confirmed dead by tuner).
     CONFIG_OVERRIDE_END();
   }
 

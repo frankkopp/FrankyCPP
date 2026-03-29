@@ -535,13 +535,13 @@ TEST_F(TuningParameterTest, expandedCount_pinnedValue) {
   // This should be updated when new tunable params are added.
   const auto expandedCount = TuningParameter::countTunableValues();
 
-  // As of Phase 6.10: 88 registry entries expand to ~122 individual params
-  // (82 scalar Int + 6 IntArray: KING_SAFETY_TABLE[16] + PASSED_PAWN_RANK_MID_BONUS[6] +
+  // As of Phase 8: 78 registry entries expand to ~112 individual params
+  // (72 scalar Int + 6 IntArray: KING_SAFETY_TABLE[16] + PASSED_PAWN_RANK_MID_BONUS[6] +
   //  PASSED_PAWN_RANK_END_BONUS[6] + PAWN_ADVANCE_MID_BONUS[4] + PAWN_ADVANCE_END_BONUS[4] +
   //  PAWN_STORM_MID_PENALTY[4])
-  // 82 + 16 + 6 + 6 + 4 + 4 + 4 = 122
+  // 72 + 16 + 6 + 6 + 4 + 4 + 4 = 112
   std::cout << "Pinned expanded tunable count: " << expandedCount << "\n";
-  EXPECT_EQ(expandedCount, 122u)
+  EXPECT_EQ(expandedCount, 112U)
     << "If you added new tunable params, update this pinned count";
 }
 

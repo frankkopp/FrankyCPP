@@ -422,12 +422,14 @@ TEST_F(ConfigRegistryTest, TunableOptionsNonEmpty) {
 }
 
 TEST_F(ConfigRegistryTest, TunableParameterCount) {
-  // Phase 5: exactly 88 eval weight entries are marked tunable
-  // 82 scalar int + 6 IntArray
-  // This pins the count — if new eval weights are added, update this number.
+  // Phase 8: 78 eval weight entries are marked tunable (was 88 before deactivation)
+  // 72 scalar int + 6 IntArray
+  // 10 dead features un-tuned: SPACE_BONUS_MID/END, BAD_BISHOP_PER_PAWN_MID/END,
+  // KNIGHT_LOW_MOBILITY_LEQ2_MID/END, BISHOP_LOW_MOBILITY_LEQ3_MID,
+  // ROOK_LOW_MOBILITY_LEQ3_MID/END, SAFE_CHECK_BISHOP_MID
   const auto tunableOpts = registry.tunableOptions();
-  EXPECT_EQ(tunableOpts.size(), 88)
-    << "Expected 88 tunable parameters (82 scalar Int + 6 IntArray). "
+  EXPECT_EQ(tunableOpts.size(), 78)
+    << "Expected 78 tunable parameters (72 scalar Int + 6 IntArray). "
        "If you added a new eval weight, mark it tunable and update this count.";
 }
 
@@ -488,7 +490,7 @@ TEST_F(ConfigRegistryTest, VerifyKeyTunableParams) {
     "ROOK_OPEN_FILE_MID_BONUS", "QUEEN_MOBILITY_MID_PER_MOVE",
     "KING_ATTACK_WEIGHT_QUEEN", "KING_SAFETY_TABLE",
     "PAWN_STORM_MID_PENALTY", "SAFE_CHECK_QUEEN_MID",
-    "THREAT_HANGING_MID", "SPACE_BONUS_MID",
+    "THREAT_HANGING_MID",
     "CONNECTED_ROOKS_MID_BONUS", "MINOR_CONNECTIVITY_END_BONUS",
   };
 

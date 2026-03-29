@@ -856,6 +856,7 @@ TEST_F(SearchTest, newGameResetsDeterministic) {
   CONFIG_OVERRIDE(s.THREADS = 1;); // Single-threaded REQUIRED for determinism
 
   // Use multiple positions to increase coverage
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::vector<std::string> fens = {
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",         // start position
     "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -", // Kiwi Pete
