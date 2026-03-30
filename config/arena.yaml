@@ -274,33 +274,87 @@ debugMode: false
 
 matches:
 
-  ## current dev vs. v1.6
-  - name: "v1.7_vs_v1.6_300s"
-    tag: "" # Set to current feature name when testing
+#  ## current dev vs. v1.6
+#  - name: "v1.7_vs_v1.6_300s"
+#    tag: "" # Set to current feature name when testing
+#    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
+#    engine1Version: "v1.7"
+#    engine2Path: "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe"
+#    engine2Version: "v1.6"
+#    openingBook: "books/8moves_GM_LB.pgn"
+#    timeControl: "300+0"
+#    rounds: 200
+#    concurrency: 4
+#    outputPgn: "results/matches/v1.7_vs_v1.6_300s.pgn"
+
+  ## Phase 8 Gauntlet B: v1.7 (Phase 8 retune) vs v1.7 (Phase 7 baseline) — 300+0
+#  - name: "v1.7_phase8_vs_phase7_300s"
+#    tag: "Phase8-retune"
+#    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
+#    engine1Version: "v1.7-phase8"
+#    engine2Path: "Release/FrankyCPP_v1.7_phase7/FrankyCPP_v1.7.exe"
+#    engine2Version: "v1.7-phase7"
+#    openingBook: "books/8moves_v3.pgn"
+#    timeControl: "300+0"
+#    rounds: 100
+#    concurrency: 4
+#    outputPgn: "results/matches/v1.7_phase8_vs_phase7_300s.pgn"
+
+#  ## Phase 8 Gauntlet B (rapid): v1.7 Phase 8 vs Phase 7 — 60+0.6
+#  - name: "v1.7_phase8_vs_phase7_60s"
+#    tag: "Phase8-retune"
+#    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
+#    engine1Version: "v1.7-phase8"
+#    engine2Path: "Release/FrankyCPP_v1.7_phase7/FrankyCPP_v1.7.exe"
+#    engine2Version: "v1.7-phase7"
+#    engine2Options: "OwnBook=false"
+#    openingBook: "books/8moves_v3.pgn"
+#    timeControl: "60+0.6"
+#    rounds: 200
+#    concurrency: 4
+#    outputPgn: "results/matches/v1.7_phase8_vs_phase7_60s.pgn"
+#
+#  ## Phase 8 Gauntlet B (blitz): v1.7 Phase 8 vs Phase 7 — 10+0.1
+#  - name: "v1.7_phase8_vs_phase7_10s"
+#    tag: "Phase8-retune"
+#    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
+#    engine1Version: "v1.7-phase8"
+#    engine1Options: "OwnBook=false; Threads=1"
+#    engine2Path: "Release/FrankyCPP_v1.7_phase7/FrankyCPP_v1.7.exe"
+#    engine2Version: "v1.7-phase7"
+#    engine2Options: "OwnBook=false; Threads=1"
+#    openingBook: "books/8moves_v3.pgn"
+#    timeControl: "10+0.1"
+#    rounds: 200
+#    concurrency: 4
+#    outputPgn: "results/matches/v1.7_phase8_vs_phase7_10s.pgn"
+
+  ## Phase 8 Gauntlet C: v1.7 (Phase 8 retune) vs v1.6 — 300+0
+  - name: "v1.7_phase8_vs_v1.6_300s"
+    tag: "Phase8-retune"
     engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
-    engine1Version: "v1.7"
+    engine1Version: "v1.7-phase8"
     engine2Path: "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe"
     engine2Version: "v1.6"
     openingBook: "books/8moves_GM_LB.pgn"
     timeControl: "300+0"
-    rounds: 200
+    rounds: 100
     concurrency: 4
-    outputPgn: "results/matches/v1.7_vs_v1.6_300s.pgn"
+    outputPgn: "results/matches/v1.7_phase8_vs_v1.6_300s.pgn"
 
-  ## current dev vs. Stockfish 18 (limited to 2700 ELO)
-  - name: "v1.7_vs_Stockfish18_2700_300s"
-    tag: "" # Set to current feature name when testing
+  ## Phase 8: v1.7 (Phase 8 retune) vs. Stockfish 18 (limited to 2700 ELO)
+  - name: "v1.7_phase8_vs_Stockfish18_2700_300s"
+    tag: "Phase8-retune"
     engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
-    engine1Version: "v1.7"
-    engine1Options: "OwnBook=false"
+    engine1Version: "v1.7-phase8"
     engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
     engine2Version: "18-2700"
     engine2Options: "UCI_LimitStrength=true; UCI_Elo=2700"
     openingBook: "books/8moves_GM_LB.pgn"
     timeControl: "300+0"
-    rounds: 200
+    rounds: 100
     concurrency: 4
-    outputPgn: "results/matches/v1.7_vs_Stockfish18_2700_300s.pgn"
+    outputPgn: "results/matches/v1.7_phase8_vs_Stockfish18_2700_300s.pgn"
 
 ## Test Stripped vs Stockfish
 #  - name: "v1.5.1stripped_vs_Stockfish18_2700_300s"

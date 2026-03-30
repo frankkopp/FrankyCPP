@@ -2028,7 +2028,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .defaultValue = configToString(defaultEval.DOUBLED_PAWN_MID_WEIGHT),
     .minValue = -100,
     .maxValue = 0,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, DOUBLED_PAWN_MID_WEIGHT), .yaml = true, .display = true, .tunable = true},
+    .exposure = {.uci = IS_MUTABLE(defaultEval, DOUBLED_PAWN_MID_WEIGHT), .yaml = true, .display = true, .tunable = false},
     .getter = evalGetter([](const auto& e){ return e.DOUBLED_PAWN_MID_WEIGHT; }),
     .setter = EVAL_CONFIG_SETTER(DOUBLED_PAWN_MID_WEIGHT, parseInt)
   });
@@ -3335,7 +3335,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Int,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.THREAT_BY_MINOR_ROOK_END),
-    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = false},
     .getter = evalGetter([](const auto& e){ return e.THREAT_BY_MINOR_ROOK_END; }),
     .setter = EVAL_CONFIG_SETTER(THREAT_BY_MINOR_ROOK_END, parseInt)
   });
@@ -3442,7 +3442,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .valueType = Int,
     .domain = Eval,
     .defaultValue = configToString(defaultEval.CONNECTED_ROOKS_MID_BONUS),
-    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = true},
+    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = false},
     .getter = evalGetter([](const auto& e){ return e.CONNECTED_ROOKS_MID_BONUS; }),
     .setter = EVAL_CONFIG_SETTER(CONNECTED_ROOKS_MID_BONUS, parseInt)
   });

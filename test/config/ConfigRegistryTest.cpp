@@ -422,14 +422,15 @@ TEST_F(ConfigRegistryTest, TunableOptionsNonEmpty) {
 }
 
 TEST_F(ConfigRegistryTest, TunableParameterCount) {
-  // Phase 8: 78 eval weight entries are marked tunable (was 88 before deactivation)
-  // 72 scalar int + 6 IntArray
-  // 10 dead features un-tuned: SPACE_BONUS_MID/END, BAD_BISHOP_PER_PAWN_MID/END,
+  // Phase 8 retune: 75 eval weight entries are marked tunable (was 78 before retune)
+  // 69 scalar int + 6 IntArray
+  // 13 dead features un-tuned: SPACE_BONUS_MID/END, BAD_BISHOP_PER_PAWN_MID/END,
   // KNIGHT_LOW_MOBILITY_LEQ2_MID/END, BISHOP_LOW_MOBILITY_LEQ3_MID,
-  // ROOK_LOW_MOBILITY_LEQ3_MID/END, SAFE_CHECK_BISHOP_MID
+  // ROOK_LOW_MOBILITY_LEQ3_MID/END, SAFE_CHECK_BISHOP_MID,
+  // DOUBLED_PAWN_MID_WEIGHT, CONNECTED_ROOKS_MID_BONUS, THREAT_BY_MINOR_ROOK_END
   const auto tunableOpts = registry.tunableOptions();
-  EXPECT_EQ(tunableOpts.size(), 78)
-    << "Expected 78 tunable parameters (72 scalar Int + 6 IntArray). "
+  EXPECT_EQ(tunableOpts.size(), 75)
+    << "Expected 75 tunable parameters (69 scalar Int + 6 IntArray). "
        "If you added a new eval weight, mark it tunable and update this count.";
 }
 
@@ -491,7 +492,7 @@ TEST_F(ConfigRegistryTest, VerifyKeyTunableParams) {
     "KING_ATTACK_WEIGHT_QUEEN", "KING_SAFETY_TABLE",
     "PAWN_STORM_MID_PENALTY", "SAFE_CHECK_QUEEN_MID",
     "THREAT_HANGING_MID",
-    "CONNECTED_ROOKS_MID_BONUS", "MINOR_CONNECTIVITY_END_BONUS",
+    "CONNECTED_ROOKS_END_BONUS", "MINOR_CONNECTIVITY_END_BONUS",
   };
 
   for (const auto& name : mustBeTunable) {

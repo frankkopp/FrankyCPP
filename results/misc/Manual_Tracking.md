@@ -818,4 +818,42 @@ Matches Complete
 ===================================================================
 ```
 
+```
+v1.7. phase 8
+
+===================================================================
+All Test Suites Complete
+===================================================================
+  franky_tests (FrankyCPP v1.7.0 v1.7): 13/13 passed (100%)
+  mate_test_suite (FrankyCPP v1.7.0 v1.7): 18/20 passed (90%)
+  wac (FrankyCPP v1.7.0 v1.7): 194/201 passed (96.5174%)
+  STS1-STS15_LAN (FrankyCPP v1.7.0 v1.7): 922/1500 passed (61.4667%)
+  crafty_test (FrankyCPP v1.7.0 v1.7): 180/347 passed (51.8732%)
+  ecm98 (FrankyCPP v1.7.0 v1.7): 574/769 passed (74.6424%)
+  kaufman (FrankyCPP v1.7.0 v1.7): 21/25 passed (84%)
+  eigenmann-rapid-engine (FrankyCPP v1.7.0 v1.7): 9/109 passed (8.25688%)
+-------------------------------------------------------------------
+  TOTAL: 1931/2984 passed (64.7118%)
+  Total Nodes: 85281388285
+  Total Time:  12382505ms
+===================================================================
+==================================================================
+Match Complete: v1.7_phase8_vs_phase7_300s
+  FrankyCPP v1.7.0: 16 wins, 66 draws, 18 losses
+  FrankyCPP v1.7.0: 18 wins, 66 draws, 16 losses
+  Score: 49 - 51
+  ELO Difference: -6.9
+  Duration: 14974.4s
+==================================================================
+==================================================================
+Match Complete: v1.7_phase8_vs_v1.6_300s
+  FrankyCPP v1.7.0: 47 wins, 28 draws, 25 losses
+  FrankyCPP v1.6.0: 25 wins, 28 draws, 47 losses
+  Score: 61 - 39
+  ELO Difference: +77.7
+  Duration: 15006.9s
+==================================================================
+
+```
+
 ---

@@ -1,7 +1,7 @@
 # FrankyCPP Evaluation Configuration (flat keys)
 # Mirrors defaults in src/config/EvalConfigData.h
 #
-# v1.7 Texel-tuned defaults — 50-pass coordinate descent on 4.57M selfplay positions
+# v1.7 Texel-tuned defaults — Phase 8 retune on 4.57M selfplay positions
 # Defaults in EvalConfigData.h now match these values (synchronized 2026-03-29).
 # All values below are commented out because they match the compiled-in defaults.
 # Uncomment a value only to override the default for testing or experimentation.
@@ -21,7 +21,7 @@ _YAML_SMOKE_TEST_MARKER: true
 
 # Apply a tempo bonus to the side to move
 # USE_TEMPO: true
-# TEMPO: 4
+# TEMPO: 3
 
 # Enable lazy evaluation shortcut for obviously winning/losing positions
 # USE_LAZY_EVAL: true
@@ -35,39 +35,39 @@ _YAML_SMOKE_TEST_MARKER: true
 # PAWN_TT_SIZE_MB: 16
 
 # Pawn structure weights (centipawns), midgame and endgame
-# ISOLATED_PAWN_MID_WEIGHT: -7
+# ISOLATED_PAWN_MID_WEIGHT: -5
 # ISOLATED_PAWN_END_WEIGHT: -7
-# DOUBLED_PAWN_MID_WEIGHT: -1
-# DOUBLED_PAWN_END_WEIGHT: -19
+# DOUBLED_PAWN_MID_WEIGHT: 0
+# DOUBLED_PAWN_END_WEIGHT: -20
 # PASSED_PAWN_MID_WEIGHT: 0
-# PASSED_PAWN_END_WEIGHT: 69
+# PASSED_PAWN_END_WEIGHT: 60
 
 # Rank-based passed pawn bonus (added on top of flat weight).
 # Array indexed by relative rank 2..7 (index 0..5).
 # USE_PASSED_PAWN_RANK_BONUS: true
-# PASSED_PAWN_RANK_MID_BONUS: -50,-33,12,65,70,70
-# PASSED_PAWN_RANK_END_BONUS: 18,41,51,84,101,120
+# PASSED_PAWN_RANK_MID_BONUS: -55,-36,8,70,70,70
+# PASSED_PAWN_RANK_END_BONUS: 26,48,57,84,100,120
 
 # BLOCKED_PAWN_MID_WEIGHT: 0
 # BLOCKED_PAWN_END_WEIGHT: -10
-# PHALANX_PAWN_MID_WEIGHT: 5
-# PHALANX_PAWN_END_WEIGHT: 9
-# SUPPORTED_PAWN_MID_WEIGHT: 21
+# PHALANX_PAWN_MID_WEIGHT: 4
+# PHALANX_PAWN_END_WEIGHT: 8
+# SUPPORTED_PAWN_MID_WEIGHT: 20
 # SUPPORTED_PAWN_END_WEIGHT: 0
 
 # Pawn advancement bonus: bonus for non-passed pawns advanced to rank 4+
 # Indexed by (relativeRank - 4): {rank4, rank5, rank6, rank7}
 # USE_PAWN_ADVANCE_BONUS: true
-# PAWN_ADVANCE_MID_BONUS: 11,12,12,25
-# PAWN_ADVANCE_END_BONUS: 0,4,18,35
+# PAWN_ADVANCE_MID_BONUS: 6,12,12,25
+# PAWN_ADVANCE_END_BONUS: 0,1,18,35
 
 # Enable piece-related evaluation terms (mobility, pair bonuses, etc.)
 # USE_PIECE_EVAL: true
 
 # Bishop pair bonus (centipawns), midgame and endgame
 # USE_BISHOP_PAIR_BONUS: true
-# BISHOP_PAIR_MID_BONUS: 52
-# BISHOP_PAIR_END_BONUS: 66
+# BISHOP_PAIR_MID_BONUS: 56
+# BISHOP_PAIR_END_BONUS: 63
 
 # Knight mobility
 # USE_KNIGHT_MOBILITY: true
@@ -75,23 +75,23 @@ _YAML_SMOKE_TEST_MARKER: true
 # KNIGHT_MOBILITY_END_PER_MOVE: 4
 # Additional low-mobility penalties (centipawns)
 # KNIGHT_LOW_MOBILITY_LEQ1_MID: 0
-# KNIGHT_LOW_MOBILITY_LEQ1_END: -10
+# KNIGHT_LOW_MOBILITY_LEQ1_END: -6
 # KNIGHT_LOW_MOBILITY_LEQ2_MID: 0
 # KNIGHT_LOW_MOBILITY_LEQ2_END: 0
 
 # Knight outpost: bonus for knight on square that cannot be attacked by enemy pawns
 # USE_KNIGHT_OUTPOST: true
-# KNIGHT_OUTPOST_SUPPORTED_MID: 39
-# KNIGHT_OUTPOST_SUPPORTED_END: 21
-# KNIGHT_OUTPOST_UNSUPPORTED_MID: 39
-# KNIGHT_OUTPOST_UNSUPPORTED_END: 5
+# KNIGHT_OUTPOST_SUPPORTED_MID: 37
+# KNIGHT_OUTPOST_SUPPORTED_END: 19
+# KNIGHT_OUTPOST_UNSUPPORTED_MID: 38
+# KNIGHT_OUTPOST_UNSUPPORTED_END: 2
 
 # Bishop mobility
 # USE_BISHOP_MOBILITY: true
-# BISHOP_MOBILITY_MID_PER_MOVE: 2
+# BISHOP_MOBILITY_MID_PER_MOVE: 1
 # BISHOP_MOBILITY_END_PER_MOVE: 6
 # BISHOP_LOW_MOBILITY_LEQ3_MID: 0
-# BISHOP_LOW_MOBILITY_LEQ3_END: -24
+# BISHOP_LOW_MOBILITY_LEQ3_END: -26
 
 # Bad bishop: penalty when own pawns are on the same color squares as the bishop
 # USE_BAD_BISHOP: true
@@ -100,37 +100,37 @@ _YAML_SMOKE_TEST_MARKER: true
 
 # Rook mobility and file bonuses
 # USE_ROOK_MOBILITY: true
-# ROOK_MOBILITY_MID_PER_MOVE: 2
+# ROOK_MOBILITY_MID_PER_MOVE: 1
 # ROOK_MOBILITY_END_PER_MOVE: 9
 # ROOK_LOW_MOBILITY_LEQ3_MID: 0
 # ROOK_LOW_MOBILITY_LEQ3_END: 0
 
 # Open/semi-open file bonuses (centipawns)
 # USE_ROOK_OPEN_FILE_BONUS: true
-# ROOK_OPEN_FILE_MID_BONUS: 24
-# ROOK_OPEN_FILE_END_BONUS: 9
-# ROOK_SEMIOPEN_FILE_MID_BONUS: 11
+# ROOK_OPEN_FILE_MID_BONUS: 26
+# ROOK_OPEN_FILE_END_BONUS: 7
+# ROOK_SEMIOPEN_FILE_MID_BONUS: 14
 # ROOK_SEMIOPEN_FILE_END_BONUS: 14
 
 # Rook on 7th rank bonus (relative to its color; 2nd rank for Black)
 # USE_ROOK_7TH_RANK_BONUS: true
-# ROOK_7TH_RANK_MID_BONUS: 41
-# ROOK_7TH_RANK_END_BONUS: 9
+# ROOK_7TH_RANK_MID_BONUS: 42
+# ROOK_7TH_RANK_END_BONUS: 7
 
 # Rook behind passed pawn: bonus for rook behind own or enemy passed pawns
 # USE_ROOK_BEHIND_PASSER: true
 # ROOK_BEHIND_PASSER_OWN_MID: 1
-# ROOK_BEHIND_PASSER_OWN_END: 24
-# ROOK_BEHIND_PASSER_OPP_MID: 13
-# ROOK_BEHIND_PASSER_OPP_END: 19
+# ROOK_BEHIND_PASSER_OWN_END: 22
+# ROOK_BEHIND_PASSER_OPP_MID: 18
+# ROOK_BEHIND_PASSER_OPP_END: 17
 
 # Queen mobility and king tropism
 # USE_QUEEN_MOBILITY: true
 # QUEEN_MOBILITY_MID_PER_MOVE: 1
-# QUEEN_MOBILITY_END_PER_MOVE: 11
+# QUEEN_MOBILITY_END_PER_MOVE: 10
 # Small bonus for queen proximity to enemy king (per Manhattan step)
 # USE_QUEEN_TROPISM: true
-# QUEEN_TROPISM_MID_PER_STEP: 2
+# QUEEN_TROPISM_MID_PER_STEP: 1
 # QUEEN_TROPISM_END_PER_STEP: 20
 
 # King evaluation and pawn shield
@@ -142,7 +142,7 @@ _YAML_SMOKE_TEST_MARKER: true
 
 # King proximity to passed pawns (endgame bonus)
 # USE_KING_PAWN_PROXIMITY: true
-# KING_OWN_PASSED_PROXIMITY_END: 5
+# KING_OWN_PASSED_PROXIMITY_END: 4
 # KING_OPP_PASSED_PROXIMITY_END: 20
 
 # King safety: attack evaluation (midgame penalty for pieces attacking the king zone)
@@ -152,16 +152,16 @@ _YAML_SMOKE_TEST_MARKER: true
 # KING_ATTACK_WEIGHT_ROOK: 3
 # KING_ATTACK_WEIGHT_QUEEN: 3
 # Non-linear penalty table — sharper curve: low danger decreased, high danger increased
-# KING_SAFETY_TABLE: 0,0,5,15,19,47,51,116,135,135,227,307,348,380,380,400
+# KING_SAFETY_TABLE: 0,0,5,15,18,46,50,112,134,134,225,316,358,380,380,400
 
 # Pawn storm: penalty when opponent pawns advance toward our king (midgame only)
 # Indexed by (relativeRank - 4): {rank4, rank5, rank6, rank7}
 # USE_PAWN_STORM: true
-# PAWN_STORM_MID_PENALTY: 0,15,15,50
+# PAWN_STORM_MID_PENALTY: 0,10,10,50
 
 # Open file near king: penalty for open/semi-open files adjacent to king (midgame only)
 # USE_KING_OPEN_FILE: true
-# KING_OPEN_FILE_MID_PENALTY: -24
+# KING_OPEN_FILE_MID_PENALTY: -25
 # KING_SEMIOPEN_FILE_MID_PENALTY: 0
 
 # Safe check squares: penalty for squares from which enemy can give check without being captured
@@ -169,27 +169,27 @@ _YAML_SMOKE_TEST_MARKER: true
 # USE_SAFE_CHECK: true
 # SAFE_CHECK_KNIGHT_MID: -15
 # SAFE_CHECK_BISHOP_MID: 0
-# SAFE_CHECK_ROOK_MID: -17
+# SAFE_CHECK_ROOK_MID: -16
 # SAFE_CHECK_QUEEN_MID: -11
 
 # Threat evaluation: bonus for pieces attacked by lesser-value pieces and hanging pieces
 # Three tiers: (1) pawn attacks on pieces, (2) minor attacks on majors, (3) hanging pieces
 # USE_THREAT_EVAL: true
 # Tier 1: pawn attacks on pieces (per victim type)
-# THREAT_BY_PAWN_MINOR_MID: 44
-# THREAT_BY_PAWN_MINOR_END: 12
-# THREAT_BY_PAWN_ROOK_MID: 48
-# THREAT_BY_PAWN_ROOK_END: 18
-# THREAT_BY_PAWN_QUEEN_MID: 30
-# THREAT_BY_PAWN_QUEEN_END: 10
+# THREAT_BY_PAWN_MINOR_MID: 41
+# THREAT_BY_PAWN_MINOR_END: 13
+# THREAT_BY_PAWN_ROOK_MID: 45
+# THREAT_BY_PAWN_ROOK_END: 16
+# THREAT_BY_PAWN_QUEEN_MID: 28
+# THREAT_BY_PAWN_QUEEN_END: 3
 # Tier 2: minor piece attacks on major pieces
-# THREAT_BY_MINOR_ROOK_MID: 55
+# THREAT_BY_MINOR_ROOK_MID: 63
 # THREAT_BY_MINOR_ROOK_END: 0
-# THREAT_BY_MINOR_QUEEN_MID: 28
-# THREAT_BY_MINOR_QUEEN_END: 20
+# THREAT_BY_MINOR_QUEEN_MID: 26
+# THREAT_BY_MINOR_QUEEN_END: 18
 # Tier 3: hanging pieces (attacked by us, not defended by them)
-# THREAT_HANGING_MID: 7
-# THREAT_HANGING_END: 43
+# THREAT_HANGING_MID: 6
+# THREAT_HANGING_END: 42
 
 # Space evaluation: safe squares behind own pawn chain (midgame-weighted)
 # DISABLED: Confirmed dead by tuner — sign-flipped in all 3 datasets
@@ -198,16 +198,16 @@ _YAML_SMOKE_TEST_MARKER: true
 # SPACE_BONUS_END: 0
 
 # Connected rooks: bonus when two rooks are on the same rank/file with no pieces between
-# ENABLED: Tuner found strong endgame bonus (+46); MID sign-flipped and zeroed
+# ENABLED: Tuner found strong endgame bonus; MID sign-flipped and zeroed
 # USE_CONNECTED_ROOKS: true
 # CONNECTED_ROOKS_MID_BONUS: 0
-# CONNECTED_ROOKS_END_BONUS: 46
+# CONNECTED_ROOKS_END_BONUS: 39
 
 # Minor piece connectivity: bonus when knight/bishop is defended by another minor piece
 # ENABLED: Tuner found positive values for both phases
 # USE_MINOR_CONNECTIVITY: true
 # MINOR_CONNECTIVITY_MID_BONUS: 1
-# MINOR_CONNECTIVITY_END_BONUS: 5
+# MINOR_CONNECTIVITY_END_BONUS: 3
 
 # Use gamephase value blending (e.g., tapered eval)
 # USE_GAMEPHASE_VALUE: true

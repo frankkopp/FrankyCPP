@@ -82,7 +82,7 @@ namespace {
     EXPECT_TRUE(c.USE_MATERIAL);
     EXPECT_TRUE(c.USE_POSITIONAL);
     EXPECT_TRUE(c.USE_TEMPO);
-    EXPECT_EQ(c.TEMPO, 4);
+    EXPECT_EQ(c.TEMPO, 3);
   }
 
   // Ensures partial YAML overrides work and unknown keys do not cause failures (lenient parsing).
