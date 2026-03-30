@@ -34,6 +34,7 @@
 #include "common/stringutil.h"
 
 #include <boost/process/v1/args.hpp>
+#include <boost/process/v1/start_dir.hpp>
 
 #include <chrono>
 #include <filesystem>
@@ -85,13 +86,17 @@ namespace arena {
     // Start engine subprocess with pipe redirection
     // Pass enginePath separately (Boost.Process handles paths with spaces correctly)
     // Pass arguments via bp::args to avoid command-line injection issues
+    // Set start_dir to the engine's parent directory so it can find its local config
+    // files (e.g., config/FrankyCPP.cfg). This mirrors cutechess-cli's dir= parameter
+    // and is consistent with how buildCutechessCommand() sets dir= for match execution.
+    // v1.7+ engines use ExePath.h and don't need this, but older engines do.
+    const auto engineDir = std::filesystem::path(enginePath).parent_path().string();
     try {
       if (commandLineArgs.empty()) {
         childProcess_ = std::make_unique<bp::child>(
           enginePath,
-          bp::std_in<*pipeIn_,
-                     bp::std_out>
-            * pipeOut_);
+          bp::start_dir(engineDir.empty() ? "." : engineDir),
+          bp::std_in<*pipeIn_, bp::std_out> * pipeOut_);
       }
       else {
         // Split arguments on whitespace - users needing complex quoting should
@@ -106,9 +111,8 @@ namespace arena {
         childProcess_ = std::make_unique<bp::child>(
           enginePath,
           bp::args(args),
-          bp::std_in<*pipeIn_,
-                     bp::std_out>
-            * pipeOut_);
+          bp::start_dir(engineDir.empty() ? "." : engineDir),
+          bp::std_in<*pipeIn_, bp::std_out> * pipeOut_);
       }
     } catch (const std::exception& e) {
       throw std::runtime_error("Failed to start UCI engine: " + std::string(e.what()));
