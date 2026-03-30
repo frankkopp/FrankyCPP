@@ -146,11 +146,6 @@ Value Evaluator::evaluate(const Position& p) {
     threatEval(p, score, BLACK);
   }
 
-  // evaluate space (safe squares behind own pawn chain, not attacked by enemy pawns)
-  if (EvalConfig.USE_SPACE_EVAL) {
-    spaceEval(p, score, WHITE);
-    spaceEval(p, score, BLACK);
-  }
 
   // evaluate piece coordination (connected rooks, minor connectivity)
   if (EvalConfig.USE_CONNECTED_ROOKS || EvalConfig.USE_MINOR_CONNECTIVITY) {
@@ -268,7 +263,7 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
     // clang-format off
     int midvalue = isolated.popcount() *  EvalConfig.ISOLATED_PAWN_MID_WEIGHT;
     int endvalue = isolated.popcount() *  EvalConfig.ISOLATED_PAWN_END_WEIGHT;
-    midvalue    += doubled.popcount() *   EvalConfig.DOUBLED_PAWN_MID_WEIGHT;
+    // No DOUBLED_PAWN_MID_WEIGHT — Texel tuning zeroed it (Phase 9). Only END has signal.
     endvalue    += doubled.popcount() *   EvalConfig.DOUBLED_PAWN_END_WEIGHT;
     // clang-format on
 
@@ -407,10 +402,7 @@ inline void Evaluator::knightEval(const Position& p, Score& s, const Color us, C
       mid += EvalConfig.KNIGHT_LOW_MOBILITY_LEQ1_MID;
       end += EvalConfig.KNIGHT_LOW_MOBILITY_LEQ1_END;
     }
-    else if (mobility <= 2) {
-      mid += EvalConfig.KNIGHT_LOW_MOBILITY_LEQ2_MID;
-      end += EvalConfig.KNIGHT_LOW_MOBILITY_LEQ2_END;
-    }
+    // No LEQ2 threshold — Texel tuning zeroed it (Phase 9). Only LEQ1 has signal.
 
     s.midgame += static_cast<Value>(mid * us.sign());
     s.endgame += static_cast<Value>(end * us.sign());
@@ -473,7 +465,7 @@ inline void Evaluator::bishopEval(const Position& p, Score& s, const Color us, C
     int end = mobility * EvalConfig.BISHOP_MOBILITY_END_PER_MOVE;
 
     if (mobility <= 3) {
-      mid += EvalConfig.BISHOP_LOW_MOBILITY_LEQ3_MID;
+      // No BISHOP_LOW_MOBILITY_LEQ3_MID — Texel tuning zeroed it (Phase 9). Only END has signal.
       end += EvalConfig.BISHOP_LOW_MOBILITY_LEQ3_END;
     }
 
@@ -481,20 +473,8 @@ inline void Evaluator::bishopEval(const Position& p, Score& s, const Color us, C
     s.endgame += static_cast<Value>(end * us.sign());
   }
 
-  // Bad bishop: penalty when many own pawns are on the same color squares as the bishop.
-  // A bishop blocked by its own pawns has reduced scope.
-  if (EvalConfig.USE_BAD_BISHOP) {
-    const Bitboard myPawns = p.getPieceBb(us, PAWN);
-    // Use pre-computed square color masks: colorBb[WHITE] = light squares, colorBb[BLACK] = dark squares
-    const Bitboard bishopColorMask = (sq.file() + sq.rank()) % 2 == 0
-                                       ? Bitboards::colorBb[WHITE]
-                                       : Bitboards::colorBb[BLACK];
-    const int pawnsOnBishopColor   = (myPawns & bishopColorMask).popcount();
-    if (pawnsOnBishopColor > 0) {
-      s.midgame += static_cast<Value>(pawnsOnBishopColor * EvalConfig.BAD_BISHOP_PER_PAWN_MID * us.sign());
-      s.endgame += static_cast<Value>(pawnsOnBishopColor * EvalConfig.BAD_BISHOP_PER_PAWN_END * us.sign());
-    }
-  }
+  // Bad bishop per-pawn penalty: REMOVED — Texel tuning zeroed both MID and END
+  // across all datasets (Phase 9, 2026-03). USE_BAD_BISHOP toggle also removed.
 
   // King safety: count attacks on enemy king zone
   if (EvalConfig.USE_KING_SAFETY_ATTACK) {
@@ -523,11 +503,7 @@ inline void Evaluator::rookEval(const Position& p, Score& s, const Color us, con
 
     mid += mobility * EvalConfig.ROOK_MOBILITY_MID_PER_MOVE;
     end += mobility * EvalConfig.ROOK_MOBILITY_END_PER_MOVE;
-
-    if (mobility <= 3) {
-      mid += EvalConfig.ROOK_LOW_MOBILITY_LEQ3_MID;
-      end += EvalConfig.ROOK_LOW_MOBILITY_LEQ3_END;
-    }
+    // No ROOK_LOW_MOBILITY_LEQ3 — Texel tuning zeroed both MID and END (Phase 9).
   }
 
   // Open/semi-open file bonuses
@@ -771,12 +747,8 @@ inline void Evaluator::kingEval(const Position& p, Score& s, const Color us) con
       const int safeChecks        = (checkSquares & safeMask).popcount();
       mid += safeChecks * EvalConfig.SAFE_CHECK_KNIGHT_MID;
     }
-    // Bishop safe checks (only if enemy has bishops)
-    if (p.getPieceBb(them, BISHOP)) {
-      const Bitboard checkSquares = Attacks::attacks(BISHOP, ksq, occupied);
-      const int safeChecks        = (checkSquares & safeMask).popcount();
-      mid += safeChecks * EvalConfig.SAFE_CHECK_BISHOP_MID;
-    }
+    // Bishop safe checks: REMOVED — Texel tuning zeroed SAFE_CHECK_BISHOP_MID (Phase 9).
+    // Knight/rook/queen safe checks retained.
     // Rook safe checks (only if enemy has rooks)
     if (p.getPieceBb(them, ROOK)) {
       const Bitboard checkSquares = Attacks::attacks(ROOK, ksq, occupied);
@@ -829,7 +801,7 @@ inline void Evaluator::threatEval(const Position& p, Score& s, const Color us) c
     const int minorThreatsRook  = (enemyRooks & ourMinorAttacks).popcount();
     const int minorThreatsQueen = (enemyQueens & ourMinorAttacks).popcount();
     mid += minorThreatsRook * EvalConfig.THREAT_BY_MINOR_ROOK_MID;
-    end += minorThreatsRook * EvalConfig.THREAT_BY_MINOR_ROOK_END;
+    // No THREAT_BY_MINOR_ROOK_END — Texel tuning sign-flipped it (Phase 9). Only MID has signal.
     mid += minorThreatsQueen * EvalConfig.THREAT_BY_MINOR_QUEEN_MID;
     end += minorThreatsQueen * EvalConfig.THREAT_BY_MINOR_QUEEN_END;
   }
@@ -846,35 +818,6 @@ inline void Evaluator::threatEval(const Position& p, Score& s, const Color us) c
   if (mid || end) {
     s.midgame += static_cast<Value>(mid * us.sign());
     s.endgame += static_cast<Value>(end * us.sign());
-  }
-}
-
-inline void Evaluator::spaceEval(const Position& p, Score& s, const Color us) const {
-  // Space = safe squares on ranks 2-4 (relative) behind own pawn chain,
-  // not attacked by enemy pawns. Midgame-weighted (space matters less in endgame).
-  const Color them = ~us;
-
-  // Ranks 2-4 relative to us: White = ranks 2,3,4; Black = ranks 7,6,5
-  const Bitboard spaceMask = us == WHITE
-    ? (Rank2BB | Rank3BB | Rank4BB)
-    : (Rank7BB | Rank6BB | Rank5BB);
-
-  // Build a mask of files occupied by own pawns
-  const Bitboard myPawns = p.getPieceBb(us, PAWN);
-  Bitboard pawnFiles     = BbZero;
-  Bitboard tmp           = myPawns;
-  while (tmp) {
-    pawnFiles |= Bitboards::sqToFileBb[tmp.popLSB()];
-  }
-
-  // Space candidates: on space ranks, on own pawn files, not attacked by enemy pawns
-  const Bitboard enemyPawnAttacks = attackedByPT[PAWN][them];
-  const Bitboard spaceSquares     = spaceMask & pawnFiles & ~enemyPawnAttacks;
-  // ReSharper disable once CppTooWideScope
-  const int spaceCount            = spaceSquares.popcount();
-  if (spaceCount) {
-    s.midgame += static_cast<Value>(spaceCount * EvalConfig.SPACE_BONUS_MID * us.sign());
-    s.endgame += static_cast<Value>(spaceCount * EvalConfig.SPACE_BONUS_END * us.sign());
   }
 }
 
@@ -896,7 +839,7 @@ inline void Evaluator::coordinationEval(const Position& p, Score& s, const Color
           if (r1.file() == r2.file() || r1.rank() == r2.rank()) {
             const Bitboard between = Bitboards::intermediateBb[r1][r2];
             if (!(p.getOccupiedBb() & between)) {
-              mid += EvalConfig.CONNECTED_ROOKS_MID_BONUS;
+              // No CONNECTED_ROOKS_MID_BONUS — Texel tuning sign-flipped it (Phase 9). Only END has signal.
               end += EvalConfig.CONNECTED_ROOKS_END_BONUS;
             }
           }

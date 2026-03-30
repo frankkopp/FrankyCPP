@@ -34,11 +34,10 @@
 //   - Pawn structure (isolated, doubled, passed, connected, advancement)
 //   - Piece mobility (attack squares available)
 //   - Knight outposts (safe squares immune to pawn attacks)
-//   - Bad bishop detection (own pawns on bishop's color)
+//   - Bad bishop detection (own pawns on bishop's color) — per-pawn penalty removed (Phase 9)
 //   - Rook placement (open files, 7th rank, behind passed pawns)
 //   - King safety (pawn shield, attacker proximity, pawn storm, open files, safe checks)
 //   - Threat evaluation (pawn attacks on pieces, minor attacks on majors, hanging pieces)
-//   - Space evaluation (safe squares behind pawn chain)
 //   - Piece coordination (connected rooks, minor piece connectivity)
 //
 // Tapered Evaluation:
@@ -205,13 +204,6 @@ namespace engine {
     /// @param s   Score struct to update
     /// @param us  Color whose threats to evaluate (bonus for us)
     void threatEval(const Position& p, Score& s, Color us) const;
-
-    /// Evaluates space: counts safe squares behind own pawn chain on ranks 2-4
-    /// (relative) that are not attacked by enemy pawns. Midgame-weighted.
-    /// @param p   The position to evaluate
-    /// @param s   Score struct to update
-    /// @param us  Color whose space to evaluate (bonus for us)
-    void spaceEval(const Position& p, Score& s, Color us) const;
 
     /// Evaluates piece coordination: connected rooks (same rank/file, no pieces
     /// between) and minor piece connectivity (knight/bishop defended by another minor).

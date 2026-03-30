@@ -308,8 +308,8 @@ matches:
   # ==========================================================================
 
 #  ## Bullet 1+0.01 — Ultra-fast smoke test (~7min for 500 games with Threads=4)
-#  - name: "TC_gauntlet_bullet_1s"
-#    tag: "TC-gauntlet"
+#  - name: "Tuning_Phase9_QuickTest_1s"
+#    tag: "Phase9_QuickTest"
 #    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
 #    engine1Version: "v1.7"
 #    engine1Options: "OwnBook=false; Threads=4"
@@ -320,7 +320,7 @@ matches:
 #    timeControl: "1+0.01"
 #    rounds: 500
 #    concurrency: 4
-#    outputPgn: "results/matches/TC_gauntlet_bullet_1s.pgn"
+#    outputPgn: "results/matches/Tuning_Phase9_QuickTest_1s.pgn"
 #
 #  ## Bullet 2+0.02 — Fast smoke test (~15min for 500 games with Threads=4)
 #  - name: "TC_gauntlet_bullet_2s"
@@ -338,19 +338,19 @@ matches:
 #    outputPgn: "results/matches/TC_gauntlet_bullet_2s.pgn"
 #
 #  ## Blitz 5+0.05 — Quick development test (~40min for 500 games with Threads=4)
-#  - name: "TC_gauntlet_blitz_5s"
-#    tag: "TC-gauntlet"
-#    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
-#    engine1Version: "v1.7"
-#    engine1Options: "OwnBook=false; Threads=4"
-#    engine2Path: "Release/FrankyCPP_v1.7_B/FrankyCPP_v1.7.exe"
-#    engine2Version: "v1.7_B"
-#    engine2Options: "OwnBook=false; Threads=4"
-#    openingBook: "books/8moves_v3.pgn"
-#    timeControl: "5+0.05"
-#    rounds: 500
-#    concurrency: 4
-#    outputPgn: "results/matches/TC_gauntlet_blitz_5s.pgn"
+  - name: "Tuning_Phase9_QuickTest_5s"
+    tag: "Phase9_QuickTest"
+    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
+    engine1Version: "v1.7"
+    engine1Options: "OwnBook=false; Threads=4"
+    engine2Path: "Release/FrankyCPP_v1.7_B/FrankyCPP_v1.7.exe"
+    engine2Version: "v1.7_B"
+    engine2Options: "OwnBook=false; Threads=4"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "5+0.05"
+    rounds: 500
+    concurrency: 4
+    outputPgn: "results/matches/Tuning_Phase9_QuickTest_5s.pgn"
 
   ## Blitz 10+0.1 — Fishtest STC equivalent (~80min for 500 games with Threads=4)
 #  - name: "TC_gauntlet_STC_10s"
@@ -368,19 +368,19 @@ matches:
 #    outputPgn: "results/matches/TC_gauntlet_STC_10s.pgn"
 
   ## Rapid 60+0.6 — Fishtest LTC equivalent (~5hr for 200 games with Threads=4)
-  - name: "TC_gauntlet_LTC_60s"
-    tag: "TC-gauntlet"
-    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
-    engine1Version: "v1.7"
-    engine1Options: "OwnBook=false; Threads=4"
-    engine2Path: "Release/FrankyCPP_v1.7_B/FrankyCPP_v1.7.exe"
-    engine2Version: "v1.7_B"
-    engine2Options: "OwnBook=false; Threads=4"
-    openingBook: "books/8moves_v3.pgn"
-    timeControl: "60+0.6"
-    rounds: 200
-    concurrency: 4
-    outputPgn: "results/matches/TC_gauntlet_LTC_60s.pgn"
+#  - name: "TC_gauntlet_LTC_60s"
+#    tag: "TC-gauntlet"
+#    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
+#    engine1Version: "v1.7"
+#    engine1Options: "OwnBook=false; Threads=4"
+#    engine2Path: "Release/FrankyCPP_v1.7_B/FrankyCPP_v1.7.exe"
+#    engine2Version: "v1.7_B"
+#    engine2Options: "OwnBook=false; Threads=4"
+#    openingBook: "books/8moves_v3.pgn"
+#    timeControl: "60+0.6"
+#    rounds: 200
+#    concurrency: 4
+#    outputPgn: "results/matches/TC_gauntlet_LTC_60s.pgn"
 
 #  ## Rapid 180+1.8 — 300+0 equivalent (~12hr for 100 games with Threads=4)
 #  - name: "TC_gauntlet_LTC_180s"
@@ -426,7 +426,7 @@ benchmarks:
     depth: 12
     hashSizeMB: 128
     threads: 1
-    tag: ""  # Set to current feature name when testing
+    tag: "Tuning After Phase 9"  # Set to current feature name when testing
 
   - name: "v1.7 External"
     enginePath: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
@@ -435,7 +435,7 @@ benchmarks:
     depth: 12
     hashSizeMB: 128
     threads: 1
-    tag: ""  # Set to current feature name when testing
+    tag: "Tuning After Phase 9"  # Set to current feature name when testing
 
 #  - name: "v1.7 External"
 #    enginePath: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"

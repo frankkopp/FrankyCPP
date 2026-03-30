@@ -287,8 +287,8 @@ TEST_F(TuningParameterTest, paramGroups_knownAssignments) {
     {"QUEEN_MOBILITY_MID_PER_MOVE",  8},
     {"KING_SHIELD_MID_PER_PAWN",     9},
     {"THREAT_BY_PAWN_MINOR_MID",    10},
-    {"SPACE_BONUS_MID",             11},
-    {"CONNECTED_ROOKS_MID_BONUS",   12},
+    // SPACE_BONUS_MID (group 11) removed — feature deleted in Phase 9.
+    {"CONNECTED_ROOKS_END_BONUS",   12},
   };
 
   for (const auto& p : params) {
@@ -535,7 +535,7 @@ TEST_F(TuningParameterTest, expandedCount_pinnedValue) {
   // This should be updated when new tunable params are added.
   const auto expandedCount = TuningParameter::countTunableValues();
 
-  // As of Phase 8 retune: 75 registry entries expand to ~109 individual params
+  // As of Phase 9: 75 registry entries expand to ~109 individual params
   // (69 scalar Int + 6 IntArray: KING_SAFETY_TABLE[16] + PASSED_PAWN_RANK_MID_BONUS[6] +
   //  PASSED_PAWN_RANK_END_BONUS[6] + PAWN_ADVANCE_MID_BONUS[4] + PAWN_ADVANCE_END_BONUS[4] +
   //  PAWN_STORM_MID_PENALTY[4])

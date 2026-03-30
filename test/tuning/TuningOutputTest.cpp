@@ -77,8 +77,8 @@ protected:
 
     // Scalar param — zeroed out
     TuningParameter p4;
-    p4.name          = "SPACE_BONUS_END";
-    p4.configName    = "SPACE_BONUS_END";
+    p4.name          = "KING_SHIELD_END_PER_PAWN";
+    p4.configName    = "KING_SHIELD_END_PER_PAWN";
     p4.originalValue = 1;
     p4.currentValue  = 0;
     p4.arrayIndex    = -1;
@@ -128,7 +128,7 @@ TEST_F(TuningOutputTest, GenerateParamsYaml_ScalarParams) {
   EXPECT_TRUE(yaml.find("TEMPO: 30") != std::string::npos);
   EXPECT_TRUE(yaml.find("ISOLATED_PAWN_MID_WEIGHT: -10") != std::string::npos);
   EXPECT_TRUE(yaml.find("BLOCKED_PAWN_MID_WEIGHT: 1") != std::string::npos);
-  EXPECT_TRUE(yaml.find("SPACE_BONUS_END: 0") != std::string::npos);
+  EXPECT_TRUE(yaml.find("KING_SHIELD_END_PER_PAWN: 0") != std::string::npos);
 }
 
 TEST_F(TuningOutputTest, GenerateParamsYaml_ArrayCoalesced) {
@@ -156,6 +156,7 @@ TEST_F(TuningOutputTest, GenerateParamsYaml_EmptyParams) {
 
 TEST_F(TuningOutputTest, WriteParamsYaml_CreatesFile) {
   const auto params = makeTestParams();
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string path = "test_tuning_output.yaml";
 
   TuningOutput::writeParamsYaml(path, params, 1.2);
@@ -195,7 +196,7 @@ TEST_F(TuningOutputTest, GenerateComparisonReport_CorrectStatistics) {
   EXPECT_TRUE(report.find("Unchanged:         1") != std::string::npos);
   // 1 sign flip (BLOCKED_PAWN_MID_WEIGHT: -2 -> 1)
   EXPECT_TRUE(report.find("Sign-flipped:      1") != std::string::npos);
-  // 1 zeroed out (SPACE_BONUS_END: 1 -> 0)
+  // 1 zeroed out (KING_SHIELD_END_PER_PAWN: 1 -> 0)
   EXPECT_TRUE(report.find("Zeroed out:        1") != std::string::npos);
 }
 
@@ -206,7 +207,7 @@ TEST_F(TuningOutputTest, GenerateComparisonReport_ContainsAllParams) {
   EXPECT_TRUE(report.find("TEMPO") != std::string::npos);
   EXPECT_TRUE(report.find("ISOLATED_PAWN_MID_WEIGHT") != std::string::npos);
   EXPECT_TRUE(report.find("BLOCKED_PAWN_MID_WEIGHT") != std::string::npos);
-  EXPECT_TRUE(report.find("SPACE_BONUS_END") != std::string::npos);
+  EXPECT_TRUE(report.find("KING_SHIELD_END_PER_PAWN") != std::string::npos);
   EXPECT_TRUE(report.find("TEST_ARRAY[0]") != std::string::npos);
   EXPECT_TRUE(report.find("TEST_ARRAY[2]") != std::string::npos);
 }
@@ -244,6 +245,7 @@ TEST_F(TuningOutputTest, GenerateComparisonReport_FlagsUnchanged) {
 
 TEST_F(TuningOutputTest, WriteComparisonReport_CreatesFile) {
   const auto params = makeTestParams();
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string path = "test_comparison.txt";
 
   TuningOutput::writeComparisonReport(path, params);

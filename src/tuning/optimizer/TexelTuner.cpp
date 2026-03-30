@@ -60,7 +60,7 @@ namespace tuning {
       // Disable pawn TT — avoids stale cache entries after param changes
       e.USE_PAWN_TT = false;
       // Optional eval terms (USE_CONNECTED_ROOKS, USE_MINOR_CONNECTIVITY) already
-      // default to true. USE_SPACE_EVAL defaults to false (confirmed dead by tuner).
+      // default to true. Space eval was removed entirely (Phase 9).
     CONFIG_OVERRIDE_END();
   }
 

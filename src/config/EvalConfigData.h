@@ -60,7 +60,7 @@ namespace config {
     // pawn structure weights
     CONFIG_CONST int ISOLATED_PAWN_MID_WEIGHT  = -5;  // was: -7 — Phase 8 retune
     CONFIG_CONST int ISOLATED_PAWN_END_WEIGHT  = -7;  // was: -20
-    CONFIG_CONST int DOUBLED_PAWN_MID_WEIGHT   = 0;   // was: -1 — zeroed by Phase 8 retune (removal candidate)
+    // No DOUBLED_PAWN_MID_WEIGHT — Texel tuning zeroed it (Phase 8, 2026-03). Only END has signal.
     CONFIG_CONST int DOUBLED_PAWN_END_WEIGHT   = -20; // was: -19 — Phase 8 retune
     CONFIG_CONST int PASSED_PAWN_MID_WEIGHT    = 0;   // was: 20 — zeroed by tuner
     CONFIG_CONST int PASSED_PAWN_END_WEIGHT    = 60;  // was: 69 — Phase 8 retune
@@ -81,9 +81,10 @@ namespace config {
 
     // pawn advancement bonus: bonus for non-passed pawns that have advanced to rank 4+
     // Indexed by (relativeRank - 4): {rank4, rank5, rank6, rank7}
+    // Note: PAWN_ADVANCE_END_BONUS[0] pinned at 0 — Texel tuning sign-flipped it (Phase 8, 2026-03).
     CONFIG_CONST bool USE_PAWN_ADVANCE_BONUS = true;
     CONFIG_CONST std::array<int, 4> PAWN_ADVANCE_MID_BONUS = {6, 12, 12, 25};  // was: {11,12,12,25}
-    CONFIG_CONST std::array<int, 4> PAWN_ADVANCE_END_BONUS = {0, 1, 18, 35};   // was: {0,4,18,35} — [0] zeroed: sign-flip
+    CONFIG_CONST std::array<int, 4> PAWN_ADVANCE_END_BONUS = {0, 1, 18, 35};   // was: {0,4,18,35}
 
     // piece eval
     CONFIG_CONST bool USE_PIECE_EVAL = true;
@@ -99,8 +100,8 @@ namespace config {
     CONFIG_CONST int KNIGHT_MOBILITY_END_PER_MOVE = 4;   // was: 2
     CONFIG_CONST int KNIGHT_LOW_MOBILITY_LEQ1_MID = 0;   // was: -6 — zeroed by tuner
     CONFIG_CONST int KNIGHT_LOW_MOBILITY_LEQ1_END = -6;  // was: -10 — Phase 8 retune
-    CONFIG_CONST int KNIGHT_LOW_MOBILITY_LEQ2_MID = 0;   // was: -3 — zeroed by tuner
-    CONFIG_CONST int KNIGHT_LOW_MOBILITY_LEQ2_END = 0;   // was: -3 — zeroed by tuner
+    // No LEQ2 threshold — Texel tuning zeroed it across all datasets (Phase 8, 2026-03).
+    // Only LEQ1 has measurable signal.
 
     // knight outpost: bonus for knight on a square that cannot be attacked by enemy pawns
     // (ranks 4-6 relative, center files preferred)
@@ -114,20 +115,17 @@ namespace config {
     CONFIG_CONST bool USE_BISHOP_MOBILITY         = true;
     CONFIG_CONST int BISHOP_MOBILITY_MID_PER_MOVE = 1;   // was: 2 — Phase 8 retune
     CONFIG_CONST int BISHOP_MOBILITY_END_PER_MOVE = 6;   // was: 3
-    CONFIG_CONST int BISHOP_LOW_MOBILITY_LEQ3_MID = 0;   // was: -4 — zeroed by tuner
+    // No BISHOP_LOW_MOBILITY_LEQ3_MID — Texel tuning zeroed it (Phase 8, 2026-03). Only END has signal.
     CONFIG_CONST int BISHOP_LOW_MOBILITY_LEQ3_END = -26; // was: -24 — Phase 8 retune
 
-    // bad bishop: penalty when own pawns are on the same color squares as the bishop
-    CONFIG_CONST bool USE_BAD_BISHOP          = true;
-    CONFIG_CONST int BAD_BISHOP_PER_PAWN_MID  = 0; // was: -3 — zeroed by tuner (removal candidate)
-    CONFIG_CONST int BAD_BISHOP_PER_PAWN_END  = 0; // was: -5 — zeroed by tuner (removal candidate)
+    // bad bishop per-pawn penalty: REMOVED — Texel tuning zeroed both MID and END
+    // across all 3 datasets (Phase 9, 2026-03). USE_BAD_BISHOP toggle also removed.
 
     // rook mobility and files
     CONFIG_CONST bool USE_ROOK_MOBILITY           = true;
     CONFIG_CONST int ROOK_MOBILITY_MID_PER_MOVE   = 1;  // was: 2 — Phase 8 retune
     CONFIG_CONST int ROOK_MOBILITY_END_PER_MOVE   = 9;  // was: 2
-    CONFIG_CONST int ROOK_LOW_MOBILITY_LEQ3_MID   = 0;  // was: -3 — zeroed by tuner
-    CONFIG_CONST int ROOK_LOW_MOBILITY_LEQ3_END   = 0;  // was: -3 — zeroed by tuner
+    // No ROOK_LOW_MOBILITY_LEQ3 — Texel tuning zeroed both MID and END (Phase 8, 2026-03).
     CONFIG_CONST bool USE_ROOK_OPEN_FILE_BONUS    = true;
     CONFIG_CONST int ROOK_OPEN_FILE_MID_BONUS     = 26; // was: 24 — Phase 8 retune
     CONFIG_CONST int ROOK_OPEN_FILE_END_BONUS     = 7;  // was: 9 — Phase 8 retune
@@ -181,8 +179,9 @@ namespace config {
 
     // pawn storm: penalty when opponent pawns advance toward our king (midgame only)
     // Indexed by (relativeRank - 4): {rank4, rank5, rank6, rank7}
+    // Note: element [0] pinned at 0 — Texel tuning sign-flipped it (Phase 8, 2026-03).
     CONFIG_CONST bool USE_PAWN_STORM = true;
-    CONFIG_CONST std::array<int, 4> PAWN_STORM_MID_PENALTY = {0, 10, 10, 50}; // was: {0,15,15,50} — [0] zeroed: sign-flip
+    CONFIG_CONST std::array<int, 4> PAWN_STORM_MID_PENALTY = {0, 10, 10, 50}; // was: {0,15,15,50}
 
     // open file near king: penalty for open/semi-open files adjacent to king (midgame only)
     CONFIG_CONST bool USE_KING_OPEN_FILE            = true;
@@ -193,7 +192,8 @@ namespace config {
     // Per-piece-type penalties (midgame only, negative values = penalty for the defending side)
     CONFIG_CONST bool USE_SAFE_CHECK          = true;
     CONFIG_CONST int SAFE_CHECK_KNIGHT_MID    = -15; // was: -10
-    CONFIG_CONST int SAFE_CHECK_BISHOP_MID    = 0;   // was: -8 — zeroed by tuner (removal candidate)
+    // No SAFE_CHECK_BISHOP_MID — Texel tuning zeroed it (Phase 8, 2026-03).
+    // Knight/rook/queen safe checks retained.
     CONFIG_CONST int SAFE_CHECK_ROOK_MID      = -16; // was: -17 — Phase 8 retune
     CONFIG_CONST int SAFE_CHECK_QUEEN_MID     = -11; // was: -15
 
@@ -209,24 +209,20 @@ namespace config {
     CONFIG_CONST int THREAT_BY_PAWN_QUEEN_END  = 3;   // was: 10 — Phase 8 retune
     // Tier 2: minor piece (knight/bishop) attacks on major pieces (rook/queen)
     CONFIG_CONST int THREAT_BY_MINOR_ROOK_MID  = 63;  // was: 55 — Phase 8 retune
-    CONFIG_CONST int THREAT_BY_MINOR_ROOK_END  = 0;   // was: 0 — zeroed: sign-flip (removal candidate)
+    // No THREAT_BY_MINOR_ROOK_END — Texel tuning sign-flipped it (Phase 8, 2026-03). Only MID has signal.
     CONFIG_CONST int THREAT_BY_MINOR_QUEEN_MID = 26;  // was: 28 — Phase 8 retune
     CONFIG_CONST int THREAT_BY_MINOR_QUEEN_END = 18;  // was: 20 — Phase 8 retune
     // Tier 3: hanging pieces (attacked by us, not defended by them)
     CONFIG_CONST int THREAT_HANGING_MID        = 6;   // was: 7 — Phase 8 retune
     CONFIG_CONST int THREAT_HANGING_END        = 42;  // was: 43 — Phase 8 retune
 
-    // space evaluation: bonus for safe squares behind own pawn chain (midgame-weighted)
-    // Space = squares on ranks 2-4 (relative) behind own pawns, not attacked by enemy pawns.
-    // DISABLED: Confirmed dead by Texel tuner — sign-flipped in all 3 datasets.
-    CONFIG_CONST bool USE_SPACE_EVAL  = false;
-    CONFIG_CONST int SPACE_BONUS_MID  = 0; // was: 3 — zeroed: sign-flip (removal candidate)
-    CONFIG_CONST int SPACE_BONUS_END  = 0; // was: 1 — zeroed: sign-flip (removal candidate)
+    // space evaluation: REMOVED — Texel tuner sign-flipped both weights across all 3 datasets.
+    // Full feature deleted in Phase 9 (2026-03). See spaceEval() removal in Evaluator.cpp.
 
     // connected rooks: bonus when two rooks are on the same rank or file with no pieces between
     // ENABLED: Texel tuner found strong endgame bonus (+46); MID sign-flipped and zeroed.
     CONFIG_CONST bool USE_CONNECTED_ROOKS      = true;  // was: false — enabled by Texel tuning
-    CONFIG_CONST int CONNECTED_ROOKS_MID_BONUS = 0;     // was: 8 — zeroed: sign-flip (removal candidate)
+    // No CONNECTED_ROOKS_MID_BONUS — Texel tuning sign-flipped it (Phase 8, 2026-03). Only END has signal.
     CONFIG_CONST int CONNECTED_ROOKS_END_BONUS = 39;    // was: 46 — Phase 8 retune
 
     // minor piece connectivity: bonus when a knight/bishop is defended by another minor piece

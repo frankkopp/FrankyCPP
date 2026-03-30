@@ -422,12 +422,12 @@ TEST_F(ConfigRegistryTest, TunableOptionsNonEmpty) {
 }
 
 TEST_F(ConfigRegistryTest, TunableParameterCount) {
-  // Phase 8 retune: 75 eval weight entries are marked tunable (was 78 before retune)
-  // 69 scalar int + 6 IntArray
-  // 13 dead features un-tuned: SPACE_BONUS_MID/END, BAD_BISHOP_PER_PAWN_MID/END,
-  // KNIGHT_LOW_MOBILITY_LEQ2_MID/END, BISHOP_LOW_MOBILITY_LEQ3_MID,
-  // ROOK_LOW_MOBILITY_LEQ3_MID/END, SAFE_CHECK_BISHOP_MID,
-  // DOUBLED_PAWN_MID_WEIGHT, CONNECTED_ROOKS_MID_BONUS, THREAT_BY_MINOR_ROOK_END
+  // Phase 9: 75 eval weight entries remain tunable (69 scalar int + 6 IntArray)
+  // 15 dead features removed from registry entirely (not just un-tuned):
+  // SPACE_BONUS_MID/END, BAD_BISHOP_PER_PAWN_MID/END, KNIGHT_LOW_MOBILITY_LEQ2_MID/END,
+  // BISHOP_LOW_MOBILITY_LEQ3_MID, ROOK_LOW_MOBILITY_LEQ3_MID/END, SAFE_CHECK_BISHOP_MID,
+  // DOUBLED_PAWN_MID_WEIGHT, CONNECTED_ROOKS_MID_BONUS, THREAT_BY_MINOR_ROOK_END,
+  // plus USE_SPACE_EVAL and USE_BAD_BISHOP toggles.
   const auto tunableOpts = registry.tunableOptions();
   EXPECT_EQ(tunableOpts.size(), 75)
     << "Expected 75 tunable parameters (69 scalar Int + 6 IntArray). "

@@ -959,6 +959,66 @@
       "timestamp": "2026-03-27T08:59:38Z",
       "totalNodes": 40541186,
       "totalTimeMs": 16581
+    },
+    {
+      "arenaVersion": "v1.7",
+      "depth": 12,
+      "engineName": "FrankyCPP",
+      "enginePath": "",
+      "engineVersion": "v1.7",
+      "hashSizeMB": 128,
+      "nps": 2499231,
+      "positions": 50,
+      "tag": "Tuning After Phase 8",
+      "threads": 1,
+      "timestamp": "2026-03-30T21:31:36Z",
+      "totalNodes": 38325721,
+      "totalTimeMs": 15335
+    },
+    {
+      "arenaVersion": "v1.7",
+      "depth": 12,
+      "engineName": "External",
+      "enginePath": "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe",
+      "engineVersion": "v1.7",
+      "hashSizeMB": 128,
+      "nps": 2466897,
+      "positions": 50,
+      "tag": "Tuning After Phase 8",
+      "threads": 1,
+      "timestamp": "2026-03-30T21:31:36Z",
+      "totalNodes": 38325721,
+      "totalTimeMs": 15536
+    },
+    {
+      "arenaVersion": "v1.7",
+      "depth": 12,
+      "engineName": "FrankyCPP",
+      "enginePath": "",
+      "engineVersion": "v1.7",
+      "hashSizeMB": 128,
+      "nps": 2514316,
+      "positions": 50,
+      "tag": "Tuning After Phase 9",
+      "threads": 1,
+      "timestamp": "2026-03-30T22:00:56Z",
+      "totalNodes": 38325721,
+      "totalTimeMs": 15243
+    },
+    {
+      "arenaVersion": "v1.7",
+      "depth": 12,
+      "engineName": "External",
+      "enginePath": "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe",
+      "engineVersion": "v1.7",
+      "hashSizeMB": 128,
+      "nps": 2497603,
+      "positions": 50,
+      "tag": "Tuning After Phase 9",
+      "threads": 1,
+      "timestamp": "2026-03-30T22:00:56Z",
+      "totalNodes": 38325721,
+      "totalTimeMs": 15345
     }
   ]
 }

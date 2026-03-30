@@ -1316,9 +1316,8 @@ TEST_F(TexelTunerTest, setupEvalOverrides_DisablesLazyEvalAndPawnTT) {
   EXPECT_FALSE(ConfigManager::instance().eval().USE_PAWN_TT)
     << "setupEvalOverrides must disable USE_PAWN_TT";
 
-  // Space eval confirmed dead — must remain disabled (default false)
-  EXPECT_FALSE(ConfigManager::instance().eval().USE_SPACE_EVAL)
-    << "USE_SPACE_EVAL must remain false (confirmed dead by tuner)";
+  // Space eval was fully removed in Phase 9 — no USE_SPACE_EVAL field exists.
+
   // Connected rooks and minor connectivity remain enabled (defaults true)
   EXPECT_TRUE(ConfigManager::instance().eval().USE_CONNECTED_ROOKS)
     << "USE_CONNECTED_ROOKS must be true (default)";

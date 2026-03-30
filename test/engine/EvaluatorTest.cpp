@@ -73,7 +73,6 @@ void set_eval_config(const bool onoff) {
     e.USE_KNIGHT_MOBILITY      = onoff;
     e.USE_KNIGHT_OUTPOST       = onoff;
     e.USE_BISHOP_MOBILITY      = onoff;
-    e.USE_BAD_BISHOP           = onoff;
     e.USE_ROOK_MOBILITY        = onoff;
     e.USE_ROOK_OPEN_FILE_BONUS = onoff;
     e.USE_ROOK_7TH_RANK_BONUS  = onoff;
@@ -91,7 +90,6 @@ void set_eval_config(const bool onoff) {
     e.USE_BISHOP_PAIR_BONUS    = onoff;
     e.USE_PAWN_ADVANCE_BONUS   = onoff;
     e.USE_THREAT_EVAL          = onoff;
-    e.USE_SPACE_EVAL           = onoff;
     e.USE_CONNECTED_ROOKS      = onoff;
     e.USE_MINOR_CONNECTIVITY   = onoff;
   });
@@ -777,71 +775,8 @@ TEST_F(EvaluatorTest, KnightOutpost_BlackSymmetry) {
 }
 
 // =========================================================================
-// BAD BISHOP TESTS
+// BAD BISHOP TESTS — REMOVED: Feature deleted in Phase 9 (Texel tuning zeroed both weights).
 // =========================================================================
-
-// Bishop with many own pawns on its color should evaluate worse than with few.
-TEST_F(EvaluatorTest, BadBishop_ManyPawnsOnColorWorseThanFew) {
-  set_eval_config(false);
-  cm.applyOverrides([&](auto&, EvalConfigData& e) {
-    e.USE_PIECE_EVAL      = true;
-    e.USE_BAD_BISHOP      = true;
-    e.USE_GAMEPHASE_VALUE = true;
-    // Explicit weights: defaults are 0 (tuner zeroed this feature); set nonzero to test logic
-    e.BAD_BISHOP_PER_PAWN_MID = -3;
-    e.BAD_BISHOP_PER_PAWN_END = -5;
-  });
-
-  Evaluator e{};
-
-  // White light-square bishop on f1, 4 white pawns on light squares (d3, e2, f3, g2)
-  // Black has one pawn to avoid draw.
-  const Position badBishop{"6k1/p7/8/8/8/3P1P2/4PBP1/6K1 w - - 0 1"};
-  // White light-square bishop on f1, only 1 white pawn on light square (e2)
-  // Other pawns on dark squares (d2, f2)
-  const Position goodBishop{"6k1/p7/8/8/8/8/3PPBP1/6K1 w - - 0 1"};
-
-  const Value vBad  = e.evaluate(badBishop);
-  const Value vGood = e.evaluate(goodBishop);
-
-  fprintln("Bad bishop (many pawns on color) eval:  {}", vBad);
-  println(badBishop.strBoard());
-  fprintln("Good bishop (few pawns on color) eval:  {}", vGood);
-  println(goodBishop.strBoard());
-  fprintln("Good > Bad: {} > {}", vGood, vBad);
-
-  ASSERT_GT(vGood, vBad)
-      << "Bishop with fewer own pawns on its color should evaluate higher";
-}
-
-// Verify that Black bad bishop penalty is correctly signed (hurts Black).
-TEST_F(EvaluatorTest, BadBishop_BlackCorrectSign) {
-  set_eval_config(false);
-  cm.applyOverrides([&](auto&, EvalConfigData& e) {
-    e.USE_PIECE_EVAL      = true;
-    e.USE_BAD_BISHOP      = true;
-    e.USE_GAMEPHASE_VALUE = true;
-    // Explicit weights: defaults are 0 (tuner zeroed this feature); set nonzero to test logic
-    e.BAD_BISHOP_PER_PAWN_MID = -3;
-    e.BAD_BISHOP_PER_PAWN_END = -5;
-  });
-
-  Evaluator e{};
-
-  // Black has bad bishop (many pawns on bishop color), White has one pawn
-  const Position blackBad{"6k1/4pbp1/3p1p2/8/8/8/P7/6K1 b - - 0 1"};
-  // Black has good bishop (few pawns on bishop color)
-  const Position blackGood{"6k1/3ppbp1/8/8/8/8/P7/6K1 b - - 0 1"};
-
-  const Value vBad  = e.evaluate(blackBad);
-  const Value vGood = e.evaluate(blackGood);
-
-  fprintln("Black bad bishop eval (Black POV):  {}", vBad);
-  fprintln("Black good bishop eval (Black POV): {}", vGood);
-
-  ASSERT_GT(vGood, vBad)
-      << "Black's good bishop should evaluate higher (from Black POV) than bad bishop";
-}
 
 // =========================================================================
 // PAWN ADVANCEMENT BONUS TESTS
@@ -1392,71 +1327,8 @@ TEST_F(EvaluatorTest, ThreatEval_SymmetricPosition) {
 }
 
 // =========================================================================
-// SPACE EVALUATION TESTS (Phase 3.1)
+// SPACE EVALUATION TESTS — REMOVED: Feature deleted in Phase 9 (Texel tuner sign-flipped).
 // =========================================================================
-
-// Position with more space (pawns on e4,d4 controlling center) should evaluate better.
-TEST_F(EvaluatorTest, SpaceEval_MoreSpaceBetter) {
-  set_eval_config(false);
-  cm.applyOverrides([&](auto&, EvalConfigData& e) {
-    e.USE_SPACE_EVAL = true;
-    // Explicit weights: defaults are 0 (tuner zeroed this feature); set nonzero to test logic
-    e.SPACE_BONUS_MID = 3;
-    e.SPACE_BONUS_END = 1;
-    // Note: attackedByPT[PAWN] is always pre-computed, no need for USE_PIECE_EVAL.
-    // USE_MATERIAL disabled — we're testing space only; the positions have unequal
-    // pawn counts and material would dominate the evaluation.
-  });
-
-  Evaluator e{};
-
-  // White has pawns on all 8 files (strong center, lots of space behind pawn chain)
-  const Position bigSpace{"rnbqkbnr/pppppppp/8/8/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 1"};
-  // White has pawns only on a2,h2 — only 2 pawn files, much less space
-  const Position noSpace{"rnbqkbnr/pppppppp/8/8/8/8/P6P/RNBQKBNR w KQkq - 0 1"};
-
-  const Value vBigSpace = e.evaluate(bigSpace);
-  const Value vNoSpace  = e.evaluate(noSpace);
-
-  fprintln("Big space eval (White POV):  {}", vBigSpace);
-  fprintln("No space eval (White POV):   {}", vNoSpace);
-
-  // White to move: higher value = better for White.
-  // bigSpace has 8 pawn files (24 space squares) vs noSpace with 2 files (6 squares).
-  // Both sides' Black space is identical (24), so the net difference comes from White's side.
-  ASSERT_GT(vBigSpace, vNoSpace)
-      << "Position with more space behind pawn chain should evaluate better";
-}
-
-// Toggle test: enabling/disabling USE_SPACE_EVAL should change evaluation.
-TEST_F(EvaluatorTest, SpaceEval_ToggleChangesEval) {
-  set_eval_config(true);
-  cm.applyOverrides([&](auto&, EvalConfigData& e) {
-    e.USE_SPACE_EVAL = false;
-    // Explicit weights: defaults are 0 (tuner zeroed this feature); set nonzero so toggle has effect
-    e.SPACE_BONUS_MID = 3;
-    e.SPACE_BONUS_END = 1;
-  });
-
-  Evaluator e{};
-
-  // Asymmetric pawn structure — space differs between sides
-  const Position pos{"r1bqkbnr/pppppppp/2n5/8/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 0 1"};
-
-  const Value vWithout = e.evaluate(pos);
-
-  cm.applyOverrides([&](auto&, EvalConfigData& e2) {
-    e2.USE_SPACE_EVAL = true;
-  });
-
-  const Value vWith = e.evaluate(pos);
-
-  fprintln("Without space eval: {}", vWithout);
-  fprintln("With space eval:    {}", vWith);
-
-  ASSERT_NE(vWith, vWithout)
-      << "Enabling space eval should change the evaluation";
-}
 
 // =========================================================================
 // PIECE COORDINATION TESTS (Phase 3.3)
@@ -1743,9 +1615,6 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
     cases.push_back({"Disable BISHOP_MOBILITY (with PIECE_EVAL)", [&] {
                        disable([](EvalConfigData& e) { e.USE_BISHOP_MOBILITY = false; });
                      }});
-    cases.push_back({"Disable BAD_BISHOP (with PIECE_EVAL)", [&] {
-                       disable([](EvalConfigData& e) { e.USE_BAD_BISHOP = false; });
-                     }});
     cases.push_back({"Disable ROOK_MOBILITY (with PIECE_EVAL)", [&] {
                        disable([](EvalConfigData& e) { e.USE_ROOK_MOBILITY = false; });
                      }});
@@ -1765,11 +1634,6 @@ TEST_F(EvaluatorTest, Timing_EvalConfig_FeatureImpact) {
     // Threat eval
     cases.push_back({"Disable THREAT_EVAL only", [&] {
                        disable([](EvalConfigData& e) { e.USE_THREAT_EVAL = false; });
-                     }});
-
-    // Space eval
-    cases.push_back({"Disable SPACE_EVAL only", [&] {
-                       disable([](EvalConfigData& e) { e.USE_SPACE_EVAL = false; });
                      }});
 
     // Piece coordination

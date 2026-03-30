@@ -37,7 +37,7 @@ _YAML_SMOKE_TEST_MARKER: true
 # Pawn structure weights (centipawns), midgame and endgame
 # ISOLATED_PAWN_MID_WEIGHT: -5
 # ISOLATED_PAWN_END_WEIGHT: -7
-# DOUBLED_PAWN_MID_WEIGHT: 0
+# DOUBLED_PAWN_MID_WEIGHT: REMOVED (Phase 9 — Texel tuning zeroed it)
 # DOUBLED_PAWN_END_WEIGHT: -20
 # PASSED_PAWN_MID_WEIGHT: 0
 # PASSED_PAWN_END_WEIGHT: 60
@@ -76,8 +76,7 @@ _YAML_SMOKE_TEST_MARKER: true
 # Additional low-mobility penalties (centipawns)
 # KNIGHT_LOW_MOBILITY_LEQ1_MID: 0
 # KNIGHT_LOW_MOBILITY_LEQ1_END: -6
-# KNIGHT_LOW_MOBILITY_LEQ2_MID: 0
-# KNIGHT_LOW_MOBILITY_LEQ2_END: 0
+# KNIGHT_LOW_MOBILITY_LEQ2: REMOVED (Phase 9 — Texel tuning zeroed both)
 
 # Knight outpost: bonus for knight on square that cannot be attacked by enemy pawns
 # USE_KNIGHT_OUTPOST: true
@@ -90,20 +89,16 @@ _YAML_SMOKE_TEST_MARKER: true
 # USE_BISHOP_MOBILITY: true
 # BISHOP_MOBILITY_MID_PER_MOVE: 1
 # BISHOP_MOBILITY_END_PER_MOVE: 6
-# BISHOP_LOW_MOBILITY_LEQ3_MID: 0
+# BISHOP_LOW_MOBILITY_LEQ3_MID: REMOVED (Phase 9 — Texel tuning zeroed it)
 # BISHOP_LOW_MOBILITY_LEQ3_END: -26
 
-# Bad bishop: penalty when own pawns are on the same color squares as the bishop
-# USE_BAD_BISHOP: true
-# BAD_BISHOP_PER_PAWN_MID: 0
-# BAD_BISHOP_PER_PAWN_END: 0
+# Bad bishop per-pawn penalty: REMOVED (Phase 9 — Texel tuning zeroed both weights)
 
 # Rook mobility and file bonuses
 # USE_ROOK_MOBILITY: true
 # ROOK_MOBILITY_MID_PER_MOVE: 1
 # ROOK_MOBILITY_END_PER_MOVE: 9
-# ROOK_LOW_MOBILITY_LEQ3_MID: 0
-# ROOK_LOW_MOBILITY_LEQ3_END: 0
+# ROOK_LOW_MOBILITY_LEQ3: REMOVED (Phase 9 — Texel tuning zeroed both)
 
 # Open/semi-open file bonuses (centipawns)
 # USE_ROOK_OPEN_FILE_BONUS: true
@@ -168,7 +163,7 @@ _YAML_SMOKE_TEST_MARKER: true
 # Per-piece-type penalties (midgame only, negative values = penalty for the defending side)
 # USE_SAFE_CHECK: true
 # SAFE_CHECK_KNIGHT_MID: -15
-# SAFE_CHECK_BISHOP_MID: 0
+# SAFE_CHECK_BISHOP_MID: REMOVED (Phase 9 — Texel tuning zeroed it)
 # SAFE_CHECK_ROOK_MID: -16
 # SAFE_CHECK_QUEEN_MID: -11
 
@@ -184,23 +179,19 @@ _YAML_SMOKE_TEST_MARKER: true
 # THREAT_BY_PAWN_QUEEN_END: 3
 # Tier 2: minor piece attacks on major pieces
 # THREAT_BY_MINOR_ROOK_MID: 63
-# THREAT_BY_MINOR_ROOK_END: 0
+# THREAT_BY_MINOR_ROOK_END: REMOVED (Phase 9 — Texel tuning sign-flipped it)
 # THREAT_BY_MINOR_QUEEN_MID: 26
 # THREAT_BY_MINOR_QUEEN_END: 18
 # Tier 3: hanging pieces (attacked by us, not defended by them)
 # THREAT_HANGING_MID: 6
 # THREAT_HANGING_END: 42
 
-# Space evaluation: safe squares behind own pawn chain (midgame-weighted)
-# DISABLED: Confirmed dead by tuner — sign-flipped in all 3 datasets
-# USE_SPACE_EVAL: false
-# SPACE_BONUS_MID: 0
-# SPACE_BONUS_END: 0
+# Space evaluation: REMOVED (Phase 9 — Texel tuner sign-flipped both weights)
 
 # Connected rooks: bonus when two rooks are on the same rank/file with no pieces between
 # ENABLED: Tuner found strong endgame bonus; MID sign-flipped and zeroed
 # USE_CONNECTED_ROOKS: true
-# CONNECTED_ROOKS_MID_BONUS: 0
+# CONNECTED_ROOKS_MID_BONUS: REMOVED (Phase 9 — Texel tuning sign-flipped it)
 # CONNECTED_ROOKS_END_BONUS: 39
 
 # Minor piece connectivity: bonus when knight/bishop is defended by another minor piece

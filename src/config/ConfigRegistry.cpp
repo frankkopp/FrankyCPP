@@ -54,14 +54,14 @@ ConfigRegistry::ConfigRegistry() {
   static_assert(sizeof(SearchConfigData) == 640,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 640,
+  static_assert(sizeof(EvalConfigData) == 584,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
   static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 632,
+  static_assert(sizeof(EvalConfigData) == 576,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #endif
@@ -72,7 +72,7 @@ ConfigRegistry::ConfigRegistry() {
   static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
-  static_assert(sizeof(EvalConfigData) == 632,
+  static_assert(sizeof(EvalConfigData) == 576,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
@@ -2019,19 +2019,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .setter = EVAL_CONFIG_SETTER(ISOLATED_PAWN_END_WEIGHT, parseInt)
   });
 
-  definitions_.push_back({
-    .name = "DOUBLED_PAWN_MID_WEIGHT",
-    .uciName = "Doubled Pawn Mid",
-    .description = "Doubled pawn penalty in middlegame",
-    .valueType = Int,
-    .domain = Eval,
-    .defaultValue = configToString(defaultEval.DOUBLED_PAWN_MID_WEIGHT),
-    .minValue = -100,
-    .maxValue = 0,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, DOUBLED_PAWN_MID_WEIGHT), .yaml = true, .display = true, .tunable = false},
-    .getter = evalGetter([](const auto& e){ return e.DOUBLED_PAWN_MID_WEIGHT; }),
-    .setter = EVAL_CONFIG_SETTER(DOUBLED_PAWN_MID_WEIGHT, parseInt)
-  });
+  // DOUBLED_PAWN_MID_WEIGHT: REMOVED — Texel tuning zeroed it (Phase 9). Only END kept.
 
   definitions_.push_back({
     .name = "DOUBLED_PAWN_END_WEIGHT",
@@ -2371,33 +2359,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .setter = EVAL_CONFIG_SETTER(KNIGHT_LOW_MOBILITY_LEQ1_END, parseInt)
   });
 
-  definitions_.push_back({
-    .name = "KNIGHT_LOW_MOBILITY_LEQ2_MID",
-    .uciName = "Knight Low Mob LEQ2 Mid",
-    .description = "Knight penalty for <=2 moves in middlegame",
-    .valueType = Int,
-    .domain = Eval,
-    .defaultValue = configToString(defaultEval.KNIGHT_LOW_MOBILITY_LEQ2_MID),
-    .minValue = -50,
-    .maxValue = 0,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_LOW_MOBILITY_LEQ2_MID), .yaml = true, .display = true, .tunable = false},
-    .getter = evalGetter([](const auto& e){ return e.KNIGHT_LOW_MOBILITY_LEQ2_MID; }),
-    .setter = EVAL_CONFIG_SETTER(KNIGHT_LOW_MOBILITY_LEQ2_MID, parseInt)
-  });
-
-  definitions_.push_back({
-    .name = "KNIGHT_LOW_MOBILITY_LEQ2_END",
-    .uciName = "Knight Low Mob LEQ2 End",
-    .description = "Knight penalty for <=2 moves in endgame",
-    .valueType = Int,
-    .domain = Eval,
-    .defaultValue = configToString(defaultEval.KNIGHT_LOW_MOBILITY_LEQ2_END),
-    .minValue = -50,
-    .maxValue = 0,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, KNIGHT_LOW_MOBILITY_LEQ2_END), .yaml = true, .display = true, .tunable = false},
-    .getter = evalGetter([](const auto& e){ return e.KNIGHT_LOW_MOBILITY_LEQ2_END; }),
-    .setter = EVAL_CONFIG_SETTER(KNIGHT_LOW_MOBILITY_LEQ2_END, parseInt)
-  });
+  // KNIGHT_LOW_MOBILITY_LEQ2_MID/END: REMOVED — Texel tuning zeroed both (Phase 9).
 
   //===========================================================================
   // KNIGHT OUTPOST
@@ -2513,19 +2475,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .setter = EVAL_CONFIG_SETTER(BISHOP_MOBILITY_END_PER_MOVE, parseInt)
   });
 
-  definitions_.push_back({
-    .name = "BISHOP_LOW_MOBILITY_LEQ3_MID",
-    .uciName = "Bishop Low Mob LEQ3 Mid",
-    .description = "Bishop penalty for <=3 moves in middlegame",
-    .valueType = Int,
-    .domain = Eval,
-    .defaultValue = configToString(defaultEval.BISHOP_LOW_MOBILITY_LEQ3_MID),
-    .minValue = -50,
-    .maxValue = 0,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, BISHOP_LOW_MOBILITY_LEQ3_MID), .yaml = true, .display = true, .tunable = false},
-    .getter = evalGetter([](const auto& e){ return e.BISHOP_LOW_MOBILITY_LEQ3_MID; }),
-    .setter = EVAL_CONFIG_SETTER(BISHOP_LOW_MOBILITY_LEQ3_MID, parseInt)
-  });
+  // BISHOP_LOW_MOBILITY_LEQ3_MID: REMOVED — Texel tuning zeroed it (Phase 9). Only END kept.
 
   definitions_.push_back({
     .name = "BISHOP_LOW_MOBILITY_LEQ3_END",
@@ -2542,47 +2492,8 @@ void ConfigRegistry::initializeEvalDefinitions() {
   });
 
   //===========================================================================
-  // BAD BISHOP
+  // BAD BISHOP — REMOVED: Texel tuning zeroed both per-pawn weights (Phase 9).
   //===========================================================================
-  definitions_.push_back({
-    .name = "USE_BAD_BISHOP",
-    .uciName = "Use Bad Bishop",
-    .description = "Enable bad bishop penalty (pawns on bishop color)",
-    .valueType = Bool,
-    .domain = Eval,
-    .defaultValue = configToString(defaultEval.USE_BAD_BISHOP),
-    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_BAD_BISHOP), .yaml = true, .display = true},
-    .getter = evalGetter([](const auto& e){ return e.USE_BAD_BISHOP; }),
-    .setter = EVAL_CONFIG_SETTER(USE_BAD_BISHOP, parseBool)
-  });
-
-  definitions_.push_back({
-    .name = "BAD_BISHOP_PER_PAWN_MID",
-    .uciName = "Bad Bishop Per Pawn Mid",
-    .description = "Bad bishop penalty per own pawn on bishop color in middlegame",
-    .valueType = Int,
-    .domain = Eval,
-    .defaultValue = configToString(defaultEval.BAD_BISHOP_PER_PAWN_MID),
-    .minValue = -20,
-    .maxValue = 0,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, BAD_BISHOP_PER_PAWN_MID), .yaml = true, .display = true, .tunable = false},
-    .getter = evalGetter([](const auto& e){ return e.BAD_BISHOP_PER_PAWN_MID; }),
-    .setter = EVAL_CONFIG_SETTER(BAD_BISHOP_PER_PAWN_MID, parseInt)
-  });
-
-  definitions_.push_back({
-    .name = "BAD_BISHOP_PER_PAWN_END",
-    .uciName = "Bad Bishop Per Pawn End",
-    .description = "Bad bishop penalty per own pawn on bishop color in endgame",
-    .valueType = Int,
-    .domain = Eval,
-    .defaultValue = configToString(defaultEval.BAD_BISHOP_PER_PAWN_END),
-    .minValue = -20,
-    .maxValue = 0,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, BAD_BISHOP_PER_PAWN_END), .yaml = true, .display = true, .tunable = false},
-    .getter = evalGetter([](const auto& e){ return e.BAD_BISHOP_PER_PAWN_END; }),
-    .setter = EVAL_CONFIG_SETTER(BAD_BISHOP_PER_PAWN_END, parseInt)
-  });
 
   //===========================================================================
   // ROOK MOBILITY AND FILES
@@ -2627,33 +2538,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .setter = EVAL_CONFIG_SETTER(ROOK_MOBILITY_END_PER_MOVE, parseInt)
   });
 
-  definitions_.push_back({
-    .name = "ROOK_LOW_MOBILITY_LEQ3_MID",
-    .uciName = "Rook Low Mob LEQ3 Mid",
-    .description = "Rook penalty for <=3 moves in middlegame",
-    .valueType = Int,
-    .domain = Eval,
-    .defaultValue = configToString(defaultEval.ROOK_LOW_MOBILITY_LEQ3_MID),
-    .minValue = -50,
-    .maxValue = 0,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_LOW_MOBILITY_LEQ3_MID), .yaml = true, .display = true, .tunable = false},
-    .getter = evalGetter([](const auto& e){ return e.ROOK_LOW_MOBILITY_LEQ3_MID; }),
-    .setter = EVAL_CONFIG_SETTER(ROOK_LOW_MOBILITY_LEQ3_MID, parseInt)
-  });
-
-  definitions_.push_back({
-    .name = "ROOK_LOW_MOBILITY_LEQ3_END",
-    .uciName = "Rook Low Mob LEQ3 End",
-    .description = "Rook penalty for <=3 moves in endgame",
-    .valueType = Int,
-    .domain = Eval,
-    .defaultValue = configToString(defaultEval.ROOK_LOW_MOBILITY_LEQ3_END),
-    .minValue = -50,
-    .maxValue = 0,
-    .exposure = {.uci = IS_MUTABLE(defaultEval, ROOK_LOW_MOBILITY_LEQ3_END), .yaml = true, .display = true, .tunable = false},
-    .getter = evalGetter([](const auto& e){ return e.ROOK_LOW_MOBILITY_LEQ3_END; }),
-    .setter = EVAL_CONFIG_SETTER(ROOK_LOW_MOBILITY_LEQ3_END, parseInt)
-  });
+  // ROOK_LOW_MOBILITY_LEQ3_MID/END: REMOVED — Texel tuning zeroed both (Phase 9).
 
   definitions_.push_back({
     .name = "USE_ROOK_OPEN_FILE_BONUS",
@@ -3195,19 +3080,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .setter = EVAL_CONFIG_SETTER(SAFE_CHECK_KNIGHT_MID, parseInt)
   });
 
-  definitions_.push_back({
-    .name = "SAFE_CHECK_BISHOP_MID",
-    .uciName = "",
-    .description = "Midgame penalty per safe bishop check square",
-    .valueType = Int,
-    .domain = Eval,
-    .defaultValue = configToString(defaultEval.SAFE_CHECK_BISHOP_MID),
-    .minValue = -50,
-    .maxValue = 0,
-    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = false},
-    .getter = evalGetter([](const auto& e){ return e.SAFE_CHECK_BISHOP_MID; }),
-    .setter = EVAL_CONFIG_SETTER(SAFE_CHECK_BISHOP_MID, parseInt)
-  });
+  // SAFE_CHECK_BISHOP_MID: REMOVED — Texel tuning zeroed it (Phase 9). Knight/rook/queen retained.
 
   definitions_.push_back({
     .name = "SAFE_CHECK_ROOK_MID",
@@ -3328,17 +3201,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .getter = evalGetter([](const auto& e){ return e.THREAT_BY_MINOR_ROOK_MID; }),
     .setter = EVAL_CONFIG_SETTER(THREAT_BY_MINOR_ROOK_MID, parseInt)
   });
-  definitions_.push_back({
-    .name = "THREAT_BY_MINOR_ROOK_END",
-    .uciName = "",
-    .description = "Threat bonus (end): minor piece attacks rook",
-    .valueType = Int,
-    .domain = Eval,
-    .defaultValue = configToString(defaultEval.THREAT_BY_MINOR_ROOK_END),
-    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = false},
-    .getter = evalGetter([](const auto& e){ return e.THREAT_BY_MINOR_ROOK_END; }),
-    .setter = EVAL_CONFIG_SETTER(THREAT_BY_MINOR_ROOK_END, parseInt)
-  });
+  // THREAT_BY_MINOR_ROOK_END: REMOVED — Texel tuning sign-flipped it (Phase 9). Only MID kept.
   definitions_.push_back({
     .name = "THREAT_BY_MINOR_QUEEN_MID",
     .uciName = "",
@@ -3385,41 +3248,8 @@ void ConfigRegistry::initializeEvalDefinitions() {
   });
 
   //===========================================================================
-  // SPACE EVALUATION
+  // SPACE EVALUATION — REMOVED: Texel tuner sign-flipped both weights (Phase 9).
   //===========================================================================
-  definitions_.push_back({
-    .name = "USE_SPACE_EVAL",
-    .uciName = "Use Space Eval",
-    .description = "Enable space evaluation (safe squares behind pawn chain)",
-    .valueType = Bool,
-    .domain = Eval,
-    .defaultValue = configToString(defaultEval.USE_SPACE_EVAL),
-    .exposure = {.uci = IS_MUTABLE(defaultEval, USE_SPACE_EVAL), .yaml = true, .display = true},
-    .getter = evalGetter([](const auto& e){ return e.USE_SPACE_EVAL; }),
-    .setter = EVAL_CONFIG_SETTER(USE_SPACE_EVAL, parseBool)
-  });
-  definitions_.push_back({
-    .name = "SPACE_BONUS_MID",
-    .uciName = "",
-    .description = "Space bonus per safe square (midgame)",
-    .valueType = Int,
-    .domain = Eval,
-    .defaultValue = configToString(defaultEval.SPACE_BONUS_MID),
-    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = false},
-    .getter = evalGetter([](const auto& e){ return e.SPACE_BONUS_MID; }),
-    .setter = EVAL_CONFIG_SETTER(SPACE_BONUS_MID, parseInt)
-  });
-  definitions_.push_back({
-    .name = "SPACE_BONUS_END",
-    .uciName = "",
-    .description = "Space bonus per safe square (endgame)",
-    .valueType = Int,
-    .domain = Eval,
-    .defaultValue = configToString(defaultEval.SPACE_BONUS_END),
-    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = false},
-    .getter = evalGetter([](const auto& e){ return e.SPACE_BONUS_END; }),
-    .setter = EVAL_CONFIG_SETTER(SPACE_BONUS_END, parseInt)
-  });
 
   //===========================================================================
   // PIECE COORDINATION
@@ -3435,17 +3265,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
     .getter = evalGetter([](const auto& e){ return e.USE_CONNECTED_ROOKS; }),
     .setter = EVAL_CONFIG_SETTER(USE_CONNECTED_ROOKS, parseBool)
   });
-  definitions_.push_back({
-    .name = "CONNECTED_ROOKS_MID_BONUS",
-    .uciName = "",
-    .description = "Connected rooks bonus (midgame)",
-    .valueType = Int,
-    .domain = Eval,
-    .defaultValue = configToString(defaultEval.CONNECTED_ROOKS_MID_BONUS),
-    .exposure = {.uci = false, .yaml = true, .display = true, .tunable = false},
-    .getter = evalGetter([](const auto& e){ return e.CONNECTED_ROOKS_MID_BONUS; }),
-    .setter = EVAL_CONFIG_SETTER(CONNECTED_ROOKS_MID_BONUS, parseInt)
-  });
+  // CONNECTED_ROOKS_MID_BONUS: REMOVED — Texel tuning sign-flipped it (Phase 9). Only END kept.
   definitions_.push_back({
     .name = "CONNECTED_ROOKS_END_BONUS",
     .uciName = "",

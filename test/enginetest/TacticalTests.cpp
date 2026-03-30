@@ -188,7 +188,6 @@ static void applyExperimentalConfig() {
   // pawn structure weights
   e.ISOLATED_PAWN_MID_WEIGHT = -10;
   e.ISOLATED_PAWN_END_WEIGHT = -20;
-  e.DOUBLED_PAWN_MID_WEIGHT  = -10;
   e.DOUBLED_PAWN_END_WEIGHT  = -30;
   e.PASSED_PAWN_MID_WEIGHT   = 20;
   e.PASSED_PAWN_END_WEIGHT   = 40;
@@ -222,22 +221,17 @@ static void applyExperimentalConfig() {
   e.KNIGHT_MOBILITY_END_PER_MOVE = 2;
   e.KNIGHT_LOW_MOBILITY_LEQ1_MID = -6;
   e.KNIGHT_LOW_MOBILITY_LEQ1_END = -6;
-  e.KNIGHT_LOW_MOBILITY_LEQ2_MID = -3;
-  e.KNIGHT_LOW_MOBILITY_LEQ2_END = -3;
 
   // bishop mobility
   e.USE_BISHOP_MOBILITY          = true;
   e.BISHOP_MOBILITY_MID_PER_MOVE = 2;
   e.BISHOP_MOBILITY_END_PER_MOVE = 3;
-  e.BISHOP_LOW_MOBILITY_LEQ3_MID = -4;
   e.BISHOP_LOW_MOBILITY_LEQ3_END = -2;
 
   // rook mobility and files
   e.USE_ROOK_MOBILITY            = true;
   e.ROOK_MOBILITY_MID_PER_MOVE   = 2;
   e.ROOK_MOBILITY_END_PER_MOVE   = 2;
-  e.ROOK_LOW_MOBILITY_LEQ3_MID   = -3;
-  e.ROOK_LOW_MOBILITY_LEQ3_END   = -3;
   e.USE_ROOK_OPEN_FILE_BONUS     = true;
   e.ROOK_OPEN_FILE_MID_BONUS     = 10;
   e.ROOK_OPEN_FILE_END_BONUS     = 8;

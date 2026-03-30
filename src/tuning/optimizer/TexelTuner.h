@@ -112,8 +112,8 @@ namespace tuning {
     /// Applies eval config overrides needed for tuning:
     /// - Disables USE_LAZY_EVAL (must evaluate all terms for every position)
     /// - Disables USE_PAWN_TT (avoids stale cache after param changes)
-    /// - Enables USE_SPACE_EVAL, USE_CONNECTED_ROOKS, USE_MINOR_CONNECTIVITY
-    ///   (so the tuner can optimize or zero out their weights)
+    /// - USE_CONNECTED_ROOKS, USE_MINOR_CONNECTIVITY already default to true
+    /// - Space eval was fully removed (Phase 9, 2026-03)
     static void setupEvalOverrides();
 
     /// Creates a single evaluator instance (single-threaded mode).
