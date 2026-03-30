@@ -211,6 +211,12 @@ namespace arena {
             match.batchSize = matchNode["batchSize"].as<int>();
           }
 
+          // Time margin for cutechess-cli (optional, defaults to 200ms)
+          // Compensates for engine post-stop overhead (joining threads, sending bestmove)
+          if (matchNode["timeMargin"]) {
+            match.timeMargin = matchNode["timeMargin"].as<int>();
+          }
+
           match.outputPgn = matchNode["outputPgn"].as<std::string>();
 
           config.matches.push_back(match);

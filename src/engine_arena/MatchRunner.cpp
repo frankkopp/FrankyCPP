@@ -395,6 +395,12 @@ namespace arena {
     // Common settings
     cmd << " -each proto=uci tc=" << matchConfig.timeControl;
 
+    // Time margin: extra tolerance before cutechess declares time loss (ms).
+    // Compensates for engine post-stop overhead (joining threads, sending bestmove).
+    if (matchConfig.timeMargin > 0) {
+      cmd << " -timemargin " << matchConfig.timeMargin;
+    }
+
     // Rounds (may be less than config if resuming a match)
     cmd << " -rounds " << rounds;
 

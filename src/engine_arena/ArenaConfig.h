@@ -155,6 +155,7 @@ namespace arena {
     int rounds;                 ///< Number of rounds to play
     int concurrency = 1;        ///< Number of games to run in parallel by cutechess-cli (default: 1 for deterministic)
     int batchSize   = 0;        ///< Games per batch for resumable matches (0 = auto: max(2, concurrency), must be even)
+    int timeMargin  = 200;      ///< cutechess-cli -timemargin value (ms); compensates for engine post-stop overhead
     std::string outputPgn;      ///< Path to save PGN games
   };
 

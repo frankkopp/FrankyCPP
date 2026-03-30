@@ -45,6 +45,8 @@ Search::Search(UciHandler* pUciHandler)
   this->tt = std::make_unique<TT>(0);
   // Initialize main search thread (thread ID 0)
   searchThreadData.push_back(std::make_unique<SearchThreadData>(0));
+  // Bootstrap dynamic post-stop overhead with configured static overhead
+  measuredPostStopOverheadMs = SearchConfig.MOVE_OVERHEAD_MS;
 }
 
 Search::~Search() {
@@ -166,6 +168,7 @@ void Search::ponderhit() {
 
 void Search::clearTT() const {
   if (isSearching()) {
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     const std::string msg = "Can't clear hash while searching.";
     sendString(msg);
     LOG__WARN(Logger::get().SEARCH_LOG, "{}", msg);
@@ -202,6 +205,7 @@ uint64_t Search::getTotalNodes() const {
 
 void Search::resetSearchState() {
   stopSearchFlag    = false;
+  stoppedByTimer    = false;
   timeLimit         = milliseconds{};
   extraTimeMs       = 0;
   lastUciUpdateTime = now();
@@ -386,6 +390,11 @@ void Search::run() {
     sendFinalUciInfo(*bestThread);
   }
 
+  // ===========================================================================
+  // Non-critical post-search work (logging, timer cleanup)
+  // Moved BEFORE sendResult to minimize latency between result ready and bestmove output.
+  // ===========================================================================
+
   // print stats to log
   LOG__INFO(Logger::get().SEARCH_LOG, "Search finished after {}", str(searchResult.time));
   LOG__INFO(Logger::get().SEARCH_LOG, "Search depth was {}({}) with {:L} nodes visited. NPS = {:L} nps with {} threads",
@@ -399,20 +408,44 @@ void Search::run() {
   }
   LOG__INFO(Logger::get().SEARCH_LOG, "Search result: {}", searchResult.str());
 
-  // save the result until overwritten by the next search
-  lastSearchResult = searchResult;
-  resultReady.store(true, std::memory_order_release); // signal result is ready
-
-  // At the end of a search we send the result in any case even if
-  // searched has been stopped.
-  sendResult(searchResult);
-
   // clean up timer thread if necessary
   joinTimerThread();
 
   // Reset thread-local pointer to prevent dangling reference if this thread
   // is reused by another Search instance
   currentThreadData = nullptr;
+
+  // ===========================================================================
+  // Dynamic post-stop overhead measurement
+  // Measures wall time from timer-triggered stop to sendResult for adaptive time management.
+  // Updates an EMA that is subtracted from the timer budget on the next search.
+  // ===========================================================================
+  if (stoppedByTimer) {
+    const auto postStopNs       = (currentTime() - timerStopTime).count(); // nanoseconds
+    const auto sampleMs         = static_cast<double>(postStopNs) / 1'000'000.0;
+    constexpr int64_t maxOverheadMs = 200;
+    const int64_t floorMs           = SearchConfig.MOVE_OVERHEAD_MS;
+    // EMA: 30% new sample, 70% previous estimate
+    const auto rawEmaMs = 0.3 * sampleMs + 0.7 * static_cast<double>(measuredPostStopOverheadMs);
+    measuredPostStopOverheadMs = std::clamp(std::llround(rawEmaMs), floorMs, maxOverheadMs);
+    LOG__INFO(Logger::get().SEARCH_LOG,
+              "Post-stop overhead: sample {:.3f} ms, EMA {} ms (floor {} ms, cap {} ms)",
+              sampleMs, measuredPostStopOverheadMs, floorMs, maxOverheadMs);
+  }
+
+  // ===========================================================================
+  // Send result and release semaphore
+  // sendResult() MUST be the last significant action before isRunningSemaphore.release().
+  // Once bestmove is sent, the GUI may immediately send the next go command.
+  // The semaphore release gates isSearching() which gates startSearch().
+  // ===========================================================================
+
+  // save the result until overwritten by the next search
+  lastSearchResult = searchResult;
+  resultReady.store(true, std::memory_order_release); // signal result is ready
+
+  // Send the result - this must be the last action before releasing the semaphore
+  sendResult(searchResult);
 
   // release the running semaphore after the search has ended
   isRunningSemaphore.release();
@@ -2897,28 +2930,41 @@ void Search::addExtraTime(const double f) {
     const auto currentExtra = extraTimeMs.load(std::memory_order_relaxed);
     const auto maxExtraMs   = std::llround(static_cast<long double>(timeLimit.count()) * SearchConfig.MAX_EXTRA_TIME_FACTOR);
 
-    // Cap extra time to MAX_EXTRA_TIME_FACTOR * base time
-    if (currentExtra >= maxExtraMs) {
-      LOG__DEBUG(Logger::get().SEARCH_LOG, "Time adjustment: {} ignored - already at max extra time {} (cap {})",
+    // Hard cap: total budget (timeLimit + extra) must not exceed remaining clock time
+    // minus a safety margin (post-stop overhead). This prevents overshooting in fast games
+    // where MAX_EXTRA_TIME_FACTOR * base could exceed the actual remaining time.
+    const auto playerTimeMs = (position.getNextPlayer()
+                                 ? searchLimits.blackTime
+                                 : searchLimits.whiteTime).count();
+    const auto clockCapMs   = std::max(0LL, playerTimeMs - measuredPostStopOverheadMs - timeLimit.count());
+
+    // Use the tighter of the two caps
+    const auto effectiveCapMs = std::min(maxExtraMs, clockCapMs);
+
+    // Cap extra time to effective cap
+    if (currentExtra >= effectiveCapMs) {
+      LOG__DEBUG(Logger::get().SEARCH_LOG, "Time adjustment: {} ignored - already at max extra time {} (cap {}, clock cap {})",
                  str(milliseconds(deltaMs)),
                  str(milliseconds(currentExtra)),
-                 str(milliseconds(maxExtraMs)));
+                 str(milliseconds(maxExtraMs)),
+                 str(milliseconds(clockCapMs)));
       return; // Already at cap
     }
 
     // Apply delta but don't exceed cap
     auto newExtra = currentExtra + deltaMs;
-    if (newExtra > maxExtraMs) {
-      newExtra = maxExtraMs;
+    if (newExtra > effectiveCapMs) {
+      newExtra = effectiveCapMs;
     }
     extraTimeMs.store(newExtra, std::memory_order_relaxed);
 
-    LOG__DEBUG(Logger::get().SEARCH_LOG, "Time adjustment: {} -> total budget {} (base {} + extra {}, cap {})",
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Time adjustment: {} -> total budget {} (base {} + extra {}, cap {}, clock cap {})",
                str(milliseconds(deltaMs)),
                str(timeLimit + milliseconds(newExtra)),
                str(timeLimit),
                str(milliseconds(newExtra)),
-               str(milliseconds(maxExtraMs)));
+               str(milliseconds(maxExtraMs)),
+               str(milliseconds(clockCapMs)));
   }
 }
 
@@ -2933,13 +2979,18 @@ void Search::startTimer() {
   timerThread = std::thread([this] {
     // Note: startSearchTime is set in startSearch() before the search thread starts.
     // Do NOT reset it here - that would race with early-exit paths (e.g., book moves).
-    LOG__DEBUG(Logger::get().SEARCH_LOG, "Timer started with time limit of {} ms", str(timeLimit));
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Timer started with time limit of {} ms (post-stop overhead reserve: {} ms)", str(timeLimit), measuredPostStopOverheadMs);
     // Busy-wait threshold for higher-precision tail (2-3ms)
     constexpr milliseconds busyWaitThreshold{3};
     while (true) {
       const auto now     = currentTime();
       const auto elapsed = now - startSearchTime;
-      const auto budget  = timeLimit + milliseconds(extraTimeMs.load());
+      // Subtract measured post-stop overhead so the timer fires early enough
+      // for post-stop work (join helpers, select best, send bestmove) to complete
+      // within the original time budget.
+      const auto overhead = milliseconds(measuredPostStopOverheadMs);
+      const auto rawBudget = timeLimit + milliseconds(extraTimeMs.load());
+      const auto budget  = rawBudget > overhead ? rawBudget - overhead : milliseconds{0};
       if (elapsed >= budget || stopSearchFlag) { break; }
       const auto remaining_ms = std::chrono::duration_cast<milliseconds>(budget - elapsed);
       if (remaining_ms > busyWaitThreshold) {
@@ -2959,6 +3010,8 @@ void Search::startTimer() {
       }
     }
     if (!this->stopSearchFlag) {
+      this->timerStopTime  = currentTime();
+      this->stoppedByTimer = true;
       this->stopSearchFlag = true;
       this->stopConditionVar.notify_all();
       LOG__INFO(Logger::get().SEARCH_LOG, "Stop search by Timer after wall time: {} (time limit {} and extra time {})", str(currentTime() - startSearchTime), str(timeLimit), str(milliseconds(extraTimeMs.load())));

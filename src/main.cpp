@@ -127,7 +127,7 @@ int main(int argc, char* argv[]) {
 
     // =========================================================================
     // Declare a group of options that will be allowed both on command line
-    // and in config file
+    // and in config file.
     // =========================================================================
     po::options_description config("Configuration");
     config.add_options()

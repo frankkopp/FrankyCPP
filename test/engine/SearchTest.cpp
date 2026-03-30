@@ -117,6 +117,9 @@ TEST_F(SearchTest, setupTime) {
 TEST_F(SearchTest, extraTime) {
   Search s{};
   s.searchLimits.timeControl = true;
+  s.searchLimits.whiteTime   = 120s; // set clock high enough so clock cap doesn't interfere
+  s.searchLimits.blackTime   = 120s;
+  s.measuredPostStopOverheadMs = 0;  // disable overhead for pure extra-time testing
   s.timeLimit                = 10s;
   s.extraTimeMs              = 0;
   s.addExtraTime(0.9);
@@ -139,6 +142,9 @@ TEST_F(SearchTest, extraTimeCap) {
 
   Search s{};
   s.searchLimits.timeControl = true;
+  s.searchLimits.whiteTime   = 120s; // set clock high enough so clock cap doesn't interfere
+  s.searchLimits.blackTime   = 120s;
+  s.measuredPostStopOverheadMs = 0;  // disable overhead for pure extra-time testing
   s.timeLimit                = 10s;
   s.extraTimeMs              = 0;
 
@@ -167,6 +173,32 @@ TEST_F(SearchTest, extraTimeCap) {
   EXPECT_EQ(30s, totalBudget);
 }
 
+// Test that extra time is capped against remaining clock time (not just MAX_EXTRA_TIME_FACTOR)
+TEST_F(SearchTest, extraTimeClockCap) {
+  Search s{};
+  s.searchLimits.timeControl = true;
+  s.searchLimits.whiteTime   = 15s; // only 15s on clock
+  s.searchLimits.blackTime   = 15s;
+  s.measuredPostStopOverheadMs = 10; // 10ms overhead
+  s.timeLimit                = 5s;   // 5s base time per move
+  s.extraTimeMs              = 0;
+
+  // MAX_EXTRA_TIME_FACTOR cap would be 2.0 * 5s = 10s
+  // But clock cap is: 15000 - 10 - 5000 = 9990ms
+  // So clock cap (9990ms) is tighter than factor cap (10000ms)
+  for (int i = 0; i < 10; i++) {
+    s.addExtraTime(1.5); // +50% = +2.5s each
+  }
+
+  // Should be capped at clock cap (9990ms), not factor cap (10000ms)
+  fprintln("Extra with clock cap: {}", str(milliseconds(s.extraTimeMs.load())));
+  EXPECT_EQ(9990, s.extraTimeMs.load());
+
+  // Total budget (base + extra) should not exceed clock time minus overhead
+  const auto total = s.timeLimit.count() + s.extraTimeMs.load();
+  EXPECT_LE(total, 15000 - 10) << "Total budget must not exceed remaining clock minus overhead";
+}
+
 TEST_F(SearchTest, startTimer) {
   Search s{};
   s.searchLimits.timeControl = true;
@@ -174,10 +206,32 @@ TEST_F(SearchTest, startTimer) {
   s.startSearchTime          = s.startTime; // Timer uses startSearchTime for elapsed calculation
   s.timeLimit                = 2s;
   s.extraTimeMs              = 1000; // 1s
+  // Timer subtracts measuredPostStopOverheadMs from budget.
+  // Set to 0 to test pure timer behavior without overhead compensation.
+  s.measuredPostStopOverheadMs = 0;
   s.startTimer();
   s.timerThread.join();
   EXPECT_LT(3s, (high_resolution_clock::now() - s.startTime));
   EXPECT_GT(3.020s, (high_resolution_clock::now() - s.startTime));
+}
+
+TEST_F(SearchTest, startTimerWithOverhead) {
+  // Timer should fire early by measuredPostStopOverheadMs to leave room for post-stop work
+  Search s{};
+  s.searchLimits.timeControl   = true;
+  s.startTime                  = high_resolution_clock::now();
+  s.startSearchTime            = s.startTime;
+  s.timeLimit                  = 2s;
+  s.extraTimeMs                = 0;
+  s.measuredPostStopOverheadMs = 100; // 100ms overhead
+  s.startTimer();
+  s.timerThread.join();
+  const auto elapsed = high_resolution_clock::now() - s.startTime;
+  // Timer should fire at ~1900ms (2000ms - 100ms overhead)
+  EXPECT_LT(1.890s, elapsed);
+  EXPECT_GT(1.920s, elapsed);
+  // Timer should have set stoppedByTimer
+  EXPECT_TRUE(s.stoppedByTimer);
 }
 
 TEST_F(SearchTest, startStopSearch) {
@@ -860,7 +914,7 @@ TEST_F(SearchTest, newGameResetsDeterministic) {
   const std::vector<std::string> fens = {
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",         // start position
     "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -", // Kiwi Pete
-    "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -",                            // endgame
+    "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1",                            // endgame
   };
 
   // ReSharper disable once CppTooWideScope

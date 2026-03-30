@@ -116,7 +116,9 @@ FRIEND_TEST_FWD_DECL(SearchTest, movesLeftBucketsOpeningVsQueenlessVsLowMaterial
 FRIEND_TEST_FWD_DECL(SearchTest, movesLeftRepetitionRiskIncreasesTime);
 FRIEND_TEST_FWD_DECL(SearchTest, extraTime);
 FRIEND_TEST_FWD_DECL(SearchTest, extraTimeCap);
+FRIEND_TEST_FWD_DECL(SearchTest, extraTimeClockCap);
 FRIEND_TEST_FWD_DECL(SearchTest, startTimer);
+FRIEND_TEST_FWD_DECL(SearchTest, startTimerWithOverhead);
 FRIEND_TEST_FWD_DECL(SearchSmpTest, selectBestThread);
 
 namespace engine {
@@ -197,6 +199,15 @@ namespace engine {
     std::atomic<int64_t> extraTimeMs{0};
     std::thread timerThread{};
     mutable std::mutex timerMutex{}; // protects timerThread access from multiple threads
+
+    // Dynamic post-stop overhead measurement for adaptive time management.
+    // Measures the wall time between the timer setting stopSearchFlag and sendResult() completing.
+    // This overhead (joining helpers, selecting best thread, building result) is subtracted from
+    // the timer budget on the next search so bestmove arrives within the allocated time.
+    // Initialized to MOVE_OVERHEAD_MS; updated via EMA after each timer-triggered search.
+    int64_t measuredPostStopOverheadMs{0}; // initialized in constructor from MOVE_OVERHEAD_MS
+    TimePoint timerStopTime{};             // timestamp when timer set stopSearchFlag
+    bool stoppedByTimer = false;           // true when stop was triggered by the timer (not external stop/natural finish)
 
     // Atomic flag to indicate search result is ready (avoids race on lastSearchResult)
     std::atomic<bool> resultReady{false};
@@ -564,6 +575,7 @@ namespace engine {
     void addExtraTime(double f);
     FRIEND_TEST_NS(SearchTest, extraTime);
     FRIEND_TEST_NS(SearchTest, extraTimeCap);
+    FRIEND_TEST_NS(SearchTest, extraTimeClockCap);
 
     /// Checks if time is almost exhausted (soft guard for re-searches).
     /// @return True if remaining time is below safety margin
@@ -576,6 +588,7 @@ namespace engine {
     /// accurate timing from the moment search begins (after ponderhit).
     void startTimer();
     FRIEND_TEST_NS(SearchTest, startTimer);
+    FRIEND_TEST_NS(SearchTest, startTimerWithOverhead);
 
     /// Joins the timer thread if it is still running (protected by timerMutex).
     /// Called from run() post-search cleanup.
