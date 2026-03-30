@@ -262,7 +262,24 @@ testSuiteRuns:
 
 # ==========================================================================
 # Match configurations
-# Note: Uncomment and adjust paths to enable matches
+# ==========================================================================
+#
+# New fields (with defaults — only specify in YAML to override):
+#   timeMargin:      200   # cutechess -timemargin (ms), compensates for post-stop overhead
+#   recover:         true  # -recover flag: restart engine on crash
+#   drawMoveNumber:  40    # draw adjudication: earliest move (0 = disabled)
+#   drawMoveCount:   8     # draw adjudication: consecutive moves below threshold
+#   drawScore:       10    # draw adjudication: centipawn threshold
+#   resignMoveCount: 3     # resign adjudication: consecutive moves (0 = disabled)
+#   resignScore:     600   # resign adjudication: centipawn threshold
+#
+# Fishtest/OpenBench conventions (for reference — FrankyCPP uses Threads=4):
+#   STC  = 10+0.1   (increment = 1% of base)
+#   LTC  = 60+0.6
+#   VLTC = 180+1.8
+#   Adjudication: resign 3/600, draw 40/8/10
+#   Fishtest uses Threads=1, Hash=16-64MB (for SPRT over 40k+ games on diverse HW)
+#
 # Opening book must be in PGN format for cutechess-cli
 # ==========================================================================
 
@@ -274,143 +291,111 @@ debugMode: false
 
 matches:
 
-#  ## current dev vs. v1.6
-#  - name: "v1.7_vs_v1.6_300s"
-#    tag: "" # Set to current feature name when testing
+  # ==========================================================================
+  # TC Gauntlet: Find optimal time control for development testing
+  # Self-play v1.7 vs v1.7_B (identical builds) at multiple TCs
+  # Realistic settings: Threads=4, Hash=128, OwnBook=false
+  # Increment convention: 1% of base time (Fishtest/OpenBench standard)
+  # See docs/specs/RESEARCH_Testing_Framework_Settings.md
+  #
+  # Note on Threads=1 vs multi-threaded:
+  #   Fishtest/OpenBench use Threads=1 to reduce variance when isolating
+  #   small Elo differences from individual patches (SPRT over 40k+ games).
+  #   For FrankyCPP development testing (finding optimal TC, overall strength
+  #   measurement, fewer games), multi-threaded is more representative of
+  #   actual play conditions. Use Threads=1 only when A/B testing a specific
+  #   single-threaded algorithm change with tight Elo bounds.
+  # ==========================================================================
+
+#  ## Bullet 1+0.01 — Ultra-fast smoke test (~7min for 500 games with Threads=4)
+#  - name: "TC_gauntlet_bullet_1s"
+#    tag: "TC-gauntlet"
 #    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
 #    engine1Version: "v1.7"
-#    engine2Path: "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe"
-#    engine2Version: "v1.6"
-#    openingBook: "books/8moves_GM_LB.pgn"
-#    timeControl: "300+0"
-#    rounds: 200
-#    concurrency: 4
-#    outputPgn: "results/matches/v1.7_vs_v1.6_300s.pgn"
-
-  ## Phase 8 Gauntlet B: v1.7 (Phase 8 retune) vs v1.7 (Phase 7 baseline) — 300+0
-#  - name: "v1.7_phase8_vs_phase7_300s"
-#    tag: "Phase8-retune"
-#    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
-#    engine1Version: "v1.7-phase8"
-#    engine2Path: "Release/FrankyCPP_v1.7_phase7/FrankyCPP_v1.7.exe"
-#    engine2Version: "v1.7-phase7"
+#    engine1Options: "OwnBook=false; Threads=4"
+#    engine2Path: "Release/FrankyCPP_v1.7_B/FrankyCPP_v1.7.exe"
+#    engine2Version: "v1.7_B"
+#    engine2Options: "OwnBook=false; Threads=4"
 #    openingBook: "books/8moves_v3.pgn"
-#    timeControl: "300+0"
-#    rounds: 100
+#    timeControl: "1+0.01"
+#    rounds: 500
 #    concurrency: 4
-#    outputPgn: "results/matches/v1.7_phase8_vs_phase7_300s.pgn"
-
-#  ## Phase 8 Gauntlet B (rapid): v1.7 Phase 8 vs Phase 7 — 60+0.6
-#  - name: "v1.7_phase8_vs_phase7_60s"
-#    tag: "Phase8-retune"
-#    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
-#    engine1Version: "v1.7-phase8"
-#    engine2Path: "Release/FrankyCPP_v1.7_phase7/FrankyCPP_v1.7.exe"
-#    engine2Version: "v1.7-phase7"
-#    engine2Options: "OwnBook=false"
-#    openingBook: "books/8moves_v3.pgn"
-#    timeControl: "60+0.6"
-#    rounds: 200
-#    concurrency: 4
-#    outputPgn: "results/matches/v1.7_phase8_vs_phase7_60s.pgn"
+#    outputPgn: "results/matches/TC_gauntlet_bullet_1s.pgn"
 #
-#  ## Phase 8 Gauntlet B (blitz): v1.7 Phase 8 vs Phase 7 — 10+0.1
-#  - name: "v1.7_phase8_vs_phase7_10s"
-#    tag: "Phase8-retune"
+#  ## Bullet 2+0.02 — Fast smoke test (~15min for 500 games with Threads=4)
+#  - name: "TC_gauntlet_bullet_2s"
+#    tag: "TC-gauntlet"
 #    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
-#    engine1Version: "v1.7-phase8"
-#    engine1Options: "OwnBook=false; Threads=1"
-#    engine2Path: "Release/FrankyCPP_v1.7_phase7/FrankyCPP_v1.7.exe"
-#    engine2Version: "v1.7-phase7"
-#    engine2Options: "OwnBook=false; Threads=1"
+#    engine1Version: "v1.7"
+#    engine1Options: "OwnBook=false; Threads=4"
+#    engine2Path: "Release/FrankyCPP_v1.7_B/FrankyCPP_v1.7.exe"
+#    engine2Version: "v1.7_B"
+#    engine2Options: "OwnBook=false; Threads=4"
+#    openingBook: "books/8moves_v3.pgn"
+#    timeControl: "2+0.02"
+#    rounds: 500
+#    concurrency: 4
+#    outputPgn: "results/matches/TC_gauntlet_bullet_2s.pgn"
+#
+#  ## Blitz 5+0.05 — Quick development test (~40min for 500 games with Threads=4)
+#  - name: "TC_gauntlet_blitz_5s"
+#    tag: "TC-gauntlet"
+#    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
+#    engine1Version: "v1.7"
+#    engine1Options: "OwnBook=false; Threads=4"
+#    engine2Path: "Release/FrankyCPP_v1.7_B/FrankyCPP_v1.7.exe"
+#    engine2Version: "v1.7_B"
+#    engine2Options: "OwnBook=false; Threads=4"
+#    openingBook: "books/8moves_v3.pgn"
+#    timeControl: "5+0.05"
+#    rounds: 500
+#    concurrency: 4
+#    outputPgn: "results/matches/TC_gauntlet_blitz_5s.pgn"
+
+  ## Blitz 10+0.1 — Fishtest STC equivalent (~80min for 500 games with Threads=4)
+#  - name: "TC_gauntlet_STC_10s"
+#    tag: "TC-gauntlet"
+#    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
+#    engine1Version: "v1.7"
+#    engine1Options: "OwnBook=false; Threads=4"
+#    engine2Path: "Release/FrankyCPP_v1.7_B/FrankyCPP_v1.7.exe"
+#    engine2Version: "v1.7_B"
+#    engine2Options: "OwnBook=false; Threads=4"
 #    openingBook: "books/8moves_v3.pgn"
 #    timeControl: "10+0.1"
-#    rounds: 200
+#    rounds: 500
 #    concurrency: 4
-#    outputPgn: "results/matches/v1.7_phase8_vs_phase7_10s.pgn"
+#    outputPgn: "results/matches/TC_gauntlet_STC_10s.pgn"
 
-  ## Phase 8 Gauntlet C: v1.7 (Phase 8 retune) vs v1.6 — 300+0
-  - name: "v1.7_phase8_vs_v1.6_300s"
-    tag: "Phase8-retune"
+  ## Rapid 60+0.6 — Fishtest LTC equivalent (~5hr for 200 games with Threads=4)
+  - name: "TC_gauntlet_LTC_60s"
+    tag: "TC-gauntlet"
     engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
-    engine1Version: "v1.7-phase8"
-    engine2Path: "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe"
-    engine2Version: "v1.6"
-    openingBook: "books/8moves_GM_LB.pgn"
-    timeControl: "300+0"
-    rounds: 100
+    engine1Version: "v1.7"
+    engine1Options: "OwnBook=false; Threads=4"
+    engine2Path: "Release/FrankyCPP_v1.7_B/FrankyCPP_v1.7.exe"
+    engine2Version: "v1.7_B"
+    engine2Options: "OwnBook=false; Threads=4"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "60+0.6"
+    rounds: 200
     concurrency: 4
-    outputPgn: "results/matches/v1.7_phase8_vs_v1.6_300s.pgn"
+    outputPgn: "results/matches/TC_gauntlet_LTC_60s.pgn"
 
-  ## Phase 8: v1.7 (Phase 8 retune) vs. Stockfish 18 (limited to 2700 ELO)
-  - name: "v1.7_phase8_vs_Stockfish18_2700_300s"
-    tag: "Phase8-retune"
-    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
-    engine1Version: "v1.7-phase8"
-    engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
-    engine2Version: "18-2700"
-    engine2Options: "UCI_LimitStrength=true; UCI_Elo=2700"
-    openingBook: "books/8moves_GM_LB.pgn"
-    timeControl: "300+0"
-    rounds: 100
-    concurrency: 4
-    outputPgn: "results/matches/v1.7_phase8_vs_Stockfish18_2700_300s.pgn"
-
-## Test Stripped vs Stockfish
-#  - name: "v1.5.1stripped_vs_Stockfish18_2700_300s"
-#    tag: ""  # Set to current feature name when testing
-#    engine1Path: "../../Games/FrankyChess/FrankyCPP-v1.5.1-stripped/FrankyCPP_v1.5.exe"
-#    engine1Version: "v1.5.1"
-#    engine1Options: "OwnBook=false"
-#    engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
-#    engine2Version: "18-2700"
-#    engine2Options: "UCI_LimitStrength=true; UCI_Elo=2700"
-#    openingBook: "books/8moves_GM_LB.pgn"
-#    timeControl: "300+0"
-#    rounds: 100
-#    concurrency: 4
-#    outputPgn: "results/matches/v1.5.1_vs_Stockfish18_2700_300s.pgn"
-
-#  # current dev vs. v1.4
-#  - name: "v1.7_vs_v1.4_300s"
-#    tag: ""
+#  ## Rapid 180+1.8 — 300+0 equivalent (~12hr for 100 games with Threads=4)
+#  - name: "TC_gauntlet_LTC_180s"
+#    tag: "TC-gauntlet"
 #    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
 #    engine1Version: "v1.7"
-#    engine2Path: "Release/FrankyCPP_v1.4/FrankyCPP_v1.4.exe"
-#    engine2Version: "v1.4"
-#    openingBook: "books/8moves_GM_LB.pgn"
-#    timeControl: "300+0"
+#    engine1Options: "OwnBook=false; Threads=4"
+#    engine2Path: "Release/FrankyCPP_v1.7_B/FrankyCPP_v1.7.exe"
+#    engine2Version: "v1.7_B"
+#    engine2Options: "OwnBook=false; Threads=4"
+#    openingBook: "books/8moves_v3.pgn"
+#    timeControl: "180+1.8"
 #    rounds: 100
 #    concurrency: 4
-#    outputPgn: "results/matches/v1.7_vs_v1.4_300s.pgn"
-
-#  # current dev vs. v1.3
-#  - name: "v1.7_vs_v1.3_300s"
-#    tag: ""
-#    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
-#    engine1Version: "v1.7"
-#    engine2Path: "Release/FrankyCPP_v1.3/FrankyCPP_v1.3.exe"
-#    engine2Version: "v1.3"
-#    openingBook: "books/8moves_GM_LB.pgn"
-#    timeControl: "300+0"
-#    rounds: 100
-#    concurrency: 4
-#    outputPgn: "results/matches/v1.7_vs_v1.3_300s.pgn"
-#
-#  # current dev vs. FrankyGo
-#  - name: "v1.7_vs_FrankyGo_300s"
-#    tag: ""
-#    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
-#    engine1Version: "v1.7"
-#    engine1Options: "OwnBook=false"
-#    engine2Path: "D:/Games/FrankyChess/FrankyGo/FrankyGo.exe"
-#    engine2Version: "v1.0.3"
-#    engine2Options: ""
-#    openingBook: "books/8moves_GM_LB.pgn"
-#    timeControl: "300+0"
-#    rounds: 100
-#    concurrency: 4
-#    outputPgn: "results/matches/v1.7_vs_FrankyGo_300s.pgn"
+#    outputPgn: "results/matches/TC_gauntlet_LTC_180s.pgn"
 
 # =============================================================================
 # Benchmark Configuration

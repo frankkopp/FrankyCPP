@@ -156,6 +156,21 @@ namespace arena {
     int concurrency = 1;        ///< Number of games to run in parallel by cutechess-cli (default: 1 for deterministic)
     int batchSize   = 0;        ///< Games per batch for resumable matches (0 = auto: max(2, concurrency), must be even)
     int timeMargin  = 200;      ///< cutechess-cli -timemargin value (ms); compensates for engine post-stop overhead
+    bool recover    = true;     ///< Use -recover flag to handle engine crashes gracefully (default: true)
+
+    // Draw adjudication: declare draw after move N if score stays below threshold for M moves.
+    // Fishtest/OpenBench standard: movenumber=40, movecount=8, score=10 (centipawns).
+    // Set drawMoveNumber=0 to disable draw adjudication.
+    int drawMoveNumber = 40;    ///< Earliest move to start draw detection (0 = disabled)
+    int drawMoveCount  = 8;     ///< Number of consecutive moves both scores must be below threshold
+    int drawScore      = 10;    ///< Score threshold in centipawns for draw adjudication
+
+    // Resign adjudication: auto-resign when losing by large margin for several moves.
+    // Fishtest/OpenBench standard: movecount=3, score=600 (centipawns).
+    // Set resignMoveCount=0 to disable resign adjudication.
+    int resignMoveCount = 3;    ///< Number of consecutive moves score must exceed threshold (0 = disabled)
+    int resignScore     = 600;  ///< Score threshold in centipawns for resign adjudication
+
     std::string outputPgn;      ///< Path to save PGN games
   };
 

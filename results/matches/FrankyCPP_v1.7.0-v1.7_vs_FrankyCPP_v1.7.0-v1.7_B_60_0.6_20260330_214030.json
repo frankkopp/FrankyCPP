@@ -1,0 +1,30 @@
+{
+  "arenaVersion": "v1.7",
+  "durationMs": 11391672,
+  "engine1": {
+    "name": "FrankyCPP v1.7.0",
+    "path": "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe",
+    "version": "v1.7"
+  },
+  "engine2": {
+    "name": "FrankyCPP v1.7.0",
+    "path": "Release/FrankyCPP_v1.7_B/FrankyCPP_v1.7.exe",
+    "version": "v1.7_B"
+  },
+  "match": {
+    "name": "TC_gauntlet_LTC_60s",
+    "rounds": 200,
+    "timeControl": "60+0.6"
+  },
+  "pgnPath": "results/matches/TC_gauntlet_LTC_60s.pgn",
+  "results": {
+    "draws": 112,
+    "eloDifference": 34.86007028756008,
+    "engine1Score": 110.0,
+    "engine1Wins": 54,
+    "engine2Score": 90.0,
+    "engine2Wins": 34
+  },
+  "tag": "TC-gauntlet",
+  "timestamp": "2026-03-30T19:40:30Z"
+}

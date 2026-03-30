@@ -217,6 +217,30 @@ namespace arena {
             match.timeMargin = matchNode["timeMargin"].as<int>();
           }
 
+          // Recover flag (optional, defaults to true)
+          if (matchNode["recover"]) {
+            match.recover = matchNode["recover"].as<bool>();
+          }
+
+          // Draw adjudication (optional, defaults: movenumber=40, movecount=8, score=10)
+          if (matchNode["drawMoveNumber"]) {
+            match.drawMoveNumber = matchNode["drawMoveNumber"].as<int>();
+          }
+          if (matchNode["drawMoveCount"]) {
+            match.drawMoveCount = matchNode["drawMoveCount"].as<int>();
+          }
+          if (matchNode["drawScore"]) {
+            match.drawScore = matchNode["drawScore"].as<int>();
+          }
+
+          // Resign adjudication (optional, defaults: movecount=3, score=600)
+          if (matchNode["resignMoveCount"]) {
+            match.resignMoveCount = matchNode["resignMoveCount"].as<int>();
+          }
+          if (matchNode["resignScore"]) {
+            match.resignScore = matchNode["resignScore"].as<int>();
+          }
+
           match.outputPgn = matchNode["outputPgn"].as<std::string>();
 
           config.matches.push_back(match);

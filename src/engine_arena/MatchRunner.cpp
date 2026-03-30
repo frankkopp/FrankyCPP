@@ -392,13 +392,33 @@ namespace arena {
       }
     }
 
-    // Common settings
+    // Common settings applied to both engines via -each.
+    // timemargin=N is a per-engine option in cutechess-cli (not a global flag).
+    // It adds N ms tolerance before declaring a time loss, compensating for
+    // engine post-stop overhead (joining threads, sending bestmove).
     cmd << " -each proto=uci tc=" << matchConfig.timeControl;
-
-    // Time margin: extra tolerance before cutechess declares time loss (ms).
-    // Compensates for engine post-stop overhead (joining threads, sending bestmove).
     if (matchConfig.timeMargin > 0) {
-      cmd << " -timemargin " << matchConfig.timeMargin;
+      cmd << " timemargin=" << matchConfig.timeMargin;
+    }
+
+    // Resign adjudication: auto-resign when losing by large margin for several moves.
+    // Fishtest/OpenBench standard: movecount=3, score=600 (centipawns).
+    if (matchConfig.resignMoveCount > 0) {
+      cmd << " -resign movecount=" << matchConfig.resignMoveCount
+          << " score=" << matchConfig.resignScore;
+    }
+
+    // Draw adjudication: declare draw after move N if score stays below threshold for M moves.
+    // Fishtest/OpenBench standard: movenumber=40, movecount=8, score=10.
+    if (matchConfig.drawMoveNumber > 0) {
+      cmd << " -draw movenumber=" << matchConfig.drawMoveNumber
+          << " movecount=" << matchConfig.drawMoveCount
+          << " score=" << matchConfig.drawScore;
+    }
+
+    // Recover from engine crashes (restart engine and continue match)
+    if (matchConfig.recover) {
+      cmd << " -recover";
     }
 
     // Rounds (may be less than config if resuming a match)
