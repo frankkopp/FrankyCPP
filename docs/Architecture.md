@@ -609,11 +609,11 @@ ConfigManager::instance().eval().USE_MOBILITY
 
 | Target                     | Description                              |
 |----------------------------|------------------------------------------|
-| `FrankyCPP_v1.7`           | Main UCI engine executable               |
-| `FrankyCPP_v1.7_Test`      | GoogleTest unit tests                    |
-| `FrankyCPP_v1.7_Bench`     | Google Benchmark microbenchmarks         |
-| `FrankyCPP_v1.7_Extractor` | Position extractor (non-production only) |
-| `FrankyCPP_v1.7_Tuner`     | Texel tuning optimizer (non-production)  |
+| `FrankyCPP_v1.8`           | Main UCI engine executable               |
+| `FrankyCPP_v1.8_Test`      | GoogleTest unit tests                    |
+| `FrankyCPP_v1.8_Bench`     | Google Benchmark microbenchmarks         |
+| `FrankyCPP_v1.8_Extractor` | Position extractor (non-production only) |
+| `FrankyCPP_v1.8_Tuner`     | Texel tuning optimizer (non-production)  |
 
 ---
 

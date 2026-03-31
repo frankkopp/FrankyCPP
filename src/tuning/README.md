@@ -74,8 +74,8 @@ Both executables are CMake targets that link against `FrankyCPPlib`:
 
 | Target                      | Description              |
 |-----------------------------|--------------------------|
-| `FrankyCPP_v1.7_Extractor`  | Position extraction tool |
-| `FrankyCPP_v1.7_Tuner`      | Texel tuning optimizer   |
+| `FrankyCPP_v1.8_Extractor`  | Position extraction tool |
+| `FrankyCPP_v1.8_Tuner`      | Texel tuning optimizer   |
 
 **Production builds** (`-DFRANKYCPP_PRODUCTION=ON`) exclude both tuning targets and
 all tuning-related tests entirely. Tuning code assigns to `CONFIG_CONST` members which
@@ -85,18 +85,18 @@ become `static constexpr` in production.
 
 ```powershell
 # Extract positions from PGN
-.\FrankyCPP_v1.7_Extractor --input games.pgn --output positions.txt
+.\FrankyCPP_v1.8_Extractor --input games.pgn --output positions.txt
 
 # Run tuner on extracted positions
-.\FrankyCPP_v1.7_Tuner --dataset positions.txt --threads 8 --output results/tuning/run1
+.\FrankyCPP_v1.8_Tuner --dataset positions.txt --threads 8 --output results/tuning/run1
 
 # Resume from checkpoint after interruption
-.\FrankyCPP_v1.7_Tuner --dataset positions.txt --threads 8 --output results/tuning/run1 \
+.\FrankyCPP_v1.8_Tuner --dataset positions.txt --threads 8 --output results/tuning/run1 \
   --resume results/tuning/run1_checkpoint.yaml
 
 # Show help
-.\FrankyCPP_v1.7_Extractor --help
-.\FrankyCPP_v1.7_Tuner --help
+.\FrankyCPP_v1.8_Extractor --help
+.\FrankyCPP_v1.8_Tuner --help
 ```
 
 ### Tuner Output Files

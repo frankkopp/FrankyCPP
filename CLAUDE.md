@@ -41,10 +41,10 @@ Build output directories: `cmake-build-win-release`, `cmake-build-win-debug`, `c
 
 ```powershell
 # Run all tests (excluding slow ones) — Windows
-.\cmake-build-win-release\test\FrankyCPP_v1.6_Test.exe --gtest_filter=-*SpeedTests.*:-*TimingTests.*
+.\cmake-build-win-release\test\FrankyCPP_v1.8_Test.exe --gtest_filter=-*SpeedTests.*:-*TimingTests.*
 
 # Run a specific test suite
-.\cmake-build-win-release\test\FrankyCPP_v1.6_Test.exe --gtest_filter=PositionTest.*
+.\cmake-build-win-release\test\FrankyCPP_v1.8_Test.exe --gtest_filter=PositionTest.*
 ```
 
 Tests auto-discovered by CMake; test files mirror source structure under `test/`.
