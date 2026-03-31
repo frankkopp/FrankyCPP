@@ -427,7 +427,7 @@ void Search::run() {
     const int64_t floorMs           = SearchConfig.MOVE_OVERHEAD_MS;
     // EMA: 30% new sample, 70% previous estimate
     const auto rawEmaMs = 0.3 * sampleMs + 0.7 * static_cast<double>(measuredPostStopOverheadMs);
-    measuredPostStopOverheadMs = std::clamp(std::llround(rawEmaMs), floorMs, maxOverheadMs);
+    measuredPostStopOverheadMs = std::clamp(static_cast<int64_t>(std::llround(rawEmaMs)), floorMs, maxOverheadMs);
     LOG__INFO(Logger::get().SEARCH_LOG,
               "Post-stop overhead: sample {:.3f} ms, EMA {} ms (floor {} ms, cap {} ms)",
               sampleMs, measuredPostStopOverheadMs, floorMs, maxOverheadMs);
@@ -2926,9 +2926,9 @@ milliseconds Search::setupTimeControl(const Position& p, const SearchLimits& lim
 
 void Search::addExtraTime(const double f) {
   if (searchLimits.timeControl && !searchLimits.moveTime.count()) {
-    const auto deltaMs      = std::llround(static_cast<long double>(timeLimit.count()) * (static_cast<long double>(f) - 1.0L));
+    const auto deltaMs      = static_cast<int64_t>(std::llround(static_cast<long double>(timeLimit.count()) * (static_cast<long double>(f) - 1.0L)));
     const auto currentExtra = extraTimeMs.load(std::memory_order_relaxed);
-    const auto maxExtraMs   = std::llround(static_cast<long double>(timeLimit.count()) * SearchConfig.MAX_EXTRA_TIME_FACTOR);
+    const auto maxExtraMs   = static_cast<int64_t>(std::llround(static_cast<long double>(timeLimit.count()) * SearchConfig.MAX_EXTRA_TIME_FACTOR));
 
     // Hard cap: total budget (timeLimit + extra) must not exceed remaining clock time
     // minus a safety margin (post-stop overhead). This prevents overshooting in fast games
@@ -2936,7 +2936,7 @@ void Search::addExtraTime(const double f) {
     const auto playerTimeMs = (position.getNextPlayer()
                                  ? searchLimits.blackTime
                                  : searchLimits.whiteTime).count();
-    const auto clockCapMs   = std::max(0LL, playerTimeMs - measuredPostStopOverheadMs - timeLimit.count());
+    const auto clockCapMs   = std::max(int64_t{0}, playerTimeMs - measuredPostStopOverheadMs - timeLimit.count());
 
     // Use the tighter of the two caps
     const auto effectiveCapMs = std::min(maxExtraMs, clockCapMs);
