@@ -1,0 +1,30 @@
+{
+  "arenaVersion": "v1.7",
+  "durationMs": 4722790,
+  "engine1": {
+    "name": "FrankyCPP v1.7.0",
+    "path": "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe",
+    "version": "v1.7"
+  },
+  "engine2": {
+    "name": "FrankyCPP v1.7.0",
+    "path": "Release/FrankyCPP_v1.7_B/FrankyCPP_v1.7.exe",
+    "version": "v1.7_B"
+  },
+  "match": {
+    "name": "Tuning_Phase9_GauntletD_10s",
+    "rounds": 500,
+    "timeControl": "10+0.1"
+  },
+  "pgnPath": "results/matches/Tuning_Phase9_GauntletD_10s.pgn",
+  "results": {
+    "draws": 213,
+    "eloDifference": -15.993323930864149,
+    "engine1Score": 238.5,
+    "engine1Wins": 132,
+    "engine2Score": 261.5,
+    "engine2Wins": 155
+  },
+  "tag": "TC-Tuning_Phase9_GauntletD",
+  "timestamp": "2026-03-30T23:40:52Z"
+}

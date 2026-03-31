@@ -856,4 +856,31 @@ Match Complete: v1.7_phase8_vs_v1.6_300s
 
 ```
 
+```
+v1.7 Phase 10 — Final validation after Phase 9 code cleanup
+
+==================================================================
+Match Complete: Tuning_Phase9_GauntletD_10s (v1.7 Phase 9 vs v1.7_B Phase 8)
+  FrankyCPP v1.7.0: 132 wins, 213 draws, 155 losses
+  FrankyCPP v1.7.0: 155 wins, 213 draws, 132 losses
+  Score: 238.5 - 261.5
+  ELO Difference: -16.0
+  Duration: 4722.8s
+==================================================================
+
+Note: Initial Gauntlet E (10+0.1, 500 games) was invalidated by stalled connection bug.
+211/500 games ended by "stalled connection" — all v1.7 losses. Root cause: cutechess-cli
+timemargin=200 sends negative clock values, UciHandler rejected go command without bestmove.
+Workaround applied (clamp to 1ms + warn). Re-ran at 300+0.
+
+==================================================================
+Match Complete: Tuning_Phase10_GauntletE-2_300s (v1.7 Phase 9 vs v1.6)
+  FrankyCPP v1.7.0: 47 wins, 23 draws, 30 losses
+  FrankyCPP v1.6.0: 30 wins, 23 draws, 47 losses
+  Score: 58.5 - 41.5
+  ELO Difference: +59.6
+  Duration: 14998.8s
+==================================================================
+```
+
 ---

@@ -47,8 +47,8 @@ UciHandler::UciHandler()
       pOutputStream(&std::cout) {}
 
 UciHandler::UciHandler(std::istream* pIstream, std::ostream* pOstream) : UciHandler() {
-  pInputStream  = pIstream;
-  pOutputStream = pOstream;
+  pInputStream  = pIstream; // NOLINT(*-prefer-member-initializer)
+  pOutputStream = pOstream; // NOLINT(*-prefer-member-initializer)
 }
 
 void UciHandler::loop() {
@@ -221,8 +221,8 @@ void UciHandler::goCommand(std::istringstream& inStream) const {
       uciError(std::format("UCI command go invalid. White to move but time for white is zero! {}", searchLimits.str()));
       return;
     }
-    else if (pPosition->getNextPlayer() == BLACK && searchLimits.blackTime.count() == 0) {
-      uciError(std::format("UCI command go invalid. Black to move but time for white is zero! {}", searchLimits.str()));
+    if (pPosition->getNextPlayer() == BLACK && searchLimits.blackTime.count() == 0) {
+      uciError(std::format("UCI command go invalid. Black to move but time for black is zero! {}", searchLimits.str()));
       return;
     }
   }
@@ -308,17 +308,32 @@ bool UciHandler::readSearchLimits(std::istringstream& inStream, SearchLimits& se
 
     else if (token == "wtime") {
       readMillisToken(searchLimits.whiteTime, true);
+      // Workaround: some GUIs (e.g. cutechess-cli with timemargin) may send zero or negative
+      // time values when an engine slightly overshoots its clock. We must never reject the go
+      // command - the UCI contract requires a bestmove response.
       if (searchLimits.whiteTime.count() <= 0) {
-        uciError(std::format("Invalid wtime: {}", token));
-        return false;
+        if (pPosition->getNextPlayer() == WHITE) {
+          uciError(std::format("Received non-positive wtime {} for side to move - clamping to 1ms", searchLimits.whiteTime.count()));
+          searchLimits.whiteTime = milliseconds(1);
+        }
+        else {
+          LOG__WARN(Logger::get().UCIHAND_LOG, "Received non-positive wtime {} for opponent - ignoring", searchLimits.whiteTime.count());
+          searchLimits.whiteTime = milliseconds(0);
+        }
       }
     }
 
     else if (token == "btime") {
       readMillisToken(searchLimits.blackTime, true);
       if (searchLimits.blackTime.count() <= 0) {
-        uciError(std::format("Invalid btime: {}", token));
-        return false;
+        if (pPosition->getNextPlayer() == BLACK) {
+          uciError(std::format("Received non-positive btime {} for side to move - clamping to 1ms", searchLimits.blackTime.count()));
+          searchLimits.blackTime = milliseconds(1);
+        }
+        else {
+          LOG__WARN(Logger::get().UCIHAND_LOG, "Received non-positive btime {} for opponent - ignoring", searchLimits.blackTime.count());
+          searchLimits.blackTime = milliseconds(0);
+        }
       }
     }
 

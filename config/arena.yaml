@@ -265,7 +265,7 @@ testSuiteRuns:
 # ==========================================================================
 #
 # New fields (with defaults — only specify in YAML to override):
-#   timeMargin:      200   # cutechess -timemargin (ms), compensates for post-stop overhead
+#   timeMargin:      0     # cutechess -timemargin (ms); 0 = strict (default). Set to 200 for multi-threaded matches.
 #   recover:         true  # -recover flag: restart engine on crash
 #   drawMoveNumber:  40    # draw adjudication: earliest move (0 = disabled)
 #   drawMoveCount:   8     # draw adjudication: consecutive moves below threshold
@@ -318,6 +318,7 @@ matches:
 #    engine2Options: "OwnBook=false; Threads=4"
 #    openingBook: "books/8moves_v3.pgn"
 #    timeControl: "1+0.01"
+#    timeMargin: 200
 #    rounds: 500
 #    concurrency: 4
 #    outputPgn: "results/matches/Tuning_Phase9_QuickTest_1s.pgn"
@@ -333,28 +334,30 @@ matches:
 #    engine2Options: "OwnBook=false; Threads=4"
 #    openingBook: "books/8moves_v3.pgn"
 #    timeControl: "2+0.02"
+#    timeMargin: 200
 #    rounds: 500
 #    concurrency: 4
 #    outputPgn: "results/matches/TC_gauntlet_bullet_2s.pgn"
 #
 #  ## Blitz 5+0.05 — Quick development test (~40min for 500 games with Threads=4)
-  - name: "Tuning_Phase9_QuickTest_5s"
-    tag: "Phase9_QuickTest"
-    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
-    engine1Version: "v1.7"
-    engine1Options: "OwnBook=false; Threads=4"
-    engine2Path: "Release/FrankyCPP_v1.7_B/FrankyCPP_v1.7.exe"
-    engine2Version: "v1.7_B"
-    engine2Options: "OwnBook=false; Threads=4"
-    openingBook: "books/8moves_v3.pgn"
-    timeControl: "5+0.05"
-    rounds: 500
-    concurrency: 4
-    outputPgn: "results/matches/Tuning_Phase9_QuickTest_5s.pgn"
+#  - name: "Tuning_Phase9_QuickTest_5s"
+#    tag: "Phase9_QuickTest"
+#    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
+#    engine1Version: "v1.7"
+#    engine1Options: "OwnBook=false; Threads=4"
+#    engine2Path: "Release/FrankyCPP_v1.7_B/FrankyCPP_v1.7.exe"
+#    engine2Version: "v1.7_B"
+#    engine2Options: "OwnBook=false; Threads=4"
+#    openingBook: "books/8moves_v3.pgn"
+#    timeControl: "5+0.05"
+#    timeMargin: 200
+#    rounds: 500
+#    concurrency: 4
+#    outputPgn: "results/matches/Tuning_Phase9_QuickTest_5s.pgn"
 
   ## Blitz 10+0.1 — Fishtest STC equivalent (~80min for 500 games with Threads=4)
-#  - name: "TC_gauntlet_STC_10s"
-#    tag: "TC-gauntlet"
+#  - name: "Tuning_Phase9_GauntletD_10s"
+#    tag: "TC-Tuning_Phase9_GauntletD"
 #    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
 #    engine1Version: "v1.7"
 #    engine1Options: "OwnBook=false; Threads=4"
@@ -363,9 +366,25 @@ matches:
 #    engine2Options: "OwnBook=false; Threads=4"
 #    openingBook: "books/8moves_v3.pgn"
 #    timeControl: "10+0.1"
+#    timeMargin: 200
 #    rounds: 500
 #    concurrency: 4
-#    outputPgn: "results/matches/TC_gauntlet_STC_10s.pgn"
+#    outputPgn: "results/matches/Tuning_Phase9_GauntletD_10s.pgn"
+
+  ## 300+0 — Long TC to avoid time-related issues with unfixed v1.6 binary
+  - name: "Tuning_Phase10_GauntletE-2_300s"
+    tag: "TC-Tuning_Phase10_GauntletE-2"
+    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
+    engine1Version: "v1.7"
+    engine1Options: "OwnBook=false; Threads=4"
+    engine2Path: "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe"
+    engine2Version: "v1.6"
+    engine2Options: "OwnBook=false; Threads=4"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "300+0"
+    rounds: 100
+    concurrency: 4
+    outputPgn: "results/matches/Tuning_Phase10_GauntletE-2_300s.pgn"
 
   ## Rapid 60+0.6 — Fishtest LTC equivalent (~5hr for 200 games with Threads=4)
 #  - name: "TC_gauntlet_LTC_60s"
@@ -378,6 +397,7 @@ matches:
 #    engine2Options: "OwnBook=false; Threads=4"
 #    openingBook: "books/8moves_v3.pgn"
 #    timeControl: "60+0.6"
+#    timeMargin: 200
 #    rounds: 200
 #    concurrency: 4
 #    outputPgn: "results/matches/TC_gauntlet_LTC_60s.pgn"
@@ -393,6 +413,7 @@ matches:
 #    engine2Options: "OwnBook=false; Threads=4"
 #    openingBook: "books/8moves_v3.pgn"
 #    timeControl: "180+1.8"
+#    timeMargin: 200
 #    rounds: 100
 #    concurrency: 4
 #    outputPgn: "results/matches/TC_gauntlet_LTC_180s.pgn"
