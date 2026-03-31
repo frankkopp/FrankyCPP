@@ -121,8 +121,8 @@ Results from White's perspective: `1.0` (white win), `0.5` (draw), `0.0` (black 
 
 ## Implementation Status
 
-See `docs/specs/PLAN_Texel_Tuning.md` for the full plan and
-`docs/specs/PLAN_Texel_Tuning_Progress.md` for phase-by-phase progress tracking.
+See `docs/archive/PLAN_Texel_Tuning.md` for the full plan and
+`docs/archive/PLAN_Texel_Tuning_Progress.md` for phase-by-phase progress tracking.
 
 | Phase | Description                             | Status        |
 |-------|-----------------------------------------|---------------|

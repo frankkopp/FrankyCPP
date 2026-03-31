@@ -41,7 +41,7 @@
 //   FrankyCPP_Tuner --dataset <file> [options]
 //   FrankyCPP_Tuner --dataset <file> --resume checkpoint.yaml
 //
-// See docs/specs/PLAN_Texel_Tuning.md for details.
+// See docs/archive/PLAN_Texel_Tuning.md for details.
 //
 //=============================================================================
 

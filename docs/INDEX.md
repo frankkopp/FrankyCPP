@@ -98,51 +98,21 @@ Quick reference to all project documentation.
 - Risk assessment and mitigation
 - References and resources
 
-### ⚙️ [PLAN_Configuration_Refactor.md](specs/PLAN_Configuration_Refactor.md)
-**Configuration System Refactoring Plan**
-- Single source of truth for all config settings
-- Auto-generation of str(), YAML, UCI options
-- ConfigDef metadata system design
-- Phased implementation approach
-- Eliminates config duplication across 4-6 files
+### ⚙️ Archived Specification Plans
+Completed plans are moved to `docs/archive/` after release. Key archived plans:
+- `archive/PLAN_Texel_Tuning.md` — Texel tuning algorithm, optimizer implementation (v1.7)
+- `archive/PLAN_Texel_Tuning_Progress.md` — Phase-by-phase progress tracker (v1.7)
+- `archive/PLAN_Configuration_Refactor.md` — ConfigRegistry single source of truth (v1.6)
+- `archive/PLAN_Eval_and_Strength_Improvement.md` — Eval enrichment phases (v1.6)
+- `archive/PLAN_Syzygy_Tablebase_Support.md` — Fathom integration (v1.2)
 
-### 🎲 [PLAN_Syzygy_Tablebase_Support.md](specs/PLAN_Syzygy_Tablebase_Support.md)
-**Syzygy Endgame Tablebase Integration**
-- Fathom library integration
-- WDL/DTZ probing at root and in-search
-- Tablebase path discovery and validation
-- Built-in download utility
-- UCI options (SyzygyPath, SyzygyProbeDepth)
+### 📋 Active Specification Plans
 
-### ⚔️ [PLAN_QSearch_Quiet_Checks.md](specs/PLAN_QSearch_Quiet_Checks.md)
-**Quiescence Search Quiet Check Enhancement**
-- Adding non-capturing checks to qsearch
-- Check evasion handling
-- Performance considerations
-- Implementation approach
-
-### ⏱️ [PLAN_Speedtest_Benchmark.md](specs/PLAN_Speedtest_Benchmark.md)
-**Performance Benchmark Infrastructure**
-- Benchmark suite design
-- Standardized test positions
-- NPS and node count comparisons
-- Regression detection
-
-### 🔍 [PLAN_Search_Tree_Reduction_Review.md](specs/PLAN_Search_Tree_Reduction_Review.md) **(NEW in v1.3)**
-**Search Tree Reduction Techniques Review**
-- LMR (Late Move Reductions) optimization
-- Move ordering improvements
-- Pruning technique analysis
-- Comparison to Stockfish approaches
-- **Status:** Phase 1 partially complete (+109 ELO vs v1.1)
-
-### 📋 [Search_Features.md](Search_Features.md) **(NEW in v1.3)**
-**Search Feature Correctness Review**
-- Complete list of 24 search features
-- Bugs discovered and fixed (isPvNode, history heuristic)
-- "To Check" items for each feature
-- Comparison to Stockfish implementation
-- Priority order for further review---
+### 🔮 [PLAN_MultiPV.md](specs/PLAN_MultiPV.md)
+**Multi-PV Implementation Plan**
+- Search and report top N moves (analysis mode)
+- UCI `MultiPV` option support
+- Status: Planned---
 
 ## Technical References
 
@@ -214,13 +184,14 @@ Quick reference to all project documentation.
 | **Project status**         | FrankyCPP_Codebase_Review.md              |
 | **v1.x Enhancement plan**  | specs/V1_ENGINE_ENHANCEMENT_PLAN.md       |
 | **v1.x Strength roadmap**  | specs/V1_ENGINE_STRENGTH_ROADMAP.md       |
-| **Syzygy tablebases**      | specs/PLAN_Syzygy_Tablebase_Support.md    |
+| **Texel tuning plan**      | archive/PLAN_Texel_Tuning.md              |
 | **Engine Arena framework** | arena/README.md                           |
 | **C++20 features**         | CPP20_Feature_Support.md                  |
 | **Lazy SMP**               | Lazy_SMP_Explained.md                     |
 | **Logging**                | Logger.md                                 |
 | **UCI protocol**           | engine-interface.txt                      |
 | **CLion IDE**              | CLion_WSL_Setup.md                        |
+| **Search features**        | Search_Features.md                        |
 
 ### Key Files in Root Directory
 
@@ -237,15 +208,15 @@ Quick reference to all project documentation.
 
 ## Documentation Status ✅
 
-All documentation is current as of **2026-03-09**:
+All documentation is current as of **2026-03-31**:
 - ✅ Build instructions for all platforms
-- ✅ Architecture and design documentation
-- ✅ v1.x Enhancement roadmap and implementation plan
-- ✅ Syzygy tablebase integration documented
+- ✅ Architecture and design documentation (updated for v1.7 tuning module)
+- ✅ v1.x Enhancement roadmap and strength plan (updated through v1.7)
+- ✅ Texel tuning plan archived with full phase history
 - ✅ Technical references up to date
 - ✅ IDE setup guides available
-- ✅ Obsolete files removed
+- ✅ Completed spec plans archived to `docs/archive/`
 
 ---
 
-**Last updated:** 2026-03-09
+**Last updated:** 2026-03-31

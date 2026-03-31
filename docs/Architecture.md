@@ -117,8 +117,13 @@ src/
 ├── common/               # Shared utilities
 │   ├── Logging.h         # spdlog-based logging with compile-time levels
 │   ├── ThreadPool.h      # Generic thread pool for parallel tasks
+│   ├── ExePath.h/.cpp    # Executable path resolution (platform-specific)
 │   ├── stringutil.h      # String manipulation and parsing helpers
-│   └── misc.h            # Miscellaneous utilities
+│   ├── misc.h            # Miscellaneous utilities
+│   └── pgn/              # PGN parser library (extracted from OpeningBook)
+│       ├── PgnParser.h/.cpp  # Streaming + batch PGN parsing
+│       ├── PgnGame.h         # Structured game with headers, moves, result
+│       └── PgnTypes.h        # GameResult enum, conversion functions
 │
 ├── chesscore/            # Chess logic (board, moves, rules)
 │   ├── Position.h/.cpp   # Board state, make/unmake, Zobrist keys
@@ -162,6 +167,18 @@ src/
 └── enginetest/           # Built-in test suite runner
     ├── TestSuite.h       # EPD test suite execution
     └── SearchTreeSizeTest.h # Search tree analysis
+
+tuning/ (non-production builds only)
+├── extractor/            # Position extraction from PGN games
+│   ├── PositionExtractor.h/.cpp  # 6 configurable filters
+│   └── ExtractorMain.cpp         # CLI tool
+└── optimizer/            # Texel tuning optimizer
+    ├── TexelTuner.h/.cpp         # Sigmoid MSE, K-tuning, coordinate descent
+    ├── TuningDataset.h/.cpp      # FEN+result dataset loader
+    ├── TuningParameter.h/.cpp    # Registry → flat param vector mapping
+    ├── TuningState.h/.cpp        # YAML checkpoint save/load
+    ├── TuningOutput.h/.cpp       # Tuned params YAML + comparison report
+    └── TunerMain.cpp             # CLI tool
 ```
 
 ---
@@ -590,11 +607,13 @@ ConfigManager::instance().eval().USE_MOBILITY
 
 ## Build Targets
 
-| Target                 | Description                      |
-|------------------------|----------------------------------|
-| `FrankyCPP_v1.6`       | Main UCI engine executable       |
-| `FrankyCPP_v1.6_Test`  | GoogleTest unit tests            |
-| `FrankyCPP_v1.6_Bench` | Google Benchmark microbenchmarks |
+| Target                     | Description                              |
+|----------------------------|------------------------------------------|
+| `FrankyCPP_v1.7`           | Main UCI engine executable               |
+| `FrankyCPP_v1.7_Test`      | GoogleTest unit tests                    |
+| `FrankyCPP_v1.7_Bench`     | Google Benchmark microbenchmarks         |
+| `FrankyCPP_v1.7_Extractor` | Position extractor (non-production only) |
+| `FrankyCPP_v1.7_Tuner`     | Texel tuning optimizer (non-production)  |
 
 ---
 
@@ -612,4 +631,4 @@ ConfigManager::instance().eval().USE_MOBILITY
 
 ---
 
-*Last updated: 2026-03-09*
+*Last updated: 2026-03-31*

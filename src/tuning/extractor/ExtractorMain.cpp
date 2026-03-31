@@ -30,7 +30,7 @@
 // Usage:
 //   FrankyCPP_Extractor --input <pgn> --output <txt> [options]
 //
-// See docs/specs/PLAN_Texel_Tuning.md for details.
+// See docs/archive/PLAN_Texel_Tuning.md for details.
 //
 //=============================================================================
 

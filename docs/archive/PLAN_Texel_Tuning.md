@@ -9,7 +9,7 @@
 **Predecessor:** `PLAN_Eval_and_Strength_Improvement.md`
 
 **Companion Documents:**
-- `docs/specs/PLAN_Texel_Tuning_Progress.md` — Phase progress tracker (created at implementation start)
+- `docs/archive/PLAN_Texel_Tuning_Progress.md` — Phase progress tracker (created at implementation start)
 - `docs/Texel_Tuning.md` — Feature documentation (created alongside implementation)
 
 ---

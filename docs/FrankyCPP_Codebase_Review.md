@@ -2,19 +2,43 @@
 
 ## Executive Summary
 
-FrankyCPP is a production-ready C++ chess engine (v0.7 → v1.5) implementing the UCI protocol. It's a modern evolution from "FrankyGo" leveraging C++20 features. The engine features alpha-beta search with advanced pruning techniques, configurable evaluation function, opening book support, and comprehensive testing infrastructure.
+FrankyCPP is a production-ready C++ chess engine (v0.7 → v1.7) implementing the UCI protocol. It's a 
+modern evolution from "FrankyGo" leveraging C++20 features. The engine features alpha-beta search 
+with advanced pruning techniques, Texel-tuned classical evaluation, Lazy SMP multi-threading, Syzygy 
+tablebase support, and comprehensive testing infrastructure.
 
-**v1.5 Development Cycle (Complete):** TT bucket design (4-way associative, cache-line aligned), XOR key verification for SMP race safety, Best Thread Selection for Lazy SMP (depth+score heuristic across all threads), Arena testing improvements. Total result: **+103.7 ELO** vs v1.4 baseline (**+331 ELO cumulative** vs v1.1).
 
-**v1.4 Development Cycle (Complete):** Lazy SMP multi-threading, search feature correctness review, improving flag, LMR history-based reductions, CutNode reductions. Total result: **+119 ELO** vs v1.3 baseline.
+**v1.7 Development Cycle (Complete):** Texel tuning infrastructure (PGN parser, position extractor, 
+multi-threaded optimizer), 75 eval weights tuned on 4.57M self-play positions, 14 dead eval features 
+removed (−503 lines, +3.5% NPS), exe-relative path resolution, adaptive time management. 
+Total result: **+60–78 ELO** vs v1.6 (**~+400–470 ELO cumulative** vs v1.1).
 
-**v1.3 Development Cycle (Complete):** This version focused on search optimization: logarithmic LMR formula, LMR tuning, and critical bug fixes in isPvNode propagation and history heuristic. Total result: **+109 ELO** vs v1.1 baseline.
+**v1.6 Development Cycle (Complete):** Evaluation enrichment (mobility, king safety, threats, pawn 
+structure features), search hardening, configuration refactoring to ConfigRegistry single source of 
+truth. 
+Total result: **+81 ELO** vs v1.5.
 
-**v1.2 Development Cycle (Complete):** Syzygy tablebase integration with WDL/DTZ probing at root and in-search.
+**v1.5 Development Cycle (Complete):** TT bucket design (4-way associative, cache-line aligned), XOR 
+key verification for SMP race safety, Best Thread Selection for Lazy SMP (depth+score heuristic 
+across all threads), Arena testing improvements. 
+Total result: **+103.7 ELO** vs v1.4 (**+331 ELO cumulative** vs v1.1).
 
-**v1.1 Development Cycle (Complete):** Engine Arena automated testing framework for measuring strength across versions.
+**v1.4 Development Cycle (Complete):** Lazy SMP multi-threading, search feature correctness review, 
+improving flag, LMR history-based reductions, CutNode reductions. 
+Total result: **+119 ELO** vs v1.3 baseline.
 
-**v1.0 Readiness:** ✅ The codebase is production-ready with professional build infrastructure, comprehensive documentation, full CI/CD pipeline, cross-platform support, and enterprise-grade code quality.
+**v1.3 Development Cycle (Complete):** Search optimization: logarithmic LMR formula, LMR tuning, and
+critical bug fixes in isPvNode propagation and history heuristic. 
+Total result: **+109 ELO** vs v1.1 baseline.
+
+**v1.2 Development Cycle (Complete):** Syzygy tablebase integration with WDL/DTZ probing at root and 
+in-search.
+
+**v1.1 Development Cycle (Complete):** Engine Arena automated testing framework for measuring 
+strength across versions.
+
+**v1.0 Readiness:** ✅ The codebase is production-ready with professional build infrastructure, 
+comprehensive documentation, full CI/CD pipeline, cross-platform support, and enterprise-grade code quality.
 
 ---
 
@@ -248,17 +272,19 @@ The `types/` directory contains well-designed value types:
 
 ### Evaluation
 
-| Feature                 | Status                                                |
-|-------------------------|-------------------------------------------------------|
-| **Material**            | ✅ Standard piece values                               |
-| **Piece-Square Tables** | ✅ Mid-game and end-game tables                        |
-| **Game Phase**          | ✅ Tapered evaluation                                  |
-| **Pawn Structure**      | ✅ Isolated, doubled, passed, phalanx, supported pawns |
-| **Pawn Hash Table**     | ✅ Dedicated pawn TT                                   |
-| **Mobility**            | ✅ Knight, Bishop, Rook, Queen mobility                |
-| **King Safety**         | ✅ Basic implementation                                |
-| **Lazy Evaluation**     | ✅ With configurable threshold                         |
-| **NNUE**                | ❌ Not implemented (classical eval only)               |
+| Feature                 | Status                                                          |
+|-------------------------|-----------------------------------------------------------------|
+| **Material**            | ✅ Standard piece values                                         |
+| **Piece-Square Tables** | ✅ Mid-game and end-game tables                                  |
+| **Game Phase**          | ✅ Tapered evaluation                                            |
+| **Pawn Structure**      | ✅ Isolated, doubled, passed, phalanx, supported pawns           |
+| **Pawn Hash Table**     | ✅ Dedicated pawn TT                                             |
+| **Mobility**            | ✅ Knight, Bishop, Rook, Queen mobility (Texel-tuned)            |
+| **King Safety**         | ✅ Shield, open files, safe checks, tropism (Texel-tuned)        |
+| **Threats**             | ✅ By minor/rook/king, hanging pieces (Texel-tuned)              |
+| **Lazy Evaluation**     | ✅ With configurable threshold                                   |
+| **Texel Tuning**        | ✅ 75 params tuned on 4.57M positions, 14 dead features removed  |
+| **NNUE**                | ❌ Not implemented (classical eval only — planned for v1.8+)     |
 
 ### Strengths
 - ✅ Very configurable search/eval via YAML (100+ parameters)
@@ -270,25 +296,25 @@ The `types/` directory contains well-designed value types:
 
 ### Suggestions
 
-1. **Consider NNUE evaluation** – Modern engines use efficiently updatable neural networks. This is a significant undertaking but would dramatically improve playing strength.
+1. **Consider NNUE evaluation** – Modern engines use efficiently updatable neural networks. This is a significant undertaking but would dramatically improve playing strength. **Status:** Planned for v1.8+ (see Enhancement Plan Phase 8).
 
-2. **Add multi-threaded search (Lazy SMP)** – `ThreadPool` exists but search appears single-threaded. Adding Lazy SMP with shared TT would improve strength on multi-core systems.
+2. **~~Add multi-threaded search (Lazy SMP)~~** – ✅ **IMPLEMENTED (v1.4)** — +119 ELO vs v1.3.
 
-3. **Implement Syzygy tablebase probing** – For endgame accuracy, Syzygy tablebases are invaluable. The Fathom library provides a clean C interface.
+3. **~~Implement Syzygy tablebase probing~~** – ✅ **IMPLEMENTED (v1.2)** — Fathom library, WDL/DTZ probing.
 
-4. **~~Add singular extensions~~** – ✅ **IMPLEMENTED (v1.2)** – When a move is clearly the best (by a margin), extend its search depth to avoid missing critical lines.
+4. **~~Add singular extensions~~** – ✅ **IMPLEMENTED (v1.2)** — +27 ELO.
 
-5. **Consider counter-move history** – Expand history heuristic to include piece-to-square counter-move history for better move ordering.
+5. **Consider continuation history** – Expand move ordering with 2-ply and 4-ply context-based history. **Status:** Planned (see Enhancement Plan Phase 4).
 
-6. **Add "capture-only" hash** – Some engines maintain a separate hash for quiescence to avoid polluting the main TT.
+6. **Consider capture history** – Separate history table for capture move ordering. **Status:** Planned (see Enhancement Plan Phase 4).
 
-7. **Tune parameters with SPSA/Texel** – The many configurable parameters could benefit from automated tuning. Consider adding tuning infrastructure.
+7. **~~Tune parameters with SPSA/Texel~~** – ✅ **IMPLEMENTED (v1.7)** — Texel tuning infrastructure, 75 eval params tuned, +60–78 ELO. SPSA for search params still planned.
 
-8. **~~Improve time management~~** – ✅ **IMPLEMENTED (v1.2)** – Best-move instability detection added. When the best move changes frequently across iterations, search time is extended (configurable via `INSTABILITY_EXTEND_FACTOR`). When the best move is stable for several consecutive iterations, time is reduced (via `INSTABILITY_STABLE_FACTOR`). Combines with existing eval volatility detection for comprehensive time management.
+8. **~~Improve time management~~** – ✅ **IMPLEMENTED (v1.2, v1.7)** — Best-move instability (v1.2), adaptive post-stop overhead measurement (v1.7).
 
-9. **Validate PEXT availability at runtime** – Currently PEXT is a compile-time requirement. Consider software fallback for non-BMI2 CPUs (with performance warning).
+9. **Validate PEXT availability at runtime** – Currently PEXT is a compile-time requirement. Consider software fallback for non-BMI2 CPUs. **Status:** Planned (see Enhancement Plan Phase 9).
 
-10. **Benchmark against established engines** – Set up regular matches against Stockfish or other engines to track relative strength improvements.
+10. **~~Benchmark against established engines~~** – ✅ **IMPLEMENTED (v1.1+)** — Arena framework with automated gauntlet matches.
 
 ---
 
@@ -296,11 +322,12 @@ The `types/` directory contains well-designed value types:
 
 | Metric                | Value                                           |
 |-----------------------|-------------------------------------------------|
-| **Source Files**      | ~50 `.cpp`/`.h` files in `src/`                 |
-| **Test Files**        | ~30 test files with comprehensive coverage      |
-| **Lines of Code**     | ~15,000-20,000 (estimated)                      |
+| **Source Files**      | ~60+ `.cpp`/`.h` files in `src/`                |
+| **Test Files**        | ~35+ test files with comprehensive coverage     |
+| **Lines of Code**     | ~20,000-25,000 (estimated)                      |
 | **Dependencies**      | 5 main (Boost, spdlog, yaml-cpp, GTest, GBench) |
 | **Config Parameters** | 100+ tunable via YAML                           |
+| **Cumulative ELO**    | ~+400-470 vs v1.1 baseline                      |
 
 ---
 
@@ -493,16 +520,20 @@ Future improvements are tracked in the v1.x roadmap below.
 | E3  | Singular extensions             | 🟢 2-3 days  | ✅ DONE | v1.2: +27 ELO contribution                                    |
 | E4  | Runtime PEXT fallback           | 🟡 3-5 days  | ⬜ TODO | CPUID + fallback path                                         |
 | E5  | Counter-move history            | 🟡 3-5 days  | ✅ DONE | v1.2: Piece-to-square history                                 |
-| E6  | NNUE evaluation                 | 🔴 4-8 weeks | ⬜ TODO | Major undertaking                                             |
-| E7  | Parameter tuning infrastructure | 🟡 1-2 weeks | ⬜ TODO | SPSA/Texel tuning                                             |
+| E6  | NNUE evaluation                 | 🔴 4-8 weeks | ⬜ TODO | Major undertaking — planned for v1.8+                         |
+| E7  | Parameter tuning infrastructure | 🟡 1-2 weeks | ✅ DONE | v1.7: Texel tuning, +60–78 ELO. SPSA still planned.           |
 | E8  | Best-move instability time mgmt | 🟢 2-3 days  | ✅ DONE | v1.2: Dynamic time allocation                                 |
 | E9  | Selective checks in quiescence  | 🟡 3-5 days  | ⬜ TODO | Search checking moves after capture phase to find short mates |
 | E10 | Check extensions                | 🟢 2-3 days  | ✅ DONE | v1.2: +30 ELO contribution                                    |
+| E11 | Eval enrichment                 | 🟡 2-3 weeks | ✅ DONE | v1.6: +81 ELO. Mobility, king safety, threats, pawn structure |
+| E12 | Texel tuning + eval cleanup     | 🟡 2-3 weeks | ✅ DONE | v1.7: +60–78 ELO. 14 dead features removed, +3.5% NPS         |
+| E13 | Adaptive time management        | 🟢 2-3 days  | ✅ DONE | v1.7: Dynamic post-stop overhead measurement                  |
+| E14 | Exe-relative path resolution    | 🟢 1-2 days  | ✅ DONE | v1.7: Config/book/log paths relative to executable            |
 
 ---
 
 *Review conducted: 2026-01-26*  
-*Last updated: 2026-03-10 (v1.5 Arena results: +103.7 ELO vs v1.4, +331 cumulative vs v1.1; Best Thread Selection validated)*
+*Last updated: 2026-03-31 (v1.7 Texel tuning complete: +60–78 ELO vs v1.6, ~+400–470 cumulative vs v1.1)*
 
 ---
 
@@ -520,4 +551,6 @@ Future improvements are tracked in the v1.x roadmap below.
 - **engine-interface.txt** - UCI protocol reference
 
 ### Planning & Roadmap
-- **V1_ENGINE_ENHANCEMENT_PLAN.md** - Detailed v1.x enhancement roadmap with phase-based implementation plans, detailed specifications, and success metrics
+- **V1_ENGINE_ENHANCEMENT_PLAN.md** — Detailed v1.x enhancement roadmap with phase-based plans (updated through v1.7)
+- **V1_ENGINE_STRENGTH_ROADMAP.md** — Strength development roadmap (v1.7 → v2.0)
+- **archive/PLAN_Texel_Tuning.md** — Texel tuning plan and algorithm details (v1.7, archived)

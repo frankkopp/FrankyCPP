@@ -1,8 +1,9 @@
 # FrankyCPP Texel Tuning — Phase Progress Tracker
 
-**Plan Document:** `docs/specs/PLAN_Texel_Tuning.md`  
+**Plan Document:** `docs/archive/PLAN_Texel_Tuning.md`  
 **Created:** 2026-03-22  
 **Last Updated:** 2026-03-31  
+**Status:** ✅ Complete  
 
 **Target Version:** v1.7  
 
@@ -22,7 +23,7 @@
 | 7     | Full production tuning + gauntlet         | ✅ Complete       | 2026-03-26 | 2026-03-28 |
 | 8     | Deactivate removal candidates + re-tune   | ✅ Complete       | 2026-03-29 | 2026-03-30 |
 | 9     | Full code cleanup of dead features        | ✅ Complete       | 2026-03-30 | 2026-03-31 |
-| 10    | Final validation + release                | 🔄 In Progress   | 2026-03-31 |            |
+| 10    | Final validation + release                | ✅ Complete       | 2026-03-31 | 2026-03-31 |
 
 ---
 
@@ -927,7 +928,7 @@ v1.6 reflects the eval simplification from removing dead features.
 | 10.3 | Update `config/eval.yaml` with final parameters                         | ✅ Complete    |
 | 10.4 | Update documentation (README, Texel Tuning docs)                        | ✅ Complete    |
 | 10.5 | Update this progress document with final status                         | ✅ Complete    |
-| 10.6 | Tag and release v1.7                                                    | ⬚ Not Started |
+| 10.6 | Tag and release v1.7                                                    | ✅ Complete    |
 
 **Notes:**
 
@@ -966,8 +967,11 @@ v1.6 reflects the eval simplification from removing dead features.
 
 - 10.5: This progress document updated with final status for all phases.
 
+- 10.6: v1.7.0 tagged and released. PR merged to master. Plan and progress documents
+  archived to `docs/archive/`.
+
 **Gate:** ✅ Measurable ELO improvement over v1.6 confirmed (+59.6 to +77.7 across gauntlets).
-All tests pass. Clean codebase. Documentation updated. Ready for 10.6 (tag and release).
+All tests pass. Clean codebase. Documentation updated. v1.7.0 released.
 
 ---
 ## Decisions Log

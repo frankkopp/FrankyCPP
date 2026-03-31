@@ -633,7 +633,7 @@ Prune moves with negative SEE at low depths in the main search (not just quiesce
 > **Decision (2026-03-22):** Texel tuning is the most promising next step for strength gains.
 > It optimizes all ~85 existing eval parameters simultaneously against labeled game data, adding
 > zero NPS cost. Moved to a dedicated spec document with full implementation plan.
-> See **`docs/specs/PLAN_Texel_Tuning.md`** for algorithm details, data pipeline, parameter
+> See **`docs/archive/PLAN_Texel_Tuning.md`** for algorithm details, data pipeline, parameter
 > selection, integration plan, and effort estimates (~3 weeks for Tier 1+2).
 
 ### Texel's Tuning Method
