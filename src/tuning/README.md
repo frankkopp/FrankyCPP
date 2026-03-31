@@ -133,9 +133,9 @@ See `docs/specs/PLAN_Texel_Tuning.md` for the full plan and
 | 4     | Position extractor                      | ✅ Complete    |
 | 5     | Mark tunable parameters                 | ✅ Complete    |
 | 6     | Optimizer implementation                | ✅ Complete    |
-| 7     | Full production tuning + gauntlet       | 🔲 Next       |
-| 8     | Deactivate removal candidates + re-tune | ⬚ Not Started |
-| 9     | Full code cleanup of dead features      | ⬚ Not Started |
-| 10    | Final validation + release              | ⬚ Not Started |
+| 7     | Full production tuning + gauntlet       | ✅ Complete    |
+| 8     | Deactivate removal candidates + re-tune | ✅ Complete    |
+| 9     | Full code cleanup of dead features      | ✅ Complete    |
+| 10    | Final validation + release              | ✅ Complete    |
 
-*Last updated: 2026-03-26*
+*Last updated: 2026-03-31*

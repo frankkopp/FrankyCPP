@@ -7,7 +7,7 @@ Modern C++20 UCI Chess Engine
 
 ## Version
 
-**v1.7.0** - (development)
+**v1.7.0** - Texel Tuning & Eval Cleanup (+60–78 ELO vs v1.6)
 
 **Previous versions:**
 - v1.6 - Evaluation Enrichment & Search Hardening (+81 ELO vs v1.5)

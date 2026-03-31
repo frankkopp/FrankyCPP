@@ -916,7 +916,7 @@ v1.6 reflects the eval simplification from removing dead features.
 
 ---
 
-## Phase 10: Final Validation + Release 🔄
+## Phase 10: Final Validation + Release ✅
 
 **Goal:** Final gauntlet after code cleanup, documentation, release v1.7.
 
@@ -924,9 +924,9 @@ v1.6 reflects the eval simplification from removing dead features.
 |------|-------------------------------------------------------------------------|---------------|
 | 10.1 | Gauntlet D: 500 games cleaned v1.7 vs Phase 8 v1.7 (expect identical)   | ✅ Complete    |
 | 10.2 | Gauntlet E: 100 games final v1.7 vs v1.6 (confirm overall improvement)  | ✅ Complete    |
-| 10.3 | Update `config/eval.yaml` with final parameters                         | ⬚ Not Started |
-| 10.4 | Update documentation (README, Texel Tuning docs)                        | ⬚ Not Started |
-| 10.5 | Update this progress document with final status                         | ⬚ Not Started |
+| 10.3 | Update `config/eval.yaml` with final parameters                         | ✅ Complete    |
+| 10.4 | Update documentation (README, Texel Tuning docs)                        | ✅ Complete    |
+| 10.5 | Update this progress document with final status                         | ✅ Complete    |
 | 10.6 | Tag and release v1.7                                                    | ⬚ Not Started |
 
 **Notes:**
@@ -955,7 +955,19 @@ v1.6 reflects the eval simplification from removing dead features.
     the ±30-40 confidence interval for 100 games ✅
   - No stalled connections. Improvement over v1.6 confirmed.
 
-**Gate:** Measurable ELO improvement over v1.6. All tests pass. Clean codebase.
+- 10.3: eval.yaml header updated to reflect final v1.7 state (Phase 9 cleanup).
+  All values remain commented out — EvalConfigData.h compiled-in defaults are the
+  single source of truth. REMOVED markers document Phase 9 deletions.
+
+- 10.4: Documentation updated:
+  - README.md: v1.7 version description ("Texel Tuning & Eval Cleanup, +60–78 ELO vs v1.6")
+  - src/tuning/README.md: all phases marked ✅ Complete
+  - PLAN_Texel_Tuning.md: status updated to ✅ Complete
+
+- 10.5: This progress document updated with final status for all phases.
+
+**Gate:** ✅ Measurable ELO improvement over v1.6 confirmed (+59.6 to +77.7 across gauntlets).
+All tests pass. Clean codebase. Documentation updated. Ready for 10.6 (tag and release).
 
 ---
 ## Decisions Log

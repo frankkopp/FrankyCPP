@@ -2,8 +2,8 @@
 
 **Document Version:** 1.4  
 **Created:** 2026-03-21  
-**Last Updated:** 2026-03-28  
-**Status:** 🚧 In Progress (Phases 0–7 ✅, Phase 8 next — deactivate removal candidates + re-tune)  
+**Last Updated:** 2026-03-31  
+**Status:** ✅ Complete (Phases 0–10 all done)  
 **Target:** FrankyCPP v1.7  
 **Priority:** High (Phase 5 of Eval & Strength Improvement Plan)  
 **Predecessor:** `PLAN_Eval_and_Strength_Improvement.md`

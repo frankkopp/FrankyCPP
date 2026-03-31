@@ -1,10 +1,14 @@
 # FrankyCPP Evaluation Configuration (flat keys)
 # Mirrors defaults in src/config/EvalConfigData.h
 #
-# v1.7 Texel-tuned defaults — Phase 8 retune on 4.57M selfplay positions
-# Defaults in EvalConfigData.h now match these values (synchronized 2026-03-29).
+# v1.7 Texel-tuned defaults — Phase 8 retune on 4.57M selfplay positions,
+# Phase 9 dead feature removal (14 parameters removed/pinned).
+# Defaults in EvalConfigData.h are the single source of truth.
 # All values below are commented out because they match the compiled-in defaults.
 # Uncomment a value only to override the default for testing or experimentation.
+#
+# Parameters marked REMOVED were deleted in Phase 9 after Texel tuning
+# zeroed or sign-flipped them across all datasets (confirmed by gauntlet).
 
 # Debugging — this is the only value that differs from the compiled-in default ("fallback")
 EVAL_CONFIG_SOURCE: "yaml-file"
