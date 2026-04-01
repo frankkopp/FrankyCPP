@@ -246,6 +246,75 @@ TEST_F(UCITest, positionTest) {
   }
 }
 
+TEST_F(UCITest, positionFenErrorTest) {
+  ostringstream os;
+
+  // 1. Invalid FEN string — error reported, position unchanged (start pos)
+  {
+    const string command = "position fen INVALID";
+    LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
+    istringstream is(command);
+    UciHandler uciHandler(&is, &os);
+    uciHandler.loop();
+    const string result = os.str();
+    LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE: {}", result);
+    EXPECT_TRUE(result.find("info string") != string::npos);
+    EXPECT_TRUE(result.find("Invalid FEN") != string::npos);
+    // Position should still be the default start position
+    EXPECT_EQ(START_POSITION_FEN, uciHandler.pPosition->strFen());
+  }
+
+  os.str("");
+  os.clear();
+
+  // 2. Empty FEN — "position fen" with no FEN tokens
+  {
+    const string command = "position fen";
+    LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
+    istringstream is(command);
+    UciHandler uciHandler(&is, &os);
+    uciHandler.loop();
+    const string result = os.str();
+    LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE: {}", result);
+    EXPECT_TRUE(result.find("info string") != string::npos);
+    EXPECT_TRUE(result.find("Invalid FEN") != string::npos);
+    EXPECT_EQ(START_POSITION_FEN, uciHandler.pPosition->strFen());
+  }
+
+  os.str("");
+  os.clear();
+
+  // 3. Valid FEN — no error, position set correctly
+  {
+    const string command = "position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
+    istringstream is(command);
+    UciHandler uciHandler(&is, &os);
+    uciHandler.loop();
+    const string result = os.str();
+    LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE: {}", result);
+    EXPECT_TRUE(result.find("Invalid FEN") == string::npos);
+    EXPECT_EQ(START_POSITION_FEN, uciHandler.pPosition->strFen());
+  }
+
+  os.str("");
+  os.clear();
+
+  // 4. Invalid FEN followed by moves — error on FEN, moves not applied, position unchanged
+  {
+    const string command = "position fen INVALID moves e2e4";
+    LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
+    istringstream is(command);
+    UciHandler uciHandler(&is, &os);
+    uciHandler.loop();
+    const string result = os.str();
+    LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE: {}", result);
+    EXPECT_TRUE(result.find("info string") != string::npos);
+    EXPECT_TRUE(result.find("Invalid FEN") != string::npos);
+    EXPECT_EQ(START_POSITION_FEN, uciHandler.pPosition->strFen());
+  }
+}
+
 TEST_F(UCITest, goPerft) {
   ostringstream os;
   int endDepth = 4;

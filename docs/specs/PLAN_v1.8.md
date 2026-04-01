@@ -23,18 +23,18 @@
 Small, low-risk items that can be done in hours, not days. Good candidates for warming up
 or for filling gaps between larger features.
 
-| #    | Item                                        | Effort     | Category   | Description                                                                                                                                              |
-|------|---------------------------------------------|------------|------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| QW1  | ✅ **Remove dead `USE_SINGULAR_TT_BOUND`**   | 🟢 15 min  | Cleanup    | Removed config option, registry entry, conditional in Search.cpp, orphaned stat tracking, and `ttBound` variable. Bound check investigation added as A9. |
-| QW2  | ✅ **Remove dead `USE_IID` / `IID_*` config**  | 🟢 30 min  | Cleanup    | Removed IID config fields, 3 registry entries, IID code block in Search.cpp, mutual-exclusion check, IID stats, and stale IID comments/YAML. |
-| QW3  | **Add FEN error handling in `position`**    | 🟢 30 min  | Robustness | `UciHandler::positionCommand()` has a TODO for invalid FEN. Return `info string` error instead of silently using broken state.                           |
-| QW4  | **Smarter book move selection**             | 🟢 1–2 hrs | Strength   | `Search.cpp:287` — currently picks random book move. Weight by frequency/score from book data. Small but free improvement.                               |
-| QW5  | **Add `ucinewgame` state audit**            | 🟢 30 min  | Robustness | `UciHandler.cpp:157` — TODO to check if more state needs clearing. Audit & document what is/isn't cleared; add missing resets if any.                    |
-| QW6  | **Evasion move generation tests**           | 🟢 1–2 hrs | Testing    | `MoveGeneratorTest.cpp:669` — two `TODO real tests` markers. Tests exist but have no assertions. Add EXPECT checks for move counts.                      |
-| QW7  | **Sort value / history ordering tests**     | 🟢 1–2 hrs | Testing    | `MoveGeneratorTest.cpp:760` — sort test has `TODO real tests`. Add assertions that PV move is first, killers before quiet, etc.                          |
-| QW8  | **History & counter-move sort value tests** | 🟢 1–2 hrs | Testing    | `MoveGenerator.cpp:826,833` — two `TODO Testing` markers in `updateSortValues()`. Add targeted unit tests for history/counter ordering.                  |
-| QW9  | **TestSuite config reset fix**              | 🟢 30 min  | Robustness | `TestSuite.cpp:150` — FIXME about hardcoded config reset. Allow test suite to run with custom configs by removing the forced reset.                      |
-| QW10 | **Bench hash for CI regression gate**       | 🟢 1 hr    | CI         | Same as E3. Record deterministic bench hash; assert in CI. Catches accidental search changes. Near-zero maintenance.                                     |
+| #    | Item                                         | Effort     | Category   | Description                                                                                                                                              |
+|------|----------------------------------------------|------------|------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| QW1  | ✅ **Remove dead `USE_SINGULAR_TT_BOUND`**    | 🟢 15 min  | Cleanup    | Removed config option, registry entry, conditional in Search.cpp, orphaned stat tracking, and `ttBound` variable. Bound check investigation added as A9. |
+| QW2  | ✅ **Remove dead `USE_IID` / `IID_*` config** | 🟢 30 min  | Cleanup    | Removed IID config fields, 3 registry entries, IID code block in Search.cpp, mutual-exclusion check, IID stats, and stale IID comments/YAML.             |
+| QW3  | ✅ **Add FEN error handling in `position`**   | 🟢 30 min  | Robustness | Wrapped `Position` construction in try-catch; `uciError()` reports invalid FEN via `info string`, previous position preserved. Tests added.              |
+| QW4  | **Smarter book move selection**              | 🟢 1–2 hrs | Strength   | `Search.cpp:287` — currently picks random book move. Weight by frequency/score from book data. Small but free improvement.                               |
+| QW5  | **Add `ucinewgame` state audit**             | 🟢 30 min  | Robustness | `UciHandler.cpp:157` — TODO to check if more state needs clearing. Audit & document what is/isn't cleared; add missing resets if any.                    |
+| QW6  | **Evasion move generation tests**            | 🟢 1–2 hrs | Testing    | `MoveGeneratorTest.cpp:669` — two `TODO real tests` markers. Tests exist but have no assertions. Add EXPECT checks for move counts.                      |
+| QW7  | **Sort value / history ordering tests**      | 🟢 1–2 hrs | Testing    | `MoveGeneratorTest.cpp:760` — sort test has `TODO real tests`. Add assertions that PV move is first, killers before quiet, etc.                          |
+| QW8  | **History & counter-move sort value tests**  | 🟢 1–2 hrs | Testing    | `MoveGenerator.cpp:826,833` — two `TODO Testing` markers in `updateSortValues()`. Add targeted unit tests for history/counter ordering.                  |
+| QW9  | **TestSuite config reset fix**               | 🟢 30 min  | Robustness | `TestSuite.cpp:150` — FIXME about hardcoded config reset. Allow test suite to run with custom configs by removing the forced reset.                      |
+| QW10 | **Bench hash for CI regression gate**        | 🟢 1 hr    | CI         | Same as E3. Record deterministic bench hash; assert in CI. Catches accidental search changes. Near-zero maintenance.                                     |
 
 ---
 
@@ -199,9 +199,9 @@ Codebase scan as of 2026-04-01. Each item evaluated for v1.8 relevance.
 | T1  | `TT.h:65`                    | Consider removing XOR key verification (Stockfish showed it may harm) | 🟡 Medium | **Defer** — needs strength testing; risky SMP change. Profile first via SPSA (Phase 3).                    |
 | T2  | `SearchConfigData.h:195`     | Remove `USE_SINGULAR_TT_BOUND` option (permanently `false`)           | ✅ Done    | **QW1 complete** — Option, registry entry, Search.cpp conditional, stat tracking, ttBound var all removed. |
 | T3  | `UciHandler.cpp:157`         | Check if `ucinewgame` clears enough state                             | 🟢 Easy   | **→ QW5** — Audit + fix. Prevents subtle bugs.                                                             |
-| T4  | `UciHandler.cpp:181`         | Error handling when FEN is invalid                                    | 🟢 Easy   | **→ QW3** — Robustness fix. Sends `info string` error.                                                     |
+| T4  | `UciHandler.cpp:181`         | Error handling when FEN is invalid                                    | ✅ Done    | **QW3 complete** — try-catch around `Position` construction; `uciError()` reports, previous position preserved. Tests added.  |
 | T5  | `Search.cpp:287`             | Select book move by score/variation instead of random                 | 🟡 Medium | **→ QW4** — Small strength gain, no downside.                                                              |
-| T6  | `Search.cpp:501`             | Remove IID/IIR mutual-exclusion check after removing IID              | ✅ Done   | **QW2 complete** — IID code, config, stats, mutual-exclusion check, and stale comments all removed.        |
+| T6  | `Search.cpp:501`             | Remove IID/IIR mutual-exclusion check after removing IID              | ✅ Done    | **QW2 complete** — IID code, config, stats, mutual-exclusion check, and stale comments all removed.        |
 | T7  | `Search.cpp:1358`            | Test RFP improving margin with different values                       | ✅ Done    | **QW1 side-effect** — Stale TODO comment removed. Tuning folded into A4 (SPSA).                            |
 | T8  | `Search.cpp:1694`            | Test FP improving margin with different values                        | 🟡 Medium | **→ A4 (SPSA)** — Fold into search param tuning.                                                           |
 | T9  | `MoveGenerator.cpp:789`      | Consider using non-stable sort                                        | ✅ Stale   | **Already resolved** — `moveSort` is `std::ranges::sort` (unstable). Remove TODO comment.                  |

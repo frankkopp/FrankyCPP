@@ -27,9 +27,9 @@
 #include "chesscore/Position.h"
 #include "common/Logging.h"
 #include "config/ConfigManager.h"
-#include "types/types.h"
 #include "version.h"
 
+#include <stdexcept>
 #include <memory>
 #include <thread>
 
@@ -178,10 +178,14 @@ void UciHandler::positionCommand(std::istringstream& inStream) {
     }
   }
 
-  // TODO error handling when fen is invalid
-
+  // Validate and apply the FEN — on error, report via UCI and keep the previous position
   LOG__INFO(Logger::get().UCIHAND_LOG, "Set position to {}", fen);
-  pPosition = std::make_unique<Position>(fen);
+  try {
+    pPosition = std::make_unique<Position>(fen);
+  } catch (const std::invalid_argument& e) {
+    uciError(std::format("Invalid FEN: {}", e.what()));
+    return;
+  }
 
   // if "moves" are given, read all and execute them to position
   if (token == "moves") {

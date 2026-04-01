@@ -32,6 +32,7 @@
 
 // Forward-declare test classes at global scope so FRIEND_TEST inside namespace engine works
 FRIEND_TEST_FWD_DECL(UCITest, positionTest);
+FRIEND_TEST_FWD_DECL(UCITest, positionFenErrorTest);
 FRIEND_TEST_FWD_DECL(UCITest, goCommand);
 FRIEND_TEST_FWD_DECL(UCITest, goInfinite);
 FRIEND_TEST_FWD_DECL(UCITest, goPonder);
@@ -95,6 +96,7 @@ namespace engine {
 
     void positionCommand(std::istringstream& inStream);
     FRIEND_TEST_NS(UCITest, positionTest);
+    FRIEND_TEST_NS(UCITest, positionFenErrorTest);
 
     void goCommand(std::istringstream& inStream) const;
     bool readSearchLimits(std::istringstream& inStream, SearchLimits& searchLimits) const;
