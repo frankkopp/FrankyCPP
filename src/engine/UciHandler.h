@@ -31,6 +31,7 @@
 #include "types/staticmovelist.h"
 
 // Forward-declare test classes at global scope so FRIEND_TEST inside namespace engine works
+FRIEND_TEST_FWD_DECL(UCITest, uciNewGameResetsState);
 FRIEND_TEST_FWD_DECL(UCITest, positionTest);
 FRIEND_TEST_FWD_DECL(UCITest, positionFenErrorTest);
 FRIEND_TEST_FWD_DECL(UCITest, goCommand);
@@ -92,7 +93,8 @@ namespace engine {
     void uciCommand() const;
     void isReadyCommand() const;
     void setOptionCommand(std::istringstream& inStream);
-    void uciNewGameCommand() const;
+    void uciNewGameCommand();
+    FRIEND_TEST_NS(UCITest, uciNewGameResetsState);
 
     void positionCommand(std::istringstream& inStream);
     FRIEND_TEST_NS(UCITest, positionTest);

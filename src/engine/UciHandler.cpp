@@ -154,10 +154,14 @@ void UciHandler::setOptionCommand(std::istringstream& inStream) {
   LOG__INFO(Logger::get().UCIHAND_LOG, "Set option: {} = {}", name, value);
 }
 
-// TODO: check if we need to clear more state here!
-void UciHandler::uciNewGameCommand() const {
+/// Resets all engine state for a new game (UCI `ucinewgame` command).
+/// - Position reset to startpos (per UCI convention)
+/// - Search state: TT, PawnTT, history, statistics, PV, TB root info,
+///   last search result, dynamic overhead estimate (see Search::newGame())
+void UciHandler::uciNewGameCommand() {
   LOG__INFO(Logger::get().UCIHAND_LOG, "New Game");
-  pSearch->newGame(); // Clears TT, History, and recreates Evaluator (clears PawnTT)
+  pPosition = std::make_unique<Position>(); // reset to startpos
+  pSearch->newGame();
 }
 
 void UciHandler::positionCommand(std::istringstream& inStream) {
@@ -522,7 +526,8 @@ void UciHandler::helpCommand() const {
   out("  Sets an engine option. Use 'uci' to list options and their types/defaults.");
 
   out("ucinewgame");
-  out("  Starts a new game. Stops any search and clears transposition table.");
+  out("  Starts a new game. Resets position to startpos, clears TT, pawn cache,");
+  out("  history heuristics, search statistics, and dynamic time overhead estimate.");
 
   out("position [startpos | fen <FEN>] [moves <m1> <m2> ...]");
   out("  Sets the current position. 'startpos' for initial setup or 'fen' for custom.");

@@ -315,6 +315,60 @@ TEST_F(UCITest, positionFenErrorTest) {
   }
 }
 
+//=============================================================================
+// Test: ucinewgame resets all engine state
+// Verifies:
+//   1. Position is reset to startpos after a custom position was set
+//   2. Search result is cleared (hasResult() == false)
+//   3. Engine still functions after ucinewgame (can search successfully)
+//=============================================================================
+TEST_F(UCITest, uciNewGameResetsState) {
+  ostringstream os;
+
+  // Set a non-startpos position and run a short search to populate state
+  const string setup = "position fen r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -\n"
+                       "go depth 4";
+  LOG__INFO(Logger::get().TEST_LOG, "SETUP: {}", setup);
+  istringstream isSetup(setup);
+  UciHandler uciHandler(&isSetup, &os);
+  uciHandler.loop();
+
+  // Wait for search to finish
+  uciHandler.getSearchPtr()->waitWhileSearching();
+  ASSERT_TRUE(uciHandler.getSearchPtr()->hasResult()) << "Search must produce a result";
+  EXPECT_NE(START_POSITION_FEN, uciHandler.pPosition->strFen()) << "Position should be Kiwi Pete, not startpos";
+
+  // Now send ucinewgame
+  os.str("");
+  os.clear();
+  const string newGameCmd = "ucinewgame\nisready";
+  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", newGameCmd);
+  istringstream isNewGame(newGameCmd);
+  uciHandler.loop(&isNewGame);
+
+  // 1. Position must be reset to startpos
+  EXPECT_EQ(START_POSITION_FEN, uciHandler.pPosition->strFen())
+    << "ucinewgame must reset position to startpos";
+
+  // 2. Search result must be cleared
+  EXPECT_FALSE(uciHandler.getSearchPtr()->hasResult())
+    << "ucinewgame must clear the last search result";
+
+  // 3. Verify engine still works — run another short search
+  os.str("");
+  os.clear();
+  const string goCmd = "go depth 3";
+  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", goCmd);
+  istringstream isGo(goCmd);
+  uciHandler.loop(&isGo);
+  uciHandler.getSearchPtr()->waitWhileSearching();
+
+  EXPECT_TRUE(uciHandler.getSearchPtr()->hasResult())
+    << "Engine must still produce a result after ucinewgame";
+  EXPECT_EQ(START_POSITION_FEN, uciHandler.pPosition->strFen())
+    << "Position should still be startpos (no position command sent)";
+}
+
 TEST_F(UCITest, goPerft) {
   ostringstream os;
   int endDepth = 4;

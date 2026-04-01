@@ -86,6 +86,14 @@ void Search::newGame() {
   bestMoveStability.reset();
   tbRoot.reset();
   hadBookMove = false;
+
+  // Clear stale result from previous game
+  lastSearchResult.reset();
+  resultReady.store(false, std::memory_order_relaxed);
+
+  // Reset dynamic overhead estimate — different games may have different time controls,
+  // so the learned EMA from the previous game is not transferable.
+  measuredPostStopOverheadMs = SearchConfig.MOVE_OVERHEAD_MS;
 }
 
 void Search::isReady() {

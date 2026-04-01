@@ -291,8 +291,10 @@ namespace engine {
     // ///////////////////////////////////////////
     // PUBLIC
 
-    /// Stops any running search and resets state for a new game.
-    /// Clears caches and history heuristics.
+    /// Stops any running search and resets all state for a new game.
+    /// Clears: TT, PawnTT, all SearchThreadData (history, statistics, PV, plyStack),
+    /// best-move stability tracker, TB root info, book move flag, last search result,
+    /// result-ready flag, and dynamic post-stop overhead estimate.
     void newGame();
 
     /// Signals readiness to the UCI interface after initialization.
