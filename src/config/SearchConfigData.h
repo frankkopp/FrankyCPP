@@ -54,6 +54,7 @@ namespace config {
     CONFIG_ESSENTIAL bool USE_BOOK         = true;
     CONFIG_ESSENTIAL std::string BOOK_PATH = "./books/book.txt";
     CONFIG_ESSENTIAL std::string BOOK_TYPE = "SIMPLE"; // OpeningBook::BookFormat as string
+    CONFIG_ESSENTIAL int BOOK_VARIETY      = 30;       // 0 = always best frequency, 100 = pure random
 
     // pondering
     CONFIG_ESSENTIAL bool USE_PONDER = true;

@@ -44,6 +44,7 @@ FRIEND_TEST_FWD_DECL(OpeningBookTest, readGamesPgn);
 FRIEND_TEST_FWD_DECL(OpeningBookTest, readGamesPgnLarge);
 FRIEND_TEST_FWD_DECL(OpeningBookTest, readGamesPgnXLLarge);
 FRIEND_TEST_FWD_DECL(OpeningBookTest, pgnCleanUpTest);
+FRIEND_TEST_FWD_DECL(OpeningBookTest, getBookMoveVarietyZero);
 
 namespace book {
   using namespace chess;
@@ -157,6 +158,17 @@ namespace book {
      */
     Move getRandomMove(ZobristKey zobrist) const;
 
+    /**
+     * Returns a book move for the given position using frequency-weighted selection.
+     * Moves leading to positions seen more often in the book source are preferred.
+     * The variety parameter controls randomness: 0 = always pick highest frequency,
+     * 100 = pure uniform random (like getRandomMove).
+     * @param zobrist  Zobrist key of the position
+     * @param variety  Randomness level (0–100, default 30)
+     * @return selected book move, or MOVE_NONE if position not in book
+     */
+    Move getBookMove(ZobristKey zobrist, int variety = 30) const;
+
     // Converts a string to a BookFormat enum value. Defaults to SIMPLE
     static BookFormat fromString(const std::string& str) {
       if (str == "SAN") {
@@ -229,6 +241,7 @@ namespace book {
     FRIEND_TEST_NS(OpeningBookTest, readGamesPgnLarge);
     FRIEND_TEST_NS(OpeningBookTest, readGamesPgnXLLarge);
     FRIEND_TEST_NS(OpeningBookTest, pgnCleanUpTest);
+    FRIEND_TEST_NS(OpeningBookTest, getBookMoveVarietyZero);
 
     // returns if a cache is used during initialization
     constexpr bool useCache() const { return _useCache; }

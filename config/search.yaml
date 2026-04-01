@@ -33,6 +33,8 @@ _YAML_SMOKE_TEST_MARKER: true
 # BOOK_PATH: "./books/book.txt"
 # Book format (SIMPLE/PGN/…) as string for readability; parsed in code
 # BOOK_TYPE: "SIMPLE"  # OpeningBook::BookFormat::SIMPLE
+# Book move randomness (0 = always best frequency, 100 = pure random)
+# BOOK_VARIETY: 30
 
 # Enable thinking during opponent time (pondering)
 # USE_PONDER: true

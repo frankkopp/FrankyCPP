@@ -284,9 +284,7 @@ void Search::run() {
   // check for opening book move when we have a time-controlled game
   Move bookMove = MOVE_NONE;
   if (book && SearchConfig.USE_BOOK && searchLimits.timeControl) {
-    // TODO: instead of a random book move we could select a book move based on
-    //  some score and some variation (randomness)
-    bookMove = book->getRandomMove(position.getZobristKey());
+    bookMove = book->getBookMove(position.getZobristKey(), SearchConfig.BOOK_VARIETY);
     LOG__DEBUG(Logger::get().SEARCH_LOG, "Opening Book: Choosing book move {}", bookMove.str());
   }
   else { LOG__INFO(Logger::get().SEARCH_LOG, "Opening Book: Not using book."); }

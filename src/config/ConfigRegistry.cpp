@@ -51,14 +51,14 @@ ConfigRegistry::ConfigRegistry() {
 #ifdef _MSC_VER
 // Windows MSVC builds
 #ifdef _DEBUG
-  static_assert(sizeof(SearchConfigData) == 632,
+  static_assert(sizeof(SearchConfigData) == 640,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 584,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
-  static_assert(sizeof(SearchConfigData) == 600,
+  static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 576,
@@ -69,7 +69,7 @@ ConfigRegistry::ConfigRegistry() {
 // Linux GCC/Clang builds (including WSL)
 #ifdef NDEBUG
   // Release build
-  static_assert(sizeof(SearchConfigData) == 600,
+  static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 576,
@@ -77,7 +77,7 @@ ConfigRegistry::ConfigRegistry() {
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
   // Debug build
-  static_assert(sizeof(SearchConfigData) == 600,
+  static_assert(sizeof(SearchConfigData) == 608,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 600,
@@ -283,6 +283,20 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .exposure = {.uci = true, .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.BOOK_TYPE; }),
     .setter = SEARCH_CONFIG_SETTER(BOOK_TYPE, parseString)
+  });
+
+  definitions_.push_back({
+    .name = "BOOK_VARIETY",
+    .uciName = "OwnBook Variety",
+    .description = "Book move randomness (0 = always best frequency, 100 = pure random)",
+    .valueType = Int,
+    .domain = General,
+    .defaultValue = configToString(defaultSearch.BOOK_VARIETY),
+    .minValue = 0,
+    .maxValue = 100,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.BOOK_VARIETY; }),
+    .setter = SEARCH_CONFIG_SETTER(BOOK_VARIETY, parseInt)
   });
 
   definitions_.push_back({
