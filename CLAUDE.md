@@ -159,6 +159,7 @@ public:
 - **Implementation file order** must mirror header declaration order
 - Class layout: static constants → member fields → public methods → private methods → getters/setters
 - **Commenting/documenting style:** Match the existing style in the codebase. See `src/engine/Search.h` as a reference example — header files use a banner block (`//===...`) with a high-level overview of the component (purpose, algorithm, key methods, usage), followed by `///` Doxygen-style comments on individual declarations with `@param`/`@return` tags. Study nearby files before adding new comments to stay consistent.
+- use modern C++20 features where appropriate (e.g., `std::ranges`, `std::optional`, `std::variant`, `std::span`, structured bindings, `if constexpr`, etc.) but maintain readability and avoid overcomplication.
 
 ## Adding Source Files
 
