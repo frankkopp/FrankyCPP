@@ -158,7 +158,6 @@ static void applyExperimentalConfig() {
   s.USE_THREAT_EXT        = true;
   s.USE_EXT_ADD_DEPTH     = true;
   s.USE_SINGULAR_EXT      = true;
-  s.USE_SINGULAR_TT_BOUND = true;
 
   // Best-move instability time management (disable for fixed-depth tests)
   s.USE_BESTMOVE_INSTABILITY = false;

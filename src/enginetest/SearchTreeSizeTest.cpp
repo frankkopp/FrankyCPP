@@ -124,7 +124,6 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   s.USE_THREAT_EXT        = false;
   s.USE_EXT_ADD_DEPTH     = false;
   s.USE_SINGULAR_EXT      = false;
-  s.USE_SINGULAR_TT_BOUND = false;
 
   // Best-move instability time management (disable for fixed-depth tests)
   s.USE_BESTMOVE_INSTABILITY = false;
@@ -399,13 +398,10 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
 
   // 10.3 Singular Extension: Extend when one move is clearly best
   CONFIG_OVERRIDE(s.USE_SINGULAR_EXT = true;);
-  CONFIG_OVERRIDE(s.USE_SINGULAR_TT_BOUND = false;); // Don't require BETA/EXACT (too restrictive)
   CONFIG_OVERRIDE(s.SINGULAR_MARGIN = 64;);
   CONFIG_OVERRIDE(s.SINGULAR_MIN_DEPTH = 8;); // Lowered from 8 to trigger more often
   CONFIG_OVERRIDE(s.SINGULAR_REDUCTION = 4;);
   // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Sing NoTTBound"));
-  // CONFIG_OVERRIDE(s.USE_SINGULAR_TT_BOUND = true;);  // Don't require BETA/EXACT (too restrictive)
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "Ext Sing TTBound"));
 
   // 10.4 Threat Extension: Extend on threat detection (experimental)
   CONFIG_OVERRIDE(s.USE_THREAT_EXT = true;);

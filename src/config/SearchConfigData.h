@@ -191,9 +191,6 @@ namespace config {
 
     // singular extensions
     CONFIG_CONST bool USE_SINGULAR_EXT = true;
-    // Require BETA/EXACT TT bound - DISABLED: filters 99.98% of candidates, verification search is sufficient
-    // TODO: Consider removing this option entirely after strength testing
-    CONFIG_CONST bool USE_SINGULAR_TT_BOUND = false;
     CONFIG_CONST int SINGULAR_MARGIN        = 64; // centipawns below TT value to consider singular
     CONFIG_CONST int SINGULAR_MIN_DEPTH     = 8;  // minimum depth to attempt singular extension
     CONFIG_CONST int SINGULAR_REDUCTION     = 4;  // depth reduction for verification search

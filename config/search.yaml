@@ -244,10 +244,6 @@ _YAML_SMOKE_TEST_MARKER: true
 # Singular Extensions
 # When a TT move is significantly better than all alternatives, extend its search
 # USE_SINGULAR_EXT: true
-# Require BETA/EXACT TT bound for singular extension
-# Testing shows this filters 99.98% of candidates - disabled because verification search is sufficient
-# TODO: Consider removing this option entirely if strength testing confirms no value
-# USE_SINGULAR_TT_BOUND: false
 # Margin (centipawns) below TT value - if no other move reaches (ttValue - margin), move is singular
 # SINGULAR_MARGIN: 64
 # Minimum depth (plies) to attempt singular extension verification

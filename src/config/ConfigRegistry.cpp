@@ -1441,18 +1441,6 @@ void ConfigRegistry::initializeSearchDefinitions() {
   });
 
   definitions_.push_back({
-    .name = "USE_SINGULAR_TT_BOUND",
-    .uciName = "Singular TT Bound",
-    .description = "Require BETA/EXACT TT bound for singular (too restrictive in practice)",
-    .valueType = Bool,
-    .domain = Search,
-    .defaultValue = configToString(defaultSearch.USE_SINGULAR_TT_BOUND),
-    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_SINGULAR_TT_BOUND), .yaml = true, .display = true},
-    .getter = searchGetter([](const auto& s){ return s.USE_SINGULAR_TT_BOUND; }),
-    .setter = SEARCH_CONFIG_SETTER(USE_SINGULAR_TT_BOUND, parseBool)
-  });
-
-  definitions_.push_back({
     .name = "SINGULAR_MARGIN",
     .uciName = "Singular Margin",
     .description = "Centipawns below TT value to consider singular",

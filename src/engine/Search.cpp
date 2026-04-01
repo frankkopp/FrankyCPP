@@ -1151,7 +1151,6 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // Variables for singular extension
   Value ttValue     = VALUE_NONE;
   Depth ttDepth     = DEPTH_NONE;
-  ValueType ttBound = ALPHA; // TT entry's bound type (for singular extension)
 
   // TT Lookup (before TB probe to avoid redundant TB probes for cached results)
   // Results of searches are stored in the TT to be used to
@@ -1178,7 +1177,6 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       }
       ttValue = valueFromTt(ttEntry->value, ply);
       ttDepth = static_cast<Depth>(ttEntry->depth);
-      ttBound = ttEntry->type; // Capture bound type for singular extension
 
       // Track hit quality by depth (sufficient depth for cutoff vs move-only)
       if (ttDepth >= depth) { STAT_INC(thread().statistics.ttHitSufficientDepth); }
@@ -1355,7 +1353,6 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     // Increase margin when not improving → prune less aggressively (Stockfish-style)
     // Rationale: "not improving" means eval may be unreliable, so search more carefully
     if (SearchConfig.USE_RFP_IMPROVING && !improving) {
-      // TODO: Test this with different values
       margin += Value{SearchConfig.RFP_IMPROVING_MARGIN};
     }
     if (staticEval - margin >= beta) {
@@ -1614,40 +1611,30 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
           && ttDepth >= depth - 3                             // TT entry was from similar or deeper search
           && std::abs(ttValue) < VALUE_CHECKMATE_THRESHOLD) { // not a mate score
 
-        // Track ALPHA-bound entries for statistics
-        const bool isLowerBound = (ttBound == BETA || ttBound == EXACT);
-        if (!isLowerBound) {
-          STAT_INC(thread().statistics.singularFilteredByBound);
-        }
+        // Reduced beta for the verification search
+        const Value singularBeta = ttValue - Value{SearchConfig.SINGULAR_MARGIN};
 
-        // Optional: Require BETA/EXACT bound (theory says yes, practice says too restrictive)
-        if (isLowerBound || !SearchConfig.USE_SINGULAR_TT_BOUND) {
-          // Reduced beta for the verification search
-          const Value singularBeta = ttValue - Value{SearchConfig.SINGULAR_MARGIN};
+        // Reduced depth for the verification search
+        Depth singularDepth = (depth - SearchConfig.SINGULAR_REDUCTION) / 2;
+        if (singularDepth < 1) { singularDepth = DEPTH_ONE; }
 
-          // Reduced depth for the verification search
-          Depth singularDepth = (depth - SearchConfig.SINGULAR_REDUCTION) / 2;
-          if (singularDepth < 1) { singularDepth = DEPTH_ONE; }
+        // Set the excluded move for this ply so the verification search skips the TT move
+        info.excludedMove = ttMove;
 
-          // Set the excluded move for this ply so the verification search skips the TT move
-          info.excludedMove = ttMove;
+        STAT_INC(thread().statistics.singularSearches);
 
-          STAT_INC(thread().statistics.singularSearches);
+        // Do a null-window search to see if any other move can reach singularBeta
+        // Uses mgSingular automatically because excludedMove is set
+        // Singular verification is a CUT node search (looking for fail-high)
+        const Value singularValue = search(p, singularDepth, ply, singularBeta - 1, singularBeta, CutNode, No_Null_Move);
 
-          // Do a null-window search to see if any other move can reach singularBeta
-          // Uses mgSingular automatically because excludedMove is set
-          // Singular verification is a CUT node search (looking for fail-high)
-          const Value singularValue = search(p, singularDepth, ply, singularBeta - 1, singularBeta, CutNode, No_Null_Move);
+        // Clear the excluded move
+        info.excludedMove = MOVE_NONE;
 
-          // Clear the excluded move
-          info.excludedMove = MOVE_NONE;
-
-
-          // If no other move reaches singularBeta, the TT move is singular - extend it
-          if (singularValue < singularBeta) {
-            STAT_INC(thread().statistics.singularExtension);
-            extension = DEPTH_ONE;
-          }
+        // If no other move reaches singularBeta, the TT move is singular - extend it
+        if (singularValue < singularBeta) {
+          STAT_INC(thread().statistics.singularExtension);
+          extension = DEPTH_ONE;
         }
       }
 
@@ -3403,7 +3390,6 @@ std::string Search::formatDetailedStats(
   os << "Check Ext      : " << stats.checkExtension << "\n";
   os << "Threat Ext     : " << stats.threatExtension << "\n";
   os << "Singular Srch  : " << stats.singularSearches << "\n";
-  os << "Singular Filt  : " << stats.singularFilteredByBound << "\n";
   os << "Singular Ext   : " << stats.singularExtension << "\n";
 
   os << "\n------------------- TT Stats --------------------------\n";
