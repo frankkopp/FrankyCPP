@@ -30,7 +30,7 @@ or for filling gaps between larger features.
 | QW3  | ✅ **Add FEN error handling in `position`**   | 🟢 30 min  | Robustness | Wrapped `Position` construction in try-catch; `uciError()` reports invalid FEN via `info string`, previous position preserved. Tests added.                                                                          |
 | QW4  | ✅ **Smarter book move selection**            | 🟢 1–2 hrs | Strength   | Frequency-weighted book move selection via `getBookMove()`. Uses destination position counter as weight, blended with uniform random via `BOOK_VARIETY` UCI option (0–100, default 30). No cache-breaking changes.   |
 | QW5  | ✅ **Add `ucinewgame` state audit**           | 🟢 30 min  | Robustness | Audited and fixed: `Search::newGame()` now also clears `lastSearchResult`, `resultReady`, and `measuredPostStopOverheadMs`. `UciHandler::uciNewGameCommand()` resets position to startpos. TODO removed; test added. |
-| QW6  | **Evasion move generation tests**            | 🟢 1–2 hrs | Testing    | `MoveGeneratorTest.cpp:669` — two `TODO real tests` markers. Tests exist but have no assertions. Add EXPECT checks for move counts.                                                                                  |
+| QW6  | ✅ **Evasion move generation tests**          | 🟢 1–2 hrs | Testing    | Replaced print-only evasion test with 6 position blocks: move count assertions (pseudo-legal, evasion, legal), structural invariants (evasion ≤ pseudo-legal, legal ≤ evasion), legal⊆evasion containment check, en passant evasion (pos 4), no-castling-in-check (pos 1), double-check king-only (pos 6), illegal evasion delta (pos 5). |
 | QW7  | **Sort value / history ordering tests**      | 🟢 1–2 hrs | Testing    | `MoveGeneratorTest.cpp:760` — sort test has `TODO real tests`. Add assertions that PV move is first, killers before quiet, etc.                                                                                      |
 | QW8  | **History & counter-move sort value tests**  | 🟢 1–2 hrs | Testing    | `MoveGenerator.cpp:826,833` — two `TODO Testing` markers in `updateSortValues()`. Add targeted unit tests for history/counter ordering.                                                                              |
 | QW9  | **TestSuite config reset fix**               | 🟢 30 min  | Robustness | `TestSuite.cpp:150` — FIXME about hardcoded config reset. Allow test suite to run with custom configs by removing the forced reset.                                                                                  |
@@ -221,7 +221,7 @@ Codebase scan as of 2026-04-01. Each item evaluated for v1.8 relevance.
 
 | #  | Location                    | TODO Text (Summary)                                 | Value   | Action for v1.8                                              |
 |----|-----------------------------|-----------------------------------------------------|---------|--------------------------------------------------------------|
-| X1 | `MoveGeneratorTest.cpp:669` | Evasion test — `TODO - real tests` (no assertions)  | 🟢 Easy | **→ QW6** — Add EXPECT assertions for move counts.           |
+| X1 | `MoveGeneratorTest.cpp:669` | Evasion test — `TODO - real tests` (no assertions)  | ✅ Done  | **QW6 complete** — 6 positions with full assertions.         |
 | X2 | `MoveGeneratorTest.cpp:760` | Sort value test — `TODO real tests` (no assertions) | 🟢 Easy | **→ QW7** — Add assertions for PV > killer > quiet ordering. |
 
 ### Summary

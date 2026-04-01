@@ -664,63 +664,156 @@ TEST_F(MoveGenTest, pvMove) {
 TEST_F(MoveGenTest, evasion) {
   MoveGenerator mg;
   Position p;
-  const MoveList *pseudoLegalMoves, *evasionMoves, *legalMoves;
 
-  // TODO - real tests
+  // Helper: verify every legal move appears in the evasion list (evasion must be a superset of legal)
+  const auto verifyLegalSubsetOfEvasion = [](const MoveList& legal, const MoveList& evasion) {
+    for (const Move lm : legal) {
+      const bool found = std::ranges::any_of(evasion, [&](const Move em) {
+        return em.stripped() == lm.stripped();
+      });
+      EXPECT_TRUE(found) << "Legal move " << lm.str() << " missing from evasion list";
+    }
+  };
 
-  p                = Position("r3k2r/1pp4p/2q1qNn1/3nP3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq -");
-  pseudoLegalMoves = mg.generatePseudoLegalMoves(p, GenAll, false);
-  fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), pseudoLegalMoves->str());
-  evasionMoves = mg.generatePseudoLegalMoves(p, GenAll, true);
-  fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), evasionMoves->str());
-  legalMoves = mg.generateLegalMoves(p, GenAll);
-  fprintln("Legal      : {:3d} {:s}", legalMoves->size(), legalMoves->str());
-  fprintln("");
+  // --- Position 1: Single check by knight (Nf6 checks e8) ---
+  // Complex position with many pieces; evasion filters from 85 down to 4
+  {
+    p = Position("r3k2r/1pp4p/2q1qNn1/3nP3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq -");
+    ASSERT_TRUE(p.hasCheck());
 
-  p                = Position("5k2/8/8/8/8/8/6p1/3K1R2 b - -");
-  pseudoLegalMoves = mg.generatePseudoLegalMoves(p, GenAll, false);
-  fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), pseudoLegalMoves->str());
-  evasionMoves = mg.generatePseudoLegalMoves(p, GenAll, true);
-  fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), evasionMoves->str());
-  legalMoves = mg.generateLegalMoves(p, GenAll);
-  fprintln("Legal      : {:3d} {:s}", legalMoves->size(), legalMoves->str());
-  fprintln("");
+    // Deep-copy each list — generatePseudoLegalMoves reuses the same internal buffer
+    const MoveList pseudoLegal = *mg.generatePseudoLegalMoves(p, GenAll, false);
+    const MoveList evasion     = *mg.generatePseudoLegalMoves(p, GenAll, true);
+    const MoveList legal       = *mg.generateLegalMoves(p, GenAll);
 
-  p                = Position("5k2/8/8/8/8/6p1/5R2/3K4 b - -");
-  pseudoLegalMoves = mg.generatePseudoLegalMoves(p, GenAll, false);
-  fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), pseudoLegalMoves->str());
-  evasionMoves = mg.generatePseudoLegalMoves(p, GenAll, true);
-  fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), evasionMoves->str());
-  legalMoves = mg.generateLegalMoves(p, GenAll);
-  fprintln("Legal      : {:3d} {:s}", legalMoves->size(), legalMoves->str());
-  fprintln("");
+    EXPECT_EQ(85, pseudoLegal.size());
+    EXPECT_EQ(4, evasion.size());
+    EXPECT_EQ(4, legal.size());
+    EXPECT_LE(evasion.size(), pseudoLegal.size());
+    EXPECT_LE(legal.size(), evasion.size());
+    verifyLegalSubsetOfEvasion(legal, evasion);
 
-  p                = Position("8/8/8/3k4/4Pp2/8/8/3K4 b - e3");
-  pseudoLegalMoves = mg.generatePseudoLegalMoves(p, GenAll, false);
-  fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), pseudoLegalMoves->str());
-  evasionMoves = mg.generatePseudoLegalMoves(p, GenAll, true);
-  fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), evasionMoves->str());
-  legalMoves = mg.generateLegalMoves(p, GenAll);
-  fprintln("Legal      : {:3d} {:s}", legalMoves->size(), legalMoves->str());
-  fprintln("");
+    // No castling in evasion when in check
+    for (const Move m : evasion) {
+      EXPECT_NE(CASTLING, m.type()) << "Castling should not appear in evasion: " << m.str();
+    }
+  }
 
-  p                = Position("8/8/8/3k2n1/8/8/6B1/3K4 b - -");
-  pseudoLegalMoves = mg.generatePseudoLegalMoves(p, GenAll, false);
-  fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), pseudoLegalMoves->str());
-  evasionMoves = mg.generatePseudoLegalMoves(p, GenAll, true);
-  fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), evasionMoves->str());
-  legalMoves = mg.generateLegalMoves(p, GenAll);
-  fprintln("Legal      : {:3d} {:s}", legalMoves->size(), legalMoves->str());
-  fprintln("");
+  // --- Position 2: Single check by rook along f-file (Rf1 checks f8) ---
+  // Evasion: king moves + pawn captures that block/capture on f1
+  {
+    p = Position("5k2/8/8/8/8/8/6p1/3K1R2 b - -");
+    ASSERT_TRUE(p.hasCheck());
 
-  p                = Position("5k2/3N4/8/8/8/8/6p1/3K1R2 b - - 1 1");
-  pseudoLegalMoves = mg.generatePseudoLegalMoves(p, GenAll, false);
-  fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), pseudoLegalMoves->str());
-  evasionMoves = mg.generatePseudoLegalMoves(p, GenAll, true);
-  fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), evasionMoves->str());
-  legalMoves = mg.generateLegalMoves(p, GenAll);
-  fprintln("Legal      : {:3d} {:s}", legalMoves->size(), legalMoves->str());
-  fprintln("");
+    const MoveList pseudoLegal = *mg.generatePseudoLegalMoves(p, GenAll, false);
+    const MoveList evasion     = *mg.generatePseudoLegalMoves(p, GenAll, true);
+    const MoveList legal       = *mg.generateLegalMoves(p, GenAll);
+
+    EXPECT_EQ(13, pseudoLegal.size());
+    EXPECT_EQ(8, evasion.size());
+    EXPECT_EQ(8, legal.size());
+    EXPECT_LE(evasion.size(), pseudoLegal.size());
+    EXPECT_LE(legal.size(), evasion.size());
+    verifyLegalSubsetOfEvasion(legal, evasion);
+  }
+
+  // --- Position 3: Single check by rook along f-file (Rf2 checks f8) ---
+  // Evasion: king moves + pawn capture on f2
+  {
+    p = Position("5k2/8/8/8/8/6p1/5R2/3K4 b - -");
+    ASSERT_TRUE(p.hasCheck());
+
+    const MoveList pseudoLegal = *mg.generatePseudoLegalMoves(p, GenAll, false);
+    const MoveList evasion     = *mg.generatePseudoLegalMoves(p, GenAll, true);
+    const MoveList legal       = *mg.generateLegalMoves(p, GenAll);
+
+    EXPECT_EQ(7, pseudoLegal.size());
+    EXPECT_EQ(5, evasion.size());
+    EXPECT_EQ(5, legal.size());
+    EXPECT_LE(evasion.size(), pseudoLegal.size());
+    EXPECT_LE(legal.size(), evasion.size());
+    verifyLegalSubsetOfEvasion(legal, evasion);
+  }
+
+  // --- Position 4: Single check by pawn (e4 attacks d5), en passant evasion ---
+  // The e4 pawn gives check to king on d5; f4xe3 en passant captures the checker
+  {
+    p = Position("8/8/8/3k4/4Pp2/8/8/3K4 b - e3");
+    ASSERT_TRUE(p.hasCheck());
+
+    const MoveList pseudoLegal = *mg.generatePseudoLegalMoves(p, GenAll, false);
+    const MoveList evasion     = *mg.generatePseudoLegalMoves(p, GenAll, true);
+    const MoveList legal       = *mg.generateLegalMoves(p, GenAll);
+
+    EXPECT_EQ(10, pseudoLegal.size());
+    EXPECT_EQ(9, evasion.size());
+    EXPECT_EQ(9, legal.size());
+    EXPECT_LE(evasion.size(), pseudoLegal.size());
+    EXPECT_LE(legal.size(), evasion.size());
+    verifyLegalSubsetOfEvasion(legal, evasion);
+
+    // En passant capture (f4e3) must be in the evasion list — it captures the checking pawn
+    const Move epMove  = Move::enPassant(SQ_F4, SQ_E3);
+    const bool epFound = std::ranges::any_of(evasion, [&](const Move m) {
+      return m.stripped() == epMove.stripped();
+    });
+    EXPECT_TRUE(epFound) << "En passant evasion f4e3 should be in evasion list";
+
+    // Direct capture of the checking pawn (d5xe4) must also be present
+    const Move captureMove  = Move::normal(SQ_D5, SQ_E4);
+    const bool captureFound = std::ranges::any_of(evasion, [&](const Move m) {
+      return m.stripped() == captureMove.stripped();
+    });
+    EXPECT_TRUE(captureFound) << "King capture d5e4 should be in evasion list";
+  }
+
+  // --- Position 5: Single check by bishop (Bg2 diagonal to d5) ---
+  // Knight can block or capture; king can move. Legal is one less than evasion
+  // (one evasion move is pseudo-legal but leaves king in check)
+  {
+    p = Position("8/8/8/3k2n1/8/8/6B1/3K4 b - -");
+    ASSERT_TRUE(p.hasCheck());
+
+    const MoveList pseudoLegal = *mg.generatePseudoLegalMoves(p, GenAll, false);
+    const MoveList evasion     = *mg.generatePseudoLegalMoves(p, GenAll, true);
+    const MoveList legal       = *mg.generateLegalMoves(p, GenAll);
+
+    EXPECT_EQ(14, pseudoLegal.size());
+    EXPECT_EQ(9, evasion.size());
+    EXPECT_EQ(8, legal.size());
+    EXPECT_LE(evasion.size(), pseudoLegal.size());
+    EXPECT_LE(legal.size(), evasion.size());
+    verifyLegalSubsetOfEvasion(legal, evasion);
+
+    // Evasion has one more move than legal — one pseudo-legal evasion is illegal
+    EXPECT_EQ(evasion.size() - legal.size(), 1)
+      << "Exactly one evasion move should be illegal (king still on diagonal)";
+  }
+
+  // --- Position 6: Double check (Nd7 + Rf1 both check f8) ---
+  // Only king moves are legal; evasionTargets returns BbZero for double check
+  {
+    p = Position("5k2/3N4/8/8/8/8/6p1/3K1R2 b - - 1 1");
+    ASSERT_TRUE(p.hasCheck());
+
+    const MoveList pseudoLegal = *mg.generatePseudoLegalMoves(p, GenAll, false);
+    const MoveList evasion     = *mg.generatePseudoLegalMoves(p, GenAll, true);
+    const MoveList legal       = *mg.generateLegalMoves(p, GenAll);
+
+    EXPECT_EQ(13, pseudoLegal.size());
+    EXPECT_EQ(4, evasion.size());
+    EXPECT_EQ(4, legal.size());
+    EXPECT_LE(evasion.size(), pseudoLegal.size());
+    EXPECT_LE(legal.size(), evasion.size());
+    verifyLegalSubsetOfEvasion(legal, evasion);
+
+    // Double check: only king moves should be generated (no blocks, no piece captures)
+    const Square kingSquare = p.getKingSquare(BLACK);
+    for (const Move m : evasion) {
+      EXPECT_EQ(kingSquare, m.from())
+        << "Double check evasion must be king move, but got " << m.str();
+    }
+  }
 }
 
 TEST_F(MoveGenTest, sortValueTest) {
