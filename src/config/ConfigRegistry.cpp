@@ -51,14 +51,14 @@ ConfigRegistry::ConfigRegistry() {
 #ifdef _MSC_VER
 // Windows MSVC builds
 #ifdef _DEBUG
-  static_assert(sizeof(SearchConfigData) == 640,
+  static_assert(sizeof(SearchConfigData) == 632,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 584,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
-  static_assert(sizeof(SearchConfigData) == 608,
+  static_assert(sizeof(SearchConfigData) == 600,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 576,
@@ -69,7 +69,7 @@ ConfigRegistry::ConfigRegistry() {
 // Linux GCC/Clang builds (including WSL)
 #ifdef NDEBUG
   // Release build
-  static_assert(sizeof(SearchConfigData) == 608,
+  static_assert(sizeof(SearchConfigData) == 600,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 576,
@@ -77,7 +77,7 @@ ConfigRegistry::ConfigRegistry() {
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
   // Debug build
-  static_assert(sizeof(SearchConfigData) == 608,
+  static_assert(sizeof(SearchConfigData) == 600,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 600,
@@ -686,47 +686,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .setter = SEARCH_CONFIG_SETTER(USE_HISTORY_MOVES, parseBool)
   });
 
-  definitions_.push_back({
-    .name = "USE_IID",
-    .uciName = "Use Internal Iterative Deepening",
-    .description = "Enable Internal Iterative Deepening (legacy - IIR is more effective)",
-    .valueType = Bool,
-    .domain = Search,
-    .defaultValue = configToString(defaultSearch.USE_IID),
-    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_IID), .yaml = true, .display = true},
-    .getter = searchGetter([](const auto& s){ return s.USE_IID; }),
-    .setter = SEARCH_CONFIG_SETTER(USE_IID, parseBool)
-  });
-
-  definitions_.push_back({
-    .name = "IID_DEPTH",
-    .uciName = "IID Move Depth",
-    .description = "Minimum depth to trigger IID",
-    .valueType = Int,
-    .domain = Search,
-    .defaultValue = configToString(defaultSearch.IID_DEPTH),
-    .minValue = 1,
-    .maxValue = 20,
-    .exposure = {.uci = IS_MUTABLE(defaultSearch, IID_DEPTH), .yaml = true, .display = true},
-    .getter = searchGetter([](const auto& s){ return s.IID_DEPTH; }),
-    .setter = SEARCH_CONFIG_SETTER(IID_DEPTH, parseInt)
-  });
-
-  definitions_.push_back({
-    .name = "IID_REDUCTION",
-    .uciName = "IID Depth Reduction",
-    .description = "Depth reduction for IID search",
-    .valueType = Int,
-    .domain = Search,
-    .defaultValue = configToString(defaultSearch.IID_REDUCTION),
-    .minValue = 1,
-    .maxValue = 10,
-    .exposure = {.uci = IS_MUTABLE(defaultSearch, IID_REDUCTION), .yaml = true, .display = true},
-    .getter = searchGetter([](const auto& s){ return s.IID_REDUCTION; }),
-    .setter = SEARCH_CONFIG_SETTER(IID_REDUCTION, parseInt)
-  });
-
-  // Internal Iterative Reduction (IIR) - modern alternative to IID
+  // Internal Iterative Reduction (IIR)
   definitions_.push_back({
     .name = "USE_IIR",
     .uciName = "Use Internal Iterative Reduction",
@@ -2421,7 +2381,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
   });
 
   //===========================================================================
-  // BISHOP MOBILITY
+  // BISHOP MOBILITY AND FILES
   //===========================================================================
   definitions_.push_back({
     .name = "USE_BISHOP_MOBILITY",
@@ -2480,7 +2440,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
   });
 
   //===========================================================================
-  // BAD BISHOP — REMOVED: Texel tuning zeroed both per-pawn weights (Phase 9).
+  // BAD BISHOP — REMOVED: Texel tuner sign-flipped both weights (Phase 9).
   //===========================================================================
 
   //===========================================================================

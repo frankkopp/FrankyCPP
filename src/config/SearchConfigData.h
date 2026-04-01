@@ -97,17 +97,9 @@ namespace config {
     CONFIG_CONST bool USE_HISTORY_COUNTER = true;
     CONFIG_CONST bool USE_HISTORY_MOVES   = true;
 
-    // Internal Iterative Deepening (IID) - legacy approach
-    // Does a reduced-depth mini-search to find a good first move when no TT move
-    // Note: Largely obsolete - PV-only restriction makes it rarely trigger due to TT
-    CONFIG_CONST bool USE_IID      = false; // Disabled - IIR is more effective
-    CONFIG_CONST int IID_DEPTH     = 6;
-    CONFIG_CONST int IID_REDUCTION = 2;
-
-    // Internal Iterative Reduction (IIR) - modern alternative to IID
+    // Internal Iterative Reduction (IIR)
     // Simply reduces depth when no TT move available (Stockfish approach)
-    // Much more effective than IID because it applies to ALL node types
-    // Note: USE_IID and USE_IIR are mutually exclusive - only enable one!
+    // Applies to all node types for maximum effectiveness
     CONFIG_CONST bool USE_IIR       = true; // Enabled - 36% node reduction in testing
     CONFIG_CONST int IIR_DEPTH      = 4;    // Minimum depth to apply IIR
     CONFIG_CONST int IIR_REDUCTION  = 2;    // How much to reduce depth

@@ -83,7 +83,6 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   s.USE_HISTORY_COUNTER = false;
   s.USE_HISTORY_MOVES   = false;
 
-  s.USE_IID = false;
   s.USE_IIR = false;
 
   // Pruning techniques
@@ -174,16 +173,7 @@ SearchTreeSizeTest::featureMeasurements(const int d, const milliseconds mt, cons
   // GROUP 3: MOVE ORDERING (Critical for alpha-beta/PVS efficiency)
   // =====================================================================
 
-  // 3.1a Internal Iterative Deepening (IID): Find good move when no TT hit (legacy)
-  // CONFIG_OVERRIDE(s.USE_IID = true;);
-  // CONFIG_OVERRIDE(s.USE_IIR = false;);
-  // CONFIG_OVERRIDE(s.IID_DEPTH = 6;);
-  // CONFIG_OVERRIDE(s.IID_REDUCTION = 2;);
-  // result.tests.push_back(measureTreeSize(search, position, searchLimits, "IID"));
-
-  // 3.1b Internal Iterative Reduction (IIR): Modern alternative to IID
-  // Note: IID and IIR are mutually exclusive - only enable one for testing
-  CONFIG_OVERRIDE(s.USE_IID = false;);
+  // 3.1 Internal Iterative Reduction (IIR): Reduce depth when no TT move available
   CONFIG_OVERRIDE(s.USE_IIR = true;);
   CONFIG_OVERRIDE(s.IIR_DEPTH = 4;);
   CONFIG_OVERRIDE(s.IIR_REDUCTION = 2;);

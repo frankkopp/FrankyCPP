@@ -497,14 +497,6 @@ void Search::joinHelperThreads() {
 SearchResult Search::iterativeDeepening(Position& p) {
   SearchResult searchResult{p};
 
-  // Validate config: IID and IIR are mutually exclusive
-  // TODO: Remove after we have removed one of these approaches and the related config options
-  if (SearchConfig.USE_IID && SearchConfig.USE_IIR) {
-    LOG__ERROR(Logger::get().SEARCH_LOG,
-               "Configuration error: USE_IID and USE_IIR are both enabled! "
-               "These are mutually exclusive - only enable one. IIR will be used.");
-  }
-
   // check repetition and 50-moves rule
   if (checkDrawRepAnd50(p, 2)) {
     const std::string msg = searchLimits.ponder
@@ -1106,7 +1098,6 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // Clear PV for this node to prevent stale data from previous iterations/branches
   // from being propagated up via thread().pv.update(). Stale PV data can contain moves from
   // different positions that are illegal in the current position.
-  // Note: IID may write to pv but clears it after extracting the ttMove.
   thread().pv.clear(ply);
 
   // Enter quiescence search when depth == 0 or max ply has been reached
@@ -1470,13 +1461,11 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     }
   }
 
-  assert(!(SearchConfig.USE_IIR && SearchConfig.USE_IID) && "IIR and IID are mutually exclusive - please enable only one of them");
-
-  // Internal Iterative Reduction (IIR) - Modern alternative to IID
+  // Internal Iterative Reduction (IIR)
   // https://www.chessprogramming.org/Internal_Iterative_Reductions
   // Simply reduces depth when no TT move is available. The reduced search
   // will populate the TT, providing a move for future iterations.
-  // Simpler and less overhead than IID, applies to all node types.
+  // Simpler and applies to all node types.
   // Note: Creates local mutable copy of depth since parameter is const.
   Depth searchDepth = depth;
   if (SearchConfig.USE_IIR
@@ -1485,43 +1474,6 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       && (SearchConfig.IIR_ALL_NODES || nodeType == PvNode)) {
     searchDepth = searchDepth - SearchConfig.IIR_REDUCTION;
     STAT_INC(thread().statistics.iirReductions);
-  }
-
-  // Internal Iterative Deepening (IID) - Legacy approach
-  // https://www.chessprogramming.org/Internal_Iterative_Deepening
-  // Used when no best move from the tt is available from previous
-  // searches. IID is used to find a good move to search first by
-  // searching the current position to a reduced depth and using
-  // the best move of that search as the first move at the real depth.
-  // Does not make a big difference in search tree size when move
-  // order already is good.
-  // Note: Only runs if IIR is disabled (they are mutually exclusive)
-  if (SearchConfig.USE_IID) {
-    if (depth >= SearchConfig.IID_DEPTH
-        && !ttMove // no move from TT
-        && doNull
-        && nodeType == PvNode) { // avoid in null move search
-
-      // do the actual reduced search only if we have time left
-      if (!isTimeAlmostUp()) {
-        // get the new depth and make sure it is >0
-        auto newDepthIid = depth - SearchConfig.IID_REDUCTION;
-        if (newDepthIid < 0) { newDepthIid = DEPTH_NONE; }
-
-        // IID search inherits nodeType (searching same node at reduced depth)
-        search(p, newDepthIid, ply, alpha, beta, nodeType, doNull);
-        STAT_INC(thread().statistics.iidSearches);
-
-
-        // get the best move from the reduced search if available
-        if (!thread().pv.empty(ply)) {
-          STAT_INC(thread().statistics.iidMoves);
-          ttMove = thread().pv.first(ply).stripped();
-          // Clear pv after extracting the move - IID polluted it
-          thread().pv.clear(ply);
-        }
-      }
-    }
   }
 
   // reset move generator for the actual search
@@ -1533,7 +1485,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 
   // PV Move Sort
   // When we received a best move for the position from the
-  // TT or IID, we set it as PV move in the move-gen so it will
+  // TT, we set it as PV move in the move-gen so it will
   // be searched first.
   if (SearchConfig.USE_TT_PV_MOVE_SORT && ttMove != MOVE_NONE) {
     STAT_INC(thread().statistics.TtMoveUsed);
@@ -3511,11 +3463,7 @@ std::string Search::formatDetailedStats(
     os << "PTT Misses     : " << pawnTT->getNumberOfMisses() << " (" << pttMissPct << "%)\n";
   }
 
-  os << "\n------------------- IID/IIR Stats ---------------------\n";
-  if (ConfigManager::instance().search().USE_IID) {
-    os << "IID Searches   : " << stats.iidSearches << "\n";
-    os << "IID Moves      : " << stats.iidMoves << "\n";
-  }
+  os << "\n------------------- IIR Stats -------------------------\n";
   if (ConfigManager::instance().search().USE_IIR) {
     os << "IIR Reductions : " << stats.iirReductions << "\n";
   }
