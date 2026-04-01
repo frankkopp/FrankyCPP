@@ -110,6 +110,10 @@ namespace arena {
     const std::string engine2Name = getUciEngineName(matchConfig.engine2Path, matchConfig.engine2Options);
     std::cout << "  Engine 2: " << engine2Name << std::endl;
 
+    // Print the full cutechess-cli command for copy-paste reproduction
+    const std::string fullCommand = buildCutechessCommand(matchConfig, engine1Name, engine2Name, matchConfig.rounds);
+    std::cout << "\ncutechess-cli command (copy-paste ready):\n" << fullCommand << "\n" << std::endl;
+
     // Check for saved state (resumable match)
     const std::string stateFilePath = getStateFilePath(matchConfig);
     MatchState currentState;
