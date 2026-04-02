@@ -91,11 +91,11 @@ or for filling gaps between larger features.
 
 ### E. Code Quality & Robustness
 
-| #  | Feature                             | Expected ELO | Effort     | Complexity | Notes                                                                                         |
-|----|-------------------------------------|--------------|------------|------------|-----------------------------------------------------------------------------------------------|
-| E1 | **SEE unit test expansion**         | N/A          | 🟢 1 day   | 🟢 Low     | Current SEE tested in integration; add dedicated edge-case unit tests (pins, x-rays, promos). |
-| E2 | **Search regression test baseline** | N/A          | 🟢 1 day   | 🟢 Low     | Fixed-depth node count assertions for key positions. Catch accidental search changes early.   |
-| E3 | ✅ **Bench hash stability**          | N/A          | 🟢 0.5 day | 🟢 Low     | Done via QW10. Signature in `bench_signature.txt`, verified in CI + unit test.                |
+| #  | Feature                                | Expected ELO | Effort     | Complexity | Notes                                                                                                                                                                                          |
+|----|----------------------------------------|--------------|------------|------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| E1 | **SEE unit test expansion**            | N/A          | 🟢 1 day   | 🟢 Low     | Current SEE tested in integration; add dedicated edge-case unit tests (pins, x-rays, promos).                                                                                                  |
+| E2 | ⏸️ **Search regression test baseline** | N/A          | 🟢 1 day   | 🟢 Low     | **Deferred** — per-position node count assertions break on every intentional search change; maintenance cost outweighs value. Bench signature (QW10/E3) covers aggregate regression detection. |
+| E3 | ✅ **Bench hash stability**             | N/A          | 🟢 0.5 day | 🟢 Low     | Done via QW10. Signature in `bench_signature.txt`, verified in CI + unit test.                                                                                                                 |
 
 ---
 
