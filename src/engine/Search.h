@@ -120,6 +120,9 @@ FRIEND_TEST_FWD_DECL(SearchTest, extraTimeClockCap);
 FRIEND_TEST_FWD_DECL(SearchTest, startTimer);
 FRIEND_TEST_FWD_DECL(SearchTest, startTimerWithOverhead);
 FRIEND_TEST_FWD_DECL(SearchSmpTest, selectBestThread);
+FRIEND_TEST_FWD_DECL(SearchTest, drawScoreZeroContempt);
+FRIEND_TEST_FWD_DECL(SearchTest, drawScorePositiveContempt);
+FRIEND_TEST_FWD_DECL(SearchTest, drawScoreNegativeContempt);
 
 namespace engine {
   using namespace chess;
@@ -184,6 +187,11 @@ namespace engine {
     // current position and search limits for the search
     Position position{};
     SearchLimits searchLimits{};
+
+    // Side to move at the root of the search — used for contempt bias.
+    // Contempt is positive from root player's perspective: when the side to move
+    // at a draw node matches rootColor, drawScore() returns +contempt; otherwise −contempt.
+    Color rootColor{WHITE};
 
     // manage running search
     std::atomic_bool stopSearchFlag = false;
@@ -612,6 +620,18 @@ namespace engine {
     /// @param numberOfRepetitions  Required repetition count
     /// @return                     True if position is drawn
     static bool checkDrawRepAnd50(const Position& p, int numberOfRepetitions);
+
+    /// Returns the contempt-biased draw score for the current position.
+    /// When CONTEMPT is 0, returns VALUE_DRAW (== 0). Otherwise returns
+    /// +CONTEMPT when the side to move at the draw node is the root player
+    /// (engine avoids draws), or −CONTEMPT when it's the opponent's turn
+    /// (engine steers opponent toward draws).
+    /// @param p  Position at the draw node (side to move is inspected)
+    /// @return   Contempt-biased draw value
+    [[nodiscard]] Value drawScore(const Position& p) const;
+    FRIEND_TEST_NS(SearchTest, drawScoreZeroContempt);
+    FRIEND_TEST_NS(SearchTest, drawScorePositiveContempt);
+    FRIEND_TEST_NS(SearchTest, drawScoreNegativeContempt);
 
     /// Sends "readyok" to UCI handler.
     void sendReadyOk() const;

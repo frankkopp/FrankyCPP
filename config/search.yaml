@@ -27,6 +27,9 @@ _YAML_SMOKE_TEST_MARKER: true
 # Fixed overhead (milliseconds) deducted from available time per move to account for engine housekeeping
 # MOVE_OVERHEAD_MS: 10
 
+# Contempt / draw score bias in centipawns (positive = avoid draws, negative = seek draws, 0 = neutral)
+# CONTEMPT: 0
+
 # Enable/disable opening book usage
 # USE_BOOK: true
 # Path to the opening book file (relative to working directory)

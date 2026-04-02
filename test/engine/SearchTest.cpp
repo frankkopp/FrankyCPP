@@ -1062,6 +1062,89 @@ TEST_F(SearchTest, moveTimeCompliance) {
     << ". Worst: " << str(maxTime) << " on: " << worstFen;
 }
 
+// ===== Contempt / drawScore() tests =====
+
+TEST_F(SearchTest, drawScoreZeroContempt) {
+  CONFIG_OVERRIDE(s.CONTEMPT = 0;);
+  Search search{};
+  search.isReady();
+  // rootColor defaults to WHITE
+  search.rootColor = WHITE;
+
+  const Position whiteToMove{};                                         // startpos, white to move
+  const Position blackToMove{"rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"}; // black to move
+
+  EXPECT_EQ(VALUE_DRAW, search.drawScore(whiteToMove));
+  EXPECT_EQ(VALUE_DRAW, search.drawScore(blackToMove));
+}
+
+TEST_F(SearchTest, drawScorePositiveContempt) {
+  CONFIG_OVERRIDE(s.CONTEMPT = 20;);
+  Search search{};
+  search.isReady();
+  search.rootColor = WHITE;
+
+  const Position whiteToMove{};                                         // side to move == rootColor
+  const Position blackToMove{"rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"};
+
+  // When side to move matches root color → +contempt (engine avoids draws)
+  EXPECT_EQ(Value{20}, search.drawScore(whiteToMove));
+  // When side to move is opponent → −contempt (draws are good for opponent)
+  EXPECT_EQ(Value{-20}, search.drawScore(blackToMove));
+
+  // Flip rootColor to BLACK
+  search.rootColor = BLACK;
+  EXPECT_EQ(Value{-20}, search.drawScore(whiteToMove));
+  EXPECT_EQ(Value{20}, search.drawScore(blackToMove));
+}
+
+TEST_F(SearchTest, drawScoreNegativeContempt) {
+  CONFIG_OVERRIDE(s.CONTEMPT = -15;);
+  Search search{};
+  search.isReady();
+  search.rootColor = WHITE;
+
+  const Position whiteToMove{};
+  const Position blackToMove{"rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"};
+
+  // Negative contempt: engine seeks draws → side to move == root gets −15
+  EXPECT_EQ(Value{-15}, search.drawScore(whiteToMove));
+  EXPECT_EQ(Value{15}, search.drawScore(blackToMove));
+}
+
+TEST_F(SearchTest, stalemateWithContempt) {
+  // Stalemate position: black is stalemated (no legal moves, not in check)
+  // "6R1/8/8/8/8/5K2/R7/7k b - -"
+  // With contempt = 0, score should be VALUE_DRAW (0)
+  // With contempt > 0, score should be non-zero (contempt-biased)
+  CONFIG_OVERRIDE(s.USE_BOOK = false; s.CONTEMPT = 0;);
+  {
+    const Position p{"6R1/8/8/8/8/5K2/R7/7k b - -"};
+    SearchLimits sl{};
+    Search s{};
+    sl.depth = 6;
+    s.isReady();
+    s.startSearch(p, sl);
+    s.waitWhileSearching();
+    EXPECT_EQ(VALUE_DRAW, s.getLastSearchResult().bestMoveValue);
+  }
+
+  CONFIG_OVERRIDE(s.CONTEMPT = 25;);
+  {
+    const Position p{"6R1/8/8/8/8/5K2/R7/7k b - -"};
+    SearchLimits sl{};
+    Search s{};
+    sl.depth = 6;
+    s.isReady();
+    s.startSearch(p, sl);
+    s.waitWhileSearching();
+    // With positive contempt, the stalemate draw should score non-zero
+    // Root side is black (stalemated). From white's earlier perspective (root),
+    // the engine should see this differently than VALUE_DRAW.
+    EXPECT_NE(VALUE_DRAW, s.getLastSearchResult().bestMoveValue);
+  }
+}
+
 // In production, CONFIG_CONST search/eval configs cannot be overridden at runtime.
 // These debug/diagnostic tests are development-only.
 #ifndef FRANKYCPP_PRODUCTION

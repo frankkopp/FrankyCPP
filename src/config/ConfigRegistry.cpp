@@ -51,14 +51,14 @@ ConfigRegistry::ConfigRegistry() {
 #ifdef _MSC_VER
 // Windows MSVC builds
 #ifdef _DEBUG
-  static_assert(sizeof(SearchConfigData) == 640,
+  static_assert(sizeof(SearchConfigData) == 648,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 584,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
-  static_assert(sizeof(SearchConfigData) == 608,
+  static_assert(sizeof(SearchConfigData) == 616,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 576,
@@ -69,7 +69,7 @@ ConfigRegistry::ConfigRegistry() {
 // Linux GCC/Clang builds (including WSL)
 #ifdef NDEBUG
   // Release build
-  static_assert(sizeof(SearchConfigData) == 608,
+  static_assert(sizeof(SearchConfigData) == 616,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 576,
@@ -77,7 +77,7 @@ ConfigRegistry::ConfigRegistry() {
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
   // Debug build
-  static_assert(sizeof(SearchConfigData) == 608,
+  static_assert(sizeof(SearchConfigData) == 616,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 600,
@@ -247,6 +247,20 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .exposure = {.uci = true, .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.MOVE_OVERHEAD_MS; }),
     .setter = SEARCH_CONFIG_SETTER(MOVE_OVERHEAD_MS, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "CONTEMPT",
+    .uciName = "Contempt",
+    .description = "Draw score bias in centipawns (positive = avoid draws, negative = seek draws)",
+    .valueType = Int,
+    .domain = General,
+    .defaultValue = configToString(defaultSearch.CONTEMPT),
+    .minValue = -100,
+    .maxValue = 100,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.CONTEMPT; }),
+    .setter = SEARCH_CONFIG_SETTER(CONTEMPT, parseInt)
   });
 
   definitions_.push_back({

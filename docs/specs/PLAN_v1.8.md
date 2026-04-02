@@ -51,7 +51,7 @@ or for filling gaps between larger features.
 | A5 | **Improving Flag in LMP**        | +3–8         | 🟢 1 day    | 🟢 Low     | Already have USE_LMP_IMPROVING config. Verify it's active & correctly tuned; may need threshold adjustment.                                                                                                                     |
 | A6 | **Multi-Cut Pruning**            | +10–20       | 🟡 3–5 days | 🟡 Medium  | If ≥C moves fail high at reduced depth, assume beta cutoff. Stockfish-style; effective at high depths.                                                                                                                          |
 | A7 | **QSearch Quiet Checks**         | +10–20       | 🟡 3–5 days | 🟡 Medium  | Implementation exists (archived) but was tested with config disabled. Needs proper retest. Avoids horizon effect on checks.                                                                                                     |
-| A8 | **Contempt / Draw Score Bias**   | +5–15        | 🟢 1–2 days | 🟢 Low     | Return non-zero for draws (e.g., +10 cp vs weaker, −10 vs stronger). Simple UCI option `Contempt`. Avoids early draws.                                                                                                          |
+| A8 | ✅ **Contempt / Draw Score Bias** | +5–15        | 🟢 1–2 days | 🟢 Low     | Return non-zero for draws (e.g., +10 cp vs weaker, −10 vs stronger). Simple UCI option `Contempt`. Avoids early draws.                                                                                                          |
 | A9 | **Singular Ext Bound Check**     | +0–10        | 🟢 1–2 days | 🟢 Low     | Stockfish requires `BETA/EXACT` TT bound for singular ext. FrankyCPP had this but disabled it (claimed 99.98% filtered — suspicious, investigate distribution). Re-implement Stockfish-style with stats; validate via gauntlet. |
 
 **Subtotal potential: +73–143 ELO** (not all additive; realistic estimate +50–80 after validation)
@@ -74,7 +74,7 @@ or for filling gaps between larger features.
 |----|---------------------------------------|--------------|-------------|------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | C1 | **MultiPV**                           | N/A          | 🟢 1–2 days | 🟡 Medium  | Existing plan in `PLAN_MultiPV.md`. Essential for analysis GUIs. Standard UCI option, not yet implemented.                                                                                                   |
 | C2 | ✅ **UCI `debug` command + eval info** | N/A          | 🟢 1–2 days | 🟢 Low     | `debug on/off` toggle, PV-leaf eval breakdown (material, positional, pawn, pieces, threats, coordination, king safety, tempo, phase), iteration stats (TT hit-rate, beta-cut-1st%), book move announcements. |
-| C4 | **UCI `Contempt` option**             | (see A8)     |             |            | Cross-ref with A8 — the UCI option part.                                                                                                                                                                     |
+| C4 | ✅ **UCI `Contempt` option**           | (see A8)     |             |            | Cross-ref with A8 — the UCI option part.                                                                                                                                                                     |
 
 ---
 
@@ -105,8 +105,8 @@ Ordered by confidence of ELO gain and dependency chain:
 
 ### Phase 1 — Quick Wins & UCI Features (Week 1–2)
 1. **C1: MultiPV** — High-value, existing plan, essential for analysis use.
-2. **C2: UCI debug + eval info** — Debug toggle with eval breakdown and search stats in info strings. ✅
-3. **A8/C4: Contempt** — Simple draw score adjustment, measurable ELO impact.
+2. ✅ **C2: UCI debug + eval info** — Debug toggle with eval breakdown and search stats in info strings.
+3. ✅ **A8/C4: Contempt** — Simple draw score adjustment, measurable ELO impact.
 4. ✅ **E3: Bench hash stability** — Safety net before making search changes.
 
 ### Phase 2 — Core Search Enhancements (Week 3–5)

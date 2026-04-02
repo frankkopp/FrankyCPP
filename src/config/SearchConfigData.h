@@ -44,6 +44,11 @@ namespace config {
     // time mgmt
     CONFIG_ESSENTIAL int MOVE_OVERHEAD_MS = 10;
 
+    // contempt — draw score bias in centipawns from the engine's perspective.
+    // Positive = avoid draws (play for win), negative = seek draws.
+    // 0 = neutral (VALUE_DRAW == 0). Typical values: 10–25 cp.
+    CONFIG_ESSENTIAL int CONTEMPT = 0;
+
     // Multi-threading (Lazy SMP)
     CONFIG_ESSENTIAL int THREADS                = 4;    // Number of search threads (1 = single-threaded, no SMP overhead)
     CONFIG_CONST int SMP_HELPER_START_DEPTH     = 4;    // Depth at which to launch helper threads (allows TT priming)

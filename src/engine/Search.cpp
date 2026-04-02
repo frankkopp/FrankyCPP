@@ -234,6 +234,9 @@ void Search::run() {
   // initialize search state (stop flag, result, time limits, UCI tracking)
   resetSearchState();
 
+  // Store root color for contempt bias (used by drawScore())
+  rootColor = position.getNextPlayer();
+
   // Note: npsTime and npsNodes are initialized later, right before iterative deepening,
   // to avoid including initialization overhead in NPS calculations
   initialize();
@@ -513,7 +516,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
                               : "Search called on DRAW by Repetition or 50-moves-rule";
     if (isMainThread()) sendString(msg);
     LOG__WARN(Logger::get().SEARCH_LOG, "{}", msg);
-    searchResult.bestMoveValue = VALUE_DRAW;
+    searchResult.bestMoveValue = drawScore(p);
     return searchResult;
   }
 
@@ -538,7 +541,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
                                 : "Search called on a stale mate position";
       if (isMainThread()) sendString(msg);
       LOG__WARN(Logger::get().SEARCH_LOG, "{}", msg);
-      searchResult.bestMoveValue = VALUE_DRAW;
+      searchResult.bestMoveValue = drawScore(p);
     }
     return searchResult;
   }
@@ -1040,7 +1043,7 @@ Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Valu
     ESSENTIAL_STAT_SET(thread().statistics.currentRootMove, moveRef);
 
     if (checkDrawRepAnd50(p, 2)) {
-      value = VALUE_DRAW;
+      value = drawScore(p);
     }
     else {
       constexpr Depth ply{1};
@@ -1764,7 +1767,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     sendSearchUpdateToUci();
 
     // check repetition and 50 moves
-    if (checkDrawRepAnd50(p, 2)) { value = VALUE_DRAW; }
+    if (checkDrawRepAnd50(p, 2)) { value = drawScore(p); }
     else {
 
       const auto do_null = matethreat ? No_Null_Move : Do_Null_Move;
@@ -1904,7 +1907,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     else {
       // stalemate
       STAT_INC(thread().statistics.stalemates);
-      bestNodeValue = VALUE_DRAW;
+      bestNodeValue = drawScore(p);
     }
     // this is in any case an exact value
     staticEval = bestNodeValue;
@@ -2114,7 +2117,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
 
     // check repetition and 50 moves
     if (checkDrawRepAnd50(p, 2)) {
-      value = VALUE_DRAW;
+      value = drawScore(p);
     }
     else {
       // recursion into qsearch - inherit nodeType (PV nodes stay PV, non-PV stay non-PV)
@@ -2722,6 +2725,16 @@ bool Search::stopConditions() { // NOLINT(*-make-member-function-const)
 
 bool Search::checkDrawRepAnd50(const Position& p, const int numberOfRepetitions) {
   return p.checkRepetitions(numberOfRepetitions) || p.getHalfMoveClock() >= 100;
+}
+
+Value Search::drawScore(const Position& p) const {
+  // When contempt is 0, return VALUE_DRAW (== 0) — no bias.
+  // Positive contempt: root player gets +contempt at draw nodes (avoids draws).
+  // The sign flips when the side to move is the opponent, so the opponent
+  // sees −contempt (draws are attractive for them from our perspective).
+  const int contempt = SearchConfig.CONTEMPT;
+  if (contempt == 0) return VALUE_DRAW;
+  return p.getNextPlayer() == rootColor ? Value{contempt} : Value{-contempt};
 }
 
 void Search::setupSearchLimits(const Position& p, SearchLimits& sl) {
