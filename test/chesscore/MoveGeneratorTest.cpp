@@ -23,6 +23,7 @@
 #include <string>
 
 #include "Test_Utils.h"
+#include "chesscore/History.h"
 #include "chesscore/MoveGenerator.h"
 #include "chesscore/Position.h"
 #include "init.h"
@@ -823,12 +824,14 @@ TEST_F(MoveGenTest, sortValueTest) {
   // Start pos
   const auto p = Position("r3k2r/1pp4p/2q1qNn1/3nP3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq -");
 
-  Move moveFromUci = Move::normal(SQ_G6, SQ_H4);
-  mg.storeKiller(moveFromUci);
-  moveFromUci = Move::normal(SQ_B7, SQ_B6);
-  mg.storeKiller(moveFromUci);
-  moveFromUci = Move::promotion(SQ_A2, SQ_B1, QUEEN);
-  mg.setPV(moveFromUci);
+  // Define the special moves used throughout this test
+  constexpr Move killer2 = Move::normal(SQ_G6, SQ_H4);   // stored first  → slot [1] → value 1000
+  constexpr Move killer1 = Move::normal(SQ_B7, SQ_B6);   // stored second → slot [0] → value 1001
+  constexpr Move pvMove  = Move::promotion(SQ_A2, SQ_B1, QUEEN);
+
+  mg.storeKiller(killer2);
+  mg.storeKiller(killer1);
+  mg.setPV(pvMove);
 
   mg.generatePawnMoves(p, &moves, GenNonQuiet, false, BbZero);
   mg.generateMoves(p, &moves, GenNonQuiet, false, BbZero);
@@ -847,24 +850,203 @@ TEST_F(MoveGenTest, sortValueTest) {
   }
   NEWLINE;
 
-  // sort moves
-  ranges::stable_sort(moves, moveValueGreaterComparator());
-
-  // TODO real tests
+  // sort moves — use unstable sort to match MoveGenerator's production sort
+  ranges::sort(moves, moveValueGreaterComparator());
 
   fprintln("Post sort:");
-  int counter   = 0;
-  Move lastMove = MOVE_NONE;
   for (const Move m : moves) {
     fprintln("{}", m.strVerbose());
-    if (!counter++) {
-      lastMove = m;
-      continue;
-    }
-    EXPECT_GE(lastMove.value(), m.value());
-    lastMove = m;
   }
   NEWLINE;
+
+  // --- Sanity: non-empty move list ---
+  ASSERT_FALSE(moves.empty()) << "Move list should not be empty for this position";
+
+  // --- 1. PV move must be first with VALUE_MAX ---
+  EXPECT_EQ(moves[0].stripped(), pvMove.stripped())
+    << "PV move a2b1q should be first after sort";
+  EXPECT_EQ(moves[0].value(), VALUE_MAX)
+    << "PV move should have VALUE_MAX sort value";
+
+  // --- 2. Non-increasing sort order (monotonic) ---
+  for (size_t i = 1; i < moves.size(); ++i) {
+    EXPECT_GE(moves[i - 1].value(), moves[i].value())
+      << "Sort order violated at index " << i
+      << ": " << moves[i - 1].strVerbose() << " vs " << moves[i].strVerbose();
+  }
+
+  // --- 3. Killer moves present and ordered: Killer1 (1001) before Killer2 (1000) ---
+
+  // Find killer indices in sorted list
+  int killer1Idx = -1;
+  int killer2Idx = -1;
+  for (int i = 0; i < static_cast<int>(moves.size()); ++i) {
+    if (moves[i].stripped() == killer1.stripped()) killer1Idx = i;
+    if (moves[i].stripped() == killer2.stripped()) killer2Idx = i;
+  }
+  ASSERT_NE(killer1Idx, -1) << "Killer 1 (b7b6) not found in move list";
+  ASSERT_NE(killer2Idx, -1) << "Killer 2 (g6h4) not found in move list";
+  EXPECT_LT(killer1Idx, killer2Idx)
+    << "Killer 1 (value 1001) should appear before Killer 2 (value 1000)";
+  EXPECT_EQ(moves[killer1Idx].value(), static_cast<Value>(1001));
+  EXPECT_EQ(moves[killer2Idx].value(), static_cast<Value>(1000));
+
+  // --- 4. Value-based ordering zones ---
+  // Sort-value contract (from updateSortValues + generation):
+  //   Captures/good promos:  value ~2000+  (above killers)
+  //   Killers:               value 1000/1001
+  //   Quiet moves:           value ~-2000  (below killers)
+  //   Under-promotions (R/B): value ~-5500 (intentionally below quiet)
+  //
+  // Since the list is monotonically sorted (check 2), it suffices to verify
+  // that every move with value > 1001 appears before the killers, and every
+  // move with value < 1000 appears after the killers.
+  for (int i = 0; i < static_cast<int>(moves.size()); ++i) {
+    if (moves[i].stripped() == pvMove.stripped()) continue;
+    if (moves[i].stripped() == killer1.stripped() || moves[i].stripped() == killer2.stripped()) continue;
+
+    if (moves[i].value() > static_cast<Value>(1001)) {
+      EXPECT_LT(i, killer1Idx)
+        << "Move with value > 1001 should appear before killers: " << moves[i].strVerbose();
+    }
+    if (moves[i].value() < static_cast<Value>(1000)) {
+      EXPECT_GT(i, killer2Idx)
+        << "Move with value < 1000 should appear after killers: " << moves[i].strVerbose();
+    }
+  }
+
+  // --- 5. No move (except PV) should exceed VALUE_MAX ---
+  for (size_t i = 1; i < moves.size(); ++i) {
+    EXPECT_LE(moves[i].value(), VALUE_MAX)
+      << "Non-PV move should not exceed VALUE_MAX: " << moves[i].strVerbose();
+  }
+}
+
+TEST_F(MoveGenTest, sortValueWithHistoryTest) {
+  MoveGenerator mg;
+  MoveList moves;
+
+  // Use a position after one move so getLastMove() is valid for counter-move lookup.
+  // FEN: r3k2r/1pp4p/2q1qNn1/3nP3/2q1Pp2/B5R1/pbp2PPP/1R4K1 w kq -
+  // White to move. Play Rg3-h3 (rook slides to h3, which is empty) as setup move.
+  Position p("r3k2r/1pp4p/2q1qNn1/3nP3/2q1Pp2/B5R1/pbp2PPP/1R4K1 w kq -");
+  constexpr Move setupMove = Move::normal(SQ_G3, SQ_H3);
+  p.doMove(setupMove);
+  // Now it's black to move, and p.getLastMove() == Rg3h3
+
+  // Choose quiet black moves for history/counter-move testing:
+  // - Ng6-h4: knight on g6 can go to h4 (empty square) — quiet move
+  // - Nd5-b4: knight on d5 can go to b4 (empty square) — quiet move
+  History history;
+  history.reset();
+  constexpr Move historyBoostedMove = Move::normal(SQ_G6, SQ_H4);
+  history.historyCount[BLACK][SQ_G6][SQ_H4] = 50'000; // → value boost = 50000/100 = 500
+
+  // Counter-move: after white's Rg3-h3, black's Nd5-b4 caused a cutoff before
+  constexpr Move counterBoostedMove = Move::normal(SQ_D5, SQ_B4);
+  history.counterMoves[setupMove.from()][setupMove.to()] = counterBoostedMove.stripped();
+  // Give the counter-move some base history so the total value > 0
+  history.historyCount[BLACK][SQ_D5][SQ_B4] = 10'000; // → value boost = 100 + 500 (counter) = 600
+
+  mg.setHistoryData(&history);
+
+  // Generate all moves (no PV, no killers — isolating history effect)
+  mg.generatePawnMoves(p, &moves, GenNonQuiet, false, BbZero);
+  mg.generateMoves(p, &moves, GenNonQuiet, false, BbZero);
+  mg.generateKingMoves(p, &moves, GenNonQuiet, false);
+  mg.generatePawnMoves(p, &moves, GenQuiet, false, BbZero);
+  mg.generateCastling(p, &moves, GenQuiet);
+  mg.generateMoves(p, &moves, GenQuiet, false, BbZero);
+  mg.generateKingMoves(p, &moves, GenQuiet, false);
+
+  // Apply history-based sort value updates
+  mg.updateSortValues(p, &moves);
+
+  // Sort — use unstable sort to match MoveGenerator's production sort
+  ranges::sort(moves, moveValueGreaterComparator());
+
+  fprintln("History test - Post sort:");
+  for (const Move m : moves) {
+    fprintln("{}", m.strVerbose());
+  }
+  NEWLINE;
+
+  ASSERT_FALSE(moves.empty());
+
+  // --- 1. Non-increasing sort order ---
+  for (size_t i = 1; i < moves.size(); ++i) {
+    EXPECT_GE(moves[i - 1].value(), moves[i].value())
+      << "Sort order violated at index " << i;
+  }
+
+  // --- 2. Locate the boosted moves in the sorted list ---
+  int histBoostedIdx    = -1;
+  int counterBoostedIdx = -1;
+  for (int i = 0; i < static_cast<int>(moves.size()); ++i) {
+    if (moves[i].stripped() == historyBoostedMove.stripped()) {
+      histBoostedIdx = i;
+    }
+    else if (moves[i].stripped() == counterBoostedMove.stripped()) {
+      counterBoostedIdx = i;
+    }
+  }
+  ASSERT_NE(histBoostedIdx, -1)    << "History-boosted move (g6h4) not found in move list";
+  ASSERT_NE(counterBoostedIdx, -1) << "Counter-boosted move (d5b4) not found in move list";
+
+  fprintln("History-boosted move (g6h4): value={}, idx={}",
+           std::to_string(moves[histBoostedIdx].value()), histBoostedIdx);
+  fprintln("Counter-boosted move (d5b4): value={}, idx={}",
+           std::to_string(moves[counterBoostedIdx].value()), counterBoostedIdx);
+
+  // --- 3. Compare against a no-history baseline to verify the boosts ---
+  MoveGenerator mg2;
+  MoveList movesNoHistory;
+
+  mg2.generatePawnMoves(p, &movesNoHistory, GenNonQuiet, false, BbZero);
+  mg2.generateMoves(p, &movesNoHistory, GenNonQuiet, false, BbZero);
+  mg2.generateKingMoves(p, &movesNoHistory, GenNonQuiet, false);
+  mg2.generatePawnMoves(p, &movesNoHistory, GenQuiet, false, BbZero);
+  mg2.generateCastling(p, &movesNoHistory, GenQuiet);
+  mg2.generateMoves(p, &movesNoHistory, GenQuiet, false, BbZero);
+  mg2.generateKingMoves(p, &movesNoHistory, GenQuiet, false);
+  mg2.updateSortValues(p, &movesNoHistory);
+  ranges::sort(movesNoHistory, moveValueGreaterComparator());
+
+  // Find both target moves in the no-history list to get their base values
+  Value histMoveBaseValue    = VALUE_NONE;
+  Value counterMoveBaseValue = VALUE_NONE;
+  for (const Move m : movesNoHistory) {
+    if (m.stripped() == historyBoostedMove.stripped()) {
+      histMoveBaseValue = m.value();
+    }
+    else if (m.stripped() == counterBoostedMove.stripped()) {
+      counterMoveBaseValue = m.value();
+    }
+  }
+  ASSERT_NE(histMoveBaseValue, VALUE_NONE)    << "History-boosted move should exist in no-history list";
+  ASSERT_NE(counterMoveBaseValue, VALUE_NONE) << "Counter-boosted move should exist in no-history list";
+
+  // History boost: 50000/100 = 500 points added to base value
+  const Value histBoostedValue = moves[histBoostedIdx].value();
+  EXPECT_GT(histBoostedValue, histMoveBaseValue)
+    << "History should have boosted the move's sort value above its base";
+  EXPECT_EQ(histBoostedValue, histMoveBaseValue + 500)
+    << "History boost should be exactly count/100 = 50000/100 = 500";
+
+  // Counter-move boost: 10000/100 = 100 (history) + 500 (counter) = 600 points
+  const Value counterBoostedValue = moves[counterBoostedIdx].value();
+  EXPECT_GT(counterBoostedValue, counterMoveBaseValue)
+    << "Counter-move + history should have boosted the move's sort value above its base";
+  EXPECT_EQ(counterBoostedValue, counterMoveBaseValue + 600)
+    << "Counter-move boost should be history(100) + counter(500) = 600";
+
+  // --- 4. Counter-boosted move should sort above history-only boosted move ---
+  // Counter-boost (600) > history-only boost (500), and both are knight quiet
+  // moves with similar base values, so counter-boosted should rank higher.
+  EXPECT_GT(counterBoostedValue, histBoostedValue)
+    << "Counter-move boost (600) should give higher final value than history-only (500)";
+  EXPECT_LT(counterBoostedIdx, histBoostedIdx)
+    << "Counter-boosted move should appear before history-only move in sorted list";
 }
 
 
