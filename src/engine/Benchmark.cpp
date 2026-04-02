@@ -152,7 +152,9 @@ namespace engine {
                              npsInt);
 
     // Unformatted signature line for CI/script parsing (no locale separators)
-    std::cout << "\nBench: " << result.signature << std::endl;
+    // Use std::format (without L) to guarantee no thousands separators even if
+    // a locale has been imbued on std::cout by other code / tests.
+    std::cout << std::format("\nBench: {}\n", result.signature) << std::flush;
   }
 
 } // namespace engine
