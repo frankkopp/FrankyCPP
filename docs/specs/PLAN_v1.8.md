@@ -33,7 +33,7 @@ or for filling gaps between larger features.
 | QW6  | ✅ **Evasion move generation tests**           | 🟢 1–2 hrs | Testing    | Replaced print-only evasion test with 6 position blocks: move count assertions (pseudo-legal, evasion, legal), structural invariants (evasion ≤ pseudo-legal, legal ≤ evasion), legal⊆evasion containment check, en passant evasion (pos 4), no-castling-in-check (pos 1), double-check king-only (pos 6), illegal evasion delta (pos 5). |
 | QW7  | ✅ **Sort value / history ordering tests**     | 🟢 1–2 hrs | Testing    | Replaced `TODO real tests` in `sortValueTest` with 5 assertion groups: PV move first with VALUE_MAX, monotonic sort order, killer ordering (1001 before 1000), value-zone check (captures > killers > quiet), no non-PV exceeds VALUE_MAX. Also removed stale T9 TODO comment in `MoveGenerator.cpp`.                                     |
 | QW8  | ✅ **History & counter-move sort value tests** | 🟢 1–2 hrs | Testing    | New `sortValueWithHistoryTest`: seeds `History` struct with known counts, verifies exact history boost (+500 = 50000/100), exact counter-move boost (+600 = history 100 + counter 500), counter-boosted sorts above history-only, compares against no-history baseline to confirm value delta.                                            |
-| QW9  | **TestSuite config reset fix**                | 🟢 30 min  | Robustness | `TestSuite.cpp:150` — FIXME about hardcoded config reset. Allow test suite to run with custom configs by removing the forced reset.                                                                                                                                                                                                       |
+| QW9  | ✅ **TestSuite config reset fix**              | 🟢 30 min  | Robustness | Removed dead FIXME/commented-out `resetToDefaults()` from `runAllTests()`. Caller owns config; added clarifying comment.                                                                                                                                                                                                                  |
 | QW10 | **Bench hash for CI regression gate**         | 🟢 1 hr    | CI         | Same as E3. Record deterministic bench hash; assert in CI. Catches accidental search changes. Near-zero maintenance.                                                                                                                                                                                                                      |
 
 ---
@@ -213,9 +213,9 @@ Codebase scan as of 2026-04-01. Each item evaluated for v1.8 relevance.
 
 ### Source Code FIXMEs
 
-| #  | Location            | FIXME Text (Summary)                                               | Value   | Action for v1.8                                             |
-|----|---------------------|--------------------------------------------------------------------|---------|-------------------------------------------------------------|
-| F1 | `TestSuite.cpp:150` | Config reset in `runAllTests()` prevents testing different configs | 🟢 Easy | **→ QW9** — Remove forced reset; let caller control config. |
+| #  | Location            | FIXME Text (Summary)                                               | Value  | Action for v1.8                                                 |
+|----|---------------------|--------------------------------------------------------------------|--------|-----------------------------------------------------------------|
+| F1 | `TestSuite.cpp:150` | Config reset in `runAllTests()` prevents testing different configs | ✅ Done | **QW9 complete** — Dead code removed; clarifying comment added. |
 
 ### Test Code TODOs
 
@@ -226,7 +226,7 @@ Codebase scan as of 2026-04-01. Each item evaluated for v1.8 relevance.
 
 ### Summary
 
-- **10 items** completed via Quick Wins (QW1–QW8) or as side-effects (T7, T9)
+- **11 items** completed via Quick Wins (QW1–QW9) or as side-effects (T7, T9)
 - **2 items** folded into feature phases (T8, T13 → A4 SPSA)
 - **2 items** deferred (T1 TT XOR, T14 TB tuning — low priority / high risk)
 - **1 item** skipped (T12 ABK format — no demand)
