@@ -308,20 +308,24 @@ int main(int argc, char* argv[]) {
       init::init();
       const int benchDepth = programOptions["benchDepth"].as<int>();
       const int benchHash  = programOptions["benchHash"].as<int>();
+
+      const int threads = SEARCH_CONFIG.THREADS;
+      
       std::cout << std::endl;
-      std::cout << "RUNNING BENCHMARK\n";
-      std::cout << "########################################################\n";
-      std::cout << "Version: " << appName << "\n";
-      std::cout << "Depth:   " << benchDepth << "\n";
-      std::cout << "Hash:    " << benchHash << " MB\n";
-      std::cout << "Threads: " << SEARCH_CONFIG.THREADS << "\n";
+      std::cout << "RUNNING BENCHMARK" << std::endl;
+      std::cout << "########################################################" << std::endl;
+      std::cout << "Version: " << appName << std::endl;
+      std::cout << "Depth:   " << benchDepth << std::endl;
+      std::cout << "Hash:    " << benchHash << " MB" << std::endl;
+      std::cout << "Threads: " << threads << std::endl;
       std::cout << std::endl;
-      engine::BenchConfig benchConfig;
+
+      BenchConfig benchConfig;
       benchConfig.depth      = benchDepth;
       benchConfig.hashSizeMB = benchHash;
-      benchConfig.threads    = SEARCH_CONFIG.THREADS;
-      const auto result      = engine::Benchmark::run(benchConfig);
-      engine::Benchmark::printResults(result);
+      benchConfig.threads    = threads;
+      const auto result      = Benchmark::run(benchConfig);
+      Benchmark::printResults(result);
       return 0;
     }
 

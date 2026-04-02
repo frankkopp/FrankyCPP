@@ -17,7 +17,8 @@ This is a **Windows** development environment. Use **PowerShell** syntax for all
 - **Allowed triggers:** "implement", "fix", "change", "update", "add", "remove", "refactor", "proceed", "go ahead", "do it"
 - **Forbidden triggers:** "check", "show", "analyze", "review", "what", "how", "why", "explain", "wdyt", "should I", "any issues"
 - **Gray areas:** If a user reports a problem without saying "fix it", ask first before modifying code.
-- **Never commit** without explicit user permission.
+- **Never commit** without explicit user request or approval — not even with `--amend`. Always ask first.
+- **Never push** without explicit user permission.
 - **Never create summary `.md` documents** unless explicitly requested; provide summaries in chat instead.
 
 ## Build Policy

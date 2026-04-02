@@ -116,6 +116,9 @@ namespace engine {
     // Set total time (only search time, no TT clearing overhead)
     result.totalTime = milliseconds{totalSearchTimeMs};
 
+    // Deterministic bench signature for CI regression gate
+    result.signature = result.totalNodes;
+
     // Calculate NPS (avoid division by zero)
     if (result.totalTime.count() > 0) {
       result.nps = static_cast<double>(result.totalNodes) * 1000.0 / static_cast<double>(result.totalTime.count());
@@ -147,6 +150,9 @@ namespace engine {
                              result.totalNodes,
                              totalTimeSec,
                              npsInt);
+
+    // Unformatted signature line for CI/script parsing (no locale separators)
+    std::cout << "\nBench: " << result.signature << std::endl;
   }
 
 } // namespace engine

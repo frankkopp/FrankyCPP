@@ -307,6 +307,22 @@ matches:
   #   single-threaded algorithm change with tight Elo bounds.
   # ==========================================================================
 
+  #  ## Bullet 1+0.01 — Ultra-fast smoke test (~7min for 500 games with Threads=4)
+    - name: "Dev_QuickTest_1s"
+      tag: "Dev_QuickTest_1s"
+      engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+      engine1Version: "v1.8"
+      engine1Options: "OwnBook=false; Threads=4"
+      engine2Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
+      engine2Version: "v1.7"
+      engine2Options: "OwnBook=false; Threads=4"
+      openingBook: "books/8moves_v3.pgn"
+      timeControl: "1+0.01"
+      timeMargin: 200
+      rounds: 52
+      concurrency: 4
+      outputPgn: "results/matches/Dev_QuickTest_1s.pgn"
+
 #  ## Bullet 1+0.01 — Ultra-fast smoke test (~7min for 500 games with Threads=4)
 #  - name: "Tuning_Phase9_QuickTest_1s"
 #    tag: "Phase9_QuickTest"
@@ -372,19 +388,19 @@ matches:
 #    outputPgn: "results/matches/Tuning_Phase9_GauntletD_10s.pgn"
 
   ## 300+0 — Long TC to avoid time-related issues with unfixed v1.6 binary
-  - name: "Tuning_Phase10_GauntletE-2_300s"
-    tag: "TC-Tuning_Phase10_GauntletE-2"
-    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
-    engine1Version: "v1.7"
-    engine1Options: "OwnBook=false; Threads=4"
-    engine2Path: "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe"
-    engine2Version: "v1.6"
-    engine2Options: "OwnBook=false; Threads=4"
-    openingBook: "books/8moves_v3.pgn"
-    timeControl: "300+0"
-    rounds: 100
-    concurrency: 4
-    outputPgn: "results/matches/Tuning_Phase10_GauntletE-2_300s.pgn"
+#- name: "Tuning_Phase10_GauntletE-2_300s"
+#  tag: "TC-Tuning_Phase10_GauntletE-2"
+#  engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
+#  engine1Version: "v1.7"
+#  engine1Options: "OwnBook=false; Threads=4"
+#  engine2Path: "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe"
+#  engine2Version: "v1.6"
+#  engine2Options: "OwnBook=false; Threads=4"
+#  openingBook: "books/8moves_v3.pgn"
+#  timeControl: "300+0"
+#  rounds: 100
+#  concurrency: 4
+#  outputPgn: "results/matches/Tuning_Phase10_GauntletE-2_300s.pgn"
 
   ## Rapid 60+0.6 — Fishtest LTC equivalent (~5hr for 200 games with Threads=4)
 #  - name: "TC_gauntlet_LTC_60s"

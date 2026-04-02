@@ -34,7 +34,7 @@ or for filling gaps between larger features.
 | QW7  | ✅ **Sort value / history ordering tests**     | 🟢 1–2 hrs | Testing    | Replaced `TODO real tests` in `sortValueTest` with 5 assertion groups: PV move first with VALUE_MAX, monotonic sort order, killer ordering (1001 before 1000), value-zone check (captures > killers > quiet), no non-PV exceeds VALUE_MAX. Also removed stale T9 TODO comment in `MoveGenerator.cpp`.                                     |
 | QW8  | ✅ **History & counter-move sort value tests** | 🟢 1–2 hrs | Testing    | New `sortValueWithHistoryTest`: seeds `History` struct with known counts, verifies exact history boost (+500 = 50000/100), exact counter-move boost (+600 = history 100 + counter 500), counter-boosted sorts above history-only, compares against no-history baseline to confirm value delta.                                            |
 | QW9  | ✅ **TestSuite config reset fix**              | 🟢 30 min  | Robustness | Removed dead FIXME/commented-out `resetToDefaults()` from `runAllTests()`. Caller owns config; added clarifying comment.                                                                                                                                                                                                                  |
-| QW10 | **Bench hash for CI regression gate**         | 🟢 1 hr    | CI         | Same as E3. Record deterministic bench hash; assert in CI. Catches accidental search changes. Near-zero maintenance.                                                                                                                                                                                                                      |
+| QW10 | ✅ **Bench hash for CI regression gate**       | 🟢 1 hr    | CI         | Added `signature` field to `BenchResult` (== totalNodes), `Bench: <number>` output line in `printResults()`. CI steps (Windows + Linux) run `--bench --threads 1` and compare against `bench_signature.txt`. Local unit test `benchSignatureMatchesCommitted` mirrors CI check. Also: determinism, sensitivity, and output-parse tests.   |
 
 ---
 
@@ -96,7 +96,7 @@ or for filling gaps between larger features.
 |----|-------------------------------------|--------------|------------|------------|-----------------------------------------------------------------------------------------------|
 | E1 | **SEE unit test expansion**         | N/A          | 🟢 1 day   | 🟢 Low     | Current SEE tested in integration; add dedicated edge-case unit tests (pins, x-rays, promos). |
 | E2 | **Search regression test baseline** | N/A          | 🟢 1 day   | 🟢 Low     | Fixed-depth node count assertions for key positions. Catch accidental search changes early.   |
-| E3 | **Bench hash stability**            | N/A          | 🟢 0.5 day | 🟢 Low     | `bench` command outputs a deterministic hash. Store expected hash in CI to catch regressions. |
+| E3 | ✅ **Bench hash stability**          | N/A          | 🟢 0.5 day | 🟢 Low     | Done via QW10. Signature in `bench_signature.txt`, verified in CI + unit test.                |
 
 ---
 
@@ -108,7 +108,7 @@ Ordered by confidence of ELO gain and dependency chain:
 1. **C1: MultiPV** — High-value, existing plan, essential for analysis use.
 2. **C2: UCI debug** — Trivial implementation, fills protocol gap.
 3. **A8/C4: Contempt** — Simple draw score adjustment, measurable ELO impact.
-4. **E3: Bench hash stability** — Safety net before making search changes.
+4. ✅ **E3: Bench hash stability** — Safety net before making search changes.
 
 ### Phase 2 — Core Search Enhancements (Week 3–5)
 5. **A1: Continuation History** — Biggest expected single-feature gain. Prerequisite for A3.
