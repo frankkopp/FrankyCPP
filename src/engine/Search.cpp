@@ -324,6 +324,9 @@ void Search::run() {
     searchResult.bookMove = true;
     searchResult.threads  = numHelperThreads + 1;
     hadBookMove           = true;
+    if (isDebugMode()) {
+      sendString(std::format("book move: {}", bookMove.str()));
+    }
   }
   // ===========================================================================
   // /END ITERATIVE DEEPENING
@@ -883,6 +886,10 @@ SearchResult Search::iterativeDeepening(Position& p) {
         ESSENTIAL_STAT_SET(thread().statistics.currentBestRootMove, thread().pv.first());
         ESSENTIAL_STAT_SET(thread().statistics.currentBestRootMoveValue, thread().pv.first().value());
         sendIterationEndInfoToUci();
+        // Send debug eval breakdown and iteration stats when debug mode is on
+        if (isDebugMode()) {
+          sendDebugEvalInfo();
+        }
       }
       // Track completed iteration for best-thread selection (all threads)
       thread().completedIterationDepth = iterationDepth;
@@ -3026,6 +3033,36 @@ void Search::sendString(const std::string& msg) const {
     return;
   }
   LOG__INFO(Logger::get().SEARCH_LOG, "uci >> {}", msg);
+}
+
+void Search::sendDebugEvalInfo() const {
+  // Evaluate the position at the end of the PV (after applying all PV moves).
+  // This is far more informative than the root position, which is the same every
+  // iteration and often symmetric (e.g., startpos → all components are zero).
+  Position pvPos = position;
+  const MoveList pvLine = thread().pv.extract();
+  for (const auto& move : pvLine) {
+    if (!move) break;
+    pvPos.doMove(move);
+  }
+  const EvalTrace trace = thread().evaluator.evaluateTrace(pvPos);
+  sendString(std::format("pv-leaf {} | {}", pvLine.str(), trace.str()));
+
+  // Iteration stats: TT hit-rate and beta-cut-1st-move %
+  const auto& stats = thread().statistics;
+  const uint64_t ttHits = stats.ttHitSufficientDepth + stats.ttHitInsufficientDepth;
+  const uint64_t ttTotal = stats.ttProbes;
+  const double ttHitRate = ttTotal > 0
+    ? 100.0 * static_cast<double>(ttHits) / static_cast<double>(ttTotal)
+    : 0.0;
+  const double betaCut1st = stats.betaCuts > 0
+    ? 100.0 * static_cast<double>(stats.betaCutsByIndex[0]) / static_cast<double>(stats.betaCuts)
+    : 0.0;
+  sendString(std::format("depth {} nodes {:L} tt-hitrate {:.1f}% beta-cut-1st {:.1f}%",
+                         stats.currentSearchDepth,
+                         thread().nodesVisited,
+                         ttHitRate,
+                         betaCut1st));
 }
 
 void Search::sendResult(const SearchResult& result) const {

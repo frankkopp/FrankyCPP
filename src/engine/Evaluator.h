@@ -77,12 +77,35 @@
 #include "config/EvalConfigData.h"
 #include "types/types.h"
 
+#include <string>
+
 namespace config {
   struct SearchConfigData;
 }
 
 namespace engine {
   using namespace chess;
+
+  /// Evaluation breakdown for debug/trace purposes.
+  /// Each component stores midgame and endgame scores from white's perspective.
+  struct EvalTrace {
+    Score material{};       ///< Material balance
+    Score positional{};     ///< Piece-square table values
+    Score pawn{};           ///< Pawn structure (isolated, doubled, passed, etc.)
+    Score pieces{};         ///< Piece mobility and placement (N, B, R, Q)
+    Score threats{};        ///< Threat evaluation (pawn/minor attacks, hanging)
+    Score coordination{};   ///< Connected rooks, minor connectivity
+    Score kingSafety{};     ///< King safety (pawn shield, attackers, etc.)
+    Score tempo{};          ///< Tempo bonus for side to move
+    double phase = 0.0;     ///< Game phase factor (1.0 = midgame, 0.0 = endgame)
+    Value totalWhite{};     ///< Final value from white's perspective
+    Value total{};          ///< Final value from side-to-move perspective
+    bool lazyExit = false;  ///< True if lazy eval shortcut was taken
+    bool insufficientMaterial = false; ///< True if draw by insufficient material
+
+    /// Returns a formatted multi-line string of the eval breakdown.
+    [[nodiscard]] std::string str() const;
+  };
 
   class Evaluator {
 
@@ -131,6 +154,13 @@ namespace engine {
     /// @param p  The position to evaluate
     /// @return   Positive value = advantage for side to move
     Value evaluate(const Position& p);
+
+    /// Evaluates the position and returns a detailed breakdown of all evaluation
+    /// components. Used for UCI debug mode info strings.
+    /// Slightly slower than evaluate() due to per-component score tracking.
+    /// @param p  The position to evaluate
+    /// @return   EvalTrace with per-component scores and final value
+    EvalTrace evaluateTrace(const Position& p);
 
     /// Evaluates pawn structure (isolated, doubled, passed, connected pawns).
     /// Results are cached in PawnTT for efficiency.

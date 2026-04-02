@@ -93,7 +93,7 @@ bool UciHandler::handleCommand(const std::string& cmd) {
   else if (token == "stop")            { stopCommand(); }
   else if (token == "ponderhit")       { ponderHitCommand(); }
   else if (token == "register")        { registerCommand(); }
-  else if (token == "debug")           { debugCommand(); }
+  else if (token == "debug")           { debugCommand(inStream); }
   else if (token == "perft")           { perftCommand(inStream); }
   else if (token == "bench")           { benchCommand(inStream); }
   else if (token == "getoptions")      { getOptionsCommand(); }
@@ -502,8 +502,22 @@ void UciHandler::registerCommand() const {
   uciError("UCI Protocol Command: register not implemented!");
 }
 
-void UciHandler::debugCommand() const {
-  uciError("UCI Protocol Command: debug not implemented!");
+void UciHandler::debugCommand(std::istringstream& inStream) {
+  std::string token;
+  inStream >> std::skipws >> token;
+  if (token == "on") {
+    debugMode = true;
+    sendString("Debug mode: on");
+    LOG__INFO(Logger::get().UCIHAND_LOG, "Debug mode enabled");
+  }
+  else if (token == "off") {
+    debugMode = false;
+    sendString("Debug mode: off");
+    LOG__INFO(Logger::get().UCIHAND_LOG, "Debug mode disabled");
+  }
+  else {
+    uciError(std::format("debug: expected 'on' or 'off', got '{}'", token));
+  }
 }
 
 void UciHandler::helpCommand() const {
@@ -579,8 +593,9 @@ void UciHandler::helpCommand() const {
   out("register");
   out("  Not implemented.");
 
-  out("debug");
-  out("  Not implemented.");
+  out("debug on|off");
+  out("  Toggles debug mode. When on, engine sends additional info strings");
+  out("  (eval breakdown, search iteration stats, diagnostic messages).");
 
   out("help");
   out("  Prints this help.");

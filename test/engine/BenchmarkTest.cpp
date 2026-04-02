@@ -196,7 +196,7 @@ TEST_F(BenchmarkTest, printResultsOutputsBenchLine) {
 
   // Capture stdout
   const auto oldBuf = std::cout.rdbuf();
-  std::ostringstream capture;
+  const std::ostringstream capture;
   std::cout.rdbuf(capture.rdbuf());
 
   Benchmark::printResults(result);
@@ -216,6 +216,7 @@ TEST_F(BenchmarkTest, printResultsOutputsBenchLine) {
 TEST_F(BenchmarkTest, benchSignatureMatchesCommitted) {
   // Determine which compiler label to look for
 #if defined(_MSC_VER)
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string compilerLabel = "msvc";
 #elif defined(__clang__)
   const std::string compilerLabel = "clang";

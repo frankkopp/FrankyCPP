@@ -70,11 +70,11 @@ or for filling gaps between larger features.
 
 ### C. Missing UCI Features (Functionality)
 
-| #  | Feature                             | Expected ELO | Effort      | Complexity | Notes                                                                                                                                                                                                                 |
-|----|-------------------------------------|--------------|-------------|------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| C1 | **MultiPV**                         | N/A          | 🟢 1–2 days | 🟡 Medium  | Existing plan in `PLAN_MultiPV.md`. Essential for analysis GUIs. Standard UCI option, not yet implemented.                                                                                                            |
-| C2 | **UCI `debug` command + eval info** | N/A          | 🟢 1–2 days | 🟢 Low     | Currently prints "not implemented". Toggle verbose info strings: eval breakdown (material, positional, mobility, king safety, threats, phase), iteration stats (TT hit-rate, beta-cut-1st%), book move announcements. |
-| C4 | **UCI `Contempt` option**           | (see A8)     |             |            | Cross-ref with A8 — the UCI option part.                                                                                                                                                                              |
+| #  | Feature                               | Expected ELO | Effort      | Complexity | Notes                                                                                                                                                                                                        |
+|----|---------------------------------------|--------------|-------------|------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| C1 | **MultiPV**                           | N/A          | 🟢 1–2 days | 🟡 Medium  | Existing plan in `PLAN_MultiPV.md`. Essential for analysis GUIs. Standard UCI option, not yet implemented.                                                                                                   |
+| C2 | ✅ **UCI `debug` command + eval info** | N/A          | 🟢 1–2 days | 🟢 Low     | `debug on/off` toggle, PV-leaf eval breakdown (material, positional, pawn, pieces, threats, coordination, king safety, tempo, phase), iteration stats (TT hit-rate, beta-cut-1st%), book move announcements. |
+| C4 | **UCI `Contempt` option**             | (see A8)     |             |            | Cross-ref with A8 — the UCI option part.                                                                                                                                                                     |
 
 ---
 
@@ -105,7 +105,7 @@ Ordered by confidence of ELO gain and dependency chain:
 
 ### Phase 1 — Quick Wins & UCI Features (Week 1–2)
 1. **C1: MultiPV** — High-value, existing plan, essential for analysis use.
-2. **C2: UCI debug + eval info** — Debug toggle with eval breakdown and search stats in info strings.
+2. **C2: UCI debug + eval info** — Debug toggle with eval breakdown and search stats in info strings. ✅
 3. **A8/C4: Contempt** — Simple draw score adjustment, measurable ELO impact.
 4. ✅ **E3: Bench hash stability** — Safety net before making search changes.
 

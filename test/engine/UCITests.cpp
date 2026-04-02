@@ -1155,3 +1155,115 @@ TEST_F(UCITest, resetAllOptionsToDefaults) {
 
   SUCCEED();
 }
+
+// =============================================================================
+// Debug command tests (C2)
+// =============================================================================
+
+TEST_F(UCITest, debugDefault) {
+  // Debug mode should be off by default
+  ostringstream os;
+  istringstream is("isready");
+  UciHandler uciHandler(&is, &os);
+  uciHandler.loop();
+
+  EXPECT_FALSE(uciHandler.isDebugMode());
+}
+
+TEST_F(UCITest, debugOnOff) {
+  ostringstream os;
+  // Send debug on, then debug off, then quit
+  istringstream is("debug on\ndebug off\nquit");
+  UciHandler uciHandler(&is, &os);
+
+  // Verify default is off
+  EXPECT_FALSE(uciHandler.isDebugMode());
+
+  uciHandler.loop();
+  const string result = os.str();
+  LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE:\n{}", result);
+
+  // Output should contain confirmation for both on and off
+  EXPECT_NE(result.find("info string Debug mode: on"), string::npos);
+  EXPECT_NE(result.find("info string Debug mode: off"), string::npos);
+
+  // After processing "debug off", debug mode should be off
+  EXPECT_FALSE(uciHandler.isDebugMode());
+}
+
+TEST_F(UCITest, debugBadArg) {
+  ostringstream os;
+  istringstream is("debug foo\nquit");
+  UciHandler uciHandler(&is, &os);
+  uciHandler.loop();
+  const string result = os.str();
+  LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE:\n{}", result);
+
+  // Should contain an error message about invalid argument
+  EXPECT_NE(result.find("expected 'on' or 'off'"), string::npos);
+  // Debug mode should remain off (default)
+  EXPECT_FALSE(uciHandler.isDebugMode());
+}
+
+TEST_F(UCITest, debugInfoDuringSearch) {
+  Logger::get().UCIHAND_LOG->set_level(spdlog::level::warn);
+  Logger::get().UCI_LOG->set_level(spdlog::level::warn);
+  Logger::get().SEARCH_LOG->set_level(spdlog::level::warn);
+  Logger::get().TT_LOG->set_level(spdlog::level::warn);
+
+  ostringstream os;
+  // Enable debug, set position, run a short search, then quit
+  istringstream is("debug on\nposition startpos\ngo movetime 200\nquit");
+  UciHandler uciHandler(&is, &os);
+  uciHandler.loop();
+
+  // Wait briefly for search to finish
+  uciHandler.getSearchPtr()->waitWhileSearching();
+
+  const string result = os.str();
+  LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE:\n{}", result);
+
+  // Debug mode should produce PV leaf eval breakdown info strings
+  EXPECT_NE(result.find("info string pv-leaf"), string::npos);
+  // Eval breakdown should contain component labels
+  EXPECT_NE(result.find("eval:"), string::npos);
+  // Should also have iteration stats with tt-hitrate
+  EXPECT_NE(result.find("tt-hitrate"), string::npos);
+  EXPECT_NE(result.find("beta-cut-1st"), string::npos);
+
+  Logger::get().UCIHAND_LOG->set_level(spdlog::level::debug);
+  Logger::get().UCI_LOG->set_level(spdlog::level::debug);
+  Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
+  Logger::get().TT_LOG->set_level(spdlog::level::debug);
+}
+
+TEST_F(UCITest, debugBookMove) {
+  // Enable book for this test (SetUp disables it by default)
+  CONFIG_OVERRIDE(s.USE_BOOK = true;);
+
+  Logger::get().UCIHAND_LOG->set_level(spdlog::level::warn);
+  Logger::get().UCI_LOG->set_level(spdlog::level::warn);
+  Logger::get().SEARCH_LOG->set_level(spdlog::level::warn);
+  Logger::get().BOOK_LOG->set_level(spdlog::level::warn);
+
+  ostringstream os;
+  // Enable debug, set startpos (has book entries), use movetime (enables timeControl for book)
+  istringstream is("debug on\nposition startpos\ngo movetime 5000\nquit");
+  UciHandler uciHandler(&is, &os);
+  uciHandler.loop();
+
+  // Wait for search/book move to complete
+  uciHandler.getSearchPtr()->waitWhileSearching();
+
+  const string result = os.str();
+  LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE:\n{}", result);
+
+  // When debug is on and a book move is found, we expect the book move info string
+  EXPECT_NE(result.find("info string book move:"), string::npos) << "Expected book move debug info string in output:\n" << result;
+
+  // Should also have bestmove in the output
+  EXPECT_NE(result.find("bestmove"), string::npos);
+
+  // No eval breakdown expected — book moves skip the search entirely
+  // (The eval trace is only sent at iteration end during search)
+}

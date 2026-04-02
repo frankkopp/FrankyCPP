@@ -22,6 +22,7 @@
 #include "config/ConfigManager.h"
 
 #include <algorithm>
+#include <format>
 
 using namespace engine;
 using namespace chess;
@@ -31,6 +32,179 @@ using namespace common;
 Evaluator::Evaluator()
     : EvalConfig(ConfigManager::instance().eval()) {
   // PawnTT is managed by Search and passed via setPawnTT()
+}
+
+std::string EvalTrace::str() const {
+  if (insufficientMaterial) {
+    return "eval: draw (insufficient material)";
+  }
+  if (lazyExit) {
+    return std::format("eval: {} (lazy exit) | material mg={} eg={} | positional mg={} eg={} | phase={:.2f}",
+                       total.str(),
+                       static_cast<int>(material.midgame), static_cast<int>(material.endgame),
+                       static_cast<int>(positional.midgame), static_cast<int>(positional.endgame),
+                       phase);
+  }
+  return std::format(
+    "eval: {} (white: {}) | mat({},{}) pos({},{}) pawn({},{}) pieces({},{}) "
+    "threats({},{}) coord({},{}) king({},{}) tempo({},{}) | phase={:.2f}",
+    total.str(), totalWhite.str(),
+    static_cast<int>(material.midgame), static_cast<int>(material.endgame),
+    static_cast<int>(positional.midgame), static_cast<int>(positional.endgame),
+    static_cast<int>(pawn.midgame), static_cast<int>(pawn.endgame),
+    static_cast<int>(pieces.midgame), static_cast<int>(pieces.endgame),
+    static_cast<int>(threats.midgame), static_cast<int>(threats.endgame),
+    static_cast<int>(coordination.midgame), static_cast<int>(coordination.endgame),
+    static_cast<int>(kingSafety.midgame), static_cast<int>(kingSafety.endgame),
+    static_cast<int>(tempo.midgame), static_cast<int>(tempo.endgame),
+    phase);
+}
+
+EvalTrace Evaluator::evaluateTrace(const Position& p) {
+  EvalTrace trace{};
+
+  // insufficient material check
+  if (p.checkInsufficientMaterial()) {
+    trace.insufficientMaterial = true;
+    trace.total = VALUE_DRAW;
+    return trace;
+  }
+
+  // Reset evaluator state (same as evaluate())
+  score.midgame           = VALUE_ZERO;
+  score.endgame           = VALUE_ZERO;
+  kingAttackCount[WHITE]  = 0;
+  kingAttackCount[BLACK]  = 0;
+  kingAttackWeight[WHITE] = 0;
+  kingAttackWeight[BLACK] = 0;
+  attackedBy[WHITE]       = BbZero;
+  attackedBy[BLACK]       = BbZero;
+  passedPawns[WHITE]      = BbZero;
+  passedPawns[BLACK]      = BbZero;
+  std::memset(&attackedByPT, 0, sizeof(attackedByPT));
+
+  const double gamePhaseFactor = p.getGamePhaseFactor();
+  trace.phase = gamePhaseFactor;
+
+  // material
+  if (EvalConfig.USE_MATERIAL) {
+    score.midgame = static_cast<Value>(p.getMaterial(WHITE) - p.getMaterial(BLACK));
+    score.endgame = score.midgame;
+    trace.material = score;
+  }
+
+  // positional value
+  if (EvalConfig.USE_POSITIONAL) {
+    const Score before = score;
+    score.midgame += static_cast<Value>(p.getMidPosValue(WHITE) - p.getMidPosValue(BLACK));
+    score.endgame += static_cast<Value>(p.getEndPosValue(WHITE) - p.getEndPosValue(BLACK));
+    trace.positional = {score.midgame - before.midgame, score.endgame - before.endgame};
+  }
+
+  // lazy eval early exit
+  if (EvalConfig.USE_LAZY_EVAL) {
+    const Value value = valueFromScore(score, gamePhaseFactor);
+    if (value > static_cast<Value>(static_cast<int>(EvalConfig.LAZY_THRESHOLD + EvalConfig.LAZY_THRESHOLD * gamePhaseFactor))) {
+      trace.lazyExit = true;
+      trace.totalWhite = value;
+      trace.total = finalEval(p, value);
+      return trace;
+    }
+  }
+
+  // Pre-compute attack data (same as evaluate())
+  {
+    attackedBy[WHITE] = Bitboards::nonSliderAttacks[KING][p.getKingSquare(WHITE)];
+    attackedBy[BLACK] = Bitboards::nonSliderAttacks[KING][p.getKingSquare(BLACK)];
+    attackedByPT[KING][WHITE] = attackedBy[WHITE];
+    attackedByPT[KING][BLACK] = attackedBy[BLACK];
+    Bitboard wp = p.getPieceBb(WHITE, PAWN);
+    while (wp) { attackedByPT[PAWN][WHITE] |= Bitboards::pawnAttacks[WHITE][wp.popLSB()]; }
+    attackedBy[WHITE] |= attackedByPT[PAWN][WHITE];
+    Bitboard bp = p.getPieceBb(BLACK, PAWN);
+    while (bp) { attackedByPT[PAWN][BLACK] |= Bitboards::pawnAttacks[BLACK][bp.popLSB()]; }
+    attackedBy[BLACK] |= attackedByPT[PAWN][BLACK];
+  }
+
+  // pawn eval
+  if (EvalConfig.USE_PAWN_EVAL) {
+    const Score before = score;
+    pawnEval(p, score);
+    trace.pawn = {score.midgame - before.midgame, score.endgame - before.endgame};
+  }
+  else {
+    for (const Color c : Color::all()) {
+      const Bitboard myPawns  = p.getPieceBb(c, PAWN);
+      const Bitboard oppPawns = p.getPieceBb(~c, PAWN);
+      Bitboard passed         = BbZero;
+      Bitboard pawns          = myPawns;
+      while (pawns) {
+        const Square sq    = pawns.popLSB();
+        const Bitboard fwd = Bitboards::rays[c == WHITE ? N : S][sq];
+        if (!(myPawns & fwd) && !(oppPawns & Bitboards::passedPawnMask[c][sq])) {
+          passed |= Bitboards::sqBb[sq];
+        }
+      }
+      passedPawns[c] = passed;
+    }
+  }
+
+  // piece eval
+  if (EvalConfig.USE_PIECE_EVAL) {
+    const Score before = score;
+    pieceEval(p, score, WHITE, KNIGHT);
+    pieceEval(p, score, BLACK, KNIGHT);
+    pieceEval(p, score, WHITE, BISHOP);
+    pieceEval(p, score, BLACK, BISHOP);
+    pieceEval(p, score, WHITE, ROOK);
+    pieceEval(p, score, BLACK, ROOK);
+    pieceEval(p, score, WHITE, QUEEN);
+    pieceEval(p, score, BLACK, QUEEN);
+    trace.pieces = {score.midgame - before.midgame, score.endgame - before.endgame};
+  }
+
+  // threat eval
+  if (EvalConfig.USE_THREAT_EVAL) {
+    const Score before = score;
+    threatEval(p, score, WHITE);
+    threatEval(p, score, BLACK);
+    trace.threats = {score.midgame - before.midgame, score.endgame - before.endgame};
+  }
+
+  // coordination eval
+  if (EvalConfig.USE_CONNECTED_ROOKS || EvalConfig.USE_MINOR_CONNECTIVITY) {
+    const Score before = score;
+    coordinationEval(p, score, WHITE);
+    coordinationEval(p, score, BLACK);
+    trace.coordination = {score.midgame - before.midgame, score.endgame - before.endgame};
+  }
+
+  // king eval
+  if (EvalConfig.USE_KING_EVAL) {
+    const Score before = score;
+    kingEval(p, score, WHITE);
+    kingEval(p, score, BLACK);
+    trace.kingSafety = {score.midgame - before.midgame, score.endgame - before.endgame};
+  }
+
+  // tempo
+  if (EvalConfig.USE_TEMPO) {
+    score.midgame += static_cast<Value>(EvalConfig.TEMPO);
+    trace.tempo = {static_cast<Value>(EvalConfig.TEMPO), VALUE_ZERO};
+  }
+
+  // final value
+  Value value;
+  if (EvalConfig.USE_GAMEPHASE_VALUE) {
+    value = valueFromScore(score, gamePhaseFactor);
+  }
+  else {
+    value = (score.midgame + score.endgame) / 2;
+  }
+
+  trace.totalWhite = value;
+  trace.total = finalEval(p, value);
+  return trace;
 }
 
 Value Evaluator::evaluate(const Position& p) {
@@ -461,7 +635,7 @@ inline void Evaluator::bishopEval(const Position& p, Score& s, const Color us, C
     const Bitboard myOcc = p.getOccupiedBb(us);
     const int mobility   = (attacks & ~myOcc).popcount();
 
-    int mid = mobility * EvalConfig.BISHOP_MOBILITY_MID_PER_MOVE;
+    const int mid = mobility * EvalConfig.BISHOP_MOBILITY_MID_PER_MOVE;
     int end = mobility * EvalConfig.BISHOP_MOBILITY_END_PER_MOVE;
 
     if (mobility <= 3) {

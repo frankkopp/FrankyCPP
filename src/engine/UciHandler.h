@@ -39,6 +39,9 @@ FRIEND_TEST_FWD_DECL(UCITest, goInfinite);
 FRIEND_TEST_FWD_DECL(UCITest, goPonder);
 FRIEND_TEST_FWD_DECL(UCITest, goMate);
 FRIEND_TEST_FWD_DECL(UCITest, goError);
+FRIEND_TEST_FWD_DECL(UCITest, debugOnOff);
+FRIEND_TEST_FWD_DECL(UCITest, debugDefault);
+FRIEND_TEST_FWD_DECL(UCITest, debugBadArg);
 
 namespace engine {
   using namespace chess;
@@ -59,6 +62,10 @@ namespace engine {
 
     std::istream* pInputStream;
     std::ostream* pOutputStream;
+
+    /// UCI debug mode toggle. When true, the engine sends additional
+    /// diagnostic info strings (eval breakdown, iteration stats, etc.).
+    bool debugMode = false;
 
   public:
     UciHandler();
@@ -88,6 +95,9 @@ namespace engine {
       return pSearch;
     }
 
+    /// Returns true if UCI debug mode is enabled (debug on).
+    [[nodiscard]] bool isDebugMode() const { return debugMode; }
+
   private:
     bool handleCommand(const std::string& cmd);
     void uciCommand() const;
@@ -112,7 +122,10 @@ namespace engine {
     void perftCommand(std::istringstream& inStream) const;
     void benchCommand(std::istringstream& inStream) const;
     void registerCommand() const;
-    void debugCommand() const;
+    void debugCommand(std::istringstream& inStream);
+    FRIEND_TEST_NS(UCITest, debugOnOff);
+    FRIEND_TEST_NS(UCITest, debugDefault);
+    FRIEND_TEST_NS(UCITest, debugBadArg);
     void helpCommand() const;
     void getOptionsCommand() const;
     void getExtendedOptionsCommand() const;

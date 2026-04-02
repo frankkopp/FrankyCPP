@@ -620,6 +620,14 @@ namespace engine {
     /// @param msg  Message to send
     void sendString(const std::string& msg) const;
 
+    /// Returns true if the UCI handler has debug mode enabled.
+    /// Used to guard additional diagnostic info string output.
+    [[nodiscard]] bool isDebugMode() const { return uciHandler && uciHandler->isDebugMode(); }
+
+    /// Sends debug eval breakdown for the current root position via info string.
+    /// Only called when debug mode is on and main thread completes an iteration.
+    void sendDebugEvalInfo() const;
+
     /// Sends search result to UCI handler if available.
     /// @param result  Search result to send
     void sendResult(const SearchResult& result) const;
