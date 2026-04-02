@@ -81,12 +81,12 @@ or for filling gaps between larger features.
 
 ### D. Tuning & Infrastructure
 
-| #  | Feature                           | Expected ELO | Effort      | Complexity | Notes                                                                                                  |
-|----|-----------------------------------|--------------|-------------|------------|--------------------------------------------------------------------------------------------------------|
-| D1 | **SPSA Tuning Framework**         | (see A4)     | 🟡 1–2 wks  | 🟡 Medium  | Extend existing Texel infra. Needs parameter perturbation, match-based feedback, convergence tracking. |
-| D2 | **Profile-Guided Optimization**   | +5–15        | 🟢 2–3 days | 🟢 Low     | Add CMake PGO support: instrument build → run bench → optimized rebuild. Free NPS gain.                |
-| D3 | **Re-tune eval after new search** | +5–15        | 🟡 3–5 days | 🟢 Low     | After adding continuation history / probcut, re-run Texel tuning. Search changes shift eval optima.    |
-| D4 | **Runtime PEXT Detection**        | N/A (compat) | 🟡 3–5 days | 🟡 Medium  | CPUID check + software PEXT fallback. Broadens hardware compatibility. No ELO gain on BMI2 hardware.   |
+| #  | Feature                           | Expected ELO | Effort      | Complexity | Notes                                                                                                      |
+|----|-----------------------------------|--------------|-------------|------------|------------------------------------------------------------------------------------------------------------|
+| D1 | **SPSA Tuning Framework**         | (see A4)     | 🟡 1–2 wks  | 🟡 Medium  | Extend existing Texel infra. Needs parameter perturbation, match-based feedback, convergence tracking.     |
+| D2 | **Profile-Guided Optimization**   | +5–15        | 🟢 2–3 days | 🟢 Low     | Add CMake PGO support: instrument build → run bench → optimized rebuild. Free NPS gain. See `PLAN_PGO.md`. |
+| D3 | **Re-tune eval after new search** | +5–15        | 🟡 3–5 days | 🟢 Low     | After adding continuation history / probcut, re-run Texel tuning. Search changes shift eval optima.        |
+| D4 | **Runtime PEXT Detection**        | N/A (compat) | 🟡 3–5 days | 🟡 Medium  | CPUID check + software PEXT fallback. Broadens hardware compatibility. No ELO gain on BMI2 hardware.       |
 
 ---
 
@@ -179,6 +179,7 @@ Each strength feature follows the standard validation process:
 
 ## References
 
+- `docs/specs/PLAN_PGO.md` — PGO implementation plan for PROD builds
 - `docs/specs/PLAN_MultiPV.md` — Detailed MultiPV implementation plan
 - `docs/specs/V1_ENGINE_STRENGTH_ROADMAP.md` — Overall strength roadmap
 - `docs/specs/V1_ENGINE_ENHANCEMENT_PLAN.md` — Phase-based enhancement plan
