@@ -308,131 +308,160 @@ matches:
   # ==========================================================================
 
   #  ## Bullet 1+0.01 — Ultra-fast smoke test (~7min for 500 games with Threads=4)
-    - name: "Dev_QuickTest_1s"
-      tag: "Dev_QuickTest_1s"
-      engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
-      engine1Version: "v1.8"
-      engine1Options: "OwnBook=false; Threads=4"
-      engine2Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
-      engine2Version: "v1.7"
-      engine2Options: "OwnBook=false; Threads=4"
-      openingBook: "books/8moves_v3.pgn"
-      timeControl: "1+0.01"
-      timeMargin: 200
-      rounds: 52
-      concurrency: 4
-      outputPgn: "results/matches/Dev_QuickTest_1s.pgn"
+#    - name: "Dev_QuickTest_1s"
+#      tag: "Dev_QuickTest_1s"
+#      engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+#      engine1Version: "v1.8"
+#      engine1Options: "OwnBook=false; Threads=4"
+#      engine2Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
+#      engine2Version: "v1.7"
+#      engine2Options: "OwnBook=false; Threads=4"
+#      openingBook: "books/8moves_v3.pgn"
+#      timeControl: "1+0.01"
+#      timeMargin: 200
+#      rounds: 52
+#      concurrency: 4
+#      outputPgn: "results/matches/Dev_QuickTest_1s.pgn"
 
-#  ## Bullet 1+0.01 — Ultra-fast smoke test (~7min for 500 games with Threads=4)
-#  - name: "Tuning_Phase9_QuickTest_1s"
-#    tag: "Phase9_QuickTest"
-#    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
-#    engine1Version: "v1.7"
+  # ==========================================================================
+  # v1.8 vs v1.7 Gauntlet: Verify no regression across multiple TCs
+  # Both engines: Threads=4, OwnBook=false
+  # ==========================================================================
+
+  ## Bullet 1+0.01 — Ultra-fast smoke test (~7min for 500 games with Threads=4)
+  - name: "v1.8_vs_v1.7_bullet_1s"
+    tag: "v1.8-vs-v1.7"
+    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine1Version: "v1.8"
+    engine1Options: "OwnBook=false; Threads=4"
+    engine2Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
+    engine2Version: "v1.7"
+    engine2Options: "OwnBook=false; Threads=4"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "1+0.01"
+    timeMargin: 200
+    rounds: 500
+    concurrency: 4
+    outputPgn: "results/matches/v1.8_vs_v1.7_bullet_1s.pgn"
+
+  ## Bullet 2+0.02 — Fast smoke test (~15min for 500 games with Threads=4)
+#  - name: "v1.8_vs_v1.7_bullet_2s"
+#    tag: "v1.8-vs-v1.7"
+#    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+#    engine1Version: "v1.8"
 #    engine1Options: "OwnBook=false; Threads=4"
-#    engine2Path: "Release/FrankyCPP_v1.7_B/FrankyCPP_v1.7.exe"
-#    engine2Version: "v1.7_B"
-#    engine2Options: "OwnBook=false; Threads=4"
-#    openingBook: "books/8moves_v3.pgn"
-#    timeControl: "1+0.01"
-#    timeMargin: 200
-#    rounds: 500
-#    concurrency: 4
-#    outputPgn: "results/matches/Tuning_Phase9_QuickTest_1s.pgn"
-#
-#  ## Bullet 2+0.02 — Fast smoke test (~15min for 500 games with Threads=4)
-#  - name: "TC_gauntlet_bullet_2s"
-#    tag: "TC-gauntlet"
-#    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
-#    engine1Version: "v1.7"
-#    engine1Options: "OwnBook=false; Threads=4"
-#    engine2Path: "Release/FrankyCPP_v1.7_B/FrankyCPP_v1.7.exe"
-#    engine2Version: "v1.7_B"
+#    engine2Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
+#    engine2Version: "v1.7"
 #    engine2Options: "OwnBook=false; Threads=4"
 #    openingBook: "books/8moves_v3.pgn"
 #    timeControl: "2+0.02"
 #    timeMargin: 200
 #    rounds: 500
 #    concurrency: 4
-#    outputPgn: "results/matches/TC_gauntlet_bullet_2s.pgn"
-#
-#  ## Blitz 5+0.05 — Quick development test (~40min for 500 games with Threads=4)
-#  - name: "Tuning_Phase9_QuickTest_5s"
-#    tag: "Phase9_QuickTest"
-#    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
-#    engine1Version: "v1.7"
+#    outputPgn: "results/matches/v1.8_vs_v1.7_bullet_2s.pgn"
+
+  ## Blitz 5+0.05 — Quick development test (~40min for 500 games with Threads=4)
+#  - name: "v1.8_vs_v1.7_blitz_5s"
+#    tag: "v1.8-vs-v1.7"
+#    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+#    engine1Version: "v1.8"
 #    engine1Options: "OwnBook=false; Threads=4"
-#    engine2Path: "Release/FrankyCPP_v1.7_B/FrankyCPP_v1.7.exe"
-#    engine2Version: "v1.7_B"
+#    engine2Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
+#    engine2Version: "v1.7"
 #    engine2Options: "OwnBook=false; Threads=4"
 #    openingBook: "books/8moves_v3.pgn"
 #    timeControl: "5+0.05"
 #    timeMargin: 200
 #    rounds: 500
 #    concurrency: 4
-#    outputPgn: "results/matches/Tuning_Phase9_QuickTest_5s.pgn"
+#    outputPgn: "results/matches/v1.8_vs_v1.7_blitz_5s.pgn"
 
   ## Blitz 10+0.1 — Fishtest STC equivalent (~80min for 500 games with Threads=4)
-#  - name: "Tuning_Phase9_GauntletD_10s"
-#    tag: "TC-Tuning_Phase9_GauntletD"
-#    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
-#    engine1Version: "v1.7"
-#    engine1Options: "OwnBook=false; Threads=4"
-#    engine2Path: "Release/FrankyCPP_v1.7_B/FrankyCPP_v1.7.exe"
-#    engine2Version: "v1.7_B"
-#    engine2Options: "OwnBook=false; Threads=4"
-#    openingBook: "books/8moves_v3.pgn"
-#    timeControl: "10+0.1"
-#    timeMargin: 200
-#    rounds: 500
-#    concurrency: 4
-#    outputPgn: "results/matches/Tuning_Phase9_GauntletD_10s.pgn"
-
-  ## 300+0 — Long TC to avoid time-related issues with unfixed v1.6 binary
-#- name: "Tuning_Phase10_GauntletE-2_300s"
-#  tag: "TC-Tuning_Phase10_GauntletE-2"
-#  engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
-#  engine1Version: "v1.7"
-#  engine1Options: "OwnBook=false; Threads=4"
-#  engine2Path: "Release/FrankyCPP_v1.6/FrankyCPP_v1.6.exe"
-#  engine2Version: "v1.6"
-#  engine2Options: "OwnBook=false; Threads=4"
-#  openingBook: "books/8moves_v3.pgn"
-#  timeControl: "300+0"
-#  rounds: 100
-#  concurrency: 4
-#  outputPgn: "results/matches/Tuning_Phase10_GauntletE-2_300s.pgn"
+  - name: "v1.8_vs_v1.7_STC_10s"
+    tag: "v1.8-vs-v1.7"
+    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine1Version: "v1.8"
+    engine1Options: "OwnBook=false; Threads=4"
+    engine2Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
+    engine2Version: "v1.7"
+    engine2Options: "OwnBook=false; Threads=4"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "10+0.1"
+    timeMargin: 200
+    rounds: 500
+    concurrency: 4
+    outputPgn: "results/matches/v1.8_vs_v1.7_STC_10s.pgn"
 
   ## Rapid 60+0.6 — Fishtest LTC equivalent (~5hr for 200 games with Threads=4)
-#  - name: "TC_gauntlet_LTC_60s"
-#    tag: "TC-gauntlet"
-#    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
-#    engine1Version: "v1.7"
+#  - name: "v1.8_vs_v1.7_LTC_60s"
+#    tag: "v1.8-vs-v1.7"
+#    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+#    engine1Version: "v1.8"
 #    engine1Options: "OwnBook=false; Threads=4"
-#    engine2Path: "Release/FrankyCPP_v1.7_B/FrankyCPP_v1.7.exe"
-#    engine2Version: "v1.7_B"
+#    engine2Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
+#    engine2Version: "v1.7"
 #    engine2Options: "OwnBook=false; Threads=4"
 #    openingBook: "books/8moves_v3.pgn"
 #    timeControl: "60+0.6"
 #    timeMargin: 200
 #    rounds: 200
 #    concurrency: 4
-#    outputPgn: "results/matches/TC_gauntlet_LTC_60s.pgn"
+#    outputPgn: "results/matches/v1.8_vs_v1.7_LTC_60s.pgn"
 
-#  ## Rapid 180+1.8 — 300+0 equivalent (~12hr for 100 games with Threads=4)
-#  - name: "TC_gauntlet_LTC_180s"
-#    tag: "TC-gauntlet"
-#    engine1Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
-#    engine1Version: "v1.7"
+#  ## Rapid 180+1.8 — VLTC (~12hr for 100 games with Threads=4)
+#  - name: "v1.8_vs_v1.7_VLTC_180s"
+#    tag: "v1.8-vs-v1.7"
+#    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+#    engine1Version: "v1.8"
 #    engine1Options: "OwnBook=false; Threads=4"
-#    engine2Path: "Release/FrankyCPP_v1.7_B/FrankyCPP_v1.7.exe"
-#    engine2Version: "v1.7_B"
+#    engine2Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
+#    engine2Version: "v1.7"
 #    engine2Options: "OwnBook=false; Threads=4"
 #    openingBook: "books/8moves_v3.pgn"
 #    timeControl: "180+1.8"
 #    timeMargin: 200
 #    rounds: 100
 #    concurrency: 4
-#    outputPgn: "results/matches/TC_gauntlet_LTC_180s.pgn"
+#    outputPgn: "results/matches/v1.8_vs_v1.7_VLTC_180s.pgn"
+
+  ## 300+0 — v1.8 vs SF18@2700 at same TC as v1.7 baseline (+69 Elo)
+  ## Purpose: Verify no regression vs v1.7 (which used 300+0, not 10+0.1)
+#  - name: "v1.8_vs_SF18_Elo2700_300s"
+  #    tag: "SF18-ELO-bracket-300s"
+  #    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+  #    engine1Version: "v1.8"
+  #    engine1Options: "OwnBook=false; Threads=4"
+  #    engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
+  #    engine2Version: "18-2700"
+  #    engine2Options: "UCI_LimitStrength=true; UCI_Elo=2700"
+  #    openingBook: "books/8moves_v3.pgn"
+  #    timeControl: "300+0"
+  #    rounds: 100
+  #    concurrency: 4
+  #    outputPgn: "results/matches/v1.8_vs_SF18_Elo2700_300s.pgn"
+
+  # ==========================================================================
+  # SF18 ELO Bracketing: FrankyCPP v1.8 vs Stockfish 18 at various ELO levels
+  # Purpose: Find which SF18 ELO level FrankyCPP v1.8 is closest to
+  # TC: 10+0.1 (Fishtest STC equivalent), 100 rounds each
+  # SF options: UCI_LimitStrength=true; UCI_Elo=XXXX; Threads=4
+  # Rationale: v1.7 beat SF18@2700 by +69 Elo at 300+0, so bracket 2700–3100
+  # ==========================================================================
+
+#  - name: "v1.8_vs_SF18_Elo2700_10s"
+#    tag: "SF18-ELO-bracket"
+#    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+#    engine1Version: "v1.8"
+#    engine1Options: "OwnBook=false; Threads=4"
+#    engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
+#    engine2Version: "18-2700"
+#    engine2Options: "UCI_LimitStrength=true; UCI_Elo=2700"
+#    openingBook: "books/8moves_v3.pgn"
+#    timeControl: "10+0.1"
+#    timeMargin: 200
+#    rounds: 100
+#    concurrency: 4
+#    outputPgn: "results/matches/v1.8_vs_SF18_Elo2700_10s.pgn"
 
 # =============================================================================
 # Benchmark Configuration
