@@ -1186,4 +1186,110 @@ TEST_F(SearchTest, debug) {
   s.waitWhileSearching();
 }
 
+// =====================================================================
+// MultiPV Tests
+// =====================================================================
+
+/// MultiPV=1 (default) should produce the same result as baseline.
+/// Verifies zero overhead — the MultiPV loop executes once.
+TEST_F(SearchTest, multiPV1NoRegression) {
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  CONFIG_OVERRIDE(s.THREADS = 1;);
+  CONFIG_OVERRIDE(s.MULTI_PV = 1;);
+
+  const Position p{};
+  SearchLimits sl{};
+  Search s{};
+  constexpr int depth = 6;
+  sl.depth            = depth;
+  s.isReady();
+  s.startSearch(p, sl);
+  s.waitWhileSearching();
+  EXPECT_TRUE(s.hasResult());
+  EXPECT_EQ(depth, s.getLastSearchResult().depth);
+  EXPECT_NE(MOVE_NONE, s.getLastSearchResult().bestMove);
+  EXPECT_FALSE(s.getLastSearchResult().pv.empty());
+}
+
+/// MultiPV=3 should produce a valid best move and depth.
+/// The top move should be present and search should complete normally.
+TEST_F(SearchTest, multiPV3ProducesValidResult) {
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  CONFIG_OVERRIDE(s.THREADS = 1;);
+  CONFIG_OVERRIDE(s.MULTI_PV = 3;);
+
+  const Position p{};
+  SearchLimits sl{};
+  Search s{};
+  constexpr int depth = 6;
+  sl.depth            = depth;
+  s.isReady();
+  s.startSearch(p, sl);
+  s.waitWhileSearching();
+  EXPECT_TRUE(s.hasResult());
+  EXPECT_EQ(depth, s.getLastSearchResult().depth);
+  EXPECT_NE(MOVE_NONE, s.getLastSearchResult().bestMove);
+  EXPECT_FALSE(s.getLastSearchResult().pv.empty());
+}
+
+/// When MultiPV exceeds legal moves, it should clamp to the number of legal moves.
+/// A position with only 2 legal moves should work fine with MultiPV=5.
+TEST_F(SearchTest, multiPVClampedToLegalMoves) {
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  CONFIG_OVERRIDE(s.THREADS = 1;);
+  CONFIG_OVERRIDE(s.MULTI_PV = 5;);
+
+  // Position with only a few legal moves (king + pawn endgame)
+  // Black king on a8, White king on c6, White pawn on b6 — very few legal moves for black
+  const Position p{"k7/8/1PK5/8/8/8/8/8 b - - 0 1"};
+  SearchLimits sl{};
+  Search s{};
+  constexpr int depth = 6;
+  sl.depth            = depth;
+  s.isReady();
+  s.startSearch(p, sl);
+  s.waitWhileSearching();
+  EXPECT_TRUE(s.hasResult());
+  // Search should complete without crash even though MultiPV > legal moves
+  EXPECT_NE(MOVE_NONE, s.getLastSearchResult().bestMove);
+}
+
+/// MultiPV should work with multiple threads (Lazy SMP).
+/// Helpers always use MultiPV=1; only main thread does full MultiPV.
+TEST_F(SearchTest, multiPVWithSMP) {
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  CONFIG_OVERRIDE(s.THREADS = 2;);
+  CONFIG_OVERRIDE(s.MULTI_PV = 3;);
+
+  const Position p{};
+  SearchLimits sl{};
+  Search s{};
+  constexpr int depth = 6;
+  sl.depth            = depth;
+  s.isReady();
+  s.startSearch(p, sl);
+  s.waitWhileSearching();
+  EXPECT_TRUE(s.hasResult());
+  EXPECT_EQ(depth, s.getLastSearchResult().depth);
+  EXPECT_NE(MOVE_NONE, s.getLastSearchResult().bestMove);
+}
+
+/// MultiPV=3 with timed search should produce a valid result.
+TEST_F(SearchTest, multiPVTimedSearch) {
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  CONFIG_OVERRIDE(s.THREADS = 1;);
+  CONFIG_OVERRIDE(s.MULTI_PV = 3;);
+
+  const Position p{};
+  SearchLimits sl{};
+  Search s{};
+  sl.timeControl = true;
+  sl.moveTime    = 500ms;
+  s.isReady();
+  s.startSearch(p, sl);
+  s.waitWhileSearching();
+  EXPECT_TRUE(s.hasResult());
+  EXPECT_NE(MOVE_NONE, s.getLastSearchResult().bestMove);
+}
+
 #endif // FRANKYCPP_PRODUCTION

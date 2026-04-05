@@ -284,6 +284,7 @@ The core search algorithm using alpha-beta with iterative deepening.
 - Quiescence search with SEE pruning
 - Time management with complexity-based allocation and best-move instability detection
 - Syzygy tablebase probing for endgame positions
+- **MultiPV analysis mode** (top N moves with sorted, batched UCI output)
 - **Lazy SMP multi-threaded parallel search**
 
 **Tablebase Integration:**
@@ -300,6 +301,14 @@ The core search algorithm using alpha-beta with iterative deepening.
 - After all threads stop, **best-thread selection** compares depth and score across all threads to pick the best result (not necessarily T0's).
 - Node counts are aggregated from all threads for UCI `info nodes` output.
 - See `docs/Lazy_SMP_Explained.md` for a full description of the algorithm.
+
+**MultiPV Analysis Mode:**
+- Controlled by UCI option `MultiPV` (default=1, max=128)
+- When MultiPV > 1, the main thread wraps each iteration's root search in a MultiPV loop: pvIdx=0 uses aspiration search, pvIdx=1..N-1 use full-window `rootSearch()` starting from index `pvIdx`
+- Results are collected during the loop, then **sorted by score (descending)** and **reported as a batch** with consistent node counts (Stockfish-style)
+- `rootMoves[0..N]` are re-sorted to match, ensuring post-iteration code sees the true best move
+- Helper threads always use MultiPV=1 for search efficiency
+- Aspiration `lowerbound`/`upperbound` UCI output is suppressed when MultiPV > 1 to prevent GUI display artifacts
 
 **Owned Components:**
 - `TT` - Transposition table (shared across all SMP threads)

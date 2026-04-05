@@ -424,6 +424,7 @@ protected:
 ### Search
 - Iterative deepening with aspiration windows
 - PVS (Principal Variation Search) with null-move pruning, LMR
+- MultiPV analysis mode (top N moves with batched, score-sorted output; helpers always use MultiPV=1)
 - Time management via `SearchLimits` structure
 - Search can be stopped via `stopSearch()` or time limit
 

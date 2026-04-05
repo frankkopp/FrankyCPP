@@ -396,9 +396,12 @@ void Search::run() {
   // Extract and validate ponder move from PV or TT
   extractPonderMove(searchResult, *bestThread);
 
-  // Send final UCI info line if a non-main thread was selected
-  // This ensures the GUI shows depth/score/PV consistent with the final bestmove
-  if (bestThread->id != 0) {
+  // Send final UCI info line if a non-main thread was selected.
+  // This ensures the GUI shows depth/score/PV consistent with the final bestmove.
+  // Suppressed when MultiPV > 1: sending a single "multipv 1" line here would
+  // overwrite the GUI's complete multi-PV display from the last completed iteration
+  // with a potentially different depth/score from a helper thread.
+  if (bestThread->id != 0 && SearchConfig.MULTI_PV <= 1) {
     sendFinalUciInfo(*bestThread);
   }
 
@@ -750,14 +753,95 @@ SearchResult Search::iterativeDeepening(Position& p) {
 
     // =========================================================================
     // Start actual alpha beta search
-    // ASPIRATION SEARCH
+    // MultiPV loop: find top N moves per iteration
+    // When MULTI_PV == 1 (default), the loop runs once — zero overhead.
+    // Helper threads always use effectiveMultiPV == 1 for efficiency.
     // =========================================================================
-    if (SearchConfig.USE_ASP && iterationDepth > 3) {
-      bestValue = aspirationSearch(p, iterationDepth, bestValue);
+    const int effectiveMultiPV = isMainThread()
+                                   ? std::min(SearchConfig.MULTI_PV, static_cast<int>(thread().rootMoves.size()))
+                                   : 1;
+
+    // Collect PV data during the loop for deferred, sorted reporting (Stockfish-style).
+    // After all PVs are searched, results are sorted by score (descending) so that
+    // the output is always monotonically non-increasing, and rootMoves[0..N] are
+    // re-ordered to match. This also produces batched UCI output with consistent
+    // node counts across all PV lines.
+    std::vector<MultiPvResult> multiPvResults;
+    multiPvResults.reserve(effectiveMultiPV);
+
+    for (int pvIdx = 0; pvIdx < effectiveMultiPV; ++pvIdx) {
+      if (pvIdx == 0) {
+        // First PV: use aspiration search as normal (or full window at shallow depths)
+        // ASPIRATION SEARCH
+        if (SearchConfig.USE_ASP && iterationDepth > 3) {
+          bestValue = aspirationSearch(p, iterationDepth, bestValue);
+        }
+        // PVS SEARCH (or pure ALPHA BETA when PVS deactivated)
+        else {
+          bestValue = rootSearch(p, iterationDepth, alpha, beta);
+        }
+      }
+      else {
+        // Secondary PVs: full window search starting from pvIdx.
+        // Moves [0..pvIdx-1] are already ranked and locked.
+        bestValue = rootSearch(p, iterationDepth, VALUE_MIN, VALUE_MAX, pvIdx);
+      }
+
+      // Break from MultiPV loop if search was stopped
+      if (stopConditions() && iterationDepth > 1) break;
+
+      // Partial sort: bring the best remaining move to position pvIdx.
+      // For pvIdx=0 this sorts the full list; for pvIdx>0 only [pvIdx..end].
+      std::ranges::stable_sort(
+        thread().rootMoves.begin() + pvIdx,
+        thread().rootMoves.end(),
+        moveValueGreaterComparator());
+
+      // Collect PV data for deferred reporting.
+      // Extract PV line now (before next pvIdx search overwrites the PV table).
+      Position tmpPos = position;
+      multiPvResults.push_back({
+        .pvLine   = extractPvWithTT(tmpPos),
+        .score    = thread().rootMoves[pvIdx].value(),
+        .seldepth = thread().statistics.currentExtraSearchDepth
+      });
     }
-    // PVS SEARCH (or pure ALPHA BETA when PVS deactivated)
-    else {
-      bestValue = rootSearch(p, iterationDepth, alpha, beta);
+
+    // Sort all completed PVs by score (descending) to guarantee monotonic output.
+    // This handles search instability where a secondary PV might score higher than
+    // pvIdx=0 due to richer TT state or different window dynamics.
+    if (effectiveMultiPV > 1 && static_cast<int>(multiPvResults.size()) == effectiveMultiPV) {
+      std::ranges::stable_sort(multiPvResults, [](const MultiPvResult& a, const MultiPvResult& b) {
+        return a.score > b.score;
+      });
+
+      // Re-sort rootMoves[0..effectiveMultiPV] to match the sorted result order.
+      // This ensures rootMoves[0] is the actual best move for post-iteration code
+      // (stability tracking, mate detection, aspiration window centering, etc.).
+      std::ranges::stable_sort(
+        thread().rootMoves.begin(),
+        thread().rootMoves.begin() + effectiveMultiPV,
+        moveValueGreaterComparator());
+    }
+
+    // Send all PV lines to UCI in batch (main thread only, not on stop).
+    // All lines share the same node count snapshot — consistent like Stockfish.
+    if (isMainThread() && !multiPvResults.empty() && !stopConditions()) {
+      sendMultiPvResultsToUci(multiPvResults, iterationDepth);
+    }
+
+    // Restore the best PV to the PV table so post-iteration code
+    // (assertions, volatility, stability, mate check, aspiration window)
+    // sees the top move and its value.
+    if (effectiveMultiPV > 1 && !multiPvResults.empty()) {
+      bestValue = multiPvResults[0].score;
+      const auto& bestPvLine = multiPvResults[0].pvLine;
+      for (int i = 0; i < static_cast<int>(bestPvLine.size()) && i < PVTable::MAX_PLY; ++i) {
+        thread().pv(DEPTH_NONE, i) = bestPvLine[i];
+      }
+      if (static_cast<int>(bestPvLine.size()) < PVTable::MAX_PLY) {
+        thread().pv(DEPTH_NONE, static_cast<int>(bestPvLine.size())) = MOVE_NONE;
+      }
     }
     // =========================================================================
     // /End of alpha beta search for this iteration
@@ -884,11 +968,11 @@ SearchResult Search::iterativeDeepening(Position& p) {
     if (!stopConditions()) {
       // sort root moves for the next iteration
       std::ranges::stable_sort(thread().rootMoves, moveValueGreaterComparator());
-      // update UCI GUI (main thread only)
+      // update stats (main thread only)
+      // UCI info was already sent per-PV-line inside the MultiPV loop above.
       if (isMainThread()) {
         ESSENTIAL_STAT_SET(thread().statistics.currentBestRootMove, thread().pv.first());
         ESSENTIAL_STAT_SET(thread().statistics.currentBestRootMoveValue, thread().pv.first().value());
-        sendIterationEndInfoToUci();
         // Send debug eval breakdown and iteration stats when debug mode is on
         if (isDebugMode()) {
           sendDebugEvalInfo();
@@ -1012,7 +1096,7 @@ Value Search::aspirationSearch(Position& p, const Depth depth, const Value bestV
   return value;
 }
 
-Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Value beta) {
+Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Value beta, const int startIndex) {
 
   // In root search we search all moves and store the value
   // into the root moves themselves for sorting in the
@@ -1033,7 +1117,7 @@ Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Valu
   // ///////////////////////////////////////////////////////
   // MOVE LOOP
   const size_t size = thread().rootMoves.size();
-  for (size_t i = 0; i < size; i++) {
+  for (size_t i = startIndex; i < size; i++) {
     Move& moveRef = thread().rootMoves.at(i);
 
     p.doMove(moveRef);
@@ -1051,7 +1135,8 @@ Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Valu
       // PVS
       // First move in a node is an assumed PV Move and searched with full search window (PV Node)
       // Root's first child is a PV node (full window search)
-      if (!SearchConfig.USE_PVS || i == 0) {
+      // For MultiPV: the first move in the current sub-range (i == startIndex) is the PV candidate
+      if (!SearchConfig.USE_PVS || i == static_cast<size_t>(startIndex)) {
         value = -search(p, depth - 1, ply, -beta, -alpha, PvNode, Do_Null_Move);
       }
       else {
@@ -3115,6 +3200,44 @@ void Search::sendIterationEndInfoToUci() {
             pvLine.str());
 }
 
+void Search::sendMultiPvResultsToUci(const std::vector<MultiPvResult>& results, const Depth iterationDepth) {
+  const nanoseconds& since = elapsedSince(startSearchTime);
+  lastUciUpdateTime        = now();
+
+  // Snapshot node count once — all PV lines share the same value (Stockfish-style).
+  const uint64_t totalNodes = getTotalNodes();
+  const uint64_t nodesPerSec = nps(totalNodes, since);
+  const auto elapsed = MILLISECONDS(since);
+
+  for (int i = 0; i < static_cast<int>(results.size()); ++i) {
+    const auto& [pvLine, score, seldepth] = results[i];
+    const int multipvIndex = i + 1; // UCI multipv is 1-based
+
+    if (uciHandler) {
+      uciHandler->sendIterationEndInfo(
+        iterationDepth,
+        seldepth,
+        score,
+        totalNodes,
+        nodesPerSec,
+        elapsed,
+        pvLine,
+        multipvIndex);
+    }
+    else {
+      LOG__INFO(Logger::get().SEARCH_LOG, "depth {} seldepth {} multipv {} value {} nodes {:L} nps {:L} time {:L} pv {}",
+                iterationDepth,
+                seldepth,
+                multipvIndex,
+                score.str(),
+                totalNodes,
+                nodesPerSec,
+                elapsed.count(),
+                pvLine.str());
+    }
+  }
+}
+
 void Search::sendSearchUpdateToUci() {
 
   // Only main thread sends UCI updates - helpers contribute via TT only
@@ -3186,7 +3309,12 @@ void Search::sendAspirationResearchInfo(const std::string& boundString) const {
   const uint64_t totalNodes = getTotalNodes();
 
   if (uciHandler) {
-    if (since >= ASP_UCI_INFO_DELAY) {
+    // Suppress aspiration bound UCI output when MultiPV > 1. Sending a single
+    // "multipv 1" lowerbound/upperbound line while the GUI still displays the
+    // previous depth's complete multi-PV set causes the GUI to show a stale
+    // multipv 2..N alongside the updated multipv 1, creating a non-monotonic display.
+    // LOG output is still emitted for debugging.
+    if (since >= ASP_UCI_INFO_DELAY && SearchConfig.MULTI_PV <= 1) {
       uciHandler->sendAspirationResearchInfo(
         thread().statistics.currentSearchDepth,
         thread().statistics.currentExtraSearchDepth,

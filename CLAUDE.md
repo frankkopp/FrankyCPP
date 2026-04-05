@@ -85,6 +85,7 @@ Iterative deepening + PVS (Principal Variation Search) with:
 - Quiescence search with SEE pruning
 - On-demand staged move ordering: PV move → TT move → Captures (MVV-LVA/SEE) → Killers → Counter move → Quiet (history-sorted)
 - Syzygy tablebase probing at root (move filtering) and interior nodes (WDL)
+- **MultiPV analysis mode**: top N moves with batched, score-sorted UCI output (Stockfish-style); helpers always use MultiPV=1
 
 ### Threading Model
 

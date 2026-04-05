@@ -49,6 +49,11 @@ namespace config {
     // 0 = neutral (VALUE_DRAW == 0). Typical values: 10–25 cp.
     CONFIG_ESSENTIAL int CONTEMPT = 0;
 
+    // MultiPV — number of principal variations to report.
+    // 1 = standard single-best-move mode (zero overhead).
+    // >1 = analysis mode: find and report the top N moves with scores and PV lines.
+    CONFIG_ESSENTIAL int MULTI_PV = 1;
+
     // Multi-threading (Lazy SMP)
     CONFIG_ESSENTIAL int THREADS                = 4;    // Number of search threads (1 = single-threaded, no SMP overhead)
     CONFIG_CONST int SMP_HELPER_START_DEPTH     = 4;    // Depth at which to launch helper threads (allows TT priming)

@@ -264,6 +264,20 @@ void ConfigRegistry::initializeSearchDefinitions() {
   });
 
   definitions_.push_back({
+    .name = "MULTI_PV",
+    .uciName = "MultiPV",
+    .description = "Number of principal variations to report (1 = normal, >1 = analysis mode)",
+    .valueType = Int,
+    .domain = General,
+    .defaultValue = configToString(defaultSearch.MULTI_PV),
+    .minValue = 1,
+    .maxValue = 128,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.MULTI_PV; }),
+    .setter = SEARCH_CONFIG_SETTER(MULTI_PV, parseInt)
+  });
+
+  definitions_.push_back({
     .name = "USE_BOOK",
     .uciName = "OwnBook",
     .description = "Use internal opening book",

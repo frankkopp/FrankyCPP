@@ -109,6 +109,7 @@
 #include <optional>
 #include <semaphore>
 #include <thread>
+#include <vector>
 
 // Forward-declare test classes at global scope so FRIEND_TEST inside namespace engine works
 FRIEND_TEST_FWD_DECL(SearchTest, setupTime);
@@ -483,12 +484,13 @@ namespace engine {
     Value aspirationSearch(Position& p, Depth depth, Value bestValue);
 
     /// Searches root moves (ply 0) with special handling for root node.
-    /// @param p      Position to search
-    /// @param depth  Remaining depth
-    /// @param alpha  Alpha bound
-    /// @param beta   Beta bound
-    /// @return       Best value found
-    Value rootSearch(Position& p, Depth depth, Value alpha, Value beta);
+    /// @param p           Position to search
+    /// @param depth       Remaining depth
+    /// @param alpha       Alpha bound
+    /// @param beta        Beta bound
+    /// @param startIndex  First index in rootMoves to search (0..N-1, for MultiPV)
+    /// @return            Best value found
+    Value rootSearch(Position& p, Depth depth, Value alpha, Value beta, int startIndex = 0);
 
     /// Recursive alpha-beta search for non-root plies (ply > 0).
     /// Handles all major pruning techniques.
@@ -654,6 +656,20 @@ namespace engine {
 
     /// Sends iteration-end info (depth, score, PV, etc.) to UCI.
     void sendIterationEndInfoToUci();
+
+    /// Holds collected PV data for deferred, sorted MultiPV reporting.
+    /// Collected during the MultiPV loop, sorted by score, then reported in batch.
+    struct MultiPvResult {
+      MoveList pvLine;  ///< PV line extracted via extractPvWithTT
+      Value score;      ///< Score from rootSearch for this PV
+      int seldepth;     ///< Selective depth at time of search
+    };
+
+    /// Sends all collected MultiPV results to UCI in a single batch.
+    /// Results must already be sorted by score (descending).
+    /// @param results        Collected PV results (sorted by score descending)
+    /// @param iterationDepth Current iteration depth
+    void sendMultiPvResultsToUci(const std::vector<MultiPvResult>& results, Depth iterationDepth);
 
     /// Sends periodic search update (nodes, nps, time, hashfull) to UCI.
     void sendSearchUpdateToUci();
