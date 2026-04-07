@@ -1292,4 +1292,160 @@ TEST_F(SearchTest, multiPVTimedSearch) {
   EXPECT_NE(MOVE_NONE, s.getLastSearchResult().bestMove);
 }
 
+// ===========================================================================
+// Handicap Tests
+// ===========================================================================
+
+/// Handicap=0 should produce identical results to default (no overhead).
+TEST_F(SearchTest, handicap0NoRegression) {
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  CONFIG_OVERRIDE(s.THREADS = 1;);
+  CONFIG_OVERRIDE(s.HANDICAP = 0;);
+
+  const Position p{};
+  SearchLimits sl{};
+  Search s{};
+  constexpr int depth = 6;
+  sl.depth            = depth;
+  s.isReady();
+  s.startSearch(p, sl);
+  s.waitWhileSearching();
+  EXPECT_TRUE(s.hasResult());
+  EXPECT_EQ(depth, s.getLastSearchResult().depth);
+  EXPECT_NE(MOVE_NONE, s.getLastSearchResult().bestMove);
+  EXPECT_FALSE(s.getLastSearchResult().pv.empty());
+}
+
+/// Handicap=5 should produce a valid legal move and complete successfully.
+TEST_F(SearchTest, handicap5ProducesValidMove) {
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  CONFIG_OVERRIDE(s.THREADS = 1;);
+  CONFIG_OVERRIDE(s.HANDICAP = 5;);
+
+  const Position p{};
+  SearchLimits sl{};
+  Search s{};
+  constexpr int depth = 10;
+  sl.depth            = depth;
+  s.isReady();
+  s.startSearch(p, sl);
+  s.waitWhileSearching();
+  EXPECT_TRUE(s.hasResult());
+  // Depth should be capped by handicap (level 5 = depthCap 14, but we requested 10)
+  EXPECT_LE(s.getLastSearchResult().depth, depth);
+  EXPECT_NE(MOVE_NONE, s.getLastSearchResult().bestMove);
+  // Ponder move should be disabled with handicap
+  EXPECT_EQ(MOVE_NONE, s.getLastSearchResult().ponderMove);
+}
+
+/// Handicap=5 should sometimes pick a move different from the best move.
+/// Over multiple diverse positions, at least one should differ from handicap=0.
+TEST_F(SearchTest, handicap5DifferentFromBest) {
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  CONFIG_OVERRIDE(s.THREADS = 1;);
+
+  // Test positions with varied best moves
+  const std::vector<std::string> fens = {
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -",
+    "r3k2r/pp2qppp/2n1pn2/bN5b/3P4/P3BN1P/1P2BPP1/R2Q1RK1 w kq -",
+    "1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -",
+    "rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -",
+    "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq -",
+  };
+
+  int differences = 0;
+  constexpr int depth = 8;
+
+  for (const auto& fen : fens) {
+    // Get best move with full strength
+    CONFIG_OVERRIDE(s.HANDICAP = 0;);
+    const Position p1{fen};
+    SearchLimits sl1{};
+    sl1.depth = depth;
+    Search s1{};
+    s1.isReady();
+    s1.startSearch(p1, sl1);
+    s1.waitWhileSearching();
+    const Move bestMove = s1.getLastSearchResult().bestMove;
+
+    // Get handicap move
+    CONFIG_OVERRIDE(s.HANDICAP = 5;);
+    const Position p2{fen};
+    SearchLimits sl2{};
+    sl2.depth = depth;
+    Search s2{};
+    s2.isReady();
+    s2.startSearch(p2, sl2);
+    s2.waitWhileSearching();
+    const Move handicapMove = s2.getLastSearchResult().bestMove;
+
+    if (bestMove != handicapMove) {
+      ++differences;
+    }
+  }
+
+  // At least one position should produce a different move with handicap=5
+  EXPECT_GE(differences, 1)
+    << "Handicap=5 should occasionally pick a different move from the best";
+}
+
+/// Handicap=15 should not search deeper than its depth cap (14).
+TEST_F(SearchTest, handicapDepthCapped) {
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  CONFIG_OVERRIDE(s.THREADS = 1;);
+  CONFIG_OVERRIDE(s.HANDICAP = 15;);
+
+  const Position p{};
+  SearchLimits sl{};
+  Search s{};
+  sl.depth = 20; // request deep search
+  s.isReady();
+  s.startSearch(p, sl);
+  s.waitWhileSearching();
+  EXPECT_TRUE(s.hasResult());
+  // Level 15 has depthCap=14, so search should not exceed depth 14
+  EXPECT_LE(s.getLastSearchResult().depth, 14);
+  EXPECT_NE(MOVE_NONE, s.getLastSearchResult().bestMove);
+}
+
+/// Handicap=20 on a position with very few legal moves should not crash.
+TEST_F(SearchTest, handicapClampedToLegalMoves) {
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  CONFIG_OVERRIDE(s.THREADS = 1;);
+  CONFIG_OVERRIDE(s.HANDICAP = 20;);
+
+  // Position with limited legal moves (king + rook endgame)
+  const Position p{"8/8/8/4k3/8/8/3Q4/4K3 w - - 0 1"};
+  SearchLimits sl{};
+  Search s{};
+  sl.depth = 5;
+  s.isReady();
+  s.startSearch(p, sl);
+  s.waitWhileSearching();
+  EXPECT_TRUE(s.hasResult());
+  EXPECT_NE(MOVE_NONE, s.getLastSearchResult().bestMove);
+}
+
+/// Handicap + MultiPV should work together: Handicap inflates pool internally,
+/// MultiPV controls how many PV lines are reported to UCI.
+TEST_F(SearchTest, handicapWithMultiPV) {
+  CONFIG_OVERRIDE(s.USE_BOOK = false;);
+  CONFIG_OVERRIDE(s.THREADS = 1;);
+  CONFIG_OVERRIDE(s.HANDICAP = 3;);
+  CONFIG_OVERRIDE(s.MULTI_PV = 2;);
+
+  const Position p{};
+  SearchLimits sl{};
+  Search s{};
+  constexpr int depth = 6;
+  sl.depth            = depth;
+  s.isReady();
+  s.startSearch(p, sl);
+  s.waitWhileSearching();
+  EXPECT_TRUE(s.hasResult());
+  EXPECT_NE(MOVE_NONE, s.getLastSearchResult().bestMove);
+  // Ponder move should be disabled with handicap
+  EXPECT_EQ(MOVE_NONE, s.getLastSearchResult().ponderMove);
+}
+
 #endif // FRANKYCPP_PRODUCTION

@@ -67,16 +67,16 @@ main.cpp → UciHandler → Search → Evaluator
 
 ### Source Modules (`src/`)
 
-| Module         | Purpose                                                                                                      |
-|----------------|--------------------------------------------------------------------------------------------------------------|
-| `types/`       | Core zero-cost value types: `Bitboard`, `Move` (32-bit), `Square`, `Piece`, `Value`                          |
-| `common/`      | `Logging.h` (spdlog), `ThreadPool.h`, `stringutil.h`                                                         |
-| `chesscore/`   | `Position` (board state, make/unmake, Zobrist), `MoveGenerator`, `Perft`, `Values` (PSTs)                    |
-| `config/`      | `ConfigRegistry` (single source of truth), `ConfigManager` (singleton), `SearchConfigData`, `EvalConfigData` |
-| `engine/`      | `Search`, `PlyInfo`, `Evaluator`, `TT`, `PawnTT`, `See`, `UciHandler`, `UciOptions`, `SearchLimits`          |
-| `openingbook/` | Book loading, querying, platform-specific Boost serialization cache                                          |
-| `tablebase/`   | Fathom library interface (WDL/DTZ probing), path discovery, downloader                                       |
-| `enginetest/`  | EPD test suite runner, search-tree analysis                                                                  |
+| Module         | Purpose                                                                                                         |
+|----------------|-----------------------------------------------------------------------------------------------------------------|
+| `types/`       | Core zero-cost value types: `Bitboard`, `Move` (32-bit), `Square`, `Piece`, `Value`                             |
+| `common/`      | `Logging.h` (spdlog), `ThreadPool.h`, `stringutil.h`                                                            |
+| `chesscore/`   | `Position` (board state, make/unmake, Zobrist), `MoveGenerator`, `Perft`, `Values` (PSTs)                       |
+| `config/`      | `ConfigRegistry` (single source of truth), `ConfigManager` (singleton), `SearchConfigData`, `EvalConfigData`    |
+| `engine/`      | `Search`, `PlyInfo`, `Evaluator`, `TT`, `PawnTT`, `See`, `Handicap`, `UciHandler`, `UciOptions`, `SearchLimits` |
+| `openingbook/` | Book loading, querying, platform-specific Boost serialization cache                                             |
+| `tablebase/`   | Fathom library interface (WDL/DTZ probing), path discovery, downloader                                          |
+| `enginetest/`  | EPD test suite runner, search-tree analysis                                                                     |
 
 ### Search Algorithm
 
@@ -86,6 +86,7 @@ Iterative deepening + PVS (Principal Variation Search) with:
 - On-demand staged move ordering: PV move → TT move → Captures (MVV-LVA/SEE) → Killers → Counter move → Quiet (history-sorted)
 - Syzygy tablebase probing at root (move filtering) and interior nodes (WDL)
 - **MultiPV analysis mode**: top N moves with batched, score-sorted UCI output (Stockfish-style); helpers always use MultiPV=1
+- **Handicap mode** (UCI `Handicap` 0–20): 5 weakening levers per level — time waste (sleep before search), MultiPV inflation, depth cap, candidate pool size, score-weighted suboptimal move selection. Pondering disabled when active.
 
 ### Threading Model
 

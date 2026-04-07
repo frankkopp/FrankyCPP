@@ -19,6 +19,7 @@
 
 #include "Search.h"
 #include "Evaluator.h"
+#include "Handicap.h"
 #include "See.h"
 #include "common/Logging.h"
 #include "common/misc.h"
@@ -393,8 +394,16 @@ void Search::run() {
   // Apply tablebase root override on top of best-thread selection
   applyTBRootOverride(searchResult);
 
-  // Extract and validate ponder move from PV or TT
-  extractPonderMove(searchResult, *bestThread);
+  // Apply handicap move selection OR extract ponder move (mutually exclusive).
+  // Handicap overrides the best move with a suboptimal pick from the candidate pool
+  // and disables pondering. Must come after TB override (TB moves are not overridden).
+  if (SearchConfig.HANDICAP > 0) {
+    applyHandicap(searchResult);
+  }
+  else {
+    // Extract and validate ponder move from PV or TT (normal play only)
+    extractPonderMove(searchResult, *bestThread);
+  }
 
   // Send final UCI info line if a non-main thread was selected.
   // This ensures the GUI shows depth/score/PV consistent with the final bestmove.
@@ -623,7 +632,26 @@ SearchResult Search::iterativeDeepening(Position& p) {
   }
 
   // prepare max depth from search limits
-  const int maxDepth = searchLimits.depth ? searchLimits.depth : DEPTH_MAX;
+  int maxDepth = searchLimits.depth ? searchLimits.depth : DEPTH_MAX;
+
+  // Apply handicap depth cap (main thread only — helpers share the same stop flag)
+  if (isMainThread() && SearchConfig.HANDICAP > 0) {
+    const auto hParams = handicap::getHandicapParams(SearchConfig.HANDICAP);
+    maxDepth = std::min(maxDepth, hParams.depthCap);
+    LOG__INFO(Logger::get().SEARCH_LOG, "Handicap {}: depth capped to {}", SearchConfig.HANDICAP, maxDepth);
+
+    // Handicap time waste: sleep to consume a fraction of the time budget.
+    // The timer is already running, so the sleep eats into search time while
+    // consuming real clock time (prevents time banking that might help the engine).
+    if (hParams.timeFraction < 100 && searchLimits.timeControl) {
+      const auto wasteMs = timeLimit.count() * (100 - hParams.timeFraction) / 100;
+      if (wasteMs > 0) {
+        LOG__INFO(Logger::get().SEARCH_LOG, "Handicap {}: wasting {}ms of {}ms budget ({}% effective)",
+                  SearchConfig.HANDICAP, wasteMs, timeLimit.count(), hParams.timeFraction);
+        std::this_thread::sleep_for(milliseconds{wasteMs});
+      }
+    }
+  }
 
   // If we have a TB root move (from non-immediate probe), give it a high sort value
   // so it's searched first. This ensures the TB move is the PV if it's truly best.
@@ -756,10 +784,26 @@ SearchResult Search::iterativeDeepening(Position& p) {
     // MultiPV loop: find top N moves per iteration
     // When MULTI_PV == 1 (default), the loop runs once — zero overhead.
     // Helper threads always use effectiveMultiPV == 1 for efficiency.
+    // When Handicap > 0, inflate to handicap multiPV to build a candidate pool
+    // for suboptimal move selection (extra PVs not reported to UCI).
+    // Note: multiPV may be < poolSize for gentle levels (1-2), where pool
+    // candidates use approximate previous-iteration scores with tight thresholds.
     // =========================================================================
-    const int effectiveMultiPV = isMainThread()
-                                   ? std::min(SearchConfig.MULTI_PV, static_cast<int>(thread().rootMoves.size()))
-                                   : 1;
+    int effectiveMultiPV = 1;
+    if (!isMainThread()) {
+      effectiveMultiPV = 1;
+    }
+    else {
+      const int handicapMPV = SearchConfig.HANDICAP > 0
+                                ? handicap::getHandicapParams(SearchConfig.HANDICAP).multiPV
+                                : 1;
+      effectiveMultiPV = std::min(
+        std::max(SearchConfig.MULTI_PV, handicapMPV),
+        static_cast<int>(thread().rootMoves.size()));
+    }
+
+    // Number of PV lines to report to UCI (user-facing MultiPV, not inflated by handicap)
+    const int reportedMultiPV = std::min(SearchConfig.MULTI_PV, effectiveMultiPV);
 
     // Collect PV data during the loop for deferred, sorted reporting (Stockfish-style).
     // After all PVs are searched, results are sorted by score (descending) so that
@@ -824,10 +868,19 @@ SearchResult Search::iterativeDeepening(Position& p) {
         moveValueGreaterComparator());
     }
 
-    // Send all PV lines to UCI in batch (main thread only, not on stop).
+    // Send PV lines to UCI in batch (main thread only, not on stop).
+    // Only send reportedMultiPV lines (user-facing), not handicap-inflated extras.
     // All lines share the same node count snapshot — consistent like Stockfish.
     if (isMainThread() && !multiPvResults.empty() && !stopConditions()) {
-      sendMultiPvResultsToUci(multiPvResults, iterationDepth);
+      if (reportedMultiPV < static_cast<int>(multiPvResults.size())) {
+        // Trim to user-facing MultiPV count (handicap extras are internal only)
+        const std::vector reportedResults(
+          multiPvResults.begin(), multiPvResults.begin() + reportedMultiPV);
+        sendMultiPvResultsToUci(reportedResults, iterationDepth);
+      }
+      else {
+        sendMultiPvResultsToUci(multiPvResults, iterationDepth);
+      }
     }
 
     // Restore the best PV to the PV table so post-iteration code
@@ -2603,6 +2656,65 @@ void Search::applyTBRootOverride(SearchResult& result) const {
   }
 }
 
+void Search::applyHandicap(SearchResult& result) const {
+  // No-op when handicap is disabled
+  if (SearchConfig.HANDICAP <= 0) {
+    return;
+  }
+
+  // Don't override book or TB moves
+  if (result.bookMove || result.tbHit) {
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Handicap: skipping — {} move",
+               result.bookMove ? "book" : "TB");
+    return;
+  }
+
+  // Need a valid search result with root moves to pick from
+  if (result.bestMove.isNone()) {
+    LOG__WARN(Logger::get().SEARCH_LOG, "Handicap: bestMove is MOVE_NONE — this should not happen");
+    return;
+  }
+
+  // Use main thread's root moves (full pool from inflated MultiPV)
+  const auto& rootMoves = mainThread().rootMoves;
+  if (rootMoves.empty()) {
+    LOG__WARN(Logger::get().SEARCH_LOG, "Handicap: rootMoves is empty — this should not happen");
+    return;
+  }
+
+  const auto params = handicap::getHandicapParams(SearchConfig.HANDICAP);
+  const Move originalBest = result.bestMove;
+
+  const Move selected = handicap::selectHandicapMove(
+    rootMoves,
+    params.poolSize,
+    params.scoreThreshold,
+    position.getZobristKey());
+
+  if (selected.isNone()) {
+    return;
+  }
+
+  // Override result with handicap-selected move
+  result.bestMove      = selected.stripped();
+  result.bestMoveValue = selected.value();
+  result.ponderMove    = MOVE_NONE; // pondering disabled with handicap
+  result.pv.clear();
+  result.pv.push_back(result.bestMove);
+
+  if (result.bestMove == originalBest.stripped()) {
+    LOG__INFO(Logger::get().SEARCH_LOG,
+              "Handicap {}: selected best move {} (score {})",
+              SearchConfig.HANDICAP, result.bestMove.str(), result.bestMoveValue.str());
+  }
+  else {
+    LOG__INFO(Logger::get().SEARCH_LOG,
+              "Handicap {}: selected {} (score {}) instead of best move {} (pool={}, threshold={}cp)",
+              SearchConfig.HANDICAP, result.bestMove.str(), result.bestMoveValue.str(),
+              originalBest.str(), params.poolSize, params.scoreThreshold);
+  }
+}
+
 void Search::extractPonderMove(SearchResult& result, const SearchThreadData& bestThread) {
   // Try to get ponder move from best thread's PV
   if (bestThread.pv.hasLength(DEPTH_NONE, 2)) {
@@ -2835,6 +2947,7 @@ void Search::setupSearchLimits(const Position& p, SearchLimits& sl) {
   if (sl.timeControl) {
     timeLimit   = setupTimeControl(p, sl);
     extraTimeMs = 0;
+
     if (sl.moveTime.count()) {
       LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Time Controlled: Time per Move {}", str(sl.moveTime));
     }

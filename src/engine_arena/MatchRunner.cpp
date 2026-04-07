@@ -205,7 +205,12 @@ namespace arena {
       std::cout << "------------------------------------------------------------------" << std::endl;
       std::cout << "Batch " << batchNumber << "/" << totalBatches
                 << " (games " << (gamesCompleted + 1) << "-" << (gamesCompleted + batchSize)
-                << " of " << matchConfig.rounds << ")" << std::endl;
+                << " of " << matchConfig.rounds << ")"
+                << "  [" << matchConfig.name;
+      if (!matchConfig.tag.empty()) {
+        std::cout << " | " << matchConfig.tag;
+      }
+      std::cout << "]" << std::endl;
       std::cout << "  Current score: " << currentState.engine1Wins << " - "
                 << currentState.engine2Wins << " - " << currentState.draws << std::endl;
 

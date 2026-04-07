@@ -54,6 +54,13 @@ namespace config {
     // >1 = analysis mode: find and report the top N moves with scores and PV lines.
     CONFIG_ESSENTIAL int MULTI_PV = 1;
 
+    // Handicap — strength limitation via multiple levers.
+    // 0 = full strength (zero overhead). 1–20 = progressively weaker play.
+    // Five levers per level: time reduction, MultiPV inflation, depth cap,
+    // candidate pool size, and score threshold for move selection.
+    // Pondering is disabled when Handicap > 0.
+    CONFIG_ESSENTIAL int HANDICAP = 0;
+
     // Multi-threading (Lazy SMP)
     CONFIG_ESSENTIAL int THREADS                = 4;    // Number of search threads (1 = single-threaded, no SMP overhead)
     CONFIG_CONST int SMP_HELPER_START_DEPTH     = 4;    // Depth at which to launch helper threads (allows TT priming)

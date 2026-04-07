@@ -90,6 +90,7 @@
 #include "PVTable.h"
 #include "PawnTT.h"
 #include "PlyInfo.h"
+#include "Handicap.h"
 #include "SearchLimits.h"
 #include "SearchResult.h"
 #include "SearchStats.h"
@@ -423,6 +424,14 @@ namespace engine {
     /// the search found a proven shorter mate.
     /// @param result  Search result to update with TB move/value
     void applyTBRootOverride(SearchResult& result) const;
+
+    /// Applies handicap move selection after search completes.
+    /// If HANDICAP > 0, picks a suboptimal move from the main thread's root move pool
+    /// using score-weighted probabilistic selection seeded by Zobrist key.
+    /// Disables pondering (ponderMove = MOVE_NONE) when active.
+    /// No-op when HANDICAP == 0 or for book/TB moves.
+    /// @param result  Search result to override with handicap move
+    void applyHandicap(SearchResult& result) const;
 
     /// Extracts and validates the ponder move after search completes.
     /// Tries the best thread's PV first; falls back to TT probing.

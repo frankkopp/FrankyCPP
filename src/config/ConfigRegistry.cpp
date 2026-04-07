@@ -51,14 +51,14 @@ ConfigRegistry::ConfigRegistry() {
 #ifdef _MSC_VER
 // Windows MSVC builds
 #ifdef _DEBUG
-  static_assert(sizeof(SearchConfigData) == 648,
+  static_assert(sizeof(SearchConfigData) == 656,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 584,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
-  static_assert(sizeof(SearchConfigData) == 616,
+  static_assert(sizeof(SearchConfigData) == 624,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 576,
@@ -69,7 +69,7 @@ ConfigRegistry::ConfigRegistry() {
 // Linux GCC/Clang builds (including WSL)
 #ifdef NDEBUG
   // Release build
-  static_assert(sizeof(SearchConfigData) == 616,
+  static_assert(sizeof(SearchConfigData) == 624,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 576,
@@ -77,7 +77,7 @@ ConfigRegistry::ConfigRegistry() {
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
   // Debug build
-  static_assert(sizeof(SearchConfigData) == 616,
+  static_assert(sizeof(SearchConfigData) == 624,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 600,
@@ -275,6 +275,20 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .exposure = {.uci = true, .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.MULTI_PV; }),
     .setter = SEARCH_CONFIG_SETTER(MULTI_PV, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "HANDICAP",
+    .uciName = "Handicap",
+    .description = "Strength limitation (0 = full strength, 1-20 = progressively weaker play)",
+    .valueType = Int,
+    .domain = General,
+    .defaultValue = configToString(defaultSearch.HANDICAP),
+    .minValue = 0,
+    .maxValue = 20,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.HANDICAP; }),
+    .setter = SEARCH_CONFIG_SETTER(HANDICAP, parseInt)
   });
 
   definitions_.push_back({

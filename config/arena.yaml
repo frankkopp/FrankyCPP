@@ -1,5 +1,5 @@
 # Arena version - used for tracking in result files (not engine version)
-version: "v1.7"
+version: "v1.8"
 resultsDir: "./results"
 
 # Cutechess-cli path (Windows)
@@ -329,20 +329,20 @@ matches:
   # ==========================================================================
 
   ## Bullet 1+0.01 — Ultra-fast smoke test (~7min for 500 games with Threads=4)
-  - name: "v1.8_vs_v1.7_bullet_1s"
-    tag: "v1.8-vs-v1.7"
-    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
-    engine1Version: "v1.8"
-    engine1Options: "OwnBook=false; Threads=4"
-    engine2Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
-    engine2Version: "v1.7"
-    engine2Options: "OwnBook=false; Threads=4"
-    openingBook: "books/8moves_v3.pgn"
-    timeControl: "1+0.01"
-    timeMargin: 200
-    rounds: 500
-    concurrency: 4
-    outputPgn: "results/matches/v1.8_vs_v1.7_bullet_1s.pgn"
+#  - name: "v1.8_vs_v1.7_bullet_1s"
+#    tag: "v1.8-vs-v1.7"
+#    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+#    engine1Version: "v1.8"
+#    engine1Options: "OwnBook=false; Threads=4"
+#    engine2Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
+#    engine2Version: "v1.7"
+#    engine2Options: "OwnBook=false; Threads=4"
+#    openingBook: "books/8moves_v3.pgn"
+#    timeControl: "1+0.01"
+#    timeMargin: 200
+#    rounds: 500
+#    concurrency: 4
+#    outputPgn: "results/matches/v1.8_vs_v1.7_bullet_1s.pgn"
 
   ## Bullet 2+0.02 — Fast smoke test (~15min for 500 games with Threads=4)
 #  - name: "v1.8_vs_v1.7_bullet_2s"
@@ -377,20 +377,20 @@ matches:
 #    outputPgn: "results/matches/v1.8_vs_v1.7_blitz_5s.pgn"
 
   ## Blitz 10+0.1 — Fishtest STC equivalent (~80min for 500 games with Threads=4)
-  - name: "v1.8_vs_v1.7_STC_10s"
-    tag: "v1.8-vs-v1.7"
-    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
-    engine1Version: "v1.8"
-    engine1Options: "OwnBook=false; Threads=4"
-    engine2Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
-    engine2Version: "v1.7"
-    engine2Options: "OwnBook=false; Threads=4"
-    openingBook: "books/8moves_v3.pgn"
-    timeControl: "10+0.1"
-    timeMargin: 200
-    rounds: 500
-    concurrency: 4
-    outputPgn: "results/matches/v1.8_vs_v1.7_STC_10s.pgn"
+#  - name: "v1.8_vs_v1.7_STC_10s"
+#    tag: "v1.8-vs-v1.7"
+#    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+#    engine1Version: "v1.8"
+#    engine1Options: "OwnBook=false; Threads=4"
+#    engine2Path: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
+#    engine2Version: "v1.7"
+#    engine2Options: "OwnBook=false; Threads=4"
+#    openingBook: "books/8moves_v3.pgn"
+#    timeControl: "10+0.1"
+#    timeMargin: 200
+#    rounds: 500
+#    concurrency: 4
+#    outputPgn: "results/matches/v1.8_vs_v1.7_STC_10s.pgn"
 
   ## Rapid 60+0.6 — Fishtest LTC equivalent (~5hr for 200 games with Threads=4)
 #  - name: "v1.8_vs_v1.7_LTC_60s"
@@ -423,6 +423,222 @@ matches:
 #    rounds: 100
 #    concurrency: 4
 #    outputPgn: "results/matches/v1.8_vs_v1.7_VLTC_180s.pgn"
+
+  # ==========================================================================
+  # Handicap Strength Validation: 0-vs-N series for Elo curve measurement
+  # Self-play v1.8 (Handicap=0) vs v1.8 (Handicap=N) at blitz 5+0.05
+  # Purpose: Measure absolute Elo loss per handicap level from a single reference
+  # Target: ~35 Elo per level, monotonically increasing
+  # TC: 5+0.05 blitz, 200 rounds, Threads=1 (isolate handicap effect)
+  # ==========================================================================
+
+  ## Handicap 0 vs 0 —
+#  - name: "Handicap_0_vs_0"
+#    tag: "handicap-validation"
+#    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+#    engine1Version: "v1.8"
+#    engine1Options: "OwnBook=false; Threads=1; Handicap=0"
+#    engine2Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+#    engine2Version: "v1.8-H0"
+#    engine2Options: "OwnBook=false; Threads=1; Handicap=0"
+#    openingBook: "books/8moves_v3.pgn"
+#    timeControl: "5+0.05"
+#    timeMargin: 200
+#    rounds: 200
+#    concurrency: 8
+#    outputPgn: "results/matches/Handicap_0_vs_0.pgn"
+
+  ## Handicap 0 vs 1
+  - name: "Handicap_0_vs_1"
+    tag: "handicap-validation"
+    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine1Version: "v1.8"
+    engine1Options: "OwnBook=false; Threads=1; Handicap=0"
+    engine2Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine2Version: "v1.8-H1"
+    engine2Options: "OwnBook=false; Threads=1; Handicap=1"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "10+0.1"
+    timeMargin: 200
+    rounds: 200
+    concurrency: 8
+    outputPgn: "results/matches/Handicap_0_vs_1.pgn"
+
+  ## Handicap 0 vs 2
+  - name: "Handicap_0_vs_2"
+    tag: "handicap-validation"
+    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine1Version: "v1.8"
+    engine1Options: "OwnBook=false; Threads=1; Handicap=0"
+    engine2Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine2Version: "v1.8-H2"
+    engine2Options: "OwnBook=false; Threads=1; Handicap=2"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "10+0.1"
+    timeMargin: 200
+    rounds: 200
+    concurrency: 8
+    outputPgn: "results/matches/Handicap_0_vs_2.pgn"
+
+  ## Handicap 0 vs 3
+  - name: "Handicap_0_vs_3"
+    tag: "handicap-validation"
+    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine1Version: "v1.8"
+    engine1Options: "OwnBook=false; Threads=1; Handicap=0"
+    engine2Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine2Version: "v1.8-H3"
+    engine2Options: "OwnBook=false; Threads=1; Handicap=3"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "10+0.1"
+    timeMargin: 200
+    rounds: 200
+    concurrency: 8
+    outputPgn: "results/matches/Handicap_0_vs_3.pgn"
+
+  ## Handicap 0 vs 4 — Target: ~140 Elo (130-70)
+  - name: "Handicap_0_vs_4"
+    tag: "handicap-validation"
+    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine1Version: "v1.8"
+    engine1Options: "OwnBook=false; Threads=1; Handicap=0"
+    engine2Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine2Version: "v1.8-H4"
+    engine2Options: "OwnBook=false; Threads=1; Handicap=4"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "10+0.1"
+    timeMargin: 200
+    rounds: 200
+    concurrency: 8
+    outputPgn: "results/matches/Handicap_0_vs_4.pgn"
+
+  ## Handicap 0 vs 6 — Target: ~210 Elo (140-60)
+  - name: "Handicap_0_vs_6"
+    tag: "handicap-validation"
+    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine1Version: "v1.8"
+    engine1Options: "OwnBook=false; Threads=1; Handicap=0"
+    engine2Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine2Version: "v1.8-H6"
+    engine2Options: "OwnBook=false; Threads=1; Handicap=6"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "10+0.1"
+    timeMargin: 200
+    rounds: 200
+    concurrency: 8
+    outputPgn: "results/matches/Handicap_0_vs_6.pgn"
+
+  ## Handicap 0 vs 8 — Target: ~280 Elo (150-50)
+  - name: "Handicap_0_vs_8"
+    tag: "handicap-validation"
+    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine1Version: "v1.8"
+    engine1Options: "OwnBook=false; Threads=1; Handicap=0"
+    engine2Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine2Version: "v1.8-H8"
+    engine2Options: "OwnBook=false; Threads=1; Handicap=8"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "10+0.1"
+    timeMargin: 200
+    rounds: 200
+    concurrency: 8
+    outputPgn: "results/matches/Handicap_0_vs_8.pgn"
+
+  ## Handicap 0 vs 10 — Target: ~350 Elo (160-40)
+  - name: "Handicap_0_vs_10"
+    tag: "handicap-validation"
+    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine1Version: "v1.8"
+    engine1Options: "OwnBook=false; Threads=1; Handicap=0"
+    engine2Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine2Version: "v1.8-H10"
+    engine2Options: "OwnBook=false; Threads=1; Handicap=10"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "10+0.1"
+    timeMargin: 200
+    rounds: 200
+    concurrency: 8
+    outputPgn: "results/matches/Handicap_0_vs_10.pgn"
+
+  ## Handicap 0 vs 12 — Target: ~420 Elo (170-30)
+  - name: "Handicap_0_vs_12"
+    tag: "handicap-validation"
+    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine1Version: "v1.8"
+    engine1Options: "OwnBook=false; Threads=1; Handicap=0"
+    engine2Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine2Version: "v1.8-H12"
+    engine2Options: "OwnBook=false; Threads=1; Handicap=12"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "10+0.1"
+    timeMargin: 200
+    rounds: 200
+    concurrency: 8
+    outputPgn: "results/matches/Handicap_0_vs_12.pgn"
+
+  ## Handicap 0 vs 14 — Target: ~490 Elo (180-20)
+  - name: "Handicap_0_vs_14"
+    tag: "handicap-validation"
+    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine1Version: "v1.8"
+    engine1Options: "OwnBook=false; Threads=1; Handicap=0"
+    engine2Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine2Version: "v1.8-H14"
+    engine2Options: "OwnBook=false; Threads=1; Handicap=14"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "10+0.1"
+    timeMargin: 200
+    rounds: 200
+    concurrency: 8
+    outputPgn: "results/matches/Handicap_0_vs_14.pgn"
+
+  ## Handicap 0 vs 16 — Target: ~560 Elo (190-10)
+  - name: "Handicap_0_vs_16"
+    tag: "handicap-validation"
+    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine1Version: "v1.8"
+    engine1Options: "OwnBook=false; Threads=1; Handicap=0"
+    engine2Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine2Version: "v1.8-H16"
+    engine2Options: "OwnBook=false; Threads=1; Handicap=16"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "10+0.1"
+    timeMargin: 200
+    rounds: 200
+    concurrency: 8
+    outputPgn: "results/matches/Handicap_0_vs_16.pgn"
+
+  ## Handicap 0 vs 18 — Target: ~630 Elo (195-5)
+  - name: "Handicap_0_vs_18"
+    tag: "handicap-validation"
+    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine1Version: "v1.8"
+    engine1Options: "OwnBook=false; Threads=1; Handicap=0"
+    engine2Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine2Version: "v1.8-H18"
+    engine2Options: "OwnBook=false; Threads=1; Handicap=18"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "10+0.1"
+    timeMargin: 200
+    rounds: 200
+    concurrency: 8
+    outputPgn: "results/matches/Handicap_0_vs_18.pgn"
+
+  ## Handicap 0 vs 20 — Target: ~700 Elo (200-0)
+  - name: "Handicap_0_vs_20"
+    tag: "handicap-validation"
+    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine1Version: "v1.8"
+    engine1Options: "OwnBook=false; Threads=1; Handicap=0"
+    engine2Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine2Version: "v1.8-H20"
+    engine2Options: "OwnBook=false; Threads=1; Handicap=20"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "10+0.1"
+    timeMargin: 200
+    rounds: 200
+    concurrency: 8
+    outputPgn: "results/matches/Handicap_0_vs_20.pgn"
 
   ## 300+0 — v1.8 vs SF18@2700 at same TC as v1.7 baseline (+69 Elo)
   ## Purpose: Verify no regression vs v1.7 (which used 300+0, not 10+0.1)

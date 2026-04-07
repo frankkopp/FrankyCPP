@@ -149,6 +149,7 @@ src/
 │   ├── TT.h/.cpp         # Transposition table
 │   ├── PawnTT.h          # Dedicated pawn hash table
 │   ├── See.h             # Static exchange evaluation
+│   ├── Handicap.h        # Strength limitation (21 levels, 5 weakening levers)
 │   ├── UciHandler.h/.cpp # UCI protocol implementation
 │   ├── UciOptions.h/.cpp # UCI option handling (uses ConfigRegistry)
 │   ├── SearchLimits.h    # Time/depth/node limits
@@ -286,6 +287,7 @@ The core search algorithm using alpha-beta with iterative deepening.
 - Syzygy tablebase probing for endgame positions
 - **MultiPV analysis mode** (top N moves with sorted, batched UCI output)
 - **Lazy SMP multi-threaded parallel search**
+- **Handicap mode** (UCI `Handicap` 0–20, strength limitation via 5 independent levers)
 
 **Tablebase Integration:**
 - **Root probing:** Before search, probe tablebases to filter moves to only WDL-optimal moves
@@ -309,6 +311,18 @@ The core search algorithm using alpha-beta with iterative deepening.
 - `rootMoves[0..N]` are re-sorted to match, ensuring post-iteration code sees the true best move
 - Helper threads always use MultiPV=1 for search efficiency
 - Aspiration `lowerbound`/`upperbound` UCI output is suppressed when MultiPV > 1 to prevent GUI display artifacts
+
+**Handicap Mode:**
+- UCI option `Handicap` (spin 0–20, default 0). Level 0 = full strength (zero overhead).
+- Five independent weakening levers per level, defined in `Handicap.h` lookup table:
+  1. **Time waste** (levels 1–2): Main thread sleeps for a fraction of the time budget before searching, consuming real clock time without banking.
+  2. **MultiPV inflation** (levels 3+): Forces MultiPV > 1, spreading search effort across multiple PV lines. Also builds the candidate pool for move selection.
+  3. **Depth cap** (levels 10+): Hard limit on iterative deepening depth.
+  4. **Candidate pool size**: Number of root moves considered for suboptimal selection.
+  5. **Score threshold**: Max centipawns below best move to include; wider = weaker. Moves outside threshold are excluded entirely (hard cutoff).
+- Move selection uses Zobrist-key-seeded PRNG (`splitmix64`) for deterministic, reproducible play from the same position.
+- Pondering is disabled when Handicap > 0.
+- `applyHandicap()` runs after `selectBestThread()`, overriding the best move with the selected candidate.
 
 **Owned Components:**
 - `TT` - Transposition table (shared across all SMP threads)
@@ -528,7 +542,8 @@ TT store result  (shared TT — all threads contribute)
   selectBestThread() → compare depth+score across all threads
          │
          ├──► TB root override (if applicable)
-         ├──► Ponder move extraction (PV or TT fallback)
+         ├──► Handicap: applyHandicap() → suboptimal move selection (if Handicap > 0)
+         ├──► Ponder move extraction (PV or TT fallback, skipped if Handicap > 0)
          │
          ▼
 UciHandler::sendFinalUciInfo() + sendResult()

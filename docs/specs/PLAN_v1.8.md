@@ -70,11 +70,12 @@ or for filling gaps between larger features.
 
 ### C. Missing UCI Features (Functionality)
 
-| #  | Feature                               | Expected ELO | Effort      | Complexity | Notes                                                                                                                                                                                                        |
-|----|---------------------------------------|--------------|-------------|------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| C1 | **MultiPV**                           | N/A          | 🟢 1–2 days | 🟡 Medium  | Existing plan in `PLAN_MultiPV.md`. Essential for analysis GUIs. Standard UCI option, not yet implemented.                                                                                                   |
-| C2 | ✅ **UCI `debug` command + eval info** | N/A          | 🟢 1–2 days | 🟢 Low     | `debug on/off` toggle, PV-leaf eval breakdown (material, positional, pawn, pieces, threats, coordination, king safety, tempo, phase), iteration stats (TT hit-rate, beta-cut-1st%), book move announcements. |
-| C4 | ✅ **UCI `Contempt` option**           | (see A8)     |             |            | Cross-ref with A8 — the UCI option part.                                                                                                                                                                     |
+| #  | Feature                                | Expected ELO | Effort      | Complexity | Notes                                                                                                                                                                                                        |
+|----|----------------------------------------|--------------|-------------|------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| C1 | ✅ **MultiPV**                          | N/A          | 🟢 1–2 days | 🟡 Medium  | Stockfish-style batched sorted output. UCI `MultiPV` option (1–128). Also used internally by Handicap for candidate pool.                                                                                    |
+| C2 | ✅ **UCI `debug` command + eval info**  | N/A          | 🟢 1–2 days | 🟢 Low     | `debug on/off` toggle, PV-leaf eval breakdown (material, positional, pawn, pieces, threats, coordination, king safety, tempo, phase), iteration stats (TT hit-rate, beta-cut-1st%), book move announcements. |
+| C4 | ✅ **UCI `Contempt` option**            | (see A8)     |             |            | Cross-ref with A8 — the UCI option part.                                                                                                                                                                     |
+| C5 | ✅ **Handicap (UCI `Handicap` option)** | N/A          | 🟡 3–5 days | 🟡 Medium  | Strength limitation via 5 levers: time waste, MultiPV inflation, depth cap, candidate pool, score threshold. 21 levels (0–20). Validated via arena at TC 5+0.05 and 10+0.1 (200 games/level).                |
 
 ---
 
@@ -104,10 +105,11 @@ or for filling gaps between larger features.
 Ordered by confidence of ELO gain and dependency chain:
 
 ### Phase 1 — Quick Wins & UCI Features (Week 1–2)
-1. **C1: MultiPV** — High-value, existing plan, essential for analysis use.
+1. ✅ **C1: MultiPV** — Stockfish-style batched sorted output, essential for analysis GUIs.
 2. ✅ **C2: UCI debug + eval info** — Debug toggle with eval breakdown and search stats in info strings.
 3. ✅ **A8/C4: Contempt** — Simple draw score adjustment, measurable ELO impact.
 4. ✅ **E3: Bench hash stability** — Safety net before making search changes.
+5. ✅ **C5: Handicap** — 21-level strength limitation (time waste + MultiPV + depth cap + move selection).
 
 ### Phase 2 — Core Search Enhancements (Week 3–5)
 5. **A1: Continuation History** — Biggest expected single-feature gain. Prerequisite for A3.
@@ -167,12 +169,78 @@ Each strength feature follows the standard validation process:
 
 ## Success Criteria for v1.8 Release
 
-- [ ] **MultiPV** working correctly (verified by GUI analysis)
-- [ ] **UCI debug** implemented (info string eval breakdown)
+- [x] **MultiPV** working correctly (verified by GUI analysis)
+- [x] **UCI debug** implemented (info string eval breakdown)
+- [x] **Handicap** 21-level strength limitation, validated at TC 5+0.05 and 10+0.1
 - [ ] **≥1 major search feature** validated at +10 ELO or more
 - [ ] **Overall ≥+40 ELO** vs v1.7 in Arena gauntlet (200+ games)
 - [ ] All existing 266+ tests still passing
 - [ ] No search regressions (bench hash, node counts)
+
+---
+
+## Observations & Future Investigation
+
+### Handicap Validation Results (2026-04-08)
+
+Validated via arena matches at two time controls. 200 games per level.
+
+**TC 5+0.05 (fast):**
+
+| Level | Score (H0 vs Hx) | ELO diff | Weakening levers active               |
+|-------|------------------|----------|---------------------------------------|
+| 0     | 103.0 - 97.0     | +10      | (baseline)                            |
+| 1     | 128.0 - 72.0     | +100     | time waste 90%                        |
+| 2     | 151.5 - 48.5     | +198     | time waste 80%                        |
+| 3     | 153.5 - 46.5     | +208     | MultiPV=2, pool=2, thr=2              |
+| 4     | 162.0 - 38.0     | +252     | MultiPV=2, pool=2, thr=4              |
+| 6     | 152.5 - 47.5     | +203     | MultiPV=2, pool=2, thr=9              |
+| 8     | 168.0 - 32.0     | +288     | MultiPV=3, pool=3, thr=16             |
+| 10    | 172.5 - 27.5     | +319     | depth≤24, MultiPV=3, pool=3, thr=28   |
+| 12    | 186.5 - 13.5     | +456     | depth≤20, MultiPV=4, pool=4, thr=45   |
+| 14    | 196.0 - 4.0      | +676     | depth≤16, MultiPV=5, pool=5, thr=80   |
+| 16    | 199.5 - 0.5      | +1040    | depth≤12, MultiPV=7, pool=7, thr=130  |
+| 18    | 200.0 - 0.0      | ∞        | depth≤9, MultiPV=9, pool=9, thr=220   |
+| 20    | 198.5 - 1.5      | +849     | depth≤7, MultiPV=12, pool=12, thr=360 |
+
+**TC 10+0.1 (longer):**
+
+| Level | Score (H0 vs Hx) | ELO diff |
+|-------|------------------|----------|
+| 1     | 113.5 - 86.5     | +47      |
+| 2     | 112.0 - 88.0     | +42      |
+| 3     | 159.0 - 41.0     | +235     |
+| 4     | 153.5 - 46.5     | +208     |
+| 6     | 157.0 - 43.0     | +225     |
+| 8     | 173.5 - 26.5     | +326     |
+| 10    | 180.0 - 20.0     | +382     |
+| 12    | 187.0 - 13.0     | +463     |
+| 14    | 195.0 - 5.0      | +636     |
+| 16    | 200.0 - 0.0      | ∞        |
+| 18    | 200.0 - 0.0      | ∞        |
+| 20    | 200.0 - 0.0      | ∞        |
+
+**Key findings:**
+- Time waste (levels 1-2) effect is TC-dependent: ~100 ELO at 5+0.05, ~45 ELO at 10+0.1
+- MultiPV cliff (level 3) creates a natural ~200 ELO floor regardless of TC
+- Monotonic progression within measurement noise (±40-60 ELO at 200 games)
+
+### Time Management Optimization (from Handicap testing, 2026-04-07)
+
+During handicap feature development, reducing the engine's time budget by 20-40% at TC 5+0.05
+paradoxically **improved** playing strength (−12 to −21 ELO for the full-strength opponent).
+This suggests the engine may be **over-allocating time per move** at fast time controls —
+banking unused time and gaining a clock advantage in later phases.
+
+**Resolution:** Fixed by using sleep-based time waste instead of budget reduction. The engine
+now sleeps for `timeLimit * (100 - timeFraction) / 100` ms while the timer runs, consuming
+real clock time without banking.
+
+**Action items (time management tuning):**
+- Investigate time allocation at fast TCs (1+0.01, 5+0.05) — is the engine using its full budget?
+- Profile average time usage vs allocated budget across game phases
+- Consider SPSA-tuning time management parameters (overhead, movesLeft estimation, extra-time factors)
+- This could yield +10–30 ELO with zero search changes — high value, low risk
 
 ---
 
