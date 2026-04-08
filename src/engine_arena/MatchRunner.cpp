@@ -456,6 +456,7 @@ namespace arena {
 #ifdef _WIN32
     // Windows implementation using _popen
     // Wrap command in cmd.exe /c to properly handle paths with spaces
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     const std::string windowsCommand = "cmd.exe /c \"" + command + "\"";
     FILE* pipe                       = _popen(windowsCommand.c_str(), "r");
     if (!pipe) {
@@ -464,7 +465,7 @@ namespace arena {
 
     // Read output
     std::array<char, 256> buffer{};
-    while (fgets(buffer.data(), static_cast<int>(buffer.size()), pipe) != nullptr) {
+    while (fgets(buffer.data(), buffer.size(), pipe) != nullptr) {
       output += buffer.data();
       // Print live output
       std::cout << buffer.data();

@@ -727,6 +727,7 @@ namespace chess {
   }
 
   std::string Position::strBoard() const {
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     const std::string ptc = " KoNBRQ  k*nbrq   ";
     std::ostringstream output;
     output << "  +---+---+---+---+---+---+---+---+" << std::endl;
@@ -944,6 +945,7 @@ namespace chess {
     }
 
     // check if position fen part is valid
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     static const std::string allowedChars{"12345678pPnNbBrRqQkK/"};
     auto l = fenParts[0].length();
     for (int i = 0; i < l; i++) {
@@ -1023,6 +1025,7 @@ namespace chess {
 
     // castling rights
     if (fenParts.size() >= 3) {
+      // ReSharper disable once CppVariableCanBeMadeConstexpr
       static const std::string allowedCastlingChars{"KkQq-"};
       l = fenParts[2].length();
       for (int i = 0; i < l; i++) {

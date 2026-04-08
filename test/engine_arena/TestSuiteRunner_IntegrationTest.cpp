@@ -132,6 +132,7 @@ protected:
 
 TEST_F(TestSuiteRunnerIntegrationTest, FullSuite_StartingPosition) {
   // Create a minimal test EPD with starting position
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string testEpdPath = "test_starting_position.epd";
   testFilesToCleanup.push_back(testEpdPath);
 
@@ -185,6 +186,7 @@ TEST_F(TestSuiteRunnerIntegrationTest, FullSuite_StartingPosition) {
 //=============================================================================
 
 TEST_F(TestSuiteRunnerIntegrationTest, MultipleTestTypes) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string testEpdPath = "test_multiple_types.epd";
   testFilesToCleanup.push_back(testEpdPath);
 
@@ -222,7 +224,9 @@ TEST_F(TestSuiteRunnerIntegrationTest, MultipleTestTypes) {
 //=============================================================================
 
 TEST_F(TestSuiteRunnerIntegrationTest, MultipleSequentialSuites) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string testEpd1 = "test_suite1.epd";
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string testEpd2 = "test_suite2.epd";
   testFilesToCleanup.push_back(testEpd1);
   testFilesToCleanup.push_back(testEpd2);
@@ -279,6 +283,7 @@ TEST_F(TestSuiteRunnerIntegrationTest, MultipleSequentialSuites) {
 //=============================================================================
 
 TEST_F(TestSuiteRunnerIntegrationTest, PositionIsolation_Enabled) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string testEpdPath = "test_isolation.epd";
   testFilesToCleanup.push_back(testEpdPath);
 
@@ -306,6 +311,7 @@ TEST_F(TestSuiteRunnerIntegrationTest, PositionIsolation_Enabled) {
 }
 
 TEST_F(TestSuiteRunnerIntegrationTest, PositionIsolation_Disabled) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string testEpdPath = "test_no_isolation.epd";
   testFilesToCleanup.push_back(testEpdPath);
 
@@ -337,6 +343,7 @@ TEST_F(TestSuiteRunnerIntegrationTest, PositionIsolation_Disabled) {
 //=============================================================================
 
 TEST_F(TestSuiteRunnerIntegrationTest, ResultMetadata_Complete) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string testEpdPath = "test_metadata.epd";
   testFilesToCleanup.push_back(testEpdPath);
 
@@ -389,6 +396,7 @@ TEST_F(TestSuiteRunnerIntegrationTest, ResultMetadata_Complete) {
 //=============================================================================
 
 TEST_F(TestSuiteRunnerIntegrationTest, EmptyEpdFile_ThrowsError) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string testEpdPath = "test_empty.epd";
   testFilesToCleanup.push_back(testEpdPath);
 
@@ -438,6 +446,7 @@ TEST_F(TestSuiteRunnerIntegrationTest, MissingEpdFile_ThrowsError) {
 //=============================================================================
 
 TEST_F(TestSuiteRunnerIntegrationTest, InvalidFEN_ContinuesSuite) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string testEpdPath = "test_invalid_fen.epd";
   testFilesToCleanup.push_back(testEpdPath);
 
@@ -474,6 +483,7 @@ TEST_F(TestSuiteRunnerIntegrationTest, InvalidFEN_ContinuesSuite) {
 //=============================================================================
 
 TEST_F(TestSuiteRunnerIntegrationTest, StressTest_MultiplePositions) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string testEpdPath = "test_stress.epd";
   testFilesToCleanup.push_back(testEpdPath);
 
@@ -517,6 +527,7 @@ TEST_F(TestSuiteRunnerIntegrationTest, StressTest_MultiplePositions) {
 //=============================================================================
 
 TEST_F(TestSuiteRunnerIntegrationTest, EngineNameExtraction) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string testEpdPath = "test_engine_name.epd";
   testFilesToCleanup.push_back(testEpdPath);
 

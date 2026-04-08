@@ -119,6 +119,7 @@ TEST_F(OpeningBookTest, initPgnLarge) {
   fprintln("Book:  {:L} entries", book.size());
   EXPECT_EQ(4'821'615, book.size());
   fprintln("{}", book.str(1));
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string expected = "Root (190.780)";
   EXPECT_TRUE(book.str(1).find_first_of(expected) != std::string::npos);
 }
@@ -162,6 +163,7 @@ TEST_F(OpeningBookTest, serializationSimple) {
 #ifndef NDEBUG
   GTEST_SKIP() << "Skipping in debug build due to duration";
 #endif
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string filePathStr = "./books/book.txt";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::SIMPLE);
 

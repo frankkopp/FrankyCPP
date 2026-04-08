@@ -57,6 +57,7 @@ public:
 //=============================================================================
 
 TEST_F(UCIEngineErrorHandlingTest, Constructor_MissingExecutable_ThrowsError) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string nonExistentPath = "nonexistent_engine.exe";
 
   // Should throw runtime_error
@@ -69,6 +70,7 @@ TEST_F(UCIEngineErrorHandlingTest, Constructor_MissingExecutable_ThrowsError) {
 
 TEST_F(UCIEngineErrorHandlingTest, Constructor_DirectoryPath_ThrowsError) {
   // Use current directory as an invalid engine path
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string directoryPath = ".";
 
   // Should throw runtime_error
@@ -80,6 +82,7 @@ TEST_F(UCIEngineErrorHandlingTest, Constructor_DirectoryPath_ThrowsError) {
 //=============================================================================
 
 TEST_F(UCIEngineErrorHandlingTest, Constructor_EmptyPath_ThrowsError) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string emptyPath = "";
 
   // Should throw runtime_error
@@ -101,6 +104,7 @@ TEST_F(UCIEngineErrorHandlingTest, SetPosition_InvalidFEN_ReturnsFalse) {
   UCIEngine engine(enginePath);
 
   // Try to set an invalid FEN (missing parts)
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string invalidFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 
   // setPosition should return false or handle gracefully
@@ -128,6 +132,7 @@ TEST_F(UCIEngineErrorHandlingTest, Search_VeryShortTimeout_ReturnsPartialOrEmpty
   engine.setSearchTimeout(milliseconds{5000}); // 5 second absolute timeout
 
   // Set position
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
   ASSERT_TRUE(engine.setPosition(startFen));
 
@@ -157,6 +162,7 @@ TEST_F(UCIEngineErrorHandlingTest, MultipleRapidSearches_NoResourceLeaks) {
 
   UCIEngine engine(enginePath);
 
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
   // Perform 10 rapid searches
@@ -193,6 +199,7 @@ TEST_F(UCIEngineErrorHandlingTest, NewGame_MultipleCalls_NoCrash) {
   }
 
   // Should still be functional after multiple newGame calls
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
   EXPECT_TRUE(engine.setPosition(startFen));
 
@@ -261,6 +268,7 @@ TEST_F(UCIEngineErrorHandlingTest, Search_ZeroTime_ReturnsQuickly) {
 
   UCIEngine engine(enginePath);
 
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
   ASSERT_TRUE(engine.setPosition(startFen));
 

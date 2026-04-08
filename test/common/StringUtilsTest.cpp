@@ -42,6 +42,7 @@ protected:
 };
 
 TEST_F(StringUtilsTest, splitFastTest) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string line{"1. f4 d5 2. Nf3 Nf6 3. e3 g6 4. b3 Bg7 5. Bb2 O-O 6. Be2 c5 7. O-O Nc6 8. Ne5 Qc7 1/2-1/2"};
   const std::string_view lineView{line};
 
@@ -65,6 +66,7 @@ TEST_F(StringUtilsTest, splitFastTest) {
 }
 
 TEST_F(StringUtilsTest, trimFastTest) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string line{" \t This is a text. This is a text. This is a text. This is a text.\t  \r\n"};
   const std::string_view lineView{line};
 
@@ -76,6 +78,7 @@ TEST_F(StringUtilsTest, trimFastTest) {
 }
 
 TEST_F(StringUtilsTest, removeTrailingCommentTest) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string line{"This is a text. This is a text. This is a text. ; and this is the comment"};
   const std::string_view lineView{line};
 

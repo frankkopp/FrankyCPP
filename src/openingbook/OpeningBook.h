@@ -104,12 +104,16 @@ namespace book {
     // the extension cache files use after the given opening book filename
     // includes platform tag to avoid cross-platform serialization issues
 #if defined(_WIN32) || defined(_WIN64)
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     const std::string platformTag = "win";
 #elif defined(__linux__)
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     const std::string platformTag = "linux";
 #elif defined(__APPLE__)
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     const std::string platformTag = "macos";
 #else
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     const std::string platformTag = "unknown";
 #endif
     const std::string cacheExt = std::format(".cache.v{}.{}.{}.bin", FrankyCPP_VERSION_MAJOR, FrankyCPP_VERSION_MINOR, platformTag);

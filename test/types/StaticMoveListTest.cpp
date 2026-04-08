@@ -256,6 +256,7 @@ TEST_F(StaticMoveListTest, str) {
   moveList.push_back(move2);
   moveList.push_back(move3);
 
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string expected = "e2e4 a7a8Q e1g1";
   EXPECT_EQ(moveList.str(), expected);
 }

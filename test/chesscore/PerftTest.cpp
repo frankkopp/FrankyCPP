@@ -422,6 +422,7 @@ TEST_F(PerftTest, StalematePositions) {
   // Perft counts moves generated, not terminal positions, so 0 nodes is correct
   {
     cout << "Test 1: Classic immediate stalemate" << endl;
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     const std::string fen = "7k/5Q2/6K1/8/8/8/8/8 b - - 0 1";
     Perft p;
     p.setFullStats(true);
@@ -434,6 +435,7 @@ TEST_F(PerftTest, StalematePositions) {
   // Test 2: Stalemate with two rooks (from SearchTest)
   {
     cout << "Test 2: Stalemate with two rooks" << endl;
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     const std::string fen = "6R1/8/8/8/8/5K2/R7/7k b - - 0 1";
     Perft p;
     p.setFullStats(true);
@@ -446,6 +448,7 @@ TEST_F(PerftTest, StalematePositions) {
   // Test 3: Position that leads to stalemate at depth 2
   {
     cout << "Test 3: Stalemate after 1 move" << endl;
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     const std::string fen = "7k/5Q2/8/6K1/8/8/8/8 w - - 0 1";
     Perft p;
     p.setFullStats(true);
@@ -459,6 +462,7 @@ TEST_F(PerftTest, StalematePositions) {
   // Test 4: King and pawn endgame - verify node counts are correct
   {
     cout << "Test 4: King and pawn endgame" << endl;
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     const std::string fen = "8/8/8/8/8/K7/P7/k7 w - - 0 1";
     Perft p;
     p.setFullStats(true);
@@ -482,6 +486,7 @@ TEST_F(PerftTest, StalematePositions) {
   // Black can play Kg8 (not a stalemate)
   {
     cout << "Test 5: Position with one legal move (not stalemate)" << endl;
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     const std::string fen = "7k/5R2/6K1/8/8/8/8/8 b - - 0 1";
     Perft p;
     p.setFullStats(true);

@@ -184,6 +184,7 @@ void Search::clearTT() const {
     return;
   }
   tt->clear();
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string msg = "Hash cleared.";
   sendString(msg);
   LOG__INFO(Logger::get().SEARCH_LOG, "{}", msg);
@@ -191,6 +192,7 @@ void Search::clearTT() const {
 
 void Search::resizeTT() const {
   if (isSearching()) {
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     const std::string msg = "Can't resize hash while searching.";
     sendString(msg);
     LOG__WARN(Logger::get().SEARCH_LOG, "{}", msg);

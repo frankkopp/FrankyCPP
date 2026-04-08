@@ -85,6 +85,7 @@ TEST_F(MoveUtilsTest, NormalizeMoveHandlesPromotion) {
 //=============================================================================
 
 TEST_F(MoveUtilsTest, DirectMatchLongAlgebraic) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string actualMove                 = "e2e4";
   const std::vector<std::string> expectedMoves = {"e2e4"};
 
@@ -92,6 +93,7 @@ TEST_F(MoveUtilsTest, DirectMatchLongAlgebraic) {
 }
 
 TEST_F(MoveUtilsTest, DirectMatchCaseInsensitive) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string actualMove                 = "e2e4";
   const std::vector<std::string> expectedMoves = {"E2E4"};
 
@@ -99,6 +101,7 @@ TEST_F(MoveUtilsTest, DirectMatchCaseInsensitive) {
 }
 
 TEST_F(MoveUtilsTest, DirectMatchWithDecoration) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string actualMove                 = "e2e4";
   const std::vector<std::string> expectedMoves = {"e2e4+"};
 
@@ -106,6 +109,7 @@ TEST_F(MoveUtilsTest, DirectMatchWithDecoration) {
 }
 
 TEST_F(MoveUtilsTest, NoMatchLongAlgebraic) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string actualMove                 = "e2e4";
   const std::vector<std::string> expectedMoves = {"d2d4"};
 
@@ -113,6 +117,7 @@ TEST_F(MoveUtilsTest, NoMatchLongAlgebraic) {
 }
 
 TEST_F(MoveUtilsTest, MatchInMultipleExpected) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string actualMove                 = "e2e4";
   const std::vector<std::string> expectedMoves = {"d2d4", "e2e4", "g1f3"};
 
@@ -124,6 +129,7 @@ TEST_F(MoveUtilsTest, MatchInMultipleExpected) {
 //=============================================================================
 
 TEST_F(MoveUtilsTest, SANPawnMove) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string actualMove                 = "e2e4";
   const std::vector<std::string> expectedMoves = {"e4"};
 
@@ -131,6 +137,7 @@ TEST_F(MoveUtilsTest, SANPawnMove) {
 }
 
 TEST_F(MoveUtilsTest, SANKnightMove) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string actualMove                 = "g1f3";
   const std::vector<std::string> expectedMoves = {"Nf3"};
 
@@ -139,6 +146,7 @@ TEST_F(MoveUtilsTest, SANKnightMove) {
 
 TEST_F(MoveUtilsTest, SANBishopMove) {
   const Position pos("rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2");
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string actualMove                 = "f8c5";
   const std::vector<std::string> expectedMoves = {"Bc5"};
 
@@ -148,6 +156,7 @@ TEST_F(MoveUtilsTest, SANBishopMove) {
 TEST_F(MoveUtilsTest, SANCastlingKingside) {
   // Italian Game position - f1, g1 clearly empty for white
   const Position pos("r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 1");
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string actualMove                 = "e1g1";
   const std::vector<std::string> expectedMoves = {"O-O"};
 
@@ -157,6 +166,7 @@ TEST_F(MoveUtilsTest, SANCastlingKingside) {
 TEST_F(MoveUtilsTest, SANCastlingQueenside) {
   // Queen's Gambit Declined - b1, c1, d1 clear for white
   const Position pos("r1bq1rk1/ppp1bppp/2np1n2/4p3/2B1P3/2NPB3/PPPQ1PPP/R3K1NR w KQ - 5 4");
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string actualMove                 = "e1c1";
   const std::vector<std::string> expectedMoves = {"O-O-O"};
 
@@ -165,6 +175,7 @@ TEST_F(MoveUtilsTest, SANCastlingQueenside) {
 
 TEST_F(MoveUtilsTest, SANPawnDoubleMove) {
   const Position pos("rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 1");
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string actualMove = "d2d4";
 
   // Both notations should work
@@ -173,6 +184,7 @@ TEST_F(MoveUtilsTest, SANPawnDoubleMove) {
 
 TEST_F(MoveUtilsTest, SANPawnCapture) {
   const Position pos("rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 1");
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string actualMove                 = "e4d5";
   const std::vector<std::string> expectedMoves = {"exd5"};
 
@@ -181,6 +193,7 @@ TEST_F(MoveUtilsTest, SANPawnCapture) {
 
 TEST_F(MoveUtilsTest, SANPromotion) {
   const Position pos("4k3/P7/8/8/8/8/8/4K3 w - - 0 1");
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string actualMove = "a7a8q";
 
   // Multiple promotion notations
@@ -192,6 +205,7 @@ TEST_F(MoveUtilsTest, SANPromotion) {
 
 TEST_F(MoveUtilsTest, SANAmbiguousKnight) {
   const Position pos("4k3/8/8/8/3N1N2/8/8/4K3 w - - 0 1");
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string actualMove                 = "d4e6";
   const std::vector<std::string> expectedMoves = {"Nde6"};
 
@@ -210,6 +224,7 @@ TEST_F(MoveUtilsTest, EmptyActualMove) {
 }
 
 TEST_F(MoveUtilsTest, EmptyExpectedMoves) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string actualMove = "e2e4";
   // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::vector<std::string> expectedMoves = {};
@@ -218,6 +233,7 @@ TEST_F(MoveUtilsTest, EmptyExpectedMoves) {
 }
 
 TEST_F(MoveUtilsTest, InvalidSANNotation) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string actualMove                 = "e2e4";
   const std::vector<std::string> expectedMoves = {"Zz9"}; // Invalid SAN
 
@@ -225,6 +241,7 @@ TEST_F(MoveUtilsTest, InvalidSANNotation) {
 }
 
 TEST_F(MoveUtilsTest, MultipleValidFormats) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string actualMove                 = "g1f3";
   const std::vector<std::string> expectedMoves = {"Nf3", "g1f3", "N1f3"};
 
@@ -239,6 +256,7 @@ TEST_F(MoveUtilsTest, MultipleValidFormats) {
 TEST_F(MoveUtilsTest, RealWorldWAC001) {
   // WAC.001: 2rr3k/pp3pp1/1nnqbN1p/3pN3/2pP4/2P3Q1/PPB4P/R4RK1 w - - bm Qg6
   const Position pos("2rr3k/pp3pp1/1nnqbN1p/3pN3/2pP4/2P3Q1/PPB4P/R4RK1 w - - 0 1");
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string actualMove                 = "g3g6";
   const std::vector<std::string> expectedMoves = {"Qg6"};
 
@@ -247,6 +265,7 @@ TEST_F(MoveUtilsTest, RealWorldWAC001) {
 
 TEST_F(MoveUtilsTest, RealWorldMultipleBestMoves) {
   // Starting position - multiple good first moves
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string actualMove                 = "e2e4";
   const std::vector<std::string> expectedMoves = {"e4", "d4", "Nf3", "c4"};
 
@@ -256,6 +275,7 @@ TEST_F(MoveUtilsTest, RealWorldMultipleBestMoves) {
 TEST_F(MoveUtilsTest, RealWorldAvoidMove) {
   // AM (avoid move) test
   const Position pos("rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 1");
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string actualMove              = "e4d5";
   const std::vector<std::string> avoidMoves = {"Nf3", "d4"}; // Avoid these
 

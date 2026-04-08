@@ -450,6 +450,7 @@ TEST_F(PositionExtractorTest, qsearchFilterReducesPositions) {
 
 TEST_F(PositionExtractorTest, integrationSmallPgnFile) {
   // Use the smallest available real PGN file (100 games)
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string pgnPath = "../../results/matches/v0.4_vs_v1.1_blitz_100.pgn";
   if (!std::filesystem::exists(pgnPath)) {
     GTEST_SKIP() << "PGN file not found: " << pgnPath;

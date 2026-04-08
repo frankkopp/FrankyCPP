@@ -219,8 +219,10 @@ TEST_F(BenchmarkTest, benchSignatureMatchesCommitted) {
   // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string compilerLabel = "msvc";
 #elif defined(__clang__)
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string compilerLabel = "clang";
 #elif defined(__GNUC__)
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string compilerLabel = "gcc";
 #else
   GTEST_SKIP() << "Unknown compiler — cannot match bench signature";

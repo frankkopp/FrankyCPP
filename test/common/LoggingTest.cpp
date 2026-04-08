@@ -126,6 +126,7 @@ TEST(LoggingMacros, CompileTimeGatingDiscardsArgsWhenTraceDisabled) {
 
 TEST(LoggerRuntime, LevelChangeByPtrAndName) {
   std::shared_ptr<vector_sink_mt> sink;
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string name = "RuntimeLevelTest";
   auto logger            = make_test_logger(name, sink);
 
