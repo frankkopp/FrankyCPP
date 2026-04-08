@@ -162,9 +162,6 @@ namespace engine {
     std::unique_ptr<PawnTT> pawnTT;                  // Shared pawn cache for all threads
     std::unique_ptr<tablebase::Tablebase> syzygy_tb; // Syzygy tablebase instance
 
-    // MoveGenerator for PV extraction (reused to avoid allocation per call)
-    // Mutable because validateMove() modifies internal lists but not observable state
-    mutable MoveGenerator pvMoveGenerator{};
 
     /// TB root probe result (when TB_ROOT_IMMEDIATE=false, used to guide search).
     /// Groups all tablebase root-probe states into a single struct with reset().

@@ -845,7 +845,9 @@ SearchResult Search::iterativeDeepening(Position& p) {
 
       // Collect PV data for deferred reporting.
       // Extract PV line now (before next pvIdx search overwrites the PV table).
-      Position tmpPos = position;
+      // Use thread-local position 'p' (not Search::position) to avoid data race
+      // with the main thread which does doMove/undoMove on Search::position.
+      Position tmpPos = p;
       multiPvResults.push_back({
         .pvLine   = extractPvWithTT(tmpPos),
         .score    = thread().rootMoves[pvIdx].value(),
@@ -3479,7 +3481,7 @@ MoveList Search::extractPvWithTT(Position& p) const {
     // Verify the move is fully legal in current position
     // validateMove() generates all legal moves and checks if this move is among them
     // This catches stale moves where the piece no longer exists on the from-square
-    if (!pvMoveGenerator.validateMove(p, move)) break;
+    if (!thread().pvMoveGenerator.validateMove(p, move)) break;
 
     result.push_back(move);
     p.doMove(move);
@@ -3501,7 +3503,7 @@ MoveList Search::extractPvWithTT(Position& p) const {
     // Verify the move is fully legal in current position
     // validateMove() generates all legal moves and checks if this move is among them
     // This catches TT hash collisions where the stored move is invalid for this position
-    if (!pvMoveGenerator.validateMove(p, ttMove)) break;
+    if (!thread().pvMoveGenerator.validateMove(p, ttMove)) break;
 
     // Check for repetition - don't extend into a repeated position
     // Use 2 to check for threefold repetition (same as search uses)
