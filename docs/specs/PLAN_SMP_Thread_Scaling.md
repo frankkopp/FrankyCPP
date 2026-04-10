@@ -351,6 +351,7 @@ race conditions or correctness bugs. Per-position variance under Lazy SMP is exp
 contents → different search trees) and not actionable. Skipping in favor of R4/R6.
 
 ### R4. Memory Bandwidth Saturation Point
+**Status:** 🔽 Downgraded to optional — no longer blocking.
 **Goal:** Confirm or refute the "memory wall" hypothesis with direct measurement.
 **Method:**
 - VTune memory-access analysis at 1T, 2T, 4T, 8T
@@ -363,6 +364,13 @@ contents → different search trees) and not actionable. Skipping in favor of R4
 - Is the NPS plateau at 5-6T correlated with memory bandwidth saturation?
 - How much of the memory traffic is TT vs slider tables vs other data?
 - What is the actual LLC miss cost in cycles (VTune can show this)?
+
+**Disposition (2026-04-10):** The "memory wall" hypothesis was disproven — the NPS ceiling was
+caused by false sharing (R5), not memory bandwidth. Post-fix scaling is 84% efficient at 16T with
+no plateau. Memory bandwidth may impose a softer ceiling at very high thread counts (>16T), but
+this is not actionable now. Phase 2 (TT replacement) and Phase 4 (thread divergence) are purely
+algorithmic and don't require memory bandwidth data. Downgraded to optional; would only become
+relevant if scaling degrades at higher thread counts or for Phase 3 (eval architecture) planning.
 
 ### R5. False Sharing & Contention Quantification
 **Status:** ✅ **Confirmed as the primary bottleneck.** Moving TT/PawnTT statistics to per-thread
@@ -454,21 +462,22 @@ False sharing on TT/PawnTT statistics was overwhelmingly the dominant bottleneck
 | R2  | Code review: bench → search → threads      | Medium  | Yes       | ✅ **Complete**  |
 | R3  | Per-position analysis                      | Small   | Partially | ⏭️ **Skipped**   |
 | R5  | False sharing quantification               | Small   | Yes       | ✅ **Complete**  |
-| R4  | Memory bandwidth saturation (VTune)        | Medium  | Yes       | ⬆️ High         |
+| R4  | Memory bandwidth saturation (VTune)        | Medium  | No        | 🔽 Optional      |
 | R6  | TT hit rate & entry quality                | Medium  | Partially | ⬆️ High         |
 | R8  | Stockfish SMP source study                 | Medium  | No        | 🔶 Medium       |
 | R7  | ELO at longer time controls                | Large   | No        | 🔶 Medium       |
 | R9  | Search tree overlap measurement            | Large   | No        | 🔽 Low          |
 
-**Gate:** R1, R2, R5 complete. R3 skipped (superseded). R4 (memory bandwidth) is the last blocking
-gate before Phase 2+ implementation. R6 (TT hit rate) is recommended but not blocking.
+**Gate:** ✅ All blocking research complete (R1, R2, R5). R3 skipped, R4 downgraded to optional.
+**Phase 2+ implementation can proceed.** R6 (TT hit rate) is recommended before Phase 2a/2b
+but not strictly blocking.
 
 ---
 
 ## 4. Improvement Plan (Gated on Research Phase)
 
-> ⚠️ **Do not start implementation until R1, R2, R4, and R5 from Section 3 are complete.**
-> Research results may invalidate or reprioritize these phases.
+> ✅ **Research gate cleared.** R1, R2, R5 complete; R3 skipped; R4 downgraded to optional.
+> Phase 2+ implementation can proceed. Primary bottleneck (false sharing) resolved in Phase 1a.
 
 ### Phase 1: Low-Hanging Fruit — Reduce Contention ✅ Applied — +235% NPS at 12T
 
