@@ -90,7 +90,6 @@
 #include "PVTable.h"
 #include "PawnTT.h"
 #include "PlyInfo.h"
-#include "Handicap.h"
 #include "SearchLimits.h"
 #include "SearchResult.h"
 #include "SearchStats.h"

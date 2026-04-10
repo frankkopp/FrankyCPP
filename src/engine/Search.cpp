@@ -105,7 +105,8 @@ void Search::isReady() {
 void Search::startSearch(const Position& p, const SearchLimits& sl) {
   // acquire init phase lock
   if (!initSemaphore.try_acquire()) {
-    LOG__WARN(Logger::get().SEARCH_LOG, "Search init failed as another initialization is ongoing.");
+    LOG__ERROR(Logger::get().SEARCH_LOG, "Search init failed as another initialization is ongoing.");
+    return;
   }
 
   // start search time
@@ -301,7 +302,9 @@ void Search::run() {
     bookMove = book->getBookMove(position.getZobristKey(), SearchConfig.BOOK_VARIETY);
     LOG__DEBUG(Logger::get().SEARCH_LOG, "Opening Book: Choosing book move {}", bookMove.str());
   }
-  else { LOG__INFO(Logger::get().SEARCH_LOG, "Opening Book: Not using book."); }
+  else {
+    LOG__INFO(Logger::get().SEARCH_LOG, "Opening Book: Not using book.");
+  }
 
   LOG__INFO(Logger::get().SEARCH_LOG, "Search using: PVS={} ASP={}", SearchConfig.USE_PVS, SearchConfig.USE_ASP);
 
@@ -325,7 +328,7 @@ void Search::run() {
     searchResult = iterativeDeepening(position);
   }
   else {
-    // If we have found a book-move an update result and omit search.
+    // If we have found a book-move, update result and omit search.
     searchResult.bestMove = bookMove;
     searchResult.bookMove = true;
     searchResult.threads  = numHelperThreads + 1;
@@ -346,7 +349,7 @@ void Search::run() {
     LOG__INFO(Logger::get().SEARCH_LOG, "Search finished before stopped or ponderhit! Waiting for stop/ponderhit to send result");
     std::unique_lock lock(stopMutex);
     stopConditionVar.wait(lock, [this] {
-      return stopSearchFlag.load() || (!searchLimits.ponder && !searchLimits.infinite);
+      return stopSearchFlag.load() || !(searchLimits.ponder || searchLimits.infinite);
     });
   }
 
@@ -447,12 +450,12 @@ void Search::run() {
   // Updates an EMA that is subtracted from the timer budget on the next search.
   // ===========================================================================
   if (stoppedByTimer) {
-    const auto postStopNs       = (currentTime() - timerStopTime).count(); // nanoseconds
-    const auto sampleMs         = static_cast<double>(postStopNs) / 1'000'000.0;
+    const auto postStopNs           = (currentTime() - timerStopTime).count(); // nanoseconds
+    const auto sampleMs             = static_cast<double>(postStopNs) / 1'000'000.0;
     constexpr int64_t maxOverheadMs = 200;
     const int64_t floorMs           = SearchConfig.MOVE_OVERHEAD_MS;
     // EMA: 30% new sample, 70% previous estimate
-    const auto rawEmaMs = 0.3 * sampleMs + 0.7 * static_cast<double>(measuredPostStopOverheadMs);
+    const auto rawEmaMs        = 0.3 * sampleMs + 0.7 * static_cast<double>(measuredPostStopOverheadMs);
     measuredPostStopOverheadMs = std::clamp(static_cast<int64_t>(std::llround(rawEmaMs)), floorMs, maxOverheadMs);
     LOG__INFO(Logger::get().SEARCH_LOG,
               "Post-stop overhead: sample {:.3f} ms, EMA {} ms (floor {} ms, cap {} ms)",
@@ -639,7 +642,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
   // Apply handicap depth cap (main thread only — helpers share the same stop flag)
   if (isMainThread() && SearchConfig.HANDICAP > 0) {
     const auto hParams = handicap::getHandicapParams(SearchConfig.HANDICAP);
-    maxDepth = std::min(maxDepth, hParams.depthCap);
+    maxDepth           = std::min(maxDepth, hParams.depthCap);
     LOG__INFO(Logger::get().SEARCH_LOG, "Handicap {}: depth capped to {}", SearchConfig.HANDICAP, maxDepth);
 
     // Handicap time waste: sleep to consume a fraction of the time budget.
@@ -799,7 +802,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
       const int handicapMPV = SearchConfig.HANDICAP > 0
                                 ? handicap::getHandicapParams(SearchConfig.HANDICAP).multiPV
                                 : 1;
-      effectiveMultiPV = std::min(
+      effectiveMultiPV      = std::min(
         std::max(SearchConfig.MULTI_PV, handicapMPV),
         static_cast<int>(thread().rootMoves.size()));
     }
@@ -848,11 +851,9 @@ SearchResult Search::iterativeDeepening(Position& p) {
       // Use thread-local position 'p' (not Search::position) to avoid data race
       // with the main thread which does doMove/undoMove on Search::position.
       Position tmpPos = p;
-      multiPvResults.push_back({
-        .pvLine   = extractPvWithTT(tmpPos),
-        .score    = thread().rootMoves[pvIdx].value(),
-        .seldepth = thread().statistics.currentExtraSearchDepth
-      });
+      multiPvResults.push_back({.pvLine   = extractPvWithTT(tmpPos),
+                                .score    = thread().rootMoves[pvIdx].value(),
+                                .seldepth = thread().statistics.currentExtraSearchDepth});
     }
 
     // Sort all completed PVs by score (descending) to guarantee monotonic output.
@@ -891,7 +892,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
     // (assertions, volatility, stability, mate check, aspiration window)
     // sees the top move and its value.
     if (effectiveMultiPV > 1 && !multiPvResults.empty()) {
-      bestValue = multiPvResults[0].score;
+      bestValue              = multiPvResults[0].score;
       const auto& bestPvLine = multiPvResults[0].pvLine;
       for (int i = 0; i < static_cast<int>(bestPvLine.size()) && i < PVTable::MAX_PLY; ++i) {
         thread().pv(DEPTH_NONE, i) = bestPvLine[i];
@@ -1298,8 +1299,8 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   bool matethreat     = false;
 
   // Variables for singular extension
-  Value ttValue     = VALUE_NONE;
-  Depth ttDepth     = DEPTH_NONE;
+  Value ttValue = VALUE_NONE;
+  Depth ttDepth = DEPTH_NONE;
 
   // TT Lookup (before TB probe to avoid redundant TB probes for cached results)
   // Results of searches are stored in the TT to be used to
@@ -1689,8 +1690,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
           && depth >= SearchConfig.CHECK_EXT_MIN_DEPTH
           && givesCheck
           && movesSearched < SearchConfig.CHECK_EXT_EARLY_LIMIT
-          && (!SearchConfig.USE_CHECK_EXT_SEE || See::see(p, move) >= 0)
-      ) {
+          && (!SearchConfig.USE_CHECK_EXT_SEE || See::see(p, move) >= 0)) {
         STAT_INC(thread().statistics.checkExtension);
         extension = DEPTH_ONE;
       }
@@ -2686,7 +2686,7 @@ void Search::applyHandicap(SearchResult& result) const {
     return;
   }
 
-  const auto params = handicap::getHandicapParams(SearchConfig.HANDICAP);
+  const auto params       = handicap::getHandicapParams(SearchConfig.HANDICAP);
   const Move originalBest = result.bestMove;
 
   const Move selected = handicap::selectHandicapMove(
@@ -3102,8 +3102,9 @@ void Search::addExtraTime(const double f) {
     // where MAX_EXTRA_TIME_FACTOR * base could exceed the actual remaining time.
     const auto playerTimeMs = (position.getNextPlayer()
                                  ? searchLimits.blackTime
-                                 : searchLimits.whiteTime).count();
-    const auto clockCapMs   = std::max(int64_t{0}, playerTimeMs - measuredPostStopOverheadMs - timeLimit.count());
+                                 : searchLimits.whiteTime)
+                                .count();
+    const auto clockCapMs = std::max(int64_t{0}, playerTimeMs - measuredPostStopOverheadMs - timeLimit.count());
 
     // Use the tighter of the two caps
     const auto effectiveCapMs = std::min(maxExtraMs, clockCapMs);
@@ -3155,9 +3156,9 @@ void Search::startTimer() {
       // Subtract measured post-stop overhead so the timer fires early enough
       // for post-stop work (join helpers, select best, send bestmove) to complete
       // within the original time budget.
-      const auto overhead = milliseconds(measuredPostStopOverheadMs);
+      const auto overhead  = milliseconds(measuredPostStopOverheadMs);
       const auto rawBudget = timeLimit + milliseconds(extraTimeMs.load());
-      const auto budget  = rawBudget > overhead ? rawBudget - overhead : milliseconds{0};
+      const auto budget    = rawBudget > overhead ? rawBudget - overhead : milliseconds{0};
       if (elapsed >= budget || stopSearchFlag) { break; }
       const auto remaining_ms = std::chrono::duration_cast<milliseconds>(budget - elapsed);
       if (remaining_ms > busyWaitThreshold) {
@@ -3254,7 +3255,7 @@ void Search::sendDebugEvalInfo() const {
   // Evaluate the position at the end of the PV (after applying all PV moves).
   // This is far more informative than the root position, which is the same every
   // iteration and often symmetric (e.g., startpos → all components are zero).
-  Position pvPos = position;
+  Position pvPos        = position;
   const MoveList pvLine = thread().pv.extract();
   for (const auto& move : pvLine) {
     if (!move) break;
@@ -3264,15 +3265,15 @@ void Search::sendDebugEvalInfo() const {
   sendString(std::format("pv-leaf {} | {}", pvLine.str(), trace.str()));
 
   // Iteration stats: TT hit-rate and beta-cut-1st-move %
-  const auto& stats = thread().statistics;
-  const uint64_t ttHits = stats.ttHitSufficientDepth + stats.ttHitInsufficientDepth;
-  const uint64_t ttTotal = stats.ttProbes;
-  const double ttHitRate = ttTotal > 0
-    ? 100.0 * static_cast<double>(ttHits) / static_cast<double>(ttTotal)
-    : 0.0;
+  const auto& stats       = thread().statistics;
+  const uint64_t ttHits   = stats.ttHitSufficientDepth + stats.ttHitInsufficientDepth;
+  const uint64_t ttTotal  = stats.ttProbes;
+  const double ttHitRate  = ttTotal > 0
+                              ? 100.0 * static_cast<double>(ttHits) / static_cast<double>(ttTotal)
+                              : 0.0;
   const double betaCut1st = stats.betaCuts > 0
-    ? 100.0 * static_cast<double>(stats.betaCutsByIndex[0]) / static_cast<double>(stats.betaCuts)
-    : 0.0;
+                              ? 100.0 * static_cast<double>(stats.betaCutsByIndex[0]) / static_cast<double>(stats.betaCuts)
+                              : 0.0;
   sendString(std::format("depth {} nodes {:L} tt-hitrate {:.1f}% beta-cut-1st {:.1f}%",
                          stats.currentSearchDepth,
                          thread().nodesVisited,
@@ -3322,13 +3323,13 @@ void Search::sendMultiPvResultsToUci(const std::vector<MultiPvResult>& results, 
   lastUciUpdateTime        = now();
 
   // Snapshot node count once — all PV lines share the same value (Stockfish-style).
-  const uint64_t totalNodes = getTotalNodes();
+  const uint64_t totalNodes  = getTotalNodes();
   const uint64_t nodesPerSec = nps(totalNodes, since);
-  const auto elapsed = MILLISECONDS(since);
+  const auto elapsed         = MILLISECONDS(since);
 
   for (int i = 0; i < static_cast<int>(results.size()); ++i) {
     const auto& [pvLine, score, seldepth] = results[i];
-    const int multipvIndex = i + 1; // UCI multipv is 1-based
+    const int multipvIndex                = i + 1; // UCI multipv is 1-based
 
     if (uciHandler) {
       uciHandler->sendIterationEndInfo(
