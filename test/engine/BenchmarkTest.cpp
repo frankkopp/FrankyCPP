@@ -60,7 +60,7 @@ TEST_F(BenchmarkTest, benchmarkPositionsAreValid) {
 /// Test benchmark configuration defaults
 TEST_F(BenchmarkTest, benchConfigDefaults) {
   constexpr BenchConfig config;
-  EXPECT_EQ(config.hashSizeMB, 128);
+  EXPECT_EQ(config.hashSizeMB, 256);
   EXPECT_EQ(config.threads, 1);
   EXPECT_EQ(config.depth, 12);
   EXPECT_EQ(config.timeLimit.count(), 0);
