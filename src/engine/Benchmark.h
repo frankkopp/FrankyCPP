@@ -62,7 +62,7 @@ namespace engine {
 
   /// Configuration for the benchmark run
   struct BenchConfig {
-    int hashSizeMB = 128;      ///< Transposition table size in MB
+    int hashSizeMB = 256;      ///< Transposition table size in MB
     int threads    = 1;        ///< Number of search threads (1 for deterministic signature)
     int depth      = 12;       ///< Search depth limit (1-127)
     milliseconds timeLimit{0}; ///< Time limit per position (0 = use depth only)

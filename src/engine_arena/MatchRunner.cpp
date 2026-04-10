@@ -464,7 +464,7 @@ namespace arena {
 
     // Read output
     std::array<char, 256> buffer{};
-    while (fgets(buffer.data(), buffer.size(), pipe) != nullptr) {
+    while (fgets(buffer.data(), static_cast<int>(buffer.size()), pipe) != nullptr) {
       output += buffer.data();
       // Print live output
       std::cout << buffer.data();

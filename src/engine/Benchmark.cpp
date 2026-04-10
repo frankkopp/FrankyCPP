@@ -25,9 +25,9 @@
 #include "common/Logging.h"
 #include "config/ConfigManager.h"
 #include "types/globals.h"
+#include "types/timeunits.h"
 #include "version.h"
 
-#include <chrono>
 #include <format>
 #include <iostream>
 
@@ -74,7 +74,7 @@ namespace engine {
     }
 
     // Track cumulative search time (excludes TT clearing and position setup)
-    int64_t totalSearchTimeMs = 0;
+    nanoseconds totalSearchTime{0};
 
     // Process each position
     int positionNum = 0;
@@ -98,14 +98,13 @@ namespace engine {
       search.newGame();
 
       // Measure only search time
-      const auto searchStart = steady_clock::now();
+      const auto searchStart = currentTime();
 
       // Start search
       search.startSearch(position, limits);
       search.waitWhileSearching();
 
-      const auto searchEnd = steady_clock::now();
-      totalSearchTimeMs += duration_cast<milliseconds>(searchEnd - searchStart).count();
+      totalSearchTime += elapsedSince(searchStart);
 
       // Collect results
       const auto& searchResult = search.getLastSearchResult();
@@ -114,15 +113,13 @@ namespace engine {
     }
 
     // Set total time (only search time, no TT clearing overhead)
-    result.totalTime = milliseconds{totalSearchTimeMs};
+    result.totalTime = duration_cast<milliseconds>(totalSearchTime);
 
     // Deterministic bench signature for CI regression gate
     result.signature = result.totalNodes;
 
-    // Calculate NPS (avoid division by zero)
-    if (result.totalTime.count() > 0) {
-      result.nps = static_cast<double>(result.totalNodes) * 1000.0 / static_cast<double>(result.totalTime.count());
-    }
+    // Calculate NPS using timeunits helper (handles zero-duration safely)
+    result.nps = static_cast<double>(nps(result.totalNodes, totalSearchTime));
 
     std::cout << "\n"; // New line after progress indicator
 
