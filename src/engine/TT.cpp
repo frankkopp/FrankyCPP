@@ -110,14 +110,7 @@ void TT::clear() {
   std::memset(_data.get(), 0, maxNumberOfClusters * sizeof(TTCluster));
 
   // reset statistics
-  numberOfPuts       = 0;
-  numberOfEntries    = 0;
-  numberOfHits       = 0;
-  numberOfUpdates    = 0;
-  numberOfMisses     = 0;
-  numberOfCollisions = 0;
-  numberOfOverwrites = 0;
-  numberOfProbes     = 0;
+  statsSlots = {};
 
   const auto finish = high_resolution_clock::now();
   const auto time   = std::chrono::duration_cast<milliseconds>(finish - startTime).count();
@@ -128,7 +121,7 @@ void TT::clear() {
              totalEntries, maxNumberOfClusters, time);
 }
 
-void TT::put(const ZobristKey key, const Depth depth, const Move move, const Value value, const ValueType type, const Value eval) {
+void TT::put(const ZobristKey key, const Depth depth, const Move move, const Value value, const ValueType type, const Value eval, const int threadIdx) {
 
 #if TT_USE_MUTEX
   std::lock_guard lock(ttMutex);
@@ -137,7 +130,7 @@ void TT::put(const ZobristKey key, const Depth depth, const Move move, const Val
   // get the cluster for this hash
   TTCluster* const cluster = getCluster(key);
 
-  TT_STAT_INC(numberOfPuts);
+  TT_STAT_INC(statsSlots[threadIdx].numberOfPuts);
 
   // Scan all entries in the cluster for:
   // 1. Exact key match (update existing entry)
@@ -153,7 +146,7 @@ void TT::put(const ZobristKey key, const Depth depth, const Move move, const Val
     // Same position -> update existing entry
     // Stored key is XOR'd with data hash, so recover original key for comparison.
     if ((storedKey ^ entry.dataHash()) == key) {
-      TT_STAT_INC(numberOfUpdates);
+      TT_STAT_INC(statsSlots[threadIdx].numberOfUpdates);
       // keep existing move if no move is given
       if (move) {
         entry.move = static_cast<uint16_t>(move);
@@ -198,7 +191,7 @@ void TT::put(const ZobristKey key, const Depth depth, const Move move, const Val
 
   // No key match found - use empty slot if available
   if (emptyEntry != nullptr) {
-    TT_STAT_INC(numberOfEntries);
+    TT_STAT_INC(statsSlots[threadIdx].numberOfEntries);
     // Write non-key fields first, then publish via release store on key.
     // Any thread that loads key with acquire will see all prior writes.
     // XOR key with data hash to detect torn reads in probe().
@@ -215,8 +208,8 @@ void TT::put(const ZobristKey key, const Depth depth, const Move move, const Val
   // No empty slot - always replace the weakest victim in the cluster.
   // The 4-way associativity protects valuable entries (3 others survive).
   if (victimEntry != nullptr) {
-    TT_STAT_INC(numberOfCollisions);
-    TT_STAT_INC(numberOfOverwrites);
+    TT_STAT_INC(statsSlots[threadIdx].numberOfCollisions);
+    TT_STAT_INC(statsSlots[threadIdx].numberOfOverwrites);
     // Write non-key fields first, then publish via release store on key.
     // XOR key with data hash to detect torn reads in probe().
     victimEntry->move  = static_cast<uint16_t>(move);
@@ -229,14 +222,13 @@ void TT::put(const ZobristKey key, const Depth depth, const Move move, const Val
   }
 }
 
-// ReSharper disable once CppMemberFunctionMayBeConst
-std::optional<TT::Entry> TT::probe(const ZobristKey& key) {
+std::optional<TT::Entry> TT::probe(const ZobristKey& key, const int threadIdx) {
 #if TT_USE_MUTEX
   // used for debugging only
   std::lock_guard lock(ttMutex);
 #endif
 
-  TT_STAT_INC(numberOfProbes);
+  TT_STAT_INC(statsSlots[threadIdx].numberOfProbes);
   TTCluster* const cluster = getCluster(key);
 
   // Scan all entries in the cluster for a key match.
@@ -256,7 +248,7 @@ std::optional<TT::Entry> TT::probe(const ZobristKey& key) {
     if ((storedKey ^ copy.dataHash()) == key) {
       // Restore the original key in the copy (it was stored XOR'd)
       copy.key.store(key, std::memory_order_relaxed);
-      TT_STAT_INC(numberOfHits);
+      TT_STAT_INC(statsSlots[threadIdx].numberOfHits);
 
       // age-- marks the entry as recently used, making it less likely to be evicted
       // by the replacement policy in put(). Safe in single-thread mode only.
@@ -273,7 +265,7 @@ std::optional<TT::Entry> TT::probe(const ZobristKey& key) {
       return copy;
     }
   }
-  TT_STAT_INC(numberOfMisses);
+  TT_STAT_INC(statsSlots[threadIdx].numberOfMisses);
   return std::nullopt;
 }
 
@@ -307,12 +299,13 @@ void TT::ageEntries() {
 
 std::string TT::str() const {
   const std::size_t maxEntries = maxNumberOfClusters * CLUSTER_SIZE;
+  const auto s = aggregateStats();
   return std::format(
     projectLocale,
     "TT: size {:L} MB max entries {:L} ({:L} clusters x {}) of size {:L} Bytes entries {:L} ({:L}%) puts {:L} "
     "updates {:L} collisions {:L} overwrites {:L} probes {:L} hits {:L} ({:L}%) misses {:L} ({:L}%)",
-    sizeInByte / MB, maxEntries, maxNumberOfClusters, CLUSTER_SIZE, sizeof(Entry), numberOfEntries, hashFull() / 10,
-    numberOfPuts, numberOfUpdates, numberOfCollisions, numberOfOverwrites, numberOfProbes,
-    numberOfHits, numberOfProbes ? (numberOfHits * 100) / numberOfProbes : 0,
-    numberOfMisses, numberOfProbes ? (numberOfMisses * 100) / numberOfProbes : 0);
+    sizeInByte / MB, maxEntries, maxNumberOfClusters, CLUSTER_SIZE, sizeof(Entry), s.numberOfEntries, hashFull() / 10,
+    s.numberOfPuts, s.numberOfUpdates, s.numberOfCollisions, s.numberOfOverwrites, s.numberOfProbes,
+    s.numberOfHits, s.numberOfProbes ? (s.numberOfHits * 100) / s.numberOfProbes : 0,
+    s.numberOfMisses, s.numberOfProbes ? (s.numberOfMisses * 100) / s.numberOfProbes : 0);
 }

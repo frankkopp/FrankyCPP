@@ -171,8 +171,8 @@ namespace engine {
       // Clear thread-local root moves (will be populated during root search)
       rootMoves.clear();
 
-      // Set shared PawnTT on this thread's evaluator
-      evaluator.setPawnTT(pawnTT);
+      // Set shared PawnTT on this thread's evaluator (with thread index for per-thread stats)
+      evaluator.setPawnTT(pawnTT, id);
 
       // Regenerate LMR table based on current config
       regenerateLmrTable(lmrUseLog, lmrLogDiv);

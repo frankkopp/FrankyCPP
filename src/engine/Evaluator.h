@@ -113,6 +113,9 @@ namespace engine {
     /// Set via setPawnTT() before evaluation. May be nullptr if pawn caching disabled.
     PawnTT* pawnCache = nullptr;
 
+    /// Thread index for per-thread PawnTT statistics (set via setPawnTT).
+    int threadIdx = 0;
+
     /// Thread-local scratch variables for evaluation
     Score score{};
     Score tmpScore{};
@@ -144,10 +147,12 @@ namespace engine {
   public:
     Evaluator();
 
-    /// Sets the shared pawn cache. Must be called before evaluate() if pawn caching is enabled.
+    /// Sets the shared pawn cache and thread index. Must be called before evaluate()
+    /// if pawn caching is enabled.
     /// The PawnTT is owned by Search and shared across all Evaluator instances.
-    /// @param pawnTT  Pointer to shared PawnTT (may be nullptr to disable caching)
-    void setPawnTT(PawnTT* pawnTT) { pawnCache = pawnTT; }
+    /// @param pawnTT      Pointer to shared PawnTT (may be nullptr to disable caching)
+    /// @param threadIndex Thread index for per-thread PawnTT statistics (default 0)
+    void setPawnTT(PawnTT* pawnTT, const int threadIndex = 0) { pawnCache = pawnTT; threadIdx = threadIndex; }
 
     /// Evaluates the position and returns a score from the side-to-move perspective.
     /// Combines material, positional, pawn structure, mobility, and king safety.

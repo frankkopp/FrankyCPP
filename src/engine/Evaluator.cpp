@@ -373,7 +373,7 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
     // Use probe() for thread-safe copy-on-read pattern.
     // This prevents races where another thread overwrites the entry
     // between key check and value reads.
-    if (const auto entry = pawnCache->probe(key)) {
+    if (const auto entry = pawnCache->probe(key, threadIdx)) {
       s.midgame += entry->midvalue;
       s.endgame += entry->endvalue;
       // Restore cached passed-pawn bitboards so rookEval/kingEval can use them.
@@ -494,7 +494,7 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
   // ReSharper disable once CppDFAUnreachableCode
   if (EvalConfig.USE_PAWN_TT && pawnCache && key != 0) {
     // ReSharper disable once CppDFAUnreachableCode
-    pawnCache->put(pawnCache->getEntryPtr(key), key, tmpScore, passedPawns[WHITE], passedPawns[BLACK]);
+    pawnCache->put(pawnCache->getEntryPtr(key), key, tmpScore, passedPawns[WHITE], passedPawns[BLACK], threadIdx);
   }
 
   s += tmpScore;

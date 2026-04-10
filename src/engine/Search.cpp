@@ -1317,7 +1317,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // the current values.
   if (SearchConfig.USE_TT) {
     STAT_INC(thread().statistics.ttProbes);
-    if (const auto ttEntry = tt->probe(p.getZobristKey())) {
+    if (const auto ttEntry = tt->probe(p.getZobristKey(), thread().id)) {
       // tt hit
       const auto probedMove = static_cast<Move>(ttEntry->move);
       // Validate TT move before use - corrupted/torn reads from lockless TT
@@ -2103,7 +2103,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
   Value staticEval = VALUE_NONE;
   if (SearchConfig.USE_TT && SearchConfig.USE_QS_TT) {
     STAT_INC(thread().statistics.ttProbes);
-    if (const auto ttEntry = tt->probe(p.getZobristKey())) {
+    if (const auto ttEntry = tt->probe(p.getZobristKey(), thread().id)) {
       // tt hit
       const auto probedMove = static_cast<Move>(ttEntry->move);
       // Validate TT move before use - corrupted/torn reads from lockless TT
@@ -2371,7 +2371,7 @@ void Search::storeTt(
   const Value value,
   const ValueType valueType,
   const Value eval) const {
-  tt->put(p.getZobristKey(), depth, move, valueToTt(value, ply), valueType, eval);
+  tt->put(p.getZobristKey(), depth, move, valueToTt(value, ply), valueType, eval, thread().id);
 }
 
 Value Search::valueToTt(const Value value, const Depth ply) {

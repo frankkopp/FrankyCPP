@@ -464,193 +464,253 @@ matches:
 #    outputPgn: "results/matches/v1.8_vs_SF18_Elo2700_10s.pgn"
 
   # ==========================================================================
-  # Thread Scaling: FrankyCPP v1.8 Threads 1–12 vs SF18@2700
-  # Purpose: Measure Elo gain per thread to find optimal thread count
+  # Thread Scaling: FrankyCPP v1.8 Threads 1–16 vs SF18@2700
+  # Purpose: Measure Elo gain per thread against a fixed-strength opponent
   # TC: 5+0.05, 100 rounds each
-  # Concurrency: floor(16 / FrankyCPP_threads) — engines alternate, not parallel
+  # Concurrency: floor(16 / (FC_threads + 1)) — accounts for SF needing 1 thread
   # SF18 fixed at UCI_LimitStrength=2700 (single thread, constant opponent)
-  # FrankyCPP varies Threads=1..12, Hash=256 (constant across all configs)
+  # FrankyCPP varies Threads=1..16, Hash=256 (constant across all configs)
   # ==========================================================================
 
-  - name: "v1.8_thread_scaling_1T"
-    tag: "thread-scaling"
+  - name: "v1.8_thread_scaling_1T_vs_SF2700"
+    tag: "thread-scaling-sf"
     engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
     engine1Version: "v1.8"
     engine1Options: "OwnBook=false; Threads=1; Hash=256"
-    engine2Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
-    engine2Version: "v1.8-2"
-    engine2Options: "OwnBook=false; Threads=1; Hash=256"
+    engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
+    engine2Version: "SF18-2700"
+    engine2Options: "UCI_LimitStrength=true; UCI_Elo=2700"
     openingBook: "books/8moves_v3.pgn"
-    timeControl: "300+0"
+    timeControl: "5+0.05"
     timeMargin: 200
     rounds: 100
     concurrency: 8
-    outputPgn: "results/matches/thread_scaling/v1.8_1T_vs_v1.8-2.pgn"
+    outputPgn: "results/matches/thread_scaling/v1.8_1T_vs_SF2700.pgn"
 
-#  - name: "v1.8_thread_scaling_2T"
-#    tag: "thread-scaling"
-#    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
-#    engine1Version: "v1.8"
-#    engine1Options: "OwnBook=false; Threads=2; Hash=256"
-#    engine2Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
-#    engine2Version: "v1.8-2"
-#    engine2Options: "OwnBook=false; Threads=1; Hash=256"
-#    openingBook: "books/8moves_v3.pgn"
-#    timeControl: "5+0.05"
-#    timeMargin: 200
-#    rounds: 200
-#    concurrency: 2
-#    outputPgn: "results/matches/thread_scaling/v1.8_2T_vs_v1.8-2.pgn"
-#
-#  - name: "v1.8_thread_scaling_3T"
-#    tag: "thread-scaling"
-#    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
-#    engine1Version: "v1.8"
-#    engine1Options: "OwnBook=false; Threads=3; Hash=256"
-#    engine2Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
-#    engine2Version: "v1.8-2"
-#    engine2Options: "OwnBook=false; Threads=1; Hash=256"
-#    openingBook: "books/8moves_v3.pgn"
-#    timeControl: "5+0.05"
-#    timeMargin: 200
-#    rounds: 200
-#    concurrency: 2
-#    outputPgn: "results/matches/thread_scaling/v1.8_3T_vs_v1.8-2.pgn"
-
-  - name: "v1.8_thread_scaling_4T"
-    tag: "thread-scaling"
+  - name: "v1.8_thread_scaling_2T_vs_SF2700"
+    tag: "thread-scaling-sf"
     engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
     engine1Version: "v1.8"
-    engine1Options: "OwnBook=false; Threads=4; Hash=256"
-    engine2Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
-    engine2Version: "v1.8-2"
-    engine2Options: "OwnBook=false; Threads=1; Hash=256"
+    engine1Options: "OwnBook=false; Threads=2; Hash=256"
+    engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
+    engine2Version: "SF18-2700"
+    engine2Options: "UCI_LimitStrength=true; UCI_Elo=2700"
     openingBook: "books/8moves_v3.pgn"
-    timeControl: "300+0"
+    timeControl: "5+0.05"
+    timeMargin: 200
+    rounds: 100
+    concurrency: 5
+    outputPgn: "results/matches/thread_scaling/v1.8_2T_vs_SF2700.pgn"
+
+  - name: "v1.8_thread_scaling_3T_vs_SF2700"
+    tag: "thread-scaling-sf"
+    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine1Version: "v1.8"
+    engine1Options: "OwnBook=false; Threads=3; Hash=256"
+    engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
+    engine2Version: "SF18-2700"
+    engine2Options: "UCI_LimitStrength=true; UCI_Elo=2700"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "5+0.05"
     timeMargin: 200
     rounds: 100
     concurrency: 4
-    outputPgn: "results/matches/thread_scaling/v1.8_4T_vs_v1.8-2.pgn"
+    outputPgn: "results/matches/thread_scaling/v1.8_3T_vs_SF2700.pgn"
 
-#  - name: "v1.8_thread_scaling_5T"
-#    tag: "thread-scaling"
-#    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
-#    engine1Version: "v1.8"
-#    engine1Options: "OwnBook=false; Threads=5; Hash=256"
-#    engine2Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
-#    engine2Version: "v1.8-2"
-#    engine2Options: "OwnBook=false; Threads=1; Hash=256"
-#    openingBook: "books/8moves_v3.pgn"
-#    timeControl: "5+0.05"
-#    timeMargin: 200
-#    rounds: 200
-#    concurrency: 2
-#    outputPgn: "results/matches/thread_scaling/v1.8_5T_vs_v1.8-2.pgn"
-#
-#  - name: "v1.8_thread_scaling_6T"
-#    tag: "thread-scaling"
-#    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
-#    engine1Version: "v1.8"
-#    engine1Options: "OwnBook=false; Threads=6; Hash=256"
-#    engine2Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
-#    engine2Version: "v1.8-2"
-#    engine2Options: "OwnBook=false; Threads=1; Hash=256"
-#    openingBook: "books/8moves_v3.pgn"
-#    timeControl: "5+0.05"
-#    timeMargin: 200
-#    rounds: 200
-#    concurrency: 2
-#    outputPgn: "results/matches/thread_scaling/v1.8_6T_vs_v1.8-2.pgn"
-#
-#  - name: "v1.8_thread_scaling_7T"
-#    tag: "thread-scaling"
-#    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
-#    engine1Version: "v1.8"
-#    engine1Options: "OwnBook=false; Threads=7; Hash=256"
-#    engine2Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
-#    engine2Version: "v1.8-2"
-#    engine2Options: "OwnBook=false; Threads=1; Hash=256"
-#    openingBook: "books/8moves_v3.pgn"
-#    timeControl: "5+0.05"
-#    timeMargin: 200
-#    rounds: 200
-#    concurrency: 2
-#    outputPgn: "results/matches/thread_scaling/v1.8_7T_vs_v1.8-2.pgn"
-
-  - name: "v1.8_thread_scaling_8T"
-    tag: "thread-scaling"
+  - name: "v1.8_thread_scaling_4T_vs_SF2700"
+    tag: "thread-scaling-sf"
     engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
     engine1Version: "v1.8"
-    engine1Options: "OwnBook=false; Threads=8; Hash=256"
-    engine2Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
-    engine2Version: "v1.8-2"
-    engine2Options: "OwnBook=false; Threads=1; Hash=256"
+    engine1Options: "OwnBook=false; Threads=4; Hash=256"
+    engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
+    engine2Version: "SF18-2700"
+    engine2Options: "UCI_LimitStrength=true; UCI_Elo=2700"
     openingBook: "books/8moves_v3.pgn"
-    timeControl: "300+0"
+    timeControl: "5+0.05"
+    timeMargin: 200
+    rounds: 100
+    concurrency: 3
+    outputPgn: "results/matches/thread_scaling/v1.8_4T_vs_SF2700.pgn"
+
+  - name: "v1.8_thread_scaling_5T_vs_SF2700"
+    tag: "thread-scaling-sf"
+    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine1Version: "v1.8"
+    engine1Options: "OwnBook=false; Threads=5; Hash=256"
+    engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
+    engine2Version: "SF18-2700"
+    engine2Options: "UCI_LimitStrength=true; UCI_Elo=2700"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "5+0.05"
     timeMargin: 200
     rounds: 100
     concurrency: 2
-    outputPgn: "results/matches/thread_scaling/v1.8_8T_vs_v1.8-2.pgn"
+    outputPgn: "results/matches/thread_scaling/v1.8_5T_vs_SF2700.pgn"
 
-#  - name: "v1.8_thread_scaling_9T"
-#    tag: "thread-scaling"
-#    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
-#    engine1Version: "v1.8"
-#    engine1Options: "OwnBook=false; Threads=9; Hash=256"
-#    engine2Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
-#    engine2Version: "v1.8-2"
-#    engine2Options: "OwnBook=false; Threads=1; Hash=256"
-#    openingBook: "books/8moves_v3.pgn"
-#    timeControl: "5+0.05"
-#    timeMargin: 200
-#    rounds: 200
-#    concurrency: 2
-#    outputPgn: "results/matches/thread_scaling/v1.8_9T_vs_v1.8-2.pgn"
-#
-#  - name: "v1.8_thread_scaling_10T"
-#    tag: "thread-scaling"
-#    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
-#    engine1Version: "v1.8"
-#    engine1Options: "OwnBook=false; Threads=10; Hash=256"
-#    engine2Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
-#    engine2Version: "v1.8-2"
-#    engine2Options: "OwnBook=false; Threads=1; Hash=256"
-#    openingBook: "books/8moves_v3.pgn"
-#    timeControl: "5+0.05"
-#    timeMargin: 200
-#    rounds: 200
-#    concurrency: 2
-#    outputPgn: "results/matches/thread_scaling/v1.8_10T_vs_v1.8-2.pgn"
-#
-#  - name: "v1.8_thread_scaling_11T"
-#    tag: "thread-scaling"
-#    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
-#    engine1Version: "v1.8"
-#    engine1Options: "OwnBook=false; Threads=11; Hash=256"
-#    engine2Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
-#    engine2Version: "v1.8-2"
-#    engine2Options: "OwnBook=false; Threads=1; Hash=256"
-#    openingBook: "books/8moves_v3.pgn"
-#    timeControl: "5+0.05"
-#    timeMargin: 200
-#    rounds: 200
-#    concurrency: 2
-#    outputPgn: "results/matches/thread_scaling/v1.8_11T_vs_v1.8-2.pgn"
-
-  - name: "v1.8_thread_scaling_12T"
-    tag: "thread-scaling"
+  - name: "v1.8_thread_scaling_6T_vs_SF2700"
+    tag: "thread-scaling-sf"
     engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
     engine1Version: "v1.8"
-    engine1Options: "OwnBook=false; Threads=12; Hash=256"
-    engine2Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
-    engine2Version: "v1.8-2"
-    engine2Options: "OwnBook=false; Threads=1; Hash=256"
+    engine1Options: "OwnBook=false; Threads=6; Hash=256"
+    engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
+    engine2Version: "SF18-2700"
+    engine2Options: "UCI_LimitStrength=true; UCI_Elo=2700"
     openingBook: "books/8moves_v3.pgn"
-    timeControl: "300+0"
+    timeControl: "5+0.05"
+    timeMargin: 200
+    rounds: 100
+    concurrency: 2
+    outputPgn: "results/matches/thread_scaling/v1.8_6T_vs_SF2700.pgn"
+
+  - name: "v1.8_thread_scaling_7T_vs_SF2700"
+    tag: "thread-scaling-sf"
+    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine1Version: "v1.8"
+    engine1Options: "OwnBook=false; Threads=7; Hash=256"
+    engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
+    engine2Version: "SF18-2700"
+    engine2Options: "UCI_LimitStrength=true; UCI_Elo=2700"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "5+0.05"
+    timeMargin: 200
+    rounds: 100
+    concurrency: 2
+    outputPgn: "results/matches/thread_scaling/v1.8_7T_vs_SF2700.pgn"
+
+  - name: "v1.8_thread_scaling_8T_vs_SF2700"
+    tag: "thread-scaling-sf"
+    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine1Version: "v1.8"
+    engine1Options: "OwnBook=false; Threads=8; Hash=256"
+    engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
+    engine2Version: "SF18-2700"
+    engine2Options: "UCI_LimitStrength=true; UCI_Elo=2700"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "5+0.05"
     timeMargin: 200
     rounds: 100
     concurrency: 1
-    outputPgn: "results/matches/thread_scaling/v1.8_12T_vs_v1.8-2.pgn"
+    outputPgn: "results/matches/thread_scaling/v1.8_8T_vs_SF2700.pgn"
+
+  - name: "v1.8_thread_scaling_9T_vs_SF2700"
+    tag: "thread-scaling-sf"
+    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine1Version: "v1.8"
+    engine1Options: "OwnBook=false; Threads=9; Hash=256"
+    engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
+    engine2Version: "SF18-2700"
+    engine2Options: "UCI_LimitStrength=true; UCI_Elo=2700"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "5+0.05"
+    timeMargin: 200
+    rounds: 100
+    concurrency: 1
+    outputPgn: "results/matches/thread_scaling/v1.8_9T_vs_SF2700.pgn"
+
+  - name: "v1.8_thread_scaling_10T_vs_SF2700"
+    tag: "thread-scaling-sf"
+    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine1Version: "v1.8"
+    engine1Options: "OwnBook=false; Threads=10; Hash=256"
+    engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
+    engine2Version: "SF18-2700"
+    engine2Options: "UCI_LimitStrength=true; UCI_Elo=2700"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "5+0.05"
+    timeMargin: 200
+    rounds: 100
+    concurrency: 1
+    outputPgn: "results/matches/thread_scaling/v1.8_10T_vs_SF2700.pgn"
+
+  - name: "v1.8_thread_scaling_11T_vs_SF2700"
+    tag: "thread-scaling-sf"
+    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine1Version: "v1.8"
+    engine1Options: "OwnBook=false; Threads=11; Hash=256"
+    engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
+    engine2Version: "SF18-2700"
+    engine2Options: "UCI_LimitStrength=true; UCI_Elo=2700"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "5+0.05"
+    timeMargin: 200
+    rounds: 100
+    concurrency: 1
+    outputPgn: "results/matches/thread_scaling/v1.8_11T_vs_SF2700.pgn"
+
+  - name: "v1.8_thread_scaling_12T_vs_SF2700"
+    tag: "thread-scaling-sf"
+    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine1Version: "v1.8"
+    engine1Options: "OwnBook=false; Threads=12; Hash=256"
+    engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
+    engine2Version: "SF18-2700"
+    engine2Options: "UCI_LimitStrength=true; UCI_Elo=2700"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "5+0.05"
+    timeMargin: 200
+    rounds: 100
+    concurrency: 1
+    outputPgn: "results/matches/thread_scaling/v1.8_12T_vs_SF2700.pgn"
+
+  - name: "v1.8_thread_scaling_13T_vs_SF2700"
+    tag: "thread-scaling-sf"
+    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine1Version: "v1.8"
+    engine1Options: "OwnBook=false; Threads=13; Hash=256"
+    engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
+    engine2Version: "SF18-2700"
+    engine2Options: "UCI_LimitStrength=true; UCI_Elo=2700"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "5+0.05"
+    timeMargin: 200
+    rounds: 100
+    concurrency: 1
+    outputPgn: "results/matches/thread_scaling/v1.8_13T_vs_SF2700.pgn"
+
+  - name: "v1.8_thread_scaling_14T_vs_SF2700"
+    tag: "thread-scaling-sf"
+    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine1Version: "v1.8"
+    engine1Options: "OwnBook=false; Threads=14; Hash=256"
+    engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
+    engine2Version: "SF18-2700"
+    engine2Options: "UCI_LimitStrength=true; UCI_Elo=2700"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "5+0.05"
+    timeMargin: 200
+    rounds: 100
+    concurrency: 1
+    outputPgn: "results/matches/thread_scaling/v1.8_14T_vs_SF2700.pgn"
+
+  - name: "v1.8_thread_scaling_15T_vs_SF2700"
+    tag: "thread-scaling-sf"
+    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine1Version: "v1.8"
+    engine1Options: "OwnBook=false; Threads=15; Hash=256"
+    engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
+    engine2Version: "SF18-2700"
+    engine2Options: "UCI_LimitStrength=true; UCI_Elo=2700"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "5+0.05"
+    timeMargin: 200
+    rounds: 100
+    concurrency: 1
+    outputPgn: "results/matches/thread_scaling/v1.8_15T_vs_SF2700.pgn"
+
+  - name: "v1.8_thread_scaling_16T_vs_SF2700"
+    tag: "thread-scaling-sf"
+    engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
+    engine1Version: "v1.8"
+    engine1Options: "OwnBook=false; Threads=16; Hash=256"
+    engine2Path: "D:/_DEV/Stockfish/src/stockfish.exe"
+    engine2Version: "SF18-2700"
+    engine2Options: "UCI_LimitStrength=true; UCI_Elo=2700"
+    openingBook: "books/8moves_v3.pgn"
+    timeControl: "5+0.05"
+    timeMargin: 200
+    rounds: 100
+    concurrency: 1
+    outputPgn: "results/matches/thread_scaling/v1.8_16T_vs_SF2700.pgn"
 
 # =============================================================================
 # Benchmark Configuration

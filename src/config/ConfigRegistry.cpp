@@ -499,7 +499,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .domain = Search,
     .defaultValue = configToString(defaultSearch.THREADS),
     .minValue = 1,
-    .maxValue = 256,
+    .maxValue = MAX_SEARCH_THREADS,
     .exposure = {.uci = true, .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.THREADS; }),
     .setter = SEARCH_CONFIG_SETTER(THREADS, parseInt)
