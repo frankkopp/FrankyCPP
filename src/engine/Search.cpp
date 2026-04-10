@@ -206,8 +206,14 @@ void Search::resizeTT() const {
 
 uint64_t Search::getTotalNodes() const {
   uint64_t total = 0;
-  for (const auto& st : searchThreadData) {
-    total += st->nodesVisited;
+  // Only sum active threads [0..numHelperThreads], not the entire vector.
+  // The vector grows but never shrinks, so stale entries beyond the active
+  // thread count could contain non-zero nodesVisited from previous searches
+  // with a higher thread count.
+  const int activeThreads = numHelperThreads + 1;
+  const auto count        = std::min(static_cast<int>(searchThreadData.size()), activeThreads);
+  for (int i = 0; i < count; ++i) {
+    total += searchThreadData[i]->nodesVisited;
   }
   return total;
 }
@@ -3812,8 +3818,12 @@ SearchStats Search::aggregateStats() const {
   // Start with main thread's stats
   SearchStats result = mainThread().statistics;
 
-  // Add stats from all helper threads
-  for (size_t i = 1; i < searchThreadData.size(); ++i) {
+  // Add stats from active helper threads only [1..numHelperThreads].
+  // The vector grows but never shrinks, so entries beyond the active
+  // thread count could contain stale statistics from previous searches.
+  const int activeThreads = numHelperThreads + 1;
+  const auto count        = std::min(static_cast<int>(searchThreadData.size()), activeThreads);
+  for (int i = 1; i < count; ++i) {
     if (searchThreadData[i]) {
       result += searchThreadData[i]->statistics;
     }

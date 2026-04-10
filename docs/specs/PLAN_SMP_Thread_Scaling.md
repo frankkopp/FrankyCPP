@@ -250,6 +250,7 @@ thrashing caused non-deterministic timing effects that occasionally produced "lu
 patterns in the search tree, resulting in fewer nodes and inflated NPS at random thread counts.
 
 ### R2. Code Review: Bench → Search → Thread Lifecycle (Top-Down)
+**Status:** ✅ Complete — one bug found and fixed, no race conditions or correctness issues.
 **Goal:** Deep, careful review of the entire code path from bench invocation to per-thread search
 completion. Identify any bugs, race conditions, or subtle issues that could explain the NPS anomalies
 or degrade SMP effectiveness.
@@ -315,6 +316,20 @@ or degrade SMP effectiveness.
 - Are there any hidden shared mutable state paths beyond the known TT statistics counters?
 - Is there a bug where some threads don't properly stop at the depth limit under SMP?
 - Could TT entry corruption (torn writes) cause non-deterministic tree size changes?
+
+**Findings (2026-04-10):**
+- **🔴 Bug found and fixed:** `getTotalNodes()` and `aggregateStats()` iterated the entire
+  `searchThreadData` vector (which grows but never shrinks). When thread count decreased between
+  searches (without `ucinewgame`), stale entries from inactive threads inflated node counts and
+  statistics. Fixed to iterate only `[0..numHelperThreads]` active threads.
+- **No race conditions found.** TT uses atomic key (acquire/release) + XOR verification — solid.
+  PawnTT uses copy-on-read without XOR — acceptable trade-off (standard approach).
+- **No thread join timing issues.** `joinHelperThreads()` uses hard `thread::join()`.
+  `waitWhileSearching()` blocks on `isRunningSemaphore` released only after all cleanup.
+- **No hidden shared mutable state** beyond the already-fixed TT/PawnTT per-thread stats.
+- **Position deep copy is correct** — compiler-generated `= default` copies all value-type members
+  including the full history stack. No shared state between thread copies.
+- **TT torn writes → XOR mismatch → clean miss.** Does not cause non-deterministic tree sizes.
 
 ### R3. Per-Position Analysis at Different Thread Counts
 **Goal:** Understand WHERE the search tree changes with threads.
@@ -430,7 +445,7 @@ False sharing on TT/PawnTT statistics was overwhelmingly the dominant bottleneck
 | ID  | Investigation                              | Effort  | Blocking? | Priority        |
 |-----|--------------------------------------------|---------|-----------|-----------------|
 | R1  | Bench stability (3× repeat runs)           | Small   | Yes       | ✅ **Complete**  |
-| R2  | Code review: bench → search → threads      | Medium  | Yes       | ⬆️ **Do first** |
+| R2  | Code review: bench → search → threads      | Medium  | Yes       | ✅ **Complete**  |
 | R3  | Per-position analysis                      | Small   | Partially | ⬆️ **Do first** |
 | R5  | False sharing quantification               | Small   | Yes       | ✅ **Complete**  |
 | R4  | Memory bandwidth saturation (VTune)        | Medium  | Yes       | ⬆️ High         |
