@@ -332,6 +332,7 @@ or degrade SMP effectiveness.
 - **TT torn writes → XOR mismatch → clean miss.** Does not cause non-deterministic tree sizes.
 
 ### R3. Per-Position Analysis at Different Thread Counts
+**Status:** ⏭️ Skipped — superseded by R1/R2/R5 findings.
 **Goal:** Understand WHERE the search tree changes with threads.
 **Method:**
 - Instrument `Benchmark::run()` to log per-position: nodes, time, depth reached, best move
@@ -343,6 +344,11 @@ or degrade SMP effectiveness.
 - Do positions reach the same depth at all thread counts? (They should — bench is depth-limited)
 - Does the best move change between thread counts? (Would indicate search instability affecting quality)
 - Is the node count variance concentrated in specific position types (open/closed/endgame)?
+
+**Disposition (2026-04-10):** The pre-fix NPS anomalies this investigation targeted no longer exist.
+R1 confirmed stable post-fix bench, R5 confirmed false sharing as the root cause, and R2 found no
+race conditions or correctness bugs. Per-position variance under Lazy SMP is expected (different TT
+contents → different search trees) and not actionable. Skipping in favor of R4/R6.
 
 ### R4. Memory Bandwidth Saturation Point
 **Goal:** Confirm or refute the "memory wall" hypothesis with direct measurement.
@@ -446,7 +452,7 @@ False sharing on TT/PawnTT statistics was overwhelmingly the dominant bottleneck
 |-----|--------------------------------------------|---------|-----------|-----------------|
 | R1  | Bench stability (3× repeat runs)           | Small   | Yes       | ✅ **Complete**  |
 | R2  | Code review: bench → search → threads      | Medium  | Yes       | ✅ **Complete**  |
-| R3  | Per-position analysis                      | Small   | Partially | ⬆️ **Do first** |
+| R3  | Per-position analysis                      | Small   | Partially | ⏭️ **Skipped**   |
 | R5  | False sharing quantification               | Small   | Yes       | ✅ **Complete**  |
 | R4  | Memory bandwidth saturation (VTune)        | Medium  | Yes       | ⬆️ High         |
 | R6  | TT hit rate & entry quality                | Medium  | Partially | ⬆️ High         |
@@ -454,8 +460,8 @@ False sharing on TT/PawnTT statistics was overwhelmingly the dominant bottleneck
 | R7  | ELO at longer time controls                | Large   | No        | 🔶 Medium       |
 | R9  | Search tree overlap measurement            | Large   | No        | 🔽 Low          |
 
-**Gate:** Do not start Phase 1-5 implementation until R1, R2, R4, and R5 are complete. Their results
-will determine which improvements actually matter and which are solving the wrong problem.
+**Gate:** R1, R2, R5 complete. R3 skipped (superseded). R4 (memory bandwidth) is the last blocking
+gate before Phase 2+ implementation. R6 (TT hit rate) is recommended but not blocking.
 
 ---
 
