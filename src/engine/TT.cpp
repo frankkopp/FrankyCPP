@@ -28,6 +28,7 @@
 
 #include "TT.h"
 #include "common/Logging.h"
+#include "config/ConfigMode.h"
 
 #include <algorithm>
 #include <execution>
@@ -136,7 +137,7 @@ void TT::put(const ZobristKey key, const Depth depth, const Move move, const Val
   // get the cluster for this hash
   TTCluster* const cluster = getCluster(key);
 
-  numberOfPuts++;
+  TT_STAT_INC(numberOfPuts);
 
   // Scan all entries in the cluster for:
   // 1. Exact key match (update existing entry)
@@ -152,7 +153,7 @@ void TT::put(const ZobristKey key, const Depth depth, const Move move, const Val
     // Same position -> update existing entry
     // Stored key is XOR'd with data hash, so recover original key for comparison.
     if ((storedKey ^ entry.dataHash()) == key) {
-      numberOfUpdates++;
+      TT_STAT_INC(numberOfUpdates);
       // keep existing move if no move is given
       if (move) {
         entry.move = static_cast<uint16_t>(move);
@@ -197,7 +198,7 @@ void TT::put(const ZobristKey key, const Depth depth, const Move move, const Val
 
   // No key match found - use empty slot if available
   if (emptyEntry != nullptr) {
-    numberOfEntries++;
+    TT_STAT_INC(numberOfEntries);
     // Write non-key fields first, then publish via release store on key.
     // Any thread that loads key with acquire will see all prior writes.
     // XOR key with data hash to detect torn reads in probe().
@@ -214,8 +215,8 @@ void TT::put(const ZobristKey key, const Depth depth, const Move move, const Val
   // No empty slot - always replace the weakest victim in the cluster.
   // The 4-way associativity protects valuable entries (3 others survive).
   if (victimEntry != nullptr) {
-    numberOfCollisions++;
-    numberOfOverwrites++;
+    TT_STAT_INC(numberOfCollisions);
+    TT_STAT_INC(numberOfOverwrites);
     // Write non-key fields first, then publish via release store on key.
     // XOR key with data hash to detect torn reads in probe().
     victimEntry->move  = static_cast<uint16_t>(move);
@@ -235,7 +236,7 @@ std::optional<TT::Entry> TT::probe(const ZobristKey& key) {
   std::lock_guard lock(ttMutex);
 #endif
 
-  numberOfProbes++;
+  TT_STAT_INC(numberOfProbes);
   TTCluster* const cluster = getCluster(key);
 
   // Scan all entries in the cluster for a key match.
@@ -255,7 +256,7 @@ std::optional<TT::Entry> TT::probe(const ZobristKey& key) {
     if ((storedKey ^ copy.dataHash()) == key) {
       // Restore the original key in the copy (it was stored XOR'd)
       copy.key.store(key, std::memory_order_relaxed);
-      numberOfHits++;
+      TT_STAT_INC(numberOfHits);
 
       // age-- marks the entry as recently used, making it less likely to be evicted
       // by the replacement policy in put(). Safe in single-thread mode only.
@@ -272,7 +273,7 @@ std::optional<TT::Entry> TT::probe(const ZobristKey& key) {
       return copy;
     }
   }
-  numberOfMisses++;
+  TT_STAT_INC(numberOfMisses);
   return std::nullopt;
 }
 

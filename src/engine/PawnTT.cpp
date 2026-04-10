@@ -24,6 +24,7 @@
 
 #include "PawnTT.h"
 #include "common/Logging.h"
+#include "config/ConfigMode.h"
 
 using namespace engine;
 using namespace chess;
@@ -150,7 +151,7 @@ void PawnTT::put(Entry* entryPtr, const ZobristKey key, const Score score,
   // Updates should not happen as we should have read this entry and
   // therefore not re-calculated
 
-  numberOfPuts++;
+  TT_STAT_INC(numberOfPuts);
 
   // Read the current key with relaxed order - we only need its value, not synchronization here.
   // The release store below (when we write a new key) provides the ordering guarantee for readers.
@@ -158,10 +159,10 @@ void PawnTT::put(Entry* entryPtr, const ZobristKey key, const Score score,
 
   // New entry
   if (entryKey == 0) {
-    numberOfEntries++;
+    TT_STAT_INC(numberOfEntries);
   } // update - should not happen in single-thread mode
   else if (entryKey == key) {
-    numberOfUpdates++;
+    TT_STAT_INC(numberOfUpdates);
     // Under SMP, concurrent threads may legitimately write the same entry - not a bug.
     // Only warn in single-thread mode where this indicates a missing read optimization.
     if (numSmpThreads <= 1) {
@@ -169,7 +170,7 @@ void PawnTT::put(Entry* entryPtr, const ZobristKey key, const Score score,
     }
   }
   else { // collision replaces former entry
-    numberOfCollisions++;
+    TT_STAT_INC(numberOfCollisions);
   }
 
   // Write value fields first, then publish via release store on key.
@@ -187,12 +188,12 @@ void PawnTT::put(Entry* entryPtr, const ZobristKey key, const Score score,
 }
 
 std::optional<PawnTT::Entry> PawnTT::probe(const ZobristKey key) const {
-  numberOfQueries++;
+  TT_STAT_INC(numberOfQueries);
 
   // Key 0 is reserved for empty entries - never matches.
   // This handles positions with no pawns (valid but uncacheable).
   if (key == 0) {
-    numberOfMisses++;
+    TT_STAT_INC(numberOfMisses);
     return std::nullopt;
   }
 
@@ -208,11 +209,11 @@ std::optional<PawnTT::Entry> PawnTT::probe(const ZobristKey key) const {
 
   // Verify key match
   if (storedKey == key) {
-    numberOfHits++;
+    TT_STAT_INC(numberOfHits);
     return copy;
   }
 
-  numberOfMisses++;
+  TT_STAT_INC(numberOfMisses);
   return std::nullopt;
 }
 
