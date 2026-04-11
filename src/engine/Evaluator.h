@@ -247,6 +247,16 @@ namespace engine {
     /// @param us  Color whose coordination to evaluate (bonus for us)
     void coordinationEval(const Position& p, Score& s, Color us) const;
 
+private:
+    /// Shared evaluation core used by both evaluate() and evaluateTrace().
+    /// Trace=true records per-component score deltas and returns EvalTrace.
+    /// Trace=false generates identical code to the original evaluate() — zero overhead.
+    /// @param p  The position to evaluate
+    /// @return   Value (Trace=false) or EvalTrace (Trace=true)
+    template<bool Trace>
+    std::conditional_t<Trace, EvalTrace, Value> evaluateCore(const Position& p);
+
+public:
 #ifdef EVAL_ENABLE_PREFETCH
     /// Prefetches pawn cache entry for the given key into CPU cache.
     /// No-op if pawnCache is nullptr.

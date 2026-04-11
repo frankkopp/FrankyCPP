@@ -60,158 +60,29 @@ std::string EvalTrace::str() const {
     phase);
 }
 
-EvalTrace Evaluator::evaluateTrace(const Position& p) {
-  EvalTrace trace{};
-
-  // insufficient material check
-  if (p.checkInsufficientMaterial()) {
-    trace.insufficientMaterial = true;
-    trace.total = VALUE_DRAW;
-    return trace;
-  }
-
-  // Reset evaluator state (same as evaluate())
-  score.midgame           = VALUE_ZERO;
-  score.endgame           = VALUE_ZERO;
-  kingAttackCount[WHITE]  = 0;
-  kingAttackCount[BLACK]  = 0;
-  kingAttackWeight[WHITE] = 0;
-  kingAttackWeight[BLACK] = 0;
-  attackedBy[WHITE]       = BbZero;
-  attackedBy[BLACK]       = BbZero;
-  passedPawns[WHITE]      = BbZero;
-  passedPawns[BLACK]      = BbZero;
-  std::memset(&attackedByPT, 0, sizeof(attackedByPT));
-
-  const double gamePhaseFactor = p.getGamePhaseFactor();
-  trace.phase = gamePhaseFactor;
-
-  // material
-  if (EvalConfig.USE_MATERIAL) {
-    score.midgame = static_cast<Value>(p.getMaterial(WHITE) - p.getMaterial(BLACK));
-    score.endgame = score.midgame;
-    trace.material = score;
-  }
-
-  // positional value
-  if (EvalConfig.USE_POSITIONAL) {
-    const Score before = score;
-    score.midgame += static_cast<Value>(p.getMidPosValue(WHITE) - p.getMidPosValue(BLACK));
-    score.endgame += static_cast<Value>(p.getEndPosValue(WHITE) - p.getEndPosValue(BLACK));
-    trace.positional = {score.midgame - before.midgame, score.endgame - before.endgame};
-  }
-
-  // lazy eval early exit
-  if (EvalConfig.USE_LAZY_EVAL) {
-    const Value value = valueFromScore(score, gamePhaseFactor);
-    if (value > static_cast<Value>(static_cast<int>(EvalConfig.LAZY_THRESHOLD + EvalConfig.LAZY_THRESHOLD * gamePhaseFactor))) {
-      trace.lazyExit = true;
-      trace.totalWhite = value;
-      trace.total = finalEval(p, value);
-      return trace;
-    }
-  }
-
-  // Pre-compute attack data (same as evaluate())
-  {
-    attackedBy[WHITE] = Bitboards::nonSliderAttacks[KING][p.getKingSquare(WHITE)];
-    attackedBy[BLACK] = Bitboards::nonSliderAttacks[KING][p.getKingSquare(BLACK)];
-    attackedByPT[KING][WHITE] = attackedBy[WHITE];
-    attackedByPT[KING][BLACK] = attackedBy[BLACK];
-    const Bitboard wp = p.getPieceBb(WHITE, PAWN);
-    attackedByPT[PAWN][WHITE] = wp.shifted(NORTH_EAST) | wp.shifted(NORTH_WEST);
-    attackedBy[WHITE] |= attackedByPT[PAWN][WHITE];
-    const Bitboard bp = p.getPieceBb(BLACK, PAWN);
-    attackedByPT[PAWN][BLACK] = bp.shifted(SOUTH_EAST) | bp.shifted(SOUTH_WEST);
-    attackedBy[BLACK] |= attackedByPT[PAWN][BLACK];
-  }
-
-  // pawn eval
-  if (EvalConfig.USE_PAWN_EVAL) {
-    const Score before = score;
-    pawnEval(p, score);
-    trace.pawn = {score.midgame - before.midgame, score.endgame - before.endgame};
-  }
-  else {
-    for (const Color c : Color::all()) {
-      const Bitboard myPawns  = p.getPieceBb(c, PAWN);
-      const Bitboard oppPawns = p.getPieceBb(~c, PAWN);
-      Bitboard passed         = BbZero;
-      Bitboard pawns          = myPawns;
-      while (pawns) {
-        const Square sq    = pawns.popLSB();
-        const Bitboard fwd = Bitboards::rays[c == WHITE ? N : S][sq];
-        if (!(myPawns & fwd) && !(oppPawns & Bitboards::passedPawnMask[c][sq])) {
-          passed |= Bitboards::sqBb[sq];
-        }
-      }
-      passedPawns[c] = passed;
-    }
-  }
-
-  // piece eval
-  if (EvalConfig.USE_PIECE_EVAL) {
-    const Score before = score;
-    pieceEval(p, score, WHITE, KNIGHT);
-    pieceEval(p, score, BLACK, KNIGHT);
-    pieceEval(p, score, WHITE, BISHOP);
-    pieceEval(p, score, BLACK, BISHOP);
-    pieceEval(p, score, WHITE, ROOK);
-    pieceEval(p, score, BLACK, ROOK);
-    pieceEval(p, score, WHITE, QUEEN);
-    pieceEval(p, score, BLACK, QUEEN);
-    trace.pieces = {score.midgame - before.midgame, score.endgame - before.endgame};
-  }
-
-  // threat eval
-  if (EvalConfig.USE_THREAT_EVAL) {
-    const Score before = score;
-    threatEval(p, score, WHITE);
-    threatEval(p, score, BLACK);
-    trace.threats = {score.midgame - before.midgame, score.endgame - before.endgame};
-  }
-
-  // coordination eval
-  if (EvalConfig.USE_CONNECTED_ROOKS || EvalConfig.USE_MINOR_CONNECTIVITY) {
-    const Score before = score;
-    coordinationEval(p, score, WHITE);
-    coordinationEval(p, score, BLACK);
-    trace.coordination = {score.midgame - before.midgame, score.endgame - before.endgame};
-  }
-
-  // king eval
-  if (EvalConfig.USE_KING_EVAL) {
-    const Score before = score;
-    kingEval(p, score, WHITE);
-    kingEval(p, score, BLACK);
-    trace.kingSafety = {score.midgame - before.midgame, score.endgame - before.endgame};
-  }
-
-  // tempo
-  if (EvalConfig.USE_TEMPO) {
-    score.midgame += static_cast<Value>(EvalConfig.TEMPO);
-    trace.tempo = {static_cast<Value>(EvalConfig.TEMPO), VALUE_ZERO};
-  }
-
-  // final value
-  Value value;
-  if (EvalConfig.USE_GAMEPHASE_VALUE) {
-    value = valueFromScore(score, gamePhaseFactor);
-  }
-  else {
-    value = (score.midgame + score.endgame) / 2;
-  }
-
-  trace.totalWhite = value;
-  trace.total = finalEval(p, value);
-  return trace;
+Value Evaluator::evaluate(const Position& p) {
+  return evaluateCore<false>(p);
 }
 
-Value Evaluator::evaluate(const Position& p) {
+EvalTrace Evaluator::evaluateTrace(const Position& p) {
+  return evaluateCore<true>(p);
+}
 
-  // if not enough material on the board to achieve a mate it is a draw
+template<bool Trace>
+std::conditional_t<Trace, EvalTrace, Value> Evaluator::evaluateCore(const Position& p) {
+  // Trace-only local — all members optimized away when Trace=false
+  [[maybe_unused]] EvalTrace trace{};
+
+  // if not enough material on the board to achieve a mate, it is a draw
   if (p.checkInsufficientMaterial()) {
-    return VALUE_DRAW;
+    if constexpr (Trace) {
+      trace.insufficientMaterial = true;
+      trace.total = VALUE_DRAW;
+      return trace;
+    }
+    else {
+      return VALUE_DRAW;
+    }
   }
 
   // Each position is evaluated from the view of the white
@@ -235,18 +106,27 @@ Value Evaluator::evaluate(const Position& p) {
   std::memset(&attackedByPT, 0, sizeof(attackedByPT));
 
   const double gamePhaseFactor = p.getGamePhaseFactor();
+  if constexpr (Trace) {
+    trace.phase = gamePhaseFactor;
+  }
 
   // material
-  // DEBUG - test of new config system
   if (EvalConfig.USE_MATERIAL) {
     score.midgame = static_cast<Value>(p.getMaterial(WHITE) - p.getMaterial(BLACK));
     score.endgame = score.midgame;
+    if constexpr (Trace) {
+      trace.material = score;
+    }
   }
 
   // positional value
   if (EvalConfig.USE_POSITIONAL) {
+    [[maybe_unused]] const Score before = score;
     score.midgame += static_cast<Value>(p.getMidPosValue(WHITE) - p.getMidPosValue(BLACK));
     score.endgame += static_cast<Value>(p.getEndPosValue(WHITE) - p.getEndPosValue(BLACK));
+    if constexpr (Trace) {
+      trace.positional = {score.midgame - before.midgame, score.endgame - before.endgame};
+    }
   }
 
   // early exit
@@ -255,7 +135,15 @@ Value Evaluator::evaluate(const Position& p) {
   if (EvalConfig.USE_LAZY_EVAL) {
     const Value value = valueFromScore(score, gamePhaseFactor);
     if (value > static_cast<Value>(static_cast<int>(EvalConfig.LAZY_THRESHOLD + EvalConfig.LAZY_THRESHOLD * gamePhaseFactor))) {
-      return finalEval(p, value);
+      if constexpr (Trace) {
+        trace.lazyExit = true;
+        trace.totalWhite = value;
+        trace.total = finalEval(p, value);
+        return trace;
+      }
+      else {
+        return finalEval(p, value);
+      }
     }
   }
 
@@ -281,7 +169,11 @@ Value Evaluator::evaluate(const Position& p) {
 
   // evaluate pawns — also computes passedPawns[] for rookEval/kingEval
   if (EvalConfig.USE_PAWN_EVAL) {
+    [[maybe_unused]] const Score before = score;
     pawnEval(p, score);
+    if constexpr (Trace) {
+      trace.pawn = {score.midgame - before.midgame, score.endgame - before.endgame};
+    }
   }
   else {
     // Fallback: compute passedPawns[] when pawn eval is disabled,
@@ -304,33 +196,45 @@ Value Evaluator::evaluate(const Position& p) {
 
   // evaluate pieces
   if (EvalConfig.USE_PIECE_EVAL) {
-    pieceEval(p, score, WHITE, KNIGHT);
-    pieceEval(p, score, BLACK, KNIGHT);
-    pieceEval(p, score, WHITE, BISHOP);
-    pieceEval(p, score, BLACK, BISHOP);
-    pieceEval(p, score, WHITE, ROOK);
-    pieceEval(p, score, BLACK, ROOK);
-    pieceEval(p, score, WHITE, QUEEN);
-    pieceEval(p, score, BLACK, QUEEN);
+    [[maybe_unused]] const Score before = score;
+    for (PieceType pt = KNIGHT; pt <= QUEEN; ++pt) {
+      for (const Color c : Color::all()) {
+        pieceEval(p, score, c, pt);
+      }
+    }
+    if constexpr (Trace) {
+      trace.pieces = {score.midgame - before.midgame, score.endgame - before.endgame};
+    }
   }
 
   // evaluate threats (requires fully populated attackedBy[] and attackedByPT[][])
   if (EvalConfig.USE_THREAT_EVAL) {
+    [[maybe_unused]] const Score before = score;
     threatEval(p, score, WHITE);
     threatEval(p, score, BLACK);
+    if constexpr (Trace) {
+      trace.threats = {score.midgame - before.midgame, score.endgame - before.endgame};
+    }
   }
-
 
   // evaluate piece coordination (connected rooks, minor connectivity)
   if (EvalConfig.USE_CONNECTED_ROOKS || EvalConfig.USE_MINOR_CONNECTIVITY) {
+    [[maybe_unused]] const Score before = score;
     coordinationEval(p, score, WHITE);
     coordinationEval(p, score, BLACK);
+    if constexpr (Trace) {
+      trace.coordination = {score.midgame - before.midgame, score.endgame - before.endgame};
+    }
   }
 
   // evaluate kings
   if (EvalConfig.USE_KING_EVAL) {
+    [[maybe_unused]] const Score before = score;
     kingEval(p, score, WHITE);
     kingEval(p, score, BLACK);
+    if constexpr (Trace) {
+      trace.kingSafety = {score.midgame - before.midgame, score.endgame - before.endgame};
+    }
   }
 
   // TEMPO Bonus for the side to move (helps with evaluation alternation -
@@ -338,6 +242,9 @@ Value Evaluator::evaluate(const Position& p) {
   // (not empirically tested)
   if (EvalConfig.USE_TEMPO) {
     score.midgame += static_cast<Value>(EvalConfig.TEMPO);
+    if constexpr (Trace) {
+      trace.tempo = {static_cast<Value>(EvalConfig.TEMPO), VALUE_ZERO};
+    }
   }
 
   // calculate value depending on game phases
@@ -350,10 +257,20 @@ Value Evaluator::evaluate(const Position& p) {
   }
 
   // normalize for the next player
-  value = finalEval(p, value);
-
-  return value;
+  if constexpr (Trace) {
+    trace.totalWhite = value;
+    trace.total = finalEval(p, value);
+    return trace;
+  }
+  else {
+    return finalEval(p, value);
+  }
 }
+
+// Explicit template instantiations — only these two specializations are ever needed.
+// Keeps the template definition in the .cpp (no header bloat).
+template std::conditional_t<false, EvalTrace, Value> Evaluator::evaluateCore<false>(const Position&);
+template std::conditional_t<true, EvalTrace, Value> Evaluator::evaluateCore<true>(const Position&);
 
 inline Value Evaluator::finalEval(const Position& p, const Value value) {
   return value * p.getNextPlayer().sign();
