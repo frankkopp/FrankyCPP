@@ -152,7 +152,8 @@ std::conditional_t<Trace, EvalTrace, Value> Evaluator::evaluateCore(const Positi
   // in each piece eval function. passedPawns are computed in pawnEval()
   // (and cached in PawnTT) for reuse by rookEval and kingEval.
   {
-    // King attacks
+    // King attacks — attackedByPT[KING][c] also serves as the king zone
+    // for piece eval king safety (avoids recomputing per piece, see S12).
     attackedBy[WHITE] = Bitboards::nonSliderAttacks[KING][p.getKingSquare(WHITE)];
     attackedBy[BLACK] = Bitboards::nonSliderAttacks[KING][p.getKingSquare(BLACK)];
     attackedByPT[KING][WHITE] = attackedBy[WHITE];
@@ -530,14 +531,10 @@ inline void Evaluator::knightEval(const Position& p, Score& s, const Color us, C
     }
   }
 
-  // King safety: count attacks on enemy king zone
-  if (EvalConfig.USE_KING_SAFETY_ATTACK) {
-    const Color them             = ~us;
-    const Bitboard enemyKingZone = Bitboards::nonSliderAttacks[KING][p.getKingSquare(them)];
-    if (attacks & enemyKingZone) {
-      ++kingAttackCount[them];
-      kingAttackWeight[them] += EvalConfig.KING_ATTACK_WEIGHT_KNIGHT;
-    }
+  // King safety: count attacks on enemy king zone (uses precomputed attackedByPT[KING])
+  if (EvalConfig.USE_KING_SAFETY_ATTACK && (attacks & attackedByPT[KING][~us])) {
+    ++kingAttackCount[~us];
+    kingAttackWeight[~us] += EvalConfig.KING_ATTACK_WEIGHT_KNIGHT;
   }
 }
 
@@ -567,14 +564,10 @@ inline void Evaluator::bishopEval(const Position& p, Score& s, const Color us, C
   // Bad bishop per-pawn penalty: REMOVED — Texel tuning zeroed both MID and END
   // across all datasets (Phase 9, 2026-03). USE_BAD_BISHOP toggle also removed.
 
-  // King safety: count attacks on enemy king zone
-  if (EvalConfig.USE_KING_SAFETY_ATTACK) {
-    const Color them             = ~us;
-    const Bitboard enemyKingZone = Bitboards::nonSliderAttacks[KING][p.getKingSquare(them)];
-    if (attacks & enemyKingZone) {
-      ++kingAttackCount[them];
-      kingAttackWeight[them] += EvalConfig.KING_ATTACK_WEIGHT_BISHOP;
-    }
+  // King safety: count attacks on enemy king zone (uses precomputed attackedByPT[KING])
+  if (EvalConfig.USE_KING_SAFETY_ATTACK && (attacks & attackedByPT[KING][~us])) {
+    ++kingAttackCount[~us];
+    kingAttackWeight[~us] += EvalConfig.KING_ATTACK_WEIGHT_BISHOP;
   }
 }
 
@@ -659,13 +652,10 @@ inline void Evaluator::rookEval(const Position& p, Score& s, const Color us, con
     }
   }
 
-  // King safety: count attacks on enemy king zone
-  if (EvalConfig.USE_KING_SAFETY_ATTACK) {
-    const Bitboard enemyKingZone = Bitboards::nonSliderAttacks[KING][p.getKingSquare(them)];
-    if (attacks & enemyKingZone) {
-      ++kingAttackCount[them];
-      kingAttackWeight[them] += EvalConfig.KING_ATTACK_WEIGHT_ROOK;
-    }
+  // King safety: count attacks on enemy king zone (uses precomputed attackedByPT[KING])
+  if (EvalConfig.USE_KING_SAFETY_ATTACK && (attacks & attackedByPT[KING][them])) {
+    ++kingAttackCount[them];
+    kingAttackWeight[them] += EvalConfig.KING_ATTACK_WEIGHT_ROOK;
   }
 
   if (mid || end) {
@@ -701,13 +691,10 @@ inline void Evaluator::queenEval(const Position& p, Score& s, const Color us, co
     end += closeness * EvalConfig.QUEEN_TROPISM_END_PER_STEP;
   }
 
-  // King safety: count attacks on enemy king zone
-  if (EvalConfig.USE_KING_SAFETY_ATTACK) {
-    const Bitboard enemyKingZone = Bitboards::nonSliderAttacks[KING][p.getKingSquare(them)];
-    if (attacks & enemyKingZone) {
-      ++kingAttackCount[them];
-      kingAttackWeight[them] += EvalConfig.KING_ATTACK_WEIGHT_QUEEN;
-    }
+  // King safety: count attacks on enemy king zone (uses precomputed attackedByPT[KING])
+  if (EvalConfig.USE_KING_SAFETY_ATTACK && (attacks & attackedByPT[KING][them])) {
+    ++kingAttackCount[them];
+    kingAttackWeight[them] += EvalConfig.KING_ATTACK_WEIGHT_QUEEN;
   }
 
   if (mid || end) {

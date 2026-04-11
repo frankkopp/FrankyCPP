@@ -1,9 +1,9 @@
 # FrankyCPP — Code Simplification & Cleanup Plan
 
-**Document Version:** 2.3
+**Document Version:** 2.4
 **Created:** 2026-04-11
-**Last updated:** 2026-04-11
-**Status:** 📋 IN PROGRESS (S1 ✅, S2 ✅, S11 ✅, S20 ✅ via S1, S22 ✅)
+**Last updated:** 2026-04-12
+**Status:** 📋 IN PROGRESS (S1 ✅, S2 ✅, S11 ✅, S12 ✅, S20 ✅ via S1, S22 ✅)
 **Scope:** `src/engine/`, `src/chesscore/`, `src/tablebase/`, `src/types/`
 
 ---
@@ -75,7 +75,7 @@ Existing test files relevant to this plan:
 | S9  | `SearchStats::operator+=` via field list macro  | REDUNDANCY    | MEDIUM   | 🟡 1–2 hrs | 🟡 Med | ❌ No operator+= tests          | —      |
 | S10 | Deduplicate TT-move validation pattern          | REDUNDANCY    | MEDIUM   | 🟢 15 min  | 🟢 Low | ✅ SearchTest + bench           | —      |
 | S11 | Bulk pawn attack computation (shift vs loop)    | PERFORMANCE   | CRITICAL | 🟡 1 hr    | 🟢 Low | ✅ Eval tests + bench           | ✅      |
-| S12 | King safety attack dedup + precompute kingzone  | PERF+REDUND   | MEDIUM   | 🟢 30 min  | 🟢 Low | ✅ KingSafety eval tests        | —      |
+| S12 | King safety attack dedup + precompute kingzone  | PERF+REDUND   | MEDIUM   | 🟢 30 min  | 🟢 Low | ✅ KingSafety eval tests        | ✅      |
 | S13 | Remove unnecessary variable in qsearch drop     | READABILITY   | LOW      | 🟢 5 min   | 🟢 Low | ✅ Bench (mechanical)           | —      |
 | S14 | Move `do_null` before move loop                 | READABILITY   | LOW      | 🟢 5 min   | 🟢 Low | ✅ Bench (mechanical)           | —      |
 | S15 | Draw-check pattern (dependent on S21)           | REDUNDANCY    | LOW      | 🟢 15 min  | 🟢 Low | ✅ SearchTest (indirectly)      | —      |
@@ -277,21 +277,26 @@ the MoveGenerator pattern.
 
 ---
 
-### S12: King safety attack dedup + precompute `enemyKingZone`
+### S12: ✅ King safety attack dedup + precompute `enemyKingZone`
 
+**Status:** ✅ COMPLETE
 **File:** `src/engine/Evaluator.cpp` (knightEval, bishopEval, rookEval, queenEval)
 **Category:** PERFORMANCE + REDUNDANCY — **Severity:** MEDIUM — **Confidence:** CERTAIN
 
 **Problem:** Identical 5-line king safety block in all 4 piece evals. `enemyKingZone`
-lookup repeated 8 times per evaluate().
+lookup (`Bitboards::nonSliderAttacks[KING][p.getKingSquare(them)]`) recomputed up to
+8 times per `evaluateCore()` call.
 
-**Solution:** Precompute `enemyKingZone[2]` once in `evaluate()`. Replace 5-line blocks with 2-line version.
+**Solution:** Reused `attackedByPT[KING][them]` — already computed once in `evaluateCore()`'s
+pre-compute block and never modified afterward. No new member variable needed.
+Each 5–7 line block collapsed to 3 lines with a merged `if` condition. Added clarifying
+comment in the pre-compute block documenting the dual use.
 
-**Lines saved:** ~16 — **Risk:** Low — behavioral equivalent.
+**Lines saved:** ~16 — **Risk:** Low — behavioral equivalent, verified by bench signature.
 
 **Test coverage:** ✅ `KingSafety_AttackedKingWorseThanSafe` tests king safety scoring.
 Multiple eval tests exercise piece evals that accumulate king attack data. Bench catches
-regressions. No additional tests needed.
+regressions.
 
 ---
 
@@ -490,7 +495,7 @@ Quick wins (🟢 5–15 min) are grouped together for batch implementation.
 ### Phase 1 — Performance wins
 1. ~~**S11** — Bulk pawn attacks~~ ✅ COMPLETE
 2. ~~**S22** — Enable EVAL_PREFETCH in search~~ ✅ COMPLETE (+1.8% NPS)
-3. **S12** — King safety dedup + precompute enemyKingZone
+3. ~~**S12** — King safety dedup + precompute enemyKingZone~~ ✅ COMPLETE
 
 ### Phase 2 — Quick wins (batch these)
 4. **S13** — Remove intermediate variable
